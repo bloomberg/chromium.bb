@@ -392,7 +392,7 @@
 <translation id="7960533875494434480">Encuadernación de borde corto</translation>
 <translation id="6431347207794742960"><ph name="PRODUCT_NAME"/> configurará actualizaciones automáticas para todos los usuarios de esta computadora.</translation>
 <translation id="4973698491777102067">Eliminar los siguientes elementos de:</translation>
-<translation id="6074963268421707432">No permitir que los sitios muestren notificaciones de escritorio</translation>
+<translation id="6074963268421707432">No permitir que los sitios muestren notificaciones de escritorio.</translation>
 <translation id="8508050303181238566">Presiona <ph name="HOTKEY_NAME"/> para alternar entre métodos de entrada.</translation>
 <translation id="6273404661268779365">Agregar nuevo fax</translation>
 <translation id="1995173078718234136">Examinando contenido...</translation>
@@ -1762,7 +1762,7 @@
 <translation id="9073281213608662541">PAP</translation>
 <translation id="1800035677272595847">Suplantación de identidad (phishing)</translation>
 <translation id="8448317557906454022">Hace <ph name="NUMBER_ZERO"/> segundos</translation>
-<translation id="402759845255257575">No permitir que los sitios ejecuten JavaScript</translation>
+<translation id="402759845255257575">No permitir que los sitios ejecuten JavaScript.</translation>
 <translation id="4610637590575890427">¿Tal vez quieres ir a <ph name="SITE"/>?</translation>
 <translation id="7723779034587221017">Se perdió la conexión con el servicio de política. Restablece el dispositivo o ponte en contacto con tu representante de asistencia.</translation>
 <translation id="3046388203776734202">Configuracion de ventana emergente:</translation>
@@ -1961,7 +1961,7 @@
 <translation id="8267453826113867474">Bloquear palabras ofensivas</translation>
 <translation id="7959074893852789871">El archivo contenía múltiples certificados. Algunos fueron importados:</translation>
 <translation id="1213999834285861200">Excepciones de imágenes</translation>
-<translation id="2805707493867224476">Permitir que todos los sitios muestren ventanas emergentes</translation>
+<translation id="2805707493867224476">Permitir que todos los sitios muestren ventanas emergentes.</translation>
 <translation id="3561217442734750519">El valor de entrada de la clave privada debe ser una ruta válida.</translation>
 <translation id="2444609190341826949">Sin una frase de contraseña, tus contraseñas y otros datos encriptados no se sincronizarán en esta computadora.</translation>
 <translation id="77221669950527621">Extensiones o aplicaciones</translation>

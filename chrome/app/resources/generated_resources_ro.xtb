@@ -399,7 +399,7 @@ a vă proteja confidenţialitatea.</translation>
 <translation id="7960533875494434480">Legare pe lăţime</translation>
 <translation id="6431347207794742960"><ph name="PRODUCT_NAME"/> va configura actualizările automate pentru toți utilizatorii acestui computer.</translation>
 <translation id="4973698491777102067">Eliminaţi elementele următoare din:</translation>
-<translation id="6074963268421707432">Nu doresc să permit niciunui site să afișeze notificări pe desktop</translation>
+<translation id="6074963268421707432">Nu permiteţi niciunui site să afişeze notificări pe desktop</translation>
 <translation id="8508050303181238566">Apăsaţi pe <ph name="HOTKEY_NAME"/> pentru a comuta între metodele de introducere.</translation>
 <translation id="6273404661268779365">Adăugaţi un fax nou</translation>
 <translation id="1995173078718234136">Se scanează conţinutul...</translation>
@@ -1776,7 +1776,7 @@ a vă proteja confidenţialitatea.</translation>
 <translation id="9073281213608662541">PAP</translation>
 <translation id="1800035677272595847">Phishing</translation>
 <translation id="8448317557906454022">Cu <ph name="NUMBER_ZERO"/> secunde în urmă</translation>
-<translation id="402759845255257575">Nu permiteți niciunui site să ruleze JavaScript</translation>
+<translation id="402759845255257575">Nu permiteţi niciunui site să ruleze JavaScript</translation>
 <translation id="4610637590575890427">Ați vrut să accesați <ph name="SITE"/>?</translation>
 <translation id="7723779034587221017">S-a pierdut conexiunea la serviciul pentru politică. Resetaţi dispozitivul sau contactaţi reprezentantul dvs. de asistenţă.</translation>
 <translation id="3046388203776734202">Setări pentru ferestrele de tip pop-up:</translation>
@@ -1982,7 +1982,7 @@ care împiedică <ph name="PRODUCT_NAME"/>
 <translation id="8267453826113867474">Blocaţi cuvintele ofensatoare</translation>
 <translation id="7959074893852789871">Fişierul a conţinut mai multe certificate, unele dintre acestea nefiind importate:</translation>
 <translation id="1213999834285861200">Excepții privind imaginile</translation>
-<translation id="2805707493867224476">Permiteți tuturor site-urilor să afișeze ferestre de tip pop-up</translation>
+<translation id="2805707493867224476">Permiteţi tuturor site-urilor să afişeze ferestre de tip pop-up</translation>
 <translation id="3561217442734750519">Valoarea introdusă pentru cheia privată trebuie să fie o cale validă.</translation>
 <translation id="2444609190341826949">În lipsa unei expresii de acces, parolele dvs. şi alte date criptate nu vor fi sincronizate pe acest computer.</translation>
 <translation id="77221669950527621">Extensii sau aplicaţii</translation>
@@ -2399,7 +2399,7 @@ care împiedică <ph name="PRODUCT_NAME"/>
 <translation id="5436492226391861498">Se așteaptă tunelul proxy...</translation>
 <translation id="3803991353670408298">Adăugați o altă metodă de introducere înainte de a o elimina pe aceasta.</translation>
 <translation id="1095623615273566396"><ph name="NUMBER_FEW"/> secunde</translation>
-<translation id="7006788746334555276">Setări privind conținutul</translation>
+<translation id="7006788746334555276">Setări privind conţinutul</translation>
 <translation id="3369521687965833290">Extensia nu poate fi dezarhivată. Pentru a dezarhiva extensia în siguranţă, trebuie să existe o cale către directorul dvs. de profiluri care să înceapă cu o literă de unitate şi care să nu conţină o joncţiune, un punct de montare sau un link simbolic. Pentru profilul dvs. nu există nicio astfel de cale.</translation>
 <translation id="337920581046691015"><ph name="PRODUCT_NAME"/> va fi instalat.</translation>
 <translation id="6282194474023008486">Cod poştal</translation>

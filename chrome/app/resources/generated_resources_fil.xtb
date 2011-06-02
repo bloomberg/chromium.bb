@@ -399,7 +399,7 @@ Kung ito ay
 <translation id="7960533875494434480">Short-edge na pag-bind</translation>
 <translation id="6431347207794742960">Ang <ph name="PRODUCT_NAME"/> ay magse-set up ng mga awtomatikong update para sa lahat ng mga user ng computer na ito.</translation>
 <translation id="4973698491777102067">Puksain ang mga sumusunod na item mula sa:</translation>
-<translation id="6074963268421707432">Huwag payagan ang anumang site na magpakita ng mga abiso sa deskstop</translation>
+<translation id="6074963268421707432">Huwag payagan ang anumang site na magpakita ng mga notification sa desktop</translation>
 <translation id="8508050303181238566">Pindutin ang <ph name="HOTKEY_NAME"/> upang lumipat sa pagitan ng mga pamamaraan ng pag-input.</translation>
 <translation id="6273404661268779365">Magdagdag ng bagong fax</translation>
 <translation id="1995173078718234136">Nag-scan ng nilalaman...</translation>
@@ -780,7 +780,7 @@ Kung ito ay
 <translation id="1272079795634619415">Stop</translation>
 <translation id="5442787703230926158">Error sa Pag-sync...</translation>
 <translation id="2462724976360937186">Certification Authority Key ID</translation>
-<translation id="6786747875388722282">Mga extension</translation>
+<translation id="6786747875388722282">Mga Extension</translation>
 <translation id="3944384147860595744">Mag-print kahit saan</translation>
 <translation id="2570648609346224037">Nagkaproblema habang dina-download ang larawan ng pagbawi.</translation>
 <translation id="4306718255138772973">Cloud Print Proxy</translation>
@@ -1776,7 +1776,7 @@ Kung ito ay
 <translation id="9073281213608662541">PAP</translation>
 <translation id="1800035677272595847">Phishing</translation>
 <translation id="8448317557906454022"><ph name="NUMBER_ZERO"/> segundo ang nakalipas</translation>
-<translation id="402759845255257575">Huwag hayaan ang anumang site na magpatakbo ng JavaScript</translation>
+<translation id="402759845255257575">Huwag payagang magpatakbo ng JavaScript ang anumang site</translation>
 <translation id="4610637590575890427">Ibig mo bang sabihin na pumunta sa <ph name="SITE"/>?</translation>
 <translation id="7723779034587221017">Nawala ang koneksyon sa serbisyo ng patakaran. Paki-reset ang device o makipag-ugnay sa iyong kinatawan sa suporta.</translation>
 <translation id="3046388203776734202">Mga Setting ng Pop-up:</translation>
@@ -1983,7 +1983,7 @@ Kung ito ay
 <translation id="8267453826113867474">I-block ang mga Nakakasakit na Salita</translation>
 <translation id="7959074893852789871">Naglaman ang file ng maramihang certificate, ilan sa mga ito ang na-import:</translation>
 <translation id="1213999834285861200">Mga Pagbubukod ng Larawan</translation>
-<translation id="2805707493867224476">Hayaan ang lahat ng mga site na magpakita ng mga pop-up</translation>
+<translation id="2805707493867224476">Payagang magpakita ng mga pop-up ang lahat ng mga site</translation>
 <translation id="3561217442734750519">Dapat na wastong path ang input na halaga para sa pribadong key.</translation>
 <translation id="2444609190341826949">Kapag walang passphrase, hindi masi-sync sa computer na ito ang iyong mga password at ibang na-encrypt na data.</translation>
 <translation id="77221669950527621">Mga Extension o Apps</translation>

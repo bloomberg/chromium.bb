@@ -943,7 +943,7 @@
 <translation id="5895875028328858187">Mostra una notificació quan hi hagi poques dades o estiguin a punt de caducar</translation>
 <translation id="939598580284253335">Introduïu la paraula de pas</translation>
 <translation id="7917972308273378936">Teclat lituà</translation>
-<translation id="8371806639176876412">És possible que es registri l'entrada del quadre multifunció</translation>
+<translation id="8371806639176876412">És possible que es registri el text d'Omnibox</translation>
 <translation id="4216499942524365685">Les dades d'inici de sessió no estan actualitzades. Feu clic per tornar a introduir la contrasenya.</translation>
 <translation id="8899388739470541164">Vietnamita</translation>
 <translation id="4091434297613116013">fulls de paper</translation>
@@ -977,7 +977,7 @@
 <translation id="2743322561779022895">Activació:</translation>
 <translation id="4181898366589410653">No s'ha trobat cap mecanisme de revocació al certificat del servidor.</translation>
 <translation id="8705331520020532516">Número de sèrie</translation>
-<translation id="1665770420914915777">Utilitzeu la pàgina Pestanya nova.</translation>
+<translation id="1665770420914915777">Utilitza la pàgina Pestanya nova</translation>
 <translation id="2629089419211541119">Fa <ph name="NUMBER_ONE"/> hora</translation>
 <translation id="1691063574428301566">El vostre equip es reiniciarà quan s'hagi completat l'actualització.</translation>
 <translation id="131364520783682672">Bloq Maj</translation>
@@ -1703,7 +1703,7 @@
 <translation id="7568790562536448087">Actualització</translation>
 <translation id="4856408283021169561">No s'ha trobat cap micròfon.</translation>
 <translation id="8190193592390505034">S'està connectant amb <ph name="PROVIDER_NAME"/></translation>
-<translation id="6144890426075165477"><ph name="PRODUCT_NAME"/> no és actualment el teu navegador predeterminat.</translation>
+<translation id="6144890426075165477"><ph name="PRODUCT_NAME"/> no és actualment el navegador predeterminat.</translation>
 <translation id="823241703361685511">Pla</translation>
 <translation id="4068506536726151626">Aquesta pàgina conté elements dels llocs següents que fan el seguiment de la vostra ubicació:</translation>
 <translation id="4721475475128190282">Diversos perfils</translation>
@@ -1776,7 +1776,7 @@
 <translation id="9073281213608662541">PAP</translation>
 <translation id="1800035677272595847">Pesca</translation>
 <translation id="8448317557906454022">Fa <ph name="NUMBER_ZERO"/> segons</translation>
-<translation id="402759845255257575">No permetis que cap lloc executi JavaScript</translation>
+<translation id="402759845255257575">No permetis que cap lloc web executi JavaScript</translation>
 <translation id="4610637590575890427">Volies anar a <ph name="SITE"/>?</translation>
 <translation id="7723779034587221017">S'ha perdut la connexió amb el servei de política. Reinicialitzeu el dispositiu o poseu-vos en contacte amb el vostre representant d'assistència.</translation>
 <translation id="3046388203776734202">Configuració de finestres emergents:</translation>

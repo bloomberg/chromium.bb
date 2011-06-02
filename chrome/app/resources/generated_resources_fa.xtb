@@ -397,7 +397,7 @@
 <translation id="7960533875494434480">حاشیه لبه کوتاه</translation>
 <translation id="6431347207794742960"><ph name="PRODUCT_NAME"/> به روزرسانی را بصورت خودکار برای تمام کاربران این رایانه راه اندازی می کند.</translation>
 <translation id="4973698491777102067">پاک کردن موارد زیر از:</translation>
-<translation id="6074963268421707432">به هیچ سایتی برای نمایش اعلام های دسک تاپ اجازه داده نشود</translation>
+<translation id="6074963268421707432">به هیچ سایتی اجازه نمایش اعلان های دسکتاپی داده نشود</translation>
 <translation id="8508050303181238566">جهت تغییر وضعیت بین روش های ورودی، <ph name="HOTKEY_NAME"/> را فشار دهید.</translation>
 <translation id="6273404661268779365">افزودن نمابر جدید</translation>
 <translation id="1995173078718234136">در حال اسکن محتوا</translation>
@@ -1450,7 +1450,7 @@
 <translation id="1636959874332483835"><ph name="HOST_NAME"/> حاوی بدافزار است. در صورت بازدید از این سایت، ممکن است رایانه شما ویروسی شود.</translation>
 <translation id="8050783156231782848">داده ای موجود نیست</translation>
 <translation id="1175364870820465910">&amp;چاپ...</translation>
-<translation id="3866249974567520381">توصیف</translation>
+<translation id="3866249974567520381">توضیح</translation>
 <translation id="2900139581179749587">گفتار شناسایی نشد.</translation>
 <translation id="953692523250483872">هیچ فایلی انتخاب نشد</translation>
 <translation id="2294358108254308676">آیا می خواهید <ph name="PRODUCT_NAME"/> را نصب کنید؟</translation>
@@ -2253,7 +2253,7 @@
 <translation id="521467793286158632">حذف همه رمزهای ورود</translation>
 <translation id="2491120439723279231">گواهی سرور دارای چندین خطاست.</translation>
 <translation id="4448844063988177157">در حال جستجوی شبکه های Wi-Fi...</translation>
-<translation id="5765780083710877561">توصیف:</translation>
+<translation id="5765780083710877561">توضیح:</translation>
 <translation id="338583716107319301">جداساز</translation>
 <translation id="2079053412993822885">در صورتی که یکی از مجوزهای خود را حذف کنید، دیگر نمی توانید از آن برای تأیید اعتبار خود استفاده کنید.</translation>
 <translation id="7221869452894271364">تازه سازی این صفحه</translation>

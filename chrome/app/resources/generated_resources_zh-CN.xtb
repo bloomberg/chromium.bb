@@ -1370,7 +1370,7 @@
 <translation id="4224803122026931301">位置例外情况</translation>
 <translation id="749452993132003881">平假名</translation>
 <translation id="8226742006292257240">以下是已指定给您计算机的随机生成的 TPM 密码：</translation>
-<translation id="8487693399751278191">立即导入书签...</translation>
+<translation id="8487693399751278191">点这就开始啦！</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME"/></translation>
 <translation id="7484580869648358686">警告：此页面包含危险内容！</translation>
 <translation id="2074739700630368799">使用 Chrome 操作系统（企业版），您可以将自己的设备连接到 Google Apps，并通过 Google Apps 控制台查找和控制相关设备。</translation>
@@ -2248,7 +2248,7 @@
 <translation id="1618661679583408047">该服务器的安全证书尚未生效！</translation>
 <translation id="7039912931802252762">Microsoft 智能卡登录</translation>
 <translation id="6285074077487067719">模式</translation>
-<translation id="3065140616557457172">可键入搜索字词进行搜索，也可输入网址进行浏览 - 地址栏、搜索框合二为一。</translation>
+<translation id="3065140616557457172">地址栏、搜索框合二为一。试试输入关键词，回车即得搜索结果，很方便！</translation>
 <translation id="5509693895992845810">存储为(&amp;A)...</translation>
 <translation id="5986279928654338866"><ph name="DOMAIN"/> 服务器要求提供用户名和密码。</translation>
 <translation id="521467793286158632">删除所有密码</translation>
@@ -2567,7 +2567,7 @@
 <translation id="4265682251887479829">找不到正在寻找的内容？</translation>
 <translation id="1804251416207250805">禁止用 Ping 发送信息来审核超链接。</translation>
 <translation id="5116628073786783676">音频存储为(&amp;V)...</translation>
-<translation id="2557899542277210112">为便于访问，可将书签直接放在书签栏中。</translation>
+<translation id="2557899542277210112">欢迎您体验谷歌浏览器。想导入您的收藏夹？</translation>
 <translation id="2749881179542288782">检查拼写和语法</translation>
 <translation id="5105855035535475848">固定标签页</translation>
 <translation id="6892450194319317066">按打开者选择</translation>
@@ -3034,7 +3034,7 @@
 <translation id="7240120331469437312">证书主题的备用名称</translation>
 <translation id="6900113680982781280">启用自动填充功能后，只需点击一次即可填写多个网络表单</translation>
 <translation id="1131850611586448366">网址为 <ph name="HOST_NAME"/> 的网站已被举报为“网上诱骗”网站，这种网站通常会伪装成银行等受信任的机构，骗取用户的个人信息或财务信息。</translation>
-<translation id="5413218268059792983">使用 <ph name="SEARCH_ENGINE"/> 直接从此处开始搜索</translation>
+<translation id="5413218268059792983">直接在地址栏里用 <ph name="SEARCH_ENGINE"/> 搜索！</translation>
 <translation id="1161575384898972166">请登录“<ph name="TOKEN_NAME"/>”，导出客户端证书。</translation>
 <translation id="1718559768876751602">立即创建 Google 帐户</translation>
 <translation id="1884319566525838835">沙盒状态</translation>

@@ -1,15 +1,518 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="lt">
-<translation id="6074963268421707432">Neleisti jokiai svetainei rodyti darbalaukio pranešimų</translation>
+<translation id="1503959756075098984">Automatiškai diegiami plėtinių ID ir atnaujinimo URL</translation>
+<translation id="2463365186486772703">Programos lokalė</translation>
+<translation id="1397855852561539316">Numatytojo paieškos teikėjo siūlymo URL</translation>
+<translation id="7040229947030068419">Vertės pavyzdys:</translation>
+<translation id="6106630674659980926">Įgalinti slaptažodžių tvarkytuvę</translation>
+<translation id="7337927025691881244">Leidžiama nurodyti, kurių plėtinių naudotojai diegti NEGALI. Jau įdiegti į juodąjį sąrašą įtraukti plėtiniai bus pašalinti.
+
+          Juodojo sąrašo vertė „*“ nurodo, kad visi plėtiniai yra įtraukti į juodąjį sąrašą, nebent jie aiškiai nurodyti baltajame sąraše.</translation>
+<translation id="7755528767666760533">Nurodomas paieškos variklio, naudojamo intuityviosios paieškos rezultatams pateikti, URL. URL turi būti eilutė „<ph name="SEARCH_TERM_MARKER"/>“, vietoj kurios pateikiant užklausą bus įvestas naudotojo įvestas tekstas. Pasirinktinai.</translation>
+<translation id="7614663184588396421">Neleidžiamų protokolų schemų sąrašas</translation>
+<translation id="2309390639296060546">Numatytasis geografinės vietovės nustatymas</translation>
+<translation id="4680961954980851756">Įgalinti automatinį pildymą</translation>
+<translation id="5183383917553127163">Leidžiama nurodyti, kurie plėtiniai neturi būti įtraukti į juodąjį sąrašą.
+
+          Juodojo sąrašo vertė „*“ nurodo, kad visi plėtiniai yra įtraukti į juodąjį sąrašą, o naudotojai gali diegti tik į baltąjį sąrašą įtrauktus plėtinius.
+
+          Pagal numatytuosius nustatymus visi plėtiniai yra įtraukti į baltąjį sąrašą, bet jei visi plėtiniai į juodąjį sąrašą buvo įtraukti todėl, kad to reikalavo politika, naudojant baltąjį sąrašą politikos galima nepaisyti.</translation>
+<translation id="3185009703220253572">nuo <ph name="SINCE_VERSION"/> versijos</translation>
+<translation id="5469825884154817306">Blokuoti vaizdus šiose svetainėse</translation>
+<translation id="1438955478865681012">Konfigūruojama su plėtiniais susijusi politika. Naudotojui neleidžiama diegti į juodąjį sąrašą įtrauktų plėtinių, jei jų nėra baltajame sąraše. Taip pat galite nustatyti, kad „<ph name="PRODUCT_NAME"/>“ automatiškai įdiegtų plėtinius, nurodydama juos „<ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>“. Juodasis sąrašas laikomas prioritetiniu privalomai įdiegiamų plėtinių sąrašo atžvilgiu.</translation>
+<translation id="4070280487546651935">Nurodomas raktinis žodis, kuris kaip nuoroda naudojamas „omnibox“ šio teikėjo paieškai inicijuoti. Pasirinktinai.</translation>
+<translation id="1096105751829466145">Numatytasis paieškos teikėjas</translation>
+<translation id="7567380065339179813">Leisti papildinius šiose svetainėse</translation>
+<translation id="5290940294294002042">Nurodyti papildinių, kuriuos naudotojas gali įgalinti arba kurių gali neleisti, sąrašą</translation>
+<translation id="1427655258943162134">Tarpinio serverio adresas arba URL</translation>
+<translation id="1827523283178827583">Naudoti fiksuotus tarpinius serverius</translation>
+<translation id="3021409116652377124">Neleisti papildinių ieškiklio</translation>
+<translation id="2455652143675149114">Leidžiama nurodyti veiksmus, kurie turi būti atliekami paleidus naršyklę.
+
+          Jei pasirinksite „Atidaryti pagrindinį puslapį“, paleidus „<ph name="PRODUCT_NAME"/>“ visada bus atidarytas pagrindinis puslapis.
+
+          Jei pasirinksite „Iš naujo atidaryti paskutinį kartą atidarytus URL“, bus iš naujo atidaryti URL, kurie buvo atidaryti prieš paskutinį kartą uždarant „<ph name="PRODUCT_NAME"/>“.
+
+          Jei pasirinksite „Atidaryti URL sąrašą“, naudotojui paleidus „<ph name="PRODUCT_NAME"/>“ bus atidarytas sąrašas „URL, kuriuos reikia atidaryti paleidžiant“.
+
+          Jei įgalinsite šį nustatymą, paleidę „<ph name="PRODUCT_NAME"/>“ naudotojai negalės jo nei pakeisti, nei nepaisyti.
+
+          Jei šio nustatymo neleisite, jis bus toks, kaip nesukonfigūruotas. Paleidęs <ph name="PRODUCT_NAME"/> naudotojas vis tiek galės jį pakeisti.</translation>
+<translation id="4980635395568992380">Duomenų tipas:</translation>
+<translation id="3096595567015595053">Įgalintų papildinių sąrašas</translation>
+<translation id="7998998292074133333">Įgalinti užraktą, jei įrenginiai, kuriuose veikia „ChromeOS“, bus nenaudojami arba laikinai sustabdyti.
+
+      Jei įgalinsite šį nustatymą, naudotojų bus prašoma pateikti slaptažodį, kad įrenginius, kuriuose veikia „ChromeOS“,  būtų galima perjungti iš miego režimo.
+
+      Jei šio nustatymo neleisite, naudotojų nebus prašoma pateikti slaptažodžio, kad įrenginius, kuriuose veikia „ChromeOS“, būtų galima perjungti iš miego režimo.
+
+      Jei šį nustatymą įgalinsite arba jo neleisite, paleidę „<ph name="PRODUCT_OS_NAME"/>“ naudotojai negalės jo nei pakeisti, nei nepaisyti.</translation>
+<translation id="5912364507361265851">Leisti naudotojams rodyti slaptažodžius slaptažodžių tvarkytuvėje</translation>
+<translation id="6999540307315670568">„<ph name="PRODUCT_NAME"/>“ naujo skirtuko puslapyje įgalinama žymių juosta.
+
+      Jei įgalinsite šį nustatymą, „<ph name="PRODUCT_NAME"/>“ naujo skirtuko puslapyje bus rodoma žymių juosta.
+
+      Jei šio nustatymo neleisite, naudotojams niekada nebus rodoma žymių juosta.
+
+      Jei šį nustatymą įgalinsite arba jo neleisite, paleidę „<ph name="PRODUCT_NAME"/>“ naudotojai negalės jo nei pakeisti, nei nepaisyti.</translation>
+<translation id="8828766846428537606">Konfigūruojamas numatytasis pagrindinis „<ph name="PRODUCT_NAME"/>“ puslapis, kurio keisti naudotojams neleidžiama.
+
+      Naudotojo pagrindinio puslapio nustatymai bus visiškai užrakinti tik tada, jei kaip pagrindinį puslapį pasirinksite naujo skirtuko puslapį arba nustatysite, kad į jį būtų įkeltas URL, ir nurodysite pagrindinio puslapio URL. Jei pagrindinio puslapio URL nenurodysite, naudotojui ir toliau bus leidžiama kaip pagrindinį puslapį nustatyti naujo skirtuko puslapį nurodant „chrome://newtab“.</translation>
+<translation id="1353966721814789986">Paleisties puslapiai</translation>
+<translation id="5564962323737505851">Konfigūruojama slaptažodžių tvarkytuvė. Jei slaptažodžių tvarkytuvė įgalinta, galite pasirinkti įgalinti naudotojo galimybę pateikti saugomus slaptažodžius aiškiu tekstu arba neleisti naudotis šia galimybe.</translation>
+<translation id="4668325077104657568">Numatytasis vaizdų nustatymas</translation>
+<translation id="6368403635025849609">Leisti „JavaScript“ šiose svetainėse</translation>
+<translation id="6074963268421707432">Neleisti jokioje svetainėje rodyti darbalaukio pranešimų</translation>
+<translation id="3758249152301468420">Neleisti kūrėjo įrankių</translation>
+<translation id="8665076741187546529">Konfigūruoti plėtinių, kuriuos įdiegti buvo privaloma, sąrašą</translation>
+<translation id="6242542007132978836">Leidžiama nustatyti, ar svetainėse turi būti leidžiama automatiškai paleisti plėtinius. Automatiškai paleisti plėtinius gali būti leidžiama visose svetainėse arba neleidžiama nė vienoje.</translation>
+<translation id="5233161357000953961">„<ph name="PRODUCT_NAME"/>“ neleidžiama naudoti SPDY protokolo.</translation>
+<translation id="4899708173828500852">Įgalinti saugų naršymą</translation>
+<translation id="3570008976476035109">Blokuoti papildinius šiose svetainėse</translation>
+<translation id="2884728160143956392">Leisti tik sesijų slapukus šiose svetainėse</translation>
+<translation id="3496296378755072552">Slaptažodžių tvarkytuvė</translation>
+<translation id="7118495359694701769">Nurodoma, ar į sugeneruotą „Kerberos“ SPN turi būti įtrauktas nestandartinis prievadas.
+
+          Jei įgalinsite šį nustatymą ir įvesite nestandartinį prievadą (t. y. ne 80 arba 443, o kitokį prievadą), jis bus įtrauktas į sugeneruotą „Kerberos“ SPN.
+
+          Jei šio nustatymo neleisite, į sugeneruotą „Kerberos“ SPN niekada nebus įtrauktas prievadas.</translation>
+<translation id="9135033364005346124">Įgalinti <ph name="CLOUD_PRINT_NAME"/> tarpinį serverį</translation>
+<translation id="4276147605137721961">Įgalinamas žymių redagavimas naudojant „<ph name="PRODUCT_NAME"/>“ arba neleidžiama to daryti.
+
+      Jei įgalinsite šį nustatymą, žymių bus galima pridėti, pašalinti arba jas modifikuoti. Tai yra numatytasis nustatymas.
+
+      Jei šio nustatymo neleisite, žymių nebus galima pridėti, pašalinti arba modifikuoti. Esamas žymes tebebus galima naudoti.</translation>
+<translation id="6943577887654905793">„Mac“ / „Linux“ nuostatos pavadinimas:</translation>
+<translation id="8621457834803281393">Leidžiama nustatyti URL šablonų, nurodančių svetaines, kuriose neleidžiama nustatyti slapukų, sąrašą.</translation>
+<translation id="254524874071906077">Nustatyti „Chrome“ kaip numatytąją naršyklę</translation>
+<translation id="4377599627073874279">Leisti visose svetainėse rodyti visus vaizdus</translation>
+<translation id="3915395663995367577">URL, siejantis su tarpinio serverio .pac failu</translation>
+<translation id="7191531985645073769">Neleidžiama sinchronizuoti duomenų „<ph name="PRODUCT_NAME"/>“ naudojantis „Google“ prieglobos sinchronizavimo paslaugomis; naudotojams šio nustatymo keisti neleidžiama.
+
+      Jei įgalinsite šį nustatymą, paleidę „<ph name="PRODUCT_NAME"/>“ naudotojai negalės nei jo pakeisti, nei nepaisyti.</translation>
+<translation id="1022361784792428773">Plėtinių, kurių diegti naudotojams turi būti neleidžiama (arba „*“, jei neleidžiama nė vieno), ID</translation>
+<translation id="5026128159812446244">Leidžiama pasiekti kompiuteryje saugomus failus leidžiant „<ph name="PRODUCT_NAME"/>“ pateikti failų pasirinkimo dialogo langus.
+
+      Jei įgalinsite šį nustatymą, failų pasirinkimo dialogo langus naudotojai galės atidaryti kaip įprastai.
+
+      Jei šio nustatymo neleisite, kaskart naudotojui atlikus veiksmą, iškviečiantį failų pasirinkimo dialogo langą (pvz., norint importuoti žymes, įkelti failus, išsaugoti nuorodas ir kt.), bus pateiktas pranešimas, be to, programa veiks taip, tarsi naudotojas būtų spustelėjęs „Atšaukti“ failų pasirinkimo dialogo lange.
+
+      Nenustačius šio nustatymo, failų pasirinkimo dialogo langus naudotojai galės atidaryti kaip įprastai.</translation>
+<translation id="7683777542468165012">Dinaminis politikos atnaujinimas</translation>
+<translation id="6228640147633317529">Leidžiama nustatyti URL šablonų, nurodančių svetaines, kuriose leidžiama pateikti vaizdus, sąrašą.</translation>
+<translation id="2711603272213076156">Leisti iškviesti failų pasirinkimo dialogo langus.</translation>
 <translation id="1426410128494586442">Taip</translation>
+<translation id="3381968327636295719">Pagal numatytuosius nustatymus naudoti prieglobos naršyklę</translation>
+<translation id="6368011194414932347">Konfigūruoti pagrindinio puslapio URL</translation>
+<translation id="1966609843734913335">Įgalinamas „<ph name="PRODUCT_NAME"/>“ inkognito režimas.
+
+      Jei įgalinsite šį nustatymą arba jo nekonfigūruosite, naudotojai galės atidaryti tinklalapius inkognito režimu.
+
+      Jei šio nustatymo neleisite, naudotojai negalės atidaryti tinklalapių inkognito režimu.</translation>
+<translation id="3423023819976532001">Įgalinamas slaptažodžių išsaugojimas ir išsaugotų slaptažodžių naudojimas „<ph name="PRODUCT_NAME"/>“.
+
+          Jei įgalinsite šį nustatymą, „<ph name="PRODUCT_NAME"/>“ prisimins naudotojų slaptažodžius ir kitą kartą prisijungiant prie svetainės automatiškai juos pateiks.
+
+          Jei šio nustatymo neleisite, naudotojai negalės nei išsaugoti slaptažodžių, nei naudoti jau išsaugotų slaptažodžių.
+
+          Jei šį nustatymą įgalinsite arba jo neleisite, paleidę „<ph name="PRODUCT_NAME"/>“ naudotojai negalės jo nei pakeisti, nei nepaisyti.</translation>
+<translation id="2877225735001246144">Neleisti CNAME paieškos vykdant „Kerberos“ tapatumo nustatymą</translation>
+<translation id="6200084307932433394">„<ph name="PRODUCT_NAME"/>“ įgalinama integruotoji „Google“ vertėjo paslauga.
+
+      Jei įgalinsite šį nustatymą, „<ph name="PRODUCT_NAME"/>“ bus rodoma integruota įrankių juosta su naudotojui skirtais pasiūlymais išversti puslapį (kai tai galima atlikti).
+
+      Jei šio nustatymo neleisite, vertimo juosta naudotojams bus nerodoma.
+
+      Jei šį nustatymą įgalinsite arba jo neleisite, paleidę „<ph name="PRODUCT_NAME"/>“ naudotojai negalės jo nei pakeisti, nei nepaisyti.</translation>
+<translation id="5059221739913673172">Konfigūruojamas katalogas, kuris „<ph name="PRODUCT_NAME"/>“ bus naudojamas naudotojo duomenims saugoti.
+
+      Jei nustatysite šią politiką, „<ph name="PRODUCT_NAME"/>“ naudos pateiktą katalogą, nesvarbu, ar naudotojas bus nustatęs žymą „--user-data-dir“, ar ne.</translation>
+<translation id="3528000905991875314">Įgalinti kitus klaidų puslapius</translation>
+<translation id="4084327080063933392">Nurodomas numatytojo paieškos teikėjo pavadinimas. Nenurodžius vertės bus naudojamas paieškos URL nurodytas prieglobos pavadinimas.</translation>
+<translation id="6114416803310251055">nepatvirtinta</translation>
+<translation id="8493645415242333585">Neleisti išsaugoti naršyklės istorijos</translation>
+<translation id="5776485039795852974">Paklausti kaskart, kai svetainėje norima rodyti darbalaukio pranešimus</translation>
 <translation id="6786747875388722282">Plėtiniai</translation>
+<translation id="6417878201680958437">Leidžiama nurodyti „<ph name="PRODUCT_NAME"/>“ naudojamą tarpinį serverį ir neleidžiama naudotojams keisti tarpinio serverio nustatymų.
+
+          Jei pasirinksite niekada nenaudoti tarpinio serverio ir visada jungtis tiesiogiai, visų kitų parinkčių bus nepaisoma.
+
+          Jei pasirinksite naudoti sistemos tarpinio serverio nustatymus arba tarpinį serverį aptikti automatiškai, visų kitų parinkčių bus nepaisoma.
+
+          Jei fiksuotą serverį paleisite veikti tarpinio serverio režimu, galėsite nurodyti ir kitas parinktis skiltyse „Tarpinio serverio adresas arba URL“ ir „Kableliu atskirtų tarpinio serverio apėjimo taisyklių sąrašas“.
+
+          Jei pasirinksite naudoti .pac tarpinio serverio scenarijų, skiltyje „URL, siejantis su tarpinio serverio .pac failu“ turėsite nurodyti scenarijaus URL.
+
+          Jei norite gauti išsamių pavyzdžių, apsilankykite šiuo adresu:
+          <ph name="PROXY_HELP_URL"/>
+
+          Jei įgalinsite šį nustatymą, „<ph name="PRODUCT_NAME"/>“ nepaisys jokių komandų eilutėje nurodytų su tarpiniu serveriu susijusių parinkčių.</translation>
+<translation id="6899705656741990703">Automatiškai aptikti tarpinio serverio nustatymus</translation>
+<translation id="4101772068965291327">Atidaryti pagrindinį puslapį</translation>
+<translation id="8992176907758534924">Neleisti jokioje svetainėje rodyti vaizdų</translation>
+<translation id="8704831857353097849">Neleidžiamų papildinių sąrašas</translation>
+<translation id="467449052039111439">Atidaryti URL sąrašą</translation>
+<translation id="5883015257301027298">Numatytasis slapukų nustatymas</translation>
+<translation id="1222189289457045659">Įgalinamas numatytojo paieškos teikėjo naudojimas.
+
+          Jei įgalinsite šį nustatymą, naudotojui į „omnibox“ vedant tekstą, kuris nėra URL, bus vykdoma numatytoji paieška.
+
+          Nustatydami likusias numatytosios paieškos politikos parinktis galite nurodyti numatytąjį naudotiną paieškos teikėją. Jei jų nenustatysite, naudotojas galės pasirinkti numatytąjį teikėją.
+
+          Jei šio nustatymo neleisite, naudotojui į „omnibox“ vedant tekstą, kuris nėra URL, nebus vykdoma jokia paieška.
+
+          Jei šį nustatymą įgalinsite arba jo neleisite, paleidę „<ph name="PRODUCT_NAME"/>“ naudotojai negalės jo nei pakeisti, nei nepaisyti.</translation>
+<translation id="8955719471735800169">Į pradžią</translation>
+<translation id="6845930317830839162">Leidžiama nustatyti, ar svetainėse turi būti leidžiama paleisti „JavaScript“. Paleisti „JavaScript“ gali būti leidžiama visose svetainėse arba neleidžiama nė vienoje.</translation>
 <translation id="4250680216510889253">Ne</translation>
+<translation id="1522425503138261032">Leisti svetainėse stebėti naudotojo buvimo vietą</translation>
+<translation id="6569553007023490040">„<ph name="PRODUCT_NAME"/>“ konfigūruojamas numatytojo pagrindinio puslapio URL ir naudotojams neleidžiama jo keisti.
+
+          Pagrindinio puslapio tipą galima nustatyti čia nurodant URL arba nustatant naujo skirtuko puslapį.
+
+          Jei pasirinksite naujo skirtuko puslapį, šios politikos bus nepaisoma.
+
+          Jei įgalinsite šį nustatymą, paleidę „<ph name="PRODUCT_NAME"/>“ naudotojai negalės keisti pagrindinio puslapio URL, bet vis tiek galės pasirinkti naujo skirtuko puslapį kaip pagrindinį puslapį.</translation>
+<translation id="4423597592074154136">Pačiam nurodyti tarpinio serverio nustatymus</translation>
+<translation id="3137734558440858947">Leidžiama nustatyti, ar svetainėse turi būti leidžiama pateikti vaizdus. Pateikti vaizdus gali būti leidžiama visose svetainėse arba neleidžiama nė vienoje.</translation>
+<translation id="9035964157729712237">Į juodąjį sąrašą neįtrauktinų plėtinių ID</translation>
+<translation id="3523486089716697173">Leidžiama nustatyti URL šablonų, nurodančių svetaines, kuriose neleidžiama pateikti vaizdų, sąrašą.</translation>
+<translation id="751265277672445578">„<ph name="PRODUCT_NAME"/>“ konfigūruojama programos lokalė ir naudotojams neleidžiama jos keisti.
+
+      Jei įgalinsite šį nustatymą, „<ph name="PRODUCT_NAME"/>“ naudos nurodytą lokalę. Jei sukonfigūruota lokalė nepalaikoma, bus naudojama „en-US“.
+
+      Jei šio nustatymo neleisite arba nekonfigūruosite, „<ph name="PRODUCT_NAME"/>“ naudos naudotojo nurodytą pageidaujamą lokalę (jei ji sukonfigūruota), sistemos lokalę arba atsarginę lokalę „en-US“.</translation>
+<translation id="6022948604095165524">Veiksmai paleidžiant</translation>
+<translation id="3704185423155638353">Leidžiama nustatyti URL šablonų, nurodančių svetaines, kuriose neleidžiama paleisti „JavaScript“, sąrašą.</translation>
+<translation id="7628741187268592472">Nurodoma, kurią GSSAPI biblioteką reikia naudoti, nustatant HTTP tapatumą. Galima nustatyti vien tik bibliotekos pavadinimą arba visą kelią. Nustatymų nepateikus „<ph name="PRODUCT_NAME"/>“ naudos atsarginės numatytosios bibliotekos pavadinimą.</translation>
+<translation id="605147781209875705">Ši politika yra nepatvirtinta, todėl geriau naudokite tarpinio serverio režimą.
+
+          Leidžiama nurodyti „<ph name="PRODUCT_NAME"/>“ naudojamą tarpinį serverį ir neleidžiama naudotojams keisti tarpinio serverio nustatymų.
+
+          Jei pasirinksite niekada nenaudoti tarpinio serverio ir visada jungtis tiesiogiai, visų kitų parinkčių bus nepaisoma.
+
+          Jei pasirinksite naudoti sistemos tarpinio serverio nustatymus arba tarpinį serverį aptikti automatiškai, visų kitų parinkčių bus nepaisoma.
+
+          Jei tarpinio serverio nustatymus pasirinksite nustatyti patys, galėsite nurodyti ir kitas parinktis skiltyse „Tarpinio serverio adresas arba URL“, „URL, siejantis su tarpinio serverio .pac failu“ ir „Kableliu atskirtų tarpinio serverio apėjimo taisyklių sąrašas“.
+
+          Jei norite gauti išsamių pavyzdžių, apsilankykite šiuo adresu:
+          <ph name="PROXY_HELP_URL"/>
+
+          Jei įgalinsite šį nustatymą, „<ph name="PRODUCT_NAME"/>“ nepaisys jokių komandų eilutėje nurodytų su tarpiniu serveriu susijusių parinkčių.</translation>
+<translation id="6516561898504323308">Blokuojami trečiosios šalies slapukai.
+
+      Jei įgalinsite šį nustatymą, naršyklės adreso juostoje nurodytam domenui nepriklausantiems tinklalapio elementams nebus leidžiama nustatyti slapukų.
+
+      Jei šio nustatymo neleisite, naršyklės adreso juostoje nurodytam domenui nepriklausantiems tinklalapio elementams bus leidžiama nustatyti slapukus, o naudotojai šio nustatymo pakeisti negalės.</translation>
+<translation id="3864818549971490907">Numatytasis papildinių nustatymas</translation>
+<translation id="4320376026953250541">„Microsoft Windows XP“ SP2 arba naujesnė versija</translation>
+<translation id="6886010724297701888">„<ph name="PRODUCT_NAME"/>“ apeis visus tarpinius serverius, kurių priegloba nurodyta šiame sąraše.
+
+          Ši politika veikia tik tada, jei skiltyje „Pasirinkti, kaip nurodyti tarpinio serverio nustatymus“ tarpinio serverio nustatymus pasirinkote nurodyti patys.
+
+          Jei norite gauti išsamesnių pavyzdžių, apsilankykite šiuo adresu:
+          <ph name="PROXY_HELP_URL"/></translation>
+<translation id="2959898425599642200">Tarpinio serverio apėjimo taisyklės</translation>
+<translation id="4752274243117690301">Jei nustatysite šio nustatymo parinktį „Teisinga“, „<ph name="PRODUCT_NAME"/>“ bus neleidžiama automatiškai vykdyti trūkstamų papildinių paieškos ir įdiegties.</translation>
+<translation id="3292147213643666827">      „<ph name="PRODUCT_NAME"/>“ įgalinama veikti kaip tarpinis serveris, siejantis <ph name="CLOUD_PRINT_NAME"/> ir senesnius prie kompiuterio prijungtus spausdintuvus.
+
+      Jei įgalinsite šį nustatymą arba jo nekonfigūruosite, naudotojai galės įgalinti spausdinimo iš debesies tarpinį serverį tapatumą nustatydami pagal savo „Google“ paskyrą.
+
+      Jei šio nustatymo neleisite, naudotojai negalės įgalinti tarpinio serverio, o kompiuteriui bus neleidžiama bendrinti prijungtų spausdintuvų ir <ph name="CLOUD_PRINT_NAME"/>.</translation>
+<translation id="617204585863800180">„<ph name="PRODUCT_NAME"/>“ įgalinamos tinklo prognozės; naudotojams šio nustatymo keisti neleidžiama.
+
+      Jei šį nustatymą įgalinsite arba jo neleisite, paleidę „<ph name="PRODUCT_NAME"/>“ naudotojai negalės jo nei pakeisti, nei nepaisyti.</translation>
+<translation id="6641981670621198190">Neleisti palaikyti trimatės grafikos API</translation>
+<translation id="2741921267428646309">Tai yra „<ph name="PRODUCT_NAME"/>“ paisomų politikos elementų sąrašas.
+
+      Patiems šių nustatymų keisti nereikia! Paprastus naudoti šablonus galite atsisiųsti iš
+      <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>.
+
+      Tiek „Chromium“, tiek „Google Chrome“ taikomas tas pats palaikomų politikos elementų sąrašas, bet „Windows“ registro vietos skiriasi.
+
+      „Chromium“ politika prasideda <ph name="CHROMIUM_KEY"/>, o „Google Chrome“ <ph name="GOOGLE_CHROME_KEY"/>.</translation>
+<translation id="7003746348783715221">„<ph name="PRODUCT_NAME"/>“ nuostatos</translation>
+<translation id="9096086085182305205">Tapatumo nustatymo serverio baltasis sąrašas</translation>
+<translation id="7063895219334505671">Leisti iššokančiuosius langus šiose svetainėse</translation>
+<translation id="2824715612115726353">Įgalinti inkognito režimą</translation>
+<translation id="6157537876488211233">Kableliais atskirtų tarpinio serverio apėjimo taisyklių sąrašas</translation>
 <translation id="8870318296973696995">Pagrindinis puslapis</translation>
-<translation id="3866249974567520381">Apibūdinimas</translation>
-<translation id="402759845255257575">Neleisti jokiai svetainei paleisti „JavaScript“</translation>
-<translation id="2805707493867224476">Leisti visoms svetainėms rodyti iššokančiuosius langus</translation>
-<translation id="5765780083710877561">Apibūdinimas:</translation>
+<translation id="4505337077089958219">Politikos atnaujinimo dažnis</translation>
+<translation id="996560596616541671">Serveriai, į kuriuos gali nukreipti „<ph name="PRODUCT_NAME"/>“.</translation>
+<translation id="3866249974567520381">Aprašas</translation>
+<translation id="2236488539271255289">Neleisti nė vienoje svetainėje nustatyti vietinių duomenų</translation>
+<translation id="4467952432486360968">Blokuoti trečiosios šalies slapukus</translation>
+<translation id="1722705282440676367">Leidžiama nurodyti „<ph name="PRODUCT_NAME"/>“ naudojamą tarpinį serverį ir neleidžiama naudotojams keisti tarpinio serverio nustatymų.
+
+      Jei pasirinksite niekada nenaudoti tarpinio serverio ir visada jungtis tiesiogiai, visų kitų parinkčių bus nepaisoma.
+
+      Jei tarpinį serverį pasirinksite aptikti automatiškai, visų kitų parinkčių bus nepaisoma.
+
+      Jei norite gauti išsamių pavyzdžių, apsilankykite šiuo adresu:
+      <ph name="PROXY_HELP_URL"/>
+
+      Jei įgalinsite šį nustatymą, „<ph name="PRODUCT_NAME"/>“ nepaisys jokių komandų eilutėje nurodytų su tarpiniu serveriu susijusių parinkčių.</translation>
+<translation id="8470053727907466464">Nurodomos paieškos teikėjo palaikomos simbolių koduotės. Koduotės yra kodų puslapių pavadinimai, pvz., UTF-8, GB2312 ir ISO-8859-1. Jie bandomi tokia tvarka, kokia yra pateikti. Numatytoji koduotė yra UTF-8.</translation>
+<translation id="2537063115727103969">Ši politika yra turinio nustatymų parinkties „Uždarant naršyklę išvalyti slapukus ir kitus svetainės duomenis“ nepaisymo politika.
+
+      Jei nustatysite nuostatą „Teisinga“, uždarius naršyklę „<ph name="PRODUCT_NAME"/>“ iš jos ištrins visus vietos mastu išsaugotus duomenis.</translation>
+<translation id="5365946944967967336">Rodyti įrankių juostoje pagrindinio puslapio mygtuką</translation>
+<translation id="3709266154059827597">Konfigūruoti plėtinių diegimo juodąjį sąrašą</translation>
+<translation id="8451988835943702790">Naudoti naujo skirtuko puslapį kaip pagrindinį puslapį</translation>
+<translation id="823695959636476037">Nustatoma, ar slaptažodžių tvarkytuvėje naudotojas gali rodyti slaptažodžius aiškiu tekstu.
+
+          Jei šio nustatymo neleisite, slaptažodžių tvarkytuvės lange nebus leidžiama rodyti išsaugotų slaptažodžių aiškiu tekstu.
+
+          Jei šį nustatymą įgalinsite arba jo nekonfigūruosite, slaptažodžių tvarkytuvėje pateiktus slaptažodžius naudotojai matys kaip aiškų tekstą.</translation>
+<translation id="8731693562790917685">Turinio nustatymų skiltyje leidžiama nurodyti, kaip turi būti naudojamas konkretaus tipo turinys (pvz., slapukai, vaizdai arba „JavaScript“).</translation>
+<translation id="467236746355332046">Palaikomos funkcijos:</translation>
+<translation id="7632724434767231364">GSSAPI bibliotekos pavadinimas</translation>
+<translation id="4985088509112317247">Leidžiama nustatyti, ar svetainėse turi būti leidžiama nustatyti vietinius duomenis. Nustatyti vietinius duomenis gali būti leidžiama visose svetainėse arba neleidžiama nė vienoje.</translation>
+<translation id="6244210204546589761">Paleidžiant atidaromi URL</translation>
+<translation id="7468416082528382842">„Windows“ registro vieta:</translation>
+<translation id="6119099935390640260">Čia galite nurodyti URL, susiejantį su tarpinio serverio .pac failu.
+
+          Ši politika veikia tik tada, jei skiltyje „Pasirinkti, kaip nurodyti tarpinio serverio nustatymus“ tarpinio serverio nustatymus pasirinkote nurodyti patys.
+
+          Jei norite gauti išsamių pavyzdžių, apsilankykite šiuo adresu:
+          <ph name="PROXY_HELP_URL"/></translation>
+<translation id="1808715480127969042">Blokuoti slapukus šiose svetainėse</translation>
+<translation id="2745445908503591390">Išvalyti svetainės duomenis uždarant naršyklę</translation>
+<translation id="8665913667133665583">Nurodoma, kurie serveriai turi būti įtraukti į baltąjį sąrašą, kurio paisoma integruotai nustatant tapatumą. Integruotasis tapatumo nustatymas įgalinamas tik tada, kai „<ph name="PRODUCT_NAME"/>“ gauna tapatumo nustatymo iššūkį iš tarpinio arba į leistinų serverių sąrašą įtraukto serverio.
+
+          Serverių pavadinimus atskirkite kableliais. Galite naudoti pakaitos simbolius („*“).</translation>
+<translation id="538108065117008131">Leisti „<ph name="PRODUCT_FRAME_NAME"/>“ naudoti šio tipo turinį.</translation>
+<translation id="2312134445771258233">Leidžiama konfigūruoti paleidžiant įkeliamus puslapius.
+
+      Jei skiltyje „Veiksmai paleidžiant“ nepasirinksite „Atidaryti URL sąrašą“, sąrašo „Paleidžiant atidaromi URL“ turinio bus nepaisoma.</translation>
+<translation id="7931766636395791713">Leidžiama nustatyti URL šablonų, nurodančių svetaines, kuriose leidžiama paleisti „JavaScript“, sąrašą.</translation>
+<translation id="1019101089073227242">Nustatyti naudotojo duomenų katalogą</translation>
+<translation id="2030905906517501646">Numatytojo paieškos teikėjo raktinis žodis</translation>
+<translation id="4290189791053175631">Čia galite nurodyti tarpinio serverio URL.
+
+          Ši politika veikia tik tada, jei skiltyje „Pasirinkti, kaip nurodyti tarpinio serverio nustatymus“ tarpinio serverio nustatymus pasirinkote nurodyti patys.
+
+          Jei norite gauti daugiau parinkčių ir išsamių pavyzdžių, apsilankykite šiuo adresu:
+          <ph name="PROXY_HELP_URL"/></translation>
+<translation id="350797926066071931">Įgalinti vertimą</translation>
+<translation id="2267204956165795704">Nurodomas paieškos variklio, naudojamo vykdant numatytąją paiešką, URL. URL turi būti eilutė „<ph name="SEARCH_TERM_MARKER"/>“, vietoj kurios pateikiant užklausą bus įvesti naudotojo ieškomi terminai.</translation>
+<translation id="4518251772179446575">Paklausti kaskart, kai svetainėje bus norima stebėti naudotojo buvimo vietą</translation>
+<translation id="402759845255257575">Neleisti jokioje svetainėje paleisti „JavaScript“</translation>
+<translation id="706669471845501145">Leisti svetainėse rodyti darbalaukio pranešimus</translation>
+<translation id="5475361623548884387">Įgalinti spausdinimą</translation>
+<translation id="3653237928288822292">Numatytojo paieškos teikėjo piktograma</translation>
+<translation id="8496973106638946974">Įgalinama „<ph name="PRODUCT_NAME"/>“ saugaus naršymo funkcija; naudotojams šio nustatymo keisti neleidžiama.
+
+      Jei įgalinsite šį nustatymą, saugus naršymas bus visada suaktyvintas.
+
+      Jei šio nustatymo neleisite, saugus naršymas niekada nebus suaktyvintas.
+
+      Jei šį nustatymą įgalinsite arba jo neleisite, paleidę „<ph name="PRODUCT_NAME"/>“ naudotojai negalės jo nei pakeisti, nei nepaisyti.</translation>
+<translation id="13356285923490863">Politikos pavadinimas</translation>
+<translation id="557658534286111200">Įgalinamas žymių redagavimas arba neleidžiama redaguoti žymių</translation>
+<translation id="3473585733246847076">Leidžiama nustatyti URL šablonų, nurodančių svetaines, kuriose leidžiama nustatyti slapukus, sąrašą.</translation>
+<translation id="2493647325461842868">Įgalinami paieškos pasiūlymai „<ph name="PRODUCT_NAME"/>“ „Omnibox“; naudotojams šio nustatymo keisti negalima.
+
+      Jei įgalinsite šį nustatymą, bus naudojami paieškos pasiūlymai.
+
+      Jei šio nustatymo neleisite, paieškos pasiūlymai niekada nebus naudojami.
+
+      Jei šį nustatymą įgalinsite arba jo neleisite, paleidę „<ph name="PRODUCT_NAME"/>“ naudotojai negalės jo nei pakeisti, nei nepaisyti.</translation>
+<translation id="6775978436824155661">Įgalinamas spausdinimas naudojant „<ph name="PRODUCT_NAME"/>“; naudotojams šio nustatymo keisti neleidžiama.
+
+      Jei šį nustatymą įgalinsite arba jo nekonfigūruosite, naudotojai galės spausdinti.
+
+      Jei šio nustatymo neleisite, naudodami „<ph name="PRODUCT_NAME"/>“ naudotojai negalės spausdinti. Spausdinti bus neleidžiama naudojant veržliarakčio meniu, plėtinius, „JavaScript“ programas ir kt. Spausdinti bus tebeleidžiama naudojant papildinius, kurie spausdinant apeina „<ph name="PRODUCT_NAME"/>“. Pvz., tam tikrų „Flash“ programų kontekstinių meniu spausdinimo parinktys tebebus įgalintos.</translation>
+<translation id="6908640907898649429">Konfigūruojamas numatytasis paieškos teikėjas. Galite nurodyti numatytąjį paieškos teikėją, kurį naudotojas naudos, arba pasirinkti neleisti numatytosios paieškos.</translation>
+<translation id="681446116407619279">Palaikomos tapatumo nustatymo schemos</translation>
+<translation id="4027608872760987929">Įgalinti numatytąjį paieškos teikėją</translation>
+<translation id="2223598546285729819">Numatytasis pranešimų nustatymas</translation>
+<translation id="3793095274466276777">Konfigūruojamos „<ph name="PRODUCT_NAME"/>“ vykdomos numatytosios naršyklės patikros; naudotojams šio nustatymo keisti neleidžiama.
+
+      Jei įgalinsite šį nustatymą, paleidžiant „<ph name="PRODUCT_NAME"/>“ visada tikrins, ar ji yra numatytoji naršyklė, ir, jei galima, automatiškai užsiregistruos.
+
+      Jei šio nustatymo neleisite, „<ph name="PRODUCT_NAME"/>“ niekada netikrins, ar ji yra numatytoji naršyklė, o naudotojams bus neleidžiama naudoti šios parinkties nustatymo valdiklių.
+
+      Nenustačius šio nustatymo „<ph name="PRODUCT_NAME"/>“ leis naudotojui valdyti numatytosios naršyklės parinktis ir nurodyti, ar turi būti pateikti naudotojui skirti pranešimai, jei naršyklė nėra numatytoji.</translation>
+<translation id="1530812829012954197">Visada pateikti šiuos URL šablonus prieglobos naršyklėje</translation>
+<translation id="6190022522129724693">Numatytasis iššokančiųjų langų nustatymas</translation>
+<translation id="847472800012384958">Neleisti jokioje svetainėje rodyti iššokančiųjų langų</translation>
+<translation id="4733471537137819387">Politika, susijusi su integruotuoju HTTP tapatumo nustatymu.</translation>
+<translation id="4608714268466689965">Leidžiama nustatyti, ar svetainėse turi būti leidžiama pateikti darbalaukio pranešimus. Pateikti darbalaukio pranešimus gali būti leidžiama arba neleidžiama pagal numatytuosius nustatymus arba kaskart prieš ketinant pateikti svetainėje darbalaukio pranešimus naudotojo gali būti apie tai paklausta.</translation>
+<translation id="1334051495529796396">Nurodoma, ar sugeneruotas „Kerberos“ SPN yra pagrįstas standartiniu DNS pavadinimu, ar pirminiu įvestu vardu.
+
+          Jei įgalinsite šį nustatymą, CNAME paieška bus praleista ir bus naudojamas įvestas serverio pavadinimas.
+
+          Jei šio nustatymo neleisite, atlikus CNAME paiešką bus nustatytas standartinis serverio pavadinimas.</translation>
+<translation id="166427968280387991">Tarpinis serveris</translation>
+<translation id="2805707493867224476">Leisti visose svetainėse rodyti iššokančiuosius langus</translation>
+<translation id="1727394138581151779">Blokuoti visus papildinius</translation>
+<translation id="7079519252486108041">Blokuoti iššokančiuosius langus šiose svetainėse</translation>
+<translation id="7433714841194914373">Įgalinti intuityviąją paiešką</translation>
+<translation id="4983201894483989687">Leisti paleisti pasenusius papildinius</translation>
+<translation id="7492608050778218564">Neleidžiama palaikyti trimatės grafikos API.
+
+      Jei įgalinsite šį nustatymą, per tinklalapius nebus galima pasiekti grafikos apdorojimo įrenginių (GPU). Paprastai per tinklalapius būna negalima pasiekti „WebGL“ API, o papildiniai negali naudoti „Pepper“ trimatės API.
+
+      Jei šio nustatymo neleisite, tinklalapiuose bus galima naudoti „WebGL“ API, o papildiniai galės naudoti „Pepper“ trimatę API. Tačiau norint naudoti šią API pagal numatytuosius naršyklės nustatymus dar gali būti reikalaujama, kad būtų patenkinti komandų eilutės argumentai.</translation>
+<translation id="7202926611616207807">Leisti visose svetainėse nustatyti vietinius duomenis.</translation>
+<translation id="678228246386317063">Leidžiama nustatyti URL šablonų, nurodančių svetaines, kuriose leidžiama nustatyti tik sesijų slapukus, sąrašą.</translation>
+<translation id="5774856474228476867">Numatytojo paieškos teikėjo paieškos URL</translation>
+<translation id="4650759511838826572">Neleisti URL protokolų schemų</translation>
+<translation id="6524941558928880715">Iš naujo atidaryti paskutinį kartą atidarytus URL</translation>
+<translation id="3167247709504138314">Nurodomas paieškos variklio, naudojamo paieškos pasiūlymams pateikti, URL. URL turi būti eilutė „<ph name="SEARCH_TERM_MARKER"/>“, vietoj kurios pateikiant užklausą bus įvestas naudotojo įvestas tekstas. Pasirinktinai.</translation>
+<translation id="602728333950205286">Numatytojo paieškos teikėjo intuityviosios paieškos URL</translation>
+<translation id="1675002386741412210">Palaikoma naudojant:</translation>
+<translation id="5417368737700340683">Įgalinama „<ph name="PRODUCT_NAME"/>“ intuityviosios paieškos funkcija; naudotojams šio nustatymo keisti neleidžiama.
+
+      Jei įgalinsite šį nustatymą, „<ph name="PRODUCT_NAME"/>“ intuityvioji paieška bus įgalinta.
+
+      Jei šio nustatymo neleisite, „<ph name="PRODUCT_NAME"/>“ intuityvioji paieška bus neleidžiama.
+
+      Jei šį nustatymą įgalinsite arba jo neleisite, naudotojai negalės jo nei pakeisti, nei nepaisyti.</translation>
+<translation id="3264793472749429012">Numatytojo paieškos teikėjo koduotės</translation>
+<translation id="2371550098059356219">Nurodomas „<ph name="PRODUCT_NAME"/>“ įgalintų papildinių sąrašas; naudotojams šio nustatymo keisti neleidžiama.
+
+      Kad įrašai atitiktų abejotinų simbolių sekas, galima naudoti pakaitos simbolius „*“ ir „?“. „*“ atitinka abejotiną simbolių skaičių, o „?“ nurodo vieną pasirinktinį simbolį, t. y. atitinka nulio arba vieneto simbolį. Kaitos simbolis yra „\“, taigi, kad simboliai atitiktų faktinius „*“, „?“ arba „\“ simbolius, prieš juos galite įvesti „\“.
+
+      „<ph name="PRODUCT_NAME"/>“ visada naudojamas nurodytas papildinių sąrašas, jei papildiniai įdiegti. Papildiniai žymimi kaip įgalinti skiltyje „about:plugins“ ir naudotojai negali jų neleisti.
+
+      Atminkite, kad nustačius šią politiką bus nepaisoma nei neleidžiamų papildinių, nei neleidžiamų papildinių išimčių politikos.</translation>
+<translation id="308285197738484705">Įgalinti tinklo prognozę.</translation>
+<translation id="5765780083710877561">Aprašas:</translation>
+<translation id="3319991432361168617">Konfigūruojamas katalogas, į kurį per „<ph name="PRODUCT_NAME"/>“ bus atsisiunčiami failai.
+
+      Jei nustatysite šią politiką, „<ph name="PRODUCT_NAME"/>“ naudos nurodytą katalogą, nesvarbu, ar naudotojas jį nurodė, ar įgalino žymą, nurodančią, kad kaskart būtų raginama nurodyti atsisiuntimo vietą.</translation>
+<translation id="8284208534498422489">Leidžiama nustatyti URL šablonų, nurodančių svetaines, kuriose leidžiama atidaryti iššokančiuosius langus, sąrašą.</translation>
+<translation id="8544375438507658205">Numatytasis „<ph name="PRODUCT_FRAME_NAME"/>“ HTML teikėjas</translation>
+<translation id="7424751532654212117">Neleidžiamų papildinių sąrašo išimčių sąrašas</translation>
+<translation id="6233173491898450179">Nustatyti atsisiuntimo katalogą</translation>
+<translation id="2299220924812062390">Nurodyti įgalintų papildinių sąrašą</translation>
+<translation id="8754704265300028644">„<ph name="PRODUCT_NAME"/>“ neleidžiama išsaugoti naršyklės istorijos; naudotojams šio nustatymo keisti neleidžiama.
+
+      Jei įgalinsite šį nustatymą, naršymo istorija nebus išsaugoma.
+
+      Jei šio nustatymo neleisite arba nekonfigūruosite, naršymo istorija bus išsaugoma.</translation>
+<translation id="1897365952389968758">Leisti visose svetainėse paleisti „JavaScript“</translation>
+<translation id="6931242315485576290">Neleisti sinchronizuoti duomenų su „Google“</translation>
 <translation id="7006788746334555276">Turinio nustatymai</translation>
-<translation id="3891357445869647828">Suaktyvinti „JavaScript“</translation>
+<translation id="3676473196461789250">Leidžiama nustatyti URL šablonų, nurodančių svetaines, kuriose leidžiama paleisti papildinius, sąrašą.</translation>
+<translation id="5671281984733584565">„<ph name="PRODUCT_NAME"/>“ įrankių juostoje rodomas pagrindinio puslapio mygtukas.
+
+      Jei įgalinsite šį nustatymą, pagrindinio puslapio mygtukas visada bus rodomas.
+
+      Jei šio nustatymo neleisite, pagrindinio puslapio mygtukas niekada nebus rodomas.
+
+      Jei šį nustatymą įgalinsite arba jo neleisite, paleidę „<ph name="PRODUCT_NAME"/>“ naudotojai negalės jo nei pakeisti, nei nepaisyti.</translation>
+<translation id="5142301680741828703">„<ph name="PRODUCT_FRAME_NAME"/>“ visada pateikti šiuos URL šablonus</translation>
+<translation id="805526450642067726">Leidžiama nustatyti URL šablonų, nurodančių svetaines, kuriose neleidžiama paleisti papildinių, sąrašą.</translation>
+<translation id="4625915093043961294">Konfigūruoti plėtinių diegimo baltąjį sąrašą</translation>
+<translation id="3101501961102569744">Pasirinkti, kaip nurodyti tarpinio serverio nustatymus</translation>
+<translation id="7774768074957326919">Naudoti sistemos tarpinio serverio nustatymus</translation>
+<translation id="3891357445869647828">Įgalinti „JavaScript“</translation>
+<translation id="868187325500643455">Leisti visose svetainėse automatiškai paleisti papildinius</translation>
+<translation id="5226033722357981948">Nurodyti, ar turi būti neleidžiamas papildinių ieškiklis</translation>
+<translation id="9068358498333390522">Leidžiama nustatyti, ar svetainėse turi būti leidžiama rodyti iššokančiuosius langus. Rodyti iššokančiuosius langus gali būti leidžiama visose svetainėse arba neleidžiama nė vienoje.</translation>
+<translation id="7194407337890404814">Numatytojo paieškos teikėjo pavadinimas</translation>
+<translation id="5535973522252703021">„Kerberos“ nukreipimo serverio baltasis sąrašas</translation>
+<translation id="4554678280250165996">Nurodoma, kurios HTTP tapatumo nustatymo schemos palaikomos „<ph name="PRODUCT_NAME"/>“.
+
+          Galimos vertės: „basic“, „digest“, „ntlm“ ir „negotiate“. Vertes atskirkite kableliais.</translation>
+<translation id="5034323863800401760">Neleidžiami kūrėjo įrankiai ir „JavaScript“ valdymo pultas.
+
+      Jei įgalinsite šį nustatymą, nebus galima pasiekti kūrėjo įrankių ir tikrinti svetainės elementų. Visi klaviatūros spartieji klavišai ir meniu bei kontekstinių meniu įrašai, skirti kūrėjo įrankiams arba „JavaScript“ valdymo pultui atidaryti, bus neleidžiami.</translation>
+<translation id="6013842521938070987">„<ph name="PRODUCT_NAME"/>“ neleidžiamos į sąrašą įtrauktos protokolų schemos.
+
+      URL, naudojančių į šį sąrašą įtrauktą schemą, nebus galima įkelti ir į juos nebus galima pereiti.</translation>
+<translation id="4056910949759281379">Neleisti SPDY protokolo</translation>
+<translation id="3808945828600697669">Nurodyti neleidžiamų papildinių sąrašą</translation>
+<translation id="2187975305444384964">Leidžiama nustatyti, ar svetainėse turi būti leidžiama stebėti naudotojo buvimo vietą. Stebėti naudotojo buvimo vietą gali būti leidžiama arba neleidžiama pagal numatytuosius nustatymus arba kaskart, kai svetainėje prašoma nurodyti buvimo vietą, naudotojo gali būti apie tai paklausta.</translation>
+<translation id="8397112610813153899">Tinkinkite URL šablonų, kurie visada turi būti pateikiami „<ph name="PRODUCT_FRAME_NAME"/>“, sąrašą.
+
+          Šablonų pavyzdžių žr. šiuo adresu: http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
+<translation id="2098658257603918882">Įgalinti naudojimo ir su strigtimis susijusių duomenų ataskaitų kūrimą</translation>
+<translation id="1151353063931113432">Leisti vaizdus šiose svetainėse</translation>
+<translation id="4498075447689127727">Leidžiama nustatyti URL šablonų, nurodančių svetaines, kuriose neleidžiama atidaryti iššokančiųjų langų, sąrašą.</translation>
+<translation id="1297182715641689552">Naudoti .pac tarpinio serverio scenarijų</translation>
+<translation id="8631434304112909927">iki <ph name="UNTIL_VERSION"/> versijos</translation>
+<translation id="7469554574977894907">Įgalinti paieškos pasiūlymus</translation>
+<translation id="5511702823008968136">Įgalinti žymių juostą</translation>
+<translation id="3653673712530669976">Įdiegus „<ph name="PRODUCT_FRAME_NAME"/>“ leidžiama sukonfigūruoti numatytąjį HTML teikėją.
+          Pagal numatytuosius nustatymus teikti leidžiama prieglobos naršyklei, bet jūs
+          savo nuožiūra šios nuostatos galite nepaisyti ir nustatyti, kad pagal numatytuosius nustatymus „<ph name="PRODUCT_FRAME_NAME"/>“ pateiktų HTML puslapius.</translation>
+<translation id="7848840259379156480">Įdiegus „<ph name="PRODUCT_FRAME_NAME"/>“ leidžiama sukonfigūruoti numatytąjį HTML teikėją.
+      Pagal numatytuosius nustatymus teikti leidžiama prieglobos naršyklei, bet jūs savo nuožiūra šios nuostatos galite nepaisyti ir nustatyti, kad pagal numatytuosius nustatymus „<ph name="PRODUCT_FRAME_NAME"/>“ pateiktų HTML puslapius.</translation>
+<translation id="4486602758942612946">Tinkinkite URL šablonų, kurie visada turi pateikiami prieglobos naršyklės, sąrašą.
+          Šablonų pavyzdžių žr. šiuo adresu: http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
+<translation id="4346795218451526495">Nurodomas papildinių, kuriuos naudotojas gali įgalinti arba kurių gali neleisti „<ph name="PRODUCT_NAME"/>“, sąrašas.
+
+      Kad vertės atitiktų abejotinų simbolių sekas, galima naudoti pakaitos simbolius „*“ ir „?“. „*“ atitinka abejotiną simbolių skaičių, o „?“ nurodo vieną pasirinktinį simbolį, t. y. atitinka nulio ir vieneto simbolius. Kaitos simbolis yra „\“, taigi, kad simboliai atitiktų faktinius „*“, „?“ arba „\“ simbolius, prieš juos galite įvesti „\“.
+
+      Jei įgalinsite šį nustatymą, „<ph name="PRODUCT_NAME"/>“ bus galima naudoti nurodytą papildinių sąrašą. Skiltyje „about:plugins“ naudotojai galės juos įgalinti arba jų neleisti net tada, jei papildinys atitiks į neleidžiamų papildinių sąrašą įtrauktą šabloną. Naudotojai taip pat galės įgalinti papildinius arba jų neleisti, jei papildiniai neatitiks jokio neleidžiamų papildinių, neleidžiamų papildinių išimčių ir įgalintų papildinių sąrašuose esančio šablono.</translation>
+<translation id="8777120694819070607">Leidžiama „<ph name="PRODUCT_NAME"/>“ paleisti pasenusius papildinius.
+
+      Jei įgalinsite šį nustatymą, pasenę papildiniai bus naudojami kaip įprasti.
+
+      Jei šio nustatymo neleisite, pasenę papildiniai nebus naudojami, o naudotojų nebus prašoma suteikti leidimo juos paleisti.
+
+      Nenustačius šio nustatymo, naudotojų bus prašoma suteikti leidimą paleisti pasenusius papildinius.</translation>
+<translation id="407895324478579198">Leidžiama nurodyti plėtinių, kurie bus įdiegti automatiškai, naudotojui neatliekant jokių veiksmų, sąrašą.
+
+          Visi sąrašo elementai yra eilutės, kuriose nurodomas plėtinio ID ir atnaujinimo URL, atskirti kabliataškiu (<ph name="SEMICOLON"/>). Pvz.: <ph name="EXTENSION_POLICY_EXAMPLE"/>. Pagal kiekvieną eilutę iš nurodyto URL „<ph name="PRODUCT_NAME"/>“ įkels plėtinį, kurį nurodo ID, ir automatiškai jį įdiegs. Tolesniuose puslapiuose paaiškinta, kaip priglobti plėtinius savo serveryje. Apie atnaujinimo URL žr. <ph name="LINK_TO_EXTENSION_DOC1"/>; bendrą informaciją apie plėtinių prieglobą žr. <ph name="LINK_TO_EXTENSION_DOC2"/>.
+
+          Naudotojai negalės pašalinti šios politikos sąraše nurodytų plėtinių. Pašalinus plėtinį iš šio sąrašo, „<ph name="PRODUCT_NAME"/>“ automatiškai jį pašalins. Į plėtinių diegimo juodąjį sąrašą įtrauktų ir į baltąjį sąrašą neįtrauktų plėtinių nustačius šią politiką privalomai diegti negalima.</translation>
+<translation id="3300906985144143927">Nurodomas numatytojo paieškos teikėjo mėgstamiausios piktogramos URL. Pasirinktinai.</translation>
+<translation id="1583248206450240930">Naudoti „<ph name="PRODUCT_FRAME_NAME"/>“ pagal numatytuosius nustatymus</translation>
+<translation id="1047128214168693844">Neleisti jokioje svetainėje stebėti naudotojo buvimo vietos</translation>
+<translation id="3273221114520206906">Numatytasis „JavaScript“ nustatymas</translation>
+<translation id="6810445994095397827">Blokuoti „JavaScript“ šiose svetainėse</translation>
+<translation id="6510914645829248303">Pasirinkus paleidžiant atliekamo veiksmo nuostatą „Atidaryti URL sąrašą“, bus leidžiama nurodyti atidarytų URL sąrašą.</translation>
+<translation id="3780152581321609624">Įtraukti nestandartinį prievadą į „Kerberos“ SPN</translation>
+<translation id="2660846099862559570">Niekada nenaudoti tarpinio serverio</translation>
+<translation id="5512418063782665071">Pagrindinio puslapio URL</translation>
+<translation id="8990655542335348641">Milisekundėmis nurodomas laikotarpis, per kurį įrenginio valdymo paslaugos prašoma pateikti politikos informaciją.
+
+      Nustačius šią politiką nepaisoma numatytosios 3 val. vertės. Nustačius šią politiką galima rinktis vertes nuo 30 min. iki 1 d. Visos į šį diapazoną nepatenkančios vertės bus blokuojamos už atitinkamos ribos.</translation>
+<translation id="6049075103826767200">Įgalinamas anonimiškų „Google“ skirtų „<ph name="PRODUCT_NAME"/>“ naudojimo ir su strigtimis susijusių duomenų ataskaitų kūrimas; naudotojams šio nustatymo keisti neleidžiama.
+
+      Jei įgalinsite šį nustatymą, „Google“ bus siunčiamos anonimiškos naudojimo ir su strigtimis susijusių duomenų ataskaitos.
+
+      Jei šio nustatymo neleisite, „Google“ niekada nebus siunčiamos anonimiškos naudojimo ir su strigtimis susijusių duomenų ataskaitos.
+
+      Jei šį nustatymą įgalinsite arba jo neleisite, paleidę „<ph name="PRODUCT_NAME"/>“ naudotojai negalės nei jo pakeisti, nei nepaisyti.</translation>
+<translation id="3115819625623659514">Konfigūruojamas numatytojo „<ph name="PRODUCT_NAME"/>“ pagrindinio puslapio tipas; naudotojams pagrindinio puslapio nuostatų keisti neleidžiama. Pagrindinį puslapį galima nustatyti nurodant URL arba nustatant naujo skirtuko puslapį.
+
+          Jei įgalinsite šį nustatymą, naujo skirtuko puslapis visada bus naudojamas kaip pagrindinis puslapis, o pagrindinio puslapio URL vietos bus nepaisoma.
+
+          Jei šio nustatymo neleisite, naudotojo pagrindinis puslapis niekada nebus naujo skirtuko puslapis, jei jo URL nebus nustatytas kaip „chrome://newtab“.
+
+          Jei šį nustatymą įgalinsite arba jo neleisite, paleidę „<ph name="PRODUCT_NAME"/>“ naudotojai negalės pakeisti pagrindinio puslapio tipo.</translation>
+<translation id="2263362640517427542">Įgalinti užraktą, kai įrenginiai, kuriuose veikia „ChromeOS“ yra nenaudojami arba pristabdyti.</translation>
+<translation id="6808666497110319299">Įgalinamas kitų „<ph name="PRODUCT_NAME"/>“ esančių klaidų puslapių (pvz., „puslapio nerasta“) naudojimas; naudotojams šio nustatymo keisti neleidžiama.
+
+      Jei įgalinsite šį nustatymą, bus naudojami kiti klaidų puslapiai.
+
+      Jei šio nustatymo neleisite, niekada nebus naudojami kiti klaidų puslapiai.
+
+      Jei šį nustatymą įgalinsite arba jo neleisite, paleidę „<ph name="PRODUCT_NAME"/>“ naudotojai negalės jo nei pakeisti, nei nepaisyti.</translation>
+<translation id="1948757837129151165">HTTP tapatumo nustatymo politika</translation>
+<translation id="817926804885880359">Įgalinama „<ph name="PRODUCT_NAME"/>“ automatinio pildymo funkcija ir naudotojams leidžiama automatiškai pildyti žiniatinklio formas, naudojant anksčiau išsaugotą informaciją, pvz., adresą arba kredito kortelės informaciją.
+
+      Jei šio nustatymo neleisite, naudotojai negalės naudoti automatinio pildymo funkcijos.
+
+      Jei šį nustatymą įgalinsite arba vertės nekonfigūruosite, naudotojai ir toliau galės valdyti automatinį pildymą. Taip jie galės sukonfigūruoti automatinio pildymo profilius ir savo nuožiūra įjungti arba išjungti automatinio pildymo funkciją.</translation>
+<translation id="5645779841392247734">Leisti slapukus šiose svetainėse</translation>
+<translation id="3906388518501362918">„<ph name="PRODUCT_NAME"/>“ įgalinamas „JavaScript“; naudotojams šio nustatymo keisti neleidžiama.
+
+      Jei šį nustatymą įgalinsite arba jo nekonfigūruosite, tinklalapiuose bus galima naudoti „JavaScript“.
+
+      Jei šio nustatymo neleisite, tinklalapiuose nebus galima naudoti „JavaScript“.</translation>
+<translation id="4821854788360803313">Nurodomas „<ph name="PRODUCT_NAME"/>“ neleidžiamų papildinių sąrašas; naudotojams šio nustatymo keisti neleidžiama.
+
+      Kad vertės atitiktų abejotinų simbolių sekas, galima naudoti pakaitos simbolius „*“ ir „?“. „*“ atitinka abejotiną simbolių skaičių, o „?“ nurodo vieną pasirinktinį simbolį, t. y. atitinka nulio ir vieneto simbolius. Kaitos simbolis yra „\“, taigi, kad simboliai atitiktų faktinius „*“, „?“ arba „\“ simbolius, prieš juos galite įvesti „\“.
+
+      Jei įgalinsite šį nustatymą, „<ph name="PRODUCT_NAME"/>“ niekada nebus naudojamas nurodytas papildinių sąrašas. Skiltyje „about:plugins“ papildiniai bus pažymėti kaip neleidžiami ir naudotojai negalės jų įgalinti.
+
+      Atminkite, kad nustačius įgalintų papildinių ir neleidžiamų papildinių išimčių politiką šios politikos bus nepaisoma.</translation>
 </translationbundle>

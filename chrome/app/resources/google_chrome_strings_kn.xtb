@@ -37,6 +37,7 @@
 <translation id="5037239767309817516">ಈ ಬದಲಾವಣೆಯು ಕಾರ್ಯಗತಗೊಳ್ಳಲು ದಯವಿಟ್ಟು ಎಲ್ಲ Google Chrome ವಿಂಡೊಗಳನ್ನು ಮುಚ್ಚಿ ಹಾಗೂ ಅದನ್ನು ಮರುಪ್ರಾರಂಭಿಸಿ.</translation>
 <translation id="7451721381978275812">ಅಮಾನ್ಯವಾದ ವಾದಗಳು. Google Chrome ಸ್ಥಾಪನೆ ಮಾಡದೆ ಸಿದ್ಧತೆಯ ಮೋಡ್‌ನಲ್ಲಿ Google Chrome Frame ಅನ್ನು ಸ್ಥಾಪನೆ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ.</translation>
 <translation id="5809236835374558741">ಈ ಕಂಪ್ಯೂಟರ್ ಈಗಾಗಲೇ ಹೆಚ್ಚು ಇತ್ತೀಚೆಗಿನ Google Chrome Frame ಅನ್ನು ಹೊಂದಿದೆ. ಸಾಫ್ಟ್‌ವೇರ್ ಕಾರ್ಯ ನಿರ್ವಹಿಸದೆ ಇದ್ದರೆ, ದಯವಿಟ್ಟು Google Chrome Frame ಅನ್ನು ಅನ್ ಇನ್ಸ್ಟಾಲ್ ಮಾಡಿ ಮತ್ತು ಪುನಃ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ. </translation>
+<translation id="6368958679917195344">ಹೆಚ್ಚುವರಿ <ph name="BEGIN_LINK_CROS_OSS"/>ತೆರೆದ ಮೂಲ ಸಾಫ್ಟ್‌ವೇರ್<ph name="END_LINK_CROS_OSS"/> ನಿಂದ Chrome OS ಮಾಡಲು ಸಾಧ್ಯ.</translation>
 <translation id="4357846314885556934">Google Chrome ಅನುಚಿತವಾಗಿ ವರ್ತಿಸುತ್ತಿದೆ</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -79,6 +80,7 @@
 <translation id="5318056482164160049">Google Chrome Plug-In Host</translation>
 <translation id="6126631249883707068">Google Chrome ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಉಳಿಸಲು ನೀವು ಬಯಸುವಿರಾ?</translation>
 <translation id="5046764976540625289">Chrome ಅನ್ನು ನಿರ್ಗಮಿಸಿ</translation>
+<translation id="2925521875688282191">ದಯವಿಟ್ಟು  Chrome OS ನಿಂದ ಸೈನ್ ಔಟ್ ಮಾಡಿ ಮತ್ತು ಈ ಬದಲಾವಣೆಗಳು ಕಾರ್ಯಗತವಾಗಲು ಮತ್ತೆ ಸೈನ್ ಇನ್ ಮಾಡಿ.</translation>
 <translation id="9039578207253536065">Google Chrome Worker</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">ಇಂಟರ್ನೆಟ್ ಬ್ರೌಸರ್</translation>

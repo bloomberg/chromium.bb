@@ -398,7 +398,7 @@
 <translation id="7960533875494434480">Penjilidan tepi pendek</translation>
 <translation id="6431347207794742960"><ph name="PRODUCT_NAME"/> akan menyiapkan pemutakhiran otomatis untuk semua pengguna komputer ini.</translation>
 <translation id="4973698491777102067">Hapus item berikut dari:</translation>
-<translation id="6074963268421707432">Jangan izinkan situs apa pun menampilkan pemberitahuan</translation>
+<translation id="6074963268421707432">Jangan izinkan situs apa pun menampilkan pemberitahuan desktop</translation>
 <translation id="8508050303181238566">Tekan <ph name="HOTKEY_NAME"/> untuk beralih antar-metode masukan.</translation>
 <translation id="6273404661268779365">Tambahkan faks baru</translation>
 <translation id="1995173078718234136">Memindai konten...</translation>
@@ -1362,7 +1362,7 @@
 <translation id="8226742006292257240">Di bawah adalah sandi TPM yang dibuat secara acak yang telah ditetapkan untuk komputer Anda:</translation>
 <translation id="8487693399751278191">Impor bookmark sekarang...</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME"/></translation>
-<translation id="7484580869648358686">Peringatan: Ada Yang Tidak Benar di Sini!</translation>
+<translation id="7484580869648358686">Peringatan: Ada Yang Aneh!</translation>
 <translation id="2074739700630368799">Chrome OS untuk perusahaan memungkinkan Anda untuk menyambungkan perangkat ke Google Apps untuk Domain Anda, memungkinkan Anda untuk menemukan dan mengontrol perangkat dari Panel Kontrol Google Apps untuk Domain Anda.</translation>
 <translation id="4474155171896946103">Bookmark semua tab...</translation>
 <translation id="5895187275912066135">Diterbitkan Pada</translation>
@@ -1442,7 +1442,7 @@
 <translation id="1636959874332483835"><ph name="HOST_NAME"/> berisi perangkat lunak jahat. Komputer Anda mungkin terkena virus jika mengunjungi situs ini.</translation>
 <translation id="8050783156231782848">Tidak ada data yang tersedia</translation>
 <translation id="1175364870820465910">&amp;Cetak...</translation>
-<translation id="3866249974567520381">Keterangan</translation>
+<translation id="3866249974567520381">Uraian</translation>
 <translation id="2900139581179749587">Ucapan tidak dikenal.</translation>
 <translation id="953692523250483872">Tidak ada berkas yang dipilih</translation>
 <translation id="2294358108254308676">Apakah Anda ingin memasang <ph name="PRODUCT_NAME"/>?</translation>
@@ -2246,7 +2246,7 @@
 <translation id="521467793286158632">Hapus semua sandi</translation>
 <translation id="2491120439723279231">Sertifikat server mengandung galat.</translation>
 <translation id="4448844063988177157">Menelusuri jaringan Wi-Fi...</translation>
-<translation id="5765780083710877561">Keterangan:</translation>
+<translation id="5765780083710877561">Uraian:</translation>
 <translation id="338583716107319301">Pemisah</translation>
 <translation id="2079053412993822885">Jika salah satu sertifikat dihapus, Anda tidak akan dapat lagi menggunakannya untuk mengidentifikasi diri Anda.</translation>
 <translation id="7221869452894271364">Muat ulang laman ini</translation>

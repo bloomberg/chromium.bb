@@ -392,7 +392,7 @@
 <translation id="7960533875494434480">เย็บสันแนวนอน</translation>
 <translation id="6431347207794742960"><ph name="PRODUCT_NAME"/> จะติดตั้งการอัปเดตอัตโนมัติสำหรับผู้ใช้ทั้งหมดที่ใช้เครื่องคอมพิวเตอร์นี้</translation>
 <translation id="4973698491777102067">ลบรายการต่อไปนี้จาก:</translation>
-<translation id="6074963268421707432">ไม่อนุญาตให้ไซต์ใดๆ แสดงการแจ้งเตือนบนเดสก์ท็อป</translation>
+<translation id="6074963268421707432">ไม่อนุญาตให้ไซต์ใดๆ แสดงการแจ้งเตือนของเดสก์ท็อป</translation>
 <translation id="8508050303181238566">กด <ph name="HOTKEY_NAME"/> เพื่อสลับระหว่างวิธีป้อนข้อมูล</translation>
 <translation id="6273404661268779365">เพิ่มโทรสารใหม่</translation>
 <translation id="1995173078718234136">กำลังสแกนเนื้อหา...</translation>
@@ -901,7 +901,7 @@
 <translation id="263325223718984101"><ph name="PRODUCT_NAME"/> ไม่สามารถติดตั้งให้เสร็จสมบูรณ์ แต่จะเรียกใช้จากดิสก์อิมเมจต่อไป</translation>
 <translation id="7025190659207909717">การจัดการบริการดาต้าบนมือถือ</translation>
 <translation id="8265096285667890932">ใช้แท็บด้านข้าง</translation>
-<translation id="4250680216510889253">ไม่</translation>
+<translation id="4250680216510889253">ไม่มี</translation>
 <translation id="3949593566929137881">ป้อน PIN ของซิมการ์ด</translation>
 <translation id="6291953229176937411">&amp;แสดงในตัวค้นหา</translation>
 <translation id="2476990193835943955">กด Control, Alt หรือ Shift ค้างไว้ เพื่อดูแป้นพิมพ์ลัด&lt;br&gt;สำหรับการปรับเปลี่ยนดังกล่าว</translation>

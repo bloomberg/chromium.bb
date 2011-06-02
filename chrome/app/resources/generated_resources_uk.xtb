@@ -378,7 +378,7 @@
 <translation id="7960533875494434480">Брошурування по ширині</translation>
 <translation id="6431347207794742960"><ph name="PRODUCT_NAME"/> налаштує автоматичні оновлення для всіх користувачів цього комп'ютера.</translation>
 <translation id="4973698491777102067">Очистити такі елементи за:</translation>
-<translation id="6074963268421707432">Заборонити всім сайтам відображати сповіщення на робочому столі</translation>
+<translation id="6074963268421707432">Забороняти всім сайтам показувати сповіщення на робочому столі</translation>
 <translation id="8508050303181238566">Натискайте <ph name="HOTKEY_NAME"/>, щоб переключатися між методами введення.</translation>
 <translation id="6273404661268779365">Додати новий номер факсу</translation>
 <translation id="1995173078718234136">Сканування вмісту...</translation>
@@ -627,7 +627,7 @@
 <translation id="257088987046510401">Теми</translation>
 <translation id="6771079623344431310">Неможливо з'єднатися з проксі-сервером</translation>
 <translation id="2200129049109201305">Пропустити синхронізацію зашифрованих даних?</translation>
-<translation id="1426410128494586442">Так</translation>
+<translation id="1426410128494586442">так</translation>
 <translation id="6468252175335241103">%b %-d, %Y</translation>
 <translation id="6725970970008349185">Кількість варіантів, відображених на сторінку</translation>
 <translation id="6198252989419008588">Змінити PIN-код</translation>
@@ -880,7 +880,7 @@
 <translation id="263325223718984101"><ph name="PRODUCT_NAME"/> не вдалося завершити встановлення, але він продовжить працювати, використовуючи своє зображення диска.</translation>
 <translation id="7025190659207909717">Керування службою пересилання мобільних даних</translation>
 <translation id="8265096285667890932">Використовувати бокові вкладки</translation>
-<translation id="4250680216510889253">Ні</translation>
+<translation id="4250680216510889253">ні</translation>
 <translation id="3949593566929137881">Введіть PIN-код SIM-карти</translation>
 <translation id="6291953229176937411">&amp;Показати в програмі Finder</translation>
 <translation id="2476990193835943955">Утримуйте клавіші Control, Alt або Shift, щоб побачити комбінації&lt;br&gt;клавіш для цих модифікаторів.</translation>
@@ -1694,7 +1694,7 @@
 <translation id="9073281213608662541">PAP</translation>
 <translation id="1800035677272595847">Фішинг</translation>
 <translation id="8448317557906454022"><ph name="NUMBER_ZERO"/> secs ago</translation>
-<translation id="402759845255257575">Заборонити всім сайтам запускати JavaScript</translation>
+<translation id="402759845255257575">Забороняти всім сайтам запускати JavaScript</translation>
 <translation id="4610637590575890427">Ви мали на увазі перейти до <ph name="SITE"/>?</translation>
 <translation id="7723779034587221017">Утрачено з’єднання зі службою політики. Скиньте параметри пристрою або зв’яжіться з представником служби підтримки.</translation>
 <translation id="3046388203776734202">Налаштування спливаючих вікон:</translation>
@@ -1887,7 +1887,7 @@
 <translation id="8267453826113867474">Блокувати образливі слова</translation>
 <translation id="7959074893852789871">Файл містив декілька сертифікатів, деякі з яких не було імпортовано:</translation>
 <translation id="1213999834285861200">Винятки для зображень</translation>
-<translation id="2805707493867224476">Дозволити всім сайтам відображати спливаючі вікна</translation>
+<translation id="2805707493867224476">Дозволяти всім сайтам показувати спливаючі вікна</translation>
 <translation id="3561217442734750519">Потрібно ввести правильний шлях до секретного ключа.</translation>
 <translation id="2444609190341826949">Без парольної фрази ваші паролі та інші зашифровані дані не буде синхронізовано на цьому комп’ютері.</translation>
 <translation id="77221669950527621">Розширення чи програми</translation>

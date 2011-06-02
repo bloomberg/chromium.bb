@@ -648,7 +648,7 @@
 <translation id="257088987046510401">Chủ đề</translation>
 <translation id="6771079623344431310">Không thể kết nối đến máy chủ proxy</translation>
 <translation id="2200129049109201305">Bỏ qua đồng bộ hóa dữ liệu được mã hóa của bạn?</translation>
-<translation id="1426410128494586442">Đồng ý</translation>
+<translation id="1426410128494586442">Có</translation>
 <translation id="6468252175335241103">%b %-d, %Y</translation>
 <translation id="6725970970008349185">Số lượng ứng viên để hiển thị trên mỗi trang</translation>
 <translation id="6198252989419008588">Thay đổi mã PIN</translation>
@@ -768,7 +768,7 @@
 <translation id="1272079795634619415">Dừng</translation>
 <translation id="5442787703230926158">Lỗi Đồng bộ hoá...</translation>
 <translation id="2462724976360937186">ID khóa của tổ chức phát hành chứng chỉ</translation>
-<translation id="6786747875388722282">Phần mở rộng</translation>
+<translation id="6786747875388722282">Tiện ích mở rộng</translation>
 <translation id="3944384147860595744">In từ bất cứ đâu</translation>
 <translation id="2570648609346224037">Đã xảy ra sự cố trong quá trình tải xuống hình ảnh khôi phục.</translation>
 <translation id="4306718255138772973">Proxy in đám mây</translation>
@@ -2386,7 +2386,7 @@ phải do
 <translation id="5436492226391861498">Chờ đường hầm proxy...</translation>
 <translation id="3803991353670408298">Vui lòng thêm phương thức nhập khác trước khi xoá phương thức này.</translation>
 <translation id="1095623615273566396"><ph name="NUMBER_FEW"/> giây</translation>
-<translation id="7006788746334555276">Cài đặt Nội dung</translation>
+<translation id="7006788746334555276">Cài đặt nội dung</translation>
 <translation id="3369521687965833290">Không thể giải nén tiện ích mở rộng.  Để giải nén tiện ích mở rộng một cách an toàn, phải có đường dẫn đến thư mục tiểu sử của bạn bắt đầu bằng ký tự ổ đĩa và không chứa ký tự liên kết, điểm lắp hoặc liên kết dạng biểu tượng.  Không có đường dẫn như vậy tồn tại cho tiểu sử của bạn.</translation>
 <translation id="337920581046691015"><ph name="PRODUCT_NAME"/> sẽ được cài đặt.</translation>
 <translation id="6282194474023008486">Mã bưu chính</translation>

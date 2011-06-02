@@ -401,7 +401,7 @@
 <translation id="1995173078718234136">콘텐츠 검색 중...</translation>
 <translation id="4735819417216076266">공백 입력 스타일</translation>
 <translation id="2977095037388048586"><ph name="DOMAIN"/>에 접속하려 했으나 <ph name="DOMAIN2"/>(이)라고 주장하는 서버에 연결되었습니다. 이 문제는 서버 구성이 잘못되었거나 그보다 중대한 오류로 인해 발생했을 수 있습니다. 네트워크의 공격자가 피해를 주는 <ph name="DOMAIN3"/>의 거짓 버전으로 이동하도록 유도하는 중일 수 있습니다. 더 이상 진행하지 않는 것이 안전합니다.</translation>
-<translation id="220138918934036434">숨기기 버튼</translation>
+<translation id="220138918934036434">버튼 숨기기</translation>
 <translation id="5374359983950678924">사진 변경</translation>
 <translation id="5158548125608505876">비밀번호를 동기화하지 않음</translation>
 <translation id="2167276631610992935">자바스크립트</translation>
@@ -1755,7 +1755,7 @@
 <translation id="9073281213608662541">PAP</translation>
 <translation id="1800035677272595847">피싱</translation>
 <translation id="8448317557906454022"><ph name="NUMBER_ZERO"/>초 전</translation>
-<translation id="402759845255257575">사이트에서 자바스크립트 실행 허용 안함</translation>
+<translation id="402759845255257575">모든 사이트에서 자바스크립트 실행 허용 안함</translation>
 <translation id="4610637590575890427"><ph name="SITE"/>(으)로 이동하려고 하셨나요?</translation>
 <translation id="7723779034587221017">정책 서비스 연결이 끊어졌습니다. 기기를 재설정하거나 지원 담당자에게 문의 하시기 바랍니다.</translation>
 <translation id="3046388203776734202">팝업 설정:</translation>

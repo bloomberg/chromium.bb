@@ -397,7 +397,7 @@ para proteger a sua privacidade.</translation>
 <translation id="7960533875494434480">Encadernação de margem estreita</translation>
 <translation id="6431347207794742960">O <ph name="PRODUCT_NAME"/> irá configurar actualizações automáticas para todos os utilizadores deste computador.</translation>
 <translation id="4973698491777102067">Limpe os seguintes itens de:</translation>
-<translation id="6074963268421707432">Não permitir que nenhum site mostre notificações do ambiente de trabalho</translation>
+<translation id="6074963268421707432">Não permitir que os sites mostrem notificações do ambiente de trabalho</translation>
 <translation id="8508050303181238566">Prima <ph name="HOTKEY_NAME"/> para alternar entre métodos de introdução.</translation>
 <translation id="6273404661268779365">Adicionar novo fax</translation>
 <translation id="1995173078718234136">A analisar o conteúdo...</translation>
@@ -1772,7 +1772,7 @@ para proteger a sua privacidade.</translation>
 <translation id="9073281213608662541">PAP</translation>
 <translation id="1800035677272595847">Phishing</translation>
 <translation id="8448317557906454022">Há <ph name="NUMBER_ZERO"/> seg.</translation>
-<translation id="402759845255257575">Não permitir que nenhum site execute JavaScript</translation>
+<translation id="402759845255257575">Não permitir que os sites executem JavaScript</translation>
 <translation id="4610637590575890427">Pretendia aceder a <ph name="SITE"/>?</translation>
 <translation id="7723779034587221017">Perdeu-se a ligação ao serviço da política. Reponha o dispositivo ou contacte o representante do suporte.</translation>
 <translation id="3046388203776734202">Definições de pop-ups:</translation>
@@ -2394,7 +2394,7 @@ para proteger a sua privacidade.</translation>
 <translation id="5436492226391861498">A aguardar pelo túnel do proxy...</translation>
 <translation id="3803991353670408298">Adicione outro método de introdução antes de remover este.</translation>
 <translation id="1095623615273566396"><ph name="NUMBER_FEW"/> seg.</translation>
-<translation id="7006788746334555276">Definições de conteúdo</translation>
+<translation id="7006788746334555276">Definições de Conteúdo</translation>
 <translation id="3369521687965833290">Não é possível descompactar a extensão. Para descompactar uma extensão em segurança, é necessário existir um caminho para o seu directório de perfil começado por uma letra de unidade e sem uma junção, ponto de montagem ou ligação simbólica. Não existe um caminho deste tipo para o seu perfil.</translation>
 <translation id="337920581046691015">O <ph name="PRODUCT_NAME"/> será instalado.</translation>
 <translation id="6282194474023008486">Código postal</translation>

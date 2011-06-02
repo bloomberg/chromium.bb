@@ -396,7 +396,7 @@
 <translation id="7960533875494434480">Väzba na kratšom okraji</translation>
 <translation id="6431347207794742960">Prehliadač <ph name="PRODUCT_NAME"/> nastaví automatické aktualizácie pre všetkých používateľov tohto počítača.</translation>
 <translation id="4973698491777102067">Vymazať nasledujúce položky z:</translation>
-<translation id="6074963268421707432">Nepovoliť žiadnym webovým stránkam zobrazovať upozornenia na pracovnej ploche</translation>
+<translation id="6074963268421707432">Nepovoliť žiadnym stránkam zobrazovať upozornenia na pracovnej ploche</translation>
 <translation id="8508050303181238566">Stlačením klávesov <ph name="HOTKEY_NAME"/> môžete prepínať medzi spôsobmi zadávania.</translation>
 <translation id="6273404661268779365">Pridať nové číslo faxu</translation>
 <translation id="1995173078718234136">Prebieha skenovanie obsahu...</translation>
@@ -1768,7 +1768,7 @@
 <translation id="9073281213608662541">PAP</translation>
 <translation id="1800035677272595847">Neoprávnené získavanie údajov (phishing)</translation>
 <translation id="8448317557906454022"><ph name="NUMBER_ZERO"/> secs ago</translation>
-<translation id="402759845255257575">Nepovoliť žiadnym webovým stránkam spustiť kód JavaScript</translation>
+<translation id="402759845255257575">Nepovoliť žiadnym stránkam spúšťať kód JavaScript</translation>
 <translation id="4610637590575890427">Chceli ste prejsť na adresu <ph name="SITE"/>?</translation>
 <translation id="7723779034587221017">Pripojenie k službe pravidiel bolo prerušené. Obnovte zariadenie alebo kontaktujte zástupcu podpory.</translation>
 <translation id="3046388203776734202">Nastavenia kontextových okien:</translation>

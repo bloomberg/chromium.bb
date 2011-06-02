@@ -398,7 +398,7 @@
 <translation id="7960533875494434480">Kötés rövid szél mentén</translation>
 <translation id="6431347207794742960">A <ph name="PRODUCT_NAME"/> jelen számítógép összes felhasználója számára beállítja az automatikus frissítéseket.</translation>
 <translation id="4973698491777102067">Elemek törlése a következő időszakból:</translation>
-<translation id="6074963268421707432">Semelyik webhely nem jeleníthet meg asztali értesítéseket</translation>
+<translation id="6074963268421707432">Egy webhely sem jeleníthet meg asztali értesítéseket</translation>
 <translation id="8508050303181238566">A(z) <ph name="HOTKEY_NAME"/> lenyomásával válthat a beviteli módok között.</translation>
 <translation id="6273404661268779365">Új faxszám hozzáadása</translation>
 <translation id="1995173078718234136">Tartalom beolvasása...</translation>
@@ -1763,7 +1763,7 @@
 <translation id="9073281213608662541">PAP</translation>
 <translation id="1800035677272595847">Adathalászat</translation>
 <translation id="8448317557906454022"><ph name="NUMBER_ZERO"/> secs ago</translation>
-<translation id="402759845255257575">Tiltsa le a JavaScript futtatását minden webhelyen</translation>
+<translation id="402759845255257575">JavaScript futtatásának tiltása minden webhely számára</translation>
 <translation id="4610637590575890427">Valójában ide szeretett volna menni: <ph name="SITE"/>?</translation>
 <translation id="7723779034587221017">Megszakadt a kapcsolat a vezérlőszolgáltatással. Kérjük, állítsa alaphelyzetbe az eszközt, vagy lépjen kapcsolatba ügyfélszolgálati képviselőjével.</translation>
 <translation id="3046388203776734202">Pop-up beállítások:</translation>
@@ -1962,7 +1962,7 @@
 <translation id="8267453826113867474">Trágár szavak kizárása</translation>
 <translation id="7959074893852789871">A fájl több tanúsítványt tartalmazott, amelyek közül néhány nincs importálva:</translation>
 <translation id="1213999834285861200">Képkivételek</translation>
-<translation id="2805707493867224476">Engedje a pop-upokat minden webhelyen</translation>
+<translation id="2805707493867224476">Pop-upok engedélyezése minden webhelyen</translation>
 <translation id="3561217442734750519">A privát kulcs beviteli értékéhez érvényes útvonalat kell megadnia.</translation>
 <translation id="2444609190341826949">Összetett jelszó nélkül jelszavai és más titkosított adatai nem lesznek szinkronizálva ezen a számítógépen.</translation>
 <translation id="77221669950527621">Bővítmények vagy alkalmazások</translation>

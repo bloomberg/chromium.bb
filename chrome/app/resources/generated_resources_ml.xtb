@@ -6,6 +6,7 @@
 <translation id="8130276680150879341">സ്വകാര്യ നെറ്റ്‌വര്‍ക്ക് ഡിസ്കണക്ട് ചെയ്യുക</translation>
 <translation id="1058418043520174283"><ph name="COUNT"/> ന്‍റെ <ph name="INDEX"/></translation>
 <translation id="4480627574828695486">ഈ അക്കൌണ്ട് ഡിസ്കണക്ട് ചെയ്യുക...</translation>
+<translation id="1437399238463685286">ഫയല്‍ പേരില്‍ അസാധുവായ പ്രതീകം: $1</translation>
 <translation id="7040807039050164757">ഈ ഫീല്‍ഡിലെ &amp;അക്ഷരത്തെറ്റ് പരിശോധിക്കുക</translation>
 <translation id="778579833039460630">ഡാറ്റയൊന്നും ലഭിച്ചില്ല</translation>
 <translation id="1852799913675865625">ഫയല്‍ വായിക്കാന്‍ ശ്രമിക്കുന്നതിനിടയില്‍ ഒരു പിശക് സംഭവിച്ചു: <ph name="ERROR_TEXT"/> .</translation>
@@ -45,6 +46,7 @@
 <translation id="524759338601046922">പുതിയ PIN വീണ്ടും ടൈപ്പ് ചെയ്യുക:</translation>
 <translation id="688547603556380205">L2TP/IPSec + ഉപയോക്തൃ സര്‍ട്ടിഫിക്കേറ്റ്</translation>
 <translation id="777702478322588152">പ്രിഫെക്ചര്‍</translation>
+<translation id="6562437808764959486">റിക്കവറി ഇമേജ് വേര്‍തിരിച്ചെടുക്കുന്നു...</translation>
 <translation id="561349411957324076">പൂര്‍ത്തിയാക്കി</translation>
 <translation id="4764776831041365478"><ph name="URL"/> ലെ വെബ്‌പേജ് താല്‍‌ക്കാലികമായി പ്രവര്‍‌ത്തനരഹിതമാകാം അല്ലെങ്കില്‍‌ ഒരു പുതിയ വെബ് വിലാസത്തിലേക്ക് എന്നെന്നേയ്‌ക്കുമായി നീക്കാം.</translation>
 <translation id="6156863943908443225">സ്ക്രിപ്റ്റ് കാഷേ</translation>
@@ -155,6 +157,7 @@
 <translation id="8503758797520866434">ഓട്ടോഫില്‍ മുന്‍ഗണനകള്‍...</translation>
 <translation id="2757031529886297178">FPS കൌണ്ടര്‍</translation>
 <translation id="6657585470893396449">പാസ്‌വേഡ്</translation>
+<translation id="7881483672146086348">അക്കൌണ്ട് കാണുക</translation>
 <translation id="1776883657531386793"><ph name="OID"/>: <ph name="INFO"/></translation>
 <translation id="1510030919967934016">നിങ്ങളുടെ സ്ഥാനം ട്രാക്കുചെയ്യുന്നതില്‍‌ നിന്നും ഈ പേജിനെ തടഞ്ഞു.</translation>
 <translation id="4640525840053037973">നിങ്ങളുടെ Google അക്കൌണ്ട് ഉപയോഗിച്ച് പ്രവേശിക്കുക</translation>
@@ -162,10 +165,12 @@
 <translation id="6242054993434749861">ഫാക്‌സ്:#<ph name="FAX"/></translation>
 <translation id="762917759028004464">സ്ഥിരസ്ഥിതി ബ്രൌസര്‍ നിലവില്‍ <ph name="BROWSER_NAME"/> ആകുന്നു.</translation>
 <translation id="9213479837033539041"><ph name="NUMBER_MANY"/> സെക്കന്റ്‍ അവശേഷിക്കുന്നു</translation>
+<translation id="560442828508350263">ഇനി പറയുന്നത് നീക്കാനാകുന്നില്ല - &quot;$1&quot;: $2</translation>
 <translation id="300544934591011246">മുന്‍‌ പാസ്‌വേഡ്</translation>
 <translation id="5078796286268621944">തെറ്റായ PIN</translation>
 <translation id="989988560359834682">വിലാസം എഡിറ്റുചെയ്യുക</translation>
 <translation id="8487678622945914333">സൂം ഇന്‍</translation>
+<translation id="2972557485845626008">ഫേംവെയര്‍</translation>
 <translation id="735327918767574393">ഈ വെബ് പേജ് പ്രദര്‍ശിപ്പിക്കുന്ന സമയത്ത് എന്തോ തെറ്റായി സംഭവിച്ചു. തുടരുവാന്‍, വീണ്ടും ലോഡുചെയ്യുക അമര്‍ത്തുക അല്ലെങ്കില്‍ മറ്റൊരു പേജിലേയ്ക്ക് പോവുക.</translation>
 <translation id="8028060951694135607">Microsoft Key Recovery</translation>
 <translation id="9187657844611842955">രണ്ട്-വശങ്ങളുള്ള</translation>
@@ -221,8 +226,10 @@
 <translation id="6698381487523150993">സൃഷ്ടിച്ചു:</translation>
 <translation id="4684748086689879921">ഇറക്കുമതി ഒഴിവാക്കുക</translation>
 <translation id="9130015405878219958">അസാധുവായ മോഡ് നല്‍കി.</translation>
+<translation id="6615807189585243369"><ph name="BURNT_AMOUNT"/> / <ph name="TOTAL_SIZE"/> പകര്‍ത്തി</translation>
 <translation id="8518425453349204360"><ph name="USER_EMAIL_ADDRESS"/> എന്നതിനായി ഈ കമ്പ്യൂട്ടറിലേക്ക് വിദൂര ആക്സസ്സ് പ്രാപ്തമാക്കി.</translation>
 <translation id="4950138595962845479">ഓപ്‌ഷനുകള്‍‌...</translation>
+<translation id="4653235815000740718">OS റിക്കവറി മീഡിയ സൃഷ്ടിക്കുന്നതിനിടയില്‍ ഒരു പ്രശ്നമുണ്ടായി. ഉപയോഗിക്കപ്പെട്ട സംഭരണ ഉപാധി കണ്ടെത്താനായില്ല.</translation>
 <translation id="5516565854418269276">&amp;ബുക്മാര്‍ക്ക് ബാര്‍ എപ്പോഴും കാണിക്കുക</translation>
 <translation id="6426222199977479699">SSL പിശക്</translation>
 <translation id="7104784605502674932">സമന്വയ മുന്‍‌ഗണനകള്‍ സ്ഥിരീകരിക്കുക</translation>
@@ -262,6 +269,7 @@
 <translation id="5904093760909470684">പ്രോക്സി ക്രമീകരണം</translation>
 <translation id="2874027208508018603">ഒരു WiFi കണക്ഷനും ഇല്ലാതിരിക്കുമ്പോള്‍ Chrome 3G ഡാറ്റ ഉപയോഗിക്കും</translation>
 <translation id="4558734465070698159">മുമ്പത്തെ ഇന്‍പുട്ട് രീതി തിരഞ്ഞെടുക്കുന്നതിന് <ph name="HOTKEY_NAME"/> അമര്‍ത്തുക.</translation>
+<translation id="3348643303702027858">OS റിക്കവറി മീഡിയ സൃഷ്ടിക്കല്‍ റദ്ദാക്കപ്പെട്ടു.</translation>
 <translation id="3391060940042023865">ഇനി പറയുന്ന പ്ലഗ്-ഇന്നുകള്‍ തകര്‍ന്നു: <ph name="PLUGIN_NAME"/></translation>
 <translation id="4237016987259239829">നെറ്റ്വര്‍ക്ക് കണക്ഷന്‍ പിശക്</translation>
 <translation id="9050666287014529139">പാസ്ഫ്രെയ്സ്</translation>
@@ -385,6 +393,7 @@
           
           <ph name="BEGIN_BOLD"/>%windir%\\network diagnostic\\xpnetdiag.exe<ph name="END_BOLD"/> ടൈപ്പുചെയ്യുക,
           തുടര്‍ന്ന്      <ph name="BEGIN_BOLD"/>ശരി<ph name="END_BOLD"/> ക്ലിക്കുചെയ്യുക.</translation>
+<translation id="2934952234745269935">വോളിയം ലേബല്‍</translation>
 <translation id="7960533875494434480">ചെറിയ അഗ്രമുള്ള ബൈന്‍ഡിംഗ്</translation>
 <translation id="6431347207794742960">ഈ കമ്പ്യൂട്ടറിലെ എല്ലാ ഉപയോക്താക്കള്‍ക്കും <ph name="PRODUCT_NAME"/> ഓട്ടോമാറ്റിക്ക് അപ്ഡേറ്റുകള്‍ ക്രമീകരിക്കും.</translation>
 <translation id="4973698491777102067">ഇനിപ്പറയുന്നതില്‍ നിന്നും ഈ ഇനങ്ങളെ നീക്കംചെയ്യുക:</translation>
@@ -414,6 +423,7 @@
 <translation id="7419631653042041064">കറ്റാലന്‍ കീബോര്‍ഡ്</translation>
 <translation id="5710740561465385694">ഒരു സൈറ്റ് ഡാറ്റ സജ്ജമാക്കാന്‍‌ ശ്രമിക്കുമ്പോള്‍‌ എന്നോട് ചോദിക്കുക</translation>
 <translation id="3897092660631435901">മെനു</translation>
+<translation id="7024867552176634416">ഉപയോഗിക്കാനായി ഒരു നീക്കം‍ചെയ്യാവുന്ന സംഭരണ ഉപാധി തെരഞ്ഞെടുക്കുക</translation>
 <translation id="8553075262323480129">പേജിന്‍റെ ഭാഷ നിര്‍‌ണ്ണയിക്കാന്‍‌ കഴിയാത്തതിനാല്‍‌ വിവര്‍‌ത്തനം പരാജയപ്പെട്ടു.</translation>
 <translation id="5910680277043747137">പലയാളുകള്‍ക്ക് Chrome ഉപയോഗിക്കാനും ഇഷ്ടാനുസൃതമാക്കാനും അനുവദിക്കണമെന്ന് ആഗ്രഹിക്കുന്നുവെങ്കില്‍ നിങ്ങള്‍ക്ക് അനുബന്ധ പ്രൊഫൈലുകള്‍ ഉപയോഗിക്കാം.</translation>
 <translation id="4381849418013903196">നിര</translation>
@@ -491,6 +501,7 @@
 <translation id="5455790498993699893"><ph name="TOTAL_MATCHCOUNT"/> ന്റെ <ph name="ACTIVE_MATCH"/></translation>
 <translation id="8890069497175260255">കീബോര്‍‌ഡ് തരം</translation>
 <translation id="1202290638211552064">ഒരു അപ്സ്ട്രീം സെര്‍വറില്‍ നിന്നുള്ള പ്രതികരണത്തിനായി കാത്തിരിക്കുന്ന സമയത്ത് ഗേറ്റ്‍വേയുടെയോ പ്രോക്സി സെര്‍വറിന്‍റെയോ സമയം കഴിഞ്ഞു.</translation>
+<translation id="7765158879357617694">നീക്കുക</translation>
 <translation id="5731751937436428514">വിയറ്റ്നാമീസ് ഇന്‍‌പുട്ട് രീതി (VIQR)</translation>
 <translation id="8412144371993786373">നിലവിലെ പേജ് ബുക്ക്‌മാര്‍ക്ക് ചെയ്യുക</translation>
 <translation id="7615851733760445951">&lt;ഒരു കുക്കിയും തിരഞ്ഞെടുത്തിട്ടില്ല&gt;</translation>
@@ -524,6 +535,7 @@
 <translation id="3528033729920178817">ഈ പേജ് നിങ്ങളുടെ സ്ഥാനം ട്രാക്കുചെയ്യുന്നു.</translation>
 <translation id="5518584115117143805">ഇമെയില്‍‌ എന്‍‌ക്രിപ്ഷന്‍‌ സര്‍‌ട്ടിഫിക്കറ്റ്</translation>
 <translation id="9203398526606335860">&amp;പ്രൊഫൈലിംഗ് പ്രാപ്തമാക്കി</translation>
+<translation id="4307281933914537745">സിസ്റ്റം റിക്കവറിയെ പറ്റി കൂടുതലറിയുക</translation>
 <translation id="2849936225196189499">ഗുരുതരം</translation>
 <translation id="9001035236599590379">MIME തരം</translation>
 <translation id="5612754943696799373">ഡൌണ്‍‌ലോഡ് അനുവദിക്കണോ?</translation>
@@ -625,6 +637,7 @@
 <translation id="4910171858422458941">എന്‍റര്‍പ്രൈസ് നയം പ്രകാരം അപ്രാപ്തമാക്കിയ പ്ലഗ്-ഇന്നുകള്‍ പ്രാപ്തമാക്കാന്‍ കഴിയില്ല</translation>
 <translation id="4495419450179050807">ഈ പേജില്‍ കാണിക്കരുത്</translation>
 <translation id="4745800796303246012">പരീക്ഷിച്ചറിഞ്ഞ Wi-Fi EAP മാര്‍ഗ്ഗങ്ങള്‍</translation>
+<translation id="1225544122210684390">ഹാര്‍ഡ് ഡിസ്ക്ക് ഉപാധി</translation>
 <translation id="939736085109172342">പുതിയ ഫോള്‍ഡര്‍</translation>
 <translation id="4933484234309072027"><ph name="URL"/> ല്‍ ഉള്‍‌ച്ചേര്‍‌ത്തു</translation>
 <translation id="5554720593229208774">ഇമെയില്‍ സര്‍ട്ടിഫിക്കേഷന്‍ അതോറിറ്റി</translation>
@@ -645,6 +658,7 @@
 <translation id="6468252175335241103">%b %-d, %Y</translation>
 <translation id="6725970970008349185">ഓരോ പേജിലും പ്രദര്‍‌ശിപ്പിക്കുന്നതിനുള്ള അംഗങ്ങളുടെ എണ്ണം</translation>
 <translation id="6198252989419008588">PIN മാറ്റുക</translation>
+<translation id="5749483996735055937">ഉപാധിയിലേക്ക് റിക്കവറി ഇമേജിന്‍റെ പകര്‍പ്പെടുക്കുന്നതിനിടയില്‍ ഒരു പ്രശ്നമുണ്ടായി.</translation>
 <translation id="3520476450377425184"><ph name="NUMBER_MANY"/> ദിവസം‍ ശേഷിക്കുന്നു</translation>
 <translation id="7643817847124207232">ഇന്റര്‍നെറ്റ് കണക്ഷന്‍ നഷ്ടപ്പെട്ടു.</translation>
 <translation id="932327136139879170">ഹോം</translation>
@@ -684,6 +698,7 @@
 <translation id="7241389281993241388">ക്ലയന്‍റ് സര്‍ട്ടിഫിക്കറ്റ് ഇറക്കുമതി ചെയ്യുന്നതിന് <ph name="TOKEN_NAME"/> എന്നതിലേക്ക് ദയവായി പ്രവേശിക്കുക.</translation>
 <translation id="40334469106837974">പേജ് ലേഔട്ട് മാറ്റുക</translation>
 <translation id="4804818685124855865">വിച്ഛേദിക്കുക</translation>
+<translation id="2617919205928008385">ഇടം വേണ്ടത്രയില്ല</translation>
 <translation id="210445503571712769">സമന്വിത മുന്‍ഗണനകള്‍</translation>
 <translation id="1608306110678187802">ഫ്രെയിം അ&amp;ച്ചടിക്കുക...</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
@@ -707,6 +722,8 @@
 <translation id="1722567105086139392">ലിങ്ക്</translation>
 <translation id="2620436844016719705">സിസ്റ്റം</translation>
 <translation id="5362741141255528695">സ്വകാര്യ കീ ഫയല്‍‌ തിരഞ്ഞെടുക്കുക.</translation>
+<translation id="5292890015345653304">SD കാര്‍ഡോ USB മെമ്മറി സ്റ്റിക്കോ ഇടുക</translation>
+<translation id="5583370583559395927">ബാക്കിയുള്ള സമയം: <ph name="TIME_REMAINING"/></translation>
 <translation id="8065982201906486420"><ph name="PLUGIN_NAME"/> എന്ന പ്ലഗ്-ഇന്‍ പ്രവര്‍ത്തിപ്പിക്കുന്നതിന് ക്ലിക്കുചെയ്യുക.</translation>
 <translation id="6219717821796422795">Hanyu</translation>
 <translation id="3725367690636977613">പേജുകള്‍</translation>
@@ -721,7 +738,9 @@
 <translation id="6812349420832218321"><ph name="PRODUCT_NAME"/> റൂട്ട് ആയി പ്രവര്‍ത്തിപ്പിക്കാന്‍ കഴിയില്ല.</translation>
 <translation id="5076340679995252485">&amp;ഒട്ടിക്കുക</translation>
 <translation id="2904348843321044456">ഉള്ളടക്ക ക്രമീകരണങ്ങള്‍...</translation>
+<translation id="1055216403268280980">ഇമേജിന്‍റെ മാനങ്ങള്‍</translation>
 <translation id="1784284518684746740">പോലെ സംരക്ഷിക്കുന്നതിനായി ഒരു ഫയല്‍ തിരഞ്ഞെടുക്കുക</translation>
+<translation id="7032947513385578725">ഫ്ലാഷ് ഉപാധി</translation>
 <translation id="5518442882456325299">നിലവിലെ തിരയല്‍ എഞ്ചിന്‍:</translation>
 <translation id="14171126816530869"><ph name="LOCALITY"/> ലെ <ph name="ORGANIZATION"/> ന്റെ വ്യക്തിത്വം <ph name="ISSUER"/> പരിശോധിച്ചു.</translation>
 <translation id="6263082573641595914">Microsoft CA പതിപ്പ്</translation>
@@ -757,6 +776,7 @@
 <translation id="2462724976360937186">സാക്‍ഷ്യപത്ര അതോറിറ്റി കീ ഐഡി</translation>
 <translation id="6786747875388722282">വിപുലീകരണങ്ങള്‍</translation>
 <translation id="3944384147860595744">എവിടെനിന്നും അച്ചടിക്കുക</translation>
+<translation id="2570648609346224037">റിക്കവറി ഇമേജ് ഡൌണ്‍ലോഡ് ചെയ്യുന്ന വേളയില്‍ ഒരു പ്രശ്നമുണ്ടായി.</translation>
 <translation id="4306718255138772973">ക്ലൌഡ് പ്രിന്‍റ് പ്രോക്സി</translation>
 <translation id="9053965862400494292">സമന്വയം സജ്ജമാക്കാന്‍ ശ്രമിക്കുന്നതിനിടയില്‍ ഒരു പിശകു സംഭവിച്ചു.</translation>
 <translation id="8596540852772265699">ഇഷ്ടാനുസൃത ഫയലുകള്‍</translation>
@@ -781,6 +801,7 @@
 <translation id="3368922792935385530">ബന്ധിപ്പിച്ചു</translation>
 <translation id="3498309188699715599">ച്യൂവിംഗ് ഇന്‍‌പുട്ട് ക്രമീകരണങ്ങള്‍‌</translation>
 <translation id="8486154204771389705">ഈ പേജില്‍ സൂക്ഷിക്കുക</translation>
+<translation id="3866443872548686097">നിങ്ങളുടെ റിക്കവറി മീഡിയ തയ്യാര്‍. നിങ്ങള്‍ക്ക് അതിപ്പോള്‍ സിസ്റ്റത്തില്‍ നിന്ന് നീക്കം‍ചെയ്യാം.</translation>
 <translation id="6824564591481349393">&amp;ഇമെയില്‍ വിലാസം പകര്‍ത്തുക</translation>
 <translation id="907148966137935206">പോപ്പ്-അപ്പുകള്‍‌ കാണിക്കാന്‍ ഒരു സൈറ്റിനെയും അനുവദിക്കരുത് (ശുപാര്‍‌ശിതം)</translation>
 <translation id="5184063094292164363">&amp;JavaScript കണ്‍‌സോള്‍‌</translation>
@@ -793,6 +814,7 @@
 <translation id="8041140688818013446">വെബ്പേജ് ഹോസ്റ്റുചെയ്തിരിക്കുന്ന സെര്‍വര്‍ അമിതഭാരത്തിലാകുകയോ ഒരു പിശക് നേരിടുകയോ ചെയ്തിരിക്കാനാണ് സാധ്യത. ട്രാഫിക്ക് അമിതമാകുന്നതും സാഹചര്യം മോശമാകുന്നതും        ഒഴിവാക്കുന്നതിന്, സെര്‍വറിലേക്ക് അഭ്യര്‍ത്ഥനകള്‍ അനുവദിക്കുന്നത്        <ph name="PRODUCT_NAME"/> താല്‍ക്കാലികമായി        നിര്‍ത്തിവച്ചിരിക്കുന്നു.
         <ph name="LINE_BREAK"/>
         ഉദാഹരണത്തിന്, സ്വന്തം വെബ്സൈറ്റ് ഡീബഗ്ഗ് ചെയ്യുന്നതിനിടെ ഈ പെരുമാറ്റം അഭികാമ്യമല്ലെന്ന് നിങ്ങള്‍ കരുതുന്നെങ്കില്‍, ദയവായി <ph name="NET_INTERNALS_PAGE"/> പേജ്        സന്ദര്‍ശിക്കുക,        അവിടെ നിങ്ങള്‍ക്ക് കൂടുതല്‍ വിവരം നേടുകയോ ഈ സവിശേഷത ഇല്ലാതാക്കുകയോ ചെയ്യാനാകും.</translation>
+<translation id="1725068750138367834">&amp;ഫയല്‍ മാനേജര്‍</translation>
 <translation id="4254921211241441775">ഈ അക്കൌണ്ട് സമന്വയിപ്പിക്കുന്നത് അവസാനിപ്പിക്കുക</translation>
 <translation id="7791543448312431591">ചേര്‍ക്കൂ</translation>
 <translation id="8569764466147087991">തുറക്കുന്നതിന് ഒരു ഫയല്‍ തിരഞ്ഞെടുക്കുക</translation>
@@ -813,6 +835,7 @@
 <translation id="5984992849064510607">ടാബ്സ്ട്രിപ്പിന്‍റെ സന്ദര്‍ഭ മെനിവിലേക്ക് “സൈഡ് ടാബുകള്‍ ഉപയോഗിക്കുക” എന്‍ട്രി ചേര്‍ക്കുന്നു. ഇതിനെ മുകളിലെയും (സ്ഥിരസ്ഥിതി) വശത്തെയും ടാബുകള്‍ തമ്മില്‍ ടോഗിള്‍ ചെയ്യുന്നതിന് ഉപയോഗിക്കുക. വിശാലമായ സ്ക്രീനുള്ള മോണിറ്ററുകളില്‍ പ്രയോജനകരം.</translation>
 <translation id="839736845446313156">രജിസ്റ്റര്‍</translation>
 <translation id="4668929960204016307">,</translation>
+<translation id="2409527877874991071">ഒരു പുതിയ പേര് നല്‍‌‌കുക</translation>
 <translation id="4240069395079660403"><ph name="PRODUCT_NAME"/> ഈ ഭാഷയില്‍ പ്രദര്‍ശിപ്പിക്കാന്‍ കഴിയില്ല</translation>
 <translation id="747114903913869239">പിശക്: വിപുലീകരണം ഡീകോഡ് ചെയ്യാനാവില്ല</translation>
 <translation id="5412637665001827670">ബള്‍ഗേറിയന്‍ കീബോര്‍ഡ്</translation>
@@ -829,6 +852,7 @@
 <translation id="8502803898357295528">നിങ്ങളുടെ പാസ്‌വേഡ് മാറ്റി</translation>
 <translation id="4064488613268730704">ഓട്ടോഫില്‍ ക്രമീകരണങ്ങള്‍ കൈകാര്യം ചെയ്യുക...</translation>
 <translation id="6830600606572693159"><ph name="URL"/> എന്നതിലെ വെബ്പേജ് നിലവില്‍ ലഭ്യമല്ല.  അത് ഓവര്‍ലോഡ് ആയിരിക്കുകയോ പുനര്‍നിര്‍മ്മാണത്തിലായിരിക്കുകയോ ആവാം.</translation>
+<translation id="4145797339181155891">ഇജക്റ്റുചെയ്യുക</translation>
 <translation id="7886793013438592140">സേവന പ്രോസസ്സ് ആരംഭിക്കാനാവുന്നില്ല.</translation>
 <translation id="8417944620073548444"><ph name="MEGABYTES"/> MB ശേഷിക്കുന്നു</translation>
 <translation id="7339898014177206373">പുതിയ വിന്‍ഡോ</translation>
@@ -838,6 +862,7 @@
 
           തിരഞ്ഞെടുത്ത പ്രോക്സികളുടെ തിരഞ്ഞെടുപ്പ് മാറ്റുക.</translation>
 <translation id="7033648024564583278">ബേണ്‍ പ്രോസസ്സ് സമാരംഭിക്കുന്നു...</translation>
+<translation id="2246340272688122454">റിക്കവറി ഇമേജ് ഡൌണ്‍ലോഡ് ചെയ്യുന്നു</translation>
 <translation id="7770995925463083016"><ph name="NUMBER_TWO"/> mins ago</translation>
 <translation id="2816269189405906839">ചൈനീസ് ഇന്‍‌പുട്ട് രീതി (cangjie)</translation>
 <translation id="7087282848513945231">രാജ്യം</translation>
@@ -910,6 +935,7 @@
 <translation id="3665650519256633768">തിരയല്‍ ഫലങ്ങള്‍</translation>
 <translation id="3733127536501031542">സ്റ്റെപ്പ്-അപ്പ് ഉള്ള SSL സെര്‍വര്‍ </translation>
 <translation id="3614837889828516995">PDF-ലേക്ക് അച്ചടിക്കുക</translation>
+<translation id="5745056705311424885">USB മെമ്മറി സ്റ്റിക്ക് കണ്ടെത്തി</translation>
 <translation id="5895875028328858187">ഡാറ്റ കുറവായിരിക്കുമ്പോഴോ കാലഹരണപ്പെടാന്‍ പോകുകയാണെങ്കിലോ വിജ്ഞാപനങ്ങള്‍ കാണിക്കുക</translation>
 <translation id="939598580284253335">പാസ്ഫ്രെയ്സ് നല്‍കുക</translation>
 <translation id="7917972308273378936">ലിത്വാനിയന്‍ കീബോര്‍ഡ്</translation>
@@ -954,6 +980,7 @@
 <translation id="6259308910735500867">റിമോട്ടിംഗ് ഹോസ്റ്റ് ഡയറക്ടറിയിലേക്കുള്ള ആക്സസ്സ് നിരസിച്ചു. ദയവായി മറ്റൊരു അക്കൌണ്ട് ഉപയോഗിച്ച് ശ്രമിക്കുക.</translation>
 <translation id="3415261598051655619">സ്ക്രിപ്റ്റിലേക്ക് ആക്സസ്സ് ചെയ്യാനാകും:</translation>
 <translation id="2335122562899522968">ഈ പേജ് കുക്കികളെ സജ്ജമാക്കുന്നു.</translation>
+<translation id="3786100282288846904">ഇനി പറയുന്നത് ഇല്ലാതാക്കാന്‍ ആകുന്നില്ല - &quot;$1&quot;: $2</translation>
 <translation id="8461914792118322307">പ്രോക്സി</translation>
 <translation id="4089521618207933045">ഉപമെനു ഉണ്ട്</translation>
 <translation id="1936157145127842922">ഫോള്‍ഡറില്‍ കാണിക്കുക</translation>
@@ -1011,6 +1038,7 @@
 <translation id="1808792122276977615">പേജ് ചേര്‍‌ക്കുക...</translation>
 <translation id="2076269580855484719">ഈ പ്ലഗിന്‍ മറയ്ക്കുക</translation>
 <translation id="254416073296957292">&amp;ഭാഷാ ക്രമീകരണങ്ങള്‍...</translation>
+<translation id="6652975592920847366">OS റിക്കവറി മീഡിയ സൃഷ്ടിക്കുക</translation>
 <translation id="52912272896845572">സ്വകാര്യ കീ ഫയല്‍‌ അസാധുവാണ്.</translation>
 <translation id="3232318083971127729">മൂല്യം:</translation>
 <translation id="8807632654848257479">സുസ്ഥിരമായ</translation>
@@ -1098,6 +1126,7 @@
 <translation id="629730747756840877">അക്കൌണ്ട്</translation>
 <translation id="8525306231823319788">പൂര്‍ണ്ണ സ്ക്രീന്‍</translation>
 <translation id="9054208318010838">എന്‍റെ ഭൌതിക സ്ഥാ‍നം ട്രാക്കുചെയ്യുന്നതിന് എല്ലാ സൈറ്റുകളെയും അനുവദിക്കുക</translation>
+<translation id="3058212636943679650">നിങ്ങളുടെ കമ്പ്യൂട്ടറിന്‍റെ ഓപ്പറേറ്റിംഗ് സിസ്റ്റം പിന്നീടെപ്പോഴെങ്കിലും പുനഃസ്ഥാപിക്കണമെങ്കില്‍ ഒരു റിക്കവറി SD കാര്‍ഡോ USB മെമ്മറി സ്റ്റിക്കോ ആവശ്യമായി വരും.</translation>
 <translation id="2815382244540487333">ഇനിപ്പറയുന്ന കുക്കികളെ തടഞ്ഞു:</translation>
 <translation id="8882395288517865445">എന്‍റെ വിലാസ പുസ്‌തക കാര്‍‌ഡില്‍‌ നിന്നുള്ള വിലാസങ്ങള്‍‌ ഉള്‍‌പ്പെടുത്തുക</translation>
 <translation id="374530189620960299">സൈറ്റിന്റെ സുരക്ഷാ സര്‍ട്ടിഫിക്കറ്റ്‍ വിശ്വസ്തമല്ല!</translation>
@@ -1253,6 +1282,7 @@
 <translation id="2762402405578816341">ഇനിപ്പറയുന്ന ഇനങ്ങള്‍ സ്വപ്രേരിതമായി സമന്വയിപ്പിക്കുക:</translation>
 <translation id="1623661092385839831">നിങ്ങളുടെ കമ്പ്യൂട്ടറില്‍ Chrome OS ലെ നിരവധി ഗുരുതര സുരക്ഷ സവിശേഷതകള്‍ നടപ്പിലാക്കുന്നതിന് ഉപയോഗിക്കുന്ന ഒരു ട്രസ്റ്റഡ് പ്ലാറ്റ്ഫോം മൊഡ്യൂള്‍ (TPM) സുരക്ഷാ ഉപാധി അടങ്ങിയിരിക്കുന്നു.</translation>
 <translation id="3359256513598016054">സര്‍‌ട്ടിഫിക്കറ്റ് നയ നിയന്ത്രണങ്ങള്‍‌</translation>
+<translation id="4433914671537236274">ഒരു റിക്കവറി മീഡിയ സൃഷ്ടിക്കുക</translation>
 <translation id="4509345063551561634">സ്ഥാനം:</translation>
 <translation id="7596288230018319236">ഒരു വേഷപ്രച്ഛന്ന വിന്‍ഡോയിലൂടെ തുറക്കുന്നില്ലെങ്കില്‍ നിങ്ങള്‍ സന്ദര്‍ശിച്ച എല്ലാ പേജുകളും ഇവിടെ നിന്ന് അപ്രത്യക്ഷമാകും. നിങ്ങള്‍ക്ക് ഈ പേജില്‍ സെര്‍ച്ച് ബട്ടണ്‍ ഉപയോഗിക്കുക വഴി നിങ്ങളുടെ ചരിത്രത്തിലെ എല്ലാ പേജുകളും തിരയാന്‍ കഴിയും.</translation>
 <translation id="7434509671034404296">വികാസകന്‍</translation>
@@ -1284,6 +1314,7 @@
 <translation id="1383876407941801731">തിരയൂ</translation>
 <translation id="8398877366907290961">എങ്ങനെയാണെങ്കിലും മുന്നോട്ട് പോകുക</translation>
 <translation id="5063180925553000800">പുതിയ പിന്‍:</translation>
+<translation id="2496540304887968742">ഉപാധിക്ക് 4GB-യോ അതിലധികമോ ശേഷി ഉണ്ടായിരിക്കണം.</translation>
 <translation id="6974053822202609517">വലത്ത് നിന്ന് ഇടത്തേക്ക്</translation>
 <translation id="2370882663124746154">ഇരട്ട-പിന്‍‌യിന്‍‌ മോഡ് പ്രാപ്‌തമാക്കുക</translation>
 <translation id="5463856536939868464">മെനുവില്‍‌ മറച്ച ബുക്ക്‍മാര്‍‌ക്കുകള്‍‌ അടങ്ങിയിരിക്കുന്നു</translation>
@@ -1305,6 +1336,8 @@
 <translation id="8839907368860424444">വിന്‍‌ഡോ മെനുവിലുള്ള എക്സ്റ്റന്‍ഷനുകളില്‍ ക്ലിക്കുചെയ്തുകൊണ്ട് നിങ്ങള്‍ക്ക് നിങ്ങളുടെ ഇന്‍സ്റ്റാള്‍ ചെയ്ത എക്സ്റ്റന്‍ഷനുകളെ മാനേജുചെയ്യാന്‍‌ കഴിയും.</translation>
 <translation id="2461687051570989462">ഏത് കമ്പ്യൂട്ടറില്‍ നിന്നോ സ്മാര്‍ട്ട് ഫോണില്‍ നിന്നോ നിങ്ങളുടെ പ്രിന്‍ററുകള്‍ ആക്സസ്സുചെയ്യുക. <ph name="BEGIN_LINK"/>കൂടുതലറിയുക<ph name="END_LINK"/></translation>
 <translation id="7194430665029924274">എന്നെ പിന്നീട് &amp;ഓര്‍മ്മപ്പെടുത്തുക</translation>
+<translation id="5790085346892983794">വിജയം</translation>
+<translation id="1901769927849168791">SD കാര്‍ഡ് കണ്ടെത്തി</translation>
 <translation id="818454486170715660"><ph name="NAME"/> - ഉടമ</translation>
 <translation id="1358032944105037487">ജപ്പാനീസ് കീബോര്‍ഡ്</translation>
 <translation id="8201956630388867069">WPA</translation>
@@ -1351,6 +1384,7 @@
 <translation id="6584878029876017575">Microsoft Lifetime Signing</translation>
 <translation id="562901740552630300"><ph name="BEGIN_BOLD"/>ആരംഭിക്കുക &gt; നിയന്ത്രണ പാനല്‍ &gt; നെറ്റ്‍വര്‍ക്കും ഇന്‍റര്‍നെറ്റും &gt; നെറ്റ്‍വര്‍ക്കും പങ്കിടല്‍ കേന്ദ്രവും &gt; പ്രശ്നപരിഹാര പ്രശ്നങ്ങള്‍ (ചുവടെ) &gt; ഇന്‍റര്‍നെറ്റ് കണക്ഷനുകള്‍
           <ph name="END_BOLD"/> എന്നതിലേക്ക് പോകുക.</translation>
+<translation id="8816996941061600321">&amp;ഫയല്‍ മാനേജര്‍</translation>
 <translation id="2773223079752808209">ഉപഭോക്തൃ പിന്തുണ</translation>
 <translation id="4585473702689066695">'<ph name="NAME"/>' നെറ്റ്‌വര്‍‌ക്കിലേക്ക് ബന്ധിപ്പിക്കുന്നതിന് പരാജയപ്പെട്ടു.</translation>
 <translation id="4647175434312795566">കരാര്‍ സ്വീകരിക്കുക</translation>
@@ -1456,6 +1490,7 @@
 <translation id="3166547286524371413">വിലാസം:</translation>
 <translation id="4522570452068850558">വിശദാംശങ്ങള്‍‌</translation>
 <translation id="59659456909144943">വിജ്ഞാപനം: <ph name="NOTIFICATION_NAME"/></translation>
+<translation id="6731320427842222405">ഇതിന് കുറച്ച് മിനിറ്റെടുത്തേയ്‌ക്കാം</translation>
 <translation id="4806525999832945986"><ph name="DOMAIN"/> എന്നത് കൈകാര്യം ചെയ്യുന്നു (<ph name="STATUS"/>)</translation>
 <translation id="7503191893372251637">നെറ്റ്‌സ്‌കേപ്പ് സര്‍‌ട്ടിഫിക്കറ്റ് തരം</translation>
 <translation id="1502960562739459116">ഈ PDF പ്രമാണത്തിന്‍റെ ഭാഗങ്ങള്‍ പ്രദര്‍ശിപ്പിക്കാന്‍ കഴിഞ്ഞില്ല.  Adobe Reader ഇന്‍സ്റ്റാള്‍ ചെയ്യണോ?</translation>
@@ -1539,6 +1574,7 @@
 <translation id="6521850982405273806">ഒരു പിശക് റിപ്പോര്‍ട്ട് ചെയ്യുക</translation>
 <translation id="736515969993332243">നെറ്റ്‌വര്‍ക്കുകള്‍ക്കായി സ്കാന്‍ ചെയ്യുന്നു.</translation>
 <translation id="8026334261755873520">ബ്രൌസിംഗ് ഡാറ്റ മായ്‌ക്കുക</translation>
+<translation id="2717361709448355148">ഇനി പറയുന്നത് പേരുമാറ്റാന്‍ ആകുന്നില്ല - &quot;$1&quot;: $2</translation>
 <translation id="1769104665586091481">ലിങ്ക് ഒരു പു‌തിയ &amp;വിന്‍‌ഡോയില്‍ തുറക്കുക</translation>
 <translation id="8503813439785031346">ഉപയോക്തൃനാമം</translation>
 <translation id="5319782540886810524">ലാറ്റ്‌വിയന്‍ കീബോര്‍ഡ്</translation>
@@ -1558,6 +1594,7 @@
 <translation id="4775879719735953715">സ്ഥിരസ്ഥിതി ബ്രൌസര്‍</translation>
 <translation id="5575473780076478375">ആള്‍മാറാട്ട വിപുലീകരണം: <ph name="EXTENSION_NAME"/></translation>
 <translation id="4188026131102273494">കീവേഡ്:</translation>
+<translation id="2930644991850369934">റിക്കവറി ഇമേജ് ഡൌണ്‍ലോഡ് ചെയ്യുന്നതിനിടെ ഒരു പ്രശ്നം ഉണ്ടായി. നെറ്റ്‌വര്‍ക്ക് ബന്ധം നഷ്ടപ്പെട്ടു.</translation>
 <translation id="3461610253915486539">ചില മുന്‍‌ഗണനകളെ നിങ്ങളുടെ ഐടി രക്ഷാധികാരി അപ്രാപ്തമാക്കി.</translation>
 <translation id="5750053751252005701"><ph name="NETWORK"/> ഡാറ്റയ്ക്ക് പുറത്താണ്</translation>
 <translation id="8858939932848080433">ഫീഡ്ബാക്ക് അയയ്ക്കുന്നതിന് മുമ്പായി എവിടെയാണ് നിങ്ങള്‍ക്ക് പ്രശ്നങ്ങള്‍ ഉണ്ടാകുന്നതെന്ന് ദയവായി ഞങ്ങളോട് പറയുക.</translation>
@@ -1615,6 +1652,7 @@
 <translation id="8053390638574070785">ഈ പേജ് വീണ്ടും ലോഡ് ചെയ്യുക</translation>
 <translation id="5507756662695126555">നിരസിക്കാത്തത്</translation>
 <translation id="3678156199662914018">വിപുലീകരണം: <ph name="EXTENSION_NAME"/></translation>
+<translation id="7951780829309373534">ഒട്ടിക്കാന്‍ ആകുന്നില്ല - &quot;$1&quot;: $2.</translation>
 <translation id="9194519262242876737">വെബ് ഓഡിയോ API പ്രാപ്തമാക്കുന്നു.</translation>
 <translation id="3531250013160506608">പാസ്‌വേഡ് വാചക ബോക്സ്</translation>
 <translation id="8314066201485587418">ഞാന്‍ എന്‍റെ ബ്രൌസറില്‍ നിന്ന് പുറത്തുകടക്കുമ്പോള്‍ കുക്കികളും മറ്റ് സൈറ്റ് ഡാറ്റയും മായ്ക്കുക</translation>
@@ -1626,6 +1664,7 @@
 <translation id="8401363965527883709">ചെക്കടയാളമിടാത്ത ചെക്ക് ബോക്സ്</translation>
 <translation id="7771452384635174008">ലേഔട്ട്</translation>
 <translation id="6188939051578398125">നാമങ്ങളും വിലാസങ്ങളും നല്‍കുക.</translation>
+<translation id="8443621894987748190">നിങ്ങളുടെ അക്കൌണ്ട് ചിത്രം തെരഞ്ഞെടുക്കുക</translation>
 <translation id="10122177803156699">എന്നെ കാണിക്കുക</translation>
 <translation id="5260878308685146029"><ph name="NUMBER_TWO"/> മിനിറ്റ് അവശേഷിക്കുന്നു</translation>
 <translation id="2192505247865591433">പ്രേഷിതാവ്:</translation>
@@ -1798,6 +1837,7 @@
 <translation id="3937609171782005782">ഈ മുന്നറിയിപ്പ് കാണുന്ന സൈറ്റുകളെക്കുറിച്ച് Google ലേക്ക് കൂടുതല്‍ ഡാറ്റ അയച്ചുകൊണ്ട് ക്ഷുദ്രവെയര്‍ കണ്ടെത്തല്‍ മെച്ചപ്പെടുത്തുന്നതിന് സഹായിക്കുക. ഈ ഡാറ്റ <ph name="PRIVACY_PAGE_LINK"/> എന്നതിന് വിധേയമായി കൈകാര്യം ചെയ്യും.</translation>
 <translation id="8877448029301136595">[രക്ഷാകര്‍തൃ ഡയറക്ടറി]</translation>
 <translation id="7301360164412453905">Hsu ന്‍റെ കീബോര്‍‌ഡ് തിരഞ്ഞെടുക്കല്‍‌ കീകള്‍‌</translation>
+<translation id="8631271110654520730">റിക്കവറി ഇമേജ് പകര്‍ത്തിക്കൊണ്ടിരിക്കുന്നു...</translation>
 <translation id="1963227389609234879">എല്ലാം നീക്കംചെയ്യൂ</translation>
 <translation id="7779140087128114262">നിങ്ങളുടെ എന്‍‌ക്രിപ്റ്റ് ചെയ്ത ഡാറ്റ നിങ്ങളുടെ പാസ്ഫ്രേസുള്ള ആളുകള്‍ക്ക് മാത്രമാണ് വായിക്കാന്‍ സാധിക്കുക -- Google അയയ്ക്കുന്നതോ അല്ലെങ്കില്‍ സംഭരിക്കുന്നതോ അല്ല പാസ്ഫ്രേസ്. നിങ്ങളുടെ പാസ്ഫ്രേസ് മറന്നു പോകുകയാണെങ്കില്‍, നിങ്ങള്‍ സമന്വയം പുനഃസജ്ജമാക്കേണ്ടതുണ്ട്.</translation>
 <translation id="8027581147000338959">പുതിയ വിന്‍ഡോയില്‍ തുറക്കുക</translation>
@@ -1815,6 +1855,7 @@
 <translation id="45025857977132537">സര്‍‌ട്ടിഫിക്കറ്റ് കീ ഉപയോഗം: <ph name="USAGES"/></translation>
 <translation id="6454421252317455908">ചൈനീസ് ഇന്‍‌പുട്ട് രീതി (ദ്രുതഗതിയിലുള്ളത്)</translation>
 <translation id="368789413795732264">ഫയല്‍ റൈറ്റുചെയ്യാന്‍ ശ്രമിക്കുന്നതിനിടയില്‍ ഒരു പിശക് സംഭവിച്ചു: <ph name="ERROR_TEXT"/> .</translation>
+<translation id="1173894706177603556">പേരുമാറ്റുക</translation>
 <translation id="5670032673361607750">സമന്വയത്തിന് നിങ്ങളുടെ ശ്രദ്ധ വേണം</translation>
 <translation id="2148716181193084225">ഇന്ന്</translation>
 <translation id="1002064594444093641">ഫ്രെയിം അച്ച&amp;ടിക്കുക...</translation>
@@ -1823,6 +1864,7 @@
 <translation id="4608500690299898628">&amp;കണ്ടെത്തുക...</translation>
 <translation id="3574305903863751447"><ph name="CITY"/>, <ph name="STATE"/> <ph name="COUNTRY"/></translation>
 <translation id="8724859055372736596">&amp;ഫോള്‍ഡറില്‍ കാണിക്കുക</translation>
+<translation id="4605399136610325267">ഇന്‍റര്‍നെറ്റിലേക്ക് ബന്ധിപ്പിച്ചിട്ടില്ല</translation>
 <translation id="978407797571588532">നിങ്ങളുടെ കണക്ഷന്‍ പരിശോധിക്കുന്നതിന്
           <ph name="BEGIN_BOLD"/>
           ആരംഭിക്കുക &gt; നിയന്ത്രണ പാനല്‍ &gt; നെറ്റ്‍വര്‍ക്ക് കണക്ഷനുകള്‍ &gt; പുതിയ കണക്ഷന്‍ വിസാര്‍ഡ്          <ph name="END_BOLD"/>
@@ -2227,6 +2269,7 @@
 <translation id="2635276683026132559">സൈന്‍‌ ചെയ്യുന്നു</translation>
 <translation id="4835836146030131423">പ്രവേശിക്കല്‍‌ പിശക്.</translation>
 <translation id="7715454002193035316">സെഷന്‍‌ മാത്രം</translation>
+<translation id="2475982808118771221">ഒരു പിശക് സംഭവിച്ചു</translation>
 <translation id="3324684065575061611">(എന്‍റര്‍പ്രൈസ് നയത്താല്‍ അപ്രാപ്തമാക്കിയിരിക്കുന്നു)</translation>
 <translation id="7385854874724088939">നിങ്ങള്‍ അച്ചടിക്കാന്‍ ശ്രമിച്ചപ്പോള്‍ എന്തോ ഒരു പിശക് സംഭവിച്ചു.  നിങ്ങളുടെ പ്രിന്‍റര്‍ പരിശോധിച്ച ശേഷം വീണ്ടും ശ്രമിക്കുക.</translation>
 <translation id="770015031906360009">ഗ്രീക്ക്</translation>
@@ -2358,6 +2401,7 @@
 <translation id="6282194474023008486">പോസ്റ്റല്‍ കോഡ്</translation>
 <translation id="7733107687644253241">താഴെ വലത്</translation>
 <translation id="5139955368427980650">&amp;തുറക്കൂ</translation>
+<translation id="8136149669168180907"><ph name="DOWNLOADED_AMOUNT"/> / <ph name="TOTAL_SIZE"/> ഡൌണ്‍ലോഡ് ആയി</translation>
 <translation id="7375268158414503514">പൊതുഫീഡ്‌ബാക്ക്/മറ്റുള്ളവ</translation>
 <translation id="4643612240819915418">&amp;ഒരു പുതിയ ടാബില്‍ വീഡിയോ തുറക്കുക</translation>
 <translation id="7997479212858899587">ഐഡന്‍റിറ്റി:</translation>
@@ -2531,6 +2575,7 @@
 <translation id="7876243839304621966">എല്ലാം നീക്കംചെയ്യുക</translation>
 <translation id="5663459693447872156">പകുതിവീതിയിലേക്ക് സ്വപ്രേരിതമായി സ്വിച്ചുചെയ്യുക</translation>
 <translation id="4593021220803146968">&amp;<ph name="URL"/> ലേക്ക് പോകുക</translation>
+<translation id="1128987120443782698">ഈ ഉപാധിയുടെ സംഭരണ ശേഷി <ph name="DEVICE_CAPACITY"/> ആണ്‌. ചുരുങ്ങിയത് 4GB ശേഷിയുള്ള ഒരു SD കാര്‍ഡോ USB മെമ്മറി സ്റ്റിക്കോ ദയവായി ബന്ധിപ്പിക്കുക.</translation>
 <translation id="869257642790614972">അവസാനം-അടച്ച ടാബ് വീണ്ടും തുറക്കുക</translation>
 <translation id="3978267865113951599">(ക്രാഷുചെയ്തു)</translation>
 <translation id="8412145213513410671">ക്രാഷുകള്‍ <ph name="CRASH_COUNT"/></translation>
@@ -2596,6 +2641,7 @@
 <translation id="2987775926667433828">ചൈനീസ് പരമ്പരാഗതം</translation>
 <translation id="6684737638449364721">എല്ലാ ബ്രൌസിംഗ് ഡാറ്റയും മായ്‌ക്കുക...</translation>
 <translation id="3954582159466790312">നിശ&amp;ബ്‌ദത മാറ്റുക</translation>
+<translation id="1110772031432362678">നെറ്റ്‌വര്‍ക്കുകളൊന്നും കണ്ടെത്തിയില്ല</translation>
 <translation id="3936390757709632190">&amp;ഓഡിയോ പുതിയ ടാബില്‍ തുറക്കുക</translation>
 <translation id="7297622089831776169">ഇന്‍‌പുട്ട് &amp;രീതികള്‍‌</translation>
 <translation id="5731698828607291678">ടാബുകള്‍ അല്ലെങ്കില്‍ വിന്‍ഡോകള്‍</translation>
@@ -2719,6 +2765,7 @@
 <translation id="6985345720668445131">ജാപ്പനീസ് ഇന്‍‌പുട്ട് ക്രമീകരണങ്ങള്‍‌</translation>
 <translation id="3258281577757096226">3 സെറ്റ് (അന്തിമം)</translation>
 <translation id="2359174522669474766">ഒരു ഫയല്‍ തിരഞ്ഞെടുത്തു, $1</translation>
+<translation id="6906268095242253962">തുടരാനായി ദയവായി ഇന്‍റര്‍നെറ്റുമായി ബന്ധിപ്പിക്കുക.</translation>
 <translation id="1908748899139377733">ഫ്രെയിം &amp;വിവരം കാണുക</translation>
 <translation id="803771048473350947">ഫയല്‍</translation>
 <translation id="6206311232642889873">ചിത്രം പകര്‍ത്തു&amp;ക</translation>
@@ -2801,6 +2848,7 @@
 <translation id="4381091992796011497">ഉപയോക്തൃ നാമം:</translation>
 <translation id="5830720307094128296">പേജ് ഇതായി &amp;സംരക്ഷിക്കുക</translation>
 <translation id="8114439576766120195">എല്ലാ വെബ്‌സൈറ്റുകളിലെയും നിങ്ങളുടെ ഡാറ്റ</translation>
+<translation id="4668954208278016290">മെഷീനിലേക്ക് ഇമേജ് വേര്‍തിരിച്ചെടുക്കുന്നതില്‍ പ്രശ്നമുണ്ടായി.</translation>
 <translation id="5822838715583768518">അപ്ലിക്കേഷന്‍ സമാരംഭിക്കുക</translation>
 <translation id="3942974664341190312">2 സെറ്റ്</translation>
 <translation id="8477241577829954800">അസാധുവാക്കി</translation>
@@ -2841,8 +2889,10 @@
 <translation id="3533943170037501541">നിങ്ങളുടെ ഹോം പേജിലേക്ക് സ്വാഗതം!</translation>
 <translation id="2333340435262918287">നിങ്ങളുടെ മാറ്റങ്ങള്‍ അടുത്ത തവണ <ph name="PRODUCT_NAME"/> പുനരാരംഭിക്കുമ്പോള്‍ പ്രാബല്യത്തില്‍ വരും.</translation>
 <translation id="5906065664303289925">ഹാര്‍ഡ്‌വെയര്‍ വിലാസം:</translation>
+<translation id="3178000186192127858">(വായന മാത്രം)</translation>
 <translation id="2187895286714876935">സെര്‍വര്‍ സാക്‍ഷ്യപത്ര ഇറക്കുമതി പിശക്</translation>
 <translation id="5460896875189097758">പ്രാദേശികമായി സംഭരിച്ച ഡാറ്റ</translation>
+<translation id="4618990963915449444"><ph name="DEVICE_NAME"/>-ലെ എല്ലാ ഫയലുകളും മായ്ക്കപ്പെടും.</translation>
 <translation id="614998064310228828">ഉപാധി മോഡല്‍:</translation>
 <translation id="1581962803218266616">ഫൈന്‍ഡറില്‍ കാണിക്കുക</translation>
 <translation id="6096326118418049043">X.500 നാമം</translation>
@@ -2959,6 +3009,7 @@
 <translation id="4032664149172368180">ജാപ്പനീസ് ഇന്‍‌പുട്ട് രീതി (US Dvorak കീബോര്‍‌ഡിന്)</translation>
 <translation id="3748706263662799310">ഒരു ബഗ് റിപ്പോര്‍ട്ടുചെയ്യുക</translation>
 <translation id="7167486101654761064">&amp;എപ്പോഴും ഈ തരത്തിലുള്ള ഫയലുകള്‍ തുറക്കുക</translation>
+<translation id="4283623729247862189">ഒപ്റ്റിക്കല്‍ ഉപാധി</translation>
 <translation id="5826507051599432481">പൊതുവായ പേര് (CN)</translation>
 <translation id="8914326144705007149">വളരെ വലുത്</translation>
 <translation id="4215444178533108414">ഇനങ്ങള്‍‌ നീക്കംചെയ്തു</translation>
@@ -2985,6 +3036,7 @@
 <translation id="4394049700291259645">അപ്രാപ്‌തമാക്കുക</translation>
 <translation id="969892804517981540">ഔദ്യോഗിക ബില്‍ഡ്</translation>
 <translation id="445923051607553918">Wi-Fi നെറ്റ്‌വര്‍ക്കില്‍ അംഗമാകുക</translation>
+<translation id="100242374795662595">അജ്ഞാതമായ ഉപാധി</translation>
 <translation id="9087725134750123268">കുക്കികളും മറ്റ് സൈറ്റ് ഡാറ്റയും ഇല്ലാതാക്കുക</translation>
 <translation id="5050255233730056751">ടൈപ്പുചെയ്ത URL കള്‍</translation>
 <translation id="3349155901412833452">ഒരു കാന്‍‌ഡിഡേറ്റ് പട്ടിക പേജുചെയ്യുന്നതിന് , ഉം . ഉം ഉപയോഗിക്കുക</translation>

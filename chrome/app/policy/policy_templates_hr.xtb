@@ -1,15 +1,309 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hr">
+<translation id="1503959756075098984">ID-jevi proširenja i URL-ovi ažuriranja koja će biti instalirana u pozadini</translation>
+<translation id="2463365186486772703">Oznaka zemlje/jezika aplikacije</translation>
+<translation id="1397855852561539316">Predloženi URL zadanog davatelja usluge pretraživanja</translation>
+<translation id="7040229947030068419">Primjer vrijednosti:</translation>
+<translation id="6106630674659980926">Omogući upravitelja zaporki</translation>
+<translation id="7337927025691881244">Omogućuje određivanje proširenja koja korisnici NE mogu instalirati. Proširenja koja su već instalirana bit će stavljena na crnu listu. Vrijednost crne liste * znači da su sva proširenja na crnom popisu, osim ako su izričito navedena na bijeloj listi.</translation>
+<translation id="7755528767666760533">Određuje URL tražilice koja se upotrebljava za pružanje instant rezultata. URL treba sadržavati niz <ph name="SEARCH_TERM_MARKER"/>, koji će u trenutku upita biti zamijenjen tekstom koji je korisnik do tada unio. To je opcionalno.</translation>
+<translation id="7614663184588396421">Popis onemogućenih shema protokola</translation>
+<translation id="2309390639296060546">Zadana postavka zemljopisnog položaja</translation>
+<translation id="4680961954980851756">Omogući Automatsko popunjavanje</translation>
+<translation id="5183383917553127163">Omogućuje određivanje proširenja koja ne podliježu crnoj listi.
+
+          Vrijednost crne liste * znači da su sva proširenja na crnoj listi i da korisnici mogu instalirati samo proširenja koja su na bijeloj listi.
+
+          Prema zadanim postavkama sva su proširenja na bijeloj listi, no ako su sva priširenja prema pravilu na crnoj listi, bijela lista može se upotrebljavati za poništavanje tog pravila.</translation>
+<translation id="3185009703220253572">od verzije <ph name="SINCE_VERSION"/></translation>
+<translation id="5469825884154817306">Blokiraj slike na ovim web-lokacijama</translation>
+<translation id="1438955478865681012">Konfigurira pravila koja se odnose na proširenja. Korisniku nije dopušteno instaliranje proširenja na crnoj listi, osim ako su na bijeloj listi. Također možete forsirati <ph name="PRODUCT_NAME"/> na automatsko instaliranje proširenja tako da ih navedete u značajci <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. Crna lista ima prednost u odnosu na popis forsiranih proširenja.</translation>
+<translation id="4070280487546651935">Određuje ključnu riječ, koja je prečac upotrijebljen u višenamjenskom okviru za pokretanje pretraživanja za ovog davatelja usluga. Opcionalno.</translation>
+<translation id="1096105751829466145">Zadani davatelj usluga pretraživanja</translation>
+<translation id="7567380065339179813">Omogući dodatke na ovim web-lokacijama</translation>
+<translation id="5290940294294002042">Odredite popis dodataka koje korisnik može omogućiti ili onemogućiti</translation>
+<translation id="1427655258943162134">Adresa ili URL proxy poslužitelja</translation>
+<translation id="1827523283178827583">Upotrijebi fiksne proxy poslužitelje</translation>
+<translation id="3021409116652377124">Onemogući alat za traženje dodataka</translation>
+<translation id="4980635395568992380">Vrste podataka:</translation>
+<translation id="3096595567015595053">Popis omogućenih dodataka</translation>
+<translation id="7998998292074133333">Omogućite zaključavanje kad se ChromeOS prijeđe u stanje mirovanja ili prekine s radom.
+
+      Ako omogućite ovu postavku, korisnici će morati unositi zaporku da bi pokrenuli ChromeOS uređaje iz stanja mirovanja.
+
+      Ako onemogućite ovu postavku, korisnici neće morati unositi zaporku da bi pokrenuli ChromeOS uređaje iz stanja mirovanja.
+
+      Ako omogućite ili onemogućite ovu postavku, korisnici je ne mogu promijeniti ni poništiti u proizvodu <ph name="PRODUCT_OS_NAME"/>.</translation>
+<translation id="5912364507361265851">Omogući korisnicima prikazivanje zaporki u Upravitelju zaporki</translation>
+<translation id="6999540307315670568">Omogućuje traku knjižnih oznaka na web-stranici nove kartice u proizvodu <ph name="PRODUCT_NAME"/>.
+
+      Ako omogućite ovu postavku, <ph name="PRODUCT_NAME"/> će prikazivati traku knjižnih oznaka na stranici &quot;Nova kartica&quot;.
+
+      Ako onemogućite ovu postavku, korisnici neće vidjeti traku knjižnih oznaka.
+
+      Ako omogućite ili onemogućite ovu postavku, korisnici je ne mogu promijeniti ni poništiti u proizvodu <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="8828766846428537606">Konfigurirajte zadanu početnu stranicu u proizvodu <ph name="PRODUCT_NAME"/> i spriječite korisnike da je promijene.
+
+      Korisničke postavke početne stranice bit će potpuno zaključane ako odaberete početnu stranicu kao web-stranicu nove kartice ili je postavite kao URL i navedete URL početne stranice.
+
+      Ako ne navedete URL početne stranice, korisnik će svejedno moći postaviti početnu stranicu na web-stranicu nove kartice tako da navede &quot;chrome://newtab&quot;.</translation>
+<translation id="1353966721814789986">Početne stranice</translation>
+<translation id="5564962323737505851">Konfigurira upravitelja zaporki. Ako je upravitelj zaporki omogućen, možete omogućiti ili onemogućiti korisničku opciju prikazivanja pohranjenih lozinki čitljivim tekstom.</translation>
+<translation id="4668325077104657568">Zadana postavka slika</translation>
+<translation id="6368403635025849609">Omogući JavaScript na ovim web-lokacijama</translation>
 <translation id="6074963268421707432">Nemoj dopustiti nijednoj web-lokaciji da prikazuje obavijesti radne površine</translation>
+<translation id="3758249152301468420">Onemogući Razvojne alate</translation>
+<translation id="8665076741187546529">Konfiguriraj popis forsirano instaliranih proširenja</translation>
+<translation id="6242542007132978836">Omogućuje određivanje je li web-lokacijama dopušteno automatsko pokretanje dodataka. Automatsko pokretanje dodataka može biti dopušteno za sve web-lokacije ili onemogućeno za sve web-lokacije.</translation>
+<translation id="5233161357000953961">Onemogućuje upotrebu SPDY protokola u proizvodu <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="4899708173828500852">Omogući Sigurno pregledavanje</translation>
+<translation id="3570008976476035109">Blokiraj dodatke na ovim web-lokacijama</translation>
+<translation id="2884728160143956392">Omogući kolačiće na ovim web-lokacijama samo tijekom sesija</translation>
+<translation id="3496296378755072552">Upravitelj zaporki</translation>
+<translation id="7118495359694701769">Određuje treba li generirani Kerberos SPN uključivati nestandardni port.
+
+          Ako omogućite ovu postavku, a unese se nestandardni port (tj. port koji nije 80 ili 443), bit će uključen u generirani Kerberos SPN.
+
+          Ako omogućite ovu postavku, generirani Kerberos SPN neće uključivati port ni u kojem slučaju.</translation>
+<translation id="9135033364005346124">Omogući <ph name="CLOUD_PRINT_NAME"/> proxy</translation>
+<translation id="4276147605137721961">Omogućuje ili onemogućuje uređivanje knjižnih oznaka u proizvodu <ph name="PRODUCT_NAME"/>.
+
+      Ako omogućite ovu postavku, knjižne oznake mogu se dodavati, uklanjati i mijenjati. To je zadana postavka
+
+      Ako onemogućite ovu postavku, knjižne oznake ne mogu se dodavati, uklanjati ni mijenjati. Postojeće knjižne oznake i dalje su dostupne.</translation>
+<translation id="6943577887654905793">Naziv Mac/Linux postavke:</translation>
+<translation id="8621457834803281393">Omogućuje postavljanje popisa url obrazaca koji određuju web-lokacije kojima nije dopušteno postavljanje kolačića.</translation>
+<translation id="254524874071906077">Postavi Chrome kao zadani preglednik</translation>
+<translation id="4377599627073874279">Dopusti svim web-lokacijama prikazivanje svih slika</translation>
+<translation id="3915395663995367577">URL prema proxy .pac datoteci</translation>
+<translation id="7191531985645073769">Onemogućuje sinkronizaciju podataka u proizvodu <ph name="PRODUCT_NAME"/> pomoću usluga sinkronizacije koje pruža Google i sprječava korisnike da mijenjaju ovu postavku.
+
+      Ako omogućite ovu postavku, korisnici je ne mogu promijeniti ni poništiti u proizvodu <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="1022361784792428773">ID-jevi proširenja u čijem bi instaliranju korisnik trebao biti spriječen (ili * za sve)</translation>
+<translation id="5026128159812446244">Omogućuje pristup lokalnim datotekama na računalu tako da dopušta proizvodu <ph name="PRODUCT_NAME"/> prikazivanje dijaloga odabira datoteka.
+
+      Ako omogućite ovu postavku, korisnici mogu otvarati dijaloge odabira datoteka kao i obično.
+
+      Ako onemogućite ovu postavku, prilikom svake korisničke radnje koja bi otvorila dijalog odabira datoteka (poput uvoza knjižnih oznaka, prijenosa datoteka, spremanja veza itd.) prikazuje se poruka umjesto dijaloga, a za korisnika se pretpostavlja da je kliknuo &quot;Odustani&quot; u dijalogu odabira datoteka.
+
+      Ako ova postavka nije postavljena, korisnici mogu otvarati dijaloge odabira datoteka kao i obično.</translation>
+<translation id="7683777542468165012">Dinamičko osvježavanje pravila</translation>
+<translation id="6228640147633317529">Omogućuje postavljanje popisa url obrazaca koji određuju web-lokacije kojima je dopušteno prikazivanje slika.</translation>
+<translation id="2711603272213076156">Omogućuje pozivanje dijaloga za odabir datoteka.</translation>
 <translation id="1426410128494586442">Da</translation>
-<translation id="6786747875388722282">Nastavci</translation>
+<translation id="3381968327636295719">Upotrijebi preglednik hosta prema zadanim postavkama</translation>
+<translation id="6368011194414932347">Konfiguriraj URL početne stranice</translation>
+<translation id="1966609843734913335">Omogućuje anoniman rad u proizvodu <ph name="PRODUCT_NAME"/>.
+
+      Ako je ova postavka omogućena ili nije konfigurirana, korisnici mogu otvoriti web-stranice u anonimnom načinu rada.
+
+      Ako je ova postavka onemogućena, korisnici ne mogu otvarati web-stranice u anonimnom načinu rada.</translation>
+<translation id="3423023819976532001">Omogućuje spremanje zaporki i upotrebu spremljenih zaporki u proizvodu <ph name="PRODUCT_NAME"/>.
+
+          Ako omogućite ovu postavku, korisnici mogu postaviti <ph name="PRODUCT_NAME"/> tako da pamti zaporke i da ih automatski pruža prilikom sljedećeg posjeta web-lokacija.
+
+          Ako onemogućite ovu postavku, korisnici ne mogu spremati zaporke ni upotrebljavati već spremljene zaporke.
+
+          Ako omogućite ili onemogućite ovu postavku, korisnici ne mogu mijenjati ni poništavati ovu postavku u proizvodu <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="2877225735001246144">Onemogući CNAME pretraživanje prilikom provjere Kerberos autentičnosti</translation>
+<translation id="6200084307932433394">Omogućuje integriranu uslugu Google Prevoditelj u proizvodu <ph name="PRODUCT_NAME"/>.
+
+      Ako omogućite ovu postavku, <ph name="PRODUCT_NAME"/> će prikazivati ponudu integrirane alatne trake za prijevod stranice korisniku, kada je to prikladno.
+
+      Ako onemogućite ovu postavku, korisnicima se neće prikazivati traka prijevoda.
+
+      Ako omogućite ili onemogućite ovu postavku, korisnici je ne mogu mijenjati ni poništavati u proizvodu <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="5059221739913673172">Konfigurira direktorij koji će <ph name="PRODUCT_NAME"/> upotrebljavati za pohranu korisničkih podataka.
+
+      Ako postavite ovo pravilo, <ph name="PRODUCT_NAME"/> upotrebljavat će postavljeni direktorij bez obzira na to je li korisnik naveo oznaku &quot;--user-data-dir&quot;.</translation>
+<translation id="3528000905991875314">Omogući alternativne stranice pogrešaka</translation>
+<translation id="4084327080063933392">Određuje naziv zadanog davatelja usluga pretraživanja. Ako se ostavi prazno, bit će upotrijebljen naziv hosta određen URL-om pretraživanja.</translation>
+<translation id="6114416803310251055">neodobreno</translation>
+<translation id="8493645415242333585">Onemogući pohranjivanje povijesti preglednika</translation>
+<translation id="5776485039795852974">Pitaj kad god web-lokacija želi prikazati obavijesti radne površine</translation>
+<translation id="6786747875388722282">Proširenja</translation>
+<translation id="6417878201680958437">Omogućuje određivanje proxy poslužitelja koji upotrebljava <ph name="PRODUCT_NAME"/> i sprječava korisnike u promjeni postavki proxy poslužitelja.
+
+          Ako odlučite da nikad ne upotrijebite proxy poslužitelj i uvijek se izravno povezujete, sve se druge opcije zanemaruju.
+
+          Ako odlučite da upotrijebite proxy postavke sustava ili odaberete automatsko detektiranje proxy poslužitelja, sve se druge opcije zanemaruju.
+
+          Ako odaberete proxy način fiksnog poslužitelja, možete odrediti dodatne opcije pod &quot;Adresa ili URL proxy poslužitelja&quot; i &quot;Popis pravila proxy zaobilaženja odvojenih zarezima&quot;.
+
+          Ako odaberete upotrebu .pac proxy skripte, morate navesti URL prema skripti pod &quot;URL prema proxy .pac datoteci&quot;.
+
+          Za detaljne primjere posjetite:
+          <ph name="PROXY_HELP_URL"/>
+
+          Ako omogućite ovu postavku, <ph name="PRODUCT_NAME"/> zanemaruje sve opcije povezane s proxy poslužiteljem unesene iz naredbenog retka.</translation>
+<translation id="6899705656741990703">Automatski detektiraj proxy postavke</translation>
+<translation id="4101772068965291327">Otvori početnu stranicu</translation>
+<translation id="8992176907758534924">Ne dopuštaj web-lokacijama prikazivanje slika</translation>
+<translation id="8704831857353097849">Popis onemogućenih dodataka</translation>
+<translation id="467449052039111439">Otvori popis URL-ova</translation>
+<translation id="5883015257301027298">Zadana postavka kolačića</translation>
+<translation id="1222189289457045659">Omogućuje upotrebu zadanog davatelja usluga pretraživanja. Ako omogućite ovu postavku, zadano pretraživanje obavlja se kad korisnik u višenamjenski okvir upiše tekst koji nije URL. Zadanog davatelja usluga pretraživanja za upotrebu možete odrediti postavljanjem ostalih zadanih pravila pretraživanja. Ako se ova pravila ostave prazna, korisnik može odabrati zadanog davatelja. Ako onemogućite ovu postavku, neće biti obavljeno pretraživanje kad korisnik u višenamjenski okvir unese tekst koji nije URL. Ako omogućite ili onemogućite ovu postavku, korisnici ne mogu promijeniti ni poništiti ovu postavku u proizvodu <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="8955719471735800169">Natrag na vrh</translation>
+<translation id="6845930317830839162">Omogućuje određivanje je li web-lokacijama dopušteno izvođenje JavaScripta. Izvođenje JavaScripta može biti dopušteno za sve web-lokacije ili zabranjeno za sve web-lokacije.</translation>
 <translation id="4250680216510889253">Ne</translation>
+<translation id="1522425503138261032">Dopusti web-lokacijama praćenje fizičke lokacije korisnika</translation>
+<translation id="6569553007023490040">Konfigurira URL zadane početne stranice u proizvodu <ph name="PRODUCT_NAME"/> i sprječava korisnike da ga promijene. Vrsta početne stranice može biti postavljena na URL koji ovdje navedete ili na stranicu Nova kartica. Ako odaberete stranicu Nova kartica, ovo se pravilo zanemaruje. Ako omogućite ovu postavku, korisnici ne mogu promijeniti URL svoje početne stranice u proizvodu <ph name="PRODUCT_NAME"/>, no svejedno mogu odabrati stranicu Nova kartica kao svoju početnu stranicu.</translation>
+<translation id="4423597592074154136">Ručno određivanje proxy postavki</translation>
+<translation id="3137734558440858947">Omogućuje određivanje je li web-lokacijama dopušteno prikazivanje slika. Prikazivanje slika može biti dopušteno za sve web-lokacije ili zabranjeno za sve web-lokacije.</translation>
+<translation id="9035964157729712237">ID-jevi proširenja za izuzimanje s crne liste</translation>
+<translation id="3523486089716697173">Omogućuje postavljanje popisa obrazaca koji određuju web-lokacije kojima nije dopušteno prikazivanje slika.</translation>
+<translation id="751265277672445578">Konfigurira oznaku zemlje/jezika u proizvodu <ph name="PRODUCT_NAME"/> i sprječava korisnike da promijene oznaku zemlje/jezika. Ako omogućute ovu postavku, <ph name="PRODUCT_NAME"/> upotrebljava navedenu oznaku zemlje/jezika. Ako konfigurirana oznaka zemlje/jezika nije podržana, upotrebljava se &quot;en-US&quot;. Ako je ova postavka onemogućena ili nije konfigurirana, <ph name="PRODUCT_NAME"/> upotrebljava korisničku preferiranu oznaku zemlje/jezika (ako je konfigurirana), oznaku zemlje/jezika sustava ili standardnu oznaku zemlje/jezika &quot;en-US&quot;.</translation>
+<translation id="6022948604095165524">Radnja prilikom pokretanja</translation>
+<translation id="3704185423155638353">Omogućuje postavljanje popisa url obrazaca koji određuju web-lokacije kojima nije dopušteno izvođenje JavaScripta.</translation>
+<translation id="7628741187268592472">Određuje koju GSSAPI biblioteku treba upotrijebiti za HTTP autentifikaciju. Možete postaviti samo naziv biblioteke ili cijelu putanju. Ako postavka nije navedena, <ph name="PRODUCT_NAME"/> upotrijebit će zadani naziv biblioteke.</translation>
+<translation id="605147781209875705">Ovo je pravilo poništeno, umjesto njega upotrijebite ProxyMode. Omogućuje određivanje proxy poslužitelja koji <ph name="PRODUCT_NAME"/> upotrebljava i sprječava korisnike da promijene proxy postavke. Ako odaberete da se proxy poslužitelj nikad ne upotrebljava i da se veza uvijek uspostavlja izravno, sve se ostale opcije zanemaruju. Ako odaberete upotrebu proxy postavki sustava ili automatsku detekciju proxy poslužitelja, sve se ostale opcije zanemaruju. Ako odaberete ručne proxy postavke, možete odrediti dodatne opcije pod &quot;Adresa ili URL proxy poslužitelja&quot;, &quot;URL prema proxy .pac datoteci&quot; i &quot;Popis pravila proxy zaobilaženja odvojenih zarezima&quot;. Za detaljne primjere posjetite <ph name="PROXY_HELP_URL"/>. Ako omogućite ovu postavku, <ph name="PRODUCT_NAME"/> zanemaruje sve opcije povezane s proxy poslužiteljem navedene iz naredbenog retka.</translation>
+<translation id="6516561898504323308">Blokira kolačiće trećih strana. Omogućavanje ove postavke sprječava postavljanje kolačića od strane elemenata web-stranica koji nisu iz domene koja je u adresnoj traci preglednika. Onemogućavanje ove postavke dopušta postavljanje kolačića elementima web-stranica koji nisu iz domene koja je u adresnoj traci preglednika i sprječava korisnike da promijene ovu postavku.</translation>
+<translation id="3864818549971490907">Zadana postavka dodataka</translation>
+<translation id="4320376026953250541">Microsoft Windows XP SP2 ili noviji</translation>
+<translation id="6886010724297701888"><ph name="PRODUCT_NAME"/> će zaobići svaki proxy za popis ovdje navedenih hostova. Ovo pravilo stupa na snagu samo ako ste odabrali ručne proxy postavke pod &quot;Odaberite način određivanja postavki proxy poslužitelja&quot;. Za detaljnije primjere posjetite <ph name="PROXY_HELP_URL"/></translation>
+<translation id="2959898425599642200">Pravila proxy zaobilaženja</translation>
+<translation id="4752274243117690301">Ako podesite ovu postavku na True, automatsko pretraživanje i instalacija nedostajućih dodataka bit će onemogućeni u proizvodu <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="3292147213643666827">      Omogućuje da se <ph name="PRODUCT_NAME"/> ponaša kao proxy između oblaka <ph name="CLOUD_PRINT_NAME"/> i naslijeđenih pisača povezanih s računalom. Ako je ova postaka onemogućena ili nije konfigurirana, korisnici mogu omogućiti proxy ispisivanja na oblaku autentifikacijom pomoću svojih Google Računa. Ako je ova postavka onemogućena, korisnici ne mogu omogućiti proxy, a računalu neće biti dopušteno dijeljenje pisača s oblakom <ph name="CLOUD_PRINT_NAME"/>.</translation>
+<translation id="617204585863800180">Omogućuje predviđanje mreže u proizvodu <ph name="PRODUCT_NAME"/> i sprječava korisnike da promijene ovu postavku. Ako omogućite ili onemogućite ovu postavku, korisnici je ne mogu promijeniti ni poništiti u proizvodu <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="6641981670621198190">Onemogući podršku za API-je 3D grafike</translation>
+<translation id="2741921267428646309">Ovo je popis pravila koja <ph name="PRODUCT_NAME"/> poštuje. Ove postavke ne morate mijenjati ručno! Možete preuzeti predloške jednostavne za upotrebu s adrese <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>. Popis podržanih pravila isti je za Chromium i Google Chrome, no njihova lokacija u Windows registru se razlikuje. Započinje s <ph name="CHROMIUM_KEY"/> za Chromium pravila i s <ph name="GOOGLE_CHROME_KEY"/> za Google Chrome pravila.</translation>
+<translation id="7003746348783715221">Postavke za <ph name="PRODUCT_NAME"/></translation>
+<translation id="9096086085182305205">Bijela lista poslužitelja za autentifikaciju</translation>
+<translation id="7063895219334505671">Dopusti skočne prozore na ovim web-lokacijama</translation>
+<translation id="2824715612115726353">Omogući anoniman način</translation>
+<translation id="6157537876488211233">Popis pravila proxy zaobilaženja odvojenih zarezima</translation>
 <translation id="8870318296973696995">Početna stranica</translation>
+<translation id="4505337077089958219">Učestalost osvježavanja pravila</translation>
+<translation id="996560596616541671">Poslužitelji koje <ph name="PRODUCT_NAME"/> može ovlastiti.</translation>
 <translation id="3866249974567520381">Opis</translation>
+<translation id="2236488539271255289">Ne dopusti nijednoj web-lokaciji postavljanje lokalnih podataka</translation>
+<translation id="4467952432486360968">Blokiraj kolačiće trećih strana</translation>
+<translation id="1722705282440676367">Omogućuje određivanje proxy poslužitelja koji <ph name="PRODUCT_NAME"/> upotrebljava i sprječava korisnike da promijene proxy postavke. Ako odaberete da se proxy poslužitelj nikad ne upotrebljava , nego da se veza uvijek uspostavlja izravno, sve se ostale opcije zanemaruju. Ako odaberete automatsko detektiranje proxy poslužitelja, sve se ostale opcije zanemaruju. Za detaljne primjere posjetite <ph name="PROXY_HELP_URL"/>. Ako omogućite ovu postavku, <ph name="PRODUCT_NAME"/> zanemaruje sve opcije koje se odnose na proxy navedene iz naredbenog retka.</translation>
+<translation id="8470053727907466464">Određuje kodiranja znakova koje podržava davatelj usluga pretraživanja. Kodiranja su nazivi kodnih stranica poput UTF-8, GB2312 i ISO-8859-1. Stranice su pokušane navedenim redoslijedom. Zadano je UTF-8.</translation>
+<translation id="2537063115727103969">Ovo pravilo zaobilazi opciju postavki sadržaja &quot;Izbriši kolačiće i druge podatke o web-lokacijama kad zatvorim preglednik&quot;. Kad je postavljeno na true, <ph name="PRODUCT_NAME"/> izbrisat će sve lokalno pohranjene podatke iz preglednika prilikom njegovog isključivanja.</translation>
+<translation id="5365946944967967336">Prikaži gumb Početna na alatnoj traci</translation>
+<translation id="3709266154059827597">Konfiguriraj crnu listu instalacije proširenja</translation>
+<translation id="8451988835943702790">Upotrijebi web-stranicu nove kartice kao početnu stranicu</translation>
+<translation id="823695959636476037">Određuje može li korisnik prikazati zaporke čitljivim tekstom u upravitelju zaporki. Ako onemogućite ovu postavku, upravitelj zaporki ne dopušta prikazivanje pohranjenih zaporki u čitljivom tekstu u prozoru upravitelja zaporki. Ako omogućite ili ne konfigurirate ovu postavku, korisnici mogu pogledati svoje zaporke u čitljivom tekstu u upravitelju zaporki.</translation>
+<translation id="8731693562790917685">Postavke sadržaja omogućuju određivanje načina postupanja s određenim vrstama sadržaja (kao što su Kolačići, Slike i JavaScript).</translation>
+<translation id="467236746355332046">Podržane značajke:</translation>
+<translation id="7632724434767231364">Naziv GSSAPI biblioteke</translation>
+<translation id="4985088509112317247">Omogućuje određivanje je li web-lokacijama dopušteno postavljanje lokalnih podataka. Postavljanje lokalnih podataka može biti dopušteno za sve web-lokacije ili zabranjeno za sve web-lokacije.</translation>
+<translation id="6244210204546589761">URL-ovi koji se otvaraju prilikom pokretanja</translation>
+<translation id="7468416082528382842">Lokacija Windows registra:</translation>
+<translation id="6119099935390640260">Ovdje možete navesti URL prema proxy .pac datoteci. Ovo pravilo stupa na snagu samo ako ste odabrali ručne proxy postavke pod &quot;Odaberite način određivanja postavki proxy poslužitelja&quot;. Za detaljne primjere posjetite <ph name="PROXY_HELP_URL"/></translation>
+<translation id="1808715480127969042">Blokiraj kolačiće na ovim web-lokacijama</translation>
+<translation id="2745445908503591390">Izbriši podatke o web-lokacijama prilikom isključivanja preglednika</translation>
+<translation id="8665913667133665583">Određuje koji poslužitelji trebaju biti na bijeloj listi za integriranu autentifikaciju. Integrirana autentifikacija omogućena je samo kad <ph name="PRODUCT_NAME"/> primi upit autentifikacije od proxy poslužitelja ili s poslužitelja koji je na ovoj dopuštenoj listi. Nazive više poslužitelja odvojite zarezima. Zamjenski znakovi (*) su dopušteni.</translation>
+<translation id="538108065117008131">Dopusti da <ph name="PRODUCT_FRAME_NAME"/> rukuje sljedećim vrstama sadržaja.</translation>
+<translation id="2312134445771258233">Omogućuje konfiguriranje stranica koje se učitavaju prilikom pokretanja. Sadržaj  popisa &quot;URL-ovi za otvaranje prilikom pokretanja&quot; se zanemaruje, osim ako odaberete &quot;Otvori popis URL-ova&quot; pod &quot;Radnje prilikom pokretanja&quot;.</translation>
+<translation id="7931766636395791713">Omogućuje postavljanje popisa url obrazaca koji određuju web-lokacije kojima je dopušteno izvođenje JavaScripta.</translation>
+<translation id="1019101089073227242">Postavi imenik korisničkih podataka</translation>
+<translation id="2030905906517501646">Zadani davatelj usluga pretraživanja</translation>
+<translation id="4290189791053175631">Ovdje možete navesti URL proxy poslužitelja. Ovo pravilo stupa na snagu samo ako ste odabrali ručne proxy postavke pod &quot;Odaberite način određivanja postavki proxy poslužitelja&quot;. Za više opcija i detaljne primjere posjetite <ph name="PROXY_HELP_URL"/></translation>
+<translation id="350797926066071931">Omogući Prevoditelj</translation>
+<translation id="2267204956165795704">Određuje URL tražilice koja se upotrebljava prilikom obavljanja zadanog pretraživanja. URL treba sadržavati niz <ph name="SEARCH_TERM_MARKER"/>, koji će u trenutku upita biti zamijenjen pojmovima koje korisnik traži.</translation>
+<translation id="4518251772179446575">Pitaj kad web-lokacija želi pratiti fizičku lokaciju korisnika</translation>
 <translation id="402759845255257575">Nemoj dopustiti nijednoj web-lokaciji da pokreće JavaScript</translation>
-<translation id="2805707493867224476">Dopusti svim web-lokacijama da prikazuju skočne prozore</translation>
+<translation id="706669471845501145">Dopusti web-lokaciji prikazivanje obavijesti radne površine</translation>
+<translation id="5475361623548884387">Omogući ispis</translation>
+<translation id="3653237928288822292">Ikona zadanog davatelja usluga pretraživanja</translation>
+<translation id="8496973106638946974">Omogućuje značajku Sigurno pregledavanje u proizvodu <ph name="PRODUCT_NAME"/> i sprječava korisnike da promijene ovu postavku. Ako omogućite ovu postavku, Sigurno pregledavanje uvijek je aktivno. Ako onemogućite ovu postavku, Sigurno pregledavanje nije nikad aktivno. Ako omogućite ili onemogućite ovu postavku, korisnici je ne mogu promijeniti ni poništiti u proizvodu <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="13356285923490863">Naziv pravila</translation>
+<translation id="557658534286111200">Omogućuje ili onemogućuje uređivanje knjižnih oznaka</translation>
+<translation id="3473585733246847076">Omogućuje postavljanje popisa url obrazaca koji određuju web-lokacije kojima je dopušteno postavljanje kolačića.</translation>
+<translation id="2493647325461842868">Omogućuje prijedloge pretraživanja u višenamjenskom okviru proizvoda <ph name="PRODUCT_NAME"/> i sprječava korisnike da promijene ovu postavku. Ako omogućite ovu postavku, upotrebljavaju se prijedlozi pretraživanja. Ako onemogućite ovu postavku, prijedlozi pretraživanja nikad se ne upotrebljavaju. Ako omogućite ili onemogućite ovu postavku, korisnici je ne mogu promijeniti u proizvodu <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="6775978436824155661">Omogućuje ispis u proizvodu <ph name="PRODUCT_NAME"/> i sprječava korisnike da promijene ovu postavku. Ako je ova postavka omogućena ili nije konfigurirana, korisnici mogu ispisivati. Ako je ova postavka onemogućena, korisnici ne mogu ispisivati iz proizvoda <ph name="PRODUCT_NAME"/>. Ispisivanje je onemogućenu u postavkama izbornika alata, JavaScript aplikacijama itd. I dalje je moguće ispisivati iz dodataka koji zaobilaze <ph name="PRODUCT_NAME"/> tijekom ispisa. Na primjer, neke Flash aplikacije imaju opciju ispisa u svojim kontekstualnim izbornicima, koja neće biti onemogućena.</translation>
+<translation id="6908640907898649429">Konfigurira zadanog davatelja usluge pretraživanja. Možete odrediti zadani davatelj usluge pretraživanja koji će korisnik upotrebljavati ili onemogućiti zadano pretraživanje.</translation>
+<translation id="681446116407619279">Podržane sheme autentifikacije</translation>
+<translation id="4027608872760987929">Omogući zadanog davatelja usluge pretraživanja</translation>
+<translation id="2223598546285729819">Zadana postavka obavijesti</translation>
+<translation id="1530812829012954197">Uvijek prikaži sljedeće URL obrasce u pregledniku hosta</translation>
+<translation id="6190022522129724693">Zadana postavka skočnih prozora</translation>
+<translation id="847472800012384958">Ne dopusti web-lokacijama prikazivanje skočnih prozora</translation>
+<translation id="4733471537137819387">Pravila koja se odnose na integriranu HTTP autentifikaciju.</translation>
+<translation id="4608714268466689965">Omogućuje određivanje je li web-lokacijama dopušteno prikazivanje obavijesti radne površine. Prikazivanje obavijesti radne površine može biti dopušteno prema zadanim postavkama, zabranjeno prema zadanim postavkama ili se korisniku može postaviti pitanje kad god web-lokacija želi prikazati obavijesti radne površine.</translation>
+<translation id="1334051495529796396">Određuje je li generirani Kerberos SPN zasnovan na kanoničkom nazivu DNS-a ili na izvornom unesenom nazivu. Ako omogućite ovu postavku, CNAME pretraživanje bit će preskočeno i bit će upotrijebljen naziv poslužitelja kako je unesen. Ako onemogućite ovu postavku, kanonički naziv poslužitelja bit će određen putem CNAME pretraživanja.</translation>
+<translation id="166427968280387991">Proxy poslužitelj</translation>
+<translation id="2805707493867224476">Dopusti svim web-lokacijama prikazivanje skočnih prozora</translation>
+<translation id="1727394138581151779">Blokiraj sve dodatke</translation>
+<translation id="7079519252486108041">Blokiraj skočne prozore na ovim web-lokacijama</translation>
+<translation id="7433714841194914373">Omogući Instant</translation>
+<translation id="4983201894483989687">Dopusti pokretanje dodataka koji su zastarjeli</translation>
+<translation id="7492608050778218564">Onemogući podršku za API-je 3D grafike. Omogućavanje ove postavke sprječava web-stranice da pristupe grafičkom procesoru (GPU). Točnije, web-stranice ne mogu pristupiti WebGL API-ju, a dodaci ne mogu upotrebljavati Pepper 3D API. Onemogućavanje ove postavke potencijalno dopušta web-stranicama upotrebu WebGL API-ja, a dodacima upotrebu Pepper 3D API-ja. Zadane postavke preglednika mogu svejedno zahtijevati prosljeđivanje argumenata naredbenog retka radi upotrebe ovih API-ja.</translation>
+<translation id="7202926611616207807">Dopusti svim web-lokacijama postavljanje lokalnih podataka.</translation>
+<translation id="678228246386317063">Omogućuje postavljanje popisa url obrazaca koji određuju web-lokacije kojima je dopušteno postavljanje kolačića samo za sesiju.</translation>
+<translation id="5774856474228476867">URL zadanog davatelja usluge pretraživanja</translation>
+<translation id="4650759511838826572">Onemogući sheme URL protokola</translation>
+<translation id="6524941558928880715">Ponovo otvori posljednje otvorene URL-ove</translation>
+<translation id="3167247709504138314">Određuje URL tražilice koja se upotrebljava za pružanje rezultata pretraživanja. URL treba sadržavati niz <ph name="SEARCH_TERM_MARKER"/>, koji će u trenutku upita biti zamijenjen tekstom koji je korisnik do tada unio. To je opcionalno.</translation>
+<translation id="602728333950205286">Instant URL zadanog davatelja usluge pretraživanja</translation>
+<translation id="1675002386741412210">Podržano na:</translation>
+<translation id="5417368737700340683">Omogućuje značajku Instant proizvoda <ph name="PRODUCT_NAME"/> i sprječava korisnike da promijene ovu postavku. Ako omogućite ovu postavku, <ph name="PRODUCT_NAME"/> Instant je omogućeno. Ako onemogućite ovu postavku, <ph name="PRODUCT_NAME"/> Instant je onemogućeno. Ako omogućite ili onemogućite ovu postavku, korisnici je ne mogu promijeniti ni poništiti.</translation>
+<translation id="3264793472749429012">Kodiranja zadanog davatelja usluge pretraživanja</translation>
+<translation id="2371550098059356219">Određuje popis dodataka koji su omogućeni u proizvodu <ph name="PRODUCT_NAME"/> i sprječava korisnike da promijene ovu postavku. Zamjenski znakovi &quot;*&quot; i &quot;?&quot; mogu se upotrebljavati za podudaranje nizova proizvoljnih znakova. &quot;*&quot; se podudara s proizvoljnim brojem znakova, dok &quot;?&quot; određuje opcionalni pojedinačni znak, tj. podudara se s nulom ili s jednim znakom. Znak za izlaz je &quot;\&quot;, stoga za podudaranje stvarnih &quot;*&quot;, &quot;?&quot; ili &quot;\&quot; znakova možete ispred njih staviti &quot;\&quot;. Navedeni popis dodataka uvijek se upotrebljava u proizvodu <ph name="PRODUCT_NAME"/> ako su instalirani. Dodaci se označavaju kao omogućeni u &quot;about:plugins&quot; i korisnici ih ne mogu onemogućiti. Napominjemo da ovo pravilo poništava DisabledPlugins i DisabledPluginsExceptions.</translation>
+<translation id="308285197738484705">Omogući predviđanje mreže.</translation>
 <translation id="5765780083710877561">Opis:</translation>
+<translation id="3319991432361168617">Konfigurira imenik koji će <ph name="PRODUCT_NAME"/> upotrijebiti za preuzimanje datoteka. Ako postavite ovo pravilo, <ph name="PRODUCT_NAME"/> upotrijebit će navedeni imenik bez obzira na to je li korisnik odredio imenik ili je omogućio oznaku za postavljanje upita o lokaciji za svako preuzimanje.</translation>
+<translation id="8284208534498422489">Omogućuje postavljanje popisa url obrazaca koji određuju web-lokacije kojima je dopušteno otvaranje skočnih prozora.</translation>
+<translation id="8544375438507658205">Zadani alat za prikazivanje HTML-a za <ph name="PRODUCT_FRAME_NAME"/></translation>
+<translation id="7424751532654212117">Popis iznimki popisa onemogućenih dodataka</translation>
+<translation id="6233173491898450179">Postavi imenik za preuzimanje</translation>
+<translation id="2299220924812062390">Odredi popis omogućenih dodataka</translation>
+<translation id="8754704265300028644">Onemogućuje spremanje povijesti preglednika u proizvodu <ph name="PRODUCT_NAME"/> i sprječava korisnika da promijeni ovu postavku. Ako je ova postavka omogućena, povijest pregledavanja se ne sprema. Ako je ova postavka onemogućena ili nije konfigurirana, Povijest pregledavanja se sprema.</translation>
+<translation id="1897365952389968758">Dopusti svim web-lokacijama izvođenje JavaScripta</translation>
+<translation id="6931242315485576290">Onemogući sinkronizaciju podataka s Googleom</translation>
 <translation id="7006788746334555276">Postavke sadržaja</translation>
+<translation id="3676473196461789250">Omogućuje postavljanje popisa url obrazaca koji određuju web-lokacije kojima je dopušteno pokretanje dodataka.</translation>
+<translation id="5671281984733584565">Prikazuje gumb Početna na alatnoj traci preglednika <ph name="PRODUCT_NAME"/>. Ako omogućite ovu postavku, gumb Početna uvijek se prikazuje. Ako onemogućite ovu postavku, gumb Početna nikad se ne prikazuje. Ako omogućite ili onemogućite ovu postavku, korisnici je ne mogu promijeniti ni poništiti u pregledniku <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="5142301680741828703">Uvijek prikaži sljedeće URL obrasce u okviru <ph name="PRODUCT_FRAME_NAME"/></translation>
+<translation id="805526450642067726">Omogućuje postavljanje popisa url obrazaca koji određuju web-lokacije kojima nije dopušteno pokretanje dodataka.</translation>
+<translation id="4625915093043961294">Konfiguriraj bijelu listu instalacije proširenja</translation>
+<translation id="3101501961102569744">Odaberi način određivanja postavki proxy poslužitelja</translation>
+<translation id="7774768074957326919">Upotrijebi proxy postavke sustava</translation>
 <translation id="3891357445869647828">Omogući JavaScript</translation>
+<translation id="868187325500643455">Dopusti svim web-lokacijama pokretanje dodataka</translation>
+<translation id="5226033722357981948">Odredi treba li onemogućiti alat za traženje dodataka</translation>
+<translation id="9068358498333390522">Omogućuje određivanje je li web-lokacijama dopušteno prikazivanje skočnih prozora. Prikazivanje skočnih prozora može biti dopušteno za sve web-lokacije ili zabranjeno za sve web-lokacije.</translation>
+<translation id="7194407337890404814">Naziv zadanog davatelja usluge pretraživanja</translation>
+<translation id="5535973522252703021">Bijela lista Kerberos poslužitelja za ovlašćivanje</translation>
+<translation id="4554678280250165996">Određuje koje sheme HTTP autentifikacije <ph name="PRODUCT_NAME"/> podržava. Moguće vrijednosti su &quot;basic&quot;, &quot;digest&quot;, &quot;ntlm&quot; i &quot;negotiate&quot;. Razdvojite vrijednosti zarezima.</translation>
+<translation id="5034323863800401760">Onemogućuje Razvojne alate i JavaScript konzolu. Ako omogućite ovu postavku, Razvojnim alatima ne može se pristupiti, a elementi web-lokacije više se ne mogu provjeravati. Bit će onemogućeni svi tipkovnički prečaci te sve opcije izbornika ili kontekstualnog izbornika za otvaranje Razvojnih alata ili JavaScript konzole.</translation>
+<translation id="6013842521938070987">Onemogućuje sheme protokola na popisu u proizvodu <ph name="PRODUCT_NAME"/>. URL-ovi koji upotrebljavaju shemu s ovog popisa neće se učitati i prema njima se ne može navigirati.</translation>
+<translation id="4056910949759281379">Onemogući SPDY protokol</translation>
+<translation id="3808945828600697669">Odredi popis onemogućenih dodataka</translation>
+<translation id="2187975305444384964">Omogućuje određivanje je li web-lokacijama dopušteno praćenje fizičke lokacije korisnika. Praćenje fizičke lokacije korisnika može biti dopušteno prema zadanim postavkama, zabranjeno prema zadanim postavkama ili se korisnika može pitati kad god web-lokacija zatraži fizičku lokaciju.</translation>
+<translation id="8397112610813153899">Prilagodite popis URL obrazaca koje <ph name="PRODUCT_FRAME_NAME"/> uvijek treba prikazati. Za primjer obrazaca pogledajte http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
+<translation id="2098658257603918882">Omogući izvješćivanje o upotrebi i podatke o rušenjima programa</translation>
+<translation id="1151353063931113432">Dopusti slike na ovim web-lokacijama</translation>
+<translation id="4498075447689127727">Omogućuje postavljanje popisa url obrazaca koji određuju web-lokacije kojima je dopušteno otvaranje skočnih prozora.</translation>
+<translation id="1297182715641689552">Upotrijebi .pac proxy skriptu</translation>
+<translation id="8631434304112909927">do verzije <ph name="UNTIL_VERSION"/></translation>
+<translation id="7469554574977894907">Omogući prijedloge pretraživanja</translation>
+<translation id="5511702823008968136">Omogući traku Knjižne oznake</translation>
+<translation id="3653673712530669976">Omogućuje konfiguriranje zadanog alata za prikazivanje HTML-a kad je <ph name="PRODUCT_FRAME_NAME"/> instaliran. Zadana postavka jest dopuštanje pregledniku hosta da obavi prikazivanje, no ovu postavku možete zaobići i kao zadano postaviti <ph name="PRODUCT_FRAME_NAME"/> da prikazuje HTML stranice.</translation>
+<translation id="4486602758942612946">Prilagodite popis URL obrazaca koje preglednik hosta treba uvijek prikazati. Za primjer obrazaca pogledajte http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
+<translation id="4346795218451526495">Određuje popis dodataka koje korisnik može omogućiti ili onemogućiti u proizvodu <ph name="PRODUCT_NAME"/>. Zamjenski znakovi &quot;*&quot; i &quot;?&quot; mogu se upotrebljavati za podudaranje nizova proizvoljnih znakova. &quot;*&quot; odgovara proizvoljnom broju znakova, a &quot;?&quot; određuje opcionalni pojedinačni znak, tj. odgovara nuli ili jednom znaku. Znak za izlaz je &quot;\&quot;, stoga za podudaranje stvarnih znakova &quot;*&quot;, &quot;?&quot; ili &quot;\&quot; možete staviti &quot;\&quot; ispred njih. Ako omogućite ovu postavku, navedeni popis dodataka može se upotrebljavati u proizvodu <ph name="PRODUCT_NAME"/>. Korisnici ih mogu omogućiti ili onemogućiti pod &quot;about:plugins&quot;, čak i ako se dodatak podudara i s obrascem u DisabledPlugins. Korisnici također mogu omogućiti i onemogućiti dodatke koji se ne podudaraju ni s jednim obrascem u DisabledPlugins, DisabledPluginsExceptions i EnabledPlugins.</translation>
+<translation id="8777120694819070607">Omogućuje da <ph name="PRODUCT_NAME"/> pokreće dodatke koji su zastarjeli. Ako omogućite ovu postavku, zastarjeli dodaci upotrebljavaju se kao uobičajeni dodaci. Ako onemogućite ovu postavku, zastarjeli dodaci neće se upotrebljavati i korisnici neće biti pitani za dozvolu za njihovo pokretanje. Ako ova postavka nije aktivirana, korisnici će biti pitani za dozvolu za pokretanje zastarjelih dodataka.</translation>
+<translation id="407895324478579198">Omogućuje određivanje popisa proširenja koja će biti instalirana u pozadini, bez interakcije korisnika. Svaka stavka na popisu je niz koji sadrži ID proširenja i URL ažuriranja razdvojene točka-zarezom (<ph name="SEMICOLON"/>). Na primjer: <ph name="EXTENSION_POLICY_EXAMPLE"/>. Za svaku stavku, <ph name="PRODUCT_NAME"/> će učitati proširenje određeno ID-jem iz navedenog URL-a i instalirati ga u pozadini. Na sljedećim je stranicama objašnjeno kako možete udomiti proširenja na vlastitom poslužitelju. O URL-ovima ažuriranja: <ph name="LINK_TO_EXTENSION_DOC1"/>, o udomljavanju proširenja općenito: <ph name="LINK_TO_EXTENSION_DOC2"/>. Korisnici neće moći deinstalirati proširenja koja su određena ovim pravilom. Ako uklonite proširenje s ovog popisa, <ph name="PRODUCT_NAME"/> će ga automatski deinstalirati. Proširenja koja su na crnoj listi u &quot;ExtensionInstallBlacklist&quot; ne stavljaju se na bijelu listu i prema ovom se pravilu ne mogu forsirano instalirati.</translation>
+<translation id="3300906985144143927">Određuje URL ikone favorita za zadani davatelj usluge pretraživanja. Opcionalno.</translation>
+<translation id="1583248206450240930">Upotrijebi <ph name="PRODUCT_FRAME_NAME"/> kao zadano</translation>
+<translation id="1047128214168693844">Ne dopuštaj web-lokacijama praćenje fizičke lokacije korisnika</translation>
+<translation id="3273221114520206906">Zadana postavka JavaScripta</translation>
+<translation id="6810445994095397827">Blok JavaScript na ovim web-lokacijama</translation>
+<translation id="6510914645829248303">Ako je kao radnja prilikom pokretanja odabrano &quot;Otvori popis URL-ova&quot;, to vam omogućuje određivanje popisa URL ova koji se otvaraju.</translation>
+<translation id="3780152581321609624">Uključi nestandardni port u Kerberos SPN-u</translation>
+<translation id="2660846099862559570">Nikad ne upotrebljavaj proxy</translation>
+<translation id="5512418063782665071">URL početne stranice</translation>
+<translation id="8990655542335348641">Određuje vrijeme u milisekundama tijekom kojeg se od usluge upravljanja uređajima traže podaci o pravilima. Postavljanje ovog pravila poništava zadanu vrijednost od 3 sata. Valjane vrijednosti za ovo pravilo su u rasponu od 30 minuta do 1 dan. Sve vrijednosti koje nisu u ovom rasponu bit će prebačene u odgovarajuće granice.</translation>
+<translation id="6049075103826767200">Omogućuje slanje anonimnih izvješća o upotrebi i podacima o rušenju za proizvod <ph name="PRODUCT_NAME"/> Googleu te sprječava korisnike da promijene ovu postavku. Ako omogućite ovu postavku, anonimna izvješća o upotrebi i podaci o rušenju šalju se Googleu. Ako onemogućite ovu postavku, anonimna izvješća o upotrebi i podaci o rušenju nikad se ne šalju Googleu. Ako omogućite ili onemogućite ovu postavku, korisnici je ne mogu promijeniti ni poništiti u proizvodu <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="3115819625623659514">Konfigurira vrstu zadane početne stranice u proizvodu <ph name="PRODUCT_NAME"/> i sprječava korisnike da promijene postavke početne stranice. Početna stranica može biti postavljena na URL koji odredite ili na web-stranicu nove kartice. Ako omogućite ovu postavku, web-stranica nove kartice uvijek se upotrebljava za početnu stranicu, a URL lokacija početne stranice se zanemaruje. Ako onemogućite ovu postavku, početna stranica korisnika neće nikad biti web-stranica nove kartice, osim ako je URL postavljen na &quot;chrome://newtab&quot;. Ako omogućite ili onemogućite ovu postavku, korisnici ne mogu promijeniti vrstu početne stranice u proizvodu <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="2263362640517427542">Omogući zaključavanje kada ChromeOS uređaji prijeđu u stanje mirovanja ili se isključe.</translation>
+<translation id="6808666497110319299">Omogućuje upotrebu alternativnih stranica pogrešaka koje su ugrađene u <ph name="PRODUCT_NAME"/> (kao što je &quot;stranica nije pronađena&quot;) i sprječava korisnike da promijene ovu postavku. Ako omogućite ovu postavku, upotrebljavaju se alternativne stranice pogrešaka. Ako onemogućite ovu postavku, alternativne stranice nikad se ne upotrebljavaju. Ako omogućite ili onemogućite ovu postavku, korisnici je ne mogu promijeniti ni poništiti u proizvodu <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="1948757837129151165">Pravila za HTTP autentifikaciju</translation>
+<translation id="817926804885880359">Omogućuje značajku Automatsko popunjavanje proizvoda <ph name="PRODUCT_NAME"/> i dopušta korisnicima automatsko ispunjavanje web-obrazaca pomoću ranije pohranjenih informacija, kao što su adresa ili podaci o kreditnoj kartici. Ako onemogućite ovu postavku, Automatsko popunjavanje neće biti dostupno korisnicima. Ako omogućite ovu postavku i ne konfigurirate vrijednost, Automatsko popunjavanje ostat će pod nadzorom korisnika. To će im omogućiri konfiguriranje profila Automatskog popunjavanja te uključivanje ili isključivanje Automatskog popunjavanja po vlastitom nahođenju.</translation>
+<translation id="5645779841392247734">Dopusti kolačiće na ovim web-lokacijama</translation>
+<translation id="3906388518501362918">Omogućuje JavaScript u proizvodu <ph name="PRODUCT_NAME"/> i sprječava korisnike da promijene ovu postavku. Ako je ova postavka omogućena ili nije konfigurirana, web-stranice mogu upotrebljavati JavaScript. Ako je ova postavka onemogućena, web-stranice ne mogu upotrebljavati JavaScript.</translation>
+<translation id="4821854788360803313">Određuje popis dodataka koji su onemogućeni u proizvodu <ph name="PRODUCT_NAME"/> i sprječava korisnike da promijene ovu postavku. Zamjenski znakovi &quot;*&quot; i &quot;?&quot; mogu se upotrebljavati za podudaranje nizova proizvoljnih znakova. &quot;*&quot; odgovara proizvoljnom broju znakova, dok &quot;?&quot; određuje opcionalni pojedinačni znak, tj. odgovara nuli ili jednom znaku. Znak za izlaz je &quot;\&quot;, stoga za podudaranje stvarnih znakova &quot;*&quot;, &quot;?&quot; ili &quot;\&quot; možete ispred njih staviti &quot;\&quot;. Ako omogućite ovu postavku, navedeni popis dodataka nikad se ne upotrebljava u proizvodu <ph name="PRODUCT_NAME"/>. Dodaci su označeni kao onemogućeni pod stavkom &quot;about:plugins, a korisnici ih ne mogu omogućiti. Napominjemo da ovo pravilo mogu zaobići pravila EnabledPlugins i DisabledPluginsExceptions.</translation>
 </translationbundle>

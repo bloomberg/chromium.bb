@@ -397,7 +397,7 @@
 <translation id="7960533875494434480">Vandret indbinding</translation>
 <translation id="6431347207794742960"><ph name="PRODUCT_NAME"/> konfigurerer automatiske opdateringer for alle brugere af denne computer.</translation>
 <translation id="4973698491777102067">Ryd disse elementer fra:</translation>
-<translation id="6074963268421707432">Tillad ikke, at websteder viser meddelelser på skrivebordet</translation>
+<translation id="6074963268421707432">Tillad ikke, at websteder viser skrivebordsmeddelelser</translation>
 <translation id="8508050303181238566">Tryk på <ph name="HOTKEY_NAME"/> for at skifte indtastningsmetode.</translation>
 <translation id="6273404661268779365">Tilføj ny fax</translation>
 <translation id="1995173078718234136">Scanner indhold...</translation>
@@ -1979,7 +1979,7 @@
 <translation id="8267453826113867474">Bloker krænkende ord</translation>
 <translation id="7959074893852789871">Filen indeholdt flere certifikater, hvoraf nogle af dem ikke blev importeret:</translation>
 <translation id="1213999834285861200">Undtagelser for billeder</translation>
-<translation id="2805707493867224476">Tillad, at alle websteder viser popups</translation>
+<translation id="2805707493867224476">Tillad, at alle websteder viser pop op-vinduer</translation>
 <translation id="3561217442734750519">Indtastningsværdi for personlig nøgle skal være en gyldig sti.</translation>
 <translation id="2444609190341826949">Hvis du ikke har nogen adgangssætning, synkroniseres dine adgangskoder og andre krypterede data ikke på denne computer.</translation>
 <translation id="77221669950527621">Udvidelser eller apps</translation>

@@ -398,7 +398,7 @@
 <translation id="7960533875494434480">Vazba po kratší straně</translation>
 <translation id="6431347207794742960"><ph name="PRODUCT_NAME"/> nastaví automatické aktualizace pro všechny uživatele tohoto počítače.</translation>
 <translation id="4973698491777102067">Zlikvidovat následující položky z:</translation>
-<translation id="6074963268421707432">Nedovolit žádnému webu zobrazovat oznámení na ploše</translation>
+<translation id="6074963268421707432">Nepovolit žádnému webu zobrazovat oznámení na ploše</translation>
 <translation id="8508050303181238566">Mezi metodami zadávání dat můžete přepínat pomocí klávesy <ph name="HOTKEY_NAME"/>.</translation>
 <translation id="6273404661268779365">Přidat nový fax</translation>
 <translation id="1995173078718234136">Prohledávání obsahu...</translation>
@@ -1768,7 +1768,7 @@
 <translation id="9073281213608662541">PAP</translation>
 <translation id="1800035677272595847">Phishing</translation>
 <translation id="8448317557906454022"><ph name="NUMBER_ZERO"/> secs ago</translation>
-<translation id="402759845255257575">Nedovolit žádnému webu spouštět JavaScript</translation>
+<translation id="402759845255257575">Nepovolit spouštění JavaScriptu žádnému webu</translation>
 <translation id="4610637590575890427">Chtěli jste přejít na <ph name="SITE"/>?</translation>
 <translation id="7723779034587221017">Připojení ke službě zásad bylo ztraceno. Restartujte zařízení nebo se obraťte na zástupce podpory.</translation>
 <translation id="3046388203776734202">Nastavení vyskakovacích oken:</translation>

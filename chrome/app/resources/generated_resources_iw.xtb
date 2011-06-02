@@ -399,7 +399,7 @@
 <translation id="7960533875494434480">כריכה לפי קצה קצר</translation>
 <translation id="6431347207794742960"><ph name="PRODUCT_NAME"/> יגדיר עדכונים אוטומטיים לכל המשתמשים במחשב זה.</translation>
 <translation id="4973698491777102067">השמד את הפריטים הבאים מתוך:</translation>
-<translation id="6074963268421707432">אל תרשה לאף אתר להציג התראות בשולחן העבודה</translation>
+<translation id="6074963268421707432">אל תרשה לשום אתר להציג התראות בשולחן העבודה</translation>
 <translation id="8508050303181238566">הקש <ph name="HOTKEY_NAME"/> כדי להחליף בין שיטות הקלט.</translation>
 <translation id="6273404661268779365">הוסף פקס חדש</translation>
 <translation id="1995173078718234136">סורק תוכן...</translation>
@@ -1783,7 +1783,7 @@
 <translation id="9073281213608662541">PAP</translation>
 <translation id="1800035677272595847">התחזות</translation>
 <translation id="8448317557906454022">לפני <ph name="NUMBER_ZERO"/> שניות</translation>
-<translation id="402759845255257575">אל תאפשר לאף אתר להריץ JavaScript</translation>
+<translation id="402759845255257575">אל תאפשר לשום אתר להריץ JavaScript</translation>
 <translation id="4610637590575890427">האם התכוונת לעבור אל <ph name="SITE"/>?</translation>
 <translation id="7723779034587221017">נותק החיבור לשירות המדיניות. אפס את המכשיר או פנה אל נציג התמיכה.</translation>
 <translation id="3046388203776734202">הגדרות של הודעות קופצות:</translation>
@@ -1984,7 +1984,7 @@
 <translation id="8267453826113867474">חסום מילים פוגעניות</translation>
 <translation id="7959074893852789871">הקובץ הכיל אישורים מרובים, חלקם לא יובאו:</translation>
 <translation id="1213999834285861200">חריגים של תמונה</translation>
-<translation id="2805707493867224476">אפשר לכל האתרים להציג הודעות קופצות</translation>
+<translation id="2805707493867224476">אפשר לכל האתרים להציג חלונות קופצים</translation>
 <translation id="3561217442734750519">ערך קלט עבור מפתח פרטי חייב להיות נתיב חוקי.</translation>
 <translation id="2444609190341826949">ללא משפט-סיסמה, הסיסמאות שלך ונתונים מוצפנים אחרים לא יסונכרנו במחשב זה.</translation>
 <translation id="77221669950527621">תוספים או יישומים</translation>

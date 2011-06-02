@@ -21,7 +21,7 @@
 <translation id="8418445294933751433">Mo&amp;strar como pestaña</translation>
 <translation id="6985276906761169321">ID:</translation>
 <translation id="859285277496340001">El certificado no especifica ningún mecanismo para comprobar si se ha revocado.</translation>
-<translation id="2010799328026760191">Teclas de modificación...</translation>
+<translation id="2010799328026760191">Teclas modificadoras...</translation>
 <translation id="3300394989536077382">Firmado por</translation>
 <translation id="654233263479157500">Utilizar un servicio web para intentar resolver errores de navegación</translation>
 <translation id="4940047036413029306">Comilla</translation>
@@ -398,7 +398,7 @@
 <translation id="7960533875494434480">Encuadernación por el margen corto</translation>
 <translation id="6431347207794742960"><ph name="PRODUCT_NAME"/> configurará actualizaciones automáticas para todos los usuarios de este ordenador.</translation>
 <translation id="4973698491777102067">Eliminar elementos almacenados desde:</translation>
-<translation id="6074963268421707432">No permitir que los sitios muestren notificaciones de escritorio</translation>
+<translation id="6074963268421707432">No permitir que ningún sitio muestre notificaciones de escritorio</translation>
 <translation id="8508050303181238566">Pulsa <ph name="HOTKEY_NAME"/> para alternar entre los métodos de entrada.</translation>
 <translation id="6273404661268779365">Añadir nuevo fax</translation>
 <translation id="1995173078718234136">Analizando contenido...</translation>
@@ -616,7 +616,7 @@ es necesario configurar los productos ESET para que no realicen esta intercepci�
 <translation id="1006316751839332762">Frase de contraseña de encriptación</translation>
 <translation id="8795916974678578410">Nueva ventana</translation>
 <translation id="2733275712367076659">Tienes certificados de las siguientes organizaciones que te identifican:</translation>
-<translation id="4801512016965057443">Permitir la itinerancia de datos en móvil</translation>
+<translation id="4801512016965057443">Permitir la itinerancia de datos móviles</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2046040965693081040">Utilizar páginas actuales</translation>
 <translation id="3798449238516105146">Versión</translation>
@@ -678,7 +678,7 @@ es necesario configurar los productos ESET para que no realicen esta intercepci�
 <translation id="9086455579313502267">No ha sido posible acceder a la red</translation>
 <translation id="5595485650161345191">Editar dirección</translation>
 <translation id="2374144379568843525">&amp;Ocultar panel de ortografía</translation>
-<translation id="2694026874607847549">Una cookie</translation>
+<translation id="2694026874607847549">1 cookie</translation>
 <translation id="4393664266930911253">Habilitar estas funciones...</translation>
 <translation id="6390842777729054533"><ph name="NUMBER_ZERO"/> segundos restantes</translation>
 <translation id="3909791450649380159">Cor&amp;tar</translation>
@@ -1052,7 +1052,7 @@ donde puedes encontrar más información o inhabilitar esta función.</translati
 <translation id="1813414402673211292">Eliminar datos de navegación</translation>
 <translation id="4062903950301992112">Si eres consciente de que el hecho de acceder a este sitio puede dañar tu ordenador, haz clic en el enlace <ph name="PROCEED_LINK"/>.</translation>
 <translation id="32330993344203779">Tu dispositivo se ha registrado correctamente en la administración corporativa.</translation>
-<translation id="2356762928523809690">No es posible actualizar el servidor (error: <ph name="ERROR_NUMBER"/>)</translation>
+<translation id="2356762928523809690">El servidor de actualizaciones no está disponible (error: <ph name="ERROR_NUMBER"/>)</translation>
 <translation id="219008588003277019">Módulo cliente nativo: <ph name="NEXE_NAME"/></translation>
 <translation id="5436510242972373446">Buscar <ph name="SITE_NAME"/>:</translation>
 <translation id="3800764353337460026">Estilo de símbolo</translation>
@@ -1328,7 +1328,7 @@ Si esto no resuelve la incidencia, te recomendamos volver a seleccionar esta opc
 <translation id="7194430665029924274">Recordar más &amp;tarde</translation>
 <translation id="5790085346892983794">La operación se ha realizado correctamente.</translation>
 <translation id="1901769927849168791">Tarjeta SD detectada</translation>
-<translation id="818454486170715660"><ph name="NAME"/>: propietario</translation>
+<translation id="818454486170715660"><ph name="NAME"/>: propietario/a</translation>
 <translation id="1358032944105037487">Teclado japonés</translation>
 <translation id="8201956630388867069">WPA</translation>
 <translation id="603890000178803545">Ene^Feb^Mar^Abr^May^Jun^Jul^Ago^Sep^Oct^Nov^Dic</translation>
@@ -1434,7 +1434,7 @@ Si esto no resuelve la incidencia, te recomendamos volver a seleccionar esta opc
 <translation id="1175364870820465910">Im&amp;primir...</translation>
 <translation id="3866249974567520381">Descripción</translation>
 <translation id="2900139581179749587">No se ha reconocido la voz.</translation>
-<translation id="953692523250483872">No hay archivos seleccionados</translation>
+<translation id="953692523250483872">0 archivos seleccionados</translation>
 <translation id="2294358108254308676">¿Quieres instalar <ph name="PRODUCT_NAME"/>?</translation>
 <translation id="6549689063733911810">Reciente</translation>
 <translation id="1529968269513889022">la semana pasada</translation>
@@ -1655,7 +1655,7 @@ Si esto no resuelve la incidencia, te recomendamos volver a seleccionar esta opc
 <translation id="7624267205732106503">Borrar cookies y datos de otros sitios al cerrar el navegador</translation>
 <translation id="8401363965527883709">Casilla de verificación sin seleccionar</translation>
 <translation id="7771452384635174008">Diseño</translation>
-<translation id="6188939051578398125">Introduce nombres o direcciones.</translation>
+<translation id="6188939051578398125">Introduce nombres o direcciones de correo electrónico.</translation>
 <translation id="8443621894987748190">Selecciona la foto de tu cuenta.</translation>
 <translation id="10122177803156699">Mostrarme</translation>
 <translation id="5260878308685146029">Faltan <ph name="NUMBER_TWO"/> minutos</translation>
@@ -1807,7 +1807,7 @@ Si esto no resuelve la incidencia, te recomendamos volver a seleccionar esta opc
 <translation id="2872961005593481000">Apagar</translation>
 <translation id="8986267729801483565">Ubicación de la descarga:</translation>
 <translation id="4322394346347055525">Cerrar las demás pestañas</translation>
-<translation id="4411770745820968260">Carpeta de descargas</translation>
+<translation id="4411770745820968260">Archivos</translation>
 <translation id="881799181680267069">Ocultar otras</translation>
 <translation id="1812631533912615985">No fijar pestañas</translation>
 <translation id="6042308850641462728">Más</translation>
@@ -2020,7 +2020,7 @@ acceder a la red.</translation>
 <translation id="7764209408768029281">Herramient&amp;as</translation>
 <translation id="1139892513581762545">Pestañas laterales</translation>
 <translation id="7634357567062076565">reanudar</translation>
-<translation id="4779083564647765204">Activar zoom</translation>
+<translation id="4779083564647765204">Zoom</translation>
 <translation id="3282430104564575032">Inspector DOM</translation>
 <translation id="1526560967942511387">Documento sin título</translation>
 <translation id="1291144580684226670">Fuente estándar</translation>
@@ -2306,7 +2306,7 @@ acceder a la red.</translation>
 <translation id="827924395145979961">Las páginas no se están cargando.</translation>
 <translation id="3092544800441494315">Incluir esta captura de pantalla:</translation>
 <translation id="7714464543167945231">Certificado</translation>
-<translation id="5530864958284331435">$1 archivos seleccionados, $2</translation>
+<translation id="5530864958284331435">$1 seleccionados, $2</translation>
 <translation id="3616741288025931835">&amp;Eliminar datos de navegación...</translation>
 <translation id="3313622045786997898">Valor de firma de certificados</translation>
 <translation id="8535005006684281994">URL de renovación de certificado de Netscape</translation>
@@ -2449,7 +2449,7 @@ acceder a la red.</translation>
 <translation id="1851266746056575977">Actualizar ahora</translation>
 <translation id="7017219178341817193">Añadir una nueva página</translation>
 <translation id="1038168778161626396">Solo cifrar</translation>
-<translation id="2756651186786928409">No cambiar las teclas de modificación.</translation>
+<translation id="2756651186786928409">No cambiar las teclas modificadoras.</translation>
 <translation id="1217515703261622005">Conversión de números especial</translation>
 <translation id="7179921470347911571">Reiniciar ahora</translation>
 <translation id="3715099868207290855">Sincronizado con <ph name="USER_EMAIL_ADDRESS"/></translation>
@@ -2737,7 +2737,7 @@ acceder a la red.</translation>
 <translation id="8286036467436129157">Inicia sesión</translation>
 <translation id="5999940714422617743"><ph name="EXTENSION_NAME"/> ya se ha instalado.</translation>
 <translation id="1122198203221319518">&amp;Herramientas</translation>
-<translation id="5757539081890243754">Página principal</translation>
+<translation id="5757539081890243754">Página de inicio</translation>
 <translation id="2760009672169282879">Teclado búlgaro fonético</translation>
 <translation id="6608140561353073361">Todas las cookies y los datos de sitios...</translation>
 <translation id="8007030362289124303">Batería baja</translation>
@@ -2754,7 +2754,7 @@ acceder a la red.</translation>
 <translation id="7666868073052500132">Propósitos: <ph name="USAGES"/></translation>
 <translation id="6985345720668445131">Configuración de entrada de japonés</translation>
 <translation id="3258281577757096226">Triple alternancia (final)</translation>
-<translation id="2359174522669474766">Un archivo seleccionado, $1</translation>
+<translation id="2359174522669474766">1 seleccionado, $1</translation>
 <translation id="6906268095242253962">Debes conectarte a Internet para continuar.</translation>
 <translation id="1908748899139377733">Ver &amp;información de marco</translation>
 <translation id="803771048473350947">Archivo</translation>
@@ -2881,7 +2881,7 @@ acceder a la red.</translation>
 <translation id="5906065664303289925">Dirección de hardware:</translation>
 <translation id="3178000186192127858">Solo lectura</translation>
 <translation id="2187895286714876935">Error de importación del certificado de servidor</translation>
-<translation id="5460896875189097758">Datos almacenados localmente</translation>
+<translation id="5460896875189097758">Datos locales</translation>
 <translation id="4618990963915449444">Se borrarán todos los archivos de <ph name="DEVICE_NAME"/>.</translation>
 <translation id="614998064310228828">Modelo de dispositivo:</translation>
 <translation id="1581962803218266616">Mostrar en Finder</translation>

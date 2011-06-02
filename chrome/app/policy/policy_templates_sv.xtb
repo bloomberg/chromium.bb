@@ -1,15 +1,517 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sv">
+<translation id="1503959756075098984">Tilläggs-ID:n och uppdateringsadresser ska installeras obemärkt</translation>
+<translation id="2463365186486772703">Appens språkversion</translation>
+<translation id="1397855852561539316">Standardsökleverantörens förslagsadress</translation>
+<translation id="7040229947030068419">Exempelvärde:</translation>
+<translation id="6106630674659980926">Aktivera lösenordshanteraren</translation>
+<translation id="7337927025691881244">Innebär att du kan ange vilka tillägg användarna INTE får installera. Tillägg som redan har installerats tas bort om de svartlistas. Om värdet * finns i svartlistan innebär det att alla tillägg är svartlistade om de inte uttryckligen tillåts i vitlistan.</translation>
+<translation id="7755528767666760533">Anger webbadressen till sökmotorn som används för att ge dynamiska resultat. Webbadressen ska innehålla strängen <ph name="SEARCH_TERM_MARKER"/>, som ersätts av texten användaren har skrivit hittills när frågan skickas. Valfritt.</translation>
+<translation id="7614663184588396421">Lista över inaktiverade protokollscheman</translation>
+<translation id="2309390639296060546">Standardinställning för geografisk plats</translation>
+<translation id="4680961954980851756">Aktivera Autofyll</translation>
+<translation id="5183383917553127163">Innebär att du kan ange vilka tillägg som inte omfattas av svartlistan.
+
+          Om värdet * finns i svartlistan innebär det att alla tillägg är svartlistade. Användarna kan bara installera tillägg som uttryckligen finns i vitlistan.
+
+          Som standard är alla tillägg vitlistade, men om alla tillägg har svartlistats av en policy kan vitlistan användas för att åsidosätta den policyn.</translation>
+<translation id="3185009703220253572">sedan version <ph name="SINCE_VERSION"/></translation>
+<translation id="5469825884154817306">Blockera bilder på dessa webbplatser</translation>
+<translation id="1438955478865681012">Konfigurerar tilläggsrelaterade policyer. Användaren får inte installera svartlistade tillägg om de inte tas med i vitlistan. Du kan också tvinga <ph name="PRODUCT_NAME"/> att installera tillägg automatiskt genom att ange dem i <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. Svartlistan åsidosätter listan med påtvingade tillägg.</translation>
+<translation id="4070280487546651935">Anger det sökord som används som genväg för att aktivera leverantörens sökning i adressfältet. Valfritt.</translation>
+<translation id="1096105751829466145">Standardsökleverantör</translation>
+<translation id="7567380065339179813">Tillåt plugin-program på dessa webbplatser</translation>
+<translation id="5290940294294002042">Ange en lista med plugin-program som användaren kan aktivera och inaktivera</translation>
+<translation id="1427655258943162134">Proxyserverns adress eller webbadress</translation>
+<translation id="1827523283178827583">Använd fasta proxyservrar</translation>
+<translation id="3021409116652377124">Inaktivera plugin-sökaren</translation>
+<translation id="2455652143675149114">Innebär att du kan specificera funktionen vid start.
+
+          Om du väljer &quot;Öppna startsidan&quot; visas alltid startsidan när du startar <ph name="PRODUCT_NAME"/>.
+
+          Om du väljer &quot;Öppna de senast öppnade sidorna igen&quot; öppnas de webbadresser som var öppna senast när <ph name="PRODUCT_NAME"/> stängdes.
+
+          Om du väljer &quot;Öppna följande sidor&quot; öppnas listan med webbadresser som ska visas vid start när en användare startar <ph name="PRODUCT_NAME"/>.
+
+          Om du aktiverar den här inställningen går det inte att ändra eller åsidosätta den i <ph name="PRODUCT_NAME"/>.
+
+          Om du inaktiverar inställningen är det samma sak som att inte konfigurera den alls. Användaren kan fortfarande ändra den i <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="4980635395568992380">Datatyp:</translation>
+<translation id="3096595567015595053">Lista med aktiverade plugin-program</translation>
+<translation id="7998998292074133333">Aktivera lås när enheter med Chrome OS försätts i viloläge eller vänteläge.
+
+      Om du aktiverar den här inställningen måste användarna ange ett lösenord för att låsa upp enheter med Chrome OS som är i viloläge.
+
+      Om du inaktiverar den här inställningen behöver användarna inte ange ett lösenord för att låsa upp enheter med Chrome OS som är i viloläge.
+
+      Om du aktiverar eller inaktiverar den här inställningen kan användarna inte åsidosätta den i <ph name="PRODUCT_OS_NAME"/>.</translation>
+<translation id="5912364507361265851">Tillåt att användarna visar lösenord i lösenordshanteraren</translation>
+<translation id="6999540307315670568">Aktiverar bokmärkesfältet på sidan Ny flik i <ph name="PRODUCT_NAME"/>.
+
+      Om du aktiverar den här inställningen visas ett bokmärkesfält på sidan Ny flik i <ph name="PRODUCT_NAME"/>.
+
+      Om du inaktiverar den här inställningen visas inte bokmärkesfältet.
+
+      Om du aktiverar eller inaktiverar den här inställningen kan användarna inte åsidosätta den i <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="8828766846428537606">Konfigurerar standardstartsidan i <ph name="PRODUCT_NAME"/> och förhindrar att användarna ändrar den.
+
+      Användarnas inställningar för startsidan blir bara helt låsta om du väljer att startsidan ska vara sidan Ny flik eller att den ska vara en webbadress som du anger. Om du inte anger en webbadress för startsidan kan användaren fortfarande ställa in startsidan på sidan Ny flik genom att ange &quot;chrome://newtab&quot;.</translation>
+<translation id="1353966721814789986">Startsidor</translation>
+<translation id="5564962323737505851">Konfigurerar lösenordshanteraren. Om lösenordshanteraren är aktiverad kan du välja att aktivera eller inaktivera huruvida användare får visa sparade lösenord med vanlig text.</translation>
+<translation id="4668325077104657568">Standardinställning för bilder</translation>
+<translation id="6368403635025849609">Tillåt JavaScript på dessa webbplatser</translation>
 <translation id="6074963268421707432">Tillåt inte att någon webbplats visar aviseringar på skrivbordet</translation>
+<translation id="3758249152301468420">Inaktivera utvecklarverktygen</translation>
+<translation id="8665076741187546529">Konfigurera listan med tillägg som måste installeras</translation>
+<translation id="6242542007132978836">Innebär att du kan ange om webbplatser får köra plugin-program automatiskt. Att köra plugin-program automatiskt kan vara tillåtet för alla webbplatser eller inte tillåtet för någon webbplats.</translation>
+<translation id="5233161357000953961">Inaktiverar användning av SPDY-protokollet i <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="4899708173828500852">Aktivera Säker webbsökning</translation>
+<translation id="3570008976476035109">Blockera plugin-program för dessa webbplatser</translation>
+<translation id="2884728160143956392">Tillåt sessionscookies på dessa webbplatser</translation>
+<translation id="3496296378755072552">Lösenordshanteraren</translation>
+<translation id="7118495359694701769">Anger om genererat Kerberos SPN ska inkludera en port som inte är standard.
+
+          Om du aktiverar den här inställningen och en port som inte är standard (dvs. en annan port än 80 eller 443) anges, tas den med i det Kerberos SPN som genereras.
+
+          Om du inaktiverar inställningen inkluderas ingen port i Kerberos SPN i något fall.</translation>
+<translation id="9135033364005346124">Aktivera <ph name="CLOUD_PRINT_NAME"/>-proxy</translation>
+<translation id="4276147605137721961">Aktiverar eller inaktiverar bokmärkesredigering i <ph name="PRODUCT_NAME"/>.
+
+      Om du aktiverar den här inställningen kan bokmärken läggas till, tas bort eller ändras. Det är standardinställningen.
+
+      Om du inaktiverar inställningen går det inte att lägga till, ta bort eller ändra bokmärken. Befintliga bokmärken kan fortfarande användas.</translation>
+<translation id="6943577887654905793">Namn för Mac/Linux-inställning:</translation>
+<translation id="8621457834803281393">Innebär att du kan skapa en lista med webbadressmönster som anger webbplatser som inte får ställa in cookies.</translation>
+<translation id="254524874071906077">Ange Chrome som standardwebbläsare</translation>
+<translation id="4377599627073874279">Tillåt att alla bilder visas på alla webbplatser</translation>
+<translation id="3915395663995367577">Webbadress till en PAC-proxyfil</translation>
+<translation id="7191531985645073769">Inaktiverar datasynkronisering i <ph name="PRODUCT_NAME"/> med synkroniseringstjänster från Google och förhindrar att användarna ändrar inställningen.
+
+      Om du aktiverar inställningen kan användarna inte ändra eller åsidosätta inställningen i <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="1022361784792428773">Tilläggs-ID:n som användaren inte får installera (eller * om det gäller alla)</translation>
+<translation id="5026128159812446244">Tillåter åtkomst till lokala filer på datorn genom att tillåta att <ph name="PRODUCT_NAME"/> visar dialogrutor för filval.
+
+      Om du aktiverar den här inställningen kan användarna öppna dialogrutor för filval som vanligt.
+
+      Om du inaktiverar inställningen visas ett meddelande varje gång användaren utför en åtgärd som skulle göra att en dialogruta för filval öppnades (som att importera bokmärken, överföra filer, spara länkar osv.) istället och användaren antas ha klickat på Avbryt i dialogrutan för filval.
+
+      Om inställningen inte ställs in kan användaren öppna dialogrutor för filval som vanligt.</translation>
+<translation id="7683777542468165012">Dynamisk policyuppdatering</translation>
+<translation id="6228640147633317529">Innebär att du kan skapa en lista med webbadressmönster som anger webbplatser som inte får visa bilder.</translation>
+<translation id="2711603272213076156">Tillåt anrop till dialogrutor för filval.</translation>
 <translation id="1426410128494586442">Ja</translation>
+<translation id="3381968327636295719">Använd värdwebbläsaren som standard</translation>
+<translation id="6368011194414932347">Konfigurera webbadress för startsida</translation>
+<translation id="1966609843734913335">Aktiverar inkognitoläge i <ph name="PRODUCT_NAME"/>.
+
+      Om den här inställningen är aktiverad eller inte konfigurerad kan användarna öppna webbsidor i inkognitoläge.
+
+      Om den här inställningen är inaktiverad kan användarna inte öppna webbsidor i inkognitoläge.</translation>
+<translation id="3423023819976532001">Gör det möjligt att spara lösenord och att använda sparade lösenord i <ph name="PRODUCT_NAME"/>.
+
+          Om du aktiverar den här inställningen kan användarna låta <ph name="PRODUCT_NAME"/> spara lösenord och ange dem automatiskt nästa gång du loggar in på en webbplats.
+
+          Om du inaktiverar inställningen kan användarna inte spara lösenord eller använda lösenord som har sparats tidigare.
+
+          Om du aktiverar eller inaktiverar inställningen kan användarna inte ändra eller åsidosätta inställningen i <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="2877225735001246144">Inaktivera CNAME-sökning när Kerberos-autentisering kontrolleras</translation>
+<translation id="6200084307932433394">Aktiverar den integrerade tjänsten Google Översätt i <ph name="PRODUCT_NAME"/>.
+
+      Om du aktiverar den här inställningen visas ett integrerat verktygsfält i <ph name="PRODUCT_NAME"/> och användaren erbjuds en översättning av sidan när det är lämpligt.
+
+      Om du inaktiverar inställningen visas aldrig översättningsfältet.
+
+      Om du aktiverar eller inaktiverar inställningen kan användarna inte ändra eller åsidosätta inställningen i <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="5059221739913673172">Konfigurerar vilken katalog som <ph name="PRODUCT_NAME"/> ska spara användardata i.
+
+      Om du använder den här policyn använder <ph name="PRODUCT_NAME"/> den angivna katalogen oavsett om användaren har angett flaggan &quot;--user-data-dir&quot; eller inte.</translation>
+<translation id="3528000905991875314">Aktivera alternativa felsidor</translation>
+<translation id="4084327080063933392">Anger namnet på standardsökleverantören. Om värdet inte anges används det värdnamn som anges av sökadressen.</translation>
+<translation id="6114416803310251055">föråldrad</translation>
+<translation id="8493645415242333585">Spara inte webbhistorik</translation>
+<translation id="5776485039795852974">Fråga varje gång en webbplats försöker visa aviseringar på skrivbordet</translation>
 <translation id="6786747875388722282">Tillägg</translation>
+<translation id="6417878201680958437">Innebär att du kan ange vilken proxyserver som ska användas av <ph name="PRODUCT_NAME"/> och förhindrar att användarna ändrar proxyinställningarna.
+
+          Om du väljer att aldrig använda en proxyserver och alltid ansluta direkt ignoreras alla andra alternativ.
+
+          Om du väljer att använda datorns proxyinställningar eller identifiera proxyserver automatiskt ignoreras alla andra alternativ.
+
+          Om du väljer läget för fast serverproxy kan du ange fler alternativ i fälten &quot;Proxyserverns adress eller webbadress&quot; och &quot;Kommaavgränsad lista med regler för proxybypass&quot;.
+
+          Om du väljer att använda ett PAC-proxyskript måste du ange webbadressen till skriptet i fältet &quot;Webbadress till en PAC-proxyfil&quot;.
+
+          Mer detaljerade exempel finns på
+          <ph name="PROXY_HELP_URL"/>
+
+          Om du aktiverar den här inställningen ignorerar <ph name="PRODUCT_NAME"/> alla proxyrelaterade alternativ som anges från kommandoraden.</translation>
+<translation id="6899705656741990703">Identifiera proxyinställningar automatiskt</translation>
+<translation id="4101772068965291327">Öppna startsidan</translation>
+<translation id="8992176907758534924">Tillåt inte att bilder visas på någon webbplats</translation>
+<translation id="8704831857353097849">Lista med inaktiverade plugin-program</translation>
+<translation id="467449052039111439">Öppna följande sidor</translation>
+<translation id="5883015257301027298">Standardinställning för cookies</translation>
+<translation id="1222189289457045659">Gör det möjligt att använda en standardsökleverantör.
+
+          Om du aktiverar den här inställningen görs en standardsökning när en användare skriver text som inte är en webbadress i adressfältet.
+
+          Du kan ange den standardsökleverantör som ska användas genom att ange resten av policyerna för standardsökning. Om du lämnar dem tomma kan användaren välja standardleverantör.
+
+          Om du inaktiverar inställningen görs ingen sökning om användaren skriver text som inte är en webbadress i adressfältet.
+
+          Om du aktiverar eller inaktiverar inställningen kan användarna inte ändra eller åsidosätta inställningen i <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="8955719471735800169">Tillbaka till början</translation>
+<translation id="6845930317830839162">Innebär att du kan ange om webbplatser ska kunna köra JavaScript. Du kan tillåta JavaScript för alla webbplatser eller inte tillåta det för någon.</translation>
 <translation id="4250680216510889253">Nej</translation>
+<translation id="1522425503138261032">Tillåt alla webbplatser att spåra användarnas fysiska plats</translation>
+<translation id="6569553007023490040">Konfigurerar adressen för standardstartsidan i <ph name="PRODUCT_NAME"/> och hindrar att användarna ändrar den.
+
+          Startsidans typ kan ställas in på en webbadress som du anger här eller på sidan Ny flik.
+
+          Om du väljer sidan Ny flik ignoreras den här policyn.
+
+          Om du aktiverar den här inställningen kan användarna inte ändra sin startsideadress i <ph name="PRODUCT_NAME"/>, men de kan välja sidan Ny flik som startsida.</translation>
+<translation id="4423597592074154136">Ange proxyinställningar manuellt</translation>
+<translation id="3137734558440858947">Innebär att du kan ange om webbplatser får visa bilder. Bildvisning kan vara tillåten för alla webbplatser eller inte tillåten för alla webbplatser.</translation>
+<translation id="9035964157729712237">Tilläggs-ID:n att undanta från svartlistan</translation>
+<translation id="3523486089716697173">Innebär att du kan skapa en lista med webbadressmönster som anger webbplatser som får visa bilder.</translation>
+<translation id="751265277672445578">Konfigurerar appens språkversion i <ph name="PRODUCT_NAME"/> och förhindrar att användarna ändrar språk.
+
+      Om du aktiverar den här inställningen används den angivna språkversionen av <ph name="PRODUCT_NAME"/>. Om den språkversion som anges inte stöds används &quot;en-US&quot; istället.
+
+      Om inställningen inaktiveras eller inte är konfigurerad använder <ph name="PRODUCT_NAME"/> antingen den språkversion som användaren anger (om den är konfigurerad), samma språk som datorn eller standardversionen &quot;en-US&quot;.</translation>
+<translation id="6022948604095165524">Åtgärd vid start</translation>
+<translation id="3704185423155638353">Innebär att du kan ange en lista med webbadressmönster som anger webbadresser som inte får köra JavaScript.</translation>
+<translation id="7628741187268592472">Anger vilket GSSAPI-bibliotek som ska användas för HTTP-autentisering. Du kan ange bara ett biblioteksnamn eller en fullständig sökväg. Om du inte anger något använder <ph name="PRODUCT_NAME"/> ett standardbiblioteksnamn.</translation>
+<translation id="605147781209875705">Den här policyn gäller inte längre. Använd ProxyMode istället.
+
+          Den innebär att du kan ange vilken proxyserver som ska användas av <ph name="PRODUCT_NAME"/> och förhindrar att användarna ändrar proxyinställningarna.
+
+          Om du väljer att aldrig använda en proxyserver och alltid ansluta direkt ignoreras alla andra alternativ.
+
+          Om du väljer att använda datorns proxyinställningar eller identifiera proxyservern automatiskt ignoreras alla andra inställningar.
+
+          Om du väljer manuella proxyinställningar kan du ange fler alternativ i &quot;Proxyserverns adress eller webbadress&quot;, &quot;Webbadress till en PAC-proxyfil&quot; och &quot;Kommaavgränsad lista med regler för proxybypass&quot;.
+
+          Detaljerade exempel finns på
+          <ph name="PROXY_HELP_URL"/>
+
+          Om du aktiverar den här inställningen ignorerar <ph name="PRODUCT_NAME"/> alla proxyrelaterade alternativ från kommandoraden.</translation>
+<translation id="6516561898504323308">Blockerar cookies från tredje part.
+
+      Om du aktiverar den här inställningen förhindras att cookies skapas av webbsideelement som inte tillhör den domän som står i webbläsarens adressfält.
+
+      Om du inaktiverar den här inställningen kan cookies ställas in av webbsideelement från tredje part som inte tillhör den domän som står i webbläsarens adressfält och användarna kan inte ändra inställningen.</translation>
+<translation id="3864818549971490907">Standardinställning för plugin-program</translation>
+<translation id="4320376026953250541">Microsoft Windows XP SP2 eller senare</translation>
+<translation id="6886010724297701888"><ph name="PRODUCT_NAME"/> förbigår eventuell proxy för listan med värdenheter som anges här.
+
+          Policyn gäller bara om du har valt manuella proxyinställningar vid &quot;Välj hur inställningar för proxyserver ska anges&quot;.
+
+          Mer detaljerade exempel finns på
+          <ph name="PROXY_HELP_URL"/></translation>
+<translation id="2959898425599642200">Regler för proxybypass</translation>
+<translation id="4752274243117690301">Om du ställer in den här inställningen på Sant inaktiveras automatisk sökning efter och installation av plugin-program som saknas i <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="3292147213643666827">      Innebär att <ph name="PRODUCT_NAME"/> kan fungera som proxy mellan <ph name="CLOUD_PRINT_NAME"/> och äldre skrivare som är anslutna till datorn.
+
+      Om den här inställningen är aktiverad eller inte konfigurerad kan användarna aktivera Cloud Print-proxyn genom att autentisera med sitt Google-konto.
+
+      Om inställningen är inaktiverad kan användarna inte aktivera proxyn och datorn kan inte dela sina skrivare med <ph name="CLOUD_PRINT_NAME"/>.</translation>
+<translation id="617204585863800180">Aktiverar nätverksförslag i <ph name="PRODUCT_NAME"/> och förhindrar att användarna ändrar inställningen.
+
+      Om du aktiverar eller inaktiverar den här inställningen kan användarna inte ändra eller åsidosätta den i <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="6641981670621198190">Inaktivera stöd för programmeringsgränssnitt för 3D-grafik</translation>
+<translation id="2741921267428646309">Det här är listan med policyer som följs av <ph name="PRODUCT_NAME"/>.
+
+      Du behöver inte ändra dem för hand. Du kan hämta lättanvända mallar från
+      <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>.
+
+      Listan med policyer som stöds är samma för Chromium och Google Chrome, men deras registerplatser i Windows är olika.
+
+      Den börjar med <ph name="CHROMIUM_KEY"/> för Chromiums policyer och med <ph name="GOOGLE_CHROME_KEY"/> för Google Chromes policyer.</translation>
+<translation id="7003746348783715221">Inställningar för <ph name="PRODUCT_NAME"/></translation>
+<translation id="9096086085182305205">Vitlista för autentiseringsserver</translation>
+<translation id="7063895219334505671">Tillåt popup-fönster på dessa webbplatser</translation>
+<translation id="2824715612115726353">Aktivera inkognitoläge</translation>
+<translation id="6157537876488211233">Kommaavgränsad lista med regler för proxybypass</translation>
 <translation id="8870318296973696995">Startsida</translation>
+<translation id="4505337077089958219">Uppdateringsfrekvens för policy</translation>
+<translation id="996560596616541671">Servrar som <ph name="PRODUCT_NAME"/> kan delegera till.</translation>
 <translation id="3866249974567520381">Beskrivning</translation>
+<translation id="2236488539271255289">Tillåt inte att någon webbplats ställer in lokala data</translation>
+<translation id="4467952432486360968">Blockera cookies från tredje part</translation>
+<translation id="1722705282440676367">Innebär att du kan ange vilken proxyserver som ska användas av <ph name="PRODUCT_NAME"/> och förhindrar att användarna ändrar proxyinställningarna.
+
+      Om du väljer att aldrig använda en proxyserver och alltid ansluta direkt ignoreras alla andra alternativ.
+
+      Om du väljer att identifiera proxyservern automatiskt ignoreras alla andra alternativ.
+
+      Detaljerade instruktioner finns på
+      <ph name="PROXY_HELP_URL"/>
+
+      Om du aktiverar den här inställningen ignorerar <ph name="PRODUCT_NAME"/> alla proxyrelaterade alternativ som anges från kommandoraden.</translation>
+<translation id="8470053727907466464">Anger vilka teckenkodningar som stöds av sökleverantören. Kodningar är kodsidenamn som UTF-8, GB2312 och ISO-8859-1. De prövas i den ordning de anges. Standardvärdet är UTF-8.</translation>
+<translation id="2537063115727103969">Den här policyn åsidosätter alternativet &quot;Ta bort cookies och andra webbplatsdata när jag stänger webbläsaren&quot; i innehållsinställningarna.
+
+      Om policyn är aktiverad tar <ph name="PRODUCT_NAME"/> bort alla data som har sparats lokalt av webbläsaren när den avslutas.</translation>
+<translation id="5365946944967967336">Visa knappen Startsida i verktygsfältet</translation>
+<translation id="3709266154059827597">Konfigurera svartlista för tilläggsinstallation</translation>
+<translation id="8451988835943702790">Använd sidan Ny flik som startsida</translation>
+<translation id="823695959636476037">Styr om användaren kan visa lösenord i klartext i lösenordshanteraren.
+
+          Om du inaktiverar den här inställningen går det inte att visa sparade lösenord i klartext i lösenordshanteraren.
+
+          Om du aktiverar eller inte konfigurerar inställningen kan användarna visa sina lösenord i klartext i lösenordshanteraren.</translation>
+<translation id="8731693562790917685">Med innehållsinställningarna kan du ange hur innehåll av en viss typ (till exempel cookies, bilder eller JavaScript) ska hanteras.</translation>
+<translation id="467236746355332046">Funktioner som stöds:</translation>
+<translation id="7632724434767231364">GSSAPI-biblioteksnamn</translation>
+<translation id="4985088509112317247">Innebär att du kan ange om webbplatser ska få ange lokala data. Att ange lokala data kan tillåtas för alla webbplatser eller nekas för alla webbplatser.</translation>
+<translation id="6244210204546589761">Webbadresser att öppna vid start</translation>
+<translation id="7468416082528382842">Windows-registerplats:</translation>
+<translation id="6119099935390640260">Här kan du ange en webbadress till en PAC-proxyfil.
+
+          Den här policyn används bara om du har valt manuella proxyinställningar för &quot;Välj hur inställningar för proxyserver ska anges&quot;.
+
+          Detaljerade exempel finns på
+          <ph name="PROXY_HELP_URL"/></translation>
+<translation id="1808715480127969042">Blockera cookies på dessa webbplatser</translation>
+<translation id="2745445908503591390">Ta bort webbplatsdata när webbläsaren avslutas</translation>
+<translation id="8665913667133665583">Anger vilka servrar som ska vitlistas för integrerad autentisering. Integrerad autentisering aktiveras bara när <ph name="PRODUCT_NAME"/> tar emot en autentiseringsfråga från en proxy eller från en server som finns på vitlistan.
+
+          Avgränsa servernamn med komma. Jokertecken (*) får användas.</translation>
+<translation id="538108065117008131">Tillåt att <ph name="PRODUCT_FRAME_NAME"/> hanterar följande innehållstyper.</translation>
+<translation id="2312134445771258233">Innebär att du kan konfigurera sidorna som läses in vid start.
+
+      Innehållet på listan &quot;Webbadresser att öppna vid start&quot; ignoreras om du inte väljer &quot;Öppna följande sidor&quot; i &quot;Vid start&quot;.</translation>
+<translation id="7931766636395791713">Innebär att du kan ange en lista med webbadressmönster som anger webbadresser som får köra JavaScript.</translation>
+<translation id="1019101089073227242">Ange katalog för användardata</translation>
+<translation id="2030905906517501646">Sökord för standardsökleverantör</translation>
+<translation id="4290189791053175631">Här kan du ange proxyserverns webbadress.
+
+          Policyn gäller bara om du har valt manuella inställningar vid &quot;Välj hur inställningar för proxyserver ska anges&quot;.
+
+          Fler alternativ och detaljerade exempel finns på
+          <ph name="PROXY_HELP_URL"/></translation>
+<translation id="350797926066071931">Aktivera Översätt</translation>
+<translation id="2267204956165795704">Anger webbadressen för den sökmotor som används för standardsökning. Webbadressen ska innehålla strängen &quot;<ph name="SEARCH_TERM_MARKER"/>&quot;, som ersätts med orden som användaren söker efter när frågan skickas.</translation>
+<translation id="4518251772179446575">Fråga när en webbplats vill spåra användarens fysiska plats</translation>
 <translation id="402759845255257575">Tillåt inte att någon webbplats kör JavaScript</translation>
+<translation id="706669471845501145">Tillåt att webbplatser visar aviseringar på skrivbordet</translation>
+<translation id="5475361623548884387">Aktivera utskrift</translation>
+<translation id="3653237928288822292">Ikon för standardsökleverantör</translation>
+<translation id="8496973106638946974">Aktiverar funktionen Säker webbsökning i <ph name="PRODUCT_NAME"/> och förhindrar att användarna ändrar inställningen.
+
+      Om du aktiverar inställningen är Säker webbsökning alltid aktivt.
+
+      Om du inaktiverar inställningen är Säker webbsökning aldrig aktivt.
+
+      Om du aktiverar eller inaktiverar inställningen kan användarna inte ändra eller åsidosätta inställningen i <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="13356285923490863">Policynamn</translation>
+<translation id="557658534286111200">Aktiverar eller inaktiverar bokmärkesredigering</translation>
+<translation id="3473585733246847076">Innebär att du kan skapa en lista med webbadressmönster som anger webbplatser som får ställa in cookies.</translation>
+<translation id="2493647325461842868">Aktiverar sökförslag i adressfältet i <ph name="PRODUCT_NAME"/> och förhindrar att användarna ändrar inställningen.
+
+      Om du aktiverar inställningen används sökförslag.
+
+      Om du inaktiverar inställningen används aldrig sökförslag.
+
+      Om du aktiverar eller inaktiverar inställningen kan användarna inte ändra eller åsidosätta den i <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="6775978436824155661">Aktiverar utskrift i <ph name="PRODUCT_NAME"/> och förhindrar att användarna ändrar inställningen.
+
+      Om inställningen är aktiverad eller inte konfigurerad kan användarna skriva ut.
+
+      Om inställningen är inaktiverad kan användarna inte skriva ut från <ph name="PRODUCT_NAME"/>. Utskrift är inaktiverad på skiftnyckelmenyn, i tillägg, i JavaScript-program osv. Det går fortfarande att skriva ut från plugin-program som förbigår <ph name="PRODUCT_NAME"/> under utskriften. Vissa Flash-program har till exempel alternativet Skriv ut på snabbmenyn, och det inaktiveras inte.</translation>
+<translation id="6908640907898649429">Konfigurerar standardsökleverantör. Du kan ange vilken standardsökleverantör som ska användas eller inaktivera standardsökning.</translation>
+<translation id="681446116407619279">Autentiseringsscheman som stöds</translation>
+<translation id="4027608872760987929">Aktivera standardsökleverantör</translation>
+<translation id="2223598546285729819">Standardinställning för avisering</translation>
+<translation id="3793095274466276777">Konfigurerar standardwebbläsarkontrollerna i <ph name="PRODUCT_NAME"/> och förhindrar att användarna ändrar dem.
+
+      Om du aktiverar den här inställningen kontrollerar <ph name="PRODUCT_NAME"/> alltid om den är standardwebbläsare vid start och registrerar sig om det går.
+
+      Om inställningen är inaktiverad kontrollerar <ph name="PRODUCT_NAME"/> aldrig om den är standardwebbläsare och användarkontrollerna för inställningen inaktiveras.
+
+      Om inställningen inte anges kan användaren avgöra om <ph name="PRODUCT_NAME"/> ska vara standardwebbläsare och om ett meddelande ska visas för användaren när den inte är det.</translation>
+<translation id="1530812829012954197">Rendera alltid följande webbadressmönster i värdwebbläsaren</translation>
+<translation id="6190022522129724693">Standardinställning för popup-fönster</translation>
+<translation id="847472800012384958">Tillåt inte att popup-fönster visas på någon webbplats</translation>
+<translation id="4733471537137819387">Policyer som gäller integrerad HTTP-autentisering</translation>
+<translation id="4608714268466689965">Innebär att du kan ange om webbplatser får visa aviseringar på skrivbordet. Att visa aviseringar på skrivbordet kan tillåtas som standard eller nekas som standard, eller så kan användaren tillfrågas varje gång en webbplats försöker visa aviseringar på skrivbordet.</translation>
+<translation id="1334051495529796396">Anger om genererat Kerberos SPN baseras på det kanoniska DNS-namnet eller det namn som angavs från början.
+
+          Om du aktiverar den här inställningen hoppas CNAME-sökningen över och servernamnet används så som det angavs.
+
+          Om du inaktiverar inställningen avgörs serverns kanoniska namn genom en CNAME-sökning.</translation>
+<translation id="166427968280387991">Proxyserver</translation>
 <translation id="2805707493867224476">Tillåt alla webbplatser att visa popup-fönster</translation>
+<translation id="1727394138581151779">Blockera alla plugin-program</translation>
+<translation id="7079519252486108041">Blockera popup-fönster på dessa webbplatser</translation>
+<translation id="7433714841194914373">Aktivera Instant</translation>
+<translation id="4983201894483989687">Tillåt att föråldrade plugin-program körs</translation>
+<translation id="7492608050778218564">Inaktivera stöd för programmeringsgränssnitt för 3D-grafik.
+
+      Om du aktiverar den här inställningen kan inte webbsidor öppna grafikprocessorn (GPU). Webbsidor kan mer specifikt inte använda WebGL API och plugin-program kan inte använda Pepper 3D API.
+
+      Om du inaktiverar den här inställningen kan webbsidor tillåtas att använda WebGL API och plugin-program att använda Pepper 3D API. Standardinställningarna i webbläsaren kan fortfarande kräva att kommandoradsargument skickas för att programmeringsgränssnitten ska kunna användas.</translation>
+<translation id="7202926611616207807">Tillåt alla webbplatser att ange lokala data.</translation>
+<translation id="678228246386317063">Innebär att du kan skapa en lista med webbadressmönster som anger webbplatser som får ställa in sessionscookies.</translation>
+<translation id="5774856474228476867">Sökadress för standardsökleverantör</translation>
+<translation id="4650759511838826572">Inaktivera protokollscheman för webbadresser</translation>
+<translation id="6524941558928880715">Öppna de senast öppnade sidorna igen</translation>
+<translation id="3167247709504138314">Anger webbadressen till sökmotorn som används för att ge sökförslag. Webbadressen ska innehålla strängen <ph name="SEARCH_TERM_MARKER"/>, som ersätts av texten användaren har skrivit hittills när frågan skickas. Valfritt.</translation>
+<translation id="602728333950205286">Dynamisk webbadress för standardsökleverantör</translation>
+<translation id="1675002386741412210">Stöds av:</translation>
+<translation id="5417368737700340683">Aktiverar funktionen Instant i <ph name="PRODUCT_NAME"/> och förhindrar  att användarna ändrar inställningen.
+
+      Om du aktiverar inställningen är <ph name="PRODUCT_NAME"/> Instant aktiverat.
+
+      Om du inaktiverar inställningen är <ph name="PRODUCT_NAME"/> Instant inaktiverat.
+
+      Om du aktiverar eller inaktiverar inställningen kan användarna inte ändra eller åsidosätta inställningen.</translation>
+<translation id="3264793472749429012">Kodningar för standardsökleverantör</translation>
+<translation id="2371550098059356219">Anger en lista med plugin-program som är aktiverade i <ph name="PRODUCT_NAME"/> och förhindrar att användarna ändrar inställningen.
+
+      Jokertecknen * och ? kan användas för att match följder med godtyckliga tecken. * matchar ett godtyckligt antal tecken medan ? specificerar ett enda valfritt tecken, det vill säga matchar noll till ett tecken. Escape-tecknet är \, så om du vill matcha de faktiska tecknen *, ? eller \ anger du \ framför dem.
+
+      Den angivna listan med plugin-program används alltid i <ph name="PRODUCT_NAME"/> om de finns installerade. Plugin-programmen aktiveras i about:plugins och kan inte inaktiveras av användarna.
+
+      Observera att den här policyn åsidosätter både DisabledPlugins och DisabledPluginsExceptions.</translation>
+<translation id="308285197738484705">Aktivera nätverksförslag</translation>
 <translation id="5765780083710877561">Beskrivning:</translation>
+<translation id="3319991432361168617">Konfigurerar den katalog som <ph name="PRODUCT_NAME"/> ska hämta filer till.
+
+      Om du ställer in den här policyn används den angivna katalogen i <ph name="PRODUCT_NAME"/> oavsett om användaren har angett någon eller aktiverat flaggan om att bli tillfrågad om hämtningsplats varje gång.</translation>
+<translation id="8284208534498422489">Innebär att du kan ange en lista med webbadressmönster som anger webbadresser som får öppna popup-fönster.</translation>
+<translation id="8544375438507658205">HTML-standardrenderare för <ph name="PRODUCT_FRAME_NAME"/></translation>
+<translation id="7424751532654212117">Lista med undantag till listan med inaktiverade plugin-program</translation>
+<translation id="6233173491898450179">Ange hämtningskatalog</translation>
+<translation id="2299220924812062390">Ange en lista med aktiverade plugin-program</translation>
+<translation id="8754704265300028644">Inaktiverar sparande av webbhistorik i <ph name="PRODUCT_NAME"/> och förhindrar att användarna ändrar inställningen.
+
+      Om du aktiverar den här inställningen sparas inte webbhistorik.
+
+      Om du inaktiverar den här inställningen sparas webbhistorik.</translation>
+<translation id="1897365952389968758">Tillåt alla webbplatser att köra JavaScript (rekommenderas)</translation>
+<translation id="6931242315485576290">Inaktivera synkronisering av data med Google</translation>
 <translation id="7006788746334555276">Innehållsinställningar</translation>
+<translation id="3676473196461789250">Innebär att du kan ange en lista med webbadressmönster som anger webbadresser som får köra plugin-program.</translation>
+<translation id="5671281984733584565">Visar knappen Startsida i verktygsfältet i <ph name="PRODUCT_NAME"/>.
+
+      Om du aktiverar den här inställningen visas knappen Startsida alltid.
+
+      Om du inaktiverar den här inställningen visas knappen Startsida aldrig.
+
+      Om du aktiverar eller inaktiverar inställningen kan användarna inte ändra eller åsidosätta den i <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="5142301680741828703">Rendera alltid följande webbadressmönster i <ph name="PRODUCT_FRAME_NAME"/></translation>
+<translation id="805526450642067726">Innebär att du kan ange en lista med webbadressmönster som anger webbadresser som inte får köra plugin-program.</translation>
+<translation id="4625915093043961294">Konfigurera vitlista för tilläggsinstallation</translation>
+<translation id="3101501961102569744">Välj hur inställningar för proxyserver ska anges</translation>
+<translation id="7774768074957326919">Använd systemets proxyinställningar</translation>
 <translation id="3891357445869647828">Aktivera JavaScript</translation>
+<translation id="868187325500643455">Tillåt alla webbplatser att köra plugin-program automatiskt</translation>
+<translation id="5226033722357981948">Ange om plugin-sökaren ska inaktiveras</translation>
+<translation id="9068358498333390522">Innebär att du kan ange om webbplatser får visa popup-fönster. Popup-fönster kan antingen vara tillåtna för alla webbplatser eller inte tillåtna för alla webbplatser.</translation>
+<translation id="7194407337890404814">Standardsökleverantörens namn</translation>
+<translation id="5535973522252703021">Vitlista  för Kerberos-delegeringsserver</translation>
+<translation id="4554678280250165996">Anger vilka HTTP-autentiseringsscheman som stöds av <ph name="PRODUCT_NAME"/>.
+
+          Möjliga värden är basic, digest, ntlm och negotiate. Avgränsa med komma om du anger flera värden.</translation>
+<translation id="5034323863800401760">Inaktiverar utvecklarverktygen och JavaScript-konsolen.
+
+      Om du aktiverar den här inställningen går det inte att öppna utvecklarverktygen eller visa webbplatselement. Alla kortkommandon och meny- eller snabbmenyalternativ som öppnar utvecklarverktygen eller JavaScript-konsolen inaktiveras.</translation>
+<translation id="6013842521938070987">Inaktiverar angivna protokollschaman i <ph name="PRODUCT_NAME"/>.
+
+      Webbadresser som använder ett schema från listan kan inte läsas in eller öppnas.</translation>
+<translation id="4056910949759281379">Inaktivera SPDY-protokoll</translation>
+<translation id="3808945828600697669">Ange en lista med inaktiverade plugin-program</translation>
+<translation id="2187975305444384964">Innebär att du kan ställa in huruvida webbplatser får spåra användarnas fysiska plats. Spårning av användarnas fysiska plats kan tillåtas automatiskt eller nekas automatiskt, eller så kan användaren bli tillfrågad varje gång en webbplats efterfrågar den fysiska platsen.</translation>
+<translation id="8397112610813153899">Anpassa listan med webbadressmönster som alltid ska renderas av <ph name="PRODUCT_FRAME_NAME"/>.
+
+          Exempelmönster finns på http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
+<translation id="2098658257603918882">Aktivera rapportering av användning och kraschrelaterade data</translation>
+<translation id="1151353063931113432">Tillåt bilder på dessa webbplatser</translation>
+<translation id="4498075447689127727">Innebär att du kan ange en lista med webbadressmönster som anger webbadresser som inte får öppna popup-fönster.</translation>
+<translation id="1297182715641689552">Använd en PAC-proxyskript</translation>
+<translation id="8631434304112909927">till och med version <ph name="UNTIL_VERSION"/></translation>
+<translation id="7469554574977894907">Aktivera sökförslag</translation>
+<translation id="5511702823008968136">Aktivera bokmärkesfältet</translation>
+<translation id="3653673712530669976">Innebär att du kan konfigurera standardrenderare för HTML när <ph name="PRODUCT_FRAME_NAME"/> är installerat.
+          Standardinställningen är att låta värdwebbläsaren utföra renderingen, men du
+          kan välja att åsidosätta detta och låta <ph name="PRODUCT_FRAME_NAME"/> rendera HTML-sidor som standard.</translation>
+<translation id="7848840259379156480">Innebär att du kan konfigurera standardrenderare för HTML när <ph name="PRODUCT_FRAME_NAME"/> är installerat.
+      Standardinställningen är att låta värdwebbläsaren utföra renderingen, men du
+      kan välja att åsidosätta detta och låta <ph name="PRODUCT_FRAME_NAME"/> rendera HTML-sidor som standard.</translation>
+<translation id="4486602758942612946">Anpassa listan med webbadressmönster som alltid ska renderas av värdwebbläsaren.
+          Exempel på mönster finns på http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
+<translation id="4346795218451526495">Anger en lista med plugin-program som användaren kan aktivera eller inaktivera i <ph name="PRODUCT_NAME"/>.
+
+      Jokertecknen * och ? kan användas för att matcha godtyckliga teckenföljder. * matchar ett godtyckligt antal tecken medan ? anger ett enda valfritt tecken, dvs. matchar noll till ett tecken. Escape-tecknet är \, så om du vill matcha de faktiska tecknen *, ? eller \ kan du skriva \ framför dem.
+
+      Om du aktiverar den här inställningen kan den angivna listan med plugin-program användas i <ph name="PRODUCT_NAME"/>. Användarna kan aktivera eller inaktivera dem i about:plugins även om plugin-programmet också matchar ett mönster i DisabledPlugins. Användarna kan också aktivera och inaktivera plugin-program som inte matchar några mönster i DisabledPlugins, DisabledPluginsExceptions och EnabledPlugins.</translation>
+<translation id="8777120694819070607">Innebär att föråldrade plugin-program kan köras i <ph name="PRODUCT_NAME"/>.
+
+      Om du aktiverar den här inställningen kan föråldrade plugin-program användas som vanliga plugin-program.
+
+      Om du inaktiverar den här inställningen går det inte att använda äldre plugin-program och användarna tillfrågas inte om tillåtelse att köra dem.
+
+      Om du inte anger inställningen får användarna välja om de vill köra föråldrade program.</translation>
+<translation id="407895324478579198">Innebär att du kan ange en lista med tillägg som ska installeras obemärkt utan att användaren behöver göra något.
+
+          Varje objekt i listan är en sträng som innehåller ett tilläggs-ID och en uppdateringsadress avgränsade med semikolon (<ph name="SEMICOLON"/>). Exempel: <ph name="EXTENSION_POLICY_EXAMPLE"/>. För varje objekt hämtar <ph name="PRODUCT_NAME"/> det tillägg som anges av ID:t från den angivna webbadressen och installerar det automatiskt. På följande sidor förklaras hur du kan tillhandahålla tillägg på din egen server. Om uppdateringsadresser: <ph name="LINK_TO_EXTENSION_DOC1"/> , allmänt om att tillhandahålla tillägg: <ph name="LINK_TO_EXTENSION_DOC2"/>.
+
+          Användarna kan inte avinstallera tillägg som anges i den här policyn. Om du tar bort ett tillägg från listan avinstalleras det automatiskt av <ph name="PRODUCT_NAME"/>. Tillägg som är svartlistade i ExtensionInstallBlacklist och inte är vitlistade kan inte tvångsinstalleras av den här policyn.</translation>
+<translation id="3300906985144143927">Anger webbadressen till favoritikonen för  standardsökleverantören. Valfritt.</translation>
+<translation id="1583248206450240930">Använd <ph name="PRODUCT_FRAME_NAME"/> som standard</translation>
+<translation id="1047128214168693844">Tillåt inte att någon webbplats spårar användarnas fysiska plats</translation>
+<translation id="3273221114520206906">Standardinställning för JavaScript</translation>
+<translation id="6810445994095397827">Blockera JavaScript på dessa webbplatser</translation>
+<translation id="6510914645829248303">Om &quot;Öppna följande sidor&quot; har valts som startåtgärd kan du ange en lista med webbadresser som ska öppnas.</translation>
+<translation id="3780152581321609624">Inkludera port som inte är standard i Kerberos SPN</translation>
+<translation id="2660846099862559570">Använd aldrig en proxy</translation>
+<translation id="5512418063782665071">Webbadress för startsida</translation>
+<translation id="8990655542335348641">Anger en tid i millisekunder för hur ofta enhetshanteringstjänsten avfrågas för policyinformation.
+
+      Om du anger den här policyn åsidosätts standardvärdet tre timmar. Giltiga värden är från 30 minuter till en dag. Värden utanför intervallet ändras till närmaste gräns.</translation>
+<translation id="6049075103826767200">Aktiverar anonym rapportering av användning och kraschrelaterade data om <ph name="PRODUCT_NAME"/> till Google och förhindrar att användarna ändrar inställningen.
+
+      Om du aktiverar den här inställningen skickas anonyma rapporter om användning och kraschrelaterade data till Google.
+
+      Om du inaktiverar inställningen skickas inga anonyma rapporter om användning och kraschrelaterade data till Google.
+
+      Om du aktiverar eller inaktiverar inställningen kan den inte ändras eller åsidosättas av användarna i <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="3115819625623659514">Konfigurerar standardstartsidans typ i <ph name="PRODUCT_NAME"/> och förhindrar att användarna ändrar inställningarna för startsidan. Startsidan kan vara en webbadress du anger eller sidan Ny flik.
+
+          Om du aktiverar inställningen används alltid sidan Ny flik som startsida och startsidans webbadress ignoreras.
+
+          Om du inaktiverar inställningen blir användarens startsida aldrig sidan Ny flik om inte dess webbadress ställs in på &quot;chrome://newtab&quot;.
+
+          Om du aktiverar eller inaktiverar inställningen kan användarna inte ändra startsidans typ i <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="2263362640517427542">Aktivera lås när enheter med Chrome OS är i viloläge eller vänteläge.</translation>
+<translation id="6808666497110319299">Aktiverar användning av alternativa felsidor som är inbyggda i <ph name="PRODUCT_NAME"/> (till exempel &quot;Sidan hittades inte&quot;) och förhindrar att användarna ändrar inställningen.
+
+      Om du aktiverar inställningen används alternativa felsidor.
+
+      Om du inaktiverar inställningen används aldrig alternativa felsidor.
+
+      Om du aktiverar eller inaktiverar den här inställningen kan den inte ändras eller åsidosättas av användarna i <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="1948757837129151165">Policy för HTTP-autentisering</translation>
+<translation id="817926804885880359">Aktiverar funktionen Autofyll i <ph name="PRODUCT_NAME"/> så att användarna kan fylla i webbformulär som använts tidigare automatiskt med information som adress eller kreditkortsinformation.
+
+      Om du inaktiverar inställningen kan användarna inte använda Autofyll.
+
+      Om du aktiverar inställningen eller inte konfigurerar något värde förblir Autofyll under användarnas kontroll. Det innebär att de kan konfigurera profiler för Autofyll och aktivera och inaktivera Autofyll som de vill.</translation>
+<translation id="5645779841392247734">Tillåt cookies på dessa webbplatser</translation>
+<translation id="3906388518501362918">Aktiverar JavaScript i <ph name="PRODUCT_NAME"/> och förhindrar att användarna ändrar inställningen.
+
+      Om inställningen är aktiverad eller inte konfigurerad kan JavaScript användas på webbsidor.
+
+      Om inställningen är inaktiverad kan inte JavaScript användas på webbsidor.</translation>
+<translation id="4821854788360803313">Anger en lista med plugin-program som är inaktiverade i <ph name="PRODUCT_NAME"/> och förhindrar att användarna ändrar inställningen.
+
+      Jokertecknen * och ? kan användas för att matcha godtyckliga teckenföljder. * matchar ett godtyckligt antal tecken medan ? anger ett enda tecken, dvs. matchar noll till ett tecken. Escape-tecknet är \, så om du vill matcha de faktiska tecknen *, ? eller \ skriver du \ framför dem.
+
+      Om du aktiverar den här inställningen används aldrig listan med plugin-program i <ph name="PRODUCT_NAME"/>. Plugin-programmen markeras som inaktiverade i about:plugins och de kan inte aktiveras av användarna.
+
+      Observera att den här policyn kan åsidosättas av EnabledPlugins och DisabledPluginsExceptions.</translation>
 </translationbundle>

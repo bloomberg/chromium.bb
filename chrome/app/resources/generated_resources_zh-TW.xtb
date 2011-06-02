@@ -1418,7 +1418,7 @@
 <translation id="1636959874332483835"><ph name="HOST_NAME"/> 含有惡意軟體，如果瀏覽這個網站，您的電腦可能會中毒。</translation>
 <translation id="8050783156231782848">沒有可用的流量</translation>
 <translation id="1175364870820465910">列印(&amp;P)...</translation>
-<translation id="3866249974567520381">描述</translation>
+<translation id="3866249974567520381">說明</translation>
 <translation id="2900139581179749587">無法辨識語音。</translation>
 <translation id="953692523250483872">未選取任何檔案</translation>
 <translation id="2294358108254308676">是否要安裝「<ph name="PRODUCT_NAME"/>」？</translation>
@@ -2194,7 +2194,7 @@
 <translation id="5792852254658380406">管理擴充功能...</translation>
 <translation id="2359808026110333948">繼續</translation>
 <translation id="176759384517330673">已與 <ph name="USER_EMAIL_ADDRESS"/> 同步化。上次同步處理時間：<ph name="LAST_SYNC_TIME"/></translation>
-<translation id="1618661679583408047">伺服器的安全性憑證尚未生效!</translation>
+<translation id="1618661679583408047">此伺服器的安全性憑證尚未生效!</translation>
 <translation id="7039912931802252762">Microsoft 智慧卡登入</translation>
 <translation id="6285074077487067719">模式</translation>
 <translation id="3065140616557457172">輸入搜尋網址或內容，什麼都行。</translation>
@@ -2203,7 +2203,7 @@
 <translation id="521467793286158632">移除所有密碼</translation>
 <translation id="2491120439723279231">伺服器憑證含有錯誤。</translation>
 <translation id="4448844063988177157">正在搜尋 Wi-Fi 網路...</translation>
-<translation id="5765780083710877561">描述：</translation>
+<translation id="5765780083710877561">說明：</translation>
 <translation id="338583716107319301">分隔線</translation>
 <translation id="2079053412993822885">如果您刪除了您所擁有的某個憑證，那麼您將無法再使用這個憑證來識別您的身分。</translation>
 <translation id="7221869452894271364">重新載入此頁</translation>

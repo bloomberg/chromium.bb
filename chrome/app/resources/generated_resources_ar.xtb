@@ -1415,7 +1415,7 @@
 <translation id="1636959874332483835">يحتوي <ph name="HOST_NAME"/> على برامج ضارة. قد يصاب جهازك بفيروس في حالة زيارتك لهذا الموقع.</translation>
 <translation id="8050783156231782848">لا تتوفر أية بيانات.</translation>
 <translation id="1175364870820465910">ط&amp;باعة...</translation>
-<translation id="3866249974567520381">وصف</translation>
+<translation id="3866249974567520381">الوصف</translation>
 <translation id="2900139581179749587">لم يتم التعرف على الكلام.</translation>
 <translation id="953692523250483872">لم يتم تحديد أي ملفات</translation>
 <translation id="2294358108254308676">هل تريد تثبيت <ph name="PRODUCT_NAME"/>؟</translation>
@@ -2192,7 +2192,7 @@
 <translation id="521467793286158632">إزالة جميع كلمات المرور</translation>
 <translation id="2491120439723279231">تحتوي شهادة الخادم على أخطاء.</translation>
 <translation id="4448844063988177157">جارِ البحث عن شبكات Wi-Fi...</translation>
-<translation id="5765780083710877561">وصف:</translation>
+<translation id="5765780083710877561">الوصف:</translation>
 <translation id="338583716107319301">فاصل</translation>
 <translation id="2079053412993822885">إذا حذفت إحدى شهاداتك، فلن تستطيع استخدامها لتعريف هويتك.</translation>
 <translation id="7221869452894271364">إعادة تحميل هذه الصفحة</translation>

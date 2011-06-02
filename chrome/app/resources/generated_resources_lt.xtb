@@ -398,7 +398,7 @@
 <translation id="7960533875494434480">Trumpalaikis išorinis saistymas</translation>
 <translation id="6431347207794742960">„<ph name="PRODUCT_NAME"/>“ nustatys automatinius naujinius visiems šio kompiuterio naudotojams.</translation>
 <translation id="4973698491777102067">Sunaikinti šiuos elementus iš:</translation>
-<translation id="6074963268421707432">Neleisti jokiai svetainei rodyti darbalaukio pranešimų</translation>
+<translation id="6074963268421707432">Neleisti jokioje svetainėje rodyti darbalaukio pranešimų</translation>
 <translation id="8508050303181238566">Jei norite perjungti įvesties metodą, paspauskite „<ph name="HOTKEY_NAME"/>“.</translation>
 <translation id="6273404661268779365">Pridėti naują fakso nr.</translation>
 <translation id="1995173078718234136">Nuskaitomas turinys...</translation>
@@ -1441,7 +1441,7 @@
 <translation id="1636959874332483835"><ph name="HOST_NAME"/> yra kenkėjiška programa. Jei apsilankysite šioje svetainėje, virusas gali patekti į kompiuterį.</translation>
 <translation id="8050783156231782848">Nėra jokių galimų duomenų</translation>
 <translation id="1175364870820465910">&amp;Spausdinti...</translation>
-<translation id="3866249974567520381">Apibūdinimas</translation>
+<translation id="3866249974567520381">Aprašas</translation>
 <translation id="2900139581179749587">Kalba neatpažinta.</translation>
 <translation id="953692523250483872">Nepasirinkta jokių failų</translation>
 <translation id="2294358108254308676">Ar norite įdiegti „<ph name="PRODUCT_NAME"/>“?</translation>
@@ -1776,7 +1776,7 @@
 <translation id="9073281213608662541">PAP</translation>
 <translation id="1800035677272595847">Sukčiavimas</translation>
 <translation id="8448317557906454022">Prieš <ph name="NUMBER_ZERO"/> sek.</translation>
-<translation id="402759845255257575">Neleisti jokiai svetainei paleisti „JavaScript“</translation>
+<translation id="402759845255257575">Neleisti jokioje svetainėje paleisti „JavaScript“</translation>
 <translation id="4610637590575890427">Ar norėjote eiti į <ph name="SITE"/>?</translation>
 <translation id="7723779034587221017">Nutrūko ryšys su politikos paslauga. Iš naujo nustatykite įrenginį arba susisiekite su palaikymo atstovu.</translation>
 <translation id="3046388203776734202">Iššokančiųjų langų nustatymai:</translation>
@@ -1982,7 +1982,7 @@
 <translation id="8267453826113867474">Blokuoti įžeidžiančius žodžius</translation>
 <translation id="7959074893852789871">Faile buvo keli sertifikatai; kai kurie iš jų nebuvo importuoti:</translation>
 <translation id="1213999834285861200">Vaizdų išimtys</translation>
-<translation id="2805707493867224476">Leisti visoms svetainėms rodyti iššokančiuosius langus</translation>
+<translation id="2805707493867224476">Leisti visose svetainėse rodyti iššokančiuosius langus</translation>
 <translation id="3561217442734750519">Privačiojo rakto įvesties vertė turi būti galiojantis kelias.</translation>
 <translation id="2444609190341826949">Neturint slaptafrazės, slaptažodžiai ir kiti šifruoti duomenys nebus sinchronizuojami šiame kompiuteryje.</translation>
 <translation id="77221669950527621">Plėtiniai arba programos</translation>
@@ -2245,7 +2245,7 @@
 <translation id="521467793286158632">Pašalinti visus slaptažodžius</translation>
 <translation id="2491120439723279231">Serverio sertifikate yra klaidų.</translation>
 <translation id="4448844063988177157">Ieškoma „Wi-Fi“ tinklų...</translation>
-<translation id="5765780083710877561">Apibūdinimas:</translation>
+<translation id="5765780083710877561">Aprašas:</translation>
 <translation id="338583716107319301">Skyriklis</translation>
 <translation id="2079053412993822885">Jei ištrinsite vieną iš savo sertifikatų, nebegalėsite jo naudoti savo tapatybei nustatyti.</translation>
 <translation id="7221869452894271364">Perkrauti šį puslapį</translation>

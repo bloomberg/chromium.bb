@@ -396,7 +396,7 @@
 <translation id="7960533875494434480">Повезивање по ширини</translation>
 <translation id="6431347207794742960"><ph name="PRODUCT_NAME"/> ће подесити аутоматска ажурирања за све кориснике овог рачунара.</translation>
 <translation id="4973698491777102067">Обришите следеће ставке од:</translation>
-<translation id="6074963268421707432">Не дозволи ниједном сајту да приказује обавештења на радној површини</translation>
+<translation id="6074963268421707432">Не дозволи да било који сајт приказује обавештења на радној површини</translation>
 <translation id="8508050303181238566">Притисните <ph name="HOTKEY_NAME"/> да бисте прелазили из једног метода уноса у други.</translation>
 <translation id="6273404661268779365">Додај нови факс</translation>
 <translation id="1995173078718234136">Скенирање садржаја...</translation>
@@ -922,7 +922,7 @@
 <translation id="263325223718984101"><ph name="PRODUCT_NAME"/> није могао да доврши инсталацију, али ће наставити да се покреће са слике диска.</translation>
 <translation id="7025190659207909717">Управљање услугом мобилног преноса података</translation>
 <translation id="8265096285667890932">Користи бочне картице</translation>
-<translation id="4250680216510889253">Ne</translation>
+<translation id="4250680216510889253">Не</translation>
 <translation id="3949593566929137881">Унос PIN-а за SIM картицу</translation>
 <translation id="6291953229176937411">&amp;Прикажи у Finder-у</translation>
 <translation id="2476990193835943955">Држите Control, Alt или Shift да бисте видели пречице на&lt;br&gt;тастатури за те модификујуће тастере.</translation>

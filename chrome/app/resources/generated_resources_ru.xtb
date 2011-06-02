@@ -396,7 +396,7 @@
 <translation id="7960533875494434480">Переплет по короткому краю</translation>
 <translation id="6431347207794742960"><ph name="PRODUCT_NAME"/> настроит автоматические обновления для всех пользователей на этом компьютере.</translation>
 <translation id="4973698491777102067">Удалить указанные ниже элементы:</translation>
-<translation id="6074963268421707432">Блокировать оповещения на всех сайтах</translation>
+<translation id="6074963268421707432">Запретить показ оповещений на любых сайтах</translation>
 <translation id="8508050303181238566">Нажмите <ph name="HOTKEY_NAME"/>, чтобы переключиться между методами ввода.</translation>
 <translation id="6273404661268779365">Добавить факс</translation>
 <translation id="1995173078718234136">Сканирование содержания...</translation>
@@ -1744,7 +1744,7 @@
 <translation id="9073281213608662541">PAP</translation>
 <translation id="1800035677272595847">Фишинг</translation>
 <translation id="8448317557906454022"><ph name="NUMBER_ZERO"/> secs ago</translation>
-<translation id="402759845255257575">Блокировать JavaScript на всех сайтах</translation>
+<translation id="402759845255257575">Запретить выполнение JavaScript на всех сайтах</translation>
 <translation id="4610637590575890427">Возможно, вы хотели перейти на <ph name="SITE"/>?</translation>
 <translation id="7723779034587221017">Отсутствует подключение к серверу политик. Выполните сброс устройства или обратитесь в службу поддержки.</translation>
 <translation id="3046388203776734202">Настройки блокирования всплывающих окон:</translation>

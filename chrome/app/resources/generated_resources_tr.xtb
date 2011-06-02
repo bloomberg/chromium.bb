@@ -640,7 +640,7 @@
 <translation id="4745800796303246012">Deneysel Kablosuz EAP yöntemleri</translation>
 <translation id="1225544122210684390">Sabit Disk Cihazı</translation>
 <translation id="939736085109172342">Yeni klasör</translation>
-<translation id="4933484234309072027"><ph name="URL"/> adresinde katıştırılmış</translation>
+<translation id="4933484234309072027"><ph name="URL"/> adresinde gömülü</translation>
 <translation id="5554720593229208774">E-posta Sertifika Yetkilisi</translation>
 <translation id="862750493060684461">CSS önbelleği</translation>
 <translation id="2832519330402637498">Sol üst</translation>
@@ -1906,7 +1906,7 @@
 <translation id="8187473050234053012">Sunucunun güvenlik sertifikası iptal edildi!</translation>
 <translation id="7444983668544353857"><ph name="NETWORKDEVICE"/> ağ cihazını devre dışı bırak</translation>
 <translation id="6003177993629630467"><ph name="PRODUCT_NAME"/> kendisini güncel tutamayabilir.</translation>
-<translation id="421577943854572179">başka bir sitede katıştırılmış</translation>
+<translation id="421577943854572179">başka bir sitede gömülü</translation>
 <translation id="580886651983547002"><ph name="PRODUCT_NAME"/>
         web sitesine erişemiyor. Bu, normalde ağdaki sorunlardan kaynaklanır,
         ama yanlış yapılandırılmış bir güvenlik duvarı veya proxy sunucusu da buna yol açabilir.</translation>
@@ -1964,7 +1964,7 @@
 <translation id="8267453826113867474">Saldırgan Sözcükleri Engelle</translation>
 <translation id="7959074893852789871">Dosya birden çok sertifika içeriyordu, bunların bazıları içe aktarılmadı:</translation>
 <translation id="1213999834285861200">Görsellerle İlgili İstisnaları</translation>
-<translation id="2805707493867224476">Tüm sitelerde pop-up'lara izin ver</translation>
+<translation id="2805707493867224476">Tüm sitelerin pop-up'ların göstermesine izin ver</translation>
 <translation id="3561217442734750519">Özel anahtara ilişkin giriş değeri geçerli bir yol olmalıdır.</translation>
 <translation id="2444609190341826949">Parola olmadan şifreleriniz ve diğer şifrelenmiş verileriniz bu bilgisayarda senkronize edilmeyecek.</translation>
 <translation id="77221669950527621">Uzantılar veya Uygulamalar</translation>

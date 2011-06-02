@@ -1375,7 +1375,7 @@ ja poista valinta kaikista välityspalvelimista, jotka on valittu.</translation>
 <translation id="3738924763801731196"><ph name="OID"/>:</translation>
 <translation id="6550769511678490130">Avaa kaikki kirjanmerkit</translation>
 <translation id="1847961471583915783">Poista evästeet ja muut sivuston ja laajennuksien tiedot, kun suljen selaimen</translation>
-<translation id="8870318296973696995">Oma etusivu</translation>
+<translation id="8870318296973696995">Etusivu</translation>
 <translation id="6659594942844771486">Välilehti</translation>
 <translation id="6575134580692778371">Ei määritetty</translation>
 <translation id="4624768044135598934">Onnistui!</translation>
@@ -1533,7 +1533,7 @@ ja poista valinta kaikista välityspalvelimista, jotka on valittu.</translation>
 <translation id="4626106357471783850"><ph name="PRODUCT_NAME"/> tulee käynnistää uudelleen, jotta päivitys otetaan käyttöön.</translation>
 <translation id="1697068104427956555">Valitse kuvasta neliön muotoinen alue.</translation>
 <translation id="2840798130349147766">Verkkotietokannat</translation>
-<translation id="1628736721748648976">Voi hitsi!</translation>
+<translation id="1628736721748648976">Koodaus</translation>
 <translation id="1198271701881992799">Aloitetaan</translation>
 <translation id="782590969421016895">Käytä nykyisiä sivuja</translation>
 <translation id="6521850982405273806">Ilmoita virheestä</translation>
@@ -1932,7 +1932,7 @@ ei saa yhteyttä sivustoon. Syynä on yleensä verkon ongelma, mutta ongelma saa
 <translation id="8267453826113867474">Estä loukkaavat sanat</translation>
 <translation id="7959074893852789871">Tiedostossa oli useita varmenteita, joista kaikkia ei tuotu:</translation>
 <translation id="1213999834285861200">Kuvapoikkeukset</translation>
-<translation id="2805707493867224476">Salli kaikkien sivustojen näyttää ponnahdusikkunoita</translation>
+<translation id="2805707493867224476">Anna kaikkien sivustojen näyttää ponnahdusikkunoita</translation>
 <translation id="3561217442734750519">Yksityisen avaimen syötearvon täytyy olla kelvollinen polku.</translation>
 <translation id="2444609190341826949">Jos et määritä tunnuslausetta, tietokoneesi salasanoja ja muita salattuja tietoja ei synkronoida.</translation>
 <translation id="77221669950527621">Laajennukset tai sovellukset</translation>

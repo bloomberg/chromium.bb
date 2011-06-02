@@ -397,7 +397,7 @@
 <translation id="7960533875494434480">Encadernação na borda menor</translation>
 <translation id="6431347207794742960">O <ph name="PRODUCT_NAME"/> irá configurar as atualizações automáticas para todos os usuários deste computador.</translation>
 <translation id="4973698491777102067">Eliminar os seguintes itens de:</translation>
-<translation id="6074963268421707432">Não permitir que nenhum site mostre notificações na área de trabalho</translation>
+<translation id="6074963268421707432">Não permitir que nenhum site exiba notificações da área de trabalho</translation>
 <translation id="8508050303181238566">Pressione <ph name="HOTKEY_NAME"/> para alternar entre os métodos de entrada.</translation>
 <translation id="6273404661268779365">Adicionar novo fax</translation>
 <translation id="1995173078718234136">Verificando conteúdo...</translation>
@@ -1771,7 +1771,7 @@
 <translation id="9073281213608662541">PAP</translation>
 <translation id="1800035677272595847">Phishing</translation>
 <translation id="8448317557906454022"><ph name="NUMBER_ZERO"/> secs ago</translation>
-<translation id="402759845255257575">Não permitir que nenhum site execute JavaScript</translation>
+<translation id="402759845255257575">Não permitir que nenhum site execute o JavaScript</translation>
 <translation id="4610637590575890427">Você quis ir a <ph name="SITE"/>?</translation>
 <translation id="7723779034587221017">A conexão com o serviço de política foi perdida. Reinicie o dispositivo ou entre em contato com seu representante de suporte.</translation>
 <translation id="3046388203776734202">Configurações de pop-up:</translation>
@@ -1977,7 +1977,7 @@
 <translation id="8267453826113867474">Bloquear palavras ofensivas</translation>
 <translation id="7959074893852789871">O arquivo continha vários certificados e alguns deles não foram importados:</translation>
 <translation id="1213999834285861200">Exceções de imagem</translation>
-<translation id="2805707493867224476">Permitir que todos os sites mostrem pop-ups</translation>
+<translation id="2805707493867224476">Permitir que todos os sites exibam pop-ups</translation>
 <translation id="3561217442734750519">O valor inserido para a chave privada deve ser um caminho válido.</translation>
 <translation id="2444609190341826949">Sem uma senha, suas senhas e outros dados criptografados não serão sincronizados neste computador.</translation>
 <translation id="77221669950527621">Extensões ou aplicativos</translation>

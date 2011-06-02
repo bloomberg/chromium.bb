@@ -297,7 +297,7 @@
 <translation id="8833054222610756741">CRX-less Web Apps</translation>
 <translation id="4031729365043810780">Netzwerkverbindung</translation>
 <translation id="3332115613788466465">Bindung an der langen Seite</translation>
-<translation id="1985136186573666099"><ph name="PRODUCT_NAME"/> verwendet die Proxy-Einstellungen Ihres Computersystems, um eine Verbindung mit dem Netzwerk herzustellen.</translation>
+<translation id="1985136186573666099"><ph name="PRODUCT_NAME"/> verwendet die System-Proxy-Einstellungen Ihres Computers, um eine Verbindung mit dem Netzwerk herzustellen.</translation>
 <translation id="6508261954199872201">Anwendung: <ph name="APP_NAME"/></translation>
 <translation id="5585645215698205895">&amp;Nach unten</translation>
 <translation id="8366757838691703947">? Alle auf diesem Gerät vorhandenen Daten werden gelöscht.</translation>
@@ -610,7 +610,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="1006316751839332762">Verschlüsselungs-Passphrase</translation>
 <translation id="8795916974678578410">Neues Fenster</translation>
 <translation id="2733275712367076659">Ihr Name ist in den Zertifikaten folgender Organisationen angegeben:</translation>
-<translation id="4801512016965057443">Mobilfunk-Roaming zulassen</translation>
+<translation id="4801512016965057443">Mobildaten-Roaming zulassen</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2046040965693081040">Aktuelle Seiten verwenden</translation>
 <translation id="3798449238516105146">Version</translation>
@@ -653,7 +653,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="5749483996735055937">Beim Kopieren des Wiederherstellungsabbilds auf das Gerät ist ein Problem aufgetreten.</translation>
 <translation id="3520476450377425184"><ph name="NUMBER_MANY"/> Tage übrig</translation>
 <translation id="7643817847124207232">Die Internetverbindung wurde unterbrochen.</translation>
-<translation id="932327136139879170">Home</translation>
+<translation id="932327136139879170">Startseite</translation>
 <translation id="4764675709794295630">« Zurück</translation>
 <translation id="2560794850818211873">Video-URL k&amp;opieren</translation>
 <translation id="6042708169578999844">Ihre Daten auf <ph name="WEBSITE_1"/> und <ph name="WEBSITE_2"/></translation>
@@ -903,13 +903,13 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="189210018541388520">Vollbildmodus öffnen</translation>
 <translation id="8795668016723474529">Kreditkarte hinzufügen</translation>
 <translation id="5860033963881614850">Aus</translation>
-<translation id="3956882961292411849">Informationen zum Mobilfunktarif werden geladen. Bitte warten...</translation>
+<translation id="3956882961292411849">Informationen zum Datenplan werden geladen. Bitte warten...</translation>
 <translation id="689050928053557380">Mobilfunktarif abschließen...</translation>
 <translation id="4235618124995926194">Diese E-Mail-Adresse einfügen:</translation>
 <translation id="4874539263382920044">Titel muss mindestens ein Zeichen enthalten</translation>
 <translation id="798525203920325731">Netzwerk-Namespaces</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME"/> konnte die Installation nicht abschließen, wird jedoch weiterhin über das Datenträgerabbild ausgeführt.</translation>
-<translation id="7025190659207909717">Mobilfunkdienst-Verwaltung</translation>
+<translation id="7025190659207909717">Verwaltung mobiler Datendienste</translation>
 <translation id="8265096285667890932">Seitliche Tabs verwenden</translation>
 <translation id="4250680216510889253">Nein</translation>
 <translation id="3949593566929137881">PIN der SIM-Karte eingeben</translation>
@@ -1034,7 +1034,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="8807632654848257479">Stabil</translation>
 <translation id="4209092469652827314">Groß</translation>
 <translation id="4222982218026733335">Ungültiges Serverzertifikat</translation>
-<translation id="152234381334907219">Noch nie gespeichert</translation>
+<translation id="152234381334907219">Nie speichern für...</translation>
 <translation id="5600599436595580114">Für diese Seite wurde ein Pre-Rendering durchgeführt.</translation>
 <translation id="8926468725336609312">Google Chrome kann keine Druckvorschau anzeigen, wenn der integrierte PDF-Viewer deaktiviert ist. Rufen Sie zum Anzeigen der Vorschau <ph name="BEGIN_LINK"/>chrome://plugins<ph name="END_LINK"/> auf, aktivieren Sie &quot;Chrome-PDF-Viewer&quot; und versuchen Sie es erneut.</translation>
 <translation id="8494214181322051417">Neu!</translation>
@@ -1104,7 +1104,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="7163503212501929773"><ph name="NUMBER_MANY"/> Stunden übrig</translation>
 <translation id="7705276765467986571">Lesezeichen-Modell konnte nicht geladen werden.</translation>
 <translation id="1196338895211115272">Privater Schlüssel konnte nicht exportiert werden.</translation>
-<translation id="5586329397967040209">Seite als meine Homepage festlegen</translation>
+<translation id="5586329397967040209">Als meine Startseite festlegen</translation>
 <translation id="629730747756840877">Konto</translation>
 <translation id="8525306231823319788">Vollbildmodus</translation>
 <translation id="9054208318010838">Abrufen meines physischen Standorts für alle Websites zulassen</translation>
@@ -1500,7 +1500,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="8186706823560132848">Software</translation>
 <translation id="4692623383562244444">Suchmaschinen</translation>
 <translation id="567760371929988174">Eingabe&amp;methoden</translation>
-<translation id="10614374240317010">Noch nie gespeichert</translation>
+<translation id="10614374240317010">Nie speichern für...</translation>
 <translation id="5116300307302421503">Datei kann nicht geparst werden.</translation>
 <translation id="2745080116229976798">Microsoft - Qualifizierte Unterordnung</translation>
 <translation id="2526590354069164005">Desktop</translation>
@@ -2021,7 +2021,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="5285267187067365830">Plug-in installieren...</translation>
 <translation id="5334844597069022743">Quelltext anzeigen</translation>
 <translation id="1166212789817575481">Tabs rechts schließen</translation>
-<translation id="6472893788822429178">Schaltfläche &quot;Home&quot; anzeigen</translation>
+<translation id="6472893788822429178">Schaltfläche &quot;Startseite&quot; anzeigen</translation>
 <translation id="4270393598798225102">Version <ph name="NUMBER"/></translation>
 <translation id="534916491091036097">Linke Klammer</translation>
 <translation id="4157869833395312646">Microsoft Server Gated Cryptography</translation>
@@ -2044,7 +2044,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="9090669887503413452">Systeminformationen senden</translation>
 <translation id="3084771660770137092">Entweder verfügt Google Chrome nicht mehr über genügend Arbeitsspeicher oder der Prozess für die Webseite wurde aus einem anderen Grund beendet. Aktualisieren Sie die Seite oder rufen Sie eine andere Seite auf.</translation>
 <translation id="1114901192629963971">Ihr Passwort kann im aktuellen Netzwerk nicht bestätigt werden. Wählen Sie ein anderes Netzwerk aus.</translation>
-<translation id="5179510805599951267">Nicht in <ph name="ORIGINAL_LANGUAGE"/>? Diesen Fehler melden</translation>
+<translation id="5179510805599951267">Nicht auf <ph name="ORIGINAL_LANGUAGE"/>? Diesen Fehler melden</translation>
 <translation id="6430814529589430811">Base64-codierter ASCII-Code, Einzelzertifikat</translation>
 <translation id="5143712164865402236">Vollbildmodus ein</translation>
 <translation id="8434177709403049435">&amp;Codierung</translation>
@@ -2059,7 +2059,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="2922350208395188000">Das Serverzertifikat kann nicht überprüft werden.</translation>
 <translation id="3778740492972734840">E&amp;ntwicklertools</translation>
 <translation id="8335971947739877923">Exportieren...</translation>
-<translation id="5680966941935662618">AutoFill-Einstellungen...</translation>
+<translation id="5680966941935662618">AutoFill-Einstellungen</translation>
 <translation id="38385141699319881">Bild wird heruntergeladen...</translation>
 <translation id="6004539838376062211">&amp;Optionen der Rechtschreibprüfung</translation>
 <translation id="5350198318881239970">Ihr Profil konnte nicht ordnungsgemäß geöffnet werden.\n\nMöglicherweise stehen nicht alle Funktionen zur Verfügung. Überprüfen Sie, ob das Profil vorhanden ist und Sie Lese- und Schreibzugriff für die Profilinhalte besitzen.</translation>
@@ -2098,7 +2098,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="7031962166228839643">TPM wird vorbereitet, bitte warten (dies kann einige Minuten dauern)...</translation>
 <translation id="4250377793615429299">Ungültige Kopienanzahl</translation>
 <translation id="7180865173735832675">Anpassen</translation>
-<translation id="5737306429639033676">Netzwerkaktionen vorhersagen, um die Seitenladeleistung zu verbessern</translation>
+<translation id="5737306429639033676">Netzwerkaktionen voraussehen, um die Ladegeschwindigkeit zu verbessern</translation>
 <translation id="8123426182923614874">Verbleibendes Datenvolumen:</translation>
 <translation id="3707020109030358290">Keine Zertifizierungsstelle</translation>
 <translation id="2115926821277323019">Muss eine gültige URL sein</translation>
@@ -2119,7 +2119,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="6928853950228839340">Aufbau einer Textur</translation>
 <translation id="1308727876662951186"><ph name="NUMBER_ZERO"/> mins left</translation>
 <translation id="7671576867600624">Technologie:</translation>
-<translation id="1103966635949043187">Gehen Sie zur Homepage der Website:</translation>
+<translation id="1103966635949043187">Gehen Sie zur Startseite der Website:</translation>
 <translation id="1951332921786364801">Remoting festlegen</translation>
 <translation id="1086613338090581534">Der Aussteller eines Zertifikats, das nicht abgelaufen ist, ist für das Führen einer so genannten &quot;Sperrliste&quot; verantwortlich. Falls ein Zertifikat in den Besitz eines anderen gelangt, kann der Aussteller es widerrufen, indem er es der Sperrliste hinzufügt. In diesem Fall vertraut Ihr Browser dem Zertifikat nicht mehr. Für abgelaufene Zertifikate ist kein Widerrufstatus erforderlich. Während der Gültigkeit dieses Zertifikats für die besuchte Website kann daher nicht ermittelt werden, ob das Zertifikat in den Besitz eines anderen gelangt ist und später widerrufen wurde oder ob es weiterhin sicher ist. Daher kann nicht ermittelt werden, ob Sie mit der rechtmäßigen Website kommunizieren oder ob sich das Zertifikat nun im Besitz eines Hackers befindet und Sie jetzt mit diesem kommunizieren. In diesem Fall sollten Sie nicht fortfahren.</translation>
 <translation id="2645575947416143543">Falls Sie jedoch in einem Unternehmen arbeiten, das eigene Zertifikate erzeugt, und Sie versuchen, mithilfe eines solchen Zertifikats eine Verbindung zu einer internen Website dieses Unternehmens herzustellen, können Sie das Problem auf sichere Weise lösen, indem Sie das Stammzertifikat des Unternehmens als &quot;Stammzertifikat&quot; importieren. In diesem Fall werden Zertifikate, die von Ihrem Unternehmen ausgestellt oder bestätigt wurden, als vertrauenswürdig eingestuft und Sie erhalten diese Fehlermeldung nicht, wenn Sie das nächste Mal versuchen, eine Verbindung zu einer internen Website herzustellen. Wenden Sie sich an die Supportmitarbeiter in Ihrem Unternehmen, wenn Sie beim Hinzufügen eines neuen Stammzertifikats in Ihrem Computer Hilfe benötigen.</translation>
@@ -2234,14 +2234,14 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="7385854874724088939">Beim Drucken ist ein Fehler aufgetreten. Bitte überprüfen Sie Ihren Drucker und versuchen Sie es erneut.</translation>
 <translation id="770015031906360009">Griechisch</translation>
 <translation id="3834901049798243128">Ausnahmen ignorieren und Drittanbieter-Cookies blockieren</translation>
-<translation id="8116152017593700047">Hier können Sie gespeicherte Screenshots auswählen. Derzeit sind keine Screenshots verfügbar. Drücken Sie Strg + die Taste &quot;Übersichtsmodus&quot;, um einen Screenshot anzufertigen. An dieser Stelle werden die letzten drei Screenshots angezeigt.</translation>
+<translation id="8116152017593700047">Hier können Sie gespeicherte Screenshots auswählen. Derzeit sind keine Screenshots verfügbar. Drücken Sie Strg + die Übersichtstaste, um einen Screenshot anzufertigen. An dieser Stelle werden die letzten drei Screenshots angezeigt.</translation>
 <translation id="3454157711543303649">Aktivierung abgeschlossen</translation>
 <translation id="884923133447025588">Kein Sperrmechanismus gefunden.</translation>
 <translation id="556042886152191864">Schaltfläche</translation>
 <translation id="1352060938076340443">Unterbrochen</translation>
 <translation id="8571226144504132898">Symbolwörterbuch</translation>
 <translation id="7229570126336867161">EVDO erforderlich</translation>
-<translation id="7582844466922312471">Mobilfunk</translation>
+<translation id="7582844466922312471">Mobile Daten</translation>
 <translation id="945522503751344254">Feedback senden</translation>
 <translation id="4539401194496451708">Das Chrome-Profil von <ph name="USER_EMAIL_ADDRESS"/> wird verwendet. Letzte Synchronisierung: <ph name="LAST_SYNC_TIME"/></translation>
 <translation id="7369847606959702983">Kreditkarte (sonstige)</translation>
@@ -2358,7 +2358,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="5436492226391861498">Warten auf Proxy-Tunnel...</translation>
 <translation id="3803991353670408298">Fügen Sie vor dem Entfernen dieser Eingabemethode eine andere Eingabemethode hinzu.</translation>
 <translation id="1095623615273566396"><ph name="NUMBER_FEW"/> Sekunden</translation>
-<translation id="7006788746334555276">Inhaltseinstellungen</translation>
+<translation id="7006788746334555276">Content-Einstellungen</translation>
 <translation id="3369521687965833290">Erweiterung kann nicht entpackt werden. Damit eine Erweiterung sicher entpackt werden kann, muss ein Pfad zu Ihrem Profilverzeichnis zur Verfügung stehen, der mit einem Laufwerksbuchstaben beginnt und keine Verknüpfung, keinen Bereitstellungspunkt und keine symbolische Verbindung enthält. Für Ihr Profil besteht kein solcher Pfad.</translation>
 <translation id="337920581046691015"><ph name="PRODUCT_NAME"/> wird installiert.</translation>
 <translation id="6282194474023008486">Postleitzahl</translation>
@@ -2631,7 +2631,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="3308006649705061278">Organisationseinheit (OE)</translation>
 <translation id="8912362522468806198">Google-Konto</translation>
 <translation id="4443536555189480885">&amp;Hilfe</translation>
-<translation id="340485819826776184">Dienst für die Vervollständigung von Suchanfragen und URLs bei der Eingabe in die Adressleiste verwenden</translation>
+<translation id="340485819826776184">Vervollständigung von Suchanfragen und URLs bei der Eingabe in die Adressleiste verwenden</translation>
 <translation id="4074900173531346617">Zertifikat für E-Mail-Signaturen</translation>
 <translation id="6165508094623778733">Weitere Informationen</translation>
 <translation id="9052208328806230490">Sie haben Ihre Drucker unter dem Konto <ph name="EMAIL"/> bei <ph name="CLOUD_PRINT_NAME"/> registriert.</translation>
@@ -2705,11 +2705,11 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="3285322247471302225">Neuer &amp;Tab</translation>
 <translation id="3943582379552582368">&amp;Zurück</translation>
 <translation id="7607002721634913082">Angehalten</translation>
-<translation id="480990236307250886">Homepage öffnen</translation>
+<translation id="480990236307250886">Startseite öffnen</translation>
 <translation id="8286036467436129157">Anmeldung</translation>
 <translation id="5999940714422617743"><ph name="EXTENSION_NAME"/> ist nun installiert.</translation>
 <translation id="1122198203221319518">&amp;Tools</translation>
-<translation id="5757539081890243754">Homepage</translation>
+<translation id="5757539081890243754">Startseite</translation>
 <translation id="2760009672169282879">Bulgarische phonetische Tastatur</translation>
 <translation id="6608140561353073361">Alle Cookies und Websitedaten...</translation>
 <translation id="8007030362289124303">Schwacher Akku</translation>
@@ -2726,7 +2726,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="7666868073052500132">Zwecke: <ph name="USAGES"/></translation>
 <translation id="6985345720668445131">Japanische Eingabeeinstellungen</translation>
 <translation id="3258281577757096226">3 Set (Final)</translation>
-<translation id="2359174522669474766">Eine Datei ausgewählt, $1</translation>
+<translation id="2359174522669474766">1 Datei ausgewählt, $1</translation>
 <translation id="6906268095242253962">Stellen Sie zum Fortfahren eine Internetverbindung her.</translation>
 <translation id="1908748899139377733">Frame-&amp;Informationen anzeigen</translation>
 <translation id="803771048473350947">Ablage</translation>
@@ -2771,7 +2771,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="8828933418460119530">DNS-Name</translation>
 <translation id="988159990683914416">Entwickler-Build</translation>
 <translation id="8026354464835030469"><ph name="BURNT_AMOUNT"/> von Unbekannt</translation>
-<translation id="4114470632216071239">SIM-Karte sperren (PIN zum Zugriff auf Mobildaten erforderlich)</translation>
+<translation id="4114470632216071239">SIM-Karte sperren (PIN zum Zugriff auf mobile Daten erforderlich)</translation>
 <translation id="2183426022964444701">Stammverzeichnis der Erweiterung auswählen</translation>
 <translation id="2517143724531502372">Nur für diese Sitzung sind Cookies von <ph name="DOMAIN"/> zulässig.</translation>
 <translation id="9018524897810991865">Synchronisierungseinstellungen bestätigen</translation>
@@ -2848,7 +2848,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
         Sie können versuchen, das Problem folgendermaßen zu diagnostizieren:
         <ph name="LINE_BREAK"/>
         <ph name="PLATFORM_TEXT"/></translation>
-<translation id="3533943170037501541">Willkommen auf Ihrer Homepage!</translation>
+<translation id="3533943170037501541">Willkommen auf Ihrer Startseite!</translation>
 <translation id="2333340435262918287">Ihre Änderungen werden beim nächsten Neustart von <ph name="PRODUCT_NAME"/> übernommen.</translation>
 <translation id="5906065664303289925">Hardware-Adresse:</translation>
 <translation id="3178000186192127858">Schreibgeschützt</translation>
@@ -2925,7 +2925,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="2149973817440762519">Lesezeichen bearbeiten</translation>
 <translation id="5431318178759467895">Farbe</translation>
 <translation id="7064842770504520784">Synchronisierungseinstellungen anpassen...</translation>
-<translation id="2784407158394623927">Ihr Mobilfunkdienst wird aktiviert.</translation>
+<translation id="2784407158394623927">Ihr mobiler Datendienst wird aktiviert.</translation>
 <translation id="3679848754951088761"><ph name="SOURCE_ORIGIN"/></translation>
 <translation id="6920989436227028121">In regulärem Tab öffnen</translation>
 <translation id="4057041477816018958"><ph name="SPEED"/> - <ph name="RECEIVED_AMOUNT"/></translation>
@@ -2959,7 +2959,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="1474842329983231719">Druckeinstellungen verwalten...</translation>
 <translation id="2455981314101692989">Auf dieser Webseite ist die AutoFill-Funktion für das Formular deaktiviert.</translation>
 <translation id="1646136617204068573">Ungarische Tastatur</translation>
-<translation id="5988840637546770870">In der Entwicklerversion werden Ideen getestet. Diese Version kann oftmals unstabil sein. Seien Sie daher vorsichtig, wenn Sie fortfahren.</translation>
+<translation id="5988840637546770870">In der Entwicklerversion werden Ideen getestet. Diese Version kann oftmals instabil sein. Seien Sie daher vorsichtig, wenn Sie fortfahren.</translation>
 <translation id="3569713929051927529">Ordner hinzufügen...</translation>
 <translation id="4032664149172368180">Japanische Eingabemethode (für US-Dvorak-Tastatur)</translation>
 <translation id="3748706263662799310">Programmfehler melden</translation>
@@ -2967,7 +2967,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="4283623729247862189">Optisches Gerät</translation>
 <translation id="5826507051599432481">Allgemeiner Name (CN)</translation>
 <translation id="8914326144705007149">Sehr groß</translation>
-<translation id="4215444178533108414">Bearbeiten beenden</translation>
+<translation id="4215444178533108414">Fertig</translation>
 <translation id="5154702632169343078">Antragsteller</translation>
 <translation id="2273562597641264981">Betreiber:</translation>
 <translation id="122082903575839559">Algorithmus für Zertifikatsignatur</translation>

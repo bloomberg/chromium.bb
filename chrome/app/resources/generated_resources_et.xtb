@@ -398,7 +398,7 @@
 <translation id="7960533875494434480">Lühema külje köitmine</translation>
 <translation id="6431347207794742960"><ph name="PRODUCT_NAME"/> seadistab automaatsed värskendused selle arvuti kõikide kasutajate jaoks.</translation>
 <translation id="4973698491777102067">Kustutage järgmised üksused saidilt:</translation>
-<translation id="6074963268421707432">Ära luba ühelgi saidil kuvada töölaua teatisi</translation>
+<translation id="6074963268421707432">Keela kõigil saitidel töölauateatiste näitamine</translation>
 <translation id="8508050303181238566">Sisendmeetodite vahetamiseks vajutage klahvi <ph name="HOTKEY_NAME"/>.</translation>
 <translation id="6273404661268779365">Lisa uus faks</translation>
 <translation id="1995173078718234136">Sisu skannimine ...</translation>
@@ -926,7 +926,7 @@
 <translation id="263325223718984101"><ph name="PRODUCT_NAME"/> ei suutnud installimist lõpule viia, kuid jätkab käitamist kettakujutiselt.</translation>
 <translation id="7025190659207909717">Mobiilse andmesideteenuse haldus</translation>
 <translation id="8265096285667890932">Kasuta külgmisi vahelehti</translation>
-<translation id="4250680216510889253">Pole</translation>
+<translation id="4250680216510889253">Ei</translation>
 <translation id="3949593566929137881">Sisestage SIM-kaardi PIN-kood</translation>
 <translation id="6291953229176937411">&amp;Näita otsijas</translation>
 <translation id="2476990193835943955">Hoidke all klahve Control, Alt või Tõst, et näha klaviatuuri&lt;br&gt;otseteid nende muundurite puhul.</translation>
@@ -1403,7 +1403,7 @@ Proovige uuesti mõne muu sertifikaadiga (kui teil on teisi sertifikaate). Kui t
 <translation id="3738924763801731196"><ph name="OID"/>:</translation>
 <translation id="6550769511678490130">Kõikide järjehoidjate avamine</translation>
 <translation id="1847961471583915783">Tühjenda brauseri sulgemisel küpsised ja muud saidi ning pistikprogrammi andmed</translation>
-<translation id="8870318296973696995">Koduleht</translation>
+<translation id="8870318296973696995">Avaleht</translation>
 <translation id="6659594942844771486">Vaheleht</translation>
 <translation id="6575134580692778371">Ei ole konfigureeritud</translation>
 <translation id="4624768044135598934">Õnnestus!</translation>
@@ -1772,7 +1772,7 @@ Proovige uuesti mõne muu sertifikaadiga (kui teil on teisi sertifikaate). Kui t
 <translation id="9073281213608662541">PAP</translation>
 <translation id="1800035677272595847">Õngevõtmine</translation>
 <translation id="8448317557906454022"><ph name="NUMBER_ZERO"/> sekundit tagasi</translation>
-<translation id="402759845255257575">Ära luba ühelgi saidil JavaScripti käitada</translation>
+<translation id="402759845255257575">Keela kõigil saitidel JavaScripti käitamine</translation>
 <translation id="4610637590575890427">Kas soovisite minna aadressile <ph name="SITE"/>?</translation>
 <translation id="7723779034587221017">Ühendus reeglite teenusega katkes. Lähtestage seade või võtke ühendust toe esindajaga.</translation>
 <translation id="3046388203776734202">Hüpikakende seaded:</translation>
@@ -1978,7 +1978,7 @@ Proovige uuesti mõne muu sertifikaadiga (kui teil on teisi sertifikaate). Kui t
 <translation id="8267453826113867474">Blokeeri solvavad sõnad</translation>
 <translation id="7959074893852789871">Fail sisaldas mitut sertifikaati, mõnda neist ei imporditud:</translation>
 <translation id="1213999834285861200">Kujutiste erandid</translation>
-<translation id="2805707493867224476">Luba kõigil saitidel hüpikaknaid kuvada</translation>
+<translation id="2805707493867224476">Luba kõigil saitidel hüpikakende näitamine</translation>
 <translation id="3561217442734750519">Privaatvõtme sisendi väärtus peab olema kehtiv tee.</translation>
 <translation id="2444609190341826949">Paroolita teie paroole ja muid krüpteeritud andmeid selles arvutis ei sünkroonita.</translation>
 <translation id="77221669950527621">Laiendused või rakendused</translation>

@@ -784,7 +784,7 @@ e fai clic su OK<ph name="END_BOLD"/>.</translation>
 <translation id="8596540852772265699">File personalizzati</translation>
 <translation id="7017354871202642555">Impossibile impostare la modalità dopo l'impostazione della finestra.</translation>
 <translation id="3101709781009526431">Data e ora</translation>
-<translation id="69375245706918574">Personalizza le preferenze di sincronizzazione</translation>
+<translation id="69375245706918574">Personalizza preferenze di sincronizzazione</translation>
 <translation id="833853299050699606">Informazioni sul piano non disponibili.</translation>
 <translation id="1737968601308870607">Segnala bug</translation>
 <translation id="4571852245489094179">Importa preferiti e impostazioni</translation>
@@ -1407,7 +1407,7 @@ e fai clic su OK<ph name="END_BOLD"/>.</translation>
 <translation id="3738924763801731196"><ph name="OID"/>:</translation>
 <translation id="6550769511678490130">Apri tutti i Preferiti</translation>
 <translation id="1847961471583915783">Cancella cookie e altri dati di siti e plug-in quando chiudo il browser</translation>
-<translation id="8870318296973696995">Pagina iniziale</translation>
+<translation id="8870318296973696995">Home page</translation>
 <translation id="6659594942844771486">TAB</translation>
 <translation id="6575134580692778371">Non configurata</translation>
 <translation id="4624768044135598934">Operazione riuscita.</translation>
@@ -1776,7 +1776,7 @@ e fai clic su OK<ph name="END_BOLD"/>.</translation>
 <translation id="9073281213608662541">PAP</translation>
 <translation id="1800035677272595847">Phishing</translation>
 <translation id="8448317557906454022"><ph name="NUMBER_ZERO"/> secondi fa</translation>
-<translation id="402759845255257575">Non consentire l'esecuzione di JavaScript nei siti</translation>
+<translation id="402759845255257575">Non consentire ad alcun sito di eseguire JavaScript</translation>
 <translation id="4610637590575890427">Forse intendevi accedere a <ph name="SITE"/>?</translation>
 <translation id="7723779034587221017">Connessione persa con il servizio dei criteri. Reimposta il dispositivo o contatta il rappresentante dell'assistenza.</translation>
 <translation id="3046388203776734202">Impostazioni popup:</translation>
@@ -2274,7 +2274,7 @@ e fai clic su OK<ph name="END_BOLD"/>.</translation>
 <translation id="7385854874724088939">Si è verificato un problema durante il tentativo di stampa. Controlla la stampante e riprova.</translation>
 <translation id="770015031906360009">Greco</translation>
 <translation id="3834901049798243128">Ignora le eccezioni e blocca l'impostazione dei cookie di terze parti</translation>
-<translation id="8116152017593700047">Puoi selezionare gli screenshot salvati da qui. Al momento non vi sono screenshot disponibili. Per acquisire uno screenshot. puoi premere Ctrl + il tasto della &quot;Modalità anteprima&quot; insieme. Gli ultimi tre screenshot acquisiti vengono visualizzati qui.</translation>
+<translation id="8116152017593700047">Puoi selezionare gli screenshot salvati da qui. Al momento non vi sono screenshot disponibili. Per acquisire uno screenshot, puoi premere Ctrl + il tasto della &quot;Modalità anteprima&quot; insieme. Gli ultimi tre screenshot acquisiti vengono visualizzati qui.</translation>
 <translation id="3454157711543303649">Attivazione completata</translation>
 <translation id="884923133447025588">Nessun sistema di revoca trovato.</translation>
 <translation id="556042886152191864">Pulsante</translation>
@@ -2935,7 +2935,7 @@ e fai clic su OK<ph name="END_BOLD"/>.</translation>
         log di sistema e nello screenshot, saranno protette
         secondo le nostre <ph name="BEGIN_LINK"/>
         norme sulla privacy.<ph name="END_LINK"/>
-        Per non inviare acun log di sistema, deseleziona la casella
+        Per non inviare alcun log di sistema, deseleziona la casella
         &quot;Invia informazioni di sistema&quot;.</translation>
 <translation id="4341977339441987045">Impedisci ai siti di impostare dati</translation>
 <translation id="806812017500012252">Riordina per titolo</translation>
