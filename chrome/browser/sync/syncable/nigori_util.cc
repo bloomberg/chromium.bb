@@ -13,6 +13,55 @@
 #include "chrome/browser/sync/util/cryptographer.h"
 
 namespace syncable {
+
+ModelTypeSet GetEncryptedDataTypes(BaseTransaction* const trans) {
+  std::string nigori_tag = ModelTypeToRootTag(syncable::NIGORI);
+  Entry entry(trans, GET_BY_SERVER_TAG, nigori_tag);
+  if (!entry.good()) {
+    VLOG(1) << "Nigori node not found, assuming no encrypted datatypes.";
+    ModelTypeSet encrypted_types;
+    encrypted_types.insert(syncable::PASSWORDS);
+    return encrypted_types;
+  }
+  if (NIGORI != entry.GetModelType()) {
+    // Can happen if we fail to apply the nigori node due to a conflict.
+    VLOG(1) << "Nigori node does not have nigori extension. Assuming no"
+            << " encrypted datatypes.";
+    ModelTypeSet encrypted_types;
+    encrypted_types.insert(syncable::PASSWORDS);
+    return encrypted_types;
+  }
+  const sync_pb::EntitySpecifics& specifics = entry.Get(SPECIFICS);
+  return GetEncryptedDataTypesFromNigori(
+      specifics.GetExtension(sync_pb::nigori));
+}
+
+ModelTypeSet GetEncryptedDataTypesFromNigori(
+    const sync_pb::NigoriSpecifics& nigori) {
+  // We don't check NIGORI datatype, it uses its own encryption scheme.
+  ModelTypeSet encrypted_types;
+  if (nigori.encrypt_bookmarks())
+    encrypted_types.insert(BOOKMARKS);
+  if (nigori.encrypt_preferences())
+    encrypted_types.insert(PREFERENCES);
+  if (nigori.encrypt_autofill_profile())
+    encrypted_types.insert(AUTOFILL_PROFILE);
+  if (nigori.encrypt_autofill())
+    encrypted_types.insert(AUTOFILL);
+  if (nigori.encrypt_themes())
+    encrypted_types.insert(THEMES);
+  if (nigori.encrypt_typed_urls())
+    encrypted_types.insert(TYPED_URLS);
+  if (nigori.encrypt_extensions())
+    encrypted_types.insert(EXTENSIONS);
+  if (nigori.encrypt_sessions())
+    encrypted_types.insert(SESSIONS);
+  if (nigori.encrypt_apps())
+    encrypted_types.insert(APPS);
+  encrypted_types.insert(PASSWORDS);  // Always encrypted.
+  return encrypted_types;
+}
+
 void FillNigoriEncryptedTypes(const ModelTypeSet& types,
     sync_pb::NigoriSpecifics* nigori) {
   DCHECK(nigori);

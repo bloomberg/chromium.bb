@@ -108,10 +108,6 @@ class HttpPostProviderFactory;
 class SyncManager;
 class WriteTransaction;
 
-syncable::ModelTypeSet GetEncryptedTypes(
-    const sync_api::BaseTransaction* trans);
-
-
 // Reasons due to which browser_sync::Cryptographer might require a passphrase.
 enum PassphraseRequiredReason {
   REASON_PASSPHRASE_NOT_REQUIRED = 0,  // Initial value.

@@ -13,7 +13,6 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/sync/protocol/nigori_specifics.pb.h"
-#include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/util/nigori.h"
 
 namespace browser_sync {
@@ -45,14 +44,6 @@ class Cryptographer {
  public:
   Cryptographer();
   ~Cryptographer();
-
-  // When update on cryptographer is called this enum tells if the
-  // cryptographer was succesfully able to update using the nigori node or if
-  // it needs a key to decrypt the nigori node.
-  enum UpdateResult {
-    SUCCESS,
-    NEEDS_PASSPHRASE
-  };
 
   // |restored_bootstrap_token| can be provided via this method to bootstrap
   // Cryptographer instance into the ready state (is_ready will be true).
@@ -126,10 +117,6 @@ class Cryptographer {
   // can't be created (i.e. if this Cryptograhper doesn't have valid keys).
   bool GetBootstrapToken(std::string* token) const;
 
-  UpdateResult Update(const sync_pb::NigoriSpecifics& nigori);
-  void SetEncryptedTypes(const sync_pb::NigoriSpecifics& nigori);
-  syncable::ModelTypeSet GetEncryptedTypes() const;
-
  private:
   FRIEND_TEST_ALL_PREFIXES(CryptographerTest, PackUnpack);
   typedef std::map<std::string, linked_ptr<const Nigori> > NigoriMap;
@@ -151,8 +138,6 @@ class Cryptographer {
   NigoriMap::value_type* default_nigori_;  // The Nigori used for encryption.
 
   scoped_ptr<sync_pb::EncryptedData> pending_keys_;
-
-  syncable::ModelTypeSet encrypted_types_;
 
   DISALLOW_COPY_AND_ASSIGN(Cryptographer);
 };

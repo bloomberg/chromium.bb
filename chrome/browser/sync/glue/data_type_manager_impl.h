@@ -29,10 +29,6 @@ class DataTypeManagerImpl : public DataTypeManager {
   // DataTypeManager interface.
   virtual void Configure(const TypeSet& desired_types,
                          sync_api::ConfigureReason reason);
-
-  virtual void ConfigureWithoutNigori(const TypeSet& desired_types,
-                                      sync_api::ConfigureReason reason);
-
   virtual void Stop();
   virtual const DataTypeController::TypeMap& controllers();
   virtual State state();
@@ -57,7 +53,7 @@ class DataTypeManagerImpl : public DataTypeManager {
   bool GetControllersNeedingStart(
       std::vector<DataTypeController*>* needs_start);
 
-  void Restart(sync_api::ConfigureReason reason, bool enable_nigori);
+  void Restart(sync_api::ConfigureReason reason);
   void DownloadReady();
   void NotifyStart();
   void NotifyDone(ConfigureResult result,
@@ -67,10 +63,6 @@ class DataTypeManagerImpl : public DataTypeManager {
   // Add to |configure_time_delta_| the time since we last called
   // Restart().
   void AddToConfigureTime();
-
-  virtual void ConfigureImpl(const TypeSet& desired_types,
-                             sync_api::ConfigureReason reason,
-                             bool enable_nigori);
 
   SyncBackendHost* backend_;
   // Map of all data type controllers that are available for sync.

@@ -456,7 +456,7 @@ void WriteNode::EncryptIfNecessary(sync_pb::EntitySpecifics* unencrypted) {
   DCHECK_NE(type, syncable::NIGORI);     // Nigori is encrypted separately.
 
   syncable::ModelTypeSet encrypted_types =
-      GetEncryptedTypes(GetTransaction());
+      GetEncryptedDataTypes(GetTransaction()->GetWrappedTrans());
   if (encrypted_types.count(type) == 0) {
     // This datatype does not require encryption.
     return;
@@ -1196,12 +1196,6 @@ DictionaryValue* NotificationInfoToValue(
 
 }  // namespace
 
-syncable::ModelTypeSet GetEncryptedTypes(
-    const sync_api::BaseTransaction* trans) {
-  Cryptographer* cryptographer = trans->GetCryptographer();
-  return cryptographer->GetEncryptedTypes();
-}
-
 //////////////////////////////////////////////////////////////////////////
 // SyncManager's implementation: SyncManager::SyncInternal
 class SyncManager::SyncInternal
@@ -1835,19 +1829,15 @@ void SyncManager::SyncInternal::BootstrapEncryption(
     return;
   }
 
+  if (!lookup->initial_sync_ended_for_type(syncable::NIGORI))
+    return;
+
   sync_pb::NigoriSpecifics nigori;
-  syncable::ModelTypeSet encrypted_types;
   {
     // Cryptographer should only be accessed while holding a transaction.
     ReadTransaction trans(GetUserShare());
     Cryptographer* cryptographer = trans.GetCryptographer();
-
-    // Set the bootstrap token before bailing out if nigori node is not there.
-    // This could happen if server asked us to migrate nigri.
     cryptographer->Bootstrap(restored_key_for_bootstrapping);
-
-    if (!lookup->initial_sync_ended_for_type(syncable::NIGORI))
-      return;
 
     ReadNode node(&trans);
     if (!node.InitByTagLookup(kNigoriTag)) {
@@ -1856,17 +1846,20 @@ void SyncManager::SyncInternal::BootstrapEncryption(
     }
 
     nigori.CopyFrom(node.GetNigoriSpecifics());
-    Cryptographer::UpdateResult result = cryptographer->Update(nigori);
-    if (result == Cryptographer::NEEDS_PASSPHRASE) {
-       FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
-                         OnPassphraseRequired(sync_api::REASON_DECRYPTION));
+    if (!nigori.encrypted().blob().empty()) {
+      if (cryptographer->CanDecrypt(nigori.encrypted())) {
+        cryptographer->SetKeys(nigori.encrypted());
+      } else {
+        cryptographer->SetPendingKeys(nigori.encrypted());
+        FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
+                          OnPassphraseRequired(sync_api::REASON_DECRYPTION));
+      }
     }
-
-    // Refresh list of encrypted datatypes.
-    encrypted_types = GetEncryptedTypes(&trans);
   }
 
-
+  // Refresh list of encrypted datatypes.
+  syncable::ModelTypeSet encrypted_types =
+      syncable::GetEncryptedDataTypesFromNigori(nigori);
 
   // Ensure any datatypes that need encryption are encrypted.
   EncryptDataTypes(encrypted_types);
@@ -2111,14 +2104,13 @@ void SyncManager::SyncInternal::EncryptDataTypes(
     return;
   }
 
-  Cryptographer* cryptographer = trans.GetCryptographer();
-
   // Update the Nigori node set of encrypted datatypes so other machines notice.
   // Note, we merge the current encrypted types with those requested. Once a
   // datatypes is marked as needing encryption, it is never unmarked.
   sync_pb::NigoriSpecifics nigori;
   nigori.CopyFrom(node.GetNigoriSpecifics());
-  syncable::ModelTypeSet current_encrypted_types = GetEncryptedTypes(&trans);
+  syncable::ModelTypeSet current_encrypted_types =
+      syncable::GetEncryptedDataTypesFromNigori(nigori);
   syncable::ModelTypeSet newly_encrypted_types;
   std::set_union(current_encrypted_types.begin(), current_encrypted_types.end(),
                  encrypted_types.begin(), encrypted_types.end(),
@@ -2126,8 +2118,6 @@ void SyncManager::SyncInternal::EncryptDataTypes(
                                newly_encrypted_types.begin()));
   syncable::FillNigoriEncryptedTypes(newly_encrypted_types, &nigori);
   node.SetNigoriSpecifics(nigori);
-
-  cryptographer->SetEncryptedTypes(nigori);
 
   // TODO(zea): only reencrypt this datatype? ReEncrypting everything is a
   // safer approach, and should not impact anything that is already encrypted
@@ -2184,7 +2174,7 @@ ListValue* SyncManager::SyncInternal::FindNodesContainingString(
 
 void SyncManager::SyncInternal::ReEncryptEverything(WriteTransaction* trans) {
   syncable::ModelTypeSet encrypted_types =
-      GetEncryptedTypes(trans);
+      GetEncryptedDataTypes(trans->GetWrappedTrans());
   ModelSafeRoutingInfo routes;
   registrar_->GetModelSafeRoutingInfo(&routes);
   std::string tag;
@@ -2560,7 +2550,14 @@ void SyncManager::SyncInternal::OnSyncEngineEvent(
       // Check to see if we need to notify the frontend that we have newly
       // encrypted types or that we require a passphrase.
       sync_api::ReadTransaction trans(GetUserShare());
-      syncable::ModelTypeSet encrypted_types = GetEncryptedTypes(&trans);
+      sync_api::ReadNode node(&trans);
+      if (!node.InitByTagLookup(kNigoriTag)) {
+        DCHECK(!event.snapshot->is_share_usable);
+        return;
+      }
+      const sync_pb::NigoriSpecifics& nigori = node.GetNigoriSpecifics();
+      syncable::ModelTypeSet encrypted_types =
+          syncable::GetEncryptedDataTypesFromNigori(nigori);
       syncable::ModelTypeSet encrypted_and_enabled_types;
       for (syncable::ModelTypeSet::iterator iter = encrypted_types.begin();
            iter != encrypted_types.end();
@@ -2570,15 +2567,7 @@ void SyncManager::SyncInternal::OnSyncEngineEvent(
       }
       if (!encrypted_and_enabled_types.empty()) {
         Cryptographer* cryptographer = trans.GetCryptographer();
-        // TODO(lipalani) : confirm from zea and tim this could be hit only for
-        // the first sync ever on this profile.
         if (!cryptographer->is_ready() && !cryptographer->has_pending_keys()) {
-          sync_api::ReadNode node(&trans);
-          if (!node.InitByTagLookup(kNigoriTag)) {
-            DCHECK(!event.snapshot->is_share_usable);
-            return;
-          }
-          const sync_pb::NigoriSpecifics& nigori = node.GetNigoriSpecifics();
           if (!nigori.encrypted().blob().empty()) {
             DCHECK(!cryptographer->CanDecrypt(nigori.encrypted()));
             cryptographer->SetPendingKeys(nigori.encrypted());

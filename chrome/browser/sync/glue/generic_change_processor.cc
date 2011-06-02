@@ -187,7 +187,7 @@ bool GenericChangeProcessor::CryptoReadyIfNecessary(syncable::ModelType type) {
   // We only access the cryptographer while holding a transaction.
   sync_api::ReadTransaction trans(share_handle());
   const syncable::ModelTypeSet& encrypted_types =
-      GetEncryptedTypes(&trans);
+      syncable::GetEncryptedDataTypes(trans.GetWrappedTrans());
   return encrypted_types.count(type) == 0 ||
          trans.GetCryptographer()->is_ready();
 }

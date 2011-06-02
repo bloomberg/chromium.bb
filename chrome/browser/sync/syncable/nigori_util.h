@@ -21,6 +21,15 @@ class BaseTransaction;
 class ReadTransaction;
 class WriteTransaction;
 
+// Returns the set of datatypes that require encryption as specified by the
+// Sync DB's nigori node. This will never include passwords, as the encryption
+// status of that is always on if passwords are enabled..
+ModelTypeSet GetEncryptedDataTypes(BaseTransaction* const trans);
+
+// Extract the set of encrypted datatypes from a nigori node.
+ModelTypeSet GetEncryptedDataTypesFromNigori(
+    const sync_pb::NigoriSpecifics& nigori);
+
 // Set the encrypted datatypes on the nigori node.
 void FillNigoriEncryptedTypes(const ModelTypeSet& types,
     sync_pb::NigoriSpecifics* nigori);

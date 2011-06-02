@@ -21,12 +21,11 @@ class SyncBackendHostMock : public SyncBackendHost {
   SyncBackendHostMock();
   virtual ~SyncBackendHostMock();
 
-  MOCK_METHOD5(ConfigureDataTypes,
+  MOCK_METHOD4(ConfigureDataTypes,
                void(const DataTypeController::TypeMap&,
                     const std::set<syncable::ModelType>&,
                     sync_api::ConfigureReason,
-                    CancelableTask*,
-                    bool));
+                    CancelableTask*));
   MOCK_METHOD0(StartSyncingWithServer, void());
 };
 

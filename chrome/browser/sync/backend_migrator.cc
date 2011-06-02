@@ -69,15 +69,7 @@ void BackendMigrator::MigrateTypes(const syncable::ModelTypeSet& types) {
                       to_migrate_.begin(), to_migrate_.end(),
                       std::inserter(difference, difference.end()));
   VLOG(1) << "BackendMigrator disabling types; calling Configure.";
-
-  // Add nigori for config or not based upon if the server told us to migrate
-  // nigori or not.
-  if (types.count(syncable::NIGORI) == 0) {
-    manager_->Configure(difference, sync_api::CONFIGURE_REASON_MIGRATION);
-  } else {
-    manager_->ConfigureWithoutNigori(difference,
-                                     sync_api::CONFIGURE_REASON_MIGRATION);
-  }
+  manager_->Configure(difference, sync_api::CONFIGURE_REASON_MIGRATION);
 }
 
 void BackendMigrator::OnStateChanged() {
@@ -107,7 +99,6 @@ void BackendMigrator::OnStateChanged() {
   ModelTypeSet full_set;
   service_->GetPreferredDataTypes(&full_set);
   VLOG(1) << "BackendMigrator re-enabling types.";
-
   // Don't use |to_migrate_| for the re-enabling because the user may have
   // chosen to disable types during the migration.
   manager_->Configure(full_set, sync_api::CONFIGURE_REASON_MIGRATION);

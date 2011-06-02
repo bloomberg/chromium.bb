@@ -160,6 +160,9 @@ std::string SyncBackendHost::RestoreEncryptionBootstrapToken() {
 
 bool SyncBackendHost::IsNigoriEnabled() const {
   base::AutoLock lock(registrar_lock_);
+  // Note that NIGORI is only ever added/removed from routing_info once,
+  // during initialization / first configuration, so there is no real 'race'
+  // possible here or possibility of stale return value.
   return registrar_.routing_info.find(syncable::NIGORI) !=
       registrar_.routing_info.end();
 }
@@ -344,14 +347,14 @@ PendingConfigureDataTypesState() : deleted_type(false),
 SyncBackendHost::PendingConfigureDataTypesState::
 ~PendingConfigureDataTypesState() {}
 
+// static
 SyncBackendHost::PendingConfigureDataTypesState*
     SyncBackendHost::MakePendingConfigModeState(
         const DataTypeController::TypeMap& data_type_controllers,
         const syncable::ModelTypeSet& types,
         CancelableTask* ready_task,
         ModelSafeRoutingInfo* routing_info,
-        sync_api::ConfigureReason reason,
-        bool nigori_enabled) {
+        sync_api::ConfigureReason reason) {
   PendingConfigureDataTypesState* state = new PendingConfigureDataTypesState();
   for (DataTypeController::TypeMap::const_iterator it =
            data_type_controllers.begin();
@@ -371,19 +374,6 @@ SyncBackendHost::PendingConfigureDataTypesState*
     }
   }
 
-  if (types.count(syncable::NIGORI) == 0) {
-    if (nigori_enabled) { // Nigori is currently enabled.
-      state->deleted_type = true;
-      routing_info->erase(syncable::NIGORI);
-    }
-  } else { // Nigori needs to be enabled.
-    if (!nigori_enabled) {
-      // Currently it is disabled. So enable it.
-      (*routing_info)[syncable::NIGORI] = GROUP_PASSIVE;
-      state->added_types.set(syncable::NIGORI);
-    }
-  }
-
   state->ready_task.reset(ready_task);
   state->initial_types = types;
   state->reason = reason;
@@ -394,8 +384,7 @@ void SyncBackendHost::ConfigureDataTypes(
     const DataTypeController::TypeMap& data_type_controllers,
     const syncable::ModelTypeSet& types,
     sync_api::ConfigureReason reason,
-    CancelableTask* ready_task,
-    bool enable_nigori) {
+    CancelableTask* ready_task) {
   // Only one configure is allowed at a time.
   DCHECK(!pending_config_mode_state_.get());
   DCHECK(!pending_download_state_.get());
@@ -405,17 +394,11 @@ void SyncBackendHost::ConfigureDataTypes(
     ConfigureAutofillMigration();
   }
 
-  syncable::ModelTypeSet types_copy = types;
-  if (enable_nigori) {
-    types_copy.insert(syncable::NIGORI);
-  }
-  bool nigori_currently_enabled = IsNigoriEnabled();
   {
     base::AutoLock lock(registrar_lock_);
     pending_config_mode_state_.reset(
-        MakePendingConfigModeState(data_type_controllers, types_copy,
-                                   ready_task, &registrar_.routing_info, reason,
-                                   nigori_currently_enabled));
+        MakePendingConfigModeState(data_type_controllers, types, ready_task,
+                                   &registrar_.routing_info, reason));
   }
 
   StartConfiguration(NewCallback(core_.get(),

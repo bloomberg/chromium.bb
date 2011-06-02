@@ -80,7 +80,7 @@ class LivePasswordsSyncTest : public LiveSyncTest {
 
   // Creates a test password form with a well known fake signon realm used only
   // by LivePasswordsSyncTest based on |index|.
-  static webkit_glue::PasswordForm CreateTestPasswordForm(int index);
+  webkit_glue::PasswordForm CreateTestPasswordForm(int index);
 
  private:
   // Cleans up all password forms ever added by LivePasswordsSyncTest. This is

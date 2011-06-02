@@ -168,8 +168,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
       const DataTypeController::TypeMap& data_type_controllers,
       const syncable::ModelTypeSet& types,
       sync_api::ConfigureReason reason,
-      CancelableTask* ready_task,
-      bool enable_nigori);
+      CancelableTask* ready_task);
 
   // Makes an asynchronous call to syncer to switch to config mode. When done
   // syncer will call us back on FinishConfigureDataTypes.
@@ -594,8 +593,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
       const syncable::ModelTypeSet& types,
       CancelableTask* ready_task,
       ModelSafeRoutingInfo* routing_info,
-      sync_api::ConfigureReason reason,
-      bool nigori_enabled);
+      sync_api::ConfigureReason reason);
 
   // A thread we dedicate for use by our Core to perform initialization,
   // authentication, handle messages from the syncapi, and periodically tell
