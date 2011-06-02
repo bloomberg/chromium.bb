@@ -77,7 +77,6 @@ BOT_ASSIGNMENT = {
     'spec-nacl':
       'bash buildbot/buildbot_pnacl2.sh mode-spec-nacl',
     # Valgrind bots.
-    'karmic64-valgrind': 'bash buildbot/buildbot_valgrind.sh newlib',
     'lucid-64-newlib-dbg-valgrind': 'bash buildbot/buildbot_valgrind.sh newlib',
     'lucid-64-glibc-dbg-valgrind': 'bash buildbot/buildbot_valgrind.sh glibc',
     # Coverage.
@@ -113,6 +112,10 @@ BOT_ASSIGNMENT = {
     'nacl-lucid64_newlib_dbg': 'bash buildbot/buildbot_linux.sh dbg 64 newlib',
     'nacl-lucid64_newlib_opt': 'bash buildbot/buildbot_linux.sh opt 64 newlib',
     'nacl-lucid64_glibc_opt': 'bash buildbot/buildbot_linux.sh opt 64 glibc',
+    'nacl-lucid64_newlib_dbg_valgrind':
+        'bash buildbot/buildbot_valgrind.sh newlib',
+    'nacl-lucid64_glibc_dbg_valgrind':
+        'bash buildbot/buildbot_valgrind.sh glibc',
     # Pnacl scons trybots
     'nacl-arm_opt':
         'bash buildbot/buildbot_pnacl1.sh mode-buildbot-arm-try',
