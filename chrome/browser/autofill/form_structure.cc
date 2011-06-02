@@ -368,6 +368,16 @@ void FormStructure::UpdateFromCache(const FormStructure& cached_form) {
   UpdateAutofillCount();
 
   server_experiment_id_ = cached_form.server_experiment_id();
+
+  // The form signature should match between query and upload requests to the
+  // server. On many websites, form elements are dynamically added, removed, or
+  // rearranged via JavaScript between page load and form submission, so we
+  // copy over the |form_signature_field_names_| corresponding to the query
+  // request.
+  DCHECK_EQ(cached_form.form_name_, form_name_);
+  DCHECK_EQ(cached_form.source_url_, source_url_);
+  DCHECK_EQ(cached_form.target_url_, target_url_);
+  form_signature_field_names_ = cached_form.form_signature_field_names_;
 }
 
 void FormStructure::LogQualityMetrics(

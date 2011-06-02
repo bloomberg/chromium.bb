@@ -77,7 +77,7 @@ class AutofillManager : public TabContentsObserver,
   void ImportFormData(const FormStructure& submitted_form);
 
   // Uploads the form data to the Autofill server.
-  void UploadFormData(const FormStructure& submitted_form);
+  virtual void UploadFormData(const FormStructure& submitted_form);
 
   // Reset cache.
   void Reset();

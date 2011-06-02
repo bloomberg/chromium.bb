@@ -348,11 +348,11 @@ void AutofillManager::OnFormSubmitted(const FormData& form) {
   FormStructure* cached_submitted_form;
   if (!FindCachedForm(form, &cached_submitted_form))
     return;
+  submitted_form.UpdateFromCache(*cached_submitted_form);
 
   DeterminePossibleFieldTypesForUpload(&submitted_form);
   UploadFormData(submitted_form);
 
-  submitted_form.UpdateFromCache(*cached_submitted_form);
   submitted_form.LogQualityMetrics(*metric_logger_);
 
   if (!submitted_form.IsAutofillable(true))
@@ -684,11 +684,12 @@ void AutofillManager::UploadFormData(const FormStructure& submitted_form) {
 
   // Check if the form is among the forms that were recently auto-filled.
   bool was_autofilled = false;
+  std::string form_signature = submitted_form.FormSignature();
   for (std::list<std::string>::const_iterator it =
            autofilled_form_signatures_.begin();
        it != autofilled_form_signatures_.end() && !was_autofilled;
        ++it) {
-    if (*it == submitted_form.FormSignature())
+    if (*it == form_signature)
       was_autofilled = true;
   }
 

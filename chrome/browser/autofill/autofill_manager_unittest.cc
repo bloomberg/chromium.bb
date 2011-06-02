@@ -415,10 +415,18 @@ class TestAutofillManager : public AutofillManager {
     test_personal_data_ = personal_manager;
   }
 
-  virtual bool IsAutofillEnabled() const { return autofill_enabled_; }
+  virtual bool IsAutofillEnabled() const OVERRIDE { return autofill_enabled_; }
 
   void set_autofill_enabled(bool autofill_enabled) {
     autofill_enabled_ = autofill_enabled;
+  }
+
+  virtual void UploadFormData(const FormStructure& submitted_form) OVERRIDE {
+    submitted_form_signature_ = submitted_form.FormSignature();
+  }
+
+  const std::string GetSubmittedFormSignature() {
+    return submitted_form_signature_;
   }
 
   AutofillProfile* GetProfileWithGUID(const char* guid) {
@@ -462,6 +470,7 @@ class TestAutofillManager : public AutofillManager {
  private:
   TestPersonalDataManager* test_personal_data_;
   bool autofill_enabled_;
+  std::string submitted_form_signature_;
 
   DISALLOW_COPY_AND_ASSIGN(TestAutofillManager);
 };
@@ -2082,6 +2091,31 @@ TEST_F(AutofillManagerTest, FormSubmittedServerTypes) {
   // filled data.
   EXPECT_CALL(*test_personal_data_, SaveImportedProfile(::testing::_)).Times(1);
   FormSubmitted(results);
+}
+
+// Test that the form signature for an uploaded form always matches the form
+// signature from the query.
+TEST_F(AutofillManagerTest, FormSubmittedWithDifferentFields) {
+  // Set up our form data.
+  FormData form;
+  CreateTestAddressFormData(&form);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  // Cache the expected form signature.
+  std::string signature = FormStructure(form).FormSignature();
+
+  // Change the structure of the form prior to submission.
+  // Websites would typically invoke JavaScript either on page load or on form
+  // submit to achieve this.
+  form.fields.pop_back();
+  FormField field = form.fields[3];
+  form.fields[3] = form.fields[7];
+  form.fields[7] = field;
+
+  // Simulate form submission.
+  FormSubmitted(form);
+  EXPECT_EQ(signature, autofill_manager_->GetSubmittedFormSignature());
 }
 
 // Checks that resetting the auxiliary profile enabled preference does the right
