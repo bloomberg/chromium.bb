@@ -233,47 +233,10 @@ ExtensionProtocolHandler::MaybeCreateJob(net::URLRequest* request) const {
                                     content_security_policy);
 }
 
-class UserScriptProtocolHandler
-    : public net::URLRequestJobFactory::ProtocolHandler {
- public:
-  UserScriptProtocolHandler(const FilePath& user_script_dir_path,
-                            ExtensionInfoMap* extension_info_map)
-      : user_script_dir_path_(user_script_dir_path),
-        extension_info_map_(extension_info_map) {}
-
-  virtual ~UserScriptProtocolHandler() {}
-
-  virtual net::URLRequestJob* MaybeCreateJob(
-      net::URLRequest* request) const OVERRIDE;
-
- private:
-  const FilePath user_script_dir_path_;
-  ExtensionInfoMap* const extension_info_map_;
-};
-
-// Factory registered with net::URLRequest to create URLRequestJobs for
-// chrome-user-script:/ URLs.
-net::URLRequestJob* UserScriptProtocolHandler::MaybeCreateJob(
-    net::URLRequest* request) const {
-  // chrome-user-script:/user-script-name.user.js
-  ExtensionResource resource(
-      request->url().host(), user_script_dir_path_,
-      extension_file_util::ExtensionURLToRelativeFilePath(request->url()));
-
-  return new net::URLRequestFileJob(request, resource.GetFilePath());
-}
-
 }  // namespace
 
 net::URLRequestJobFactory::ProtocolHandler* CreateExtensionProtocolHandler(
     bool is_incognito,
     ExtensionInfoMap* extension_info_map) {
   return new ExtensionProtocolHandler(is_incognito, extension_info_map);
-}
-
-net::URLRequestJobFactory::ProtocolHandler* CreateUserScriptProtocolHandler(
-    const FilePath& user_script_dir_path,
-    ExtensionInfoMap* extension_info_map) {
-  return new UserScriptProtocolHandler(
-      user_script_dir_path, extension_info_map);
 }

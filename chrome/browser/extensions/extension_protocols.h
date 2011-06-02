@@ -16,9 +16,4 @@ net::URLRequestJobFactory::ProtocolHandler* CreateExtensionProtocolHandler(
     bool is_incognito,
     ExtensionInfoMap* extension_info_map);
 
-// Creates the handlers for the chrome-user-script:// scheme.
-net::URLRequestJobFactory::ProtocolHandler* CreateUserScriptProtocolHandler(
-    const FilePath& user_script_dir_path,
-    ExtensionInfoMap* extension_info_map);
-
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_PROTOCOLS_H_

@@ -241,12 +241,6 @@ void ProfileIOData::InitializeProfileParams(Profile* profile) {
   params->host_content_settings_map = profile->GetHostContentSettingsMap();
   params->host_zoom_map = profile->GetHostZoomMap();
   params->transport_security_state = profile->GetTransportSecurityState();
-
-  if (profile->GetUserScriptMaster()) {
-    params->user_script_dir_path =
-        profile->GetUserScriptMaster()->user_script_dir();
-  }
-
   params->ssl_config_service = profile->GetSSLConfigService();
   params->cookie_monster_delegate = new ChromeCookieMonsterDelegate(profile);
   params->database_tracker = profile->GetDatabaseTracker();
@@ -299,7 +293,6 @@ bool ProfileIOData::IsHandledProtocol(const std::string& scheme) {
   DCHECK_EQ(scheme, StringToLowerASCII(scheme));
   static const char* const kProtocolList[] = {
     chrome::kExtensionScheme,
-    chrome::kUserScriptScheme,
     chrome::kChromeUIScheme,
     chrome::kChromeDevToolsScheme,
 #if defined(OS_CHROMEOS)
@@ -430,11 +423,6 @@ void ProfileIOData::LazyInitialize() const {
                                      profile_params_->extension_info_map));
   DCHECK(set_protocol);
   set_protocol = job_factory_->SetProtocolHandler(
-      chrome::kUserScriptScheme,
-      CreateUserScriptProtocolHandler(profile_params_->user_script_dir_path,
-                                      profile_params_->extension_info_map));
-  DCHECK(set_protocol);
-  set_protocol = job_factory_->SetProtocolHandler(
       chrome::kChromeUIScheme,
       ChromeURLDataManagerBackend::CreateProtocolHandler(
           chrome_url_data_manager_backend_.get(),
@@ -504,7 +492,6 @@ void ProfileIOData::ApplyProfileParamsToContext(
   context->set_accept_language(profile_params_->accept_language);
   context->set_accept_charset(profile_params_->accept_charset);
   context->set_referrer_charset(profile_params_->referrer_charset);
-  context->set_user_script_dir_path(profile_params_->user_script_dir_path);
   context->set_transport_security_state(
       profile_params_->transport_security_state);
   context->set_ssl_config_service(profile_params_->ssl_config_service);

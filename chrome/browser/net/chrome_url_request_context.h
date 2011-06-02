@@ -49,11 +49,6 @@ class ChromeURLRequestContext : public net::URLRequestContext {
   // Copies the state from |other| into this context.
   void CopyFrom(ChromeURLRequestContext* other);
 
-  // Gets the path to the directory user scripts are stored in.
-  FilePath user_script_dir_path() const {
-    return user_script_dir_path_;
-  }
-
   // Gets the appcache service to be used for requests in this context.
   // May be NULL if requests for this context aren't subject to appcaching.
   ChromeAppCacheService* appcache_service() const {
@@ -84,10 +79,6 @@ class ChromeURLRequestContext : public net::URLRequestContext {
   // move completely to ProfileIOData.
   ChromeURLDataManagerBackend* chrome_url_data_manager_backend() const;
 
-  // Setters to simplify initializing from factory objects.
-  void set_user_script_dir_path(const FilePath& path) {
-    user_script_dir_path_ = path;
-  }
   void set_is_incognito(bool is_incognito) {
     is_incognito_ = is_incognito;
   }
@@ -120,9 +111,6 @@ class ChromeURLRequestContext : public net::URLRequestContext {
   // Important: When adding any new members below, consider whether they need to
   // be added to CopyFrom.
   // ---------------------------------------------------------------------------
-
-  // Path to the directory user scripts are stored in.
-  FilePath user_script_dir_path_;
 
   // TODO(willchan): Make these non-refcounted.
   scoped_refptr<ChromeAppCacheService> appcache_service_;

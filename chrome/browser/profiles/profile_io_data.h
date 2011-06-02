@@ -116,7 +116,6 @@ class ProfileIOData : public base::RefCountedThreadSafe<ProfileIOData> {
     std::string accept_language;
     std::string accept_charset;
     std::string referrer_charset;
-    FilePath user_script_dir_path;
     IOThread* io_thread;
     scoped_refptr<HostContentSettingsMap> host_content_settings_map;
     scoped_refptr<HostZoomMap> host_zoom_map;

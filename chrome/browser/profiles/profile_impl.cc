@@ -447,10 +447,7 @@ void ProfileImpl::InitExtensions(bool extensions_enabled) {
 
   ExtensionErrorReporter::Init(true);  // allow noisy errors.
 
-  FilePath script_dir;  // Don't look for user scripts in any directory.
-                        // TODO(aa): We should just remove this functionality,
-                        // since it isn't used anymore.
-  user_script_master_ = new UserScriptMaster(script_dir, this);
+  user_script_master_ = new UserScriptMaster(this);
 
   bool autoupdate_enabled = true;
 #if defined(OS_CHROMEOS)

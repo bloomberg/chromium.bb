@@ -29,7 +29,6 @@ extern const char kHttpsScheme[];
 extern const char kJavaScriptScheme[];
 extern const char kMailToScheme[];
 extern const char kMetadataScheme[];
-extern const char kUserScriptScheme[];
 extern const char kViewSourceScheme[];
 
 // Used to separate a standard scheme and the hostname: "://".

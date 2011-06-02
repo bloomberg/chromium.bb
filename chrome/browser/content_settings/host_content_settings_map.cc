@@ -37,8 +37,7 @@ static bool ShouldAllowAllContent(const GURL& url) {
   return url.SchemeIs(chrome::kChromeDevToolsScheme) ||
          url.SchemeIs(chrome::kChromeInternalScheme) ||
          url.SchemeIs(chrome::kChromeUIScheme) ||
-         url.SchemeIs(chrome::kExtensionScheme) ||
-         url.SchemeIs(chrome::kUserScriptScheme);
+         url.SchemeIs(chrome::kExtensionScheme);
 }
 
 typedef linked_ptr<content_settings::DefaultProviderInterface>

@@ -21,7 +21,6 @@ const char kHttpsScheme[] = "https";
 const char kJavaScriptScheme[] = "javascript";
 const char kMailToScheme[] = "mailto";
 const char kMetadataScheme[] = "metadata";
-const char kUserScriptScheme[] = "chrome-user-script";
 const char kViewSourceScheme[] = "view-source";
 
 const char kStandardSchemeSeparator[] = "://";

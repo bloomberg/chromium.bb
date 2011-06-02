@@ -875,10 +875,6 @@ class NotificationType {
     // removed the extension from its internal state.
     EXTENSION_UNLOADED,
 
-    // Sent when an extension has updated its user scripts. The details are an
-    // Extension, and the source is a Profile.
-    EXTENSION_USER_SCRIPTS_UPDATED,
-
     // Sent after a new ExtensionHost is created. The details are
     // an ExtensionHost* and the source is an ExtensionProcessManager*.
     EXTENSION_HOST_CREATED,

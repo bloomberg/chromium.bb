@@ -360,7 +360,6 @@ void ChromeURLRequestContext::CopyFrom(ChromeURLRequestContext* other) {
   URLRequestContext::CopyFrom(other);
 
   // Copy ChromeURLRequestContext parameters.
-  set_user_script_dir_path(other->user_script_dir_path());
   set_appcache_service(other->appcache_service());
   set_blob_storage_context(other->blob_storage_context());
   set_file_system_context(other->file_system_context());
