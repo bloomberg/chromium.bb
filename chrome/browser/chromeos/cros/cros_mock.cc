@@ -313,7 +313,7 @@ void CrosMock::SetNetworkLibraryStatusAreaExpectations() {
 
 void CrosMock::SetPowerLibraryStatusAreaExpectations() {
   EXPECT_CALL(*mock_power_library_, AddObserver(_))
-      .Times(2)
+      .Times(3)
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_power_library_, battery_fully_charged())
       .Times(1)
@@ -340,7 +340,7 @@ void CrosMock::SetPowerLibraryStatusAreaExpectations() {
       .WillRepeatedly((Return(base::TimeDelta::FromMinutes(24))))
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_power_library_, RemoveObserver(_))
-      .Times(2)
+      .Times(3)
       .RetiresOnSaturation();
 }
 

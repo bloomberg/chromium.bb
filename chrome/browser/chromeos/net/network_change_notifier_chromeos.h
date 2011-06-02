@@ -9,12 +9,14 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
+#include "chrome/browser/chromeos/cros/power_library.h"
 #include "net/base/network_change_notifier.h"
 
 namespace chromeos {
 
 class NetworkChangeNotifierChromeos
     : public net::NetworkChangeNotifier,
+      public chromeos::PowerLibrary::Observer,
       public chromeos::NetworkLibrary::NetworkObserver,
       public chromeos::NetworkLibrary::NetworkManagerObserver {
  public:
@@ -22,6 +24,10 @@ class NetworkChangeNotifierChromeos
   virtual ~NetworkChangeNotifierChromeos();
 
  private:
+  // PowerLibrary::Observer overrides.
+  virtual void PowerChanged(PowerLibrary* obj) OVERRIDE;
+  virtual void SystemResumed() OVERRIDE;
+
   // NetworkChangeNotifier overrides.
   virtual bool IsCurrentlyOffline() const OVERRIDE;
 

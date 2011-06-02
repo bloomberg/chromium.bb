@@ -18,6 +18,10 @@ NetworkChangeNotifierChromeos::NetworkChangeNotifierChromeos()
   chromeos::NetworkLibrary* lib =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
   lib->AddNetworkManagerObserver(this);
+
+  chromeos::PowerLibrary* power =
+      chromeos::CrosLibrary::Get()->GetPowerLibrary();
+  power->AddObserver(this);
 }
 
 NetworkChangeNotifierChromeos::~NetworkChangeNotifierChromeos() {
@@ -25,7 +29,23 @@ NetworkChangeNotifierChromeos::~NetworkChangeNotifierChromeos() {
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
   lib->RemoveNetworkManagerObserver(this);
   lib->RemoveObserverForAllNetworks(this);
+
+  chromeos::PowerLibrary* power =
+      chromeos::CrosLibrary::Get()->GetPowerLibrary();
+  power->RemoveObserver(this);
 }
+
+void NetworkChangeNotifierChromeos::PowerChanged(PowerLibrary* obj) {
+}
+
+void NetworkChangeNotifierChromeos::SystemResumed() {
+  // Force invalidation of various net resources on system resume.
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      NewRunnableFunction(
+          &NetworkChangeNotifier::NotifyObserversOfIPAddressChange));
+}
+
 
 void NetworkChangeNotifierChromeos::OnNetworkManagerChanged(
     chromeos::NetworkLibrary* cros) {
@@ -60,7 +80,7 @@ void NetworkChangeNotifierChromeos::UpdateNetworkState(
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         NewRunnableFunction(
-            &NetworkChangeNotifierChromeos::NotifyObserversOfIPAddressChange));
+            &NetworkChangeNotifier::NotifyObserversOfIPAddressChange));
   }
 }
 
