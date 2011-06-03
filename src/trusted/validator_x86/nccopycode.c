@@ -24,15 +24,22 @@
 #include <string.h>
 #include <assert.h>
 #include "native_client/src/shared/platform/nacl_check.h"
-#if NACL_TARGET_SUBARCH == 32
-#include "native_client/src/trusted/validator_x86/ncdecode.h"
-#include "native_client/src/trusted/validator_x86/ncvalidate.h"
-#elif NACL_TARGET_SUBARCH == 64
-#include "native_client/src/trusted/validator_x86/nc_inst_iter.h"
-#include "native_client/src/trusted/validator_x86/nc_segment.h"
-#include "native_client/src/trusted/validator_x86/nc_inst_state_internal.h"
+#include "native_client/src/trusted/validator/ncvalidate.h"
+
+#if NACL_ARCH(NACL_TARGET_ARCH) == NACL_x86
+# if NACL_TARGET_SUBARCH == 32
+#  include "native_client/src/trusted/validator_x86/ncdecode.h"
+#  include "native_client/src/trusted/validator_x86/ncvalidate.h"
+# elif NACL_TARGET_SUBARCH == 64
+#  include "native_client/src/trusted/validator_x86/nc_inst_iter.h"
+#  include "native_client/src/trusted/validator_x86/nc_segment.h"
+#  include "native_client/src/trusted/validator_x86/nc_inst_state_internal.h"
+#  include "native_client/src/trusted/validator_x86/nacl_cpuid.h"
+# else
+#  error "Unknown Platform"
+# endif
 #else
-#error "Unknown Platform"
+# error "Unknown Platform"
 #endif
 
 /* x86 HALT opcode */
@@ -262,6 +269,29 @@ int NCCopyCode(uint8_t *dst, uint8_t *src, NaClPcAddress vbase,
   return result;
 }
 
+NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorCopy,
+                                       NACL_TARGET_ARCH,
+                                       NACL_TARGET_SUBARCH)
+    (uintptr_t guest_addr,
+     uint8_t *data_old,
+     uint8_t *data_new,
+     size_t size,
+     int bundle_size) {
+  NaClValidationStatus status = NaClValidationFailedNotImplemented;
+  if (bundle_size == 16 || bundle_size == 32) {
+    NaClCPUData cpu_data;
+    NaClCPUDataGet(&cpu_data);
+    if (!NaClArchSupported(&cpu_data)) {
+      status = NaClValidationFailedCpuNotSupported;
+    } else {
+      status = ((0 == NCCopyCode(data_old, data_new, guest_addr,
+                                size, bundle_size))
+                ? NaClValidationFailed : NaClValidationSucceeded);
+    }
+  }
+  return status;
+}
+
 #elif NACL_TARGET_SUBARCH == 64
 
 int NaClCopyCodeIter(uint8_t *dst, uint8_t *src,
@@ -325,6 +355,26 @@ int NaClCopyCodeIter(uint8_t *dst, uint8_t *src,
   return still_good;
 }
 
-#else
-#error "Unknown Platform"
+NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorCopy,
+                                       NACL_TARGET_ARCH,
+                                       NACL_TARGET_SUBARCH)
+    (uintptr_t guest_addr,
+     uint8_t *data_old,
+     uint8_t *data_new,
+     size_t size,
+     int bundle_size) {
+  NaClValidationStatus status = NaClValidationFailedNotImplemented;
+  if (bundle_size == 16 || bundle_size == 32) {
+    NaClCPUData cpu_data;
+    NaClCPUDataGet(&cpu_data);
+    if (!NaClArchSupported(&cpu_data)) {
+      status = NaClValidationFailedCpuNotSupported;
+    } else {
+      status = ((0 == NaClCopyCodeIter(data_old, data_new, guest_addr, size))
+                ? NaClValidationFailed : NaClValidationSucceeded);
+    }
+  }
+  return status;
+}
+
 #endif

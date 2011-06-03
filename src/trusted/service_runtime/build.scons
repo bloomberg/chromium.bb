@@ -256,7 +256,9 @@ if ((not env.Bit('coverage_enabled') or not env.Bit('windows')) and
 
   if env.Bit('target_x86'):
     if env.Bit('target_x86_64'):
-      VALIDATOR_LIBS += ['ncvalidate_sfi']
+      VALIDATOR_LIBS += ['ncvalidate_x86_64', 'ncvalidate_sfi']
+    else:
+      VALIDATOR_LIBS += ['ncvalidate_x86_32']
     VALIDATOR_LIBS += ['ncvalidate']
   elif env.Bit('target_arm'):
     VALIDATOR_LIBS += ['ncvalidate_arm_v2', 'arm_validator_core']

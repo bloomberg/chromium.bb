@@ -22,108 +22,56 @@
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/utils/types.h"
 #include "native_client/src/trusted/validator_x86/nacl_cpuid.h"
-
-#if NACL_TARGET_SUBARCH == 32
-
-# include "native_client/src/trusted/validator_x86/ncdecode.h"
-# include "native_client/src/trusted/validator_x86/ncdis_util.h"
-# include "native_client/src/trusted/validator_x86/ncvalidate.h"
+#include "native_client/src/trusted/validator/ncvalidate.h"
 
 static Bool FixUpSection(uintptr_t load_address,
                          unsigned char *code,
                          size_t code_size) {
-  int return_code;
-  struct NCValidatorState *vstate;
   int bundle_size = 32;
-  CPUFeatures features;
-
-  /* Start by stubbing out the code. */
-  vstate = NCValidateInit(load_address, load_address + code_size, bundle_size);
-  if (vstate == NULL) {
-    fprintf(stderr, "Unable to stubout code, not enough memory\n");
-    return FALSE;
+  NaClValidationStatus status =
+      /* Start by stubbing out the code.
+       * We should not stub out any instructions based on the features
+       * of the CPU we are executing on now.
+       */
+      NACL_SUBARCH_NAME(ApplyValidator,
+                        NACL_TARGET_ARCH,
+                        NACL_TARGET_SUBARCH)
+      (NaClApplyValidationDoStubout, load_address, code,
+       code_size,  bundle_size, FALSE);
+  if (status == NaClValidationSucceeded) {
+    /* Now run the validator again, so that we report any errors
+     * that were not fixed by stubbing out. This is done so that
+     * the user knows that stubout doesn't fix all errors.
+     */
+    status = NACL_SUBARCH_NAME(ApplyValidatorVerbosely,
+                               NACL_TARGET_ARCH,
+                               NACL_TARGET_SUBARCH)
+        (NaClApplyCodeValidation, load_address, code, code_size,
+         bundle_size, FALSE);
   }
 
-  NCValidateSetStubOutMode(vstate, 1);
-
-  /*
-   * We should not stub out any instructions based on the features
-   * of the CPU we are executing on now.
-   */
-  NaClSetAllCPUFeatures(&features);
-  NCValidatorStateSetCPUFeatures(vstate, &features);
-  NCValidateSegment(code, load_address, code_size, vstate);
-  NCValidateFinish(vstate);
-  NCValidateFreeState(&vstate);
-
-  /* Now run the validator again, so that we report any errors
-   * that were not fixed by stubbing out. This is done so that
-   * the user knows that stubout doesn't fix all errors.
-   */
-  vstate = NCValidateInit(load_address, load_address + code_size, bundle_size);
-  if (vstate == NULL) {
-    fprintf(stderr, "Unable to stubout code, not enough memory\n");
-    return FALSE;
+  switch (status) {
+    case NaClValidationSucceeded:
+      return TRUE;
+    default:
+    case NaClValidationFailed:
+      fprintf(stderr, "Errors still exist after attempting to stubout code\n");
+      return FALSE;
+    case NaClValidationFailedOutOfMemory:
+      fprintf(stderr, "Unable to stubout code, not enough memory\n");
+      return FALSE;
+    case NaClValidationFailedNotImplemented:
+      fprintf(stderr, "Unable to stubout code, not implemented\n");
+      return FALSE;
+    case NaClValidationFailedCpuNotSupported:
+      /* This shouldn't happen, but if it does, report the problem. */
+      fprintf(stderr, "Unable to stubout code, cpu not supported\n");
+      return FALSE;
+    case NaClValidationFailedSegmentationIssue:
+      fprintf(stderr, "Unable to stubout code, segmentation issues found\n");
+      return FALSE;
   }
-  NCValidatorStateSetCPUFeatures(vstate, &features);
-  NCValidateSetErrorReporter(vstate, &kNCVerboseErrorReporter);
-  NCValidateSegment(code, load_address, code_size, vstate);
-  return_code = NCValidateFinish(vstate);
-  NCValidateFreeState(&vstate);
-  return return_code ? FALSE : TRUE;
 }
-
-#else
-
-# include "native_client/src/trusted/validator_x86/ncvalidate_iter.h"
-# include "native_client/src/trusted/validator_x86/ncval_driver.h"
-
-static Bool FixUpSection(uintptr_t load_address,
-                         unsigned char *code,
-                         size_t code_size) {
-  struct NaClValidatorState *vstate;
-  int bundle_size = 32;
-  CPUFeatures features;
-  Bool return_code;
-
-  /* Start by stubbing out the code. */
-  vstate = NaClValidatorStateCreate(load_address, code_size, bundle_size,
-                                    RegR15);
-  if (vstate == NULL) {
-    fprintf(stderr, "Unable to stubout code, not enough memory\n");
-    return FALSE;
-  }
-  NaClValidatorStateSetDoStubOut(vstate, TRUE);
-
-  /*
-   * We should not stub out any instructions based on the features
-   * of the CPU we are executing on now.
-   */
-  NaClSetAllCPUFeatures(&features);
-  NaClValidatorStateSetCPUFeatures(vstate, &features);
-  NaClValidateSegment(code, load_address, code_size, vstate);
-  return_code = NaClValidatesOk(vstate);
-  NaClValidatorStateDestroy(vstate);
-
-  /* Now run the validator again, so that we report any errors
-   * that were not fixed by stubbing out. This is done so that
-   * the user knows that stubout doesn't fix all errors.
-   */
-  vstate = NaClValidatorStateCreate(load_address, code_size, bundle_size,
-                                    RegR15);
-  if (vstate == NULL) {
-    fprintf(stderr, "Unable to stubout code, not enough memory\n");
-    return FALSE;
-  }
-  NaClValidatorStateSetCPUFeatures(vstate, &features);
-  NaClValidatorStateSetErrorReporter(vstate, &kNaClVerboseErrorReporter);
-  NaClValidateSegment(code, load_address, code_size, vstate);
-  return_code = NaClValidatesOk(vstate);
-  NaClValidatorStateDestroy(vstate);
-  return return_code;
-}
-
-#endif
 
 static void CheckBounds(unsigned char *data, size_t data_size,
                         void *ptr, size_t inside_size) {

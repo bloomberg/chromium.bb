@@ -25,7 +25,6 @@ env.ComponentLibrary('nchelper', ['ncfileutil.c'])
 #
 if not env.Bit('target_x86'): Return()
 
-
 # Make a copy of debug CRT for now.
 # TODO(bradnelson): there should be a better way to generalize this requirement.
 # NOTE: debug builds on windows break without this
@@ -46,7 +45,7 @@ env.FilterOut(CCFLAGS=['-Wextra', '-Wswitch-enum', '-Wsign-compare'])
 # ncopcode_desc_0
 #
 # This one source file is shared in two projects so we generate it first
-# to prevent conflics in compile options.
+# to prevent conflicts in compile options.
 #
 ncopcode_desc_o = env.ComponentObject('ncopcode_desc.c')
 force_cpp_o = env.ComponentObject('force_cpp.cc')

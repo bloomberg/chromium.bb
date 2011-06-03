@@ -171,6 +171,7 @@
       ['target_arch=="ia32"', {
         'defines': [
           'NACL_TARGET_SUBARCH=32',
+          'NACL_TARGET_ARCH=x86',
           'NACL_BUILD_SUBARCH=32',
           'NACL_BUILD_ARCH=x86',
         ],
@@ -178,6 +179,7 @@
       ['target_arch=="x64"', {
         'defines': [
           'NACL_TARGET_SUBARCH=64',
+          'NACL_TARGET_ARCH=x86',
           'NACL_BUILD_SUBARCH=64',
           'NACL_BUILD_ARCH=x86',
         ],

@@ -8,195 +8,79 @@
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
 
-#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
+#if NACL_ARCH(NACL_TARGET_ARCH) == NACL_x86
 
-# include "native_client/src/trusted/validator_x86/nccopycode.h"
 # include "native_client/src/trusted/validator_x86/nacl_cpuid.h"
+# include "native_client/src/trusted/validator/ncvalidate.h"
 
-# if NACL_TARGET_SUBARCH == 32
-
-#  include "native_client/src/trusted/validator_x86/ncvalidate.h"
+/* Translate validation status to values wanted by sel_ldr. */
+static int NaClValidateStatus(NaClValidationStatus status) {
+  switch (status) {
+    case NaClValidationSucceeded:
+      return LOAD_OK;
+    case NaClValidationFailedOutOfMemory:
+      /* Note: this is confusing, but is what sel_ldr is expecting. */
+      return LOAD_BAD_FILE;
+    case NaClValidationFailed:
+    case NaClValidationFailedNotImplemented:
+    case NaClValidationFailedCpuNotSupported:
+    case NaClValidationFailedSegmentationIssue:
+    default:
+      return LOAD_VALIDATION_FAILED;
+  }
+}
 
 int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
                      uint8_t *data, size_t size) {
-  struct NCValidatorState *vstate;
-  int validator_result = 0;
-  NaClCPUData cpu_data;
-
-  NaClCPUDataGet(&cpu_data);
-  if (!NaClArchSupported(&cpu_data)) return LOAD_VALIDATION_FAILED;
-
+  NaClValidationStatus status = NaClValidationSucceeded;
   if (nap->validator_stub_out_mode) {
     /* In stub out mode, we do two passes.  The second pass acts as a
        sanity check that bad instructions were indeed overwritten with
        allowable HLTs. */
-    vstate = NCValidateInit(guest_addr, guest_addr + size, nap->bundle_size);
-    if (vstate == NULL) {
-      return LOAD_BAD_FILE;
-    }
-    NCValidateSetStubOutMode(vstate, 1);
-    NCValidateSegment(data, guest_addr, size, vstate);
-    NCValidateFinish(vstate);
-    NCValidateFreeState(&vstate);
+    status = NACL_SUBARCH_NAME(ApplyValidator,
+                               NACL_TARGET_ARCH,
+                               NACL_TARGET_SUBARCH)(
+                                   NaClApplyValidationDoStubout,
+                                   guest_addr, data, size,
+                                   nap->bundle_size, TRUE);
   }
-
-  vstate = NCValidateInit(guest_addr, guest_addr + size, nap->bundle_size);
-  if (vstate == NULL) {
-    return LOAD_BAD_FILE;
+  if (status == NaClValidationSucceeded) {
+    status = NACL_SUBARCH_NAME(ApplyValidator,
+                               NACL_TARGET_ARCH,
+                               NACL_TARGET_SUBARCH)(
+                                   NaClApplyCodeValidation,
+                                   guest_addr, data, size,
+                                   nap->bundle_size, TRUE);
   }
-  NCValidateSegment(data, guest_addr, size, vstate);
-  validator_result = NCValidateFinish(vstate);
-  NCValidateFreeState(&vstate);
-  if (validator_result != 0) {
-    return LOAD_VALIDATION_FAILED;
-  }
-  return LOAD_OK;
+  return NaClValidateStatus(status);
 }
 
 int NaClValidateCodeReplacement(struct NaClApp *nap, uintptr_t guest_addr,
                                 uint8_t *data_old, uint8_t *data_new,
                                 size_t size) {
-  NaClCPUData cpu_data;
-
-  NaClCPUDataGet(&cpu_data);
-  if (!NaClArchSupported(&cpu_data)) return LOAD_VALIDATION_FAILED;
-
-  if (nap->validator_stub_out_mode) {
-    NaClLog(1, "NaClValidateCodeReplacement:  "
-               "stub_out_mode not supported for code replacement\n");
-    return LOAD_BAD_FILE;
-  }
+  if (nap->validator_stub_out_mode) return LOAD_BAD_FILE;
 
   if ((guest_addr % nap->bundle_size) != 0 ||
-            (size % nap->bundle_size) != 0) {
-    NaClLog(1, "NaClValidateCodeReplacement:  "
-               "code replacement is not properly bundle-aligned\n");
+      (size % nap->bundle_size) != 0) {
     return LOAD_BAD_FILE;
   }
 
-  if (!NCValidateSegmentPair(data_old, data_new, guest_addr, size,
-                             nap->bundle_size)) {
-    return LOAD_VALIDATION_FAILED;
-  }
-  return LOAD_OK;
+  return NaClValidateStatus(
+      NACL_SUBARCH_NAME(ApplyValidatorCodeReplacement,
+                        NACL_TARGET_ARCH,
+                        NACL_TARGET_SUBARCH)
+      (guest_addr, data_old, data_new, size, nap->bundle_size));
 }
 
 int NaClCopyCode(struct NaClApp *nap, uintptr_t guest_addr,
                  uint8_t *data_old, uint8_t *data_new,
                  size_t size) {
-  int result;
-  NaClCPUData cpu_data;
-
-  NaClCPUDataGet(&cpu_data);
-  if (!NaClArchSupported(&cpu_data)) return LOAD_UNLOADABLE;
-
-  result = NCCopyCode(data_old, data_new, guest_addr, size, nap->bundle_size);
-  if (0 == result) {
-    return LOAD_UNLOADABLE;
-  }
-  return LOAD_OK;
+  return NaClValidateStatus(
+      NACL_SUBARCH_NAME(ApplyValidatorCopy,
+                        NACL_TARGET_ARCH,
+                        NACL_TARGET_SUBARCH)
+      (guest_addr, data_old, data_new, size, nap->bundle_size));
 }
-
-# else
-
-#  include "native_client/src/trusted/validator_x86/ncvalidate_iter.h"
-
-int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
-                     uint8_t *data, size_t size) {
-  struct NaClValidatorState *vstate;
-  int is_ok;
-  NaClCPUData cpu_data;
-
-  NaClCPUDataGet(&cpu_data);
-  if (!NaClArchSupported(&cpu_data)) return LOAD_VALIDATION_FAILED;
-
-  vstate = NaClValidatorStateCreate(guest_addr, size, nap->bundle_size,
-                                    RegR15);
-  if (vstate == NULL) {
-    return LOAD_BAD_FILE;
-  }
-
-  NaClValidatorStateSetLogVerbosity(vstate, LOG_ERROR);
-
-  if (nap->validator_stub_out_mode) {
-    /* In stub out mode, we do two passes. The second pass acts as a sanity
-     * check, after illegal instructions have been stubbed out with allowable
-     * HLTs.
-     * Start pass one to find errors, and stub out illegal instructions.
-     */
-    NaClValidatorStateSetDoStubOut(vstate, TRUE);
-    NaClValidateSegment(data, guest_addr, size, vstate);
-    NaClValidatorStateDestroy(vstate);
-    vstate = NaClValidatorStateCreate(guest_addr, size, nap->bundle_size,
-                                      RegR15);
-    NaClValidatorStateSetLogVerbosity(vstate, LOG_ERROR);
-  }
-  NaClValidateSegment(data, guest_addr, size, vstate);
-  is_ok = NaClValidatesOk(vstate);
-  NaClValidatorStateDestroy(vstate);
-  if (!is_ok) {
-    return LOAD_VALIDATION_FAILED;
-  }
-  return LOAD_OK;
-}
-
-int NaClValidateCodeReplacement(struct NaClApp *nap, uintptr_t guest_addr,
-                                uint8_t *data_old, uint8_t *data_new,
-                                size_t size) {
-  struct NaClValidatorState *vstate;
-  NaClCPUData cpu_data;
-  int is_ok;
-
-  NaClCPUDataGet(&cpu_data);
-  if (!NaClArchSupported(&cpu_data)) return LOAD_VALIDATION_FAILED;
-
-  if (nap->validator_stub_out_mode) {
-    NaClLog(1, "NaClValidateCodeReplacement:  "
-               "stub_out_mode not supported for code replacement\n");
-    return LOAD_BAD_FILE;
-  }
-
-  if ((guest_addr % nap->bundle_size) != 0 ||
-            (size % nap->bundle_size) != 0) {
-    NaClLog(1, "NaClValidateCodeReplacement:  "
-               "code replacement is not properly bundle-aligned\n");
-    return LOAD_BAD_FILE;
-  }
-
-  vstate = NaClValidatorStateCreate(guest_addr, size, nap->bundle_size,
-                                    RegR15);
-  if (NULL == vstate) {
-    return LOAD_BAD_FILE;
-  }
-  NaClValidatorStateSetLogVerbosity(vstate, LOG_ERROR);
-
-  NaClValidateSegmentPair(data_old, data_new, guest_addr, size, vstate);
-  is_ok = NaClValidatesOk(vstate);
-  NaClValidatorStateDestroy(vstate);
-  if (!is_ok) {
-    return LOAD_VALIDATION_FAILED;
-  }
-  return LOAD_OK;
-}
-
-int NaClCopyCode(struct NaClApp *nap, uintptr_t guest_addr,
-                 uint8_t *data_old, uint8_t *data_new,
-                 size_t size) {
-  int result;
-  NaClCPUData cpu_data;
-  UNREFERENCED_PARAMETER(nap);
-
-  NaClCPUDataGet(&cpu_data);
-  if (!NaClArchSupported(&cpu_data)) return LOAD_UNLOADABLE;
-
-  result = NaClCopyCodeIter(data_old, data_new, guest_addr, size);
-  if (0 == result) {
-    return LOAD_UNLOADABLE;
-  }
-  return LOAD_OK;
-}
-
-# endif
 
 #elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
 
