@@ -214,7 +214,8 @@ class TaskAdaptorHolder : public CancelableTask {
 };
 
 webkit_support::GraphicsContext3DImplementation
-    g_graphics_context_3d_implementation = webkit_support::IN_PROCESS;
+    g_graphics_context_3d_implementation =
+        webkit_support::IN_PROCESS_COMMAND_BUFFER;
 
 }  // namespace
 

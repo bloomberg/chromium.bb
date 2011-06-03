@@ -18,6 +18,10 @@ include_rules = [
 
   # For gpu/
   "+app/gfx",
+  "+gpu/command_buffer/client",
+  "+gpu/command_buffer/common",
+  "+gpu/command_buffer/service",
+  "+gpu/GLES2",
 
   # TODO(brettw) - review these; move up if it's ok, or remove the dependency
   "+crypto",

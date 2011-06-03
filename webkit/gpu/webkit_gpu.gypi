@@ -1,4 +1,4 @@
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -9,9 +9,15 @@
       'type': 'static_library',
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
+	'<(DEPTH)/gpu/gpu.gyp:command_buffer_service',
+	'<(DEPTH)/gpu/gpu.gyp:command_buffer_client',
+	'<(DEPTH)/gpu/gpu.gyp:gles2_c_lib',
         '<(DEPTH)/third_party/angle/src/build_angle.gyp:translator_common',
         '<(DEPTH)/third_party/angle/src/build_angle.gyp:translator_glsl',
         '<(DEPTH)/ui/gfx/gl/gl.gyp:gl',
+      ],
+      'include_dirs': [
+        '<(DEPTH)/skia/config',
       ],
       'sources': [
         # This list contains all .h and .cc in gpu except for test code.

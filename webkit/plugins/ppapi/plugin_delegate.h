@@ -172,7 +172,7 @@ class PluginDelegate {
     // This call will return the address of the command buffer for this context
     // that is constructed in Initialize() and is valid until this context is
     // destroyed.
-    virtual gpu::CommandBuffer* GetCommandBuffer() = 0;
+    virtual ::gpu::CommandBuffer* GetCommandBuffer() = 0;
 
     // Set an optional callback that will be invoked when the context is lost
     // (e.g. gpu process crash). Takes ownership of the callback.
