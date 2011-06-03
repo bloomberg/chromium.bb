@@ -569,7 +569,6 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kEnableIPCFuzzing,
     switches::kEnableLogging,
     switches::kEnableNaCl,
-    switches::kEnableOpenMax,
 #if defined(ENABLE_P2P_APIS)
     switches::kEnableP2PApi,
 #endif
