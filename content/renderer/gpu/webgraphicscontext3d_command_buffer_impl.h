@@ -421,11 +421,6 @@ class WebGraphicsContext3DCommandBufferImpl
       WGC3Denum target, WGC3Dsizei samples, WGC3Denum internalformat,
       WGC3Dsizei width, WGC3Dsizei height);
 
-  virtual WebGLId createCompositorTexture(WGC3Dsizei width, WGC3Dsizei height);
-  virtual void deleteCompositorTexture(WebGLId parent_texture);
-  virtual void copyTextureToCompositor(WebGLId texture,
-                                       WebGLId parent_texture);
-
   RendererGLContext* context() { return context_; }
 
   virtual void setContextLostCallback(

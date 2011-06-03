@@ -231,16 +231,6 @@ void WebGraphicsContext3DCommandBufferImpl::reshape(int width, int height) {
 #endif  // FLIP_FRAMEBUFFER_VERTICALLY
 }
 
-WebGLId WebGraphicsContext3DCommandBufferImpl::createCompositorTexture(
-    WGC3Dsizei width, WGC3Dsizei height) {
-  return context_->CreateParentTexture(gfx::Size(width, height));
-}
-
-void WebGraphicsContext3DCommandBufferImpl::deleteCompositorTexture(
-    WebGLId parent_texture) {
-  context_->DeleteParentTexture(parent_texture);
-}
-
 #ifdef FLIP_FRAMEBUFFER_VERTICALLY
 void WebGraphicsContext3DCommandBufferImpl::FlipVertically(
     uint8* framebuffer,
@@ -347,7 +337,9 @@ void WebGraphicsContext3DCommandBufferImpl::unmapTexSubImage2DCHROMIUM(
 
 void WebGraphicsContext3DCommandBufferImpl::copyTextureToParentTextureCHROMIUM(
     WebGLId texture, WebGLId parentTexture) {
-  copyTextureToCompositor(texture, parentTexture);
+  TRACE_EVENT0("gpu", "WebGfxCtx3DCmdBfrImpl::copyTextureToCompositor");
+  gl_->CopyTextureToParentTextureCHROMIUM(texture, parentTexture);
+  gl_->Flush();
 }
 
 void WebGraphicsContext3DCommandBufferImpl::getParentToChildLatchCHROMIUM(
@@ -1016,13 +1008,6 @@ void WebGraphicsContext3DCommandBufferImpl::deleteShader(WebGLId shader) {
 
 void WebGraphicsContext3DCommandBufferImpl::deleteTexture(WebGLId texture) {
   gl_->DeleteTextures(1, &texture);
-}
-
-void WebGraphicsContext3DCommandBufferImpl::copyTextureToCompositor(
-    WebGLId texture, WebGLId parentTexture) {
-  TRACE_EVENT0("gpu", "WebGfxCtx3DCmdBfrImpl::copyTextureToCompositor");
-  gl_->CopyTextureToParentTextureCHROMIUM(texture, parentTexture);
-  gl_->Flush();
 }
 
 void WebGraphicsContext3DCommandBufferImpl::OnSwapBuffersComplete() {
