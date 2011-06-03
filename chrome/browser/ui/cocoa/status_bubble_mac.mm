@@ -209,10 +209,12 @@ void StatusBubbleMac::SetText(const string16& text, bool is_url) {
   else
     show = false;
 
-  if (show)
+  if (show) {
+    UpdateSizeAndPosition();
     StartShowing();
-  else
+  } else {
     StartHiding();
+  }
 }
 
 void StatusBubbleMac::Hide() {
@@ -258,61 +260,55 @@ void StatusBubbleMac::Hide() {
   url_text_ = nil;
 }
 
-void StatusBubbleMac::MouseMoved(
-    const gfx::Point& location, bool left_content) {
-  if (left_content)
-    return;
-
+void StatusBubbleMac::SetFrameAvoidingMouse(
+    NSRect window_frame, const gfx::Point& mouse_pos) {
   if (!window_)
     return;
 
-  // TODO(thakis): Use 'location' here instead of NSEvent.
-  NSPoint cursor_location = [NSEvent mouseLocation];
-  --cursor_location.y;  // docs say the y coord starts at 1 not 0; don't ask why
+  // Bubble's base rect in |parent_| (window base) coordinates.
+  NSRect base_rect;
+  if ([delegate_ respondsToSelector:@selector(statusBubbleBaseFrame)]) {
+    base_rect = [delegate_ statusBubbleBaseFrame];
+  } else {
+    base_rect = [[parent_ contentView] bounds];
+    base_rect = [[parent_ contentView] convertRect:base_rect toView:nil];
+  }
 
-  // Bubble's base frame in |parent_| coordinates.
-  NSRect baseFrame;
-  if ([delegate_ respondsToSelector:@selector(statusBubbleBaseFrame)])
-    baseFrame = [delegate_ statusBubbleBaseFrame];
-  else
-    baseFrame = [[parent_ contentView] frame];
+  // To start, assume default positioning in the lower left corner.
+  // The window_frame position is in global (screen) coordinates.
+  window_frame.origin = [parent_ convertBaseToScreen:base_rect.origin];
 
-  // Get the normal position of the frame.
-  NSRect window_frame = [window_ frame];
-  window_frame.origin = [parent_ convertBaseToScreen:baseFrame.origin];
-
-  // Get the cursor position relative to the popup.
-  cursor_location.x -= NSMaxX(window_frame);
-  cursor_location.y -= NSMaxY(window_frame);
-
+  // Get the cursor position relative to the top right corner of the bubble.
+  gfx::Point relative_pos(mouse_pos.x() - NSMaxX(window_frame),
+                          mouse_pos.y() - NSMaxY(window_frame));
 
   // If the mouse is in a position where we think it would move the
   // status bubble, figure out where and how the bubble should be moved.
-  if (cursor_location.y < kMousePadding &&
-      cursor_location.x < kMousePadding) {
-    int offset = kMousePadding - cursor_location.y;
+  if (relative_pos.y() < kMousePadding &&
+      relative_pos.x() < kMousePadding) {
+    int offset = kMousePadding - relative_pos.y();
 
     // Make the movement non-linear.
     offset = offset * offset / kMousePadding;
 
     // When the mouse is entering from the right, we want the offset to be
     // scaled by how horizontally far away the cursor is from the bubble.
-    if (cursor_location.x > 0) {
-      offset = offset * ((kMousePadding - cursor_location.x) / kMousePadding);
+    if (relative_pos.x() > 0) {
+      offset *= (kMousePadding - relative_pos.x()) / kMousePadding;
     }
 
-    bool isOnScreen = true;
+    bool is_on_screen = true;
     NSScreen* screen = [window_ screen];
     if (screen &&
         NSMinY([screen visibleFrame]) > NSMinY(window_frame) - offset) {
-      isOnScreen = false;
+      is_on_screen = false;
     }
 
     // If something is shown below tab contents (devtools, download shelf etc.),
     // adjust the position to sit on top of it.
-    bool isAnyShelfVisible = NSMinY(baseFrame) > 0;
+    bool is_any_shelf_visible = NSMinY(base_rect) > 0;
 
-    if (isOnScreen && !isAnyShelfVisible) {
+    if (is_on_screen && !is_any_shelf_visible) {
       // Cap the offset and change the visual presentation of the bubble
       // depending on where it ends up (so that rounded corners square off
       // and mate to the edges of the tab content).
@@ -327,20 +323,26 @@ void StatusBubbleMac::MouseMoved(
       } else {
         [[window_ contentView] setCornerFlags:kRoundedTopRightCorner];
       }
+
+      // Place the bubble on the left, but slightly lower.
       window_frame.origin.y -= offset;
     } else {
       // Cannot move the bubble down without obscuring other content.
-      // Move it to the right instead.
+      // Move it to the far right instead.
       [[window_ contentView] setCornerFlags:kRoundedTopLeftCorner];
-
-      // Subtract border width + bubble width.
-      window_frame.origin.x += NSWidth(baseFrame) - NSWidth(window_frame);
+      window_frame.origin.x += NSWidth(base_rect) - NSWidth(window_frame);
     }
   } else {
+    // Use the default position in the lower left corner of the content area.
     [[window_ contentView] setCornerFlags:kRoundedTopRightCorner];
   }
-
   [window_ setFrame:window_frame display:YES];
+}
+
+void StatusBubbleMac::MouseMoved(
+    const gfx::Point& location, bool left_content) {
+  if (!left_content)
+    SetFrameAvoidingMouse([window_ frame], location);
 }
 
 void StatusBubbleMac::UpdateDownloadShelfVisibility(bool visible) {
@@ -435,8 +437,6 @@ void StatusBubbleMac::SetState(StatusBubbleState state) {
 
   if (state == kBubbleHidden)
     [window_ setFrame:NSZeroRect display:YES];
-  else
-    UpdateSizeAndPosition();
 
   if ([delegate_ respondsToSelector:@selector(statusBubbleWillEnterState:)])
     [delegate_ statusBubbleWillEnterState:state];
@@ -581,6 +581,15 @@ void StatusBubbleMac::CancelExpandTimer() {
   expand_timer_factory_.RevokeAll();
 }
 
+// Get the current location of the mouse in screen coordinates. To make this
+// class testable, all code should use this method rather than using
+// NSEvent mouseLocation directly.
+gfx::Point StatusBubbleMac::GetMouseLocation() {
+  NSPoint p = [NSEvent mouseLocation];
+  --p.y;  // The docs say the y coord starts at 1 not 0; don't ask why.
+  return gfx::Point(p.x, p.y);
+}
+
 void StatusBubbleMac::ExpandBubble() {
   // Calculate the width available for expanded and standard bubbles.
   NSRect window_frame = CalculateWindowFrame(/*expand=*/true);
@@ -630,7 +639,8 @@ void StatusBubbleMac::ExpandBubble() {
   actual_window_frame.size.width = NSWidth(window_frame);
 
   // Do not expand if it's going to cover mouse location.
-  if (NSPointInRect([NSEvent mouseLocation], actual_window_frame))
+  gfx::Point p = GetMouseLocation();
+  if (NSPointInRect(NSMakePoint(p.x(), p.y()), actual_window_frame))
     return;
 
   [NSAnimationContext beginGrouping];
@@ -643,7 +653,8 @@ void StatusBubbleMac::UpdateSizeAndPosition() {
   if (!window_)
     return;
 
-  [window_ setFrame:CalculateWindowFrame(/*expand=*/false) display:YES];
+  SetFrameAvoidingMouse(CalculateWindowFrame(/*expand=*/false),
+                        GetMouseLocation());
 }
 
 void StatusBubbleMac::SwitchParentWindow(NSWindow* parent) {

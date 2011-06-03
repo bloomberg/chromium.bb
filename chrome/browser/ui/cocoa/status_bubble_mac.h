@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -59,6 +59,11 @@ class StatusBubbleMac : public StatusBubble {
   // Expand the bubble to fit a URL too long for the standard bubble size.
   void ExpandBubble();
 
+ protected:
+  // Get the current location of the mouse. Protected so that it can be
+  // stubbed out for testing.
+  virtual gfx::Point GetMouseLocation();
+
  private:
   friend class StatusBubbleMacTest;
 
@@ -109,6 +114,10 @@ class StatusBubbleMac : public StatusBubble {
 
   // Cancel the expansion timer.
   void CancelExpandTimer();
+
+  // Sets the frame of the status bubble window to |window_frame|, adjusting
+  // for the given mouse position if necessary. Protected for use in tests.
+  void SetFrameAvoidingMouse(NSRect window_frame, const gfx::Point& mouse_pos);
 
   // The timer factory used for show and hide delay timers.
   ScopedRunnableMethodFactory<StatusBubbleMac> timer_factory_;

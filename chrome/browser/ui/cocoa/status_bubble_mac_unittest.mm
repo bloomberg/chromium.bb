@@ -59,16 +59,30 @@
 @end
 
 // This class implements, for testing purposes, a subclass of |StatusBubbleMac|
-// whose |MouseMoved()| method does nothing. (Ideally, we'd have a way of
-// controlling the "mouse" location, but the current implementation of
-// |StatusBubbleMac| uses |[NSEvent mouseLocation]| directly.) Without this,
-// tests can be flaky since results may depend on the mouse location.
+// whose |MouseMoved()| method does nothing. This lets the tests fake the mouse
+// position and avoid being affected by the true mouse position.
 class StatusBubbleMacIgnoreMouseMoved : public StatusBubbleMac {
  public:
   StatusBubbleMacIgnoreMouseMoved(NSWindow* parent, id delegate)
-      : StatusBubbleMac(parent, delegate) {}
+      : StatusBubbleMac(parent, delegate), mouseLocation_(0, 0) {
+    // Set the fake mouse position to the top right of the content area.
+    NSRect contentBounds = [[parent contentView] bounds];
+    mouseLocation_.SetPoint(NSMaxX(contentBounds), NSMaxY(contentBounds));
+  }
 
   virtual void MouseMoved(const gfx::Point& location, bool left_content) {}
+
+  virtual gfx::Point GetMouseLocation() {
+    return mouseLocation_;
+  }
+
+  void SetMouseLocationForTesting(int x, int y) {
+    mouseLocation_.SetPoint(x, y);
+    StatusBubbleMac::MouseMoved(gfx::Point(x, y), false);
+  }
+
+ private:
+  gfx::Point mouseLocation_;
 };
 
 class StatusBubbleMacTest : public CocoaTest {
@@ -133,6 +147,29 @@ class StatusBubbleMacTest : public CocoaTest {
   StatusBubbleMac::StatusBubbleState StateAt(int index) {
     return (*States())[index];
   }
+
+  bool IsPointInBubble(int x, int y) {
+    return NSPointInRect(NSMakePoint(x, y), [GetWindow() frame]);
+  }
+
+  void SetMouseLocation(int relative_x, int relative_y) {
+    // Convert to screen coordinates.
+    NSRect window_frame = [test_window() frame];
+    int x = relative_x + window_frame.origin.x;
+    int y = relative_y + window_frame.origin.y;
+
+    ((StatusBubbleMacIgnoreMouseMoved*)
+      bubble_)->SetMouseLocationForTesting(x, y);
+  }
+
+  // Test helper for moving the fake mouse location, and checking that
+  // the bubble avoids that location.
+  // For convenience & clarity, coordinates are relative to the main window.
+  bool CheckAvoidsMouse(int relative_x, int relative_y) {
+    SetMouseLocation(relative_x, relative_y);
+    return !IsPointInBubble(relative_x, relative_y);
+  }
+
   BrowserTestHelper browser_helper_;
   scoped_nsobject<StatusBubbleMacTestDelegate> delegate_;
   StatusBubbleMac* bubble_;  // Strong.
@@ -581,4 +618,42 @@ TEST_F(StatusBubbleMacTest, ExpandBubble) {
   EXPECT_TRUE([GetURLText() hasSuffix:@"\u2026"]);
 }
 
+TEST_F(StatusBubbleMacTest, BubbleAvoidsMouse) {
+  NSWindow* window = test_window();
 
+  // All coordinates here are relative to the window origin.
+
+  // Initially, the bubble should appear in the bottom left.
+  bubble_->SetStatus(UTF8ToUTF16("Showing"));
+  EXPECT_TRUE(IsPointInBubble(0, 0));
+  bubble_->Hide();
+
+  // Check that the bubble doesn't appear in the left corner if the
+  // mouse is currently located there.
+  SetMouseLocation(0, 0);
+  bubble_->SetStatus(UTF8ToUTF16("Showing"));
+  EXPECT_FALSE(IsPointInBubble(0, 0));
+
+  // Leave the bubble visible, and try moving the mouse around.
+  int smallValue = NSHeight([GetWindow() frame]) / 2;
+  EXPECT_TRUE(CheckAvoidsMouse(0, 0));
+  EXPECT_TRUE(CheckAvoidsMouse(smallValue, 0));
+  EXPECT_TRUE(CheckAvoidsMouse(0, smallValue));
+  EXPECT_TRUE(CheckAvoidsMouse(smallValue, smallValue));
+
+  // Simulate moving the mouse down from the top of the window.
+  for (int y = NSHeight([window frame]); y >= 0; y -= smallValue) {
+    ASSERT_TRUE(CheckAvoidsMouse(smallValue, y));
+  }
+
+  // Simulate moving the mouse from left to right.
+  int windowWidth = NSWidth([window frame]);
+  for (int x = 0; x < windowWidth; x += smallValue) {
+    ASSERT_TRUE(CheckAvoidsMouse(x, smallValue));
+  }
+
+  // Simulate moving the mouse from right to left.
+  for (int x = windowWidth; x >= 0; x -= smallValue) {
+    ASSERT_TRUE(CheckAvoidsMouse(x, smallValue));
+  }
+}
