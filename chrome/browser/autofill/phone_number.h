@@ -84,12 +84,22 @@ class PhoneNumber : public FormGroup {
 
   static void StripPunctuation(string16* number);
 
+  void ClearCachedNumbers() const;
+  // Updates cached parsed parts of the number. Returns false only if there was
+  // parsing involved and it failed.
+  bool UpdateCacheIfNeeded() const;
+
   // Phone group -  currently it is PHONE_HOME and PHONE_FAX.
   AutofillType::FieldTypeGroup phone_group_;
   // Locale for phone normalizing.
   std::string locale_;
-  // The pieces of the phone number.
+  // The phone number.
   string16 number_;
+
+  // Cached parsed parts of the number.
+  mutable string16 cached_country_code_;
+  mutable string16 cached_city_code_;
+  mutable string16 cached_local_number_;
 };
 
 #endif  // CHROME_BROWSER_AUTOFILL_PHONE_NUMBER_H_
