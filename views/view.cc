@@ -566,7 +566,7 @@ bool View::IsGroupFocusTraversable() const {
   return true;
 }
 
-void View::GetViewsWithGroup(int group_id, std::vector<View*>* out) {
+void View::GetViewsWithGroup(int group_id, ViewVector* out) {
   if (group_ == group_id)
     out->push_back(this);
 
@@ -575,7 +575,7 @@ void View::GetViewsWithGroup(int group_id, std::vector<View*>* out) {
 }
 
 View* View::GetSelectedViewForGroup(int group_id) {
-  std::vector<View*> views;
+  ViewVector views;
   GetWidget()->GetRootView()->GetViewsWithGroup(group_id, &views);
   return views.empty() ? NULL : views[0];
 }
@@ -1463,7 +1463,7 @@ void View::BoundsChanged(const gfx::Rect& previous_bounds) {
   // Notify interested Views that visible bounds within the root view may have
   // changed.
   if (descendants_to_notify_.get()) {
-    for (std::vector<View*>::iterator i = descendants_to_notify_->begin();
+    for (ViewVector::iterator i = descendants_to_notify_->begin();
          i != descendants_to_notify_->end(); ++i) {
       (*i)->OnVisibleBoundsChanged();
     }
@@ -1744,7 +1744,7 @@ void View::InitFocusSiblings(View* v, int index) {
       // the last focusable element. Let's try to find an element with no next
       // focusable element to link to.
       View* last_focusable_view = NULL;
-      for (std::vector<View*>::iterator iter = children_.begin();
+      for (ViewVector::iterator iter = children_.begin();
            iter != children_.end(); ++iter) {
           if (!(*iter)->next_focusable_view_) {
             last_focusable_view = *iter;

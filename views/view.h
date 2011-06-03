@@ -143,6 +143,8 @@ class DragController {
 /////////////////////////////////////////////////////////////////////////////
 class View : public AcceleratorTarget {
  public:
+  typedef std::vector<View*> ViewVector;
+
 #if defined(TOUCH_UI)
   enum TouchStatus {
     TOUCH_STATUS_UNKNOWN = 0,  // Unknown touch status. This is used to indicate
@@ -450,7 +452,7 @@ class View : public AcceleratorTarget {
 
   // Fills the provided vector with all the available views which belong to the
   // provided group.
-  void GetViewsWithGroup(int group_id, std::vector<View*>* out);
+  void GetViewsWithGroup(int group_id, ViewVector* out);
 
   // Return the View that is currently selected in the specified group.
   // The default implementation simply returns the first View found for that
@@ -1314,7 +1316,6 @@ class View : public AcceleratorTarget {
   View* parent_;
 
   // This view's children.
-  typedef std::vector<View*> ViewVector;
   ViewVector children_;
 
   // Size and disposition ------------------------------------------------------
