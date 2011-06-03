@@ -33,7 +33,15 @@ IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, ExecuteScriptPermissions) {
   ASSERT_TRUE(RunExtensionTest("executescript/permissions")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, ExecuteScriptFileAfterClose) {
+// http://crbug.com/84760
+#if defined(OS_CHROMEOS)
+#define MAYBE_ExecuteScriptFileAfterClose DISABLED_ExecuteScriptFileAfterClose
+#else
+#define MAYBE_ExecuteScriptFileAfterClose ExecuteScriptFileAfterClose
+#endif  // defined(OS_CHROMEOS)
+
+IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest,
+                       MAYBE_ExecuteScriptFileAfterClose) {
   host_resolver()->AddRule("b.com", "127.0.0.1");
   ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionTest("executescript/file_after_close")) << message_;
