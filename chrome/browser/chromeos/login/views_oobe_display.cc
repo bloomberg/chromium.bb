@@ -178,31 +178,37 @@ void ViewsOobeDisplay::HideScreen(WizardScreen* screen) {
   contents_->SchedulePaint();
 }
 
-UpdateScreenActor* ViewsOobeDisplay::CreateUpdateScreenActor() {
-  return new ViewsUpdateScreenActor(this);
+UpdateScreenActor* ViewsOobeDisplay::GetUpdateScreenActor() {
+  if (update_screen_actor_ == NULL)
+    update_screen_actor_.reset(new ViewsUpdateScreenActor(this));
+  return update_screen_actor_.get();
 }
 
-NetworkScreenActor* ViewsOobeDisplay::CreateNetworkScreenActor() {
-  return new ViewsNetworkScreenActor(this);
+NetworkScreenActor* ViewsOobeDisplay::GetNetworkScreenActor() {
+  if (network_screen_actor_ == NULL)
+    network_screen_actor_.reset(new ViewsNetworkScreenActor(this));
+  return network_screen_actor_.get();
 }
 
-EulaScreenActor* ViewsOobeDisplay::CreateEulaScreenActor() {
-  return new ViewsEulaScreenActor(this);
+EulaScreenActor* ViewsOobeDisplay::GetEulaScreenActor() {
+  if (eula_screen_actor_ == NULL)
+    eula_screen_actor_.reset(new ViewsEulaScreenActor(this));
+  return eula_screen_actor_.get();
 }
 
-ViewScreenDelegate* ViewsOobeDisplay::CreateEnterpriseEnrollmentScreenActor() {
+ViewScreenDelegate* ViewsOobeDisplay::GetEnterpriseEnrollmentScreenActor() {
   return this;
 }
 
-ViewScreenDelegate* ViewsOobeDisplay::CreateUserImageScreenActor() {
+ViewScreenDelegate* ViewsOobeDisplay::GetUserImageScreenActor() {
   return this;
 }
 
-ViewScreenDelegate* ViewsOobeDisplay::CreateRegistrationScreenActor() {
+ViewScreenDelegate* ViewsOobeDisplay::GetRegistrationScreenActor() {
   return this;
 }
 
-ViewScreenDelegate* ViewsOobeDisplay::CreateHTMLPageScreenActor() {
+ViewScreenDelegate* ViewsOobeDisplay::GetHTMLPageScreenActor() {
   return this;
 }
 

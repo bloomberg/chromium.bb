@@ -6,8 +6,9 @@
 
 namespace chromeos {
 
-MockUpdateScreen::MockUpdateScreen(ScreenObserver* screen_observer)
-    : UpdateScreen(screen_observer, new MockUpdateScreenActor) {
+MockUpdateScreen::MockUpdateScreen(ScreenObserver* screen_observer,
+                                   UpdateScreenActor* actor)
+    : UpdateScreen(screen_observer, actor) {
 }
 
 MockUpdateScreen::~MockUpdateScreen() {

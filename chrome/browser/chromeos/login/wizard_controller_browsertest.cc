@@ -27,22 +27,28 @@
 
 namespace chromeos {
 
-template <class T>
+template <class T, class H>
 class MockOutShowHide : public T {
  public:
-  template <class P> MockOutShowHide(P p) : T(p) {}
+  template <class P> explicit  MockOutShowHide(P p) : T(p) {}
+  template <class P> MockOutShowHide(P p, H* actor)
+      : T(p, actor), actor_(actor) {}
   MOCK_METHOD0(Show, void());
   MOCK_METHOD0(Hide, void());
+
+ private:
+  scoped_ptr<H> actor_;
 };
 
-#define MOCK(mock_var, screen_name, mocked_class)                              \
-  mock_var = new MockOutShowHide<mocked_class>(controller());                  \
+#define MOCK(mock_var, screen_name, mocked_class, actor_class)                 \
+  mock_var = new MockOutShowHide<mocked_class, actor_class>(                   \
+      controller(), new actor_class);                                          \
   controller()->screen_name.reset(mock_var);                                   \
   EXPECT_CALL(*mock_var, Show()).Times(0);                                     \
   EXPECT_CALL(*mock_var, Hide()).Times(0);
 
 #define MOCK_OLD(mock_var, screen_name, mocked_class)                          \
-  mock_var = new MockOutShowHide<mocked_class>(                                \
+  mock_var = new MockOutShowHide<mocked_class, int>(                           \
       static_cast<ViewsOobeDisplay*>(controller()->oobe_display_.get()));      \
   controller()->screen_name.reset(mock_var);                                   \
   EXPECT_CALL(*mock_var, Show()).Times(0);                                     \
@@ -99,9 +105,11 @@ class WizardControllerFlowTest : public WizardControllerTest {
     WizardController::default_controller()->is_official_build_ = true;
 
     // Set up the mocks for all screens.
-    MOCK(mock_network_screen_, network_screen_, MockNetworkScreen);
-    MOCK(mock_update_screen_, update_screen_, MockUpdateScreen);
-    MOCK(mock_eula_screen_, eula_screen_, MockEulaScreen);
+    MOCK(mock_network_screen_, network_screen_,
+         MockNetworkScreen, MockNetworkScreenActor);
+    MOCK(mock_update_screen_, update_screen_,
+         MockUpdateScreen, MockUpdateScreenActor);
+    MOCK(mock_eula_screen_, eula_screen_, MockEulaScreen, MockEulaScreenActor);
 
     MOCK_OLD(mock_enterprise_enrollment_screen_,
              enterprise_enrollment_screen_,
@@ -119,10 +127,11 @@ class WizardControllerFlowTest : public WizardControllerTest {
     controller()->OnExit(exit_code);
   }
 
-  MockOutShowHide<MockNetworkScreen>* mock_network_screen_;
-  MockOutShowHide<MockUpdateScreen>* mock_update_screen_;
-  MockOutShowHide<MockEulaScreen>* mock_eula_screen_;
-  MockOutShowHide<EnterpriseEnrollmentScreen>*
+  MockOutShowHide<MockNetworkScreen, MockNetworkScreenActor>*
+      mock_network_screen_;
+  MockOutShowHide<MockUpdateScreen, MockUpdateScreenActor>* mock_update_screen_;
+  MockOutShowHide<MockEulaScreen, MockEulaScreenActor>* mock_eula_screen_;
+  MockOutShowHide<EnterpriseEnrollmentScreen, int>*
       mock_enterprise_enrollment_screen_;
 
  private:

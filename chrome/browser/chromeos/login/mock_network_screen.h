@@ -15,7 +15,7 @@ namespace chromeos {
 
 class MockNetworkScreen : public NetworkScreen {
  public:
-  explicit MockNetworkScreen(ScreenObserver* observer);
+  MockNetworkScreen(ScreenObserver* observer, NetworkScreenActor* actor);
   virtual ~MockNetworkScreen();
 };
 

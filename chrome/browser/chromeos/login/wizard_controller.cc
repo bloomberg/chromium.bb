@@ -164,14 +164,14 @@ void WizardController::CancelOOBEUpdate() {
 chromeos::NetworkScreen* WizardController::GetNetworkScreen() {
   if (!network_screen_.get())
     network_screen_.reset(new chromeos::NetworkScreen(
-        this, oobe_display_->CreateNetworkScreenActor()));
+        this, oobe_display_->GetNetworkScreenActor()));
   return network_screen_.get();
 }
 
 chromeos::UpdateScreen* WizardController::GetUpdateScreen() {
   if (!update_screen_.get()) {
     update_screen_.reset(new chromeos::UpdateScreen(
-        this, oobe_display_->CreateUpdateScreenActor()));
+        this, oobe_display_->GetUpdateScreenActor()));
     update_screen_->SetRebootCheckDelay(kWaitForRebootTimeSec);
   }
   return update_screen_.get();
@@ -181,14 +181,14 @@ chromeos::UserImageScreen* WizardController::GetUserImageScreen() {
   if (!user_image_screen_.get())
     user_image_screen_.reset(
         new chromeos::UserImageScreen(
-            oobe_display_->CreateUserImageScreenActor()));
+            oobe_display_->GetUserImageScreenActor()));
   return user_image_screen_.get();
 }
 
 chromeos::EulaScreen* WizardController::GetEulaScreen() {
   if (!eula_screen_.get())
     eula_screen_.reset(new chromeos::EulaScreen(
-        this, oobe_display_->CreateEulaScreenActor()));
+        this, oobe_display_->GetEulaScreenActor()));
   return eula_screen_.get();
 }
 
@@ -196,7 +196,7 @@ chromeos::RegistrationScreen* WizardController::GetRegistrationScreen() {
   if (!registration_screen_.get())
     registration_screen_.reset(
         new chromeos::RegistrationScreen(
-            oobe_display_->CreateRegistrationScreenActor()));
+            oobe_display_->GetRegistrationScreenActor()));
   return registration_screen_.get();
 }
 
@@ -214,7 +214,7 @@ chromeos::HTMLPageScreen* WizardController::GetHTMLPageScreen() {
     DCHECK(!url.empty()) << "No URL in commane line";
     html_page_screen_.reset(
         new chromeos::HTMLPageScreen(
-            oobe_display_->CreateHTMLPageScreenActor(), url));
+            oobe_display_->GetHTMLPageScreenActor(), url));
   }
   return html_page_screen_.get();
 }
@@ -224,7 +224,7 @@ chromeos::EnterpriseEnrollmentScreen*
   if (!enterprise_enrollment_screen_.get()) {
     enterprise_enrollment_screen_.reset(
         new chromeos::EnterpriseEnrollmentScreen(
-            oobe_display_->CreateEnterpriseEnrollmentScreenActor()));
+            oobe_display_->GetEnterpriseEnrollmentScreenActor()));
   }
   return enterprise_enrollment_screen_.get();
 }

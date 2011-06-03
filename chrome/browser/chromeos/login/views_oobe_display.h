@@ -29,13 +29,13 @@ class ViewsOobeDisplay : public OobeDisplay,
   // OobeDisplay implementation:
   virtual void ShowScreen(WizardScreen* screen);
   virtual void HideScreen(WizardScreen* screen);
-  virtual UpdateScreenActor* CreateUpdateScreenActor();
-  virtual NetworkScreenActor* CreateNetworkScreenActor();
-  virtual EulaScreenActor* CreateEulaScreenActor();
-  virtual ViewScreenDelegate* CreateEnterpriseEnrollmentScreenActor();
-  virtual ViewScreenDelegate* CreateUserImageScreenActor();
-  virtual ViewScreenDelegate* CreateRegistrationScreenActor();
-  virtual ViewScreenDelegate* CreateHTMLPageScreenActor();
+  virtual UpdateScreenActor* GetUpdateScreenActor();
+  virtual NetworkScreenActor* GetNetworkScreenActor();
+  virtual EulaScreenActor* GetEulaScreenActor();
+  virtual ViewScreenDelegate* GetEnterpriseEnrollmentScreenActor();
+  virtual ViewScreenDelegate* GetUserImageScreenActor();
+  virtual ViewScreenDelegate* GetRegistrationScreenActor();
+  virtual ViewScreenDelegate* GetHTMLPageScreenActor();
 
   // Overridden from ViewScreenDelegate:
   virtual views::View* GetWizardView();
@@ -71,6 +71,10 @@ class ViewsOobeDisplay : public OobeDisplay,
   bool initial_show_;
 
   ScreenObserver* screen_observer_;
+
+  scoped_ptr<UpdateScreenActor> update_screen_actor_;
+  scoped_ptr<NetworkScreenActor> network_screen_actor_;
+  scoped_ptr<EulaScreenActor> eula_screen_actor_;
 
   FRIEND_TEST_ALL_PREFIXES(WizardControllerFlowTest, Accelerators);
 

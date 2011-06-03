@@ -138,7 +138,7 @@ void NetworkScreen::OnConnectionTimeout() {
 }
 
 void NetworkScreen::UpdateStatus(NetworkLibrary* network) {
-  if (!actor_.get() || !network)
+  if (!actor_ || !network)
     return;
 
   if (network->Connected())

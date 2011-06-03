@@ -15,7 +15,7 @@ namespace chromeos {
 
 class MockUpdateScreen : public UpdateScreen {
  public:
-  explicit MockUpdateScreen(ScreenObserver* screen_observer);
+  MockUpdateScreen(ScreenObserver* screen_observer, UpdateScreenActor* actor);
   virtual ~MockUpdateScreen();
 
   MOCK_METHOD0(StartUpdate, void());

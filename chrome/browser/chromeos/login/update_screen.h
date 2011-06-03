@@ -97,7 +97,7 @@ class UpdateScreen: public UpdateLibrary::Observer,
   bool is_shown_;
 
   // Keeps actor which is delegated with all showing operations.
-  scoped_ptr<UpdateScreenActor> actor_;
+  UpdateScreenActor* actor_;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateScreen);
 };

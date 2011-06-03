@@ -9,8 +9,9 @@ namespace chromeos {
 using ::testing::AtLeast;
 using ::testing::NotNull;
 
-MockNetworkScreen::MockNetworkScreen(ScreenObserver* observer)
-    : NetworkScreen(observer, new MockNetworkScreenActor) {
+MockNetworkScreen::MockNetworkScreen(ScreenObserver* observer,
+                                     NetworkScreenActor* actor)
+    : NetworkScreen(observer, actor) {
 }
 
 MockNetworkScreen::~MockNetworkScreen() {

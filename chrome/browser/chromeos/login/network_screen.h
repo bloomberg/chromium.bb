@@ -39,7 +39,7 @@ class NetworkScreen : public WizardScreen,
   // NetworkScreenActor::Delegate implementation:
   virtual void OnContinuePressed();
 
-  NetworkScreenActor* actor() const { return actor_.get(); }
+  NetworkScreenActor* actor() const { return actor_; }
 
  protected:
   // Subscribes NetworkScreen to the network change notification,
@@ -83,7 +83,7 @@ class NetworkScreen : public WizardScreen,
   // Timer for connection timeout.
   base::OneShotTimer<NetworkScreen> connection_timer_;
 
-  scoped_ptr<NetworkScreenActor> actor_;
+  NetworkScreenActor* actor_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkScreen);
 };

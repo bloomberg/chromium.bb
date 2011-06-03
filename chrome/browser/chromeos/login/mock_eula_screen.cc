@@ -9,8 +9,9 @@ namespace chromeos {
 using ::testing::AtLeast;
 using ::testing::NotNull;
 
-MockEulaScreen::MockEulaScreen(ScreenObserver* screen_observer)
-    : EulaScreen(screen_observer, new MockEulaScreenActor) {
+MockEulaScreen::MockEulaScreen(ScreenObserver* screen_observer,
+                               EulaScreenActor* actor)
+    : EulaScreen(screen_observer, actor) {
 }
 
 MockEulaScreen::~MockEulaScreen() {

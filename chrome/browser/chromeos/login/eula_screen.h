@@ -47,7 +47,7 @@ class EulaScreen : public WizardScreen,
   // it's destroyed.
   std::string tpm_password_;
 
-  scoped_ptr<EulaScreenActor> actor_;
+  EulaScreenActor* actor_;
 
   DISALLOW_COPY_AND_ASSIGN(EulaScreen);
 };
