@@ -109,6 +109,9 @@
           'WTF_USE_THREADED_COMPOSITING=1',
         ],
       }],
+      ['touchui==1', {
+        'enable_touch_icon_loading': 1,
+      }],
       # TODO(crogers): For the moment Windows is only enabled for
       # Google-branded build, since the FFmpeg DLLs need to be re-built
       # for chromium.
