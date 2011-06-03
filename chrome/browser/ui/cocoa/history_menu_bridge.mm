@@ -101,9 +101,8 @@ HistoryMenuBridge::HistoryMenuBridge(Profile* profile)
 
   // The service is not ready for use yet, so become notified when it does.
   if (!history_service_) {
-    registrar_.Add(this,
-                   NotificationType::HISTORY_LOADED,
-                   NotificationService::AllSources());
+    registrar_.Add(
+        this, NotificationType::HISTORY_LOADED, Source<Profile>(profile_));
   }
 }
 
@@ -112,13 +111,14 @@ HistoryMenuBridge::HistoryMenuBridge(Profile* profile)
 // task cancellation is not done manually here in the dtor.
 HistoryMenuBridge::~HistoryMenuBridge() {
   // Unregister ourselves as observers and notifications.
-  const NotificationSource& src = NotificationService::AllSources();
   if (history_service_) {
+    const NotificationSource& src = NotificationService::AllSources();
     registrar_.Remove(this, NotificationType::HISTORY_TYPED_URLS_MODIFIED, src);
     registrar_.Remove(this, NotificationType::HISTORY_URL_VISITED, src);
     registrar_.Remove(this, NotificationType::HISTORY_URLS_DELETED, src);
   } else {
-    registrar_.Remove(this, NotificationType::HISTORY_LOADED, src);
+    registrar_.Remove(
+        this, NotificationType::HISTORY_LOADED, Source<Profile>(profile_));
   }
 
   if (tab_restore_service_)
@@ -148,7 +148,7 @@ void HistoryMenuBridge::Observe(NotificationType type,
       // Found our HistoryService, so stop listening for this notification.
       registrar_.Remove(this,
                         NotificationType::HISTORY_LOADED,
-                        NotificationService::AllSources());
+                        Source<Profile>(profile_));
     }
   }
 
@@ -361,6 +361,7 @@ void HistoryMenuBridge::CreateMenu() {
   create_in_progress_ = true;
   need_recreate_ = false;
 
+  DCHECK(history_service_);
   history_service_->QuerySegmentUsageSince(
       &cancelable_request_consumer_,
       base::Time::Now() - base::TimeDelta::FromDays(kMostVisitedScope),
