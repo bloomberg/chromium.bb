@@ -4,6 +4,9 @@
 
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 
+#include "base/compiler_specific.h"
+#include "base/memory/singleton.h"
+#include "content/browser/javascript_dialogs.h"
 #include "content/common/url_constants.h"
 #include "ui/gfx/rect.h"
 
@@ -195,6 +198,43 @@ TabContentsDelegate::CreateMainFrameCommitDetails(TabContents* tab) {
 void TabContentsDelegate::DidNavigateMainFramePostCommit(
     TabContents* tab,
     const MainFrameCommitDetails& details) {
+}
+
+// A stubbed-out version of JavaScriptDialogCreator that doesn't do anything.
+class JavaScriptDialogCreatorStub : public content::JavaScriptDialogCreator {
+ public:
+  static JavaScriptDialogCreatorStub* GetInstance() {
+    return Singleton<JavaScriptDialogCreatorStub>::get();
+  }
+
+  virtual void RunJavaScriptDialog(content::JavaScriptDialogDelegate* delegate,
+                                   const GURL& frame_url,
+                                   int dialog_flags,
+                                   const string16& message_text,
+                                   const string16& default_prompt_text,
+                                   IPC::Message* reply_message,
+                                   bool* did_suppress_message,
+                                   Profile* profile) OVERRIDE {
+    *did_suppress_message = true;
+  }
+
+  virtual void RunBeforeUnloadDialog(
+      content::JavaScriptDialogDelegate* delegate,
+      const string16& message_text,
+      IPC::Message* reply_message) OVERRIDE {
+    delegate->OnDialogClosed(reply_message, true, string16());
+  }
+
+  virtual void ResetJavaScriptState(
+      content::JavaScriptDialogDelegate* delegate) OVERRIDE {
+  }
+ private:
+  friend struct DefaultSingletonTraits<JavaScriptDialogCreatorStub>;
+};
+
+content::JavaScriptDialogCreator*
+TabContentsDelegate::GetJavaScriptDialogCreator() {
+  return JavaScriptDialogCreatorStub::GetInstance();
 }
 
 TabContentsDelegate::~TabContentsDelegate() {

@@ -7,6 +7,7 @@
 #include "base/file_path.h"
 #include "base/path_service.h"
 #include "base/stringprintf.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/automation/automation_tab_helper.h"
 #include "chrome/browser/automation/mock_tab_event_observer.h"
 #include "chrome/browser/ui/browser.h"

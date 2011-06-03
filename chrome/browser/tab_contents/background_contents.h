@@ -11,8 +11,9 @@
 
 #include "base/scoped_ptr.h"
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
-#include "chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h"
+#include "content/browser/javascript_dialogs.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
+#include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/window_container_type.h"
 #include "webkit/glue/window_open_disposition.h"
@@ -32,7 +33,7 @@ class Rect;
 class BackgroundContents : public RenderViewHostDelegate,
                            public RenderViewHostDelegate::View,
                            public NotificationObserver,
-                           public JavaScriptAppModalDialogDelegate {
+                           public content::JavaScriptDialogDelegate {
  public:
   class Delegate {
    public:
@@ -124,14 +125,13 @@ class BackgroundContents : public RenderViewHostDelegate,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  // Overridden from JavaScriptAppModalDialogDelegate:
-  virtual void OnMessageBoxClosed(IPC::Message* reply_msg,
-                                  bool success,
-                                  const std::wstring& user_input);
-  virtual void SetSuppressMessageBoxes(bool suppress_message_boxes) {}
-  virtual gfx::NativeWindow GetMessageBoxRootWindow();
-  virtual TabContents* AsTabContents();
-  virtual ExtensionHost* AsExtensionHost();
+  // Overridden from JavaScriptDialogDelegate:
+  virtual void OnDialogClosed(IPC::Message* reply_msg,
+                              bool success,
+                              const string16& user_input) OVERRIDE;
+  virtual gfx::NativeWindow GetDialogRootWindow() OVERRIDE;
+  virtual TabContents* AsTabContents() OVERRIDE;
+  virtual ExtensionHost* AsExtensionHost() OVERRIDE;
 
   virtual void UpdateInspectorSetting(const std::string& key,
                                       const std::string& value);

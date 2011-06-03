@@ -165,6 +165,7 @@
         'browser/in_process_webkit/webkit_context.h',
         'browser/in_process_webkit/webkit_thread.cc',
         'browser/in_process_webkit/webkit_thread.h',
+        'browser/javascript_dialogs.h',
         'browser/load_notification_details.h',
         'browser/media_stream/media_stream_provider.cc',
         'browser/media_stream/media_stream_provider.h',

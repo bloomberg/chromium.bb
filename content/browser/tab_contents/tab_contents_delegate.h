@@ -15,6 +15,10 @@
 #include "ui/gfx/native_widget_types.h"
 #include "webkit/glue/window_open_disposition.h"
 
+namespace content {
+class JavaScriptDialogCreator;
+}
+
 namespace gfx {
 class Point;
 class Rect;
@@ -298,6 +302,11 @@ class TabContentsDelegate {
   virtual void DidNavigateMainFramePostCommit(
       TabContents* tab,
       const MainFrameCommitDetails& details);
+
+  // Returns a pointer to a service to create JavaScript dialogs. The default
+  // pointer returned is to a stub service that marks all dialogs as suppressed
+  // and displays nothing.
+  virtual content::JavaScriptDialogCreator* GetJavaScriptDialogCreator();
 
  protected:
   virtual ~TabContentsDelegate();

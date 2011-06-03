@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_view_gtk.h"
 
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/renderer_host/render_widget_host_view_gtk.h"
 #include "chrome/browser/tab_contents/web_drag_dest_gtk.h"
 #include "chrome/browser/ui/gtk/constrained_window_gtk.h"

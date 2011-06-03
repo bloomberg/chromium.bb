@@ -46,7 +46,7 @@ void ShowSSLClientCertificateSelector(
       IDS_CLIENT_CERT_DIALOG_TEXT,
       ASCIIToUTF16(cert_request_info->host_and_port)));
   PCCERT_CONTEXT cert_context = CryptUIDlgSelectCertificateFromStore(
-      client_certs, parent->GetMessageBoxRootWindow(),
+      client_certs, parent->GetDialogRootWindow(),
       title.c_str(), text.c_str(), 0, 0, NULL);
 
   net::X509Certificate* cert = NULL;

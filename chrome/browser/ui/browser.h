@@ -851,6 +851,8 @@ class Browser : public TabHandlerDelegate,
   virtual void DidNavigateMainFramePostCommit(
       TabContents* tab,
       const MainFrameCommitDetails& details);
+  virtual content::JavaScriptDialogCreator* GetJavaScriptDialogCreator()
+      OVERRIDE;
 
   // Overridden from TabContentsWrapperDelegate:
   virtual void OnDidGetApplicationInfo(TabContentsWrapper* source,

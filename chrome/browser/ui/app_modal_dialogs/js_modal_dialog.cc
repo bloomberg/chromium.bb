@@ -48,28 +48,31 @@ void EnforceMaxPromptSize(const string16& in_string, string16* out_string) {
 
 }  // namespace
 
+ChromeJavaScriptDialogExtraData::ChromeJavaScriptDialogExtraData()
+    : suppress_javascript_messages_(false) {
+}
+
 JavaScriptAppModalDialog::JavaScriptAppModalDialog(
-    JavaScriptAppModalDialogDelegate* delegate,
-    const std::wstring& title,
+    content::JavaScriptDialogDelegate* delegate,
+    ChromeJavaScriptDialogExtraData* extra_data,
+    const string16& title,
     int dialog_flags,
-    const std::wstring& message_text,
-    const std::wstring& default_prompt_text,
+    const string16& message_text,
+    const string16& default_prompt_text,
     bool display_suppress_checkbox,
     bool is_before_unload_dialog,
     IPC::Message* reply_msg)
     : AppModalDialog(delegate->AsTabContents(), title),
       delegate_(delegate),
+      extra_data_(extra_data),
       extension_host_(delegate->AsExtensionHost()),
       dialog_flags_(dialog_flags),
       display_suppress_checkbox_(display_suppress_checkbox),
       is_before_unload_dialog_(is_before_unload_dialog),
       reply_msg_(reply_msg),
       use_override_prompt_text_(false) {
-  string16 elided_text;
-  EnforceMaxTextSize(WideToUTF16(message_text), &elided_text);
-  message_text_ = UTF16ToWide(elided_text);
-  EnforceMaxPromptSize(WideToUTF16Hack(default_prompt_text),
-                       &default_prompt_text_);
+  EnforceMaxTextSize(message_text, &message_text_);
+  EnforceMaxPromptSize(default_prompt_text, &default_prompt_text_);
 
   DCHECK((tab_contents_ != NULL) != (extension_host_ != NULL));
   InitNotifications();
@@ -79,9 +82,7 @@ JavaScriptAppModalDialog::~JavaScriptAppModalDialog() {
 }
 
 NativeAppModalDialog* JavaScriptAppModalDialog::CreateNativeDialog() {
-  gfx::NativeWindow parent_window = tab_contents_ ?
-      tab_contents_->GetMessageBoxRootWindow() :
-      extension_host_->GetMessageBoxRootWindow();
+  gfx::NativeWindow parent_window = delegate_->GetDialogRootWindow();
   return NativeAppModalDialog::CreateNativeJavaScriptPrompt(this,
                                                             parent_window);
 }
@@ -142,22 +143,22 @@ void JavaScriptAppModalDialog::OnCancel(bool suppress_js_messages) {
   // is a temporary workaround.
   CompleteDialog();
 
-  NotifyDelegate(false, L"", suppress_js_messages);
+  NotifyDelegate(false, string16(), suppress_js_messages);
 }
 
-void JavaScriptAppModalDialog::OnAccept(const std::wstring& prompt_text,
+void JavaScriptAppModalDialog::OnAccept(const string16& prompt_text,
                                         bool suppress_js_messages) {
-  std::wstring prompt_text_to_use = prompt_text;
+  string16 prompt_text_to_use = prompt_text;
   // This is only for testing.
   if (use_override_prompt_text_)
-    prompt_text_to_use = UTF16ToWideHack(override_prompt_text_);
+    prompt_text_to_use = override_prompt_text_;
 
   CompleteDialog();
   NotifyDelegate(true, prompt_text_to_use, suppress_js_messages);
 }
 
 void JavaScriptAppModalDialog::OnClose() {
-  NotifyDelegate(false, L"", false);
+  NotifyDelegate(false, string16(), false);
 }
 
 void JavaScriptAppModalDialog::SetOverridePromptText(
@@ -167,14 +168,15 @@ void JavaScriptAppModalDialog::SetOverridePromptText(
 }
 
 void JavaScriptAppModalDialog::NotifyDelegate(bool success,
-                                              const std::wstring& prompt_text,
+                                              const string16& user_input,
                                               bool suppress_js_messages) {
   if (skip_this_dialog_)
     return;
 
-  delegate_->OnMessageBoxClosed(reply_msg_, success, prompt_text);
-  if (suppress_js_messages)
-    delegate_->SetSuppressMessageBoxes(true);
+  delegate_->OnDialogClosed(reply_msg_, success, user_input);
+
+  extra_data_->last_javascript_message_dismissal_ = base::TimeTicks::Now();
+  extra_data_->suppress_javascript_messages_ = suppress_js_messages;
 
   // On Views, we can end up coming through this code path twice :(.
   // See crbug.com/63732.

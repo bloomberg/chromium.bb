@@ -6,6 +6,7 @@
 
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_modal_dialogs/message_box_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/extension_sidebar_defaults.h"
@@ -106,6 +107,11 @@ void SidebarContainer::SetTitle(const string16& title) {
 
 bool SidebarContainer::IsPopup(const TabContents* source) const {
   return false;
+}
+
+content::JavaScriptDialogCreator*
+SidebarContainer::GetJavaScriptDialogCreator() {
+  return GetJavaScriptDialogCreatorInstance();
 }
 
 void SidebarContainer::OnImageLoaded(SkBitmap* image,

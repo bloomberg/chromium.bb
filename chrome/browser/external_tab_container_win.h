@@ -165,10 +165,14 @@ class ExternalTabContainer : public TabContentsDelegate,
                                  bool proceed,
                                  bool* proceed_to_fire_unload);
 
+  virtual content::JavaScriptDialogCreator* GetJavaScriptDialogCreator()
+      OVERRIDE;
+
   void ShowRepostFormWarningDialog(TabContents* tab_contents);
 
   void RegisterRenderViewHost(RenderViewHost* render_view_host);
   void UnregisterRenderViewHost(RenderViewHost* render_view_host);
+
 
   // Overridden from TabContentsObserver:
   // IPC::Channel::Listener implementation.

@@ -7,6 +7,7 @@
 #include "base/i18n/time_formatting.h"
 #include "base/string_number_conversions.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/crash_upload_list.h"
 #include "chrome/browser/platform_util.h"

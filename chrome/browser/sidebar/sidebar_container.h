@@ -113,6 +113,8 @@ class SidebarContainer
   virtual void MoveContents(TabContents* source, const gfx::Rect& pos) {}
   virtual bool IsPopup(const TabContents* source) const;
   virtual void UpdateTargetURL(TabContents* source, const GURL& url) {}
+  virtual content::JavaScriptDialogCreator* GetJavaScriptDialogCreator()
+      OVERRIDE;
 
   // Overridden from ImageLoadingTracker::Observer.
   virtual void OnImageLoaded(SkBitmap* image,

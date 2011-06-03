@@ -465,7 +465,7 @@ void AdvancedOptionsHandler::ShowCloudPrintSetupDialog(const ListValue* args) {
   cloud_print_setup_handler_.reset(new CloudPrintSetupHandler(this));
   CloudPrintSetupFlow::OpenDialog(
       web_ui_->GetProfile(), cloud_print_setup_handler_->AsWeakPtr(),
-      web_ui_->tab_contents()->GetMessageBoxRootWindow());
+      web_ui_->tab_contents()->GetDialogRootWindow());
 }
 
 void AdvancedOptionsHandler::HandleDisableCloudPrintProxy(

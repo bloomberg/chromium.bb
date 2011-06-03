@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/string16.h"
 #include "build/build_config.h"
 
 class NativeAppModalDialog;
@@ -20,7 +21,7 @@ class AppModalDialog {
   // A union of data necessary to determine the type of message box to
   // show. |tab_contents| parameter is optional, if provided that tab will be
   // activated before the modal dialog is displayed.
-  AppModalDialog(TabContents* tab_contents, const std::wstring& title);
+  AppModalDialog(TabContents* tab_contents, const string16& title);
   virtual ~AppModalDialog();
 
   // Called by the AppModalDialogQueue to show this dialog.
@@ -37,7 +38,7 @@ class AppModalDialog {
   void CompleteDialog();
 
   // Dialog window title.
-  std::wstring title() const { return title_; }
+  string16 title() const { return title_; }
 
   NativeAppModalDialog* native_dialog() const { return native_dialog_; }
 
@@ -76,7 +77,7 @@ class AppModalDialog {
 
  private:
   // Information about the message box is held in the following variables.
-  std::wstring title_;
+  string16 title_;
 
   DISALLOW_COPY_AND_ASSIGN(AppModalDialog);
 };

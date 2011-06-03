@@ -32,6 +32,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browsing_instance.h"
+#include "content/browser/content_browser_client.h"
 #include "content/browser/renderer_host/browser_render_process_host.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -41,6 +42,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/common/bindings_policy.h"
+#include "content/common/content_client.h"
 #include "content/common/native_web_keyboard_event.h"
 #include "content/common/notification_service.h"
 #include "content/common/view_messages.h"
@@ -134,8 +136,7 @@ ExtensionHost::ExtensionHost(const Extension* extension,
       ALLOW_THIS_IN_INITIALIZER_LIST(
           extension_function_dispatcher_(profile_, this)),
       extension_host_type_(host_type),
-      associated_tab_contents_(NULL),
-      suppress_javascript_messages_(false) {
+      associated_tab_contents_(NULL) {
   render_view_host_ = new RenderViewHost(site_instance, this, MSG_ROUTING_NONE,
                                          NULL);
   if (enable_dom_automation_)
@@ -157,6 +158,7 @@ ExtensionHost::~ExtensionHost() {
       Source<Profile>(profile_),
       Details<ExtensionHost>(this));
   ProcessCreationQueue::GetInstance()->Remove(this);
+  GetJavaScriptDialogCreatorInstance()->ResetJavaScriptState(this);
   render_view_host_->Shutdown();  // deletes render_view_host
 }
 
@@ -416,38 +418,27 @@ void ExtensionHost::RunJavaScriptMessage(const RenderViewHost* rvh,
                                          const int flags,
                                          IPC::Message* reply_msg,
                                          bool* did_suppress_message) {
-  base::TimeDelta time_since_last_message(
-      base::TimeTicks::Now() - last_javascript_message_dismissal_);
+  bool suppress_this_message = false;
+  GetJavaScriptDialogCreatorInstance()->RunJavaScriptDialog(
+      this,
+      frame_url,
+      flags,
+      message,
+      default_prompt,
+      reply_msg,
+      &suppress_this_message,
+      profile());
 
-  *did_suppress_message = suppress_javascript_messages_;
-  if (!suppress_javascript_messages_) {
-    bool show_suppress_checkbox = false;
-    // Show a checkbox offering to suppress further messages if this message is
-    // being displayed within kJavascriptMessageExpectedDelay of the last one.
-    if (time_since_last_message <
-        base::TimeDelta::FromMilliseconds(
-            chrome::kJavascriptMessageExpectedDelay))
-      show_suppress_checkbox = true;
-
-    // Unlike for page alerts, navigations aren't a good signal for when to
-    // resume showing alerts, so we can't reasonably stop showing them even if
-    // the extension is spammy.
-    RunJavascriptMessageBox(profile_,
-                            this,
-                            frame_url,
-                            flags,
-                            UTF16ToWideHack(message),
-                            UTF16ToWideHack(default_prompt),
-                            show_suppress_checkbox,
-                            reply_msg);
-  } else {
-    // If we are suppressing messages, just reply as is if the user immediately
+  if (suppress_this_message) {
+    // If we are suppressing messages, just reply as if the user immediately
     // pressed "Cancel".
-    OnMessageBoxClosed(reply_msg, false, std::wstring());
+    OnDialogClosed(reply_msg, false, string16());
   }
+
+  *did_suppress_message = suppress_this_message;
 }
 
-gfx::NativeWindow ExtensionHost::GetMessageBoxRootWindow() {
+gfx::NativeWindow ExtensionHost::GetDialogRootWindow() {
   // If we have a view, use that.
   gfx::NativeView native_view = GetNativeViewOfHost();
   if (native_view)
@@ -473,17 +464,12 @@ ExtensionHost* ExtensionHost::AsExtensionHost() {
   return this;
 }
 
-void ExtensionHost::OnMessageBoxClosed(IPC::Message* reply_msg,
-                                       bool success,
-                                       const std::wstring& user_input) {
-  last_javascript_message_dismissal_ = base::TimeTicks::Now();
+void ExtensionHost::OnDialogClosed(IPC::Message* reply_msg,
+                                   bool success,
+                                   const string16& user_input) {
   render_view_host()->JavaScriptDialogClosed(reply_msg,
                                              success,
-                                             WideToUTF16Hack(user_input));
-}
-
-void ExtensionHost::SetSuppressMessageBoxes(bool suppress_message_boxes) {
-  suppress_javascript_messages_ = suppress_message_boxes;
+                                             user_input);
 }
 
 void ExtensionHost::Close(RenderViewHost* render_view_host) {

@@ -14,7 +14,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
-#include "chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h"
+#include "content/browser/javascript_dialogs.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/tab_contents/constrained_window.h"
 #include "content/browser/tab_contents/navigation_controller.h"
@@ -61,7 +61,7 @@ class TabContents : public PageNavigator,
                     public NotificationObserver,
                     public RenderViewHostDelegate,
                     public RenderViewHostManager::Delegate,
-                    public JavaScriptAppModalDialogDelegate,
+                    public content::JavaScriptDialogDelegate,
                     public net::NetworkChangeNotifier::OnlineStateObserver {
  public:
   // Flags passed to the TabContentsDelegate.NavigationStateChanged to tell it
@@ -383,12 +383,6 @@ class TabContents : public PageNavigator,
 
   // Misc state & callbacks ----------------------------------------------------
 
-  // Set whether the contents should block javascript message boxes or not.
-  // Default is not to block any message boxes.
-  void set_suppress_javascript_messages(bool suppress_javascript_messages) {
-    suppress_javascript_messages_ = suppress_javascript_messages;
-  }
-
   // Returns true if the active NavigationEntry's page_id equals page_id.
   bool IsActiveEntry(int32 page_id);
 
@@ -445,14 +439,13 @@ class TabContents : public PageNavigator,
   }
   bool closed_by_user_gesture() const { return closed_by_user_gesture_; }
 
-  // Overridden from JavaScriptAppModalDialogDelegate:
-  virtual void OnMessageBoxClosed(IPC::Message* reply_msg,
-                                  bool success,
-                                  const std::wstring& user_input);
-  virtual void SetSuppressMessageBoxes(bool suppress_message_boxes);
-  virtual gfx::NativeWindow GetMessageBoxRootWindow();
-  virtual TabContents* AsTabContents();
-  virtual ExtensionHost* AsExtensionHost();
+  // Overridden from JavaScriptDialogDelegate:
+  virtual void OnDialogClosed(IPC::Message* reply_msg,
+                              bool success,
+                              const string16& user_input) OVERRIDE;
+  virtual gfx::NativeWindow GetDialogRootWindow() OVERRIDE;
+  virtual TabContents* AsTabContents() OVERRIDE;
+  virtual ExtensionHost* AsExtensionHost() OVERRIDE;
 
   // The BookmarkDragDelegate is used to forward bookmark drag and drop events
   // to extensions.
@@ -672,7 +665,7 @@ class TabContents : public PageNavigator,
                                     const GURL& frame_url,
                                     const int flags,
                                     IPC::Message* reply_msg,
-                                    bool* did_suppress_message);
+                                    bool* did_suppress_message) OVERRIDE;
   virtual void RunBeforeUnloadConfirm(const RenderViewHost* rvh,
                                       const string16& message,
                                       IPC::Message* reply_msg);
@@ -823,13 +816,6 @@ class TabContents : public PageNavigator,
   // they should pump messages then.
   base::win::ScopedHandle message_box_active_;
 #endif
-
-  // The time that the last javascript message was dismissed.
-  base::TimeTicks last_javascript_message_dismissal_;
-
-  // True if the user has decided to block future javascript messages. This is
-  // reset on navigations to false on navigations.
-  bool suppress_javascript_messages_;
 
   // Set to true when there is an active "before unload" dialog.  When true,
   // we've forced the throbber to start in Navigate, and we need to remember to

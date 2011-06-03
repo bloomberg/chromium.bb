@@ -18,8 +18,6 @@
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/app_modal_dialogs/message_box_handler.h"
-#include "chrome/common/chrome_constants.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/content_browser_client.h"
 #include "content/browser/host_zoom_map.h"
@@ -188,7 +186,6 @@ TabContents::TabContents(Profile* profile,
 #if defined(OS_WIN)
       message_box_active_(CreateEvent(NULL, TRUE, FALSE, NULL)),
 #endif
-      suppress_javascript_messages_(false),
       is_showing_before_unload_dialog_(false),
       opener_web_ui_type_(WebUI::kNoWebUI),
       closed_by_user_gesture_(false),
@@ -220,6 +217,10 @@ TabContents::~TabContents() {
 
   // We don't want any notifications while we're running our destructor.
   registrar_.RemoveAll();
+
+  // Clear out any JavaScript state.
+  if (delegate_)
+    delegate_->GetJavaScriptDialogCreator()->ResetJavaScriptState(this);
 
   NotifyDisconnected();
 
@@ -1089,10 +1090,11 @@ void TabContents::DidNavigateAnyFramePostCommit(
     RenderViewHost* render_view_host,
     const content::LoadCommittedDetails& details,
     const ViewHostMsg_FrameNavigate_Params& params) {
-  // If we navigate, start showing messages again. This does nothing to prevent
+  // If we navigate, reset JavaScript state. This does nothing to prevent
   // a malicious script from spamming messages, since the script could just
   // reload the page to stop blocking.
-  suppress_javascript_messages_ = false;
+  if (delegate_)
+    delegate_->GetJavaScriptDialogCreator()->ResetJavaScriptState(this);
 
   // Notify observers about navigation.
   FOR_EACH_OBSERVER(TabContentsObserver, observers_,
@@ -1559,47 +1561,34 @@ void TabContents::RunJavaScriptMessage(
     const int flags,
     IPC::Message* reply_msg,
     bool* did_suppress_message) {
-  // Suppress javascript messages when requested and when inside a constrained
-  // popup window (because that activates them and breaks them out of the
-  // constrained window jail).
-  // Also suppress messages when showing an interstitial. The interstitial is
-  // shown over the previous page, we don't want the hidden page dialogs to
-  // interfere with the interstitial.
+  // Suppress JavaScript dialogs when requested. Also suppress messages when
+  // showing an interstitial as it's shown over the previous page and we don't
+  // want the hidden page's dialogs to interfere with the interstitial.
   bool suppress_this_message =
       rvh->is_swapped_out() ||
-      suppress_javascript_messages_ ||
       showing_interstitial_page() ||
-      (delegate() && delegate()->ShouldSuppressDialogs());
-  if (delegate())
-    suppress_this_message |=
-        (delegate()->GetConstrainingContents(this) != this);
-
-  *did_suppress_message = suppress_this_message;
+      !delegate_ ||
+      delegate_->ShouldSuppressDialogs();
 
   if (!suppress_this_message) {
-    base::TimeDelta time_since_last_message(
-        base::TimeTicks::Now() - last_javascript_message_dismissal_);
-    bool show_suppress_checkbox = false;
-    // Show a checkbox offering to suppress further messages if this message is
-    // being displayed within kJavascriptMessageExpectedDelay of the last one.
-    if (time_since_last_message <
-        base::TimeDelta::FromMilliseconds(
-            chrome::kJavascriptMessageExpectedDelay))
-      show_suppress_checkbox = true;
-
-    RunJavascriptMessageBox(profile(),
-                            this,
-                            frame_url,
-                            flags,
-                            UTF16ToWideHack(message),
-                            UTF16ToWideHack(default_prompt),
-                            show_suppress_checkbox,
-                            reply_msg);
-  } else {
-    // If we are suppressing messages, just reply as is if the user immediately
-    // pressed "Cancel".
-    OnMessageBoxClosed(reply_msg, false, std::wstring());
+    delegate_->GetJavaScriptDialogCreator()->RunJavaScriptDialog(
+        this,
+        frame_url,
+        flags,
+        message,
+        default_prompt,
+        reply_msg,
+        &suppress_this_message,
+        profile());
   }
+
+  if (suppress_this_message) {
+    // If we are suppressing messages, just reply as if the user immediately
+    // pressed "Cancel".
+    OnDialogClosed(reply_msg, false, string16());
+  }
+
+  *did_suppress_message = suppress_this_message;
 }
 
 void TabContents::RunBeforeUnloadConfirm(const RenderViewHost* rvh,
@@ -1607,14 +1596,21 @@ void TabContents::RunBeforeUnloadConfirm(const RenderViewHost* rvh,
                                          IPC::Message* reply_msg) {
   if (delegate())
     delegate()->WillRunBeforeUnloadConfirm();
-  bool suppress_this_message = rvh->is_swapped_out() ||
-      (delegate() && delegate()->ShouldSuppressDialogs());
+
+  bool suppress_this_message =
+      rvh->is_swapped_out() ||
+      !delegate_ ||
+      delegate_->ShouldSuppressDialogs();
   if (suppress_this_message) {
     render_view_host()->JavaScriptDialogClosed(reply_msg, true, string16());
     return;
   }
+
   is_showing_before_unload_dialog_ = true;
-  RunBeforeUnloadDialog(this, UTF16ToWideHack(message), reply_msg);
+  delegate_->GetJavaScriptDialogCreator()->RunBeforeUnloadDialog(
+      this,
+      message,
+      reply_msg);
 }
 
 WebPreferences TabContents::GetWebkitPrefs() {
@@ -1812,14 +1808,11 @@ void TabContents::Observe(NotificationType type,
   }
 }
 
-gfx::NativeWindow TabContents::GetMessageBoxRootWindow() {
-  return view_->GetTopLevelNativeWindow();
-}
+// Overridden from JavaScriptDialogDelegate
 
-void TabContents::OnMessageBoxClosed(IPC::Message* reply_msg,
-                                     bool success,
-                                     const std::wstring& user_input) {
-  last_javascript_message_dismissal_ = base::TimeTicks::Now();
+void TabContents::OnDialogClosed(IPC::Message* reply_msg,
+                                 bool success,
+                                 const string16& user_input) {
   if (is_showing_before_unload_dialog_ && !success) {
     // If a beforeunload dialog is canceled, we need to stop the throbber from
     // spinning, since we forced it to start spinning in Navigate.
@@ -1830,11 +1823,11 @@ void TabContents::OnMessageBoxClosed(IPC::Message* reply_msg,
   is_showing_before_unload_dialog_ = false;
   render_view_host()->JavaScriptDialogClosed(reply_msg,
                                              success,
-                                             WideToUTF16Hack(user_input));
+                                             user_input);
 }
 
-void TabContents::SetSuppressMessageBoxes(bool suppress_message_boxes) {
-  set_suppress_javascript_messages(suppress_message_boxes);
+gfx::NativeWindow TabContents::GetDialogRootWindow() {
+  return view_->GetTopLevelNativeWindow();
 }
 
 TabContents* TabContents::AsTabContents() {

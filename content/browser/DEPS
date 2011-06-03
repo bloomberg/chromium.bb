@@ -54,8 +54,6 @@ include_rules = [
 
   "+chrome/browser/utility_process_host.h",
 
-  "+chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h",
-  "+chrome/browser/ui/app_modal_dialogs/message_box_handler.h",
   "+chrome/browser/ui/crypto_module_password_dialog.h",
 
   "+chrome/common/chrome_constants.h",

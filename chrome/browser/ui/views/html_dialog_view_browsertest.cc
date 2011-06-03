@@ -131,7 +131,7 @@ IN_PROC_BROWSER_TEST_F(HtmlDialogBrowserTest, MAYBE_SizeWindow) {
       new HtmlDialogView(browser()->profile(), delegate);
   TabContents* tab_contents = browser()->GetSelectedTabContents();
   ASSERT_TRUE(tab_contents != NULL);
-  views::Window::CreateChromeWindow(tab_contents->GetMessageBoxRootWindow(),
+  views::Window::CreateChromeWindow(tab_contents->GetDialogRootWindow(),
                                     gfx::Rect(), html_view);
   html_view->InitDialog();
   html_view->window()->Show();

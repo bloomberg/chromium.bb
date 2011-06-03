@@ -59,9 +59,9 @@
         contextInfo:(void*)contextInfo {
   scoped_ptr<JSModalDialogCocoa> native_dialog(
       reinterpret_cast<JSModalDialogCocoa*>(contextInfo));
-  std::wstring input;
+  string16 input;
   if (textField_)
-    input = base::SysNSStringToWide([textField_ stringValue]);
+    input = base::SysNSStringToUTF16([textField_ stringValue]);
   bool shouldSuppress = false;
   if ([alert showsSuppressionButton])
     shouldSuppress = [[alert suppressionButton] state] == NSOnState;
@@ -135,12 +135,12 @@ JSModalDialogCocoa::JSModalDialogCocoa(JavaScriptAppModalDialog* dialog)
   NSTextField* field = nil;
   if (text_field) {
     field = [helper_ textField];
-    [field setStringValue:base::SysWideToNSString(
+    [field setStringValue:base::SysUTF16ToNSString(
         dialog_->default_prompt_text())];
   }
   [alert_ setDelegate:helper_];
-  [alert_ setInformativeText:base::SysWideToNSString(dialog_->message_text())];
-  [alert_ setMessageText:base::SysWideToNSString(dialog_->title())];
+  [alert_ setInformativeText:base::SysUTF16ToNSString(dialog_->message_text())];
+  [alert_ setMessageText:base::SysUTF16ToNSString(dialog_->title())];
   [alert_ addButtonWithTitle:default_button];
   if (!one_button) {
     NSButton* other = [alert_ addButtonWithTitle:other_button];

@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/memory/singleton.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/browser_process.h"

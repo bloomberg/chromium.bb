@@ -11,7 +11,7 @@
 #include "content/common/notification_type.h"
 
 AppModalDialog::AppModalDialog(TabContents* tab_contents,
-                               const std::wstring& title)
+                               const string16& title)
     : skip_this_dialog_(false),
       tab_contents_(tab_contents),
       native_dialog_(NULL),

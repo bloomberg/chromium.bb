@@ -21,6 +21,7 @@
 #include "chrome/browser/history/history_tab_helper.h"
 #include "chrome/browser/page_info_window.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_modal_dialogs/message_box_handler.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -591,6 +592,11 @@ void ExternalTabContainer::UnregisterRenderViewHost(
       render_view_host->process()->id(),
       render_view_host->routing_id());
   }
+}
+
+content::JavaScriptDialogCreator*
+ExternalTabContainer::GetJavaScriptDialogCreator() {
+  return GetJavaScriptDialogCreatorInstance();
 }
 
 bool ExternalTabContainer::HandleContextMenu(const ContextMenuParams& params) {

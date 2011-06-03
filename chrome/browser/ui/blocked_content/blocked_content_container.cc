@@ -163,6 +163,12 @@ bool BlockedContentContainer::IsPopup(const TabContents* source) const {
   return true;
 }
 
+bool BlockedContentContainer::ShouldSuppressDialogs() {
+  // Suppress JavaScript dialogs when inside a constrained popup window (because
+  // that activates them and breaks them out of the constrained window jail).
+  return true;
+}
+
 TabContents* BlockedContentContainer::GetConstrainingContents(
     TabContents* source) {
   return owner_->tab_contents();

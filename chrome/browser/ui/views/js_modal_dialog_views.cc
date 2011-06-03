@@ -23,7 +23,8 @@ JSModalDialogViews::JSModalDialogViews(
     : parent_(parent),
       message_box_view_(new views::MessageBoxView(
           parent->dialog_flags() | ui::MessageBoxFlags::kAutoDetectAlignment,
-          parent->message_text(), parent->default_prompt_text())) {
+          UTF16ToWideHack(parent->message_text()),
+          UTF16ToWideHack(parent->default_prompt_text()))) {
   DCHECK(message_box_view_);
 
   message_box_view_->AddAccelerator(
@@ -90,7 +91,7 @@ int JSModalDialogViews::GetDialogButtons() const {
 }
 
 std::wstring JSModalDialogViews::GetWindowTitle() const {
-  return parent_->title();
+  return UTF16ToWideHack(parent_->title());
 }
 
 
@@ -108,7 +109,7 @@ bool JSModalDialogViews::Cancel() {
 }
 
 bool JSModalDialogViews::Accept() {
-  parent_->OnAccept(message_box_view_->GetInputText(),
+  parent_->OnAccept(WideToUTF16Hack(message_box_view_->GetInputText()),
                     message_box_view_->IsCheckBoxSelected());
   return true;
 }

@@ -109,8 +109,12 @@ void BackgroundContents::RunJavaScriptMessage(
     const int flags,
     IPC::Message* reply_msg,
     bool* did_suppress_message) {
-  // TODO(rafaelw): Implement, The JavaScriptModalDialog needs to learn about
-  // BackgroundContents.
+  // TODO(rafaelw): Implement.
+
+  // Since we are suppressing messages, just reply as if the user immediately
+  // pressed "Cancel".
+  OnDialogClosed(reply_msg, false, string16());
+
   *did_suppress_message = true;
 }
 
@@ -137,15 +141,15 @@ void BackgroundContents::Observe(NotificationType type,
   }
 }
 
-void BackgroundContents::OnMessageBoxClosed(IPC::Message* reply_msg,
-                                            bool success,
-                                            const std::wstring& user_input) {
+void BackgroundContents::OnDialogClosed(IPC::Message* reply_msg,
+                                        bool success,
+                                        const string16& user_input) {
   render_view_host()->JavaScriptDialogClosed(reply_msg,
                                              success,
-                                             WideToUTF16Hack(user_input));
+                                             user_input);
 }
 
-gfx::NativeWindow BackgroundContents::GetMessageBoxRootWindow() {
+gfx::NativeWindow BackgroundContents::GetDialogRootWindow() {
   NOTIMPLEMENTED();
   return NULL;
 }

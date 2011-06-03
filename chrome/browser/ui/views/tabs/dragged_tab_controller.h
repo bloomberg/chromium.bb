@@ -148,6 +148,8 @@ class DraggedTabController : public TabContentsDelegate,
                             const gfx::Rect& pos) OVERRIDE;
   virtual void UpdateTargetURL(TabContents* source, const GURL& url) OVERRIDE;
   virtual bool ShouldSuppressDialogs() OVERRIDE;
+  virtual content::JavaScriptDialogCreator* GetJavaScriptDialogCreator()
+      OVERRIDE;
 
   // Overridden from NotificationObserver:
   virtual void Observe(NotificationType type,

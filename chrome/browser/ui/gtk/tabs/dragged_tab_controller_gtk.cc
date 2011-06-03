@@ -10,6 +10,7 @@
 #include "base/i18n/rtl.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/app_modal_dialogs/message_box_handler.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
@@ -178,6 +179,11 @@ bool DraggedTabControllerGtk::IsPopup(const TabContents* source) const {
 void DraggedTabControllerGtk::UpdateTargetURL(TabContents* source,
                                               const GURL& url) {
   // Ignored.
+}
+
+content::JavaScriptDialogCreator*
+DraggedTabControllerGtk::GetJavaScriptDialogCreator() {
+  return GetJavaScriptDialogCreatorInstance();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

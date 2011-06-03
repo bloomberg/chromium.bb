@@ -13,8 +13,9 @@
 #include "base/perftimer.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
-#include "chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h"
+#include "content/browser/javascript_dialogs.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
+#include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 
 #if defined(TOOLKIT_VIEWS)
@@ -42,7 +43,7 @@ class ExtensionHost : public RenderViewHostDelegate,
                       public RenderViewHostDelegate::View,
                       public ExtensionFunctionDispatcher::Delegate,
                       public NotificationObserver,
-                      public JavaScriptAppModalDialogDelegate {
+                      public content::JavaScriptDialogDelegate {
  public:
   class ProcessCreationQueue;
 
@@ -187,14 +188,13 @@ class ExtensionHost : public RenderViewHostDelegate,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  // Overridden from JavaScriptAppModalDialogDelegate:
-  virtual void OnMessageBoxClosed(IPC::Message* reply_msg,
-                                  bool success,
-                                  const std::wstring& user_input);
-  virtual void SetSuppressMessageBoxes(bool suppress_message_boxes);
-  virtual gfx::NativeWindow GetMessageBoxRootWindow();
-  virtual TabContents* AsTabContents();
-  virtual ExtensionHost* AsExtensionHost();
+  // Overridden from content::JavaScriptDialogDelegate:
+  virtual void OnDialogClosed(IPC::Message* reply_msg,
+                              bool success,
+                              const string16& user_input) OVERRIDE;
+  virtual gfx::NativeWindow GetDialogRootWindow() OVERRIDE;
+  virtual TabContents* AsTabContents() OVERRIDE;
+  virtual ExtensionHost* AsExtensionHost() OVERRIDE;
 
  protected:
   // Internal functions used to support the CreateNewWidget() method. If a
@@ -290,12 +290,6 @@ class ExtensionHost : public RenderViewHostDelegate,
 
   // FileSelectHelper, lazily created.
   scoped_ptr<FileSelectHelper> file_select_helper_;
-
-  // The time that the last javascript message was dismissed.
-  base::TimeTicks last_javascript_message_dismissal_;
-
-  // Whether to suppress all javascript messages.
-  bool suppress_javascript_messages_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionHost);
 };

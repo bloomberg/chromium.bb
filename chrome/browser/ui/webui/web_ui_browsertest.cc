@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/path_service.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_paths.h"

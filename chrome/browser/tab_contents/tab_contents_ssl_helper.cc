@@ -89,7 +89,7 @@ string16 SSLCertAddedInfoBarDelegate::GetButtonLabel(
 }
 
 bool SSLCertAddedInfoBarDelegate::Accept() {
-  ShowCertificateViewer(tab_contents_->GetMessageBoxRootWindow(), cert_);
+  ShowCertificateViewer(tab_contents_->GetDialogRootWindow(), cert_);
   return false;  // Hiding the infobar just as the dialog opens looks weird.
 }
 

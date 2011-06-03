@@ -73,6 +73,7 @@
 #include "chrome/browser/tab_contents/simple_alert_infobar_delegate.h"
 #include "chrome/browser/tabs/tab_finder.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/app_modal_dialogs/message_box_handler.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -3420,6 +3421,10 @@ void Browser::DidNavigateMainFramePostCommit(
       ShouldShowBookmarkBar()) {
     window()->ShelfVisibilityChanged();
   }
+}
+
+content::JavaScriptDialogCreator* Browser::GetJavaScriptDialogCreator() {
+  return GetJavaScriptDialogCreatorInstance();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

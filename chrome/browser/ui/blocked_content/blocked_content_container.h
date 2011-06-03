@@ -94,6 +94,9 @@ class BlockedContentContainer : public BlockedContentTabHelperDelegate,
   // Ignored; BlockedContentContainer doesn't display a URL bar.
   virtual void UpdateTargetURL(TabContents* source, const GURL& url) {}
 
+  // Always returns true.
+  virtual bool ShouldSuppressDialogs();
+
   // Maximum number of blocked contents we allow. No page should really need
   // this many anyway. If reached it typically means there is a compromised
   // renderer.
