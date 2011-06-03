@@ -36,6 +36,7 @@
 #include "base/string_util.h"
 #include "base/stl_util-inl.h"
 #include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/sync/engine/syncer.h"
 #include "chrome/browser/sync/engine/syncer_util.h"
@@ -206,6 +207,31 @@ EntryKernel::EntryKernel() : dirty_(false) {
 }
 
 EntryKernel::~EntryKernel() {}
+
+bool EntryKernel::ContainsString(const std::string& lowercase_query) const {
+  // TODO(lipalani) - figure out what to do if the node is encrypted.
+  const sync_pb::EntitySpecifics& specifics = ref(SPECIFICS);
+  std::string temp;
+  // The protobuf serialized string contains the original strings. So
+  // we will just serialize it and search it.
+  specifics.SerializeToString(&temp);
+
+  // Now convert to lower case.
+  StringToLowerASCII(&temp);
+
+  if (temp.find(lowercase_query) != std::string::npos)
+    return true;
+
+  // Now go through all the string fields to see if the value is there.
+  for (int i = STRING_FIELDS_BEGIN; i < STRING_FIELDS_END; ++i) {
+    std::string value = ref(static_cast<StringField>(i));
+
+    StringToLowerASCII(&value);
+    if (value.find(lowercase_query) != std::string::npos)
+      return true;
+  }
+  return false;
+}
 
 namespace {
 
@@ -506,21 +532,28 @@ EntryKernel* Directory::GetEntryByHandle(int64 metahandle,
   return NULL;
 }
 
-void Directory::GetChildHandles(BaseTransaction* trans, const Id& parent_id,
-                                Directory::ChildHandles* result) {
+void Directory::GetChildHandlesById(
+    BaseTransaction* trans, const Id& parent_id,
+    Directory::ChildHandles* result) {
   CHECK(this == trans->directory());
   result->clear();
-  {
-    ScopedKernelLock lock(this);
 
-    typedef ParentIdChildIndex::iterator iterator;
-    for (iterator i = GetParentChildIndexLowerBound(lock, parent_id),
-                end = GetParentChildIndexUpperBound(lock, parent_id);
-         i != end; ++i) {
-      DCHECK_EQ(parent_id, (*i)->ref(PARENT_ID));
-      result->push_back((*i)->ref(META_HANDLE));
-    }
-  }
+  ScopedKernelLock lock(this);
+  AppendChildHandles(lock, parent_id, result);
+}
+
+void Directory::GetChildHandlesByHandle(
+    BaseTransaction* trans, int64 handle,
+    Directory::ChildHandles* result) {
+  CHECK(this == trans->directory());
+  result->clear();
+
+  ScopedKernelLock lock(this);
+  EntryKernel* kernel = GetEntryByHandle(handle, &lock);
+  if (!kernel)
+    return;
+
+  AppendChildHandles(lock, kernel->ref(ID), result);
 }
 
 EntryKernel* Directory::GetRootEntry() {
@@ -943,6 +976,15 @@ void Directory::GetAllMetaHandles(BaseTransaction* trans,
        ++i) {
     result->insert((*i)->ref(META_HANDLE));
   }
+}
+
+void Directory::GetAllEntryKernels(BaseTransaction* trans,
+                                   std::vector<const EntryKernel*>* result) {
+  result->clear();
+  ScopedKernelLock lock(this);
+  result->insert(result->end(),
+                 kernel_->metahandles_index->begin(),
+                 kernel_->metahandles_index->end());
 }
 
 void Directory::GetUnsyncedMetaHandles(BaseTransaction* trans,
@@ -1950,6 +1992,19 @@ Directory::GetParentChildIndexUpperBound(const ScopedKernelLock& lock,
   // bound of |++parent_id|'s range.
   return GetParentChildIndexLowerBound(lock,
       parent_id.GetLexicographicSuccessor());
+}
+
+void Directory::AppendChildHandles(const ScopedKernelLock& lock,
+                                   const Id& parent_id,
+                                   Directory::ChildHandles* result) {
+  typedef ParentIdChildIndex::iterator iterator;
+  CHECK(result);
+  for (iterator i = GetParentChildIndexLowerBound(lock, parent_id),
+           end = GetParentChildIndexUpperBound(lock, parent_id);
+       i != end; ++i) {
+    DCHECK_EQ(parent_id, (*i)->ref(PARENT_ID));
+    result->push_back((*i)->ref(META_HANDLE));
+  }
 }
 
 }  // namespace syncable

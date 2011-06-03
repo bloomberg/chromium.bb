@@ -198,7 +198,7 @@ class SyncerTest : public testing::Test,
     CHECK(dir.good());
     ReadTransaction trans(dir, __FILE__, __LINE__);
     syncable::Directory::ChildHandles children;
-    dir->GetChildHandles(&trans, trans.root_id(), &children);
+    dir->GetChildHandlesById(&trans, trans.root_id(), &children);
     ASSERT_TRUE(0 == children.size());
     saw_syncer_event_ = false;
     root_id_ = TestIdFactory::root();
@@ -1888,7 +1888,7 @@ TEST_F(SyncerTest, DoublyChangedWithResolver) {
   syncable::Directory::ChildHandles children;
   {
     ReadTransaction trans(dir, __FILE__, __LINE__);
-    dir->GetChildHandles(&trans, parent_id_, &children);
+    dir->GetChildHandlesById(&trans, parent_id_, &children);
     // We expect the conflict resolver to preserve the local entry.
     Entry child(&trans, syncable::GET_BY_ID, child_id_);
     ASSERT_TRUE(child.good());
@@ -1982,9 +1982,9 @@ TEST_F(SyncerTest, ParentAndChildBothMatch) {
   {
     ReadTransaction trans(dir, __FILE__, __LINE__);
     Directory::ChildHandles children;
-    dir->GetChildHandles(&trans, root_id_, &children);
+    dir->GetChildHandlesById(&trans, root_id_, &children);
     EXPECT_TRUE(1 == children.size());
-    dir->GetChildHandles(&trans, parent_id, &children);
+    dir->GetChildHandlesById(&trans, parent_id, &children);
     EXPECT_TRUE(1 == children.size());
     Directory::UnappliedUpdateMetaHandles unapplied;
     dir->GetUnappliedUpdateMetaHandles(&trans, &unapplied);
@@ -3118,7 +3118,7 @@ class SusanDeletingTest : public SyncerTest {
   WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
     MutableEntry susan(&trans, GET_BY_ID, susan_id);
   Directory::ChildHandles children;
-  dir->GetChildHandles(&trans, susan.Get(ID), &children);
+  dir->GetChildHandlesById(&trans, susan.Get(ID), &children);
   ASSERT_TRUE(0 == children.size());
   susan.Put(IS_DEL, true);
   susan.Put(IS_UNSYNCED, true);
@@ -4288,7 +4288,7 @@ TEST_F(SyncerTest, ClientTagUpdateClashesWithLocalEntry) {
     tag2_metahandle = tag2.Get(META_HANDLE);
 
     syncable::Directory::ChildHandles children;
-    dir->GetChildHandles(&trans, trans.root_id(), &children);
+    dir->GetChildHandlesById(&trans, trans.root_id(), &children);
     ASSERT_EQ(2U, children.size());
   }
 
@@ -4328,7 +4328,7 @@ TEST_F(SyncerTest, ClientTagUpdateClashesWithLocalEntry) {
     EXPECT_EQ(tag2_metahandle, tag2.Get(META_HANDLE));
 
     syncable::Directory::ChildHandles children;
-    dir->GetChildHandles(&trans, trans.root_id(), &children);
+    dir->GetChildHandlesById(&trans, trans.root_id(), &children);
     ASSERT_EQ(2U, children.size());
   }
 }
@@ -4410,7 +4410,7 @@ TEST_F(SyncerTest, ClientTagClashWithinBatchOfUpdates) {
     EXPECT_EQ("tag c", tag_c.Get(UNIQUE_CLIENT_TAG));
 
     syncable::Directory::ChildHandles children;
-    dir->GetChildHandles(&trans, trans.root_id(), &children);
+    dir->GetChildHandlesById(&trans, trans.root_id(), &children);
     ASSERT_EQ(3U, children.size());
   }
 }

@@ -130,9 +130,9 @@ ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
     // If a server deleted folder has local contents we should be in a set.
     if (entry.Get(syncable::IS_DIR)) {
       Directory::ChildHandles children;
-      trans->directory()->GetChildHandles(trans,
-                                          entry.Get(syncable::ID),
-                                          &children);
+      trans->directory()->GetChildHandlesById(trans,
+                                              entry.Get(syncable::ID),
+                                              &children);
       if (0 != children.size()) {
         VLOG(1) << "Entry is a server deleted directory with local contents, "
                    "should be in a set. (race condition).";

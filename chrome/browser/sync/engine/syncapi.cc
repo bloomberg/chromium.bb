@@ -8,11 +8,14 @@
 #include <bitset>
 #include <iomanip>
 #include <list>
+#include <map>
 #include <queue>
 #include <string>
 #include <vector>
 
 #include "base/base64.h"
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
@@ -330,17 +333,22 @@ int64 BaseNode::GetFirstChildId() const {
   return IdToMetahandle(GetTransaction()->GetWrappedTrans(), id_string);
 }
 
-DictionaryValue* BaseNode::ToValue() const {
+DictionaryValue* BaseNode::GetSummaryAsValue() const {
   DictionaryValue* node_info = new DictionaryValue();
   node_info->SetString("id", base::Int64ToString(GetId()));
-  // TODO(akalin): Return time in a better format.
-  node_info->SetString("modificationTime",
-                       base::Int64ToString(GetModificationTime()));
-  node_info->SetString("parentId", base::Int64ToString(GetParentId()));
   node_info->SetBoolean("isFolder", GetIsFolder());
   // TODO(akalin): Add a std::string accessor for the title.
   node_info->SetString("title", WideToUTF8(GetTitle()));
   node_info->Set("type", ModelTypeToValue(GetModelType()));
+  return node_info;
+}
+
+DictionaryValue* BaseNode::GetDetailsAsValue() const {
+  DictionaryValue* node_info = GetSummaryAsValue();
+  // TODO(akalin): Return time in a better format.
+  node_info->SetString("modificationTime",
+                       base::Int64ToString(GetModificationTime()));
+  node_info->SetString("parentId", base::Int64ToString(GetParentId()));
   // Specifics are already in the Entry value, so no need to duplicate
   // it here.
   node_info->SetString("externalId",
@@ -1101,7 +1109,7 @@ DictionaryValue* SyncManager::ChangeRecord::ToValue(
   } else {
     ReadNode node(trans);
     if (node.InitByIdLookup(id)) {
-      node_value = node.ToValue();
+      node_value = node.GetDetailsAsValue();
     }
   }
   if (!node_value) {
@@ -1110,34 +1118,6 @@ DictionaryValue* SyncManager::ChangeRecord::ToValue(
   }
   value->Set("node", node_value);
   return value;
-}
-
-bool BaseNode::ContainsString(const std::string& lowercase_query) const {
-  DCHECK(GetEntry());
-  // TODO(lipalani) - figure out what to do if the node is encrypted.
-  const sync_pb::EntitySpecifics& specifics = GetEntry()->Get(SPECIFICS);
-  std::string temp;
-  // The protobuf serialized string contains the original strings. So
-  // we will just serialize it and search it.
-  specifics.SerializeToString(&temp);
-
-  // Now convert to lower case.
-  StringToLowerASCII(&temp);
-
-  if (temp.find(lowercase_query) != std::string::npos)
-    return true;
-
-  // Now go through all the string fields to see if the value is there.
-  for (int i = syncable::STRING_FIELDS_BEGIN; i < syncable::STRING_FIELDS_END;
-       ++i) {
-    std::string value = GetEntry()->Get(
-        static_cast<syncable::StringField>(i));
-
-    StringToLowerASCII(&value);
-    if (value.find(lowercase_query) != std::string::npos)
-      return true;
-  }
-  return false;
 }
 
 SyncManager::ExtraPasswordChangeRecordData::ExtraPasswordChangeRecordData() {}
@@ -1230,6 +1210,29 @@ class SyncManager::SyncInternal
       notification_info_map_.insert(
           std::make_pair(syncable::ModelTypeFromInt(i), NotificationInfo()));
     }
+
+    // Bind message handlers.
+    BindJsMessageHandler(
+        "getNotificationState",
+        &SyncManager::SyncInternal::GetNotificationState);
+    BindJsMessageHandler(
+        "getNotificationInfo",
+        &SyncManager::SyncInternal::GetNotificationInfo);
+    BindJsMessageHandler(
+        "getRootNodeDetails",
+        &SyncManager::SyncInternal::GetRootNodeDetails);
+    BindJsMessageHandler(
+        "getNodeSummariesById",
+        &SyncManager::SyncInternal::GetNodeSummariesById);
+    BindJsMessageHandler(
+        "getNodeDetailsById",
+        &SyncManager::SyncInternal::GetNodeDetailsById);
+    BindJsMessageHandler(
+        "getChildNodeIds",
+        &SyncManager::SyncInternal::GetChildNodeIds);
+    BindJsMessageHandler(
+        "findNodesContainingString",
+        &SyncManager::SyncInternal::FindNodesContainingString);
   }
 
   virtual ~SyncInternal() {
@@ -1448,9 +1451,14 @@ class SyncManager::SyncInternal
       const browser_sync::JsArgList& args,
       const browser_sync::JsEventHandler* target) OVERRIDE;
 
-  ListValue* FindNodesContainingString(const std::string& query);
-
  private:
+  typedef browser_sync::JsArgList
+      (SyncManager::SyncInternal::*UnboundJsMessageHandler)(
+          const browser_sync::JsArgList&);
+  typedef base::Callback<browser_sync::JsArgList(browser_sync::JsArgList)>
+      JsMessageHandler;
+  typedef std::map<std::string, JsMessageHandler> JsMessageHandlerMap;
+
   // Helper to call OnAuthError when no authentication credentials are
   // available.
   void RaiseAuthNeededEvent();
@@ -1562,14 +1570,31 @@ class SyncManager::SyncInternal
   // Checks for server reachabilty and requests a nudge.
   void OnIPAddressChangedImpl();
 
-  // Functions called by ProcessMessage().
-  browser_sync::JsArgList ProcessGetNodesByIdMessage(
+  // Helper function used only by the constructor.
+  void BindJsMessageHandler(
+    const std::string& name,
+    UnboundJsMessageHandler unbound_message_handler);
+
+  // JS message handlers.
+  browser_sync::JsArgList GetNotificationState(
       const browser_sync::JsArgList& args);
 
-  browser_sync::JsArgList ProcessGetChildNodeIdsMessage(
+  browser_sync::JsArgList GetNotificationInfo(
       const browser_sync::JsArgList& args);
 
-  browser_sync::JsArgList ProcessFindNodesContainingString(
+  browser_sync::JsArgList GetRootNodeDetails(
+      const browser_sync::JsArgList& args);
+
+  browser_sync::JsArgList GetNodeSummariesById(
+      const browser_sync::JsArgList& args);
+
+  browser_sync::JsArgList GetNodeDetailsById(
+      const browser_sync::JsArgList& args);
+
+  browser_sync::JsArgList GetChildNodeIds(
+      const browser_sync::JsArgList& args);
+
+  browser_sync::JsArgList FindNodesContainingString(
       const browser_sync::JsArgList& args);
 
   // We couple the DirectoryManager and username together in a UserShare member
@@ -1634,6 +1659,8 @@ class SyncManager::SyncInternal
   NotificationInfoMap notification_info_map_;
 
   browser_sync::JsDirectoryChangeListener js_directory_change_listener_;
+
+  JsMessageHandlerMap js_message_handlers_;
 };
 const int SyncManager::SyncInternal::kDefaultNudgeDelayMilliseconds = 200;
 const int SyncManager::SyncInternal::kPreferencesNudgeDelayMilliseconds = 2000;
@@ -2134,52 +2161,6 @@ void SyncManager::SyncInternal::EncryptDataTypes(
   // (redundant changes are ignored).
   ReEncryptEverything(&trans);
   return;
-}
-
-namespace {
-
-void FindChildNodesContainingString(const std::string& lowercase_query,
-    const ReadNode& parent_node,
-    sync_api::ReadTransaction* trans,
-    ListValue* result) {
-  int64 child_id = parent_node.GetFirstChildId();
-  while (child_id != kInvalidId) {
-    ReadNode node(trans);
-    if (node.InitByIdLookup(child_id)) {
-      if (node.ContainsString(lowercase_query)) {
-        result->Append(new StringValue(base::Int64ToString(child_id)));
-      }
-      FindChildNodesContainingString(lowercase_query, node, trans, result);
-      child_id = node.GetSuccessorId();
-    } else {
-      LOG(WARNING) << "Lookup of node failed. Id: " << child_id;
-      return;
-    }
-  }
-}
-}  // namespace
-
-// Returned pointer owned by the caller.
-ListValue* SyncManager::SyncInternal::FindNodesContainingString(
-    const std::string& query) {
-  // Convert the query string to lower case to perform case insensitive
-  // searches.
-  std::string lowercase_query = query;
-  StringToLowerASCII(&lowercase_query);
-  ReadTransaction trans(GetUserShare());
-  ReadNode root(&trans);
-  root.InitByRootLookup();
-
-  ListValue* result = new ListValue();
-
-  base::Time start_time = base::Time::Now();
-  FindChildNodesContainingString(lowercase_query, root, &trans, result);
-  base::Time end_time = base::Time::Now();
-
-  base::TimeDelta delta = end_time - start_time;
-  VLOG(1) << "Time taken in milliseconds to search " << delta.InMilliseconds();
-
-  return result;
 }
 
 void SyncManager::SyncInternal::ReEncryptEverything(WriteTransaction* trans) {
@@ -2696,77 +2677,25 @@ const browser_sync::JsEventRouter*
   return parent_router_;
 }
 
-namespace {
-
-void LogNoRouter(const std::string& name,
-                 const browser_sync::JsArgList& args) {
-  VLOG(1) << "No parent router; not replying to message " << name
-          << " with args " << args.ToString();
-}
-
-}  // namespace
-
 void SyncManager::SyncInternal::ProcessMessage(
     const std::string& name, const browser_sync::JsArgList& args,
     const browser_sync::JsEventHandler* sender) {
   DCHECK(initialized_);
-  if (name == "getNotificationState") {
-    if (!parent_router_) {
-      LogNoRouter(name, args);
-      return;
-    }
-    bool notifications_enabled = allstatus_.status().notifications_enabled;
-    ListValue return_args;
-    return_args.Append(Value::CreateBooleanValue(notifications_enabled));
-    parent_router_->RouteJsMessageReply(
-        name, browser_sync::JsArgList(&return_args), sender);
-  } else if (name == "getNotificationInfo") {
-    if (!parent_router_) {
-      LogNoRouter(name, args);
-      return;
-    }
+  if (!parent_router_) {
+    VLOG(1) << "No parent router; not replying to message " << name
+            << " with args " << args.ToString();
+    return;
+  }
 
-    ListValue return_args;
-    return_args.Append(NotificationInfoToValue(notification_info_map_));
-    parent_router_->RouteJsMessageReply(
-        name, browser_sync::JsArgList(&return_args), sender);
-  } else if (name == "getRootNode") {
-    if (!parent_router_) {
-      LogNoRouter(name, args);
-      return;
-    }
-    ReadTransaction trans(GetUserShare());
-    ReadNode root(&trans);
-    root.InitByRootLookup();
-    ListValue return_args;
-    return_args.Append(root.ToValue());
-    parent_router_->RouteJsMessageReply(
-        name, browser_sync::JsArgList(&return_args), sender);
-  } else if (name == "getNodesById") {
-    if (!parent_router_) {
-      LogNoRouter(name, args);
-      return;
-    }
-    parent_router_->RouteJsMessageReply(
-        name, ProcessGetNodesByIdMessage(args), sender);
-  } else if (name == "getChildNodeIds") {
-    if (!parent_router_) {
-      LogNoRouter(name, args);
-      return;
-    }
-    parent_router_->RouteJsMessageReply(
-        name, ProcessGetChildNodeIdsMessage(args), sender);
-  } else if (name == "findNodesContainingString") {
-    if (!parent_router_) {
-      LogNoRouter(name, args);
-      return;
-    }
-    parent_router_->RouteJsMessageReply(
-        name, ProcessFindNodesContainingString(args), sender);
-  } else {
+  JsMessageHandler js_message_handler = js_message_handlers_[name];
+  if (js_message_handler.is_null()) {
     VLOG(1) << "Dropping unknown message " << name
               << " with args " << args.ToString();
+    return;
   }
+
+  parent_router_->RouteJsMessageReply(
+      name, js_message_handler.Run(args), sender);
 }
 
 void SyncManager::SyncInternal::RouteJsEvent(
@@ -2788,76 +2717,120 @@ void SyncManager::SyncInternal::RouteJsMessageReply(
   parent_router_->RouteJsMessageReply(name, args, target);
 }
 
-namespace {
-
-bool GetId(const ListValue& ids, int i, int64* id) {
-  std::string id_str;
-  if (!ids.GetString(i, &id_str)) {
-    return false;
-  }
-  if (!base::StringToInt64(id_str, id)) {
-    return false;
-  }
-  if (*id == kInvalidId) {
-    return false;
-  }
-  return true;
+void SyncManager::SyncInternal::BindJsMessageHandler(
+    const std::string& name,
+    UnboundJsMessageHandler unbound_message_handler) {
+  js_message_handlers_[name] =
+      base::Bind(unbound_message_handler, base::Unretained(this));
 }
 
-}  // namespace
-
-browser_sync::JsArgList SyncManager::SyncInternal::ProcessGetNodesByIdMessage(
-    const browser_sync::JsArgList& args) {
+browser_sync::JsArgList
+    SyncManager::SyncInternal::GetNotificationState(
+        const browser_sync::JsArgList& args) {
+  bool notifications_enabled = allstatus_.status().notifications_enabled;
   ListValue return_args;
-  ListValue* nodes = new ListValue();
-  return_args.Append(nodes);
-  ListValue* id_list = NULL;
+  return_args.Append(Value::CreateBooleanValue(notifications_enabled));
+  return browser_sync::JsArgList(&return_args);
+}
+
+browser_sync::JsArgList
+    SyncManager::SyncInternal::GetNotificationInfo(
+        const browser_sync::JsArgList& args) {
+  ListValue return_args;
+  return_args.Append(NotificationInfoToValue(notification_info_map_));
+  return browser_sync::JsArgList(&return_args);
+}
+
+browser_sync::JsArgList
+    SyncManager::SyncInternal::GetRootNodeDetails(
+        const browser_sync::JsArgList& args) {
   ReadTransaction trans(GetUserShare());
+  ReadNode root(&trans);
+  root.InitByRootLookup();
+  ListValue return_args;
+  return_args.Append(root.GetDetailsAsValue());
+  return browser_sync::JsArgList(&return_args);
+}
+
+namespace {
+
+int64 GetId(const ListValue& ids, int i) {
+  std::string id_str;
+  if (!ids.GetString(i, &id_str)) {
+    return kInvalidId;
+  }
+  int64 id = kInvalidId;
+  if (!base::StringToInt64(id_str, &id)) {
+    return kInvalidId;
+  }
+  return id;
+}
+
+browser_sync::JsArgList GetNodeInfoById(
+    const browser_sync::JsArgList& args,
+    UserShare* user_share,
+    DictionaryValue* (BaseNode::*info_getter)() const) {
+  CHECK(info_getter);
+  ListValue return_args;
+  ListValue* node_summaries = new ListValue();
+  return_args.Append(node_summaries);
+  ListValue* id_list = NULL;
+  ReadTransaction trans(user_share);
   if (args.Get().GetList(0, &id_list)) {
+    CHECK(id_list);
     for (size_t i = 0; i < id_list->GetSize(); ++i) {
-      int64 id = kInvalidId;
-      if (!GetId(*id_list, i, &id)) {
+      int64 id = GetId(*id_list, i);
+      if (id == kInvalidId) {
         continue;
       }
       ReadNode node(&trans);
       if (!node.InitByIdLookup(id)) {
         continue;
       }
-      nodes->Append(node.ToValue());
+      node_summaries->Append((node.*info_getter)());
     }
   }
   return browser_sync::JsArgList(&return_args);
 }
 
+}  // namespace
+
+browser_sync::JsArgList
+    SyncManager::SyncInternal::GetNodeSummariesById(
+        const browser_sync::JsArgList& args) {
+  return GetNodeInfoById(args, GetUserShare(), &BaseNode::GetSummaryAsValue);
+}
+
+browser_sync::JsArgList
+    SyncManager::SyncInternal::GetNodeDetailsById(
+        const browser_sync::JsArgList& args) {
+  return GetNodeInfoById(args, GetUserShare(), &BaseNode::GetDetailsAsValue);
+}
+
 browser_sync::JsArgList SyncManager::SyncInternal::
-    ProcessGetChildNodeIdsMessage(
+    GetChildNodeIds(
         const browser_sync::JsArgList& args) {
   ListValue return_args;
   ListValue* child_ids = new ListValue();
   return_args.Append(child_ids);
-  int64 id = kInvalidId;
-  if (GetId(args.Get(), 0, &id)) {
+  int64 id = GetId(args.Get(), 0);
+  if (id != kInvalidId) {
     ReadTransaction trans(GetUserShare());
-    ReadNode node(&trans);
-    if (node.InitByIdLookup(id)) {
-      int64 child_id = node.GetFirstChildId();
-      while (child_id != kInvalidId) {
-        ReadNode child_node(&trans);
-        if (!child_node.InitByIdLookup(child_id)) {
-          break;
-        }
-        child_ids->Append(Value::CreateStringValue(
-            base::Int64ToString(child_id)));
-        child_id = child_node.GetSuccessorId();
-      }
+    syncable::Directory::ChildHandles child_handles;
+    trans.GetLookup()->GetChildHandlesByHandle(trans.GetWrappedTrans(),
+                                               id, &child_handles);
+    for (syncable::Directory::ChildHandles::const_iterator it =
+             child_handles.begin(); it != child_handles.end(); ++it) {
+      child_ids->Append(Value::CreateStringValue(
+          base::Int64ToString(*it)));
     }
   }
   return browser_sync::JsArgList(&return_args);
 }
 
 browser_sync::JsArgList SyncManager::SyncInternal::
-    ProcessFindNodesContainingString(
-    const browser_sync::JsArgList& args) {
+    FindNodesContainingString(
+        const browser_sync::JsArgList& args) {
   std::string query;
   ListValue return_args;
   if (!args.Get().GetString(0, &query)) {
@@ -2865,8 +2838,27 @@ browser_sync::JsArgList SyncManager::SyncInternal::
     return browser_sync::JsArgList(&return_args);
   }
 
-  ListValue* result = FindNodesContainingString(query);
+  // Convert the query string to lower case to perform case insensitive
+  // searches.
+  std::string lowercase_query = query;
+  StringToLowerASCII(&lowercase_query);
+
+  ListValue* result = new ListValue();
   return_args.Append(result);
+
+  ReadTransaction trans(GetUserShare());
+  std::vector<const syncable::EntryKernel*> entry_kernels;
+  trans.GetLookup()->GetAllEntryKernels(trans.GetWrappedTrans(),
+                                        &entry_kernels);
+
+  for (std::vector<const syncable::EntryKernel*>::const_iterator it =
+           entry_kernels.begin(); it != entry_kernels.end(); ++it) {
+    if ((*it)->ContainsString(lowercase_query)) {
+      result->Append(new StringValue(base::Int64ToString(
+          (*it)->ref(syncable::META_HANDLE))));
+    }
+  }
+
   return browser_sync::JsArgList(&return_args);
 }
 
@@ -3013,7 +3005,7 @@ void SyncManager::LogUnsyncedItems(int level) const {
        it != unsynced_handles.end(); ++it) {
     ReadNode node(&trans);
     if (node.InitByIdLookup(*it)) {
-      scoped_ptr<DictionaryValue> value(node.ToValue());
+      scoped_ptr<DictionaryValue> value(node.GetDetailsAsValue());
       std::string info;
       base::JSONWriter::Write(value.get(), true, &info);
       VLOG(level) << info;

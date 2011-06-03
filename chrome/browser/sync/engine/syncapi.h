@@ -279,13 +279,13 @@ class BaseNode {
   virtual const syncable::Entry* GetEntry() const = 0;
   virtual const BaseTransaction* GetTransaction() const = 0;
 
-  // Dumps all node info into a DictionaryValue and returns it.
+  // Dumps a summary of node info into a DictionaryValue and returns it.
   // Transfers ownership of the DictionaryValue to the caller.
-  DictionaryValue* ToValue() const;
+  DictionaryValue* GetSummaryAsValue() const;
 
-  // Does a case in-sensitive search for a given string, which must be
-  // lower case.
-  bool ContainsString(const std::string& lowercase_query) const;
+  // Dumps all node details into a DictionaryValue and returns it.
+  // Transfers ownership of the DictionaryValue to the caller.
+  DictionaryValue* GetDetailsAsValue() const;
 
  protected:
   BaseNode();
@@ -975,39 +975,73 @@ class SyncManager {
   void RemoveObserver(Observer* observer);
 
   // Returns a pointer to the JsBackend (which is owned by the sync
-  // manager).  Never returns NULL.  The following events are sent by
-  // the returned backend:
+  // manager).  Never returns NULL.  jsDocs for raised events are below:
+
+  /**
+   * @param {{ enabled: boolean }} details enabled is set to whether
+   *     or not notifications are enabled.
+   */
+  // function onNotificationStateChange(details);
+
+  /**
+   * @param {{ changedTypes: Array.<string> }} details changedTypes is
+   *     a list of types (as strings) for which there are new updates.
+   */
+  // function onIncomingNotification(details);
+
+  // jsDocs for handled messages are below (all other messages are
+  // ignored).
+
+  /**
+   * Gets the current notification state.
+   *
+   * @param {function(boolean)} callback Called with whether or not
+   *     notifications are enabled.
+   */
+  // function getNotificationState(callback);
+
+  /**
+   * Gets details about the root node.
+   *
+   * @param {function(!Object)} callback Called with details about the
+   *     root node.
+   */
+  // TODO(akalin): Change this to getRootNodeId or eliminate it
+  // entirely.
   //
-  // onNotificationStateChange({ enabled: (boolean) }):
-  //   Sent when notifications are enabled or disabled.
-  //
-  // onIncomingNotification({ changedTypes: (array) }):
-  //   Sent when an incoming notification arrives.  |changedTypes|
-  //   is a list of sync types (strings) which have changed.
-  //
-  // The following messages are processed by the returned backend:
-  //
-  // getNotificationState():
-  //   callback(boolean notificationsEnabled):
-  //     notificationsEnabled: whether or not notifications are
-  //     enabled.
-  //
-  // getRootNode():
-  //   callback(dictionary nodeInfo):
-  //     nodeInfo: Information on the root node.
-  //
-  // getNodesById(array idList):
-  //   idList: A list of IDs as strings.
-  //   callback(array nodeList):
-  //     nodeList: Information on each node for each valid id in
-  //     idList.  Not guaranteed to be in any order.
-  //
-  // getChildNodeIds(string id):
-  //   id: The id of the node for which to return the child node ids.
-  //   callback(array idList):
-  //     idList: The child node IDs of the node with the given id.
-  //
-  // All other messages are dropped.
+  // function getRootNodeDetails(callback);
+
+  /**
+   * Gets summary information for a list of ids.
+   *
+   * @param {Array.<string>} idList List of 64-bit ids in decimal
+   *     string form.
+   * @param {Array.<{id: string, title: string, isFolder: boolean}>}
+   * callback Called with summaries for the nodes in idList that
+   *     exist.
+   */
+  // function getNodeSummariesById(idList, callback);
+
+  /**
+   * Gets detailed information for a list of ids.
+   *
+   * @param {Array.<string>} idList List of 64-bit ids in decimal
+   *     string form.
+   * @param {Array.<!Object>} callback Called with detailed
+   *     information for the nodes in idList that exist.
+   */
+  // function getNodeDetailsById(idList, callback);
+
+  /**
+   * Gets child ids for a given id.
+   *
+   * @param {string} id 64-bit id in decimal string form of the parent
+   *     node.
+   * @param {Array.<string>} callback Called with the (possibly empty)
+   *     list of child ids.
+   */
+  // function getChildNodeIds(id);
+
   browser_sync::JsBackend* GetJsBackend();
 
   // Status-related getters. Typically GetStatusSummary will suffice, but

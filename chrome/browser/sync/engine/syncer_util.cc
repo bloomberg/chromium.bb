@@ -90,7 +90,7 @@ void SyncerUtil::ChangeEntryIDAndUpdateChildren(
   }
   if (entry->Get(IS_DIR)) {
     // Get all child entries of the old id.
-    trans->directory()->GetChildHandles(trans, old_id, children);
+    trans->directory()->GetChildHandlesById(trans, old_id, children);
     Directory::ChildHandles::iterator i = children->begin();
     while (i != children->end()) {
       MutableEntry child_entry(trans, GET_BY_HANDLE, *i++);
@@ -279,7 +279,7 @@ UpdateAttemptResponse SyncerUtil::AttemptToUpdateEntry(
     }
   } else if (entry->Get(IS_DIR)) {
     Directory::ChildHandles handles;
-    trans->directory()->GetChildHandles(trans, id, &handles);
+    trans->directory()->GetChildHandlesById(trans, id, &handles);
     if (!handles.empty()) {
       // If we have still-existing children, then we need to deal with
       // them before we can process this change.

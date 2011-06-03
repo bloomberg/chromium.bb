@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,7 +16,7 @@ int CountEntriesWithName(BaseTransaction* rtrans,
                          const syncable::Id& parent_id,
                          const string& name) {
   Directory::ChildHandles child_handles;
-  rtrans->directory()->GetChildHandles(rtrans, parent_id, &child_handles);
+  rtrans->directory()->GetChildHandlesById(rtrans, parent_id, &child_handles);
   if (child_handles.size() <= 0) {
     return 0;
   }
@@ -37,7 +37,7 @@ Id GetFirstEntryWithName(BaseTransaction* rtrans,
                          const syncable::Id& parent_id,
                          const string& name) {
   Directory::ChildHandles child_handles;
-  rtrans->directory()->GetChildHandles(rtrans, parent_id, &child_handles);
+  rtrans->directory()->GetChildHandlesById(rtrans, parent_id, &child_handles);
 
   for (Directory::ChildHandles::iterator i = child_handles.begin();
        i != child_handles.end(); ++i) {

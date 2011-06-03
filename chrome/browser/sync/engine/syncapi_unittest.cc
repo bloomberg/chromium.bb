@@ -6,6 +6,7 @@
 // functionality is provided by the Syncable layer, which has its own
 // unit tests. We'll test SyncApi specific things in this harness.
 
+#include <cstddef>
 #include <map>
 
 #include "base/basictypes.h"
@@ -388,10 +389,9 @@ TEST_F(SyncApiTest, WriteAndReadPassword) {
 
 namespace {
 
-void CheckNodeValue(const BaseNode& node, const DictionaryValue& value) {
+void CheckNodeValue(const BaseNode& node, const DictionaryValue& value,
+                    bool is_detailed) {
   ExpectInt64Value(node.GetId(), value, "id");
-  ExpectInt64Value(node.GetModificationTime(), value, "modificationTime");
-  ExpectInt64Value(node.GetParentId(), value, "parentId");
   {
     bool is_folder = false;
     EXPECT_TRUE(value.GetBoolean("isFolder", &is_folder));
@@ -414,28 +414,46 @@ void CheckNodeValue(const BaseNode& node, const DictionaryValue& value) {
       ADD_FAILURE();
     }
   }
-  ExpectInt64Value(node.GetExternalId(), value, "externalId");
-  ExpectInt64Value(node.GetPredecessorId(), value, "predecessorId");
-  ExpectInt64Value(node.GetSuccessorId(), value, "successorId");
-  ExpectInt64Value(node.GetFirstChildId(), value, "firstChildId");
-  {
-    scoped_ptr<DictionaryValue> expected_entry(node.GetEntry()->ToValue());
-    Value* entry = NULL;
-    EXPECT_TRUE(value.Get("entry", &entry));
-    EXPECT_TRUE(Value::Equals(entry, expected_entry.get()));
+  if (is_detailed) {
+    ExpectInt64Value(node.GetParentId(), value, "parentId");
+    ExpectInt64Value(node.GetModificationTime(), value, "modificationTime");
+    ExpectInt64Value(node.GetExternalId(), value, "externalId");
+    ExpectInt64Value(node.GetPredecessorId(), value, "predecessorId");
+    ExpectInt64Value(node.GetSuccessorId(), value, "successorId");
+    ExpectInt64Value(node.GetFirstChildId(), value, "firstChildId");
+    {
+      scoped_ptr<DictionaryValue> expected_entry(node.GetEntry()->ToValue());
+      Value* entry = NULL;
+      EXPECT_TRUE(value.Get("entry", &entry));
+      EXPECT_TRUE(Value::Equals(entry, expected_entry.get()));
+    }
+    EXPECT_EQ(11u, value.size());
+  } else {
+    EXPECT_EQ(4u, value.size());
   }
-  EXPECT_EQ(11u, value.size());
 }
 
 }  // namespace
 
-TEST_F(SyncApiTest, BaseNodeToValue) {
+TEST_F(SyncApiTest, BaseNodeGetSummaryAsValue) {
   ReadTransaction trans(test_user_share_.user_share());
   ReadNode node(&trans);
   node.InitByRootLookup();
-  scoped_ptr<DictionaryValue> value(node.ToValue());
-  if (value.get()) {
-    CheckNodeValue(node, *value);
+  scoped_ptr<DictionaryValue> details(node.GetSummaryAsValue());
+  if (details.get()) {
+    CheckNodeValue(node, *details, false);
+  } else {
+    ADD_FAILURE();
+  }
+}
+
+TEST_F(SyncApiTest, BaseNodeGetDetailsAsValue) {
+  ReadTransaction trans(test_user_share_.user_share());
+  ReadNode node(&trans);
+  node.InitByRootLookup();
+  scoped_ptr<DictionaryValue> details(node.GetDetailsAsValue());
+  if (details.get()) {
+    CheckNodeValue(node, *details, true);
   } else {
     ADD_FAILURE();
   }
@@ -473,8 +491,8 @@ void CheckNonDeleteChangeRecordValue(const SyncManager::ChangeRecord& record,
   {
     ReadNode node(trans);
     EXPECT_TRUE(node.InitByIdLookup(record.id));
-    scoped_ptr<DictionaryValue> expected_node_value(node.ToValue());
-    ExpectDictDictionaryValue(*expected_node_value, value, "node");
+    scoped_ptr<DictionaryValue> expected_details(node.GetDetailsAsValue());
+    ExpectDictDictionaryValue(*expected_details, value, "node");
   }
 }
 
@@ -837,7 +855,7 @@ TEST_F(SyncManagerTest, ProcessMessage) {
   }
 }
 
-TEST_F(SyncManagerTest, ProcessMessageGetRootNode) {
+TEST_F(SyncManagerTest, ProcessMessageGetRootNodeDetails) {
   const JsArgList kNoArgs;
 
   browser_sync::JsBackend* js_backend = sync_manager_.GetJsBackend();
@@ -848,13 +866,13 @@ TEST_F(SyncManagerTest, ProcessMessageGetRootNode) {
   JsArgList return_args;
 
   EXPECT_CALL(event_router,
-              RouteJsMessageReply("getRootNode", _, &event_handler))
+              RouteJsMessageReply("getRootNodeDetails", _, &event_handler))
       .WillOnce(SaveArg<1>(&return_args));
 
   js_backend->SetParentJsEventRouter(&event_router);
 
   // Should trigger the reply.
-  js_backend->ProcessMessage("getRootNode", kNoArgs, &event_handler);
+  js_backend->ProcessMessage("getRootNodeDetails", kNoArgs, &event_handler);
 
   EXPECT_EQ(1u, return_args.Get().GetSize());
   DictionaryValue* node_info = NULL;
@@ -863,7 +881,7 @@ TEST_F(SyncManagerTest, ProcessMessageGetRootNode) {
     ReadTransaction trans(sync_manager_.GetUserShare());
     ReadNode node(&trans);
     node.InitByRootLookup();
-    CheckNodeValue(node, *node_info);
+    CheckNodeValue(node, *node_info, true);
   } else {
     ADD_FAILURE();
   }
@@ -873,7 +891,8 @@ TEST_F(SyncManagerTest, ProcessMessageGetRootNode) {
 
 void CheckGetNodesByIdReturnArgs(const SyncManager& sync_manager,
                                  const JsArgList& return_args,
-                                 int64 id) {
+                                 int64 id,
+                                 bool is_detailed) {
   EXPECT_EQ(1u, return_args.Get().GetSize());
   ListValue* nodes = NULL;
   ASSERT_TRUE(return_args.Get().GetList(0, &nodes));
@@ -885,123 +904,143 @@ void CheckGetNodesByIdReturnArgs(const SyncManager& sync_manager,
   ReadTransaction trans(sync_manager.GetUserShare());
   ReadNode node(&trans);
   node.InitByIdLookup(id);
-  CheckNodeValue(node, *node_info);
+  CheckNodeValue(node, *node_info, is_detailed);
 }
 
-TEST_F(SyncManagerTest, ProcessMessageGetNodesById) {
-  int64 child_id =
-      MakeNode(sync_manager_.GetUserShare(), syncable::BOOKMARKS, "testtag");
+class SyncManagerGetNodesByIdTest : public SyncManagerTest {
+ protected:
+  virtual ~SyncManagerGetNodesByIdTest() {}
 
-  browser_sync::JsBackend* js_backend = sync_manager_.GetJsBackend();
+  void RunGetNodesByIdTest(const char* message_name, bool is_detailed) {
+    int64 root_id = kInvalidId;
+    {
+      ReadTransaction trans(sync_manager_.GetUserShare());
+      ReadNode root_node(&trans);
+      root_node.InitByRootLookup();
+      root_id = root_node.GetId();
+    }
 
-  StrictMock<MockJsEventHandler> event_handler;
-  StrictMock<MockJsEventRouter> event_router;
+    int64 child_id =
+        MakeNode(sync_manager_.GetUserShare(),
+                 syncable::BOOKMARKS, "testtag");
 
-  JsArgList return_args;
+    browser_sync::JsBackend* js_backend = sync_manager_.GetJsBackend();
 
-  EXPECT_CALL(event_router,
-              RouteJsMessageReply("getNodesById", _, &event_handler))
-      .Times(2).WillRepeatedly(SaveArg<1>(&return_args));
+    StrictMock<MockJsEventHandler> event_handler;
+    StrictMock<MockJsEventRouter> event_router;
 
-  js_backend->SetParentJsEventRouter(&event_router);
+    JsArgList return_args;
 
-  // Should trigger the reply.
-  {
-    ListValue args;
-    ListValue* ids = new ListValue();
-    args.Append(ids);
-    ids->Append(Value::CreateStringValue("1"));
-    js_backend->ProcessMessage("getNodesById",
-                               JsArgList(&args), &event_handler);
+    const int64 ids[] = { root_id, child_id };
+
+    EXPECT_CALL(event_router,
+                RouteJsMessageReply(message_name, _, &event_handler))
+        .Times(arraysize(ids)).WillRepeatedly(SaveArg<1>(&return_args));
+
+    js_backend->SetParentJsEventRouter(&event_router);
+
+    for (size_t i = 0; i < arraysize(ids); ++i) {
+      ListValue args;
+      ListValue* id_values = new ListValue();
+      args.Append(id_values);
+      id_values->Append(Value::CreateStringValue(base::Int64ToString(ids[i])));
+      js_backend->ProcessMessage(message_name,
+                                 JsArgList(&args), &event_handler);
+
+      CheckGetNodesByIdReturnArgs(sync_manager_, return_args,
+                                  ids[i], is_detailed);
+    }
+
+    js_backend->RemoveParentJsEventRouter();
   }
 
-  CheckGetNodesByIdReturnArgs(sync_manager_, return_args, 1);
+  void RunGetNodesByIdFailureTest(const char* message_name) {
+    browser_sync::JsBackend* js_backend = sync_manager_.GetJsBackend();
 
-  // Should trigger another reply.
-  {
-    ListValue args;
-    ListValue* ids = new ListValue();
-    args.Append(ids);
-    ids->Append(Value::CreateStringValue(base::Int64ToString(child_id)));
-    js_backend->ProcessMessage("getNodesById",
-                               JsArgList(&args), &event_handler);
+    StrictMock<MockJsEventHandler> event_handler;
+    StrictMock<MockJsEventRouter> event_router;
+
+    ListValue empty_list_args;
+    empty_list_args.Append(new ListValue());
+
+    EXPECT_CALL(event_router,
+                RouteJsMessageReply(message_name,
+                                    HasArgsAsList(empty_list_args),
+                                    &event_handler))
+        .Times(6);
+
+    js_backend->SetParentJsEventRouter(&event_router);
+
+    {
+      ListValue args;
+      js_backend->ProcessMessage(message_name,
+                                 JsArgList(&args), &event_handler);
+    }
+
+    {
+      ListValue args;
+      args.Append(new ListValue());
+      js_backend->ProcessMessage(message_name,
+                                 JsArgList(&args), &event_handler);
+    }
+
+    {
+      ListValue args;
+      ListValue* ids = new ListValue();
+      args.Append(ids);
+      ids->Append(Value::CreateStringValue(""));
+      js_backend->ProcessMessage(message_name,
+                                 JsArgList(&args), &event_handler);
+    }
+
+    {
+      ListValue args;
+      ListValue* ids = new ListValue();
+      args.Append(ids);
+      ids->Append(Value::CreateStringValue("nonsense"));
+      js_backend->ProcessMessage(message_name,
+                                 JsArgList(&args), &event_handler);
+    }
+
+    {
+      ListValue args;
+      ListValue* ids = new ListValue();
+      args.Append(ids);
+      ids->Append(Value::CreateStringValue("0"));
+      js_backend->ProcessMessage(message_name,
+                                 JsArgList(&args), &event_handler);
+    }
+
+    {
+      ListValue args;
+      ListValue* ids = new ListValue();
+      args.Append(ids);
+      ids->Append(Value::CreateStringValue("9999"));
+      js_backend->ProcessMessage(message_name,
+                                 JsArgList(&args), &event_handler);
+    }
+
+    js_backend->RemoveParentJsEventRouter();
   }
+};
 
-  CheckGetNodesByIdReturnArgs(sync_manager_, return_args, child_id);
-
-  js_backend->RemoveParentJsEventRouter();
+TEST_F(SyncManagerGetNodesByIdTest, GetNodeSummariesById) {
+  RunGetNodesByIdTest("getNodeSummariesById", false);
 }
 
-TEST_F(SyncManagerTest, ProcessMessageGetNodesByIdFailure) {
-  browser_sync::JsBackend* js_backend = sync_manager_.GetJsBackend();
-
-  StrictMock<MockJsEventHandler> event_handler;
-  StrictMock<MockJsEventRouter> event_router;
-
-  ListValue empty_list_args;
-  empty_list_args.Append(new ListValue());
-
-  EXPECT_CALL(event_router,
-              RouteJsMessageReply("getNodesById",
-                                  HasArgsAsList(empty_list_args),
-                                  &event_handler))
-      .Times(6);
-
-  js_backend->SetParentJsEventRouter(&event_router);
-
-  {
-    ListValue args;
-    js_backend->ProcessMessage("getNodesById",
-                               JsArgList(&args), &event_handler);
-  }
-
-  {
-    ListValue args;
-    args.Append(new ListValue());
-    js_backend->ProcessMessage("getNodesById",
-                               JsArgList(&args), &event_handler);
-  }
-
-  {
-    ListValue args;
-    ListValue* ids = new ListValue();
-    args.Append(ids);
-    ids->Append(Value::CreateStringValue(""));
-    js_backend->ProcessMessage("getNodesById",
-                               JsArgList(&args), &event_handler);
-  }
-
-  {
-    ListValue args;
-    ListValue* ids = new ListValue();
-    args.Append(ids);
-    ids->Append(Value::CreateStringValue("nonsense"));
-    js_backend->ProcessMessage("getNodesById",
-                               JsArgList(&args), &event_handler);
-  }
-
-  {
-    ListValue args;
-    ListValue* ids = new ListValue();
-    args.Append(ids);
-    ids->Append(Value::CreateStringValue("0"));
-    js_backend->ProcessMessage("getNodesById",
-                               JsArgList(&args), &event_handler);
-  }
-
-  {
-    ListValue args;
-    ListValue* ids = new ListValue();
-    args.Append(ids);
-    ids->Append(Value::CreateStringValue("9999"));
-    js_backend->ProcessMessage("getNodesById",
-                               JsArgList(&args), &event_handler);
-  }
-
-  js_backend->RemoveParentJsEventRouter();
+TEST_F(SyncManagerGetNodesByIdTest, GetNodeDetailsById) {
+  RunGetNodesByIdTest("getNodeDetailsById", true);
 }
 
-TEST_F(SyncManagerTest, ProcessMessageGetChildNodeIds) {
+TEST_F(SyncManagerGetNodesByIdTest, GetNodeSummariesByIdFailure) {
+  RunGetNodesByIdFailureTest("getNodeSummariesById");
+}
+
+TEST_F(SyncManagerGetNodesByIdTest, GetNodeDetailsByIdFailure) {
+  RunGetNodesByIdFailureTest("getNodeDetailsById");
+}
+
+TEST_F(SyncManagerTest, GetChildNodeIds) {
   browser_sync::JsBackend* js_backend = sync_manager_.GetJsBackend();
 
   StrictMock<MockJsEventHandler> event_handler;
@@ -1032,7 +1071,7 @@ TEST_F(SyncManagerTest, ProcessMessageGetChildNodeIds) {
   js_backend->RemoveParentJsEventRouter();
 }
 
-TEST_F(SyncManagerTest, ProcessMessageGetChildNodeIdsFailure) {
+TEST_F(SyncManagerTest, GetChildNodeIdsFailure) {
   browser_sync::JsBackend* js_backend = sync_manager_.GetJsBackend();
 
   StrictMock<MockJsEventHandler> event_handler;
@@ -1085,6 +1124,8 @@ TEST_F(SyncManagerTest, ProcessMessageGetChildNodeIdsFailure) {
 
   js_backend->RemoveParentJsEventRouter();
 }
+
+// TODO(akalin): Add unit tests for findNodesContainingString message.
 
 TEST_F(SyncManagerTest, OnNotificationStateChange) {
   InSequence dummy;

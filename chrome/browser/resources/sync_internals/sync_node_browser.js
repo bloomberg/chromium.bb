@@ -10,91 +10,145 @@ cr.define('chrome.sync', function() {
   /**
    * Gets all children of the given node and passes it to the given
    * callback.
-   * @param {Object} nodeInfo The info for the node whose children we
-   *     want.
-   * @param {Function} callback The callback to call with the list of
-   *     children.
+   * @param {string} id The id whose children we want.
+   * @param {function(Array.<!Object>)} callback The callback to call
+   *     with the list of children summaries.
    */
-  function getSyncNodeChildren(nodeInfo, callback) {
+  function getSyncNodeChildrenSummaries(id, callback) {
     var timer = chrome.sync.makeTimer();
-    chrome.sync.getChildNodeIds(nodeInfo.id, function(childNodeIds) {
+    chrome.sync.getChildNodeIds(id, function(childNodeIds) {
       console.debug('getChildNodeIds took ' +
                     timer.elapsedSeconds + 's to retrieve ' +
                     childNodeIds.length + ' ids');
       timer = chrome.sync.makeTimer();
-      chrome.sync.getNodesById(childNodeIds, function(children) {
-        console.debug('getNodesById took ' +
-                      timer.elapsedSeconds + 's to retrieve ' +
-                      children.length + ' nodes');
-        callback(children);
+      chrome.sync.getNodeSummariesById(
+          childNodeIds, function(childrenSummaries) {
+        console.debug('getNodeSummariesById took ' +
+                      timer.elapsedSeconds + 's to retrieve summaries for ' +
+                      childrenSummaries.length + ' nodes');
+        callback(childrenSummaries);
       });
     });
   }
 
   /**
-   * Makes a tree item from the given node info.
-   * @param {dictionary} nodeInfo The node info to create the tree
-   *    item from.
-   * @return {cr.ui.TreeItem} The created tree item.
+   * Creates a new sync node tree item.
+   * @param {{id: string, title: string, isFolder: boolean}}
+   *     nodeSummary The nodeSummary object for the node (as returned
+   *     by chrome.sync.getNodeSummariesById()).
+   * @constructor
+   * @extends {cr.ui.TreeItem}
    */
-  function makeNodeTreeItem(nodeInfo) {
+  var SyncNodeTreeItem = function(nodeSummary) {
     var treeItem = new cr.ui.TreeItem({
-      label: nodeInfo.title,
-      detail: nodeInfo
+      id_: nodeSummary.id
     });
+    treeItem.__proto__ = SyncNodeTreeItem.prototype;
 
-    if (nodeInfo.isFolder) {
+    treeItem.label = nodeSummary.title;
+    if (nodeSummary.isFolder) {
       treeItem.mayHaveChildren_ = true;
 
       // Load children asynchronously on expand.
       // TODO(akalin): Add a throbber while loading?
       treeItem.triggeredLoad_ = false;
-      treeItem.addEventListener('expand', function(event) {
-        if (!treeItem.triggeredLoad_) {
-          getSyncNodeChildren(nodeInfo, function(children) {
-            var timer = chrome.sync.makeTimer();
-            for (var i = 0; i < children.length; ++i) {
-              var childTreeItem = makeNodeTreeItem(children[i]);
-              treeItem.add(childTreeItem);
-            }
-            console.debug('adding ' + children.length + ' children took ' +
-                          timer.elapsedSeconds + 's');
-          });
-          treeItem.triggeredLoad_ = true;
-        }
-      });
+      treeItem.addEventListener('expand',
+                                treeItem.handleExpand_.bind(treeItem));
     } else {
       treeItem.classList.add('leaf');
     }
     return treeItem;
+  };
+
+  SyncNodeTreeItem.prototype = {
+    __proto__: cr.ui.TreeItem.prototype,
+
+    /**
+     * Retrieves the details for this node.
+     * @param {function(Object)} callback The callback that will be
+     *    called with the node details, or null if it could not be
+     *    retrieved.
+     */
+    getDetails: function(callback) {
+      chrome.sync.getNodeDetailsById([this.id_], function(nodeDetails) {
+        callback(nodeDetails[0] || null);
+      });
+    },
+
+    handleExpand_: function(event) {
+      if (!this.triggeredLoad_) {
+        getSyncNodeChildrenSummaries(this.id_, this.addChildNodes_.bind(this));
+        this.triggeredLoad_ = true;
+      }
+    },
+
+    /**
+     * Adds children from the list of children summaries.
+     * @param {Array.<{id: string, title: string, isFolder: boolean}>}
+     *    childrenSummaries The list of children summaries with which
+     *    to create the child nodes.
+     */
+    addChildNodes_: function(childrenSummaries) {
+      var timer = chrome.sync.makeTimer();
+      for (var i = 0; i < childrenSummaries.length; ++i) {
+        var childTreeItem = new SyncNodeTreeItem(childrenSummaries[i]);
+        this.add(childTreeItem);
+      }
+      console.debug('adding ' + childrenSummaries.length +
+                    ' children took ' + timer.elapsedSeconds + 's');
+    }
+  };
+
+  /**
+   * Updates the node detail view with the details for the given node.
+   * @param {!Object} nodeDetails The details for the node we want
+   *     to display.
+   */
+  function updateNodeDetailView(nodeDetails) {
+    var nodeBrowser = document.getElementById('node-browser');
+    // TODO(akalin): Write a nicer detail viewer.
+    nodeDetails.entry = JSON.stringify(nodeDetails.entry, null, 2);
+    jstProcess(new JsEvalContext(nodeDetails), nodeBrowser);
   }
 
   /**
-   * Updates the node detail view with the info for the given node.
-   * @param {dictionary} nodeInfo The info for the node we want to
-   *     display.
+   * Creates a new sync node tree.
+   * @param {Object=} opt_propertyBag Optional properties.
+   * @constructor
+   * @extends {cr.ui.Tree}
    */
-  function updateNodeDetailView(nodeInfo) {
-    var nodeBrowser = document.getElementById('node-browser');
-    // TODO(akalin): Get rid of this hack.
-    if (typeof nodeInfo.entry != 'string')
-      nodeInfo.entry = JSON.stringify(nodeInfo.entry, null, 2);
-    jstProcess(new JsEvalContext(nodeInfo), nodeBrowser);
-  }
+  var SyncNodeTree = cr.ui.define('tree');
+
+  SyncNodeTree.prototype = {
+    __proto__: cr.ui.Tree.prototype,
+
+    decorate: function() {
+      cr.ui.Tree.prototype.decorate.call(this);
+      this.addEventListener('change', this.handleChange_.bind(this));
+      chrome.sync.getRootNodeDetails(this.makeRoot_.bind(this));
+    },
+
+    /**
+     * Creates the root of the tree.
+     * @param {{id: string, title: string, isFolder: boolean}}
+     *    rootNodeSummary The summary info for the root node.
+     */
+    makeRoot_: function(rootNodeSummary) {
+      // The root node usually doesn't have a title.
+      rootNodeSummary.title = rootNodeSummary.title || 'Root';
+      var rootTreeItem = new SyncNodeTreeItem(rootNodeSummary);
+      this.add(rootTreeItem);
+    },
+
+    handleChange_: function(event) {
+      if (this.selectedItem) {
+        this.selectedItem.getDetails(updateNodeDetailView);
+      }
+    }
+  };
 
   function decorateSyncNodeBrowser(syncNodeBrowser) {
-    cr.ui.decorate(syncNodeBrowser, cr.ui.Tree);
-
-    syncNodeBrowser.addEventListener('change', function(event) {
-      if (syncNodeBrowser.selectedItem)
-        updateNodeDetailView(syncNodeBrowser.selectedItem.detail);
-    });
-
-    chrome.sync.getRootNode(function(rootNodeInfo) {
-      var rootTreeItem = makeNodeTreeItem(rootNodeInfo);
-      rootTreeItem.label = 'Root';
-      syncNodeBrowser.add(rootTreeItem);
-    });
+    cr.ui.decorate(syncNodeBrowser, SyncNodeTree);
   }
 
   // This is needed because JsTemplate (which is needed by

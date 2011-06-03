@@ -335,6 +335,10 @@ struct EntryKernel {
     return id_fields[field - ID_FIELDS_BEGIN];
   }
 
+  // Does a case in-sensitive search for a given string, which must be
+  // lower case.
+  bool ContainsString(const std::string& lowercase_query) const;
+
   // Dumps all kernel info into a DictionaryValue and returns it.
   // Transfers ownership of the DictionaryValue to the caller.
   DictionaryValue* ToValue() const;
@@ -846,8 +850,14 @@ class Directory {
   typedef EventChannel<DirectoryEventTraits, base::Lock> Channel;
   typedef std::vector<int64> ChildHandles;
 
-  // Returns the child meta handles for given parent id.
-  void GetChildHandles(BaseTransaction*, const Id& parent_id,
+  // Returns the child meta handles for given parent id.  Clears
+  // |result| if there are no children.
+  void GetChildHandlesById(BaseTransaction*, const Id& parent_id,
+      ChildHandles* result);
+
+  // Returns the child meta handles for given meta handle.  Clears
+  // |result| if there are no children.
+  void GetChildHandlesByHandle(BaseTransaction*, int64 handle,
       ChildHandles* result);
 
   // Find the first or last child in the positional ordering under a parent,
@@ -872,6 +882,10 @@ class Directory {
   //
   // WARNING: THIS METHOD PERFORMS SYNCHRONOUS I/O VIA SQLITE.
   bool SaveChanges();
+
+  // Fill in |result| with all entry kernels.
+  void GetAllEntryKernels(BaseTransaction* trans,
+                          std::vector<const EntryKernel*>* result);
 
   // Returns the number of entities with the unsynced bit set.
   int64 unsynced_entity_count() const;
@@ -1071,6 +1085,11 @@ class Directory {
   ParentIdChildIndex::iterator GetParentChildIndexUpperBound(
       const ScopedKernelLock& lock,
       const Id& parent_id);
+
+  // Append the handles of the children of |parent_id| to |result|.
+  void AppendChildHandles(
+      const ScopedKernelLock& lock,
+      const Id& parent_id, Directory::ChildHandles* result);
 
   Kernel* kernel_;
 

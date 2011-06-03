@@ -47,6 +47,8 @@ namespace syncable {
 
 class SyncableKernelTest : public testing::Test {};
 
+// TODO(akalin): Add unit tests for EntryKernel::ContainsString().
+
 TEST_F(SyncableKernelTest, ToValue) {
   EntryKernel kernel;
   scoped_ptr<DictionaryValue> value(kernel.ToValue());
@@ -105,6 +107,14 @@ TEST_F(SyncableGeneralTest, General) {
   Directory dir;
   dir.Open(db_path_, "SimpleTest");
 
+  int64 root_metahandle;
+  {
+    ReadTransaction rtrans(&dir, __FILE__, __LINE__);
+    Entry e(&rtrans, GET_BY_ID, rtrans.root_id());
+    ASSERT_TRUE(e.good());
+    root_metahandle = e.Get(META_HANDLE);
+  }
+
   int64 written_metahandle;
   const Id id = TestIdFactory::FromNumber(99);
   std::string name = "Jeff";
@@ -115,7 +125,10 @@ TEST_F(SyncableGeneralTest, General) {
     ASSERT_FALSE(e.good());  // Hasn't been written yet.
 
     Directory::ChildHandles child_handles;
-    dir.GetChildHandles(&rtrans, rtrans.root_id(), &child_handles);
+    dir.GetChildHandlesById(&rtrans, rtrans.root_id(), &child_handles);
+    EXPECT_TRUE(child_handles.empty());
+
+    dir.GetChildHandlesByHandle(&rtrans, root_metahandle, &child_handles);
     EXPECT_TRUE(child_handles.empty());
   }
 
@@ -129,7 +142,7 @@ TEST_F(SyncableGeneralTest, General) {
     written_metahandle = me.Get(META_HANDLE);
   }
 
-  // Test GetChildHandles after something is now in the DB.
+  // Test GetChildHandles* after something is now in the DB.
   // Also check that GET_BY_ID works.
   {
     ReadTransaction rtrans(&dir, __FILE__, __LINE__);
@@ -137,7 +150,15 @@ TEST_F(SyncableGeneralTest, General) {
     ASSERT_TRUE(e.good());
 
     Directory::ChildHandles child_handles;
-    dir.GetChildHandles(&rtrans, rtrans.root_id(), &child_handles);
+    dir.GetChildHandlesById(&rtrans, rtrans.root_id(), &child_handles);
+    EXPECT_EQ(1u, child_handles.size());
+
+    for (Directory::ChildHandles::iterator i = child_handles.begin();
+         i != child_handles.end(); ++i) {
+      EXPECT_EQ(*i, written_metahandle);
+    }
+
+    dir.GetChildHandlesByHandle(&rtrans, root_metahandle, &child_handles);
     EXPECT_EQ(1u, child_handles.size());
 
     for (Directory::ChildHandles::iterator i = child_handles.begin();

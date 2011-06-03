@@ -11,10 +11,10 @@ cr.define('chrome.sync', function() {
    * Runs a search with the given query.
    *
    * @param {string} query The query to do the search with.
-   *    item from.
-   * @param {function} doneCallback The callback called when the
-   * search is finished; not called if doSearch() is called again
-   * while the search is running.
+   * @param {Array.<{id: string, title: string, isFolder: boolean}>}
+   *     callback The callback called with the search results; not
+   *     called if doSearch() is called again while the search is
+   *     running.
    */
   var doSearch = function(query, callback) {
     var searchId = ++currSearchId;
@@ -22,11 +22,11 @@ cr.define('chrome.sync', function() {
       if (currSearchId != searchId) {
         return;
       }
-      chrome.sync.getNodesById(ids, function(nodeInfos) {
+      chrome.sync.getNodeSummariesById(ids, function(nodeSummaries) {
         if (currSearchId != searchId) {
           return;
         }
-        callback(nodeInfos);
+        callback(nodeSummaries);
       });
     });
   };
@@ -34,14 +34,14 @@ cr.define('chrome.sync', function() {
   /**
    * Decorates the various search controls.
    *
-   * @param {object} queryControl The <input> object of type=search
-   * where the user types in his query.
-   * @param {object} statusControl The <span> object display the
-   * search status.
-   * @param {object} listControl The <list> object which holds the
-   * list of returned results.
-   * @param {object} detailsControl The <pre> object which holds the
-   * details of the selected result.
+   * @param {!HTMLInputElement} queryControl The <input> object of
+   *     type=search where the user types in his query.
+   * @param {!HTMLElement} statusControl The <span> object display the
+   *     search status.
+   * @param {!HTMLElement} listControl The <list> object which holds
+   *     the list of returned results.
+   * @param {!HTMLPreElement} detailsControl The <pre> object which
+   *     holds the details of the selected result.
    */
   function decorateSearchControls(queryControl, statusControl,
                                   resultsControl, detailsControl) {
@@ -57,17 +57,17 @@ cr.define('chrome.sync', function() {
       }
       statusControl.innerText = 'Searching for ' + query + '...';
       var timer = chrome.sync.makeTimer();
-      doSearch(query, function(nodeInfos) {
+      doSearch(query, function(nodeSummaries) {
         statusControl.innerText =
-          'Found ' + nodeInfos.length + ' nodes in '
+          'Found ' + nodeSummaries.length + ' nodes in '
           + timer.elapsedSeconds + 's';
         // TODO(akalin): Write a nicer list display.
-        for (var i = 0; i < nodeInfos.length; ++i) {
-          nodeInfos[i].toString = function() {
+        for (var i = 0; i < nodeSummaries.length; ++i) {
+          nodeSummaries[i].toString = function() {
             return this.title;
-          }.bind(nodeInfos[i]);
+          }.bind(nodeSummaries[i]);
         }
-        resultsDataModel.push.apply(resultsDataModel, nodeInfos);
+        resultsDataModel.push.apply(resultsDataModel, nodeSummaries);
         // Workaround for http://crbug.com/83452 .
         resultsControl.redraw();
       });
@@ -81,7 +81,13 @@ cr.define('chrome.sync', function() {
       detailsControl.innerText = '';
       var selected = resultsControl.selectedItem;
       if (selected) {
-        detailsControl.innerText = JSON.stringify(selected, null, 2);
+        chrome.sync.getNodeDetailsById([selected.id], function(nodeDetails) {
+          var selectedNodeDetails = nodeDetails[0] || null;
+          if (selectedNodeDetails) {
+            detailsControl.innerText =
+              JSON.stringify(selectedNodeDetails, null, 2);
+          }
+        });
       }
     });
   }
