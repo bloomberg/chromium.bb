@@ -99,17 +99,13 @@ NativeTextfieldWin::NativeTextfieldWin(Textfield* textfield)
   if (!did_load_library_)
     did_load_library_ = !!LoadLibrary(L"riched20.dll");
 
-  DWORD style = kDefaultEditStyle;
+  DWORD style = kDefaultEditStyle | ES_AUTOHSCROLL;
   if (textfield_->style() & Textfield::STYLE_PASSWORD)
     style |= ES_PASSWORD;
 
   if (textfield_->read_only())
     style |= ES_READONLY;
 
-  if (textfield_->style() & Textfield::STYLE_MULTILINE)
-    style |= ES_MULTILINE | ES_WANTRETURN | ES_AUTOVSCROLL;
-  else
-    style |= ES_AUTOHSCROLL;
   // Make sure we apply RTL related extended window styles if necessary.
   DWORD ex_style = l10n_util::GetExtendedStyles();
 
@@ -634,13 +630,11 @@ void NativeTextfieldWin::OnKeyDown(TCHAR key, UINT repeat_count, UINT flags) {
   // in this function even with a WM_SYSKEYDOWN handler.
 
   switch (key) {
+
+    // Ignore Return
     case VK_RETURN:
-      // If we are multi-line, we want to let returns through so they start a
-      // new line.
-      if (textfield_->IsMultiLine())
-        break;
-      else
-        return;
+      return;
+
     // Hijacking Editing Commands
     //
     // We hijack the keyboard short-cuts for Cut, Copy, and Paste here so that

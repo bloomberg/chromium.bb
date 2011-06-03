@@ -34,8 +34,6 @@ const int kTextViewBorderWidth = 4;
 NativeTextfieldGtk::NativeTextfieldGtk(Textfield* textfield)
     : textfield_(textfield),
       paste_clipboard_requested_(false) {
-  if (textfield_->IsMultiLine() && textfield_->IsPassword())
-    NOTIMPLEMENTED();  // We don't support multiline password yet.
   // Make |textfield| the focused view, so that when we get focused the focus
   // manager sees |textfield| as the focused view (since we are just a wrapper
   // view).
@@ -74,50 +72,20 @@ gfx::Insets NativeTextfieldGtk::GetTextViewInnerBorder(GtkTextView* text_view) {
 // NativeTextfieldGtk, NativeTextfieldWrapper implementation:
 
 string16 NativeTextfieldGtk::GetText() const {
-  if (textfield_->IsMultiLine()) {
-    GtkTextBuffer* text_buffer = gtk_text_view_get_buffer(
-        GTK_TEXT_VIEW(native_view()));
-
-    GtkTextIter start;
-    GtkTextIter end;
-    gtk_text_buffer_get_bounds(text_buffer, &start, &end);
-
-    return UTF8ToUTF16(gtk_text_iter_get_visible_text(&start, &end));
-  } else {
-    return UTF8ToUTF16(gtk_entry_get_text(GTK_ENTRY(native_view())));
-  }
+  return UTF8ToUTF16(gtk_entry_get_text(GTK_ENTRY(native_view())));
 }
 
 void NativeTextfieldGtk::UpdateText() {
   if (!native_view())
     return;
-  if (textfield_->IsMultiLine()) {
-    GtkTextBuffer* text_buffer = gtk_text_view_get_buffer(
-        GTK_TEXT_VIEW(native_view()));
-
-    std::string utf8 = UTF16ToUTF8(textfield_->text());
-    gtk_text_buffer_set_text(text_buffer,  utf8.c_str(), utf8.length());
-  } else {
-    gtk_entry_set_text(GTK_ENTRY(native_view()),
+  gtk_entry_set_text(GTK_ENTRY(native_view()),
                        UTF16ToUTF8(textfield_->text()).c_str());
-  }
 }
 
 void NativeTextfieldGtk::AppendText(const string16& text) {
   if (!native_view())
     return;
-  if (textfield_->IsMultiLine()) {
-    GtkTextBuffer* text_buffer = gtk_text_view_get_buffer(
-        GTK_TEXT_VIEW(native_view()));
-
-    GtkTextIter end;
-    gtk_text_buffer_get_end_iter(text_buffer, &end);
-
-    std::string utf8 = UTF16ToUTF8(text);
-    gtk_text_buffer_insert(text_buffer, &end, utf8.c_str(), utf8.length());
-  } else {
-    gtk_entry_append_text(GTK_ENTRY(native_view()), UTF16ToUTF8(text).c_str());
-  }
+  gtk_entry_append_text(GTK_ENTRY(native_view()), UTF16ToUTF8(text).c_str());
 }
 
 string16 NativeTextfieldGtk::GetSelectedText() const {
@@ -126,28 +94,15 @@ string16 NativeTextfieldGtk::GetSelectedText() const {
 
   string16 result;
 
-  if (textfield_->IsMultiLine()) {
-    GtkTextBuffer* text_buffer = gtk_text_view_get_buffer(
-        GTK_TEXT_VIEW(native_view()));
-
-    GtkTextIter start;
-    GtkTextIter end;
-    if (gtk_text_buffer_get_selection_bounds(text_buffer, &start, &end)) {
-      gchar* selected_text = gtk_text_iter_get_visible_text(&start, &end);
-      if (selected_text)
-        UTF8ToUTF16(selected_text, strlen(selected_text), &result);
-    }
-  } else {
-    gint start_pos;
-    gint end_pos;
-    if (!gtk_editable_get_selection_bounds(GTK_EDITABLE(native_view()),
+  gint start_pos;
+  gint end_pos;
+  if (!gtk_editable_get_selection_bounds(GTK_EDITABLE(native_view()),
                                            &start_pos, &end_pos))
-      return result;  // No selection.
+    return result;  // No selection.
 
-    UTF8ToUTF16(gtk_editable_get_chars(GTK_EDITABLE(native_view()),
-                                       start_pos, end_pos),
-                end_pos - start_pos, &result);
-  }
+  UTF8ToUTF16(gtk_editable_get_chars(GTK_EDITABLE(native_view()),
+                                     start_pos, end_pos),
+              end_pos - start_pos, &result);
 
   return result;
 }
@@ -155,52 +110,22 @@ string16 NativeTextfieldGtk::GetSelectedText() const {
 void NativeTextfieldGtk::SelectAll() {
   if (!native_view())
     return;
-  if (textfield_->IsMultiLine()) {
-    GtkTextBuffer* text_buffer = gtk_text_view_get_buffer(
-        GTK_TEXT_VIEW(native_view()));
-
-    GtkTextIter start;
-    GtkTextIter end;
-    gtk_text_buffer_get_bounds(text_buffer, &start, &end);
-    gtk_text_buffer_select_range(text_buffer, &start, &end);
-  } else {
-    // -1 as the end position selects to the end of the text.
-    gtk_editable_select_region(GTK_EDITABLE(native_view()), 0, -1);
-  }
+  // -1 as the end position selects to the end of the text.
+  gtk_editable_select_region(GTK_EDITABLE(native_view()), 0, -1);
 }
 
 void NativeTextfieldGtk::ClearSelection() {
   if (!native_view())
     return;
-  if (textfield_->IsMultiLine()) {
-    GtkTextBuffer* text_buffer = gtk_text_view_get_buffer(
-        GTK_TEXT_VIEW(native_view()));
-
-    GtkTextMark* insert_mark = gtk_text_buffer_get_insert(text_buffer);
-    GtkTextIter insert;
-    gtk_text_buffer_get_iter_at_mark(text_buffer, &insert, insert_mark);
-    gtk_text_buffer_select_range(text_buffer, &insert, &insert);
-  } else {
-    gtk_editable_select_region(GTK_EDITABLE(native_view()), 0, 0);
-  }
+  gtk_editable_select_region(GTK_EDITABLE(native_view()), 0, 0);
 }
 
 void NativeTextfieldGtk::UpdateBorder() {
   if (!native_view())
     return;
 
-  if (textfield_->IsMultiLine()) {
-    if (!textfield_->draw_border()) {
-      gtk_container_set_border_width(GTK_CONTAINER(native_view()), 0);
-
-      // Use margin to match entry with no border
-      textfield_->SetHorizontalMargins(kTextViewBorderWidth / 2 + 1,
-                                       kTextViewBorderWidth / 2 + 1);
-    }
-  } else {
-    if (!textfield_->draw_border())
-      gtk_entry_set_has_frame(GTK_ENTRY(native_view()), false);
-  }
+  if (!textfield_->draw_border())
+    gtk_entry_set_has_frame(GTK_ENTRY(native_view()), false);
 }
 
 void NativeTextfieldGtk::UpdateTextColor() {
@@ -228,14 +153,8 @@ void NativeTextfieldGtk::UpdateBackgroundColor() {
 void NativeTextfieldGtk::UpdateReadOnly() {
   if (!native_view())
     return;
-
-  if (textfield_->IsMultiLine()) {
-    gtk_text_view_set_editable(GTK_TEXT_VIEW(native_view()),
-                               !textfield_->read_only());
-  } else {
-    gtk_editable_set_editable(GTK_EDITABLE(native_view()),
-                              !textfield_->read_only());
-  }
+  gtk_editable_set_editable(GTK_EDITABLE(native_view()),
+                            !textfield_->read_only());
 }
 
 void NativeTextfieldGtk::UpdateFont() {
@@ -249,10 +168,7 @@ void NativeTextfieldGtk::UpdateFont() {
 void NativeTextfieldGtk::UpdateIsPassword() {
   if (!native_view())
     return;
-  if (!textfield_->IsMultiLine()) {
-    gtk_entry_set_visibility(GTK_ENTRY(native_view()),
-                             !textfield_->IsPassword());
-  }
+  gtk_entry_set_visibility(GTK_ENTRY(native_view()), !textfield_->IsPassword());
 }
 
 void NativeTextfieldGtk::UpdateEnabled() {
@@ -268,17 +184,13 @@ gfx::Insets NativeTextfieldGtk::CalculateInsets() {
   GtkWidget* widget = native_view();
   gfx::Insets insets;
 
-  if (textfield_->IsMultiLine()) {
-    insets += GetTextViewInnerBorder(GTK_TEXT_VIEW(widget));
-  } else {
-    GtkEntry* entry = GTK_ENTRY(widget);
-    insets += GetEntryInnerBorder(entry);
-    if (entry->has_frame) {
-      insets += gfx::Insets(widget->style->ythickness,
+  GtkEntry* entry = GTK_ENTRY(widget);
+  insets += GetEntryInnerBorder(entry);
+  if (entry->has_frame) {
+    insets += gfx::Insets(widget->style->ythickness,
                             widget->style->xthickness,
                             widget->style->ythickness,
                             widget->style->xthickness);
-    }
   }
 
   gboolean interior_focus;
@@ -301,15 +213,9 @@ void NativeTextfieldGtk::UpdateHorizontalMargins() {
   if (!textfield_->GetHorizontalMargins(&left, &right))
     return;
 
-  if (textfield_->IsMultiLine()) {
-    GtkTextView* text_view = GTK_TEXT_VIEW(native_view());
-    gtk_text_view_set_left_margin(text_view, left);
-    gtk_text_view_set_right_margin(text_view, right);
-  } else {
-    gfx::Insets insets = GetEntryInnerBorder(GTK_ENTRY(native_view()));
-    GtkBorder border = {left, right, insets.top(), insets.bottom()};
-    gtk_entry_set_inner_border(GTK_ENTRY(native_view()), &border);
-  }
+  gfx::Insets insets = GetEntryInnerBorder(GTK_ENTRY(native_view()));
+  GtkBorder border = {left, right, insets.top(), insets.bottom()};
+  gtk_entry_set_inner_border(GTK_ENTRY(native_view()), &border);
 }
 
 void NativeTextfieldGtk::UpdateVerticalMargins() {
@@ -320,13 +226,9 @@ void NativeTextfieldGtk::UpdateVerticalMargins() {
   if (!textfield_->GetVerticalMargins(&top, &bottom))
     return;
 
-  if (!textfield_->IsMultiLine()) {
-    gfx::Insets insets = GetEntryInnerBorder(GTK_ENTRY(native_view()));
-    GtkBorder border = {insets.left(), insets.right(), top, bottom};
-    gtk_entry_set_inner_border(GTK_ENTRY(native_view()), &border);
-  } else {
-    NOTIMPLEMENTED();
-  }
+  gfx::Insets insets = GetEntryInnerBorder(GTK_ENTRY(native_view()));
+  GtkBorder border = {insets.left(), insets.right(), top, bottom};
+  gtk_entry_set_inner_border(GTK_ENTRY(native_view()), &border);
 }
 
 bool NativeTextfieldGtk::SetFocus() {
@@ -486,19 +388,9 @@ void NativeTextfieldGtk::OnPasteClipboard(GtkWidget* widget) {
 // NativeTextfieldGtk, NativeControlGtk overrides:
 
 void NativeTextfieldGtk::CreateNativeControl() {
-  if (textfield_->IsMultiLine()) {
-    NativeControlCreated(gtk_views_textview_new(this));
-    if (textfield_->draw_border())
-      gtk_container_set_border_width(GTK_CONTAINER(native_view()),
-                                     kTextViewBorderWidth);
-
-    gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(native_view()),
-                                GTK_WRAP_WORD_CHAR);
-  } else {
-    NativeControlCreated(gtk_views_entry_new(this));
-    gtk_entry_set_invisible_char(GTK_ENTRY(native_view()),
+  NativeControlCreated(gtk_views_entry_new(this));
+  gtk_entry_set_invisible_char(GTK_ENTRY(native_view()),
                                  static_cast<gunichar>(kPasswordChar));
-  }
   textfield_->UpdateAllProperties();
 }
 

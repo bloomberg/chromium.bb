@@ -75,8 +75,6 @@ NativeTextfieldViews::NativeTextfieldViews(Textfield* parent)
       last_click_location_(0, 0) {
   set_border(text_border_);
 
-  // Multiline is not supported.
-  DCHECK_NE(parent->style(), Textfield::STYLE_MULTILINE);
   // Lowercase is not supported.
   DCHECK_NE(parent->style(), Textfield::STYLE_LOWERCASE);
 

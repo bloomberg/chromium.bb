@@ -50,8 +50,7 @@ class Textfield : public View {
   enum StyleFlags {
     STYLE_DEFAULT   = 0,
     STYLE_PASSWORD  = 1 << 0,
-    STYLE_MULTILINE = 1 << 1,
-    STYLE_LOWERCASE = 1 << 2
+    STYLE_LOWERCASE = 1 << 1
   };
 
   Textfield();
@@ -70,11 +69,7 @@ class Textfield : public View {
   bool IsPassword() const;
   void SetPassword(bool password);
 
-  // Whether the text field is multi-line or not, must be set when the text
-  // field is created, using StyleFlags.
-  bool IsMultiLine() const;
-
-  // Gets the text currently displayed in the Textfield.
+  // Gets/Sets the text currently displayed in the Textfield.
   const string16& text() const { return text_; }
 
   // Sets the text currently displayed in the Textfield.  This doesn't
@@ -137,10 +132,6 @@ class Textfield : public View {
   // Sets the top and bottom margins (in pixels) within the textfield.
   // NOTE: in most cases height could be changed instead.
   void SetVerticalMargins(int top, int bottom);
-
-  // Should only be called on a multi-line text field. Sets how many lines of
-  // text can be displayed at once by this text field.
-  void SetHeightInLines(int num_lines);
 
   // Sets the default width of the text control. See default_width_in_chars_.
   void set_default_width_in_chars(int default_width) {
@@ -293,9 +284,6 @@ class Textfield : public View {
   // this Textfield. When false, the value of |background_color_| determines the
   // Textfield's background color.
   bool use_default_background_color_;
-
-  // The number of lines of text this Textfield displays at once.
-  int num_lines_;
 
   // TODO(beng): remove this once NativeTextfieldWin subclasses
   //             NativeControlWin.
