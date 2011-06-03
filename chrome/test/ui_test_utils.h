@@ -116,12 +116,6 @@ void WaitForLoadStop(TabContents* tab);
 // Waits for a new browser to be created, returning the browser.
 Browser* WaitForNewBrowser();
 
-// Waits for a new browser to be created, returning the browser.
-// Pass in the number of browsers that exist before the navigation starts in
-// |start_count|, and it will exit even if the notification occurs before it's
-// called.
-Browser* WaitForNewBrowserWithCount(size_t start_count);
-
 // Opens |url| in an incognito browser window with the incognito profile of
 // |profile|, blocking until the navigation finishes. This will create a new
 // browser if a browser with the incognito profile does not exist.
