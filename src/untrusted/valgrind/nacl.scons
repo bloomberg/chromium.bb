@@ -19,6 +19,5 @@ env.AddHeaderToSdk(['dynamic_annotations.h'])
 # With newlib, dynamic annotations are built into libpthread.
 # With glibc, they are in a separate library.
 if env.Bit('nacl_glibc'):
-  out = env.NaClSdkLibrary('libdynamic_annotations', 'dynamic_annotations.c')
-  env.Depends(out, env.Alias('install_libpthread'))
+  env.NaClSdkLibrary('libdynamic_annotations', 'dynamic_annotations.c')
   env.AddLibraryToSdk(['libdynamic_annotations'])

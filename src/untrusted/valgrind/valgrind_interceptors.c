@@ -26,7 +26,6 @@
 
 #include <stdio.h>
 #include <assert.h>
-#include <pthread.h>
 #include <errno.h>
 #include <sched.h>
 #include <stdlib.h>
@@ -43,7 +42,17 @@
 
 #include "native_client/src/third_party/valgrind/ts_valgrind_client_requests.h"
 
-#ifndef __GLIBC__
+#ifdef __GLIBC__
+#include <pthread.h>
+#else
+/*
+ * Get pthread.h from the source tree rather than using the installed one
+ * in the newlib build.  It might not be installed yet when we're building.
+ * Since we're about to include its private header here anyway, we might
+ * as well consistently refer to the source rather than what's installed.
+ */
+#include "native_client/src/untrusted/pthread/pthread.h"
+
 /* For sizeof(nc_thread_memory_block_t) */
 #include "native_client/src/untrusted/pthread/pthread_types.h"
 #endif
