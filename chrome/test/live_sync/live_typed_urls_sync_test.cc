@@ -52,7 +52,8 @@ class GetTypedUrlsTask : public HistoryDBTask {
 }  // namespace
 
 LiveTypedUrlsSyncTest::LiveTypedUrlsSyncTest(TestType test_type)
-    : LiveSyncTest(test_type) {}
+    : LiveSyncTest(test_type),
+      timestamp_(base::Time::Now()) {}
 
 LiveTypedUrlsSyncTest::~LiveTypedUrlsSyncTest() {}
 
@@ -73,8 +74,18 @@ LiveTypedUrlsSyncTest::GetTypedUrlsFromHistoryService(HistoryService *service) {
   return rows;
 }
 
+base::Time LiveTypedUrlsSyncTest::GetTimestamp() {
+  // The history subsystem doesn't like identical timestamps for page visits,
+  // and it will massage the visit timestamps if we try to use identical
+  // values, which can lead to spurious errors. So make sure all timestamps
+  // are unique.
+  base::Time original = timestamp_;
+  timestamp_ += base::TimeDelta::FromMilliseconds(1);
+  return original;
+}
+
 void LiveTypedUrlsSyncTest::AddUrlToHistory(int index, const GURL& url) {
-  base::Time timestamp = base::Time::Now();
+  base::Time timestamp = GetTimestamp();
   AddToHistory(GetProfile(index)->GetHistoryServiceWithoutCreating(),
                url,
                timestamp);

@@ -59,13 +59,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveTypedUrlsSyncTest, AddThenDelete) {
 }
 
 // TCM: 3643277
-#if defined(OS_WIN)
-// This test fails on the "Win7 Sync" bot. See http://crbug.com/84410.
-IN_PROC_BROWSER_TEST_F(TwoClientLiveTypedUrlsSyncTest,
-                       FAILS_DisableEnableSync) {
-#else
 IN_PROC_BROWSER_TEST_F(TwoClientLiveTypedUrlsSyncTest, DisableEnableSync) {
-#endif
   const string16 kUrl1(ASCIIToUTF16("http://history1.google.com/"));
   const string16 kUrl2(ASCIIToUTF16("http://history2.google.com/"));
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";

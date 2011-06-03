@@ -29,12 +29,7 @@ IN_PROC_BROWSER_TEST_F(MultipleClientLiveTypedUrlsSyncTest, AddToOne) {
   AssertAllProfilesHaveSameURLsAsVerifier();
 }
 
-#if defined(OS_WIN)
-// This test fails on the "Win7 Sync" bot. See http://crbug.com/84410.
-IN_PROC_BROWSER_TEST_F(MultipleClientLiveTypedUrlsSyncTest, FAILS_AddToAll) {
-#else
 IN_PROC_BROWSER_TEST_F(MultipleClientLiveTypedUrlsSyncTest, AddToAll) {
-#endif
   const string16 kHistoryUrl(
       ASCIIToUTF16("http://www.add-all-history.google.com/"));
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
