@@ -1,7 +1,9 @@
-Name: mongoose
+Name: Mongoose webserver
+Short Name: mongoose
 URL: http://code.google.com/p/mongoose/
 LICENSE: MIT
 Version: 2.8
+Security Critical: no
 
 Description:
 Mongoose is an easy to use web server. It can be embedded into existing
@@ -28,4 +30,5 @@ the chrome versoin of webdriver found under the directory:
 
 Local modifications:
 -Do not check for OS_POSIX, instead just check that it is not windows.
-
+-Handle case where pthread_cond_timedwait times out but the condition predicate
+is actually true.

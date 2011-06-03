@@ -4486,9 +4486,13 @@ get_socket(struct mg_context *ctx, struct socket *sp)
 #endif
     if (pthread_cond_timedwait(&ctx->empty_cond,
         &ctx->thr_mutex, &ts) != 0) {
-      /* Timeout! release the mutex and return */
-      (void) pthread_mutex_unlock(&ctx->thr_mutex);
-      return (FALSE);
+      // Even if the wait timed out, it is not guaranteed that the condition
+      // predicate is actually false.
+      if (ctx->sq_head == ctx->sq_tail) {
+        /* Timeout! release the mutex and return */
+        (void) pthread_mutex_unlock(&ctx->thr_mutex);
+        return (FALSE);
+      }
     }
   }
   assert(ctx->sq_head > ctx->sq_tail);
