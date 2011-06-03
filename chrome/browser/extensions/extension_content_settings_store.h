@@ -16,6 +16,7 @@
 #include "base/tuple.h"
 #include "chrome/browser/content_settings/content_settings_pattern.h"
 #include "chrome/browser/content_settings/content_settings_provider.h"
+#include "chrome/browser/extensions/extension_prefs_scope.h"
 #include "chrome/common/content_settings.h"
 #include "googleurl/src/gurl.h"
 
@@ -60,7 +61,7 @@ class ExtensionContentSettingsStore {
       ContentSettingsType type,
       const content_settings::ResourceIdentifier& identifier,
       ContentSetting setting,
-      bool incognito);
+      extension_prefs_scope::Scope scope);
 
   ContentSetting GetEffectiveContentSetting(
       const GURL& embedded_url,
@@ -68,6 +69,10 @@ class ExtensionContentSettingsStore {
       ContentSettingsType type,
       const content_settings::ResourceIdentifier& identifier,
       bool incognito) const;
+
+  // Clears all contents settings set by the extension |ext_id|.
+  void ClearContentSettingsForExtension(const std::string& ext_id,
+                                        extension_prefs_scope::Scope scope);
 
   // Returns a list of all content setting rules for the content type |type|
   // and the resource identifier (if specified and the content type uses
@@ -81,12 +86,14 @@ class ExtensionContentSettingsStore {
   // Serializes all content settings set by the extension with ID |extension_id|
   // and returns them as a ListValue. The caller takes ownership of the returned
   // value.
-  ListValue* GetSettingsForExtension(const std::string& extension_id) const;
+  ListValue* GetSettingsForExtension(const std::string& extension_id,
+                                     extension_prefs_scope::Scope scope) const;
 
   // Deserializes content settings rules from |list| and applies them as set by
   // the extension with ID |extension_id|.
   void SetExtensionContentSettingsFromList(const std::string& extension_id,
-                                           const ListValue* dict);
+                                           const ListValue* list,
+                                           extension_prefs_scope::Scope scope);
 
   // //////////////////////////////////////////////////////////////////////////
 
@@ -137,11 +144,18 @@ class ExtensionContentSettingsStore {
 
   ContentSettingSpecList* GetContentSettingSpecList(
       const std::string& ext_id,
-      bool incognito);
+      extension_prefs_scope::Scope scope);
 
   const ContentSettingSpecList* GetContentSettingSpecList(
       const std::string& ext_id,
-      bool incognito) const;
+      extension_prefs_scope::Scope scope) const;
+
+  // Adds all content setting rules for |type| and |identifier| found in
+  // |setting_spec_list| to |rules|.
+  static void AddRules(ContentSettingsType type,
+                       const content_settings::ResourceIdentifier& identifier,
+                       const ContentSettingSpecList* setting_spec_list,
+                       content_settings::ProviderInterface::Rules* rules);
 
   void NotifyOfContentSettingChanged(const std::string& extension_id,
                                      bool incognito);

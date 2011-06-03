@@ -211,10 +211,10 @@ void GeolocationContentSettingsMap::Observe(
   if (type == NotificationType::PREF_CHANGED) {
     const std::string& name = *Details<std::string>(details).ptr();
     if (name == prefs::kGeolocationDefaultContentSetting) {
-      NotifyObservers(ContentSettingsDetails(
-      ContentSettingsPattern(),
-      CONTENT_SETTINGS_TYPE_DEFAULT,
-      ""));
+      ContentSettingsDetails details(ContentSettingsPattern(),
+                                     CONTENT_SETTINGS_TYPE_DEFAULT,
+                                     std::string());
+      NotifyObservers(details);
     }
   } else if (NotificationType::PROFILE_DESTROYED == type) {
     UnregisterObservers();

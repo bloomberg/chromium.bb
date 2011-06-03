@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// The details send with notifications about content setting changes.
-
 #ifndef CHROME_BROWSER_CONTENT_SETTINGS_CONTENT_SETTINGS_DETAILS_H_
 #define CHROME_BROWSER_CONTENT_SETTINGS_CONTENT_SETTINGS_DETAILS_H_
 #pragma once
@@ -22,16 +20,13 @@ class ContentSettingsDetails {
   // Update the setting that matches this pattern/content type/resource.
   ContentSettingsDetails(const ContentSettingsPattern& pattern,
                          ContentSettingsType type,
-                         const std::string& resource_identifier)
-      : pattern_(pattern),
-        type_(type),
-        resource_identifier_(resource_identifier) {}
+                         const std::string& resource_identifier);
 
   // The pattern whose settings have changed.
   const ContentSettingsPattern& pattern() const { return pattern_; }
 
   // True if all settings should be updated for the given type.
-  bool update_all() const { return pattern_.ToString().empty(); }
+  bool update_all() const { return !pattern_.IsValid(); }
 
   // The type of the pattern whose settings have changed.
   ContentSettingsType type() const { return type_; }
@@ -51,6 +46,8 @@ class ContentSettingsDetails {
   ContentSettingsPattern pattern_;
   ContentSettingsType type_;
   std::string resource_identifier_;
+
+  DISALLOW_COPY_AND_ASSIGN(ContentSettingsDetails);
 };
 
 #endif  // CHROME_BROWSER_CONTENT_SETTINGS_CONTENT_SETTINGS_DETAILS_H_

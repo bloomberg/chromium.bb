@@ -6,7 +6,7 @@
 
 #include "base/auto_reset.h"
 #include "base/command_line.h"
-#include "chrome/browser/content_settings/stub_settings_observer.h"
+#include "chrome/browser/content_settings/mock_settings_observer.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -17,6 +17,8 @@
 #include "content/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "googleurl/src/gurl.h"
+
+using ::testing::_;
 
 namespace content_settings {
 
@@ -59,27 +61,26 @@ TEST_F(PolicyDefaultProviderTest, DefaultValues) {
 // if the managed setting is removed.
 TEST_F(PolicyDefaultProviderTest, ObserveManagedSettingsChange) {
   TestingProfile profile;
-  StubSettingsObserver observer;
+  MockSettingsObserver observer;
   // Make sure the content settings map exists.
   profile.GetHostContentSettingsMap();
   TestingPrefService* prefs = profile.GetTestingPrefService();
 
   // Set the managed default-content-setting.
+  EXPECT_CALL(observer,
+              OnContentSettingsChanged(profile.GetHostContentSettingsMap(),
+                                       CONTENT_SETTINGS_TYPE_DEFAULT, true,
+                                       _, true));
   prefs->SetManagedPref(prefs::kManagedDefaultImagesSetting,
                         Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
-  EXPECT_EQ(profile.GetHostContentSettingsMap(), observer.last_notifier);
-  EXPECT_EQ(CONTENT_SETTINGS_TYPE_DEFAULT, observer.last_type);
-  EXPECT_TRUE(observer.last_update_all);
-  EXPECT_TRUE(observer.last_update_all_types);
-  EXPECT_EQ(1, observer.counter);
+  ::testing::Mock::VerifyAndClearExpectations(&observer);
 
+  EXPECT_CALL(observer,
+              OnContentSettingsChanged(profile.GetHostContentSettingsMap(),
+                                       CONTENT_SETTINGS_TYPE_DEFAULT, true,
+                                       _, true));
   // Remove the managed default-content-setting.
   prefs->RemoveManagedPref(prefs::kManagedDefaultImagesSetting);
-  EXPECT_EQ(profile.GetHostContentSettingsMap(), observer.last_notifier);
-  EXPECT_EQ(CONTENT_SETTINGS_TYPE_DEFAULT, observer.last_type);
-  EXPECT_TRUE(observer.last_update_all);
-  EXPECT_TRUE(observer.last_update_all_types);
-  EXPECT_EQ(2, observer.counter);
 }
 
 class PolicyProviderTest : public testing::Test {

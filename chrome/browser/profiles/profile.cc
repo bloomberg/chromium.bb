@@ -244,6 +244,12 @@ class OffTheRecordProfileImpl : public Profile,
 
     if (pref_proxy_config_tracker_)
       pref_proxy_config_tracker_->DetachFromPrefService();
+
+    ExtensionService* extension_service = GetExtensionService();
+    if (extension_service) {
+      ExtensionPrefs* extension_prefs = extension_service->extension_prefs();
+      extension_prefs->ClearIncognitoSessionOnlyContentSettings();
+    }
   }
 
   virtual ProfileId GetRuntimeId() {
@@ -743,7 +749,7 @@ class OffTheRecordProfileImpl : public Profile,
   // The download manager that only stores downloaded items in memory.
   scoped_refptr<DownloadManager> download_manager_;
 
-  // We use a non-writable content settings map for OTR.
+  // We use a non-persistent content settings map for OTR.
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
 
   // Use a separate zoom map for OTR.

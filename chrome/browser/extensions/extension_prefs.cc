@@ -119,6 +119,9 @@ const char kPrefIncognitoPreferences[] = "incognito_preferences";
 // A preference that contains extension-set content settings.
 const char kPrefContentSettings[] = "content_settings";
 
+// A preference that contains extension-set content settings.
+const char kPrefIncognitoContentSettings[] = "incognito_content_settings";
+
 // Provider of write access to a dictionary storing extension prefs.
 class ScopedExtensionPrefUpdate : public DictionaryPrefUpdate {
  public:
@@ -895,6 +898,7 @@ void ExtensionPrefs::OnExtensionInstalled(
   extension_dict->Set(kPrefPreferences, new DictionaryValue());
   extension_dict->Set(kPrefIncognitoPreferences, new DictionaryValue());
   extension_dict->Set(kPrefContentSettings, new ListValue());
+  extension_dict->Set(kPrefIncognitoContentSettings, new ListValue());
 
   FilePath::StringType path = MakePathRelative(install_directory_,
       extension->path());
@@ -1332,12 +1336,19 @@ base::Time ExtensionPrefs::GetCurrentTime() const {
   return base::Time::Now();
 }
 
-void ExtensionPrefs::OnContentSettingChanged(const std::string& extension_id,
-                                             bool incognito) {
-  if (!incognito) {
+void ExtensionPrefs::OnContentSettingChanged(
+    const std::string& extension_id,
+    bool incognito) {
+  if (incognito) {
+    UpdateExtensionPref(
+        extension_id, kPrefIncognitoContentSettings,
+        content_settings_store_->GetSettingsForExtension(
+            extension_id, extension_prefs_scope::kIncognitoPersistent));
+  } else {
     UpdateExtensionPref(
         extension_id, kPrefContentSettings,
-        content_settings_store_->GetSettingsForExtension(extension_id));
+        content_settings_store_->GetSettingsForExtension(
+            extension_id, extension_prefs_scope::kRegular));
   }
 }
 
@@ -1457,9 +1468,17 @@ void ExtensionPrefs::InitPrefStore() {
     const DictionaryValue* extension_prefs = GetExtensionPref(*ext_id);
     DCHECK(extension_prefs);
     ListValue* content_settings = NULL;
-    if (extension_prefs->GetList(kPrefContentSettings, &content_settings)) {
+    if (extension_prefs->GetList(kPrefContentSettings,
+                                 &content_settings)) {
       content_settings_store_->SetExtensionContentSettingsFromList(
-          *ext_id, content_settings);
+          *ext_id, content_settings,
+          extension_prefs_scope::kRegular);
+    }
+    if (extension_prefs->GetList(kPrefIncognitoContentSettings,
+                                 &content_settings)) {
+      content_settings_store_->SetExtensionContentSettingsFromList(
+          *ext_id, content_settings,
+          extension_prefs_scope::kIncognitoPersistent);
     }
   }
 
@@ -1551,6 +1570,17 @@ bool ExtensionPrefs::HasIncognitoPrefValue(const std::string& pref_key) {
                                                    true,
                                                    &has_incognito_pref_value);
   return has_incognito_pref_value;
+}
+
+void ExtensionPrefs::ClearIncognitoSessionOnlyContentSettings() {
+  ExtensionIdSet extension_ids;
+  GetExtensions(&extension_ids);
+  for (ExtensionIdSet::iterator ext_id = extension_ids.begin();
+       ext_id != extension_ids.end(); ++ext_id) {
+    content_settings_store_->ClearContentSettingsForExtension(
+        *ext_id,
+        extension_prefs_scope::kIncognitoSessionOnly);
+  }
 }
 
 // static

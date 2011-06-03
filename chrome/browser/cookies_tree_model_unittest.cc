@@ -7,7 +7,7 @@
 #include <string>
 
 #include "chrome/browser/content_settings/host_content_settings_map.h"
-#include "chrome/browser/content_settings/stub_settings_observer.h"
+#include "chrome/browser/content_settings/mock_settings_observer.h"
 #include "chrome/browser/mock_browsing_data_appcache_helper.h"
 #include "chrome/browser/mock_browsing_data_database_helper.h"
 #include "chrome/browser/mock_browsing_data_file_system_helper.h"
@@ -22,6 +22,7 @@
 
 #include "base/utf_string_conversions.h"
 
+using ::testing::_;
 
 namespace {
 
@@ -857,7 +858,7 @@ TEST_F(CookiesTreeModelTest, ContentSettings) {
   TestingProfile profile;
   HostContentSettingsMap* content_settings =
       profile.GetHostContentSettingsMap();
-  StubSettingsObserver observer;
+  MockSettingsObserver observer;
 
   CookieTreeRootNode* root =
       static_cast<CookieTreeRootNode*>(cookies_model.GetRoot());
@@ -865,11 +866,16 @@ TEST_F(CookiesTreeModelTest, ContentSettings) {
 
   EXPECT_EQ(1, origin->child_count());
   EXPECT_TRUE(origin->CanCreateContentException());
+  EXPECT_CALL(observer,
+              OnContentSettingsChanged(content_settings,
+                                       CONTENT_SETTINGS_TYPE_COOKIES, false,
+                                       _, false));
+  EXPECT_CALL(observer,
+              OnContentSettingsChanged(content_settings,
+                                       CONTENT_SETTINGS_TYPE_COOKIES, false,
+                                       pattern, false));
   origin->CreateContentException(
       content_settings, CONTENT_SETTING_SESSION_ONLY);
-
-  EXPECT_EQ(2, observer.counter);
-  EXPECT_EQ(pattern, observer.last_pattern);
   EXPECT_EQ(CONTENT_SETTING_SESSION_ONLY,
       content_settings->GetCookieContentSetting(host, host, true));
 }

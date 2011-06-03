@@ -7,6 +7,7 @@
 #include "chrome/browser/content_settings/content_settings_details.h"
 #include "chrome/browser/extensions/extension_content_settings_store.h"
 #include "chrome/browser/profiles/profile.h"
+#include "content/common/notification_details.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_source.h"
 
@@ -69,8 +70,9 @@ void ExtensionProvider::OnContentSettingChanged(
   if (incognito_ != incognito)
     return;
   // TODO(markusheintz): Be more concise.
-  NotifyObservers(ContentSettingsDetails(
-      ContentSettingsPattern(), CONTENT_SETTINGS_TYPE_DEFAULT, ""));
+  ContentSettingsDetails details(
+      ContentSettingsPattern(), CONTENT_SETTINGS_TYPE_DEFAULT, std::string());
+  NotifyObservers(details);
 }
 
 void ExtensionProvider::OnDestruction() {

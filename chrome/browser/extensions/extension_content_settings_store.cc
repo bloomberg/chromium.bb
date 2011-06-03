@@ -25,8 +25,10 @@ struct ExtensionContentSettingsStore::ExtensionEntry {
   bool enabled;
   // Content settings.
   ContentSettingSpecList settings;
-  // Incognito content settings.
-  ContentSettingSpecList incognito_settings;
+  // Persistent incognito content settings.
+  ContentSettingSpecList incognito_persistent_settings;
+  // Session-only incognito content settings.
+  ContentSettingSpecList incognito_session_only_settings;
 };
 
 ExtensionContentSettingsStore::ExtensionContentSettingsStore() {
@@ -46,11 +48,11 @@ void ExtensionContentSettingsStore::SetExtensionContentSetting(
     ContentSettingsType type,
     const content_settings::ResourceIdentifier& identifier,
     ContentSetting setting,
-    bool incognito) {
+    extension_prefs_scope::Scope scope) {
   {
     base::AutoLock lock(lock_);
     ContentSettingSpecList* setting_spec_list =
-        GetContentSettingSpecList(ext_id, incognito);
+        GetContentSettingSpecList(ext_id, scope);
 
     // Find |ContentSettingSpec|.
     ContentSettingSpecList::iterator setting_spec = setting_spec_list->begin();
@@ -85,7 +87,8 @@ void ExtensionContentSettingsStore::SetExtensionContentSetting(
   // TODO(markusheintz): Notifications should only be sent if the set content
   // setting is effective and not hidden by another setting of another
   // extension installed more recently.
-  NotifyOfContentSettingChanged(ext_id, incognito);
+  NotifyOfContentSettingChanged(ext_id,
+                                scope != extension_prefs_scope::kRegular);
 }
 
 void ExtensionContentSettingsStore::RegisterExtension(
@@ -112,7 +115,8 @@ void ExtensionContentSettingsStore::UnregisterExtension(
     if (i == entries_.end())
       return;
     notify = !i->second->settings.empty();
-    notify_incognito = !i->second->incognito_settings.empty();
+    notify_incognito = !i->second->incognito_persistent_settings.empty() ||
+                       !i->second->incognito_session_only_settings.empty();
 
     delete i->second;
     entries_.erase(i);
@@ -133,7 +137,8 @@ void ExtensionContentSettingsStore::SetExtensionState(
     if (i == entries_.end())
       return;
     notify = !i->second->settings.empty();
-    notify_incognito = !i->second->incognito_settings.empty();
+    notify_incognito = !i->second->incognito_persistent_settings.empty() ||
+                       !i->second->incognito_session_only_settings.empty();
 
     i->second->enabled = is_enabled;
   }
@@ -146,23 +151,38 @@ void ExtensionContentSettingsStore::SetExtensionState(
 ExtensionContentSettingsStore::ContentSettingSpecList*
     ExtensionContentSettingsStore::GetContentSettingSpecList(
         const std::string& ext_id,
-        bool incognito) {
+        extension_prefs_scope::Scope scope) {
   ExtensionEntryMap::const_iterator i = entries_.find(ext_id);
   DCHECK(i != entries_.end());
-  return incognito ? &(i->second->incognito_settings)
-                   : &(i->second->settings);
+  switch (scope) {
+    case extension_prefs_scope::kRegular:
+      return &(i->second->settings);
+    case extension_prefs_scope::kIncognitoPersistent:
+      return &(i->second->incognito_persistent_settings);
+    case extension_prefs_scope::kIncognitoSessionOnly:
+      return &(i->second->incognito_session_only_settings);
+  }
+  NOTREACHED();
+  return NULL;
 }
 
 const ExtensionContentSettingsStore::ContentSettingSpecList*
     ExtensionContentSettingsStore::GetContentSettingSpecList(
         const std::string& ext_id,
-        bool incognito) const {
+        extension_prefs_scope::Scope scope) const {
   ExtensionEntryMap::const_iterator i = entries_.find(ext_id);
   DCHECK(i != entries_.end());
-  return incognito ? &(i->second->incognito_settings)
-                   : &(i->second->settings);
+  switch (scope) {
+    case extension_prefs_scope::kRegular:
+      return &(i->second->settings);
+    case extension_prefs_scope::kIncognitoPersistent:
+      return &(i->second->incognito_persistent_settings);
+    case extension_prefs_scope::kIncognitoSessionOnly:
+      return &(i->second->incognito_session_only_settings);
+  }
+  NOTREACHED();
+  return NULL;
 }
-
 
 ContentSetting ExtensionContentSettingsStore::GetContentSettingFromSpecList(
     const GURL& embedded_url,
@@ -181,9 +201,9 @@ ContentSetting ExtensionContentSettingsStore::GetContentSettingFromSpecList(
       continue;
     }
 
-    // TODO(markusheintz): Compare top-level patterns as well?
+    // TODO(markusheintz): Compare embedded patterns as well?
     if (winner_spec == setting_spec_list.end() ||
-        spec->embedded_pattern.Compare(winner_spec->embedded_pattern) ==
+        winner_spec->top_level_pattern.Compare(spec->top_level_pattern) ==
             ContentSettingsPattern::SUCCESSOR) {
       winner_spec = spec;
     }
@@ -216,13 +236,19 @@ ContentSetting ExtensionContentSettingsStore::GetEffectiveContentSetting(
 
     ContentSetting setting = CONTENT_SETTING_DEFAULT;
     if (incognito) {
-      // Get incognito setting
-      setting = GetContentSettingFromSpecList(embedded_url, top_level_url, type,
-                                              identifier,
-                                              i->second->incognito_settings);
+      // Try session-only incognito setting first.
+      setting = GetContentSettingFromSpecList(
+          embedded_url, top_level_url, type, identifier,
+          i->second->incognito_session_only_settings);
+      if (setting == CONTENT_SETTING_DEFAULT) {
+        // Next, persistent incognito setting.
+        setting = GetContentSettingFromSpecList(
+            embedded_url, top_level_url, type, identifier,
+            i->second->incognito_persistent_settings);
+      }
     }
     if (setting == CONTENT_SETTING_DEFAULT) {
-      // Get non incognito setting
+      // Then, non-incognito setting.
       setting = GetContentSettingFromSpecList(embedded_url, top_level_url, type,
                                               identifier, i->second->settings);
     }
@@ -236,6 +262,38 @@ ContentSetting ExtensionContentSettingsStore::GetEffectiveContentSetting(
   return winner_setting;
 }
 
+void ExtensionContentSettingsStore::ClearContentSettingsForExtension(
+    const std::string& ext_id,
+    extension_prefs_scope::Scope scope) {
+  bool notify = false;
+  {
+    base::AutoLock lock(lock_);
+    ContentSettingSpecList* setting_spec_list =
+        GetContentSettingSpecList(ext_id, scope);
+    notify = !setting_spec_list->empty();
+    setting_spec_list->clear();
+  }
+  if (notify) {
+    NotifyOfContentSettingChanged(ext_id,
+                                  scope != extension_prefs_scope::kRegular);
+  }
+}
+
+// static
+void ExtensionContentSettingsStore::AddRules(
+    ContentSettingsType type,
+    const content_settings::ResourceIdentifier& identifier,
+    const ContentSettingSpecList* setting_spec_list,
+    content_settings::ProviderInterface::Rules* rules) {
+  ContentSettingSpecList::const_iterator it;
+  for (it = setting_spec_list->begin(); it != setting_spec_list->end(); ++it) {
+    if (it->content_type == type && it->resource_identifier == identifier) {
+      rules->push_back(content_settings::ProviderInterface::Rule(
+          it->embedded_pattern, it->top_level_pattern, it->setting));
+    }
+  }
+}
+
 void ExtensionContentSettingsStore::GetContentSettingsForContentType(
     ContentSettingsType type,
     const content_settings::ResourceIdentifier& identifier,
@@ -244,25 +302,34 @@ void ExtensionContentSettingsStore::GetContentSettingsForContentType(
   base::AutoLock lock(lock_);
   ExtensionEntryMap::const_iterator ext_it;
   for (ext_it = entries_.begin(); ext_it != entries_.end(); ++ext_it) {
-    const ContentSettingSpecList* setting_spec_list =
-        GetContentSettingSpecList(ext_it->first, incognito);
-    ContentSettingSpecList::const_iterator it;
-    for (it = setting_spec_list->begin(); it != setting_spec_list->end();
-         ++it) {
-      if (it->content_type == type && it->resource_identifier == identifier) {
-        rules->push_back(content_settings::ProviderInterface::Rule(
-            it->embedded_pattern, it->top_level_pattern, it->setting));
-      }
+    if (incognito) {
+      AddRules(type, identifier,
+               GetContentSettingSpecList(
+                   ext_it->first,
+                   extension_prefs_scope::kIncognitoPersistent),
+               rules);
+      AddRules(type, identifier,
+               GetContentSettingSpecList(
+                   ext_it->first,
+                   extension_prefs_scope::kIncognitoSessionOnly),
+                rules);
+    } else {
+      AddRules(type, identifier,
+               GetContentSettingSpecList(
+                   ext_it->first,
+                   extension_prefs_scope::kRegular),
+               rules);
     }
   }
 }
 
 ListValue* ExtensionContentSettingsStore::GetSettingsForExtension(
-    const std::string& extension_id) const {
+    const std::string& extension_id,
+    extension_prefs_scope::Scope scope) const {
   base::AutoLock lock(lock_);
   ListValue* settings = new ListValue();
   const ContentSettingSpecList* setting_spec_list =
-      GetContentSettingSpecList(extension_id, false);
+      GetContentSettingSpecList(extension_id, scope);
   ContentSettingSpecList::const_iterator it;
   for (it = setting_spec_list->begin(); it != setting_spec_list->end(); ++it) {
     DictionaryValue* setting_dict = new DictionaryValue();
@@ -284,7 +351,8 @@ ListValue* ExtensionContentSettingsStore::GetSettingsForExtension(
 
 void ExtensionContentSettingsStore::SetExtensionContentSettingsFromList(
     const std::string& extension_id,
-    const ListValue* list) {
+    const ListValue* list,
+    extension_prefs_scope::Scope scope) {
   for (ListValue::const_iterator it = list->begin(); it != list->end(); ++it) {
     if ((*it)->GetType() != Value::TYPE_DICTIONARY) {
       NOTREACHED();
@@ -325,7 +393,7 @@ void ExtensionContentSettingsStore::SetExtensionContentSettingsFromList(
                                content_settings_type,
                                resource_identifier,
                                setting,
-                               false);
+                               scope);
   }
 }
 

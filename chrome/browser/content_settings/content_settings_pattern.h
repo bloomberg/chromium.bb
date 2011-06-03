@@ -26,16 +26,16 @@ class ContentSettingsPattern {
   // Each content settings pattern describes a set of origins. Patterns, and the
   // sets they describe, have specific relations. |Relation| describes the
   // relation of two patterns A and B. When pattern A is compared with pattern B
-  // (A compare B) interessting relations are:
-  // - IDENTITY : Pattern A and B are identical. The patterns are equal.
-  // - DISJOINT : Pattern A and B have no intersection. A and B never match
-  //              a the origin of a URL at the same time.
-  // - SUCCESSOR  : Pattern A and B have an intersection. But pattern B has a
+  // (|A.Compare(B)|) interesting relations are:
+  // - IDENTITY:    Pattern A and B are identical. The patterns are equal.
+  // - DISJOINT:    Pattern A and B have no intersection. A and B never both
+  //                match the origin of a URL.
+  // - SUCCESSOR:   Pattern A and B have an intersection. But pattern B has a
   //                higher precedence than pattern A for URLs that are matched
   //                by both pattern.
-  // - PREDECESSOR : Pattern A and B have an intersection. But pattern A has a
-  //                 higher precedence than pattern B for URLs that are matched
-  //                 by both pattern.
+  // - PREDECESSOR: Pattern A and B have an intersection. But pattern A has a
+  //                higher precedence than pattern B for URLs that are matched
+  //                by both pattern.
   enum Relation {
     DISJOINT = -2,
     SUCCESSOR = -1,

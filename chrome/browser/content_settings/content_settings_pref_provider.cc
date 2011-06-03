@@ -133,10 +133,6 @@ void PrefDefaultProvider::UpdateDefaultSetting(
     ContentSetting setting) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(kTypeNames[content_type] != NULL);  // Don't call this for Geolocation.
-  DCHECK(content_type != CONTENT_SETTINGS_TYPE_PLUGINS ||
-         setting != CONTENT_SETTING_ASK ||
-         CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableClickToPlay));
 
   // The default settings may not be directly modified for OTR sessions.
   // Instead, they are synced to the main profile's setting.
@@ -165,8 +161,9 @@ void PrefDefaultProvider::UpdateDefaultSetting(
   }
   updating_preferences_ = false;
 
-  NotifyObservers(
-      ContentSettingsDetails(ContentSettingsPattern(), content_type, ""));
+  ContentSettingsDetails details(
+      ContentSettingsPattern(), content_type, std::string());
+  NotifyObservers(details);
 }
 
 bool PrefDefaultProvider::DefaultSettingIsManaged(
@@ -207,8 +204,10 @@ void PrefDefaultProvider::Observe(NotificationType type,
     }
 
     if (!is_incognito_) {
-      NotifyObservers(ContentSettingsDetails(
-            ContentSettingsPattern(), CONTENT_SETTINGS_TYPE_DEFAULT, ""));
+      ContentSettingsDetails details(ContentSettingsPattern(),
+                                     CONTENT_SETTINGS_TYPE_DEFAULT,
+                                     std::string());
+      NotifyObservers(details);
     }
   } else if (type == NotificationType::PROFILE_DESTROYED) {
     DCHECK_EQ(profile_, Source<Profile>(source).ptr());
@@ -497,7 +496,9 @@ void PrefProvider::SetContentSetting(
   }  // End scope of update.
   updating_preferences_ = false;
 
-  NotifyObservers(ContentSettingsDetails(requesting_pattern, content_type, ""));
+  ContentSettingsDetails details(
+      requesting_pattern, content_type, std::string());
+  NotifyObservers(details);
 }
 
 void PrefProvider::ResetToDefaults() {
@@ -568,8 +569,9 @@ void PrefProvider::ClearAllContentSettingsRules(
   }  // End scope of update.
   updating_preferences_ = false;
 
-  NotifyObservers(
-      ContentSettingsDetails(ContentSettingsPattern(), content_type, ""));
+  ContentSettingsDetails details(
+      ContentSettingsPattern(), content_type, std::string());
+  NotifyObservers(details);
 }
 
 void PrefProvider::Observe(
@@ -592,9 +594,10 @@ void PrefProvider::Observe(
     }
 
     if (!is_incognito()) {
-      NotifyObservers(ContentSettingsDetails(ContentSettingsPattern(),
-                                             CONTENT_SETTINGS_TYPE_DEFAULT,
-                                             ""));
+      ContentSettingsDetails details(ContentSettingsPattern(),
+                                     CONTENT_SETTINGS_TYPE_DEFAULT,
+                                     std::string());
+      NotifyObservers(details);
     }
   } else if (type == NotificationType::PROFILE_DESTROYED) {
     DCHECK_EQ(profile_, Source<Profile>(source).ptr());

@@ -178,8 +178,10 @@ void PolicyDefaultProvider::Observe(NotificationType type,
     }
 
     if (!is_off_the_record_) {
-      NotifyObservers(ContentSettingsDetails(
-            ContentSettingsPattern(), CONTENT_SETTINGS_TYPE_DEFAULT, ""));
+      ContentSettingsDetails details(ContentSettingsPattern(),
+                                     CONTENT_SETTINGS_TYPE_DEFAULT,
+                                     std::string());
+      NotifyObservers(details);
     }
   } else if (type == NotificationType::PROFILE_DESTROYED) {
     DCHECK_EQ(profile_, Source<Profile>(source).ptr());
@@ -448,8 +450,10 @@ void PolicyProvider::Observe(NotificationType type,
         *name == prefs::kManagedPopupsAllowedForUrls ||
         *name == prefs::kManagedPopupsBlockedForUrls) {
       ReadManagedContentSettings(true);
-      NotifyObservers(ContentSettingsDetails(
-          ContentSettingsPattern(), CONTENT_SETTINGS_TYPE_DEFAULT, ""));
+      ContentSettingsDetails details(ContentSettingsPattern(),
+                                     CONTENT_SETTINGS_TYPE_DEFAULT,
+                                     std::string());
+      NotifyObservers(details);
     }
   } else if (type == NotificationType::PROFILE_DESTROYED) {
     DCHECK_EQ(profile_, Source<Profile>(source).ptr());

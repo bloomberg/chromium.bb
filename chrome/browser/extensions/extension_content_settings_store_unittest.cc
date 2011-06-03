@@ -76,7 +76,7 @@ TEST(ExtensionContentSettingsStoreTest, RegisterUnregister) {
       CONTENT_SETTINGS_TYPE_COOKIES,
       "",
       CONTENT_SETTING_ALLOW,
-      false);
+      extension_prefs_scope::kRegular);
   Mock::VerifyAndClear(&observer);
 
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
@@ -99,7 +99,7 @@ TEST(ExtensionContentSettingsStoreTest, RegisterUnregister) {
       CONTENT_SETTINGS_TYPE_COOKIES,
       "",
       CONTENT_SETTING_BLOCK,
-      false);
+      extension_prefs_scope::kRegular);
 
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             map.GetEffectiveContentSetting(

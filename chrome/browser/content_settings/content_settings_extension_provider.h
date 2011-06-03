@@ -7,7 +7,6 @@
 
 #include "chrome/browser/content_settings/content_settings_provider.h"
 #include "chrome/browser/extensions/extension_content_settings_store.h"
-#include "content/common/notification_details.h"
 
 class ContentSettingsDetails;
 class Profile;
@@ -45,8 +44,7 @@ class ExtensionProvider : public ProviderInterface,
       const ResourceIdentifier& resource_identifier,
       Rules* content_setting_rules) const;
 
-  virtual void ClearAllContentSettingsRules(
-      ContentSettingsType content_type) {}
+  virtual void ClearAllContentSettingsRules(ContentSettingsType content_type) {}
 
   virtual void ResetToDefaults() {}
 

@@ -327,6 +327,9 @@ class ExtensionPrefs : public ExtensionContentSettingsStore::Observer {
   //  for |pref_key| *and* it is specific to incognito mode.
   bool HasIncognitoPrefValue(const std::string& pref_key);
 
+  // Clears incognito session-only content settings for all extensions.
+  void ClearIncognitoSessionOnlyContentSettings();
+
   // Helper method to acquire the installation time of an extension.
   // Returns base::Time() if the installation time could not be parsed or
   // found.

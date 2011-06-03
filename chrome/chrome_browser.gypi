@@ -757,6 +757,7 @@
         'browser/command_updater.h',
         'browser/content_settings/content_settings_base_provider.cc',
         'browser/content_settings/content_settings_base_provider.h',
+        'browser/content_settings/content_settings_details.cc',
         'browser/content_settings/content_settings_details.h',
         'browser/content_settings/content_settings_extension_provider.cc',
         'browser/content_settings/content_settings_extension_provider.h',

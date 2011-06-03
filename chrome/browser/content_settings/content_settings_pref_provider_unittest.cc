@@ -6,11 +6,12 @@
 
 #include "base/auto_reset.h"
 #include "base/command_line.h"
-#include "chrome/browser/content_settings/stub_settings_observer.h"
+#include "chrome/browser/content_settings/mock_settings_observer.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/default_pref_store.h"
 #include "chrome/browser/prefs/overlay_persistent_pref_store.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/pref_service_mock_builder.h"
 #include "chrome/browser/prefs/testing_pref_store.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -22,24 +23,7 @@
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace {
-class ContentSettingsPrefService : public PrefService {
- public:
-  ContentSettingsPrefService(PrefStore* managed_platform_prefs,
-                             PrefStore* managed_cloud_prefs,
-                             PrefStore* extension_prefs,
-                             PrefStore* command_line_prefs,
-                             PersistentPrefStore* user_prefs,
-                             PrefStore* recommended_platform_prefs,
-                             PrefStore* recommended_cloud_prefs,
-                             DefaultPrefStore* default_store)
-      : PrefService(
-          managed_platform_prefs, managed_cloud_prefs, extension_prefs,
-          command_line_prefs, user_prefs, recommended_platform_prefs,
-          recommended_cloud_prefs, default_store, false) {}
-  virtual ~ContentSettingsPrefService() {}
-};
-}
+using ::testing::_;
 
 namespace content_settings {
 
@@ -76,14 +60,20 @@ TEST_F(PrefDefaultProviderTest, DefaultValues) {
 TEST_F(PrefDefaultProviderTest, Observer) {
   TestingProfile profile;
   PrefDefaultProvider provider(&profile);
-  StubSettingsObserver observer;
+  MockSettingsObserver observer;
 
+  EXPECT_CALL(observer,
+              OnContentSettingsChanged(profile.GetHostContentSettingsMap(),
+                                       CONTENT_SETTINGS_TYPE_IMAGES, false,
+                                       _, true));
+  // Expect a second call because the PrefDefaultProvider in the TestingProfile
+  // also observes the default content settings preference.
+  EXPECT_CALL(observer,
+              OnContentSettingsChanged(profile.GetHostContentSettingsMap(),
+                                       CONTENT_SETTINGS_TYPE_DEFAULT, true,
+                                       _, true));
   provider.UpdateDefaultSetting(
       CONTENT_SETTINGS_TYPE_IMAGES, CONTENT_SETTING_BLOCK);
-  EXPECT_EQ(profile.GetHostContentSettingsMap(), observer.last_notifier);
-  EXPECT_TRUE(observer.last_update_all);
-  EXPECT_FALSE(observer.last_update_all_types);
-  EXPECT_EQ(1, observer.counter);
 }
 
 TEST_F(PrefDefaultProviderTest, ObserveDefaultPref) {
@@ -176,54 +166,44 @@ TEST_F(PrefProviderTest, Observer) {
   profile.GetHostContentSettingsMap();
   Profile* p = &profile;
   PrefProvider pref_content_settings_provider(p);
-  StubSettingsObserver observer;
+  MockSettingsObserver observer;
   ContentSettingsPattern pattern =
       ContentSettingsPattern::FromString("[*.]example.com");
 
+  // Expect 2 calls: One from the update and one from canonicalization.
+  EXPECT_CALL(observer,
+              OnContentSettingsChanged(profile.GetHostContentSettingsMap(),
+                                       CONTENT_SETTINGS_TYPE_IMAGES, false,
+                                       pattern, false));
+  EXPECT_CALL(observer,
+              OnContentSettingsChanged(profile.GetHostContentSettingsMap(),
+                                       CONTENT_SETTINGS_TYPE_DEFAULT, true,
+                                       _, true));
   pref_content_settings_provider.SetContentSetting(
       pattern,
       pattern,
       CONTENT_SETTINGS_TYPE_IMAGES,
       "",
       CONTENT_SETTING_ALLOW);
-  EXPECT_EQ(profile.GetHostContentSettingsMap(), observer.last_notifier);
-  EXPECT_EQ(pattern, observer.last_pattern);
-  EXPECT_FALSE(observer.last_update_all);
-  EXPECT_FALSE(observer.last_update_all_types);
-  // Expect 2 calls: One from the update and one from canonicalization.
-  EXPECT_EQ(2, observer.counter);
 }
 
 // Test for regression in which the PrefProvider modified the user pref store
 // of the OTR unintentionally: http://crbug.com/74466.
 TEST_F(PrefProviderTest, Incognito) {
-  DefaultPrefStore* default_prefs = new DefaultPrefStore();
   PersistentPrefStore* user_prefs = new TestingPrefStore();
   OverlayPersistentPrefStore* otr_user_prefs =
       new OverlayPersistentPrefStore(user_prefs);
 
-  PrefService* regular_prefs = new ContentSettingsPrefService(
-      NULL,  // managed_platform_prefs
-      NULL,  // managed_cloud_prefs
-      NULL,  // extension_prefs
-      NULL,  // command_line_prefs
-      user_prefs,
-      NULL,  // recommended_platform_prefs,
-      NULL,  // recommended_cloud_prefs,
-      default_prefs);
+  PrefServiceMockBuilder builder;
+  PrefService* regular_prefs = builder.WithUserPrefs(user_prefs).Create();
 
   Profile::RegisterUserPrefs(regular_prefs);
   browser::RegisterUserPrefs(regular_prefs);
 
-  PrefService* otr_prefs = new ContentSettingsPrefService(
-        NULL,  // managed_platform_prefs
-        NULL,  // managed_cloud_prefs
-        NULL,  // extension_prefs
-        NULL,  // command_line_prefs
-        otr_user_prefs,
-        NULL,  // recommended_platform_prefs,
-        NULL,  // recommended_cloud_prefs,
-        default_prefs);
+  PrefService* otr_prefs = builder.WithUserPrefs(otr_user_prefs).Create();
+
+  Profile::RegisterUserPrefs(otr_prefs);
+  browser::RegisterUserPrefs(otr_prefs);
 
   TestingProfile profile;
   TestingProfile* otr_profile = new TestingProfile;

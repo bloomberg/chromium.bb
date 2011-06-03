@@ -8,7 +8,7 @@
 #include "base/json/json_writer.h"
 #include "chrome/browser/content_settings/content_settings_details.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
-#include "chrome/browser/content_settings/stub_settings_observer.h"
+#include "chrome/browser/content_settings/mock_settings_observer.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/chrome_switches.h"
@@ -20,6 +20,8 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/static_cookie_policy.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using ::testing::_;
 
 namespace {
 
@@ -213,31 +215,32 @@ TEST_F(HostContentSettingsMapTest, Observer) {
   TestingProfile profile;
   HostContentSettingsMap* host_content_settings_map =
       profile.GetHostContentSettingsMap();
-  StubSettingsObserver observer;
+  MockSettingsObserver observer;
 
   ContentSettingsPattern pattern =
        ContentSettingsPattern::FromString("[*.]example.com");
+  EXPECT_CALL(observer,
+              OnContentSettingsChanged(host_content_settings_map,
+                                       CONTENT_SETTINGS_TYPE_IMAGES, false,
+                                       pattern, false));
   host_content_settings_map->SetContentSetting(pattern,
       CONTENT_SETTINGS_TYPE_IMAGES, "", CONTENT_SETTING_ALLOW);
-  EXPECT_EQ(host_content_settings_map, observer.last_notifier);
-  EXPECT_EQ(pattern, observer.last_pattern);
-  EXPECT_FALSE(observer.last_update_all);
-  EXPECT_FALSE(observer.last_update_all_types);
-  EXPECT_EQ(1, observer.counter);
+  ::testing::Mock::VerifyAndClearExpectations(&observer);
 
+  EXPECT_CALL(observer,
+              OnContentSettingsChanged(host_content_settings_map,
+                                       CONTENT_SETTINGS_TYPE_IMAGES, false,
+                                       _, true));
   host_content_settings_map->ClearSettingsForOneType(
       CONTENT_SETTINGS_TYPE_IMAGES);
-  EXPECT_EQ(host_content_settings_map, observer.last_notifier);
-  EXPECT_TRUE(observer.last_update_all);
-  EXPECT_FALSE(observer.last_update_all_types);
-  EXPECT_EQ(2, observer.counter);
+  ::testing::Mock::VerifyAndClearExpectations(&observer);
 
+  EXPECT_CALL(observer,
+              OnContentSettingsChanged(host_content_settings_map,
+                                       CONTENT_SETTINGS_TYPE_IMAGES, false,
+                                       _, true));
   host_content_settings_map->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_IMAGES, CONTENT_SETTING_BLOCK);
-  EXPECT_EQ(host_content_settings_map, observer.last_notifier);
-  EXPECT_TRUE(observer.last_update_all);
-  EXPECT_FALSE(observer.last_update_all_types);
-  EXPECT_EQ(3, observer.counter);
 }
 
 TEST_F(HostContentSettingsMapTest, ObserveDefaultPref) {
