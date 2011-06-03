@@ -195,6 +195,8 @@
         'common/renderer_preferences.h',
         'common/resource_dispatcher.cc',
         'common/resource_dispatcher.h',
+        'common/resource_dispatcher_delegate.cc',
+        'common/resource_dispatcher_delegate.h',
         'common/resource_messages.h',
         'common/resource_response.cc',
         'common/resource_response.h',

@@ -28,7 +28,7 @@
 #include "ipc/ipc_message.h"
 
 class ChromeNetLog;
-class ChromeResourceDispatcherHostObserver;
+class ChromeResourceDispatcherHostDelegate;
 class CommandLine;
 class DevToolsHttpProtocolHandler;
 class DevToolsProtocolHandler;
@@ -286,12 +286,12 @@ class BrowserProcessImpl : public BrowserProcess,
   // Lives here so can safely log events on shutdown.
   scoped_ptr<ChromeNetLog> net_log_;
 
-  // Ordered before resource_dispatcher_host_observer_ due to destruction
+  // Ordered before resource_dispatcher_host_delegate_ due to destruction
   // ordering.
   scoped_ptr<prerender::PrerenderTracker> prerender_tracker_;
 
-  scoped_ptr<ChromeResourceDispatcherHostObserver>
-      resource_dispatcher_host_observer_;
+  scoped_ptr<ChromeResourceDispatcherHostDelegate>
+      resource_dispatcher_host_delegate_;
 
   NotificationRegistrar notification_registrar_;
   scoped_refptr<PluginDataRemover> plugin_data_remover_;

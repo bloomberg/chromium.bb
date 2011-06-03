@@ -18,6 +18,7 @@
 #include "ipc/ipc_channel.h"
 #include "webkit/glue/resource_loader_bridge.h"
 
+class ResourceDispatcherDelegate;
 struct ResourceResponseHead;
 
 // This class serves as a communication interface between the
@@ -25,24 +26,6 @@ struct ResourceResponseHead;
 // the child process.  It can be used from any child process.
 class ResourceDispatcher : public IPC::Channel::Listener {
  public:
-  // Interface that allows observing request events and optionally replacing the
-  // peer.
-  class Observer {
-   public:
-    Observer();
-    virtual ~Observer();
-
-    virtual webkit_glue::ResourceLoaderBridge::Peer* OnRequestComplete(
-        webkit_glue::ResourceLoaderBridge::Peer* current_peer,
-        ResourceType::Type resource_type,
-        const net::URLRequestStatus& status) = 0;
-
-    virtual webkit_glue::ResourceLoaderBridge::Peer* OnReceivedResponse(
-        webkit_glue::ResourceLoaderBridge::Peer* current_peer,
-        const std::string& mime_type,
-        const GURL& url) = 0;
-  };
-
   explicit ResourceDispatcher(IPC::Message::Sender* sender);
   virtual ~ResourceDispatcher();
 
@@ -75,8 +58,11 @@ class ResourceDispatcher : public IPC::Channel::Listener {
   // Toggles the is_deferred attribute for the specified request.
   void SetDefersLoading(int request_id, bool value);
 
-  // Takes ownership of the object.
-  void set_observer(Observer* observer) { observer_.reset(observer); }
+  // This does not take ownership of the delegate. It is expected that the
+  // delegate have a longer lifetime than the ResourceDispatcher.
+  void set_delegate(ResourceDispatcherDelegate* delegate) {
+    delegate_ = delegate;
+  }
 
  private:
   friend class ResourceDispatcherTest;
@@ -166,7 +152,7 @@ class ResourceDispatcher : public IPC::Channel::Listener {
 
   ScopedRunnableMethodFactory<ResourceDispatcher> method_factory_;
 
-  scoped_ptr<Observer> observer_;
+  ResourceDispatcherDelegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceDispatcher);
 };

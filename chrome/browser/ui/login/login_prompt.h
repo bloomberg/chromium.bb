@@ -9,9 +9,9 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/password_manager/password_manager.h"
+#include "content/browser/renderer_host/resource_dispatcher_host_login_delegate.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 
@@ -27,7 +27,7 @@ class RenderViewHostDelegate;
 // This is the base implementation for the OS-specific classes that route
 // authentication info to the net::URLRequest that needs it. These functions
 // must be implemented in a thread safe manner.
-class LoginHandler : public base::RefCountedThreadSafe<LoginHandler>,
+class LoginHandler : public ResourceDispatcherHostLoginDelegate,
                      public LoginModelObserver,
                      public NotificationObserver {
  public:
@@ -38,6 +38,9 @@ class LoginHandler : public base::RefCountedThreadSafe<LoginHandler>,
   // CreateLoginPrompt() which creates tasks.
   static LoginHandler* Create(net::AuthChallengeInfo* auth_info,
                               net::URLRequest* request);
+
+  // ResourceDispatcherHostLoginDelegate implementation:
+  virtual void OnRequestCancelled();
 
   // Initializes the underlying platform specific view.
   virtual void BuildViewForPasswordManager(PasswordManager* manager,
@@ -61,10 +64,6 @@ class LoginHandler : public base::RefCountedThreadSafe<LoginHandler>,
   // Display the error page without asking for credentials again.
   // This function can be called from either thread.
   void CancelAuth();
-
-  // Notify the handler that the request was cancelled.
-  // This function can only be called from the IO thread.
-  void OnRequestCancelled();
 
   // Implements the NotificationObserver interface.
   // Listens for AUTH_SUPPLIED and AUTH_CANCELLED notifications from other

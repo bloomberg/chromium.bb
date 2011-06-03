@@ -2,16 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/renderer_host/chrome_resource_dispatcher_host_observer.h"
+#include "chrome/browser/renderer_host/chrome_resource_dispatcher_host_delegate.h"
 
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/renderer_host/safe_browsing_resource_handler.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/browser/ui/login/login_prompt.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/resource_context.h"
+#include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/common/resource_messages.h"
 #include "net/base/load_flags.h"
@@ -21,7 +24,7 @@
 #include "chrome/browser/renderer_host/offline_resource_handler.h"
 #endif
 
-ChromeResourceDispatcherHostObserver::ChromeResourceDispatcherHostObserver(
+ChromeResourceDispatcherHostDelegate::ChromeResourceDispatcherHostDelegate(
     ResourceDispatcherHost* resource_dispatcher_host,
     prerender::PrerenderTracker* prerender_tracker)
     : resource_dispatcher_host_(resource_dispatcher_host),
@@ -29,10 +32,10 @@ ChromeResourceDispatcherHostObserver::ChromeResourceDispatcherHostObserver(
       prerender_tracker_(prerender_tracker) {
 }
 
-ChromeResourceDispatcherHostObserver::~ChromeResourceDispatcherHostObserver() {
+ChromeResourceDispatcherHostDelegate::~ChromeResourceDispatcherHostDelegate() {
 }
 
-bool ChromeResourceDispatcherHostObserver::ShouldBeginRequest(
+bool ChromeResourceDispatcherHostDelegate::ShouldBeginRequest(
     int child_id, int route_id,
     const ResourceHostMsg_Request& request_data,
     const content::ResourceContext& resource_context,
@@ -79,8 +82,8 @@ bool ChromeResourceDispatcherHostObserver::ShouldBeginRequest(
   return true;
 }
 
-void ChromeResourceDispatcherHostObserver::RequestBeginning(
-    ResourceHandler** handler,
+ResourceHandler* ChromeResourceDispatcherHostDelegate::RequestBeginning(
+    ResourceHandler* handler,
     net::URLRequest* request,
     bool is_subresource,
     int child_id,
@@ -91,29 +94,30 @@ void ChromeResourceDispatcherHostObserver::RequestBeginning(
   // Insert safe browsing at the front of the chain, so it gets to decide
   // on policies first.
   if (safe_browsing_->enabled()) {
-    *handler = CreateSafeBrowsingResourceHandler(
-        *handler, child_id, route_id, is_subresource);
+    handler = CreateSafeBrowsingResourceHandler(
+        handler, child_id, route_id, is_subresource);
   }
 
 #if defined(OS_CHROMEOS)
   // We check offline first, then check safe browsing so that we still can block
   // unsafe site after we remove offline page.
-  *handler = new OfflineResourceHandler(
-      *handler, child_id, route_id, resource_dispatcher_host_, request);
+  handler = new OfflineResourceHandler(
+      handler, child_id, route_id, resource_dispatcher_host_, request);
 #endif
+  return handler;
 }
 
-void ChromeResourceDispatcherHostObserver::DownloadStarting(
-    ResourceHandler** handler,
+ResourceHandler* ChromeResourceDispatcherHostDelegate::DownloadStarting(
+    ResourceHandler* handler,
     int child_id,
     int route_id) {
-  if (safe_browsing_->enabled()) {
-    *handler = CreateSafeBrowsingResourceHandler(
-        *handler, child_id, route_id, false);
-  }
+  if (!safe_browsing_->enabled())
+    return handler;
+
+  return CreateSafeBrowsingResourceHandler(handler, child_id, route_id, false);
 }
 
-bool ChromeResourceDispatcherHostObserver::ShouldDeferStart(
+bool ChromeResourceDispatcherHostDelegate::ShouldDeferStart(
     net::URLRequest* request,
     const content::ResourceContext& resource_context) {
   ResourceDispatcherHostRequestInfo* info =
@@ -123,7 +127,7 @@ bool ChromeResourceDispatcherHostObserver::ShouldDeferStart(
       info->child_id(), info->route_id(), info->request_id());
 }
 
-bool ChromeResourceDispatcherHostObserver::AcceptSSLClientCertificateRequest(
+bool ChromeResourceDispatcherHostDelegate::AcceptSSLClientCertificateRequest(
     net::URLRequest* request, net::SSLCertRequestInfo* cert_request_info) {
   if (request->load_flags() & net::LOAD_PREFETCH)
     return false;
@@ -143,7 +147,7 @@ bool ChromeResourceDispatcherHostObserver::AcceptSSLClientCertificateRequest(
   return true;
 }
 
-bool ChromeResourceDispatcherHostObserver::AcceptAuthRequest(
+bool ChromeResourceDispatcherHostDelegate::AcceptAuthRequest(
     net::URLRequest* request,
     net::AuthChallengeInfo* auth_info) {
   if (!(request->load_flags() & net::LOAD_PRERENDERING))
@@ -164,8 +168,22 @@ bool ChromeResourceDispatcherHostObserver::AcceptAuthRequest(
   return false;
 }
 
+ResourceDispatcherHostLoginDelegate*
+    ChromeResourceDispatcherHostDelegate::CreateLoginDelegate(
+        net::AuthChallengeInfo* auth_info, net::URLRequest* request) {
+  return CreateLoginPrompt(auth_info, request);
+}
+
+void ChromeResourceDispatcherHostDelegate::HandleExternalProtocol(
+    const GURL& url, int child_id, int route_id) {
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      NewRunnableFunction(
+          &ExternalProtocolHandler::LaunchUrl, url, child_id, route_id));
+}
+
 ResourceHandler*
-    ChromeResourceDispatcherHostObserver::CreateSafeBrowsingResourceHandler(
+    ChromeResourceDispatcherHostDelegate::CreateSafeBrowsingResourceHandler(
         ResourceHandler* handler, int child_id, int route_id,
         bool subresource) {
   return SafeBrowsingResourceHandler::Create(

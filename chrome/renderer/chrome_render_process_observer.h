@@ -9,9 +9,11 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/scoped_ptr.h"
 #include "content/renderer/render_process_observer.h"
 
 class GURL;
+class ResourceDispatcherDelegate;
 struct ContentSettings;
 
 // This class filters the incoming control messages (i.e. ones not destined for
@@ -44,6 +46,7 @@ class ChromeRenderProcessObserver : public RenderProcessObserver {
   void OnPurgeMemory();
 
   static bool is_incognito_process_;
+  scoped_ptr<ResourceDispatcherDelegate> resource_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeRenderProcessObserver);
 };

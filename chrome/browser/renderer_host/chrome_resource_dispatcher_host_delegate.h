@@ -2,31 +2,34 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_RENDERER_HOST_CHROME_RESOURCE_DISPATCHER_HOST_OBSERVER_H_
-#define CHROME_BROWSER_RENDERER_HOST_CHROME_RESOURCE_DISPATCHER_HOST_OBSERVER_H_
+#ifndef CHROME_BROWSER_RENDERER_HOST_CHROME_RESOURCE_DISPATCHER_HOST_DELEGATE_H_
+#define CHROME_BROWSER_RENDERER_HOST_CHROME_RESOURCE_DISPATCHER_HOST_DELEGATE_H_
 #pragma once
 
-#include "content/browser/renderer_host/resource_dispatcher_host.h"
+#include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
+#include "content/browser/renderer_host/resource_dispatcher_host_delegate.h"
 
+class ResourceDispatcherHost;
 class SafeBrowsingService;
 
 namespace prerender {
 class PrerenderTracker;
 }
 
-// Implements ResourceDispatcherHost::Observer. Currently used by the Prerender
+// Implements ResourceDispatcherHostDelegate. Currently used by the Prerender
 // system to abort requests and add to the load flags when a request begins.
-class ChromeResourceDispatcherHostObserver
-    : public ResourceDispatcherHost::Observer {
+class ChromeResourceDispatcherHostDelegate
+    : public ResourceDispatcherHostDelegate {
  public:
   // This class does not take ownership of the tracker but merely holds a
   // reference to it to avoid accessing g_browser_process.
   // Both |resource_dispatcher_host| and |prerender_tracker| must outlive
   // |this|.
-  ChromeResourceDispatcherHostObserver(
+  ChromeResourceDispatcherHostDelegate(
       ResourceDispatcherHost* resource_dispatcher_host,
       prerender::PrerenderTracker* prerender_tracker);
-  virtual ~ChromeResourceDispatcherHostObserver();
+  virtual ~ChromeResourceDispatcherHostDelegate();
 
   // ResourceDispatcherHost::Observer implementation.
   virtual bool ShouldBeginRequest(
@@ -34,14 +37,14 @@ class ChromeResourceDispatcherHostObserver
       const ResourceHostMsg_Request& request_data,
       const content::ResourceContext& resource_context,
       const GURL& referrer) OVERRIDE;
-  virtual void RequestBeginning(ResourceHandler** handler,
-                                  net::URLRequest* request,
-                                  bool is_subresource,
-                                  int child_id,
-                                  int route_id) OVERRIDE;
-  virtual void DownloadStarting(ResourceHandler** handler,
-                                int child_id,
-                                int route_id) OVERRIDE;
+  virtual ResourceHandler* RequestBeginning(ResourceHandler* handler,
+                                            net::URLRequest* request,
+                                            bool is_subresource,
+                                            int child_id,
+                                            int route_id) OVERRIDE;
+  virtual ResourceHandler* DownloadStarting(ResourceHandler* handler,
+                                            int child_id,
+                                            int route_id) OVERRIDE;
   virtual bool ShouldDeferStart(
       net::URLRequest* request,
       const content::ResourceContext& resource_context) OVERRIDE;
@@ -50,6 +53,11 @@ class ChromeResourceDispatcherHostObserver
         net::SSLCertRequestInfo* cert_request_info) OVERRIDE;
   virtual bool AcceptAuthRequest(net::URLRequest* request,
                                  net::AuthChallengeInfo* auth_info) OVERRIDE;
+  virtual ResourceDispatcherHostLoginDelegate* CreateLoginDelegate(
+      net::AuthChallengeInfo* auth_info, net::URLRequest* request) OVERRIDE;
+  virtual void HandleExternalProtocol(const GURL& url,
+                                      int child_id,
+                                      int route_id) OVERRIDE;
 
  private:
   ResourceHandler* CreateSafeBrowsingResourceHandler(
@@ -59,7 +67,7 @@ class ChromeResourceDispatcherHostObserver
   scoped_refptr<SafeBrowsingService> safe_browsing_;
   prerender::PrerenderTracker* prerender_tracker_;
 
-  DISALLOW_COPY_AND_ASSIGN(ChromeResourceDispatcherHostObserver);
+  DISALLOW_COPY_AND_ASSIGN(ChromeResourceDispatcherHostDelegate);
 };
 
-#endif  // CHROME_BROWSER_RENDERER_HOST_CHROME_RESOURCE_DISPATCHER_HOST_OBSERVER_H_
+#endif  // CHROME_BROWSER_RENDERER_HOST_CHROME_RESOURCE_DISPATCHER_HOST_DELEGATE_H_

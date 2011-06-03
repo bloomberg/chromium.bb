@@ -12,6 +12,7 @@
 #include "base/message_loop.h"
 #include "base/shared_memory.h"
 #include "base/string_util.h"
+#include "content/common/resource_dispatcher_delegate.h"
 #include "content/common/resource_messages.h"
 #include "content/common/resource_response.h"
 #include "net/base/net_errors.h"
@@ -225,15 +226,10 @@ void IPCResourceLoaderBridge::SyncLoad(SyncLoadResponse* response) {
 
 // ResourceDispatcher ---------------------------------------------------------
 
-ResourceDispatcher::Observer::Observer() {
-}
-
-ResourceDispatcher::Observer::~Observer() {
-}
-
 ResourceDispatcher::ResourceDispatcher(IPC::Message::Sender* sender)
     : message_sender_(sender),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
+      delegate_(NULL) {
 }
 
 ResourceDispatcher::~ResourceDispatcher() {
@@ -313,9 +309,9 @@ void ResourceDispatcher::OnReceivedResponse(
   if (!request_info)
     return;
 
-  if (observer_.get()) {
+  if (delegate_) {
     webkit_glue::ResourceLoaderBridge::Peer* new_peer =
-        observer_->OnReceivedResponse(
+        delegate_->OnReceivedResponse(
             request_info->peer, response_head.mime_type, request_info->url);
     if (new_peer)
       request_info->peer = new_peer;
@@ -421,9 +417,9 @@ void ResourceDispatcher::OnRequestComplete(int request_id,
 
   webkit_glue::ResourceLoaderBridge::Peer* peer = request_info->peer;
 
-  if (observer_.get()) {
+  if (delegate_) {
     webkit_glue::ResourceLoaderBridge::Peer* new_peer =
-        observer_->OnRequestComplete(
+        delegate_->OnRequestComplete(
             request_info->peer, request_info->resource_type, status);
     if (new_peer)
       request_info->peer = new_peer;

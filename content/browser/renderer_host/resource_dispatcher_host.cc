@@ -23,14 +23,10 @@
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/download/save_file_manager.h"
-#include "chrome/browser/external_protocol/external_protocol_handler.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/download_resource_handler.h"
 #include "chrome/browser/renderer_host/save_file_resource_handler.h"
 #include "chrome/browser/ssl/ssl_client_auth_handler.h"
 #include "chrome/browser/ssl/ssl_manager.h"
-#include "chrome/browser/ui/login/login_prompt.h"
-#include "chrome/common/chrome_switches.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/cert_store.h"
 #include "content/browser/child_process_security_policy.h"
@@ -48,12 +44,15 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_notification_task.h"
+#include "content/browser/renderer_host/resource_dispatcher_host_delegate.h"
+#include "content/browser/renderer_host/resource_dispatcher_host_login_delegate.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/browser/renderer_host/resource_message_filter.h"
 #include "content/browser/renderer_host/resource_queue.h"
 #include "content/browser/renderer_host/resource_request_details.h"
 #include "content/browser/renderer_host/sync_resource_handler.h"
 #include "content/browser/worker_host/worker_service.h"
+#include "content/common/content_switches.h"
 #include "content/common/notification_service.h"
 #include "content/common/resource_messages.h"
 #include "content/common/url_constants.h"
@@ -242,7 +241,7 @@ ResourceDispatcherHost::ResourceDispatcherHost(
       max_outstanding_requests_cost_per_process_(
           kMaxOutstandingRequestsCostPerProcess),
       filter_(NULL),
-      observer_(NULL),
+      delegate_(NULL),
       allow_cross_origin_auth_prompt_(false) {
   resource_queue_.Initialize(resource_queue_delegates);
 }
@@ -312,10 +311,8 @@ bool ResourceDispatcherHost::HandleExternalProtocol(
     return false;
   }
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      NewRunnableFunction(
-          &ExternalProtocolHandler::LaunchUrl, url, child_id, route_id));
+  if (delegate_)
+    delegate_->HandleExternalProtocol(url, child_id, route_id);
 
   handler->OnResponseCompleted(
       request_id,
@@ -396,7 +393,7 @@ void ResourceDispatcherHost::BeginRequest(
   const GURL referrer = MaybeStripReferrer(request_data.referrer);
 
   // Allow the observer to block/handle the request.
-  if (observer_ && !observer_->ShouldBeginRequest(child_id, route_id,
+  if (delegate_ && !delegate_->ShouldBeginRequest(child_id, route_id,
                                                   request_data,
                                                   resource_context,
                                                   referrer)) {
@@ -495,12 +492,10 @@ void ResourceDispatcherHost::BeginRequest(
   // Insert a buffered event handler before the actual one.
   handler = new BufferedResourceHandler(handler, this, request);
 
-  if (observer_) {
+  if (delegate_) {
     bool sub = request_data.resource_type != ResourceType::MAIN_FRAME;
-    ResourceHandler* temp_handler = handler;
-    observer_->RequestBeginning(
-        &temp_handler, request, sub, child_id, route_id);
-    handler = temp_handler;
+    handler = delegate_->RequestBeginning(
+        handler, request, sub, child_id, route_id);
   }
 
   // Make extra info and read footer (contains request ID).
@@ -716,11 +711,8 @@ void ResourceDispatcherHost::BeginDownload(
                                   prompt_for_save_location,
                                   save_info));
 
-  if (observer_) {
-    ResourceHandler* temp_handler = handler;
-    observer_->DownloadStarting(&temp_handler, child_id, route_id);
-    handler = temp_handler;
-  }
+  if (delegate_)
+    handler = delegate_->DownloadStarting(handler, child_id, route_id);
 
   const net::URLRequestContext* request_context = context.request_context();
 
@@ -976,8 +968,8 @@ void ResourceDispatcherHost::RemovePendingRequest(
                                          info->child_id());
 
   // Notify interested parties that the request object is going away.
-  if (info->login_handler())
-    info->login_handler()->OnRequestCancelled();
+  if (info->login_delegate())
+    info->login_delegate()->OnRequestCancelled();
   if (info->ssl_client_auth_handler())
     info->ssl_client_auth_handler()->OnRequestCancelled();
   resource_queue_.RemoveRequest(iter->first);
@@ -1039,7 +1031,7 @@ void ResourceDispatcherHost::OnAuthRequired(
     return;
   }
 
-  if (observer_ && !observer_->AcceptAuthRequest(request, auth_info)) {
+  if (delegate_ && !delegate_->AcceptAuthRequest(request, auth_info)) {
     request->CancelAuth();
     return;
   }
@@ -1067,16 +1059,21 @@ void ResourceDispatcherHost::OnAuthRequired(
   // That would also solve the problem of the net::URLRequest being cancelled
   // before we receive authentication.
   ResourceDispatcherHostRequestInfo* info = InfoForRequest(request);
-  DCHECK(!info->login_handler()) <<
-      "OnAuthRequired called with login_handler pending";
-  info->set_login_handler(CreateLoginPrompt(auth_info, request));
+  DCHECK(!info->login_delegate()) <<
+      "OnAuthRequired called with login_delegate pending";
+  if (delegate_) {
+    info->set_login_delegate(delegate_->CreateLoginDelegate(
+        auth_info, request));
+  }
+  if (!info->login_delegate())
+    request->CancelAuth();
 }
 
 void ResourceDispatcherHost::OnCertificateRequested(
     net::URLRequest* request,
     net::SSLCertRequestInfo* cert_request_info) {
   DCHECK(request);
-  if (observer_ && !observer_->AcceptSSLClientCertificateRequest(
+  if (delegate_ && !delegate_->AcceptSSLClientCertificateRequest(
           request, cert_request_info)) {
     request->Cancel();
     return;
@@ -1229,9 +1226,9 @@ bool ResourceDispatcherHost::CancelRequestInternal(net::URLRequest* request,
   // In this case, ignore the cancel since we handle downloads in the browser.
   ResourceDispatcherHostRequestInfo* info = InfoForRequest(request);
   if (!from_renderer || !info->is_download()) {
-    if (info->login_handler()) {
-      info->login_handler()->OnRequestCancelled();
-      info->set_login_handler(NULL);
+    if (info->login_delegate()) {
+      info->login_delegate()->OnRequestCancelled();
+      info->set_login_delegate(NULL);
     }
     if (info->ssl_client_auth_handler()) {
       info->ssl_client_auth_handler()->OnRequestCancelled();
@@ -1364,8 +1361,8 @@ void ResourceDispatcherHost::BeginRequestInternal(net::URLRequest* request) {
 
   // TODO(cbentzel): Should we isolate this to resource handlers instead of
   // adding an interface to the observer?
-  if (!defer_start && observer_ && filter_) {
-    defer_start = observer_->ShouldDeferStart(request,
+  if (!defer_start && delegate_ && filter_) {
+    defer_start = delegate_->ShouldDeferStart(request,
                                               filter_->resource_context());
   }
 

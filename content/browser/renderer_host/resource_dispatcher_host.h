@@ -34,6 +34,7 @@ class DownloadRequestLimiter;
 class LoginHandler;
 class NotificationDetails;
 class PluginService;
+class ResourceDispatcherHostDelegate;
 class ResourceDispatcherHostRequestInfo;
 class ResourceHandler;
 class ResourceMessageFilter;
@@ -58,55 +59,6 @@ class DeletableFileReference;
 
 class ResourceDispatcherHost : public net::URLRequest::Delegate {
  public:
-  class Observer {
-   public:
-    // Called when a request begins. Return false to abort the request.
-    virtual bool ShouldBeginRequest(
-        int child_id, int route_id,
-        const ResourceHostMsg_Request& request_data,
-        const content::ResourceContext& resource_context,
-        const GURL& referrer) = 0;
-
-    // Called after ShouldBeginRequest when all the resource handlers from the
-    // content layer have been added.
-    virtual void RequestBeginning(ResourceHandler** handler,
-                                  net::URLRequest* request,
-                                  bool is_subresource,
-                                  int child_id,
-                                  int route_id) = 0;
-
-    // Called when a download is starting, after the resource handles from the
-    // content layer have been added.
-    virtual void DownloadStarting(ResourceHandler** handler,
-                                  int child_id,
-                                  int route_id) = 0;
-
-    // Called to determine whether a request's start should be deferred. This
-    // is only called if the ResourceHandler associated with the request does
-    // not ask for a deferral. A return value of true will defer the start of
-    // the request, false will continue the request.
-    virtual bool ShouldDeferStart(
-        net::URLRequest* request,
-        const content::ResourceContext& resource_context) = 0;
-
-    // Called when an SSL Client Certificate is requested. If false is returned,
-    // the request is canceled. Otherwise, the certificate is chosen.
-    virtual bool AcceptSSLClientCertificateRequest(
-        net::URLRequest* request,
-        net::SSLCertRequestInfo* cert_request_info) = 0;
-
-    // Called when authentication is required and credentials are needed. If
-    // false is returned, CancelAuth() is called on the URLRequest and the error
-    // page is shown. If true is returned, the user will be prompted for
-    // authentication credentials.
-    virtual bool AcceptAuthRequest(net::URLRequest* request,
-                                   net::AuthChallengeInfo* auth_info) = 0;
-
-   protected:
-    Observer() {}
-    virtual ~Observer() {}
-  };
-
   explicit ResourceDispatcherHost(
       const ResourceQueue::DelegateSet& resource_queue_delegates);
   virtual ~ResourceDispatcherHost();
@@ -293,9 +245,11 @@ class ResourceDispatcherHost : public net::URLRequest::Delegate {
   bool allow_cross_origin_auth_prompt();
   void set_allow_cross_origin_auth_prompt(bool value);
 
-  // This does not take ownership of the observer. It is expected that the
-  // observer have a longer lifetime than the ResourceDispatcherHost.
-  void set_observer(Observer* observer) { observer_ = observer; }
+  // This does not take ownership of the delegate. It is expected that the
+  // delegate have a longer lifetime than the ResourceDispatcherHost.
+  void set_delegate(ResourceDispatcherHostDelegate* delegate) {
+    delegate_ = delegate;
+  }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest,
@@ -534,7 +488,7 @@ class ResourceDispatcherHost : public net::URLRequest::Delegate {
   // to the source of the message.
   ResourceMessageFilter* filter_;
 
-  Observer* observer_;
+  ResourceDispatcherHostDelegate* delegate_;
 
   static bool is_prefetch_enabled_;
   bool allow_cross_origin_auth_prompt_;

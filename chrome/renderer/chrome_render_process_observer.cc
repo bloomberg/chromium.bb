@@ -20,6 +20,7 @@
 #include "chrome/renderer/content_settings_observer.h"
 #include "chrome/renderer/security_filter_peer.h"
 #include "content/common/resource_dispatcher.h"
+#include "content/common/resource_dispatcher_delegate.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/render_thread.h"
 #include "content/renderer/render_view.h"
@@ -53,9 +54,9 @@ namespace {
 
 static const unsigned int kCacheStatsDelayMS = 2000 /* milliseconds */;
 
-class RenderResourceObserver : public ResourceDispatcher::Observer {
+class RendererResourceDelegate : public ResourceDispatcherDelegate {
  public:
-  RenderResourceObserver()
+  RendererResourceDelegate()
       : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   }
 
@@ -69,7 +70,7 @@ class RenderResourceObserver : public ResourceDispatcher::Observer {
       MessageLoop::current()->PostDelayedTask(
          FROM_HERE,
          method_factory_.NewRunnableMethod(
-             &RenderResourceObserver::InformHostOfCacheStats),
+             &RendererResourceDelegate::InformHostOfCacheStats),
          kCacheStatsDelayMS);
     }
 
@@ -98,9 +99,9 @@ class RenderResourceObserver : public ResourceDispatcher::Observer {
     RenderThread::current()->Send(new ViewHostMsg_UpdatedCacheStats(stats));
   }
 
-  ScopedRunnableMethodFactory<RenderResourceObserver> method_factory_;
+  ScopedRunnableMethodFactory<RendererResourceDelegate> method_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(RenderResourceObserver);
+  DISALLOW_COPY_AND_ASSIGN(RendererResourceDelegate);
 };
 
 class RenderViewContentSettingsSetter : public RenderViewVisitor {
@@ -310,7 +311,8 @@ ChromeRenderProcessObserver::ChromeRenderProcessObserver() {
   }
 
   RenderThread* thread = RenderThread::current();
-  thread->resource_dispatcher()->set_observer(new RenderResourceObserver());
+  resource_delegate_.reset(new RendererResourceDelegate());
+  thread->resource_dispatcher()->set_delegate(resource_delegate_.get());
 
 #if defined(OS_POSIX)
   thread->AddFilter(new SuicideOnChannelErrorFilter());

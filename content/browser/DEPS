@@ -22,14 +22,13 @@ include_rules = [
   "+chrome/browser/download/download_types.h",
   "+chrome/browser/download/download_util.h",
   "+chrome/browser/renderer_host/download_resource_handler.h",
+  "+chrome/browser/renderer_host/download_throttling_resource_handler.h",
   "+chrome/browser/renderer_host/save_file_resource_handler.h",
 
   # http://crbug.com/76789
   "+chrome/browser/extensions/extension_info_map.h",
   "+chrome/common/extensions/extension.h",
   "+chrome/common/extensions/user_script.h",
-
-  "+chrome/browser/external_protocol/external_protocol_handler.h",
 
   "+chrome/browser/load_from_memory_cache_details.h",
 
@@ -43,8 +42,6 @@ include_rules = [
 
   # http://crbug.com/76788
   "+chrome/browser/profiles/profile.h",
-
-  "+chrome/browser/renderer_host/download_throttling_resource_handler.h",
 
   "+chrome/browser/sessions/session_id.h",
   "+chrome/browser/sessions/session_types.h",
@@ -60,7 +57,6 @@ include_rules = [
   "+chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h",
   "+chrome/browser/ui/app_modal_dialogs/message_box_handler.h",
   "+chrome/browser/ui/crypto_module_password_dialog.h",
-  "+chrome/browser/ui/login/login_prompt.h",
 
   "+chrome/common/chrome_constants.h",
   "+chrome/common/chrome_switches.h",

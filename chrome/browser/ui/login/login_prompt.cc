@@ -41,7 +41,7 @@ void ResetLoginHandlerForRequest(net::URLRequest* request) {
   if (!info)
     return;
 
-  info->set_login_handler(NULL);
+  info->set_login_delegate(NULL);
 }
 
 // Get the signon_realm under which this auth info should be stored.

@@ -51,7 +51,7 @@
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/renderer_host/chrome_resource_dispatcher_host_observer.h"
+#include "chrome/browser/renderer_host/chrome_resource_dispatcher_host_delegate.h"
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/shell_integration.h"
@@ -740,11 +740,11 @@ void BrowserProcessImpl::CreateResourceDispatcherHost() {
       new ResourceDispatcherHost(resource_queue_delegates));
   resource_dispatcher_host_->Initialize();
 
-  resource_dispatcher_host_observer_.reset(
-      new ChromeResourceDispatcherHostObserver(resource_dispatcher_host_.get(),
+  resource_dispatcher_host_delegate_.reset(
+      new ChromeResourceDispatcherHostDelegate(resource_dispatcher_host_.get(),
                                                prerender_tracker()));
-  resource_dispatcher_host_->set_observer(
-      resource_dispatcher_host_observer_.get());
+  resource_dispatcher_host_->set_delegate(
+      resource_dispatcher_host_delegate_.get());
 
   pref_change_registrar_.Add(prefs::kAllowCrossOriginAuthPrompt, this);
   ApplyAllowCrossOriginAuthPromptPolicy();
