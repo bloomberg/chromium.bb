@@ -640,12 +640,12 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestDisplaysCachedInsecureContent) {
 }
 
 // http://crbug.com/84729
-#if defined(OS_LINUX)
+#if defined(OS_CHROMEOS)
 #define MAYBE_TestRunsCachedInsecureContent \
     DISABLED_TestRunsCachedInsecureContent
 #else
 #define MAYBE_TestRunsCachedInsecureContent TestRunsCachedInsecureContent
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_CHROMEOS)
 
 // Visits a page with script over http.  Visits another page over https
 // referencing that same script over http (hoping it is coming from the webcore
