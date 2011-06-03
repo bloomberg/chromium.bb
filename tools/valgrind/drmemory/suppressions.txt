@@ -368,6 +368,13 @@ CLBCatQ.DLL!DestroyStgDatabase
 CLBCatQ.DLL!PostError
 CLBCatQ.DLL!PostError
 
+POSSIBLE LEAK
+RPCRT4.dll!I_RpcBCacheFree
+RPCRT4.dll!I_RpcBCacheFree
+RPCRT4.dll!NdrOleFree
+...
+RPCRT4.dll!NdrClientCall2
+
 # http://code.google.com/p/drmemory/issues/detail?id=426
 UNINITIALIZED READ
 ...
