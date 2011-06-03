@@ -4,10 +4,6 @@
 
 #include "chrome/browser/extensions/extension_apitest.h"
 
-#if defined(OS_CHROMEOS)
-
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DecodeJPEG) {
   ASSERT_TRUE(RunExtensionTest("decode_jpeg")) << message_;
 }
-
-#endif

@@ -34,10 +34,10 @@
 #include "content/renderer/render_view_visitor.h"
 #include "grit/common_resources.h"
 #include "grit/renderer_resources.h"
-#include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/skia/include/core/SkColor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "webkit/glue/webkit_glue.h"
 
 using bindings_utils::GetStringResource;
@@ -183,7 +183,7 @@ class ExtensionImpl : public ExtensionBase {
     } else if (name->Equals(v8::String::New("GetLocalFileSystem"))) {
       return v8::FunctionTemplate::New(GetLocalFileSystem);
     } else if (name->Equals(v8::String::New("DecodeJPEG"))) {
-      return v8::FunctionTemplate::New(DecodeJPEG);
+      return v8::FunctionTemplate::New(DecodeJPEG, v8::External::New(this));
     }
 
     return ExtensionBase::GetNativeFunction(name);
@@ -277,6 +277,16 @@ class ExtensionImpl : public ExtensionBase {
 
   // Decodes supplied JPEG byte array to image pixel array.
   static v8::Handle<v8::Value> DecodeJPEG(const v8::Arguments& args) {
+    static const char* kWebAppId = "haiffjcadagjlijoggckpgfnoeiflnem";
+    static const char* kWebAppIdTest = "oflbaaikkabfdfkimeclgkackhdkpnip";
+    ExtensionImpl* v8_extension = GetFromArguments<ExtensionImpl>(args);
+    const ::Extension* extension =
+        v8_extension->GetExtensionForCurrentContext();
+    if (!extension)
+      return v8::Undefined();
+    if (extension->id() != kWebAppId && extension->id() != kWebAppIdTest)
+      return v8::Undefined();
+
     DCHECK(args.Length() == 1);
     DCHECK(args[0]->IsArray());
     v8::Local<v8::Object> jpeg_array = args[0]->ToObject();
