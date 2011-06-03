@@ -18,6 +18,7 @@
 #include "base/message_loop.h"
 #include "base/shared_memory.h"
 #include "media/video/video_decode_accelerator.h"
+#include "third_party/angle/include/EGL/egl.h"
 #include "third_party/openmax/il/OMX_Component.h"
 #include "third_party/openmax/il/OMX_Core.h"
 #include "third_party/openmax/il/OMX_Video.h"
@@ -41,6 +42,8 @@ class OmxVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   void ReusePictureBuffer(int32 picture_buffer_id) OVERRIDE;
   bool Flush() OVERRIDE;
   bool Abort() OVERRIDE;
+
+  void SetEglState(EGLDisplay egl_display, EGLContext egl_context);
 
  private:
   MessageLoop* message_loop_;
@@ -71,7 +74,8 @@ class OmxVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   // Methods for shutdown
   void PauseFromExecuting(OMX_STATETYPE ignored);
   void FlushIOPorts();
-  void PortFlushDone(int port);
+  void InputPortFlushDone(int port);
+  void OutputPortFlushDone(int port);
   void FlushBegin();
 
   // Determine whether we actually start decoding the bitstream.
@@ -103,6 +107,12 @@ class OmxVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   int output_buffers_at_component_;
 
   bool uses_egl_image_;
+  // NOTE: someday there may be multiple contexts for a single decoder.  But not
+  // today.
+  // TODO(fischman,vrk): handle lost contexts?
+  EGLDisplay egl_display_;
+  EGLContext egl_context_;
+
   // Free input OpenMAX buffers that can be used to take bitstream from demuxer.
   std::queue<OMX_BUFFERHEADERTYPE*> free_input_buffers_;
 
@@ -112,6 +122,7 @@ class OmxVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   std::vector<OutputPicture> output_pictures_;
 
   // To expose client callbacks from VideoDecodeAccelerator.
+  // NOTE: all calls to this object *MUST* be executed in message_loop_.
   Client* client_;
 
   std::vector<uint32> texture_ids_;

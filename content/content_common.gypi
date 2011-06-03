@@ -284,6 +284,9 @@
           ],
         }],
         ['target_arch=="arm"', {
+          'dependencies': [
+            '../media/media.gyp:media',
+          ],
           'sources': [
             'common/gpu/gles2_texture_to_egl_image_translator.cc',
             'common/gpu/gles2_texture_to_egl_image_translator.h',
@@ -303,5 +306,29 @@
         }],
       ],
     },
+  ],
+
+  'conditions': [
+    ['target_arch=="arm"', {
+      'targets': [
+        {
+          'target_name': 'omx_video_decode_accelerator_unittest',
+          'type': 'executable',
+          'dependencies': [
+            'content_common',
+            '../testing/gtest.gyp:gtest',
+            '../testing/gtest.gyp:gtest_main',
+          ],
+          'include_dirs': [
+            '<(DEPTH)/third_party/angle/include',
+            '<(DEPTH)/third_party/openmax/il',
+          ],
+          'sources': [
+            'common/gpu/omx_video_decode_accelerator_unittest.cc',
+          ],
+        }
+      ],
+    },
+   ],
   ],
 }

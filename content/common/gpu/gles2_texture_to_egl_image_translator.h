@@ -16,23 +16,24 @@
 // PPAPI will give the textures to OmxVideoDecodeAccelerator.
 // OmxVideoDecodeAccelerator will use this class to convert
 // these texture into EGLImage and back.
+//
+// TODO(fischman): this class is now stateless (it wasn't always).  If it seems
+// like it'll stay stateless, replace with a namespace and free functions, or
+// just in-line them into the only caller, OmxVideoDecodeAccelerator.
 class Gles2TextureToEglImageTranslator {
  public:
-  Gles2TextureToEglImageTranslator(Display* display, int32 gles2_context_id);
+  Gles2TextureToEglImageTranslator();
   ~Gles2TextureToEglImageTranslator();
 
   // Translates texture into EGLImage and back.
-  EGLImageKHR TranslateToEglImage(uint32 texture);
+  EGLImageKHR TranslateToEglImage(EGLDisplay egl_display,
+                                  EGLContext egl_context,
+                                  uint32 texture);
   uint32 TranslateToTexture(EGLImageKHR egl_image);
-  void DestroyEglImage(EGLImageKHR egl_image);
+  void DestroyEglImage(EGLDisplay egl_display, EGLImageKHR egl_image);
 
  private:
-  int32 gles2_context_id_;
-  gfx::Size size_;
-  EGLDisplay egl_display_;
-  EGLContext egl_context_;
-  EGLSurface egl_surface_;
-  DISALLOW_IMPLICIT_CONSTRUCTORS(Gles2TextureToEglImageTranslator);
+  DISALLOW_COPY_AND_ASSIGN(Gles2TextureToEglImageTranslator);
 };
 
 #endif  // CONTENT_COMMON_GPU_GLES2_TEXTURE_TO_EGL_IMAGE_TRANSLATOR_H_
