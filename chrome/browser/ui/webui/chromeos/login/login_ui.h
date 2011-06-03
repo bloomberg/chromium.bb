@@ -23,6 +23,7 @@ class HTMLOperationsInterface;
 class LoginUIHTMLSource : public ChromeURLDataManager::DataSource {
  public:
   explicit LoginUIHTMLSource(MessageLoop* message_loop);
+  virtual ~LoginUIHTMLSource();
 
   virtual void StartDataRequest(const std::string& path,
                                 bool is_incognito,
@@ -48,9 +49,8 @@ class LoginUIHandlerDelegate {
   // Sign in into Guest session.
   virtual void LoginAsGuest() = 0;
   // Let the delegate know about the handler it is supposed to be using.
-  virtual void set_login_handler(LoginUIHandler* login_handler) {
-    login_handler_ = login_handler;
-  }
+  virtual void set_login_handler(LoginUIHandler* login_handler);
+
  protected:
   // Reference to the WebUI handling layer for the login screen
   LoginUIHandler* login_handler_;
@@ -63,6 +63,7 @@ class LoginUIHandlerDelegate {
 class LoginUIHandler : public WebUIMessageHandler {
  public:
   LoginUIHandler();
+  virtual ~LoginUIHandler();
 
   // WebUIMessageHandler implementation.
   virtual WebUIMessageHandler* Attach(WebUI* web_ui);

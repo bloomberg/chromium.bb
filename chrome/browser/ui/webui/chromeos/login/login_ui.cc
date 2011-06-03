@@ -33,6 +33,9 @@ LoginUIHTMLSource::LoginUIHTMLSource(MessageLoop* message_loop)
       html_operations_(new HTMLOperationsInterface()) {
 }
 
+LoginUIHTMLSource::~LoginUIHTMLSource() {
+}
+
 void LoginUIHTMLSource::StartDataRequest(const std::string& path,
                                          bool is_incognito,
                                          int request_id) {
@@ -52,6 +55,12 @@ std::string LoginUIHTMLSource::GetMimeType(const std::string&) const {
   return "text/html";
 }
 
+// LoginUIHandlerDelegate, public: ------------------------------------------
+
+void LoginUIHandlerDelegate::set_login_handler(LoginUIHandler* login_handler) {
+  login_handler_ = login_handler;
+}
+
 // LoginUIHandlerDelegate, protected: ------------------------------------------
 
 LoginUIHandlerDelegate::~LoginUIHandlerDelegate() {}
@@ -61,6 +70,9 @@ LoginUIHandlerDelegate::~LoginUIHandlerDelegate() {}
 LoginUIHandler::LoginUIHandler() {
   delegate_ = WebUILoginDisplay::GetInstance();
   delegate_->set_login_handler(this);
+}
+
+LoginUIHandler::~LoginUIHandler() {
 }
 
 WebUIMessageHandler* LoginUIHandler::Attach(WebUI* web_ui) {
@@ -104,7 +116,6 @@ void LoginUIHandler::HandleShutdownSystem(const ListValue* args) {
 void LoginUIHandler::ClearAndEnablePassword() {
   web_ui_->CallJavascriptFunction(kResetPrompt);
 }
-
 
 // LoginUI, public: ------------------------------------------------------------
 
