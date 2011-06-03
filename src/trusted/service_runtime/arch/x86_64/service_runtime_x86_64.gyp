@@ -53,16 +53,19 @@
         ['OS=="mac"', {
           'sources' : [
             '../../osx/nacl_signal_64.c',
+            'sel_addrspace_posix_x86_64.c',
           ] },
         ],
         ['OS=="linux"', {
           'sources' : [
             '../../linux/nacl_signal_64.c',
+            'sel_addrspace_posix_x86_64.c',
           ] },
         ],
         ['OS=="win"', {
           'sources' : [
             '../../win/nacl_signal_64.c',
+            'sel_addrspace_win_x86_64.c',
           ] },
         ],
         [ 'library=="shared_library"', {

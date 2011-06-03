@@ -49,6 +49,35 @@ void CheckLowerMappings(struct NaClVmmap *mem_map) {
             NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE);
 }
 
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64
+void CheckForGuardRegion(uintptr_t addr, size_t expected_size) {
+  /*
+   * This check is easiest to do on Windows where we can query memory
+   * mappings with VirtualQuery().  On Linux this would involve
+   * parsing /proc/self/maps.
+   */
+#if NACL_WINDOWS
+  MEMORY_BASIC_INFORMATION info;
+  size_t result = VirtualQuery((void *) addr, &info, sizeof(info));
+  ASSERT_EQ(result, sizeof(info));
+  ASSERT_EQ(info.BaseAddress, (void *) addr);
+  ASSERT_EQ(info.AllocationBase, (void *) addr);
+  ASSERT_EQ(info.RegionSize, expected_size);
+  /*
+   * We certainly do not expect MEM_COMMIT here, because usually we
+   * would not be able to allocate 80GB of swap space.
+   */
+  ASSERT_EQ(info.State, MEM_RESERVE);
+  /* Note that Windows returns 0 in place of PAGE_NOACCESS (1) here. */
+  ASSERT_EQ(info.Protect, 0);
+  ASSERT_EQ(info.Type, MEM_PRIVATE);
+#else
+  UNREFERENCED_PARAMETER(addr);
+  UNREFERENCED_PARAMETER(expected_size);
+#endif
+}
+#endif
+
 int main(int argc, char **argv) {
   char *nacl_file;
   struct GioMemoryFileSnapshot gf;
@@ -300,6 +329,13 @@ int main(int argc, char **argv) {
 
   errcode = NaClSysMunmap(natp, (void *) (uintptr_t) initial_addr, 0);
   ASSERT_EQ(errcode, -NACL_ABI_EINVAL);
+
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64
+  CheckForGuardRegion(nap->mem_start - ((size_t) 40 << 30),
+                      (size_t) 40 << 30);
+  CheckForGuardRegion(nap->mem_start + ((size_t) 4 << 30),
+                      (size_t) 40 << 30);
+#endif
 
   printf("PASS\n");
   return 0;

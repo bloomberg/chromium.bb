@@ -128,6 +128,10 @@ elif env.Bit('build_x86_64'):
       'arch/x86_64/sel_rt_64.c',
       'arch/x86_64/tramp_64.S',
       ]
+  if env.Bit('windows'):
+    ldr_inputs += ['arch/x86_64/sel_addrspace_win_x86_64.c']
+  else:
+    ldr_inputs += ['arch/x86_64/sel_addrspace_posix_x86_64.c']
 elif env.Bit('build_arm'):
   ldr_inputs += [
     'arch/arm/nacl_app.c',
@@ -416,7 +420,7 @@ if ((not env.Bit('windows') or not env.Bit('coverage_enabled')) and
       osenv='NACL_DISABLE_DYNAMIC_LOADING=1')
   # This test fails for arm on 32-bit machines running qemu.
   # So don't run it there.
-  env.AddNodeToTestSuite(node, ['medium_tests'],
+  env.AddNodeToTestSuite(node, ['medium_tests'], 'run_trusted_mmap_test',
                          is_broken=env.Bit('build_arm') and env.UsingEmulator())
 
 

@@ -28,9 +28,6 @@
 #include "native_client/src/trusted/service_runtime/include/machine/_types.h"
 
 
-#define MSGWIDTH  "25"
-
-
 void NaCl_page_free(void     *p,
                     size_t   size) {
   if (p == 0 || size == 0)
@@ -131,83 +128,4 @@ int NaCl_madvise(void           *start,
    * MADV_DONTNEED and MADV_NORMAL are needed
    */
   return ret == -1 ? -errno : ret;
-}
-
-
-void *NaClAllocatePow2AlignedMemory(size_t mem_sz, size_t log_alignment) {
-  uintptr_t pow2align;
-  size_t    request_sz;
-  void      *mem_ptr;
-  uintptr_t orig_addr;
-  uintptr_t rounded_addr;
-  size_t    extra;
-
-  pow2align = ((uintptr_t) 1) << log_alignment;
-
-  request_sz = mem_sz + pow2align;
-
-  NaClLog(4,
-          "%"MSGWIDTH"s %016"NACL_PRIxS"\n",
-          " Ask:",
-          request_sz);
-
-  mem_ptr = mmap((void *) 0,
-           request_sz,
-           PROT_NONE,
-           MAP_ANONYMOUS | MAP_NORESERVE | MAP_PRIVATE,
-           -1,
-           (off_t) 0);
-  if (MAP_FAILED == mem_ptr) {
-    return NULL;
-  }
-  orig_addr = (uintptr_t) mem_ptr;
-
-  NaClLog(4,
-          "%"MSGWIDTH"s %016"NACL_PRIxPTR"\n",
-          "orig memory at",
-          orig_addr);
-
-  rounded_addr = (orig_addr + (pow2align - 1)) & ~(pow2align - 1);
-  extra = rounded_addr - orig_addr;
-
-  if (0 != extra) {
-    NaClLog(4,
-            "%"MSGWIDTH"s %016"NACL_PRIxPTR", %016"NACL_PRIxS"\n",
-            "Freeing front:",
-            orig_addr,
-            extra);
-    if (-1 == munmap((void *) orig_addr, extra)) {
-      perror("munmap (front)");
-      NaClLog(LOG_FATAL,
-              "NaClAllocatePow2AlignedMemory: munmap front failed\n");
-    }
-  }
-
-  extra = pow2align - extra;
-  if (0 != extra) {
-    NaClLog(4,
-            "%"MSGWIDTH"s %016"NACL_PRIxPTR", %016"NACL_PRIxS"\n",
-            "Freeing tail:",
-            rounded_addr + mem_sz,
-            extra);
-    if (-1 == munmap((void *) (rounded_addr + mem_sz),
-         extra)) {
-      perror("munmap (end)");
-      NaClLog(LOG_FATAL,
-              "NaClAllocatePow2AlignedMemory: munmap tail failed\n");
-    }
-  }
-  NaClLog(4,
-          "%"MSGWIDTH"s %016"NACL_PRIxPTR"\n",
-          "Aligned memory:",
-          rounded_addr);
-
-  /*
-   * we could also mmap again at rounded_addr w/o MAP_NORESERVE etc to
-   * ensure that we have the memory, but that's better done in another
-   * utility function.  the semantics here is no paging space
-   * reserved, as in Windows MEM_RESERVE without MEM_COMMIT.
-   */
-
-  return (void *) rounded_addr;
 }

@@ -13,44 +13,8 @@
 #include "native_client/src/trusted/service_runtime/sel_memory.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
-#define ALIGN_BITS  32
 #define FOURGIG     (((size_t) 1) << 32)
-#define FOURKAY     (((size_t) 1) << 12)
 #define GUARDSIZE   (10 * FOURGIG)
-#define MSGWIDTH    "25"
-
-NaClErrorCode NaClAllocateSpace(void **mem, size_t addrsp_size) {
-  size_t        mem_sz = 2 * GUARDSIZE + FOURGIG;  /* 40G guard on each side */
-  size_t        log_align = ALIGN_BITS;
-  void          *mem_ptr;
-
-  NaClLog(4, "NaClAllocateSpace(*, 0x%016"NACL_PRIxS" bytes).\n",
-          addrsp_size);
-
-  CHECK(addrsp_size == FOURGIG);
-
-  errno = 0;
-  mem_ptr = NaClAllocatePow2AlignedMemory(mem_sz, log_align);
-  if (NULL == mem_ptr) {
-    if (0 != errno) {
-      perror("NaClAllocatePow2AlignedMemory");
-    }
-    NaClLog(LOG_WARNING, "Memory allocation failed\n");
-
-    return LOAD_NO_MEMORY;
-  }
-  /*
-   * The module lives in the middle FOURGIG of the allocated region --
-   * we skip over an initial 40G guard.
-   */
-  *mem = (void *) (((char *) mem_ptr) + GUARDSIZE);
-  NaClLog(4,
-          "NaClAllocateSpace: addr space at 0x%016"NACL_PRIxPTR"\n",
-          (uintptr_t) *mem);
-
-
-  return LOAD_OK;
-}
 
 NaClErrorCode NaClMprotectGuards(struct NaClApp *nap) {
   uintptr_t start_addr;
