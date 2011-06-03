@@ -437,9 +437,9 @@ void EulaView::OnLocaleChanged() {
 
 void EulaView::ButtonPressed(views::Button* sender, const views::Event& event) {
   if (sender == continue_button_) {
-    actor_->screen()->OnExit(true);
+    actor_->screen()->OnExit(true, IsUsageStatsChecked());
   } else if (sender == back_button_) {
-    actor_->screen()->OnExit(false);
+    actor_->screen()->OnExit(false, IsUsageStatsChecked());
   }
 }
 

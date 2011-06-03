@@ -32,7 +32,7 @@ class EulaScreenActor {
 
     // Called when screen is exited. |accepted| indicates if EULA was
     // accepted or not.
-    virtual void OnExit(bool accepted) = 0;
+    virtual void OnExit(bool accepted, bool is_usage_stats_checked) = 0;
 
     // Returns the string where TPM password will be stored.
     virtual std::string* GetTpmPasswordStorage() = 0;
@@ -46,9 +46,6 @@ class EulaScreenActor {
   virtual void PrepareToShow() = 0;
   virtual void Show() = 0;
   virtual void Hide() = 0;
-
-  // Returns true if user decided to report usage statistics.
-  virtual bool IsUsageStatsChecked() const = 0;
   virtual void SetDelegate(Delegate* delegate) = 0;
 };
 

@@ -3298,6 +3298,8 @@
         'browser/ui/webui/chromeos/imageburner_ui.h',
         'browser/ui/webui/chromeos/keyboard_overlay_ui.cc',
         'browser/ui/webui/chromeos/keyboard_overlay_ui.h',
+        'browser/ui/webui/chromeos/login/eula_screen_handler.cc',
+        'browser/ui/webui/chromeos/login/eula_screen_handler.h',
         'browser/ui/webui/chromeos/login/oobe_ui.cc',
         'browser/ui/webui/chromeos/login/oobe_ui.h',
         'browser/ui/webui/chromeos/login/login_ui.cc',

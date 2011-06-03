@@ -71,9 +71,8 @@ GURL EulaScreen::GetOemEulaUrl() const {
   return GURL();
 }
 
-void EulaScreen::OnExit(bool accepted) {
-  get_screen_observer()->set_usage_statistics_reporting(
-      actor_->IsUsageStatsChecked());
+void EulaScreen::OnExit(bool accepted, bool is_usage_stats_checked) {
+  get_screen_observer()->set_usage_statistics_reporting(is_usage_stats_checked);
   get_screen_observer()->OnExit(accepted
                    ? ScreenObserver::EULA_ACCEPTED
                    : ScreenObserver::EULA_BACK);

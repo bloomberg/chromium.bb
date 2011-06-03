@@ -30,10 +30,6 @@ void ViewsEulaScreenActor::Hide() {
   ViewScreen<EulaView>::Hide();
 }
 
-bool ViewsEulaScreenActor::IsUsageStatsChecked() const {
-  return view() && view()->IsUsageStatsChecked();
-}
-
 void ViewsEulaScreenActor::SetDelegate(Delegate* delegate) {
   screen_ = delegate;
 }

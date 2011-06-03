@@ -27,7 +27,6 @@ class MockEulaScreenActor : public EulaScreenActor {
   MOCK_METHOD0(PrepareToShow, void());
   MOCK_METHOD0(Show, void());
   MOCK_METHOD0(Hide, void());
-  MOCK_CONST_METHOD0(IsUsageStatsChecked, bool());
   MOCK_METHOD1(SetDelegate, void(Delegate* delegate));
 };
 

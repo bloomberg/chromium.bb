@@ -32,7 +32,7 @@ class EulaScreen : public WizardScreen,
   virtual bool IsTpmEnabled() const;
   virtual GURL GetGoogleEulaUrl() const;
   virtual GURL GetOemEulaUrl() const;
-  virtual void OnExit(bool accepted);
+  virtual void OnExit(bool accepted, bool is_usage_stats_checked);
   virtual std::string* GetTpmPasswordStorage();
   virtual bool IsUsageStatsEnabled() const;
 
