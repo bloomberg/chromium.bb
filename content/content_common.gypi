@@ -248,23 +248,7 @@
         'common/worker_messages.h',
       ],
       'conditions': [
-        ['OS=="win"', {
-          'msvs_guid': '062E9260-304A-4657-A74C-0D3AA1A0A0A4',
-          'sources': [
-            'common/gpu/media/mft_angle_video_device.cc',
-            'common/gpu/media/mft_angle_video_device.h',
-          ],
-          'include_dirs': [
-            '<(DEPTH)/third_party/angle/include',
-            '<(DEPTH)/third_party/angle/src',
-            '<(DEPTH)/third_party/wtl/include',
-            '$(DXSDK_DIR)/include',
-          ],
-          'dependencies': [
-            '../third_party/angle/src/build_angle.gyp:libEGL',
-            '../third_party/angle/src/build_angle.gyp:libGLESv2',
-          ],
-        }, {  # OS!="win"
+        ['OS!="win"', {
           'sources!': [
             'common/sandbox_policy.cc',
             'common/sandbox_policy.h',
