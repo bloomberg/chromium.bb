@@ -97,7 +97,6 @@ class FilePatchDiff(FilePatchBase):
     self.patchlevel = 0
     if self.is_git_diff:
       self._verify_git_header()
-      assert not svn_properties
     else:
       self._verify_svn_header()
 
@@ -197,6 +196,7 @@ class FilePatchDiff(FilePatchBase):
       self._fail('Unexpected git diff; couldn\'t find git header.')
 
     # Handle these:
+    # new file mode \d{6}
     # rename from <>
     # rename to <>
     # copy from <>
@@ -204,18 +204,26 @@ class FilePatchDiff(FilePatchBase):
     while lines:
       if lines[0].startswith('--- '):
         break
-      match = re.match(r'^(rename|copy) from (.+)$', lines.pop(0))
-      if not match:
+      line = lines.pop(0)
+      match = re.match(r'^(rename|copy) from (.+)$', line)
+      if match:
+        if old != match.group(2):
+          self._fail('Unexpected git diff input name for %s.' % match.group(1))
+        if not lines:
+          self._fail('Missing git diff output name for %s.' % match.group(1))
+        match = re.match(r'^(rename|copy) to (.+)$', lines.pop(0))
+        if not match:
+          self._fail('Missing git diff output name for %s.' % match.group(1))
+        if new != match.group(2):
+          self._fail('Unexpected git diff output name for %s.' % match.group(1))
         continue
-      if old != match.group(2):
-        self._fail('Unexpected git diff input name for %s.' % match.group(1))
-      if not lines:
-        self._fail('Missing git diff output name for %s.' % match.group(1))
-      match = re.match(r'^(rename|copy) to (.+)$', lines.pop(0))
-      if not match:
-        self._fail('Missing git diff output name for %s.' % match.group(1))
-      if new != match.group(2):
-        self._fail('Unexpected git diff output name for %s.' % match.group(1))
+
+      match = re.match(r'^new file mode (\d{6})$', line)
+      if match:
+        mode = match.group(1)
+        # Only look at owner ACL for executable.
+        if bool(int(mode[4]) & 4):
+          self.svn_properties.append(('svn:executable', '*'))
 
     # Handle ---/+++
     while lines:
