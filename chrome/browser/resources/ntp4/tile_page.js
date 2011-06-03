@@ -107,7 +107,9 @@ cr.define('ntp4', function() {
 
       this.classList.add('dragging');
       this.dragOffsetX = e.pageX - this.offsetLeft;
-      this.dragOffsetY = e.pageY - this.offsetTop - this.parentNode.offsetTop;
+      this.dragOffsetY = e.pageY - this.offsetTop -
+          // Unlike offsetTop, this value takes scroll position into account.
+          this.parentNode.getBoundingClientRect().top;
 
       this.onDragMove_(e);
     },
@@ -150,7 +152,8 @@ cr.define('ntp4', function() {
           this.firstChild.offsetTop;
       this.dragClone.style.left = (this.gridX - contentDiffX) + 'px';
       this.dragClone.style.top =
-          (this.gridY + this.parentNode.offsetTop - contentDiffY) + 'px';
+          (this.gridY + this.parentNode.getBoundingClientRect().top -
+           contentDiffY) + 'px';
     },
 
     /**
@@ -487,6 +490,9 @@ cr.define('ntp4', function() {
       } else {
         tile.clearDoppleganger();
       }
+
+      if (index == this.tileElements_.length - 1)
+        this.tileGrid_.style.height = (realY + layout.rowHeight) + 'px';
     },
 
     /**
@@ -507,7 +513,8 @@ cr.define('ntp4', function() {
       if (col < 0 || col >= layout.numRowTiles)
         return -1;
 
-      var row = Math.floor((y - this.tileGrid_.offsetTop) / layout.rowHeight);
+      var row = Math.floor(
+          (y - this.tileGrid_.getBoundingClientRect().top) / layout.rowHeight);
       return row * layout.numRowTiles + col;
     },
 
@@ -527,6 +534,13 @@ cr.define('ntp4', function() {
       this.lastHeight_ = this.clientHeight;
       this.classList.add('animating-tile-page');
 
+      // The tile grid will expand to the bottom footer, or enough to hold all
+      // the tiles, whichever is greater. It would be nicer if tilePage were
+      // a flex box, and the tile grid could be box-flex: 1, but this exposes a
+      // bug where repositioning tiles will cause the scroll position to reset.
+      this.tileGrid_.style.minHeight = (this.clientHeight -
+          this.tileGrid_.offsetTop) + 'px';
+
       for (var i = 0; i < this.tileElements_.length; i++) {
         this.positionTile_(i);
       }
@@ -540,7 +554,7 @@ cr.define('ntp4', function() {
      */
     updateMask_: function() {
       if (!this.isCurrentDragTarget_) {
-        this.style.WebkitMaskBoxImage = '';
+        this.tileGrid_.style.WebkitMaskBoxImage = '';
         return;
       }
 
@@ -555,7 +569,7 @@ cr.define('ntp4', function() {
               'transparent ' + (this.clientWidth - leftMargin + fadeDistance) +
                   'px, ' +
               'transparent)';
-      this.style.WebkitMaskBoxImage = gradient;
+      this.tileGrid_.style.WebkitMaskBoxImage = gradient;
     },
 
     updateTopMargin_: function() {
@@ -713,7 +727,7 @@ cr.define('ntp4', function() {
       else
         e.dataTransfer.dropEffect = 'copy';
 
-      var newDragIndex = this.getWouldBeIndexForPoint_(e.clientX, e.clientY);
+      var newDragIndex = this.getWouldBeIndexForPoint_(e.pageX, e.pageY);
       if (newDragIndex < 0 || newDragIndex >= this.tileElements_.length)
         newDragIndex = this.dragItemIndex_;
       this.updateDropIndicator_(newDragIndex);

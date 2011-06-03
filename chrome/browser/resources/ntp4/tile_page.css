@@ -4,11 +4,14 @@
  */
 
 .tile-page {
-  display: -webkit-box;
+  overflow-y: scroll;
   padding-top: 100px;
   text-align: center;
   width: 100%;
-  -webkit-box-orient: vertical;
+}
+
+.tile-page::-webkit-scrollbar {
+  width: 0;
 }
 
 .tile-page-title {
@@ -21,7 +24,6 @@
 .tile-grid {
   position: relative;
   z-index: 100;
-  -webkit-box-flex: 1;
 }
 
 .tile {
