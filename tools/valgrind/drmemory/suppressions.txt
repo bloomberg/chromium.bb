@@ -387,6 +387,29 @@ IMM32.dll!ImmDisableIME
 IMM32.dll!ImmSetActiveContext
 USER32.dll!IMPSetIMEA
 
+# http://code.google.com/p/drmemory/issues/detail?id=435
+UNINITIALIZED READ
+...
+ntdll.dll!RtlSetSecurityObject
+ntdll.dll!RtlNewSecurityObjectEx
+ADVAPI32.dll!CreatePrivateObjectSecurityEx
+NTMARTA.dll!AccRewriteSetNamedRights
+NTMARTA.dll!AccRewriteSetNamedRights
+ADVAPI32.dll!SetNamedSecurityInfoW
+
+POSSIBLE LEAK
+WLDAP32.dll!Ordinal325
+WLDAP32.dll!Ordinal325
+WLDAP32.dll!Ordinal325
+WLDAP32.dll!Ordinal325
+WLDAP32.dll!Ordinal325
+ntdll.dll!LdrInitializeThunk
+ntdll.dll!LdrFindResourceDirectory_U
+ntdll.dll!RtlValidateUnicodeString
+ntdll.dll!LdrLoadDll
+KERNEL32.dll!LoadLibraryExW
+KERNEL32.dll!LoadLibraryW
+
 ############################
 # TODO(timurrrr): investigate these
 UNINITIALIZED READ
