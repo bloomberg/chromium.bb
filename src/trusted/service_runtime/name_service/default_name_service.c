@@ -1,11 +1,12 @@
 /*
- * Copyright 2011 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include "native_client/src/trusted/service_runtime/name_service/default_name_service.h"
 
+#include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #include "native_client/src/trusted/desc/nacl_desc_rng.h"
 
 int NaClDefaultNameServiceInit(struct NaClNameService *ns) {
@@ -30,7 +31,9 @@ int NaClDefaultNameServiceInit(struct NaClNameService *ns) {
    * anyway.
    */
   (*NACL_VTBL(NaClNameService, ns)->
-   CreateDescEntry)(ns, "SecureRandom", (struct NaClDesc *) rng);
+   CreateDescEntry)(ns,
+                    "SecureRandom", NACL_ABI_O_RDWR,
+                    (struct NaClDesc *) rng);
   NaClDescUnref((struct NaClDesc *) rng);
 
   /* start the service! */

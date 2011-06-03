@@ -56,10 +56,12 @@ int NaClNameServiceCtor(struct NaClNameService      *self,
 int NaClNameServiceCreateDescEntry(
     struct NaClNameService  *self,
     char const              *name,
+    int                     mode,
     struct NaClDesc         *new_desc);  /* takes new ref */
 
 typedef int (*NaClNameServiceFactoryFn_t)(void             *factory_state,
                                           char const       *name,
+                                          int              flags,
                                           struct NaClDesc  **out);
 
 int NaClNameServiceCreateFactoryEntry(
@@ -78,6 +80,7 @@ int NaClNameServiceCreateFactoryEntry(
 int NaClNameServiceResolveName(
     struct NaClNameService  *self,
     char const              *name,
+    int                     flags,
     struct NaClDesc         **out);
 
 int NaClNameServiceDeleteName(struct NaClNameService  *nnsp,
@@ -98,8 +101,9 @@ struct NaClNameServiceVtbl {
    * subclass and modify later, should the need occur.
    */
   int                           (*CreateDescEntry)(
-      struct NaClNameService *self,
-      char const             *name,
+      struct NaClNameService  *self,
+      char const              *name,
+      int                     mode,
       struct NaClDesc         *new_desc);  /* takes new ref */
   int                           (*CreateFactoryEntry)(
       struct NaClNameService      *self,
@@ -109,6 +113,7 @@ struct NaClNameServiceVtbl {
   int                           (*ResolveName)(
       struct NaClNameService  *self,
       char const              *name,
+      int                     flags,
       struct NaClDesc         **out);
   int                           (*DeleteName)(
       struct NaClNameService  *self,

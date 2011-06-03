@@ -1,17 +1,22 @@
 /*
- * Copyright 2011 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <inttypes.h>
+#include <sys/fcntl.h>
 #include <nacl/nacl_inttypes.h>
 #include <string.h>
 #include <unistd.h>
 #include <sys/nacl_syscalls.h>
+#if 0  /* swap after SDK update */
 #include <sys/nacl_name_service.h>
+#else
+#include "native_client/src/trusted/service_runtime/include/sys/nacl_name_service.h"
+#endif
 #include <nacl/nacl_srpc.h>
 
 #define RNG_OUTPUT_BYTES  1024
@@ -61,7 +66,8 @@ int EnumerateNames(NaClSrpcChannel *nschan) {
   char      *p;
   size_t    name_len;
 
-  if (NACL_SRPC_RESULT_OK != NaClSrpcInvokeBySignature(nschan, "list::C",
+  if (NACL_SRPC_RESULT_OK != NaClSrpcInvokeBySignature(nschan,
+                                                       NACL_NAME_SERVICE_LIST,
                                                        &nbytes, buffer)) {
     return 0;
   }
@@ -100,14 +106,16 @@ int main(void) {
     fprintf(stderr, "Srpc client channel ctor failed\n");
     return 1;
   }
+  printf("NaClSrpcClientCtor succeeded\n");
   if (!EnumerateNames(&channel)) {
     fprintf(stderr, "Could not enumerate names\n");
     return 1;
   }
+  printf("EnumerateNames succeeded\n");
   if (NACL_SRPC_RESULT_OK !=
-      NaClSrpcInvokeBySignature(&channel, "lookup:s:ih",
-                                "SecureRandom", &status, &rng)) {
-    fprintf(stderr, "nameservice lookup failed\n");
+      NaClSrpcInvokeBySignature(&channel, NACL_NAME_SERVICE_LOOKUP,
+                                "SecureRandom", O_RDONLY, &status, &rng)) {
+    fprintf(stderr, "nameservice lookup failed, status %d\n", status);
     return 1;
   }
   printf("rpc status %d\n", status);

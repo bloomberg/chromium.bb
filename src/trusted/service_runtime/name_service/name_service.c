@@ -23,6 +23,7 @@
 #include "native_client/src/trusted/desc/nacl_desc_invalid.h"
 #include "native_client/src/trusted/desc/nrd_xfer.h"
 
+#include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_name_service.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
@@ -41,6 +42,7 @@
 struct NaClNameServiceEntry {
   struct NaClNameServiceEntry *next;
   char const                  *name;
+  int                         mode;
   struct NaClDesc             *entry;  /* static entry, or, ... */
 
   NaClNameServiceFactoryFn_t  factory;
@@ -96,7 +98,7 @@ void NaClNameServiceDtor(struct NaClRefCount *vself) {
       /*
        * Tell the factory fn that this particular use can be GC'd.
        */
-      (void) (*p->factory)(p->state, p->name, (struct NaClDesc **) NULL);
+      (void) (*p->factory)(p->state, p->name, 0, (struct NaClDesc **) NULL);
     }
     free(p);
   }
@@ -119,6 +121,7 @@ static struct NaClNameServiceEntry **NameServiceSearch(
 int NaClNameServiceCreateDescEntry(
     struct NaClNameService  *nnsp,
     char const              *name,
+    int                     mode,
     struct NaClDesc         *new_desc) {
   int                         retval = NACL_NAME_SERVICE_INSUFFICIENT_RESOURCES;
   struct NaClNameServiceEntry *name_entry = NULL;
@@ -147,6 +150,7 @@ int NaClNameServiceCreateDescEntry(
   name_entry->next = nnsp->head;
   name_entry->name = dup_name;
   dup_name = (char *) NULL;
+  name_entry->mode = mode;
   name_entry->entry = NaClDescRef(new_desc);
   name_entry->factory = (NaClNameServiceFactoryFn_t) NULL;
   name_entry->state = (void *) NULL;
@@ -213,22 +217,54 @@ int NaClNameServiceCreateFactoryEntry(
 
 int NaClNameServiceResolveName(struct NaClNameService  *nnsp,
                                char const              *name,
+                               int                     flags,
                                struct NaClDesc         **out) {
   struct NaClNameServiceEntry *nnsep;
   int                         status = NACL_NAME_SERVICE_NAME_NOT_FOUND;
+
+  if (0 != (flags & NACL_ABI_O_ACCMODE)) {
+    status = NACL_NAME_SERVICE_PERMISSION_DENIED;
+    goto quit;
+  }
 
   NaClXMutexLock(&nnsp->mu);
   nnsep = *NameServiceSearch(&nnsp->head, name);
   if (NULL != nnsep) {
     if (NULL != nnsep->entry) {
+      /* check flags against nnsep->mode */
+      switch (flags) {
+        case NACL_ABI_O_RDONLY:
+          if (NACL_ABI_O_WRONLY == nnsep->mode) {
+            status = NACL_NAME_SERVICE_PERMISSION_DENIED;
+            goto unlock_and_quit;
+          }
+          break;
+        case NACL_ABI_O_WRONLY:
+          if (NACL_ABI_O_RDONLY == nnsep->mode) {
+            status = NACL_NAME_SERVICE_PERMISSION_DENIED;
+            goto unlock_and_quit;
+          }
+          break;
+        case NACL_ABI_O_RDWR:
+          if (NACL_ABI_O_RDWR != nnsep->mode) {
+            status = NACL_NAME_SERVICE_PERMISSION_DENIED;
+            goto unlock_and_quit;
+          }
+          break;
+        default:
+          status = NACL_NAME_SERVICE_INVALID_ARGUMENT;
+          goto unlock_and_quit;
+      }
       *out = NaClDescRef(nnsep->entry);
       status = NACL_NAME_SERVICE_SUCCESS;
     } else {
-      status = (*nnsep->factory)(nnsep->state, name, out);
+      status = (*nnsep->factory)(nnsep->state, name, flags, out);
     }
   }
+ unlock_and_quit:
   nnsep = NULL;
   NaClXMutexUnlock(&nnsp->mu);
+ quit:
   return status;
 }
 
@@ -253,6 +289,7 @@ int NaClNameServiceDeleteName(struct NaClNameService *nnsp,
     if (NULL != to_free->factory) {
       (void) (*to_free->factory)(to_free->state,
                                  to_free->name,
+                                 0,
                                  (struct NaClDesc **) NULL);
     }
     free((void *) to_free->name);
@@ -294,10 +331,34 @@ static void NaClNameServiceNameInsertRpc(
   struct NaClNameService  *nnsp =
       (struct NaClNameService *) rpc->channel->server_instance_data;
   char                    *name = in_args[0]->arrays.str;
-  struct NaClDesc         *desc = in_args[1]->u.hval;
+  int                     mode  = in_args[1]->u.ival;
+  struct NaClDesc         *desc = in_args[2]->u.hval;
 
   out_args[0]->u.ival = (*NACL_VTBL(NaClNameService, nnsp)->CreateDescEntry)(
-      nnsp, name, desc);
+      nnsp, name, mode, desc);
+  rpc->result = NACL_SRPC_RESULT_OK;
+  (*done_cls->Run)(done_cls);
+}
+
+static void NaClNameServiceNameLookupOldRpc(
+    struct NaClSrpcRpc      *rpc,
+    struct NaClSrpcArg      **in_args,
+    struct NaClSrpcArg      **out_args,
+    struct NaClSrpcClosure  *done_cls) {
+  struct NaClNameService  *nnsp =
+      (struct NaClNameService *) rpc->channel->server_instance_data;
+  char                    *name = in_args[0]->arrays.str;
+  int                     status;
+  struct NaClDesc         *desc;
+
+  NaClLog(LOG_WARNING,
+          "NaClNameServiceNameLookupOldRpc: DEPRECATED interface used.\n");
+  status = (*NACL_VTBL(NaClNameService, nnsp)->ResolveName)(
+      nnsp, name, NACL_ABI_O_RDONLY, &desc);
+  out_args[0]->u.ival = status;
+  out_args[1]->u.hval = (NACL_NAME_SERVICE_SUCCESS == status)
+      ? desc
+      : (struct NaClDesc *) NaClDescInvalidMake();
   rpc->result = NACL_SRPC_RESULT_OK;
   (*done_cls->Run)(done_cls);
 }
@@ -310,11 +371,12 @@ static void NaClNameServiceNameLookupRpc(
   struct NaClNameService  *nnsp =
       (struct NaClNameService *) rpc->channel->server_instance_data;
   char                    *name = in_args[0]->arrays.str;
+  int                     flags = in_args[1]->u.ival;
   int                     status;
   struct NaClDesc         *desc;
 
   status = (*NACL_VTBL(NaClNameService, nnsp)->ResolveName)(
-      nnsp, name, &desc);
+      nnsp, name, flags, &desc);
   out_args[0]->u.ival = status;
   out_args[1]->u.hval = (NACL_NAME_SERVICE_SUCCESS == status)
       ? desc
@@ -356,10 +418,11 @@ static void NaClNameServiceListRpc(
 }
 
 struct NaClSrpcHandlerDesc const kNaClNameServiceHandlers[] = {
-  { "list::C", NaClNameServiceListRpc, },
-  { "insert:sh:i", NaClNameServiceNameInsertRpc, },
-  { "lookup:s:ih", NaClNameServiceNameLookupRpc, },
-  { "delete:s:i", NaClNameServiceNameDeleteRpc, },
+  { NACL_NAME_SERVICE_LIST, NaClNameServiceListRpc, },
+  { NACL_NAME_SERVICE_INSERT, NaClNameServiceNameInsertRpc, },
+  { NACL_NAME_SERVICE_LOOKUP_DEPRECATED, NaClNameServiceNameLookupOldRpc, },
+  { NACL_NAME_SERVICE_LOOKUP, NaClNameServiceNameLookupRpc, },
+  { NACL_NAME_SERVICE_DELETE, NaClNameServiceNameDeleteRpc, },
   { (char const *) NULL, (NaClSrpcMethod) NULL, },
 };
 
@@ -376,6 +439,14 @@ struct NaClNameServiceVtbl kNaClNameServiceVtbl = {
       NaClNameServiceDtor,
     },
     NaClSimpleServiceConnectionFactory,
+    /*
+     * To implement name service ownership, the ConnectionFactory will
+     * need to build a subclass of a NaClSimpleServiceConnection where
+     * the connection can be marked as an owner, and the NameService
+     * would contain a mutex protected flag specifying whether it is
+     * owned that blocks mutations by all but the owning connection.
+     * The Connection object's Dtor can release ownership.
+     */
     NaClSimpleLtdServiceAcceptConnection,
     NaClSimpleServiceAcceptAndSpawnHandler,
     NaClSimpleLtdServiceRpcHandler,
