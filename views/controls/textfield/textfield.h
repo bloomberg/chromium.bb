@@ -74,8 +74,13 @@ class Textfield : public View {
   // field is created, using StyleFlags.
   bool IsMultiLine() const;
 
-  // Gets/Sets the text currently displayed in the Textfield.
+  // Gets the text currently displayed in the Textfield.
   const string16& text() const { return text_; }
+
+  // Sets the text currently displayed in the Textfield.  This doesn't
+  // change the cursor position if the current cursor is within the
+  // new text's range, or moves the cursor to the end if the cursor is
+  // out of the new text's range.
   void SetText(const string16& text);
 
   // Appends the given string to the previously-existing text in the field.
@@ -208,6 +213,9 @@ class Textfield : public View {
   // This is views-implementation only and has to be called after the
   // wrapper is created.
   void ClearAllTextStyles();
+
+  // Clears Edit history.
+  void ClearEditHistory();
 
   // Set the accessible name of the text field.
   void SetAccessibleName(const string16& name);

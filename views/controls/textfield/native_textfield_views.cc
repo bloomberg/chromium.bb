@@ -459,6 +459,10 @@ TextInputClient* NativeTextfieldViews::GetTextInputClient() {
   return textfield_->read_only() ? NULL : this;
 }
 
+void NativeTextfieldViews::ClearEditHistory() {
+  model_->ClearEditHistory();
+}
+
 /////////////////////////////////////////////////////////////////
 // NativeTextfieldViews, ui::SimpleMenuModel::Delegate overrides:
 

@@ -34,6 +34,19 @@ class Edit;
 
 struct TextStyleRange;
 
+// C++ doesn't allow forward decl enum, so let's define here.
+enum MergeType {
+  // The edit should not be merged with next edit. It still may
+  // be merged with an edit with MERGE_WITH_PREVIOUS.
+  DO_NOT_MERGE,
+  // The edit can be merged with next edit when possible.
+  MERGEABLE,
+  // Does the edit have to be merged with previous edit?
+  // This forces the merge even if the previous edit is marked
+  // as DO_NOT_MERGE.
+  MERGE_WITH_PREVIOUS,
+};
+
 }  // namespace internal
 
 typedef std::vector<internal::TextStyleRange*> TextStyleRanges;
@@ -313,10 +326,13 @@ class TextfieldViewsModel {
 
   // Executes and records edit operations.
   void ExecuteAndRecordDelete(size_t from, size_t to, bool mergeable);
-  void ExecuteAndRecordReplace(const string16& text, bool mergeable);
-  void ExecuteAndRecordReplaceAt(const string16& text,
-                                 size_t at,
-                                 bool mergeable);
+  void ExecuteAndRecordReplaceSelection(internal::MergeType merge_type,
+                                        const string16& text);
+  void ExecuteAndRecordReplace(internal::MergeType merge_type,
+                               size_t old_cursor_pos,
+                               size_t new_cursor_pos,
+                               const string16& text,
+                               size_t new_text_start);
   void ExecuteAndRecordInsert(const string16& text, bool mergeable);
 
   // Adds or merge |edit| into edit history. Return true if the edit

@@ -289,6 +289,11 @@ void Textfield::ClearAllTextStyles() {
   native_wrapper_->ClearAllTextStyles();
 }
 
+void Textfield::ClearEditHistory() {
+  DCHECK(native_wrapper_);
+  native_wrapper_->ClearEditHistory();
+}
+
 void Textfield::SetAccessibleName(const string16& name) {
   accessible_name_ = name;
 }

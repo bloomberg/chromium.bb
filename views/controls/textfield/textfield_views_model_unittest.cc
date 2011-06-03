@@ -273,14 +273,16 @@ TEST_F(TextfieldViewsModelTest, SetText) {
   model.MoveCursorToEnd(false);
   model.SetText(ASCIIToUTF16("GOODBYE"));
   EXPECT_STR_EQ("GOODBYE", model.text());
-  EXPECT_EQ(0U, model.cursor_pos());
+  // SetText won't reset the cursor posistion.
+  EXPECT_EQ(5U, model.cursor_pos());
   model.SelectAll();
   EXPECT_STR_EQ("GOODBYE", model.GetSelectedText());
   model.MoveCursorToEnd(false);
   EXPECT_EQ(7U, model.cursor_pos());
 
   model.SetText(ASCIIToUTF16("BYE"));
-  EXPECT_EQ(0U, model.cursor_pos());
+  // Setting shorter string moves the cursor to the end of the new string.
+  EXPECT_EQ(3U, model.cursor_pos());
   EXPECT_EQ(string16(), model.GetSelectedText());
   model.SetText(ASCIIToUTF16(""));
   EXPECT_EQ(0U, model.cursor_pos());
@@ -683,28 +685,35 @@ TEST_F(TextfieldViewsModelTest, UndoRedo_BasicTest) {
   EXPECT_STR_EQ("abc", model.text());
   EXPECT_TRUE(model.Undo());
   EXPECT_STR_EQ("a", model.text());
+  EXPECT_EQ(1U, model.cursor_pos());
   EXPECT_TRUE(model.Undo());
   EXPECT_STR_EQ("", model.text());
+  EXPECT_EQ(0U, model.cursor_pos());
 
   // Undoing further shouldn't change the text.
   EXPECT_FALSE(model.Undo());
   EXPECT_STR_EQ("", model.text());
   EXPECT_FALSE(model.Undo());
   EXPECT_STR_EQ("", model.text());
+  EXPECT_EQ(0U, model.cursor_pos());
 
   // Redoing to the latest text.
   EXPECT_TRUE(model.Redo());
   EXPECT_STR_EQ("a", model.text());
+  EXPECT_EQ(1U, model.cursor_pos());
   EXPECT_TRUE(model.Redo());
   EXPECT_STR_EQ("abc", model.text());
+  EXPECT_EQ(3U, model.cursor_pos());
 
   // Backspace ===============================
   EXPECT_TRUE(model.Backspace());
   EXPECT_STR_EQ("ab", model.text());
   EXPECT_TRUE(model.Undo());
   EXPECT_STR_EQ("abc", model.text());
+  EXPECT_EQ(3U, model.cursor_pos());
   EXPECT_TRUE(model.Redo());
   EXPECT_STR_EQ("ab", model.text());
+  EXPECT_EQ(2U, model.cursor_pos());
   // Continous backspaces are treated as one edit.
   EXPECT_TRUE(model.Backspace());
   EXPECT_TRUE(model.Backspace());
@@ -713,16 +722,20 @@ TEST_F(TextfieldViewsModelTest, UndoRedo_BasicTest) {
   EXPECT_FALSE(model.Backspace());
   EXPECT_TRUE(model.Undo());
   EXPECT_STR_EQ("ab", model.text());
+  EXPECT_EQ(2U, model.cursor_pos());
   EXPECT_TRUE(model.Undo());
   EXPECT_STR_EQ("abc", model.text());
+  EXPECT_EQ(3U, model.cursor_pos());
   EXPECT_TRUE(model.Undo());
   EXPECT_STR_EQ("a", model.text());
+  EXPECT_EQ(1U, model.cursor_pos());
 
   // Clear history
   model.ClearEditHistory();
   EXPECT_FALSE(model.Undo());
   EXPECT_FALSE(model.Redo());
   EXPECT_STR_EQ("a", model.text());
+  EXPECT_EQ(1U, model.cursor_pos());
 
   // Delete ===============================
   model.SetText(ASCIIToUTF16("ABCDE"));
@@ -735,18 +748,85 @@ TEST_F(TextfieldViewsModelTest, UndoRedo_BasicTest) {
   EXPECT_STR_EQ("BDE", model.text());
   EXPECT_TRUE(model.Undo());
   EXPECT_STR_EQ("ABDE", model.text());
+  EXPECT_EQ(0U, model.cursor_pos());
   EXPECT_TRUE(model.Undo());
   EXPECT_STR_EQ("ABCDE", model.text());
+  EXPECT_EQ(2U, model.cursor_pos());
   EXPECT_TRUE(model.Redo());
   EXPECT_STR_EQ("ABDE", model.text());
+  EXPECT_EQ(2U, model.cursor_pos());
   // Continous deletes are treated as one edit.
   EXPECT_TRUE(model.Delete());
   EXPECT_TRUE(model.Delete());
   EXPECT_STR_EQ("AB", model.text());
   EXPECT_TRUE(model.Undo());
   EXPECT_STR_EQ("ABDE", model.text());
+  EXPECT_EQ(2U, model.cursor_pos());
   EXPECT_TRUE(model.Redo());
   EXPECT_STR_EQ("AB", model.text());
+  EXPECT_EQ(2U, model.cursor_pos());
+}
+
+TEST_F(TextfieldViewsModelTest, UndoRedo_SetText) {
+  // This is to test the undo/redo behavior of omnibox.
+  TextfieldViewsModel model(NULL);
+  model.InsertChar('w');
+  EXPECT_STR_EQ("w", model.text());
+  EXPECT_EQ(1U, model.cursor_pos());
+  model.SetText(ASCIIToUTF16("www.google.com"));
+  EXPECT_EQ(1U, model.cursor_pos());
+  EXPECT_STR_EQ("www.google.com", model.text());
+  model.SelectRange(ui::Range(14, 1));
+  model.InsertChar('w');
+  EXPECT_STR_EQ("ww", model.text());
+  model.SetText(ASCIIToUTF16("www.google.com"));
+  model.SelectRange(ui::Range(14, 2));
+  model.InsertChar('w');
+  EXPECT_STR_EQ("www", model.text());
+  model.SetText(ASCIIToUTF16("www.google.com"));
+  model.SelectRange(ui::Range(14, 3));
+  model.InsertChar('.');
+  EXPECT_STR_EQ("www.", model.text());
+  model.SetText(ASCIIToUTF16("www.google.com"));
+  model.SelectRange(ui::Range(14, 4));
+  model.InsertChar('y');
+  EXPECT_STR_EQ("www.y", model.text());
+  model.SetText(ASCIIToUTF16("www.youtube.com"));
+  EXPECT_STR_EQ("www.youtube.com", model.text());
+  EXPECT_EQ(5U, model.cursor_pos());
+
+  EXPECT_TRUE(model.Undo());
+  EXPECT_STR_EQ("www.google.com", model.text());
+  EXPECT_EQ(4U, model.cursor_pos());
+  EXPECT_TRUE(model.Undo());
+  EXPECT_STR_EQ("www.google.com", model.text());
+  EXPECT_EQ(3U, model.cursor_pos());
+  EXPECT_TRUE(model.Undo());
+  EXPECT_STR_EQ("www.google.com", model.text());
+  EXPECT_EQ(2U, model.cursor_pos());
+  EXPECT_TRUE(model.Undo());
+  EXPECT_STR_EQ("www.google.com", model.text());
+  EXPECT_EQ(1U, model.cursor_pos());
+  EXPECT_TRUE(model.Undo());
+  EXPECT_STR_EQ("", model.text());
+  EXPECT_EQ(0U, model.cursor_pos());
+  EXPECT_FALSE(model.Undo());
+  EXPECT_TRUE(model.Redo());
+  EXPECT_STR_EQ("www.google.com", model.text());
+  EXPECT_EQ(1U, model.cursor_pos());
+  EXPECT_TRUE(model.Redo());
+  EXPECT_STR_EQ("www.google.com", model.text());
+  EXPECT_EQ(2U, model.cursor_pos());
+  EXPECT_TRUE(model.Redo());
+  EXPECT_STR_EQ("www.google.com", model.text());
+  EXPECT_EQ(3U, model.cursor_pos());
+  EXPECT_TRUE(model.Redo());
+  EXPECT_STR_EQ("www.google.com", model.text());
+  EXPECT_EQ(4U, model.cursor_pos());
+  EXPECT_TRUE(model.Redo());
+  EXPECT_STR_EQ("www.youtube.com", model.text());
+  EXPECT_EQ(5U, model.cursor_pos());
+  EXPECT_FALSE(model.Redo());
 }
 
 TEST_F(TextfieldViewsModelTest, UndoRedo_CutCopyPasteTest) {
@@ -758,16 +838,21 @@ TEST_F(TextfieldViewsModelTest, UndoRedo_CutCopyPasteTest) {
   model.MoveCursorTo(3, true);
   model.Cut();
   EXPECT_STR_EQ("ADE", model.text());
+  EXPECT_EQ(1U, model.cursor_pos());
   EXPECT_TRUE(model.Undo());
   EXPECT_STR_EQ("ABCDE", model.text());
+  EXPECT_EQ(3U, model.cursor_pos());
   EXPECT_TRUE(model.Undo());
   EXPECT_STR_EQ("", model.text());
+  EXPECT_EQ(0U, model.cursor_pos());
   EXPECT_FALSE(model.Undo());  // no more undo
   EXPECT_STR_EQ("", model.text());
   EXPECT_TRUE(model.Redo());
   EXPECT_STR_EQ("ABCDE", model.text());
+  EXPECT_EQ(0U, model.cursor_pos());
   EXPECT_TRUE(model.Redo());
   EXPECT_STR_EQ("ADE", model.text());
+  EXPECT_EQ(1U, model.cursor_pos());
   EXPECT_FALSE(model.Redo());  // no more redo
   EXPECT_STR_EQ("ADE", model.text());
 
@@ -775,72 +860,98 @@ TEST_F(TextfieldViewsModelTest, UndoRedo_CutCopyPasteTest) {
   model.Paste();
   model.Paste();
   EXPECT_STR_EQ("ABCBCBCDE", model.text());
+  EXPECT_EQ(7U, model.cursor_pos());
   EXPECT_TRUE(model.Undo());
   EXPECT_STR_EQ("ABCBCDE", model.text());
+  EXPECT_EQ(5U, model.cursor_pos());
   EXPECT_TRUE(model.Undo());
   EXPECT_STR_EQ("ABCDE", model.text());
+  EXPECT_EQ(3U, model.cursor_pos());
   EXPECT_TRUE(model.Undo());
   EXPECT_STR_EQ("ADE", model.text());
+  EXPECT_EQ(1U, model.cursor_pos());
   EXPECT_TRUE(model.Undo());
   EXPECT_STR_EQ("ABCDE", model.text());
+  EXPECT_EQ(3U, model.cursor_pos());
   EXPECT_TRUE(model.Undo());
   EXPECT_STR_EQ("", model.text());
+  EXPECT_EQ(0U, model.cursor_pos());
   EXPECT_FALSE(model.Undo());
   EXPECT_STR_EQ("", model.text());
   EXPECT_TRUE(model.Redo());
-  EXPECT_STR_EQ("ABCDE", model.text());
+  EXPECT_STR_EQ("ABCDE", model.text());  // Redoing SetText
+  EXPECT_EQ(0U, model.cursor_pos());
+
   // Redo
   EXPECT_TRUE(model.Redo());
   EXPECT_STR_EQ("ADE", model.text());
+  EXPECT_EQ(1U, model.cursor_pos());
   EXPECT_TRUE(model.Redo());
   EXPECT_STR_EQ("ABCDE", model.text());
+  EXPECT_EQ(3U, model.cursor_pos());
   EXPECT_TRUE(model.Redo());
   EXPECT_STR_EQ("ABCBCDE", model.text());
+  EXPECT_EQ(5U, model.cursor_pos());
   EXPECT_TRUE(model.Redo());
   EXPECT_STR_EQ("ABCBCBCDE", model.text());
+  EXPECT_EQ(7U, model.cursor_pos());
   EXPECT_FALSE(model.Redo());
 
   // with SelectRange
   model.SelectRange(ui::Range(1, 3));
   EXPECT_TRUE(model.Cut());
   EXPECT_STR_EQ("ABCBCDE", model.text());
+  EXPECT_EQ(1U, model.cursor_pos());
   model.SelectRange(ui::Range(1, 1));
   EXPECT_FALSE(model.Cut());
   model.MoveCursorToEnd(false);
   EXPECT_TRUE(model.Paste());
   EXPECT_STR_EQ("ABCBCDEBC", model.text());
+  EXPECT_EQ(9U, model.cursor_pos());
   EXPECT_TRUE(model.Undo());
   EXPECT_STR_EQ("ABCBCDE", model.text());
+  EXPECT_EQ(7U, model.cursor_pos());
   // empty cut shouldn't create an edit.
   EXPECT_TRUE(model.Undo());
   EXPECT_STR_EQ("ABCBCBCDE", model.text());
+  EXPECT_EQ(3U, model.cursor_pos());
 
   // Copy
   ResetModel(&model);
   model.SetText(ASCIIToUTF16("12345"));
   EXPECT_STR_EQ("12345", model.text());
+  EXPECT_EQ(0U, model.cursor_pos());
   model.MoveCursorTo(1, false);
   model.MoveCursorTo(3, true);
-  model.Copy();
+  model.Copy();  // Copy "23"
   EXPECT_STR_EQ("12345", model.text());
-  model.Paste();
+  EXPECT_EQ(3U, model.cursor_pos());
+  model.Paste();  // Paste "23" into "23".
   EXPECT_STR_EQ("12345", model.text());
+  EXPECT_EQ(3U, model.cursor_pos());
   model.Paste();
   EXPECT_STR_EQ("1232345", model.text());
+  EXPECT_EQ(5U, model.cursor_pos());
   EXPECT_TRUE(model.Undo());
   EXPECT_STR_EQ("12345", model.text());
-  EXPECT_FALSE(model.Undo());  // no text change
+  EXPECT_EQ(3U, model.cursor_pos());
+  // TODO(oshima): We need to change the return type from bool to enum.
+  EXPECT_FALSE(model.Undo());  // No text change.
   EXPECT_STR_EQ("12345", model.text());
+  EXPECT_EQ(3U, model.cursor_pos());
   EXPECT_TRUE(model.Undo());
   EXPECT_STR_EQ("", model.text());
   EXPECT_FALSE(model.Undo());
   // Redo
   EXPECT_TRUE(model.Redo());
   EXPECT_STR_EQ("12345", model.text());
-  EXPECT_FALSE(model.Redo());  // no text change.
-  EXPECT_STR_EQ("12345", model.text());
+  EXPECT_EQ(0U, model.cursor_pos());
+  EXPECT_TRUE(model.Redo());
+  EXPECT_STR_EQ("12345", model.text());  // For 1st paste
+  EXPECT_EQ(3U, model.cursor_pos());
   EXPECT_TRUE(model.Redo());
   EXPECT_STR_EQ("1232345", model.text());
+  EXPECT_EQ(5U, model.cursor_pos());
   EXPECT_FALSE(model.Redo());
   EXPECT_STR_EQ("1232345", model.text());
 
@@ -851,8 +962,10 @@ TEST_F(TextfieldViewsModelTest, UndoRedo_CutCopyPasteTest) {
   model.MoveCursorToEnd(false);
   EXPECT_TRUE(model.Paste());
   EXPECT_STR_EQ("123234523", model.text());
+  EXPECT_EQ(9U, model.cursor_pos());
   EXPECT_TRUE(model.Undo());
   EXPECT_STR_EQ("1232345", model.text());
+  EXPECT_EQ(7U, model.cursor_pos());
 }
 
 TEST_F(TextfieldViewsModelTest, UndoRedo_CursorTest) {
@@ -870,41 +983,60 @@ TEST_F(TextfieldViewsModelTest, UndoRedo_CursorTest) {
   EXPECT_STR_EQ("", model.text());
   EXPECT_TRUE(model.Redo());
   EXPECT_STR_EQ("ab", model.text());
+  EXPECT_EQ(2U, model.cursor_pos());
   EXPECT_FALSE(model.Redo());
 }
 
 void RunInsertReplaceTest(TextfieldViewsModel& model) {
+  ui::Range r;
+  model.GetSelectedRange(&r);
+  bool reverse = r.is_reversed();
+
   model.InsertChar('1');
   model.InsertChar('2');
   model.InsertChar('3');
   EXPECT_STR_EQ("a123d", model.text());
+  EXPECT_EQ(4U, model.cursor_pos());
   EXPECT_TRUE(model.Undo());
   EXPECT_STR_EQ("abcd", model.text());
+  EXPECT_EQ(reverse ? 1U : 3U, model.cursor_pos());
   EXPECT_TRUE(model.Undo());
   EXPECT_STR_EQ("", model.text());
+  EXPECT_EQ(0U, model.cursor_pos());
   EXPECT_FALSE(model.Undo());
   EXPECT_TRUE(model.Redo());
   EXPECT_STR_EQ("abcd", model.text());
+  EXPECT_EQ(0U, model.cursor_pos());  // By SetText
   EXPECT_TRUE(model.Redo());
   EXPECT_STR_EQ("a123d", model.text());
+  EXPECT_EQ(4U, model.cursor_pos());
   EXPECT_FALSE(model.Redo());
 }
 
 void RunOverwriteReplaceTest(TextfieldViewsModel& model) {
+  ui::Range r;
+  model.GetSelectedRange(&r);
+  bool reverse = r.is_reversed();
+
   model.ReplaceChar('1');
   model.ReplaceChar('2');
   model.ReplaceChar('3');
   model.ReplaceChar('4');
   EXPECT_STR_EQ("a1234", model.text());
+  EXPECT_EQ(5U, model.cursor_pos());
   EXPECT_TRUE(model.Undo());
   EXPECT_STR_EQ("abcd", model.text());
+  EXPECT_EQ(reverse ? 1U : 3U, model.cursor_pos());
   EXPECT_TRUE(model.Undo());
   EXPECT_STR_EQ("", model.text());
+  EXPECT_EQ(0U, model.cursor_pos());
   EXPECT_FALSE(model.Undo());
   EXPECT_TRUE(model.Redo());
   EXPECT_STR_EQ("abcd", model.text());
+  EXPECT_EQ(0U, model.cursor_pos());
   EXPECT_TRUE(model.Redo());
   EXPECT_STR_EQ("a1234", model.text());
+  EXPECT_EQ(5U, model.cursor_pos());
   EXPECT_FALSE(model.Redo());
 }
 

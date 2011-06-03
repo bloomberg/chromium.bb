@@ -90,6 +90,7 @@ class NativeTextfieldWin
   virtual void ApplyTextStyle(const TextStyle* style,
                               const ui::Range& range) OVERRIDE;
   virtual void ClearAllTextStyles() OVERRIDE;
+  virtual void ClearEditHistory() OVERRIDE;
 
   // Overridden from ui::SimpleMenuModel::Delegate:
   virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;

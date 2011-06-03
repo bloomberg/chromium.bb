@@ -61,6 +61,7 @@ class NativeTextfieldGtk : public NativeControlGtk,
   virtual void ApplyTextStyle(const TextStyle* style,
                               const ui::Range& range) OVERRIDE;
   virtual void ClearAllTextStyles() OVERRIDE;
+  virtual void ClearEditHistory() OVERRIDE;
 
   // Overridden from NativeControlGtk:
   virtual void CreateNativeControl() OVERRIDE;

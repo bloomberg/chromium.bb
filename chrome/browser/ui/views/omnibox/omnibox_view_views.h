@@ -35,6 +35,7 @@ class TextStyle;
 //
 // LTR support.
 // Drag and drop behavior.
+// Adjust paste behavior (should not autocomplete).
 // Custom context menu for omnibox.
 // Instant.
 class OmniboxViewViews : public views::View,

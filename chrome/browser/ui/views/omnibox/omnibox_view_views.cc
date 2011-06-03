@@ -303,7 +303,6 @@ void OmniboxViewViews::Update(const TabContents* contents) {
   // NOTE: We're getting the URL text here from the ToolbarModel.
   bool visibly_changed_permanent_text =
       model_->UpdatePermanentText(WideToUTF16Hack(toolbar_model_->GetText()));
-
   ToolbarModel::SecurityLevel security_level =
         toolbar_model_->GetSecurityLevel();
   bool changed_security_level = (security_level != security_level_);
@@ -322,6 +321,9 @@ void OmniboxViewViews::Update(const TabContents* contents) {
       // Move the marks for the cursor and the other end of the selection to
       // the previously-saved offsets (but preserve PRIMARY).
       textfield_->SelectRange(state->view_state.selection_range);
+      // We do not carry over the current edit history to another tab.
+      // TODO(oshima): consider saving/restoring edit history.
+      textfield_->ClearEditHistory();
     }
   } else if (visibly_changed_permanent_text) {
     RevertAll();

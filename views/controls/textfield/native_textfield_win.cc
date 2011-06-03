@@ -385,6 +385,10 @@ void NativeTextfieldWin::ClearAllTextStyles() {
   NOTREACHED();
 }
 
+void NativeTextfieldWin::ClearEditHistory() {
+  NOTREACHED();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NativeTextfieldWin, ui::SimpleMenuModel::Delegate implementation:
 

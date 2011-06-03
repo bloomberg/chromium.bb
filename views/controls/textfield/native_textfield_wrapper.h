@@ -138,6 +138,9 @@ class NativeTextfieldWrapper {
   // Clears all text styles in this textfield.
   virtual void ClearAllTextStyles() = 0;
 
+  // Clears Edit history.
+  virtual void ClearEditHistory() = 0;
+
   // Creates an appropriate NativeTextfieldWrapper for the platform.
   static NativeTextfieldWrapper* CreateWrapper(Textfield* field);
 };

@@ -117,6 +117,7 @@ class NativeTextfieldViews : public View,
   virtual void ApplyTextStyle(const TextStyle* style,
                               const ui::Range& range) OVERRIDE;
   virtual void ClearAllTextStyles() OVERRIDE;
+  virtual void ClearEditHistory() OVERRIDE;
 
   // ui::SimpleMenuModel::Delegate overrides
   virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;

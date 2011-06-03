@@ -1021,11 +1021,13 @@ TEST_F(NativeTextfieldViewsTest, UndoRedoTest) {
   SendKeyEvent(ui::VKEY_Z, false, true);
   EXPECT_STR_EQ("123", textfield_->text());
   SendKeyEvent(ui::VKEY_Z, false, true);
-  EXPECT_STR_EQ("abc", textfield_->text());
-  SendKeyEvent(ui::VKEY_Z, false, true);
+  // the insert edit "c" and set edit "123" are merged to single edit,
+  // so text becomes "ab" after undo.
   EXPECT_STR_EQ("ab", textfield_->text());
+  SendKeyEvent(ui::VKEY_Z, false, true);
+  EXPECT_STR_EQ("a", textfield_->text());
   SendKeyEvent(ui::VKEY_Y, false, true);
-  EXPECT_STR_EQ("abc", textfield_->text());
+  EXPECT_STR_EQ("ab", textfield_->text());
   SendKeyEvent(ui::VKEY_Y, false, true);
   EXPECT_STR_EQ("123", textfield_->text());
   SendKeyEvent(ui::VKEY_Y, false, true);
@@ -1069,6 +1071,7 @@ TEST_F(NativeTextfieldViewsTest, UndoRedoTest) {
 
   // Insert
   textfield_->SetText(ASCIIToUTF16("123"));
+  SendKeyEvent(ui::VKEY_HOME);
   SendKeyEvent(ui::VKEY_INSERT);
   SendKeyEvent(ui::VKEY_A);
   EXPECT_STR_EQ("a23", textfield_->text());
