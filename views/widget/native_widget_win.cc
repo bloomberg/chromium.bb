@@ -671,7 +671,7 @@ bool NativeWidgetWin::IsActive() const {
 
 void NativeWidgetWin::SetAlwaysOnTop(bool on_top) {
   ::SetWindowPos(GetNativeView(), on_top ? HWND_TOPMOST : HWND_NOTOPMOST,
-                 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+                 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 }
 
 void NativeWidgetWin::Maximize() {
