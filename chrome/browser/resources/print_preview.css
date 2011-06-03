@@ -431,7 +431,7 @@ input[type='text']:focus {
 
 input[type='text']:disabled {
   background: #f8f8f8;
-  border-color: #c077c0;
+  border-color: #c0c0c0;
 }
 
 input[type='text'].small {
@@ -514,7 +514,7 @@ select {
                       0 1px 2px rgba(0, 0, 0, .2);
   -webkit-appearance: none;
   -webkit-margin-end: -2px;
-  -webkit-padding-end: 34px;
+  -webkit-padding-end: 20px;
   -webkit-padding-start: 14px;
   -webkit-user-select: none;
   background-image: url('./print_preview/black_arrow.png'),
@@ -565,9 +565,9 @@ input[type='checkbox']:focus,
 input[type='radio']:focus {
   -webkit-box-shadow: inset 0 1px 2px white,
                       0 1px 2px rgba(0, 0, 0, .2),
-                      0 0 1px #c077c0,
-                      0 0 1px #c077c0,
-                      0 0 1px #c077c0;
+                      0 0 1px #c0c0c0,
+                      0 0 1px #c0c0c0,
+                      0 0 1px #c0c0c0;
   -webkit-transition: border-color 200ms;
   border-color: #4080fa;
   outline: none;
