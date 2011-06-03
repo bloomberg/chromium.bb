@@ -133,7 +133,8 @@ class Rietveld(object):
           out.append(patch.FilePatchBinary(
               filename,
               self.get_file_content(issue, patchset, state['id']),
-              props))
+              props,
+              is_new=(status[0] == 'A')))
         else:
           if state['num_chunks']:
             diff = self.get_file_diff(issue, patchset, state['id'])

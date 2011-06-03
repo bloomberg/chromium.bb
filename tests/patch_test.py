@@ -5,6 +5,7 @@
 
 """Unit tests for patch.py."""
 
+import logging
 import os
 import sys
 import unittest
@@ -125,21 +126,30 @@ GIT_NEW = (
     '+bar\n')
 
 
+NEW = (
+    '--- /dev/null\n'
+    '+++ foo\n'
+    '@@ -0,0 +1 @@\n'
+    '+bar\n')
+
+
 class PatchTest(unittest.TestCase):
   def testFilePatchDelete(self):
     c = patch.FilePatchDelete('foo', False)
-    self.assertEquals(c.is_delete, True)
-    self.assertEquals(c.is_binary, False)
     self.assertEquals(c.filename, 'foo')
+    self.assertEquals(c.is_binary, False)
+    self.assertEquals(c.is_delete, True)
+    self.assertEquals(c.is_new, False)
     try:
       c.get()
       self.fail()
     except NotImplementedError:
       pass
     c = patch.FilePatchDelete('foo', True)
-    self.assertEquals(c.is_delete, True)
-    self.assertEquals(c.is_binary, True)
     self.assertEquals(c.filename, 'foo')
+    self.assertEquals(c.is_binary, True)
+    self.assertEquals(c.is_delete, True)
+    self.assertEquals(c.is_new, False)
     try:
       c.get()
       self.fail()
@@ -147,59 +157,97 @@ class PatchTest(unittest.TestCase):
       pass
 
   def testFilePatchBinary(self):
-    c = patch.FilePatchBinary('foo', 'data', [])
-    self.assertEquals(c.is_delete, False)
-    self.assertEquals(c.is_binary, True)
+    c = patch.FilePatchBinary('foo', 'data', [], is_new=False)
     self.assertEquals(c.filename, 'foo')
+    self.assertEquals(c.is_binary, True)
+    self.assertEquals(c.is_delete, False)
+    self.assertEquals(c.is_new, False)
+    self.assertEquals(c.get(), 'data')
+
+  def testFilePatchBinaryNew(self):
+    c = patch.FilePatchBinary('foo', 'data', [], is_new=True)
+    self.assertEquals(c.filename, 'foo')
+    self.assertEquals(c.is_binary, True)
+    self.assertEquals(c.is_delete, False)
+    self.assertEquals(c.is_new, True)
     self.assertEquals(c.get(), 'data')
 
   def testFilePatchDiff(self):
     c = patch.FilePatchDiff('chrome/file.cc', SVN_PATCH, [])
-    self.assertEquals(c.is_delete, False)
-    self.assertEquals(c.is_binary, False)
     self.assertEquals(c.filename, 'chrome/file.cc')
+    self.assertEquals(c.is_binary, False)
+    self.assertEquals(c.is_delete, False)
     self.assertEquals(c.is_git_diff, False)
+    self.assertEquals(c.is_new, False)
     self.assertEquals(c.patchlevel, 0)
     self.assertEquals(c.get(), SVN_PATCH)
+
+  def testFilePatchDiffHeaderMode(self):
     diff = (
         'diff --git a/git_cl/git-cl b/git_cl/git-cl\n'
         'old mode 100644\n'
         'new mode 100755\n')
     c = patch.FilePatchDiff('git_cl/git-cl', diff, [])
-    self.assertEquals(c.is_delete, False)
-    self.assertEquals(c.is_binary, False)
     self.assertEquals(c.filename, 'git_cl/git-cl')
+    self.assertEquals(c.is_binary, False)
+    self.assertEquals(c.is_delete, False)
     self.assertEquals(c.is_git_diff, True)
+    self.assertEquals(c.is_new, False)
     self.assertEquals(c.patchlevel, 1)
     self.assertEquals(c.get(), diff)
+
+  def testFilePatchDiffHeaderModeIndex(self):
     diff = (
         'Index: Junk\n'
         'diff --git a/git_cl/git-cl b/git_cl/git-cl\n'
         'old mode 100644\n'
         'new mode 100755\n')
     c = patch.FilePatchDiff('git_cl/git-cl', diff, [])
-    self.assertEquals(c.is_delete, False)
-    self.assertEquals(c.is_binary, False)
     self.assertEquals(c.filename, 'git_cl/git-cl')
+    self.assertEquals(c.is_binary, False)
+    self.assertEquals(c.is_delete, False)
     self.assertEquals(c.is_git_diff, True)
+    self.assertEquals(c.is_new, False)
     self.assertEquals(c.patchlevel, 1)
     self.assertEquals(c.get(), diff)
 
-  def testFilePatchBadDiff(self):
+  def testFilePatchDiffSvnNew(self):
+    # The code path is different for git and svn.
+    c = patch.FilePatchDiff('foo', NEW, [])
+    self.assertEquals(c.filename, 'foo')
+    self.assertEquals(c.is_binary, False)
+    self.assertEquals(c.is_delete, False)
+    self.assertEquals(c.is_git_diff, False)
+    self.assertEquals(c.is_new, True)
+    self.assertEquals(c.patchlevel, 0)
+    self.assertEquals(c.get(), NEW)
+
+  def testFilePatchDiffGitNew(self):
+    # The code path is different for git and svn.
+    c = patch.FilePatchDiff('foo', GIT_NEW, [])
+    self.assertEquals(c.filename, 'foo')
+    self.assertEquals(c.is_binary, False)
+    self.assertEquals(c.is_delete, False)
+    self.assertEquals(c.is_git_diff, True)
+    self.assertEquals(c.is_new, True)
+    self.assertEquals(c.patchlevel, 1)
+    self.assertEquals(c.get(), GIT_NEW)
+
+  def testFilePatchDiffBad(self):
     try:
       patch.FilePatchDiff('foo', 'data', [])
       self.fail()
     except patch.UnsupportedPatchFormat:
       pass
 
-  def testFilePatchNoDiff(self):
+  def testFilePatchDiffEmpty(self):
     try:
       patch.FilePatchDiff('foo', '', [])
       self.fail()
     except patch.UnsupportedPatchFormat:
       pass
 
-  def testFilePatchNoneDiff(self):
+  def testFilePatchDiffNone(self):
     try:
       patch.FilePatchDiff('foo', None, [])
       self.fail()
@@ -210,10 +258,60 @@ class PatchTest(unittest.TestCase):
     try:
       patch.FilePatchDiff('foo', SVN_PATCH, [])
       self.fail()
+    except patch.UnsupportedPatchFormat, e:
+      self.assertEquals(
+          "Can't process patch for file foo.\nUnexpected diff: chrome/file.cc.",
+          str(e))
+
+  def testFilePatchDiffBadHeader(self):
+    try:
+      diff = (
+        '+++ b/foo\n'
+        '@@ -0,0 +1 @@\n'
+        '+bar\n')
+      patch.FilePatchDiff('foo', diff, [])
+      self.fail()
     except patch.UnsupportedPatchFormat:
       pass
 
-  def testInvalidFilePatchDiffGit(self):
+  def testFilePatchDiffBadGitHeader(self):
+    try:
+      diff = (
+        'diff --git a/foo b/foo\n'
+        '+++ b/foo\n'
+        '@@ -0,0 +1 @@\n'
+        '+bar\n')
+      patch.FilePatchDiff('foo', diff, [])
+      self.fail()
+    except patch.UnsupportedPatchFormat:
+      pass
+
+  def testFilePatchDiffBadHeaderReversed(self):
+    try:
+      diff = (
+        '+++ b/foo\n'
+        '--- b/foo\n'
+        '@@ -0,0 +1 @@\n'
+        '+bar\n')
+      patch.FilePatchDiff('foo', diff, [])
+      self.fail()
+    except patch.UnsupportedPatchFormat:
+      pass
+
+  def testFilePatchDiffGitBadHeaderReversed(self):
+    try:
+      diff = (
+        'diff --git a/foo b/foo\n'
+        '+++ b/foo\n'
+        '--- b/foo\n'
+        '@@ -0,0 +1 @@\n'
+        '+bar\n')
+      patch.FilePatchDiff('foo', diff, [])
+      self.fail()
+    except patch.UnsupportedPatchFormat:
+      pass
+
+  def testFilePatchDiffInvalidGit(self):
     try:
       patch.FilePatchDiff('svn_utils_test.txt', (
         'diff --git a/tests/svn_utils_test_data/svn_utils_test.txt '
@@ -291,7 +389,7 @@ class PatchTest(unittest.TestCase):
         patch.FilePatchDiff('pp', GIT_COPY, []),
         patch.FilePatchDiff('foo', GIT_NEW, []),
         patch.FilePatchDelete('other/place/foo', True),
-        patch.FilePatchBinary('bar', 'data', []),
+        patch.FilePatchBinary('bar', 'data', [], is_new=False),
     ])
     expected = [
         'chrome/file.cc', 'tools/clang_check/README.chromium',
@@ -325,6 +423,16 @@ class PatchTest(unittest.TestCase):
       self.fail()
     except patch.UnsupportedPatchFormat:
       pass
+
+  def testRelPathEmpty(self):
+    patches = patch.PatchSet([
+        patch.FilePatchDiff('chrome\\file.cc', SVN_PATCH, []),
+        patch.FilePatchDelete('other\\place\\foo', True),
+    ])
+    patches.set_relpath('')
+    self.assertEquals(
+        ['chrome/file.cc', 'other/place/foo'],
+        [f.filename for f in patches])
 
   def testBackSlash(self):
     mangled_patch = SVN_PATCH.replace('chrome/', 'chrome\\')
@@ -407,4 +515,7 @@ class PatchTest(unittest.TestCase):
 
 
 if __name__ == '__main__':
+  logging.basicConfig(level=
+      [logging.WARNING, logging.INFO, logging.DEBUG][
+        min(2, sys.argv.count('-v'))])
   unittest.main()

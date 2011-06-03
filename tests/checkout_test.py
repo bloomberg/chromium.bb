@@ -151,7 +151,8 @@ class BaseTest(fake_repos.FakeReposTestBase):
     return patch.PatchSet([
         patch.FilePatchDiff(
             'svn_utils_test.txt', GIT_PATCH, []),
-        patch.FilePatchBinary('bin_file', '\x00', []),
+        # TODO(maruel): Test with is_new == False.
+        patch.FilePatchBinary('bin_file', '\x00', [], is_new=True),
         patch.FilePatchDelete('extra', False),
         patch.FilePatchDiff('new_dir/subdir/new_file', PATCH_ADD, []),
     ])
