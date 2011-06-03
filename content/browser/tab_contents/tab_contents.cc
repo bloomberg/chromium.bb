@@ -1619,10 +1619,11 @@ WebPreferences TabContents::GetWebkitPrefs() {
   WebPreferences web_prefs =
       RenderViewHostDelegateHelper::GetWebkitPrefs(profile, is_web_ui);
 
-  // Force accelerated compositing and 2d canvas off for chrome: and
-  // chrome-extension: pages.
+  // Force accelerated compositing and 2d canvas off for chrome:, about: and
+  // chrome-devtools: pages.
   if (GetURL().SchemeIs(chrome::kChromeDevToolsScheme) ||
-      GetURL().SchemeIs(chrome::kChromeUIScheme)) {
+      GetURL().SchemeIs(chrome::kChromeUIScheme) ||
+      GetURL().SchemeIs(chrome::kAboutScheme)) {
     web_prefs.accelerated_compositing_enabled = false;
     web_prefs.accelerated_2d_canvas_enabled = false;
   }
