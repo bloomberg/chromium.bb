@@ -15,8 +15,8 @@ import subprocess
 import sys
 import signal
 import platform
-from threading import Thread, Event
-from Queue import Queue, Empty
+import threading
+import Queue
 
 ######################################################################
 #
@@ -1084,29 +1084,38 @@ def SetupSignalHandlers():
     signal.signal(signal.SIGHUP, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
 
-def PipeRecord(event, f, q):
+def PipeRecord(sem, f, q):
+  """ Read the output of a subprocess from the file object f one line at a
+      time. Put each line on Queue q and release semaphore sem to wake the
+      parent thread.
+  """
   while True:
     line = f.readline()
     if line:
       q.put(line)
-      event.set()
+      sem.release()
     else:
       f.close()
       break
   return 0
 
-def ProcessWait(event, p):
+def ProcessWait(sem, p):
+  """ Wait for the subprocess.Popen object p to finish, and release
+      the semaphore sem to wake the parent thread.
+  """
   try:
     p.wait()
   except BaseException:
     pass
-  event.set()
+  sem.release()
   return 0
 
 def QueueGetNext(q):
+  """ Return the next line from Queue q, or None if empty.
+  """
   try:
     nextline = q.get_nowait()
-  except Empty:
+  except Queue.Empty:
     return None
   except KeyboardInterrupt as e:
     raise e
@@ -1114,9 +1123,9 @@ def QueueGetNext(q):
     return nextline
 
 def RunWithLog(args, **kwargs):
-  kwargs['log_command'] = True
-  kwargs['log_stdout'] = True
-  kwargs['log_stderr'] = True
+  kwargs.setdefault('log_command', True)
+  kwargs.setdefault('log_stdout', True)
+  kwargs.setdefault('log_stderr', True)
   Run(args, **kwargs)
 
 #
@@ -1152,20 +1161,35 @@ def Run(args,                    # Command and arguments
       Log.Fatal("Unhandled dry-run case.")
     return 0
 
-  record_stdout = log_stdout or return_stdout or redirect_stdout
-  record_stderr = log_stderr or return_stderr or redirect_stderr
+  # If we only want to echo or redirect the output, we directly pass
+  # a descriptor to the child (process_stdout = False), which is is much
+  # faster than doing all the processing here. For any other combination
+  # (e.g. to log, return, or tee), we process the output by firing off
+  # a separate thread below
+  record_stdout = log_stdout or return_stdout
+  record_stderr = log_stderr or return_stderr
+  process_stdout = record_stdout or (redirect_stdout and echo_stdout)
+  process_stderr = record_stderr or (redirect_stderr and echo_stderr)
 
   stdin_pipe = None
   if stdin is not None:
     stdin_pipe = subprocess.PIPE
 
-  stdout_pipe = None
-  if record_stdout:
+  stdout_pipe = None  # By default, inherit the parent's stdout
+  if process_stdout:
     stdout_pipe = subprocess.PIPE
+  elif redirect_stdout:
+    stdout_pipe = redirect_stdout
+  elif not echo_stdout:
+    stdout_pipe = open(os.devnull)
 
-  stderr_pipe = None
-  if record_stderr:
+  stderr_pipe = None # By default, inherit the parent's stderr
+  if process_stderr:
     stderr_pipe = subprocess.PIPE
+  elif redirect_stderr:
+    stderr_pipe = redirect_stderr
+  elif not echo_stderr:
+    stderr_pipe = open(os.devnull)
 
   try:
     p = subprocess.Popen(args, stdin=stdin_pipe,
@@ -1181,19 +1205,19 @@ def Run(args,                    # Command and arguments
 
   CleanupProcesses.append(p)
 
-  stdoutq = Queue()
-  stderrq = Queue()
-  IOReady = Event()
+  stdoutq = Queue.Queue()
+  stderrq = Queue.Queue()
+  IOReady = threading.Semaphore()
   threads = []
 
-  t = Thread(target=ProcessWait, args=(IOReady,p))
+  t = threading.Thread(target=ProcessWait, args=(IOReady,p))
   threads.append(t)
 
-  if record_stdout:
-    t = Thread(target=PipeRecord, args=(IOReady, p.stdout, stdoutq))
+  if process_stdout:
+    t = threading.Thread(target=PipeRecord, args=(IOReady, p.stdout, stdoutq))
     threads.append(t)
-  if record_stderr:
-    t = Thread(target=PipeRecord, args=(IOReady, p.stderr, stderrq))
+  if process_stderr:
+    t = threading.Thread(target=PipeRecord, args=(IOReady, p.stderr, stderrq))
     threads.append(t)
 
   for t in threads:
@@ -1207,10 +1231,12 @@ def Run(args,                    # Command and arguments
 
   stdout_contents = ''
   stderr_contents = ''
-  # Loop while handling I/O on stdout/stderr until it finishes.
+  # Loop while handling I/O on stdout/stderr until the child finishes.
+  # If process_stderr/stdout are both false, then we just wait for the
+  # ProcessWait thread
   lastio = False
   while True:
-    IOReady.wait()
+    IOReady.acquire()
     if p.poll() is not None:
       # Wait for the threads to finish so that the pipes are flushed.
       for t in threads:
@@ -1226,23 +1252,25 @@ def Run(args,                    # Command and arguments
     # Flush stdout queue
     while stdout_qsize > 0:
       line = QueueGetNext(stdoutq)
-      if line and echo_stdout:
-        sys.stdout.write(line)
-      if line and record_stdout:
-        stdout_contents += line
-      if line and redirect_stdout:
-        redirect_stdout.write(line)
+      if line:
+        if echo_stdout:
+          sys.stdout.write(line)
+        if record_stdout:
+          stdout_contents += line
+        if redirect_stdout:
+          redirect_stdout.write(line)
       stdout_qsize -= 1
 
     # Flush stderr queue
     while stderr_qsize > 0:
       line = QueueGetNext(stderrq)
-      if line and echo_stderr:
-        sys.stderr.write(line)
-      if line and record_stderr:
-        stderr_contents += line
-      if line and redirect_stderr:
-        redirect_stderr.write(line)
+      if line:
+        if echo_stderr:
+          sys.stderr.write(line)
+        if record_stderr:
+          stderr_contents += line
+        if redirect_stderr:
+          redirect_stderr.write(line)
       stderr_qsize -= 1
 
     if lastio:

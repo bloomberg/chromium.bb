@@ -41,27 +41,33 @@ def main(argv):
     env.set('input', infile)
     env.set('output', output)
 
+    # When we output to stdout, set redirect_stdout and set log_stdout
+    # to False to bypass the driver's line-by-line handling of stdout
+    # which is extremely slow when you have a lot of output
+
     if IsBitcode(infile):
       if output == '':
         # LLVM by default outputs to a file if -o is missing
         # Let's instead output to stdout
         env.set('output', '-')
         env.append('FLAGS', '-f')
-      RunWithLog('${LLVM_DIS} ${FLAGS} ${input} -o ${output}')
+      RunWithLog('${LLVM_DIS} ${FLAGS} ${input} -o ${output}',
+                 log_stdout = False)
     elif IsELF(infile):
       flags = env.get('FLAGS')
       if len(flags) == 0:
         env.append('FLAGS', '-d')
       if output == '':
         # objdump to stdout
-        RunWithLog('${OBJDUMP} ${FLAGS} ${input}', log_stdout = False,
-                                                   log_stderr = False)
+        RunWithLog('${OBJDUMP} ${FLAGS} ${input}',
+                   log_stdout = False, log_stderr = False)
       else:
         # objdump always outputs to stdout, and doesn't recognize -o
         # Let's add this feature to be consistent.
         fp = DriverOpen(output, 'w')
         RunWithLog('${OBJDUMP} ${FLAGS} ${input}',
-                   echo_stdout = False, redirect_stdout = fp)
+                   echo_stdout = False, log_stdout = False,
+                   redirect_stdout = fp)
         DriverClose(fp)
     else:
       Log.Fatal('Unknown file type')
