@@ -9,7 +9,11 @@ chrome.test.runTests([
     try {
       chrome.tabs.create({url: "404_is_enough.html"}, function(tab1) {
         chrome.tabs.update(tab1.id, {url: "404_again.html"}, function(tab2) {
-          chrome.test.succeed();
+          chrome.tabs.onRemoved.addListener(function(tabId, removeInfo) {
+            chrome.test.assertEq(tab1.id, tabId);
+            chrome.test.succeed();
+          });
+          chrome.tabs.remove(tab1.id);
         });
       });
     } catch (e) {

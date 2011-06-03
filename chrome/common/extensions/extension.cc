@@ -135,7 +135,9 @@ const size_t kNumNonPermissionModuleNames =
 // use with no permissions specified.
 const char* kNonPermissionFunctionNames[] = {
   "tabs.create",
-  "tabs.update"
+  "tabs.onRemoved",
+  "tabs.remove",
+  "tabs.update",
 };
 const size_t kNumNonPermissionFunctionNames =
     arraysize(kNonPermissionFunctionNames);

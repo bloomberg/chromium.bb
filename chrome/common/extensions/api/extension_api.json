@@ -1207,7 +1207,7 @@
       {
         "name": "remove",
         "type": "function",
-        "description": "Closes a tab.",
+        "description": "Closes a tab. Note: This function can be used without requesting the 'tabs' permission in the manifest.",
         "parameters": [
           {"type": "integer", "name": "tabId", "minimum": 0},
           {"type": "function", "name": "callback", "optional": true, "parameters": []}
@@ -1454,7 +1454,7 @@
       {
         "name": "onRemoved",
         "type": "function",
-        "description": "Fires when a tab is closed.",
+        "description": "Fires when a tab is closed. Note: A listener can be registered for this event without requesting the 'tabs' permission in the manifest.",
         "parameters": [
           {"type": "integer", "name": "tabId", "minimum": 0},
           { 

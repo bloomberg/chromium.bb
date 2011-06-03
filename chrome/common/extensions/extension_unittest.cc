@@ -1197,6 +1197,8 @@ TEST(ExtensionTest, ApiPermissions) {
     { "browserAction.abcd.onClick",  true },
     // Test Tabs functions.
     { "tabs.create",      true},
+    { "tabs.onRemoved",   true},
+    { "tabs.remove",      true},
     { "tabs.update",      true},
     { "tabs.getSelected", false},
   };
