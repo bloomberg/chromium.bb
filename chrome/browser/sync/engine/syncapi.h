@@ -1066,6 +1066,8 @@ class SyncManager {
 
   UserShare* GetUserShare() const;
 
+  syncable::ModelTypeSet GetEncryptedDataTypes() const;
+
   // Uses a read-only transaction to determine if the directory being synced has
   // any remaining unsynced items.
   bool HasUnsyncedItems() const;

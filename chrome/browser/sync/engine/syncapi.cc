@@ -2577,10 +2577,11 @@ void SyncManager::SyncInternal::OnSyncEngineEvent(
                   << "ready";
           FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
                             OnPassphraseRequired(sync_api::REASON_ENCRYPTION));
-        } else {
-          FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
-                            OnEncryptionComplete(encrypted_and_enabled_types));
         }
+        // If everything is in order(we have the passphrase) then there is no
+        // need to inform the listeners. They will just wait for sync
+        // completion event and if no errors have been raised it means
+        // encryption was succesful.
       }
     }
 
@@ -2989,6 +2990,12 @@ UserShare* SyncManager::GetUserShare() const {
   DCHECK(data_->initialized()) << "GetUserShare requires initialization!";
   return data_->GetUserShare();
 }
+
+syncable::ModelTypeSet SyncManager::GetEncryptedDataTypes() const {
+  sync_api::ReadTransaction trans(GetUserShare());
+  return GetEncryptedTypes(&trans);
+}
+
 
 bool SyncManager::HasUnsyncedItems() const {
   sync_api::ReadTransaction trans(GetUserShare());

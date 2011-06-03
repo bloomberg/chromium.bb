@@ -182,6 +182,8 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   virtual void EncryptDataTypes(
       const syncable::ModelTypeSet& encrypted_types);
 
+  syncable::ModelTypeSet GetEncryptedDataTypes() const;
+
   syncable::AutofillMigrationState
       GetAutofillMigrationState();
 

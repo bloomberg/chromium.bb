@@ -661,25 +661,11 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // is reworked to allow one-shot commands like clearing server data.
   base::OneShotTimer<ProfileSyncService> clear_server_data_timer_;
 
-  // We keep track of both the currently encrypted types and the types
-  // we will soon be attempting to encrypt.
-  struct EncryptedTypes {
-    // Always initialize current with syncable::PASSWORDS.
-    EncryptedTypes();
-    ~EncryptedTypes();
-
-    // The currently encrypted types. Updated by OnEncryptionComplete whenever
-    // datatypes finish encryption.
-    syncable::ModelTypeSet current;
-
-    // The most recently requested set of types to encrypt. Set by the user,
-    // and cached if the syncer was unable to encrypt new types (for example
-    // because we haven't finished initializing). Cleared when we successfully
-    // post a new encrypt task to the sync backend.
-    syncable::ModelTypeSet pending;
-  };
-
-  EncryptedTypes encrypted_types_;
+  // The most recently requested set of types to encrypt. Set by the user,
+  // and cached if the syncer was unable to encrypt new types (for example
+  // because we haven't finished initializing). Cleared when we successfully
+  // post a new encrypt task to the sync backend.
+  syncable::ModelTypeSet pending_types_for_encryption_;
 
   scoped_ptr<browser_sync::BackendMigrator> migrator_;
 

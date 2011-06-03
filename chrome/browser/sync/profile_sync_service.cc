@@ -354,11 +354,13 @@ void ProfileSyncService::CreateBackend() {
 bool ProfileSyncService::IsEncryptedDatatypeEnabled() const {
   syncable::ModelTypeSet preferred_types;
   GetPreferredDataTypes(&preferred_types);
+  syncable::ModelTypeSet encrypted_types;
+  GetEncryptedDataTypes(&encrypted_types);
   syncable::ModelTypeBitSet preferred_types_bitset =
       syncable::ModelTypeBitSetFromSet(preferred_types);
   syncable::ModelTypeBitSet encrypted_types_bitset =
-      syncable::ModelTypeBitSetFromSet(encrypted_types_.current);
-  DCHECK(encrypted_types_.current.count(syncable::PASSWORDS));
+      syncable::ModelTypeBitSetFromSet(encrypted_types);
+  DCHECK(encrypted_types.count(syncable::PASSWORDS));
   return (preferred_types_bitset & encrypted_types_bitset).any();
 }
 
@@ -694,10 +696,7 @@ void ProfileSyncService::OnPassphraseAccepted() {
 
 void ProfileSyncService::OnEncryptionComplete(
     const syncable::ModelTypeSet& encrypted_types) {
-  if (encrypted_types_.current != encrypted_types) {
-    encrypted_types_.current = encrypted_types;
-    NotifyObservers();
-  }
+  NotifyObservers();
 }
 
 void ProfileSyncService::OnMigrationNeededForTypes(
@@ -1172,16 +1171,27 @@ void ProfileSyncService::EncryptDataTypes(
     const syncable::ModelTypeSet& encrypted_types) {
   if (HasSyncSetupCompleted()) {
     backend_->EncryptDataTypes(encrypted_types);
-    encrypted_types_.pending.clear();
+    pending_types_for_encryption_.clear();
   } else {
-    encrypted_types_.pending = encrypted_types;
+    pending_types_for_encryption_ = encrypted_types;
   }
 }
 
+// This would open a transaction to get the encrypted types. Do not call this
+// if you already have a transaction open.
 void ProfileSyncService::GetEncryptedDataTypes(
     syncable::ModelTypeSet* encrypted_types) const {
-  *encrypted_types = encrypted_types_.current;
-  DCHECK(encrypted_types->count(syncable::PASSWORDS));
+  CHECK(encrypted_types);
+  if (backend_.get()) {
+    *encrypted_types = backend_->GetEncryptedDataTypes();
+    DCHECK(encrypted_types->count(syncable::PASSWORDS));
+  } else {
+    // Either we are in an unrecoverable error or the sync is not yet done
+    // initializing. In either case just return the password type. During
+    // sync initialization the UI might need to know what our encrypted
+    // types are.
+    (*encrypted_types).insert(syncable::PASSWORDS);
+  }
 }
 
 void ProfileSyncService::Observe(NotificationType type,
@@ -1240,8 +1250,10 @@ void ProfileSyncService::Observe(NotificationType type,
       // normal operation.
       backend_->StartSyncingWithServer();
 
-      if (!encrypted_types_.pending.empty())
-        EncryptDataTypes(encrypted_types_.pending);
+      if (!pending_types_for_encryption_.empty()) {
+        EncryptDataTypes(pending_types_for_encryption_);
+        pending_types_for_encryption_.clear();
+      }
       break;
     }
     case NotificationType::PREF_CHANGED: {
@@ -1346,8 +1358,3 @@ bool ProfileSyncService::ShouldPushChanges() {
   return data_type_manager_->state() == DataTypeManager::CONFIGURED;
 }
 
-ProfileSyncService::EncryptedTypes::EncryptedTypes() {
-  current.insert(syncable::PASSWORDS);
-}
-
-ProfileSyncService::EncryptedTypes::~EncryptedTypes() {}
