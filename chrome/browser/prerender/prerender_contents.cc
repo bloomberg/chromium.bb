@@ -125,7 +125,6 @@ PrerenderContents::PrerenderContents(PrerenderManager* prerender_manager,
       referrer_(referrer),
       profile_(profile),
       page_id_(0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(tab_contents_observer_registrar_(this)),
       has_stopped_loading_(false),
       final_status_(FINAL_STATUS_MAX),
       prerendering_has_started_(false),
@@ -157,7 +156,7 @@ void PrerenderContents::StartPrerendering(
   TabContents* new_contents = new TabContents(profile_, NULL, MSG_ROUTING_NONE,
                                               NULL, NULL);
   prerender_contents_.reset(new TabContentsWrapper(new_contents));
-  tab_contents_observer_registrar_.Observe(new_contents);
+  TabContentsObserver::Observe(new_contents);
   prerender_contents_->download_tab_helper()->set_delegate(this);
 
   TabContents* source_tc =
@@ -534,7 +533,7 @@ void PrerenderContents::DestroyWhenUsingTooManyResources() {
 TabContentsWrapper* PrerenderContents::ReleasePrerenderContents() {
   render_view_host_observer_.reset();
   prerender_contents_->download_tab_helper()->set_delegate(NULL);
-  tab_contents_observer_registrar_.Observe(NULL);
+  TabContentsObserver::Observe(NULL);
   return prerender_contents_.release();
 }
 

@@ -96,7 +96,6 @@ ExternalTabContainer::ExternalTabContainer(
     : views::NativeWidgetWin(new views::Widget),
       automation_(automation),
       tab_contents_container_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(tab_contents_registrar_(this)),
       tab_handle_(0),
       ignore_next_load_notification_(false),
       automation_resource_message_filter_(filter),
@@ -195,7 +194,7 @@ bool ExternalTabContainer::Init(Profile* profile,
       Source<NavigationController>(controller),
       NotificationService::NoDetails());
 
-  tab_contents_registrar_.Observe(tab_contents_->tab_contents());
+  TabContentsObserver::Observe(tab_contents_->tab_contents());
 
   // Start loading initial URL
   if (!initial_url.is_empty()) {

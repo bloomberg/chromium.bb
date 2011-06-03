@@ -34,7 +34,6 @@ KeyboardContainerView::KeyboardContainerView(Profile* profile, Browser* browser)
     : dom_view_(new DOMView),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           extension_function_dispatcher_(profile, this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(tab_contents_registrar_(this)),
       browser_(browser) {
   GURL keyboard_url(chrome::kChromeUIKeyboardURL);
   dom_view_->Init(profile,
@@ -45,7 +44,7 @@ KeyboardContainerView::KeyboardContainerView(Profile* profile, Browser* browser)
   AddChildView(dom_view_);
 
   // We have Inited the dom_view. So we must have a tab contents.
-  tab_contents_registrar_.Observe(dom_view_->tab_contents());
+  Observe(dom_view_->tab_contents());
 }
 
 KeyboardContainerView::~KeyboardContainerView() {

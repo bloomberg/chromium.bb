@@ -335,8 +335,6 @@
         'browser/tab_contents/tab_contents_delegate.h',
         'browser/tab_contents/tab_contents_observer.cc',
         'browser/tab_contents/tab_contents_observer.h',
-        'browser/tab_contents/tab_contents_observer_registrar.cc',
-        'browser/tab_contents/tab_contents_observer_registrar.h',
         'browser/tab_contents/tab_contents_view.cc',
         'browser/tab_contents/tab_contents_view.h',
         'browser/tab_contents/title_updated_details.h',

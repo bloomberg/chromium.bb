@@ -844,8 +844,7 @@ bool GetCurrentTabFunction::RunImpl() {
   return true;
 }
 
-UpdateTabFunction::UpdateTabFunction()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(registrar_(this)) {
+UpdateTabFunction::UpdateTabFunction() {
 }
 
 bool UpdateTabFunction::RunImpl() {
@@ -909,7 +908,7 @@ bool UpdateTabFunction::RunImpl() {
           new ExtensionMsg_ExecuteCode(render_view_host->routing_id(),
                                        params));
 
-      registrar_.Observe(contents->tab_contents());
+      Observe(contents->tab_contents());
       AddRef();  // balanced in Observe()
 
       return true;
@@ -989,7 +988,7 @@ void UpdateTabFunction::OnExecuteCodeFinished(int request_id,
 
   SendResponse(success);
 
-  registrar_.Observe(NULL);
+  Observe(NULL);
   Release();  // balanced in Execute()
 }
 

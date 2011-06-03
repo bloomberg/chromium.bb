@@ -11,7 +11,6 @@
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
-#include "content/browser/tab_contents/tab_contents_observer_registrar.h"
 
 // Implement API call tabs.executeScript and tabs.insertCSS.
 class ExecuteCodeInTabFunction : public AsyncExtensionFunction,
@@ -37,8 +36,6 @@ class ExecuteCodeInTabFunction : public AsyncExtensionFunction,
   // Run in UI thread.  Code string contains the code to be executed. Returns
   // true on success. If true is returned, this does an AddRef.
   bool Execute(const std::string& code_string);
-
-  TabContentsObserverRegistrar registrar_;
 
   // Id of tab which executes code.
   int execute_tab_id_;

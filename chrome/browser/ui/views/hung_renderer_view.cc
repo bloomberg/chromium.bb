@@ -14,7 +14,6 @@
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/tab_contents/tab_contents_observer_registrar.h"
 #include "content/common/result_codes.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -195,9 +194,6 @@ class HungRendererDialogView : public views::View,
   // the display of this view.
   TabContents* contents_;
 
-  // Used so we know when the TabContents goes away.
-  TabContentsObserverRegistrar tab_contents_observer_registrar_;
-
   // Whether or not we've created controls for ourself.
   bool initialized_;
 
@@ -228,7 +224,6 @@ HungRendererDialogView::HungRendererDialogView()
       kill_button_(NULL),
       kill_button_container_(NULL),
       contents_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(tab_contents_observer_registrar_(this)),
       initialized_(false) {
   InitClass();
 }
@@ -240,7 +235,7 @@ HungRendererDialogView::~HungRendererDialogView() {
 void HungRendererDialogView::ShowForTabContents(TabContents* contents) {
   DCHECK(contents && window());
   contents_ = contents;
-  tab_contents_observer_registrar_.Observe(contents);
+  Observe(contents);
 
   // Don't show the warning unless the foreground window is the frame, or this
   // window (but still invisible). If the user has another window or
@@ -281,7 +276,7 @@ void HungRendererDialogView::EndForTabContents(TabContents* contents) {
     window()->Close();
     // Since we're closing, we no longer need this TabContents.
     contents_ = NULL;
-    tab_contents_observer_registrar_.Observe(NULL);
+    Observe(NULL);
   }
 }
 

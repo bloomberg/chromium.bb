@@ -21,7 +21,6 @@
 #include "chrome/browser/ui/views/unhandled_keyboard_event_handler.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
-#include "content/browser/tab_contents/tab_contents_observer_registrar.h"
 #include "content/common/navigation_types.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
@@ -285,8 +284,6 @@ class ExternalTabContainer : public TabContentsDelegate,
   scoped_refptr<AutomationProvider> automation_;
 
   NotificationRegistrar registrar_;
-
-  TabContentsObserverRegistrar tab_contents_registrar_;
 
   // A view to handle focus cycling
   TabContentsContainer* tab_contents_container_;

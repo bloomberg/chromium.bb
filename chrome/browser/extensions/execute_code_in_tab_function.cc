@@ -26,8 +26,7 @@
 namespace keys = extension_tabs_module_constants;
 
 ExecuteCodeInTabFunction::ExecuteCodeInTabFunction()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(registrar_(this)),
-      execute_tab_id_(-1),
+    : execute_tab_id_(-1),
       all_frames_(false) {
 }
 
@@ -179,7 +178,7 @@ bool ExecuteCodeInTabFunction::Execute(const std::string& code_string) {
   contents->render_view_host()->Send(new ExtensionMsg_ExecuteCode(
       contents->render_view_host()->routing_id(), params));
 
-  registrar_.Observe(contents->tab_contents());
+  Observe(contents->tab_contents());
   AddRef();  // balanced in OnExecuteCodeFinished()
   return true;
 }
@@ -215,6 +214,6 @@ void ExecuteCodeInTabFunction::OnExecuteCodeFinished(int request_id,
 
   SendResponse(success);
 
-  registrar_.Observe(NULL);
+  Observe(NULL);
   Release();  // balanced in Execute()
 }

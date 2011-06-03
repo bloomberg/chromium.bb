@@ -10,7 +10,6 @@
 
 #include "chrome/browser/extensions/extension_function.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
-#include "content/browser/tab_contents/tab_contents_observer_registrar.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 
@@ -123,7 +122,6 @@ class UpdateTabFunction : public AsyncExtensionFunction,
   virtual bool OnMessageReceived(const IPC::Message& message);
   void OnExecuteCodeFinished(int request_id, bool success,
                              const std::string& error);
-  TabContentsObserverRegistrar registrar_;
   DECLARE_EXTENSION_FUNCTION_NAME("tabs.update")
 };
 class MoveTabFunction : public SyncExtensionFunction {

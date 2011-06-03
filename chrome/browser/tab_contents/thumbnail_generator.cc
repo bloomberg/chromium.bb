@@ -127,8 +127,7 @@ struct ThumbnailGenerator::AsyncRequestInfo {
 };
 
 ThumbnailGenerator::ThumbnailGenerator()
-    : tab_contents_observer_registrar_(this),
-      load_interrupted_(false) {
+    : load_interrupted_(false) {
   // The BrowserProcessImpl creates this non-lazily. If you add nontrivial
   // stuff here, be sure to convert it to being lazily created.
   //
@@ -140,7 +139,7 @@ ThumbnailGenerator::~ThumbnailGenerator() {
 }
 
 void ThumbnailGenerator::StartThumbnailing(TabContents* tab_contents) {
-  tab_contents_observer_registrar_.Observe(tab_contents);
+  TabContentsObserver::Observe(tab_contents);
 
   if (registrar_.IsEmpty()) {
     // Even though we deal in RenderWidgetHosts, we only care about its

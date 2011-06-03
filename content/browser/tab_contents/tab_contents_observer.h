@@ -11,7 +11,6 @@
 #include "webkit/glue/window_open_disposition.h"
 
 class RenderViewHost;
-class TabContentsObserverRegistrar;
 struct ViewHostMsg_FrameNavigate_Params;
 
 // An observer API implemented by classes which are interested in various page
@@ -84,11 +83,14 @@ class TabContentsObserver : public IPC::Channel::Listener,
   explicit TabContentsObserver(TabContents* tab_contents);
 
   // Use this constructor when the object wants to observe a TabContents for
-  // part of its lifetime.  It can use a TabContentsObserverRegistrar member
-  // variable to start and stop observing.
+  // part of its lifetime.  It can then call Observe() to start and stop
+  // observing.
   TabContentsObserver();
 
   virtual ~TabContentsObserver();
+
+  // Start observing a different TabContents; used with the default constructor.
+  void Observe(TabContents* tab_contents);
 
   // Invoked when the TabContents is being destroyed. Gives subclasses a chance
   // to cleanup. At the time this is invoked |tab_contents()| returns NULL.
@@ -103,11 +105,6 @@ class TabContentsObserver : public IPC::Channel::Listener,
 
   TabContents* tab_contents() const { return tab_contents_; }
   int routing_id() const;
-
-  friend class TabContentsObserverRegistrar;
-
-  // Called from TabContents in response to having |this| added as an observer.
-  void SetTabContents(TabContents* tab_contents);
 
  private:
   friend class TabContents;

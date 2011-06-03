@@ -485,7 +485,6 @@ class TabContents : public PageNavigator,
 
  protected:
   friend class TabContentsObserver;
-  friend class TabContentsObserverRegistrar;
 
   // Add and remove observers for page navigation notifications. Adding or
   // removing multiple times has no effect. The order in which notifications
