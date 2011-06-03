@@ -3,60 +3,30 @@
 // found in the LICENSE file.
 
 var exif = {
-  verbose: false,
+  urlFilter: /\.jpe?g$/i,
 
-  messageHandlers: {
-    "init": function() {
-      this.log('thumbnailer initialized');
-    },
-
-    "get-exif": function(fileURL) {
-      this.processOneFile(fileURL, function callback(metadata) {
-          postMessage({verb: 'give-exif',
-                       arguments: [fileURL, metadata]});
-      });
-    },
-  },
-
-  processOneFile: function(fileURL, callback) {
-    var self = this;
+  parse : function (file, callback, error_closure, logger) {
     var currentStep = -1;
 
     function nextStep(var_args) {
-      self.vlog('nextStep: ' + steps[currentStep + 1].name);
-      steps[++currentStep].apply(self, arguments);
+      logger.vlog('nextStep: ' + steps[currentStep + 1].name);
+      steps[++currentStep].apply(null, arguments);
     }
 
     function onError(err) {
-      self.vlog('Error processing: ' + fileURL + ': step: ' +
-                steps[currentStep].name + ": " + err);
-
-      postMessage({verb: 'give-exif-error',
-                   arguments: [fileURL, steps[currentStep].name, err]});
+      error_closure(err, steps[currentStep].name);
     }
 
     var steps =
-    [ // Step one, turn the url into an entry.
-      function getEntry() {
-        webkitResolveLocalFileSystemURL(fileURL,
-                                        function(entry) { nextStep(entry) },
-                                        onError);
-      },
-
-      // Step two, turn the entry into a file.
-      function getFile(entry) {
-        entry.file(function(file) { nextStep(file) }, onError);
-      },
-
-      // Step three, read the file header into a byte array.
+    [ // Step one, read the file header into a byte array.
       function readHeader(file) {
-        var reader = new FileReader(file.webkitSlice(0, 1024));
+        var reader = new FileReader();
         reader.onerror = onError;
         reader.onload = function(event) { nextStep(file, reader.result) };
-        reader.readAsArrayBuffer(file);
+        reader.readAsArrayBuffer(file.webkitSlice(0, 1024));
       },
 
-      // Step four, find the exif marker and read all exif data.
+      // Step two, find the exif marker and read all exif data.
       function findExif(file, buf) {
         var br = new exif.BufferReader(buf);
         var mark = br.readMark();
@@ -91,7 +61,7 @@ var exif = {
         }
       },
 
-      // Step five, parse the exif data.
+      // Step three, parse the exif data.
       function parseExif(file, buf) {
         var br = new exif.BufferReader(buf);
         var order = br.readScalar(2);
@@ -129,7 +99,7 @@ var exif = {
           var b64 = br.readBase64(tags[exif.TAG_JPG_THUMB_LENGTH].value);
           metadata.thumbnailURL = 'data:image/jpeg;base64,' + b64;
         } else {
-          self.vlog('Image has EXIF data, but no JPG thumbnail.');
+          logger.vlog('Image has EXIF data, but no JPG thumbnail.');
         }
 
         if (exif.TAG_EXIF_IMAGE_WIDTH in tags)
@@ -141,32 +111,11 @@ var exif = {
         nextStep(metadata);
       },
 
-      // Step six, we're done.
+      // Step four, we're done.
       callback
     ];
 
-    nextStep();
-  },
-
-  onMessage: function(event) {
-    var data = event.data;
-
-    if (this.messageHandlers.hasOwnProperty(data.verb)) {
-      //this.log('dispatching: ' + data.verb + ': ' + data.arguments);
-      this.messageHandlers[data.verb].apply(this, data.arguments);
-    } else {
-      this.log('Unknown message from client: ' + data.verb, data);
-    }
-  },
-
-  log: function(var_args) {
-    var ary = Array.apply(null, arguments);
-    postMessage({verb: 'log', arguments: ary});
-  },
-
-  vlog: function(var_args) {
-    if (this.verbose)
-      this.log.apply(this, arguments);
+    nextStep(file);
   }
 };
 
@@ -213,90 +162,26 @@ exif.BufferReader.prototype = {
    * Big endian read.  Most significant bytes come first.
    */
   readBig: function(width) {
-    var rv = 0;
-    switch(width) {
-      case 4:
-        rv = this.ary_[this.pos_++] << 24;
-      case 3:
-        rv |= this.ary_[this.pos_++] << 16;
-      case 2:
-        rv |= this.ary_[this.pos_++] << 8;
-      case 1:
-        rv |= this.ary_[this.pos_++];
-    }
-
-    return rv;
+    this.skip(width);
+    return parseUtil.parseBig(this.ary_, this.pos_ - width, width);
   },
 
   /**
    * Little endian read.  Least significant bytes come first.
    */
   readLittle: function(width) {
-    var rv = 0;
-    switch(width) {
-      case 4:
-        rv = this.ary_[this.pos_ + 3] << 24;
-      case 3:
-        rv |= this.ary_[this.pos_ + 2] << 16;
-      case 2:
-        rv |= this.ary_[this.pos_+ 1] << 8;
-      case 1:
-        rv |= this.ary_[this.pos_];
-    }
-
-    this.pos_ += width;
-    return rv;
+    this.skip(width);
+    return parseUtil.parseLittle(this.ary_, this.pos_ - width, width);
   },
 
   readString: function(length) {
-    var chars = [];
-    for (var i = 0; i < length; i++) {
-      chars[i] = String.fromCharCode(this.ary_[this.pos_++]);
-    }
-
-    return chars.join('');
+    this.skip(length);
+    return parseUtil.parseString(this.ary_, this.pos_ - length, this.pos_);
   },
 
-  base64Alphabet_: ('ABCDEFGHIJKLMNOPQRSTUVWXYZ' +
-                    'abcdefghijklmnopqrstuvwxyz' +
-                    '0123456789+/').split(''),
-
   readBase64: function(length) {
-    var rv = [];
-    var chars = [];
-    var padding = 0;
-
-    for (var i = 0; i < length; /* incremented inside */) {
-      var bits = this.ary_[this.pos_ + i++] << 16;
-
-      if (i < length) {
-        bits |= this.ary_[this.pos_ + i++] << 8;
-
-        if (i < length) {
-          bits |= this.ary_[this.pos_ + i++];
-        } else {
-          padding = 1;
-        }
-      } else {
-        padding = 2;
-      }
-
-      chars[3] = this.base64Alphabet_[bits & 63];
-      chars[2] = this.base64Alphabet_[(bits >> 6) & 63];
-      chars[1] = this.base64Alphabet_[(bits >> 12) & 63];
-      chars[0] = this.base64Alphabet_[(bits >> 18) & 63];
-
-      rv.push.apply(rv, chars);
-    }
-
-    this.pos_ += i;
-
-    if (padding > 0)
-      chars[chars.length - 1] = '=';
-    if (padding > 1)
-      chars[chars.length - 2] = '=';
-
-    return rv.join('');
+    this.skip(length);
+    return parseUtil.parseBase64(this.ary_, this.pos_ - length, this.pos_);
   },
 
   readMark: function() {
@@ -335,4 +220,4 @@ exif.BufferReader.prototype = {
   }
 };
 
-var onmessage = exif.onMessage.bind(exif);
+if (metadataReader) metadataReader.registerParser(exif);

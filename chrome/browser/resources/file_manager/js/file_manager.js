@@ -4,10 +4,10 @@
 
 // WK Bug 55728 is fixed on the chrome 12 branch but not on the trunk.
 // TODO(rginda): Enable this everywhere once we have a trunk-worthy fix.
-const ENABLE_EXIF_READER = navigator.userAgent.match(/chrome\/12\.0/i);
+const ENABLE_METADATA = true;
 
 // Thumbnail view is painful without the exif reader.
-const ENABLE_THUMBNAIL_VIEW = ENABLE_EXIF_READER;
+const ENABLE_THUMBNAIL_VIEW = ENABLE_METADATA;
 
 var g_slideshow_data = null;
 
@@ -41,7 +41,7 @@ function FileManager(dialogDom, rootEntries, params) {
 
   this.listType_ = null;
 
-  this.exifCache_ = {};
+  this.metadataCache_ = {};
 
   // True if we should filter out files that start with a dot.
   this.filterFiles_ = true;
@@ -79,10 +79,16 @@ function FileManager(dialogDom, rootEntries, params) {
 
   this.table_.list_.focus();
 
-  if (ENABLE_EXIF_READER) {
-    this.exifReader = new Worker('js/exif_reader.js');
-    this.exifReader.onmessage = this.onExifReaderMessage_.bind(this);
-    this.exifReader.postMessage({verb: 'init'});
+  if (ENABLE_METADATA) {
+    // Pass all URLs to the metadata reader until we have a correct filter.
+    this.metadataUrlFilter_ = /.*/;
+
+    this.metadataReader_ = new Worker('js/metadata_reader.js');
+    this.metadataReader_.onmessage = this.onMetadataMessage_.bind(this);
+    this.metadataReader_.postMessage({verb: 'init'});
+  } else {
+    // This regexp never matches anything, so the metadata reader is bypassed.
+    this.metadataUrlFilter_ = /$./;
   }
 }
 
@@ -1132,10 +1138,10 @@ FileManager.prototype = {
     cacheNextFile();
   };
 
-  FileManager.prototype.onExifGiven_ = function(fileURL, metadata) {
-    var observers = this.exifCache_[fileURL];
+  FileManager.prototype.onMetadataReceived_ = function(fileURL, metadata) {
+    var observers = this.metadataCache_[fileURL];
     if (!observers || !(observers instanceof Array)) {
-      console.error('Missing or invalid exif observers: ' + fileURL + ': ' +
+      console.error('Missing or invalid metadata observers: ' + fileURL + ': ' +
                     observers);
       return;
     }
@@ -1144,15 +1150,19 @@ FileManager.prototype = {
       observers[i](metadata);
     }
 
-    this.exifCache_[fileURL] = metadata;
+    this.metadataCache_[fileURL] = metadata;
   };
 
-  FileManager.prototype.onExifError_ = function(fileURL, step, error) {
-    console.warn('Exif error: ' + fileURL + ': ' + step + ': ' + error);
-    this.onExifGiven_(fileURL, {});
+  FileManager.prototype.onMetadataError_ = function(fileURL, step, error) {
+    console.warn('metadata: ' + fileURL + ': ' + step + ': ' + error);
+    this.onMetadataReceived_(fileURL, {});
   };
 
-  FileManager.prototype.onExifReaderMessage_ = function(event) {
+  FileManager.prototype.onMetadataUrlFilter_ = function(regexp) {
+    this.metadataUrlFilter_ = regexp;
+  };
+
+  FileManager.prototype.onMetadataMessage_ = function(event) {
     var data = event.data;
     var self = this;
 
@@ -1160,19 +1170,23 @@ FileManager.prototype = {
 
     switch (data.verb) {
       case 'log':
-        console.log.apply(console, ['exif:'].concat(data.arguments));
+        console.log.apply(console, ['metadata:'].concat(data.arguments));
         break;
 
-      case 'give-exif':
-        fwd('onExifGiven_', data.arguments);
+      case 'result':
+        fwd('onMetadataReceived_', data.arguments);
         break;
 
-      case 'give-exif-error':
-        fwd('onExifError_', data.arguments);
+      case 'error':
+        fwd('onMetadataError_', data.arguments);
+        break;
+
+      case 'filter':
+        fwd('onMetadataUrlFilter_', data.arguments);
         break;
 
       default:
-        console.log('Unknown message from exif reader: ' + data.verb, data);
+        console.log('Unknown message from metadata reader: ' + data.verb, data);
         break;
     }
   };
@@ -1335,15 +1349,20 @@ FileManager.prototype = {
     });
   };
 
-  FileManager.prototype.cacheExifMetadata_ = function(entry, callback) {
+  FileManager.prototype.cacheMetadata_ = function(entry, callback) {
     var url = entry.toURL();
-    var cacheValue = this.exifCache_[url];
+    var cacheValue = this.metadataCache_[url];
 
     if (!cacheValue) {
       // This is the first time anyone's asked, go get it.
-      this.exifCache_[url] = [callback];
-      this.exifReader.postMessage({verb: 'get-exif',
-                                   arguments: [entry.toURL()]});
+      if (entry.name.match(this.metadataUrlFilter_)) {
+        this.metadataCache_[url] = [callback];
+        this.metadataReader_.postMessage(
+            {verb: 'request', arguments: [entry.toURL()]});
+        return;
+      }
+      // Cannot extract metadata for this file, return an empty map.
+      setTimeout(function() { callback({}) });
       return;
     }
 
@@ -1359,7 +1378,7 @@ FileManager.prototype = {
       return;
     }
 
-    console.error('Unexpected exif cache value:' + cacheValue);
+    console.error('Unexpected metadata cache value:' + cacheValue);
   };
 
   FileManager.prototype.getThumbnailURL = function(entry, callback) {
@@ -1367,28 +1386,19 @@ FileManager.prototype = {
       return;
 
     var iconType = getIconType(entry);
-    if (iconType != 'image') {
-      // Not an image, display a canned clip-art graphic.
-      if (!(iconType in previewArt))
-        iconType = 'unknown';
 
-      setTimeout(function() { callback(iconType, previewArt[iconType]) });
-      return;
-    }
-
-    if (ENABLE_EXIF_READER) {
-      if (entry.name.match(/\.jpe?g$/i)) {
-        // File is a jpg image, fetch the exif thumbnail.
-        this.cacheExifMetadata_(entry, function(metadata) {
-          callback(iconType, metadata.thumbnailURL || entry.toURL());
-        });
-        return;
+    this.cacheMetadata_(entry, function (metadata) {
+      var url = metadata.thumbnailURL;
+      if (!url) {
+        if (iconType == 'image') {
+          url = entry.toURL();
+        } else {
+          url = previewArt[iconType] || previewArt['unknown'];
+        }
       }
-    }
 
-    // File is some other kind of image, just return the url to the whole
-    // thing.
-    setTimeout(function() { callback(iconType, entry.toURL()) });
+      callback(iconType, url);
+    });
   };
 
   /**
