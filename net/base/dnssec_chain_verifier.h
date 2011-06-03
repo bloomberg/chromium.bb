@@ -103,7 +103,7 @@ class NET_TEST DNSSECChainVerifier {
 // Authority Authorization records. These are DNS records which can express
 // limitations regarding acceptable certificates for a domain. See
 // http://tools.ietf.org/html/draft-hallambaker-donotissue-04
-class DnsCAARecord {
+class NET_TEST DnsCAARecord {
  public:
   enum ParseResult {
     SUCCESS,  // parse successful.
@@ -115,7 +115,7 @@ class DnsCAARecord {
   // A CAAPolicy is the result of parsing a set of CAA records. It describes a
   // number of properies of certificates in a chain, any of which is sufficient
   // to validate the chain.
-  struct Policy {
+  struct NET_TEST Policy {
    public:
     Policy();
     ~Policy();
