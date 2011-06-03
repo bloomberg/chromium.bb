@@ -338,6 +338,7 @@ add_config('x86-mario-pre-flight-branch', [internal, {
 
 add_config('arm-tegra2_seaboard-private-bin', [internal, arm, binary, {
   'board' : 'tegra2_seaboard',
+  'prebuilts': False,
 }])
 
 add_config('arm-tegra2_kaen-private-bin', [internal, arm, binary, {
