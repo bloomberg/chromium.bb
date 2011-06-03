@@ -188,11 +188,14 @@ ContentSettingPrerenderImageModel::ContentSettingPrerenderImageModel()
 void ContentSettingPrerenderImageModel::UpdateFromTabContents(
     TabContents* tab_contents) {
   bool visibility = false;
-  if (tab_contents) {
-    prerender::PrerenderManager* pm =
-        tab_contents->profile()->GetPrerenderManager();
-    if (pm && pm->IsTabContentsPrerendered(tab_contents))
-      visibility = true;
+  if (prerender::PrerenderManager::GetMode() ==
+      prerender::PrerenderManager::PRERENDER_MODE_ENABLED) {
+    if (tab_contents) {
+      prerender::PrerenderManager* pm =
+          tab_contents->profile()->GetPrerenderManager();
+      if (pm && pm->IsTabContentsPrerendered(tab_contents))
+        visibility = true;
+    }
   }
   set_visible(visibility);
 }
