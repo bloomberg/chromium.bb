@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SSL_SSL_ERROR_HANDLER_H_
-#define CHROME_BROWSER_SSL_SSL_ERROR_HANDLER_H_
+#ifndef CONTENT_BROWSER_SSL_SSL_ERROR_HANDLER_H_
+#define CONTENT_BROWSER_SSL_SSL_ERROR_HANDLER_H_
 #pragma once
 
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/ssl/ssl_manager.h"
 #include "content/browser/renderer_host/global_request_id.h"
+#include "content/browser/ssl/ssl_manager.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/glue/resource_type.h"
 
@@ -141,4 +141,4 @@ class SSLErrorHandler : public base::RefCountedThreadSafe<SSLErrorHandler> {
   DISALLOW_COPY_AND_ASSIGN(SSLErrorHandler);
 };
 
-#endif  // CHROME_BROWSER_SSL_SSL_ERROR_HANDLER_H_
+#endif  // CONTENT_BROWSER_SSL_SSL_ERROR_HANDLER_H_

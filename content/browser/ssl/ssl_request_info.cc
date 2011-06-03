@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ssl/ssl_request_info.h"
+#include "content/browser/ssl/ssl_request_info.h"
 
 SSLRequestInfo::SSLRequestInfo(const GURL& url,
                                ResourceType::Type resource_type,

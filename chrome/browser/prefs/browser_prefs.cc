@@ -43,7 +43,6 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
-#include "chrome/browser/ssl/ssl_manager.h"
 #include "chrome/browser/sync/signin_manager.h"
 #include "chrome/browser/tabs/pinned_tab_codec.h"
 #include "chrome/browser/task_manager/task_manager.h"
@@ -59,6 +58,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/browser/host_zoom_map.h"
 #include "content/browser/renderer_host/browser_render_process_host.h"
+#include "content/browser/ssl/ssl_manager.h"
 
 #if defined(TOOLKIT_VIEWS)  // TODO(port): whittle this down as we port
 #include "chrome/browser/ui/views/browser_actions_container.h"

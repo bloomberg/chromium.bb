@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ssl/ssl_cert_error_handler.h"
+#include "content/browser/ssl/ssl_cert_error_handler.h"
 
-#include "chrome/browser/ssl/ssl_manager.h"
-#include "chrome/browser/ssl/ssl_policy.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
+#include "content/browser/ssl/ssl_policy.h"
 #include "net/base/x509_certificate.h"
 
 SSLCertErrorHandler::SSLCertErrorHandler(

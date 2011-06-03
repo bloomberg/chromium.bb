@@ -23,6 +23,7 @@
 #include "grit/theme_resources.h"
 #include "net/base/cert_status_flags.h"
 #include "net/base/net_util.h"
+#include "ui/base/l10n/l10n_util.h"
 
 ToolbarModel::ToolbarModel(Browser* browser)
     : browser_(browser),
@@ -120,7 +121,22 @@ std::wstring ToolbarModel::GetEVCertName() const {
   // the security level would be NONE.
   CertStore::GetInstance()->RetrieveCert(
       GetNavigationController()->GetActiveEntry()->ssl().cert_id(), &cert);
-  return UTF16ToWideHack(SSLManager::GetEVCertName(*cert));
+  return UTF16ToWideHack(GetEVCertName(*cert));
+}
+
+// static
+string16 ToolbarModel::GetEVCertName(const net::X509Certificate& cert) {
+  // EV are required to have an organization name and country.
+  if (cert.subject().organization_names.empty() ||
+      cert.subject().country_name.empty()) {
+    NOTREACHED();
+    return string16();
+  }
+
+  return l10n_util::GetStringFUTF16(
+      IDS_SECURE_CONNECTION_EV,
+      UTF8ToUTF16(cert.subject().organization_names[0]),
+      UTF8ToUTF16(cert.subject().country_name));
 }
 
 NavigationController* ToolbarModel::GetNavigationController() const {

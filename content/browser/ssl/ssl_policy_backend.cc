@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ssl/ssl_policy_backend.h"
+#include "content/browser/ssl/ssl_policy_backend.h"
 
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ssl/ssl_host_state.h"
+#include "content/browser/ssl/ssl_host_state.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 
 SSLPolicyBackend::SSLPolicyBackend(NavigationController* controller)

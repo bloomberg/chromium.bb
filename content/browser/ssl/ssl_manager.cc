@@ -2,25 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ssl/ssl_manager.h"
+#include "content/browser/ssl/ssl_manager.h"
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/load_from_memory_cache_details.h"
-#include "chrome/browser/ssl/ssl_cert_error_handler.h"
-#include "chrome/browser/ssl/ssl_policy.h"
-#include "chrome/browser/ssl/ssl_request_info.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/browser/renderer_host/resource_request_details.h"
+#include "content/browser/ssl/ssl_cert_error_handler.h"
+#include "content/browser/ssl/ssl_policy.h"
+#include "content/browser/ssl/ssl_request_info.h"
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/provisional_load_details.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
-#include "grit/generated_resources.h"
 #include "net/base/cert_status_flags.h"
-#include "ui/base/l10n/l10n_util.h"
 
 // static
 void SSLManager::OnSSLCertificateError(ResourceDispatcherHost* rdh,
@@ -90,21 +88,6 @@ bool SSLManager::DeserializeSecurityInfo(const std::string& state,
          pickle.ReadInt(&iter, cert_status) &&
          pickle.ReadInt(&iter, security_bits) &&
          pickle.ReadInt(&iter, ssl_connection_status);
-}
-
-// static
-string16 SSLManager::GetEVCertName(const net::X509Certificate& cert) {
-  // EV are required to have an organization name and country.
-  if (cert.subject().organization_names.empty() ||
-      cert.subject().country_name.empty()) {
-    NOTREACHED();
-    return string16();
-  }
-
-  return l10n_util::GetStringFUTF16(
-      IDS_SECURE_CONNECTION_EV,
-      UTF8ToUTF16(cert.subject().organization_names[0]),
-      UTF8ToUTF16(cert.subject().country_name));
 }
 
 SSLManager::SSLManager(NavigationController* controller)

@@ -2,16 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SSL_SSL_MANAGER_H_
-#define CHROME_BROWSER_SSL_SSL_MANAGER_H_
+#ifndef CONTENT_BROWSER_SSL_SSL_MANAGER_H_
+#define CONTENT_BROWSER_SSL_SSL_MANAGER_H_
 #pragma once
 
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/string16.h"
-#include "chrome/browser/ssl/ssl_policy_backend.h"
+#include "content/browser/ssl/ssl_policy_backend.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
@@ -65,9 +64,6 @@ class SSLManager : public NotificationObserver {
                                       int* cert_status,
                                       int* security_bits,
                                       int* connection_status);
-
-  // Returns "<organization_name> [<country>]".
-  static string16 GetEVCertName(const net::X509Certificate& cert);
 
   // Construct an SSLManager for the specified tab.
   // If |delegate| is NULL, SSLPolicy::GetDefaultPolicy() is used.
@@ -129,4 +125,4 @@ class SSLManager : public NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(SSLManager);
 };
 
-#endif  // CHROME_BROWSER_SSL_SSL_MANAGER_H_
+#endif  // CONTENT_BROWSER_SSL_SSL_MANAGER_H_

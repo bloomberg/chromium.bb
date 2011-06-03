@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ssl/ssl_error_handler.h"
+#include "content/browser/ssl/ssl_error_handler.h"
 
-#include "chrome/browser/ssl/ssl_cert_error_handler.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
+#include "content/browser/ssl/ssl_cert_error_handler.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request.h"

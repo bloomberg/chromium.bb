@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SSL_SSL_CERT_ERROR_HANDLER_H_
-#define CHROME_BROWSER_SSL_SSL_CERT_ERROR_HANDLER_H_
+#ifndef CONTENT_BROWSER_SSL_SSL_CERT_ERROR_HANDLER_H_
+#define CONTENT_BROWSER_SSL_SSL_CERT_ERROR_HANDLER_H_
 #pragma once
 
 #include <string>
 
-#include "chrome/browser/ssl/ssl_error_handler.h"
+#include "content/browser/ssl/ssl_error_handler.h"
 #include "net/base/ssl_info.h"
 
 namespace net {
@@ -48,4 +48,4 @@ class SSLCertErrorHandler : public SSLErrorHandler {
   DISALLOW_COPY_AND_ASSIGN(SSLCertErrorHandler);
 };
 
-#endif  // CHROME_BROWSER_SSL_SSL_CERT_ERROR_HANDLER_H_
+#endif  // CONTENT_BROWSER_SSL_SSL_CERT_ERROR_HANDLER_H_
