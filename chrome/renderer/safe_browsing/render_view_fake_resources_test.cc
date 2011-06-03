@@ -106,7 +106,6 @@ void RenderViewFakeResourcesTest::TearDown() {
   } while (view_);
 
   mock_process_.reset();
-  message_loop_.RunAllPending();
   platform_->PlatformUninitialize();
   platform_.reset();
   command_line_.reset();

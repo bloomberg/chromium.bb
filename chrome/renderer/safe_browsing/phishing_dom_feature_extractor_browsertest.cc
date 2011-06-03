@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -187,14 +187,7 @@ TEST_F(PhishingDOMFeatureExtractorTest, ScriptAndImageFeatures) {
   EXPECT_THAT(features.features(), ContainerEq(expected_features.features()));
 }
 
-// Flaky on windows, http://crbug.com/84623
-#if defined(OS_WIN)
-#define MAYBE_SubFrames FLAKY_SubFrames
-#else
-#define MAYBE_SubFrames SubFrames
-#endif
-
-TEST_F(PhishingDOMFeatureExtractorTest, MAYBE_SubFrames) {
+TEST_F(PhishingDOMFeatureExtractorTest, SubFrames) {
   // This test doesn't exercise the extraction timing.
   EXPECT_CALL(clock_, Now()).WillRepeatedly(Return(base::TimeTicks::Now()));
 
