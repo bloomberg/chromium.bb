@@ -20,9 +20,10 @@ env.Append(CFLAGS=['-Wno-pointer-sign'])
 # ..and don't warn about missing braces
 env.Append(CCFLAGS=['-Wno-missing-braces'])
 
-# Add local path to find GPU sources.
+# Add local path to find GPU sources and GLES2 includes.
 env.Append(CPPPATH=[
     '$SOURCE_ROOT/third_party/gles2_book/Common/Include',
+    '$SOURCE_ROOT/gpu',
     ])
 
 gles_demo_srcs = [
@@ -65,4 +66,3 @@ for demo, sources in gles_book_examples.iteritems():
                     'm'])
     env.Publish('ppapi_' + demo + '.nexe', 'run',
        ['ppapi_gles_book.html?nexe=' + demo ])
-

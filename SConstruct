@@ -2643,7 +2643,9 @@ nacl_extra_sdk_env = pre_base_env.Clone(
     BUILD_TYPE_DESCRIPTION = 'NaCl SDK extra library build',
     NACL_BUILD_FAMILY = 'UNTRUSTED',
     IRT_DATA_REGION_START = nacl_env['IRT_DATA_REGION_START'],
-    CPPPATH = ['${SOURCE_ROOT}'],
+    # ${SOURCE_ROOT} for #include <ppapi/...>
+    # ${SOURCE_ROOT}/gpu for #include <GLES2/...>"
+    CPPPATH = ['${SOURCE_ROOT}', '${SOURCE_ROOT}/gpu'],
     CPPDEFINES = [
       ['NACL_BUILD_ARCH', '${BUILD_ARCHITECTURE}' ],
       ['NACL_BUILD_SUBARCH', '${BUILD_SUBARCH}' ],
