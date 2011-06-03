@@ -1298,4 +1298,20 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, SafeBrowsingPage) {
                    FINAL_STATUS_SAFE_BROWSING, 1);
 }
 
+// Checks that a local storage read will not cause prerender to fail.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderLocalStorageRead) {
+  PrerenderTestURL("files/prerender/prerender_localstorage_read.html",
+                   FINAL_STATUS_USED,
+                   1);
+  NavigateToDestURL();
+}
+
+// Checks that a local storage write will not cause prerender to fail.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderLocalStorageWrite) {
+  PrerenderTestURL("files/prerender/prerender_localstorage_write.html",
+                   FINAL_STATUS_USED,
+                   1);
+  NavigateToDestURL();
+}
+
 }  // namespace prerender
