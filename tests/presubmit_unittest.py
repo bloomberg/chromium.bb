@@ -16,6 +16,7 @@ from super_mox import mox, SuperMoxTestBase
 
 import owners
 import presubmit_support as presubmit
+import rietveld
 # Shortcut.
 presubmit_canned_checks = presubmit.presubmit_canned_checks
 
@@ -1338,10 +1339,12 @@ class CannedChecksUnittest(PresubmitTestsBase):
   def MockInputApi(self, change, committing):
     input_api = self.mox.CreateMock(presubmit.InputApi)
     input_api.cStringIO = presubmit.cStringIO
+    input_api.json = presubmit.json
     input_api.os_listdir = self.mox.CreateMockAnything()
     input_api.os_walk = self.mox.CreateMockAnything()
     input_api.os_path = presubmit.os.path
     input_api.re = presubmit.re
+    input_api.rietveld = self.mox.CreateMock(rietveld.Rietveld)
     input_api.traceback = presubmit.traceback
     input_api.urllib2 = self.mox.CreateMock(presubmit.urllib2)
     input_api.unittest = unittest
@@ -1815,7 +1818,6 @@ class CannedChecksUnittest(PresubmitTestsBase):
 
   def testCannedCheckJsonTreeIsOpenOpen(self):
     input_api = self.MockInputApi(None, True)
-    input_api.json = presubmit.json
     connection = self.mox.CreateMockAnything()
     input_api.urllib2.urlopen('url_to_open').AndReturn(connection)
     status = {
@@ -1832,7 +1834,6 @@ class CannedChecksUnittest(PresubmitTestsBase):
 
   def testCannedCheckJsonTreeIsOpenClosed(self):
     input_api = self.MockInputApi(None, True)
-    input_api.json = presubmit.json
     connection = self.mox.CreateMockAnything()
     input_api.urllib2.urlopen('url_to_closed').AndReturn(connection)
     status = {
@@ -1968,7 +1969,6 @@ mac|success|blew
 
   def testCheckBuildbotPendingBuildsBad(self):
     input_api = self.MockInputApi(None, True)
-    input_api.json = presubmit.json
     connection = self.mox.CreateMockAnything()
     input_api.urllib2.urlopen('uurl').AndReturn(connection)
     connection.read().AndReturn('foo')
@@ -1983,7 +1983,6 @@ mac|success|blew
 
   def testCheckBuildbotPendingBuildsGood(self):
     input_api = self.MockInputApi(None, True)
-    input_api.json = presubmit.json
     connection = self.mox.CreateMockAnything()
     input_api.urllib2.urlopen('uurl').AndReturn(connection)
     connection.read().AndReturn("""
@@ -2002,8 +2001,7 @@ mac|success|blew
         presubmit.OutputApi.PresubmitNotifyResult)
 
   def AssertOwnersWorks(self, tbr=False, issue='1', approvers=None,
-      rietveld_response=None, host_url=None,
-      uncovered_files=None, expected_output=''):
+      rietveld_response=None, uncovered_files=None, expected_output=''):
     if approvers is None:
       approvers = set()
     if uncovered_files is None:
@@ -2022,26 +2020,19 @@ mac|success|blew
     if not tbr and issue:
       affected_file.LocalPath().AndReturn('foo.cc')
       change.AffectedFiles(file_filter=None).AndReturn([affected_file])
-
-      expected_host = 'http://localhost'
-      if host_url:
-        input_api.host_url = host_url
-        if host_url.startswith('https'):
-          expected_host = host_url
-
       owner_email = 'john@example.com'
       if not rietveld_response:
-        messages = (
-          '{"sender": "%s", "text": "I approve", "approval": true}' % a
-          for a in approvers)
-        rietveld_response = '{"owner_email": "%s", "messages": [%s]}' % (
-            owner_email, ','.join(messages))
-      input_api.urllib2.urlopen(
-          expected_host + '/api/1?messages=true').AndReturn(
-          StringIO.StringIO(rietveld_response))
-      input_api.json = presubmit.json
+        rietveld_response = {
+          "owner_email": owner_email,
+          "messages": [
+            {"sender": a, "text": "I approve", "approval": True}
+            for a in approvers
+          ],
+        }
+      input_api.rietveld.get_issue_properties(
+          int(input_api.change.issue), True).AndReturn(rietveld_response)
       fake_db.files_not_covered_by(set(['foo.cc']),
-         approvers.union(set([owner_email]))).AndReturn(uncovered_files)
+          approvers.union(set([owner_email]))).AndReturn(uncovered_files)
 
     self.mox.ReplayAll()
     output = presubmit.PresubmitOutput()
@@ -2051,29 +2042,33 @@ mac|success|blew
       results[0].handle(output)
     self.assertEquals(output.getvalue(), expected_output)
 
-  def testCannedCheckOwners_LGTMPhrases(self):
-    def phrase_test(approval, approvers=None, expected_output=''):
-      if approvers is None:
-        approvers = set(['ben@example.com'])
-      self.AssertOwnersWorks(approvers=approvers,
-          rietveld_response=(
-            '{"owner_email": "john@example.com",'
-            '"messages": [{"sender": "ben@example.com",'
-            '  "text": "foo", "approval": %s}]}') % approval,
-          expected_output=expected_output)
-
-    phrase_test('true')
-    phrase_test('false', approvers=set(),
-                expected_output='Missing LGTM from someone other than '
-                                'john@example.com\n')
-
-  def testCannedCheckOwners_HTTPS_HostURL(self):
+  def testCannedCheckOwners_Approved(self):
+    response = {
+      "owner_email": "john@example.com",
+      "messages": [
+        {
+          "sender": "ben@example.com", "text": "foo", "approval": True,
+        },
+      ],
+    }
     self.AssertOwnersWorks(approvers=set(['ben@example.com']),
-                           host_url='https://localhost')
+        rietveld_response=response,
+        expected_output='')
 
-  def testCannedCheckOwners_MissingSchemeInHostURL(self):
-    self.AssertOwnersWorks(approvers=set(['ben@example.com']),
-                           host_url='localhost')
+  def testCannedCheckOwners_NotApproved(self):
+    response = {
+      "owner_email": "john@example.com",
+      "messages": [
+        {
+          "sender": "ben@example.com", "text": "foo", "approval": False,
+        },
+      ],
+    }
+    self.AssertOwnersWorks(
+        approvers=set(),
+        rietveld_response=response,
+        expected_output=
+            'Missing LGTM from someone other than john@example.com\n')
 
   def testCannedCheckOwners_NoIssue(self):
     self.AssertOwnersWorks(issue=None,

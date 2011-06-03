@@ -741,6 +741,10 @@ def CheckOwners(input_api, output_api, source_file_filter=None):
   owners_db = input_api.owners_db
   owner_email, approvers = _RietveldOwnerAndApprovers(input_api,
                                                       owners_db.email_regexp)
+  if not owner_email:
+    return [output_api.PresubmitWarning(
+        'The issue was not uploaded so you have no OWNER approval.')]
+
   approvers_plus_owner = approvers.union(set([owner_email]))
 
   missing_files = owners_db.files_not_covered_by(affected_files,
@@ -757,13 +761,11 @@ def CheckOwners(input_api, output_api, source_file_filter=None):
 
 def _RietveldOwnerAndApprovers(input_api, email_regexp):
   """Return the owner and approvers of a change, if any."""
-  # TODO(dpranke): Should figure out if input_api.host_url is supposed to
-  # be a host or a scheme+host and normalize it there.
-  host = input_api.host_url
-  if not host.startswith('http://') and not host.startswith('https://'):
-    host = 'http://' + host
-  url = '%s/api/%s?messages=true' % (host, input_api.change.issue)
-  issue_props = input_api.json.load(input_api.urllib2.urlopen(url))
+  if not input_api.change.issue:
+    return None, None
+
+  issue_props = input_api.rietveld.get_issue_properties(
+      int(input_api.change.issue), True)
   owner_email = issue_props['owner_email']
 
   def match_reviewer(r):
