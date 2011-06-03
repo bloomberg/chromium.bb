@@ -1706,3 +1706,11 @@
    fun:_ZN6WebKit13WebWorkerBase24dispatchTaskToMainThreadEN3WTF10PassOwnPtrIN7WebCore22ScriptExecutionContext4TaskEEE
    fun:_ZN6WebKit13WebWorkerBase21reportPendingActivityEb
 }
+{
+   bug_84835
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN22ConfirmInfoBarDelegate13CreateInfoBarEP18TabContentsWrapper
+   fun:_ZN18TabContentsWrapper10AddInfoBarEP15InfoBarDelegate
+   fun:_ZN33GeolocationInfoBarQueueController17ShowQueuedInfoBarEii
+}
