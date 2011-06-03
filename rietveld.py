@@ -42,6 +42,12 @@ class Rietveld(object):
   """Accesses rietveld."""
   def __init__(self, url, email, password, extra_headers=None):
     self.url = url
+    # TODO(maruel): It's not awesome but maybe necessary to retrieve the value.
+    # It happens when the presubmit check is ran out of process, the cookie
+    # needed to be recreated from the credentials. Instead, it should pass the
+    # email and the cookie.
+    self.email = email
+    self.password = password
     if email and password:
       get_creds = lambda: (email, password)
       self.rpc_server = upload.HttpRpcServer(

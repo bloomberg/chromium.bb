@@ -47,6 +47,7 @@ import fix_encoding
 import gclient_utils
 import owners
 import presubmit_canned_checks
+import rietveld
 import scm
 import subprocess2 as subprocess  # Exposed through the API.
 
@@ -216,7 +217,7 @@ class InputApi(object):
   )
 
   def __init__(self, change, presubmit_path, is_committing, tbr,
-      rietveld, verbose):
+      rietveld_obj, verbose):
     """Builds an InputApi object.
 
     Args:
@@ -224,18 +225,18 @@ class InputApi(object):
       presubmit_path: The path to the presubmit script being processed.
       is_committing: True if the change is about to be committed.
       tbr: True if '--tbr' was passed to skip any reviewer/owner checks
-      rietveld: rietveld client object
+      rietveld_obj: rietveld.Rietveld client object
     """
     # Version number of the presubmit_support script.
     self.version = [int(x) for x in __version__.split('.')]
     self.change = change
     self.is_committing = is_committing
     self.tbr = tbr
-    self.rietveld = rietveld
+    self.rietveld = rietveld_obj
     # TBD
     self.host_url = 'http://codereview.chromium.org'
     if self.rietveld:
-      self.host_url = rietveld.url
+      self.host_url = self.rietveld.url
 
     # We expose various modules and functions as attributes of the input_api
     # so that presubmit scripts don't have to import them.
@@ -955,18 +956,18 @@ def DoGetTrySlaves(changed_files,
 
 
 class PresubmitExecuter(object):
-  def __init__(self, change, committing, tbr, rietveld, verbose):
+  def __init__(self, change, committing, tbr, rietveld_obj, verbose):
     """
     Args:
       change: The Change object.
       committing: True if 'gcl commit' is running, False if 'gcl upload' is.
       tbr: True if '--tbr' was passed to skip any reviewer/owner checks
-      rietveld: rietveld client object.
+      rietveld_obj: rietveld.Rietveld client object.
     """
     self.change = change
     self.committing = committing
     self.tbr = tbr
-    self.rietveld = rietveld
+    self.rietveld = rietveld_obj
     self.verbose = verbose
 
   def ExecPresubmitScript(self, script_text, presubmit_path):
@@ -1030,7 +1031,7 @@ def DoPresubmitChecks(change,
                       default_presubmit,
                       may_prompt,
                       tbr,
-                      rietveld):
+                      rietveld_obj):
   """Runs all presubmit checks that apply to the files in the change.
 
   This finds all PRESUBMIT.py files in directories enclosing the files in the
@@ -1049,7 +1050,7 @@ def DoPresubmitChecks(change,
     default_presubmit: A default presubmit script to execute in any case.
     may_prompt: Enable (y/n) questions on warning or error.
     tbr: was --tbr specified to skip any reviewer/owner checks?
-    rietveld: rietveld object.
+    rietveld_obj: rietveld.Rietveld object.
 
   Warning:
     If may_prompt is true, output_stream SHOULD be sys.stdout and input_stream
@@ -1076,7 +1077,7 @@ def DoPresubmitChecks(change,
     if not presubmit_files and verbose:
       output.write("Warning, no presubmit.py found.\n")
     results = []
-    executer = PresubmitExecuter(change, committing, tbr, rietveld, verbose)
+    executer = PresubmitExecuter(change, committing, tbr, rietveld_obj, verbose)
     if default_presubmit:
       if verbose:
         output.write("Running default presubmit script.\n")
@@ -1205,6 +1206,9 @@ def Main(argv):
                     "system directories will also be searched.")
   parser.add_option("--default_presubmit")
   parser.add_option("--may_prompt", action='store_true', default=False)
+  parser.add_option("--rietveld_url", help=optparse.SUPPRESS_HELP)
+  parser.add_option("--rietveld_email", help=optparse.SUPPRESS_HELP)
+  parser.add_option("--rietveld_password", help=optparse.SUPPRESS_HELP)
   options, args = parser.parse_args(argv)
   if options.verbose >= 2:
     logging.basicConfig(level=logging.DEBUG)
@@ -1216,6 +1220,12 @@ def Main(argv):
   if not change_class:
     parser.error('For unversioned directory, <files> is not optional.')
   logging.info('Found %d file(s).' % len(files))
+  rietveld_obj = None
+  if options.rietveld_url:
+    rietveld_obj = rietveld.Rietveld(
+        options.rietveld_url,
+        options.rietveld_email,
+        options.rietveld_password)
   try:
     results = DoPresubmitChecks(
         change_class(options.name,
@@ -1232,7 +1242,7 @@ def Main(argv):
         options.default_presubmit,
         options.may_prompt,
         False,
-        None)
+        rietveld_obj)
     return not results.should_continue()
   except PresubmitFailure, e:
     print >> sys.stderr, e

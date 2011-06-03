@@ -1235,7 +1235,7 @@ def DoPresubmitChecks(change_info, committing, may_prompt):
       default_presubmit=root_presubmit,
       may_prompt=may_prompt,
       tbr=False,
-      rietveld=change_info.RpcServer())
+      rietveld_obj=change_info.RpcServer())
   if not output.should_continue() and may_prompt:
     # TODO(dpranke): move into DoPresubmitChecks(), unify cmd line args.
     print "\nPresubmit errors, can't continue (use --no_presubmit to bypass)"

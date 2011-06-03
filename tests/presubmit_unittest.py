@@ -154,7 +154,8 @@ class PresubmitUnittest(PresubmitTestsBase):
       'fix_encoding', 'fnmatch', 'gclient_utils', 'glob', 'json',
       'load_files',
       'logging', 'marshal', 'normpath', 'optparse', 'os', 'owners', 'pickle',
-      'presubmit_canned_checks', 'random', 're', 'scm', 'subprocess',
+      'presubmit_canned_checks', 'random', 're', 'rietveld', 'scm',
+      'subprocess',
       'sys', 'tempfile', 'time', 'traceback', 'types', 'unittest', 'urllib2',
       'warn',
     ]
@@ -838,7 +839,7 @@ class InputApiUnittest(PresubmitTestsBase):
     api = presubmit.InputApi(
         self.fake_change,
         presubmit_path='foo/path/PRESUBMIT.py',
-        is_committing=False, tbr=False, rietveld=None, verbose=False)
+        is_committing=False, tbr=False, rietveld_obj=None, verbose=False)
     self.assertEquals(api.PresubmitLocalPath(), 'foo/path')
     self.assertEquals(api.change, self.fake_change)
     self.assertEquals(api.host_url, 'http://codereview.chromium.org')
@@ -1082,7 +1083,7 @@ class InputApiUnittest(PresubmitTestsBase):
     presubmit_path = join(self.fake_root_dir, 'isdir', 'PRESUBMIT.py')
     api = presubmit.InputApi(
         change=change, presubmit_path=presubmit_path,
-        is_committing=True, tbr=False, rietveld=None, verbose=False)
+        is_committing=True, tbr=False, rietveld_obj=None, verbose=False)
     paths_from_api = api.AbsoluteLocalPaths(include_dirs=True)
     self.assertEqual(len(paths_from_api), 2)
     for absolute_paths in [paths_from_change, paths_from_api]:

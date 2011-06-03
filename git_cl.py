@@ -548,7 +548,7 @@ or verify this branch is set up to track another (via the --track argument to
       output = presubmit_support.DoPresubmitChecks(change, committing,
           verbose=verbose, output_stream=sys.stdout, input_stream=sys.stdin,
           default_presubmit=None, may_prompt=may_prompt, tbr=tbr,
-          rietveld=self.RpcServer())
+          rietveld_obj=self.RpcServer())
     except presubmit_support.PresubmitFailure, e:
       DieWithError(
           ('%s\nMaybe your depot_tools is out of date?\n'
