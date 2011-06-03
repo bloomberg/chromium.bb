@@ -143,6 +143,19 @@ arm = {
   'vm_tests' : False,
 }
 
+binary = {
+  # Full builds that build fully from binaries.
+  'chroot_replace' : False,
+  'quick_unit' : False,
+
+  'build_type': 'full',
+  'archive_build_debug' : True,
+  'test_mod' : True,
+  'factory_install_mod' : True,
+  'factory_test_mod' : True,
+}
+
+
 full = {
   # Full builds are test build to show that we can build from scratch,
   # so use settings to build from scratch, and archive the results.
@@ -164,6 +177,7 @@ full = {
 internal = {
   'git_url' : MANIFEST_INT_URL,
   'quick_vm' : False,
+  'gs_path' : None,
 }
 
 #
@@ -177,6 +191,7 @@ release = {
   'build_tests' : True,
   'chrome_tests' : True,
   'manifest_version' : MANIFEST_VERSIONS_INT_URL,
+  'prebuilts' : False,
   'push_image' : True,
   'upload_symbols' : True,
   # --official
@@ -191,8 +206,6 @@ official = {
 
   'useflags' : ['chrome_internal', 'chrome_pdf'],
   'chromeos_official' : True,
-
-  'gs_path' : None,
 
   # cbuild --official
 }
@@ -238,46 +251,8 @@ add_config('x86-generic-chrome-pre-flight-queue', [{
   'push_overlays': 'public',
 }])
 
-
-add_config('x86-mario-pre-flight-queue', [internal, {
-  'board' : 'x86-mario',
-  'master' : True,
-
-  'uprev' : True,
-  'quick_vm' : True,
-  'rev_overlays': 'both',
-  'push_overlays': 'private',
-  'gs_path': 'gs://chromeos-x86-mario/pre-flight-master'
-}])
-
-add_config('x86-alex-pre-flight-branch', [internal, {
-  'board' : 'x86-alex',
-  'master' : False,
-
-  'uprev' : True,
-  'rev_overlays': 'both',
-  'push_overlays': None,
-}])
-
-add_config('x86-mario-pre-flight-branch', [internal, {
-  'board' : 'x86-mario',
-  'master' : True,
-
-  'uprev' : True,
-  'rev_overlays': 'both',
-  'push_overlays': 'both',
-}])
-
 add_config('x86-agz-bin', [{
   'board' : 'x86-agz',
-
-  'uprev' : True,
-  'rev_overlays': 'both',
-  'push_overlays': None,
-}])
-
-add_config('x86-dogfood-bin', [{
-  'board' : 'x86-dogfood',
 
   'uprev' : True,
   'rev_overlays': 'both',
@@ -332,125 +307,86 @@ add_config('x86-pineview-full', [full, {
 # Internal Builds
 #
 
-add_config('arm-tegra2_seaboard-private-bin', [internal, arm, {
-  'board' : 'tegra2_seaboard',
-
-  'uprev' : True,
-  'rev_overlays': 'both',
-  'push_overlays': None,
-
-  'gs_path' : None,
-}])
-
-add_config('arm-tegra2_kaen-private-bin', [internal, arm, {
-  'board' : 'tegra2_kaen',
-
-  'uprev' : True,
-  'rev_overlays': 'both',
-  'push_overlays': None,
-
-  'gs_path' : None,
-}])
-
-add_config('arm-tegra2_aebl-private-bin', [internal, arm, {
-  'board' : 'tegra2_aebl',
-
-  'uprev' : True,
-  'rev_overlays': 'both',
-  'push_overlays': None,
-
-  'gs_path' : None,
-}])
-
-add_config('arm-tegra2_dev-board-private-bin', [internal, arm, {
-  'board' : 'tegra2_dev-board',
-
-  'uprev' : True,
-  'rev_overlays': 'both',
-  'push_overlays': None,
-
-  'gs_path' : None,
-}])
-
-add_config('x86-zgb-private-bin', [internal, {
-  'board' : 'x86-dogfood',
-
-  'uprev' : True,
-  'rev_overlays': 'both',
-  'push_overlays': None,
-
-  'gs_path' : None,
-}])
-
-add_config('x86-mario-private-bin', [internal, {
-  'board' : 'x86-dogfood',
-
-  'uprev' : True,
-  'rev_overlays': 'both',
-  'push_overlays': None,
-
-  'gs_path' : None,
-}])
-
-add_config('x86-alex-private-bin', [internal, {
-  'board' : 'x86-dogfood',
-
-  'uprev' : True,
-  'rev_overlays': 'both',
-  'push_overlays': None,
-
-  'gs_path' : None,
-}])
-
-add_config('x86-mario-private-full', [internal, full, official, {
+add_config('x86-mario-pre-flight-queue', [internal, {
   'board' : 'x86-mario',
-  'prebuilts' : False,
+  'master' : True,
+
+  'uprev' : True,
+  'quick_vm' : True,
+  'rev_overlays': 'both',
+  'push_overlays': 'private',
+  'gs_path': 'gs://chromeos-x86-mario/pre-flight-master'
 }])
 
-add_config('x86-zgb-private-full', [internal, full, official, {
-  'board' : 'x86-zgb',
-  'prebuilts' : False,
-}])
-
-add_config('x86-alex-private-full', [internal, full, official, {
+add_config('x86-alex-pre-flight-branch', [internal, {
   'board' : 'x86-alex',
-  'prebuilts' : False,
+  'master' : False,
+
+  'uprev' : True,
+  'rev_overlays': 'both',
+  'push_overlays': None,
 }])
 
-add_config('arm-tegra2_seaboard-private-full', [internal, full, official, {
-  'board' : 'arm-tegra2_seaboard',
-  'prebuilts' : False,
+add_config('x86-mario-pre-flight-branch', [internal, {
+  'board' : 'x86-mario',
+  'master' : True,
+
+  'uprev' : True,
+  'rev_overlays': 'both',
+  'push_overlays': 'both',
+}])
+
+add_config('arm-tegra2_seaboard-private-bin', [internal, arm, binary, {
+  'board' : 'tegra2_seaboard',
+}])
+
+add_config('arm-tegra2_kaen-private-bin', [internal, arm, binary, {
+  'board' : 'tegra2_kaen',
+}])
+
+add_config('arm-tegra2_aebl-private-bin', [internal, arm, binary, {
+  'board' : 'tegra2_aebl',
+}])
+
+add_config('arm-tegra2_dev-board-private-bin', [internal, arm, binary, {
+  'board' : 'tegra2_dev-board',
+}])
+
+add_config('x86-zgb-private-bin', [internal, binary, {
+  'board' : 'x86-zgb',
+}])
+
+add_config('x86-mario-private-bin', [internal, binary, {
+  'board' : 'x86-mario',
+}])
+
+add_config('x86-alex-private-bin', [internal, binary, {
+  'board' : 'x86-alex',
 }])
 
 add_config('x86-mario-release', [internal, full, official, release, {
   'board' : 'x86-mario',
-  'prebuilts' : False,
 }])
 
 add_config('x86-alex-release', [internal, full, official, release, {
   'board' : 'x86-alex',
-  'prebuilts' : False,
 }])
 
 add_config('x86-zgb-release', [internal, full, official, release, {
   'board' : 'x86-zgb',
-  'prebuilts' : False,
 }])
 
 add_config('arm-tegra2_seaboard-release', [
     arm, internal, full, official, release, {
   'board' : 'tegra2_seaboard',
-  'prebuilts' : False,
 }])
 
 add_config('arm-tegra2_aebl-release', [
     arm, internal, full, official, release, {
   'board' : 'tegra2_aebl',
-  'prebuilts' : False,
 }])
 
 add_config('arm-tegra2_kaen-release', [
     arm, internal, full, official, release, {
   'board' : 'tegra2_kaen',
-  'prebuilts' : False,
 }])
