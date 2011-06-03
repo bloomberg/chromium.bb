@@ -72,7 +72,6 @@ function FileManager(dialogDom, rootEntries, params) {
   this.initDialogType_();
 
   this.summarizeSelection_();
-  this.updateOkButton_();
   this.updatePreview_();
 
   chrome.fileBrowserPrivate.onDiskChanged.addListener(
@@ -1648,6 +1647,7 @@ FileManager.prototype = {
                         location.href);
     }
 
+    this.updateOkButton_();
     // New folder should never be enabled in the root or media/ directories.
     this.newFolderButton_.disabled =
         (this.currentDirEntry_.fullPath == '/' ||
