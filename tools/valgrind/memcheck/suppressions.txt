@@ -4678,6 +4678,12 @@
    fun:_ZN7WebCore6Editor28replaceSelectionWithFragmentEN3WTF10PassRefPtrINS_16DocumentFragmentEEEbbb
    fun:_ZN7WebCore6Editor24replaceSelectionWithTextERKN3WTF6StringEbb
 }
+{
+   bug_84833
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN5views6Widget4InitERKNS0_10InitParamsE
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
