@@ -34,7 +34,7 @@ INITIAL_ENV = {
   #             detection method so that toolchain location is relative.
   'BASE_NACL'       : '',   # Absolute path of native_client/ dir
   'BASE_DRIVER'     : '',   # Location of PNaCl drivers
-  'BUILD_OS'        : '',   # "linux" or "darwin"
+  'BUILD_OS'        : '',   # "linux" or "darwin" or "windows"
   'BUILD_ARCH'      : '',   # "x86_64" or "i686" or "i386"
 
   # Directories
@@ -82,13 +82,25 @@ INITIAL_ENV = {
   'SO_EXT'          : '${SO_EXT_%BUILD_OS%}',
   'SO_EXT_darwin'   : '.dylib',
   'SO_EXT_linux'    : '.so',
+  'SO_EXT_windows'  : '.dll',
+
+  'SO_PREFIX'        : '${SO_PREFIX_%BUILD_OS%}',
+  'SO_PREFIX_darwin' : 'lib',
+  'SO_PREFIX_linux'  : 'lib',
+  'SO_PREFIX_windows': 'cyg',
+
+  'EXEC_EXT'        : '${EXEC_EXT_%BUILD_OS%}',
+  'EXEC_EXT_darwin' : '',
+  'EXEC_EXT_linux'  : '',
+  'EXEC_EXT_windows': '.exe',
 
   'SCONS_OS'            : '${SCONS_OS_%BUILD_OS%}',
   'SCONS_OS_linux'      : 'linux',
   'SCONS_OS_darwin'     : 'mac',
+  'SCONS_OS_windows'    : 'win',
 
   # Tool Pathnames
-  'GOLD_PLUGIN_SO'  : '${BASE_ARM}/lib/libLLVMgold${SO_EXT}',
+  'GOLD_PLUGIN_SO'  : '${BASE_ARM}/lib/${SO_PREFIX}LLVMgold${SO_EXT}',
 
   'SCONS_STAGING'       : '${SCONS_STAGING_%ARCH%}',
   'SCONS_STAGING_X8632' : '${SCONS_OUT}/opt-${SCONS_OS}-x86-32/staging',
@@ -96,7 +108,7 @@ INITIAL_ENV = {
   'SCONS_STAGING_ARM'   : '${SCONS_OUT}/opt-${SCONS_OS}-arm/staging',
 
   'SEL_UNIVERSAL_PREFIX': '${USE_EMULATOR ? ${EMULATOR}}',
-  'SEL_UNIVERSAL'       : '${SCONS_STAGING}/sel_universal',
+  'SEL_UNIVERSAL'       : '${SCONS_STAGING}/sel_universal${EXEC_EXT}',
   'SEL_UNIVERSAL_FLAGS' : '--abort_on_error ' +
                           '${USE_EMULATOR ? -Q --command-prefix ${EMULATOR}}',
 
@@ -105,10 +117,10 @@ INITIAL_ENV = {
   'EMULATOR_X8664'      : '',
   'EMULATOR_ARM'        : '${BASE_TRUSTED}/run_under_qemu_arm',
 
-  'LLVM_MC'       : '${BASE_LLVM_BIN}/llvm-mc',
-  'LLVM_AS'       : '${BASE_LLVM_BIN}/llvm-as',
+  'LLVM_MC'       : '${BASE_LLVM_BIN}/llvm-mc${EXEC_EXT}',
+  'LLVM_AS'       : '${BASE_LLVM_BIN}/llvm-as${EXEC_EXT}',
 
-  'SEL_LDR'       : '${SCONS_STAGING}/sel_ldr',
+  'SEL_LDR'       : '${SCONS_STAGING}/sel_ldr${EXEC_EXT}',
 
   'AS_SB'         : '${SEL_LDR} -a -- ${BASE_SB}/nonsrpc/bin/as',
   'AS_ARM'        : '${BINUTILS_BASE}as',
@@ -121,23 +133,23 @@ INITIAL_ENV = {
   'LLC_SRPC'      : '${BASE_SB}/srpc/bin/llc',
   'LD_SRPC'       : '${BASE_SB}/srpc/bin/ld',
 
-  'LLVM_GCC'      : '${BASE_LLVM_BIN}/arm-none-linux-gnueabi-gcc',
-  'LLVM_GXX'      : '${BASE_LLVM_BIN}/arm-none-linux-gnueabi-g++',
-  'LLVM_OPT'      : '${BASE_LLVM_BIN}/opt',
-  'LLVM_LLC'      : '${BASE_LLVM_BIN}/llc',
-  'LLVM_LD'       : '${BASE_LLVM_BIN}/llvm-ld',
-  'LLVM_DIS'      : '${BASE_LLVM_BIN}/llvm-dis',
-  'LLVM_LINK'     : '${BASE_LLVM_BIN}/llvm-link',
+  'LLVM_GCC'      : '${BASE_LLVM_BIN}/arm-none-linux-gnueabi-gcc${EXEC_EXT}',
+  'LLVM_GXX'      : '${BASE_LLVM_BIN}/arm-none-linux-gnueabi-g++${EXEC_EXT}',
+  'LLVM_OPT'      : '${BASE_LLVM_BIN}/opt${EXEC_EXT}',
+  'LLVM_LLC'      : '${BASE_LLVM_BIN}/llc${EXEC_EXT}',
+  'LLVM_LD'       : '${BASE_LLVM_BIN}/llvm-ld${EXEC_EXT}',
+  'LLVM_DIS'      : '${BASE_LLVM_BIN}/llvm-dis${EXEC_EXT}',
+  'LLVM_LINK'     : '${BASE_LLVM_BIN}/llvm-link${EXEC_EXT}',
 
   'BINUTILS_BASE'  : '${BASE_ARM}/bin/arm-pc-nacl-',
-  'OBJDUMP'        : '${BINUTILS_BASE}objdump',
-  'NM'             : '${BINUTILS_BASE}nm',
-  'AR'             : '${BINUTILS_BASE}ar',
-  'RANLIB'         : '${BINUTILS_BASE}ranlib',
-  'STRIP'          : '${BINUTILS_BASE}strip',
+  'OBJDUMP'        : '${BINUTILS_BASE}objdump${EXEC_EXT}',
+  'NM'             : '${BINUTILS_BASE}nm${EXEC_EXT}',
+  'AR'             : '${BINUTILS_BASE}ar${EXEC_EXT}',
+  'RANLIB'         : '${BINUTILS_BASE}ranlib${EXEC_EXT}',
+  'STRIP'          : '${BINUTILS_BASE}strip${EXEC_EXT}',
 
-  'LD_BFD'         : '${BINUTILS_BASE}ld.bfd',
-  'LD_GOLD'        : '${BINUTILS_BASE}ld.gold',
+  'LD_BFD'         : '${BINUTILS_BASE}ld.bfd${EXEC_EXT}',
+  'LD_GOLD'        : '${BINUTILS_BASE}ld.gold${EXEC_EXT}',
 }
 
 
@@ -221,12 +233,7 @@ class env(object):
   # is a single term. Returns a string.
   @classmethod
   def getone(cls, varname):
-    w = cls.get(varname)
-    if len(w) == 1:
-      return w[0]
-    if len(w) == 0:
-      return ''
-    assert(False)
+    return shell.unescape(cls.getraw(varname))
 
   @classmethod
   def getbool(cls, varname):
@@ -482,6 +489,7 @@ def RunDriver(invocation, args, suppress_arch = False):
     args = shell.split(env.eval(args))
 
   script = env.eval('${BASE_DRIVER}/%s${DRIVER_EXT}' % invocation)
+  script = shell.unescape(script)
   driver_args = env.get('DRIVER_FLAGS')
 
   if '--pnacl-driver-recurse' not in driver_args:
@@ -523,12 +531,23 @@ def FindFirst(s, pos, strset):
 
 def GetBuildOS():
   name = platform.system().lower()
-  if name not in ('linux', 'darwin'):
-    Log.Fatal("Unsupported platform '%s'" % (name,))
+  if name.startswith('cygwin_nt') or 'windows' in name:
+    name = 'windows'
+  if name not in ('linux', 'darwin', 'windows'):
+    Log.Fatal("Unsupported platform '%s'", name)
   return name
 
 def GetBuildArch():
-  return platform.machine()
+  m = platform.machine()
+
+  # Windows is special
+  if m == 'x86':
+    m = 'i686'
+
+  if m not in ('i386', 'i686', 'x86_64'):
+    Log.Fatal("Unsupported architecture '%s'", m)
+  return m
+
 
 # Crawl backwards, starting from the directory containing this script,
 # until we find the native_client/ directory.
@@ -884,13 +903,25 @@ class TempNameGen(object):
 ######################################################################
 
 class shell(object):
+
+  @staticmethod
+  def unescape(s):
+    w = shell.split(s)
+    if len(w) == 0:
+      return ''
+    if len(w) == 1:
+      return w[0]
+    # String was not properly escaped in the first place?
+    assert(False)
+
+  # TODO(pdox): Simplify this function by moving more of it into unescape
   @staticmethod
   def split(s):
     """Split a shell-style string up into a list of distinct arguments.
     For example: split('cmd -arg1 -arg2="a b c"')
     Returns ['cmd', '-arg1', '-arg2=a b c']
     """
-
+    assert(isinstance(s, str))
     out = []
     inspace = True
     inquote = False
@@ -912,6 +943,9 @@ class shell(object):
         inspace = False
         i += 1
         buf += s[i]
+      elif s[i] == '/':
+        inspace = False
+        buf += os.sep
       else:
         inspace = False
         buf += s[i]
@@ -927,14 +961,7 @@ class shell(object):
     """Turn a list into a shell-style string For example:
        shell.join([ 'a', 'b', 'c d e' ]) = 'a b "c d e"'
     """
-    if isinstance(args, str):
-      return args
-
-    out = ''
-    for a in args:
-      out += shell.escape(a) + ' '
-
-    return out[0:-1]
+    return ' '.join([ shell.escape(a) for a in args ])
 
   @staticmethod
   def escape(s):
@@ -943,6 +970,7 @@ class shell(object):
     """
     s = s.replace('\\', '\\\\')
     s = s.replace('"', '\\"')
+    s = s.replace('/', '\\/')
     if ' ' in s:
       s = '"' + s + '"'
     return s

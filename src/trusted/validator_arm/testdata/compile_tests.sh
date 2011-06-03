@@ -1,8 +1,7 @@
 #!/bin/bash
-# Copyright 2009 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
-# Copyright 2009 Google Inc.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 set -eu
 
@@ -11,7 +10,7 @@ set -eu
 # untrusted compiler) doesn't support -nodefaultlibs.
 dir=$(pwd)
 cd ../../../..
-source tools/llvm/setup_arm_trusted_toolchain.sh
+eval "$(tools/llvm/setup_arm_trusted_toolchain.py)"
 topdir=$(pwd)
 cd $dir
 

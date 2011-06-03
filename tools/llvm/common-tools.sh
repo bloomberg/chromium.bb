@@ -35,47 +35,74 @@ SetLogDirectory() {
 # Detect system type
 ######################################################################
 
-readonly BUILD_PLATFORM=$(uname | tr '[A-Z]' '[a-z]')
+BUILD_PLATFORM=$(uname | tr '[A-Z]' '[a-z]')
+BUILD_PLATFORM_LINUX=false
+BUILD_PLATFORM_MAC=false
+BUILD_PLATFORM_WIN=false
+
 if [ "${BUILD_PLATFORM}" == "linux" ] ; then
-  readonly BUILD_PLATFORM_LINUX=true
-  readonly BUILD_PLATFORM_MAC=false
-  readonly SCONS_BUILD_PLATFORM=linux
+  BUILD_PLATFORM_LINUX=true
+  SCONS_BUILD_PLATFORM=linux
+  SO_PREFIX=lib
+  SO_EXT=.so
+elif [[ "${BUILD_PLATFORM}" =~ cygwin_nt ]]; then
+  BUILD_PLATFORM=windows
+  BUILD_PLATFORM_WIN=true
+  SCONS_BUILD_PLATFORM=win
+  SO_PREFIX=cyg
+  SO_EXT=.dll
 elif [ "${BUILD_PLATFORM}" == "darwin" ] ; then
-  readonly BUILD_PLATFORM_LINUX=false
-  readonly BUILD_PLATFORM_MAC=true
-  readonly SCONS_BUILD_PLATFORM=mac
+  BUILD_PLATFORM_MAC=true
+  SCONS_BUILD_PLATFORM=mac
   # force 32 bit host because build is also 32 bit on mac (no 64bit nacl)
   HOST_ARCH=${HOST_ARCH:-i386}
+  SO_PREFIX=lib
+  SO_EXT=.dylib
 else
   echo "Unknown system '${BUILD_PLATFORM}'"
   exit -1
 fi
 
-readonly BUILD_ARCH=$(uname -m)
+readonly BUILD_PLATFORM
+readonly BUILD_PLATFORM_LINUX
+readonly BUILD_PLATFORM_MAC
+readonly BUILD_PLATFORM_WIN
+readonly SCONS_BUILD_PLATFORM
+readonly SO_PREFIX
+readonly SO_EXT
+
+BUILD_ARCH=$(uname -m)
+BUILD_ARCH_X8632=false
+BUILD_ARCH_X8664=false
 if [ "${BUILD_ARCH}" == "i386" ] ||
    [ "${BUILD_ARCH}" == "i686" ] ; then
-  readonly BUILD_ARCH_X8632=true
-  readonly BUILD_ARCH_X8664=false
+  BUILD_ARCH_X8632=true
 elif [ "${BUILD_ARCH}" == "x86_64" ] ; then
-  readonly BUILD_ARCH_X8632=false
-  readonly BUILD_ARCH_X8664=true
+  BUILD_ARCH_X8664=true
 else
   echo "Unknown build arch '${BUILD_ARCH}'"
   exit -1
 fi
+readonly BUILD_ARCH
+readonly BUILD_ARCH_X8632
+readonly BUILD_ARCH_X8664
 
-readonly HOST_ARCH=${HOST_ARCH:-${BUILD_ARCH}}
+
+HOST_ARCH=${HOST_ARCH:-${BUILD_ARCH}}
+HOST_ARCH_X8632=false
+HOST_ARCH_X8664=false
 if [ "${HOST_ARCH}" == "i386" ] ||
    [ "${HOST_ARCH}" == "i686" ] ; then
-  readonly HOST_ARCH_X8632=true
-  readonly HOST_ARCH_X8664=false
+  HOST_ARCH_X8632=true
 elif [ "${HOST_ARCH}" == "x86_64" ] ; then
-  readonly HOST_ARCH_X8632=false
-  readonly HOST_ARCH_X8664=true
+  HOST_ARCH_X8664=true
 else
   echo "Unknown host arch '${HOST_ARCH}'"
   exit -1
 fi
+readonly HOST_ARCH
+readonly HOST_ARCH_X8632
+readonly HOST_ARCH_X8664
 
 if [ "${BUILD_ARCH}" != "${HOST_ARCH}" ]; then
   if ! { ${BUILD_ARCH_X8664} && ${HOST_ARCH_X8632}; }; then

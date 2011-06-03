@@ -48,8 +48,8 @@ SetLogDirectory "${NACL_ROOT}/toolchain/hg-log"
 readonly UTMAN_CONCURRENCY=${UTMAN_CONCURRENCY:-8}
 UTMAN_BUILD_ARM=true
 
-if ${BUILD_PLATFORM_MAC} ; then
-  # We don't yet support building ARM tools for mac.
+if ${BUILD_PLATFORM_MAC} || ${BUILD_PLATFORM_WIN} ; then
+  # We don't yet support building ARM tools for mac or windows.
   UTMAN_BUILD_ARM=false
 fi
 
@@ -922,16 +922,8 @@ llvm-install() {
 
   mkdir -p "${BFD_PLUGIN_DIR}"
 
-  if ${BUILD_PLATFORM_MAC} ; then
-    ln -sf ../../lib/libLLVMgold.dylib "${BFD_PLUGIN_DIR}"
-    ln -sf ../../lib/libLTO.dylib "${BFD_PLUGIN_DIR}"
-  elif ${BUILD_PLATFORM_LINUX} ; then
-    ln -sf ../../lib/libLLVMgold.so "${BFD_PLUGIN_DIR}"
-    ln -sf ../../lib/libLTO.so "${BFD_PLUGIN_DIR}"
-  else
-    echo "Unhandled host"
-    exit -1
-  fi
+  ln -sf ../../lib/${SO_PREFIX}LLVMgold${SO_EXT} "${BFD_PLUGIN_DIR}"
+  ln -sf ../../lib/${SO_PREFIX}LTO${SO_EXT} "${BFD_PLUGIN_DIR}"
 
   spopd
 }
