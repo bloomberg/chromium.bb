@@ -15,8 +15,13 @@ MAIN_DEPS = os.path.join(TOP_DIR, 'DEPS')
 # List of directories to not apply presubmit project checks, relative
 # to the NaCl top directory
 EXCLUDE_PROJECT_CHECKS_DIRS = [
+    # The following contain test data (including automatically generated),
+    # and do not follow our conventions.
     'src/trusted/validator_x86/testdata/32',
     'src/trusted/validator_x86/testdata/64',
+    # The following directory contains automatically generated source,
+    # which may not follow our conventions.
+    'src/trusted/validator_x86/gen',
     ]
 
 def NaclTopDir():
