@@ -20,7 +20,7 @@ inline int strcasecmp(const char* s1, const char* s2) {
 }
 #else
 inline int strcasecmp(const char* s1, const char* s2) {
-  return strcasecmp(s1, s2);
+  return ::strcasecmp(s1, s2);
 }
 #endif
 
