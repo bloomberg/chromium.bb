@@ -54,6 +54,9 @@ function FileManager(dialogDom, rootEntries, params) {
 
   this.defaultPath_ = this.params_.defaultPath || '/';
 
+  // This is set to just the directory portion of defaultPath in initDialogType.
+  this.defaultFolder_ = '/';
+
   this.showCheckboxes_ =
       (this.dialogType_ == FileManager.DialogType.FULL_PAGE ||
        this.dialogType_ == FileManager.DialogType.SELECT_OPEN_MULTI_FILE);
@@ -73,6 +76,7 @@ function FileManager(dialogDom, rootEntries, params) {
 
   this.summarizeSelection_();
   this.updatePreview_();
+  this.changeDirectory(this.defaultFolder_);
 
   chrome.fileBrowserPrivate.onDiskChanged.addListener(
       this.onDiskChanged_.bind(this));
@@ -824,7 +828,7 @@ FileManager.prototype = {
         defaultFolder = '/Downloads' + (ary[1] || '');
       }
 
-    this.changeDirectory(defaultFolder);
+    this.defaultFolder_ = defaultFolder;
     this.filenameInput_.value = defaultTarget;
   };
 
