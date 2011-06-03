@@ -165,7 +165,7 @@ echo @@@BUILD_STEP archive irt.nexe@@@
 # to build a NaCl-enabled Chromium.  We strip the IRT to save space
 # and download time.
 # TODO(mseaborn): It might be better to do the stripping in Scons.
-IRT_PATH=scons-out/nacl-x86-${BITS}/staging/irt.nexe
+IRT_PATH=scons-out/nacl_irt-x86-${BITS}/staging/irt.nexe
 toolchain/linux_x86_newlib/bin/nacl-strip \
     --strip-debug ${IRT_PATH} -o ${IRT_PATH}.stripped
 

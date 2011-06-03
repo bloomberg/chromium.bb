@@ -383,7 +383,10 @@ DeclareBit('nacl_glibc', 'Use nacl-glibc for building untrusted code')
 pre_base_env.SetBitFromOption('nacl_glibc', False)
 
 def IrtIsBroken(env):
-  if env.Bit('nacl_glibc') or env.Bit('use_sandboxed_translator'):
+  if env.Bit('nacl_glibc'):
+    # The glibc startup code is not yet compatible with IRT.
+    return True
+  if env.Bit('use_sandboxed_translator'):
     # The IRT image doesn't get built.
     return True
   if env.Bit('bitcode'):
@@ -1058,7 +1061,7 @@ def GetIrtNexe(env, irt_name='irt'):
   if image:
     return env.SConstructAbsPath(image)
 
-  return env.File('${STAGING_DIR}/irt.nexe')
+  return nacl_irt_env.File('${STAGING_DIR}/irt.nexe')
 
 pre_base_env.AddMethod(GetIrtNexe)
 
@@ -2395,6 +2398,31 @@ nacl_env = pre_base_env.Clone(
       ],
 )
 
+if not nacl_env.Bit('bitcode'):
+  if nacl_env.Bit('build_x86_32'):
+    nacl_env.Append(CCFLAGS = ['-m32'], LINKFLAGS = '-m32')
+  elif nacl_env.Bit('build_x86_64'):
+    nacl_env.Append(CCFLAGS = ['-m64'], LINKFLAGS = '-m64')
+
+if nacl_env.Bit('bitcode'):
+  # TODO(robertm): remove this ASAP, we currently have llvm issue with c++
+  nacl_env.FilterOut(CCFLAGS = ['-Werror'])
+  nacl_env.Append(CFLAGS = werror_flags)
+
+  # NOTE: we change the linker command line to make it possible to
+  #       sneak in startup and cleanup code
+  nacl_env.Prepend(EMULATOR=EMULATOR)
+
+# We use a special environment for building the IRT image because it must
+# always use the newlib toolchain, regardless of --nacl_glibc.  We clone
+# it from nacl_env here, before too much other cruft has been added.
+# We do some more magic below to instantiate it the way we need it.
+nacl_irt_env = nacl_env.Clone(
+    BUILD_TYPE = 'nacl_irt',
+    BUILD_TYPE_DESCRIPTION = 'NaCl IRT build',
+    NACL_BUILD_FAMILY = 'UNTRUSTED_IRT',
+)
+
 if nacl_env.Bit('irt'):
   nacl_env.Replace(PPAPI_LIBS=['ppapi'])
   # Even non-PPAPI nexes need this for IRT-compatible linking.
@@ -2453,21 +2481,6 @@ if nacl_env.Bit('running_on_valgrind'):
     nacl_env.Append(LINKFLAGS = ['-Wl,-u,have_nacl_valgrind_interceptors'],
                     LIBS = ['valgrind'])
 
-if not nacl_env.Bit('bitcode'):
-  if nacl_env.Bit('build_x86_32'):
-    nacl_env.Append(CCFLAGS = ['-m32'], LINKFLAGS = '-m32')
-  elif nacl_env.Bit('build_x86_64'):
-    nacl_env.Append(CCFLAGS = ['-m64'], LINKFLAGS = '-m64')
-
-if nacl_env.Bit('bitcode'):
-  # TODO(robertm): remove this ASAP, we currently have llvm issue with c++
-  nacl_env.FilterOut(CCFLAGS = ['-Werror'])
-  nacl_env.Append(CFLAGS = werror_flags)
-
-  # NOTE: we change the linker command line to make it possible to
-  #       sneak in startup and cleanup code
-  nacl_env.Prepend(EMULATOR=EMULATOR)
-
 environment_list.append(nacl_env)
 
 nacl_env.Append(
@@ -2476,7 +2489,6 @@ nacl_env.Append(
     'src/tools/posix_over_imc/nacl.scons',
     'src/trusted/service_runtime/nacl.scons',
     'src/trusted/validator_x86/nacl.scons',
-    'src/untrusted/irt/nacl.scons',
     'tests/app_lib/nacl.scons',
     'tests/autoloader/nacl.scons',
     'tests/barebones/nacl.scons',
@@ -2856,6 +2868,63 @@ nacl_extra_sdk_env.Command('extra_sdk_clean', [],
                             'rm -rf ${NACL_SDK_LIB}/libgoogle*',
                             'rm -rf ${NACL_SDK_LIB_PLATFORM}/crt[1in].*'])
 
+# The IRT-building environment was cloned from nacl_env, but it should
+# ignore the --nacl_glibc switch.  We have to reinstantiate the naclsdk.py
+# magic after clearing the flag, so it regenerates the tool paths right.
+# TODO(mcgrathr,bradnelson): could get cleaner if naclsdk.py got folded back in.
+nacl_irt_env.ClearBits('nacl_glibc')
+nacl_irt_env.Tool('naclsdk')
+# Make it find the libraries it builds, rather than the SDK ones.
+nacl_irt_env.Replace(LIBPATH='${LIB_DIR}')
+
+AddTargetRootSuffix(nacl_irt_env, 'bitcode', 'pnacl')
+AddTargetRootSuffix(nacl_irt_env, 'nacl_pic', 'pic')
+if nacl_irt_env.Bit('bitcode'):
+  nacl_irt_env.AddBiasForPNaCl()
+
+# We have to stub out various methods that are only defined in
+# nacl_extra_sdk_env, because we doubly use these nacl.scons files
+# in nacl_irt_env.
+# TODO(mcgrathr): Remove these when nacl_extra_sdk_env is removed.
+def IrtAddLibraryToSdk(env, nodes, is_platform=False):
+  pass
+nacl_irt_env.AddMethod(IrtAddLibraryToSdk, 'AddLibraryToSdk')
+nacl_irt_env.AddMethod(IrtAddLibraryToSdk, 'AddObjectToSdk')
+
+def IrtNaClSdkLibrary(env, lib_name, *args, **kwargs):
+  env.ComponentLibrary(lib_name, *args, **kwargs)
+nacl_irt_env.AddMethod(IrtNaClSdkLibrary, 'NaClSdkLibrary')
+
+def IrtAddHeaderToSdk(env, nodes, subdir = 'nacl/'):
+  pass
+nacl_irt_env.AddMethod(IrtAddHeaderToSdk, 'AddHeaderToSdk')
+
+# Give the environment for building the IRT and its libraries
+# the -Ds used for building those libraries for the SDK.
+# TODO(mcgrathr,bradnelson): clean up when nacl_extra_sdk_env goes away.
+#
+# Since we will use a locally-built libpthread rather than the
+# one from the toolchain, find its header files in the source
+# rather than using the ones installed in the toolchain.
+nacl_irt_env.AppendUnique(CPPDEFINES = nacl_extra_sdk_env['CPPDEFINES'],
+                          CPPPATH = ['${MAIN_DIR}/src/untrusted/pthread'])
+
+# TODO(mcgrathr): nacl, crt_platform are implicitly linked in from toolchain,
+# scons does not know about the dependencies.  We may be building all of
+# src/untrusted/nacl but only actually getting libimc_syscalls.a from there.
+nacl_irt_env.Append(
+    BUILD_SCONSCRIPTS = [
+        'src/shared/gio/nacl.scons',
+        'src/shared/platform/nacl.scons',
+        'src/shared/ppapi_proxy/nacl.scons',
+        'src/shared/srpc/nacl.scons',
+        'src/untrusted/irt/nacl.scons',
+        'src/untrusted/nacl/nacl.scons',
+        'src/untrusted/pthread/nacl.scons',
+    ])
+
+environment_list.append(nacl_irt_env)
+
 windows_coverage_env = windows_env.Clone(
     tools = ['code_coverage'],
     BUILD_TYPE = 'coverage-win',
@@ -3044,6 +3113,14 @@ CheckArguments()
 
 SanityCheckEnvironments(environment_list)
 selected_envs = FilterEnvironments(environment_list)
+
+# If we are building nacl, build nacl_irt too.  This works around it being
+# a separate mode due to the vagaries of scons when we'd really rather it
+# not be, while not requiring that every bot command line using --mode be
+# changed to list '...,nacl,nacl_irt' explicitly.
+if nacl_env in selected_envs:
+  selected_envs.append(nacl_irt_env)
+
 DumpEnvironmentInfo(selected_envs)
 LinkTrustedEnv(selected_envs)
 BuildEnvironments(selected_envs)
