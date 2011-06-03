@@ -124,10 +124,7 @@ def BuildScript(status, context):
       Command(
           context,
           cmd=[
-              # Explicitly call the depot tools version of python to avoid
-              # cygwin issues.  This step only occurs on toolchain bots
-              # (which use cygwin)
-              'python.bat',
+              sys.executable,
               'native_client/build/gyp_nacl',
               'native_client/build/all.gyp',
               ],
