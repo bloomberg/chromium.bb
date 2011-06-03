@@ -116,7 +116,7 @@ struct PPB_VideoDecoder_Dev {
   //
   // Returns PP_TRUE on success, PP_FALSE otherwise.
   PP_Bool (*GetConfigs)(PP_Instance instance,
-                        PP_VideoConfigElement* proto_config,
+                        const PP_VideoConfigElement* proto_config,
                         PP_VideoConfigElement* matching_configs,
                         uint32_t matching_configs_size,
                         uint32_t* num_of_matching_configs);
@@ -135,7 +135,7 @@ struct PPB_VideoDecoder_Dev {
   //
   // The created decoder is returned as PP_Resource. NULL means failure.
   PP_Resource (*Create)(PP_Instance instance,
-                        PP_VideoConfigElement* dec_config,
+                        const PP_VideoConfigElement* dec_config,
                         struct PP_CompletionCallback callback);
 
   // Tests whether |resource| is a video decoder created through Create
@@ -159,7 +159,7 @@ struct PPB_VideoDecoder_Dev {
   // Returns PP_TRUE on decoder successfully accepting buffer, PP_FALSE
   // otherwise.
   PP_Bool (*Decode)(PP_Resource video_decoder,
-                    struct PP_VideoBitstreamBuffer_Dev* bitstream_buffer,
+                    const struct PP_VideoBitstreamBuffer_Dev* bitstream_buffer,
                     struct PP_CompletionCallback callback);
 
   // Provides the decoder with picture buffers for video decoding.
@@ -191,10 +191,10 @@ struct PPB_VideoDecoder_Dev {
   //   allocated.
   void (*AssignGLESBuffers)(PP_Resource video_decoder,
                             uint32_t no_of_buffers,
-                            struct PP_GLESBuffer_Dev* buffers);
+                            const struct PP_GLESBuffer_Dev* buffers);
   void (*AssignSysmemBuffers)(PP_Resource video_decoder,
                               uint32_t no_of_buffers,
-                              struct PP_SysmemBuffer_Dev* buffers);
+                              const struct PP_SysmemBuffer_Dev* buffers);
 
   // Tells the decoder to reuse given picture buffer. Typical use of this
   // function is to call from PictureReady callback to recycle picture buffer

@@ -27,7 +27,7 @@ namespace ppapi {
 namespace {
 
 PP_Bool GetConfigs(PP_Instance instance_id,
-                   PP_VideoConfigElement* proto_config,
+                   const PP_VideoConfigElement* proto_config,
                    PP_VideoConfigElement* matching_configs,
                    uint32_t matching_configs_size,
                    uint32_t* num_of_matching_configs) {
@@ -45,7 +45,7 @@ PP_Bool GetConfigs(PP_Instance instance_id,
 }
 
 PP_Resource Create(PP_Instance instance_id,
-                   PP_VideoConfigElement* decoder_config,
+                   const PP_VideoConfigElement* decoder_config,
                    PP_CompletionCallback callback) {
   PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance)
@@ -67,7 +67,7 @@ PP_Bool IsVideoDecoder(PP_Resource resource) {
 }
 
 PP_Bool Decode(PP_Resource decoder_id,
-               PP_VideoBitstreamBuffer_Dev* bitstream_buffer,
+               const PP_VideoBitstreamBuffer_Dev* bitstream_buffer,
                PP_CompletionCallback callback) {
   scoped_refptr<PPB_VideoDecoder_Impl> decoder(
       Resource::GetAs<PPB_VideoDecoder_Impl>(decoder_id));
@@ -79,7 +79,7 @@ PP_Bool Decode(PP_Resource decoder_id,
 
 void AssignGLESBuffers(PP_Resource video_decoder,
                        uint32_t no_of_buffers,
-                       PP_GLESBuffer_Dev* buffers) {
+                       const PP_GLESBuffer_Dev* buffers) {
   scoped_refptr<PPB_VideoDecoder_Impl> decoder(
       Resource::GetAs<PPB_VideoDecoder_Impl>(video_decoder));
   if (!decoder)
@@ -90,7 +90,7 @@ void AssignGLESBuffers(PP_Resource video_decoder,
 
 void AssignSysmemBuffers(PP_Resource video_decoder,
                          uint32_t no_of_buffers,
-                         PP_SysmemBuffer_Dev* buffers) {
+                         const PP_SysmemBuffer_Dev* buffers) {
   scoped_refptr<PPB_VideoDecoder_Impl> decoder(
       Resource::GetAs<PPB_VideoDecoder_Impl>(video_decoder));
   if (!decoder)
@@ -192,7 +192,7 @@ PPB_VideoDecoder_Impl* PPB_VideoDecoder_Impl::AsPPB_VideoDecoder_Impl() {
 }
 
 bool PPB_VideoDecoder_Impl::GetConfigs(
-    PP_VideoConfigElement* requested_configs,
+    const PP_VideoConfigElement* requested_configs,
     PP_VideoConfigElement* matching_configs,
     uint32_t matching_configs_size,
     uint32_t* num_of_matching_configs) {
@@ -216,7 +216,7 @@ bool PPB_VideoDecoder_Impl::GetConfigs(
   return true;
 }
 
-bool PPB_VideoDecoder_Impl::Init(PP_VideoConfigElement* decoder_config,
+bool PPB_VideoDecoder_Impl::Init(const PP_VideoConfigElement* decoder_config,
                                  PP_CompletionCallback callback) {
   if (!instance())
     return false;
@@ -235,7 +235,7 @@ bool PPB_VideoDecoder_Impl::Init(PP_VideoConfigElement* decoder_config,
 }
 
 bool PPB_VideoDecoder_Impl::Decode(
-    PP_VideoBitstreamBuffer_Dev* bitstream_buffer,
+    const PP_VideoBitstreamBuffer_Dev* bitstream_buffer,
     PP_CompletionCallback callback) {
   if (!platform_video_decoder_.get())
     return false;
@@ -259,7 +259,7 @@ bool PPB_VideoDecoder_Impl::Decode(
 
 void PPB_VideoDecoder_Impl::AssignGLESBuffers(
     uint32_t no_of_buffers,
-    PP_GLESBuffer_Dev* buffers) {
+    const PP_GLESBuffer_Dev* buffers) {
   if (!platform_video_decoder_.get())
     return;
 
@@ -274,7 +274,7 @@ void PPB_VideoDecoder_Impl::AssignGLESBuffers(
 
 void PPB_VideoDecoder_Impl::AssignSysmemBuffers(
     uint32_t no_of_buffers,
-    PP_SysmemBuffer_Dev* buffers) {
+    const PP_SysmemBuffer_Dev* buffers) {
   if (!platform_video_decoder_.get())
     return;
 

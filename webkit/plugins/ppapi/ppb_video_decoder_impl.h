@@ -42,17 +42,18 @@ class PPB_VideoDecoder_Impl : public Resource,
   virtual PPB_VideoDecoder_Impl* AsPPB_VideoDecoder_Impl();
 
   // PPB_VideoDecoder implementation.
-  bool GetConfigs(PP_VideoConfigElement* requested_configs,
+  bool GetConfigs(const PP_VideoConfigElement* requested_configs,
                   PP_VideoConfigElement* matching_configs,
                   uint32_t matching_configs_size,
                   uint32_t* num_of_matching_configs);
-  bool Init(PP_VideoConfigElement* dec_config, PP_CompletionCallback callback);
-  bool Decode(PP_VideoBitstreamBuffer_Dev* bitstream_buffer,
+  bool Init(const PP_VideoConfigElement* dec_config,
+            PP_CompletionCallback callback);
+  bool Decode(const PP_VideoBitstreamBuffer_Dev* bitstream_buffer,
               PP_CompletionCallback callback);
   void AssignGLESBuffers(uint32_t no_of_buffers,
-                         PP_GLESBuffer_Dev* buffers);
+                         const PP_GLESBuffer_Dev* buffers);
   void AssignSysmemBuffers(uint32_t no_of_buffers,
-                           PP_SysmemBuffer_Dev* buffers);
+                           const PP_SysmemBuffer_Dev* buffers);
   void ReusePictureBuffer(int32_t picture_buffer_id);
   bool Flush(PP_CompletionCallback callback);
   bool Abort(PP_CompletionCallback callback);

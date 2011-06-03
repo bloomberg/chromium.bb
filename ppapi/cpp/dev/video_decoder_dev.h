@@ -30,8 +30,9 @@ class VideoDecoder : public Resource {
 
     // Callback to provide buffers for the decoded output pictures.
     virtual void ProvidePictureBuffers(
-        uint32_t requested_num_of_buffers,
-        const std::vector<uint32_t>& buffer_properties) = 0;
+        uint32_t req_num_of_bufs,
+        struct PP_Size dimensions,
+        enum PP_PictureBufferType_Dev type);
 
     // Callback for decoder to delivered unneeded picture buffers back to the
     // plugin.
@@ -42,7 +43,7 @@ class VideoDecoder : public Resource {
 
     // Callback to notify that decoder has decoded end of stream marker and has
     // outputted all displayable pictures.
-    virtual void NotifyEndOfStream() = 0;
+    virtual void EndOfStream() = 0;
 
     // Callback to notify about decoding errors.
     virtual void NotifyError(PP_VideoDecodeError_Dev error) = 0;
@@ -57,23 +58,24 @@ class VideoDecoder : public Resource {
   //  |callback| will be called when decoder is initialized.
   //  |client| is the pointer to the client object. Ownership of the object is
   //  not transferred and it must outlive the lifetime of this class.
-  VideoDecoder(const Instance* instance, const std::vector<uint32_t>& config,
+  VideoDecoder(const Instance* instance,
+               const PP_VideoConfigElement* config,
                CompletionCallback callback, Client* client);
   ~VideoDecoder();
 
   // GetConfigs returns supported configurations that are subsets of given
   // |prototype_config|.
-  static std::vector<uint32_t> GetConfigs(
-      Instance* instance,
-      const std::vector<uint32_t>& prototype_config);
+  bool GetConfigs(Instance* instance,
+                  const PP_VideoConfigElement* prototype_config,
+                  PP_VideoConfigElement* matching_configs,
+                  uint32_t matching_configs_size,
+                  uint32_t* num_of_matching_configs);
 
   // Provides the decoder with picture buffers for video decoding.
   // AssignGLESBuffers provides texture-backed buffers, whereas
   // AssignSysmemBuffers provides system memory-backed buffers.
-  void AssignGLESBuffers(uint32_t no_of_buffers,
-                         const PP_GLESBuffer_Dev& buffers);
-  void AssignSysmemBuffers(uint32_t no_of_buffers,
-                           const PP_SysmemBuffer_Dev& buffers);
+  void AssignGLESBuffers(const std::vector<PP_GLESBuffer_Dev>& buffers);
+  void AssignSysmemBuffers(const std::vector<PP_SysmemBuffer_Dev>& buffers);
 
   // Decodes given bitstream buffer. Once decoder is done with processing
   // |bitstream_buffer| is will call |callback| with provided user data.
