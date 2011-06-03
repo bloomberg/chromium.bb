@@ -42,12 +42,11 @@ Example of uploading prebuilt amd64 host files using rsync:
 ./prebuilt.py -p /b/cbuild/build -s -u codf30.jail:/tmp
 """
 
-# as per http://crosbug.com/5855 always filter the below packages
-_FILTER_PACKAGES = set()
 _RETRIES = 3
 _GSUTIL_BIN = '/b/build/third_party/gsutil/gsutil'
 _HOST_PACKAGES_PATH = 'chroot/var/lib/portage/pkgs'
 _CATEGORIES_PATH = 'chroot/etc/portage/categories'
+_PYM_PATH = 'chroot/usr/lib/portage/pym'
 _HOST_TARGET = 'amd64'
 _BOARD_PATH = 'chroot/build/%(board)s'
 # board/board-target/version/'
@@ -64,11 +63,6 @@ _PREBUILT_BASE_DIR = 'src/third_party/chromiumos-overlay/chromeos/config/'
 _PREBUILT_MAKE_CONF = {'amd64': os.path.join(_PREBUILT_BASE_DIR,
                                              'make.conf.amd64-host')}
 _BINHOST_CONF_DIR = 'src/third_party/chromiumos-overlay/chromeos/binhost'
-
-
-class FiltersEmpty(Exception):
-  """Raised when filters are used but none are found."""
-  pass
 
 
 class UploadFailed(Exception):
@@ -167,52 +161,6 @@ def RevGitFile(filename, value, retries=5, key='PORTAGE_BINHOST'):
 def GetVersion():
   """Get the version to put in LATEST and update the git version with."""
   return datetime.datetime.now().strftime('%d.%m.%y.%H%M%S')
-
-
-def LoadPrivateFilters(build_path):
-  """Load private filters based on ebuilds found under _PRIVATE_OVERLAY_DIR.
-
-  This function adds filters to the global set _FILTER_PACKAGES.
-  Args:
-    build_path: Path that _PRIVATE_OVERLAY_DIR is in.
-  """
-  # TODO(scottz): eventually use manifest.xml to find the proper
-  # private overlay path.
-  filter_path = os.path.join(build_path, _PRIVATE_OVERLAY_DIR)
-  files = cros_build_lib.ListFiles(filter_path)
-  filters = []
-  for file in files:
-    if file.endswith('.ebuild'):
-      basename = os.path.basename(file)
-      match = re.match('(.*?)-\d.*.ebuild', basename)
-      if match:
-        filters.append(match.group(1))
-
-  if not filters:
-    raise FiltersEmpty('No filters were returned')
-
-  _FILTER_PACKAGES.update(filters)
-
-
-def ShouldFilterPackage(file_path):
-  """Skip a particular file if it matches a pattern.
-
-  Skip any files that machine the list of packages to filter in
-  _FILTER_PACKAGES.
-
-  Args:
-    file_path: string of a file path to inspect against _FILTER_PACKAGES
-
-  Returns:
-    True if we should filter the package,
-    False otherwise.
-  """
-  for name in _FILTER_PACKAGES:
-    if name in file_path:
-      print 'FILTERING %s' % file_path
-      return True
-
-  return False
 
 
 def _RetryRun(cmd, print_cmd=True, cwd=None):
@@ -424,7 +372,8 @@ def _GrabAllRemotePackageIndexes(binhost_urls):
 class PrebuiltUploader(object):
   """Synchronize host and board prebuilts."""
 
-  def __init__(self, upload_location, acl, binhost_base_url, pkg_indexes):
+  def __init__(self, upload_location, acl, binhost_base_url,
+               pkg_indexes, build_path, packages):
     """Constructor for prebuilt uploader object.
 
     This object can upload host or prebuilt files to Google Storage.
@@ -438,11 +387,25 @@ class PrebuiltUploader(object):
       binhost_base_url: The URL used for downloading the prebuilts.
       pkg_indexes: Old uploaded prebuilts to compare against. Instead of
           uploading duplicate files, we just link to the old files.
+      build_path: The path to the directory containing the chroot.
+      packages: Packages to upload.
     """
     self._upload_location = upload_location
     self._acl = acl
     self._binhost_base_url = binhost_base_url
     self._pkg_indexes = pkg_indexes
+    self._build_path = build_path
+    self._packages = set(packages)
+
+  def _ShouldFilterPackage(self, pkg):
+    if not self._packages:
+      return False
+    pym_path = os.path.abspath(os.path.join(self._build_path, _PYM_PATH))
+    sys.path.append(pym_path)
+    import portage.versions
+    cat, pkgname = portage.versions.catpkgsplit(pkg['CPV'])[0:2]
+    cp = '%s/%s' % (cat, pkgname)
+    return pkgname not in self._packages and cp not in self._packages
 
   def _UploadPrebuilt(self, package_path, url_suffix):
     """Upload host or board prebuilt files to Google Storage space.
@@ -462,7 +425,7 @@ class PrebuiltUploader(object):
     # Process Packages file, removing duplicates and filtered packages.
     pkg_index = GrabLocalPackageIndex(package_path)
     pkg_index.SetUploadLocation(self._binhost_base_url, url_suffix)
-    pkg_index.RemoveFilteredPackages(ShouldFilterPackage)
+    pkg_index.RemoveFilteredPackages(self._ShouldFilterPackage)
     uploads = pkg_index.ResolveDuplicateUploads(self._pkg_indexes)
 
     if not uploads:
@@ -525,8 +488,7 @@ class PrebuiltUploader(object):
     finally:
       cros_build_lib.RunCommand(['sudo', 'rm', '-rf', tmpdir], cwd=cwd)
 
-  def _SyncHostPrebuilts(self, build_path, version, key, git_sync,
-                        sync_binhost_conf):
+  def _SyncHostPrebuilts(self, version, key, git_sync, sync_binhost_conf):
     """Synchronize host prebuilt files.
 
     This function will sync both the standard host packages, plus the host
@@ -538,7 +500,6 @@ class PrebuiltUploader(object):
     'armv7a-cros-linux-gnueabi'.
 
     Args:
-      build_path: The path to the directory containing the chroot.
       version: A unique string, intended to be included in the upload path,
           which identifies the version number of the uploaded prebuilts.
       key: The variable key to update in the git file.
@@ -548,7 +509,7 @@ class PrebuiltUploader(object):
           chromiumos-overlay for the host.
     """
     # Upload prebuilts.
-    package_path = os.path.join(build_path, _HOST_PACKAGES_PATH)
+    package_path = os.path.join(self._build_path, _HOST_PACKAGES_PATH)
     url_suffix = _REL_HOST_PATH % {'version': version, 'target': _HOST_TARGET}
     packages_url_suffix = '%s/packages' % url_suffix.rstrip('/')
 
@@ -557,20 +518,20 @@ class PrebuiltUploader(object):
       url_value = '%s/%s/' % (self._binhost_base_url.rstrip('/'),
                               packages_url_suffix.rstrip('/'))
       if git_sync:
-        git_file = os.path.join(build_path, _PREBUILT_MAKE_CONF[_HOST_TARGET])
+        git_file = os.path.join(self._build_path,
+            _PREBUILT_MAKE_CONF[_HOST_TARGET])
         RevGitFile(git_file, url_value, key=key)
       if sync_binhost_conf:
-        binhost_conf = os.path.join(build_path, _BINHOST_CONF_DIR, 'host',
-            '%s-%s.conf' % (_HOST_TARGET, key))
+        binhost_conf = os.path.join(self._build_path, _BINHOST_CONF_DIR,
+            'host', '%s-%s.conf' % (_HOST_TARGET, key))
         UpdateBinhostConfFile(binhost_conf, key, url_value)
 
-  def _SyncBoardPrebuilts(self, board, build_path, version, key, git_sync,
+  def _SyncBoardPrebuilts(self, board, version, key, git_sync,
                           sync_binhost_conf, upload_board_tarball):
     """Synchronize board prebuilt files.
 
     Args:
       board: The board to upload to Google Storage.
-      build_path: The path to the directory containing the chroot.
       version: A unique string, intended to be included in the upload path,
           which identifies the version number of the uploaded prebuilts.
       key: The variable key to update in the git file.
@@ -580,7 +541,7 @@ class PrebuiltUploader(object):
           chromiumos-overlay for the current board.
       upload_board_tarball: Include a tarball of the board in our upload.
     """
-    board_path = os.path.join(build_path, _BOARD_PATH % {'board': board})
+    board_path = os.path.join(self._build_path, _BOARD_PATH % {'board': board})
     package_path = os.path.join(board_path, 'packages')
     url_suffix = _REL_BOARD_PATH % {'board': board, 'version': version}
     packages_url_suffix = '%s/packages' % url_suffix.rstrip('/')
@@ -604,11 +565,11 @@ class PrebuiltUploader(object):
       url_value = '%s/%s/' % (self._binhost_base_url.rstrip('/'),
                               packages_url_suffix.rstrip('/'))
       if git_sync:
-        git_file = DeterminePrebuiltConfFile(build_path, board)
+        git_file = DeterminePrebuiltConfFile(self._build_path, board)
         RevGitFile(git_file, url_value, key=key)
       if sync_binhost_conf:
-        binhost_conf = os.path.join(build_path, _BINHOST_CONF_DIR, 'target',
-            '%s-%s.conf' % (board, key))
+        binhost_conf = os.path.join(self._build_path, _BINHOST_CONF_DIR,
+            'target', '%s-%s.conf' % (board, key))
         UpdateBinhostConfFile(binhost_conf, key, url_value)
 
 
@@ -630,6 +591,10 @@ def ParseOptions():
                     help='Board type that was built on this machine')
   parser.add_option('-p', '--build-path', dest='build_path',
                     help='Path to the directory containing the chroot')
+  parser.add_option('', '--packages', action='append',
+                    default=[], dest='packages',
+                    help='Only include the specified packages. '
+                         '(Default is to include all packages.)')
   parser.add_option('-s', '--sync-host', dest='sync_host',
                     default=False, action='store_true',
                     help='Sync host prebuilts')
@@ -687,10 +652,6 @@ def ParseOptions():
 def main():
   options = ParseOptions()
 
-  if options.filters:
-    LoadPrivateFilters(options.build_path)
-
-
   # Calculate a list of Packages index files to compare against. Whenever we
   # upload a package, we check to make sure it's not already stored in one of
   # the packages files we uploaded. This list of packages files might contain
@@ -711,14 +672,15 @@ def main():
     acl = os.path.join(board_path, _GOOGLESTORAGE_ACL_FILE)
 
   uploader = PrebuiltUploader(options.upload, acl, binhost_base_url,
-                              pkg_indexes)
+                              pkg_indexes, options.build_path,
+                              options.packages)
 
   if options.sync_host:
-    uploader._SyncHostPrebuilts(options.build_path, version, options.key,
-                                options.git_sync, options.sync_binhost_conf)
+    uploader._SyncHostPrebuilts(version, options.key, options.git_sync,
+                                options.sync_binhost_conf)
 
   if options.board:
-    uploader._SyncBoardPrebuilts(options.board, options.build_path, version,
+    uploader._SyncBoardPrebuilts(options.board, version,
                                  options.key, options.git_sync,
                                  options.sync_binhost_conf,
                                  options.upload_board_tarball)

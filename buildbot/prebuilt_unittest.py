@@ -17,16 +17,16 @@ import constants
 sys.path.append(constants.SOURCE_ROOT)
 import prebuilt
 from chromite.lib import cros_build_lib
-from chromite.lib.binpkg import PackageIndex
+from chromite.lib import binpkg
 
-PUBLIC_PACKAGES = [{'CPV': 'gtk+/public1', 'SHA1': '1'},
+PUBLIC_PACKAGES = [{'CPV': 'gtk+/public1', 'SHA1': '1', 'MTIME': '1'},
                    {'CPV': 'gtk+/public2', 'SHA1': '2',
-                    'PATH': 'gtk+/foo.tgz'}]
-PRIVATE_PACKAGES = [{'CPV': 'private', 'SHA1': '3'}]
+                    'PATH': 'gtk+/foo.tgz', 'MTIME': '2'}]
+PRIVATE_PACKAGES = [{'CPV': 'private', 'SHA1': '3', 'MTIME': '3'}]
 
 
 def SimplePackageIndex(header=True, packages=True):
-   pkgindex = PackageIndex()
+   pkgindex = binpkg.PackageIndex()
    if header:
      pkgindex.header['URI'] = 'http://www.example.com'
    if packages:
@@ -107,73 +107,6 @@ class TestUpdateFile(unittest.TestCase):
         os.remove(non_existent_file)
 
 
-class TestPrebuiltFilters(unittest.TestCase):
-
-  def setUp(self):
-    self.tmp_dir = tempfile.mkdtemp()
-    self.private_dir = os.path.join(self.tmp_dir,
-                                    prebuilt._PRIVATE_OVERLAY_DIR)
-    self.private_structure_base = 'chromeos-overlay/chromeos-base'
-    self.private_pkgs = ['test-package/salt-flavor-0.1.r3.ebuild',
-                         'easy/alpha_beta-0.1.41.r3.ebuild',
-                         'dev/j-t-r-0.1.r3.ebuild', ]
-    self.expected_filters = set(['salt-flavor', 'alpha_beta', 'j-t-r'])
-
-  def tearDown(self):
-    if self.tmp_dir:
-      shutil.rmtree(self.tmp_dir)
-
-  def _CreateNestedDir(self, tmp_dir, dir_structure):
-    for entry in dir_structure:
-      full_path = os.path.join(os.path.join(tmp_dir, entry))
-      # ensure dirs are created
-      try:
-        os.makedirs(os.path.dirname(full_path))
-        if full_path.endswith('/'):
-          # we only want to create directories
-          return
-      except OSError, err:
-        if err.errno == errno.EEXIST:
-          # we don't care if the dir already exists
-          pass
-        else:
-          raise
-      # create dummy files
-      tmp = open(full_path, 'w')
-      tmp.close()
-
-  def _LoadPrivateMockFilters(self):
-    """Load mock filters as defined in the setUp function."""
-    dir_structure = [os.path.join(self.private_structure_base, entry)
-                     for entry in self.private_pkgs]
-
-    self._CreateNestedDir(self.private_dir, dir_structure)
-    prebuilt.LoadPrivateFilters(self.tmp_dir)
-
-  def testFilterPattern(self):
-    """Check that particular packages are filtered properly."""
-    self._LoadPrivateMockFilters()
-    packages = ['/some/dir/area/j-t-r-0.1.r3.tbz',
-                '/var/pkgs/new/alpha_beta-0.2.3.4.tbz',
-                '/usr/local/cache/good-0.1.3.tbz',
-                '/usr-blah/b_d/salt-flavor-0.0.3.tbz']
-    expected_list = ['/usr/local/cache/good-0.1.3.tbz']
-    filtered_list = [file for file in packages if not
-                     prebuilt.ShouldFilterPackage(file)]
-    self.assertEqual(expected_list, filtered_list)
-
-  def testLoadPrivateFilters(self):
-    self._LoadPrivateMockFilters()
-    prebuilt.LoadPrivateFilters(self.tmp_dir)
-    self.assertEqual(self.expected_filters, prebuilt._FILTER_PACKAGES)
-
-  def testEmptyFiltersErrors(self):
-    """Ensure LoadPrivateFilters errors if an empty list is generated."""
-    os.makedirs(os.path.join(self.tmp_dir, prebuilt._PRIVATE_OVERLAY_DIR))
-    self.assertRaises(prebuilt.FiltersEmpty, prebuilt.LoadPrivateFilters,
-                      self.tmp_dir)
-
-
 class TestPrebuilt(unittest.TestCase):
 
   def setUp(self):
@@ -197,9 +130,13 @@ class TestPrebuilt(unittest.TestCase):
 
   def testFailonUploadFail(self):
     """Make sure we fail if one of the upload processes fail."""
+    self.mox.StubOutWithMock(prebuilt, '_RetryRun')
+    prebuilt._RetryRun(mox.IgnoreArg(), print_cmd=False).AndReturn(False)
+    self.mox.ReplayAll()
     files = {'test': '/uasd'}
     result = prebuilt.RemoteUpload('public-read', files)
     self.assertEqual(result, set([('test', '/uasd')]))
+    prebuilt._RetryRun('example', print_cmd=False)
 
   def testDeterminePrebuiltConfHost(self):
     """Test that the host prebuilt path comes back properly."""
@@ -284,13 +221,13 @@ class TestPopulateDuplicateDB(unittest.TestCase):
   def testEmptyIndex(self):
     pkgindex = SimplePackageIndex(packages=False)
     db = {}
-    pkgindex._PopulateDuplicateDB(db)
+    pkgindex._PopulateDuplicateDB(db, 0)
     self.assertEqual(db, {})
 
   def testNormalIndex(self):
     pkgindex = SimplePackageIndex()
     db = {}
-    pkgindex._PopulateDuplicateDB(db)
+    pkgindex._PopulateDuplicateDB(db, 0)
     self.assertEqual(len(db), 3)
     self.assertEqual(db['1'], 'http://www.example.com/gtk+/public1.tbz2')
     self.assertEqual(db['2'], 'http://www.example.com/gtk+/foo.tgz')
@@ -300,7 +237,7 @@ class TestPopulateDuplicateDB(unittest.TestCase):
     db = {}
     pkgindex = SimplePackageIndex()
     del pkgindex.packages[0]['SHA1']
-    pkgindex._PopulateDuplicateDB(db)
+    pkgindex._PopulateDuplicateDB(db, 0)
     self.assertEqual(len(db), 2)
     self.assertEqual(db['2'], 'http://www.example.com/gtk+/foo.tgz')
     self.assertEqual(db['3'], 'http://www.example.com/private.tbz2')
@@ -308,20 +245,34 @@ class TestPopulateDuplicateDB(unittest.TestCase):
   def testFailedPopulate(self):
     db = {}
     pkgindex = SimplePackageIndex(header=False)
-    self.assertRaises(KeyError, pkgindex._PopulateDuplicateDB, db)
+    self.assertRaises(KeyError, pkgindex._PopulateDuplicateDB, db, 0)
     pkgindex = SimplePackageIndex()
     del pkgindex.packages[0]['CPV']
-    self.assertRaises(KeyError, pkgindex._PopulateDuplicateDB, db)
+    self.assertRaises(KeyError, pkgindex._PopulateDuplicateDB, db, 0)
 
 
 class TestResolveDuplicateUploads(unittest.TestCase):
+
+  def setUp(self):
+    self.mox = mox.Mox()
+    self.mox.StubOutWithMock(binpkg.time, 'time')
+    binpkg.time.time().AndReturn(binpkg.TWO_WEEKS)
+    self.mox.ReplayAll()
+
+  def tearDown(self):
+    self.mox.UnsetStubs()
+    self.mox.VerifyAll()
 
   def testEmptyList(self):
     pkgindex = SimplePackageIndex()
     pristine = SimplePackageIndex()
     uploads = pkgindex.ResolveDuplicateUploads([])
-    self.assertEqual(uploads, pristine.packages)
-    self.assertEqual(pkgindex.packages, pristine.packages)
+    self.assertEqual(uploads, pkgindex.packages)
+    self.assertEqual(len(pkgindex.packages), len(pristine.packages))
+    for pkg1, pkg2 in zip(pkgindex.packages, pristine.packages):
+      self.assertNotEqual(pkg1['MTIME'], pkg2['MTIME'])
+      del pkg1['MTIME']
+      del pkg2['MTIME']
     self.assertEqual(pkgindex.modified, False)
 
   def testEmptyIndex(self):
@@ -329,8 +280,13 @@ class TestResolveDuplicateUploads(unittest.TestCase):
     pristine = SimplePackageIndex()
     empty = SimplePackageIndex(packages=False)
     uploads = pkgindex.ResolveDuplicateUploads([empty])
-    self.assertEqual(uploads, pristine.packages)
-    self.assertEqual(pkgindex.packages, pristine.packages)
+    self.assertEqual(uploads, pkgindex.packages)
+    self.assertEqual(len(pkgindex.packages), len(pristine.packages))
+    for pkg1, pkg2 in zip(pkgindex.packages, pristine.packages):
+      self.assertNotEqual(pkg1['MTIME'], pkg2['MTIME'])
+      del pkg1['MTIME']
+      del pkg2['MTIME']
+      self.assertEqual(pkg1, pkg2)
     self.assertEqual(pkgindex.modified, False)
 
   def testDuplicates(self):
@@ -352,6 +308,10 @@ class TestResolveDuplicateUploads(unittest.TestCase):
     for pkg in expected_pkgindex.packages[1:]:
       pkg.setdefault('PATH', pkg['CPV'] + '.tbz2')
     uploads = pkgindex.ResolveDuplicateUploads([dup_pkgindex])
+    self.assertNotEqual(pkgindex.packages[0]['MTIME'],
+                        expected_pkgindex.packages[0]['MTIME'])
+    del pkgindex.packages[0]['MTIME']
+    del expected_pkgindex.packages[0]['MTIME']
     self.assertEqual(pkgindex.packages, expected_pkgindex.packages)
 
 
@@ -407,7 +367,7 @@ class TestUploadPrebuilt(unittest.TestCase):
     self.mox.ReplayAll()
     uri = self.pkgindex.header['URI']
     uploader = prebuilt.PrebuiltUploader('chromeos-prebuilt:/dir',
-        'public-read', uri, [])
+        'public-read', uri, [], '/', [])
     uploader._UploadPrebuilt('/packages', suffix)
 
   def testSuccessfulGsUpload(self):
@@ -421,7 +381,7 @@ class TestUploadPrebuilt(unittest.TestCase):
     prebuilt.RemoteUpload(acl, uploads).AndReturn([None])
     self.mox.ReplayAll()
     uri = self.pkgindex.header['URI']
-    uploader = prebuilt.PrebuiltUploader('gs://foo', acl, uri, [])
+    uploader = prebuilt.PrebuiltUploader('gs://foo', acl, uri, [], '/', [])
     uploader._UploadPrebuilt('/packages', 'suffix')
 
   def testSuccessfulRsyncUploadWithNoTrailingSlash(self):
@@ -443,9 +403,7 @@ class TestSyncPrebuilts(unittest.TestCase):
     self.version = '1'
     self.binhost = 'http://prebuilt/'
     self.key = 'PORTAGE_BINHOST'
-    self.uploader = prebuilt.PrebuiltUploader(
-        self.upload_location, 'public-read', self.binhost, [])
-    self.mox.StubOutWithMock(self.uploader, '_UploadPrebuilt')
+    self.mox.StubOutWithMock(prebuilt.PrebuiltUploader, '_UploadPrebuilt')
 
   def tearDown(self):
     self.mox.UnsetStubs()
@@ -457,14 +415,17 @@ class TestSyncPrebuilts(unittest.TestCase):
     url_suffix = prebuilt._REL_HOST_PATH % {'version': self.version,
         'target': prebuilt._HOST_TARGET }
     packages_url_suffix = '%s/packages' % url_suffix.rstrip('/')
-    self.uploader._UploadPrebuilt(package_path, packages_url_suffix)
+    prebuilt.PrebuiltUploader._UploadPrebuilt(package_path,
+        packages_url_suffix).AndReturn(True)
     url_value = '%s/%s/' % (self.binhost.rstrip('/'),
                             packages_url_suffix.rstrip('/'))
     prebuilt.RevGitFile(mox.IgnoreArg(), url_value, key=self.key)
     prebuilt.UpdateBinhostConfFile(mox.IgnoreArg(), self.key, url_value)
     self.mox.ReplayAll()
-    self.uploader._SyncHostPrebuilts(self.build_path, self.version, self.key,
-        True, True)
+    uploader = prebuilt.PrebuiltUploader(
+        self.upload_location, 'public-read', self.binhost, [],
+        self.build_path, [])
+    uploader._SyncHostPrebuilts(self.version, self.key, True, True)
 
   def testSyncBoardPrebuilts(self):
     board = 'x86-generic'
@@ -479,10 +440,11 @@ class TestSyncPrebuilts(unittest.TestCase):
     self.mox.StubOutWithMock(multiprocessing.Process, 'exitcode')
     self.mox.StubOutWithMock(multiprocessing.Process, 'start')
     self.mox.StubOutWithMock(multiprocessing.Process, 'join')
-    multiprocessing.Process.__init__(target=self.uploader._UploadBoardTarball,
-      args=(board_path, url_suffix))
+    multiprocessing.Process.__init__(target=mox.IgnoreArg(),
+        args=(board_path, url_suffix))
     multiprocessing.Process.start()
-    self.uploader._UploadPrebuilt(package_path, packages_url_suffix)
+    prebuilt.PrebuiltUploader._UploadPrebuilt(package_path,
+        packages_url_suffix).AndReturn(True)
     multiprocessing.Process.join()
     multiprocessing.Process.exitcode = 0
     url_value = '%s/%s/' % (self.binhost.rstrip('/'),
@@ -491,8 +453,11 @@ class TestSyncPrebuilts(unittest.TestCase):
     prebuilt.RevGitFile('foo', url_value, key=self.key)
     prebuilt.UpdateBinhostConfFile(mox.IgnoreArg(), self.key, url_value)
     self.mox.ReplayAll()
-    self.uploader._SyncBoardPrebuilts(board, self.build_path, self.version,
-        self.key, True, True, True)
+    uploader = prebuilt.PrebuiltUploader(
+        self.upload_location, 'public-read', self.binhost, [],
+        self.build_path, [])
+    uploader._SyncBoardPrebuilts(board, self.version, self.key, True,
+        True, True)
 
 
 class TestMain(unittest.TestCase):
@@ -512,6 +477,7 @@ class TestMain(unittest.TestCase):
     options.board = 'x86-generic'
     options.build_path = '/trunk'
     options.private = True
+    options.packages = []
     options.sync_host = True
     options.git_sync = True
     options.upload_board_tarball = True
@@ -523,8 +489,6 @@ class TestMain(unittest.TestCase):
     options.sync_binhost_conf = True
     self.mox.StubOutWithMock(prebuilt, 'ParseOptions')
     prebuilt.ParseOptions().AndReturn(options)
-    self.mox.StubOutWithMock(prebuilt, 'LoadPrivateFilters')
-    prebuilt.LoadPrivateFilters(options.build_path)
     self.mox.StubOutWithMock(prebuilt, 'GrabRemotePackageIndex')
     prebuilt.GrabRemotePackageIndex(old_binhost).AndReturn(True)
     self.mox.StubOutWithMock(prebuilt.PrebuiltUploader, '__init__')
@@ -535,14 +499,14 @@ class TestMain(unittest.TestCase):
     expected_gs_acl_path = os.path.join(fake_overlay_path,
                                         prebuilt._GOOGLESTORAGE_ACL_FILE)
     prebuilt.PrebuiltUploader.__init__(options.upload, expected_gs_acl_path,
-                                       options.upload, mox.IgnoreArg())
+                                       options.upload, mox.IgnoreArg(),
+                                       options.build_path, options.packages)
     self.mox.StubOutWithMock(prebuilt.PrebuiltUploader, '_SyncHostPrebuilts')
-    prebuilt.PrebuiltUploader._SyncHostPrebuilts(options.build_path,
-        mox.IgnoreArg(), options.key, options.git_sync,
-        options.sync_binhost_conf)
+    prebuilt.PrebuiltUploader._SyncHostPrebuilts(mox.IgnoreArg(), options.key,
+        options.git_sync, options.sync_binhost_conf)
     self.mox.StubOutWithMock(prebuilt.PrebuiltUploader, '_SyncBoardPrebuilts')
     prebuilt.PrebuiltUploader._SyncBoardPrebuilts(options.board,
-        options.build_path, mox.IgnoreArg(), options.key, options.git_sync,
+        mox.IgnoreArg(), options.key, options.git_sync,
         options.sync_binhost_conf, options.upload_board_tarball)
     self.mox.ReplayAll()
     prebuilt.main()

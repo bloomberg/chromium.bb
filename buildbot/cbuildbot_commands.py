@@ -469,7 +469,8 @@ def UploadPrebuilts(buildroot, board, overlay_config, binhosts, category,
     assert chrome_rev
     key = '%s_%s' % (chrome_rev, _CHROME_BINHOST)
     cmd.extend(['--sync-binhost-conf',
-                 '--key', key.upper()])
+                '--packages=chromeos-chrome',
+                '--key', key.upper()])
   elif category == 'binary':
     cmd.extend(['--sync-binhost-conf',
                 '--key', _PREFLIGHT_BINHOST])
