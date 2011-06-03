@@ -202,6 +202,7 @@ def Main():
   env = os.environ.copy()
   env['ARCHIVE_IRT'] = builder in IRT_ARCHIVE_BUILDERS and '1' or '0'
 
+  print "%s runs: %s\n" % (builder, cmd)
   p = subprocess.Popen(cmd, env=env, shell=True)
   p.wait()
 
