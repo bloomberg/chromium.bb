@@ -247,7 +247,7 @@ class FilePatchDiff(FilePatchBase):
     if match:
       mode = match.group(1)
       # Only look at owner ACL for executable.
-      if bool(int(mode[4]) & 4):
+      if bool(int(mode[4]) & 1):
         self.svn_properties.append(('svn:executable', '*'))
 
     # Handle "--- "
