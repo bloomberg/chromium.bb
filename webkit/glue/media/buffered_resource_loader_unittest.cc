@@ -475,6 +475,36 @@ TEST_F(BufferedResourceLoaderTest, ReadThenDeferStrategy) {
   ConfirmLoaderDeferredState(true);
   VerifyBuffer(buffer, 10, 10);
 
+  // Read again which should disable deferring since there should be nothing
+  // left in our internal buffer.
+  EXPECT_CALL(*this, NetworkCallback());
+  ReadLoader(20, 10, buffer);
+
+  ConfirmLoaderDeferredState(false);
+
+  // Over-fulfill requested bytes, then deferring should be enabled again.
+  EXPECT_CALL(*this, NetworkCallback());
+  EXPECT_CALL(*this, ReadCallback(10));
+  WriteLoader(20, 40);
+
+  ConfirmLoaderDeferredState(true);
+  VerifyBuffer(buffer, 20, 10);
+
+  // Read far ahead, which should disable deferring. In this case we still have
+  // bytes in our internal buffer.
+  EXPECT_CALL(*this, NetworkCallback());
+  ReadLoader(80, 10, buffer);
+
+  ConfirmLoaderDeferredState(false);
+
+  // Fulfill requested bytes, then deferring should be enabled again.
+  EXPECT_CALL(*this, NetworkCallback());
+  EXPECT_CALL(*this, ReadCallback(10));
+  WriteLoader(60, 40);
+
+  ConfirmLoaderDeferredState(true);
+  VerifyBuffer(buffer, 80, 10);
+
   StopWhenLoad();
 }
 

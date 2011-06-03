@@ -58,8 +58,7 @@ BufferedDataSource::BufferedDataSource(
       using_range_request_(true) {
 }
 
-BufferedDataSource::~BufferedDataSource() {
-}
+BufferedDataSource::~BufferedDataSource() {}
 
 // A factory method to create BufferedResourceLoader using the read parameters.
 // This method can be overrided to inject mock BufferedResourceLoader object
@@ -148,6 +147,7 @@ void BufferedDataSource::SetPreload(media::Preload preload) {
 // media::DataSource implementation.
 void BufferedDataSource::Read(int64 position, size_t size, uint8* data,
                               media::DataSource::ReadCallback* read_callback) {
+  VLOG(1) << "Read: " << position << " offset, " << size << " bytes";
   DCHECK(read_callback);
 
   {
@@ -353,6 +353,8 @@ void BufferedDataSource::ReadInternal() {
 // Method to report the results of the current read request. Also reset all
 // the read parameters.
 void BufferedDataSource::DoneRead_Locked(int error) {
+  VLOG(1) << "DoneRead: " << error << " bytes";
+
   DCHECK(MessageLoop::current() == render_loop_);
   DCHECK(read_callback_.get());
   lock_.AssertAcquired();

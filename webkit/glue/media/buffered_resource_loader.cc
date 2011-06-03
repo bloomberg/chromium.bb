@@ -272,6 +272,7 @@ void BufferedResourceLoader::didSendData(
 void BufferedResourceLoader::didReceiveResponse(
     WebURLLoader* loader,
     const WebURLResponse& response) {
+  VLOG(1) << "didReceiveResponse: " << response.httpStatusCode();
 
   // The loader may have been stopped and |start_callback| is destroyed.
   // In this case we shouldn't do anything.
@@ -336,6 +337,8 @@ void BufferedResourceLoader::didReceiveData(
     const char* data,
     int data_length,
     int encoded_data_length) {
+  VLOG(1) << "didReceiveData: " << data_length << " bytes";
+
   DCHECK(!completed_);
   DCHECK_GT(data_length, 0);
 
@@ -382,6 +385,8 @@ void BufferedResourceLoader::didReceiveCachedMetadata(
 void BufferedResourceLoader::didFinishLoading(
     WebURLLoader* loader,
     double finishTime) {
+  VLOG(1) << "didFinishLoading";
+
   DCHECK(!completed_);
   completed_ = true;
 
@@ -421,6 +426,8 @@ void BufferedResourceLoader::didFinishLoading(
 void BufferedResourceLoader::didFail(
     WebURLLoader* loader,
     const WebURLError& error) {
+  VLOG(1) << "didFail: " << error.reason;
+
   DCHECK(!completed_);
   completed_ = true;
 
@@ -499,11 +506,9 @@ bool BufferedResourceLoader::ShouldDisableDefer() {
 
     // We have an outstanding read request, and we have not buffered enough
     // yet to fulfill the request; disable defer to get more data.
-    case kReadThenDefer: {
-      size_t amount_buffered = buffer_->forward_bytes();
-      size_t amount_to_read = static_cast<size_t>(read_size_);
-      return read_callback_.get() && amount_buffered < amount_to_read;
-    }
+    case kReadThenDefer:
+      return read_callback_.get() &&
+          last_offset_ > static_cast<int>(buffer_->forward_bytes());
 
     // We have less than half the capacity of our threshold, so
     // disable defer to get more data.
