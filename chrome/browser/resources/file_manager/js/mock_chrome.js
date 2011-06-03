@@ -131,7 +131,7 @@ chrome.fileBrowserPrivate = {
       ERROR_INVALID_FOLDER_CHARACTER: 'Invalid character in folder name: $1',
       ERROR_INVALID_FILE_CHARACTER: 'Invalid character in file name: $1',
       NEW_FOLDER_PROMPT: 'Enter a name for the new folder',
-      NEW_FOLDER_BUTTON_LABEL: 'New Folder',
+      NEW_FOLDER_BUTTON_LABEL: 'New folder',
       FILENAME_LABEL: 'File Name',
 
       EJECT_BUTTON: 'Eject',
@@ -167,7 +167,7 @@ chrome.fileBrowserPrivate = {
       SELECT_FOLDER_TITLE: 'Select a folder to open',
       SELECT_OPEN_FILE_TITLE: 'Select a file to open',
       SELECT_OPEN_MULTI_FILE_TITLE: 'Select one or more files',
-      SELECT_SAVEAS_FILE_TITLE: 'Select a file to save as',
+      SELECT_SAVEAS_FILE_TITLE: 'Save file as',
 
       COMPUTING_SELECTION: 'Computing selection...',
       NOTHING_SELECTED: 'No files selected',

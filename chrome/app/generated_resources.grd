@@ -8542,8 +8542,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FILE_BROWSER_NEW_FOLDER_PROMPT" desc="Prompt displayed in a message box when user trys to create a new folder.">
         Enter a name for the new folder
       </message>
-      <message name="IDS_FILE_BROWSER_NEW_FOLDER_BUTTON_LABEL" desc="Label on the 'New Folder' button.">
-        New Folder
+      <message name="IDS_FILE_BROWSER_NEW_FOLDER_BUTTON_LABEL" desc="Label on the 'New folder' button.">
+        New folder
       </message>
       <message name="IDS_FILE_BROWSER_FILENAME_LABEL" desc="Filename text area label.">
         File name
@@ -8634,7 +8634,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Select one or more files
       </message>
       <message name="IDS_FILE_BROWSER_SELECT_SAVEAS_FILE_TITLE" desc="Select saveas file title.">
-        Select a file to save as
+        Save file as
       </message>
 
       <message name="IDS_FILE_BROWSER_COMPUTING_SELECTION" desc="Computing selection...">
