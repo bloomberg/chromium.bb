@@ -12,7 +12,7 @@
 #include "net/base/cookie_store.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/test/test_server.h"
-#include "net/url_request/url_request_context.cc"
+#include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace {
