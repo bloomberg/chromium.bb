@@ -34,6 +34,11 @@ run.py options:
   -arch <arch> | -m32 | -m64 | -marm
                          Specify architecture for PNaCl translation
                          (arch is one of: x86-32, x86-64 or arm)
+
+  --pnacl-glibc-dynamic  Translate a .pexe as dynamic against glibc
+  --pnacl-glibc-static   Translate a .pexe as static against glibc
+                         (These will be removed as soon as pnacl-translate
+                          can auto-detect .pexe type)
 """
   print info % name
   print "-" * 80
@@ -86,6 +91,11 @@ def SetupEnvironment():
   # Arch (x86-32, x86-64, arm)
   env.arch = None
 
+  # Translate a PNaCl file against glibc.
+  # Valid values: 'static' or 'dynamic' or ''
+  # This option will be removed as soon as pnacl-translate
+  # can auto-detect .pexe type.
+  env.pnacl_glibc = ''
 
 def SetupArch(arch, is_dynamic, allow_build = True):
   """Setup environment variables that require knowing the
@@ -122,7 +132,9 @@ def main(argv):
     nexe = Translate(nexe)
     if env.dry_run:
       arch = env.arch
-      is_dynamic = False  # TODO(pdox): Set this correctly
+      # TODO(pdox): Pull this information from the pnacl driver
+      # when it can be auto-detected.
+      is_dynamic = (env.pnacl_glibc == 'dynamic')
       bypass_readelf = True
 
   # Read ELF Info
@@ -215,6 +227,11 @@ def Translate(pexe):
   translator = os.path.join(env.pnacl_root, 'bin', 'pnacl-translate')
   output_file = os.path.splitext(pexe)[0] + '.' + arch + '.nexe'
   args = [ translator, '-arch', arch, pexe, '-o', output_file ]
+  if env.pnacl_glibc:
+    args.append('--pnacl-use-glibc')
+    if env.pnacl_glibc == 'static':
+      args.append('-static')
+
   Run(args)
   return output_file
 
@@ -282,6 +299,10 @@ def ArgSplit(argv):
       env.arch = 'x86-64'
     elif arg == '-marm':
       env.arch = 'arm'
+    elif arg == '--pnacl-glibc-dynamic':
+      env.pnacl_glibc = 'dynamic'
+    elif arg == '--pnacl-glibc-static':
+      env.pnacl_glibc = 'static'
     elif arg == '-arch':
       if i+1 < len(argv):
         env.arch = FixArch(argv[i+1])

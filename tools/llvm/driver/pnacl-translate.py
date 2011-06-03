@@ -13,6 +13,12 @@ from driver_tools import *
 
 EXTRA_ENV = {
   'PIC'           : '0',
+
+  # If translating a .pexe which was linked statically against
+  # glibc, then you must do pnacl-translate --pnacl-use-glibc
+  # -static. This will be removed once we can detect .pexe type.
+  'STATIC'        : '0',
+
   'INPUTS'        : '',
   'OUTPUT'        : '',
   'OUTPUT_TYPE'   : '',
@@ -73,6 +79,7 @@ TranslatorPatterns = [
   # the shared lib ad-hoc tests, c.f. tests/pnacl_ld_example
   ( '(-sfi-.+)',       "env.append('LLC_FLAGS', $0)"),
 
+  ( '-static',         "env.set('STATIC', '1')"),
   ( '-fPIC',           "env.set('PIC', '1')"),
 
   ( '(-*)',            UnrecognizedOption),
@@ -148,8 +155,12 @@ def RunAS(infile, outfile):
 # because we need to link against native libraries.
 def RunLD(infile, outfile, shared):
   args = ['--pnacl-native-hack', infile, '-o', outfile]
+
   if shared:
     args += ['-shared']
+  elif env.getbool('STATIC'):
+    args += ['-static']
+
   RunDriver('pnacl-gcc', args)
 
 
