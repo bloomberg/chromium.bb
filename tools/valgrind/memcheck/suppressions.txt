@@ -4389,47 +4389,41 @@
 }
 {
    bug_81753a
-   Memcheck:Value4
-   fun:ucase_toFullFolding_46
+   Memcheck:Cond
+   ...
    fun:_ZN6icu_4612RegexMatcher12MatchChunkAtEiaR10UErrorCode
    fun:_ZN6icu_4612RegexMatcher7matchesExR10UErrorCode
    fun:_ZNK20IcuRegularExpression5MatchEPKcbPSs
    fun:_ZN4i18n12phonenumbers15PhoneNumberUtil19IsViablePhoneNumberERKSs
-   fun:_ZNK4i18n12phonenumbers15PhoneNumberUtil11ParseHelperERKSsS3_bbPNS0_11PhoneNumberE
-   fun:_ZNK4i18n12phonenumbers15PhoneNumberUtil5ParseERKSsS3_PNS0_11PhoneNumberE
-   fun:_ZN13autofill_i18n17PhoneNumbersMatchERKSbItN4base20string16_char_traitsESaItEES5_RKSs
-   fun:_ZN42PhoneNumberI18NTest_PhoneNumbersMatch_Test8TestBodyEv
 }
 {
    bug_81753b
-   Memcheck:Cond
-   ...
-   fun:_ZN6icu_4612RegexMatcher12MatchChunkAtEiaR10UErrorCode
-   fun:_ZN6icu_4612RegexMatcher7matchesExR10UErrorCode
-   fun:_ZNK20IcuRegularExpression5MatchEPKcbPSs
-   fun:_ZN4i18n12phonenumbers15PhoneNumberUtil19IsViablePhoneNumberERKSs
-   fun:_ZNK4i18n12phonenumbers15PhoneNumberUtil11ParseHelperERKSsS3_bbPNS0_11PhoneNumberE
-   fun:_ZNK4i18n12phonenumbers15PhoneNumberUtil5ParseERKSsS3_PNS0_11PhoneNumberE
-   fun:_ZN13autofill_i18n17PhoneNumbersMatchERKSbItN4base20string16_char_traitsESaItEES5_RKSs
-   fun:_ZN42PhoneNumberI18NTest_PhoneNumbersMatch_Test8TestBodyEv
-}
-{
-   bug_82183a
-   Memcheck:Cond
-   ...
-   fun:_ZN6icu_4612RegexMatcher12MatchChunkAtEiaR10UErrorCode
-   fun:_ZN6icu_4612RegexMatcher7matchesExR10UErrorCode
-   fun:_ZNK20IcuRegularExpression5MatchEPKcbPSs
-   fun:_ZN4i18n12phonenumbers15PhoneNumberUtil19IsViablePhoneNumberERKSs
-}
-{
-   bug_82183b
    Memcheck:Value4
    ...
    fun:_ZN6icu_4612RegexMatcher12MatchChunkAtEiaR10UErrorCode
    fun:_ZN6icu_4612RegexMatcher7matchesExR10UErrorCode
    fun:_ZNK20IcuRegularExpression5MatchEPKcbPSs
    fun:_ZN4i18n12phonenumbers15PhoneNumberUtil19IsViablePhoneNumberERKSs
+}
+{
+   bug_81753c
+   Memcheck:Cond
+   ...
+   fun:_ZN6icu_4612RegexMatcher12MatchChunkAtEiaR10UErrorCode
+   fun:_ZN6icu_4612RegexMatcher14findUsingChunkEv
+   fun:_ZN6icu_4612RegexMatcher4findEv
+   fun:_ZN6icu_4612RegexMatcher4findExR10UErrorCode
+   fun:_ZN8autofill14MatchesPatternERKSbItN4base20string16_char_traitsESaItEES5_
+}
+{
+   bug_81753d
+   Memcheck:Value4
+   ...
+   fun:_ZN6icu_4612RegexMatcher12MatchChunkAtEiaR10UErrorCode
+   fun:_ZN6icu_4612RegexMatcher14findUsingChunkEv
+   fun:_ZN6icu_4612RegexMatcher4findEv
+   fun:_ZN6icu_4612RegexMatcher4findExR10UErrorCode
+   fun:_ZN8autofill14MatchesPatternERKSbItN4base20string16_char_traitsESaItEES5_
 }
 {
    bug_82186
