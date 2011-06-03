@@ -25,6 +25,8 @@ namespace views {
 //  of it.
 class NonClientFrameView : public View {
  public:
+  // Internal class name.
+  static const char kViewClassName[];
   // Various edges of the frame border have a 1 px shadow along their edges; in
   // a few cases we shift elements based on this amount for visual appeal.
   static const int kFrameShadowThickness;
@@ -62,6 +64,7 @@ class NonClientFrameView : public View {
   // Overridden from View:
   virtual bool HitTest(const gfx::Point& l) const OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual std::string GetClassName() const OVERRIDE;
 
  protected:
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
@@ -130,6 +133,9 @@ class NonClientFrameView : public View {
 //
 class NonClientView : public View {
  public:
+  // Internal class name.
+  static const char kViewClassName[];
+
   NonClientView();
   virtual ~NonClientView();
 
@@ -203,6 +209,7 @@ class NonClientView : public View {
   virtual gfx::Size GetMinimumSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual std::string GetClassName() const OVERRIDE;
 
   virtual views::View* GetEventHandlerForPoint(const gfx::Point& point)
       OVERRIDE;

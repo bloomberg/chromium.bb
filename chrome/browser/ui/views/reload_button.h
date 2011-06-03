@@ -30,6 +30,9 @@ class ReloadButton : public views::ToggleImageButton,
  public:
   enum Mode { MODE_RELOAD = 0, MODE_STOP };
 
+  // The button's class name.
+  static const char kViewClassName[];
+
   ReloadButton(LocationBarView* location_bar, Browser* Browser);
   virtual ~ReloadButton();
 
@@ -45,6 +48,7 @@ class ReloadButton : public views::ToggleImageButton,
   virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
   virtual bool GetTooltipText(const gfx::Point& p,
                               std::wstring* tooltip) OVERRIDE;
+  virtual std::string GetClassName() const OVERRIDE;
 
  private:
   friend class ReloadButtonTest;

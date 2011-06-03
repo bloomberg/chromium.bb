@@ -116,6 +116,10 @@ const SkColor kSecurityErrorSchemeColor = SK_ColorRED;
 
 }  // namespace
 
+// static
+const char OmniboxViewViews::kViewClassName[] =
+    "browser/ui/views/omnibox/OmniboxViewViews";
+
 OmniboxViewViews::OmniboxViewViews(AutocompleteEditController* controller,
                                    ToolbarModel* toolbar_model,
                                    Profile* profile,
@@ -274,6 +278,10 @@ void OmniboxViewViews::Layout() {
 
 void OmniboxViewViews::GetAccessibleState(ui::AccessibleViewState* state) {
   state->name = l10n_util::GetStringUTF16(IDS_ACCNAME_LOCATION);
+}
+
+std::string OmniboxViewViews::GetClassName() const {
+  return kViewClassName;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

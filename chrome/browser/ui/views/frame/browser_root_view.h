@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,6 +22,9 @@ class OSExchangeData;
 // TabStrip.
 class BrowserRootView : public views::internal::RootView {
  public:
+  // Internal class name.
+  static const char kViewClassName[];
+
   // You must call set_tabstrip before this class will accept drops.
   BrowserRootView(BrowserView* browser_view, views::Widget* widget);
 
@@ -36,6 +39,7 @@ class BrowserRootView : public views::internal::RootView {
   virtual void OnDragExited() OVERRIDE;
   virtual int OnPerformDrop(const views::DropTargetEvent& event) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual std::string GetClassName() const OVERRIDE;
 
  private:
   // Returns true if the event should be forwarded to the tabstrip.

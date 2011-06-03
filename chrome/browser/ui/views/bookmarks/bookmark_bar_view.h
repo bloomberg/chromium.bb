@@ -56,6 +56,9 @@ class BookmarkBarView : public DetachableToolbarView,
                         public BookmarkMenuController::Observer,
                         public BookmarkBarInstructionsView::Delegate {
  public:
+  // The internal view class name.
+  static const char kViewClassName[];
+
   // Constants used in Browser View, as well as here.
   // How inset the bookmarks bar is when displayed on the new tab page.
   static const int kNewtabHorizontalPadding;
@@ -178,6 +181,7 @@ class BookmarkBarView : public DetachableToolbarView,
   virtual void ShowContextMenu(const gfx::Point& p,
                                bool is_mouse_gesture) OVERRIDE;
   virtual void OnThemeChanged() OVERRIDE;
+  virtual std::string GetClassName() const OVERRIDE;
 
   // AccessiblePaneView methods:
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;

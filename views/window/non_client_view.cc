@@ -16,8 +16,14 @@
 
 namespace views {
 
+// static
 const int NonClientFrameView::kFrameShadowThickness = 1;
 const int NonClientFrameView::kClientEdgeThickness = 1;
+const char NonClientFrameView::kViewClassName[] =
+    "views/window/NonClientFrameView";
+
+const char NonClientView::kViewClassName[] =
+    "views/window/NonClientView";
 
 // The frame view and the client view are always at these specific indices,
 // because the RootView message dispatch sends messages to items higher in the
@@ -158,6 +164,10 @@ void NonClientView::GetAccessibleState(ui::AccessibleViewState* state) {
   state->name = accessible_name_;
 }
 
+std::string NonClientView::GetClassName() const {
+  return kViewClassName;
+}
+
 views::View* NonClientView::GetEventHandlerForPoint(const gfx::Point& point) {
   // Because of the z-ordering of our child views (the client view is positioned
   // over the non-client frame view, if the client view ever overlaps the frame
@@ -241,6 +251,10 @@ bool NonClientFrameView::ShouldPaintAsActive() const {
 
 void NonClientFrameView::GetAccessibleState(ui::AccessibleViewState* state) {
   state->role = ui::AccessibilityTypes::ROLE_WINDOW;
+}
+
+std::string NonClientFrameView::GetClassName() const {
+  return kViewClassName;
 }
 
 void NonClientFrameView::OnBoundsChanged(const gfx::Rect& previous_bounds) {

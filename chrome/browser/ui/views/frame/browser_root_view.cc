@@ -19,6 +19,10 @@
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/l10n/l10n_util.h"
 
+// static
+const char BrowserRootView::kViewClassName[] =
+    "browser/ui/views/frame/BrowserRootView";
+
 BrowserRootView::BrowserRootView(BrowserView* browser_view,
                                  views::Widget* widget)
     : views::internal::RootView(widget),
@@ -112,6 +116,10 @@ int BrowserRootView::OnPerformDrop(const views::DropTargetEvent& event) {
 void BrowserRootView::GetAccessibleState(ui::AccessibleViewState* state) {
   views::internal::RootView::GetAccessibleState(state);
   state->name = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
+}
+
+std::string BrowserRootView::GetClassName() const {
+  return kViewClassName;
 }
 
 bool BrowserRootView::ShouldForwardToTabStrip(

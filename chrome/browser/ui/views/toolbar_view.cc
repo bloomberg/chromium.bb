@@ -42,6 +42,8 @@
 #include "chrome/browser/enumerate_modules_model_win.h"
 #endif
 
+// static
+char ToolbarView::kViewClassName[] = "browser/ui/views/ToolbarView";
 // The space between items is 4 px in general.
 const int ToolbarView::kStandardSpacing = 4;
 // The top of the toolbar has an edge we have to skip over in addition to the 4
@@ -594,6 +596,10 @@ int ToolbarView::OnPerformDrop(const views::DropTargetEvent& event) {
 
 void ToolbarView::OnThemeChanged() {
   LoadImages();
+}
+
+std::string ToolbarView::GetClassName() const {
+  return kViewClassName;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

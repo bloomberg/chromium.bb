@@ -43,6 +43,9 @@ class OmniboxViewViews : public views::View,
                          public NotificationObserver,
                          public views::TextfieldController {
  public:
+  // The internal view class name.
+  static const char kViewClassName[];
+
   OmniboxViewViews(AutocompleteEditController* controller,
                    ToolbarModel* toolbar_model,
                    Profile* profile,
@@ -70,6 +73,7 @@ class OmniboxViewViews : public views::View,
   // Implements views::View
   virtual void Layout() OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual std::string GetClassName() const OVERRIDE;
 
   // OmniboxView:
   virtual AutocompleteEditModel* model() OVERRIDE;

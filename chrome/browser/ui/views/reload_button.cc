@@ -13,6 +13,9 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "views/metrics.h"
 
+// static
+const char ReloadButton::kViewClassName[] = "browser/ui/views/ReloadButton";
+
 ////////////////////////////////////////////////////////////////////////////////
 // ReloadButton, public:
 
@@ -126,6 +129,10 @@ bool ReloadButton::GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {
                                              : IDS_TOOLTIP_STOP;
   tooltip->assign(UTF16ToWide(l10n_util::GetStringUTF16(text_id)));
   return true;
+}
+
+std::string ReloadButton::GetClassName() const {
+  return kViewClassName;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

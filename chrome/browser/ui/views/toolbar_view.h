@@ -39,6 +39,9 @@ class ToolbarView : public AccessiblePaneView,
                     public CommandUpdater::CommandObserver,
                     public views::ButtonListener {
  public:
+  // The view class name.
+  static char kViewClassName[];
+
   explicit ToolbarView(Browser* browser);
   virtual ~ToolbarView();
 
@@ -126,6 +129,7 @@ class ToolbarView : public AccessiblePaneView,
   virtual int OnDragUpdated(const views::DropTargetEvent& event) OVERRIDE;
   virtual int OnPerformDrop(const views::DropTargetEvent& event) OVERRIDE;
   virtual void OnThemeChanged() OVERRIDE;
+  virtual std::string GetClassName() const OVERRIDE;
 
   // The apparent horizontal space between most items, and the vertical padding
   // above and below them.

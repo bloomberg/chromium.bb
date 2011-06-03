@@ -82,6 +82,10 @@ static const int kBarHeight = 28;
 // Preferred height of the bookmarks bar when only shown on the new tab page.
 const int BookmarkBarView::kNewtabBarHeight = 57;
 
+// static
+const char BookmarkBarView::kViewClassName[] =
+    "browser/ui/views/bookmarks/BookmarkBarView";
+
 // Padding between buttons.
 static const int kButtonPadding = 0;
 
@@ -128,6 +132,9 @@ namespace {
 
 class BookmarkButton : public views::TextButton {
  public:
+  // The internal view class name.
+  static const char kViewClassName[];
+
   BookmarkButton(views::ButtonListener* listener,
                  const GURL& url,
                  const std::wstring& title,
@@ -157,6 +164,10 @@ class BookmarkButton : public views::TextButton {
     return event_utils::IsPossibleDispositionEvent(e);
   }
 
+  virtual std::string GetClassName() const OVERRIDE {
+    return kViewClassName;
+  }
+
  private:
   const GURL& url_;
   Profile* profile_;
@@ -164,6 +175,10 @@ class BookmarkButton : public views::TextButton {
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkButton);
 };
+
+// static for BookmarkButton
+const char BookmarkButton::kViewClassName[] =
+    "browser/ui/views/bookmarks/BookmarkButton";
 
 // BookmarkFolderButton -------------------------------------------------------
 
@@ -845,6 +860,10 @@ void BookmarkBarView::ShowContextMenu(const gfx::Point& p,
 
 void BookmarkBarView::OnThemeChanged() {
   UpdateColors();
+}
+
+std::string BookmarkBarView::GetClassName() const {
+  return kViewClassName;
 }
 
 void BookmarkBarView::GetAccessibleState(ui::AccessibleViewState* state) {

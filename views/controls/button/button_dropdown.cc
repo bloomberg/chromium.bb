@@ -18,6 +18,10 @@
 
 namespace views {
 
+// static
+const char ButtonDropDown::kViewClassName[] =
+    "views/controls/button/ButtonDropDown";
+
 // How long to wait before showing the menu
 static const int kMenuTimerDelay = 500;
 
@@ -89,6 +93,10 @@ void ButtonDropDown::OnMouseReleased(const MouseEvent& event) {
     show_menu_factory_.RevokeAll();
     ShowDropDownMenu(GetWidget()->GetNativeView());
   }
+}
+
+std::string ButtonDropDown::GetClassName() const {
+  return kViewClassName;
 }
 
 void ButtonDropDown::OnMouseExited(const MouseEvent& event) {
