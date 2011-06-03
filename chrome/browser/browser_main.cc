@@ -145,6 +145,7 @@
 #include "chrome/browser/chromeos/metrics_cros_settings_provider.h"
 #include "chrome/browser/chromeos/net/network_change_notifier_chromeos.h"
 #include "chrome/browser/chromeos/system_key_event_listener.h"
+#include "chrome/browser/chromeos/xinput_hierarchy_changed_event_listener.h"
 #include "chrome/browser/oom_priority_manager.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
 #endif
@@ -1785,6 +1786,12 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // Listen for system key events so that the user will be able to adjust the
   // volume on the login screen.
   chromeos::SystemKeyEventListener::GetInstance();
+
+  // TODO(yusukes): Remove the #if once the ARM bot (crbug.com/84694) is fixed.
+#if defined(HAVE_XINPUT2)
+  // Listen for XI_HierarchyChanged events.
+  chromeos::XInputHierarchyChangedEventListener::GetInstance();
+#endif
 #endif
 
   // Initialize extension event routers. Note that on Chrome OS, this will

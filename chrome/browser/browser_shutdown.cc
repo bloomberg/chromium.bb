@@ -54,6 +54,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/system_key_event_listener.h"
+#include "chrome/browser/chromeos/xinput_hierarchy_changed_event_listener.h"
 #endif
 
 using base::Time;
@@ -131,6 +132,13 @@ void Shutdown() {
   // The system key event listener needs to be shut down earlier than when
   // Singletons are finally destroyed in AtExitManager.
   chromeos::SystemKeyEventListener::GetInstance()->Stop();
+
+  // TODO(yusukes): Remove the #if once the ARM bot (crbug.com/84694) is fixed.
+#if defined(HAVE_XINPUT2)
+  // The XInput2 event listener needs to be shut down earlier than when
+  // Singletons are finally destroyed in AtExitManager.
+  chromeos::XInputHierarchyChangedEventListener::GetInstance()->Stop();
+#endif
 #endif
 
   // WARNING: During logoff/shutdown (WM_ENDSESSION) we may not have enough
