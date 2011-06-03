@@ -103,13 +103,11 @@
 }
 
 #email-readonly {
-  display: none;
   font-weight: bold;
 }
 
 #sync-setup-overlay * div.errormsg {
   color: red;
-  display: none;
   font-size: smaller;
 }
 
@@ -219,10 +217,6 @@ div.error-msg-spacer {
   padding: 2px;
 }
 
-.access-code-row {
-  display: none;
-}
-
 .access-code-row > td {
   padding-bottom: 1px;
   text-align: center;
@@ -230,14 +224,6 @@ div.error-msg-spacer {
 
 #access-code-label-row > td {
   padding-top: 6px;
-}
-
-#error-custom {
-  display: none;
-}
-
-#captcha-div {
-  display: none;
 }
 
 #captcha-instructions {

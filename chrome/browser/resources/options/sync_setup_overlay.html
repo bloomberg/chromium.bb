@@ -3,9 +3,14 @@
     <h1 i18n-content="syncSetupOverlayTitle"></h1>
     <div class="content-area">
       <div>
-        <div id="top-blurb-error">
+        <!-- top-blurb-error's reset state is handled differently from most
+             elements. Instead of being [hidden] it is visibility:hidden so it
+             still takes up space. But it is also [hidden] when we display the
+             captcha, so when it is reset, it needs to be shown. -->
+        <div id="top-blurb-error"
+            class="reset-shown reset-visibility-hidden">
           <span id="error-signing-in" i18n-content="errorSigningIn"></span>
-          <span id="error-custom"></span>
+          <span id="error-custom" hidden></span>
         </div>
         <form id="gaia-login-form">
           <div id="gaia-login-box">
@@ -39,7 +44,7 @@
                       <tr>
                         <td colspan="2" align="center"> </td>
                       </tr>
-                      <tr id="email-row">
+                      <tr id="email-row" class="reset-shown">
                         <td nowrap="nowrap">
                           <div class="end-aligned">
                             <span i18n-content="emailLabel">
@@ -48,16 +53,18 @@
                         </td>
                         <td>
                           <input id="gaia-email" type="text" name="email"
-                              size="18" value="">
-                          <span id="email-readonly"></span>
+                              size="18" value="" class="reset-enabled">
+                          <span id="email-readonly" hidden></span>
                         </td>
                       </tr>
-                      <tr id="access-code-label-row" class="access-code-row">
+                      <tr id="access-code-label-row"
+                          class="access-code-row reset-hidden" hidden>
                         <td colspan="2">
                           <span i18n-content="enterAccessCode"></span>
                         </td>
                       </tr>
-                      <tr id="access-code-help-row" class="access-code-row">
+                      <tr id="access-code-help-row"
+                          class="access-code-row reset-hidden" hidden>
                         <td colspan="2">
                           <a i18n-values="href:getAccessCodeURL"
                               i18n-content="getAccessCodeHelp" target="_blank">
@@ -67,21 +74,24 @@
                       <tr>
                         <td></td>
                         <td>
-                          <div id="errormsg-0-email" class="errormsg"
-                              i18n-content="cannotBeBlank">
+                          <div id="errormsg-0-email"
+                              class="errormsg reset-hidden"
+                              i18n-content="cannotBeBlank"
+                              hidden>
                           </div>
                         </td>
                       </tr>
-                      <tr id="password-row">
+                      <tr id="password-row" class="reset-shown">
                         <td class="end-aligned">
                           <span i18n-content="passwordLabel"></span>
                         </td>
                         <td>
                           <input id="gaia-passwd" type="password" name="passwd"
-                              size="18">
+                              size="18" class="reset-enabled">
                         </td>
                       </tr>
-                      <tr id="access-code-input-row" class="access-code-row">
+                      <tr id="access-code-input-row"
+                          class="access-code-row reset-hidden" hidden>
                         <td colspan="2">
                           <input id="access-code" type="password"
                               name="accessCode" size="18">
@@ -91,24 +101,30 @@
                         <td></td>
                         <td>
                           <div class="error-msg-spacer">
-                            <div id="errormsg-0-password" class="errormsg"
-                                i18n-content="cannotBeBlank">
+                            <div id="errormsg-0-password"
+                                class="errormsg reset-hidden"
+                                i18n-content="cannotBeBlank"
+                                hidden>
                             </div>
-                            <div id="errormsg-1-password" class="errormsg">
+                            <div id="errormsg-1-password"
+                                class="errormsg reset-hidden"
+                                hidden>
                               <span i18n-content="invalidCredentials"></span>
                               <!-- Brackets are intentional -->
                               [<a i18n-values="href:invalidPasswordHelpURL"
                                    target="_blank">?</a>]
                             </div>
-                            <div id="errormsg-0-access-code" class="errormsg"
-                                i18n-content="invalidAccessCode">
+                            <div id="errormsg-0-access-code"
+                                class="errormsg reset-hidden"
+                                i18n-content="invalidAccessCode"
+                                hidden>
                             </div>
                           </div>
                         </td>
                       </tr>
                       <tr>
                         <td colspan="2">
-                          <div id="captcha-div">
+                          <div id="captcha-div" class="reset-hidden" hidden>
                             <div id="captcha-instructions"
                                 i18n-content="captchaInstructions"
                                 class="bottom-padded-cell">
@@ -120,15 +136,18 @@
                             </div>
                             <div>
                               <input id="captcha-value" type="text"
-                                  name="captchaValue" size="18" value="">
+                                  name="captchaValue" size="18" value=""
+                                  class="reset-disabled">
                             </div>
                           </div>
                         </td>
                       </tr>
                       <tr>
                         <td colspan="2" align="center">
-                          <div id="errormsg-0-connection" class="errormsg"
-                              i18n-content="couldNotConnect">
+                          <div id="errormsg-0-connection"
+                              class="errormsg reset-hidden"
+                              i18n-content="couldNotConnect"
+                              hidden>
                           </div>
                         </td>
                       </tr>
@@ -342,10 +361,10 @@
                 <input id="confirm-passphrase" type="password"
                     i18n-values="placeholder:confirmLabel">
               </div>
-              <div id="empty-error" class="error" style="display:none"
-                  i18n-content="emptyErrorMessage"></div>
-              <div id="mismatch-error" class="error" style="display:none"
-                  i18n-content="mismatchErrorMessage"></div>
+              <div id="empty-error" class="error"
+                  i18n-content="emptyErrorMessage" hidden></div>
+              <div id="mismatch-error" class="error"
+                  i18n-content="mismatchErrorMessage" hidden></div>
             </div>
           </div>
           <div id="sync-existing-passphrase-container" hidden>

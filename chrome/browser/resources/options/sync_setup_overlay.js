@@ -191,8 +191,8 @@ cr.define('options', function() {
     checkPassphraseMatch_: function() {
       var emptyError = $('empty-error');
       var mismatchError = $('mismatch-error');
-      emptyError.style.display = "none";
-      mismatchError.style.display = "none";
+      emptyError.hidden = true;
+      mismatchError.hidden = true;
 
       var f = $('choose-data-types-form');
       if (this.getPassphraseRadioCheckedValue_() != "explicit" ||
@@ -201,13 +201,13 @@ cr.define('options', function() {
 
       var customPassphrase = $('custom-passphrase');
       if (customPassphrase.value.length == 0) {
-        emptyError.style.display = "block";
+        emptyError.hidden = false;
         return false;
       }
 
       var confirmPassphrase = $('confirm-passphrase');
       if (confirmPassphrase.value != customPassphrase.value) {
-        mismatchError.style.display = "block";
+        mismatchError.hidden = false;
         return false;
       }
 
@@ -507,12 +507,6 @@ cr.define('options', function() {
           throbbers[i].style.visibility = visible ? "visible" : "hidden";
     },
 
-    setElementDisplay_: function(id, display) {
-      var d = document.getElementById(id);
-      if (d)
-        d.style.display = display;
-    },
-
     loginSetFocus_: function() {
       var email = $('gaia-email');
       var passwd = $('gaia-passwd');
@@ -524,39 +518,56 @@ cr.define('options', function() {
     },
 
     showAccessCodeRequired_: function() {
-      this.setElementDisplay_("password-row", "none");
-      this.setElementDisplay_("email-row", "none");
+      $('password-row').hidden = true;
+      $('email-row').hidden = true;
       $('create-account-cell').style.visibility = "hidden";
 
-      this.setElementDisplay_("access-code-label-row", "table-row");
-      this.setElementDisplay_("access-code-input-row", "table-row");
-      this.setElementDisplay_("access-code-help-row", "table-row");
-      document.getElementById('access-code').disabled = false;
+      $('access-code-label-row').hidden = false;
+      $('access-code-input-row').hidden = false;
+      $('access-code-help-row').hidden = false;
+      $('access-code').disabled = false;
     },
 
     showCaptcha_: function(args) {
       this.captchaChallengeActive_ = true;
 
       // The captcha takes up lots of space, so make room.
-      this.setElementDisplay_("top-blurb", "none");
-      this.setElementDisplay_("top-blurb-error", "none");
-      this.setElementDisplay_("create-account-div", "none");
-      document.getElementById('create-account-cell').height = 0;
+      $('top-blurb-error').hidden = true;
+      $('create-account-div').hidden = true;
+      $('create-account-cell').hidden = true;
 
       // It's showtime for the captcha now.
-      this.setElementDisplay_("captcha-div", "block");
-      document.getElementById('gaia-email').disabled = true;
-      document.getElementById('gaia-passwd').disabled = false;
-      document.getElementById('captcha-value').disabled = false;
-      document.getElementById('captcha-wrapper').style.backgroundImage =
-          url(args.captchaUrl);
+      $('captcha-div').hidden = false;
+      $('gaia-email').disabled = true;
+      $('gaia-passwd').disabled = false;
+      $('captcha-value').disabled = false;
+      $('captcha-wrapper').style.backgroundImage = url(args.captchaUrl);
+    },
+
+    resetPage_: function(pageElementId) {
+      var page = $(pageElementId);
+      var forEach = function(arr, fn) {
+        var length = arr.length;
+        for (var i = 0; i < length; i++) {
+          fn(arr[i]);
+        }
+      };
+
+      forEach(page.getElementsByClassName('reset-hidden'),
+          function(elt) { elt.hidden = true; });
+      forEach(page.getElementsByClassName('reset-shown'),
+          function(elt) { elt.hidden = false; });
+      forEach(page.getElementsByClassName('reset-disabled'),
+          function(elt) { elt.disabled = true; });
+      forEach(page.getElementsByClassName('reset-enabled'),
+          function(elt) { elt.disabled = false; });
+      forEach(page.getElementsByClassName('reset-visibility-hidden'),
+          function(elt) { elt.style.visibility = 'hidden'; });
     },
 
     showGaiaLogin_: function(args) {
+      this.resetPage_('sync-setup-login');
       $('sync-setup-login').hidden = false;
-
-      document.getElementById('gaia-email').disabled = false;
-      document.getElementById('gaia-passwd').disabled = false;
 
       var f = $('gaia-login-form');
       var email = $('gaia-email');
@@ -573,7 +584,7 @@ cr.define('options', function() {
           var span = document.getElementById('email-readonly');
           span.appendChild(document.createTextNode(email.value));
           span.style.display = 'inline';
-          this.setElementDisplay_("create-account-div", "none");
+          $('create-account-div').hidden = true;
         }
 
         f.accessCode.disabled = true;
@@ -582,14 +593,14 @@ cr.define('options', function() {
       if (1 == args.error) {
         var access_code = document.getElementById('access-code');
         if (access_code.value && access_code.value != "") {
-          this.setElementDisplay_("errormsg-0-access-code", 'block');
+          $('errormsg-0-access-code').hidden = false;
           this.showAccessCodeRequired_();
         } else {
-          this.setElementDisplay_("errormsg-1-password", 'table-row');
+          $('errormsg-1-password').hidden = false;
         }
         this.setBlurbError_(args.error_message);
       } else if (3 == args.error) {
-        this.setElementDisplay_("errormsg-0-connection", 'table-row');
+        $('errormsg-0-connection').hidden = false;
         this.setBlurbError_(args.error_message);
       } else if (4 == args.error) {
         this.showCaptcha_(args);
@@ -605,11 +616,11 @@ cr.define('options', function() {
     },
 
     resetErrorVisibility_: function() {
-      this.setElementDisplay_("errormsg-0-email", 'none');
-      this.setElementDisplay_("errormsg-0-password", 'none');
-      this.setElementDisplay_("errormsg-1-password", 'none');
-      this.setElementDisplay_("errormsg-0-connection", 'none');
-      this.setElementDisplay_("errormsg-0-access-code", 'none');
+      $("errormsg-0-email").hidden = true;
+      $("errormsg-0-password").hidden = true;
+      $("errormsg-1-password").hidden = true;
+      $("errormsg-0-connection").hidden = true;
+      $("errormsg-0-access-code").hidden = true;
     },
 
     setBlurbError_: function(error_message) {
@@ -617,17 +628,17 @@ cr.define('options', function() {
         return;  // No blurb in captcha challenge mode.
 
       if (error_message) {
-        document.getElementById('error-signing-in').style.display = 'none';
-        document.getElementById('error-custom').style.display = 'inline';
-        document.getElementById('error-custom').textContent = error_message;
+        $('error-signing-in').hidden = true;
+        $('error-custom').hidden = false;
+        $('error-custom').textContent = error_message;
       } else {
-        document.getElementById('error-signing-in').style.display = 'inline';
-        document.getElementById('error-custom').style.display = 'none';
+        $('error-signing-in').hidden = false;
+        $('error-custom').hidden = true;
       }
 
       $('top-blurb-error').style.visibility = "visible";
-      document.getElementById('gaia-email').disabled = false;
-      document.getElementById('gaia-passwd').disabled = false;
+      $('gaia-email').disabled = false;
+      $('gaia-passwd').disabled = false;
     },
 
     setErrorVisibility_: function() {
@@ -636,18 +647,18 @@ cr.define('options', function() {
       var email = $('gaia-email');
       var passwd = $('gaia-passwd');
       if (null == email.value || "" == email.value) {
-        this.setElementDisplay_("errormsg-0-email", 'table-row');
+        $('errormsg-0-email').hidden = false;
         this.setBlurbError_();
         return false;
       }
       if (null == passwd.value || "" == passwd.value) {
-        this.setElementDisplay_("errormsg-0-password", 'table-row');
+        $('errormsg-0-password').hidden = false;
         this.setBlurbError_();
         return false;
       }
       if (!f.accessCode.disabled && (null == f.accessCode.value ||
           "" == f.accessCode.value)) {
-        this.setElementDisplay_("errormsg-0-password", 'table-row');
+        $('errormsg-0-password').hidden = false;
         return false;
       }
       return true;
