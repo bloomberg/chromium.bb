@@ -183,9 +183,17 @@ TEST_F(ThumbnailGeneratorTest, DiscardBackingStore) {
   // The thumbnail generator should be able to retrieve a thumbnail.
   SkBitmap result = generator_.GetThumbnailForRenderer(widget_.get());
   ASSERT_FALSE(result.isNull());
-  // TODO(satorux): Figure out why valgrind complains about this and fix.
-  // See crbug.com/80458.
-  // EXPECT_EQ(TRANSPORT_BLACK, ClassifyFirstPixel(result));
+  // Valgrind reports MemoryCheck::Cond inside ClassifyFirstPixel(). With
+  // --track-origins=yes, valgrind reports that the uninitialized value
+  // originates from SkBitmap created in BackingStoreSkia's constructor.
+  // However, the bitmap is set properly when we send bitmap data in
+  // SendPaint() using TransportDIB (the test fails if the bitmap does not
+  // starts with 0xFF, 0x00, 0x00, 0x00, which is unlikely to happen by
+  // accident). Valgrind doesn't seem to be able to track data transfer
+  // from TransportDIB probably because the data comes from shared
+  // memory. This can explain why valgrind wrongly reports that the value
+  // in the bitmap is uninitialized. See also crbug.com/80458.
+  EXPECT_EQ(TRANSPORT_BLACK, ClassifyFirstPixel(result));
 
   // Discard the backing store.
   ASSERT_TRUE(BackingStoreManager::ExpireBackingStoreForTest(widget_.get()));

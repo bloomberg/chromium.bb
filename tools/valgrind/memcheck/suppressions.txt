@@ -4303,12 +4303,6 @@
    fun:_ZN8gtk_util*AppModal*
 }
 {
-   bug_80458_a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN22ThumbnailGeneratorTestC2Ev
-}
-{
    bug_80458_b
    Memcheck:Cond
    fun:_ZN22ThumbnailGeneratorTest18ClassifyFirstPixelERK8SkBitmap
