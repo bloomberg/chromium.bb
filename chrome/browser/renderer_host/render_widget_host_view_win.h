@@ -127,56 +127,57 @@ class RenderWidgetHostViewWin
 
   // Implementation of RenderWidgetHostView:
   virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,
-                           const gfx::Rect& pos);
-  virtual void InitAsFullscreen();
-  virtual RenderWidgetHost* GetRenderWidgetHost() const;
-  virtual void DidBecomeSelected();
-  virtual void WasHidden();
-  virtual void SetSize(const gfx::Size& size);
-  virtual void SetBounds(const gfx::Rect& rect);
-  virtual gfx::NativeView GetNativeView();
+                           const gfx::Rect& pos) OVERRIDE;
+  virtual void InitAsFullscreen() OVERRIDE;
+  virtual RenderWidgetHost* GetRenderWidgetHost() const OVERRIDE;
+  virtual void DidBecomeSelected() OVERRIDE;
+  virtual void WasHidden() OVERRIDE;
+  virtual void SetSize(const gfx::Size& size) OVERRIDE;
+  virtual void SetBounds(const gfx::Rect& rect) OVERRIDE;
+  virtual gfx::NativeView GetNativeView() OVERRIDE;
   virtual void MovePluginWindows(
-      const std::vector<webkit::npapi::WebPluginGeometry>& moves);
-  virtual void Focus();
-  virtual void Blur();
-  virtual bool HasFocus();
-  virtual void Show();
-  virtual void Hide();
-  virtual bool IsShowing();
-  virtual gfx::Rect GetViewBounds() const;
-  virtual void UpdateCursor(const WebCursor& cursor);
-  virtual void SetIsLoading(bool is_loading);
+      const std::vector<webkit::npapi::WebPluginGeometry>& moves) OVERRIDE;
+  virtual void Focus() OVERRIDE;
+  virtual void Blur() OVERRIDE;
+  virtual bool HasFocus() OVERRIDE;
+  virtual void Show() OVERRIDE;
+  virtual void Hide() OVERRIDE;
+  virtual bool IsShowing() OVERRIDE;
+  virtual gfx::Rect GetViewBounds() const OVERRIDE;
+  virtual void UpdateCursor(const WebCursor& cursor) OVERRIDE;
+  virtual void SetIsLoading(bool is_loading) OVERRIDE;
   virtual void ImeUpdateTextInputState(WebKit::WebTextInputType type,
-                                       const gfx::Rect& caret_rect);
-  virtual void ImeCancelComposition();
+                                       const gfx::Rect& caret_rect) OVERRIDE;
+  virtual void ImeCancelComposition() OVERRIDE;
   virtual void DidUpdateBackingStore(
       const gfx::Rect& scroll_rect, int scroll_dx, int scroll_dy,
-      const std::vector<gfx::Rect>& copy_rects);
+      const std::vector<gfx::Rect>& copy_rects) OVERRIDE;
   virtual void RenderViewGone(base::TerminationStatus status,
-                              int error_code);
-  virtual void WillWmDestroy();  // called by TabContents before DestroyWindow
-  virtual void WillDestroyRenderWidget(RenderWidgetHost* rwh);
-  virtual void Destroy();
-  virtual void SetTooltipText(const std::wstring& tooltip_text);
-  virtual BackingStore* AllocBackingStore(const gfx::Size& size);
-  virtual void SetBackground(const SkBitmap& background);
-  virtual bool ContainsNativeView(gfx::NativeView native_view) const;
-  virtual void SetVisuallyDeemphasized(const SkColor* color, bool animate);
-
-  virtual gfx::PluginWindowHandle GetCompositingSurface();
-  virtual void ShowCompositorHostWindow(bool show);
-
+                              int error_code) OVERRIDE;
+  // called by TabContents before DestroyWindow
+  virtual void WillWmDestroy() OVERRIDE;
+  virtual void WillDestroyRenderWidget(RenderWidgetHost* rwh) OVERRIDE;
+  virtual void Destroy() OVERRIDE;
+  virtual void SetTooltipText(const std::wstring& tooltip_text) OVERRIDE;
+  virtual BackingStore* AllocBackingStore(const gfx::Size& size) OVERRIDE;
+  virtual void SetBackground(const SkBitmap& background) OVERRIDE;
+  virtual bool ContainsNativeView(gfx::NativeView native_view) const OVERRIDE;
+  virtual void SetVisuallyDeemphasized(const SkColor* color,
+                                       bool animate) OVERRIDE;
+  virtual gfx::PluginWindowHandle GetCompositingSurface() OVERRIDE;
+  virtual void ShowCompositorHostWindow(bool show) OVERRIDE;
   virtual void OnAccessibilityNotifications(
-      const std::vector<ViewHostMsg_AccessibilityNotification_Params>& params);
+      const std::vector<ViewHostMsg_AccessibilityNotification_Params>& params
+      ) OVERRIDE;
 
   // Implementation of NotificationObserver:
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
   // Implementation of BrowserAccessibilityDelegate:
-  virtual void SetAccessibilityFocus(int acc_obj_id);
-  virtual void AccessibilityDoDefaultAction(int acc_obj_id);
+  virtual void SetAccessibilityFocus(int acc_obj_id) OVERRIDE;
+  virtual void AccessibilityDoDefaultAction(int acc_obj_id) OVERRIDE;
 
  protected:
   // Windows Message Handlers

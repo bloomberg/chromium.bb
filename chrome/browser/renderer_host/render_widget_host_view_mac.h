@@ -173,57 +173,58 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
 
   // Implementation of RenderWidgetHostView:
   virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,
-                           const gfx::Rect& pos);
-  virtual void InitAsFullscreen();
-  virtual RenderWidgetHost* GetRenderWidgetHost() const;
-  virtual void DidBecomeSelected();
-  virtual void WasHidden();
-  virtual void SetSize(const gfx::Size& size);
-  virtual void SetBounds(const gfx::Rect& rect);
-  virtual gfx::NativeView GetNativeView();
+                           const gfx::Rect& pos) OVERRIDE;
+  virtual void InitAsFullscreen() OVERRIDE;
+  virtual RenderWidgetHost* GetRenderWidgetHost() const OVERRIDE;
+  virtual void DidBecomeSelected() OVERRIDE;
+  virtual void WasHidden() OVERRIDE;
+  virtual void SetSize(const gfx::Size& size) OVERRIDE;
+  virtual void SetBounds(const gfx::Rect& rect) OVERRIDE;
+  virtual gfx::NativeView GetNativeView() OVERRIDE;
   virtual void MovePluginWindows(
-      const std::vector<webkit::npapi::WebPluginGeometry>& moves);
-  virtual void Focus();
-  virtual void Blur();
-  virtual bool HasFocus();
-  virtual void Show();
-  virtual void Hide();
-  virtual bool IsShowing();
-  virtual gfx::Rect GetViewBounds() const;
-  virtual void UpdateCursor(const WebCursor& cursor);
-  virtual void SetIsLoading(bool is_loading);
+      const std::vector<webkit::npapi::WebPluginGeometry>& moves) OVERRIDE;
+  virtual void Focus() OVERRIDE;
+  virtual void Blur() OVERRIDE;
+  virtual bool HasFocus() OVERRIDE;
+  virtual void Show() OVERRIDE;
+  virtual void Hide() OVERRIDE;
+  virtual bool IsShowing() OVERRIDE;
+  virtual gfx::Rect GetViewBounds() const OVERRIDE;
+  virtual void UpdateCursor(const WebCursor& cursor) OVERRIDE;
+  virtual void SetIsLoading(bool is_loading) OVERRIDE;
   virtual void ImeUpdateTextInputState(WebKit::WebTextInputType state,
-                                       const gfx::Rect& caret_rect);
-  virtual void ImeCancelComposition();
-  virtual void ImeCompositionRangeChanged(const ui::Range& range);
+                                       const gfx::Rect& caret_rect) OVERRIDE;
+  virtual void ImeCancelComposition() OVERRIDE;
+  virtual void ImeCompositionRangeChanged(const ui::Range& range) OVERRIDE;
   virtual void DidUpdateBackingStore(
       const gfx::Rect& scroll_rect, int scroll_dx, int scroll_dy,
-      const std::vector<gfx::Rect>& copy_rects);
+      const std::vector<gfx::Rect>& copy_rects) OVERRIDE;
   virtual void RenderViewGone(base::TerminationStatus status,
-                              int error_code);
-  virtual void WillDestroyRenderWidget(RenderWidgetHost* rwh) {};
-  virtual void Destroy();
-  virtual void SetTooltipText(const std::wstring& tooltip_text);
+                              int error_code) OVERRIDE;
+  virtual void WillDestroyRenderWidget(RenderWidgetHost* rwh) OVERRIDE {};
+  virtual void Destroy() OVERRIDE;
+  virtual void SetTooltipText(const std::wstring& tooltip_text) OVERRIDE;
   virtual void SelectionChanged(const std::string& text,
-                                const ui::Range& range);
-  virtual BackingStore* AllocBackingStore(const gfx::Size& size);
-  virtual void SetTakesFocusOnlyOnMouseDown(bool flag);
+                                const ui::Range& range) OVERRIDE;
+  virtual BackingStore* AllocBackingStore(const gfx::Size& size) OVERRIDE;
+  virtual void SetTakesFocusOnlyOnMouseDown(bool flag) OVERRIDE;
   // See comment in RenderWidgetHostView!
-  virtual gfx::Rect GetViewCocoaBounds() const;
-  virtual gfx::Rect GetRootWindowRect();
-  virtual void SetActive(bool active);
-  virtual void SetWindowVisibility(bool visible);
-  virtual void WindowFrameChanged();
-  virtual void SetBackground(const SkBitmap& background);
-  virtual bool ContainsNativeView(gfx::NativeView native_view) const;
+  virtual gfx::Rect GetViewCocoaBounds() const OVERRIDE;
+  virtual gfx::Rect GetRootWindowRect() OVERRIDE;
+  virtual void SetActive(bool active) OVERRIDE;
+  virtual void SetWindowVisibility(bool visible) OVERRIDE;
+  virtual void WindowFrameChanged() OVERRIDE;
+  virtual void SetBackground(const SkBitmap& background) OVERRIDE;
+  virtual bool ContainsNativeView(gfx::NativeView native_view) const OVERRIDE;
 
   virtual void OnAccessibilityNotifications(
-      const std::vector<ViewHostMsg_AccessibilityNotification_Params>& params);
+      const std::vector<ViewHostMsg_AccessibilityNotification_Params>& params
+      ) OVERRIDE;
 
-  virtual void PluginFocusChanged(bool focused, int plugin_id);
-  virtual void StartPluginIme();
+  virtual void PluginFocusChanged(bool focused, int plugin_id) OVERRIDE;
+  virtual void StartPluginIme() OVERRIDE;
   virtual bool PostProcessEventForPluginIme(
-      const NativeWebKeyboardEvent& event);
+      const NativeWebKeyboardEvent& event) OVERRIDE;
 
   // Methods associated with GPU-accelerated plug-in instances and the
   // accelerated compositor.
@@ -241,15 +242,16 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   // destroyed anyway).
   void DeallocFakePluginWindowHandle(gfx::PluginWindowHandle window);
 
-  virtual void AcceleratedSurfaceSetIOSurface(gfx::PluginWindowHandle window,
-                                              int32 width,
-                                              int32 height,
-                                              uint64 io_surface_identifier);
+  virtual void AcceleratedSurfaceSetIOSurface(
+      gfx::PluginWindowHandle window,
+      int32 width,
+      int32 height,
+      uint64 io_surface_identifier) OVERRIDE;
   virtual void AcceleratedSurfaceSetTransportDIB(
       gfx::PluginWindowHandle window,
       int32 width,
       int32 height,
-      TransportDIB::Handle transport_dib);
+      TransportDIB::Handle transport_dib) OVERRIDE;
   virtual void AcceleratedSurfaceBuffersSwapped(
       gfx::PluginWindowHandle window,
       uint64 surface_id,
@@ -257,9 +259,9 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
       int32 route_id,
       int gpu_host_id,
       uint64 swap_buffers_count);
-  virtual void GpuRenderingStateDidChange();
+  virtual void GpuRenderingStateDidChange() OVERRIDE;
 
-  virtual gfx::PluginWindowHandle GetCompositingSurface();
+  virtual gfx::PluginWindowHandle GetCompositingSurface() OVERRIDE;
 
   void DrawAcceleratedSurfaceInstance(
       CGLContextObj context,
