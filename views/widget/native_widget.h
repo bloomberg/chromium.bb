@@ -66,6 +66,14 @@ class NativeWidget {
   // Initializes the NativeWidget.
   virtual void InitNativeWidget(const Widget::InitParams& params) = 0;
 
+  // Returns a NonClientFrameView for the widget's NonClientView, or NULL if
+  // the NativeWidget wants no special NonClientFrameView.
+  virtual NonClientFrameView* CreateNonClientFrameView() = 0;
+
+  virtual void UpdateFrameAfterFrameChange() = 0;
+  virtual bool ShouldUseNativeFrame() const = 0;
+  virtual void FrameTypeChanged() = 0;
+
   // Returns the Widget associated with this NativeWidget. This function is
   // guaranteed to return non-NULL for the lifetime of the NativeWidget.
   virtual Widget* GetWidget() = 0;

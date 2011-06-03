@@ -52,10 +52,6 @@ class NativeWindowGtk : public NativeWidgetGtk, public NativeWindow {
   virtual void ShowNativeWindow(ShowState state) OVERRIDE;
   virtual void BecomeModal() OVERRIDE;
   virtual void EnableClose(bool enable) OVERRIDE;
-  virtual NonClientFrameView* CreateFrameViewForWindow() OVERRIDE;
-  virtual void UpdateFrameAfterFrameChange() OVERRIDE;
-  virtual bool ShouldUseNativeFrame() const OVERRIDE;
-  virtual void FrameTypeChanged() OVERRIDE;
 
   // Overridden from NativeWidgetGtk:
   virtual void Restore() OVERRIDE;
@@ -66,7 +62,6 @@ class NativeWindowGtk : public NativeWidgetGtk, public NativeWindow {
   friend class Window;
 
   virtual void OnDestroy(GtkWidget* widget);
-  virtual void OnDestroyed(GObject *where_the_object_was);
 
  private:
   static gboolean CallConfigureEvent(GtkWidget* widget,

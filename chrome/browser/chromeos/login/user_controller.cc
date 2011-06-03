@@ -51,9 +51,8 @@ const int kControlsHeight = 28;
 const int kVerticalIntervalSize = 10;
 
 void CloseWindow(views::Widget* window) {
-  if (!window)
-    return;
-  window->Close();
+  if (window)
+    window->CloseNow();
 }
 
 }  // namespace

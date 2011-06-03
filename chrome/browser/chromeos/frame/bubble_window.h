@@ -38,15 +38,21 @@ class BubbleWindow : public views::NativeWindowGtk {
   static const SkColor kBackgroundColor;
 
  protected:
-  explicit BubbleWindow(views::Window* window);
+  BubbleWindow(views::Window* window, Style style);
 
   // Overidden from views::NativeWindowGtk:
   virtual void InitNativeWidget(
       const views::Widget::InitParams& params) OVERRIDE;
+  virtual views::NonClientFrameView* CreateNonClientFrameView() OVERRIDE;
 
   // Trims the window margins and rounds off the corners.
   void TrimMargins(int margin_left, int margin_right, int margin_top,
                    int margin_bottom, int border_radius);
+
+ private:
+  Style style_;
+
+  DISALLOW_COPY_AND_ASSIGN(BubbleWindow);
 };
 
 }  // namespace chromeos

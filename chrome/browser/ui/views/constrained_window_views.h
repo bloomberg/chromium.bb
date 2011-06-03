@@ -36,10 +36,6 @@ class NativeConstrainedWindowDelegate {
   // Called when the NativeConstrainedWindow is clicked on when inactive.
   virtual void OnNativeConstrainedWindowMouseActivate() = 0;
 
-  // Creates the frame view for the constrained window.
-  // TODO(beng): remove once ConstrainedWindowViews is-a views::Window.
-  virtual views::NonClientFrameView* CreateFrameViewForWindow() = 0;
-
   virtual views::internal::NativeWindowDelegate* AsNativeWindowDelegate() = 0;
 };
 
@@ -78,7 +74,7 @@ class ConstrainedWindowViews : public views::Window,
 
  private:
   // Overridden from views::Window:
-  virtual views::NonClientFrameView* CreateFrameViewForWindow() OVERRIDE;
+  virtual views::NonClientFrameView* CreateNonClientFrameView() OVERRIDE;
 
   // Overridden from NativeConstrainedWindowDelegate:
   virtual void OnNativeConstrainedWindowDestroyed() OVERRIDE;

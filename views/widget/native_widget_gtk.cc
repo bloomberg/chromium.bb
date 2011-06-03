@@ -736,6 +736,27 @@ void NativeWidgetGtk::InitNativeWidget(const Widget::InitParams& params) {
   }
 }
 
+NonClientFrameView* NativeWidgetGtk::CreateNonClientFrameView() {
+  return NULL;
+}
+
+void NativeWidgetGtk::UpdateFrameAfterFrameChange() {
+  // We currently don't support different frame types on Gtk, so we don't
+  // need to implement this.
+  NOTIMPLEMENTED();
+}
+
+bool NativeWidgetGtk::ShouldUseNativeFrame() const {
+  return false;
+}
+
+void NativeWidgetGtk::FrameTypeChanged() {
+  // This is called when the Theme has changed, so forward the event to the root
+  // widget.
+  GetWidget()->ThemeChanged();
+  GetWidget()->GetRootView()->SchedulePaint();
+}
+
 Widget* NativeWidgetGtk::GetWidget() {
   return delegate_->AsWidget();
 }
@@ -1435,6 +1456,7 @@ void NativeWidgetGtk::OnDestroy(GtkWidget* object) {
 }
 
 void NativeWidgetGtk::OnDestroyed(GObject *where_the_object_was) {
+  delegate_->OnNativeWidgetDestroyed();
   if (ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET)
     delete this;
 }

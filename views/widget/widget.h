@@ -15,6 +15,8 @@
 #include "ui/gfx/rect.h"
 #include "views/focus/focus_manager.h"
 #include "views/widget/native_widget_delegate.h"
+#include "views/window/client_view.h"
+#include "views/window/non_client_view.h"
 
 #if defined(OS_WIN)
 // Windows headers define macros for these function names which screw with us.
@@ -46,6 +48,7 @@ namespace views {
 class DefaultThemeProvider;
 class InputMethod;
 class NativeWidget;
+class NonClientFrameView;
 class TooltipManager;
 class View;
 class WidgetDelegate;
@@ -82,6 +85,12 @@ class RootView;
 class Widget : public internal::NativeWidgetDelegate,
                public FocusTraversable {
  public:
+  enum FrameType {
+    FRAME_TYPE_DEFAULT,         // Use whatever the default would be.
+    FRAME_TYPE_FORCE_CUSTOM,    // Force the custom frame.
+    FRAME_TYPE_FORCE_NATIVE     // Force the native frame.
+  };
+
   struct InitParams {
     enum Type {
       TYPE_WINDOW,      // A Window, like a frame window.
@@ -354,6 +363,44 @@ class Widget : public internal::NativeWidgetDelegate,
   void SetFocusTraversableParent(FocusTraversable* parent);
   void SetFocusTraversableParentView(View* parent_view);
 
+  // Updates the frame after an event caused it to be changed.
+  virtual void UpdateFrameAfterFrameChange();
+
+  void set_frame_type(FrameType frame_type) { frame_type_ = frame_type; }
+  FrameType frame_type() const { return frame_type_; }
+
+  // Creates an appropriate NonClientFrameView for this widget. The
+  // WidgetDelegate is given the first opportunity to create one, followed by
+  // the NativeWidget implementation. If both return NULL, a default one is
+  // created.
+  virtual NonClientFrameView* CreateNonClientFrameView();
+
+  // Whether we should be using a native frame.
+  bool ShouldUseNativeFrame() const;
+
+  // Forces the frame into the alternate frame type (custom or native) depending
+  // on its current state.
+  void DebugToggleFrameType();
+
+  // Tell the window that something caused the frame type to change.
+  void FrameTypeChanged();
+
+  NonClientView* non_client_view() {
+    return const_cast<NonClientView*>(
+        const_cast<const Widget*>(this)->non_client_view());
+  }
+  const NonClientView* non_client_view() const {
+    return non_client_view_;
+  }
+
+  ClientView* client_view() {
+    return const_cast<ClientView*>(
+        const_cast<const Widget*>(this)->client_view());
+  }
+  const ClientView* client_view() const {
+    return non_client_view()->client_view();
+  }
+
   const ui::Compositor* compositor() const { return compositor_.get(); }
   ui::Compositor* compositor() { return compositor_.get(); }
 
@@ -375,6 +422,7 @@ class Widget : public internal::NativeWidgetDelegate,
   virtual void OnNativeFocus(gfx::NativeView focused_view) OVERRIDE;
   virtual void OnNativeBlur(gfx::NativeView focused_view) OVERRIDE;
   virtual void OnNativeWidgetCreated() OVERRIDE;
+  virtual void OnNativeWidgetDestroyed() OVERRIDE;
   virtual void OnSizeChanged(const gfx::Size& new_size) OVERRIDE;
   virtual bool HasFocusManager() const OVERRIDE;
   virtual bool OnNativeWidgetPaintAccelerated(
@@ -430,6 +478,8 @@ class Widget : public internal::NativeWidgetDelegate,
 
   NativeWidget* native_widget_;
 
+  InitParams::Type type_;
+
   // Non-owned pointer to the Widget's delegate.  May be NULL if no delegate is
   // being used.
   WidgetDelegate* widget_delegate_;
@@ -438,6 +488,12 @@ class Widget : public internal::NativeWidgetDelegate,
   // WARNING: see warning in tooltip_manager_ for ordering dependencies with
   // this and tooltip_manager_.
   scoped_ptr<internal::RootView> root_view_;
+
+  // The View that provides the non-client area of the window (title bar,
+  // window controls, sizing borders etc). To use an implementation other than
+  // the default, this class must be sub-classed and this value set to the
+  // desired implementation before calling |InitWindow()|.
+  NonClientView* non_client_view_;
 
   // The focus manager keeping track of focus for this Widget and any of its
   // children.  NULL for non top-level widgets.
@@ -460,6 +516,10 @@ class Widget : public internal::NativeWidgetDelegate,
 
   // See set_is_secondary_widget().
   bool is_secondary_widget_;
+
+  // The current frame type in use by this window. Defaults to
+  // FRAME_TYPE_DEFAULT.
+  FrameType frame_type_;
 
   DISALLOW_COPY_AND_ASSIGN(Widget);
 };
