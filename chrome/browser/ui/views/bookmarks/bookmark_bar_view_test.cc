@@ -1188,7 +1188,7 @@ class BookmarkBarViewTest13 : public BookmarkBarViewEventTestBase {
     views::SubmenuView* submenu = menu->GetSubmenu();
     views::View* separator_view = NULL;
     for (int i = 0; i < submenu->child_count(); ++i) {
-      if (submenu->GetChildViewAt(i)->GetID() !=
+      if (submenu->GetChildViewAt(i)->id() !=
           views::MenuItemView::kMenuItemViewID) {
         separator_view = submenu->GetChildViewAt(i);
         break;

@@ -29,7 +29,7 @@ const char TabContentsContainer::kViewClassName[] =
 
 TabContentsContainer::TabContentsContainer()
     : tab_contents_(NULL) {
-  SetID(VIEW_ID_TAB_CONTAINER);
+  set_id(VIEW_ID_TAB_CONTAINER);
 }
 
 void TabContentsContainer::SetReservedContentsRect(

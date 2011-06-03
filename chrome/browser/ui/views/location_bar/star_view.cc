@@ -18,7 +18,7 @@
 
 StarView::StarView(CommandUpdater* command_updater)
     : command_updater_(command_updater) {
-  SetID(VIEW_ID_STAR_BUTTON);
+  set_id(VIEW_ID_STAR_BUTTON);
   SetToggled(false);
   set_accessibility_focusable(true);
 }

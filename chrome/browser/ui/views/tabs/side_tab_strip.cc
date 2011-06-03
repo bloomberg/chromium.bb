@@ -128,7 +128,7 @@ SideTabStrip::SideTabStrip(TabStripController* controller)
       separator_(new views::View()),
       first_tab_y_offset_(0),
       ideal_height_(0) {
-  SetID(VIEW_ID_TAB_STRIP);
+  set_id(VIEW_ID_TAB_STRIP);
   set_background(views::Background::CreateSolidBackground(kBackgroundColor));
   AddChildView(newtab_button_);
   separator_->set_background(

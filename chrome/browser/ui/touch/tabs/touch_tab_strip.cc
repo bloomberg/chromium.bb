@@ -275,7 +275,7 @@ TouchTab* TouchTabStrip::GetTabAtTabDataIndex(int tab_data_index) const {
 // TouchTabStrip, private:
 
 void TouchTabStrip::Init() {
-  SetID(VIEW_ID_TAB_STRIP);
+  set_id(VIEW_ID_TAB_STRIP);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -330,7 +330,7 @@ views::View::TouchStatus TouchTabStrip::OnTouchEvent(
     return TOUCH_STATUS_UNKNOWN;
 
   views::View* view = GetEventHandlerForPoint(event.location());
-  if (view && view != this && view->GetID() != VIEW_ID_TAB)
+  if (view && view != this && view->id() != VIEW_ID_TAB)
     return TOUCH_STATUS_UNKNOWN;
 
   base::TimeDelta delta = event.time_stamp() - last_tap_time_;

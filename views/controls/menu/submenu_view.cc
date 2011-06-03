@@ -55,7 +55,7 @@ SubmenuView::~SubmenuView() {
 int SubmenuView::GetMenuItemCount() {
   int count = 0;
   for (int i = 0; i < child_count(); ++i) {
-    if (GetChildViewAt(i)->GetID() == MenuItemView::kMenuItemViewID)
+    if (GetChildViewAt(i)->id() == MenuItemView::kMenuItemViewID)
       count++;
   }
   return count;
@@ -63,7 +63,7 @@ int SubmenuView::GetMenuItemCount() {
 
 MenuItemView* SubmenuView::GetMenuItemAt(int index) {
   for (int i = 0, count = 0; i < child_count(); ++i) {
-    if (GetChildViewAt(i)->GetID() == MenuItemView::kMenuItemViewID &&
+    if (GetChildViewAt(i)->id() == MenuItemView::kMenuItemViewID &&
         count++ == index) {
       return static_cast<MenuItemView*>(GetChildViewAt(i));
     }
@@ -113,7 +113,7 @@ gfx::Size SubmenuView::GetPreferredSize() {
         child->GetPreferredSize() : gfx::Size();
     max_width = std::max(max_width, child_pref_size.width());
     height += child_pref_size.height();
-    if (child->GetID() == MenuItemView::kMenuItemViewID) {
+    if (child->id() == MenuItemView::kMenuItemViewID) {
       MenuItemView* menu = static_cast<MenuItemView*>(child);
       max_accelerator_width_ =
           std::max(max_accelerator_width_, menu->GetAcceleratorTextWidth());

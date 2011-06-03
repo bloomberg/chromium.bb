@@ -552,14 +552,6 @@ View* View::GetViewByID(int id) {
   return const_cast<View*>(const_cast<const View*>(this)->GetViewByID(id));
 }
 
-void View::SetID(int id) {
-  id_ = id;
-}
-
-int View::GetID() const {
-  return id_;
-}
-
 void View::SetGroup(int gid) {
   // Don't change the group id once it's set.
   DCHECK(group_ == -1 || group_ == gid);

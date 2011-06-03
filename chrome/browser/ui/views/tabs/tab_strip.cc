@@ -533,7 +533,7 @@ void TabStrip::ButtonPressed(views::Button* sender, const views::Event& event) {
 // TabStrip, private:
 
 void TabStrip::Init() {
-  SetID(VIEW_ID_TAB_STRIP);
+  set_id(VIEW_ID_TAB_STRIP);
   newtab_button_bounds_.SetRect(0, 0, kNewTabButtonWidth, kNewTabButtonHeight);
   if (browser_defaults::kSizeTabButtonToTopOfTabStrip) {
     newtab_button_bounds_.set_height(

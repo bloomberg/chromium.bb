@@ -361,7 +361,7 @@ BrowserActionsContainer::BrowserActionsContainer(Browser* browser,
       drop_indicator_position_(-1),
       ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(show_menu_task_factory_(this)) {
-  SetID(VIEW_ID_BROWSER_ACTION_TOOLBAR);
+  set_id(VIEW_ID_BROWSER_ACTION_TOOLBAR);
 
   if (profile_->GetExtensionService()) {
     model_ = profile_->GetExtensionService()->toolbar_model();

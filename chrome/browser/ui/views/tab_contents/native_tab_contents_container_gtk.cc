@@ -20,7 +20,7 @@ NativeTabContentsContainerGtk::NativeTabContentsContainerGtk(
     TabContentsContainer* container)
     : container_(container),
       focus_callback_id_(0) {
-  SetID(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW);
+  set_id(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW);
 }
 
 NativeTabContentsContainerGtk::~NativeTabContentsContainerGtk() {

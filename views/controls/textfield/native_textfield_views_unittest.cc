@@ -167,12 +167,12 @@ class NativeTextfieldViewsTest : public ViewsTestBase,
 
     textfield_view_
         = static_cast<NativeTextfieldViews*>(textfield_->native_wrapper());
-    textfield_->SetID(1);
+    textfield_->set_id(1);
 
     for (int i = 1; i < count; i++) {
       Textfield* textfield = new Textfield(style);
       container->AddChildView(textfield);
-      textfield->SetID(i + 1);
+      textfield->set_id(i + 1);
     }
 
     DCHECK(textfield_view_);
@@ -490,35 +490,35 @@ TEST_F(NativeTextfieldViewsTest, FocusTraversalTest) {
   InitTextfields(Textfield::STYLE_DEFAULT, 3);
   textfield_->RequestFocus();
 
-  EXPECT_EQ(1, GetFocusedView()->GetID());
+  EXPECT_EQ(1, GetFocusedView()->id());
   widget_->GetFocusManager()->AdvanceFocus(false);
-  EXPECT_EQ(2, GetFocusedView()->GetID());
+  EXPECT_EQ(2, GetFocusedView()->id());
   widget_->GetFocusManager()->AdvanceFocus(false);
-  EXPECT_EQ(3, GetFocusedView()->GetID());
+  EXPECT_EQ(3, GetFocusedView()->id());
   // Cycle back to the first textfield.
   widget_->GetFocusManager()->AdvanceFocus(false);
-  EXPECT_EQ(1, GetFocusedView()->GetID());
+  EXPECT_EQ(1, GetFocusedView()->id());
 
   widget_->GetFocusManager()->AdvanceFocus(true);
-  EXPECT_EQ(3, GetFocusedView()->GetID());
+  EXPECT_EQ(3, GetFocusedView()->id());
   widget_->GetFocusManager()->AdvanceFocus(true);
-  EXPECT_EQ(2, GetFocusedView()->GetID());
+  EXPECT_EQ(2, GetFocusedView()->id());
   widget_->GetFocusManager()->AdvanceFocus(true);
-  EXPECT_EQ(1, GetFocusedView()->GetID());
+  EXPECT_EQ(1, GetFocusedView()->id());
   // Cycle back to the last textfield.
   widget_->GetFocusManager()->AdvanceFocus(true);
-  EXPECT_EQ(3, GetFocusedView()->GetID());
+  EXPECT_EQ(3, GetFocusedView()->id());
 
   // Request focus should still work.
   textfield_->RequestFocus();
-  EXPECT_EQ(1, GetFocusedView()->GetID());
+  EXPECT_EQ(1, GetFocusedView()->id());
 
   // Test if clicking on textfield view sets the focus to textfield_.
   widget_->GetFocusManager()->AdvanceFocus(true);
-  EXPECT_EQ(3, GetFocusedView()->GetID());
+  EXPECT_EQ(3, GetFocusedView()->id());
   MouseEvent click(ui::ET_MOUSE_PRESSED, 0, 0, ui::EF_LEFT_BUTTON_DOWN);
   textfield_view_->OnMousePressed(click);
-  EXPECT_EQ(1, GetFocusedView()->GetID());
+  EXPECT_EQ(1, GetFocusedView()->id());
 }
 
 void VerifyTextfieldContextMenuContents(bool textfield_has_selection,

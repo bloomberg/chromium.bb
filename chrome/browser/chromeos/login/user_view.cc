@@ -85,7 +85,7 @@ class SignoutView : public views::View {
     signout_link_->SetHighlightedColor(kTextColor);
     signout_link_->SetDisabledColor(kTextColor);
     signout_link_->SetNormalColor(kTextColor);
-    signout_link_->SetID(VIEW_ID_SCREEN_LOCKER_SIGNOUT_LINK);
+    signout_link_->set_id(VIEW_ID_SCREEN_LOCKER_SIGNOUT_LINK);
 
     AddChildView(active_user_label_);
     AddChildView(signout_link_);

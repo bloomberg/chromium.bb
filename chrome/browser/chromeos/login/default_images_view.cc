@@ -8,14 +8,14 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/default_user_images.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
-#include "grit/theme_resources.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "views/border.h"
 #include "views/background.h"
+#include "views/border.h"
 #include "views/controls/button/image_button.h"
 #include "views/layout/grid_layout.h"
 
@@ -90,14 +90,14 @@ DefaultImagesView::~DefaultImagesView() {}
 
 void DefaultImagesView::Init() {
   UserImageButton* capture_button = new UserImageButton(this);
-  capture_button->SetID(kCaptureButtonId);
+  capture_button->set_id(kCaptureButtonId);
   capture_button->SetTooltipText(UTF16ToWide(
       l10n_util::GetStringUTF16(IDS_OPTIONS_CHANGE_PICTURE_TAKE_PHOTO)));
   InitButton(IDR_BUTTON_USER_IMAGE_TAKE_PHOTO, capture_button);
   default_images_.push_back(capture_button);
   for (int i = 0; i < kDefaultImagesCount; ++i) {
     UserImageButton* image_button = new UserImageButton(this);
-    image_button->SetID(i + kImageStartId);
+    image_button->set_id(i + kImageStartId);
     InitButton(kDefaultImageResources[i], image_button);
     default_images_.push_back(image_button);
   }
@@ -140,11 +140,11 @@ void DefaultImagesView::ButtonPressed(views::Button* sender,
     return;
   ClearSelection();
 
-  if (sender->GetID() == kCaptureButtonId) {
+  if (sender->id() == kCaptureButtonId) {
     if (delegate_)
       delegate_->OnCaptureButtonClicked();
   } else {
-    int image_index = sender->GetID() - kImageStartId;
+    int image_index = sender->id() - kImageStartId;
     int images_count = static_cast<int>(default_images_.size());
     if (image_index < 0 || image_index >= images_count) {
       NOTREACHED() << "Got ButtonPressed event from a view with wrong id.";

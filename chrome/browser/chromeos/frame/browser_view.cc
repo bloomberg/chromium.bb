@@ -130,7 +130,7 @@ class BrowserViewLayout : public ::BrowserViewLayout {
   void ViewAdded(views::View* host,
                  views::View* view) {
     ::BrowserViewLayout::ViewAdded(host, view);
-    switch (view->GetID()) {
+    switch (view->id()) {
       case VIEW_ID_STATUS_AREA:
         status_area_ = static_cast<chromeos::StatusAreaView*>(view);
         break;
@@ -291,7 +291,7 @@ BrowserView::~BrowserView() {
 void BrowserView::Init() {
   ::BrowserView::Init();
   status_area_ = new StatusAreaView(this);
-  status_area_->SetID(VIEW_ID_STATUS_AREA);
+  status_area_->set_id(VIEW_ID_STATUS_AREA);
   AddChildView(status_area_);
   status_area_->Init();
 

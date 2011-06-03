@@ -153,7 +153,7 @@ BaseTab::BaseTab(TabController* controller)
       theme_provider_(NULL) {
   BaseTab::InitResources();
 
-  SetID(VIEW_ID_TAB);
+  set_id(VIEW_ID_TAB);
 
   // Add the Close Button.
   close_button_ = new TabCloseButton(this);

@@ -189,7 +189,7 @@ void BookmarkEditorView::ContentsChanged(Textfield* sender,
 void BookmarkEditorView::ButtonPressed(
     Button* sender, const views::Event& event) {
   DCHECK(sender);
-  switch (sender->GetID()) {
+  switch (sender->id()) {
     case kNewFolderButtonID:
       NewFolder();
       break;
@@ -311,7 +311,7 @@ void BookmarkEditorView::Init() {
 
     tree_view_->SetRootShown(false);
     new_folder_button_->SetEnabled(false);
-    new_folder_button_->SetID(kNewFolderButtonID);
+    new_folder_button_->set_id(kNewFolderButtonID);
   }
 
   // Yummy layout code.

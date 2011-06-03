@@ -72,7 +72,7 @@ void ShutdownButton::Init() {
   SetIcon(*rb.GetBitmapNamed(IDR_SHUTDOWN_ICON));
   set_icon_text_spacing(kIconTextPadding);
   set_focusable(true);
-  SetID(VIEW_ID_SCREEN_LOCKER_SHUTDOWN);
+  set_id(VIEW_ID_SCREEN_LOCKER_SHUTDOWN);
   // Set label colors.
   SetEnabledColor(SK_ColorWHITE);
   SetDisabledColor(SK_ColorWHITE);

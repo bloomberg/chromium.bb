@@ -429,10 +429,10 @@ class View : public AcceleratorTarget {
   virtual const View* GetViewByID(int id) const;
   virtual View* GetViewByID(int id);
 
-  // Sets and gets the ID for this view.  ID should be unique within the subtree
-  // that you intend to search for it.  0 is the default ID for views.
-  void SetID(int id);
-  int GetID() const;
+  // Gets and sets the ID for this view. ID should be unique within the subtree
+  // that you intend to search for it. 0 is the default ID for views.
+  int id() const { return id_; }
+  void set_id(int id) { id_ = id; }
 
   // A group id is used to tag views which are part of the same logical group.
   // Focus can be moved between views with the same group using the arrow keys.

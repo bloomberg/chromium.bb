@@ -714,7 +714,7 @@ int MenuController::OnPerformDrop(SubmenuView* source,
   // WARNING: the call to MenuClosed deletes us.
 
   // If over an empty menu item, drop occurs on the parent.
-  if (drop_target->GetID() == MenuItemView::kEmptyMenuItemViewID)
+  if (drop_target->id() == MenuItemView::kEmptyMenuItemViewID)
     drop_target = drop_target->GetParentMenuItem();
 
   return drop_target->GetDelegate()->OnPerformDrop(
@@ -1130,11 +1130,11 @@ MenuItemView* MenuController::GetMenuItemAt(View* source, int x, int y) {
   // Walk the view hierarchy until we find a menu item (or the root).
   View* child_under_mouse = source->GetEventHandlerForPoint(gfx::Point(x, y));
   while (child_under_mouse &&
-         child_under_mouse->GetID() != MenuItemView::kMenuItemViewID) {
+         child_under_mouse->id() != MenuItemView::kMenuItemViewID) {
     child_under_mouse = child_under_mouse->parent();
   }
   if (child_under_mouse && child_under_mouse->IsEnabled() &&
-      child_under_mouse->GetID() == MenuItemView::kMenuItemViewID) {
+      child_under_mouse->id() == MenuItemView::kMenuItemViewID) {
     return static_cast<MenuItemView*>(child_under_mouse);
   }
   return NULL;
@@ -1143,7 +1143,7 @@ MenuItemView* MenuController::GetMenuItemAt(View* source, int x, int y) {
 MenuItemView* MenuController::GetEmptyMenuItemAt(View* source, int x, int y) {
   View* child_under_mouse = source->GetEventHandlerForPoint(gfx::Point(x, y));
   if (child_under_mouse &&
-      child_under_mouse->GetID() == MenuItemView::kEmptyMenuItemViewID) {
+      child_under_mouse->id() == MenuItemView::kEmptyMenuItemViewID) {
     return static_cast<MenuItemView*>(child_under_mouse);
   }
   return NULL;

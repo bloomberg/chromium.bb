@@ -23,7 +23,7 @@
 TabContentsContainer::TabContentsContainer()
     : native_container_(NULL),
       tab_contents_(NULL) {
-  SetID(VIEW_ID_TAB_CONTAINER);
+  set_id(VIEW_ID_TAB_CONTAINER);
 }
 
 void TabContentsContainer::SetReservedContentsRect(

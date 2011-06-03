@@ -19,7 +19,7 @@
 NativeTabContentsContainerWin::NativeTabContentsContainerWin(
     TabContentsContainer* container)
     : container_(container) {
-  SetID(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW);
+  set_id(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW);
 }
 
 NativeTabContentsContainerWin::~NativeTabContentsContainerWin() {

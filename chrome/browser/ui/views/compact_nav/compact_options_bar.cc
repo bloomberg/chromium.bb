@@ -49,7 +49,7 @@ void CompactOptionsBar::Init() {
   app_menu_->SetTooltipText(UTF16ToWide(l10n_util::GetStringFUTF16(
       IDS_APPMENU_TOOLTIP,
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME))));
-  app_menu_->SetID(VIEW_ID_APP_MENU);
+  app_menu_->set_id(VIEW_ID_APP_MENU);
   AddChildView(app_menu_);
 
   LoadImages();
@@ -92,7 +92,7 @@ void CompactOptionsBar::Layout() {
 
 void CompactOptionsBar::RunMenu(views::View* source,
                                 const gfx::Point& /* pt */) {
-  DCHECK_EQ(VIEW_ID_APP_MENU, source->GetID());
+  DCHECK_EQ(VIEW_ID_APP_MENU, source->id());
 
   wrench_menu_ = new WrenchMenu(browser_view_->browser());
   wrench_menu_->Init(wrench_menu_model_.get());

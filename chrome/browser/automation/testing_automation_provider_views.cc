@@ -57,9 +57,9 @@ class ViewFocusChangeWaiter : public views::FocusChangeListener {
  private:
   void FocusChanged(views::View* focused_before,
                     views::View* focused_now) {
-    if (focused_now && focused_now->GetID() != previous_view_id_) {
+    if (focused_now && focused_now->id() != previous_view_id_) {
       AutomationMsg_WaitForFocusedViewIDToChange::WriteReplyParams(
-          reply_message_, true, focused_now->GetID());
+          reply_message_, true, focused_now->id());
 
       automation_->Send(reply_message_);
       delete this;
@@ -149,7 +149,7 @@ void TestingAutomationProvider::GetFocusedViewID(int handle, int* view_id) {
     DCHECK(focus_manager);
     views::View* focused_view = focus_manager->GetFocusedView();
     if (focused_view)
-      *view_id = focused_view->GetID();
+      *view_id = focused_view->id();
   }
 }
 

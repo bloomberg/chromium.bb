@@ -358,7 +358,7 @@ BookmarkBarView::BookmarkBarView(Profile* profile, Browser* browser)
     sync_service_->AddObserver(this);
   }
 
-  SetID(VIEW_ID_BOOKMARK_BAR);
+  set_id(VIEW_ID_BOOKMARK_BAR);
   Init();
   SetProfile(profile);
 
@@ -1230,7 +1230,7 @@ MenuButton* BookmarkBarView::CreateOtherBookmarkedButton() {
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_BOOMARK_BAR_OTHER_BOOKMARKED)),
       this,
       false);
-  button->SetID(VIEW_ID_OTHER_BOOKMARKS);
+  button->set_id(VIEW_ID_OTHER_BOOKMARKS);
   button->SetIcon(GetFolderIcon());
   button->SetContextMenuController(this);
   button->set_tag(kOtherFolderButtonTag);
@@ -1297,7 +1297,7 @@ void BookmarkBarView::ConfigureButton(const BookmarkNode* node,
                                       views::TextButton* button) {
   button->SetText(UTF16ToWide(node->GetTitle()));
   button->SetAccessibleName(node->GetTitle());
-  button->SetID(VIEW_ID_BOOKMARK_BAR_ELEMENT);
+  button->set_id(VIEW_ID_BOOKMARK_BAR_ELEMENT);
   // We don't always have a theme provider (ui tests, for example).
   if (GetThemeProvider()) {
     button->SetEnabledColor(GetThemeProvider()->GetColor(

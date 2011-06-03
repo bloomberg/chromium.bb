@@ -249,7 +249,7 @@ void BrowserViewLayout::Installed(views::View* host) {
 void BrowserViewLayout::Uninstalled(views::View* host) {}
 
 void BrowserViewLayout::ViewAdded(views::View* host, views::View* view) {
-  switch (view->GetID()) {
+  switch (view->id()) {
     case VIEW_ID_CONTENTS_SPLIT: {
       contents_split_ = static_cast<views::SingleSplitView*>(view);
       // We're installed as the LayoutManager before BrowserView creates the
@@ -286,7 +286,7 @@ void BrowserViewLayout::ViewAdded(views::View* host, views::View* view) {
 }
 
 void BrowserViewLayout::ViewRemoved(views::View* host, views::View* view) {
-  switch (view->GetID()) {
+  switch (view->id()) {
     case VIEW_ID_BOOKMARK_BAR:
       active_bookmark_bar_ = NULL;
       break;

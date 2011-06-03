@@ -1891,7 +1891,7 @@ void BrowserView::Init() {
   bool sidebar_allowed = SidebarManager::IsSidebarAllowed();
   if (sidebar_allowed) {
     sidebar_container_ = new TabContentsContainer;
-    sidebar_container_->SetID(VIEW_ID_SIDE_BAR_CONTAINER);
+    sidebar_container_->set_id(VIEW_ID_SIDE_BAR_CONTAINER);
     sidebar_container_->SetVisible(false);
 
     sidebar_split_ = new views::SingleSplitView(
@@ -1899,7 +1899,7 @@ void BrowserView::Init() {
         sidebar_container_,
         views::SingleSplitView::HORIZONTAL_SPLIT,
         this);
-    sidebar_split_->SetID(VIEW_ID_SIDE_BAR_SPLIT);
+    sidebar_split_->set_id(VIEW_ID_SIDE_BAR_SPLIT);
     sidebar_split_->SetAccessibleName(
         l10n_util::GetStringUTF16(IDS_ACCNAME_SIDE_BAR));
     sidebar_split_->set_background(
@@ -1907,7 +1907,7 @@ void BrowserView::Init() {
   }
 
   devtools_container_ = new TabContentsContainer;
-  devtools_container_->SetID(VIEW_ID_DEV_TOOLS_DOCKED);
+  devtools_container_->set_id(VIEW_ID_DEV_TOOLS_DOCKED);
   devtools_container_->SetVisible(false);
 
   views::View* contents_view = contents_;
@@ -1919,7 +1919,7 @@ void BrowserView::Init() {
       devtools_container_,
       views::SingleSplitView::VERTICAL_SPLIT,
       this);
-  contents_split_->SetID(VIEW_ID_CONTENTS_SPLIT);
+  contents_split_->set_id(VIEW_ID_CONTENTS_SPLIT);
   contents_split_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ACCNAME_WEB_CONTENTS));
   contents_split_->set_background(
@@ -1952,11 +1952,11 @@ void BrowserView::Init() {
       switches::kEnableCompactNavigation)) {
     compact_location_bar_view_host_.reset(new CompactLocationBarViewHost(this));
     compact_navigation_bar_ = new CompactNavigationBar(this);
-    compact_navigation_bar_->SetID(VIEW_ID_COMPACT_NAV_BAR);
+    compact_navigation_bar_->set_id(VIEW_ID_COMPACT_NAV_BAR);
     AddChildView(compact_navigation_bar_);
     compact_navigation_bar_->Init();
     compact_options_bar_ = new CompactOptionsBar(this);
-    compact_options_bar_->SetID(VIEW_ID_COMPACT_OPT_BAR);
+    compact_options_bar_->set_id(VIEW_ID_COMPACT_OPT_BAR);
     AddChildView(compact_options_bar_);
     compact_options_bar_->Init();
   }
@@ -1964,7 +1964,7 @@ void BrowserView::Init() {
   // Use an empty view for the spacer since all it does is that it replaces the
   // toolbar area in compact navigation mode.
   compact_spacer_ = new views::View();
-  compact_spacer_->SetID(VIEW_ID_COMPACT_NAV_BAR_SPACER);
+  compact_spacer_->set_id(VIEW_ID_COMPACT_NAV_BAR_SPACER);
   AddChildView(compact_spacer_);
 
   // We're now initialized and ready to process Layout requests.

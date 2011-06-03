@@ -22,7 +22,7 @@ bool IsViewFocused(const Browser* browser, ViewID vid) {
   views::FocusManager* focus_manager =
       views::FocusManager::GetFocusManagerForNativeView(window);
   DCHECK(focus_manager);
-  return focus_manager->GetFocusedView()->GetID() == vid;
+  return focus_manager->GetFocusedView()->id() == vid;
 }
 
 void ClickOnView(const Browser* browser, ViewID vid) {

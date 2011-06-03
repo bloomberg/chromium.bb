@@ -12,8 +12,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/gfx/canvas.h"
-#include "views/controls/button/text_button.h"
 #include "views/controls/button/menu_button.h"
+#include "views/controls/button/text_button.h"
 #include "views/controls/menu/menu_config.h"
 #include "views/controls/menu/menu_controller.h"
 #include "views/controls/menu/menu_separator.h"
@@ -38,7 +38,7 @@ class EmptyMenuMenuItem : public MenuItemView {
   explicit EmptyMenuMenuItem(MenuItemView* parent)
       : MenuItemView(parent, 0, EMPTY) {
     // Set this so that we're not identified as a normal menu item.
-    SetID(kEmptyMenuItemViewID);
+    set_id(kEmptyMenuItemViewID);
     SetTitle(UTF16ToWide(
         l10n_util::GetStringUTF16(IDS_APP_MENU_EMPTY_SUBMENU)));
     SetEnabled(false);
@@ -445,7 +445,7 @@ MenuItemView* MenuItemView::GetMenuItemByID(int id) {
     return NULL;
   for (int i = 0; i < GetSubmenu()->child_count(); ++i) {
     View* child = GetSubmenu()->GetChildViewAt(i);
-    if (child->GetID() == MenuItemView::kMenuItemViewID) {
+    if (child->id() == MenuItemView::kMenuItemViewID) {
       MenuItemView* result = static_cast<MenuItemView*>(child)->
           GetMenuItemByID(id);
       if (result)
@@ -561,7 +561,7 @@ void MenuItemView::Init(MenuItemView* parent,
   submenu_ = NULL;
   show_mnemonics_ = false;
   // Assign our ID, this allows SubmenuItemView to find MenuItemViews.
-  SetID(kMenuItemViewID);
+  set_id(kMenuItemViewID);
   has_icons_ = false;
 
   // Don't request enabled status from the root menu item as it is just
@@ -656,11 +656,11 @@ void MenuItemView::RemoveEmptyMenus() {
   // view count.
   for (int i = submenu_->child_count() - 1; i >= 0; --i) {
     View* child = submenu_->GetChildViewAt(i);
-    if (child->GetID() == MenuItemView::kMenuItemViewID) {
+    if (child->id() == MenuItemView::kMenuItemViewID) {
       MenuItemView* menu_item = static_cast<MenuItemView*>(child);
       if (menu_item->HasSubmenu())
         menu_item->RemoveEmptyMenus();
-    } else if (child->GetID() == EmptyMenuMenuItem::kEmptyMenuItemViewID) {
+    } else if (child->id() == EmptyMenuMenuItem::kEmptyMenuItemViewID) {
       submenu_->RemoveChildView(child);
       delete child;
       child = NULL;
@@ -742,7 +742,7 @@ int MenuItemView::GetChildPreferredWidth() {
 }
 
 string16 MenuItemView::GetAcceleratorText() {
-  if (GetID() == kEmptyMenuItemViewID) {
+  if (id() == kEmptyMenuItemViewID) {
     // Don't query the delegate for menus that represent no children.
     return string16();
   }

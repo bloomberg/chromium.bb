@@ -53,7 +53,7 @@ bool IsViewFocused(const Browser* browser, ViewID vid) {
           GTK_WIDGET(window));
   DCHECK(focus_manager);
   return focus_manager->GetFocusedView() &&
-      focus_manager->GetFocusedView()->GetID() == vid;
+      focus_manager->GetFocusedView()->id() == vid;
 #else
   gfx::NativeWindow window = browser_window->GetNativeHandle();
   DCHECK(window);

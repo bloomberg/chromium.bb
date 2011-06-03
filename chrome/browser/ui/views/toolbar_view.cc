@@ -87,7 +87,7 @@ ToolbarView::ToolbarView(Browser* browser)
       profile_(NULL),
       browser_(browser),
       profiles_menu_contents_(NULL) {
-  SetID(VIEW_ID_TOOLBAR);
+  set_id(VIEW_ID_TOOLBAR);
 
   browser_->command_updater()->AddCommandObserver(IDC_BACK, this);
   browser_->command_updater()->AddCommandObserver(IDC_FORWARD, this);
@@ -128,7 +128,7 @@ void ToolbarView::Init(Profile* profile) {
   back_->SetTooltipText(
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_TOOLTIP_BACK)));
   back_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_BACK));
-  back_->SetID(VIEW_ID_BACK_BUTTON);
+  back_->set_id(VIEW_ID_BACK_BUTTON);
 
   forward_ = new views::ButtonDropDown(this, forward_menu_model_.get());
   forward_->set_triggerable_event_flags(ui::EF_LEFT_BUTTON_DOWN |
@@ -137,7 +137,7 @@ void ToolbarView::Init(Profile* profile) {
   forward_->SetTooltipText(
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_TOOLTIP_FORWARD)));
   forward_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_FORWARD));
-  forward_->SetID(VIEW_ID_FORWARD_BUTTON);
+  forward_->set_id(VIEW_ID_FORWARD_BUTTON);
 
   // Have to create this before |reload_| as |reload_|'s constructor needs it.
   location_bar_ = new LocationBarView(profile, browser_,
@@ -151,7 +151,7 @@ void ToolbarView::Init(Profile* profile) {
   reload_->SetTooltipText(
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_TOOLTIP_RELOAD)));
   reload_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_RELOAD));
-  reload_->SetID(VIEW_ID_RELOAD_BUTTON);
+  reload_->set_id(VIEW_ID_RELOAD_BUTTON);
 
   home_ = new views::ImageButton(this);
   home_->set_triggerable_event_flags(ui::EF_LEFT_BUTTON_DOWN |
@@ -160,7 +160,7 @@ void ToolbarView::Init(Profile* profile) {
   home_->SetTooltipText(
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_TOOLTIP_HOME)));
   home_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_HOME));
-  home_->SetID(VIEW_ID_HOME_BUTTON);
+  home_->set_id(VIEW_ID_HOME_BUTTON);
 
   browser_actions_ = new BrowserActionsContainer(browser_, this);
 
@@ -171,7 +171,7 @@ void ToolbarView::Init(Profile* profile) {
   app_menu_->SetTooltipText(UTF16ToWide(l10n_util::GetStringFUTF16(
       IDS_APPMENU_TOOLTIP,
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME))));
-  app_menu_->SetID(VIEW_ID_APP_MENU);
+  app_menu_->set_id(VIEW_ID_APP_MENU);
 
   // Add any necessary badges to the menu item based on the system state.
   if (IsUpgradeRecommended() || ShouldShowIncompatibilityWarning()) {
@@ -327,7 +327,7 @@ bool ToolbarView::GetAcceleratorInfo(int id, ui::Accelerator* accel) {
 // ToolbarView, views::MenuDelegate implementation:
 
 void ToolbarView::RunMenu(views::View* source, const gfx::Point& /* pt */) {
-  DCHECK_EQ(VIEW_ID_APP_MENU, source->GetID());
+  DCHECK_EQ(VIEW_ID_APP_MENU, source->id());
 
   wrench_menu_ = new WrenchMenu(browser_);
   wrench_menu_->Init(wrench_menu_model_.get());

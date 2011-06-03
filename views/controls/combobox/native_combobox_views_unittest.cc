@@ -99,7 +99,7 @@ class NativeComboboxViewsTest : public ViewsTestBase {
 
     ASSERT_FALSE(combobox_);
     combobox_ = new TestCombobox(model_.get());
-    combobox_->SetID(1);
+    combobox_->set_id(1);
 
     widget_ = new Widget;
     Widget::InitParams params(Widget::InitParams::TYPE_POPUP);

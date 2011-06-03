@@ -124,7 +124,7 @@ LocationBarView::LocationBarView(Profile* profile,
       template_url_model_(NULL),
       animation_offset_(0) {
   DCHECK(profile_);
-  SetID(VIEW_ID_LOCATION_BAR);
+  set_id(VIEW_ID_LOCATION_BAR);
   set_focusable(true);
 
   if (mode_ == NORMAL)
@@ -179,7 +179,7 @@ void LocationBarView::Init() {
 #endif
 
   location_entry_view_ = location_entry_->AddToView(this);
-  location_entry_view_->SetID(VIEW_ID_AUTOCOMPLETE);
+  location_entry_view_->set_id(VIEW_ID_AUTOCOMPLETE);
 
   selected_keyword_view_ = new SelectedKeywordView(
       kSelectedKeywordBackgroundImages, IDR_KEYWORD_SEARCH_MAGNIFIER,

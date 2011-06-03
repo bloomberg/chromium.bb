@@ -24,7 +24,7 @@ void PrintViewHierarchyImp(const View* view, int indent) {
     buf << L' ';
   buf << UTF8ToWide(view->GetClassName());
   buf << L' ';
-  buf << view->GetID();
+  buf << view->id();
   buf << L' ';
   buf << view->x() << L"," << view->y() << L",";
   buf << view->bounds().right() << L"," << view->bounds().bottom();
@@ -45,7 +45,7 @@ void PrintFocusHierarchyImp(const View* view, int indent) {
     buf << L' ';
   buf << UTF8ToWide(view->GetClassName());
   buf << L' ';
-  buf << view->GetID();
+  buf << view->id();
   buf << L' ';
   buf << view->GetClassName().c_str();
   buf << L' ';

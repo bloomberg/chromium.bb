@@ -125,7 +125,7 @@ void CompactLocationBarView::Init() {
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_TOOLTIP_RELOAD)));
   reload_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ACCNAME_RELOAD));
-  reload_button_->SetID(VIEW_ID_RELOAD_BUTTON);
+  reload_button_->set_id(VIEW_ID_RELOAD_BUTTON);
 
   ThemeProvider* tp = GetThemeProvider();
   reload_button_->SetImage(views::CustomButton::BS_NORMAL,

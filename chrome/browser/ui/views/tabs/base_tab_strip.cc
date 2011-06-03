@@ -559,11 +559,10 @@ BaseTab* BaseTabStrip::GetTabAtLocal(const gfx::Point& local_point) {
     return NULL;  // No tab contains the point.
 
   // Walk up the view hierarchy until we find a tab, or the TabStrip.
-  while (view && view != this && view->GetID() != VIEW_ID_TAB)
+  while (view && view != this && view->id() != VIEW_ID_TAB)
     view = view->parent();
 
-  return view && view->GetID() == VIEW_ID_TAB ?
-      static_cast<BaseTab*>(view) : NULL;
+  return view && view->id() == VIEW_ID_TAB ? static_cast<BaseTab*>(view) : NULL;
 }
 
 void BaseTabStrip::StoppedDraggingTab(BaseTab* tab, bool* is_first_tab) {

@@ -12,7 +12,7 @@
 
 InfoBarContainerView::InfoBarContainerView(Delegate* delegate)
     : InfoBarContainer(delegate) {
-  SetID(VIEW_ID_INFO_BAR_CONTAINER);
+  set_id(VIEW_ID_INFO_BAR_CONTAINER);
 }
 
 InfoBarContainerView::~InfoBarContainerView() {

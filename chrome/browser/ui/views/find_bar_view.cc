@@ -76,11 +76,11 @@ FindBarView::FindBarView(FindBarHost* host)
       close_button_(NULL),
       background_(NULL),
       background_left_(NULL) {
-  SetID(VIEW_ID_FIND_IN_PAGE);
+  set_id(VIEW_ID_FIND_IN_PAGE);
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
 
   find_text_ = new SearchTextfieldView();
-  find_text_->SetID(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD);
+  find_text_->set_id(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD);
   find_text_->SetFont(rb.GetFont(ResourceBundle::BaseFont));
   find_text_->set_default_width_in_chars(kDefaultCharWidth);
   find_text_->SetController(this);
