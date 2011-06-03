@@ -178,6 +178,9 @@ void View::AddChildViewAt(View* view, int index) {
 
   if (layout_manager_.get())
     layout_manager_->ViewAdded(this, view);
+#if defined(COMPOSITOR_2)
+  view->MarkTextureDirty();
+#endif
 }
 
 void View::RemoveChildView(View* view) {
@@ -637,6 +640,10 @@ void View::SchedulePaintInRect(const gfx::Rect& rect) {
   if (!IsVisible())
     return;
 
+#if defined(COMPOSITOR_2)
+  MarkTextureDirty();
+  SchedulePaintInternal(rect);
+#else
   if (parent_) {
     // Translate the requested paint rect to the parent's coordinate system
     // then pass this notification up to the parent.
@@ -644,6 +651,7 @@ void View::SchedulePaintInRect(const gfx::Rect& rect) {
     paint_rect.Offset(GetMirroredPosition());
     parent_->SchedulePaintInRect(paint_rect);
   }
+#endif
 }
 
 void View::Paint(gfx::Canvas* canvas) {
@@ -672,8 +680,10 @@ void View::Paint(gfx::Canvas* canvas) {
     if (dirty_rect.IsEmpty())
       return;
 
-    if (!texture_.get())
+    if (!texture_.get()) {
       texture_.reset(GetCompositor()->CreateTexture());
+      texture_needs_updating_ = true;
+    }
 
     if (!texture_needs_updating_) {
       // We don't need to be painted. Iterate over descendants in case one of
@@ -689,7 +699,6 @@ void View::Paint(gfx::Canvas* canvas) {
     texture_canvas->TranslateInt(-dirty_rect.x(), -dirty_rect.y());
     canvas = texture_canvas.get();
     texture_rect = dirty_rect;
-    // TODO: set texture_needs_updating_ to false.
 #endif
   } else {
     // We're going to modify the canvas, save its state first.
@@ -745,6 +754,7 @@ void View::Paint(gfx::Canvas* canvas) {
         texture_canvas->AsCanvasSkia()->getDevice()->accessBitmap(false),
         texture_rect.origin(),
         size());
+    texture_needs_updating_ = false;
   }
 #endif
 }
@@ -1177,6 +1187,16 @@ void View::PaintComposite() {
     GetChildViewAt(i)->PaintComposite();
 }
 
+void View::SchedulePaintInternal(const gfx::Rect& rect) {
+  if (parent_) {
+    // Translate the requested paint rect to the parent's coordinate system
+    // then pass this notification up to the parent.
+    gfx::Rect paint_rect = ConvertRectToParent(rect);
+    paint_rect.Offset(GetMirroredPosition());
+    parent_->SchedulePaintInternal(paint_rect);
+  }
+}
+
 void View::PaintToTexture(const gfx::Rect& dirty_region) {
   if (!IsVisible())
     return;
@@ -1593,6 +1613,16 @@ bool View::ConvertPointFromAncestor(const View* ancestor,
 }
 
 // Accelerated painting --------------------------------------------------------
+
+#if defined(COMPOSITOR_2)
+void View::MarkTextureDirty() {
+  View* owner = this;
+  while (!((owner->transform_.get() && owner->transform_->HasChange()) ||
+           owner->paint_to_texture_) && owner->parent())
+    owner = owner->parent();
+  owner->texture_needs_updating_ = true;
+}
+#endif
 
 void View::ResetTexture() {
 #if defined(COMPOSITOR_2)

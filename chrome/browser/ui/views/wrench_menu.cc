@@ -234,6 +234,7 @@ class ScheduleAllView : public views::View {
  public:
   ScheduleAllView() {}
 
+#if !defined(COMPOSITOR_2)
   virtual void SchedulePaintInRect(const gfx::Rect& r) {
     if (!IsVisible())
       return;
@@ -241,6 +242,15 @@ class ScheduleAllView : public views::View {
     if (parent())
       parent()->SchedulePaintInRect(GetMirroredBounds());
   }
+#else
+  virtual void SchedulePaintInRect(const gfx::Rect& r) {
+    View::SchedulePaintInRect(gfx::Rect(0, 0, width(), height()));
+  }
+
+  virtual void SchedulePaintInternal(const gfx::Rect& r) {
+    View::SchedulePaintInternal(gfx::Rect(0, 0, width(), height()));
+  }
+#endif
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ScheduleAllView);

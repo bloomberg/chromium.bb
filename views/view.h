@@ -1009,9 +1009,17 @@ class View : public AcceleratorTarget {
   // Accelerated painting ------------------------------------------------------
 
 #if !defined(COMPOSITOR_2)
+
   // Performs accelerated painting using the compositor.
   virtual void PaintComposite(ui::Compositor* compositor);
 #else
+
+  // Invoked from SchedulePaintInRect. Invokes SchedulePaintInternal on the
+  // parent. This does not mark the texture as dirty. It's assumed the caller
+  // has done this. You should not need to invoke this, use SchedulePaint or
+  // SchedulePaintInRect instead.
+  virtual void SchedulePaintInternal(const gfx::Rect& r);
+
   // If our texture is out of date invokes Paint() with a canvas that is then
   // copied to the texture. If the texture is not out of date recursively
   // descends in case any children needed their textures updated.
@@ -1221,6 +1229,11 @@ class View : public AcceleratorTarget {
   bool ConvertPointFromAncestor(const View* ancestor, gfx::Point* point) const;
 
   // Accelerated painting ------------------------------------------------------
+
+#if defined(COMPOSITOR_2)
+  // Marks the texture this view draws into as dirty.
+  void MarkTextureDirty();
+#endif
 
   // Releases the texture of this and recurses through all children.
   void ResetTexture();
