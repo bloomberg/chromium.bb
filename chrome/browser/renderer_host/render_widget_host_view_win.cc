@@ -1549,8 +1549,13 @@ gfx::PluginWindowHandle RenderWidgetHostViewWin::GetCompositingSurface() {
 
   RECT currentRect;
   GetClientRect(&currentRect);
-  int width = currentRect.right - currentRect.left;
-  int height = currentRect.bottom - currentRect.top;
+
+  // Ensure window does not have zero area because D3D cannot create a zero
+  // area swap chain.
+  int width = std::max(1,
+      static_cast<int>(currentRect.right - currentRect.left));
+  int height = std::max(1,
+      static_cast<int>(currentRect.bottom - currentRect.top));
 
   compositor_host_window_ = CreateWindowEx(
     WS_EX_LEFT | WS_EX_LTRREADING | WS_EX_RIGHTSCROLLBAR,

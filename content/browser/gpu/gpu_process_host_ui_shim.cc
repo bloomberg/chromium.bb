@@ -4,6 +4,8 @@
 
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
 
+#include <algorithm>
+
 #include "base/id_map.h"
 #include "base/process_util.h"
 #include "base/debug/trace_event.h"
@@ -194,11 +196,13 @@ void GpuProcessHostUIShim::OnResizeView(int32 renderer_id,
         XSync(display, False);
       }
 #elif defined(OS_WIN)
+      // Ensure window does not have zero area because D3D cannot create a zero
+      // area swap chain.
       SetWindowPos(handle,
           NULL,
           0, 0,
-          size.width(),
-          size.height(),
+          std::max(1, size.width()),
+          std::max(1, size.height()),
           SWP_NOSENDCHANGING | SWP_NOCOPYBITS | SWP_NOZORDER |
               SWP_NOACTIVATE | SWP_DEFERERASE);
 #endif
