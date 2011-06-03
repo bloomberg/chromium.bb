@@ -228,8 +228,6 @@ void BrowserMainParts::EarlyInitialization() {
 
   InitializeSSL();
 
-  if (parsed_command_line().HasSwitch(switches::kEnableDNSSECCerts))
-    net::SSLConfigService::EnableDNSSEC();
   if (parsed_command_line().HasSwitch(switches::kDisableSSLFalseStart))
     net::SSLConfigService::DisableFalseStart();
   // Disabled to stop people playing with it.
