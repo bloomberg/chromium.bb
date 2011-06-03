@@ -13,7 +13,6 @@
 
 class TranslateInfoBarDelegate;
 namespace views {
-class Menu2;
 class MenuButton;
 }
 
@@ -51,10 +50,7 @@ class BeforeTranslateInfoBar : public TranslateInfoBarBase,
   views::MenuButton* options_menu_button_;
 
   LanguagesMenuModel languages_menu_model_;
-  scoped_ptr<views::Menu2> languages_menu_;
-
   OptionsMenuModel options_menu_model_;
-  scoped_ptr<views::Menu2> options_menu_;
 
   DISALLOW_COPY_AND_ASSIGN(BeforeTranslateInfoBar);
 };

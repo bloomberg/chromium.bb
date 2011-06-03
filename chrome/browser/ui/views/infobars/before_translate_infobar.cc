@@ -10,7 +10,9 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/label.h"
-#include "views/controls/menu/menu_2.h"
+#include "views/controls/menu/menu_item_view.h"
+#include "views/controls/menu/menu_model_adapter.h"
+#include "views/window/window.h"
 
 BeforeTranslateInfoBar::BeforeTranslateInfoBar(
     TabContentsWrapper* owner,
@@ -25,9 +27,7 @@ BeforeTranslateInfoBar::BeforeTranslateInfoBar(
       always_translate_button_(NULL),
       options_menu_button_(NULL),
       languages_menu_model_(delegate, LanguagesMenuModel::ORIGINAL),
-      languages_menu_(new views::Menu2(&languages_menu_model_)),
-      options_menu_model_(delegate),
-      options_menu_(new views::Menu2(&options_menu_model_)) {
+      options_menu_model_(delegate) {
 }
 
 BeforeTranslateInfoBar::~BeforeTranslateInfoBar() {
@@ -188,10 +188,17 @@ void BeforeTranslateInfoBar::OriginalLanguageChanged() {
 }
 
 void BeforeTranslateInfoBar::RunMenu(View* source, const gfx::Point& pt) {
+  ui::MenuModel* menu_model = NULL;
   if (source == language_menu_button_) {
-    languages_menu_->RunMenuAt(pt, views::Menu2::ALIGN_TOPRIGHT);
+    menu_model = &languages_menu_model_;
   } else {
     DCHECK_EQ(options_menu_button_, source);
-    options_menu_->RunMenuAt(pt, views::Menu2::ALIGN_TOPRIGHT);
+    menu_model = &options_menu_model_;
   }
+
+  views::MenuModelAdapter menu_model_adapter(menu_model);
+  views::MenuItemView menu(&menu_model_adapter);
+  menu_model_adapter.BuildMenu(&menu);
+  menu.RunMenuAt(source->GetWindow()->GetNativeWindow(), NULL,
+      gfx::Rect(pt, gfx::Size()), views::MenuItemView::TOPRIGHT, true);
 }
