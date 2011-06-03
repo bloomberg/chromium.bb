@@ -182,9 +182,9 @@ SBTC_BUILD_WITH_PNACL="arm x8632 x8664"
 # Current milestones in each repo
 # hg-update-all uses these
 readonly LLVM_REV=0d3856fc6b19
-readonly LLVM_GCC_REV=974739742365
+readonly LLVM_GCC_REV=f65c2a206cb9
 readonly NEWLIB_REV=9bef47f82918
-readonly BINUTILS_REV=8c9b01919410
+readonly BINUTILS_REV=569e4fcf08da
 
 # Repositories
 readonly REPO_LLVM_GCC="llvm-gcc.nacl-llvm-branches"
