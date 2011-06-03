@@ -548,7 +548,6 @@ bool GpuProcessHost::LaunchGpuProcess() {
     switches::kDisableGpuVsync,
     switches::kDisableGpuWatchdog,
     switches::kDisableLogging,
-    switches::kEnableAcceleratedDecoding,
     switches::kEnableLogging,
 #if defined(OS_MACOSX)
     switches::kEnableSandboxLogging,

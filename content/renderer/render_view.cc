@@ -47,7 +47,6 @@
 #include "content/renderer/gpu/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/renderer/load_progress_tracker.h"
 #include "content/renderer/media/audio_renderer_impl.h"
-#include "content/renderer/media/ipc_video_decoder.h"
 #include "content/renderer/navigation_state.h"
 #include "content/renderer/notification_provider.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
@@ -1883,23 +1882,6 @@ WebMediaPlayer* RenderView::createMediaPlayer(
   if (!cmd_line->HasSwitch(switches::kDisableAudio)) {
     // Add the chrome specific audio renderer.
     collection->AddAudioRenderer(new AudioRendererImpl(audio_message_filter()));
-  }
-
-  if (cmd_line->HasSwitch(switches::kEnableAcceleratedDecoding) &&
-      !cmd_line->HasSwitch(switches::kDisableAcceleratedCompositing)) {
-    WebGraphicsContext3DCommandBufferImpl* context =
-        static_cast<WebGraphicsContext3DCommandBufferImpl*>(
-            frame->view()->graphicsContext3D());
-    if (!context)
-      return NULL;
-
-    // Add the hardware video decoder factory.
-    // TODO(hclam): This will cause the renderer process to crash on context
-    // lost.
-    bool ret = context->makeContextCurrent();
-    CHECK(ret) << "Failed to switch context";
-    collection->AddVideoDecoder(new IpcVideoDecoder(
-        MessageLoop::current(), context->context()));
   }
 
   scoped_refptr<webkit_glue::WebVideoRenderer> video_renderer;

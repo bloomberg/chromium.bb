@@ -558,7 +558,6 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kDisableWebSockets,
     switches::kDomAutomationController,
     switches::kDumpHistogramsOnExit,
-    switches::kEnableAcceleratedDecoding,
     switches::kEnableAdaptive,
     switches::kEnableBenchmarking,
     switches::kEnableClickToPlay,

@@ -31,12 +31,6 @@ class GLES2Implementation;
 }
 }
 
-namespace media {
-class VideoDecodeContext;
-class VideoDecodeEngine;
-class VideoDecodeRendererGLContext;
-}
-
 class RendererGLContext : public base::SupportsWeakPtr<RendererGLContext> {
  public:
   // These are the same error codes as used by EGL.
@@ -153,19 +147,6 @@ class RendererGLContext : public base::SupportsWeakPtr<RendererGLContext> {
   // that has been rendered since the last call to a copy that can be accessed
   // by the parent RendererGLContext.
   bool SwapBuffers();
-
-  // Create a hardware video decode engine corresponding to the
-  // RendererGLContext.
-  media::VideoDecodeEngine* CreateVideoDecodeEngine();
-
-  // Create a hardware video decode RendererGLContext to pair with the hardware
-  // video decode engine. It can also be used with a software decode engine.
-  //
-  // Set |hardware_decoder| to true if this RendererGLContext is for a hardware
-  // video engine. |message_loop| is where the decode RendererGLContext should
-  // run on.
-  media::VideoDecodeContext* CreateVideoDecodeContext(MessageLoop* message_loop,
-                                                      bool hardware_decoder);
 
   // Create a TransportTextureHost object associated with the context.
   scoped_refptr<TransportTextureHost> CreateTransportTextureHost();

@@ -20,49 +20,10 @@
 
 #define IPC_MESSAGE_START GpuMsgStart
 
-// Flag assigned to a video buffer for both input and output.
-#define kGpuVideoEndOfStream (1 << 0)
-
 IPC_STRUCT_BEGIN(GPUCreateCommandBufferConfig)
   IPC_STRUCT_MEMBER(std::string, allowed_extensions)
   IPC_STRUCT_MEMBER(std::vector<int>, attribs)
   IPC_STRUCT_MEMBER(GURL, active_url)
-IPC_STRUCT_END()
-
-IPC_STRUCT_BEGIN(GpuVideoDecoderInitParam)
-  IPC_STRUCT_MEMBER(int32, codec_id)
-  IPC_STRUCT_MEMBER(int32, width)
-  IPC_STRUCT_MEMBER(int32, height)
-  IPC_STRUCT_MEMBER(int32, profile)
-  IPC_STRUCT_MEMBER(int32, level)
-  IPC_STRUCT_MEMBER(int32, frame_rate_den)
-  IPC_STRUCT_MEMBER(int32, frame_rate_num)
-  IPC_STRUCT_MEMBER(int32, aspect_ratio_den)
-  IPC_STRUCT_MEMBER(int32, aspect_ratio_num)
-IPC_STRUCT_END()
-
-IPC_STRUCT_BEGIN(GpuVideoDecoderInitDoneParam)
-  // other parameter is only meaningful when this is true.
-  IPC_STRUCT_MEMBER(int32, success)
-  IPC_STRUCT_MEMBER(int32, input_buffer_size)
-  IPC_STRUCT_MEMBER(base::SharedMemoryHandle, input_buffer_handle)
-IPC_STRUCT_END()
-
-IPC_STRUCT_BEGIN(GpuVideoDecoderInputBufferParam)
-  IPC_STRUCT_MEMBER(int64, timestamp)  // In unit of microseconds.
-  IPC_STRUCT_MEMBER(int32, offset)
-  IPC_STRUCT_MEMBER(int32, size)
-  IPC_STRUCT_MEMBER(int32, flags)  // Miscellaneous flag bit mask.
-IPC_STRUCT_END()
-
-IPC_STRUCT_BEGIN(GpuVideoDecoderErrorInfoParam)
-  IPC_STRUCT_MEMBER(int32, error_id)  // TODO(jiesun): define enum.
-IPC_STRUCT_END()
-
-// TODO(jiesun): define this.
-IPC_STRUCT_BEGIN(GpuVideoDecoderFormatChangeParam)
-  IPC_STRUCT_MEMBER(int32, input_buffer_size)
-  IPC_STRUCT_MEMBER(base::SharedMemoryHandle, input_buffer_handle)
 IPC_STRUCT_END()
 
 #if defined(OS_MACOSX)
@@ -418,93 +379,8 @@ IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_SetWindowSize,
                     gfx::Size /* size */)
 #endif
 
-//------------------------------------------------------------------------------
-// GPU Video Decoder Messages
-// These messages are sent from Renderer process to GPU process.
-// Initialize and configure GpuVideoDecoder asynchronously.
-IPC_MESSAGE_ROUTED1(GpuVideoDecoderMsg_Initialize,
-                    GpuVideoDecoderInitParam)
-
-// Destroy and release GpuVideoDecoder asynchronously.
-IPC_MESSAGE_ROUTED0(GpuVideoDecoderMsg_Destroy)
-
-// Start decoder flushing operation.
-IPC_MESSAGE_ROUTED0(GpuVideoDecoderMsg_Flush)
-
-// Tell the decoder to start prerolling.
-IPC_MESSAGE_ROUTED0(GpuVideoDecoderMsg_Preroll)
-
-// Send input buffer to GpuVideoDecoder.
-IPC_MESSAGE_ROUTED1(GpuVideoDecoderMsg_EmptyThisBuffer,
-                    GpuVideoDecoderInputBufferParam)
-
-// Ask the GPU process to produce a video frame with the ID.
-IPC_MESSAGE_ROUTED1(GpuVideoDecoderMsg_ProduceVideoFrame,
-                    int32) /* Video Frame ID */
-
-// Sent from Renderer process to the GPU process to notify that textures are
-// generated for a video frame.
-IPC_MESSAGE_ROUTED2(GpuVideoDecoderMsg_VideoFrameAllocated,
-                    int32, /* Video Frame ID */
-                    std::vector<uint32>) /* Textures for video frame */
-
-//------------------------------------------------------------------------------
-// GPU Video Decoder Host Messages
-// These messages are sent from GPU process to Renderer process.
-// Inform GpuVideoDecoderHost that a GpuVideoDecoder is created.
-IPC_MESSAGE_ROUTED1(GpuVideoDecoderHostMsg_CreateVideoDecoderDone,
-                    int32) /* decoder_id */
-
-// Confirm GpuVideoDecoder had been initialized or failed to initialize.
-// TODO(hclam): Change this to Done instead of ACK.
-IPC_MESSAGE_ROUTED1(GpuVideoDecoderHostMsg_InitializeACK,
-                    GpuVideoDecoderInitDoneParam)
-
-// Confrim GpuVideoDecoder had been destroyed properly.
-// TODO(hclam): Change this to Done instead of ACK.
-IPC_MESSAGE_ROUTED0(GpuVideoDecoderHostMsg_DestroyACK)
-
-// Confirm decoder had been flushed.
-// TODO(hclam): Change this to Done instead of ACK.
-IPC_MESSAGE_ROUTED0(GpuVideoDecoderHostMsg_FlushACK)
-
-// Confirm preroll operation is done.
-IPC_MESSAGE_ROUTED0(GpuVideoDecoderHostMsg_PrerollDone)
-
-// GpuVideoDecoder has consumed input buffer from transfer buffer.
-// TODO(hclam): Change this to Done instead of ACK.
-IPC_MESSAGE_ROUTED0(GpuVideoDecoderHostMsg_EmptyThisBufferACK)
-
-// GpuVideoDecoder require new input buffer.
-IPC_MESSAGE_ROUTED0(GpuVideoDecoderHostMsg_EmptyThisBufferDone)
-
-// GpuVideoDecoder reports that a video frame is ready to be consumed.
-IPC_MESSAGE_ROUTED4(GpuVideoDecoderHostMsg_ConsumeVideoFrame,
-                    int32, /* Video Frame ID */
-                    int64, /* Timestamp in microseconds */
-                    int64, /* Duration in microseconds */
-                    int32) /* Flags */
-
-// Allocate video frames for output of the hardware video decoder.
-IPC_MESSAGE_ROUTED4(GpuVideoDecoderHostMsg_AllocateVideoFrames,
-                    int32,  /* Number of video frames to generate */
-                    uint32, /* Width of the video frame */
-                    uint32, /* Height of the video frame */
-                    int32   /* Format of the video frame */)
-
-// Release all video frames allocated for a hardware video decoder.
-IPC_MESSAGE_ROUTED0(GpuVideoDecoderHostMsg_ReleaseAllVideoFrames)
-
-// GpuVideoDecoder report output format change.
-IPC_MESSAGE_ROUTED1(GpuVideoDecoderHostMsg_MediaFormatChange,
-                    GpuVideoDecoderFormatChangeParam)
-
-// GpuVideoDecoder report error.
-IPC_MESSAGE_ROUTED1(GpuVideoDecoderHostMsg_ErrorNotification,
-                    GpuVideoDecoderErrorInfoParam)
-
 // --------------------------------------------------------------------------
-// TranspotTexture messages
+// TransportTexture messages
 //
 // These are messages sent from renderer process to the GPU proess.
 

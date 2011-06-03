@@ -17,7 +17,6 @@
 #include "content/renderer/gpu/gpu_video_service_host.h"
 #include "content/renderer/gpu/transport_texture_host.h"
 #include "content/renderer/gpu/transport_texture_service.h"
-#include "content/renderer/media/gles2_video_decode_context.h"
 #include "content/renderer/render_thread.h"
 #include "content/renderer/render_widget.h"
 #include "googleurl/src/gurl.h"
@@ -303,16 +302,6 @@ bool RendererGLContext::SwapBuffers() {
 
   gles2_implementation_->SwapBuffers();
   return true;
-}
-
-media::VideoDecodeEngine* RendererGLContext::CreateVideoDecodeEngine() {
-  return channel_->gpu_video_service_host()->CreateVideoDecoder(
-      command_buffer_->route_id());
-}
-
-media::VideoDecodeContext* RendererGLContext::CreateVideoDecodeContext(
-    MessageLoop* message_loop, bool hardware_decoder) {
-  return new Gles2VideoDecodeContext(message_loop, hardware_decoder, this);
 }
 
 scoped_refptr<TransportTextureHost>

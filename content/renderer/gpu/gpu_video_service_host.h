@@ -7,7 +7,6 @@
 
 #include "base/memory/singleton.h"
 #include "content/renderer/gpu/gpu_channel_host.h"
-#include "content/renderer/gpu/gpu_video_decoder_host.h"
 #include "ipc/ipc_channel.h"
 #include "media/base/buffers.h"
 #include "media/base/video_frame.h"
@@ -37,21 +36,6 @@ class GpuVideoServiceHost : public IPC::ChannelProxy::MessageFilter {
 
   // Called on RenderThread to create a hardware accelerated video decoder
   // in the GPU process.
-  //
-  // A routing ID for the GLES2 context needs to be provided when creating a
-  // hardware video decoder. This is important because the resources used by
-  // the video decoder needs to be shared with the GLES2 context corresponding
-  // to the RenderView.
-  //
-  // This means that a GPU video decoder is tied to a specific RenderView and
-  // its GLES2 context in the GPU process.
-  //
-  // Returns a GpuVideoDecoderHost as a handle to control the video decoder.
-  //
-  // Note: OnFilterAdded() MUST be called before these methods are called,
-  // because they require |channel_| to be non-NULL.
-  GpuVideoDecoderHost* CreateVideoDecoder(int context_route_id);
-
   GpuVideoDecodeAcceleratorHost* CreateVideoAccelerator(
       media::VideoDecodeAccelerator::Client* client);
 

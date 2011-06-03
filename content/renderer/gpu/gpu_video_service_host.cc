@@ -70,12 +70,6 @@ void GpuVideoServiceHost::SetOnInitialized(
     on_initialized.Run();
 }
 
-GpuVideoDecoderHost* GpuVideoServiceHost::CreateVideoDecoder(
-    int context_route_id) {
-  // TODO(vrk): Delete all references to GpuVideoDecoder (deprecated).
-  return NULL;
-}
-
 GpuVideoDecodeAcceleratorHost* GpuVideoServiceHost::CreateVideoAccelerator(
     media::VideoDecodeAccelerator::Client* client) {
   base::AutoLock auto_lock(lock_);

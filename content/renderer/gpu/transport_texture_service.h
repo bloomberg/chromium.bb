@@ -10,7 +10,6 @@
 
 #include "base/memory/ref_counted.h"
 #include "content/renderer/gpu/gpu_channel_host.h"
-#include "content/renderer/gpu/gpu_video_decoder_host.h"
 #include "ipc/ipc_channel.h"
 #include "media/base/buffers.h"
 #include "media/base/video_frame.h"
