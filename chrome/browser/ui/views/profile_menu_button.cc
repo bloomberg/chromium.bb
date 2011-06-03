@@ -8,7 +8,9 @@
 #include "ui/base/text/text_elider.h"
 #include "ui/gfx/color_utils.h"
 #include "views/controls/button/button.h"
-#include "views/controls/menu/menu_2.h"
+#include "views/controls/menu/menu_item_view.h"
+#include "views/controls/menu/menu_model_adapter.h"
+#include "views/window/window.h"
 
 // Menu should display below the profile button tag image on the frame. This
 // offset size depends on whether the frame is in glass or opaque mode.
@@ -37,7 +39,6 @@ ProfileMenuButton::ProfileMenuButton(const std::wstring& text, Profile* profile)
   SetHighlightColor(kTextHighlighted);
 
   profile_menu_model_.reset(new ProfileMenuModel);
-  menu_.reset(new views::Menu2(profile_menu_model_.get()));
 }
 
 ProfileMenuButton::~ProfileMenuButton() {}
@@ -49,6 +50,13 @@ void ProfileMenuButton::SetText(const std::wstring& text) {
 
 // views::ViewMenuDelegate implementation
 void ProfileMenuButton::RunMenu(views::View* source, const gfx::Point &pt) {
+  views::MenuModelAdapter menu_model_adapter(profile_menu_model_.get());
+  views::MenuItemView menu(&menu_model_adapter);
+  menu_model_adapter.BuildMenu(&menu);
+
   gfx::Point menu_point(pt.x(), pt.y() + kMenuDisplayOffset);
-  menu_->RunMenuAt(menu_point, views::Menu2::ALIGN_TOPRIGHT);
+  menu.RunMenuAt(source->GetWindow()->GetNativeWindow(), NULL,
+                 gfx::Rect(pt, gfx::Size(0, 0)),
+                 views::MenuItemView::TOPRIGHT,
+                 true);
 }

@@ -24,10 +24,6 @@ namespace ui {
 class Accelerator;
 }
 
-namespace views {
-class Menu2;
-}
-
 // ProfileMenuButton
 //
 // Shows the button for the multiprofile menu with an image layered
@@ -57,11 +53,9 @@ class ProfileMenuButton : public views::MenuButton,
   // Overridden from views::ViewMenuDelegate:
   virtual void RunMenu(views::View* source, const gfx::Point& pt) OVERRIDE;
 
-  scoped_ptr<views::Menu2> menu_;
   scoped_ptr<ProfileMenuModel> profile_menu_model_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileMenuButton);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_PROFILE_MENU_BUTTON_H_
-
