@@ -192,6 +192,14 @@ chrome.test.runTests([
     }));
   },
 
+  function getSubTree() {
+    chrome.bookmarks.getSubTree(expected[0].children[0].id,
+        pass(function(results) {
+          chrome.test.assertTrue(compareTrees([expected[0].children[0]],
+              results), "getTree() result != expected");
+        }));
+  },
+
   function moveSetup() {
     createNodes(bookmarksBar(), [node1, node2, node3], pass(function() {
       verifyTreeIsExpected(pass());

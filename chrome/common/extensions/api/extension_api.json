@@ -1892,6 +1892,25 @@
         ]
       },
       {
+        "name": "getSubTree",
+        "type": "function",
+        "description": "Retrieves part of the Bookmarks hierarchy, starting at the specified node.",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "id",
+            "description": "The ID of the root of the subtree to retrieve."
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": [
+              {"name": "results", "type": "array", "items": { "$ref": "BookmarkTreeNode"} }
+            ]
+          }
+        ]
+      },
+      {
         "name": "search",
         "type": "function",
         "description": "Searches for BookmarkTreeNodes matching the given query.",

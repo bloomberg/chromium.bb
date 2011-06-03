@@ -5,6 +5,7 @@
     "chrome.bookmarks.get": "bookmarks.html#method-get",
     "chrome.bookmarks.getChildren": "bookmarks.html#method-getChildren",
     "chrome.bookmarks.getRecent": "bookmarks.html#method-getRecent",
+    "chrome.bookmarks.getSubTree": "bookmarks.html#method-getSubTree",
     "chrome.bookmarks.getTree": "bookmarks.html#method-getTree",
     "chrome.bookmarks.import": "bookmarks.html#method-import",
     "chrome.bookmarks.move": "bookmarks.html#method-move",

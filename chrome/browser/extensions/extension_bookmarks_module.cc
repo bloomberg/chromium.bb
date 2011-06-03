@@ -365,6 +365,26 @@ bool GetBookmarkTreeFunction::RunImpl() {
   return true;
 }
 
+bool GetBookmarkSubTreeFunction::RunImpl() {
+  BookmarkModel* model = profile()->GetBookmarkModel();
+  scoped_ptr<ListValue> json(new ListValue());
+  Value* arg0;
+  EXTENSION_FUNCTION_VALIDATE(args_->Get(0, &arg0));
+  int64 id;
+  std::string id_string;
+  EXTENSION_FUNCTION_VALIDATE(arg0->GetAsString(&id_string));
+  if (!GetBookmarkIdAsInt64(id_string, &id))
+    return false;
+  const BookmarkNode* node = model->GetNodeByID(id);
+  if (!node) {
+    error_ = keys::kNoNodeError;
+    return false;
+  }
+  extension_bookmark_helpers::AddNode(node, json.get(), true);
+  result_.reset(json.release());
+  return true;
+}
+
 bool SearchBookmarksFunction::RunImpl() {
   string16 query;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &query));

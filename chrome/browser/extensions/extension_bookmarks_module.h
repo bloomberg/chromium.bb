@@ -132,6 +132,14 @@ class GetBookmarkTreeFunction : public BookmarksFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.getTree")
 };
 
+class GetBookmarkSubTreeFunction : public BookmarksFunction {
+ public:
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.getSubTree")
+};
+
 class SearchBookmarksFunction : public BookmarksFunction {
  public:
   virtual bool RunImpl() OVERRIDE;
