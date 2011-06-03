@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/debug/trace_event.h"
 #include "base/message_loop.h"
+#include "base/time.h"
 #include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_bindings.h"
 #include "ui/gfx/gl/gl_surface.h"
@@ -136,6 +137,7 @@ const unsigned int kMaxOutstandingSwapBuffersCallsPerOnscreenContext = 1;
 #endif
 
 void GpuScheduler::PutChanged(bool sync) {
+  TRACE_EVENT0("gpu", "GpuScheduler:PutChanged");
   CommandBuffer::State state = command_buffer_->GetState();
   parser_->set_put(state.put_offset);
 
@@ -151,8 +153,11 @@ void GpuScheduler::ProcessCommands() {
   if (state.error != error::kNoError)
     return;
 
-  if (unscheduled_count_ > 0)
+  if (unscheduled_count_ > 0) {
+    TRACE_EVENT1("gpu", "EarlyOut_Unscheduled",
+                 "unscheduled_count_", unscheduled_count_);
     return;
+  }
 
   if (decoder_.get()) {
     if (!decoder_->MakeCurrent()) {
@@ -175,32 +180,43 @@ void GpuScheduler::ProcessCommands() {
   }
 #endif
 
+  base::TimeTicks start_time = base::TimeTicks::Now();
+  base::TimeDelta elapsed;
+  bool is_break = false;
   error::Error error = error::kNoError;
-  int commands_processed = 0;
-  while (commands_processed < commands_per_update_ &&
-         !parser_->IsEmpty()) {
-    error = parser_->ProcessCommand();
+  do {
+    int commands_processed = 0;
+    while (commands_processed < commands_per_update_ &&
+           !parser_->IsEmpty()) {
+      error = parser_->ProcessCommand();
 
-    // TODO(piman): various classes duplicate various pieces of state, leading
-    // to needlessly complex update logic. It should be possible to simply share
-    // the state across all of them.
-    command_buffer_->SetGetOffset(static_cast<int32>(parser_->get()));
+      // TODO(piman): various classes duplicate various pieces of state, leading
+      // to needlessly complex update logic. It should be possible to simply
+      // share the state across all of them.
+      command_buffer_->SetGetOffset(static_cast<int32>(parser_->get()));
 
-    if (error == error::kWaiting || error == error::kYield) {
-      break;
-    } else if (error::IsError(error)) {
-      command_buffer_->SetParseError(error);
-      return;
+      if (error == error::kWaiting || error == error::kYield) {
+        is_break = true;
+        break;
+      } else if (error::IsError(error)) {
+        command_buffer_->SetParseError(error);
+        return;
+      }
+
+      if (unscheduled_count_ > 0) {
+        is_break = true;
+        break;
+      }
+
+      ++commands_processed;
+      if (command_processed_callback_.get()) {
+        command_processed_callback_->Run();
+      }
     }
-
-    if (unscheduled_count_ > 0)
-      break;
-
-    ++commands_processed;
-    if (command_processed_callback_.get()) {
-      command_processed_callback_->Run();
-    }
-  }
+    elapsed = base::TimeTicks::Now() - start_time;
+  } while(!is_break &&
+          !parser_->IsEmpty() &&
+          elapsed.InMicroseconds() < kMinimumSchedulerQuantumMicros);
 
   if (unscheduled_count_ == 0 &&
       error != error::kWaiting &&
@@ -210,6 +226,8 @@ void GpuScheduler::ProcessCommands() {
 }
 
 void GpuScheduler::SetScheduled(bool scheduled) {
+  TRACE_EVENT2("gpu", "GpuScheduler:SetScheduled", "scheduled", scheduled,
+               "unscheduled_count_", unscheduled_count_);
   if (scheduled) {
     --unscheduled_count_;
     DCHECK_GE(unscheduled_count_, 0);

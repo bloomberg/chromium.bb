@@ -39,6 +39,10 @@ class ContextGroup;
 // posts tasks to the current message loop to do additional work.
 class GpuScheduler : public CommandBufferEngine {
  public:
+  // Scheduler quantum: makes ProcessCommands continue until the specified time
+  // has passed, or the command buffer yields or runs out of commands.
+  static const int kMinimumSchedulerQuantumMicros = 2000;
+
   // If a group is not passed in one will be created.
   GpuScheduler(CommandBuffer* command_buffer,
                SurfaceManager* surface_manager,

@@ -44,7 +44,7 @@ class GpuSchedulerTest : public testing::Test {
     ON_CALL(*command_buffer_.get(), GetState())
       .WillByDefault(Return(default_state));
 
-    async_api_.reset(new StrictMock<AsyncAPIMock>);
+    async_api_.reset(new StrictMock<SpecializedDoCommandAsyncAPIMock>);
 
     decoder_ = new gles2::MockGLES2Decoder();
 
@@ -161,11 +161,12 @@ TEST_F(GpuSchedulerTest, SchedulerSetsTheGLContext) {
 }
 
 TEST_F(GpuSchedulerTest, PostsTaskToFinishRemainingCommands) {
+  unsigned int pauseCmd = SpecializedDoCommandAsyncAPIMock::kTestQuantumCommand;
   CommandHeader* header = reinterpret_cast<CommandHeader*>(&buffer_[0]);
   header[0].command = 7;
   header[0].size = 2;
   buffer_[1] = 123;
-  header[2].command = 8;
+  header[2].command = pauseCmd;
   header[2].size = 1;
   header[3].command = 9;
   header[3].size = 1;
@@ -180,7 +181,7 @@ TEST_F(GpuSchedulerTest, PostsTaskToFinishRemainingCommands) {
     .WillOnce(Return(error::kNoError));
   EXPECT_CALL(*command_buffer_, SetGetOffset(2));
 
-  EXPECT_CALL(*async_api_, DoCommand(8, 0, &buffer_[2]))
+  EXPECT_CALL(*async_api_, DoCommand(pauseCmd, 0, &buffer_[2]))
     .WillOnce(Return(error::kNoError));
   EXPECT_CALL(*command_buffer_, SetGetOffset(3));
 
