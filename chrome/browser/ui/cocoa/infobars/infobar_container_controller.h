@@ -111,9 +111,7 @@ const CGFloat kBaseHeight = 36.0;
 @interface InfoBarContainerController (ForTheObserverAndTesting)
 
 // Adds the given infobar.  Takes ownership of |infobar|.
-- (void)addInfoBar:(InfoBar*)infobar
-    animate:(BOOL)animate
-    deleteImmediately:(BOOL)deleteImmediately;
+- (void)addInfoBar:(InfoBar*)infobar animate:(BOOL)animate;
 
 // Closes all the infobar views for a given delegate, either immediately or by
 // starting a close animation.

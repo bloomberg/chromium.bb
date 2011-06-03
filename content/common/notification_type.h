@@ -336,7 +336,8 @@ class NotificationType {
     // This message is sent when a new InfoBar has been added to a
     // TabContentsWrapper.  The source is a Source<TabContentsWrapper> with a
     // pointer to the TabContentsWrapper the InfoBar was added to.  The details
-    // is a Details<InfoBar> with a pointer to the InfoBar that was added.
+    // is a Details<InfoBarDelegate> with a pointer to the delegate that was
+    // added.
     TAB_CONTENTS_INFOBAR_ADDED,
 
     // This message is sent when an InfoBar is about to be removed from a
@@ -349,8 +350,8 @@ class NotificationType {
     // This message is sent when an InfoBar is replacing another infobar in a
     // TabContentsWrapper.  The source is a Source<TabContentsWrapper> with a
     // pointer to the TabContentsWrapper the InfoBar was removed from.  The
-    // details is a Details<std::pair<InfoBarDelegate*, InfoBar*> > with a
-    // pointer to the removed delegate and new InfoBar, respectively.
+    // details is a Details<std::pair<InfoBarDelegate*, InfoBarDelegate*> > with
+    // pointers to the old and new delegates, respectively.
     TAB_CONTENTS_INFOBAR_REPLACED,
 
     // This is sent when an externally hosted tab is created. The details

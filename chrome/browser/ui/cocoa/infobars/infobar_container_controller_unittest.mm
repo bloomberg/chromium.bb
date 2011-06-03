@@ -60,19 +60,13 @@ TEST_F(InfoBarContainerControllerTest, AddAndRemoveInfoBars) {
   InfoBarDelegate* linkDelegate2 = new MockLinkInfoBarDelegate(NULL);
   InfoBarDelegate* confirmDelegate = new MockConfirmInfoBarDelegate(NULL);
 
-  [controller_ addInfoBar:linkDelegate->CreateInfoBar(NULL)
-                  animate:NO
-        deleteImmediately:YES];
+  [controller_ addInfoBar:linkDelegate->CreateInfoBar(NULL) animate:NO];
   EXPECT_EQ(1U, [[view subviews] count]);
 
-  [controller_ addInfoBar:confirmDelegate->CreateInfoBar(NULL)
-                  animate:NO
-        deleteImmediately:YES];
+  [controller_ addInfoBar:confirmDelegate->CreateInfoBar(NULL) animate:NO];
   EXPECT_EQ(2U, [[view subviews] count]);
 
-  [controller_ addInfoBar:linkDelegate2->CreateInfoBar(NULL)
-                  animate:NO
-        deleteImmediately:YES];
+  [controller_ addInfoBar:linkDelegate2->CreateInfoBar(NULL) animate:NO];
   EXPECT_EQ(3U, [[view subviews] count]);
 
   // Just to mix things up, remove them in a different order.
@@ -100,15 +94,9 @@ TEST_F(InfoBarContainerControllerTest, RemoveAllInfoBars) {
   InfoBarDelegate* confirmDelegatePtr = &confirmDelegate;
   InfoBarDelegate* confirmDelegate2Ptr = &confirmDelegate2;
 
-  [controller_ addInfoBar:linkDelegatePtr->CreateInfoBar(NULL)
-                  animate:NO
-        deleteImmediately:YES];
-  [controller_ addInfoBar:confirmDelegatePtr->CreateInfoBar(NULL)
-                  animate:NO
-        deleteImmediately:YES];
-  [controller_ addInfoBar:confirmDelegate2Ptr->CreateInfoBar(NULL)
-                  animate:NO
-        deleteImmediately:YES];
+  [controller_ addInfoBar:linkDelegatePtr->CreateInfoBar(NULL) animate:NO];
+  [controller_ addInfoBar:confirmDelegatePtr->CreateInfoBar(NULL) animate:NO];
+  [controller_ addInfoBar:confirmDelegate2Ptr->CreateInfoBar(NULL) animate:NO];
   EXPECT_EQ(3U, [[view subviews] count]);
 
   [controller_ removeAllInfoBars];

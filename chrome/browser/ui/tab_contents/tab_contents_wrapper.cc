@@ -461,8 +461,7 @@ void TabContentsWrapper::AddInfoBar(InfoBarDelegate* delegate) {
   infobar_delegates_.push_back(delegate);
   NotificationService::current()->Notify(
       NotificationType::TAB_CONTENTS_INFOBAR_ADDED,
-      Source<TabContentsWrapper>(this),
-      Details<InfoBar>(delegate->CreateInfoBar(this)));
+      Source<TabContentsWrapper>(this), Details<InfoBarDelegate>(delegate));
 
   // Add ourselves as an observer for navigations the first time a delegate is
   // added. We use this notification to expire InfoBars that need to expire on
@@ -509,9 +508,8 @@ void TabContentsWrapper::ReplaceInfoBar(InfoBarDelegate* old_delegate,
   DCHECK(it != infobar_delegates_.end());
 
   // Notify the container about the change of plans.
-  typedef std::pair<InfoBarDelegate*, InfoBar*> ReplaceDetails;
-  ReplaceDetails replace_details(old_delegate,
-                                 new_delegate->CreateInfoBar(this));
+  typedef std::pair<InfoBarDelegate*, InfoBarDelegate*> ReplaceDetails;
+  ReplaceDetails replace_details(old_delegate, new_delegate);
   NotificationService::current()->Notify(
       NotificationType::TAB_CONTENTS_INFOBAR_REPLACED,
       Source<TabContentsWrapper>(this),

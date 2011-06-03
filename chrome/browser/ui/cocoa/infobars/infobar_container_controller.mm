@@ -28,11 +28,12 @@ class InfoBarNotificationObserver : public NotificationObserver {
   void Observe(NotificationType type,
                const NotificationSource& source,
                const NotificationDetails& details) {
+    TabContentsWrapper* tab_contents = Source<TabContentsWrapper>(source).ptr();
     switch (type.value) {
       case NotificationType::TAB_CONTENTS_INFOBAR_ADDED:
-        [controller_ addInfoBar:Details<InfoBar>(details).ptr()
-                        animate:YES
-              deleteImmediately:NO];
+        [controller_ addInfoBar:Details<InfoBarDelegate>(details)->
+                                    CreateInfoBar(tab_contents)
+                        animate:YES];
         break;
 
       case NotificationType::TAB_CONTENTS_INFOBAR_REMOVED: {
@@ -45,14 +46,14 @@ class InfoBarNotificationObserver : public NotificationObserver {
       }
 
       case NotificationType::TAB_CONTENTS_INFOBAR_REPLACED: {
-        typedef std::pair<InfoBarDelegate*, InfoBar*> ReplaceDetails;
+        typedef std::pair<InfoBarDelegate*, InfoBarDelegate*> ReplaceDetails;
         ReplaceDetails* replace_details =
             Details<ReplaceDetails>(details).ptr();
         [controller_ closeInfoBarsForDelegate:replace_details->first
                                       animate:NO];
-        [controller_ addInfoBar:replace_details->second
-                        animate:NO
-              deleteImmediately:NO];
+        [controller_ addInfoBar:replace_details->second->
+                                    CreateInfoBar(tab_contents)
+                        animate:NO];
         break;
       }
 
@@ -138,7 +139,7 @@ class InfoBarNotificationObserver : public NotificationObserver {
     for (size_t i = 0; i < currentTabContents_->infobar_count(); ++i) {
       InfoBar* infobar = currentTabContents_->GetInfoBarDelegateAt(i)->
           CreateInfoBar(currentTabContents_);
-      [self addInfoBar:infobar animate:NO deleteImmediately:YES];
+      [self addInfoBar:infobar animate:NO];
     }
 
     Source<TabContentsWrapper> source(currentTabContents_);
@@ -189,9 +190,7 @@ class InfoBarNotificationObserver : public NotificationObserver {
   return height;
 }
 
-- (void)addInfoBar:(InfoBar*)infobar
-    animate:(BOOL)animate
-    deleteImmediately:(BOOL)deleteImmediately {
+- (void)addInfoBar:(InfoBar*)infobar animate:(BOOL)animate {
   InfoBarController* controller = infobar->controller();
   [controller setContainerController:self];
   [[controller animatableView] setResizeDelegate:self];
@@ -203,10 +202,7 @@ class InfoBarNotificationObserver : public NotificationObserver {
   else
     [controller open];
 
-  if (deleteImmediately)
-    delete infobar;
-  else
-    MessageLoop::current()->DeleteSoon(FROM_HERE, infobar);
+  delete infobar;
 }
 
 - (void)closeInfoBarsForDelegate:(InfoBarDelegate*)delegate

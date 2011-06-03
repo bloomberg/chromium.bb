@@ -120,7 +120,9 @@ void InfoBarContainerGtk::Observe(NotificationType type,
                                   const NotificationDetails& details) {
   switch (type.value) {
     case NotificationType::TAB_CONTENTS_INFOBAR_ADDED:
-      AddInfoBar(Details<InfoBar>(details).ptr(), true);
+      AddInfoBar(
+          Details<InfoBarDelegate>(details)->CreateInfoBar(tab_contents_),
+          true);
       break;
 
     case NotificationType::TAB_CONTENTS_INFOBAR_REMOVED: {
@@ -131,10 +133,10 @@ void InfoBarContainerGtk::Observe(NotificationType type,
     }
 
     case NotificationType::TAB_CONTENTS_INFOBAR_REPLACED: {
-      typedef std::pair<InfoBarDelegate*, InfoBar*> ReplaceDetails;
+      typedef std::pair<InfoBarDelegate*, InfoBarDelegate*> ReplaceDetails;
       ReplaceDetails* replace_details = Details<ReplaceDetails>(details).ptr();
       RemoveInfoBar(replace_details->first, false);
-      AddInfoBar(replace_details->second, false);
+      AddInfoBar(replace_details->second->CreateInfoBar(tab_contents_), false);
       break;
     }
 

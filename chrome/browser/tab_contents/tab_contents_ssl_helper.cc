@@ -157,10 +157,12 @@ void TabContentsSSLHelper::SSLAddCertData::Observe(
     const NotificationDetails& details) {
   DCHECK(type.value == NotificationType::TAB_CONTENTS_INFOBAR_REMOVED ||
          type.value == NotificationType::TAB_CONTENTS_INFOBAR_REPLACED);
+  typedef std::pair<InfoBarDelegate*, bool> RemoveDetails;
+  typedef std::pair<InfoBarDelegate*, InfoBarDelegate*> ReplaceDetails;
   if (infobar_delegate_ ==
       ((type.value == NotificationType::TAB_CONTENTS_INFOBAR_REMOVED) ?
-          Details<std::pair<InfoBarDelegate*, bool> >(details)->first :
-          Details<std::pair<InfoBarDelegate*, InfoBar*> >(details)->first))
+          Details<RemoveDetails>(details)->first :
+          Details<ReplaceDetails>(details)->first))
     infobar_delegate_ = NULL;
 }
 
