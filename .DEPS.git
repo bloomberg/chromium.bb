@@ -1,17 +1,19 @@
 # DO NOT EDIT. THIS IS A GENERATED FILE.
 # ALL MANUAL CHANGES WILL BE OVERWRITTEN.
 vars = {
+    'webkit_url':
+         'http://git.chromium.org/external/WebKit_trimmed.git',
     'git_url':
          'http://git.chromium.org',
-    'webkit_repo':
-         'WebKit_trimmed.git'
+    'webkit_rev':
+         '@0cef828c7259bda2d721c7732e848dfe2b06783f'
 }
 
 deps = {
     'src/third_party/bidichecker':
          Var('git_url') + '/external/bidichecker/lib.git@97f2aa645b74c28c57eca56992235c79850fa9e0',
     'src/third_party/skia/include':
-         Var('git_url') + '/external/skia/include.git@d5ef4a9f01459c372b8841816a9b1662ea51fef6',
+         Var('git_url') + '/external/skia/include.git@58bcd9fe17828a88274f670e4ea0c9c2fd3296a0',
     'src/third_party/pylib':
          Var('git_url') + '/native_client/src/third_party/pylib.git@be1b3e269cb698f969a5a630a026628cc6d6cc78',
     'src/third_party/flac':
@@ -23,7 +25,7 @@ deps = {
     'src/testing/gmock':
          Var('git_url') + '/external/googlemock.git@1de8831515fed5d6c86989c6c021f08abd2c37a5',
     'src/third_party/skia/src':
-         Var('git_url') + '/external/skia/src.git@c40eccfbf2f1c29a6d1c23f4664eb2ed8e1e81e7',
+         Var('git_url') + '/external/skia/src.git@a4aebb8929266e01dc7907e0537a50a30cdc2efd',
     'src/chrome/test/data/extensions/api_test/permissions/nacl_enabled/bin':
          Var('git_url') + '/native_client/src/native_client/tests/prebuilt.git@3e17365176c94624f46cace174f61834b7f3c35d',
     'src/third_party/hunspell':
@@ -47,7 +49,7 @@ deps = {
     'src/third_party/cacheinvalidation/files/src/google':
          Var('git_url') + '/external/google-cache-invalidation-api/src/google.git@5e99c8e5554555fe5fe55c93d8695fcf0da744f7',
     'src/third_party/skia/gpu':
-         Var('git_url') + '/external/skia/gpu.git@55f6963803d7c9767f5e8971a882ced31e16f22c',
+         Var('git_url') + '/external/skia/gpu.git@4ecf9e34618f710be6e50197033385c97778ddc9',
     'src/build/util/support':
          Var('git_url') + '/chromium/support.git@9306628dc48b26b6264fc32a09bd5f926fec7218',
     'src/third_party/webdriver/python/selenium':
@@ -59,13 +61,13 @@ deps = {
     'src/third_party/libjingle/source':
          Var('git_url') + '/external/libjingle.git@ccbae7750cbb29603cb94fac4679ee68d70e457d',
     'src/third_party/icu':
-         Var('git_url') + '/chromium/deps/icu46.git@5fb9b882e40b3b9bd1d242a3f430f326cdb3bc4f',
+         Var('git_url') + '/chromium/deps/icu46.git@59026aeb93a49e0a7f232957b8ae078aec4fc22d',
     'src/third_party/speex':
          Var('git_url') + '/chromium/deps/speex.git@0c94ee62322ce3272783cafda02b3ee172c45553',
     'src/third_party/snappy/src':
          Var('git_url') + '/external/snappy.git@5258607248a000affb2f72b87b9bbd044806677d',
     'src/third_party/WebKit':
-         Var('git_url') + '/external/' + Var('webkit_repo') + '@0138de2fc57ecc02e59235798b47dd31fd2d82d5',
+         Var('webkit_url') + Var('webkit_rev'),
     'src/breakpad/src':
          Var('git_url') + '/external/google-breakpad/src.git@072eac01b55527ad6511c04471d9e0b2329d4471',
     'src/seccompsandbox':
@@ -119,7 +121,7 @@ deps_os = {
     'src/third_party/pdfsqueeze':
          Var('git_url') + '/external/pdfsqueeze.git@a2470ff9fcc9d399a1c0ac58e8b1df6f46143801',
     'src/chrome/installer/mac/third_party/xz/xz':
-         Var('git_url') + '/chromium/deps/xz.git@77022065014d48cf51d83322264ab4836fd175ec',
+         Var('git_url') + '/chromium/deps/xz.git@604fa85cc4e214aa0f418a2596ea865c0eed7a54',
     'src/third_party/swig/mac':
          Var('git_url') + '/chromium/deps/swig/mac.git@1b182eef16df2b506f1d710b34df65d55c1ac44e',
     'src/third_party/lighttpd':
