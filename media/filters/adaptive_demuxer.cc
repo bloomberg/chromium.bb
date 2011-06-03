@@ -458,7 +458,7 @@ AdaptiveDemuxer::AdaptiveDemuxer(DemuxerVector const& demuxers,
       current_video_demuxer_index_(initial_video_demuxer_index),
       playback_rate_(0),
       switch_pending_(false),
-      start_time_(base::TimeDelta::FromMicroseconds(kint64max)) {
+      start_time_(kNoTimestamp) {
   DCHECK(!demuxers_.empty());
   DCHECK_GE(current_audio_demuxer_index_, -1);
   DCHECK_GE(current_video_demuxer_index_, -1);
@@ -474,8 +474,12 @@ AdaptiveDemuxer::AdaptiveDemuxer(DemuxerVector const& demuxers,
     video_streams.push_back(video);
     if (video)
       video_ids.push_back(i);
-    start_time_ = std::min(start_time_, demuxers_[i]->GetStartTime());
+    if (start_time_ == kNoTimestamp ||
+        demuxers_[i]->GetStartTime() < start_time_) {
+      start_time_ = demuxers_[i]->GetStartTime();
+    }
   }
+  DCHECK(start_time_ != kNoTimestamp);
   // TODO(fgalligan): Add a check to make sure |demuxers_| start time are
   // within an acceptable range, once the range is defined.
   if (current_audio_demuxer_index_ >= 0) {
