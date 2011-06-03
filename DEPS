@@ -96,6 +96,9 @@ deps = {
   "src/third_party/skia/include":
     (Var("googlecode_url") % "skia") + "/trunk/include@" + Var("skia_revision"),
 
+  "src/third_party/skia/third_party/glu":
+    (Var("googlecode_url") % "skia") + "/trunk/third_party/glu@" + Var("skia_revision"),
+
   "src/third_party/WebKit/LayoutTests":
     Var("webkit_trunk") + "/LayoutTests@" + Var("webkit_revision"),
 
