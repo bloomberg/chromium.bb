@@ -888,6 +888,11 @@ FileDialogFunction::Callback::Find(int32 tab_id) {
 
 int32 FileDialogFunction::GetTabId() const {
   int32 tab_id = 0;
+  if (!dispatcher()) {
+    NOTREACHED();
+    return tab_id;
+  }
+
   // TODO(jamescook):  This is going to fail when we switch to tab-modal
   // dialogs.  Figure out a way to find which SelectFileDialog::Listener
   // to call from inside these extension FileDialogFunctions.
