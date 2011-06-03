@@ -11,6 +11,7 @@
 // Keys used in JSON representation of extensions.
 namespace extension_manifest_keys {
   extern const char* kAllFrames;
+  extern const char* kAltKey;
   extern const char* kApp;
   extern const char* kBackground;
   extern const char* kBrowserAction;
@@ -20,6 +21,7 @@ namespace extension_manifest_keys {
   extern const char* kContentSecurityPolicy;
   extern const char* kConvertedFromUserScript;
   extern const char* kCss;
+  extern const char* kCtrlKey;
   extern const char* kCurrentLocale;
   extern const char* kDefaultLocale;
   extern const char* kDescription;
@@ -30,16 +32,21 @@ namespace extension_manifest_keys {
   extern const char* kFileBrowserHandlers;
   extern const char* kHomepageURL;
   extern const char* kIcons;
+  extern const char* kId;
   extern const char* kIncognito;
   extern const char* kIncludeGlobs;
+  extern const char* kInputComponents;
   extern const char* kIsolation;
   extern const char* kJs;
+  extern const char* kKeycode;
+  extern const char* kLanguage;
   extern const char* kLaunch;
   extern const char* kLaunchContainer;
   extern const char* kLaunchHeight;
   extern const char* kLaunchLocalPath;
   extern const char* kLaunchWebURL;
   extern const char* kLaunchWidth;
+  extern const char* kLayouts;
   extern const char* kMatches;
   extern const char* kMinimumChromeVersion;
   extern const char* kNaClModules;
@@ -65,6 +72,8 @@ namespace extension_manifest_keys {
   extern const char* kPluginsPublic;
   extern const char* kPublicKey;
   extern const char* kRunAt;
+  extern const char* kShiftKey;
+  extern const char* kShortcutKey;
   extern const char* kSidebar;
   extern const char* kSidebarDefaultIcon;
   extern const char* kSidebarDefaultPage;
@@ -147,6 +156,14 @@ namespace extension_manifest_errors {
   extern const char* kInvalidIconPath;
   extern const char* kInvalidIcons;
   extern const char* kInvalidIncognitoBehavior;
+  extern const char* kInvalidInputComponents;
+  extern const char* kInvalidInputComponentDescription;
+  extern const char* kInvalidInputComponentLayoutName;
+  extern const char* kInvalidInputComponentLayouts;
+  extern const char* kInvalidInputComponentName;
+  extern const char* kInvalidInputComponentShortcutKey;
+  extern const char* kInvalidInputComponentShortcutKeycode;
+  extern const char* kInvalidInputComponentType;
   extern const char* kInvalidIsolation;
   extern const char* kInvalidIsolationValue;
   extern const char* kInvalidJs;

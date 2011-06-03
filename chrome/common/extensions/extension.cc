@@ -351,6 +351,9 @@ const int Extension::kValidWebExtentSchemes =
 const int Extension::kValidHostPermissionSchemes =
     UserScript::kValidUserScriptSchemes | URLPattern::SCHEME_CHROMEUI;
 
+Extension::InputComponentInfo::InputComponentInfo() {}
+Extension::InputComponentInfo::~InputComponentInfo() {}
+
 //
 // PermissionMessage
 //
@@ -2419,6 +2422,139 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
     if (overrides->size() > 1) {
       *error = errors::kMultipleOverrides;
       return false;
+    }
+  }
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableExperimentalExtensionApis) &&
+      source.HasKey(keys::kInputComponents)) {
+    ListValue* list_value = NULL;
+    if (!source.GetList(keys::kInputComponents, &list_value)) {
+      *error = errors::kInvalidInputComponents;
+      return false;
+    }
+
+    for (size_t i = 0; i < list_value->GetSize(); ++i) {
+      DictionaryValue* module_value = NULL;
+      std::string name_str;
+      InputComponentType type;
+      std::string id_str;
+      std::string description_str;
+      std::string language_str;
+      std::set<std::string> layouts;
+      std::string shortcut_keycode_str;
+      bool shortcut_alt = false;
+      bool shortcut_ctrl = false;
+      bool shortcut_shift = false;
+
+      if (!list_value->GetDictionary(i, &module_value)) {
+        *error = errors::kInvalidInputComponents;
+        return false;
+      }
+
+      // Get input_components[i].name.
+      if (!module_value->GetString(keys::kName, &name_str)) {
+        *error = ExtensionErrorUtils::FormatErrorMessage(
+            errors::kInvalidInputComponentName, base::IntToString(i));
+        return false;
+      }
+
+      // Get input_components[i].type.
+      std::string type_str;
+      if (module_value->GetString(keys::kType, &type_str)) {
+        if (type_str == "ime") {
+          type = INPUT_COMPONENT_TYPE_IME;
+        } else if (type_str == "virtual_keyboard") {
+          type = INPUT_COMPONENT_TYPE_VIRTUAL_KEYBOARD;
+        } else {
+          *error = ExtensionErrorUtils::FormatErrorMessage(
+              errors::kInvalidInputComponentType, base::IntToString(i));
+          return false;
+        }
+      } else {
+        *error = ExtensionErrorUtils::FormatErrorMessage(
+            errors::kInvalidInputComponentType, base::IntToString(i));
+        return false;
+      }
+
+      // Get input_components[i].id.
+      if (!module_value->GetString(keys::kId, &id_str)) {
+        id_str = "";
+      }
+
+      // Get input_components[i].description.
+      if (!module_value->GetString(keys::kDescription, &description_str)) {
+        *error = ExtensionErrorUtils::FormatErrorMessage(
+            errors::kInvalidInputComponentDescription, base::IntToString(i));
+        return false;
+      }
+
+      // Get input_components[i].language.
+      if (!module_value->GetString(keys::kLanguage, &language_str)) {
+        language_str = "";
+      }
+
+      // Get input_components[i].layouts.
+      ListValue* layouts_value = NULL;
+      if (!source.GetList(keys::kLayouts, &layouts_value)) {
+        *error = errors::kInvalidInputComponentLayouts;
+        return false;
+      }
+
+      for (size_t j = 0; j < layouts_value->GetSize(); ++j) {
+        std::string layout_name_str;
+        if (!layouts_value->GetString(j, &layout_name_str)) {
+          *error = ExtensionErrorUtils::FormatErrorMessage(
+              errors::kInvalidInputComponentLayoutName, base::IntToString(i),
+              base::IntToString(j));
+          return false;
+        }
+        layouts.insert(layout_name_str);
+      }
+
+      if (source.HasKey(keys::kShortcutKey)) {
+        DictionaryValue* shortcut_value = NULL;
+        if (!module_value->GetDictionary(keys::kShortcutKey, &shortcut_value)) {
+          *error = ExtensionErrorUtils::FormatErrorMessage(
+              errors::kInvalidInputComponentShortcutKey, base::IntToString(i));
+          return false;
+        }
+
+        // Get input_components[i].shortcut_keycode.
+        if (!shortcut_value->GetString(keys::kKeycode, &shortcut_keycode_str)) {
+          *error = ExtensionErrorUtils::FormatErrorMessage(
+              errors::kInvalidInputComponentShortcutKeycode,
+              base::IntToString(i));
+          return false;
+        }
+
+        // Get input_components[i].shortcut_alt.
+        if (!shortcut_value->GetBoolean(keys::kAltKey, &shortcut_alt)) {
+          shortcut_alt = false;
+        }
+
+        // Get input_components[i].shortcut_ctrl.
+        if (!shortcut_value->GetBoolean(keys::kCtrlKey, &shortcut_ctrl)) {
+          shortcut_ctrl = false;
+        }
+
+        // Get input_components[i].shortcut_shift.
+        if (!shortcut_value->GetBoolean(keys::kShiftKey, &shortcut_shift)) {
+          shortcut_shift = false;
+        }
+      }
+
+      input_components_.push_back(InputComponentInfo());
+      input_components_.back().name = name_str;
+      input_components_.back().type = type;
+      input_components_.back().id = id_str;
+      input_components_.back().description = description_str;
+      input_components_.back().language = language_str;
+      input_components_.back().layouts.insert(layouts.begin(), layouts.end());
+      input_components_.back().shortcut_keycode = shortcut_keycode_str;
+      input_components_.back().shortcut_alt = shortcut_alt;
+      input_components_.back().shortcut_ctrl = shortcut_ctrl;
+      input_components_.back().shortcut_shift = shortcut_shift;
     }
   }
 

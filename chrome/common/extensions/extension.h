@@ -112,6 +112,29 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     std::string mime_type;
   };
 
+  enum InputComponentType {
+    INPUT_COMPONENT_TYPE_IME = 0,
+    INPUT_COMPONENT_TYPE_VIRTUAL_KEYBOARD,
+    INPUT_COMPONENT_TYPE_COUNT
+  };
+
+  struct InputComponentInfo {
+    // Define out of line constructor/destructor to please Clang.
+    InputComponentInfo();
+    ~InputComponentInfo();
+
+    std::string name;
+    InputComponentType type;
+    std::string id;
+    std::string description;
+    std::string language;
+    std::set<std::string> layouts;
+    std::string shortcut_keycode;
+    bool shortcut_alt;
+    bool shortcut_ctrl;
+    bool shortcut_shift;
+  };
+
   struct TtsVoice {
     std::string voice_name;
     std::string locale;
@@ -599,6 +622,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   const std::vector<NaClModuleInfo>& nacl_modules() const {
     return nacl_modules_;
   }
+  const std::vector<InputComponentInfo>& input_components() const {
+    return input_components_;
+  }
   const GURL& background_url() const { return background_url_; }
   const GURL& options_url() const { return options_url_; }
   const GURL& devtools_url() const { return devtools_url_; }
@@ -843,6 +869,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // Optional list of NaCl modules and associated properties.
   std::vector<NaClModuleInfo> nacl_modules_;
+
+  // Optional list of input components and associated properties.
+  std::vector<InputComponentInfo> input_components_;
 
   // Optional URL to a master page of which a single instance should be always
   // loaded in the background.
