@@ -14,7 +14,6 @@
 #include "media/base/pipeline.h"
 #include "media/ffmpeg/ffmpeg_common.h"
 #include "media/filters/ffmpeg_demuxer.h"
-#include "media/video/ffmpeg_video_allocator.h"
 
 namespace media {
 
@@ -23,7 +22,6 @@ FFmpegVideoDecodeEngine::FFmpegVideoDecodeEngine()
       event_handler_(NULL),
       frame_rate_numerator_(0),
       frame_rate_denominator_(0),
-      direct_rendering_(false),
       pending_input_buffers_(0),
       pending_output_buffers_(0),
       output_eos_reached_(false),
@@ -43,8 +41,6 @@ void FFmpegVideoDecodeEngine::Initialize(
     VideoDecodeEngine::EventHandler* event_handler,
     VideoDecodeContext* context,
     const VideoDecoderConfig& config) {
-  allocator_.reset(new FFmpegVideoAllocator());
-
   // Always try to use three threads for video decoding.  There is little reason
   // not to since current day CPUs tend to be multi-core and we measured
   // performance benefits on older machines such as P4s with hyperthreading.
@@ -85,20 +81,10 @@ void FFmpegVideoDecodeEngine::Initialize(
 
   AVCodec* codec = avcodec_find_decoder(codec_context_->codec_id);
 
-  if (codec) {
-#ifdef FF_THREAD_FRAME  // Only defined in FFMPEG-MT.
-    direct_rendering_ = codec->capabilities & CODEC_CAP_DR1 ? true : false;
-#endif
-    if (direct_rendering_) {
-      DVLOG(1) << "direct rendering is used";
-      allocator_->Initialize(codec_context_, GetSurfaceFormat());
-    }
-  }
-
   // TODO(fbarchard): Improve thread logic based on size / codec.
   // TODO(fbarchard): Fix bug affecting video-cookie.html
   int decode_threads = (codec_context_->codec_id == CODEC_ID_THEORA) ?
-    1 : kDecodeThreads;
+      1 : kDecodeThreads;
 
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
   std::string threads(cmd_line->GetSwitchValueASCII(switches::kVideoThreads));
@@ -123,22 +109,21 @@ void FFmpegVideoDecodeEngine::Initialize(
   // If we do not have enough buffers, we will report error too.
   bool buffer_allocated = true;
   frame_queue_available_.clear();
-  if (!direct_rendering_) {
-    // Create output buffer pool when direct rendering is not used.
-    for (size_t i = 0; i < Limits::kMaxVideoFrames; ++i) {
-      scoped_refptr<VideoFrame> video_frame;
-      VideoFrame::CreateFrame(VideoFrame::YV12,
-                              config.width(),
-                              config.height(),
-                              kNoTimestamp,
-                              kNoTimestamp,
-                              &video_frame);
-      if (!video_frame.get()) {
-        buffer_allocated = false;
-        break;
-      }
-      frame_queue_available_.push_back(video_frame);
+
+  // Create output buffer pool when direct rendering is not used.
+  for (size_t i = 0; i < Limits::kMaxVideoFrames; ++i) {
+    scoped_refptr<VideoFrame> video_frame;
+    VideoFrame::CreateFrame(VideoFrame::YV12,
+                            config.width(),
+                            config.height(),
+                            kNoTimestamp,
+                            kNoTimestamp,
+                            &video_frame);
+    if (!video_frame.get()) {
+      buffer_allocated = false;
+      break;
     }
+    frame_queue_available_.push_back(video_frame);
   }
 
   if (codec &&
@@ -201,11 +186,8 @@ void FFmpegVideoDecodeEngine::ProduceVideoFrame(
   // Increment pending output buffer count.
   pending_output_buffers_++;
 
-  // Return this frame to available pool or allocator after display.
-  if (direct_rendering_)
-    allocator_->DisplayDone(codec_context_, frame);
-  else
-    frame_queue_available_.push_back(frame);
+  // Return this frame to available pool after display.
+  frame_queue_available_.push_back(frame);
 
   if (flush_pending_) {
     TryToFinishPendingFlush();
@@ -295,25 +277,20 @@ void FFmpegVideoDecodeEngine::DecodeFrame(scoped_refptr<Buffer> buffer) {
   base::TimeDelta duration =
       ConvertFromTimeBase(doubled_time_base, 2 + av_frame_->repeat_pict);
 
-  if (!direct_rendering_) {
-    // Available frame is guaranteed, because we issue as much reads as
-    // available frame, except the case of |frame_decoded| == 0, which
-    // implies decoder order delay, and force us to read more inputs.
-    DCHECK(frame_queue_available_.size());
-    video_frame = frame_queue_available_.front();
-    frame_queue_available_.pop_front();
+  // Available frame is guaranteed, because we issue as much reads as
+  // available frame, except the case of |frame_decoded| == 0, which
+  // implies decoder order delay, and force us to read more inputs.
+  DCHECK(frame_queue_available_.size());
+  video_frame = frame_queue_available_.front();
+  frame_queue_available_.pop_front();
 
-    // Copy the frame data since FFmpeg reuses internal buffers for AVFrame
-    // output, meaning the data is only valid until the next
-    // avcodec_decode_video() call.
-    size_t height = codec_context_->height;
-    CopyPlane(VideoFrame::kYPlane, video_frame.get(), av_frame_.get(), height);
-    CopyPlane(VideoFrame::kUPlane, video_frame.get(), av_frame_.get(), height);
-    CopyPlane(VideoFrame::kVPlane, video_frame.get(), av_frame_.get(), height);
-  } else {
-    // Get the VideoFrame from allocator which associate with av_frame_.
-    video_frame = allocator_->DecodeDone(codec_context_, av_frame_.get());
-  }
+  // Copy the frame data since FFmpeg reuses internal buffers for AVFrame
+  // output, meaning the data is only valid until the next
+  // avcodec_decode_video() call.
+  size_t height = codec_context_->height;
+  CopyPlane(VideoFrame::kYPlane, video_frame.get(), av_frame_.get(), height);
+  CopyPlane(VideoFrame::kUPlane, video_frame.get(), av_frame_.get(), height);
+  CopyPlane(VideoFrame::kVPlane, video_frame.get(), av_frame_.get(), height);
 
   video_frame->SetTimestamp(timestamp);
   video_frame->SetDuration(duration);
@@ -323,10 +300,6 @@ void FFmpegVideoDecodeEngine::DecodeFrame(scoped_refptr<Buffer> buffer) {
 }
 
 void FFmpegVideoDecodeEngine::Uninitialize() {
-  if (direct_rendering_) {
-    allocator_->Stop(codec_context_);
-  }
-
   event_handler_->OnUninitializeComplete();
 }
 

@@ -17,8 +17,6 @@ struct AVFrame;
 
 namespace media {
 
-class FFmpegVideoAllocator;
-
 class FFmpegVideoDecodeEngine : public VideoDecodeEngine {
  public:
   FFmpegVideoDecodeEngine();
@@ -49,12 +47,6 @@ class FFmpegVideoDecodeEngine : public VideoDecodeEngine {
   // Frame rate of the video.
   int frame_rate_numerator_;
   int frame_rate_denominator_;
-
-  // Whether direct rendering is used.
-  bool direct_rendering_;
-
-  // Used when direct rendering is used to recycle output buffers.
-  scoped_ptr<FFmpegVideoAllocator> allocator_;
 
   // Indicate how many buffers are pending on input port of this filter:
   // Increment when engine receive one input packet from demuxer;
