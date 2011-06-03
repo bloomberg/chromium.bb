@@ -184,10 +184,10 @@ void View::RemoveChildView(View* view) {
   DoRemoveChildView(view, true, true, false);
 }
 
-void View::RemoveAllChildViews(bool delete_views) {
+void View::RemoveAllChildViews(bool delete_children) {
   ViewVector::iterator iter;
   while ((iter = children_.begin()) != children_.end())
-    DoRemoveChildView(*iter, false, false, delete_views);
+    DoRemoveChildView(*iter, false, false, delete_children);
   UpdateTooltip();
 }
 

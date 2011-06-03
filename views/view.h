@@ -190,35 +190,34 @@ class View : public AcceleratorTarget {
   virtual const Widget* GetWidget() const;
   virtual Widget* GetWidget();
 
-  // Add a child View, optionally at |index|.
+  // Adds |view| as a child of this view, optionally at |index|.
   void AddChildView(View* view);
   void AddChildViewAt(View* view, int index);
 
-  // Remove a child view from this view. The view's parent will change to NULL.
-  void RemoveChildView(View* views);
+  // Removes |view| from this view. The view's parent will change to NULL.
+  void RemoveChildView(View* view);
 
-  // Remove all child view from this view.  If |delete_views| is true, the views
-  // are deleted, unless marked as not parent owned.
-  void RemoveAllChildViews(bool delete_views);
+  // Removes all the children from this view. If |delete_children| is true,
+  // the views are deleted, unless marked as not parent owned.
+  void RemoveAllChildViews(bool delete_children);
 
-  // Returns the View at the specified |index|.
+  // Returns the child view at |index|.
   const View* GetChildViewAt(int index) const;
   View* GetChildViewAt(int index);
 
-  // Get the number of child Views.
+  // Returns the number of child views.
   int child_count() const { return static_cast<int>(children_.size()); }
   bool has_children() const { return !children_.empty(); }
 
-  // Get the parent View
+  // Returns the parent view.
   const View* parent() const { return parent_; }
   View* parent() { return parent_; }
 
-  // Returns true if |child| is contained within this View's hierarchy, even as
-  // an indirect descendant. Will return true if child is also this View.
+  // Returns true if |view| is contained within this View's hierarchy, even as
+  // an indirect descendant. Will return true if child is also this view.
   bool Contains(const View* view) const;
 
-  // Returns the index of the specified |view| in this view's children, or -1
-  // if the specified view is not a child of this view.
+  // Returns the index of |view|, or -1 if |view| is not a child of this view.
   int GetIndexOf(const View* view) const;
 
   // TODO(beng): REMOVE (Views need not know about Window).
