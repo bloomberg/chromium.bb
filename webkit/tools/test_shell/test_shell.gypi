@@ -348,6 +348,7 @@
         'test_shell_common',
         '<(DEPTH)/base/base.gyp:test_support_base',
         '<(DEPTH)/media/media.gyp:media_test_support',
+        '<(DEPTH)/net/net.gyp:net',
         '<(DEPTH)/net/net.gyp:net_test_support',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/testing/gmock.gyp:gmock',

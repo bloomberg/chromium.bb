@@ -10,6 +10,7 @@
       'dependencies': [
         'content_common',
         '../app/app.gyp:app_resources',
+        '../net/net.gyp:net',
         '../ppapi/ppapi_internal.gyp:ppapi_proxy',
         '../skia/skia.gyp:skia',
         '../third_party/flac/flac.gyp:libflac',

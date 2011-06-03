@@ -69,6 +69,8 @@ class BlobURLRequestJobTest : public testing::Test {
 
    private:
     void ReadSome(net::URLRequest* request) {
+      // job() is not part of the URLRequest public API so it should not be
+      // used here. Bug 84783.
       if (request->job()->is_done()) {
         RequestComplete();
         return;

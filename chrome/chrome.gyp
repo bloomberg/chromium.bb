@@ -424,6 +424,7 @@
         'chrome_strings',
         '../base/base.gyp:base',
         '../net/net.gyp:http_server',
+        '../net/net.gyp:net',
         'theme_resources',
         'theme_resources_standard',
         '../skia/skia.gyp:skia',
@@ -534,6 +535,7 @@
         '../base/base.gyp:base',
         '../build/temp_gyp/googleurl.gyp:googleurl',
         '../jingle/jingle.gyp:notifier',
+        '../net/net.gyp:net',
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/sqlite/sqlite.gyp:sqlite',
         'app/policy/cloud_policy_codegen.gyp:policy',
@@ -801,6 +803,7 @@
       'dependencies': [
         'sync',
         '../jingle/jingle.gyp:notifier',
+        '../net/net.gyp:net',
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
       ],
       # This target exports a hard dependency because it depends on
@@ -821,6 +824,7 @@
         'common_net',
         '../base/base.gyp:base',
         '../jingle/jingle.gyp:notifier',
+        '../net/net.gyp:net',
         '../printing/printing.gyp:printing',
         '../skia/skia.gyp:skia',
         '../third_party/libjingle/libjingle.gyp:libjingle',

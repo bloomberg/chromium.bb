@@ -233,6 +233,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../ui/ui.gyp:ui_gfx',
+        '../net/net.gyp:net',
         '../third_party/protobuf/protobuf.gyp:protobuf_lite',
         '../third_party/libvpx/libvpx.gyp:libvpx_include',
         '../third_party/zlib/zlib.gyp:zlib',
@@ -499,6 +500,7 @@
         'remoting_jingle_glue',
         '../crypto/crypto.gyp:crypto',
         '../jingle/jingle.gyp:jingle_glue',
+        '../net/net.gyp:net',
       ],
       'export_dependent_settings': [
         'remoting_jingle_glue',

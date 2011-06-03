@@ -11,6 +11,7 @@
       'dependencies': [
         'content_common',
         '../jingle/jingle.gyp:jingle_glue',
+        '../net/net.gyp:net',
         '../ppapi/ppapi_internal.gyp:ppapi_proxy',
         '../skia/skia.gyp:skia',
         '../third_party/ffmpeg/ffmpeg.gyp:ffmpeg',

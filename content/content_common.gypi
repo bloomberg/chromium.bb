@@ -11,6 +11,7 @@
         '../base/base.gyp:base',
         '../ipc/ipc.gyp:ipc',
         '../media/media.gyp:media',
+        '../net/net.gyp:net',
         '../skia/skia.gyp:skia',
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/npapi/npapi.gyp:npapi',

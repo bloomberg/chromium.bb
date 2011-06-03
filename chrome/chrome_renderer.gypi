@@ -16,6 +16,7 @@
         'safe_browsing_proto',
         '../content/content.gyp:content_renderer',
         '../content/content.gyp:content_plugin',
+        '../net/net.gyp:net',
         '../ppapi/ppapi_internal.gyp:ppapi_proxy',
         '../printing/printing.gyp:printing',
         '../skia/skia.gyp:skia',

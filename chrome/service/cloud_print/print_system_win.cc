@@ -31,6 +31,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/rect.h"
 
+#pragma comment(lib, "rpcrt4.lib")  // for UuidToString & Co.
+
 namespace {
 
 class DevMode {
