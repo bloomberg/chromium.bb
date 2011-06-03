@@ -159,25 +159,6 @@ void test_replacing_code_unaligned() {
   assert(rc == 4321);
 }
 
-/* Check that we can dynamically delete code. */
-void test_deleting_code() {
-  uint8_t *load_area = allocate_code_space(1);
-  uint8_t buf[BUF_SIZE];
-  int rc;
-  int (*func)();
-
-  copy_and_pad_fragment(buf, sizeof(buf), &template_func, &template_func_end);
-  rc = nacl_dyncode_create(load_area, buf, sizeof(buf));
-  assert(rc == 0);
-  func = (int (*)()) (uintptr_t) load_area;
-  rc = func();
-  assert(rc == 1234);
-
-  rc = nacl_dyncode_delete(load_area, sizeof buf);
-  assert(rc == 0);
-  assert(load_area[0] != buf[0]);
-}
-
 /* Check code replacement constraints */
 void test_illegal_code_replacment() {
   uint8_t *load_area = allocate_code_space(1);
@@ -292,25 +273,6 @@ void test_replacing_code_unaligned_disabled() {
 }
 
 
-/* Check that we can't delete code */
-void test_deleting_code_disabled() {
-  uint8_t *load_area = allocate_code_space(1);
-  uint8_t buf[BUF_SIZE];
-  int rc;
-  int (*func)();
-
-  copy_and_pad_fragment(buf, sizeof(buf), &template_func, &template_func_end);
-  rc = nacl_dyncode_create(load_area, buf, sizeof(buf));
-  assert(rc == 0);
-  func = (int (*)()) (uintptr_t) load_area;
-  rc = func();
-  assert(rc == 1234);
-
-  rc = nacl_dyncode_delete(load_area, sizeof buf);
-  assert(rc != 0);
-  assert(load_area[0] == buf[0]);
-}
-
 void run_test(const char *test_name, void (*test_func)(void)) {
   printf("Running %s...\n", test_name);
   test_func();
@@ -331,7 +293,6 @@ int TestMain() {
 
   RUN_TEST(test_replacing_code);
   RUN_TEST(test_replacing_code_unaligned);
-  RUN_TEST(test_deleting_code);
   RUN_TEST(test_illegal_code_replacment);
   RUN_TEST(test_external_jump_target_replacement);
 

@@ -351,6 +351,25 @@ void test_hlt_filled_bundle() {
   }
 }
 
+/* Check that we can dynamically delete code. */
+void test_deleting_code() {
+  uint8_t *load_area = (uint8_t *) allocate_code_space(1);
+  uint8_t buf[BUF_SIZE];
+  int rc;
+  int (*func)();
+
+  copy_and_pad_fragment(buf, sizeof(buf), &template_func, &template_func_end);
+  rc = nacl_dyncode_create(load_area, buf, sizeof(buf));
+  assert(rc == 0);
+  func = (int (*)()) (uintptr_t) load_area;
+  rc = func();
+  assert(rc == 1234);
+
+  rc = nacl_dyncode_delete(load_area, sizeof(buf));
+  assert(rc == 0);
+  assert(load_area[0] != buf[0]);
+}
+
 
 void run_test(const char *test_name, void (*test_func)(void)) {
   printf("Running %s...\n", test_name);
@@ -378,6 +397,7 @@ int TestMain() {
   RUN_TEST(test_branches_outside_chunk);
   RUN_TEST(test_end_of_code_region);
   RUN_TEST(test_hlt_filled_bundle);
+  RUN_TEST(test_deleting_code);
   RUN_TEST(test_stress);
 
   /* Test again to make sure we didn't run out of space. */
