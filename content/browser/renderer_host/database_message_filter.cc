@@ -8,6 +8,7 @@
 
 #include "base/string_util.h"
 #include "base/threading/thread.h"
+#include "base/utf_string_conversions.h"
 #include "content/browser/user_metrics.h"
 #include "content/common/database_messages.h"
 #include "content/common/result_codes.h"
@@ -216,8 +217,18 @@ void DatabaseMessageFilter::DatabaseDeleteFile(const string16& vfs_file_name,
     // In order to delete a journal file in incognito mode, we only need to
     // close the open handle to it that's stored in the database tracker.
     if (db_tracker_->IsIncognitoProfile()) {
-      if (db_tracker_->CloseIncognitoFileHandle(vfs_file_name))
+      const string16 wal_suffix(ASCIIToUTF16("-wal"));
+      string16 sqlite_suffix;
+
+      // WAL files can be deleted without having previously been opened.
+      if (!db_tracker_->HasSavedIncognitoFileHandle(vfs_file_name) &&
+          DatabaseUtil::CrackVfsFileName(vfs_file_name,
+                                         NULL, NULL, &sqlite_suffix) &&
+          sqlite_suffix == wal_suffix) {
         error_code = SQLITE_OK;
+      } else if (db_tracker_->CloseIncognitoFileHandle(vfs_file_name)) {
+        error_code = SQLITE_OK;
+      }
     } else {
       error_code = VfsBackend::DeleteFile(db_file, sync_dir);
     }
