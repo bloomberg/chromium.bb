@@ -27,6 +27,7 @@ PrintingContext* PrintingContext::Create(const std::string& app_locale) {
 
 PrintingContextMac::PrintingContextMac(const std::string& app_locale)
     : PrintingContext(app_locale),
+      print_info_([[NSPrintInfo sharedPrintInfo] copy]),
       context_(NULL) {
 }
 
@@ -57,7 +58,7 @@ void PrintingContextMac::AskUserForSettings(gfx::NativeView parent_view,
   // adding a new custom view to the panel on 10.5; 10.6 has
   // NSPrintPanelShowsPrintSelection).
   NSPrintPanel* panel = [NSPrintPanel printPanel];
-  NSPrintInfo* printInfo = [NSPrintInfo sharedPrintInfo];
+  NSPrintInfo* printInfo = print_info_.get();
 
   NSPrintPanelOptions options = [panel options];
   options |= NSPrintPanelShowsPaperSize;
@@ -80,7 +81,8 @@ void PrintingContextMac::AskUserForSettings(gfx::NativeView parent_view,
   // Will require restructuring the PrintingContext API to use a callback.
   NSInteger selection = [panel runModalWithPrintInfo:printInfo];
   if (selection == NSOKButton) {
-    ParsePrintInfo([panel printInfo]);
+    print_info_.reset([[panel printInfo] retain]);
+    InitPrintSettingsFromPrintInfo(GetPageRangesFromPrintInfo());
     callback->Run(OK);
   } else {
     callback->Run(CANCEL);
@@ -90,7 +92,8 @@ void PrintingContextMac::AskUserForSettings(gfx::NativeView parent_view,
 PrintingContext::Result PrintingContextMac::UseDefaultSettings() {
   DCHECK(!in_print_job_);
 
-  ParsePrintInfo([NSPrintInfo sharedPrintInfo]);
+  print_info_.reset([[NSPrintInfo sharedPrintInfo] copy]);
+  InitPrintSettingsFromPrintInfo(GetPageRangesFromPrintInfo());
 
   return OK;
 }
@@ -99,7 +102,8 @@ PrintingContext::Result PrintingContextMac::UpdatePrintSettings(
     const DictionaryValue& job_settings, const PageRanges& ranges) {
   DCHECK(!in_print_job_);
 
-  ResetSettings();
+  // NOTE: Reset |print_info_| with a copy of |sharedPrintInfo| so as to start
+  // with a clean slate.
   print_info_.reset([[NSPrintInfo sharedPrintInfo] copy]);
 
   bool collate;
@@ -250,9 +254,7 @@ bool PrintingContextMac::SetOutputIsColor(bool color) {
                                  false) == noErr;
 }
 
-void PrintingContextMac::ParsePrintInfo(NSPrintInfo* print_info) {
-  ResetSettings();
-  print_info_.reset([print_info retain]);
+PageRanges PrintingContextMac::GetPageRangesFromPrintInfo() {
   PageRanges page_ranges;
   NSDictionary* print_info_dict = [print_info_.get() dictionary];
   if (![[print_info_dict objectForKey:NSPrintAllPages] boolValue]) {
@@ -261,7 +263,7 @@ void PrintingContextMac::ParsePrintInfo(NSPrintInfo* print_info) {
     range.to = [[print_info_dict objectForKey:NSPrintLastPage] intValue] - 1;
     page_ranges.push_back(range);
   }
-  InitPrintSettingsFromPrintInfo(page_ranges);
+  return page_ranges;
 }
 
 PrintingContext::Result PrintingContextMac::InitWithSettings(

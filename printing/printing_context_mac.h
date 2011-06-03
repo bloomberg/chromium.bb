@@ -42,11 +42,15 @@ class PrintingContextMac : public PrintingContext {
   virtual gfx::NativeDrawingContext context() const;
 
  private:
-  // Read the settings from the given NSPrintInfo (and cache it for later use).
-  void ParsePrintInfo(NSPrintInfo* print_info);
-
-  // Initializes PrintSettings from native print info object.
+  // Initializes PrintSettings from |print_info_|. This must be called
+  // after changes to |print_info_| in order for the changes to take effect in
+  // printing.
+  // This function ignores the page range information specified in the print
+  // info object and use |ranges| instead.
   void InitPrintSettingsFromPrintInfo(const PageRanges& ranges);
+
+  // Returns the set of page ranges constructed from |print_info_|.
+  PageRanges GetPageRangesFromPrintInfo();
 
   // Updates |print_info_| to use the given printer.
   // Returns true if the printer was set else returns false.
