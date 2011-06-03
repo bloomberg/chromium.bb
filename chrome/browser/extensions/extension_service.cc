@@ -35,6 +35,7 @@
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_history_api.h"
 #include "chrome/browser/extensions/extension_host.h"
+#include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_management_api.h"
 #include "chrome/browser/extensions/extension_preference_api.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
@@ -141,6 +142,52 @@ static void ForceShutdownPlugin(const FilePath& plugin_path) {
     plugin->ForceShutdown();
 }
 
+// Manages an ExtensionInstallUI for a particular extension.
+class SimpleExtensionLoadPrompt : public ExtensionInstallUI::Delegate {
+ public:
+  SimpleExtensionLoadPrompt(Profile* profile,
+                            base::WeakPtr<ExtensionService> extension_service,
+                            const Extension* extension);
+  ~SimpleExtensionLoadPrompt();
+
+  void ShowPrompt();
+
+  // ExtensionInstallUI::Delegate
+  virtual void InstallUIProceed();
+  virtual void InstallUIAbort();
+
+ private:
+  base::WeakPtr<ExtensionService> extension_service_;
+  scoped_ptr<ExtensionInstallUI> install_ui_;
+  scoped_refptr<const Extension> extension_;
+};
+
+SimpleExtensionLoadPrompt::SimpleExtensionLoadPrompt(
+    Profile* profile,
+    base::WeakPtr<ExtensionService> extension_service,
+    const Extension* extension)
+    : extension_service_(extension_service),
+      install_ui_(new ExtensionInstallUI(profile)),
+      extension_(extension) {
+}
+
+SimpleExtensionLoadPrompt::~SimpleExtensionLoadPrompt() {
+}
+
+void SimpleExtensionLoadPrompt::ShowPrompt() {
+  install_ui_->ConfirmInstall(this, extension_);
+}
+
+void SimpleExtensionLoadPrompt::InstallUIProceed() {
+  if (extension_service_.get())
+    extension_service_->OnExtensionInstalled(extension_);
+  delete this;
+}
+
+void SimpleExtensionLoadPrompt::InstallUIAbort() {
+  delete this;
+}
+
 }  // namespace
 
 ExtensionService::ExtensionRuntimeData::ExtensionRuntimeData()
@@ -190,7 +237,7 @@ class ExtensionServiceBackend
                                 const std::string& error);
 
   // Notify the frontend that an extension was installed.
-  void OnExtensionInstalled(const scoped_refptr<const Extension>& extension);
+  void OnLoadSingleExtension(const scoped_refptr<const Extension>& extension);
 
   base::WeakPtr<ExtensionService> frontend_;
 
@@ -247,7 +294,7 @@ void ExtensionServiceBackend::LoadSingleExtension(const FilePath& path_in) {
           BrowserThread::UI, FROM_HERE,
           NewRunnableMethod(
               this,
-              &ExtensionServiceBackend::OnExtensionInstalled,
+              &ExtensionServiceBackend::OnLoadSingleExtension,
               extension)))
     NOTREACHED();
 }
@@ -261,11 +308,11 @@ void ExtensionServiceBackend::ReportExtensionLoadError(
         true /* alert_on_error */);
 }
 
-void ExtensionServiceBackend::OnExtensionInstalled(
+void ExtensionServiceBackend::OnLoadSingleExtension(
     const scoped_refptr<const Extension>& extension) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (frontend_.get())
-    frontend_->OnExtensionInstalled(extension);
+    frontend_->OnLoadSingleExtension(extension);
 }
 
 void ExtensionService::CheckExternalUninstall(const std::string& id) {
@@ -1858,6 +1905,22 @@ void ExtensionService::UpdateActiveExtensionsInCrashReporter() {
   }
 
   child_process_logging::SetActiveExtensions(extension_ids);
+}
+
+void ExtensionService::OnLoadSingleExtension(const Extension* extension) {
+  // If this is a new install of an extension with plugins, prompt the user
+  // first.
+  if (show_extensions_prompts_ &&
+      !extension->plugins().empty() &&
+      disabled_extension_paths_.find(extension->id()) ==
+          disabled_extension_paths_.end()) {
+    SimpleExtensionLoadPrompt* prompt = new SimpleExtensionLoadPrompt(
+        profile_, weak_ptr_factory_.GetWeakPtr(), extension);
+    prompt->ShowPrompt();
+    return;  // continues in SimpleExtensionLoadPrompt::InstallUI*
+  }
+
+  OnExtensionInstalled(extension);
 }
 
 void ExtensionService::OnExtensionInstalled(const Extension* extension) {

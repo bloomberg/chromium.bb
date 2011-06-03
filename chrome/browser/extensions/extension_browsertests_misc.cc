@@ -715,6 +715,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginLoadUnload) {
   EXPECT_FALSE(result);
 
   ExtensionService* service = browser()->profile()->GetExtensionService();
+  service->set_show_extensions_prompts(false);
   const size_t size_before = service->extensions()->size();
   ASSERT_TRUE(LoadExtension(extension_dir));
   EXPECT_EQ(size_before + 1, service->extensions()->size());
@@ -763,6 +764,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginPrivate) {
       test_data_dir_.AppendASCII("uitest").AppendASCII("plugins_private");
 
   ExtensionService* service = browser()->profile()->GetExtensionService();
+  service->set_show_extensions_prompts(false);
   const size_t size_before = service->extensions()->size();
   ASSERT_TRUE(LoadExtension(extension_dir));
   EXPECT_EQ(size_before + 1, service->extensions()->size());
