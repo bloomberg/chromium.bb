@@ -849,8 +849,15 @@ void BadMessage(bool pump_during_send) {
 
 }  // namespace
 
+#if defined(OS_WIN)
+// Crashy on windows. See crbug.com/62511.
+#define MAYBE_BadMessage DISABLED_BadMessage
+#else
+#define MAYBE_BadMessage BadMessage
+#endif
+
 // Tests that if a message is not serialized correctly, the Send() will fail.
-TEST_F(IPCSyncChannelTest, BadMessage) {
+TEST_F(IPCSyncChannelTest, MAYBE_BadMessage) {
   BadMessage(false);
   BadMessage(true);
 }
