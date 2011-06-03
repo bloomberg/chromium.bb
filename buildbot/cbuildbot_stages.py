@@ -443,6 +443,8 @@ class BuildBoardStage(BuilderStage):
           replace=self._build_config['chroot_replace'],
           fast=self._build_config['fast'],
           usepkg=self._build_config['usepkg_chroot'])
+    else:
+      commands.RunChrootUpgradeHooks(self._build_root)
 
     # If board is a string, convert to array.
     if isinstance(self._build_config['board'], str):

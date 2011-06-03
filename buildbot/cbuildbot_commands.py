@@ -213,6 +213,13 @@ def MakeChroot(buildroot, replace, fast, usepkg):
   cros_lib.OldRunCommand(cmd, cwd=cwd)
 
 
+def RunChrootUpgradeHooks(buildroot):
+  """Run the chroot upgrade hooks in the chroot."""
+  cwd = os.path.join(buildroot, 'src', 'scripts')
+  cros_lib.RunCommand(['./run_chroot_version_hooks'], cwd=cwd,
+                      enter_chroot=True)
+
+
 def SetupBoard(buildroot, board, fast, usepkg):
   """Wrapper around setup_board."""
   cwd = os.path.join(buildroot, 'src', 'scripts')
