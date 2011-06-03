@@ -4,10 +4,7 @@
 
 extern "C" {
 #include <X11/Xlib.h>
-#include <X11/Xatom.h>
 }
-
-#include <map>
 
 #include "ui/gfx/gl/gl_surface_glx.h"
 
@@ -19,16 +16,6 @@ extern "C" {
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/gl/gl_bindings.h"
 #include "ui/gfx/gl/gl_implementation.h"
-
-namespace {
-
-static Display* g_display;
-typedef std::map<gfx::PluginWindowHandle, XID> XIDMapping;
-static XIDMapping glx_windows_destroyed_;
-static const char kGLX_WINDOWPropertyName[] = "GLX_WINDOW";
-static const char kGLX_GPU_PIDPropertyName[] = "GPU_PID";
-
-}  // namespace
 
 namespace gfx {
 
@@ -42,60 +29,9 @@ class ScopedPtrXFree {
   void operator()(void* x) const {
     ::XFree(x);
   }
-
 };
 
-XID GetGLX_WINDOWProperty(XID window) {
-  Atom a;
-  Atom actual_type;
-  int actual_format;
-  unsigned long nitems;
-  unsigned long bytes_after;
-  unsigned char* prop;
-
-  a = XInternAtom(g_display, kGLX_GPU_PIDPropertyName, False);
-  if (XGetWindowProperty(g_display, window, a, 0, 1, False, XA_INTEGER,
-                         &actual_type, &actual_format, &nitems,
-                         &bytes_after, &prop) == Success && actual_type) {
-    scoped_ptr_malloc<unsigned char, ScopedPtrXFree> prop_scoped(prop);
-    if (*reinterpret_cast<int*>(prop) != base::GetCurrentProcId())
-      return 0;
-  }
-
-
-  a = XInternAtom(g_display, kGLX_WINDOWPropertyName, False);
-  if (XGetWindowProperty(g_display, window, a, 0, 1, False, XA_WINDOW,
-                         &actual_type, &actual_format, &nitems,
-                         &bytes_after, &prop) == Success && actual_type) {
-    scoped_ptr_malloc<unsigned char, ScopedPtrXFree> prop_scoped(prop);
-    return *reinterpret_cast<XID*>(prop);
-  } else {
-    return 0;
-  }
-}
-
-void SetGLX_WINDOWProperty(XID window, XID glx_window) {
-  Atom a = XInternAtom(g_display, kGLX_WINDOWPropertyName, False);
-  XChangeProperty(g_display, window, a, XA_WINDOW, 32, PropModeReplace,
-                  reinterpret_cast<unsigned char*>(&glx_window), 1);
-  a = XInternAtom(g_display, kGLX_GPU_PIDPropertyName, False);
-  base::ProcessId pid = base::GetCurrentProcId();
-  XChangeProperty(g_display, window, a, XA_INTEGER, 32, PropModeReplace,
-                  reinterpret_cast<unsigned char*>(&pid), 1);
-}
-
-void CollectGarbage() {
-  for (XIDMapping::iterator iter = glx_windows_destroyed_.begin();
-       iter != glx_windows_destroyed_.end(); ) {
-    XID glx_window = GetGLX_WINDOWProperty(iter->second);
-    if (glx_window != iter->first) {
-      glXDestroyWindow(g_display, iter->first);
-      glx_windows_destroyed_.erase(iter++);
-    } else {
-      iter++;
-    }
-  }
-}
+Display* g_display;
 
 }  // namespace anonymous
 
@@ -136,9 +72,7 @@ Display* GLSurfaceGLX::GetDisplay() {
 }
 
 NativeViewGLSurfaceGLX::NativeViewGLSurfaceGLX(gfx::PluginWindowHandle window)
-  : window_(window),
-    config_(NULL),
-    glx_window_(0) {
+  : window_(window) {
 }
 
 NativeViewGLSurfaceGLX::~NativeViewGLSurfaceGLX() {
@@ -146,105 +80,10 @@ NativeViewGLSurfaceGLX::~NativeViewGLSurfaceGLX() {
 }
 
 bool NativeViewGLSurfaceGLX::Initialize() {
-  DCHECK(!glx_window_);
-
-  XWindowAttributes attributes;
-  XGetWindowAttributes(g_display, window_, &attributes);
-
-  XVisualInfo visual_template = {0};
-  visual_template.visualid = XVisualIDFromVisual(attributes.visual);
-
-  int num_visual_infos;
-  scoped_ptr_malloc<XVisualInfo, ScopedPtrXFree> visual_infos(
-      XGetVisualInfo(g_display,
-                     VisualIDMask,
-                     &visual_template,
-                     &num_visual_infos));
-
-  if (!num_visual_infos)
-    return false;
-
-  if (glXGetFBConfigFromVisualSGIX) {
-    config_ = glXGetFBConfigFromVisualSGIX(g_display, visual_infos.get());
-    if (!config_) {
-      LOG(ERROR) << "glXGetFBConfigFromVisualSGIX failed.";
-    }
-  }
-
-  if (!config_) {
-    int config_id;
-    if (glXGetConfig(g_display,
-                     visual_infos.get(),
-                     GLX_FBCONFIG_ID,
-                     &config_id)) {
-      LOG(ERROR) << "glXGetConfig failed.";
-      return false;
-    }
-
-    const int config_attributes[] = {
-      GLX_FBCONFIG_ID, config_id,
-      0
-    };
-
-    int num_elements = 0;
-    scoped_ptr_malloc<GLXFBConfig, ScopedPtrXFree> configs(
-        glXChooseFBConfig(g_display,
-                          DefaultScreen(g_display),
-                          config_attributes,
-                          &num_elements));
-    if (!configs.get()) {
-      LOG(ERROR) << "glXChooseFBConfig failed.";
-      return false;
-    }
-    if (!num_elements) {
-      LOG(ERROR) << "glXChooseFBConfig returned 0 elements.";
-      return false;
-    }
-
-    config_ = configs.get()[0];
-  }
-
-  // Some X servers do not allow recreating the GLX window after a previous GLX
-  // window for the same X window was destroyed.  To work around this, we attach
-  // a GLX_WINDOW property to the X window that stores the XID of the GLX
-  // window.  In the destructor we do not call glXDestroyWindow right away;
-  // instead we add the XID of the deleted window to the destroyed windows list.
-  //
-  // CollectGarbage call walks through the destroyed windows list and checks
-  // that corresponding X windows still exist and refer to the correct GLX
-  // window.  If an X window does not exist, it must have been deleted by the
-  // browser process.  If an X window does exist but the property does not exist
-  // or does not match, X server must have recycled the XID.  In these two cases
-  // the GLX window is orphaned and needs to be deleted.
-  glx_window_ = GetGLX_WINDOWProperty(window_);
-  if (glx_window_)
-    glx_windows_destroyed_.erase(glx_window_);
-  else {
-    glx_window_ = glXCreateWindow(g_display,
-                                  static_cast<GLXFBConfig>(config_),
-                                  window_,
-                                  NULL);
-    SetGLX_WINDOWProperty(window_, glx_window_);
-  }
-
-  if (!glx_window_) {
-    Destroy();
-    LOG(ERROR) << "glXCreateWindow failed.";
-    return false;
-  }
-
-  CollectGarbage();
-
   return true;
 }
 
 void NativeViewGLSurfaceGLX::Destroy() {
-  if (glx_window_) {
-    glx_windows_destroyed_[glx_window_] = window_;
-    glx_window_ = 0;
-  }
-
-  config_ = NULL;
 }
 
 bool NativeViewGLSurfaceGLX::IsOffscreen() {
@@ -252,7 +91,7 @@ bool NativeViewGLSurfaceGLX::IsOffscreen() {
 }
 
 bool NativeViewGLSurfaceGLX::SwapBuffers() {
-  glXSwapBuffers(g_display, glx_window_);
+  glXSwapBuffers(g_display, window_);
   return true;
 }
 
@@ -263,11 +102,11 @@ gfx::Size NativeViewGLSurfaceGLX::GetSize() {
 }
 
 void* NativeViewGLSurfaceGLX::GetHandle() {
-  return reinterpret_cast<void*>(glx_window_);
+  return reinterpret_cast<void*>(window_);
 }
 
 void* NativeViewGLSurfaceGLX::GetConfig() {
-  return config_;
+  return NULL;
 }
 
 PbufferGLSurfaceGLX::PbufferGLSurfaceGLX(const gfx::Size& size)

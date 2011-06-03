@@ -19,6 +19,16 @@ namespace gfx {
 
 namespace {
 
+// scoped_ptr functor for XFree(). Use as follows:
+//   scoped_ptr_malloc<XVisualInfo, ScopedPtrXFree> foo(...);
+// where "XVisualInfo" is any X type that is freed with XFree.
+class ScopedPtrXFree {
+ public:
+  void operator()(void* x) const {
+    ::XFree(x);
+  }
+};
+
 bool IsCompositingWindowManagerActive(Display* display) {
   // The X macro "None" has been undefined by gl_bindings.h.
   const int kNone = 0;
@@ -45,13 +55,48 @@ GLContextGLX::~GLContextGLX() {
 bool GLContextGLX::Initialize(GLContext* shared_context,
                               GLSurface* compatible_surface) {
   GLSurfaceGLX* surface_glx = static_cast<GLSurfaceGLX*>(compatible_surface);
-  context_ = glXCreateNewContext(
-      GLSurfaceGLX::GetDisplay(),
-      static_cast<GLXFBConfig>(surface_glx->GetConfig()),
-      GLX_RGBA_TYPE,
-      static_cast<GLXContext>(
-          shared_context ? shared_context->GetHandle() : NULL),
-      True);
+
+  GLXFBConfig config = static_cast<GLXFBConfig>(surface_glx->GetConfig());
+
+  // The means by which the context is created depends on whether the drawable
+  // type works reliably with GLX 1.3. If it does not then fall back to GLX 1.2.
+  if (config) {
+    context_ = glXCreateNewContext(
+        GLSurfaceGLX::GetDisplay(),
+        static_cast<GLXFBConfig>(surface_glx->GetConfig()),
+        GLX_RGBA_TYPE,
+        static_cast<GLXContext>(
+            shared_context ? shared_context->GetHandle() : NULL),
+        True);
+  } else {
+    Display* display = GLSurfaceGLX::GetDisplay();
+
+    // Get the visuals for the X drawable.
+    XWindowAttributes attributes;
+    XGetWindowAttributes(
+        display,
+        reinterpret_cast<GLXDrawable>(surface_glx->GetHandle()),
+        &attributes);
+
+    XVisualInfo visual_info_template;
+    visual_info_template.visualid = XVisualIDFromVisual(attributes.visual);
+
+    int visual_info_count = 0;
+    scoped_ptr_malloc<XVisualInfo, ScopedPtrXFree> visual_info_list(
+        XGetVisualInfo(display, VisualIDMask,
+                       &visual_info_template,
+                       &visual_info_count));
+
+    DCHECK(visual_info_list.get());
+    if (visual_info_count == 0) {
+      LOG(ERROR) << "No visual info for visual ID.";
+      return false;
+    }
+
+    // Attempt to create a context with each visual in turn until one works.
+    context_ = glXCreateContext(display, visual_info_list.get(), 0, True);
+  }
+
   if (!context_) {
     LOG(ERROR) << "Couldn't create GL context.";
     Destroy();
@@ -74,13 +119,14 @@ bool GLContextGLX::MakeCurrent(GLSurface* surface) {
   if (IsCurrent(surface))
     return true;
 
-  if (!glXMakeContextCurrent(
+  GLSurfaceGLX* surface_glx = static_cast<GLSurfaceGLX*>(surface);
+
+  if (!glXMakeCurrent(
       GLSurfaceGLX::GetDisplay(),
       reinterpret_cast<GLXDrawable>(surface->GetHandle()),
-      reinterpret_cast<GLXDrawable>(surface->GetHandle()),
       static_cast<GLXContext>(context_))) {
+    LOG(ERROR) << "Couldn't make context current with X drawable.";
     Destroy();
-    LOG(ERROR) << "Couldn't make context current.";
     return false;
   }
 
