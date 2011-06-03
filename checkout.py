@@ -127,10 +127,14 @@ class RawCheckout(CheckoutBase):
             with open(os.path.join(filename), 'wb') as f:
               f.write(p.get())
           else:
-            stdout = subprocess2.check_output(
-                ['patch', '-p%s' % p.patchlevel],
-                stdin=p.get(),
-                cwd=self.project_path)
+            if p.diff_hunks:
+              stdout = subprocess2.check_output(
+                  ['patch', '-p%s' % p.patchlevel],
+                  stdin=p.get(),
+                  cwd=self.project_path)
+            elif p.is_new:
+              # There is only a header. Just create the file.
+              open(os.path.join(self.project_path, p.filename), 'w').close()
         for post in post_processor:
           post(self, p)
       except OSError, e:
@@ -258,8 +262,6 @@ class SvnCheckout(CheckoutBase, SvnMixIn):
           stdout += self._check_output_svn(
               ['delete', p.filename, '--force'], credentials=False)
         else:
-          new = not os.path.exists(p.filename)
-
           # svn add while creating directories otherwise svn add on the
           # contained files will silently fail.
           # First, find the root directory that exists.
@@ -278,10 +280,14 @@ class SvnCheckout(CheckoutBase, SvnMixIn):
             with open(os.path.join(self.project_path, p.filename), 'wb') as f:
               f.write(p.get())
           else:
-            cmd = ['patch', '-p%s' % p.patchlevel, '--forward', '--force']
-            stdout += subprocess2.check_output(
-                cmd, stdin=p.get(), cwd=self.project_path)
-          if new:
+            if p.diff_hunks:
+              cmd = ['patch', '-p%s' % p.patchlevel, '--forward', '--force']
+              stdout += subprocess2.check_output(
+                  cmd, stdin=p.get(), cwd=self.project_path)
+            elif p.is_new:
+              # There is only a header. Just create the file.
+              open(os.path.join(self.project_path, p.filename), 'w').close()
+          if p.is_new:
             stdout += self._check_output_svn(
                 ['add', p.filename, '--force'], credentials=False)
           for prop in p.svn_properties:
@@ -410,6 +416,8 @@ class GitCheckoutBase(CheckoutBase):
               f.write(p.get())
             stdout += self._check_output_git(['add', p.filename])
           else:
+            # No need to do anything special with p.is_new or if not
+            # p.diff_hunks. git apply manages all that already.
             stdout += self._check_output_git(
                 ['apply', '--index', '-p%s' % p.patchlevel], stdin=p.get())
           for prop in p.svn_properties:

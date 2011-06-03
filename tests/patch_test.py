@@ -512,6 +512,15 @@ class PatchTest(unittest.TestCase):
     self.assertEquals(
         [('svn:executable', '*')],
         patch.FilePatchDiff('natsort_test.py', diff, []).svn_properties)
+    diff = (
+        'diff --git a/natsort_test.py b/natsort_test.py\n'
+        'new file mode 100644\n'
+        '--- /dev/null\n'
+        '+++ b/natsort_test.py\n'
+        '@@ -0,0 +1,1 @@\n'
+        '+#!/usr/bin/env python\n')
+    self.assertEquals(
+        [], patch.FilePatchDiff('natsort_test.py', diff, []).svn_properties)
 
 
 if __name__ == '__main__':

@@ -22,7 +22,8 @@ import scm
 def main():
   parser = optparse.OptionParser(description=sys.modules[__name__].__doc__)
   parser.add_option(
-      '-v', '--verbose', action='count', help='Prints debugging infos')
+      '-v', '--verbose', action='count', default=0,
+      help='Prints debugging infos')
   parser.add_option(
       '-i', '--issue', type='int', help='Rietveld issue number')
   parser.add_option(
@@ -38,13 +39,10 @@ def main():
       default='http://codereview.chromium.org',
       help='Rietveld server')
   options, args = parser.parse_args()
-  LOG_FORMAT = '%(levelname)s %(filename)s(%(lineno)d): %(message)s'
-  if not options.verbose:
-    logging.basicConfig(level=logging.WARNING, format=LOG_FORMAT)
-  elif options.verbose == 1:
-    logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
-  elif options.verbose > 1:
-    logging.basicConfig(level=logging.DEBUG, format=LOG_FORMAT)
+  logging.basicConfig(
+      format='%(levelname)s %(filename)s(%(lineno)d): %(message)s',
+      level=[logging.WARNING, logging.INFO, logging.DEBUG][
+          min(2, options.verbose)])
   if args:
     parser.error('Extra argument(s) "%s" not understood' % ' '.join(args))
   if not options.issue:

@@ -142,12 +142,17 @@ class Rietveld(object):
               props,
               is_new=(status[0] == 'A')))
         else:
-          if state['num_chunks']:
+          # Ignores num_chunks since it may only contain an header.
+          try:
             diff = self.get_file_diff(issue, patchset, state['id'])
-          else:
-            raise patch.UnsupportedPatchFormat(
-                filename, 'File doesn\'t have a diff.')
+          except urllib2.HTTPError, e:
+            if e.code == 404:
+              raise patch.UnsupportedPatchFormat(
+                  filename, 'File doesn\'t have a diff.')
           out.append(patch.FilePatchDiff(filename, diff, props))
+          if status[0] == 'A':
+            # It won't be set for empty file.
+            out[-1].is_new = True
       else:
         # Line too long (N/80)
         # pylint: disable=C0301
