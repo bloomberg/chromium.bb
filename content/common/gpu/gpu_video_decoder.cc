@@ -271,8 +271,12 @@ GpuVideoDecoder::GpuVideoDecoder(
 GpuVideoDecoder::~GpuVideoDecoder() {}
 
 void GpuVideoDecoder::OnInitialize(const GpuVideoDecoderInitParam& param) {
+
   // TODO(jiesun): codec id should come from |param|.
+  // TODO(scottfr): surface dimensions should use aspect ratio from |param|.
   media::VideoDecoderConfig config(media::kCodecH264,
+                                   param.width,
+                                   param.height,
                                    param.width,
                                    param.height,
                                    param.frame_rate_num,
