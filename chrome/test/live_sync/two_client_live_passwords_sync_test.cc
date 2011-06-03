@@ -198,9 +198,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, Merge) {
   ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
 }
 
-// TODO(rsimha): Flaky due to http://crbug.com/80180.
 IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest,
-                       FLAKY_SetPassphraseAndThenSetupSync) {
+                       SetPassphraseAndThenSetupSync) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
   ASSERT_TRUE(GetClient(0)->SetupSync());
@@ -214,9 +213,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest,
   ASSERT_TRUE(GetClient(1)->AwaitSyncCycleCompletion("Initial sync."));
 }
 
-// TODO(rsimha): Flaky due to http://crbug.com/80180.
 IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest,
-                       FLAKY_SetPassphraseTwice) {
+                       SetPassphraseTwice) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   SetPassphrase(0, kValidPassphrase, true);
