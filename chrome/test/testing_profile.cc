@@ -157,14 +157,12 @@ TestingProfile::TestingProfile()
   }
 
   // Install profile keyed service factory hooks for dummy/test services
-  BackgroundContentsServiceFactory::GetInstance()->ForceAssociationBetween(
+  BackgroundContentsServiceFactory::GetInstance()->SetTestingFactory(
       this, NULL);
-  DesktopNotificationServiceFactory::GetInstance()->set_test_factory(
-      &CreateTestDesktopNotificationService);
-  DesktopNotificationServiceFactory::GetInstance()->ForceAssociationBetween(
-      this, NULL);
-  SessionServiceFactory::GetInstance()->ForceAssociationBetween(this, NULL);
-  TabRestoreServiceFactory::GetInstance()->ForceAssociationBetween(this, NULL);
+  DesktopNotificationServiceFactory::GetInstance()->SetTestingFactory(
+      this, CreateTestDesktopNotificationService);
+  SessionServiceFactory::GetInstance()->SetTestingFactory(this, NULL);
+  TabRestoreServiceFactory::GetInstance()->SetTestingFactory(this, NULL);
 }
 
 TestingProfile::~TestingProfile() {

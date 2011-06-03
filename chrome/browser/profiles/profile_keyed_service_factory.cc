@@ -11,9 +11,30 @@
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 
+void ProfileKeyedServiceFactory::SetTestingFactory(Profile* profile,
+                                                   FactoryFunction factory) {
+#ifndef NDEBUG
+  std::map<Profile*, FactoryFunction>::iterator it =
+      factories_.find(profile);
+  if (it != factories_.end()) {
+    DCHECK(it->second == NULL) << "Can't change non-NULL testing factory";
+  }
+#endif
+
+  factories_[profile] = factory;
+}
+
+ProfileKeyedService* ProfileKeyedServiceFactory::SetTestingFactoryAndUse(
+    Profile* profile,
+    FactoryFunction factory) {
+  DCHECK(factory);
+  SetTestingFactory(profile, factory);
+  return GetServiceForProfile(profile, true);
+}
+
 ProfileKeyedServiceFactory::ProfileKeyedServiceFactory(
     ProfileDependencyManager* manager)
-    : dependency_manager_(manager), factory_(NULL) {
+    : dependency_manager_(manager) {
   dependency_manager_->AddComponent(this);
 }
 
@@ -49,16 +70,21 @@ ProfileKeyedService* ProfileKeyedServiceFactory::GetServiceForProfile(
   std::map<Profile*, ProfileKeyedService*>::iterator it =
       mapping_.find(profile);
   if (it != mapping_.end()) {
-    service = it->second;
-    if (service || !factory_ || !create)
-      return service;
-
-    // service is NULL but we have a mock factory function
-    mapping_.erase(it);
-    service = factory_(profile);
+    return it->second;
   } else if (create) {
     // not found but creation allowed
-    service = BuildServiceInstanceFor(profile);
+
+    // Check to see if we have a per-Profile factory
+    std::map<Profile*, FactoryFunction>::iterator jt = factories_.find(profile);
+    if (jt != factories_.end()) {
+      if (jt->second) {
+        service = jt->second(profile);
+      } else {
+        service = NULL;
+      }
+    } else {
+      service = BuildServiceInstanceFor(profile);
+    }
   } else {
     // not found, creation forbidden
     return NULL;
@@ -100,4 +126,10 @@ void ProfileKeyedServiceFactory::ProfileDestroyed(Profile* profile) {
     delete it->second;
     mapping_.erase(it);
   }
+
+  // For unit tests, we also remove the factory function both so we don't
+  // maintain a big map of dead pointers, but also since we may have a second
+  // object that lives at the same address (see other comments about unit tests
+  // in this file).
+  factories_.erase(profile);
 }

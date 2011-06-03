@@ -23,7 +23,24 @@ namespace {
 using ::testing::AnyNumber;
 using ::testing::Return;
 
+class MockThemeService : public ThemeService {
+ public:
+  MOCK_METHOD0(SetNativeTheme, void());
+  MOCK_METHOD0(UseDefaultTheme, void());
+  MOCK_CONST_METHOD0(GetThemeID, std::string());
+};
+
+ProfileKeyedService* BuildMockThemeService(Profile* profile) {
+  return new MockThemeService;
+}
+
 class ThemeUtilTest : public testing::Test {
+ protected:
+  MockThemeService* BuildForProfile(Profile* profile) {
+    return static_cast<MockThemeService*>(
+        ThemeServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+            profile, BuildMockThemeService));
+  }
 };
 
 scoped_refptr<Extension> MakeThemeExtension(const FilePath& extension_path,
@@ -92,19 +109,10 @@ TEST_F(ThemeUtilTest, AreThemeSpecificsEqualHelper) {
   EXPECT_TRUE(AreThemeSpecificsEqualHelper(a, b, true));
 }
 
-class MockThemeService : public ThemeService {
- public:
-  MOCK_METHOD0(SetNativeTheme, void());
-  MOCK_METHOD0(UseDefaultTheme, void());
-  MOCK_CONST_METHOD0(GetThemeID, std::string());
-};
-
 TEST_F(ThemeUtilTest, SetCurrentThemeDefaultTheme) {
   sync_pb::ThemeSpecifics theme_specifics;
   TestingProfile profile;
-  MockThemeService* mock_theme_service = new MockThemeService;
-  ThemeServiceFactory::GetInstance()->ForceAssociationBetween(&profile,
-      mock_theme_service);
+  MockThemeService* mock_theme_service = BuildForProfile(&profile);
 
   EXPECT_CALL(*mock_theme_service, UseDefaultTheme()).Times(1);
 
@@ -116,9 +124,7 @@ TEST_F(ThemeUtilTest, SetCurrentThemeSystemTheme) {
   theme_specifics.set_use_system_theme_by_default(true);
 
   TestingProfile profile;
-  MockThemeService* mock_theme_service = new MockThemeService;
-  ThemeServiceFactory::GetInstance()->ForceAssociationBetween(&profile,
-      mock_theme_service);
+  MockThemeService* mock_theme_service = BuildForProfile(&profile);
 
   EXPECT_CALL(*mock_theme_service, SetNativeTheme()).Times(1);
 
@@ -217,9 +223,7 @@ TEST_F(ThemeUtilTest, GetThemeSpecificsHelperCustomThemeDistinct) {
 
 TEST_F(ThemeUtilTest, SetCurrentThemeIfNecessaryDefaultThemeNotNecessary) {
   TestingProfile profile;
-  MockThemeService* mock_theme_service = new MockThemeService;
-  ThemeServiceFactory::GetInstance()->ForceAssociationBetween(&profile,
-      mock_theme_service);
+  MockThemeService* mock_theme_service = BuildForProfile(&profile);
 
   EXPECT_CALL(*mock_theme_service, GetThemeID()).WillRepeatedly(Return(
       ThemeService::kDefaultThemeID));
