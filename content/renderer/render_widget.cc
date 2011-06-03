@@ -30,6 +30,7 @@
 #include "ui/gfx/point.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/surface/transport_dib.h"
+#include "ui/gfx/gl/gl_switches.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/plugins/npapi/webplugin.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
@@ -90,6 +91,8 @@ RenderWidget::RenderWidget(RenderThreadBase* render_thread,
       invalidation_task_posted_(false) {
   RenderProcess::current()->AddRefProcess();
   DCHECK(render_thread_);
+  has_disable_gpu_vsync_switch_ = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableGpuVsync);
 }
 
 RenderWidget::~RenderWidget() {
@@ -587,7 +590,7 @@ void RenderWidget::AnimationCallback() {
   animation_task_posted_ = false;
   if (!animation_update_pending_)
     return;
-  if (!animation_floor_time_.is_null()) {
+  if (!animation_floor_time_.is_null() && IsRenderingVSynced()) {
     // Record when we fired (according to base::Time::Now()) relative to when
     // we posted the task to quantify how much the base::Time/base::TimeTicks
     // skew is affecting animations.
@@ -605,14 +608,19 @@ void RenderWidget::AnimationCallback() {
 void RenderWidget::AnimateIfNeeded() {
   if (!animation_update_pending_)
     return;
+
+  // Target 60FPS if vsync is on. Go as fast as we can if vsync is off.
+  int animationInterval = IsRenderingVSynced() ? 16 : 0;
+
   base::Time now = base::Time::Now();
   if (now >= animation_floor_time_) {
-    animation_floor_time_ = now + base::TimeDelta::FromMilliseconds(16);
-    // Set a timer to call us back after 16ms (targetting 60FPS) before
+    animation_floor_time_ = now +
+        base::TimeDelta::FromMilliseconds(animationInterval);
+    // Set a timer to call us back after animationInterval before
     // running animation callbacks so that if a callback requests another
     // we'll be sure to run it at the proper time.
     MessageLoop::current()->PostDelayedTask(FROM_HERE, NewRunnableMethod(
-        this, &RenderWidget::AnimationCallback), 16);
+        this, &RenderWidget::AnimationCallback), animationInterval);
     animation_task_posted_ = true;
     animation_update_pending_ = false;
 #ifdef WEBWIDGET_HAS_ANIMATE_CHANGES
@@ -622,6 +630,7 @@ void RenderWidget::AnimateIfNeeded() {
 #endif
     return;
   }
+  TRACE_EVENT0("renderer", "EarlyOut_AnimatedTooRecently");
   if (animation_task_posted_)
     return;
   // This code uses base::Time::Now() to calculate the floor and next fire
@@ -636,6 +645,14 @@ void RenderWidget::AnimateIfNeeded() {
   animation_task_posted_ = true;
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
       NewRunnableMethod(this, &RenderWidget::AnimationCallback), delay);
+}
+
+bool RenderWidget::IsRenderingVSynced() {
+  // TODO(nduca): Forcing a driver to disable vsync (e.g. in a control panel) is
+  // not caught by this check. This will lead to artificially low frame rates
+  // for people who force vsync off at a driver level and expect Chrome to speed
+  // up.
+  return !has_disable_gpu_vsync_switch_;
 }
 
 void RenderWidget::InvalidationCallback() {

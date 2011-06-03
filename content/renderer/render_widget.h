@@ -169,6 +169,7 @@ class RenderWidget : public IPC::Channel::Listener,
   // Paints a border at the given rect for debugging purposes.
   void PaintDebugBorder(const gfx::Rect& rect, skia::PlatformCanvas* canvas);
 
+  bool IsRenderingVSynced();
   void AnimationCallback();
   void AnimateIfNeeded();
   void InvalidationCallback();
@@ -432,6 +433,7 @@ class RenderWidget : public IPC::Channel::Listener,
   bool animation_task_posted_;
   bool invalidation_task_posted_;
 
+  bool has_disable_gpu_vsync_switch_;
   base::TimeTicks last_do_deferred_update_time_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidget);
