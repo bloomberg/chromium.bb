@@ -42,6 +42,7 @@
 #include "chrome/browser/ui/webui/chromeos/enterprise_enrollment_ui.h"
 #include "chrome/browser/ui/webui/chromeos/imageburner_ui.h"
 #include "chrome/browser/ui/webui/chromeos/keyboard_overlay_ui.h"
+#include "chrome/browser/ui/webui/chromeos/login/login_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/mobile_setup_ui.h"
 #include "chrome/browser/ui/webui/chromeos/proxy_settings_ui.h"
@@ -53,10 +54,6 @@
 
 #if defined(TOUCH_UI)
 #include "chrome/browser/ui/webui/keyboard_ui.h"
-#endif
-
-#if defined(TOUCH_UI) && defined(OS_CHROMEOS)
-#include "chrome/browser/ui/webui/chromeos/login/login_ui.h"
 #endif
 
 #if defined(OS_WIN)
@@ -187,6 +184,8 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
     return &NewWebUI<KeyboardOverlayUI>;
   if (url.host() == chrome::kChromeUIMobileSetupHost)
     return &NewWebUI<MobileSetupUI>;
+  if (url.host() == chrome::kChromeUILoginHost)
+    return &NewWebUI<chromeos::LoginUI>;
   if (url.host() == chrome::kChromeUIOobeHost)
       return &NewWebUI<chromeos::OobeUI>;
   if (url.host() == chrome::kChromeUIProxySettingsHost)
@@ -209,11 +208,6 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
     return &NewWebUI<PrintPreviewUI>;
   }
 #endif  // defined(OS_CHROMEOS)
-
-#if defined(TOUCH_UI) && defined(OS_CHROMEOS)
-  if (url.host() == chrome::kChromeUILoginHost)
-    return &NewWebUI<chromeos::LoginUI>;
-#endif
 
   if (url.spec() == chrome::kChromeUIConstrainedHTMLTestURL)
     return &NewWebUI<ConstrainedHtmlUI>;

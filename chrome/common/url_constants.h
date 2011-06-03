@@ -142,9 +142,6 @@ extern const char kChromeUIWrenchMenu[];
 extern const char kChromeUINetworkMenu[];
 extern const char kChromeUIUserImageHost[];
 extern const char kChromeUIEnterpriseEnrollmentHost[];
-#endif
-
-#if defined(OS_CHROMEOS) && defined(TOUCH_UI)
 extern const char kChromeUILoginContainerHost[];
 extern const char kChromeUILoginHost[];
 #endif

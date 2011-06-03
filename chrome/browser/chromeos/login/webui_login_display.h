@@ -12,17 +12,14 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/login_display.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/chromeos/login/webui_login_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/login_ui.h"
+#include "views/widget/widget.h"
 
 namespace gfx {
 class Rect;
 }  // namespace gfx
 
 namespace chromeos {
-
-class WebUIBrowser;
-
 // WebUI-based login UI implementation.
 // This class is a Singleton. It allows the LoginDisplayHost and LoginUIHandler
 // to access it without having to be coupled with each other. It is created with
@@ -83,8 +80,7 @@ class WebUILoginDisplay : public LoginDisplay,
   std::vector<UserManager::User> users_;
 
   // Container of the screen we are displaying
-  WebUILoginView* webui_login_view_;  // Owned by webui_login_window_
-  views::Widget* webui_login_window_;
+  views::Widget* login_window_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUILoginDisplay);
 };

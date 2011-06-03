@@ -152,9 +152,6 @@ const char kChromeUIWrenchMenu[] = "wrench-menu";
 const char kChromeUINetworkMenu[] = "network-menu";
 const char kChromeUIUserImageHost[] = "userimage";
 const char kChromeUIEnterpriseEnrollmentHost[] = "enterprise-enrollment";
-#endif
-
-#if defined(OS_CHROMEOS) && defined(TOUCH_UI)
 const char kChromeUILoginContainerHost[] = "login-container";
 const char kChromeUILoginHost[] = "login";
 #endif

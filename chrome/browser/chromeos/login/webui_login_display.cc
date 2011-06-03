@@ -4,10 +4,15 @@
 
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 
+#include "chrome/browser/chromeos/login/webui_login_view.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "views/widget/widget.h"
+
+#if defined(TOUCH_UI)
+#include "chrome/browser/chromeos/login/touch_login_view.h"
+#endif
 
 namespace {
 const char kLoginURL[] = "chrome://login";
@@ -18,8 +23,8 @@ namespace chromeos {
 // WebUILoginDisplay, public: --------------------------------------------------
 
 WebUILoginDisplay::~WebUILoginDisplay() {
-  if (webui_login_window_)
-    webui_login_window_->Close();
+  if (login_window_)
+    login_window_->Close();
 }
 
 // WebUILoginDisplay, Singleton implementation: --------------------------------
@@ -37,20 +42,21 @@ views::Widget* WebUILoginDisplay::GetLoginWindow() {
 }
 
 views::Widget* WebUILoginDisplay::LoginWindow() {
-  return webui_login_window_;
+  return login_window_;
 }
 
 void WebUILoginDisplay::Destroy() {
   background_bounds_ = gfx::Rect();
   delegate_ = NULL;
 
-  if (webui_login_window_)
-    webui_login_window_->Close();
+  if (login_window_)
+    login_window_->Close();
 
-  webui_login_window_ = NULL;
-  webui_login_view_ = NULL;
+  login_window_ = NULL;
 }
 
+  // TODO(rharrison): Add mechanism to pass in the show_guest and show_new_user
+  // values.
 void WebUILoginDisplay::Init(const std::vector<UserManager::User>& users,
                              bool show_guest,
                              bool show_new_user) {
@@ -58,13 +64,22 @@ void WebUILoginDisplay::Init(const std::vector<UserManager::User>& users,
   DCHECK(delegate_);
   users_ = users;
 
-  // TODO(rharrison): Add mechanism to pass in the show_guest and show_new_user
-  // values.
-  webui_login_window_ = WebUILoginView::CreateWindowContainingView(
-      background_bounds_,
-      GURL(kLoginURL),
-      &webui_login_view_);
-  webui_login_window_->Show();
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
+  params.bounds = background_bounds_;
+
+  login_window_ = new views::Widget;
+  login_window_->Init(params);
+
+#if defined(TOUCH_UI)
+  TouchLoginView* login_view = new TouchLoginView();
+#else
+  WebUILoginView* login_view = new WebUILoginView();
+#endif
+  login_view->Init(GURL(kLoginURL));
+  login_window_->SetContentsView(login_view);
+  login_view->UpdateWindowType();
+
+  login_window_->Show();
 }
 
 void WebUILoginDisplay::OnBeforeUserRemoved(const std::string& username) {
@@ -120,8 +135,7 @@ void WebUILoginDisplay::LoginAsGuest() {
 WebUILoginDisplay::WebUILoginDisplay()
     : LoginDisplay(NULL, gfx::Rect()),
       LoginUIHandlerDelegate(),
-      webui_login_view_(NULL),
-      webui_login_window_(NULL) {
+      login_window_(NULL) {
 }
 
 }  // namespace chromeos

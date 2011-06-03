@@ -576,6 +576,8 @@
         'browser/chromeos/login/test_attempt_state.h',
         'browser/chromeos/login/textfield_with_margin.cc',
         'browser/chromeos/login/textfield_with_margin.h',
+        'browser/chromeos/login/touch_login_view.h',
+        'browser/chromeos/login/touch_login_view.cc',
         'browser/chromeos/login/update_screen.cc',
         'browser/chromeos/login/update_screen.h',
         'browser/chromeos/login/update_screen_actor.h',
@@ -3639,7 +3641,7 @@
         }],
         ['touchui==0', {
           'sources/': [
-            ['exclude', '^browser/chromeos/login/webui_*'],
+            ['exclude', '^browser/chromeos/login/touch_*'],
             ['exclude', '^browser/extensions/extension_input_ui_api.cc'],
             ['exclude', '^browser/extensions/extension_input_ui_api.h'],
             ['exclude', '^browser/renderer_host/render_widget_host_view_views.*'],
@@ -3647,7 +3649,6 @@
             ['exclude', '^browser/ui/views/tab_contents/tab_contents_container_views.cc'],
             ['exclude', '^browser/ui/views/tab_contents/tab_contents_container_views.h'],
             ['exclude', '^browser/ui/views/tab_contents/tab_contents_view_touch.*'],
-            ['exclude', '^browser/ui/webui/chromeos/login/login*'],
             ['exclude', '^browser/ui/webui/keyboard_ui.*'],
           ],
         }],

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/base_login_display_host.h"
 
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/threading/thread_restrictions.h"
@@ -20,14 +21,15 @@
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/views_login_display_host.h"
+#include "chrome/browser/chromeos/login/webui_login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/system_access.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/common/pref_names.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_type.h"
-#include "chrome/common/pref_names.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/cros/chromeos_wm_ipc_enums.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -36,10 +38,6 @@
 // TODO(altimofeev): move to ViewsLoginDisplayHost
 #include "chrome/browser/chromeos/login/views_oobe_display.h"
 
-#if defined(TOUCH_UI)
-#include "base/command_line.h"
-#include "chrome/browser/chromeos/login/webui_login_display_host.h"
-#endif
 
 namespace {
 
@@ -234,18 +232,13 @@ void ShowLoginWizard(const std::string& first_screen_name,
       (first_screen_name.empty() && oobe_complete) ||
       first_screen_name == chromeos::WizardController::kLoginScreenName;
 
-  // TODO(nkostylev) Create LoginDisplayHost instance based on flag.
-#if defined(TOUCH_UI)
   chromeos::LoginDisplayHost* display_host;
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kWebUILogin)) {
     display_host = new chromeos::WebUILoginDisplayHost(screen_bounds);
   } else {
     display_host = new chromeos::ViewsLoginDisplayHost(screen_bounds);
   }
-#else
-  chromeos::LoginDisplayHost* display_host =
-      new chromeos::ViewsLoginDisplayHost(screen_bounds);
-#endif
+
   if (show_login_screen && chromeos::CrosLibrary::Get()->EnsureLoaded()) {
     display_host->StartSignInScreen();
     return;
