@@ -26,9 +26,6 @@ const Extension* Panel::GetExtension(Browser* browser) {
 
 Panel::Panel(Browser* browser, const gfx::Rect& bounds)
     : bounds_(bounds),
-#ifndef NDEBUG
-      closing_(false),
-#endif
       minimized_(false) {
   browser_window_.reset(CreateNativePanel(browser, this));
 }
@@ -80,13 +77,6 @@ void Panel::SetBounds(const gfx::Rect& bounds) {
 void Panel::Close() {
   if (!browser_window_.get())
     return;
-
-  // Mark that we're starting the closing process. This is used by the platform
-  // specific BrowserWindow implementation to ensure Panel::Close() should be
-  // called to close a panel.
-#ifndef NDEBUG
-  closing_ = true;
-#endif
 
   browser_window_->Close();
   manager()->Remove(this);

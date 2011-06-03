@@ -47,12 +47,6 @@ void PanelBrowserView::Close() {
   if (!panel_)
     return;
 
-  // Check if the panel is in the closing process, i.e. Panel::Close() is
-  // called.
-#ifndef NDEBUG
-  DCHECK(panel_->closing());
-#endif
-
   // Cancel any currently running animation since we're closing down.
   if (bounds_animator_.get())
     bounds_animator_.reset();

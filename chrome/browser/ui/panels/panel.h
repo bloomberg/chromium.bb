@@ -141,10 +141,6 @@ class Panel : public BrowserWindow {
   BrowserWindow* browser_window() { return browser_window_.get(); }
 #endif
 
-#ifndef NDEBUG
-  bool closing() const { return closing_; }
-#endif
-
  protected:
   virtual void DestroyBrowser() OVERRIDE;
 
@@ -169,13 +165,6 @@ class Panel : public BrowserWindow {
 
   // The bounds when the panel is minimized.
   gfx::Rect minimized_bounds_;
-
-  // Is the panel being closed? This is used by the platform specific
-  // BrowserWindow implementation to ensure its Close() method is only invoked
-  // from Panel::Close().
-#ifndef NDEBUG
-  bool closing_;
-#endif
 
   // Is the panel minimized?
   bool minimized_;
