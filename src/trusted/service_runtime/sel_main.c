@@ -817,10 +817,10 @@ int main(int  argc,
     NaClLog(LOG_FATAL, "Failed to initialise env cleanser\n");
   }
 
-  /*
-   * only nap->ehdrs.e_entry is usable, no symbol table is
-   * available.
-   */
+  if (!NaClAppLaunchServiceThreads(nap)) {
+    fprintf(stderr, "Launch service threads failed\n");
+    goto done;
+  }
   if (!NaClCreateMainThread(nap,
                             argc - optind,
                             argv + optind,

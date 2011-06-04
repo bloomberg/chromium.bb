@@ -521,6 +521,11 @@ int NaClAddrIsValidEntryPt(struct NaClApp *nap,
   return addr < nap->static_text_end;
 }
 
+int NaClAppLaunchServiceThreads(struct NaClApp *nap) {
+  NaClNameServiceLaunch(nap->name_service);
+  return 1;
+}
+
 /*
  * preconditions:
  * argc > 0, argc and argv table is consistent
@@ -702,7 +707,10 @@ int NaClCreateMainThread(struct NaClApp     *nap,
   /* We are ready to distinguish crashes in trusted and untrusted code. */
   NaClSignalRegisterApp(nap);
 
+  NaClXMutexLock(&nap->mu);
   nap->running = 1;
+  NaClXMutexUnlock(&nap->mu);
+
   NaClVmHoleWaitToStartThread(nap);
 
   NaClLog(2, "system stack ptr : %016"NACL_PRIxPTR"\n", stack_ptr);
@@ -720,9 +728,6 @@ int NaClCreateMainThread(struct NaClApp     *nap,
     goto cleanup;
   }
 
-  /*
-   * NB: Hereafter locking is required to access nap.
-   */
   retval = 1;
 cleanup:
   free(argv_len);

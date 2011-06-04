@@ -36,9 +36,6 @@ int NaClDefaultNameServiceInit(struct NaClNameService *ns) {
                     (struct NaClDesc *) rng);
   NaClDescUnref((struct NaClDesc *) rng);
 
-  /* start the service! */
-  NaClNameServiceLaunch(ns);
-
   return 1;
 
  rng_ctor_failed:

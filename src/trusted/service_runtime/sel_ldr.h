@@ -409,6 +409,17 @@ void NaClAddImcHandle(struct NaClApp  *nap,
                       int             nacl_desc);
 
 /*
+ * Launch system-level service threads.  After this, access to the
+ * NaClApp object must be done in a thread-safe manner, using nap->mu
+ * etc, or access only read-only data.
+ *
+ * NB: the "secure command channel" thread should have already started
+ * (if enabled); that thread must take care to not race with the main
+ * thread that is continuing to set up the NaCl module as well.
+ */
+int NaClAppLaunchServiceThreads(struct NaClApp *nap);
+
+/*
  * Used to launch the main thread.  NB: calling thread may in the
  * future become the main NaCl app thread, and this function will
  * return only after the NaCl app main thread exits.  In such an

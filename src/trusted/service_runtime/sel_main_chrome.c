@@ -255,10 +255,10 @@ int NaClMainForChromium(int handle_count, const NaClHandle *handles,
     NaClLog(LOG_FATAL, "Failed to initialise env cleanser\n");
   }
 
-  /*
-   * only nap->ehdrs.e_entry is usable, no symbol table is
-   * available.
-   */
+  if (!NaClAppLaunchServiceThreads(nap)) {
+    fprintf(stderr, "Launch service threads failed\n");
+    goto done;
+  }
   if (!NaClCreateMainThread(nap, ac, av,
                             NaClEnvCleanserEnvironment(&env_cleanser))) {
     fprintf(stderr, "creating main thread failed\n");
