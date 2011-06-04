@@ -92,9 +92,6 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
     request_.reset(NULL);
     delegate_.reset(NULL);
 
-    // This shouldn't be necessary, but it shuts HeapChecker up.
-    file_system_context_ = NULL;
-
     net::URLRequest::RegisterProtocolFactory("filesystem", NULL);
   }
 
@@ -156,15 +153,18 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
     return temp;
   }
 
+  // Put the message loop at the top, so that it's the last thing deleted.
+  MessageLoop message_loop_;
+  // Delete all MessageLoopProxy objects before the MessageLoop, to help prevent
+  // leaks caused by tasks posted during shutdown.
+  scoped_refptr<base::MessageLoopProxy> file_thread_proxy_;
+
   ScopedTempDir temp_dir_;
   FilePath root_path_;
   scoped_ptr<net::URLRequest> request_;
   scoped_ptr<TestDelegate> delegate_;
   scoped_refptr<TestSpecialStoragePolicy> special_storage_policy_;
   scoped_refptr<FileSystemContext> file_system_context_;
-  scoped_refptr<base::MessageLoopProxy> file_thread_proxy_;
-
-  MessageLoop message_loop_;
   base::ScopedCallbackFactory<FileSystemDirURLRequestJobTest> callback_factory_;
 
   static net::URLRequestJob* job_;
