@@ -151,6 +151,8 @@ void drm_intel_gem_bo_start_gtt_access(drm_intel_bo *bo, int write_enable);
 
 int drm_intel_get_pipe_from_crtc_id(drm_intel_bufmgr *bufmgr, int crtc_id);
 
+int drm_intel_get_aperture_sizes(int fd, size_t *mappable, size_t *total);
+
 /* drm_intel_bufmgr_fake.c */
 drm_intel_bufmgr *drm_intel_bufmgr_fake_init(int fd,
 					     unsigned long low_offset,

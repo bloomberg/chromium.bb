@@ -36,8 +36,10 @@
 #include <errno.h>
 #include <drm.h>
 #include <i915_drm.h>
+#include <pciaccess.h>
 #include "intel_bufmgr.h"
 #include "intel_bufmgr_priv.h"
+#include "xf86drm.h"
 
 /** @file intel_bufmgr.c
  *
@@ -268,4 +270,52 @@ int drm_intel_get_pipe_from_crtc_id(drm_intel_bufmgr *bufmgr, int crtc_id)
 	if (bufmgr->get_pipe_from_crtc_id)
 		return bufmgr->get_pipe_from_crtc_id(bufmgr, crtc_id);
 	return -1;
+}
+
+static size_t
+drm_intel_probe_agp_aperture_size(int fd)
+{
+	struct pci_device *pci_dev;
+	size_t size = 0;
+	int ret;
+
+	ret = pci_system_init();
+	if (ret)
+		goto err;
+
+	/* XXX handle multiple adaptors? */
+	pci_dev = pci_device_find_by_slot(0, 0, 2, 0);
+	if (pci_dev == NULL)
+		goto err;
+
+	ret = pci_device_probe(pci_dev);
+	if (ret)
+		goto err;
+
+	size = pci_dev->regions[2].size;
+err:
+	pci_system_cleanup ();
+	return size;
+}
+
+int drm_intel_get_aperture_sizes(int fd,
+				 size_t *mappable,
+				 size_t *total)
+{
+
+	struct drm_i915_gem_get_aperture aperture;
+	int ret;
+
+	ret = drmIoctl(fd, DRM_IOCTL_I915_GEM_GET_APERTURE, &aperture);
+	if (ret)
+		return ret;
+
+	*mappable = 0;
+	/* XXX add a query for the kernel value? */
+	if (*mappable == 0)
+		*mappable = drm_intel_probe_agp_aperture_size(fd);
+	if (*mappable == 0)
+		*mappable = 64 * 1024 * 1024; /* minimum possible value */
+	*total = aperture.aper_size;
+	return 0;
 }
