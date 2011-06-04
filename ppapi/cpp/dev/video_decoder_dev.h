@@ -54,14 +54,20 @@ class VideoDecoder : public Resource {
   //
   // Parameters:
   //  |instance| is the pointer to the plug-in instance.
-  //  |config| is the configuration on which the decoder should be initialized.
   //  |callback| will be called when decoder is initialized.
   //  |client| is the pointer to the client object. Ownership of the object is
   //  not transferred and it must outlive the lifetime of this class.
-  VideoDecoder(const Instance* instance,
-               const PP_VideoConfigElement* config,
-               CompletionCallback callback, Client* client);
+  VideoDecoder(const Instance* instance, Client* client);
   ~VideoDecoder();
+
+  // Initializates the video decoder with a requested configuration.
+  // Calls Init() on PPB_VideoDecoder_Dev interface.
+  //
+  // Parameters:
+  //  |config| is the configuration on which the decoder should be initialized.
+  //  |callback| will be called when decoder is initialized.
+  int32_t Initialize(const PP_VideoConfigElement* config,
+                     CompletionCallback callback);
 
   // GetConfigs returns supported configurations that are subsets of given
   // |prototype_config|.
@@ -79,19 +85,19 @@ class VideoDecoder : public Resource {
 
   // Decodes given bitstream buffer. Once decoder is done with processing
   // |bitstream_buffer| is will call |callback| with provided user data.
-  bool Decode(const PP_VideoBitstreamBuffer_Dev& bitstream_buffer,
-              CompletionCallback callback);
+  int32_t Decode(const PP_VideoBitstreamBuffer_Dev& bitstream_buffer,
+                 CompletionCallback callback);
 
   // Tells the decoder to reuse given picture buffer.
   void ReusePictureBuffer(int32_t picture_buffer_id);
 
   // Flushes the decoder. |callback| will be called as soon as Flush has been
   // finished.
-  bool Flush(CompletionCallback callback);
+  int32_t Flush(CompletionCallback callback);
 
   // Dispatches abortion request to the decoder to abort decoding as soon as
   // possible. |callback| will be called as soon as abortion has been finished.
-  bool Abort(CompletionCallback callback);
+  int32_t Abort(CompletionCallback callback);
 
  private:
   // Pointer to the plugin's video decoder support interface for providing the

@@ -52,7 +52,7 @@
 //          |###########################|
 //          | GetConfigs                |
 //          |-------------------------->|
-//          | Create                    |
+//          | Create + Initialize       |
 //          |-------------------------->|  Decoder will ask for certain number
 //          | (Decode)                  |  of PictureBuffers. This may happen
 //          |- - - - - - - - - - - - - >|  either directly after constructor or
@@ -121,7 +121,16 @@ struct PPB_VideoDecoder_Dev {
                         uint32_t matching_configs_size,
                         uint32_t* num_of_matching_configs);
 
-  // Creates a video decoder with requested |decoder_config|.
+  // Creates a video decoder. Initialize() must be called afterwards to
+  // set its configuration.
+  //
+  // Parameters:
+  //   |instance| pointer to the plugin instance.
+  //
+  // The created decoder is returned as PP_Resource. 0 means failure.
+  PP_Resource (*Create)(PP_Instance instance);
+
+  // Initializes the video decoder with requested configuration.
   // |input_format| in |decoder_config| specifies the format of input access
   // unit, with PP_VIDEOKEY_CODECID and PP_VIDEOKEY_PAYLOADFORMAT required.
   // Plugin has the option to specify codec profile/level and other
@@ -129,13 +138,13 @@ struct PPB_VideoDecoder_Dev {
   // the most appropriate decoder.
   //
   // Parameters:
-  //   |instance| pointer to the plugin instance.
-  //   |dec_config| the configuration which to use to initialize the decoder.
-  //   |callback| called after initialize is complete.
+  //   |video_decoder| is the previously created handle to the decoder resource.
+  //   |decoder_config| the configuration to use to initialize the decoder.
+  //   |callback| called after initialization is complete.
   //
-  // The created decoder is returned as PP_Resource. NULL means failure.
-  PP_Resource (*Create)(PP_Instance instance,
-                        const PP_VideoConfigElement* dec_config,
+  // Returns an error code from pp_errors.h.
+  int32_t (*Initialize)(PP_Resource video_decoder,
+                        const PP_VideoConfigElement* decoder_config,
                         struct PP_CompletionCallback callback);
 
   // Tests whether |resource| is a video decoder created through Create
@@ -151,14 +160,13 @@ struct PPB_VideoDecoder_Dev {
   // non-blocking function.
   //
   // Parameters:
-  //   |video_decoder| is the previously created handle to the decoder instance.
+  //   |video_decoder| is the previously created handle to the decoder resource.
   //   |bitstream_buffer| is the bitstream buffer that contains the input data.
   //   |callback| will be called when |bitstream_buffer| has been processed by
   //   the decoder.
   //
-  // Returns PP_TRUE on decoder successfully accepting buffer, PP_FALSE
-  // otherwise.
-  PP_Bool (*Decode)(PP_Resource video_decoder,
+  // Returns an error code from pp_errors.h.
+  int32_t (*Decode)(PP_Resource video_decoder,
                     const struct PP_VideoBitstreamBuffer_Dev* bitstream_buffer,
                     struct PP_CompletionCallback callback);
 
@@ -185,7 +193,7 @@ struct PPB_VideoDecoder_Dev {
   // PPB API.
   //
   // Parameters:
-  //   |video_decoder| is the previously created handle to the decoder instance.
+  //   |video_decoder| is the previously created handle to the decoder resource.
   //   |no_of_buffers| how many buffers are behind picture buffer pointer.
   //   |buffers| contains the reference to the picture buffer that was
   //   allocated.
@@ -210,7 +218,7 @@ struct PPB_VideoDecoder_Dev {
   //            the GL textures for writing output again.
   //
   // Parameters:
-  //   |video_decoder| is the previously created handle to the decoder instance.
+  //   |video_decoder| is the previously created handle to the decoder resource.
   //   |picture_buffer_id| contains the id of the picture buffer that was
   //   processed.
   void (*ReusePictureBuffer)(PP_Resource video_decoder,
@@ -223,13 +231,12 @@ struct PPB_VideoDecoder_Dev {
   // decode will call the |callback|.
   //
   // Parameters:
-  //   |video_decoder| is the previously created handle to the decoder instance.
+  //   |video_decoder| is the previously created handle to the decoder resource.
   //   |callback| is one-time callback that will be called once the flushing
   //   request has been completed.
   //
-  // Returns PP_TRUE on acceptance of flush request and PP_FALSE if request to
-  // flush is rejected by the decoder.
-  PP_Bool (*Flush)(PP_Resource video_decoder,
+  // Returns an error code from pp_errors.h.
+  int32_t (*Flush)(PP_Resource video_decoder,
                    struct PP_CompletionCallback callback);
 
   // Dispatches abortion request to the decoder to abort decoding as soon as
@@ -239,13 +246,12 @@ struct PPB_VideoDecoder_Dev {
   // to dismiss them.
   //
   // Parameters:
-  //   |video_decoder| is the previously created handle to the decoder instance.
+  //   |video_decoder| is the previously created handle to the decoder resource.
   //   |callback| is one-time callback that will be called once the abortion
   //   request has been completed.
   //
-  // Returns PP_TRUE on acceptance of abort request and PP_FALSE if request to
-  // abort is rejected by the decoder.
-  PP_Bool (*Abort)(PP_Resource video_decoder,
+  // Returns an error code from pp_errors.h.
+  int32_t (*Abort)(PP_Resource video_decoder,
                    struct PP_CompletionCallback callback);
 };
 

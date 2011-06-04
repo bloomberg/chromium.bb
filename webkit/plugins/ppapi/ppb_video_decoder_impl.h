@@ -46,17 +46,17 @@ class PPB_VideoDecoder_Impl : public Resource,
                   PP_VideoConfigElement* matching_configs,
                   uint32_t matching_configs_size,
                   uint32_t* num_of_matching_configs);
-  bool Init(const PP_VideoConfigElement* dec_config,
-            PP_CompletionCallback callback);
-  bool Decode(const PP_VideoBitstreamBuffer_Dev* bitstream_buffer,
-              PP_CompletionCallback callback);
+  int32_t Initialize(const PP_VideoConfigElement* dec_config,
+                     PP_CompletionCallback callback);
+  int32_t Decode(const PP_VideoBitstreamBuffer_Dev* bitstream_buffer,
+                 PP_CompletionCallback callback);
   void AssignGLESBuffers(uint32_t no_of_buffers,
                          const PP_GLESBuffer_Dev* buffers);
   void AssignSysmemBuffers(uint32_t no_of_buffers,
                            const PP_SysmemBuffer_Dev* buffers);
   void ReusePictureBuffer(int32_t picture_buffer_id);
-  bool Flush(PP_CompletionCallback callback);
-  bool Abort(PP_CompletionCallback callback);
+  int32_t Flush(PP_CompletionCallback callback);
+  int32_t Abort(PP_CompletionCallback callback);
 
   // media::VideoDecodeAccelerator::Client implementation.
   virtual void ProvidePictureBuffers(

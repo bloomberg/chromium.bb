@@ -4,6 +4,7 @@
 
 #include "webkit/plugins/ppapi/ppb_layer_compositor_impl.h"
 
+#include "ppapi/c/pp_errors.h"
 #include "webkit/plugins/ppapi/common.h"
 
 namespace webkit {
@@ -40,9 +41,9 @@ void SetDisplay(PP_Resource compositor, PP_Resource layer,
 void MarkAsDirty(PP_Resource compositor, PP_Resource layer) {
 }
 
-PP_Bool SwapBuffers(PP_Resource compositor,
-                       struct PP_CompletionCallback callback) {
-  return PP_FALSE;
+int32_t SwapBuffers(PP_Resource compositor,
+                    struct PP_CompletionCallback callback) {
+  return PP_ERROR_FAILED;
 }
 
 const PPB_LayerCompositor_Dev ppb_layercompositor = {
@@ -97,9 +98,9 @@ void PPB_LayerCompositor_Impl::SetDisplay(PP_Resource layer,
 void PPB_LayerCompositor_Impl::MarkAsDirty(PP_Resource layer) {
 }
 
-PP_Bool PPB_LayerCompositor_Impl::SwapBuffers(
+int32_t PPB_LayerCompositor_Impl::SwapBuffers(
     struct PP_CompletionCallback callback) {
-  return PP_FALSE;
+  return PP_ERROR_FAILED;
 }
 
 }  // namespace ppapi

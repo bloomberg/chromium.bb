@@ -68,8 +68,8 @@ struct PPB_LayerCompositor_Dev {
   // Since this is an asynchronous operation, |callback| will be called when
   // this operation is done.
   //
-  // Returns PP_TRUE if the operation was successful. PP_FALSE otherwise.
-  PP_Bool (*SwapBuffers)(PP_Resource compositor,
+  // Returns an error code from pp_errors.h.
+  int32_t (*SwapBuffers)(PP_Resource compositor,
                          struct PP_CompletionCallback callback);
 };
 

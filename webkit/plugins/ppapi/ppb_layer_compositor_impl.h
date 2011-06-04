@@ -32,7 +32,7 @@ class PPB_LayerCompositor_Impl : public Resource {
   void SetRect(PP_Resource layer, const struct PP_Rect* rect);
   void SetDisplay(PP_Resource layer, PP_Bool is_displayed);
   void MarkAsDirty(PP_Resource layer);
-  PP_Bool SwapBuffers(struct PP_CompletionCallback callback);
+  int32_t SwapBuffers(struct PP_CompletionCallback callback);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PPB_LayerCompositor_Impl);
