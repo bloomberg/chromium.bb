@@ -28,6 +28,7 @@
 #include "chrome/browser/renderer_host/text_input_client_message_filter.h"
 #include "chrome/browser/search_engines/search_provider_install_state_message_filter.h"
 #include "chrome/browser/spellcheck_message_filter.h"
+#include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_factory.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_switches.h"
@@ -321,6 +322,15 @@ void ChromeContentBrowserClient::RevealFolderInOS(const FilePath& path) {
       BrowserThread::FILE, FROM_HERE,
       NewRunnableFunction(&platform_util::OpenItem, path));
 #endif
+}
+
+void ChromeContentBrowserClient::AllowCertificateError(
+    SSLCertErrorHandler* handler,
+    bool overridable,
+    Callback2<SSLCertErrorHandler*, bool>::Type* callback) {
+  SSLBlockingPage* blocking_page = new SSLBlockingPage(
+      handler, overridable, callback);
+  blocking_page->Show();
 }
 
 #if defined(OS_LINUX)

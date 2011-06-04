@@ -8,13 +8,13 @@
 
 #include <string>
 
-#include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "webkit/glue/resource_type.h"
 
 class NavigationEntry;
 class SSLCertErrorHandler;
 class SSLPolicyBackend;
 class SSLRequestInfo;
+class TabContents;
 
 // SSLPolicy
 //
@@ -22,7 +22,7 @@ class SSLRequestInfo;
 // SSL trust indicators.  It relies on the SSLPolicyBackend to actually enact
 // the decisions it reaches.
 //
-class SSLPolicy : public SSLBlockingPage::Delegate {
+class SSLPolicy {
  public:
   explicit SSLPolicy(SSLPolicyBackend* backend);
 
@@ -41,19 +41,16 @@ class SSLPolicy : public SSLBlockingPage::Delegate {
 
   SSLPolicyBackend* backend() const { return backend_; }
 
-  // SSLBlockingPage::Delegate methods.
-  virtual SSLErrorInfo GetSSLErrorInfo(SSLCertErrorHandler* handler);
-  virtual void OnDenyCertificate(SSLCertErrorHandler* handler);
-  virtual void OnAllowCertificate(SSLCertErrorHandler* handler);
-
  private:
+  // Callback that the user chose to accept or deny the certificate.
+  void OnAllowCertificate(SSLCertErrorHandler* handler, bool allow);
+
   // Helper method for derived classes handling certificate errors.
   // If the error can be overridden by the user, show a blocking page that
   // lets the user continue or cancel the request.
   // For fatal certificate errors, show a blocking page that only lets the
   // user cancel the request.
-  void OnCertErrorInternal(SSLCertErrorHandler* handler,
-                           SSLBlockingPage::ErrorLevel error_level);
+  void OnCertErrorInternal(SSLCertErrorHandler* handler, bool overridable);
 
   // If the security style of |entry| has not been initialized, then initialize
   // it with the default style for its URL.

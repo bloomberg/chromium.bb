@@ -47,8 +47,6 @@ include_rules = [
   "+chrome/browser/sessions/session_types.h",
 
   "+chrome/browser/ssl/ssl_add_cert_handler.h",
-  "+chrome/browser/ssl/ssl_blocking_page.h",
-  "+chrome/browser/ssl/ssl_error_info.h",
   "+chrome/browser/tab_contents/tab_contents_ssl_helper.h",
   "+chrome/browser/tab_contents/tab_util.h",
   "+chrome/browser/ui/tab_contents/tab_contents_wrapper.h",

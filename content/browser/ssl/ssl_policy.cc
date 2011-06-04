@@ -9,7 +9,7 @@
 #include "base/memory/singleton.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
-#include "chrome/browser/ssl/ssl_error_info.h"
+#include "content/browser/content_browser_client.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/site_instance.h"
@@ -58,7 +58,7 @@ void SSLPolicy::OnCertError(SSLCertErrorHandler* handler) {
     case net::ERR_CERT_DATE_INVALID:
     case net::ERR_CERT_AUTHORITY_INVALID:
     case net::ERR_CERT_WEAK_SIGNATURE_ALGORITHM:
-      OnCertErrorInternal(handler, SSLBlockingPage::ERROR_OVERRIDABLE);
+      OnCertErrorInternal(handler, true);
       break;
     case net::ERR_CERT_NO_REVOCATION_MECHANISM:
       // Ignore this error.
@@ -73,7 +73,7 @@ void SSLPolicy::OnCertError(SSLCertErrorHandler* handler) {
     case net::ERR_CERT_REVOKED:
     case net::ERR_CERT_INVALID:
     case net::ERR_CERT_NOT_IN_DNS:
-      OnCertErrorInternal(handler, SSLBlockingPage::ERROR_FATAL);
+      OnCertErrorInternal(handler, false);
       break;
     default:
       NOTREACHED();
@@ -154,47 +154,38 @@ void SSLPolicy::UpdateEntry(NavigationEntry* entry, TabContents* tab_contents) {
     entry->ssl().set_displayed_insecure_content();
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// SSLBlockingPage::Delegate methods
-
-SSLErrorInfo SSLPolicy::GetSSLErrorInfo(SSLCertErrorHandler* handler) {
-  return SSLErrorInfo::CreateError(
-      SSLErrorInfo::NetErrorToErrorType(handler->cert_error()),
-      handler->ssl_info().cert, handler->request_url());
-}
-
-void SSLPolicy::OnDenyCertificate(SSLCertErrorHandler* handler) {
-  // Default behavior for rejecting a certificate.
-  //
-  // While DenyCertForHost() executes synchronously on this thread,
-  // CancelRequest() gets posted to a different thread. Calling
-  // DenyCertForHost() first ensures deterministic ordering.
-  backend_->DenyCertForHost(handler->ssl_info().cert,
-                            handler->request_url().host());
-  handler->CancelRequest();
-}
-
-void SSLPolicy::OnAllowCertificate(SSLCertErrorHandler* handler) {
-  // Default behavior for accepting a certificate.
-  // Note that we should not call SetMaxSecurityStyle here, because the active
-  // NavigationEntry has just been deleted (in HideInterstitialPage) and the
-  // new NavigationEntry will not be set until DidNavigate.  This is ok,
-  // because the new NavigationEntry will have its max security style set
-  // within DidNavigate.
-  //
-  // While AllowCertForHost() executes synchronously on this thread,
-  // ContinueRequest() gets posted to a different thread. Calling
-  // AllowCertForHost() first ensures deterministic ordering.
-  backend_->AllowCertForHost(handler->ssl_info().cert,
-                             handler->request_url().host());
-  handler->ContinueRequest();
+void SSLPolicy::OnAllowCertificate(SSLCertErrorHandler* handler, bool allow) {
+  if (allow) {
+    // Default behavior for accepting a certificate.
+    // Note that we should not call SetMaxSecurityStyle here, because the active
+    // NavigationEntry has just been deleted (in HideInterstitialPage) and the
+    // new NavigationEntry will not be set until DidNavigate.  This is ok,
+    // because the new NavigationEntry will have its max security style set
+    // within DidNavigate.
+    //
+    // While AllowCertForHost() executes synchronously on this thread,
+    // ContinueRequest() gets posted to a different thread. Calling
+    // AllowCertForHost() first ensures deterministic ordering.
+    backend_->AllowCertForHost(handler->ssl_info().cert,
+                               handler->request_url().host());
+    handler->ContinueRequest();
+  } else {
+    // Default behavior for rejecting a certificate.
+    //
+    // While DenyCertForHost() executes synchronously on this thread,
+    // CancelRequest() gets posted to a different thread. Calling
+    // DenyCertForHost() first ensures deterministic ordering.
+    backend_->DenyCertForHost(handler->ssl_info().cert,
+                              handler->request_url().host());
+    handler->CancelRequest();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Certificate Error Routines
 
 void SSLPolicy::OnCertErrorInternal(SSLCertErrorHandler* handler,
-                                    SSLBlockingPage::ErrorLevel error_level) {
+                                    bool overridable) {
   if (handler->resource_type() != ResourceType::MAIN_FRAME) {
     // A sub-resource has a certificate error.  The user doesn't really
     // have a context for making the right decision, so block the
@@ -203,9 +194,11 @@ void SSLPolicy::OnCertErrorInternal(SSLCertErrorHandler* handler,
     handler->DenyRequest();
     return;
   }
-  SSLBlockingPage* blocking_page = new SSLBlockingPage(handler, this,
-                                                       error_level);
-  blocking_page->Show();
+
+  Callback2<SSLCertErrorHandler*, bool>::Type* callback =
+      NewCallback(this, &SSLPolicy::OnAllowCertificate);
+  content::GetContentClient()->browser()->AllowCertificateError(
+      handler, overridable, callback);
 }
 
 void SSLPolicy::InitializeEntryIfNeeded(NavigationEntry* entry) {

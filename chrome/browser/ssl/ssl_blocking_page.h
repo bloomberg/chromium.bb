@@ -9,8 +9,8 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_old.h"
 #include "base/string16.h"
-#include "chrome/browser/ssl/ssl_error_info.h"
 #include "chrome/browser/tab_contents/chrome_interstitial_page.h"
 
 class DictionaryValue;
@@ -21,33 +21,9 @@ class SSLCertErrorHandler;
 // It deletes itself when the interstitial page is closed.
 class SSLBlockingPage : public ChromeInterstitialPage {
  public:
-  // An interface that classes that want to interact with the SSLBlockingPage
-  // should implement.
-  class Delegate {
-   public:
-    // Should return the information about the error that causes this blocking
-    // page.
-    virtual SSLErrorInfo GetSSLErrorInfo(SSLCertErrorHandler* handler) = 0;
-
-    // Notification that the user chose to reject the certificate.
-    virtual void OnDenyCertificate(SSLCertErrorHandler* handler) = 0;
-
-    // Notification that the user chose to accept the certificate.
-    virtual void OnAllowCertificate(SSLCertErrorHandler* handler) = 0;
-
-   protected:
-    virtual ~Delegate() {}
-  };
-
-  // The severity of the certificate error.
-  enum ErrorLevel {
-    ERROR_OVERRIDABLE,  // The interstitial page has a "Proceed anyway" button.
-    ERROR_FATAL,        // The interstitial page doesn't allow the user to
-                        // proceed to the site.
-  };
-
-  SSLBlockingPage(SSLCertErrorHandler* handler, Delegate* delegate,
-                  ErrorLevel error_level);
+  SSLBlockingPage(SSLCertErrorHandler* handler,
+                  bool overridable,
+                  Callback2<SSLCertErrorHandler*, bool>::Type* callback);
   virtual ~SSLBlockingPage();
 
   // A method that sets strings in the specified dictionary from the passed
@@ -73,15 +49,10 @@ class SSLBlockingPage : public ChromeInterstitialPage {
   // ContinueRequest() on this object.
   scoped_refptr<SSLCertErrorHandler> handler_;
 
-  // Our delegate.  It provides useful information, like the title and details
-  // about this error.
-  Delegate* delegate_;
-
-  // A flag to indicate if we've notified |delegate_| of the user's decision.
-  bool delegate_has_been_notified_;
+  Callback2<SSLCertErrorHandler*, bool>::Type* callback_;
 
   // Is the certificate error overridable or fatal?
-  ErrorLevel error_level_;
+  bool overridable_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLBlockingPage);
 };

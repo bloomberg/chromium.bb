@@ -42,21 +42,21 @@ void RecordSSLBlockingPageStats(SSLBlockingPageEvent event) {
 
 // Note that we always create a navigation entry with SSL errors.
 // No error happening loading a sub-resource triggers an interstitial so far.
-SSLBlockingPage::SSLBlockingPage(SSLCertErrorHandler* handler,
-                                 Delegate* delegate,
-                                 ErrorLevel error_level)
+SSLBlockingPage::SSLBlockingPage(
+    SSLCertErrorHandler* handler,
+    bool overridable,
+    Callback2<SSLCertErrorHandler*, bool>::Type* callback)
     : ChromeInterstitialPage(handler->GetTabContents(),
                              true,
                              handler->request_url()),
       handler_(handler),
-      delegate_(delegate),
-      delegate_has_been_notified_(false),
-      error_level_(error_level) {
+      callback_(callback),
+      overridable_(overridable) {
   RecordSSLBlockingPageStats(SHOW);
 }
 
 SSLBlockingPage::~SSLBlockingPage() {
-  if (!delegate_has_been_notified_) {
+  if (callback_) {
     // The page is closed without the user having chosen what to do, default to
     // deny.
     NotifyDenyCertificate();
@@ -66,7 +66,10 @@ SSLBlockingPage::~SSLBlockingPage() {
 std::string SSLBlockingPage::GetHTMLContents() {
   // Let's build the html error page.
   DictionaryValue strings;
-  SSLErrorInfo error_info = delegate_->GetSSLErrorInfo(handler_);
+  SSLErrorInfo error_info = SSLErrorInfo::CreateError(
+      SSLErrorInfo::NetErrorToErrorType(handler_->cert_error()),
+      handler_->ssl_info().cert, handler_->request_url());
+
   strings.SetString("headLine", error_info.title());
   strings.SetString("description", error_info.details());
 
@@ -75,7 +78,7 @@ std::string SSLBlockingPage::GetHTMLContents() {
   SetExtraInfo(&strings, error_info.extra_information());
 
   int resource_id;
-  if (error_level_ == ERROR_OVERRIDABLE) {
+  if (overridable_) {
     resource_id = IDR_SSL_ROAD_BLOCK_HTML;
     strings.SetString("title",
                       l10n_util::GetStringUTF16(IDS_SSL_BLOCKING_PAGE_TITLE));
@@ -84,7 +87,6 @@ std::string SSLBlockingPage::GetHTMLContents() {
     strings.SetString("exit",
                       l10n_util::GetStringUTF16(IDS_SSL_BLOCKING_PAGE_EXIT));
   } else {
-    DCHECK_EQ(error_level_, ERROR_FATAL);
     resource_id = IDR_SSL_ERROR_HTML;
     strings.SetString("title",
                       l10n_util::GetStringUTF16(IDS_SSL_ERROR_PAGE_TITLE));
@@ -141,17 +143,19 @@ void SSLBlockingPage::DontProceed() {
 }
 
 void SSLBlockingPage::NotifyDenyCertificate() {
-  DCHECK(!delegate_has_been_notified_);
+  DCHECK(callback_);
 
-  delegate_->OnDenyCertificate(handler_);
-  delegate_has_been_notified_ = true;
+  callback_->Run(handler_, false);
+  delete callback_;
+  callback_ = NULL;
 }
 
 void SSLBlockingPage::NotifyAllowCertificate() {
-  DCHECK(!delegate_has_been_notified_);
+  DCHECK(callback_);
 
-  delegate_->OnAllowCertificate(handler_);
-  delegate_has_been_notified_ = true;
+  callback_->Run(handler_, true);
+  delete callback_;
+  callback_ = NULL;
 }
 
 // static

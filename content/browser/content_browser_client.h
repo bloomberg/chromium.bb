@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/callback_old.h"
 #include "content/common/content_client.h"
 
 class BrowserRenderProcessHost;
@@ -18,6 +19,7 @@ class PluginProcessHost;
 class Profile;
 class QuotaPermissionContext;
 class RenderViewHost;
+class SSLCertErrorHandler;
 class TabContents;
 class WorkerProcessHost;
 
@@ -108,6 +110,15 @@ class ContentBrowserClient {
 
   // Shows the given path using the OS file manager.
   virtual void RevealFolderInOS(const FilePath& path);
+
+  // Informs the embedder that a certificate error has occured.  If overridable
+  // is true, the user can ignore the error and continue.  If it's false, then
+  // the certificate error is severe and the user isn't allowed to proceed.  The
+  // embedder can call the callback asynchronously.
+  virtual void AllowCertificateError(
+      SSLCertErrorHandler* handler,
+      bool overridable,
+      Callback2<SSLCertErrorHandler*, bool>::Type* callback);
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Can return an optional fd for crash handling, otherwise returns -1.

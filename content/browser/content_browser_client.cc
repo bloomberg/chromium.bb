@@ -87,6 +87,14 @@ QuotaPermissionContext* ContentBrowserClient::CreateQuotaPermissionContext() {
 void ContentBrowserClient::RevealFolderInOS(const FilePath& path) {
 }
 
+void ContentBrowserClient::AllowCertificateError(
+    SSLCertErrorHandler* handler,
+    bool overridable,
+    Callback2<SSLCertErrorHandler*, bool>::Type* callback) {
+  callback->Run(handler, overridable);
+  delete callback;
+}
+
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 int ContentBrowserClient::GetCrashSignalFD(const std::string& process_type) {
   return -1;
