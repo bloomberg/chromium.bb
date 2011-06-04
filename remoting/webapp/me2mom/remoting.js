@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-"use strict";
+// TODO(jamiewalch): strict mode causes the page to crash so it's disabled for
+// now. Reinstate this when the associated bug is fixed.
+// http://code.google.com/p/v8/issues/detail?id=1423
+//"use strict";
 
 // TODO(ajwong): This seems like a bad idea to share the exact same object
 // with the background page.  Why are we doing it like this?
