@@ -47,12 +47,12 @@ BrowserPolicyConnector* BrowserPolicyConnector::Create() {
 
 // static
 BrowserPolicyConnector* BrowserPolicyConnector::CreateForTests() {
-  const policy::ConfigurationPolicyProvider::PolicyDefinitionList*
-      policy_list = policy::ConfigurationPolicyPrefStore::
-      GetChromePolicyDefinitionList();
+  const ConfigurationPolicyProvider::PolicyDefinitionList*
+      policy_list = ConfigurationPolicyPrefStore::
+          GetChromePolicyDefinitionList();
   return new BrowserPolicyConnector(
-      new policy::DummyConfigurationPolicyProvider(policy_list),
-      new policy::DummyConfigurationPolicyProvider(policy_list));
+      new DummyConfigurationPolicyProvider(policy_list),
+      new DummyConfigurationPolicyProvider(policy_list));
 }
 
 BrowserPolicyConnector::BrowserPolicyConnector()
