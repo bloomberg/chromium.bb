@@ -18,6 +18,7 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/message_loop.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
@@ -74,6 +75,8 @@ class GLInProcessContext : public base::SupportsWeakPtr<GLInProcessContext> {
   static bool Terminate();
 
   ~GLInProcessContext();
+
+  void PumpCommands(bool sync);
 
   // Create a GLInProcessContext that renders directly to a view. The view and
   // the associated window must not be destroyed until the returned
@@ -249,13 +252,18 @@ class LatchAllocator {
   LatchAllocator();
   ~LatchAllocator();
 
+  base::SharedMemoryHandle handle() const { return shm_->handle(); }
+  base::SharedMemory* shared_memory() { return shm_.get(); }
+
   bool AllocateLatch(uint32* latch_id);
   bool FreeLatch(uint32 latch_id);
 
  private:
   friend struct DefaultSingletonTraits<LatchAllocator>;
 
-  scoped_array<uint32> latches_;
+  scoped_ptr<base::SharedMemory> shm_;
+  // Pointer to mapped shared memory.
+  volatile uint32* latches_;
 
   DISALLOW_COPY_AND_ASSIGN(LatchAllocator);
 };
@@ -268,7 +276,10 @@ LatchAllocator* LatchAllocator::GetInstance() {
 }
 
 LatchAllocator::LatchAllocator() {
-  latches_.reset(new uint32[size()]);
+  shm_.reset(new base::SharedMemory());
+  shm_->CreateAndMapAnonymous(size());
+
+  latches_ = static_cast<uint32*>(shm_->memory());
   // Mark all latches as unallocated.
   for (uint32 i = 0; i < kMaxLatchesPerRenderer; ++i)
     latches_[i] = kFreeLatch;
@@ -369,6 +380,15 @@ void GLInProcessContext::ResizeOffscreen(const gfx::Size& size) {
     gles2_implementation_->ResizeCHROMIUM(size.width(),  size.height());
     size_ = size;
   }
+}
+
+void GLInProcessContext::PumpCommands(bool /* sync */) {
+  ::gpu::CommandBuffer::State state;
+  do {
+    gpu_scheduler_->PutChanged(true);
+    MessageLoop::current()->RunAllPending();
+    state = command_buffer_->GetState();
+  } while (state.get_offset != state.put_offset);
 }
 
 uint32 GLInProcessContext::GetParentTextureId() {
@@ -591,7 +611,7 @@ bool GLInProcessContext::Initialize(bool onscreen,
   }
 
   command_buffer_->SetPutOffsetChangeCallback(
-      NewCallback(gpu_scheduler_, &GpuScheduler::PutChanged));
+      NewCallback(this, &GLInProcessContext::PumpCommands));
 
   // Create the GLES2 helper, which writes the command buffer protocol.
   gles2_helper_ = new GLES2CmdHelper(command_buffer_.get());
@@ -613,6 +633,16 @@ bool GLInProcessContext::Initialize(bool onscreen,
   Buffer transfer_buffer =
       command_buffer_->GetTransferBuffer(transfer_buffer_id_);
   if (!transfer_buffer.ptr) {
+    Destroy();
+    return false;
+  }
+
+  // Register transfer buffer so that the context can access latches.
+  LatchAllocator* latch_shm = LatchAllocator::GetInstance();
+  latch_transfer_buffer_id_ = command_buffer_->RegisterTransferBuffer(
+      latch_shm->shared_memory(), LatchAllocator::size(),
+      ::gpu::kLatchSharedMemoryId);
+  if (latch_transfer_buffer_id_ != ::gpu::kLatchSharedMemoryId) {
     Destroy();
     return false;
   }
@@ -808,8 +838,6 @@ bool WebGraphicsContext3DInProcessCommandBufferImpl::initialize(
     attributes_.antialias = samples > 0;
   }
   makeContextCurrent();
-
-  fprintf(stderr, "Running command buffer\n");
 
   return true;
 }
