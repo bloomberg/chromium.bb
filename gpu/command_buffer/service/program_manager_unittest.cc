@@ -623,17 +623,17 @@ TEST_F(ProgramManagerWithShaderTest, GLDriverReturnsWrongTypeInfo) {
   ShaderTranslator::VariableMap attrib_map;
   ShaderTranslator::VariableMap uniform_map;
   attrib_map[kAttrib1Name] = ShaderTranslatorInterface::VariableInfo(
-      kAttrib1Type, kAttrib1Size);
+      kAttrib1Type, kAttrib1Size, kAttrib1Name);
   attrib_map[kAttrib2Name] = ShaderTranslatorInterface::VariableInfo(
-      kAttrib2GoodType, kAttrib2Size);
+      kAttrib2GoodType, kAttrib2Size, kAttrib2Name);
   attrib_map[kAttrib3Name] = ShaderTranslatorInterface::VariableInfo(
-      kAttrib3Type, kAttrib3Size);
+      kAttrib3Type, kAttrib3Size, kAttrib3Name);
   uniform_map[kUniform1Name] = ShaderTranslatorInterface::VariableInfo(
-      kUniform1Type, kUniform1Size);
+      kUniform1Type, kUniform1Size, kUniform1Name);
   uniform_map[kUniform2Name] = ShaderTranslatorInterface::VariableInfo(
-      kUniform2GoodType, kUniform2Size);
+      kUniform2GoodType, kUniform2Size, kUniform2Name);
   uniform_map[kUniform3GoodName] = ShaderTranslatorInterface::VariableInfo(
-      kUniform3Type, kUniform3Size);
+      kUniform3Type, kUniform3Size, kUniform3GoodName);
   EXPECT_CALL(shader_translator, attrib_map())
       .WillRepeatedly(ReturnRef(attrib_map));
   EXPECT_CALL(shader_translator, uniform_map())
@@ -684,6 +684,7 @@ TEST_F(ProgramManagerWithShaderTest, GLDriverReturnsWrongTypeInfo) {
     EXPECT_EQ(it->first, attrib_info->name);
     EXPECT_EQ(static_cast<GLenum>(it->second.type), attrib_info->type);
     EXPECT_EQ(it->second.size, attrib_info->size);
+    EXPECT_EQ(it->second.name, attrib_info->name);
   }
   // Check Uniforms
   for (unsigned index = 0; index < kNumUniforms; ++index) {
@@ -696,6 +697,7 @@ TEST_F(ProgramManagerWithShaderTest, GLDriverReturnsWrongTypeInfo) {
     EXPECT_EQ(it->first, uniform_info->name);
     EXPECT_EQ(static_cast<GLenum>(it->second.type), uniform_info->type);
     EXPECT_EQ(it->second.size, uniform_info->size);
+    EXPECT_EQ(it->second.name, uniform_info->name);
   }
 }
 

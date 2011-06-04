@@ -144,6 +144,7 @@ TEST_F(ShaderTranslatorTest, GetAttributes) {
   EXPECT_TRUE(iter != attrib_map.end());
   EXPECT_EQ(SH_FLOAT_VEC4, iter->second.type);
   EXPECT_EQ(1, iter->second.size);
+  EXPECT_EQ("vPosition", iter->second.name);
 }
 
 TEST_F(ShaderTranslatorTest, GetUniforms) {
@@ -180,11 +181,13 @@ TEST_F(ShaderTranslatorTest, GetUniforms) {
   EXPECT_TRUE(iter != uniform_map.end());
   EXPECT_EQ(SH_FLOAT_VEC4, iter->second.type);
   EXPECT_EQ(1, iter->second.size);
+  EXPECT_EQ("bar[0].foo.color[0]", iter->second.name);
   // Second uniform.
   iter = uniform_map.find("bar[1].foo.color[0]");
   EXPECT_TRUE(iter != uniform_map.end());
   EXPECT_EQ(SH_FLOAT_VEC4, iter->second.type);
   EXPECT_EQ(1, iter->second.size);
+  EXPECT_EQ("bar[1].foo.color[0]", iter->second.name);
 }
 
 }  // namespace gles2

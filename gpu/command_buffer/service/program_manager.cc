@@ -102,14 +102,18 @@ void ProgramManager::ProgramInfo::Update() {
     DCHECK(length == 0 || name_buffer[length] == '\0');
     if (!IsInvalidPrefix(name_buffer.get(), length)) {
       std::string name;
-      GetCorrectedVariableInfo(false, name_buffer.get(), &name, &size, &type);
+      std::string original_name;
+      GetCorrectedVariableInfo(
+          false, name_buffer.get(), &name, &original_name, &size, &type);
       // TODO(gman): Should we check for error?
       GLint location = glGetAttribLocation(service_id_, name_buffer.get());
       if (location > max_location) {
         max_location = location;
       }
-      attrib_infos_.push_back(VertexAttribInfo(size, type, name, location));
-      max_attrib_name_length_ = std::max(max_attrib_name_length_, length);
+      attrib_infos_.push_back(
+          VertexAttribInfo(size, type, original_name, location));
+      max_attrib_name_length_ = std::max(
+          max_attrib_name_length_, static_cast<GLsizei>(original_name.size()));
     }
   }
 
@@ -142,8 +146,11 @@ void ProgramManager::ProgramInfo::Update() {
     if (!IsInvalidPrefix(name_buffer.get(), length)) {
       GLint location =  glGetUniformLocation(service_id_, name_buffer.get());
       std::string name;
-      GetCorrectedVariableInfo(true, name_buffer.get(), &name, &size, &type);
-      const UniformInfo* info = AddUniformInfo(size, type, location, name);
+      std::string original_name;
+      GetCorrectedVariableInfo(
+          true, name_buffer.get(), &name, &original_name, &size, &type);
+      const UniformInfo* info =
+          AddUniformInfo(size, type, location, name, original_name);
       for (size_t jj = 0; jj < info->element_locations.size(); ++jj) {
         if (info->element_locations[jj] > max_location) {
           max_location = info->element_locations[jj];
@@ -264,8 +271,10 @@ const ProgramManager::ProgramInfo::UniformInfo*
 void ProgramManager::ProgramInfo::GetCorrectedVariableInfo(
     bool use_uniforms,
     const std::string& name, std::string* corrected_name,
+    std::string* original_name,
     GLsizei* size, GLenum* type) const {
   DCHECK(corrected_name);
+  DCHECK(original_name);
   DCHECK(size);
   DCHECK(type);
   const char* kArraySpec = "[0]";
@@ -282,6 +291,7 @@ void ProgramManager::ProgramInfo::GetCorrectedVariableInfo(
         // for that case?
         if (variable_info) {
           *corrected_name = test_name;
+          *original_name = variable_info->name;
           *type = variable_info->type;
           *size = variable_info->size;
           return;
@@ -290,13 +300,15 @@ void ProgramManager::ProgramInfo::GetCorrectedVariableInfo(
     }
   }
   *corrected_name = name;
+  *original_name = name;
 }
 
 const ProgramManager::ProgramInfo::UniformInfo*
     ProgramManager::ProgramInfo::AddUniformInfo(
-        GLsizei size, GLenum type, GLint location, const std::string& name) {
+        GLsizei size, GLenum type, GLint location, const std::string& name,
+        const std::string& original_name) {
   const char* kArraySpec = "[0]";
-  uniform_infos_.push_back(UniformInfo(size, type, name));
+  uniform_infos_.push_back(UniformInfo(size, type, original_name));
   UniformInfo& info = uniform_infos_.back();
   info.element_locations.resize(size);
   info.element_locations[0] = location;
@@ -306,13 +318,6 @@ const ProgramManager::ProgramInfo::UniformInfo*
   info.texture_units.resize(num_texture_units, 0);
 
   if (size > 1) {
-    // Sadly there is no way to tell if this is an array except if the name
-    // has an array string or the size > 1. That means an array of size 1 can
-    // be ambiguous.
-    //
-    // For now we just make sure that if the size is > 1 then the name must have
-    // an array spec.
-
     // Go through the array element locations looking for a match.
     // We can skip the first element because it's the same as the
     // the location without the array operators.

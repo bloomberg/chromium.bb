@@ -196,11 +196,12 @@ class ProgramManager {
     void UpdateLogInfo();
 
     const UniformInfo* AddUniformInfo(
-        GLsizei size, GLenum type, GLint location, const std::string& name);
+        GLsizei size, GLenum type, GLint location, const std::string& name,
+        const std::string& original_name);
 
     void GetCorrectedVariableInfo(
         bool use_uniforms, const std::string& name, std::string* corrected_name,
-        GLsizei* size, GLenum* type) const;
+        std::string* original_name, GLsizei* size, GLenum* type) const;
 
     void DetachShaders(ShaderManager* manager);
 

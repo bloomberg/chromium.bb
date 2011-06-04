@@ -45,12 +45,14 @@ class ShaderTranslatorInterface {
         : type(0),
           size(0) {
     }
-    VariableInfo(int _type, int _size)
+      VariableInfo(int _type, int _size, std::string _name)
         : type(_type),
-          size(_size) {
+          size(_size),
+          name(_name) {
     }
     int type;
     int size;
+    std::string name;  // name in the original shader source.
   };
   // Mapping between variable name and info.
   typedef base::hash_map<std::string, VariableInfo> VariableMap;

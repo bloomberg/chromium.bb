@@ -26,7 +26,7 @@ bool InitializeShaderTranslator() {
 using gpu::gles2::ShaderTranslator;
 void GetVariableInfo(ShHandle compiler, ShShaderInfo var_type,
                      ShaderTranslator::VariableMap* var_map) {
-  int name_len = 0;
+  int name_len = 0, mapped_name_len = 0;
   switch (var_type) {
     case SH_ACTIVE_ATTRIBUTES:
       ShGetInfo(compiler, SH_ACTIVE_ATTRIBUTE_MAX_LENGTH, &name_len);
@@ -36,8 +36,10 @@ void GetVariableInfo(ShHandle compiler, ShShaderInfo var_type,
       break;
     default: NOTREACHED();
   }
-  if (name_len <= 1) return;
+  ShGetInfo(compiler, SH_MAPPED_NAME_MAX_LENGTH, &mapped_name_len);
+  if (name_len <= 1 || mapped_name_len <= 1) return;
   scoped_array<char> name(new char[name_len]);
+  scoped_array<char> mapped_name(new char[mapped_name_len]);
 
   int num_vars = 0;
   ShGetInfo(compiler, var_type, &num_vars);
@@ -47,16 +49,18 @@ void GetVariableInfo(ShHandle compiler, ShShaderInfo var_type,
 
     switch (var_type) {
       case SH_ACTIVE_ATTRIBUTES:
-        ShGetActiveAttrib(compiler, i, NULL, &size, &type, name.get(), NULL);
+        ShGetActiveAttrib(
+            compiler, i, NULL, &size, &type, name.get(), mapped_name.get());
         break;
       case SH_ACTIVE_UNIFORMS:
-        ShGetActiveUniform(compiler, i, NULL, &size, &type, name.get(), NULL);
+        ShGetActiveUniform(
+            compiler, i, NULL, &size, &type, name.get(), mapped_name.get());
         break;
       default: NOTREACHED();
     }
 
-    ShaderTranslator::VariableInfo info(type, size);
-    (*var_map)[name.get()] = info;
+    ShaderTranslator::VariableInfo info(type, size, name.get());
+    (*var_map)[mapped_name.get()] = info;
   }
 }
 }  // namespace
@@ -99,7 +103,8 @@ bool ShaderTranslator::Translate(const char* shader) {
   ClearResults();
 
   bool success = false;
-  int compile_options = SH_OBJECT_CODE | SH_ATTRIBUTES_UNIFORMS;
+  int compile_options =
+      SH_OBJECT_CODE | SH_ATTRIBUTES_UNIFORMS | SH_MAP_LONG_VARIABLE_NAMES;
   if (ShCompile(compiler_, &shader, 1, compile_options)) {
     success = true;
     if (!implementation_is_glsl_es_) {

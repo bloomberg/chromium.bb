@@ -142,14 +142,14 @@ TEST_F(ShaderManagerTest, GetInfo) {
   MockShaderTranslator shader_translator;
   ShaderTranslator::VariableMap attrib_map;
   attrib_map[kAttrib1Name] = ShaderTranslatorInterface::VariableInfo(
-      kAttrib1Type, kAttrib1Size);
+      kAttrib1Type, kAttrib1Size, kAttrib1Name);
   attrib_map[kAttrib2Name] = ShaderTranslatorInterface::VariableInfo(
-      kAttrib2Type, kAttrib2Size);
+      kAttrib2Type, kAttrib2Size, kAttrib2Name);
   ShaderTranslator::VariableMap uniform_map;
   uniform_map[kUniform1Name] = ShaderTranslatorInterface::VariableInfo(
-      kUniform1Type, kUniform1Size);
+      kUniform1Type, kUniform1Size, kUniform1Name);
   uniform_map[kUniform2Name] = ShaderTranslatorInterface::VariableInfo(
-      kUniform2Type, kUniform2Size);
+      kUniform2Type, kUniform2Size, kUniform2Name);
   EXPECT_CALL(shader_translator, attrib_map())
       .WillRepeatedly(ReturnRef(attrib_map));
   EXPECT_CALL(shader_translator, uniform_map())
@@ -169,6 +169,7 @@ TEST_F(ShaderManagerTest, GetInfo) {
     ASSERT_TRUE(variable_info != NULL);
     EXPECT_EQ(it->second.type, variable_info->type);
     EXPECT_EQ(it->second.size, variable_info->size);
+    EXPECT_EQ(it->second.name, variable_info->name);
   }
   for (ShaderTranslator::VariableMap::const_iterator it = uniform_map.begin();
        it != uniform_map.end(); ++it) {
@@ -177,6 +178,7 @@ TEST_F(ShaderManagerTest, GetInfo) {
     ASSERT_TRUE(variable_info != NULL);
     EXPECT_EQ(it->second.type, variable_info->type);
     EXPECT_EQ(it->second.size, variable_info->size);
+    EXPECT_EQ(it->second.name, variable_info->name);
   }
   // Check attrib and uniform get cleared.
   info1->SetStatus(true, NULL, NULL);
