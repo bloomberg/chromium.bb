@@ -1554,7 +1554,11 @@ def CommandSelLdrTestNacl(env, name, command,
     env.IsRunningUnderValgrind():
     sel_ldr_flags += ['-Q']
 
-  if env.Bit('nacl_glibc'):
+  # The glibc modifications only make sense for nacl_env tests.
+  # But this function gets used by some base_env (i.e. src/trusted/...)
+  # tests too.  Don't add the --nacl_glibc changes to the command
+  # line for those cases.
+  if env.Bit('nacl_glibc') and env['NACL_BUILD_FAMILY'] != 'TRUSTED':
     if not glibc_static and not env.Bit('nacl_static_link'):
       command = ['${NACL_SDK_LIB}/runnable-ld.so',
                  '--library-path', '${NACL_SDK_LIB}'] + command
