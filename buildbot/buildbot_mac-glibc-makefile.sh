@@ -17,12 +17,16 @@ export TOOLCHAINLOC=toolchain
 export TOOLCHAINNAME=mac_x86
 export INST_GLIBC_PROGRAM="$PWD/tools/glibc_download.sh"
 
+this_toolchain="$TOOLCHAINLOC/$TOOLCHAINNAME"
+
+GSUTIL=/b/build/scripts/slave/gsutil
+
 echo @@@BUILD_STEP gclient_runhooks@@@
 gclient runhooks --force
 
 echo @@@BUILD_STEP clobber@@@
 rm -rf scons-out tools/SRC/* tools/BUILD/* tools/out/* tools/toolchain \
-  tools/glibc tools/glibc.tar tools/toolchain.t* toolchain .tmp ||
+  tools/glibc tools/glibc.tar tools/toolchain.t* "${this_toolchain}" .tmp ||
   echo already_clean
 mkdir -p tools/toolchain/mac_x86
 
@@ -55,7 +59,7 @@ else
   echo @@@BUILD_STEP tar_toolchain@@@
   (
     cd tools
-    tar Scf toolchain.tar toolchain/
+    tar Scf toolchain.tar "${this_toolchain}"
     bzip2 -k -9 toolchain.tar
     gzip -9 toolchain.tar
     chmod a+r toolchain.tar.gz toolchain.tar.bz2
@@ -63,7 +67,7 @@ else
 
   echo @@@BUILD_STEP archive_build@@@
   for suffix in gz bz2; do
-    /b/build/scripts/slave/gsutil -h Cache-Control:no-cache cp -a public-read \
+    $GSUTIL -h Cache-Control:no-cache cp -a public-read \
       tools/toolchain.tar.$suffix \
       gs://nativeclient-archive2/x86_toolchain/r${BUILDBOT_GOT_REVISION}/toolchain_mac_x86.tar.$suffix
   done
@@ -76,7 +80,7 @@ else
     # GNU tar does not like some headers, regular tar can not create sparse files.
     # Use regular tar with non-sparse files for now.
     tar zxf ../tools/toolchain.tar.gz
-    mv toolchain ..
+    mv "${this_toolchain}" ../toolchain
   )
 fi
 

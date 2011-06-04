@@ -16,12 +16,16 @@ set -u
 export TOOLCHAINLOC=toolchain
 export TOOLCHAINNAME=linux_x86
 
+GSUTIL=/b/build/scripts/slave/gsutil
+
+this_toolchain="$TOOLCHAINLOC/$TOOLCHAINNAME"
+
 echo @@@BUILD_STEP gclient_runhooks@@@
 gclient runhooks --force
 
 echo @@@BUILD_STEP clobber@@@
 rm -rf scons-out tools/SRC/* tools/BUILD/* tools/out tools/toolchain \
-  tools/glibc tools/glibc.tar tools/toolchain.t* toolchain .tmp ||
+  tools/glibc tools/glibc.tar tools/toolchain.t* "$this_toolchain" .tmp ||
   echo already_clean
 
 echo @@@BUILD_STEP compile_toolchain@@@
@@ -56,19 +60,20 @@ else
   )
 
   echo @@@BUILD_STEP archive_glibc@@@
-  wget http://gsdview.appspot.com/nativeclient-archive2/between_builders/x86_glibc/r"$(tools/glibc_revision.sh)"/glibc_x86.tar.gz -O /dev/null ||
-  /b/build/scripts/slave/gsutil -h Cache-Control:no-cache cp -a public-read \
+  rev="$(tools/glibc_revision.sh)"
+  wget http://gsdview.appspot.com/nativeclient-archive2/between_builders/x86_glibc/r"$rev"/glibc_x86.tar.gz -O /dev/null ||
+  $GSUTIL -h Cache-Control:no-cache cp -a public-read \
     tools/glibc.tgz \
-    gs://nativeclient-archive2/between_builders/x86_glibc/r"$(tools/glibc_revision.sh)"/glibc_x86.tar.gz
-  echo @@@STEP_LINK@download@http://gsdview.appspot.com/nativeclient-archive2/between_builders/x86_glibc/r"$(tools/glibc_revision.sh)"/@@@
+    gs://nativeclient-archive2/between_builders/x86_glibc/r"$rev"/glibc_x86.tar.gz
+  echo @@@STEP_LINK@download@http://gsdview.appspot.com/nativeclient-archive2/between_builders/x86_glibc/r"$rev"/@@@
 
   echo @@@BUILD_STEP tar_toolchain@@@
   (
     cd tools
-    cp --archive --sparse=always toolchain toolchain_sparse
-    rm -rf toolchain
-    mv toolchain_sparse toolchain
-    tar Scf toolchain.tar toolchain/
+    cp --archive --sparse=always "${this_toolchain}" "${this_toolchain}_sparse"
+    rm -rf "${this_toolchain}"
+    mv "${this_toolchain}_sparse" "${this_toolchain}"
+    tar Scf toolchain.tar "${this_toolchain}"
     xz -k -9 toolchain.tar
     bzip2 -k -9 toolchain.tar
     gzip -9 toolchain.tar
@@ -77,7 +82,7 @@ else
 
   echo @@@BUILD_STEP archive_build@@@
   for suffix in gz bz2 xz; do
-    /b/build/scripts/slave/gsutil -h Cache-Control:no-cache cp -a public-read \
+    $GSUTIL -h Cache-Control:no-cache cp -a public-read \
       tools/toolchain.tar.$suffix \
       gs://nativeclient-archive2/x86_toolchain/r${BUILDBOT_GOT_REVISION}/toolchain_linux_x86.tar.$suffix
   done
@@ -88,7 +93,7 @@ else
     mkdir -p .tmp
     cd .tmp
     tar JSxf ../tools/toolchain.tar.xz
-    mv toolchain ..
+    mv "${this_toolchain}" ../toolchain
   )
 
   echo @@@BUILD_STEP glibc_tests64@@@
@@ -98,7 +103,7 @@ else
   )
 fi
 
-# First run 32bit tests, then 64bit tests. Both shell succeed.
+# First run 32bit tests, then 64bit tests.  Both should succeed.
 export INSIDE_TOOLCHAIN=1
 buildbot/buildbot_linux.sh opt 32 glibc
 exec buildbot/buildbot_linux.sh opt 64 glibc

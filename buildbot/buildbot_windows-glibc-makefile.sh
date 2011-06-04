@@ -16,6 +16,9 @@ set -u
 
 export TOOLCHAINLOC=toolchain
 export TOOLCHAINNAME=win_x86
+
+this_toolchain="$TOOLCHAINLOC/$TOOLCHAINNAME"
+
 export INST_GLIBC_PROGRAM="$PWD/tools/glibc_download.sh"
 # Workaround for broken autoconf mmap test (WOW64 limitation)
 # More info here: http://cygwin.com/ml/cygwin/2011-03/msg00596.html
@@ -35,7 +38,7 @@ function convert_symlinks_to_hardlinks
 
 echo @@@BUILD_STEP clobber@@@
 rm -rf scons-out tools/SRC/* tools/BUILD/* tools/out tools/toolchain \
-  tools/glibc tools/glibc.tar tools/toolchain.t* toolchain .tmp ||
+  tools/glibc tools/glibc.tar tools/toolchain.t* "${this_toolchain}" .tmp ||
   echo already_clean
 mkdir -p tools/toolchain/win_x86
 ln -sfn "$PWD"/cygwin/tmp tools/toolchain/win_x86
@@ -71,7 +74,7 @@ else
   echo @@@BUILD_STEP tar_toolchain@@@
   (
     cd tools
-    tar Scf toolchain.tar toolchain/
+    tar Scf toolchain.tar "${this_toolchain}"
     xz -k -9 toolchain.tar
     bzip2 -k -9 toolchain.tar
     gzip -9 toolchain.tar
@@ -83,7 +86,7 @@ else
     mkdir -p .tmp
     cd .tmp
     tar JSxf ../tools/toolchain.tar.xz
-    convert_symlinks_to_hardlinks toolchain
-    mv toolchain ..
+    convert_symlinks_to_hardlinks "${this_toolchain}"
+    mv "${this_toolchain}" ../toolchain
   )
 fi
