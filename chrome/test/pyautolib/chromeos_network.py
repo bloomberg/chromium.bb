@@ -146,7 +146,8 @@ class PyNetworkUITest(pyauto.PyUITest):
   def tearDown(self):
     pyauto.PyUITest.tearDown(self)
     self._PopServiceOrder()
-    self._wifi_power_strip.TurnOffUsedRouters()
+    if self._wifi_power_strip:
+      self._wifi_power_strip.TurnOffUsedRouters()
 
   def _SetServiceOrder(self, service_order):
     self._manager.SetServiceOrder(service_order)
