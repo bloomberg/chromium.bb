@@ -123,8 +123,10 @@ class RawCheckout(CheckoutBase):
           full_dir = os.path.join(self.project_path, dirname)
           if dirname and not os.path.isdir(full_dir):
             os.makedirs(full_dir)
+
+          filepath = os.path.join(self.project_path, p.filename)
           if p.is_binary:
-            with open(os.path.join(filename), 'wb') as f:
+            with open(filepath, 'wb') as f:
               f.write(p.get())
           else:
             if p.diff_hunks:
@@ -132,9 +134,9 @@ class RawCheckout(CheckoutBase):
                   ['patch', '-p%s' % p.patchlevel],
                   stdin=p.get(),
                   cwd=self.project_path)
-            elif p.is_new:
+            elif p.is_new and not os.path.exists(filepath):
               # There is only a header. Just create the file.
-              open(os.path.join(self.project_path, p.filename), 'w').close()
+              open(filepath, 'w').close()
         for post in post_processor:
           post(self, p)
       except OSError, e:
@@ -276,17 +278,19 @@ class SvnCheckout(CheckoutBase, SvnMixIn):
             stdout += self._check_output_svn(
                 ['add', dir_to_create, '--force'], credentials=False)
 
+          filepath = os.path.join(self.project_path, p.filename)
           if p.is_binary:
-            with open(os.path.join(self.project_path, p.filename), 'wb') as f:
+            with open(filepath, 'wb') as f:
               f.write(p.get())
           else:
             if p.diff_hunks:
               cmd = ['patch', '-p%s' % p.patchlevel, '--forward', '--force']
               stdout += subprocess2.check_output(
                   cmd, stdin=p.get(), cwd=self.project_path)
-            elif p.is_new:
-              # There is only a header. Just create the file.
-              open(os.path.join(self.project_path, p.filename), 'w').close()
+            elif p.is_new and not os.path.exists(filepath):
+              # There is only a header. Just create the file if it doesn't
+              # exist.
+              open(filepath, 'w').close()
           if p.is_new:
             stdout += self._check_output_svn(
                 ['add', p.filename, '--force'], credentials=False)
