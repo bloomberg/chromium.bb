@@ -44,39 +44,37 @@ PP_Bool GetConfigs(PP_Instance instance_id,
                                           num_of_matching_configs));
 }
 
-PP_Resource Create(PP_Instance instance_id) {
+PP_Resource Create(PP_Instance instance_id,
+                   const PP_VideoConfigElement* decoder_config,
+                   PP_CompletionCallback callback) {
   PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance)
     return 0;
 
-  PPB_VideoDecoder_Impl* decoder = new PPB_VideoDecoder_Impl(instance);
-  return decoder->GetReference();
-}
-
-int32_t Initialize(PP_Resource video_decoder,
-                   const PP_VideoConfigElement* decoder_config,
-                   struct PP_CompletionCallback callback) {
   scoped_refptr<PPB_VideoDecoder_Impl> decoder(
-      Resource::GetAs<PPB_VideoDecoder_Impl>(video_decoder));
-  if (!decoder)
-    return PP_ERROR_BADRESOURCE;
+      new PPB_VideoDecoder_Impl(instance));
 
-  return decoder->Initialize(decoder_config, callback);
+  if (!decoder->Init(
+      const_cast<PP_VideoConfigElement*>(decoder_config), callback)) {
+    return 0;
+  }
+
+  return decoder->GetReference();
 }
 
 PP_Bool IsVideoDecoder(PP_Resource resource) {
   return BoolToPPBool(!!Resource::GetAs<PPB_VideoDecoder_Impl>(resource));
 }
 
-int32_t Decode(PP_Resource decoder_id,
+PP_Bool Decode(PP_Resource decoder_id,
                const PP_VideoBitstreamBuffer_Dev* bitstream_buffer,
                PP_CompletionCallback callback) {
   scoped_refptr<PPB_VideoDecoder_Impl> decoder(
       Resource::GetAs<PPB_VideoDecoder_Impl>(decoder_id));
   if (!decoder)
-    return PP_ERROR_BADRESOURCE;
+    return PP_FALSE;
 
-  return decoder->Decode(bitstream_buffer, callback);
+  return BoolToPPBool(decoder->Decode(bitstream_buffer, callback));
 }
 
 void AssignGLESBuffers(PP_Resource video_decoder,
@@ -110,29 +108,28 @@ void ReusePictureBuffer(PP_Resource video_decoder, int32_t picture_buffer_id) {
   decoder->ReusePictureBuffer(picture_buffer_id);
 }
 
-int32_t Flush(PP_Resource video_decoder, PP_CompletionCallback callback) {
+PP_Bool Flush(PP_Resource video_decoder, PP_CompletionCallback callback) {
   scoped_refptr<PPB_VideoDecoder_Impl> decoder(
       Resource::GetAs<PPB_VideoDecoder_Impl>(video_decoder));
   if (!decoder)
-    return PP_ERROR_BADRESOURCE;
+    return PP_FALSE;
 
-  return decoder->Flush(callback);
+  return BoolToPPBool(decoder->Flush(callback));
 }
 
-int32_t Abort(PP_Resource video_decoder,
+PP_Bool Abort(PP_Resource video_decoder,
               PP_CompletionCallback callback) {
   scoped_refptr<PPB_VideoDecoder_Impl> decoder(
       Resource::GetAs<PPB_VideoDecoder_Impl>(video_decoder));
   if (!decoder)
-    return PP_ERROR_BADRESOURCE;
+    return PP_FALSE;
 
-  return decoder->Abort(callback);
+  return BoolToPPBool(decoder->Abort(callback));
 }
 
 const PPB_VideoDecoder_Dev ppb_videodecoder = {
   &GetConfigs,
   &Create,
-  &Initialize,
   &IsVideoDecoder,
   &Decode,
   &AssignGLESBuffers,
@@ -219,41 +216,34 @@ bool PPB_VideoDecoder_Impl::GetConfigs(
   return true;
 }
 
-int32_t PPB_VideoDecoder_Impl::Initialize(
-    const PP_VideoConfigElement* decoder_config,
-    PP_CompletionCallback callback) {
-  if (!callback.func)
-    return PP_ERROR_BADARGUMENT;
+bool PPB_VideoDecoder_Impl::Init(const PP_VideoConfigElement* decoder_config,
+                                 PP_CompletionCallback callback) {
   if (!instance())
-    return PP_ERROR_FAILED;
+    return false;
 
   platform_video_decoder_.reset(
       instance()->delegate()->CreateVideoDecoder(this));
 
-  if (!platform_video_decoder_.get())
-    return PP_ERROR_FAILED;
-
   std::vector<uint32> copied;
   // TODO(vrk): Validate configs before copy.
   CopyToConfigList(decoder_config, &copied);
-  if (platform_video_decoder_->Initialize(copied)) {
-    initialization_callback_ = callback;
-    return PP_OK_COMPLETIONPENDING;
-  } else {
-    return PP_ERROR_FAILED;
-  }
+  platform_video_decoder_->Initialize(copied);
+
+  initialization_callback_ = callback;
+
+  return platform_video_decoder_.get()? true : false;
 }
 
-int32_t PPB_VideoDecoder_Impl::Decode(
+bool PPB_VideoDecoder_Impl::Decode(
     const PP_VideoBitstreamBuffer_Dev* bitstream_buffer,
     PP_CompletionCallback callback) {
   if (!platform_video_decoder_.get())
-    return PP_ERROR_BADRESOURCE;
+    return false;
 
   ::ppapi::thunk::EnterResourceNoLock< ::ppapi::thunk::PPB_Buffer_API>
       enter(bitstream_buffer->data, true);
   if (enter.failed())
-    return PP_ERROR_FAILED;
+    return false;
 
   PPB_Buffer_Impl* buffer = static_cast<PPB_Buffer_Impl*>(enter.object());
   media::BitstreamBuffer decode_buffer(bitstream_buffer->id,
@@ -264,10 +254,7 @@ int32_t PPB_VideoDecoder_Impl::Decode(
   // TODO(vmr): handle simultaneous decodes + callbacks.
   bitstream_buffer_callback_ = callback;
 
-  if (platform_video_decoder_->Decode(decode_buffer))
-    return PP_OK_COMPLETIONPENDING;
-  else
-    return PP_ERROR_FAILED;
+  return platform_video_decoder_->Decode(decode_buffer);
 }
 
 void PPB_VideoDecoder_Impl::AssignGLESBuffers(
@@ -306,32 +293,26 @@ void PPB_VideoDecoder_Impl::ReusePictureBuffer(int32_t picture_buffer_id) {
   platform_video_decoder_->ReusePictureBuffer(picture_buffer_id);
 }
 
-int32_t PPB_VideoDecoder_Impl::Flush(PP_CompletionCallback callback) {
+bool PPB_VideoDecoder_Impl::Flush(PP_CompletionCallback callback) {
   if (!platform_video_decoder_.get())
-    return PP_ERROR_BADRESOURCE;
+    return false;
 
   // Store the callback to be called when Flush() is done.
   // TODO(vmr): Check for current flush/abort operations.
   flush_callback_ = callback;
 
-  if (platform_video_decoder_->Flush())
-    return PP_OK_COMPLETIONPENDING;
-  else
-    return PP_ERROR_FAILED;
+  return platform_video_decoder_->Flush();
 }
 
-int32_t PPB_VideoDecoder_Impl::Abort(PP_CompletionCallback callback) {
+bool PPB_VideoDecoder_Impl::Abort(PP_CompletionCallback callback) {
   if (!platform_video_decoder_.get())
-    return PP_ERROR_BADRESOURCE;
+    return false;
 
   // Store the callback to be called when Abort() is done.
   // TODO(vmr): Check for current flush/abort operations.
   abort_callback_ = callback;
 
-  if (platform_video_decoder_->Abort())
-    return PP_OK_COMPLETIONPENDING;
-  else
-    return PP_ERROR_FAILED;
+  return platform_video_decoder_->Abort();
 }
 
 void PPB_VideoDecoder_Impl::ProvidePictureBuffers(
