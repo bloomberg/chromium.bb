@@ -63,7 +63,6 @@
 #include "ppapi/c/private/ppb_instance_private.h"
 #include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/c/private/ppb_proxy_private.h"
-#include "ppapi/c/private/ppb_nacl_private.h"
 #include "ppapi/c/private/ppb_uma_private.h"
 #include "ppapi/c/trusted/ppb_audio_trusted.h"
 #include "ppapi/c/trusted/ppb_broker_trusted.h"
@@ -90,7 +89,6 @@
 #include "webkit/plugins/ppapi/ppb_graphics_2d_impl.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
 #include "webkit/plugins/ppapi/ppb_layer_compositor_impl.h"
-#include "webkit/plugins/ppapi/ppb_nacl_private_impl.h"
 #include "webkit/plugins/ppapi/ppb_pdf_impl.h"
 #include "webkit/plugins/ppapi/ppb_proxy_impl.h"
 #include "webkit/plugins/ppapi/ppb_scrollbar_impl.h"
@@ -275,8 +273,6 @@ const void* GetInterface(const char* name) {
     return ::ppapi::thunk::GetPPB_FileChooser_Thunk();
   if (strcmp(name, PPB_FILEIO_DEV_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_FileIO_Thunk();
-  if (strcmp(name, PPB_NACL_PRIVATE_INTERFACE) == 0)
-    return PPB_NaCl_Private_Impl::GetInterface();
   if (strcmp(name, PPB_FILEIOTRUSTED_DEV_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_FileIOTrusted_Thunk();
   if (strcmp(name, PPB_FILEREF_DEV_INTERFACE) == 0)

@@ -97,6 +97,8 @@
         'renderer/blocked_plugin.h',
         'renderer/chrome_content_renderer_client.cc',
         'renderer/chrome_content_renderer_client.h',
+        'renderer/chrome_ppapi_interfaces.cc',
+        'renderer/chrome_ppapi_interfaces.h',
         'renderer/chrome_render_process_observer.cc',
         'renderer/chrome_render_process_observer.h',
         'renderer/chrome_render_view_observer.cc',

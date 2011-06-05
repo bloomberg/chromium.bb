@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
 #include "base/i18n/icu_util.h"
+#include "base/lazy_instance.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/message_loop.h"
 #include "base/metrics/stats_counters.h"
@@ -89,6 +90,14 @@
 #if defined(USE_LINUX_BREAKPAD)
 #include "chrome/app/breakpad_linux.h"
 #endif
+
+#if !defined(NACL_WIN64)  // We don't build the renderer code on win nacl64.
+base::LazyInstance<chrome::ChromeContentRendererClient>
+    g_chrome_content_renderer_client(base::LINKER_INITIALIZED);
+#endif   // NACL_WIN64
+
+base::LazyInstance<chrome::ChromeContentPluginClient>
+    g_chrome_content_plugin_client(base::LINKER_INITIALIZED);
 
 extern int BrowserMain(const MainFunctionParams&);
 extern int RendererMain(const MainFunctionParams&);
@@ -220,15 +229,15 @@ void EnableHeapProfiler(const CommandLine& command_line) {
 
 void InitializeChromeContentRendererClient() {
 #if !defined(NACL_WIN64)  // We don't build the renderer code on win nacl64.
-  static chrome::ChromeContentRendererClient chrome_content_renderer_client;
-  content::GetContentClient()->set_renderer(&chrome_content_renderer_client);
+  content::GetContentClient()->set_renderer(
+      &g_chrome_content_renderer_client.Get());
 #endif
 }
 
 void InitializeChromeContentClient(const std::string& process_type) {
   if (process_type == switches::kPluginProcess) {
-    static chrome::ChromeContentPluginClient chrome_content_plugin_client;
-    content::GetContentClient()->set_plugin(&chrome_content_plugin_client);
+    content::GetContentClient()->set_plugin(
+        &g_chrome_content_plugin_client.Get());
   } else if (process_type == switches::kRendererProcess ||
              process_type == switches::kExtensionProcess) {
     InitializeChromeContentRendererClient();

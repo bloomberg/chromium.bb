@@ -32,15 +32,15 @@ void PpapiInterfaceFactoryManager::UnregisterFactory(
   FactoryList::iterator index =
       std::find(interface_factory_list_.begin(), interface_factory_list_.end(),
                 factory);
-  DCHECK(index != interface_factory_list_.end());
-  interface_factory_list_.erase(index);
+  if (index != interface_factory_list_.end())
+    interface_factory_list_.erase(index);
 }
 
-void* PpapiInterfaceFactoryManager::GetInterface(
+const void* PpapiInterfaceFactoryManager::GetInterface(
     const std::string& interface_name) {
   FactoryList::iterator index;
 
-  void* ppapi_interface = NULL;
+  const void* ppapi_interface = NULL;
 
   for (index = interface_factory_list_.begin();
        index != interface_factory_list_.end();

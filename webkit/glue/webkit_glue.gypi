@@ -283,8 +283,6 @@
         '../plugins/ppapi/ppb_image_data_impl.h',
         '../plugins/ppapi/ppb_layer_compositor_impl.cc',
         '../plugins/ppapi/ppb_layer_compositor_impl.h',
-        '../plugins/ppapi/ppb_nacl_private_impl.cc',
-        '../plugins/ppapi/ppb_nacl_private_impl.h',
         '../plugins/ppapi/ppb_opengles_impl.cc',
         '../plugins/ppapi/ppb_opengles_impl.h',
         '../plugins/ppapi/ppb_pdf_impl.cc',

@@ -28,6 +28,7 @@
 #include "chrome/renderer/automation/automation_renderer_helper.h"
 #include "chrome/renderer/automation/dom_automation_v8_extension.h"
 #include "chrome/renderer/blocked_plugin.h"
+#include "chrome/renderer/chrome_ppapi_interfaces.h"
 #include "chrome/renderer/chrome_render_process_observer.h"
 #include "chrome/renderer/chrome_render_view_observer.h"
 #include "chrome/renderer/content_settings_observer.h"
@@ -128,9 +129,11 @@ static void AppendParams(const std::vector<string16>& additional_names,
 namespace chrome {
 
 ChromeContentRendererClient::ChromeContentRendererClient() {
+  chrome::InitializePPAPI();
 }
 
 ChromeContentRendererClient::~ChromeContentRendererClient() {
+  chrome::UninitializePPAPI();
 }
 
 void ChromeContentRendererClient::RenderThreadStarted() {

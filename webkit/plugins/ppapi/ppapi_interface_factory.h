@@ -18,7 +18,7 @@ namespace ppapi {
 // factories.
 class PpapiInterfaceFactoryManager {
  public:
-  typedef void* (InterfaceFactory)(const std::string& interface_name);
+  typedef const void* (InterfaceFactory)(const std::string& interface_name);
 
   // Registers a custom PPAPI interface factory.
   void RegisterFactory(InterfaceFactory* factory);
@@ -28,7 +28,7 @@ class PpapiInterfaceFactoryManager {
 
   // Returns a pointer to the interface identified by the name passed in.
   // Returns NULL if no factory handles this interface.
-  void* GetInterface(const std::string& interface_name);
+  const void* GetInterface(const std::string& interface_name);
 
   // Returns a pointer to the global instance of the
   // PpapiInterfaceFactoryManager class.

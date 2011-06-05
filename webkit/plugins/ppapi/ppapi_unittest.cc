@@ -134,7 +134,7 @@ class PpapiCustomInterfaceFactoryTest
     result_ = false;
   }
 
-  static void* InterfaceFactory(const std::string& interface_name) {
+  static const void* InterfaceFactory(const std::string& interface_name) {
     result_ = true;
     return NULL;
   }

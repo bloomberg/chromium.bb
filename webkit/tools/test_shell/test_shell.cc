@@ -673,11 +673,6 @@ bool IsSingleProcess() {
   return true;
 }
 
-bool LaunchSelLdr(const char* alleged_url, int socket_count, void* imc_handles,
-                  void* nacl_process_handle, int* nacl_process_id) {
-  return false;
-}
-
 #if defined(OS_LINUX)
 int MatchFontWithFallback(const std::string& face, bool bold,
                           bool italic, int charset) {
