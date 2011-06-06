@@ -148,7 +148,13 @@ TEST_F(PPAPITest,PaintAggregator) {
   RunTestViaHTTP("PaintAggregator");
 }
 
-TEST_F(PPAPITest, Scrollbar) {
+// Fails consistently on Windows. See crbug.com/85010 for details.
+#if defined(OS_WIN)
+#define MAYBE_Scrollbar FAILS_Scrollbar
+#else
+#define MAYBE_Scrollbar Scrollbar
+#endif
+TEST_F(PPAPITest, MAYBE_Scrollbar) {
   RunTest("Scrollbar");
 }
 
