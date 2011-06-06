@@ -1028,9 +1028,14 @@ class View : public AcceleratorTarget {
   void PaintToTexture(const gfx::Rect& dirty_rect);
 
   // Instructs the compositor to show our texture and all children textures.
+  // Invokes OnWillCompositeTexture() for any views that have textures.
   //
   // This is invoked internally by Widget and painting code.
   void PaintComposite();
+
+  // Invoked from |PaintComposite| if this view has a texture and before the
+  // texture is rendered by the compositor.
+  virtual void OnWillCompositeTexture();
 #endif
 
   // Returns true if this view should paint using a texture.

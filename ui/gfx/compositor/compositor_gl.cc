@@ -66,6 +66,7 @@ class CompositorGL : public Compositor {
   virtual Texture* CreateTexture() OVERRIDE;
   virtual void NotifyStart() OVERRIDE;
   virtual void NotifyEnd() OVERRIDE;
+  virtual void Blur(const gfx::Rect& bounds) OVERRIDE;
 
   // Specific to CompositorGL.
   bool InitShaders();
@@ -270,6 +271,10 @@ void CompositorGL::NotifyEnd() {
   DCHECK(started_);
   gl_surface_->SwapBuffers();
   started_ = false;
+}
+
+void CompositorGL::Blur(const gfx::Rect& bounds) {
+  NOTIMPLEMENTED();
 }
 
 namespace {

@@ -1181,6 +1181,7 @@ void View::PaintComposite() {
     return;
 
   if (texture_.get()) {
+    OnWillCompositeTexture();
     ui::Transform transform;
     GetTransformRelativeTo(NULL, &transform);
     texture_->Draw(transform);
@@ -1230,6 +1231,10 @@ void View::PaintToTexture(const gfx::Rect& dirty_region) {
     }
   }
 }
+
+void View::OnWillCompositeTexture() {
+}
+
 #endif
 
 bool View::ShouldPaintToTexture() const {

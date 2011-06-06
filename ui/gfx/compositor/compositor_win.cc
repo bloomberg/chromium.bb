@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/logging.h"
 #include "base/stl_util-inl.h"
 #include "base/string_piece.h"
 #include "base/win/scoped_comptr.h"
@@ -272,6 +273,7 @@ class CompositorWin : public Compositor, public ViewTextureHost {
   virtual Texture* CreateTexture() OVERRIDE;
   virtual void NotifyStart() OVERRIDE;
   virtual void NotifyEnd() OVERRIDE;
+  virtual void Blur(const gfx::Rect& bounds) OVERRIDE;
 
  private:
   ~CompositorWin();
@@ -405,6 +407,10 @@ void CompositorWin::NotifyEnd() {
   technique_->GetDesc(&tech_desc);
   for(UINT i = 0; i < tech_desc.Passes; ++i)
     technique_->GetPassByIndex(i)->Apply(0);
+}
+
+void CompositorWin::Blur(const gfx::Rect& bounds) {
+  NOTIMPLEMENTED();
 }
 
 CompositorWin::~CompositorWin() {

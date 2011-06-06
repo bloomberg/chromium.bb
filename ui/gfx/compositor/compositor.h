@@ -12,6 +12,7 @@
 class SkBitmap;
 namespace gfx {
 class Point;
+class Rect;
 class Size;
 }
 
@@ -20,6 +21,9 @@ class Transform;
 
 #if !defined(COMPOSITOR_2)
 typedef unsigned int TextureID;
+
+// NOTE: all coordinates passed to Texture/Compositor have 0x0 as the upper left
+// corner.
 
 // Compositor object to take care of GPU painting.
 // A Browser compositor object is responsible for generating the final
@@ -96,6 +100,9 @@ class Compositor : public base::RefCounted<Compositor> {
 
   // Notifies the compositor that compositing is complete.
   virtual void NotifyEnd() = 0;
+
+  // Blurs the specific region in the compositor.
+  virtual void Blur(const gfx::Rect& bounds) = 0;
 
  protected:
   virtual ~Compositor() {}

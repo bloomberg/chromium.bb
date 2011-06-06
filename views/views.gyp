@@ -560,6 +560,8 @@
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
         'views',
+        '../ui/ui.gyp:ui_gfx',
+        '../ui/ui.gyp:gfx_resources',
       ],
       'include_dirs': [
         '..',
@@ -646,6 +648,8 @@
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
         'views',
+        '../ui/ui.gyp:ui_gfx',
+        '../ui/ui.gyp:gfx_resources',
       ],
       'include_dirs': [
         '..',
