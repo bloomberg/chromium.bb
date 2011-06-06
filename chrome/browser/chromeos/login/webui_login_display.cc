@@ -109,7 +109,7 @@ void WebUILoginDisplay::SetUIEnabled(bool is_enabled) {
     login_handler_->ClearAndEnablePassword();
 }
 
-void SelectPod(int index) {
+void WebUILoginDisplay::SelectPod(int index) {
   // TODO(rharrison): Figure out what we should be doing here.
 }
 
