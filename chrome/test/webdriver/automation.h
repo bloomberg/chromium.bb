@@ -146,7 +146,6 @@ class Automation {
  private:
   AutomationProxy* automation() const;
   Error* GetIndicesForTab(int tab_id, int* browser_index, int* tab_index);
-  Error* CreateChromeError(const std::string& message);
   Error* CompareVersion(int client_build_no,
                         int client_patch_no,
                         bool* is_newer_or_equal);
