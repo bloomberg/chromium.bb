@@ -73,7 +73,7 @@ class PanelBrowserViewTest : public InProcessBrowserTest {
   PanelBrowserView* CreatePanelBrowserView(const std::string& panel_name) {
     Browser* panel_browser = Browser::CreateForApp(Browser::TYPE_PANEL,
                                                    panel_name,
-                                                   gfx::Size(),
+                                                   gfx::Rect(),
                                                    browser()->profile());
     panel_browser->window()->Show();
     return static_cast<PanelBrowserView*>(

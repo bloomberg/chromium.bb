@@ -537,8 +537,9 @@ bool CreateWindowFunction::RunImpl() {
   Browser* new_window;
   if (app_name.empty()) {
     new_window = Browser::CreateForType(window_type, window_profile);
+    new_window->window()->SetBounds(window_bounds);
   } else {
-    new_window = Browser::CreateForApp(window_type, app_name, gfx::Size(),
+    new_window = Browser::CreateForApp(window_type, app_name, popup_bounds,
                                        window_profile);
   }
   for (std::vector<GURL>::iterator i = urls.begin(); i != urls.end(); ++i)
@@ -551,10 +552,6 @@ bool CreateWindowFunction::RunImpl() {
     new_window->NewTab();
   }
   new_window->SelectNumberedTab(0);
-  if (app_name.empty())
-    new_window->window()->SetBounds(window_bounds);
-  else
-    new_window->window()->SetBounds(popup_bounds);
 
   if (focused)
     new_window->window()->Show();

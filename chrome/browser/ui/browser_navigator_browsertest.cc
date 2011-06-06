@@ -42,7 +42,7 @@ Browser* BrowserNavigatorTest::CreateEmptyBrowserForType(Browser::Type type,
 Browser* BrowserNavigatorTest::CreateEmptyBrowserForApp(Browser::Type type,
                                                         Profile* profile) {
   Browser* browser = Browser::CreateForApp(Browser::TYPE_POPUP, "Test",
-                                           gfx::Size(), profile);
+                                           gfx::Rect(), profile);
   browser->AddBlankTab(true);
   return browser;
 }

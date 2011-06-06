@@ -29,7 +29,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreatePanel) {
 
   Browser* panel_browser = Browser::CreateForApp(Browser::TYPE_PANEL,
                                                  "PanelTest",
-                                                 gfx::Size(),
+                                                 gfx::Rect(),
                                                  browser()->profile());
   EXPECT_TRUE(panel_browser->is_type_panel());
   panel_browser->window()->Show();

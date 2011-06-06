@@ -200,7 +200,7 @@ void MediaPlayer::PopupPlaylist(Browser* creator) {
   Profile* profile = BrowserList::GetLastActive()->profile();
   playlist_browser_ = Browser::CreateForApp(Browser::TYPE_PANEL,
                                             kMediaPlayerAppName,
-                                            gfx::Size(),
+                                            gfx::Rect(),
                                             profile);
   registrar_.Add(this,
                  NotificationType::BROWSER_CLOSING,
@@ -225,7 +225,7 @@ void MediaPlayer::PopupMediaPlayer(Browser* creator) {
   Profile* profile = BrowserList::GetLastActive()->profile();
   mediaplayer_browser_ = Browser::CreateForApp(Browser::TYPE_PANEL,
                                                kMediaPlayerAppName,
-                                               gfx::Size(),
+                                               gfx::Rect(),
                                                profile);
   registrar_.Add(this,
                  NotificationType::BROWSER_CLOSING,

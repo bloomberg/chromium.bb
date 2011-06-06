@@ -202,7 +202,7 @@ Browser* GetBrowserForDisposition(browser::NavigateParams* params) {
           return Browser::CreateWithParams(browser_params);
         } else {
           return Browser::CreateForApp(Browser::TYPE_POPUP, app_name,
-                                       params->window_bounds.size(), profile);
+                                       params->window_bounds, profile);
         }
       }
       return NULL;

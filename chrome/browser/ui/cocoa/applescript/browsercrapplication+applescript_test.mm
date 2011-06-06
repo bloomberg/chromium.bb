@@ -22,7 +22,7 @@ IN_PROC_BROWSER_TEST_F(BrowserCrApplicationAppleScriptTest, Creation) {
   Profile* profile = browser()->profile();
   Browser* b1 = Browser::CreateForType(Browser::TYPE_POPUP, profile);
   Browser* b2 = Browser::CreateForApp(Browser::TYPE_PANEL, "Test",
-                                      gfx::Size(), profile);
+                                      gfx::Rect(), profile);
 
   EXPECT_EQ(3U, [[NSApp appleScriptWindows] count]);
   for (WindowAppleScript* window in [NSApp appleScriptWindows]) {

@@ -154,11 +154,11 @@ class Browser : public TabHandlerDelegate,
 
   // Like Create, but creates a toolbar-less "app" window for the specified
   // app. |app_name| is required and is used to identify the window to the
-  // shell.  If |window_size| is set, it is used to determine the size of the
-  // window to open.
+  // shell.  If |window_bounds| is set, it is used to determine the bounds of
+  // the window to open.
   static Browser* CreateForApp(Type type,
                                const std::string& app_name,
-                               const gfx::Size& window_size,
+                               const gfx::Rect& window_bounds,
                                Profile* profile);
 
   // Like Create, but creates a tabstrip-less and toolbar-less

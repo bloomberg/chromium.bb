@@ -386,7 +386,7 @@ Browser* Browser::CreateForType(Type type, Profile* profile) {
 // static
 Browser* Browser::CreateForApp(Type type,
                                const std::string& app_name,
-                               const gfx::Size& window_size,
+                               const gfx::Rect& window_bounds,
                                Profile* profile) {
   DCHECK(type != TYPE_TABBED);
   DCHECK(!app_name.empty());
@@ -404,8 +404,8 @@ Browser* Browser::CreateForApp(Type type,
 
   CreateParams params(type, profile);
   params.app_name = app_name;
-  if (!window_size.IsEmpty())
-    params.initial_bounds.set_size(window_size);
+  if (!window_bounds.IsEmpty())
+    params.initial_bounds = window_bounds;
 
   return CreateWithParams(params);
 }
@@ -596,12 +596,13 @@ TabContents* Browser::OpenApplicationWindow(
   Type type = extension && (container == extension_misc::LAUNCH_PANEL) ?
       TYPE_PANEL : TYPE_POPUP;
 
-  gfx::Size window_size;
-  if (extension)
-    window_size.SetSize(extension->launch_width(),
-                        extension->launch_height());
+  gfx::Rect window_bounds;
+  if (extension) {
+    window_bounds.set_width(extension->launch_width());
+    window_bounds.set_height(extension->launch_height());
+  }
 
-  Browser* browser = Browser::CreateForApp(type, app_name, window_size,
+  Browser* browser = Browser::CreateForApp(type, app_name, window_bounds,
                                            profile);
 
   if (app_browser)
@@ -2717,7 +2718,7 @@ void Browser::DuplicateContentsAt(int index) {
     if (is_app()) {
       CHECK(!is_type_popup());
       CHECK(!is_type_panel());
-      browser = Browser::CreateForApp(TYPE_POPUP, app_name_, gfx::Size(),
+      browser = Browser::CreateForApp(TYPE_POPUP, app_name_, gfx::Rect(),
                                       profile_);
     } else if (is_type_popup()) {
       browser = Browser::CreateForType(TYPE_POPUP, profile_);
@@ -3268,7 +3269,7 @@ void Browser::ConvertContentsToApplication(TabContents* contents) {
 
   DetachContents(contents);
   Browser* app_browser = Browser::CreateForApp(
-      TYPE_POPUP, app_name, gfx::Size(), profile_);
+      TYPE_POPUP, app_name, gfx::Rect(), profile_);
   TabContentsWrapper* wrapper =
       TabContentsWrapper::GetCurrentWrapperForContents(contents);
   if (!wrapper)

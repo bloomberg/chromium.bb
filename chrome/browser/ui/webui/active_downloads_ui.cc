@@ -390,7 +390,7 @@ Browser* ActiveDownloadsUI::OpenPopup(Profile* profile) {
   // Create new browser if no matching pop up is found.
   if (browser == NULL) {
     browser = Browser::CreateForApp(Browser::TYPE_PANEL, kActiveDownloadAppName,
-                                    gfx::Size(), profile);
+                                    gfx::Rect(), profile);
 
     browser::NavigateParams params(
         browser,
