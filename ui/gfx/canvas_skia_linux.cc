@@ -270,14 +270,18 @@ void DrawStringContext::Draw(const SkColor& text_color) {
          b = SkColorGetB(text_color) / 255.0,
          a = SkColorGetA(text_color) / 255.0;
 
+  cairo_pattern_t* pattern = NULL;
+
+  cairo_save(cr_);
+
+  // If we're not eliding, use a fixed color.
+  // Otherwise, create a gradient pattern to use as the source.
   if (base::i18n::IsRTL() ||
       (flags_ & gfx::Canvas::NO_ELLIPSIS) ||
       text_width_ <= bounds_.width()) {
     cairo_set_source_rgba(cr_, r, g, b, a);
-    cairo_move_to(cr_, text_x_, text_y_);
-    pango_cairo_show_layout(cr_, layout_);
   } else {
-    // Fade to gray to ellide.
+    // Fade to semi-transparent to elide.
     int fade_width = static_cast<double>(text_height_) * kFadeWidthFactor;
     if (fade_width > (bounds_.width() / 2)) {
       // Don't fade more than half the text.
@@ -285,43 +289,20 @@ void DrawStringContext::Draw(const SkColor& text_color) {
     }
     int fade_x = bounds_.x() + bounds_.width() - fade_width;
 
-    // Draw left part of text, clipped at fade_width.
-    cairo_save(cr_);
-    cairo_rectangle(cr_,
-                    bounds_.x(),
-                    bounds_.y(),
-                    bounds_.width() - fade_width,
-                    bounds_.height());
-    cairo_clip(cr_);
-    cairo_set_source_rgba(cr_, r, g, b, a);
-    cairo_move_to(cr_, text_x_, text_y_);
-    pango_cairo_show_layout(cr_, layout_);
-    cairo_restore(cr_);
-
-    // Clip to the left of fade_width.
-    cairo_save(cr_);
-    cairo_rectangle(cr_, fade_x, bounds_.y(), fade_width, bounds_.height());
-    cairo_clip(cr_);
-
-    // Create clip for text.
-    cairo_move_to(cr_, text_x_, text_y_);
-    pango_cairo_layout_path(cr_, layout_);
-    cairo_clip(cr_);
-
-    // Create alpha fade pattern.
-    cairo_pattern_t* pattern = cairo_pattern_create_linear(
+    pattern = cairo_pattern_create_linear(
         fade_x, bounds_.y(), bounds_.x() + bounds_.width(), bounds_.y());
     cairo_pattern_add_color_stop_rgba(pattern, 0, r, g, b, a);
     cairo_pattern_add_color_stop_rgba(pattern, 1, r, g, b, kFadeFinalAlpha);
-
-    // Draw pattern, clipped by text.
     cairo_set_source(cr_, pattern);
-    cairo_fill(cr_);
-    cairo_paint(cr_);
+  }
+
+  cairo_move_to(cr_, text_x_, text_y_);
+  pango_cairo_show_layout(cr_, layout_);
+
+  if (pattern)
     cairo_pattern_destroy(pattern);
 
-    cairo_restore(cr_);
-  }
+  cairo_restore(cr_);
 }
 
 void DrawStringContext::DrawWithHalo(const SkColor& text_color,
