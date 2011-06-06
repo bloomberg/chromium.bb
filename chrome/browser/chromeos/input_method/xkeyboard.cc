@@ -151,7 +151,6 @@ class XKeyboard {
       LOG(ERROR) << "Can't reapply XKB layout: layout unknown";
       return false;
     }
-    VLOG(1) << "ReapplyLayout: setting to " << current_layout_name_;
     return SetLayoutInternal(
         current_layout_name_, current_modifier_map_, true /* force */);
   }
@@ -249,6 +248,10 @@ class XKeyboard {
             modifier_map, kCapsLockKey)) {
       SetCapsLockEnabled(false);
     }
+
+    // TODO(yusukes): Revert to VLOG(1) when crosbug.com/15851 is resolved.
+    LOG(WARNING) << (force ? "Reapply" : "Set")
+                 << " layout: " << layouts_to_set;
 
     ExecuteSetLayoutCommand(layouts_to_set);
     return true;
