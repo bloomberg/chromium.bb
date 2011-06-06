@@ -1008,12 +1008,8 @@ void Session::TerminateOnSessionThread() {
 
 Error* Session::ExecuteScriptAndParseResponse(const FrameId& frame_id,
                                               const std::string& script,
-                                              Value** value) {
-  // Should we also log the script that's being executed? It could be several KB
-  // in size and will add lots of noise to the logs.
-  VLOG(1) << "Executing script in frame: " << frame_id.frame_path.value();
-
-  std::string result;
+                                              Value** script_result) {
+  std::string response_json;
   Error* error = NULL;
   RunSessionTask(NewRunnableMethod(
       automation_.get(),
@@ -1021,37 +1017,41 @@ Error* Session::ExecuteScriptAndParseResponse(const FrameId& frame_id,
       frame_id.window_id,
       frame_id.frame_path,
       script,
-      &result,
+      &response_json,
       &error));
   if (error)
     return error;
 
-  VLOG(1) << "...script result: " << result;
-  scoped_ptr<Value> r(base::JSONReader::ReadAndReturnError(
-      result, true, NULL, NULL));
-  if (!r.get())
+  scoped_ptr<Value> value(base::JSONReader::ReadAndReturnError(
+      response_json, true, NULL, NULL));
+  if (!value.get())
     return new Error(kUnknownError, "Failed to parse script result");
-
-  if (r->GetType() != Value::TYPE_DICTIONARY)
+  if (value->GetType() != Value::TYPE_DICTIONARY)
     return new Error(kUnknownError, "Execute script did not return dictionary");
-
-  DictionaryValue* result_dict = static_cast<DictionaryValue*>(r.get());
-
-  Value* tmp;
-  if (result_dict->Get("value", &tmp)) {
-    // result_dict owns the returned value, so we need to make a copy.
-    *value = tmp->DeepCopy();
-  } else {
-    // "value" was not defined in the returned dictionary; set to null.
-    *value = Value::CreateNullValue();
-  }
+  DictionaryValue* result_dict = static_cast<DictionaryValue*>(value.get());
 
   int status;
   if (!result_dict->GetInteger("status", &status))
     return new Error(kUnknownError, "Execute script did not return status");
   ErrorCode code = static_cast<ErrorCode>(status);
-  if (code != kSuccess)
-    return new Error(code);
+  if (code != kSuccess) {
+    DictionaryValue* error_dict;
+    std::string error_msg = "Script threw an exception";
+    if (result_dict->GetDictionary("value", &error_dict)) {
+      std::string exception;
+      if (error_dict->GetString("message", &exception))
+        error_msg += ": " + exception;
+    }
+    return new Error(code, error_msg);
+  }
+
+  Value* tmp;
+  if (result_dict->Get("value", &tmp)) {
+    *script_result= tmp->DeepCopy();
+  } else {
+    // "value" was not defined in the returned dictionary; set to null.
+    *script_result= Value::CreateNullValue();
+  }
   return NULL;
 }
 

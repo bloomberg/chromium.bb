@@ -41,6 +41,7 @@ void ExecuteAsyncScriptCommand::ExecutePost(Response* const response) {
   Error* error = session_->ExecuteAsyncScript(
       session_->current_target(), script, args, &result);
   if (error) {
+    error->AddDetails("Original script: " + script);
     response->SetError(error);
     return;
   }

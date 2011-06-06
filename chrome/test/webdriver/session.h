@@ -73,7 +73,7 @@ class Session {
   // The |script| should be in the form of a function body
   // (e.g. "return arguments[0]"), where |args| is the list of arguments to
   // pass to the function. The caller is responsible for the script result
-  // |value|.
+  // |value|, which is set only if there is no error.
   Error* ExecuteScript(const FrameId& frame_id,
                        const std::string& script,
                        const ListValue* const args,
@@ -88,7 +88,7 @@ class Session {
   // The |script| should be in the form of a function body
   // (e.g. "return arguments[0]"), where |args| is the list of arguments to
   // pass to the function. The caller is responsible for the script result
-  // |value|.
+  // |value|, which is set only if there is no error.
   Error* ExecuteAsyncScript(const FrameId& frame_id,
                             const std::string& script,
                             const ListValue* const args,
