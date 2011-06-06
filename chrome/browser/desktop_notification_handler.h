@@ -15,10 +15,12 @@ struct DesktopNotificationHostMsg_Show_Params;
 // coming in from the renderer.
 class DesktopNotificationHandler : public RenderViewHostObserver {
  public:
-  explicit DesktopNotificationHandler(RenderViewHost* render_view_host);
+  static DesktopNotificationHandler* Create(RenderViewHost* render_view_host);
   virtual ~DesktopNotificationHandler();
 
  private:
+  explicit DesktopNotificationHandler(RenderViewHost* render_view_host);
+
   // RenderViewHostObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message);
 

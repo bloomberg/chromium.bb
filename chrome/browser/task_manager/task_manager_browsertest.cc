@@ -365,39 +365,6 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeHostedAppTabs) {
   ASSERT_TRUE(StartsWith(model()->GetResourceTitle(2), tab_prefix, true));
 }
 
-IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeNotificationChanges) {
-  EXPECT_EQ(0, model()->ResourceCount());
-
-  // Show the task manager.
-  browser()->window()->ShowTaskManager();
-  // Expect to see the browser and the New Tab Page renderer.
-  WaitForResourceChange(2);
-
-  // Show a notification.
-  NotificationUIManager* notifications =
-      g_browser_process->notification_ui_manager();
-
-  string16 content = DesktopNotificationService::CreateDataUrl(
-      GURL(), ASCIIToUTF16("Hello World!"), string16(),
-      WebKit::WebTextDirectionDefault);
-
-  scoped_refptr<NotificationDelegate> del1(new MockNotificationDelegate("n1"));
-  Notification n1(
-      GURL(), GURL(content), ASCIIToUTF16("Test 1"), string16(), del1.get());
-  scoped_refptr<NotificationDelegate> del2(new MockNotificationDelegate("n2"));
-  Notification n2(
-      GURL(), GURL(content), ASCIIToUTF16("Test 2"), string16(), del2.get());
-
-  notifications->Add(n1, browser()->profile());
-  WaitForResourceChange(3);
-  notifications->Add(n2, browser()->profile());
-  WaitForResourceChange(4);
-  notifications->CancelById(n1.notification_id());
-  WaitForResourceChange(3);
-  notifications->CancelById(n2.notification_id());
-  WaitForResourceChange(2);
-}
-
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, KillExtension) {
   EXPECT_EQ(0, TaskManager::GetBackgroundPageCount());
   // Show the task manager. This populates the model, and helps with debugging

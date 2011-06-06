@@ -799,6 +799,7 @@
         'browser/defaults.h',
         'browser/desktop_notification_handler.cc',
         'browser/desktop_notification_handler.h',
+        'browser/desktop_notification_handler_stub.cc',
         'browser/diagnostics/diagnostics_main.cc',
         'browser/diagnostics/diagnostics_main.h',
         'browser/diagnostics/diagnostics_model.cc',
@@ -1471,6 +1472,7 @@
         'browser/notifications/notification_object_proxy.h',
         'browser/notifications/notification_options_menu_model.cc',
         'browser/notifications/notification_options_menu_model.h',
+        'browser/notifications/notification_stubs.cc',
         'browser/notifications/notification_ui_manager.cc',
         'browser/notifications/notification_ui_manager.h',
         'browser/notifications/notifications_prefs_cache.cc',
@@ -2100,6 +2102,8 @@
         'browser/tabs/tab_strip_selection_model.h',
         'browser/task_manager/task_manager.cc',
         'browser/task_manager/task_manager.h',
+        'browser/task_manager/task_manager_notification_resource_provider.cc',
+        'browser/task_manager/task_manager_notification_resource_provider_stub.cc',
         'browser/task_manager/task_manager_resource_providers.cc',
         'browser/task_manager/task_manager_resource_providers.h',
         'browser/themes/browser_theme_pack.cc',
@@ -4451,6 +4455,23 @@
             ['exclude', '^browser/ui/views/file_manager_dialog.h'],
           ]}
         ],
+        ['enable_desktop_notifications==0', {
+          'sources/': [
+            ['exclude', '^browser/desktop_notification_handler.cc'],
+            ['exclude', '^browser/notifications/'],
+            ['exclude', '^browser/ui/cocoa/notifications/'],
+            ['exclude', '^browser/ui/gtk/notifications/'],
+            ['exclude', '^browser/ui/views/notifications/'],
+            ['include', '^browser/notifications/notification_stubs.cc'],
+            ['exclude', '^browser/task_manager/task_manager_notification_resource_provider.cc'],
+          ]
+        }, {  # enable_desktop_notifications==0
+          'sources!': [
+            'browser/desktop_notification_handler_stub.cc',
+            'browser/notifications/notification_stubs.cc',
+            'browser/task_manager/task_manager_notification_resource_provider_stub.cc',
+          ]
+        }],
       ],
     },
     {

@@ -18,7 +18,6 @@
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
-#include "chrome/browser/notifications/notifications_prefs_cache.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
@@ -285,14 +284,14 @@ RenderMessageFilter::RenderMessageFilter(
       resource_context_(profile->GetResourceContext()),
       extensions_request_context_(profile->GetRequestContextForExtensions()),
       render_widget_helper_(render_widget_helper),
-      notification_prefs_(
-          DesktopNotificationServiceFactory::GetForProfile(profile)->
-              prefs_cache()),
+      notification_service_(
+          DesktopNotificationServiceFactory::GetForProfile(profile)),
       incognito_(profile->IsOffTheRecord()),
       webkit_context_(profile->GetWebKitContext()),
       render_process_id_(render_process_id) {
   DCHECK(request_context_);
 
+  profile_->GetPrefs();
   render_widget_helper_->Init(render_process_id_, resource_dispatcher_host_);
 }
 
@@ -627,7 +626,9 @@ void RenderMessageFilter::OnCheckNotificationPermission(
 
   // Fall back to the regular notification preferences, which works on an
   // origin basis.
-  *result = notification_prefs_->HasPermission(source_url.GetOrigin());
+  *result = notification_service_ ?
+      notification_service_->HasPermission(source_url.GetOrigin()) :
+      WebKit::WebNotificationPresenter::PermissionNotAllowed;
 }
 
 void RenderMessageFilter::OnAllocateSharedMemoryBuffer(

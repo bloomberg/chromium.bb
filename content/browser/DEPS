@@ -38,7 +38,6 @@ include_rules = [
 
   "+chrome/browser/notifications/desktop_notification_service.h",
   "+chrome/browser/notifications/desktop_notification_service_factory.h",
-  "+chrome/browser/notifications/notifications_prefs_cache.h",
 
   # http://crbug.com/76788
   "+chrome/browser/profiles/profile.h",

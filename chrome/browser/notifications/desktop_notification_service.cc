@@ -591,3 +591,8 @@ void DesktopNotificationService::NotifySettingsChange() {
       Source<DesktopNotificationService>(this),
       NotificationService::NoDetails());
 }
+
+int DesktopNotificationService::HasPermission(const GURL& origin) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  return prefs_cache()->HasPermission(origin.GetOrigin());
+}

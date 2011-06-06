@@ -86,8 +86,11 @@ TaskManagerModel::TaskManagerModel(TaskManager* task_manager)
       new TaskManagerChildProcessResourceProvider(task_manager));
   AddResourceProvider(
       new TaskManagerExtensionProcessResourceProvider(task_manager));
-  AddResourceProvider(
-      new TaskManagerNotificationResourceProvider(task_manager));
+
+  TaskManager::ResourceProvider* provider =
+      TaskManagerNotificationResourceProvider::Create(task_manager);
+  if (provider)
+    AddResourceProvider(provider);
 }
 
 TaskManagerModel::~TaskManagerModel() {

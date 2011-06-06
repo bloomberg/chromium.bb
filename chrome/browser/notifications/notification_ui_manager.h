@@ -30,13 +30,18 @@ class NotificationUIManager
     : public BalloonCollection::BalloonSpaceChangeListener,
       public NotificationObserver {
  public:
-  explicit NotificationUIManager(PrefService* local_state);
   virtual ~NotificationUIManager();
 
   // Creates an initialized UI manager with a new balloon collection
   // and the listener relationship setup.
   // Except for unit tests, this is the way to construct the object.
   static NotificationUIManager* Create(PrefService* local_state);
+
+  // Creates an initialized UI manager with the given balloon collection
+  // and the listener relationship setup.
+  // Used primarily by unit tests.
+  static NotificationUIManager* Create(PrefService* local_state,
+                                       BalloonCollection* balloons);
 
   // Registers preferences.
   static void RegisterPrefs(PrefService* prefs);
@@ -75,6 +80,8 @@ class NotificationUIManager
   void SetPositionPreference(BalloonCollection::PositionPreference preference);
 
  private:
+  explicit NotificationUIManager(PrefService* local_state);
+
   // NotificationObserver override.
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,

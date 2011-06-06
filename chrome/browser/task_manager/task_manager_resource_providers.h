@@ -416,7 +416,8 @@ class TaskManagerNotificationResourceProvider
     : public TaskManager::ResourceProvider,
       public NotificationObserver {
  public:
-  explicit TaskManagerNotificationResourceProvider(TaskManager* task_manager);
+  static TaskManagerNotificationResourceProvider* Create(
+      TaskManager* task_manager);
 
   // TaskManager::ResourceProvider interface
   virtual TaskManager::Resource* GetResource(int origin_pid,
@@ -431,6 +432,7 @@ class TaskManagerNotificationResourceProvider
                        const NotificationDetails& details);
 
  private:
+  explicit TaskManagerNotificationResourceProvider(TaskManager* task_manager);
   virtual ~TaskManagerNotificationResourceProvider();
 
   void AddToTaskManager(BalloonHost* balloon_host);

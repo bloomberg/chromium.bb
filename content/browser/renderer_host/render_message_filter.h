@@ -26,10 +26,10 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/surface/transport_dib.h"
 
+class DesktopNotificationService;
 struct FontDescriptor;
 class ExtensionInfoMap;
 class HostContentSettingsMap;
-class NotificationsPrefsCache;
 class Profile;
 class RenderWidgetHelper;
 struct ViewHostMsg_CreateWindow_Params;
@@ -238,9 +238,7 @@ class RenderMessageFilter : public BrowserMessageFilter {
 
   scoped_refptr<RenderWidgetHelper> render_widget_helper_;
 
-  // A cache of notifications preferences which is used to handle
-  // Desktop Notifications permission messages.
-  scoped_refptr<NotificationsPrefsCache> notification_prefs_;
+  DesktopNotificationService* notification_service_;
 
   // Whether this process is used for incognito tabs.
   bool incognito_;

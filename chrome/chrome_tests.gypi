@@ -1470,11 +1470,6 @@
         'browser/net/sqlite_persistent_cookie_store_unittest.cc',
         'browser/net/url_fixer_upper_unittest.cc',
         'browser/net/url_info_unittest.cc',
-        'browser/notifications/desktop_notification_service_unittest.cc',
-        'browser/notifications/desktop_notifications_unittest.cc',
-        'browser/notifications/desktop_notifications_unittest.h',
-        'browser/notifications/notification_exceptions_table_model_unittest.cc',
-        'browser/notifications/notifications_prefs_cache_unittest.cc',
         'browser/parsers/metadata_parser_filebase_unittest.cc',
         'browser/password_manager/encryptor_password_mac_unittest.cc',
         'browser/password_manager/encryptor_unittest.cc',
@@ -1756,7 +1751,6 @@
         'browser/ui/cocoa/location_bar/selected_keyword_decoration_unittest.mm',
         'browser/ui/cocoa/menu_button_unittest.mm',
         'browser/ui/cocoa/menu_controller_unittest.mm',
-        'browser/ui/cocoa/notifications/balloon_controller_unittest.mm',
         'browser/ui/cocoa/nsimage_cache_unittest.mm',
         'browser/ui/cocoa/nsmenuitem_additions_unittest.mm',
         'browser/ui/cocoa/objc_method_swizzle_unittest.mm',
@@ -2003,6 +1997,16 @@
         '../webkit/fileapi/file_system_test_helper.h',
       ],
       'conditions': [
+        ['enable_desktop_notifications==1', {
+          'sources': [
+            'browser/notifications/desktop_notification_service_unittest.cc',
+            'browser/notifications/desktop_notifications_unittest.cc',
+            'browser/notifications/desktop_notifications_unittest.h',
+            'browser/notifications/notification_exceptions_table_model_unittest.cc',
+            'browser/notifications/notifications_prefs_cache_unittest.cc',
+            'browser/ui/cocoa/notifications/balloon_controller_unittest.mm',
+          ]
+        }],
         ['p2p_apis==1', {
           'sources': [
             '../content/browser/renderer_host/p2p/socket_host_test_utils.h',
@@ -2378,7 +2382,6 @@
         'browser/extensions/extension_context_menu_browsertest.cc',
         'browser/extensions/extension_cookies_apitest.cc',
         'browser/extensions/extension_cookies_unittest.cc',
-        'browser/extensions/extension_crash_recovery_browsertest.cc',
         'browser/extensions/extension_debugger_apitest.cc',
         'browser/extensions/extension_decode_jpeg_apitest.cc',
         'browser/extensions/extension_fileapi_apitest.cc',
@@ -2426,7 +2429,6 @@
         'browser/extensions/extension_webstore_private_apitest.cc',
         'browser/extensions/extension_webstore_private_browsertest.cc',
         'browser/extensions/isolated_app_apitest.cc',
-        'browser/extensions/notifications_apitest.cc',
         'browser/extensions/page_action_apitest.cc',
         'browser/extensions/permissions_apitest.cc',
         'browser/extensions/stubs_apitest.cc',
@@ -2677,6 +2679,13 @@
             # run time dependency
             '../webkit/webkit.gyp:copy_npapi_test_plugin',
           ],
+        }],
+        ['enable_desktop_notifications==1', {
+          'sources': [
+            'browser/extensions/extension_crash_recovery_browsertest.cc',
+            'browser/extensions/notifications_apitest.cc',
+            'browser/task_manager/task_manager_notification_browsertest.cc',
+          ]
         }],
       ],  # conditions
     },  # target browser_tests

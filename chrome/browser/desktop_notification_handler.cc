@@ -13,12 +13,18 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/common/desktop_notification_messages.h"
 
-DesktopNotificationHandler::DesktopNotificationHandler(
-    RenderViewHost* render_view_host)
-  : RenderViewHostObserver(render_view_host) {
+// static
+DesktopNotificationHandler*
+DesktopNotificationHandler::Create(RenderViewHost* render_view_host) {
+  return new DesktopNotificationHandler(render_view_host);
 }
 
 DesktopNotificationHandler::~DesktopNotificationHandler() {
+}
+
+DesktopNotificationHandler::DesktopNotificationHandler(
+    RenderViewHost* render_view_host)
+  : RenderViewHostObserver(render_view_host) {
 }
 
 bool DesktopNotificationHandler::OnMessageReceived(

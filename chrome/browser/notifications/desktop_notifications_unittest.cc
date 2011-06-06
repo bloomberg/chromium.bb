@@ -85,9 +85,8 @@ void DesktopNotificationsTest::SetUp() {
   browser::RegisterLocalState(&local_state_);
   profile_.reset(new TestingProfile());
   balloon_collection_ = new MockBalloonCollection();
-  ui_manager_.reset(new NotificationUIManager(&local_state_));
-  ui_manager_->Initialize(balloon_collection_);
-  balloon_collection_->set_space_change_listener(ui_manager_.get());
+  ui_manager_.reset(NotificationUIManager::Create(&local_state_,
+                                                  balloon_collection_));
   service_.reset(new DesktopNotificationService(profile(), ui_manager_.get()));
   log_output_.clear();
 }
