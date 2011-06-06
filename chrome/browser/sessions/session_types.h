@@ -82,6 +82,13 @@ class TabNavigation {
   void set_index(int index) { index_ = index; }
   int index() const { return index_; }
 
+  // Converts a set of TabNavigations into a set of NavigationEntrys. The
+  // caller owns the NavigationEntrys.
+  static void CreateNavigationEntriesFromTabNavigations(
+      Profile* profile,
+      const std::vector<TabNavigation>& navigations,
+      std::vector<NavigationEntry*>* entries);
+
  private:
   friend class BaseSessionService;
 

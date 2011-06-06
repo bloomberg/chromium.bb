@@ -1126,8 +1126,12 @@ TabContents* Browser::AddRestoredTab(
       session_storage_namespace);
   TabContents* new_tab = wrapper->tab_contents();
   wrapper->extension_tab_helper()->SetExtensionAppById(extension_app_id);
-  new_tab->controller().RestoreFromState(navigations, selected_navigation,
-                                         from_last_session);
+  std::vector<NavigationEntry*> entries;
+  TabNavigation::CreateNavigationEntriesFromTabNavigations(
+      profile_, navigations, &entries);
+  new_tab->controller().Restore(
+      selected_navigation, from_last_session, &entries);
+  DCHECK_EQ(0u, entries.size());
 
   int add_types = select ? TabStripModel::ADD_ACTIVE :
       TabStripModel::ADD_NONE;
@@ -1168,8 +1172,12 @@ void Browser::ReplaceRestoredTab(
       session_storage_namespace);
   wrapper->extension_tab_helper()->SetExtensionAppById(extension_app_id);
   TabContents* replacement = wrapper->tab_contents();
-  replacement->controller().RestoreFromState(navigations, selected_navigation,
-                                             from_last_session);
+  std::vector<NavigationEntry*> entries;
+  TabNavigation::CreateNavigationEntriesFromTabNavigations(
+      profile_, navigations, &entries);
+  replacement->controller().Restore(
+      selected_navigation, from_last_session, &entries);
+  DCHECK_EQ(0u, entries.size());
 
   tab_handler_->GetTabStripModel()->ReplaceNavigationControllerAt(
       tab_handler_->GetTabStripModel()->active_index(),

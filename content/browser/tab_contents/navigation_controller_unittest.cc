@@ -15,7 +15,7 @@
 //  #include "chrome/browser/sessions/session_service.h"
 //  #include "chrome/browser/sessions/session_service_factory.h"
 //  #include "chrome/browser/sessions/session_service_test_helper.h"
-#include "chrome/browser/sessions/session_types.h"
+//  #include "chrome/browser/sessions/session_types.h"
 #include "chrome/test/test_notification_tracker.h"
 #include "chrome/test/testing_profile.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
@@ -1358,13 +1358,17 @@ TEST_F(NavigationControllerTest, EnforceMaxNavigationCount) {
 TEST_F(NavigationControllerTest, RestoreNavigate) {
   // Create a NavigationController with a restored set of tabs.
   GURL url("http://foo");
-  std::vector<TabNavigation> navigations;
-  navigations.push_back(TabNavigation(0, url, GURL(),
-                                      ASCIIToUTF16("Title"), "state",
-                                      PageTransition::LINK));
+  std::vector<NavigationEntry*> entries;
+  NavigationEntry* entry = NavigationController::CreateNavigationEntry(
+      url, GURL(), PageTransition::RELOAD, profile());
+  entry->set_page_id(0);
+  entry->set_title(ASCIIToUTF16("Title"));
+  entry->set_content_state("state");
+  entries.push_back(entry);
   TabContents our_contents(profile(), NULL, MSG_ROUTING_NONE, NULL, NULL);
   NavigationController& our_controller = our_contents.controller();
-  our_controller.RestoreFromState(navigations, 0, true);
+  our_controller.Restore(0, true, &entries);
+  ASSERT_EQ(0u, entries.size());
   our_controller.GoToIndex(0);
 
   // We should now have one entry, and it should be "pending".

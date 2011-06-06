@@ -11,7 +11,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_url_handler.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sessions/session_types.h"
 #include "chrome/common/chrome_constants.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/in_process_webkit/session_storage_namespace.h"
@@ -141,18 +140,19 @@ NavigationController::~NavigationController() {
       NotificationService::NoDetails());
 }
 
-void NavigationController::RestoreFromState(
-    const std::vector<TabNavigation>& navigations,
+void NavigationController::Restore(
     int selected_navigation,
-    bool from_last_session) {
+    bool from_last_session,
+    std::vector<NavigationEntry*>* entries) {
   // Verify that this controller is unused and that the input is valid.
   DCHECK(entry_count() == 0 && !pending_entry());
   DCHECK(selected_navigation >= 0 &&
-         selected_navigation < static_cast<int>(navigations.size()));
+         selected_navigation < static_cast<int>(entries->size()));
 
-  // Populate entries_ from the supplied TabNavigations.
   needs_reload_ = true;
-  CreateNavigationEntriesFromTabNavigations(navigations, &entries_);
+  for (size_t i = 0; i < entries->size(); ++i)
+    entries_.push_back(linked_ptr<NavigationEntry>((*entries)[i]));
+  entries->clear();
 
   // And finish the restore.
   FinishRestore(selected_navigation, from_last_session);
@@ -686,18 +686,6 @@ bool NavigationController::IsRedirect(
     return PageTransition::IsRedirect(params.transition);
   }
   return params.redirects.size() > 1;
-}
-
-void NavigationController::CreateNavigationEntriesFromTabNavigations(
-    const std::vector<TabNavigation>& navigations,
-    std::vector<linked_ptr<NavigationEntry> >* entries) {
-  // Create a NavigationEntry for each of the navigations.
-  int page_id = 0;
-  for (std::vector<TabNavigation>::const_iterator i =
-           navigations.begin(); i != navigations.end(); ++i, ++page_id) {
-    linked_ptr<NavigationEntry> entry(i->ToNavigationEntry(page_id, profile_));
-    entries->push_back(entry);
-  }
 }
 
 void NavigationController::RendererDidNavigateToNewPage(

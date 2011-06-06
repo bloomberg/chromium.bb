@@ -24,7 +24,6 @@ class Profile;
 class SessionStorageNamespace;
 class SiteInstance;
 class TabContents;
-class TabNavigation;
 struct ViewHostMsg_FrameNavigate_Params;
 
 namespace content {
@@ -66,10 +65,12 @@ class NavigationController {
   // using selected_navigation as the currently loaded entry. Before this call
   // the controller should be unused (there should be no current entry). If
   // from_last_session is true, navigations are from the previous session,
-  // otherwise they are from the current session (undo tab close).
+  // otherwise they are from the current session (undo tab close). This takes
+  // ownership of the NavigationEntrys in |entries| and clears it out.
   // This is used for session restore.
-  void RestoreFromState(const std::vector<TabNavigation>& navigations,
-                        int selected_navigation, bool from_last_session);
+  void Restore(int selected_navigation,
+               bool from_last_session,
+               std::vector<NavigationEntry*>* entries);
 
   // Active entry --------------------------------------------------------------
 
@@ -325,8 +326,7 @@ class NavigationController {
   bool IsInitialNavigation();
 
   // Creates navigation entry and translates the virtual url to a real one.
-  // Used when restoring a tab from a TabNavigation object and when navigating
-  // to a new URL using LoadURL.
+  // Used when navigating to a new URL using LoadURL.
   static NavigationEntry* CreateNavigationEntry(const GURL& url,
                                                 const GURL& referrer,
                                                 PageTransition::Type transition,
@@ -409,12 +409,6 @@ class NavigationController {
   // Returns true if the navigation is likley to be automatic rather than
   // user-initiated.
   bool IsLikelyAutoNavigation(base::TimeTicks now);
-
-  // Creates a new NavigationEntry for each TabNavigation in navigations, adding
-  // the NavigationEntry to entries. This is used during session restore.
-  void CreateNavigationEntriesFromTabNavigations(
-      const std::vector<TabNavigation>& navigations,
-      std::vector<linked_ptr<NavigationEntry> >* entries);
 
   // Inserts up to |max_index| entries from |source| into this. This does NOT
   // adjust any of the members that reference entries_
