@@ -140,17 +140,6 @@ class Plugin : public PortableHandle {
   // TODO(sehr): document this.
   ScriptableHandle* socket() const { return socket_; }
 
-  // Shut down the multimedia system, destroying the listener thread.
-  virtual void ShutdownMultimedia() { }
-
-  // Width is the width in pixels of the region this instance occupies.
-  int32_t width() const { return width_; }
-  void set_width(int32_t width) { width_ = width; }
-
-  // Height is the height in pixels of the region this instance occupies.
-  int32_t height() const { return height_; }
-  void set_height(int32_t height) { height_ = height; }
-
   nacl::DescWrapperFactory* wrapper_factory() const { return wrapper_factory_; }
 
   // Complex method to set member data.
@@ -219,10 +208,6 @@ class Plugin : public PortableHandle {
   nacl::string manifest_url_;
   nacl::string nacl_module_origin_;
   ReadyState nacl_ready_state_;
-
-  int32_t height_;
-  int32_t width_;
-  int32_t video_update_mode_;
 
   nacl::DescWrapperFactory* wrapper_factory_;
 

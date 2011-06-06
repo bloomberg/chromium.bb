@@ -34,59 +34,8 @@ testProgressEventStateMachine(
     1,  // loadCount
     undefined  // lastError
 );
-testProgressEventStateMachine(
-    tester,
-    'topdir_src',
-    2,  // progressMinCount
-    0,  // errorCount
-    0,  // abortCount
-    1,  // loadCount
-    undefined  // lastError
-);
-testProgressEventStateMachine(
-    tester,
-    'subdir_src',
-    2,  // progressMinCount
-    0,  // errorCount
-    0,  // abortCount
-    1,  // loadCount
-    undefined  // lastError
-);
-/*
-testProgressEventStateMachine(
-    tester,
-    'topdir_setattribute',
-    2,  // progressMinCount
-    0,  // errorCount
-    0,  // abortCount
-    1,  // loadCount
-    undefined  // lastError
-);
-testProgressEventStateMachine(
-    tester,
-    'subdir_setattribute',
-    2,  // progressMinCount
-    0,  // errorCount
-    0,  // abortCount
-    1,  // loadCount
-    undefined  // lastError
-);
-*/
 function runTests() {
-  // Set the src attribute by src=.
-  $('topdir_src').src = 'manifest_top.nmf';
-  $('subdir_src').src = 'subdir/manifest_subdir.nmf';
-  // Set the src attribute by setAttribute.
-  // TODO(sehr,polina): enable these when setAttribute is implemented.
-  // http://code.google.com/p/nativeclient/issues/detail?id=1850
-  // $('topdir_setattribute').setAttribute('src', 'manifest_top.nmf');
-  // $('subdir_setattribute').setAttribute('src', 'subdir/manifest_subdir.nmf');
-  tester.waitFor($('topdir_static'),
-                 $('subdir_static'),
-                 $('topdir_src'),
-                 $('subdir_src')
-                 /* $('topdir_setattribute'),
-                 $('subdir_setattribute') */);
+  tester.waitFor($('topdir_static'), $('subdir_static'));
   tester.run();
 }
 // Set all the listeners on the body.
@@ -111,28 +60,6 @@ setListeners($('body'));
        width=0 height=0
        src="subdir/manifest_subdir.nmf"
        type="application/x-nacl" />
-
-<embed id="topdir_src"
-       class="naclModule"
-       width=0 height=0
-       type="application/x-nacl" />
-
-<embed id="subdir_src"
-       class="naclModule"
-       width=0 height=0
-       type="application/x-nacl" />
-
-<!--
-<embed id="topdir_setattribute"
-       class="naclModule"
-       width=0 height=0
-       type="application/x-nacl" />
-
-<embed id="subdir_setattribute"
-       class="naclModule"
-       width=0 height=0
-       type="application/x-nacl" />
--->
 
 <script type="text/javascript">
 //<![CDATA[

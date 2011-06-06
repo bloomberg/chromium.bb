@@ -209,7 +209,8 @@ int raii_main(int argc, char* argv[]) {
     launcher.SetCommandPrefix(command_prefix);
   }
 
-  if (!launcher.StartFromCommandLine(5, sel_ldr_argv, app_argv)) {
+  launcher.InitCommandLine(5, sel_ldr_argv, app_argv);
+  if (!launcher.LaunchFromCommandLine()) {
     NaClLog(LOG_FATAL, "sel_universal: Failed to launch sel_ldr\n");
   }
 

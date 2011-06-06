@@ -34,19 +34,20 @@ function log(message) {
 }
 
 function startProcess(url, callback) {
-  // Using createElement() + innerHTML is a very kludgy way of launching
-  // a process.  TODO(mseaborn): Add a better interface for launching
-  // processes to the plugin.
-  // See http://code.google.com/p/nativeclient/issues/detail?id=746
-  var node = document.createElement('div');
+  var embed = document.createElement('embed');
+  embed.width = 0;
+  embed.height = 0;
+  embed.src = url;
+  embed.type = 'application/x-nacl';
+  embed.name = 'foo';
+
+  var div = document.createElement('div');
+  div.appendChild(embed);
   // Wait for the load event, which indicates successful loading.
-  document.getElementById('scratch_space').appendChild(node);
-  node.addEventListener('load', (function(e) { callback(e.target) }) , true);
-  node.innerHTML = '<embed name=foo width=0 height=0 ' +
-    'type="application/x-nacl" />';
-  var plugin = node.childNodes[0];
-  // Assigning to "nacl" causes manifest and then nexe to be loaded.
-  plugin.src = url;
+  div.addEventListener('load', (function(e) { callback(e.target) }) , true);
+
+  // Insert div into the DOM.  This starts the load of the nacl plugin, etc.
+  document.getElementById('scratch_space').appendChild(div);
 }
 
 function runTest(url, callback) {

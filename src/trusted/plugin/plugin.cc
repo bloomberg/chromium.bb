@@ -44,10 +44,6 @@ namespace plugin {
 
 namespace {
 
-static int32_t stringToInt32(char* src) {
-  return strtol(src, static_cast<char**>(NULL), 0);
-}
-
 bool ShmFactory(void* obj, SrpcParams* params) {
   Plugin* plugin = reinterpret_cast<Plugin*>(obj);
 
@@ -101,26 +97,6 @@ bool GetReadyStateProperty(void* obj, SrpcParams* params) {
   return true;
 }
 
-bool GetSrcProperty(void* obj, SrpcParams* params) {
-  Plugin* plugin = reinterpret_cast<Plugin*>(obj);
-  const char* url = plugin->manifest_url().c_str();
-  PLUGIN_PRINTF(("GetSrcProperty ('src'='%s')\n", url));
-  if (NACL_NO_URL != plugin->manifest_url()) {
-    params->outs()[0]->arrays.str = strdup(url);
-    return true;
-  } else {
-    // No url set for 'src'.
-    return false;
-  }
-}
-
-bool SetSrcProperty(void* obj, SrpcParams* params) {
-  PLUGIN_PRINTF(("SetSrcProperty ()\n"));
-  reinterpret_cast<Plugin*>(obj)->
-      SetSrcPropertyImpl(params->ins()[0]->arrays.str);
-  return true;
-}
-
 bool LaunchExecutableFromFd(void* obj, SrpcParams* params) {
   PLUGIN_PRINTF(("LaunchExecutableFromFd ()\n"));
   Plugin* plugin = reinterpret_cast<Plugin*>(obj);
@@ -147,30 +123,6 @@ bool LaunchExecutableFromFd(void* obj, SrpcParams* params) {
                             error_string);
   }
   return was_successful;
-}
-
-bool GetHeightProperty(void* obj, SrpcParams* params) {
-  Plugin* plugin = reinterpret_cast<Plugin*>(obj);
-  params->outs()[0]->u.ival = plugin->height();
-  return true;
-}
-
-bool SetHeightProperty(void* obj, SrpcParams* params) {
-  Plugin* plugin = reinterpret_cast<Plugin*>(obj);
-  plugin->set_height(params->ins()[0]->u.ival);
-  return true;
-}
-
-bool GetWidthProperty(void* obj, SrpcParams* params) {
-  Plugin* plugin = reinterpret_cast<Plugin*>(obj);
-  params->outs()[0]->u.ival = plugin->width();
-  return true;
-}
-
-bool SetWidthProperty(void* obj, SrpcParams* params) {
-  Plugin* plugin = reinterpret_cast<Plugin*>(obj);
-  plugin->set_width(params->ins()[0]->u.ival);
-  return true;
 }
 
 }  // namespace
@@ -253,8 +205,6 @@ void Plugin::LoadMethods() {
   // Properties implemented by Plugin.
   AddPropertyGet(GetReadyStateProperty, "readyState", "i");
 
-  AddPropertyGet(GetSrcProperty, "src", "s");
-  AddPropertySet(SetSrcProperty, "src", "s");
   if (!ExperimentalJavaScriptApisAreEnabled()) {
     return;
   }
@@ -268,15 +218,6 @@ void Plugin::LoadMethods() {
   AddMethodCall(SendAsyncMessage0, "__sendAsyncMessage0", "s", "");
   AddMethodCall(SendAsyncMessage1, "__sendAsyncMessage1", "sh", "");
   AddMethodCall(StartSrpcServicesWrapper, "__startSrpcServices", "", "");
-  // With PPAPI plugin, we make sure all predeclared plugin properties start
-  // with __ to avoid conflicts with the properties of the underlying object
-  // (e.g. height).
-  // TODO(polina): Make the PPAPI nexe inherit from the plugin to provide
-  // access to these properties.
-  AddPropertyGet(GetHeightProperty, "__height", "i");
-  AddPropertySet(SetHeightProperty, "__height", "i");
-  AddPropertyGet(GetWidthProperty, "__width", "i");
-  AddPropertySet(SetWidthProperty, "__width", "i");
 }
 
 bool Plugin::HasMethodEx(uintptr_t method_id, CallType call_type) {
@@ -337,25 +278,17 @@ bool Plugin::Init(BrowserInterface* browser_interface,
   argn_ = new(std::nothrow) char*[argc];
   argv_ = new(std::nothrow) char*[argc];
   argc_ = 0;
-  // Set up the height and width attributes if passed (for Opera)
   for (int i = 0; i < argc; ++i) {
-    if (!strncmp(argn[i], "height", 7)) {
-      set_height(stringToInt32(argv[i]));
-    } else if (!strncmp(argn[i], "width", 6)) {
-      set_width(stringToInt32(argv[i]));
-    } else {
-      if (NULL != argn_ && NULL != argv_) {
-        argn_[argc_] = strdup(argn[i]);
-        argv_[argc_] = strdup(argv[i]);
-        if (NULL == argn_[argc_] ||
-            NULL == argv_[argc_]) {
-          // Give up on passing arguments.
-          free(argn_[argc_]);
-          free(argv_[argc_]);
-          continue;
-        }
-        ++argc_;
+    if (NULL != argn_ && NULL != argv_) {
+      argn_[argc_] = strdup(argn[i]);
+      argv_[argc_] = strdup(argv[i]);
+      if (NULL == argn_[argc_] || NULL == argv_[argc_]) {
+        // Give up on passing arguments.
+        free(argn_[argc_]);
+        free(argv_[argc_]);
+        continue;
       }
+      ++argc_;
     }
   }
   // TODO(sehr): this leaks strings if there is a subsequent failure.
@@ -398,8 +331,6 @@ Plugin::Plugin()
     socket_(NULL),
     origin_valid_(false),
     nacl_ready_state_(UNSENT),
-    height_(0),
-    width_(0),
     wrapper_factory_(NULL) {
   PLUGIN_PRINTF(("Plugin::Plugin (this=%p)\n", static_cast<void*>(this)));
 }
@@ -429,7 +360,6 @@ void Plugin::ShutDownSubprocess() {
     delete service_runtime_;
     service_runtime_ = NULL;
   }
-  ShutdownMultimedia();
   if (receive_thread_running_) {
     NaClThreadJoin(&receive_thread_);
     receive_thread_running_ = false;

@@ -58,10 +58,6 @@ srpc_hw_fd_files = [
     env.File('${STAGING_DIR}/' + srpc_hw_nexe_name),
     env.File('${STAGING_DIR}/srpc_hw.nmf'),
     env.File('${STAGING_DIR}/srpc_hw_fd.html')]
-srpc_plugin_files = [
-    env.File('${STAGING_DIR}/' + srpc_test_nexe_name),
-    env.File('${STAGING_DIR}/srpc_plugin.html'),
-    env.File('${STAGING_DIR}/srpc_test.nmf')]
 srpc_shm_files = CreateDefaultDeps('srpc_shm');
 srpc_sockaddr_files = [
     env.File('${STAGING_DIR}/' + srpc_nrd_server_nexe_name),
@@ -95,7 +91,6 @@ core_test_files = [env.File('${STAGING_DIR}/nacltest.js'),
                    srpc_hw_files +
                    srpc_hw_fd_files +
                    srpc_nrd_xfer_files +
-                   srpc_plugin_files +
                    srpc_shm_files +
                    srpc_sockaddr_files +
                    srpc_url_as_nacl_desc_files]

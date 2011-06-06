@@ -100,14 +100,6 @@ struct SelLdrLauncher {
   // You must call InitCommandLine() before calling this function.
   bool LaunchFromCommandLine();
 
-  // Combines setting up the command line with launching the sel_ldr.
-  bool StartFromCommandLine(int imc_fd,
-                            const std::vector<nacl::string>& sel_ldr_argv,
-                            const std::vector<nacl::string>& app_argv) {
-    InitCommandLine(imc_fd, sel_ldr_argv, app_argv);
-    return LaunchFromCommandLine();
-  }
-
   // Builds a command line out of the prepopulated args.
   void BuildCommandLine(std::vector<nacl::string>* command);
 
