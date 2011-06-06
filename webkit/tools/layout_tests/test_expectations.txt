@@ -28,7 +28,3 @@ BUGGMAN : fast/canvas/canvas-transform-skewed.html = IMAGE
 BUGGMAN : fast/canvas/zero-size-fill-rect.html = IMAGE
 BUGGMAN : media/video-canvas-alpha.html = IMAGE
 
-// We now follow the ES5 spec with regards to the semantics of the receiver
-// given through eval to builtins (undefined). Test assumes that the global
-// object is given as receiver.
-BUGRICOW : fast/js/eval-var-decl.html = TEXT
