@@ -22,8 +22,7 @@ found in the LICENSE file.
         <form action="" onsubmit="authorizeOAuth2(); return false;">
           <label for="oauth2-code">OAuth2 Token:</label>
           <input id="oauth2-code" class="display-inline" type="text"
-                 onkeyup="handleOAuth2CodeChange();"
-                 onchange="handleOAuth2CodeChange();" />
+                 oninput="handleOAuth2CodeChange();" />
           <input id="oauth2-submit-button" class="display-inline"
                  type="submit" />
           <input id="oauth2-code-button" class="display-inline" type="button"
