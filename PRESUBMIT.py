@@ -105,8 +105,8 @@ def _CheckAuthorizedAuthor(input_api, output_api):
   valid_authors = (
       input_api.re.match(r'[^#]+\s+\<(.+?)\>\s*$', line)
       for line in open(authors_path))
-  valid_authors = [item.group(1) for item in valid_authors if item]
-  if not author in valid_authors:
+  valid_authors = [item.group(1).lower() for item in valid_authors if item]
+  if not author.lower() in valid_authors:
     return [output_api.PresubmitPromptWarning(
         ('%s is not in AUTHORS file. If you are a new contributor, please visit'
         '\n'
