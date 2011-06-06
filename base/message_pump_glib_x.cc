@@ -79,7 +79,7 @@ bool MessagePumpGlibX::ProcessXEvent(XEvent* xev) {
       should_quit = true;
       Quit();
     } else if (status == MessagePumpGlibXDispatcher::EVENT_IGNORED) {
-      DLOG(WARNING) << "Event (" << xev->type << ") not handled.";
+      VLOG(1) << "Event (" << xev->type << ") not handled.";
     }
   }
 
@@ -213,14 +213,14 @@ void MessagePumpGlibX::InitializeXInput2(void) {
   int event, err;
 
   if (!XQueryExtension(xdisplay, "XInputExtension", &xiopcode_, &event, &err)) {
-    DLOG(WARNING) << "X Input extension not available.";
+    VLOG(1) << "X Input extension not available.";
     xiopcode_ = -1;
     return;
   }
 
   int major = 2, minor = 0;
   if (XIQueryVersion(xdisplay, &major, &minor) == BadRequest) {
-    DLOG(WARNING) << "XInput2 not supported in the server.";
+    VLOG(1) << "XInput2 not supported in the server.";
     xiopcode_ = -1;
     return;
   }

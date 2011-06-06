@@ -686,6 +686,15 @@ window.onload = function() {
   }
 
   window.onresize();
+
+  // Restore the keyboard to the default state when it gets hidden.
+  // Ref: dvcs.w3.org/hg/webperf/raw-file/tip/specs/PageVisibility/Overview.html
+  document.addEventListener("webkitvisibilitychange", function() {
+    if (document.webkitHidden) {
+      currentMode = KEY_MODE;
+      setMode(currentMode);
+    }
+  }, false);
 }
 // TODO(bryeung): would be nice to leave less gutter (without causing
 // rendering issues with floated divs wrapping at some sizes).

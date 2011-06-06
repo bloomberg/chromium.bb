@@ -318,6 +318,9 @@ void TouchBrowserFrameView::AnimationEnded(const ui::Animation* animation) {
         browser_view()->browser()->GetSelectedTabContents()->render_view_host();
     host->Send(new ViewMsg_ScrollFocusedEditableNodeIntoView(
         host->routing_id()));
+  } else {
+    // Notify the keyboard that it is hidden now.
+    keyboard_->SetVisible(false);
   }
   SchedulePaint();
 }
