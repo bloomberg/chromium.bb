@@ -123,6 +123,10 @@ section {
   */
 }
 
+.hidden {
+  display: none;
+}
+
 /* Ids */
 #auth-panel {
   border-bottom: 2px solid gray;

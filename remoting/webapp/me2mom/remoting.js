@@ -19,7 +19,17 @@ remoting.HOST_PLUGIN_ID = 'host-plugin-id';
 window.addEventListener("load", init_, false);
 
 function hasClass(element, cls) {
-  return element.className.match(new RegExp('(\\s|^)' + cls + '(\\s|$)'));
+  return element.className.match(new RegExp('\\b' + cls + '\\b'));
+}
+
+function addClass(element, cls) {
+  if (!hasClass(element, cls))
+    element.className = element.className + ' ' + cls;
+}
+
+function removeClass(element, cls) {
+  element.className =
+      element.className.replace(new RegExp('\\b' + cls + '\\b', 'g'), '');
 }
 
 function showElement(element, visible) {
@@ -127,6 +137,8 @@ function init_() {
   setHostMode('unshared');
   setClientMode('unconnected');
   setGlobalMode(remoting.getItem('startup-mode', remoting.HOST_MODE));
+  addClass(document.getElementById('loading-panel'), 'hidden');
+  removeClass(document.getElementById('main-panel'), 'hidden');
 }
 
 function setGlobalMode(mode) {
