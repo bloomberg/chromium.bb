@@ -4,6 +4,9 @@
 
 #include "chrome/browser/content_settings/content_settings_pattern.h"
 
+#include <vector>
+
+#include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/content_settings/content_settings_pattern_parser.h"
@@ -39,6 +42,37 @@ bool IsSubDomainOrEqual(const std::string sub_domain,
     return false;
   }
   return true;
+}
+
+// Compares two domain names.
+int CompareDomainNames(const std::string& str1, const std::string& str2) {
+  std::vector<std::string> domain_name1;
+  std::vector<std::string> domain_name2;
+
+  base::SplitString(str1, '.', &domain_name1);
+  base::SplitString(str2, '.', &domain_name2);
+
+  int i1 = domain_name1.size() - 1;
+  int i2 = domain_name2.size() - 1;
+  int rv;
+  while (i1 >= 0 && i2 >= 0) {
+    // domain names are stored in puny code. So it's fine to use the compare
+    // method.
+    rv = domain_name1[i1].compare(domain_name2[i2]);
+    if (rv != 0)
+      return rv;
+    --i1;
+    --i2;
+  }
+
+  if (i1 > i2)
+    return 1;
+
+  if (i1 < i2)
+    return -1;
+
+  // The domain names are identical.
+  return 0;
 }
 
 typedef ContentSettingsPattern::BuilderInterface BuilderInterface;
@@ -343,24 +377,33 @@ const std::string ContentSettingsPattern::ToString() const {
 
 ContentSettingsPattern::Relation ContentSettingsPattern::Compare(
     const ContentSettingsPattern& other) const {
-  if (this == &other)
+  // Two invalid patterns are identical in the way they behave. They don't match
+  // anything and are represented as an empty string. So it's fair to treat them
+  // as identical.
+  if ((this == &other) ||
+      (!is_valid_ && !other.is_valid_))
     return IDENTITY;
 
-  if (!is_valid_ || !other.is_valid_) {
-    NOTREACHED();
-    return DISJOINT;
-  }
+  if (!is_valid_ && other.is_valid_)
+    return DISJOINT_ORDER_POST;
+  if (is_valid_ && !other.is_valid_)
+    return DISJOINT_ORDER_PRE;
 
   // If either host, port or scheme are disjoint return immediately.
   Relation host_relation = CompareHost(parts_, other.parts_);
-  if (host_relation == DISJOINT)
-    return DISJOINT;
+  if (host_relation == DISJOINT_ORDER_PRE ||
+      host_relation == DISJOINT_ORDER_POST)
+    return host_relation;
+
   Relation port_relation = ComparePort(parts_, other.parts_);
-  if (port_relation == DISJOINT)
-    return DISJOINT;
+  if (port_relation == DISJOINT_ORDER_PRE ||
+      port_relation == DISJOINT_ORDER_POST)
+    return port_relation;
+
   Relation scheme_relation = CompareScheme(parts_, other.parts_);
-  if (scheme_relation == DISJOINT)
-    return DISJOINT;
+  if (scheme_relation == DISJOINT_ORDER_PRE ||
+      scheme_relation == DISJOINT_ORDER_POST)
+    return scheme_relation;
 
   if (host_relation != IDENTITY)
     return host_relation;
@@ -369,17 +412,33 @@ ContentSettingsPattern::Relation ContentSettingsPattern::Compare(
   return scheme_relation;
 }
 
+bool ContentSettingsPattern::operator==(
+    const ContentSettingsPattern& other) const {
+  return Compare(other) == IDENTITY;
+}
+
+bool ContentSettingsPattern::operator<(
+    const ContentSettingsPattern& other) const {
+  return Compare(other) < 0;
+}
+
+bool ContentSettingsPattern::operator>(
+    const ContentSettingsPattern& other) const {
+  return Compare(other) > 0;
+}
+
 // static
 ContentSettingsPattern::Relation ContentSettingsPattern::CompareHost(
     const ContentSettingsPattern::PatternParts& parts,
     const ContentSettingsPattern::PatternParts& other_parts) {
   if (!parts.has_domain_wildcard && !other_parts.has_domain_wildcard) {
     // Case 1: No host starts with a wild card
-    if (parts.host == other_parts.host) {
+    int result = CompareDomainNames(parts.host, other_parts.host);
+    if (result == 0)
       return ContentSettingsPattern::IDENTITY;
-    } else {
-      return ContentSettingsPattern::DISJOINT;
-    }
+    if (result < 0)
+      return ContentSettingsPattern::DISJOINT_ORDER_PRE;
+    return ContentSettingsPattern::DISJOINT_ORDER_POST;
   } else if (parts.has_domain_wildcard && !other_parts.has_domain_wildcard) {
     // Case 2: |host| starts with a domain wildcard and |other_host| does not
     // start with a domain wildcard.
@@ -404,7 +463,9 @@ ContentSettingsPattern::Relation ContentSettingsPattern::CompareHost(
     if (IsSubDomainOrEqual(other_parts.host, parts.host)) {
       return ContentSettingsPattern::SUCCESSOR;
     } else {
-      return ContentSettingsPattern::DISJOINT;
+       if (CompareDomainNames(parts.host, other_parts.host) < 0)
+         return ContentSettingsPattern::DISJOINT_ORDER_PRE;
+       return ContentSettingsPattern::DISJOINT_ORDER_POST;
     }
   } else if (!parts.has_domain_wildcard && other_parts.has_domain_wildcard) {
     // Case 3: |host| starts NOT with a domain wildcard and |other_host| starts
@@ -412,7 +473,9 @@ ContentSettingsPattern::Relation ContentSettingsPattern::CompareHost(
     if (IsSubDomainOrEqual(parts.host, other_parts.host)) {
       return ContentSettingsPattern::PREDECESSOR;
     } else {
-      return ContentSettingsPattern::DISJOINT;
+      if (CompareDomainNames(parts.host, other_parts.host) < 0)
+        return ContentSettingsPattern::DISJOINT_ORDER_PRE;
+      return ContentSettingsPattern::DISJOINT_ORDER_POST;
     }
   } else if (parts.has_domain_wildcard && other_parts.has_domain_wildcard) {
     // Case 4: |host| and |other_host| both start with a domain wildcard.
@@ -441,7 +504,9 @@ ContentSettingsPattern::Relation ContentSettingsPattern::CompareHost(
     } else if (IsSubDomainOrEqual(parts.host, other_parts.host)) {
       return ContentSettingsPattern::PREDECESSOR;
     } else {
-      return ContentSettingsPattern::DISJOINT;
+      if (CompareDomainNames(parts.host, other_parts.host) < 0)
+        return ContentSettingsPattern::DISJOINT_ORDER_PRE;
+      return ContentSettingsPattern::DISJOINT_ORDER_POST;
     }
   }
 
@@ -457,9 +522,13 @@ ContentSettingsPattern::Relation ContentSettingsPattern::CompareScheme(
     return ContentSettingsPattern::SUCCESSOR;
   if (!parts.is_scheme_wildcard && other_parts.is_scheme_wildcard)
     return ContentSettingsPattern::PREDECESSOR;
-  if (parts.scheme != other_parts.scheme)
-    return ContentSettingsPattern::DISJOINT;
-  return ContentSettingsPattern::IDENTITY;
+
+  int result = parts.scheme.compare(other_parts.scheme);
+  if (result == 0)
+    return ContentSettingsPattern::IDENTITY;
+  if (result > 0)
+    return ContentSettingsPattern::DISJOINT_ORDER_PRE;
+  return ContentSettingsPattern::DISJOINT_ORDER_POST;
 }
 
 // static
@@ -470,7 +539,11 @@ ContentSettingsPattern::Relation ContentSettingsPattern::ComparePort(
     return ContentSettingsPattern::SUCCESSOR;
   if (!parts.is_port_wildcard && other_parts.is_port_wildcard)
     return ContentSettingsPattern::PREDECESSOR;
-  if (parts.port != other_parts.port)
-    return ContentSettingsPattern::DISJOINT;
-  return ContentSettingsPattern::IDENTITY;
+
+  int result = parts.port.compare(other_parts.port);
+  if (result == 0)
+    return ContentSettingsPattern::IDENTITY;
+  if (result > 0)
+    return ContentSettingsPattern::DISJOINT_ORDER_PRE;
+  return ContentSettingsPattern::DISJOINT_ORDER_POST;
 }

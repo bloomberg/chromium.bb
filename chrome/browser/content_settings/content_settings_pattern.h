@@ -26,21 +26,33 @@ class ContentSettingsPattern {
   // Each content settings pattern describes a set of origins. Patterns, and the
   // sets they describe, have specific relations. |Relation| describes the
   // relation of two patterns A and B. When pattern A is compared with pattern B
-  // (|A.Compare(B)|) interesting relations are:
-  // - IDENTITY:    Pattern A and B are identical. The patterns are equal.
-  // - DISJOINT:    Pattern A and B have no intersection. A and B never both
-  //                match the origin of a URL.
-  // - SUCCESSOR:   Pattern A and B have an intersection. But pattern B has a
-  //                higher precedence than pattern A for URLs that are matched
-  //                by both pattern.
-  // - PREDECESSOR: Pattern A and B have an intersection. But pattern A has a
-  //                higher precedence than pattern B for URLs that are matched
-  //                by both pattern.
+  // (A compare B) interesting relations are:
+  // - IDENTITY:
+  //   Pattern A and B are identical. The patterns are equal.
+  //
+  // - DISJOINT_ORDER_PRE:
+  //   Pattern A and B have no intersection. A and B never match the origin of
+  //   a URL at the same time. But pattern A has a higher precedence than
+  //   pattern B when patterns are sorted.
+  //
+  // - DISJOINT_ORDER_POST:
+  //   Pattern A and B have no intersection. A and B never match the origin of
+  //   a URL at the same time. But pattern A has a lower precedence than
+  //   pattern B when patterns are sorted.
+  //
+  // - SUCCESSOR:
+  //   Pattern A and B have an intersection. But pattern B has a higher
+  //   precedence than pattern A for URLs that are matched by both pattern.
+  //
+  // - PREDECESSOR:
+  //   Pattern A and B have an intersection. But pattern A has a higher
+  //   precedence than pattern B for URLs that are matched by both pattern.
   enum Relation {
-    DISJOINT = -2,
+    DISJOINT_ORDER_POST = -2,
     SUCCESSOR = -1,
     IDENTITY = 0,
     PREDECESSOR = 1,
+    DISJOINT_ORDER_PRE = 2,
   };
 
   class BuilderInterface {
@@ -118,9 +130,14 @@ class ContentSettingsPattern {
   // |Relation| of the two patterns.
   Relation Compare(const ContentSettingsPattern& other) const;
 
-  bool operator==(const ContentSettingsPattern& other) const {
-    return Compare(other) == IDENTITY;
-  }
+  // Returns true if the pattern and the |other| pattern are identical.
+  bool operator==(const ContentSettingsPattern& other) const;
+
+  // Returns true if the pattern has a lower priority than the |other| pattern.
+  bool operator<(const ContentSettingsPattern& other) const;
+
+  // Returns true if the pattern has a higher priority than the |other| pattern.
+  bool operator>(const ContentSettingsPattern& other) const;
 
  private:
   friend class content_settings::PatternParser;
