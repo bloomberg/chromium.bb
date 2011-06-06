@@ -18,6 +18,7 @@ import mox
 
 import cros_portage_upgrade as cpu
 import parallel_emerge
+import portage.package.ebuild.config as portcfg
 import portage.tests.resolver.ResolverPlayground as respgnd
 
 # Configuration for generating a temporary valid ebuild hierarchy.
@@ -300,6 +301,11 @@ class UpgraderTest(mox.MoxTestBase):
     os.environ.setdefault("CHROMEOS_ROOT", "%s/trunk" % os.environ["HOME"])
     os.environ["PORTDIR"] = "%s/usr/portage" % eroot
 
+  def _GetPortageDBAPI(self):
+    portroot = self._playground.settings["ROOT"]
+    porttree = self._playground.trees[portroot]['porttree']
+    return porttree.dbapi
+
   def _TearDownEmerge(self):
     """Delete the temporary ebuild playground files."""
     try:
@@ -324,12 +330,12 @@ class UpgraderTest(mox.MoxTestBase):
     self._SetUpEmerge()
 
     # Add test-specific mocks/stubs.
-    # TODO(mtennant): Stubbing this method may be overkill for this unit test
     self.mox.StubOutWithMock(cpu.Upgrader, '_GetPreOrderDepGraph')
 
     # Replay script
     verifier = _GenDepsGraphVerifier(pkg)
     mocked_upgrader._GenParallelEmergeArgv().AndReturn(pm_argv)
+    mocked_upgrader._SetPortTree(mox.IsA(portcfg.config), mox.IsA(dict))
     cpu.Upgrader._GetPreOrderDepGraph(mox.Func(verifier)).AndReturn(['ignore'])
     self.mox.ReplayAll()
 
@@ -423,6 +429,8 @@ class UpgraderTest(mox.MoxTestBase):
     self._SetUpEmerge()
 
     # Add test-specific mocks/stubs
+    self.mox.StubOutWithMock(cpu.Upgrader, '_FindBoardArch')
+    cpu.Upgrader._FindBoardArch(mox.IgnoreArg()).AndReturn('x86')
 
     # Replay script, if any
     self.mox.ReplayAll()
@@ -433,6 +441,7 @@ class UpgraderTest(mox.MoxTestBase):
                                                 package=pkg,
                                                 verbose=False)
     upgrader = cpu.Upgrader(options, args)
+    upgrader._SetPortTree(self._playground.settings, self._playground.trees)
 
     cpvinfolist = upgrader._GetInfoListWithOverlays(cpvlist)
     self.mox.VerifyAll()
@@ -562,7 +571,9 @@ class MainTest(mox.MoxTestBase):
 
   def testUpgraderRun(self):
     """Verify that running main method launches Upgrader.Run"""
+    self.mox.StubOutWithMock(cpu.Upgrader, '_FindBoardArch')
     self.mox.StubOutWithMock(cpu.Upgrader, 'Run')
+    cpu.Upgrader._FindBoardArch(mox.IgnoreArg()).AndReturn('x86')
     cpu.Upgrader.Run()
     self.mox.ReplayAll()
 
