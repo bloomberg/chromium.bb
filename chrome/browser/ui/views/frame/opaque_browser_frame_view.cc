@@ -736,8 +736,15 @@ void OpaqueBrowserFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
   // Never theme app and popup windows.
   if (!browser_view_->IsBrowserTypeNormal()) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    theme_frame = rb.GetBitmapNamed(ShouldPaintAsActive() ?
-        IDR_FRAME : IDR_FRAME_INACTIVE);
+    bool is_incognito = browser_view_->IsOffTheRecord();
+    if (ShouldPaintAsActive()) {
+      theme_frame = rb.GetBitmapNamed(is_incognito ?
+                                      IDR_THEME_FRAME_INCOGNITO : IDR_FRAME);
+    } else {
+      theme_frame = rb.GetBitmapNamed(is_incognito ?
+                                      IDR_THEME_FRAME_INCOGNITO_INACTIVE :
+                                      IDR_FRAME_INACTIVE);
+    }
   } else if (!browser_view_->IsOffTheRecord()) {
     theme_frame = tp->GetBitmapNamed(ShouldPaintAsActive() ?
         IDR_THEME_FRAME : IDR_THEME_FRAME_INACTIVE);
