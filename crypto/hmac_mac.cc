@@ -39,7 +39,7 @@ HMAC::~HMAC() {
   plat_->key_.reserve(0);
 }
 
-bool HMAC::Sign(const std::string& data,
+bool HMAC::Sign(const base::StringPiece& data,
                 unsigned char* digest,
                 int digest_length) const {
   CCHmacAlgorithm algorithm;
