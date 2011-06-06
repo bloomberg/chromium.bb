@@ -143,7 +143,7 @@ class DragController {
 /////////////////////////////////////////////////////////////////////////////
 class View : public AcceleratorTarget {
  public:
-  typedef std::vector<View*> ViewVector;
+  typedef std::vector<View*> Views;
 
 #if defined(TOUCH_UI)
   enum TouchStatus {
@@ -452,7 +452,7 @@ class View : public AcceleratorTarget {
 
   // Fills the provided vector with all the available views which belong to the
   // provided group.
-  void GetViewsWithGroup(int group_id, ViewVector* out);
+  void GetViewsWithGroup(int group_id, Views* out);
 
   // Return the View that is currently selected in the specified group.
   // The default implementation simply returns the first View found for that
@@ -1329,7 +1329,7 @@ class View : public AcceleratorTarget {
   View* parent_;
 
   // This view's children.
-  ViewVector children_;
+  Views children_;
 
   // Size and disposition ------------------------------------------------------
 
@@ -1347,7 +1347,7 @@ class View : public AcceleratorTarget {
   bool registered_for_visible_bounds_notification_;
 
   // List of descendants wanting notification when their visible bounds change.
-  scoped_ptr<ViewVector> descendants_to_notify_;
+  scoped_ptr<Views> descendants_to_notify_;
 
   // Transformations -----------------------------------------------------------
 

@@ -42,10 +42,9 @@ void NativeRadioButton::SetChecked(bool checked) {
     while (container && container->parent())
       container = container->parent();
     if (container) {
-      std::vector<View*> other;
+      Views other;
       container->GetViewsWithGroup(GetGroup(), &other);
-      std::vector<View*>::iterator i;
-      for (i = other.begin(); i != other.end(); ++i) {
+      for (Views::iterator i(other.begin()); i != other.end(); ++i) {
         if (*i != this) {
           if ((*i)->GetClassName() != kViewClassName) {
             NOTREACHED() << "radio-button has same group as other non "
@@ -70,14 +69,13 @@ void NativeRadioButton::GetAccessibleState(ui::AccessibleViewState* state) {
 }
 
 View* NativeRadioButton::GetSelectedViewForGroup(int group_id) {
-  std::vector<View*> views;
+  Views views;
   GetWidget()->GetRootView()->GetViewsWithGroup(group_id, &views);
   if (views.empty())
     return NULL;
 
-  for (std::vector<View*>::const_iterator iter = views.begin();
-       iter != views.end(); ++iter) {
-    NativeRadioButton* radio_button = static_cast<NativeRadioButton*>(*iter);
+  for (Views::const_iterator i(views.begin()); i != views.end(); ++i) {
+    NativeRadioButton* radio_button = static_cast<NativeRadioButton*>(*i);
     if (radio_button->checked())
       return radio_button;
   }
@@ -141,10 +139,9 @@ void RadioButton::SetChecked(bool checked) {
     while (container && container->parent())
       container = container->parent();
     if (container) {
-      std::vector<View*> other;
+      Views other;
       container->GetViewsWithGroup(GetGroup(), &other);
-      std::vector<View*>::iterator i;
-      for (i = other.begin(); i != other.end(); ++i) {
+      for (Views::iterator i(other.begin()); i != other.end(); ++i) {
         if (*i != this) {
           if ((*i)->GetClassName() != kViewClassName) {
             NOTREACHED() << "radio-button-nt has same group as other non "
@@ -170,15 +167,14 @@ void RadioButton::GetAccessibleState(ui::AccessibleViewState* state) {
 }
 
 View* RadioButton::GetSelectedViewForGroup(int group_id) {
-  std::vector<View*> views;
+  Views views;
   GetWidget()->GetRootView()->GetViewsWithGroup(group_id, &views);
   if (views.empty())
     return NULL;
 
-  for (std::vector<View*>::const_iterator iter = views.begin();
-       iter != views.end(); ++iter) {
+  for (Views::const_iterator i(views.begin()); i != views.end(); ++i) {
     // REVIEW: why don't we check the runtime type like is done above?
-    RadioButton* radio_button = static_cast<RadioButton*>(*iter);
+    RadioButton* radio_button = static_cast<RadioButton*>(*i);
     if (radio_button->checked())
       return radio_button;
   }

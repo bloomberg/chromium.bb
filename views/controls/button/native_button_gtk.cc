@@ -250,11 +250,9 @@ void NativeRadioButtonGtk::ViewHierarchyChanged(bool is_add,
     while (container && container->parent())
       container = container->parent();
     if (container) {
-      std::vector<View*> other;
+      Views other;
       container->GetViewsWithGroup(native_button_->GetGroup(), &other);
-      for (std::vector<View*>::iterator i = other.begin();
-           i != other.end();
-           ++i) {
+      for (Views::iterator i(other.begin()); i != other.end(); ++i) {
         if (*i != native_button_) {
           if ((*i)->GetClassName() != NativeRadioButton::kViewClassName) {
             NOTREACHED() << "radio-button has same group as other non "

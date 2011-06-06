@@ -188,7 +188,7 @@ void View::RemoveChildView(View* view) {
 }
 
 void View::RemoveAllChildViews(bool delete_children) {
-  ViewVector::iterator iter;
+  Views::iterator iter;
   while ((iter = children_.begin()) != children_.end())
     DoRemoveChildView(*iter, false, false, delete_children);
   UpdateTooltip();
@@ -212,9 +212,8 @@ bool View::Contains(const View* view) const {
 }
 
 int View::GetIndexOf(const View* view) const {
-  ViewVector::const_iterator it = std::find(children_.begin(), children_.end(),
-                                            view);
-  return it != children_.end() ? it - children_.begin() : -1;
+  Views::const_iterator i(std::find(children_.begin(), children_.end(), view));
+  return i != children_.end() ? i - children_.begin() : -1;
 }
 
 // TODO(beng): remove
@@ -569,7 +568,7 @@ bool View::IsGroupFocusTraversable() const {
   return true;
 }
 
-void View::GetViewsWithGroup(int group_id, ViewVector* out) {
+void View::GetViewsWithGroup(int group_id, Views* out) {
   if (group_ == group_id)
     out->push_back(this);
 
@@ -578,7 +577,7 @@ void View::GetViewsWithGroup(int group_id, ViewVector* out) {
 }
 
 View* View::GetSelectedViewForGroup(int group_id) {
-  ViewVector views;
+  Views views;
   GetWidget()->GetRootView()->GetViewsWithGroup(group_id, &views);
   return views.empty() ? NULL : views[0];
 }
@@ -1346,7 +1345,7 @@ void View::DoRemoveChildView(View* view,
                              bool update_tool_tip,
                              bool delete_removed_view) {
   DCHECK(view);
-  const ViewVector::iterator i = find(children_.begin(), children_.end(), view);
+  const Views::iterator i = std::find(children_.begin(), children_.end(), view);
   scoped_ptr<View> view_to_be_deleted;
   if (i != children_.end()) {
     if (update_focus_cycle) {
@@ -1483,7 +1482,7 @@ void View::BoundsChanged(const gfx::Rect& previous_bounds) {
   // Notify interested Views that visible bounds within the root view may have
   // changed.
   if (descendants_to_notify_.get()) {
-    for (ViewVector::iterator i = descendants_to_notify_->begin();
+    for (Views::iterator i = descendants_to_notify_->begin();
          i != descendants_to_notify_->end(); ++i) {
       (*i)->OnVisibleBoundsChanged();
     }
@@ -1532,13 +1531,13 @@ void View::UnregisterForVisibleBoundsNotification() {
 void View::AddDescendantToNotify(View* view) {
   DCHECK(view);
   if (!descendants_to_notify_.get())
-    descendants_to_notify_.reset(new ViewVector);
+    descendants_to_notify_.reset(new Views);
   descendants_to_notify_->push_back(view);
 }
 
 void View::RemoveDescendantToNotify(View* view) {
   DCHECK(view && descendants_to_notify_.get());
-  ViewVector::iterator i = find(descendants_to_notify_->begin(),
+  Views::iterator i = std::find(descendants_to_notify_->begin(),
                                 descendants_to_notify_->end(),
                                 view);
   DCHECK(i != descendants_to_notify_->end());
@@ -1774,10 +1773,9 @@ void View::InitFocusSiblings(View* v, int index) {
       // the last focusable element. Let's try to find an element with no next
       // focusable element to link to.
       View* last_focusable_view = NULL;
-      for (ViewVector::iterator iter = children_.begin();
-           iter != children_.end(); ++iter) {
-          if (!(*iter)->next_focusable_view_) {
-            last_focusable_view = *iter;
+      for (Views::iterator i(children_.begin()); i != children_.end(); ++i) {
+          if (!(*i)->next_focusable_view_) {
+            last_focusable_view = *i;
             break;
           }
       }
