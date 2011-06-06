@@ -95,8 +95,19 @@ bool Transform::TransformRect(gfx::Rect* rect) {
   SkRect src = gfx::RectToSkRect(*rect);
   if (!matrix_.mapRect(&src))
     return false;
-  gfx::Rect xrect = gfx::SkRectToRect(src);
-  rect->SetRect(xrect.x(), xrect.y(), xrect.width(), xrect.height());
+  *rect = gfx::SkRectToRect(src);
+  return true;
+}
+
+bool Transform::TransformRectReverse(gfx::Rect* rect) {
+  SkMatrix inverse;
+  if (!matrix_.invert(&inverse))
+    return false;
+
+  SkRect src = gfx::RectToSkRect(*rect);
+  if (!inverse.mapRect(&src))
+    return false;
+  *rect = gfx::SkRectToRect(src);
   return true;
 }
 

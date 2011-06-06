@@ -276,9 +276,9 @@ class View : public AcceleratorTarget {
   // system.
   //
   // When traversing the View hierarchy in order to compute the bounds, the
-  // function takes into account the mirroring setting for each View and
-  // therefore it will return the mirrored version of the visible bounds if
-  // need be.
+  // function takes into account the mirroring setting and transformation for
+  // each View and therefore it will return the mirrored and transformed version
+  // of the visible bounds if need be.
   gfx::Rect GetVisibleBounds() const;
 
   // Return the bounds of the View in screen coordinate system.

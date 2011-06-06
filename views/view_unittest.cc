@@ -1772,6 +1772,38 @@ TEST_F(ViewTest, TransformEvent) {
   widget->CloseNow();
 }
 
+TEST_F(ViewTest, TransformVisibleBound) {
+  gfx::Rect viewport_bounds(0, 0, 100, 100);
+
+  scoped_ptr<Widget> widget(new Widget);
+  Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.bounds = viewport_bounds;
+  widget->Init(params);
+  widget->GetRootView()->SetBoundsRect(viewport_bounds);
+
+  View* viewport = new View;
+  widget->SetContentsView(viewport);
+  View* contents = new View;
+  viewport->AddChildView(contents);
+  viewport->SetBoundsRect(viewport_bounds);
+  contents->SetBounds(0, 0, 100, 200);
+
+  View* child = new View;
+  contents->AddChildView(child);
+  child->SetBounds(10, 90, 50, 50);
+  EXPECT_EQ(gfx::Rect(0, 0, 50, 10), child->GetVisibleBounds());
+
+  // Rotate |child| counter-clockwise
+  ui::Transform transform;
+  transform.SetRotate(-90.0f);
+  transform.SetTranslateY(50.0f);
+  child->SetTransform(transform);
+  EXPECT_EQ(gfx::Rect(40, 0, 10, 50), child->GetVisibleBounds());
+
+  widget->CloseNow();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // OnVisibleBoundsChanged()
 
@@ -1799,8 +1831,6 @@ class VisibleBoundsView : public View {
   DISALLOW_COPY_AND_ASSIGN(VisibleBoundsView);
 };
 
-#if defined(OS_WIN)
-// TODO(beng): This can be cross platform when widget construction/init is.
 TEST_F(ViewTest, OnVisibleBoundsChanged) {
   gfx::Rect viewport_bounds(0, 0, 100, 100);
 
@@ -1845,8 +1875,6 @@ TEST_F(ViewTest, OnVisibleBoundsChanged) {
 
   widget->CloseNow();
 }
-
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // BoundsChanged()

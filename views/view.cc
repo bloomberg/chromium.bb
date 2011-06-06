@@ -300,12 +300,16 @@ gfx::Rect View::GetVisibleBounds() const {
   gfx::Rect vis_bounds(0, 0, width(), height());
   gfx::Rect ancestor_bounds;
   const View* view = this;
-  int root_x = 0;
-  int root_y = 0;
+  ui::Transform transform;
+
   while (view != NULL && !vis_bounds.IsEmpty()) {
-    root_x += view->GetMirroredX();
-    root_y += view->y();
-    vis_bounds.Offset(view->GetMirroredX(), view->y());
+    if (view->transform_.get())
+      transform.ConcatTransform(*view->transform_);
+    transform.ConcatTranslate(static_cast<float>(view->GetMirroredX()),
+                              static_cast<float>(view->y()));
+
+    vis_bounds = view->ConvertRectToParent(vis_bounds);
+    vis_bounds.Offset(view->GetMirroredPosition());
     const View* ancestor = view->parent();
     if (ancestor != NULL) {
       ancestor_bounds.SetRect(0, 0, ancestor->width(), ancestor->height());
@@ -319,7 +323,7 @@ gfx::Rect View::GetVisibleBounds() const {
   if (vis_bounds.IsEmpty())
     return vis_bounds;
   // Convert back to this views coordinate system.
-  vis_bounds.Offset(-root_x, -root_y);
+  transform.TransformRectReverse(&vis_bounds);
   return vis_bounds;
 }
 

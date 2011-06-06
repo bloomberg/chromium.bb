@@ -77,9 +77,13 @@ class Transform {
   // is transformed successfully.
   bool TransformPointReverse(gfx::Point* point);
 
-  // Applies transformation on the rectangle. Returns true of the rectangle is
+  // Applies transformation on the rectangle. Returns true if the rectangle is
   // transformed successfully.
   bool TransformRect(gfx::Rect* rect);
+
+  // Applies the reverse transformation on the rectangle. Returns true if the
+  // rectangle is transformed successfully.
+  bool TransformRectReverse(gfx::Rect* rect);
 
   // Returns the underlying matrix.
   const SkMatrix& matrix() const { return matrix_; }
