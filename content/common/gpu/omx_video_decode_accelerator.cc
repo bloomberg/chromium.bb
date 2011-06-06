@@ -11,6 +11,11 @@
 #include "media/base/bitstream_buffer.h"
 #include "media/video/picture.h"
 
+// Helper typedef for input buffers.  This is used as the pAppPrivate field of
+// OMX_BUFFERHEADERTYPEs of input buffers, to point to the data associated with
+// them.
+typedef std::pair<scoped_ptr<base::SharedMemory>, int32> SharedMemoryAndId;
+
 enum { kNumPictureBuffers = 4 };
 
 // Open the libnvomx here for now.
@@ -50,11 +55,8 @@ OmxVideoDecodeAccelerator::OmxVideoDecodeAccelerator(
       input_buffer_size_(0),
       input_port_(0),
       input_buffers_at_component_(0),
-      output_buffer_count_(0),
-      output_buffer_size_(0),
       output_port_(0),
       output_buffers_at_component_(0),
-      uses_egl_image_(false),
       client_(client),
       on_port_disable_event_func_(NULL),
       on_port_enable_event_func_(NULL),
@@ -74,7 +76,7 @@ OmxVideoDecodeAccelerator::~OmxVideoDecodeAccelerator() {
   DCHECK(free_input_buffers_.empty());
   DCHECK_EQ(0, input_buffers_at_component_);
   DCHECK_EQ(0, output_buffers_at_component_);
-  DCHECK(output_pictures_.empty());
+  DCHECK(pictures_.empty());
 }
 
 void OmxVideoDecodeAccelerator::SetEglState(
@@ -136,17 +138,12 @@ bool OmxVideoDecodeAccelerator::Initialize(const std::vector<uint32>& config) {
 
   // Output buffers will be eventually handed to us via
   // Assign{GLES,Sysmem}Buffers().
-  output_buffer_count_ = kNumPictureBuffers;
   message_loop_->PostTask(
       FROM_HERE,
       base::Bind(&Client::ProvidePictureBuffers, base::Unretained(client_),
-                 output_buffer_count_, gfx::Size(width_, height_),
+                 static_cast<int32>(kNumPictureBuffers),
+                 gfx::Size(width_, height_),
                  PICTUREBUFFER_MEMORYTYPE_GL_TEXTURE));
-  // TODO(fischman): we always ask for GLES buffers above.  So why maintain the
-  // !uses_egl_image_ path in this class at all?  Theoretically it could be
-  // useful for testing, but today there's no such testing.  Consider ripping it
-  // out of this class and replacing AssignSysmemBuffers() with
-  // NOTIMPLEMENTED().
 
   return true;
 }
@@ -286,12 +283,20 @@ bool OmxVideoDecodeAccelerator::Decode(
     LOG(ERROR) << "Failed to SharedMemory::Map().";
     return false;
   }
-  omx_buffer->pBuffer = static_cast<OMX_U8*>(shm->memory());
+  SharedMemoryAndId* input_buffer_details = new SharedMemoryAndId();
+  input_buffer_details->first.reset(shm.release());
+  input_buffer_details->second = bitstream_buffer.id();
+  DCHECK(!omx_buffer->pAppPrivate);
+  omx_buffer->pAppPrivate = input_buffer_details;
+  omx_buffer->pBuffer =
+      static_cast<OMX_U8*>(input_buffer_details->first->memory());
   omx_buffer->nFilledLen = bitstream_buffer.size();
   omx_buffer->nAllocLen = omx_buffer->nFilledLen;
-
   omx_buffer->nFlags &= ~OMX_BUFFERFLAG_EOS;
-  omx_buffer->nTimeStamp = 0;
+  // Abuse the header's nTimeStamp field to propagate the bitstream buffer ID to
+  // the output buffer's nTimeStamp field, so we can report it back to the
+  // client in PictureReady().
+  omx_buffer->nTimeStamp = bitstream_buffer.id();
 
   // Give this buffer to OMX.
   OMX_ERRORTYPE result = OMX_ErrorNone;
@@ -302,42 +307,20 @@ bool OmxVideoDecodeAccelerator::Decode(
     return false;
   }
   input_buffers_at_component_++;
-  // OMX_EmptyThisBuffer is a non blocking call and should
-  // not make any assumptions about its completion.
-  omx_buff_ids_.insert(std::make_pair(
-      omx_buffer, std::make_pair(shm.release(), bitstream_buffer.id())));
   return true;
 }
 
-// NOTE: this is only partially-implemented as never unsets uses_egl_image_ once
-// set.
 void OmxVideoDecodeAccelerator::AssignGLESBuffers(
     const std::vector<media::GLESBuffer>& buffers) {
   CHECK_EQ(message_loop_, MessageLoop::current());
-  uses_egl_image_ = true;
-  std::vector<media::BaseBuffer*> base_buffers(buffers.size());
-  for (size_t i = 0; i < buffers.size(); ++i)
-    base_buffers[i] = new media::GLESBuffer(buffers[i]);
-  AssignBuffersHelper(base_buffers);
-}
+  for (size_t i = 0; i < buffers.size(); ++i) {
+    CHECK(pictures_.insert(std::make_pair(
+        buffers[i].id(), OutputPicture(buffers[i], NULL))).second);
+  }
 
-void OmxVideoDecodeAccelerator::AssignSysmemBuffers(
-    const std::vector<media::SysmemBuffer>& buffers) {
-  CHECK_EQ(message_loop_, MessageLoop::current());
-  DCHECK(!uses_egl_image_);
-  std::vector<media::BaseBuffer*> base_buffers(buffers.size());
-  for (size_t i = 0; i < buffers.size(); ++i)
-    base_buffers[i] = new media::SysmemBuffer(buffers[i]);
-  AssignBuffersHelper(base_buffers);
-}
-
-void OmxVideoDecodeAccelerator::AssignBuffersHelper(
-    const std::vector<media::BaseBuffer*>& buffers) {
-  assigned_picture_buffers_.insert(
-      assigned_picture_buffers_.end(), buffers.begin(), buffers.end());
-
-  if (assigned_picture_buffers_.size() < kNumPictureBuffers)
+  if (pictures_.size() < kNumPictureBuffers)
     return;  // get all the buffers first.
+  DCHECK_EQ(pictures_.size(), kNumPictureBuffers);
 
   // Obtain the information about the output port.
   OMX_PARAM_PORTDEFINITIONTYPE port_format;
@@ -357,23 +340,17 @@ void OmxVideoDecodeAccelerator::AssignBuffersHelper(
     return;
   }
 
-  if (uses_egl_image_) {
-    port_format.nBufferCountActual = kNumPictureBuffers;
-    port_format.nBufferCountMin = kNumPictureBuffers;
-    output_buffer_count_ = kNumPictureBuffers;
+  port_format.nBufferCountActual = kNumPictureBuffers;
+  port_format.nBufferCountMin = kNumPictureBuffers;
 
-    result = OMX_SetParameter(component_handle_,
-                              OMX_IndexParamPortDefinition,
-                              &port_format);
-    if (result != OMX_ErrorNone) {
-      LOG(ERROR) << "SetParameter(OMX_IndexParamPortDefinition) failed";
-      StopOnError();
-      return;
-    }
-  } else {
-    output_buffer_count_ = port_format.nBufferCountActual;
+  result = OMX_SetParameter(component_handle_,
+                            OMX_IndexParamPortDefinition,
+                            &port_format);
+  if (result != OMX_ErrorNone) {
+    LOG(ERROR) << "SetParameter(OMX_IndexParamPortDefinition) failed";
+    StopOnError();
+    return;
   }
-  output_buffer_size_ = port_format.nBufferSize;
 
   if (!AllocateOutputBuffers()) {
     LOG(ERROR) << "OMX_AllocateBuffer() Output buffer error";
@@ -382,22 +359,31 @@ void OmxVideoDecodeAccelerator::AssignBuffersHelper(
   }
 }
 
+void OmxVideoDecodeAccelerator::AssignSysmemBuffers(
+    const std::vector<media::SysmemBuffer>& buffers) {
+  // We don't support decoding to system memory because we don't have HW that
+  // needs it yet.
+  NOTIMPLEMENTED();
+}
+
 void OmxVideoDecodeAccelerator::ReusePictureBuffer(int32 picture_buffer_id) {
   // TODO(vhiremath@nvidia.com) Avoid leaking of the picture buffer.
   if (!CanFillBuffer())
     return;
 
-  for (int i = 0; i < output_buffer_count_; ++i) {
-    if (picture_buffer_id != assigned_picture_buffers_[i]->id())
-      continue;
-    output_buffers_at_component_++;
-    OMX_ERRORTYPE result =
-        OMX_FillThisBuffer(component_handle_, output_pictures_[i].second);
-    if (result != OMX_ErrorNone) {
-      LOG(ERROR) << "OMX_FillThisBuffer() failed with result " << result;
-      StopOnError();
-    }
-    // Sent one buffer to omx.
+  OutputPictureById::iterator it = pictures_.find(picture_buffer_id);
+  if (it == pictures_.end()) {
+    LOG(DFATAL) << "Missing picture buffer id: " << picture_buffer_id;
+    return;
+  }
+  OutputPicture& output_picture = it->second;
+
+  output_buffers_at_component_++;
+  OMX_ERRORTYPE result =
+      OMX_FillThisBuffer(component_handle_, output_picture.omx_buffer_header);
+  if (result != OMX_ErrorNone) {
+    LOG(ERROR) << "OMX_FillThisBuffer() failed with result " << result;
+    StopOnError();
     return;
   }
 }
@@ -407,9 +393,11 @@ void OmxVideoDecodeAccelerator::InitialFillBuffer() {
     return;
 
   // Ask the decoder to fill the output buffers.
-  for (uint32 i = 0; i < output_pictures_.size(); ++i) {
-    OMX_BUFFERHEADERTYPE* omx_buffer = output_pictures_[i].second;
-    // clear EOS flag.
+  for (OutputPictureById::iterator it = pictures_.begin();
+       it != pictures_.end(); ++it) {
+    OMX_BUFFERHEADERTYPE* omx_buffer = it->second.omx_buffer_header;
+    DCHECK(omx_buffer);
+    // Clear EOS flag.
     omx_buffer->nFlags &= ~OMX_BUFFERFLAG_EOS;
     omx_buffer->nOutputPortIndex = output_port_;
     output_buffers_at_component_++;
@@ -483,7 +471,7 @@ void OmxVideoDecodeAccelerator::FlushIOPorts() {
 
 void OmxVideoDecodeAccelerator::InputPortFlushDone(int port) {
   DCHECK_EQ(port, input_port_);
-  VLOG(1) << "Input Port had been flushed";
+  VLOG(1) << "Input Port has been flushed";
   DCHECK_EQ(input_buffers_at_component_, 0);
   // Flush output port next.
   DCHECK(!on_flush_event_func_);
@@ -501,11 +489,9 @@ void OmxVideoDecodeAccelerator::InputPortFlushDone(int port) {
 void OmxVideoDecodeAccelerator::OutputPortFlushDone(int port) {
   DCHECK_EQ(port, output_port_);
 
-  VLOG(1) << "Output Port had been flushed";
+  VLOG(1) << "Output Port has been flushed";
   DCHECK_EQ(output_buffers_at_component_, 0);
   client_state_ = OMX_StatePause;
-  // So Finally call OnPortCommandFlush which should
-  // internally call DismissPictureBuffer();
   OnPortCommandFlush(OMX_StateExecuting);
 }
 
@@ -571,11 +557,6 @@ void OmxVideoDecodeAccelerator::OnPortCommandFlush(OMX_STATETYPE state) {
   on_state_event_func_ =
       &OmxVideoDecodeAccelerator::OnStateChangeExecutingToIdle;
   TransitionToState(OMX_StateIdle);
-  for (int i = 0; i < output_buffer_count_; ++i) {
-    OutputPicture output_picture = output_pictures_[i];
-    client_->DismissPictureBuffer(output_picture.first);
-  }
-  STLDeleteElements(&assigned_picture_buffers_);
 }
 
 void OmxVideoDecodeAccelerator::OnStateChangeExecutingToIdle(
@@ -637,9 +618,15 @@ void OmxVideoDecodeAccelerator::StopOnError() {
 bool OmxVideoDecodeAccelerator::AllocateInputBuffers() {
   for (int i = 0; i < input_buffer_count_; ++i) {
     OMX_BUFFERHEADERTYPE* buffer;
+    // While registering the buffer header we use fake buffer information
+    // (length 0, at memory address 0x1) to fake out the "safety" check in
+    // OMX_UseBuffer.  When it comes time to actually use this header in Decode
+    // we set these fields to their real values (for the duration of that
+    // Decode).
     OMX_ERRORTYPE result =
-        OMX_AllocateBuffer(component_handle_, &buffer, input_port_,
-                           this, input_buffer_size_);
+        OMX_UseBuffer(component_handle_, &buffer, input_port_,
+                      NULL, /* pAppPrivate gets set in Decode(). */
+                      0, reinterpret_cast<OMX_U8*>(0x1));
     if (result != OMX_ErrorNone)
       return false;
     buffer->nInputPortIndex = input_port_;
@@ -656,45 +643,25 @@ bool OmxVideoDecodeAccelerator::AllocateOutputBuffers() {
 
   gfx::Size decoded_pixel_size(width_, height_);
   gfx::Size visible_pixel_size(width_, height_);
-  // TODO(fischman): remove garbage bitstream buffer id's below (42 and 24) when
-  // the bitstream_buffer_id field is removed from Picture.
-  if (uses_egl_image_) {
-    for (uint32 i = 0; i < assigned_picture_buffers_.size(); i++) {
-      media::GLESBuffer* gles_buffer =
-          reinterpret_cast<media::GLESBuffer*>(assigned_picture_buffers_[i]);
-      OMX_BUFFERHEADERTYPE* omx_buffer;
-      void* egl = texture2eglImage_translator.TranslateToEglImage(
-          egl_display_, egl_context_, gles_buffer->texture_id());
-      OMX_ERRORTYPE result = OMX_UseEGLImage(
-          component_handle_, &omx_buffer, output_port_, gles_buffer, egl);
-      if (result != OMX_ErrorNone) {
-        LOG(ERROR) << "OMX_UseEGLImage failed with: " << result;
-        return false;
-      }
-      omx_buffer->pAppPrivate =
-          new media::Picture(gles_buffer->id(),
-                             42 /* garbage bitstreambuffer id */,
-                             decoded_pixel_size, visible_pixel_size);
-      output_pictures_.push_back(
-          std::make_pair(assigned_picture_buffers_[i]->id(), omx_buffer));
+  for (OutputPictureById::iterator it = pictures_.begin();
+       it != pictures_.end(); ++it) {
+    media::GLESBuffer& gles_buffer = it->second.gles_buffer;
+    OMX_BUFFERHEADERTYPE** omx_buffer = &it->second.omx_buffer_header;
+    DCHECK(!*omx_buffer);
+    void* egl = texture2eglImage_translator.TranslateToEglImage(
+        egl_display_, egl_context_, gles_buffer.texture_id());
+    OMX_ERRORTYPE result = OMX_UseEGLImage(
+        component_handle_, omx_buffer, output_port_, &gles_buffer, egl);
+    if (result != OMX_ErrorNone) {
+      LOG(ERROR) << "OMX_UseEGLImage failed with: " << result;
+      return false;
     }
-  } else {
-    for (uint32 i = 0; i < assigned_picture_buffers_.size(); i++) {
-      media::SysmemBuffer* sysmem_buffer =
-          reinterpret_cast<media::SysmemBuffer*>(assigned_picture_buffers_[i]);
-      OMX_BUFFERHEADERTYPE* omx_buffer;
-      OMX_ERRORTYPE result = OMX_AllocateBuffer(
-          component_handle_, &omx_buffer, output_port_, NULL,
-          output_buffer_size_);
-      if (result != OMX_ErrorNone)
-        return false;
-      omx_buffer->pAppPrivate = new media::Picture(
-          sysmem_buffer->id(),
-          24 /* garbage bitstreambuffer id */,
-          decoded_pixel_size, visible_pixel_size);
-      output_pictures_.push_back(
-          std::make_pair(sysmem_buffer->id(), omx_buffer));
-    }
+    // Here we set a garbage bitstream buffer id, and then overwrite it before
+    // passing to PictureReady.
+    int garbage_bitstream_buffer_id = -1;
+    (*omx_buffer)->pAppPrivate =
+        new media::Picture(gles_buffer.id(), garbage_bitstream_buffer_id,
+                           decoded_pixel_size, visible_pixel_size);
   }
   return true;
 }
@@ -713,13 +680,15 @@ void OmxVideoDecodeAccelerator::FreeInputBuffers() {
       return;
     }
   }
+  VLOG(1) << "Input buffers freed.";
 }
 
 void OmxVideoDecodeAccelerator::FreeOutputBuffers() {
   // Calls to OMX to free buffers.
   OMX_ERRORTYPE result;
-  for (size_t i = 0; i < output_pictures_.size(); ++i) {
-    OMX_BUFFERHEADERTYPE* omx_buffer = output_pictures_[i].second;
+  for (OutputPictureById::iterator it = pictures_.begin();
+       it != pictures_.end(); ++it) {
+    OMX_BUFFERHEADERTYPE* omx_buffer = it->second.omx_buffer_header;
     CHECK(omx_buffer);
     delete reinterpret_cast<media::Picture*>(omx_buffer->pAppPrivate);
     result = OMX_FreeBuffer(component_handle_, output_port_, omx_buffer);
@@ -728,8 +697,9 @@ void OmxVideoDecodeAccelerator::FreeOutputBuffers() {
       StopOnError();
       return;
     }
+    client_->DismissPictureBuffer(it->first);
   }
-  output_pictures_.clear();
+  pictures_.clear();
 }
 
 void OmxVideoDecodeAccelerator::OnPortSettingsChangedRun(
@@ -760,8 +730,11 @@ void OmxVideoDecodeAccelerator::FillBufferDoneTask(
     return;
   }
 
-  client_->PictureReady(*reinterpret_cast<media::Picture*>(
-      buffer->pAppPrivate));
+  media::Picture* picture =
+      reinterpret_cast<media::Picture*>(buffer->pAppPrivate);
+  // See Decode() for an explanation of this abuse of nTimeStamp.
+  picture->set_bitstream_buffer_id(buffer->nTimeStamp);
+  client_->PictureReady(*picture);
 }
 
 void OmxVideoDecodeAccelerator::EmptyBufferDoneTask(
@@ -775,15 +748,12 @@ void OmxVideoDecodeAccelerator::EmptyBufferDoneTask(
 
   // Retrieve the corresponding BitstreamBuffer's id and notify the client of
   // its completion.
-  OMXBufferIdMap::iterator it = omx_buff_ids_.find(buffer);
-  if (it == omx_buff_ids_.end()) {
-    LOG(ERROR) << "Unexpectedly failed to find a buffer id.";
-    StopOnError();
-    return;
-  }
-  delete it->second.first;
-  client_->NotifyEndOfBitstreamBuffer(it->second.second);
-  omx_buff_ids_.erase(it);
+  SharedMemoryAndId* input_buffer_details =
+      reinterpret_cast<SharedMemoryAndId*>(buffer->pAppPrivate);
+  DCHECK(input_buffer_details);
+  buffer->pAppPrivate = NULL;
+  client_->NotifyEndOfBitstreamBuffer(input_buffer_details->second);
+  delete input_buffer_details;
 }
 
 void OmxVideoDecodeAccelerator::EventHandlerCompleteTask(OMX_EVENTTYPE event,

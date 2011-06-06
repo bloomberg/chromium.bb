@@ -445,6 +445,12 @@ void EglRenderingVDAClient::DismissPictureBuffer(int32 picture_buffer_id) {
 void EglRenderingVDAClient::PictureReady(const media::Picture& picture) {
   CHECK_EQ(message_loop(), MessageLoop::current());
 
+  // Because we feed the decoder one NALU at a time, we can be sure each frame
+  // comes from a bitstream buffer numbered at least as high as our current
+  // decoded frame's index, and less than the id of the next bitstream buffer
+  // we'll send for decoding.  Assert that.
+  CHECK_GE(picture.bitstream_buffer_id(), num_decoded_frames_);
+  CHECK_LE(picture.bitstream_buffer_id(), next_bitstream_buffer_id_);
   ++num_decoded_frames_;
 
   media::GLESBuffer* gles_buffer =
@@ -569,11 +575,12 @@ TEST(OmxVideoDecodeAcceleratorTest, TestSimpleDecode) {
 }
 
 // TODO(fischman, vrk): add more tests!  In particular:
-// - Test that breaking up the data buffers into many Decode() calls works.
+// - Test that chunking Decode() calls differently works.
+// - Test for memory leaks (valgrind)
 // - Test decode speed.  Ideally we can beat 60fps esp on simple test.mp4.
 // - Test alternate configurations
 // - Test failure conditions.
-// - Test multiple concurrent decoders going at once.
+// - Test multiple decodes; sequentially & concurrently.
 // - Test frame size changes mid-stream
 
 }  // namespace

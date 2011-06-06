@@ -46,11 +46,18 @@ class OmxVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   void SetEglState(EGLDisplay egl_display, EGLContext egl_context);
 
  private:
+  // Helper struct for keeping track of the relationship between an OMX output
+  // buffer and the GLESBuffer it points to.
+  struct OutputPicture {
+    OutputPicture(media::GLESBuffer g_b, OMX_BUFFERHEADERTYPE* o_b_h)
+        : gles_buffer(g_b), omx_buffer_header(o_b_h) {}
+    media::GLESBuffer gles_buffer;
+    OMX_BUFFERHEADERTYPE* omx_buffer_header;
+  };
+  typedef std::map<int32, OutputPicture> OutputPictureById;
+
   MessageLoop* message_loop_;
   OMX_HANDLETYPE component_handle_;
-
-  // Common initialization code for Assign{GLES,Sysmem}Buffers.
-  void AssignBuffersHelper(const std::vector<media::BaseBuffer*>& buffers);
 
   // Create the Component for OMX. Handles all OMX initialization.
   bool CreateComponent();
@@ -101,12 +108,9 @@ class OmxVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   int input_buffers_at_component_;
 
   // Following are output port related variables.
-  int output_buffer_count_;
-  int output_buffer_size_;
   int output_port_;
   int output_buffers_at_component_;
 
-  bool uses_egl_image_;
   // NOTE: someday there may be multiple contexts for a single decoder.  But not
   // today.
   // TODO(fischman,vrk): handle lost contexts?
@@ -117,9 +121,7 @@ class OmxVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   std::queue<OMX_BUFFERHEADERTYPE*> free_input_buffers_;
 
   // For output buffer recycling cases.
-  std::vector<media::BaseBuffer*> assigned_picture_buffers_;
-  typedef std::pair<int32, OMX_BUFFERHEADERTYPE*> OutputPicture;
-  std::vector<OutputPicture> output_pictures_;
+  OutputPictureById pictures_;
 
   // To expose client callbacks from VideoDecodeAccelerator.
   // NOTE: all calls to this object *MUST* be executed in message_loop_.
@@ -137,11 +139,6 @@ class OmxVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
 
   // Method to receive buffers from component's output port
   void FillBufferDoneTask(OMX_BUFFERHEADERTYPE* buffer);
-  typedef std::pair<OMX_BUFFERHEADERTYPE*, uint32> OMXbufferTexture;
-
-  typedef std::map<OMX_BUFFERHEADERTYPE*,
-                   std::pair<base::SharedMemory*, int32> > OMXBufferIdMap;
-  OMXBufferIdMap omx_buff_ids_;
 
   // Method used the change the state of the port.
   void ChangePort(OMX_COMMANDTYPE cmd, int port_index);
