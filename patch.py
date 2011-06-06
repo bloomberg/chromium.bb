@@ -215,10 +215,10 @@ class FilePatchDiff(FilePatchBase):
     """Processes a single line of the header.
 
     Returns True if it should continue looping.
+
+    Format is described to
+    http://www.kernel.org/pub/software/scm/git/docs/git-diff.html
     """
-    # Handle these:
-    #  rename from <>
-    #  copy from <>
     match = re.match(r'^(rename|copy) from (.+)$', line)
     if match:
       if old != match.group(2):
@@ -229,9 +229,6 @@ class FilePatchDiff(FilePatchBase):
                 (match.group(1), line))
       return
 
-    # Handle these:
-    #  rename to <>
-    #  copy to <>
     match = re.match(r'^(rename|copy) to (.+)$', line)
     if match:
       if new != match.group(2):
@@ -242,15 +239,14 @@ class FilePatchDiff(FilePatchBase):
                 (match.group(1), line))
       return
 
-    # Handle "new file mode \d{6}"
-    match = re.match(r'^new file mode (\d{6})$', line)
+    match = re.match(r'^new(| file) mode (\d{6})$', line)
     if match:
-      mode = match.group(1)
+      mode = match.group(2)
       # Only look at owner ACL for executable.
+      # TODO(maruel): Add support to remove a property.
       if bool(int(mode[4]) & 1):
         self.svn_properties.append(('svn:executable', '*'))
 
-    # Handle "--- "
     match = re.match(r'^--- (.*)$', line)
     if match:
       if last_line[:3] in ('---', '+++'):
@@ -263,7 +259,6 @@ class FilePatchDiff(FilePatchBase):
         self._fail('Missing git diff output name.')
       return
 
-    # Handle "+++ "
     match = re.match(r'^\+\+\+ (.*)$', line)
     if match:
       if not last_line.startswith('---'):
