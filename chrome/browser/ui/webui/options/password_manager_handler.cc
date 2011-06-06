@@ -136,8 +136,9 @@ void PasswordManagerHandler::RemoveSavedPassword(const ListValue* args) {
     return;
   std::string string_value = UTF16ToUTF8(ExtractStringValue(args));
   int index;
-  base::StringToInt(string_value, &index);
-  store->RemoveLogin(*password_list_[index]);
+  if (base::StringToInt(string_value, &index) && index >= 0 &&
+      static_cast<size_t>(index) < password_list_.size())
+    store->RemoveLogin(*password_list_[index]);
 }
 
 void PasswordManagerHandler::RemovePasswordException(
@@ -147,9 +148,9 @@ void PasswordManagerHandler::RemovePasswordException(
     return;
   std::string string_value = UTF16ToUTF8(ExtractStringValue(args));
   int index;
-  base::StringToInt(string_value, &index);
-
-  store->RemoveLogin(*password_exception_list_[index]);
+  if (base::StringToInt(string_value, &index) && index >= 0 &&
+      static_cast<size_t>(index) < password_exception_list_.size())
+    store->RemoveLogin(*password_exception_list_[index]);
 }
 
 void PasswordManagerHandler::RemoveAllSavedPasswords(
