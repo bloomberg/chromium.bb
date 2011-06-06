@@ -32,7 +32,7 @@ class QuotaPermissionContext
 
  protected:
   friend class base::RefCountedThreadSafe<QuotaPermissionContext>;
-  ~QuotaPermissionContext() {}
+  virtual ~QuotaPermissionContext() {}
 };
 
 #endif  // CONTENT_BROWSER_QUOTA_PERMISSION_CONTEXT_H_
