@@ -5,18 +5,23 @@
 
 
 import sys
+import time
 
 
 class RPCListener(object):
 
   def __init__(self, shutdown_callback):
     self.shutdown_callback = shutdown_callback
-    self.prefix = '**** '
+    self.prefix = '|||| '
     self.ever_failed = False
+    self.start_time = time.time()
 
   def Log(self, message):
+    # Display the number of milliseconds since startup.
+    # This gives us additional data for debugging bot behavior.
+    prefix = '[%6s ms] ' % int((time.time()-self.start_time)*1000) + self.prefix
     lines = [line.rstrip() for line in message.split('\n')]
-    text = ''.join(['%s%s\n' % (self.prefix, line) for line in lines])
+    text = ''.join(['%s%s\n' % (prefix, line) for line in lines])
     sys.stdout.write(text)
 
   def TestLog(self, message):
