@@ -366,7 +366,7 @@ history::QueryOptions BrowsingHistoryHandler::CreateMonthQueryOptions(
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-HistoryUI::HistoryUI(TabContents* contents) : WebUI(contents) {
+HistoryUI::HistoryUI(TabContents* contents) : ChromeWebUI(contents) {
   AddMessageHandler((new BrowsingHistoryHandler())->Attach(this));
 
   HistoryUIHTMLSource* html_source = new HistoryUIHTMLSource();

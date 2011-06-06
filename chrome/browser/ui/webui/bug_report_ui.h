@@ -23,8 +23,8 @@ void ShowHtmlBugReportView(Browser* browser);
 class BugReportUI : public HtmlDialogUI {
  public:
   explicit BugReportUI(TabContents* contents);
- private:
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(BugReportUI);
 };
 

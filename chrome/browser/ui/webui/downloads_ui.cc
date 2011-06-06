@@ -109,7 +109,7 @@ std::string DownloadsUIHTMLSource::GetMimeType(const std::string& path) const {
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-DownloadsUI::DownloadsUI(TabContents* contents) : WebUI(contents) {
+DownloadsUI::DownloadsUI(TabContents* contents) : ChromeWebUI(contents) {
   DownloadManager* dlm = GetProfile()->GetDownloadManager();
 
   DownloadsDOMHandler* handler = new DownloadsDOMHandler(dlm);

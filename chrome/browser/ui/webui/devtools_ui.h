@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_UI_WEBUI_DEVTOOLS_UI_H_
 #pragma once
 
-#include "content/browser/webui/web_ui.h"
+#include "chrome/browser/ui/webui/chrome_web_ui.h"
 
-class DevToolsUI : public WebUI {
+class DevToolsUI : public ChromeWebUI {
  public:
   static void RegisterDevToolsDataSource();
 

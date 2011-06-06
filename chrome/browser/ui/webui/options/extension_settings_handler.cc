@@ -896,7 +896,7 @@ ExtensionsDOMHandler::~ExtensionsDOMHandler() {
 
 // ExtensionsDOMHandler, public: -----------------------------------------------
 
-ExtensionsUI::ExtensionsUI(TabContents* contents) : WebUI(contents) {
+ExtensionsUI::ExtensionsUI(TabContents* contents) : ChromeWebUI(contents) {
   ExtensionService *exstension_service =
       GetProfile()->GetOriginalProfile()->GetExtensionService();
 

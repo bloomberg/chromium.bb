@@ -24,7 +24,7 @@
 #include "content/browser/browser_thread.h"
 
 SyncInternalsUI::SyncInternalsUI(TabContents* contents)
-    : WebUI(contents) {
+    : ChromeWebUI(contents) {
   browser_sync::JsFrontend* backend = GetJsFrontend();
   if (backend) {
     backend->AddHandler(this);

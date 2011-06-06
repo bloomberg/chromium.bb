@@ -7,7 +7,7 @@
 #pragma once
 
 #include "chrome/browser/chromeos/login/oobe_display.h"
-#include "content/browser/webui/web_ui.h"
+#include "chrome/browser/ui/webui/chrome_web_ui.h"
 
 class DictionaryValue;
 
@@ -34,7 +34,7 @@ class OobeMessageHandler : public WebUIMessageHandler {
 // - eula screen (CrOS (+ OEM) EULA content/TPM password/crash reporting).
 // - update screen.
 class OobeUI : public OobeDisplay,
-               public WebUI {
+               public ChromeWebUI {
  public:
   explicit OobeUI(TabContents* contents);
 

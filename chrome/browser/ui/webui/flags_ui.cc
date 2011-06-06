@@ -208,7 +208,7 @@ void FlagsDOMHandler::HandleRestartBrowser(const ListValue* args) {
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-FlagsUI::FlagsUI(TabContents* contents) : WebUI(contents) {
+FlagsUI::FlagsUI(TabContents* contents) : ChromeWebUI(contents) {
   AddMessageHandler((new FlagsDOMHandler())->Attach(this));
 
   FlagsUIHTMLSource* html_source = new FlagsUIHTMLSource();

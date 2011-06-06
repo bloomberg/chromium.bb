@@ -64,25 +64,23 @@ namespace {
 
 // A function for creating a new WebUI. The caller owns the return value, which
 // may be NULL (for example, if the URL refers to an non-existent extension).
-typedef WebUI* (*WebUIFactoryFunction)(TabContents* tab_contents,
-                                       const GURL& url);
+typedef ChromeWebUI* (*WebUIFactoryFunction)(TabContents* tab_contents,
+                                             const GURL& url);
 
 // Template for defining WebUIFactoryFunction.
 template<class T>
-WebUI* NewWebUI(TabContents* contents, const GURL& url) {
+ChromeWebUI* NewWebUI(TabContents* contents, const GURL& url) {
   return new T(contents);
 }
 
 // Special case for extensions.
 template<>
-WebUI* NewWebUI<ExtensionWebUI>(TabContents* contents, const GURL& url) {
+ChromeWebUI* NewWebUI<ExtensionWebUI>(TabContents* contents, const GURL& url) {
   // Don't use a WebUI for incognito tabs because we require extensions to run
   // within a single process.
   ExtensionService* service = contents->profile()->GetExtensionService();
-  if (service &&
-      service->ExtensionBindingsAllowed(url)) {
+  if (service && service->ExtensionBindingsAllowed(url))
     return new ExtensionWebUI(contents, url);
-  }
   return NULL;
 }
 
@@ -126,7 +124,7 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
 
   // Give about:about a generic Web UI so it can navigate to pages with Web UIs.
   if (url.spec() == chrome::kChromeUIAboutAboutURL)
-    return &NewWebUI<WebUI>;
+    return &NewWebUI<ChromeWebUI>;
 
   // We must compare hosts only since some of the Web UIs append extra stuff
   // after the host name.
@@ -168,6 +166,8 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
     return &NewWebUI<PluginsUI>;
   if (url.host() == chrome::kChromeUISyncInternalsHost)
     return &NewWebUI<SyncInternalsUI>;
+  if (url.host() == chrome::kChromeUISettingsHost)
+    return &NewWebUI<OptionsUI>;
 
 #if defined(OS_CHROMEOS)
   if (url.host() == chrome::kChromeUIChooseMobileNetworkHost)
@@ -192,8 +192,6 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
     return &NewWebUI<chromeos::ProxySettingsUI>;
   if (url.host() == chrome::kChromeUIRegisterPageHost)
     return &NewWebUI<RegisterPageUI>;
-  if (url.host() == chrome::kChromeUISettingsHost)
-    return &NewWebUI<OptionsUI>;
   if (url.host() == chrome::kChromeUISimUnlockHost)
     return &NewWebUI<chromeos::SimUnlockUI>;
   if (url.host() == chrome::kChromeUISystemInfoHost)
@@ -201,8 +199,6 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
   if (url.host() == chrome::kChromeUIEnterpriseEnrollmentHost)
     return &NewWebUI<chromeos::EnterpriseEnrollmentUI>;
 #else
-  if (url.host() == chrome::kChromeUISettingsHost)
-    return &NewWebUI<OptionsUI>;
   if (url.host() == chrome::kChromeUIPrintHost &&
       switches::IsPrintPreviewEnabled()) {
     return &NewWebUI<PrintPreviewUI>;

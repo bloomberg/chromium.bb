@@ -120,7 +120,7 @@ void LoginUIHandler::ClearAndEnablePassword() {
 // LoginUI, public: ------------------------------------------------------------
 
 LoginUI::LoginUI(TabContents* contents)
-    : WebUI(contents) {
+    : ChromeWebUI(contents) {
   LoginUIHandler* handler = new LoginUIHandler();
   AddMessageHandler(handler->Attach(this));
   LoginUIHTMLSource* html_source =

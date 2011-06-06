@@ -12,11 +12,11 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/time.h"
 #include "chrome/browser/printing/print_preview_data_service.h"
-#include "content/browser/webui/web_ui.h"
+#include "chrome/browser/ui/webui/chrome_web_ui.h"
 
 class PrintPreviewDataService;
 
-class PrintPreviewUI : public WebUI {
+class PrintPreviewUI : public ChromeWebUI {
  public:
   explicit PrintPreviewUI(TabContents* contents);
   virtual ~PrintPreviewUI();

@@ -11,7 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-#include "content/browser/webui/web_ui.h"
+#include "chrome/browser/ui/webui/chrome_web_ui.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_type.h"
@@ -81,7 +81,7 @@ class OptionsPageUIHandlerHost {
 };
 
 // The WebUI for chrome:settings.
-class OptionsUI : public WebUI,
+class OptionsUI : public ChromeWebUI,
                   public OptionsPageUIHandlerHost {
  public:
   explicit OptionsUI(TabContents* contents);

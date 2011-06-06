@@ -64,7 +64,7 @@ void TextfieldsDOMHandler::HandleTextfieldValue(const ListValue* args) {
 /**
  * TextfieldsUI implementation.
  */
-TextfieldsUI::TextfieldsUI(TabContents* contents) : WebUI(contents) {
+TextfieldsUI::TextfieldsUI(TabContents* contents) : ChromeWebUI(contents) {
   TextfieldsDOMHandler* handler = new TextfieldsDOMHandler();
   AddMessageHandler(handler);
   handler->Attach(this);

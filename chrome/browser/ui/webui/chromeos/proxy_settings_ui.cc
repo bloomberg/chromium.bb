@@ -66,7 +66,8 @@ void ProxySettingsHTMLSource::StartDataRequest(const std::string& path,
 
 namespace chromeos {
 
-ProxySettingsUI::ProxySettingsUI(TabContents* contents) : WebUI(contents) {
+ProxySettingsUI::ProxySettingsUI(TabContents* contents)
+    : ChromeWebUI(contents) {
   // |localized_strings| will be owned by ProxySettingsHTMLSource.
   DictionaryValue* localized_strings = new DictionaryValue();
 

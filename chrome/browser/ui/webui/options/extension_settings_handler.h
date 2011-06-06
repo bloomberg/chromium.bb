@@ -14,8 +14,8 @@
 #include "chrome/browser/extensions/pack_extension_job.h"
 #include "chrome/browser/ui/shell_dialogs.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "chrome/browser/ui/webui/chrome_web_ui.h"
 #include "chrome/common/extensions/extension_resource.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
@@ -260,7 +260,7 @@ class ExtensionsDOMHandler : public WebUIMessageHandler,
   DISALLOW_COPY_AND_ASSIGN(ExtensionsDOMHandler);
 };
 
-class ExtensionsUI : public WebUI {
+class ExtensionsUI : public ChromeWebUI {
  public:
   explicit ExtensionsUI(TabContents* contents);
 

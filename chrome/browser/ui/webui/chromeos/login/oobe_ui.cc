@@ -148,7 +148,7 @@ void CoreOobeHandler::OnInitialized(const ListValue* args) {
 // OobeUI ----------------------------------------------------------------------
 
 OobeUI::OobeUI(TabContents* contents)
-    : WebUI(contents),
+    : ChromeWebUI(contents),
       update_screen_actor_(NULL),
       network_screen_actor_(NULL),
       eula_screen_actor_(NULL) {

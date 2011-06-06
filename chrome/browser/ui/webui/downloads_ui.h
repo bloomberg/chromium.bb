@@ -6,11 +6,11 @@
 #define CHROME_BROWSER_UI_WEBUI_DOWNLOADS_UI_H_
 #pragma once
 
-#include "content/browser/webui/web_ui.h"
+#include "chrome/browser/ui/webui/chrome_web_ui.h"
 
 class RefCountedMemory;
 
-class DownloadsUI : public WebUI {
+class DownloadsUI : public ChromeWebUI {
  public:
   explicit DownloadsUI(TabContents* contents);
 

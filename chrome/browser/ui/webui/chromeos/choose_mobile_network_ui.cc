@@ -222,7 +222,7 @@ void ChooseMobileNetworkHandler::HandleConnect(const ListValue* args) {
 }  // namespace
 
 ChooseMobileNetworkUI::ChooseMobileNetworkUI(TabContents* contents)
-    : WebUI(contents) {
+    : ChromeWebUI(contents) {
   ChooseMobileNetworkHandler* handler = new ChooseMobileNetworkHandler();
   AddMessageHandler((handler)->Attach(this));
   ChooseMobileNetworkHTMLSource* html_source =

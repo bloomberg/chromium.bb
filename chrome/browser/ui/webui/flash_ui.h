@@ -6,12 +6,12 @@
 #define CHROME_BROWSER_UI_WEBUI_FLASH_UI_H_
 #pragma once
 
-#include "content/browser/webui/web_ui.h"
+#include "chrome/browser/ui/webui/chrome_web_ui.h"
 
 class RefCountedMemory;
 
 // The Web UI handler for about:flash.
-class FlashUI : public WebUI {
+class FlashUI : public ChromeWebUI {
  public:
   explicit FlashUI(TabContents* contents);
 

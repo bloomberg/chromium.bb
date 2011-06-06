@@ -1046,7 +1046,7 @@ void ImageBurnDownloader::DownloadStarted(bool success, const GURL& url) {
 // ImageBurnUI
 //
 ////////////////////////////////////////////////////////////////////////////////
-ImageBurnUI::ImageBurnUI(TabContents* contents) : WebUI(contents) {
+ImageBurnUI::ImageBurnUI(TabContents* contents) : ChromeWebUI(contents) {
   ImageBurnHandler* handler = new ImageBurnHandler(contents);
   AddMessageHandler((handler)->Attach(this));
   ImageBurnUIHTMLSource* html_source = new ImageBurnUIHTMLSource();

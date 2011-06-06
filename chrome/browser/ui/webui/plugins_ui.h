@@ -6,12 +6,12 @@
 #define CHROME_BROWSER_UI_WEBUI_PLUGINS_UI_H_
 #pragma once
 
-#include "content/browser/webui/web_ui.h"
+#include "chrome/browser/ui/webui/chrome_web_ui.h"
 
 class PrefService;
 class RefCountedMemory;
 
-class PluginsUI : public WebUI {
+class PluginsUI : public ChromeWebUI {
  public:
   explicit PluginsUI(TabContents* contents);
 

@@ -11,14 +11,15 @@
 #include "base/compiler_specific.h"
 #include "base/basictypes.h"
 #include "chrome/browser/sync/js_event_handler.h"
-#include "content/browser/webui/web_ui.h"
+#include "chrome/browser/ui/webui/chrome_web_ui.h"
 
 namespace browser_sync {
 class JsFrontend;
 }  // namespace browser_sync
 
 // The implementation for the chrome://sync-internals page.
-class SyncInternalsUI : public WebUI, public browser_sync::JsEventHandler {
+class SyncInternalsUI : public ChromeWebUI,
+                        public browser_sync::JsEventHandler {
  public:
   explicit SyncInternalsUI(TabContents* contents);
   virtual ~SyncInternalsUI();

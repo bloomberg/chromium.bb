@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_UI_WEBUI_GPU_INTERNALS_UI_H_
 #pragma once
 
-#include "content/browser/webui/web_ui.h"
+#include "chrome/browser/ui/webui/chrome_web_ui.h"
 
-class GpuInternalsUI : public WebUI {
+class GpuInternalsUI : public ChromeWebUI {
  public:
   explicit GpuInternalsUI(TabContents* contents);
 

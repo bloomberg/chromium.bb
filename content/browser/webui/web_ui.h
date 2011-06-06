@@ -27,6 +27,9 @@ class Value;
 
 // A WebUI sets up the datasources and message handlers for a given HTML-based
 // UI. It is contained by a WebUIManager.
+//
+// NOTE: If you're creating a new WebUI for Chrome code, make sure you extend
+// ChromeWebUI.
 class WebUI : public IPC::Channel::Listener {
  public:
   explicit WebUI(TabContents* contents);
@@ -67,12 +70,6 @@ class WebUI : public IPC::Channel::Listener {
   // Returns true if the favicon should be hidden for the current tab.
   bool hide_favicon() const {
     return hide_favicon_;
-  }
-
-  // Returns true if the bookmark bar should be forced to being visible,
-  // overriding the user's preference.
-  bool force_bookmark_bar_visible() const {
-    return force_bookmark_bar_visible_;
   }
 
   // Returns true if the location bar should be focused by default rather than
@@ -172,7 +169,6 @@ class WebUI : public IPC::Channel::Listener {
   // Options that may be overridden by individual Web UI implementations. The
   // bool options default to false. See the public getters for more information.
   bool hide_favicon_;
-  bool force_bookmark_bar_visible_;
   bool focus_location_bar_by_default_;
   bool should_hide_url_;
   string16 overridden_title_;  // Defaults to empty string.

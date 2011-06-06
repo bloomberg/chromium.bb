@@ -351,7 +351,7 @@ class WriteTraceFileTask : public Task {
 
 void GpuMessageHandler::FileSelected(
     const FilePath& path, int index, void* params) {
-  if(select_trace_file_dialog_type_ == SelectFileDialog::SELECT_OPEN_FILE)
+  if (select_trace_file_dialog_type_ == SelectFileDialog::SELECT_OPEN_FILE)
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
         new ReadTraceFileTask(new TaskProxy(AsWeakPtr()), path));
@@ -365,7 +365,7 @@ void GpuMessageHandler::FileSelected(
 
 void GpuMessageHandler::FileSelectionCanceled(void* params) {
   select_trace_file_dialog_.release();
-  if(select_trace_file_dialog_type_ == SelectFileDialog::SELECT_OPEN_FILE)
+  if (select_trace_file_dialog_type_ == SelectFileDialog::SELECT_OPEN_FILE)
     web_ui_->CallJavascriptFunction("tracingController.onLoadTraceFileCanceled");
   else
     web_ui_->CallJavascriptFunction("tracingController.onSaveTraceFileCanceled");
@@ -641,7 +641,7 @@ void GpuMessageHandler::OnTraceBufferPercentFullReply(float percent_full) {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-GpuInternalsUI::GpuInternalsUI(TabContents* contents) : WebUI(contents) {
+GpuInternalsUI::GpuInternalsUI(TabContents* contents) : ChromeWebUI(contents) {
   AddMessageHandler((new GpuMessageHandler())->Attach(this));
 
   GpuHTMLSource* html_source = new GpuHTMLSource();

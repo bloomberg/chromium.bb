@@ -194,7 +194,7 @@ void CrashesDOMHandler::UpdateUI() {
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-CrashesUI::CrashesUI(TabContents* contents) : WebUI(contents) {
+CrashesUI::CrashesUI(TabContents* contents) : ChromeWebUI(contents) {
   AddMessageHandler((new CrashesDOMHandler())->Attach(this));
 
   CrashesUIHTMLSource* html_source = new CrashesUIHTMLSource();

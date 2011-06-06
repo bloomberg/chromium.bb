@@ -25,8 +25,8 @@
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "chrome/browser/ui/webui/chrome_web_ui.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/webui/web_ui.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/file_stream.h"
 #include "ui/base/dragdrop/download_file_interface.h"
@@ -448,7 +448,7 @@ class ImageBurnHandler
   DISALLOW_COPY_AND_ASSIGN(ImageBurnHandler);
 };
 
-class ImageBurnUI : public WebUI {
+class ImageBurnUI : public ChromeWebUI {
  public:
   explicit ImageBurnUI(TabContents* contents);
 

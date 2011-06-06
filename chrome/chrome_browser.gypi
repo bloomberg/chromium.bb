@@ -3272,6 +3272,8 @@
         'browser/ui/webui/chrome_url_data_manager_backend.h',
         'browser/ui/webui/chrome_url_data_manager.cc',
         'browser/ui/webui/chrome_url_data_manager.h',
+        'browser/ui/webui/chrome_web_ui.cc',
+        'browser/ui/webui/chrome_web_ui.h',
         'browser/ui/webui/chrome_web_ui_data_source.cc',
         'browser/ui/webui/chrome_web_ui_data_source.h',
         'browser/ui/webui/chrome_web_ui_factory.cc',

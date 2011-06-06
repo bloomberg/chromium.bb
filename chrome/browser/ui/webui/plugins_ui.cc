@@ -336,7 +336,7 @@ void PluginsDOMHandler::PluginsLoaded(ListWrapper* wrapper) {
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-PluginsUI::PluginsUI(TabContents* contents) : WebUI(contents) {
+PluginsUI::PluginsUI(TabContents* contents) : ChromeWebUI(contents) {
   AddMessageHandler((new PluginsDOMHandler())->Attach(this));
 
   PluginsUIHTMLSource* html_source = new PluginsUIHTMLSource();

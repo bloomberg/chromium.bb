@@ -1631,7 +1631,7 @@ void NetInternalsMessageHandler::IOThreadImpl::CallJavascriptFunction(
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-NetInternalsUI::NetInternalsUI(TabContents* contents) : WebUI(contents) {
+NetInternalsUI::NetInternalsUI(TabContents* contents) : ChromeWebUI(contents) {
   AddMessageHandler((new NetInternalsMessageHandler())->Attach(this));
 
   NetInternalsHTMLSource* html_source = new NetInternalsHTMLSource();

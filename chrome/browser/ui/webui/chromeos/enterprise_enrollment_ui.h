@@ -7,13 +7,13 @@
 #pragma once
 
 #include "base/compiler_specific.h"
-#include "content/browser/webui/web_ui.h"
+#include "chrome/browser/ui/webui/chrome_web_ui.h"
 
 namespace chromeos {
 
 // WebUI implementation that handles the enterprise enrollment dialog in the
 // Chrome OS login flow.
-class EnterpriseEnrollmentUI : public WebUI {
+class EnterpriseEnrollmentUI : public ChromeWebUI {
  public:
   // This defines the interface for controllers which will be called back when
   // something happens on the UI. It is stored in a property of the TabContents.

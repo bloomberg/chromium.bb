@@ -14,7 +14,8 @@
 static base::LazyInstance<PropertyAccessor<HtmlDialogUIDelegate*> >
     g_html_dialog_ui_property_accessor(base::LINKER_INITIALIZED);
 
-HtmlDialogUI::HtmlDialogUI(TabContents* tab_contents) : WebUI(tab_contents) {
+HtmlDialogUI::HtmlDialogUI(TabContents* tab_contents)
+    : ChromeWebUI(tab_contents) {
 }
 
 HtmlDialogUI::~HtmlDialogUI() {

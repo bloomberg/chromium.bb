@@ -10,7 +10,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-#include "content/browser/webui/web_ui.h"
+#include "chrome/browser/ui/webui/chrome_web_ui.h"
 
 class Profile;
 
@@ -83,7 +83,7 @@ class LoginUIHandler : public WebUIMessageHandler {
 
 // Boilerplate class that is used to associate the LoginUI code with the WebUI
 // code.
-class LoginUI : public WebUI {
+class LoginUI : public ChromeWebUI {
  public:
   explicit LoginUI(TabContents* contents);
 

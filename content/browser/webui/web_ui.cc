@@ -40,7 +40,6 @@ string16 WebUI::GetJavascriptCall(
 
 WebUI::WebUI(TabContents* contents)
     : hide_favicon_(false),
-      force_bookmark_bar_visible_(false),
       focus_location_bar_by_default_(false),
       should_hide_url_(false),
       link_transition_type_(PageTransition::LINK),

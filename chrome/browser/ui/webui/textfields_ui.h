@@ -9,7 +9,7 @@
 #include <string>
 
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-#include "content/browser/webui/web_ui.h"
+#include "chrome/browser/ui/webui/chrome_web_ui.h"
 
 class RefCountedMemory;
 
@@ -55,7 +55,7 @@ class TextfieldsDOMHandler : public WebUIMessageHandler {
   DISALLOW_COPY_AND_ASSIGN(TextfieldsDOMHandler);
 };
 
-class TextfieldsUI : public WebUI {
+class TextfieldsUI : public ChromeWebUI {
  public:
   explicit TextfieldsUI(TabContents* contents);
 

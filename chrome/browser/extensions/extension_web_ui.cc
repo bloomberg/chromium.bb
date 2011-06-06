@@ -127,7 +127,7 @@ const char ExtensionWebUI::kExtensionURLOverrides[] =
     "extensions.chrome_url_overrides";
 
 ExtensionWebUI::ExtensionWebUI(TabContents* tab_contents, const GURL& url)
-    : WebUI(tab_contents),
+    : ChromeWebUI(tab_contents),
       url_(url) {
   ExtensionService* service = tab_contents->profile()->GetExtensionService();
   const Extension* extension = service->GetExtensionByURL(url);

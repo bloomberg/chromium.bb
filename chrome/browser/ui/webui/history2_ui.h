@@ -11,8 +11,8 @@
 #include "base/string16.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "chrome/browser/ui/webui/chrome_web_ui.h"
 #include "content/browser/cancelable_request.h"
-#include "content/browser/webui/web_ui.h"
 
 class GURL;
 
@@ -87,7 +87,7 @@ class BrowsingHistoryHandler2 : public WebUIMessageHandler {
   DISALLOW_COPY_AND_ASSIGN(BrowsingHistoryHandler2);
 };
 
-class HistoryUI2 : public WebUI {
+class HistoryUI2 : public ChromeWebUI {
  public:
   explicit HistoryUI2(TabContents* contents);
 

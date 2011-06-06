@@ -196,7 +196,7 @@ void ConflictsDOMHandler::Observe(NotificationType type,
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-ConflictsUI::ConflictsUI(TabContents* contents) : WebUI(contents) {
+ConflictsUI::ConflictsUI(TabContents* contents) : ChromeWebUI(contents) {
   UserMetrics::RecordAction(
       UserMetricsAction("ViewAboutConflicts"));
 

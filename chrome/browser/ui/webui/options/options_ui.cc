@@ -205,7 +205,8 @@ void OptionsPageUIHandler::RegisterTitle(DictionaryValue* localized_strings,
 ////////////////////////////////////////////////////////////////////////////////
 
 OptionsUI::OptionsUI(TabContents* contents)
-    : WebUI(contents), initialized_handlers_(false) {
+    : ChromeWebUI(contents),
+      initialized_handlers_(false) {
   DictionaryValue* localized_strings = new DictionaryValue();
 
   CoreOptionsHandler* core_handler;

@@ -14,7 +14,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 
 PrintPreviewUI::PrintPreviewUI(TabContents* contents)
-    : WebUI(contents),
+    : ChromeWebUI(contents),
       initial_preview_start_time_(base::TimeTicks::Now()) {
   // PrintPreviewUI owns |handler|.
   PrintPreviewHandler* handler = new PrintPreviewHandler();

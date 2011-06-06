@@ -8,10 +8,14 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/webui/chrome_web_ui.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/common/notification_service.h"
+
+static bool ForceBookmarkBarVisible(WebUI* ui) {
+  return ui && static_cast<ChromeWebUI*>(ui)->force_bookmark_bar_visible();
+}
 
 BookmarkTabHelper::BookmarkTabHelper(TabContentsWrapper* tab_contents)
     : TabContentsObserver(tab_contents->tab_contents()),
@@ -40,15 +44,13 @@ bool BookmarkTabHelper::ShouldShowBookmarkBar() {
   // does.
   if (tab_contents()->controller().GetLastCommittedEntry()) {
     // Not the first load, always use the committed Web UI.
-    return tab_contents()->committed_web_ui() &&
-        tab_contents()->committed_web_ui()->force_bookmark_bar_visible();
+    return ForceBookmarkBarVisible(tab_contents()->committed_web_ui());
   }
 
   // When it's the first load, we know either the pending one or the committed
   // one will have the Web UI in it (see GetWebUIForCurrentState), and only one
   // of them will be valid, so we can just check both.
-  return tab_contents()->web_ui() &&
-      tab_contents()->web_ui()->force_bookmark_bar_visible();
+  return ForceBookmarkBarVisible(tab_contents()->web_ui());
 }
 
 void BookmarkTabHelper::DidNavigateMainFramePostCommit(

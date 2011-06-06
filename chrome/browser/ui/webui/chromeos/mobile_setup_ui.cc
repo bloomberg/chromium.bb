@@ -1315,7 +1315,7 @@ void MobileSetupHandler::LoadCellularConfig() {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-MobileSetupUI::MobileSetupUI(TabContents* contents) : WebUI(contents) {
+MobileSetupUI::MobileSetupUI(TabContents* contents) : ChromeWebUI(contents) {
   chromeos::CellularNetwork* network = GetCellularNetwork();
   std::string service_path = network ? network->service_path() : std::string();
   MobileSetupHandler* handler = new MobileSetupHandler(service_path);

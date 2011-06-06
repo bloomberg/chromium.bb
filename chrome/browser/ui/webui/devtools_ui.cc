@@ -96,7 +96,7 @@ void DevToolsUI::RegisterDevToolsDataSource() {
   }
 }
 
-DevToolsUI::DevToolsUI(TabContents* contents) : WebUI(contents) {
+DevToolsUI::DevToolsUI(TabContents* contents) : ChromeWebUI(contents) {
   DevToolsDataSource* data_source = new DevToolsDataSource();
   contents->profile()->GetChromeURLDataManager()->AddDataSource(data_source);
 }

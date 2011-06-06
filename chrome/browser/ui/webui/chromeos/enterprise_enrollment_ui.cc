@@ -271,7 +271,7 @@ void EnterpriseEnrollmentDataSource::AddString(DictionaryValue* dictionary,
 }
 
 EnterpriseEnrollmentUI::EnterpriseEnrollmentUI(TabContents* contents)
-    : WebUI(contents) {}
+    : ChromeWebUI(contents) {}
 
 EnterpriseEnrollmentUI::~EnterpriseEnrollmentUI() {}
 

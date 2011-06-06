@@ -176,7 +176,7 @@ void SystemInfoHandler::RegisterMessages() {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-SystemInfoUI::SystemInfoUI(TabContents* contents) : WebUI(contents) {
+SystemInfoUI::SystemInfoUI(TabContents* contents) : ChromeWebUI(contents) {
   SystemInfoHandler* handler = new SystemInfoHandler();
   AddMessageHandler((handler)->Attach(this));
   SystemInfoUIHTMLSource* html_source = new SystemInfoUIHTMLSource();
