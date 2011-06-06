@@ -32,7 +32,7 @@ extern void* malloc(int);
 extern void free(void*);
 extern void* memcpy(void*, const void *, int);
 
-typedef void  (*FUN_PTR)();
+typedef void (*FUN_PTR)();
 volatile FUN_PTR HACK_TO_KEEP_SYMBOLS_ALIVE[] = {
   (FUN_PTR) abort,
   (FUN_PTR) malloc,
@@ -155,7 +155,16 @@ ADD_FUN_PTR_TO_SEC(__EH_FRAME_END__[1],
 static void frame_dummy (void) __attribute__ ((constructor));
 static void frame_dummy (void) {
   static struct object object;
-  __register_frame_info ((FUN_PTR) __EH_FRAME_BEGIN__, &object);
+  /*
+   * NOTE: the volatile hack below prevents an undesirable llvm optimization.
+   * Without it llvm assumes that the zero length array, __EH_FRAME_BEGIN__,
+   * consists of at least one zero pointer. This makes
+   * __register_frame_info() into a nop.
+   * This hack can be avoided if we move the bracketing eh_frame
+   * into the linkerscript.
+   */
+  volatile FUN_PTR start_of_eh_frame_section = (FUN_PTR) __EH_FRAME_BEGIN__;
+  __register_frame_info (start_of_eh_frame_section, &object);
 }
 
 /* __attribute__((destructor)) places a call to the function in the
@@ -165,7 +174,8 @@ static void frame_dummy (void) {
  */
 static void __do_global_dtors_aux (void) __attribute__ ((destructor));
 static void __do_global_dtors_aux (void) {
-  __deregister_frame_info ((FUN_PTR) __EH_FRAME_BEGIN__);
+  volatile FUN_PTR start_of_eh_frame_section = (FUN_PTR) __EH_FRAME_BEGIN__;
+  __deregister_frame_info (start_of_eh_frame_section);
 }
 
 #endif  /* defined(__pnacl__) */
