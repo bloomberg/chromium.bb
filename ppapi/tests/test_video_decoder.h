@@ -22,7 +22,7 @@ class TestVideoDecoder : public TestCase {
   void QuitMessageLoop();
 
  private:
-  std::string TestCreate();
+  std::string TestCreateAndInitialize();
 
   // Used by the tests that access the C API directly.
   const PPB_VideoDecoder_Dev* video_decoder_interface_;

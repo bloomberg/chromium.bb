@@ -22,18 +22,23 @@ template <> const char* interface_name<PPB_VideoDecoder_Dev>() {
 
 }  // namespace
 
-VideoDecoder::VideoDecoder(const Instance* instance,
-                           const PP_VideoConfigElement* config,
-                           CompletionCallback callback,
-                           Client* client)
+VideoDecoder::VideoDecoder(const Instance* instance, Client* client)
     : client_(client) {
   if (!has_interface<PPB_VideoDecoder_Dev>())
     return;
   PassRefFromConstructor(get_interface<PPB_VideoDecoder_Dev>()->Create(
-      instance->pp_instance(), config, callback.pp_completion_callback()));
+      instance->pp_instance()));
 }
 
 VideoDecoder::~VideoDecoder() {}
+
+int32_t VideoDecoder::Initialize(const PP_VideoConfigElement* config,
+                                 CompletionCallback callback) {
+  if (!has_interface<PPB_VideoDecoder_Dev>())
+    return PP_ERROR_NOINTERFACE;
+  return get_interface<PPB_VideoDecoder_Dev>()->Initialize(
+      pp_resource(), config, callback.pp_completion_callback());
+}
 
 bool VideoDecoder::GetConfigs(Instance* instance,
                               const PP_VideoConfigElement* prototype_config,
@@ -63,12 +68,15 @@ void VideoDecoder::AssignSysmemBuffers(
       pp_resource(), buffers.size(), &buffers[0]);
 }
 
-bool VideoDecoder::Decode(const PP_VideoBitstreamBuffer_Dev& bitstream_buffer,
-                          CompletionCallback callback) {
-  if (!has_interface<PPB_VideoDecoder_Dev>() || !pp_resource())
-    return false;
-  return PPBoolToBool(get_interface<PPB_VideoDecoder_Dev>()->Decode(
-      pp_resource(), &bitstream_buffer, callback.pp_completion_callback()));
+int32_t VideoDecoder::Decode(
+    const PP_VideoBitstreamBuffer_Dev& bitstream_buffer,
+    CompletionCallback callback) {
+  if (!has_interface<PPB_VideoDecoder_Dev>())
+    return PP_ERROR_NOINTERFACE;
+  if (!pp_resource())
+    return PP_ERROR_BADRESOURCE;
+  return get_interface<PPB_VideoDecoder_Dev>()->Decode(
+      pp_resource(), &bitstream_buffer, callback.pp_completion_callback());
 }
 
 void VideoDecoder::ReusePictureBuffer(int32_t picture_buffer_id) {
@@ -78,18 +86,22 @@ void VideoDecoder::ReusePictureBuffer(int32_t picture_buffer_id) {
       pp_resource(), picture_buffer_id);
 }
 
-bool VideoDecoder::Flush(CompletionCallback callback) {
-  if (!has_interface<PPB_VideoDecoder_Dev>() || !pp_resource())
-    return false;
-  return PPBoolToBool(get_interface<PPB_VideoDecoder_Dev>()->Flush(
-      pp_resource(), callback.pp_completion_callback()));
+int32_t VideoDecoder::Flush(CompletionCallback callback) {
+  if (!has_interface<PPB_VideoDecoder_Dev>())
+    return PP_ERROR_NOINTERFACE;
+  if (!pp_resource())
+    return PP_ERROR_BADRESOURCE;
+  return get_interface<PPB_VideoDecoder_Dev>()->Flush(
+      pp_resource(), callback.pp_completion_callback());
 }
 
-bool VideoDecoder::Abort(CompletionCallback callback) {
-  if (!has_interface<PPB_VideoDecoder_Dev>() || !pp_resource())
-    return false;
-  return PPBoolToBool(get_interface<PPB_VideoDecoder_Dev>()->Abort(
-      pp_resource(), callback.pp_completion_callback()));
+int32_t VideoDecoder::Abort(CompletionCallback callback) {
+  if (!has_interface<PPB_VideoDecoder_Dev>())
+    return PP_ERROR_NOINTERFACE;
+  if (!pp_resource())
+    return PP_ERROR_BADRESOURCE;
+  return get_interface<PPB_VideoDecoder_Dev>()->Abort(
+      pp_resource(), callback.pp_completion_callback());
 }
 
 }  // namespace pp
