@@ -215,6 +215,10 @@ int NaClDebugStart(void) throw() {
 
     /* Add a temp breakpoint. */
     struct NaClApp* app = g_nacl_debug_state->app_;
+    if (0 != app->user_entry_pt) {
+      g_nacl_debug_state->target_->AddTemporaryBreakpoint(app->user_entry_pt +
+                                                          app->mem_start);
+    }
     g_nacl_debug_state->target_->AddTemporaryBreakpoint(app->initial_entry_pt +
                                                         app->mem_start);
 
