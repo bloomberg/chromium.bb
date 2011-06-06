@@ -86,6 +86,10 @@ class LoginDisplay : public RemoveUserDelegate {
   // Changes enabled state of the UI.
   virtual void SetUIEnabled(bool is_enabled) = 0;
 
+  // Selects user entry with specified |index|.
+  // Does nothing if current user is already selected.
+  virtual void SelectPod(int index) = 0;
+
   // Displays error with |error_msg_id| specified.
   // |login_attempts| shows number of login attempts made by current user.
   // |help_topic_id| is additional help topic that is presented as link.

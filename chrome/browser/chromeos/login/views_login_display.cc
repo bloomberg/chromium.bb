@@ -180,6 +180,10 @@ void ViewsLoginDisplay::SetUIEnabled(bool is_enabled) {
     controllers_[selected_view_index_]->ClearAndEnablePassword();
 }
 
+void ViewsLoginDisplay::SelectPod(int index) {
+  SelectUser(index);
+}
+
 void ViewsLoginDisplay::ShowError(int error_msg_id,
                                   int login_attempts,
                                   HelpAppLauncher::HelpTopic help_topic_id) {

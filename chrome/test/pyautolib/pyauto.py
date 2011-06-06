@@ -2736,7 +2736,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     cmd_dict = { 'command': 'GetLoginInfo' }
     return self._GetResultFromJSONRequest(cmd_dict, windex=-1)
 
-  def _WaitForSessionManagerRestart(self, function):
+  def WaitForSessionManagerRestart(self, function):
     """Call a function and wait for the ChromeOS session_manager to restart.
 
     Args:
@@ -2829,7 +2829,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     """
     assert self.GetLoginInfo()['is_logged_in'], \
         'Trying to log out when already logged out.'
-    assert self._WaitForSessionManagerRestart(
+    assert self.WaitForSessionManagerRestart(
         lambda: self.ApplyAccelerator(IDC_EXIT)), \
         'Session manager did not restart after logout.'
 
@@ -2877,7 +2877,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       pyauto_errors.JSONInterfaceError if the automation call returns an error.
     """
     cmd_dict = { 'command': 'SignoutInScreenLocker' }
-    assert self._WaitForSessionManagerRestart(
+    assert self.WaitForSessionManagerRestart(
         lambda: self._GetResultFromJSONRequest(cmd_dict, windex=-1)), \
         'Session manager did not restart after logout.'
     self.setUp()

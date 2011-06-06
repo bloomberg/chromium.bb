@@ -109,10 +109,14 @@ void WebUILoginDisplay::SetUIEnabled(bool is_enabled) {
     login_handler_->ClearAndEnablePassword();
 }
 
+void SelectPod(int index) {
+  // TODO(rharrison): Figure out what we should be doing here.
+}
+
 void WebUILoginDisplay::ShowError(int error_msg_id,
                                   int login_attempts,
                                   HelpAppLauncher::HelpTopic help_topic_id) {
-  // TODO(rharrison): Figure out what we should be doing here
+  // TODO(rharrison): Figure out what we should be doing here.
 }
 
 // WebUILoginDisplay, LoginUIHandlerDelegate implementation: -------------------

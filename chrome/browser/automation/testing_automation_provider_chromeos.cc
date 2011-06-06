@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/cros/screen_lock_library.h"
 #include "chrome/browser/chromeos/cros/update_library.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
+#include "chrome/browser/chromeos/login/login_display.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/network_state_notifier.h"
 #include "chrome/browser/chromeos/proxy_cros_settings_provider.h"
@@ -184,6 +185,7 @@ void TestingAutomationProvider::Login(DictionaryValue* args,
 
   chromeos::ExistingUserController* controller =
       chromeos::ExistingUserController::current_controller();
+  controller->login_display()->SelectPod(0);
   // Set up an observer (it will delete itself).
   new LoginObserver(controller, this, reply_message);
   controller->Login(username, password);

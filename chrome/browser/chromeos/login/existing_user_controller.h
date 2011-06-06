@@ -79,6 +79,12 @@ class ExistingUserController : public LoginDisplay::Delegate,
     login_status_consumer_ = consumer;
   }
 
+  // Returns the LoginDisplay instance created and owned by this controller.
+  // Used for testing.
+  LoginDisplay* login_display() {
+    return login_display_;
+  }
+
  private:
   friend class ExistingUserControllerTest;
   friend class MockLoginPerformerDelegate;

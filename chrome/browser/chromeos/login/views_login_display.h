@@ -44,6 +44,7 @@ class ViewsLoginDisplay : public LoginDisplay,
   virtual void OnUserRemoved(const std::string& username);
   virtual void OnFadeOut();
   virtual void SetUIEnabled(bool is_enabled);
+  virtual void SelectPod(int index);
   virtual void ShowError(int error_msg_id,
                          int login_attempts,
                          HelpAppLauncher::HelpTopic help_topic_id);

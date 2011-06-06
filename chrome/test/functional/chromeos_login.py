@@ -4,6 +4,7 @@
 # found in the LICENSE file.
 
 import os
+import subprocess
 
 import pyauto_functional  # Must be imported before pyauto
 import pyauto
@@ -14,11 +15,13 @@ class ChromeosLogin(pyauto.PyUITest):
 
   assert os.geteuid() == 0, 'Need to run this test as root'
 
-  def tearDown(self):
-    # All test will start with logging in, we need to reset to being logged out
-    if self.GetLoginInfo()['is_logged_in']:
-      self.Logout()
-    pyauto.PyUITest.tearDown(self)
+  def setUp(self):
+    # We want a clean session_manager instance for every run,
+    # so restart session_manager now.
+    assert self.WaitForSessionManagerRestart(
+        lambda: subprocess.call(['pkill', 'session_manager'])), \
+        'Timed out waiting for session_manager to start.'
+    pyauto.PyUITest.setUp(self)
 
   def _ValidCredentials(self, account_type='test_google_account'):
     """Obtains a valid username and password from a data file.
