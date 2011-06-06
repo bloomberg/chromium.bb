@@ -10,19 +10,19 @@
   <release seq="1" allow_pseudo="false">
     <messages fallback_to_english="true">
       <message name="IDS_AUTOFILL_ADDRESS_LINE_1_RE">
-        address.?line|address1|addr1|street<!-- de-DE -->|strasse|straße|hausnummer|housenumber<!-- en-GB -->|house.?name<!-- es -->|direccion|dirección<!-- fr-FR -->|adresse<!-- it-IT -->|indirizzo<!-- ja-JP -->|住所1<!-- pt-BR, pt-PT -->|morada|endereço<!-- ru -->|Адрес<!-- zh-CN -->|地址
+        address.*line|address1|addr1|street<!-- de-DE -->|strasse|straße|hausnummer|housenumber<!-- en-GB -->|house.?name<!-- es -->|direccion|dirección<!-- fr-FR -->|adresse<!-- it-IT -->|indirizzo<!-- ja-JP -->|住所1<!-- pt-BR, pt-PT -->|morada|endereço<!-- ru -->|Адрес<!-- zh-CN -->|地址
       </message>
       <message name="IDS_AUTOFILL_ADDRESS_LINE_1_LABEL_RE">
         address<!-- fr-FR -->|adresse<!-- it-IT -->|indirizzo<!-- ja-JP -->|住所<!-- zh-CN -->|地址
       </message>
       <message name="IDS_AUTOFILL_ADDRESS_LINE_2_RE">
-        address.?line2|address2|addr2|street|suite|unit<!-- de-DE -->|adresszusatz|ergänzende.?angaben<!-- es -->|direccion2|colonia|adicional<!-- fr-FR -->|addresssuppl|complementnom|appartement<!-- it-IT -->|indirizzo2<!-- ja-JP -->|住所2<!-- pt-BR, pt-PT -->|complemento|addrcomplement<!-- ru -->|Улица<!-- zh-CN -->|地址2
+        address.*line2|address2|addr2|street|suite|unit<!-- de-DE -->|adresszusatz|ergänzende.?angaben<!-- es -->|direccion2|colonia|adicional<!-- fr-FR -->|addresssuppl|complementnom|appartement<!-- it-IT -->|indirizzo2<!-- ja-JP -->|住所2<!-- pt-BR, pt-PT -->|complemento|addrcomplement<!-- ru -->|Улица<!-- zh-CN -->|地址2
       </message>
       <message name="IDS_AUTOFILL_ADDRESS_LINE_2_LABEL_RE">
         address<!-- fr-FR -->|adresse<!-- it-IT -->|indirizzo<!-- zh-CN -->|地址
       </message>
       <message name="IDS_AUTOFILL_ADDRESS_LINE_3_RE">
-        address.?line3|address3|addr3|street|line3<!-- es -->|municipio<!-- fr-FR -->|batiment|residence<!-- it-IT -->|indirizzo3
+        address.*line3|address3|addr3|street|line3<!-- es -->|municipio<!-- fr-FR -->|batiment|residence<!-- it-IT -->|indirizzo3
       </message>
       <message name="IDS_AUTOFILL_COMPANY_RE">
         company|business|organization|organisation<!-- de-DE -->|firma|firmenname<!-- es -->|empresa<!-- fr-FR -->|societe|société<!-- it-IT -->|ragione.?sociale<!-- ja-JP -->|会社<!-- ru -->|название.?компании<!-- zh-CN -->|单位|公司

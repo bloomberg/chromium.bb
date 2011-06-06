@@ -226,8 +226,7 @@ bool AddressField::ParseAddressLines(AutofillScanner* scanner,
       ParseField(scanner, pattern, NULL);
     } else {
       pattern = l10n_util::GetStringUTF16(IDS_AUTOFILL_ADDRESS_LINE_3_RE);
-      if (!ParseEmptyLabel(scanner, NULL))
-        ParseField(scanner, pattern, NULL);
+      ParseField(scanner, pattern, NULL);
     }
   }
 
