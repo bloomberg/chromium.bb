@@ -2871,10 +2871,14 @@ nacl_extra_sdk_env.Command('extra_sdk_clean', [],
                             'rm -rf ${NACL_SDK_LIB_PLATFORM}/crt[1in].*'])
 
 # The IRT-building environment was cloned from nacl_env, but it should
-# ignore the --nacl_glibc switch.  We have to reinstantiate the naclsdk.py
-# magic after clearing the flag, so it regenerates the tool paths right.
+# ignore the --nacl_glibc, --nacl_pic and bitcode=1 switches.
+# We have to reinstantiate the naclsdk.py magic after clearing those flags,
+# so it regenerates the tool paths right.
 # TODO(mcgrathr,bradnelson): could get cleaner if naclsdk.py got folded back in.
 nacl_irt_env.ClearBits('nacl_glibc')
+nacl_irt_env.ClearBits('nacl_pic')
+if not nacl_irt_env.Bit('target_arm'):
+  nacl_irt_env.ClearBits('bitcode')
 nacl_irt_env.Tool('naclsdk')
 # Make it find the libraries it builds, rather than the SDK ones.
 nacl_irt_env.Replace(LIBPATH='${LIB_DIR}')
