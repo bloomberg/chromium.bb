@@ -251,12 +251,6 @@ void EnableSpdy(bool enable);
 // Notifies the browser that the given action has been performed.
 void UserMetricsRecordAction(const std::string& action);
 
-#if !defined(DISABLE_NACL)
-// Launch NaCl's sel_ldr process.
-bool LaunchSelLdr(const char* alleged_url, int socket_count, void* imc_handles,
-                  void* nacl_process_handle, int* nacl_process_id);
-#endif
-
 #if defined(OS_LINUX)
 // Return a read-only file descriptor to the font which best matches the given
 // properties or -1 on failure.
