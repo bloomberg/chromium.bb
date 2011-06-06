@@ -204,23 +204,6 @@ that trigger them.
 
 <tr>
   <td style="font-weight:bold">
-    <!-- IDS_EXTENSION_PROMPT_WARNING_DEBUGGER -->
-    Your data on all websites
-  </td>
-  <td>
-    <!-- HasEffectiveBrowsingHistoryPermission -->
-     "debugger" permission
-  </td>
-  <td>
-    <p>
-      The "debugger" permission is required by the
-      <a href="tabs.html"><code>chrome.debugger</code></a> module.
-    </p>
-  </td>
-</tr>
-
-<tr>
-  <td style="font-weight:bold">
     <!-- IDS_EXTENSION_PROMPT_WARNING_ALL_HOSTS -->
     Your data on all websites
   </td>
@@ -228,6 +211,7 @@ that trigger them.
     <!-- HasEffectiveAccessToAllHosts() -->
     Any of the following:
     <ul>
+      <li> "debugger" permission </li>
       <li> "proxy" permission </li>
       <li> A match pattern in the "permissions" field
         that matches all hosts </li>
@@ -238,8 +222,13 @@ that trigger them.
   </td>
   <td>
     <p>
+      The "debugger" permission is required by the experimental
+      <a href="experimental.debugger.html">debugger</a> module.
+    </p>
+
+    <p>
       The "proxy" permission is required by the
-      <a href="http://code.google.com/chrome/extensions/proxy.html">proxy</a> module.
+      <a href="proxy.html"><code>chrome.proxy</code></a> module.
     </p>
 
     <p>
