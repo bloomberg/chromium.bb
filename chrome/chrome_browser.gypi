@@ -3032,7 +3032,8 @@
         'browser/ui/views/extensions/extension_view.h',
         'browser/ui/views/external_protocol_dialog.cc',
         'browser/ui/views/external_protocol_dialog.h',
-        'browser/ui/views/file_manager_dialogs.cc',
+        'browser/ui/views/file_manager_dialog.cc',
+        'browser/ui/views/file_manager_dialog.h',
         'browser/ui/views/find_bar_host.cc',
         'browser/ui/views/find_bar_host.h',
         'browser/ui/views/find_bar_host_gtk.cc',
@@ -4437,14 +4438,17 @@
              'browser/ui/crypto_module_password_dialog_openssl.cc',
           ]},
         ],
+        # File manager extension replaces the native OS file open/save dialog.
         ['file_manager_extension==1', {
           'sources/': [
             ['exclude', '^browser/ui/gtk/dialogs_gtk.cc'],
             ['exclude', '^browser/ui/views/select_file_dialog.cc'],
-            ['include', '^browser/ui/views/file_manager_dialogs.cc'],
+            ['include', '^browser/ui/views/file_manager_dialog.cc'],
+            ['include', '^browser/ui/views/file_manager_dialog.h'],
           ]}, {
           'sources/': [
-            ['exclude', '^browser/ui/views/file_manager_dialogs.cc'],
+            ['exclude', '^browser/ui/views/file_manager_dialog.cc'],
+            ['exclude', '^browser/ui/views/file_manager_dialog.h'],
           ]}
         ],
       ],

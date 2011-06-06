@@ -69,6 +69,7 @@ ExtensionDialog* ExtensionDialog::Show(
   if (!manager)
     return NULL;
   ExtensionHost* host = manager->CreateDialogHost(url, browser);
+  DCHECK(host);
   views::Widget* frame = BrowserView::GetBrowserViewForNativeWindow(
       browser->window()->GetNativeHandle())->GetWidget();
   gfx::Rect relative_to = browser->window()->GetBounds();

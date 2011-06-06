@@ -145,10 +145,6 @@ void InProcessBrowserTest::SetUp() {
   // Disable audio mixer as it can cause hang.
   // see http://crosbug.com/17058.
   chromeos::AudioHandler::Disable();
-
-  // Prevent loading ChromeOS component extension to prevent their interference
-  // with other browser tests.
-  command_line->AppendSwitch(switches::kSkipChromeOSComponents);
 #endif  // defined(OS_CHROMEOS)
 
   SandboxInitWrapper sandbox_wrapper;

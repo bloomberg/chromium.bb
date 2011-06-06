@@ -26,6 +26,10 @@ function init() {
   function onEntriesFound(entries) {
     FileManager.initStrings(function () {
       fileManager = new FileManager(document.body, entries, params);
+      // We're ready to run.  Tests can monitor for this state with
+      // ExtensionTestMessageListener listener("ready");
+      // ASSERT_TRUE(listener.WaitUntilSatisfied());
+      chrome.test.sendMessage('ready');
     });
   }
 

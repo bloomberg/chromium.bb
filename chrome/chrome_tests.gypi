@@ -2470,6 +2470,7 @@
         'browser/ui/panels/panel_browser_view_browsertest.cc',
         'browser/ui/views/browser_actions_container_browsertest.cc',
         'browser/ui/views/dom_view_browsertest.cc',
+        'browser/ui/views/file_manager_dialog_browsertest.cc',
         'browser/ui/views/html_dialog_view_browsertest.cc',
         'browser/ui/webui/chrome_url_data_manager_browsertest.cc',
         'browser/ui/webui/ntp/most_visited_browsertest.cc',
@@ -2532,6 +2533,11 @@
         }, { #else: OS == "chromeos"
           'sources!': [
             'browser/service/service_process_control_browsertest.cc',
+          ],
+        }],
+        ['file_manager_extension==0', {
+          'sources!': [
+            'browser/ui/views/file_manager_dialog_browsertest.cc',
           ],
         }],
         ['toolkit_views==0', {

@@ -499,16 +499,9 @@ void ProfileImpl::RegisterComponentExtensions() {
       IDR_BOOKMARKS_MANIFEST));
 
 #if defined(FILE_MANAGER_EXTENSION)
-#if defined(OS_CHROMEOS)
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kSkipChromeOSComponents)) {
-#endif
     component_extensions.push_back(std::make_pair(
         FILE_PATH_LITERAL("file_manager"),
         IDR_FILEMANAGER_MANIFEST));
-#if defined(OS_CHROMEOS)
-   }
-#endif
 #endif
 
 #if defined(TOUCH_UI)
@@ -518,8 +511,6 @@ void ProfileImpl::RegisterComponentExtensions() {
 #endif
 
 #if defined(OS_CHROMEOS)
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kSkipChromeOSComponents)) {
     component_extensions.push_back(std::make_pair(
         FILE_PATH_LITERAL("/usr/share/chromeos-assets/mobile"),
         IDR_MOBILE_MANIFEST));
@@ -531,7 +522,6 @@ void ProfileImpl::RegisterComponentExtensions() {
           IDR_HELP_MANIFEST));
     }
 #endif
-  }
 #endif
 
   // Web Store.

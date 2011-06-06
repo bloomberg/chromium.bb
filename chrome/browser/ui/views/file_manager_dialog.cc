@@ -2,20 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/views/file_manager_dialog.h"
+
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/extension_file_browser_private_api.h"
 #include "chrome/browser/extensions/file_manager_util.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/extensions/extension_dialog.h"
 #include "chrome/browser/ui/views/window.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "views/window/window.h"
-#include "ui/gfx/rect.h"
-#include "ui/gfx/size.h"
 
 namespace {
 
@@ -24,46 +23,6 @@ const int kFileManagerHeight = 580;  // pixels
 
 }
 
-// Shows a dialog box for selecting a file or a folder.
-class FileManagerDialog
-    : public SelectFileDialog,
-      public ExtensionDialog::Observer {
-
- public:
-  explicit FileManagerDialog(Listener* listener);
-
-  // BaseShellDialog implementation.
-  virtual bool IsRunning(gfx::NativeWindow owner_window) const OVERRIDE;
-  virtual void ListenerDestroyed() OVERRIDE;
-
-  // ExtensionDialog::Observer implementation.
-  virtual void ExtensionDialogIsClosing(ExtensionDialog* dialog) OVERRIDE;
-
- protected:
-  // SelectFileDialog implementation.
-  virtual void SelectFileImpl(Type type,
-                              const string16& title,
-                              const FilePath& default_path,
-                              const FileTypeInfo* file_types,
-                              int file_type_index,
-                              const FilePath::StringType& default_extension,
-                              gfx::NativeWindow owning_window,
-                              void* params) OVERRIDE;
-
- private:
-  virtual ~FileManagerDialog();
-
-  // Host for the extension that implements this dialog.
-  scoped_refptr<ExtensionDialog> extension_dialog_;
-
-  // ID of the tab that spawned this dialog, used to route callbacks.
-  int32 tab_id_;
-
-  gfx::NativeWindow owner_window_;
-
-  DISALLOW_COPY_AND_ASSIGN(FileManagerDialog);
-};
-
 // Linking this implementation of SelectFileDialog::Create into the target
 // selects FileManagerDialog as the dialog of choice.
 // static
@@ -71,6 +30,8 @@ SelectFileDialog* SelectFileDialog::Create(Listener* listener) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return new FileManagerDialog(listener);
 }
+
+/////////////////////////////////////////////////////////////////////////////
 
 FileManagerDialog::FileManagerDialog(Listener* listener)
     : SelectFileDialog(listener),
@@ -98,6 +59,12 @@ void FileManagerDialog::ExtensionDialogIsClosing(ExtensionDialog* dialog) {
   // Release our reference to the dialog to allow it to close.
   extension_dialog_ = NULL;
   FileDialogFunction::Callback::Remove(tab_id_);
+}
+
+RenderViewHost* FileManagerDialog::GetRenderViewHost() {
+  if (extension_dialog_)
+    return extension_dialog_->host()->render_view_host();
+  return NULL;
 }
 
 void FileManagerDialog::SelectFileImpl(

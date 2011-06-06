@@ -1064,12 +1064,6 @@ const char kScreenSaverUrl[]                = "screen-saver-url";
 // Flag to trigger ChromeOS system log compression during feedback submit.
 const char kCompressSystemFeedback[]        = "compress-sys-feedback";
 
-// Flag to skip loading ChromeOS specific component extensions. This one is
-// needed to prevent these component interfering with the some of the tests.
-// TODO(zelidrag): http://crosbug.com/14463 - we should remove this switch once
-// get rid of ChromeOS component extensions with background pages.
-const char kSkipChromeOSComponents[]        = "skip-chromeos-components";
-
 // Forces usage of libcros stub implementation. For testing purposes, this
 // switch separates chrome code from the rest of ChromeOS.
 const char kForceStubLibcros[]              = "force-stub-libcros";

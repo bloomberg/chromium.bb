@@ -198,9 +198,6 @@ void UITestBase::SetLaunchSwitches() {
     launch_arguments_.AppendSwitchASCII(switches::kHomePage, homepage_);
   if (!test_name_.empty())
     launch_arguments_.AppendSwitchASCII(switches::kTestName, test_name_);
-#if defined(OS_CHROMEOS)
-  launch_arguments_.AppendSwitch(switches::kSkipChromeOSComponents);
-#endif
 }
 
 void UITestBase::LaunchBrowser() {
