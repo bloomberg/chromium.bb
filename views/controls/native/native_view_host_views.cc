@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,8 +60,11 @@ void NativeViewHostViews::ShowWidget(int x, int y, int w, int h) {
   // x, y are in the coordinate system of the root view, but we're
   // already properly positioned by virtue of being an actual views
   // child of the NativeHostView, so disregard the origin.
-  host_->views_view()->SetBounds(0, 0, w, h);
+  // It is important to update the visibility first, so that when the bounds is
+  // set, the contents get notified of the resize (because resizing a hidden
+  // views may not actually resize the contents).
   host_->views_view()->SetVisible(true);
+  host_->views_view()->SetBounds(0, 0, w, h);
 }
 
 void NativeViewHostViews::HideWidget() {

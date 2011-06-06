@@ -164,12 +164,16 @@ void TouchBrowserFrameView::UpdateKeyboardAndLayout(bool should_show_keyboard) {
 
   keyboard_showing_ = should_show_keyboard;
   if (keyboard_showing_) {
-    animation_->Show();
-
     // We don't re-layout the client view until the animation ends (see
     // AnimationEnded below) because we want the client view to occupy the
-    // entire height during the animation.
+    // entire height during the animation. It is necessary to reset the
+    // transform for the keyboard first so that the contents are sized properly
+    // when layout, and then start the animation.
+    ui::Transform reset;
+    keyboard_->SetTransform(reset);
     Layout();
+
+    animation_->Show();
   } else {
     animation_->Hide();
 
