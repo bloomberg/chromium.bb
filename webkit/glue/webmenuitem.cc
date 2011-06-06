@@ -15,6 +15,7 @@ WebMenuItem::WebMenuItem()
 
 WebMenuItem::WebMenuItem(const WebKit::WebMenuItemInfo& item)
     : label(item.label),
+      toolTip(item.toolTip),
       type(static_cast<Type>(item.type)),
       action(item.action),
       rtl(item.textDirection == WebKit::WebTextDirectionRightToLeft),
@@ -25,6 +26,7 @@ WebMenuItem::WebMenuItem(const WebKit::WebMenuItemInfo& item)
 
 WebMenuItem::WebMenuItem(const WebMenuItem& item)
     : label(item.label),
+      toolTip(item.toolTip),
       type(item.type),
       action(item.action),
       rtl(item.rtl),

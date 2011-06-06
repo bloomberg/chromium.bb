@@ -1683,11 +1683,6 @@ void RenderView::setKeyboardFocusURL(const WebURL& url) {
   UpdateTargetURL(focus_url_, mouse_over_url_);
 }
 
-void RenderView::setToolTipText(const WebString& text, WebTextDirection hint) {
-  Send(new ViewHostMsg_SetTooltipText(routing_id_, UTF16ToWideHack(text),
-                                      hint));
-}
-
 void RenderView::startDragging(const WebDragData& data,
                                WebDragOperationsMask mask,
                                const WebImage& image,

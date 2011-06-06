@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "content/common/content_switches.h"
 #include "content/common/swapped_out_messages.h"
@@ -27,6 +28,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSize.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/surface/transport_dib.h"
@@ -1010,6 +1012,12 @@ WebRect RenderWidget::windowRect() {
   gfx::Rect rect;
   Send(new ViewHostMsg_GetWindowRect(routing_id_, host_window_, &rect));
   return rect;
+}
+
+void RenderWidget::setToolTipText(const WebKit::WebString& text,
+                                  WebTextDirection hint) {
+  Send(new ViewHostMsg_SetTooltipText(routing_id_, UTF16ToWideHack(text),
+                                      hint));
 }
 
 void RenderWidget::setWindowRect(const WebRect& pos) {

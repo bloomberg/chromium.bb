@@ -66,6 +66,10 @@ static NSString* NSWritingDirectionAttributeName = @"NSWritingDirection";
   NSMenuItem* menuItem = [menu_ addItemWithTitle:title
                                           action:@selector(menuItemSelected:)
                                    keyEquivalent:@""];
+  if (!item.toolTip.empty()) {
+    NSString* toolTip = base::SysUTF16ToNSString(item.toolTip);
+    [menuItem setToolTip:toolTip];
+  }
   [menuItem setEnabled:(item.enabled && item.type != WebMenuItem::GROUP)];
   [menuItem setTarget:self];
 

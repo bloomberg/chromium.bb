@@ -113,6 +113,8 @@ class RenderWidget : public IPC::Channel::Listener,
   virtual void show(WebKit::WebNavigationPolicy);
   virtual void runModal() {}
   virtual WebKit::WebRect windowRect();
+  virtual void setToolTipText(const WebKit::WebString& text,
+                              WebKit::WebTextDirection hint);
   virtual void setWindowRect(const WebKit::WebRect&);
   virtual WebKit::WebRect windowResizerRect();
   virtual WebKit::WebRect rootWindowRect();

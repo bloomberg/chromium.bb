@@ -446,6 +446,8 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   void OnMsgRenderViewGone(int status, int error_code);
   void OnMsgClose();
   void OnMsgRequestMove(const gfx::Rect& pos);
+  void OnMsgSetTooltipText(const std::wstring& tooltip_text,
+                           WebKit::WebTextDirection text_direction_hint);
   void OnMsgPaintAtSizeAck(int tag, const gfx::Size& size);
   void OnMsgUpdateRect(const ViewHostMsg_UpdateRect_Params& params);
   void OnMsgInputEventAck(const IPC::Message& message);

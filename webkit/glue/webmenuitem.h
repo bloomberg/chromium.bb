@@ -27,6 +27,7 @@ struct WebMenuItem {
   ~WebMenuItem();
 
   string16 label;
+  string16 toolTip;
   Type type;
   unsigned action;
   bool rtl;

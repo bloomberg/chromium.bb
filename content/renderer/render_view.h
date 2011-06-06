@@ -404,8 +404,6 @@ class RenderView : public RenderWidget,
   virtual void setStatusText(const WebKit::WebString& text);
   virtual void setMouseOverURL(const WebKit::WebURL& url);
   virtual void setKeyboardFocusURL(const WebKit::WebURL& url);
-  virtual void setToolTipText(const WebKit::WebString& text,
-                              WebKit::WebTextDirection hint);
   virtual void startDragging(const WebKit::WebDragData& data,
                              WebKit::WebDragOperationsMask mask,
                              const WebKit::WebImage& image,
