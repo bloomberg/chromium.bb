@@ -27,11 +27,11 @@ const Extension* Panel::GetExtension(Browser* browser) {
 Panel::Panel(Browser* browser, const gfx::Rect& bounds)
     : bounds_(bounds),
       minimized_(false) {
-  browser_window_.reset(CreateNativePanel(browser, this));
+  browser_window_ = CreateNativePanel(browser, this);
 }
 
 Panel::~Panel() {
-  Close();
+  // Invoked by native panel so do not access browser_window_ here.
 }
 
 PanelManager* Panel::manager() const {
@@ -74,10 +74,9 @@ void Panel::SetBounds(const gfx::Rect& bounds) {
   // by panel manager.
 }
 
+// Close() may be called multiple times if the browser window is not ready to
+// close on the first attempt.
 void Panel::Close() {
-  if (!browser_window_.get())
-    return;
-
   browser_window_->Close();
   manager()->Remove(this);
 }
@@ -208,8 +207,11 @@ bool Panel::IsBookmarkBarAnimating() const {
   return false;
 }
 
+// This is used by extensions to decide if a window can be closed.
+// Always return true as panels do not have tabs that can be dragged,
+// during which extensions will avoid closing a window.
 bool Panel::IsTabStripEditable() const {
-  return false;
+  return true;
 }
 
 bool Panel::IsToolbarVisible() const {

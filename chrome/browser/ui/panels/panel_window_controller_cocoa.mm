@@ -7,19 +7,15 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/mac_util.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/panels/panel.h"
+#include "chrome/browser/ui/panels/panel_browser_window_cocoa.h"
 
 @implementation PanelWindowControllerCocoa
 
-- (id)initWithBrowser:(Browser*)browser
-             forPanel:(Panel*)panel {
+- (id)initWithBrowserWindow:(PanelBrowserWindowCocoa*)window {
   NSString* nibpath =
       [base::mac::MainAppBundle() pathForResource:@"Panel" ofType:@"nib"];
-  if ((self = [super initWithWindowNibPath:nibpath owner:self])) {
-    browser_ = browser;
-    panel_ = panel;
-  }
+  if ((self = [super initWithWindowNibPath:nibpath owner:self]))
+    windowShim_.reset(window);
   return self;
 }
 

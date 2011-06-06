@@ -14,20 +14,15 @@
 #import "base/mac/cocoa_protocols.h"
 #include "base/memory/scoped_ptr.h"
 
-class Browser;
-class BrowserWindow;
-class Panel;
 class PanelBrowserWindowCocoa;
 
 @interface PanelWindowControllerCocoa : NSWindowController<NSWindowDelegate> {
  @private
-  Browser* browser_;  // Weak, owned by app.
-  Panel* panel_;  // Weak, owned by PanelManager.
+  scoped_ptr<PanelBrowserWindowCocoa> windowShim_;
 }
 
 // Load the browser window nib and do any Cocoa-specific initialization.
-// Takes ownership of |browser|.
-- (id)initWithBrowser:(Browser*)browser forPanel:(Panel*)panel;
+- (id)initWithBrowserWindow:(PanelBrowserWindowCocoa*)window;
 
 @end  // @interface PanelWindowController
 

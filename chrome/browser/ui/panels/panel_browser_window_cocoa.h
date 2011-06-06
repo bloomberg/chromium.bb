@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_UI_PANELS_PANEL_BROWSER_WINDOW_COCOA_H_
 #define CHROME_BROWSER_UI_PANELS_PANEL_BROWSER_WINDOW_COCOA_H_
 
+#import <Foundation/Foundation.h>
 #include "base/gtest_prod_util.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/browser_window.h"
 
 class Browser;
@@ -115,10 +116,12 @@ class PanelBrowserWindowCocoa : public BrowserWindow {
   FRIEND_TEST_ALL_PREFIXES(PanelBrowserWindowCocoaTest, NativeBounds);
 
   bool isClosed();
+  NSWindow* nswindow() const;  // Accessor for the |NSWindow|.
   NSRect ConvertCoordinatesToCocoa(const gfx::Rect& bounds);
 
-  Panel* panel_;  // weak, owns us.
-  scoped_nsobject<PanelWindowControllerCocoa> controller_;
+  scoped_ptr<Browser> browser_;
+  scoped_ptr<Panel> panel_;
+  PanelWindowControllerCocoa* controller_;  // Weak, owns us.
 
   DISALLOW_COPY_AND_ASSIGN(PanelBrowserWindowCocoa);
 };

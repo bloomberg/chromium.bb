@@ -138,7 +138,7 @@ class Panel : public BrowserWindow {
   static const Extension* GetExtension(Browser* browser);
 
 #ifdef UNIT_TEST
-  BrowserWindow* browser_window() { return browser_window_.get(); }
+  BrowserWindow* browser_window() { return browser_window_; }
 #endif
 
  protected:
@@ -158,7 +158,7 @@ class Panel : public BrowserWindow {
 
   // Platform specifc BrowserWindow implementation for panels.  It'd be one of
   // PanelBrowserWindowGtk/PanelBrowserView/PanelBrowserWindowCocoa.
-  scoped_ptr<BrowserWindow> browser_window_;
+  BrowserWindow* browser_window_;  // Weak, owns us.
 
   // The normal bounds when the panel is not minimized.
   gfx::Rect bounds_;

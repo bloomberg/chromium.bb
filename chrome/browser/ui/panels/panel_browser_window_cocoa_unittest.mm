@@ -6,17 +6,33 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/command_line.h"
 #include "base/debug/debugger.h"
 #include "base/memory/scoped_ptr.h"
-#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/browser_test_helper.h"
+#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
+#include "chrome/common/chrome_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Main test class.
 class PanelBrowserWindowCocoaTest : public CocoaTest {
- protected:
+ public:
+  virtual void SetUp() {
+    CocoaTest::SetUp();
+    CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnablePanels);
+  }
+
+  Panel* CreateTestPanel(const std::string& panel_name) {
+    Browser* panel_browser = Browser::CreateForApp(Browser::TYPE_PANEL,
+                                                   panel_name,
+                                                   gfx::Size(),
+                                                   browser_helper_.profile());
+    return static_cast<Panel*>(panel_browser->window());
+  }
+
+ private:
   BrowserTestHelper browser_helper_;
 };
 
@@ -24,17 +40,14 @@ TEST_F(PanelBrowserWindowCocoaTest, CreateClose) {
   PanelManager* manager = PanelManager::GetInstance();
   EXPECT_EQ(0, manager->active_count());  // No panels initially.
 
-  scoped_ptr<Panel> panel(manager->CreatePanel(browser_helper_.browser()));
-  EXPECT_TRUE(panel.get());
+  Panel* panel = CreateTestPanel("Test Panel");
+  EXPECT_TRUE(panel);
   EXPECT_TRUE(panel->browser_window());  // Native panel is created right away.
   PanelBrowserWindowCocoa* native_window =
       static_cast<PanelBrowserWindowCocoa*>(panel->browser_window());
 
   EXPECT_EQ(panel, native_window->panel_);  // Back pointer initialized.
   EXPECT_EQ(1, manager->active_count());
-  // BrowserTestHelper provides a browser w/o window_ set.
-  // Use Browser::set_window() if needed.
-  EXPECT_EQ(NULL, browser_helper_.browser()->window());
 
   // Window should not load before Show()
   EXPECT_FALSE([native_window->controller_ isWindowLoaded]);
@@ -59,9 +72,11 @@ TEST_F(PanelBrowserWindowCocoaTest, CreateClose) {
 
 TEST_F(PanelBrowserWindowCocoaTest, AssignedBounds) {
   PanelManager* manager = PanelManager::GetInstance();
-  scoped_ptr<Panel> panel1(manager->CreatePanel(browser_helper_.browser()));
-  scoped_ptr<Panel> panel2(manager->CreatePanel(browser_helper_.browser()));
-  scoped_ptr<Panel> panel3(manager->CreatePanel(browser_helper_.browser()));
+  Panel* panel1 = CreateTestPanel("Test Panel 1");
+  Panel* panel2 = CreateTestPanel("Test Panel 2");
+  Panel* panel3 = CreateTestPanel("Test Panel 3");
+  EXPECT_EQ(3, manager->active_count());
+
   panel1->Show();
   panel2->Show();
   panel3->Show();
@@ -77,18 +92,29 @@ TEST_F(PanelBrowserWindowCocoaTest, AssignedBounds) {
   EXPECT_EQ(bounds1.y(), bounds2.y());
   EXPECT_EQ(bounds2.y(), bounds3.y());
 
+  // After panel2 is closed, panel3 should take its place.
   panel2->Close();
   bounds3 = panel3->GetBounds();
-  // After panel2 is closed, panel3 should take its place.
   EXPECT_EQ(bounds2, bounds3);
+  EXPECT_EQ(2, manager->active_count());
+
+  // After panel1 is closed, panel3 should take its place.
+  panel1->Close();
+  EXPECT_EQ(bounds1, panel3->GetBounds());
+  EXPECT_EQ(1, manager->active_count());
+
+  panel3->Close();
+  EXPECT_EQ(0, manager->active_count());
 }
 
 // Same test as AssignedBounds, but checks actual bounds on native OS windows.
 TEST_F(PanelBrowserWindowCocoaTest, NativeBounds) {
   PanelManager* manager = PanelManager::GetInstance();
-  scoped_ptr<Panel> panel1(manager->CreatePanel(browser_helper_.browser()));
-  scoped_ptr<Panel> panel2(manager->CreatePanel(browser_helper_.browser()));
-  scoped_ptr<Panel> panel3(manager->CreatePanel(browser_helper_.browser()));
+  Panel* panel1 = CreateTestPanel("Test Panel 1");
+  Panel* panel2 = CreateTestPanel("Test Panel 2");
+  Panel* panel3 = CreateTestPanel("Test Panel 3");
+  EXPECT_EQ(3, manager->active_count());
+
   panel1->Show();
   panel2->Show();
   panel3->Show();
@@ -109,12 +135,25 @@ TEST_F(PanelBrowserWindowCocoaTest, NativeBounds) {
   EXPECT_EQ(bounds1.origin.y, bounds2.origin.y);
   EXPECT_EQ(bounds2.origin.y, bounds3.origin.y);
 
+  // After panel2 is closed, panel3 should take its place.
   panel2->Close();
   bounds3 = [[native_window3->controller_ window] frame];
-  // After panel2 is closed, panel3 should take its place.
   EXPECT_EQ(bounds2.origin.x, bounds3.origin.x);
   EXPECT_EQ(bounds2.origin.y, bounds3.origin.y);
   EXPECT_EQ(bounds2.size.width, bounds3.size.width);
   EXPECT_EQ(bounds2.size.height, bounds3.size.height);
+  EXPECT_EQ(2, manager->active_count());
+
+  // After panel1 is closed, panel3 should take its place.
+  panel1->Close();
+  bounds3 = [[native_window3->controller_ window] frame];
+  EXPECT_EQ(bounds1.origin.x, bounds3.origin.x);
+  EXPECT_EQ(bounds1.origin.y, bounds3.origin.y);
+  EXPECT_EQ(bounds1.size.width, bounds3.size.width);
+  EXPECT_EQ(bounds1.size.height, bounds3.size.height);
+  EXPECT_EQ(1, manager->active_count());
+
+  panel3->Close();
+  EXPECT_EQ(0, manager->active_count());
 }
 

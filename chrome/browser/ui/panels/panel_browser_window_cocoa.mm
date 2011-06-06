@@ -5,33 +5,31 @@
 #include "chrome/browser/ui/panels/panel_browser_window_cocoa.h"
 
 #include "base/logging.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/panels/panel.h"
-#include "chrome/browser/ui/panels/panel_window_controller_cocoa.h"
+#import "chrome/browser/ui/panels/panel_window_controller_cocoa.h"
 
 // This creates a shim window class, which in turn creates a Cocoa window
 // controller which in turn creates actual NSWindow by loading a nib.
-// Since Panel only knows and owns a BrowserWindow,
-// it will own the returned pointer and the overall chain of ownership is:
-// Panel -> PanelBrowserWindowCocoa -> PanelWindowControllerCocoa
+// Panel contains this class as a nested BrowserWindow, but the overall
+// chain of ownership is:
+// PanelWindowControllerCocoa -> PanelBrowserWindowCocoa -> Panel.
 BrowserWindow* Panel::CreateNativePanel(Browser* browser, Panel* panel) {
   return new PanelBrowserWindowCocoa(browser, panel);
 }
 
 PanelBrowserWindowCocoa::PanelBrowserWindowCocoa(Browser* browser,
                                                  Panel* panel)
-    : panel_(panel) {
-  controller_.reset([[PanelWindowControllerCocoa alloc] initWithBrowser:browser
-                                                               forPanel:panel]);
+  : browser_(browser),
+    panel_(panel) {
+  controller_ = [[PanelWindowControllerCocoa alloc] initWithBrowserWindow:this];
 }
 
 PanelBrowserWindowCocoa::~PanelBrowserWindowCocoa() {
 }
 
 bool PanelBrowserWindowCocoa::isClosed() {
-  // Both panel_ and controller_ are NULL if panel is closed.
-  // Otherwise, they both should be initialized.
-  DCHECK(panel_ || !controller_);
-  return !panel_;
+  return !controller_;
 }
 
 void PanelBrowserWindowCocoa::Show() {
@@ -42,9 +40,9 @@ void PanelBrowserWindowCocoa::Show() {
   NSRect startFrame = NSMakeRect(NSMinX(finalFrame), NSMinY(finalFrame),
                                  NSWidth(finalFrame), 0);
   // Show the window, using OS-specific animation.
-  [[controller_ window] setFrame:startFrame display:NO animate:NO];
+  [nswindow() setFrame:startFrame display:NO animate:NO];
   [controller_ showWindow:nil];
-  [[controller_ window] setFrame:finalFrame display:YES animate:YES];
+  [nswindow() setFrame:finalFrame display:YES animate:YES];
 }
 
 void PanelBrowserWindowCocoa::ShowInactive() {
@@ -53,17 +51,19 @@ void PanelBrowserWindowCocoa::ShowInactive() {
 
 void PanelBrowserWindowCocoa::SetBounds(const gfx::Rect& bounds) {
   NSRect frame = ConvertCoordinatesToCocoa(bounds);
-  [[controller_ window] setFrame:frame display:YES animate:YES];
+  [nswindow() setFrame:frame display:YES animate:YES];
 }
 
+// Callers assume that this doesn't immediately delete the Browser object.
 void PanelBrowserWindowCocoa::Close() {
-  NSRect frame = [[controller_ window] frame];
+  if (isClosed())
+      return;
+
+  NSRect frame = [nswindow() frame];
   frame.size.height = 0;
-  [[controller_ window] setFrame:frame display:YES animate:YES];
-  [controller_ close];
-  // Close is destructive.
-  controller_.reset();
-  panel_ = NULL;
+  [nswindow() setFrame:frame display:YES animate:YES];
+  browser_->OnWindowClosing();
+  DestroyBrowser(); // not immediately, though.
 }
 
 void PanelBrowserWindowCocoa::Activate() {
@@ -84,7 +84,7 @@ void PanelBrowserWindowCocoa::FlashFrame() {
 }
 
 gfx::NativeWindow PanelBrowserWindowCocoa::GetNativeHandle() {
-  return [controller_ window];
+  return nswindow();
 }
 
 BrowserWindowTesting* PanelBrowserWindowCocoa::GetBrowserWindowTesting() {
@@ -368,6 +368,13 @@ WindowOpenDisposition PanelBrowserWindowCocoa::GetDispositionForPopupBounds(
 }
 
 void PanelBrowserWindowCocoa::DestroyBrowser() {
+  [controller_ close];
+  [controller_ autorelease];
+  controller_ = NULL;
+}
+
+NSWindow* PanelBrowserWindowCocoa::nswindow() const {
+  return [controller_ window];
 }
 
 NSRect PanelBrowserWindowCocoa::ConvertCoordinatesToCocoa(
