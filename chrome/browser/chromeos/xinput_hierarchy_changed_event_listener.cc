@@ -130,3 +130,8 @@ bool XInputHierarchyChangedEventListener::WillProcessXEvent(XEvent* xevent) {
 }  // namespace chromeos
 
 #endif
+
+// TODO(yusukes): Remove this check when crbug.com/84694 is resolved.
+#if defined(ARCH_CPU_X86_FAMILY) && !defined(HAVE_XINPUT2)
+#error XINPUT2 should always be enabled on Chrome OS x86!
+#endif
