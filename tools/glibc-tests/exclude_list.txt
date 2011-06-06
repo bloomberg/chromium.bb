@@ -234,33 +234,10 @@ elf/tst-tls10
 elf/tst-tls11
 elf/tst-tls12
 
-############################################
-# Objects that slow tests depend on.
-############################################
-nptl/tst-cleanup4aux
-nptl/tst-atfork2mod
-nptl/tst-tls3mod
-nptl/tst-tls5mod
-nptl/tst-fini1mod
-nptl/tst-tls4moda
-nptl/tst-tls4modb
-
-############################################
-# Tests that cause timeouts, i.e. slow.
-############################################
-nptl/tst-mutex6
-nptl/tst-mutexpi6
-rt/tst-clock
-nptl/tst-spin3
+###########################################################################
+# Tests that expect SIGALRM.  They declare it by defining EXPECTED_SIGNAL.
+# Would wait infinitely in NaCl.
+###########################################################################
 nptl/tst-exit2
 nptl/tst-exit3
-
-############################################
-# Flaky tests.
-############################################
-nptl/tst-mutexpi2
-nptl/tst-cond14
 nptl/tst-stdio1
-posix/tst-fnmatch
-nptl/tst-spin1
-nptl/tst-spin2

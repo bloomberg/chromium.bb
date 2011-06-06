@@ -45,7 +45,8 @@ wpid=0
 tpid=$!
 
 # Check for timeout in background, handle in timeout().
-(sleep 10; kill -USR2 $$ 2>/dev/null) &
+# note: 10 seconds is not enough for rt/tst-clock to finish.
+(sleep 15; kill -USR2 $$ 2>/dev/null) &
 wpid=$!
 
 # Wait for the test to finish, collect exitcode.
