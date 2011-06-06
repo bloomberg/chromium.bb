@@ -49,6 +49,11 @@ class PanelBrowserView : public ::BrowserView,
   virtual bool AcceleratorPressed(const views::Accelerator& accelerator)
       OVERRIDE;
 
+  // Overridden from views::WidgetDelegate:
+  virtual void OnDisplayChanged() OVERRIDE;
+  virtual void OnWorkAreaChanged() OVERRIDE;
+  virtual bool WillProcessWorkAreaChange() const OVERRIDE;
+
   // Overridden from AnimationDelegate:
   virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
 

@@ -64,6 +64,9 @@ void PanelManager::OnDisplayChanged() {
   scoped_ptr<WindowSizer::MonitorInfoProvider> info_provider(
       WindowSizer::CreateDefaultMonitorInfoProvider());
   gfx::Rect work_area = info_provider->GetPrimaryMonitorWorkArea();
+  if (work_area == work_area_)
+    return;
+  work_area_ = work_area;
 
   min_x_ = work_area.x();
   current_x_ = work_area.right();

@@ -144,5 +144,9 @@ NonClientFrameView* WidgetDelegate::CreateNonClientFrameView() {
   return NULL;
 }
 
+bool WidgetDelegate::WillProcessWorkAreaChange() const {
+  return false;
+}
+
 }  // namespace views
 

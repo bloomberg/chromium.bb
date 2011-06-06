@@ -94,6 +94,9 @@ class PanelManager {
   // when we're in the process of the dragging.
   std::vector<Panel*> panels_pending_to_remove_;
 
+  // Current work area used in computing the panel bounds.
+  gfx::Rect work_area_;
+
   // Used in computing the bounds of the next panel.
   int max_width_;
   int max_height_;

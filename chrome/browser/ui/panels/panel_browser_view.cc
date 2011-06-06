@@ -105,6 +105,20 @@ void PanelBrowserView::AnimationProgressed(const ui::Animation* animation) {
   ::BrowserView::SetBounds(new_bounds);
 }
 
+void PanelBrowserView::OnDisplayChanged() {
+  BrowserView::OnDisplayChanged();
+  panel_->manager()->OnDisplayChanged();
+}
+
+void PanelBrowserView::OnWorkAreaChanged() {
+  BrowserView::OnWorkAreaChanged();
+  panel_->manager()->OnDisplayChanged();
+}
+
+bool PanelBrowserView::WillProcessWorkAreaChange() const {
+  return true;
+}
+
 PanelBrowserFrameView* PanelBrowserView::GetFrameView() const {
   return static_cast<PanelBrowserFrameView*>(frame()->GetFrameView());
 }

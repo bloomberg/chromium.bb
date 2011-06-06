@@ -1285,7 +1285,8 @@ LRESULT NativeWidgetWin::OnSetText(const wchar_t* text) {
 }
 
 void NativeWidgetWin::OnSettingChange(UINT flags, const wchar_t* section) {
-  if (!GetParent() && (flags == SPI_SETWORKAREA)) {
+  if (!GetParent() && (flags == SPI_SETWORKAREA) &&
+      !GetWidget()->widget_delegate()->WillProcessWorkAreaChange()) {
     // Fire a dummy SetWindowPos() call, so we'll trip the code in
     // OnWindowPosChanging() below that notices work area changes.
     ::SetWindowPos(GetNativeView(), 0, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE |
