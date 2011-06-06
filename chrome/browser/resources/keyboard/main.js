@@ -687,7 +687,7 @@ window.onload = function() {
 
   window.onresize();
 
-  // Restore the keyboard to the default state when it gets hidden.
+  // Restore the keyboard to the default state when it is hidden.
   // Ref: dvcs.w3.org/hg/webperf/raw-file/tip/specs/PageVisibility/Overview.html
   document.addEventListener("webkitvisibilitychange", function() {
     if (document.webkitHidden) {

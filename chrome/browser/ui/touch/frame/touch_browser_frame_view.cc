@@ -115,6 +115,7 @@ void TouchBrowserFrameView::FocusWillChange(views::View* focused_before,
 
 ///////////////////////////////////////////////////////////////////////////////
 // TouchBrowserFrameView, protected:
+
 int TouchBrowserFrameView::GetReservedHeight() const {
   return keyboard_showing_ ? kKeyboardHeight : 0;
 }
