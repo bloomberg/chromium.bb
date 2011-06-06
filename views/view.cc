@@ -126,11 +126,10 @@ View::~View() {
   if (parent_)
     parent_->RemoveChildView(this);
 
-  int c = static_cast<int>(children_.size());
-  while (--c >= 0) {
-    children_[c]->parent_ = NULL;
-    if (children_[c]->parent_owned())
-      delete children_[c];
+  for (Views::const_iterator i(children_.begin()); i != children_.end(); ++i) {
+    (*i)->parent_ = NULL;
+    if ((*i)->parent_owned())
+      delete *i;
   }
 
 #if defined(OS_WIN)
