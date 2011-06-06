@@ -55,10 +55,10 @@ bool IdAllocator::MarkAsUsed(ResourceId id) {
 }
 
 void IdAllocator::FreeID(ResourceId id) {
-  GPU_DCHECK(id);
-  used_ids_.erase(id);
-  std::pair<ResourceIdSet::iterator, bool> result = free_ids_.insert(id);
-  GPU_DCHECK(result.second);
+  if (id) {
+    used_ids_.erase(id);
+    free_ids_.insert(id);
+  }
 }
 
 bool IdAllocator::InUse(ResourceId id) const {

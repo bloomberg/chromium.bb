@@ -110,4 +110,19 @@ TEST_F(IdAllocatorTest, AllocateIdAtOrAboveWrapsAround) {
   EXPECT_EQ(2u, id3);
 }
 
+TEST_F(IdAllocatorTest, RedundantFreeIsIgnored) {
+  IdAllocator* allocator = id_allocator();
+  ResourceId id1 = allocator->AllocateID();
+  allocator->FreeID(0);
+  allocator->FreeID(id1);
+  allocator->FreeID(id1);
+  allocator->FreeID(id1 + 1);
+
+  ResourceId id2 = allocator->AllocateID();
+  ResourceId id3 = allocator->AllocateID();
+  EXPECT_NE(id2, id3);
+  EXPECT_NE(kInvalidResource, id2);
+  EXPECT_NE(kInvalidResource, id3);
+}
+
 }  // namespace gpu
