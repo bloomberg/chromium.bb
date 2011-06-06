@@ -691,11 +691,6 @@ const char kPinnedTabs[] = "pinned_tabs";
 // Boolean that is true when HTTP throttling is enabled.
 const char kHttpThrottlingEnabled[] = "http_throttling.enabled";
 
-// Integer that specifies the policy refresh rate for policy in milliseconds.
-// Not all values are meaningful, so it is clamped to a sane range by the cloud
-// policy subsystem.
-const char kPolicyRefreshRate[] = "policy.refresh_rate";
-
 // Integer containing the default Geolocation content setting.
 const char kGeolocationDefaultContentSetting[] =
     "geolocation.default_content_setting";
@@ -1371,4 +1366,10 @@ const char kIgnoredProtocolHandlers[] =
 // Whether user-specified handlers for protocols and content types can be
 // specified.
 const char kCustomHandlersEnabled[] = "custom_handlers.enabled";
+
+// Integers that specify the policy refresh rate for device- and user-policy in
+// milliseconds. Not all values are meaningful, so it is clamped to a sane range
+// by the cloud policy subsystem.
+const char kDevicePolicyRefreshRate[] = "policy.device_refresh_rate";
+const char kUserPolicyRefreshRate[] = "policy.user_refresh_rate";
 }  // namespace prefs

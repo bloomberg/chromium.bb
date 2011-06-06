@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
+#include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 
 class Profile;
@@ -55,6 +56,9 @@ class ProfilePolicyConnector : public ProfileKeyedService {
 
   scoped_ptr<ConfigurationPolicyProvider> managed_cloud_provider_;
   scoped_ptr<ConfigurationPolicyProvider> recommended_cloud_provider_;
+
+  // Temporarily needed until we can serve user policy to local state.
+  PrefChangeRegistrar profile_pref_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfilePolicyConnector);
 };

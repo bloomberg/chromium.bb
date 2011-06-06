@@ -17,6 +17,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 
 namespace {
 
@@ -72,14 +73,24 @@ void ProfilePolicyConnector::ScheduleServiceInitialization(
 void ProfilePolicyConnector::Initialize() {
   if (identity_strategy_.get())
     identity_strategy_->LoadTokenCache();
-  if (cloud_policy_subsystem_.get())
-    cloud_policy_subsystem_->Initialize(profile_->GetPrefs(),
+  if (cloud_policy_subsystem_.get()) {
+    cloud_policy_subsystem_->Initialize(prefs::kUserPolicyRefreshRate,
                                         kServiceInitializationStartupDelay);
+    // Temporarily set the subsystem to listen to profile pref service, since
+    // we cannot yet serve user cloud policy to |local_state| and we don't want
+    // the profile reference in the subsystem.
+    profile_pref_registrar_.Init(profile_->GetPrefs());
+    profile_pref_registrar_.Add(prefs::kUserPolicyRefreshRate,
+                                cloud_policy_subsystem_.get());
+  }
 }
 
 void ProfilePolicyConnector::Shutdown() {
-  if (cloud_policy_subsystem_.get())
+  if (cloud_policy_subsystem_.get()) {
+    // Remove the temporary profile observer.
+    profile_pref_registrar_.RemoveAll();
     cloud_policy_subsystem_->Shutdown();
+  }
 }
 
 ConfigurationPolicyProvider*

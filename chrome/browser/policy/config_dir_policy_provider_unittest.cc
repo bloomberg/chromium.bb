@@ -328,6 +328,9 @@ INSTANTIATE_TEST_CASE_P(
             kPolicyPrintingEnabled,
             key::kPrintingEnabled),
         ValueTestParams::ForIntegerPolicy(
+            kPolicyDevicePolicyRefreshRate,
+            key::kDevicePolicyRefreshRate),
+        ValueTestParams::ForIntegerPolicy(
             kPolicyPolicyRefreshRate,
             key::kPolicyRefreshRate),
         ValueTestParams::ForBooleanPolicy(

@@ -163,6 +163,8 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   TemplateURLModel::RegisterUserPrefs(user_prefs);
   InstantController::RegisterUserPrefs(user_prefs);
   NetPrefObserver::RegisterPrefs(user_prefs);
+  // TODO(sfeuz): Remove registering of cloud policy refresh rate preference in
+  // |user_prefs| once we can push user cloud policies to local_state.
   policy::CloudPolicySubsystem::RegisterPrefs(user_prefs);
   ProtocolHandlerRegistry::RegisterPrefs(user_prefs);
 }

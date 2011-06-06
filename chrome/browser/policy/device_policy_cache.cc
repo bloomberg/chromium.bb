@@ -269,12 +269,13 @@ void DevicePolicyCache::DecodeDevicePolicy(
     const em::ChromeDeviceSettingsProto& policy,
     PolicyMap* mandatory,
     PolicyMap* recommended) {
-  if (policy.has_policy_refresh_rate()) {
+  if (policy.has_device_policy_refresh_rate()) {
     const em::DevicePolicyRefreshRateProto container =
-        policy.policy_refresh_rate();
-    if (container.has_policy_refresh_rate()) {
-      mandatory->Set(kPolicyPolicyRefreshRate,
-                     DecodeIntegerValue(container.policy_refresh_rate()));
+        policy.device_policy_refresh_rate();
+    if (container.has_device_policy_refresh_rate()) {
+      mandatory->Set(kPolicyDevicePolicyRefreshRate,
+                     DecodeIntegerValue(
+                         container.device_policy_refresh_rate()));
     }
   }
 

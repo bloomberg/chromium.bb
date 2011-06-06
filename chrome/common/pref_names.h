@@ -244,8 +244,6 @@ extern const char kEnableBookmarkBar[];
 extern const char kPinnedTabs[];
 extern const char kHttpThrottlingEnabled[];
 
-extern const char kPolicyRefreshRate[];
-
 extern const char kDisable3DAPIs[];
 extern const char kEnableHyperlinkAuditing[];
 extern const char kEnableReferrers[];
@@ -505,6 +503,8 @@ extern const char kCustomHandlersEnabled[];
 extern const char kUserCreatedLoginItem[];
 extern const char kBackgroundModeEnabled[];
 
+extern const char kDevicePolicyRefreshRate[];
+extern const char kUserPolicyRefreshRate[];
 }  // namespace prefs
 
 #endif  // CHROME_COMMON_PREF_NAMES_H_

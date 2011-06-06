@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/cloud_policy_cache_base.h"
 #include "chrome/browser/policy/cloud_policy_controller.h"
 #include "chrome/browser/policy/cloud_policy_identity_strategy.h"
@@ -51,8 +52,7 @@ CloudPolicySubsystem::ObserverRegistrar::~ObserverRegistrar() {
 CloudPolicySubsystem::CloudPolicySubsystem(
     CloudPolicyIdentityStrategy* identity_strategy,
     CloudPolicyCacheBase* policy_cache)
-    : prefs_(NULL),
-      identity_strategy_(identity_strategy) {
+    : identity_strategy_(identity_strategy) {
   net::NetworkChangeNotifier::AddIPAddressObserver(this);
   notifier_.reset(new PolicyNotifier());
   CommandLine* command_line = CommandLine::ForCurrentProcess();
@@ -71,7 +71,6 @@ CloudPolicySubsystem::CloudPolicySubsystem(
 }
 
 CloudPolicySubsystem::~CloudPolicySubsystem() {
-  DCHECK(!prefs_);
   cloud_policy_controller_.reset();
   device_token_fetcher_.reset();
   cloud_policy_cache_.reset();
@@ -86,14 +85,16 @@ void CloudPolicySubsystem::OnIPAddressChanged() {
   }
 }
 
-void CloudPolicySubsystem::Initialize(
-    PrefService* prefs,
-    int64 delay_milliseconds) {
-  DCHECK(!prefs_);
-  prefs_ = prefs;
-
+void CloudPolicySubsystem::Initialize(const char* refresh_pref_name,
+                                      int64 delay_milliseconds) {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kDeviceManagementUrl)) {
+    DCHECK(device_management_service_.get());
+    DCHECK(cloud_policy_cache_.get());
+    DCHECK(device_token_fetcher_.get());
+    DCHECK(identity_strategy_);
+
+    refresh_pref_name_ = refresh_pref_name;
     DCHECK(!cloud_policy_controller_.get());
     cloud_policy_controller_.reset(
         new CloudPolicyController(device_management_service_.get(),
@@ -101,13 +102,15 @@ void CloudPolicySubsystem::Initialize(
                                   device_token_fetcher_.get(),
                                   identity_strategy_,
                                   notifier_.get()));
-  }
 
-  if (device_management_service_.get())
     device_management_service_->ScheduleInitialization(delay_milliseconds);
 
-  policy_refresh_rate_.Init(prefs::kPolicyRefreshRate, prefs_, this);
-  UpdatePolicyRefreshRate();
+    PrefService* local_state = g_browser_process->local_state();
+    DCHECK(pref_change_registrar_.IsEmpty());
+    pref_change_registrar_.Init(local_state);
+    pref_change_registrar_.Add(refresh_pref_name_, this);
+    UpdatePolicyRefreshRate(local_state->GetInteger(refresh_pref_name_));
+  }
 }
 
 void CloudPolicySubsystem::Shutdown() {
@@ -115,8 +118,7 @@ void CloudPolicySubsystem::Shutdown() {
     device_management_service_->Shutdown();
   cloud_policy_controller_.reset();
   cloud_policy_cache_.reset();
-  policy_refresh_rate_.Destroy();
-  prefs_ = NULL;
+  pref_change_registrar_.RemoveAll();
 }
 
 CloudPolicySubsystem::PolicySubsystemState CloudPolicySubsystem::state() {
@@ -149,15 +151,17 @@ ConfigurationPolicyProvider*
 
 // static
 void CloudPolicySubsystem::RegisterPrefs(PrefService* pref_service) {
-  pref_service->RegisterIntegerPref(prefs::kPolicyRefreshRate,
+  pref_service->RegisterIntegerPref(prefs::kDevicePolicyRefreshRate,
+                                    kDefaultPolicyRefreshRateMs,
+                                    PrefService::UNSYNCABLE_PREF);
+  pref_service->RegisterIntegerPref(prefs::kUserPolicyRefreshRate,
                                     kDefaultPolicyRefreshRateMs,
                                     PrefService::UNSYNCABLE_PREF);
 }
 
-void CloudPolicySubsystem::UpdatePolicyRefreshRate() {
+void CloudPolicySubsystem::UpdatePolicyRefreshRate(int64 refresh_rate) {
   if (cloud_policy_controller_.get()) {
     // Clamp to sane values.
-    int64 refresh_rate = policy_refresh_rate_.GetValue();
     refresh_rate = std::max(kPolicyRefreshRateMinMs, refresh_rate);
     refresh_rate = std::min(kPolicyRefreshRateMaxMs, refresh_rate);
     cloud_policy_controller_->SetRefreshRate(refresh_rate);
@@ -167,11 +171,13 @@ void CloudPolicySubsystem::UpdatePolicyRefreshRate() {
 void CloudPolicySubsystem::Observe(NotificationType type,
                                    const NotificationSource& source,
                                    const NotificationDetails& details) {
-  if (type == NotificationType::PREF_CHANGED &&
-      policy_refresh_rate_.GetPrefName() ==
-          *(Details<std::string>(details).ptr()) &&
-      prefs_ == Source<PrefService>(source).ptr()) {
-    UpdatePolicyRefreshRate();
+  if (type == NotificationType::PREF_CHANGED) {
+    DCHECK_EQ(*(Details<std::string>(details).ptr()),
+              std::string(refresh_pref_name_));
+    PrefService* pref_service = Source<PrefService>(source).ptr();
+    // Temporarily also consider the profile preference service as a valid
+    // source, since we cannot yet push user cloud policy to |local_state|.
+    UpdatePolicyRefreshRate(pref_service->GetInteger(refresh_pref_name_));
   } else {
     NOTREACHED();
   }

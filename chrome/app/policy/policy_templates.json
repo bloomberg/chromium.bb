@@ -94,7 +94,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 89
+#   For your editing convenience: highest ID currently used: 90
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -1331,10 +1331,10 @@
       'features': {'dynamic_refresh': 1},
       'example_value': 3600000,
       'id': 56,
-      'caption': '''Policy refresh rate''',
-      'desc': '''Specifies the period in milliseconds at which the device management service is queried for policy information.
+      'caption': '''Refresh rate for user policy''',
+      'desc': '''Specifies the period in milliseconds at which the device management service is queried for user policy information.
 
-      Setting this policy overrides the default value of 3 hours. Valid values for this policy are in the range from 30 minutes to 1 day. Any values not in this range will be clamped to the respective boundary.''',
+      Setting this policy overrides the default value of 3 hours. Valid values for this policy are in the range from 1800000 (30 minutes) to 86400000 (1 day). Any values not in this range will be clamped to the respective boundary.''',
     },
     {
       'name': 'ChromeFrameRendererSettings',
@@ -1552,6 +1552,20 @@
       If you set this policy, <ph name="PRODUCT_NAME">$3<ex>Google Chrome Frame</ex></ph> will use the provided directory.''',
       'label': '''Set user data directory''',
     },
+    {
+      'name': 'DevicePolicyRefreshRate',
+      'type': 'int',
+      'supported_on': ['chrome_os:1.0-'],
+      'device_only': True,
+      'features': {'dynamic_refresh': 1},
+      'example_value': 3600000,
+      'id': 90,
+      'caption': '''Refresh rate for Device Policy''',
+      'desc': '''Specifies the period in milliseconds at which the device management service is queried for device policy information.
+
+      Setting this policy overrides the default value of 3 hours. Valid values for this policy are in the range from 1800000 (30 minutes) to 86400000 (1 day). Any values not in this range will be clamped to the respective boundary.''',
+    },
+
   ],
   'messages': {
     # Messages that are not associated to any policies.

@@ -64,7 +64,8 @@ void CreateRefreshRatePolicy(em::PolicyFetchResponse* policy,
   // timestamp, machine_name, policy_type, public key info.
   em::PolicyData signed_response;
   em::ChromeDeviceSettingsProto settings;
-  settings.mutable_policy_refresh_rate()->set_policy_refresh_rate(refresh_rate);
+  settings.mutable_device_policy_refresh_rate()->
+      set_device_policy_refresh_rate(refresh_rate);
   signed_response.set_username(user);
   signed_response.set_request_token("dmtoken");
   signed_response.set_device_id("deviceid");
@@ -151,7 +152,8 @@ TEST_F(DevicePolicyCacheTest, Startup) {
   testing::Mock::VerifyAndClearExpectations(&signed_settings_helper_);
   FundamentalValue expected(120);
   EXPECT_TRUE(Value::Equals(&expected,
-                            GetMandatoryPolicy(kPolicyPolicyRefreshRate)));
+                            GetMandatoryPolicy(
+                                kPolicyDevicePolicyRefreshRate)));
 }
 
 TEST_F(DevicePolicyCacheTest, SetPolicy) {
@@ -169,7 +171,8 @@ TEST_F(DevicePolicyCacheTest, SetPolicy) {
   testing::Mock::VerifyAndClearExpectations(&signed_settings_helper_);
   FundamentalValue expected(120);
   EXPECT_TRUE(Value::Equals(&expected,
-                            GetMandatoryPolicy(kPolicyPolicyRefreshRate)));
+                            GetMandatoryPolicy(
+                                kPolicyDevicePolicyRefreshRate)));
 
   // Set new policy information.
   em::PolicyFetchResponse new_policy;
@@ -183,7 +186,8 @@ TEST_F(DevicePolicyCacheTest, SetPolicy) {
   testing::Mock::VerifyAndClearExpectations(&signed_settings_helper_);
   FundamentalValue updated_expected(300);
   EXPECT_TRUE(Value::Equals(&updated_expected,
-                            GetMandatoryPolicy(kPolicyPolicyRefreshRate)));
+                            GetMandatoryPolicy(
+                                kPolicyDevicePolicyRefreshRate)));
 }
 
 TEST_F(DevicePolicyCacheTest, SetPolicyWrongUser) {
@@ -209,7 +213,8 @@ TEST_F(DevicePolicyCacheTest, SetPolicyWrongUser) {
 
   FundamentalValue expected(120);
   EXPECT_TRUE(Value::Equals(&expected,
-                            GetMandatoryPolicy(kPolicyPolicyRefreshRate)));
+                            GetMandatoryPolicy(
+                                kPolicyDevicePolicyRefreshRate)));
 }
 
 TEST_F(DevicePolicyCacheTest, SetPolicyNonEnterpriseDevice) {
@@ -233,7 +238,8 @@ TEST_F(DevicePolicyCacheTest, SetPolicyNonEnterpriseDevice) {
 
   FundamentalValue expected(120);
   EXPECT_TRUE(Value::Equals(&expected,
-                            GetMandatoryPolicy(kPolicyPolicyRefreshRate)));
+                            GetMandatoryPolicy(
+                                kPolicyDevicePolicyRefreshRate)));
 }
 
 TEST_F(DevicePolicyCacheTest, SetProxyPolicy) {

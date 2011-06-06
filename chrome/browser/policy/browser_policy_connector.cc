@@ -13,6 +13,7 @@
 #include "chrome/browser/policy/dummy_configuration_policy_provider.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/policy/configuration_policy_provider_win.h"
@@ -211,7 +212,7 @@ void BrowserPolicyConnector::FetchPolicy() {
 void BrowserPolicyConnector::Initialize() {
   if (cloud_policy_subsystem_.get()) {
     cloud_policy_subsystem_->Initialize(
-        g_browser_process->local_state(),
+        prefs::kDevicePolicyRefreshRate,
         kServiceInitializationStartupDelay);
   }
 }

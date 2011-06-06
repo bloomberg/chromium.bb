@@ -8,6 +8,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/prefs/pref_member.h"
+#include "chrome/browser/prefs/pref_change_registrar.h"
 #include "content/common/notification_observer.h"
 #include "net/base/network_change_notifier.h"
 
@@ -75,9 +76,9 @@ class CloudPolicySubsystem
   // net::NetworkChangeNotifier::IPAddressObserver:
   virtual void OnIPAddressChanged() OVERRIDE;
 
-  // Initializes the subsystem.The first network request will only be made
+  // Initializes the subsystem. The first network request will only be made
   // after |delay_milliseconds|.
-  void Initialize(PrefService* prefs, int64 delay_milliseconds);
+  void Initialize(const char* refresh_pref_name, int64 delay_milliseconds);
 
   // Shuts the subsystem down. This must be called before threading and network
   // infrastructure goes away.
@@ -102,7 +103,7 @@ class CloudPolicySubsystem
 
  private:
   // Updates the policy controller with a new refresh rate value.
-  void UpdatePolicyRefreshRate();
+  void UpdatePolicyRefreshRate(int64 refresh_rate);
 
   // Returns a weak pointer to this subsystem's PolicyNotifier.
   PolicyNotifier* notifier() {
@@ -114,11 +115,10 @@ class CloudPolicySubsystem
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  // The pref service that controls the refresh rate.
-  PrefService* prefs_;
+  // Name of the preference to read the refresh rate from.
+  const char* refresh_pref_name_;
 
-  // Tracks the pref value for the policy refresh rate.
-  IntegerPrefMember policy_refresh_rate_;
+  PrefChangeRegistrar pref_change_registrar_;
 
   // Weak reference to pass on to |cloud_policy_controller_| on creation.
   CloudPolicyIdentityStrategy* identity_strategy_;

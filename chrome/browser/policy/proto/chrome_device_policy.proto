@@ -10,7 +10,7 @@ package enterprise_management;
 
 message DevicePolicyRefreshRateProto {
   // In milliseconds.
-  optional int64 policy_refresh_rate = 1;
+  optional int64 device_policy_refresh_rate = 1;
 }
 
 message UserWhitelistProto {
@@ -72,7 +72,7 @@ message CameraEnabledProto {
 }
 
 message ChromeDeviceSettingsProto {
-  optional DevicePolicyRefreshRateProto policy_refresh_rate = 1;
+  optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
   optional UserWhitelistProto user_whitelist = 2;
   optional GuestModeEnabledProto guest_mode_enabled = 3;
   optional DeviceProxySettingsProto device_proxy_settings = 4;
