@@ -748,6 +748,18 @@ void OmxVideoDecodeAccelerator::FillBufferDoneTask(
   CHECK_EQ(message_loop_, MessageLoop::current());
   DCHECK_GT(output_buffers_at_component_, 0);
   output_buffers_at_component_--;
+
+  // During the transition from Paused to Idle (e.g. during Flush()) all
+  // pictures are sent back through here.  Avoid giving them to the client.
+  // TODO(fischman): this is a hokey way to detect this condition.  The state
+  // transitions in this class need to be rethought, and this implemented more
+  // sanely.
+  if (buffer->nFlags & OMX_BUFFERFLAG_EOS ||
+      on_flush_event_func_ == &OmxVideoDecodeAccelerator::InputPortFlushDone ||
+      on_flush_event_func_ == &OmxVideoDecodeAccelerator::OutputPortFlushDone) {
+    return;
+  }
+
   client_->PictureReady(*reinterpret_cast<media::Picture*>(
       buffer->pAppPrivate));
 }

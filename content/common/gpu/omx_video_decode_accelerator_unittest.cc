@@ -320,8 +320,10 @@ ClientState ClientStateNotification::Wait() {
 // the TESTs below.
 class EglRenderingVDAClient : public VideoDecodeAccelerator::Client {
  public:
-  // Doesn't take ownership of |note|, which must outlive |*this|.
-  EglRenderingVDAClient(ClientStateNotification* note);
+  // Doesn't take ownership of |note| or |encoded_data|, which must outlive
+  // |*this|.
+  EglRenderingVDAClient(ClientStateNotification* note,
+                        std::string* encoded_data);
   virtual ~EglRenderingVDAClient();
 
   // VideoDecodeAccelerator::Client implementation.
@@ -358,8 +360,14 @@ class EglRenderingVDAClient : public VideoDecodeAccelerator::Client {
     state_ = new_state;
   }
 
-  VideoDecodeAccelerator* decoder_;
+  // Request decode of the next NALU in the encoded data.
+  void DecodeNextNALU();
+
+  const std::string* encoded_data_;
+  size_t encoded_data_next_pos_to_decode_;
+  int next_bitstream_buffer_id_;
   ClientStateNotification* note_;
+  VideoDecodeAccelerator* decoder_;
   ClientState state_;
   VideoDecodeAccelerator::Error error_;
   int num_decoded_frames_;
@@ -371,8 +379,11 @@ class EglRenderingVDAClient : public VideoDecodeAccelerator::Client {
   RenderingHelper rendering_helper_;
 };
 
-EglRenderingVDAClient::EglRenderingVDAClient(ClientStateNotification* note)
-    : decoder_(NULL), note_(note), state_(CS_CREATED),
+EglRenderingVDAClient::EglRenderingVDAClient(ClientStateNotification* note,
+                                             std::string* encoded_data)
+    : encoded_data_(encoded_data), encoded_data_next_pos_to_decode_(0),
+      next_bitstream_buffer_id_(0), note_(note), decoder_(NULL),
+      state_(CS_CREATED),
       error_(VideoDecodeAccelerator::VIDEODECODERERROR_NONE),
       num_decoded_frames_(0), num_done_bitstream_buffers_(0),
       thread_("EglRenderingVDAClientThread") {
@@ -447,6 +458,7 @@ void EglRenderingVDAClient::PictureReady(const media::Picture& picture) {
 void EglRenderingVDAClient::NotifyInitializeDone() {
   CHECK_EQ(message_loop(), MessageLoop::current());
   SetState(CS_INITIALIZED);
+  DecodeNextNALU();
 }
 
 void EglRenderingVDAClient::NotifyEndOfStream() {
@@ -458,11 +470,7 @@ void EglRenderingVDAClient::NotifyEndOfBitstreamBuffer(
     int32 bitstream_buffer_id) {
   CHECK_EQ(message_loop(), MessageLoop::current());
   ++num_done_bitstream_buffers_;
-
-  // TODO(fischman): this is hokey!  It should be possible to call Flush() from
-  // outside a callback.
-  if (num_done_bitstream_buffers_ == 1)
-    decoder_->Flush();
+  DecodeNextNALU();
 }
 
 void EglRenderingVDAClient::NotifyFlushDone() {
@@ -486,18 +494,59 @@ void EglRenderingVDAClient::SetDecoder(VideoDecodeAccelerator* decoder) {
   SetState(CS_DECODER_SET);
 }
 
+static bool LookingAtNAL(const std::string& encoded, size_t pos) {
+  return pos + 3 < encoded.size() &&
+      encoded[pos] == 0 && encoded[pos + 1] == 0 &&
+      encoded[pos + 2] == 0 && encoded[pos + 3] == 1;
+}
+
+void EglRenderingVDAClient::DecodeNextNALU() {
+  if (encoded_data_next_pos_to_decode_ == encoded_data_->size()) {
+    decoder_->Flush();
+    return;
+  }
+  size_t start_pos = encoded_data_next_pos_to_decode_;
+  CHECK(LookingAtNAL(*encoded_data_, start_pos));
+  size_t end_pos = encoded_data_next_pos_to_decode_ + 4;
+  while (end_pos + 3 < encoded_data_->size() &&
+         !LookingAtNAL(*encoded_data_, end_pos)) {
+    ++end_pos;
+  }
+  if (end_pos + 3 >= encoded_data_->size())
+    end_pos = encoded_data_->size();
+
+  // Populate the shared memory buffer w/ the NALU, duplicate its handle, and
+  // hand it off to the decoder.
+  base::SharedMemory shm;
+  CHECK(shm.CreateAndMapAnonymous(end_pos - start_pos))
+      << start_pos << ", " << end_pos;
+  memcpy(shm.memory(), encoded_data_->data() + start_pos, end_pos - start_pos);
+  base::SharedMemoryHandle dup_handle;
+  CHECK(shm.ShareToProcess(base::Process::Current().handle(), &dup_handle));
+  media::BitstreamBuffer bitstream_buffer(
+      next_bitstream_buffer_id_++, dup_handle, end_pos - start_pos);
+  decoder_->Decode(bitstream_buffer);
+  encoded_data_next_pos_to_decode_ = end_pos;
+}
+
 // Test the most straightforward case possible: data is decoded from a single
 // chunk and rendered to the screen.
 TEST(OmxVideoDecodeAcceleratorTest, TestSimpleDecode) {
   logging::SetMinLogLevel(-1);
   ClientStateNotification note;
   ClientState state;
-  EglRenderingVDAClient client(&note);
+  // Read in the video data and hand it off to the client for later decoding.
+  std::string data_str;
+  CHECK(file_util::ReadFileToString(FilePath(std::string("test-25fps.h264")),
+                                    &data_str));
+  EglRenderingVDAClient client(&note, &data_str);
   OmxVideoDecodeAccelerator decoder(&client, client.message_loop());
   client.SetDecoder(&decoder);
   decoder.SetEglState(client.egl_display(), client.egl_context());
   ASSERT_EQ((state = note.Wait()), CS_DECODER_SET);
 
+
+  // Configure the decoder.
   int32 config_array[] = {
     media::VIDEOATTRIBUTEKEY_BITSTREAMFORMAT_FOURCC,
     media::VIDEOCODECFOURCC_H264,
@@ -510,23 +559,13 @@ TEST(OmxVideoDecodeAcceleratorTest, TestSimpleDecode) {
       config_array, config_array + arraysize(config_array));
   CHECK(decoder.Initialize(config));
   ASSERT_EQ((state = note.Wait()), CS_INITIALIZED);
-
-  // Set up buffers to pass to Decode.
-  char const* data_filename = "test-25fps.h264";
-  int data_fd = open(data_filename, O_RDONLY);
-  CHECK_GE(data_fd, 0);
-  int64 file_size = -1;
-  CHECK(file_util::GetFileSize(FilePath(std::string(data_filename)),
-                               &file_size));
-  base::SharedMemory data_shm(base::FileDescriptor(data_fd, false), true);
-  CHECK(data_shm.Map(file_size));
-  media::BitstreamBuffer bitstream_buffer(0, data_shm.handle(), file_size);
-
-  decoder.Decode(bitstream_buffer);
+  // InitializeDone kicks off decoding inside the client, so we just need to
+  // wait for Flush.
   ASSERT_EQ((state = note.Wait()), CS_FLUSHED);
 
   EXPECT_EQ(client.num_decoded_frames(), 25 /* fps */ * 10 /* seconds */);
-  EXPECT_EQ(client.num_done_bitstream_buffers(), 1);
+  // Hard-coded the number of NALUs in the stream.  Icky.
+  EXPECT_EQ(client.num_done_bitstream_buffers(), 258);
 }
 
 // TODO(fischman, vrk): add more tests!  In particular:
