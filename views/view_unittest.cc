@@ -2003,9 +2003,9 @@ TEST_F(ViewTest, ConvertPointToViewWithTransform) {
 }
 
 TEST_F(ViewTest, Contains) {
-  TestView v1;
-  TestView* v2 = new TestView();
-  TestView* v3 = new TestView();
+  View v1;
+  View* v2 = new View();
+  View* v3 = new View();
 
   v1.AddChildView(v2);
   v2->AddChildView(v3);
@@ -2014,14 +2014,51 @@ TEST_F(ViewTest, Contains) {
   EXPECT_TRUE(v1.Contains(&v1));
   EXPECT_TRUE(v1.Contains(v2));
   EXPECT_TRUE(v1.Contains(v3));
+
   EXPECT_FALSE(v2->Contains(NULL));
   EXPECT_TRUE(v2->Contains(v2));
   EXPECT_FALSE(v2->Contains(&v1));
   EXPECT_TRUE(v2->Contains(v3));
+
   EXPECT_FALSE(v3->Contains(NULL));
   EXPECT_TRUE(v3->Contains(v3));
   EXPECT_FALSE(v3->Contains(&v1));
   EXPECT_FALSE(v3->Contains(v2));
+}
+
+// Verify if the View::GetIndexOf() returns the correct indexes for the
+// specified child views.
+// The tree looks like this:
+// root
+// |-- child1
+// |   |-- foo1
+// +-- child2
+TEST_F(ViewTest, GetIndexOf) {
+  View root;
+
+  View* child1 = new View();
+  root.AddChildView(child1);
+
+  View* child2 = new View();
+  root.AddChildView(child2);
+
+  View* foo1 = new View();
+  child1->AddChildView(foo1);
+
+  ASSERT_EQ(-1, root.GetIndexOf(&root));
+  ASSERT_EQ(0, root.GetIndexOf(child1));
+  ASSERT_EQ(1, root.GetIndexOf(child2));
+  ASSERT_EQ(-1, root.GetIndexOf(foo1));
+
+  ASSERT_EQ(-1, child1->GetIndexOf(&root));
+  ASSERT_EQ(-1, child1->GetIndexOf(child1));
+  ASSERT_EQ(-1, child1->GetIndexOf(child2));
+  ASSERT_EQ(0, child1->GetIndexOf(foo1));
+
+  ASSERT_EQ(-1, child2->GetIndexOf(&root));
+  ASSERT_EQ(-1, child2->GetIndexOf(child2));
+  ASSERT_EQ(-1, child2->GetIndexOf(child1));
+  ASSERT_EQ(-1, child2->GetIndexOf(foo1));
 }
 
 }  // namespace views
