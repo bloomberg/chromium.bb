@@ -27,7 +27,7 @@ class PanelBrowserWindowCocoaTest : public CocoaTest {
   Panel* CreateTestPanel(const std::string& panel_name) {
     Browser* panel_browser = Browser::CreateForApp(Browser::TYPE_PANEL,
                                                    panel_name,
-                                                   gfx::Size(),
+                                                   gfx::Rect(),
                                                    browser_helper_.profile());
     return static_cast<Panel*>(panel_browser->window());
   }
