@@ -293,5 +293,6 @@
                'prasadt@chromium.org', 'dcheng@chromium.org',
 	       'jianli@chromium.org'],
     'importer': ['tfarina@chromium.org'],
+    'views': ['dhollowa@chromium.org'],
   },
 }
