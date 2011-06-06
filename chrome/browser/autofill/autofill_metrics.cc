@@ -10,6 +10,21 @@
 
 namespace {
 
+// Server experiments we support.
+enum ServerExperiment {
+  NO_EXPERIMENT = 0,
+  UNKNOWN_EXPERIMENT,
+  ACCEPTANCE_RATIO_06,
+  ACCEPTANCE_RATIO_1,
+  ACCEPTANCE_RATIO_2,
+  ACCEPTANCE_RATIO_4,
+  ACCEPTANCE_RATIO_05_WINNER_LEAD_RATIO_15,
+  ACCEPTANCE_RATIO_05_WINNER_LEAD_RATIO_25,
+  ACCEPTANCE_RATIO_05_WINNER_LEAD_RATIO_15_MIN_FORM_SCORE_5,
+  TOOLBAR_DATA_ONLY,
+  NUM_SERVER_EXPERIMENTS
+};
+
 enum FieldTypeGroupForMetrics {
   AMBIGUOUS = 0,
   NAME,
@@ -250,4 +265,32 @@ void AutofillMetrics::LogStoredProfileCount(size_t num_profiles) const {
 
 void AutofillMetrics::LogAddressSuggestionsCount(size_t num_suggestions) const {
   UMA_HISTOGRAM_COUNTS("Autofill.AddressSuggestionsCount", num_suggestions);
+}
+
+void AutofillMetrics::LogServerExperimentId(
+    const std::string& experiment_id) const {
+  ServerExperiment metric = UNKNOWN_EXPERIMENT;
+
+  if (experiment_id.empty())
+    metric = NO_EXPERIMENT;
+  else if (experiment_id == "ar06")
+    metric = ACCEPTANCE_RATIO_06;
+  else if (experiment_id == "ar1")
+    metric = ACCEPTANCE_RATIO_1;
+  else if (experiment_id == "ar2")
+    metric = ACCEPTANCE_RATIO_2;
+  else if (experiment_id == "ar4")
+    metric = ACCEPTANCE_RATIO_4;
+  else if (experiment_id == "ar05wlr15")
+    metric = ACCEPTANCE_RATIO_05_WINNER_LEAD_RATIO_15;
+  else if (experiment_id == "ar05wlr25")
+    metric = ACCEPTANCE_RATIO_05_WINNER_LEAD_RATIO_25;
+  else if (experiment_id == "ar05wr15fs5")
+    metric = ACCEPTANCE_RATIO_05_WINNER_LEAD_RATIO_15_MIN_FORM_SCORE_5;
+  else if (experiment_id == "tbar1")
+    metric = TOOLBAR_DATA_ONLY;
+
+  DCHECK(metric < NUM_SERVER_EXPERIMENTS);
+  UMA_HISTOGRAM_ENUMERATION("Autofill.ServerExperimentId", metric,
+                            NUM_SERVER_EXPERIMENTS);
 }

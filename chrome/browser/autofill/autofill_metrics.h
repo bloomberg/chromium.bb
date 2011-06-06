@@ -115,6 +115,9 @@ class AutofillMetrics {
   // form.
   virtual void LogAddressSuggestionsCount(size_t num_suggestions) const;
 
+  // Logs the experiment id corresponding to a server query response.
+  virtual void LogServerExperimentId(const std::string& experiment_id) const;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(AutofillMetrics);
 };

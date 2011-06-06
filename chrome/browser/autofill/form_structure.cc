@@ -252,6 +252,7 @@ void FormStructure::ParseQueryResponse(const std::string& response_xml,
     return;
 
   metric_logger.LogServerQueryMetric(AutofillMetrics::QUERY_RESPONSE_PARSED);
+  metric_logger.LogServerExperimentId(experiment_id);
 
   bool heuristics_detected_fillable_field = false;
   bool query_response_overrode_heuristics = false;

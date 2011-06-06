@@ -49,6 +49,8 @@ class MockAutofillMetrics : public AutofillMetrics {
   MOCK_CONST_METHOD1(LogIsAutofillEnabledAtStartup, void(bool enabled));
   MOCK_CONST_METHOD1(LogStoredProfileCount, void(size_t num_profiles));
   MOCK_CONST_METHOD1(LogAddressSuggestionsCount, void(size_t num_suggestions));
+  MOCK_CONST_METHOD1(LogServerExperimentId,
+                     void(const std::string& experiment_id));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAutofillMetrics);
@@ -958,4 +960,38 @@ TEST_F(AutofillMetricsTest, CreditCardInfoBar) {
     EXPECT_CALL(metric_logger,
         LogCreditCardInfoBarMetric(AutofillMetrics::INFOBAR_IGNORED)).Times(1);
   }
+}
+
+// Test that server query response experiment id metrics are logged correctly.
+TEST_F(AutofillMetricsTest, ServerQueryExperimentId) {
+  MockAutofillMetrics metric_logger;
+  ::testing::InSequence dummy;
+
+  // No experiment specified.
+  EXPECT_CALL(metric_logger,
+              LogServerQueryMetric(AutofillMetrics::QUERY_RESPONSE_RECEIVED));
+  EXPECT_CALL(metric_logger,
+              LogServerQueryMetric(AutofillMetrics::QUERY_RESPONSE_PARSED));
+  EXPECT_CALL(metric_logger,
+              LogServerExperimentId(std::string()));
+  EXPECT_CALL(metric_logger,
+              LogServerQueryMetric(
+                  AutofillMetrics::QUERY_RESPONSE_MATCHED_LOCAL_HEURISTICS));
+  FormStructure::ParseQueryResponse(
+      "<autofillqueryresponse></autofillqueryresponse>",
+      std::vector<FormStructure*>(), metric_logger);
+
+  // Experiment "ar1" specified.
+  EXPECT_CALL(metric_logger,
+              LogServerQueryMetric(AutofillMetrics::QUERY_RESPONSE_RECEIVED));
+  EXPECT_CALL(metric_logger,
+              LogServerQueryMetric(AutofillMetrics::QUERY_RESPONSE_PARSED));
+  EXPECT_CALL(metric_logger,
+              LogServerExperimentId("ar1"));
+  EXPECT_CALL(metric_logger,
+              LogServerQueryMetric(
+                  AutofillMetrics::QUERY_RESPONSE_MATCHED_LOCAL_HEURISTICS));
+  FormStructure::ParseQueryResponse(
+      "<autofillqueryresponse experimentid=\"ar1\"></autofillqueryresponse>",
+      std::vector<FormStructure*>(), metric_logger);
 }
