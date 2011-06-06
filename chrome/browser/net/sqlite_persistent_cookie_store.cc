@@ -146,7 +146,8 @@ bool InitTable(sql::Connection* db) {
 
   // Try to create the index every time. Older versions did not have this index,
   // so we want those people to get it. Ignore errors, since it may exist.
-  db->Execute("CREATE INDEX cookie_times ON cookies (creation_utc)");
+  db->Execute("CREATE INDEX IF NOT EXISTS cookie_times ON cookies"
+              " (creation_utc)");
   return true;
 }
 
