@@ -259,6 +259,14 @@ bool CheckAndResolveLocale(const std::string& locale,
     *resolved_locale = locale;
     return true;
   }
+
+  // If there's a variant, skip over it so we can try without the region
+  // code.  For example, ca_ES@valencia should cause us to try ca@valencia
+  // before ca.
+  std::string::size_type variant_pos = locale.find('@');
+  if (variant_pos != std::string::npos)
+    return false;
+
   // If the locale matches language but not country, use that instead.
   // TODO(jungshik) : Nothing is done about languages that Chrome
   // does not support but available on Windows. We fall
@@ -275,12 +283,12 @@ bool CheckAndResolveLocale(const std::string& locale,
       tmp_locale.append("-419");
     else if (LowerCaseEqualsASCII(lang, "zh")) {
       // Map zh-HK and zh-MO to zh-TW. Otherwise, zh-FOO is mapped to zh-CN.
-     if (LowerCaseEqualsASCII(region, "hk") ||
-         LowerCaseEqualsASCII(region, "mo")) { // Macao
-       tmp_locale.append("-TW");
-     } else {
-       tmp_locale.append("-CN");
-     }
+      if (LowerCaseEqualsASCII(region, "hk") ||
+          LowerCaseEqualsASCII(region, "mo")) { // Macao
+        tmp_locale.append("-TW");
+      } else {
+        tmp_locale.append("-CN");
+      }
     }
     if (IsLocaleAvailable(tmp_locale, locale_path)) {
       resolved_locale->swap(tmp_locale);

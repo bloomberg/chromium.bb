@@ -141,6 +141,8 @@ TEST_F(L10nUtilTest, GetAppLocale) {
     "fil",
     "nb",
     "am",
+    "ca",
+    "ca@valencia",
   };
 
 #if defined(OS_WIN)
@@ -194,6 +196,21 @@ TEST_F(L10nUtilTest, GetAppLocale) {
   env->UnSetVar("LC_MESSAGES");
   EXPECT_EQ("nb", l10n_util::GetApplicationLocale(""));
   env->UnSetVar("LANG");
+
+  SetDefaultLocaleForTest("ca", env.get());
+  EXPECT_EQ("ca", l10n_util::GetApplicationLocale(""));
+
+  SetDefaultLocaleForTest("ca-ES", env.get());
+  EXPECT_EQ("ca", l10n_util::GetApplicationLocale(""));
+
+  SetDefaultLocaleForTest("ca@valencia", env.get());
+  EXPECT_EQ("ca@valencia", l10n_util::GetApplicationLocale(""));
+
+  SetDefaultLocaleForTest("ca_ES@valencia", env.get());
+  EXPECT_EQ("ca@valencia", l10n_util::GetApplicationLocale(""));
+
+  SetDefaultLocaleForTest("ca_ES.UTF8@valencia", env.get());
+  EXPECT_EQ("ca@valencia", l10n_util::GetApplicationLocale(""));
 #endif  // defined(OS_POSIX) && !defined(OS_CHROMEOS)
 
   SetDefaultLocaleForTest("en-US", env.get());
