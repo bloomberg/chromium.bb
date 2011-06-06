@@ -2498,7 +2498,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
 
       // Get input_components[i].layouts.
       ListValue* layouts_value = NULL;
-      if (!source.GetList(keys::kLayouts, &layouts_value)) {
+      if (!module_value->GetList(keys::kLayouts, &layouts_value)) {
         *error = errors::kInvalidInputComponentLayouts;
         return false;
       }
@@ -2514,7 +2514,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
         layouts.insert(layout_name_str);
       }
 
-      if (source.HasKey(keys::kShortcutKey)) {
+      if (module_value->HasKey(keys::kShortcutKey)) {
         DictionaryValue* shortcut_value = NULL;
         if (!module_value->GetDictionary(keys::kShortcutKey, &shortcut_value)) {
           *error = ExtensionErrorUtils::FormatErrorMessage(
