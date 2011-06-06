@@ -189,17 +189,38 @@ void gtk_preserve_window_set_preserve(GtkPreserveWindow* window,
 void gtk_preserve_window_size_allocate(GtkWidget* widget,
                                        GtkAllocation* allocation) {
   g_return_if_fail(GTK_IS_PRESERVE_WINDOW(widget));
-  GtkPreserveWindowPrivate* priv = GTK_PRESERVE_WINDOW_GET_PRIVATE(widget);
 
-  if (priv->delegate_resize) {
-    widget->allocation = *allocation;
-    // Only update the position. Someone else will call gdk_window_resize.
-    if (GTK_WIDGET_REALIZED(widget)) {
+  widget->allocation = *allocation;
+
+  if (GTK_WIDGET_REALIZED(widget)) {
+    GtkPreserveWindowPrivate* priv = GTK_PRESERVE_WINDOW_GET_PRIVATE(widget);
+    if (priv->delegate_resize) {
       gdk_window_move(widget->window, allocation->x, allocation->y);
+    } else {
+      gdk_window_move_resize(
+          widget->window, allocation->x, allocation->y,
+          allocation->width, allocation->height);
     }
-  } else {
-    GTK_WIDGET_CLASS(gtk_preserve_window_parent_class)->size_allocate(
-        widget, allocation);
+  }
+
+  // Propagate resize to children
+  guint16 border_width = GTK_CONTAINER(widget)->border_width;
+  GList *children = GTK_FIXED(widget)->children;
+  while (children) {
+    GtkFixedChild *child = reinterpret_cast<GtkFixedChild*>(children->data);
+    if (gtk_widget_get_visible(child->widget)) {
+      GtkRequisition child_requisition;
+      gtk_widget_get_child_requisition(child->widget, &child_requisition);
+
+      GtkAllocation child_allocation;
+      child_allocation.x = child->x + border_width;
+      child_allocation.y = child->y + border_width;
+      child_allocation.width = child_requisition.width;
+      child_allocation.height = child_requisition.height;
+
+      gtk_widget_size_allocate(child->widget, &child_allocation);
+    }
+    children = children->next;
   }
 }
 
