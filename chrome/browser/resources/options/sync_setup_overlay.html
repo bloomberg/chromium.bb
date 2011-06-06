@@ -53,7 +53,8 @@
                         </td>
                         <td>
                           <input id="gaia-email" type="text" name="email"
-                              size="18" value="" class="reset-enabled">
+                              size="18" value=""
+                              class="reset-enabled reset-value">
                           <span id="email-readonly" hidden></span>
                         </td>
                       </tr>
@@ -87,7 +88,7 @@
                         </td>
                         <td>
                           <input id="gaia-passwd" type="password" name="passwd"
-                              size="18" class="reset-enabled">
+                              size="18" class="reset-enabled reset-value">
                         </td>
                       </tr>
                       <tr id="access-code-input-row"
@@ -355,10 +356,12 @@
               </div>
               <div class="sync-custom-passphrase-input">
                 <input id="custom-passphrase" type="password"
+                    class="reset-value"
                     i18n-values="placeholder:passphraseLabel">
               </div>
               <div class="sync-custom-passphrase-input">
                 <input id="confirm-passphrase" type="password"
+                    class="reset-value"
                     i18n-values="placeholder:confirmLabel">
               </div>
               <div id="empty-error" class="error"
@@ -377,12 +380,14 @@
             </div>
             <div id="passphrase-input">
               <input id="passphrase" name="passphrase" type="password"
+                  class="reset-value"
                   i18n-values="placeholder:passphraseLabel">
               <div id="incorrect-passphrase" class="error"
                    i18n-content="incorrectPassphrase" hidden>
               </div>
             </div>
-            <div id="sync-passphrase-warning">
+            <div id="sync-passphrase-warning"
+                 i18n-values=".innerHTML:passphraseRecover" hidden>
             </div>
           </div>
         </div>

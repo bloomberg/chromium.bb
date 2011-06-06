@@ -372,9 +372,8 @@ cr.define('options', function() {
         self.setCheckboxesToKeepEverythingSynced_(syncAll);
       };
 
+      this.resetPage_('sync-setup-configure');
       $('sync-setup-configure').hidden = false;
-
-      this.clearPassphraseInputs_();
 
       if (args) {
         if (!args['encryptionEnabled'])
@@ -394,19 +393,9 @@ cr.define('options', function() {
       }
     },
 
-    /**
-     * Clears the value of the custom passphrase inputs.
-     * @private
-     */
-    clearPassphraseInputs_: function() {
-      $('custom-passphrase').value = '';
-      $('confirm-passphrase').value = '';
-    },
-
     showSyncEverythingPage_: function() {
       $('confirm-sync-preferences').hidden = false;
       $('customize-sync-preferences').hidden = true;
-      this.clearPassphraseInputs_();
 
       // Reset the selection to 'Sync everything'.
       $('sync-select-datatypes').selectedIndex = 0;
@@ -446,8 +435,7 @@ cr.define('options', function() {
       if (args["passphrase_setting_rejected"])
         $('incorrect-passphrase').hidden = false;
 
-      $('sync-passphrase-warning').innerHTML =
-          localStrings.getString('passphraseRecover');
+      $('sync-passphrase-warning').hidden = false;
 
       $('passphrase').focus();
     },
@@ -544,6 +532,14 @@ cr.define('options', function() {
       $('captcha-wrapper').style.backgroundImage = url(args.captchaUrl);
     },
 
+    /**
+     * Reset the state of all descendant elements of a root element to their
+     * initial state.
+     * The initial state is specified by adding a class to the descendant
+     * element in sync_setup_overlay.html.
+     * @param pageElementId The root page element id.
+     * @private
+     */
     resetPage_: function(pageElementId) {
       var page = $(pageElementId);
       var forEach = function(arr, fn) {
@@ -563,6 +559,8 @@ cr.define('options', function() {
           function(elt) { elt.disabled = false; });
       forEach(page.getElementsByClassName('reset-visibility-hidden'),
           function(elt) { elt.style.visibility = 'hidden'; });
+      forEach(page.getElementsByClassName('reset-value'),
+          function(elt) { elt.value = ''; });
     },
 
     showGaiaLogin_: function(args) {
