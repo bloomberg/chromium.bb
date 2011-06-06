@@ -6,7 +6,7 @@ vars = {
     'git_url':
          'http://git.chromium.org',
     'webkit_rev':
-         '@81b2a955d56542a4fc469c2eaa488eac85ad8bb3'
+         '@49bf21c2e7b420f28923475474ce821ad503bdf1'
 }
 
 deps = {
@@ -55,7 +55,7 @@ deps = {
     'src/third_party/libvpx':
         Var('git_url') + '/chromium/deps/libvpx.git@466ba7c8ea5ac06ddf1e12a2cb7c656e0060824c',
     'src/third_party/ots':
-        Var('git_url') + '/external/ots.git@d668582b5057eaa91dfc12129eb79a3b24dcf884',
+        Var('git_url') + '/external/ots.git@18908189deb0ea39155f5558173862807e2936e1',
     'src/third_party/pylib':
         Var('git_url') + '/native_client/src/third_party/pylib.git@be1b3e269cb698f969a5a630a026628cc6d6cc78',
     'src/third_party/safe_browsing/testing':
@@ -63,7 +63,7 @@ deps = {
     'src/third_party/scons-2.0.1':
         Var('git_url') + '/native_client/src/third_party/scons-2.0.1.git@c81c95aff36392cffede13382dd5fcad25c0a603',
     'src/third_party/skia/gpu':
-        Var('git_url') + '/external/skia/gpu.git@4ecf9e34618f710be6e50197033385c97778ddc9',
+        Var('git_url') + '/external/skia/gpu.git@77b99428e0b06fc52b7fbdac4f950e071c1de06c',
     'src/third_party/skia/include':
         Var('git_url') + '/external/skia/include.git@58bcd9fe17828a88274f670e4ea0c9c2fd3296a0',
     'src/third_party/skia/src':
