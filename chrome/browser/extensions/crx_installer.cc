@@ -443,6 +443,8 @@ void CrxInstaller::InstallUIAbort() {
                   NotificationService::NoDetails());
   Release();  // balanced in ConfirmInstall().
 
+  NotifyCrxInstallComplete();
+
   // We're done. Since we don't post any more tasks to ourself, our ref count
   // should go to zero and we die. The destructor will clean up the temp dir.
 }

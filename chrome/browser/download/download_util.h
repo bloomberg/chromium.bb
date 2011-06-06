@@ -12,6 +12,7 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
+#include "base/memory/ref_counted.h"
 #include "base/string16.h"
 #include "chrome/browser/download/download_process_handle.h"
 #include "ui/gfx/native_widget_types.h"
@@ -21,6 +22,7 @@
 #endif
 
 class BaseDownloadItemModel;
+class CrxInstaller;
 class DictionaryValue;
 class DownloadItem;
 class DownloadManager;
@@ -87,10 +89,13 @@ void GenerateFileName(const GURL& url,
 // full path to a file.
 void GenerateSafeFileName(const std::string& mime_type, FilePath* file_name);
 
-// Opens downloaded Chrome extension file (*.crx).
-void OpenChromeExtension(Profile* profile,
-                         DownloadManager* download_manager,
-                         const DownloadItem& download_item);
+// Start installing a downloaded item item as a CRX (extension, theme, app,
+// ...).  The installer does work on the file thread, so the installation
+// is not complete when this function returns.  Returns the object managing
+// the installation.
+scoped_refptr<CrxInstaller> OpenChromeExtension(
+    Profile* profile,
+    const DownloadItem& download_item);
 
 // Download progress animations ------------------------------------------------
 

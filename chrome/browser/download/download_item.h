@@ -27,8 +27,11 @@
 #include "base/timer.h"
 #include "chrome/browser/download/download_process_handle.h"
 #include "chrome/browser/download/download_state_info.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 
+class CrxInstaller;
 class DownloadFileManager;
 class DownloadManager;
 struct DownloadCreateInfo;
@@ -39,7 +42,7 @@ struct DownloadHistoryInfo;
 // Destination tab's download view, may refer to a given DownloadItem.
 //
 // This is intended to be used only on the UI thread.
-class DownloadItem {
+class DownloadItem : public NotificationObserver {
  public:
   enum DownloadState {
     // Download is actively progressing.
@@ -126,6 +129,11 @@ class DownloadItem {
 
   // Notifies our observers periodically.
   void UpdateObservers();
+
+  // NotificationObserver implementation.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
   // Returns true if it is OK to open this download.
   bool CanOpenDownload();
@@ -315,6 +323,13 @@ class DownloadItem {
     return state_info_.target_name != full_path_.BaseName();
   }
 
+  // Is a CRX installer running on this download?
+  bool IsCrxInstallRuning() const {
+    return (is_extension_install() &&
+            all_data_saved() &&
+            state_ == IN_PROGRESS);
+  }
+
   std::string DebugString(bool verbose) const;
 
 #ifdef UNIT_TEST
@@ -337,6 +352,10 @@ class DownloadItem {
   // Start/stop sending periodic updates to our observers
   void StartProgressTimer();
   void StopProgressTimer();
+
+  // Call to install this item as a CRX. Should only be called on
+  // items which are CRXes. Use is_extension_install() to check.
+  void StartCrxInstall();
 
   // State information used by the download manager.
   DownloadStateInfo state_info_;
@@ -440,6 +459,9 @@ class DownloadItem {
   // Do we actual open downloads when requested?  For testing purposes
   // only.
   bool open_enabled_;
+
+  // DownloadItem observes CRX installs it initiates.
+  NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadItem);
 };
