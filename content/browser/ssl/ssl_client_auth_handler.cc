@@ -4,14 +4,13 @@
 
 #include "content/browser/ssl/ssl_client_auth_handler.h"
 
-#include "chrome/browser/tab_contents/tab_contents_ssl_helper.h"
-#include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/content_browser_client.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/browser/ssl/ssl_client_auth_notification_details.h"
 #include "content/common/notification_service.h"
+#include "net/base/x509_certificate.h"
 #include "net/url_request/url_request.h"
 
 SSLClientAuthHandler::SSLClientAuthHandler(
@@ -97,14 +96,8 @@ void SSLClientAuthHandler::DoCertificateSelected(net::X509Certificate* cert) {
 
 void SSLClientAuthHandler::ShowClientCertificateRequestDialog(
     int render_process_host_id, int render_view_host_id) {
-  TabContents* tab = tab_util::GetTabContentsByID(
-      render_process_host_id, render_view_host_id);
-  if (!tab)
-    return;
-
-  TabContentsWrapper* wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(tab);
-  wrapper->ssl_helper()->ShowClientCertificateRequestDialog(this);
+  content::GetContentClient()->browser()->ShowClientCertificateRequestDialog(
+      render_process_host_id, render_view_host_id, this);
 }
 
 SSLClientAuthObserver::SSLClientAuthObserver(

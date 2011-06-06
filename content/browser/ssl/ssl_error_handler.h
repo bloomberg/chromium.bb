@@ -53,10 +53,6 @@ class SSLErrorHandler : public base::RefCountedThreadSafe<SSLErrorHandler> {
   // Available on either thread.
   ResourceType::Type resource_type() const { return resource_type_; }
 
-  // Returns the TabContents this object is associated with.  Should be
-  // called from the UI thread.
-  TabContents* GetTabContents();
-
   // Cancels the associated net::URLRequest.
   // This method can be called from OnDispatchFailed and OnDispatched.
   void CancelRequest();
@@ -79,6 +75,9 @@ class SSLErrorHandler : public base::RefCountedThreadSafe<SSLErrorHandler> {
   // take any specific actions in their OnDispatched/OnDispatchFailed should
   // call this.
   void TakeNoAction();
+
+  int render_process_host_id() const { return render_process_host_id_; }
+  int tab_contents_id() const { return tab_contents_id_; }
 
  protected:
   friend class base::RefCountedThreadSafe<SSLErrorHandler>;

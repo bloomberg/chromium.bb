@@ -5,6 +5,7 @@
 #include "content/browser/content_browser_client.h"
 
 #include "base/memory/singleton.h"
+#include "content/browser/ssl/ssl_client_auth_handler.h"
 #include "content/browser/webui/empty_web_ui_factory.h"
 #include "googleurl/src/gurl.h"
 
@@ -93,6 +94,20 @@ void ContentBrowserClient::AllowCertificateError(
     Callback2<SSLCertErrorHandler*, bool>::Type* callback) {
   callback->Run(handler, overridable);
   delete callback;
+}
+
+void ContentBrowserClient::ShowClientCertificateRequestDialog(
+    int render_process_id,
+    int render_view_id,
+    SSLClientAuthHandler* handler) {
+  handler->CertificateSelected(NULL);
+}
+
+void ContentBrowserClient::AddNewCertificate(
+    net::URLRequest* request,
+    net::X509Certificate* cert,
+    int render_process_id,
+    int render_view_id) {
 }
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)

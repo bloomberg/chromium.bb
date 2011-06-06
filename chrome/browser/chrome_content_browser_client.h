@@ -50,6 +50,15 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       SSLCertErrorHandler* handler,
       bool overridable,
       Callback2<SSLCertErrorHandler*, bool>::Type* callback) OVERRIDE;
+  virtual void ShowClientCertificateRequestDialog(
+      int render_process_id,
+      int render_view_id,
+      SSLClientAuthHandler* handler) OVERRIDE;
+  virtual void AddNewCertificate(
+      net::URLRequest* request,
+      net::X509Certificate* cert,
+      int render_process_id,
+      int render_view_id) OVERRIDE;
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Can return an optional fd for crash handling, otherwise returns -1.
   virtual int GetCrashSignalFD(const std::string& process_type) OVERRIDE;

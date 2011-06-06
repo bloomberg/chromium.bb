@@ -6,7 +6,7 @@
 
 #include "base/string_util.h"
 #include "chrome/browser/download/download_types.h"
-#include "chrome/browser/ssl/ssl_add_cert_handler.h"
+#include "content/browser/content_browser_client.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/common/resource_response.h"
@@ -103,9 +103,8 @@ bool X509UserCertResourceHandler::OnResponseCompleted(
   scoped_refptr<net::X509Certificate> cert(
       net::X509Certificate::CreateFromBytes(resource_buffer_->data(),
                                             content_length_));
-  // The handler will run the UI and delete itself when it's finished.
-  new SSLAddCertHandler(request_, cert, render_process_host_id_,
-                        render_view_id_);
+  content::GetContentClient()->browser()->AddNewCertificate(
+      request_, cert, render_process_host_id_, render_view_id_);
   return true;
 }
 

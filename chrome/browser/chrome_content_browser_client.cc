@@ -28,7 +28,11 @@
 #include "chrome/browser/renderer_host/text_input_client_message_filter.h"
 #include "chrome/browser/search_engines/search_provider_install_state_message_filter.h"
 #include "chrome/browser/spellcheck_message_filter.h"
+#include "chrome/browser/ssl/ssl_add_cert_handler.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
+#include "chrome/browser/tab_contents/tab_contents_ssl_helper.h"
+#include "chrome/browser/tab_contents/tab_util.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_factory.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_switches.h"
@@ -43,6 +47,7 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/resource_context.h"
 #include "content/browser/site_instance.h"
+#include "content/browser/ssl/ssl_client_auth_handler.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/worker_host/worker_process_host.h"
 #include "content/common/bindings_policy.h"
@@ -331,6 +336,31 @@ void ChromeContentBrowserClient::AllowCertificateError(
   SSLBlockingPage* blocking_page = new SSLBlockingPage(
       handler, overridable, callback);
   blocking_page->Show();
+}
+
+void ChromeContentBrowserClient::ShowClientCertificateRequestDialog(
+    int render_process_id,
+    int render_view_id,
+    SSLClientAuthHandler* handler) {
+  TabContents* tab = tab_util::GetTabContentsByID(
+      render_process_id, render_view_id);
+  if (!tab) {
+    NOTREACHED();
+    return;
+  }
+
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(tab);
+  wrapper->ssl_helper()->ShowClientCertificateRequestDialog(handler);
+}
+
+void ChromeContentBrowserClient::AddNewCertificate(
+    net::URLRequest* request,
+    net::X509Certificate* cert,
+    int render_process_id,
+    int render_view_id) {
+  // The handler will run the UI and delete itself when it's finished.
+  new SSLAddCertHandler(request, cert, render_process_id, render_view_id);
 }
 
 #if defined(OS_LINUX)

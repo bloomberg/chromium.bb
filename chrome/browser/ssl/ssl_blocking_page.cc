@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "chrome/browser/dom_operation_notification_details.h"
 #include "chrome/browser/ssl/ssl_error_info.h"
+#include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "content/browser/cert_store.h"
 #include "content/browser/renderer_host/render_process_host.h"
@@ -46,9 +47,11 @@ SSLBlockingPage::SSLBlockingPage(
     SSLCertErrorHandler* handler,
     bool overridable,
     Callback2<SSLCertErrorHandler*, bool>::Type* callback)
-    : ChromeInterstitialPage(handler->GetTabContents(),
-                             true,
-                             handler->request_url()),
+    : ChromeInterstitialPage(
+          tab_util::GetTabContentsByID(
+              handler->render_process_host_id(), handler->tab_contents_id()),
+          true,
+          handler->request_url()),
       handler_(handler),
       callback_(callback),
       overridable_(overridable) {

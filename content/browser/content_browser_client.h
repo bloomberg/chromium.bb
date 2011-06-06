@@ -20,12 +20,15 @@ class Profile;
 class QuotaPermissionContext;
 class RenderViewHost;
 class SSLCertErrorHandler;
+class SSLClientAuthHandler;
 class TabContents;
 class WorkerProcessHost;
 
 namespace net {
 class CookieList;
 class CookieOptions;
+class URLRequest;
+class X509Certificate;
 }
 
 namespace content {
@@ -119,6 +122,24 @@ class ContentBrowserClient {
       SSLCertErrorHandler* handler,
       bool overridable,
       Callback2<SSLCertErrorHandler*, bool>::Type* callback);
+
+  // Shows the user a SSL client certificate selection dialog. When the user has
+  // made a selection, the dialog will report back to |delegate|. |delegate| is
+  // notified when the dialog closes in call cases; if the user cancels the
+  // dialog, we call  with a NULL certificate.
+  virtual void ShowClientCertificateRequestDialog(
+      int render_process_id,
+      int render_view_id,
+      SSLClientAuthHandler* handler);
+
+  // Adds a newly-generated client cert. The embedder should ensure that there's
+  // a private key for the cert, displays the cert to the user, and adds it upon
+  // user approval.
+  virtual void AddNewCertificate(
+      net::URLRequest* request,
+      net::X509Certificate* cert,
+      int render_process_id,
+      int render_view_id);
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Can return an optional fd for crash handling, otherwise returns -1.
