@@ -162,6 +162,8 @@
 #define SK_SCALAR_IS_FLOAT
 #undef SK_SCALAR_IS_FIXED
 
+#define GR_MAX_OFFSCREEN_AA_DIM     512
+
 // Log the file and line number for assertions.
 #define SkDebugf(...) SkDebugf_FileLine(__FILE__, __LINE__, false, __VA_ARGS__)
 SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
