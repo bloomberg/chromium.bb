@@ -22,6 +22,7 @@
 #include "net/base/host_resolver.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
+#include "net/base/single_request_host_resolver.h"
 
 using base::TimeDelta;
 

@@ -12,6 +12,7 @@
 #include "net/base/completion_callback.h"
 #include "net/base/host_resolver.h"
 #include "net/base/net_log.h"
+#include "net/base/single_request_host_resolver.h"
 #include "jingle/notifier/base/server_information.h"
 
 namespace talk_base {

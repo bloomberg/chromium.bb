@@ -18,6 +18,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/host_resolver.h"
+#include "net/base/single_request_host_resolver.h"
 #include "net/url_request/url_request_context.h"
 #include "ppapi/c/private/ppb_flash_net_connector.h"
 #include "ppapi/proxy/ppapi_messages.h"

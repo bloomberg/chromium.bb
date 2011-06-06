@@ -15,6 +15,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
+#include "net/base/single_request_host_resolver.h"
 #include "net/curvecp/curvecp_client_socket.h"
 
 namespace net {
