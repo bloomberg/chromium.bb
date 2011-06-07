@@ -430,8 +430,9 @@ void PersonalOptionsHandler::LoadAccountPicture(const ListValue* args) {
     web_ui_->CallJavascriptFunction("PersonalOptions.setAccountPicture",
                                     image_url);
 
+    StringValue email_value(email);
     web_ui_->CallJavascriptFunction("AccountsOptions.updateAccountPicture",
-                                    StringValue(email), image_url);
+                                    email_value, image_url);
   }
 }
 #endif
