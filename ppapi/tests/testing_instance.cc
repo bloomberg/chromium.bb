@@ -24,6 +24,11 @@ TestingInstance::TestingInstance(PP_Instance instance)
   callback_factory_.Initialize(this);
 }
 
+TestingInstance::~TestingInstance() {
+  if (current_case_)
+    delete current_case_;
+}
+
 bool TestingInstance::Init(uint32_t argc,
                            const char* argn[],
                            const char* argv[]) {
