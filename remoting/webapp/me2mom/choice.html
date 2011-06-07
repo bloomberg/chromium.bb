@@ -67,12 +67,12 @@ found in the LICENSE file.
             With Chromoting you can easily let another Chrome user see and
             control your computer.
           </div>
-          <form class="centered-form">
+          <div class="centered-button">
             <button id="share-button" class="auth-status-control"
                     type="button" onclick="tryShare(); return false;">
               Share this computer
             </button>
-          </form>
+          </div>
         </div> <!-- unshared -->
 
         <div id="preparing-to-share" class="mode">
@@ -92,22 +92,22 @@ found in the LICENSE file.
           <div class="message">
             Waiting for connection...
           </div>
-          <form class="centered-form">
+          <div class="centered-button">
             <button type="button" onclick="cancelShare(); return false;">
               Cancel
             </button>
-          </form>
+          </div>
         </div> <!-- ready-to-share -->
 
         <div id="shared" class="mode">
           <div class="message">
             Your desktop is currently being shared.
           </div>
-          <form class="centered-form">
+          <div class="centered-button">
             <button type="button" onclick="cancelShare(); return false;">
               Stop sharing
             </button>
-          </form>
+          </div>
         </div> <!-- shared -->
       </section> <!-- host-section -->
 
@@ -119,18 +119,18 @@ found in the LICENSE file.
             their access code to you.
           </div>
           <div id="access-code-entry-row">
-            <form action="">
+            <form action="" onsubmit="tryConnect();  return false;">
               <label class="auth-status-control" for="access-code-entry">
                 Access code:
               </label>
               <input id="access-code-entry" class="auth-status-control"
                      type="text"/>
-            </form>
-            <form class="centered-form">
-              <button id="connect-button" class="auth-status-control"
-                      type="button" onclick="tryConnect();  return false;">
-                Connect
-              </button>
+              <div class="centered-button">
+                <button id="connect-button" class="auth-status-control"
+                        type="submit">
+                  Connect
+                </button>
+              </div>
             </form>
           </div> <!-- code-entry-row -->
         </div> <!-- unconnected -->
@@ -141,11 +141,11 @@ found in the LICENSE file.
             <!-- TODO(jamiewalch): Implement Cancel, being careful when ignoring
                  the eventual server response not to ignore responses for any
                  subsequent requests.
-            <form class="centered-form">
+            <div class="centered-button">
               <button onclick="cancelConnect(); return false;">
                 Cancel
               </button>
-            </form>
+            </div>
             -->
           </div>
         </div> <!-- connecting -->
@@ -158,12 +158,12 @@ found in the LICENSE file.
             An error occurred. The server response was
             <div id="server-response"></div>.
           </div>
-          <form class="centered-form">
-            <button type="button"
+          <div class="centered-button">
+            <button type="button" class="auth-status-control"
                     onclick="setClientMode('unconnected'); return false;">
               OK
             </button>
-          </form>
+          </div>
         </div> <!-- connect-failed -->
       </section> <!-- client-section -->
 

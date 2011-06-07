@@ -75,17 +75,18 @@ section {
 
 .auth-status-control {
   /* Class used to denote controls that affect authorization status. */
+  margin: 10px auto auto 0px;
 }
 
-.centered-form {
+.centered-button {
   /*
-    Used to force buttons to center correctly on Chrome due to bug laying out
-    buttons. http://crbug.com/84654
-    When 84654 is fixed we can remove the forms that have this class that
-    are wrapping our buttons.
+    Used to force buttons to center correctly on Chrome due to a quirk
+    with laying out buttons. http://crbug.com/84654
+
+    TODO(ajwong): Either fix Chrome layout behavior, or if Chrome is actually
+    conforming correctly to the standard, remove this comment.
   */
-  margin: 25px auto;
-  display: table;
+  text-align: center;
 }
 
 .client-element {
