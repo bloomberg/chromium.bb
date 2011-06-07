@@ -6,6 +6,7 @@
 #define CHROME_TEST_LIVE_SYNC_LIVE_PREFERENCES_SYNC_TEST_H_
 #pragma once
 
+#include <string>
 #include "chrome/test/live_sync/live_sync_test.h"
 
 class PrefService;
@@ -42,6 +43,14 @@ class LivePreferencesSyncTest : public LiveSyncTest {
   void ChangeStringPref(int index,
                         const char* pref_name,
                         const std::string& new_value);
+
+  // Modifies the value of the string preference with name |pref_name| in the
+  // profile with index |index| by appending |append_value| to its current
+  // value. Also changes its value in |verifier| if DisableVerifier() hasn't
+  // been called.
+  void AppendStringPref(int index,
+                        const char* pref_name,
+                        const std::string& append_value);
 
   // Changes the value of the file path preference with name |pref_name| in the
   // profile with index |index| to |new_value|. Also changes its value in

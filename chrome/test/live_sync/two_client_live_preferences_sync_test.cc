@@ -433,6 +433,63 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest,
   ASSERT_TRUE(BooleanPrefMatches(prefs::kExtensionsUIDeveloperMode));
 }
 
+// TCM ID - 7583816
+IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest, kAcceptLanguages) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(StringPrefMatches(prefs::kAcceptLanguages));
+
+  AppendStringPref(0, prefs::kAcceptLanguages, ",ar");
+  AppendStringPref(1, prefs::kAcceptLanguages, ",fr");
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  // kAcceptLanguages is not synced on Mac.
+#if !defined(OS_MACOSX)
+  ASSERT_TRUE(StringPrefMatches(prefs::kAcceptLanguages));
+#else
+  ASSERT_FALSE(StringPrefMatches(prefs::kAcceptLanguages));
+#endif  // OS_MACOSX
+
+  ChangeStringPref(0, prefs::kAcceptLanguages, "en-US");
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+#if !defined(OS_MACOSX)
+  ASSERT_TRUE(StringPrefMatches(prefs::kAcceptLanguages));
+#else
+  ASSERT_FALSE(StringPrefMatches(prefs::kAcceptLanguages));
+#endif  // OS_MACOSX
+
+  ChangeStringPref(0, prefs::kAcceptLanguages, "ar,en-US");
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+#if !defined(OS_MACOSX)
+  ASSERT_TRUE(StringPrefMatches(prefs::kAcceptLanguages));
+#else
+  ASSERT_FALSE(StringPrefMatches(prefs::kAcceptLanguages));
+#endif  // OS_MACOSX
+}
+
+// TCM ID - 7590682
+#if defined(TOOLKIT_USES_GTK)
+IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest, kUsesSystemTheme) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(BooleanPrefMatches(prefs::kUsesSystemTheme));
+
+  ChangeBooleanPref(0, prefs::kUsesSystemTheme);
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  ASSERT_FALSE(BooleanPrefMatches(prefs::kUsesSystemTheme));
+}
+#endif  // TOOLKIT_USES_GTK
+
+// TCM ID - 3636292
+#if defined(TOOLKIT_USES_GTK)
+IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest,
+                       kUseCustomChromeFrame) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(BooleanPrefMatches(prefs::kUseCustomChromeFrame));
+
+  ChangeBooleanPref(0, prefs::kUseCustomChromeFrame);
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  ASSERT_TRUE(BooleanPrefMatches(prefs::kUseCustomChromeFrame));
+}
+#endif  // TOOLKIT_USES_GTK
+
 // TCM ID - 6473347.
 #if defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest, kTapToClickEnabled) {

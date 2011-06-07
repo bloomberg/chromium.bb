@@ -55,6 +55,14 @@ void LivePreferencesSyncTest::ChangeStringPref(int index,
     GetVerifierPrefs()->SetString(pref_name, new_value);
 }
 
+void LivePreferencesSyncTest::AppendStringPref(
+    int index,
+    const char* pref_name,
+    const std::string& append_value) {
+  ChangeStringPref(index, pref_name,
+                   GetPrefs(index)->GetString(pref_name) + append_value);
+}
+
 void LivePreferencesSyncTest::ChangeFilePathPref(int index,
                                                const char* pref_name,
                                                const FilePath& new_value) {
