@@ -16,6 +16,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/defaults.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -114,7 +115,7 @@ std::string GetNewTabBackgroundCSS(const ui::ThemeProvider* theme_provider,
   // The bar is detached, so we must offset the background by the bar size
   // if it's a top-aligned bar.
 #if defined(OS_WIN) || defined(TOOLKIT_VIEWS)
-  int offset = BookmarkBarView::kNewtabBarHeight;
+  int offset = browser_defaults::kNewtabBookmarkBarHeight;
 #elif defined(OS_MACOSX)
   int offset = bookmarks::kNTPBookmarkBarHeight;
 #elif defined(OS_POSIX)

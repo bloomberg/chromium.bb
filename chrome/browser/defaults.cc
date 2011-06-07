@@ -80,4 +80,12 @@ bool skip_restore = false;
 
 bool enable_help_app = true;
 
+#ifdef TOUCH_UI
+const int kBookmarkBarHeight = 50;
+const int kNewtabBookmarkBarHeight = 72;
+#else
+const int kBookmarkBarHeight = 28;
+const int kNewtabBookmarkBarHeight = 57;
+#endif
+
 }  // namespace browser_defaults

@@ -82,6 +82,11 @@ extern bool skip_restore;
 // today.
 extern bool enable_help_app;
 
+// Preferred height of the bookmarks bar when shown on every page and
+// when shown only on the new tab page.
+extern const int kBookmarkBarHeight;
+extern const int kNewtabBookmarkBarHeight;
+
 }  // namespace browser_defaults
 
 #endif  // CHROME_BROWSER_DEFAULTS_H_

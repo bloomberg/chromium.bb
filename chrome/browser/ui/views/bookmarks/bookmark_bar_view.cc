@@ -16,6 +16,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser_shutdown.h"
+#include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -75,12 +76,6 @@ static const int kDetachedTopMargin = 1;  // When attached, we use 0 and let the
 static const int kBottomMargin = 2;
 static const int kLeftMargin = 1;
 static const int kRightMargin = 1;
-
-// Preferred height of the bookmarks bar.
-static const int kBarHeight = 28;
-
-// Preferred height of the bookmarks bar when only shown on the new tab page.
-const int BookmarkBarView::kNewtabBarHeight = 57;
 
 // static
 const char BookmarkBarView::kViewClassName[] =
@@ -642,7 +637,7 @@ gfx::Size BookmarkBarView::GetMinimumSize() {
       overflow_pref.width() + kButtonPadding +
       bookmarks_separator_pref.width() + sync_error_total_width);
 
-  return gfx::Size(width, kBarHeight);
+  return gfx::Size(width, browser_defaults::kBookmarkBarHeight);
 }
 
 void BookmarkBarView::Layout() {
@@ -1659,8 +1654,8 @@ gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
     // For the attached appearance, pin the content to the bottom of the bar
     // when animating in/out, as shrinking its height instead looks weird.  This
     // also matches how we layout infobars.
-    y += View::height() - kBarHeight;
-    height += kBarHeight;
+    y += View::height() - browser_defaults::kBookmarkBarHeight;
+    height += browser_defaults::kBookmarkBarHeight;
   }
 
   gfx::Size other_bookmarked_pref =
@@ -1770,12 +1765,17 @@ gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
     if (OnNewTabPage()) {
       x += static_cast<int>(
           kNewtabHorizontalPadding * (1 - size_animation_->GetCurrentValue()));
-      prefsize.set_height(kBarHeight +
-          static_cast<int>((kNewtabBarHeight - kBarHeight) *
+      prefsize.set_height(
+          browser_defaults::kBookmarkBarHeight +
+          static_cast<int>(
+              (browser_defaults::kNewtabBookmarkBarHeight -
+               browser_defaults::kBookmarkBarHeight) *
               (1 - size_animation_->GetCurrentValue())));
     } else {
       prefsize.set_height(
-          static_cast<int>(kBarHeight * size_animation_->GetCurrentValue()));
+          static_cast<int>(
+              browser_defaults::kBookmarkBarHeight *
+              size_animation_->GetCurrentValue()));
     }
   }
   return prefsize;

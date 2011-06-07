@@ -67,8 +67,6 @@ class BookmarkBarView : public DetachableToolbarView,
   // Maximum size of buttons on the bookmark bar.
   static const int kMaxButtonWidth;
 
-  static const int kNewtabBarHeight;
-
   BookmarkBarView(Profile* profile, Browser* browser);
   virtual ~BookmarkBarView();
 
