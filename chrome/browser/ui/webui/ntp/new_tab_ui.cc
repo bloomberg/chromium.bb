@@ -30,6 +30,7 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
+#include "chrome/browser/ui/webui/ntp/favicon_webui_handler.h"
 #include "chrome/browser/ui/webui/ntp/foreign_session_handler.h"
 #include "chrome/browser/ui/webui/ntp/most_visited_handler.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_page_sync_handler.h"
@@ -347,7 +348,7 @@ NewTabUI::NewTabUI(TabContents* contents)
     AddMessageHandler((new NTPLoginHandler())->Attach(this));
     AddMessageHandler((new ShownSectionsHandler(pref_service))->Attach(this));
     AddMessageHandler((new browser_sync::ForeignSessionHandler())->
-      Attach(this));
+        Attach(this));
     AddMessageHandler((new MostVisitedHandler())->Attach(this));
     AddMessageHandler((new RecentlyClosedTabsHandler())->Attach(this));
     AddMessageHandler((new MetricsHandler())->Attach(this));
@@ -361,6 +362,8 @@ NewTabUI::NewTabUI(TabContents* contents)
 
     AddMessageHandler((new NewTabPageSetHomePageHandler())->Attach(this));
     AddMessageHandler((new NewTabPageClosePromoHandler())->Attach(this));
+    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewTabPage4))
+      AddMessageHandler((new FaviconWebUIHandler())->Attach(this));
   }
 
   // Initializing the CSS and HTML can require some CPU, so do it after

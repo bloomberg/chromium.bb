@@ -84,8 +84,6 @@ WebUIMessageHandler* MostVisitedHandler::Attach(WebUI* web_ui) {
 }
 
 void MostVisitedHandler::RegisterMessages() {
-  // Register ourselves as the handler for the "getMostSisited" message from
-  // Javascript.
   web_ui_->RegisterMessageCallback("getMostVisited",
       NewCallback(this, &MostVisitedHandler::HandleGetMostVisited));
 
