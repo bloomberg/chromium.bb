@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
 
+#include <queue>
 #include <utility>
 
 #include <X11/XKBlib.h>
@@ -18,6 +19,7 @@
 #include "base/process_util.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
+#include "content/browser/browser_thread.h"
 
 namespace chromeos {
 namespace input_method {
@@ -228,17 +230,17 @@ class XKeyboard {
       return false;
     }
 
-    const std::string layouts_to_set = CreateFullXkbLayoutName(
+    const std::string layout_to_set = CreateFullXkbLayoutName(
         layout_name, modifier_map);
-    if (layouts_to_set.empty()) {
+    if (layout_to_set.empty()) {
       return false;
     }
 
     if (!current_layout_name_.empty()) {
       const std::string current_layout = CreateFullXkbLayoutName(
           current_layout_name_, current_modifier_map_);
-      if (!force && (current_layout == layouts_to_set)) {
-        DLOG(INFO) << "The requested layout is already set: " << layouts_to_set;
+      if (!force && (current_layout == layout_to_set)) {
+        DLOG(INFO) << "The requested layout is already set: " << layout_to_set;
         return true;
       }
     }
@@ -251,28 +253,45 @@ class XKeyboard {
 
     // TODO(yusukes): Revert to VLOG(1) when crosbug.com/15851 is resolved.
     LOG(WARNING) << (force ? "Reapply" : "Set")
-                 << " layout: " << layouts_to_set;
+                 << " layout: " << layout_to_set;
 
-    ExecuteSetLayoutCommand(layouts_to_set);
+    const bool start_execution = execute_queue_.empty();
+    // If no setxkbmap command is in flight (i.e. start_execution is true),
+    // start the first one by explicitly calling MaybeExecuteSetLayoutCommand().
+    // If one or more setxkbmap commands are already in flight, just push the
+    // layout name to the queue. setxkbmap command for the layout will be called
+    // via OnSetLayoutFinish() callback later.
+    execute_queue_.push(layout_to_set);
+    if (start_execution) {
+      MaybeExecuteSetLayoutCommand();
+    }
     return true;
   }
 
-  // Executes 'setxkbmap -layout ...' command asynchronously.
+  // Executes 'setxkbmap -layout ...' command asynchronously using a layout name
+  // in the |execute_queue_|. Do nothing if the queue is empty.
   // TODO(yusukes): Use libxkbfile.so instead of the command (crosbug.com/13105)
-  void ExecuteSetLayoutCommand(const std::string& layouts_to_set) {
+  void MaybeExecuteSetLayoutCommand() {
+    if (execute_queue_.empty()) {
+      return;
+    }
+    const std::string layout_to_set = execute_queue_.front();
+
     std::vector<std::string> argv;
     base::file_handle_mapping_vector fds_to_remap;
     base::ProcessHandle handle = base::kNullProcessHandle;
 
     argv.push_back(kSetxkbmapCommand);
     argv.push_back("-layout");
-    argv.push_back(layouts_to_set);
+    argv.push_back(layout_to_set);
+    argv.push_back("-synch");
     const bool result = base::LaunchApp(argv,
                                         fds_to_remap,  // No remapping.
                                         false,  // Don't wait.
                                         &handle);
     if (!result) {
-      LOG(ERROR) << "Failed to execute setxkbmap: " << layouts_to_set;
+      LOG(ERROR) << "Failed to execute setxkbmap: " << layout_to_set;
+      execute_queue_ = std::queue<std::string>();  // clear the queue.
       return;
     }
 
@@ -282,16 +301,27 @@ class XKeyboard {
     g_child_watch_add(pid,
                       reinterpret_cast<GChildWatchFunc>(OnSetLayoutFinish),
                       this);
+    VLOG(1) << "ExecuteSetLayoutCommand: " << layout_to_set << ": pid=" << pid;
   }
 
   static void OnSetLayoutFinish(GPid pid, gint status, XKeyboard* self) {
-    DLOG(INFO) << "OnSetLayoutFinish: pid=" << pid;
+    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    VLOG(1) << "OnSetLayoutFinish: pid=" << pid;
+    if (self->execute_queue_.empty()) {
+      LOG(ERROR) << "OnSetLayoutFinish: execute_queue_ is empty. "
+                 << "base::LaunchApp failed? pid=" << pid;
+      return;
+    }
+    self->execute_queue_.pop();
+    self->MaybeExecuteSetLayoutCommand();
   }
 
   // The XKB layout name which we set last time like "us" and "us(dvorak)".
   std::string current_layout_name_;
   // The mapping of modifier keys we set last time.
   ModifierMap current_modifier_map_;
+  // A queue for executing setxkbmap one by one.
+  std::queue<std::string> execute_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(XKeyboard);
 };
