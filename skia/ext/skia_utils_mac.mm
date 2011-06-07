@@ -186,6 +186,14 @@ CGColorRef SkColorToCGColorRef(SkColor color) {
                                  SkColorGetA(color) / 255.0);
 }
 
+// Converts ARGB to NSColor.
+NSColor* SkColorToCalibratedNSColor(SkColor color) {
+  return [NSColor colorWithCalibratedRed:SkColorGetR(color) / 255.0
+                                   green:SkColorGetG(color) / 255.0
+                                    blue:SkColorGetB(color) / 255.0
+                                   alpha:SkColorGetA(color) / 255.0];
+}
+
 SkBitmap CGImageToSkBitmap(CGImageRef image) {
   if (!image)
     return SkBitmap();

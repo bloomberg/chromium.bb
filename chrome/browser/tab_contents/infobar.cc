@@ -2,16 +2,39 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#if defined(TOOLKIT_VIEWS)  // TODO(pkasting): Port non-views to use this.
-
 #include "chrome/browser/tab_contents/infobar.h"
 
 #include <cmath>
 
 #include "base/logging.h"
 #include "chrome/browser/tab_contents/infobar_container.h"
-#include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "ui/base/animation/slide_animation.h"
+
+SkColor GetInfoBarTopColor(InfoBarDelegate::Type infobar_type) {
+  // Yellow
+  static const SkColor kWarningBackgroundColorTop =
+      SkColorSetRGB(255, 242, 183);
+  // Gray
+  static const SkColor kPageActionBackgroundColorTop =
+      SkColorSetRGB(237, 237, 237);
+
+  return (infobar_type == InfoBarDelegate::WARNING_TYPE) ?
+      kWarningBackgroundColorTop : kPageActionBackgroundColorTop;
+}
+
+SkColor GetInfoBarBottomColor(InfoBarDelegate::Type infobar_type) {
+  // Yellow
+  static const SkColor kWarningBackgroundColorBottom =
+      SkColorSetRGB(250, 230, 145);
+  // Gray
+  static const SkColor kPageActionBackgroundColorBottom =
+      SkColorSetRGB(217, 217, 217);
+
+  return (infobar_type == InfoBarDelegate::WARNING_TYPE) ?
+      kWarningBackgroundColorBottom : kPageActionBackgroundColorBottom;
+}
+
+#if defined(TOOLKIT_VIEWS)  // TODO(pkasting): Port non-views to use this.
 
 InfoBar::InfoBar(TabContentsWrapper* owner, InfoBarDelegate* delegate)
     : owner_(owner),

@@ -26,9 +26,11 @@ typedef struct _NSSize NSSize;
 #ifdef __OBJC__
 @class NSImage;
 @class NSImageRep;
+@class NSColor;
 #else
 class NSImage;
 class NSImageRep;
+class NSColor;
 #endif
 
 namespace gfx {
@@ -61,6 +63,9 @@ SkColor CGColorRefToSkColor(CGColorRef color);
 
 // Converts ARGB to CGColorRef.
 CGColorRef SkColorToCGColorRef(SkColor color);
+
+// Converts ARGB to NSColor.
+NSColor* SkColorToCalibratedNSColor(SkColor color);
 
 // Converts a CGImage to a SkBitmap.
 SkBitmap CGImageToSkBitmap(CGImageRef image);

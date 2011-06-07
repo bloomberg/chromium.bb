@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/infobars/infobar_background.h"
 
+#include "chrome/browser/tab_contents/infobar.h"
 #include "chrome/browser/ui/views/infobars/infobar_view.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia_paint.h"
@@ -12,31 +13,11 @@
 
 InfoBarBackground::InfoBarBackground(InfoBarDelegate::Type infobar_type)
     : separator_color_(SK_ColorBLACK),
-      top_color_(GetTopColor(infobar_type)),
-      bottom_color_(GetBottomColor(infobar_type)) {
+      top_color_(GetInfoBarTopColor(infobar_type)),
+      bottom_color_(GetInfoBarBottomColor(infobar_type)) {
 }
 
 InfoBarBackground::~InfoBarBackground() {
-}
-
-SkColor InfoBarBackground::GetTopColor(InfoBarDelegate::Type infobar_type) {
-  static const SkColor kWarningBackgroundColorTop =
-      SkColorSetRGB(255, 242, 183);
-  static const SkColor kPageActionBackgroundColorTop =
-      SkColorSetRGB(218, 231, 249);
-
-  return (infobar_type == InfoBarDelegate::WARNING_TYPE) ?
-      kWarningBackgroundColorTop : kPageActionBackgroundColorTop;
-}
-
-SkColor InfoBarBackground::GetBottomColor(InfoBarDelegate::Type infobar_type) {
-  static const SkColor kWarningBackgroundColorBottom =
-      SkColorSetRGB(250, 230, 145);
-  static const SkColor kPageActionBackgroundColorBottom =
-      SkColorSetRGB(179, 202, 231);
-
-  return (infobar_type == InfoBarDelegate::WARNING_TYPE) ?
-      kWarningBackgroundColorBottom : kPageActionBackgroundColorBottom;
 }
 
 void InfoBarBackground::Paint(gfx::Canvas* canvas, views::View* view) const {

@@ -13,6 +13,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image.h"
+#include "skia/ext/skia_utils_mac.h"
 
 NSString* const kBrowserThemeDidChangeNotification =
     @"BrowserThemeDidChangeNotification";
@@ -132,11 +133,7 @@ NSColor* ThemeService::GetNSColor(int id, bool allow_default) const {
   if (is_default && !allow_default)
     return nil;
 
-  NSColor* color = [NSColor
-      colorWithCalibratedRed:SkColorGetR(sk_color)/255.0
-                       green:SkColorGetG(sk_color)/255.0
-                        blue:SkColorGetB(sk_color)/255.0
-                       alpha:SkColorGetA(sk_color)/255.0];
+  NSColor* color = gfx::SkColorToCalibratedNSColor(sk_color);
 
   // We loaded successfully.  Cache the color.
   if (color)

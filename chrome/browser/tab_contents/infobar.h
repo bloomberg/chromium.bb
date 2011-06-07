@@ -2,19 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#if defined(TOOLKIT_VIEWS)  // TODO(pkasting): Port non-views to use this.
-
 #ifndef CHROME_BROWSER_TAB_CONTENTS_INFOBAR_H_
 #define CHROME_BROWSER_TAB_CONTENTS_INFOBAR_H_
 #pragma once
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
+#include "chrome/browser/tab_contents/infobar_delegate.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/gfx/size.h"
 
+// TODO(sail): These functions should be static methods in the InfoBar class
+// below once all platforms use that class.
+SkColor GetInfoBarTopColor(InfoBarDelegate::Type infobar_type);
+SkColor GetInfoBarBottomColor(InfoBarDelegate::Type infobar_type);
+
+#if defined(TOOLKIT_VIEWS)  // TODO(pkasting): Port non-views to use this.
+
 class InfoBarContainer;
-class InfoBarDelegate;
 class TabContentsWrapper;
 
 namespace ui {
@@ -116,10 +122,10 @@ class InfoBar : public ui::AnimationDelegate {
   DISALLOW_COPY_AND_ASSIGN(InfoBar);
 };
 
-#endif  // CHROME_BROWSER_TAB_CONTENTS_INFOBAR_H_
-
 #elif defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/ui/gtk/infobars/infobar_gtk.h"
 #elif defined(OS_MACOSX)
 #include "chrome/browser/ui/cocoa/infobars/infobar.h"
 #endif
+
+#endif  // CHROME_BROWSER_TAB_CONTENTS_INFOBAR_H_

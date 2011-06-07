@@ -8,6 +8,7 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/platform_util.h"
+#include "chrome/browser/tab_contents/infobar.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/custom_button.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
@@ -196,37 +197,18 @@ void InfoBar::AddLabelWithInlineLink(const string16& display_text,
 
 void InfoBar::GetTopColor(InfoBarDelegate::Type type,
                           double* r, double* g, double *b) {
-  // These constants are copied from corresponding skia constants from
-  // browser/ui/views/infobars/infobars.cc, and then changed into 0-1 ranged
-  // values for cairo.
-  switch (type) {
-    case InfoBarDelegate::WARNING_TYPE:
-      *r = 255.0 / 255.0;
-      *g = 242.0 / 255.0;
-      *b = 183.0 / 255.0;
-      break;
-    case InfoBarDelegate::PAGE_ACTION_TYPE:
-      *r = 218.0 / 255.0;
-      *g = 231.0 / 255.0;
-      *b = 249.0 / 255.0;
-      break;
-  }
+  SkColor color = GetInfoBarTopColor(type);
+  *r = SkColorGetR(color) / 255.0;
+  *g = SkColorGetG(color) / 255.0;
+  *b = SkColorGetB(color) / 255.0;
 }
 
 void InfoBar::GetBottomColor(InfoBarDelegate::Type type,
                              double* r, double* g, double *b) {
-  switch (type) {
-    case InfoBarDelegate::WARNING_TYPE:
-      *r = 250.0 / 255.0;
-      *g = 230.0 / 255.0;
-      *b = 145.0 / 255.0;
-      break;
-    case InfoBarDelegate::PAGE_ACTION_TYPE:
-      *r = 179.0 / 255.0;
-      *g = 202.0 / 255.0;
-      *b = 231.0 / 255.0;
-      break;
-  }
+  SkColor color = GetInfoBarBottomColor(type);
+  *r = SkColorGetR(color) / 255.0;
+  *g = SkColorGetG(color) / 255.0;
+  *b = SkColorGetB(color) / 255.0;
 }
 
 void InfoBar::UpdateBorderColor() {

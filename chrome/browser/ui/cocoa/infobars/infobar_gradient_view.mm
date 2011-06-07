@@ -5,38 +5,21 @@
 #include "chrome/browser/ui/cocoa/infobars/infobar_gradient_view.h"
 
 #include "base/memory/scoped_nsobject.h"
+#include "chrome/browser/tab_contents/infobar.h"
 #import "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
-
-namespace {
-
-const double kBackgroundColorTop[3] =
-    {255.0 / 255.0, 242.0 / 255.0, 183.0 / 255.0};
-const double kBackgroundColorBottom[3] =
-    {250.0 / 255.0, 230.0 / 255.0, 145.0 / 255.0};
-}
+#include "skia/ext/skia_utils_mac.h"
 
 @implementation InfoBarGradientView
 
-- (id)initWithFrame:(NSRect)frameRect {
-  if ((self = [super initWithFrame:frameRect])) {
-    NSColor* startingColor =
-        [NSColor colorWithCalibratedRed:kBackgroundColorTop[0]
-                                  green:kBackgroundColorTop[1]
-                                   blue:kBackgroundColorTop[2]
-                                  alpha:1.0];
-    NSColor* endingColor =
-        [NSColor colorWithCalibratedRed:kBackgroundColorBottom[0]
-                                  green:kBackgroundColorBottom[1]
-                                   blue:kBackgroundColorBottom[2]
-                                  alpha:1.0];
-    scoped_nsobject<NSGradient> gradient(
-        [[NSGradient alloc] initWithStartingColor:startingColor
-                                       endingColor:endingColor]);
-    [self setGradient:gradient];
-  }
-  return self;
+- (void)setInfobarType:(InfoBarDelegate::Type)infobarType {
+  SkColor topColor = GetInfoBarTopColor(infobarType);
+  SkColor bottomColor = GetInfoBarBottomColor(infobarType);
+  scoped_nsobject<NSGradient> gradient([[NSGradient alloc]
+      initWithStartingColor:gfx::SkColorToCalibratedNSColor(topColor)
+                endingColor:gfx::SkColorToCalibratedNSColor(bottomColor)]);
+  [self setGradient:gradient];
 }
 
 - (NSColor*)strokeColor {
