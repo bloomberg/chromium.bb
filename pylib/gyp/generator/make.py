@@ -207,13 +207,29 @@ cmd_copy = ln -f $< $@ 2>/dev/null || cp -af $< $@
 quiet_cmd_link = LINK($(TOOLSET)) $@
 cmd_link = $(LINK.$(TOOLSET)) $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSET)) -o $@ -Wl,--start-group $(filter-out FORCE_DO_CMD, $^) -Wl,--end-group $(LIBS)
 
-# Shared-object link (for generating .so).
-# Set SONAME to the library filename so our binaries don't reference the local,
-# absolute paths used on the link command-line.
-# TODO: perhaps this can share with the LINK command above?
+# We support two kinds of shared objects (.so):
+# 1) shared_library, which is just bundling together many dependent libraries
+# into a link line.
+# 2) loadable_module, which is generating a module intended for dlopen().
+#
+# They differ only slightly:
+# In the former case, we want to package all dependent code into the .so.
+# In the latter case, we want to package just the API exposed by the
+# outermost module.
+# This means shared_library uses --whole-archive, while loadable_module doesn't.
+# (Note that --whole-archive is incompatible with the --start-group used in
+# normal linking.)
+
+# Other shared-object link notes:
+# - Set SONAME to the library filename so our binaries don't reference
+# the local, absolute paths used on the link command-line.
 quiet_cmd_solink = SOLINK($(TOOLSET)) $@
-cmd_solink = $(LINK.$(TOOLSET)) -shared $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSET)) -Wl,-soname=$(@F) -o $@ -Wl,--start-group $(filter-out FORCE_DO_CMD, $^) -Wl,--end-group $(LIBS)
+cmd_solink = $(LINK.$(TOOLSET)) -shared $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSET)) -Wl,-soname=$(@F) -o $@ -Wl,--whole-archive $(filter-out FORCE_DO_CMD, $^) -Wl,--no-whole-archive $(LIBS)
+
+quiet_cmd_solink_module = SOLINK_MODULE($(TOOLSET)) $@
+cmd_solink_module = $(LINK.$(TOOLSET)) -shared $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSET)) -Wl,-soname=$(@F) -o $@ -Wl,--start-group $(filter-out FORCE_DO_CMD, $^) -Wl,--end-group $(LIBS)
 """
+
 r"""
 # Define an escape_quotes function to escape single quotes.
 # This allows us to handle quotes properly as long as we always use
@@ -495,9 +511,10 @@ def Sourceify(path):
 
 # Map from qualified target to path to output.
 target_outputs = {}
-# Map from qualified target to a list of all linker dependencies,
-# transitively expanded.
-# Used in building shared-library-based executables.
+# Map from qualified target to any linkable output.  A subset
+# of target_outputs.  E.g. when mybinary depends on liba, we want to
+# include liba in the linker line; when otherbinary depends on
+# mybinary, we just want to build mybinary first.
 target_link_deps = {}
 
 
@@ -602,12 +619,8 @@ class MakefileWriter:
     target_outputs[qualified_target] = install_path
 
     # Update global list of link dependencies.
-    if self.type == 'static_library':
-      target_link_deps[qualified_target] = [self.output]
-    elif self.type == 'shared_library':
-      # Anyone that uses us transitively depend on all of our link
-      # dependencies.
-      target_link_deps[qualified_target] = [self.output] + link_deps
+    if self.type in ('static_library', 'shared_library'):
+      target_link_deps[qualified_target] = self.output
 
     # Currently any versions have the same effect, but in future the behavior
     # could be different.
@@ -969,7 +982,7 @@ class MakefileWriter:
                    if target_outputs[dep]])
       for dep in spec['dependencies']:
         if dep in target_link_deps:
-          link_deps.extend(target_link_deps[dep])
+          link_deps.append(target_link_deps[dep])
       deps.extend(link_deps)
       # TODO: It seems we need to transitively link in libraries (e.g. -lfoo)?
       # This hack makes it work:
@@ -1015,8 +1028,10 @@ class MakefileWriter:
       self.WriteDoCmd([self.output], link_deps, 'link', part_of_all)
     elif self.type == 'static_library':
       self.WriteDoCmd([self.output], link_deps, 'alink', part_of_all)
-    elif self.type in ('loadable_module', 'shared_library'):
+    elif self.type == 'shared_library':
       self.WriteDoCmd([self.output], link_deps, 'solink', part_of_all)
+    elif self.type == 'loadable_module':
+      self.WriteDoCmd([self.output], link_deps, 'solink_module', part_of_all)
     elif self.type == 'none':
       # Write a stamp line.
       self.WriteDoCmd([self.output], deps, 'touch', part_of_all)
