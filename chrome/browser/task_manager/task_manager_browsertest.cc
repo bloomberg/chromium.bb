@@ -31,6 +31,13 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
+// In some environments this test fails about 1/6 http://crbug/84850
+#if defined(TOUCH_UI)
+#define MAYBE_KillExtension FLAKY_KillExtension
+#else
+#define MAYBE_KillExtension KillExtension
+#endif
+
 namespace {
 
 const FilePath::CharType* kTitle1File = FILE_PATH_LITERAL("title1.html");
@@ -365,7 +372,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeHostedAppTabs) {
   ASSERT_TRUE(StartsWith(model()->GetResourceTitle(2), tab_prefix, true));
 }
 
-IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, KillExtension) {
+IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, MAYBE_KillExtension) {
   EXPECT_EQ(0, TaskManager::GetBackgroundPageCount());
   // Show the task manager. This populates the model, and helps with debugging
   // (you see the task manager).
