@@ -34,7 +34,7 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk {
  private:
   void SetBoundsImpl();
 
-  scoped_ptr<Panel> panel_;
+  Panel* panel_;
   DISALLOW_COPY_AND_ASSIGN(PanelBrowserWindowGtk);
 };
 
