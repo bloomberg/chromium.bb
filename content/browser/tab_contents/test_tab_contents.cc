@@ -15,7 +15,8 @@
 
 TestTabContents::TestTabContents(Profile* profile, SiteInstance* instance)
     : TabContents(profile, instance, MSG_ROUTING_NONE, NULL, NULL),
-      transition_cross_site(false) {
+      transition_cross_site(false),
+      delegate_view_override_(NULL) {
 }
 
 TestRenderViewHost* TestTabContents::pending_rvh() const {
@@ -81,4 +82,10 @@ void TestTabContents::ProceedWithCrossSiteNavigation() {
   TestRenderViewHost* rvh = static_cast<TestRenderViewHost*>(
       render_manager_.current_host());
   rvh->SendShouldCloseACK(true);
+}
+
+RenderViewHostDelegate::View* TestTabContents::GetViewDelegate() {
+  if (delegate_view_override_)
+    return delegate_view_override_;
+  return TabContents::GetViewDelegate();
 }

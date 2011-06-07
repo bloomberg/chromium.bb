@@ -112,6 +112,11 @@ void TestRenderViewHost::SendShouldCloseACK(bool proceed) {
   OnMsgShouldCloseACK(proceed);
 }
 
+void TestRenderViewHost::TestOnMsgStartDragging(const WebDropData& drop_data) {
+  WebKit::WebDragOperationsMask drag_operation = WebKit::WebDragOperationEvery;
+  OnMsgStartDragging(drop_data, drag_operation, SkBitmap(), gfx::Point());
+}
+
 void TestRenderViewHost::set_simulate_fetch_via_proxy(bool proxy) {
   simulate_fetch_via_proxy_ = proxy;
 }

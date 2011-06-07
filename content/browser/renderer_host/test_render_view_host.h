@@ -185,6 +185,8 @@ class TestRenderViewHost : public RenderViewHost {
   // Calls OnMsgShouldCloseACK on the RenderViewHost with the given parameter.
   void SendShouldCloseACK(bool proceed);
 
+  void TestOnMsgStartDragging(const WebDropData& drop_data);
+
   // If set, *delete_counter is incremented when this object destructs.
   void set_delete_counter(int* delete_counter) {
     delete_counter_ = delete_counter;

@@ -66,6 +66,14 @@ class TestTabContents : public TabContents {
 
   // Set by individual tests.
   bool transition_cross_site;
+
+  // Allow mocking of the RenderViewHostDelegate::View.
+  virtual RenderViewHostDelegate::View* GetViewDelegate();
+  void set_view_delegate(RenderViewHostDelegate::View* view) {
+    delegate_view_override_ = view;
+  }
+ private:
+  RenderViewHostDelegate::View* delegate_view_override_;
 };
 
 #endif  // CONTENT_BROWSER_TAB_CONTENTS_TEST_TAB_CONTENTS_H_

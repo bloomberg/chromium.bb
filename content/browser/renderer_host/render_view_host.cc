@@ -980,8 +980,26 @@ void RenderViewHost::OnMsgStartDragging(
     const SkBitmap& image,
     const gfx::Point& image_offset) {
   RenderViewHostDelegate::View* view = delegate_->GetViewDelegate();
-  if (view)
+  if (!view)
+    return;
+
+  GURL drag_url = drop_data.url;
+  GURL html_base_url = drop_data.html_base_url;
+
+  ChildProcessSecurityPolicy* policy =
+      ChildProcessSecurityPolicy::GetInstance();
+  FilterURL(policy, process()->id(), &drag_url);
+  FilterURL(policy, process()->id(), &html_base_url);
+
+  if (drag_url != drop_data.url || html_base_url != drop_data.html_base_url) {
+    WebDropData drop_data_copy = drop_data;
+    drop_data_copy.url = drag_url;
+    drop_data_copy.html_base_url = html_base_url;
+    view->StartDragging(drop_data_copy, drag_operations_mask, image,
+                        image_offset);
+  } else {
     view->StartDragging(drop_data, drag_operations_mask, image, image_offset);
+  }
 }
 
 void RenderViewHost::OnUpdateDragCursor(WebDragOperation current_op) {
