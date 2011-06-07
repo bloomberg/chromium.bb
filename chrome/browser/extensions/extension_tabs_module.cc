@@ -123,6 +123,19 @@ std::string GetWindowTypeText(const Browser* browser) {
   return keys::kWindowTypeValueNormal;
 }
 
+bool IsCrashURL(const GURL& url) {
+  // GURL does not parse about: URL hosts, so compare against these entire URLs.
+  if (url == GURL(chrome::kAboutBrowserCrash) ||
+      url == GURL(chrome::kAboutCrashURL))
+    return true;
+
+  // Catch any crash-like URL here.
+  return ((url.SchemeIs(chrome::kAboutScheme) ||
+           url.SchemeIs(chrome::kChromeUIScheme)) &&
+          (url.host() == chrome::kChromeUIBrowserCrashHost ||
+           url.host() == chrome::kChromeUICrashHost));
+}
+
 }  // namespace
 
 int ExtensionTabUtil::GetWindowId(const Browser* browser) {
@@ -402,18 +415,14 @@ bool CreateWindowFunction::RunImpl() {
               keys::kInvalidUrlError, *i);
           return false;
         }
+        // Don't let the extension crash the browser or renderers.
+        if (IsCrashURL(url)) {
+          error_ = keys::kNoCrashBrowserError;
+          return false;
+        }
         urls.push_back(url);
       }
     }
-  }
-
-  // Don't let the extension crash the browser or renderers.
-  GURL browser_crash(chrome::kAboutBrowserCrash);
-  GURL renderer_crash(chrome::kAboutCrashURL);
-  if (std::find(urls.begin(), urls.end(), browser_crash) != urls.end() ||
-      std::find(urls.begin(), urls.end(), renderer_crash) != urls.end()) {
-    error_ = keys::kNoCrashBrowserError;
-    return false;
   }
 
   // Look for optional tab id.
@@ -746,8 +755,7 @@ bool CreateTabFunction::RunImpl() {
   }
 
   // Don't let extensions crash the browser or renderers.
-  if (url == GURL(chrome::kAboutBrowserCrash) ||
-      url == GURL(chrome::kAboutCrashURL)) {
+  if (IsCrashURL(url)) {
     error_ = keys::kNoCrashBrowserError;
     return false;
   }
@@ -863,7 +871,7 @@ bool UpdateTabFunction::RunImpl() {
   // -title
   // -favIconUrl
 
-  // Navigate the tab to a new location if the url different.
+  // Navigate the tab to a new location if the url is different.
   std::string url_string;
   if (update_props->HasKey(keys::kUrlKey)) {
     EXTENSION_FUNCTION_VALIDATE(update_props->GetString(
@@ -877,8 +885,7 @@ bool UpdateTabFunction::RunImpl() {
     }
 
     // Don't let the extension crash the browser or renderers.
-    if (url == GURL(chrome::kAboutBrowserCrash) ||
-        url == GURL(chrome::kAboutCrashURL)) {
+    if (IsCrashURL(url)) {
       error_ = keys::kNoCrashBrowserError;
       return false;
     }

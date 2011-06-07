@@ -82,9 +82,9 @@ TEST_F(NewTabUITest, DISABLED_NTPHasLoginName) {
   EXPECT_EQ(L"user@gmail.com", displayed_username);
 }
 
-// Loads about:hang into two NTP tabs, ensuring we don't crash.
+// Loads chrome://hang/ into two NTP tabs, ensuring we don't crash.
 // See http://crbug.com/59859.
-TEST_F(NewTabUITest, AboutHangInNTP) {
+TEST_F(NewTabUITest, ChromeHangInNTP) {
   scoped_refptr<BrowserProxy> window(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(window.get());
 
@@ -93,15 +93,15 @@ TEST_F(NewTabUITest, AboutHangInNTP) {
   scoped_refptr<TabProxy> tab = window->GetActiveTab();
   ASSERT_TRUE(tab.get());
 
-  // Navigate to about:hang to stall the process.
-  ASSERT_TRUE(tab->NavigateToURLAsync(GURL(chrome::kAboutHangURL)));
+  // Navigate to chrome://hang/ to stall the process.
+  ASSERT_TRUE(tab->NavigateToURLAsync(GURL(chrome::kChromeUIHangURL)));
 
-  // Visit about:hang again in another NTP.  Don't bother waiting for the
+  // Visit chrome://hang/ again in another NTP. Don't bother waiting for the
   // NTP to load, because it's hung.
   ASSERT_TRUE(window->RunCommandAsync(IDC_NEW_TAB));
   scoped_refptr<TabProxy> tab2 = window->GetActiveTab();
   ASSERT_TRUE(tab2.get());
-  ASSERT_TRUE(tab2->NavigateToURLAsync(GURL(chrome::kAboutHangURL)));
+  ASSERT_TRUE(tab2->NavigateToURLAsync(GURL(chrome::kChromeUIHangURL)));
 }
 
 // Allows testing NTP in process-per-tab mode.
@@ -128,8 +128,8 @@ TEST_F(NewTabUIProcessPerTabTest, NavBeforeNTPCommits) {
   scoped_refptr<TabProxy> tab = window->GetActiveTab();
   ASSERT_TRUE(tab.get());
 
-  // Navigate to about:hang to stall the process.
-  ASSERT_TRUE(tab->NavigateToURLAsync(GURL(chrome::kAboutHangURL)));
+  // Navigate to chrome://hang/ to stall the process.
+  ASSERT_TRUE(tab->NavigateToURLAsync(GURL(chrome::kChromeUIHangURL)));
 
   // Visit a normal URL in another NTP that hasn't committed.
   ASSERT_TRUE(window->RunCommandAsync(IDC_NEW_TAB));

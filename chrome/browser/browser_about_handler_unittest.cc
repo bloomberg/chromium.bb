@@ -16,6 +16,8 @@
 typedef TestingBrowserProcessTest BrowserAboutHandlerTest;
 
 TEST_F(BrowserAboutHandlerTest, WillHandleBrowserAboutURL) {
+  std::string chrome_prefix(chrome::kChromeUIScheme);
+  chrome_prefix.append(chrome::kStandardSchemeSeparator);
   struct AboutURLTestData {
     GURL test_url;
     GURL result_url;
@@ -35,71 +37,71 @@ TEST_F(BrowserAboutHandlerTest, WillHandleBrowserAboutURL) {
         false
       },
       {
-        GURL(std::string(chrome::kAboutCacheURL) + "/mercury"),
-        GURL(std::string(chrome::kNetworkViewCacheURL) + "mercury"),
-        false,
-        true
-      },
-      {
-        GURL(std::string(chrome::kAboutNetInternalsURL) + "/venus"),
-        GURL(std::string(chrome::kNetworkViewInternalsURL) + "venus"),
-        false,
-        true
-      },
-      {
-        GURL(std::string(chrome::kAboutGpuURL) + "/jupiter"),
-        GURL(std::string(chrome::kGpuInternalsURL) + "jupiter"),
-        false,
-        true
-      },
-      {
-        GURL(std::string(chrome::kAboutAppCacheInternalsURL) + "/earth"),
-        GURL(std::string(chrome::kAppCacheViewInternalsURL) + "earth"),
-        false,
-        true
-      },
-      {
-        GURL(chrome::kAboutPluginsURL),
-        GURL(chrome::kChromeUIPluginsURL),
-        false,
-        true
-      },
-      {
-        GURL(chrome::kAboutCrashURL),
-        GURL(chrome::kAboutCrashURL),
+        GURL(chrome_prefix + chrome::kChromeUICrashHost),
+        GURL(chrome_prefix + chrome::kChromeUICrashHost),
         true,
         false
       },
       {
-        GURL(chrome::kAboutKillURL),
-        GURL(chrome::kAboutKillURL),
+        GURL(chrome_prefix + chrome::kChromeUIKillHost),
+        GURL(chrome_prefix + chrome::kChromeUIKillHost),
         true,
         false
       },
       {
-        GURL(chrome::kAboutHangURL),
-        GURL(chrome::kAboutHangURL),
+        GURL(chrome_prefix + chrome::kChromeUIHangHost),
+        GURL(chrome_prefix + chrome::kChromeUIHangHost),
         true,
         false
       },
       {
-        GURL(chrome::kAboutShorthangURL),
-        GURL(chrome::kAboutShorthangURL),
+        GURL(chrome_prefix + chrome::kChromeUIShorthangHost),
+        GURL(chrome_prefix + chrome::kChromeUIShorthangHost),
         true,
         false
       },
       {
-        GURL("about:memory"),
-        GURL("chrome://about/memory-redirect"),
+        GURL(chrome_prefix + chrome::kChromeUIMemoryHost),
+        GURL(chrome_prefix + chrome::kChromeUIMemoryHost),
         false,
         true
       },
       {
-        GURL("about:mars"),
-        GURL("chrome://about/mars"),
+        GURL(chrome_prefix + chrome::kChromeUIDefaultHost),
+        GURL(chrome_prefix + chrome::kChromeUIVersionHost),
         false,
         true
       },
+      {
+        GURL(chrome_prefix + chrome::kChromeUIAboutHost),
+        GURL(chrome_prefix + chrome::kChromeUIChromeURLsHost),
+        false,
+        true
+      },
+      {
+        GURL(chrome_prefix + chrome::kChromeUICacheHost),
+        GURL(chrome_prefix + chrome::kChromeUINetworkViewCacheHost),
+        false,
+        true
+      },
+      {
+        GURL(chrome_prefix + chrome::kChromeUIGpuHost),
+        GURL(chrome_prefix + chrome::kChromeUIGpuInternalsHost),
+        false,
+        true
+      },
+      {
+        GURL(chrome_prefix + chrome::kChromeUISyncHost),
+        GURL(chrome_prefix + chrome::kChromeUISyncInternalsHost),
+        false,
+        true
+      },
+      {
+        GURL(chrome_prefix + "host/path?query#ref"),
+        GURL(chrome_prefix + "host/path?query#ref"),
+        false,
+        true
+      }
   };
   MessageLoopForUI message_loop;
   BrowserThread ui_thread(BrowserThread::UI, &message_loop);

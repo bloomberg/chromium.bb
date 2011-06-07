@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,11 +57,51 @@ static const segment_case segment_cases[] = {
     url_parse::Component(0, 5), // scheme
     url_parse::Component(), // username
     url_parse::Component(), // password
-    url_parse::Component(), // host
+    url_parse::Component(6, 7), // host
     url_parse::Component(), // port
     url_parse::Component(), // path
     url_parse::Component(), // query
     url_parse::Component(), // ref
+  },
+  { "about:host/path?query#ref", "about",
+    url_parse::Component(0, 5), // scheme
+    url_parse::Component(), // username
+    url_parse::Component(), // password
+    url_parse::Component(6, 4), // host
+    url_parse::Component(), // port
+    url_parse::Component(10, 5), // path
+    url_parse::Component(16, 5), // query
+    url_parse::Component(22, 3), // ref
+  },
+  { "about://host/path?query#ref", "about",
+    url_parse::Component(0, 5), // scheme
+    url_parse::Component(), // username
+    url_parse::Component(), // password
+    url_parse::Component(8, 4), // host
+    url_parse::Component(), // port
+    url_parse::Component(12, 5), // path
+    url_parse::Component(18, 5), // query
+    url_parse::Component(24, 3), // ref
+  },
+  { "chrome:host/path?query#ref", "chrome",
+    url_parse::Component(0, 6), // scheme
+    url_parse::Component(), // username
+    url_parse::Component(), // password
+    url_parse::Component(7, 4), // host
+    url_parse::Component(), // port
+    url_parse::Component(11, 5), // path
+    url_parse::Component(17, 5), // query
+    url_parse::Component(23, 3), // ref
+  },
+  { "chrome://host/path?query#ref", "chrome",
+    url_parse::Component(0, 6), // scheme
+    url_parse::Component(), // username
+    url_parse::Component(), // password
+    url_parse::Component(9, 4), // host
+    url_parse::Component(), // port
+    url_parse::Component(13, 5), // path
+    url_parse::Component(19, 5), // query
+    url_parse::Component(25, 3), // ref
   },
   { "    www.google.com:124?foo#", "http",
     url_parse::Component(), // scheme
@@ -218,8 +258,13 @@ struct fixup_case {
   {"http://host.com:ninety-two/", "", "http://host.com:ninety-two/"},
   {"http://host.com:ninety-two?foo", "", "http://host.com:ninety-two/?foo"},
   {"google.com:123", "", "http://google.com:123/"},
-  {"about:", "", "about:"},
-  {"about:version", "", "about:version"},
+  {"about:", "", "chrome://version/"},
+  {"about:foo", "", "chrome://foo/"},
+  {"about:version", "", "chrome://version/"},
+  {"about:usr:pwd@hst/pth?qry#ref", "", "chrome://usr:pwd@hst/pth?qry#ref"},
+  {"about://usr:pwd@hst/pth?qry#ref", "", "chrome://usr:pwd@hst/pth?qry#ref"},
+  {"chrome:usr:pwd@hst/pth?qry#ref", "", "chrome://usr:pwd@hst/pth?qry#ref"},
+  {"chrome://usr:pwd@hst/pth?qry#ref", "", "chrome://usr:pwd@hst/pth?qry#ref"},
   {"www:123", "", "http://www:123/"},
   {"   www:123", "", "http://www:123/"},
   {"www.google.com?foo", "", "http://www.google.com/?foo"},

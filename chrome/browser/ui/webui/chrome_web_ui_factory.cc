@@ -100,7 +100,7 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
   // All platform builds of Chrome will need to have a cloud printing
   // dialog as backup.  It's just that on Chrome OS, it's the only
   // print dialog.
-  if (url.host() == chrome::kCloudPrintResourcesHost)
+  if (url.host() == chrome::kChromeUICloudPrintResourcesHost)
     return &NewWebUI<ExternalHtmlDialogUI>;
 
   // This will get called a lot to check all URLs, so do a quick check of other
@@ -111,7 +111,7 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
     return NULL;
 
   if (url.host() == chrome::kChromeUISyncResourcesHost ||
-      url.host() == chrome::kCloudPrintSetupHost)
+      url.host() == chrome::kChromeUICloudPrintSetupHost)
     return &NewWebUI<HtmlDialogUI>;
 
   // Special case the new tab page. In older versions of Chrome, the new tab
@@ -122,8 +122,9 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
       url.SchemeIs(chrome::kChromeInternalScheme))
     return &NewWebUI<NewTabUI>;
 
-  // Give about:about a generic Web UI so it can navigate to pages with Web UIs.
-  if (url.spec() == chrome::kChromeUIAboutAboutURL)
+  // Return a generic Web UI so chrome:chrome-urls can navigate to Web UI pages.
+  if (url.host() == chrome::kChromeUIAboutHost ||
+      url.host() == chrome::kChromeUIChromeURLsHost)
     return &NewWebUI<ChromeWebUI>;
 
   // We must compare hosts only since some of the Web UIs append extra stuff
@@ -254,11 +255,11 @@ bool ChromeWebUIFactory::IsURLAcceptableForWebUI(
       // It's possible to load about:blank in a Web UI renderer.
       // See http://crbug.com/42547
       url.spec() == chrome::kAboutBlankURL ||
-      // about:crash, about:kill, about:hang, and about:shorthang are allowed.
-      url.spec() == chrome::kAboutCrashURL ||
-      url.spec() == chrome::kAboutKillURL ||
-      url.spec() == chrome::kAboutHangURL ||
-      url.spec() == chrome::kAboutShorthangURL;
+      // Chrome URLs crash, kill, hang, and shorthang are allowed.
+      url == GURL(chrome::kChromeUICrashURL) ||
+      url == GURL(chrome::kChromeUIKillURL) ||
+      url == GURL(chrome::kChromeUIHangURL) ||
+      url == GURL(chrome::kChromeUIShorthangURL);
 }
 
 WebUI* ChromeWebUIFactory::CreateWebUIForURL(
@@ -305,7 +306,7 @@ ChromeWebUIFactory::~ChromeWebUIFactory() {
 }
 
 RefCountedMemory* ChromeWebUIFactory::GetFaviconResourceBytes(
-    const GURL& page_url) const  {
+    const GURL& page_url) const {
   // The bookmark manager is a chrome extension, so we have to check for it
   // before we check for extension scheme.
   if (page_url.host() == extension_misc::kBookmarkManagerId)

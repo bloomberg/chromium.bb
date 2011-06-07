@@ -187,16 +187,14 @@ void AboutPageHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
   localized_strings->SetString(chromium_url_appears_first ?
       "license_link_0" : "license_link_1", url.spec());
 
-  // The Open Source link within the main text of the dialog.  We need to use
-  // the chrome:// variant instead of about:credits; the latter will get
-  // rewritten to about:blank.
+  // The Open Source link within the main text of the dialog.
   localized_strings->SetString(chromium_url_appears_first ?
       "license_link_content_1" : "license_link_content_0",
       StringSubRange(text,
                      text.find(kBeginLinkOss) + strlen(kBeginLinkOss),
                      text.find(kEndLinkOss)));
   localized_strings->SetString(chromium_url_appears_first ?
-      "license_link_1" : "license_link_0", chrome::kChromeUIAboutCreditsURL);
+      "license_link_1" : "license_link_0", chrome::kChromeUICreditsURL);
 
 #if defined(OS_CHROMEOS)
   std::string cros_text =
@@ -215,7 +213,7 @@ void AboutPageHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
       StringSubRange(cros_text, cros_link + strlen(kBeginLinkCrosOss),
                      cros_link_end));
   localized_strings->SetString("cros_license_link_0",
-      chrome::kChromeUIAboutOSCreditsURL);
+      chrome::kChromeUIOSCreditsURL);
 #endif
 
   // webkit

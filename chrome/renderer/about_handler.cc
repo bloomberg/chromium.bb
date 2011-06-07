@@ -1,12 +1,14 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/renderer/about_handler.h"
 
+#include "base/logging.h"
 #include "base/process_util.h"
 #include "base/threading/platform_thread.h"
 #include "chrome/common/about_handler.h"
+#include "content/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 
 typedef void (*AboutHandlerFuncPtr)();
@@ -23,7 +25,7 @@ static const AboutHandlerFuncPtr about_urls_handlers[] = {
 
 // static
 bool AboutHandler::MaybeHandle(const GURL& url) {
-  if (url.scheme() != chrome_about_handler::kAboutScheme)
+  if (!url.SchemeIs(chrome::kChromeUIScheme))
     return false;
 
   int about_urls_handler_index = 0;
@@ -41,8 +43,7 @@ bool AboutHandler::MaybeHandle(const GURL& url) {
 
 // static
 void AboutHandler::AboutCrash() {
-  int *zero = NULL;
-  *zero = 0;  // Null pointer dereference: kaboom!
+  CHECK(false);
 }
 
 // static
