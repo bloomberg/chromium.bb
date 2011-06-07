@@ -129,12 +129,15 @@ cr.define('options', function() {
       searchField.type = 'search';
       searchField.incremental = true;
       searchField.placeholder = localStrings.getString('searchPlaceholder');
+      searchField.setAttribute('aria-label', searchField.placeholder);
       this.searchField = searchField;
 
       // Replace the contents of the navigation tab with the search field.
       self.tab.textContent = '';
       self.tab.appendChild(searchField);
-      self.tab.onclick = self.tab.onkeypress = undefined;
+      self.tab.onclick = self.tab.onkeydown = self.tab.onkeypress = undefined;
+      self.tab.tabIndex = -1;
+      self.tab.setAttribute('role', '');
 
       // Handle search events. (No need to throttle, WebKit's search field
       // will do that automatically.)
