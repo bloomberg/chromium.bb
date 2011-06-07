@@ -1031,7 +1031,14 @@ void MenuController::UpdateInitialLocation(
     // nicely and menus close prematurely.
     pending_state_.initial_bounds.Inset(0, 1);
   }
-  pending_state_.anchor = position;
+
+  // Reverse anchor position for RTL languages.
+  if (base::i18n::IsRTL()) {
+    pending_state_.anchor = position == MenuItemView::TOPRIGHT ?
+        MenuItemView::TOPLEFT : MenuItemView::TOPRIGHT;
+  } else {
+    pending_state_.anchor = position;
+  }
 
   // Calculate the bounds of the monitor we'll show menus on. Do this once to
   // avoid repeated system queries for the info.

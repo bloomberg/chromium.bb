@@ -603,8 +603,7 @@ void WrenchMenu::RunMenu(views::MenuButton* host) {
   gfx::Rect bounds(screen_loc, host->size());
   UserMetrics::RecordAction(UserMetricsAction("ShowAppMenu"));
   root_->RunMenuAt(host->GetWindow()->GetNativeWindow(), host, bounds,
-      base::i18n::IsRTL() ? MenuItemView::TOPLEFT : MenuItemView::TOPRIGHT,
-      true);
+      MenuItemView::TOPRIGHT, true);
   if (bookmark_menu_delegate_.get()) {
     BookmarkModel* model = browser_->profile()->GetBookmarkModel();
     if (model)

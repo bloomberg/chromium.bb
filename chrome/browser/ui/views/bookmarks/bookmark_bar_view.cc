@@ -523,14 +523,6 @@ void BookmarkBarView::GetAnchorPositionForButton(
     *anchor = MenuItemView::TOPRIGHT;
   else
     *anchor = MenuItemView::TOPLEFT;
-
-  // Invert orientation if right to left.
-  if (base::i18n::IsRTL()) {
-    if (*anchor == MenuItemView::TOPRIGHT)
-      *anchor = MenuItemView::TOPLEFT;
-    else
-      *anchor = MenuItemView::TOPRIGHT;
-  }
 }
 
 views::MenuItemView* BookmarkBarView::GetMenu() {

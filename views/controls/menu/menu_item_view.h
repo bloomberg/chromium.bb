@@ -90,7 +90,8 @@ class MenuItemView : public View {
     EMPTY
   };
 
-  // Where the menu should be anchored to.
+  // Where the menu should be anchored to for non-RTL languages.  The
+  // opposite position will be used if base::i18n:IsRTL() is true.
   enum AnchorPosition {
     TOPLEFT,
     TOPRIGHT
@@ -122,7 +123,8 @@ class MenuItemView : public View {
   // Run methods. See description above class for details. Both Run methods take
   // a rectangle, which is used to position the menu. |has_mnemonics| indicates
   // whether the items have mnemonics. Mnemonics are identified by way of the
-  // character following the '&'.
+  // character following the '&'.  The anchor position is specified for non-RTL
+  // languages; the opposite value will be used for RTL.
   void RunMenuAt(gfx::NativeWindow parent,
                  MenuButton* button,
                  const gfx::Rect& bounds,
