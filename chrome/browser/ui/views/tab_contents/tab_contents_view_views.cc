@@ -136,7 +136,15 @@ void TabContentsViewViews::OnTabCrashed(base::TerminationStatus status,
 }
 
 void TabContentsViewViews::SizeContents(const gfx::Size& size) {
-  SetSize(size);
+  gfx::Rect bounds;
+  GetContainerBounds(&bounds);
+  if (bounds.size() != size) {
+    SetSize(size);
+  } else {
+    // Our size matches what we want but the renderers size may not match.
+    // Pretend we were resized so that the renderers size is updated too.
+    OnNativeTabContentsViewSized(size);
+  }
 }
 
 void TabContentsViewViews::Focus() {
