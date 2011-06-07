@@ -10465,9 +10465,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT" desc="In settings Internet options, the x509 certificate to use.">
         User certificate:
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_NONE" desc="In settings Internet options, a string specifying no client certificate.">
-        None
-      </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_BUTTON" desc="In settings Internet options, the prompt on the certificate-selection button.">
         Select certificate file
       </message>
@@ -10618,10 +10615,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_USER_PASSPHRASE" desc="In settings Internet options, a string specifying VPN user passphrase.">
         Password:
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_USER_CERT_NONE_INSTALLED" desc="In settings Internet options, when creating a VPN connection, combobox item to display when no user certificates are installed.">
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_USER_CERT_NONE_INSTALLED" desc="In settings Internet options, when creating a VPN or enterprise Wi-Fi connection, combobox item to display when no user certificates are installed.">
         None installed
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_PLEASE_INSTALL_USER_CERT" desc="In settings Internet options, when creating a VPN connection, error message to display when no user certificates are installed.">
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PLEASE_INSTALL_USER_CERT" desc="In settings Internet options, when creating a VPN or enterprise Wi-Fi connection, error message to display when no user certificates are installed.">
         Please install a user certificate.
       </message>
       <message name="IDS_NETWORK_RECONNECT_TITLE" desc="In network menu, title of the reconnect button that allows user to retry connection on error.">

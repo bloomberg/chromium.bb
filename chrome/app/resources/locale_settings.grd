@@ -315,7 +315,7 @@
         86
       </message>
       <message name="IDS_JOIN_WIFI_NETWORK_DIALOG_ADVANCED_MINIMUM_HEIGHT_LINES" use_name_for_id="true">
-        27
+        29
       </message>
       
       <!-- The width and height of the Page Info dialog box in characters and lines -->

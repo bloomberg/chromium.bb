@@ -210,15 +210,15 @@ class ClientCertComboboxModel : public ui::ComboboxModel {
   }
   virtual ~ClientCertComboboxModel() {}
   virtual int GetItemCount() {
-    // One initial item "None", then the certs.
-    return 1 + wifi_config_model_->GetUserCertCount();
+    if (wifi_config_model_->GetUserCertCount() == 0)
+      return 1;  // "None installed" item.
+    return wifi_config_model_->GetUserCertCount();
   }
   virtual string16 GetItemAt(int combo_index) {
-    if (combo_index == 0)
+    if (wifi_config_model_->GetUserCertCount() == 0)
       return l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_NONE);
-    int cert_index = combo_index - 1;
-    return wifi_config_model_->GetUserCertName(cert_index);
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_USER_CERT_NONE_INSTALLED);
+    return wifi_config_model_->GetUserCertName(combo_index);
   }
  private:
   WifiConfigModel* wifi_config_model_;
@@ -301,7 +301,18 @@ bool WifiConfigView::CanLogin() {
       && eap_method_combobox_->selected_item() == EAP_METHOD_INDEX_NONE)
     return false;
 
+  // Show an error and block login if certs are required but user has none.
+  if (UserCertRequired() && wifi_config_model_->GetUserCertCount() == 0)
+    return false;
+
   return true;
+}
+
+bool WifiConfigView::UserCertRequired() const {
+  // Only EAP-TLS requires a user certificate.
+  return eap_method_combobox_ &&
+      eap_method_combobox_->IsEnabled() &&
+      eap_method_combobox_->selected_item() == EAP_METHOD_INDEX_TLS;
 }
 
 void WifiConfigView::UpdateDialogButtons() {
@@ -326,10 +337,10 @@ void WifiConfigView::RefreshEapFields() {
     passphrase_textfield_->SetText(string16());
 
   // Client certs only for EAP-TLS
-  if (client_cert_combobox_) {
-    client_cert_combobox_->SetEnabled(selected == EAP_METHOD_INDEX_TLS);
-    client_cert_label_->SetEnabled(client_cert_combobox_->IsEnabled());
-  }
+  bool is_tls = selected == EAP_METHOD_INDEX_TLS;
+  client_cert_label_->SetEnabled(is_tls);
+  bool have_user_certs = wifi_config_model_->GetUserCertCount() > 0;
+  client_cert_combobox_->SetEnabled(is_tls && have_user_certs);
 
   // No server CA certs for LEAP
   server_ca_cert_combobox_->SetEnabled(selected != EAP_METHOD_INDEX_NONE &&
@@ -347,6 +358,9 @@ void WifiConfigView::RefreshEapFields() {
 
 void WifiConfigView::UpdateErrorLabel() {
   std::string error_msg;
+  if (UserCertRequired() && wifi_config_model_->GetUserCertCount() == 0)
+    error_msg = l10n_util::GetStringUTF8(
+        IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PLEASE_INSTALL_USER_CERT);
   if (!service_path_.empty()) {
     NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
     const WifiNetwork* wifi = cros->FindWifiNetworkByPath(service_path_);
@@ -420,6 +434,7 @@ void WifiConfigView::ItemChanged(views::Combobox* combo_box,
     }
   } else if (combo_box == eap_method_combobox_) {
     RefreshEapFields();
+    UpdateErrorLabel();
   }
   UpdateDialogButtons();
 }
@@ -548,15 +563,9 @@ bool WifiConfigView::GetEapUseSystemCas() const {
 
 std::string WifiConfigView::GetEapClientCertPkcs11Id() const {
   DCHECK(client_cert_combobox_);
+  // Certificates are listed in the order they appear in the model.
   int selected = client_cert_combobox_->selected_item();
-  if (selected == 0) {
-    // First item is "None".
-    return std::string();
-  } else {
-    // Otherwise certificates are in a list.
-    int cert_index = selected - 1;
-    return wifi_config_model_->GetUserCertPkcs11Id(cert_index);
-  }
+  return wifi_config_model_->GetUserCertPkcs11Id(selected);
 }
 
 std::string WifiConfigView::GetEapIdentity() const {
@@ -840,17 +849,13 @@ void WifiConfigView::Init(WifiNetwork* wifi, bool show_8021x) {
     }
 
     // Client certificate
-    if (client_cert_combobox_ && client_cert_combobox_->IsEnabled()) {
+    if (client_cert_combobox_->IsEnabled()) {
       const std::string& pkcs11_id =
           (wifi ? wifi->eap_client_cert_pkcs11_id() : std::string());
-      if (pkcs11_id.empty()) {
-        // First item is "None".
-        client_cert_combobox_->SetSelectedItem(0);
-      } else {
+      if (!pkcs11_id.empty()) {
         int cert_index = wifi_config_model_->GetUserCertIndex(pkcs11_id);
         if (cert_index >= 0) {
-          // Skip item for "None"
-          client_cert_combobox_->SetSelectedItem(1 + cert_index);
+          client_cert_combobox_->SetSelectedItem(cert_index);
         }
       }
     }

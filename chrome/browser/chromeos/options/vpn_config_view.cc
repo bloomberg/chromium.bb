@@ -94,7 +94,7 @@ class UserCertComboboxModel : public ui::ComboboxModel {
     if (user_certs_.empty()) {
       // "None installed" item.
       return l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_USER_CERT_NONE_INSTALLED);
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_USER_CERT_NONE_INSTALLED);
     }
     if (index >= 0 && index < static_cast<int>(user_certs_.size())) {
       net::X509Certificate* cert = user_certs_[index].get();
@@ -160,7 +160,7 @@ void VPNConfigView::UpdateErrorLabel() {
   std::string error_msg;
   if (UserCertRequired() && !HaveUserCerts())
     error_msg = l10n_util::GetStringUTF8(
-        IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_PLEASE_INSTALL_USER_CERT);
+        IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PLEASE_INSTALL_USER_CERT);
   if (!service_path_.empty()) {
     // TODO(kuan): differentiate between bad psk and user passphrases.
     NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
