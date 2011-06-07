@@ -18,13 +18,6 @@
 #define MAYBE_TabOnRemoved TabOnRemoved
 #endif
 
-// Crashes on linux views. http://crbug.com/61592
-#if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
-#define MAYBE_Tabs DISABLED_Tabs
-#else
-#define MAYBE_Tabs Tabs
-#endif
-
 // Window resizes are not completed by the time the callback happens,
 // so these tests fail on linux. http://crbug.com/72369
 #if defined(OS_LINUX)
@@ -37,7 +30,7 @@
 #define MAYBE_UpdateWindowSizeExitsFullscreen UpdateWindowSizeExitsFullscreen
 #endif
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_Tabs) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Tabs) {
   ASSERT_TRUE(StartTestServer());
 
   // The test creates a tab and checks that the URL of the new tab
