@@ -55,7 +55,7 @@ deps = {
     'src/third_party/libvpx':
         Var('git_url') + '/chromium/deps/libvpx.git@466ba7c8ea5ac06ddf1e12a2cb7c656e0060824c',
     'src/third_party/ots':
-        Var('git_url') + '/external/ots.git@18908189deb0ea39155f5558173862807e2936e1',
+        Var('git_url') + '/external/ots.git@7f9bebe3906fb30f0632f9d010754d12dd6c02d7',
     'src/third_party/pylib':
         Var('git_url') + '/native_client/src/third_party/pylib.git@be1b3e269cb698f969a5a630a026628cc6d6cc78',
     'src/third_party/safe_browsing/testing':
