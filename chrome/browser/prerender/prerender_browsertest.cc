@@ -85,7 +85,8 @@ class TestPrerenderContents : public PrerenderContents {
         expected_final_status_(expected_final_status),
         new_render_view_host_(NULL),
         was_hidden_(false),
-        was_shown_(false) {
+        was_shown_(false),
+        quit_message_loop_on_destruction_(true) {
   }
 
   virtual ~TestPrerenderContents() {
@@ -112,7 +113,8 @@ class TestPrerenderContents : public PrerenderContents {
     // When the PrerenderContents is destroyed, quit the UI message loop.
     // This happens on navigation to used prerendered pages, and soon
     // after cancellation of unused prerendered pages.
-    MessageLoopForUI::current()->Quit();
+    if (quit_message_loop_on_destruction_)
+      MessageLoopForUI::current()->Quit();
   }
 
   virtual void OnRenderViewGone(int status, int exit_code) OVERRIDE {
@@ -139,6 +141,13 @@ class TestPrerenderContents : public PrerenderContents {
       // about:crash can't be navigated to by a normal webpage.
       render_view_host_mutable()->NavigateToURL(GURL("about:crash"));
     }
+  }
+
+  // Some of the ui_test_utils calls that we use assume that no one will quit
+  // the message loop that they run internally. So we dont quit the message
+  // loop in the destructor so as not to interfere.
+  void set_quit_message_loop_on_destruction(bool value) {
+    quit_message_loop_on_destruction_ = value;
   }
 
  private:
@@ -188,6 +197,7 @@ class TestPrerenderContents : public PrerenderContents {
   // Set to true when the prerendering RenderWidget is shown, after having been
   // hidden.
   bool was_shown_;
+  bool quit_message_loop_on_destruction_;
 };
 
 // PrerenderManager that uses TestPrerenderContents.
@@ -371,7 +381,11 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
 
   void OpenDestUrlInNewWindowViaJs() const {
     // Make sure in navigating we have a URL to use in the PrerenderManager.
-    EXPECT_TRUE(prerender_manager()->FindEntry(dest_url_) != NULL);
+    TestPrerenderContents* prerender_contents =
+        static_cast<TestPrerenderContents*>(
+            prerender_manager()->FindEntry(dest_url_));
+    ASSERT_TRUE(prerender_contents != NULL);
+    prerender_contents->set_quit_message_loop_on_destruction(false);
 
     bool open_window_result = false;
     ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
@@ -379,11 +393,21 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
         L"window.domAutomationController.send(JsOpenLinkInNewWindow())",
         &open_window_result));
     EXPECT_TRUE(open_window_result);
+
+    // If the prerender contents has not been destroyed, run message loop.
+    if (prerender_manager()->FindEntry(dest_url_) != NULL) {
+      prerender_contents->set_quit_message_loop_on_destruction(true);
+      ui_test_utils::RunMessageLoop();
+    }
   }
 
   void OpenDestUrlInNewWindowViaClick() const {
     // Make sure in navigating we have a URL to use in the PrerenderManager.
-    EXPECT_TRUE(prerender_manager()->FindEntry(dest_url_) != NULL);
+    TestPrerenderContents* prerender_contents =
+        static_cast<TestPrerenderContents*>(
+            prerender_manager()->FindEntry(dest_url_));
+    ASSERT_TRUE(prerender_contents != NULL);
+    prerender_contents->set_quit_message_loop_on_destruction(false);
 
     bool click_prerendered_link_result = false;
     ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
@@ -391,6 +415,12 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
         L"window.domAutomationController.send(ClickOpenLinkInNewWindow())",
         &click_prerendered_link_result));
     EXPECT_TRUE(click_prerendered_link_result);
+
+    // If the prerender contents has not been destroyed, run message loop.
+    if (prerender_manager()->FindEntry(dest_url_) != NULL) {
+      prerender_contents->set_quit_message_loop_on_destruction(true);
+      ui_test_utils::RunMessageLoop();
+    }
   }
 
   // Should be const but test_server()->GetURL(...) is not const.
@@ -1203,19 +1233,15 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPrint) {
                    1);
 }
 
-// The following test has been commented out because it exposes a bug in the
-// way ui_test_utils::ExecuteJavaScriptAndExtractBool method works which can
-// cause this test to fail sometimes.
-//
 // Checks that if a page is opened in a new window by javascript the
 // prerendered page is not used.
-// IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-//                        PrerenderWindowOpenerJsOpenInNewPageTest) {
-//   PrerenderTestURL("files/prerender/prerender_page.html",
-//                    FINAL_STATUS_WINDOW_OPENER,
-//                    1);
-//   OpenDestUrlInNewWindowViaJs();
-// }
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderWindowOpenerJsOpenInNewPageTest) {
+  PrerenderTestURL("files/prerender/prerender_page.html",
+                   FINAL_STATUS_WINDOW_OPENER,
+                   1);
+  OpenDestUrlInNewWindowViaJs();
+}
 
 // Checks that if a page is opened due to click on a href with target="_blank"
 // the prerendered page is not used.
