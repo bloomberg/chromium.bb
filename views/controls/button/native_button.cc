@@ -247,7 +247,7 @@ void NativeButtonBase::UpdateAllStates() {
 NativeButton::NativeButton(ButtonListener* listener, const std::wstring& label)
     : TextButton(listener, label), is_default_(false) {
   set_alignment(TextButton::ALIGN_CENTER);
-  SetNormalHasBorder(true);
+  static_cast<TextButtonBorder*>(border())->copy_normal_set_to_hot_set();
   set_focusable(true);
 }
 
