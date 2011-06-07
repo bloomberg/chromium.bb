@@ -58,7 +58,6 @@ class AutofillTest(pyauto.PyUITest):
                              'crazy_autofill.txt')
     profiles = self.EvalDataFrom(file_path)
     self.FillAutofillProfile(profiles=profiles)
-
     self.assertEqual(profiles, self.GetAutofillProfile()['profiles'],
                      msg='Autofill profile data does not match.')
 
@@ -72,39 +71,6 @@ class AutofillTest(pyauto.PyUITest):
     self.assertEqual(test_data['expected'],
                      self.GetAutofillProfile()['credit_cards'],
                      msg='Autofill credit card data does not match.')
-
-  def testSegmentNumbersNotSupportedInDOMUI(self):
-    """Test segmented phone/fax numbers no longer supported in DOM UI.
-
-    Phone and fax |COUNTRY_CODE| and |CITY_CODE| are only supported when
-    aggregating a web form and no longer processed in parts through the DOM UI
-    (when adding profiles through prefs settings).
-    """
-    profile_input = [{'NAME_FIRST': 'John',
-                     'NAME_LAST': 'Doe',
-                     'ADDRESS_HOME_LINE1': '123 H St.',
-                     'ADDRESS_HOME_CITY': 'San Jose',
-                     'ADDRESS_HOME_STATE': 'CA',
-                     'ADDRESS_HOME_ZIP': '95110',
-                     'ADDRESS_HOME_COUNTRY': 'China',
-                     'PHONE_HOME_COUNTRY_CODE': '86',
-                     'PHONE_HOME_CITY_CODE': '108',
-                     'PHONE_HOME_NUMBER': '8828000',
-                     'PHONE_FAX_COUNTRY_CODE': '86',
-                     'PHONE_FAX_CITY_CODE': '108',
-                     'PHONE_FAX_NUMBER': '8828000'}]
-
-    profile_expected = [{'NAME_FIRST': 'John',
-                        'NAME_LATE': 'Doe',
-                        'ADDRESS_HOME_LINE1': '123 H St.',
-                        'ADDRESS_HOME_CITY': 'San Jose',
-                        'ADDRESS_HOME_STATE': 'CA',
-                        'ADDRESS_HOME_ZIP': '95110',
-                        'ADDRESS_HOME_COUNTRY': 'China'}]
-
-    self.FillAutofillProfile(profiles=profile_input)
-    self.assertEqual(profile_expected, self.GetAutofillProfile()['profiles'],
-                     msg='Segmented phone/fax numbers supported in DOM UI.')
 
   def testGetProfilesEmpty(self):
     """Test getting profiles when none have been filled."""
@@ -607,8 +573,9 @@ class AutofillTest(pyauto.PyUITest):
     fields should accumulate multi-valued data.
     """
     self._AggregateProfilesIntoAutofillPrefs('dataset_2.txt')
-    # Expecting 4 profiles out of the original 14 within Autofill preferences.
-    self.assertEqual(4, len(self.GetAutofillProfile()['profiles']),
+    # Expecting 3 profiles out of the original 14 within Autofill preferences
+    raw_input()
+    self.assertEqual(3, len(self.GetAutofillProfile()['profiles']),
                      msg='Aggregated profiles did not merge correctly.')
 
   def testProfilesNotMergedWhenNoMinAddressData(self):

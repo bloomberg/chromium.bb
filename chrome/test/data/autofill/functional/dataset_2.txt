@@ -3,7 +3,7 @@ This dataset file can be parsed with dataset_converter.py
 first_name, middle_name, last_name, email, company_name, address_line_1, address_line_2, city, state, zipcode, country, phone, fax
 
 Used with AutofillTest.testMergeAppregatedProfileWithSameAddress
-These 12 profiles should merge into 4 profiles with the new multi-value feature.
+These 12 profiles should merge into 3 profiles with the new multi-value feature.
 
 john|Jacob||john.doe@gmail.com||1950 Amphitheatre Ave|#2|Mountain View|CA|14888|USA|4155551234|4155551235
 john|Jacob||john.doe@gmail.com||1950 Amphitheatre #2||Mountain View|CA|14888|USA|4155551234|4155551235
