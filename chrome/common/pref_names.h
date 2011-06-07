@@ -398,6 +398,7 @@ extern const char kNTPPromoClosed[];
 extern const char kNTPPromoGroup[];
 extern const char kNTPPromoGroupTimeSlice[];
 extern const char kNTPPromoBuild[];
+extern const char kNTPWebStoreEnabled[];
 extern const char kNTPWebStorePromoLastId[];
 extern const char kNTPWebStorePromoId[];
 extern const char kNTPWebStorePromoHeader[];
@@ -405,6 +406,7 @@ extern const char kNTPWebStorePromoButton[];
 extern const char kNTPWebStorePromoLink[];
 extern const char kNTPWebStorePromoLogo[];
 extern const char kNTPWebStorePromoExpire[];
+extern const char kNTPWebStorePromoUserGroup[];
 
 extern const char kGpuBlacklist[];
 extern const char kGpuBlacklistUpdate[];

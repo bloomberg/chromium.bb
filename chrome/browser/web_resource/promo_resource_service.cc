@@ -303,6 +303,7 @@ void PromoResourceService::UnpackWebStoreSignal(
   DictionaryValue* topic_dict;
   ListValue* answer_list;
 
+  bool is_webstore_active = false;
   bool signal_found = false;
   std::string promo_id = "";
   std::string promo_header = "";
@@ -310,6 +311,7 @@ void PromoResourceService::UnpackWebStoreSignal(
   std::string promo_link = "";
   std::string promo_expire = "";
   std::string promo_logo = "";
+  int maximize_setting = 0;
   int target_builds = 0;
 
   if (!parsed_json.GetDictionary("topic", &topic_dict) ||
@@ -334,6 +336,10 @@ void PromoResourceService::UnpackWebStoreSignal(
     if (split == std::string::npos || name.substr(0, split) != "webstore_promo")
       continue;
 
+    // If the "webstore_promo" string was found, that's enough to activate the
+    // apps section even if the rest of the promo fails parsing.
+    is_webstore_active = true;
+
     // (2) an integer specifying which builds the promo targets
     name = name.substr(split+1);
     split = name.find(':');
@@ -341,7 +347,14 @@ void PromoResourceService::UnpackWebStoreSignal(
         !base::StringToInt(name.substr(0, split), &target_builds))
       continue;
 
-    // (3) optional text that specifies a URL of a logo image
+    // (3) an integer specifying what users should maximize the promo
+    name = name.substr(split+1);
+    split = name.find(':');
+    if (split == std::string::npos ||
+        !base::StringToInt(name.substr(0, split), &maximize_setting))
+      continue;
+
+    // (4) optional text that specifies a URL of a logo image
     promo_logo = name.substr(split+1);
 
     if (!a_dic->GetString(kAnswerIdProperty, &promo_id) ||
@@ -354,7 +367,8 @@ void PromoResourceService::UnpackWebStoreSignal(
     if (IsThisBuildTargeted(target_builds)) {
       // Store the first web store promo that targets the current build.
       AppsPromo::SetPromo(promo_id, promo_header, promo_button,
-                          GURL(promo_link), promo_expire, GURL(promo_logo));
+                          GURL(promo_link), promo_expire, GURL(promo_logo),
+                          maximize_setting);
       signal_found = true;
       break;
     }
@@ -364,6 +378,8 @@ void PromoResourceService::UnpackWebStoreSignal(
     // If no web store promos target this build, then clear all the prefs.
     AppsPromo::ClearPromo();
   }
+
+  AppsPromo::SetWebStoreSupportedForLocale(is_webstore_active);
 
   NotificationService::current()->Notify(
       NotificationType::WEB_STORE_PROMO_LOADED,

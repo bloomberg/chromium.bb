@@ -1132,6 +1132,9 @@ const char kNTPPromoLine[] = "ntp.promo_line";
 const char kNTPPromoStart[] = "ntp.promo_start";
 const char kNTPPromoEnd[] = "ntp.promo_end";
 
+// Boolean indicating whether the web store is active for the current locale.
+const char kNTPWebStoreEnabled[] = "ntp.webstore_enabled";
+
 // The id of the last web store promo actually displayed on the NTP.
 const char kNTPWebStorePromoLastId[] = "ntp.webstore_last_promo_id";
 
@@ -1152,6 +1155,9 @@ const char kNTPWebStorePromoLogo[] = "ntp.webstorepromo.logo";
 
 // The "hide this" link text for the NTP web store promo.
 const char kNTPWebStorePromoExpire[] = "ntp.webstorepromo.expire";
+
+// Specifies what users should maximize the NTP web store promo.
+const char kNTPWebStorePromoUserGroup[] = "ntp.webstorepromo.usergroup";
 
 // The most up-to-date GPU blacklist downloaded from the web, which replaces
 // the one that's installed with chrome.

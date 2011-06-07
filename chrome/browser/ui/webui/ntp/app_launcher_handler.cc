@@ -292,8 +292,7 @@ void AppLauncherHandler::HandleGetApps(const ListValue* args) {
   bool apps_promo_just_expired = false;
   if (apps_promo->ShouldShowPromo(extensions_service_->GetAppIds(),
                                   &apps_promo_just_expired)) {
-    // Maximize the apps section on the first promo view.
-    apps_promo->MaximizeAppsIfFirstView();
+    apps_promo->MaximizeAppsIfNecessary();
     dictionary.SetBoolean("showPromo", true);
     FillPromoDictionary(&dictionary);
     promo_active_ = true;

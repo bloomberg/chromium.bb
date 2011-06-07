@@ -169,14 +169,12 @@ TEST_F(PromoResourceServiceTest, UnpackPromoSignal) {
 TEST_F(PromoResourceServiceTest, UnpackWebStoreSignal) {
   web_resource_service_->set_channel(platform_util::CHANNEL_DEV);
 
-  // Set up start and end dates and promo line in a Dictionary as if parsed
-  // from the service.
   std::string json = "{ "
                      "  \"topic\": {"
                      "    \"answers\": ["
                      "       {"
                      "        \"answer_id\": \"341252\","
-                     "        \"name\": \"webstore_promo:15:\","
+                     "        \"name\": \"webstore_promo:15:1:\","
                      "        \"question\": \"The header!\","
                      "        \"inproduct_target\": \"The button label!\","
                      "        \"inproduct\": \"http://link.com\","
@@ -201,8 +199,34 @@ TEST_F(PromoResourceServiceTest, UnpackWebStoreSignal) {
   EXPECT_EQ("The button label!", AppsPromo::GetPromoButtonText());
   EXPECT_EQ(GURL("http://link.com"), AppsPromo::GetPromoLink());
   EXPECT_EQ("No thanks, hide this.", AppsPromo::GetPromoExpireText());
+  EXPECT_EQ(AppsPromo::USERS_NEW, AppsPromo::GetPromoUserGroup());
   EXPECT_EQ(GURL("chrome://theme/IDR_WEBSTORE_ICON"),
             AppsPromo::GetPromoLogo());
+}
+
+// Tests that the "web store active" flag is set even when the web store promo
+// fails parsing.
+TEST_F(PromoResourceServiceTest, UnpackPartialWebStoreSignal) {
+  std::string json = "{ "
+                     "  \"topic\": {"
+                     "    \"answers\": ["
+                     "       {"
+                     "        \"answer_id\": \"sdlfj32\","
+                     "        \"name\": \"webstore_promo:#klsdjlfSD\""
+                     "       }"
+                     "    ]"
+                     "  }"
+                     "}";
+  scoped_ptr<DictionaryValue> test_json(static_cast<DictionaryValue*>(
+      base::JSONReader::Read(json, false)));
+
+  // Initialize a message loop for this to run on.
+  MessageLoop loop;
+
+  // Check that prefs are set correctly.
+  web_resource_service_->UnpackWebStoreSignal(*(test_json.get()));
+  EXPECT_FALSE(AppsPromo::IsPromoSupportedForLocale());
+  EXPECT_TRUE(AppsPromo::IsWebStoreSupportedForLocale());
 }
 
 TEST_F(PromoResourceServiceTest, IsBuildTargeted) {

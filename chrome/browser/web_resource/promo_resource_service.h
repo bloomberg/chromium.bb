@@ -48,6 +48,8 @@ class PromoResourceService
   FRIEND_TEST_ALL_PREFIXES(PromoResourceServiceTest, UnpackLogoSignal);
   FRIEND_TEST_ALL_PREFIXES(PromoResourceServiceTest, UnpackPromoSignal);
   FRIEND_TEST_ALL_PREFIXES(PromoResourceServiceTest, UnpackWebStoreSignal);
+  FRIEND_TEST_ALL_PREFIXES(
+      PromoResourceServiceTest, UnpackPartialWebStoreSignal);
 
   // Identifies types of Chrome builds for promo targeting.
   enum BuildType {

@@ -19,6 +19,19 @@ class PrefService;
 // - Whether to expire existing default apps
 class AppsPromo {
  public:
+  // Groups users by whether they have seen a web store promo before. This is
+  // used for deciding to maximize the promo and apps section on the NTP.
+  enum UserGroup {
+    // Matches no users.
+    USERS_NONE = 0,
+
+    // Users who have not seen a promo (last promo id is default value).
+    USERS_NEW = 1,
+
+    // Users who have already seen a promo (last promo id is non-default).
+    USERS_EXISTING = 1 << 1,
+  };
+
   // Register our preferences. Parts of the promo content are stored in Local
   // State since they're independent of the user profile.
   static void RegisterPrefs(PrefService* local_state);
@@ -26,6 +39,12 @@ class AppsPromo {
 
   // Removes the current promo data.
   static void ClearPromo();
+
+  // Returns true if a promo is available for the current locale.
+  static bool IsPromoSupportedForLocale();
+
+  // Returns true if the web store is active for the existing locale.
+  static bool IsWebStoreSupportedForLocale();
 
   // Gets the ID of the current promo.
   static std::string GetPromoId();
@@ -45,6 +64,10 @@ class AppsPromo {
   // Gets the text for the promo "hide this" link.
   static std::string GetPromoExpireText();
 
+  // Gets the user groups for which we should maximize the promo and apps
+  // section. The return value is a bitwise OR of UserGroup enums.
+  static int GetPromoUserGroup();
+
   // Called to set the current promo data. The default web store logo will be
   // used if |logo| is empty or not valid.
   static void SetPromo(const std::string& id,
@@ -52,7 +75,12 @@ class AppsPromo {
                        const std::string& button_text,
                        const GURL& link,
                        const std::string& expire_text,
-                       const GURL& logo);
+                       const GURL& logo,
+                       const int user_group);
+
+  // Sets whether the web store and apps section is supported for the current
+  // locale.
+  static void SetWebStoreSupportedForLocale(bool supported);
 
   explicit AppsPromo(PrefService* prefs);
   ~AppsPromo();
@@ -71,8 +99,10 @@ class AppsPromo {
   // Called to hide the promo from the apps section.
   void HidePromo();
 
-  // Maximizes the apps section the first time this is called for a given promo.
-  void MaximizeAppsIfFirstView();
+  // Maximizes the apps section on the NTP if the following conditions are met:
+  //  (a) the existing promo has not already been maximized
+  //  (b) the current user group is targetted by the promo
+  void MaximizeAppsIfNecessary();
 
   // Returns true if the app launcher should be displayed on the NTP.
   bool ShouldShowAppLauncher(const ExtensionIdSet& installed_ids);
@@ -91,10 +121,10 @@ class AppsPromo {
   // between the first time we overflow and subsequent times.
   static const int kDefaultAppsCounterMax;
 
-  // Returns true if a promo is available for the current locale.
-  static bool IsPromoSupportedForLocale();
-
   bool GetDefaultAppsInstalled() const;
+
+  // Gets the UserGroup classification of the current user.
+  UserGroup GetCurrentUserGroup() const;
 
   // Gets/sets the ID of the last promo shown.
   std::string GetLastPromoId();

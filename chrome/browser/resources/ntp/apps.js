@@ -77,9 +77,9 @@ function getAppsCallback(data) {
     document.documentElement.classList.remove('apps-promo-visible');
   }
 
-  // Only show the web store entry if there are apps installed, since the promo
-  // is sufficient otherwise.
-  if (data.apps.length > 0) {
+  // Only show the web store entry if there are apps installed or the promo
+  // is not available.
+  if (data.apps.length > 0 || !data.showPromo) {
     webStoreEntry = apps.createWebStoreElement();
     webStoreEntry.querySelector('a').ping = appsPromoPing;
     appsSectionContent.appendChild(webStoreEntry);
