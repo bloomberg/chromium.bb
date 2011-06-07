@@ -16,6 +16,7 @@ const char16 kNewWMPPlugin[] = L"np-mswmp.dll";
 const char16 kOldWMPPlugin[] = L"npdsplay.dll";
 const char16 kYahooApplicationStatePlugin[] = L"npystate.dll";
 const char16 kWanWangProtocolHandlerPlugin[] = L"npww.dll";
+const char16 kBuiltinFlashPlugin[] = L"gcswf32.dll";
 const char16 kFlashPlugin[] = L"npswf32.dll";
 const char16 kAcrobatReaderPlugin[] = L"nppdf32.dll";
 const char16 kRealPlayerPlugin[] = L"nppl3260.dll";

@@ -326,7 +326,7 @@ bool ChromeContentClient::SandboxPlugin(CommandLine* command_line,
     policy->SetJobLevel(sandbox::JOB_UNPROTECTED, 0);
     policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
                           sandbox::USER_INTERACTIVE);
-    policy->SetDelayedIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
+    policy->SetIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
   } else {
     // Could not start the broker, use a very weak policy instead.
     DLOG(WARNING) << "Failed to start flash broker";

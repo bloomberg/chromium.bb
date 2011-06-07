@@ -111,6 +111,7 @@ class WebPluginImpl : public WebPlugin,
   virtual void WillDestroyWindow(gfx::PluginWindowHandle window);
 #if defined(OS_WIN)
   void SetWindowlessPumpEvent(HANDLE pump_messages_event) { }
+  void ReparentPluginWindow(HWND window, HWND parent) { }
 #endif
   virtual void CancelResource(unsigned long id);
   virtual void Invalidate();

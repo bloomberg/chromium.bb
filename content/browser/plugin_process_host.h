@@ -102,6 +102,7 @@ class PluginProcessHost : public BrowserChildProcessHost {
 
 #if defined(OS_WIN)
   void OnPluginWindowDestroyed(HWND window, HWND parent);
+  void OnReparentPluginWindow(HWND window, HWND parent);
 #endif
 
 #if defined(USE_X11)

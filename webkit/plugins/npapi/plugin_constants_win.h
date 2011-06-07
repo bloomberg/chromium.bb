@@ -30,6 +30,7 @@ extern const char16 kNewWMPPlugin[];
 extern const char16 kOldWMPPlugin[];
 extern const char16 kYahooApplicationStatePlugin[];
 extern const char16 kWanWangProtocolHandlerPlugin[];
+extern const char16 kBuiltinFlashPlugin[];
 extern const char16 kFlashPlugin[];
 extern const char16 kAcrobatReaderPlugin[];
 extern const char16 kRealPlayerPlugin[];

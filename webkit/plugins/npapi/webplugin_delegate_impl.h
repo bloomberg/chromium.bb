@@ -77,6 +77,7 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
     PLUGIN_QUIRK_HANDLE_MOUSE_CAPTURE = 16384,  // Windows
     PLUGIN_QUIRK_WINDOWLESS_NO_RIGHT_CLICK = 32768,  // Linux
     PLUGIN_QUIRK_IGNORE_FIRST_SETWINDOW_CALL = 65536,  // Windows.
+    PLUGIN_QUIRK_REPARENT_IN_BROWSER = 131072,  // Windows
   };
 
   static WebPluginDelegateImpl* Create(const FilePath& filename,
@@ -351,6 +352,7 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
   // receives a WM_LBUTTONDOWN/WM_RBUTTONDOWN message via NPP_HandleEvent.
 
   HWND dummy_window_for_activation_;
+  HWND parent_proxy_window_;
   bool CreateDummyWindowForActivation();
 
   // Returns true if the event passed in needs to be tracked for a potential

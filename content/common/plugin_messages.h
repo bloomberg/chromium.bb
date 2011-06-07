@@ -101,6 +101,10 @@ IPC_MESSAGE_CONTROL2(PluginProcessHostMsg_PluginWindowDestroyed,
 IPC_MESSAGE_CONTROL2(PluginProcessHostMsg_DownloadUrl,
                      std::string /* URL */,
                      HWND /* caller window */)
+
+IPC_MESSAGE_CONTROL2(PluginProcessHostMsg_ReparentPluginWindow,
+                     HWND /* window */,
+                     HWND /* parent */)
 #endif
 
 #if defined(USE_X11)
