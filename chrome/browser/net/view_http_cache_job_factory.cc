@@ -53,7 +53,6 @@ class ViewHttpCacheJob : public net::URLRequestJob {
 
     // Prevents it from invoking its callback. It will self-delete.
     void Orphan() {
-      DCHECK(user_callback_);
       user_callback_ = NULL;
     }
 
@@ -98,8 +97,10 @@ void ViewHttpCacheJob::Start() {
 
 void ViewHttpCacheJob::Kill() {
   method_factory_.RevokeAll();
-  core_->Orphan();
-  core_ = NULL;
+  if (core_) {
+    core_->Orphan();
+    core_ = NULL;
+  }
   net::URLRequestJob::Kill();
 }
 
