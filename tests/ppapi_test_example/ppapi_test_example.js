@@ -8,9 +8,7 @@ function setupTests(tester, plugin) {
     assert(plugin.testFoo());
   });
   tester.addTest('Example::PostMessage', function() {
-    // TODO(polina): use postMessage instead when proxy support is available.
-    //plugin.postMessage("dummy");
-    assert(plugin.testHandleMessage());
+    plugin.postMessage("dummy");
     tester.waitForCallback('MessageHandled', 1);
   });
 }

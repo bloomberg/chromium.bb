@@ -35,22 +35,10 @@ void HandleMessage(PP_Instance instance, PP_Var message) {
 
 const PPP_Messaging ppp_messaging_interface = { HandleMessage };
 
-// TODO(polina): remove this when _Messaging proxy are checked in and
-// the callback can be triggered by plugin.postMessage() instead of
-// plugin.testCallback() from JavaScript.
-PP_Var TestHandleMessage() {
-  printf("--- TestHandleMessage\n");
-  ppp_messaging_interface.HandleMessage(pp_instance(), PP_MakeUndefined());
-
-  return TEST_PASSED;
-}
-
-
 }  // namespace
 
 void SetupScriptableTests() {
   RegisterScriptableTest("testFoo", TestFoo);
-  RegisterScriptableTest("testHandleMessage", TestHandleMessage);
 }
 
 void SetupPluginInterfaces() {
