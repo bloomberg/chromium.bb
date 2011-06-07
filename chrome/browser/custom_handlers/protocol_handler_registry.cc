@@ -106,6 +106,7 @@ void ProtocolHandlerRegistry::Enable() {
     for (p = default_handlers_.begin(); p != default_handlers_.end(); ++p) {
       delegate_->RegisterExternalHandler(p->first);
     }
+    Save();
   }
   NotifyChanged();
 }
@@ -121,6 +122,7 @@ void ProtocolHandlerRegistry::Disable() {
     for (p = default_handlers_.begin(); p != default_handlers_.end(); ++p) {
       delegate_->DeregisterExternalHandler(p->first);
     }
+    Save();
   }
   NotifyChanged();
 }

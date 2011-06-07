@@ -139,6 +139,7 @@ class ProtocolHandlerRegistryTest : public RenderViewHostTestHarness {
 
   void ReloadProtocolHandlerRegistry() {
     delegate_ = new FakeDelegate();
+    registry_->Finalize();
     registry_ = new ProtocolHandlerRegistry(profile(), delegate());
     registry_->Load();
   }
@@ -296,11 +297,16 @@ TEST_F(ProtocolHandlerRegistryTest, TestDefaultSaveLoad) {
   registry()->OnDenyRegisterProtocolHandler(ph2);
 
   registry()->OnAcceptRegisterProtocolHandler(ph2);
+  registry()->Disable();
 
   ReloadProtocolHandlerRegistry();
-
+  ASSERT_FALSE(registry()->enabled());
+  registry()->Enable();
   ASSERT_FALSE(registry()->IsDefault(ph1));
   ASSERT_TRUE(registry()->IsDefault(ph2));
+
+  ReloadProtocolHandlerRegistry();
+  ASSERT_TRUE(registry()->enabled());
 }
 
 TEST_F(ProtocolHandlerRegistryTest, TestRemoveHandler) {
