@@ -1616,3 +1616,9 @@
    ...
    fun:TestingProfile::GetWebKitContext
 }
+{
+   bug_85151_b
+   Heapcheck:Leak
+   ...
+   fun:WebKitContextTest_Basic_Test::TestBody
+}

@@ -4699,6 +4699,13 @@
    ...
    fun:_ZN14TestingProfile16GetWebKitContextEv
 }
+{
+   bug_85151_b
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN28WebKitContextTest_Basic_Test8TestBodyEv
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
