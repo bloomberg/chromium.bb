@@ -7,6 +7,7 @@
 #ifndef GPU_COMMAND_BUFFER_COMMON_CMD_BUFFER_COMMON_H_
 #define GPU_COMMAND_BUFFER_COMMON_CMD_BUFFER_COMMON_H_
 
+#include <stddef.h>
 #include "../common/types.h"
 #include "../common/bitfield_helpers.h"
 #include "../common/logging.h"
