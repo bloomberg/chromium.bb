@@ -57,6 +57,15 @@ CharPtrType = {
   'store': 'char*'
 }
 
+# A function pointer type
+FuncType = {
+  'in': '$TYPEREF$',
+  'inout': '$TYPEREF$',
+  'out': '$TYPEREF$',
+  'return': '$TYPEREF$',
+  'store': '$TYPEREF$'
+}
+
 # A 'struct' is passed by pointer.
 StructType = {
   'in': 'const $TYPEREF$*',
@@ -76,6 +85,7 @@ VoidType = {
 }
 
 TypeMap = {
+  'func': FuncType,
   'enum': EnumType,
   'mem_t': MemPtrType,
   'str_t': CharPtrType,
@@ -102,112 +112,126 @@ def GetName(node, **keyargs):
 
 
 # Return the array specification of the object.
-def GetArrayspec(node):
+def GetArrayspec(node, name):
   assert(node.cls == 'Array')
   out = ''
   fixed = node.GetProperty('FIXED')
   if fixed:
-    out = '[%s]' % fixed
+    out = '%s[%s]' % (name, fixed)
   else:
-    out = '[]'
+    out = '*%s' % name
   # Add children
   for child in node.GetListOf('Array'):
-    out += GetArrayspec(child)
+    out += GetArrayspec(child, name)
   return out
 
 
 # Return the <name>[<size>] form of the node.
 def GetNameArray(node, **keyargs):
-  array = ''
+  name = GetName(node, **keyargs)
   for child in node.GetListOf('Array'):
-    array += GetArrayspec(child)
-  return '%s%s' % (GetName(node, **keyargs), array)
+    name = GetArrayspec(child, name)
+  return name
 
 
-# Get the 'return' type of the function.
-def GetReturnType(node, **keyargs):
+def GetRootType(node):
   root = node
   while root.typeinfo:
+    typeinfo = root.typeinfo
+    if root.GetOneOf('Callspec'):
+      return TypeMap['func']
     root = root.typeinfo
-  typeinfo = root.name
-  typedata = TypeMap[typeinfo]
-  return node.Replace(typedata['return'])
+  return TypeMap[root.name]
 
 
 # Get the passing form of the parameter.
 def GetParamType(node, **keyargs):
-  root = node
-  while root.typeinfo:
-    root = root.typeinfo
-
-  typeinfo = root.name
-  typedata = TypeMap[typeinfo]
+  typedata = GetRootType(node)
   if node.GetProperty('in'):
     return node.Replace(typedata['in'])
   if node.GetProperty('out'):
     return node.Replace(typedata['out'])
-  return node.Replace(typedata['inout'])
+  if node.GetProperty('inout'):
+    return node.Replace(typedata['inout'])
+  return node.GetProperty('TYPEREF')
 
 
-# Return a list of arguments.
-def GetArgList(node, **keyargs):
+# GetParam
+#
+# A Param signature is different than that of a Member because a Member is
+# stored in the structure as declared, but the Param's signature is affected
+# by how it gets passed and it's extended attributes like IN, OUT, and INOUT.
+#
+def GetParam(node, **keyargs):
+  # This may be a function.
+  callnode = node.GetOneOf('Callspec')
+
+  typeref  = GetParamType(node, **keyargs)
+  name = GetNameArray(node, **keyargs)
+  if callnode:
+    arglist = GetParamList(callnode, **keyargs)
+    return '%s (*%s)(%s)' % (typeref, name, ', '.join(arglist))
+  return '%s %s' % (typeref, name)
+
+
+# GetParamList
+def GetParamList(node, **keyargs):
   assert(node.cls == 'Callspec')
   out = []
   for child in node.GetListOf('Param'):
-    out.append(GetSignature(child, **keyargs))
+    out.append(GetParam(child, **keyargs))
   return out
 
 
-# Return the signature of this node
-def GetSignature(node, **keyargs):
+# DefineSignature
+def DefineSignature(node, **keyargs):
+  # This may be a function.
   callnode = node.GetOneOf('Callspec')
 
-  typeinfo  = node.GetProperty('TYPEREF')
+  typeref  = node.GetProperty('TYPEREF')
   name = GetNameArray(node, **keyargs)
-  if node.cls == 'Param':
-    type = GetParamType(node, **keyargs)
-  else:
-    type = GetReturnType(node, **keyargs)
-
   if callnode:
-    arglist = GetArgList(callnode, **keyargs)
-    return '%s (*%s)(%s)' % (type, name, ', '.join(arglist))
-  return '%s %s' % (type, name)
+    arglist = GetParamList(callnode, **keyargs)
+    return '%s (*%s)(%s)' % (typeref, name, ', '.join(arglist))
+  return '%s %s' % (typeref, name)
 
+# Define a Member (or Function) in an interface.
+def DefineMember(node, **keyargs):
+  return '%s;\n' % DefineSignature(node, **keyargs)
+
+# Define an Typedef.
+def DefineTypedef(node, **keyargs):
+  return 'typedef %s;\n' % DefineSignature(node, **keyargs)
 
 # Define an Enum.
 def DefineEnum(node, **keyargs):
-  out = "enum %s {\n" % GetName(node, **keyargs)
+  out = 'enum %s {' % GetName(node, **keyargs)
 
   enumlist = []
   for child in node.GetListOf('EnumItem'):
     value = child.GetProperty('VALUE')
     enumlist.append('  %s = %s' % (GetName(child), value))
-  return "%s\n%s\n};\n" % (out, ',\n'.join(enumlist))
-
-# Define an member Function.
-def DefineFunction(node, **keyargs):
-  return '%s;' % GetSignature(node, **keyargs)
-
-# Define an Typedef.
-def DefineTypedef(node, **keyargs):
-  return "typedef %s;\n" % GetSignature(node, **keyargs)
+  return '%s\n%s\n};\n' % (out, ',\n'.join(enumlist))
 
 # Define a Struct.
 def DefineStruct(node, **keyargs):
-  out = "struct %s {\n" % (GetName(node, **keyargs))
+  out = 'struct %s {\n' % (GetName(node, **keyargs))
+
+  # Generate Member Functions
   for child in node.GetListOf('Function'):
-    out += '  %s' % Define(child)
+    out += '  %s' % DefineMember(child, **keyargs)
+
+  # Generate Member Variables
   for child in node.GetListOf('Member'):
-    out += '  %s;\n' % GetSignature(child)
-  out += "};"
+    out += '  %s' % DefineMember(child, **keyargs)
+  out += '};'
   return out
 
-# Define a C "prototype-able" object
+
+# Define a top level object.
 def Define(node, **keyargs):
   declmap = {
     'Enum' : DefineEnum,
-    'Function' : DefineFunction,
     'Interface' : DefineStruct,
     'Struct' : DefineStruct,
     'Typedef' : DefineTypedef,
@@ -268,13 +292,13 @@ def TestFiles(filenames):
   for filenode in ast_result.out.GetListOf('File'):
     errs = TestFile(filenode)
     if errs:
-      ErrOut.Log("%s test failed with %d error(s)." % (filenode.name, errs))
+      ErrOut.Log('%s test failed with %d error(s).' % (filenode.name, errs))
       total_errs += errs
 
   if total_errs:
-    ErrOut.Log("Failed generator test.")
+    ErrOut.Log('Failed generator test.')
   else:
-    InfoOut.Log("Passed generator test.")
+    InfoOut.Log('Passed generator test.')
   return total_errs
 
 

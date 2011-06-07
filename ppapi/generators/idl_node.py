@@ -70,6 +70,7 @@ class IDLNode(object):
     self.hash = None
     self.typeref = None
     self.parent = None
+    self.childlist = children
 
     if children:
       for child in children:

@@ -41,6 +41,8 @@ Option('build_debug', 'Debug tree building.')
 Option('parse_debug', 'Debug parse reduction steps.')
 Option('token_debug', 'Debug token generation.')
 Option('dump_tree', 'Dump the tree.')
+Option('srcdir', 'Working directory', default='.')
+
 
 #
 # ERROR_REMAP
@@ -221,9 +223,7 @@ class IDLParser(IDLLexer):
     Copyright = self.BuildProduction('Copyright', p, 1, None)
     Filedoc = self.BuildProduction('Comment', p, 2, None)
 
-    out = ListFromConcat(p[3], p[4])
-    out = ListFromConcat(Filedoc, out)
-    p[0] = ListFromConcat(Copyright, out)
+    p[0] = ListFromConcat(Copyright, Filedoc, p[3], p[4])
     if self.parse_debug: DumpReduction('top', p)
 
   # Build a list of top level items.
@@ -620,7 +620,7 @@ class IDLParser(IDLLexer):
   def VerifyProduction(self, node):
     comment = node.GetOneOf('Comment')
     if node.cls in ['Interface', 'Struct', 'Function'] and not comment:
-      self.Warn(node, 'Missing comment.')
+      self.Warn(node, 'Missing comment for %s.' % node)
     if node.cls in ['Param']:
       found = False;
       for form in ['in', 'inout', 'out']:
@@ -684,7 +684,8 @@ class IDLParser(IDLLexer):
 # Loads a new file into the lexer and attemps to parse it.
 #
   def ParseFile(self, filename):
-    data = open(filename).read()
+    loadname = os.path.join(GetOption('srcdir'), filename)
+    data = open(loadname).read()
     if self.verbose:
       InfoOut.Log("Parsing %s" % filename)
     try:
