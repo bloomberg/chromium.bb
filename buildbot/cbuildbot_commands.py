@@ -396,18 +396,16 @@ def UploadPrebuilts(buildroot, board, overlay_config, binhosts, category,
   cwd = os.path.dirname(__file__)
   cmd = ['./prebuilt.py',
          '--build-path', buildroot,
-         '--board', board,
          '--prepend-version', category]
   for binhost in binhosts:
     if binhost:
       cmd.extend(['--previous-binhost-url', binhost])
   if overlay_config == 'public':
     cmd.extend(['--upload', 'gs://chromeos-prebuilt'])
-    # Only one bot should upload full host prebuilts, and one bot should upload
-    # preflight host prebuilts. We've arbitrarily designated the x86-generic
-    # preflight and full bots as the bots that do that.  Note: This only
-    # works with public-only prebuilts.
-    if board == 'x86-generic' and category in ('binary', 'full'):
+    # Only one bot should upload preflight host prebuilts. We've arbitrarily
+    # designated the x86-generic preflight bot as the bots that does that.
+    # Note: This only works with public-only prebuilts.
+    if board == 'x86-generic' and category == 'binary':
       cmd.append('--sync-host')
   else:
     assert overlay_config in ('private', 'both')
@@ -416,6 +414,13 @@ def UploadPrebuilts(buildroot, board, overlay_config, binhosts, category,
                     (upload_bucket, category, buildnumber),
                 '--private',
                ])
+
+  if category == 'chroot':
+    cmd.extend(['--sync-host',
+                '--board', 'amd64-host',
+                '--upload-board-tarball'])
+  else:
+    cmd.extend(['--board', board])
 
   if category == 'chrome':
     assert chrome_rev
@@ -427,8 +432,8 @@ def UploadPrebuilts(buildroot, board, overlay_config, binhosts, category,
     cmd.extend(['--sync-binhost-conf',
                 '--key', _PREFLIGHT_BINHOST])
   else:
-    assert category == 'full'
-    # Commit new binhost directly to board overlay.
+    assert category in ('full', 'chroot')
+    # Commit new binhost directly to overlay.
     cmd.extend(['--git-sync',
                 '--key', _FULL_BINHOST])
 

@@ -226,7 +226,6 @@ def add_config(name, updates):
 add_config('chromiumos-sdk', [full, {
   'board' : ['x86-generic', 'arm-generic', 'amd64-host'],
   'build_type' : 'chroot',
-  'usepkg_chroot' : True,
 }])
 
 add_config('x86-generic-pre-flight-queue', [{

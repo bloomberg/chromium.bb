@@ -465,6 +465,12 @@ class BuildBoardStage(BuilderStage):
                           fast=self._build_config['fast'],
                           usepkg=self._build_config['usepkg_setup_board'])
 
+    if self._prebuilt_type == 'chroot':
+      commands.UploadPrebuilts(
+          self._build_root, 'amd64-host', self._build_config['rev_overlays'],
+          [], self._prebuilt_type, None, self._options.buildnumber)
+
+
 
 class UprevStage(BuilderStage):
   """Stage that uprevs Chromium OS packages that the builder intends to
