@@ -251,7 +251,7 @@ void TabStripModel::ActivateTabAt(int index, bool user_gesture) {
   TabContentsWrapper* new_contents = GetContentsAt(index);
   if (old_contents != new_contents && old_contents) {
     FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
-                      TabDeselected(old_contents));
+                      TabDeactivated(old_contents));
   }
   if (old_contents != new_contents || had_multi) {
     FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
@@ -1217,7 +1217,7 @@ void TabStripModel::NotifyTabSelectedIfChanged(TabContentsWrapper* old_contents,
   TabContentsWrapper* last_selected_contents = old_contents;
   if (last_selected_contents) {
     FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
-                      TabDeselected(last_selected_contents));
+                      TabDeactivated(last_selected_contents));
   }
 
   FOR_EACH_OBSERVER(TabStripModelObserver, observers_,

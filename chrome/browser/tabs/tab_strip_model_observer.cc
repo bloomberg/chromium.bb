@@ -18,7 +18,7 @@ void TabStripModelObserver::TabDetachedAt(TabContentsWrapper* contents,
                                           int index) {
 }
 
-void TabStripModelObserver::TabDeselected(TabContentsWrapper* contents) {
+void TabStripModelObserver::TabDeactivated(TabContentsWrapper* contents) {
 }
 
 void TabStripModelObserver::ActiveTabChanged(TabContentsWrapper* old_contents,

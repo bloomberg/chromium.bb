@@ -355,7 +355,7 @@ class BrowserView : public BrowserBubbleHost,
 
   // Overridden from TabStripModelObserver:
   virtual void TabDetachedAt(TabContentsWrapper* contents, int index) OVERRIDE;
-  virtual void TabDeselected(TabContentsWrapper* contents) OVERRIDE;
+  virtual void TabDeactivated(TabContentsWrapper* contents) OVERRIDE;
   virtual void ActiveTabChanged(TabContentsWrapper* old_contents,
                                 TabContentsWrapper* new_contents,
                                 int index,
