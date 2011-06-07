@@ -44,9 +44,6 @@ cr.define('options', function() {
       $('customize-sync').onclick = function(event) {
         chrome.send('showCustomizeSyncDialog');
       };
-      $('privacy-dashboard-link').onclick = function(event) {
-        chrome.send('openPrivacyDashboardTabAndActivate');
-      };
       $('manage-passwords').onclick = function(event) {
         OptionsPage.navigateToPage('passwords');
         OptionsPage.showTab($('passwords-nav-tab'));
@@ -121,7 +118,6 @@ cr.define('options', function() {
     setSyncSetupCompleted_: function(completed) {
       this.syncSetupCompleted = completed;
       $('customize-sync').hidden = !completed;
-      $('privacy-dashboard-link').hidden = !completed;
     },
 
     setAccountPicture_: function(image) {

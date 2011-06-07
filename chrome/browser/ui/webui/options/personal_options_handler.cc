@@ -241,8 +241,12 @@ void PersonalOptionsHandler::OnStateChanged() {
   browser_sync::SyncBackendHost::StatusSummary summary =
       service->QuerySyncStatusSummary();
 
+  // TODO(jhawkins): This is terribly hacky. Sync should pass us this state, but
+  // we have to fix the other callers of
+  // sync_ui_util::GetSyncedStateStatusLabel() to handle returned HTML.
   if (!status_has_error &&
-      summary == browser_sync::SyncBackendHost::Status::SYNCING) {
+      summary == browser_sync::SyncBackendHost::Status::READY &&
+      service->HasSyncSetupCompleted()) {
     string16 user_name(service->GetAuthenticatedUsername());
     status_label.assign(l10n_util::GetStringFUTF16(
         IDS_SYNC_ACCOUNT_SYNCING_TO_USER,
