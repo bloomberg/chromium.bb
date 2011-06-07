@@ -82,6 +82,8 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
   static void DisableFailureUIForTests();
 
  private:
+  friend class GalleryInstallApiTestObserver;
+
   // Show an infobar for a newly-installed theme.  previous_theme_id
   // should be empty if the previous theme was the system/default
   // theme.

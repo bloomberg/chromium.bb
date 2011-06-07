@@ -11,7 +11,43 @@
 #include "chrome/browser/extensions/extension_webstore_private_api.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/ui_test_utils.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_registrar.h"
+#include "content/common/notification_service.h"
+#include "content/common/notification_type.h"
 #include "net/base/mock_host_resolver.h"
+
+// This is a helper class to let us automatically accept extension install
+// dialogs.
+class GalleryInstallApiTestObserver :
+    public base::RefCounted<GalleryInstallApiTestObserver>,
+    public NotificationObserver {
+ public:
+  GalleryInstallApiTestObserver() {
+    registrar_.Add(this,
+                  NotificationType::EXTENSION_WILL_SHOW_CONFIRM_DIALOG,
+                  NotificationService::AllSources());
+  }
+
+  void InstallUIProceed(ExtensionInstallUI::Delegate* delegate) {
+    delegate->InstallUIProceed();
+  }
+
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) OVERRIDE {
+    ExtensionInstallUI* prompt = Source<ExtensionInstallUI>(source).ptr();
+    CHECK(prompt->delegate_);
+    MessageLoop::current()->PostTask(
+        FROM_HERE, NewRunnableMethod(
+            this,
+            &GalleryInstallApiTestObserver::InstallUIProceed,
+            prompt->delegate_));
+  }
+
+ private:
+  NotificationRegistrar registrar_;
+};
 
 class ExtensionGalleryInstallApiTest : public ExtensionApiTest {
  public:
@@ -22,6 +58,8 @@ class ExtensionGalleryInstallApiTest : public ExtensionApiTest {
   }
 
   bool RunInstallTest(const std::string& page) {
+    scoped_refptr<GalleryInstallApiTestObserver> observer =
+        new GalleryInstallApiTestObserver();  // Responds to install dialog.
     std::string base_url = base::StringPrintf(
         "http://www.example.com:%u/files/extensions/",
         test_server()->host_port_pair().port());

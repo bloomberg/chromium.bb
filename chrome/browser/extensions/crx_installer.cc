@@ -392,11 +392,10 @@ void CrxInstaller::ConfirmInstall() {
   current_version_ =
       frontend_weak_->extension_prefs()->GetVersionString(extension_->id());
 
-  // First see if it's whitelisted by id (the old mechanism).
-  bool whitelisted = ClearWhitelistedInstallId(extension_->id()) &&
-      extension_->plugins().empty() && is_gallery_install_;
+  // TODO(asargent) - remove this when we fully deprecate the old install api.
+  ClearWhitelistedInstallId(extension_->id());
 
-  // Now check if there's a WhitelistEntry.
+  bool whitelisted = false;
   scoped_ptr<CrxInstaller::WhitelistEntry> entry(
       RemoveWhitelistEntry(extension_->id()));
   if (is_gallery_install_ && entry.get() && original_manifest_.get()) {
