@@ -5,11 +5,25 @@
 #include "chrome/browser/browsing_data_remover.h"
 
 #include "base/message_loop.h"
+#include "base/platform_file.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/fileapi/file_system_context.h"
+#include "webkit/fileapi/file_system_operation_context.h"
+#include "webkit/fileapi/file_system_file_util.h"
+#include "webkit/fileapi/file_system_path_manager.h"
+#include "webkit/fileapi/sandbox_mount_point_provider.h"
 
 namespace {
+
+const char kTestkOrigin1[] = "http://host1:1/";
+const char kTestkOrigin2[] = "http://host2:1/";
+const char kTestkOrigin3[] = "http://host3:1/";
+
+const GURL kOrigin1(kTestkOrigin1);
+const GURL kOrigin2(kTestkOrigin2);
+const GURL kOrigin3(kTestkOrigin3);
 
 class BrowsingDataRemoverTester : public BrowsingDataRemover::Observer {
  public:
@@ -79,16 +93,98 @@ class RemoveHistoryTester : public BrowsingDataRemoverTester {
   DISALLOW_COPY_AND_ASSIGN(RemoveHistoryTester);
 };
 
+class RemoveFileSystemTester : public BrowsingDataRemoverTester {
+ public:
+  explicit RemoveFileSystemTester() {}
+
+  void FindFileSystemPathCallback(bool success,
+                                  const FilePath& path,
+                                  const std::string& name) {
+    found_file_system_ = success;
+    Notify();
+  }
+
+  bool FileSystemContainsOriginAndType(const GURL& origin,
+                                       fileapi::FileSystemType type) {
+    sandbox_->ValidateFileSystemRootAndGetURL(
+        origin, type, false, NewCallback(this,
+            &RemoveFileSystemTester::FindFileSystemPathCallback));
+    BlockUntilNotified();
+    return found_file_system_;
+  }
+
+  virtual void PopulateTestFileSystemData(TestingProfile* profile) {
+    // Set up kOrigin1 with a temporary file system, kOrigin2 with a persistent
+    // file system, and kOrigin3 with both.
+    sandbox_ = profile->GetFileSystemContext()->path_manager()->
+        sandbox_provider();
+
+    CreateDirectoryForOriginAndType(kOrigin1,
+        fileapi::kFileSystemTypeTemporary);
+    CreateDirectoryForOriginAndType(kOrigin2,
+        fileapi::kFileSystemTypePersistent);
+    CreateDirectoryForOriginAndType(kOrigin3,
+        fileapi::kFileSystemTypeTemporary);
+    CreateDirectoryForOriginAndType(kOrigin3,
+        fileapi::kFileSystemTypePersistent);
+
+    EXPECT_FALSE(FileSystemContainsOriginAndType(kOrigin1,
+        fileapi::kFileSystemTypePersistent));
+    EXPECT_TRUE(FileSystemContainsOriginAndType(kOrigin1,
+        fileapi::kFileSystemTypeTemporary));
+    EXPECT_TRUE(FileSystemContainsOriginAndType(kOrigin2,
+        fileapi::kFileSystemTypePersistent));
+    EXPECT_FALSE(FileSystemContainsOriginAndType(kOrigin2,
+        fileapi::kFileSystemTypeTemporary));
+    EXPECT_TRUE(FileSystemContainsOriginAndType(kOrigin3,
+        fileapi::kFileSystemTypePersistent));
+    EXPECT_TRUE(FileSystemContainsOriginAndType(kOrigin3,
+        fileapi::kFileSystemTypeTemporary));
+  }
+
+  void CreateDirectoryForOriginAndType(const GURL& origin,
+                                       fileapi::FileSystemType type) {
+    FilePath target = sandbox_->ValidateFileSystemRootAndGetPathOnFileThread(
+        origin, type, FilePath(), true);
+    EXPECT_TRUE(file_util::DirectoryExists(target));
+  }
+
+ private:
+  fileapi::SandboxMountPointProvider* sandbox_;
+  bool found_file_system_;
+
+  DISALLOW_COPY_AND_ASSIGN(RemoveFileSystemTester);
+};
+
 class BrowsingDataRemoverTest : public testing::Test {
  public:
-  BrowsingDataRemoverTest() {}
-  virtual ~BrowsingDataRemoverTest() {}
+  BrowsingDataRemoverTest()
+      : ui_thread_(BrowserThread::UI, &message_loop_),
+        db_thread_(BrowserThread::DB, &message_loop_),
+        webkit_thread_(BrowserThread::WEBKIT, &message_loop_),
+        file_thread_(BrowserThread::FILE, &message_loop_),
+        io_thread_(BrowserThread::IO, &message_loop_),
+        profile_(new TestingProfile()) {
+  }
+
+  virtual ~BrowsingDataRemoverTest() {
+  }
+
+  void TearDown() {
+    // TestingProfile contains a WebKitContext.  WebKitContext's destructor
+    // posts a message to the WEBKIT thread to delete some of its member
+    // variables. We need to ensure that the profile is destroyed, and that
+    // the message loop is cleared out, before destroying the threads and loop.
+    // Otherwise we leak memory.
+    profile_.reset();
+    message_loop_.RunAllPending();
+  }
 
   void BlockUntilBrowsingDataRemoved(BrowsingDataRemover::TimePeriod period,
                                      base::Time delete_end,
                                      int remove_mask,
                                      BrowsingDataRemoverTester* tester) {
-    BrowsingDataRemover* remover = new BrowsingDataRemover(&profile_,
+    BrowsingDataRemover* remover = new BrowsingDataRemover(profile_.get(),
         period, delete_end);
     remover->AddObserver(tester);
 
@@ -98,13 +194,19 @@ class BrowsingDataRemoverTest : public testing::Test {
   }
 
   TestingProfile* GetProfile() {
-    return &profile_;
+    return profile_.get();
   }
 
  private:
-  // message_loop_ must be defined before profile_ to prevent explosions.
+  // message_loop_, as well as all the threads associated with it must be
+  // defined before profile_ to prevent explosions. Oh how I love C++.
   MessageLoopForUI message_loop_;
-  TestingProfile profile_;
+  BrowserThread ui_thread_;
+  BrowserThread db_thread_;
+  BrowserThread webkit_thread_;
+  BrowserThread file_thread_;
+  BrowserThread io_thread_;
+  scoped_ptr<TestingProfile> profile_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataRemoverTest);
 };
@@ -113,14 +215,13 @@ TEST_F(BrowsingDataRemoverTest, RemoveHistoryForever) {
   scoped_ptr<RemoveHistoryTester> tester(
       new RemoveHistoryTester(GetProfile()));
 
-  GURL test_url("http://example.com/");
-  tester->AddHistory(test_url, base::Time::Now());
-  ASSERT_TRUE(tester->HistoryContainsURL(test_url));
+  tester->AddHistory(kOrigin1, base::Time::Now());
+  ASSERT_TRUE(tester->HistoryContainsURL(kOrigin1));
 
   BlockUntilBrowsingDataRemoved(BrowsingDataRemover::EVERYTHING,
       base::Time::Now(), BrowsingDataRemover::REMOVE_HISTORY, tester.get());
 
-  EXPECT_FALSE(tester->HistoryContainsURL(test_url));
+  EXPECT_FALSE(tester->HistoryContainsURL(kOrigin1));
 }
 
 TEST_F(BrowsingDataRemoverTest, RemoveHistoryForLastHour) {
@@ -129,18 +230,38 @@ TEST_F(BrowsingDataRemoverTest, RemoveHistoryForLastHour) {
 
   base::Time two_hours_ago = base::Time::Now() - base::TimeDelta::FromHours(2);
 
-  GURL test_url1("http://example.com/1");
-  GURL test_url2("http://example.com/2");
-  tester->AddHistory(test_url1, base::Time::Now());
-  tester->AddHistory(test_url2, two_hours_ago);
-  ASSERT_TRUE(tester->HistoryContainsURL(test_url1));
-  ASSERT_TRUE(tester->HistoryContainsURL(test_url2));
+  tester->AddHistory(kOrigin1, base::Time::Now());
+  tester->AddHistory(kOrigin2, two_hours_ago);
+  ASSERT_TRUE(tester->HistoryContainsURL(kOrigin1));
+  ASSERT_TRUE(tester->HistoryContainsURL(kOrigin2));
 
   BlockUntilBrowsingDataRemoved(BrowsingDataRemover::LAST_HOUR,
       base::Time::Now(), BrowsingDataRemover::REMOVE_HISTORY, tester.get());
 
-  EXPECT_FALSE(tester->HistoryContainsURL(test_url1));
-  EXPECT_TRUE(tester->HistoryContainsURL(test_url2));
+  EXPECT_FALSE(tester->HistoryContainsURL(kOrigin1));
+  EXPECT_TRUE(tester->HistoryContainsURL(kOrigin2));
+}
+
+TEST_F(BrowsingDataRemoverTest, RemoveFileSystemsForever) {
+  scoped_ptr<RemoveFileSystemTester> tester(new RemoveFileSystemTester());
+
+  tester->PopulateTestFileSystemData(GetProfile());
+
+  BlockUntilBrowsingDataRemoved(BrowsingDataRemover::EVERYTHING,
+      base::Time::Now(), BrowsingDataRemover::REMOVE_COOKIES, tester.get());
+
+  EXPECT_FALSE(tester->FileSystemContainsOriginAndType(kOrigin1,
+      fileapi::kFileSystemTypePersistent));
+  EXPECT_FALSE(tester->FileSystemContainsOriginAndType(kOrigin1,
+      fileapi::kFileSystemTypeTemporary));
+  EXPECT_FALSE(tester->FileSystemContainsOriginAndType(kOrigin2,
+      fileapi::kFileSystemTypePersistent));
+  EXPECT_FALSE(tester->FileSystemContainsOriginAndType(kOrigin2,
+      fileapi::kFileSystemTypeTemporary));
+  EXPECT_FALSE(tester->FileSystemContainsOriginAndType(kOrigin3,
+      fileapi::kFileSystemTypePersistent));
+  EXPECT_FALSE(tester->FileSystemContainsOriginAndType(kOrigin3,
+      fileapi::kFileSystemTypeTemporary));
 }
 
 }  // namespace

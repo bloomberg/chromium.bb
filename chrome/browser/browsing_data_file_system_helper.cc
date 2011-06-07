@@ -109,7 +109,6 @@ void BrowsingDataFileSystemHelperImpl::FetchFileSystemInfoInFileThread() {
   scoped_ptr<fileapi::SandboxMountPointProvider::OriginEnumerator>
       origin_enumerator(profile_->GetFileSystemContext()->path_manager()->
           sandbox_provider()->CreateOriginEnumerator());
-
   // We don't own this pointer; deleting it would be a bad idea.
   fileapi::FileSystemQuotaUtil* quota_util = profile_->
       GetFileSystemContext()->GetQuotaUtil(fileapi::kFileSystemTypeTemporary);

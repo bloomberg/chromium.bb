@@ -181,6 +181,7 @@ TestingProfile::~TestingProfile() {
   if (extension_service_.get()) {
     extension_service_.reset();
   }
+
   if (pref_proxy_config_tracker_.get())
     pref_proxy_config_tracker_->DetachFromPrefService();
 }
@@ -425,9 +426,9 @@ ExtensionEventRouter* TestingProfile::GetExtensionEventRouter() {
 
 ExtensionSpecialStoragePolicy*
 TestingProfile::GetExtensionSpecialStoragePolicy() {
-  if (!extension_special_storage_policy_)
+  if (!extension_special_storage_policy_.get())
     extension_special_storage_policy_ = new ExtensionSpecialStoragePolicy();
-  return extension_special_storage_policy_;
+  return extension_special_storage_policy_.get();
 }
 
 SSLHostState* TestingProfile::GetSSLHostState() {

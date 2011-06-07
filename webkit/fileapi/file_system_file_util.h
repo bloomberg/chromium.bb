@@ -230,6 +230,14 @@ class FileSystemFileUtil {
     virtual bool IsDirectory() { return false; }
   };
 
+  // Returns a pointer to a new instance of AbstractFileEnumerator which is
+  // implemented for each FileUtil subclass. The instance needs to be freed
+  // by the caller, and its lifetime should not extend past when the current
+  // call returns to the main FILE message loop.
+  virtual AbstractFileEnumerator* CreateFileEnumerator(
+      FileSystemOperationContext* unused,
+      const FilePath& root_path);
+
  protected:
   FileSystemFileUtil() { }
 
@@ -271,14 +279,6 @@ class FileSystemFileUtil {
       const FilePath& src_file_path,
       const FilePath& dest_file_path,
       bool copy);
-
-  // Returns a pointer to a new instance of AbstractFileEnumerator which is
-  // implemented for each FileUtil subclass. The instance needs to be freed
-  // by the caller, and its lifetime should not extend past when the current
-  // call returns to the main FILE message loop.
-  virtual AbstractFileEnumerator* CreateFileEnumerator(
-      FileSystemOperationContext* unused,
-      const FilePath& root_path);
 
   friend struct DefaultSingletonTraits<FileSystemFileUtil>;
   DISALLOW_COPY_AND_ASSIGN(FileSystemFileUtil);

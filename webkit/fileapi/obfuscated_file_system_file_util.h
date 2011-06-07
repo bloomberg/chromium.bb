@@ -172,7 +172,6 @@ class ObfuscatedFileSystemFileUtil : public FileSystemFileUtil,
   // object.
   AbstractOriginEnumerator* CreateOriginEnumerator();
 
- protected:
   virtual AbstractFileEnumerator* CreateFileEnumerator(
       FileSystemOperationContext* context,
       const FilePath& root_path) OVERRIDE;

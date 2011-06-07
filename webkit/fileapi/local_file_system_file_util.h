@@ -113,12 +113,12 @@ class LocalFileSystemFileUtil : public FileSystemFileUtil {
       FileSystemOperationContext* context,
       const FilePath& file_path);
 
- protected:
-  LocalFileSystemFileUtil() { }
-
   virtual AbstractFileEnumerator* CreateFileEnumerator(
       FileSystemOperationContext* context,
       const FilePath& root_path);
+
+ protected:
+  LocalFileSystemFileUtil() { }
 
   friend struct DefaultSingletonTraits<LocalFileSystemFileUtil>;
   DISALLOW_COPY_AND_ASSIGN(LocalFileSystemFileUtil);

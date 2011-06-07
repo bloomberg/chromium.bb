@@ -352,12 +352,16 @@ class TestingProfile : public Profile {
   // Did the last session exit cleanly? Default is true.
   bool last_session_exited_cleanly_;
 
-  // The main database tracker for this profile.
-  // Should be used only on the file thread.
-  scoped_refptr<webkit_database::DatabaseTracker> db_tracker_;
+
+  // FileSystemContext.  Created lazily by GetFileSystemContext().
+  scoped_refptr<fileapi::FileSystemContext> file_system_context_;
 
   // WebKitContext, lazily initialized by GetWebKitContext().
   scoped_refptr<WebKitContext> webkit_context_;
+
+  // The main database tracker for this profile.
+  // Should be used only on the file thread.
+  scoped_refptr<webkit_database::DatabaseTracker> db_tracker_;
 
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
   scoped_refptr<GeolocationContentSettingsMap>
@@ -381,8 +385,6 @@ class TestingProfile : public Profile {
   scoped_refptr<ExtensionSpecialStoragePolicy>
       extension_special_storage_policy_;
 
-  // FileSystemContext.  Created lazily by GetFileSystemContext().
-  scoped_refptr<fileapi::FileSystemContext> file_system_context_;
 
   // The proxy prefs tracker.
   scoped_refptr<PrefProxyConfigTracker> pref_proxy_config_tracker_;

@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/file_util.h"
+#include "base/platform_file.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_manager.h"
@@ -42,6 +43,9 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "webkit/database/database_tracker.h"
 #include "webkit/database/database_util.h"
+#include "webkit/fileapi/file_system_context.h"
+#include "webkit/fileapi/file_system_operation_context.h"
+#include "webkit/fileapi/sandbox_mount_point_provider.h"
 
 // Done so that we can use PostTask on BrowsingDataRemovers and not have
 // BrowsingDataRemover implement RefCounted.
@@ -74,7 +78,8 @@ BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
       waiting_for_clear_networking_history_(false),
       waiting_for_clear_cache_(false),
       waiting_for_clear_appcache_(false),
-      waiting_for_clear_gears_data_(false) {
+      waiting_for_clear_gears_data_(false),
+      waiting_for_clear_file_systems_(false) {
   DCHECK(profile);
 }
 
@@ -104,7 +109,8 @@ BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
       waiting_for_clear_cache_(false),
       waiting_for_clear_appcache_(false),
       waiting_for_clear_lso_data_(false),
-      waiting_for_clear_gears_data_(false) {
+      waiting_for_clear_gears_data_(false),
+      waiting_for_clear_file_systems_(false) {
   DCHECK(profile);
 }
 
@@ -177,17 +183,22 @@ void BrowsingDataRemover::Remove(int remove_mask) {
   if (remove_mask & REMOVE_COOKIES) {
     UserMetrics::RecordAction(UserMetricsAction("ClearBrowsingData_Cookies"));
     // Since we are running on the UI thread don't call GetURLRequestContext().
-    net::CookieMonster* cookie_monster =
-        profile_->GetRequestContext()->DONTUSEME_GetCookieStore()->
-        GetCookieMonster();
+    net::CookieMonster* cookie_monster = NULL;
+    net::URLRequestContextGetter* rq_context = profile_->GetRequestContext();
+    if (rq_context) {
+      cookie_monster = rq_context->DONTUSEME_GetCookieStore()->
+          GetCookieMonster();
+    }
     if (cookie_monster)
       cookie_monster->DeleteAllCreatedBetween(delete_begin_, delete_end_, true);
 
     // REMOVE_COOKIES is actually "cookies and other site data" so we make sure
-    // to remove other data such local databases, STS state, etc.
-    // We assume the end time is now.
-
-    profile_->GetWebKitContext()->DeleteDataModifiedSince(delete_begin_);
+    // to remove other data such local databases, STS state, etc. These only can
+    // be removed if a WEBKIT thread exists, so check that first:
+    if (BrowserThread::IsMessageLoopValid(BrowserThread::WEBKIT)) {
+      // We assume the end time is now.
+      profile_->GetWebKitContext()->DeleteDataModifiedSince(delete_begin_);
+    }
 
     database_tracker_ = profile_->GetDatabaseTracker();
     if (database_tracker_.get()) {
@@ -214,14 +225,21 @@ void BrowsingDataRemover::Remove(int remove_mask) {
             &BrowsingDataRemover::ClearGearsDataOnFILEThread,
             profile_->GetPath()));
 
-    // TODO(michaeln): delete temporary file system data too
-
+    waiting_for_clear_file_systems_ = true;
     BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+        BrowserThread::FILE, FROM_HERE,
         NewRunnableMethod(
-            profile_->GetTransportSecurityState(),
-            &net::TransportSecurityState::DeleteSince,
-            delete_begin_));
+            this,
+            &BrowsingDataRemover::ClearFileSystemsOnFILEThread));
+
+    if (profile_->GetTransportSecurityState()) {
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
+          NewRunnableMethod(
+              profile_->GetTransportSecurityState(),
+              &net::TransportSecurityState::DeleteSince,
+              delete_begin_));
+    }
   }
 
   if (remove_mask & REMOVE_PASSWORDS) {
@@ -485,9 +503,14 @@ void BrowsingDataRemover::ClearAppCacheOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(waiting_for_clear_appcache_);
   appcache_info_ = new appcache::AppCacheInfoCollection;
-  GetAppCacheService()->GetAllAppCacheInfo(
-      appcache_info_, &appcache_got_info_callback_);
-  // continues in OnGotAppCacheInfo
+  if (GetAppCacheService()) {
+    GetAppCacheService()->GetAllAppCacheInfo(
+        appcache_info_, &appcache_got_info_callback_);
+    // continues in OnGotAppCacheInfo
+  } else {
+    // Couldn't get app cache service, nothing to clear.
+    OnClearedAppCache();
+  }
 }
 
 void BrowsingDataRemover::OnGotAppCacheInfo(int rv) {
@@ -522,11 +545,47 @@ void BrowsingDataRemover::OnAppCacheDeleted(int rv) {
 
 ChromeAppCacheService* BrowsingDataRemover::GetAppCacheService() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  ChromeURLRequestContext* request_context =
-      reinterpret_cast<ChromeURLRequestContext*>(
-          main_context_getter_->GetURLRequestContext());
+  ChromeURLRequestContext* request_context = NULL;
+  if (main_context_getter_)
+    request_context = reinterpret_cast<ChromeURLRequestContext*>(
+        main_context_getter_->GetURLRequestContext());
   return request_context ? request_context->appcache_service()
                          : NULL;
+}
+
+void BrowsingDataRemover::ClearFileSystemsOnFILEThread() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(waiting_for_clear_file_systems_);
+  scoped_refptr<fileapi::FileSystemContext>
+      fs_context(profile_->GetFileSystemContext());
+  scoped_ptr<fileapi::SandboxMountPointProvider::OriginEnumerator>
+      origin_enumerator(fs_context->path_manager()->sandbox_provider()->
+          CreateOriginEnumerator());
+
+  GURL origin;
+  while (!(origin = origin_enumerator->Next()).is_empty()) {
+    if (special_storage_policy_->IsStorageProtected(origin))
+      continue;
+    if (delete_begin_ == base::Time()) {
+      // If the user chooses to delete browsing data "since the beginning of
+      // time" remove both temporary and persistent file systems entirely.
+      fs_context->DeleteDataForOriginAndTypeOnFileThread(origin,
+          fileapi::kFileSystemTypeTemporary);
+      fs_context->DeleteDataForOriginAndTypeOnFileThread(origin,
+          fileapi::kFileSystemTypePersistent);
+    }
+    // TODO(mkwst): Else? Decide what to do for time-based deletion: crbug/63700
+  }
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      NewRunnableMethod(this, &BrowsingDataRemover::OnClearedFileSystems));
+}
+
+void BrowsingDataRemover::OnClearedFileSystems() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  waiting_for_clear_file_systems_ = false;
+  NotifyAndDeleteIfDone();
 }
 
 // static
