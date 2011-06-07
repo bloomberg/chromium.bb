@@ -2389,13 +2389,14 @@ TEST_F(GLES2DecoderTest, TexSubImage2DValidArgs) {
       GL_TEXTURE_2D, 1, GL_RGBA, kWidth, kHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE,
       0, 0);
   EXPECT_CALL(*gl_, TexSubImage2D(
-      GL_TEXTURE_2D, 1, 0, 0, kWidth, kHeight, GL_RGBA, GL_UNSIGNED_BYTE,
+      GL_TEXTURE_2D, 1, 1, 0, kWidth - 1, kHeight, GL_RGBA, GL_UNSIGNED_BYTE,
       shared_memory_address_))
       .Times(1)
       .RetiresOnSaturation();
   TexSubImage2D cmd;
-  cmd.Init(GL_TEXTURE_2D, 1, 0, 0, kWidth, kHeight, GL_RGBA, GL_UNSIGNED_BYTE,
-           kSharedMemoryId, kSharedMemoryOffset, GL_FALSE);
+  cmd.Init(
+      GL_TEXTURE_2D, 1, 1, 0, kWidth - 1, kHeight, GL_RGBA, GL_UNSIGNED_BYTE,
+      kSharedMemoryId, kSharedMemoryOffset, GL_FALSE);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }

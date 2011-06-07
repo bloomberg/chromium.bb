@@ -126,6 +126,39 @@ static bool IsAngle() {
 #endif
 }
 
+void WrappedTexImage2D(
+    GLenum target,
+    GLint level,
+    GLenum internal_format,
+    GLsizei width,
+    GLsizei height,
+    GLint border,
+    GLenum format,
+    GLenum type,
+    const void* pixels) {
+  GLenum gl_internal_format = internal_format;
+  if (gfx::GetGLImplementation() != gfx::kGLImplementationEGLGLES2) {
+    if (format == GL_BGRA_EXT && internal_format == GL_BGRA_EXT) {
+      gl_internal_format = GL_RGBA;
+    } else if (type == GL_FLOAT) {
+      if (format == GL_RGBA) {
+        gl_internal_format = GL_RGBA32F_ARB;
+      } else if (format == GL_RGB) {
+        gl_internal_format = GL_RGB32F_ARB;
+      }
+    } else if (type == GL_HALF_FLOAT_OES) {
+      if (format == GL_RGBA) {
+        gl_internal_format = GL_RGBA16F_ARB;
+      } else if (format == GL_RGB) {
+        gl_internal_format = GL_RGB16F_ARB;
+      }
+    }
+  }
+  glTexImage2D(
+      target, level, gl_internal_format, width, height, border, format, type,
+      pixels);
+}
+
 // This class prevents any GL errors that occur when it is in scope from
 // being reported to the client.
 class ScopedGLErrorSuppressor {
@@ -1469,6 +1502,9 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   // The format of the back buffer_
   GLenum back_buffer_color_format_;
 
+  bool teximage2d_faster_than_texsubimage2d_;
+  bool bufferdata_faster_than_buffersubdata_;
+
   // The last error message set.
   std::string last_error_;
 
@@ -1815,6 +1851,8 @@ GLES2DecoderImpl::GLES2DecoderImpl(SurfaceManager* surface_manager,
       copy_texture_to_parent_texture_fb_(0),
       offscreen_saved_color_format_(0),
       back_buffer_color_format_(0),
+      teximage2d_faster_than_texsubimage2d_(true),
+      bufferdata_faster_than_buffersubdata_(true),
       current_decoder_error_(error::kNoError),
       use_shader_translator_(true),
       validators_(group_->feature_info()->validators()),
@@ -1837,6 +1875,12 @@ GLES2DecoderImpl::GLES2DecoderImpl(SurfaceManager* surface_manager,
        !feature_info_->feature_flags().chromium_webglsl) ||
       gfx::GetGLImplementation() == gfx::kGLImplementationMockGL) {
     use_shader_translator_ = false;
+  }
+
+  // TODO(gman): Consider setting these based on GPU and/or driver.
+  if (IsAngle()) {
+    teximage2d_faster_than_texsubimage2d_ = false;
+    bufferdata_faster_than_buffersubdata_ = false;
   }
 }
 
@@ -5335,13 +5379,21 @@ void GLES2DecoderImpl::DoBufferData(
     memset(zero.get(), 0, size);
     data = zero.get();
   }
+
+  if (!bufferdata_faster_than_buffersubdata_ &&
+      size == info->size() && usage == info->usage()) {
+    glBufferSubData(target, 0, size, data);
+    info->SetRange(0, size, data);
+    return;
+  }
+
   CopyRealGLErrorsToWrapper();
   glBufferData(target, size, data, usage);
   GLenum error = glGetError();
   if (error != GL_NO_ERROR) {
     SetGLError(error, NULL);
   } else {
-    buffer_manager()->SetSize(info, size);
+    buffer_manager()->SetInfo(info, size, usage);
     info->SetRange(0, size, data);
   }
 }
@@ -5387,9 +5439,14 @@ void GLES2DecoderImpl::DoBufferSubData(
   }
   if (!info->SetRange(offset, size, data)) {
     SetGLError(GL_INVALID_VALUE, "glBufferSubData: out of range");
-  } else {
-    glBufferSubData(target, offset, size, data);
+    return;
   }
+  if (bufferdata_faster_than_buffersubdata_ &&
+      offset == 0 && size == info->size()) {
+    glBufferData(target, size, data, info->usage());
+    return;
+  }
+  glBufferSubData(target, offset, size, data);
 }
 
 error::Error GLES2DecoderImpl::DoCompressedTexImage2D(
@@ -5591,28 +5648,24 @@ error::Error GLES2DecoderImpl::DoTexImage2D(
     pixels = zero.get();
   }
 
-  GLenum gl_internal_format = internal_format;
-  if (gfx::GetGLImplementation() != gfx::kGLImplementationEGLGLES2) {
-    if (format == GL_BGRA_EXT && internal_format == GL_BGRA_EXT) {
-      gl_internal_format = GL_RGBA;
-    } else if (type == GL_FLOAT) {
-      if (format == GL_RGBA) {
-        gl_internal_format = GL_RGBA32F_ARB;
-      } else if (format == GL_RGB) {
-        gl_internal_format = GL_RGB32F_ARB;
-      }
-    } else if (type == GL_HALF_FLOAT_OES) {
-      if (format == GL_RGBA) {
-        gl_internal_format = GL_RGBA16F_ARB;
-      } else if (format == GL_RGB) {
-        gl_internal_format = GL_RGB16F_ARB;
-      }
+  if (!teximage2d_faster_than_texsubimage2d_) {
+    GLsizei tex_width = 0;
+    GLsizei tex_height = 0;
+    GLenum tex_type = 0;
+    GLenum tex_format = 0;
+    if (info->GetLevelSize(target, level, &tex_width, &tex_height) &&
+        info->GetLevelType(target, level, &tex_type, &tex_format) &&
+        width == tex_width && height == tex_height &&
+        type == tex_type && format == tex_format) {
+      glTexSubImage2D(target, level, 0, 0, width, height, format, type, pixels);
+      tex_image_2d_failed_ = false;
+      return error::kNoError;
     }
   }
 
   CopyRealGLErrorsToWrapper();
-  glTexImage2D(
-      target, level, gl_internal_format, width, height, border, format, type,
+  WrappedTexImage2D(
+      target, level, internal_format, width, height, border, format, type,
       pixels);
   GLenum error = glGetError();
   if (error == GL_NO_ERROR) {
@@ -5932,6 +5985,21 @@ void GLES2DecoderImpl::DoTexSubImage2D(
     SetGLError(GL_INVALID_VALUE,
                "glTexSubImage2D: bad dimensions.");
     return;
+  }
+
+  // See if we can call glTexImage2D instead since it appears to be faster.
+  if (teximage2d_faster_than_texsubimage2d_ && xoffset == 0 && yoffset == 0) {
+    GLsizei tex_width = 0;
+    GLsizei tex_height = 0;
+    bool ok = info->GetLevelSize(target, level, &tex_width, &tex_height);
+    DCHECK(ok);
+    if (width == tex_width && height == tex_height) {
+      // NOTE: In OpenGL ES 2.0 border is always zero and format is always the
+      // same as internal_foramt. If that changes we'll need to look them up.
+      WrappedTexImage2D(
+          target, level, format, width, height, 0, format, type, data);
+      return;
+    }
   }
   glTexSubImage2D(
       target, level, xoffset, yoffset, width, height, format, type, data);

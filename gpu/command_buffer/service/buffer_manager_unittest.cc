@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,6 +49,7 @@ TEST_F(BufferManagerTest, Basic) {
   ASSERT_TRUE(info1 != NULL);
   EXPECT_EQ(0u, GetTarget(info1));
   EXPECT_EQ(0, info1->size());
+  EXPECT_EQ(static_cast<GLenum>(GL_STATIC_DRAW), info1->usage());
   EXPECT_FALSE(info1->IsDeleted());
   EXPECT_EQ(kServiceBuffer1Id, info1->service_id());
   GLuint client_id = 0;
@@ -57,8 +58,9 @@ TEST_F(BufferManagerTest, Basic) {
   manager_.SetTarget(info1, GL_ELEMENT_ARRAY_BUFFER);
   EXPECT_EQ(static_cast<GLenum>(GL_ELEMENT_ARRAY_BUFFER), GetTarget(info1));
   // Check we and set its size.
-  manager_.SetSize(info1, kBuffer1Size);
+  manager_.SetInfo(info1, kBuffer1Size, GL_DYNAMIC_DRAW);
   EXPECT_EQ(kBuffer1Size, info1->size());
+  EXPECT_EQ(static_cast<GLenum>(GL_DYNAMIC_DRAW), info1->usage());
   // Check we get nothing for a non-existent buffer.
   EXPECT_TRUE(manager_.GetBufferInfo(kClientBuffer2Id) == NULL);
   // Check trying to a remove non-existent buffers does not crash.
@@ -94,7 +96,7 @@ TEST_F(BufferManagerTest, SetRange) {
   BufferManager::BufferInfo* info = manager_.GetBufferInfo(kClientBufferId);
   ASSERT_TRUE(info != NULL);
   manager_.SetTarget(info, GL_ELEMENT_ARRAY_BUFFER);
-  manager_.SetSize(info, sizeof(data));
+  manager_.SetInfo(info, sizeof(data), GL_STATIC_DRAW);
   EXPECT_TRUE(info->SetRange(0, sizeof(data), data));
   EXPECT_TRUE(info->SetRange(sizeof(data), 0, data));
   EXPECT_FALSE(info->SetRange(sizeof(data), 1, data));
@@ -111,7 +113,7 @@ TEST_F(BufferManagerTest, GetRange) {
   BufferManager::BufferInfo* info = manager_.GetBufferInfo(kClientBufferId);
   ASSERT_TRUE(info != NULL);
   manager_.SetTarget(info, GL_ELEMENT_ARRAY_BUFFER);
-  manager_.SetSize(info, sizeof(data));
+  manager_.SetInfo(info, sizeof(data), GL_STATIC_DRAW);
   const char* buf = static_cast<const char*>(info->GetRange(0, sizeof(data)));
   ASSERT_TRUE(buf != NULL);
   const char* buf1 =
@@ -132,7 +134,7 @@ TEST_F(BufferManagerTest, GetMaxValueForRangeUint8) {
   BufferManager::BufferInfo* info = manager_.GetBufferInfo(kClientBufferId);
   ASSERT_TRUE(info != NULL);
   manager_.SetTarget(info, GL_ELEMENT_ARRAY_BUFFER);
-  manager_.SetSize(info, sizeof(data));
+  manager_.SetInfo(info, sizeof(data), GL_STATIC_DRAW);
   EXPECT_TRUE(info->SetRange(0, sizeof(data), data));
   GLuint max_value;
   // Check entire range succeeds.
@@ -162,7 +164,7 @@ TEST_F(BufferManagerTest, GetMaxValueForRangeUint16) {
   BufferManager::BufferInfo* info = manager_.GetBufferInfo(kClientBufferId);
   ASSERT_TRUE(info != NULL);
   manager_.SetTarget(info, GL_ELEMENT_ARRAY_BUFFER);
-  manager_.SetSize(info, sizeof(data));
+  manager_.SetInfo(info, sizeof(data), GL_STATIC_DRAW);
   EXPECT_TRUE(info->SetRange(0, sizeof(data), data));
   GLuint max_value;
   // Check entire range succeeds.
@@ -194,7 +196,7 @@ TEST_F(BufferManagerTest, GetMaxValueForRangeUint32) {
   BufferManager::BufferInfo* info = manager_.GetBufferInfo(kClientBufferId);
   ASSERT_TRUE(info != NULL);
   manager_.SetTarget(info, GL_ELEMENT_ARRAY_BUFFER);
-  manager_.SetSize(info, sizeof(data));
+  manager_.SetInfo(info, sizeof(data), GL_STATIC_DRAW);
   EXPECT_TRUE(info->SetRange(0, sizeof(data), data));
   GLuint max_value;
   // Check entire range succeeds.

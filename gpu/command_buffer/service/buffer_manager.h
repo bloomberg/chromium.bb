@@ -38,6 +38,10 @@ class BufferManager {
       return size_;
     }
 
+    GLenum usage() const {
+      return usage_;
+    }
+
     // Sets a range of data for this buffer. Returns false if the offset or size
     // is out of range.
     bool SetRange(
@@ -115,7 +119,7 @@ class BufferManager {
       ClearCache();
     }
 
-    void SetSize(GLsizeiptr size, bool shadow);
+    void SetInfo(GLsizeiptr size, GLenum usage, bool shadow);
 
     // Clears any cache of index ranges.
     void ClearCache();
@@ -130,6 +134,9 @@ class BufferManager {
 
     // Size of buffer.
     GLsizeiptr size_;
+
+    // Usage of buffer.
+    GLenum usage_;
 
     // Whether or not the data is shadowed.
     bool shadowed_;
@@ -161,8 +168,8 @@ class BufferManager {
   // Gets a client id for a given service id.
   bool GetClientId(GLuint service_id, GLuint* client_id) const;
 
-  // Sets the size of a buffer.
-  void SetSize(BufferInfo* info, GLsizeiptr size);
+  // Sets the size and usage of a buffer.
+  void SetInfo(BufferInfo* info, GLsizeiptr size, GLenum usage);
 
   // Sets the target of a buffer. Returns false if the target can not be set.
   bool SetTarget(BufferInfo* info, GLenum target);
