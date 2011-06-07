@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 
 @class TabController;
+@protocol TabDraggingEventTarget;
 
 // A protocol to be implemented by a TabController's target.
 @protocol TabControllerTarget
@@ -27,6 +28,9 @@
 // Returns a context menu model for a given controller. Caller owns the result.
 - (ui::SimpleMenuModel*)contextMenuModelForController:(TabController*)controller
     menuDelegate:(ui::SimpleMenuModel::Delegate*)delegate;
+
+// Returns a weak reference to the controller that manages dragging of tabs.
+- (id<TabDraggingEventTarget>)dragController;
 
 @end
 

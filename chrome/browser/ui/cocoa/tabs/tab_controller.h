@@ -8,6 +8,7 @@
 
 #import <Cocoa/Cocoa.h>
 #import "chrome/browser/ui/cocoa/hover_close_button.h"
+#import "chrome/browser/ui/cocoa/tabs/tab_strip_drag_controller.h"
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "googleurl/src/gurl.h"
 
@@ -37,7 +38,7 @@ class MenuDelegate;
 // progress. The default in the nib is an image view so nothing special is
 // required if that's all you need.
 
-@interface TabController : NSViewController {
+@interface TabController : NSViewController<TabDraggingEventTarget> {
  @private
   IBOutlet NSView* iconView_;
   IBOutlet NSTextField* titleView_;

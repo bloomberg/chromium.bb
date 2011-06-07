@@ -21,6 +21,7 @@
 @class ProfileMenuButton;
 @class TabContentsController;
 @class TabView;
+@class TabStripDragController;
 @class TabStripView;
 
 class Browser;
@@ -79,6 +80,9 @@ class NotificationBridge;
   NewTabButton* newTabButton_;  // weak, obtained from the nib.
   ProfileMenuButton* profileMenuButton_;  // weak, obtained from the nib.
   BOOL hasUpdatedProfileMenuButtonXOffset_;
+
+  // The controller that manages all the interactions of dragging tabs.
+  scoped_nsobject<TabStripDragController> dragController_;
 
   // Tracks the newTabButton_ for rollovers.
   scoped_nsobject<CrTrackingArea> newTabTrackingArea_;

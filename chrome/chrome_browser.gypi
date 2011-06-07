@@ -2541,6 +2541,8 @@
         'browser/ui/cocoa/tabs/tab_controller.mm',
         'browser/ui/cocoa/tabs/tab_strip_controller.h',
         'browser/ui/cocoa/tabs/tab_strip_controller.mm',
+        'browser/ui/cocoa/tabs/tab_strip_drag_controller.h',
+        'browser/ui/cocoa/tabs/tab_strip_drag_controller.mm',
         'browser/ui/cocoa/tabs/tab_strip_model_observer_bridge.h',
         'browser/ui/cocoa/tabs/tab_strip_model_observer_bridge.mm',
         'browser/ui/cocoa/tabs/tab_strip_view.h',

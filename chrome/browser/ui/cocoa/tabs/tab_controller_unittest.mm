@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_controller_target.h"
+#import "chrome/browser/ui/cocoa/tabs/tab_strip_drag_controller.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -19,12 +20,20 @@
  @private
   bool selected_;
   bool closed_;
+  scoped_nsobject<TabStripDragController> dragController_;
 }
 - (bool)selected;
 - (bool)closed;
 @end
 
 @implementation TabControllerTestTarget
+- (id)init {
+  if ((self = [super init])) {
+    dragController_.reset(
+        [[TabStripDragController alloc] initWithTabStripController:nil]);
+  }
+  return self;
+}
 - (bool)selected {
   return selected_;
 }
@@ -66,6 +75,9 @@
   model->AddItem(2, ASCIIToUTF16("Allays"));
   model->AddItem(3, ASCIIToUTF16("Chromium"));
   return model;
+}
+- (id<TabDraggingEventTarget>)dragController {
+  return dragController_.get();
 }
 @end
 

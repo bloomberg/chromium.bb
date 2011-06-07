@@ -37,6 +37,7 @@
 #import "chrome/browser/ui/cocoa/profile_menu_button.h"
 #import "chrome/browser/ui/cocoa/tab_contents/favicon_util.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_controller.h"
+#import "chrome/browser/ui/cocoa/tabs/tab_strip_drag_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_model_observer_bridge.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_view.h"
@@ -359,6 +360,8 @@ class NotificationBridge : public NotificationObserver {
     hoverTabSelector_.reset(new HoverTabSelector(tabStripModel_));
     delegate_ = delegate;
     bridge_.reset(new TabStripModelObserverBridge(tabStripModel_, self));
+    dragController_.reset(
+        [[TabStripDragController alloc] initWithTabStripController:self]);
     tabContentsArray_.reset([[NSMutableArray alloc] init]);
     tabArray_.reset([[NSMutableArray alloc] init]);
     NSWindow* browserWindow = [view window];
@@ -809,6 +812,11 @@ class NotificationBridge : public NotificationObserver {
     menuDelegate:(ui::SimpleMenuModel::Delegate*)delegate {
   int index = [self modelIndexForTabView:[controller view]];
   return new TabMenuModel(delegate, tabStripModel_, index);
+}
+
+// Returns a weak reference to the controller that manages dragging of tabs.
+- (id<TabDraggingEventTarget>)dragController {
+  return dragController_.get();
 }
 
 - (void)insertPlaceholderForTab:(TabView*)tab
