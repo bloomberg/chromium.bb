@@ -4533,6 +4533,15 @@
    fun:_ZN2v88internal20HGlobalValueNumberer12AnalyzeBlockEPNS0_11HBasicBlockEPNS0_9HValueMapE
 }
 {
+   bug_83626c
+   Memcheck:Value8
+   fun:_ZNK2v88internal9SparseSet8ContainsEi
+   fun:_ZN2v88internal9SparseSet3AddEi
+   ...
+   fun:_ZN2v88internal20HGlobalValueNumberer41CollectSideEffectsOnPathsToDominatedBlockEPNS0_11HBasicBlockES3_
+   fun:_ZN2v88internal20HGlobalValueNumberer12AnalyzeBlockEPNS0_11HBasicBlockEPNS0_9HValueMapE
+}
+{
    bug_83835
    Memcheck:Leak
    fun:_Znw*
