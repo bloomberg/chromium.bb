@@ -101,4 +101,15 @@ TEST(FormFieldTest, Match) {
   field.label = ASCIIToUTF16("xxxHeAd_tAiLxxx");
   EXPECT_TRUE(FormField::Match(&field, ASCIIToUTF16("head_tail"),
               FormField::MATCH_LABEL));
+
+  // Word boundaries.
+  field.label = ASCIIToUTF16("contains word:");
+  EXPECT_TRUE(FormField::Match(&field, ASCIIToUTF16("\\bword\\b"),
+                               FormField::MATCH_LABEL));
+  EXPECT_FALSE(FormField::Match(&field, ASCIIToUTF16("\\bcon\\b"),
+                                FormField::MATCH_LABEL));
+  // Make sure the circumflex in 'crepe' is not treated as a word boundary.
+  field.label = UTF8ToUTF16("cr" "\xC3\xAA" "pe");
+  EXPECT_FALSE(FormField::Match(&field, ASCIIToUTF16("\\bcr\\b"),
+                                FormField::MATCH_LABEL));
 }
