@@ -1,8 +1,8 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/base/x509_openssl_util.h"
+#include "net/base/x509_util_openssl.h"
 
 #include <algorithm>
 
@@ -12,7 +12,7 @@
 
 namespace net {
 
-namespace x509_openssl_util {
+namespace x509_util {
 
 bool ParsePrincipalKeyAndValueByIndex(X509_NAME* name,
                                       int index,
@@ -69,6 +69,6 @@ bool ParseDate(ASN1_TIME* x509_time, base::Time* time) {
   return ParseCertificateDate(str_date, format, time);
 }
 
-}  // namespace x509_openssl_util
+}  // namespace x509_util
 
 }  // namespace net
