@@ -1006,12 +1006,27 @@ void GLES2Implementation::TexImage2D(
     SetGLError(GL_INVALID_VALUE, "glTexImage2D: image size too large");
     return;
   }
-  helper_->TexImage2D(
-      target, level, internalformat, width, height, border, format, type, 0, 0);
-  if (pixels) {
-    TexSubImage2DImpl(
-        target, level, 0, 0, width, height, format, type, pixels, GL_TRUE);
+
+  // Check if we can send it all at once.
+  unsigned int max_size = transfer_buffer_.GetLargestFreeOrPendingSize();
+  if (size > max_size || !pixels) {
+    // No, so send it using TexSubImage2D.
+    helper_->TexImage2D(
+       target, level, internalformat, width, height, border, format, type,
+       0, 0);
+    if (pixels) {
+      TexSubImage2DImpl(
+          target, level, 0, 0, width, height, format, type, pixels, GL_TRUE);
+    }
+    return;
   }
+
+  void* buffer = transfer_buffer_.Alloc(size);
+  memcpy(buffer, pixels, size);
+  helper_->TexImage2D(
+      target, level, internalformat, width, height, border, format, type,
+      transfer_buffer_id_, transfer_buffer_.GetOffset(buffer));
+  transfer_buffer_.FreePendingToken(buffer, helper_->InsertToken());
 }
 
 void GLES2Implementation::TexSubImage2D(
