@@ -13,6 +13,7 @@
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/curtain.h"
 #include "remoting/host/desktop_environment.h"
+#include "remoting/host/disconnect_window.h"
 #include "remoting/host/event_executor.h"
 #include "remoting/host/host_config.h"
 #include "remoting/host/host_key_pair.h"
@@ -39,8 +40,10 @@ ChromotingHost* ChromotingHost::Create(ChromotingHostContext* context,
   EventExecutor* event_executor =
       EventExecutor::Create(context->ui_message_loop(), capturer);
   Curtain* curtain = Curtain::Create();
+  DisconnectWindow* disconnect_window = DisconnectWindow::Create();
   return Create(context, config,
-                new DesktopEnvironment(capturer, event_executor, curtain),
+                new DesktopEnvironment(capturer, event_executor, curtain,
+                                       disconnect_window),
                 access_verifier);
 }
 
@@ -366,8 +369,11 @@ void ChromotingHost::OnClientDisconnected(ConnectionToClient* connection) {
   // Also remove reference to ConnectionToClient from this object.
   clients_.erase(client);
 
-  if (!HasAuthenticatedClients())
+  if (!HasAuthenticatedClients()) {
     EnableCurtainMode(false);
+    if (is_me2mom_)
+      desktop_environment_->disconnect_window()->Hide();
+  }
 }
 
 // TODO(sergeyu): Move this to SessionManager?
@@ -460,6 +466,13 @@ void ChromotingHost::LocalLoginSucceeded(
   recorder_->AddConnection(connection);
   recorder_->Start();
   EnableCurtainMode(true);
+  if (is_me2mom_) {
+    std::string username = connection->session()->jid();
+    size_t pos = username.find('/');
+    if (pos != std::string::npos)
+      username.replace(pos, std::string::npos, "");
+    desktop_environment_->disconnect_window()->Show(this, username);
+  }
 }
 
 void ChromotingHost::LocalLoginFailed(

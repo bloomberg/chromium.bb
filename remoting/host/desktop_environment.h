@@ -13,17 +13,19 @@ namespace remoting {
 class Capturer;
 class Curtain;
 class EventExecutor;
+class DisconnectWindow;
 
 class DesktopEnvironment {
  public:
   // DesktopEnvironment takes ownership of all the objects passed the ctor.
   DesktopEnvironment(Capturer* capturer, EventExecutor* event_executor,
-                     Curtain* curtain);
+                     Curtain* curtain, DisconnectWindow* disconnect_window);
   virtual ~DesktopEnvironment();
 
   Capturer* capturer() const { return capturer_.get(); }
   EventExecutor* event_executor() const { return event_executor_.get(); }
   Curtain* curtain() const { return curtain_.get(); }
+  DisconnectWindow* disconnect_window() { return disconnect_window_.get(); }
 
  private:
   // Capturer to be used by ScreenRecorder.
@@ -34,6 +36,9 @@ class DesktopEnvironment {
 
   // Curtain ensures privacy for the remote user.
   scoped_ptr<Curtain> curtain_;
+
+  // Provide a user interface allowing the host user to close the connection.
+  scoped_ptr<DisconnectWindow> disconnect_window_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopEnvironment);
 };

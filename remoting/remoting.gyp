@@ -147,6 +147,10 @@
         '../third_party/npapi/npapi.gyp:npapi',
       ],
       'sources': [
+        'host/disconnect_window_linux.cc',
+        'host/disconnect_window_mac.h',
+        'host/disconnect_window_mac.mm',
+        'host/disconnect_window_win.cc',
         'host/host_plugin.cc',
       ],
       'conditions': [
@@ -173,6 +177,7 @@
           # only be necessary to list framework-Info.plist once, not the
           # three times it is listed here.
           'mac_bundle_resources': [
+            'host/disconnect_window.xib',
             'host/host_plugin-Info.plist',
           ],
           'mac_bundle_resources!': [
@@ -439,6 +444,10 @@
       'sources': [
         'host/capturer_fake_ascii.cc',
         'host/capturer_fake_ascii.h',
+        'host/disconnect_window_linux.cc',
+        'host/disconnect_window_mac.h',
+        'host/disconnect_window_mac.mm',
+        'host/disconnect_window_win.cc',
         'host/simple_host_process.cc',
         '../base/test/mock_chrome_application_mac.mm',
         '../base/test/mock_chrome_application_mac.h',

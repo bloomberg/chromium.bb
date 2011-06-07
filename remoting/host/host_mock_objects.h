@@ -10,6 +10,7 @@
 #include "remoting/host/curtain.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/client_session.h"
+#include "remoting/host/disconnect_window.h"
 #include "remoting/host/event_executor.h"
 #include "remoting/host/user_authenticator.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -40,6 +41,16 @@ class MockCurtain : public Curtain {
   virtual ~MockCurtain();
 
   MOCK_METHOD1(EnableCurtainMode, void(bool enable));
+};
+
+class MockDisconnectWindow : public DisconnectWindow {
+ public:
+  MockDisconnectWindow();
+  virtual ~MockDisconnectWindow();
+
+  MOCK_METHOD2(Show, void(remoting::ChromotingHost* host,
+                          const std::string& username));
+  MOCK_METHOD0(Hide, void());
 };
 
 class MockChromotingHostContext : public ChromotingHostContext {

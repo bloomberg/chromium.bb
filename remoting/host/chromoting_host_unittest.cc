@@ -35,6 +35,7 @@ using testing::DoAll;
 using testing::InSequence;
 using testing::InvokeWithoutArgs;
 using testing::Return;
+using testing::ReturnRef;
 using testing::Sequence;
 
 namespace remoting {
@@ -84,8 +85,10 @@ class ChromotingHostTest : public testing::Test {
     Capturer* capturer = new CapturerFake();
     event_executor_ = new MockEventExecutor();
     curtain_ = new MockCurtain();
+    disconnect_window_ = new MockDisconnectWindow();
     DesktopEnvironment* desktop =
-        new DesktopEnvironment(capturer, event_executor_, curtain_);
+        new DesktopEnvironment(capturer, event_executor_, curtain_,
+                               disconnect_window_);
     MockAccessVerifier* access_verifier = new MockAccessVerifier();
 
     host_ = ChromotingHost::Create(&context_, config_,
@@ -208,6 +211,7 @@ class ChromotingHostTest : public testing::Test {
   // Owned by |host_|.
   MockEventExecutor* event_executor_;
   MockCurtain* curtain_;
+  MockDisconnectWindow* disconnect_window_;
 };
 
 TEST_F(ChromotingHostTest, StartAndShutdown) {
@@ -231,6 +235,8 @@ TEST_F(ChromotingHostTest, Connect) {
     InSequence s;
     EXPECT_CALL(*curtain_, EnableCurtainMode(true))
         .Times(1);
+    EXPECT_CALL(*disconnect_window_, Show(_, _))
+        .Times(0);
     EXPECT_CALL(video_stub_, ProcessVideoPacket(_, _))
         .WillOnce(DoAll(
             InvokeWithoutArgs(host_.get(), &ChromotingHost::Shutdown),
@@ -259,6 +265,8 @@ TEST_F(ChromotingHostTest, Reconnect) {
     // Ensure that curtain mode is activated before the first video packet.
     EXPECT_CALL(*curtain_, EnableCurtainMode(true))
         .Times(1);
+    EXPECT_CALL(*disconnect_window_, Show(_, _))
+        .Times(0);
     EXPECT_CALL(video_stub_, ProcessVideoPacket(_, _))
         .WillOnce(DoAll(
             InvokeWithoutArgs(this,
@@ -286,6 +294,8 @@ TEST_F(ChromotingHostTest, Reconnect) {
     InSequence s;
     EXPECT_CALL(*curtain_, EnableCurtainMode(true))
         .Times(1);
+    EXPECT_CALL(*disconnect_window_, Show(_, _))
+        .Times(0);
     EXPECT_CALL(video_stub_, ProcessVideoPacket(_, _))
         .WillOnce(DoAll(
             InvokeWithoutArgs(host_.get(), &ChromotingHost::Shutdown),
@@ -319,6 +329,8 @@ TEST_F(ChromotingHostTest, ConnectTwice) {
     EXPECT_CALL(*curtain_, EnableCurtainMode(true))
         .Times(1)
         .WillOnce(QuitMainMessageLoop(&message_loop_));
+    EXPECT_CALL(*disconnect_window_, Show(_, _))
+        .Times(0);
     EXPECT_CALL(video_stub_, ProcessVideoPacket(_, _))
         .WillOnce(DoAll(
             InvokeWithoutArgs(
@@ -329,6 +341,8 @@ TEST_F(ChromotingHostTest, ConnectTwice) {
         .RetiresOnSaturation();
     // Check that the second connection does not affect curtain mode.
     EXPECT_CALL(*curtain_, EnableCurtainMode(_))
+        .Times(0);
+    EXPECT_CALL(*disconnect_window_, Show(_, _))
         .Times(0);
     EXPECT_CALL(video_stub_, ProcessVideoPacket(_, _))
         .Times(AnyNumber());
@@ -360,6 +374,8 @@ TEST_F(ChromotingHostTest, CurtainModeFail) {
   // authenticate.
   EXPECT_CALL(*curtain_, EnableCurtainMode(_))
       .Times(0);
+  EXPECT_CALL(*disconnect_window_, Show(_, _))
+      .Times(0);
   EXPECT_CALL(*connection_.get(), Disconnect())
       .WillOnce(QuitMainMessageLoop(&message_loop_));
   SimulateClientConnection(0, false);
@@ -383,6 +399,8 @@ TEST_F(ChromotingHostTest, CurtainModeFailSecond) {
     InSequence s;
     EXPECT_CALL(*curtain_, EnableCurtainMode(true))
         .WillOnce(QuitMainMessageLoop(&message_loop_));
+    EXPECT_CALL(*disconnect_window_, Show(_, _))
+        .Times(0);
     EXPECT_CALL(video_stub_, ProcessVideoPacket(_, _))
         .WillOnce(DoAll(
             InvokeWithoutArgs(
@@ -393,6 +411,8 @@ TEST_F(ChromotingHostTest, CurtainModeFailSecond) {
         .RetiresOnSaturation();
     // Check that the second connection does not affect curtain mode.
     EXPECT_CALL(*curtain_, EnableCurtainMode(_))
+        .Times(0);
+    EXPECT_CALL(*disconnect_window_, Show(_, _))
         .Times(0);
     EXPECT_CALL(video_stub_, ProcessVideoPacket(_, _))
         .Times(AnyNumber());
@@ -416,6 +436,7 @@ TEST_F(ChromotingHostTest, CurtainModeMe2Mom) {
   // When the video packet is received we first shutdown ChromotingHost
   // then execute the done task.
   bool curtain_activated = false;
+  std::string mockJid("user@domain/rest-of-jid");
   {
     InSequence s;
     // Can't just expect Times(0) because if it fails then the host will
@@ -423,6 +444,11 @@ TEST_F(ChromotingHostTest, CurtainModeMe2Mom) {
     EXPECT_CALL(*curtain_, EnableCurtainMode(_))
         .Times(AnyNumber())
         .WillRepeatedly(SetBool(&curtain_activated));
+    EXPECT_CALL(*session_, jid())
+        .Times(1)
+        .WillOnce(ReturnRef(mockJid));
+    EXPECT_CALL(*disconnect_window_, Show(_, "user@domain"))
+        .Times(1);
     EXPECT_CALL(video_stub_, ProcessVideoPacket(_, _))
         .WillOnce(DoAll(
             InvokeWithoutArgs(host_.get(), &ChromotingHost::Shutdown),

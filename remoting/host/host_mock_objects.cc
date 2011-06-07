@@ -22,6 +22,14 @@ Curtain* Curtain::Create() {
   return new MockCurtain();
 }
 
+MockDisconnectWindow::MockDisconnectWindow() {}
+
+MockDisconnectWindow::~MockDisconnectWindow() {}
+
+DisconnectWindow* DisconnectWindow::Create() {
+  return new MockDisconnectWindow();
+}
+
 MockChromotingHostContext::MockChromotingHostContext() {}
 
 MockChromotingHostContext::~MockChromotingHostContext() {}
