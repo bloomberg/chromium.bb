@@ -117,14 +117,10 @@ BalloonViewImpl::~BalloonViewImpl() {
 
 void BalloonViewImpl::Close(bool by_user) {
   // Delay a system-initiated close if the menu is showing.
-  if (!by_user && menu_showing_) {
+  if (!by_user && menu_showing_)
     pending_close_ = true;
-  } else {
-    MessageLoop::current()->PostTask(
-        FROM_HERE,
-        method_factory_.NewRunnableMethod(
-            &BalloonViewImpl::DelayedClose, by_user));
-  }
+  else
+    CleanUpAndPostDelayedClose(by_user);
 }
 
 gfx::Size BalloonViewImpl::GetSize() const {
@@ -141,6 +137,15 @@ gfx::Size BalloonViewImpl::GetSize() const {
 
 BalloonHost* BalloonViewImpl::GetHost() const {
   return html_contents_.get();
+}
+
+void BalloonViewImpl::CleanUpAndPostDelayedClose(bool by_user) {
+  if (animation_.get())
+    animation_->Stop();
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      method_factory_.NewRunnableMethod(
+          &BalloonViewImpl::DelayedClose, by_user));
 }
 
 void BalloonViewImpl::DelayedClose(bool by_user) {
@@ -465,12 +470,8 @@ void BalloonViewImpl::OnOptionsMenuButton(GtkWidget* widget,
 // Called when the menu stops showing.
 void BalloonViewImpl::StoppedShowing() {
   menu_showing_ = false;
-  if (pending_close_) {
-    MessageLoop::current()->PostTask(
-        FROM_HERE,
-        method_factory_.NewRunnableMethod(
-            &BalloonViewImpl::DelayedClose, false));
-  }
+  if (pending_close_)
+    CleanUpAndPostDelayedClose(false);
 }
 
 gboolean BalloonViewImpl::OnDestroy(GtkWidget* widget) {

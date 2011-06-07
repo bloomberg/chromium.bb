@@ -63,6 +63,10 @@ class BalloonViewImpl : public BalloonView,
   // ui::AnimationDelegate interface.
   virtual void AnimationProgressed(const ui::Animation* animation);
 
+  // Do anything that needs to happen before view components are destroyed, then
+  // post DelayedClose to finish clean up later.
+  void CleanUpAndPostDelayedClose(bool by_user);
+
   // Do the delayed close work.  The balloon and all view components will be
   // destroyed at this time, so it shouldn't be called while still processing
   // an event that relies on them.

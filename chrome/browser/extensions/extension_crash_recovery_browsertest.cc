@@ -233,12 +233,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
 // Make sure that when we don't do anything about the crashed extension
 // and close the browser, it doesn't crash. The browser is closed implicitly
 // at the end of each browser test.
-#if defined(OS_LINUX)
-// Occasional crash on Linux tests (dbg) http://crbug.com/79204
-IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, FLAKY_ShutdownWhileCrashed) {
-#else
 IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, ShutdownWhileCrashed) {
-#endif
   const size_t size_before = GetExtensionService()->extensions()->size();
   LoadTestExtension();
   CrashExtension(size_before);
@@ -324,20 +319,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, TwoExtensionsOneByOne) {
   }
 }
 
-// http://crbug.com/84719
-#if defined(OS_LINUX)
-#define MAYBE_TwoExtensionsShutdownWhileCrashed \
-    DISABLED_TwoExtensionsShutdownWhileCrashed
-#else
-#define MAYBE_TwoExtensionsShutdownWhileCrashed \
-    TwoExtensionsShutdownWhileCrashed
-#endif  // defined(OS_LINUX)
-
 // Make sure that when we don't do anything about the crashed extensions
 // and close the browser, it doesn't crash. The browser is closed implicitly
 // at the end of each browser test.
 IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
-                       MAYBE_TwoExtensionsShutdownWhileCrashed) {
+                       TwoExtensionsShutdownWhileCrashed) {
   const size_t size_before = GetExtensionService()->extensions()->size();
   LoadTestExtension();
   CrashExtension(size_before);
@@ -418,14 +404,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, CrashAndUninstall) {
   ASSERT_EQ(0U, CountBalloons());
 }
 
-// http://crbug.com/84719
-#if defined(OS_LINUX)
-#define MAYBE_CrashAndUnloadAll DISABLED_CrashAndUnloadAll
-#else
-#define MAYBE_CrashAndUnloadAll CrashAndUnloadAll
-#endif  // defined(OS_LINUX)
-
-IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, MAYBE_CrashAndUnloadAll) {
+IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, CrashAndUnloadAll) {
   const size_t size_before = GetExtensionService()->extensions()->size();
   const size_t crash_size_before =
       GetExtensionService()->terminated_extensions()->size();
