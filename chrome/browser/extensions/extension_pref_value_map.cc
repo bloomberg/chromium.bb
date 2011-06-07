@@ -34,7 +34,7 @@ ExtensionPrefValueMap::~ExtensionPrefValueMap() {
 
 void ExtensionPrefValueMap::SetExtensionPref(const std::string& ext_id,
                                              const std::string& key,
-                                             extension_prefs_scope::Scope scope,
+                                             ExtensionPrefsScope scope,
                                              Value* value) {
   PrefValueMap* prefs = GetExtensionPrefValueMap(ext_id, scope);
 
@@ -45,7 +45,7 @@ void ExtensionPrefValueMap::SetExtensionPref(const std::string& ext_id,
 void ExtensionPrefValueMap::RemoveExtensionPref(
     const std::string& ext_id,
     const std::string& key,
-    extension_prefs_scope::Scope scope) {
+    ExtensionPrefsScope scope) {
   PrefValueMap* prefs = GetExtensionPrefValueMap(ext_id, scope);
   if (prefs->RemoveValue(key))
     NotifyPrefValueChanged(key);
@@ -139,15 +139,15 @@ void ExtensionPrefValueMap::SetExtensionState(const std::string& ext_id,
 
 PrefValueMap* ExtensionPrefValueMap::GetExtensionPrefValueMap(
     const std::string& ext_id,
-    extension_prefs_scope::Scope scope) {
+    ExtensionPrefsScope scope) {
   ExtensionEntryMap::const_iterator i = entries_.find(ext_id);
   CHECK(i != entries_.end());
   switch (scope) {
-    case extension_prefs_scope::kRegular:
+    case kExtensionPrefsScopeRegular:
       return &(i->second->regular_profile_preferences);
-    case extension_prefs_scope::kIncognitoPersistent:
+    case kExtensionPrefsScopeIncognitoPersistent:
       return &(i->second->incognito_profile_preferences_persistent);
-    case extension_prefs_scope::kIncognitoSessionOnly:
+    case kExtensionPrefsScopeIncognitoSessionOnly:
       return &(i->second->incognito_profile_preferences_session_only);
   }
   NOTREACHED();
@@ -156,15 +156,15 @@ PrefValueMap* ExtensionPrefValueMap::GetExtensionPrefValueMap(
 
 const PrefValueMap* ExtensionPrefValueMap::GetExtensionPrefValueMap(
     const std::string& ext_id,
-    extension_prefs_scope::Scope scope) const {
+    ExtensionPrefsScope scope) const {
   ExtensionEntryMap::const_iterator i = entries_.find(ext_id);
   CHECK(i != entries_.end());
   switch (scope) {
-    case extension_prefs_scope::kRegular:
+    case kExtensionPrefsScopeRegular:
       return &(i->second->regular_profile_preferences);
-    case extension_prefs_scope::kIncognitoPersistent:
+    case kExtensionPrefsScopeIncognitoPersistent:
       return &(i->second->incognito_profile_preferences_persistent);
-    case extension_prefs_scope::kIncognitoSessionOnly:
+    case kExtensionPrefsScopeIncognitoSessionOnly:
       return &(i->second->incognito_profile_preferences_session_only);
   }
   NOTREACHED();
@@ -206,7 +206,7 @@ const Value* ExtensionPrefValueMap::GetEffectivePrefValue(
   // First search for incognito session only preferences.
   if (incognito) {
     const PrefValueMap* prefs = GetExtensionPrefValueMap(
-        ext_id, extension_prefs_scope::kIncognitoSessionOnly);
+        ext_id, kExtensionPrefsScopeIncognitoSessionOnly);
     prefs->GetValue(key, &value);
   }
 
@@ -214,14 +214,14 @@ const Value* ExtensionPrefValueMap::GetEffectivePrefValue(
   // incognito preference.
   if (incognito && !value) {
     const PrefValueMap* prefs = GetExtensionPrefValueMap(
-        ext_id, extension_prefs_scope::kIncognitoPersistent);
+        ext_id, kExtensionPrefsScopeIncognitoPersistent);
     prefs->GetValue(key, &value);
   }
 
   // Finally consider a regular preference.
   if (!value) {
     const PrefValueMap* prefs = GetExtensionPrefValueMap(
-        ext_id, extension_prefs_scope::kRegular);
+        ext_id, kExtensionPrefsScopeRegular);
     prefs->GetValue(key, &value);
   }
   return value;
@@ -248,7 +248,7 @@ ExtensionPrefValueMap::GetEffectivePrefValueController(
 
     const Value* value = NULL;
     const PrefValueMap* prefs = GetExtensionPrefValueMap(
-        ext_id, extension_prefs_scope::kRegular);
+        ext_id, kExtensionPrefsScopeRegular);
     if (prefs->GetValue(key, &value)) {
       winner = i;
       winners_install_time = install_time;
@@ -260,7 +260,7 @@ ExtensionPrefValueMap::GetEffectivePrefValueController(
       continue;
 
     prefs = GetExtensionPrefValueMap(
-        ext_id, extension_prefs_scope::kIncognitoPersistent);
+        ext_id, kExtensionPrefsScopeIncognitoPersistent);
     if (prefs->GetValue(key, &value)) {
       winner = i;
       winners_install_time = install_time;
@@ -269,7 +269,7 @@ ExtensionPrefValueMap::GetEffectivePrefValueController(
     }
 
     prefs = GetExtensionPrefValueMap(
-        ext_id, extension_prefs_scope::kIncognitoSessionOnly);
+        ext_id, kExtensionPrefsScopeIncognitoSessionOnly);
     if (prefs->GetValue(key, &value)) {
       winner = i;
       winners_install_time = install_time;

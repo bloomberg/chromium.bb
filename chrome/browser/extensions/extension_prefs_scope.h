@@ -6,22 +6,18 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_PREFS_SCOPE_H_
 #pragma once
 
-// TODO(battre): get rid of this namespace, see
-// http://codereview.chromium.org/7065033/diff/3003/chrome/browser/extensions/extension_prefs_scope.h
-namespace extension_prefs_scope {
+#include "base/basictypes.h"
 
 // Scope for a preference.
-enum Scope {
+enum ExtensionPrefsScope {
   // Regular profile.
-  kRegular,
+  kExtensionPrefsScopeRegular,
   // Incognito profile; preference is persisted to disk and remains active
   // after a browser restart.
-  kIncognitoPersistent,
+  kExtensionPrefsScopeIncognitoPersistent,
   // Incognito profile; preference is kept in memory and deleted when the
   // incognito session is terminated.
-  kIncognitoSessionOnly
+  kExtensionPrefsScopeIncognitoSessionOnly
 };
-
-}  // extension_prefs_scope
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_PREFS_SCOPE_H_

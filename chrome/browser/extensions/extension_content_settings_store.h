@@ -61,7 +61,7 @@ class ExtensionContentSettingsStore {
       ContentSettingsType type,
       const content_settings::ResourceIdentifier& identifier,
       ContentSetting setting,
-      extension_prefs_scope::Scope scope);
+      ExtensionPrefsScope scope);
 
   ContentSetting GetEffectiveContentSetting(
       const GURL& embedded_url,
@@ -72,7 +72,7 @@ class ExtensionContentSettingsStore {
 
   // Clears all contents settings set by the extension |ext_id|.
   void ClearContentSettingsForExtension(const std::string& ext_id,
-                                        extension_prefs_scope::Scope scope);
+                                        ExtensionPrefsScope scope);
 
   // Returns a list of all content setting rules for the content type |type|
   // and the resource identifier (if specified and the content type uses
@@ -87,13 +87,13 @@ class ExtensionContentSettingsStore {
   // and returns them as a ListValue. The caller takes ownership of the returned
   // value.
   ListValue* GetSettingsForExtension(const std::string& extension_id,
-                                     extension_prefs_scope::Scope scope) const;
+                                     ExtensionPrefsScope scope) const;
 
   // Deserializes content settings rules from |list| and applies them as set by
   // the extension with ID |extension_id|.
   void SetExtensionContentSettingsFromList(const std::string& extension_id,
                                            const ListValue* list,
-                                           extension_prefs_scope::Scope scope);
+                                           ExtensionPrefsScope scope);
 
   // //////////////////////////////////////////////////////////////////////////
 
@@ -144,11 +144,11 @@ class ExtensionContentSettingsStore {
 
   ContentSettingSpecList* GetContentSettingSpecList(
       const std::string& ext_id,
-      extension_prefs_scope::Scope scope);
+      ExtensionPrefsScope scope);
 
   const ContentSettingSpecList* GetContentSettingSpecList(
       const std::string& ext_id,
-      extension_prefs_scope::Scope scope) const;
+      ExtensionPrefsScope scope) const;
 
   // Adds all content setting rules for |type| and |identifier| found in
   // |setting_spec_list| to |rules|.

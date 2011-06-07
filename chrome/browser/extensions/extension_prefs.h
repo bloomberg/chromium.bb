@@ -304,12 +304,12 @@ class ExtensionPrefs : public ExtensionContentSettingsStore::Observer {
   // Takes ownership of |value|.
   void SetExtensionControlledPref(const std::string& extension_id,
                                   const std::string& pref_key,
-                                  extension_prefs_scope::Scope scope,
+                                  ExtensionPrefsScope scope,
                                   Value* value);
 
   void RemoveExtensionControlledPref(const std::string& extension_id,
                                      const std::string& pref_key,
-                                     extension_prefs_scope::Scope scope);
+                                     ExtensionPrefsScope scope);
 
   // Returns true if currently no extension with higher precedence controls the
   // preference.

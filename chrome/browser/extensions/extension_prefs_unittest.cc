@@ -695,28 +695,26 @@ class ExtensionPrefsPreferencesBase : public ExtensionPrefsTest {
   void InstallExtControlledPref(Extension *ext,
                                 const std::string& key,
                                 Value* val) {
-    using namespace extension_prefs_scope;
     EnsureExtensionInstalled(ext);
-    prefs()->SetExtensionControlledPref(ext->id(), key, kRegular, val);
+    prefs()->SetExtensionControlledPref(
+        ext->id(), key, kExtensionPrefsScopeRegular, val);
   }
 
   void InstallExtControlledPrefIncognito(Extension *ext,
                                          const std::string& key,
                                          Value* val) {
-    using namespace extension_prefs_scope;
     EnsureExtensionInstalled(ext);
-    prefs()->SetExtensionControlledPref(ext->id(), key,
-                                        kIncognitoPersistent, val);
+    prefs()->SetExtensionControlledPref(
+        ext->id(), key, kExtensionPrefsScopeIncognitoPersistent, val);
   }
 
   void InstallExtControlledPrefIncognitoSessionOnly(
       Extension *ext,
       const std::string& key,
       Value* val) {
-    using namespace extension_prefs_scope;
     EnsureExtensionInstalled(ext);
-    prefs()->SetExtensionControlledPref(ext->id(), key,
-                                        kIncognitoSessionOnly, val);
+    prefs()->SetExtensionControlledPref(
+        ext->id(), key, kExtensionPrefsScopeIncognitoSessionOnly, val);
   }
 
   void InstallExtension(Extension *ext) {

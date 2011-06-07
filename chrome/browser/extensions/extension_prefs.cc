@@ -1343,12 +1343,12 @@ void ExtensionPrefs::OnContentSettingChanged(
     UpdateExtensionPref(
         extension_id, kPrefIncognitoContentSettings,
         content_settings_store_->GetSettingsForExtension(
-            extension_id, extension_prefs_scope::kIncognitoPersistent));
+            extension_id, kExtensionPrefsScopeIncognitoPersistent));
   } else {
     UpdateExtensionPref(
         extension_id, kPrefContentSettings,
         content_settings_store_->GetSettingsForExtension(
-            extension_id, extension_prefs_scope::kRegular));
+            extension_id, kExtensionPrefsScopeRegular));
   }
 }
 
@@ -1450,7 +1450,7 @@ void ExtensionPrefs::InitPrefStore() {
       if (!prefs->GetWithoutPathExpansion(*i, &value))
         continue;
       extension_pref_value_map_->SetExtensionPref(
-          *ext_id, *i, extension_prefs_scope::kRegular, value->DeepCopy());
+          *ext_id, *i, kExtensionPrefsScopeRegular, value->DeepCopy());
     }
 
     // Set incognito extension controlled prefs.
@@ -1461,7 +1461,7 @@ void ExtensionPrefs::InitPrefStore() {
       if (!prefs->GetWithoutPathExpansion(*i, &value))
         continue;
       extension_pref_value_map_->SetExtensionPref(
-          *ext_id, *i, extension_prefs_scope::kIncognitoPersistent,
+          *ext_id, *i, kExtensionPrefsScopeIncognitoPersistent,
           value->DeepCopy());
     }
 
@@ -1472,13 +1472,13 @@ void ExtensionPrefs::InitPrefStore() {
                                  &content_settings)) {
       content_settings_store_->SetExtensionContentSettingsFromList(
           *ext_id, content_settings,
-          extension_prefs_scope::kRegular);
+          kExtensionPrefsScopeRegular);
     }
     if (extension_prefs->GetList(kPrefIncognitoContentSettings,
                                  &content_settings)) {
       content_settings_store_->SetExtensionContentSettingsFromList(
           *ext_id, content_settings,
-          extension_prefs_scope::kIncognitoPersistent);
+          kExtensionPrefsScopeIncognitoPersistent);
     }
   }
 
@@ -1489,7 +1489,7 @@ void ExtensionPrefs::InitPrefStore() {
 void ExtensionPrefs::SetExtensionControlledPref(
     const std::string& extension_id,
     const std::string& pref_key,
-    extension_prefs_scope::Scope scope,
+    ExtensionPrefsScope scope,
     Value* value) {
 #ifndef NDEBUG
   const PrefService::Preference* pref =
@@ -1500,13 +1500,13 @@ void ExtensionPrefs::SetExtensionControlledPref(
       << "Extension controlled preference " << pref_key << " has wrong type.";
 #endif
 
-  if (scope == extension_prefs_scope::kRegular) {
+  if (scope == kExtensionPrefsScopeRegular) {
     // Also store in persisted Preferences file to recover after a
     // browser restart.
     ScopedExtensionControlledPrefUpdate update(prefs_, extension_id,
                                                kPrefPreferences);
     update->SetWithoutPathExpansion(pref_key, value->DeepCopy());
-  } else if (scope == extension_prefs_scope::kIncognitoPersistent) {
+  } else if (scope == kExtensionPrefsScopeIncognitoPersistent) {
     ScopedExtensionControlledPrefUpdate update(prefs_, extension_id,
                                                kPrefIncognitoPreferences);
     update->SetWithoutPathExpansion(pref_key, value->DeepCopy());
@@ -1519,18 +1519,18 @@ void ExtensionPrefs::SetExtensionControlledPref(
 void ExtensionPrefs::RemoveExtensionControlledPref(
     const std::string& extension_id,
     const std::string& pref_key,
-    extension_prefs_scope::Scope scope) {
+    ExtensionPrefsScope scope) {
   DCHECK(pref_service()->FindPreference(pref_key.c_str()))
       << "Extension controlled preference key " << pref_key
       << " not registered.";
 
-  if (scope == extension_prefs_scope::kRegular) {
+  if (scope == kExtensionPrefsScopeRegular) {
     // Also store in persisted Preferences file to recover after a
     // browser restart.
     ScopedExtensionControlledPrefUpdate update(prefs_, extension_id,
                                                kPrefPreferences);
     update->RemoveWithoutPathExpansion(pref_key, NULL);
-  } else if (scope == extension_prefs_scope::kIncognitoPersistent) {
+  } else if (scope == kExtensionPrefsScopeIncognitoPersistent) {
     ScopedExtensionControlledPrefUpdate update(prefs_, extension_id,
                                                kPrefIncognitoPreferences);
     update->RemoveWithoutPathExpansion(pref_key, NULL);
@@ -1579,7 +1579,7 @@ void ExtensionPrefs::ClearIncognitoSessionOnlyContentSettings() {
        ext_id != extension_ids.end(); ++ext_id) {
     content_settings_store_->ClearContentSettingsForExtension(
         *ext_id,
-        extension_prefs_scope::kIncognitoSessionOnly);
+        kExtensionPrefsScopeIncognitoSessionOnly);
   }
 }
 

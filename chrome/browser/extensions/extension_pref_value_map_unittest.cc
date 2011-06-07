@@ -33,6 +33,13 @@ static base::Time CreateTime(int64 t) {
 template <typename BASECLASS>
 class ExtensionPrefValueMapTestBase : public BASECLASS {
  public:
+  const static ExtensionPrefsScope kRegular =
+      kExtensionPrefsScopeRegular;
+  const static ExtensionPrefsScope kIncognitoPersistent =
+      kExtensionPrefsScopeIncognitoPersistent;
+  const static ExtensionPrefsScope kIncognitoSessionOnly =
+      kExtensionPrefsScopeIncognitoSessionOnly;
+
   // Returns an empty string if the key is not set.
   std::string GetValue(const char * key, bool incognito) const {
     const Value *value = epvm_.GetEffectivePrefValue(key, incognito, NULL);
@@ -66,7 +73,6 @@ class ExtensionPrefValueMapObserverMock
 };
 
 TEST_F(ExtensionPrefValueMapTest, SetAndGetPrefValue) {
-  using namespace extension_prefs_scope;
   epvm_.RegisterExtension(kExt1, CreateTime(10), true);
   epvm_.SetExtensionPref(kExt1, kPref1, kRegular, CreateVal("val1"));
   EXPECT_EQ("val1", GetValue(kPref1, false));
@@ -79,7 +85,6 @@ TEST_F(ExtensionPrefValueMapTest, GetNotSetPrefValue) {
 
 // Make sure the last-installed extension wins for each preference.
 TEST_F(ExtensionPrefValueMapTest, Override) {
-  using namespace extension_prefs_scope;
   epvm_.RegisterExtension(kExt1, CreateTime(10), true);
   epvm_.RegisterExtension(kExt2, CreateTime(20), true);
   epvm_.RegisterExtension(kExt3, CreateTime(30), true);
@@ -101,7 +106,6 @@ TEST_F(ExtensionPrefValueMapTest, Override) {
 }
 
 TEST_F(ExtensionPrefValueMapTest, OverrideChecks) {
-  using namespace extension_prefs_scope;
   epvm_.RegisterExtension(kExt1, CreateTime(10), true);
   epvm_.RegisterExtension(kExt2, CreateTime(20), true);
   epvm_.RegisterExtension(kExt3, CreateTime(30), true);
@@ -124,14 +128,12 @@ TEST_F(ExtensionPrefValueMapTest, OverrideChecks) {
 }
 
 TEST_F(ExtensionPrefValueMapTest, SetAndGetPrefValueIncognito) {
-  using namespace extension_prefs_scope;
   epvm_.RegisterExtension(kExt1, CreateTime(10), true);
   epvm_.SetExtensionPref(kExt1, kPref1, kRegular, CreateVal("val1"));
   EXPECT_EQ("val1", GetValue(kPref1, true));
 }
 
 TEST_F(ExtensionPrefValueMapTest, UninstallOnlyExtension) {
-  using namespace extension_prefs_scope;
   epvm_.RegisterExtension(kExt1, CreateTime(10), true);
   epvm_.SetExtensionPref(kExt1, kPref1, kRegular, CreateVal("val1"));
   epvm_.UnregisterExtension(kExt1);
@@ -141,7 +143,6 @@ TEST_F(ExtensionPrefValueMapTest, UninstallOnlyExtension) {
 
 // Tests uninstalling an extension that wasn't winning for any preferences.
 TEST_F(ExtensionPrefValueMapTest, UninstallIrrelevantExtension) {
-  using namespace extension_prefs_scope;
   epvm_.RegisterExtension(kExt1, CreateTime(10), true);
   epvm_.RegisterExtension(kExt2, CreateTime(10), true);
 
@@ -159,7 +160,6 @@ TEST_F(ExtensionPrefValueMapTest, UninstallIrrelevantExtension) {
 
 // Tests uninstalling an extension that was winning for all preferences.
 TEST_F(ExtensionPrefValueMapTest, UninstallExtensionFromTop) {
-  using namespace extension_prefs_scope;
   epvm_.RegisterExtension(kExt1, CreateTime(10), true);
   epvm_.RegisterExtension(kExt2, CreateTime(20), true);
   epvm_.RegisterExtension(kExt3, CreateTime(30), true);
@@ -179,7 +179,6 @@ TEST_F(ExtensionPrefValueMapTest, UninstallExtensionFromTop) {
 
 // Tests uninstalling an extension that was winning for only some preferences.
 TEST_F(ExtensionPrefValueMapTest, UninstallExtensionFromMiddle) {
-  using namespace extension_prefs_scope;
   epvm_.RegisterExtension(kExt1, CreateTime(10), true);
   epvm_.RegisterExtension(kExt2, CreateTime(20), true);
   epvm_.RegisterExtension(kExt3, CreateTime(30), true);
@@ -208,7 +207,6 @@ TEST_F(ExtensionPrefValueMapTest, NotifyWhenNeeded) {
   using testing::_;
   using testing::Mock;
   using testing::StrEq;
-  using namespace extension_prefs_scope;
 
   epvm_.RegisterExtension(kExt1, CreateTime(10), true);
 
@@ -260,7 +258,6 @@ TEST_F(ExtensionPrefValueMapTest, NotifyWhenNeeded) {
 
 // Tests disabling an extension.
 TEST_F(ExtensionPrefValueMapTest, DisableExt) {
-  using namespace extension_prefs_scope;
   epvm_.RegisterExtension(kExt1, CreateTime(10), true);
 
   epvm_.SetExtensionPref(kExt1, kPref1, kRegular, CreateVal("val1"));
@@ -270,7 +267,6 @@ TEST_F(ExtensionPrefValueMapTest, DisableExt) {
 
 // Tests disabling and reenabling an extension.
 TEST_F(ExtensionPrefValueMapTest, ReenableExt) {
-  using namespace extension_prefs_scope;
   epvm_.RegisterExtension(kExt1, CreateTime(10), true);
 
   epvm_.SetExtensionPref(kExt1, kPref1, kRegular, CreateVal("val1"));
@@ -315,7 +311,6 @@ class ExtensionPrefValueMapTestIncognitoTests
 };
 
 TEST_P(ExtensionPrefValueMapTestIncognitoTests, OverrideIncognito) {
-  using namespace extension_prefs_scope;
   OverrideIncognitoTestCase test = GetParam();
   const char* strings[] = {
       "undefined",

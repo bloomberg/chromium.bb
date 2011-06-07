@@ -48,7 +48,7 @@ void ExtensionContentSettingsStore::SetExtensionContentSetting(
     ContentSettingsType type,
     const content_settings::ResourceIdentifier& identifier,
     ContentSetting setting,
-    extension_prefs_scope::Scope scope) {
+    ExtensionPrefsScope scope) {
   {
     base::AutoLock lock(lock_);
     ContentSettingSpecList* setting_spec_list =
@@ -88,7 +88,7 @@ void ExtensionContentSettingsStore::SetExtensionContentSetting(
   // setting is effective and not hidden by another setting of another
   // extension installed more recently.
   NotifyOfContentSettingChanged(ext_id,
-                                scope != extension_prefs_scope::kRegular);
+                                scope != kExtensionPrefsScopeRegular);
 }
 
 void ExtensionContentSettingsStore::RegisterExtension(
@@ -151,15 +151,15 @@ void ExtensionContentSettingsStore::SetExtensionState(
 ExtensionContentSettingsStore::ContentSettingSpecList*
     ExtensionContentSettingsStore::GetContentSettingSpecList(
         const std::string& ext_id,
-        extension_prefs_scope::Scope scope) {
+        ExtensionPrefsScope scope) {
   ExtensionEntryMap::const_iterator i = entries_.find(ext_id);
   DCHECK(i != entries_.end());
   switch (scope) {
-    case extension_prefs_scope::kRegular:
+    case kExtensionPrefsScopeRegular:
       return &(i->second->settings);
-    case extension_prefs_scope::kIncognitoPersistent:
+    case kExtensionPrefsScopeIncognitoPersistent:
       return &(i->second->incognito_persistent_settings);
-    case extension_prefs_scope::kIncognitoSessionOnly:
+    case kExtensionPrefsScopeIncognitoSessionOnly:
       return &(i->second->incognito_session_only_settings);
   }
   NOTREACHED();
@@ -169,15 +169,15 @@ ExtensionContentSettingsStore::ContentSettingSpecList*
 const ExtensionContentSettingsStore::ContentSettingSpecList*
     ExtensionContentSettingsStore::GetContentSettingSpecList(
         const std::string& ext_id,
-        extension_prefs_scope::Scope scope) const {
+        ExtensionPrefsScope scope) const {
   ExtensionEntryMap::const_iterator i = entries_.find(ext_id);
   DCHECK(i != entries_.end());
   switch (scope) {
-    case extension_prefs_scope::kRegular:
+    case kExtensionPrefsScopeRegular:
       return &(i->second->settings);
-    case extension_prefs_scope::kIncognitoPersistent:
+    case kExtensionPrefsScopeIncognitoPersistent:
       return &(i->second->incognito_persistent_settings);
-    case extension_prefs_scope::kIncognitoSessionOnly:
+    case kExtensionPrefsScopeIncognitoSessionOnly:
       return &(i->second->incognito_session_only_settings);
   }
   NOTREACHED();
@@ -264,7 +264,7 @@ ContentSetting ExtensionContentSettingsStore::GetEffectiveContentSetting(
 
 void ExtensionContentSettingsStore::ClearContentSettingsForExtension(
     const std::string& ext_id,
-    extension_prefs_scope::Scope scope) {
+    ExtensionPrefsScope scope) {
   bool notify = false;
   {
     base::AutoLock lock(lock_);
@@ -274,8 +274,7 @@ void ExtensionContentSettingsStore::ClearContentSettingsForExtension(
     setting_spec_list->clear();
   }
   if (notify) {
-    NotifyOfContentSettingChanged(ext_id,
-                                  scope != extension_prefs_scope::kRegular);
+    NotifyOfContentSettingChanged(ext_id, scope != kExtensionPrefsScopeRegular);
   }
 }
 
@@ -306,18 +305,18 @@ void ExtensionContentSettingsStore::GetContentSettingsForContentType(
       AddRules(type, identifier,
                GetContentSettingSpecList(
                    ext_it->first,
-                   extension_prefs_scope::kIncognitoPersistent),
+                   kExtensionPrefsScopeIncognitoPersistent),
                rules);
       AddRules(type, identifier,
                GetContentSettingSpecList(
                    ext_it->first,
-                   extension_prefs_scope::kIncognitoSessionOnly),
+                   kExtensionPrefsScopeIncognitoSessionOnly),
                 rules);
     } else {
       AddRules(type, identifier,
                GetContentSettingSpecList(
                    ext_it->first,
-                   extension_prefs_scope::kRegular),
+                   kExtensionPrefsScopeRegular),
                rules);
     }
   }
@@ -325,7 +324,7 @@ void ExtensionContentSettingsStore::GetContentSettingsForContentType(
 
 ListValue* ExtensionContentSettingsStore::GetSettingsForExtension(
     const std::string& extension_id,
-    extension_prefs_scope::Scope scope) const {
+    ExtensionPrefsScope scope) const {
   base::AutoLock lock(lock_);
   ListValue* settings = new ListValue();
   const ContentSettingSpecList* setting_spec_list =
@@ -352,7 +351,7 @@ ListValue* ExtensionContentSettingsStore::GetSettingsForExtension(
 void ExtensionContentSettingsStore::SetExtensionContentSettingsFromList(
     const std::string& extension_id,
     const ListValue* list,
-    extension_prefs_scope::Scope scope) {
+    ExtensionPrefsScope scope) {
   for (ListValue::const_iterator it = list->begin(); it != list->end(); ++it) {
     if ((*it)->GetType() != Value::TYPE_DICTIONARY) {
       NOTREACHED();
