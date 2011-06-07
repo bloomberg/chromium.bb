@@ -10589,11 +10589,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CONNECT_TITLE" desc="In settings Internet options, Title of the overlay when the user is not connected and can.">
         Connect to network
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_L2TP_IPSEC_PSK" desc="In settings Internet options, a string specifying L2TP/IPSec + PSK.">
-        L2TP/IPSec + Pre-shared key
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_L2TP_IPSEC_PSK" desc="In settings Internet options, a string specifying L2TP/IPsec + PSK.">
+        L2TP/IPsec + Pre-shared key
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_L2TP_IPSEC_USER_CERT" desc="In settings Internet options, a string specifying L2TP/IPSec + User Certificate.">
-        L2TP/IPSec + User certificate
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_L2TP_IPSEC_USER_CERT" desc="In settings Internet options, a string specifying L2TP/IPsec + User Certificate.">
+        L2TP/IPsec + User certificate
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_OPEN_VPN" desc="In settings Internet options, a string specifying OpenVPN.">
         OpenVPN
