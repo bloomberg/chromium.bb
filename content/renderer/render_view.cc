@@ -3856,7 +3856,7 @@ void RenderView::OnWasHidden() {
   if (webview()) {
     webview()->settings()->setMinimumTimerInterval(
         webkit_glue::kBackgroundTabTimerInterval);
-    webview()->setVisibilityState(WebKit::WebPageVisibilityStateHidden, false);
+    webview()->setVisibilityState(visibilityState(), false);
   }
 
 #if defined(OS_MACOSX)
@@ -3875,7 +3875,7 @@ void RenderView::OnWasRestored(bool needs_repainting) {
   if (webview()) {
     webview()->settings()->setMinimumTimerInterval(
         webkit_glue::kForegroundTabTimerInterval);
-    webview()->setVisibilityState(WebKit::WebPageVisibilityStateVisible, false);
+    webview()->setVisibilityState(visibilityState(), false);
   }
 
 #if defined(OS_MACOSX)
@@ -4131,10 +4131,15 @@ void RenderView::registerProtocolHandler(const WebString& scheme,
 }
 
 WebKit::WebPageVisibilityState RenderView::visibilityState() const {
-  if (is_hidden())
-    return WebKit::WebPageVisibilityStateHidden;
-  else
-    return WebKit::WebPageVisibilityStateVisible;
+  WebKit::WebPageVisibilityState current_state = is_hidden() ?
+      WebKit::WebPageVisibilityStateHidden :
+      WebKit::WebPageVisibilityStateVisible;
+  WebKit::WebPageVisibilityState override_state = current_state;
+  if (content::GetContentClient()->renderer()->
+          ShouldOverridePageVisibilityState(this,
+                                            &override_state))
+    return override_state;
+  return current_state;
 }
 
 bool RenderView::IsNonLocalTopLevelNavigation(

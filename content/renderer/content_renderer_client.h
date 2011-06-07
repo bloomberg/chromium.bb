@@ -10,6 +10,7 @@
 
 #include "base/string16.h"
 #include "content/common/content_client.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebPageVisibilityState.h"
 
 class FilePath;
 class GURL;
@@ -97,6 +98,9 @@ class ContentRendererClient {
                                              size_t length);
   virtual bool IsLinkVisited(unsigned long long link_hash);
   virtual void PrefetchHostName(const char* hostname, size_t length);
+  virtual bool ShouldOverridePageVisibilityState(
+      const RenderView* render_view,
+      WebKit::WebPageVisibilityState* override_state) const;
 };
 
 }  // namespace content

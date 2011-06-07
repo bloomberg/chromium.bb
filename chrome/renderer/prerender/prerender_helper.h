@@ -26,7 +26,7 @@ class PrerenderHelper : public RenderViewObserver,
   virtual ~PrerenderHelper();
 
   // Returns true if |render_view| is currently prerendering.
-  static bool IsPrerendering(RenderView* render_view);
+  static bool IsPrerendering(const RenderView* render_view);
 
   // Records prerender histograms.  These are recorded even for pages that are
   // not prerendered, for comparison to pages that are.

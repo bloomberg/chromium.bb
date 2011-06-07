@@ -547,6 +547,16 @@ void ChromeContentRendererClient::PrefetchHostName(const char* hostname,
   net_predictor_->Resolve(hostname, length);
 }
 
+bool ChromeContentRendererClient::ShouldOverridePageVisibilityState(
+    const RenderView* render_view,
+    WebKit::WebPageVisibilityState* override_state) const {
+  if (!prerender::PrerenderHelper::IsPrerendering(render_view))
+    return false;
+
+  *override_state = WebKit::WebPageVisibilityStatePrerender;
+  return true;
+}
+
 void ChromeContentRendererClient::SetExtensionDispatcher(
     ExtensionDispatcher* extension_dispatcher) {
   extension_dispatcher_.reset(extension_dispatcher);

@@ -34,7 +34,7 @@ PrerenderHelper::~PrerenderHelper() {
 }
 
 // static.
-bool PrerenderHelper::IsPrerendering(RenderView* render_view) {
+bool PrerenderHelper::IsPrerendering(const RenderView* render_view) {
   PrerenderHelper* prerender_helper = PrerenderHelper::Get(render_view);
   return (prerender_helper && prerender_helper->is_prerendering_);
 }

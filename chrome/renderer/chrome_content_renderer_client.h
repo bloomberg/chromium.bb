@@ -67,6 +67,9 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
                                              size_t length) OVERRIDE;
   virtual bool IsLinkVisited(unsigned long long link_hash) OVERRIDE;
   virtual void PrefetchHostName(const char* hostname, size_t length) OVERRIDE;
+  virtual bool ShouldOverridePageVisibilityState(
+      const RenderView* render_view,
+      WebKit::WebPageVisibilityState* override_state) const OVERRIDE;
 
   // For testing.
   void SetExtensionDispatcher(ExtensionDispatcher* extension_dispatcher);

@@ -95,4 +95,10 @@ void ContentRendererClient::PrefetchHostName(const char* hostname,
                                              size_t length) {
 }
 
+bool ContentRendererClient::ShouldOverridePageVisibilityState(
+    const RenderView* render_view,
+    WebKit::WebPageVisibilityState* override_state) const {
+  return false;
+}
+
 }  // namespace content
