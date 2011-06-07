@@ -505,9 +505,9 @@ void ChromeRenderViewObserver::CapturePageInfo(int load_id,
   // Retrieve the frame's full text.
   string16 contents;
   CaptureText(main_frame, &contents);
+  if (translate_helper_)
+    translate_helper_->PageCaptured(contents);
   if (contents.size()) {
-    if (translate_helper_)
-      translate_helper_->PageCaptured(contents);
     // Send the text to the browser for indexing (the browser might decide not
     // to index, if the URL is HTTPS for instance) and language discovery.
     Send(new ViewHostMsg_PageContents(routing_id(), url, load_id, contents));

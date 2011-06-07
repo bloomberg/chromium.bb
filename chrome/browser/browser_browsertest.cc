@@ -604,6 +604,20 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_PageLanguageDetection) {
   TranslateTabHelper* helper = wrapper->translate_tab_helper();
   Source<TabContents> source(current_tab);
 
+  std::string lang;
+
+  // The browser test opens about:blank, which has undetermined language.
+  EXPECT_EQ("about:blank", current_tab->GetURL().spec());
+  ui_test_utils::WindowedNotificationObserverWithDetails<std::string>
+      und_language_detected_signal(NotificationType::TAB_LANGUAGE_DETERMINED,
+                                   source);
+  EXPECT_TRUE(helper->language_state().original_language().empty());
+  und_language_detected_signal.Wait();
+  EXPECT_TRUE(und_language_detected_signal.GetDetailsFor(
+        source.map_key(), &lang));
+  EXPECT_EQ("und", lang);
+  EXPECT_EQ("und", helper->language_state().original_language());
+
   // Navigate to a page in English.
   ui_test_utils::WindowedNotificationObserverWithDetails<std::string>
       en_language_detected_signal(NotificationType::TAB_LANGUAGE_DETERMINED,
@@ -612,7 +626,6 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_PageLanguageDetection) {
       browser(), GURL(test_server()->GetURL("files/english_page.html")));
   EXPECT_TRUE(helper->language_state().original_language().empty());
   en_language_detected_signal.Wait();
-  std::string lang;
   EXPECT_TRUE(en_language_detected_signal.GetDetailsFor(
         source.map_key(), &lang));
   EXPECT_EQ("en", lang);

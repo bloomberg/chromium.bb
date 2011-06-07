@@ -180,15 +180,13 @@ chrome.test.runTests([
     }));
   },
 
-  /* Sadly, this has also regressed. crbug.com/60802.
   function detectLanguage() {
     chrome.tabs.getAllInWindow(firstWindowId, pass(function(tabs) {
       chrome.tabs.detectLanguage(tabs[0].id, pass(function(lang) {
-        assertEq("en", lang);
+        assertEq("und", lang);
       }));
     }));
   },
-  */
 
   function windowCreate() {
     chrome.windows.create({type: "popup"}, pass(function(window) {
