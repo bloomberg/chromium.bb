@@ -649,7 +649,10 @@ cr.define('options', function() {
         this.setBlurbError_();
         return false;
       }
-      if (null == passwd.value || "" == passwd.value) {
+      // Don't enforce password being non-blank when checking access code (it
+      // will have been cleared when the page was displayed).
+      if (f.accessCode.disabled && (null == passwd.value ||
+          "" == passwd.value)) {
         $('errormsg-0-password').hidden = false;
         this.setBlurbError_();
         return false;
