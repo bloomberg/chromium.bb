@@ -47,17 +47,17 @@ Button.prototype = {
    * @return {string}
    */
   get text() {
-    return this.textContent;
+    return this.innerHTML;
   },
 
   /**
-   * Sets the text of the button
-   * @param {string} text in button, if text is empty, the button will be
-   * hidden.
+   * Sets the HTML of the button
+   * @param {string} text in button in HTML format. If text is empty, the
+   * button will be hidden.
    * @return {void}
    */
   set text(text) {
-    this.textContent = text;
+    this.innerHTML = text;
     if (text) {
       this.style.display = 'inline-block';
     } else {
@@ -89,12 +89,12 @@ ImeUi.prototype = {
     this.appendChild(this.auxiliary_);
 
     var that = this;
-    this.pageUp_ = new Button({'text': ' << '});
+    this.pageUp_ = new Button({'text': ' &laquo; '});
     this.pageUp_.onclick = function() {
       that.pageUp();
     };
 
-    this.pageDown_ = new Button({'text': ' >> '});
+    this.pageDown_ = new Button({'text': ' &raquo; '});
     this.pageDown_.onclick = function() {
       that.pageDown();
     };
