@@ -34,8 +34,6 @@
 
 // Invalidate children for a non-ignored ancestor (including self).
 - (void)childrenChanged;
-// The tabs owned by a tablist.
-- (NSArray*)tabs;
 
 // Children is an array of BrowserAccessibility objects, representing
 // the accessibility children of this object.
