@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1180,7 +1180,8 @@ void AppCacheUpdateJob::OnResponseInfoLoaded(
     const std::string name = "vary";
     std::string value;
     void* iter = NULL;
-    if (http_info->headers->RequiresValidation(http_info->request_time,
+    if (!http_info->headers ||
+        http_info->headers->RequiresValidation(http_info->request_time,
                                                http_info->response_time,
                                                base::Time::Now()) ||
         http_info->headers->EnumerateHeader(&iter, name, &value)) {

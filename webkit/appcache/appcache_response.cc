@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -214,12 +214,16 @@ void AppCacheResponseReader::SetReadRange(int offset, int length) {
 void AppCacheResponseReader::OnIOComplete(int result) {
   if (result >= 0) {
     if (info_buffer_.get()) {
-      // Allocate and deserialize the http info structure.
+      // Deserialize the http info structure.
       Pickle pickle(buffer_->data(), result);
+      scoped_ptr<net::HttpResponseInfo> info(new net::HttpResponseInfo);
       bool response_truncated = false;
-      info_buffer_->http_info.reset(new net::HttpResponseInfo);
-      info_buffer_->http_info->InitFromPickle(pickle, &response_truncated);
+      if (!info->InitFromPickle(pickle, &response_truncated)) {
+        InvokeUserCompletionCallback(net::ERR_FAILED);
+        return;
+      }
       DCHECK(!response_truncated);
+      info_buffer_->http_info.reset(info.release());
 
       // Also return the size of the response body
       DCHECK(entry_);
