@@ -63,28 +63,39 @@ static int PrefixTypeToCanvasType(TextButton::PrefixType type) {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-TextButtonBorder::TextButtonBorder() {
+TextButtonBorder::TextButtonBorder()
+    : vertical_padding_(kPreferredPaddingVertical) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  BorderImageSet normal_set = {
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+  };
+  set_normal_set(normal_set);
 
-  hot_set_.top_left = rb.GetBitmapNamed(IDR_TEXTBUTTON_TOP_LEFT_H);
-  hot_set_.top = rb.GetBitmapNamed(IDR_TEXTBUTTON_TOP_H);
-  hot_set_.top_right = rb.GetBitmapNamed(IDR_TEXTBUTTON_TOP_RIGHT_H);
-  hot_set_.left = rb.GetBitmapNamed(IDR_TEXTBUTTON_LEFT_H);
-  hot_set_.center = rb.GetBitmapNamed(IDR_TEXTBUTTON_CENTER_H);
-  hot_set_.right = rb.GetBitmapNamed(IDR_TEXTBUTTON_RIGHT_H);
-  hot_set_.bottom_left = rb.GetBitmapNamed(IDR_TEXTBUTTON_BOTTOM_LEFT_H);
-  hot_set_.bottom = rb.GetBitmapNamed(IDR_TEXTBUTTON_BOTTOM_H);
-  hot_set_.bottom_right = rb.GetBitmapNamed(IDR_TEXTBUTTON_BOTTOM_RIGHT_H);
+  BorderImageSet hot_set = {
+    rb.GetBitmapNamed(IDR_TEXTBUTTON_TOP_LEFT_H),
+    rb.GetBitmapNamed(IDR_TEXTBUTTON_TOP_H),
+    rb.GetBitmapNamed(IDR_TEXTBUTTON_TOP_RIGHT_H),
+    rb.GetBitmapNamed(IDR_TEXTBUTTON_LEFT_H),
+    rb.GetBitmapNamed(IDR_TEXTBUTTON_CENTER_H),
+    rb.GetBitmapNamed(IDR_TEXTBUTTON_RIGHT_H),
+    rb.GetBitmapNamed(IDR_TEXTBUTTON_BOTTOM_LEFT_H),
+    rb.GetBitmapNamed(IDR_TEXTBUTTON_BOTTOM_H),
+    rb.GetBitmapNamed(IDR_TEXTBUTTON_BOTTOM_RIGHT_H),
+  };
+  set_hot_set(hot_set);
 
-  pushed_set_.top_left = rb.GetBitmapNamed(IDR_TEXTBUTTON_TOP_LEFT_P);
-  pushed_set_.top = rb.GetBitmapNamed(IDR_TEXTBUTTON_TOP_P);
-  pushed_set_.top_right = rb.GetBitmapNamed(IDR_TEXTBUTTON_TOP_RIGHT_P);
-  pushed_set_.left = rb.GetBitmapNamed(IDR_TEXTBUTTON_LEFT_P);
-  pushed_set_.center = rb.GetBitmapNamed(IDR_TEXTBUTTON_CENTER_P);
-  pushed_set_.right = rb.GetBitmapNamed(IDR_TEXTBUTTON_RIGHT_P);
-  pushed_set_.bottom_left = rb.GetBitmapNamed(IDR_TEXTBUTTON_BOTTOM_LEFT_P);
-  pushed_set_.bottom = rb.GetBitmapNamed(IDR_TEXTBUTTON_BOTTOM_P);
-  pushed_set_.bottom_right = rb.GetBitmapNamed(IDR_TEXTBUTTON_BOTTOM_RIGHT_P);
+  BorderImageSet pushed_set = {
+    rb.GetBitmapNamed(IDR_TEXTBUTTON_TOP_LEFT_P),
+    rb.GetBitmapNamed(IDR_TEXTBUTTON_TOP_P),
+    rb.GetBitmapNamed(IDR_TEXTBUTTON_TOP_RIGHT_P),
+    rb.GetBitmapNamed(IDR_TEXTBUTTON_LEFT_P),
+    rb.GetBitmapNamed(IDR_TEXTBUTTON_CENTER_P),
+    rb.GetBitmapNamed(IDR_TEXTBUTTON_RIGHT_P),
+    rb.GetBitmapNamed(IDR_TEXTBUTTON_BOTTOM_LEFT_P),
+    rb.GetBitmapNamed(IDR_TEXTBUTTON_BOTTOM_P),
+    rb.GetBitmapNamed(IDR_TEXTBUTTON_BOTTOM_RIGHT_P),
+  };
+  set_pushed_set(pushed_set);
 }
 
 TextButtonBorder::~TextButtonBorder() {
@@ -97,102 +108,70 @@ TextButtonBorder::~TextButtonBorder() {
 //
 ////////////////////////////////////////////////////////////////////////////////
 void TextButtonBorder::Paint(const View& view, gfx::Canvas* canvas) const {
-  const TextButtonBase* mb = static_cast<const TextButton*>(&view);
-  int state = mb->state();
+  const TextButton* button = static_cast<const TextButton*>(&view);
+  int state = button->state();
 
-  // TextButton takes care of deciding when to call Paint.
-  const MBBImageSet* set = &hot_set_;
-  if (state == TextButton::BS_PUSHED)
-    set = &pushed_set_;
-
-  bool is_animating = mb->GetAnimation()->is_animating();
-  bool show_mult_icons = mb->show_multiple_icon_states();
-  bool do_paint = (show_mult_icons && is_animating) ||
-      (show_mult_icons && (state == TextButton::BS_HOT ||
-                           state == TextButton::BS_PUSHED)) ||
-      (state == TextButton::BS_NORMAL && mb->normal_has_border());
-  if (set && do_paint) {
-    if (is_animating) {
-      canvas->SaveLayerAlpha(
-          static_cast<uint8>(mb->GetAnimation()->CurrentValueBetween(0, 255)));
+  const BorderImageSet* set = &normal_set_;
+  if (button->show_multiple_icon_states() &&
+      ((state == TextButton::BS_HOT) || (state == TextButton::BS_PUSHED)))
+    set = (state == TextButton::BS_HOT) ? &hot_set_ : &pushed_set_;
+  if (set->top_left) {
+    if (button->GetAnimation()->is_animating()) {
+      // TODO(pkasting): Really this should crossfade between states so it could
+      // handle the case of having a non-NULL |normal_set_|.
+      canvas->SaveLayerAlpha(static_cast<uint8>(
+          button->GetAnimation()->CurrentValueBetween(0, 255)));
       canvas->AsCanvasSkia()->drawARGB(0, 255, 255, 255,
                                        SkXfermode::kClear_Mode);
-    }
-
-    Paint(view, canvas, *set);
-
-    if (is_animating)
+      Paint(view, canvas, *set);
       canvas->Restore();
+    } else {
+      Paint(view, canvas, *set);
+    }
   }
 }
 
-void TextButtonBorder::Paint(const View& view, gfx::Canvas* canvas,
-    const MBBImageSet& set) const {
-  gfx::Rect bounds = view.bounds();
+void TextButtonBorder::Paint(const View& view,
+                             gfx::Canvas* canvas,
+                             const BorderImageSet& set) const {
+  DCHECK(set.top_left);
+  int width = view.bounds().width();
+  int height = view.bounds().height();
+  int tl_width = set.top_left->width();
+  int tl_height = set.top_left->height();
+  int t_height = set.top->height();
+  int tr_height = set.top_right->height();
+  int l_width = set.left->width();
+  int r_width = set.right->width();
+  int bl_width = set.bottom_left->width();
+  int bl_height = set.bottom_left->height();
+  int b_height = set.bottom->height();
+  int br_width = set.bottom_right->width();
+  int br_height = set.bottom_right->height();
 
-  // Draw the top left image
   canvas->DrawBitmapInt(*set.top_left, 0, 0);
-
-  // Tile the top image
-  canvas->TileImageInt(
-      *set.top,
-      set.top_left->width(),
-      0,
-      bounds.width() - set.top_right->width() - set.top_left->width(),
-      set.top->height());
-
-  // Draw the top right image
-  canvas->DrawBitmapInt(*set.top_right,
-                        bounds.width() - set.top_right->width(), 0);
-
-  // Tile the left image
-  canvas->TileImageInt(
-      *set.left,
-      0,
-      set.top_left->height(),
-      set.top_left->width(),
-      bounds.height() - set.top->height() - set.bottom_left->height());
-
-  // Tile the center image
-  canvas->TileImageInt(
-      *set.center,
-      set.left->width(),
-      set.top->height(),
-      bounds.width() - set.right->width() - set.left->width(),
-      bounds.height() - set.bottom->height() - set.top->height());
-
-  // Tile the right image
-  canvas->TileImageInt(
-      *set.right,
-      bounds.width() - set.right->width(),
-      set.top_right->height(),
-      bounds.width(),
-      bounds.height() - set.bottom_right->height() -
-          set.top_right->height());
-
-  // Draw the bottom left image
-  canvas->DrawBitmapInt(*set.bottom_left,
-                        0,
-                        bounds.height() - set.bottom_left->height());
-
-  // Tile the bottom image
-  canvas->TileImageInt(
-      *set.bottom,
-      set.bottom_left->width(),
-      bounds.height() - set.bottom->height(),
-      bounds.width() - set.bottom_right->width() -
-          set.bottom_left->width(),
-      set.bottom->height());
-
-  // Draw the bottom right image
-  canvas->DrawBitmapInt(*set.bottom_right,
-                        bounds.width() - set.bottom_right->width(),
-                        bounds.height() -  set.bottom_right->height());
+  canvas->DrawBitmapInt(*set.top, 0, 0, set.top->width(), t_height, tl_width, 0,
+      width - tl_width - set.top_right->width(), t_height, false);
+  canvas->DrawBitmapInt(*set.top_right, width - set.top_right->width(), 0);
+  canvas->DrawBitmapInt(*set.left, 0, 0, l_width, set.left->height(), 0,
+      tl_height, tl_width, height - tl_height - bl_height, false);
+  canvas->DrawBitmapInt(*set.center, 0, 0, set.center->width(),
+      set.center->height(), l_width, t_height, width - l_width - r_width,
+      height - t_height - b_height, false);
+  canvas->DrawBitmapInt(*set.right, 0, 0, r_width, set.right->height(),
+                        width - r_width, tr_height, r_width,
+                        height - tr_height - br_height, false);
+  canvas->DrawBitmapInt(*set.bottom_left, 0, height - bl_height);
+  canvas->DrawBitmapInt(*set.bottom, 0, 0, set.bottom->width(), b_height,
+                        bl_width, height - b_height,
+                        width - bl_width - br_width, b_height, false);
+  canvas->DrawBitmapInt(*set.bottom_right, width - br_width,
+                        height -  br_height);
 }
 
 void TextButtonBorder::GetInsets(gfx::Insets* insets) const {
-  insets->Set(kPreferredPaddingVertical, kPreferredPaddingHorizontal,
-              kPreferredPaddingVertical, kPreferredPaddingHorizontal);
+  insets->Set(vertical_padding_, kPreferredPaddingHorizontal,
+              vertical_padding_, kPreferredPaddingHorizontal);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -267,7 +246,6 @@ TextButtonBase::TextButtonBase(ButtonListener* listener,
       has_shadow_(false),
       shadow_offset_(gfx::Point(1, 1)),
       max_width_(0),
-      normal_has_border_(false),
       show_multiple_icon_states_(true),
       is_default_(false),
       multi_line_(false),
@@ -337,10 +315,6 @@ void TextButtonBase::SetTextShadowOffset(int x, int y) {
 
 void TextButtonBase::ClearMaxTextSize() {
   max_text_size_ = text_size_;
-}
-
-void TextButtonBase::SetNormalHasBorder(bool normal_has_border) {
-  normal_has_border_ = normal_has_border;
 }
 
 void TextButtonBase::SetShowMultipleIconStates(bool show_multiple_icon_states) {

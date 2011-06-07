@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,26 +26,31 @@ class DropDownButtonBorder : public views::TextButtonBorder {
 
 DropDownButtonBorder::DropDownButtonBorder() {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  BorderImageSet hot_set = {
+    rb.GetBitmapNamed(IDR_DROPDOWN_TOP_LEFT_H),
+    rb.GetBitmapNamed(IDR_DROPDOWN_TOP_H),
+    rb.GetBitmapNamed(IDR_DROPDOWN_TOP_RIGHT_H),
+    rb.GetBitmapNamed(IDR_DROPDOWN_LEFT_H),
+    rb.GetBitmapNamed(IDR_DROPDOWN_CENTER_H),
+    rb.GetBitmapNamed(IDR_DROPDOWN_RIGHT_H),
+    rb.GetBitmapNamed(IDR_DROPDOWN_BOTTOM_LEFT_H),
+    rb.GetBitmapNamed(IDR_DROPDOWN_BOTTOM_H),
+    rb.GetBitmapNamed(IDR_DROPDOWN_BOTTOM_RIGHT_H),
+  };
+  set_hot_set(hot_set);
 
-  hot_set_.top_left = rb.GetBitmapNamed(IDR_DROPDOWN_TOP_LEFT_H);
-  hot_set_.top = rb.GetBitmapNamed(IDR_DROPDOWN_TOP_H);
-  hot_set_.top_right = rb.GetBitmapNamed(IDR_DROPDOWN_TOP_RIGHT_H);
-  hot_set_.left = rb.GetBitmapNamed(IDR_DROPDOWN_LEFT_H);
-  hot_set_.center = rb.GetBitmapNamed(IDR_DROPDOWN_CENTER_H);
-  hot_set_.right = rb.GetBitmapNamed(IDR_DROPDOWN_RIGHT_H);
-  hot_set_.bottom_left = rb.GetBitmapNamed(IDR_DROPDOWN_BOTTOM_LEFT_H);
-  hot_set_.bottom = rb.GetBitmapNamed(IDR_DROPDOWN_BOTTOM_H);
-  hot_set_.bottom_right = rb.GetBitmapNamed(IDR_DROPDOWN_BOTTOM_RIGHT_H);
-
-  pushed_set_.top_left = rb.GetBitmapNamed(IDR_DROPDOWN_TOP_LEFT_P);
-  pushed_set_.top = rb.GetBitmapNamed(IDR_DROPDOWN_TOP_P);
-  pushed_set_.top_right = rb.GetBitmapNamed(IDR_DROPDOWN_TOP_RIGHT_P);
-  pushed_set_.left = rb.GetBitmapNamed(IDR_DROPDOWN_LEFT_P);
-  pushed_set_.center = rb.GetBitmapNamed(IDR_DROPDOWN_CENTER_P);
-  pushed_set_.right = rb.GetBitmapNamed(IDR_DROPDOWN_RIGHT_P);
-  pushed_set_.bottom_left = rb.GetBitmapNamed(IDR_DROPDOWN_BOTTOM_LEFT_P);
-  pushed_set_.bottom = rb.GetBitmapNamed(IDR_DROPDOWN_BOTTOM_P);
-  pushed_set_.bottom_right = rb.GetBitmapNamed(IDR_DROPDOWN_BOTTOM_RIGHT_P);
+  BorderImageSet pushed_set = {
+    rb.GetBitmapNamed(IDR_DROPDOWN_TOP_LEFT_P),
+    rb.GetBitmapNamed(IDR_DROPDOWN_TOP_P),
+    rb.GetBitmapNamed(IDR_DROPDOWN_TOP_RIGHT_P),
+    rb.GetBitmapNamed(IDR_DROPDOWN_LEFT_P),
+    rb.GetBitmapNamed(IDR_DROPDOWN_CENTER_P),
+    rb.GetBitmapNamed(IDR_DROPDOWN_RIGHT_P),
+    rb.GetBitmapNamed(IDR_DROPDOWN_BOTTOM_LEFT_P),
+    rb.GetBitmapNamed(IDR_DROPDOWN_BOTTOM_P),
+    rb.GetBitmapNamed(IDR_DROPDOWN_BOTTOM_RIGHT_P),
+  };
+  set_pushed_set(pushed_set);
 }
 
 }  // namespace

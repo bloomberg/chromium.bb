@@ -93,8 +93,8 @@ void AfterTranslateInfoBar::ViewHierarchyChanged(bool is_add,
   label_1_ = CreateLabel(strings[0]);
   AddChildView(label_1_);
 
-  original_language_menu_button_ = CreateMenuButton(string16(), true, this);
-  target_language_menu_button_ = CreateMenuButton(string16(), true, this);
+  original_language_menu_button_ = CreateMenuButton(string16(), this);
+  target_language_menu_button_ = CreateMenuButton(string16(), this);
   AddChildView(swapped_language_buttons_ ?
       target_language_menu_button_ : original_language_menu_button_);
 
@@ -112,7 +112,7 @@ void AfterTranslateInfoBar::ViewHierarchyChanged(bool is_add,
   AddChildView(revert_button_);
 
   options_menu_button_ = CreateMenuButton(
-      l10n_util::GetStringUTF16(IDS_TRANSLATE_INFOBAR_OPTIONS), false, this);
+      l10n_util::GetStringUTF16(IDS_TRANSLATE_INFOBAR_OPTIONS), this);
   AddChildView(options_menu_button_);
 
   // This must happen after adding all other children so InfoBarView can ensure

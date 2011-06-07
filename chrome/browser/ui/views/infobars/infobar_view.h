@@ -54,7 +54,6 @@ class InfoBarView : public InfoBar,
   // Creates a menu button with an infobar-specific appearance.
   static views::MenuButton* CreateMenuButton(
       const string16& text,
-      bool normal_has_border,
       views::ViewMenuDelegate* menu_delegate);
 
   // Creates a text button with an infobar-specific appearance.

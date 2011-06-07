@@ -517,6 +517,7 @@ class View : public AcceleratorTarget {
   // The border object is owned by this object and may be NULL.
   void set_border(Border* b) { border_.reset(b); }
   const Border* border() const { return border_.get(); }
+  Border* border() { return border_.get(); }
 
   // Get the theme provider from the parent widget.
   virtual ui::ThemeProvider* GetThemeProvider() const;

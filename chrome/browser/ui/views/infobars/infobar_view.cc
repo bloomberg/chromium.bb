@@ -96,18 +96,14 @@ views::Link* InfoBarView::CreateLink(const string16& text,
 // static
 views::MenuButton* InfoBarView::CreateMenuButton(
     const string16& text,
-    bool normal_has_border,
     views::ViewMenuDelegate* menu_delegate) {
   views::MenuButton* menu_button =
       new views::MenuButton(NULL, UTF16ToWideHack(text), menu_delegate, true);
   menu_button->set_border(new InfoBarButtonBorder);
+  menu_button->set_animate_on_state_change(false);
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   menu_button->set_menu_marker(
       rb.GetBitmapNamed(IDR_INFOBARBUTTON_MENU_DROPARROW));
-  if (normal_has_border) {
-    menu_button->SetNormalHasBorder(true);
-    menu_button->SetAnimationDuration(0);
-  }
   menu_button->SetEnabledColor(SK_ColorBLACK);
   menu_button->SetHighlightColor(SK_ColorBLACK);
   menu_button->SetHoverColor(SK_ColorBLACK);
@@ -123,8 +119,7 @@ views::TextButton* InfoBarView::CreateTextButton(
   views::TextButton* text_button =
       new views::TextButton(listener, UTF16ToWideHack(text));
   text_button->set_border(new InfoBarButtonBorder);
-  text_button->SetNormalHasBorder(true);
-  text_button->SetAnimationDuration(0);
+  text_button->set_animate_on_state_change(false);
   text_button->SetEnabledColor(SK_ColorBLACK);
   text_button->SetHighlightColor(SK_ColorBLACK);
   text_button->SetHoverColor(SK_ColorBLACK);

@@ -307,7 +307,6 @@ class WrenchMenuView : public ScheduleAllView, public views::ButtonListener {
       *background = bg;
     button->set_border(new MenuButtonBorder());
     button->set_alignment(TextButton::ALIGN_CENTER);
-    button->SetNormalHasBorder(true);
     button->SetFont(views::MenuConfig::instance().font);
     button->ClearMaxTextSize();
     AddChildView(button);

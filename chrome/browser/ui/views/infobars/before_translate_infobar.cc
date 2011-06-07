@@ -101,7 +101,7 @@ void BeforeTranslateInfoBar::ViewHierarchyChanged(bool is_add,
   label_1_ = CreateLabel(text.substr(0, offset));
   AddChildView(label_1_);
 
-  language_menu_button_ = CreateMenuButton(string16(), true, this);
+  language_menu_button_ = CreateMenuButton(string16(), this);
   AddChildView(language_menu_button_);
 
   label_2_ = CreateLabel(text.substr(offset));
@@ -132,7 +132,7 @@ void BeforeTranslateInfoBar::ViewHierarchyChanged(bool is_add,
   }
 
   options_menu_button_ = CreateMenuButton(
-      l10n_util::GetStringUTF16(IDS_TRANSLATE_INFOBAR_OPTIONS), false, this);
+      l10n_util::GetStringUTF16(IDS_TRANSLATE_INFOBAR_OPTIONS), this);
   AddChildView(options_menu_button_);
 
   // This must happen after adding all other children so InfoBarView can ensure

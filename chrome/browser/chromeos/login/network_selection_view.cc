@@ -80,10 +80,11 @@ const SkColor kWelcomeColor = 0xFFCDD3D6;
 // Initializes menu button default properties.
 static void InitMenuButtonProperties(views::MenuButton* menu_button) {
   menu_button->set_focusable(true);
-  menu_button->SetNormalHasBorder(true);
   menu_button->SetEnabledColor(SK_ColorBLACK);
   menu_button->SetHighlightColor(SK_ColorBLACK);
   menu_button->SetHoverColor(SK_ColorBLACK);
+  static_cast<views::TextButtonBorder*>(menu_button->border())->
+      copy_normal_set_to_hot_set();
   menu_button->set_animate_on_state_change(false);
   // Menu is positioned by bottom right corner of the MenuButton.
   menu_button->set_menu_offset(kMenuHorizontalOffset, kMenuVerticalOffset);

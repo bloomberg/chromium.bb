@@ -78,9 +78,8 @@ void ShutdownButton::Init() {
   SetDisabledColor(SK_ColorWHITE);
   SetHighlightColor(SK_ColorWHITE);
   SetHoverColor(SK_ColorWHITE);
-  // Disable throbbing and make border always visible.
-  SetAnimationDuration(0);
-  SetNormalHasBorder(true);
+  static_cast<views::TextButtonBorder*>(border())->copy_normal_set_to_hot_set();
+  set_animate_on_state_change(false);
   // Setup round shapes.
   set_background(
       new HoverBackground(

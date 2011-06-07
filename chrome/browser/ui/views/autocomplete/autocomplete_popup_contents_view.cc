@@ -211,7 +211,6 @@ class AutocompletePopupContentsView::InstantOptInView
     views::TextButton* button =
         new views::TextButton(this, UTF16ToWide(l10n_util::GetStringUTF16(id)));
     button->set_border(new OptInButtonBorder());
-    button->SetNormalHasBorder(true);
     button->set_tag(id);
     button->SetFont(font);
     button->set_animate_on_state_change(false);

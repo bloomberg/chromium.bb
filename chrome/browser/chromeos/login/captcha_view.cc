@@ -201,7 +201,8 @@ void CaptchaView::Init() {
         this, UTF16ToWide(l10n_util::GetStringUTF16(IDS_OK)));
     ok_button_->set_alignment(views::TextButton::ALIGN_CENTER);
     ok_button_->set_focusable(true);
-    ok_button_->SetNormalHasBorder(true);
+    static_cast<views::TextButtonBorder*>(ok_button_->border())->
+        copy_normal_set_to_hot_set();
     ok_button_->set_animate_on_state_change(false);
     ok_button_->SetEnabledColor(SK_ColorBLACK);
     ok_button_->SetHighlightColor(SK_ColorBLACK);
