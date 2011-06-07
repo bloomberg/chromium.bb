@@ -2851,6 +2851,7 @@
         'browser/ui/omnibox/omnibox_view.h',
         'browser/ui/options/options_util.cc',
         'browser/ui/options/options_util.h',
+        'browser/ui/panels/native_panel.h',
         'browser/ui/panels/panel.cc',
         'browser/ui/panels/panel.h',
         'browser/ui/panels/panel_browser_frame_view.cc',
