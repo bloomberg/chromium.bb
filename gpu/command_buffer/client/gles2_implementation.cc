@@ -910,13 +910,24 @@ void GLES2Implementation::ShaderSource(
 
 void GLES2Implementation::BufferData(
     GLenum target, GLsizeiptr size, const void* data, GLenum usage) {
-  // NOTE: Should this be optimized for the case where we can call BufferData
-  //    with the actual data in the case of our transfer buffer being big
-  //    enough?
-  helper_->BufferData(target, size, 0, 0, usage);
-  if (data != NULL) {
-    BufferSubData(target, 0, size, data);
+  GLsizeiptr max_size = transfer_buffer_.GetLargestFreeOrPendingSize();
+  if (size > max_size || !data) {
+    helper_->BufferData(target, size, 0, 0, usage);
+    if (data != NULL) {
+      BufferSubData(target, 0, size, data);
+    }
+    return;
   }
+
+  void* buffer = transfer_buffer_.Alloc(size);
+  memcpy(buffer, data, size);
+  helper_->BufferData(
+      target,
+      size,
+      transfer_buffer_id_,
+      transfer_buffer_.GetOffset(buffer),
+      usage);
+  transfer_buffer_.FreePendingToken(buffer, helper_->InsertToken());
 }
 
 void GLES2Implementation::BufferSubData(
