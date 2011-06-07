@@ -67,8 +67,6 @@
         'gfx/codec/jpeg_codec.h',
         'gfx/codec/png_codec.cc',
         'gfx/codec/png_codec.h',
-        'gfx/color_analysis.cc',
-        'gfx/color_analysis.h',
         'gfx/color_utils.cc',
         'gfx/color_utils.h',
         'gfx/favicon_size.h',

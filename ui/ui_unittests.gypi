@@ -30,7 +30,6 @@
         'gfx/blit_unittest.cc',
         'gfx/codec/jpeg_codec_unittest.cc',
         'gfx/codec/png_codec_unittest.cc',
-        'gfx/color_analysis_unittest.cc',
         'gfx/color_utils_unittest.cc',
         'gfx/font_unittest.cc',
         'gfx/image_mac_unittest.mm',

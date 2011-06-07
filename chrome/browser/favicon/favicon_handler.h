@@ -64,7 +64,7 @@ class TabContents;
 // db knew about the favicon), or requests the renderer to download the
 // favicon.
 //
-// When the renderer downloads the favicon SetFavicon is invoked,
+// When the renderer downloads the favicon SetFaviconImageData is invoked,
 // at which point we update the favicon of the NavigationEntry and notify
 // the database to save the favicon.
 
