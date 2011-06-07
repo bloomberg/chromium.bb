@@ -8,18 +8,19 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace location_bar_util {
 
 std::wstring GetKeywordName(Profile* profile, const std::wstring& keyword) {
 // Make sure the TemplateURL still exists.
-// TODO(sky): Once LocationBarView adds a listener to the TemplateURLModel
+// TODO(sky): Once LocationBarView adds a listener to the TemplateURLService
 // to track changes to the model, this should become a DCHECK.
   const TemplateURL* template_url =
-      profile->GetTemplateURLModel()->GetTemplateURLForKeyword(
-          WideToUTF16Hack(keyword));
+      TemplateURLServiceFactory::GetForProfile(profile)->
+      GetTemplateURLForKeyword(WideToUTF16Hack(keyword));
   if (template_url)
     return UTF16ToWideHack(template_url->AdjustedShortNameForLocaleDirection());
   return std::wstring();

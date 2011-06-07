@@ -14,8 +14,8 @@
 #include "chrome/browser/search_engines/search_host_to_urls_map.h"
 #include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/search_engines/template_url_model.h"
-#include "chrome/browser/search_engines/template_url_model_test_util.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_test_util.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/webdata/web_database.h"
 #include "chrome/common/pref_names.h"
@@ -104,9 +104,9 @@ static TemplateURL* CreatePreloadedTemplateURL() {
   return t_url;
 }
 
-class TemplateURLModelTest : public testing::Test {
+class TemplateURLServiceTest : public testing::Test {
  public:
-  TemplateURLModelTest() {}
+  TemplateURLServiceTest() {}
 
   virtual void SetUp() {
     test_util_.SetUp();
@@ -254,7 +254,7 @@ class TemplateURLModelTest : public testing::Test {
   // happens when a preloaded url that is not the default gets updated.
   void TestLoadUpdatingPreloadedURL(size_t index_offset_from_default);
 
-  // Helper methods to make calling TemplateURLModelTestUtil methods less
+  // Helper methods to make calling TemplateURLServiceTestUtil methods less
   // visually noisy in the test code.
   void VerifyObserverCount(int expected_changed_count) {
     EXPECT_EQ(expected_changed_count, test_util_.GetObserverCount());
@@ -265,7 +265,7 @@ class TemplateURLModelTest : public testing::Test {
     test_util_.ResetObserverCount();
   }
   void BlockTillServiceProcessesRequests() {
-    TemplateURLModelTestUtil::BlockTillServiceProcessesRequests();
+    TemplateURLServiceTestUtil::BlockTillServiceProcessesRequests();
   }
   void VerifyLoad() { test_util_.VerifyLoad(); }
   void ChangeModelToLoadState() { test_util_.ChangeModelToLoadState(); }
@@ -277,13 +277,13 @@ class TemplateURLModelTest : public testing::Test {
     test_util_.SetGoogleBaseURL(base_url);
   }
   WebDataService* GetWebDataService() { return test_util_.GetWebDataService(); }
-  TemplateURLModel* model() { return test_util_.model(); }
+  TemplateURLService* model() { return test_util_.model(); }
   TestingProfile* profile() { return test_util_.profile(); }
 
  protected:
-  TemplateURLModelTestUtil test_util_;
+  TemplateURLServiceTestUtil test_util_;
 
-  DISALLOW_COPY_AND_ASSIGN(TemplateURLModelTest);
+  DISALLOW_COPY_AND_ASSIGN(TemplateURLServiceTest);
 };
 
 void TestGenerateSearchURL::RunTest() {
@@ -309,9 +309,9 @@ void TestGenerateSearchURL::RunTest() {
       t_url.SetURL(generate_url_cases[i].url, 0, 0);
 
     std::string result = search_terms_data_ ?
-        TemplateURLModel::GenerateSearchURLUsingTermsData(
+        TemplateURLService::GenerateSearchURLUsingTermsData(
             &t_url, *search_terms_data_).spec() :
-        TemplateURLModel::GenerateSearchURL(&t_url).spec();
+        TemplateURLService::GenerateSearchURL(&t_url).spec();
     if (strcmp(generate_url_cases[i].expected, result.c_str())) {
       LOG(ERROR) << generate_url_cases[i].test_name << " failed. Expected " <<
           generate_url_cases[i].expected << " Actual " << result;
@@ -322,7 +322,7 @@ void TestGenerateSearchURL::RunTest() {
   passed_ = everything_passed;
 }
 
-TemplateURL* TemplateURLModelTest::CreateReplaceablePreloadedTemplateURL(
+TemplateURL* TemplateURLServiceTest::CreateReplaceablePreloadedTemplateURL(
     size_t index_offset_from_default,
     string16* prepopulated_display_url) {
   TemplateURL* t_url = CreatePreloadedTemplateURL();
@@ -343,7 +343,7 @@ TemplateURL* TemplateURLModelTest::CreateReplaceablePreloadedTemplateURL(
   return t_url;
 }
 
-void TemplateURLModelTest::TestLoadUpdatingPreloadedURL(
+void TemplateURLServiceTest::TestLoadUpdatingPreloadedURL(
     size_t index_offset_from_default) {
   string16 prepopulated_url;
   TemplateURL* t_url = CreateReplaceablePreloadedTemplateURL(
@@ -378,11 +378,11 @@ void TemplateURLModelTest::TestLoadUpdatingPreloadedURL(
   ASSERT_EQ(prepopulated_url, keyword_url->url()->DisplayURL());
 }
 
-TEST_F(TemplateURLModelTest, MAYBE_Load) {
+TEST_F(TemplateURLServiceTest, MAYBE_Load) {
   VerifyLoad();
 }
 
-TEST_F(TemplateURLModelTest, AddUpdateRemove) {
+TEST_F(TemplateURLServiceTest, AddUpdateRemove) {
   // Add a new TemplateURL.
   VerifyLoad();
   const size_t initial_count = model()->GetTemplateURLs().size();
@@ -443,37 +443,37 @@ TEST_F(TemplateURLModelTest, AddUpdateRemove) {
   EXPECT_TRUE(model()->GetTemplateURLForKeyword(ASCIIToUTF16("b")) == NULL);
 }
 
-TEST_F(TemplateURLModelTest, GenerateKeyword) {
-  ASSERT_EQ(string16(), TemplateURLModel::GenerateKeyword(GURL(), true));
+TEST_F(TemplateURLServiceTest, GenerateKeyword) {
+  ASSERT_EQ(string16(), TemplateURLService::GenerateKeyword(GURL(), true));
   // Shouldn't generate keywords for https.
   ASSERT_EQ(string16(),
-            TemplateURLModel::GenerateKeyword(GURL("https://blah"), true));
+            TemplateURLService::GenerateKeyword(GURL("https://blah"), true));
   ASSERT_EQ(ASCIIToUTF16("foo"),
-            TemplateURLModel::GenerateKeyword(GURL("http://foo"), true));
+            TemplateURLService::GenerateKeyword(GURL("http://foo"), true));
   // www. should be stripped.
   ASSERT_EQ(ASCIIToUTF16("foo"),
-            TemplateURLModel::GenerateKeyword(GURL("http://www.foo"), true));
+            TemplateURLService::GenerateKeyword(GURL("http://www.foo"), true));
   // Shouldn't generate keywords with paths, if autodetected.
   ASSERT_EQ(string16(),
-            TemplateURLModel::GenerateKeyword(GURL("http://blah/foo"), true));
+            TemplateURLService::GenerateKeyword(GURL("http://blah/foo"), true));
   ASSERT_EQ(ASCIIToUTF16("blah"),
-            TemplateURLModel::GenerateKeyword(GURL("http://blah/foo"), false));
+            TemplateURLService::GenerateKeyword(GURL("http://blah/foo"), false));
   // FTP shouldn't generate a keyword.
   ASSERT_EQ(string16(),
-            TemplateURLModel::GenerateKeyword(GURL("ftp://blah/"), true));
+            TemplateURLService::GenerateKeyword(GURL("ftp://blah/"), true));
   // Make sure we don't get a trailing /
   ASSERT_EQ(ASCIIToUTF16("blah"),
-            TemplateURLModel::GenerateKeyword(GURL("http://blah/"), true));
+            TemplateURLService::GenerateKeyword(GURL("http://blah/"), true));
 }
 
-TEST_F(TemplateURLModelTest, GenerateSearchURL) {
+TEST_F(TemplateURLServiceTest, GenerateSearchURL) {
   scoped_refptr<TestGenerateSearchURL> test_generate_search_url(
       new TestGenerateSearchURL(NULL));
   test_generate_search_url->RunTest();
   EXPECT_TRUE(test_generate_search_url->passed());
 }
 
-TEST_F(TemplateURLModelTest, GenerateSearchURLUsingTermsData) {
+TEST_F(TemplateURLServiceTest, GenerateSearchURLUsingTermsData) {
   // Run the test for GenerateSearchURLUsingTermsData on the "IO" thread and
   // wait for it to finish.
   TestSearchTermsData search_terms_data("http://google.com/");
@@ -485,11 +485,11 @@ TEST_F(TemplateURLModelTest, GenerateSearchURLUsingTermsData) {
           FROM_HERE,
           NewRunnableMethod(test_generate_search_url.get(),
                             &TestGenerateSearchURL::RunTest));
-  TemplateURLModelTestUtil::BlockTillIOThreadProcessesRequests();
+  TemplateURLServiceTestUtil::BlockTillIOThreadProcessesRequests();
   EXPECT_TRUE(test_generate_search_url->passed());
 }
 
-TEST_F(TemplateURLModelTest, ClearBrowsingData_Keywords) {
+TEST_F(TemplateURLServiceTest, ClearBrowsingData_Keywords) {
   Time now = Time::Now();
   TimeDelta one_day = TimeDelta::FromDays(1);
   Time month_ago = now - TimeDelta::FromDays(30);
@@ -549,7 +549,7 @@ TEST_F(TemplateURLModelTest, ClearBrowsingData_Keywords) {
   EXPECT_EQ(2U, model()->GetTemplateURLs().size());
 }
 
-TEST_F(TemplateURLModelTest, Reset) {
+TEST_F(TemplateURLServiceTest, Reset) {
   // Add a new TemplateURL.
   VerifyLoad();
   const size_t initial_count = model()->GetTemplateURLs().size();
@@ -590,7 +590,7 @@ TEST_F(TemplateURLModelTest, Reset) {
   AssertEquals(last_url, *read_url);
 }
 
-TEST_F(TemplateURLModelTest, DefaultSearchProvider) {
+TEST_F(TemplateURLServiceTest, DefaultSearchProvider) {
   // Add a new TemplateURL.
   VerifyLoad();
   const size_t initial_count = model()->GetTemplateURLs().size();
@@ -621,7 +621,7 @@ TEST_F(TemplateURLModelTest, DefaultSearchProvider) {
   AssertEquals(cloned_url, *model()->GetDefaultSearchProvider());
 }
 
-TEST_F(TemplateURLModelTest, TemplateURLWithNoKeyword) {
+TEST_F(TemplateURLServiceTest, TemplateURLWithNoKeyword) {
   VerifyLoad();
 
   const size_t initial_count = model()->GetTemplateURLs().size();
@@ -647,7 +647,7 @@ TEST_F(TemplateURLModelTest, TemplateURLWithNoKeyword) {
   ASSERT_TRUE(found_keyword);
 }
 
-TEST_F(TemplateURLModelTest, CantReplaceWithSameKeyword) {
+TEST_F(TemplateURLServiceTest, CantReplaceWithSameKeyword) {
   ChangeModelToLoadState();
   ASSERT_TRUE(model()->CanReplaceKeyword(ASCIIToUTF16("foo"), GURL(), NULL));
   TemplateURL* t_url = AddKeywordWithDate("foo", false, "http://foo1",
@@ -666,7 +666,7 @@ TEST_F(TemplateURLModelTest, CantReplaceWithSameKeyword) {
                                           GURL("http://foo2"), NULL));
 }
 
-TEST_F(TemplateURLModelTest, CantReplaceWithSameHosts) {
+TEST_F(TemplateURLServiceTest, CantReplaceWithSameHosts) {
   ChangeModelToLoadState();
   ASSERT_TRUE(model()->CanReplaceKeyword(ASCIIToUTF16("foo"),
                                          GURL("http://foo.com"), NULL));
@@ -686,7 +686,7 @@ TEST_F(TemplateURLModelTest, CantReplaceWithSameHosts) {
                                           GURL("http://foo.com"), NULL));
 }
 
-TEST_F(TemplateURLModelTest, HasDefaultSearchProvider) {
+TEST_F(TemplateURLServiceTest, HasDefaultSearchProvider) {
   // We should have a default search provider even if we haven't loaded.
   ASSERT_TRUE(model()->GetDefaultSearchProvider());
 
@@ -696,7 +696,7 @@ TEST_F(TemplateURLModelTest, HasDefaultSearchProvider) {
   ASSERT_TRUE(model()->GetDefaultSearchProvider());
 }
 
-TEST_F(TemplateURLModelTest, DefaultSearchProviderLoadedFromPrefs) {
+TEST_F(TemplateURLServiceTest, DefaultSearchProviderLoadedFromPrefs) {
   VerifyLoad();
 
   TemplateURL* template_url = new TemplateURL();
@@ -744,7 +744,7 @@ TEST_F(TemplateURLModelTest, DefaultSearchProviderLoadedFromPrefs) {
                *model()->GetDefaultSearchProvider());
 }
 
-TEST_F(TemplateURLModelTest, BuildQueryTerms) {
+TEST_F(TemplateURLServiceTest, BuildQueryTerms) {
   struct TestData {
     const std::string url;
     const bool result;
@@ -770,9 +770,9 @@ TEST_F(TemplateURLModelTest, BuildQueryTerms) {
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(data); ++i) {
-    TemplateURLModel::QueryTerms terms;
+    TemplateURLService::QueryTerms terms;
     ASSERT_EQ(data[i].result,
-              TemplateURLModel::BuildQueryTerms(GURL(data[i].url), &terms));
+              TemplateURLService::BuildQueryTerms(GURL(data[i].url), &terms));
     if (data[i].result) {
       std::vector<std::string> keys;
       std::vector<std::string> values;
@@ -781,7 +781,7 @@ TEST_F(TemplateURLModelTest, BuildQueryTerms) {
       ASSERT_TRUE(keys.size() == values.size());
       ASSERT_EQ(keys.size(), terms.size());
       for (size_t j = 0; j < keys.size(); ++j) {
-        TemplateURLModel::QueryTerms::iterator term_iterator =
+        TemplateURLService::QueryTerms::iterator term_iterator =
             terms.find(keys[j]);
         ASSERT_TRUE(term_iterator != terms.end());
         ASSERT_EQ(values[j], term_iterator->second);
@@ -790,7 +790,7 @@ TEST_F(TemplateURLModelTest, BuildQueryTerms) {
   }
 }
 
-TEST_F(TemplateURLModelTest, UpdateKeywordSearchTermsForURL) {
+TEST_F(TemplateURLServiceTest, UpdateKeywordSearchTermsForURL) {
   struct TestData {
     const std::string url;
     const string16 term;
@@ -817,7 +817,7 @@ TEST_F(TemplateURLModelTest, UpdateKeywordSearchTermsForURL) {
   }
 }
 
-TEST_F(TemplateURLModelTest, DontUpdateKeywordSearchForNonReplaceable) {
+TEST_F(TemplateURLServiceTest, DontUpdateKeywordSearchForNonReplaceable) {
   struct TestData {
     const std::string url;
   } data[] = {
@@ -839,7 +839,7 @@ TEST_F(TemplateURLModelTest, DontUpdateKeywordSearchForNonReplaceable) {
   }
 }
 
-TEST_F(TemplateURLModelTest, ChangeGoogleBaseValue) {
+TEST_F(TemplateURLServiceTest, ChangeGoogleBaseValue) {
   // NOTE: Do not do a VerifyLoad() here as it will load the prepopulate data,
   // which also has a {google:baseURL} keyword in it, which will confuse this
   // test.
@@ -884,9 +884,9 @@ struct QueryHistoryCallbackImpl {
   history::VisitVector visits;
 };
 
-// Make sure TemplateURLModel generates a KEYWORD_GENERATED visit for
+// Make sure TemplateURLService generates a KEYWORD_GENERATED visit for
 // KEYWORD visits.
-TEST_F(TemplateURLModelTest, GenerateVisitOnKeyword) {
+TEST_F(TemplateURLServiceTest, GenerateVisitOnKeyword) {
   VerifyLoad();
   profile()->CreateHistoryService(true, false);
 
@@ -927,7 +927,7 @@ TEST_F(TemplateURLModelTest, GenerateVisitOnKeyword) {
 
 // Make sure that the load routine deletes prepopulated engines that no longer
 // exist in the prepopulate data.
-TEST_F(TemplateURLModelTest, LoadDeletesUnusedProvider) {
+TEST_F(TemplateURLServiceTest, LoadDeletesUnusedProvider) {
   // Create a preloaded template url. Add it to a loaded model and wait for the
   // saves to finish.
   TemplateURL* t_url = CreatePreloadedTemplateURL();
@@ -954,7 +954,7 @@ TEST_F(TemplateURLModelTest, LoadDeletesUnusedProvider) {
 
 // Make sure that load routine doesn't delete prepopulated engines that no
 // longer exist in the prepopulate data if it has been modified by the user.
-TEST_F(TemplateURLModelTest, LoadRetainsModifiedProvider) {
+TEST_F(TemplateURLServiceTest, LoadRetainsModifiedProvider) {
   // Create a preloaded template url and add it to a loaded model.
   TemplateURL* t_url = CreatePreloadedTemplateURL();
   t_url->set_safe_for_autoreplace(false);
@@ -987,7 +987,7 @@ TEST_F(TemplateURLModelTest, LoadRetainsModifiedProvider) {
 // Make sure that load routine doesn't delete
 // prepopulated engines that no longer exist in the prepopulate data if
 // it has been modified by the user.
-TEST_F(TemplateURLModelTest, LoadSavesPrepopulatedDefaultSearchProvider) {
+TEST_F(TemplateURLServiceTest, LoadSavesPrepopulatedDefaultSearchProvider) {
   VerifyLoad();
   // Verify that the default search provider is set to something.
   ASSERT_TRUE(model()->GetDefaultSearchProvider() != NULL);
@@ -1006,7 +1006,7 @@ TEST_F(TemplateURLModelTest, LoadSavesPrepopulatedDefaultSearchProvider) {
 // Make sure that the load routine doesn't delete
 // prepopulated engines that no longer exist in the prepopulate data if
 // it is the default search provider.
-TEST_F(TemplateURLModelTest, LoadRetainsDefaultProvider) {
+TEST_F(TemplateURLServiceTest, LoadRetainsDefaultProvider) {
   // Set the default search provider to a preloaded template url which
   // is not in the current set of preloaded template urls and save
   // the result.
@@ -1049,20 +1049,20 @@ TEST_F(TemplateURLModelTest, LoadRetainsDefaultProvider) {
 
 // Make sure that the load routine updates the url of a preexisting
 // default search engine provider and that the result is saved correctly.
-TEST_F(TemplateURLModelTest, LoadUpdatesDefaultSearchURL) {
+TEST_F(TemplateURLServiceTest, LoadUpdatesDefaultSearchURL) {
   TestLoadUpdatingPreloadedURL(0);
 }
 
 // Make sure that the load routine updates the url of a preexisting
 // non-default search engine provider and that the result is saved correctly.
-TEST_F(TemplateURLModelTest, LoadUpdatesSearchURL) {
+TEST_F(TemplateURLServiceTest, LoadUpdatesSearchURL) {
   TestLoadUpdatingPreloadedURL(1);
 }
 
 // Make sure that the load does update of auto-keywords correctly.
 // This test basically verifies that no asserts or crashes occur
 // during this operation.
-TEST_F(TemplateURLModelTest, LoadDoesAutoKeywordUpdate) {
+TEST_F(TemplateURLServiceTest, LoadDoesAutoKeywordUpdate) {
   string16 prepopulated_url;
   TemplateURL* t_url = CreateReplaceablePreloadedTemplateURL(
       0, &prepopulated_url);
@@ -1084,7 +1084,7 @@ TEST_F(TemplateURLModelTest, LoadDoesAutoKeywordUpdate) {
 
 // Simulates failing to load the webdb and makes sure the default search
 // provider is valid.
-TEST_F(TemplateURLModelTest, FailedInit) {
+TEST_F(TemplateURLServiceTest, FailedInit) {
   VerifyLoad();
 
   test_util_.ClearModel();
@@ -1101,7 +1101,7 @@ TEST_F(TemplateURLModelTest, FailedInit) {
 // Verifies that if the default search URL preference is managed, we report
 // the default search as managed.  Also check that we are getting the right
 // values.
-TEST_F(TemplateURLModelTest, TestManagedDefaultSearch) {
+TEST_F(TemplateURLServiceTest, TestManagedDefaultSearch) {
   VerifyLoad();
   const size_t initial_count = model()->GetTemplateURLs().size();
   test_util_.ResetObserverCount();

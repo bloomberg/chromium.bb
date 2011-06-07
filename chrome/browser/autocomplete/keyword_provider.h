@@ -6,7 +6,7 @@
 // is responsible for remembering/suggesting user "search keyword queries"
 // (e.g.  "imdb Godzilla") and then fixing them up into valid URLs.  An
 // instance of it gets created and managed by the autocomplete controller.
-// KeywordProvider uses a TemplateURLModel to find the set of keywords.
+// KeywordProvider uses a TemplateURLService to find the set of keywords.
 //
 // For more information on the autocomplete system in general, including how
 // the autocomplete controller and autocomplete providers work, see
@@ -24,7 +24,7 @@
 
 class Profile;
 class TemplateURL;
-class TemplateURLModel;
+class TemplateURLService;
 
 // Autocomplete provider for keyword input.
 //
@@ -53,7 +53,7 @@ class KeywordProvider : public AutocompleteProvider,
  public:
   KeywordProvider(ACProviderListener* listener, Profile* profile);
   // For testing.
-  KeywordProvider(ACProviderListener* listener, TemplateURLModel* model);
+  KeywordProvider(ACProviderListener* listener, TemplateURLService* model);
 
   // Returns the replacement string from the user input. The replacement
   // string is the portion of the input that does not contain the keyword.
@@ -85,7 +85,7 @@ class KeywordProvider : public AutocompleteProvider,
   // after the keyword are placed in |remaining_input|. Returns true if |input|
   // is valid and has a keyword. This makes use of SplitKeywordFromInput to
   // extract the keyword and remaining string, and uses
-  // TemplateURLModel::CleanUserInputKeyword to remove unnecessary characters.
+  // TemplateURLService::CleanUserInputKeyword to remove unnecessary characters.
   // In general use this instead of SplitKeywordFromInput.
   // Leading whitespace in |*remaining_input| will be trimmed.
   static bool ExtractKeywordFromInput(const AutocompleteInput& input,
@@ -122,7 +122,7 @@ class KeywordProvider : public AutocompleteProvider,
   // Creates a fully marked-up AutocompleteMatch from the user's input.
   // If |relevance| is negative, calculate a relevance based on heuristics.
   AutocompleteMatch CreateAutocompleteMatch(
-      TemplateURLModel* model,
+      TemplateURLService* model,
       const string16& keyword,
       const AutocompleteInput& input,
       size_t prefix_length,
@@ -138,8 +138,8 @@ class KeywordProvider : public AutocompleteProvider,
                        const NotificationDetails& details);
 
   // Model for the keywords.  This is only non-null when testing, otherwise the
-  // TemplateURLModel from the Profile is used.
-  TemplateURLModel* model_;
+  // TemplateURLService from the Profile is used.
+  TemplateURLService* model_;
 
   // Identifies the current input state. This is incremented each time the
   // autocomplete edit's input changes in any way. It is used to tell whether

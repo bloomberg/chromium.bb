@@ -13,7 +13,7 @@
 class Profile;
 class SearchEngineDialogControllerBridge;
 class TemplateURL;
-class TemplateURLModel;
+class TemplateURLService;
 
 // Class that acts as a controller for the search engine choice dialog.
 @interface SearchEngineDialogController : NSWindowController {
@@ -25,7 +25,7 @@ class TemplateURLModel;
   bool randomize_;
 
   // Owned by the profile_.
-  TemplateURLModel* searchEnginesModel_;
+  TemplateURLService* searchEnginesModel_;
 
   // Bridge to the C++ world.
   scoped_refptr<SearchEngineDialogControllerBridge> bridge_;

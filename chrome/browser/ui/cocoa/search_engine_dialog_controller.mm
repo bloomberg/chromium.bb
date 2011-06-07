@@ -11,8 +11,9 @@
 #include "base/time.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/search_engines/template_url_model.h"
-#include "chrome/browser/search_engines/template_url_model_observer.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/search_engines/template_url_service_observer.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
@@ -33,7 +34,7 @@ const int kLogoLabelWidth = 170;
 const int kLogoLabelHeight = 25;
 
 @interface SearchEngineDialogController (Private)
-- (void)onTemplateURLModelChanged;
+- (void)onTemplateURLServiceChanged;
 - (void)buildSearchEngineView;
 - (NSView*)viewForSearchEngine:(const TemplateURL*)engine
                        atIndex:(size_t)index;
@@ -42,12 +43,12 @@ const int kLogoLabelHeight = 25;
 
 class SearchEngineDialogControllerBridge :
     public base::RefCounted<SearchEngineDialogControllerBridge>,
-    public TemplateURLModelObserver {
+    public TemplateURLServiceObserver {
  public:
   SearchEngineDialogControllerBridge(SearchEngineDialogController* controller);
 
-  // TemplateURLModelObserver
-  virtual void OnTemplateURLModelChanged();
+  // TemplateURLServiceObserver
+  virtual void OnTemplateURLServiceChanged();
 
  private:
   SearchEngineDialogController* controller_;
@@ -57,8 +58,8 @@ SearchEngineDialogControllerBridge::SearchEngineDialogControllerBridge(
     SearchEngineDialogController* controller) : controller_(controller) {
 }
 
-void SearchEngineDialogControllerBridge::OnTemplateURLModelChanged() {
-  [controller_ onTemplateURLModelChanged];
+void SearchEngineDialogControllerBridge::OnTemplateURLServiceChanged() {
+  [controller_ onTemplateURLServiceChanged];
   MessageLoop::current()->QuitNow();
 }
 
@@ -83,7 +84,7 @@ void SearchEngineDialogControllerBridge::OnTemplateURLModelChanged() {
 }
 
 - (IBAction)showWindow:(id)sender {
-  searchEnginesModel_ = profile_->GetTemplateURLModel();
+  searchEnginesModel_ = TemplateURLServiceFactory::GetForProfile(profile_);
   searchEnginesModel_->AddObserver(bridge_.get());
 
   if (searchEnginesModel_->loaded()) {
@@ -91,14 +92,14 @@ void SearchEngineDialogControllerBridge::OnTemplateURLModelChanged() {
         FROM_HERE,
         NewRunnableMethod(
             bridge_.get(),
-            &SearchEngineDialogControllerBridge::OnTemplateURLModelChanged));
+            &SearchEngineDialogControllerBridge::OnTemplateURLServiceChanged));
   } else {
     searchEnginesModel_->Load();
   }
   MessageLoop::current()->Run();
 }
 
-- (void)onTemplateURLModelChanged {
+- (void)onTemplateURLServiceChanged {
   searchEnginesModel_->RemoveObserver(bridge_.get());
 
   // Add the search engines in the search_engines_model_ to the buttons list.

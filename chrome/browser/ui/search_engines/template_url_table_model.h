@@ -11,13 +11,13 @@
 
 #include "base/compiler_specific.h"
 #include "base/string16.h"
-#include "chrome/browser/search_engines/template_url_model_observer.h"
+#include "chrome/browser/search_engines/template_url_service_observer.h"
 #include "ui/base/models/table_model.h"
 
 class ModelEntry;
 class SkBitmap;
 class TemplateURL;
-class TemplateURLModel;
+class TemplateURLService;
 
 // TemplateURLTableModel is the TableModel implementation used by
 // KeywordEditorView to show the keywords in a TableView.
@@ -31,14 +31,15 @@ class TemplateURLModel;
 // appear first (grouped together) and are followed by generated keywords.
 
 class TemplateURLTableModel : public ui::TableModel,
-                                     TemplateURLModelObserver {
+                                     TemplateURLServiceObserver {
  public:
-  explicit TemplateURLTableModel(TemplateURLModel* template_url_model);
+  explicit TemplateURLTableModel(TemplateURLService* template_url_service);
 
   virtual ~TemplateURLTableModel();
 
-  // Reloads the entries from the TemplateURLModel. This should ONLY be invoked
-  // if the TemplateURLModel wasn't initially loaded and has been loaded.
+  // Reloads the entries from the TemplateURLService. This should ONLY be
+  // invoked if the TemplateURLService wasn't initially loaded and has been
+  // loaded.
   void Reload();
 
   // ui::TableModel overrides.
@@ -84,7 +85,9 @@ class TemplateURLTableModel : public ui::TableModel,
   // If there is an observer, it's notified the selected row has changed.
   void NotifyChanged(int index);
 
-  TemplateURLModel* template_url_model() const { return template_url_model_; }
+  TemplateURLService* template_url_service() const {
+    return template_url_service_;
+  }
 
   // Returns the index of the last entry shown in the search engines group.
   int last_search_engine_index() const { return last_search_engine_index_; }
@@ -95,8 +98,8 @@ class TemplateURLTableModel : public ui::TableModel,
   // Notification that a model entry has fetched its icon.
   void FaviconAvailable(ModelEntry* entry);
 
-  // TemplateURLModelObserver notification.
-  virtual void OnTemplateURLModelChanged();
+  // TemplateURLServiceObserver notification.
+  virtual void OnTemplateURLServiceChanged();
 
   ui::TableModelObserver* observer_;
 
@@ -104,7 +107,7 @@ class TemplateURLTableModel : public ui::TableModel,
   std::vector<ModelEntry*> entries_;
 
   // The model we're displaying entries from.
-  TemplateURLModel* template_url_model_;
+  TemplateURLService* template_url_service_;
 
   // Index of the last search engine in entries_. This is used to determine the
   // group boundaries.

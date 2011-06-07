@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_MODEL_H_
-#define CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_MODEL_H_
+#ifndef CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_SERVICE_H_
+#define CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_SERVICE_H_
 #pragma once
 
 #include <map>
@@ -14,6 +14,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/search_engines/search_host_to_urls_map.h"
 #include "chrome/browser/search_engines/template_url_id.h"
 #include "chrome/browser/webdata/web_data_service.h"
@@ -27,36 +28,37 @@ class Profile;
 class PrefSetObserver;
 class SearchHostToURLsMap;
 class SearchTermsData;
-class TemplateURLModelObserver;
+class TemplateURLServiceObserver;
 class TemplateURLRef;
 
 namespace history {
 struct URLVisitedDetails;
 }
 
-// TemplateURLModel is the backend for keywords. It's used by
+// TemplateURLService is the backend for keywords. It's used by
 // KeywordAutocomplete.
 //
-// TemplateURLModel stores a vector of TemplateURLs. The TemplateURLs are
+// TemplateURLService stores a vector of TemplateURLs. The TemplateURLs are
 // persisted to the database maintained by WebDataService. *ALL* mutations
-// to the TemplateURLs must funnel through TemplateURLModel. This allows
-// TemplateURLModel to notify listeners of changes as well as keep the
+// to the TemplateURLs must funnel through TemplateURLService. This allows
+// TemplateURLService to notify listeners of changes as well as keep the
 // database in sync.
 //
-// There is a TemplateURLModel per Profile.
+// There is a TemplateURLService per Profile.
 //
-// TemplateURLModel does not load the vector of TemplateURLs in its
+// TemplateURLService does not load the vector of TemplateURLs in its
 // constructor (except for testing). Use the Load method to trigger a load.
-// When TemplateURLModel has completed loading, observers are notified via
-// OnTemplateURLModelChanged as well as the TEMPLATE_URL_MODEL_LOADED
+// When TemplateURLService has completed loading, observers are notified via
+// OnTemplateURLServiceChanged as well as the TEMPLATE_URL_SERVICE_LOADED
 // notification message.
 //
-// TemplateURLModel takes ownership of any TemplateURL passed to it. If there
+// TemplateURLService takes ownership of any TemplateURL passed to it. If there
 // is a WebDataService, deletion is handled by WebDataService, otherwise
-// TemplateURLModel handles deletion.
+// TemplateURLService handles deletion.
 
-class TemplateURLModel : public WebDataServiceConsumer,
-                         public NotificationObserver {
+class TemplateURLService : public WebDataServiceConsumer,
+                           public ProfileKeyedService,
+                           public NotificationObserver {
  public:
   typedef std::map<std::string, std::string> QueryTerms;
   typedef std::vector<const TemplateURL*> TemplateURLVector;
@@ -69,10 +71,10 @@ class TemplateURLModel : public WebDataServiceConsumer,
     const char* const content;
   };
 
-  explicit TemplateURLModel(Profile* profile);
+  explicit TemplateURLService(Profile* profile);
   // The following is for testing.
-  TemplateURLModel(const Initializer* initializers, const int count);
-  virtual ~TemplateURLModel();
+  TemplateURLService(const Initializer* initializers, const int count);
+  virtual ~TemplateURLService();
 
   // Generates a suitable keyword for the specified url.  Returns an empty
   // string if a keyword couldn't be generated.  If |autodetected| is true, we
@@ -124,7 +126,7 @@ class TemplateURLModel : public WebDataServiceConsumer,
   // or NULL if there are no such TemplateURLs
   const TemplateURL* GetTemplateURLForHost(const std::string& host) const;
 
-  // Adds a new TemplateURL to this model. TemplateURLModel will own the
+  // Adds a new TemplateURL to this model. TemplateURLService will own the
   // reference, and delete it when the TemplateURL is removed.
   void Add(TemplateURL* template_url);
 
@@ -157,7 +159,7 @@ class TemplateURLModel : public WebDataServiceConsumer,
       const Extension* extension) const;
 
   // Returns the set of URLs describing the keywords. The elements are owned
-  // by TemplateURLModel and should not be deleted.
+  // by TemplateURLService and should not be deleted.
   TemplateURLVector GetTemplateURLs() const;
 
   // Increment the usage count of a keyword.
@@ -179,7 +181,7 @@ class TemplateURLModel : public WebDataServiceConsumer,
   // invoking this method in that situation.
   void SetDefaultSearchProvider(const TemplateURL* url);
 
-  // Returns the default search provider. If the TemplateURLModel hasn't been
+  // Returns the default search provider. If the TemplateURLService hasn't been
   // loaded, the default search provider is pulled from preferences.
   //
   // NOTE: At least in unittest mode, this may return NULL.
@@ -189,14 +191,14 @@ class TemplateURLModel : public WebDataServiceConsumer,
   bool is_default_search_managed() const { return is_default_search_managed_; }
 
   // Observers used to listen for changes to the model.
-  // TemplateURLModel does NOT delete the observers when deleted.
-  void AddObserver(TemplateURLModelObserver* observer);
-  void RemoveObserver(TemplateURLModelObserver* observer);
+  // TemplateURLService does NOT delete the observers when deleted.
+  void AddObserver(TemplateURLServiceObserver* observer);
+  void RemoveObserver(TemplateURLServiceObserver* observer);
 
   // Loads the keywords. This has no effect if the keywords have already been
   // loaded.
   // Observers are notified when loading completes via the method
-  // OnTemplateURLModelChanged.
+  // OnTemplateURLServiceChanged.
   void Load();
 
   // Whether or not the keywords have been loaded.
@@ -214,7 +216,7 @@ class TemplateURLModel : public WebDataServiceConsumer,
   string16 GetKeywordShortName(const string16& keyword,
                                bool* is_extension_keyword);
 
-  // NotificationObserver method. TemplateURLModel listens for three
+  // NotificationObserver method. TemplateURLService listens for three
   // notification types:
   // . NOTIFY_HISTORY_URL_VISITED: adds keyword search terms if the visit
   //   corresponds to a keyword.
@@ -248,15 +250,15 @@ class TemplateURLModel : public WebDataServiceConsumer,
                                            const string16& term);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(TemplateURLModelTest, BuildQueryTerms);
-  FRIEND_TEST_ALL_PREFIXES(TemplateURLModelTest, TestManagedDefaultSearch);
-  FRIEND_TEST_ALL_PREFIXES(TemplateURLModelTest,
+  FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceTest, BuildQueryTerms);
+  FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceTest, TestManagedDefaultSearch);
+  FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceTest,
                            UpdateKeywordSearchTermsForURL);
-  FRIEND_TEST_ALL_PREFIXES(TemplateURLModelTest,
+  FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceTest,
                            DontUpdateKeywordSearchForNonReplaceable);
-  FRIEND_TEST_ALL_PREFIXES(TemplateURLModelTest, ChangeGoogleBaseValue);
-  FRIEND_TEST_ALL_PREFIXES(TemplateURLModelTest, MergeDeletesUnusedProviders);
-  friend class TemplateURLModelTestUtil;
+  FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceTest, ChangeGoogleBaseValue);
+  FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceTest, MergeDeletesUnusedProviders);
+  friend class TemplateURLServiceTestUtil;
 
   typedef std::map<string16, const TemplateURL*> KeywordToTemplateMap;
 
@@ -282,7 +284,7 @@ class TemplateURLModel : public WebDataServiceConsumer,
   // Transitions to the loaded state.
   void ChangeToLoadedState();
 
-  // If there is a notification service, sends TEMPLATE_URL_MODEL_LOADED
+  // If there is a notification service, sends TEMPLATE_URL_SERVICE_LOADED
   // notification.
   void NotifyLoaded();
 
@@ -356,7 +358,7 @@ class TemplateURLModel : public WebDataServiceConsumer,
   // Caller is responsible for notifying observers.
   void SetDefaultSearchProviderNoNotify(const TemplateURL* url);
 
-  // Adds a new TemplateURL to this model. TemplateURLModel will own the
+  // Adds a new TemplateURL to this model. TemplateURLService will own the
   // reference, and delete it when the TemplateURL is removed.
   // Caller is responsible for notifying observers.
   void AddNoNotify(TemplateURL* template_url);
@@ -386,7 +388,7 @@ class TemplateURLModel : public WebDataServiceConsumer,
 
   TemplateURLVector template_urls_;
 
-  ObserverList<TemplateURLModelObserver> model_observers_;
+  ObserverList<TemplateURLServiceObserver> model_observers_;
 
   // Maps from host to set of TemplateURLs whose search url host is host.
   SearchHostToURLsMap provider_map_;
@@ -438,7 +440,7 @@ class TemplateURLModel : public WebDataServiceConsumer,
   // List of extension IDs waiting for Load to have keywords registered.
   std::vector<std::string> pending_extension_ids_;
 
-  DISALLOW_COPY_AND_ASSIGN(TemplateURLModel);
+  DISALLOW_COPY_AND_ASSIGN(TemplateURLService);
 };
 
-#endif  // CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_MODEL_H_
+#endif  // CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_SERVICE_H_

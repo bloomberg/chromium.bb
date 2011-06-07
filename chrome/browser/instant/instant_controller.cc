@@ -17,7 +17,8 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_switches.h"
@@ -365,7 +366,8 @@ void InstantController::OnAutocompleteGotFocus(
   if (is_active_)
     return;
 
-  TemplateURLModel* model = tab_contents->profile()->GetTemplateURLModel();
+  TemplateURLService* model = TemplateURLServiceFactory::GetForProfile(
+      tab_contents->profile());
   if (!model)
     return;
 
@@ -728,7 +730,8 @@ const TemplateURL* InstantController::GetTemplateURL(
   if (match.type == AutocompleteMatch::SEARCH_WHAT_YOU_TYPED ||
       match.type == AutocompleteMatch::SEARCH_HISTORY ||
       match.type == AutocompleteMatch::SEARCH_SUGGEST) {
-    TemplateURLModel* model = tab_contents_->profile()->GetTemplateURLModel();
+    TemplateURLService* model = TemplateURLServiceFactory::GetForProfile(
+        tab_contents_->profile());
     template_url = model ? model->GetDefaultSearchProvider() : NULL;
   }
   return template_url;

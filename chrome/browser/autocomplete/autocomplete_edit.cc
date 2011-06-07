@@ -25,7 +25,8 @@
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -460,7 +461,8 @@ void AutocompleteEditModel::AcceptInput(WindowOpenDisposition disposition,
       match.type == AutocompleteMatch::SEARCH_HISTORY ||
       match.type == AutocompleteMatch::SEARCH_SUGGEST) {
     const TemplateURL* default_provider =
-        profile_->GetTemplateURLModel()->GetDefaultSearchProvider();
+        TemplateURLServiceFactory::GetForProfile(profile_)->
+        GetDefaultSearchProvider();
     if (default_provider && default_provider->url() &&
         default_provider->url()->HasGoogleBaseURLs()) {
       GoogleURLTracker::GoogleURLSearchCommitted();
@@ -497,10 +499,11 @@ void AutocompleteEditModel::OpenMatch(const AutocompleteMatch& match,
         Details<AutocompleteLog>(&log));
   }
 
-  TemplateURLModel* template_url_model = profile_->GetTemplateURLModel();
-  if (template_url_model && !keyword.empty()) {
+  TemplateURLService* template_url_service =
+      TemplateURLServiceFactory::GetForProfile(profile_);
+  if (template_url_service && !keyword.empty()) {
     const TemplateURL* const template_url =
-        template_url_model->GetTemplateURLForKeyword(keyword);
+        template_url_service->GetTemplateURLForKeyword(keyword);
 
     // Special case for extension keywords. Don't increment usage count for
     // these.
@@ -523,7 +526,7 @@ void AutocompleteEditModel::OpenMatch(const AutocompleteMatch& match,
 
     if (template_url) {
       UserMetrics::RecordAction(UserMetricsAction("AcceptedKeyword"));
-      template_url_model->IncrementUsageCount(template_url);
+      template_url_service->IncrementUsageCount(template_url);
     }
 
     // NOTE: We purposefully don't increment the usage count of the default

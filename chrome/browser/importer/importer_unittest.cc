@@ -211,7 +211,7 @@ class TestObserver : public ProfileWriter,
     return true;
   }
 
-  virtual bool TemplateURLModelIsLoaded() const {
+  virtual bool TemplateURLServiceIsLoaded() const {
     return true;
   }
 
@@ -577,7 +577,7 @@ class FirefoxObserver : public ProfileWriter,
     return true;
   }
 
-  virtual bool TemplateURLModelIsLoaded() const {
+  virtual bool TemplateURLServiceIsLoaded() const {
     return true;
   }
 
@@ -781,7 +781,7 @@ class Firefox3Observer : public ProfileWriter,
     return true;
   }
 
-  virtual bool TemplateURLModelIsLoaded() const {
+  virtual bool TemplateURLServiceIsLoaded() const {
     return true;
   }
 

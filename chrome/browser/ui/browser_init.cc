@@ -39,7 +39,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
@@ -1236,7 +1237,8 @@ std::vector<GURL> BrowserInit::GetURLsFromCommandLine(
     if (param.value().size() > 2 &&
         param.value()[0] == '?' && param.value()[1] == ' ') {
       const TemplateURL* default_provider =
-          profile->GetTemplateURLModel()->GetDefaultSearchProvider();
+          TemplateURLServiceFactory::GetForProfile(profile)->
+          GetDefaultSearchProvider();
       if (default_provider && default_provider->url()) {
         const TemplateURLRef* search_url = default_provider->url();
         DCHECK(search_url->SupportsReplacement());

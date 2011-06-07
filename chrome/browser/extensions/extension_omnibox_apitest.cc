@@ -13,7 +13,8 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
@@ -61,13 +62,13 @@ class OmniboxApiTest : public ExtensionApiTest {
         autocomplete_controller();
   }
 
-  void WaitForTemplateURLModelToLoad() {
-    TemplateURLModel* model =
-        browser()->profile()->GetTemplateURLModel();
+  void WaitForTemplateURLServiceToLoad() {
+    TemplateURLService* model =
+        TemplateURLServiceFactory::GetForProfile(browser()->profile());
     model->Load();
     if (!model->loaded()) {
       ui_test_utils::WaitForNotification(
-          NotificationType::TEMPLATE_URL_MODEL_LOADED);
+          NotificationType::TEMPLATE_URL_SERVICE_LOADED);
     }
   }
 
@@ -91,9 +92,9 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, MAYBE_Basic) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(RunExtensionTest("omnibox")) << message_;
 
-  // The results depend on the TemplateURLModel being loaded. Make sure it is
+  // The results depend on the TemplateURLService being loaded. Make sure it is
   // loaded so that the autocomplete results are consistent.
-  WaitForTemplateURLModelToLoad();
+  WaitForTemplateURLServiceToLoad();
 
   LocationBar* location_bar = GetLocationBar();
   AutocompleteController* autocomplete_controller = GetAutocompleteController();

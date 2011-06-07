@@ -8,14 +8,16 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/search_engines/template_url_table_model.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/user_metrics.h"
 
 KeywordEditorController::KeywordEditorController(Profile* profile)
     : profile_(profile) {
-  table_model_.reset(new TemplateURLTableModel(profile->GetTemplateURLModel()));
+  table_model_.reset(new TemplateURLTableModel(
+      TemplateURLServiceFactory::GetForProfile(profile)));
 }
 
 KeywordEditorController::~KeywordEditorController() {
@@ -106,6 +108,6 @@ const TemplateURL* KeywordEditorController::GetTemplateURL(int index) const {
   return &table_model_->GetTemplateURL(index);
 }
 
-TemplateURLModel* KeywordEditorController::url_model() const {
-  return table_model_->template_url_model();
+TemplateURLService* KeywordEditorController::url_model() const {
+  return table_model_->template_url_service();
 }

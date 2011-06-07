@@ -25,8 +25,6 @@
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 
-class TemplateURLModel;
-
 class ExtensionAppProvider : public AutocompleteProvider,
                              public NotificationObserver {
  public:

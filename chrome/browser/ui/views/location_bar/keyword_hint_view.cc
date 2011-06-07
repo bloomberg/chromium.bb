@@ -8,7 +8,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -53,13 +54,15 @@ void KeywordHintView::SetKeyword(const string16& keyword) {
   if (keyword_.empty())
     return;
   DCHECK(profile_);
-  if (!profile_->GetTemplateURLModel())
+  TemplateURLService* url_service =
+      TemplateURLServiceFactory::GetForProfile(profile_);
+  if (!url_service)
     return;
 
   std::vector<size_t> content_param_offsets;
   bool is_extension_keyword;
-  string16 short_name = profile_->GetTemplateURLModel()->
-      GetKeywordShortName(keyword, &is_extension_keyword);
+  string16 short_name = url_service->GetKeywordShortName(keyword,
+                                                         &is_extension_keyword);
   int message_id = is_extension_keyword ?
       IDS_OMNIBOX_EXTENSION_KEYWORD_HINT : IDS_OMNIBOX_KEYWORD_HINT;
   const std::wstring keyword_hint =

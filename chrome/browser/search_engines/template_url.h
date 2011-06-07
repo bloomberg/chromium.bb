@@ -138,7 +138,7 @@ class TemplateURLRef {
  private:
   friend class SearchHostToURLsMapTest;
   friend class TemplateURL;
-  friend class TemplateURLModelTestUtil;
+  friend class TemplateURLServiceTestUtil;
   friend class TemplateURLTest;
   FRIEND_TEST_ALL_PREFIXES(TemplateURLTest, ParseParameterKnown);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLTest, ParseParameterUnknown);
@@ -463,7 +463,7 @@ class TemplateURL {
   int logo_id() const { return logo_id_; }
 
   // Returns the unique identifier of this TemplateURL. The unique ID is set
-  // by the TemplateURLModel when the TemplateURL is added to it.
+  // by the TemplateURLService when the TemplateURL is added to it.
   TemplateURLID id() const { return id_; }
 
   // If this TemplateURL comes from prepopulated data the prepopulate_id is > 0.
@@ -482,7 +482,7 @@ class TemplateURL {
   friend class KeywordTable;
   friend class KeywordTableTest;
   friend class SearchHostToURLsMap;
-  friend class TemplateURLModel;
+  friend class TemplateURLService;
 
   // Invalidates cached values on this object and its child TemplateURLRefs.
   void InvalidateCachedValues() const;

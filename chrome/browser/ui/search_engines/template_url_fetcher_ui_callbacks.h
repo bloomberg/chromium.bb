@@ -25,7 +25,7 @@ class TemplateURLFetcherUICallbacks : public TemplateURLFetcherCallbacks,
   // TemplateURLFetcherCallback implementation.
   virtual void ConfirmSetDefaultSearchProvider(
       TemplateURL* template_url,
-      TemplateURLModel* template_url_model);
+      TemplateURLService* template_url_service);
   virtual void ConfirmAddSearchProvider(
       TemplateURL* template_url,
       Profile* profile);

@@ -3483,9 +3483,9 @@ void Browser::OnInstallApplication(TabContentsWrapper* source,
 void Browser::ConfirmSetDefaultSearchProvider(
     TabContents* tab_contents,
     TemplateURL* template_url,
-    TemplateURLModel* template_url_model) {
+    TemplateURLService* template_url_service) {
   window()->ConfirmSetDefaultSearchProvider(tab_contents, template_url,
-                                            template_url_model);
+                                            template_url_service);
 }
 
 void Browser::ConfirmAddSearchProvider(const TemplateURL* template_url,

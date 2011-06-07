@@ -18,7 +18,7 @@ BrowserTestHelper::BrowserTestHelper()
   // this.
   // http://crbug.com/39725
   profile_->CreateAutocompleteClassifier();
-  profile_->CreateTemplateURLModel();
+  profile_->CreateTemplateURLService();
 
   browser_.reset(new Browser(Browser::TYPE_TABBED, profile_.get()));
 }

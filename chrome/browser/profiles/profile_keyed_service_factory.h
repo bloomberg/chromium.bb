@@ -26,9 +26,10 @@ class ProfileKeyedServiceFactory {
   // Associates |factory| with |profile| so that |factory| is used to create
   // the ProfileKeyedService when requested.
   //
-  // |factory| can be NULL to signal that ProfileKeyedService should be
-  // NULL. When |factory| is NULL, a second call to SetTestingFactory() is
-  // allowed. (Otherwise, we'll DCHECK.)
+  // |factory| can be NULL to signal that ProfileKeyedService should be NULL. A
+  // second call to SetTestingFactory() is allowed. If the FactoryFunction is
+  // changed AND an instance of the PKSF already exists for |profile|, that
+  // service is destroyed.
   void SetTestingFactory(Profile* profile, FactoryFunction factory);
 
   // Associates |factory| with |profile| and immediately returns the created

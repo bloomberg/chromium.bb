@@ -74,7 +74,6 @@ class ProfileImpl : public Profile,
   virtual PasswordStore* GetPasswordStore(ServiceAccessType sat);
   virtual PrefService* GetPrefs();
   virtual PrefService* GetOffTheRecordPrefs();
-  virtual TemplateURLModel* GetTemplateURLModel();
   virtual TemplateURLFetcher* GetTemplateURLFetcher();
   virtual DownloadManager* GetDownloadManager();
   virtual PersonalDataManager* GetPersonalDataManager();
@@ -210,7 +209,6 @@ class ProfileImpl : public Profile,
   scoped_ptr<prerender::PrerenderManager> prerender_manager_;
   scoped_ptr<NetPrefObserver> net_pref_observer_;
   scoped_ptr<TemplateURLFetcher> template_url_fetcher_;
-  scoped_ptr<TemplateURLModel> template_url_model_;
   scoped_ptr<BookmarkModel> bookmark_bar_model_;
   scoped_refptr<PromoResourceService> promo_resource_service_;
   scoped_refptr<ProtocolHandlerRegistry> protocol_handler_registry_;

@@ -93,7 +93,7 @@ class ImporterHost : public base::RefCountedThreadSafe<ImporterHost>,
                            uint16 items,
                            bool first_run);
 
-  // Make sure BookmarkModel and TemplateURLModel are loaded before import
+  // Make sure BookmarkModel and TemplateURLService are loaded before import
   // process starts, if bookmarks and/or search engines are among the items
   // which are to be imported.
   void CheckForLoadedModels(uint16 items);
@@ -119,7 +119,7 @@ class ImporterHost : public base::RefCountedThreadSafe<ImporterHost>,
   // True if source profile is readable.
   bool is_source_readable_;
 
-  // Receives notification when the TemplateURLModel has loaded.
+  // Receives notification when the TemplateURLService has loaded.
   NotificationRegistrar registrar_;
 
   // Writes data from the importer back to the profile.
@@ -140,7 +140,7 @@ class ImporterHost : public base::RefCountedThreadSafe<ImporterHost>,
   virtual void BookmarkModelChanged() OVERRIDE;
 
   // NotificationObserver:
-  // Called when TemplateURLModel has been loaded.
+  // Called when TemplateURLService has been loaded.
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE;

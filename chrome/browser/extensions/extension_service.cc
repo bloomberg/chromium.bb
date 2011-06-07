@@ -51,7 +51,8 @@
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
@@ -782,8 +783,10 @@ bool ExtensionService::UninstallExtension(
   RecordPermissionMessagesHistogram(
       extension, "Extensions.Permissions_Uninstall");
 
-  if (profile_->GetTemplateURLModel())
-    profile_->GetTemplateURLModel()->UnregisterExtensionKeyword(extension);
+  TemplateURLService* url_service =
+      TemplateURLServiceFactory::GetForProfile(profile_);
+  if (url_service)
+    url_service->UnregisterExtensionKeyword(extension);
 
   // Unload before doing more cleanup to ensure that nothing is hanging on to
   // any of these resources.
@@ -1216,8 +1219,10 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
   ExtensionWebUI::RegisterChromeURLOverrides(
       profile_, extension->GetChromeURLOverrides());
 
-  if (profile_->GetTemplateURLModel())
-    profile_->GetTemplateURLModel()->RegisterExtensionKeyword(extension);
+  TemplateURLService* url_service =
+      TemplateURLServiceFactory::GetForProfile(profile_);
+  if (url_service)
+    url_service->RegisterExtensionKeyword(extension);
 
   // Load the icon for omnibox-enabled extensions so it will be ready to display
   // in the URL bar.

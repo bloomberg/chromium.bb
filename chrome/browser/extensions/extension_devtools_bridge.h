@@ -42,7 +42,6 @@ class ExtensionDevToolsBridge : public DevToolsClientHost {
   int tab_id_;
 
   scoped_refptr<ExtensionDevToolsManager> extension_devtools_manager_;
-  scoped_refptr<ExtensionMessageService> extension_message_service_;
 
   // Profile that owns our tab
   Profile* profile_;

@@ -9,7 +9,8 @@
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "content/browser/user_metrics.h"
 #include "googleurl/src/gurl.h"
 
@@ -43,7 +44,8 @@ bool EditSearchEngineController::IsURLValid(
     // If this is the default search engine, there must be a search term
     // placeholder.
     if (template_url_ ==
-        profile_->GetTemplateURLModel()->GetDefaultSearchProvider())
+        TemplateURLServiceFactory::GetForProfile(profile_)->
+        GetDefaultSearchProvider())
       return false;
     return GURL(url).is_valid();
   }
@@ -61,8 +63,8 @@ bool EditSearchEngineController::IsKeywordValid(
   if (keyword_input_trimmed.empty())
     return false;  // Do not allow empty keyword.
   const TemplateURL* turl_with_keyword =
-      profile_->GetTemplateURLModel()->GetTemplateURLForKeyword(
-          keyword_input_trimmed);
+      TemplateURLServiceFactory::GetForProfile(profile_)->
+      GetTemplateURLForKeyword(keyword_input_trimmed);
   return (turl_with_keyword == NULL || turl_with_keyword == template_url_);
 }
 
@@ -73,9 +75,10 @@ void EditSearchEngineController::AcceptAddOrEdit(
   std::string url_string = GetFixedUpURL(url_input);
   DCHECK(!url_string.empty());
 
-  const TemplateURL* existing =
-      profile_->GetTemplateURLModel()->GetTemplateURLForKeyword(
-          keyword_input);
+  TemplateURLService* template_url_service =
+      TemplateURLServiceFactory::GetForProfile(profile_);
+  const TemplateURL* existing = template_url_service->GetTemplateURLForKeyword(
+      keyword_input);
   if (existing &&
       (!edit_keyword_delegate_ || existing != template_url_)) {
     // An entry may have been added with the same keyword string while the
@@ -92,15 +95,15 @@ void EditSearchEngineController::AcceptAddOrEdit(
     // Confiming an entry we got from JS. We have a template_url_, but it
     // hasn't yet been added to the model.
     DCHECK(template_url_);
-    // const_cast is ugly, but this is the same thing the TemplateURLModel
+    // const_cast is ugly, but this is the same thing the TemplateURLService
     // does in a similar situation (updating an existing TemplateURL with
     // data from a new one).
     TemplateURL* modifiable_url = const_cast<TemplateURL*>(template_url_);
     modifiable_url->set_short_name(title_input);
     modifiable_url->set_keyword(keyword_input);
     modifiable_url->SetURL(url_string, 0, 0);
-    // TemplateURLModel takes ownership of template_url_.
-    profile_->GetTemplateURLModel()->Add(modifiable_url);
+    // TemplateURLService takes ownership of template_url_.
+    template_url_service->Add(modifiable_url);
     UserMetrics::RecordAction(UserMetricsAction("KeywordEditor_AddKeywordJS"));
   } else {
     // Adding or modifying an entry via the Delegate.

@@ -15,7 +15,8 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -176,7 +177,8 @@ void OmniboxSearchHint::Observe(NotificationType type,
       return;
     }
     const TemplateURL* const default_provider =
-        tab_->profile()->GetTemplateURLModel()->GetDefaultSearchProvider();
+        TemplateURLServiceFactory::GetForProfile(tab_->profile())->
+        GetDefaultSearchProvider();
     if (!default_provider)
       return;
 

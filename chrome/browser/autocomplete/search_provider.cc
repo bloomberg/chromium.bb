@@ -23,7 +23,8 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/history/in_memory_database.h"
-#include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/common/json_value_serializer.h"
@@ -152,7 +153,8 @@ void SearchProvider::Start(const AutocompleteInput& input,
     keyword_provider = NULL;
 
   const TemplateURL* default_provider =
-      profile_->GetTemplateURLModel()->GetDefaultSearchProvider();
+      TemplateURLServiceFactory::GetForProfile(profile_)->
+      GetDefaultSearchProvider();
   if (!TemplateURL::SupportsReplacement(default_provider))
     default_provider = NULL;
 

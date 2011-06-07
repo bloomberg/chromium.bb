@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/search_engines/template_url_model_test_util.h"
+#include "chrome/browser/search_engines/template_url_service_test_util.h"
 
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/test/testing_profile.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_type.h"
@@ -47,9 +48,9 @@ static void WaitForThreadToProcessRequests(BrowserThread::ID identifier) {
 }  // namespace
 
 // Subclass the TestingProfile so that it can return a WebDataService.
-class TemplateURLModelTestingProfile : public TestingProfile {
+class TemplateURLServiceTestingProfile : public TestingProfile {
  public:
-  TemplateURLModelTestingProfile()
+  TemplateURLServiceTestingProfile()
       : TestingProfile(),
         db_thread_(BrowserThread::DB),
         io_thread_(BrowserThread::IO) {
@@ -77,12 +78,16 @@ class TemplateURLModelTestingProfile : public TestingProfile {
   BrowserThread io_thread_;
 };
 
-// Trivial subclass of TemplateURLModel that records the last invocation of
+// Trivial subclass of TemplateURLService that records the last invocation of
 // SetKeywordSearchTermsForURL.
-class TestingTemplateURLModel : public TemplateURLModel {
+class TestingTemplateURLService : public TemplateURLService {
  public:
-  explicit TestingTemplateURLModel(Profile* profile)
-      : TemplateURLModel(profile) {
+  static ProfileKeyedService* Build(Profile* profile) {
+    return new TestingTemplateURLService(profile);
+  }
+
+  explicit TestingTemplateURLService(Profile* profile)
+      : TemplateURLService(profile) {
   }
 
   string16 GetAndClearSearchTerm() {
@@ -101,10 +106,10 @@ class TestingTemplateURLModel : public TemplateURLModel {
  private:
   string16 search_term_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestingTemplateURLModel);
+  DISALLOW_COPY_AND_ASSIGN(TestingTemplateURLService);
 };
 
-void TemplateURLModelTestingProfile::SetUp() {
+void TemplateURLServiceTestingProfile::SetUp() {
   db_thread_.Start();
 
   // Make unique temp directory.
@@ -115,14 +120,14 @@ void TemplateURLModelTestingProfile::SetUp() {
   ASSERT_TRUE(service_->InitWithPath(path));
 }
 
-void TemplateURLModelTestingProfile::TearDown() {
+void TemplateURLServiceTestingProfile::TearDown() {
   // Clear the request context so it will get deleted. This should be done
   // before shutting down the I/O thread to avoid memory leaks.
   ResetRequestContext();
 
   // Wait for the delete of the request context to happen.
   if (io_thread_.IsRunning())
-    TemplateURLModelTestUtil::BlockTillIOThreadProcessesRequests();
+    TemplateURLServiceTestUtil::BlockTillIOThreadProcessesRequests();
 
   // The I/O thread must be shutdown before the DB thread.
   io_thread_.Stop();
@@ -137,22 +142,24 @@ void TemplateURLModelTestingProfile::TearDown() {
   db_thread_.Stop();
 }
 
-TemplateURLModelTestUtil::TemplateURLModelTestUtil()
+TemplateURLServiceTestUtil::TemplateURLServiceTestUtil()
     : ui_thread_(BrowserThread::UI, &message_loop_),
       changed_count_(0) {
 }
 
-TemplateURLModelTestUtil::~TemplateURLModelTestUtil() {
+TemplateURLServiceTestUtil::~TemplateURLServiceTestUtil() {
 }
 
-void TemplateURLModelTestUtil::SetUp() {
-  profile_.reset(new TemplateURLModelTestingProfile());
+void TemplateURLServiceTestUtil::SetUp() {
+  profile_.reset(new TemplateURLServiceTestingProfile());
   profile_->SetUp();
-  profile_->SetTemplateURLModel(new TestingTemplateURLModel(profile_.get()));
-  profile_->GetTemplateURLModel()->AddObserver(this);
+  TemplateURLService* service = static_cast<TemplateURLService*>(
+      TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+          profile_.get(), TestingTemplateURLService::Build));
+  service->AddObserver(this);
 }
 
-void TemplateURLModelTestUtil::TearDown() {
+void TemplateURLServiceTestUtil::TearDown() {
   if (profile_.get()) {
     profile_->TearDown();
     profile_.reset();
@@ -163,27 +170,27 @@ void TemplateURLModelTestUtil::TearDown() {
   message_loop_.RunAllPending();
 }
 
-void TemplateURLModelTestUtil::OnTemplateURLModelChanged() {
+void TemplateURLServiceTestUtil::OnTemplateURLServiceChanged() {
   changed_count_++;
 }
 
-int TemplateURLModelTestUtil::GetObserverCount() {
+int TemplateURLServiceTestUtil::GetObserverCount() {
   return changed_count_;
 }
 
-void TemplateURLModelTestUtil::ResetObserverCount() {
+void TemplateURLServiceTestUtil::ResetObserverCount() {
   changed_count_ = 0;
 }
 
-void TemplateURLModelTestUtil::BlockTillServiceProcessesRequests() {
+void TemplateURLServiceTestUtil::BlockTillServiceProcessesRequests() {
   WaitForThreadToProcessRequests(BrowserThread::DB);
 }
 
-void TemplateURLModelTestUtil::BlockTillIOThreadProcessesRequests() {
+void TemplateURLServiceTestUtil::BlockTillIOThreadProcessesRequests() {
   WaitForThreadToProcessRequests(BrowserThread::IO);
 }
 
-void TemplateURLModelTestUtil::VerifyLoad() {
+void TemplateURLServiceTestUtil::VerifyLoad() {
   ASSERT_FALSE(model()->loaded());
   model()->Load();
   BlockTillServiceProcessesRequests();
@@ -191,31 +198,33 @@ void TemplateURLModelTestUtil::VerifyLoad() {
   ResetObserverCount();
 }
 
-void TemplateURLModelTestUtil::ChangeModelToLoadState() {
+void TemplateURLServiceTestUtil::ChangeModelToLoadState() {
   model()->ChangeToLoadedState();
   // Initialize the web data service so that the database gets updated with
   // any changes made.
   model()->service_ = profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
 }
 
-void TemplateURLModelTestUtil::ClearModel() {
-  profile_->SetTemplateURLModel(NULL);
+void TemplateURLServiceTestUtil::ClearModel() {
+  TemplateURLServiceFactory::GetInstance()->SetTestingFactory(
+      profile_.get(), NULL);
 }
 
-void TemplateURLModelTestUtil::ResetModel(bool verify_load) {
-  profile_->SetTemplateURLModel(new TestingTemplateURLModel(profile_.get()));
+void TemplateURLServiceTestUtil::ResetModel(bool verify_load) {
+  TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+      profile_.get(), TestingTemplateURLService::Build);
   model()->AddObserver(this);
   changed_count_ = 0;
   if (verify_load)
     VerifyLoad();
 }
 
-string16 TemplateURLModelTestUtil::GetAndClearSearchTerm() {
+string16 TemplateURLServiceTestUtil::GetAndClearSearchTerm() {
   return
-      static_cast<TestingTemplateURLModel*>(model())->GetAndClearSearchTerm();
+      static_cast<TestingTemplateURLService*>(model())->GetAndClearSearchTerm();
 }
 
-void TemplateURLModelTestUtil::SetGoogleBaseURL(
+void TemplateURLServiceTestUtil::SetGoogleBaseURL(
     const std::string& base_url) const {
   TemplateURLRef::SetGoogleBaseURL(new std::string(base_url));
   NotificationService::current()->Notify(NotificationType::GOOGLE_URL_UPDATED,
@@ -223,18 +232,18 @@ void TemplateURLModelTestUtil::SetGoogleBaseURL(
                                          NotificationService::NoDetails());
 }
 
-WebDataService* TemplateURLModelTestUtil::GetWebDataService() {
+WebDataService* TemplateURLServiceTestUtil::GetWebDataService() {
   return profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
 }
 
-TemplateURLModel* TemplateURLModelTestUtil::model() const {
-  return profile_->GetTemplateURLModel();
+TemplateURLService* TemplateURLServiceTestUtil::model() const {
+  return TemplateURLServiceFactory::GetForProfile(profile());
 }
 
-TestingProfile* TemplateURLModelTestUtil::profile() const {
+TestingProfile* TemplateURLServiceTestUtil::profile() const {
   return profile_.get();
 }
 
-void TemplateURLModelTestUtil::StartIOThread() {
+void TemplateURLServiceTestUtil::StartIOThread() {
   profile_->StartIOThread();
 }

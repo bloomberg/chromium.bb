@@ -177,7 +177,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_switches.h"
@@ -555,7 +555,7 @@ void MetricsService::SetUpNotifications(NotificationRegistrar* registrar,
                    NotificationService::AllSources());
     registrar->Add(observer, NotificationType::CHILD_PROCESS_CRASHED,
                    NotificationService::AllSources());
-    registrar->Add(observer, NotificationType::TEMPLATE_URL_MODEL_LOADED,
+    registrar->Add(observer, NotificationType::TEMPLATE_URL_SERVICE_LOADED,
                    NotificationService::AllSources());
     registrar->Add(observer, NotificationType::OMNIBOX_OPENED_URL,
                    NotificationService::AllSources());
@@ -621,8 +621,8 @@ void MetricsService::Observe(NotificationType type,
       LogChildProcessChange(type, source, details);
       break;
 
-    case NotificationType::TEMPLATE_URL_MODEL_LOADED:
-      LogKeywords(Source<TemplateURLModel>(source).ptr());
+    case NotificationType::TEMPLATE_URL_SERVICE_LOADED:
+      LogKeywords(Source<TemplateURLService>(source).ptr());
       break;
 
     case NotificationType::OMNIBOX_OPENED_URL: {
@@ -1566,7 +1566,7 @@ void MetricsService::LogBookmarks(BookmarkModel* model) {
   ScheduleNextStateSave();
 }
 
-void MetricsService::LogKeywords(const TemplateURLModel* url_model) {
+void MetricsService::LogKeywords(const TemplateURLService* url_model) {
   DCHECK(url_model);
 
   PrefService* pref = g_browser_process->local_state();

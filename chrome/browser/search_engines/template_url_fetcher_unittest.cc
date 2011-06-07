@@ -10,8 +10,8 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_fetcher.h"
 #include "chrome/browser/search_engines/template_url_fetcher_callbacks.h"
-#include "chrome/browser/search_engines/template_url_model.h"
-#include "chrome/browser/search_engines/template_url_model_test_util.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_test_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/testing_profile.h"
 #include "googleurl/src/gurl.h"
@@ -31,7 +31,7 @@ class TemplateURLFetcherTestCallbacks : public TemplateURLFetcherCallbacks {
   // TemplateURLFetcherCallbacks implementation.
   virtual void ConfirmSetDefaultSearchProvider(
       TemplateURL* template_url,
-      TemplateURLModel* template_url_model);
+      TemplateURLService* template_url_service);
   virtual void ConfirmAddSearchProvider(
       TemplateURL* template_url,
       Profile* profile);
@@ -70,7 +70,7 @@ class TemplateURLFetcherTest : public testing::Test {
   // this class, these methods handle those calls for the test.)
   virtual void ConfirmSetDefaultSearchProvider(
       TemplateURL* template_url,
-      TemplateURLModel* template_url_model);
+      TemplateURLService* template_url_service);
   virtual void ConfirmAddSearchProvider(
       TemplateURL* template_url,
       Profile* profile);
@@ -85,7 +85,7 @@ class TemplateURLFetcherTest : public testing::Test {
   // Waits for any downloads to finish.
   void WaitForDownloadToFinish();
 
-  TemplateURLModelTestUtil test_util_;
+  TemplateURLServiceTestUtil test_util_;
   net::TestServer test_server_;
 
   // The last TemplateURL to come from a callback.
@@ -114,8 +114,8 @@ TemplateURLFetcherTestCallbacks::~TemplateURLFetcherTestCallbacks() {
 
 void TemplateURLFetcherTestCallbacks::ConfirmSetDefaultSearchProvider(
     TemplateURL* template_url,
-    TemplateURLModel* template_url_model) {
-  test_->ConfirmSetDefaultSearchProvider(template_url, template_url_model);
+    TemplateURLService* template_url_service) {
+  test_->ConfirmSetDefaultSearchProvider(template_url, template_url_service);
 }
 
 void TemplateURLFetcherTestCallbacks::ConfirmAddSearchProvider(
@@ -142,7 +142,7 @@ void TemplateURLFetcherTest::DestroyedCallback(
 
 void TemplateURLFetcherTest::ConfirmSetDefaultSearchProvider(
     TemplateURL* template_url,
-    TemplateURLModel* template_url_model) {
+    TemplateURLService* template_url_service) {
   last_callback_template_url_.reset(template_url);
   set_default_called_++;
 }

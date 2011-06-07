@@ -17,7 +17,7 @@ class TemplateURLFetcherCallbacks;
 
 // TemplateURLFetcher is responsible for downloading OpenSearch description
 // documents, creating a TemplateURL from the OSDD, and adding the TemplateURL
-// to the TemplateURLModel. Downloading is done in the background.
+// to the TemplateURLService. Downloading is done in the background.
 //
 class TemplateURLFetcher {
  public:
@@ -33,7 +33,7 @@ class TemplateURLFetcher {
 
   // If TemplateURLFetcher is not already downloading the OSDD for osdd_url,
   // it is downloaded. If successful and the result can be parsed, a TemplateURL
-  // is added to the TemplateURLModel. Takes ownership of |callbacks|.
+  // is added to the TemplateURLService. Takes ownership of |callbacks|.
   void ScheduleDownload(const string16& keyword,
                         const GURL& osdd_url,
                         const GURL& favicon_url,

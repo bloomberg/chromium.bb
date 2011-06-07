@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/search_engines/template_url_service.h"
 
 #include "base/command_line.h"
 #include "base/environment.h"
@@ -25,7 +25,7 @@
 #include "chrome/browser/search_engines/search_host_to_urls_map.h"
 #include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/search_engines/template_url_model_observer.h"
+#include "chrome/browser/search_engines/template_url_service_observer.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/search_engines/util.h"
 #include "chrome/common/chrome_switches.h"
@@ -73,7 +73,7 @@ bool TemplateURLsHaveSamePrefs(const TemplateURL* url1,
 }  // namespace
 
 
-class TemplateURLModel::LessWithPrefix {
+class TemplateURLService::LessWithPrefix {
  public:
   // We want to find the set of keywords that begin with a prefix.  The STL
   // algorithms will return the set of elements that are "equal to" the
@@ -95,7 +95,7 @@ class TemplateURLModel::LessWithPrefix {
   }
 };
 
-TemplateURLModel::TemplateURLModel(Profile* profile)
+TemplateURLService::TemplateURLService(Profile* profile)
     : profile_(profile),
       loaded_(false),
       load_failed_(false),
@@ -107,8 +107,8 @@ TemplateURLModel::TemplateURLModel(Profile* profile)
   Init(NULL, 0);
 }
 
-TemplateURLModel::TemplateURLModel(const Initializer* initializers,
-                                   const int count)
+TemplateURLService::TemplateURLService(const Initializer* initializers,
+                                       const int count)
     : profile_(NULL),
       loaded_(false),
       load_failed_(false),
@@ -120,7 +120,7 @@ TemplateURLModel::TemplateURLModel(const Initializer* initializers,
   Init(initializers, count);
 }
 
-TemplateURLModel::~TemplateURLModel() {
+TemplateURLService::~TemplateURLService() {
   if (load_handle_) {
     DCHECK(service_.get());
     service_->CancelRequest(load_handle_);
@@ -130,8 +130,8 @@ TemplateURLModel::~TemplateURLModel() {
 }
 
 // static
-string16 TemplateURLModel::GenerateKeyword(const GURL& url,
-                                           bool autodetected) {
+string16 TemplateURLService::GenerateKeyword(const GURL& url,
+                                             bool autodetected) {
   // Don't autogenerate keywords for referrers that are the result of a form
   // submission (TODO: right now we approximate this by checking for the URL
   // having a query, but we should replace this with a call to WebCore to see if
@@ -152,7 +152,7 @@ string16 TemplateURLModel::GenerateKeyword(const GURL& url,
 }
 
 // static
-string16 TemplateURLModel::CleanUserInputKeyword(const string16& keyword) {
+string16 TemplateURLService::CleanUserInputKeyword(const string16& keyword) {
   // Remove the scheme.
   string16 result(base::i18n::ToLower(keyword));
   TrimWhitespace(result, TRIM_ALL, &result);
@@ -186,14 +186,14 @@ string16 TemplateURLModel::CleanUserInputKeyword(const string16& keyword) {
 }
 
 // static
-GURL TemplateURLModel::GenerateSearchURL(const TemplateURL* t_url) {
+GURL TemplateURLService::GenerateSearchURL(const TemplateURL* t_url) {
   DCHECK(t_url);
   UIThreadSearchTermsData search_terms_data;
   return GenerateSearchURLUsingTermsData(t_url, search_terms_data);
 }
 
 // static
-GURL TemplateURLModel::GenerateSearchURLUsingTermsData(
+GURL TemplateURLService::GenerateSearchURLUsingTermsData(
     const TemplateURL* t_url,
     const SearchTermsData& search_terms_data) {
   DCHECK(t_url);
@@ -212,7 +212,7 @@ GURL TemplateURLModel::GenerateSearchURLUsingTermsData(
       string16(), search_terms_data));
 }
 
-bool TemplateURLModel::CanReplaceKeyword(
+bool TemplateURLService::CanReplaceKeyword(
     const string16& keyword,
     const GURL& url,
     const TemplateURL** template_url_to_replace) {
@@ -238,7 +238,7 @@ bool TemplateURLModel::CanReplaceKeyword(
   return true;
 }
 
-void TemplateURLModel::FindMatchingKeywords(
+void TemplateURLService::FindMatchingKeywords(
     const string16& prefix,
     bool support_replacement_only,
     std::vector<string16>* matches) const {
@@ -276,30 +276,30 @@ void TemplateURLModel::FindMatchingKeywords(
   }
 }
 
-const TemplateURL* TemplateURLModel::GetTemplateURLForKeyword(
-                                     const string16& keyword) const {
+const TemplateURL* TemplateURLService::GetTemplateURLForKeyword(
+    const string16& keyword) const {
   KeywordToTemplateMap::const_iterator elem(
       keyword_to_template_map_.find(keyword));
   return (elem == keyword_to_template_map_.end()) ? NULL : elem->second;
 }
 
-const TemplateURL* TemplateURLModel::GetTemplateURLForHost(
+const TemplateURL* TemplateURLService::GetTemplateURLForHost(
     const std::string& host) const {
   return provider_map_.GetTemplateURLForHost(host);
 }
 
-void TemplateURLModel::Add(TemplateURL* template_url) {
+void TemplateURLService::Add(TemplateURL* template_url) {
   AddNoNotify(template_url);
   NotifyObservers();
 }
 
-void TemplateURLModel::Remove(const TemplateURL* template_url) {
+void TemplateURLService::Remove(const TemplateURL* template_url) {
   RemoveNoNotify(template_url);
   NotifyObservers();
 }
 
-void TemplateURLModel::RemoveAutoGeneratedBetween(Time created_after,
-                                                  Time created_before) {
+void TemplateURLService::RemoveAutoGeneratedBetween(Time created_after,
+                                                    Time created_before) {
   bool should_notify = false;
   for (size_t i = 0; i < template_urls_.size();) {
     if (template_urls_[i]->date_created() >= created_after &&
@@ -316,11 +316,11 @@ void TemplateURLModel::RemoveAutoGeneratedBetween(Time created_after,
     NotifyObservers();
 }
 
-void TemplateURLModel::RemoveAutoGeneratedSince(Time created_after) {
+void TemplateURLService::RemoveAutoGeneratedSince(Time created_after) {
   RemoveAutoGeneratedBetween(created_after, Time());
 }
 
-void TemplateURLModel::RegisterExtensionKeyword(const Extension* extension) {
+void TemplateURLService::RegisterExtensionKeyword(const Extension* extension) {
   // TODO(mpcomplete): disable the keyword when the extension is disabled.
   if (extension->omnibox_keyword().empty())
     return;
@@ -354,13 +354,14 @@ void TemplateURLModel::RegisterExtensionKeyword(const Extension* extension) {
   NotifyObservers();
 }
 
-void TemplateURLModel::UnregisterExtensionKeyword(const Extension* extension) {
+void TemplateURLService::UnregisterExtensionKeyword(
+    const Extension* extension) {
   const TemplateURL* url = GetTemplateURLForExtension(extension);
   if (url)
     Remove(url);
 }
 
-const TemplateURL* TemplateURLModel::GetTemplateURLForExtension(
+const TemplateURL* TemplateURLService::GetTemplateURLForExtension(
     const Extension* extension) const {
   for (TemplateURLVector::const_iterator i = template_urls_.begin();
        i != template_urls_.end(); ++i) {
@@ -371,11 +372,11 @@ const TemplateURL* TemplateURLModel::GetTemplateURLForExtension(
   return NULL;
 }
 
-std::vector<const TemplateURL*> TemplateURLModel::GetTemplateURLs() const {
+std::vector<const TemplateURL*> TemplateURLService::GetTemplateURLs() const {
   return template_urls_;
 }
 
-void TemplateURLModel::IncrementUsageCount(const TemplateURL* url) {
+void TemplateURLService::IncrementUsageCount(const TemplateURL* url) {
   DCHECK(url && find(template_urls_.begin(), template_urls_.end(), url) !=
          template_urls_.end());
   const_cast<TemplateURL*>(url)->set_usage_count(url->usage_count() + 1);
@@ -383,10 +384,10 @@ void TemplateURLModel::IncrementUsageCount(const TemplateURL* url) {
     service_.get()->UpdateKeyword(*url);
 }
 
-void TemplateURLModel::ResetTemplateURL(const TemplateURL* url,
-                                        const string16& title,
-                                        const string16& keyword,
-                                        const std::string& search_url) {
+void TemplateURLService::ResetTemplateURL(const TemplateURL* url,
+                                          const string16& title,
+                                          const string16& keyword,
+                                          const std::string& search_url) {
   TemplateURL new_url(*url);
   new_url.set_short_name(title);
   new_url.set_keyword(keyword);
@@ -402,14 +403,14 @@ void TemplateURLModel::ResetTemplateURL(const TemplateURL* url,
   NotifyObservers();
 }
 
-bool TemplateURLModel::CanMakeDefault(const TemplateURL* url) {
+bool TemplateURLService::CanMakeDefault(const TemplateURL* url) {
   return url != GetDefaultSearchProvider() &&
       url->url() &&
       url->url()->SupportsReplacement() &&
       !is_default_search_managed();
 }
 
-void TemplateURLModel::SetDefaultSearchProvider(const TemplateURL* url) {
+void TemplateURLService::SetDefaultSearchProvider(const TemplateURL* url) {
   if (is_default_search_managed_) {
     NOTREACHED();
     return;
@@ -420,7 +421,7 @@ void TemplateURLModel::SetDefaultSearchProvider(const TemplateURL* url) {
   NotifyObservers();
 }
 
-const TemplateURL* TemplateURLModel::GetDefaultSearchProvider() {
+const TemplateURL* TemplateURLService::GetDefaultSearchProvider() {
   if (loaded_ && !load_failed_)
     return default_search_provider_;
 
@@ -428,15 +429,15 @@ const TemplateURL* TemplateURLModel::GetDefaultSearchProvider() {
   return initial_default_search_provider_.get();
 }
 
-void TemplateURLModel::AddObserver(TemplateURLModelObserver* observer) {
+void TemplateURLService::AddObserver(TemplateURLServiceObserver* observer) {
   model_observers_.AddObserver(observer);
 }
 
-void TemplateURLModel::RemoveObserver(TemplateURLModelObserver* observer) {
+void TemplateURLService::RemoveObserver(TemplateURLServiceObserver* observer) {
   model_observers_.RemoveObserver(observer);
 }
 
-void TemplateURLModel::Load() {
+void TemplateURLService::Load() {
   if (loaded_ || load_handle_)
     return;
 
@@ -451,7 +452,7 @@ void TemplateURLModel::Load() {
   }
 }
 
-void TemplateURLModel::OnWebDataServiceRequestDone(
+void TemplateURLService::OnWebDataServiceRequestDone(
     WebDataService::Handle h,
     const WDTypedResult* result) {
   // Reset the load_handle so that we don't try and cancel the load in
@@ -561,11 +562,11 @@ void TemplateURLModel::OnWebDataServiceRequestDone(
   NotifyLoaded();
 }
 
-string16 TemplateURLModel::GetKeywordShortName(const string16& keyword,
-                                               bool* is_extension_keyword) {
+string16 TemplateURLService::GetKeywordShortName(const string16& keyword,
+                                                 bool* is_extension_keyword) {
   const TemplateURL* template_url = GetTemplateURLForKeyword(keyword);
 
-  // TODO(sky): Once LocationBarView adds a listener to the TemplateURLModel
+  // TODO(sky): Once LocationBarView adds a listener to the TemplateURLService
   // to track changes to the model, this should become a DCHECK.
   if (template_url) {
     *is_extension_keyword = template_url->IsExtensionKeyword();
@@ -575,9 +576,9 @@ string16 TemplateURLModel::GetKeywordShortName(const string16& keyword,
   return string16();
 }
 
-void TemplateURLModel::Observe(NotificationType type,
-                               const NotificationSource& source,
-                               const NotificationDetails& details) {
+void TemplateURLService::Observe(NotificationType type,
+                                 const NotificationSource& source,
+                                 const NotificationDetails& details) {
   if (type == NotificationType::HISTORY_URL_VISITED) {
     Details<history::URLVisitedDetails> visit_details(details);
     if (!loaded())
@@ -600,7 +601,7 @@ void TemplateURLModel::Observe(NotificationType type,
 }
 
 // static
-void TemplateURLModel::RegisterUserPrefs(PrefService* prefs) {
+void TemplateURLService::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kDefaultSearchProviderEnabled,
                              true,
                              PrefService::UNSYNCABLE_PREF);
@@ -633,9 +634,9 @@ void TemplateURLModel::RegisterUserPrefs(PrefService* prefs) {
                             PrefService::UNSYNCABLE_PREF);
 }
 
-void TemplateURLModel::SetKeywordSearchTermsForURL(const TemplateURL* t_url,
-                                                   const GURL& url,
-                                                   const string16& term) {
+void TemplateURLService::SetKeywordSearchTermsForURL(const TemplateURL* t_url,
+                                                     const GURL& url,
+                                                     const string16& term) {
   HistoryService* history = profile_  ?
       profile_->GetHistoryService(Profile::EXPLICIT_ACCESS) : NULL;
   if (!history)
@@ -643,7 +644,7 @@ void TemplateURLModel::SetKeywordSearchTermsForURL(const TemplateURL* t_url,
   history->SetKeywordSearchTermsForURL(url, t_url->id(), term);
 }
 
-void TemplateURLModel::Init(const Initializer* initializers,
+void TemplateURLService::Init(const Initializer* initializers,
                             int num_initializers) {
   // Register for notifications.
   if (profile_) {
@@ -662,7 +663,7 @@ void TemplateURLModel::Init(const Initializer* initializers,
 
   if (num_initializers > 0) {
     // This path is only hit by test code and is used to simulate a loaded
-    // TemplateURLModel.
+    // TemplateURLService.
     ChangeToLoadedState();
 
     // Add specific initializers, if any.
@@ -678,7 +679,8 @@ void TemplateURLModel::Init(const Initializer* initializers,
       osd_url.replace(template_position, arraysize(kTemplateParameter) - 1,
                       kSearchTermParameter);
 
-      // TemplateURLModel ends up owning the TemplateURL, don't try and free it.
+      // TemplateURLService ends up owning the TemplateURL, don't try and free
+      // it.
       TemplateURL* template_url = new TemplateURL();
       template_url->set_keyword(UTF8ToUTF16(initializers[i].keyword));
       template_url->set_short_name(UTF8ToUTF16(initializers[i].content));
@@ -704,14 +706,14 @@ void TemplateURLModel::Init(const Initializer* initializers,
   }
 }
 
-void TemplateURLModel::RemoveFromMaps(const TemplateURL* template_url) {
+void TemplateURLService::RemoveFromMaps(const TemplateURL* template_url) {
   if (!template_url->keyword().empty())
     keyword_to_template_map_.erase(template_url->keyword());
   if (loaded_)
     provider_map_.Remove(template_url);
 }
 
-void TemplateURLModel::RemoveFromKeywordMapByPointer(
+void TemplateURLService::RemoveFromKeywordMapByPointer(
     const TemplateURL* template_url) {
   DCHECK(template_url);
   for (KeywordToTemplateMap::iterator i = keyword_to_template_map_.begin();
@@ -725,7 +727,7 @@ void TemplateURLModel::RemoveFromKeywordMapByPointer(
   }
 }
 
-void TemplateURLModel::AddToMaps(const TemplateURL* template_url) {
+void TemplateURLService::AddToMaps(const TemplateURL* template_url) {
   if (!template_url->keyword().empty())
     keyword_to_template_map_[template_url->keyword()] = template_url;
   if (loaded_) {
@@ -734,7 +736,8 @@ void TemplateURLModel::AddToMaps(const TemplateURL* template_url) {
   }
 }
 
-void TemplateURLModel::SetTemplateURLs(const std::vector<TemplateURL*>& urls) {
+void TemplateURLService::SetTemplateURLs(
+    const std::vector<TemplateURL*>& urls) {
   // Add mappings for the new items.
 
   // First, add the items that already have id's, so that the next_id_
@@ -759,7 +762,7 @@ void TemplateURLModel::SetTemplateURLs(const std::vector<TemplateURL*>& urls) {
   }
 }
 
-void TemplateURLModel::ChangeToLoadedState() {
+void TemplateURLService::ChangeToLoadedState() {
   DCHECK(!loaded_);
 
   UIThreadSearchTermsData search_terms_data;
@@ -767,10 +770,10 @@ void TemplateURLModel::ChangeToLoadedState() {
   loaded_ = true;
 }
 
-void TemplateURLModel::NotifyLoaded() {
+void TemplateURLService::NotifyLoaded() {
   NotificationService::current()->Notify(
-      NotificationType::TEMPLATE_URL_MODEL_LOADED,
-      Source<TemplateURLModel>(this),
+      NotificationType::TEMPLATE_URL_SERVICE_LOADED,
+      Source<TemplateURLService>(this),
       NotificationService::NoDetails());
 
   for (size_t i = 0; i < pending_extension_ids_.size(); ++i) {
@@ -782,7 +785,7 @@ void TemplateURLModel::NotifyLoaded() {
   pending_extension_ids_.clear();
 }
 
-void TemplateURLModel::SaveDefaultSearchProviderToPrefs(
+void TemplateURLService::SaveDefaultSearchProviderToPrefs(
     const TemplateURL* t_url) {
   PrefService* prefs = GetPrefs();
   if (!prefs)
@@ -829,7 +832,7 @@ void TemplateURLModel::SaveDefaultSearchProviderToPrefs(
   prefs->ScheduleSavePersistentPrefs();
 }
 
-bool TemplateURLModel::LoadDefaultSearchProviderFromPrefs(
+bool TemplateURLService::LoadDefaultSearchProviderFromPrefs(
     scoped_ptr<TemplateURL>* default_provider,
     bool* is_managed) {
   PrefService* prefs = GetPrefs();
@@ -891,7 +894,7 @@ bool TemplateURLModel::LoadDefaultSearchProviderFromPrefs(
   return true;
 }
 
-bool TemplateURLModel::CanReplaceKeywordForHost(
+bool TemplateURLService::CanReplaceKeywordForHost(
     const std::string& host,
     const TemplateURL** to_replace) {
   const TemplateURLSet* urls = provider_map_.GetURLsForHost(host);
@@ -912,13 +915,13 @@ bool TemplateURLModel::CanReplaceKeywordForHost(
   return !urls;
 }
 
-bool TemplateURLModel::CanReplace(const TemplateURL* t_url) {
+bool TemplateURLService::CanReplace(const TemplateURL* t_url) {
   return (t_url != default_search_provider_ && !t_url->show_in_default_list() &&
           t_url->safe_for_autoreplace());
 }
 
-void TemplateURLModel::UpdateNoNotify(const TemplateURL* existing_turl,
-                                      const TemplateURL& new_values) {
+void TemplateURLService::UpdateNoNotify(const TemplateURL* existing_turl,
+                                        const TemplateURL& new_values) {
   DCHECK(loaded_);
   DCHECK(existing_turl);
   DCHECK(find(template_urls_.begin(), template_urls_.end(), existing_turl) !=
@@ -941,11 +944,11 @@ void TemplateURLModel::UpdateNoNotify(const TemplateURL* existing_turl,
     SetDefaultSearchProviderNoNotify(existing_turl);
 }
 
-PrefService* TemplateURLModel::GetPrefs() {
+PrefService* TemplateURLService::GetPrefs() {
   return profile_ ? profile_->GetPrefs() : NULL;
 }
 
-void TemplateURLModel::UpdateKeywordSearchTermsForURL(
+void TemplateURLService::UpdateKeywordSearchTermsForURL(
     const history::URLVisitedDetails& details) {
   const history::URLRow& row = details.row;
   if (!row.url().is_valid() ||
@@ -1005,7 +1008,7 @@ void TemplateURLModel::UpdateKeywordSearchTermsForURL(
   }
 }
 
-void TemplateURLModel::AddTabToSearchVisit(const TemplateURL& t_url) {
+void TemplateURLService::AddTabToSearchVisit(const TemplateURL& t_url) {
   // Only add visits for entries the user hasn't modified. If the user modified
   // the entry the keyword may no longer correspond to the host name. It may be
   // possible to do something more sophisticated here, but it's so rare as to
@@ -1034,8 +1037,8 @@ void TemplateURLModel::AddTabToSearchVisit(const TemplateURL& t_url) {
 }
 
 // static
-bool TemplateURLModel::BuildQueryTerms(const GURL& url,
-                                       QueryTerms* query_terms) {
+bool TemplateURLService::BuildQueryTerms(const GURL& url,
+                                         QueryTerms* query_terms) {
   url_parse::Component query = url.parsed_for_possibly_invalid_spec().query;
   url_parse::Component key, value;
   size_t valid_term_count = 0;
@@ -1065,7 +1068,7 @@ bool TemplateURLModel::BuildQueryTerms(const GURL& url,
   return (valid_term_count > 0);
 }
 
-void TemplateURLModel::GoogleBaseURLChanged() {
+void TemplateURLService::GoogleBaseURLChanged() {
   bool something_changed = false;
   for (size_t i = 0; i < template_urls_.size(); ++i) {
     const TemplateURL* t_url = template_urls_[i];
@@ -1087,7 +1090,7 @@ void TemplateURLModel::GoogleBaseURLChanged() {
   }
 }
 
-void TemplateURLModel::UpdateDefaultSearch() {
+void TemplateURLService::UpdateDefaultSearch() {
   if (!loaded_) {
     // Set |initial_default_search_provider_| from the preferences.  We use this
     // value for default search provider until the database has been loaded.
@@ -1172,7 +1175,7 @@ void TemplateURLModel::UpdateDefaultSearch() {
   NotifyObservers();
 }
 
-const TemplateURL* TemplateURLModel::FindNewDefaultSearchProvider() {
+const TemplateURL* TemplateURLService::FindNewDefaultSearchProvider() {
   // See if the prepoluated default still exists.
   scoped_ptr<TemplateURL> prepopulated_default(
       TemplateURLPrepopulateData::GetPrepopulatedDefaultSearch(GetPrefs()));
@@ -1188,7 +1191,7 @@ const TemplateURL* TemplateURLModel::FindNewDefaultSearchProvider() {
   return NULL;
 }
 
-void TemplateURLModel::SetDefaultSearchProviderNoNotify(
+void TemplateURLService::SetDefaultSearchProviderNoNotify(
     const TemplateURL* url) {
   DCHECK(!url || find(template_urls_.begin(), template_urls_.end(), url) !=
          template_urls_.end());
@@ -1222,7 +1225,7 @@ void TemplateURLModel::SetDefaultSearchProviderNoNotify(
     service_->SetDefaultSearchProvider(url);
 }
 
-void TemplateURLModel::AddNoNotify(TemplateURL* template_url) {
+void TemplateURLService::AddNoNotify(TemplateURL* template_url) {
   DCHECK(template_url);
   DCHECK(template_url->id() == 0);
   DCHECK(find(template_urls_.begin(), template_urls_.end(), template_url) ==
@@ -1235,7 +1238,7 @@ void TemplateURLModel::AddNoNotify(TemplateURL* template_url) {
     service_->AddKeyword(*template_url);
 }
 
-void TemplateURLModel::RemoveNoNotify(const TemplateURL* template_url) {
+void TemplateURLService::RemoveNoNotify(const TemplateURL* template_url) {
   TemplateURLVector::iterator i = find(template_urls_.begin(),
                                        template_urls_.end(),
                                        template_url);
@@ -1269,12 +1272,12 @@ void TemplateURLModel::RemoveNoNotify(const TemplateURL* template_url) {
   delete template_url;
 }
 
-void TemplateURLModel::NotifyObservers() {
+void TemplateURLService::NotifyObservers() {
   if (!loaded_)
     return;
 
-  FOR_EACH_OBSERVER(TemplateURLModelObserver, model_observers_,
-                    OnTemplateURLModelChanged());
+  FOR_EACH_OBSERVER(TemplateURLServiceObserver, model_observers_,
+                    OnTemplateURLServiceChanged());
 }
 
 // |template_urls| are the TemplateURLs loaded from the database.
@@ -1285,7 +1288,7 @@ void TemplateURLModel::NotifyObservers() {
 // This function removes from the vector and the database all the TemplateURLs
 // that were set by policy, unless it is the current default search provider
 // and matches what is set by a managed preference.
-void TemplateURLModel::RemoveProvidersCreatedByPolicy(
+void TemplateURLService::RemoveProvidersCreatedByPolicy(
     std::vector<TemplateURL*>* template_urls,
     const TemplateURL** default_search_provider,
     const TemplateURL* default_from_prefs) {

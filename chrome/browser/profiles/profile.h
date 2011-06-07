@@ -87,7 +87,6 @@ class SSLConfigServiceManager;
 class SSLHostState;
 class SpellCheckHost;
 class TemplateURLFetcher;
-class TemplateURLModel;
 class TokenService;
 class TransportSecurityPersister;
 class UserScriptMaster;
@@ -309,10 +308,6 @@ class Profile {
   // for OffTheRecord Profiles.  This PrefService is lazily created the first
   // time that this method is called.
   virtual PrefService* GetOffTheRecordPrefs() = 0;
-
-  // Returns the TemplateURLModel for this profile. This is owned by the
-  // the Profile.
-  virtual TemplateURLModel* GetTemplateURLModel() = 0;
 
   // Returns the TemplateURLFetcher for this profile. This is owned by the
   // profile.

@@ -470,7 +470,7 @@ void URLDatabase::GetMostRecentKeywordSearchTerms(
     int max_count,
     std::vector<KeywordSearchTermVisit>* matches) {
   // NOTE: the keyword_id can be zero if on first run the user does a query
-  // before the TemplateURLModel has finished loading. As the chances of this
+  // before the TemplateURLService has finished loading. As the chances of this
   // occurring are small, we ignore it.
   if (!keyword_id)
     return;

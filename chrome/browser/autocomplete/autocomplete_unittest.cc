@@ -12,7 +12,8 @@
 #include "chrome/browser/autocomplete/keyword_provider.h"
 #include "chrome/browser/autocomplete/search_provider.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/test/testing_browser_process.h"
 #include "chrome/test/testing_browser_process_test.h"
 #include "chrome/test/testing_profile.h"
@@ -164,12 +165,13 @@ void AutocompleteProviderTest::ResetControllerWithTestProviders(
 
 void AutocompleteProviderTest::
     ResetControllerWithTestProvidersWithKeywordAndSearchProviders() {
-  profile_.CreateTemplateURLModel();
+  profile_.CreateTemplateURLService();
 
   // Reset the default TemplateURL.
   TemplateURL* default_t_url = new TemplateURL();
   default_t_url->SetURL("http://defaultturl/{searchTerms}", 0, 0);
-  TemplateURLModel* turl_model = profile_.GetTemplateURLModel();
+  TemplateURLService* turl_model =
+      TemplateURLServiceFactory::GetForProfile(&profile_);
   turl_model->Add(default_t_url);
   turl_model->SetDefaultSearchProvider(default_t_url);
   TemplateURLID default_provider_id = default_t_url->id();
@@ -180,7 +182,7 @@ void AutocompleteProviderTest::
   keyword_t_url->set_short_name(ASCIIToUTF16("k"));
   keyword_t_url->set_keyword(ASCIIToUTF16("k"));
   keyword_t_url->SetURL("http://keyword/{searchTerms}", 0, 0);
-  profile_.GetTemplateURLModel()->Add(keyword_t_url);
+  turl_model->Add(keyword_t_url);
   ASSERT_NE(0, keyword_t_url->id());
 
   // Forget about any existing providers.  The controller owns them and will

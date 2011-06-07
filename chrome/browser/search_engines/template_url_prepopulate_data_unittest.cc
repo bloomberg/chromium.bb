@@ -9,7 +9,7 @@
 #include "chrome/browser/search_engines/search_engine_type.h"
 #include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_pref_service.h"
@@ -146,7 +146,7 @@ TEST_F(TemplateURLPrepopulateDataTest, SearchEngineFromOrigin) {
       for (size_t turl_i = 0; turl_i < urls.size(); ++turl_i) {
         GURL engine_url(urls[turl_i]->url()->url());
         if (!engine_url.is_valid()) {
-          engine_url = TemplateURLModel::GenerateSearchURLUsingTermsData(
+          engine_url = TemplateURLService::GenerateSearchURLUsingTermsData(
               urls[turl_i], search_terms_data);
         }
         GURL origin = engine_url.GetOrigin();
@@ -162,7 +162,7 @@ TEST_F(TemplateURLPrepopulateDataTest, SearchEngineFromOrigin) {
         TemplateURLPrepopulateData::GetEngineForOrigin(profile.GetPrefs(),
                                                        *it));
     EXPECT_EQ(
-        TemplateURLModel::GenerateSearchURLUsingTermsData(
+        TemplateURLService::GenerateSearchURLUsingTermsData(
             found_url.get(), search_terms_data).GetOrigin(),
         it->GetOrigin());
   }

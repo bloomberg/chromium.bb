@@ -11,7 +11,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_fetcher_callbacks.h"
-#include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/template_url_parser.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
@@ -39,7 +40,7 @@ class TemplateURLFetcher::RequestDelegate : public URLFetcher::Delegate,
 
   // URLFetcher::Delegate:
   // If data contains a valid OSDD, a TemplateURL is created and added to
-  // the TemplateURLModel.
+  // the TemplateURLService.
   virtual void OnURLFetchComplete(const URLFetcher* source,
                                   const GURL& url,
                                   const net::URLRequestStatus& status,
@@ -89,14 +90,15 @@ TemplateURLFetcher::RequestDelegate::RequestDelegate(
       favicon_url_(favicon_url),
       provider_type_(provider_type),
       callbacks_(callbacks) {
-  TemplateURLModel* model = fetcher_->profile()->GetTemplateURLModel();
+  TemplateURLService* model = TemplateURLServiceFactory::GetForProfile(
+      fetcher_->profile());
   DCHECK(model);  // TemplateURLFetcher::ScheduleDownload verifies this.
 
   if (!model->loaded()) {
     // Start the model load and set-up waiting for it.
     registrar_.Add(this,
-                   NotificationType::TEMPLATE_URL_MODEL_LOADED,
-                   Source<TemplateURLModel>(model));
+                   NotificationType::TEMPLATE_URL_SERVICE_LOADED,
+                   Source<TemplateURLService>(model));
     model->Load();
   }
 
@@ -108,7 +110,7 @@ void TemplateURLFetcher::RequestDelegate::Observe(
     NotificationType type,
     const NotificationSource& source,
     const NotificationDetails& details) {
-  DCHECK(type == NotificationType::TEMPLATE_URL_MODEL_LOADED);
+  DCHECK(type == NotificationType::TEMPLATE_URL_SERVICE_LOADED);
 
   if (!template_url_.get())
     return;
@@ -145,7 +147,8 @@ void TemplateURLFetcher::RequestDelegate::OnURLFetchComplete(
   }
 
   // Wait for the model to be loaded before adding the provider.
-  TemplateURLModel* model = fetcher_->profile()->GetTemplateURLModel();
+  TemplateURLService* model = TemplateURLServiceFactory::GetForProfile(
+      fetcher_->profile());
   if (!model->loaded())
     return;
   AddSearchProvider();
@@ -160,12 +163,13 @@ void TemplateURLFetcher::RequestDelegate::AddSearchProvider() {
     // it gives wrong result when OSDD is located on third party site that
     // has nothing in common with search engine in OSDD.
     GURL keyword_url(template_url_->url()->url());
-    string16 new_keyword = TemplateURLModel::GenerateKeyword(
+    string16 new_keyword = TemplateURLService::GenerateKeyword(
         keyword_url, false);
     if (!new_keyword.empty())
       keyword_ = new_keyword;
   }
-  TemplateURLModel* model = fetcher_->profile()->GetTemplateURLModel();
+  TemplateURLService* model = TemplateURLServiceFactory::GetForProfile(
+      fetcher_->profile());
   const TemplateURL* existing_url;
   if (keyword_.empty() ||
       !model || !model->loaded() ||
@@ -281,7 +285,8 @@ void TemplateURLFetcher::ScheduleDownload(
   if (provider_type == TemplateURLFetcher::AUTODETECTED_PROVIDER &&
       keyword.empty())
     return;
-  TemplateURLModel* url_model = profile()->GetTemplateURLModel();
+  TemplateURLService* url_model =
+      TemplateURLServiceFactory::GetForProfile(profile());
   if (!url_model)
     return;
 

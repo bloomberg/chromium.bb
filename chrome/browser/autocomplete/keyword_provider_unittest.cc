@@ -7,7 +7,7 @@
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/keyword_provider.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/test/testing_browser_process.h"
 #include "chrome/test/testing_browser_process_test.h"
 #include "googleurl/src/gurl.h"
@@ -35,11 +35,11 @@ class KeywordProviderTest : public TestingBrowserProcessTest {
 
  protected:
   scoped_refptr<KeywordProvider> kw_provider_;
-  scoped_ptr<TemplateURLModel> model_;
+  scoped_ptr<TemplateURLService> model_;
 };
 
 void KeywordProviderTest::SetUp() {
-  static const TemplateURLModel::Initializer kTestKeywordData[] = {
+  static const TemplateURLService::Initializer kTestKeywordData[] = {
     { "aa", "aa.com?foo=%s", "aa" },
     { "aaaa", "http://aaaa/?aaaa=1&b=%s&c", "aaaa" },
     { "aaaaa", "%s", "aaaaa" },
@@ -49,7 +49,7 @@ void KeywordProviderTest::SetUp() {
     { "z", "%s=z", "z" },
   };
 
-  model_.reset(new TemplateURLModel(kTestKeywordData,
+  model_.reset(new TemplateURLService(kTestKeywordData,
                                     arraysize(kTestKeywordData)));
   kw_provider_ = new KeywordProvider(NULL, model_.get());
 }

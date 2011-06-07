@@ -10,7 +10,7 @@
 #include "chrome/browser/importer/in_process_importer_bridge.h"
 #include "chrome/browser/importer/profile_import_process_host.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/search_engines/template_url_service.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 

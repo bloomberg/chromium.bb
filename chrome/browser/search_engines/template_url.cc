@@ -13,7 +13,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/search_engines/search_engine_type.h"
 #include "chrome/browser/search_engines/search_terms_data.h"
-#include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "content/browser/user_metrics.h"
@@ -643,8 +643,8 @@ string16 TemplateURL::keyword() const {
 void TemplateURL::EnsureKeyword() const {
   if (autogenerate_keyword_ && !keyword_generated_) {
     // Generate a keyword and cache it.
-    keyword_ = TemplateURLModel::GenerateKeyword(
-        TemplateURLModel::GenerateSearchURL(this).GetWithEmptyPath(), true);
+    keyword_ = TemplateURLService::GenerateKeyword(
+        TemplateURLService::GenerateSearchURL(this).GetWithEmptyPath(), true);
     keyword_generated_ = true;
   }
 }

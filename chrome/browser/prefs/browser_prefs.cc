@@ -41,7 +41,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/sync/signin_manager.h"
 #include "chrome/browser/tabs/pinned_tab_codec.h"
@@ -160,7 +160,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
 #endif
   BackgroundContentsService::RegisterUserPrefs(user_prefs);
   SigninManager::RegisterUserPrefs(user_prefs);
-  TemplateURLModel::RegisterUserPrefs(user_prefs);
+  TemplateURLService::RegisterUserPrefs(user_prefs);
   InstantController::RegisterUserPrefs(user_prefs);
   NetPrefObserver::RegisterPrefs(user_prefs);
   // TODO(sfeuz): Remove registering of cloud policy refresh rate preference in

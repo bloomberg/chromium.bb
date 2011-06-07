@@ -15,7 +15,7 @@
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/prefs/pref_member.h"
-#include "chrome/browser/search_engines/template_url_model_observer.h"
+#include "chrome/browser/search_engines/template_url_service_observer.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/browser/ui/views/dropdown_bar_host.h"
@@ -45,7 +45,7 @@ class SelectedKeywordView;
 class StarView;
 class TabContents;
 class TabContentsWrapper;
-class TemplateURLModel;
+class TemplateURLService;
 
 namespace views {
 class HorizontalPainter;
@@ -70,7 +70,7 @@ class LocationBarView : public LocationBar,
                         public views::DragController,
                         public AutocompleteEditController,
                         public DropdownBarHostDelegate,
-                        public TemplateURLModelObserver,
+                        public TemplateURLServiceObserver,
                         public NotificationObserver {
  public:
   // The location bar view's class name.
@@ -262,8 +262,8 @@ class LocationBarView : public LocationBar,
   virtual ExtensionAction* GetVisiblePageAction(size_t index) OVERRIDE;
   virtual void TestPageActionPressed(size_t index) OVERRIDE;
 
-  // Overridden from TemplateURLModelObserver
-  virtual void OnTemplateURLModelChanged() OVERRIDE;
+  // Overridden from TemplateURLServiceObserver
+  virtual void OnTemplateURLServiceChanged() OVERRIDE;
 
   // Overridden from NotificationObserver
   virtual void Observe(NotificationType type,
@@ -415,10 +415,9 @@ class LocationBarView : public LocationBar,
   // Whether bubble text is short or long.
   FirstRun::BubbleType bubble_type_;
 
-  // This is in case we're destroyed before the model loads. We store the model
-  // because calling profile_->GetTemplateURLModel() in the destructor causes a
-  // crash.
-  TemplateURLModel* template_url_model_;
+  // This is in case we're destroyed before the model loads. We need to make
+  // Add/RemoveObserver calls.
+  TemplateURLService* template_url_service_;
 
   // Tracks this preference to determine whether bookmark editing is allowed.
   BooleanPrefMember edit_bookmarks_enabled_;

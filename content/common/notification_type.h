@@ -730,10 +730,10 @@ class NotificationType {
 
     // Non-history storage services --------------------------------------------
 
-    // Notification that the TemplateURLModel has finished loading from the
-    // database. The source is the TemplateURLModel, and the details are
+    // Notification that the TemplateURLService has finished loading from the
+    // database. The source is the TemplateURLService, and the details are
     // NoDetails.
-    TEMPLATE_URL_MODEL_LOADED,
+    TEMPLATE_URL_SERVICE_LOADED,
 
     // Sent when a TemplateURL is removed from the model. The source is the
     // Profile, and the details the id of the TemplateURL being removed.

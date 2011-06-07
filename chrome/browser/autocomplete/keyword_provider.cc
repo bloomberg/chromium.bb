@@ -14,7 +14,8 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
 #include "grit/generated_resources.h"
@@ -72,7 +73,7 @@ KeywordProvider::KeywordProvider(ACProviderListener* listener, Profile* profile)
 }
 
 KeywordProvider::KeywordProvider(ACProviderListener* listener,
-                                 TemplateURLModel* model)
+                                 TemplateURLService* model)
     : AutocompleteProvider(listener, NULL, "Keyword"),
       model_(model),
       current_input_id_(0) {
@@ -117,7 +118,7 @@ const TemplateURL* KeywordProvider::GetSubstitutingTemplateURLForInput(
 
   // Make sure the model is loaded. This is cheap and quickly bails out if
   // the model is already loaded.
-  TemplateURLModel* model = profile->GetTemplateURLModel();
+  TemplateURLService* model = TemplateURLServiceFactory::GetForProfile(profile);
   DCHECK(model);
   model->Load();
 
@@ -160,7 +161,10 @@ void KeywordProvider::Start(const AutocompleteInput& input,
 
   // Make sure the model is loaded. This is cheap and quickly bails out if
   // the model is already loaded.
-  TemplateURLModel* model = profile_ ? profile_->GetTemplateURLModel() : model_;
+  TemplateURLService* model =
+      profile_ ?
+      TemplateURLServiceFactory::GetForProfile(profile_) :
+      model_;
   DCHECK(model);
   model->Load();
 
@@ -282,7 +286,7 @@ bool KeywordProvider::ExtractKeywordFromInput(const AutocompleteInput& input,
 
   string16 trimmed_input;
   TrimWhitespace(input.text(), TRIM_TRAILING, &trimmed_input);
-  *keyword = TemplateURLModel::CleanUserInputKeyword(
+  *keyword = TemplateURLService::CleanUserInputKeyword(
       SplitKeywordFromInput(trimmed_input, true, remaining_input));
   return !keyword->empty();
 }
@@ -382,7 +386,7 @@ int KeywordProvider::CalculateRelevance(AutocompleteInput::Type type,
 }
 
 AutocompleteMatch KeywordProvider::CreateAutocompleteMatch(
-    TemplateURLModel* model,
+    TemplateURLService* model,
     const string16& keyword,
     const AutocompleteInput& input,
     size_t prefix_length,
@@ -450,7 +454,8 @@ AutocompleteMatch KeywordProvider::CreateAutocompleteMatch(
 void KeywordProvider::Observe(NotificationType type,
                               const NotificationSource& source,
                               const NotificationDetails& details) {
-  TemplateURLModel* model = profile_ ? profile_->GetTemplateURLModel() : model_;
+  TemplateURLService* model =
+      profile_ ? TemplateURLServiceFactory::GetForProfile(profile_) : model_;
   const AutocompleteInput& input = extension_suggest_last_input_;
 
   switch (type.value) {

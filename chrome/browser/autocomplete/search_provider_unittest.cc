@@ -11,7 +11,8 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_browser_process.h"
 #include "chrome/test/testing_browser_process_test.h"
@@ -23,7 +24,7 @@
 
 // The following environment is configured for these tests:
 // . The TemplateURL default_t_url_ is set as the default provider.
-// . The TemplateURL keyword_t_url_ is added to the TemplateURLModel. This
+// . The TemplateURL keyword_t_url_ is added to the TemplateURLService. This
 //   TemplateURL has a valid suggest and search URL.
 // . The URL created by using the search term term1_ with default_t_url_ is
 //   added to history.
@@ -102,9 +103,10 @@ void SearchProviderTest::SetUp() {
 
   // We need both the history service and template url model loaded.
   profile_.CreateHistoryService(true, false);
-  profile_.CreateTemplateURLModel();
+  profile_.CreateTemplateURLService();
 
-  TemplateURLModel* turl_model = profile_.GetTemplateURLModel();
+  TemplateURLService* turl_model =
+      TemplateURLServiceFactory::GetForProfile(&profile_);
 
   // Reset the default TemplateURL.
   default_t_url_ = new TemplateURL();
@@ -132,7 +134,7 @@ void SearchProviderTest::SetUp() {
   keyword_t_url_->SetURL("http://keyword/{searchTerms}", 0, 0);
   keyword_t_url_->SetSuggestionsURL("http://suggest_keyword/{searchTerms}", 0,
                                     0);
-  profile_.GetTemplateURLModel()->Add(keyword_t_url_);
+  turl_model->Add(keyword_t_url_);
   ASSERT_NE(0, keyword_t_url_->id());
 
   // Add a page and search term for keyword_t_url_.

@@ -44,7 +44,7 @@ class HostContentSettingsMap;
 class PrefService;
 class ProfileDependencyManager;
 class ProfileSyncService;
-class TemplateURLModel;
+class TemplateURLService;
 class TestingPrefService;
 class ThemeService;
 class WebKitContext;
@@ -112,16 +112,14 @@ class TestingProfile : public Profile {
   // Blocks until TopSites finishes loading.
   void BlockUntilTopSitesLoaded();
 
-  // Creates a TemplateURLModel. If not invoked the TemplateURLModel is NULL.
-  // Creates a TemplateURLFetcher. If not invoked, the TemplateURLFetcher is
-  // NULL.
+  // Creates a TemplateURLService. If not invoked the TemplateURLService is
+  // NULL.  Creates a TemplateURLFetcher. If not invoked, the
+  // TemplateURLFetcher is NULL.
   void CreateTemplateURLFetcher();
 
-  // Creates a TemplateURLModel. If not invoked, the TemplateURLModel is NULL.
-  void CreateTemplateURLModel();
-
-  // Sets the TemplateURLModel. Takes ownership of it.
-  void SetTemplateURLModel(TemplateURLModel* model);
+  // Creates a TemplateURLService. If not invoked, the TemplateURLService is
+  // NULL.
+  void CreateTemplateURLService();
 
   // Creates an ExtensionService initialized with the testing profile and
   // returns it. The profile keeps its own copy of a scoped_refptr to the
@@ -132,6 +130,8 @@ class TestingProfile : public Profile {
                                            bool autoupdate_enabled);
 
   TestingPrefService* GetTestingPrefService();
+
+  virtual TestingProfile* AsTestingProfile();
 
   virtual std::string GetProfileName();
   virtual ProfileId GetRuntimeId();
@@ -181,7 +181,6 @@ class TestingProfile : public Profile {
   // TestingPrefService takes ownership of |prefs|.
   void SetPrefService(PrefService* prefs);
   virtual PrefService* GetPrefs();
-  virtual TemplateURLModel* GetTemplateURLModel();
   virtual TemplateURLFetcher* GetTemplateURLFetcher();
   virtual history::TopSites* GetTopSites();
   virtual history::TopSites* GetTopSitesWithoutCreating();
@@ -333,9 +332,6 @@ class TestingProfile : public Profile {
   // The TemplateURLFetcher. Only created if CreateTemplateURLFetcher is
   // invoked.
   scoped_ptr<TemplateURLFetcher> template_url_fetcher_;
-
-  // The TemplateURLModel. Only created if CreateTemplateURLModel is invoked.
-  scoped_ptr<TemplateURLModel> template_url_model_;
 
   scoped_ptr<NTPResourceCache> ntp_resource_cache_;
 

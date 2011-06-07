@@ -26,7 +26,7 @@ class EditSearchEngineController;
 class EditSearchEngineControllerDelegate;
 class Profile;
 class TemplateURL;
-class TemplateURLModel;
+class TemplateURLService;
 
 class EditSearchEngineDialog : public views::View,
                                public views::TextfieldController,

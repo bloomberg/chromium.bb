@@ -226,7 +226,7 @@ void Panel::DisableInactiveFrame() {
 void Panel::ConfirmSetDefaultSearchProvider(
     TabContents* tab_contents,
     TemplateURL* template_url,
-    TemplateURLModel* template_url_model) {
+    TemplateURLService* template_url_service) {
   NOTIMPLEMENTED();
 }
 

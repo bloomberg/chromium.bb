@@ -12,7 +12,8 @@
 #include "chrome/browser/instant/instant_loader_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -43,18 +44,19 @@ class InstantTest : public InProcessBrowserTest {
   }
 
   void SetupInstantProvider(const std::string& page) {
-    TemplateURLModel* model = browser()->profile()->GetTemplateURLModel();
+    TemplateURLService* model =
+        TemplateURLServiceFactory::GetForProfile(browser()->profile());
     ASSERT_TRUE(model);
 
     if (!model->loaded()) {
       model->Load();
       ui_test_utils::WaitForNotification(
-          NotificationType::TEMPLATE_URL_MODEL_LOADED);
+          NotificationType::TEMPLATE_URL_SERVICE_LOADED);
     }
 
     ASSERT_TRUE(model->loaded());
 
-    // TemplateURLModel takes ownership of this.
+    // TemplateURLService takes ownership of this.
     TemplateURL* template_url = new TemplateURL();
 
     std::string url = StringPrintf(
@@ -329,7 +331,8 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnChangeEvent) {
   // Make sure the url that will get committed when we press enter matches that
   // of the default search provider.
   const TemplateURL* default_turl =
-      browser()->profile()->GetTemplateURLModel()->GetDefaultSearchProvider();
+      TemplateURLServiceFactory::GetForProfile(browser()->profile())->
+      GetDefaultSearchProvider();
   ASSERT_TRUE(default_turl);
   ASSERT_TRUE(default_turl->url());
   EXPECT_EQ(default_turl->url()->ReplaceSearchTerms(

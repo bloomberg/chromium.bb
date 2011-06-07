@@ -34,7 +34,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/spellcheck_host.h"
 #include "chrome/browser/spellchecker_platform_engine.h"
 #include "chrome/browser/translate/translate_manager.h"
@@ -720,7 +721,8 @@ void RenderViewContextMenu::AppendSearchProvider() {
     }
   } else {
     const TemplateURL* const default_provider =
-        profile_->GetTemplateURLModel()->GetDefaultSearchProvider();
+        TemplateURLServiceFactory::GetForProfile(profile_)->
+        GetDefaultSearchProvider();
     if (!default_provider)
       return;
     menu_model_.AddItem(

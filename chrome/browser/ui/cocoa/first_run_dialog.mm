@@ -14,7 +14,8 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #import "chrome/browser/ui/cocoa/search_engine_dialog_controller.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
@@ -125,7 +126,8 @@ void ShowFirstRun(Profile* profile) {
 
   // Set preference to show first run bubble and welcome page.
   // Don't display the minimal bubble if there is no default search provider.
-  TemplateURLModel* search_engines_model = profile->GetTemplateURLModel();
+  TemplateURLService* search_engines_model =
+      TemplateURLServiceFactory::GetForProfile(profile);
   if (search_engines_model &&
       search_engines_model->GetDefaultSearchProvider()) {
     FirstRun::SetShowFirstRunBubblePref(true);
@@ -147,7 +149,7 @@ void ShowFirstRunDialog(Profile* profile,
                         bool randomize_search_engine_experiment) {
   // If the default search is not managed via policy, ask the user to
   // choose a default.
-  TemplateURLModel* model = profile->GetTemplateURLModel();
+  TemplateURLService* model = TemplateURLServiceFactory::GetForProfile(profile);
   if (!FirstRun::SearchEngineSelectorDisallowed() ||
       (model && !model->is_default_search_managed())) {
     ShowSearchEngineSelectionDialog(profile,

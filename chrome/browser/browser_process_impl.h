@@ -138,7 +138,7 @@ class BrowserProcessImpl : public BrowserProcess,
 #if defined(OS_CHROMEOS)
   void CreateWebSocketProxyThread();
 #endif
-  void CreateTemplateURLModel();
+  void CreateTemplateURLService();
   void CreateProfileManager();
   void CreateWebDataService();
   void CreateLocalState();

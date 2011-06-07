@@ -13,13 +13,8 @@
 
 void ProfileKeyedServiceFactory::SetTestingFactory(Profile* profile,
                                                    FactoryFunction factory) {
-#ifndef NDEBUG
-  std::map<Profile*, FactoryFunction>::iterator it =
-      factories_.find(profile);
-  if (it != factories_.end()) {
-    DCHECK(it->second == NULL) << "Can't change non-NULL testing factory";
-  }
-#endif
+  ProfileShutdown(profile);
+  ProfileDestroyed(profile);
 
   factories_[profile] = factory;
 }

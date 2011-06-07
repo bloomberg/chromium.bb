@@ -15,7 +15,7 @@
 class PrefService;
 class Profile;
 class TemplateURL;
-class TemplateURLModel;
+class TemplateURLService;
 class TemplateURLTableModel;
 
 class KeywordEditorController {
@@ -26,14 +26,14 @@ class KeywordEditorController {
   static void RegisterPrefs(PrefService* prefs);
 
   // Invoked when the user succesfully fills out the add keyword dialog.
-  // Propagates the change to the TemplateURLModel and updates the table model.
-  // Returns the index of the added URL.
+  // Propagates the change to the TemplateURLService and updates the table
+  // model.  Returns the index of the added URL.
   int AddTemplateURL(const string16& title,
                      const string16& keyword,
                      const std::string& url);
 
-  // Invoked when the user modifies a TemplateURL. Updates the TemplateURLModel
-  // and table model appropriately.
+  // Invoked when the user modifies a TemplateURL. Updates the
+  // TemplateURLService and table model appropriately.
   void ModifyTemplateURL(const TemplateURL* template_url,
                          const string16& title,
                          const string16& keyword,
@@ -65,7 +65,7 @@ class KeywordEditorController {
     return table_model_.get();
   }
 
-  TemplateURLModel* url_model() const;
+  TemplateURLService* url_model() const;
 
  private:
   // The profile.

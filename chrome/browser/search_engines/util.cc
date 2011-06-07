@@ -9,7 +9,8 @@
 
 #include "base/logging.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -21,7 +22,8 @@ string16 GetDefaultSearchEngineName(Profile* profile) {
     return string16();
   }
   const TemplateURL* const default_provider =
-      profile->GetTemplateURLModel()->GetDefaultSearchProvider();
+      TemplateURLServiceFactory::GetForProfile(profile)->
+      GetDefaultSearchProvider();
   if (!default_provider) {
     // TODO(cpu): bug 1187517. It is possible to have no default provider.
     // returning an empty string is a stopgap measure for the crash

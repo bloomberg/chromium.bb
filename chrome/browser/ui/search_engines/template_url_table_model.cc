@@ -11,7 +11,7 @@
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/search_engines/template_url_service.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -75,7 +75,7 @@ class ModelEntry {
   void LoadFavicon() {
     load_state_ = LOADED;
     FaviconService* favicon_service =
-        model_->template_url_model()->profile()->GetFaviconService(
+        model_->template_url_service()->profile()->GetFaviconService(
             Profile::EXPLICIT_ACCESS);
     if (!favicon_service)
       return;
@@ -119,17 +119,17 @@ class ModelEntry {
 // TemplateURLTableModel -----------------------------------------
 
 TemplateURLTableModel::TemplateURLTableModel(
-    TemplateURLModel* template_url_model)
+    TemplateURLService* template_url_service)
     : observer_(NULL),
-      template_url_model_(template_url_model) {
-  DCHECK(template_url_model);
-  template_url_model_->Load();
-  template_url_model_->AddObserver(this);
+      template_url_service_(template_url_service) {
+  DCHECK(template_url_service);
+  template_url_service_->Load();
+  template_url_service_->AddObserver(this);
   Reload();
 }
 
 TemplateURLTableModel::~TemplateURLTableModel() {
-  template_url_model_->RemoveObserver(this);
+  template_url_service_->RemoveObserver(this);
   STLDeleteElements(&entries_);
   entries_.clear();
 }
@@ -138,7 +138,8 @@ void TemplateURLTableModel::Reload() {
   STLDeleteElements(&entries_);
   entries_.clear();
 
-  std::vector<const TemplateURL*> urls = template_url_model_->GetTemplateURLs();
+  std::vector<const TemplateURL*> urls =
+      template_url_service_->GetTemplateURLs();
 
   // Keywords that can be made the default first.
   for (std::vector<const TemplateURL*>::iterator i = urls.begin();
@@ -181,7 +182,7 @@ string16 TemplateURLTableModel::GetText(int row, int col_id) {
     // since those should always be displayed LTR. Please refer to
     // http://crbug.com/6726 for more information.
     base::i18n::AdjustStringForLocaleDirection(&url_short_name);
-    if (template_url_model_->GetDefaultSearchProvider() == &url) {
+    if (template_url_service_->GetDefaultSearchProvider() == &url) {
       return l10n_util::GetStringFUTF16(
           IDS_SEARCH_ENGINES_EDITOR_DEFAULT_ENGINE,
           url_short_name);
@@ -237,7 +238,7 @@ int TemplateURLTableModel::GetGroupID(int row) {
 void TemplateURLTableModel::Remove(int index) {
   // Remove the observer while we modify the model, that way we don't need to
   // worry about the model calling us back when we mutate it.
-  template_url_model_->RemoveObserver(this);
+  template_url_service_->RemoveObserver(this);
   const TemplateURL* template_url = &GetTemplateURL(index);
 
   scoped_ptr<ModelEntry> entry(entries_[index]);
@@ -249,8 +250,8 @@ void TemplateURLTableModel::Remove(int index) {
 
   // Make sure to remove from the table model first, otherwise the
   // TemplateURL would be freed.
-  template_url_model_->Remove(template_url);
-  template_url_model_->AddObserver(this);
+  template_url_service_->Remove(template_url);
+  template_url_service_->AddObserver(this);
 }
 
 void TemplateURLTableModel::Add(int index, TemplateURL* template_url) {
@@ -259,9 +260,9 @@ void TemplateURLTableModel::Add(int index, TemplateURL* template_url) {
   entries_.insert(entries_.begin() + index, entry);
   if (observer_)
     observer_->OnItemsAdded(index, 1);
-  template_url_model_->RemoveObserver(this);
-  template_url_model_->Add(template_url);
-  template_url_model_->AddObserver(this);
+  template_url_service_->RemoveObserver(this);
+  template_url_service_->Add(template_url);
+  template_url_service_->AddObserver(this);
 }
 
 void TemplateURLTableModel::ModifyTemplateURL(int index,
@@ -270,16 +271,16 @@ void TemplateURLTableModel::ModifyTemplateURL(int index,
                                               const std::string& url) {
   DCHECK(index >= 0 && index <= RowCount());
   const TemplateURL* template_url = &GetTemplateURL(index);
-  template_url_model_->RemoveObserver(this);
-  template_url_model_->ResetTemplateURL(template_url, title, keyword, url);
-  if (template_url_model_->GetDefaultSearchProvider() == template_url &&
+  template_url_service_->RemoveObserver(this);
+  template_url_service_->ResetTemplateURL(template_url, title, keyword, url);
+  if (template_url_service_->GetDefaultSearchProvider() == template_url &&
       !TemplateURL::SupportsReplacement(template_url)) {
     // The entry was the default search provider, but the url has been modified
     // so that it no longer supports replacement. Reset the default search
     // provider so that it doesn't point to a bogus entry.
-    template_url_model_->SetDefaultSearchProvider(NULL);
+    template_url_service_->SetDefaultSearchProvider(NULL);
   }
-  template_url_model_->AddObserver(this);
+  template_url_service_->AddObserver(this);
   ReloadIcon(index);  // Also calls NotifyChanged().
 }
 
@@ -330,13 +331,13 @@ int TemplateURLTableModel::MakeDefaultTemplateURL(int index) {
 
   const TemplateURL* keyword = &GetTemplateURL(index);
   const TemplateURL* current_default =
-      template_url_model_->GetDefaultSearchProvider();
+      template_url_service_->GetDefaultSearchProvider();
   if (current_default == keyword)
     return -1;
 
-  template_url_model_->RemoveObserver(this);
-  template_url_model_->SetDefaultSearchProvider(keyword);
-  template_url_model_->AddObserver(this);
+  template_url_service_->RemoveObserver(this);
+  template_url_service_->SetDefaultSearchProvider(keyword);
+  template_url_service_->AddObserver(this);
 
   // The formatting of the default engine is different; notify the table that
   // both old and new entries have changed.
@@ -368,6 +369,6 @@ void TemplateURLTableModel::FaviconAvailable(ModelEntry* entry) {
   NotifyChanged(static_cast<int>(i - entries_.begin()));
 }
 
-void TemplateURLTableModel::OnTemplateURLModelChanged() {
+void TemplateURLTableModel::OnTemplateURLServiceChanged() {
   Reload();
 }

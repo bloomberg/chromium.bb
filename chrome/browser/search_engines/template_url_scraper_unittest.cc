@@ -1,9 +1,10 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved. Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/in_process_browser_test.h"
@@ -24,11 +25,11 @@ class TemplateURLScraperTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(TemplateURLScraperTest);
 };
 
-class TemplateURLModelLoader : public NotificationObserver {
+class TemplateURLServiceLoader : public NotificationObserver {
  public:
-  explicit TemplateURLModelLoader(TemplateURLModel* model) : model_(model) {
-    registrar_.Add(this, NotificationType::TEMPLATE_URL_MODEL_LOADED,
-                   Source<TemplateURLModel>(model));
+  explicit TemplateURLServiceLoader(TemplateURLService* model) : model_(model) {
+    registrar_.Add(this, NotificationType::TEMPLATE_URL_SERVICE_LOADED,
+                   Source<TemplateURLService>(model));
     model_->Load();
     ui_test_utils::RunMessageLoop();
   }
@@ -36,8 +37,8 @@ class TemplateURLModelLoader : public NotificationObserver {
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
-    if (type == NotificationType::TEMPLATE_URL_MODEL_LOADED &&
-        Source<TemplateURLModel>(source).ptr() == model_) {
+    if (type == NotificationType::TEMPLATE_URL_SERVICE_LOADED &&
+        Source<TemplateURLService>(source).ptr() == model_) {
       MessageLoop::current()->Quit();
     }
   }
@@ -45,9 +46,9 @@ class TemplateURLModelLoader : public NotificationObserver {
  private:
   NotificationRegistrar registrar_;
 
-  TemplateURLModel* model_;
+  TemplateURLService* model_;
 
-  DISALLOW_COPY_AND_ASSIGN(TemplateURLModelLoader);
+  DISALLOW_COPY_AND_ASSIGN(TemplateURLServiceLoader);
 };
 
 }  // namespace
@@ -56,8 +57,9 @@ class TemplateURLModelLoader : public NotificationObserver {
 IN_PROC_BROWSER_TEST_F(TemplateURLScraperTest, ScrapeWithOnSubmit) {
   host_resolver()->AddRule("*.foo.com", "localhost");
 
-  TemplateURLModel* template_urls = browser()->profile()->GetTemplateURLModel();
-  TemplateURLModelLoader loader(template_urls);
+  TemplateURLService* template_urls =
+      TemplateURLServiceFactory::GetInstance(browser()->profile());
+  TemplateURLServiceLoader loader(template_urls);
 
   std::vector<const TemplateURL*> all_urls = template_urls->GetTemplateURLs();
 

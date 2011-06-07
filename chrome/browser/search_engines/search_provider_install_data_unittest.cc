@@ -11,8 +11,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/search_engines/search_provider_install_data.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/search_engines/template_url_model.h"
-#include "chrome/browser/search_engines/template_url_model_test_util.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_test_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_pref_service.h"
 #include "chrome/test/testing_profile.h"
@@ -155,7 +155,7 @@ void TestGetInstallState::VerifyInstallState(
 }
 
 // Provides basic test set-up/tear-down functionality needed by all tests
-// that use TemplateURLModelTestUtil.
+// that use TemplateURLServiceTestUtil.
 class SearchProviderInstallDataTest : public testing::Test {
  public:
   SearchProviderInstallDataTest()
@@ -212,7 +212,7 @@ class SearchProviderInstallDataTest : public testing::Test {
   }
 
  protected:
-  TemplateURLModelTestUtil util_;
+  TemplateURLServiceTestUtil util_;
 
   // Provides the search provider install state on the I/O thread. It must be
   // deleted on the I/O thread, which is why it isn't a scoped_ptr.
@@ -230,7 +230,7 @@ TEST_F(SearchProviderInstallDataTest, GetInstallState) {
   util_.model()->Add(t_url);
 
   // Wait for the changes to be saved.
-  TemplateURLModelTestUtil::BlockTillServiceProcessesRequests();
+  TemplateURLServiceTestUtil::BlockTillServiceProcessesRequests();
 
   // Verify the search providers install state (with no default set).
   scoped_refptr<TestGetInstallState> test_get_install_state(
@@ -285,7 +285,7 @@ TEST_F(SearchProviderInstallDataTest, GoogleBaseUrlChange) {
   std::string google_host = "w.com";
   util_.SetGoogleBaseURL("http://" + google_host + "/");
   // Wait for the I/O thread to process the update notification.
-  TemplateURLModelTestUtil::BlockTillIOThreadProcessesRequests();
+  TemplateURLServiceTestUtil::BlockTillIOThreadProcessesRequests();
 
   TemplateURL* t_url = CreateTemplateURL("{google:baseURL}?q={searchTerms}",
                                          "t");
@@ -296,7 +296,7 @@ TEST_F(SearchProviderInstallDataTest, GoogleBaseUrlChange) {
   util_.model()->SetDefaultSearchProvider(default_url);
 
   // Wait for the changes to be saved.
-  TemplateURLModelTestUtil::BlockTillServiceProcessesRequests();
+  TemplateURLServiceTestUtil::BlockTillServiceProcessesRequests();
 
   // Verify the search providers install state (with no default set).
   test_get_install_state->set_search_provider_host(google_host);
@@ -306,7 +306,7 @@ TEST_F(SearchProviderInstallDataTest, GoogleBaseUrlChange) {
   google_host = "foo.com";
   util_.SetGoogleBaseURL("http://" + google_host + "/");
   // Wait for the I/O thread to process the update notification.
-  TemplateURLModelTestUtil::BlockTillIOThreadProcessesRequests();
+  TemplateURLServiceTestUtil::BlockTillIOThreadProcessesRequests();
 
   // Verify that the change got picked up.
   test_get_install_state->set_search_provider_host(google_host);

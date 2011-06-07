@@ -35,7 +35,8 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/search_engines/template_url_fetcher.h"
-#include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
@@ -163,6 +164,7 @@ TestingProfile::TestingProfile()
       this, CreateTestDesktopNotificationService);
   SessionServiceFactory::GetInstance()->SetTestingFactory(this, NULL);
   TabRestoreServiceFactory::GetInstance()->SetTestingFactory(this, NULL);
+  TemplateURLServiceFactory::GetInstance()->SetTestingFactory(this, NULL);
 }
 
 TestingProfile::~TestingProfile() {
@@ -312,12 +314,13 @@ void TestingProfile::CreateTemplateURLFetcher() {
   template_url_fetcher_.reset(new TemplateURLFetcher(this));
 }
 
-void TestingProfile::CreateTemplateURLModel() {
-  SetTemplateURLModel(new TemplateURLModel(this));
+static ProfileKeyedService* BuildTemplateURLService(Profile* profile) {
+  return new TemplateURLService(profile);
 }
 
-void TestingProfile::SetTemplateURLModel(TemplateURLModel* model) {
-  template_url_model_.reset(model);
+void TestingProfile::CreateTemplateURLService() {
+  TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+      this, BuildTemplateURLService);
 }
 
 ExtensionService* TestingProfile::CreateExtensionService(
@@ -356,13 +359,17 @@ TestingPrefService* TestingProfile::GetTestingPrefService() {
   return testing_prefs_;
 }
 
+TestingProfile* TestingProfile::AsTestingProfile() {
+  return this;
+}
+
 std::string TestingProfile::GetProfileName() {
   return std::string("testing_profile");
 }
 
 ProfileId TestingProfile::GetRuntimeId() {
-    return reinterpret_cast<ProfileId>(this);
-  }
+  return reinterpret_cast<ProfileId>(this);
+}
 
 bool TestingProfile::IsOffTheRecord() {
   return incognito_;
@@ -492,10 +499,6 @@ PrefService* TestingProfile::GetPrefs() {
     CreateTestingPrefService();
   }
   return prefs_.get();
-}
-
-TemplateURLModel* TestingProfile::GetTemplateURLModel() {
-  return template_url_model_.get();
 }
 
 TemplateURLFetcher* TestingProfile::GetTemplateURLFetcher() {

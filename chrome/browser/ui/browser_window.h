@@ -24,7 +24,7 @@ class StatusBubble;
 class TabContents;
 class TabContentsWrapper;
 class TemplateURL;
-class TemplateURLModel;
+class TemplateURLService;
 #if !defined(OS_MACOSX)
 class ToolbarView;
 #endif
@@ -198,7 +198,7 @@ class BrowserWindow {
   virtual void ConfirmSetDefaultSearchProvider(
       TabContents* tab_contents,
       TemplateURL* template_url,
-      TemplateURLModel* template_url_model) {
+      TemplateURLService* template_url_service) {
     // TODO(levin): Implement this for non-Windows platforms and make it pure.
     // http://crbug.com/38475
   }

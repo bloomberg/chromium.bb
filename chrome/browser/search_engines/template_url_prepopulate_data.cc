@@ -18,7 +18,7 @@
 #include "chrome/browser/search_engines/search_engine_type.h"
 #include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "googleurl/src/gurl.h"
@@ -3532,7 +3532,7 @@ static GURL GetOriginForSearchURL(const STR& url_string) {
     turl.SetURL(url_utf8_string, 0, 0);
 
     UIThreadSearchTermsData search_terms_data;
-    url = TemplateURLModel::GenerateSearchURLUsingTermsData(
+    url = TemplateURLService::GenerateSearchURLUsingTermsData(
         &turl, search_terms_data);
   }
   return url.GetOrigin();

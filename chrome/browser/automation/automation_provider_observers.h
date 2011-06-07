@@ -32,7 +32,7 @@
 #include "chrome/browser/importer/importer_progress_observer.h"
 #include "chrome/browser/password_manager/password_store_change.h"
 #include "chrome/browser/password_manager/password_store_consumer.h"
-#include "chrome/browser/search_engines/template_url_model_observer.h"
+#include "chrome/browser/search_engines/template_url_service_observer.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/common/automation_constants.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -989,17 +989,17 @@ class AutomationProviderDownloadModelChangedObserver
   DISALLOW_COPY_AND_ASSIGN(AutomationProviderDownloadModelChangedObserver);
 };
 
-// Allows automation provider to wait until TemplateURLModel has loaded
+// Allows automation provider to wait until TemplateURLService has loaded
 // before looking up/returning search engine info.
 class AutomationProviderSearchEngineObserver
-    : public TemplateURLModelObserver {
+    : public TemplateURLServiceObserver {
  public:
   AutomationProviderSearchEngineObserver(
       AutomationProvider* provider,
       IPC::Message* reply_message);
   virtual ~AutomationProviderSearchEngineObserver();
 
-  virtual void OnTemplateURLModelChanged();
+  virtual void OnTemplateURLServiceChanged();
 
  private:
   base::WeakPtr<AutomationProvider> provider_;

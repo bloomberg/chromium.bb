@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@
 
 class Profile;
 class TemplateURL;
-class TemplateURLModel;
+class TemplateURLService;
 
 // Callbacks for the TemplateURLFetcher.
 class TemplateURLFetcherCallbacks {
@@ -20,7 +20,7 @@ class TemplateURLFetcherCallbacks {
   // described by |template_url|. Takes ownership of |template_url|.
   virtual void ConfirmSetDefaultSearchProvider(
       TemplateURL* template_url,
-      TemplateURLModel* template_url_model) = 0;
+      TemplateURLService* template_url_service) = 0;
 
   // Performs the confirmation step for adding a search engine described by
   // |template_url|. Takes ownership of |template_url|.

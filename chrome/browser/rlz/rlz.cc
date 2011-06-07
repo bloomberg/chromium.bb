@@ -26,7 +26,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/installer/util/google_update_settings.h"
@@ -222,8 +223,8 @@ class DelayedInitTask : public Task {
     Profile* profile = profile_manager->GetDefaultProfile(user_data_dir);
     if (!profile)
       return false;
-    const TemplateURL* url_template =
-        profile->GetTemplateURLModel()->GetDefaultSearchProvider();
+    const TemplateURL* url_template = TemplateURLServiceFactory::GetForProfile(
+        profile)->GetDefaultSearchProvider();
     if (!url_template)
       return false;
     const TemplateURLRef* urlref = url_template->url();

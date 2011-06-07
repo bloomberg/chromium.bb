@@ -61,7 +61,7 @@ class EditSearchEngineController {
                        const std::string& url_input);
 
   // Deletes an unused TemplateURL, if its add was cancelled and it's not
-  // already owned by the TemplateURLModel.
+  // already owned by the TemplateURLService.
   void CleanUpCancelledAdd();
 
   // Accessors.
@@ -75,14 +75,14 @@ class EditSearchEngineController {
 
   // The TemplateURL we're displaying information for. It may be NULL. If we
   // have a keyword_editor_view, we assume that this TemplateURL is already in
-  // the TemplateURLModel; if not, we assume it isn't.
+  // the TemplateURLService; if not, we assume it isn't.
   const TemplateURL* template_url_;
 
   // We may have been created by this, in which case we will call back to it on
   // success to add/modify the entry.  May be NULL.
   EditSearchEngineControllerDelegate* edit_keyword_delegate_;
 
-  // Profile whose TemplateURLModel we're modifying.
+  // Profile whose TemplateURLService we're modifying.
   Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(EditSearchEngineController);

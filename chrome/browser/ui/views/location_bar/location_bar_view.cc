@@ -21,7 +21,8 @@
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/view_ids.h"
@@ -121,7 +122,7 @@ LocationBarView::LocationBarView(Profile* profile,
       mode_(mode),
       show_focus_rect_(false),
       bubble_type_(FirstRun::MINIMAL_BUBBLE),
-      template_url_model_(NULL),
+      template_url_service_(NULL),
       animation_offset_(0) {
   DCHECK(profile_);
   set_id(VIEW_ID_LOCATION_BAR);
@@ -135,8 +136,8 @@ LocationBarView::LocationBarView(Profile* profile,
 }
 
 LocationBarView::~LocationBarView() {
-  if (template_url_model_)
-    template_url_model_->RemoveObserver(this);
+  if (template_url_service_)
+    template_url_service_->RemoveObserver(this);
 }
 
 void LocationBarView::Init() {
@@ -553,7 +554,8 @@ void LocationBarView::Layout() {
     if (selected_keyword_view_->keyword() != keyword) {
       selected_keyword_view_->SetKeyword(keyword);
       const TemplateURL* template_url =
-          profile_->GetTemplateURLModel()->GetTemplateURLForKeyword(keyword);
+          TemplateURLServiceFactory::GetForProfile(profile_)->
+          GetTemplateURLForKeyword(keyword);
       if (template_url && template_url->IsExtensionKeyword()) {
         const SkBitmap& bitmap = profile_->GetExtensionService()->
             GetOmniboxIcon(template_url->GetExtensionId());
@@ -1078,11 +1080,13 @@ bool LocationBarView::CanStartDragForView(View* sender,
 
 void LocationBarView::ShowFirstRunBubble(FirstRun::BubbleType bubble_type) {
   // Wait until search engines have loaded to show the first run bubble.
-  if (!profile_->GetTemplateURLModel()->loaded()) {
+  TemplateURLService* url_service =
+      TemplateURLServiceFactory::GetForProfile(profile_);
+  if (!url_service->loaded()) {
     bubble_type_ = bubble_type;
-    template_url_model_ = profile_->GetTemplateURLModel();
-    template_url_model_->AddObserver(this);
-    template_url_model_->Load();
+    template_url_service_ = url_service;
+    template_url_service_->AddObserver(this);
+    template_url_service_->Load();
     return;
   }
   ShowFirstRunBubbleInternal(bubble_type);
@@ -1193,9 +1197,9 @@ void LocationBarView::TestPageActionPressed(size_t index) {
   NOTREACHED();
 }
 
-void LocationBarView::OnTemplateURLModelChanged() {
-  template_url_model_->RemoveObserver(this);
-  template_url_model_ = NULL;
+void LocationBarView::OnTemplateURLServiceChanged() {
+  template_url_service_->RemoveObserver(this);
+  template_url_service_ = NULL;
   // If the browser is no longer active, let's not show the info bubble, as this
   // would make the browser the active window again.
   if (location_entry_view_ && location_entry_view_->GetWidget()->IsActive())

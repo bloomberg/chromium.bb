@@ -62,7 +62,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/tab_contents/link_infobar_delegate.h"
@@ -2914,7 +2915,8 @@ void TestingAutomationProvider::LoadSearchEngineInfo(
     Browser* browser,
     DictionaryValue* args,
     IPC::Message* reply_message) {
-  TemplateURLModel* url_model(profile_->GetTemplateURLModel());
+  TemplateURLService* url_model =
+      TemplateURLServiceFactory::GetForProfile(profile_);
   if (url_model->loaded()) {
     AutomationJSONReply(this, reply_message).SendSuccess(NULL);
     return;
@@ -2930,7 +2932,8 @@ void TestingAutomationProvider::GetSearchEngineInfo(
     Browser* browser,
     DictionaryValue* args,
     IPC::Message* reply_message) {
-  TemplateURLModel* url_model(profile_->GetTemplateURLModel());
+  TemplateURLService* url_model =
+      TemplateURLServiceFactory::GetForProfile(profile_);
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
   ListValue* search_engines = new ListValue;
   std::vector<const TemplateURL*> template_urls = url_model->GetTemplateURLs();
@@ -2962,7 +2965,8 @@ void TestingAutomationProvider::AddOrEditSearchEngine(
     Browser* browser,
     DictionaryValue* args,
     IPC::Message* reply_message) {
-  TemplateURLModel* url_model(profile_->GetTemplateURLModel());
+  TemplateURLService* url_model =
+      TemplateURLServiceFactory::GetForProfile(profile_);
   const TemplateURL* template_url;
   string16 new_title;
   string16 new_keyword;
@@ -3003,7 +3007,8 @@ void TestingAutomationProvider::PerformActionOnSearchEngine(
     Browser* browser,
     DictionaryValue* args,
     IPC::Message* reply_message) {
-  TemplateURLModel* url_model(profile_->GetTemplateURLModel());
+  TemplateURLService* url_model =
+      TemplateURLServiceFactory::GetForProfile(profile_);
   std::string keyword;
   std::string action;
   if (!args->GetString("keyword", &keyword) ||

@@ -16,7 +16,8 @@
 #include "chrome/browser/importer/toolbar_importer_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_source.h"
@@ -196,14 +197,15 @@ void ImporterHost::CheckForLoadedModels(uint16 items) {
     installed_bookmark_observer_ = true;
   }
 
-  // Observes the TemplateURLModel if needed to import search engines from the
+  // Observes the TemplateURLService if needed to import search engines from the
   // other browser. We also check to see if we're importing bookmarks because
   // we can import bookmark keywords from Firefox as search engines.
   if ((items & importer::SEARCH_ENGINES) || (items & importer::FAVORITES)) {
-    if (!writer_->TemplateURLModelIsLoaded()) {
-      TemplateURLModel* model = profile_->GetTemplateURLModel();
-      registrar_.Add(this, NotificationType::TEMPLATE_URL_MODEL_LOADED,
-                     Source<TemplateURLModel>(model));
+    if (!writer_->TemplateURLServiceIsLoaded()) {
+      TemplateURLService* model =
+          TemplateURLServiceFactory::GetForProfile(profile_);
+      registrar_.Add(this, NotificationType::TEMPLATE_URL_SERVICE_LOADED,
+                     Source<TemplateURLService>(model));
       model->Load();
     }
   }
@@ -235,7 +237,7 @@ void ImporterHost::BookmarkModelChanged() {
 void ImporterHost::Observe(NotificationType type,
                            const NotificationSource& source,
                            const NotificationDetails& details) {
-  DCHECK(type == NotificationType::TEMPLATE_URL_MODEL_LOADED);
+  DCHECK(type == NotificationType::TEMPLATE_URL_SERVICE_LOADED);
   registrar_.RemoveAll();
   InvokeTaskIfDone();
 }

@@ -33,7 +33,7 @@ class HistogramSynchronizer;
 class MetricsLogBase;
 class MetricsReportingScheduler;
 class PrefService;
-class TemplateURLModel;
+class TemplateURLService;
 
 namespace webkit {
 namespace npapi {
@@ -307,7 +307,7 @@ class MetricsService : public NotificationObserver,
 
   // Logs keywords specific metrics. Keyword metrics are recorded in the
   // profile specific metrics.
-  void LogKeywords(const TemplateURLModel* url_model);
+  void LogKeywords(const TemplateURLService* url_model);
 
   // Saves plugin-related updates from the in-object buffer to Local State
   // for retrieval next time we send a Profile log (generally next launch).

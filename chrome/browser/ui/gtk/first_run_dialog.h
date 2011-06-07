@@ -10,18 +10,18 @@ typedef struct _GtkButton GtkButton;
 typedef struct _GtkWidget GtkWidget;
 
 #include "chrome/browser/first_run/first_run.h"
-#include "chrome/browser/search_engines/template_url_model_observer.h"
+#include "chrome/browser/search_engines/template_url_service_observer.h"
 #include "ui/base/gtk/gtk_signal.h"
 
 class TemplateURL;
-class TemplateURLModel;
+class TemplateURLService;
 
-class FirstRunDialog : public TemplateURLModelObserver {
+class FirstRunDialog : public TemplateURLServiceObserver {
  public:
   // Displays the first run UI for reporting opt-in, import data etc.
   static bool Show(Profile* profile, bool randomize_search_engine_order);
 
-  virtual void OnTemplateURLModelChanged();
+  virtual void OnTemplateURLServiceChanged();
 
  private:
   FirstRunDialog(Profile* profile,
@@ -63,7 +63,7 @@ class FirstRunDialog : public TemplateURLModelObserver {
   Profile* profile_;
 
   // Owned by the profile_.
-  TemplateURLModel* search_engines_model_;
+  TemplateURLService* search_engines_model_;
 
   // The search engine the user chose, or NULL if the user has not chosen a
   // search engine.

@@ -299,7 +299,7 @@ class WebDataService
   // done on the background thread.
   //
   // Many of the keyword related methods do not return a handle. This is because
-  // the caller (TemplateURLModel) does not need to know when the request is
+  // the caller (TemplateURLService) does not need to know when the request is
   // done.
   void AddKeyword(const TemplateURL& url);
 
@@ -485,8 +485,8 @@ class WebDataService
 #endif
 
  protected:
-  friend class TemplateURLModelTest;
-  friend class TemplateURLModelTestingProfile;
+  friend class TemplateURLServiceTest;
+  friend class TemplateURLServiceTestingProfile;
   friend class WebDataServiceTest;
   friend class WebDataRequest;
 

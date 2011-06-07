@@ -31,7 +31,7 @@
 #include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/password_manager/ie7_password.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"
@@ -405,8 +405,8 @@ void IEImporter::ImportSearchEngines() {
       template_url->SetURL(url, 0, 0);
       // Give this a keyword to facilitate tab-to-search, if possible.
       GURL gurl = GURL(url);
-      template_url->set_keyword(TemplateURLModel::GenerateKeyword(gurl,
-                                                                  false));
+      template_url->set_keyword(TemplateURLService::GenerateKeyword(gurl,
+                                                                    false));
       template_url->set_logo_id(
           TemplateURLPrepopulateData::GetSearchEngineLogo(gurl));
       template_url->set_show_in_default_list(true);

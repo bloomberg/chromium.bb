@@ -18,7 +18,8 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
@@ -142,7 +143,7 @@ const int kCtrlOrCmdMask = ui::EF_CONTROL_DOWN;
 }  // namespace
 
 class OmniboxViewTest : public InProcessBrowserTest,
-                                 public NotificationObserver {
+                        public NotificationObserver {
  protected:
   OmniboxViewTest() {
     set_show_window(true);
@@ -255,13 +256,14 @@ class OmniboxViewTest : public InProcessBrowserTest,
   }
 
   void SetupSearchEngine() {
-    TemplateURLModel* model = browser()->profile()->GetTemplateURLModel();
+    TemplateURLService* model =
+        TemplateURLServiceFactory::GetForProfile(browser()->profile());
     ASSERT_TRUE(model);
 
     if (!model->loaded()) {
       NotificationRegistrar registrar;
-      registrar.Add(this, NotificationType::TEMPLATE_URL_MODEL_LOADED,
-                    Source<TemplateURLModel>(model));
+      registrar.Add(this, NotificationType::TEMPLATE_URL_SERVICE_LOADED,
+                    Source<TemplateURLService>(model));
       model->Load();
       ui_test_utils::RunMessageLoop();
     }
@@ -270,8 +272,8 @@ class OmniboxViewTest : public InProcessBrowserTest,
     // Remove built-in template urls, like google.com, bing.com etc., as they
     // may appear as autocomplete suggests and interfere with our tests.
     model->SetDefaultSearchProvider(NULL);
-    TemplateURLModel::TemplateURLVector builtins = model->GetTemplateURLs();
-    for (TemplateURLModel::TemplateURLVector::const_iterator
+    TemplateURLService::TemplateURLVector builtins = model->GetTemplateURLs();
+    for (TemplateURLService::TemplateURLVector::const_iterator
          i = builtins.begin(); i != builtins.end(); ++i)
       model->Remove(*i);
 
@@ -347,7 +349,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
     switch (type.value) {
       case NotificationType::TAB_PARENTED:
       case NotificationType::TAB_CLOSED:
-      case NotificationType::TEMPLATE_URL_MODEL_LOADED:
+      case NotificationType::TEMPLATE_URL_SERVICE_LOADED:
       case NotificationType::AUTOCOMPLETE_CONTROLLER_RESULT_READY:
       case NotificationType::HISTORY_LOADED:
       case NotificationType::BOOKMARK_MODEL_LOADED:
@@ -862,15 +864,15 @@ class OmniboxViewTest : public InProcessBrowserTest,
     AutocompletePopupModel* popup_model = omnibox_view->model()->popup_model();
     ASSERT_TRUE(popup_model);
 
-    TemplateURLModel* template_url_model =
-        browser()->profile()->GetTemplateURLModel();
+    TemplateURLService* template_url_service =
+        TemplateURLServiceFactory::GetForProfile(browser()->profile());
 
     // Add a non-default substituting keyword.
     TemplateURL* template_url = new TemplateURL();
     template_url->SetURL("http://abc.com/{searchTerms}", 0, 0);
     template_url->set_keyword(UTF8ToUTF16(kSearchText));
     template_url->set_short_name(UTF8ToUTF16("Search abc"));
-    template_url_model->Add(template_url);
+    template_url_service->Add(template_url);
 
     omnibox_view->SetUserText(string16());
 
@@ -890,12 +892,12 @@ class OmniboxViewTest : public InProcessBrowserTest,
     ASSERT_FALSE(popup_model->IsOpen());
 
     // Try a non-substituting keyword.
-    template_url_model->Remove(template_url);
+    template_url_service->Remove(template_url);
     template_url = new TemplateURL();
     template_url->SetURL("http://abc.com/", 0, 0);
     template_url->set_keyword(UTF8ToUTF16(kSearchText));
     template_url->set_short_name(UTF8ToUTF16("abc"));
-    template_url_model->Add(template_url);
+    template_url_service->Add(template_url);
 
     // We always allow exact matches for non-substituting keywords.
     ASSERT_NO_FATAL_FAILURE(SendKeySequence(kSearchTextKeys));
@@ -910,7 +912,8 @@ class OmniboxViewTest : public InProcessBrowserTest,
   void DeleteItemTest() {
     // Disable the search provider, to make sure the popup contains only history
     // items.
-    TemplateURLModel* model = browser()->profile()->GetTemplateURLModel();
+    TemplateURLService* model =
+        TemplateURLServiceFactory::GetForProfile(browser()->profile());
     model->SetDefaultSearchProvider(NULL);
 
     ui_test_utils::NavigateToURL(browser(), GURL(chrome::kAboutBlankURL));

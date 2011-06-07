@@ -16,7 +16,8 @@
 #include "chrome/browser/process_singleton.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/ui/gtk/gtk_floating_container.h"
@@ -106,7 +107,8 @@ bool FirstRunDialog::Show(Profile* profile,
                           bool randomize_search_engine_order) {
   // Figure out which dialogs we will show.
   // If the default search is managed via policy, we won't ask.
-  const TemplateURLModel* search_engines_model = profile->GetTemplateURLModel();
+  const TemplateURLService* search_engines_model =
+      TemplateURLServiceFactory::GetForProfile(profile);
   bool show_search_engines_dialog =
       !FirstRun::SearchEngineSelectorDisallowed() &&
       search_engines_model &&
@@ -159,13 +161,13 @@ FirstRunDialog::FirstRunDialog(Profile* profile,
     ShowReportingDialog();
     return;
   }
-  search_engines_model_ = profile_->GetTemplateURLModel();
+  search_engines_model_ = TemplateURLServiceFactory::GetForProfile(profile_);
 
   ShowSearchEngineWindow();
 
   search_engines_model_->AddObserver(this);
   if (search_engines_model_->loaded())
-    OnTemplateURLModelChanged();
+    OnTemplateURLServiceChanged();
   else
     search_engines_model_->Load();
 }
@@ -226,7 +228,7 @@ void FirstRunDialog::ShowSearchEngineWindow() {
   gtk_util::SetLabelWidth(explanation, kExplanationWidth);
   gtk_box_pack_start(GTK_BOX(bubble_area_box), explanation, FALSE, FALSE, 0);
 
-  // We will fill this in after the TemplateURLModel has loaded.
+  // We will fill this in after the TemplateURLService has loaded.
   // GtkHButtonBox because we want all children to have the same size.
   search_engine_hbox_ = gtk_hbutton_box_new();
   gtk_box_set_spacing(GTK_BOX(search_engine_hbox_), kSearchEngineSpacing);
@@ -298,7 +300,7 @@ void FirstRunDialog::ShowReportingDialog() {
   gtk_widget_show_all(dialog_);
 }
 
-void FirstRunDialog::OnTemplateURLModelChanged() {
+void FirstRunDialog::OnTemplateURLServiceChanged() {
   // We only watch the search engine model change once, on load.  Remove
   // observer so we don't try to redraw if engines change under us.
   search_engines_model_->RemoveObserver(this);

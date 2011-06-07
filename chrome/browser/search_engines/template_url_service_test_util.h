@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_MODEL_TEST_UTIL_H_
-#define CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_MODEL_TEST_UTIL_H_
+#ifndef CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_SERVICE_TEST_UTIL_H_
+#define CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_SERVICE_TEST_UTIL_H_
 #pragma once
 
 #include <string>
@@ -13,22 +13,22 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/string16.h"
-#include "chrome/browser/search_engines/template_url_model_observer.h"
+#include "chrome/browser/search_engines/template_url_service_observer.h"
 #include "content/browser/browser_thread.h"
 
-class TemplateURLModel;
-class TemplateURLModelTestingProfile;
-class TestingTemplateURLModel;
+class TemplateURLService;
+class TemplateURLServiceTestingProfile;
+class TestingTemplateURLService;
 class TestingProfile;
 class WebDataService;
 
-// Implements functionality to make it easier to test TemplateURLModel and
+// Implements functionality to make it easier to test TemplateURLService and
 // make changes to it.
-class TemplateURLModelTestUtil : public TemplateURLModelObserver {
+class TemplateURLServiceTestUtil : public TemplateURLServiceObserver {
  public:
-  TemplateURLModelTestUtil();
+  TemplateURLServiceTestUtil();
 
-  virtual ~TemplateURLModelTestUtil();
+  virtual ~TemplateURLServiceTestUtil();
 
   // Sets up the data structures for this class (mirroring gtest standard
   // methods).
@@ -38,8 +38,8 @@ class TemplateURLModelTestUtil : public TemplateURLModelObserver {
   // methods).
   void TearDown();
 
-  // TemplateURLModelObserver implemementation.
-  virtual void OnTemplateURLModelChanged();
+  // TemplateURLServiceObserver implemementation.
+  virtual void OnTemplateURLServiceChanged();
 
   // Gets the observer count.
   int GetObserverCount();
@@ -66,11 +66,11 @@ class TemplateURLModelTestUtil : public TemplateURLModelObserver {
   // Deletes the current model (and doesn't create a new one).
   void ClearModel();
 
-  // Creates a new TemplateURLModel.
+  // Creates a new TemplateURLService.
   void ResetModel(bool verify_load);
 
   // Returns the search term from the last invocation of
-  // TemplateURLModel::SetKeywordSearchTermsForURL and clears the search term.
+  // TemplateURLService::SetKeywordSearchTermsForURL and clears the search term.
   string16 GetAndClearSearchTerm();
 
   // Set the google base url.
@@ -79,8 +79,8 @@ class TemplateURLModelTestUtil : public TemplateURLModelObserver {
   // Returns the WebDataService.
   WebDataService* GetWebDataService();
 
-  // Returns the TemplateURLModel.
-  TemplateURLModel* model() const;
+  // Returns the TemplateURLService.
+  TemplateURLService* model() const;
 
   // Returns the TestingProfile.
   TestingProfile* profile() const;
@@ -93,11 +93,11 @@ class TemplateURLModelTestUtil : public TemplateURLModelObserver {
   // Needed to make the DeleteOnUIThread trait of WebDataService work
   // properly.
   BrowserThread ui_thread_;
-  scoped_ptr<TemplateURLModelTestingProfile> profile_;
-  scoped_ptr<TestingTemplateURLModel> model_;
+  scoped_ptr<TemplateURLServiceTestingProfile> profile_;
+  scoped_ptr<TestingTemplateURLService> model_;
   int changed_count_;
 
-  DISALLOW_COPY_AND_ASSIGN(TemplateURLModelTestUtil);
+  DISALLOW_COPY_AND_ASSIGN(TemplateURLServiceTestUtil);
 };
 
-#endif  // CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_MODEL_TEST_UTIL_H_
+#endif  // CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_SERVICE_TEST_UTIL_H_

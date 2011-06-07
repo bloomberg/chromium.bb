@@ -28,7 +28,7 @@ TemplateURLFetcherUICallbacks::~TemplateURLFetcherUICallbacks() {
 
 void TemplateURLFetcherUICallbacks::ConfirmSetDefaultSearchProvider(
     TemplateURL* template_url,
-    TemplateURLModel* template_url_model) {
+    TemplateURLService* template_url_service) {
   scoped_ptr<TemplateURL> owned_template_url(template_url);
   if (!source_ || !source_->delegate() || !tab_contents_)
       return;
@@ -36,7 +36,7 @@ void TemplateURLFetcherUICallbacks::ConfirmSetDefaultSearchProvider(
   source_->delegate()->ConfirmSetDefaultSearchProvider(
       tab_contents_,
       owned_template_url.release(),
-      template_url_model);
+      template_url_service);
 }
 
 void TemplateURLFetcherUICallbacks::ConfirmAddSearchProvider(

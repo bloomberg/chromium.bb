@@ -66,7 +66,8 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/search_engine_type.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/service/service_process_control.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/translate/translate_manager.h"
@@ -1913,8 +1914,10 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // selecting a search engine through the dialog reached from the first run
   // bubble link.
   if (record_search_engine) {
+    TemplateURLService* url_service =
+        TemplateURLServiceFactory::GetForProfile(profile);
     const TemplateURL* default_search_engine =
-        profile->GetTemplateURLModel()->GetDefaultSearchProvider();
+        url_service->GetDefaultSearchProvider();
     // The default engine can be NULL if the administrator has disabled
     // default search.
     SearchEngineType search_engine_type =
@@ -1928,8 +1931,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
           SEARCH_ENGINE_MAX);
       // If the selection has been randomized, also record the winner by slot.
       if (master_prefs.randomize_search_engine_experiment) {
-        size_t engine_pos = profile->GetTemplateURLModel()->
-            GetSearchEngineDialogSlot();
+        size_t engine_pos = url_service->GetSearchEngineDialogSlot();
         if (engine_pos < 4) {
           std::string experiment_type = "Chrome.SearchSelectExperimentSlot";
           // Nicer in UMA if slots are 1-based.

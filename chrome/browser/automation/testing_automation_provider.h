@@ -22,7 +22,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 
 class DictionaryValue;
-class TemplateURLModel;
+class TemplateURLService;
 
 // This is an automation provider containing testing calls.
 class TestingAutomationProvider : public AutomationProvider,

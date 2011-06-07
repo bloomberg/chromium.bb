@@ -21,7 +21,8 @@
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/options/options_managed_banner_handler.h"
 #include "chrome/common/pref_names.h"
@@ -36,7 +37,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 BrowserOptionsHandler::BrowserOptionsHandler()
-    : template_url_model_(NULL), startup_custom_pages_table_model_(NULL) {
+    : template_url_service_(NULL), startup_custom_pages_table_model_(NULL) {
 #if !defined(OS_MACOSX)
   default_browser_worker_ = new ShellIntegration::DefaultBrowserWorker(this);
 #endif
@@ -45,8 +46,8 @@ BrowserOptionsHandler::BrowserOptionsHandler()
 BrowserOptionsHandler::~BrowserOptionsHandler() {
   if (default_browser_worker_.get())
     default_browser_worker_->ObserverDestroyed();
-  if (template_url_model_)
-    template_url_model_->RemoveObserver(this);
+  if (template_url_service_)
+    template_url_service_->RemoveObserver(this);
 }
 
 void BrowserOptionsHandler::GetLocalizedValues(
@@ -245,17 +246,17 @@ void BrowserOptionsHandler::SetDefaultBrowserUIString(int status_string_id) {
                                   *status_string, *is_default, *can_be_default);
 }
 
-void BrowserOptionsHandler::OnTemplateURLModelChanged() {
-  if (!template_url_model_ || !template_url_model_->loaded())
+void BrowserOptionsHandler::OnTemplateURLServiceChanged() {
+  if (!template_url_service_ || !template_url_service_->loaded())
     return;
 
   const TemplateURL* default_url =
-      template_url_model_->GetDefaultSearchProvider();
+      template_url_service_->GetDefaultSearchProvider();
 
   int default_index = 0;
   ListValue search_engines;
   std::vector<const TemplateURL*> model_urls =
-      template_url_model_->GetTemplateURLs();
+      template_url_service_->GetTemplateURLs();
   for (size_t i = 0; i < model_urls.size(); ++i) {
     if (!model_urls[i]->ShowInDefaultList())
       continue;
@@ -270,7 +271,7 @@ void BrowserOptionsHandler::OnTemplateURLModelChanged() {
 
   scoped_ptr<Value> default_value(Value::CreateIntegerValue(default_index));
   scoped_ptr<Value> default_managed(Value::CreateBooleanValue(
-      template_url_model_->is_default_search_managed()));
+      template_url_service_->is_default_search_managed()));
 
   web_ui_->CallJavascriptFunction("BrowserOptions.updateSearchEngines",
                                   search_engines, *default_value,
@@ -285,20 +286,21 @@ void BrowserOptionsHandler::SetDefaultSearchEngine(const ListValue* args) {
   }
 
   std::vector<const TemplateURL*> model_urls =
-      template_url_model_->GetTemplateURLs();
+      template_url_service_->GetTemplateURLs();
   if (selected_index >= 0 &&
       selected_index < static_cast<int>(model_urls.size()))
-    template_url_model_->SetDefaultSearchProvider(model_urls[selected_index]);
+    template_url_service_->SetDefaultSearchProvider(model_urls[selected_index]);
 
   UserMetricsRecordAction(UserMetricsAction("Options_SearchEngineChanged"));
 }
 
 void BrowserOptionsHandler::UpdateSearchEngines() {
-  template_url_model_ = web_ui_->GetProfile()->GetTemplateURLModel();
-  if (template_url_model_) {
-    template_url_model_->Load();
-    template_url_model_->AddObserver(this);
-    OnTemplateURLModelChanged();
+  template_url_service_ = TemplateURLServiceFactory::GetForProfile(
+      web_ui_->GetProfile());
+  if (template_url_service_) {
+    template_url_service_->Load();
+    template_url_service_->AddObserver(this);
+    OnTemplateURLServiceChanged();
   }
 }
 

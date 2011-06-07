@@ -8,7 +8,7 @@
 
 #include "chrome/browser/autocomplete/autocomplete_controller_delegate.h"
 #include "chrome/browser/prefs/pref_member.h"
-#include "chrome/browser/search_engines/template_url_model_observer.h"
+#include "chrome/browser/search_engines/template_url_service_observer.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "ui/base/models/table_model_observer.h"
@@ -16,13 +16,13 @@
 class AutocompleteController;
 class CustomHomePagesTableModel;
 class OptionsManagedBannerHandler;
-class TemplateURLModel;
+class TemplateURLService;
 
 // Chrome browser options page UI handler.
 class BrowserOptionsHandler : public OptionsPageUIHandler,
                               public AutocompleteControllerDelegate,
                               public ShellIntegration::DefaultWebClientObserver,
-                              public TemplateURLModelObserver,
+                              public TemplateURLServiceObserver,
                               public ui::TableModelObserver {
  public:
   BrowserOptionsHandler();
@@ -41,8 +41,8 @@ class BrowserOptionsHandler : public OptionsPageUIHandler,
   virtual void SetDefaultWebClientUIState(
       ShellIntegration::DefaultWebClientUIState state);
 
-  // TemplateURLModelObserver implementation.
-  virtual void OnTemplateURLModelChanged();
+  // TemplateURLServiceObserver implementation.
+  virtual void OnTemplateURLServiceChanged();
 
   // ui::TableModelObserver implementation.
   virtual void OnModelChanged();
@@ -112,11 +112,11 @@ class BrowserOptionsHandler : public OptionsPageUIHandler,
   StringPrefMember homepage_;
   BooleanPrefMember default_browser_policy_;
 
-  TemplateURLModel* template_url_model_;  // Weak.
+  TemplateURLService* template_url_service_;  // Weak.
 
   // TODO(stuartmorgan): Once there are no other clients of
   // CustomHomePagesTableModel, consider changing it to something more like
-  // TemplateURLModel.
+  // TemplateURLService.
   scoped_ptr<CustomHomePagesTableModel> startup_custom_pages_table_model_;
   scoped_ptr<OptionsManagedBannerHandler> banner_handler_;
 

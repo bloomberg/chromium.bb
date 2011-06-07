@@ -27,7 +27,8 @@
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
@@ -946,11 +947,13 @@ void LocationBarViewGtk::SetKeywordLabel(const string16& keyword) {
     return;
 
   DCHECK(profile_);
-  if (!profile_->GetTemplateURLModel())
+  TemplateURLService* template_url_service =
+      TemplateURLServiceFactory::GetForProfile(profile_);
+  if (!template_url_service)
     return;
 
   bool is_extension_keyword;
-  const string16 short_name = profile_->GetTemplateURLModel()->
+  const string16 short_name = template_url_service->
       GetKeywordShortName(keyword, &is_extension_keyword);
   int message_id = is_extension_keyword ?
       IDS_OMNIBOX_EXTENSION_KEYWORD_TEXT : IDS_OMNIBOX_KEYWORD_TEXT;
@@ -970,7 +973,7 @@ void LocationBarViewGtk::SetKeywordLabel(const string16& keyword) {
 
     if (is_extension_keyword) {
       const TemplateURL* template_url =
-          profile_->GetTemplateURLModel()->GetTemplateURLForKeyword(keyword);
+          template_url_service->GetTemplateURLForKeyword(keyword);
       const SkBitmap& bitmap = profile_->GetExtensionService()->
           GetOmniboxIcon(template_url->GetExtensionId());
       GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(&bitmap);
@@ -989,11 +992,13 @@ void LocationBarViewGtk::SetKeywordHintLabel(const string16& keyword) {
     return;
 
   DCHECK(profile_);
-  if (!profile_->GetTemplateURLModel())
+  TemplateURLService* template_url_service =
+      TemplateURLServiceFactory::GetForProfile(profile_);
+  if (!template_url_service)
     return;
 
   bool is_extension_keyword;
-  const string16 short_name = profile_->GetTemplateURLModel()->
+  const string16 short_name = template_url_service->
       GetKeywordShortName(keyword, &is_extension_keyword);
   int message_id = is_extension_keyword ?
       IDS_OMNIBOX_EXTENSION_KEYWORD_HINT : IDS_OMNIBOX_KEYWORD_HINT;

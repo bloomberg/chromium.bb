@@ -404,10 +404,6 @@ class OffTheRecordProfileImpl : public Profile,
     return prefs_;
   }
 
-  virtual TemplateURLModel* GetTemplateURLModel() {
-    return profile_->GetTemplateURLModel();
-  }
-
   virtual TemplateURLFetcher* GetTemplateURLFetcher() {
     return profile_->GetTemplateURLFetcher();
   }

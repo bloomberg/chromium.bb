@@ -20,7 +20,8 @@
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser_list.h"
 #import "chrome/browser/ui/cocoa/content_settings/content_setting_bubble_cocoa.h"
 #include "chrome/browser/ui/cocoa/event_utils.h"
@@ -462,8 +463,8 @@ NSPoint LocationBarViewMac::GetPageInfoBubblePoint() const {
 }
 
 NSImage* LocationBarViewMac::GetKeywordImage(const string16& keyword) {
-  const TemplateURL* template_url =
-      profile_->GetTemplateURLModel()->GetTemplateURLForKeyword(keyword);
+  const TemplateURL* template_url = TemplateURLServiceFactory::GetForProfile(
+      profile_)->GetTemplateURLForKeyword(keyword);
   if (template_url && template_url->IsExtensionKeyword()) {
     const SkBitmap& bitmap = profile_->GetExtensionService()->
         GetOmniboxIcon(template_url->GetExtensionId());
@@ -601,7 +602,7 @@ void LocationBarViewMac::Layout() {
   string16 short_name;
   bool is_extension_keyword = false;
   if (!keyword.empty()) {
-    short_name = profile_->GetTemplateURLModel()->
+    short_name = TemplateURLServiceFactory::GetForProfile(profile_)->
         GetKeywordShortName(keyword, &is_extension_keyword);
   }
 

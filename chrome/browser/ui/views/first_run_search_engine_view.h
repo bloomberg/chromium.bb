@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@
 
 #include <vector>
 
-#include "chrome/browser/search_engines/template_url_model_observer.h"
+#include "chrome/browser/search_engines/template_url_service_observer.h"
 #include "ui/gfx/size.h"
 #include "views/controls/button/native_button.h"
 #include "views/view.h"
@@ -24,7 +24,7 @@ class Window;
 
 class Profile;
 class TemplateURL;
-class TemplateURLModel;
+class TemplateURLService;
 
 // This class holds the logo and TemplateURL for a search engine and serves
 // as its button in the search engine selection view.
@@ -80,7 +80,7 @@ class FirstRunSearchEngineView
     : public views::View,
       public views::ButtonListener,
       public views::WindowDelegate,
-      public TemplateURLModelObserver {
+      public TemplateURLServiceObserver {
  public:
   // |profile| allows us to get the set of imported search engines.
   // |randomize| is true if logos are to be displayed in random order.
@@ -109,17 +109,17 @@ class FirstRunSearchEngineView
   // Override from View so we can draw the gray background at dialog top.
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
-  // Overridden from TemplateURLModelObserver. When the search engines have
+  // Overridden from TemplateURLServiceObserver. When the search engines have
   // loaded from the profile, we can populate the logos in the dialog box
   // to present to the user.
-  virtual void OnTemplateURLModelChanged() OVERRIDE;
+  virtual void OnTemplateURLServiceChanged() OVERRIDE;
 
  private:
   // Initializes the labels and controls in the view.
   void SetupControls();
 
   // Owned by the profile_.
-  TemplateURLModel* search_engines_model_;
+  TemplateURLService* search_engines_model_;
 
   // One for each search engine choice offered, either three or four.
   std::vector<SearchEngineChoice*> search_engine_choices_;

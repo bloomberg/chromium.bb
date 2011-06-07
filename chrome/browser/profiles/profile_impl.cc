@@ -58,7 +58,7 @@
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/template_url_fetcher.h"
-#include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/spellcheck_host.h"
 #include "chrome/browser/sync/profile_sync_factory_impl.h"
@@ -602,11 +602,6 @@ ProfileImpl::~ProfileImpl() {
 
   ProfileDependencyManager::GetInstance()->DestroyProfileServices(this);
 
-  // TemplateURLModel schedules a task on the WebDataService from its
-  // destructor. Delete it first to ensure the task gets scheduled before we
-  // shut down the database.
-  template_url_model_.reset();
-
   // DownloadManager is lazily created, so check before accessing it.
   if (download_manager_.get()) {
     // The download manager queries the history system and should be shut down
@@ -1019,12 +1014,6 @@ HistoryService* ProfileImpl::GetHistoryService(ServiceAccessType sat) {
 
 HistoryService* ProfileImpl::GetHistoryServiceWithoutCreating() {
   return history_service_.get();
-}
-
-TemplateURLModel* ProfileImpl::GetTemplateURLModel() {
-  if (!template_url_model_.get())
-    template_url_model_.reset(new TemplateURLModel(this));
-  return template_url_model_.get();
 }
 
 TemplateURLFetcher* ProfileImpl::GetTemplateURLFetcher() {

@@ -13,7 +13,7 @@
 #include "chrome/browser/search_engines/search_host_to_urls_map.h"
 #include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/util.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "content/browser/browser_thread.h"
@@ -153,7 +153,7 @@ static bool IsSameOrigin(const GURL& requested_origin,
                          const SearchTermsData& search_terms_data) {
   DCHECK(requested_origin == requested_origin.GetOrigin());
   return template_url && requested_origin ==
-      TemplateURLModel::GenerateSearchURLUsingTermsData(
+      TemplateURLService::GenerateSearchURLUsingTermsData(
           template_url,
           search_terms_data).GetOrigin();
 }
@@ -276,7 +276,7 @@ void SearchProviderInstallData::SetDefault(const TemplateURL* template_url) {
   }
 
   IOThreadSearchTermsData search_terms_data(google_base_url_);
-  const GURL url(TemplateURLModel::GenerateSearchURLUsingTermsData(
+  const GURL url(TemplateURLService::GenerateSearchURLUsingTermsData(
       template_url, search_terms_data));
   if (!url.is_valid() || !url.has_host()) {
     default_search_origin_.clear();

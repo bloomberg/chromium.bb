@@ -7,7 +7,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_fetcher.h"
-#include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/search_engines/template_url_fetcher_ui_callbacks.h"
 #include "chrome/common/render_messages.h"
 #include "content/common/view_messages.h"
@@ -109,7 +110,7 @@ void SearchEngineTabHelper::OnPageHasOSDD(
   if (!keyword_url.is_valid())
     return;
 
-  string16 keyword = TemplateURLModel::GenerateKeyword(
+  string16 keyword = TemplateURLService::GenerateKeyword(
       keyword_url,
       provider_type == TemplateURLFetcher::AUTODETECTED_PROVIDER);
 
@@ -150,23 +151,23 @@ void SearchEngineTabHelper::GenerateKeywordIfNecessary(
   GURL keyword_url = previous_entry->user_typed_url().is_valid() ?
           previous_entry->user_typed_url() : previous_entry->url();
   string16 keyword =
-      TemplateURLModel::GenerateKeyword(keyword_url, true);  // autodetected
+      TemplateURLService::GenerateKeyword(keyword_url, true);  // autodetected
   if (keyword.empty())
     return;
 
-  TemplateURLModel* url_model =
-      tab_contents()->profile()->GetTemplateURLModel();
-  if (!url_model)
+  TemplateURLService* url_service =
+      TemplateURLServiceFactory::GetForProfile(tab_contents()->profile());
+  if (!url_service)
     return;
 
-  if (!url_model->loaded()) {
-    url_model->Load();
+  if (!url_service->loaded()) {
+    url_service->Load();
     return;
   }
 
   const TemplateURL* current_url;
   GURL url = params.searchable_form_url;
-  if (!url_model->CanReplaceKeyword(keyword, url, &current_url))
+  if (!url_service->CanReplaceKeyword(keyword, url, &current_url))
     return;
 
   if (current_url) {
@@ -175,7 +176,7 @@ void SearchEngineTabHelper::GenerateKeywordIfNecessary(
       // document, don't regenerate.
       return;
     }
-    url_model->Remove(current_url);
+    url_service->Remove(current_url);
   }
   TemplateURL* new_url = new TemplateURL();
   new_url->set_keyword(keyword);
@@ -196,5 +197,5 @@ void SearchEngineTabHelper::GenerateKeywordIfNecessary(
     new_url->SetFaviconURL(TemplateURL::GenerateFaviconURL(params.referrer));
   }
   new_url->set_safe_for_autoreplace(true);
-  url_model->Add(new_url);
+  url_service->Add(new_url);
 }

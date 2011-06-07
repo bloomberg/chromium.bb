@@ -7,7 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/task.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/search_engines/template_url_service.h"
 
 SearchHostToURLsMap::SearchHostToURLsMap()
     : initialized_(false) {
@@ -33,7 +33,7 @@ void SearchHostToURLsMap::Add(const TemplateURL* template_url,
   DCHECK(initialized_);
   DCHECK(template_url);
 
-  const GURL url(TemplateURLModel::GenerateSearchURLUsingTermsData(
+  const GURL url(TemplateURLService::GenerateSearchURLUsingTermsData(
       template_url, search_terms_data));
   if (!url.is_valid() || !url.has_host())
     return;
@@ -45,7 +45,7 @@ void SearchHostToURLsMap::Remove(const TemplateURL* template_url) {
   DCHECK(initialized_);
   DCHECK(template_url);
 
-  const GURL url(TemplateURLModel::GenerateSearchURL(template_url));
+  const GURL url(TemplateURLService::GenerateSearchURL(template_url));
   if (!url.is_valid() || !url.has_host())
     return;
 

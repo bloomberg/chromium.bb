@@ -869,7 +869,7 @@ class Browser : public TabHandlerDelegate,
   virtual void ConfirmSetDefaultSearchProvider(
       TabContents* tab_contents,
       TemplateURL* template_url,
-      TemplateURLModel* template_url_model) OVERRIDE;
+      TemplateURLService* template_url_service) OVERRIDE;
   virtual void ConfirmAddSearchProvider(const TemplateURL* template_url,
                                         Profile* profile) OVERRIDE;
 
