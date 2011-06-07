@@ -108,50 +108,6 @@ class BrowserTest(pyauto.PyUITest):
     self.RestartBrowser(clear_profile=False)
     _VerifySize(20, 40, 600, 300)
 
-  def testCanLoadFlash(self):
-    """Verify that we can play Flash.
-
-    We merely check that the flash process kicks in.
-    """
-    flash_url = self.GetFileURLForDataPath('plugin', 'flash.swf')
-    self.NavigateToURL(flash_url)
-    child_processes = self.GetBrowserInfo()['child_processes']
-    self.assertTrue([x for x in child_processes
-        if x['type'] == self._flash_plugin_type and
-        x['name'] == 'Shockwave Flash'])
-
-  def _GetFlashProcessesInfo(self):
-    """Get info about flash processes, if any."""
-    return [x for x in self.GetBrowserInfo()['child_processes']
-            if x['type'] == self._flash_plugin_type and
-            x['name'] == 'Shockwave Flash']
-
-  def testSingleFlashPluginProcess(self):
-    """Verify there's only one flash plugin process shared across all uses."""
-    flash_url = self.GetFileURLForDataPath('plugin', 'flash.swf')
-    self.NavigateToURL(flash_url)
-    for _ in range(2):
-      self.AppendTab(pyauto.GURL(flash_url))
-    # Open flash in new window
-    self.OpenNewBrowserWindow(True)
-    self.NavigateToURL(flash_url, 1, 0)
-    # Open flash in new incognito window
-    self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
-    self.NavigateToURL(flash_url, 1, 0)
-    # Verify there's only 1 flash process
-    self.assertEqual(1, len(self._GetFlashProcessesInfo()))
-
-  def testFlashLoadsAfterKill(self):
-    """Verify that Flash process reloads after crashing (or being killed)."""
-    flash_url = self.GetFileURLForDataPath('plugin', 'flash.swf')
-    self.NavigateToURL(flash_url)
-    flash_process_id1 = self._GetFlashProcessesInfo()[0]['pid']
-    self.Kill(flash_process_id1)
-    self.ReloadActiveTab()
-    flash_processes = self._GetFlashProcessesInfo()
-    self.assertEqual(1, len(flash_processes))
-    self.assertNotEqual(flash_process_id1, flash_processes[0]['pid'])
-
   def testMaxProcess(self):
     """Verify that opening 100 tabs doesn't create 100 child processes"""
     total_tabs = 100

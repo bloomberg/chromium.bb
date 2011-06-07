@@ -58,6 +58,7 @@
       '-find_in_page.FindMatchTests.testSearchInPDF',
       # Turkish I problem. crbug.com/60638
       '-find_in_page.FindMatchTests.testLocalizationAndCaseOrder',
+      'flash',
       'history',
       'https',
       'imports',
