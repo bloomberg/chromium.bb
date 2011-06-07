@@ -8,13 +8,19 @@
 
 #include <string>
 
+#include "base/callback_old.h"
+#include "content/browser/cancelable_request.h"
 #include "unicode/timezone.h"
+
+class CancelableRequestConsumerBase;
 
 namespace chromeos {
 
+typedef std::map<std::string, std::string> LogDictionaryType;
+
 // This interface provides access to Chrome OS system APIs such as the
 // timezone setting.
-class SystemAccess {
+class SystemAccess : public CancelableRequestProvider {
  public:
   class Observer {
    public:
@@ -36,6 +42,30 @@ class SystemAccess {
   virtual bool GetMachineStatistic(const std::string& name,
                                    std::string* result) = 0;
 
+  // The callback type used with RequestSyslogs().
+  typedef Callback2<LogDictionaryType*,
+                    std::string*>::Type ReadCompleteCallback;
+
+  // Used to specify the syslogs context with RequestSyslogs().
+  enum SyslogsContext {
+    SYSLOGS_FEEDBACK,
+    SYSLOGS_SYSINFO,
+    SYSLOGS_NETWORK,
+    SYSLOGS_DEFAULT
+  };
+
+  // Request system logs. Read happens on the FILE thread and callback is
+  // called on the thread this is called from (via ForwardResult).
+  // Logs are owned by callback function (use delete when done with them).
+  // Returns the request handle. Call CancelRequest(Handle) to cancel
+  // the request before the callback gets called.
+  virtual Handle RequestSyslogs(
+      bool compress_logs,
+      SyslogsContext context,
+      CancelableRequestConsumerBase* consumer,
+      ReadCompleteCallback* callback) = 0;
+
+  // The observer is used to monitor timezone changes.
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
 

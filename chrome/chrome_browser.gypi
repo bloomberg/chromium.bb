@@ -401,8 +401,6 @@
         'browser/chromeos/cros/screen_lock_library.h',
         'browser/chromeos/cros/speech_synthesis_library.cc',
         'browser/chromeos/cros/speech_synthesis_library.h',
-        'browser/chromeos/cros/syslogs_library.cc',
-        'browser/chromeos/cros/syslogs_library.h',
         'browser/chromeos/cros/touchpad_library.cc',
         'browser/chromeos/cros/touchpad_library.h',
         'browser/chromeos/cros/update_library.cc',

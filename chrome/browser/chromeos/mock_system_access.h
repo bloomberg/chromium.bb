@@ -23,6 +23,10 @@ class MockSystemAccess : public SystemAccess {
                                          std::string* result));
   MOCK_METHOD1(AddObserver, void(Observer* observer));
   MOCK_METHOD1(RemoveObserver, void(Observer* observer));
+  MOCK_METHOD4(RequestSyslogs, Handle(bool compress_logs,
+                                      SyslogsContext context,
+                                      CancelableRequestConsumerBase* consumer,
+                                      ReadCompleteCallback* callback));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSystemAccess);

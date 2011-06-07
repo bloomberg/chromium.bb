@@ -15,7 +15,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/syslogs_library.h"
+#include "chrome/browser/chromeos/system_access.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/chrome_paths.h"
@@ -92,12 +92,12 @@ void SystemInfoUIHTMLSource::StartDataRequest(const std::string& path,
   path_ = path;
   request_id_ = request_id;
 
-  chromeos::SyslogsLibrary* syslogs_lib =
-      chromeos::CrosLibrary::Get()->GetSyslogsLibrary();
-  if (syslogs_lib) {
-    syslogs_lib->RequestSyslogs(
+  chromeos::SystemAccess* system_access =
+      chromeos::SystemAccess::GetInstance();
+  if (system_access) {
+    system_access->RequestSyslogs(
         false,  // don't compress.
-        chromeos::SyslogsLibrary::SYSLOGS_SYSINFO,
+        chromeos::SystemAccess::SYSLOGS_SYSINFO,
         &consumer_,
         NewCallback(this, &SystemInfoUIHTMLSource::SyslogsComplete));
   }

@@ -30,7 +30,6 @@ class NetworkLibrary;
 class PowerLibrary;
 class ScreenLockLibrary;
 class SpeechSynthesisLibrary;
-class SyslogsLibrary;
 class TouchpadLibrary;
 class UpdateLibrary;
 
@@ -67,7 +66,6 @@ class CrosLibrary {
     void SetPowerLibrary(PowerLibrary* library, bool own);
     void SetScreenLockLibrary(ScreenLockLibrary* library, bool own);
     void SetSpeechSynthesisLibrary(SpeechSynthesisLibrary* library, bool own);
-    void SetSyslogsLibrary(SyslogsLibrary* library, bool own);
     void SetTouchpadLibrary(TouchpadLibrary* library, bool own);
     void SetUpdateLibrary(UpdateLibrary* library, bool own);
 
@@ -91,7 +89,6 @@ class CrosLibrary {
   PowerLibrary* GetPowerLibrary();
   ScreenLockLibrary* GetScreenLockLibrary();
   SpeechSynthesisLibrary* GetSpeechSynthesisLibrary();
-  SyslogsLibrary* GetSyslogsLibrary();
   TouchpadLibrary* GetTouchpadLibrary();
   UpdateLibrary* GetUpdateLibrary();
 
@@ -166,7 +163,6 @@ class CrosLibrary {
   Library<PowerLibrary> power_lib_;
   Library<ScreenLockLibrary> screen_lock_lib_;
   Library<SpeechSynthesisLibrary> speech_synthesis_lib_;
-  Library<SyslogsLibrary> syslogs_lib_;
   Library<TouchpadLibrary> touchpad_lib_;
   Library<UpdateLibrary> update_lib_;
 

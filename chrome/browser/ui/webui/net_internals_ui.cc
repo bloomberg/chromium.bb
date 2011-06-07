@@ -64,7 +64,7 @@
 
 #ifdef OS_CHROMEOS
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/syslogs_library.h"
+#include "chrome/browser/chromeos/system_access.h"
 #endif
 #ifdef OS_WIN
 #include "chrome/browser/net/service_providers_win.h"
@@ -224,7 +224,7 @@ class NetInternalsMessageHandler
   class SystemLogsGetter {
    public:
     SystemLogsGetter(NetInternalsMessageHandler* handler,
-                     chromeos::SyslogsLibrary* syslog_lib);
+                     chromeos::SystemAccess* system_access);
     ~SystemLogsGetter();
 
     // Deletes logs copy we currently have, and resets logs_requested and
@@ -256,7 +256,7 @@ class NetInternalsMessageHandler
     void SendLogs(const SystemLogRequest& request);
 
     NetInternalsMessageHandler* handler_;
-    chromeos::SyslogsLibrary* syslogs_library_;
+    chromeos::SystemAccess* system_access_;
     // List of postponed requests.
     std::list<SystemLogRequest> requests_;
     scoped_ptr<chromeos::LogDictionaryType> logs_;
@@ -552,7 +552,7 @@ WebUIMessageHandler* NetInternalsMessageHandler::Attach(WebUI* web_ui) {
                             web_ui->GetProfile()->GetRequestContext());
 #ifdef OS_CHROMEOS
   syslogs_getter_.reset(new SystemLogsGetter(this,
-      chromeos::CrosLibrary::Get()->GetSyslogsLibrary()));
+      chromeos::SystemAccess::GetInstance()));
 #endif
   renderer_ready_io_callback_.reset(
       proxy_->CreateCallback(&IOThreadImpl::OnRendererReady));
@@ -748,14 +748,14 @@ void NetInternalsMessageHandler::ReadLogFileTask::Run() {
 
 NetInternalsMessageHandler::SystemLogsGetter::SystemLogsGetter(
     NetInternalsMessageHandler* handler,
-    chromeos::SyslogsLibrary* syslog_lib)
+    chromeos::SystemAccess* system_access)
     : handler_(handler),
-      syslogs_library_(syslog_lib),
+      system_access_(system_access),
       logs_(NULL),
       logs_received_(false),
       logs_requested_(false) {
-  if (!syslogs_library_)
-    LOG(ERROR) << "System logs library not loaded";
+  if (!system_access_)
+    LOG(ERROR) << "System access library not loaded";
 }
 
 NetInternalsMessageHandler::SystemLogsGetter::~SystemLogsGetter() {
@@ -763,8 +763,8 @@ NetInternalsMessageHandler::SystemLogsGetter::~SystemLogsGetter() {
 }
 
 void NetInternalsMessageHandler::SystemLogsGetter::DeleteSystemLogs() {
-  if (syslogs_library_ && logs_requested_ && !logs_received_) {
-    syslogs_library_->CancelRequest(syslogs_request_id_);
+  if (system_access_ && logs_requested_ && !logs_received_) {
+    system_access_->CancelRequest(syslogs_request_id_);
   }
   logs_requested_ = false;
   logs_received_ = false;
@@ -789,12 +789,12 @@ void NetInternalsMessageHandler::SystemLogsGetter::RequestSystemLog(
 }
 
 void NetInternalsMessageHandler::SystemLogsGetter::LoadSystemLogs() {
-  if (logs_requested_ || !syslogs_library_)
+  if (logs_requested_ || !system_access_)
     return;
   logs_requested_ = true;
-  syslogs_request_id_ = syslogs_library_->RequestSyslogs(
+  syslogs_request_id_ = system_access_->RequestSyslogs(
       false,  // compress logs.
-      chromeos::SyslogsLibrary::SYSLOGS_NETWORK,
+      chromeos::SystemAccess::SYSLOGS_NETWORK,
       &consumer_,
       NewCallback(
           this,
