@@ -76,6 +76,9 @@ static const RoleEntry roles[] = {
   { WebAccessibility::ROLE_SCROLLBAR, NSAccessibilityScrollBarRole },
   { WebAccessibility::ROLE_STATIC_TEXT, NSAccessibilityStaticTextRole },
   { WebAccessibility::ROLE_STATUS, NSAccessibilityGroupRole },
+  { WebAccessibility::ROLE_TAB, NSAccessibilityRadioButtonRole },
+  { WebAccessibility::ROLE_TAB_LIST, NSAccessibilityTabGroupRole },
+  { WebAccessibility::ROLE_TAB_PANEL, NSAccessibilityGroupRole },
   { WebAccessibility::ROLE_TABLE, NSAccessibilityTableRole },
   { WebAccessibility::ROLE_TABLE_HEADER_CONTAINER, NSAccessibilityGroupRole },
   { WebAccessibility::ROLE_TAB_GROUP, NSAccessibilityTabGroupRole },
@@ -205,18 +208,20 @@ bool GetState(BrowserAccessibility* accessibility, int state) {
   if ([[self role] isEqualToString:@"AXHeading"])
     return l10n_util::GetNSString(IDS_AX_ROLE_HEADING);
 
-  if ([[self role] isEqualToString:NSAccessibilityGroupRole]) {
+  if ([[self role] isEqualToString:NSAccessibilityGroupRole] ||
+      [[self role] isEqualToString:NSAccessibilityRadioButtonRole]) {
     const std::vector<std::pair<string16, string16> >& htmlAttributes =
         browserAccessibility_->html_attributes();
     WebAccessibility::Role browserAccessibilityRole =
         static_cast<WebAccessibility::Role>(browserAccessibility_->role());
 
-    if (browserAccessibilityRole != WebAccessibility::ROLE_GROUP &&
-        browserAccessibilityRole != WebAccessibility::ROLE_LIST_ITEM) {
+    if ((browserAccessibilityRole != WebAccessibility::ROLE_GROUP &&
+         browserAccessibilityRole != WebAccessibility::ROLE_LIST_ITEM) ||
+         browserAccessibilityRole == WebAccessibility::ROLE_TAB) {
       for (size_t i = 0; i < htmlAttributes.size(); ++i) {
         const std::pair<string16, string16>& htmlAttribute = htmlAttributes[i];
         if (htmlAttribute.first == ASCIIToUTF16("role")) {
-          // This is not localized.
+          // TODO(dtseng): This is not localized; see crbug/84814.
           return base::SysUTF16ToNSString(htmlAttribute.second);
         }
       }
@@ -230,6 +235,22 @@ bool GetState(BrowserAccessibility* accessibility, int state) {
 - (NSSize)size {
   return NSMakeSize(browserAccessibility_->location().width(),
                     browserAccessibility_->location().height());
+}
+
+// Returns all tabs in this subtree.
+- (NSArray*)tabs {
+  NSMutableArray* tabSubtree = [[[NSMutableArray alloc] init] autorelease];
+
+  if (browserAccessibility_->role() == WebAccessibility::ROLE_TAB)
+    [tabSubtree addObject:self];
+
+  for (uint i=0; i < [[self children] count]; ++i) {
+    NSArray* tabChildren = [[[self children] objectAtIndex:i] tabs];
+    if ([tabChildren count] > 0)
+      [tabSubtree addObjectsFromArray:tabChildren];
+  }
+
+  return tabSubtree;
 }
 
 // Returns the accessibility value for the given attribute.  If the value isn't
@@ -265,6 +286,9 @@ bool GetState(BrowserAccessibility* accessibility, int state) {
       // Hook back up to RenderWidgetHostViewCocoa.
       return browserAccessibility_->manager()->GetParentView();
     }
+  }
+  if ([attribute isEqualToString:NSAccessibilityTabsAttribute]) {
+    return [self tabs];
   }
   if ([attribute isEqualToString:NSAccessibilityTitleAttribute]) {
     return base::SysUTF16ToNSString(browserAccessibility_->name());
@@ -522,6 +546,10 @@ bool GetState(BrowserAccessibility* accessibility, int state) {
         NSAccessibilityVisibleCharacterRangeAttribute,
         nil]];
   }
+
+  if ([self role] == NSAccessibilityTabGroupRole)
+    [ret addObject:NSAccessibilityTabsAttribute];
+
   return ret;
 }
 

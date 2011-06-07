@@ -364,10 +364,25 @@ cr.define('options', function() {
     pageNav.id = page.name + 'PageNav';
     pageNav.className = 'navbar-item';
     pageNav.setAttribute('pageName', page.name);
+    pageNav.setAttribute('role', 'tab');
     pageNav.textContent = page.pageDiv.querySelector('h1').textContent;
-    pageNav.tabIndex = 0;
+    pageNav.tabIndex = -1;
     pageNav.onclick = function(event) {
       OptionsPage.navigateToPage(this.getAttribute('pageName'));
+    };
+    pageNav.onkeydown = function(event) {
+        if ((event.keyCode == 37 || event.keyCode==38) &&
+             this.previousSibling && this.previousSibling.onkeydown) {
+        // Left and up arrow moves back one tab.
+        OptionsPage.navigateToPage(
+            this.previousSibling.getAttribute('pageName'));
+        this.previousSibling.focus();
+        } else if ((event.keyCode == 39 || event.keyCode == 40) &&
+                    this.nextSibling) {
+        // Right and down arrows move forward one tab.
+        OptionsPage.navigateToPage(this.nextSibling.getAttribute('pageName'));
+        this.nextSibling.focus();
+      }
     };
     pageNav.onkeypress = function(event) {
       // Enter or space
@@ -848,13 +863,19 @@ cr.define('options', function() {
       if (visible) {
         this.pageDiv.hidden = false;
 
-        if (this.tab)
+        if (this.tab) {
           this.tab.classList.add('navbar-item-selected');
+          this.tab.setAttribute('aria-selected', 'true');
+          this.tab.tabIndex = 0;
+        }
       } else {
         this.pageDiv.hidden = true;
 
-        if (this.tab)
+        if (this.tab) {
           this.tab.classList.remove('navbar-item-selected');
+          this.tab.setAttribute('aria-selected', 'false');
+          this.tab.tabIndex = -1;
+        }
       }
 
       OptionsPage.updatePageFreezeStates();
