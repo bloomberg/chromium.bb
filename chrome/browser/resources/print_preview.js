@@ -819,7 +819,8 @@ function getSelectedPagesValidityLevel() {
       else
         failedToParse += 1;
 
-    } else if (isInteger(part) && parseInt(part, 10) <= totalPageCount)
+    } else if (isInteger(part) && parseInt(part, 10) <= totalPageCount &&
+               parseInt(part, 10) > 0)
       successfullyParsed += 1;
     else
       failedToParse += 1;
