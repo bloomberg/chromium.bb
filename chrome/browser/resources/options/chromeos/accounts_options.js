@@ -77,6 +77,7 @@ cr.define('options', function() {
     handleVisibleChange_: function(e) {
       if (this.visible) {
         this.updateControls_();
+        $('userList').redraw();
       }
     },
 
@@ -140,6 +141,14 @@ cr.define('options', function() {
     for (var i = 0; i < users.length; ++i) {
       userList.addUser(users[i]);
     }
+  };
+
+  /**
+   * Update account picture.
+   */
+  AccountsOptions.updateAccountPicture = function(email, imageUrl) {
+    var userList = $('userList');
+    userList.updateAccountPicture(email, imageUrl);
   };
 
   // Export

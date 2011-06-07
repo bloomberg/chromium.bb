@@ -429,6 +429,9 @@ void PersonalOptionsHandler::LoadAccountPicture(const ListValue* args) {
                      timestamp));
     web_ui_->CallJavascriptFunction("PersonalOptions.setAccountPicture",
                                     image_url);
+
+    web_ui_->CallJavascriptFunction("AccountsOptions.updateAccountPicture",
+                                    StringValue(email), image_url);
   }
 }
 #endif

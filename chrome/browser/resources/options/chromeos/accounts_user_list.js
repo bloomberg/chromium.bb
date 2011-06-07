@@ -50,6 +50,9 @@ cr.define('options.accounts', function() {
      */
     findUserByEmail_: function(email) {
       var dataModel = this.dataModel;
+      if (!dataModel)
+        return -1;
+
       var length = dataModel.length;
       for (var i = 0; i < length; ++i) {
         var user = dataModel.item(i);
@@ -83,6 +86,20 @@ cr.define('options.accounts', function() {
       if (index >= 0) {
         dataModel.splice(index, 1);
         chrome.send('unwhitelistUser', [user.email]);
+      }
+    },
+
+    /**
+     * Update given user's account picture.
+     * @param {String} email Email ofthe user to update.
+     * @param {String} imageUrl Updated account picture url.
+     */
+    updateAccountPicture: function(email, imageUrl) {
+      var index = this.findUserByEmail_(email);
+      if (index >= 0) {
+        var item = this.getListItemByIndex(index);
+        if (item)
+          item.setPicture(imageUrl);
       }
     },
 
@@ -148,9 +165,10 @@ cr.define('options.accounts', function() {
 
       this.className = 'user-list-item';
 
-      var icon = this.ownerDocument.createElement('img');
-      icon.className = 'user-icon';
-      icon.src = 'chrome://userimage/' + this.user.email;
+      this.icon_ = this.ownerDocument.createElement('img');
+      this.icon_.className = 'user-icon';
+      this.icon_.src = 'chrome://userimage/' + this.user.email +
+                       '?id=' + (new Date()).getTime();
 
       var labelEmail = this.ownerDocument.createElement('span');
       labelEmail.className = 'user-email-label';
@@ -170,7 +188,7 @@ cr.define('options.accounts', function() {
           localStrings.getStringF('username_format', this.user.email) :
           this.user.email;
 
-      this.appendChild(icon);
+      this.appendChild(this.icon_);
       this.appendChild(emailNameBlock);
 
       if (!this.user.owner) {
@@ -179,6 +197,14 @@ cr.define('options.accounts', function() {
         removeButton.classList.add('remove-user-button');
         this.appendChild(removeButton);
       }
+    },
+
+    /**
+     * Set user picture to givem url.
+     * @param {String} imageUrl Account picture url.
+     */
+    setPicture: function(imageUrl) {
+      this.icon_.src = imageUrl;
     }
   };
 
