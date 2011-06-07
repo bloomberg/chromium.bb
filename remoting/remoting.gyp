@@ -152,6 +152,8 @@
         'host/disconnect_window_mac.mm',
         'host/disconnect_window_win.cc',
         'host/host_plugin.cc',
+        'host/host_plugin.def',
+        'host/host_plugin.rc',
       ],
       'conditions': [
         ['OS=="mac"', {
@@ -192,6 +194,12 @@
               ],
             },
           },
+        }],
+        ['OS!="win"', {
+          'sources!': [
+            'host/host_plugin.def',
+            'host/host_plugin.rc',
+          ],
         }],
       ],
     },  # end of target 'remoting_host_plugin'

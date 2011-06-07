@@ -33,10 +33,11 @@
 #include "third_party/npapi/bindings/npfunctions.h"
 #include "third_party/npapi/bindings/npruntime.h"
 
-#if defined (OS_WIN)
-#define OSCALL __declspec(dllexport)
+// Symbol export is handled with a separate def file on Windows.
+#if defined (__GNUC__) && __GNUC__ >= 4
+#define EXPORT __attribute__((visibility("default")))
 #else
-#define OSCALL __attribute__((visibility("default")))
+#define EXPORT
 #endif
 
 #if defined(OS_WIN)
@@ -895,7 +896,7 @@ DISABLE_RUNNABLE_METHOD_REFCOUNT(HostNPScriptObject);
 
 extern "C" {
 
-OSCALL NPError NP_GetEntryPoints(NPPluginFuncs* nppfuncs) {
+EXPORT NPError API_CALL NP_GetEntryPoints(NPPluginFuncs* nppfuncs) {
   LOG(INFO) << "NP_GetEntryPoints";
   nppfuncs->version = (NP_VERSION_MAJOR << 8) | NP_VERSION_MINOR;
   nppfuncs->newp = &CreatePlugin;
@@ -907,7 +908,7 @@ OSCALL NPError NP_GetEntryPoints(NPPluginFuncs* nppfuncs) {
   return NPERR_NO_ERROR;
 }
 
-OSCALL NPError NP_Initialize(NPNetscapeFuncs* npnetscape_funcs
+EXPORT NPError API_CALL NP_Initialize(NPNetscapeFuncs* npnetscape_funcs
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
                             , NPPluginFuncs* nppfuncs
 #endif
@@ -930,22 +931,26 @@ OSCALL NPError NP_Initialize(NPNetscapeFuncs* npnetscape_funcs
   return NPERR_NO_ERROR;
 }
 
-OSCALL NPError NP_Shutdown() {
+EXPORT NPError NP_Shutdown() {
   LOG(INFO) << "NP_Shutdown";
   delete g_at_exit_manager;
   g_at_exit_manager = NULL;
   return NPERR_NO_ERROR;
 }
 
-OSCALL const char* NP_GetMIMEDescription(void) {
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+EXPORT const char* API_CALL NP_GetMIMEDescription(void) {
   LOG(INFO) << "NP_GetMIMEDescription";
   return STRINGIZE(HOST_PLUGIN_MIME_TYPE) ":"
       HOST_PLUGIN_NAME ":"
       HOST_PLUGIN_DESCRIPTION;
 }
 
-OSCALL NPError NP_GetValue(void* npp, NPPVariable variable, void* value) {
+EXPORT NPError API_CALL NP_GetValue(void* npp,
+                                    NPPVariable variable,
+                                    void* value) {
   return GetValue((NPP)npp, variable, value);
 }
+#endif
 
 }  // extern "C"
