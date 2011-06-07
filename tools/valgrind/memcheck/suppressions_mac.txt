@@ -217,6 +217,12 @@
    fun:tpDbFindIssuerCrl
    fun:tpVerifyCertGroupWithCrls
 }
+{
+   bug_85213
+   Memcheck:Leak
+   ...
+   fun:_CFBundleCopyDirectoryContentsAtPath
+}
 
 # 2. Intentional unit test errors, stuff that is somehow a false positive
 # in our own code, or stuff that is so trivial it's not worth fixing.
