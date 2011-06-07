@@ -92,6 +92,7 @@ class CommandBufferProxy : public gpu::CommandBuffer,
   // Message handlers:
   void OnUpdateState(const gpu::CommandBuffer::State& state);
   void OnNotifyRepaint();
+  void OnDestroyed();
 
   // As with the service, the client takes ownership of the ring buffer.
   int32 num_entries_;

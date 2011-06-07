@@ -50,6 +50,7 @@ class CommandBufferService : public CommandBuffer {
   // attempting to write more to the command buffer. Takes ownership of
   // callback.
   virtual void SetPutOffsetChangeCallback(Callback1<bool>::Type* callback);
+  virtual void SetParseErrorCallback(Callback0::Type* callback);
 
  private:
   Buffer ring_buffer_;
@@ -57,6 +58,7 @@ class CommandBufferService : public CommandBuffer {
   int32 get_offset_;
   int32 put_offset_;
   scoped_ptr<Callback1<bool>::Type> put_offset_change_callback_;
+  scoped_ptr<Callback0::Type> parse_error_callback_;
   std::vector<Buffer> registered_objects_;
   std::set<int32> unused_registered_object_elements_;
   int32 token_;

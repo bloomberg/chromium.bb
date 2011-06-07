@@ -148,6 +148,8 @@ void GpuCommandBufferStub::OnInitialize(
       command_buffer_->SetPutOffsetChangeCallback(
           NewCallback(scheduler_.get(),
                       &gpu::GpuScheduler::PutChanged));
+      command_buffer_->SetParseErrorCallback(
+          NewCallback(this, &GpuCommandBufferStub::OnParseError));
       scheduler_->SetSwapBuffersCallback(
           NewCallback(this, &GpuCommandBufferStub::OnSwapBuffers));
       scheduler_->SetLatchCallback(base::Bind(
@@ -194,6 +196,13 @@ void GpuCommandBufferStub::OnGetState(IPC::Message* reply_message) {
 
   GpuCommandBufferMsg_GetState::WriteReplyParams(reply_message, state);
   Send(reply_message);
+}
+
+void GpuCommandBufferStub::OnParseError() {
+  TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnParseError");
+  IPC::Message* msg = new GpuCommandBufferMsg_Destroyed(route_id_);
+  msg->set_unblock(true);
+  Send(msg);
 }
 
 void GpuCommandBufferStub::OnFlush(int32 put_offset,

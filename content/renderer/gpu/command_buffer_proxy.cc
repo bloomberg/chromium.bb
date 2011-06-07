@@ -43,6 +43,7 @@ bool CommandBufferProxy::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(CommandBufferProxy, message)
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_UpdateState, OnUpdateState);
+    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_Destroyed, OnDestroyed);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SwapBuffers, OnSwapBuffers);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_NotifyRepaint,
                         OnNotifyRepaint);
@@ -53,6 +54,10 @@ bool CommandBufferProxy::OnMessageReceived(const IPC::Message& message) {
 }
 
 void CommandBufferProxy::OnChannelError() {
+  OnDestroyed();
+}
+
+void CommandBufferProxy::OnDestroyed() {
   // Prevent any further messages from being sent.
   channel_ = NULL;
 
@@ -60,8 +65,11 @@ void CommandBufferProxy::OnChannelError() {
   // CommandBufferProxy and create a new one.
   last_state_.error = gpu::error::kLostContext;
 
-  if (channel_error_callback_.get())
+  if (channel_error_callback_.get()) {
     channel_error_callback_->Run();
+    // Avoid calling the error callback more than once.
+    channel_error_callback_.reset();
+  }
 }
 
 void CommandBufferProxy::SetChannelErrorCallback(Callback0::Type* callback) {

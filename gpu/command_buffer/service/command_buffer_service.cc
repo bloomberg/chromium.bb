@@ -249,12 +249,19 @@ void CommandBufferService::SetToken(int32 token) {
 void CommandBufferService::SetParseError(error::Error error) {
   if (error_ == error::kNoError) {
     error_ = error;
+    if (parse_error_callback_.get())
+      parse_error_callback_->Run();
   }
 }
 
 void CommandBufferService::SetPutOffsetChangeCallback(
     Callback1<bool>::Type* callback) {
   put_offset_change_callback_.reset(callback);
+}
+
+void CommandBufferService::SetParseErrorCallback(
+    Callback0::Type* callback) {
+  parse_error_callback_.reset(callback);
 }
 
 }  // namespace gpu

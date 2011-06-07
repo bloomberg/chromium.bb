@@ -379,6 +379,10 @@ IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_SetWindowSize,
                     gfx::Size /* size */)
 #endif
 
+// Tells the proxy that there was an error and the command buffer had to be
+// destroyed for some reason.
+IPC_MESSAGE_ROUTED0(GpuCommandBufferMsg_Destroyed)
+
 // --------------------------------------------------------------------------
 // TransportTexture messages
 //
