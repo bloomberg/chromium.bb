@@ -102,6 +102,13 @@ class TreeNode : public TreeModelNode {
     children_->clear();
   }
 
+  // Returns the parent node, or NULL if this is the root node.
+  const NodeType* parent() const { return parent_; }
+  NodeType* parent() { return parent_; }
+
+  // Returns true if this is the root node.
+  bool is_root() const { return parent_ == NULL; }
+
   // Returns the number of children.
   int child_count() const { return static_cast<int>(children_->size()); }
 
@@ -125,21 +132,13 @@ class TreeNode : public TreeModelNode {
         static_cast<const NodeType&>(*this).GetChild(index));
   }
 
-  // Returns the parent node, or NULL if this is the root node.
-  const NodeType* parent() const { return parent_; }
-  NodeType* parent() { return parent_; }
-
-  // Returns true if this is the root node.
-  bool is_root() const { return parent_ == NULL; }
-
   // Returns the index of |node|, or -1 if |node| is not a child of this.
   int GetIndexOf(const NodeType* node) const {
     DCHECK(node);
     typename std::vector<NodeType*>::const_iterator i =
         std::find(children_->begin(), children_->end(), node);
-    if (i != children_->end())
-      return static_cast<int>(i - children_->begin());
-    return -1;
+    return
+        i != children_->end() ? static_cast<int>(i - children_->begin()) : -1;
   }
 
   // Sets the title of the node.

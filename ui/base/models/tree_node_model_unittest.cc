@@ -172,28 +172,31 @@ TEST_F(TreeNodeModelTest, RemoveAllNodes) {
 // |   |-- foo1
 // +-- child2
 TEST_F(TreeNodeModelTest, GetIndexOf) {
-  TreeNodeWithValue<int>* root =
-      new TreeNodeWithValue<int>(ASCIIToUTF16("root"), 0);
-  TreeNodeModel<TreeNodeWithValue<int> > model(root);
-  model.AddObserver(this);
-  ClearCounts();
+  TreeNodeWithValue<int> root;
 
-  TreeNodeWithValue<int>* child1 =
-      new TreeNodeWithValue<int>(ASCIIToUTF16("child 1"), 1);
-  model.Add(root, child1, 0);
+  TreeNodeWithValue<int>* child1 = new TreeNodeWithValue<int>(1);
+  root.Add(child1, 0);
 
-  TreeNodeWithValue<int>* child2 =
-      new TreeNodeWithValue<int>(ASCIIToUTF16("child 2"), 2);
-  model.Add(root, child2, 1);
+  TreeNodeWithValue<int>* child2 = new TreeNodeWithValue<int>(2);
+  root.Add(child2, 1);
 
-  TreeNodeWithValue<int>* foo1 =
-      new TreeNodeWithValue<int>(ASCIIToUTF16("foo1"), 0);
-  model.Add(child1, foo1, 0);
+  TreeNodeWithValue<int>* foo1 = new TreeNodeWithValue<int>(0);
+  child1->Add(foo1, 0);
 
-  ASSERT_EQ(0, model.GetIndexOf(root, child1));
-  ASSERT_EQ(1, model.GetIndexOf(root, child2));
-  ASSERT_EQ(0, model.GetIndexOf(child1, foo1));
-  ASSERT_EQ(-1, model.GetIndexOf(root, foo1));
+  ASSERT_EQ(-1, root.GetIndexOf(&root));
+  ASSERT_EQ(0, root.GetIndexOf(child1));
+  ASSERT_EQ(1, root.GetIndexOf(child2));
+  ASSERT_EQ(-1, root.GetIndexOf(foo1));
+
+  ASSERT_EQ(-1, child1->GetIndexOf(&root));
+  ASSERT_EQ(-1, child1->GetIndexOf(child1));
+  ASSERT_EQ(-1, child1->GetIndexOf(child2));
+  ASSERT_EQ(0, child1->GetIndexOf(foo1));
+
+  ASSERT_EQ(-1, child2->GetIndexOf(&root));
+  ASSERT_EQ(-1, child2->GetIndexOf(child2));
+  ASSERT_EQ(-1, child2->GetIndexOf(child1));
+  ASSERT_EQ(-1, child2->GetIndexOf(foo1));
 }
 
 // Verify whether a specified node has or not an ancestor.

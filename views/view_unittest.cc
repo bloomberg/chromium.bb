@@ -2045,16 +2045,19 @@ TEST_F(ViewTest, GetIndexOf) {
   View* foo1 = new View();
   child1->AddChildView(foo1);
 
+  ASSERT_EQ(-1, root.GetIndexOf(NULL));
   ASSERT_EQ(-1, root.GetIndexOf(&root));
   ASSERT_EQ(0, root.GetIndexOf(child1));
   ASSERT_EQ(1, root.GetIndexOf(child2));
   ASSERT_EQ(-1, root.GetIndexOf(foo1));
 
+  ASSERT_EQ(-1, child1->GetIndexOf(NULL));
   ASSERT_EQ(-1, child1->GetIndexOf(&root));
   ASSERT_EQ(-1, child1->GetIndexOf(child1));
   ASSERT_EQ(-1, child1->GetIndexOf(child2));
   ASSERT_EQ(0, child1->GetIndexOf(foo1));
 
+  ASSERT_EQ(-1, child2->GetIndexOf(NULL));
   ASSERT_EQ(-1, child2->GetIndexOf(&root));
   ASSERT_EQ(-1, child2->GetIndexOf(child2));
   ASSERT_EQ(-1, child2->GetIndexOf(child1));

@@ -212,7 +212,7 @@ bool View::Contains(const View* view) const {
 
 int View::GetIndexOf(const View* view) const {
   Views::const_iterator i(std::find(children_.begin(), children_.end(), view));
-  return i != children_.end() ? i - children_.begin() : -1;
+  return i != children_.end() ? static_cast<int>(i - children_.begin()) : -1;
 }
 
 // TODO(beng): remove
