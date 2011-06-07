@@ -434,7 +434,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest,
 }
 
 // TCM ID - 7583816
-IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest, kAcceptLanguages) {
+// TODO(braffert): This test fails on linux.  See http://crbug.com/85250.
+IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest,
+                       FAILS_kAcceptLanguages) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(StringPrefMatches(prefs::kAcceptLanguages));
 
