@@ -327,6 +327,7 @@ const char* const Extension::kHostedAppPermissionNames[] = {
   Extension::kChromePrivatePermission,
   Extension::kClipboardReadPermission,
   Extension::kClipboardWritePermission,
+  Extension::kExperimentalPermission,
   Extension::kGeolocationPermission,
   Extension::kNotificationPermission,
   Extension::kUnlimitedStoragePermission,
@@ -1459,7 +1460,7 @@ bool Extension::LoadAppIsolation(const DictionaryValue* manifest,
                                  std::string* error) {
   // Only parse app isolation features if this switch is present.
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExperimentalAppManifests))
+          switches::kEnableExperimentalExtensionApis))
     return true;
 
   Value* temp = NULL;
@@ -2288,9 +2289,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
         if (IsAPIPermission(permission_str)) {
           // Only allow the experimental API permission if the command line
           // flag is present, or if the extension is a component of Chrome.
-          if (permission_str == Extension::kExperimentalPermission &&
-              !CommandLine::ForCurrentProcess()->HasSwitch(
-                switches::kEnableExperimentalExtensionApis) &&
+          if (IsDisallowedExperimentalPermission(permission_str) &&
               location() != Extension::COMPONENT) {
             *error = errors::kExperimentalFlagRequired;
             return false;
@@ -2301,6 +2300,10 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
       } else {
         // Hosted apps only get access to a subset of the valid permissions.
         if (IsHostedAppPermission(permission_str)) {
+          if (IsDisallowedExperimentalPermission(permission_str)) {
+            *error = errors::kExperimentalFlagRequired;
+            return false;
+          }
           api_permissions_.insert(permission_str);
           continue;
         }
@@ -3059,6 +3062,13 @@ bool Extension::ShowConfigureContextMenus() const {
   // extension with options. All other menu items like uninstall have
   // no sense for component extensions.
   return location() != Extension::COMPONENT;
+}
+
+bool Extension::IsDisallowedExperimentalPermission(
+    const std::string& permission_str) const {
+  return permission_str == Extension::kExperimentalPermission &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnableExperimentalExtensionApis);
 }
 
 bool Extension::IsAPIPermission(const std::string& str) const {

@@ -777,6 +777,10 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // don't want to allow scripts and such to be bundled with themes.
   bool ContainsNonThemeKeys(const DictionaryValue& source) const;
 
+  // Only allow the experimental API permission if the command line
+  // flag is present.
+  bool IsDisallowedExperimentalPermission(const std::string& permission) const;
+
   // Returns true if the string is one of the known api permissions (see
   // kPermissions).
   bool IsAPIPermission(const std::string& permission) const;

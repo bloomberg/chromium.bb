@@ -11,5 +11,8 @@
     "isolation": [
       "storage"
     ]
-  }
+  },
+  "permissions": [
+    "experimental"
+  ]
 }

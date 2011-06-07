@@ -122,7 +122,6 @@ extern const char kEnableConnectBackupJobs[];
 extern const char kEnableCrxlessWebApps[];
 extern const char kEnableDhcpWpad[];
 extern const char kEnableDNSCertProvenanceChecking[];
-extern const char kEnableExperimentalAppManifests[];
 extern const char kEnableExperimentalExtensionApis[];
 extern const char kEnableExtensionTimelineApi[];
 extern const char kEnableFastback[];

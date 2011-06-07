@@ -105,8 +105,8 @@ class ExtensionManifestTest : public testing::Test {
                                                 const std::string& name) {
     std::string error;
     scoped_refptr<Extension> extension = LoadExtension(manifest, &error);
-    EXPECT_TRUE(extension) << "Unexpected success for " << name;
-    EXPECT_EQ("", error) << "Unexpected no error for " << name;
+    EXPECT_TRUE(extension) << "Unexpected failure for " << name;
+    EXPECT_EQ("", error) << "Unexpected error for " << name;
     return extension;
   }
 
@@ -462,6 +462,7 @@ TEST_F(ExtensionManifestTest, AllowUnrecognizedPermissions) {
   scoped_ptr<DictionaryValue> manifest(
       LoadManifestFile("valid_app.json", &error));
   ASSERT_TRUE(manifest.get());
+  CommandLine old_command_line = *CommandLine::ForCurrentProcess();
 
   ListValue *permissions = new ListValue();
   manifest->Set(keys::kPermissions, permissions);
@@ -472,11 +473,18 @@ TEST_F(ExtensionManifestTest, AllowUnrecognizedPermissions) {
     permissions->Append(p);
     std::string message_name = base::StringPrintf("permission-%s", name);
 
+    if (name == Extension::kExperimentalPermission) {
+      // Experimental permission is allowed, but requires this switch.
+      CommandLine::ForCurrentProcess()->AppendSwitch(
+          switches::kEnableExperimentalExtensionApis);
+    }
+
     // Extensions are allowed to contain unrecognized API permissions,
     // so there shouldn't be any errors.
     scoped_refptr<Extension> extension;
     extension = LoadAndExpectSuccess(manifest.get(), message_name);
   }
+  *CommandLine::ForCurrentProcess() = old_command_line;
 }
 
 TEST_F(ExtensionManifestTest, NormalizeIconPaths) {
@@ -577,14 +585,13 @@ TEST_F(ExtensionManifestTest, ForbidPortsInPermissions) {
 }
 
 TEST_F(ExtensionManifestTest, IsolatedApps) {
-  // Requires --enable-experimental-app-manifests
-  scoped_refptr<Extension> extension(
-      LoadAndExpectSuccess("isolated_app_valid.json"));
-  EXPECT_FALSE(extension->is_storage_isolated());
+  // Requires --enable-experimental-extension-apis
+  LoadAndExpectError("isolated_app_valid.json",
+                     errors::kExperimentalFlagRequired);
 
   CommandLine old_command_line = *CommandLine::ForCurrentProcess();
   CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalAppManifests);
+      switches::kEnableExperimentalExtensionApis);
   scoped_refptr<Extension> extension2(
       LoadAndExpectSuccess("isolated_app_valid.json"));
   EXPECT_TRUE(extension2->is_storage_isolated());

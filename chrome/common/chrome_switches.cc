@@ -403,10 +403,6 @@ const char kEnableDhcpWpad[]                = "enable-dhcp-wpad";
 const char kEnableDNSCertProvenanceChecking[] =
      "enable-dns-cert-provenance-checking";
 
-// Enables app manifest features that are in development.
-const char kEnableExperimentalAppManifests[] =
-    "enable-experimental-app-manifests";
-
 // Enables extension APIs that are in development.
 const char kEnableExperimentalExtensionApis[] =
     "enable-experimental-extension-apis";
