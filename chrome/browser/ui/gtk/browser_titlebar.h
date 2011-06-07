@@ -14,6 +14,7 @@
 #include <gtk/gtk.h>
 
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/prefs/pref_member.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "ui/base/gtk/gtk_signal.h"
@@ -25,6 +26,7 @@ class CustomDrawButton;
 class GtkThemeService;
 class MenuGtk;
 class PopupPageMenuModel;
+class ProfileMenuButton;
 class TabContents;
 
 class BrowserTitlebar : public NotificationObserver,
@@ -229,6 +231,15 @@ class BrowserTitlebar : public NotificationObserver,
 
   // The throbber used when the window is in app mode or popup window mode.
   Throbber throbber_;
+
+  // Profile button container.
+  GtkWidget* titlebar_profile_vbox_;
+
+  // The profile button.
+  scoped_ptr<ProfileMenuButton> profile_button_;
+
+  // Shown in the profile button. Only used to register a notification observer.
+  StringPrefMember usernamePref_;
 
   // Theme provider for building buttons.
   GtkThemeService* theme_service_;

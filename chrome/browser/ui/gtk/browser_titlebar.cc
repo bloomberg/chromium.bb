@@ -29,10 +29,12 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "chrome/browser/ui/gtk/nine_box.h"
+#include "chrome/browser/ui/gtk/profile_menu_button.h"
 #include "chrome/browser/ui/gtk/tabs/tab_strip_gtk.h"
 #include "chrome/browser/ui/gtk/unity_service.h"
 #include "chrome/browser/ui/toolbar/encoding_menu_controller.h"
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
@@ -246,7 +248,7 @@ void BrowserTitlebar::Init() {
   // generated so they don't interfere with alignment when everything is
   // stuffed in the other box.
   //
-  // Each vbox has the contains the following hierarchy if it contains buttons:
+  // Each vbox has the following hierarchy if it contains buttons:
   //
   // +- VBox (titlebar_{l,r}_buttons_vbox_) ---------+
   // |+- Fixed (top_padding_{l,r}_) ----------------+|
@@ -282,8 +284,8 @@ void BrowserTitlebar::Init() {
   g_signal_connect(window_, "window-state-event",
                    G_CALLBACK(OnWindowStateChangedThunk), this);
 
-  // Allocate the two button boxes on the left and right parts of the bar, and
-  // spyguy frames in case of incognito mode.
+  // Allocate the two button boxes on the left and right parts of the bar,
+  // spyguy frames in case of incognito mode, and profile button boxes.
   titlebar_left_buttons_vbox_ = gtk_vbox_new(FALSE, 0);
   gtk_box_pack_start(GTK_BOX(container_hbox_), titlebar_left_buttons_vbox_,
                      FALSE, FALSE, 0);
@@ -295,7 +297,29 @@ void BrowserTitlebar::Init() {
         kOTRBottomSpacing, kOTRSideSpacing, kOTRSideSpacing);
     gtk_box_pack_start(GTK_BOX(container_hbox_), titlebar_left_spy_frame_,
                        FALSE, FALSE, 0);
+  }
 
+  // If multi-profile is enabled set up profile button and login notifications.
+  // The button lives in its own vbox in container_hbox_.
+  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
+  if (browser_command_line.HasSwitch(switches::kMultiProfiles) &&
+      !browser_window_->browser()->profile()->IsOffTheRecord()) {
+    PrefService* prefs = browser_window_->browser()->profile()->GetPrefs();
+    usernamePref_.Init(prefs::kGoogleServicesUsername, prefs, this);
+
+    titlebar_profile_vbox_ = gtk_vbox_new(FALSE, 0);
+    gtk_box_pack_end(GTK_BOX(container_hbox_), titlebar_profile_vbox_,
+                       FALSE, FALSE, 0);
+    gtk_widget_show_all(titlebar_profile_vbox_);
+
+    profile_button_.reset(new ProfileMenuButton());
+    gtk_box_pack_start(GTK_BOX(titlebar_profile_vbox_),
+                       profile_button_->widget(), FALSE, FALSE, 0);
+    profile_button_->UpdateText(browser_window_->browser()->profile());
+  }
+
+  if (browser_window_->browser()->profile()->IsOffTheRecord() &&
+      browser_window_->browser()->is_type_tabbed()) {
     titlebar_right_spy_frame_ = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
     gtk_widget_set_no_show_all(titlebar_right_spy_frame_, TRUE);
     gtk_alignment_set_padding(GTK_ALIGNMENT(titlebar_right_spy_frame_), 0,
@@ -868,6 +892,13 @@ void BrowserTitlebar::Observe(NotificationType type,
     case NotificationType::BROWSER_THEME_CHANGED:
       UpdateTextColor();
       break;
+
+    case NotificationType::PREF_CHANGED: {
+      std::string* name = Details<std::string>(details).ptr();
+      if (prefs::kGoogleServicesUsername == *name)
+        profile_button_->UpdateText(browser_window_->browser()->profile());
+      break;
+    }
 
     default:
       NOTREACHED();

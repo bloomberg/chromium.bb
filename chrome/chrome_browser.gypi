@@ -2794,6 +2794,8 @@
         'browser/ui/gtk/page_info_bubble_gtk.cc',
         'browser/ui/gtk/process_singleton_dialog.cc',
         'browser/ui/gtk/process_singleton_dialog.h',
+        'browser/ui/gtk/profile_menu_button.cc',
+        'browser/ui/gtk/profile_menu_button.h',
         'browser/ui/gtk/reload_button_gtk.cc',
         'browser/ui/gtk/reload_button_gtk.h',
         'browser/ui/gtk/repost_form_warning_gtk.cc',
