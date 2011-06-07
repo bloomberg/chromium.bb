@@ -45,29 +45,62 @@ class FormsExtractor(object):
   log_handlers = {'StreamHandler': None}
 
   # This pattern is used for removing all |<script>| code.
-  re_script_pattern = re.compile(ur'<\bscript\b.*?>.*?</\bscript\b>',
-                                 re.U | re.S | re.I)
+  re_script_pattern = re.compile(
+      ur"""
+      <script       # A new opening 'script' tag.
+      \b            # The end of the word 'script'.
+      .*?           # Any characters (non-greedy).
+      >             # Ending of the opening tag '>'.
+      .*?           # Any characters (non-greedy) between the tags.
+      </script\s*>  # The '<script>' closing tag.
+      """, re.U | re.S | re.I | re.X)
 
-  # This pattern is used for capturing js event |'onmouseover="mOvr1(this);"'|
-  # \bon\w+             # Matches 'onmouseover'
-  # ?                   # Makes |\w+| non-greedy.
-  # \s*=\s*             # Match any spaces before and after the '=' symbol.
-  # (?P<quote>[\'\"])   # Adds the single or double quote in the matching
-                        # pattern.
-  # .*?                 # Adds the non-greedy to any chars.
-  # \1                  # Matches the previously captured quote.
-  re_event = ur'\bon\w+?\s*=\s*(?P<quote>[\'\"]).*?\1'
+  # This pattern is used to remove all href js code.
+  re_href_js_pattern = re.compile(
+      ur"""
+      \bhref             # The beginning of a new word.
+      \s*=\s*            # Matches any spaces before and after the '=' symbol.
+      (?P<quote>[\'\"])  # Captures the single or double quote in the
+                         # matching pattern.
+      \s*javascript\s*   # Matches anything before and after 'javascript'.
+      .*?                # Matches any characters (non-greedy) between the
+                         # quotes.
+      \1                 # Matches the previously captured single or double
+                         # quotes.
+      """, re.U | re.S | re.I | re.X)
+
+  # This pattern is used for capturing js event |'onmouseover="..."'|
+  re_event = (
+      ur"""
+      \b                 # The beginning of a new word.
+      on\w+?             # Matches all words starting with 'on' (non-greedy)
+                         # |onmouseover|.
+      \s*=\s*            # Matches any spaces before and after the '=' symbol.
+      (?P<quote>[\'\"])  # Captures the single or double quote in the matching
+                         # pattern.
+      .*?                # Matches any characters (non-greedy) between the
+                         # quotes.
+      \1                 # Matches the previously captured single or double
+                         # quotes.
+      """)
 
   # This pattern is used for removing code with js events, such as |onload|.
   # By adding the leading |ur'<[^<>]*?'| and the trailing |'ur'[^<>]*?>'| the
   # pattern matches to strings such as '<tr class="nav"
   # onmouseover="mOvr1(this);" onmouseout="mOut1(this);">'
   re_tag_with_events_pattern = re.compile(
-      ur'<[^<>]*?' + re_event + ur'[^<>]*?>', re.U | re.S | re.I)
+      ur"""
+      <        # Matches character '<'.
+      [^<>]*?  # Matches any characters except '<' and '>' (non-greedy).""" +
+      re_event +
+      ur"""
+      [^<>]*?  # Matches any characters except '<' and '>' (non-greedy)
+      >        # Matches character '>'.
+      """, re.U | re.S | re.I | re.X)
 
   # Add white space characters at the end of the matched event. Leaves only the
   # leading white space when substituted with empty string.
-  re_event_pattern = re.compile(re_event + ur'\s*', re.U | re.S | re.I)
+  re_event_pattern = re.compile(re_event + ur'\s*', re.U | re.S | re.I | re.X)
 
 
   def __init__(self, input_dir=REGISTRATION_PAGES_DIR,
@@ -132,7 +165,9 @@ class FormsExtractor(object):
       self.logger.info('extracting file "%s" ...', filename)
       with open(filename) as f:
         html_content = self.re_tag_with_events_pattern.sub(
-            self._SubstituteAllEvents, self.re_script_pattern.sub('', f.read()))
+            self._SubstituteAllEvents,
+            self.re_href_js_pattern.sub(
+                '', self.re_script_pattern.sub('', f.read())))
       try:
         with open(
             os.path.join(self._output_dir, '%s%s' % (
