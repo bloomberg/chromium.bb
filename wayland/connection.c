@@ -519,7 +519,7 @@ wl_connection_demarshal(struct wl_connection *connection,
 
 	wl_connection_copy(connection, closure->buffer, size);
 	p = &closure->buffer[2];
-	end = (uint32_t *) ((char *) (p + size));
+	end = (uint32_t *) ((char *) p + size);
 	extra = (char *) end;
 	for (i = 2; i < count; i++) {
 		if (p + 1 > end) {
