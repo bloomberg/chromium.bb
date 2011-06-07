@@ -209,12 +209,13 @@ bool UserScriptSlave::UpdateScripts(base::SharedMemoryHandle shared_memory) {
       const UserScript::File& file = scripts_[i]->css_scripts()[j];
       std::string content = file.GetContent().as_string();
 
-       WebView::addUserStyleSheet(
+      WebView::addUserStyleSheet(
           WebString::fromUTF8(content),
           patterns,
            script->match_all_frames() ?
               WebView::UserContentInjectInAllFrames :
-              WebView::UserContentInjectInTopFrameOnly);
+              WebView::UserContentInjectInTopFrameOnly,
+          WebView::UserStyleInjectInExistingDocuments);
     }
   }
 

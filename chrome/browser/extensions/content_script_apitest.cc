@@ -1,11 +1,14 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "content/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/ui_test_utils.h"
+#include "googleurl/src/gurl.h"
 #include "net/base/mock_host_resolver.h"
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentScriptAllFrames) {
@@ -54,4 +57,32 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentScriptViewSource) {
   ASSERT_TRUE(StartTestServer());
   host_resolver()->AddRule("c.com", "127.0.0.1");
   ASSERT_TRUE(RunExtensionTest("content_scripts/view_source")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(
+    ExtensionApiTest, ContentScriptStylesInjectedIntoExistingRenderers) {
+  ASSERT_TRUE(StartTestServer());
+
+  ui_test_utils::WindowedNotificationObserver signal(
+      NotificationType::USER_SCRIPTS_UPDATED,
+      Source<Profile>(browser()->profile()));
+
+  // Start with a renderer already open at a URL.
+  GURL url(test_server()->GetURL("file/extensions/test_file.html"));
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  LoadExtension(
+      test_data_dir_.AppendASCII("content_scripts/existing_renderers"));
+
+  signal.Wait();
+
+  // And check that its styles were affected by the styles that just got loaded.
+  bool styles_injected;
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      browser()->GetSelectedTabContents()->render_view_host(), L"",
+      L"window.domAutomationController.send("
+      L"document.defaultView.getComputedStyle(document.body, null)."
+      L"getPropertyValue('background-color') == 'rgb(255, 0, 0)')",
+      &styles_injected));
+  ASSERT_TRUE(styles_injected);
 }
