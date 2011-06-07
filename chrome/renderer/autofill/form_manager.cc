@@ -77,6 +77,10 @@ bool IsScriptElement(const WebElement& element) {
   return element.hasTagName("script");
 }
 
+bool IsNoScriptElement(const WebElement& element) {
+  return element.hasTagName("noscript");
+}
+
 bool IsAutofillableElement(const WebFormControlElement& element) {
   const WebInputElement* input_element = toWebInputElement(&element);
   return IsTextInput(input_element) || IsSelectElement(element);
@@ -98,8 +102,11 @@ string16 FindChildTextInner(const WebNode& node, int depth) {
   // excluded.
   if (node.isElementNode()) {
     const WebElement element = node.toConst<WebElement>();
-    if (IsOptionElement(element) || IsScriptElement(element))
+    if (IsOptionElement(element) ||
+        IsScriptElement(element) ||
+        IsNoScriptElement(element)) {
       return element_text;
+    }
   }
 
   string16 node_text = node.nodeValue();

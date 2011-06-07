@@ -1273,14 +1273,20 @@ TEST_F(FormManagerTest, LabelsInferredFromTableEmptyTDs) {
       labels, names, values);
 }
 
-// <script> and <option> tags are excluded when the labels are inferred.
+// <script>, <noscript> and <option> tags are excluded when the labels are
+// inferred.
 // Also <!-- comment --> is excluded.
-TEST_F(FormManagerTest, LabelsInferredFromTableWithScriptOptionTagAndComment) {
+TEST_F(FormManagerTest, LabelsInferredFromTableWithSpecialElements) {
   std::vector<string16> labels, names, values, control_types;
 
   labels.push_back(ASCIIToUTF16("*First Name"));
   names.push_back(ASCIIToUTF16("firstname"));
   values.push_back(ASCIIToUTF16("John"));
+  control_types.push_back(ASCIIToUTF16("text"));
+
+  labels.push_back(ASCIIToUTF16("*Middle Name"));
+  names.push_back(ASCIIToUTF16("middlename"));
+  values.push_back(ASCIIToUTF16("Joe"));
   control_types.push_back(ASCIIToUTF16("text"));
 
   labels.push_back(ASCIIToUTF16("*Last Name"));
@@ -1310,6 +1316,18 @@ TEST_F(FormManagerTest, LabelsInferredFromTableWithScriptOptionTagAndComment) {
       "      <SCRIPT> <!-- function test() { alert('ignored as label'); } -->"
       "      </SCRIPT>"
       "      <INPUT type=\"text\" id=\"firstname\" value=\"John\"/>"
+      "    </TD>"
+      "  </TR>"
+      "  <TR>"
+      "    <TD>"
+      "      <SPAN>*</SPAN>"
+      "      <B>Middle Name</B>"
+      "    </TD>"
+      "    <TD>"
+      "      <NOSCRIPT>"
+      "        <P>Bad</P>"
+      "      </NOSCRIPT>"
+      "      <INPUT type=\"text\" id=\"middlename\" value=\"Joe\"/>"
       "    </TD>"
       "  </TR>"
       "  <TR>"
