@@ -182,8 +182,8 @@ def RunLLCSRPC():
   flags = env.get("LLC_FLAGS")
   script = MakeSelUniversalScriptForLLC(infile, outfile, flags)
 
-  RunWithLog('${SEL_UNIVERSAL_PREFIX} "${SEL_UNIVERSAL}" ' +
-             '${SEL_UNIVERSAL_FLAGS} -- "${LLC_SRPC}"',
+  RunWithLog('${SEL_UNIVERSAL_PREFIX} ${SEL_UNIVERSAL} ' +
+             '${SEL_UNIVERSAL_FLAGS} -- ${LLC_SRPC}',
              stdin=script, echo_stdout = False, echo_stderr = False)
 
 def MakeSelUniversalScriptForLLC(infile, outfile, flags):

@@ -335,7 +335,7 @@ def RunLDSRPC():
   assert(main_input != '')
   files = LinkerFiles(all_inputs)
   ld_flags = env.get('LD_FLAGS') + env.get('LD_BFD_FLAGS')
-  ld_script = env.eval('${LD_SCRIPT}')
+  ld_script = env.getone('LD_SCRIPT')
 
   script = MakeSelUniversalScriptForLD(ld_flags,
                                        ld_script,
@@ -343,8 +343,8 @@ def RunLDSRPC():
                                        files,
                                        outfile)
 
-  RunWithLog('"${SEL_UNIVERSAL}" ${SEL_UNIVERSAL_FLAGS} -- ' +
-             '"${LD_SRPC}"', stdin=script,
+  RunWithLog('${SEL_UNIVERSAL} ${SEL_UNIVERSAL_FLAGS} -- ' +
+             '${LD_SRPC}', stdin=script,
              echo_stdout = False, echo_stderr = False)
 
 def MakeSelUniversalScriptForFile(filename):

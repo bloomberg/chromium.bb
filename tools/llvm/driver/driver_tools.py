@@ -1385,10 +1385,11 @@ def DriverExit(code):
 
 def CheckPresenceSelUniversal():
   'Assert that both sel_universal and sel_ldr exist'
-  sel_universal = env.eval('${SEL_UNIVERSAL}')
+  sel_universal = env.getone('SEL_UNIVERSAL')
   if not os.path.exists(sel_universal):
     Log.Fatal('Could not find sel_universal [%s]', sel_universal)
-  sel_ldr = env.eval('${SEL_LDR}')
+
+  sel_ldr = env.getone('SEL_LDR')
   if not os.path.exists(sel_ldr):
     Log.Fatal('Could not find sel_ldr [%s]', sel_ldr)
 
