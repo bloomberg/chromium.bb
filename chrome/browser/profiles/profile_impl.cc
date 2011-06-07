@@ -870,13 +870,14 @@ net::URLRequestContextGetter* ProfileImpl::GetRequestContext() {
 
 net::URLRequestContextGetter* ProfileImpl::GetRequestContextForRenderProcess(
     int renderer_child_id) {
-  const Extension* installed_app = extension_service_->
-      GetInstalledAppForRenderer(renderer_child_id);
-  if (installed_app != NULL && installed_app->is_storage_isolated() &&
-      installed_app->HasApiPermission(Extension::kExperimentalPermission)) {
-    return GetRequestContextForIsolatedApp(installed_app->id());
+  if (extension_service_.get()) {
+    const Extension* installed_app = extension_service_->
+        GetInstalledAppForRenderer(renderer_child_id);
+    if (installed_app != NULL && installed_app->is_storage_isolated() &&
+        installed_app->HasApiPermission(Extension::kExperimentalPermission)) {
+      return GetRequestContextForIsolatedApp(installed_app->id());
+    }
   }
-
   return GetRequestContext();
 }
 
