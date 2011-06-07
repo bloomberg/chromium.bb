@@ -81,12 +81,7 @@
       <include name="IDR_INFOBAR_SAVE_PASSWORD" file="large_infobar_savepassword.png" type="BINDATA" />
       <include name="IDR_INFOBAR_SSL_WARNING" file="large_infobar_insecure.png" type="BINDATA" />
       <include name="IDR_INFOBAR_THEME" file="large_infobar_theme.png" type="BINDATA" />
-      <if expr="pp_ifdef('_google_chrome')">
-        <include name="IDR_INFOBAR_TRANSLATE" file="google_chrome/large_infobar_translate.png" type="BINDATA" />
-      </if>
-      <if expr="not pp_ifdef('_google_chrome')">
-        <include name="IDR_INFOBAR_TRANSLATE" file="chromium/large_infobar_translate.png" type="BINDATA" />
-      </if>
+      <include name="IDR_INFOBAR_TRANSLATE" file="large_infobar_translate.png" type="BINDATA" />
       <include name="IDR_KEYWORD_SEARCH_MAGNIFIER" file="large_keyword_search_magnifier.png" type="BINDATA" />
       <include name="IDR_LOCATIONBG_C" file="large_omnibox_c.png" type="BINDATA" />
       <include name="IDR_LOCATIONBG_L" file="large_omnibox_l.png" type="BINDATA" />
