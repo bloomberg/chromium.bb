@@ -7,6 +7,7 @@
 #include "base/i18n/time_formatting.h"
 #include "base/string_number_conversions.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/timer.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/crash_upload_list.h"
@@ -34,6 +35,8 @@
 #endif
 
 namespace {
+
+const int kTimeout = 8 * 1000;  // 8 seconds.
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -117,6 +120,16 @@ class FlashDOMHandler : public WebUIMessageHandler,
   // to the page.
   void MaybeRespondToPage();
 
+  // In certain cases we might not get called back from the GPU process so we
+  // set an upper limit on the time we wait. This function gets called when the
+  // time has passed. This actually doesn't prevent the rest of the information
+  // to appear later, the page will just reflow when more information becomes
+  // available.
+  void OnTimeout();
+
+  // A timer to keep track of when the data fetching times out.
+  base::OneShotTimer<FlashDOMHandler> timeout_;
+
   // GPU variables.
   GpuDataManager* gpu_data_manager_;
   Callback0::Type* gpu_info_update_callback_;
@@ -152,9 +165,15 @@ FlashDOMHandler::FlashDOMHandler()
   // GPU process has not run yet, this will trigger its launch.
   gpu_data_manager_->RequestCompleteGpuInfoIfNeeded();
 
-  const GPUInfo& gpu_info = gpu_data_manager_->gpu_info();
-  if (gpu_info.finalized)
+  // GPU access might not be allowed at all, which will cause us not to get a
+  // call back.
+  if (!gpu_data_manager_->GpuAccessAllowed())
     OnGpuInfoUpdate();
+
+  // And lastly, we fire off a timer to make sure we never get stuck at the
+  // "Loading..." message.
+  timeout_.Start(base::TimeDelta::FromMilliseconds(kTimeout),
+                 this, &FlashDOMHandler::OnTimeout);
 }
 
 void FlashDOMHandler::RegisterMessages() {
@@ -188,11 +207,22 @@ void FlashDOMHandler::OnGpuInfoUpdate() {
   MaybeRespondToPage();
 }
 
+void FlashDOMHandler::OnTimeout() {
+  // We don't set page_has_requested_data_ because that is guaranteed to appear
+  // and we shouldn't be responding to the page before then.
+  has_gpu_info_ = true;
+  crash_list_available_ = true;
+  MaybeRespondToPage();
+}
+
 void FlashDOMHandler::MaybeRespondToPage() {
   // We don't reply until everything is ready. The page is showing a 'loading'
-  // message until then.
+  // message until then. If you add criteria to this list, please update the
+  // function OnTimeout() as well.
   if (!page_has_requested_data_ || !crash_list_available_ || !has_gpu_info_)
     return;
+
+  timeout_.Stop();
 
   // This is code that runs only when the user types in about:flash. We don't
   // need to jump through hoops to offload this to the IO thread.
@@ -275,6 +305,8 @@ void FlashDOMHandler::MaybeRespondToPage() {
   AddPair(list, ASCIIToUTF16(""), "--- GPU information ---");
   const GPUInfo& gpu_info = gpu_data_manager_->gpu_info();
 
+  if (!gpu_data_manager_->GpuAccessAllowed())
+    AddPair(list, ASCIIToUTF16("WARNING:"), "GPU access is not allowed");
 #if defined(OS_WIN)
   const DxDiagNode& node = gpu_info.dx_diagnostics;
   for (std::map<std::string, DxDiagNode>::const_iterator it =
