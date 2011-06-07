@@ -74,7 +74,7 @@ TabContents* KeyboardContainerView::GetAssociatedTabContents() const {
 void KeyboardContainerView::ViewHierarchyChanged(bool is_add,
                                                  View* parent,
                                                  View* child) {
-  if (is_add)
+  if (is_add && parent == this)
     MakeViewHierarchyUnfocusable(child);
 }
 
