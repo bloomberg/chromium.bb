@@ -27,6 +27,8 @@
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/shared/utils/types.h"
 
+EXTERN_C_BEGIN
+
 /* Defines possible validation status values. */
 typedef enum NaClValidationStatus {
   /* The call to the validator succeeded. */
@@ -40,7 +42,7 @@ typedef enum NaClValidationStatus {
   /* The call to the validator failed, because the CPU is not supported. */
   NaClValidationFailedCpuNotSupported,
   /* The call to the validator failed, due to segment alignment issues. */
-  NaClValidationFailedSegmentationIssue,
+  NaClValidationFailedSegmentationIssue
 } NaClValidationStatus;
 
 /* Defines possible ways that validation can be applied. */
@@ -70,7 +72,7 @@ typedef enum NaClApplyValidationKind {
    * the resulting status of the validation of a code segment.
    * Typically used to generate input for ncval_annotate.
    */
-  NaClApplyValidationAnnotator,
+  NaClApplyValidationAnnotator
 } NaClApplyValidationKind;
 
 /* Applies the validator, as defined by sel_ldr. That is, run the
@@ -166,5 +168,7 @@ extern NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorCopy,
     uint8_t *data_new,
     size_t size,
     int bundle_size);
+
+EXTERN_C_END
 
 #endif  /*  NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVALIDATE_H__ */

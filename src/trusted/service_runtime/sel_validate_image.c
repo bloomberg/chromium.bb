@@ -6,12 +6,7 @@
 
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
-
-
-#if NACL_ARCH(NACL_TARGET_ARCH) == NACL_x86
-
-# include "native_client/src/trusted/validator_x86/nacl_cpuid.h"
-# include "native_client/src/trusted/validator/ncvalidate.h"
+#include "native_client/src/trusted/validator/ncvalidate.h"
 
 /* Translate validation status to values wanted by sel_ldr. */
 static int NaClValidateStatus(NaClValidationStatus status) {
@@ -81,50 +76,6 @@ int NaClCopyCode(struct NaClApp *nap, uintptr_t guest_addr,
                         NACL_TARGET_SUBARCH)
       (guest_addr, data_old, data_new, size, nap->bundle_size));
 }
-
-#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
-
-# include "native_client/src/trusted/validator_arm/ncvalidate.h"
-
-int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
-                     uint8_t *data, size_t size) {
-  UNREFERENCED_PARAMETER(nap);
-
-  if (NCValidateSegment(data, guest_addr, size) == 0) {
-    return LOAD_OK;
-  }
-  else {
-    return LOAD_VALIDATION_FAILED;
-  }
-}
-
-int NaClValidateCodeReplacement(struct NaClApp *nap, uintptr_t guest_addr,
-                                uint8_t *data_old, uint8_t *data_new,
-                                size_t size) {
-  UNREFERENCED_PARAMETER(nap);
-  UNREFERENCED_PARAMETER(guest_addr);
-  UNREFERENCED_PARAMETER(data_old);
-  UNREFERENCED_PARAMETER(data_new);
-  UNREFERENCED_PARAMETER(size);
-  NaClLog(1, "NaClValidateCodeReplacement: "
-             "code replacement not yet supported on ARM\n");
-  return LOAD_UNIMPLEMENTED;
-}
-
-int NaClCopyCode(struct NaClApp *nap, uintptr_t guest_addr,
-                 uint8_t *data_old, uint8_t *data_new,
-                 size_t size) {
-  UNREFERENCED_PARAMETER(nap);
-  UNREFERENCED_PARAMETER(guest_addr);
-  UNREFERENCED_PARAMETER(data_old);
-  UNREFERENCED_PARAMETER(data_new);
-  UNREFERENCED_PARAMETER(size);
-  NaClLog(1, "NaClCopyCode: "
-             "code replacement not yet supported on ARM\n");
-  return LOAD_UNIMPLEMENTED;
-}
-
-#endif
 
 NaClErrorCode NaClValidateImage(struct NaClApp  *nap) {
   uintptr_t               memp;
