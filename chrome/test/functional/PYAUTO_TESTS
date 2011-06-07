@@ -111,9 +111,6 @@
       # crbug.com/83820
       '-passwords.PasswordTest.testInfoBarDisappearByNavigatingPage',
       '-passwords.PasswordTest.testDisplayAndSavePasswordInfobar',
-      # crbug.com/84904
-      '-plugins.PluginsTest.testDisableEnableAllPlugins',
-      '-plugins.PluginsTest.testKillAndReloadAllPlugins',
     ],
 
     'mac': [
