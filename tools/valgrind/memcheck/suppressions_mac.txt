@@ -218,10 +218,43 @@
    fun:tpVerifyCertGroupWithCrls
 }
 {
-   bug_85213
+   bug_85213_a
    Memcheck:Leak
    ...
    fun:_CFBundleCopyDirectoryContentsAtPath
+}
+{
+   bug_85213_b
+   Memcheck:Leak
+   ...
+   fun:_CFBundleCopyInfoDictionaryInDirectoryWithVersion
+}
+{
+   bug_85213_c
+   Memcheck:Leak
+   ...
+   fun:_CFBundleURLLooksLikeBundleVersion
+}
+{
+   bug_85213_d
+   Memcheck:Leak
+   ...
+   fun:_CFBundleCreate
+   fun:_ZN6webkit5npapi9PluginLib17ReadWebPluginInfoERK8FilePathPNS0_13WebPluginInfoE
+}
+{
+   bug_85213_e
+   Memcheck:Leak
+   ...
+   fun:CFBundlePreflightExecutable
+   fun:_ZN6webkit5npapi9PluginLib17ReadWebPluginInfoERK8FilePathPNS0_13WebPluginInfoE
+}
+{
+   bug_85213_f
+   Memcheck:Leak
+   ...
+   fun:CFBundleGetPackageInfo
+   fun:_ZN6webkit5npapi9PluginLib17ReadWebPluginInfoERK8FilePathPNS0_13WebPluginInfoE
 }
 
 # 2. Intentional unit test errors, stuff that is somehow a false positive
