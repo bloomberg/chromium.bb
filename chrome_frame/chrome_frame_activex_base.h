@@ -8,6 +8,7 @@
 #include <atlbase.h>
 #include <atlcom.h>
 #include <atlctl.h>
+#include <exdisp.h>
 #include <wininet.h>
 #include <shdeprecated.h>  // for IBrowserService2
 #include <shlguid.h>
@@ -448,6 +449,18 @@ END_MSG_MAP()
   // There's room for improvement here and also see todo below.
   LPARAM OnDownloadRequestInHost(UINT message, WPARAM wparam, LPARAM lparam,
                                  BOOL& handled) {
+    ChromeFrameUrl cf_url;
+    cf_url.Parse(UTF8ToWide(GetDocumentUrl()));
+
+    // Always issue the download request in a new window to ensure that the
+    // currently loaded ChromeFrame document does not inadvartently see an
+    // unload request. This runs javascript unload handlers on the page which
+    // renders the page non functional.
+    VARIANT flags = { VT_I4 };
+    V_I4(&flags) = navNoHistory;
+    if (!cf_url.attach_to_external_tab())
+      V_I4(&flags) |= navOpenInNewWindow;
+
     DownloadInHostParams* download_params =
         reinterpret_cast<DownloadInHostParams*>(wparam);
     DCHECK(download_params);
@@ -459,7 +472,8 @@ END_MSG_MAP()
       NavigateBrowserToMoniker(
           doc_site_, download_params->moniker,
           UTF8ToWide(download_params->request_headers).c_str(),
-          download_params->bind_ctx, NULL, download_params->post_data);
+          download_params->bind_ctx, NULL, download_params->post_data,
+          &flags);
     }
     delete download_params;
     return TRUE;
@@ -1051,7 +1065,6 @@ END_MSG_MAP()
         return;
       }
     }
-
     // Last chance to handle the keystroke is to pass it to chromium.
     // We do this last partially because there's no way for us to tell if
     // chromium actually handled the keystroke, but also since the browser

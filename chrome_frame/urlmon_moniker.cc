@@ -4,6 +4,7 @@
 
 #include "chrome_frame/urlmon_moniker.h"
 
+#include <exdisp.h>
 #include <shlguid.h>
 
 #include "base/string_util.h"
@@ -62,8 +63,11 @@ HRESULT NavigationManager::NavigateToCurrentUrlInCF(IBrowserService* browser) {
         fragment = UTF8ToWide(parsed_moniker_url.ref());
       }
 
+      VARIANT flags = { VT_I4 };
+      V_VT(&flags) = navNoHistory | navOpenInNewWindow;
+
       hr = NavigateBrowserToMoniker(browser, moniker, headers.c_str(),
-          bind_context, fragment.c_str(), NULL);
+          bind_context, fragment.c_str(), NULL, &flags);
       DVLOG(1) << base::StringPrintf("NavigateBrowserToMoniker: 0x%08X", hr);
     }
   }

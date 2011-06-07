@@ -1054,6 +1054,8 @@ bool ChromeActiveDocument::LaunchUrl(const ChromeFrameUrl& cf_url,
     }
   }
 
+  document_url_ = cf_url.gurl().spec();
+
   url_.Allocate(UTF8ToWide(cf_url.gurl().spec()).c_str());
   if (cf_url.attach_to_external_tab()) {
     automation_client_->AttachExternalTab(cf_url.cookie());

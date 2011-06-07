@@ -792,7 +792,8 @@ RendererType RendererTypeForUrl(const std::wstring& url) {
 
 HRESULT NavigateBrowserToMoniker(IUnknown* browser, IMoniker* moniker,
                                  const wchar_t* headers, IBindCtx* bind_ctx,
-                                 const wchar_t* fragment, IStream* post_data) {
+                                 const wchar_t* fragment, IStream* post_data,
+                                 VARIANT* flags) {
   DCHECK(browser);
   DCHECK(moniker);
   DCHECK(bind_ctx);
@@ -805,13 +806,6 @@ HRESULT NavigateBrowserToMoniker(IUnknown* browser, IMoniker* moniker,
                                                      hr);
   if (FAILED(hr))
     return hr;
-
-  // Always issue the download request in a new window to ensure that the
-  // currently loaded ChromeFrame document does not inadvarently see an unload
-  // request. This runs javascript unload handlers on the page which renders
-  // the page non functional.
-  VARIANT flags = { VT_I4 };
-  V_I4(&flags) = navOpenInNewWindow | navNoHistory;
 
   // If the data to be downloaded was received in response to a post request
   // then we need to reissue the post request.
@@ -893,14 +887,14 @@ HRESULT NavigateBrowserToMoniker(IUnknown* browser, IMoniker* moniker,
 
       if (GetIEVersion() < IE_9) {
         hr = browser_priv2->NavigateWithBindCtx2(
-                uri_obj, &flags, NULL, post_data_variant.AsInput(),
+                uri_obj, flags, NULL, post_data_variant.AsInput(),
                 headers_var.AsInput(), bind_ctx,
                 const_cast<wchar_t*>(fragment));
       } else {
         IWebBrowserPriv2CommonIE9* browser_priv2_ie9 =
             reinterpret_cast<IWebBrowserPriv2CommonIE9*>(browser_priv2.get());
         hr = browser_priv2_ie9->NavigateWithBindCtx2(
-                uri_obj, &flags, NULL, post_data_variant.AsInput(),
+                uri_obj, flags, NULL, post_data_variant.AsInput(),
                 headers_var.AsInput(), bind_ctx,
                 const_cast<wchar_t*>(fragment), 0);
       }
@@ -930,7 +924,7 @@ HRESULT NavigateBrowserToMoniker(IUnknown* browser, IMoniker* moniker,
         }
 
         base::win::ScopedVariant var_url(UTF8ToWide(target_url.spec()).c_str());
-        hr = browser_priv->NavigateWithBindCtx(var_url.AsInput(), &flags, NULL,
+        hr = browser_priv->NavigateWithBindCtx(var_url.AsInput(), flags, NULL,
                                                post_data_variant.AsInput(),
                                                headers_var.AsInput(), bind_ctx,
                                                const_cast<wchar_t*>(fragment));

@@ -302,7 +302,8 @@ HRESULT DoQueryService(const IID& service_id, IUnknown* unk, T** service) {
 // |headers| can be NULL.
 HRESULT NavigateBrowserToMoniker(IUnknown* browser, IMoniker* moniker,
                                  const wchar_t* headers, IBindCtx* bind_ctx,
-                                 const wchar_t* fragment, IStream* post_data);
+                                 const wchar_t* fragment, IStream* post_data,
+                                 VARIANT* flags);
 
 // Raises a flag on the current thread (using TLS) to indicate that an
 // in-progress navigation should be rendered in chrome frame.
