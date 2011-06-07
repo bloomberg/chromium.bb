@@ -887,7 +887,7 @@ def PanProjectChecks(input_api, output_api,
   if owners_check:
     snapshot("checking owners")
     results.extend(input_api.canned_checks.CheckOwners(
-        input_api, output_api, source_file_filter=sources))
+        input_api, output_api, source_file_filter=None))
 
   snapshot("checking long lines")
   results.extend(input_api.canned_checks.CheckLongLines(
