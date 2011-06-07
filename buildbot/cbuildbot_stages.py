@@ -13,11 +13,9 @@ import tempfile
 import time
 import traceback
 
-from chromite.buildbot import cbuildbot_commands as commands
-from chromite.buildbot import cbuildbot_config
-from chromite.buildbot import lkgm_manager
-from chromite.buildbot import manifest_version
-from chromite.lib import cros_build_lib as cros_lib
+import chromite.buildbot.cbuildbot_commands as commands
+import chromite.buildbot.manifest_version as manifest_version
+import chromite.lib.cros_build_lib as cros_lib
 
 _FULL_BINHOST = 'FULL_BINHOST'
 _PORTAGE_BINHOST = 'PORTAGE_BINHOST'
@@ -182,7 +180,7 @@ class Results:
       file.write('\n')
       file.write(first_exception)
 
-class BuilderStage(object):
+class BuilderStage():
   """Parent class for stages to be performed by a builder."""
   name_stage_re = re.compile('(\w+)Stage')
 
@@ -285,7 +283,7 @@ class BuilderStage(object):
       del msg_lines[-1]
 
     for msg_line in msg_lines:
-      print '%s %s' % (edge, msg_line)
+      print '%s %s'% (edge, msg_line)
 
     print border_line
 
@@ -378,43 +376,35 @@ class ManifestVersionedSyncStage(BuilderStage):
 
   manifest_manager = None
 
-  def InitializeManifestManager(self):
-    """Initializes a manager that manages manifests for associated stages."""
+  def _PerformStage(self):
     increment = 'branch' if self._tracking_branch == 'master' else 'patch'
 
-    ManifestVersionedSyncStage.manifest_manager = \
-        manifest_version.BuildSpecsManager(
-            source_dir=self._build_root,
-            checkout_repo=self._build_config['git_url'],
-            manifest_repo=self._build_config['manifest_version'],
-            branch=self._tracking_branch,
-            build_name=self._build_config['board'],
-            incr_type=increment,
-            clobber=self._options.clobber,
-            dry_run=self._options.debug)
+    manifest_manager = manifest_version.BuildSpecsManager(
+       source_dir=self._build_root,
+       checkout_repo=self._build_config['git_url'],
+       manifest_repo=self._build_config['manifest_version'],
+       branch=self._tracking_branch,
+       build_name=self._build_config['board'],
+       incr_type=increment,
+       clobber=self._options.clobber,
+       dry_run=self._options.debug)
 
-  def GetNextManifest(self):
-    """Uses the initialized manifest manager to get the next manifest."""
-    assert self.manifest_manager, \
-        'Must run GetStageManager before checkout out build.'
-    return self.manifest_manager.GetNextBuildSpec(VERSION_FILE, latest=True)
-
-  def _PerformStage(self):
     if os.path.isdir(os.path.join(self._build_root, '.repo')):
       commands.PreFlightRinse(self._build_root, self._build_config['board'],
                               BuilderStage.rev_overlays)
 
-    self.InitializeManifestManager()
-    next_manifest = self.GetNextManifest()
+    next_manifest = manifest_manager.GetNextBuildSpec(VERSION_FILE, latest=True)
     if not next_manifest:
-      print 'Manifest Revision: Nothing to build!'
+      print 'AUTOREV: Nothing to build!'
       sys.exit(0);
 
     # Log this early on for the release team to grep out before we finish.
     print
-    print 'RELEASETAG: %s' % (
-        ManifestVersionedSyncStage.manifest_manager.current_version)
+    print "RELEASETAG: %s" % manifest_manager.current_version
     print
+
+    # Store off this value where the Completion stage can find it...
+    ManifestVersionedSyncStage.manifest_manager = manifest_manager
 
     commands.ManifestCheckout(self._build_root,
                               self._tracking_branch,
@@ -422,36 +412,9 @@ class ManifestVersionedSyncStage(BuilderStage):
                               url=self._build_config['git_url'])
 
     # Check that all overlays can be found.
-    self._ExtractOverlays()
+    self._ExtractOverlays() # Our list of overlays are from pre-sync, refresh
     for path in BuilderStage.rev_overlays:
       assert os.path.isdir(path), 'Missing overlay: %s' % path
-
-
-class LGKMVersionedSyncStage(ManifestVersionedSyncStage):
-  """Stage that generates a unique manifest file candidate, and sync's to it."""
-
-  def InitializeManifestManager(self):
-    """Override: Creates an LKGMManager rather than a ManifestManager."""
-    ManifestVersionedSyncStage.manifest_manager = lkgm_manager.LKGMManager(
-        source_dir=self._build_root,
-        checkout_repo=self._build_config['git_url'],
-        manifest_repo=self._build_config['manifest_version'],
-        branch=self._tracking_branch,
-        build_name=self._build_config['board'],
-        clobber=self._options.clobber,
-        dry_run=self._options.debug)
-
-  def GetNextManifest(self):
-    """Gets the next manifest using LKGM logic."""
-    assert self.manifest_manager, \
-        'Must run InitializeManifestManager before we can get a manifest.'
-    assert isinstance(self.manifest_manager, lkgm_manager.LKGMManager), \
-        'Manifest manager instantiated with wrong class.'
-
-    if self._build_config['master']:
-      return self.manifest_manager.CreateNewCandidate(VERSION_FILE)
-    else:
-      return self.manifest_manager.GetLatestCandidate(VERSION_FILE)
 
 
 class ManifestVersionedSyncCompletionStage(BuilderStage):
@@ -465,38 +428,6 @@ class ManifestVersionedSyncCompletionStage(BuilderStage):
     if ManifestVersionedSyncStage.manifest_manager:
       ManifestVersionedSyncStage.manifest_manager.UpdateStatus(
          success=self.success)
-
-
-class LGKMVersionedSyncCompletionStage(ManifestVersionedSyncCompletionStage):
-  """Stage that records whether we passed or failed to build/test manifest."""
-
-  @staticmethod
-  def _GetImportantBuilders():
-    builders = []
-    for build_name, config in cbuildbot_config.config.iteritems():
-      if config['important']: builders.append(build_name)
-
-    return builders
-
-  def _PerformStage(self):
-    if not ManifestVersionedSyncStage.manifest_manager:
-      return
-
-    super(LGKMVersionedSyncCompletionStage, self)._PerformStage()
-    if self._build_config['master']:
-      builders = self._GetImportantBuilders()
-      statuses = ManifestVersionedSyncStage.manifest_manager.GetBuildersStatus(
-          builders)
-      success = True
-      for builder in builders:
-        status = statuses[builder]
-        if status != 'pass':
-          cros_lib.Warning('Builder %s reported status %s' % (builder, status))
-          success = False
-
-      if not success:
-        # TODO(sosa): Convert to Die / raise exception.
-        cros_lib.Warning('An important build failed.')
 
 
 class BuildBoardStage(BuilderStage):
@@ -526,7 +457,7 @@ class BuildBoardStage(BuilderStage):
     for board_to_build in board:
       # Only build the board if the directory does not exist.
       board_path = os.path.join(chroot_path, 'build', board_to_build)
-      if os.path.isdir(board_path):
+      if os.path.exists(board_path):
         continue
 
       commands.SetupBoard(self._build_root,

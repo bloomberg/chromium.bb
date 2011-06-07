@@ -201,6 +201,7 @@ class VersionInfo(object):
       self.version_file = None
 
     self.incr_type = incr_type
+    logging.debug('Using version %s' % self.VersionString())
 
   def _LoadFromFile(self):
     """Read the version file and set the version components"""
@@ -319,8 +320,6 @@ class VersionInfo(object):
 
 class BuildSpecsManager(object):
   """A Class to manage buildspecs and their states."""
-  _TMP_MANIFEST_DIR = '/tmp/manifests'
-
   def __init__(self, source_dir, checkout_repo, manifest_repo, branch,
                build_name, incr_type, clobber=False, dry_run=True):
     """Initializes a build specs manager.
@@ -333,7 +332,7 @@ class BuildSpecsManager(object):
       incr_type: part of the version to increment. 'patch or branch'
       dry_run: Whether we actually commit changes we make or not.
     """
-    self.work_directory = self._TMP_MANIFEST_DIR
+    self.work_directory = tempfile.mkdtemp('manifest')
     self.cros_source = repository.RepoRepository(
         checkout_repo, source_dir, branch=branch, clobber=clobber)
     self.manifest_repo = manifest_repo
@@ -358,6 +357,11 @@ class BuildSpecsManager(object):
     self.compare_versions_fn = lambda s: map(int, s.split('.'))
 
     self.current_version = None
+
+  def __del__(self):
+    # Clean up of our manifest work directory.
+    if os.path.isdir(self.work_directory):
+      shutil.rmtree(self.work_directory)
 
   def _GetMatchingSpecs(self, version_info, directory):
     """Returns the sorted list of buildspecs that match '*.xml in a directory.'
@@ -386,7 +390,6 @@ class BuildSpecsManager(object):
       relative_working_dir: Optional working directory within buildspecs repo.
     """
     working_dir = os.path.join(self.manifests_dir, relative_working_dir)
-    if not os.path.exists(working_dir): os.makedirs(working_dir)
     dir_pfx = version_info.DirPrefix()
     specs_for_build = os.path.join(working_dir, 'build-name',
                                    self.build_name)
@@ -413,12 +416,11 @@ class BuildSpecsManager(object):
 
     if self.all: self.latest = self.all[-1]
     latest_processed = None
-    if processed:
-      latest_processed = processed[-1]
-      logging.debug('Last processed build for %s is %s' % (self.build_name,
-                                                           latest_processed))
-
-      # Remove unprocessed candidates that are older than the latest processed.
+    if processed: latest_processed = processed[-1]
+    logging.debug('Last processed build for %s is %s' % (self.build_name,
+                                                         latest_processed))
+    # Remove unprocessed candidates that are older than the latest processed.
+    if latest_processed:
       to_be_removed = []
       for build in self.unprocessed:
         build1 = map(int, build.split('.'))
@@ -474,11 +476,11 @@ class BuildSpecsManager(object):
       logging.debug('Incremented version number to  %s', version)
       self.cros_source.Sync(repository.RepoRepository.DEFAULT_MANIFEST)
 
-    self._PrepSpecChanges()
     spec_file = '%s.xml' % os.path.join(self.all_specs_dir, version)
     if not os.path.exists(os.path.dirname(spec_file)):
       os.makedirs(os.path.dirname(spec_file))
 
+    self._PrepSpecChanges()
     self.cros_source.ExportManifest(spec_file)
     self._PushSpecChanges('Automatic: Creating new manifest file: %s.xml' %
                           version)
@@ -507,7 +509,6 @@ class BuildSpecsManager(object):
     for index in range(0, retries + 1):
       try:
         version_info = self._GetCurrentVersionInfo(version_file)
-        logging.debug('Using version %s' % version_info.VersionString())
         self._LoadSpecs(version_info)
 
         if not self.unprocessed:

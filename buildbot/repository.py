@@ -47,8 +47,7 @@ class RepoRepository(object):
 
     # Handle branch / manifest options.
     if self.branch: init_cmd.extend(['--manifest-branch', self.branch])
-    cros_lib.RunCommand(init_cmd, cwd=self.directory, input='\n\ny\n',
-                        redirect_stdout=True, redirect_stderr=True)
+    cros_lib.RunCommand(init_cmd, cwd=self.directory, input='\n\ny\n')
 
   def _ReinitializeIfNecessary(self, local_manifest):
     """Reinitializes the repository if the manifest has changed."""
@@ -63,7 +62,6 @@ class RepoRepository(object):
     if not (local_manifest and _ShouldReinitialize()):
       return
 
-    logging.debug('Moving to manifest defined by %s' % local_manifest)
     # If no manifest passed in, assume default.
     if local_manifest == self.DEFAULT_MANIFEST:
       cros_lib.RunCommand(['repo', 'init', '--manifest-name=default.xml'],
@@ -85,9 +83,9 @@ class RepoRepository(object):
         self.Initialize()
 
       self._ReinitializeIfNecessary(local_manifest)
+
       cros_lib.OldRunCommand(['repo', 'sync', '--quiet', '--jobs', '8'],
-                             cwd=self.directory, redirect_stdout=True,
-                             redirect_stderr=True, num_retries=2)
+                             cwd=self.directory, num_retries=2)
     except cros_lib.RunCommandError, e:
       err_msg = 'Failed to sync sources %s' % e.message
       logging.error(err_msg)
@@ -104,7 +102,7 @@ class RepoRepository(object):
       output_file: Self explanatory.
     """
     cros_lib.RunCommand(['repo', 'manifest', '-r', '-o', output_file],
-                        cwd=self.directory, print_cmd=True)
+                        cwd=self.directory, print_cmd=False)
 
 
   def IsManifestDifferent(self, other_manifest):

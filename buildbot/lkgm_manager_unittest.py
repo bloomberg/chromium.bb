@@ -78,15 +78,9 @@ class LKGMManagerTest(mox.MoxTestBase):
     self.build_name = 'x86-generic'
     self.incr_type = 'patch'
 
-    # Change default to something we clean up.
-    self.tmpmandir = tempfile.mkdtemp()
-    lkgm_manager.LKGMManager._TMP_MANIFEST_DIR = self.tmpmandir
-
     self.manager = lkgm_manager.LKGMManager(
       self.tmpdir, self.source_repo, self.manifest_repo, self.branch,
       self.build_name, dry_run=True)
-
-    self.manager.all_specs_dir = '/LKGM/path'
 
     self.manager.SLEEP_TIMEOUT = 1
 
@@ -134,10 +128,6 @@ class LKGMManagerTest(mox.MoxTestBase):
     """Tests whether we can get the latest candidate with no rc's at all."""
     self._CommonTestLatestCandidateByVersion('10.0.1.5', '10.0.1.5-rc1', True)
 
-  def _GetPathToManifest(self, info):
-    return os.path.join(self.manager.all_specs_dir, '%s.xml' %
-                        info.VersionString())
-
   def testCreateNewCandidate(self):
     """Tests that we can create a new candidate and uprev and old rc."""
     # Let's stub out other LGKMManager calls cause they're already
@@ -164,8 +154,8 @@ class LKGMManagerTest(mox.MoxTestBase):
         mox.StrContains(new_candidate.VersionString()))
 
     self.mox.ReplayAll()
-    candidate_path = self.manager.CreateNewCandidate(self.version_file)
-    self.assertEqual(candidate_path, self._GetPathToManifest(new_candidate))
+    candidate = self.manager.CreateNewCandidate(self.version_file)
+    self.assertEqual(candidate, new_candidate.VersionString())
     self.mox.VerifyAll()
 
   def testCreateNewCandidateReturnNoneIfNoWorkToDo(self):
@@ -213,7 +203,7 @@ class LKGMManagerTest(mox.MoxTestBase):
     self.mox.ReplayAll()
     self.manager.latest_unprocessed = '1.2.3.4-rc12'
     candidate = self.manager.GetLatestCandidate(self.version_file)
-    self.assertEqual(candidate, self._GetPathToManifest(most_recent_candidate))
+    self.assertEqual(candidate, most_recent_candidate.VersionString())
     self.mox.VerifyAll()
 
   def testGetLatestCandidateNone(self):
@@ -318,7 +308,7 @@ class LKGMManagerTest(mox.MoxTestBase):
                               'build-name', 'build2')
 
     self._FinishBuild(manifest, for_build1, dir_pfx, 'fail', wait=3)
-    thread = self._FinishBuild(manifest, for_build2, dir_pfx, 'pass', wait=5)
+    thread = self._FinishBuild(manifest, for_build2, dir_pfx, 'pass', wait=10)
 
     lkgm_manager._SyncGitRepo(self.manager.manifests_dir).MultipleTimes()
     self.mox.ReplayAll()
@@ -331,8 +321,7 @@ class LKGMManagerTest(mox.MoxTestBase):
     self.mox.VerifyAll()
 
   def tearDown(self):
-    if os.path.exists(self.tmpdir): shutil.rmtree(self.tmpdir)
-    shutil.rmtree(self.tmpmandir)
+    shutil.rmtree(self.tmpdir)
 
 
 if __name__ == '__main__':
