@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_TABS_PINNED_TAB_SERVICE_FACTORY_H_
 
 #include "base/compiler_specific.h"
-#include "base/memory/singleton.h"
+#include "base/lazy_instance.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
 
 class PinnedTabService;
@@ -17,13 +17,12 @@ class Profile;
 // associated PinnedTabService.
 class PinnedTabServiceFactory : public ProfileKeyedServiceFactory {
  public:
-  // Returns the PinnedTabService that tracks pinning changes for |profile|.
-  static PinnedTabService* GetForProfile(Profile* profile);
-
-  static PinnedTabServiceFactory* GetInstance();
+  // Creates and initializes a PinnedTabService to track pinning changes for
+  // |profile|.
+  static void InitForProfile(Profile* profile);
 
  private:
-  friend struct DefaultSingletonTraits<PinnedTabServiceFactory>;
+  friend struct base::DefaultLazyInstanceTraits<PinnedTabServiceFactory>;
 
   PinnedTabServiceFactory();
   virtual ~PinnedTabServiceFactory();

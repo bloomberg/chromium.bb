@@ -359,7 +359,7 @@ void ProfileImpl::DoFinalInit() {
   ssl_config_service_manager_.reset(
       SSLConfigServiceManager::CreateDefaultManager(local_state));
 
-  PinnedTabServiceFactory::GetForProfile(this);
+  PinnedTabServiceFactory::InitForProfile(this);
 
   // Initialize the BackgroundModeManager - this has to be done here before
   // InitExtensions() is called because it relies on receiving notifications
