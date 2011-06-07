@@ -646,7 +646,7 @@ void PrefProvider::ReadExceptions(bool overwrite) {
     for (DictionaryValue::key_iterator i(mutable_settings->begin_keys());
          i != mutable_settings->end_keys(); ++i) {
       const std::string& pattern(*i);
-      if (!ContentSettingsPattern::FromString(pattern).IsValid())
+      if (!ContentSettingsPattern::LegacyFromString(pattern).IsValid())
         LOG(WARNING) << "Invalid pattern stored in content settings";
       DictionaryValue* pattern_settings_dictionary = NULL;
       bool found = mutable_settings->GetDictionaryWithoutPathExpansion(
@@ -676,7 +676,7 @@ void PrefProvider::CanonicalizeContentSettingsExceptions(
        i != all_settings_dictionary->end_keys(); ++i) {
     const std::string& pattern(*i);
     const std::string canonicalized_pattern =
-        ContentSettingsPattern::FromString(pattern).ToString();
+        ContentSettingsPattern::LegacyFromString(pattern).ToString();
 
     if (canonicalized_pattern.empty() || canonicalized_pattern == pattern)
       continue;
@@ -800,8 +800,9 @@ void PrefProvider::MigrateObsoletePerhostPref(PrefService* prefs) {
          i(all_settings_dictionary->begin_keys());
          i != all_settings_dictionary->end_keys(); ++i) {
       const std::string& host(*i);
-      ContentSettingsPattern pattern = ContentSettingsPattern::FromString(
-          std::string(ContentSettingsPattern::kDomainWildcard) + host);
+      ContentSettingsPattern pattern =
+          ContentSettingsPattern::LegacyFromString(
+              std::string(ContentSettingsPattern::kDomainWildcard) + host);
       DictionaryValue* host_settings_dictionary = NULL;
       bool found = all_settings_dictionary->GetDictionaryWithoutPathExpansion(
           host, &host_settings_dictionary);
@@ -832,8 +833,8 @@ void PrefProvider::MigrateObsoletePopupsPref(PrefService* prefs) {
          i != whitelist_pref->end(); ++i) {
       std::string host;
       (*i)->GetAsString(&host);
-      SetContentSetting(ContentSettingsPattern::FromString(host),
-                        ContentSettingsPattern::FromString(host),
+      SetContentSetting(ContentSettingsPattern::LegacyFromString(host),
+                        ContentSettingsPattern::LegacyFromString(host),
                         CONTENT_SETTINGS_TYPE_POPUPS,
                         "",
                         CONTENT_SETTING_ALLOW);

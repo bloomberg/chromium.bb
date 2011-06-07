@@ -144,8 +144,8 @@ void BaseProvider::GetAllContentSettingsRules(
       // Use of push_back() relies on the map iterator traversing in order of
       // ascending keys.
       content_setting_rules->push_back(
-          Rule(ContentSettingsPattern::FromString(i->first),
-               ContentSettingsPattern::FromString(i->first),
+          Rule(ContentSettingsPattern::LegacyFromString(i->first),
+               ContentSettingsPattern::LegacyFromString(i->first),
                setting));
     }
   }

@@ -362,13 +362,13 @@ void ExtensionContentSettingsStore::SetExtensionContentSettingsFromList(
     std::string pattern_str;
     dict->GetString(keys::kTopLevelPatternKey, &pattern_str);
     ContentSettingsPattern pattern =
-        ContentSettingsPattern::FromString(pattern_str);
+        ContentSettingsPattern::LegacyFromString(pattern_str);
     DCHECK(pattern.IsValid());
 
     std::string embedded_pattern_str;
     dict->GetString(keys::kEmbeddedPatternKey, &embedded_pattern_str);
     ContentSettingsPattern embedded_pattern =
-        ContentSettingsPattern::FromString(embedded_pattern_str);
+        ContentSettingsPattern::LegacyFromString(embedded_pattern_str);
     DCHECK(embedded_pattern.IsValid());
 
     std::string content_settings_type_str;

@@ -342,8 +342,8 @@ void PolicyProvider::GetContentSettingsFromPreferences(
     for (size_t j = 0; j < pattern_str_list->GetSize(); ++j) {
       std::string original_pattern_str;
       pattern_str_list->GetString(j, &original_pattern_str);
-      ContentSettingsPattern pattern = ContentSettingsPattern::FromString(
-          original_pattern_str);
+      ContentSettingsPattern pattern =
+          ContentSettingsPattern::LegacyFromString(original_pattern_str);
       // Ignore invalid patterns.
       if (!pattern.IsValid()) {
         VLOG(1) << "Ignoring invalid content settings pattern: " <<

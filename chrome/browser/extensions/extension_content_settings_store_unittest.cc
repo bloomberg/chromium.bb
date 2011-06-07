@@ -67,7 +67,7 @@ TEST(ExtensionContentSettingsStoreTest, RegisterUnregister) {
 
   // Set setting
   ContentSettingsPattern pattern =
-      ContentSettingsPattern::FromString("http://www.youtube.com");
+      ContentSettingsPattern::FromURL(GURL("http://www.youtube.com"));
   EXPECT_CALL(observer, OnContentSettingChanged(ext_id, false));
   map.SetExtensionContentSetting(
       ext_id,

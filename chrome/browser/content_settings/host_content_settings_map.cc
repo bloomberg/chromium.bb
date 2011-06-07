@@ -321,11 +321,11 @@ void HostContentSettingsMap::AddExceptionForURL(
     ContentSetting setting) {
   // Make sure there is no entry that would override the pattern we are about
   // to insert for exactly this URL.
-  SetContentSetting(ContentSettingsPattern::FromURLNoWildcard(url),
+  SetContentSetting(ContentSettingsPattern::LegacyFromURLNoWildcard(url),
                     content_type,
                     resource_identifier,
                     CONTENT_SETTING_DEFAULT);
-  SetContentSetting(ContentSettingsPattern::FromURL(url),
+  SetContentSetting(ContentSettingsPattern::LegacyFromURL(url),
                     content_type,
                     resource_identifier,
                     setting);

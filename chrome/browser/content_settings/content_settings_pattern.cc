@@ -82,8 +82,9 @@ typedef ContentSettingsPattern::BuilderInterface BuilderInterface;
 // ////////////////////////////////////////////////////////////////////////////
 // ContentSettingsPattern::Builder
 //
-
-ContentSettingsPattern::Builder::Builder() : invalid_(false) {}
+ContentSettingsPattern::Builder::Builder(bool use_legacy_validate)
+    : is_valid_(true),
+      use_legacy_validate_(use_legacy_validate) {}
 
 ContentSettingsPattern::Builder::~Builder() {}
 
@@ -131,15 +132,20 @@ BuilderInterface* ContentSettingsPattern::Builder::WithPath(
 }
 
 BuilderInterface* ContentSettingsPattern::Builder::Invalid() {
-  invalid_ = true;
+  is_valid_ = false;
   return this;
 }
 
 ContentSettingsPattern ContentSettingsPattern::Builder::Build() {
-  if (invalid_)
+  if (!is_valid_)
     return ContentSettingsPattern();
   Canonicalize(&parts_);
-  return ContentSettingsPattern(parts_);
+  if (use_legacy_validate_) {
+    is_valid_ = LegacyValidate(parts_);
+  } else {
+    is_valid_ = Validate(parts_);
+  }
+  return ContentSettingsPattern(parts_, is_valid_);
 }
 
 // static
@@ -166,6 +172,75 @@ void ContentSettingsPattern::Builder::Canonicalize(PatternParts* parts) {
     // Valid host.
     parts->host += canonicalized_host;
   }
+}
+
+// static
+bool ContentSettingsPattern::Builder::Validate(const PatternParts& parts) {
+  // If the pattern is for a "file-pattern" test if it is valid.
+  if (parts.scheme == std::string(chrome::kFileScheme) &&
+      !parts.is_scheme_wildcard &&
+      parts.host.empty() &&
+      parts.port.empty())
+    return true;
+
+  // If the pattern is for an extension URL test if it is valid.
+  if (parts.scheme == std::string(chrome::kExtensionScheme) &&
+      !parts.is_scheme_wildcard &&
+      !parts.host.empty() &&
+      !parts.has_domain_wildcard &&
+      parts.port.empty() &&
+      !parts.is_port_wildcard)
+    return true;
+
+  // Non-file patterns are invalid if either the scheme, host or port part is
+  // empty.
+  if ((parts.scheme.empty() && !parts.is_scheme_wildcard) ||
+      (parts.host.empty() && !parts.has_domain_wildcard) ||
+      (parts.port.empty() && !parts.is_port_wildcard))
+    return false;
+
+  // Test if the scheme is supported or a wildcard.
+  if (!parts.is_scheme_wildcard &&
+      parts.scheme != std::string(chrome::kHttpScheme) &&
+      parts.scheme != std::string(chrome::kHttpsScheme)) {
+    return false;
+  }
+  return true;
+}
+
+// static
+bool ContentSettingsPattern::Builder::LegacyValidate(
+    const PatternParts& parts) {
+  // If the pattern is for a "file-pattern" test if it is valid.
+  if (parts.scheme == std::string(chrome::kFileScheme) &&
+      !parts.is_scheme_wildcard &&
+      parts.host.empty() &&
+      parts.port.empty())
+    return true;
+
+  // If the pattern is for an extension URL test if it is valid.
+  if (parts.scheme == std::string(chrome::kExtensionScheme) &&
+      !parts.is_scheme_wildcard &&
+      !parts.host.empty() &&
+      !parts.has_domain_wildcard &&
+      parts.port.empty() &&
+      !parts.is_port_wildcard)
+    return true;
+
+  // Non-file patterns are invalid if either the scheme, host or port part is
+  // empty.
+  if ((!parts.is_scheme_wildcard) ||
+      (parts.host.empty() && !parts.has_domain_wildcard) ||
+      (!parts.is_port_wildcard))
+    return false;
+
+  // Test if the scheme is supported or a wildcard.
+  if (!parts.is_scheme_wildcard &&
+      parts.scheme != std::string(chrome::kHttpScheme) &&
+      parts.scheme != std::string(chrome::kHttpsScheme)) {
+    return false;
+  }
+  return true;
 }
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -199,15 +274,16 @@ const char* ContentSettingsPattern::kDomainWildcard = "[*.]";
 const size_t ContentSettingsPattern::kDomainWildcardLength = 4;
 
 // static
-BuilderInterface* ContentSettingsPattern::CreateBuilder() {
-  return new Builder();
+BuilderInterface* ContentSettingsPattern::CreateBuilder(
+    bool validate) {
+  return new Builder(validate);
 }
 
 // static
 ContentSettingsPattern ContentSettingsPattern::FromURL(
     const GURL& url) {
   scoped_ptr<ContentSettingsPattern::BuilderInterface> builder(
-      ContentSettingsPattern::CreateBuilder());
+      ContentSettingsPattern::CreateBuilder(false));
 
   if (url.SchemeIsFile()) {
     builder->WithScheme(url.scheme())->WithPath(url.path());
@@ -234,10 +310,39 @@ ContentSettingsPattern ContentSettingsPattern::FromURL(
 }
 
 // static
+ContentSettingsPattern ContentSettingsPattern::LegacyFromURL(
+    const GURL& url) {
+  scoped_ptr<ContentSettingsPattern::BuilderInterface> builder(
+      ContentSettingsPattern::CreateBuilder(true));
+
+  if (url.SchemeIsFile()) {
+    builder->WithScheme(url.scheme())->WithPath(url.path());
+  } else {
+    // Please keep the order of the ifs below as URLs with an IP as host can
+    // also have a "http" scheme.
+    // TODO(markusheintz): For HTTPS we will create scheme specific patterns as
+    // soon as the pattern matching code in the HostContentSettingsMap is
+    // replaced.
+    if (url.HostIsIPAddress()) {
+      builder->WithSchemeWildcard()->WithHost(url.host());
+    } else if (url.SchemeIs(chrome::kHttpScheme)) {
+      builder->WithSchemeWildcard()->WithDomainWildcard()->WithHost(url.host());
+    } else if (url.SchemeIs(chrome::kHttpsScheme)) {
+      builder->WithSchemeWildcard()->WithDomainWildcard()->WithHost(
+          url.host());
+    } else {
+      // Unsupported scheme
+    }
+    builder->WithPortWildcard();
+  }
+  return builder->Build();
+}
+
+// static
 ContentSettingsPattern ContentSettingsPattern::FromURLNoWildcard(
     const GURL& url) {
   scoped_ptr<ContentSettingsPattern::BuilderInterface> builder(
-      ContentSettingsPattern::CreateBuilder());
+      ContentSettingsPattern::CreateBuilder(false));
 
   if (url.SchemeIsFile()) {
     builder->WithScheme(url.scheme())->WithPath(url.path());
@@ -253,10 +358,34 @@ ContentSettingsPattern ContentSettingsPattern::FromURLNoWildcard(
 }
 
 // static
+ContentSettingsPattern ContentSettingsPattern::LegacyFromURLNoWildcard(
+    const GURL& url) {
+  scoped_ptr<ContentSettingsPattern::BuilderInterface> builder(
+      ContentSettingsPattern::CreateBuilder(true));
+
+  if (url.SchemeIsFile()) {
+    builder->WithScheme(url.scheme())->WithPath(url.path());
+  } else {
+    builder->WithSchemeWildcard()->WithHost(url.host());
+  }
+  builder->WithPortWildcard();
+  return builder->Build();
+}
+
+// static
 ContentSettingsPattern ContentSettingsPattern::FromString(
     const std::string& pattern_spec) {
   scoped_ptr<ContentSettingsPattern::BuilderInterface> builder(
-      ContentSettingsPattern::CreateBuilder());
+      ContentSettingsPattern::CreateBuilder(false));
+  content_settings::PatternParser::Parse(pattern_spec, builder.get());
+  return builder->Build();
+}
+
+// static
+ContentSettingsPattern ContentSettingsPattern::LegacyFromString(
+    const std::string& pattern_spec) {
+  scoped_ptr<ContentSettingsPattern::BuilderInterface> builder(
+      ContentSettingsPattern::CreateBuilder(true));
   content_settings::PatternParser::Parse(pattern_spec, builder.get());
   return builder->Build();
 }
@@ -264,52 +393,20 @@ ContentSettingsPattern ContentSettingsPattern::FromString(
 // static
 ContentSettingsPattern ContentSettingsPattern::Wildcard() {
   scoped_ptr<ContentSettingsPattern::BuilderInterface> builder(
-      ContentSettingsPattern::CreateBuilder());
+      ContentSettingsPattern::CreateBuilder(true));
   builder->WithSchemeWildcard()->WithDomainWildcard()->WithPortWildcard();
   return builder->Build();
-}
-
-// static
-bool ContentSettingsPattern::Validate(const PatternParts& parts) {
-  // If the pattern is for a "file-pattern" test if it is valid.
-  if (parts.scheme == std::string(chrome::kFileScheme) &&
-      !parts.is_scheme_wildcard &&
-      parts.host.empty() &&
-      parts.port.empty())
-    return true;
-
-  // If the pattern is for an extension URL test if it is valid.
-  if (parts.scheme == std::string(chrome::kExtensionScheme) &&
-      !parts.is_scheme_wildcard &&
-      !parts.host.empty() &&
-      !parts.has_domain_wildcard &&
-      parts.port.empty() &&
-      !parts.is_port_wildcard)
-    return true;
-
-  // Non-file patterns are invalid if either the scheme, host or port part is
-  // empty.
-  if ((parts.scheme.empty() && !parts.is_scheme_wildcard) ||
-      (parts.host.empty() && !parts.has_domain_wildcard) ||
-      (parts.port.empty() && !parts.is_port_wildcard))
-    return false;
-
-  // Test if the scheme is supported or a wildcard.
-  if (!parts.is_scheme_wildcard &&
-      parts.scheme != std::string(chrome::kHttpScheme) &&
-      parts.scheme != std::string(chrome::kHttpsScheme)) {
-    return false;
-  }
-  return true;
 }
 
 ContentSettingsPattern::ContentSettingsPattern()
   : is_valid_(false) {
 }
 
-ContentSettingsPattern::ContentSettingsPattern(const PatternParts& parts)
-    : parts_(parts) {
-  is_valid_ = Validate(parts);
+ContentSettingsPattern::ContentSettingsPattern(
+    const PatternParts& parts,
+    bool valid)
+    : parts_(parts),
+      is_valid_(valid) {
 }
 
 bool ContentSettingsPattern::Matches(
