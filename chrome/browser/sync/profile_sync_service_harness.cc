@@ -279,7 +279,8 @@ bool ProfileSyncServiceHarness::RunStateChangeMachine() {
     case WAITING_FOR_PASSPHRASE_ACCEPTED: {
       LogClientInfo("WAITING_FOR_PASSPHRASE_ACCEPTED", 1);
       if (service()->ShouldPushChanges() &&
-          !service()->IsPassphraseRequired()) {
+          !service()->IsPassphraseRequired() &&
+          service()->IsUsingSecondaryPassphrase()) {
         // The passphrase has been accepted, and sync has been restarted.
         SignalStateCompleteWithNextState(FULLY_SYNCED);
       }
@@ -372,7 +373,8 @@ bool ProfileSyncServiceHarness::AwaitPassphraseAccepted() {
   }
 
   if (service()->ShouldPushChanges() &&
-      !service()->IsPassphraseRequired()) {
+      !service()->IsPassphraseRequired() &&
+      service()->IsUsingSecondaryPassphrase()) {
     // Passphrase is already accepted; don't wait.
     return true;
   }
