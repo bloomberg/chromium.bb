@@ -10,7 +10,6 @@
 #include "base/values.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/browser_thread.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebNotificationPresenter.h"
 
 NotificationsPrefsCache::NotificationsPrefsCache()
         : default_content_setting_(CONTENT_SETTING_DEFAULT),
@@ -64,7 +63,8 @@ void NotificationsPrefsCache::ListValueToGurlVector(
   }
 }
 
-int NotificationsPrefsCache::HasPermission(const GURL& origin) {
+WebKit::WebNotificationPresenter::Permission
+      NotificationsPrefsCache::HasPermission(const GURL& origin) {
   if (IsOriginAllowed(origin))
     return WebKit::WebNotificationPresenter::PermissionAllowed;
   if (IsOriginDenied(origin))

@@ -110,6 +110,33 @@ void ContentBrowserClient::AddNewCertificate(
     int render_view_id) {
 }
 
+void ContentBrowserClient::RequestDesktopNotificationPermission(
+    const GURL& source_origin,
+    int callback_context,
+    int render_process_id,
+    int render_view_id) {
+}
+
+WebKit::WebNotificationPresenter::Permission
+    ContentBrowserClient::CheckDesktopNotificationPermission(
+        const GURL& source_url,
+        const content::ResourceContext& context) {
+  return WebKit::WebNotificationPresenter::PermissionAllowed;
+}
+
+void ContentBrowserClient::ShowDesktopNotification(
+    const DesktopNotificationHostMsg_Show_Params& params,
+    int render_process_id,
+    int render_view_id,
+    bool worker) {
+}
+
+void ContentBrowserClient::CancelDesktopNotification(
+    int render_process_id,
+    int render_view_id,
+    int notification_id) {
+}
+
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 int ContentBrowserClient::GetCrashSignalFD(const std::string& process_type) {
   return -1;

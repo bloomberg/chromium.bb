@@ -23,13 +23,17 @@
 class CommandLine;
 class ChromeAppCacheService;
 class ChromeBlobStorageContext;
+class DesktopNotificationService;
 class ExtensionInfoMap;
-namespace fileapi {
-class FileSystemContext;
-}  // namespace fileapi
 class HostContentSettingsMap;
 class HostZoomMap;
 class IOThread;
+class ProtocolHandlerRegistry;
+
+namespace fileapi {
+class FileSystemContext;
+}  // namespace fileapi
+
 namespace net {
 class DnsCertProvenanceChecker;
 class NetLog;
@@ -38,13 +42,15 @@ class ProxyService;
 class SSLConfigService;
 class TransportSecurityState;
 }  // namespace net
+
 namespace prerender {
 class PrerenderManager;
 };  // namespace prerender
-class ProtocolHandlerRegistry;
+
 namespace quota {
 class QuotaManager;
 };  // namespace quota
+
 namespace webkit_database {
 class DatabaseTracker;
 }  // webkit_database
@@ -86,7 +92,9 @@ class ProfileIOData : public base::RefCountedThreadSafe<ProfileIOData> {
   // These are useful when the Chrome layer is called from the content layer
   // with a content::ResourceContext, and they want access to Chrome data for
   // that profile.
+  ExtensionInfoMap* GetExtensionInfoMap() const;
   HostContentSettingsMap* GetHostContentSettingsMap() const;
+  DesktopNotificationService* GetNotificationService() const;
 
  protected:
   friend class base::RefCountedThreadSafe<ProfileIOData>;
@@ -128,6 +136,7 @@ class ProfileIOData : public base::RefCountedThreadSafe<ProfileIOData> {
     scoped_refptr<fileapi::FileSystemContext> file_system_context;
     scoped_refptr<quota::QuotaManager> quota_manager;
     scoped_refptr<ExtensionInfoMap> extension_info_map;
+    DesktopNotificationService* notification_service;
     base::WeakPtr<prerender::PrerenderManager> prerender_manager;
     scoped_refptr<ProtocolHandlerRegistry> protocol_handler_registry;
     // We need to initialize the ProxyConfigService from the UI thread
@@ -247,8 +256,9 @@ class ProfileIOData : public base::RefCountedThreadSafe<ProfileIOData> {
   mutable scoped_refptr<HostZoomMap> host_zoom_map_;
 
   // TODO(willchan): Remove from ResourceContext.
-  mutable scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
   mutable scoped_refptr<ExtensionInfoMap> extension_info_map_;
+  mutable scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
+  mutable DesktopNotificationService* notification_service_;
   mutable base::WeakPtr<prerender::PrerenderManager> prerender_manager_;
 
   mutable ResourceContext resource_context_;

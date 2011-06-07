@@ -39,9 +39,6 @@ class NotificationObjectProxy
   virtual ~NotificationObjectProxy() {}
 
  private:
-  // Called on UI thread to send a message.
-  void Send(IPC::Message* message);
-
   // Callback information to find the JS Notification object where it lives.
   int process_id_;
   int route_id_;

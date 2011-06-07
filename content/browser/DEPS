@@ -36,14 +36,10 @@ include_rules = [
 
   "+chrome/browser/net/load_timing_observer.h",
 
-  "+chrome/browser/notifications/desktop_notification_service.h",
-  "+chrome/browser/notifications/desktop_notification_service_factory.h",
-
   # http://crbug.com/76788
   "+chrome/browser/profiles/profile.h",
 
   "+chrome/browser/sessions/session_id.h",
-  "+chrome/browser/sessions/session_types.h",
 
   "+chrome/browser/tab_contents/render_view_host_delegate_helper.h",
 

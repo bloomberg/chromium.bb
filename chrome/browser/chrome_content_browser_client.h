@@ -59,6 +59,24 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       net::X509Certificate* cert,
       int render_process_id,
       int render_view_id) OVERRIDE;
+  virtual void RequestDesktopNotificationPermission(
+      const GURL& source_origin,
+      int callback_context,
+      int render_process_id,
+      int render_view_id) OVERRIDE;
+  virtual WebKit::WebNotificationPresenter::Permission
+      CheckDesktopNotificationPermission(
+          const GURL& source_url,
+          const content::ResourceContext& context) OVERRIDE;
+  virtual void ShowDesktopNotification(
+      const DesktopNotificationHostMsg_Show_Params& params,
+      int render_process_id,
+      int render_view_id,
+      bool worker) OVERRIDE;
+  virtual void CancelDesktopNotification(
+      int render_process_id,
+      int render_view_id,
+      int notification_id) OVERRIDE;
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Can return an optional fd for crash handling, otherwise returns -1.
   virtual int GetCrashSignalFD(const std::string& process_type) OVERRIDE;

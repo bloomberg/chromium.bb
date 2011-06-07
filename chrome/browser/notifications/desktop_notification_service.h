@@ -21,6 +21,7 @@
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebNotificationPresenter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
 
 class Extension;
@@ -127,9 +128,9 @@ class DesktopNotificationService : public NotificationObserver,
   ContentSetting GetContentSetting(const GURL& origin);
 
   // Checks to see if a given origin has permission to create desktop
-  // notifications.  Returns a constant from WebNotificationPresenter
-  // class.
-  int HasPermission(const GURL& origin);
+  // notifications.
+  WebKit::WebNotificationPresenter::Permission
+      HasPermission(const GURL& origin);
 
  private:
   void InitPrefs();

@@ -37,7 +37,6 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "net/base/escape.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebNotificationPresenter.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -154,10 +153,8 @@ NotificationPermissionInfoBarDelegate::
     UMA_HISTOGRAM_COUNTS("NotificationPermissionRequest.Ignored", 1);
 
   RenderViewHost* host = RenderViewHost::FromID(process_id_, route_id_);
-  if (host) {
-    host->Send(new DesktopNotificationMsg_PermissionRequestDone(
-        route_id_, callback_context_));
-  }
+  if (host)
+    host->DesktopNotificationPermissionRequestDone(callback_context_);
 }
 
 gfx::Image* NotificationPermissionInfoBarDelegate::GetIcon() const {
@@ -525,10 +522,8 @@ void DesktopNotificationService::RequestPermission(
   } else {
     // Notify renderer immediately.
     RenderViewHost* host = RenderViewHost::FromID(process_id, route_id);
-    if (host) {
-      host->Send(new DesktopNotificationMsg_PermissionRequestDone(
-          route_id, callback_context));
-    }
+    if (host)
+      host->DesktopNotificationPermissionRequestDone(callback_context);
   }
 }
 
@@ -592,7 +587,8 @@ void DesktopNotificationService::NotifySettingsChange() {
       NotificationService::NoDetails());
 }
 
-int DesktopNotificationService::HasPermission(const GURL& origin) {
+WebKit::WebNotificationPresenter::Permission
+    DesktopNotificationService::HasPermission(const GURL& origin) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   return prefs_cache()->HasPermission(origin.GetOrigin());
 }

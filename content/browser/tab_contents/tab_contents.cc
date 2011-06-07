@@ -15,8 +15,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/load_from_memory_cache_details.h"
-#include "chrome/browser/notifications/desktop_notification_service.h"
-#include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/content_browser_client.h"
@@ -1718,15 +1716,6 @@ bool TabContents::IsExternalTabContainer() const {
 void TabContents::WorkerCrashed() {
   if (delegate())
     delegate()->WorkerCrashed(this);
-}
-
-void TabContents::RequestDesktopNotificationPermission(
-    const GURL& source_origin, int callback_context) {
-  DesktopNotificationService* service =
-      DesktopNotificationServiceFactory::GetForProfile(profile());
-  service->RequestPermission(
-      source_origin, GetRenderProcessHost()->id(),
-      render_view_host()->routing_id(), callback_context, this);
 }
 
 void TabContents::BeforeUnloadFiredFromRenderManager(

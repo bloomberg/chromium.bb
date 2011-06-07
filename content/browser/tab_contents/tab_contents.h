@@ -681,8 +681,6 @@ class TabContents : public PageNavigator,
                                 uint64 upload_position, uint64 upload_size);
   virtual bool IsExternalTabContainer() const;
   virtual void WorkerCrashed();
-  virtual void RequestDesktopNotificationPermission(const GURL& source_origin,
-                                                    int callback_context);
 
   // RenderViewHostManager::Delegate -------------------------------------------
 

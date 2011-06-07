@@ -16,8 +16,6 @@
 #include "chrome/browser/download/download_types.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/extensions/extension_info_map.h"
-#include "chrome/browser/notifications/desktop_notification_service.h"
-#include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
@@ -284,8 +282,6 @@ RenderMessageFilter::RenderMessageFilter(
       resource_context_(profile->GetResourceContext()),
       extensions_request_context_(profile->GetRequestContextForExtensions()),
       render_widget_helper_(render_widget_helper),
-      notification_service_(
-          DesktopNotificationServiceFactory::GetForProfile(profile)),
       incognito_(profile->IsOffTheRecord()),
       webkit_context_(profile->GetWebKitContext()),
       render_process_id_(render_process_id) {
@@ -614,21 +610,8 @@ void RenderMessageFilter::OnDownloadUrl(const IPC::Message& message,
 
 void RenderMessageFilter::OnCheckNotificationPermission(
     const GURL& source_url, int* result) {
-  *result = WebKit::WebNotificationPresenter::PermissionNotAllowed;
-
-  const Extension* extension =
-      extension_info_map_->extensions().GetByURL(source_url);
-  if (extension &&
-      extension->HasApiPermission(Extension::kNotificationPermission)) {
-    *result = WebKit::WebNotificationPresenter::PermissionAllowed;
-    return;
-  }
-
-  // Fall back to the regular notification preferences, which works on an
-  // origin basis.
-  *result = notification_service_ ?
-      notification_service_->HasPermission(source_url.GetOrigin()) :
-      WebKit::WebNotificationPresenter::PermissionNotAllowed;
+  *result = content::GetContentClient()->browser()->
+      CheckDesktopNotificationPermission(source_url, resource_context_);
 }
 
 void RenderMessageFilter::OnAllocateSharedMemoryBuffer(

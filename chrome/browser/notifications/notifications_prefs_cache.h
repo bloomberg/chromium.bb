@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/common/content_settings.h"
 #include "googleurl/src/gurl.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebNotificationPresenter.h"
 
 class ListValue;
 
@@ -30,9 +31,9 @@ class NotificationsPrefsCache
   bool is_initialized() { return is_initialized_; }
 
   // Checks to see if a given origin has permission to create desktop
-  // notifications.  Returns a constant from WebNotificationPresenter
-  // class.
-  int HasPermission(const GURL& origin);
+  // notifications.
+  WebKit::WebNotificationPresenter::Permission
+      HasPermission(const GURL& origin);
 
   // Updates the cache with a new origin allowed or denied.
   void CacheAllowedOrigin(const GURL& origin);

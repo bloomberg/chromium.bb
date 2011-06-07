@@ -31,6 +31,7 @@
 #include "content/browser/user_metrics.h"
 #include "content/common/bindings_policy.h"
 #include "content/common/content_constants.h"
+#include "content/common/desktop_notification_messages.h"
 #include "content/common/drag_messages.h"
 #include "content/common/native_web_keyboard_event.h"
 #include "content/common/notification_details.h"
@@ -421,6 +422,32 @@ void RenderViewHost::DragTargetDrop(
   Send(new DragMsg_TargetDrop(routing_id(), client_pt, screen_pt));
 }
 
+void RenderViewHost::DesktopNotificationPermissionRequestDone(
+    int callback_context) {
+  Send(new DesktopNotificationMsg_PermissionRequestDone(
+      routing_id(), callback_context));
+}
+
+void RenderViewHost::DesktopNotificationPostDisplay(int callback_context) {
+  Send(new DesktopNotificationMsg_PostDisplay(routing_id(), callback_context));
+}
+
+void RenderViewHost::DesktopNotificationPostError(int notification_id,
+                                                  const string16& message) {
+  Send(new DesktopNotificationMsg_PostError(
+      routing_id(), notification_id, message));
+}
+
+void RenderViewHost::DesktopNotificationPostClose(int notification_id,
+                                                  bool by_user) {
+  Send(new DesktopNotificationMsg_PostClose(
+      routing_id(), notification_id, by_user));
+}
+
+void RenderViewHost::DesktopNotificationPostClick(int notification_id) {
+  Send(new DesktopNotificationMsg_PostClick(routing_id(), notification_id));
+}
+
 void RenderViewHost::ExecuteJavascriptInWebFrame(
     const string16& frame_xpath,
     const string16& jscript) {
@@ -662,6 +689,12 @@ bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
                         OnAccessibilityNotifications)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ScriptEvalResponse, OnScriptEvalResponse)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidZoomURL, OnDidZoomURL)
+    IPC_MESSAGE_HANDLER(DesktopNotificationHostMsg_RequestPermission,
+                        OnRequestDesktopNotificationPermission)
+    IPC_MESSAGE_HANDLER(DesktopNotificationHostMsg_Show,
+                        OnShowDesktopNotification)
+    IPC_MESSAGE_HANDLER(DesktopNotificationHostMsg_Cancel,
+                        OnCancelDesktopNotification)
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowPopup, OnMsgShowPopup)
 #endif
@@ -1242,6 +1275,34 @@ void RenderViewHost::OnDidZoomURL(double zoom_level,
     host_zoom_map->SetTemporaryZoomLevel(
         process()->id(), routing_id(), zoom_level);
   }
+}
+
+void RenderViewHost::OnRequestDesktopNotificationPermission(
+    const GURL& source_origin, int callback_context) {
+  content::GetContentClient()->browser()->RequestDesktopNotificationPermission(
+      source_origin, callback_context, process()->id(), routing_id());
+}
+
+void RenderViewHost::OnShowDesktopNotification(
+    const DesktopNotificationHostMsg_Show_Params& params) {
+  // Disallow HTML notifications from unwanted schemes.  javascript:
+  // in particular allows unwanted cross-domain access.
+  GURL url = params.contents_url;
+  if (params.is_html &&
+      !url.SchemeIs(chrome::kHttpScheme) &&
+      !url.SchemeIs(chrome::kHttpsScheme) &&
+      !url.SchemeIs(chrome::kExtensionScheme) &&
+      !url.SchemeIs(chrome::kDataScheme)) {
+    return;
+  }
+
+  content::GetContentClient()->browser()->ShowDesktopNotification(
+      params, process()->id(), routing_id(), false);
+}
+
+void RenderViewHost::OnCancelDesktopNotification(int notification_id) {
+  content::GetContentClient()->browser()->CancelDesktopNotification(
+      process()->id(), routing_id(), notification_id);
 }
 
 #if defined(OS_MACOSX)

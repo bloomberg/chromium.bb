@@ -25,6 +25,7 @@
 #include "chrome/browser/net/metadata_url_request.h"
 #include "chrome/browser/net/pref_proxy_config_service.h"
 #include "chrome/browser/net/proxy_service_factory.h"
+#include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -249,6 +250,8 @@ void ProfileIOData::InitializeProfileParams(Profile* profile) {
   params->file_system_context = profile->GetFileSystemContext();
   params->quota_manager = profile->GetQuotaManager();
   params->extension_info_map = profile->GetExtensionInfoMap();
+  params->notification_service =
+      DesktopNotificationServiceFactory::GetForProfile(profile);
   prerender::PrerenderManager* prerender_manager =
       profile->GetPrerenderManager();
   if (prerender_manager)
@@ -360,8 +363,16 @@ const content::ResourceContext& ProfileIOData::GetResourceContext() const {
   return resource_context_;
 }
 
+ExtensionInfoMap* ProfileIOData::GetExtensionInfoMap() const {
+  return extension_info_map_;
+}
+
 HostContentSettingsMap* ProfileIOData::GetHostContentSettingsMap() const {
   return host_content_settings_map_;
+}
+
+DesktopNotificationService* ProfileIOData::GetNotificationService() const {
+  return notification_service_;
 }
 
 ProfileIOData::ResourceContext::ResourceContext(const ProfileIOData* io_data)
@@ -465,6 +476,7 @@ void ProfileIOData::LazyInitialize() const {
   quota_manager_ = profile_params_->quota_manager;
   host_zoom_map_ = profile_params_->host_zoom_map;
   host_content_settings_map_ = profile_params_->host_content_settings_map;
+  notification_service_ = profile_params_->notification_service;
   extension_info_map_ = profile_params_->extension_info_map;
   prerender_manager_ = profile_params_->prerender_manager;
 

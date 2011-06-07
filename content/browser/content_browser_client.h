@@ -10,6 +10,7 @@
 
 #include "base/callback_old.h"
 #include "content/common/content_client.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebNotificationPresenter.h"
 
 class BrowserRenderProcessHost;
 class CommandLine;
@@ -23,6 +24,7 @@ class SSLCertErrorHandler;
 class SSLClientAuthHandler;
 class TabContents;
 class WorkerProcessHost;
+struct DesktopNotificationHostMsg_Show_Params;
 
 namespace net {
 class CookieList;
@@ -36,7 +38,8 @@ namespace content {
 class ResourceContext;
 class WebUIFactory;
 
-// Embedder API for participating in browser logic.
+// Embedder API for participating in browser logic.  The methods are assumed to
+// be called on the UI thread unless otherwise specified.
 class ContentBrowserClient {
  public:
   // Notifies that a new RenderHostView has been created.
@@ -140,6 +143,34 @@ class ContentBrowserClient {
       net::X509Certificate* cert,
       int render_process_id,
       int render_view_id);
+
+  // Asks permission to show desktop notifications.
+  virtual void RequestDesktopNotificationPermission(
+      const GURL& source_origin,
+      int callback_context,
+      int render_process_id,
+      int render_view_id);
+
+  // Checks if the given page has permission to show desktop notifications.
+  // This is called on the IO thread.
+  virtual WebKit::WebNotificationPresenter::Permission
+      CheckDesktopNotificationPermission(
+          const GURL& source_url,
+          const content::ResourceContext& context);
+
+  // Show a desktop notification.  If |worker| is true, the request came from an
+  // HTML5 web worker, otherwise, it came from a renderer.
+  virtual void ShowDesktopNotification(
+      const DesktopNotificationHostMsg_Show_Params& params,
+      int render_process_id,
+      int render_view_id,
+      bool worker);
+
+  // Cancels a displayed desktop notification.
+  virtual void CancelDesktopNotification(
+      int render_process_id,
+      int render_view_id,
+      int notification_id);
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Can return an optional fd for crash handling, otherwise returns -1.

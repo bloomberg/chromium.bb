@@ -413,12 +413,6 @@ class RenderViewHostDelegate : public IPC::Channel::Listener {
   // Notification that a worker process has crashed.
   void WorkerCrashed() {}
 
-  // Ask the user if they want to allow the view to show desktop notifications.
-  // Returns true if the delegate will take care of asking the user, otherwise
-  // the caller will do the default behavior.
-  bool RequestDesktopNotificationPermission(const GURL& source_origin,
-                                            int callback_context);
-
  protected:
   virtual ~RenderViewHostDelegate() {}
 };

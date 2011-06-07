@@ -26,7 +26,6 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/surface/transport_dib.h"
 
-class DesktopNotificationService;
 struct FontDescriptor;
 class ExtensionInfoMap;
 class HostContentSettingsMap;
@@ -237,8 +236,6 @@ class RenderMessageFilter : public BrowserMessageFilter {
   scoped_refptr<net::URLRequestContextGetter> extensions_request_context_;
 
   scoped_refptr<RenderWidgetHelper> render_widget_helper_;
-
-  DesktopNotificationService* notification_service_;
 
   // Whether this process is used for incognito tabs.
   bool incognito_;

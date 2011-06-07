@@ -14,10 +14,12 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/debugger/devtools_handler.h"
-#include "chrome/browser/desktop_notification_handler.h"
+#include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_message_handler.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/notifications/desktop_notification_service.h"
+#include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/printing_message_filter.h"
@@ -36,6 +38,7 @@
 #include "chrome/browser/ui/webui/chrome_web_ui_factory.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
@@ -51,6 +54,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/worker_host/worker_process_host.h"
 #include "content/common/bindings_policy.h"
+#include "content/common/desktop_notification_messages.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/cookie_options.h"
 
@@ -124,7 +128,6 @@ namespace chrome {
 void ChromeContentBrowserClient::RenderViewHostCreated(
     RenderViewHost* render_view_host) {
   new ChromeRenderViewHostObserver(render_view_host);
-  DesktopNotificationHandler::Create(render_view_host);
   new DevToolsHandler(render_view_host);
   new ExtensionMessageHandler(render_view_host);
 
@@ -361,6 +364,87 @@ void ChromeContentBrowserClient::AddNewCertificate(
     int render_view_id) {
   // The handler will run the UI and delete itself when it's finished.
   new SSLAddCertHandler(request, cert, render_process_id, render_view_id);
+}
+
+void ChromeContentBrowserClient::RequestDesktopNotificationPermission(
+    const GURL& source_origin,
+    int callback_context,
+    int render_process_id,
+    int render_view_id) {
+  RenderViewHost* rvh = RenderViewHost::FromID(
+      render_process_id, render_view_id);
+  if (!rvh) {
+    NOTREACHED();
+    return;
+  }
+
+  RenderProcessHost* process = rvh->process();
+  DesktopNotificationService* service =
+      DesktopNotificationServiceFactory::GetForProfile(process->profile());
+  service->RequestPermission(
+      source_origin, render_process_id, render_view_id, callback_context,
+      tab_util::GetTabContentsByID(render_process_id, render_view_id));
+}
+
+WebKit::WebNotificationPresenter::Permission
+    ChromeContentBrowserClient::CheckDesktopNotificationPermission(
+        const GURL& source_url,
+        const content::ResourceContext& context) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  ProfileIOData* io_data =
+      reinterpret_cast<ProfileIOData*>(context.GetUserData(NULL));
+
+  const Extension* extension =
+      io_data->GetExtensionInfoMap()->extensions().GetByURL(source_url);
+  if (extension &&
+      extension->HasApiPermission(Extension::kNotificationPermission)) {
+    return WebKit::WebNotificationPresenter::PermissionAllowed;
+  }
+
+  // Fall back to the regular notification preferences, which works on an
+  // origin basis.
+  return io_data->GetNotificationService() ?
+      io_data->GetNotificationService()->HasPermission(source_url.GetOrigin()) :
+      WebKit::WebNotificationPresenter::PermissionNotAllowed;
+}
+
+void ChromeContentBrowserClient::ShowDesktopNotification(
+    const DesktopNotificationHostMsg_Show_Params& params,
+    int render_process_id,
+    int render_view_id,
+    bool worker) {
+  RenderViewHost* rvh = RenderViewHost::FromID(
+      render_process_id, render_view_id);
+  if (!rvh) {
+    NOTREACHED();
+    return;
+  }
+
+  RenderProcessHost* process = rvh->process();
+  DesktopNotificationService* service =
+      DesktopNotificationServiceFactory::GetForProfile(process->profile());
+  service->ShowDesktopNotification(
+    params, render_process_id, render_view_id,
+    worker ? DesktopNotificationService::WorkerNotification :
+        DesktopNotificationService::PageNotification);
+}
+
+void ChromeContentBrowserClient::CancelDesktopNotification(
+    int render_process_id,
+    int render_view_id,
+    int notification_id) {
+  RenderViewHost* rvh = RenderViewHost::FromID(
+      render_process_id, render_view_id);
+  if (!rvh) {
+    NOTREACHED();
+    return;
+  }
+
+  RenderProcessHost* process = rvh->process();
+  DesktopNotificationService* service =
+      DesktopNotificationServiceFactory::GetForProfile(process->profile());
+  service->CancelDesktopNotification(
+      render_process_id, render_view_id, notification_id);
 }
 
 #if defined(OS_LINUX)
