@@ -1007,9 +1007,8 @@ enum {
       enable = browser_->command_updater()->IsCommandEnabled(tag);
       switch (tag) {
         case IDC_CLOSE_TAB:
-          // Disable "close tab" if we're not the key window or if there's only
-          // one tab.
-          enable &= [self numberOfTabs] > 1 && [[self window] isKeyWindow];
+          // Disable "close tab" if we're not the key window.
+          enable &= [[self window] isKeyWindow];
           break;
         case IDC_FULLSCREEN: {
           enable &= [self supportsFullscreen];

@@ -209,14 +209,6 @@ void RecordLastRunAppBundlePath() {
              name:NSWindowDidResignMainNotification
            object:nil];
 
-  // Register for a notification that the number of tabs changes in windows
-  // so we can adjust the close tab/window command keys.
-  [notificationCenter
-      addObserver:self
-         selector:@selector(tabsChanged:)
-             name:kTabStripNumberOfTabsChanged
-           object:nil];
-
   // Set up the command updater for when there are no windows open
   [self initMenuState];
 
@@ -359,88 +351,9 @@ void RecordLastRunAppBundlePath() {
   return nil;
 }
 
-// If the window has tabs, make "close window" be cmd-shift-w, otherwise leave
-// it as the normal cmd-w. Capitalization of the key equivalent affects whether
-// the shift modifer is used.
-- (void)adjustCloseWindowMenuItemKeyEquivalent:(BOOL)inHaveTabs {
-  [closeWindowMenuItem_ setKeyEquivalent:(inHaveTabs ? @"W" : @"w")];
-  [closeWindowMenuItem_ setKeyEquivalentModifierMask:NSCommandKeyMask];
-}
-
-// If the window has tabs, make "close tab" take over cmd-w, otherwise it
-// shouldn't have any key-equivalent because it should be disabled.
-- (void)adjustCloseTabMenuItemKeyEquivalent:(BOOL)hasTabs {
-  if (hasTabs) {
-    [closeTabMenuItem_ setKeyEquivalent:@"w"];
-    [closeTabMenuItem_ setKeyEquivalentModifierMask:NSCommandKeyMask];
-  } else {
-    [closeTabMenuItem_ setKeyEquivalent:@""];
-    [closeTabMenuItem_ setKeyEquivalentModifierMask:0];
-  }
-}
-
-// Explicitly remove any command-key equivalents from the close tab/window
-// menus so that nothing can go haywire if we get a user action during pending
-// updates.
-- (void)clearCloseMenuItemKeyEquivalents {
-  [closeTabMenuItem_ setKeyEquivalent:@""];
-  [closeTabMenuItem_ setKeyEquivalentModifierMask:0];
-  [closeWindowMenuItem_ setKeyEquivalent:@""];
-  [closeWindowMenuItem_ setKeyEquivalentModifierMask:0];
-}
-
-// See if we have a window with tabs open, and adjust the key equivalents for
-// Close Tab/Close Window accordingly.
-- (void)fixCloseMenuItemKeyEquivalents {
-  fileMenuUpdatePending_ = NO;
-  TabWindowController* tabController = [self keyWindowTabController];
-  if (!tabController && ![NSApp keyWindow]) {
-    // There might be a small amount of time where there is no key window,
-    // so just use our main browser window if there is one.
-    tabController = [self mainWindowTabController];
-  }
-  BOOL windowWithMultipleTabs =
-      (tabController && [tabController numberOfTabs] > 1);
-  [self adjustCloseWindowMenuItemKeyEquivalent:windowWithMultipleTabs];
-  [self adjustCloseTabMenuItemKeyEquivalent:windowWithMultipleTabs];
-}
-
-// Fix up the "close tab/close window" command-key equivalents. We do this
-// after a delay to ensure that window layer state has been set by the time
-// we do the enabling. This should only be called on the main thread, code that
-// calls this (even as a side-effect) from other threads needs to be fixed.
-- (void)delayedFixCloseMenuItemKeyEquivalents {
-  DCHECK([NSThread isMainThread]);
-  if (!fileMenuUpdatePending_) {
-    // The OS prefers keypresses to timers, so it's possible that a cmd-w
-    // can sneak in before this timer fires. In order to prevent that from
-    // having any bad consequences, just clear the keys combos altogether. They
-    // will be reset when the timer eventually fires.
-    if ([NSThread isMainThread]) {
-      fileMenuUpdatePending_ = YES;
-      [self clearCloseMenuItemKeyEquivalents];
-      [self performSelector:@selector(fixCloseMenuItemKeyEquivalents)
-                 withObject:nil
-                 afterDelay:0];
-    } else {
-      // This shouldn't be happening, but if it does, force it to the main
-      // thread to avoid dropping the update. Don't mess with
-      // |fileMenuUpdatePending_| as it's not expected to be threadsafe and
-      // there could be a race between the selector finishing and setting the
-      // flag.
-      [self
-          performSelectorOnMainThread:@selector(fixCloseMenuItemKeyEquivalents)
-                           withObject:nil
-                        waitUntilDone:NO];
-    }
-  }
-}
-
 // Called when we get a notification about the window layering changing to
 // update the UI based on the new main window.
 - (void)windowLayeringDidChange:(NSNotification*)notify {
-  [self delayedFixCloseMenuItemKeyEquivalents];
-
   if ([notify name] == NSWindowDidResignKeyNotification) {
     // If a window is closed, this notification is fired but |[NSApp keyWindow]|
     // returns nil regardless of whether any suitable candidates for the key
@@ -461,16 +374,6 @@ void RecordLastRunAppBundlePath() {
       NotificationType::NO_KEY_WINDOW,
       NotificationService::AllSources(),
       NotificationService::NoDetails());
-}
-
-// Called when the number of tabs changes in one of the browser windows. The
-// object is the tab strip controller, but we don't currently care.
-- (void)tabsChanged:(NSNotification*)notify {
-  // We don't need to do this on a delay, as in the method above, because the
-  // window layering isn't changing. As a result, there's no chance that a
-  // different window will sneak in as the key window and cause the problems
-  // we hacked around above by clearing the key equivalents.
-  [self fixCloseMenuItemKeyEquivalents];
 }
 
 // If the auto-update interval is not set, make it 5 hours.
