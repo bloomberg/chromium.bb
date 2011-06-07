@@ -488,15 +488,15 @@ Error* Session::SwitchToWindow(const std::string& name) {
     // See if any of the window names match |name|.
     for (size_t i = 0; i < window_ids.size(); ++i) {
       ListValue empty_list;
-      Value* unscoped_name_value;
+      Value* unscoped_name_value = NULL;
       std::string window_name;
       Error* error = ExecuteScript(FrameId(window_ids[i], FramePath()),
                                    "return window.name;",
                                    &empty_list,
                                    &unscoped_name_value);
-      scoped_ptr<Value> name_value(unscoped_name_value);
       if (error)
         return error;
+      scoped_ptr<Value> name_value(unscoped_name_value);
       if (name_value->GetAsString(&window_name) &&
           name == window_name) {
         switch_to_id = window_ids[i];
@@ -591,7 +591,6 @@ Error* Session::SwitchToTopFrameIfCurrentFrameInvalid() {
                      "Frame element vector out of sync with frame path");
   }
   FramePath frame_path;
-  Value* unscoped_value;
   // Start from the root path and check that each frame element that makes
   // up the current frame target is valid by executing an empty script.
   // This code should not execute script in any frame before making sure the
@@ -600,6 +599,7 @@ Error* Session::SwitchToTopFrameIfCurrentFrameInvalid() {
     FrameId frame_id(current_target_.window_id, frame_path);
     ListValue args;
     args.Append(frame_elements_[i].ToValue());
+    Value* unscoped_value = NULL;
     scoped_ptr<Error> error(ExecuteScript(
         frame_id, "", &args, &unscoped_value));
 
@@ -1161,7 +1161,7 @@ Error* Session::FindElementsHelper(const FrameId& frame_id,
   scoped_ptr<Error> error;
   bool done = false;
   while (!done) {
-    Value* unscoped_value;
+    Value* unscoped_value = NULL;
     error.reset(ExecuteScript(
         frame_id, jscript, &jscript_args, &unscoped_value));
     value.reset(unscoped_value);
