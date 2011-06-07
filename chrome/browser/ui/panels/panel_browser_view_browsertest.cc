@@ -513,7 +513,10 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, TitleBarMouseEvent) {
   // Closes all panels.
   for (size_t i = 0; i < browser_view_count; ++i) {
     browser_views[i]->panel()->Close();
-    EXPECT_FALSE(browser_views[i]->panel());
+    // We're only verifying that PanelBrowserView::Close has been called when
+    // a panel is closed. This is to make sure the dragging is ended and does
+    // not interfere the closing process.
+    EXPECT_TRUE(browser_views[i]->closed());
   }
 }
 

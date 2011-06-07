@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/gtest_prod_util.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "ui/base/animation/animation_delegate.h"
 
@@ -24,7 +25,8 @@ class PanelBrowserView : public ::BrowserView,
   PanelBrowserView(Browser* browser, Panel* panel);
   virtual ~PanelBrowserView();
 
-  Panel* panel() const { return panel_; }
+  Panel* panel() const { return panel_.get(); }
+  bool closed() const { return closed_; }
 
   // Called from frame view when title bar receives a mouse event.
   // Return true if the event is handled.
@@ -60,7 +62,10 @@ class PanelBrowserView : public ::BrowserView,
   PanelBrowserFrameView* GetFrameView() const;
   bool EndDragging(bool cancelled);
 
-  Panel* panel_;
+  scoped_ptr<Panel> panel_;
+
+  // Is the panel being closed? Do not use it when it is closed.
+  bool closed_;
 
   // Is the mouse button currently down?
   bool mouse_pressed_;

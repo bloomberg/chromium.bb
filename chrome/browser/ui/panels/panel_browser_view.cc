@@ -28,6 +28,7 @@ BrowserWindow* Panel::CreateNativePanel(Browser* browser, Panel* panel) {
 PanelBrowserView::PanelBrowserView(Browser* browser, Panel* panel)
   : BrowserView(browser),
     panel_(panel),
+    closed_(false),
     mouse_pressed_(false),
     mouse_dragging_(false) {
 }
@@ -44,15 +45,13 @@ void PanelBrowserView::Init() {
 }
 
 void PanelBrowserView::Close() {
-  if (!panel_)
-    return;
+  closed_ = true;
 
   // Cancel any currently running animation since we're closing down.
   if (bounds_animator_.get())
     bounds_animator_.reset();
 
   ::BrowserView::Close();
-  panel_ = NULL;
 }
 
 void PanelBrowserView::SetBounds(const gfx::Rect& bounds) {
@@ -129,7 +128,7 @@ bool PanelBrowserView::OnTitleBarMousePressed(const views::MouseEvent& event) {
   mouse_pressed_ = true;
   mouse_pressed_point_ = event.location();
   mouse_dragging_ = false;
-  panel_->manager()->StartDragging(panel_);
+  panel_->manager()->StartDragging(panel_.get());
   return true;
 }
 
