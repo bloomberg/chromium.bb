@@ -16,6 +16,7 @@
         <!-- TODO(sky): we don't want a test only image in the release builds -->
         <include name="IDR_BITMAP_BRUSH_IMAGE" file="resources\bitmap_brush_image.png" type="BINDATA" />
         <include name="IDR_COMPOSITOR_FX" file="resources\compositor.fx" type="BINDATA" />
+        <include name="IDR_BLUR_FX" file="resources\blur.fx" type="BINDATA" />
       </if>
 
       <if expr="os == 'linux2' or os.find('bsd') != -1 or os == 'sunos5'">

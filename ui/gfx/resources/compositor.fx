@@ -62,6 +62,6 @@ technique10 ViewTech {
     SetPixelShader(CompileShader(ps_4_0, PS()));
     SetDepthStencilState(StencilState, 0);
     SetBlendState(SrcAlphaBlendingAdd, float4(0.0f, 0.0f, 0.0f, 0.0f),
-                   0xFFFFFFFF);
+                  0xFFFFFFFF);
   }
 }

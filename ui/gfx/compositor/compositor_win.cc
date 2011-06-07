@@ -47,8 +47,17 @@ class ViewTextureHost {
   // Returns the overall size of the compositor.
   virtual const gfx::Size& GetHostSize() = 0;
 
+  // Returns the index buffer used for drawing a texture.
+  virtual ID3D10Buffer* GetTextureIndexBuffer() = 0;
+
  protected:
   virtual ~ViewTextureHost() {}
+};
+
+// Vertex structure used by the compositor.
+struct Vertex {
+  D3DXVECTOR3 position;
+  D3DXVECTOR2 texture_offset;
 };
 
 // D3D 10 Texture implementation. Creates a quad representing the view and
@@ -62,8 +71,6 @@ class ViewTexture : public Texture {
 
   ~ViewTexture();
 
-  void Init();
-
   // Texture:
   virtual void SetBitmap(const SkBitmap& bitmap,
                          const gfx::Point& origin,
@@ -71,20 +78,12 @@ class ViewTexture : public Texture {
   virtual void Draw(const ui::Transform& transform) OVERRIDE;
 
  private:
-  struct Vertex {
-    D3DXVECTOR3 position;
-    D3DXVECTOR2 texture_offset;
-  };
-
   void Errored(HRESULT result);
 
   void ConvertBitmapToD3DData(const SkBitmap& bitmap,
                               scoped_array<uint32>* converted_data);
 
   void CreateVertexBuffer(const gfx::Size& size);
-
-  // TODO: this should be shared among all textures.
-  void CreateIndexBuffer();
 
   ViewTextureHost* host_;
 
@@ -96,7 +95,6 @@ class ViewTexture : public Texture {
   ScopedComPtr<ID3D10Texture2D> texture_;
   ScopedComPtr<ID3D10ShaderResourceView> shader_view_;
   ScopedComPtr<ID3D10Buffer> vertex_buffer_;
-  ScopedComPtr<ID3D10Buffer> index_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewTexture);
 };
@@ -110,10 +108,6 @@ ViewTexture::ViewTexture(ViewTextureHost* host,
 }
 
 ViewTexture::~ViewTexture() {
-}
-
-void ViewTexture::Init() {
-  CreateIndexBuffer();
 }
 
 void ViewTexture::SetBitmap(const SkBitmap& bitmap,
@@ -181,7 +175,8 @@ void ViewTexture::Draw(const ui::Transform& transform) {
   UINT offset = 0;
   ID3D10Buffer* vertex_buffer = vertex_buffer_.get();
   device_->IASetVertexBuffers(0, 1, &vertex_buffer, &stride, &offset);
-  device_->IASetIndexBuffer(index_buffer_.get(), DXGI_FORMAT_R32_UINT, 0);
+  device_->IASetIndexBuffer(host_->GetTextureIndexBuffer(),
+                            DXGI_FORMAT_R32_UINT, 0);
   device_->DrawIndexed(6, 0, 0);
 }
 
@@ -190,18 +185,19 @@ void ViewTexture::Errored(HRESULT result) {
   DCHECK(false);
 }
 
-void ViewTexture::ConvertBitmapToD3DData(const SkBitmap& bitmap,
-                                         scoped_array<uint32>* converted_data) {
+void ViewTexture::ConvertBitmapToD3DData(
+    const SkBitmap& bitmap,
+    scoped_array<uint32>* converted_data) {
   int width = bitmap.width();
   int height = bitmap.height();
   SkAutoLockPixels pixel_lock(bitmap);
-  // D3D wants the data in a different format (and not pre-multiplied).
+  // D3D wants colors in ABGR format (premultiplied).
   converted_data->reset(new uint32[width * height]);
-  for (int x = 0; x < width; ++x) {
-    for (int y = 0; y < height; ++y) {
-      SkColor color = bitmap.getColor(x, y);
-      int alpha = SkColorGetA(color);
-      (*converted_data)[y * width + x] =
+  uint32_t* bitmap_data = bitmap.getAddr32(0, 0);
+  for (int x = 0, offset = 0; x < width; ++x) {
+    for (int y = 0; y < height; ++y, ++offset) {
+      SkColor color = bitmap_data[offset];
+      (*converted_data)[offset] =
           (SkColorGetA(color) << 24) |
           (SkColorGetB(color) << 16) |
           (SkColorGetG(color) << 8) |
@@ -237,26 +233,6 @@ void ViewTexture::CreateVertexBuffer(const gfx::Size& size) {
                                          vertex_buffer_.Receive()));
 }
 
-void ViewTexture::CreateIndexBuffer() {
-  index_buffer_.Release();
-
-  // Then the index buffer.
-  DWORD indices[] = {
-    0, 1, 2,
-    0, 2, 3,
-  };
-  D3D10_BUFFER_DESC index_buffer;
-  index_buffer.Usage = D3D10_USAGE_IMMUTABLE;
-  index_buffer.ByteWidth = sizeof(DWORD) * ARRAYSIZE_UNSAFE(indices);
-  index_buffer.BindFlags = D3D10_BIND_INDEX_BUFFER;
-  index_buffer.CPUAccessFlags = 0;
-  index_buffer.MiscFlags = 0;
-  D3D10_SUBRESOURCE_DATA init_data2;
-  init_data2.pSysMem = indices;
-  RETURN_IF_FAILED(device_->CreateBuffer(&index_buffer, &init_data2,
-                                         index_buffer_.Receive()));
-}
-
 // D3D 10 Compositor implementation.
 class CompositorWin : public Compositor, public ViewTextureHost {
  public:
@@ -268,6 +244,7 @@ class CompositorWin : public Compositor, public ViewTextureHost {
   virtual void UpdatePerspective(const ui::Transform& transform,
                                  const gfx::Size& view_size) OVERRIDE;
   virtual const gfx::Size& GetHostSize() OVERRIDE;
+  virtual ID3D10Buffer* GetTextureIndexBuffer() OVERRIDE;
 
   // Compositor:
   virtual Texture* CreateTexture() OVERRIDE;
@@ -276,6 +253,11 @@ class CompositorWin : public Compositor, public ViewTextureHost {
   virtual void Blur(const gfx::Rect& bounds) OVERRIDE;
 
  private:
+  enum Direction {
+    HORIZONTAL,
+    VERTICAL
+  };
+
   ~CompositorWin();
 
   void Errored(HRESULT error_code);
@@ -291,6 +273,26 @@ class CompositorWin : public Compositor, public ViewTextureHost {
 
   void Resize(const gfx::Rect& bounds);
 
+  // Updates the kernel used for blurring. Size is the size of the texture
+  // being drawn to along the appropriate axis.
+  void UpdateBlurKernel(Direction direction, int size);
+
+  // Creates a texture, render target view and shader.
+  void CreateTexture(const gfx::Size& size,
+                     ID3D10Texture2D** texture,
+                     ID3D10RenderTargetView** render_target_view,
+                     ID3D10ShaderResourceView** shader_resource_view);
+
+  // Creates |vertex_buffer_|.
+  void CreateVertexBuffer();
+
+  // Creates |index_buffer_|.
+  void CreateIndexBuffer();
+
+  // Creates a vertex buffer for the specified region. The caller owns the
+  // return value.
+  ID3D10Buffer* CreateVertexBufferForRegion(const gfx::Rect& bounds);
+
   gfx::AcceleratedWidget host_;
 
   // Bounds the device was last created at.
@@ -298,12 +300,36 @@ class CompositorWin : public Compositor, public ViewTextureHost {
 
   ScopedComPtr<ID3D10Device> device_;
   ScopedComPtr<IDXGISwapChain> swap_chain_;
-  ScopedComPtr<ID3D10RenderTargetView> render_target_view_;
+  ScopedComPtr<ID3D10RenderTargetView> dest_render_target_view_;
   ScopedComPtr<ID3D10Texture2D> depth_stencil_buffer_;
   ScopedComPtr<ID3D10DepthStencilView> depth_stencil_view_;
   ScopedComPtr<ID3D10Effect, NULL> fx_;
   ID3D10EffectTechnique* technique_;
+
+  // Layout for Vertex.
   ScopedComPtr<ID3D10InputLayout> vertex_layout_;
+
+  // Identity vertext buffer. Used when copying from main back to dest.
+  ScopedComPtr<ID3D10Buffer> vertex_buffer_;
+
+  // Index buffer used for drawing a rectangle.
+  ScopedComPtr<ID3D10Buffer> index_buffer_;
+
+  // Used for bluring.
+  ScopedComPtr<ID3D10Effect, NULL> blur_fx_;
+  ID3D10EffectTechnique* blur_technique_;
+
+  // All rendering is done to the main_texture. Effects (such as bloom) render
+  // into the blur texture, and are then copied back to the main texture. When
+  // rendering is done |main_texture_| is drawn back to
+  // |dest_render_target_view_|.
+  ScopedComPtr<ID3D10Texture2D> main_texture_;
+  ScopedComPtr<ID3D10RenderTargetView> main_render_target_view_;
+  ScopedComPtr<ID3D10ShaderResourceView> main_texture_shader_view_;
+
+  ScopedComPtr<ID3D10Texture2D> blur_texture_;
+  ScopedComPtr<ID3D10RenderTargetView> blur_render_target_view_;
+  ScopedComPtr<ID3D10ShaderResourceView> blur_texture_shader_view_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositorWin);
 };
@@ -318,6 +344,8 @@ void CompositorWin::Init() {
   LoadEffects();
   Resize(last_bounds_);
   InitVertexLayout();
+  CreateVertexBuffer();
+  CreateIndexBuffer();
 }
 
 void CompositorWin::UpdatePerspective(const ui::Transform& transform,
@@ -363,17 +391,19 @@ void CompositorWin::UpdatePerspective(const ui::Transform& transform,
 
   D3DXMATRIX wvp = transform_matrix * scale_matrix * translate_matrix * view *
       projection_matrix;
-  fx_->GetVariableByName("gWVP")->AsMatrix()->SetMatrix((float*)&wvp);
+  fx_->GetVariableByName("gWVP")->AsMatrix()->SetMatrix(wvp);
 }
 
 const gfx::Size& CompositorWin::GetHostSize() {
   return last_bounds_.size();
 }
 
+ID3D10Buffer* CompositorWin::GetTextureIndexBuffer() {
+  return index_buffer_.get();
+}
+
 Texture* CompositorWin::CreateTexture() {
-  ViewTexture* texture = new ViewTexture(this, device_.get(), fx_.get());
-  texture->Init();
-  return texture;
+  return new ViewTexture(this, device_.get(), fx_.get());
 }
 
 void CompositorWin::NotifyStart() {
@@ -381,8 +411,11 @@ void CompositorWin::NotifyStart() {
   if (bounds != last_bounds_)
     Resize(bounds);
 
+  ID3D10RenderTargetView* target_view = main_render_target_view_.get();
+  device_->OMSetRenderTargets(1, &target_view, depth_stencil_view_.get());
+
   // Clear the background and stencil view.
-  device_->ClearRenderTargetView(render_target_view_.get(),
+  device_->ClearRenderTargetView(target_view,
                                  D3DXCOLOR(0.0f, 0.0f, 0.0f, 0.0f));
   device_->ClearDepthStencilView(
       depth_stencil_view_.get(), D3D10_CLEAR_DEPTH|D3D10_CLEAR_STENCIL,
@@ -397,20 +430,97 @@ void CompositorWin::NotifyStart() {
 }
 
 void CompositorWin::NotifyEnd() {
+  // Copy from main_render_target_view_| (where all are rendering was done) back
+  // to |dest_render_target_view_|.
+  ID3D10RenderTargetView* target_view = dest_render_target_view_.get();
+  device_->OMSetRenderTargets(1, &target_view, NULL);
+  device_->ClearRenderTargetView(target_view,
+                                 D3DXCOLOR(0.0f, 0.0f, 0.0f, 0.0f));
+  RETURN_IF_FAILED(
+      fx_->GetVariableByName("textureMap")->AsShaderResource()->
+      SetResource(main_texture_shader_view_.get()));
+  D3DXMATRIX identify_matrix;
+  D3DXMatrixIdentity(&identify_matrix);
+  fx_->GetVariableByName("gWVP")->AsMatrix()->SetMatrix(identify_matrix);
+  ID3D10EffectTechnique* technique = fx_->GetTechniqueByName("ViewTech");
+  DCHECK(technique);
+  D3D10_TECHNIQUE_DESC tech_desc;
+  technique->GetDesc(&tech_desc);
+  for(UINT p = 0; p < tech_desc.Passes; ++p)
+    technique->GetPassByIndex(p)->Apply(0);
+  UINT stride = sizeof(Vertex);
+  UINT offset = 0;
+  ID3D10Buffer* vertex_buffer = vertex_buffer_.get();
+  device_->IASetVertexBuffers(0, 1, &vertex_buffer, &stride, &offset);
+  device_->IASetIndexBuffer(index_buffer_.get(), DXGI_FORMAT_R32_UINT, 0);
+  device_->DrawIndexed(6, 0, 0);
+  RETURN_IF_FAILED(
+      fx_->GetVariableByName("textureMap")->AsShaderResource()->
+      SetResource(NULL));
   swap_chain_->Present(0, 0);
 
   // We may delete the shader resource view before drawing again. Unset it so
   // that d3d doesn't generate a warning when we do that.
-  fx_->GetVariableByName("textureMap")->AsShaderResource()->
-      SetResource(NULL);
-  D3D10_TECHNIQUE_DESC tech_desc;
-  technique_->GetDesc(&tech_desc);
+  fx_->GetVariableByName("textureMap")->AsShaderResource()->SetResource(NULL);
   for(UINT i = 0; i < tech_desc.Passes; ++i)
     technique_->GetPassByIndex(i)->Apply(0);
 }
 
 void CompositorWin::Blur(const gfx::Rect& bounds) {
-  NOTIMPLEMENTED();
+  // Set up the vertex buffer for the region we're going to blur.
+  ScopedComPtr<ID3D10Buffer> scoped_vertex_buffer(
+      CreateVertexBufferForRegion(bounds));
+  ID3D10Buffer* vertex_buffer = scoped_vertex_buffer.get();
+  UINT stride = sizeof(Vertex);
+  UINT offset = 0;
+  device_->IASetVertexBuffers(0, 1, &vertex_buffer, &stride, &offset);
+  device_->IASetIndexBuffer(index_buffer_.get(), DXGI_FORMAT_R32_UINT, 0);
+  device_->DrawIndexed(6, 0, 0);
+  D3DXMATRIX identity_matrix;
+  D3DXMatrixIdentity(&identity_matrix);
+
+  // Horizontal blur from the main texture to blur texture.
+  UpdateBlurKernel(HORIZONTAL, last_bounds_.width());
+  ID3D10RenderTargetView* target_view = blur_render_target_view_.get();
+  device_->OMSetRenderTargets(1, &target_view, NULL);
+  RETURN_IF_FAILED(
+      blur_fx_->GetVariableByName("textureMap")->AsShaderResource()->
+      SetResource(main_texture_shader_view_.get()));
+  blur_fx_->GetVariableByName("gWVP")->AsMatrix()->SetMatrix(
+      identity_matrix);
+  ID3D10EffectTechnique* technique = blur_fx_->GetTechniqueByName("ViewTech");
+  DCHECK(technique);
+  D3D10_TECHNIQUE_DESC tech_desc;
+  technique->GetDesc(&tech_desc);
+  for(UINT p = 0; p < tech_desc.Passes; ++p)
+    technique->GetPassByIndex(p)->Apply(0);
+  device_->DrawIndexed(6, 0, 0);
+
+  {
+    // We do this to avoid a warning.
+    ID3D10ShaderResourceView* tmp = NULL;
+    device_->PSSetShaderResources(0, 1, &tmp);
+  }
+
+  // Vertical blur from the blur texture back to main buffer.
+  RETURN_IF_FAILED(
+      blur_fx_->GetVariableByName("textureMap")->AsShaderResource()->
+      SetResource(blur_texture_shader_view_.get()));
+  UpdateBlurKernel(VERTICAL, last_bounds_.height());
+  target_view = main_render_target_view_.get();
+  device_->OMSetRenderTargets(1, &target_view, NULL);
+  for(UINT p = 0; p < tech_desc.Passes; ++p)
+    technique->GetPassByIndex(p)->Apply(0);
+  device_->DrawIndexed(6, 0, 0);
+
+#if !defined(NDEBUG)
+  // A warning is generated if a bound vertexbuffer is deleted. To avoid that
+  // warning we reset the buffer here. We only do it for debug builds as it's
+  // ok to effectively unbind the vertex buffer.
+  vertex_buffer = vertex_buffer_.get();
+  device_->IASetVertexBuffers(0, 1, &vertex_buffer, &stride, &offset);
+  device_->IASetIndexBuffer(index_buffer_.get(), DXGI_FORMAT_R32_UINT, 0);
+#endif
 }
 
 CompositorWin::~CompositorWin() {
@@ -483,6 +593,18 @@ void CompositorWin::LoadEffects() {
           compilation_errors.Receive(), NULL));
   technique_ = fx_->GetTechniqueByName("ViewTech");
   DCHECK(technique_);
+
+  const base::StringPiece& blur_data = ResourceBundle::GetSharedInstance().
+      GetRawDataResource(IDR_BLUR_FX);
+  DCHECK(!blur_data.empty());
+  compilation_errors = NULL;
+  RETURN_IF_FAILED(
+      D3DX10CreateEffectFromMemory(
+          blur_data.data(), blur_data.size(), "bloom.fx", NULL, NULL,
+          "fx_4_0", shader_flags, 0, device_.get(), NULL, NULL,
+          blur_fx_.Receive(), compilation_errors.Receive(), NULL));
+  blur_technique_ = blur_fx_->GetTechniqueByName("ViewTech");
+  DCHECK(blur_technique_);
 }
 
 void CompositorWin::InitVertexLayout() {
@@ -504,9 +626,27 @@ void CompositorWin::InitVertexLayout() {
 }
 
 void CompositorWin::Resize(const gfx::Rect& bounds) {
-  render_target_view_ = NULL;
+  last_bounds_ = bounds;
+
+  dest_render_target_view_ = NULL;
   depth_stencil_buffer_ = NULL;
   depth_stencil_view_ = NULL;
+
+  main_render_target_view_ = NULL;
+  main_texture_ = NULL;
+  main_texture_shader_view_ = NULL;
+
+  blur_render_target_view_ = NULL;
+  blur_texture_ = NULL;
+  blur_texture_shader_view_ = NULL;
+
+  CreateTexture(bounds.size(), main_texture_.Receive(),
+                main_render_target_view_.Receive(),
+                main_texture_shader_view_.Receive());
+
+  CreateTexture(bounds.size(), blur_texture_.Receive(),
+                blur_render_target_view_.Receive(),
+                blur_texture_shader_view_.Receive());
 
   // Resize the swap chain and recreate the render target view.
   RETURN_IF_FAILED(swap_chain_->ResizeBuffers(
@@ -516,7 +656,8 @@ void CompositorWin::Resize(const gfx::Rect& bounds) {
                        0, __uuidof(ID3D10Texture2D),
                        reinterpret_cast<void**>(back_buffer.Receive())));
   RETURN_IF_FAILED(device_->CreateRenderTargetView(
-                       back_buffer.get(), 0, render_target_view_.Receive()));
+                       back_buffer.get(), 0,
+                       dest_render_target_view_.Receive()));
 
   // Create the depth/stencil buffer and view.
   D3D10_TEXTURE2D_DESC depth_stencil_desc;
@@ -539,10 +680,6 @@ void CompositorWin::Resize(const gfx::Rect& bounds) {
                        depth_stencil_view_.Receive()));
 
 
-  // Bind the render target view and depth/stencil view to the pipeline.
-  ID3D10RenderTargetView* target_view = render_target_view_.get();
-  device_->OMSetRenderTargets(1, &target_view, depth_stencil_view_.get());
-
   // Set the viewport transform.
   D3D10_VIEWPORT vp;
   vp.TopLeftX = bounds.x();
@@ -553,8 +690,135 @@ void CompositorWin::Resize(const gfx::Rect& bounds) {
   vp.MaxDepth = 1.0f;
 
   device_->RSSetViewports(1, &vp);
+}
 
-  last_bounds_ = bounds;
+void CompositorWin::UpdateBlurKernel(Direction direction, int size) {
+  // Update the blur data.
+  const int kSize = 13;
+  float pixel_data[4 * kSize];
+  memset(pixel_data, 0, sizeof(float) * 4 * kSize);
+  for (int i = 0; i < kSize; ++i) {
+    pixel_data[i * 4 + ((direction == HORIZONTAL) ? 0 : 1)] =
+        static_cast<float>(i - (kSize / 2)) / static_cast<float>(size);
+  }
+  RETURN_IF_FAILED(blur_fx_->GetVariableByName("TexelKernel")->AsVector()->
+                   SetFloatVectorArray(pixel_data, 0, kSize));
+}
+
+void CompositorWin::CreateTexture(
+    const gfx::Size& size,
+    ID3D10Texture2D** texture,
+    ID3D10RenderTargetView** render_target_view,
+    ID3D10ShaderResourceView** shader_resource_view) {
+  D3D10_TEXTURE2D_DESC texture_desc;
+  texture_desc.Width = size.width();
+  texture_desc.Height = size.height();
+  texture_desc.MipLevels = 1;
+  texture_desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+  texture_desc.SampleDesc.Count = 1;
+  texture_desc.SampleDesc.Quality = 0;
+  texture_desc.Usage = D3D10_USAGE_DEFAULT;
+  texture_desc.BindFlags =
+      D3D10_BIND_RENDER_TARGET | D3D10_BIND_SHADER_RESOURCE;
+  texture_desc.CPUAccessFlags = 0;
+  texture_desc.MiscFlags = 0;
+  texture_desc.ArraySize = 1;
+  RETURN_IF_FAILED(device_->CreateTexture2D(&texture_desc, NULL, texture));
+
+  RETURN_IF_FAILED(
+      device_->CreateShaderResourceView(*texture, NULL, shader_resource_view));
+
+  D3D10_RENDER_TARGET_VIEW_DESC render_target_view_desc;
+  render_target_view_desc.Format = texture_desc.Format;
+  render_target_view_desc.ViewDimension = D3D10_RTV_DIMENSION_TEXTURE2DMS;
+  render_target_view_desc.Texture2D.MipSlice = 0;
+  RETURN_IF_FAILED(device_->CreateRenderTargetView(
+                       *texture, &render_target_view_desc, render_target_view));
+}
+
+void CompositorWin::CreateVertexBuffer() {
+  vertex_buffer_.Release();
+
+  Vertex vertices[] = {
+    { D3DXVECTOR3(-1.0f, -1.0f, 0.0f), D3DXVECTOR2(0.0f, 1.0f) },
+    { D3DXVECTOR3(-1.0f,  1.0f, 0.0f), D3DXVECTOR2(0.0f, 0.0f) },
+    { D3DXVECTOR3( 1.0f,  1.0f, 0.0f), D3DXVECTOR2(1.0f, 0.0f) },
+    { D3DXVECTOR3( 1.0f, -1.0f, 0.0f), D3DXVECTOR2(1.0f, 1.0f) },
+  };
+
+  // Create the vertex buffer containing the points.
+  D3D10_BUFFER_DESC buffer_desc;
+  buffer_desc.Usage = D3D10_USAGE_IMMUTABLE;
+  buffer_desc.ByteWidth = sizeof(Vertex) * ARRAYSIZE_UNSAFE(vertices);
+  buffer_desc.BindFlags = D3D10_BIND_VERTEX_BUFFER;
+  buffer_desc.CPUAccessFlags = 0;
+  buffer_desc.MiscFlags = 0;
+  D3D10_SUBRESOURCE_DATA init_data;
+  init_data.pSysMem = vertices;
+  RETURN_IF_FAILED(device_->CreateBuffer(&buffer_desc, &init_data,
+                                         vertex_buffer_.Receive()));
+}
+
+void CompositorWin::CreateIndexBuffer() {
+  index_buffer_.Release();
+
+  // Then the index buffer.
+  DWORD indices[] = {
+    0, 1, 2,
+    0, 2, 3,
+  };
+  D3D10_BUFFER_DESC index_buffer;
+  index_buffer.Usage = D3D10_USAGE_IMMUTABLE;
+  index_buffer.ByteWidth = sizeof(DWORD) * ARRAYSIZE_UNSAFE(indices);
+  index_buffer.BindFlags = D3D10_BIND_INDEX_BUFFER;
+  index_buffer.CPUAccessFlags = 0;
+  index_buffer.MiscFlags = 0;
+  D3D10_SUBRESOURCE_DATA init_data;
+  init_data.pSysMem = indices;
+  RETURN_IF_FAILED(device_->CreateBuffer(&index_buffer, &init_data,
+                                         index_buffer_.Receive()));
+}
+
+ID3D10Buffer* CompositorWin::CreateVertexBufferForRegion(
+    const gfx::Rect& bounds) {
+  float x = static_cast<float>(bounds.x()) /
+      static_cast<float>(last_bounds_.width()) * 2.0f - 1.0f;
+  float max_x =
+      x + bounds.width() / static_cast<float>(last_bounds_.width()) * 2.0f;
+  float y =
+      static_cast<float>(last_bounds_.height() - bounds.y() - bounds.height()) /
+      static_cast<float>(last_bounds_.height()) * 2.0f - 1.0f;
+  float max_y =
+      y + bounds.height() / static_cast<float>(last_bounds_.height()) * 2.0f;
+  float tex_x = x / 2.0f + .5f;
+  float max_tex_x = max_x / 2.0f + .5f;
+  float tex_y = 1.0f - (max_y + 1.0f) / 2.0f;
+  float max_tex_y = tex_y + (max_y - y) / 2.0f;
+  Vertex vertices[] = {
+    { D3DXVECTOR3(    x,     y, 0.0f), D3DXVECTOR2(    tex_x, max_tex_y) },
+    { D3DXVECTOR3(    x, max_y, 0.0f), D3DXVECTOR2(    tex_x,     tex_y) },
+    { D3DXVECTOR3(max_x, max_y, 0.0f), D3DXVECTOR2(max_tex_x,     tex_y) },
+    { D3DXVECTOR3(max_x,     y, 0.0f), D3DXVECTOR2(max_tex_x, max_tex_y) },
+  };
+
+  // Create the vertex buffer containing the points.
+  D3D10_BUFFER_DESC buffer_desc;
+  buffer_desc.Usage = D3D10_USAGE_IMMUTABLE;
+  buffer_desc.ByteWidth = sizeof(Vertex) * ARRAYSIZE_UNSAFE(vertices);
+  buffer_desc.BindFlags = D3D10_BIND_VERTEX_BUFFER;
+  buffer_desc.CPUAccessFlags = 0;
+  buffer_desc.MiscFlags = 0;
+  D3D10_SUBRESOURCE_DATA init_data;
+  init_data.pSysMem = vertices;
+  ID3D10Buffer* vertex_buffer = NULL;
+  // TODO: better error handling.
+  int error_code =
+      device_->CreateBuffer(&buffer_desc, &init_data, &vertex_buffer);
+  if (error_code != S_OK) {
+    Errored(error_code);
+    return NULL;
+  }
+  return vertex_buffer;
 }
 
 }  // namespace
