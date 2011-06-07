@@ -9,52 +9,52 @@
     <script type="application/x-javascript">
 //<![CDATA[
 function setupTests(tester, plugin) {
-  tester.addTest('PPB_Graphics2D::Create', function() {
-    assert(plugin.testCreate());
+  tester.addTest('PPB_Graphics2D::Create', function(status) {
+    status.assert(plugin.testCreate());
   });
-  tester.addTest('PPB_Graphics2D::IsGraphics2D', function() {
-    assert(plugin.testIsGraphics2D());
+  tester.addTest('PPB_Graphics2D::IsGraphics2D', function(status) {
+    status.assert(plugin.testIsGraphics2D());
   });
-  tester.addTest('PPB_Graphics2D::Describe', function() {
-    assert(plugin.testDescribe());
+  tester.addTest('PPB_Graphics2D::Describe', function(status) {
+    status.assert(plugin.testDescribe());
   });
   // This must be called first because it sets the entire graphics area to gray.
-  tester.addTest('PPB_Graphics2D::ReplaceContents', function() {
-    assert(plugin.testReplaceContents());
-    tester.waitForCallback('ReplaceContentsFlushCallback', 1);
+  tester.addTest('PPB_Graphics2D::ReplaceContents', function(status) {
+    status.assert(plugin.testReplaceContents());
+    status.waitForCallback('ReplaceContentsFlushCallback', 1);
   });
   // Adds a blue square at the top right.
-  tester.addTest('PPB_Graphics2D::PaintImageData', function() {
-    assert(plugin.testPaintImageData());
-    tester.waitForCallback('PaintImageDataFlushCallback', 1);
+  tester.addTest('PPB_Graphics2D::PaintImageData', function(status) {
+    status.assert(plugin.testPaintImageData());
+    status.waitForCallback('PaintImageDataFlushCallback', 1);
   });
   // Adds a yellow square at the bottom left.
-  tester.addTest('PPB_Graphics2D::PaintImageDataEntire', function() {
-    assert(plugin.testPaintImageDataEntire());
-    tester.waitForCallback('PaintImageDataEntireFlushCallback', 1);
+  tester.addTest('PPB_Graphics2D::PaintImageDataEntire', function(status) {
+    status.assert(plugin.testPaintImageDataEntire());
+    status.waitForCallback('PaintImageDataEntireFlushCallback', 1);
   });
   // Adds a white square at the top left and then the middle.
-  tester.addTest('PPB_Graphics2D::Scroll', function() {
-    assert(plugin.testScroll());
-    tester.waitForCallback('ScrollFlushCallback', 1);
+  tester.addTest('PPB_Graphics2D::Scroll', function(status) {
+    status.assert(plugin.testScroll());
+    status.waitForCallback('ScrollFlushCallback', 1);
   });
   // Adds a green square at the top left (over white) and then the bottom right.
-  tester.addTest('PPB_Graphics2D::ScrollEntire', function() {
-   assert(plugin.testScrollEntire());
-   tester.waitForCallback('ScrollEntireFlushCallback', 1);
+  tester.addTest('PPB_Graphics2D::ScrollEntire', function(status) {
+    status.assert(plugin.testScrollEntire());
+    status.waitForCallback('ScrollEntireFlushCallback', 1);
   });
   // Does not alter the image.
-  tester.addTest('PPB_Graphics2D::Flush', function() {
-    assert(plugin.testFlush());
-    tester.waitForCallback('FlushCallback', 1);
+  tester.addTest('PPB_Graphics2D::Flush', function(status) {
+    status.assert(plugin.testFlush());
+    status.waitForCallback('FlushCallback', 1);
   });
   // Adds a red square at the top left (over green) 10 times.
-  tester.addTest('PPB_Graphics2D::FlushAnimation', function() {
-    assert(plugin.testFlushAnimation());
-    tester.waitForCallback('FlushAnimationCallback', 10);
+  tester.addTest('PPB_Graphics2D::FlushAnimation', function(status) {
+    status.assert(plugin.testFlushAnimation());
+    status.waitForCallback('FlushAnimationCallback', 10);
   });
-  tester.addTest('PPB_Graphics2D::Stress', function() {
-    assert(plugin.testStress());
+  tester.addTest('PPB_Graphics2D::Stress', function(status) {
+    status.assert(plugin.testStress());
   });
 }
       //]]>

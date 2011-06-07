@@ -9,58 +9,42 @@
       //<![CDATA[
 
 function loadAndTestMethods(tester, server) {
-  tester.addTest('load_and_run_methods', function() {
-    // Variables to hold the response.
-    var responded = false;
-    var nexe_file_descriptor_object = undefined;
-
+  tester.addAsyncTest('load_and_run_methods', function(status) {
     var Callback = function() {
-      this.onload = function(fd) {
-        nexe_file_descriptor_object = fd;
-        responded = true;
-      },
-      this.onfail = function(message) {
-      }
+      this.onload = status.wrap(function(fd) {
+        // Validate the results of the static load.
+        status.assert(fd);
+
+        // When __launchExecutableFromFd is called, it causes the set of
+        // progress events to be dispatched.  On successful loading a 'load'
+        // event will be dispatched.  The 'loadend' event should always be
+        // dispatched at the end of loading.
+
+        var loadedFromFdSucceeded = false;
+        server.addEventListener('load', function() {
+          loadedFromFdSucceeded = true;
+        }, true);
+
+        server.addEventListener('loadend', status.wrap(function() {
+          status.assert(loadedFromFdSucceeded);
+          status.assertEqual(4, server.readyState);
+          status.assertEqual('', server.lastError);
+          status.assertEqual(42, server.fortytwo());
+          status.assertEqual('hello, world.', server.helloworld());
+          status.pass();
+         }), true);
+
+        // Start the load from the nexe file descriptor object.
+        server.__launchExecutableFromFd(fd);
+      }),
+
+      this.onfail = status.wrap(function(message) {
+        status.fail('Failed to fetch URL.');
+      })
     };
 
     // Make the request.
     server.__urlAsNaClDesc('srpc_hw.nexe', new Callback());
-
-    function waitForStaticLoad() {
-      if (!responded) {
-        // Periodically poll until the results are ready.
-        halt_and_callback(5, waitForStaticLoad);
-      } else {
-        // Validate the results of the static load.
-        tester.log(nexe_file_descriptor_object);
-        // When __launchExecutableFromFd is called, it causes the set of
-        // progress events to be dispatched.  On successful loading a 'load'
-        // event will be dispatched.  We keep a variable to indicate whether
-        // the 'loadend' event has been dispatched and poll. An event listener
-        // changes the success/fail variable when the 'load' event is received.
-        var loadedFromFdEnded = false;
-        var loadedFromFdSucceeded = false;
-        $('nacl_server').addEventListener('loadend',
-            function() { loadedFromFdEnded = true; }, true);
-        $('nacl_server').addEventListener('load',
-            function() { loadedFromFdSucceeded = true; }, true);
-        // Start the load from the nexe file descriptor object.
-        server.__launchExecutableFromFd(nexe_file_descriptor_object);
-        // Wait until the variable indicates the load event was received.
-        function waitForLoadFromFd() {
-          if (!loadedFromFdEnded) {
-            // Periodically poll until the results are ready.
-            halt_and_callback(5, waitForLoadFromFd);
-          } else {
-            assert(loadedFromFdSucceeded);
-            assertEqual(42, server.fortytwo());
-            assertEqual('hello, world.', server.helloworld());
-          }
-        }
-        waitForLoadFromFd();
-      }
-    }
-    waitForStaticLoad();
   });
 }
 
@@ -77,7 +61,7 @@ function loadAndTestMethods(tester, server) {
     <script type="text/javascript">
       //<![CDATA[
       var tester = new Tester();
-      var server = $("nacl_server");
+      var server = $('nacl_server');
       loadAndTestMethods(tester, server);
       tester.waitFor(server);
       tester.run();

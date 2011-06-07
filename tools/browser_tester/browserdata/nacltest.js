@@ -22,7 +22,7 @@ function exceptionToLogText(e) {
 // Logs test results to the server using URL-encoded RPC.
 // Also logs the same test results locally into the DOM.
 function RPCWrapper() {
-  // Workaround how JS binds 'this'
+  // Work around how JS binds 'this'
   var this_ = this;
   // It is assumed RPC will work unless proven otherwise.
   this.rpc_available = true;
@@ -148,16 +148,23 @@ function RPCWrapper() {
     this._log(full_message, 'blue');
   }
 
-  // TODO(ncbray) make this the main interface
-  this._log = function(message, color) {
+  this._log = function(message, color, from_completed_test) {
     if (typeof(message) != 'string') {
       message = toString(message);
     }
+
+    // For event-driven tests, output may come after the test has finished.
+    // Display this in a special way to assist debugging.
+    if (from_completed_test) {
+      color = 'orange';
+      message = 'completed test: ' + message;
+    }
+
     this.logLocal(message, color);
     rpcCall('TestLog', {message: message});
   }
 
-  this.log = function(test_name, message) {
+  this.log = function(test_name, message, from_completed_test) {
     if (message == undefined) {
       // This is a log message that is not assosiated with a test.
       // What we though was the test name is actually the message.
@@ -166,29 +173,30 @@ function RPCWrapper() {
       if (typeof(message) != 'string') {
         message = toString(message);
       }
-      this._log('[' + test_name + ' LOG] ' + message);
+      var full_message = '[' + test_name + ' LOG] ' + message;
+      this._log(full_message, 'black', from_completed_test);
     }
   }
 
-  this.fail = function(test_name, message) {
+  this.fail = function(test_name, message, from_completed_test) {
     this.num_failed += 1;
     this.visualError();
     var full_message = '[' + test_name + ' FAIL] ' + message
-    this._log(full_message, 'red');
+    this._log(full_message, 'red', from_completed_test);
   }
 
-  this.exception = function(test_name, err) {
+  this.exception = function(test_name, err, from_completed_test) {
     this.num_errors += 1;
     this.visualError();
     var message = exceptionToLogText(err);
     var full_message = '[' + test_name + ' EXCEPTION] ' + message;
-    this._log(full_message, 'purple');
+    this._log(full_message, 'purple', from_completed_test);
   }
 
-  this.pass = function(test_name) {
+  this.pass = function(test_name, from_completed_test) {
     this.num_passed += 1;
     var full_message = '[' + test_name + ' PASS]';
-    this._log(full_message, 'green');
+    this._log(full_message, 'green', from_completed_test);
   }
 
   this.blankLine = function() {
@@ -245,7 +253,7 @@ function RPCWrapper() {
 //
 
 
-function fail(message, info) {
+function fail(message, info, test_status) {
   var parts = [];
   if (message != undefined) {
     parts.push(message);
@@ -253,13 +261,21 @@ function fail(message, info) {
   if (info != undefined) {
     parts.push('(' + info + ')');
   }
-  throw {type: 'test_fail', message: parts.join(' ')};
+  var full_message = parts.join(' ');
+
+  if (test_status !== undefined) {
+    // New-style test
+    test_status.fail(full_message);
+  } else {
+    // Old-style test
+    throw {type: 'test_fail', message: full_message};
+  }
 }
 
 
-function assert(condition, message) {
+function assert(condition, message, test_status) {
   if (!condition) {
-    fail(message, toString(condition));
+    fail(message, toString(condition), test_status);
   }
 }
 
@@ -293,24 +309,30 @@ function toString(obj) {
 }
 
 
-function assertEqual(a, b, message) {
+// Old-style, but new-style tests use it indirectly.
+// (The use of the "test" parameter indicates a new-style test.  This is a
+// temporary hack to avoid code duplication.)
+function assertEqual(a, b, message, test_status) {
   if (isArray(a) && isArray(b)) {
-    assertArraysEqual(a, b, message);
+    assertArraysEqual(a, b, message, test_status);
   } else if (a !== b) {
-    fail(message, toString(a) + ' != ' + toString(b));
+    fail(message, toString(a) + ' != ' + toString(b), test_status);
   }
 }
 
 
-function assertArraysEqual(a, b, message) {
+// Old-style, but new-style tests use it indirectly.
+// (The use of the "test" parameter indicates a new-style test.  This is a
+// temporary hack to avoid code duplication.)
+function assertArraysEqual(a, b, message, test_status) {
   var dofail = function() {
-    fail(message, toString(a) + ' != ' + toString(b));
+    fail(message, toString(a) + ' != ' + toString(b), test_status);
   }
   if (a.length != b.length) {
     dofail();
   }
   for (var i = 0; i < a.length; i++) {
-    if(a[i] != b[i]) {
+    if(a[i] !== b[i]) {
       dofail();
     }
   }
@@ -320,21 +342,17 @@ function assertArraysEqual(a, b, message) {
 // Ideally there'd be some way to identify what exception was thrown, but JS
 // exceptions are fairly ad-hoc.
 // TODO(ncbray) allow manual validation of exception types?
-function assertRaises(func, message) {
+function assertRaises(func, message, test_status) {
   try {
     func();
   } catch (err) {
     return;
   }
-  fail(message, 'did not raise');
+  fail(message, 'did not raise', test_status);
 }
 
 
-function halt_and_pass() {
-  throw {type: 'test_pass'};
-}
-
-
+// Old-style
 function halt_and_callback(time, callback) {
   throw {type: 'test_wait', time: time, callback: callback};
 }
@@ -343,6 +361,11 @@ function halt_and_callback(time, callback) {
 //
 // END functions for testing
 //
+
+
+function haltAsyncTest() {
+  throw {type: 'test_halt'};
+}
 
 
 function begins_with(s, prefix) {
@@ -473,8 +496,8 @@ function NaClWaiter(body_element) {
         this.pingCallback();
     }
   }
-
 }
+
 
 function logLoadStatus(rpc, load_errors_are_test_errors, loaded, waiting) {
   for (var i = 0; i < loaded.length; i++) {
@@ -509,8 +532,159 @@ function logLoadStatus(rpc, load_errors_are_test_errors, loaded, waiting) {
   }
 }
 
+
+// Contains the state for a single test.
+function TestStatus(tester, name, async) {
+  // Work around how JS binds 'this'
+  var this_ = this;
+  this.tester = tester;
+  this.name = name;
+  this.async = async;
+  this.running = true;
+
+  this.log = function(message) {
+    this.tester.rpc.log(this.name, toString(message), !this.running);
+  }
+
+  this.pass = function() {
+    // TODO raise if not running.
+    this.tester.rpc.pass(this.name, !this.running);
+    this._done();
+    haltAsyncTest();
+  }
+
+  this.fail = function(message) {
+    this.tester.rpc.fail(this.name, message, !this.running);
+    this._done();
+    haltAsyncTest();
+  }
+
+  this._done = function() {
+    if (this.running) {
+      this.running = false;
+      this.tester.testDone(this);
+    }
+  }
+
+  this.assert = function(condition, message) {
+    assert(condition, message, this);
+  }
+
+  this.assertEqual = function(a, b, message) {
+    assertEqual(a, b, message, this);
+  }
+
+  this.callbackWrapper = function(callback, args) {
+    // A stale callback?
+    if (!this.running)
+      return;
+
+    if (args === undefined)
+      args = [];
+
+    // Should we move on to the next test?
+    // Async tests do not move on without an explicit pass.
+    var done = !this.async;
+    // Did the test exit via an exception?
+    var exceptionHandled = false;
+
+    // Was the next test scheduled before the callback returned?
+    // This is how new-style tests behave.
+    var new_style_exit = false;
+
+    try {
+      callback.apply(undefined, args);
+    } catch (err) {
+      exceptionHandled = true;
+      var recognized = true;
+      done = true;
+      if(typeof err == 'object' && 'type' in err) {
+        if (err.type == 'test_halt') {
+          // New-style test
+          // If we get this exception, we can assume any callbacks or next
+          // tests have already been scheduled.
+          new_style_exit = true;
+        } else if (err.type == 'test_fail') {
+          // A special exception that terminates the test with a failure
+          this.tester.rpc.fail(this.name, err.message, !this.running);
+        } else if (err.type == 'test_pass') {
+          // A special exception that terminates the test without failing
+          this.tester.rpc.pass(this.name, !this.running);
+        } else if (err.type == 'test_wait') {
+          // A special exception that indicates the test wants a callback
+          setTimeout(function() {
+            this_.callbackWrapper(err.callback);
+          }, err.time);
+          done = false;
+        } else {
+          recognized = false;
+        }
+      } else {
+        recognized = false;
+      }
+      if (!recognized) {
+        // This is not a special type of exception, it is an error.
+        this.tester.rpc.exception(this.name, err, !this.running);
+      }
+    }
+
+    if (!new_style_exit) {
+      if (done && this.running) {
+        if (!exceptionHandled) {
+          // No exception, the test passed
+          // Only used by non-async tests.
+          this.tester.rpc.pass(this.name);
+        }
+        this._done();
+      }
+    }
+  }
+
+  // Async callbacks should be wrapped so the tester can catch unexpected
+  // exceptions.
+  this.wrap = function(callback) {
+    return function() {
+      this_.callbackWrapper(callback, arguments);
+    };
+  }
+
+  this.setTimeout = function(callback, time) {
+    setTimeout(this.wrap(callback), time);
+  }
+
+  this.waitForCallback = function(callbackName, expectedCalls) {
+    this.log('Waiting for ' + expectedCalls + ' invocations of callback: '
+               + callbackName);
+    var gotCallbacks = 0;
+
+    // Deliberately global - this is what the nexe expects.
+    // TODO(ncbray): consider returning this function, so the test has more
+    // flexibility. For example, in the test one could count to N
+    // using a different callback before calling _this_ callback, and
+    // continuing the test. Also, consider calling user-supplied callback
+    // when done waiting.
+    window[callbackName] = this.wrap(function() {
+      ++gotCallbacks;
+      this_.log('Received callback ' + gotCallbacks);
+      if (gotCallbacks == expectedCalls) {
+        this_.log("Done waiting");
+        this_.pass();
+      } else {
+        // HACK
+        haltAsyncTest();
+      }
+    });
+
+    // HACK if this function is used in a non-async test, make sure we don't
+    // spuriously pass.  Throwing this exception forces us to behave like an
+    // async test.
+    haltAsyncTest();
+  }
+}
+
+
 function Tester(body_element) {
-  // Workaround how JS binds 'this'
+  // Work around how JS binds 'this'
   var this_ = this;
   // The tests being run.
   var tests = [];
@@ -518,6 +692,9 @@ function Tester(body_element) {
   this.waiter = new NaClWaiter(body_element);
 
   var load_errors_are_test_errors = true;
+
+  // Logging that occurs before tests have started need this object.
+  this.currentTest = new TestStatus(this, undefined, false);
 
   //
   // BEGIN public interface
@@ -528,14 +705,20 @@ function Tester(body_element) {
   }
 
   this.log = function(message) {
-    this.rpc.log(this.currentTest, message);
+    this.currentTest.log(message);
   }
 
+  // If this kind of test exits cleanly, it passes
   this.addTest = function(name, testFunction) {
-    tests.push({name: name, callback: testFunction});
+    tests.push({name: name, callback: testFunction, async: false});
   }
 
-  // TODO(ncbray): implement parallelized async test harness
+  // This kind of test does not pass until "pass" is explicitly called.
+  this.addAsyncTest = function(name, testFunction) {
+    tests.push({name: name, callback: testFunction, async: true});
+  }
+
+  // TODO(ncbray): remove
   this.waitForCallback = function(callbackName, expectedCalls) {
     this_.log('Waiting for ' + expectedCalls + ' invocations of callback: '
                + callbackName);
@@ -592,28 +775,20 @@ function Tester(body_element) {
     if (this.testIndex < tests.length) {
       // Setup for the next test.
       var test = tests[this.testIndex];
-      this.currentTest = test.name;
+      var currentTest = new TestStatus(this, test.name, test.async)
+      this.currentTest = currentTest;
       this.rpc.blankLine();
-      this.rpc.begin(this.currentTest);
-      this.setNextStep(0, test.callback);
+      this.rpc.begin(this.currentTest.name);
+
+      setTimeout(currentTest.wrap(function() {
+        test.callback(currentTest);
+      }), 0);
     } else {
       // There are no more test suites.
+      this.currentTest = new TestStatus(this, undefined, false);
       this.rpc.blankLine();
       this.rpc.shutdown();
     }
-  }
-
-  this.setNextStep = function(time, callback) {
-    // Give up control
-    // There are three reasons for this:
-    // 1) It allows the render thread to update (can't see the log, otherwise)
-    // 2) It breaks up a "long running process" so the browser
-    //    won't think it crashed
-    // 3) It allows us to sleep for a specified interval
-    // TODO it might not be desirable to relinquish control between each test.
-    // Running several tests in a row might make things faster.
-    this.nextStep = callback;
-    setTimeout(function() { this_.runTestStep(); }, time);
   }
 
   this.startTesting = function() {
@@ -622,55 +797,9 @@ function Tester(body_element) {
     this.initTest();
   }
 
-  this.nextTest = function() {
+  this.testDone = function(test) {
     // Advance to the next test suite
     this.testIndex += 1;
-    this.initTest()
-  }
-
-  this.runTestStep = function() {
-    callback = this.nextStep;
-    // Be paranoid - avoid accidental infinite loops
-    this.nextStep = null;
-    // Should we move on to the next test?
-    var done = true;
-    // Did the text exit abnormally
-    var exceptionHandled = false;
-
-    try {
-      callback();
-    } catch (err) {
-      if (typeof err == 'object') {
-        if ('type' in err) {
-          if (err.type == 'test_fail') {
-            // A special exception that terminates the test with a failure
-            this.rpc.fail(this.currentTest, err.message);
-            exceptionHandled = true;
-          } else if (err.type == 'test_pass') {
-            // A special exception that terminates the test without failing
-            this.rpc.pass(this.currentTest);
-            exceptionHandled = true;
-          } else if (err.type == 'test_wait') {
-            // A special exception that indicates the test wants a callback
-            this.setNextStep(err.time, err.callback);
-            done = false;
-            exceptionHandled = true;
-          }
-        }
-      }
-      if (!exceptionHandled) {
-        // This is not a special type of exception, it is an error.
-        this.rpc.exception(this.currentTest, err);
-        exceptionHandled = true
-      }
-    }
-
-    if (done) {
-      if (!exceptionHandled) {
-        // No exception, the test passed
-        this.rpc.pass(this.currentTest);
-      }
-      this.nextTest();
-    }
+    this.initTest();
   }
 }

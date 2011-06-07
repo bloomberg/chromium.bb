@@ -9,11 +9,13 @@
     <script type="application/x-javascript">
       //<![CDATA[
 function setupTests(tester, plugin) {
-  tester.addTest('smoke', function() {
-    halt_and_callback(2000, function() { });
-    // '' means there was no error.
-    assertEqual(plugin.lastError, '');
-  })
+  tester.addAsyncTest('smoke', function(status) {
+    status.setTimeout(function() {
+      // '' means there was no error.
+      status.assertEqual(plugin.lastError, '');
+      status.pass(); // Async tests require an explicit pass.
+    }, 2000);
+  });
 }
       //]]>
     </script>
