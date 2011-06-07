@@ -89,7 +89,8 @@ class TestPrerenderContents : public PrerenderContents {
   }
 
   virtual ~TestPrerenderContents() {
-    EXPECT_EQ(expected_final_status_, final_status()) <<
+    EXPECT_EQ(FinalStatusCanonicalize(expected_final_status_),
+              FinalStatusCanonicalize(final_status())) <<
         " when testing URL " << prerender_url().path();
     // Prerendering RenderViewHosts should be hidden before the first
     // navigation, so this should be happen for every PrerenderContents for
@@ -175,6 +176,13 @@ class TestPrerenderContents : public PrerenderContents {
       return;
     }
     PrerenderContents::Observe(type, source, details);
+  }
+
+  static FinalStatus FinalStatusCanonicalize(FinalStatus final) {
+    if (final == FINAL_STATUS_JS_OUT_OF_MEMORY) {
+      return FINAL_STATUS_MEMORY_LIMIT_EXCEEDED;
+    }
+    return final;
   }
 
   int number_of_loads_;
