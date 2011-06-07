@@ -89,7 +89,7 @@ echo @@@BUILD_STEP small_tests@@@
     { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 
 if [[ $TOOLCHAIN = glibc ]]; then
-echo @@@BUILD_STEP dynamic_library_browser_tests${BITS}@@@
+  echo @@@BUILD_STEP dynamic_library_browser_tests${BITS}@@@
     ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
     browser_headless=1 \
     ${GLIBCOPTS} --mode=${MODE}-mac,nacl,doc SILENT=1 platform=x86-${BITS} \
@@ -99,50 +99,50 @@ fi
 
 # TODO(khim): run other tests with glibc toolchain
 if [[ $TOOLCHAIN != glibc ]]; then
-echo @@@BUILD_STEP medium_tests@@@
-./scons DOXYGEN=../third_party/doxygen/osx/doxygen -k --verbose \
-    ${GLIBCOPTS} --mode=${MODE}-mac,nacl,doc medium_tests \
-    platform=x86-${BITS} ||
-    { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
+  echo @@@BUILD_STEP medium_tests@@@
+  ./scons DOXYGEN=../third_party/doxygen/osx/doxygen -k --verbose \
+      ${GLIBCOPTS} --mode=${MODE}-mac,nacl,doc medium_tests \
+      platform=x86-${BITS} ||
+      { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 
-echo @@@BUILD_STEP large_tests@@@
-./scons DOXYGEN=../third_party/doxygen/osx/doxygen -k --verbose \
-    ${GLIBCOPTS} --mode=${MODE}-mac,nacl,doc large_tests \
-    platform=x86-${BITS} ||
-    { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
+  echo @@@BUILD_STEP large_tests@@@
+  ./scons DOXYGEN=../third_party/doxygen/osx/doxygen -k --verbose \
+      ${GLIBCOPTS} --mode=${MODE}-mac,nacl,doc large_tests \
+      platform=x86-${BITS} ||
+      { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 
-if [[ "${INSIDE_TOOLCHAIN:-}" == "" ]]; then
+  if [[ "${INSIDE_TOOLCHAIN:-}" == "" ]]; then
 
-echo @@@BUILD_STEP chrome_browser_tests@@@
-./scons DOXYGEN=../third_party/doxygen/osx/doxygen -k --verbose \
-    ${GLIBCOPTS} --mode=${MODE}-mac,nacl,doc SILENT=1 platform=x86-${BITS} \
-    chrome_browser_tests ||
-    { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
+  echo @@@BUILD_STEP chrome_browser_tests@@@
+  ./scons DOXYGEN=../third_party/doxygen/osx/doxygen -k --verbose \
+      ${GLIBCOPTS} --mode=${MODE}-mac,nacl,doc SILENT=1 platform=x86-${BITS} \
+      chrome_browser_tests ||
+      { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 
-echo @@@BUILD_STEP chrome_browser_tests using GYP@@@
-./scons DOXYGEN=../third_party/doxygen/osx/doxygen -k --verbose \
-    ${GLIBCOPTS} --mode=${MODE}-mac,nacl,doc SILENT=1 platform=x86-${BITS} \
-    force_ppapi_plugin=../xcodebuild/${GYPMODE}/libppGoogleNaClPlugin.dylib \
-    force_sel_ldr=../xcodebuild/${GYPMODE}/sel_ldr \
-    chrome_browser_tests ||
-    { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
+  echo @@@BUILD_STEP chrome_browser_tests using GYP@@@
+  ./scons DOXYGEN=../third_party/doxygen/osx/doxygen -k --verbose \
+      ${GLIBCOPTS} --mode=${MODE}-mac,nacl,doc SILENT=1 platform=x86-${BITS} \
+      force_ppapi_plugin=../xcodebuild/${GYPMODE}/libppGoogleNaClPlugin.dylib \
+      force_sel_ldr=../xcodebuild/${GYPMODE}/sel_ldr \
+      chrome_browser_tests ||
+      { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 
-# TODO(mcgrathr): Drop support for non-IRT builds and remove this entirely.
-# See http://code.google.com/p/nativeclient/issues/detail?id=1691
-echo @@@BUILD_STEP chrome_browser_tests without IRT@@@
-./scons DOXYGEN=../third_party/doxygen/osx/doxygen -k --verbose \
-    ${GLIBCOPTS} --mode=${MODE}-mac,nacl,doc SILENT=1 platform=x86-${BITS} \
-    chrome_browser_tests irt=0 ||
-    { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
+  # TODO(mcgrathr): Drop support for non-IRT builds and remove this entirely.
+  # See http://code.google.com/p/nativeclient/issues/detail?id=1691
+  echo @@@BUILD_STEP chrome_browser_tests without IRT@@@
+  ./scons DOXYGEN=../third_party/doxygen/osx/doxygen -k --verbose \
+      ${GLIBCOPTS} --mode=${MODE}-mac,nacl,doc SILENT=1 platform=x86-${BITS} \
+      chrome_browser_tests irt=0 ||
+      { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 
-echo @@@BUILD_STEP pyauto_tests@@@
-./scons DOXYGEN=../third_party/doxygen/osx/doxygen -k --verbose \
-    ${GLIBCOPTS} --mode=${MODE}-mac,nacl,doc SILENT=1 platform=x86-${BITS} \
-    pyauto_tests ||
-    { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
+  echo @@@BUILD_STEP pyauto_tests@@@
+  ./scons DOXYGEN=../third_party/doxygen/osx/doxygen -k --verbose \
+      ${GLIBCOPTS} --mode=${MODE}-mac,nacl,doc SILENT=1 platform=x86-${BITS} \
+      pyauto_tests ||
+      { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 
 
-fi
+  fi
 fi
 
 if [[ ${RETCODE} != 0 ]]; then

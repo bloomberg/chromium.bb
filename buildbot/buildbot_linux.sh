@@ -97,96 +97,96 @@ echo @@@BUILD_STEP small_tests${BITS}@@@
     { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 
 if [[ $TOOLCHAIN = glibc ]]; then
-echo @@@BUILD_STEP dynamic_library_browser_tests${BITS}@@@
-    ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
-    browser_headless=1 \
-    ${GLIBCOPTS} --mode=${MODE}-linux,nacl,doc SILENT=1 platform=x86-${BITS} \
-    dynamic_library_browser_tests ||
-    { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
+  echo @@@BUILD_STEP dynamic_library_browser_tests${BITS}@@@
+  ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
+      browser_headless=1 \
+      ${GLIBCOPTS} --mode=${MODE}-linux,nacl,doc SILENT=1 platform=x86-${BITS} \
+      dynamic_library_browser_tests ||
+      { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 fi
 
 # TODO(khim): run other tests with glibc toolchain
 if [[ $TOOLCHAIN != glibc ]]; then
-echo @@@BUILD_STEP medium_tests${BITS}@@@
-./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
-    ${GLIBCOPTS} --mode=${MODE}-linux,nacl,doc medium_tests \
-    platform=x86-${BITS} ||
-    { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
+  echo @@@BUILD_STEP medium_tests${BITS}@@@
+  ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
+      ${GLIBCOPTS} --mode=${MODE}-linux,nacl,doc medium_tests \
+      platform=x86-${BITS} ||
+      { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 
-echo @@@BUILD_STEP large_tests${BITS}@@@
-./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
-    ${GLIBCOPTS} --mode=${MODE}-linux,nacl,doc large_tests \
-    platform=x86-${BITS} ||
-    { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
+  echo @@@BUILD_STEP large_tests${BITS}@@@
+  ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
+      ${GLIBCOPTS} --mode=${MODE}-linux,nacl,doc large_tests \
+      platform=x86-${BITS} ||
+      { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 
-if [[ "${INSIDE_TOOLCHAIN:-}" == "" ]]; then
+  if [[ "${INSIDE_TOOLCHAIN:-}" == "" ]]; then
 
-echo @@@BUILD_STEP chrome_browser_tests@@@
-# Although we could use the "browser_headless=1" Scons option, it runs
-# xvfb-run once per Chromium invocation.  This is good for isolating
-# the tests, but xvfb-run has a stupid fixed-period sleep, which would
-# slow down the tests unnecessarily.
-XVFB_PREFIX="xvfb-run --auto-servernum"
+    echo @@@BUILD_STEP chrome_browser_tests@@@
+    # Although we could use the "browser_headless=1" Scons option, it runs
+    # xvfb-run once per Chromium invocation.  This is good for isolating
+    # the tests, but xvfb-run has a stupid fixed-period sleep, which would
+    # slow down the tests unnecessarily.
+    XVFB_PREFIX="xvfb-run --auto-servernum"
 
-$XVFB_PREFIX \
-    ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
-    ${GLIBCOPTS} --mode=${MODE}-linux,nacl,doc SILENT=1 platform=x86-${BITS} \
-    chrome_browser_tests ||
-    { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
+    $XVFB_PREFIX \
+        ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
+        ${GLIBCOPTS} --mode=${MODE}-linux,nacl,doc SILENT=1 \
+        platform=x86-${BITS} chrome_browser_tests ||
+        { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 
-echo @@@BUILD_STEP chrome_browser_tests using GYP@@@
-$XVFB_PREFIX \
-    ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
-    ${GLIBCOPTS} --mode=${MODE}-linux,nacl,doc SILENT=1 platform=x86-${BITS} \
-    force_ppapi_plugin=../out/${GYPMODE}/lib.target/libppGoogleNaClPlugin.so \
-    force_sel_ldr=../out/${GYPMODE}/sel_ldr \
-    chrome_browser_tests ||
-    { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
+    echo @@@BUILD_STEP chrome_browser_tests using GYP@@@
+    $XVFB_PREFIX \
+        ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
+        ${GLIBCOPTS} --mode=${MODE}-linux,nacl,doc SILENT=1 \
+        platform=x86-${BITS} \
+        force_ppapi_plugin=../out/$GYPMODE/lib.target/libppGoogleNaClPlugin.so \
+        force_sel_ldr=../out/${GYPMODE}/sel_ldr \
+        chrome_browser_tests ||
+        { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 
-# TODO(mcgrathr): Drop support for non-IRT builds and remove this entirely.
-# See http://code.google.com/p/nativeclient/issues/detail?id=1691
-echo @@@BUILD_STEP chrome_browser_tests without IRT@@@
-$XVFB_PREFIX \
-    ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
-    ${GLIBCOPTS} --mode=${MODE}-linux,nacl,doc SILENT=1 platform=x86-${BITS} \
-    chrome_browser_tests irt=0 ||
-    { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
+    # TODO(mcgrathr): Drop support for non-IRT builds and remove this entirely.
+    # See http://code.google.com/p/nativeclient/issues/detail?id=1691
+    echo @@@BUILD_STEP chrome_browser_tests without IRT@@@
+    $XVFB_PREFIX \
+        ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
+        ${GLIBCOPTS} --mode=${MODE}-linux,nacl,doc SILENT=1 \
+        platform=x86-${BITS} chrome_browser_tests irt=0 ||
+        { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 
-echo @@@BUILD_STEP pyauto_tests${BITS}@@@
-$XVFB_PREFIX \
-    ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
-    ${GLIBCOPTS} --mode=${MODE}-linux,nacl,doc SILENT=1 platform=x86-${BITS} \
-    pyauto_tests ||
-    { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
+    echo @@@BUILD_STEP pyauto_tests${BITS}@@@
+    $XVFB_PREFIX \
+        ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
+        ${GLIBCOPTS} --mode=${MODE}-linux,nacl,doc SILENT=1 \
+        platform=x86-${BITS} pyauto_tests ||
+        { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 
-echo @@@BUILD_STEP archive irt.nexe@@@
-# Upload the integrated runtime (IRT) library so that it can be pulled
-# into the Chromium build, so that a NaCl toolchain will not be needed
-# to build a NaCl-enabled Chromium.  We strip the IRT to save space
-# and download time.
-# TODO(mseaborn): It might be better to do the stripping in Scons.
-IRT_PATH=scons-out/nacl_irt-x86-${BITS}/staging/irt.nexe
-toolchain/linux_x86_newlib/bin/nacl-strip \
-    --strip-debug ${IRT_PATH} -o ${IRT_PATH}.stripped
+    echo @@@BUILD_STEP archive irt.nexe@@@
+    # Upload the integrated runtime (IRT) library so that it can be pulled
+    # into the Chromium build, so that a NaCl toolchain will not be needed
+    # to build a NaCl-enabled Chromium.  We strip the IRT to save space
+    # and download time.
+    # TODO(mseaborn): It might be better to do the stripping in Scons.
+    IRT_PATH=scons-out/nacl_irt-x86-${BITS}/staging/irt.nexe
+    toolchain/linux_x86_newlib/bin/nacl-strip \
+        --strip-debug ${IRT_PATH} -o ${IRT_PATH}.stripped
 
-function gscp() {
-  GSUTIL=/b/build/scripts/slave/gsutil
-  ${GSUTIL} -h Cache-Control:no-cache cp -a public-read "$@"
-}
+    function gscp() {
+      GSUTIL=/b/build/scripts/slave/gsutil
+      ${GSUTIL} -h Cache-Control:no-cache cp -a public-read "$@"
+    }
 
-if [ "${ARCHIVE_IRT:-}" = "1" ]; then
-  IRT_DIR=nativeclient-archive2/irt
-  GSDVIEW=http://gsdview.appspot.com
-  GS_PATH=${IRT_DIR}/r${BUILDBOT_GOT_REVISION}/irt_x86_${BITS}.nexe
-  gscp ${IRT_PATH}.stripped gs://${GS_PATH}
-  echo @@@STEP_LINK@stripped@${GSDVIEW}/${GS_PATH}@@@
-  gscp ${IRT_PATH} gs://${GS_PATH}.unstripped
-  echo @@@STEP_LINK@unstripped@${GSDVIEW}/${GS_PATH}.unstripped@@@
-else
-  echo @@@STEP_TEXT@not uploading on this bot@@@
-fi
-
-fi
+    if [ "${ARCHIVE_IRT:-}" = "1" ]; then
+      IRT_DIR=nativeclient-archive2/irt
+      GSDVIEW=http://gsdview.appspot.com
+      GS_PATH=${IRT_DIR}/r${BUILDBOT_GOT_REVISION}/irt_x86_${BITS}.nexe
+      gscp ${IRT_PATH}.stripped gs://${GS_PATH}
+      echo @@@STEP_LINK@stripped@${GSDVIEW}/${GS_PATH}@@@
+      gscp ${IRT_PATH} gs://${GS_PATH}.unstripped
+      echo @@@STEP_LINK@unstripped@${GSDVIEW}/${GS_PATH}.unstripped@@@
+    else
+      echo @@@STEP_TEXT@not uploading on this bot@@@
+    fi
+  fi
 fi
 
 if [[ ${RETCODE} != 0 ]]; then
