@@ -54,7 +54,7 @@
 // The constructor for PrintDialogCloud creates a
 // CloudPrintHtmlDialogDelegate and asks the current active browser to
 // show an HTML dialog using that class as the delegate. That class
-// hands in the kChromeUICloudPrintResourcesURL as the URL to visit.  That is
+// hands in the kCloudPrintResourcesURL as the URL to visit.  That is
 // recognized by the GetWebUIFactoryFunction as a signal to create an
 // ExternalHtmlDialogUI.
 
@@ -424,7 +424,7 @@ void CloudPrintHtmlDialogDelegate::Init(int width, int height,
                                         const std::string& json_arguments) {
   // This information is needed to show the dialog HTML content.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  params_.url = GURL(chrome::kChromeUICloudPrintResourcesURL);
+  params_.url = GURL(chrome::kCloudPrintResourcesURL);
   params_.height = height;
   params_.width = width;
   params_.json_input = json_arguments;

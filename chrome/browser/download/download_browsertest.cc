@@ -1331,7 +1331,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, ChromeURLAfterDownload) {
   ASSERT_TRUE(InitialSetup(false));
   FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
   GURL download_url(URLRequestMockHTTPJob::GetMockUrl(file));
-  GURL flags_url(chrome::kChromeUIFlagsURL);
+  GURL flags_url(chrome::kAboutFlagsURL);
   GURL extensions_url(chrome::kChromeUIExtensionsURL);
 
   ui_test_utils::NavigateToURL(browser(), flags_url);
@@ -1356,7 +1356,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, ChromeURLAfterDownload) {
 // As of 2011/05/22, it's crashing, so it is getting disabled.
 // http://crbug.com/82278
 IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_BrowserCloseAfterDownload) {
-  GURL downloads_url(chrome::kChromeUIFlagsURL);
+  GURL downloads_url(chrome::kAboutFlagsURL);
   FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
   GURL download_url(URLRequestMockHTTPJob::GetMockUrl(file));
 

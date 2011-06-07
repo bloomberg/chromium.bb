@@ -1588,9 +1588,11 @@ bool RenderViewContextMenu::IsDevCommandEnabled(int id) const {
   if (active_entry->IsViewSourceMode())
     return false;
 
-  // Do not inspect Chrome URLs (chrome://network/, chrome://memory/, etc.).
-  // However, do inspect about:blank, which is often used by ordinary web pages.
-  if (active_entry->virtual_url().SchemeIs(chrome::kChromeUIScheme))
+  // Don't inspect about:network, about:memory, etc.
+  // However, we do want to inspect about:blank, which is often
+  // used by ordinary web pages.
+  if (active_entry->virtual_url().SchemeIs(chrome::kAboutScheme) &&
+      !LowerCaseEqualsASCII(active_entry->virtual_url().path(), "blank"))
     return false;
 
   if (id == IDC_CONTENT_CONTEXT_INSPECTELEMENT) {

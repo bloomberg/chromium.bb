@@ -704,10 +704,13 @@ bool HistoryService::CanAddURL(const GURL& url) {
       url.SchemeIs(chrome::kChromeInternalScheme))
     return false;
 
-  // Allow all about: and chrome: URLs except about:blank, since the user may
-  // like to see "chrome://memory/", etc. in their history and autocomplete.
-  if (url == GURL(chrome::kAboutBlankURL))
-    return false;
+  if (url.SchemeIs(chrome::kAboutScheme)) {
+    if (LowerCaseEqualsASCII(url.path(), "blank"))
+      return false;
+    // We allow all other about URLs since the user may like to see things
+    // like "about:memory" or "about:histograms" in their history and
+    // autocomplete.
+  }
 
   return true;
 }

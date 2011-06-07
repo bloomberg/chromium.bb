@@ -11,7 +11,6 @@
 #include "chrome/browser/renderer_host/render_widget_host_view_win.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/common/url_constants.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -371,7 +370,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   EXPECT_NE(parent_dispatch, reinterpret_cast<IDispatch*>(NULL));
 
   // Navigate to another page.
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIVersionURL));
+  GURL about_url("about:");
+  ui_test_utils::NavigateToURL(browser(), about_url);
 
   // Verify that the IAccessible reference still points to a valid object and
   // that calls to its methods fail since the tree is no longer valid after

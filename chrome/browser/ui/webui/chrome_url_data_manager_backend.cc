@@ -220,8 +220,9 @@ void URLRequestChromeJob::StartAsync() {
 namespace {
 
 bool IsViewAppCacheInternalsURL(const GURL& url) {
-  return url.SchemeIs(chrome::kChromeUIScheme) &&
-         url.host() == chrome::kChromeUIAppCacheInternalsHost;
+  return StartsWithASCII(url.spec(),
+                         chrome::kAppCacheViewInternalsURL,
+                         true /*case_sensitive*/);
 }
 
 class ChromeProtocolHandler

@@ -24,6 +24,10 @@
 
 namespace {
 
+// TODO(estade): this shouldn't need to be chrome:, but it does (or else GURL
+// doesn't think that the webui URLs have a host). Figure out where this is
+// coming from and fix it.
+const char kWebUIScheme[] = "chrome";
 const char kSameAsAnyInstanceURL[] = "about:internets";
 
 class SiteInstanceTestWebUIFactory : public content::EmptyWebUIFactory {
@@ -32,7 +36,7 @@ class SiteInstanceTestWebUIFactory : public content::EmptyWebUIFactory {
     return HasWebUIScheme(url);
   }
   virtual bool HasWebUIScheme(const GURL& url) const {
-    return url.SchemeIs(chrome::kChromeUIScheme);
+    return url.SchemeIs(kWebUIScheme);
   }
 };
 
@@ -43,8 +47,7 @@ class SiteInstanceTestBrowserClient : public content::ContentBrowserClient {
   }
 
   virtual bool IsURLSameAsAnySiteInstance(const GURL& url) OVERRIDE {
-    return url == GURL(kSameAsAnyInstanceURL) ||
-           url == GURL(chrome::kAboutCrashURL);
+    return url.spec() == kSameAsAnyInstanceURL;
   }
 
  private:
@@ -489,12 +492,14 @@ TEST_F(SiteInstanceTest, ProcessSharingByType) {
             extension2_instance->GetProcess());
 
   // Create some WebUI instances and make sure they share a process.
-  scoped_refptr<SiteInstance> webui1_instance(CreateSiteInstance(&rph_factory,
-      GURL(chrome::kChromeUIScheme + std::string("://newtab"))));
+  scoped_refptr<SiteInstance> webui1_instance(
+      CreateSiteInstance(&rph_factory,
+                         GURL(kWebUIScheme + std::string("://newtab"))));
   policy->GrantWebUIBindings(webui1_instance->GetProcess()->id());
 
-  scoped_refptr<SiteInstance> webui2_instance( CreateSiteInstance(&rph_factory,
-      GURL(chrome::kChromeUIScheme + std::string("://history"))));
+  scoped_refptr<SiteInstance> webui2_instance(
+      CreateSiteInstance(&rph_factory,
+                         GURL(kWebUIScheme + std::string("://history"))));
 
   scoped_ptr<RenderProcessHost> dom_host(webui1_instance->GetProcess());
   EXPECT_EQ(webui1_instance->GetProcess(), webui2_instance->GetProcess());

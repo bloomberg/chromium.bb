@@ -40,7 +40,7 @@ void AddString(DictionaryValue* dictionary,
 }  // namespace
 
 CloudPrintSetupSource::CloudPrintSetupSource()
-  : DataSource(chrome::kChromeUICloudPrintSetupHost, MessageLoop::current()) {
+  : DataSource(chrome::kCloudPrintSetupHost, MessageLoop::current()) {
 }
 
 void CloudPrintSetupSource::StartDataRequest(const std::string& path_raw,

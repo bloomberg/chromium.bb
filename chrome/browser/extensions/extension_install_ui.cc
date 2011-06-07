@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_resource.h"
@@ -70,8 +71,7 @@ void ShowAppInstalledAnimation(Browser* browser, const std::string& app_id) {
   // automatically show the install animation for any new apps.
   for (int i = 0; i < browser->tab_count(); ++i) {
     GURL url = browser->GetTabContentsAt(i)->GetURL();
-    if (url.SchemeIs(chrome::kChromeUIScheme) &&
-        url.host() == chrome::kChromeUINewTabHost) {
+    if (web_ui_util::ChromeURLHostEquals(url, chrome::kChromeUINewTabHost)) {
       browser->ActivateTabAt(i, false);
       return;
     }

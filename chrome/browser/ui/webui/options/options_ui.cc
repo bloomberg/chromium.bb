@@ -282,6 +282,10 @@ OptionsUI::OptionsUI(TabContents* contents)
   contents->profile()->GetChromeURLDataManager()->AddDataSource(
       user_image_source);
 #endif
+
+  // Initialize the chrome://about/ source in case the user clicks the credits
+  // link.
+  InitializeAboutDataSource(contents->profile());
 }
 
 OptionsUI::~OptionsUI() {

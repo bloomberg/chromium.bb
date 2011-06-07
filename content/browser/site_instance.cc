@@ -17,10 +17,12 @@ static bool IsURLSameAsAnySiteInstance(const GURL& url) {
   if (!url.is_valid())
     return false;
 
-  // We treat javascript: as the same site as any URL since it is actually
-  // a modifier on existing pages.
-  if (url.SchemeIs(chrome::kJavaScriptScheme))
+  // We treat javascript: and about:crash as the same site as any URL since they
+  // are actually modifiers on existing pages.
+  if (url.SchemeIs(chrome::kJavaScriptScheme) ||
+      url.spec() == chrome::kAboutCrashURL) {
     return true;
+  }
 
   return
       content::GetContentClient()->browser()->IsURLSameAsAnySiteInstance(url);

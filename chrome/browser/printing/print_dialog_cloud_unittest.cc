@@ -320,7 +320,7 @@ class CloudPrintHtmlDialogDelegateTest : public testing::Test {
 TEST_F(CloudPrintHtmlDialogDelegateTest, BasicChecks) {
   EXPECT_TRUE(delegate_->IsDialogModal());
   EXPECT_THAT(delegate_->GetDialogContentURL().spec(),
-              StrEq(chrome::kChromeUICloudPrintResourcesURL));
+              StrEq(chrome::kCloudPrintResourcesURL));
   EXPECT_TRUE(delegate_->GetDialogTitle().empty());
 
   bool close_dialog = false;

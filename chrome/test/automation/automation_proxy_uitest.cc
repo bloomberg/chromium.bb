@@ -134,7 +134,7 @@ TEST_F(AutomationProxyVisibleTest, MAYBE_WindowGetViewBounds) {
     ASSERT_TRUE(tab1->GetCurrentURL(&tab1_url));
 
     // Add another tab so we can simulate dragging.
-    ASSERT_TRUE(browser->AppendTab(GURL(chrome::kChromeUIVersionURL)));
+    ASSERT_TRUE(browser->AppendTab(GURL("about:")));
 
     scoped_refptr<TabProxy> tab2(browser->GetTab(1));
     ASSERT_TRUE(tab2.get());

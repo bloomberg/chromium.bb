@@ -182,10 +182,9 @@ GURL ChromeContentBrowserClient::GetEffectiveURL(Profile* profile,
 }
 
 bool ChromeContentBrowserClient::IsURLSameAsAnySiteInstance(const GURL& url) {
-  return url == GURL(chrome::kChromeUICrashURL) ||
-         url == GURL(chrome::kChromeUIKillURL) ||
-         url == GURL(chrome::kChromeUIHangURL) ||
-         url == GURL(chrome::kChromeUIShorthangURL);
+  return url.spec() == chrome::kAboutKillURL ||
+         url.spec() == chrome::kAboutHangURL ||
+         url.spec() == chrome::kAboutShorthangURL;
 }
 
 std::string ChromeContentBrowserClient::GetCanonicalEncodingNameByAliasName(

@@ -13,8 +13,9 @@
 
 // static.
 bool ViewBlobInternalsJobFactory::IsSupportedURL(const GURL& url) {
-  return url.SchemeIs(chrome::kChromeUIScheme) &&
-         url.host() == chrome::kChromeUIBlobInternalsHost;
+  return StartsWithASCII(url.spec(),
+                         chrome::kBlobViewInternalsURL,
+                         true /*case_sensitive*/);
 }
 
 // static.

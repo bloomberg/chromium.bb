@@ -31,7 +31,6 @@
 #include "chrome/browser/memory_details.h"
 #include "chrome/browser/metrics/histogram_synchronizer.h"
 #include "chrome/browser/net/predictor_api.h"
-#include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -103,93 +102,107 @@ void AboutTcmallocRendererCallback(base::ProcessId pid,
 
 namespace {
 
-// Add paths here to be included in chrome://chrome-urls/.
-// These paths will also be suggested by BuiltinProvider.
-const char *kChromePaths[] = {
-  chrome::kChromeUIAppCacheInternalsHost,
-  chrome::kChromeUIBlobInternalsHost,
-  chrome::kChromeUIChromeURLsHost,
-  chrome::kChromeUICreditsHost,
-  chrome::kChromeUIDNSHost,
-  chrome::kChromeUIFlagsHost,
-  chrome::kChromeUIFlashHost,
-  chrome::kChromeUIGpuInternalsHost,
-  chrome::kChromeUIHistogramsHost,
-  chrome::kChromeUIMemoryHost,
-  chrome::kChromeUINetInternalsHost,
-  chrome::kChromeUINetworkViewCacheHost,
-  chrome::kChromeUIPluginsHost,
-  chrome::kChromeUIStatsHost,
-  chrome::kChromeUISyncInternalsHost,
-  chrome::kChromeUITCMallocHost,
-  chrome::kChromeUITermsHost,
-  chrome::kChromeUIVersionHost,
-#ifdef TRACK_ALL_TASK_OBJECTS
-  chrome::kChromeUITasksHost,
-#endif
+// The (alphabetized) paths used for the about pages.
+// Note: Keep these in sync with url_constants.h
+const char kAppCacheInternalsPath[] = "appcache-internals";
+const char kBlobInternalsPath[] = "blob-internals";
+const char kCreditsPath[] = "credits";
+const char kCachePath[] = "view-http-cache";
 #if defined(OS_WIN)
-  chrome::kChromeUIConflictsHost,
+const char kConflictsPath[] = "conflicts";
 #endif
+const char kDnsPath[] = "dns";
+const char kFlagsPath[] = "flags";
+const char kFlashPath[] = "flash";
+const char kGpuPath[] = "gpu-internals";
+const char kHistogramsPath[] = "histograms";
+const char kMemoryRedirectPath[] = "memory-redirect";
+const char kMemoryPath[] = "memory";
+const char kStatsPath[] = "stats";
+const char kTasksPath[] = "tasks";
+const char kTcmallocPath[] = "tcmalloc";
+const char kTermsPath[] = "terms";
+const char kVersionPath[] = "version";
+const char kAboutPath[] = "about";
+// Not about:* pages, but included to make about:about look nicer
+const char kNetInternalsPath[] = "net-internals";
+const char kPluginsPath[] = "plugins";
+const char kSyncInternalsPath[] = "sync-internals";
+
 #if defined(OS_LINUX)
-  chrome::kChromeUISandboxHost,
+const char kLinuxProxyConfigPath[] = "linux-proxy-config";
+const char kSandboxPath[] = "sandbox";
 #endif
+
 #if defined(OS_CHROMEOS)
-  chrome::kChromeUINetworkHost,
-  chrome::kChromeUIOSCreditsHost,
+const char kNetworkPath[] = "network";
+const char kOSCreditsPath[] = "os-credits";
+const char kEULAPathFormat[] = "/usr/share/chromeos-assets/eula/%s/eula.html";
 #endif
-};
 
-// Debug paths, presented without links in chrome://about.
-// These paths will not be suggested by BuiltinProvider.
-const char *kDebugChromePaths[] = {
-  chrome::kChromeUICrashHost,
-  chrome::kChromeUIKillHost,
-  chrome::kChromeUIHangHost,
-  chrome::kChromeUIShorthangHost,
-  chrome::kChromeUIGpuCleanHost,
-  chrome::kChromeUIGpuCrashHost,
-  chrome::kChromeUIGpuHangHost
-};
-
-// AboutSource handles these chrome:// paths.
-const char *kAboutSourceNames[] = {
-  chrome::kChromeUIChromeURLsHost,
-  chrome::kChromeUICreditsHost,
-  chrome::kChromeUIDNSHost,
-  chrome::kChromeUIHistogramsHost,
-  chrome::kChromeUIMemoryHost,
-  chrome::kChromeUIMemoryRedirectHost,
-  chrome::kChromeUIStatsHost,
-  chrome::kChromeUITermsHost,
-  chrome::kChromeUIVersionHost,
+// Add path here to be included in about:about
+const char *kAllAboutPaths[] = {
+  kAboutPath,
+  kAppCacheInternalsPath,
+  kBlobInternalsPath,
+  kCachePath,
+  kCreditsPath,
+#if defined(OS_WIN)
+  kConflictsPath,
+#endif
+  kDnsPath,
+  kFlagsPath,
+  kFlashPath,
+  kGpuPath,
+  kHistogramsPath,
+  kMemoryPath,
+  kNetInternalsPath,
+  kPluginsPath,
+  kStatsPath,
+  kSyncInternalsPath,
 #ifdef TRACK_ALL_TASK_OBJECTS
-  chrome::kChromeUITasksHost,
-#endif
-#if defined(USE_TCMALLOC)
-  chrome::kChromeUITCMallocHost,
-#endif
+  kTasksPath,
+#endif  // TRACK_ALL_TASK_OBJECTS
+  kTcmallocPath,
+  kTermsPath,
+  kVersionPath,
 #if defined(OS_LINUX)
-  chrome::kChromeUILinuxProxyConfigHost,
-  chrome::kChromeUISandboxHost,
+  kSandboxPath,
 #endif
 #if defined(OS_CHROMEOS)
-  chrome::kChromeUINetworkHost,
-  chrome::kChromeUIOSCreditsHost,
+  kNetworkPath,
+  kOSCreditsPath,
 #endif
-};
+  };
+
+// When you type about:memory, it actually loads an intermediate URL that
+// redirects you to the final page. This avoids the problem where typing
+// "about:memory" on the new tab page or any other page where a process
+// transition would occur to the about URL will cause some confusion.
+//
+// The problem is that during the processing of the memory page, there are two
+// processes active, the original and the destination one. This can create the
+// impression that we're using more resources than we actually are. This
+// redirect solves the problem by eliminating the process transition during the
+// time that about memory is being computed.
+std::string GetAboutMemoryRedirectResponse() {
+  return "<meta http-equiv=\"refresh\" "
+      "content=\"0;chrome://about/memory\">";
+}
 
 class AboutSource : public ChromeURLDataManager::DataSource {
  public:
-  // Construct a data source for the specified |source_name|.
-  AboutSource(const std::string& source_name, Profile* profile);
+  // Creates our datasource.
+  AboutSource();
+  explicit AboutSource(Profile* profile);
 
   // Called when the network layer has requested a resource underneath
   // the path we registered.
   virtual void StartDataRequest(const std::string& path,
                                 bool is_incognito,
-                                int request_id) OVERRIDE;
+                                int request_id);
 
-  virtual std::string GetMimeType(const std::string&) const OVERRIDE {
+  virtual std::string GetMimeType(const std::string&) const {
     return "text/html";
   }
 
@@ -206,43 +219,14 @@ class AboutSource : public ChromeURLDataManager::DataSource {
   DISALLOW_COPY_AND_ASSIGN(AboutSource);
 };
 
-// Register a data source for a known source name. Safe to call multiple times.
-// |name| may be an unkown host (e.g. "chrome://foo/"); only handle known hosts.
-void InitializeAboutDataSource(const std::string& name, Profile* profile) {
-  ChromeURLDataManager* manager = profile->GetChromeURLDataManager();
-  for (size_t i = 0; i < arraysize(kAboutSourceNames); i++) {
-    if (name == kAboutSourceNames[i]) {
-      manager->AddDataSource(new AboutSource(name, profile));
-      return;
-    }
-  }
-}
-
-// When you type about:memory, it actually loads this intermediate URL that
-// redirects you to the final page. This avoids the problem where typing
-// "about:memory" on the new tab page or any other page where a process
-// transition would occur to the about URL will cause some confusion.
-//
-// The problem is that during the processing of the memory page, there are two
-// processes active, the original and the destination one. This can create the
-// impression that we're using more resources than we actually are. This
-// redirect solves the problem by eliminating the process transition during the
-// time that about memory is being computed.
-std::string GetAboutMemoryRedirectResponse(Profile* profile) {
-  InitializeAboutDataSource(chrome::kChromeUIMemoryRedirectHost, profile);
-  return StringPrintf("<meta http-equiv=\"refresh\" content=\"0;%s\">",
-                      chrome::kChromeUIMemoryRedirectURL);
-}
-
 // Handling about:memory is complicated enough to encapsulate its related
 // methods into a single class. The user should create it (on the heap) and call
 // its |StartFetch()| method.
 class AboutMemoryHandler : public MemoryDetails {
  public:
   AboutMemoryHandler(AboutSource* source, int request_id)
-      : source_(source),
-        request_id_(request_id) {
-  }
+    : source_(source), request_id_(request_id) {}
+
 
   virtual void OnDetailsAvailable();
 
@@ -313,10 +297,10 @@ class ChromeOSTermsHandler
 
   void LoadFileOnFileThread() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-    std::string path = StringPrintf(chrome::kEULAPathFormat, locale_.c_str());
+    std::string path = StringPrintf(kEULAPathFormat, locale_.c_str());
     if (!file_util::ReadFileToString(FilePath(path), &contents_)) {
       // No EULA for given language - try en-US as default.
-      path = StringPrintf(chrome::kEULAPathFormat, "en-US");
+      path = StringPrintf(kEULAPathFormat, "en-US");
       if (!file_util::ReadFileToString(FilePath(path), &contents_)) {
         // File with EULA not found, ResponseOnUIThread will load EULA from
         // resources if contents_ is empty.
@@ -354,19 +338,36 @@ class ChromeOSTermsHandler
 
 // Individual about handlers ---------------------------------------------------
 
-std::string ChromeURLs() {
-  std::string html("<html><head><title>Chrome URLs</title></head>\n"
-      "<body><h2>List of Chrome URLs</h2>\n<ul>");
-  std::vector<std::string> paths(ChromePaths());
+std::string AboutAbout() {
+  std::string html("<html><head><title>About Pages</title></head>\n"
+      "<body><h2>List of About pages</h2>\n<ul>");
+  std::vector<std::string> paths(AboutPaths());
   for (std::vector<std::string>::const_iterator i = paths.begin();
-       i != paths.end(); ++i)
-    html += "<li><a href='chrome://" + *i + "/'>chrome://" + *i + "</a></li>\n";
+       i != paths.end(); ++i) {
+    html += "<li><a href='chrome://";
+    if ((*i != kAppCacheInternalsPath) &&
+        (*i != kBlobInternalsPath) &&
+        (*i != kCachePath) &&
+  #if defined(OS_WIN)
+        (*i != kConflictsPath) &&
+  #endif
+        (*i != kFlagsPath) &&
+        (*i != kFlashPath) &&
+        (*i != kGpuPath) &&
+        (*i != kNetInternalsPath) &&
+        (*i != kPluginsPath)) {
+      html += "about/";
+    }
+    html += *i + "/'>about:" + *i + "</a></li>\n";
+  }
+  const char *debug[] = { "crash", "kill", "hang", "shorthang",
+                          "gpuclean", "gpucrash", "gpuhang" };
   html += "</ul>\n<h2>For Debug</h2>\n"
       "<p>The following pages are for debugging purposes only. Because they "
       "crash or hang the renderer, they're not linked directly; you can type "
       "them into the address bar if you need them.</p>\n<ul>";
-  for (size_t i = 0; i < arraysize(kDebugChromePaths); i++)
-    html += "<li>chrome://" + std::string(kDebugChromePaths[i]) + "</li>\n";
+  for (size_t i = 0; i < arraysize(debug); i++)
+    html += "<li>about:" + std::string(debug[i]) + "</li>\n";
   html += "</ul>\n</body></html>";
   return html;
 }
@@ -599,7 +600,7 @@ class AboutDnsHandler : public base::RefCountedThreadSafe<AboutDnsHandler> {
 };
 
 #if defined(USE_TCMALLOC)
-std::string AboutTcmalloc() {
+std::string AboutTcmalloc(const std::string& query) {
   std::string data;
   AboutTcmallocOutputsType* outputs =
       AboutTcmallocOutputs::GetInstance()->outputs();
@@ -1019,40 +1020,51 @@ std::string AboutVersion(DictionaryValue* localized_strings, Profile* profile) {
 
 // AboutSource -----------------------------------------------------------------
 
-AboutSource::AboutSource(const std::string& source_name, Profile* profile)
-    : DataSource(source_name, MessageLoop::current()),
+AboutSource::AboutSource()
+    : DataSource(chrome::kAboutScheme, MessageLoop::current()) {
+}
+
+AboutSource::AboutSource(Profile* profile)
+    : DataSource(chrome::kAboutScheme, MessageLoop::current()),
       profile_(profile) {
 }
 
 AboutSource::~AboutSource() {
 }
 
-void AboutSource::StartDataRequest(const std::string& path,
-                                   bool is_incognito,
-                                   int request_id) {
+void AboutSource::StartDataRequest(const std::string& path_raw,
+    bool is_incognito, int request_id) {
+  std::string path = path_raw;
+  std::string info;
+  if (path.find("/") != std::string::npos) {
+    size_t pos = path.find("/");
+    info = path.substr(pos + 1, path.length() - (pos + 1));
+    path = path.substr(0, pos);
+  }
+  path = StringToLowerASCII(path);
+
   std::string response;
-  std::string host = source_name();
-  if (host == chrome::kChromeUIDNSHost) {
+  if (path == kDnsPath) {
     AboutDnsHandler::Start(this, request_id);
     return;
-  } else if (host == chrome::kChromeUIHistogramsHost) {
-    response = AboutHistograms(path);
-  } else if (host == chrome::kChromeUIMemoryHost) {
-    response = GetAboutMemoryRedirectResponse(profile());
-  } else if (host == chrome::kChromeUIMemoryRedirectHost) {
+  } else if (path == kHistogramsPath) {
+    response = AboutHistograms(info);
+  } else if (path == kMemoryPath) {
     AboutMemory(this, request_id);
     return;
+  } else if (path == kMemoryRedirectPath) {
+    response = GetAboutMemoryRedirectResponse();
 #ifdef TRACK_ALL_TASK_OBJECTS
-  } else if (host == chrome::kChromeUITasksHost) {
-    response = AboutObjects(path);
+  } else if (path == kTasksPath) {
+    response = AboutObjects(info);
 #endif
-  } else if (host == chrome::kChromeUIStatsHost) {
-    response = AboutStats(path);
+  } else if (path == kStatsPath) {
+    response = AboutStats(info);
 #if defined(USE_TCMALLOC)
-  } else if (host == chrome::kChromeUITCMallocHost) {
-    response = AboutTcmalloc();
+  } else if (path == kTcmallocPath) {
+    response = AboutTcmalloc(info);
 #endif
-  } else if (host == chrome::kChromeUIVersionHost) {
+  } else if (path == kVersionPath || path.empty()) {
 #if defined(OS_CHROMEOS)
     new ChromeOSAboutVersionHandler(this, request_id);
     return;
@@ -1061,19 +1073,19 @@ void AboutSource::StartDataRequest(const std::string& path,
     localized_strings.SetString("os_version", "");
     response = AboutVersion(&localized_strings, profile_);
 #endif
-  } else if (host == chrome::kChromeUICreditsHost) {
+  } else if (path == kCreditsPath) {
     response = ResourceBundle::GetSharedInstance().GetRawDataResource(
         IDR_CREDITS_HTML).as_string();
-  } else if (host == chrome::kChromeUIChromeURLsHost) {
-    response = ChromeURLs();
+  } else if (path == kAboutPath) {
+    response = AboutAbout();
 #if defined(OS_CHROMEOS)
-  } else if (host == chrome::kChromeUIOSCreditsHost) {
+  } else if (path == kOSCreditsPath) {
     response = ResourceBundle::GetSharedInstance().GetRawDataResource(
         IDR_OS_CREDITS_HTML).as_string();
-  } else if (host == chrome::kChromeUINetworkHost) {
-    response = AboutNetwork(path);
+  } else if (path == kNetworkPath) {
+    response = AboutNetwork(info);
 #endif
-  } else if (host == chrome::kChromeUITermsHost) {
+  } else if (path == kTermsPath) {
 #if defined(OS_CHROMEOS)
     ChromeOSTermsHandler::Start(this, request_id);
     return;
@@ -1082,9 +1094,9 @@ void AboutSource::StartDataRequest(const std::string& path,
         IDR_TERMS_HTML).as_string();
 #endif
 #if defined(OS_LINUX)
-  } else if (host == chrome::kChromeUILinuxProxyConfigHost) {
+  } else if (path == kLinuxProxyConfigPath) {
     response = AboutLinuxProxyConfig();
-  } else if (host == chrome::kChromeUISandboxHost) {
+  } else if (path == kSandboxPath) {
     response = AboutSandbox();
 #endif
   }
@@ -1092,10 +1104,11 @@ void AboutSource::StartDataRequest(const std::string& path,
   FinishDataRequest(response, request_id);
 }
 
-void AboutSource::FinishDataRequest(const std::string& html, int request_id) {
+void AboutSource::FinishDataRequest(const std::string& response,
+                                    int request_id) {
   scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
-  html_bytes->data.resize(html.size());
-  std::copy(html.begin(), html.end(), html_bytes->data.begin());
+  html_bytes->data.resize(response.size());
+  std::copy(response.begin(), response.end(), html_bytes->data.begin());
   SendResponse(request_id, html_bytes);
 }
 
@@ -1259,71 +1272,152 @@ void ChromeOSAboutVersionHandler::OnVersion(
 
 #endif
 
+// Returns true if |url|'s spec starts with |about_specifier|, and is
+// terminated by the start of a path.
+bool StartsWithAboutSpecifier(const GURL& url, const char* about_specifier) {
+  return StartsWithASCII(url.spec(), about_specifier, true) &&
+         (url.spec().size() == strlen(about_specifier) ||
+          url.spec()[strlen(about_specifier)] == '/');
+}
+
+// Transforms a URL of the form "about:foo/XXX" to <url_prefix> + "XXX".
+GURL RemapAboutURL(const std::string& url_prefix, const GURL& url) {
+  std::string path;
+  size_t split = url.spec().find('/');
+  if (split != std::string::npos)
+    path = url.spec().substr(split + 1);
+  return GURL(url_prefix + path);
+}
+
 }  // namespace
 
 // -----------------------------------------------------------------------------
 
 bool WillHandleBrowserAboutURL(GURL* url, Profile* profile) {
-  // TODO(msw): Eliminate "about:*" constants and literals from code and tests,
-  //            then hopefully we can remove this forced fixup.
-  *url = URLFixerUpper::FixupURL(url->possibly_invalid_spec(), std::string());
-
-  // Check that about: URLs are fixed up to chrome: by URLFixerUpper::FixupURL.
-  DCHECK((*url == GURL(chrome::kAboutBlankURL)) ||
-         !url->SchemeIs(chrome::kAboutScheme));
-
-  // Only handle chrome://foo/, URLFixerUpper::FixupURL translates about:foo.
-  // TAB_CONTENTS_WEB handles about:blank, which frames are allowed to access.
-  if (!url->SchemeIs(chrome::kChromeUIScheme))
+  // We only handle about: schemes.
+  if (!url->SchemeIs(chrome::kAboutScheme))
     return false;
 
-  // Circumvent processing URLs that the renderer process will handle.
-  if (chrome_about_handler::WillHandle(*url))
+  // about:blank is special. Frames are allowed to access about:blank,
+  // but they are not allowed to access other types of about pages.
+  // Just ignore the about:blank and let the TAB_CONTENTS_WEB handle it.
+  if (LowerCaseEqualsASCII(url->spec(), chrome::kAboutBlankURL))
     return false;
 
-  std::string host(url->host());
-  // Replace about with chrome-urls.
-  if (host == chrome::kChromeUIAboutHost)
-    host = chrome::kChromeUIChromeURLsHost;
-  // Replace cache with view-http-cache.
-  if (host == chrome::kChromeUICacheHost)
-    host = chrome::kChromeUINetworkViewCacheHost;
-  // Replace gpu with gpu-internals.
-  else if (host == chrome::kChromeUIGpuHost)
-    host = chrome::kChromeUIGpuInternalsHost;
-  // Replace sync with sync-internals (for legacy reasons).
-  else if (host == chrome::kChromeUISyncHost)
-    host = chrome::kChromeUISyncInternalsHost;
-  GURL::Replacements replacements;
-  replacements.SetHostStr(host);
-  *url = url->ReplaceComponents(replacements);
+  // Rewrite about:cache/* URLs to chrome://view-http-cache/*
+  if (StartsWithAboutSpecifier(*url, chrome::kAboutCacheURL)) {
+    *url = RemapAboutURL(chrome::kNetworkViewCacheURL, *url);
+    return true;
+  }
 
-  // Handle URLs to crash the browser or wreck the gpu process.
-  if (host == chrome::kChromeUIBrowserCrashHost) {
+#if defined(OS_WIN)
+  // Rewrite about:conflicts/* URLs to chrome://conflicts/*
+  if (StartsWithAboutSpecifier(*url, chrome::kAboutConflicts)) {
+    *url = GURL(chrome::kChromeUIConflictsURL);
+    return true;
+  }
+#endif
+
+  // Rewrite about:flags to chrome://flags/.
+  if (LowerCaseEqualsASCII(url->spec(), chrome::kAboutFlagsURL)) {
+    *url = GURL(chrome::kChromeUIFlagsURL);
+    return true;
+  }
+
+  // Rewrite about:flash to chrome://flash/.
+  if (LowerCaseEqualsASCII(url->spec(), chrome::kAboutFlashURL)) {
+    *url = GURL(chrome::kChromeUIFlashURL);
+    return true;
+  }
+
+  // Rewrite about:net-internals/* URLs to chrome://net-internals/*
+  if (StartsWithAboutSpecifier(*url, chrome::kAboutNetInternalsURL)) {
+    *url = RemapAboutURL(chrome::kNetworkViewInternalsURL, *url);
+    return true;
+  }
+
+  // Rewrite about:gpu/* URLs to chrome://gpu-internals/*
+  if (StartsWithAboutSpecifier(*url, chrome::kAboutGpuURL)) {
+    *url = RemapAboutURL(chrome::kGpuInternalsURL, *url);
+    return true;
+  }
+
+  // Rewrite about:appcache-internals/* URLs to chrome://appcache/*
+  if (StartsWithAboutSpecifier(*url, chrome::kAboutAppCacheInternalsURL)) {
+    *url = RemapAboutURL(chrome::kAppCacheViewInternalsURL, *url);
+    return true;
+  }
+
+  // Rewrite about:sync-internals/* URLs (and about:sync, too, for
+  // legacy reasons) to chrome://sync-internals/*
+  if (StartsWithAboutSpecifier(*url, chrome::kAboutSyncInternalsURL) ||
+      StartsWithAboutSpecifier(*url, chrome::kAboutSyncURL)) {
+    *url = RemapAboutURL(chrome::kSyncViewInternalsURL, *url);
+    return true;
+  }
+
+  // Rewrite about:plugins to chrome://plugins/.
+  if (LowerCaseEqualsASCII(url->spec(), chrome::kAboutPluginsURL)) {
+    *url = GURL(chrome::kChromeUIPluginsURL);
+    return true;
+  }
+
+  // Handle URL to crash the browser process.
+  if (LowerCaseEqualsASCII(url->spec(), chrome::kAboutBrowserCrash)) {
     // Induce an intentional crash in the browser process.
-    CHECK(false);
-  } else if (host == chrome::kChromeUIGpuCleanHost) {
+    int* bad_pointer = NULL;
+    *bad_pointer = 42;
+    return true;
+  }
+
+  // Handle URLs to wreck the gpu process.
+  if (LowerCaseEqualsASCII(url->spec(), chrome::kAboutGpuCleanURL)) {
     GpuProcessHost::SendOnIO(
         0, content::CAUSE_FOR_GPU_LAUNCH_NO_LAUNCH, new GpuMsg_Clean());
-  } else if (host == chrome::kChromeUIGpuCrashHost) {
+  }
+  if (LowerCaseEqualsASCII(url->spec(), chrome::kAboutGpuCrashURL)) {
     GpuProcessHost::SendOnIO(
         0, content::CAUSE_FOR_GPU_LAUNCH_ABOUT_GPUCRASH, new GpuMsg_Crash());
-  } else if (host == chrome::kChromeUIGpuHangHost) {
+  }
+  if (LowerCaseEqualsASCII(url->spec(), chrome::kAboutGpuHangURL)) {
     GpuProcessHost::SendOnIO(
         0, content::CAUSE_FOR_GPU_LAUNCH_ABOUT_GPUHANG, new GpuMsg_Hang());
   }
 
-  // Initialize any potentially corresponding AboutSource handler.
-  InitializeAboutDataSource(host, profile);
+  // There are a few about: URLs that we hand over to the renderer. If the
+  // renderer wants them, don't do any rewriting.
+  if (chrome_about_handler::WillHandle(*url))
+    return false;
+
+  // Anything else requires our special handler; make sure it's initialized.
+  InitializeAboutDataSource(profile);
+
+  // Special case about:memory to go through a redirect before ending up on
+  // the final page. See GetAboutMemoryRedirectResponse above for why.
+  if (LowerCaseEqualsASCII(url->path(), kMemoryPath)) {
+    *url = GURL("chrome://about/memory-redirect");
+    return true;
+  }
+
+  // Rewrite the about URL to use chrome:. WebKit treats all about URLS the
+  // same (blank page), so if we want to display content, we need another
+  // scheme.
+  std::string about_url = "chrome://about/";
+  about_url.append(url->path());
+  *url = GURL(about_url);
   return true;
 }
 
+void InitializeAboutDataSource(Profile* profile) {
+  profile->GetChromeURLDataManager()->AddDataSource(new AboutSource(profile));
+}
+
 bool HandleNonNavigationAboutURL(const GURL& url) {
-  // chrome://ipc/ is currently buggy, so we disable it for official builds.
+  // about:ipc is currently buggy, so we disable it for official builds.
 #if !defined(OFFICIAL_BUILD)
 
 #if (defined(OS_MACOSX) || defined(OS_WIN)) && defined(IPC_MESSAGE_LOG_ENABLED)
-  if (LowerCaseEqualsASCII(url.spec(), chrome::kChromeUIIPCURL)) {
+  if (LowerCaseEqualsASCII(url.spec(), chrome::kAboutIPCURL)) {
     // Run the dialog. This will re-use the existing one if it's already up.
     browser::ShowAboutIPCDialog();
     return true;
@@ -1335,10 +1429,10 @@ bool HandleNonNavigationAboutURL(const GURL& url) {
   return false;
 }
 
-std::vector<std::string> ChromePaths() {
+std::vector<std::string> AboutPaths() {
   std::vector<std::string> paths;
-  paths.reserve(arraysize(kChromePaths));
-  for (size_t i = 0; i < arraysize(kChromePaths); i++)
-    paths.push_back(kChromePaths[i]);
+  paths.reserve(arraysize(kAllAboutPaths));
+  for (size_t i = 0; i < arraysize(kAllAboutPaths); i++)
+    paths.push_back(kAllAboutPaths[i]);
   return paths;
 }

@@ -63,6 +63,10 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTest, TestMainHistoryPageLTR) {
   RunBidiCheckerOnPage(chrome::kChromeUIHistoryURL, false);
 }
 
+IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTest, TestAboutAboutPageLTR) {\
+  RunBidiCheckerOnPage(chrome::kChromeUIAboutAboutURL, false);\
+}
+
 IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTest, TestAboutPageLTR) {\
   RunBidiCheckerOnPage(chrome::kChromeUIAboutURL, false);\
 }
