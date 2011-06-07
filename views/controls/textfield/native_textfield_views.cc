@@ -816,10 +816,11 @@ void NativeTextfieldViews::PaintTextAndCursor(gfx::Canvas* canvas) {
       kFocusedSelectionColor : kUnfocusedSelectionColor;
   gfx::Font font = GetFont();
   gfx::Rect selection_bounds = model_->GetSelectionBounds(font);
+
   if (!selection_bounds.IsEmpty()) {
     canvas->FillRectInt(selection_color,
                         x_offset + selection_bounds.x(),
-                        y + selection_bounds.y(),
+                        (height() - selection_bounds.height()) / 2,
                         selection_bounds.width(),
                         selection_bounds.height());
   }
