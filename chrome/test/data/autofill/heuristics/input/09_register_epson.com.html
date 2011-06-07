@@ -1,0 +1,177 @@
+<html>
+<!--Form Location: https://www.epson.com/cgi-bin/Store/jsp/j_Login/j_Login-Register.jsp?BV_UseBVCookie=yes&errMsgReg=new_acct&nextPage=/jsp/j_Login/j_MyAccount.jsp&bvproductid=&bvdisplaycode=&bvpage=&bvcontenttype=&bvauthenticateuser=--><head>
+<link rel="STYLESHEET" type="text/css" href="/2005redesign/newstyles2.css">
+<!--// replaces unewwindow.js //--><!--[if (gte IE 6)&(lte IE 8)]>
+
+<![endif]--><link rel="STYLESHEET" type="text/css" href="/2005redesign/global.css">
+<link rel="STYLESHEET" type="text/css" href="/2005redesign/login_styles.css">
+<title>Login</title>
+<!-- Page created on: 06/06/2011 08:07:36 --><!-- Page created by: ccegadfdkggkmmdcfngcfkmdhjidfmh.0 --><!--esi
+<esi:choose>
+<esi:when test="(($(HTTP_COOKIE{BV_IDS}|'false')=='') | ($(HTTP_COOKIE{BV_IDS}|'false')=='false')) & ($(QUERY_STRING{cookies})!='no')">
+	<esi:choose>
+	<esi:when test="(($(QUERY_STRING{BV_SessionID}|'false')!='') & ($(QUERY_STRING{BV_SessionID}|'false')!='false')) & (($(QUERY_STRING{BV_EngineID}|'false')!='') & ($(QUERY_STRING{BV_EngineID}|'false')!='false'))">
+		
+	</esi:when>
+	</esi:choose>
+</esi:when>
+<esi:otherwise>
+
+</esi:otherwise>
+</esi:choose>
+<esi:choose>
+<esi:when test="(($(HTTP_COOKIE{BV_IDS}|'false')!='false') & ($(HTTP_COOKIE{BV_IDS}|'false')!='')) & ($(QUERY_STRING{cookies})!='no')">
+	<esi:try>
+		<esi:attempt>
+			<esi:include src="/cgi-bin/Store/ping.jsp?BV_SessionID=$(HTTP_COOKIE{BV_SessionID})&BV_EngineID=$(HTTP_COOKIE{BV_EngineID})" alt="/cgi-bin/Store/alive.jsp" />
+		</esi:attempt>
+	<esi:except>
+	</esi:except>
+	</esi:try>
+</esi:when>
+</esi:choose>
+ -->
+</head>
+<body>
+<noscript>
+	<meta http-equiv="Refresh" content="0; URL=/cgi-bin/Store/jsp/j_Login/j_Login-Register.jsp?cookies=no&amp;bvproductid=&amp;bvpage=&amp;errMsgReg=new_acct&amp;bvdisplaycode=&amp;bvauthenticateuser=&amp;nextPage=%2fjsp%2fj_Login%2fj_MyAccount.jsp&amp;bvcontenttype=">
+</noscript>
+
+        <style type="text/css">
+		    table#benefits-grid { background: #d1d3d4; width: 370px; border: 3px solid #4e4d4c; font-weight: bold; font-family: "Century Gothic", "Apple Gothic", verdana, sans-serif; font-size: 12px; }
+		    table#benefits-grid thead { background: #302f2e; color: #fff; text-align: left; vertical-align: bottom; font-weight: lighter; }
+		    table#benefits-grid img.rt {float: right; }
+		    table#benefits-grid td {border-right: 1px solid #666; border-bottom: 1px solid #666; text-shadow:#fff 0 1px 1px;}
+		    table#benefits-grid span { text-align: center; width: 100%; display: block;}
+		    table#benefits-grid em { font-weight: normal; font-family: verdana, arial, sans-serif}
+	    </style>
+<div class="container">
+			<!--// GLOBAL HEADER STARTS HERE //-->
+				<div id="global-search">
+					<form id="global-search-form" name="Search_All" action="/cgi-bin/Store/gSearch.jsp?BV_UseBVCookie=yes" method="GET">
+						<label for="global-search">
+							United States
+							<input type="text" name="query" id="global-search-txt" placeholder="Enter Search" maxlength="50" title="Enter Search" class="placeholder empty"></label>
+						<input type="HIDDEN" name="pre_search" value="pre_search"><input type="HIDDEN" name="Category" value="Products"><input type="image" id="global-search-btn" src="/_assets/img/header/header-search-button.png" width="56" height="19" alt="SEARCH"><input type="HIDDEN" name="BV_UseBVCookie" value="yes">
+</form>
+				</div>
+				<header><a href="/cgi-bin/Store/jsp/index.do?BV_UseBVCookie=yes" id="header-logo"><img src="/_assets/img/header/header-logo-tagline.png" height="40" width="115" alt="Epson - Exceed Your Vision"></a>
+				<nav><ul id="secondary-nav">
+<li><a href="/cgi-bin/Store/jsp/j_Login/j_MyAccount.jsp?BV_UseBVCookie=yes&amp;Category=MyAccount">Sign In</a></li>
+						<li><a href="/cgi-bin/Store/Login/TrackOrder.jsp?BV_UseBVCookie=yes">Track My Order</a></li>
+						<li><a href="/cgi-bin/Store/jsp/j_Login/j_MyAccount.jsp?BV_UseBVCookie=yes&amp;Category=MyAccount">My Account</a></li>
+						<li><a href="/cgi-bin/Store/jsp/j_Login/j_MyAccountFavorites.jsp?BV_UseBVCookie=yes&amp;Category=MyAccount">Reorder List</a></li>
+						<li><a href="/cgi-bin/Store/Help/Help.jsp?BV_UseBVCookie=yes&amp;Category=Products">Help</a></li>
+					</ul></nav></header><div class="pageTitle">
+				<h1>My Account</h1>
+			</div>
+
+
+
+            <div class="contentAreaNoBG">
+				<div>
+					<div class="contentWholeTop"></div>
+				</div>
+				<div class="wholeColumn">  <!-- This is the main content area -->
+
+
+
+
+                    <div class="blueSubHeader">
+						Register with Epson
+					</div>
+
+					<div class="loginContainer">
+
+						<table width="750" border="0" cellspacing="0" cellpadding="0"><tr>
+<td width="50%" class="loginModulePadded">
+					<h2>Benefits of Registering</h2>
+
+					<p class="login_text"><b>Easy.</b> Simply fill out your name, email, and password and you're done.</p>
+					<p class="login_text"><b>Convenient.</b> Track the history and status of your order anytime from anywhere you access your account.</p>
+					<p class="login_text"><b>Save Time.</b> Fast online shopping with a Reorder List of frequently ordered products.</p>
+					<p class="login_text"><b>Secure.</b> You have the option not to store credit card information into your account.</p>
+					<p class="login_text"><b>Latest News.</b> Free subscription to Epson Extra! (our online newsletter).</p>
+					<p class="login_text"><b>Savings.</b> Receive exclusive online offers.</p>
+						</td>
+							<td width="50%" class="rightCellPadded">
+
+
+        <form action="/cgi-bin/Store/jsp/j_Login/j_LoginVerify.jsp?BV_UseBVCookie=yes" method="POST">
+		<input type="HIDDEN" name="securitizer" value="0035036284"><input type="HIDDEN" name="BV_UseBVCookie" value="yes"><input type="HIDDEN" name="oid" value=""><input type="HIDDEN" name="prodOID" value=""><input type="HIDDEN" name="pageFrom" value=""><h2>New Customer? Register Below!</h2>
+
+					<p class="login_text">Use the email address and password you enter below on future visits to quickly access your account information.</p>
+
+					<p class="login_smalltext">All items marked with asterisks ( <font color="red">*</font> ) must be answered to complete your registration.</p>
+
+					<p class="login_label_negindent"><span class="login_servmsg_new">* </span>First Name</p>
+					<input class="login" name="fname" type="text" size="30" value=""><p class="login_label_negindent"><span class="login_servmsg_new">* </span>Last Name</p>
+					<input class="login" name="lname" type="text" size="30" value=""><p class="login_label_negindent"><span class="login_servmsg_new">* </span>E-mail address</p>
+					<input class="login" name="emLogin" type="text" size="30" value="" maxlength="255"><input type="HIDDEN" name="nextPage" value="/jsp/j_Login/j_MyAccount.jsp"><input type="hidden" name="customer_status" value="new"><p class="login_label_negindent"><span class="login_servmsg_new">* </span>Password</p>
+					<input class="login" type="password" name="pw" value="" size="30" maxlength="25"><p class="login_label_negindent"><span class="login_servmsg_new">* </span>Re-Confirm Password</p>
+					<input class="login" type="password" name="verifypw" value="" size="30" maxlength="25"><p class="login_smalltext">Note: Passwords must be at least 6 characters and are case sensitive.</p>
+                    
+					<p class="login_text"><input type="checkbox" name="wantMsg" checked>I'd like to hear about new product information, special discounts and offers exclusive to Epson customers only. Please sign me up!</p>
+					
+
+
+                            <input type="image" src="/images/buttons/button_submit.gif" border="0">
+</form>
+							</td>
+						</tr></table>
+<br><br>
+</div>
+	   
+			<div class="footer">
+				<div class="footer-block">
+					<div class="footer-block-left">
+						<h2>Sign up for exclusive deals &amp; offers</h2>
+						<ul class="social-share">
+<li id="s-twitter"><a href="http://twitter.com/Epson_Store" target="_blank">Follow us on Twitter</a></li>
+						</ul>
+<div class="footer-opt-in">
+							<div class="opt-in-thankyou">
+								<h3>Thank you for signing up!</h3>
+								<p>Keep an eye out for our great offers and updates.</p>
+							</div>
+							<p class="opt-in-error">
+								<span id="error-msg">Oops, it looks like the system is down. Please try again later.</span>
+							</p>
+							<div class="opt-in-noscript">
+								<h3>Stay in the loop with Epson email notifications</h3>
+								<p><a href="https://epson.rsys3.net/servlet/website/ResponseForm?LilhgEikLM_JLgmLkE" target="_blank" class="arrow" title="Sign Up Now">Sign Up Now<span>&#160;</span></a></p>
+							</div>
+							<form id="ft-opt-in-form" name="OptInForm" class="opt-in-form cmxform">
+								<label>Email Address<br><input type="text" maxlength="320" name="EMAIL_ADDRESS" id="FT_EMAIL" class="required email empty" value="(Required)"></label>
+								<label>First Name<br><input type="text" name="FIRST_NAME" id="FT_FNAME" class="empty" value="(Optional)"></label>
+								<input type="hidden" name="SOURCE" id="SOURCE" value=""><button id="ft-subscribe" class="btn_sign-up-now" title="Sign Up Now"></button>
+							</form>
+						</div>
+					</div>
+					<div class="footer-block-right"></div>
+				</div>
+				<footer><nav><ul>
+<li><a href="/cgi-bin/Store/Other.jsp?BV_UseBVCookie=yes">Other Epson Sites</a></li>
+							<li><a href="/cgi-bin/Store/AboutCorpInfo.jsp?BV_UseBVCookie=yes">Corporate Info</a></li>
+							<li><a href="http://www.epson.com/prxm/prxm_html/hr_landing.html">Jobs</a></li>
+							<li><a href="/cgi-bin/Store/AboutContactUs.jsp?BV_UseBVCookie=yes">Contact Us</a></li>
+							<li><a href="http://www.epson.com">Epson WorldWide</a></li>
+						</ul></nav><ul>
+<li><a href="/cgi-bin/Store/AboutPrivacyInfo.jsp?BV_UseBVCookie=yes">Privacy Policy</a></li>
+						<li><a href="/cgi-bin/Store/Help/TermsofUse.jsp?BV_UseBVCookie=yes">Terms of Use</a></li>
+						<li>Copyright &#169; 2000-<noscript>2011</noscript> Epson America, Inc.</li>
+					</ul>
+<div class="ssl_logo">
+						
+</div>
+				</footer>
+</div>
+
+<noscript><a href="http://www.omniture.com" title="Web Analytics"><img src="http://epson.112.2o7.net/b/ss/epsonglobalprod/1/H.9--NS/0" height="1" width="1" border="0" alt=""></a></noscript>
+<!--/DO NOT REMOVE/-->
+
+</div>
+</div>
+</div>
+</body>
+</html>

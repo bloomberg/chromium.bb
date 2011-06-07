@@ -1,0 +1,1367 @@
+
+<!DOCTYPE html PUBLIC
+ "-//W3C//DTD XHTML 1.0 Transitional//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<title>
+		Secure Checkout at JR.com
+	</title>
+	<meta http-equiv="content-type" content="iso-8859-1" />
+	<meta name="MSSmartTagsPreventParsing" content="TRUE" />
+	<meta name="autosize" content="off" />
+	<meta http-equiv="imagetoolbar" content="no" />
+	<meta name="robots" content="noindex,nofollow" />
+	<meta name="description" content="Checkout at J&amp;R Music &amp; Computer World" />
+
+	<link href="/media/favicon_v1_m56577569833246480.ico" type="image/x-icon" rel="icon" />
+	<link href="/media/favicon_v1_m56577569833246480.ico" type="image/x-icon" rel="shortcut icon" />
+		
+<link href="https://www.jr.com/assets/gui/1.2.12/combo/gui/uber.css" type="text/css" rel="stylesheet"/>
+	<link rel="stylesheet" type="text/css" href="/media/styles/checkout_v1_m56577569833774837.css" />
+	<link rel="stylesheet" type="text/css" media="only screen and (max-device-width: 480px)" href="/media/styles/mobile_v1_m56577569833774845.css" />
+	
+	
+	
+
+	
+	
+	
+	
+		
+	<!--[if lt IE 7]>
+		<link rel="stylesheet" type="text/css" href="/media/styles/ie6_v1_m56577569833774833.css" />
+	<![endif]-->
+	
+</head>
+<body class="yui-skin-clint yui-skin-sam" >
+
+<div id="doc2">
+
+<div id="hd">
+<a name="top"></a>
+
+<div class="hdContent">
+	<div class="yui-g header-g">
+		<div class="yui-u first">
+			<a href="http://www.jr.com/" title="Home"><img src="/media/images/navigation/jrlogo_toy_v1_m56577569833498411.gif"  /></a>
+		</div>
+		<div class="yui-u">
+			<div id="topNavContainer">
+				<ul id="topNav">
+					<li><a href="http://www.jr.com/information/pop_shoppingHelp.jsp#order" title="Help" target="shophelp" >Help</a></li>
+				</ul>
+			</div>
+				<div style="clear:both; float:right;">
+<a href="http://www.bbbonline.org/cks.asp?id=121000141" target="bbb_online" ><img width="90" height="31" style="padding: 1px 0px 0px 0px" src="/media/images/awards/bbbors_v1_m56577569830485548.gif"/></a>				</div>
+		</div>
+	</div> 
+</div>
+
+<div class="checkoutBar">
+	<span class="checkoutBarLabel">Need Assistance?</span>
+	Call 1-800-806-1115
+</div>
+
+</div> 
+<div id="bd">
+
+<!--
+ - State: < 0 = off, 0 = on, > 0 linked
+-->
+
+
+
+		
+	<div class="steps noprint">
+		<div class="stepImages">
+
+	<a href="/checkout.flow?_flowExecutionKey=_c1CD2F5A1-28EE-6B0F-71FC-DCDBE4BCCA78_k64250CE6-ADB4-BD9D-FEED-2C51C69CE671&amp;_eventId=cancelOrder">
+<img src="/media/images/order/steps/opCart_v1_m56577569833489852.jpg"  />	</a>
+
+<img src="/media/images/order/steps/op1_v1_m56577569833489851.jpg" alt="addresses" />
+
+<img src="/media/images/order/steps/op2s_v1_m56577569833489872.jpg" alt="payment and shipping" />
+
+<img src="/media/images/order/steps/op3s_v1_m56577569833489874.jpg" alt="review order" />
+
+		</div>
+	</div>
+	<div class="clear"></div>
+
+	<div class="breadcrumb">
+			<a href="/checkout.flow?_flowExecutionKey=_c1CD2F5A1-28EE-6B0F-71FC-DCDBE4BCCA78_k64250CE6-ADB4-BD9D-FEED-2C51C69CE671&amp;_eventId=cancelOrder">Cart</a>
+	
+			&raquo;
+				<span class="active">Billing &amp; Shipping Addresses</span>
+			
+			&raquo;	
+				<span class="">Shipping &amp; Payment Options</span>
+	
+			&raquo;
+			<span class="">Review Order</span>
+
+	</div>
+
+	<div class="stepsWarning noprint">
+		<!--	* Do not use the browser back button for navigation.  Click on a step above if you wish to return to a previous page.  -->
+	</div>
+	<div class="clear"></div>
+	
+
+<form method="POST" id="addressForm">
+
+
+<div class="yui-g">
+	<div class="yui-u first">
+		<div class="pageHeader">
+			Billing and Shipping Addresses		</div>
+	</div>
+	<div class="yui-u jrui-right">
+		<input type="hidden" name="_flowExecutionKey" value="_c1CD2F5A1-28EE-6B0F-71FC-DCDBE4BCCA78_k64250CE6-ADB4-BD9D-FEED-2C51C69CE671" />
+		<input type="image" name="_eventId_continue" value="submit" alt="Continue" src="/media/images/buttons/btn_Continue_v1_m56577569833653811.gif" />
+	</div>
+</div>
+
+	
+	<div class="yui-g">
+		<div class="yui-u first firstCol">
+			<div class="subHead">
+Billing Address				<span class="subNote">&nbsp;&nbsp;&nbsp; 			<span class='asterisk'>*</span>
+required fields</span>
+			</div>
+<div class="subNote">
+	Please enter info as it appears on your credit card statement.</div>
+
+<div class="addressRowGroup">
+	<div class="addressCell">
+		<div>
+	<div class='mark asterisk'> &nbsp; </div>
+			<div class="field label">
+First Name			</div>
+		</div>
+		<div>
+	<div class='mark asterisk'> * </div>
+    <input type="text" id="billingAddress.firstName" name="billingAddress.firstName" value="" style='width: 124px' maxlength='14'    >
+
+		</div>
+		<div>	
+ </div>
+	</div>
+
+	<div class="addressCell">
+		<div>
+	<div class='mark asterisk'> &nbsp; </div>
+			<div class="field label">
+Last Name			</div>
+		</div>
+		<div>
+	<div class='mark asterisk'> * </div>
+    <input type="text" id="billingAddress.lastName" name="billingAddress.lastName" value="" style='width: 124px' maxlength='15'     >
+
+		</div>
+		<div>	
+</div>
+	</div>
+	
+	<div style="clear: both;"></div>
+</div>
+
+<div class="addressRowGroup">
+	<div class="addressRow">
+	<div class='mark asterisk'> &nbsp; </div>
+		<div class="field label">
+Address		</div>
+	</div>
+	
+	<div class="addressRow">
+	<div class='mark asterisk'> * </div>
+		<div>    <input type="text" id="billingAddress.address1" name="billingAddress.address1" value="" style='width: 275px' maxlength='30' >
+
+</div>
+	</div>
+
+	<div class="addressRow">
+	<div class='mark asterisk'> &nbsp; </div>
+		<div class="field subNote">
+Street address or P.O. box		</div>
+	</div>
+
+	
+	
+	<div class="addressRow">
+	<div class='mark asterisk'> &nbsp; </div>
+		<div class="field">    <input type="text" id="billingAddress.address2" name="billingAddress.address2" value="" style='width: 275px' maxlength='30' >
+
+</div>
+
+	</div>
+
+	<div class="addressRow">
+	<div class='mark asterisk'> &nbsp; </div>
+		<div class="field subNote">
+Apartment, suite, company, care of, etc.		</div>
+	</div>
+</div>
+
+<div class="addressRowGroup">
+
+	<div class="addressRow">
+	<div class='mark asterisk'> &nbsp; </div>
+		<div class="field label">City</div>
+	</div>
+
+	<div class="addressRow">
+	<div class='mark asterisk'> * </div>
+		<div class="field">
+    <input type="text" id="billingAddress.city" name="billingAddress.city" value="" style='width: 275px' maxlength='20' >
+
+		</div>
+	</div>
+
+	<div class="addressRow">
+	<div class='mark asterisk'> &nbsp; </div>
+		<div class="field subNote">
+			Enter APO or FPO in the City field above
+		</div>
+	</div>
+	
+	
+
+</div>
+
+<div class="addressRowGroup">
+
+	<div class="addressCell" style="width: 215px;">
+
+	<div class='mark asterisk'> &nbsp; </div>
+		<div class="field label">State/Province</div>
+
+	<div class='mark asterisk'> * </div>
+		<div class="field">
+    <select id="billingAddress.stateCode" name="billingAddress.stateCode" >
+        <option value="XX"    
+    
+>Select a State:</option>
+        <option value="AA"    
+    
+>AA - Armed Forces America</option>
+        <option value="AE"    
+    
+>AE - Armed Forces Europe</option>
+        <option value="AK"    
+    
+>AK - Alaska</option>
+        <option value="AL"    
+    
+>AL - Alabama</option>
+        <option value="AP"    
+    
+>AP - Armed Forces Pacific</option>
+        <option value="AR"    
+    
+>AR - Arkansas</option>
+        <option value="AS"    
+    
+>AS - American Somoa</option>
+        <option value="AZ"    
+    
+>AZ - Arizona</option>
+        <option value="CA"    
+    
+>CA - California</option>
+        <option value="CO"    
+    
+>CO - Colorado</option>
+        <option value="CT"    
+    
+>CT - Connecticut</option>
+        <option value="DC"    
+    
+>DC - District of Columbia</option>
+        <option value="DE"    
+    
+>DE - Delaware</option>
+        <option value="FL"    
+    
+>FL - Florida</option>
+        <option value="FM"    
+    
+>FM - FS of Micronesia</option>
+        <option value="GA"    
+    
+>GA - Georgia</option>
+        <option value="GU"    
+    
+>GU - Guam</option>
+        <option value="HI"    
+    
+>HI - Hawaii</option>
+        <option value="IA"    
+    
+>IA - Iowa</option>
+        <option value="ID"    
+    
+>ID - Idaho</option>
+        <option value="IL"    
+    
+>IL - Illinois</option>
+        <option value="IN"    
+    
+>IN - Indiana</option>
+        <option value="KS"    
+    
+>KS - Kansas</option>
+        <option value="KY"    
+    
+>KY - Kentucky</option>
+        <option value="LA"    
+    
+>LA - Louisiana</option>
+        <option value="MA"    
+    
+>MA - Massachusetts</option>
+        <option value="MD"    
+    
+>MD - Maryland</option>
+        <option value="ME"    
+    
+>ME - Maine</option>
+        <option value="MH"    
+    
+>MH - Marshall Islands</option>
+        <option value="MI"    
+    
+>MI - Michigan</option>
+        <option value="MN"    
+    
+>MN - Minnesota</option>
+        <option value="MO"    
+    
+>MO - Missouri</option>
+        <option value="MP"    
+    
+>MP - Mariana Islands</option>
+        <option value="MS"    
+    
+>MS - Mississippi</option>
+        <option value="MT"    
+    
+>MT - Montana</option>
+        <option value="NC"    
+    
+>NC - North Carolina</option>
+        <option value="ND"    
+    
+>ND - North Dakota</option>
+        <option value="NE"    
+    
+>NE - Nebraska</option>
+        <option value="NH"    
+    
+>NH - New Hampshire</option>
+        <option value="NJ"    
+    
+>NJ - New Jersey</option>
+        <option value="NM"    
+    
+>NM - New Mexico</option>
+        <option value="NV"    
+    
+>NV - Nevada</option>
+        <option value="NY"    
+    
+>NY - New York</option>
+        <option value="OH"    
+    
+>OH - Ohio</option>
+        <option value="OK"    
+    
+>OK - Oklahoma</option>
+        <option value="OR"    
+    
+>OR - Oregon</option>
+        <option value="PA"    
+    
+>PA - Pennsylvania</option>
+        <option value="PR"    
+    
+>PR - Puerto Rico</option>
+        <option value="PW"    
+    
+>PW - Palau</option>
+        <option value="RI"    
+    
+>RI - Rhode Island</option>
+        <option value="SC"    
+    
+>SC - South Carolina</option>
+        <option value="SD"    
+    
+>SD - South Dakota</option>
+        <option value="TN"    
+    
+>TN - Tennessee</option>
+        <option value="TX"    
+    
+>TX - Texas</option>
+        <option value="UT"    
+    
+>UT - Utah</option>
+        <option value="VA"    
+    
+>VA - Virginia</option>
+        <option value="VI"    
+    
+>VI - Virgin Islands</option>
+        <option value="VT"    
+    
+>VT - Vermont</option>
+        <option value="WA"    
+    
+>WA - Washington</option>
+        <option value="WI"    
+    
+>WI - Wisconsin</option>
+        <option value="WV"    
+    
+>WV - West Virginia</option>
+        <option value="WY"    
+    
+>WY - Wyoming</option>
+        <option value="XY"    
+    
+>Select a Province:</option>
+        <option value="AB"    
+    
+>AB - Alberta</option>
+        <option value="BC"    
+    
+>BC - British Columbia</option>
+        <option value="MB"    
+    
+>MB - Manitoba</option>
+        <option value="NU"    
+    
+>NU - Nunavut</option>
+        <option value="NB"    
+    
+>NB - New Brunswick</option>
+        <option value="NF"    
+    
+>NF - Newfoundland</option>
+        <option value="NT"    
+    
+>NT - Northwest Territories</option>
+        <option value="NS"    
+    
+>NS - Nova Scotia</option>
+        <option value="ON"    
+    
+>ON - Ontario</option>
+        <option value="PE"    
+    
+>PE - Prince Edward Island</option>
+        <option value="QC"    
+    
+>QC - Quebec</option>
+        <option value="SK"    
+    
+>SK - Saskatchewan</option>
+        <option value="YT"    
+    
+>YT - Yukon Territory</option>
+        <option value="XQ"    
+    
+>International</option>
+    </select>
+		</div>
+
+	
+	</div>
+
+	<div class="addressCell" style="width: 150px;">
+	<div class='mark asterisk'> &nbsp; </div>
+		<div class="field label">ZIP/Postal Code</div>
+	
+	<div class='mark asterisk'> * </div>
+		<div class="field">
+    <input type="text" id="billingAddress.postalCode" name="billingAddress.postalCode" value="" style='width: 90px' maxlength='10' >
+
+		</div>
+	
+	
+	</div>
+
+	<div style="clear: both;"></div>
+</div>
+
+
+<div class="addressRowGroup">
+
+	<div class="addressRow">
+	<div class='mark asterisk'> &nbsp; </div>
+		<div class="field label">Country</div>
+	</div>
+
+	<div class="addressRow">
+	<div class='mark asterisk'> * </div>
+		<div class="field">
+    <select id="billingAddress.country" name="billingAddress.country" >
+        <option value="US"    
+    
+>United States</option>
+        <option value="CA"    
+    
+>Canada</option>
+    </select>
+			<span style="margin-left: 10px">
+			<a 
+				target="nonUSBill"
+				href="http://www.jr.com/information/pop_nonUSBilling.jsp">International billing instructions</a>
+			</span>
+		</div>
+	</div>
+
+	
+
+</div>
+
+<div class="addressRowGroup">
+
+	<div class="addressRow">
+	<div class='mark asterisk'> &nbsp; </div>
+		<div class="field label">Contact Phone Number</div>
+	</div>
+
+	<div class="addressRow">
+	<div class='mark asterisk'> * </div>
+		<div class="field">
+    <input type="text" id="billingAddress.phoneNumber" name="billingAddress.phoneNumber" value="" maxlength='18' size='18' style='width: 120px;' >
+
+		</div>
+	</div>
+	<div class="addressRow">
+	<div class='mark asterisk'> &nbsp; </div>
+		<div class="field subNote">Used only for billing inquiries</div>
+	</div>
+
+	
+	
+</div>
+
+<div class="addressRowGroup">
+
+	<div class="addressRow">
+	<div class='mark asterisk'> &nbsp; </div>
+		<div class="field label">Email Address</div>
+	</div>
+
+	<div class="addressRow">
+	<div class='mark asterisk'> * </div>
+		<div class="field">
+    <input type="text" id="customer.emailAddress" name="customer.emailAddress" value="" maxlength='50' style='width: 275px'    >
+
+		</div>
+	</div>
+
+	
+	
+
+</div>
+
+<div class="addressRowGroup">	
+	<div class="addressRow">
+	<div class='mark asterisk'> &nbsp; </div>
+		<span class="field">
+    <input type="hidden" name="_customer.optIn" value="false" />
+    <input type="checkbox" id="customer.optIn" name="customer.optIn"
+        checked="checked"
+        
+    >
+			<label for="customer.optIn">Yes, send me J&amp;R's promotional email newsletter.</label>
+		</span>
+	</div>
+	
+</div>
+
+		</div>
+		<div class="yui-u">
+
+			<div class="subHead">Shipping Address</div>
+				<div style="margin-top: 20px;">
+						
+						<span>    <input type="hidden" name="_storePickup" value="false" />
+    <input type="checkbox" id="storePickup" name="storePickup"
+        
+        >
+</span> 
+						<span class="keyOption"><label for="storePickup">Pickup In-Store (Park Row, New York NY)</label></span>
+				</div>						
+			
+			<div id="shipToBillingDiv" style="margin-top: 10px;">
+			
+				<div>
+					<span>    <input type="hidden" name="_shipToBillingAddress" value="false" />
+    <input type="checkbox" id="shipToBillingAddress" name="shipToBillingAddress"
+        
+        
+    >
+</span>
+					<span class="keyOption"><label for="shipToBillingAddress">Ship to my billing address</label></span>
+				</div>
+				
+				<div style="padding-left: 18px; padding-right: 70px;">
+	<div class='mark asterisk'> &nbsp; </div>
+					<div class="subNote"><font color='#990000' style='font-weight: bold'>SAVE TIME!</font>
+		     If your shipping address is the same as your billing address, it will expedite your order.</div>
+				</div>
+
+			</div>
+			
+			<div id="shippingAddressFields">
+	
+	<div style='margin-bottom: 4px'> </div>
+	
+
+	<div class="addressRowGroup">
+		<div class="addressCell">
+			<div>
+	<div class='mark asterisk'> &nbsp; </div>
+				<div class="field label">
+First Name				</div>
+			</div>
+			<div>
+	<div class='mark asterisk'> * </div>
+    <input type="text" id="shippingAddress.firstName" name="shippingAddress.firstName" value="" style='width: 124px' maxlength='14'    >
+
+			</div>
+			<div>	
+ </div>
+		</div>
+
+		<div class="addressCell">
+			<div>
+	<div class='mark asterisk'> &nbsp; </div>
+				<div class="field label">
+Last Name				</div>
+			</div>
+			<div>
+	<div class='mark asterisk'> * </div>
+    <input type="text" id="shippingAddress.lastName" name="shippingAddress.lastName" value="" style='width: 124px' maxlength='15'     >
+
+			</div>
+			<div>	
+ </div>
+		</div>
+		
+		<div style="clear: both;"></div>
+	</div>
+
+	<div class="addressRowGroup">
+		<div class="addressRow">
+	<div class='mark asterisk'> &nbsp; </div>
+			<div class="field label">
+Address			</div>
+		</div>
+
+		<div class="addressRow">
+	<div class='mark asterisk'> * </div>
+			<div>    <input type="text" id="shippingAddress.address1" name="shippingAddress.address1" value="" style='width: 275px' maxlength='30'     >
+
+</div>
+
+		</div>
+
+		<div class="addressRow">
+	<div class='mark asterisk'> &nbsp; </div>
+			<div class="field subNote">
+Street address or P.O. box			</div>
+		</div>
+	
+	
+		
+		<div class="addressRow">
+	<div class='mark asterisk'> &nbsp; </div>
+			<div class="field">    <input type="text" id="shippingAddress.address2" name="shippingAddress.address2" value="" style='width: 275px' maxlength='30'     >
+
+</div>
+
+		</div>
+
+		<div class="addressRow">
+	<div class='mark asterisk'> &nbsp; </div>
+			<div class="field subNote">
+Apartment, suite, company, care of, etc.			</div>
+		</div>
+	</div>
+
+	<div class="addressRowGroup">
+
+		<div class="addressRow">
+	<div class='mark asterisk'> &nbsp; </div>
+			<div class="field label">City</div>
+		</div>
+
+		<div class="addressRow">
+	<div class='mark asterisk'> * </div>
+			<div class="field">
+    <input type="text" id="shippingAddress.city" name="shippingAddress.city" value="" style='width: 275px' maxlength='20'     >
+
+			</div>
+		</div>
+
+		<div class="addressRow">
+	<div class='mark asterisk'> &nbsp; </div>
+			<div class="field subNote">
+				Enter APO or FPO in the City field above
+			</div>
+		</div>
+
+	
+	</div>
+
+	<div class="addressRowGroup">
+		<div class="addressCell" style="width: 205px;">
+			<div>
+	<div class='mark asterisk'> &nbsp; </div>
+				<div class="field label">State/Province</div>
+			</div>
+
+			<div>
+	<div class='mark asterisk'> * </div>
+				<div class="field">
+    <select id="shippingAddress.stateCode" name="shippingAddress.stateCode" >
+        <option value="XX"    
+    
+>Select a State:</option>
+        <option value="AA"    
+    
+>AA - Armed Forces America</option>
+        <option value="AE"    
+    
+>AE - Armed Forces Europe</option>
+        <option value="AK"    
+    
+>AK - Alaska</option>
+        <option value="AL"    
+    
+>AL - Alabama</option>
+        <option value="AP"    
+    
+>AP - Armed Forces Pacific</option>
+        <option value="AR"    
+    
+>AR - Arkansas</option>
+        <option value="AS"    
+    
+>AS - American Somoa</option>
+        <option value="AZ"    
+    
+>AZ - Arizona</option>
+        <option value="CA"    
+    
+>CA - California</option>
+        <option value="CO"    
+    
+>CO - Colorado</option>
+        <option value="CT"    
+    
+>CT - Connecticut</option>
+        <option value="DC"    
+    
+>DC - District of Columbia</option>
+        <option value="DE"    
+    
+>DE - Delaware</option>
+        <option value="FL"    
+    
+>FL - Florida</option>
+        <option value="FM"    
+    
+>FM - FS of Micronesia</option>
+        <option value="GA"    
+    
+>GA - Georgia</option>
+        <option value="GU"    
+    
+>GU - Guam</option>
+        <option value="HI"    
+    
+>HI - Hawaii</option>
+        <option value="IA"    
+    
+>IA - Iowa</option>
+        <option value="ID"    
+    
+>ID - Idaho</option>
+        <option value="IL"    
+    
+>IL - Illinois</option>
+        <option value="IN"    
+    
+>IN - Indiana</option>
+        <option value="KS"    
+    
+>KS - Kansas</option>
+        <option value="KY"    
+    
+>KY - Kentucky</option>
+        <option value="LA"    
+    
+>LA - Louisiana</option>
+        <option value="MA"    
+    
+>MA - Massachusetts</option>
+        <option value="MD"    
+    
+>MD - Maryland</option>
+        <option value="ME"    
+    
+>ME - Maine</option>
+        <option value="MH"    
+    
+>MH - Marshall Islands</option>
+        <option value="MI"    
+    
+>MI - Michigan</option>
+        <option value="MN"    
+    
+>MN - Minnesota</option>
+        <option value="MO"    
+    
+>MO - Missouri</option>
+        <option value="MP"    
+    
+>MP - Mariana Islands</option>
+        <option value="MS"    
+    
+>MS - Mississippi</option>
+        <option value="MT"    
+    
+>MT - Montana</option>
+        <option value="NC"    
+    
+>NC - North Carolina</option>
+        <option value="ND"    
+    
+>ND - North Dakota</option>
+        <option value="NE"    
+    
+>NE - Nebraska</option>
+        <option value="NH"    
+    
+>NH - New Hampshire</option>
+        <option value="NJ"    
+    
+>NJ - New Jersey</option>
+        <option value="NM"    
+    
+>NM - New Mexico</option>
+        <option value="NV"    
+    
+>NV - Nevada</option>
+        <option value="NY"    
+    
+>NY - New York</option>
+        <option value="OH"    
+    
+>OH - Ohio</option>
+        <option value="OK"    
+    
+>OK - Oklahoma</option>
+        <option value="OR"    
+    
+>OR - Oregon</option>
+        <option value="PA"    
+    
+>PA - Pennsylvania</option>
+        <option value="PR"    
+    
+>PR - Puerto Rico</option>
+        <option value="PW"    
+    
+>PW - Palau</option>
+        <option value="RI"    
+    
+>RI - Rhode Island</option>
+        <option value="SC"    
+    
+>SC - South Carolina</option>
+        <option value="SD"    
+    
+>SD - South Dakota</option>
+        <option value="TN"    
+    
+>TN - Tennessee</option>
+        <option value="TX"    
+    
+>TX - Texas</option>
+        <option value="UT"    
+    
+>UT - Utah</option>
+        <option value="VA"    
+    
+>VA - Virginia</option>
+        <option value="VI"    
+    
+>VI - Virgin Islands</option>
+        <option value="VT"    
+    
+>VT - Vermont</option>
+        <option value="WA"    
+    
+>WA - Washington</option>
+        <option value="WI"    
+    
+>WI - Wisconsin</option>
+        <option value="WV"    
+    
+>WV - West Virginia</option>
+        <option value="WY"    
+    
+>WY - Wyoming</option>
+        <option value="XY"    
+    
+>Select a Province:</option>
+        <option value="AB"    
+    
+>AB - Alberta</option>
+        <option value="BC"    
+    
+>BC - British Columbia</option>
+        <option value="MB"    
+    
+>MB - Manitoba</option>
+        <option value="NU"    
+    
+>NU - Nunavut</option>
+        <option value="NB"    
+    
+>NB - New Brunswick</option>
+        <option value="NF"    
+    
+>NF - Newfoundland</option>
+        <option value="NT"    
+    
+>NT - Northwest Territories</option>
+        <option value="NS"    
+    
+>NS - Nova Scotia</option>
+        <option value="ON"    
+    
+>ON - Ontario</option>
+        <option value="PE"    
+    
+>PE - Prince Edward Island</option>
+        <option value="QC"    
+    
+>QC - Quebec</option>
+        <option value="SK"    
+    
+>SK - Saskatchewan</option>
+        <option value="YT"    
+    
+>YT - Yukon Territory</option>
+        <option value="XQ"    
+    
+>International</option>
+    </select>
+				</div>
+			</div>
+
+	
+
+		</div>
+
+		<div class="addressCell" style="width: 170px;">
+			<div>
+	<div class='mark asterisk'> &nbsp; </div>
+				<div class="field label">ZIP/Postal Code</div>
+			</div>
+
+			<div>
+	<div class='mark asterisk'> * </div>
+				<div class="field">
+    <input type="text" id="shippingAddress.postalCode" name="shippingAddress.postalCode" value="" style='width: 90px' maxlength='10'     >
+
+				</div>
+			</div>
+
+	
+		</div>
+
+		<div style="clear: both;"></div>
+	</div>
+
+	<div class="addressRowGroup">
+
+		<div class="addressRow">
+	<div class='mark asterisk'> &nbsp; </div>
+			<div class="field label">Country</div>
+		</div>
+
+		<div class="addressRow">
+	<div class='mark asterisk'> * </div>
+			<div class="field">
+    <select id="shippingAddress.country" name="shippingAddress.country" >
+        <option value="US"    
+    
+>United States</option>
+        <option value="CA"    
+    
+>Canada</option>
+    </select>
+			</div>
+		</div>
+
+	
+	</div>
+
+	<div class="addressRowGroup">
+
+		<div class="addressRow">
+	<div class='mark asterisk'> &nbsp; </div>
+			<div class="field label">Contact Phone Number</div>
+		</div>
+
+		<div class="addressRow">
+	<div class='mark asterisk'> * </div>
+			<div class="field">
+    <input type="text" id="shippingAddress.phoneNumber" name="shippingAddress.phoneNumber" value="" maxlength='18' size='18' style='width: 120px;'    >
+
+			</div>
+		</div>
+		<div class="addressRow">
+	<div class='mark asterisk'> &nbsp; </div>
+			<div class="field subNote">Used only for order inquiries</div>
+		</div>
+
+	
+	</div>
+
+			</div>
+		</div>
+	</div>
+	
+
+<div id='restOfForm'>
+
+<div class="yui-g">
+
+	<div class="yui-u first firstCol">
+
+          <a name="info"></a>
+          <div class="subHead"></span>Other Information</div>
+			
+			<div class="addressRowGroup">
+				<div class="addressRow">
+	<div class='mark asterisk'> &nbsp; </div>
+					<div class="field label">
+International Billing					</div>
+				</div>
+
+				<div class="addressRow">
+	<div class='mark asterisk'> &nbsp; </div>
+					<div class="field">
+    <input type="text" id="customOrderHeader.internationalBilling" name="customOrderHeader.internationalBilling" value="" maxlength='50' style='width: 225px;'    >
+
+					</div>
+				</div>
+
+				<div class="addressRow" style="width: 300px;">
+	<div class='mark asterisk'> &nbsp; </div>
+					<div class="field subNote">
+Enter your country and phone number, with country code and city code. (max. 50 characters)					</div>
+				</div>
+			</div>
+			
+      		<div class="addressRowGroup">
+				<div class="addressRow">
+	<div class='mark asterisk'> &nbsp; </div>
+					<div class="field label">
+Salesperson Number					</div>
+				</div>
+
+				<div class="addressRow">
+	<div class='mark asterisk'> &nbsp; </div>
+					<div class="field">
+    <input type="text" id="customOrderHeader.salespersonNumber" name="customOrderHeader.salespersonNumber" value="" maxlength='3' style='width: 30px;'     >
+
+					</div>
+				</div>
+
+				<div class="addressRow" style="width: 300px;">
+	<div class='mark asterisk'> &nbsp; </div>
+					<div class="field subNote">
+If you received help from a J&amp;R salesperson, please enter their number here.					</div>
+				</div>
+			</div>
+	
+	</div> 
+	<div class="yui-u">
+
+		<div class="subHead">
+Gift Options		</div>
+	
+		<div class="addressRowGroup">
+			<div class="addressRow">
+	<div class='mark asterisk'> &nbsp; </div>
+				<div class="field label">
+Gift From				</div>
+			</div>
+			
+			<div class="addressRow">
+	<div class='mark asterisk'> &nbsp; </div>
+				<div class="field">
+    <input type="text" id="customOrderHeader.giftFromName" name="customOrderHeader.giftFromName" value="" style='width: 225px;' maxlength='30'    >
+
+				</div>
+			</div>
+		</div>
+
+
+
+		<div class="addressRowGroup">
+			<div class="addressRow">
+	<div class='mark asterisk'> &nbsp; </div>
+				<div class="field label">
+Gift Message				</div>
+			</div>
+			
+			<div class="addressRow">
+	<div class='mark asterisk'> &nbsp; </div>
+				<div class="field">
+    <input type="text" id="customOrderHeader.giftMessage" name="customOrderHeader.giftMessage" value="" style='width: 225px;' maxlength='60'    >
+
+				</div>
+			</div>
+			
+			<div class="addressRow">
+	<div class='mark asterisk'> &nbsp; </div>
+				<div class="field subNote">(max. 60 characters)</div>
+		</div>
+
+
+		<div class="addressRowGroup">
+			<div class="addressRow">
+	<div class='mark asterisk'> &nbsp; </div>
+				<div class="field label">
+Gift Email				</div>
+			</div>
+			
+			<div class="addressRow">
+	<div class='mark asterisk'> &nbsp; </div>
+				<div class="field">
+    <input type="text" id="customOrderHeader.giftEmailAddress" name="customOrderHeader.giftEmailAddress" value="" style='width: 225px;' maxlength='50'    >
+
+				</div>
+			</div>
+			
+			<div class="addressRow">
+	<div class='mark asterisk'> &nbsp; </div>
+				<div class="field">
+					<a 
+						target="giftnote"
+						href="http://www.jr.com/information/pop_giftNotification.jsp">
+							Learn more</a>
+				</div>
+			</div>
+		</div>			
+
+		<div class="addressRowGroup">
+			<div class="addressRow">
+	<div class='mark asterisk'> &nbsp; </div>
+    <input type="hidden" name="_customOrderHeader.giftHidePrices" value="false" />
+    <input type="checkbox" id="customOrderHeader.giftHidePrices" name="customOrderHeader.giftHidePrices"
+        
+        
+    >
+				<label for="customOrderHeader.giftHidePrices">Hide prices on the recipient's invoice and products on gift email.</label>
+			</div>
+		</div>	
+
+	</div>
+
+</div> 
+</div>
+
+<style type="text/css">
+<!--
+		div.orderSummaryRow {
+		clear: both;
+		margin-bottom: 15px;
+		text-align: left;
+	}
+	div.orderSummaryLeft {
+		float: left;
+		width: 50px;
+		font-weight: bold;
+		text-align: left;
+	}
+	div.orderSummaryRight {
+		margin-left: 55px;
+		text-align: right;
+		font-weight: bold;
+	}
+-->
+</style>
+
+
+<div class="subHead">In Your Cart</div>
+
+	<div class="yui-ge">
+		<div class="yui-u first">
+	<div class="cartDetailHeader">
+		<table align="center" bgcolor="#ffffff" cellpadding="0" cellspacing="0" width="95%">
+			<tr>
+				<td align="left">
+					<b>Item Description</b>
+				</td>
+				<td align="right" width="80">
+					<b>Price</b>
+				</td>
+				<td align="center" width="75">
+					<b>Quantity</b>
+				</td>
+				<td align="right" width="90">
+					<b>Total</b>
+				</td>
+			</tr>
+		</table>
+	</div>
+
+	<table id="cartDetailTab" align="center" bgcolor="#ffffff" cellpadding="0" cellspacing="0" width="95%">
+			<tr>
+				<td cellpadding="0" cellspacing="0" align="left" valign="top">
+				<div style="padding: 0px;">
+					Panasonic Lumix DMC-LX5 10.1 Megapixel Digital Camera - Black
+				</div>
+				<div class="productItemMessage" style="font-style:italic;">
+					
+				</div>
+			</td>
+			<td cellspacing="0" cellpadding="0" align="right" valign="top" width="80">
+				$499.95
+			</td>
+			<td cellspacing="0" cellpadding="0" align="center" valign="top" width="75">
+				1
+			</td>
+			<td cellspacing="0" cellpadding="0" align="right" valign="top" width="90">
+				<div class="fontItemPrice">
+						$499.95
+				</div>
+				&nbsp;
+			</td>
+		</tr>
+
+			<tr>
+				<td colspan="4" valign="bottom">
+					<div class="productItemMessage">Buy this Camera Save $5 off select memory cards. <a href="/promotion/listContent.jsp?promoName=MemCard" ><b> See Details</b></a></div>
+				</td>
+			</tr>
+			
+		<tr>
+			<td colspan="4" valign="bottom">
+				<div style="margin: 0 0 2px 315px; text-align: left;">
+						<span class="fontsmall" style="margin-left: 5px;">&nbsp;</span>
+				</div>
+			</td>
+		</tr>
+		<tr><td colspan="4" style="padding: 0px 0px 5px;"><div style="background-image: url(/media/images/dotted_horiz_v1_m56577569831605050.gif); height: 1px;"><img src="/media/images/p_v1_m56577569830601610.gif" alt="" border="0" height="1" width="212"></div></td></tr>
+	</table>
+		<div class="stepsWarning">
+			(You may go back to the 
+			<a href="/checkout.flow?_flowExecutionKey=_c1CD2F5A1-28EE-6B0F-71FC-DCDBE4BCCA78_k64250CE6-ADB4-BD9D-FEED-2C51C69CE671&_eventId=cancelOrder">Shopping Cart</a>
+			to change your selections.)
+		</div>
+	
+	</div>
+
+	<div class="yui-u">
+
+
+
+	<div class="refinements jrui-center">Order Summary</div>
+	
+	<div class="orderSummaryBox">
+				<div class="orderSummaryRow">
+					<div class="orderSummaryLeft largerFont">Subtotal:</div>
+					<div class="orderSummaryRight largerFont">$499.95</div>
+				</div>
+		
+				<div class="orderSummaryRow">
+Shipping charge and total will be displayed once you select your shipping option later in the process.				</div>
+				
+			
+				<div class="orderSummaryRow">
+					<div class="orderSummaryLeft">Tax:</div>
+					<div class="orderSummaryRight">
+NY Only*					</div>
+				</div>
+		
+				<div class="orderSummaryRow">
+*J&amp;R only collects local sales tax on orders shipped to NY State.				</div>
+		
+				<div class="orderSummaryRow" style="text-align: center;">
+					<input type="image" name="_eventId_continue" value="submit" alt="Continue" src="/media/images/buttons/btn_Continue_v1_m56577569833653811.gif" />
+				</div>
+				
+	</div>
+
+		</div>
+	 
+</div> 
+</form>
+
+
+
+
+	</div> 
+	<div id="ft">
+
+<div class="securitySealsFooter">
+<table width="60%" cellspacing="0" cellpadding="0" border="0" align="center">
+	<tr>
+		<td style="text-align: center; vertical-align: middle; height: 100px;">
+			<a href="http://www.jr.com/information/pop_info.jsp?contentPath=/Content/media/html/information/verifiedByVisa.html" target="vbv" ><img width="71" height="57" style="padding: 1px 0px 0px 0px" src="/media/images/buttons/learn_vbVisa_v1_m56577569833359731.gif" alt="Verified by Visa Learn More"/></a>		</td>
+		<td style="text-align: center; vertical-align: middle; height: 100px;">
+<a href="http://www.mastercardbusiness.com/mcbiz/index.jsp?template=/orphans&amp;content=securecodepopup" target="msc" ><img width="80" height="44" style="padding: 1px 0px 0px 0px" src="/media/images/buttons/learn_masterCardSecureCode_v1_m56577569833359753.gif" alt="MasterCard Secure Code Learn More"/></a>		</td>
+		<td style="text-align: center; vertical-align: middle; height: 100px;">
+<span id="siteseal"></span>
+		</td>
+		<td style="text-align: center; vertical-align: middle; height: 100px;">
+	<!-- START SCANALERT CODE -->
+	<a href="//www.scanalert.com/RatingVerify?ref=www.jr.com" target="_blank">
+		<img width="115" height="32" border="0" alt="HACKER SAFE certified sites prevent over 99% of hacker crime." src="//images.scanalert.com/meter/www.jr.com/12.gif" style="vertical-align: middle;" /></a>
+	<!-- END   SCANALERT CODE -->
+		</td>
+	</tr>
+</table>
+</div>
+
+
+
+<!-- SiteCatalyst code version: H.8.
+Copyright 1997-2006 Omniture, Inc. More info available at
+http://www.omniture.com -->
+
+
+<noscript><a href="http://www.omniture.com" title="Web Analytics"><img
+src="//jrcom.112.2O7.net/b/ss/jrcom/1/H.15.1--NS/0"
+height="1" width="1" border="0" alt="" /></a></noscript><!--/DO NOT REMOVE/-->
+<!-- End SiteCatalyst code version: H.8. -->
+
+	
+
+
+
+
+
+
+	</div> 
+</div> 
+</body>
+</html>
+
+
