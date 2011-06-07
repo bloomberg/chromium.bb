@@ -378,19 +378,6 @@ class CandidateWindowView : public views::View {
   // are modified.
   void ResizeAndMoveParentFrame();
 
-  // Resizes the parent frame per the current contents size.
-  //
-  // The function is rarely used solely. See comments at
-  // ResizeAndMoveParentFrame().
-  void ResizeParentFrame();
-
-  // Moves the candidate window per the current cursor location, and the
-  // horizontal offset.
-  //
-  // The function is rarely used solely. See comments at
-  // ResizeAndMoveParentFrame().
-  void MoveParentFrame();
-
   // Returns the horizontal offset used for placing the vertical candidate
   // window so that the first candidate is aligned with the the text being
   // converted like:
@@ -1054,7 +1041,7 @@ void CandidateWindowView::MaybeInitializeCandidateViews(
   // Compute views size in |layout|.
   // If we don't call this function, GetHorizontalOffset() often
   // returns invalid value (returns 0), then candidate window
-  // moves right from the correct position in MoveParentFrame().
+  // moves right from the correct position in ResizeAndMoveParentFrame().
   // TODO(nhiroki): Figure out why it returns invalid value.
   // It seems that the x-position of the candidate labels is not set.
   layout->Layout(candidate_area_);
@@ -1176,30 +1163,17 @@ void CandidateWindowView::CommitCandidate() {
 }
 
 void CandidateWindowView::ResizeAndMoveParentFrame() {
-  ResizeParentFrame();
-  MoveParentFrame();
-}
-
-void CandidateWindowView::ResizeParentFrame() {
-  // Resize the parent frame, with the current candidate window size.
-  gfx::Size size = GetPreferredSize();
-  gfx::Rect bounds = parent_frame_->GetClientAreaScreenBounds();
-  // SetBounds() is not cheap. Only call this when the size is changed.
-  if (bounds.size() != size) {
-    bounds.set_size(size);
-    parent_frame_->SetBounds(bounds);
-  }
-}
-
-void CandidateWindowView::MoveParentFrame() {
   const int x = cursor_location_.x();
   const int y = cursor_location_.y();
   const int height = cursor_location_.height();
   const int horizontal_offset = GetHorizontalOffset();
 
-  gfx::Rect frame_bounds = parent_frame_->GetClientAreaScreenBounds();
+  gfx::Rect old_bounds = parent_frame_->GetClientAreaScreenBounds();
   gfx::Rect screen_bounds = views::Screen::GetMonitorWorkAreaNearestWindow(
       parent_frame_->GetNativeView());
+  // The size.
+  gfx::Rect frame_bounds = old_bounds;
+  frame_bounds.set_size(GetPreferredSize());
 
   // The default position.
   frame_bounds.set_x(x + horizontal_offset);
@@ -1222,7 +1196,9 @@ void CandidateWindowView::MoveParentFrame() {
   }
 
   // Move the window per the cursor location.
-  parent_frame_->SetBounds(frame_bounds);
+  // SetBounds() is not cheap. Only call this when it is really changed.
+  if (frame_bounds != old_bounds)
+    parent_frame_->SetBounds(frame_bounds);
 }
 
 int CandidateWindowView::GetHorizontalOffset() {
@@ -1239,7 +1215,7 @@ void CandidateWindowView::VisibilityChanged(View* starting_from,
   if (is_visible) {
     // If the visibility of candidate window is changed,
     // we should move the frame to the right position.
-    MoveParentFrame();
+    ResizeAndMoveParentFrame();
   }
 }
 
@@ -1247,7 +1223,7 @@ void CandidateWindowView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   // If the bounds(size) of candidate window is changed,
   // we should move the frame to the right position.
   View::OnBoundsChanged(previous_bounds);
-  MoveParentFrame();
+  ResizeAndMoveParentFrame();
 }
 
 bool CandidateWindowController::Impl::Init() {
@@ -1309,7 +1285,7 @@ void CandidateWindowController::Impl::OnHideAuxiliaryText(
       static_cast<CandidateWindowController::Impl*>(input_method_library);
 
   controller->candidate_window_->HideAuxiliaryText();
-  controller->candidate_window_->ResizeParentFrame();
+  controller->candidate_window_->ResizeAndMoveParentFrame();
 }
 
 void CandidateWindowController::Impl::OnHideLookupTable(
@@ -1344,7 +1320,7 @@ void CandidateWindowController::Impl::OnSetCursorLocation(
   controller->candidate_window_->set_cursor_location(
       gfx::Rect(x, y, width, height));
   // Move the window per the cursor location.
-  controller->candidate_window_->MoveParentFrame();
+  controller->candidate_window_->ResizeAndMoveParentFrame();
 }
 
 void CandidateWindowController::Impl::OnUpdateAuxiliaryText(
@@ -1360,7 +1336,7 @@ void CandidateWindowController::Impl::OnUpdateAuxiliaryText(
   }
   controller->candidate_window_->UpdateAuxiliaryText(utf8_text);
   controller->candidate_window_->ShowAuxiliaryText();
-  controller->candidate_window_->ResizeParentFrame();
+  controller->candidate_window_->ResizeAndMoveParentFrame();
 }
 
 void CandidateWindowController::Impl::OnUpdateLookupTable(
@@ -1376,7 +1352,7 @@ void CandidateWindowController::Impl::OnUpdateLookupTable(
   }
 
   controller->candidate_window_->UpdateCandidates(lookup_table);
-  controller->candidate_window_->ResizeParentFrame();
+  controller->candidate_window_->ResizeAndMoveParentFrame();
   controller->frame_->Show();
 }
 
