@@ -29,7 +29,9 @@
 #include "chrome/browser/sync/js_test_util.h"
 #include "chrome/browser/sync/notifier/sync_notifier.h"
 #include "chrome/browser/sync/notifier/sync_notifier_observer.h"
+#include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
 #include "chrome/browser/sync/protocol/password_specifics.pb.h"
+#include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/protocol/proto_value_conversions.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
@@ -100,7 +102,7 @@ int64 MakeNodeWithParent(UserShare* share,
                          int64 parent_id) {
   WriteTransaction trans(share);
   ReadNode parent_node(&trans);
-  parent_node.InitByIdLookup(parent_id);
+  EXPECT_TRUE(parent_node.InitByIdLookup(parent_id));
   WriteNode node(&trans);
   EXPECT_TRUE(node.InitUniqueByCreation(model_type, parent_node, client_tag));
   node.SetIsFolder(false);
@@ -115,7 +117,7 @@ int64 MakeFolderWithParent(UserShare* share,
                            BaseNode* predecessor) {
   WriteTransaction trans(share);
   ReadNode parent_node(&trans);
-  parent_node.InitByIdLookup(parent_id);
+  EXPECT_TRUE(parent_node.InitByIdLookup(parent_id));
   WriteNode node(&trans);
   EXPECT_TRUE(node.InitByCreation(model_type, parent_node, predecessor));
   node.SetIsFolder(true);
@@ -385,6 +387,44 @@ TEST_F(SyncApiTest, WriteAndReadPassword) {
         password_node.GetPasswordSpecifics();
     EXPECT_EQ("secret", data.password_value());
   }
+}
+
+TEST_F(SyncApiTest, BaseNodeSetSpecifics) {
+  int64 child_id = MakeNode(test_user_share_.user_share(),
+                            syncable::BOOKMARKS, "testtag");
+  WriteTransaction trans(test_user_share_.user_share());
+  WriteNode node(&trans);
+  EXPECT_TRUE(node.InitByIdLookup(child_id));
+
+  sync_pb::EntitySpecifics entity_specifics;
+  entity_specifics.MutableExtension(sync_pb::bookmark)->
+      set_url("http://www.google.com");
+
+  EXPECT_NE(entity_specifics.SerializeAsString(),
+            node.GetEntitySpecifics().SerializeAsString());
+  node.SetEntitySpecifics(entity_specifics);
+  EXPECT_EQ(entity_specifics.SerializeAsString(),
+            node.GetEntitySpecifics().SerializeAsString());
+}
+
+TEST_F(SyncApiTest, BaseNodeSetSpecificsPreservesUnknownFields) {
+  int64 child_id = MakeNode(test_user_share_.user_share(),
+                            syncable::BOOKMARKS, "testtag");
+  WriteTransaction trans(test_user_share_.user_share());
+  WriteNode node(&trans);
+  EXPECT_TRUE(node.InitByIdLookup(child_id));
+  EXPECT_TRUE(node.GetEntitySpecifics().unknown_fields().empty());
+
+  sync_pb::EntitySpecifics entity_specifics;
+  entity_specifics.MutableExtension(sync_pb::bookmark)->
+      set_url("http://www.google.com");
+  entity_specifics.mutable_unknown_fields()->AddFixed32(5, 100);
+  node.SetEntitySpecifics(entity_specifics);
+  EXPECT_FALSE(node.GetEntitySpecifics().unknown_fields().empty());
+
+  entity_specifics.mutable_unknown_fields()->Clear();
+  node.SetEntitySpecifics(entity_specifics);
+  EXPECT_FALSE(node.GetEntitySpecifics().unknown_fields().empty());
 }
 
 namespace {
@@ -734,7 +774,7 @@ class SyncManagerTest : public testing::Test,
     sync_pb::NigoriSpecifics nigori;
     cryptographer->GetKeys(nigori.mutable_encrypted());
     WriteNode node(&trans);
-    node.InitByIdLookup(nigori_id);
+    EXPECT_TRUE(node.InitByIdLookup(nigori_id));
     node.SetNigoriSpecifics(nigori);
     return cryptographer->is_ready();
   }
@@ -903,7 +943,7 @@ void CheckGetNodesByIdReturnArgs(const SyncManager& sync_manager,
   ASSERT_TRUE(node_info);
   ReadTransaction trans(sync_manager.GetUserShare());
   ReadNode node(&trans);
-  node.InitByIdLookup(id);
+  EXPECT_TRUE(node.InitByIdLookup(id));
   CheckNodeValue(node, *node_info, is_detailed);
 }
 

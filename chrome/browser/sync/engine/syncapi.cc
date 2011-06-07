@@ -236,10 +236,10 @@ sync_pb::PasswordSpecificsData* DecryptPasswordSpecifics(
   return data.release();
 }
 
-bool BaseNode::DecryptIfNecessary(Entry* entry) {
+bool BaseNode::DecryptIfNecessary() {
   if (GetIsFolder()) return true;  // Ignore the top-level datatype folder.
   const sync_pb::EntitySpecifics& specifics =
-      entry->Get(syncable::SPECIFICS);
+      GetEntry()->Get(syncable::SPECIFICS);
   if (specifics.HasExtension(sync_pb::password)) {
     // Passwords have their own legacy encryption structure.
     scoped_ptr<sync_pb::PasswordSpecificsData> data(DecryptPasswordSpecifics(
@@ -262,7 +262,7 @@ bool BaseNode::DecryptIfNecessary(Entry* entry) {
     return false;
   if (!unencrypted_data_.ParseFromString(plaintext_data)) {
     LOG(ERROR) << "Failed to decrypt encrypted node of type " <<
-      syncable::ModelTypeToString(entry->GetModelType()) << ".";
+      syncable::ModelTypeToString(GetModelType()) << ".";
     return false;
   }
   return true;
@@ -378,37 +378,27 @@ int64 BaseNode::GetExternalId() const {
 
 const sync_pb::AppSpecifics& BaseNode::GetAppSpecifics() const {
   DCHECK_EQ(syncable::APPS, GetModelType());
-  const sync_pb::EntitySpecifics& unencrypted =
-      GetUnencryptedSpecifics(GetEntry());
-  return unencrypted.GetExtension(sync_pb::app);
+  return GetEntitySpecifics().GetExtension(sync_pb::app);
 }
 
 const sync_pb::AutofillSpecifics& BaseNode::GetAutofillSpecifics() const {
   DCHECK_EQ(syncable::AUTOFILL, GetModelType());
-  const sync_pb::EntitySpecifics& unencrypted =
-      GetUnencryptedSpecifics(GetEntry());
-  return unencrypted.GetExtension(sync_pb::autofill);
+  return GetEntitySpecifics().GetExtension(sync_pb::autofill);
 }
 
 const AutofillProfileSpecifics& BaseNode::GetAutofillProfileSpecifics() const {
   DCHECK_EQ(GetModelType(), syncable::AUTOFILL_PROFILE);
-  const sync_pb::EntitySpecifics& unencrypted =
-      GetUnencryptedSpecifics(GetEntry());
-  return unencrypted.GetExtension(sync_pb::autofill_profile);
+  return GetEntitySpecifics().GetExtension(sync_pb::autofill_profile);
 }
 
 const sync_pb::BookmarkSpecifics& BaseNode::GetBookmarkSpecifics() const {
   DCHECK_EQ(syncable::BOOKMARKS, GetModelType());
-  const sync_pb::EntitySpecifics& unencrypted =
-      GetUnencryptedSpecifics(GetEntry());
-  return unencrypted.GetExtension(sync_pb::bookmark);
+  return GetEntitySpecifics().GetExtension(sync_pb::bookmark);
 }
 
 const sync_pb::NigoriSpecifics& BaseNode::GetNigoriSpecifics() const {
   DCHECK_EQ(syncable::NIGORI, GetModelType());
-  const sync_pb::EntitySpecifics& unencrypted =
-      GetUnencryptedSpecifics(GetEntry());
-  return unencrypted.GetExtension(sync_pb::nigori);
+  return GetEntitySpecifics().GetExtension(sync_pb::nigori);
 }
 
 const sync_pb::PasswordSpecificsData& BaseNode::GetPasswordSpecifics() const {
@@ -419,36 +409,26 @@ const sync_pb::PasswordSpecificsData& BaseNode::GetPasswordSpecifics() const {
 
 const sync_pb::ThemeSpecifics& BaseNode::GetThemeSpecifics() const {
   DCHECK_EQ(syncable::THEMES, GetModelType());
-  const sync_pb::EntitySpecifics& unencrypted =
-      GetUnencryptedSpecifics(GetEntry());
-  return unencrypted.GetExtension(sync_pb::theme);
+  return GetEntitySpecifics().GetExtension(sync_pb::theme);
 }
 
 const sync_pb::TypedUrlSpecifics& BaseNode::GetTypedUrlSpecifics() const {
   DCHECK_EQ(syncable::TYPED_URLS, GetModelType());
-  const sync_pb::EntitySpecifics& unencrypted =
-      GetUnencryptedSpecifics(GetEntry());
-  return unencrypted.GetExtension(sync_pb::typed_url);
+  return GetEntitySpecifics().GetExtension(sync_pb::typed_url);
 }
 
 const sync_pb::ExtensionSpecifics& BaseNode::GetExtensionSpecifics() const {
   DCHECK_EQ(syncable::EXTENSIONS, GetModelType());
-  const sync_pb::EntitySpecifics& unencrypted =
-      GetUnencryptedSpecifics(GetEntry());
-  return unencrypted.GetExtension(sync_pb::extension);
+  return GetEntitySpecifics().GetExtension(sync_pb::extension);
 }
 
 const sync_pb::SessionSpecifics& BaseNode::GetSessionSpecifics() const {
   DCHECK_EQ(syncable::SESSIONS, GetModelType());
-  const sync_pb::EntitySpecifics& unencrypted =
-      GetUnencryptedSpecifics(GetEntry());
-  return unencrypted.GetExtension(sync_pb::session);
+  return GetEntitySpecifics().GetExtension(sync_pb::session);
 }
 
 const sync_pb::EntitySpecifics& BaseNode::GetEntitySpecifics() const {
-  const sync_pb::EntitySpecifics& unencrypted =
-      GetUnencryptedSpecifics(GetEntry());
-  return unencrypted;
+  return GetUnencryptedSpecifics(GetEntry());
 }
 
 syncable::ModelType BaseNode::GetModelType() const {
@@ -460,8 +440,14 @@ syncable::ModelType BaseNode::GetModelType() const {
 void WriteNode::EncryptIfNecessary(sync_pb::EntitySpecifics* unencrypted) {
   syncable::ModelType type = syncable::GetModelTypeFromSpecifics(*unencrypted);
   DCHECK_NE(type, syncable::UNSPECIFIED);
-  DCHECK_NE(type, syncable::PASSWORDS);  // Passwords use their own encryption.
-  DCHECK_NE(type, syncable::NIGORI);     // Nigori is encrypted separately.
+  // Passwords use their own encryption.
+  if (type == syncable::PASSWORDS) {
+    return;
+  }
+  // Nigori is encrypted separately.
+  if (type == syncable::NIGORI) {
+    return;
+  }
 
   syncable::ModelTypeSet encrypted_types =
       GetEncryptedTypes(GetTransaction());
@@ -520,64 +506,38 @@ void WriteNode::SetURL(const GURL& url) {
 
 void WriteNode::SetAppSpecifics(
     const sync_pb::AppSpecifics& new_value) {
-  DCHECK_EQ(syncable::APPS, GetModelType());
-  PutAppSpecificsAndMarkForSyncing(new_value);
+  sync_pb::EntitySpecifics entity_specifics;
+  entity_specifics.MutableExtension(sync_pb::app)->CopyFrom(new_value);
+  SetEntitySpecifics(entity_specifics);
 }
 
 void WriteNode::SetAutofillSpecifics(
     const sync_pb::AutofillSpecifics& new_value) {
-  DCHECK_EQ(syncable::AUTOFILL, GetModelType());
-  PutAutofillSpecificsAndMarkForSyncing(new_value);
-}
-
-void WriteNode::PutAutofillSpecificsAndMarkForSyncing(
-    const sync_pb::AutofillSpecifics& new_value) {
   sync_pb::EntitySpecifics entity_specifics;
   entity_specifics.MutableExtension(sync_pb::autofill)->CopyFrom(new_value);
-  EncryptIfNecessary(&entity_specifics);
-  PutSpecificsAndMarkForSyncing(entity_specifics);
+  SetEntitySpecifics(entity_specifics);
 }
 
 void WriteNode::SetAutofillProfileSpecifics(
     const sync_pb::AutofillProfileSpecifics& new_value) {
-  DCHECK_EQ(GetModelType(), syncable::AUTOFILL_PROFILE);
-  PutAutofillProfileSpecificsAndMarkForSyncing(new_value);
-}
-
-void WriteNode::PutAutofillProfileSpecificsAndMarkForSyncing(
-    const sync_pb::AutofillProfileSpecifics& new_value) {
   sync_pb::EntitySpecifics entity_specifics;
-  entity_specifics.MutableExtension(sync_pb::autofill_profile)->CopyFrom(
-      new_value);
-  EncryptIfNecessary(&entity_specifics);
-  PutSpecificsAndMarkForSyncing(entity_specifics);
+  entity_specifics.MutableExtension(sync_pb::autofill_profile)->
+      CopyFrom(new_value);
+  SetEntitySpecifics(entity_specifics);
 }
 
 void WriteNode::SetBookmarkSpecifics(
     const sync_pb::BookmarkSpecifics& new_value) {
-  DCHECK_EQ(syncable::BOOKMARKS, GetModelType());
-  PutBookmarkSpecificsAndMarkForSyncing(new_value);
-}
-
-void WriteNode::PutBookmarkSpecificsAndMarkForSyncing(
-    const sync_pb::BookmarkSpecifics& new_value) {
   sync_pb::EntitySpecifics entity_specifics;
   entity_specifics.MutableExtension(sync_pb::bookmark)->CopyFrom(new_value);
-  EncryptIfNecessary(&entity_specifics);
-  PutSpecificsAndMarkForSyncing(entity_specifics);
+  SetEntitySpecifics(entity_specifics);
 }
 
 void WriteNode::SetNigoriSpecifics(
     const sync_pb::NigoriSpecifics& new_value) {
-  DCHECK_EQ(syncable::NIGORI, GetModelType());
-  PutNigoriSpecificsAndMarkForSyncing(new_value);
-}
-
-void WriteNode::PutNigoriSpecificsAndMarkForSyncing(
-    const sync_pb::NigoriSpecifics& new_value) {
   sync_pb::EntitySpecifics entity_specifics;
   entity_specifics.MutableExtension(sync_pb::nigori)->CopyFrom(new_value);
-  PutSpecificsAndMarkForSyncing(entity_specifics);
+  SetEntitySpecifics(entity_specifics);
 }
 
 void WriteNode::SetPasswordSpecifics(
@@ -604,107 +564,71 @@ void WriteNode::SetPasswordSpecifics(
   if (!cryptographer->Encrypt(data, new_value.mutable_encrypted())) {
     NOTREACHED();
   }
-  PutPasswordSpecificsAndMarkForSyncing(new_value);
+
+  sync_pb::EntitySpecifics entity_specifics;
+  entity_specifics.MutableExtension(sync_pb::password)->CopyFrom(new_value);
+  SetEntitySpecifics(entity_specifics);
 }
 
 void WriteNode::SetThemeSpecifics(
     const sync_pb::ThemeSpecifics& new_value) {
-  DCHECK_EQ(syncable::THEMES, GetModelType());
-  PutThemeSpecificsAndMarkForSyncing(new_value);
+  sync_pb::EntitySpecifics entity_specifics;
+  entity_specifics.MutableExtension(sync_pb::theme)->CopyFrom(new_value);
+  SetEntitySpecifics(entity_specifics);
 }
 
 void WriteNode::SetSessionSpecifics(
     const sync_pb::SessionSpecifics& new_value) {
-  DCHECK_EQ(syncable::SESSIONS, GetModelType());
-  PutSessionSpecificsAndMarkForSyncing(new_value);
+  sync_pb::EntitySpecifics entity_specifics;
+  entity_specifics.MutableExtension(sync_pb::session)->CopyFrom(new_value);
+  SetEntitySpecifics(entity_specifics);
 }
 
 void WriteNode::SetEntitySpecifics(
     const sync_pb::EntitySpecifics& new_value) {
-  syncable::ModelType specifics_type =
+  syncable::ModelType new_specifics_type =
       syncable::GetModelTypeFromSpecifics(new_value);
-  DCHECK_EQ(specifics_type, GetModelType());
+  DCHECK_NE(new_specifics_type, syncable::UNSPECIFIED);
+  // GetModelType() can be unspecified if this is the first time this
+  // node is being initialized (see PutModelType()).  Otherwise, it
+  // should match |new_specifics_type|.
+  if (GetModelType() != syncable::UNSPECIFIED) {
+    DCHECK_EQ(new_specifics_type, GetModelType());
+  }
   sync_pb::EntitySpecifics entity_specifics;
+
+  // Preserve unknown fields.
   entity_specifics.CopyFrom(new_value);
+  entity_specifics.mutable_unknown_fields()->
+      MergeFrom(GetEntitySpecifics().unknown_fields());
+
   EncryptIfNecessary(&entity_specifics);
-  PutSpecificsAndMarkForSyncing(entity_specifics);
+
+  // Skip redundant changes.
+  if (entity_specifics.SerializeAsString() ==
+      entry_->Get(SPECIFICS).SerializeAsString()) {
+    return;
+  }
+  entry_->Put(SPECIFICS, entity_specifics);
+  MarkForSyncing();
 }
 
 void WriteNode::ResetFromSpecifics() {
-  sync_pb::EntitySpecifics new_data;
-  new_data.CopyFrom(GetUnencryptedSpecifics(GetEntry()));
-  EncryptIfNecessary(&new_data);
-  PutSpecificsAndMarkForSyncing(new_data);
-}
-
-void WriteNode::PutPasswordSpecificsAndMarkForSyncing(
-    const sync_pb::PasswordSpecifics& new_value) {
-  sync_pb::EntitySpecifics entity_specifics;
-  entity_specifics.MutableExtension(sync_pb::password)->CopyFrom(new_value);
-  PutSpecificsAndMarkForSyncing(entity_specifics);
+  SetEntitySpecifics(GetEntitySpecifics());
 }
 
 void WriteNode::SetTypedUrlSpecifics(
     const sync_pb::TypedUrlSpecifics& new_value) {
-  DCHECK_EQ(syncable::TYPED_URLS, GetModelType());
-  PutTypedUrlSpecificsAndMarkForSyncing(new_value);
+  sync_pb::EntitySpecifics entity_specifics;
+  entity_specifics.MutableExtension(sync_pb::typed_url)->CopyFrom(new_value);
+  SetEntitySpecifics(entity_specifics);
 }
 
 void WriteNode::SetExtensionSpecifics(
     const sync_pb::ExtensionSpecifics& new_value) {
-  DCHECK_EQ(syncable::EXTENSIONS, GetModelType());
-  PutExtensionSpecificsAndMarkForSyncing(new_value);
-}
-
-void WriteNode::PutAppSpecificsAndMarkForSyncing(
-    const sync_pb::AppSpecifics& new_value) {
-  sync_pb::EntitySpecifics entity_specifics;
-  entity_specifics.MutableExtension(sync_pb::app)->CopyFrom(new_value);
-  EncryptIfNecessary(&entity_specifics);
-  PutSpecificsAndMarkForSyncing(entity_specifics);
-}
-
-void WriteNode::PutThemeSpecificsAndMarkForSyncing(
-    const sync_pb::ThemeSpecifics& new_value) {
-  sync_pb::EntitySpecifics entity_specifics;
-  entity_specifics.MutableExtension(sync_pb::theme)->CopyFrom(new_value);
-  EncryptIfNecessary(&entity_specifics);
-  PutSpecificsAndMarkForSyncing(entity_specifics);
-}
-
-void WriteNode::PutTypedUrlSpecificsAndMarkForSyncing(
-    const sync_pb::TypedUrlSpecifics& new_value) {
-  sync_pb::EntitySpecifics entity_specifics;
-  entity_specifics.MutableExtension(sync_pb::typed_url)->CopyFrom(new_value);
-  EncryptIfNecessary(&entity_specifics);
-  PutSpecificsAndMarkForSyncing(entity_specifics);
-}
-
-void WriteNode::PutExtensionSpecificsAndMarkForSyncing(
-    const sync_pb::ExtensionSpecifics& new_value) {
   sync_pb::EntitySpecifics entity_specifics;
   entity_specifics.MutableExtension(sync_pb::extension)->CopyFrom(new_value);
-  EncryptIfNecessary(&entity_specifics);
-  PutSpecificsAndMarkForSyncing(entity_specifics);
-}
-
-void WriteNode::PutSessionSpecificsAndMarkForSyncing(
-    const sync_pb::SessionSpecifics& new_value) {
-  sync_pb::EntitySpecifics entity_specifics;
-  entity_specifics.MutableExtension(sync_pb::session)->CopyFrom(new_value);
-  EncryptIfNecessary(&entity_specifics);
-  PutSpecificsAndMarkForSyncing(entity_specifics);
-}
-
-void WriteNode::PutSpecificsAndMarkForSyncing(
-    const sync_pb::EntitySpecifics& specifics) {
-  // Skip redundant changes.
-  if (specifics.SerializeAsString() ==
-      entry_->Get(SPECIFICS).SerializeAsString()) {
-    return;
-  }
-  entry_->Put(SPECIFICS, specifics);
-  MarkForSyncing();
+  SetEntitySpecifics(entity_specifics);
 }
 
 void WriteNode::SetExternalId(int64 id) {
@@ -729,7 +653,7 @@ bool WriteNode::InitByIdLookup(int64 id) {
   entry_ = new syncable::MutableEntry(transaction_->GetWrappedWriteTrans(),
                                       syncable::GET_BY_HANDLE, id);
   return (entry_->good() && !entry_->Get(syncable::IS_DEL) &&
-          DecryptIfNecessary(entry_));
+          DecryptIfNecessary());
 }
 
 // Find a node by client tag, and bind this WriteNode to it.
@@ -746,7 +670,7 @@ bool WriteNode::InitByClientTagLookup(syncable::ModelType model_type,
   entry_ = new syncable::MutableEntry(transaction_->GetWrappedWriteTrans(),
                                       syncable::GET_BY_CLIENT_TAG, hash);
   return (entry_->good() && !entry_->Get(syncable::IS_DEL) &&
-          DecryptIfNecessary(entry_));
+          DecryptIfNecessary());
 }
 
 bool WriteNode::InitByTagLookup(const std::string& tag) {
@@ -772,8 +696,7 @@ void WriteNode::PutModelType(syncable::ModelType model_type) {
 
   sync_pb::EntitySpecifics specifics;
   syncable::AddDefaultExtensionValue(model_type, &specifics);
-  PutSpecificsAndMarkForSyncing(specifics);
-  DCHECK_EQ(model_type, GetModelType());
+  SetEntitySpecifics(specifics);
 }
 
 // Create a new node with default properties, and bind this WriteNode to it.
@@ -987,7 +910,7 @@ bool ReadNode::InitByIdLookup(int64 id) {
   LOG_IF(WARNING, model_type == syncable::UNSPECIFIED ||
                   model_type == syncable::TOP_LEVEL_FOLDER)
       << "SyncAPI InitByIdLookup referencing unusual object.";
-  return DecryptIfNecessary(entry_);
+  return DecryptIfNecessary();
 }
 
 bool ReadNode::InitByClientTagLookup(syncable::ModelType model_type,
@@ -1001,7 +924,7 @@ bool ReadNode::InitByClientTagLookup(syncable::ModelType model_type,
   entry_ = new syncable::Entry(transaction_->GetWrappedTrans(),
                                syncable::GET_BY_CLIENT_TAG, hash);
   return (entry_->good() && !entry_->Get(syncable::IS_DEL) &&
-          DecryptIfNecessary(entry_));
+          DecryptIfNecessary());
 }
 
 const syncable::Entry* ReadNode::GetEntry() const {
@@ -1026,7 +949,7 @@ bool ReadNode::InitByTagLookup(const std::string& tag) {
   LOG_IF(WARNING, model_type == syncable::UNSPECIFIED ||
                   model_type == syncable::TOP_LEVEL_FOLDER)
       << "SyncAPI InitByTagLookup referencing unusually typed object.";
-  return DecryptIfNecessary(entry_);
+  return DecryptIfNecessary();
 }
 
 //////////////////////////////////////////////////////////////////////////

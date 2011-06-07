@@ -300,13 +300,11 @@ class BaseNode {
   // return |true|. If the contents are encrypted, the decrypted data will be
   // stored in |unencrypted_data_|.
   // This method is invoked once when the BaseNode is initialized.
-  bool DecryptIfNecessary(syncable::Entry* entry);
+  bool DecryptIfNecessary();
 
   // Returns the unencrypted specifics associated with |entry|. If |entry| was
   // not encrypted, it directly returns |entry|'s EntitySpecifics. Otherwise,
   // returns |unencrypted_data_|.
-  // This method is invoked by the datatype specific Get<datatype>Specifics
-  // methods.
   const sync_pb::EntitySpecifics& GetUnencryptedSpecifics(
       const syncable::Entry* entry) const;
 
@@ -392,6 +390,16 @@ class WriteNode : public BaseNode {
   void SetURL(const GURL& url);
   void SetFaviconBytes(const std::vector<unsigned char>& bytes);
 
+  // Generic set specifics method. Will extract the model type from |specifics|.
+  void SetEntitySpecifics(const sync_pb::EntitySpecifics& specifics);
+
+  // Resets the EntitySpecifics for this node based on the unencrypted data.
+  // Will encrypt if necessary.
+  void ResetFromSpecifics();
+
+  // TODO(sync): Remove the setters below when the corresponding data
+  // types are ported to the new sync service API.
+
   // Set the app specifics (id, update url, enabled state, etc).
   // Should only be called if GetModelType() == APPS.
   void SetAppSpecifics(const sync_pb::AppSpecifics& specifics);
@@ -411,10 +419,6 @@ class WriteNode : public BaseNode {
   // Should only be called if GetModelType() == PASSWORD.
   void SetPasswordSpecifics(const sync_pb::PasswordSpecificsData& specifics);
 
-  // Set the preference specifics (name and value).
-  // Should only be called if GetModelType() == PREFERENCE.
-  void SetPreferenceSpecifics(const sync_pb::PreferenceSpecifics& specifics);
-
   // Set the theme specifics (name and value).
   // Should only be called if GetModelType() == THEME.
   void SetThemeSpecifics(const sync_pb::ThemeSpecifics& specifics);
@@ -431,13 +435,6 @@ class WriteNode : public BaseNode {
   // Should only be called if GetModelType() == SESSIONS.
   void SetSessionSpecifics(const sync_pb::SessionSpecifics& specifics);
 
-  // Generic set specifics method. Will extract the model type from |specifics|.
-  void SetEntitySpecifics(const sync_pb::EntitySpecifics& specifics);
-
-  // Resets the EntitySpecifics for this node based on the unencrypted data.
-  // Will encrypt if necessary.
-  void ResetFromSpecifics();
-
   // Implementation of BaseNode's abstract virtual accessors.
   virtual const syncable::Entry* GetEntry() const;
 
@@ -451,36 +448,6 @@ class WriteNode : public BaseNode {
 
   // Helper to set the previous node.
   void PutPredecessor(const BaseNode* predecessor);
-
-  // Private helpers to set type-specific protobuf data.  These don't
-  // do any checking on the previous modeltype, so they can be used
-  // for internal initialization (you can use them to set the modeltype).
-  // Additionally, they will mark for syncing if the underlying value
-  // changes.
-  void PutAppSpecificsAndMarkForSyncing(
-      const sync_pb::AppSpecifics& new_value);
-  void PutAutofillSpecificsAndMarkForSyncing(
-      const sync_pb::AutofillSpecifics& new_value);
-  void PutAutofillProfileSpecificsAndMarkForSyncing(
-      const sync_pb::AutofillProfileSpecifics& new_value);
-  void PutBookmarkSpecificsAndMarkForSyncing(
-      const sync_pb::BookmarkSpecifics& new_value);
-  void PutNigoriSpecificsAndMarkForSyncing(
-      const sync_pb::NigoriSpecifics& new_value);
-  void PutPasswordSpecificsAndMarkForSyncing(
-      const sync_pb::PasswordSpecifics& new_value);
-  void PutPreferenceSpecificsAndMarkForSyncing(
-      const sync_pb::PreferenceSpecifics& new_value);
-  void PutThemeSpecificsAndMarkForSyncing(
-      const sync_pb::ThemeSpecifics& new_value);
-  void PutTypedUrlSpecificsAndMarkForSyncing(
-      const sync_pb::TypedUrlSpecifics& new_value);
-  void PutExtensionSpecificsAndMarkForSyncing(
-      const sync_pb::ExtensionSpecifics& new_value);
-  void PutSessionSpecificsAndMarkForSyncing(
-      const sync_pb::SessionSpecifics& new_value);
-  void PutSpecificsAndMarkForSyncing(
-      const sync_pb::EntitySpecifics& specifics);
 
   // Sets IS_UNSYNCED and SYNCING to ensure this entry is considered in an
   // upcoming commit pass.
