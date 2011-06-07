@@ -685,6 +685,9 @@ bool RenderView::OnMessageReceived(const IPC::Message& message) {
 #if defined(ENABLE_FLAPPER_HACKS)
     IPC_MESSAGE_HANDLER(PepperMsg_ConnectTcpACK, OnConnectTcpACK)
 #endif
+#if defined(OS_MACOSX)
+    IPC_MESSAGE_HANDLER(ViewMsg_SetInLiveResize, OnSetInLiveResize)
+#endif
 
     // Have the super handle all other messages.
     IPC_MESSAGE_UNHANDLED(handled = RenderWidget::OnMessageReceived(message))
@@ -929,6 +932,17 @@ void RenderView::OnSetInitialFocus(bool reverse) {
     return;
   webview()->setInitialFocus(reverse);
 }
+
+#if defined(OS_MACOSX)
+void RenderView::OnSetInLiveResize(bool in_live_resize) {
+    if (!webview())
+        return;
+    if (in_live_resize)
+        webview()->willStartLiveResize();
+    else
+        webview()->willEndLiveResize();
+}
+#endif
 
 void RenderView::OnScrollFocusedEditableNodeIntoView() {
   WebKit::WebNode node = GetFocusedNode();

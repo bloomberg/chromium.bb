@@ -2545,6 +2545,18 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   return requestor;
 }
 
+- (void)viewWillStartLiveResize {
+  [super viewWillStartLiveResize];
+  RenderWidgetHost* widget = renderWidgetHostView_->render_widget_host_;
+  widget->Send(new ViewMsg_SetInLiveResize(widget->routing_id(), true));
+}
+
+- (void)viewDidEndLiveResize {
+  [super viewDidEndLiveResize];
+  RenderWidgetHost* widget = renderWidgetHostView_->render_widget_host_;
+  widget->Send(new ViewMsg_SetInLiveResize(widget->routing_id(), false));
+}
+
 @end
 
 //

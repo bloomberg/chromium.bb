@@ -802,6 +802,9 @@ class RenderView : public RenderWidget,
   void OnSetWebUIProperty(const std::string& name, const std::string& value);
   void OnSetEditCommandsForNextKeyEvent(const EditCommands& edit_commands);
   void OnSetInitialFocus(bool reverse);
+#if defined(OS_MACOSX)
+  void OnSetInLiveResize(bool in_live_resize);
+#endif
   void OnScrollFocusedEditableNodeIntoView();
   void OnSetPageEncoding(const std::string& encoding_name);
   void OnSetRendererPrefs(const RendererPreferences& renderer_prefs);

@@ -52,11 +52,17 @@ class PepperWidget : public WebWidget {
     return size_;
   }
 
+  virtual void willStartLiveResize() {
+  }
+
   virtual void resize(const WebSize& size) {
     size_ = size;
     WebRect plugin_rect(0, 0, size_.width, size_.height);
     plugin_->ViewChanged(plugin_rect, plugin_rect);
     widget_->Invalidate();
+  }
+
+  virtual void willEndLiveResize() {
   }
 
 #ifndef WEBWIDGET_HAS_ANIMATE_CHANGES
