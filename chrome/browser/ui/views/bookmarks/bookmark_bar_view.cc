@@ -249,6 +249,34 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 
 }  // namespace
 
+// DropLocation ---------------------------------------------------------------
+
+struct BookmarkBarView::DropLocation {
+  DropLocation()
+      : index(-1),
+        operation(ui::DragDropTypes::DRAG_NONE),
+        on(false),
+        button_type(DROP_BOOKMARK) {
+  }
+
+  bool Equals(const DropLocation& other) {
+    return ((other.index == index) && (other.on == on) &&
+            (other.button_type == button_type));
+  }
+
+  // Index into the model the drop is over. This is relative to the root node.
+  int index;
+
+  // Drop constants.
+  int operation;
+
+  // If true, the user is dropping on a folder.
+  bool on;
+
+  // Type of button.
+  DropButtonType button_type;
+};
+
 // DropInfo -------------------------------------------------------------------
 
 // Tracks drops on the BookmarkBarView.
@@ -256,44 +284,25 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 struct BookmarkBarView::DropInfo {
   DropInfo()
       : valid(false),
-        drop_index(-1),
         is_menu_showing(false),
-        drop_on(false),
-        is_over_overflow(false),
-        is_over_other(false),
         x(0),
-        y(0),
-        drag_operation(0) {
+        y(0) {
   }
 
   // Whether the data is valid.
   bool valid;
 
-  // Index into the model the drop is over. This is relative to the root node.
-  int drop_index;
-
   // If true, the menu is being shown.
   bool is_menu_showing;
-
-  // If true, the user is dropping on a node. This is only used for folder
-  // nodes.
-  bool drop_on;
-
-  // If true, the user is over the overflow button.
-  bool is_over_overflow;
-
-  // If true, the user is over the other button.
-  bool is_over_other;
 
   // Coordinates of the drag (in terms of the BookmarkBarView).
   int x;
   int y;
 
-  // The current drag operation.
-  int drag_operation;
-
   // DropData for the drop.
   BookmarkNodeData data;
+
+  DropLocation location;
 };
 
 // ButtonSeparatorView  --------------------------------------------------------
@@ -658,9 +667,10 @@ void BookmarkBarView::PaintChildren(gfx::Canvas* canvas) {
   View::PaintChildren(canvas);
 
   if (drop_info_.get() && drop_info_->valid &&
-      drop_info_->drag_operation != 0 && drop_info_->drop_index != -1 &&
-      !drop_info_->is_over_overflow && !drop_info_->drop_on) {
-    int index = drop_info_->drop_index;
+      drop_info_->location.operation != 0 && drop_info_->location.index != -1 &&
+      drop_info_->location.button_type != DROP_OVERFLOW &&
+      !drop_info_->location.on) {
+    int index = drop_info_->location.index;
     DCHECK(index <= GetBookmarkButtonCount());
     int x = 0;
     int y = 0;
@@ -732,40 +742,29 @@ int BookmarkBarView::OnDragUpdated(const DropTargetEvent& event) {
   if (drop_info_->valid &&
       (drop_info_->x == event.x() && drop_info_->y == event.y())) {
     // The location of the mouse didn't change, return the last operation.
-    return drop_info_->drag_operation;
+    return drop_info_->location.operation;
   }
 
   drop_info_->x = event.x();
   drop_info_->y = event.y();
 
-  int drop_index;
-  bool drop_on;
-  bool is_over_overflow;
-  bool is_over_other;
+  DropLocation location;
+  CalculateDropLocation(event, drop_info_->data, &location);
 
-  drop_info_->drag_operation = CalculateDropOperation(
-      event, drop_info_->data, &drop_index, &drop_on, &is_over_overflow,
-      &is_over_other);
-
-  if (drop_info_->valid && drop_info_->drop_index == drop_index &&
-      drop_info_->drop_on == drop_on &&
-      drop_info_->is_over_overflow == is_over_overflow &&
-      drop_info_->is_over_other == is_over_other) {
+  if (drop_info_->valid && drop_info_->location.Equals(location)) {
     // The position we're going to drop didn't change, return the last drag
-    // operation we calculated.
-    return drop_info_->drag_operation;
+    // operation we calculated. Copy of the operation in case it changed.
+    drop_info_->location.operation = location.operation;
+    return drop_info_->location.operation;
   }
-
-  drop_info_->valid = true;
 
   StopShowFolderDropMenuTimer();
 
   // TODO(sky): Optimize paint region.
   SchedulePaint();
-  drop_info_->drop_index = drop_index;
-  drop_info_->drop_on = drop_on;
-  drop_info_->is_over_overflow = is_over_overflow;
-  drop_info_->is_over_other = is_over_other;
+
+  drop_info_->location = location;
+  drop_info_->valid = true;
 
   if (drop_info_->is_menu_showing) {
     if (bookmark_drop_menu_)
@@ -773,18 +772,19 @@ int BookmarkBarView::OnDragUpdated(const DropTargetEvent& event) {
     drop_info_->is_menu_showing = false;
   }
 
-  if (drop_on || is_over_overflow || is_over_other) {
+  if (location.on || location.button_type == DROP_OVERFLOW ||
+      location.button_type == DROP_OTHER_FOLDER) {
     const BookmarkNode* node;
-    if (is_over_other)
+    if (location.button_type == DROP_OTHER_FOLDER)
       node = model_->other_node();
-    else if (is_over_overflow)
+    else if (location.button_type == DROP_OVERFLOW)
       node = model_->GetBookmarkBarNode();
     else
-      node = model_->GetBookmarkBarNode()->GetChild(drop_index);
+      node = model_->GetBookmarkBarNode()->GetChild(location.index);
     StartShowFolderDropMenuTimer(node);
   }
 
-  return drop_info_->drag_operation;
+  return drop_info_->location.operation;
 }
 
 void BookmarkBarView::OnDragExited() {
@@ -795,7 +795,7 @@ void BookmarkBarView::OnDragExited() {
 
   drop_info_->valid = false;
 
-  if (drop_info_->drop_index != -1) {
+  if (drop_info_->location.index != -1) {
     // TODO(sky): optimize the paint region.
     SchedulePaint();
   }
@@ -808,34 +808,31 @@ int BookmarkBarView::OnPerformDrop(const DropTargetEvent& event) {
   if (bookmark_drop_menu_)
     bookmark_drop_menu_->Cancel();
 
-  if (!drop_info_.get() || !drop_info_->drag_operation)
+  if (!drop_info_.get() || !drop_info_->location.operation)
     return ui::DragDropTypes::DRAG_NONE;
 
   const BookmarkNode* root =
-      drop_info_->is_over_other ? model_->other_node() :
-                                  model_->GetBookmarkBarNode();
-  int index = drop_info_->drop_index;
-  const bool drop_on = drop_info_->drop_on;
-  const BookmarkNodeData data = drop_info_->data;
-  const bool is_over_other = drop_info_->is_over_other;
-  DCHECK(data.is_valid());
+      (drop_info_->location.button_type == DROP_OTHER_FOLDER) ?
+      model_->other_node() : model_->GetBookmarkBarNode();
+  int index = drop_info_->location.index;
 
-  if (drop_info_->drop_index != -1) {
+  if (index != -1) {
     // TODO(sky): optimize the SchedulePaint region.
     SchedulePaint();
   }
-  drop_info_.reset();
-
   const BookmarkNode* parent_node;
-  if (is_over_other) {
+  if (drop_info_->location.button_type == DROP_OTHER_FOLDER) {
     parent_node = root;
     index = parent_node->child_count();
-  } else if (drop_on) {
+  } else if (drop_info_->location.on) {
     parent_node = root->GetChild(index);
     index = parent_node->child_count();
   } else {
     parent_node = root;
   }
+  const BookmarkNodeData data = drop_info_->data;
+  DCHECK(data.is_valid());
+  drop_info_.reset();
   return bookmark_utils::PerformBookmarkDrop(profile_, data, parent_node,
                                              index);
 }
@@ -1426,15 +1423,14 @@ void BookmarkBarView::StartShowFolderDropMenuTimer(const BookmarkNode* node) {
       views::GetMenuShowDelay());
 }
 
-int BookmarkBarView::CalculateDropOperation(const DropTargetEvent& event,
+void BookmarkBarView::CalculateDropLocation(const DropTargetEvent& event,
                                             const BookmarkNodeData& data,
-                                            int* index,
-                                            bool* drop_on,
-                                            bool* is_over_overflow,
-                                            bool* is_over_other) {
+                                            DropLocation* location) {
   DCHECK(model_);
   DCHECK(model_->IsLoaded());
   DCHECK(data.is_valid());
+
+  *location = DropLocation();
 
   // The drop event uses the screen coordinates while the child Views are
   // always laid out from left to right (even though they are rendered from
@@ -1443,26 +1439,23 @@ int BookmarkBarView::CalculateDropOperation(const DropTargetEvent& event,
   // locale is RTL.
   int mirrored_x = GetMirroredXInView(event.x());
 
-  *index = -1;
-  *drop_on = false;
-  *is_over_other = *is_over_overflow = false;
-
   bool found = false;
   const int other_delta_x = mirrored_x - other_bookmarked_button_->x();
   if (other_bookmarked_button_->IsVisible() && other_delta_x >= 0 &&
       other_delta_x < other_bookmarked_button_->width()) {
     // Mouse is over 'other' folder.
-    *is_over_other = true;
-    *drop_on = true;
+    location->button_type = DROP_OTHER_FOLDER;
+    location->on = true;
     found = true;
   } else if (!GetBookmarkButtonCount()) {
     // No bookmarks, accept the drop.
-    *index = 0;
+    location->index = 0;
     int ops = data.GetFirstNode(profile_)
         ? ui::DragDropTypes::DRAG_MOVE
         : ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_LINK;
-    return bookmark_utils::PreferredDropOperation(event.source_operations(),
-                                                  ops);
+    location->operation =
+        bookmark_utils::PreferredDropOperation(event.source_operations(), ops);
+    return;
   }
 
   for (int i = 0; i < GetBookmarkButtonCount() &&
@@ -1475,17 +1468,17 @@ int BookmarkBarView::CalculateDropOperation(const DropTargetEvent& event,
       const BookmarkNode* node = model_->GetBookmarkBarNode()->GetChild(i);
       if (node->is_folder()) {
         if (button_x <= views::kDropBetweenPixels) {
-          *index = i;
+          location->index = i;
         } else if (button_x < button_w - views::kDropBetweenPixels) {
-          *index = i;
-          *drop_on = true;
+          location->index = i;
+          location->on = true;
         } else {
-          *index = i + 1;
+          location->index = i + 1;
         }
       } else if (button_x < button_w / 2) {
-        *index = i;
+        location->index = i;
       } else {
-        *index = i + 1;
+        location->index = i + 1;
       }
       break;
     }
@@ -1498,43 +1491,43 @@ int BookmarkBarView::CalculateDropOperation(const DropTargetEvent& event,
       if (overflow_delta_x >= 0 &&
           overflow_delta_x < overflow_button_->width()) {
         // Mouse is over overflow button.
-        *index = GetFirstHiddenNodeIndex();
-        *is_over_overflow = true;
+        location->index = GetFirstHiddenNodeIndex();
+        location->button_type = DROP_OVERFLOW;
       } else if (overflow_delta_x < 0) {
         // Mouse is after the last visible button but before overflow button;
         // use the last visible index.
-        *index = GetFirstHiddenNodeIndex();
+        location->index = GetFirstHiddenNodeIndex();
       } else {
-        return ui::DragDropTypes::DRAG_NONE;
+        return;
       }
     } else if (!other_bookmarked_button_->IsVisible() ||
                mirrored_x < other_bookmarked_button_->x()) {
       // Mouse is after the last visible button but before more recently
       // bookmarked; use the last visible index.
-      *index = GetFirstHiddenNodeIndex();
+      location->index = GetFirstHiddenNodeIndex();
     } else {
-      return ui::DragDropTypes::DRAG_NONE;
+      return;
     }
   }
 
-  if (*drop_on) {
-    const BookmarkNode* parent =
-        *is_over_other ? model_->other_node() :
-                         model_->GetBookmarkBarNode()->GetChild(*index);
-    int operation =
+  if (location->on) {
+    const BookmarkNode* parent = (location->button_type == DROP_OTHER_FOLDER) ?
+        model_->other_node() :
+        model_->GetBookmarkBarNode()->GetChild(location->index);
+    location->operation =
         bookmark_utils::BookmarkDropOperation(profile_, event, data, parent,
                                               parent->child_count());
-    if (!operation && !data.has_single_url() &&
+    if (!location->operation && !data.has_single_url() &&
         data.GetFirstNode(profile_) == parent) {
-      // Don't open a menu if the node being dragged is the the menu to
-      // open.
-      *drop_on = false;
+      // Don't open a menu if the node being dragged is the menu to open.
+      location->on = false;
     }
-    return operation;
+  } else {
+    location->operation =
+        bookmark_utils::BookmarkDropOperation(profile_, event, data,
+                                              model_->GetBookmarkBarNode(),
+                                              location->index);
   }
-  return bookmark_utils::BookmarkDropOperation(profile_, event, data,
-                                               model_->GetBookmarkBarNode(),
-                                               *index);
 }
 
 void BookmarkBarView::WriteBookmarkDragData(const BookmarkNode* node,

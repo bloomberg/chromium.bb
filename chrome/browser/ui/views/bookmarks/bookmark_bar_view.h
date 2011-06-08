@@ -253,9 +253,17 @@ class BookmarkBarView : public DetachableToolbarView,
  private:
   class ButtonSeparatorView;
   struct DropInfo;
+  struct DropLocation;
 
   friend class BookmarkBarViewEventTestBase;
   FRIEND_TEST_ALL_PREFIXES(BookmarkBarViewTest, SwitchProfile);
+
+  // Used to identify what the user is dropping onto.
+  enum DropButtonType {
+    DROP_BOOKMARK,
+    DROP_OTHER_FOLDER,
+    DROP_OVERFLOW
+  };
 
   // Creates recent bookmark button and when visible button as well as
   // calculating the preferred height.
@@ -319,14 +327,10 @@ class BookmarkBarView : public DetachableToolbarView,
   // Stars the timer used to show a drop menu for node.
   void StartShowFolderDropMenuTimer(const BookmarkNode* node);
 
-  // Returns the drop operation and index for the drop based on the event
-  // and data. Returns ui::DragDropTypes::DRAG_NONE if not a valid location.
-  int CalculateDropOperation(const views::DropTargetEvent& event,
+  // Calculates the location for the drop in |location|.
+  void CalculateDropLocation(const views::DropTargetEvent& event,
                              const BookmarkNodeData& data,
-                             int* index,
-                             bool* drop_on,
-                             bool* is_over_overflow,
-                             bool* is_over_other);
+                             DropLocation* location);
 
   // Writes a BookmarkNodeData for node to data.
   void WriteBookmarkDragData(const BookmarkNode* node,
