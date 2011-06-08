@@ -6,6 +6,10 @@
 #define CHROME_BROWSER_UI_PANELS_NATIVE_PANEL_H_
 #pragma once
 
+#include "ui/gfx/native_widget_types.h"
+
+class Panel;
+
 namespace gfx {
 class Rect;
 }  // namespace gfx
@@ -21,19 +25,25 @@ class Rect;
 // still use the BrowserWindow interface as part of their implementation so we
 // use Panel in all the method names to avoid collisions.
 class NativePanel {
- public:
+  friend class Panel;
+
+ protected:
+  virtual ~NativePanel() {}
+
   virtual void ShowPanel() = 0;
   virtual void SetPanelBounds(const gfx::Rect& bounds) = 0;
   virtual void MinimizePanel() = 0;
   virtual void RestorePanel() = 0;
   virtual void ClosePanel() = 0;
   virtual void ActivatePanel() = 0;
-  virtual void DeactivePanel() = 0;
-  virtual bool IsActivePanel() const = 0;
+  virtual void DeactivatePanel() = 0;
+  virtual bool IsPanelActive() const = 0;
+  virtual gfx::NativeWindow GetNativePanelHandle() = 0;
+  virtual void UpdatePanelTitleBar() = 0;
+  virtual void ShowTaskManagerForPanel() = 0;
+  virtual void NotifyPanelOnUserChangedTheme() = 0;
   virtual void FlashPanelFrame() = 0;
-
- protected:
-  virtual ~NativePanel() {}
+  virtual void DestroyPanelBrowser() = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_PANELS_NATIVE_PANEL_H_

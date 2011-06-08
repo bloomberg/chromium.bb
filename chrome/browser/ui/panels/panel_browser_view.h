@@ -8,6 +8,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/ui/panels/native_panel.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "ui/base/animation/animation_delegate.h"
 
@@ -19,7 +20,8 @@ class SlideAnimation;
 }
 
 // A browser view that implements Panel specific behavior.
-class PanelBrowserView : public ::BrowserView,
+class PanelBrowserView : public BrowserView,
+                         public NativePanel,
                          public ui::AnimationDelegate {
  public:
   PanelBrowserView(Browser* browser, Panel* panel);
@@ -55,6 +57,22 @@ class PanelBrowserView : public ::BrowserView,
   virtual void OnDisplayChanged() OVERRIDE;
   virtual void OnWorkAreaChanged() OVERRIDE;
   virtual bool WillProcessWorkAreaChange() const OVERRIDE;
+
+  // Overridden from NativePanel:
+  virtual void ShowPanel() OVERRIDE;
+  virtual void SetPanelBounds(const gfx::Rect& bounds) OVERRIDE;
+  virtual void MinimizePanel() OVERRIDE;
+  virtual void RestorePanel() OVERRIDE;
+  virtual void ClosePanel() OVERRIDE;
+  virtual void ActivatePanel() OVERRIDE;
+  virtual void DeactivatePanel() OVERRIDE;
+  virtual bool IsPanelActive() const OVERRIDE;
+  virtual gfx::NativeWindow GetNativePanelHandle() OVERRIDE;
+  virtual void UpdatePanelTitleBar() OVERRIDE;
+  virtual void ShowTaskManagerForPanel() OVERRIDE;
+  virtual void NotifyPanelOnUserChangedTheme() OVERRIDE;
+  virtual void FlashPanelFrame() OVERRIDE;
+  virtual void DestroyPanelBrowser() OVERRIDE;
 
   // Overridden from AnimationDelegate:
   virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;

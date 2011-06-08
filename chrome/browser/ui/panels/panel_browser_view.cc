@@ -118,6 +118,62 @@ bool PanelBrowserView::WillProcessWorkAreaChange() const {
   return true;
 }
 
+void PanelBrowserView::ShowPanel() {
+  Show();
+}
+
+void PanelBrowserView::SetPanelBounds(const gfx::Rect& bounds) {
+  SetBounds(bounds);
+}
+
+void PanelBrowserView::MinimizePanel() {
+  NOTIMPLEMENTED();
+}
+
+void PanelBrowserView::RestorePanel() {
+  NOTIMPLEMENTED();
+}
+
+void PanelBrowserView::ClosePanel() {
+  Close();
+}
+
+void PanelBrowserView::ActivatePanel() {
+  Activate();
+}
+
+void PanelBrowserView::DeactivatePanel() {
+  Deactivate();
+}
+
+bool PanelBrowserView::IsPanelActive() const {
+  return IsActive();
+}
+
+gfx::NativeWindow PanelBrowserView::GetNativePanelHandle() {
+  return GetNativeHandle();
+}
+
+void PanelBrowserView::UpdatePanelTitleBar() {
+  UpdateTitleBar();
+}
+
+void PanelBrowserView::ShowTaskManagerForPanel() {
+  ShowTaskManager();
+}
+
+void PanelBrowserView::NotifyPanelOnUserChangedTheme() {
+  UserChangedTheme();
+}
+
+void PanelBrowserView::FlashPanelFrame() {
+  FlashFrame();
+}
+
+void PanelBrowserView::DestroyPanelBrowser() {
+  DestroyBrowser();
+}
+
 PanelBrowserFrameView* PanelBrowserView::GetFrameView() const {
   return static_cast<PanelBrowserFrameView*>(frame()->GetFrameView());
 }
