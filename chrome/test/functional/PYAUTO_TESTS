@@ -157,6 +157,7 @@
       # back in the FULL suite below.
       # crbug.com/85310
       '-instant.InstantTest.testFindInCanDismissInstant',
+      '-instant.InstantTest.testPreFetchInstantURLNotInHistory',
       '-omnibox.OmniboxTest.testBookmarkResultInNewTabAndWindow',
       '-omnibox.OmniboxTest.testDifferentTypesOfResults',
       '-omnibox.OmniboxTest.testFetchHistoryResultItems',
@@ -263,6 +264,7 @@
       # because they do not produce omnibox results under virtual X on linux.
       # crbug.com/85310
       'instant.InstantTest.testFindInCanDismissInstant',
+      'instant.InstantTest.testPreFetchInstantURLNotInHistory',
       'omnibox.OmniboxTest.testBookmarkResultInNewTabAndWindow',
       'omnibox.OmniboxTest.testDifferentTypesOfResults',
       'omnibox.OmniboxTest.testFetchHistoryResultItems',
