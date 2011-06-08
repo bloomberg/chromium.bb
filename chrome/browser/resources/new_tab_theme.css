@@ -23,12 +23,12 @@ body {
 /* TODO(aa): Is this still in use? The styling may be incorrect with M7 NTP
    rework. */
 #notification.first-run {
-  background-color: $$1; /* COLOR_NTP_SECTION */
-  border-color: $$2; /* COLOR_NTP_SECTION_BORDER */
+  background-color: $10; /* COLOR_NTP_SECTION */
+  border-color: $11; /* COLOR_NTP_SECTION_BORDER */
 }
 
 #notification.first-run .link {
-   color: $$5; /* COLOR_NTP_LINK_UNDERLINE */
+   color: $14; /* COLOR_NTP_LINK_UNDERLINE */
 }
 
 #notification.first-run .link-color {
@@ -36,7 +36,7 @@ body {
 }
 
 .thumbnail {
-  border-color: $$1; /* COLOR_NTP_SECTION */
+  border-color: $10; /* COLOR_NTP_SECTION */
 }
 
 .thumbnail-container,
@@ -61,13 +61,13 @@ body {
 }
 
 .filler .thumbnail-wrapper {
-  border: 3px solid $$1; /* COLOR_NTP_SECTION */
+  border: 3px solid $10; /* COLOR_NTP_SECTION */
   background-color: $2; /* COLOR_NTP_BACKGROUND */
 }
 
 .filler .thumbnail {
   border: 1px solid $2; /* COLOR_NTP_BACKGROUND */
-  background-color: $$1; /* COLOR_NTP_SECTION */
+  background-color: $10; /* COLOR_NTP_SECTION */
 }
 
 .miniview {
@@ -75,7 +75,7 @@ body {
 }
 
 .miniview > span {
-  color: $$5; /* COLOR_NTP_LINK_UNDERLINE */
+  color: $14; /* COLOR_NTP_LINK_UNDERLINE */
   text-decoration: underline;
 }
 
@@ -99,35 +99,35 @@ body {
 :link,
 :visited,
 .link {
-  color: $$5; /* COLOR_NTP_LINK_UNDERLINE */
+  color: $14; /* COLOR_NTP_LINK_UNDERLINE */
 }
 
 .section > h2,
 #closed-sections-bar > button {
-  color: $$7; /* COLOR_NTP_SECTION_HEADER_TEXT */
+  color: $16; /* COLOR_NTP_SECTION_HEADER_TEXT */
 }
 
 .section:not(.hidden) > h2 {
-  color: $$8; /* COLOR_NTP_SECTION_HEADER_TEXT_HOVER */
+  color: $17; /* COLOR_NTP_SECTION_HEADER_TEXT_HOVER */
 }
 
 .section.hidden:not([noexpand]) > h2:hover,
 #closed-sections-bar > button:hover {
-  color: $$8; /* COLOR_NTP_SECTION_HEADER_TEXT_HOVER */
+  color: $17; /* COLOR_NTP_SECTION_HEADER_TEXT_HOVER */
 }
 
 .section > h2 .back,
 #closed-sections-bar[chromeos] {
-  border-top: 1px solid $$1; /* COLOR_NTP_SECTION  */
+  border-top: 1px solid $10; /* COLOR_NTP_SECTION  */
 }
 
 .section.hidden > h2 .back {
   background: none;
-  border-color-top: $$$1; /* COLOR_NTP_SECTION_HEADER_RULE_LIGHT */
+  border-color-top: $19; /* COLOR_NTP_SECTION_HEADER_RULE_LIGHT */
 }
 
 .section.hidden:hover > h2 .back {
-  border-color-top: $$9; /* COLOR_NTP_SECTION_HEADER_RULE */
+  border-color-top: $18; /* COLOR_NTP_SECTION_HEADER_RULE */
 }
 
 .app a {
@@ -136,8 +136,8 @@ body {
 
 .app:hover > a,
 .app.dragging > a {
-  color: $$3; /* COLOR_NTP_SECTION_TEXT */
-  background-color: $$1; /* COLOR_NTP_SECTION */;
+  color: $12; /* COLOR_NTP_SECTION_TEXT */
+  background-color: $10; /* COLOR_NTP_SECTION */;
 }
 
 #apps-promo-hide {
@@ -145,5 +145,5 @@ body {
 }
 
 #apps-promo-text2 {
-  color: $$$3; /* COLOR_NTP_TEXT_LIGHT */
+  color: $21; /* COLOR_NTP_TEXT_LIGHT */
 }

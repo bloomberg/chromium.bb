@@ -517,10 +517,6 @@ void NTPResourceCache::CreateNewTabCSS() {
 
   // Generate the replacements.
   std::vector<std::string> subst;
-  // A second list of replacements, each of which must be in $$x format,
-  // where x is a digit from 1-9.
-  std::vector<std::string> subst2;
-  std::vector<std::string> subst3;
 
   // Cache-buster for background.
   subst.push_back(
@@ -535,23 +531,21 @@ void NTPResourceCache::CreateNewTabCSS() {
   subst.push_back(SkColorToRGBAString(color_header_gradient_light));  // $7
   subst.push_back(SkColorToRGBAString(color_text));  // $8
   subst.push_back(SkColorToRGBAString(color_link));  // $9
-
-  subst2.push_back(SkColorToRGBAString(color_section));  // $$1
-  subst2.push_back(SkColorToRGBAString(color_section_border));  // $$2
-  subst2.push_back(SkColorToRGBAString(color_section_text));  // $$3
-  subst2.push_back(SkColorToRGBAString(color_section_link));  // $$4
-  subst2.push_back(SkColorToRGBAString(color_link_underline));  // $$5
-  subst2.push_back(SkColorToRGBAString(color_section_link_underline));  // $$6
-  subst2.push_back(SkColorToRGBAString(color_section_header_text)); // $$7
-  subst2.push_back(SkColorToRGBAString(
-      color_section_header_text_hover)); // $$8
-  subst2.push_back(SkColorToRGBAString(color_section_header_rule));  // $$9
-
-  subst3.push_back(SkColorToRGBAString(
-      color_section_header_rule_light));  // $$$1
-  subst3.push_back(SkColorToRGBAString(
-      SkColorSetA(color_section_header_rule, 0)));  // $$$2
-  subst3.push_back(SkColorToRGBAString(color_text_light));  // $$$3
+  subst.push_back(SkColorToRGBAString(color_section));  // $10
+  subst.push_back(SkColorToRGBAString(color_section_border));  // $11
+  subst.push_back(SkColorToRGBAString(color_section_text));  // $12
+  subst.push_back(SkColorToRGBAString(color_section_link));  // $13
+  subst.push_back(SkColorToRGBAString(color_link_underline));  // $14
+  subst.push_back(SkColorToRGBAString(color_section_link_underline));  // $15
+  subst.push_back(SkColorToRGBAString(color_section_header_text)); // $16
+  subst.push_back(SkColorToRGBAString(
+      color_section_header_text_hover)); // $17
+  subst.push_back(SkColorToRGBAString(color_section_header_rule));  // $18
+  subst.push_back(SkColorToRGBAString(
+      color_section_header_rule_light));  // $19
+  subst.push_back(SkColorToRGBAString(
+      SkColorSetA(color_section_header_rule, 0)));  // $20
+  subst.push_back(SkColorToRGBAString(color_text_light));  // $21
 
   // Get our template.
   int ntp_css_resource_id =
@@ -564,9 +558,6 @@ void NTPResourceCache::CreateNewTabCSS() {
   // Create the string from our template and the replacements.
   std::string css_string;
   css_string = ReplaceStringPlaceholders(new_tab_theme_css, subst, NULL);
-  css_string = ReplaceStringPlaceholders(css_string, subst2, NULL);
-  css_string = ReplaceStringPlaceholders(css_string, subst3, NULL);
-
   new_tab_css_ = new RefCountedBytes;
   new_tab_css_->data.resize(css_string.size());
   std::copy(css_string.begin(), css_string.end(),
