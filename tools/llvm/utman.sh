@@ -182,7 +182,7 @@ SBTC_BUILD_WITH_PNACL="arm x8632 x8664"
 # Current milestones in each repo
 # hg-update-all uses these
 readonly LLVM_REV=0d3856fc6b19
-readonly LLVM_GCC_REV=f65c2a206cb9
+readonly LLVM_GCC_REV=90bef7731935
 readonly NEWLIB_REV=9bef47f82918
 readonly BINUTILS_REV=569e4fcf08da
 
@@ -1123,18 +1123,19 @@ build-libgcc_eh-bitcode() {
   #       missing flags, e.g.  include paths ann defines like
   #       'ATTRIBUTE_UNUSED' which is used to mark unused function
   #       parameters.
+  #       The arguments were gleaned from build logs.
   StepBanner "bitcode libgcc_eh" "building"
   RunWithLog libgcc_eh.bitcode.make \
        env -i PATH=/usr/bin/:/bin:${INSTALL_DIR}/bin:${objdir}/dummy-bin \
               "${STD_ENV_FOR_LIBSTDCPP[@]}" \
-              "INCLUDES=-I${srcdir}/llvm-gcc-4.2/include -I." \
-              "LIBGCC2_CFLAGS=-DATTRIBUTE_UNUSED=" \
+              "INCLUDES=-I${srcdir}/llvm-gcc-4.2/include -I${srcdir}/llvm-gcc-4.2/gcc -I." \
+              "LIBGCC2_CFLAGS=-DATTRIBUTE_UNUSED= -DHOST_BITS_PER_INT=32 -Dinhibit_libc  -DIN_GCC -DCROSS_DIRECTORY_STRUCTURE " \
               "AR_CREATE_FOR_TARGET=${PNACL_AR} rc" \
               make ${MAKE_OPTS} -f libgcc.mk libgcc_eh.a
 
   StepBanner "bitcode libgcc_eh" "installing"
-  # removed the old native version if any
-  rm -f toolchain/pnacl_linux_x86_64/libs-*newlib/libgcc_eh.a
+  # removed the old native versions of libgcc_eh if any
+  rm -f ${INSTALL_ROOT}/libs-*newlib/libgcc_eh.a
   # install the new bitcode version
   cp libgcc_eh.a ${PNACL_BITCODE_ROOT}
   spopd
