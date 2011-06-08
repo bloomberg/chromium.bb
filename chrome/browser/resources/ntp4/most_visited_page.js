@@ -105,12 +105,15 @@ cr.define('ntp4', function() {
      */
     handleClick_: function(e) {
       var target = e.target;
-      if (target.classList.contains('pin')) {
-        this.togglePinned_();
+
+      // Don't navigate on edit bar clicks.
+      if (this.querySelector('.edit-bar').contains(target))
         e.preventDefault();
+
+      if (target.classList.contains('pin')) {
+        this.setPinned_(!this.data_.pinned);
       } else if (target.classList.contains('remove')) {
         this.blacklist_();
-        e.preventDefault();
       } else {
         chrome.send('metrics', ['NTP_MostVisited' + this.index]);
       }
@@ -129,9 +132,9 @@ cr.define('ntp4', function() {
     /**
      * Changes the visual state of the page and updates the model.
      */
-    togglePinned_: function() {
+    setPinned_: function(pinned) {
       var data = this.data_;
-      data.pinned = !data.pinned;
+      data.pinned = pinned;
       if (data.pinned) {
         chrome.send('addPinnedURL', [
           data.url,
@@ -165,9 +168,37 @@ cr.define('ntp4', function() {
      * Permanently removes a page from Most Visited.
      */
     blacklist_: function() {
+      this.showUndoNotification_();
       chrome.send('blacklistURLFromMostVisited', [this.data_.url]);
       this.reset();
       chrome.send('getMostVisited');
+    },
+
+    showUndoNotification_: function() {
+      var data = this.data_;
+      var pinned = data.pinned;
+      var self = this;
+      var doUndo = function () {
+        chrome.send('removeURLsFromMostVisitedBlacklist', [data.url]);
+        self.updateForData(data);
+        self.setPinned_(data.pinned);
+        // chrome.send('getMostVisited');
+      }
+
+      var undo = {
+        action: doUndo,
+        text: templateData.undothumbnailremove,
+      }
+
+      var undoAll = {
+        action: function() {
+          chrome.send('clearMostVisitedURLsBlacklist', []);
+        },
+        text: templateData.restoreThumbnailsShort,
+      }
+
+      ntp4.showNotification(templateData.thumbnailremovednotification,
+                            [undo, undoAll]);
     },
 
     /**
@@ -314,7 +345,7 @@ cr.define('ntp4', function() {
     // Look through old pages; if they exist in the newData list, keep them
     // where they are.
     for (var i = 0; i < oldData.length; i++) {
-      if (oldData[i].updated)
+      if (!oldData[i] || oldData[i].updated)
         continue;
 
       for (var j = 0; j < newData.length; j++) {
@@ -333,7 +364,7 @@ cr.define('ntp4', function() {
 
     // Look through old pages that haven't been updated yet; replace them.
     for (var i = 0; i < oldData.length; i++) {
-      if (oldData[i].updated)
+      if (oldData[i] && oldData[i].updated)
         continue;
 
       for (var j = 0; j < newData.length; j++) {
@@ -346,7 +377,7 @@ cr.define('ntp4', function() {
         break;
       }
 
-      if (!oldData[i].updated)
+      if (oldData[i] && !oldData[i].updated)
         oldData[i] = null;
     }
 

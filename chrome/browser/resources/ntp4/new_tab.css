@@ -17,6 +17,7 @@ html {
 body {
   background-size: auto 100%;
   margin: 0;
+  text-align: center;
   /* Don't highlight links when they're tapped.  Safari has bugs here that
      show up as flicker when dragging in some situations */
   -webkit-tap-highlight-color: transparent;
@@ -26,6 +27,64 @@ body {
 
 .hidden {
   display: none !important;
+}
+
+#notification {
+  background-color: #FFF199;
+  border: 1px solid lightGrey;
+  border-radius: 6px;
+  color: black;
+  display: inline-block;
+  font-weight: bold;
+  margin-top: 2px;
+  opacity: 100%;
+  padding: 7px 15px;
+  position: relative;
+  z-index: 100;
+  -webkit-transition-duration: 0.1s;
+  -webkit-transition-property: opacity;
+}
+
+#notification.inactive {
+  display: inline-block;
+  opacity: 0;
+  -webkit-transition-duration: 0.2s;
+}
+
+#notification > div > div,
+#notification > div {
+  display: inline-block;
+}
+
+#notification button {
+  background: no-repeat;
+  background-color: transparent;
+  /* TODO(estade): this should animate between states. */
+  background-image: url('chrome://theme/IDR_CLOSE_BAR');
+  border: 0;
+  display: inline-block;
+  height: 16px;
+  padding: 0;
+  vertical-align: middle;
+  width: 16px;
+  -webkit-margin-start: 0.5em;
+}
+
+#notification button:hover,
+#notification button:focus {
+  background-image: url('chrome://theme/IDR_CLOSE_BAR_H');
+}
+
+#notification button:active {
+  background-image: url('chrome://theme/IDR_CLOSE_BAR_P');
+}
+
+.linkButton {
+  color: #06C;
+  cursor: pointer;
+  display: inline-block;
+  text-decoration: underline;
+  -webkit-margin-start: 0.5em;
 }
 
 #card-slider-frame {

@@ -7915,6 +7915,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
          desc="The link that restores previously removed thumbnails">
         Restore all removed thumbnails
       </message>
+      <message name="IDS_NEW_TAB_RESTORE_THUMBNAILS_SHORT_LINK"
+         desc="The link that restores previously removed thumbnails. Context is 'Thumbnail removed. Undo | Restore all'">
+        Restore all
+      </message>
       <message name="IDS_NEW_TAB_RECENTLY_CLOSED"
                desc="The 'Recently Closed' heading on the new tab page">
         Recently closed

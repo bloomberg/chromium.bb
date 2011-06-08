@@ -84,6 +84,10 @@ cr.define('ntp4', function() {
     trash = getRequiredElement('trash');
     trash.hidden = true;
 
+    document.querySelector('#notification button').onclick = function(e) {
+      hideNotification();
+    };
+
     // Request data on the apps so we can fill them in.
     // Note that this is kicked off asynchronously.  'getAppsCallback' will be
     // invoked at some point after this function returns.
@@ -371,7 +375,51 @@ cr.define('ntp4', function() {
     } else {
       attribution.hidden = true;
     }
+  }
 
+  /**
+    * Timeout ID.
+    * @type {number}
+    */
+  var notificationTimeout_ = 0;
+
+  /**
+   * Shows the notification bubble.
+   * @param {string} text The notification message.
+   * @param {Array.<{text: string, action: function()}>} links An array of
+   *     records describing the links in the notification. Each record should
+   *     have a 'text' attribute (the display string) and an 'action' attribute
+   *     (a function to run when the link is activated).
+   */
+  function showNotification(text, links) {
+    window.clearTimeout(notificationTimeout_);
+    document.querySelector('#notification > span').textContent = text;
+
+    var linksBin = $('notificationLinks');
+    linksBin.textContent = '';
+    for (var i = 0; i < links.length; i++) {
+      var link = linksBin.ownerDocument.createElement('div');
+      link.textContent = links[i].text;
+      var action = links[i].action;
+      link.onclick = function(e) {
+        action();
+        hideNotification();
+      }
+      link.setAttribute('role', 'button');
+      link.setAttribute('tabindex', 0);
+      link.className = "linkButton";
+      linksBin.appendChild(link);
+    }
+
+    $('notification').classList.remove('inactive');
+    notificationTimeout_ = window.setTimeout(hideNotification, 10000);
+  }
+
+  /**
+   * Hide the notification bubble.
+   */
+  function hideNotification() {
+    $('notification').classList.add('inactive');
   }
 
   function setRecentlyClosedTabs(dataItems) {
@@ -395,6 +443,7 @@ cr.define('ntp4', function() {
     themeChanged: themeChanged,
     setRecentlyClosedTabs: setRecentlyClosedTabs,
     setMostVisitedPages: setMostVisitedPages,
+    showNotification: showNotification,
   };
 });
 

@@ -280,6 +280,8 @@ void NTPResourceCache::CreateNewTabHTML() {
   localized_strings.SetString("mostvisited", most_visited);
   localized_strings.SetString("restorethumbnails",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_RESTORE_THUMBNAILS_LINK));
+  localized_strings.SetString("restoreThumbnailsShort",
+      l10n_util::GetStringUTF16(IDS_NEW_TAB_RESTORE_THUMBNAILS_SHORT_LINK));
   localized_strings.SetString("recentlyclosed",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_RECENTLY_CLOSED));
   localized_strings.SetString("closedwindowsingle",
