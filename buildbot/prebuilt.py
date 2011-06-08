@@ -143,6 +143,12 @@ def RevGitFile(filename, value, retries=5, key='PORTAGE_BINHOST'):
   cros_build_lib.RunCommand(git_ssh_config_cmd, cwd=cwd)
   cros_build_lib.RunCommand(['git', 'remote', 'update'], cwd=cwd)
   cros_build_lib.RunCommand(['repo', 'start', prebuilt_branch, '.'], cwd=cwd)
+
+  # We want to push our changes to this file to tip of tree, so we should
+  # make sure the branch is at tip of tree before we apply our change.
+  push_branch = '%s/%s' % cros_build_lib.GetPushBranch(prebuilt_branch, cwd)
+  cros_build_lib.RunCommand(['git', 'reset', '--hard', push_branch], cwd=cwd)
+
   description = 'Update %s="%s" in %s' % (key, value, filename)
   print description
   try:
