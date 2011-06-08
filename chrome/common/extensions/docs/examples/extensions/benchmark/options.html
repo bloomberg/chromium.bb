@@ -162,16 +162,20 @@ Array.avg = function(array) {
   return sum / count;
 }
 
-// Compute the standard deviation of an array
+// Compute the sample standard deviation of an array
 Array.stddev = function(array) {
   var count = array.length;
-  var mean = Array.avg(array);
+  var mean = 0;
+  for (var i = 0; i < count; i++) {
+    mean += array[i];
+  }
+  mean /= count;
   var variance = 0;
   for (var i = 0; i < count; i++) {
     var deviation = mean - array[i];
     variance = variance + deviation * deviation;
   }
-  variance = variance / count;
+  variance = variance / (count - 1);
   return Math.sqrt(variance);
 }
 
