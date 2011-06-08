@@ -28,7 +28,8 @@ namespace views {
 
 class FocusableBorder;
 class KeyEvent;
-class Menu2;
+class MenuItemView;
+class MenuModelAdapter;
 
 // A views/skia only implementation of NativeTextfieldWrapper.
 // No platform specific code is used.
@@ -206,8 +207,8 @@ class NativeTextfieldViews : public View,
   // changed.
   void UpdateAfterChange(bool text_changed, bool cursor_changed);
 
-  // Utility function to create the context menu if one does not already exist.
-  void InitContextMenuIfRequired();
+  // Utility function to prepare the context menu..
+  void UpdateContextMenu();
 
   // Convenience method to call InputMethod::OnTextInputTypeChanged();
   void OnTextInputTypeChanged();
@@ -266,7 +267,8 @@ class NativeTextfieldViews : public View,
 
   // Context menu and its content list for the textfield.
   scoped_ptr<ui::SimpleMenuModel> context_menu_contents_;
-  scoped_ptr<Menu2> context_menu_menu_;
+  scoped_ptr<views::MenuModelAdapter> context_menu_delegate_;
+  scoped_ptr<views::MenuItemView> context_menu_menu_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeTextfieldViews);
 };

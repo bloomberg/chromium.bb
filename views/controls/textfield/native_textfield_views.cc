@@ -19,7 +19,8 @@
 #include "views/background.h"
 #include "views/border.h"
 #include "views/controls/focusable_border.h"
-#include "views/controls/menu/menu_2.h"
+#include "views/controls/menu/menu_item_view.h"
+#include "views/controls/menu/menu_model_adapter.h"
 #include "views/controls/textfield/text_style.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/controls/textfield/textfield_controller.h"
@@ -29,6 +30,7 @@
 #include "views/metrics.h"
 #include "views/views_delegate.h"
 #include "views/widget/widget.h"
+#include "views/window/window.h"
 
 #if defined(OS_LINUX)
 #include "ui/gfx/gtk_util.h"
@@ -258,8 +260,12 @@ gfx::NativeCursor NativeTextfieldViews::GetCursor(const MouseEvent& event) {
 void NativeTextfieldViews::ShowContextMenuForView(View* source,
                                                   const gfx::Point& p,
                                                   bool is_mouse_gesture) {
-  InitContextMenuIfRequired();
-  context_menu_menu_->RunContextMenuAt(p);
+  UpdateContextMenu();
+  context_menu_menu_->RunMenuAt(GetWindow()->GetNativeWindow(),
+                                NULL,
+                                gfx::Rect(p, gfx::Size()),
+                                views::MenuItemView::TOPLEFT,
+                                true);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -1033,18 +1039,24 @@ void NativeTextfieldViews::UpdateAfterChange(bool text_changed,
   }
 }
 
-void NativeTextfieldViews::InitContextMenuIfRequired() {
-  if (context_menu_menu_.get())
-    return;
-  context_menu_contents_.reset(new ui::SimpleMenuModel(this));
-  context_menu_contents_->AddItemWithStringId(IDS_APP_CUT, IDS_APP_CUT);
-  context_menu_contents_->AddItemWithStringId(IDS_APP_COPY, IDS_APP_COPY);
-  context_menu_contents_->AddItemWithStringId(IDS_APP_PASTE, IDS_APP_PASTE);
-  context_menu_contents_->AddItemWithStringId(IDS_APP_DELETE, IDS_APP_DELETE);
-  context_menu_contents_->AddSeparator();
-  context_menu_contents_->AddItemWithStringId(IDS_APP_SELECT_ALL,
-                                              IDS_APP_SELECT_ALL);
-  context_menu_menu_.reset(new Menu2(context_menu_contents_.get()));
+void NativeTextfieldViews::UpdateContextMenu() {
+  if (!context_menu_contents_.get()) {
+    context_menu_contents_.reset(new ui::SimpleMenuModel(this));
+    context_menu_contents_->AddItemWithStringId(IDS_APP_CUT, IDS_APP_CUT);
+    context_menu_contents_->AddItemWithStringId(IDS_APP_COPY, IDS_APP_COPY);
+    context_menu_contents_->AddItemWithStringId(IDS_APP_PASTE, IDS_APP_PASTE);
+    context_menu_contents_->AddItemWithStringId(IDS_APP_DELETE, IDS_APP_DELETE);
+    context_menu_contents_->AddSeparator();
+    context_menu_contents_->AddItemWithStringId(IDS_APP_SELECT_ALL,
+                                                IDS_APP_SELECT_ALL);
+
+    context_menu_delegate_.reset(
+        new views::MenuModelAdapter(context_menu_contents_.get()));
+    context_menu_menu_.reset(
+        new views::MenuItemView(context_menu_delegate_.get()));
+  }
+
+  context_menu_delegate_->BuildMenu(context_menu_menu_.get());
 }
 
 void NativeTextfieldViews::OnTextInputTypeChanged() {

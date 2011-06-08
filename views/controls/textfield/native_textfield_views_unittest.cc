@@ -188,9 +188,9 @@ class NativeTextfieldViewsTest : public ViewsTestBase,
     textfield_->RequestFocus();
   }
 
-  views::Menu2* GetContextMenu() {
-    textfield_view_->InitContextMenuIfRequired();
-    return textfield_view_->context_menu_menu_.get();
+  ui::MenuModel* GetContextMenuModel() {
+    textfield_view_->UpdateContextMenu();
+    return textfield_view_->context_menu_contents_.get();
   }
 
  protected:
@@ -537,11 +537,11 @@ void VerifyTextfieldContextMenuContents(bool textfield_has_selection,
 TEST_F(NativeTextfieldViewsTest, ContextMenuDisplayTest) {
   InitTextfield(Textfield::STYLE_DEFAULT);
   textfield_->SetText(ASCIIToUTF16("hello world"));
-  EXPECT_TRUE(GetContextMenu());
-  VerifyTextfieldContextMenuContents(false, GetContextMenu()->model());
+  EXPECT_TRUE(GetContextMenuModel());
+  VerifyTextfieldContextMenuContents(false, GetContextMenuModel());
 
   textfield_->SelectAll();
-  VerifyTextfieldContextMenuContents(true, GetContextMenu()->model());
+  VerifyTextfieldContextMenuContents(true, GetContextMenuModel());
 }
 
 TEST_F(NativeTextfieldViewsTest, DoubleAndTripleClickTest) {
