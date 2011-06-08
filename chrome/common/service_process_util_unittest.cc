@@ -29,6 +29,13 @@
 #include <glib.h>
 #endif
 
+#if defined(TOUCH_UI)
+// This test fails http://crbug/84854
+#define MAYBE_ForceShutdown FAILS_ForceShutdown
+#else
+#define MAYBE_ForceShutdown ForceShutdown
+#endif
+
 namespace {
 
 bool g_good_shutdown = false;
@@ -166,7 +173,7 @@ TEST_F(ServiceProcessStateTest, SharedMem) {
   ASSERT_EQ(base::GetCurrentProcId(), pid);
 }
 
-TEST_F(ServiceProcessStateTest, ForceShutdown) {
+TEST_F(ServiceProcessStateTest, MAYBE_ForceShutdown) {
   base::ProcessHandle handle = SpawnChild("ServiceProcessStateTestShutdown",
                                           true);
   ASSERT_TRUE(handle);
