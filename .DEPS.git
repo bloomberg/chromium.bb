@@ -47,7 +47,7 @@ deps = {
     'src/third_party/icu':
         Var('git_url') + '/chromium/deps/icu46.git@59026aeb93a49e0a7f232957b8ae078aec4fc22d',
     'src/third_party/leveldb':
-        Var('git_url') + '/external/leveldb.git@ce5ba3cdead24077a2f07212d93f867a45dd79da',
+        Var('git_url') + '/external/leveldb.git@6635e49a8999ab5e411d5227146a3db17fac2944',
     'src/third_party/libjingle/source':
         Var('git_url') + '/external/libjingle.git@ccbae7750cbb29603cb94fac4679ee68d70e457d',
     'src/third_party/libjpeg_turbo':
