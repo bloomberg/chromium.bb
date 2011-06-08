@@ -2586,6 +2586,22 @@ void TestingAutomationProvider::GetBrowserInfo(
     browser_item->SetInteger("selected_tab", browser->active_index());
     browser_item->SetBoolean("incognito",
                              browser->profile()->IsOffTheRecord());
+    std::string type;
+    switch (browser->type()) {
+      case Browser::TYPE_TABBED:
+        type = "tabbed";
+        break;
+      case Browser::TYPE_POPUP:
+        type = "popup";
+        break;
+      case Browser::TYPE_PANEL:
+        type = "panel";
+        break;
+      default:
+        type = "unknown";
+        break;
+    }
+    browser_item->SetString("type", type);
     // For each window, add info about all tabs in a list of dictionaries,
     // one dictionary item per tab.
     ListValue* tabs = new ListValue;

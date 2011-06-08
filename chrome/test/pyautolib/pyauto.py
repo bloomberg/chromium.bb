@@ -1220,6 +1220,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
                           u'renderer_pid': 93929,
                           u'url': u'http://slides.html5rocks.com/#slide14'},
                             ],
+                        u'type': u'tabbed',
                         u'width': 925,
                         u'x': 26,
                         u'y': 44}]}
@@ -2947,6 +2948,38 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     """
     cmd_dict = { 'command': 'GetBatteryInfo' }
     return self._GetResultFromJSONRequest(cmd_dict, windex=-1)
+
+  def GetPanelInfo(self):
+    """Get details about open ChromeOS panels.
+
+    A panel is actually a type of browser window, so all of
+    this information is also available using GetBrowserInfo().
+
+    Returns:
+      A dictionary.
+      Sample:
+      [{ 'incognito': False,
+         'renderer_pid': 4820,
+         'title': u'Downloads',
+         'url': u'chrome://active-downloads/'}]
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    panels = []
+    for browser in self.GetBrowserInfo()['windows']:
+      if browser['type'] != 'panel':
+        continue
+
+      panel = {}
+      panels.append(panel)
+      tab = browser['tabs'][0]
+      panel['incognito'] = browser['incognito']
+      panel['renderer_pid'] = tab['renderer_pid']
+      panel['title'] = self.GetActiveTabTitle(browser['index'])
+      panel['url'] = tab['url']
+
+    return panels
 
   def GetNetworkInfo(self):
     """Get details about ethernet, wifi, and cellular networks on chromeos.
