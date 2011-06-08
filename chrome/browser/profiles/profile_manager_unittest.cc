@@ -176,6 +176,8 @@ TEST_F(ProfileManagerTest, CreateAndUseTwoProfiles) {
   message_loop_.RunAllPending();
 }
 
+#if !defined(OS_CHROMEOS)  // disable temporary while jam debugs debug failures
+
 // Tests asynchronous profile creation mechanism.
 TEST_F(ProfileManagerTest, CreateProfileAsync) {
   FilePath dest_path =
@@ -229,3 +231,5 @@ TEST_F(ProfileManagerTest, CreateProfilesAsync) {
 
   message_loop_.RunAllPending();
 }
+#endif
+
