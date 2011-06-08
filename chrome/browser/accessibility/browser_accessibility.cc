@@ -32,6 +32,15 @@ BrowserAccessibility::BrowserAccessibility()
 BrowserAccessibility::~BrowserAccessibility() {
 }
 
+void BrowserAccessibility::DetachTree(
+    std::vector<BrowserAccessibility*>* nodes) {
+  nodes->push_back(this);
+  for (size_t i = 0; i < children_.size(); i++)
+    children_[i]->DetachTree(nodes);
+  children_.clear();
+  parent_ = NULL;
+}
+
 void BrowserAccessibility::Initialize(
     BrowserAccessibilityManager* manager,
     BrowserAccessibility* parent,
@@ -62,15 +71,6 @@ void BrowserAccessibility::Initialize() {
 
 void BrowserAccessibility::AddChild(BrowserAccessibility* child) {
   children_.push_back(child);
-}
-
-void BrowserAccessibility::DetachTree(
-    std::vector<BrowserAccessibility*>* nodes) {
-  nodes->push_back(this);
-  for (size_t i = 0; i < children_.size(); i++)
-    children_[i]->DetachTree(nodes);
-  children_.clear();
-  parent_ = NULL;
 }
 
 void BrowserAccessibility::UpdateParent(BrowserAccessibility* parent,

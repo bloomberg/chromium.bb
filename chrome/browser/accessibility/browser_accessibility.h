@@ -43,6 +43,10 @@ class BrowserAccessibility {
 
   virtual ~BrowserAccessibility();
 
+  // Detach all descendants of this subtree and push all of the node pointers,
+  // including this node, onto the end of |nodes|.
+  virtual void DetachTree(std::vector<BrowserAccessibility*>* nodes);
+
   // Perform platform specific initialization. This can be called multiple times
   // during the lifetime of this instance after the members of this base object
   // have been reset with new values from the renderer process.
@@ -58,10 +62,6 @@ class BrowserAccessibility {
 
   // Add a child of this object.
   void AddChild(BrowserAccessibility* child);
-
-  // Detach all descendants of this subtree and push all of the node pointers,
-  // including this node, onto the end of |nodes|.
-  void DetachTree(std::vector<BrowserAccessibility*>* nodes);
 
   // Update the parent and index in parent if this node has been moved.
   void UpdateParent(BrowserAccessibility* parent, int index_in_parent);
