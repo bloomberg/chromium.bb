@@ -14,7 +14,6 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
@@ -67,12 +66,11 @@ class WebResourceService::WebResourceFetcher
     url_fetcher_.reset(new URLFetcher(GURL(
         web_resource_server),
         URLFetcher::GET, this));
-    // Do not let url fetcher affect existing state in profile (by setting
-    // cookies, for example.
+    // Use system request context and do not save state in cookies or cache.
     url_fetcher_->set_load_flags(net::LOAD_DISABLE_CACHE |
         net::LOAD_DO_NOT_SAVE_COOKIES);
     net::URLRequestContextGetter* url_request_context_getter =
-        web_resource_service_->profile_->GetRequestContext();
+        g_browser_process->system_request_context();
     url_fetcher_->set_request_context(url_request_context_getter);
     url_fetcher_->Start();
   }
@@ -197,7 +195,6 @@ class WebResourceService::UnpackerClient
 };
 
 WebResourceService::WebResourceService(
-    Profile* profile,
     PrefService* prefs,
     const char* web_resource_server,
     bool apply_locale_to_url,
@@ -206,7 +203,6 @@ WebResourceService::WebResourceService(
     int start_fetch_delay,
     int cache_update_delay)
     : prefs_(prefs),
-      profile_(profile),
       ALLOW_THIS_IN_INITIALIZER_LIST(service_factory_(this)),
       in_fetch_(false),
       web_resource_server_(web_resource_server),
@@ -217,7 +213,6 @@ WebResourceService::WebResourceService(
       cache_update_delay_(cache_update_delay),
       web_resource_update_scheduled_(false) {
   DCHECK(prefs);
-  DCHECK(profile);
   prefs_->RegisterStringPref(last_update_time_pref_name,
                              "0",
                              PrefService::UNSYNCABLE_PREF);

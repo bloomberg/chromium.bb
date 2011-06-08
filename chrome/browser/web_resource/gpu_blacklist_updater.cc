@@ -39,8 +39,7 @@ const char* GpuBlacklistUpdater::kDefaultGpuBlacklistURL =
     "https://dl.google.com/dl/edgedl/chrome/gpu/software_rendering_list.json";
 
 GpuBlacklistUpdater::GpuBlacklistUpdater()
-    : WebResourceService(ProfileManager::GetDefaultProfile(),
-                         g_browser_process->local_state(),
+    : WebResourceService(g_browser_process->local_state(),
                          GpuBlacklistUpdater::kDefaultGpuBlacklistURL,
                          false,  // don't append locale to URL
                          NotificationType::NOTIFICATION_TYPE_COUNT,

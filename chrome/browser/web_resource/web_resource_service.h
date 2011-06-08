@@ -12,7 +12,6 @@
 #include "content/common/notification_type.h"
 
 class PrefService;
-class Profile;
 class ResourceDispatcherHost;
 
 // A WebResourceService fetches data from a web resource server and store
@@ -22,8 +21,7 @@ class WebResourceService
  public:
   // Pass notification_type = NOTIFICATION_TYPE_COUNT if notification is not
   // required.
-  WebResourceService(Profile* profile,
-                     PrefService* prefs,
+  WebResourceService(PrefService* prefs,
                      const char* web_resource_server,
                      bool apply_locale_to_url_,
                      NotificationType::Type notification_type,
@@ -52,8 +50,6 @@ class WebResourceService
   // We need to be able to load parsed resource data into preferences file,
   // and get proper install directory.
   PrefService* prefs_;
-
-  Profile* profile_;
 
  private:
   class WebResourceFetcher;
@@ -84,7 +80,9 @@ class WebResourceService
   // kCacheUpdateDelay time, and silently exit.
   bool in_fetch_;
 
-  // URL that hosts the web resource.
+  // URL that hosts the web resource. This URL will be loaded with a
+  // SystemURLRequestContext, so should not depend on Profile request context
+  // data (see http://codereview.chromium.org/7099004/).
   const char* web_resource_server_;
 
   // Indicates whether we should append locale to the web resource server URL.
