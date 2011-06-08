@@ -9,6 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"  // g_browser_process
 #include "chrome/common/net/x509_certificate_model.h"
+#include "crypto/nss_util.h"  // crypto::GetTPMTokenInfo()
 #include "net/base/cert_database.h"
 #include "net/base/x509_certificate.h"
 #include "ui/base/l10n/l10n_util_collator.h"  // CompareString16WithCollator
@@ -65,6 +66,18 @@ void WifiConfigModel::UpdateCertificates() {
   // so build filtered lists once.
   net::CertificateList cert_list;
   cert_db_.ListCerts(&cert_list);
+
+  // Need TPM token name to filter user certificates.
+  std::string tpm_token_name;
+  if (crypto::IsTPMTokenReady()) {
+    std::string unused_pin;
+    // TODO(jamescook): Make this asynchronous.  It results in a synchronous
+    // D-Bus call to cryptohome.
+    crypto::GetTPMTokenInfo(&tpm_token_name, &unused_pin);
+  } else {
+    LOG(WARNING) << "TPM token not ready";
+  }
+
   for (net::CertificateList::const_iterator it = cert_list.begin();
        it != cert_list.end();
        ++it) {
@@ -72,9 +85,15 @@ void WifiConfigModel::UpdateCertificates() {
     net::X509Certificate::OSCertHandle cert_handle = cert->os_cert_handle();
     net::CertType type = x509_certificate_model::GetType(cert_handle);
     switch (type) {
-      case net::USER_CERT:
-        user_certs_.push_back(*it);
+      case net::USER_CERT: {
+        // Only include user certs that are in the TPM token (and hence
+        // available via PKCS#11 to flimflam and wpa_supplicant).
+        std::string cert_token_name =
+            x509_certificate_model::GetTokenName(cert_handle);
+        if (cert_token_name == tpm_token_name)
+          user_certs_.push_back(*it);
         break;
+      }
       case net::CA_CERT: {
         // Exclude root CA certificates that are built into Chrome.
         std::string token_name =
