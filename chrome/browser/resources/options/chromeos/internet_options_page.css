@@ -95,8 +95,9 @@ html[dir='rtl'] .network-item-text {
 }
 
 #detailsInternetPage {
-  min-width: 400px;
+  min-width: 440px;
   min-height: 420px;
+  padding-bottom: 40px;
   position: relative;
 }
 
