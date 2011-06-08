@@ -150,6 +150,18 @@
       '-passwords',
       # Gnome / kwallet popups on linux break sync tests.  crbug.com/80329
       '-sync',
+
+      # Several omnibox tests do not show omnibox results when run
+      # under virtual X on linux.  The CONTINUOUS suite runs under virtual X
+      # on the chromium bots, so exlcude these from here.  They're included
+      # back in the FULL suite below.
+      # crbug.com/85310
+      '-instant.InstantTest.testFindInCanDismissInstant',
+      '-omnibox.OmniboxTest.testBookmarkResultInNewTabAndWindow',
+      '-omnibox.OmniboxTest.testDifferentTypesOfResults',
+      '-omnibox.OmniboxTest.testFetchHistoryResultItems',
+      '-omnibox.OmniboxTest.testInlinAutoComplete',
+      '-omnibox.OmniboxTest.testSelect',
     ],
 
     # ChromeOS is linux, but note that this section does not include the
@@ -246,6 +258,15 @@
     ],
 
     'linux': [
+      # Add back the omnibox tests excluded from the CONTINUOUS suite above
+      # because they do not produce omnibox results under virtual X on linux.
+      # crbug.com/85310
+      'instant.InstantTest.testFindInCanDismissInstant',
+      'omnibox.OmniboxTest.testBookmarkResultInNewTabAndWindow',
+      'omnibox.OmniboxTest.testDifferentTypesOfResults',
+      'omnibox.OmniboxTest.testFetchHistoryResultItems',
+      'omnibox.OmniboxTest.testInlinAutoComplete',
+      'omnibox.OmniboxTest.testSelect',
     ],
 
     'chromeos': [
