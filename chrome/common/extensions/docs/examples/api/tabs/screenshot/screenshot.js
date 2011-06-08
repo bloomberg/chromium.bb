@@ -1,3 +1,7 @@
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 // To make sure we can uniquely identify each screenshot tab, add an id as a
 // query param to the url that displays the screenshot.
 var id = 100;
@@ -44,5 +48,9 @@ function takeScreenshot() {
 
 // Listen for a click on the camera icon.  On that click, take a screenshot.
 chrome.browserAction.onClicked.addListener(function(tab) {
-  takeScreenshot();
+  if (tab.url.match(/code.google.com/)) {
+    takeScreenshot();
+  } else {
+    alert('This sample can only take screenshots of code.google.com pages');
+  }
 });

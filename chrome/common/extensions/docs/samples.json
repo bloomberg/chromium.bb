@@ -1720,7 +1720,7 @@
         "chrome.tabs.create",
         "chrome.tabs.onUpdated"
       ],
-      "description": "Demonstrate screenshot functionality in the chrome.tabs api.",
+      "description": "Demonstrate screenshot functionality in the chrome.tabs api. Note: only works for code.google.com",
       "features": [
         "background_page",
         "browser_action",
@@ -1730,15 +1730,17 @@
       "id": "e1697cacebad05218798bf3e8a0f724517f0e8c3",
       "name": "Test Screenshot Extension",
       "path": "examples\/api\/tabs\/screenshot\/",
-      "protocols": [],
-      "search_string": "TEST SCREENSHOT EXTENSION DEMONSTRATE SCREENSHOT FUNCTIONALITY IN THE CHROME.TABS API. BACKGROUND_PAGE BROWSER_ACTION TABS CHROME.BROWSERACTION.ONCLICKED CHROME.EXTENSION.GETURL CHROME.EXTENSION.GETVIEWS CHROME.TABS.CAPTUREVISIBLETAB CHROME.TABS.CREATE CHROME.TABS.ONUPDATED",
+      "protocols": [
+        "http:\/\/"
+      ],
+      "search_string": "TEST SCREENSHOT EXTENSION DEMONSTRATE SCREENSHOT FUNCTIONALITY IN THE CHROME.TABS API. NOTE: ONLY WORKS FOR CODE.GOOGLE.COM BACKGROUND_PAGE BROWSER_ACTION TABS CHROME.BROWSERACTION.ONCLICKED CHROME.EXTENSION.GETURL CHROME.EXTENSION.GETVIEWS CHROME.TABS.CAPTUREVISIBLETAB CHROME.TABS.CREATE CHROME.TABS.ONUPDATED",
       "source_files": [
         "background.html",
         "manifest.json",
         "screenshot.html",
         "screenshot.js"
       ],
-      "source_hash": "6be9b92850e86ce311cc12a2cf0cda3b47ab5d58",
+      "source_hash": "a822ee354314b8ff943ddf537e0cdff2e2fd36c9",
       "zip_path": "examples\/api\/tabs\/screenshot.zip"
     },
     {
