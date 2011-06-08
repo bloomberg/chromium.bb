@@ -3,6 +3,9 @@
   border: 1px solid rgba(0, 0, 0, 0.5);
   width: 70px;
   height: 70px;
+  margin-right: 10px;
+  margin-bottom: 5px;
+  vertical-align: middle;
 }
 
 #sync-buttons {

@@ -1,151 +1,142 @@
 <div id="personal-page" class="page" hidden>
   <h1 i18n-content="personalPage"></h1>
+  <div class="displaytable">
 <if expr="pp_ifdef('chromeos')">
-  <section>
-    <h3 i18n-content="account"></h3>
-    <div>
-      <table class="option-control-table">
-        <tr>
-          <td>
-            <img id='account-picture'
-                src='chrome://theme/IDR_LOGIN_DEFAULT_USER'>
-          </td>
-          <td>
-            <label>
-              <input id="enable-screen-lock" type="checkbox"
-                  pref="settings.enable_screen_lock">
-              <span i18n-content="enableScreenlock"></span>
-            </label>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <button id="change-picture-button" i18n-content="changePicture">
-            </button>
-          </td>
-        </tr>
-      </table>
-    </div>
-  </section>
-</if>
-  <section id="sync-section">
-    <h3 i18n-content="syncSection"></h3>
-    <div>
-      <div id="sync-overview" hidden>
-        <div i18n-content="syncOverview"></div>
-        <div i18n-content="syncFurtherOverview"></div>
-      </div>
-      <div id="sync-status" hidden>
-        <span id="sync-status-text"></span>
-        <button id="sync-action-link" class="link-button"></button>
-      </div>
-      <div id="sync-buttons">
-        <button id="start-stop-sync" hidden></button>
-        <button id="customize-sync" i18n-content="customizeSync" hidden>
+    <section>
+      <h3 i18n-content="account"></h3>
+      <div>
+        <img id='account-picture'
+            src='chrome://theme/IDR_LOGIN_DEFAULT_USER'>
+        <label>
+          <input id="enable-screen-lock" type="checkbox"
+              pref="settings.enable_screen_lock">
+          <span i18n-content="enableScreenlock"></span>
+        </label>
+        <br>
+        <button id="change-picture-button" i18n-content="changePicture">
         </button>
       </div>
-      <div id="profiles-create" hidden>
-        <span i18n-content="createNewProfile"></span>
-        <div id="profiles-create-button">
-          <button id="new-profile" i18n-content="createProfileButton"></button>
+    </section>
+</if>
+    <section id="sync-section">
+      <h3 i18n-content="syncSection"></h3>
+      <div>
+        <div id="sync-overview" hidden>
+          <div i18n-content="syncOverview"></div>
+          <div i18n-content="syncFurtherOverview"></div>
+        </div>
+        <div id="sync-status" hidden>
+          <span id="sync-status-text"></span>
+          <button id="sync-action-link" class="link-button"></button>
+        </div>
+        <div id="sync-buttons">
+          <button id="start-stop-sync" hidden></button>
+          <button id="customize-sync" i18n-content="customizeSync" hidden>
+          </button>
+        </div>
+        <div id="profiles-create" hidden>
+          <span i18n-content="createNewProfile"></span>
+          <div id="profiles-create-button">
+            <button id="new-profile" i18n-content="createProfileButton"></button>
+          </div>
         </div>
       </div>
-    </div>
-  </section>
-  <section>
-    <h3 i18n-content="passwords"></h3>
-    <div>
-      <div class="radio">
-        <label>
-          <input id="passwords-offersave" type="radio" name="passwords_radio"
-              value="true" pref="profile.password_manager_enabled"
-              metric="Options_PasswordManager">
-          <span i18n-content="passwordsAskToSave"></span>
-        </label>
+    </section>
+    <section>
+      <h3 i18n-content="passwords"></h3>
+      <div>
+        <div class="radio">
+          <label>
+            <input id="passwords-offersave" type="radio" name="passwords_radio"
+                value="true" pref="profile.password_manager_enabled"
+                metric="Options_PasswordManager">
+            <span i18n-content="passwordsAskToSave"></span>
+          </label>
+        </div>
+        <div class="radio">
+          <label>
+            <input id="passwords-neversave" type="radio" name="passwords_radio"
+                value="false" pref="profile.password_manager_enabled"
+                metric="Options_PasswordManager">
+            <span i18n-content="passwordsNeverSave"></span>
+          </label>
+        </div>
+        <div><button id="manage-passwords"
+            i18n-content="manage_passwords"></button></div>
+        <!-- This makes the managed-banner appear when the "pref" is
+        configured by the IT administrator. -->
+        <input name="password_allow_show_hidden" type="text"
+            pref="profile.password_manager_allow_show_passwords" hidden>
       </div>
-      <div class="radio">
-        <label>
-          <input id="passwords-neversave" type="radio" name="passwords_radio"
-              value="false" pref="profile.password_manager_enabled"
-              metric="Options_PasswordManager">
-          <span i18n-content="passwordsNeverSave"></span>
-        </label>
+    </section>
+    <section>
+      <h3 i18n-content="autofill"></h3>
+      <div>
+        <div class="checkbox">
+          <label>
+            <input id="autofill-enabled" pref="autofill.enabled"
+                metric="Options_FormAutofill" type="checkbox">
+            <span i18n-content="autofillEnabled"></span>
+          </label>
+        </div>
+        <button id="autofill-settings"
+            i18n-content="manageAutofillSettings"></button>
       </div>
-      <div><button id="manage-passwords"
-          i18n-content="manage_passwords"></button></div>
-      <!-- This makes the managed-banner appear when the "pref" is
-      configured by the IT administrator. -->
-      <input name="password_allow_show_hidden" type="text"
-          pref="profile.password_manager_allow_show_passwords" hidden>
-    </div>
-  </section>
-  <section>
-    <h3 i18n-content="autofill"></h3>
-    <div>
-      <div class="checkbox">
-        <label>
-          <input id="autofill-enabled" pref="autofill.enabled"
-              metric="Options_FormAutofill" type="checkbox">
-          <span i18n-content="autofillEnabled"></span>
-        </label>
-      </div>
-      <button id="autofill-settings"
-          i18n-content="manageAutofillSettings"></button>
-    </div>
-  </section>
+    </section>
 <if expr="not pp_ifdef('chromeos')">
-  <section>
-    <h3 i18n-content="browsingData"></h3>
-    <div>
-      <button id="import-data" i18n-content="importData"></button>
-    </div>
-  </section>
+    <section>
+      <h3 i18n-content="browsingData"></h3>
+      <div>
+        <button id="import-data" i18n-content="importData"></button>
+      </div>
+    </section>
 </if>
 <if expr="not pp_ifdef('toolkit_views') and (os == 'linux2' or os.find('bsd') != -1 or os == 'sunos5')">
-  <section>
-    <h3 i18n-content="appearance"></h3>
-    <div>
+    <section>
+      <h3 i18n-content="appearance"></h3>
       <div>
-        <button id="themes-GTK-button"
-            i18n-content="themesGTKButton"></button>
-        <button id="themes-reset"
-            i18n-content="themesSetClassic"></button>
+        <div>
+          <button id="themes-GTK-button"
+              i18n-content="themesGTKButton"></button>
+          <button id="themes-reset"
+              i18n-content="themesSetClassic"></button>
+        </div>
+        <div id="themes-gallery-div">
+          <a id="themes-gallery" i18n-content="themesGallery"
+              i18n-values="href:themesGalleryURL" target="_blank"></a>
+        </div>
+        <div class="radio">
+          <label>
+            <input name="decorations_radio"
+                pref="browser.custom_chrome_frame"
+                type="radio" value="false" metric="Options_CustomFrame">
+            <span i18n-content="showWindowDecorations"></span>
+          </label>
+        </div>
+        <div class="radio">
+          <label>
+            <input name="decorations_radio"
+                pref="browser.custom_chrome_frame"
+                type="radio" value="true" metric="Options_CustomFrame">
+            <span i18n-content="hideWindowDecorations"></span>
+          </label>
+        </div>
       </div>
-      <div id="themes-gallery-div">
-        <a id="themes-gallery" i18n-content="themesGallery"
-            i18n-values="href:themesGalleryURL" target="_blank"></a>
-      </div>
-      <div class="radio">
-        <label>
-          <input name="decorations_radio"
-              pref="browser.custom_chrome_frame"
-              type="radio" value="false" metric="Options_CustomFrame">
-          <span i18n-content="showWindowDecorations"></span>
-        </label>
-      </div>
-      <div class="radio">
-        <label>
-          <input name="decorations_radio"
-              pref="browser.custom_chrome_frame"
-              type="radio" value="true" metric="Options_CustomFrame">
-          <span i18n-content="hideWindowDecorations"></span>
-        </label>
-      </div>
-    </div>
-  </section>
+    </section>
 </if>
 <if expr="pp_ifdef('toolkit_views') or os == 'win32' or os == 'darwin'">
-  <section>
-    <h3 i18n-content="themes"></h3>
-    <div>
+    <section>
+      <h3 i18n-content="themes"></h3>
       <div>
-        <button id="themes-reset" i18n-content="themesReset"></button>
+        <div>
+          <button id="themes-reset" i18n-content="themesReset"></button>
+        </div>
+        <div id="themes-gallery-div">
+          <a id="themes-gallery" i18n-content="themesGallery"
+              i18n-values="href:themesGalleryURL" target="_blank"></a>
+        </div>
       </div>
-      <div id="themes-gallery-div">
-        <a id="themes-gallery" i18n-content="themesGallery"
-            i18n-values="href:themesGalleryURL" target="_blank"></a>
-      </div>
-    </div>
-  </section>
+    </section>
 </if>
+  </div>
 </div>

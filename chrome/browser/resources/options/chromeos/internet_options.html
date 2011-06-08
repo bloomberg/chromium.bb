@@ -4,46 +4,48 @@
     <span id="locked-network-icon"></span>
     <span id="access-locked-text" i18n-content="accessLockedMsg"></span>
   </div>
-  <section id="wireless-buttons">
-   <h3 i18n-content="generalNetworkingTitle"></h3>
-   <div id="network-general-div">
-     <div id="networking-controls" class="section-group">
-       <button id="enable-wifi" hidden
-           i18n-content="enableWifi"></button>
-       <button id="disable-wifi" hidden
-           i18n-content="disableWifi"></button>
-       <button id="enable-cellular" hidden
-           i18n-content="enableCellular"></button>
-       <button id="disable-cellular" hidden
-           i18n-content="disableCellular"></button>
+  <div class="displaytable">
+    <section id="wireless-buttons">
+     <h3 i18n-content="generalNetworkingTitle"></h3>
+     <div id="network-general-div">
+       <div id="networking-controls" class="section-group">
+         <button id="enable-wifi" hidden
+             i18n-content="enableWifi"></button>
+         <button id="disable-wifi" hidden
+             i18n-content="disableWifi"></button>
+         <button id="enable-cellular" hidden
+             i18n-content="enableCellular"></button>
+         <button id="disable-cellular" hidden
+             i18n-content="disableCellular"></button>
+       </div>
+       <div id="internet-owner-only-warning" hidden>
+         <span i18n-content="ownerOnly"></span>
+         <span i18n-content="ownerUserId"></span>
+       </div>
+       <div id="data-roaming" class="checkbox">
+         <label>
+           <input id="enable-data-roaming" pref="cros.signed.data_roaming_enabled"
+               metric="Options_Internet_DataRoaming" type="checkbox">
+           <span i18n-content="enableDataRoaming"></span>
+         </label>
+       </div>
      </div>
-     <div id="internet-owner-only-warning" hidden>
-       <span i18n-content="ownerOnly"></span>
-       <span i18n-content="ownerUserId"></span>
-     </div>
-     <div id="data-roaming" class="checkbox">
-       <label>
-         <input id="enable-data-roaming" pref="cros.signed.data_roaming_enabled"
-             metric="Options_Internet_DataRoaming" type="checkbox">
-         <span i18n-content="enableDataRoaming"></span>
-       </label>
-     </div>
-   </div>
-  </section>
-  <section id="wired-section">
-    <h3 i18n-content="wired_title"></h3>
-    <div id="wired-list" class="networks"></div>
-  </section>
-  <section id="wireless-section">
-    <h3 i18n-content="wireless_title"></h3>
-    <div id="wireless-list" class="networks"></div>
-  </section>
-  <section id="vpn-section">
-    <h3 i18n-content="vpn_title"></h3>
-    <div id="vpn-list" class="networks"></div>
-  </section>
-  <section id="remembered-section">
-    <h3 i18n-content="remembered_title"></h3>
-    <div id="remembered-list" class="networks"></div>
-  </section>
+    </section>
+    <section id="wired-section">
+      <h3 i18n-content="wired_title"></h3>
+      <div id="wired-list" class="networks"></div>
+    </section>
+    <section id="wireless-section">
+      <h3 i18n-content="wireless_title"></h3>
+      <div id="wireless-list" class="networks"></div>
+    </section>
+    <section id="vpn-section">
+      <h3 i18n-content="vpn_title"></h3>
+      <div id="vpn-list" class="networks"></div>
+    </section>
+    <section id="remembered-section">
+      <h3 i18n-content="remembered_title"></h3>
+      <div id="remembered-list" class="networks"></div>
+    </section>
+  </div>
 </div>

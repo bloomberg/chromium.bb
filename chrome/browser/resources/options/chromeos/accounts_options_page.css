@@ -73,7 +73,9 @@
   width: 366px;
 }
 
+
 #ownerOnlyWarning {
+  margin-top: 10px;
   margin-bottom: 10px;
   padding-bottom: 1px;
   -webkit-padding-start: 20px;

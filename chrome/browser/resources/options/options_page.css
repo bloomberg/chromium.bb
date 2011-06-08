@@ -353,6 +353,11 @@ html.hide-menu #mainview {
   min-height: 192px;
 }
 
+/**
+ * TODO(kevers): Standardize formatting of sections to use display tables.
+ * For now, we require separate specialized rules for sections that are 
+ * formatted as table rows. 
+ */
 section {
   -webkit-box-orient: horizontal;
   border-bottom: 1px solid #eeeeee;
@@ -776,4 +781,37 @@ html[flashPluginSupportsClearSiteData] .flash-plugin-area,
 html:not([flashPluginSupportsClearSiteData]) .clear-plugin-lso-data-enabled,
 html[flashPluginSupportsClearSiteData] .clear-plugin-lso-data-disabled {
   display: none;
+}
+
+
+/* Display a collection of sections as a table in order to display nicely
+ * in multiple locales.  The left column should expand to accomodate the
+ * widest label without introducing excessive whitespace.  Labels in
+ * languages such as German or Dutch tend to be wider than for English 
+ */
+.displaytable {
+  display: table;
+  width: 100%;
+}
+
+.displaytable > section {
+  display: table-row;
+}
+
+/* right table column containing settable options */
+.displaytable > section > h3 + div,
+.displaytable > section > h3 + table {
+  padding-top: 17px;
+  padding-bottom: 20px;
+}
+
+.displaytable > section > * {
+  display: table-cell;
+  vertical-align: baseline;
+  border-bottom: 1px solid #eeeeee;
+}
+
+/* do not display a border after the last section in the table */
+.displaytable > section:last-child > *  {
+  border-bottom: none;
 }
