@@ -214,8 +214,14 @@ void TabStrip::PrepareForCloseAt(int model_index) {
     // available_width_for_tabs_ so that if we do a layout we don't position a
     // tab past the end of the second to last tab. We do this so that as the
     // user closes tabs with the mouse a tab continues to fall under the mouse.
-    available_width_for_tabs_ = GetAvailableWidthForTabs(
-        GetTabAtModelIndex(model_count - 2));
+    Tab* last_tab = GetTabAtModelIndex(model_count - 1);
+    Tab* tab_being_removed = GetTabAtModelIndex(model_index);
+    available_width_for_tabs_ = last_tab->x() + last_tab->width() -
+        tab_being_removed->width() - kTabHOffset;
+    if (model_index == 0 && tab_being_removed->data().mini &&
+        !GetTabAtModelIndex(1)->data().mini) {
+      available_width_for_tabs_ -= mini_to_non_mini_gap_;
+    }
   }
 
   in_tab_close_ = true;
@@ -994,10 +1000,6 @@ int TabStrip::GetMiniTabCount() const {
       return mini_count;
   }
   return mini_count;
-}
-
-int TabStrip::GetAvailableWidthForTabs(Tab* last_tab) const {
-  return last_tab->x() + last_tab->width();
 }
 
 bool TabStrip::IsPointInTab(Tab* tab,

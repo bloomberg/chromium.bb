@@ -214,9 +214,6 @@ class TabStrip : public BaseTabStrip,
   virtual void StartMiniTabAnimation();
   void StartMouseInitiatedRemoveTabAnimation(int model_index);
 
-  // Calculates the available width for tabs, assuming a Tab is to be closed.
-  int GetAvailableWidthForTabs(Tab* last_tab) const;
-
   // Returns true if the specified point in TabStrip coords is within the
   // hit-test region of the specified Tab.
   bool IsPointInTab(Tab* tab, const gfx::Point& point_in_tabstrip_coords);
