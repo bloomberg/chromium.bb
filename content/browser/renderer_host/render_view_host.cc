@@ -16,6 +16,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/spellcheck_host.h"
 #include "content/browser/browser_message_filter.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/content_browser_client.h"
@@ -960,6 +961,12 @@ void RenderViewHost::OnMsgContextMenu(const ContextMenuParams& params) {
   FilterURL(policy, renderer_id, &validated_params.frame_url);
 
   view->ShowContextMenu(validated_params);
+
+  Profile* profile = process()->profile();
+  DCHECK(profile);
+  if (!validated_params.dictionary_suggestions.empty() &&
+      profile->GetSpellCheckHost())
+      profile->GetSpellCheckHost()->RecordSuggestionStats(1);
 }
 
 void RenderViewHost::OnMsgOpenURL(const GURL& url,

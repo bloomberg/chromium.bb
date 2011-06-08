@@ -91,6 +91,7 @@ SpellCheckHostImpl::SpellCheckHostImpl(
       request_context_getter_(request_context_getter),
       misspelled_word_count_(0),
       spellchecked_word_count_(0),
+      suggestion_count_(0),
       replaced_word_count_(0) {
   DCHECK(observer_);
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -315,16 +316,30 @@ void SpellCheckHostImpl::RecordCheckedWordStats(bool misspell) {
   UMA_HISTOGRAM_PERCENTAGE("SpellCheck.MisspellRatio", percentage);
 }
 
+void SpellCheckHostImpl::RecordDictionaryCorruptionStats(bool corrupted) {
+  UMA_HISTOGRAM_BOOLEAN("SpellCheck.DictionaryCorrupted", corrupted);
+}
+
+void SpellCheckHostImpl::RecordSuggestionStats(int delta) {
+  suggestion_count_ += delta;
+  RecordReplacedWordStats(0);
+}
+
 void SpellCheckHostImpl::RecordReplacedWordStats(int delta) {
   replaced_word_count_ += delta;
-  if (!misspelled_word_count_) {
-    // This is possible when an extension gives the misspelling,
-    // which is not recorded as a part of this metrics.
-    return;
+
+  if (misspelled_word_count_) {
+    // zero |misspelled_word_count_| is possible when an extension
+    // gives the misspelling, which is not recorded as a part of this
+    // metrics.
+    int percentage = (100 * replaced_word_count_) / misspelled_word_count_;
+    UMA_HISTOGRAM_PERCENTAGE("SpellCheck.ReplaceRatio", percentage);
   }
 
-  int percentage = (100 * replaced_word_count_) / misspelled_word_count_;
-  UMA_HISTOGRAM_PERCENTAGE("SpellCheck.ReplaceRatio", percentage);
+  if (suggestion_count_) {
+    int percentage = (100 * replaced_word_count_) / suggestion_count_;
+    UMA_HISTOGRAM_PERCENTAGE("SpellCheck.SuggestionHitRatio", percentage);
+  }
 }
 
 void SpellCheckHostImpl::OnURLFetchComplete(const URLFetcher* source,
@@ -372,7 +387,9 @@ void SpellCheckHostImpl::SaveDictionaryData() {
 
   // To prevent corrupted dictionary data from causing a renderer crash, scan
   // the dictionary data and verify it is sane before save it to a file.
-  if (!hunspell::BDict::Verify(data_.data(), data_.size())) {
+  bool verified = hunspell::BDict::Verify(data_.data(), data_.size());
+  RecordDictionaryCorruptionStats(!verified);
+  if (!verified) {
     LOG(ERROR) << "Failure to verify the downloaded dictionary.";
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(this,

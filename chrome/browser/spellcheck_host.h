@@ -88,6 +88,10 @@ class SpellCheckHost
   // to be uploaded via UMA
   virtual void RecordCheckedWordStats(bool misspell) = 0;
 
+  // Collects a histogram for context menu showing as a spell correction
+  // attempt to be uploaded via UMA
+  virtual void RecordSuggestionStats(int delta) = 0;
+
   // Collects a histogram for misspelled word replacement
   // to be uploaded via UMA
   virtual void RecordReplacedWordStats(int delta) = 0;
