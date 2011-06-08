@@ -6,6 +6,7 @@
 
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
+#include "base/metrics/histogram.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "content/common/notification_service.h"
 
 namespace events {
@@ -276,6 +278,10 @@ void LaunchAppFromOmnibox(const AutocompleteMatch& match,
   // ignore the request.
   if (!extension)
     return;
+
+  UMA_HISTOGRAM_ENUMERATION(extension_misc::kAppLaunchHistogram,
+                            extension_misc::APP_LAUNCH_OMNIBOX_APP,
+                            extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
 
   // Look at the preferences to find the right launch container.  If no
   // preference is set, launch as a regular tab.

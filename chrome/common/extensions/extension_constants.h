@@ -347,7 +347,7 @@ namespace extension_misc {
     // Autolaunched at startup, like for pinned tabs.
     APP_LAUNCH_AUTOLAUNCH,
 
-    // Launched from omnibox app links (not implemented yet).
+    // Launched from omnibox app links.
     APP_LAUNCH_OMNIBOX_APP,
 
     // App URL typed directly into the omnibox (w/ instant turned off).
