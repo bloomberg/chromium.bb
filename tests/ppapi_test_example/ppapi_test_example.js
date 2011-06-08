@@ -7,8 +7,8 @@ function setupTests(tester, plugin) {
   tester.addTest('Example::Foo', function() {
     assert(plugin.testFoo());
   });
-  tester.addTest('Example::PostMessage', function() {
-    plugin.postMessage("dummy");
-    tester.waitForCallback('MessageHandled', 1);
+  tester.addTest('Example::PostMessage', function(status) {
+    plugin.postMessage('dummy');
+    status.waitForCallback('MessageHandled', 1);
   });
 }

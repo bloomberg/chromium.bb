@@ -576,61 +576,34 @@ function TestStatus(tester, name, async) {
     if (args === undefined)
       args = [];
 
-    // Should we move on to the next test?
-    // Async tests do not move on without an explicit pass.
-    var done = !this.async;
-    // Did the test exit via an exception?
-    var exceptionHandled = false;
-
-    // Was the next test scheduled before the callback returned?
-    // This is how new-style tests behave.
-    var new_style_exit = false;
-
     try {
       callback.apply(undefined, args);
     } catch (err) {
-      exceptionHandled = true;
-      var recognized = true;
-      done = true;
       if(typeof err == 'object' && 'type' in err) {
         if (err.type == 'test_halt') {
           // New-style test
           // If we get this exception, we can assume any callbacks or next
           // tests have already been scheduled.
-          new_style_exit = true;
+          return;
         } else if (err.type == 'test_fail') {
+          // Old-style test
           // A special exception that terminates the test with a failure
           this.tester.rpc.fail(this.name, err.message, !this.running);
-        } else if (err.type == 'test_pass') {
-          // A special exception that terminates the test without failing
-          this.tester.rpc.pass(this.name, !this.running);
-        } else if (err.type == 'test_wait') {
-          // A special exception that indicates the test wants a callback
-          setTimeout(function() {
-            this_.callbackWrapper(err.callback);
-          }, err.time);
-          done = false;
-        } else {
-          recognized = false;
+          this._done();
+          return;
         }
-      } else {
-        recognized = false;
       }
-      if (!recognized) {
-        // This is not a special type of exception, it is an error.
-        this.tester.rpc.exception(this.name, err, !this.running);
-      }
+      // This is not a special type of exception, it is an error.
+      this.tester.rpc.exception(this.name, err, !this.running);
+      this._done();
+      return;
     }
 
-    if (!new_style_exit) {
-      if (done && this.running) {
-        if (!exceptionHandled) {
-          // No exception, the test passed
-          // Only used by non-async tests.
-          this.tester.rpc.pass(this.name);
-        }
-        this._done();
-      }
+    // A normal exit.  Should we move on to the next test?
+    // Async tests do not move on without an explicit pass.
+    if (!this.async) {
+      this.tester.rpc.pass(this.name);
+      this._done();
     }
   }
 
@@ -710,34 +683,6 @@ function Tester(body_element) {
   // This kind of test does not pass until "pass" is explicitly called.
   this.addAsyncTest = function(name, testFunction) {
     tests.push({name: name, callback: testFunction, async: true});
-  }
-
-  // TODO(ncbray): remove
-  this.waitForCallback = function(callbackName, expectedCalls) {
-    this_.log('Waiting for ' + expectedCalls + ' invocations of callback: '
-               + callbackName);
-    var gotCallbacks = 0;
-
-    // Deliberately global - this what the nexe expects.
-    // TODO(ncbray): consider returning this function, so the test has more
-    // flexibility. For example, in the test one could count to N
-    // using a different callback before calling _this_ callback, and
-    // continuing the test. Also, consider calling user-supplieed callback
-    // when done waiting.
-    window[callbackName] = function() {
-      ++gotCallbacks;
-      this_.log('Received callback ' + gotCallbacks);
-    };
-
-    function wait() {
-      if (gotCallbacks < expectedCalls) {
-        throw {type: 'test_wait', time: 1, callback: wait};
-      } else {
-        this_.log("Done waiting");
-      }
-    }
-
-    wait();
   }
 
   this.run = function() {

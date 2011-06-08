@@ -9,22 +9,22 @@
     <script type="application/x-javascript">
       //<![CDATA[
 function setupTests(tester, plugin) {
-    tester.addTest('PPB_FileSystem_Dev::Create', function() {
-      assert(plugin.testCreate());
+    tester.addTest('PPB_FileSystem_Dev::Create', function(status) {
+      status.assert(plugin.testCreate());
     });
 
-    tester.addTest('PPB_FileSystem_Dev::IsFileSystem', function() {
-      assert(plugin.testIsFileSystem());
+    tester.addTest('PPB_FileSystem_Dev::IsFileSystem', function(status) {
+      status.assert(plugin.testIsFileSystem());
     });
 
     // TODO(ncbray): Replace with async test harness.
-    tester.addTest('PPB_FileSystem_Dev::Open', function() {
-      assert(plugin.testOpen());
-      tester.waitForCallback('OpenCallback', 4);
+    tester.addTest('PPB_FileSystem_Dev::Open', function(status) {
+      status.assert(plugin.testOpen());
+      status.waitForCallback('OpenCallback', 4);
     });
 
-    tester.addTest('PPB_FileSytem_Dev::GetType', function() {
-      assert(plugin.testGetType());
+    tester.addTest('PPB_FileSytem_Dev::GetType', function(status) {
+      status.assert(plugin.testGetType());
     });
 } // STOP!!!
       //]]>
