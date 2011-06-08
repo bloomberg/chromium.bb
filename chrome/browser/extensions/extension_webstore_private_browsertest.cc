@@ -86,10 +86,7 @@ class FakeBrowserSignin : public BrowserSignin {
       delegate->OnLoginSuccess();
 
       // Fake a token available notification.
-      Profile* profile = tab_contents->profile();
-      if (profile->IsOffTheRecord()) {
-        profile = g_browser_process->profile_manager()->GetDefaultProfile();
-      }
+      Profile* profile = tab_contents->profile()->GetOriginalProfile();
       TokenService* token_service = profile->GetTokenService();
       token_service->IssueAuthTokenForTest(GaiaConstants::kGaiaService,
                                            "new_token");
