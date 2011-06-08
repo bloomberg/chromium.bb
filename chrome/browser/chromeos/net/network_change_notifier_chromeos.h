@@ -50,8 +50,6 @@ class NetworkChangeNotifierChromeos
   // Current active network's IP address.
   std::string ip_address_;
 
-  ScopedRunnableMethodFactory<NetworkChangeNotifierChromeos> method_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(NetworkChangeNotifierChromeos);
 };
 

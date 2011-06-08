@@ -12,8 +12,7 @@ namespace chromeos {
 
 NetworkChangeNotifierChromeos::NetworkChangeNotifierChromeos()
     : has_active_network_(false),
-      connection_state_(chromeos::STATE_UNKNOWN),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+      connection_state_(chromeos::STATE_UNKNOWN) {
 
   chromeos::NetworkLibrary* lib =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
@@ -110,7 +109,7 @@ void NetworkChangeNotifierChromeos::OnNetworkChanged(
   if (is_online != was_online || is_portal != was_portal) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        method_factory_.NewRunnableMethod(
+        NewRunnableFunction(
            &NetworkChangeNotifierChromeos::NotifyObserversOfOnlineStateChange));
   }
   connection_state_ = new_connection_state;
