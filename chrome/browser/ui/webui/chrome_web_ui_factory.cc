@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "chrome/browser/ui/webui/plugins_ui.h"
 #include "chrome/browser/ui/webui/print_preview_ui.h"
+#include "chrome/browser/ui/webui/sessions_ui.h"
 #include "chrome/browser/ui/webui/sync_internals_ui.h"
 #include "chrome/browser/ui/webui/test_chrome_web_ui_factory.h"
 #include "chrome/browser/ui/webui/textfields_ui.h"
@@ -164,6 +165,8 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
     return &NewWebUI<NetInternalsUI>;
   if (url.host() == chrome::kChromeUIPluginsHost)
     return &NewWebUI<PluginsUI>;
+  if (url.host() == chrome::kChromeUISessionsHost)
+    return &NewWebUI<SessionsUI>;
   if (url.host() == chrome::kChromeUISyncInternalsHost)
     return &NewWebUI<SyncInternalsUI>;
   if (url.host() == chrome::kChromeUISettingsHost)
@@ -342,6 +345,9 @@ RefCountedMemory* ChromeWebUIFactory::GetFaviconResourceBytes(
 
   if (page_url.host() == chrome::kChromeUIFlagsHost)
     return FlagsUI::GetFaviconResourceBytes();
+
+  if (page_url.host() == chrome::kChromeUISessionsHost)
+    return SessionsUI::GetFaviconResourceBytes();
 
   if (page_url.host() == chrome::kChromeUIFlashHost)
     return FlashUI::GetFaviconResourceBytes();

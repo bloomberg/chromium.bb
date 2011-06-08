@@ -3472,6 +3472,8 @@
         'browser/ui/webui/print_preview_ui.h',
         'browser/ui/webui/screenshot_source.cc',
         'browser/ui/webui/screenshot_source.h',
+        'browser/ui/webui/sessions_ui.cc',
+        'browser/ui/webui/sessions_ui.h',
         'browser/ui/webui/shared_resources_data_source.cc',
         'browser/ui/webui/shared_resources_data_source.h',
         'browser/ui/webui/sync_internals_html_source.cc',
