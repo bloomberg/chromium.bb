@@ -2488,6 +2488,7 @@
   {
     "namespace": "experimental.inputUI",
     "nodoc": true,
+    "platforms": ["chromeos touch"],
     "types": [],
     "functions": [
       {

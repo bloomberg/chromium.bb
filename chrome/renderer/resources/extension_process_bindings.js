@@ -499,6 +499,24 @@ var chrome = chrome || {};
     };
   }
 
+  // Get the platform from navigator.appVersion.
+  function getPlatform() {
+    var platforms = [
+      [/CrOS Touch/, "chromeos touch"],
+      [/CrOS/, "chromeos"],
+      [/Linux/, "linux"],
+      [/Mac/, "mac"],
+      [/Win/, "win"],
+    ];
+
+    for (var i = 0; i < platforms.length; i++) {
+      if (platforms[i][0].test(navigator.appVersion)) {
+        return platforms[i][1];
+      }
+    }
+    return "unknown";
+  }
+
   chromeHidden.onLoad.addListener(function (extensionId) {
     if (!extensionId) {
       return;
@@ -521,8 +539,14 @@ var chrome = chrome || {};
     // TOOD(rafaelw): Consider providing some convenient override points
     //   for api functions that wish to insert themselves into the call.
     var apiDefinitions = chromeHidden.JSON.parse(GetExtensionAPIDefinition());
+    var platform = getPlatform();
 
     apiDefinitions.forEach(function(apiDef) {
+      // Check platform, if apiDef has platforms key.
+      if (apiDef.platforms && apiDef.platforms.indexOf(platform) == -1) {
+        return;
+      }
+
       var module = chrome;
       var namespaces = apiDef.namespace.split('.');
       for (var index = 0, name; name = namespaces[index]; index++) {
