@@ -581,10 +581,10 @@ cr.define('options', function() {
         }
 
         if (!args.editable_user) {
-          email.style.display = 'none';
-          var span = document.getElementById('email-readonly');
-          span.appendChild(document.createTextNode(email.value));
-          span.style.display = 'inline';
+          email.hidden = true;
+          var span = $('email-readonly');
+          span.textContent = email.value;
+          span.hidden = false;
           $('create-account-div').hidden = true;
         }
 
