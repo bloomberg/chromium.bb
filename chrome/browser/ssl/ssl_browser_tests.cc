@@ -455,7 +455,9 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestDisplaysInsecureContent) {
 // Visits a page that runs insecure content and tries to suppress the insecure
 // content warnings by randomizing location.hash.
 // Based on http://crbug.com/8706
-IN_PROC_BROWSER_TEST_F(SSLUITest, TestRunsInsecuredContentRandomizeHash) {
+// Disabled, http://crbug.com/85475.
+IN_PROC_BROWSER_TEST_F(SSLUITest,
+                       DISABLED_TestRunsInsecuredContentRandomizeHash) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(https_server_.Start());
 
@@ -578,7 +580,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestDisplaysInsecureContentTwoTabs) {
 // Visits two pages from the same origin: one that runs insecure content and one
 // that doesn't.  The test checks that we propagate the insecure content state
 // from one to the other.
-IN_PROC_BROWSER_TEST_F(SSLUITest, TestRunsInsecureContentTwoTabs) {
+// Disabled, http://crbug.com/85475.
+IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestRunsInsecureContentTwoTabs) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(https_server_.Start());
 
@@ -644,7 +647,9 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestDisplaysCachedInsecureContent) {
 #define MAYBE_TestRunsCachedInsecureContent \
     DISABLED_TestRunsCachedInsecureContent
 #else
-#define MAYBE_TestRunsCachedInsecureContent TestRunsCachedInsecureContent
+// Disabled, http://crbug.com/85475.
+#define MAYBE_TestRunsCachedInsecureContent \
+    DISABLED_TestRunsCachedInsecureContent
 #endif  // defined(OS_CHROMEOS)
 
 // Visits a page with script over http.  Visits another page over https
