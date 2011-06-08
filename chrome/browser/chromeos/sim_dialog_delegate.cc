@@ -36,27 +36,13 @@ const char kSimDialogChangePinMode[]  = "change-pin";
 const char kSimDialogSetLockOnMode[]  = "set-lock-on";
 const char kSimDialogSetLockOffMode[] = "set-lock-off";
 
-// Custom HtmlDialogView with disabled context menu.
-class HtmlDialogWithoutContextMenuView : public HtmlDialogView {
- public:
-  HtmlDialogWithoutContextMenuView(Profile* profile,
-                                   HtmlDialogUIDelegate* delegate)
-      : HtmlDialogView(profile, delegate) {}
-
-  // TabContentsDelegate implementation.
-  bool HandleContextMenu(const ContextMenuParams& params) {
-    // Disable context menu.
-    return true;
-  }
-};
-
 }  // namespace
 
 namespace chromeos {
 
 // static
 void SimDialogDelegate::ShowDialog(gfx::NativeWindow owning_window,
-                                         SimDialogMode mode) {
+                                   SimDialogMode mode) {
   Profile* profile;
   if (UserManager::Get()->user_is_logged_in()) {
     Browser* browser = BrowserList::GetLastActive();
@@ -65,8 +51,8 @@ void SimDialogDelegate::ShowDialog(gfx::NativeWindow owning_window,
   } else {
     profile = ProfileManager::GetDefaultProfile();
   }
-  HtmlDialogView* html_view = new HtmlDialogWithoutContextMenuView(
-      profile, new SimDialogDelegate(mode));
+  HtmlDialogView* html_view =
+      new HtmlDialogView(profile, new SimDialogDelegate(mode));
   html_view->InitDialog();
   chromeos::BubbleWindow::Create(owning_window,
                                  gfx::Rect(),
@@ -134,6 +120,11 @@ void SimDialogDelegate::OnCloseContents(TabContents* source,
 
 bool SimDialogDelegate::ShouldShowDialogTitle() const {
   return false;
+}
+
+bool SimDialogDelegate::HandleContextMenu(const ContextMenuParams& params) {
+  // Disable context menu.
+  return true;
 }
 
 }  // namespace chromeos

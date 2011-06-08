@@ -22,21 +22,6 @@ namespace {
 const double kDefaultWidthRatio = 0.6;
 const double kDefaultHeightRatio = 0.6;
 
-// Custom HtmlDialogView with disabled context menu.
-class HtmlDialogWithoutContextMenuView : public HtmlDialogView {
- public:
-  HtmlDialogWithoutContextMenuView(Profile* profile,
-                                   HtmlDialogUIDelegate* delegate)
-      : HtmlDialogView(profile, delegate) {}
-  virtual ~HtmlDialogWithoutContextMenuView() {}
-
-  // TabContentsDelegate implementation.
-  bool HandleContextMenu(const ContextMenuParams& params) {
-    // Disable context menu.
-    return true;
-  }
-};
-
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -64,9 +49,8 @@ LoginHtmlDialog::~LoginHtmlDialog() {
 }
 
 void LoginHtmlDialog::Show() {
-  HtmlDialogWithoutContextMenuView* html_view =
-      new HtmlDialogWithoutContextMenuView(ProfileManager::GetDefaultProfile(),
-                                           this);
+  HtmlDialogView* html_view =
+      new HtmlDialogView(ProfileManager::GetDefaultProfile(), this);
   if (style_ & STYLE_BUBBLE) {
     views::Window* bubble_window = BubbleWindow::Create(
         parent_window_, gfx::Rect(),
@@ -136,6 +120,11 @@ void LoginHtmlDialog::OnCloseContents(TabContents* source,
 }
 
 bool LoginHtmlDialog::ShouldShowDialogTitle() const {
+  return true;
+}
+
+bool LoginHtmlDialog::HandleContextMenu(const ContextMenuParams& params) {
+  // Disable context menu.
   return true;
 }
 

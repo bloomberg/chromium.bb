@@ -18,20 +18,6 @@ namespace {
 const int kDefaultWidth = 350;
 const int kDefaultHeight = 225;
 
-// Custom HtmlDialogView with disabled context menu.
-class HtmlDialogWithoutContextMenuView : public HtmlDialogView {
- public:
-  HtmlDialogWithoutContextMenuView(Profile* profile,
-                                   HtmlDialogUIDelegate* delegate)
-      : HtmlDialogView(profile, delegate) {}
-
-  // TabContentsDelegate implementation.
-  bool HandleContextMenu(const ContextMenuParams& params) {
-    // Disable context menu.
-    return true;
-  }
-};
-
 }  // namespace
 
 namespace chromeos {
@@ -46,8 +32,8 @@ void ChooseMobileNetworkDialog::ShowDialog(gfx::NativeWindow owning_window) {
   } else {
     profile = ProfileManager::GetDefaultProfile();
   }
-  HtmlDialogView* html_view = new HtmlDialogWithoutContextMenuView(
-      profile, new ChooseMobileNetworkDialog);
+  HtmlDialogView* html_view =
+      new HtmlDialogView(profile, new ChooseMobileNetworkDialog);
   html_view->InitDialog();
   chromeos::BubbleWindow::Create(owning_window,
                                  gfx::Rect(),
@@ -95,6 +81,12 @@ void ChooseMobileNetworkDialog::OnCloseContents(TabContents* source,
 
 bool ChooseMobileNetworkDialog::ShouldShowDialogTitle() const {
   return false;
+}
+
+bool ChooseMobileNetworkDialog::HandleContextMenu(
+    const ContextMenuParams& params) {
+  // Disable context menu.
+  return true;
 }
 
 }  // namespace chromeos
