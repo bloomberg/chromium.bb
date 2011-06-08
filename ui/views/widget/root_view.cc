@@ -31,11 +31,11 @@ RootView::~RootView() {
 ////////////////////////////////////////////////////////////////////////////////
 // RootView, View overrides:
 
-void RootView::OnViewRemoved(View* parent, View* child) {
-  if (child == mouse_pressed_handler_)
+void RootView::OnViewRemoved(const View& parent, const View& child) {
+  if (&child == mouse_pressed_handler_)
     mouse_pressed_handler_ = NULL;
 
-  GetFocusManager()->RemoveView(child);
+  GetFocusManager()->RemoveView(&child);
 }
 
 bool RootView::OnKeyPressed(const KeyEvent& event) {

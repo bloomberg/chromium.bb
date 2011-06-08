@@ -4,6 +4,7 @@
 
 #include <algorithm>
 
+#include "base/compiler_specific.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/view.h"
@@ -69,15 +70,15 @@ class ObserverView : public View {
   }
 
   // Overridden from View:
-  virtual void OnViewAdded(View* parent, View* child) {
-    subject_view_ = child;
+  virtual void OnViewAdded(const View& parent, const View& child) OVERRIDE {
     view_added_ = true;
     view_removed_ = false;
+    subject_view_ = &child;
   }
-  virtual void OnViewRemoved(View* parent, View* child) {
-    subject_view_ = child;
-    view_removed_ = true;
+  virtual void OnViewRemoved(const View& parent, const View& child) OVERRIDE {
     view_added_ = false;
+    view_removed_ = true;
+    subject_view_ = &child;
   }
 
   bool view_added() const { return view_added_; }

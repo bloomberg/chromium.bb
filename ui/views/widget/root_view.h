@@ -26,7 +26,7 @@ class RootView : public View,
   virtual ~RootView();
 
   // Overridden from View:
-  virtual void OnViewRemoved(View* parent, View* child) OVERRIDE;
+  virtual void OnViewRemoved(const View& parent, const View& child) OVERRIDE;
   virtual bool OnKeyPressed(const KeyEvent& event) OVERRIDE;
   virtual bool OnKeyReleased(const KeyEvent& event) OVERRIDE;
   virtual bool OnMouseWheel(const MouseWheelEvent& event) OVERRIDE;
