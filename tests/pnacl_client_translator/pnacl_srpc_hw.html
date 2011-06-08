@@ -31,30 +31,19 @@
       // it helps reproduce a bug.
       //tester.waitFor(nexeModule);
 
-      tester.addTest('pnacl_translate', function() {
-        // Flag to determine when translation is done.
-        var translated = false;
-
-        function wait() {
-          if (!translated) {
-            halt_and_callback(100, wait);
-          } else {
-            tester.log('Done waiting for translation.');
-            assertEqual(nexeModule.fortytwo(), 42);
-            assertEqual(nexeModule.helloworld(), 'hello, world.');
-          }
-        }
-
+      tester.addAsyncTest('pnacl_translate', function(status) {
         // Translation will call this when the nexe is translated and loaded.
-        function finishCallback() {
+        var finishCallback = status.wrap(function() {
           enableButton('fortytwo');
           enableButton('helloworld');
-          translated = true;
-        }
+          status.log('Done waiting for translation.');
+          status.assertEqual(nexeModule.fortytwo(), 42);
+          status.assertEqual(nexeModule.helloworld(), 'hello, world.');
+          status.pass();
+        });
 
         // Start translation and wait for it to finish.
         startLoading(finishCallback, nexeModule, pnaclEmbeds);
-        wait();
       });
 
       tester.run();
