@@ -509,7 +509,7 @@ function updatePrintPreview(pageCount, jobTitle, modifiable, previewUid) {
   } else if (printSettings.isLandscape != tempPrintSettings.isLandscape) {
     setDefaultValuesAndRegeneratePreview();
     return;
-  } else if (getSelectedPagesValidityLevel() == 1) {
+  } else if (isSelectedPagesValid()) {
     var currentlySelectedPages = getSelectedPagesSet();
     if (!areArraysEqual(previouslySelectedPages, currentlySelectedPages)) {
       previouslySelectedPages = currentlySelectedPages;
@@ -518,7 +518,7 @@ function updatePrintPreview(pageCount, jobTitle, modifiable, previewUid) {
     }
   }
 
-  if (getSelectedPagesValidityLevel() != 1)
+  if (!isSelectedPagesValid())
     pageRangesFieldChanged();
 
   // Update the current tab title.
@@ -587,10 +587,10 @@ function checkCompatiblePluginExists() {
  */
 function updatePrintButtonState() {
   if (getSelectedPrinterName() == PRINT_TO_PDF) {
-    $('print-button').disabled = (getSelectedPagesValidityLevel() != 1);
+    $('print-button').disabled = !isSelectedPagesValid();
   } else {
     $('print-button').disabled = (!isNumberOfCopiesValid() ||
-                                  getSelectedPagesValidityLevel() != 1);
+                                  !isSelectedPagesValid());
   }
 }
 
@@ -615,9 +615,8 @@ function pageRangesFieldChanged() {
   var currentlySelectedPages = getSelectedPagesSet();
   var individualPagesField = $('individual-pages');
   var individualPagesHint = $('individual-pages-hint');
-  var validityLevel = getSelectedPagesValidityLevel();
 
-  if (validityLevel == 1) {
+  if (isSelectedPagesValid()) {
     individualPagesField.classList.remove('invalid');
     fadeOutElement(individualPagesHint);
   } else {
@@ -669,7 +668,7 @@ function updatePrintSummary() {
     return;
   }
 
-  if (getSelectedPagesValidityLevel() != 1) {
+  if (!isSelectedPagesValid()) {
     printSummary.innerHTML = '';
     return;
   }
@@ -787,20 +786,17 @@ function getSelectedPages() {
 }
 
 /**
- * Checks the 'individual-pages' field and returns -1 if nothing is valid, 0 if
- * it is partially valid, 1 if it is completely valid.
- * Note: This function is stricter than getSelectedPages(), in other words this
- * could return -1 and getSelectedPages() might still extract some pages.
+ * Validates the 'individual-pages' text field value.
+ *
+ * @return {boolean} true if the text is valid.
  */
-function getSelectedPagesValidityLevel() {
+function isSelectedPagesValid() {
   var pageText = $('individual-pages').value;
 
   if ($('all-pages').checked || pageText.length == 0)
-    return 1;
+    return true;
 
   var successfullyParsed = 0;
-  var failedToParse = 0;
-
   var parts = pageText.split(/,/);
 
   for (var i = 0; i < parts.length; ++i) {
@@ -809,31 +805,27 @@ function getSelectedPagesValidityLevel() {
       continue;
 
     var match = part.match(/^([0-9]+)-([0-9]*)$/);
-    if (match && match[1]) {
+    if (match && isValidNonZeroPositiveInteger(match[1])) {
       var from = parseInt(match[1], 10);
       var to = match[2] ? parseInt(match[2], 10) : totalPageCount;
 
-      if (from && to && from <= to)
-        successfullyParsed += 1;
-      else
-        failedToParse += 1;
-
-    } else if (isInteger(part) && parseInt(part, 10) <= totalPageCount &&
-               parseInt(part, 10) > 0)
-      successfullyParsed += 1;
-    else
-      failedToParse += 1;
+      if (!to || from > to)
+        return false;
+    } else if (!isValidNonZeroPositiveInteger(part) ||
+               !(parseInt(part, 10) <= totalPageCount)) {
+      return false;
+    }
+    successfullyParsed += 1;
   }
-  if (successfullyParsed > 0 && failedToParse == 0)
-    return 1;
-  else if (successfullyParsed > 0 && failedToParse > 0)
-    return 0;
-  else
-    return -1;
+  return successfullyParsed > 0
 }
 
-function isSelectedPagesFieldValid() {
-  return (getSelectedPages().length != 0)
+/**
+ * Returns true if |value| is a valid non zero positive integer.
+ * @param {string} value The string to be tested.
+ */
+function isValidNonZeroPositiveInteger(value) {
+  return isInteger(value) && parseInt(value, 10) > 0;
 }
 
 /**
@@ -911,13 +903,12 @@ function resetPageRangeFieldTimer() {
 function onPageSelectionMayHaveChanged() {
   if ($('print-pages').checked)
     pageRangesFieldChanged();
-  var validityLevel = getSelectedPagesValidityLevel();
   var currentlySelectedPages = getSelectedPagesSet();
 
   // Toggling between "all pages"/"some pages" radio buttons while having an
   // invalid entry in the page selection textfield still requires updating the
   // print summary and print button.
-  if (validityLevel < 1 ||
+  if (!isSelectedPagesValid() ||
       areArraysEqual(previouslySelectedPages, currentlySelectedPages)) {
     updatePrintButtonState();
     updatePrintSummary();
