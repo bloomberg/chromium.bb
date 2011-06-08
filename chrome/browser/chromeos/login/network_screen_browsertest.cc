@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/login/network_screen.h"
 #include "chrome/browser/chromeos/login/network_selection_view.h"
 #include "chrome/browser/chromeos/login/view_screen.h"
+#include "chrome/browser/chromeos/login/views_network_screen_actor.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/login/wizard_in_process_browser_test.h"
 #include "chrome/browser/chromeos/login/wizard_screen.h"
@@ -115,7 +116,9 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
     ASSERT_TRUE(network_screen_ != NULL);
     ASSERT_EQ(controller()->current_screen(), network_screen_);
     network_screen_->screen_observer_ = mock_screen_observer_.get();
-    actor_ = network_screen_->actor();
+    // We need a couple of methods defined only in views version.
+    // TODO(avayvod): Refactor this when WebUI implementation is finished.
+    actor_ = static_cast<ViewsNetworkScreenActor*>(network_screen_->actor());
     ASSERT_TRUE(actor_ != NULL);
   }
 
@@ -140,7 +143,7 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
   MockNetworkLibrary* mock_network_library_;
   scoped_ptr<NetworkDevice> cellular_;
   NetworkScreen* network_screen_;
-  NetworkScreenActor* actor_;
+  ViewsNetworkScreenActor* actor_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkScreenTest);

@@ -59,6 +59,8 @@ void EulaScreenHandler::RegisterMessages() {
 }
 
 void EulaScreenHandler::OnExit(const ListValue* args) {
+  DCHECK(args->GetSize() == 2);
+
   bool accepted = false;
   if (!args->GetBoolean(0, &accepted))
     NOTREACHED();
@@ -66,8 +68,6 @@ void EulaScreenHandler::OnExit(const ListValue* args) {
   bool is_usage_stats_checked = false;
   if (!args->GetBoolean(1, &is_usage_stats_checked))
     NOTREACHED();
-
-  DCHECK(args->GetSize() == 2);
 
   if (!delegate_)
     return;

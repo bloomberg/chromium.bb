@@ -7,18 +7,17 @@
 #include <string>
 
 #include "base/logging.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/eula_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "grit/browser_resources.h"
-#include "grit/chromium_strings.h"
-#include "grit/generated_resources.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace {
@@ -115,22 +114,6 @@ CoreOobeHandler::~CoreOobeHandler() {
 }
 
 void CoreOobeHandler::GetLocalizedSettings(DictionaryValue* localized_strings) {
-  // OOBE title is not actually seen in UI, use title of the welcome screen.
-  // TODO(altimofeev): move the strings to the corresponding handlers, when
-  // they will be ready.
-  localized_strings->SetString("title",
-                    l10n_util::GetStringUTF16(IDS_NETWORK_SELECTION_TITLE));
-  localized_strings->SetString("welcomeScreenTitle",
-                    l10n_util::GetStringFUTF16(IDS_WELCOME_SCREEN_TITLE,
-                        l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
-  localized_strings->SetString("languageSelect",
-                    l10n_util::GetStringUTF16(IDS_LANGUAGE_SELECTION_SELECT));
-  localized_strings->SetString("keyboardSelect",
-                    l10n_util::GetStringUTF16(IDS_KEYBOARD_SELECTION_SELECT));
-  localized_strings->SetString("networkSelect",
-                    l10n_util::GetStringUTF16(IDS_NETWORK_SELECTION_SELECT));
-  localized_strings->SetString("continue",
-      l10n_util::GetStringUTF16(IDS_NETWORK_SELECTION_CONTINUE_BUTTON));
 }
 
 void CoreOobeHandler::Initialize() {
@@ -155,6 +138,10 @@ OobeUI::OobeUI(TabContents* contents)
   scoped_ptr<DictionaryValue> localized_strings(new DictionaryValue);
 
   AddOobeMessageHandler(new CoreOobeHandler(this), localized_strings.get());
+
+  NetworkScreenHandler* network_screen_handler = new NetworkScreenHandler;
+  network_screen_actor_ = network_screen_handler;
+  AddOobeMessageHandler(network_screen_handler, localized_strings.get());
 
   EulaScreenHandler* eula_screen_handler = new EulaScreenHandler;
   eula_screen_actor_ = eula_screen_handler;
@@ -213,10 +200,9 @@ void OobeUI::AddOobeMessageHandler(OobeMessageHandler* handler,
 }
 
 void OobeUI::InitializeHandlers() {
-  std::vector<WebUIMessageHandler*>::iterator iter;
   // Note, handlers_[0] is a GenericHandler used by the WebUI.
-  for (iter = handlers_.begin() + 1; iter != handlers_.end(); ++iter) {
-    (static_cast<OobeMessageHandler*>(*iter))->Initialize();
+  for (size_t i = 1; i < handlers_.size(); ++i) {
+    static_cast<OobeMessageHandler*>(handlers_[i])->Initialize();
   }
 }
 

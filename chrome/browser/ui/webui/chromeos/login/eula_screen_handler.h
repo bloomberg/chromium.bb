@@ -15,7 +15,7 @@ class ListValue;
 
 namespace chromeos {
 
-// WebUI implementation of the EulaScreenActor. It is used to interract
+// WebUI implementation of EulaScreenActor. It is used to interact
 // with the eula part of the JS page.
 class EulaScreenHandler : public EulaScreenActor,
                           public OobeMessageHandler {

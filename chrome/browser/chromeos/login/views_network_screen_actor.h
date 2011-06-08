@@ -47,8 +47,6 @@ class ViewsNetworkScreenActor : public ViewScreen<NetworkSelectionView>,
       bool connecting,
       const string16& network_id);
   virtual void EnableContinue(bool enabled);
-  virtual bool IsContinueEnabled() const;
-  virtual bool IsConnecting() const;
 
   // views::ButtonListener implementation:
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
@@ -65,6 +63,10 @@ class ViewsNetworkScreenActor : public ViewScreen<NetworkSelectionView>,
   KeyboardSwitchMenu* keyboard_switch_menu() {
     return &keyboard_switch_menu_;
   }
+
+  // For tests.
+  virtual bool IsContinueEnabled() const;
+  virtual bool IsConnecting() const;
 
  private:
   // Overridden views::BubbleDelegate.

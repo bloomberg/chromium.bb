@@ -59,6 +59,20 @@ bool ViewsNetworkScreenActor::IsErrorShown() const {
   return bubble_ != NULL;
 }
 
+bool ViewsNetworkScreenActor::IsContinueEnabled() const {
+  DCHECK(view());
+  if (view())
+    return view()->IsContinueEnabled();
+  return false;
+}
+
+bool ViewsNetworkScreenActor::IsConnecting() const {
+  DCHECK(view());
+  if (view())
+    return view()->IsConnecting();
+  return false;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ViewsNetworkScreenActor, NetworkScreenActor implementation:
 void ViewsNetworkScreenActor::PrepareToShow() {
@@ -112,20 +126,6 @@ void ViewsNetworkScreenActor::EnableContinue(bool enabled) {
   DCHECK(view());
   if (view())
     view()->EnableContinue(enabled);
-}
-
-bool ViewsNetworkScreenActor::IsContinueEnabled() const {
-  DCHECK(view());
-  if (view())
-    return view()->IsContinueEnabled();
-  return false;
-}
-
-bool ViewsNetworkScreenActor::IsConnecting() const {
-  DCHECK(view());
-  if (view())
-    return view()->IsConnecting();
-  return false;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
