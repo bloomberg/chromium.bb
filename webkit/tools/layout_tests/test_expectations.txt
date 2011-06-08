@@ -30,3 +30,8 @@ BUGGMAN : media/video-canvas-alpha.html = IMAGE
 
 BUGKOZ : fast/dom/navigator-detached-no-crash.html = TEXT
 BUGKOZ : fast/dom/register-protocol-handler.html = TEXT
+
+// We now follow the ES5 spec with regards to the semantics of the receiver
+// given through eval to builtins (undefined). Test assumes that the global
+// object is given as receiver.
+BUGRICOW : fast/js/eval-var-decl.html = TEXT
