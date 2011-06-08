@@ -68,10 +68,12 @@ void FFmpegVideoDecodeEngine::Initialize(
 
   if (config.extra_data() != NULL) {
     codec_context_->extradata_size = config.extra_data_size();
-    codec_context_->extradata =
-        reinterpret_cast<uint8_t*>(av_malloc(config.extra_data_size()));
+    codec_context_->extradata = reinterpret_cast<uint8_t*>(
+        av_malloc(config.extra_data_size() + FF_INPUT_BUFFER_PADDING_SIZE));
     memcpy(codec_context_->extradata, config.extra_data(),
            config.extra_data_size());
+    memset(codec_context_->extradata + config.extra_data_size(), '\0',
+           FF_INPUT_BUFFER_PADDING_SIZE);
   }
 
   // Enable motion vector search (potentially slow), strong deblocking filter
