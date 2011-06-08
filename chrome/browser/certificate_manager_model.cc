@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,14 @@
 #include "net/base/crypto_module.h"
 #include "net/base/net_errors.h"
 #include "net/base/x509_certificate.h"
+
+#if defined(OS_CHROMEOS)
+#include <cert.h>
+
+#include "crypto/nss_util.h"
+#include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
+#endif
 
 CertificateManagerModel::CertificateManagerModel(Observer* observer)
     : observer_(observer) {
@@ -70,6 +78,18 @@ string16 CertificateManagerModel::GetColumnText(
     case COL_SUBJECT_NAME:
       rv = UTF8ToUTF16(
           x509_certificate_model::GetCertNameOrNickname(cert.os_cert_handle()));
+
+#if defined(OS_CHROMEOS)
+      // TODO(xiyuan): Put this into a column when we have js tree-table.
+      if (crypto::IsTPMTokenReady() &&
+          cert.os_cert_handle()->slot ==
+            cert_db().GetPrivateModule()->os_module_handle()) {
+        rv = l10n_util::GetStringFUTF16(
+            IDS_CERT_MANAGER_HARDWARE_BACKED_KEY_FORMAT,
+            rv,
+            l10n_util::GetStringUTF16(IDS_CERT_MANAGER_HARDWARE_BACKED));
+      }
+#endif
       break;
     case COL_CERTIFICATE_STORE:
       rv = UTF8ToUTF16(
