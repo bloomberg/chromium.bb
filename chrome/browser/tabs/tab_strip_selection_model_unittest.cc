@@ -40,6 +40,13 @@ TEST_F(TabStripSelectionModelTest, SetSelectedIndex) {
   EXPECT_FALSE(model.empty());
 }
 
+TEST_F(TabStripSelectionModelTest, SetSelectedIndexToEmpty) {
+  TabStripSelectionModel model;
+  model.SetSelectedIndex(-1);
+  EXPECT_EQ("active=-1 anchor=-1 selection=", StateAsString(model));
+  EXPECT_TRUE(model.empty());
+}
+
 TEST_F(TabStripSelectionModelTest, IncrementFrom) {
   TabStripSelectionModel model;
   model.SetSelectedIndex(1);
@@ -97,6 +104,22 @@ TEST_F(TabStripSelectionModelTest, RemoveIndexFromSelection) {
 
   model.RemoveIndexFromSelection(2);
   EXPECT_EQ("active=2 anchor=2 selection=", StateAsString(model));
+}
+
+TEST_F(TabStripSelectionModelTest, SetSelectionFromAnchorTo) {
+  TabStripSelectionModel model;
+  model.SetSelectedIndex(2);
+  model.SetSelectionFromAnchorTo(7);
+  EXPECT_EQ("active=7 anchor=2 selection=2 3 4 5 6 7", StateAsString(model));
+
+  model.Clear();
+  model.SetSelectedIndex(7);
+  model.SetSelectionFromAnchorTo(2);
+  EXPECT_EQ("active=2 anchor=7 selection=2 3 4 5 6 7", StateAsString(model));
+
+  model.Clear();
+  model.SetSelectionFromAnchorTo(7);
+  EXPECT_EQ("active=7 anchor=7 selection=7", StateAsString(model));
 }
 
 TEST_F(TabStripSelectionModelTest, Clear) {

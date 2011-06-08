@@ -59,7 +59,9 @@ void TabStripSelectionModel::DecrementFrom(int index) {
 
 void TabStripSelectionModel::SetSelectedIndex(int index) {
   anchor_ = active_ = index;
-  SetSelectionFromAnchorTo(index);
+  selected_indices_.clear();
+  if (index != kUnselectedIndex)
+    selected_indices_.push_back(index);
 }
 
 bool TabStripSelectionModel::IsSelected(int index) const {
