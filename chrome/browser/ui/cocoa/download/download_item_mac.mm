@@ -79,14 +79,14 @@ void DownloadItemMac::LoadIcon() {
 
   // We may already have this particular image cached.
   FilePath file = download_model_->download()->GetUserVerifiedFilePath();
-  gfx::Image* icon = icon_manager->LookupIcon(file, IconLoader::SMALL);
+  gfx::Image* icon = icon_manager->LookupIcon(file, IconLoader::ALL);
   if (icon) {
     [item_controller_ setIcon:*icon];
     return;
   }
 
   // The icon isn't cached, load it asynchronously.
-  icon_manager->LoadIcon(file, IconLoader::SMALL, &icon_consumer_,
+  icon_manager->LoadIcon(file, IconLoader::ALL, &icon_consumer_,
                          NewCallback(this,
                                      &DownloadItemMac::OnExtractIconComplete));
 }

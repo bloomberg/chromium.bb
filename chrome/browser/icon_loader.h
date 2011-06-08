@@ -40,7 +40,8 @@ class IconLoader : public base::RefCountedThreadSafe<IconLoader> {
   enum IconSize {
     SMALL = 0,  // 16x16
     NORMAL,     // 32x32
-    LARGE
+    LARGE,      // Windows: 32x32, Linux: 48x48, Mac: Unsupported
+    ALL,        // All sizes available
   };
 
   class Delegate {

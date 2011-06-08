@@ -16,12 +16,20 @@
 #include "base/string_util.h"
 
 static int SizeToInt(IconLoader::IconSize size) {
-  int pixels = 48;
-  if (size == IconLoader::NORMAL)
-    pixels = 32;
-  else if (size == IconLoader::SMALL)
-    pixels = 16;
-
+  int pixels = 0;
+  switch (size) {
+    case IconLoader::SMALL:
+      pixels = 16;
+      break;
+    case IconLoader::NORMAL:
+      pixels = 32;
+      break;
+    case IconLoader::LARGE:
+      pixels = 48;
+      break;
+    default:
+      NOTREACHED();
+  }
   return pixels;
 }
 

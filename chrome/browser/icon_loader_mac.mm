@@ -17,9 +17,24 @@ void IconLoader::ReadIcon() {
   NSWorkspace* workspace = [NSWorkspace sharedWorkspace];
   NSImage* icon = [workspace iconForFileType:group];
 
-  // Mac will ignore the size because icons have multiple size representations
-  // and NSImage choses the best at draw-time.
-  image_.reset(new gfx::Image([icon retain]));
+  if (icon_size_ == ALL) {
+    // The NSImage already has all sizes.
+    image_.reset(new gfx::Image([icon retain]));
+  } else {
+    NSSize size = NSZeroSize;
+    switch (icon_size_) {
+      case IconLoader::SMALL:
+        size = NSMakeSize(16, 16);
+        break;
+      case IconLoader::NORMAL:
+        size = NSMakeSize(32, 32);
+        break;
+      default:
+        NOTREACHED();
+    }
+    image_.reset(new gfx::Image(new SkBitmap(
+        gfx::NSImageToSkBitmap(icon, size, false))));
+  }
 
   target_message_loop_->PostTask(FROM_HERE,
       NewRunnableMethod(this, &IconLoader::NotifyDelegate));
