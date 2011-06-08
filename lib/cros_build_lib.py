@@ -396,7 +396,13 @@ def GitPushWithRetry(branch, cwd, dryrun=False, retries=5):
   for retry in range(1, retries + 1):
     try:
       RunCommand(['git', 'remote', 'update'], cwd=cwd)
-      RunCommand(['git', 'rebase', '%s/%s' % (remote, push_branch)], cwd=cwd)
+      try:
+        RunCommand(['git', 'rebase', '%s/%s' % (remote, push_branch)], cwd=cwd)
+      except RunCommandError:
+        # Looks like our change conflicts with upstream. Cleanup our failed
+        # rebase.
+        RunCommand(['git', 'rebase', '--abort'], error_ok=True, cwd=cwd)
+        raise
       push_command = ['git', 'push', remote, '%s:%s' % (branch, push_branch)]
       if dryrun:
         push_command.append('--dry-run')
