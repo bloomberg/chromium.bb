@@ -116,9 +116,6 @@ class GlobalBookmarkMenu : public GlobalMenuOwner,
 
   OwnedWidgetGtk bookmark_menu_;
 
-  // We use this factory to create callback tasks for ThreadWatcher object. We
-  // use this during ping-pong messaging between WatchDog thread and watched
-  // thread.
   ScopedRunnableMethodFactory<GlobalBookmarkMenu> method_factory_;
 
   // In order to appropriately update items in the bookmark menu, without

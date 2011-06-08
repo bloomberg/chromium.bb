@@ -110,11 +110,11 @@ void GlobalBookmarkMenu::RebuildMenu() {
 
     GtkWidget* menu_item = gtk_image_menu_item_new_with_label(
         l10n_util::GetStringUTF8(IDS_BOOMARK_BAR_OTHER_FOLDER_NAME).c_str());
-    gtk_util::SetAlwaysShowImage(menu_item);
     gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), submenu);
     gtk_image_menu_item_set_image(
         GTK_IMAGE_MENU_ITEM(menu_item),
         gtk_image_new_from_pixbuf(default_folder_));
+    gtk_util::SetAlwaysShowImage(menu_item);
 
     AddBookmarkMenuItem(bookmark_menu_.get(), menu_item);
   }
@@ -140,7 +140,6 @@ void GlobalBookmarkMenu::AddNodeToMenu(const BookmarkNode* node,
     for (int i = 0; i < child_count; i++) {
       const BookmarkNode* child = node->GetChild(i);
       GtkWidget* item = gtk_image_menu_item_new();
-      gtk_util::SetAlwaysShowImage(item);
       ConfigureMenuItem(child, item);
       bookmark_nodes_[child] = item;
 
@@ -162,6 +161,9 @@ void GlobalBookmarkMenu::AddNodeToMenu(const BookmarkNode* node,
 
 void GlobalBookmarkMenu::ConfigureMenuItem(const BookmarkNode* node,
                                            GtkWidget* menu_item) {
+  CHECK(node);
+  CHECK(menu_item);
+
   // This check is only to make things compile on Hardy; this code won't
   // display any visible widgets in older systems that don't have a global menu
   // bar.
@@ -184,11 +186,15 @@ void GlobalBookmarkMenu::ConfigureMenuItem(const BookmarkNode* node,
                                   gtk_image_new_from_pixbuf(pixbuf));
     g_object_unref(pixbuf);
   } else {
-    gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menu_item),
-                                  gtk_image_new_from_pixbuf(
-                                      node->is_url() ? default_favicon_ :
-                                      default_folder_));
+    GdkPixbuf* pixbuf = node->is_url() ? default_favicon_ : default_folder_;
+    CHECK(pixbuf);
+    GtkWidget* image = gtk_image_new_from_pixbuf(pixbuf);
+    CHECK(image);
+
+    gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menu_item), image);
   }
+
+  gtk_util::SetAlwaysShowImage(menu_item);
 }
 
 GtkWidget* GlobalBookmarkMenu::MenuItemForNode(const BookmarkNode* node) {
