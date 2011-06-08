@@ -567,9 +567,7 @@ FileManager.prototype = {
    */
   FileManager.prototype.onRenameCanExecute_ = function(event) {
     event.canExecute =
-        (// Full page mode.
-         this.dialogType_ == FileManager.DialogType.FULL_PAGE &&
-         // Rename not in progress.
+        (// Rename not in progress.
          !this.renameInput_.currentEntry &&
          // Not in root directory.
          this.currentDirEntry_.fullPath != '/' &&
@@ -584,9 +582,7 @@ FileManager.prototype = {
    */
   FileManager.prototype.onDeleteCanExecute_ = function(event) {
     event.canExecute =
-        (// Full page mode.
-         this.dialogType_ == FileManager.DialogType.FULL_PAGE &&
-         // Rename not in progress.
+        (// Rename not in progress.
          !this.renameInput_.currentEntry &&
          // Not in root directory.
          this.currentDirEntry_.fullPath != '/' &&
@@ -641,11 +637,8 @@ FileManager.prototype = {
     this.grid_.selectionModel.addEventListener(
         'change', this.onSelectionChanged_.bind(this));
 
-    if (this.dialogType_ == FileManager.DialogType.FULL_PAGE) {
-      cr.ui.contextMenuHandler.addContextMenuProperty(this.grid_);
-      this.grid_.contextMenu = this.fileContextMenu_;
-    }
-
+    cr.ui.contextMenuHandler.addContextMenuProperty(this.grid_);
+    this.grid_.contextMenu = this.fileContextMenu_;
     this.grid_.addEventListener('mousedown',
                                 this.onGridMouseDown_.bind(this));
   };
@@ -683,10 +676,8 @@ FileManager.prototype = {
     this.table_.selectionModel.addEventListener(
         'change', this.onSelectionChanged_.bind(this));
 
-    if (this.dialogType_ == FileManager.DialogType.FULL_PAGE) {
-      cr.ui.contextMenuHandler.addContextMenuProperty(this.table_);
-      this.table_.contextMenu = this.fileContextMenu_;
-    }
+    cr.ui.contextMenuHandler.addContextMenuProperty(this.table_);
+    this.table_.contextMenu = this.fileContextMenu_;
 
     this.table_.addEventListener('mousedown',
                                  this.onTableMouseDown_.bind(this));
