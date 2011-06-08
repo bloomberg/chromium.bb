@@ -45,9 +45,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentScriptIsolatedWorlds) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentScriptIgnoreHostPermissions) {
-  ASSERT_TRUE(StartTestServer());
   host_resolver()->AddRule("a.com", "127.0.0.1");
   host_resolver()->AddRule("b.com", "127.0.0.1");
+  ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionTest(
       "content_scripts/dont_match_host_permissions")) << message_;
 }
@@ -55,7 +55,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentScriptIgnoreHostPermissions) {
 // crbug.com/39249 -- content scripts js should not run on view source.
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentScriptViewSource) {
   ASSERT_TRUE(StartTestServer());
-  host_resolver()->AddRule("c.com", "127.0.0.1");
   ASSERT_TRUE(RunExtensionTest("content_scripts/view_source")) << message_;
 }
 
