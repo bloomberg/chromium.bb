@@ -6805,6 +6805,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <!-- Language & spell-checker settings -->
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_DIALOG_TITLE">
+        Languages
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_AND_INPUT_DIALOG_TITLE">
         Languages and Input
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_LANGUAGES" desc="The label for the list of languages">

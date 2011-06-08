@@ -35,6 +35,8 @@ void CrosLanguageOptionsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   LanguageOptionsHandlerCommon::GetLocalizedValues(localized_strings);
 
+  RegisterTitle(localized_strings, "languagePage",
+                IDS_OPTIONS_SETTINGS_LANGUAGES_AND_INPUT_DIALOG_TITLE);
   localized_strings->SetString("ok_button", l10n_util::GetStringUTF16(IDS_OK));
   localized_strings->SetString("configure",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_LANGUAGES_CONFIGURE));
