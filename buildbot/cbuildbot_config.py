@@ -175,6 +175,7 @@ full = {
 }
 
 internal = {
+  'rev_overlays' : 'both',
   'git_url' : MANIFEST_INT_URL,
   'quick_vm' : False,
   'gs_path' : None,
@@ -337,37 +338,30 @@ add_config('x86-mario-pre-flight-branch', [internal, {
 
 add_config('arm-tegra2_seaboard-private-bin', [internal, arm, binary, {
   'board' : 'tegra2_seaboard',
-  'prebuilts': False,
 }])
 
 add_config('arm-tegra2_kaen-private-bin', [internal, arm, binary, {
   'board' : 'tegra2_kaen',
-  'prebuilts': False,
 }])
 
 add_config('arm-tegra2_aebl-private-bin', [internal, arm, binary, {
   'board' : 'tegra2_aebl',
-  'prebuilts': False,
 }])
 
 add_config('arm-tegra2_dev-board-private-bin', [internal, arm, binary, {
   'board' : 'tegra2_dev-board',
-  'prebuilts': False,
 }])
 
 add_config('x86-zgb-private-bin', [internal, binary, {
   'board' : 'x86-zgb',
-  'prebuilts': False,
 }])
 
 add_config('x86-mario-private-bin', [internal, binary, {
   'board' : 'x86-mario',
-  'prebuilts': False,
 }])
 
 add_config('x86-alex-private-bin', [internal, binary, {
   'board' : 'x86-alex',
-  'prebuilts': False,
 }])
 
 add_config('x86-mario-release', [internal, full, official, release, {
