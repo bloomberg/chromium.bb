@@ -547,7 +547,7 @@ BUILD/stamp-$(CROSSARCH)-pregcc-standalone: \
 
 NEWLIB_CFLAGS = -O2 -D_I386MACH_ALLOW_HW_INTERRUPTS -mtls-use-call
 
-BUILD/stamp-$(CROSSARCH)-newlib: | SRC/newlib BUILD
+BUILD/stamp-$(CROSSARCH)-newlib: | SRC/newlib BUILD newlib-libc-script
 	rm -rf BUILD/build-newlib-$(CROSSARCH)
 	mkdir BUILD/build-newlib-$(CROSSARCH)
 	../src/trusted/service_runtime/export_header.py ../src/trusted/service_runtime/include \
@@ -569,6 +569,12 @@ BUILD/stamp-$(CROSSARCH)-newlib: | SRC/newlib BUILD
 	  $(MAKE) && \
 	  $(MAKE) DESTDIR=$(DESTDIR) install
 	rm $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include/pthread.h
+	for bits in 32 64; do \
+	  mv $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib$$bits/libc.a \
+	     $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib$$bits/libcrt_common.a; \
+	  sed "s/@OBJFORMAT@/elf$${bits}-nacl/" newlib-libc-script \
+	    > $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib$$bits/libc.a; \
+	done
 	touch $@
 
 .PHONY: newlib
@@ -765,7 +771,7 @@ endif
 # gcc:
 # Builds the gcc that will be used to build applications.
 ##################################################################
-BUILD/stamp-$(CROSSARCH)-gcc: | SRC/gcc BUILD
+BUILD/stamp-$(CROSSARCH)-gcc: BUILD/stamp-$(CROSSARCH)-newlib | SRC/gcc BUILD
 	rm -rf BUILD/build-gcc-$(CROSSARCH)
 	mkdir BUILD/build-gcc-$(CROSSARCH)
 ifeq ($(CYGWIN17), 1)
