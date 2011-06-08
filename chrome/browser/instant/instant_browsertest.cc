@@ -315,6 +315,9 @@ class InstantTest : public InProcessBrowserTest {
 // DISABLED http://crbug.com/80118
 #if defined(OS_LINUX)
 IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_OnChangeEvent) {
+#elif defined(OS_MACOSX)
+// http://crbug.com/85387
+IN_PROC_BROWSER_TEST_F(InstantTest, FLAKY_OnChangeEvent) {
 #else
 IN_PROC_BROWSER_TEST_F(InstantTest, OnChangeEvent) {
 #endif  // OS_LINUX
@@ -720,6 +723,9 @@ IN_PROC_BROWSER_TEST_F(InstantTest, HideOn403) {
 // DISABLED http://crbug.com/80118
 #if defined(OS_LINUX)
 IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_OnSubmitEvent) {
+#elif defined(OS_MACOSX)
+// http://crbug.com/85387
+IN_PROC_BROWSER_TEST_F(InstantTest, FLAKY_OnSubmitEvent) {
 #else
 IN_PROC_BROWSER_TEST_F(InstantTest, OnSubmitEvent) {
 #endif  // OS_LINUX
@@ -753,6 +759,9 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnSubmitEvent) {
 // DISABLED http://crbug.com/80118
 #if defined(OS_LINUX)
 IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_OnCancelEvent) {
+#elif defined(OS_MACOSX)
+// http://crbug.com/85387
+IN_PROC_BROWSER_TEST_F(InstantTest, FLAKY_OnCancelEvent) {
 #else
 IN_PROC_BROWSER_TEST_F(InstantTest, OnCancelEvent) {
 #endif  // OS_LINUX
