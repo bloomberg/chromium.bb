@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -45,6 +45,7 @@ chmod +x vlayout-wrapper.sh
 rm -f vlayout-*.log
 export BROWSER_WRAPPER=`pwd`/vlayout-wrapper.sh
 export G_SLICE=always-malloc
+export NSS_DISABLE_UNLOAD=1
 export NSS_DISABLE_ARENA_FREE_LIST=1
 sh webkit/tools/layout_tests/run_webkit_tests.sh --run-singly -v --noshow-results --time-out-ms=200000 --nocheck-sys-deps --debug "$@"
 

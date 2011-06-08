@@ -156,6 +156,7 @@ class BaseTool(object):
 
     add_env = {
       "G_SLICE" : "always-malloc",
+      "NSS_DISABLE_UNLOAD" : "1",
       "NSS_DISABLE_ARENA_FREE_LIST" : "1",
       "GTEST_DEATH_TEST_USE_FORK" : "1",
     }

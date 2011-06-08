@@ -91,6 +91,8 @@ export VALGRIND_LIB="$CHROME_VALGRIND/lib/valgrind"
 export VALGRIND_LIB_INNER="$CHROME_VALGRIND/lib/valgrind"
 
 # G_SLICE=always-malloc: make glib use system malloc
+# NSS_DISABLE_UNLOAD=1: make nss skip dlclosing dynamically loaded modules,
+# which would result in "obj:*" in backtraces.
 # NSS_DISABLE_ARENA_FREE_LIST=1: make nss use system malloc
 # G_DEBUG=fatal_warnings: make  GTK abort on any critical or warning assertions.
 # If it crashes on you in the Options menu, you hit bug 19751,
@@ -103,6 +105,7 @@ export VALGRIND_LIB_INNER="$CHROME_VALGRIND/lib/valgrind"
 # to ignore possible but not definite leaks.
 
 G_SLICE=always-malloc \
+NSS_DISABLE_UNLOAD=1 \
 NSS_DISABLE_ARENA_FREE_LIST=1 \
 G_DEBUG=fatal_warnings \
 GTEST_DEATH_TEST_USE_FORK=1 \
