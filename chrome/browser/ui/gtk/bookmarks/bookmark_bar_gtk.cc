@@ -531,7 +531,7 @@ void BookmarkBarGtk::CreateAllBookmarkButtons() {
 }
 
 void BookmarkBarGtk::SetInstructionState() {
-  show_instructions_ = (model_->GetBookmarkBarNode()->child_count() == 0);
+  show_instructions_ = model_->GetBookmarkBarNode()->empty();
   if (show_instructions_) {
     gtk_widget_hide(bookmark_toolbar_.get());
     gtk_widget_show_all(instructions_);

@@ -1606,7 +1606,7 @@ void BookmarkBarView::UpdateColors() {
 }
 
 void BookmarkBarView::UpdateOtherBookmarksVisibility() {
-  bool has_other_children = model_->other_node()->child_count() > 0;
+  bool has_other_children = !model_->other_node()->empty();
   if (has_other_children == other_bookmarked_button_->IsVisible())
     return;
   other_bookmarked_button_->SetVisible(has_other_children);

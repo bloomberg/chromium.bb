@@ -112,6 +112,9 @@ class TreeNode : public TreeModelNode {
   // Returns the number of children.
   int child_count() const { return static_cast<int>(children_->size()); }
 
+  // Returns true if this node has no children.
+  bool empty() const { return children_.empty(); }
+
   // Returns the number of all nodes in the subtree rooted at this node,
   // including this node.
   int GetTotalNodeCount() const {

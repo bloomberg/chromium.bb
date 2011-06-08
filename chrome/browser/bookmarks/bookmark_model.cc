@@ -68,8 +68,7 @@ bool BookmarkNode::IsVisible() const {
   // no bookmarks under it.
   if (type_ != BookmarkNode::SYNCED ||
       CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableSyncedBookmarksFolder) ||
-      child_count() > 0) {
+          switches::kEnableSyncedBookmarksFolder) || !empty()) {
     return true;
   }
   return false;

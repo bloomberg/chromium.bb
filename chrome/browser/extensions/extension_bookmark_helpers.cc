@@ -99,7 +99,7 @@ bool RemoveNode(BookmarkModel* model,
     *error = keys::kModifySpecialError;
     return false;
   }
-  if (node->is_folder() && node->child_count() > 0 && !recursive) {
+  if (node->is_folder() && !node->empty() && !recursive) {
     *error = keys::kFolderNotEmptyError;
     return false;
   }

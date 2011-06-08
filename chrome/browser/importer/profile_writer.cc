@@ -123,7 +123,7 @@ void ProfileWriter::AddBookmarks(const std::vector<BookmarkEntry>& bookmarks,
   // If the bookmark bar is currently empty, we should import directly to it.
   // Otherwise, we should import everything to a subfolder.
   const BookmarkNode* bookmark_bar = model->GetBookmarkBarNode();
-  bool import_to_top_level = bookmark_bar->child_count() == 0;
+  bool import_to_top_level = bookmark_bar->empty();
 
   // If the user currently has no bookmarks in the bookmark bar, make sure that
   // at least some of the imported bookmarks end up there.  Otherwise, we'll end

@@ -24,7 +24,7 @@ template <class NodeType>
 class TreeNodeIterator {
  public:
   explicit TreeNodeIterator(NodeType* node) {
-    if (node->child_count() > 0)
+    if (!node->empty())
       positions_.push(Position<NodeType>(node, 0));
   }
 

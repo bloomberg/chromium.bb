@@ -197,7 +197,7 @@ void BookmarkMenuController::BuildMenu(const BookmarkNode* parent,
     node_to_menu_widget_map_[node] = menu_item;
   }
 
-  if (parent->child_count() == 0) {
+  if (parent->empty()) {
     GtkWidget* empty_menu = gtk_menu_item_new_with_label(
         l10n_util::GetStringUTF8(IDS_MENU_EMPTY_SUBMENU).c_str());
     gtk_widget_set_sensitive(empty_menu, FALSE);
