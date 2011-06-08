@@ -162,6 +162,7 @@
       '-omnibox.OmniboxTest.testFetchHistoryResultItems',
       '-omnibox.OmniboxTest.testInlinAutoComplete',
       '-omnibox.OmniboxTest.testSelect',
+      '-omnibox.OmniboxTest.testSuggestPref',
     ],
 
     # ChromeOS is linux, but note that this section does not include the
@@ -267,6 +268,7 @@
       'omnibox.OmniboxTest.testFetchHistoryResultItems',
       'omnibox.OmniboxTest.testInlinAutoComplete',
       'omnibox.OmniboxTest.testSelect',
+      'omnibox.OmniboxTest.testSuggestPref',
     ],
 
     'chromeos': [
