@@ -316,7 +316,6 @@ bool GpuProcessHost::OnMessageReceived(const IPC::Message& message) {
   DCHECK(CalledOnValidThread());
   IPC_BEGIN_MESSAGE_MAP(GpuProcessHost, message)
     IPC_MESSAGE_HANDLER(GpuHostMsg_ChannelEstablished, OnChannelEstablished)
-    IPC_MESSAGE_HANDLER(GpuHostMsg_SynchronizeReply, OnSynchronizeReply)
     IPC_MESSAGE_HANDLER(GpuHostMsg_CommandBufferCreated, OnCommandBufferCreated)
     IPC_MESSAGE_HANDLER(GpuHostMsg_DestroyCommandBuffer, OnDestroyCommandBuffer)
     IPC_MESSAGE_HANDLER(GpuHostMsg_GraphicsInfoCollected,
@@ -355,17 +354,6 @@ void GpuProcessHost::EstablishGpuChannel(
     EstablishChannelError(
         wrapped_callback.release(), IPC::ChannelHandle(),
         base::kNullProcessHandle, GPUInfo());
-  }
-}
-
-void GpuProcessHost::Synchronize(SynchronizeCallback* callback) {
-  DCHECK(CalledOnValidThread());
-  linked_ptr<SynchronizeCallback> wrapped_callback(callback);
-
-  if (Send(new GpuMsg_Synchronize())) {
-    synchronize_requests_.push(wrapped_callback);
-  } else {
-    SynchronizeError(wrapped_callback.release());
   }
 }
 
@@ -433,15 +421,6 @@ void GpuProcessHost::OnChannelEstablished(
 
   callback->Run(
       channel_handle, gpu_process_, GpuDataManager::GetInstance()->gpu_info());
-}
-
-void GpuProcessHost::OnSynchronizeReply() {
-  // Guard against race conditions in abrupt GPU process termination.
-  if (!synchronize_requests_.empty()) {
-    linked_ptr<SynchronizeCallback> callback(synchronize_requests_.front());
-    synchronize_requests_.pop();
-    callback->Run();
-  }
 }
 
 void GpuProcessHost::OnCommandBufferCreated(const int32 route_id) {
@@ -592,13 +571,6 @@ void GpuProcessHost::SendOutstandingReplies() {
                           base::kNullProcessHandle,
                           GPUInfo());
   }
-
-  // Now unblock all renderers waiting for synchronization replies.
-  while (!synchronize_requests_.empty()) {
-    linked_ptr<SynchronizeCallback> callback = synchronize_requests_.front();
-    synchronize_requests_.pop();
-    SynchronizeError(callback.release());
-  }
 }
 
 void GpuProcessHost::EstablishChannelError(
@@ -615,9 +587,4 @@ void GpuProcessHost::CreateCommandBufferError(
   scoped_ptr<GpuProcessHost::CreateCommandBufferCallback>
     wrapped_callback(callback);
   callback->Run(route_id);
-}
-
-void GpuProcessHost::SynchronizeError(SynchronizeCallback* callback) {
-  scoped_ptr<SynchronizeCallback> wrapped_callback(callback);
-  wrapped_callback->Run();
 }

@@ -68,7 +68,6 @@ class GpuChannelManager : public IPC::Channel::Listener,
   void OnCloseChannel(const IPC::ChannelHandle& channel_handle);
   void OnVisibilityChanged(
       int32 render_view_id, int32 renderer_id, bool visible);
-  void OnSynchronize();
   void OnCreateViewCommandBuffer(
       gfx::PluginWindowHandle window,
       int32 render_view_id,

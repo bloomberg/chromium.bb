@@ -98,13 +98,6 @@ IPC_MESSAGE_CONTROL1(GpuMsg_EstablishChannel,
 IPC_MESSAGE_CONTROL1(GpuMsg_CloseChannel,
                      IPC::ChannelHandle /* channel_handle */)
 
-// Provides a synchronization point to guarantee that the processing of
-// previous asynchronous messages (i.e., GpuMsg_EstablishChannel) has
-// completed. (This message can't be synchronous because the
-// GpuProcessHost uses an IPC::ChannelProxy, which sends all messages
-// asynchronously.) Results in a GpuHostMsg_SynchronizeReply.
-IPC_MESSAGE_CONTROL0(GpuMsg_Synchronize)
-
 IPC_MESSAGE_CONTROL3(GpuMsg_VisibilityChanged,
                      int32, /*render_view_id */
                      int32, /* renderer_id */
@@ -156,13 +149,6 @@ IPC_MESSAGE_CONTROL0(GpuMsg_Crash)
 // Tells the GPU process to hang.
 IPC_MESSAGE_CONTROL0(GpuMsg_Hang)
 
-// The browser sends this to a renderer process in response to a
-// GpuHostMsg_EstablishGpuChannel message.
-IPC_MESSAGE_CONTROL3(GpuMsg_GpuChannelEstablished,
-                     IPC::ChannelHandle /* handle to channel */,
-                     base::ProcessHandle /* renderer_process_for_gpu */,
-                     GPUInfo /* stats about GPU process*/)
-
 //------------------------------------------------------------------------------
 // GPU Host Messages
 // These are messages to the browser.
@@ -170,13 +156,11 @@ IPC_MESSAGE_CONTROL3(GpuMsg_GpuChannelEstablished,
 // A renderer sends this when it wants to create a connection to the GPU
 // process. The browser will create the GPU process if necessary, and will
 // return a handle to the channel via a GpuChannelEstablished message.
-IPC_MESSAGE_CONTROL1(GpuHostMsg_EstablishGpuChannel,
-                     content::CauseForGpuLaunch)
-
-// A renderer sends this to the browser process to provide a synchronization
-// point for GPU operations, in particular to make sure the GPU channel has
-// been established.
-IPC_SYNC_MESSAGE_CONTROL0_0(GpuHostMsg_SynchronizeGpu)
+IPC_SYNC_MESSAGE_CONTROL1_3(GpuHostMsg_EstablishGpuChannel,
+                            content::CauseForGpuLaunch,
+                            IPC::ChannelHandle /* handle to channel */,
+                            base::ProcessHandle /* renderer_process_for_gpu */,
+                            GPUInfo /* stats about GPU process*/)
 
 // A renderer sends this to the browser process when it wants to
 // create a GL context associated with the given view_id.
@@ -210,9 +194,6 @@ IPC_MESSAGE_CONTROL3(GpuHostMsg_OnLogMessage,
                      int /*severity*/,
                      std::string /* header */,
                      std::string /* message */)
-
-// Response from GPU to a GpuMsg_Synchronize message.
-IPC_MESSAGE_CONTROL0(GpuHostMsg_SynchronizeReply)
 
 #if defined(TOOLKIT_USES_GTK) && !defined(TOUCH_UI) || defined(OS_WIN)
 // Resize the window that is being drawn into. It's important that this

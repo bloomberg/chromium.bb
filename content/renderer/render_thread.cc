@@ -389,7 +389,6 @@ bool RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewMsg_New, OnCreateNewView)
     IPC_MESSAGE_HANDLER(ViewMsg_PurgePluginListCache, OnPurgePluginListCache)
     IPC_MESSAGE_HANDLER(DOMStorageMsg_Event, OnDOMStorageEvent)
-    IPC_MESSAGE_HANDLER(GpuMsg_GpuChannelEstablished, OnGpuChannelEstablished)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -465,14 +464,14 @@ void RenderThread::EnableSpdy(bool enable) {
   Send(new ViewHostMsg_EnableSpdy(enable));
 }
 
-void RenderThread::EstablishGpuChannel(
+GpuChannelHost* RenderThread::EstablishGpuChannelSync(
     content::CauseForGpuLaunch cause_for_gpu_launch) {
   if (gpu_channel_.get()) {
     // Do nothing if we already have a GPU channel or are already
     // establishing one.
     if (gpu_channel_->state() == GpuChannelHost::kUnconnected ||
         gpu_channel_->state() == GpuChannelHost::kConnected)
-      return;
+      return GetGpuChannel();
 
     // Recreate the channel if it has been lost.
     if (gpu_channel_->state() == GpuChannelHost::kLost)
@@ -483,13 +482,26 @@ void RenderThread::EstablishGpuChannel(
     gpu_channel_ = new GpuChannelHost;
 
   // Ask the browser for the channel name.
-  Send(new GpuHostMsg_EstablishGpuChannel(cause_for_gpu_launch));
-}
+  IPC::ChannelHandle channel_handle;
+  base::ProcessHandle renderer_process_for_gpu;
+  GPUInfo gpu_info;
+  if (!Send(new GpuHostMsg_EstablishGpuChannel(cause_for_gpu_launch,
+                                               &channel_handle,
+                                               &renderer_process_for_gpu,
+                                               &gpu_info)) ||
+      channel_handle.name.empty() ||
+      renderer_process_for_gpu == base::kNullProcessHandle) {
+    // Otherwise cancel the connection.
+    gpu_channel_ = NULL;
+    return NULL;
+  }
 
-GpuChannelHost* RenderThread::EstablishGpuChannelSync(
-    content::CauseForGpuLaunch cause_for_gpu_launch) {
-  EstablishGpuChannel(cause_for_gpu_launch);
-  Send(new GpuHostMsg_SynchronizeGpu());
+  gpu_channel_->set_gpu_info(gpu_info);
+  content::GetContentClient()->SetGpuInfo(gpu_info);
+
+  // Connect to the GPU process if a channel name was received.
+  gpu_channel_->Connect(channel_handle, renderer_process_for_gpu);
+
   return GetGpuChannel();
 }
 
@@ -645,22 +657,6 @@ void RenderThread::OnPurgePluginListCache(bool reload_pages) {
   plugin_refresh_allowed_ = false;
   WebKit::resetPluginCache(reload_pages);
   plugin_refresh_allowed_ = true;
-}
-
-void RenderThread::OnGpuChannelEstablished(
-    const IPC::ChannelHandle& channel_handle,
-    base::ProcessHandle renderer_process_for_gpu,
-    const GPUInfo& gpu_info) {
-  gpu_channel_->set_gpu_info(gpu_info);
-  content::GetContentClient()->SetGpuInfo(gpu_info);
-
-  if (!channel_handle.name.empty() && renderer_process_for_gpu != 0) {
-    // Connect to the GPU process if a channel name was received.
-    gpu_channel_->Connect(channel_handle, renderer_process_for_gpu);
-  } else {
-    // Otherwise cancel the connection.
-    gpu_channel_ = NULL;
-  }
 }
 
 scoped_refptr<base::MessageLoopProxy>

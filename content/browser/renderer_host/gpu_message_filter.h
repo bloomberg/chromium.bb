@@ -38,8 +38,8 @@ class GpuMessageFilter : public BrowserMessageFilter,
   virtual ~GpuMessageFilter();
 
   // Message handlers called on the browser IO thread:
-  void OnEstablishGpuChannel(content::CauseForGpuLaunch);
-  void OnSynchronizeGpu(IPC::Message* reply);
+  void OnEstablishGpuChannel(content::CauseForGpuLaunch,
+                             IPC::Message* reply);
   void OnCreateViewCommandBuffer(
       gfx::PluginWindowHandle compositing_surface,
       int32 render_view_id,

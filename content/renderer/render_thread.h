@@ -193,11 +193,6 @@ class RenderThread : public RenderThreadBase,
   // Sends a message to the browser to enable/disable spdy.
   void EnableSpdy(bool enable);
 
-  // Asynchronously establish a channel to the GPU plugin if not previously
-  // established or if it has been lost (for example if the GPU plugin crashed).
-  // Use GetGpuChannel() to determine when the channel is ready for use.
-  void EstablishGpuChannel(content::CauseForGpuLaunch);
-
   // Synchronously establish a channel to the GPU plugin if not previously
   // established or if it has been lost (for example if the GPU plugin crashed).
   // If there is a pending asynchronous request, it will be completed by the
@@ -237,9 +232,6 @@ class RenderThread : public RenderThreadBase,
   void OnCreateNewView(const ViewMsg_New_Params& params);
   void OnTransferBitmap(const SkBitmap& bitmap, int resource_id);
   void OnPurgePluginListCache(bool reload_pages);
-  void OnGpuChannelEstablished(const IPC::ChannelHandle& channel_handle,
-                               base::ProcessHandle renderer_process_for_gpu,
-                               const GPUInfo& gpu_info);
   void OnGetAccessibilityTree();
 
   // We initialize WebKit as late as possible.

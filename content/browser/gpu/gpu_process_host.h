@@ -66,12 +66,6 @@ class GpuProcessHost : public BrowserChildProcessHost,
   void EstablishGpuChannel(
       int renderer_id, EstablishChannelCallback* callback);
 
-  typedef Callback0::Type SynchronizeCallback;
-
-  // Sends a reply message later when the next GpuHostMsg_SynchronizeReply comes
-  // in.
-  void Synchronize(SynchronizeCallback* callback);
-
   typedef Callback1<int32>::Type CreateCommandBufferCallback;
 
   // Tells the GPU process to create a new command buffer that draws into the
@@ -99,7 +93,6 @@ class GpuProcessHost : public BrowserChildProcessHost,
 
   // Message handlers.
   void OnChannelEstablished(const IPC::ChannelHandle& channel_handle);
-  void OnSynchronizeReply();
   void OnCommandBufferCreated(const int32 route_id);
   void OnDestroyCommandBuffer(
       gfx::PluginWindowHandle window, int32 renderer_id, int32 render_view_id);
@@ -115,7 +108,6 @@ class GpuProcessHost : public BrowserChildProcessHost,
       const GPUInfo& gpu_info);
   void CreateCommandBufferError(CreateCommandBufferCallback* callback,
                                 int32 route_id);
-  void SynchronizeError(SynchronizeCallback* callback);
 
   // The serial number of the GpuProcessHost / GpuProcessHostUIShim pair.
   int host_id_;
@@ -123,9 +115,6 @@ class GpuProcessHost : public BrowserChildProcessHost,
   // These are the channel requests that we have already sent to
   // the GPU process, but haven't heard back about yet.
   std::queue<linked_ptr<EstablishChannelCallback> > channel_requests_;
-
-  // The pending synchronization requests we need to reply to.
-  std::queue<linked_ptr<SynchronizeCallback> > synchronize_requests_;
 
   // The pending create command buffer requests we need to reply to.
   std::queue<linked_ptr<CreateCommandBufferCallback> >

@@ -47,7 +47,6 @@ bool GpuChannelManager::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(GpuMsg_CloseChannel, OnCloseChannel)
     IPC_MESSAGE_HANDLER(GpuMsg_CreateViewCommandBuffer,
                         OnCreateViewCommandBuffer)
-    IPC_MESSAGE_HANDLER(GpuMsg_Synchronize, OnSynchronize)
     IPC_MESSAGE_HANDLER(GpuMsg_VisibilityChanged, OnVisibilityChanged)
 #if defined(TOOLKIT_USES_GTK) && !defined(TOUCH_UI) || defined(OS_WIN)
     IPC_MESSAGE_HANDLER(GpuMsg_ResizeViewACK, OnResizeViewACK);
@@ -106,10 +105,6 @@ void GpuChannelManager::OnCloseChannel(
       return;
     }
   }
-}
-
-void GpuChannelManager::OnSynchronize() {
-  Send(new GpuHostMsg_SynchronizeReply());
 }
 
 void GpuChannelManager::OnVisibilityChanged(
