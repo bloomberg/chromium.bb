@@ -89,11 +89,14 @@ const char kVideoSwitchValueVp8Rtp[] = "vp8rtp";
 // Glue class to print out the access code for Me2Mom.
 void SetMe2MomAccessCode(remoting::SupportAccessVerifier* access_verifier,
                          bool successful, const std::string& support_id) {
+  access_verifier->OnMe2MomHostRegistered(successful, support_id);
   if (successful) {
     std::cout << "Support id: " << support_id << "-"
               << access_verifier->host_secret() << std::endl;
+  } else {
+    LOG(ERROR) << "If you haven't done so recently, try running"
+               << " remoting/tools/register_host.py.";
   }
-  access_verifier->OnMe2MomHostRegistered(successful, support_id);
 }
 
 class SimpleHost {
