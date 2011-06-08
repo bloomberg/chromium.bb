@@ -12,7 +12,7 @@ class Panel;
 class PanelBrowserWindowGtk : public BrowserWindowGtk {
  public:
   PanelBrowserWindowGtk(Browser* browser, Panel* panel);
-  virtual ~PanelBrowserWindowGtk() {}
+  virtual ~PanelBrowserWindowGtk();
 
   // BrowserWindowGtk overrides
   virtual void Init() OVERRIDE;
@@ -34,7 +34,7 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk {
  private:
   void SetBoundsImpl();
 
-  Panel* panel_;
+  scoped_ptr<Panel> panel_;
   DISALLOW_COPY_AND_ASSIGN(PanelBrowserWindowGtk);
 };
 

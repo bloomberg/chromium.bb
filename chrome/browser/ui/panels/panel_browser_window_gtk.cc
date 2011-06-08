@@ -17,6 +17,9 @@ PanelBrowserWindowGtk::PanelBrowserWindowGtk(Browser* browser, Panel* panel)
     : BrowserWindowGtk(browser), panel_(panel) {
 }
 
+PanelBrowserWindowGtk::~PanelBrowserWindowGtk() {
+}
+
 void PanelBrowserWindowGtk::Init() {
   BrowserWindowGtk::Init();
 
