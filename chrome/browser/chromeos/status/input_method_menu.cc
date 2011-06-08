@@ -95,7 +95,7 @@ const struct {
   { "mozc", "\xe3\x81\x82" },  // U+3042, Japanese Hiragana letter A in UTF-8.
   { "mozc-dv", "\xe3\x81\x82" },
   { "mozc-jp", "\xe3\x81\x82" },
-  { "ibus-zinnia-japanese", "\xe6\x89\x8b" },  // U+624B, "hand"
+  { "zinnia-japanese", "\xe6\x89\x8b" },  // U+624B, "hand"
   // For simplified Chinese input methods
   { "pinyin", "\xe6\x8b\xbc" },  // U+62FC
   // For traditional Chinese input methods
