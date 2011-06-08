@@ -27,41 +27,26 @@
       function setupTests(tester, plugin) {
         // TODO(ncbray) replace with an asynchronous test framework
         function makeTest(name, url, as_file, expected_data, expected_success) {
-          tester.addTest(name, function() {
-            // Variables to hold the response.
-            var responded = false;
-            var response_url = undefined;
-            var response_as_file = undefined;
-            var response_data = undefined;
-            var response_success = undefined;
-
+          tester.addAsyncTest(name, function(status) {
             // Intentionally sets a global variable
             // This prevents running the tests in parallel...
-            ReportResult = function(url, as_file, data, success) {
-              response_url = url;
-              response_as_file = as_file;
-              response_data = data;
-              response_success = success;
-              responded = true;
-            }
+            ReportResult = status.wrap(function(
+                response_url,
+                response_as_file,
+                response_data,
+                response_success) {
+
+                // Validate the results.
+                status.assert(isMatch(response_url, url));
+                status.assertEqual(response_as_file, as_file);
+                status.log(response_data);
+                status.assert(isMatch(response_data, expected_data));
+                status.assertEqual(response_success, expected_success);
+                status.pass();
+            });
 
             // Make the request.
             plugin.loadUrl(url, as_file);
-
-            function wait() {
-              if (!responded) {
-                // Periodically poll until the results are ready.
-                halt_and_callback(5, wait);
-              } else {
-                // Validate the results.
-                assert(isMatch(response_url, url));
-                assertEqual(response_as_file, as_file);
-                tester.log(response_data);
-                assert(isMatch(response_data, expected_data));
-                assertEqual(response_success, expected_success);
-              }
-            }
-            wait();
           });
         }
 
