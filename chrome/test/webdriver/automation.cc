@@ -19,6 +19,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/stringprintf.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/automation_constants.h"
@@ -178,6 +179,8 @@ void Automation::InitWithBrowserPath(const FilePath& browser_exe,
             "ChromeDriver is up-to-date. " + chrome_details);
     return;
   }
+
+  launcher_->automation()->set_action_timeout_ms(base::kNoTimeout);
   VLOG(1) << "Chrome launched successfully. Version: "
           << automation()->server_version();
 
