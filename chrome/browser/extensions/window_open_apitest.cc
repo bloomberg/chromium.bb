@@ -26,26 +26,26 @@ void WaitForTabsAndPopups(Browser* browser, int num_tabs, int num_popups) {
   ++num_tabs;
   size_t num_browsers = static_cast<size_t>(num_popups) + 1;
 
-  while (true) {
-    if (BrowserList::GetBrowserCount(browser->profile()) < num_browsers ||
-        browser->tab_count() < num_tabs) {
-      MessageLoopForUI::current()->RunAllPending();
+  const base::TimeDelta kWaitTime = base::TimeDelta::FromSeconds(15);
+  base::TimeTicks end_time = base::TimeTicks::Now() + kWaitTime;
+  while (base::TimeTicks::Now() < end_time) {
+    if (BrowserList::GetBrowserCount(browser->profile()) >= num_browsers &&
+        browser->tab_count() >= num_tabs)
+      break;
+
+    MessageLoopForUI::current()->RunAllPending();
+  }
+
+  EXPECT_EQ(num_browsers, BrowserList::GetBrowserCount(browser->profile()));
+  EXPECT_EQ(num_tabs, browser->tab_count());
+
+  for (BrowserList::const_iterator iter = BrowserList::begin();
+       iter != BrowserList::end(); ++iter) {
+    if (*iter == browser)
       continue;
-    }
 
-    ASSERT_EQ(num_browsers, BrowserList::GetBrowserCount(browser->profile()));
-    ASSERT_EQ(num_tabs, browser->tab_count());
-
-    for (BrowserList::const_iterator iter = BrowserList::begin();
-         iter != BrowserList::end(); ++iter) {
-      if (*iter == browser)
-        continue;
-
-      // Check for TYPE_POPUP or TYPE_PANEL.
-      ASSERT_TRUE((*iter)->is_type_popup() || (*iter)->is_type_panel());
-    }
-
-    break;
+    // Check for TYPE_POPUP or TYPE_PANEL.
+    EXPECT_TRUE((*iter)->is_type_popup() || (*iter)->is_type_panel());
   }
 }
 
@@ -64,6 +64,45 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, BrowserIsApp) {
     else
       ASSERT_TRUE((*iter)->is_app());
   }
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowOpenPopupDefault) {
+  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("window_open").AppendASCII("popup")));
+
+  const int num_tabs = 1;
+  const int num_popups = 0;
+  WaitForTabsAndPopups(browser(), num_tabs, num_popups);
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowOpenPopupLarge) {
+  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("window_open").AppendASCII("popup_large")));
+
+#if defined(OS_CHROMEOS)
+  // On ChromeOS this should open a new tab.
+  const int num_tabs = 1;
+  const int num_popups = 0;
+#else
+  // On other systems this should open a new popup window.
+  const int num_tabs = 0;
+  const int num_popups = 1;
+#endif
+  WaitForTabsAndPopups(browser(), num_tabs, num_popups);
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowOpenPopupSmall) {
+  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("window_open").AppendASCII("popup_small")));
+
+  // On ChromeOS this should open a new panel (acts like a new popup window).
+  // On other systems this should open a new popup window.
+  const int num_tabs = 0;
+  const int num_popups = 1;
+  WaitForTabsAndPopups(browser(), num_tabs, num_popups);
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PopupBlockingExtension) {

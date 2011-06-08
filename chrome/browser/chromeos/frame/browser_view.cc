@@ -376,7 +376,9 @@ void BrowserView::Paste() {
   gtk_util::DoPaste(this);
 }
 
-WindowOpenDisposition BrowserView::GetDispositionForPopupBounds(
+// This is a static function so that the logic can be shared by
+// chromeos::PanelBrowserView.
+WindowOpenDisposition BrowserView::DispositionForPopupBounds(
     const gfx::Rect& bounds) {
   // If a popup is larger than a given fraction of the screen, turn it into
   // a foreground tab. Also check for width or height == 0, which would
@@ -391,6 +393,11 @@ WindowOpenDisposition BrowserView::GetDispositionForPopupBounds(
     return NEW_FOREGROUND_TAB;
   }
   return NEW_POPUP;
+}
+
+WindowOpenDisposition BrowserView::GetDispositionForPopupBounds(
+    const gfx::Rect& bounds) {
+  return DispositionForPopupBounds(bounds);
 }
 
 // views::ContextMenuController implementation.

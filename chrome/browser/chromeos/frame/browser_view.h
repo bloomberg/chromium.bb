@@ -83,6 +83,10 @@ class BrowserView : public ::BrowserView,
     return saved_focused_widget_;
   }
 
+  // static implementation for chromeos::PanelBrowserView.
+  static WindowOpenDisposition DispositionForPopupBounds(
+      const gfx::Rect& bounds);
+
  protected:
   virtual void GetAccessiblePanes(
       std::vector<AccessiblePaneView*>* panes);

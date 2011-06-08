@@ -27,27 +27,31 @@ class PanelBrowserView : public ::BrowserView,
   virtual ~PanelBrowserView();
 
   // BrowserView overrides.
-  virtual void Show();
-  virtual void ShowInactive();
-  virtual void SetBounds(const gfx::Rect& bounds);
-  virtual void Close();
-  virtual void UpdateTitleBar();
-  virtual void SetCreatorView(PanelBrowserView* creator);
-  virtual bool GetSavedWindowBounds(gfx::Rect* bounds) const;
-  virtual void OnWindowActivationChanged(bool active);
+  virtual void Show() OVERRIDE;
+  virtual void ShowInactive() OVERRIDE;
+  virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
+  virtual void Close() OVERRIDE;
+  virtual void UpdateTitleBar() OVERRIDE;
+  virtual WindowOpenDisposition GetDispositionForPopupBounds(
+      const gfx::Rect& bounds) OVERRIDE OVERRIDE;
+  virtual bool GetSavedWindowBounds(gfx::Rect* bounds) const OVERRIDE;
+  virtual void OnWindowActivationChanged(bool active) OVERRIDE;
 
   // BrowserView : TabStripModelObserver overrides.
   virtual void TabChangedAt(TabContentsWrapper* contents,
                             int index,
-                            TabChangeType change_type);
+                            TabChangeType change_type) OVERRIDE;
 
-  // PanelController::Delegate overrides
-  virtual string16 GetPanelTitle();
-  virtual SkBitmap GetPanelIcon();
-  virtual bool CanClosePanel();
-  virtual void ClosePanel();
-  virtual void ActivatePanel();
-  virtual void OnPanelStateChanged(PanelController::State state) {}
+  // PanelController::Delegate overrides.
+  virtual string16 GetPanelTitle() OVERRIDE;
+  virtual SkBitmap GetPanelIcon() OVERRIDE;
+  virtual bool CanClosePanel() OVERRIDE;
+  virtual void ClosePanel() OVERRIDE;
+  virtual void ActivatePanel() OVERRIDE;
+  virtual void OnPanelStateChanged(PanelController::State state) OVERRIDE;
+
+  // Specific to PanelBrowserView.
+  void SetCreatorView(PanelBrowserView* creator);
 
  private:
   // Enforces the min, max, and default bounds.

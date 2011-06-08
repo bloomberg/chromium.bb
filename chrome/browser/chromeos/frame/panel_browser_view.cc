@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/frame/panel_browser_view.h"
 
+#include "chrome/browser/chromeos/frame/browser_view.h"
 #include "chrome/browser/chromeos/frame/panel_controller.h"
 #include "third_party/cros/chromeos_wm_ipc_enums.h"
 #include "views/widget/widget.h"
@@ -100,6 +101,11 @@ void PanelBrowserView::SetCreatorView(PanelBrowserView* creator) {
   creator_xid_ = ui::GetX11WindowFromGtkWidget(GTK_WIDGET(window));
 }
 
+WindowOpenDisposition PanelBrowserView::GetDispositionForPopupBounds(
+    const gfx::Rect& bounds) {
+  return chromeos::BrowserView::DispositionForPopupBounds(bounds);
+}
+
 bool PanelBrowserView::GetSavedWindowBounds(gfx::Rect* bounds) const {
   bool res = ::BrowserView::GetSavedWindowBounds(bounds);
   if (res)
@@ -148,6 +154,9 @@ void PanelBrowserView::ClosePanel() {
 
 void PanelBrowserView::ActivatePanel() {
   Activate();
+}
+
+void PanelBrowserView::OnPanelStateChanged(PanelController::State state) {
 }
 
 }  // namespace chromeos
