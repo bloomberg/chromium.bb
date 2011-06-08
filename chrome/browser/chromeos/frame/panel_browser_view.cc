@@ -156,7 +156,4 @@ void PanelBrowserView::ActivatePanel() {
   Activate();
 }
 
-void PanelBrowserView::OnPanelStateChanged(PanelController::State state) {
-}
-
 }  // namespace chromeos
