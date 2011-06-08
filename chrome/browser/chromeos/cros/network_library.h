@@ -883,6 +883,8 @@ class NetworkLibrary {
     // Called when the state of the network manager has changed,
     // for example, networks have appeared or disappeared.
     virtual void OnNetworkManagerChanged(NetworkLibrary* obj) = 0;
+   protected:
+    ~NetworkManagerObserver() { }
   };
 
   class NetworkObserver {
@@ -891,6 +893,8 @@ class NetworkLibrary {
     // for example signal strength or connection state.
     virtual void OnNetworkChanged(NetworkLibrary* cros,
                                   const Network* network) = 0;
+   protected:
+    ~NetworkObserver() {}
   };
 
   class NetworkDeviceObserver {
@@ -899,12 +903,16 @@ class NetworkLibrary {
     // for example SIMLock state for cellular.
     virtual void OnNetworkDeviceChanged(NetworkLibrary* cros,
                                         const NetworkDevice* device) = 0;
+   protected:
+    ~NetworkDeviceObserver() {}
   };
 
   class CellularDataPlanObserver {
    public:
     // Called when the cellular data plan has changed.
     virtual void OnCellularDataPlanChanged(NetworkLibrary* obj) = 0;
+   protected:
+    ~CellularDataPlanObserver() {}
   };
 
   class PinOperationObserver {
@@ -913,6 +921,8 @@ class NetworkLibrary {
     // Network is NULL when we don't have an associated Network object.
     virtual void OnPinOperationCompleted(NetworkLibrary* cros,
                                          PinOperationError error) = 0;
+   protected:
+    ~PinOperationObserver() {}
   };
 
   class UserActionObserver {
@@ -921,6 +931,8 @@ class NetworkLibrary {
     // Network is NULL when we don't have an associated Network object.
     virtual void OnConnectionInitiated(NetworkLibrary* cros,
                                        const Network* network) = 0;
+   protected:
+    ~UserActionObserver() {}
   };
 
   virtual ~NetworkLibrary() {}

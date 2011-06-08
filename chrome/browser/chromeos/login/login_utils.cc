@@ -532,8 +532,10 @@ class WarmingObserver : public NetworkLibrary::NetworkManagerObserver {
     netlib->AddNetworkManagerObserver(this);
   }
 
+  virtual ~WarmingObserver() {}
+
   // If we're now connected, prewarm the auth url.
-  void OnNetworkManagerChanged(NetworkLibrary* netlib) {
+  virtual void OnNetworkManagerChanged(NetworkLibrary* netlib) {
     if (netlib->Connected()) {
       const int kConnectionsNeeded = 1;
       chrome_browser_net::PreconnectOnUIThread(

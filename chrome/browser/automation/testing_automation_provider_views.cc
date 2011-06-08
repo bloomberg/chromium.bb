@@ -37,7 +37,7 @@ class ViewFocusChangeWaiter : public views::FocusChangeListener {
     FocusWillChange(NULL, focus_manager_->GetFocusedView());
   }
 
-  ~ViewFocusChangeWaiter() {
+  virtual ~ViewFocusChangeWaiter() {
     focus_manager_->RemoveFocusChangeListener(this);
   }
 
@@ -86,6 +86,8 @@ class TestingAutomationProvider::PopupMenuWaiter : public views::MenuListener {
         reply_message_(NULL) {
     toolbar_view_->AddMenuListener(this);
   }
+
+  virtual ~PopupMenuWaiter() {}
 
   // Implementation of views::MenuListener
   virtual void OnMenuOpened() {

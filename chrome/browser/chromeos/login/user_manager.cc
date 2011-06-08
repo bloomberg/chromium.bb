@@ -141,6 +141,8 @@ class RemoveAttempt : public CryptohomeLibrary::Delegate {
     RemoveUser();
   }
 
+  virtual ~RemoveAttempt() {}
+
   void RemoveUser() {
     // Owner is not allowed to be removed from the device.
     // Must not proceed without signature verification.

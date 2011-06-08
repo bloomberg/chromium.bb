@@ -258,7 +258,7 @@ class UserCrosSettingsTrust : public SignedSettingsHelper::Callback {
     Reload();
   }
 
-  ~UserCrosSettingsTrust() {
+  virtual ~UserCrosSettingsTrust() {
     if (BrowserThread::CurrentlyOn(BrowserThread::UI) &&
         CrosLibrary::Get()->EnsureLoaded()) {
       // Cancels all pending callbacks from us.
