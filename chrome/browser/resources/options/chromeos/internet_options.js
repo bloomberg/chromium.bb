@@ -498,7 +498,9 @@ cr.define('options', function() {
       detailsPage.cellular = false;
       detailsPage.gsm = false;
     }
-    OptionsPage.navigateToPage('detailsInternetPage');
+    // Don't show page name in address bar and in history to prevent people
+    // navigate here by hand and solve issue with page session restore.
+    OptionsPage.showPageByName('detailsInternetPage', false);
   };
 
   // Export
