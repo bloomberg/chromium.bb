@@ -10,9 +10,6 @@
 #include "chrome/browser/ui/views/window.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/native_web_keyboard_event.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_source.h"
-#include "content/common/notification_type.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "views/events/event.h"
 #include "views/widget/root_view.h"
@@ -22,8 +19,6 @@
 #if defined(TOOLKIT_USES_GTK)
 #include "views/window/native_window_gtk.h"
 #endif
-
-class RenderWidgetHost;
 
 namespace browser {
 
@@ -47,7 +42,6 @@ HtmlDialogView::HtmlDialogView(Profile* profile,
                                HtmlDialogUIDelegate* delegate)
     : DOMView(),
       HtmlDialogTabContentsDelegate(profile),
-      state_(NONE),
       delegate_(delegate) {
 }
 
@@ -70,20 +64,6 @@ bool HtmlDialogView::AcceleratorPressed(const views::Accelerator& accelerator) {
   OnWindowClosed();
   OnDialogClosed(std::string());
   return true;
-}
-
-void HtmlDialogView::ViewHierarchyChanged(
-    bool is_add, View* parent, View* child) {
-  DOMView::ViewHierarchyChanged(is_add, parent, child);
-  if (is_add && GetWidget() && state_ == NONE) {
-    state_ = INITIALIZED;
-#if defined(OS_CHROMEOS)
-    CHECK(
-        static_cast<views::NativeWidgetGtk*>(
-            GetWidget()->native_widget())->SuppressFreezeUpdates());
-#endif
-    RegisterDialogAccelerators();
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -242,49 +222,9 @@ void HtmlDialogView::InitDialog() {
   // the comment above HtmlDialogUI in its header file for why.
   HtmlDialogUI::GetPropertyAccessor().SetProperty(tab_contents_->property_bag(),
                                                   this);
-  notification_registrar_.Add(
-      this,
-      NotificationType::RENDER_VIEW_HOST_CREATED_FOR_TAB,
-      Source<TabContents>(tab_contents()));
-  notification_registrar_.Add(
-      this,
-      NotificationType::LOAD_COMPLETED_MAIN_FRAME,
-      Source<TabContents>(tab_contents()));
 
-  DOMView::LoadURL(GetDialogContentURL());
-}
-
-void HtmlDialogView::Observe(NotificationType type,
-                             const NotificationSource& source,
-                             const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::RENDER_VIEW_HOST_CREATED_FOR_TAB: {
-      RenderWidgetHost* rwh = Details<RenderWidgetHost>(details).ptr();
-      notification_registrar_.Add(
-          this,
-          NotificationType::RENDER_WIDGET_HOST_DID_PAINT,
-          Source<RenderWidgetHost>(rwh));
-      break;
-    }
-    case NotificationType::LOAD_COMPLETED_MAIN_FRAME:
-      if (state_ == INITIALIZED)
-        state_ = LOADED;
-      break;
-    case NotificationType::RENDER_WIDGET_HOST_DID_PAINT:
-      if (state_ == LOADED) {
-        state_ = PAINTED;
-#if defined(OS_CHROMEOS)
-        views::NativeWidgetGtk::UpdateFreezeUpdatesProperty(
-            GTK_WINDOW(GetWidget()->GetNativeView()), false);
-#endif
-      }
-      break;
-    default:
-      NOTREACHED() << "unknown type" << type.value;
-  }
-}
-
-void HtmlDialogView::RegisterDialogAccelerators() {
   // Pressing the ESC key will close the dialog.
   AddAccelerator(views::Accelerator(ui::VKEY_ESCAPE, false, false, false));
+
+  DOMView::LoadURL(GetDialogContentURL());
 }

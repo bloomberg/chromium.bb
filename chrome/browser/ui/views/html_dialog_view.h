@@ -8,12 +8,9 @@
 
 #include <string>
 
-#include "base/gtest_prod_util.h"
 #include "chrome/browser/ui/views/dom_view.h"
 #include "chrome/browser/ui/webui/html_dialog_tab_contents_delegate.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
 #include "ui/gfx/size.h"
 #include "views/window/window_delegate.h"
 
@@ -39,8 +36,7 @@ class HtmlDialogView
     : public DOMView,
       public HtmlDialogTabContentsDelegate,
       public HtmlDialogUIDelegate,
-      public views::WindowDelegate,
-      public NotificationObserver {
+      public views::WindowDelegate {
  public:
   HtmlDialogView(Profile* profile, HtmlDialogUIDelegate* delegate);
   virtual ~HtmlDialogView();
@@ -51,7 +47,6 @@ class HtmlDialogView
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize();
   virtual bool AcceleratorPressed(const views::Accelerator& accelerator);
-  virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
 
   // Overridden from views::WindowDelegate:
   virtual bool CanResize() const;
@@ -81,38 +76,12 @@ class HtmlDialogView
   virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
   virtual void CloseContents(TabContents* source);
 
-  // Overridden from NotificationObserver
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
-
- protected:
-  // Register accelerators for this dialog.
-  virtual void RegisterDialogAccelerators();
-
  private:
-  FRIEND_TEST_ALL_PREFIXES(HtmlDialogBrowserTest, TestStateTransition);
-
-  // A state used to ensure that we show the window only after the
-  // renderer painted the full page.
-  enum DialogState {
-    NONE,
-    INITIALIZED,  // FreezeUpdates property is set to prevent WM from showing
-                  // the window until the property is remoevd.
-    LOADED,       // Renderer loaded the page.
-    PAINTED,      // 1st paint event after the page is loaded.
-                  // FreezeUpdates property is removed to tell WM to shows
-                  // the window.
-  };
-  DialogState state_;
-
   // This view is a delegate to the HTML content since it needs to get notified
   // about when the dialog is closing. For all other actions (besides dialog
   // closing) we delegate to the creator of this view, which we keep track of
   // using this variable.
   HtmlDialogUIDelegate* delegate_;
-
-  NotificationRegistrar notification_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(HtmlDialogView);
 };

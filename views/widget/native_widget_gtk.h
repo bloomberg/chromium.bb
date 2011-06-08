@@ -108,21 +108,14 @@ class NativeWidgetGtk : public NativeWidget,
   void GetRequestedSize(gfx::Size* out) const;
 
   // Overridden from ui::ActiveWindowWatcherX::Observer.
-  virtual void ActiveWindowChanged(GdkWindow* active_window) OVERRIDE;
+  virtual void ActiveWindowChanged(GdkWindow* active_window);
 
   // Clears the focus on the native widget having the focus.
-  void ClearNativeFocus();
+  virtual void ClearNativeFocus();
 
   // Handles a keyboard event by sending it to our focus manager.
   // Returns true if it's handled by the focus manager.
   bool HandleKeyboardEvent(const KeyEvent& key);
-
-  // Tells widget not to remove FREEZE_UPDATES property when the
-  // widget is painted.  This is used if painting the gtk widget
-  // is not enough to show the window and has to wait further like
-  // keyboard overlay. Returns true if this is called before
-  // FREEZE_UPDATES property is removed, or false otherwise.
-  bool SuppressFreezeUpdates();
 
   // Enables debug painting. See |debug_paint_enabled_| for details.
   static void EnableDebugPaint();
