@@ -20,7 +20,6 @@ if __name__ == '__main__':
   sys.path.append(constants.SOURCE_ROOT)
 
 import chromite.buildbot.cbuildbot_comm as cbuildbot_comm
-import chromite.buildbot.cbuildbot_commands as commands
 import chromite.buildbot.cbuildbot_config as cbuildbot_config
 import chromite.buildbot.cbuildbot_stages as stages
 import chromite.lib.cros_build_lib as cros_lib
@@ -54,7 +53,7 @@ def _GetChromiteTrackingBranch():
   cwd = os.path.dirname(os.path.realpath(__file__))
   current_branch = cros_lib.GetCurrentBranch(cwd)
   if current_branch:
-    (remote, tracking_branch) = cros_lib.GetPushBranch(current_branch, cwd)
+    (_, tracking_branch) = cros_lib.GetPushBranch(current_branch, cwd)
   else:
     tracking_branch = cros_lib.GetManifestDefaultBranch(cwd)
 
@@ -126,7 +125,10 @@ def RunBuildStages(bot_id, options, build_config):
   # Control master / slave logic here.
   if build_and_test_success and build_config['master']:
     if cbuildbot_comm.HaveSlavesCompleted(cbuildbot_config.config):
-      stages.PushChangesStage(bot_id, options, build_config).Run()
+      try:
+        stages.PushChangesStage(bot_id, options, build_config).Run()
+      except stages.BuildException:
+        pass
     else:
       cros_lib.Die('One of the other slaves failed.')
 

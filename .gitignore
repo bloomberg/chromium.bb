@@ -4,3 +4,4 @@
 buildbot/revisions.pfq
 .project
 .pydevproject
+buildbot/.completed_stages

@@ -494,7 +494,6 @@ class BuildTargetStage(BuilderStage):
   Specifically, we build Chromium OS packages and perform imaging to get
   the images we want per the build spec."""
   def _PerformStage(self):
-    board = self._build_config['board']
     build_autotest = (self._build_config['build_tests'] and
                       self._options.tests)
     env = {}
