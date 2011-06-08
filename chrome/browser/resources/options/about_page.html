@@ -4,14 +4,14 @@
     <section>
       <div>
         <!-- White space is significant between spans. -->
-        <div><span i18n-content="firmware"></span> <span id="osFirmware0">
-          <span class="loading" i18n-content="loading"></span></span></div>
-        <div><span i18n-content="os"></span> <span id="osVersion0">
-          <span class="loading" i18n-content="loading"></span></span></div>
         <div>
           <span i18n-content="browser"></span>
           <span i18n-content="browser_version"></span>
         </div>
+        <div><span i18n-content="os"></span> <span id="osVersion0">
+          <span class="loading" i18n-content="loading"></span></span></div>
+        <div><span i18n-content="firmware"></span> <span id="osFirmware0">
+          <span class="loading" i18n-content="loading"></span></span></div>
         <div>
           <button id="moreInfoButton" class="link-button"
               i18n-content="more_info"></button>
@@ -35,9 +35,8 @@
       </div>
     </section>
     <section>
-      <h3 i18n-content="firmware"></h3>
-      <div id="osFirmware1">
-        <span class="loading" i18n-content="loading"></span>
+      <h3 i18n-content="browser"></h3>
+      <div i18n-content="browser_version"></div>
     </section>
     <section>
       <h3 i18n-content="os"></h3>
@@ -46,8 +45,9 @@
       </div>
     </section>
     <section>
-      <h3 i18n-content="browser"></h3>
-      <div i18n-content="browser_version"></div>
+      <h3 i18n-content="firmware"></h3>
+      <div id="osFirmware1">
+        <span class="loading" i18n-content="loading"></span>
     </section>
     <section>
       <h3>WebKit</h3>
