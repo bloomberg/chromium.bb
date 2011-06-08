@@ -433,9 +433,11 @@ void Widget::ResetLastMouseMoveFlag() {
 }
 
 void Widget::UpdateWindowTitle() {
-  // If the non-client view is rendering its own title, it'll need to relayout
-  // now.
-  non_client_view_->Layout();
+  if (non_client_view_) {
+    // If the non-client view is rendering its own title, it'll need to relayout
+    // now.
+    non_client_view_->Layout();
+  }
 
   // Update the native frame's text. We do this regardless of whether or not
   // the native frame is being used, since this also updates the taskbar, etc.
@@ -582,7 +584,7 @@ void Widget::OnNativeWidgetDestroyed() {
 }
 
 gfx::Size Widget::GetMinimumSize() {
-  return non_client_view_->GetMinimumSize();
+  return non_client_view_ ? non_client_view_->GetMinimumSize() : gfx::Size();
 }
 
 void Widget::OnNativeWidgetSizeChanged(const gfx::Size& new_size) {
