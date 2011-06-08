@@ -29,13 +29,6 @@
 using base::Time;
 using base::TimeDelta;
 
-#if defined(OS_LINUX)
-// Timed out on Chromium Linux.  http://crbug.com/53607
-#define MAYBE_Load DISABLED_Load
-#else
-#define MAYBE_Load Load
-#endif
-
 // Test the GenerateSearchURL on a thread or the main thread.
 class TestGenerateSearchURL
     : public base::RefCountedThreadSafe<TestGenerateSearchURL> {
@@ -378,7 +371,7 @@ void TemplateURLServiceTest::TestLoadUpdatingPreloadedURL(
   ASSERT_EQ(prepopulated_url, keyword_url->url()->DisplayURL());
 }
 
-TEST_F(TemplateURLServiceTest, MAYBE_Load) {
+TEST_F(TemplateURLServiceTest, Load) {
   VerifyLoad();
 }
 
