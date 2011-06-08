@@ -1,0 +1,117 @@
+#!/usr/bin/python
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import pyauto_nacl  # Must be imported before pyauto
+import pyauto
+import nacl_utils
+import random
+import time
+
+class NaClTest(pyauto.PyUITest):
+  """Tests for NaCl."""
+
+  def reloadMulti(self, page, title_word, num_tries, wait_min, wait_max):
+    tab = self.GetBrowserWindow(0).GetTab(0)
+    url = self.GetHttpURLForDataPath(page)
+    tab.NavigateToURL(pyauto.GURL(url))
+    page_title = self.GetActiveTabTitle()
+    # Verify that test page exists by case insensitive title keyword check.
+    self.assertNotEqual(page_title.upper().find(title_word.upper()), -1)
+    # Surf to about:version as reference point for GoBack().
+    tab.NavigateToURL(pyauto.GURL('about:version'))
+    version_title = self.GetActiveTabTitle()
+    # For a given page:
+    #  - Surf to the test page.
+    #  - Wait until the expected page title to appear.
+    #  - Wait a random amount of time between wait_min..wait_max.
+    #  - For num_tries, attempt reload w/ new random timeout
+    #  - On the last try, verify the test ran and completed successfully
+    #  - GoBack()
+    #  - Verify a page snap didn't occur by checking the page title;
+    #    expect to be back on the about:version page.
+    # This test intentionally tries to interrupt the page during mid-load,
+    # so it does not wait for the test to complete, except on the last
+    # iteration.
+    tab.NavigateToURLAsync(pyauto.GURL(url))
+    self.WaitUntil(lambda: self.GetActiveTabTitle() == page_title)
+    for i in range(0, num_tries):
+      if wait_max > 0:
+        wait_duration = random.uniform(wait_min, wait_max)
+        stop_time = time.time() + wait_duration
+        self.WaitUntil(lambda: time.time() > stop_time)
+      self.assertEqual(page_title, self.GetActiveTabTitle())
+      tab.Reload()
+      self.WaitUntil(lambda: self.GetActiveTabTitle() == page_title)
+    # After last reload, wait for test to complete before going back
+    nacl_utils.WaitForNexeLoad(self)
+    nacl_utils.VerifyAllTestsPassed(self)
+    tab.GoBack()
+    self.assertEqual(version_title, self.GetActiveTabTitle())
+    did_snap = nacl_utils.CheckForSnap(self)
+    self.assertEqual(did_snap, False)
+
+  def reloader(self, page, title_word):
+    """Navigate to PPAPI page and surf away asynchronously."""
+    print '---> pyauto reload: start testing', page
+    # Repeatedly (5 times) immediately reload
+    self.reloadMulti(page, title_word, 5, 0, 0)
+    # Repeatedly (25 times) reload after a random delay (0 - 2 seconds)
+    self.reloadMulti(page, title_word, 25, 0.0, 2.0)
+    nacl_utils.CheckForSnap(self)
+    print '---> pyauto reload: finished testing', page
+
+  def testReloadSRPCHelloWorld(self):
+    self.reloader('srpc_hw.html', 'SRPC')
+
+  def testReloadSRPCParameterPassing(self):
+    self.reloader('srpc_basic.html', 'SRPC')
+
+  def testReloadSRPCPluginProperties(self):
+    self.reloader('srpc_plugin.html', 'SRPC')
+
+  def testReloadSRPCSocketAddress(self):
+    self.reloader('srpc_sockaddr.html', 'SRPC')
+
+  def testReloadSRPCSharedMemory(self):
+    self.reloader('srpc_shm.html', 'SRPC')
+
+  def testReloadSRPCResourceDescriptor(self):
+    self.reloader('srpc_nrd_xfer.html', 'SRPC')
+
+  def testReloadSRPCHelloWorldFileDescriptor(self):
+    self.reloader('srpc_hw_fd.html', 'SRPC')
+
+  def testReloadSRPCURLContentAsNaclResourceDescriptor(self):
+    self.reloader('srpc_url_as_nacl_desc.html', 'SRPC')
+
+  def testReloadScripting(self):
+    self.reloader('basic_object.html', 'PPAPI')
+
+  def testReloadExampleAudio(self):
+    self.reloader('ppapi_example_audio.html#mute', 'PPAPI')
+
+  def testReloadGetURL(self):
+    self.reloader('ppapi_geturl.html', 'PPAPI')
+
+  def testReloadEarthC(self):
+    self.reloader('earth_c.html', 'Globe')
+
+  def testReloadEarthCC(self):
+    self.reloader('earth_cc.html', 'Globe')
+
+  def testReloadProgressEvents(self):
+    self.reloader('ppapi_progress_events.html', 'PPAPI')
+
+  def testReloadPPBCore(self):
+    self.reloader('ppapi_core.html', 'PPAPI')
+
+  def testReloadPPBGraphics2D(self):
+    self.reloader('ppapi_ppb_graphics2d.html', 'PPAPI')
+
+  def testReloadPPBFileSystem(self):
+    self.reloader('ppapi_file_system.html', 'PPAPI')
+
+if __name__ == '__main__':
+  pyauto_nacl.Main()

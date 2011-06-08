@@ -99,8 +99,7 @@ core_test_files = [env.File('${STAGING_DIR}/nacltest.js'),
 node = env.PyAutoTester(
     'pyauto_surfaway.out',
     env.File('surfaway.py'),
-    files=core_test_files
-)
+    files=core_test_files)
 env.AddNodeToTestSuite(node,
                        ['pyauto_tests'],
                        'run_pyauto_surfaway_test',
@@ -110,21 +109,29 @@ env.AddNodeToTestSuite(node,
 node = env.PyAutoTester(
     'pyauto_surfaway_async.out',
     env.File('surfaway_async.py'),
-    files=core_test_files +
-          ppapi_event_example_files
-)
+    files=core_test_files + ppapi_event_example_files)
 env.AddNodeToTestSuite(node,
                        ['pyauto_tests'],
                        'run_pyauto_surfaway_async_test',
                        is_broken=env.PyAutoTesterIsBroken() or
                                  env.PyAutoTesterSurfawayAsyncIsBroken())
 
+# reload.py
+node = env.PyAutoTester(
+    'pyauto_reload.out',
+    env.File('reload.py'),
+    files=core_test_files)
+env.AddNodeToTestSuite(node,
+                       ['pyauto_tests'],
+                       'run_pyauto_reload_test',
+                       is_broken=env.PyAutoTesterIsBroken() or
+                                 env.PyAutoTesterReloaderIsBroken())
+
 # multiple_nexes.py
 node = env.PyAutoTester(
     'pyauto_multiple_nexes.out',
     env.File('multiple_nexes.py'),
-    files=core_test_files
-)
+    files=core_test_files)
 env.AddNodeToTestSuite(node,
                        ['pyauto_tests'],
                        'run_pyauto_multiple_nexes_test',

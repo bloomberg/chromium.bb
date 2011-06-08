@@ -60,3 +60,19 @@ def VerifyAllTestsPassed(browser, tab_index=0):
       '0 failed, 0 errors', tab_index=tab_index)['match_count'] == 1,
                      'nexe test did not report success',
                      tab_index)
+
+def CheckForSnap(browser):
+  browser.NavigateToURL('about:histograms')
+  tab_index = browser.GetActiveTabIndex()
+  def condition_function():
+    return browser.FindInPage('Histogram',
+        tab_index=tab_index)['match_count'] > 100
+  AssertTrueOrLogTab(browser,
+      browser.WaitUntil(condition_function, expect_retval=True, timeout=90),
+      'histogram page did not refresh', tab_index)
+  find_result = browser.FindInPage('BrowserRenderProcessHost.ChildCrashes')
+  match_count = find_result['match_count']
+  if match_count > 0:
+    return True
+  return False
+
