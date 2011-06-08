@@ -261,7 +261,7 @@ void VDSOSupport::ElfMemImage::Init(const void *base) {
     Init(0);
     return;
   }
-  ptrdiff_t relocation =
+  std::ptrdiff_t relocation =
       base_as_char - reinterpret_cast<const char *>(link_base_);
   ElfW(Dyn) *dynamic_entry =
       reinterpret_cast<ElfW(Dyn) *>(dynamic_program_header->p_vaddr +

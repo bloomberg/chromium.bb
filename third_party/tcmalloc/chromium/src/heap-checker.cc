@@ -2133,7 +2133,7 @@ extern void InitialMallocHook_MMap(const void* result,
 }
 
 // Important to have this to catch the first sbrk call (say from tcmalloc):
-extern void InitialMallocHook_Sbrk(const void* result, ptrdiff_t increment) {
+extern void InitialMallocHook_Sbrk(const void* result, std::ptrdiff_t increment) {
   InitHeapLeakCheckerFromMallocHook();
   // record this first sbrk as well (if we need to):
   MallocHook::InvokeSbrkHook(result, increment);

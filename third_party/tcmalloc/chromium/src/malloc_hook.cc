@@ -102,10 +102,10 @@ extern void InitialMallocHook_MMap(const void* result,
                                    off_t offset);
 
 ATTRIBUTE_WEAK
-extern void InitialMallocHook_PreSbrk(ptrdiff_t increment);
+extern void InitialMallocHook_PreSbrk(std::ptrdiff_t increment);
 
 ATTRIBUTE_WEAK
-extern void InitialMallocHook_Sbrk(const void* result, ptrdiff_t increment);
+extern void InitialMallocHook_Sbrk(const void* result, std::ptrdiff_t increment);
 
 namespace base { namespace internal {
 template<typename PtrT>
@@ -240,12 +240,12 @@ void InitialMallocHook_MMap(const void* result,
     MallocHook::SetMmapHook(NULL);
 }
 
-void InitialMallocHook_PreSbrk(ptrdiff_t increment) {
+void InitialMallocHook_PreSbrk(std::ptrdiff_t increment) {
   if (MallocHook::GetPreSbrkHook() == &InitialMallocHook_PreSbrk)
     MallocHook::SetPreSbrkHook(NULL);
 }
 
-void InitialMallocHook_Sbrk(const void* result, ptrdiff_t increment) {
+void InitialMallocHook_Sbrk(const void* result, std::ptrdiff_t increment) {
   if (MallocHook::GetSbrkHook() == &InitialMallocHook_Sbrk)
     MallocHook::SetSbrkHook(NULL);
 }
@@ -449,7 +449,7 @@ extern "C" {
   void* mremap(void* old_addr, size_t old_size, size_t new_size,
                int flags, ...) __THROW
     ATTRIBUTE_SECTION(malloc_hook);
-  void* sbrk(ptrdiff_t increment) __THROW
+  void* sbrk(std::ptrdiff_t increment) __THROW
     ATTRIBUTE_SECTION(malloc_hook);
 }
 
@@ -492,9 +492,9 @@ extern "C" void* mremap(void* old_addr, size_t old_size, size_t new_size,
 }
 
 // libc's version:
-extern "C" void* __sbrk(ptrdiff_t increment);
+extern "C" void* __sbrk(std::ptrdiff_t increment);
 
-extern "C" void* sbrk(ptrdiff_t increment) __THROW {
+extern "C" void* sbrk(std::ptrdiff_t increment) __THROW {
   MallocHook::InvokePreSbrkHook(increment);
   void *result = __sbrk(increment);
   MallocHook::InvokeSbrkHook(result, increment);

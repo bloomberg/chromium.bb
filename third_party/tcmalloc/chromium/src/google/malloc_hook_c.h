@@ -84,10 +84,10 @@ typedef void (*MallocHook_MremapHook)(const void* result,
                                       const void* new_addr);
 MallocHook_MremapHook MallocHook_SetMremapHook(MallocHook_MremapHook hook);
 
-typedef void (*MallocHook_PreSbrkHook)(ptrdiff_t increment);
+typedef void (*MallocHook_PreSbrkHook)(std::ptrdiff_t increment);
 MallocHook_PreSbrkHook MallocHook_SetPreSbrkHook(MallocHook_PreSbrkHook hook);
 
-typedef void (*MallocHook_SbrkHook)(const void* result, ptrdiff_t increment);
+typedef void (*MallocHook_SbrkHook)(const void* result, std::ptrdiff_t increment);
 MallocHook_SbrkHook MallocHook_SetSbrkHook(MallocHook_SbrkHook hook);
 
 #endif /* _MALLOC_HOOK_C_H_ */

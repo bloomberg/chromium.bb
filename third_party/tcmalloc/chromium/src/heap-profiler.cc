@@ -437,7 +437,7 @@ static void MunmapHook(const void* ptr, size_t size) {
   }
 }
 
-static void SbrkHook(const void* result, ptrdiff_t increment) {
+static void SbrkHook(const void* result, std::ptrdiff_t increment) {
   if (FLAGS_mmap_log) {  // log it
     RAW_LOG(INFO, "sbrk(inc=%"PRIdS") = 0x%"PRIxPTR"",
                   increment, (uintptr_t) result);

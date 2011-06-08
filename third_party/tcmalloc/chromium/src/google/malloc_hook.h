@@ -169,7 +169,7 @@ class PERFTOOLS_DLL_DECL MallocHook {
   inline static PreSbrkHook SetPreSbrkHook(PreSbrkHook hook) {
     return MallocHook_SetPreSbrkHook(hook);
   }
-  inline static void InvokePreSbrkHook(ptrdiff_t increment);
+  inline static void InvokePreSbrkHook(std::ptrdiff_t increment);
 
   // The SbrkHook is invoked whenever sbrk is called -- except when
   // the increment is 0.  This is because sbrk(0) is often called
@@ -180,7 +180,7 @@ class PERFTOOLS_DLL_DECL MallocHook {
   inline static SbrkHook SetSbrkHook(SbrkHook hook) {
     return MallocHook_SetSbrkHook(hook);
   }
-  inline static void InvokeSbrkHook(const void* result, ptrdiff_t increment);
+  inline static void InvokeSbrkHook(const void* result, std::ptrdiff_t increment);
 
   // Get the current stack trace.  Try to skip all routines up to and
   // and including the caller of MallocHook::Invoke*.

@@ -35,6 +35,7 @@
 
 #include "config.h"
 #ifdef HAVE_STDINT_H
+#include <stddef.h>
 #include <stdint.h>  // for uintptr_t
 #endif
 #include <map>

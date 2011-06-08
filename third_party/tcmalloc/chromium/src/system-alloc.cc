@@ -166,7 +166,7 @@ void* SbrkSysAllocator::Alloc(size_t size, size_t *actual_size,
 
   // sbrk will release memory if passed a negative number, so we do
   // a strict check here
-  if (static_cast<ptrdiff_t>(size + alignment) < 0) return NULL;
+  if (static_cast<std::ptrdiff_t>(size + alignment) < 0) return NULL;
 
   // This doesn't overflow because TCMalloc_SystemAlloc has already
   // tested for overflow at the alignment boundary.
