@@ -719,10 +719,6 @@ void InterstitialPage::InterstitialPageRVHViewDelegate::OnFindReply(
     int active_match_ordinal, bool final_update) {
 }
 
-int InterstitialPage::GetBrowserWindowID() const {
-  return tab_->GetBrowserWindowID();
-}
-
 void InterstitialPage::UpdateInspectorSetting(const std::string& key,
                                               const std::string& value) {
   RenderViewHostDelegateHelper::UpdateInspectorSetting(

@@ -33,8 +33,6 @@ bool ExtensionMessageHandler::OnMessageReceived(
 void ExtensionMessageHandler::RenderViewHostInitialized() {
   Send(new ExtensionMsg_NotifyRenderViewType(
       routing_id(), render_view_host()->delegate()->GetRenderViewType()));
-  Send(new ExtensionMsg_UpdateBrowserWindowId(
-      routing_id(), render_view_host()->delegate()->GetBrowserWindowID()));
 }
 
 void ExtensionMessageHandler::OnPostMessage(int port_id,

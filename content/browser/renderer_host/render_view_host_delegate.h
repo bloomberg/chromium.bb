@@ -274,10 +274,6 @@ class RenderViewHostDelegate : public IPC::Channel::Listener {
   // object is not a BackgroundContents, returns NULL.
   virtual BackgroundContents* GetAsBackgroundContents();
 
-  // Return id number of browser window which this object is attached to. If no
-  // browser window is attached to, just return -1.
-  virtual int GetBrowserWindowID() const = 0;
-
   // Return type of RenderView which is attached with this object.
   virtual ViewType::Type GetRenderViewType() const = 0;
 

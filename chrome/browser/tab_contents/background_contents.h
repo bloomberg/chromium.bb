@@ -63,7 +63,6 @@ class BackgroundContents : public RenderViewHostDelegate,
   virtual RenderViewHostDelegate::View* GetViewDelegate();
   virtual const GURL& GetURL() const;
   virtual ViewType::Type GetRenderViewType() const;
-  virtual int GetBrowserWindowID() const;
   virtual void DidNavigate(RenderViewHost* render_view_host,
                            const ViewHostMsg_FrameNavigate_Params& params);
   virtual WebPreferences GetWebkitPrefs();

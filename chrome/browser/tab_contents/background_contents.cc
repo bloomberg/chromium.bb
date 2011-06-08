@@ -74,10 +74,6 @@ ViewType::Type BackgroundContents::GetRenderViewType() const {
   return ViewType::BACKGROUND_CONTENTS;
 }
 
-int BackgroundContents::GetBrowserWindowID() const {
-  return extension_misc::kUnknownWindowId;
-}
-
 void BackgroundContents::DidNavigate(
     RenderViewHost* render_view_host,
     const ViewHostMsg_FrameNavigate_Params& params) {

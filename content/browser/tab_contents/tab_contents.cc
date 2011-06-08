@@ -1245,10 +1245,6 @@ ViewType::Type TabContents::GetRenderViewType() const {
   return ViewType::TAB_CONTENTS;
 }
 
-int TabContents::GetBrowserWindowID() const {
-  return controller().window_id().id();
-}
-
 void TabContents::RenderViewCreated(RenderViewHost* render_view_host) {
   NotificationService::current()->Notify(
       NotificationType::RENDER_VIEW_HOST_CREATED_FOR_TAB,
@@ -1273,6 +1269,9 @@ void TabContents::RenderViewCreated(RenderViewHost* render_view_host) {
 
   FOR_EACH_OBSERVER(
       TabContentsObserver, observers_, RenderViewCreated(render_view_host));
+
+  if (delegate())
+    delegate()->RenderViewCreated(this, render_view_host);
 }
 
 void TabContents::RenderViewReady(RenderViewHost* rvh) {

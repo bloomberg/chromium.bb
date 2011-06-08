@@ -210,6 +210,19 @@ void ExtensionHost::CreateRenderViewSoon(RenderWidgetHostView* host_view) {
 
 void ExtensionHost::CreateRenderViewNow() {
   render_view_host_->CreateRenderView(string16());
+  if (extension_host_type_ == ViewType::EXTENSION_POPUP ||
+      extension_host_type_ == ViewType::EXTENSION_DIALOG ||
+      extension_host_type_ == ViewType::EXTENSION_INFOBAR) {
+    // If the host is bound to a browser, then extract its window id.
+    // Extensions hosted in ExternalTabContainer objects may not have
+    // an associated browser.
+    const Browser* browser = GetBrowser();
+    if (browser && render_view_host_) {
+      render_view_host_->Send(new ExtensionMsg_UpdateBrowserWindowId(
+          render_view_host_->routing_id(),
+          ExtensionTabUtil::GetWindowId(browser)));
+    }
+  }
   NavigateToURL(url_);
   DCHECK(IsRenderViewLive());
   if (is_background_page())
@@ -787,25 +800,6 @@ void ExtensionHost::RenderViewCreated(RenderViewHost* render_view_host) {
         render_view_host->routing_id(),
         kPreferredSizeWidth | kPreferredSizeHeightThisIsSlow));
   }
-}
-
-int ExtensionHost::GetBrowserWindowID() const {
-  // Hosts not attached to any browser window have an id of -1.  This includes
-  // those mentioned below, and background pages.
-  int window_id = extension_misc::kUnknownWindowId;
-  if (extension_host_type_ == ViewType::EXTENSION_POPUP ||
-      extension_host_type_ == ViewType::EXTENSION_DIALOG ||
-      extension_host_type_ == ViewType::EXTENSION_INFOBAR) {
-    // If the host is bound to a browser, then extract its window id.
-    // Extensions hosted in ExternalTabContainer objects may not have
-    // an associated browser.
-    const Browser* browser = GetBrowser();
-    if (browser)
-      window_id = ExtensionTabUtil::GetWindowId(browser);
-  } else if (extension_host_type_ != ViewType::EXTENSION_BACKGROUND_PAGE) {
-    NOTREACHED();
-  }
-  return window_id;
 }
 
 void ExtensionHost::OnRunFileChooser(

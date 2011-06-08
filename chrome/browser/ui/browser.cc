@@ -2859,6 +2859,7 @@ void Browser::TabInsertedAt(TabContentsWrapper* contents,
 
   // Extension code in the renderer holds the ID of the window that hosts it.
   // Notify it that the window ID changed.
+  // TODO(sky): move this to a better place.
   contents->render_view_host()->Send(new ExtensionMsg_UpdateBrowserWindowId(
       contents->render_view_host()->routing_id(),
       contents->controller().window_id().id()));
@@ -3434,6 +3435,14 @@ void Browser::DidNavigateMainFramePostCommit(
 
 content::JavaScriptDialogCreator* Browser::GetJavaScriptDialogCreator() {
   return GetJavaScriptDialogCreatorInstance();
+}
+
+void Browser::RenderViewCreated(TabContents* source, RenderViewHost* host) {
+  // TODO(sky): move this to a TabContentsObserver hung off TabContentsWrapper,
+  // then nuke this method.
+  host->Send(new ExtensionMsg_UpdateBrowserWindowId(
+                 host->routing_id(),
+                 source->controller().window_id().id()));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

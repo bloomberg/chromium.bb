@@ -110,10 +110,6 @@ void BalloonHost::RenderViewGone(RenderViewHost* render_view_host,
   Close(render_view_host);
 }
 
-int BalloonHost::GetBrowserWindowID() const {
-  return extension_misc::kUnknownWindowId;
-}
-
 ViewType::Type BalloonHost::GetRenderViewType() const {
   return ViewType::NOTIFICATION;
 }

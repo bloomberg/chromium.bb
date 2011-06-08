@@ -102,7 +102,6 @@ class InterstitialPage : public NotificationObserver,
   void FocusThroughTabTraversal(bool reverse);
 
   virtual ViewType::Type GetRenderViewType() const;
-  virtual int GetBrowserWindowID() const;
 
   // See description above field.
   void set_reload_on_dont_proceed(bool value) {

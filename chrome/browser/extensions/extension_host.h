@@ -115,7 +115,6 @@ class ExtensionHost : public RenderViewHostDelegate,
   virtual const GURL& GetURL() const;
   virtual void RenderViewCreated(RenderViewHost* render_view_host);
   virtual ViewType::Type GetRenderViewType() const;
-  virtual int GetBrowserWindowID() const;
   virtual void RenderViewGone(RenderViewHost* render_view_host,
                               base::TerminationStatus status,
                               int error_code);
