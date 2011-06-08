@@ -24,12 +24,16 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if !defined(OS_CHROMEOS)  // disable temporary while jam debugs debug failures
+
 namespace {
 // This global variable is used to check that value returned to different
 // observers is the same.
 Profile* g_created_profile;
 
 }  // namespace
+
+#endif
 
 class ProfileManagerTest : public TestingBrowserProcessTest {
  protected:
