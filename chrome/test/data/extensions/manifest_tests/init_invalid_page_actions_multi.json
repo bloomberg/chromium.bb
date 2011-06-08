@@ -1,0 +1,11 @@
+{
+   "name": "my extension",
+   "version": "1.0.0.0",
+   "page_actions": [ {
+      "id": "MyExtensionActionId",
+      "name": "MyExtensionActionName"
+   }, {
+      "id": "MyExtensionActionId",
+      "name": "MyExtensionActionName"
+   } ]
+}

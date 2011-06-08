@@ -1,0 +1,9 @@
+{
+   "name": "PageAction Test",
+   "version": "1.0",
+   "page_action": {
+      "id": "MyExtensionActionId",
+      "name": "MyExtensionActionName",
+      "type": "tab"
+   }
+}

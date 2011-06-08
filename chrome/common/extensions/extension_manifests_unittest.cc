@@ -2,9 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/common/extensions/extension.h"
+
+#if defined(TOOLKIT_GTK)
+#include <gtk/gtk.h>
+#endif
+
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/i18n/rtl.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/stringprintf.h"
@@ -21,6 +28,7 @@
 #include "chrome/common/extensions/url_pattern.h"
 #include "content/common/json_value_serializer.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace errors = extension_manifest_errors;
 namespace keys = extension_manifest_keys;
@@ -143,8 +151,154 @@ class ExtensionManifestTest : public testing::Test {
     VerifyExpectedError(extension.get(), name, error, expected_error);
   }
 
+  struct Testcase {
+    std::string manifest;
+    std::string expected_error;
+  };
+
+  void RunTestcases(const Testcase* testcases, size_t num_testcases) {
+    for (size_t i = 0; i < num_testcases; ++i) {
+      LoadAndExpectError(testcases[i].manifest, testcases[i].expected_error);
+    }
+  }
+
   bool enable_apps_;
 };
+
+TEST_F(ExtensionManifestTest, InitFromValueInvalid) {
+  Testcase testcases[] = {
+    {"init_invalid_version_missing.json", errors::kInvalidVersion},
+    {"init_invalid_version_invalid.json", errors::kInvalidVersion},
+    {"init_invalid_name_missing.json", errors::kInvalidName},
+    {"init_invalid_name_invalid.json", errors::kInvalidName},
+    {"init_invalid_description_invalid.json", errors::kInvalidDescription},
+    {"init_invalid_icons_invalid.json", errors::kInvalidIcons},
+    {"init_invalid_icons_path_invalid.json", errors::kInvalidIconPath},
+    {"init_invalid_script_invalid.json", errors::kInvalidContentScriptsList},
+    {"init_invalid_script_item_invalid.json", errors::kInvalidContentScript},
+    {"init_invalid_script_matches_missing.json", errors::kInvalidMatches},
+    {"init_invalid_script_matches_invalid.json", errors::kInvalidMatches},
+    {"init_invalid_script_matches_empty.json", errors::kInvalidMatchCount},
+    {"init_invalid_script_match_item_invalid.json", errors::kInvalidMatch},
+    {"init_invalid_script_match_item_invalid_2.json", errors::kInvalidMatch},
+    {"init_invalid_script_files_missing.json", errors::kMissingFile},
+    {"init_invalid_files_js_invalid.json", errors::kInvalidJsList},
+    {"init_invalid_files_empty.json", errors::kMissingFile},
+    {"init_invalid_files_js_empty_css_missing.json", errors::kMissingFile},
+    {"init_invalid_files_js_item_invalid.json", errors::kInvalidJs},
+    {"init_invalid_files_css_invalid.json", errors::kInvalidCssList},
+    {"init_invalid_files_css_item_invalid.json", errors::kInvalidCss},
+    {"init_invalid_permissions_invalid.json", errors::kInvalidPermissions},
+    {"init_invalid_permissions_item_invalid.json", errors::kInvalidPermission},
+    {"init_invalid_page_actions_multi.json",
+        errors::kInvalidPageActionsListSize},
+    {"init_invalid_options_url_invalid.json", errors::kInvalidOptionsPage},
+    {"init_invalid_locale_invalid.json", errors::kInvalidDefaultLocale},
+    {"init_invalid_locale_empty.json", errors::kInvalidDefaultLocale},
+    {"init_invalid_min_chrome_invalid.json",
+        errors::kInvalidMinimumChromeVersion},
+    {"init_invalid_chrome_version_too_low.json", errors::kChromeVersionTooLow}
+  };
+
+  RunTestcases(testcases, arraysize(testcases));
+}
+
+TEST_F(ExtensionManifestTest, InitFromValueValid) {
+  scoped_refptr<Extension> extension(LoadAndExpectSuccess(
+      "init_valid_minimal.json"));
+
+  FilePath path;
+  PathService::Get(chrome::DIR_TEST_DATA, &path);
+  path = path.AppendASCII("extensions");
+
+  EXPECT_TRUE(Extension::IdIsValid(extension->id()));
+  EXPECT_EQ("1.0.0.0", extension->VersionString());
+  EXPECT_EQ("my extension", extension->name());
+  EXPECT_EQ(extension->id(), extension->url().host());
+  EXPECT_EQ(extension->path(), path);
+  EXPECT_EQ(path, extension->path());
+
+  // Test permissions scheme.
+  // We allow unknown API permissions, so this will be valid until we better
+  // distinguish between API and host permissions.
+  extension = LoadAndExpectSuccess("init_valid_permissions.json");
+
+  // Test with an options page.
+  extension = LoadAndExpectSuccess("init_valid_options.json");
+  EXPECT_EQ("chrome-extension", extension->options_url().scheme());
+  EXPECT_EQ("/options.html", extension->options_url().path());
+
+  // Test that an empty list of page actions does not stop a browser action
+  // from being loaded.
+  extension = LoadAndExpectSuccess("init_valid_empty_page_actions.json");
+
+  // Test with a minimum_chrome_version.
+  extension = LoadAndExpectSuccess("init_valid_minimum_chrome.json");
+
+  // Verify empty permission settings are considered valid.
+  LoadAndExpectSuccess("init_valid_permissions_empty.json");
+
+  // We allow unknown API permissions, so this will be valid until we better
+  // distinguish between API and host permissions.
+  LoadAndExpectSuccess("init_valid_permissions_unknown.json");
+}
+
+TEST_F(ExtensionManifestTest, InitFromValueValidNameInRTL) {
+#if defined(TOOLKIT_GTK)
+  GtkTextDirection gtk_dir = gtk_widget_get_default_direction();
+  gtk_widget_set_default_direction(GTK_TEXT_DIR_RTL);
+#else
+  std::string locale = l10n_util::GetApplicationLocale("");
+  base::i18n::SetICUDefaultLocale("he");
+#endif
+
+  // No strong RTL characters in name.
+  scoped_refptr<Extension> extension(LoadAndExpectSuccess(
+      "init_valid_name_no_rtl.json"));
+
+  string16 localized_name(ASCIIToUTF16("Dictionary (by Google)"));
+  base::i18n::AdjustStringForLocaleDirection(&localized_name);
+  EXPECT_EQ(localized_name, UTF8ToUTF16(extension->name()));
+
+  // Strong RTL characters in name.
+  extension = LoadAndExpectSuccess("init_valid_name_strong_rtl.json");
+
+  localized_name = WideToUTF16(L"Dictionary (\x05D1\x05D2"L" Google)");
+  base::i18n::AdjustStringForLocaleDirection(&localized_name);
+  EXPECT_EQ(localized_name, UTF8ToUTF16(extension->name()));
+
+  // Reset locale.
+#if defined(TOOLKIT_GTK)
+  gtk_widget_set_default_direction(gtk_dir);
+#else
+  base::i18n::SetICUDefaultLocale(locale);
+#endif
+}
+
+TEST_F(ExtensionManifestTest, UpdateUrls) {
+  // Test several valid update urls
+  LoadStrictAndExpectSuccess("update_url_valid_1.json");
+  LoadStrictAndExpectSuccess("update_url_valid_2.json");
+  LoadStrictAndExpectSuccess("update_url_valid_3.json");
+  LoadStrictAndExpectSuccess("update_url_valid_4.json");
+
+  // Test some invalid update urls
+  LoadAndExpectErrorStrict("update_url_invalid_1.json",
+      errors::kInvalidUpdateURL);
+  LoadAndExpectErrorStrict("update_url_invalid_2.json",
+      errors::kInvalidUpdateURL);
+  LoadAndExpectErrorStrict("update_url_invalid_3.json",
+      errors::kInvalidUpdateURL);
+}
+
+// Tests that the old permission name "unlimited_storage" still works for
+// backwards compatibility (we renamed it to "unlimitedStorage").
+TEST_F(ExtensionManifestTest, OldUnlimitedStoragePermission) {
+  scoped_refptr<Extension> extension = LoadStrictAndExpectSuccess(
+      "old_unlimited_storage.json");
+  EXPECT_TRUE(extension->HasApiPermission(
+      Extension::kUnlimitedStoragePermission));
+}
 
 TEST_F(ExtensionManifestTest, ValidApp) {
   scoped_refptr<Extension> extension(LoadAndExpectSuccess("valid_app.json"));

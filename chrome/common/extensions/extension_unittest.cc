@@ -4,14 +4,9 @@
 
 #include "chrome/common/extensions/extension.h"
 
-#if defined(TOOLKIT_GTK)
-#include <gtk/gtk.h>
-#endif
-
 #include "base/format_macros.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/i18n/rtl.h"
 #include "base/path_service.h"
 #include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
@@ -30,7 +25,6 @@
 #include "net/base/mock_host_resolver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/codec/png_codec.h"
 
 namespace keys = extension_manifest_keys;
@@ -51,6 +45,73 @@ void CompareLists(const std::vector<std::string>& expected,
 static void AddPattern(URLPatternSet* extent, const std::string& pattern) {
   int schemes = URLPattern::SCHEME_ALL;
   extent->AddPattern(URLPattern(schemes, pattern));
+}
+
+static scoped_refptr<Extension> LoadManifestUnchecked(
+    const std::string& dir,
+    const std::string& test_file,
+    Extension::Location location,
+    int extra_flags,
+    std::string* error) {
+  FilePath path;
+  PathService::Get(chrome::DIR_TEST_DATA, &path);
+  path = path.AppendASCII("extensions")
+             .AppendASCII(dir)
+             .AppendASCII(test_file);
+
+  JSONFileValueSerializer serializer(path);
+  scoped_ptr<Value> result(serializer.Deserialize(NULL, error));
+  if (!result.get())
+    return NULL;
+
+  scoped_refptr<Extension> extension = Extension::Create(
+      path.DirName(), location, *static_cast<DictionaryValue*>(result.get()),
+      extra_flags, error);
+  return extension;
+}
+
+static scoped_refptr<Extension> LoadManifest(const std::string& dir,
+                                             const std::string& test_file,
+                                             Extension::Location location,
+                                             int extra_flags) {
+  std::string error;
+  scoped_refptr<Extension> extension = LoadManifestUnchecked(dir, test_file,
+    location, extra_flags, &error);
+
+  EXPECT_TRUE(extension) << test_file << ":" << error;
+  return extension;
+}
+
+static scoped_refptr<Extension> LoadManifest(const std::string& dir,
+                                             const std::string& test_file,
+                                             int extra_flags) {
+  return LoadManifest(dir, test_file, Extension::INVALID, extra_flags);
+}
+
+static scoped_refptr<Extension> LoadManifest(const std::string& dir,
+                                             const std::string& test_file) {
+  return LoadManifest(dir, test_file, Extension::NO_FLAGS);
+}
+
+static scoped_refptr<Extension> LoadManifestStrict(
+    const std::string& dir,
+    const std::string& test_file) {
+  return LoadManifest(dir, test_file, Extension::STRICT_ERROR_CHECKS);
+}
+
+static ExtensionAction* LoadAction(const std::string& manifest) {
+  scoped_refptr<Extension> extension = LoadManifest("page_action",
+      manifest);
+  return new ExtensionAction(*(extension->page_action()));
+}
+
+static void LoadActionAndExpectError(const std::string& manifest,
+                                     const std::string& expected_error) {
+  std::string error;
+  scoped_refptr<Extension> extension = LoadManifestUnchecked("page_action",
+      manifest, Extension::INTERNAL, Extension::NO_FLAGS, &error);
+  EXPECT_FALSE(extension);
+  EXPECT_EQ(expected_error, error);
 }
 
 }
@@ -108,399 +169,9 @@ TEST(ExtensionTest, LocationPriorityTest) {
                 Extension::EXTERNAL_PREF));
 }
 
-
-// Please don't put any more manifest tests here!!
-// Move them to extension_manifest_unittest.cc instead and make them use the
-// more data-driven style there instead.
-// Bug: http://crbug.com/38462
-
-
-TEST(ExtensionTest, InitFromValueInvalid) {
-#if defined(OS_WIN)
-  FilePath path(FILE_PATH_LITERAL("c:\\foo"));
-#elif defined(OS_POSIX)
-  FilePath path(FILE_PATH_LITERAL("/foo"));
-#endif
-  scoped_refptr<Extension> extension_ptr(new Extension(path,
-                                                       Extension::INVALID));
-  Extension& extension = *extension_ptr;
-  int error_code = 0;
-  std::string error;
-
-  // Start with a valid extension manifest
-  FilePath extensions_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
-  extensions_path = extensions_path.AppendASCII("extensions")
-      .AppendASCII("good")
-      .AppendASCII("Extensions")
-      .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
-      .AppendASCII("1.0.0.0")
-      .Append(Extension::kManifestFilename);
-
-  JSONFileValueSerializer serializer(extensions_path);
-  scoped_ptr<DictionaryValue> valid_value(
-      static_cast<DictionaryValue*>(serializer.Deserialize(&error_code,
-                                                           &error)));
-  EXPECT_EQ("", error);
-  EXPECT_EQ(0, error_code);
-  ASSERT_TRUE(valid_value.get());
-  ASSERT_TRUE(extension.InitFromValue(*valid_value, Extension::REQUIRE_KEY,
-                                      &error));
-  ASSERT_EQ("", error);
-  EXPECT_EQ("en_US", extension.default_locale());
-
-  scoped_ptr<DictionaryValue> input_value;
-
-  // Test missing and invalid versions
-  input_value.reset(valid_value->DeepCopy());
-  input_value->Remove(keys::kVersion, NULL);
-  EXPECT_FALSE(extension.InitFromValue(*input_value, Extension::REQUIRE_KEY,
-                                       &error));
-  EXPECT_EQ(errors::kInvalidVersion, error);
-
-  input_value->SetInteger(keys::kVersion, 42);
-  EXPECT_FALSE(extension.InitFromValue(*input_value, Extension::REQUIRE_KEY,
-                                       &error));
-  EXPECT_EQ(errors::kInvalidVersion, error);
-
-  // Test missing and invalid names.
-  input_value.reset(valid_value->DeepCopy());
-  input_value->Remove(keys::kName, NULL);
-  EXPECT_FALSE(extension.InitFromValue(*input_value, Extension::REQUIRE_KEY,
-                                       &error));
-  EXPECT_EQ(errors::kInvalidName, error);
-
-  input_value->SetInteger(keys::kName, 42);
-  EXPECT_FALSE(extension.InitFromValue(*input_value, Extension::REQUIRE_KEY,
-                                       &error));
-  EXPECT_EQ(errors::kInvalidName, error);
-
-  // Test invalid description
-  input_value.reset(valid_value->DeepCopy());
-  input_value->SetInteger(keys::kDescription, 42);
-  EXPECT_FALSE(extension.InitFromValue(*input_value, Extension::REQUIRE_KEY,
-                                       &error));
-  EXPECT_EQ(errors::kInvalidDescription, error);
-
-  // Test invalid icons
-  input_value.reset(valid_value->DeepCopy());
-  input_value->SetInteger(keys::kIcons, 42);
-  EXPECT_FALSE(extension.InitFromValue(*input_value, Extension::REQUIRE_KEY,
-                                       &error));
-  EXPECT_EQ(errors::kInvalidIcons, error);
-
-  // Test invalid icon paths
-  input_value.reset(valid_value->DeepCopy());
-  DictionaryValue* icons = NULL;
-  input_value->GetDictionary(keys::kIcons, &icons);
-  ASSERT_FALSE(NULL == icons);
-  icons->SetInteger(base::IntToString(128), 42);
-  EXPECT_FALSE(extension.InitFromValue(*input_value, Extension::REQUIRE_KEY,
-                                       &error));
-  EXPECT_TRUE(MatchPattern(error, errors::kInvalidIconPath));
-
-  // Test invalid user scripts list
-  input_value.reset(valid_value->DeepCopy());
-  input_value->SetInteger(keys::kContentScripts, 42);
-  EXPECT_FALSE(extension.InitFromValue(*input_value, Extension::REQUIRE_KEY,
-                                       &error));
-  EXPECT_EQ(errors::kInvalidContentScriptsList, error);
-
-  // Test invalid user script item
-  input_value.reset(valid_value->DeepCopy());
-  ListValue* content_scripts = NULL;
-  input_value->GetList(keys::kContentScripts, &content_scripts);
-  ASSERT_FALSE(NULL == content_scripts);
-  content_scripts->Set(0, Value::CreateIntegerValue(42));
-  EXPECT_FALSE(extension.InitFromValue(*input_value, Extension::REQUIRE_KEY,
-                                       &error));
-  EXPECT_TRUE(MatchPattern(error, errors::kInvalidContentScript));
-
-  // Test missing and invalid matches array
-  input_value.reset(valid_value->DeepCopy());
-  input_value->GetList(keys::kContentScripts, &content_scripts);
-  DictionaryValue* user_script = NULL;
-  content_scripts->GetDictionary(0, &user_script);
-  user_script->Remove(keys::kMatches, NULL);
-  EXPECT_FALSE(extension.InitFromValue(*input_value, Extension::REQUIRE_KEY,
-                                       &error));
-  EXPECT_TRUE(MatchPattern(error, errors::kInvalidMatches));
-
-  user_script->Set(keys::kMatches, Value::CreateIntegerValue(42));
-  EXPECT_FALSE(extension.InitFromValue(*input_value, Extension::REQUIRE_KEY,
-                                       &error));
-  EXPECT_TRUE(MatchPattern(error, errors::kInvalidMatches));
-
-  ListValue* matches = new ListValue;
-  user_script->Set(keys::kMatches, matches);
-  EXPECT_FALSE(extension.InitFromValue(*input_value, Extension::REQUIRE_KEY,
-                                       &error));
-  EXPECT_TRUE(MatchPattern(error, errors::kInvalidMatchCount));
-
-  // Test invalid match element
-  matches->Set(0, Value::CreateIntegerValue(42));
-  EXPECT_FALSE(extension.InitFromValue(*input_value, Extension::REQUIRE_KEY,
-                                       &error));
-  EXPECT_TRUE(MatchPattern(error, errors::kInvalidMatch));
-
-  matches->Set(0, Value::CreateStringValue("chrome://*/*"));
-  EXPECT_FALSE(extension.InitFromValue(*input_value, Extension::REQUIRE_KEY,
-                                       &error));
-  EXPECT_TRUE(MatchPattern(error, errors::kInvalidMatch));
-
-  // Test missing and invalid files array
-  input_value.reset(valid_value->DeepCopy());
-  input_value->GetList(keys::kContentScripts, &content_scripts);
-  content_scripts->GetDictionary(0, &user_script);
-  user_script->Remove(keys::kJs, NULL);
-  user_script->Remove(keys::kCss, NULL);
-  EXPECT_FALSE(extension.InitFromValue(*input_value, Extension::REQUIRE_KEY,
-                                       &error));
-  EXPECT_TRUE(MatchPattern(error, errors::kMissingFile));
-
-  user_script->Set(keys::kJs, Value::CreateIntegerValue(42));
-  EXPECT_FALSE(extension.InitFromValue(*input_value, Extension::REQUIRE_KEY,
-                                       &error));
-  EXPECT_TRUE(MatchPattern(error, errors::kInvalidJsList));
-
-  user_script->Set(keys::kCss, new ListValue);
-  user_script->Set(keys::kJs, new ListValue);
-  EXPECT_FALSE(extension.InitFromValue(*input_value, Extension::REQUIRE_KEY,
-                                       &error));
-  EXPECT_TRUE(MatchPattern(error, errors::kMissingFile));
-  user_script->Remove(keys::kCss, NULL);
-
-  ListValue* files = new ListValue;
-  user_script->Set(keys::kJs, files);
-  EXPECT_FALSE(extension.InitFromValue(*input_value, Extension::REQUIRE_KEY,
-                                       &error));
-  EXPECT_TRUE(MatchPattern(error, errors::kMissingFile));
-
-  // Test invalid file element
-  files->Set(0, Value::CreateIntegerValue(42));
-  EXPECT_FALSE(extension.InitFromValue(*input_value, Extension::REQUIRE_KEY,
-                                       &error));
-  EXPECT_TRUE(MatchPattern(error, errors::kInvalidJs));
-
-  user_script->Remove(keys::kJs, NULL);
-  // Test the css element
-  user_script->Set(keys::kCss, Value::CreateIntegerValue(42));
-  EXPECT_FALSE(extension.InitFromValue(*input_value, Extension::REQUIRE_KEY,
-                                       &error));
-  EXPECT_TRUE(MatchPattern(error, errors::kInvalidCssList));
-
-  // Test invalid file element
-  ListValue* css_files = new ListValue;
-  user_script->Set(keys::kCss, css_files);
-  css_files->Set(0, Value::CreateIntegerValue(42));
-  EXPECT_FALSE(extension.InitFromValue(*input_value, Extension::REQUIRE_KEY,
-                                       &error));
-  EXPECT_TRUE(MatchPattern(error, errors::kInvalidCss));
-
-  // Test missing and invalid permissions array
-  input_value.reset(valid_value->DeepCopy());
-  EXPECT_TRUE(extension.InitFromValue(*input_value, Extension::REQUIRE_KEY,
-                                      &error));
-
-  ListValue* permissions = NULL;
-  input_value->GetList(keys::kPermissions, &permissions);
-  ASSERT_FALSE(NULL == permissions);
-
-  permissions = new ListValue;
-  input_value->Set(keys::kPermissions, permissions);
-  EXPECT_TRUE(extension.InitFromValue(*input_value, Extension::REQUIRE_KEY,
-                                      &error));
-
-  input_value->Set(keys::kPermissions, Value::CreateIntegerValue(9));
-  EXPECT_FALSE(extension.InitFromValue(*input_value, Extension::REQUIRE_KEY,
-                                       &error));
-  EXPECT_TRUE(MatchPattern(error, errors::kInvalidPermissions));
-
-  input_value.reset(valid_value->DeepCopy());
-  input_value->GetList(keys::kPermissions, &permissions);
-  permissions->Set(0, Value::CreateIntegerValue(24));
-  EXPECT_FALSE(extension.InitFromValue(*input_value, Extension::REQUIRE_KEY,
-                                       &error));
-  EXPECT_TRUE(MatchPattern(error, errors::kInvalidPermission));
-
-  // We allow unknown API permissions, so this will be valid until we better
-  // distinguish between API and host permissions.
-  permissions->Set(0, Value::CreateStringValue("www.google.com"));
-  EXPECT_TRUE(extension.InitFromValue(*input_value, Extension::REQUIRE_KEY,
-                                      &error));
-
-  // Multiple page actions are not allowed.
-  input_value.reset(valid_value->DeepCopy());
-  DictionaryValue* action = new DictionaryValue;
-  action->SetString(keys::kPageActionId, "MyExtensionActionId");
-  action->SetString(keys::kName, "MyExtensionActionName");
-  ListValue* action_list = new ListValue;
-  action_list->Append(action->DeepCopy());
-  action_list->Append(action);
-  input_value->Set(keys::kPageActions, action_list);
-  EXPECT_FALSE(extension.InitFromValue(*input_value, Extension::REQUIRE_KEY,
-                                       &error));
-  EXPECT_STREQ(errors::kInvalidPageActionsListSize, error.c_str());
-
-  // Test invalid options page url.
-  input_value.reset(valid_value->DeepCopy());
-  input_value->Set(keys::kOptionsPage, Value::CreateNullValue());
-  EXPECT_FALSE(extension.InitFromValue(*input_value, Extension::REQUIRE_KEY,
-                                       &error));
-  EXPECT_TRUE(MatchPattern(error, errors::kInvalidOptionsPage));
-
-  // Test invalid/empty default locale.
-  input_value.reset(valid_value->DeepCopy());
-  input_value->Set(keys::kDefaultLocale, Value::CreateIntegerValue(5));
-  EXPECT_FALSE(extension.InitFromValue(*input_value, Extension::REQUIRE_KEY,
-                                       &error));
-  EXPECT_TRUE(MatchPattern(error, errors::kInvalidDefaultLocale));
-
-  input_value->Set(keys::kDefaultLocale, Value::CreateStringValue(""));
-  EXPECT_FALSE(extension.InitFromValue(*input_value, Extension::REQUIRE_KEY,
-                                       &error));
-  EXPECT_TRUE(MatchPattern(error, errors::kInvalidDefaultLocale));
-
-  // Test invalid minimum_chrome_version.
-  input_value.reset(valid_value->DeepCopy());
-  input_value->Set(keys::kMinimumChromeVersion, Value::CreateIntegerValue(42));
-  EXPECT_FALSE(extension.InitFromValue(*input_value, Extension::REQUIRE_KEY,
-                                       &error));
-  EXPECT_TRUE(MatchPattern(error, errors::kInvalidMinimumChromeVersion));
-
-#if !defined(OS_MACOSX)
-  // TODO(aa): The version isn't stamped into the unit test binary on mac.
-  input_value->Set(keys::kMinimumChromeVersion,
-                   Value::CreateStringValue("88.8"));
-  EXPECT_FALSE(extension.InitFromValue(*input_value, Extension::REQUIRE_KEY,
-                                       &error));
-  EXPECT_TRUE(MatchPattern(error, errors::kChromeVersionTooLow));
-#endif
-}
-
-TEST(ExtensionTest, InitFromValueValid) {
-#if defined(OS_WIN)
-  FilePath path(FILE_PATH_LITERAL("C:\\foo"));
-#elif defined(OS_POSIX)
-  FilePath path(FILE_PATH_LITERAL("/foo"));
-#endif
-  scoped_refptr<Extension> extension_ptr(new Extension(path,
-                                                       Extension::INVALID));
-  Extension& extension = *extension_ptr;
-  std::string error;
-  DictionaryValue input_value;
-
-  // Test minimal extension
-  input_value.SetString(keys::kVersion, "1.0.0.0");
-  input_value.SetString(keys::kName, "my extension");
-
-  EXPECT_TRUE(extension.InitFromValue(input_value, Extension::NO_FLAGS,
-                                      &error));
-  EXPECT_EQ("", error);
-  EXPECT_TRUE(Extension::IdIsValid(extension.id()));
-  EXPECT_EQ("1.0.0.0", extension.VersionString());
-  EXPECT_EQ("my extension", extension.name());
-  EXPECT_EQ(extension.id(), extension.url().host());
-  EXPECT_EQ(path.value(), extension.path().value());
-
-  // Test permissions scheme.
-  ListValue* permissions = new ListValue;
-  permissions->Set(0, Value::CreateStringValue("file:///C:/foo.txt"));
-  input_value.Set(keys::kPermissions, permissions);
-
-  // We allow unknown API permissions, so this will be valid until we better
-  // distinguish between API and host permissions.
-  EXPECT_TRUE(extension.InitFromValue(input_value, Extension::NO_FLAGS,
-                                      &error));
-  input_value.Remove(keys::kPermissions, NULL);
-
-  // Test with an options page.
-  input_value.SetString(keys::kOptionsPage, "options.html");
-  EXPECT_TRUE(extension.InitFromValue(input_value, Extension::NO_FLAGS,
-                                      &error));
-  EXPECT_EQ("", error);
-  EXPECT_EQ("chrome-extension", extension.options_url().scheme());
-  EXPECT_EQ("/options.html", extension.options_url().path());
-
-  // Test that an empty list of page actions does not stop a browser action
-  // from being loaded.
-  ListValue* empty_list = new ListValue;
-  input_value.Set(keys::kPageActions, empty_list);
-  EXPECT_TRUE(extension.InitFromValue(input_value, Extension::NO_FLAGS,
-                                      &error));
-  EXPECT_EQ("", error);
-
-#if !defined(OS_MACOSX)
-  // TODO(aa): The version isn't stamped into the unit test binary on mac.
-  // Test with a minimum_chrome_version.
-  input_value.SetString(keys::kMinimumChromeVersion, "1.0");
-  EXPECT_TRUE(extension.InitFromValue(input_value, Extension::NO_FLAGS,
-                                      &error));
-  EXPECT_EQ("", error);
-  // The minimum chrome version is not stored in the Extension object.
-#endif
-}
-
-TEST(ExtensionTest, InitFromValueValidNameInRTL) {
-#if defined(TOOLKIT_GTK)
-  GtkTextDirection gtk_dir = gtk_widget_get_default_direction();
-  gtk_widget_set_default_direction(GTK_TEXT_DIR_RTL);
-#else
-  std::string locale = l10n_util::GetApplicationLocale("");
-  base::i18n::SetICUDefaultLocale("he");
-#endif
-
-#if defined(OS_WIN)
-  FilePath path(FILE_PATH_LITERAL("C:\\foo"));
-#elif defined(OS_POSIX)
-  FilePath path(FILE_PATH_LITERAL("/foo"));
-#endif
-  scoped_refptr<Extension> extension_ptr(new Extension(path,
-                                                       Extension::INVALID));
-  Extension& extension = *extension_ptr;
-  std::string error;
-  DictionaryValue input_value;
-
-  input_value.SetString(keys::kVersion, "1.0.0.0");
-  // No strong RTL characters in name.
-  string16 name(ASCIIToUTF16("Dictionary (by Google)"));
-  input_value.SetString(keys::kName, name);
-  EXPECT_TRUE(extension.InitFromValue(input_value, Extension::NO_FLAGS,
-                                      &error));
-  EXPECT_EQ("", error);
-  string16 localized_name(name);
-  base::i18n::AdjustStringForLocaleDirection(&localized_name);
-  EXPECT_EQ(localized_name, UTF8ToUTF16(extension.name()));
-
-  // Strong RTL characters in name.
-  name = WideToUTF16(L"Dictionary (\x05D1\x05D2"L" Google)");
-  input_value.SetString(keys::kName, name);
-  EXPECT_TRUE(extension.InitFromValue(input_value, Extension::NO_FLAGS,
-                                      &error));
-  EXPECT_EQ("", error);
-  localized_name = name;
-  base::i18n::AdjustStringForLocaleDirection(&localized_name);
-  EXPECT_EQ(localized_name, UTF8ToUTF16(extension.name()));
-
-  // Reset locale.
-#if defined(TOOLKIT_GTK)
-  gtk_widget_set_default_direction(gtk_dir);
-#else
-  base::i18n::SetICUDefaultLocale(locale);
-#endif
-}
-
 TEST(ExtensionTest, GetResourceURLAndPath) {
-#if defined(OS_WIN)
-  FilePath path(FILE_PATH_LITERAL("C:\\foo"));
-#elif defined(OS_POSIX)
-  FilePath path(FILE_PATH_LITERAL("/foo"));
-#endif
-  DictionaryValue input_value;
-  input_value.SetString(keys::kVersion, "1.0.0.0");
-  input_value.SetString(keys::kName, "my extension");
-  scoped_refptr<Extension> extension(Extension::Create(path,
-      Extension::INVALID, input_value, Extension::STRICT_ERROR_CHECKS, NULL));
+  scoped_refptr<Extension> extension = LoadManifestStrict("empty_manifest",
+      "empty.json");
   EXPECT_TRUE(extension.get());
 
   EXPECT_EQ(extension->url().spec() + "bar/baz.js",
@@ -513,22 +184,11 @@ TEST(ExtensionTest, GetResourceURLAndPath) {
 }
 
 TEST(ExtensionTest, LoadPageActionHelper) {
-#if defined(OS_WIN)
-    FilePath path(base::StringPrintf(L"c:\\extension"));
-#else
-    FilePath path(base::StringPrintf("/extension"));
-#endif
-  scoped_refptr<Extension> extension_ptr(new Extension(path,
-                                                       Extension::INVALID));
-  Extension& extension = *extension_ptr;
-  std::string error_msg;
   scoped_ptr<ExtensionAction> action;
-  DictionaryValue input;
 
   // First try with an empty dictionary.
-  action.reset(extension.LoadExtensionActionHelper(&input, &error_msg));
+  action.reset(LoadAction("page_action_empty.json"));
   ASSERT_TRUE(action != NULL);
-  ASSERT_TRUE(error_msg.empty());
 
   // Now setup some values to use in the action.
   const std::string id("MyExtensionActionId");
@@ -536,158 +196,95 @@ TEST(ExtensionTest, LoadPageActionHelper) {
   std::string img1("image1.png");
   std::string img2("image2.png");
 
-  // Add the dictionary for the contextual action.
-  input.SetString(keys::kPageActionId, id);
-  input.SetString(keys::kName, name);
-  ListValue* icons = new ListValue;
-  icons->Set(0, Value::CreateStringValue(img1));
-  icons->Set(1, Value::CreateStringValue(img2));
-  input.Set(keys::kPageActionIcons, icons);
-
-  // Parse and read back the values from the object.
-  action.reset(extension.LoadExtensionActionHelper(&input, &error_msg));
+  action.reset(LoadAction("page_action.json"));
   ASSERT_TRUE(NULL != action.get());
-  ASSERT_TRUE(error_msg.empty());
   ASSERT_EQ(id, action->id());
+
   // No title, so fall back to name.
   ASSERT_EQ(name, action->GetTitle(1));
   ASSERT_EQ(2u, action->icon_paths()->size());
   ASSERT_EQ(img1, (*action->icon_paths())[0]);
   ASSERT_EQ(img2, (*action->icon_paths())[1]);
 
-  // Explicitly set the same type and parse again.
-  input.SetString(keys::kType, values::kPageActionTypeTab);
-  action.reset(extension.LoadExtensionActionHelper(&input, &error_msg));
-  ASSERT_TRUE(NULL != action.get());
-  ASSERT_TRUE(error_msg.empty());
-
-  // Make a deep copy of the input and remove one key at a time and see if we
-  // get the right error.
-  scoped_ptr<DictionaryValue> copy;
-
-  // First remove id key.
-  copy.reset(input.DeepCopy());
-  copy->Remove(keys::kPageActionId, NULL);
-  action.reset(extension.LoadExtensionActionHelper(copy.get(), &error_msg));
+  // Same test with explicitly set type.
+  action.reset(LoadAction("page_action_type.json"));
   ASSERT_TRUE(NULL != action.get());
 
-  // Then remove the name key. It's optional, so no error.
-  copy.reset(input.DeepCopy());
-  copy->Remove(keys::kName, NULL);
-  action.reset(extension.LoadExtensionActionHelper(copy.get(), &error_msg));
+  // Try an action without id key.
+  action.reset(LoadAction("page_action_no_id.json"));
+  ASSERT_TRUE(NULL != action.get());
+
+  // Then try without the name key. It's optional, so no error.
+  action.reset(LoadAction("page_action_no_name.json"));
   ASSERT_TRUE(NULL != action.get());
   ASSERT_TRUE(action->GetTitle(1).empty());
-  ASSERT_TRUE(error_msg.empty());
 
-  // Then remove the icon paths key.
-  copy.reset(input.DeepCopy());
-  copy->Remove(keys::kPageActionIcons, NULL);
-  action.reset(extension.LoadExtensionActionHelper(copy.get(), &error_msg));
+  // Then try without the icon paths key.
+  action.reset(LoadAction("page_action_no_icon.json"));
   ASSERT_TRUE(NULL != action.get());
-  error_msg = "";
 
   // Now test that we can parse the new format for page actions.
-
-  // Now setup some values to use in the page action.
   const std::string kTitle("MyExtensionActionTitle");
   const std::string kIcon("image1.png");
   const std::string kPopupHtmlFile("a_popup.html");
 
-  // Add the dictionary for the contextual action.
-  input.Clear();
-  input.SetString(keys::kPageActionDefaultTitle, kTitle);
-  input.SetString(keys::kPageActionDefaultIcon, kIcon);
-
-  // Parse and read back the values from the object.
-  action.reset(extension.LoadExtensionActionHelper(&input, &error_msg));
+  action.reset(LoadAction("page_action_new_format.json"));
   ASSERT_TRUE(action.get());
-  ASSERT_TRUE(error_msg.empty());
   ASSERT_EQ(kTitle, action->GetTitle(1));
   ASSERT_EQ(0u, action->icon_paths()->size());
 
   // Invalid title should give an error even with a valid name.
-  input.Clear();
-  input.SetInteger(keys::kPageActionDefaultTitle, 42);
-  input.SetString(keys::kName, name);
-  action.reset(extension.LoadExtensionActionHelper(&input, &error_msg));
-  ASSERT_TRUE(NULL == action.get());
-  ASSERT_STREQ(errors::kInvalidPageActionDefaultTitle, error_msg.c_str());
-  error_msg = "";
+  LoadActionAndExpectError("page_action_invalid_title.json",
+      errors::kInvalidPageActionDefaultTitle);
 
   // Invalid name should give an error only with no title.
-  input.SetString(keys::kPageActionDefaultTitle, kTitle);
-  input.SetInteger(keys::kName, 123);
-  action.reset(extension.LoadExtensionActionHelper(&input, &error_msg));
+  action.reset(LoadAction("page_action_invalid_name.json"));
   ASSERT_TRUE(NULL != action.get());
   ASSERT_EQ(kTitle, action->GetTitle(1));
-  ASSERT_TRUE(error_msg.empty());
 
-  input.Remove(keys::kPageActionDefaultTitle, NULL);
-  action.reset(extension.LoadExtensionActionHelper(&input, &error_msg));
-  ASSERT_TRUE(NULL == action.get());
-  ASSERT_STREQ(errors::kInvalidPageActionName, error_msg.c_str());
-  error_msg = "";
+  LoadActionAndExpectError("page_action_invalid_name_no_title.json",
+      errors::kInvalidPageActionName);
 
   // Test that keys "popup" and "default_popup" both work, but can not
   // be used at the same time.
-  input.Clear();
-  input.SetString(keys::kPageActionDefaultTitle, kTitle);
-  input.SetString(keys::kPageActionDefaultIcon, kIcon);
+  // These tests require an extension_url, so we also load the manifest.
 
-  // LoadExtensionActionHelper expects the extension member |extension_url|
-  // to be set.
-  extension.extension_url_ =
-      GURL(std::string(chrome::kExtensionScheme) +
-           chrome::kStandardSchemeSeparator +
-           "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/");
-
-  // Add key "popup", expect success.
-  input.SetString(keys::kPageActionPopup, kPopupHtmlFile);
-  action.reset(extension.LoadExtensionActionHelper(&input, &error_msg));
+  // Only use "popup", expect success.
+  scoped_refptr<Extension> extension = LoadManifest("page_action",
+             "page_action_popup.json");
+  action.reset(LoadAction("page_action_popup.json"));
   ASSERT_TRUE(NULL != action.get());
-  ASSERT_TRUE(error_msg.empty());
   ASSERT_STREQ(
-      extension.url().Resolve(kPopupHtmlFile).spec().c_str(),
+      extension->url().Resolve(kPopupHtmlFile).spec().c_str(),
       action->GetPopupUrl(ExtensionAction::kDefaultTabId).spec().c_str());
 
-  // Add key "default_popup", expect failure.
-  input.SetString(keys::kPageActionDefaultPopup, kPopupHtmlFile);
-  action.reset(extension.LoadExtensionActionHelper(&input, &error_msg));
-  ASSERT_TRUE(NULL == action.get());
-  ASSERT_STREQ(
+  // Use both "popup" and "default_popup", expect failure.
+  LoadActionAndExpectError("page_action_popup_and_default_popup.json",
       ExtensionErrorUtils::FormatErrorMessage(
           errors::kInvalidPageActionOldAndNewKeys,
           keys::kPageActionDefaultPopup,
-          keys::kPageActionPopup).c_str(),
-      error_msg.c_str());
-  error_msg = "";
+          keys::kPageActionPopup));
 
-  // Remove key "popup", expect success.
-  input.Remove(keys::kPageActionPopup, NULL);
-  action.reset(extension.LoadExtensionActionHelper(&input, &error_msg));
+  // Use only "default_popup", expect success.
+  extension = LoadManifest("page_action", "page_action_popup.json");
+  action.reset(LoadAction("page_action_default_popup.json"));
   ASSERT_TRUE(NULL != action.get());
-  ASSERT_TRUE(error_msg.empty());
   ASSERT_STREQ(
-      extension.url().Resolve(kPopupHtmlFile).spec().c_str(),
+      extension->url().Resolve(kPopupHtmlFile).spec().c_str(),
       action->GetPopupUrl(ExtensionAction::kDefaultTabId).spec().c_str());
 
   // Setting default_popup to "" is the same as having no popup.
-  input.Remove(keys::kPageActionDefaultPopup, NULL);
-  input.SetString(keys::kPageActionDefaultPopup, "");
-  action.reset(extension.LoadExtensionActionHelper(&input, &error_msg));
+  action.reset(LoadAction("page_action_empty_default_popup.json"));
   ASSERT_TRUE(NULL != action.get());
-  ASSERT_TRUE(error_msg.empty());
   EXPECT_FALSE(action->HasPopup(ExtensionAction::kDefaultTabId));
   ASSERT_STREQ(
       "",
       action->GetPopupUrl(ExtensionAction::kDefaultTabId).spec().c_str());
 
   // Setting popup to "" is the same as having no popup.
-  input.Remove(keys::kPageActionDefaultPopup, NULL);
-  input.SetString(keys::kPageActionPopup, "");
-  action.reset(extension.LoadExtensionActionHelper(&input, &error_msg));
+  action.reset(LoadAction("page_action_empty_popup.json"));
+
   ASSERT_TRUE(NULL != action.get());
-  ASSERT_TRUE(error_msg.empty());
   EXPECT_FALSE(action->HasPopup(ExtensionAction::kDefaultTabId));
   ASSERT_STREQ(
       "",
@@ -733,64 +330,6 @@ TEST(ExtensionTest, GenerateID) {
   EXPECT_EQ("melddjfinppjdikinhbgehiennejpfhp", extension_id);
 }
 
-TEST(ExtensionTest, UpdateUrls) {
-  // Test several valid update urls
-  std::vector<std::string> valid;
-  valid.push_back("http://test.com");
-  valid.push_back("http://test.com/");
-  valid.push_back("http://test.com/update");
-  valid.push_back("http://test.com/update?check=true");
-  for (size_t i = 0; i < valid.size(); i++) {
-    GURL url(valid[i]);
-    EXPECT_TRUE(url.is_valid());
-
-    DictionaryValue input_value;
-#if defined(OS_WIN)
-    // (Why %Iu below?  This is the single file in the whole code base that
-    // might make use of a WidePRIuS; let's not encourage any more.)
-    FilePath path(base::StringPrintf(L"c:\\extension%Iu", i));
-#else
-    FilePath path(base::StringPrintf("/extension%" PRIuS, i));
-#endif
-    std::string error;
-
-    input_value.SetString(keys::kVersion, "1.0");
-    input_value.SetString(keys::kName, "Test");
-    input_value.SetString(keys::kUpdateURL, url.spec());
-
-    scoped_refptr<Extension> extension(Extension::Create(
-        path, Extension::INVALID, input_value, Extension::STRICT_ERROR_CHECKS,
-        &error));
-    EXPECT_TRUE(extension.get()) << error;
-  }
-
-  // Test some invalid update urls
-  std::vector<std::string> invalid;
-  invalid.push_back("");
-  invalid.push_back("test.com");
-  valid.push_back("http://test.com/update#whatever");
-  for (size_t i = 0; i < invalid.size(); i++) {
-    DictionaryValue input_value;
-#if defined(OS_WIN)
-    // (Why %Iu below?  This is the single file in the whole code base that
-    // might make use of a WidePRIuS; let's not encourage any more.)
-    FilePath path(base::StringPrintf(L"c:\\extension%Iu", i));
-#else
-    FilePath path(base::StringPrintf("/extension%" PRIuS, i));
-#endif
-    std::string error;
-    input_value.SetString(keys::kVersion, "1.0");
-    input_value.SetString(keys::kName, "Test");
-    input_value.SetString(keys::kUpdateURL, invalid[i]);
-
-    scoped_refptr<Extension> extension(Extension::Create(
-        path, Extension::INVALID, input_value, Extension::STRICT_ERROR_CHECKS,
-        &error));
-    EXPECT_FALSE(extension.get());
-    EXPECT_TRUE(MatchPattern(error, errors::kInvalidUpdateURL));
-  }
-}
-
 // This test ensures that the mimetype sniffing code stays in sync with the
 // actual crx files that we test other parts of the system with.
 TEST(ExtensionTest, MimeTypeSniffing) {
@@ -813,36 +352,6 @@ TEST(ExtensionTest, MimeTypeSniffing) {
   EXPECT_TRUE(net::SniffMimeType(data.c_str(), data.size(),
               GURL("http://www.example.com/foo.crx"), "", &result));
   EXPECT_EQ("application/octet-stream", result);
-}
-
-static scoped_refptr<Extension> LoadManifest(const std::string& dir,
-                                             const std::string& test_file,
-                                             int extra_flags) {
-  FilePath path;
-  PathService::Get(chrome::DIR_TEST_DATA, &path);
-  path = path.AppendASCII("extensions")
-             .AppendASCII(dir)
-             .AppendASCII(test_file);
-
-  JSONFileValueSerializer serializer(path);
-  std::string error;
-  scoped_ptr<Value> result(serializer.Deserialize(NULL, &error));
-  if (!result.get()) {
-    EXPECT_EQ("", error);
-    return NULL;
-  }
-
-  scoped_refptr<Extension> extension = Extension::Create(
-      path.DirName(), Extension::INVALID,
-      *static_cast<DictionaryValue*>(result.get()),
-      Extension::STRICT_ERROR_CHECKS | extra_flags, &error);
-  EXPECT_TRUE(extension) << error;
-  return extension;
-}
-
-static scoped_refptr<Extension> LoadManifest(const std::string& dir,
-                                             const std::string& test_file) {
-  return LoadManifest(dir, test_file, Extension::NO_FLAGS);
 }
 
 TEST(ExtensionTest, EffectiveHostPermissions) {
@@ -1139,36 +648,6 @@ TEST(ExtensionTest, ImageCaching) {
             extension->GetCachedImage(resource, size128).getPixels());
 }
 
-// Tests that the old permission name "unlimited_storage" still works for
-// backwards compatibility (we renamed it to "unlimitedStorage").
-TEST(ExtensionTest, OldUnlimitedStoragePermission) {
-  ScopedTempDir directory;
-  ASSERT_TRUE(directory.CreateUniqueTempDir());
-  FilePath extension_path = directory.path();
-  DictionaryValue dictionary;
-
-  // The two required keys.
-  dictionary.SetString(extension_manifest_keys::kName, "test");
-  dictionary.SetString(extension_manifest_keys::kVersion, "0.1");
-
-  // Create a permissions list containing "unlimited_storage" and add it.
-  ListValue* permissions = new ListValue();
-  const char* old_unlimited = "unlimited_storage";
-  EXPECT_STREQ(old_unlimited, Extension::kOldUnlimitedStoragePermission);
-  permissions->Append(Value::CreateStringValue(old_unlimited));
-  dictionary.Set(extension_manifest_keys::kPermissions, permissions);
-
-  // Initialize the extension and make sure the permission for unlimited storage
-  // is present.
-  std::string errors;
-  scoped_refptr<Extension> extension(Extension::Create(
-      extension_path, Extension::INVALID, dictionary,
-      Extension::STRICT_ERROR_CHECKS, &errors));
-  EXPECT_TRUE(extension.get());
-  EXPECT_TRUE(extension->HasApiPermission(
-      Extension::kUnlimitedStoragePermission));
-}
-
 // This tests the API permissions with an empty manifest (one that just
 // specifies a name and a version and nothing else).
 TEST(ExtensionTest, ApiPermissions) {
@@ -1310,40 +789,6 @@ class ExtensionScriptAndCaptureVisibleTest : public testing::Test {
     PathService::Get(chrome::DIR_TEST_DATA, &dirpath_);
   }
 
-  scoped_refptr<Extension> MakeExtension(const std::string& permissions,
-                                         Extension::Location location) {
-    // Replace single-quotes with double-quotes in permissions, since JSON
-    // mandates double-quotes.
-    std::string munged_permissions = permissions;
-    ReplaceSubstringsAfterOffset(&munged_permissions, 0, "'", "\"");
-
-    DictionaryValue dictionary;
-    dictionary.SetString(keys::kName, "permission test");
-    dictionary.SetString(keys::kVersion, "1");
-    std::string error;
-    JSONStringValueSerializer serializer(munged_permissions);
-    scoped_ptr<Value> permission_value(serializer.Deserialize(NULL, &error));
-    EXPECT_EQ("", error);
-    if (!permission_value.get())
-      return NULL;
-    EXPECT_TRUE(permission_value->IsType(Value::TYPE_LIST));
-    dictionary.Set(keys::kPermissions, permission_value.release());
-
-    FilePath dirpath;
-    PathService::Get(chrome::DIR_TEST_DATA, &dirpath);
-    dirpath = dirpath.AppendASCII("extensions").AppendASCII("permissions");
-
-    scoped_refptr<Extension> extension =  Extension::Create(
-        dirpath,
-        location,
-        dictionary,
-        Extension::STRICT_ERROR_CHECKS,
-        &error);
-    if (!extension)
-      VLOG(1) << error;
-    return extension;
-  }
-
   bool Allowed(const Extension* extension, const GURL& url) {
     return (extension->CanExecuteScriptOnPage(url, NULL, NULL) &&
             extension->CanCaptureVisiblePage(url, NULL));
@@ -1384,7 +829,8 @@ TEST_F(ExtensionScriptAndCaptureVisibleTest, Permissions) {
   GURL about_url("about:flags");
 
   // Test <all_urls> for regular extensions.
-  extension = MakeExtension("['tabs','<all_urls>']", Extension::INTERNAL);
+  extension = LoadManifestStrict("script_and_capture",
+      "extension_regular_all.json");
   EXPECT_TRUE(Allowed(extension, http_url));
   EXPECT_TRUE(Allowed(extension, https_url));
   EXPECT_TRUE(Blocked(extension, file_url));
@@ -1398,37 +844,45 @@ TEST_F(ExtensionScriptAndCaptureVisibleTest, Permissions) {
   EXPECT_TRUE(extension->HasHostPermission(favicon_url));
 
   // Test * for scheme, which implies just the http/https schemes.
-  extension = MakeExtension("['tabs','*://*/']", Extension::INTERNAL);
+  extension = LoadManifestStrict("script_and_capture",
+      "extension_wildcard.json");
   EXPECT_TRUE(Allowed(extension, http_url));
   EXPECT_TRUE(Allowed(extension, https_url));
   EXPECT_TRUE(Blocked(extension, settings_url));
   EXPECT_TRUE(Blocked(extension, about_url));
   EXPECT_TRUE(Blocked(extension, file_url));
   EXPECT_TRUE(Blocked(extension, favicon_url));
-  extension = MakeExtension("['tabs','*://settings/*']", Extension::INTERNAL);
+  extension = LoadManifest("script_and_capture",
+      "extension_wildcard_settings.json");
   EXPECT_TRUE(Blocked(extension, settings_url));
 
   // Having chrome://*/ should not work for regular extensions. Note that
   // for favicon access, we require the explicit pattern chrome://favicon/*.
-  extension = MakeExtension("['tabs','chrome://*/']",
-                            Extension::INTERNAL);
+  std::string error;
+  extension = LoadManifestUnchecked("script_and_capture",
+      "extension_wildcard_chrome.json", Extension::INTERNAL,
+      Extension::NO_FLAGS, &error);
   EXPECT_TRUE(extension == NULL);
+  EXPECT_EQ(ExtensionErrorUtils::FormatErrorMessage(
+      errors::kInvalidPermissionScheme, base::IntToString(1)), error);
 
   // Having chrome://favicon/* should not give you chrome://*
-  extension = MakeExtension("['tabs','chrome://favicon/*']",
-                            Extension::INTERNAL);
+  extension = LoadManifestStrict("script_and_capture",
+      "extension_chrome_favicon_wildcard.json");
   EXPECT_TRUE(Blocked(extension, settings_url));
   EXPECT_TRUE(CaptureOnly(extension, favicon_url));
   EXPECT_TRUE(Blocked(extension, about_url));
   EXPECT_TRUE(extension->HasHostPermission(favicon_url));
 
   // Having http://favicon should not give you chrome://favicon
-  extension = MakeExtension("['tabs', 'http://favicon/']", Extension::INTERNAL);
+  extension = LoadManifestStrict("script_and_capture",
+      "extension_http_favicon.json");
   EXPECT_TRUE(Blocked(extension, settings_url));
   EXPECT_TRUE(Blocked(extension, favicon_url));
 
   // Component extensions with <all_urls> should get everything.
-  extension = MakeExtension("['tabs','<all_urls>']", Extension::COMPONENT);
+  extension = LoadManifest("script_and_capture", "extension_component_all.json",
+      Extension::COMPONENT, Extension::STRICT_ERROR_CHECKS);
   EXPECT_TRUE(Allowed(extension, http_url));
   EXPECT_TRUE(Allowed(extension, https_url));
   EXPECT_TRUE(Allowed(extension, settings_url));
@@ -1437,8 +891,9 @@ TEST_F(ExtensionScriptAndCaptureVisibleTest, Permissions) {
   EXPECT_TRUE(extension->HasHostPermission(favicon_url));
 
   // Component extensions should only get access to what they ask for.
-  extension = MakeExtension("['tabs', 'http://www.google.com/']",
-                            Extension::COMPONENT);
+  extension = LoadManifest("script_and_capture",
+      "extension_component_google.json", Extension::COMPONENT,
+      Extension::STRICT_ERROR_CHECKS);
   EXPECT_TRUE(Allowed(extension, http_url));
   EXPECT_TRUE(Blocked(extension, https_url));
   EXPECT_TRUE(Blocked(extension, file_url));
@@ -1448,7 +903,6 @@ TEST_F(ExtensionScriptAndCaptureVisibleTest, Permissions) {
   EXPECT_TRUE(Blocked(extension, extension_url));
   EXPECT_FALSE(extension->HasHostPermission(settings_url));
 }
-
 
 TEST(ExtensionTest, GetDistinctHostsForDisplay) {
   std::vector<std::string> expected;

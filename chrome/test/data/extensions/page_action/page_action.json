@@ -1,0 +1,9 @@
+{
+   "name": "PageAction Test",
+   "version": "1.0",
+   "page_action": {
+      "icons": [ "image1.png", "image2.png" ],
+      "id": "MyExtensionActionId",
+      "name": "MyExtensionActionName"
+   }
+}

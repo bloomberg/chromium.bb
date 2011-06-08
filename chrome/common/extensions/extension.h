@@ -969,9 +969,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
                            UpdateExtensionPreservesLocation);
   FRIEND_TEST_ALL_PREFIXES(ExtensionTest, LoadPageActionHelper);
-  FRIEND_TEST_ALL_PREFIXES(ExtensionTest, InitFromValueInvalid);
-  FRIEND_TEST_ALL_PREFIXES(ExtensionTest, InitFromValueValid);
-  FRIEND_TEST_ALL_PREFIXES(ExtensionTest, InitFromValueValidNameInRTL);
   FRIEND_TEST_ALL_PREFIXES(TabStripModelTest, Apps);
 
   DISALLOW_COPY_AND_ASSIGN(Extension);
