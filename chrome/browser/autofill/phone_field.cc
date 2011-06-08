@@ -263,7 +263,6 @@ bool PhoneField::ParseInternal(PhoneField *phone_field,
 
   for (size_t i = 0; i < arraysize(phone_field_grammars_); ++i) {
     memset(parsed_fields, 0, sizeof(parsed_fields));
-    scanner->Rewind();
     scanner->SaveCursor();
 
     // Attempt to parse according to the next grammar.
@@ -300,6 +299,8 @@ bool PhoneField::ParseInternal(PhoneField *phone_field,
       scanner->Rewind();
       return false;  // Tried through all the possibilities - did not match.
     }
+
+    scanner->Rewind();
   }
 
   if (!parsed_fields[FIELD_PHONE]) {

@@ -27,7 +27,7 @@ FormField* CreditCardField::Parse(AutofillScanner* scanner,
     return NULL;
 
   scoped_ptr<CreditCardField> credit_card_field(new CreditCardField);
-  scanner->SaveCursor();
+  size_t saved_cursor = scanner->SaveCursor();
 
   // Credit card fields can appear in many different orders.
   // We loop until no more credit card related fields are found, see |break| at
@@ -131,7 +131,7 @@ FormField* CreditCardField::Parse(AutofillScanner* scanner,
 
         if (!ParseFieldSpecifics(scanner, pattern, MATCH_DEFAULT | MATCH_SELECT,
                                  &credit_card_field->expiration_year_)) {
-          scanner->Rewind();
+          scanner->RewindTo(saved_cursor);
           return NULL;
         }
         continue;
@@ -179,7 +179,7 @@ FormField* CreditCardField::Parse(AutofillScanner* scanner,
     return credit_card_field.release();
   }
 
-  scanner->Rewind();
+  scanner->RewindTo(saved_cursor);
   return NULL;
 }
 

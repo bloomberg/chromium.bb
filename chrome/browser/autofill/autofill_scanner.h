@@ -29,19 +29,25 @@ class AutofillScanner {
   // Returns |true| if the cursor has reached the end of the stream.
   bool IsEnd() const;
 
-  // Returns the most recently saved cursor -- see also |SaveCursor()|.
+  // Restores the most recently saved cursor. See also |SaveCursor()|.
   void Rewind();
 
-  // Saves the current cursor position.  Multiple cursor positions can be saved,
-  // with stack ordering semantics.  See also |Rewind()|.
-  void SaveCursor();
+  // Repositions the cursor to the specified |index|. See also |SaveCursor()|.
+  void RewindTo(size_t index);
+
+  // Saves and returns the current cursor position. See also |Rewind()| and
+  // |RewindTo()|.
+  size_t SaveCursor();
 
  private:
   // Indicates the current position in the stream, represented as a vector.
   std::vector<const AutofillField*>::const_iterator cursor_;
 
-  // A stack of saved positions in the stream.
-  std::vector<std::vector<const AutofillField*>::const_iterator> saved_cursors_;
+  // The most recently saved cursor.
+  std::vector<const AutofillField*>::const_iterator saved_cursor_;
+
+  // The beginning pointer for the stream.
+  const std::vector<const AutofillField*>::const_iterator begin_;
 
   // The past-the-end pointer for the stream.
   const std::vector<const AutofillField*>::const_iterator end_;

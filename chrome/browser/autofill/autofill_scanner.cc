@@ -10,6 +10,8 @@
 AutofillScanner::AutofillScanner(
     const std::vector<const AutofillField*>& fields)
     : cursor_(fields.begin()),
+      saved_cursor_(fields.begin()),
+      begin_(fields.begin()),
       end_(fields.end()) {
 }
 
@@ -35,11 +37,18 @@ bool AutofillScanner::IsEnd() const {
 }
 
 void AutofillScanner::Rewind() {
-  DCHECK(!saved_cursors_.empty());
-  cursor_ = saved_cursors_.back();
-  saved_cursors_.pop_back();
+  DCHECK(saved_cursor_ != end_);
+  cursor_ = saved_cursor_;
+  saved_cursor_ = end_;
 }
 
-void AutofillScanner::SaveCursor() {
-  saved_cursors_.push_back(cursor_);
+void AutofillScanner::RewindTo(size_t index) {
+  DCHECK(index < static_cast<size_t>(end_ - begin_));
+  cursor_ = begin_ + index;
+  saved_cursor_ = end_;
+}
+
+size_t AutofillScanner::SaveCursor() {
+  saved_cursor_ = cursor_;
+  return static_cast<size_t>(cursor_ - begin_);
 }
