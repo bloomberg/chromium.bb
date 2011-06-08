@@ -28,3 +28,5 @@ BUGGMAN : fast/canvas/canvas-transform-skewed.html = IMAGE
 BUGGMAN : fast/canvas/zero-size-fill-rect.html = IMAGE
 BUGGMAN : media/video-canvas-alpha.html = IMAGE
 
+BUGKOZ : fast/dom/navigator-detached-no-crash.html = TEXT
+BUGKOZ : fast/dom/register-protocol-handler.html = TEXT
