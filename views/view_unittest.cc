@@ -1776,7 +1776,7 @@ TEST_F(ViewTest, TransformVisibleBound) {
   gfx::Rect viewport_bounds(0, 0, 100, 100);
 
   scoped_ptr<Widget> widget(new Widget);
-  Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
+  Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = viewport_bounds;
   widget->Init(params);
