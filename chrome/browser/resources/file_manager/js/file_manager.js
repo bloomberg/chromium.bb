@@ -1547,16 +1547,26 @@ FileManager.prototype = {
    * @param {cr.Event} event The change event.
    */
   FileManager.prototype.onSelectionChanged_ = function(event) {
-    var selectable;
-
     this.summarizeSelection_();
-    this.updateOkButton_();
     this.updatePreview_();
+
+    if (this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE) {
+      // If this is a save-as dialog, copy the selected file into the filename
+      // input text box.
+      if (this.selection.leadEntry && this.selection.leadEntry.isFile)
+        this.filenameInput_.value = this.selection.leadEntry.name;
+    }
+
+    this.updateOkButton_();
 
     var self = this;
     setTimeout(function() { self.onSelectionChangeComplete_(event) }, 0);
   };
 
+  /**
+   * Handle selection change related tasks that won't run properly during
+   * the actual selection change event.
+   */
   FileManager.prototype.onSelectionChangeComplete_ = function(event) {
     if (!this.showCheckboxes_)
       return;
@@ -1593,6 +1603,8 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.updateOkButton_ = function(event) {
+    var selectable;
+
     if (this.dialogType_ == FileManager.DialogType.SELECT_FOLDER) {
       selectable = this.selection.directoryCount == 1 &&
           this.selection.fileCount == 0;
@@ -1604,9 +1616,6 @@ FileManager.prototype = {
       selectable = (this.selection.directoryCount == 0 &&
                     this.selection.fileCount >= 1);
     } else if (this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE) {
-      if (this.selection.leadEntry && this.selection.leadEntry.isFile)
-        this.filenameInput_.value = this.selection.leadEntry.name;
-
       if (this.currentDirEntry_.fullPath == '/' ||
           this.currentDirEntry_.fullPath == MEDIA_DIRECTORY) {
         // Nothing can be saved in to the root or media/ directories.
@@ -1622,6 +1631,7 @@ FileManager.prototype = {
     }
 
     this.okButton_.disabled = !selectable;
+    return selectable;
   };
 
   /**
@@ -1925,9 +1935,8 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.onFilenameInputKeyUp_ = function(event) {
-    this.okButton_.disabled = this.filenameInput_.value.length == 0;
-
-    if (event.keyCode == 13 /* Enter */ && !this.okButton_.disabled)
+    var enabled = this.updateOkButton_();
+    if (enabled && event.keyCode == 13 /* Enter */)
       this.onOk_();
   };
 
