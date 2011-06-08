@@ -72,7 +72,7 @@ class GitBranchTest(mox.MoxTestBase):
     # Test init with no previous branch existing.
     self._branch.Exists().AndReturn(False)
     cros_mark_as_stable._SimpleRunCommand(
-        'git checkout -b %s %s -f' % (self._branch_name, self._tracking_branch))
+        'repo start %s .' % self._branch_name)
     self.mox.ReplayAll()
     cros_mark_as_stable.GitBranch.Checkout(self._branch)
     self.mox.VerifyAll()
@@ -91,7 +91,7 @@ class GitBranchTest(mox.MoxTestBase):
     branch = cros_mark_as_stable.GitBranch(self._branch_name,
                                            self._tracking_branch)
     cros_mark_as_stable.GitBranch.Checkout(mox.IgnoreArg())
-    cros_mark_as_stable._SimpleRunCommand('git branch -D ' + self._branch_name)
+    cros_mark_as_stable._SimpleRunCommand('repo abandon ' + self._branch_name)
     self.mox.ReplayAll()
     branch.Delete()
     self.mox.VerifyAll()

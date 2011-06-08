@@ -322,8 +322,7 @@ class GitBranch(object):
     if target.branch_name == target.tracking_branch or target.Exists():
       git_cmd = 'git checkout %s -f' % target.branch_name
     else:
-      git_cmd = 'git checkout -b %s %s -f' % (target.branch_name,
-                                              target.tracking_branch)
+      git_cmd = 'repo start %s .' % target.branch_name
     _SimpleRunCommand(git_cmd)
 
   def Exists(self):
@@ -339,7 +338,7 @@ class GitBranch(object):
     """
     tracking_branch = GitBranch(self.tracking_branch, self.tracking_branch)
     GitBranch.Checkout(tracking_branch)
-    delete_cmd = 'git branch -D %s' % self.branch_name
+    delete_cmd = 'repo abandon %s' % self.branch_name
     _SimpleRunCommand(delete_cmd)
 
 
