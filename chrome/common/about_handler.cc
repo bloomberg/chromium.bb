@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,18 +11,16 @@ namespace chrome_about_handler {
 // This needs to match up with about_urls_handlers in
 // chrome/renderer/about_handler.cc.
 const char* const about_urls[] = {
-  chrome::kAboutCrashURL,
-  chrome::kAboutKillURL,
-  chrome::kAboutHangURL,
-  chrome::kAboutShorthangURL,
+  chrome::kChromeUICrashURL,
+  chrome::kChromeUIKillURL,
+  chrome::kChromeUIHangURL,
+  chrome::kChromeUIShorthangURL,
   NULL,
 };
 const size_t about_urls_size = arraysize(about_urls);
 
-const char* const kAboutScheme = "about";
-
 bool WillHandle(const GURL& url) {
-  if (url.scheme() != kAboutScheme)
+  if (!url.SchemeIs(chrome::kChromeUIScheme))
     return false;
 
   const char* const* url_handler = about_urls;

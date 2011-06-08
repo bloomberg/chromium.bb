@@ -96,7 +96,6 @@
 #include "chrome/browser/ui/webui/active_downloads_ui.h"
 #include "chrome/browser/ui/webui/bug_report_ui.h"
 #include "chrome/browser/ui/webui/options/content_settings_handler.h"
-#include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/browser/ui/window_sizer.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -1612,7 +1611,8 @@ void Browser::ToggleFullscreenMode() {
 void Browser::Search() {
   // If the NTP is showing, close it.
   const GURL& url = GetSelectedTabContents()->GetURL();
-  if (web_ui_util::ChromeURLHostEquals(url, chrome::kChromeUINewTabHost)) {
+  if (url.SchemeIs(chrome::kChromeUIScheme) &&
+      url.host() == chrome::kChromeUINewTabHost) {
     CloseTab();
     return;
   }

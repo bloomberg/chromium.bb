@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,6 +40,11 @@ namespace URLFixerUpper {
   // The result will be a "more" valid URL than the input. It may still not
   // be valid, so check the return value's validity or use
   // possibly_invalid_spec().
+  //
+  // Schemes "about" and "chrome" are normalized to "chrome://", with slashes.
+  // "about:blank" is unaltered, as Webkit allows frames to access about:blank.
+  // Additionally, if a chrome URL does not have a valid host, as in "about:",
+  // the returned URL will have the host "version", as in "chrome://version".
   //
   // If |desired_tld| is non-empty, it represents the TLD the user wishes to
   // append in the case of an incomplete domain.  We check that this is not a

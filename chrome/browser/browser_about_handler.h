@@ -19,25 +19,21 @@ template <typename T> struct DefaultSingletonTraits;
 class GURL;
 class Profile;
 
-// Decides whether the given URL will be handled by the browser about handler
-// and returns true if so. On true, it may also modify the given URL to be the
-// final form (we fix up most "about:" URLs to be "chrome:" because WebKit
-// handles all "about:" URLs as "about:blank.
+// Returns true if the given URL will be handled by the browser about handler.
+// |url| should have been processed by URLFixerUpper::FixupURL, which replaces
+// the about: scheme with chrome:// for all about:foo URLs except "about:blank".
+// Some |url| host values will be replaced with their respective redirects.
 //
 // This is used by BrowserURLHandler.
 bool WillHandleBrowserAboutURL(GURL* url, Profile* profile);
-
-// Register the data source for chrome://about URLs.
-// Safe to call multiple times.
-void InitializeAboutDataSource(Profile* profile);
 
 // We have a few magic commands that don't cause navigations, but rather pop up
 // dialogs. This function handles those cases, and returns true if so. In this
 // case, normal tab navigation should be skipped.
 bool HandleNonNavigationAboutURL(const GURL& url);
 
-// Gets the paths that are shown in about:about.
-std::vector<std::string> AboutPaths();
+// Gets the paths that are shown in chrome://chrome-urls.
+std::vector<std::string> ChromePaths();
 
 #if defined(USE_TCMALLOC)
 // A map of header strings (e.g. "Browser", "Renderer PID 123")

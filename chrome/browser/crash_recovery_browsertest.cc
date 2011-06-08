@@ -15,7 +15,7 @@
 namespace {
 
 void SimulateRendererCrash(Browser* browser) {
-  browser->OpenURL(GURL(chrome::kAboutCrashURL), GURL(), CURRENT_TAB,
+  browser->OpenURL(GURL(chrome::kChromeUICrashURL), GURL(), CURRENT_TAB,
                    PageTransition::TYPED);
   LOG(ERROR) << "SimulateRendererCrash, before WaitForNotification";
   ui_test_utils::WaitForNotification(

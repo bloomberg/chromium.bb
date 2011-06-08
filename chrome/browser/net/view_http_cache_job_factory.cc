@@ -128,12 +128,13 @@ int ViewHttpCacheJob::Core::Start(const net::URLRequest& request,
 
   AddRef();  // Released on OnIOComplete().
   std::string cache_key =
-      request.url().spec().substr(strlen(chrome::kNetworkViewCacheURL));
+      request.url().spec().substr(strlen(chrome::kChromeUINetworkViewCacheURL));
 
   int rv;
   if (cache_key.empty()) {
     rv = cache_helper_.GetContentsHTML(request.context(),
-                                       chrome::kNetworkViewCacheURL, &data_,
+                                       chrome::kChromeUINetworkViewCacheURL,
+                                       &data_,
                                        &callback_);
   } else {
     rv = cache_helper_.GetEntryInfoHTML(cache_key, request.context(),
@@ -184,8 +185,8 @@ void ViewHttpCacheJob::Core::OnIOComplete(int result) {
 
 // Static.
 bool ViewHttpCacheJobFactory::IsSupportedURL(const GURL& url) {
-  return StartsWithASCII(url.spec(), chrome::kNetworkViewCacheURL,
-                         true /*case_sensitive*/);
+  return url.SchemeIs(chrome::kChromeUIScheme) &&
+         url.host() == chrome::kChromeUINetworkViewCacheHost;
 }
 
 // Static.

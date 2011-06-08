@@ -15,7 +15,7 @@ const int BuiltinProvider::kRelevance = 575;
 BuiltinProvider::BuiltinProvider(ACProviderListener* listener,
                                  Profile* profile)
     : AutocompleteProvider(listener, profile, "Builtin") {
-  std::vector<std::string> builtins(AboutPaths());
+  std::vector<std::string> builtins(ChromePaths());
   for (std::vector<std::string>::iterator i(builtins.begin());
        i != builtins.end(); ++i)
     builtins_.push_back(ASCIIToUTF16("about:") + ASCIIToUTF16(*i));
