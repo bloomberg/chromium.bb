@@ -30,12 +30,10 @@ from media_test_matrix import MediaTestMatrix
 
 
 def main():
-  EXTRA_NICKNAMES = ['nocache', 'cache']
-  # Disable/enable media_cache.
-  CHROME_FLAGS = ['--chrome-flags=\'--media-cache-size=1\'', '']
-  # The 't' parameter is passed to player.html to disable/enable the media
-  # cache (refer to data/media/html/player.js).
-  ADD_T_PARAMETERS = [False, True]
+  CHROME_FLAGS = {'disable_cache': '--media-cache-size=1',
+                  # Please note track (caption) option is not implemented yet
+                  # as of 6/8/2011.
+                  'track': '--enable-video-track'}
   # Player.html should contain all the HTML and Javascript that is
   # necessary to run these tests.
   DEFAULT_PLAYER_HTML_URL = 'DEFAULT'
@@ -92,8 +90,8 @@ def main():
                     default=DEFAULT_MEASURE_INTERVALS,
                     help='Interval for measurement data [defaults to "%d"]' %
                          DEFAULT_MEASURE_INTERVALS)
-  parser.add_option('-c', '--cache_test', dest='cache_test',
-                    default=False, help='Include cache test',
+  parser.add_option('-c', '--disable_media_cache', dest='disable_media_cache',
+                    default=False, help='Disable media cache',
                     action='store_true')
   parser.add_option('-z', '--test-one-video', dest='one_video',
                     default=False, help='Run only one video',
@@ -120,7 +118,11 @@ def main():
                           'binaries of reference build.'))
   parser.add_option('-v', '--verbose', dest='verbose', help='Verbose mode.',
                     default=False, action='store_true')
-
+  parser.add_option('-j', '--track', dest='track',
+                    help=('Run track test (binary should be downloaded'
+                          ' from http://www.annacavender.com/track/'
+                          ' and put into reference_build_dir).'),
+                    default=False, action='store_true')
   options, args = parser.parse_args()
   if args:
     parser.print_help()
@@ -158,6 +160,13 @@ def main():
     reference_build_list = [False, True]
   else:
     reference_build_list = [False]
+  if options.track:
+    # TODO(imasaki@chromium.org): change here after track functionality is
+    # available on Chrome. Currently, track patch is still under development.
+    # So, I need to download the binary from
+    # http://www.annacavender.com/track/ and use it for testing.
+    # I temporarily use reference build mechanism.
+    reference_build_list = [True]
   # This is a loop for iterating through all videos defined above (list
   # or matrix). Each video has associated tag and nickname for display
   # purpose.
@@ -168,70 +177,74 @@ def main():
       # There are two ways to disable the media cache: setting Chrome option
       # to --media-cache-size=1 or adding t parameter in query parameter of
       # URL in which player.js (data/media/html/player.js) disables the
-      # media cache). We are doing both here. Please note the length of
-      # CHROME_FLAGS and ADD_T_PARAMETERS should be the same.
-      for j in range(len(CHROME_FLAGS)):
-        for reference_build in reference_build_list:
-          parent_envs = copy.deepcopy(os.environ)
-          if options.input_matrix_filename is None:
-            par_filename = os.path.join(os.pardir, filename)
+      # media cache).
+      for reference_build in reference_build_list:
+        parent_envs = copy.deepcopy(os.environ)
+        if options.input_matrix_filename is None:
+          par_filename = os.path.join(os.pardir, filename)
+        else:
+          par_filename = filename
+        envs = {
+          MediaTestEnvNames.MEDIA_TAG_ENV_NAME: tag,
+          MediaTestEnvNames.MEDIA_FILENAME_ENV_NAME: par_filename,
+          MediaTestEnvNames.MEDIA_FILENAME_NICKNAME_ENV_NAME: nickname,
+          MediaTestEnvNames.PLAYER_HTML_URL_ENV_NAME:
+            options.player_html_url,
+          MediaTestEnvNames.PLAYER_HTML_URL_NICKNAME_ENV_NAME:
+            options.player_html_url_nickname,
+          MediaTestEnvNames.N_RUNS_ENV_NAME: str(options.number_of_runs),
+          MediaTestEnvNames.MEASURE_INTERVAL_ENV_NAME:
+            str(options.measure_intervals),
+          MediaTestEnvNames.TEST_SCENARIO_FILE_ENV_NAME:
+            options.test_scenario_input_filename,
+          MediaTestEnvNames.TEST_SCENARIO_ENV_NAME:
+            options.test_scenario,
+        }
+        # Boolean variables and their related variables.
+        if options.disable_media_cache:
+          # The 't' parameter is passed to player.html to disable/enable
+          # the media cache (refer to data/media/html/player.js).
+          envs[MediaTestEnvNames.ADD_T_PARAMETER_ENV_NAME] = str(
+              options.disable_media_cache)
+        if reference_build:
+          envs[MediaTestEnvNames.REFERENCE_BUILD_ENV_NAME] = str(
+              reference_build)
+        if REMOVE_FIRST_RESULT:
+          envs[MediaTestEnvNames.REMOVE_FIRST_RESULT_ENV_NAME] = str(
+              REMOVE_FIRST_RESULT)
+        if options.reference_build_dir:
+          envs[MediaTestEnvNames.REFERENCE_BUILD_DIR_ENV_NAME] = (
+              options.reference_build_dir)
+        envs.update(parent_envs)
+        if options.suite is None and options.test_prog_name is not None:
+          # Suite is not used - run test program directly.
+          test_prog_name = options.test_prog_name
+          suite_string = ''
+        else:
+          # Suite is used.
+          # The test script names are in the PYAUTO_TESTS file.
+          test_prog_name = pyauto_functional_script_name
+          if options.suite is None:
+            suite_name = DEFAULT_SUITE_NAME
           else:
-            par_filename = filename
-          envs = {
-            MediaTestEnvNames.MEDIA_TAG_ENV_NAME: tag,
-            MediaTestEnvNames.MEDIA_FILENAME_ENV_NAME: par_filename,
-            MediaTestEnvNames.MEDIA_FILENAME_NICKNAME_ENV_NAME: nickname,
-            MediaTestEnvNames.PLAYER_HTML_URL_ENV_NAME:
-              options.player_html_url,
-            MediaTestEnvNames.PLAYER_HTML_URL_NICKNAME_ENV_NAME:
-              options.player_html_url_nickname,
-            MediaTestEnvNames.EXTRA_NICKNAME_ENV_NAME:
-              EXTRA_NICKNAMES[j],
-            # Enables or disables the media cache.
-            # (refer to data/media/html/player.js)
-            MediaTestEnvNames.N_RUNS_ENV_NAME: str(options.number_of_runs),
-            MediaTestEnvNames.MEASURE_INTERVAL_ENV_NAME:
-              str(options.measure_intervals),
-            MediaTestEnvNames.TEST_SCENARIO_FILE_ENV_NAME:
-              options.test_scenario_input_filename,
-            MediaTestEnvNames.TEST_SCENARIO_ENV_NAME:
-              options.test_scenario,
-          }
-          # Boolean variables and their related variables.
-          if ADD_T_PARAMETERS[j]:
-            envs[MediaTestEnvNames.ADD_T_PARAMETER_ENV_NAME] = str(
-                ADD_T_PARAMETERS[j])
-          if reference_build:
-            envs[MediaTestEnvNames.REFERENCE_BUILD_ENV_NAME] = str(
-                reference_build)
-          if REMOVE_FIRST_RESULT:
-            envs[MediaTestEnvNames.REMOVE_FIRST_RESULT_ENV_NAME] = str(
-                REMOVE_FIRST_RESULT)
-          if options.reference_build_dir:
-            envs[MediaTestEnvNames.REFERENCE_BUILD_DIR_ENV_NAME] = (
-                options.reference_build_dir)
-          envs.update(parent_envs)
-          if options.suite is None and options.test_prog_name is not None:
-            # Suite is not used - run test program directly.
-            test_prog_name = options.test_prog_name
-            suite_string = ''
-          else:
-            # Suite is used.
-            # The test script names are in the PYAUTO_TEST file.
-            test_prog_name = pyauto_functional_script_name
-            if options.suite is None:
-              suite_name = DEFAULT_SUITE_NAME
-            else:
-              suite_name = options.suite
-            suite_string = ' --suite=%s' % suite_name
-          test_prog_name = sys.executable + ' ' + test_prog_name
-          cmd = test_prog_name + suite_string + ' ' + CHROME_FLAGS[j]
-          if options.verbose:
-            cmd += ' -v'
-          proc = Popen(cmd, env=envs, shell=True)
-          proc.communicate()
-        if not options.cache_test:
-          break
+            suite_name = options.suite
+          suite_string = ' --suite=%s' % suite_name
+        test_prog_name = sys.executable + ' ' + test_prog_name
+        chrome_flag = ''
+        if options.disable_media_cache:
+          chrome_flag += CHROME_FLAGS['disable_cache']
+        if options.track:
+          if options.disable_media_cache:
+            chrome_flag += ' '
+          chrome_flag += CHROME_FLAGS['track']
+        if chrome_flag:
+          chrome_flag = '--chrome-flags=\'%s\'' % chrome_flag
+        cmd = test_prog_name + suite_string + ' ' + chrome_flag
+        if options.verbose:
+          cmd += ' -v'
+        proc = Popen(cmd, env=envs, shell=True)
+        proc.communicate()
+
       if options.one_video:
         break
 
