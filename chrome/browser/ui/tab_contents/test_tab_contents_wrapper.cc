@@ -16,7 +16,7 @@ TabContentsWrapperTestHarness::~TabContentsWrapperTestHarness() {
 }
 
 TestTabContents* TabContentsWrapperTestHarness::contents() {
-  return static_cast<TestTabContents*>(contents_wrapper_.get()->tab_contents());
+  return static_cast<TestTabContents*>(contents_wrapper_->tab_contents());
 }
 
 TabContentsWrapper* TabContentsWrapperTestHarness::contents_wrapper() {
@@ -25,11 +25,6 @@ TabContentsWrapper* TabContentsWrapperTestHarness::contents_wrapper() {
 
 void TabContentsWrapperTestHarness::SetContents(TestTabContents* contents) {
   contents_wrapper_.reset(new TabContentsWrapper(contents));
-}
-
-void TabContentsWrapperTestHarness::SetContentsWrapper(
-    TabContentsWrapper* contents) {
-  contents_wrapper_.reset(contents);
 }
 
 void TabContentsWrapperTestHarness::SetUp() {

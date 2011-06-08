@@ -20,7 +20,6 @@ class TabContentsWrapperTestHarness : public RenderViewHostTestHarness {
   TabContentsWrapper* contents_wrapper();
 
   void SetContents(TestTabContents* contents);
-  void SetContentsWrapper(TabContentsWrapper* contents);
 
  protected:
   // testing::Test
