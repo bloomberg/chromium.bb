@@ -24,16 +24,12 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if !defined(OS_CHROMEOS)  // disable temporary while jam debugs debug failures
-
 namespace {
 // This global variable is used to check that value returned to different
 // observers is the same.
 Profile* g_created_profile;
 
 }  // namespace
-
-#endif
 
 class ProfileManagerTest : public TestingBrowserProcessTest {
  protected:
@@ -180,8 +176,6 @@ TEST_F(ProfileManagerTest, CreateAndUseTwoProfiles) {
   message_loop_.RunAllPending();
 }
 
-#if !defined(OS_CHROMEOS)  // disable temporary while jam debugs debug failures
-
 // Tests asynchronous profile creation mechanism.
 TEST_F(ProfileManagerTest, CreateProfileAsync) {
   FilePath dest_path =
@@ -235,5 +229,3 @@ TEST_F(ProfileManagerTest, CreateProfilesAsync) {
 
   message_loop_.RunAllPending();
 }
-#endif
-

@@ -237,6 +237,8 @@ prerender::PrerenderTracker* TestingBrowserProcess::prerender_tracker() {
 }
 
 void TestingBrowserProcess::SetLocalState(PrefService* local_state) {
+  if (!local_state && notification_ui_manager_.get())
+    notification_ui_manager_.reset();  // Used local_state_.
   local_state_ = local_state;
 }
 
