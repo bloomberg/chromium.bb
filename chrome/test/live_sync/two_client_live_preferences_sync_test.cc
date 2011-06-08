@@ -434,15 +434,14 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest,
 }
 
 // TCM ID - 7583816
-// TODO(braffert): This test fails on linux.  See http://crbug.com/85250.
-IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest,
-                       FAILS_kAcceptLanguages) {
+IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest, kAcceptLanguages) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  DisableVerifier();
   ASSERT_TRUE(StringPrefMatches(prefs::kAcceptLanguages));
 
   AppendStringPref(0, prefs::kAcceptLanguages, ",ar");
   AppendStringPref(1, prefs::kAcceptLanguages, ",fr");
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  ASSERT_TRUE(AwaitQuiescence());
   // kAcceptLanguages is not synced on Mac.
 #if !defined(OS_MACOSX)
   ASSERT_TRUE(StringPrefMatches(prefs::kAcceptLanguages));
