@@ -68,7 +68,7 @@ void VideoCaptureImpl::Init() {
 
 void VideoCaptureImpl::DeInit(Task* task) {
   if (state_ == kStarted)
-    message_filter_->Send(new VideoCaptureHostMsg_Stop(0, device_id_));
+    Send(new VideoCaptureHostMsg_Stop(0, device_id_));
 
   base::MessageLoopProxy* io_message_loop_proxy =
       ChildProcess::current()->io_message_loop_proxy();
@@ -229,8 +229,7 @@ void VideoCaptureImpl::OnBufferReceived(TransportDIB::Handle handle,
   }
 
   if (state_ != kStarted) {
-    message_filter_->Send(
-        new VideoCaptureHostMsg_BufferReady(0, device_id_, handle));
+    Send(new VideoCaptureHostMsg_BufferReady(0, device_id_, handle));
     return;
   }
 
@@ -259,8 +258,7 @@ void VideoCaptureImpl::OnBufferReceived(TransportDIB::Handle handle,
     it->first->OnBufferReady(this, buffer);
   }
 
-  message_filter_->Send(
-      new VideoCaptureHostMsg_BufferReady(0, device_id_, handle));
+  Send(new VideoCaptureHostMsg_BufferReady(0, device_id_, handle));
 }
 
 void VideoCaptureImpl::OnStateChanged(
@@ -342,7 +340,7 @@ void VideoCaptureImpl::StopDevice() {
 
   if (state_ == kStarted) {
     state_ = kStopping;
-    message_filter_->Send(new VideoCaptureHostMsg_Stop(0, device_id_));
+    Send(new VideoCaptureHostMsg_Stop(0, device_id_));
     width_ = height_ = 0;
   }
 }
@@ -369,7 +367,7 @@ void VideoCaptureImpl::StartCaptureInternal() {
   params.height = height_;
   params.session_id = session_id_;
 
-  message_filter_->Send(new VideoCaptureHostMsg_Start(0, device_id_, params));
+  Send(new VideoCaptureHostMsg_Start(0, device_id_, params));
   state_ = kStarted;
   for (ClientInfo::iterator it = clients_.begin(); it != clients_.end(); it++) {
     it->first->OnStarted(this);
@@ -383,4 +381,13 @@ void VideoCaptureImpl::AddDelegateOnIOThread() {
 void VideoCaptureImpl::RemoveDelegateOnIOThread(Task* task) {
   base::ScopedTaskRunner task_runner(task);
   message_filter_->RemoveDelegate(this);
+}
+
+void VideoCaptureImpl::Send(IPC::Message* message) {
+  base::MessageLoopProxy* io_message_loop_proxy =
+      ChildProcess::current()->io_message_loop_proxy();
+
+  io_message_loop_proxy->PostTask(FROM_HERE,
+      NewRunnableMethod(message_filter_.get(),
+                        &VideoCaptureMessageFilter::Send, message));
 }

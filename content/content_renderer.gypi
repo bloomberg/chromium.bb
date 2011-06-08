@@ -141,6 +141,8 @@
         'renderer/v8_value_converter.h',
         'renderer/video_capture_message_filter.cc',
         'renderer/video_capture_message_filter.h',
+        'renderer/video_capture_message_filter_creator.cc',
+        'renderer/video_capture_message_filter_creator.h',
         'renderer/webplugin_delegate_proxy.cc',
         'renderer/webplugin_delegate_proxy.h',
         'renderer/websharedworker_proxy.cc',

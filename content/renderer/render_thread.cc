@@ -44,6 +44,8 @@
 #include "content/renderer/render_view_visitor.h"
 #include "content/renderer/renderer_webidbfactory_impl.h"
 #include "content/renderer/renderer_webkitclient_impl.h"
+#include "content/renderer/video_capture_message_filter.h"
+#include "content/renderer/video_capture_message_filter_creator.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_platform_file.h"
 #include "net/base/net_errors.h"
@@ -167,6 +169,10 @@ void RenderThread::Init() {
   db_message_filter_ = new DBMessageFilter();
   AddFilter(db_message_filter_.get());
 
+  VideoCaptureMessageFilter* video_capture_message_filter =
+      VideoCaptureMessageFilterCreator::SharedFilter();
+  AddFilter(video_capture_message_filter);
+
   content::GetContentClient()->renderer()->RenderThreadStarted();
 
   TRACE_EVENT_END_ETW("RenderThread::Init", 0, "");
@@ -183,6 +189,10 @@ RenderThread::~RenderThread() {
   // Shutdown in reverse of the initialization order.
   RemoveFilter(db_message_filter_.get());
   db_message_filter_ = NULL;
+
+  VideoCaptureMessageFilter* video_capture_message_filter =
+      VideoCaptureMessageFilterCreator::SharedFilter();
+  RemoveFilter(video_capture_message_filter);
 
   // Shutdown the file thread if it's running.
   if (file_thread_.get())

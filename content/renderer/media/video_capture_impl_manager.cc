@@ -5,43 +5,8 @@
 #include "content/renderer/media/video_capture_impl_manager.h"
 
 #include "base/memory/singleton.h"
-#include "content/common/child_process.h"
-#include "content/common/child_thread.h"
-#include "content/common/video_capture_messages.h"
-#include "content/common/view_messages.h"
+#include "content/renderer/video_capture_message_filter_creator.h"
 #include "media/base/message_loop_factory_impl.h"
-
-namespace {
-
-// VideoCaptureMessageFilterCreator is to be used as a singleton so we can get
-// access to a shared VideoCaptureMessageFilter.
-// Example usage:
-//   VideoCaptureMessageFilter* filter =
-//       VideoCaptureMessageFilterCreator::SharedFilter();
-
-class VideoCaptureMessageFilterCreator {
- public:
-  VideoCaptureMessageFilterCreator() {
-    int routing_id;
-    ChildThread::current()->Send(
-        new ViewHostMsg_GenerateRoutingID(&routing_id));
-    filter_ = new VideoCaptureMessageFilter(routing_id);
-    filter_->AddFilter();
-  }
-
-  static VideoCaptureMessageFilter* SharedFilter() {
-    return GetInstance()->filter_.get();
-  }
-
-  static VideoCaptureMessageFilterCreator* GetInstance() {
-    return Singleton<VideoCaptureMessageFilterCreator>::get();
-  }
-
- private:
-  scoped_refptr<VideoCaptureMessageFilter> filter_;
-};
-
-}  // namespace
 
 VideoCaptureImplManager::VideoCaptureImplManager() {
   ml_factory_.reset(new media::MessageLoopFactoryImpl());

@@ -13,9 +13,8 @@ using ::testing::Return;
 #define DEFAULT_CAPABILITY {176, 144, 30, 0, media::VideoFrame::I420, \
     false, false }
 
-ACTION_P(DeleteMessage, return_value) {
+ACTION(DeleteMessage) {
   delete arg0;
-  return return_value;
 }
 
 class MockVideoCaptureMessageFilter : public VideoCaptureMessageFilter {
@@ -25,7 +24,6 @@ class MockVideoCaptureMessageFilter : public VideoCaptureMessageFilter {
 
   // Filter implementation.
   MOCK_METHOD1(Send, bool(IPC::Message* message));
-  MOCK_METHOD0(ReadyToSend, bool());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockVideoCaptureMessageFilter);
@@ -54,6 +52,18 @@ class MockVideoCaptureClient : public media::VideoCapture::EventHandler {
 
 class VideoCaptureImplTest : public ::testing::Test {
  public:
+  class MockVideoCaptureImpl : public VideoCaptureImpl {
+   public:
+    MockVideoCaptureImpl(const media::VideoCaptureSessionId id,
+                         scoped_refptr<base::MessageLoopProxy> ml_proxy,
+                         VideoCaptureMessageFilter* filter)
+        : VideoCaptureImpl(id, ml_proxy, filter) {
+    }
+    virtual ~MockVideoCaptureImpl() {}
+
+    MOCK_METHOD1(Send, void(IPC::Message* message));
+  };
+
   VideoCaptureImplTest() {
     message_loop_.reset(new MessageLoop(MessageLoop::TYPE_IO));
     message_loop_proxy_ =
@@ -62,8 +72,9 @@ class VideoCaptureImplTest : public ::testing::Test {
     message_filter_ = new MockVideoCaptureMessageFilter;
     session_id_ = 1;
 
-    video_capture_impl_ = new VideoCaptureImpl(session_id_, message_loop_proxy_,
-                                               message_filter_);
+    video_capture_impl_ = new MockVideoCaptureImpl(session_id_,
+                                                   message_loop_proxy_,
+                                                   message_filter_);
 
     video_capture_impl_->device_id_ = 2;
   }
@@ -77,7 +88,7 @@ class VideoCaptureImplTest : public ::testing::Test {
   scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
   scoped_refptr<MockVideoCaptureMessageFilter> message_filter_;
   media::VideoCaptureSessionId session_id_;
-  VideoCaptureImpl* video_capture_impl_;
+  MockVideoCaptureImpl* video_capture_impl_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureImplTest);
@@ -89,11 +100,8 @@ TEST_F(VideoCaptureImplTest, Simple) {
   scoped_ptr<MockVideoCaptureClient> client(new MockVideoCaptureClient);
   media::VideoCapture::VideoCaptureCapability capability = DEFAULT_CAPABILITY;
 
-  EXPECT_CALL(*message_filter_, Send(_))
-      .WillRepeatedly(DeleteMessage(true));
-
-  EXPECT_CALL(*message_filter_, ReadyToSend())
-      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*video_capture_impl_, Send(_))
+      .WillRepeatedly(DeleteMessage());
 
   EXPECT_CALL(*client, OnStarted(_))
       .WillOnce(Return());

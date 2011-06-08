@@ -4,8 +4,8 @@
 
 #include "content/renderer/video_capture_message_filter.h"
 
-#include "content/common/child_process.h"
 #include "content/common/video_capture_messages.h"
+#include "content/common/view_messages.h"
 #include "content/renderer/render_thread.h"
 
 VideoCaptureMessageFilter::VideoCaptureMessageFilter(int32 route_id)
@@ -21,14 +21,6 @@ bool VideoCaptureMessageFilter::Send(IPC::Message* message) {
   if (!channel_) {
     delete message;
     return false;
-  }
-
-  if (!message_loop_proxy_->BelongsToCurrentThread()) {
-    // Can only access the IPC::Channel on the IPC thread since it's not thread
-    // safe.
-    message_loop_proxy_->PostTask(FROM_HERE,
-        NewRunnableMethod(this, &VideoCaptureMessageFilter::Send, message));
-    return true;
   }
 
   message->set_routing_id(route_id_);
@@ -152,13 +144,3 @@ void VideoCaptureMessageFilter::RemoveDelegate(Delegate* delegate) {
   }
 }
 
-void VideoCaptureMessageFilter::AddFilter() {
-  if (MessageLoop::current() != ChildThread::current()->message_loop()) {
-    ChildThread::current()->message_loop()->PostTask(
-      FROM_HERE, NewRunnableMethod(this,
-                                   &VideoCaptureMessageFilter::AddFilter));
-    return;
-  }
-
-  RenderThread::current()->AddFilter(this);
-}

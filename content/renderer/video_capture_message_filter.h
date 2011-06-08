@@ -54,8 +54,6 @@ class VideoCaptureMessageFilter : public IPC::ChannelProxy::MessageFilter {
   // Send a message asynchronously.
   virtual bool Send(IPC::Message* message);
 
-  void AddFilter();
-
  private:
   FRIEND_TEST_ALL_PREFIXES(VideoCaptureMessageFilterTest, Basic);
   FRIEND_TEST_ALL_PREFIXES(VideoCaptureMessageFilterTest, Delegates);

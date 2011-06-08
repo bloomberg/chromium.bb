@@ -76,6 +76,7 @@ class VideoCaptureImpl
   void StartCaptureInternal();
   void AddDelegateOnIOThread();
   void RemoveDelegateOnIOThread(Task* task);
+  virtual void Send(IPC::Message* message);
 
   scoped_refptr<VideoCaptureMessageFilter> message_filter_;
   media::VideoCaptureSessionId session_id_;
