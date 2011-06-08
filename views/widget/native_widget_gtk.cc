@@ -279,7 +279,6 @@ static GtkWidget* CreateDragIconWidget(GdkPixbuf* drag_image) {
 
 // static
 GtkWidget* NativeWidgetGtk::null_parent_ = NULL;
-bool NativeWidgetGtk::debug_paint_enabled_ = false;
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetGtk, public:
@@ -502,7 +501,7 @@ void NativeWidgetGtk::ActiveWindowChanged(GdkWindow* active_window) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// NativeWidgetGtk, Widget implementation:
+// NativeWidgetGtk implementation:
 
 void NativeWidgetGtk::ClearNativeFocus() {
   DCHECK(!child_);
@@ -545,9 +544,17 @@ bool NativeWidgetGtk::HandleKeyboardEvent(const KeyEvent& key) {
   return handled;
 }
 
+bool NativeWidgetGtk::SuppressFreezeUpdates() {
+  if (!painted_) {
+    painted_ = true;
+    return true;
+  }
+  return false;
+}
+
 // static
 void NativeWidgetGtk::EnableDebugPaint() {
-  debug_paint_enabled_ = true;
+  gdk_window_set_debug_updates(true);
 }
 
 // static
@@ -1180,20 +1187,6 @@ gboolean NativeWidgetGtk::OnPaint(GtkWidget* widget, GdkEventExpose* event) {
       // the widget.
       CompositePainter::SetComposited(widget_);
     }
-  }
-
-  if (debug_paint_enabled_) {
-    // Using cairo directly because using skia didn't have immediate effect.
-    cairo_t* cr = gdk_cairo_create(event->window);
-    gdk_cairo_region(cr, event->region);
-    cairo_set_source_rgb(cr, 1, 0, 0);  // red
-    cairo_rectangle(cr,
-                    event->area.x, event->area.y,
-                    event->area.width, event->area.height);
-    cairo_fill(cr);
-    cairo_destroy(cr);
-    // Make sure that users see the red flash.
-    XSync(ui::GetXDisplay(), false /* don't discard events */);
   }
 
   ui::ScopedRegion region(gdk_region_copy(event->region));

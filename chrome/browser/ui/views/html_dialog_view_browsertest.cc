@@ -42,7 +42,7 @@ class TestHtmlDialogUIDelegate : public HtmlDialogUIDelegate {
     return std::wstring(L"Test");
   }
   virtual GURL GetDialogContentURL() const {
-    return GURL(chrome::kAboutBlankURL);
+    return GURL(chrome::kAboutAboutURL);
   }
   virtual void GetWebUIMessageHandlers(
       std::vector<WebUIMessageHandler*>* handlers) const { }
@@ -201,6 +201,33 @@ IN_PROC_BROWSER_TEST_F(HtmlDialogBrowserTest, MAYBE_SizeWindow) {
   actual_bounds = html_view->GetWidget()->GetClientAreaScreenBounds();
   EXPECT_LT(0, actual_bounds.width());
   EXPECT_LT(0, actual_bounds.height());
+
+  MessageLoopForUI::current()->RemoveObserver(
+      WindowChangedObserver::GetInstance());
+}
+
+IN_PROC_BROWSER_TEST_F(HtmlDialogBrowserTest, TestStateTransition) {
+  HtmlDialogUIDelegate* delegate = new TestHtmlDialogUIDelegate();
+
+  HtmlDialogView* html_view =
+      new HtmlDialogView(browser()->profile(), delegate);
+  TabContents* tab_contents = browser()->GetSelectedTabContents();
+  ASSERT_TRUE(tab_contents != NULL);
+  views::Window::CreateChromeWindow(tab_contents->GetDialogRootWindow(),
+                                    gfx::Rect(), html_view);
+  // Test if the state transitions from INITIALIZED to -> PAINTED
+  EXPECT_EQ(HtmlDialogView::INITIALIZED, html_view->state_);
+
+  html_view->InitDialog();
+  html_view->window()->Show();
+
+  MessageLoopForUI::current()->AddObserver(
+      WindowChangedObserver::GetInstance());
+  // We use busy loop because the state is updated in notifications.
+  while (html_view->state_ != HtmlDialogView::PAINTED)
+    MessageLoop::current()->RunAllPending();
+
+  EXPECT_EQ(HtmlDialogView::PAINTED, html_view->state_);
 
   MessageLoopForUI::current()->RemoveObserver(
       WindowChangedObserver::GetInstance());
