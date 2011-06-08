@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_PPB_VAR_PROXY_H_
-#define PPAPI_PPB_VAR_PROXY_H_
+#ifndef PPAPI_PPB_VAR_DEPRECATED_PROXY_H_
+#define PPAPI_PPB_VAR_DEPRECATED_PROXY_H_
 
 #include <vector>
 
@@ -33,7 +33,7 @@ class PPB_Var_Deprecated_Proxy : public InterfaceProxy {
   static const Info* GetInfo();
 
   const PPB_Var_Deprecated* ppb_var_target() const {
-    return reinterpret_cast<const PPB_Var_Deprecated*>(target_interface());
+    return static_cast<const PPB_Var_Deprecated*>(target_interface());
   }
 
   // InterfaceProxy implementation.
@@ -101,4 +101,4 @@ class PPB_Var_Deprecated_Proxy : public InterfaceProxy {
 }  // namespace proxy
 }  // namespace pp
 
-#endif  // PPAPI_PPB_VAR_PROXY_H_
+#endif  // PPAPI_PPB_VAR_DEPRECATED_PROXY_H_

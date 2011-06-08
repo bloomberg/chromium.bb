@@ -34,6 +34,7 @@
 #include "ppapi/c/ppb_url_loader.h"
 #include "ppapi/c/ppb_url_request_info.h"
 #include "ppapi/c/ppb_url_response_info.h"
+#include "ppapi/c/ppb_var.h"
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/c/private/ppb_flash.h"
 #include "ppapi/c/private/ppb_flash_clipboard.h"
@@ -77,6 +78,7 @@
 #include "ppapi/proxy/ppb_url_response_info_proxy.h"
 #include "ppapi/proxy/ppb_url_util_proxy.h"
 #include "ppapi/proxy/ppb_var_deprecated_proxy.h"
+#include "ppapi/proxy/ppb_var_proxy.h"
 #include "ppapi/proxy/ppp_class_proxy.h"
 #include "ppapi/proxy/ppp_graphics_3d_proxy.h"
 #include "ppapi/proxy/ppp_instance_private_proxy.h"
@@ -144,6 +146,7 @@ InterfaceList::InterfaceList() {
   AddPPB(PPB_URLResponseInfo_Proxy::GetInfo());
   AddPPB(PPB_URLUtil_Proxy::GetInfo());
   AddPPB(PPB_Var_Deprecated_Proxy::GetInfo());
+  AddPPB(PPB_Var_Proxy::GetInfo());
 
 #ifdef ENABLE_FLAPPER_HACKS
   AddPPB(PPB_Flash_NetConnector_Proxy::GetInfo());

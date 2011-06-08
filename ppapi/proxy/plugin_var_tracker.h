@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 
+#include "base/memory/ref_counted.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_var.h"
 
@@ -51,10 +52,6 @@ class PluginVarTracker {
   VarID MakeString(const std::string& str);
   VarID MakeString(const char* str, uint32_t len);
 
-  // Returns the string associated with the given string var. The var must be
-  // of type string and must be valid or this function will crash.
-  std::string GetString(const PP_Var& plugin_var) const;
-
   // Returns a pointer to the given string if it exists, or NULL if the var
   // isn't a string var.
   const std::string* GetExistingString(const PP_Var& plugin_var) const;
@@ -92,6 +89,27 @@ class PluginVarTracker {
  private:
   friend struct DefaultSingletonTraits<PluginVarTracker>;
   friend class PluginProxyTest;
+
+  class RefCountedString : public base::RefCounted<RefCountedString> {
+   public:
+    RefCountedString() {
+    }
+    RefCountedString(const std::string& str) : value_(str) {
+    }
+    RefCountedString(const char* data, size_t len)
+        : value_(data, len) {
+    }
+
+    const std::string& value() const { return value_; }
+
+   private:
+    std::string value_;
+
+    // Ensure only base::RefCounted can delete a RefCountedString.
+    friend void base::RefCounted<RefCountedString>::Release() const;
+    virtual ~RefCountedString() {}
+  };
+  typedef scoped_refptr<RefCountedString> RefCountedStringPtr;
 
   // Represents a var as received from the host.
   struct HostVar {
@@ -160,9 +178,16 @@ class PluginVarTracker {
   typedef std::map<HostVar, VarID> HostVarToPluginVarMap;
   HostVarToPluginVarMap host_var_to_plugin_var_;
 
-  // The last plugin object ID we've handed out. This must be unique for the
+  // Maps plugin var IDs to ref counted strings.
+  typedef std::map<VarID, RefCountedStringPtr> VarIDStringMap;
+  VarIDStringMap var_id_to_string_;
+
+  // The last plugin PP_Var ID we've handed out. This must be unique for the
   // process.
-  VarID last_plugin_object_id_;
+  VarID last_plugin_var_id_;
+
+  // Get a new Var ID and increment last_plugin_var_id_.
+  VarID GetNewVarID();
 };
 
 }  // namespace proxy

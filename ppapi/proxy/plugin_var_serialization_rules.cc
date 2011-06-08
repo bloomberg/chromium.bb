@@ -24,10 +24,14 @@ PP_Var PluginVarSerializationRules::SendCallerOwned(const PP_Var& var,
   if (var.type == PP_VARTYPE_OBJECT)
     return var_tracker_->GetHostObject(var);
 
-  // Nothing to do since we manage the refcount, other than retrieve the string
-  // to use for IPC.
-  if (var.type == PP_VARTYPE_STRING)
-    *str_val = var_tracker_->GetString(var);
+  // Retrieve the string to use for IPC.
+  if (var.type == PP_VARTYPE_STRING) {
+    const std::string* var_string = var_tracker_->GetExistingString(var);
+    if (var_string)
+      *str_val = *var_string;
+    else
+      NOTREACHED() << "Trying to send unknown string over IPC.";
+  }
   return var;
 }
 
@@ -119,8 +123,13 @@ PP_Var PluginVarSerializationRules::BeginSendPassRef(const PP_Var& var,
   if (var.type == PP_VARTYPE_OBJECT)
     return var_tracker_->GetHostObject(var);
 
-  if (var.type == PP_VARTYPE_STRING)
-    *str_val = var_tracker_->GetString(var);
+  if (var.type == PP_VARTYPE_STRING) {
+    const std::string* var_string = var_tracker_->GetExistingString(var);
+    if (var_string)
+      *str_val = *var_string;
+    else
+      NOTREACHED() << "Trying to send unknown string over IPC.";
+  }
   return var;
 }
 

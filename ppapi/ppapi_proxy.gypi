@@ -122,6 +122,8 @@
         'proxy/ppb_url_util_proxy.h',
         'proxy/ppb_var_deprecated_proxy.cc',
         'proxy/ppb_var_deprecated_proxy.h',
+        'proxy/ppb_var_proxy.cc',
+        'proxy/ppb_var_proxy.h',
         'proxy/ppp_class_proxy.cc',
         'proxy/ppp_class_proxy.h',
         'proxy/ppp_graphics_3d_proxy.cc',

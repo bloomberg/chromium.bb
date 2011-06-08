@@ -58,10 +58,11 @@ TEST_F(PluginVarTrackerTest, Strings) {
   EXPECT_NE(0, str_id2);
 
   // Make sure the strings come out the other end.
-  std::string result = var_tracker().GetString(MakeString(str_id1));
-  EXPECT_EQ(str, result);
-  result = var_tracker().GetString(MakeString(str_id2));
-  EXPECT_EQ(str, result);
+  const std::string* result =
+      var_tracker().GetExistingString(MakeString(str_id1));
+  EXPECT_EQ(str, *result);
+  result = var_tracker().GetExistingString(MakeString(str_id2));
+  EXPECT_EQ(str, *result);
 }
 
 TEST_F(PluginVarTrackerTest, GetHostObject) {

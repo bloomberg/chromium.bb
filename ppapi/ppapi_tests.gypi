@@ -236,6 +236,8 @@
         'tests/test_url_util.h',
         'tests/test_utils.cc',
         'tests/test_utils.h',
+        'tests/test_var.cc',
+        'tests/test_var.h',
         'tests/test_video_decoder.cc',
         'tests/test_video_decoder.h',
 

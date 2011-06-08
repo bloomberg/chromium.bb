@@ -2,20 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ppapi/tests/test_var_deprecated.h"
+#include "ppapi/tests/test_var.h"
 
 #include <string.h>
 
 #include <limits>
 
 #include "base/basictypes.h"
-#include "ppapi/c/pp_var.h"
 #include "ppapi/c/dev/ppb_testing_dev.h"
-#include "ppapi/c/dev/ppb_var_deprecated.h"
-#include "ppapi/cpp/dev/scriptable_object_deprecated.h"
+#include "ppapi/c/pp_var.h"
+#include "ppapi/c/ppb_var.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
-#include "ppapi/cpp/private/var_private.h"
 #include "ppapi/cpp/var.h"
 #include "ppapi/tests/testing_instance.h"
 
@@ -23,57 +21,17 @@ namespace {
 
 uint32_t kInvalidLength = static_cast<uint32_t>(-1);
 
-static const char kSetValueFunction[] = "SetValue";
-
-// ScriptableObject used by the var tests.
-class VarScriptableObject : public pp::deprecated::ScriptableObject {
- public:
-  VarScriptableObject(TestVarDeprecated* v) : test_var_deprecated_(v) {}
-
-  // pp::deprecated::ScriptableObject overrides.
-  bool HasMethod(const pp::Var& name, pp::Var* exception);
-  pp::Var Call(const pp::Var& name,
-               const std::vector<pp::Var>& args,
-               pp::Var* exception);
-
- private:
-  TestVarDeprecated* test_var_deprecated_;
-};
-
-bool VarScriptableObject::HasMethod(const pp::Var& name, pp::Var* exception) {
-  if (!name.is_string())
-    return false;
-  return name.AsString() == kSetValueFunction;
-}
-
-pp::Var VarScriptableObject::Call(const pp::Var& method_name,
-                                  const std::vector<pp::Var>& args,
-                                  pp::Var* exception) {
-  if (!method_name.is_string())
-    return false;
-  std::string name = method_name.AsString();
-
-  if (name == kSetValueFunction) {
-    if (args.size() != 1)
-      *exception = pp::Var("Bad argument to SetValue(<value>)");
-    else
-      test_var_deprecated_->set_var_from_page(args[0]);
-  }
-
-  return pp::Var();
-}
-
 }  // namespace
 
-REGISTER_TEST_CASE(VarDeprecated);
+REGISTER_TEST_CASE(Var);
 
-bool TestVarDeprecated::Init() {
-  var_interface_ = static_cast<const PPB_Var_Deprecated*>(
-      pp::Module::Get()->GetBrowserInterface(PPB_VAR_DEPRECATED_INTERFACE));
+bool TestVar::Init() {
+  var_interface_ = reinterpret_cast<const PPB_Var*>(
+      pp::Module::Get()->GetBrowserInterface(PPB_VAR_INTERFACE));
   return var_interface_ && InitTestingInterface();
 }
 
-void TestVarDeprecated::RunTest() {
+void TestVar::RunTest() {
   RUN_TEST(BasicString);
   RUN_TEST(InvalidAndEmpty);
   RUN_TEST(InvalidUtf8);
@@ -81,15 +39,9 @@ void TestVarDeprecated::RunTest() {
   RUN_TEST(ValidUtf8);
   RUN_TEST(Utf8WithEmbeddedNulls);
   RUN_TEST(VarToUtf8ForWrongType);
-  RUN_TEST(HasPropertyAndMethod);
-  RUN_TEST(PassReference);
 }
 
-pp::deprecated::ScriptableObject* TestVarDeprecated::CreateTestObject() {
-  return new VarScriptableObject(this);
-}
-
-std::string TestVarDeprecated::TestBasicString() {
+std::string TestVar::TestBasicString() {
   uint32_t before_object = testing_interface_->GetLiveObjectsForInstance(
       instance_->pp_instance());
   {
@@ -119,7 +71,7 @@ std::string TestVarDeprecated::TestBasicString() {
   PASS();
 }
 
-std::string TestVarDeprecated::TestInvalidAndEmpty() {
+std::string TestVar::TestInvalidAndEmpty() {
   PP_Var invalid_string;
   invalid_string.type = PP_VARTYPE_STRING;
   invalid_string.value.as_id = 31415926;
@@ -147,7 +99,7 @@ std::string TestVarDeprecated::TestInvalidAndEmpty() {
   PASS();
 }
 
-std::string TestVarDeprecated::TestInvalidUtf8() {
+std::string TestVar::TestInvalidUtf8() {
   // utf8じゃない (japanese for "is not utf8") in shift-jis encoding.
   static const char kSjisString[] = "utf8\x82\xb6\x82\xe1\x82\xc8\x82\xa2";
   pp::Var sjis(kSjisString);
@@ -157,7 +109,7 @@ std::string TestVarDeprecated::TestInvalidUtf8() {
   PASS();
 }
 
-std::string TestVarDeprecated::TestNullInputInUtf8Conversion() {
+std::string TestVar::TestNullInputInUtf8Conversion() {
   // This test talks directly to the C interface to access edge cases that
   // cannot be exercised via the C++ interface.
   PP_Var converted_string;
@@ -191,7 +143,7 @@ std::string TestVarDeprecated::TestNullInputInUtf8Conversion() {
   PASS();
 }
 
-std::string TestVarDeprecated::TestValidUtf8() {
+std::string TestVar::TestValidUtf8() {
   // From UTF8 string -> PP_Var.
   // Chinese for "I am utf8."
   static const char kValidUtf8[] = "\xe6\x88\x91\xe6\x98\xafutf8.";
@@ -215,7 +167,7 @@ std::string TestVarDeprecated::TestValidUtf8() {
   PASS();
 }
 
-std::string TestVarDeprecated::TestUtf8WithEmbeddedNulls() {
+std::string TestVar::TestUtf8WithEmbeddedNulls() {
   // From UTF8 string with embedded nulls -> PP_Var.
   // Chinese for "also utf8."
   static const char kUtf8WithEmbededNull[] = "\xe6\xb9\x9f\xe6\x98\xaf\0utf8.";
@@ -239,7 +191,7 @@ std::string TestVarDeprecated::TestUtf8WithEmbeddedNulls() {
   PASS();
 }
 
-std::string TestVarDeprecated::TestVarToUtf8ForWrongType() {
+std::string TestVar::TestVarToUtf8ForWrongType() {
   uint32_t length = kInvalidLength;
   const char* result = NULL;
   result = var_interface_->VarToUtf8(PP_MakeUndefined(), &length);
@@ -293,107 +245,3 @@ std::string TestVarDeprecated::TestVarToUtf8ForWrongType() {
   PASS();
 }
 
-std::string TestVarDeprecated::TestHasPropertyAndMethod() {
-  uint32_t before_objects = testing_interface_->GetLiveObjectsForInstance(
-      instance_->pp_instance());
-  {
-    pp::Var window = instance_->GetWindowObject();
-    ASSERT_TRUE(window.is_object());
-
-    // Regular property.
-    pp::Var exception;
-    ASSERT_TRUE(window.HasProperty("scrollX", &exception));
-    ASSERT_TRUE(exception.is_undefined());
-    ASSERT_FALSE(window.HasMethod("scrollX", &exception));
-    ASSERT_TRUE(exception.is_undefined());
-
-    // Regular method (also counts as HasProperty).
-    ASSERT_TRUE(window.HasProperty("find", &exception));
-    ASSERT_TRUE(exception.is_undefined());
-    ASSERT_TRUE(window.HasMethod("find", &exception));
-    ASSERT_TRUE(exception.is_undefined());
-
-    // Nonexistant ones should return false and not set the exception.
-    ASSERT_FALSE(window.HasProperty("superEvilBit", &exception));
-    ASSERT_TRUE(exception.is_undefined());
-    ASSERT_FALSE(window.HasMethod("superEvilBit", &exception));
-    ASSERT_TRUE(exception.is_undefined());
-
-    // Check exception and return false on invalid property name.
-    ASSERT_FALSE(window.HasProperty(3.14159, &exception));
-    ASSERT_FALSE(exception.is_undefined());
-    exception = pp::Var();
-
-    exception = pp::Var();
-    ASSERT_FALSE(window.HasMethod(3.14159, &exception));
-    ASSERT_FALSE(exception.is_undefined());
-
-    // Try to use something not an object.
-    exception = pp::Var();
-    pp::Var string_object("asdf");
-    ASSERT_FALSE(string_object.HasProperty("find", &exception));
-    ASSERT_FALSE(exception.is_undefined());
-    exception = pp::Var();
-    ASSERT_FALSE(string_object.HasMethod("find", &exception));
-    ASSERT_FALSE(exception.is_undefined());
-
-    // Try to use an invalid object (need to use the C API).
-    PP_Var invalid_object;
-    invalid_object.type = PP_VARTYPE_OBJECT;
-    invalid_object.value.as_id = static_cast<int64_t>(-1234567);
-    PP_Var exception2 = PP_MakeUndefined();
-    ASSERT_FALSE(var_interface_->HasProperty(invalid_object,
-                                             pp::Var("find").pp_var(),
-                                             &exception2));
-    ASSERT_NE(PP_VARTYPE_UNDEFINED, exception2.type);
-    var_interface_->Release(exception2);
-
-    exception2 = PP_MakeUndefined();
-    ASSERT_FALSE(var_interface_->HasMethod(invalid_object,
-                                           pp::Var("find").pp_var(),
-                                           &exception2));
-    ASSERT_NE(PP_VARTYPE_UNDEFINED, exception2.type);
-    var_interface_->Release(exception2);
-
-    // Get a valid property/method when the exception is set returns false.
-    exception = pp::Var("Bad something-or-other exception");
-    ASSERT_FALSE(window.HasProperty("find", &exception));
-    ASSERT_FALSE(exception.is_undefined());
-    ASSERT_FALSE(window.HasMethod("find", &exception));
-    ASSERT_FALSE(exception.is_undefined());
-  }
-
-  // Make sure nothing leaked.
-  ASSERT_TRUE(testing_interface_->GetLiveObjectsForInstance(
-      instance_->pp_instance()) == before_objects);
-
-  PASS();
-}
-
-// Tests that when the page sends an object to the plugin via a function call,
-// that the refcounting works properly (bug 79813).
-std::string TestVarDeprecated::TestPassReference() {
-  var_from_page_ = pp::Var();
-
-  // Send a JS object from the page to the plugin.
-  pp::Var exception;
-  pp::Var ret = instance_->ExecuteScript(
-      "document.getElementById('plugin').SetValue(function(arg) {"
-          "return 'works' + arg;"
-      "})",
-      &exception);
-  ASSERT_TRUE(exception.is_undefined());
-
-  // We should have gotten an object set for our var_from_page.
-  ASSERT_TRUE(var_from_page_.is_object());
-
-  // If the reference counting works, the object should be valid. We can test
-  // this by executing it (it was a function we defined above) and it should
-  // return "works" concatenated with the argument.
-  pp::VarPrivate function(var_from_page_);
-  pp::Var result = var_from_page_.Call(pp::Var(), "nice");
-  ASSERT_TRUE(result.is_string());
-  ASSERT_TRUE(result.AsString() == "worksnice");
-
-  PASS();
-}

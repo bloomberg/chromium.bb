@@ -166,6 +166,10 @@ TEST_F(PPAPITest, CharSet) {
   RunTest("CharSet");
 }
 
+TEST_F(PPAPITest, Var) {
+  RunTest("Var");
+}
+
 TEST_F(PPAPITest, VarDeprecated) {
   RunTest("VarDeprecated");
 }

@@ -19,28 +19,6 @@ namespace {
 // When non-NULL, this object overrides the VarTrackerSingleton.
 PluginVarTracker* var_tracker_override = NULL;
 
-class RefCountedString : public base::RefCounted<RefCountedString> {
- public:
-  RefCountedString() {
-  }
-  RefCountedString(const std::string& str) : value_(str) {
-  }
-  RefCountedString(const char* data, size_t len)
-      : value_(data, len) {
-  }
-
-  const std::string& value() const { return value_; }
-
- private:
-  std::string value_;
-};
-
-// When running in the plugin, this will convert the string ID to the object
-// using casting. No validity checking is done.
-RefCountedString* PluginStringFromID(PluginVarTracker::VarID id) {
-  return reinterpret_cast<RefCountedString*>(static_cast<intptr_t>(id));
-}
-
 }  // namespace
 
 PluginVarTracker::HostVar::HostVar(PluginDispatcher* d, VarID i)
@@ -62,7 +40,7 @@ PluginVarTracker::PluginVarInfo::PluginVarInfo(const HostVar& host_var)
       track_with_no_reference_count(0) {
 }
 
-PluginVarTracker::PluginVarTracker() : last_plugin_object_id_(0) {
+PluginVarTracker::PluginVarTracker() : last_plugin_var_id_(0) {
 }
 
 PluginVarTracker::~PluginVarTracker() {
@@ -81,33 +59,45 @@ PluginVarTracker* PluginVarTracker::GetInstance() {
 }
 
 PluginVarTracker::VarID PluginVarTracker::MakeString(const std::string& str) {
-  RefCountedString* out = new RefCountedString(str);
-  out->AddRef();
-  return static_cast<VarID>(reinterpret_cast<intptr_t>(out));
+  return MakeString(str.c_str(), str.length());
 }
 
 PluginVarTracker::VarID PluginVarTracker::MakeString(const char* str,
                                                      uint32_t len) {
-  RefCountedString* out = new RefCountedString(str, len);
-  out->AddRef();
-  return static_cast<VarID>(reinterpret_cast<intptr_t>(out));
-}
-
-std::string PluginVarTracker::GetString(const PP_Var& var) const {
-  return PluginStringFromID(var.value.as_id)->value();
+  std::pair<VarIDStringMap::iterator, bool>
+      iter_success_pair(var_id_to_string_.end(), false);
+  VarID new_id(0);
+  RefCountedStringPtr str_ptr(new RefCountedString(str, len));
+  // Pick new IDs until one is successfully inserted. This loop is very unlikely
+  // to ever run a 2nd time, since we have ~2^63 possible IDs to exhaust.
+  while (!iter_success_pair.second) {
+    new_id = GetNewVarID();
+    iter_success_pair =
+        var_id_to_string_.insert(VarIDStringMap::value_type(new_id, str_ptr));
+  }
+  iter_success_pair.first->second->AddRef();
+  return new_id;
 }
 
 const std::string* PluginVarTracker::GetExistingString(
     const PP_Var& var) const {
   if (var.type != PP_VARTYPE_STRING)
     return NULL;
-  RefCountedString* str = PluginStringFromID(var.value.as_id);
-  return &str->value();
+  VarIDStringMap::const_iterator found =
+      var_id_to_string_.find(var.value.as_id);
+  if (found != var_id_to_string_.end())
+    return &found->second->value();
+  return NULL;
 }
 
 void PluginVarTracker::AddRef(const PP_Var& var) {
   if (var.type == PP_VARTYPE_STRING) {
-    PluginStringFromID(var.value.as_id)->AddRef();
+    VarIDStringMap::iterator found = var_id_to_string_.find(var.value.as_id);
+    if (found == var_id_to_string_.end()) {
+      NOTREACHED() << "Requesting to addref an unknown string.";
+      return;
+    }
+    found->second->AddRef();
   } else if (var.type == PP_VARTYPE_OBJECT && var.value.as_id != 0) {
     PluginVarInfoMap::iterator found = plugin_var_info_.find(var.value.as_id);
     if (found == plugin_var_info_.end()) {
@@ -131,7 +121,16 @@ void PluginVarTracker::AddRef(const PP_Var& var) {
 
 void PluginVarTracker::Release(const PP_Var& var) {
   if (var.type == PP_VARTYPE_STRING) {
-    PluginStringFromID(var.value.as_id)->Release();
+    VarIDStringMap::iterator found = var_id_to_string_.find(var.value.as_id);
+    if (found == var_id_to_string_.end()) {
+      NOTREACHED() << "Requesting to release an unknown string.";
+      return;
+    }
+    found->second->Release();
+    // If there is only 1 reference left, it's the map's reference. Erase it
+    // from the map, which will delete the string.
+    if (found->second->HasOneRef())
+      var_id_to_string_.erase(found);
   } else if (var.type == PP_VARTYPE_OBJECT) {
     PluginVarInfoMap::iterator found = plugin_var_info_.find(var.value.as_id);
     if (found == plugin_var_info_.end()) {
@@ -308,7 +307,7 @@ PluginVarTracker::FindOrMakePluginVarFromHostVar(const PP_Var& var,
   }
 
   // Make a new var, adding references to both maps.
-  VarID new_plugin_var_id = ++last_plugin_object_id_;
+  VarID new_plugin_var_id = GetNewVarID();
   host_var_to_plugin_var_[host_var] = new_plugin_var_id;
   return plugin_var_info_.insert(
       std::make_pair(new_plugin_var_id, PluginVarInfo(host_var))).first;
@@ -325,6 +324,12 @@ void PluginVarTracker::DeletePluginVarInfoIfNecessary(
          host_var_to_plugin_var_.end());
   host_var_to_plugin_var_.erase(iter->second.host_var);
   plugin_var_info_.erase(iter);
+}
+
+PluginVarTracker::VarID PluginVarTracker::GetNewVarID() {
+  if (last_plugin_var_id_ == std::numeric_limits<VarID>::max())
+    last_plugin_var_id_ = 0;
+  return ++last_plugin_var_id_;
 }
 
 }  // namesace proxy
