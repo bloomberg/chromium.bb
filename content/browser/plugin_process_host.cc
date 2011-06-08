@@ -48,6 +48,21 @@
 #if defined(OS_WIN)
 #include "webkit/plugins/npapi/webplugin_delegate_impl.h"
 
+namespace {
+
+void ReparentPluginWindowHelper(HWND window, HWND parent) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  int window_style = WS_CHILD;
+  if (!webkit::npapi::WebPluginDelegateImpl::IsDummyActivationWindow(window))
+    window_style |= WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
+
+  ::SetWindowLongPtr(window, GWL_STYLE, window_style);
+  ::SetParent(window, parent);
+}
+
+}  // namespace
+
 void PluginProcessHost::OnPluginWindowDestroyed(HWND window, HWND parent) {
   // The window is destroyed at this point, we just care about its parent, which
   // is the intermediate window we created.
@@ -71,13 +86,9 @@ void PluginProcessHost::OnReparentPluginWindow(HWND window, HWND parent) {
   if (process_id != ::GetCurrentProcessId())
     return;
 
-  if (webkit::npapi::WebPluginDelegateImpl::IsDummyActivationWindow(window)) {
-    ::SetWindowLongPtr(window, GWL_STYLE, WS_CHILD);
-  } else {
-    ::SetWindowLongPtr(window, GWL_STYLE, WS_CHILD | WS_CLIPCHILDREN |
-                       WS_CLIPSIBLINGS);
-  }
-  ::SetParent(window, parent);
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      NewRunnableFunction(ReparentPluginWindowHelper, window, parent));
 }
 #endif  // defined(OS_WIN)
 
