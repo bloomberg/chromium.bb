@@ -58,10 +58,6 @@ cr.define('options', function() {
         self.sendCredentialsAndClose_();
         return false;
       };
-      $('choose-data-types-form').onsubmit = function() {
-        self.sendConfiguration_();
-        return false;
-      };
       $('google-option').onchange = $('explicit-option').onchange = function() {
         self.onPassphraseRadioChanged_();
       };
@@ -374,6 +370,13 @@ cr.define('options', function() {
 
       this.resetPage_('sync-setup-configure');
       $('sync-setup-configure').hidden = false;
+
+      // onsubmit is changed when submitting a passphrase. Reset it to its
+      // default.
+      $('choose-data-types-form').onsubmit = function() {
+        self.sendConfiguration_();
+        return false;
+      };
 
       if (args) {
         if (!args['encryptionEnabled'])
