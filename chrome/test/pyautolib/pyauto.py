@@ -171,10 +171,40 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
   def tearDown(self):
     self.TearDown()  # Destroy browser
 
-  @staticmethod
-  def CloseChromeOnChromeOS():
+  def CloseChromeOnChromeOS(self):
     """Gracefully exit chrome on ChromeOS."""
+
+    def _GetListOfChromePids():
+      """Retrieves the list of currently-running Chrome process IDs.
+
+      Returns:
+        A list of strings, where each string represents a currently-running
+        'chrome' process ID.
+      """
+      proc = subprocess.Popen(['pgrep', 'chrome'], stdout=subprocess.PIPE)
+      proc.wait()
+      return [x.strip() for x in proc.stdout.readlines()]
+
+    orig_pids = _GetListOfChromePids()
     subprocess.call(['pkill', 'chrome'])
+
+    def _AreOrigPidsDead(orig_pids):
+      """Determines whether all originally-running 'chrome' processes are dead.
+
+      Args:
+        orig_pids: A list of strings, where each string represents the PID for
+                   an originally-running 'chrome' process.
+
+      Returns:
+        True, if all originally-running 'chrome' processes have been killed, or
+        False otherwise.
+      """
+      for new_pid in _GetListOfChromePids():
+        if new_pid in orig_pids:
+          return False
+      return True
+
+    self.WaitUntil(lambda: _AreOrigPidsDead(orig_pids))
 
   def EnableChromeTestingOnChromeOS(self):
     """Enables the named automation interface on chromeos.
