@@ -150,6 +150,18 @@ class BrowserTest(pyauto.PyUITest):
     self.assertEquals(popup_pid, parent_pid,
                       msg='Parent and popup are not sharing a process.')
 
+   def testPopupSharesSameProcessInIncognito(self):
+    """Verify parent incognito and popup share same process id"""
+    self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
+    file_url = self.GetFileURLForDataPath('popup_blocker',
+                                          'popup-window-open.html')
+    self.NavigateToURL(file_url, 1, 0)
+    self.UnblockAndLaunchBlockedPopup(0, tab_index=0, windex=1)
+    self.assertEquals(
+          self.GetBrowserInfo()['windows'][1]['tabs'][0]['renderer_pid'],
+          self.GetBrowserInfo()['windows'][2]['tabs'][0]['renderer_pid'],
+          msg='Incognito window and popup are not sharing a process id.')
+
   def testKillAndReloadSharedProcess(self):
     """Verify that killing a shared process kills all associated renderers.
     In this case we are killing a process shared by a parent and
@@ -184,7 +196,6 @@ class BrowserTest(pyauto.PyUITest):
     # The shared process id should be different from the previous one.
     self.assertNotEqual(shared_pid,
         self.GetBrowserInfo()['windows'][0]['tabs'][0]['renderer_pid'])
-
 
 if __name__ == '__main__':
   pyauto_functional.Main()
