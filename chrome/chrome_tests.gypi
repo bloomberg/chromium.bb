@@ -2484,6 +2484,7 @@
         'browser/ui/webui/web_ui_browsertest.h',
         'browser/ui/webui/web_ui_test_handler.cc',
         'browser/ui/webui/web_ui_test_handler.h',
+        'common/time_format_browsertest.cc',
         'renderer/autofill/autofill_browsertest.cc',
         'renderer/autofill/form_autocomplete_browsertest.cc',
         'renderer/autofill/form_manager_browsertest.cc',
