@@ -156,10 +156,11 @@ bool PrintBackendCUPS::EnumeratePrinters(PrinterList* printer_list) {
 }
 
 std::string PrintBackendCUPS::GetDefaultPrinterName() {
-  // TODO(thestig) Figure out why cupsGetDefault() lies about the default
-  // printer. :-(
-  // Return an empty string for now.
-  return std::string();
+  // Not using cupsGetDefault() because it lies about the default printer.
+  cups_dest_t* dests;
+  int num_dests = GetDests(&dests);
+  cups_dest_t* dest = cupsGetDest(NULL, NULL, num_dests, dests);
+  return dest ? std::string(dest->name) : std::string();
 }
 
 bool PrintBackendCUPS::GetPrinterCapsAndDefaults(

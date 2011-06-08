@@ -30,6 +30,9 @@ const MANAGE_PRINTERS = 'Manage Printers';
 // State of the print preview settings.
 var printSettings = new PrintSettings();
 
+// The name of the default or last used printer.
+var defaultOrLastUsedPrinterName = '';
+
 /**
  * Window onload handler, sets up the page and starts print preview by getting
  * the printer list.
@@ -355,7 +358,8 @@ function setDefaultPrinter(printer) {
   // Add a placeholder value so the printer list looks valid.
   addDestinationListOption('', '', true, true);
   if (printer) {
-    $('printer-list')[0].value = printer;
+    defaultOrLastUsedPrinterName = printer;
+    $('printer-list')[0].value = defaultOrLastUsedPrinterName;
     updateControlsWithSelectedPrinterCapabilities();
   }
   chrome.send('getPrinters');
@@ -365,23 +369,16 @@ function setDefaultPrinter(printer) {
  * Fill the printer list drop down.
  * Called from PrintPreviewHandler::SendPrinterList().
  * @param {Array} printers Array of printer info objects.
- * @param {number} defaultPrinterIndex The index of the default printer.
  */
-function setPrinters(printers, defaultPrinterIndex) {
+function setPrinters(printers) {
   var printerList = $('printer-list');
   // If there exists a dummy printer value, then setDefaultPrinter() already
   // requested a preview, so no need to do it again.
   var needPreview = (printerList[0].value == '');
   for (var i = 0; i < printers.length; ++i) {
-    // Check if we are looking at the default printer.
-    if (i == defaultPrinterIndex) {
-      // If the default printer from setDefaultPrinter() does not match the
-      // enumerated value, (re)generate the print preview.
-      if (printers[i].deviceName != printerList[0].value)
-        needPreview = true;
-    }
+    var isDefault = (printers[i].deviceName == defaultOrLastUsedPrinterName);
     addDestinationListOption(printers[i].printerName, printers[i].deviceName,
-                             i == defaultPrinterIndex, false);
+                             isDefault, false);
   }
 
   // Remove the dummy printer added in setDefaultPrinter().
@@ -392,7 +389,9 @@ function setPrinters(printers, defaultPrinterIndex) {
 
   // Adding option for saving PDF to disk.
   addDestinationListOption(localStrings.getString('printToPDF'),
-                           PRINT_TO_PDF, false, false);
+                           PRINT_TO_PDF,
+                           defaultOrLastUsedPrinterName == PRINT_TO_PDF,
+                           false);
   addDestinationListOption('', '', false, true);
 
   // Add an option to manage printers.

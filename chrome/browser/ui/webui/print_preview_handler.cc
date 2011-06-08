@@ -168,9 +168,18 @@ class PrintSystemTaskProxy
 
   void GetDefaultPrinter() {
     VLOG(1) << "Get default printer start";
-    StringValue* default_printer =
-        new StringValue(print_backend_->GetDefaultPrinterName());
-    VLOG(1) << "Get default printer finished, found: " << default_printer;
+    StringValue* default_printer = NULL;
+    if (PrintPreviewHandler::last_used_printer_ == NULL) {
+      default_printer = new StringValue(
+          print_backend_->GetDefaultPrinterName());
+    } else {
+      default_printer = new StringValue(
+          *PrintPreviewHandler::last_used_printer_);
+    }
+    std::string default_printer_string;
+    default_printer->GetAsString(&default_printer_string);
+    VLOG(1) << "Get default printer finished, found: "
+            << default_printer_string;
 
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
@@ -188,7 +197,6 @@ class PrintSystemTaskProxy
   void EnumeratePrinters() {
     VLOG(1) << "Enumerate printers start";
     ListValue* printers = new ListValue;
-    int default_printer_index = -1;
 
     printing::PrinterList printer_list;
     print_backend_->EnumeratePrinters(&printer_list);
@@ -214,8 +222,6 @@ class PrintSystemTaskProxy
       printer_info->SetString(printing::kSettingPrinterName, printerName);
       printer_info->SetString(printing::kSettingDeviceName, iter->printer_name);
       printers->Append(printer_info);
-      if (iter->is_default)
-        default_printer_index = i;
     }
     VLOG(1) << "Enumerate printers finished, found " << i << " printers";
 
@@ -223,16 +229,13 @@ class PrintSystemTaskProxy
         BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(this,
                           &PrintSystemTaskProxy::SendPrinterList,
-                          printers,
-                          new FundamentalValue(default_printer_index)));
+                          printers));
   }
 
-  void SendPrinterList(ListValue* printers,
-                       FundamentalValue* default_printer_index) {
+  void SendPrinterList(ListValue* printers) {
     if (handler_)
-      handler_->SendPrinterList(*printers, *default_printer_index);
+      handler_->SendPrinterList(*printers);
     delete printers;
-    delete default_printer_index;
   }
 
   void GetPrinterCapabilities(const std::string& printer_name) {
@@ -338,6 +341,7 @@ class PrintToPdfTask : public Task {
 
 // static
 FilePath* PrintPreviewHandler::last_saved_path_ = NULL;
+std::string* PrintPreviewHandler::last_used_printer_ = NULL;
 
 PrintPreviewHandler::PrintPreviewHandler()
     : print_backend_(printing::PrintBackend::CreateInstance(NULL)),
@@ -439,6 +443,12 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
   scoped_ptr<DictionaryValue> settings(GetSettingsDictionary(args));
   if (!settings.get())
     return;
+
+  // Initializing last_used_printer_ if it is not already initialized.
+  if (!last_used_printer_)
+    last_used_printer_ = new std::string();
+  // Storing last used printer.
+  settings->GetString("deviceName", last_used_printer_);
 
   bool print_to_pdf = false;
   settings->GetBoolean(printing::kSettingPrintToPDF, &print_to_pdf);
@@ -559,11 +569,8 @@ void PrintPreviewHandler::SendDefaultPrinter(
   web_ui_->CallJavascriptFunction("setDefaultPrinter", default_printer);
 }
 
-void PrintPreviewHandler::SendPrinterList(
-    const ListValue& printers,
-    const FundamentalValue& default_printer_index) {
-  web_ui_->CallJavascriptFunction("setPrinters", printers,
-                                  default_printer_index);
+void PrintPreviewHandler::SendPrinterList(const ListValue& printers) {
+  web_ui_->CallJavascriptFunction("setPrinters", printers);
 }
 
 TabContents* PrintPreviewHandler::GetInitiatorTab() {

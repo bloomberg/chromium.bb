@@ -80,8 +80,7 @@ class PrintPreviewHandler : public WebUIMessageHandler,
   void SendDefaultPrinter(const StringValue& default_printer);
 
   // Send the list of printers to the Web UI.
-  void SendPrinterList(const ListValue& printers,
-                       const FundamentalValue& default_printer_index);
+  void SendPrinterList(const ListValue& printers);
 
   // Helper function to get the initiator tab for the print preview tab.
   TabContents* GetInitiatorTab();
@@ -102,6 +101,7 @@ class PrintPreviewHandler : public WebUIMessageHandler,
   scoped_refptr<SelectFileDialog> select_file_dialog_;
 
   static FilePath* last_saved_path_;
+  static std::string* last_used_printer_;
 
   // A count of how many requests received to regenerate preview data.
   // Initialized to 0 then incremented and emitted to a histogram.
