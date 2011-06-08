@@ -949,10 +949,12 @@ void BrowserView::SaveFocusedView() {
 }
 
 void BrowserView::DestroyBrowser() {
-  // Explicitly delete the BookmarkBarView now. That way we don't have to
-  // worry about the BookmarkBarView potentially outliving the Browser &
-  // Profile.
+  // Explicitly delete the BookmarkBarView, DownloadShelfView and child views
+  // owned by BrowserView before destroying |browser_|. That way we don't have
+  // to worry about them potentially outliving the Browser & Profile.
   bookmark_bar_view_.reset();
+  download_shelf_.reset();
+  RemoveAllChildViews(true);
   browser_.reset();
 }
 
