@@ -184,3 +184,9 @@ chrome.extension = {
     return document.location.href;
   }
 };
+
+chrome.test = {
+  sendMessage: function(msg) {
+    console.log('chrome.test.sendMessage: ' + msg);
+  }
+};

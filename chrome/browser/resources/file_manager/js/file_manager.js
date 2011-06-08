@@ -1725,6 +1725,9 @@ FileManager.prototype = {
       reader.readEntries(onReadSome);
     };
 
+    // Updated when a user clicks on the label of a file, used to detect
+    // when a click is eligible to trigger a rename.  Can be null, or
+    // an object with 'path' and 'date' properties.
     this.lastLabelClick_ = null;
 
     // Clear the table first.
@@ -1825,20 +1828,20 @@ FileManager.prototype = {
     }
 
     var now = new Date();
+    var path = event.srcElement.entry.fullPath;
 
-    this.lastLabelClick_ = this.lastLabelClick_ || now;
-    var delay = now - this.lastLabelClick_;
-    if (!row.selected || delay < 500)
-      return false;
+    if (this.lastLabelClick_ && this.lastLabelClick_.path == path) {
+      var delay = now - this.lastLabelClick_.date;
+      if (delay > 500 && delay < 2000)
+        return true;
+    }
 
-    this.lastLabelClick_ = now;
-    return true;
+    this.lastLabelClick_ = {path: path, date: now};
+    return false;
   };
 
   FileManager.prototype.initiateRename_= function(label) {
     var input = this.renameInput_;
-
-    window.label = label;
 
     input.value = label.textContent;
     input.style.top = label.offsetTop + 'px';
