@@ -17,7 +17,7 @@ namespace chromeos {
 ViewsUpdateScreenActor::ViewsUpdateScreenActor(ViewScreenDelegate* delegate)
     : DefaultViewScreen<chromeos::UpdateView>(delegate,
                                               kUpdateScreenWidth,
-                                              kUpdateScreenWidth) {
+                                              kUpdateScreenHeight) {
 }
 
 void ViewsUpdateScreenActor::PrepareToShow() {
@@ -42,6 +42,10 @@ void ViewsUpdateScreenActor::SetProgress(int progress) {
 
 void ViewsUpdateScreenActor::ShowCurtain(bool enable) {
   view()->ShowCurtain(enable);
+}
+
+void ViewsUpdateScreenActor::ShowPreparingUpdatesInfo(bool visible) {
+  view()->ShowPreparingUpdatesInfo(visible);
 }
 
 }  // namespace chromeos

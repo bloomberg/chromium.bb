@@ -32,6 +32,7 @@ class MockUpdateScreenActor : public UpdateScreenActor {
   MOCK_METHOD0(ShowManualRebootInfo, void());
   MOCK_METHOD1(SetProgress, void(int progress));
   MOCK_METHOD1(ShowCurtain, void(bool enable));
+  MOCK_METHOD1(ShowPreparingUpdatesInfo, void(bool enable));
 };
 
 }  // namespace chromeos

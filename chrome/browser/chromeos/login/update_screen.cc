@@ -40,10 +40,13 @@ const char kUpdateDeadlineFile[] = "/tmp/update-check-response-deadline";
 void StartUpdateCallback(void* user_data,
                          UpdateResult result,
                          const char* msg) {
-  if (result != chromeos::UPDATE_RESULT_SUCCESS) {
-    DCHECK(user_data);
-    UpdateScreen* screen = static_cast<UpdateScreen*>(user_data);
-    if (UpdateScreen::HasInstance(screen))
+  VLOG(1) << "Callback from RequestUpdateCheck, result " << result;
+  DCHECK(user_data);
+  UpdateScreen* screen = static_cast<UpdateScreen*>(user_data);
+  if (UpdateScreen::HasInstance(screen)) {
+    if (result == chromeos::UPDATE_RESULT_SUCCESS)
+      screen->SetIgnoreIdleStatus(false);
+    else
       screen->ExitUpdate(UpdateScreen::REASON_UPDATE_INIT_FAILED);
   }
 }
@@ -64,7 +67,6 @@ bool UpdateScreen::HasInstance(UpdateScreen* inst) {
   return (found != instance_set.end());
 }
 
-
 UpdateScreen::UpdateScreen(ScreenObserver* screen_observer,
                            UpdateScreenActor* actor)
     : WizardScreen(screen_observer),
@@ -73,6 +75,7 @@ UpdateScreen::UpdateScreen(ScreenObserver* screen_observer,
       is_downloading_update_(false),
       is_ignore_update_deadlines_(false),
       is_shown_(false),
+      ignore_idle_status_(true),
       actor_(actor) {
   GetInstanceSet().insert(this);
 }
@@ -86,6 +89,9 @@ void UpdateScreen::UpdateStatusChanged(UpdateLibrary* library) {
   UpdateStatusOperation status = library->status().status;
   if (is_checking_for_update_ && status > UPDATE_STATUS_CHECKING_FOR_UPDATE) {
     is_checking_for_update_ = false;
+  }
+  if (ignore_idle_status_ && status > UPDATE_STATUS_IDLE) {
+    ignore_idle_status_ = false;
   }
 
   switch (status) {
@@ -103,6 +109,8 @@ void UpdateScreen::UpdateStatusChanged(UpdateLibrary* library) {
       } else {
         LOG(INFO) << "Critical update available: "
                   << library->status().new_version;
+        actor_->ShowPreparingUpdatesInfo(true);
+        actor_->ShowCurtain(false);
       }
       break;
     case UPDATE_STATUS_DOWNLOADING:
@@ -119,9 +127,10 @@ void UpdateScreen::UpdateStatusChanged(UpdateLibrary* library) {
           } else {
             LOG(INFO) << "Critical update available: "
                       << library->status().new_version;
+            actor_->ShowPreparingUpdatesInfo(false);
+            actor_->ShowCurtain(false);
           }
         }
-        actor_->ShowCurtain(false);
         int download_progress = static_cast<int>(
             library->status().download_progress * kDownloadProgressIncrement);
         actor_->SetProgress(kBeforeDownloadProgress + download_progress);
@@ -152,6 +161,12 @@ void UpdateScreen::UpdateStatusChanged(UpdateLibrary* library) {
       }
       break;
     case UPDATE_STATUS_IDLE:
+      if (ignore_idle_status_) {
+        // It is first IDLE status that is sent before we initiated the check.
+        break;
+      }
+      // else no break
+
     case UPDATE_STATUS_ERROR:
     case UPDATE_STATUS_REPORTING_ERROR_EVENT:
       ExitUpdate(REASON_UPDATE_ENDED);
@@ -253,6 +268,10 @@ void UpdateScreen::SetRebootCheckDelay(int seconds) {
     reboot_timer_.Stop();
   DCHECK(!reboot_timer_.IsRunning());
   reboot_check_delay_ = seconds;
+}
+
+void UpdateScreen::SetIgnoreIdleStatus(bool ignore_idle_status) {
+  ignore_idle_status_ = ignore_idle_status;
 }
 
 bool UpdateScreen::HasCriticalUpdate() {

@@ -31,6 +31,9 @@ class UpdateScreenActor {
 
   // Shows screen curtains.
   virtual void ShowCurtain(bool enable) = 0;
+
+  // Shows label for "Preparing updates" state.
+  virtual void ShowPreparingUpdatesInfo(bool visible) = 0;
 };
 
 }  // namespace chromeos

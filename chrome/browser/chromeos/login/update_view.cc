@@ -58,11 +58,13 @@ namespace chromeos {
 
 UpdateView::UpdateView(chromeos::ScreenObserver* observer)
     : installing_updates_label_(NULL),
+      preparing_updates_label_(NULL),
       reboot_label_(NULL),
       manual_reboot_label_(NULL),
       progress_bar_(NULL),
       show_curtain_(true),
       show_manual_reboot_label_(false),
+      show_preparing_updates_label_(false),
       observer_(observer) {
 }
 
@@ -76,8 +78,10 @@ void UpdateView::Init() {
   set_background(views::Background::CreateBackgroundPainter(true, painter));
 
   InitLabel(&installing_updates_label_);
+  InitLabel(&preparing_updates_label_);
   InitLabel(&reboot_label_);
   InitLabel(&manual_reboot_label_);
+  preparing_updates_label_->SetVisible(false);
   manual_reboot_label_->SetVisible(false);
   manual_reboot_label_->SetColor(kManualRebootLabelColor);
 
@@ -108,6 +112,8 @@ void UpdateView::UpdateLocalizedStrings() {
   installing_updates_label_->SetText(UTF16ToWide(l10n_util::GetStringFUTF16(
       IDS_INSTALLING_UPDATE,
       l10n_util::GetStringUTF16(IDS_PRODUCT_OS_NAME))));
+  preparing_updates_label_->SetText(
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_UPDATE_AVAILABLE)));
   reboot_label_->SetText(
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_INSTALLING_UPDATE_DESC)));
   manual_reboot_label_->SetText(
@@ -126,6 +132,11 @@ void UpdateView::SetProgress(int progress) {
 
 void UpdateView::ShowManualRebootInfo() {
   show_manual_reboot_label_ = true;
+  UpdateVisibility();
+}
+
+void UpdateView::ShowPreparingUpdatesInfo(bool visible) {
+  show_preparing_updates_label_ = visible;
   UpdateVisibility();
 }
 
@@ -155,6 +166,7 @@ void UpdateView::Layout() {
   int vertical_center = GetInsets().top() + max_height / 2;
 
   installing_updates_label_->SizeToFit(max_width);
+  preparing_updates_label_->SizeToFit(max_width);
   reboot_label_->SizeToFit(max_width);
   manual_reboot_label_->SizeToFit(max_width);
 
@@ -168,6 +180,8 @@ void UpdateView::Layout() {
       progress_bar_->y() -
       kInstallingUpdatesLabelYBottomFromProgressBar -
       installing_updates_label_->height());
+  preparing_updates_label_->SetX(installing_updates_label_->x());
+  preparing_updates_label_->SetY(installing_updates_label_->y());
   reboot_label_->SetX(right_margin);
   reboot_label_->SetY(
       progress_bar_->y() +
@@ -209,8 +223,12 @@ void UpdateView::InitLabel(views::Label** label) {
 }
 
 void UpdateView::UpdateVisibility() {
-  installing_updates_label_->SetVisible(
-      !show_curtain_&& !show_manual_reboot_label_);
+  installing_updates_label_->SetVisible(!show_curtain_ &&
+                                        !show_manual_reboot_label_ &&
+                                        !show_preparing_updates_label_);
+  preparing_updates_label_->SetVisible(!show_curtain_ &&
+                                       !show_manual_reboot_label_ &&
+                                       show_preparing_updates_label_);
   reboot_label_->SetVisible(!show_curtain_&& !show_manual_reboot_label_);
   manual_reboot_label_->SetVisible(!show_curtain_ && show_manual_reboot_label_);
   progress_bar_->SetVisible(!show_curtain_);

@@ -24,6 +24,7 @@ class ViewsUpdateScreenActor : public DefaultViewScreen<UpdateView>,
   virtual void ShowManualRebootInfo();
   virtual void SetProgress(int progress);
   virtual void ShowCurtain(bool enable);
+  virtual void ShowPreparingUpdatesInfo(bool visible);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ViewsUpdateScreenActor);

@@ -101,7 +101,18 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestBasic) {
 }
 
 IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestNoUpdate) {
+  update_screen_->SetIgnoreIdleStatus(true);
   UpdateLibrary::Status status;
+  status.status = UPDATE_STATUS_IDLE;
+  EXPECT_CALL(*mock_update_library_, status())
+      .Times(1)
+      .WillRepeatedly(ReturnRef(status));
+  update_screen_->UpdateStatusChanged(mock_update_library_);
+  status.status = UPDATE_STATUS_CHECKING_FOR_UPDATE;
+  EXPECT_CALL(*mock_update_library_, status())
+      .Times(1)
+      .WillRepeatedly(ReturnRef(status));
+  update_screen_->UpdateStatusChanged(mock_update_library_);
   status.status = UPDATE_STATUS_IDLE;
   EXPECT_CALL(*mock_update_library_, status())
       .Times(AtLeast(1))

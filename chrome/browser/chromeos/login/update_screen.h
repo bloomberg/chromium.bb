@@ -47,6 +47,8 @@ class UpdateScreen: public UpdateLibrary::Observer,
   // Returns true if this instance is still active (i.e. has not been deleted).
   static bool HasInstance(UpdateScreen* inst);
 
+  void SetIgnoreIdleStatus(bool ignore_idle_status);
+
   enum ExitReason {
      REASON_UPDATE_CANCELED,
      REASON_UPDATE_INIT_FAILED,
@@ -91,10 +93,12 @@ class UpdateScreen: public UpdateLibrary::Observer,
   // Flag that is used to detect when update download has just started.
   bool is_downloading_update_;
   // If true, update deadlines are ignored.
-  // Note, this is true by default. See "http://crosbug.com/10068".
+  // Note, this is false by default.
   bool is_ignore_update_deadlines_;
   // Whether the update screen is shown.
   bool is_shown_;
+  // Ignore fist IDLE status that is sent before update screen initiated check.
+  bool ignore_idle_status_;
 
   // Keeps actor which is delegated with all showing operations.
   UpdateScreenActor* actor_;
