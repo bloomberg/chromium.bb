@@ -12,25 +12,6 @@ body {
 }
 
 /* Ids */
-#debug-log {
-  background-color: white;
-  bottom: 0;
-  border-top: 1px solid black;
-  display: none;
-  font-family: monospace;
-  font-weight: bold;
-  font-size: small;
-  height: 150px;
-  margin: 0;
-  opacity: 0.85;
-  overflow: auto;
-  padding: 0;
-  position: fixed;
-  width: 100%;
-  z-index: 100;
-  -webkit-user-select: text;
-}
-
 #plugin-scroll-panel {
   overflow: auto;
   width: 100%;

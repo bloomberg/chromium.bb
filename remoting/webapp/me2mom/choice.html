@@ -9,10 +9,12 @@ found in the LICENSE file.
   <head>
     <meta charset="utf-8" />
     <link rel="shortcut icon" href="chromoting128.png" />
+    <link rel="stylesheet" href="debug_log.css" />
     <link rel="stylesheet" href="main.css" />
     <link rel="stylesheet" href="choice.css" />
-    <script src="remoting.js"></script>
+    <script src="debug_log.js"></script>
     <script src="oauth2.js"></script>
+    <script src="remoting.js"></script>
     <title>Chromoting</title>
   </head>
 
@@ -46,6 +48,13 @@ found in the LICENSE file.
                  onclick="setEmail(''); return false;" value="Change Email" />
         </form>
       </span> <!-- email-entry -->
+
+      <span id="debug-enable">
+        <form>
+          <input id="debug-log-toggle" class="display-inline" type="button"
+                 value="Debug Log" onclick="toggleDebugLog(); return false;"/>
+        </form>
+      </span> <!-- debug-enable -->
 
     </div> <!-- auth-panel -->
 
@@ -193,6 +202,8 @@ found in the LICENSE file.
     </div>
 
     <div id="plugin-wrapper">
+    </div>
+    <div id="debug-log">
     </div>
   </body>
 </html>

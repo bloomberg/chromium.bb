@@ -1,0 +1,32 @@
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+#debug-log {
+  background-color: white;
+  bottom: 0;
+  border-top: 1px solid black;
+  display: none;
+  height: 150px;
+  margin: 0;
+  opacity: 0.85;
+  overflow: auto;
+  padding: 0;
+  position: fixed;
+  width: 100%;
+  z-index: 100;
+  -webkit-user-select: text;
+}
+
+#debug-log > p {
+  font-family: monospace;
+  font-weight: bold;
+  font-size: small;
+  margin: 0.35em;
+  padding: 0;
+}
+
+#debug-log-toggle {
+  float: right;
+}

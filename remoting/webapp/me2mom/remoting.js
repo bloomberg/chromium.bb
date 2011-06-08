@@ -169,20 +169,25 @@ function setGlobalModePersistent(mode) {
 function setHostMode(mode) {
   var section = document.getElementById('host-section');
   var modes = section.getElementsByClassName('mode');
+  addToDebugLog('Host mode: ' + mode);
   setMode_(mode, modes);
 }
 
 function setClientMode(mode) {
   var section = document.getElementById('client-section');
   var modes = section.getElementsByClassName('mode');
+  addToDebugLog('Client mode: ' + mode);
   setMode_(mode, modes);
 }
 
 function tryShare() {
+  addToDebugLog("Attempting to share...");
   if (remoting.oauth2.needsNewAccessToken()) {
+    addToDebugLog("Refreshing token...");
     remoting.oauth2.refreshAccessToken(function() {
       if (remoting.oauth2.needsNewAccessToken()) {
         // If we still need it, we're going to infinite loop.
+        addToDebugLog("Unable to get access token");
         throw "Unable to get access token";
       }
       tryShare();
@@ -217,16 +222,18 @@ function onStateChanged_() {
     setHostMode('unshared');
     plugin.parentNode.removeChild(plugin);
   } else {
-    window.alert('Unknown state -> ' + state);
+    addToDebugLog('Unknown state -> ' + state);
   }
 }
 
 function cancelShare() {
+  addToDebugLog('Canceling share...');
   var plugin = document.getElementById(remoting.HOST_PLUGIN_ID);
   plugin.disconnect();
 }
 
 function startSession_() {
+  addToDebugLog('Starting session...');
   remoting.username = remoting.getItem(remoting.XMPP_LOGIN_NAME);
   document.location = 'remoting_session.html';
 }
@@ -289,7 +296,7 @@ function tryConnect() {
     remoting.oauth2.refreshAccessToken(function() {
       if (remoting.oauth2.needsNewAccessToken()) {
         // If we still need it, we're going to infinite loop.
-        throw "Unable to get access token";
+        throw "Unable to get access token.";
       }
       tryConnect();
     });
