@@ -352,12 +352,6 @@ function assertRaises(func, message, test_status) {
 }
 
 
-// Old-style
-function halt_and_callback(time, callback) {
-  throw {type: 'test_wait', time: time, callback: callback};
-}
-
-
 //
 // END functions for testing
 //
@@ -737,7 +731,7 @@ function Tester(body_element) {
 
     function wait() {
       if (gotCallbacks < expectedCalls) {
-        halt_and_callback(1, wait);
+        throw {type: 'test_wait', time: 1, callback: wait};
       } else {
         this_.log("Done waiting");
       }
