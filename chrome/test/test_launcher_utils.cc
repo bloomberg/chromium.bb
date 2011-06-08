@@ -15,6 +15,10 @@
 
 namespace {
 
+// TODO(phajdan.jr): remove this flag and fix its users.
+// We should use base/test/test_timeouts and not custom flags.
+static const char kTestTerminateTimeoutFlag[] = "test-terminate-timeout";
+
 // A multiplier for slow tests. We generally avoid multiplying
 // test timeouts by any constants. Here it is used as last resort
 // to implement the SLOW_ test prefix.
@@ -90,6 +94,18 @@ bool OverrideGLImplementation(CommandLine* command_line,
 int GetTestTerminationTimeout(const std::string& test_name,
                               int default_timeout_ms) {
   int timeout_ms = default_timeout_ms;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(kTestTerminateTimeoutFlag)) {
+    std::string timeout_str =
+        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            kTestTerminateTimeoutFlag);
+    int timeout;
+    if (base::StringToInt(timeout_str, &timeout)) {
+      timeout_ms = std::max(timeout_ms, timeout);
+    } else {
+      LOG(ERROR) << "Invalid timeout (" << kTestTerminateTimeoutFlag << "): "
+                 << timeout_str;
+    }
+  }
 
   // Make it possible for selected tests to request a longer timeout.
   // Generally tests should really avoid doing too much, and splitting
