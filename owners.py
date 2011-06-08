@@ -147,7 +147,7 @@ class Database(object):
     for line in self.fopen(owners_path):
       lineno += 1
       line = line.strip()
-      if line.startswith('#'):
+      if line.startswith('#') or line == '':
         continue
       if line == 'set noparent':
         self.stop_looking.add(dirpath)
