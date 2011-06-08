@@ -50,7 +50,7 @@ const char* kPingLaunchAppByID = "record-app-launch-by-id";
 const char* kPingLaunchWebStore = "record-webstore-launch";
 const char* kPingLaunchAppByURL = "record-app-launch-by-url";
 
-const char* kChromeWebStoreUrl = "https://chrome.google.com/webstore";
+const char* kChromeWebStoreUrl = "https://chrome.google.com/webstore/";
 
 const UnescapeRule::Type kUnescapeRules =
     UnescapeRule::NORMAL | UnescapeRule::URL_SPECIAL_CHARS;
