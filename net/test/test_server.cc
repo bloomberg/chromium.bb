@@ -349,7 +349,7 @@ bool TestServer::AddCommandLineArguments(CommandLine* command_line) const {
   command_line->AppendArgNative(FILE_PATH_LITERAL("--data-dir=") +
                                 document_root_.value());
 
-  if (logging::GetMinLogLevel() == logging::LOG_VERBOSE) {
+  if (VLOG_IS_ON(1)) {
     command_line->AppendArg("--log-to-console");
   }
 

@@ -134,6 +134,8 @@ struct SyncSessionSnapshot {
   // Caller takes ownership of the returned dictionary.
   DictionaryValue* ToValue() const;
 
+  std::string ToString() const;
+
   const SyncerStatus syncer_status;
   const ErrorCounters errors;
   const int64 num_server_changes_remaining;

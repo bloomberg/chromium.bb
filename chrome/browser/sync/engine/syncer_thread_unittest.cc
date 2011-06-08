@@ -70,7 +70,8 @@ class SyncerThreadTest : public testing::Test {
         registrar_.get(), std::vector<SyncEngineEventListener*>());
     context_->set_notifications_enabled(true);
     context_->set_account_name("Test");
-    syncer_thread_.reset(new SyncerThread(context_, syncer_));
+    syncer_thread_.reset(
+        new SyncerThread("TestSyncerThread", context_, syncer_));
   }
 
   SyncerThread* syncer_thread() { return syncer_thread_.get(); }

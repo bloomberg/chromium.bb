@@ -7,6 +7,8 @@
 #define CHROME_BROWSER_SYNC_ENGINE_SYNCER_THREAD_H_
 #pragma once
 
+#include <string>
+
 #include "base/callback.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
@@ -43,8 +45,10 @@ class SyncerThread : public sessions::SyncSession::Delegate,
     NORMAL_MODE,
   };
 
-  // Takes ownership of both |context| and |syncer|.
-  SyncerThread(sessions::SyncSessionContext* context, Syncer* syncer);
+  // |name| is a display string to identify the syncer thread.  Takes
+  // |ownership of both |context| and |syncer|.
+  SyncerThread(const std::string& name,
+               sessions::SyncSessionContext* context, Syncer* syncer);
   virtual ~SyncerThread();
 
   typedef Callback0::Type ModeChangeCallback;
@@ -297,6 +301,8 @@ class SyncerThread : public sessions::SyncSession::Delegate,
   // session snapshot containing data like initial_sync_ended.  Important when
   // the client starts up and does not need to perform an initial sync.
   void SendInitialSnapshot();
+
+  const std::string name_;
 
   base::Thread thread_;
 

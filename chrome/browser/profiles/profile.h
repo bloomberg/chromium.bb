@@ -8,6 +8,8 @@
 #define CHROME_BROWSER_PROFILES_PROFILE_H_
 #pragma once
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "chrome/common/extensions/extension.h"
@@ -516,6 +518,8 @@ class Profile {
   // Returns the PrerenderManager used to prerender entire webpages for this
   // profile.
   virtual prerender::PrerenderManager* GetPrerenderManager() = 0;
+
+  std::string GetDebugName();
 
   // Returns whether it is a guest session.
   static bool IsGuestSession();

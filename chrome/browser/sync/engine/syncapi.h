@@ -833,7 +833,7 @@ class SyncManager {
   typedef Callback0::Type ModeChangeCallback;
 
   // Create an uninitialized SyncManager.  Callers must Init() before using.
-  SyncManager();
+  explicit SyncManager(const std::string& name);
   virtual ~SyncManager();
 
   // Initialize the sync manager.  |database_location| specifies the path of

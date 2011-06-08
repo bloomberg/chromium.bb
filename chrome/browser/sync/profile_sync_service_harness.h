@@ -31,8 +31,7 @@ class ProfileSyncServiceHarness : public ProfileSyncServiceObserver {
  public:
   ProfileSyncServiceHarness(Profile* profile,
                             const std::string& username,
-                            const std::string& password,
-                            int id);
+                            const std::string& password);
 
   virtual ~ProfileSyncServiceHarness() {}
 
@@ -220,9 +219,9 @@ class ProfileSyncServiceHarness : public ProfileSyncServiceObserver {
   // other client has.
   bool MatchesOtherClient(ProfileSyncServiceHarness* partner);
 
-  // Logs message with relevant info about client's sync state (if available).
-  // |log_level| denotes the VLOG level.
-  void LogClientInfo(const std::string& message, int log_level);
+  // Returns a string with relevant info about client's sync state (if
+  // available).  Useful for logging.
+  std::string GetClientInfo();
 
   // Gets the current progress indicator of the current sync session
   // for a particular datatype.
@@ -253,8 +252,8 @@ class ProfileSyncServiceHarness : public ProfileSyncServiceObserver {
   std::string username_;
   std::string password_;
 
-  // Client ID, used for logging purposes.
-  int id_;
+  // Used for logging.
+  const std::string profile_debug_name_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncServiceHarness);
 };

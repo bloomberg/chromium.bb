@@ -29,7 +29,8 @@ class SyncerThreadWhiteboxTest : public testing::Test {
         registrar_.get(), std::vector<SyncEngineEventListener*>());
     context_->set_notifications_enabled(true);
     context_->set_account_name("Test");
-    syncer_thread_.reset(new SyncerThread(context_, syncer));
+    syncer_thread_.reset(
+        new SyncerThread("TestSyncerThreadWhitebox", context_, syncer));
   }
 
   virtual void TearDown() {

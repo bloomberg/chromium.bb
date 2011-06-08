@@ -268,12 +268,20 @@ void Syncer::SyncShare(sessions::SyncSession* session,
       default:
         LOG(ERROR) << "Unknown command: " << current_step;
     }
+    VLOG(2) << "last step: " << last_step << ", current step: "
+            << current_step << ", next step: "
+            << next_step << ", snapshot: "
+            << session->TakeSnapshot().ToString();
     if (last_step == current_step)
       break;
     current_step = next_step;
   }
 
   VLOG(1) << "Syncer End";
+  VLOG(2) << "last step: " << last_step << ", current step: "
+          << current_step << ", next step: "
+          << next_step << ", snapshot: "
+          << session->TakeSnapshot().ToString();
   SyncerEndCommand syncer_end_command;
   syncer_end_command.Execute(session);
   return;

@@ -16,16 +16,6 @@
 #include "chrome/test/live_sync/live_sync_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace {
-
-std::string GetProfileName(Profile* profile) {
-  const std::string& name = profile->GetPath().BaseName().MaybeAsASCII();
-  EXPECT_FALSE(name.empty());
-  return name;
-}
-
-}  // namespace
-
 LiveSyncExtensionHelper::LiveSyncExtensionHelper() {}
 
 LiveSyncExtensionHelper::~LiveSyncExtensionHelper() {}
@@ -91,7 +81,7 @@ void LiveSyncExtensionHelper::InstallExtensionsPendingForSync(
     StringMap::const_iterator it2 = id_to_name_.find(id);
     if (it2 == id_to_name_.end()) {
       ADD_FAILURE() << "Could not get name for id " << id
-                    << " (profile = " << GetProfileName(profile) << ")";
+                    << " (profile = " << profile->GetDebugName() << ")";
       continue;
     }
     InstallExtension(profile, it2->second, type);
@@ -101,7 +91,7 @@ void LiveSyncExtensionHelper::InstallExtensionsPendingForSync(
 LiveSyncExtensionHelper::ExtensionStateMap
     LiveSyncExtensionHelper::GetExtensionStates(
         Profile* profile) const {
-  const std::string& profile_name = GetProfileName(profile);
+  const std::string& profile_debug_name = profile->GetDebugName();
 
   ExtensionStateMap extension_state_map;
 
@@ -112,7 +102,7 @@ LiveSyncExtensionHelper::ExtensionStateMap
        it != extensions->end(); ++it) {
     extension_state_map[(*it)->id()] = ENABLED;
     VLOG(2) << "Extension " << (*it)->id() << " in profile "
-            << profile_name << " is enabled";
+            << profile_debug_name << " is enabled";
   }
 
   const ExtensionList* disabled_extensions =
@@ -121,7 +111,7 @@ LiveSyncExtensionHelper::ExtensionStateMap
        it != disabled_extensions->end(); ++it) {
     extension_state_map[(*it)->id()] = DISABLED;
     VLOG(2) << "Extension " << (*it)->id() << " in profile "
-            << profile_name << " is disabled";
+            << profile_debug_name << " is disabled";
   }
 
   const PendingExtensionManager* pending_extension_manager =
@@ -131,7 +121,7 @@ LiveSyncExtensionHelper::ExtensionStateMap
        it != pending_extension_manager->end(); ++it) {
     extension_state_map[it->first] = PENDING;
     VLOG(2) << "Extension " << it->first << " in profile "
-            << profile_name << " is pending";
+            << profile_debug_name << " is pending";
   }
 
   return extension_state_map;

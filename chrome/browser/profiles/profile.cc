@@ -171,6 +171,14 @@ net::URLRequestContextGetter* Profile::GetDefaultRequestContext() {
   return default_request_context_;
 }
 
+std::string Profile::GetDebugName() {
+  std::string name = GetPath().BaseName().MaybeAsASCII();
+  if (name.empty()) {
+    name = "UnknownProfile";
+  }
+  return name;
+}
+
 bool Profile::IsGuestSession() {
 #if defined(OS_CHROMEOS)
   static bool is_guest_session =

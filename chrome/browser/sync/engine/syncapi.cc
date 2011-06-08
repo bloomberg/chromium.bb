@@ -17,6 +17,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/compiler_specific.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -465,8 +466,16 @@ void WriteNode::EncryptIfNecessary(sync_pb::EntitySpecifics* unencrypted) {
   }
   sync_pb::EntitySpecifics encrypted;
   syncable::AddDefaultExtensionValue(type, &encrypted);
-  VLOG(2) << "Encrypted specifics of type " << syncable::ModelTypeToString(type)
-          << " with content: " << unencrypted->SerializeAsString() << "\n";
+  if (VLOG_IS_ON(2)) {
+    std::string unencrypted_base64;
+    if (!base::Base64Encode(unencrypted->SerializeAsString(),
+                            &unencrypted_base64)) {
+      NOTREACHED();
+    }
+    VLOG(2) << "Encrypted specifics of type "
+            << syncable::ModelTypeToString(type)
+            << " with content: " << unencrypted_base64 << "\n";
+  }
   if (!GetTransaction()->GetCryptographer()->Encrypt(
       *unencrypted,
       encrypted.mutable_encrypted())) {
@@ -1118,8 +1127,9 @@ class SyncManager::SyncInternal
   static const int kDefaultNudgeDelayMilliseconds;
   static const int kPreferencesNudgeDelayMilliseconds;
  public:
-  explicit SyncInternal(SyncManager* sync_manager)
-      : core_message_loop_(NULL),
+  SyncInternal(const std::string& name, SyncManager* sync_manager)
+      : name_(name),
+        core_message_loop_(NULL),
         parent_router_(NULL),
         sync_manager_(sync_manager),
         registrar_(NULL),
@@ -1520,6 +1530,8 @@ class SyncManager::SyncInternal
   browser_sync::JsArgList FindNodesContainingString(
       const browser_sync::JsArgList& args);
 
+  const std::string name_;
+
   // We couple the DirectoryManager and username together in a UserShare member
   // so we can return a handle to share_ to clients of the API for use when
   // constructing any transaction type.
@@ -1590,9 +1602,8 @@ const int SyncManager::SyncInternal::kPreferencesNudgeDelayMilliseconds = 2000;
 
 SyncManager::Observer::~Observer() {}
 
-SyncManager::SyncManager() {
-  data_ = new SyncInternal(this);
-}
+SyncManager::SyncManager(const std::string& name)
+    : data_(new SyncInternal(name, ALLOW_THIS_IN_INITIALIZER_LIST(this))) {}
 
 bool SyncManager::Init(const FilePath& database_location,
                        const char* sync_server_and_path,
@@ -1760,7 +1771,8 @@ bool SyncManager::SyncInternal::Init(
         listeners);
     context->set_account_name(credentials.email);
     // The SyncerThread takes ownership of |context|.
-    syncer_thread_.reset(new SyncerThread(context, new Syncer()));
+    syncer_thread_.reset(
+        new SyncerThread(name_, context, new Syncer()));
   }
 
   bool signed_in = SignIn(credentials);

@@ -270,7 +270,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
                public JsBackend,
                public JsEventRouter {
    public:
-    explicit Core(SyncBackendHost* backend);
+    Core(const std::string& name, SyncBackendHost* backend);
 
     // SyncManager::Observer implementation.  The Core just acts like an air
     // traffic controller here, forwarding incoming messages to appropriate

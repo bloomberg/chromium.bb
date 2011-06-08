@@ -59,7 +59,8 @@ using sessions::SyncSessionSnapshot;
 using sync_api::SyncCredentials;
 
 SyncBackendHost::SyncBackendHost(Profile* profile)
-    : core_(new Core(ALLOW_THIS_IN_INITIALIZER_LIST(this))),
+    : core_(new Core(profile->GetDebugName(),
+                     ALLOW_THIS_IN_INITIALIZER_LIST(this))),
       core_thread_("Chrome_SyncCoreThread"),
       frontend_loop_(MessageLoop::current()),
       profile_(profile),
@@ -699,9 +700,9 @@ void SyncBackendHost::LogUnsyncedItems(int level) const {
   return core_->syncapi()->LogUnsyncedItems(level);
 }
 
-SyncBackendHost::Core::Core(SyncBackendHost* backend)
+SyncBackendHost::Core::Core(const std::string& name, SyncBackendHost* backend)
     : host_(backend),
-      syncapi_(new sync_api::SyncManager()),
+      syncapi_(new sync_api::SyncManager(name)),
       sync_manager_observer_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       parent_router_(NULL),
       processing_passphrase_(false),

@@ -11,6 +11,8 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/json/json_writer.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/sync/protocol/proto_enum_conversions.h"
 
@@ -170,6 +172,13 @@ DictionaryValue* SyncSessionSnapshot::ToValue() const {
   value->SetInteger("numEntries", num_entries);
   value->Set("source", source.ToValue());
   return value;
+}
+
+std::string SyncSessionSnapshot::ToString() const {
+  scoped_ptr<DictionaryValue> value(ToValue());
+  std::string json;
+  base::JSONWriter::Write(value.get(), true, &json);
+  return json;
 }
 
 ConflictProgress::ConflictProgress(bool* dirty_flag) : dirty_(dirty_flag) {}
