@@ -2012,5 +2012,3 @@ bool ResourceDispatcherHost::allow_cross_origin_auth_prompt() {
 void ResourceDispatcherHost::set_allow_cross_origin_auth_prompt(bool value) {
   allow_cross_origin_auth_prompt_ = value;
 }
-
-

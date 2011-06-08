@@ -250,6 +250,9 @@ class ResourceDispatcherHost : public net::URLRequest::Delegate {
   void set_delegate(ResourceDispatcherHostDelegate* delegate) {
     delegate_ = delegate;
   }
+  ResourceDispatcherHostDelegate* delegate() {
+    return delegate_;
+  }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest,

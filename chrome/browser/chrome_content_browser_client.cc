@@ -448,6 +448,36 @@ void ChromeContentBrowserClient::CancelDesktopNotification(
       render_process_id, render_view_id, notification_id);
 }
 
+bool ChromeContentBrowserClient::CanCreateWindow(
+    const GURL& source_url,
+    WindowContainerType container_type,
+    const content::ResourceContext& context) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  // If the opener is trying to create a background window but doesn't have
+  // the appropriate permission, fail the attempt.
+  if (container_type == WINDOW_CONTAINER_TYPE_BACKGROUND) {
+    ProfileIOData* io_data =
+        reinterpret_cast<ProfileIOData*>(context.GetUserData(NULL));
+    const Extension* extension =
+        io_data->GetExtensionInfoMap()->extensions().GetByURL(source_url);
+    return (extension &&
+            extension->HasApiPermission(Extension::kBackgroundPermission));
+  }
+  return true;
+}
+
+std::string ChromeContentBrowserClient::GetWorkerProcessTitle(
+    const GURL& url, const content::ResourceContext& context) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  // Check if it's an extension-created worker, in which case we want to use
+  // the name of the extension.
+  ProfileIOData* io_data =
+      reinterpret_cast<ProfileIOData*>(context.GetUserData(NULL));
+  const Extension* extension =
+      io_data->GetExtensionInfoMap()->extensions().GetByID(url.host());
+  return extension ? extension->name() : std::string();
+}
+
 #if defined(OS_LINUX)
 int ChromeContentBrowserClient::GetCrashSignalFD(
     const std::string& process_type) {

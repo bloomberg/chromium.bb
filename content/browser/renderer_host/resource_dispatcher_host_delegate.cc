@@ -61,3 +61,8 @@ void ResourceDispatcherHostDelegate::HandleExternalProtocol(const GURL& url,
                                                             int child_id,
                                                             int route_id) {
 }
+
+bool ResourceDispatcherHostDelegate::ShouldForceDownloadResource(
+    const GURL& url, const std::string& mime_type) {
+  return false;
+}

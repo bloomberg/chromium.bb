@@ -12,7 +12,6 @@
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/extensions/extension_info_map.h"
 #include "content/browser/appcache/appcache_dispatcher_host.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/child_process_security_policy.h"
@@ -457,21 +456,18 @@ bool WorkerProcessHost::CanShutdown() {
 void WorkerProcessHost::UpdateTitle() {
   std::set<std::string> titles;
   for (Instances::iterator i = instances_.begin(); i != instances_.end(); ++i) {
-    std::string title =
-        net::RegistryControlledDomainService::GetDomainAndRegistry(i->url());
+    // Allow the embedder first crack at special casing the title.
+    std::string title = content::GetContentClient()->browser()->
+        GetWorkerProcessTitle(i->url(), *resource_context_);
+
+    if (title.empty()) {
+      title = net::RegistryControlledDomainService::GetDomainAndRegistry(
+          i->url());
+    }
+
     // Use the host name if the domain is empty, i.e. localhost or IP address.
     if (title.empty())
       title = i->url().host();
-
-    // Check if it's an extension-created worker, in which case we want to use
-    // the name of the extension.
-    // TODO(mpcomplete): move out of content. http:://crbug.com/76789
-    const Extension* extension =
-        resource_context_->extension_info_map()->extensions().GetByID(title);
-    if (extension) {
-      titles.insert(extension->name());
-      continue;
-    }
 
     // If the host name is empty, i.e. file url, use the path.
     if (title.empty())

@@ -10,9 +10,10 @@
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
 #include "chrome/browser/renderer_host/download_throttling_resource_handler.h"
-#include "chrome/common/extensions/user_script.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/content_browser_client.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
+#include "content/browser/renderer_host/resource_dispatcher_host_delegate.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/browser/renderer_host/x509_user_cert_resource_handler.h"
 #include "content/common/resource_response.h"
@@ -377,8 +378,8 @@ bool BufferedResourceHandler::ShouldDownload(bool* need_plugin_list) {
       return true;
   }
 
-  // Special-case user scripts to get downloaded instead of viewed.
-  if (UserScript::IsURLUserScript(request_->url(), type))
+  if (host_->delegate() &&
+      host_->delegate()->ShouldForceDownloadResource(request_->url(), type))
     return true;
 
   // MIME type checking.

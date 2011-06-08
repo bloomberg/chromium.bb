@@ -83,6 +83,11 @@ class ResourceDispatcherHostDelegate {
                                       int child_id,
                                       int route_id);
 
+  // Returns true if we should force the given resource to be downloaded.
+  // Otherwise, the content layer decides.
+  virtual bool ShouldForceDownloadResource(
+      const GURL& url, const std::string& mime_type);
+
  protected:
   ResourceDispatcherHostDelegate();
   virtual ~ResourceDispatcherHostDelegate();

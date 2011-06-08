@@ -74,10 +74,6 @@ class ResourceContext {
   // =======================================================================
   // TODO(willchan): These don't belong in content/. Remove them eventually.
 
-  // TODO(mpcomplete): Kill this one.
-  const ExtensionInfoMap* extension_info_map() const;
-  void set_extension_info_map(ExtensionInfoMap* extension_info_map);
-
   // TODO(cbentzel): Kill this one.
   const base::WeakPtr<prerender::PrerenderManager>& prerender_manager() const;
   void set_prerender_manager(
@@ -106,7 +102,6 @@ class ResourceContext {
   // =======================================================================
   // TODO(willchan): These don't belong in content/. Remove them eventually.
 
-  ExtensionInfoMap* extension_info_map_;
   base::WeakPtr<prerender::PrerenderManager> prerender_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceContext);

@@ -15,7 +15,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_types.h"
 #include "chrome/browser/download/download_util.h"
-#include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
@@ -385,16 +384,10 @@ void RenderMessageFilter::OnDestruct() const {
 void RenderMessageFilter::OnMsgCreateWindow(
     const ViewHostMsg_CreateWindow_Params& params,
     int* route_id, int64* cloned_session_storage_namespace_id) {
-  // If the opener is trying to create a background window but doesn't have
-  // the appropriate permission, fail the attempt.
-  if (params.window_container_type == WINDOW_CONTAINER_TYPE_BACKGROUND) {
-    const Extension* extension =
-        extension_info_map_->extensions().GetByURL(params.opener_url);
-    if (!extension ||
-        !extension->HasApiPermission(Extension::kBackgroundPermission)) {
-      *route_id = MSG_ROUTING_NONE;
-      return;
-    }
+  if (!content::GetContentClient()->browser()->CanCreateWindow(
+          params.opener_url, params.window_container_type, resource_context_)) {
+    *route_id = MSG_ROUTING_NONE;
+    return;
   }
 
   *cloned_session_storage_namespace_id =

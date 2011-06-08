@@ -131,18 +131,6 @@ void ResourceContext::set_host_zoom_map(HostZoomMap* host_zoom_map) {
   host_zoom_map_ = host_zoom_map;
 }
 
-const ExtensionInfoMap* ResourceContext::extension_info_map() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  EnsureInitialized();
-  return extension_info_map_;
-}
-
-void ResourceContext::set_extension_info_map(
-    ExtensionInfoMap* extension_info_map) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  extension_info_map_ = extension_info_map;
-}
-
 const base::WeakPtr<prerender::PrerenderManager>&
 ResourceContext::prerender_manager() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));

@@ -25,11 +25,6 @@ include_rules = [
   "+chrome/browser/renderer_host/download_throttling_resource_handler.h",
   "+chrome/browser/renderer_host/save_file_resource_handler.h",
 
-  # http://crbug.com/76789
-  "+chrome/browser/extensions/extension_info_map.h",
-  "+chrome/common/extensions/extension.h",
-  "+chrome/common/extensions/user_script.h",
-
   "+chrome/browser/load_from_memory_cache_details.h",
 
   "+chrome/browser/mach_broker_mac.h",

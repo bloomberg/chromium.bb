@@ -12,6 +12,7 @@
 #include "chrome/browser/renderer_host/safe_browsing_resource_handler.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ui/login/login_prompt.h"
+#include "chrome/common/extensions/user_script.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/resource_context.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
@@ -189,4 +190,10 @@ ResourceHandler*
   return SafeBrowsingResourceHandler::Create(
       handler, child_id, route_id, subresource, safe_browsing_,
       resource_dispatcher_host_);
+}
+
+bool ChromeResourceDispatcherHostDelegate::ShouldForceDownloadResource(
+    const GURL& url, const std::string& mime_type) {
+  // Special-case user scripts to get downloaded instead of viewed.
+  return UserScript::IsURLUserScript(url, mime_type);
 }

@@ -31,7 +31,7 @@ class ChromeResourceDispatcherHostDelegate
       prerender::PrerenderTracker* prerender_tracker);
   virtual ~ChromeResourceDispatcherHostDelegate();
 
-  // ResourceDispatcherHost::Observer implementation.
+  // ResourceDispatcherHostDelegate implementation.
   virtual bool ShouldBeginRequest(
       int child_id, int route_id,
       const ResourceHostMsg_Request& request_data,
@@ -58,6 +58,8 @@ class ChromeResourceDispatcherHostDelegate
   virtual void HandleExternalProtocol(const GURL& url,
                                       int child_id,
                                       int route_id) OVERRIDE;
+  virtual bool ShouldForceDownloadResource(
+      const GURL& url, const std::string& mime_type) OVERRIDE;
 
  private:
   ResourceHandler* CreateSafeBrowsingResourceHandler(

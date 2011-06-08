@@ -10,6 +10,7 @@
 
 #include "base/callback_old.h"
 #include "content/common/content_client.h"
+#include "content/common/window_container_type.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNotificationPresenter.h"
 
 class BrowserRenderProcessHost;
@@ -171,6 +172,19 @@ class ContentBrowserClient {
       int render_process_id,
       int render_view_id,
       int notification_id);
+
+  // Returns true if the given page is allowed to open a window of the given
+  // type. This is called on the IO thread.
+  virtual bool CanCreateWindow(
+      const GURL& source_url,
+      WindowContainerType container_type,
+      const content::ResourceContext& context);
+
+  // Returns a title string to use in the task manager for a process host with
+  // the given URL, or the empty string to fall back to the default logic.
+  // This is called on the IO thread.
+  virtual std::string GetWorkerProcessTitle(
+      const GURL& url, const content::ResourceContext& context);
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Can return an optional fd for crash handling, otherwise returns -1.

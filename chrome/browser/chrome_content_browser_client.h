@@ -77,6 +77,12 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       int render_process_id,
       int render_view_id,
       int notification_id) OVERRIDE;
+  virtual bool CanCreateWindow(
+      const GURL& source_url,
+      WindowContainerType container_type,
+      const content::ResourceContext& context) OVERRIDE;
+  virtual std::string GetWorkerProcessTitle(
+      const GURL& url, const content::ResourceContext& context) OVERRIDE;
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Can return an optional fd for crash handling, otherwise returns -1.
   virtual int GetCrashSignalFD(const std::string& process_type) OVERRIDE;

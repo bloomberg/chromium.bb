@@ -137,6 +137,18 @@ void ContentBrowserClient::CancelDesktopNotification(
     int notification_id) {
 }
 
+bool ContentBrowserClient::CanCreateWindow(
+    const GURL& source_url,
+    WindowContainerType container_type,
+    const content::ResourceContext& context) {
+  return false;
+}
+
+std::string ContentBrowserClient::GetWorkerProcessTitle(
+    const GURL& url, const content::ResourceContext& context) {
+  return std::string();
+}
+
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 int ContentBrowserClient::GetCrashSignalFD(const std::string& process_type) {
   return -1;
