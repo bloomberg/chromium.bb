@@ -69,7 +69,7 @@ class PluginResourceTracker : public ::ppapi::TrackerBase {
   friend class PluginProxyTest;
 
   PluginResourceTracker();
-  ~PluginResourceTracker();
+  virtual ~PluginResourceTracker();
 
   struct ResourceInfo {
     ResourceInfo();

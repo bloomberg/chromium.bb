@@ -40,6 +40,8 @@ class FetcherDelegate {
     StartTimer();
   }
 
+  virtual ~FetcherDelegate() {}
+
   ResourceFetcher::Callback* NewCallback() {
     return ::NewCallback(this, &FetcherDelegate::OnURLFetchComplete);
   }
@@ -173,12 +175,14 @@ TEST_F(ResourceFetcherTests, ResourceFetcherTimeout) {
 
 class EvilFetcherDelegate : public FetcherDelegate {
  public:
+  virtual ~EvilFetcherDelegate() {}
+
   void SetFetcher(ResourceFetcher* fetcher) {
     fetcher_.reset(fetcher);
   }
 
-  void OnURLFetchComplete(const WebURLResponse& response,
-                          const std::string& data) {
+  virtual void OnURLFetchComplete(const WebURLResponse& response,
+                                  const std::string& data) {
     // Destroy the ResourceFetcher here.  We are testing that upon returning
     // to the ResourceFetcher that it does not crash.
     fetcher_.reset();

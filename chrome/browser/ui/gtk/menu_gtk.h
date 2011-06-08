@@ -55,7 +55,7 @@ class MenuGtk {
   };
 
   MenuGtk(MenuGtk::Delegate* delegate, ui::MenuModel* model);
-  ~MenuGtk();
+  virtual ~MenuGtk();
 
   // Initialize GTK signal handlers.
   void ConnectSignalHandlers();

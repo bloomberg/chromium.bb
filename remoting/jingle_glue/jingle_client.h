@@ -145,7 +145,7 @@ class JingleClient : public base::RefCountedThreadSafe<JingleClient>,
                talk_base::PacketSocketFactory* socket_factory,
                PortAllocatorSessionFactory* session_factory,
                Callback* callback);
-  ~JingleClient();
+  virtual ~JingleClient();
 
   // Starts the XMPP connection initialization. Must be called only once.
   // |callback| specifies callback object for the client and must not be NULL.

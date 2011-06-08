@@ -30,6 +30,8 @@ namespace content {
 // Embedder API for participating in renderer logic.
 class ContentRendererClient {
  public:
+  virtual ~ContentRendererClient() {}
+
   // Notifies us that the RenderThread has been created.
   virtual void RenderThreadStarted();
 

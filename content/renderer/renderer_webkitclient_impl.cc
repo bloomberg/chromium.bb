@@ -110,6 +110,8 @@ class RendererWebKitClientImpl::FileUtilities
 class RendererWebKitClientImpl::SandboxSupport
     : public WebKit::WebSandboxSupport {
  public:
+  virtual ~SandboxSupport() {}
+
 #if defined(OS_WIN)
   virtual bool ensureFontLoaded(HFONT);
 #elif defined(OS_MACOSX)

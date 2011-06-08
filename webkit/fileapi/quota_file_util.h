@@ -14,7 +14,7 @@ namespace fileapi {
 class QuotaFileUtil : public FileSystemFileUtil {
  public:
   static QuotaFileUtil* GetInstance();
-  ~QuotaFileUtil() {}
+  virtual ~QuotaFileUtil() {}
 
   static const int64 kNoLimit;
 

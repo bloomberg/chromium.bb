@@ -196,6 +196,8 @@ class OpenChannelToPpapiBrokerCallback : public PpapiBrokerProcessHost::Client {
         request_id_(request_id) {
   }
 
+  virtual ~OpenChannelToPpapiBrokerCallback() {}
+
   virtual void GetChannelInfo(base::ProcessHandle* renderer_handle,
                               int* renderer_id) {
     *renderer_handle = filter_->peer_handle();

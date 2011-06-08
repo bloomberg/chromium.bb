@@ -251,7 +251,7 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
   virtual WebKit::WebCookieJar* GetCookieJar();
 
   TestWebViewDelegate(TestShell* shell);
-  ~TestWebViewDelegate();
+  virtual ~TestWebViewDelegate();
   void Reset();
 
   void SetSmartInsertDeleteEnabled(bool enabled);

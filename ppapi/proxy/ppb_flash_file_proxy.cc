@@ -103,7 +103,7 @@ class ModuleLocalThreadAdapter
     std::set<int> pending_requests_for_filter_;
   };
 
-  virtual void SendFromIOThread(Dispatcher* dispatcher, IPC::Message* msg);
+  void SendFromIOThread(Dispatcher* dispatcher, IPC::Message* msg);
 
   // Internal version of OnModuleLocalMessageFailed which assumes the lock
   // is already held.

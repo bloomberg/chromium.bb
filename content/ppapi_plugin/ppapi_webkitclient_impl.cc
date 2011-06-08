@@ -28,6 +28,8 @@ using WebKit::WebUChar;
 
 class PpapiWebKitClientImpl::SandboxSupport : public WebSandboxSupport {
  public:
+  virtual ~SandboxSupport() {}
+
 #if defined(OS_WIN)
   virtual bool ensureFontLoaded(HFONT);
 #elif defined(OS_MACOSX)

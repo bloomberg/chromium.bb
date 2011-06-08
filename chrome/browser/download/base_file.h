@@ -30,7 +30,7 @@ class BaseFile {
            const GURL& referrer_url,
            int64 received_bytes,
            const linked_ptr<net::FileStream>& file_stream);
-  ~BaseFile();
+  virtual ~BaseFile();
 
   // If calculate_hash is true, sha256 hash will be calculated.
   bool Initialize(bool calculate_hash);

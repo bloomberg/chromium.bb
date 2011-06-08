@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,6 +22,8 @@ class UpdateChecker : public Provider::Observer {
   explicit UpdateChecker(int* expectations_count_ptr)
       : expectations_count_ptr_(expectations_count_ptr) {
   }
+
+  virtual ~UpdateChecker() {}
 
   // From Provider::Observer.
   virtual void OnOrientationUpdate(const Orientation& orientation) {

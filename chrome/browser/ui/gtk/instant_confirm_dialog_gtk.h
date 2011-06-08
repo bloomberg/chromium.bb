@@ -19,7 +19,7 @@ typedef struct _GtkWindow GtkWindow;
 class InstantConfirmDialogGtk {
  public:
   InstantConfirmDialogGtk(GtkWindow* parent, Profile* profile);
-  ~InstantConfirmDialogGtk();
+  virtual ~InstantConfirmDialogGtk();
 
  private:
   CHROMEGTK_CALLBACK_1(InstantConfirmDialogGtk, void, OnResponse, int);

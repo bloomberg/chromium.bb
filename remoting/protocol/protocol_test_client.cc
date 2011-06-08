@@ -52,6 +52,8 @@ class ProtocolTestConnection
         closed_event_(true, false) {
   }
 
+  virtual ~ProtocolTestConnection() {}
+
   void Init(Session* session);
   void Write(const std::string& str);
   void Read();

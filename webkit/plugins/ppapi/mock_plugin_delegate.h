@@ -13,7 +13,7 @@ namespace ppapi {
 class MockPluginDelegate : public PluginDelegate {
  public:
   MockPluginDelegate();
-  ~MockPluginDelegate();
+  virtual ~MockPluginDelegate();
 
   virtual void PluginFocusChanged(bool focused);
   virtual void PluginCrashed(PluginInstance* instance);

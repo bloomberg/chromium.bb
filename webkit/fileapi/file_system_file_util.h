@@ -240,6 +240,7 @@ class FileSystemFileUtil {
 
  protected:
   FileSystemFileUtil() { }
+  virtual ~FileSystemFileUtil() { }
 
   // Deletes a directory and all entries under the directory.
   //

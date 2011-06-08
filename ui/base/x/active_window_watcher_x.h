@@ -42,7 +42,7 @@ class ActiveWindowWatcherX {
   friend struct DefaultSingletonTraits<ActiveWindowWatcherX>;
 
   ActiveWindowWatcherX();
-  ~ActiveWindowWatcherX();
+  virtual ~ActiveWindowWatcherX();
 
   void Init();
 

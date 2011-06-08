@@ -43,6 +43,8 @@ class PepperWidget : public WebWidget {
         cursor_(WebCursorInfo::TypePointer) {
   }
 
+  virtual ~PepperWidget() {}
+
   // WebWidget API
   virtual void close() {
     delete this;

@@ -22,7 +22,7 @@
 class SaveFile : public BaseFile {
  public:
   explicit SaveFile(const SaveFileCreateInfo* info);
-  ~SaveFile();
+  virtual ~SaveFile();
 
   // Accessors.
   int save_id() const { return info_->save_id; }

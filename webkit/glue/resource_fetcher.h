@@ -45,7 +45,7 @@ class ResourceFetcher : public WebKit::WebURLLoaderClient {
   ResourceFetcher(
       const GURL& url, WebKit::WebFrame* frame,
       WebKit::WebURLRequest::TargetType target_type, Callback* callback);
-  ~ResourceFetcher();
+  virtual ~ResourceFetcher();
 
   // Stop the request and don't call the callback.
   void Cancel();

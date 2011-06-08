@@ -32,7 +32,7 @@ namespace chrome {
 class ChromeContentRendererClient : public content::ContentRendererClient {
  public:
   ChromeContentRendererClient();
-  ~ChromeContentRendererClient();
+  virtual ~ChromeContentRendererClient();
 
   virtual void RenderThreadStarted() OVERRIDE;
   virtual void RenderViewCreated(RenderView* render_view) OVERRIDE;

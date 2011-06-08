@@ -32,6 +32,7 @@ namespace {
 class HungRendererDialogGtk {
  public:
   HungRendererDialogGtk();
+  virtual ~HungRendererDialogGtk() {}
   void ShowForTabContents(TabContents* hung_contents);
   void EndForTabContents(TabContents* hung_contents);
 

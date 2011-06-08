@@ -35,7 +35,7 @@ class WebPluginImpl : public WebKit::WebPlugin {
  private:
   friend class DeleteTask<WebPluginImpl>;
 
-  ~WebPluginImpl();
+  virtual ~WebPluginImpl();
 
   // WebKit::WebPlugin implementation.
   virtual bool initialize(WebKit::WebPluginContainer* container);
