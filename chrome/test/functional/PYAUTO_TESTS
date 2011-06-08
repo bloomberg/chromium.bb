@@ -156,8 +156,7 @@
       # on the chromium bots, so exlcude these from here.  They're included
       # back in the FULL suite below.
       # crbug.com/85310
-      '-instant.InstantTest.testFindInCanDismissInstant',
-      '-instant.InstantTest.testPreFetchInstantURLNotInHistory',
+      '-instant',
       '-omnibox.OmniboxTest.testBookmarkResultInNewTabAndWindow',
       '-omnibox.OmniboxTest.testDifferentTypesOfResults',
       '-omnibox.OmniboxTest.testFetchHistoryResultItems',
@@ -263,14 +262,15 @@
       # Add back the omnibox tests excluded from the CONTINUOUS suite above
       # because they do not produce omnibox results under virtual X on linux.
       # crbug.com/85310
-      'instant.InstantTest.testFindInCanDismissInstant',
-      'instant.InstantTest.testPreFetchInstantURLNotInHistory',
+      'instant',
       'omnibox.OmniboxTest.testBookmarkResultInNewTabAndWindow',
       'omnibox.OmniboxTest.testDifferentTypesOfResults',
       'omnibox.OmniboxTest.testFetchHistoryResultItems',
       'omnibox.OmniboxTest.testInlinAutoComplete',
       'omnibox.OmniboxTest.testSelect',
       'omnibox.OmniboxTest.testSuggestPref',
+      # crbug.com/83459
+      '-instant.InstantTest.testPreFetchInstantURLSetsNoCookies',
     ],
 
     'chromeos': [
