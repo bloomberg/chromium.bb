@@ -44,16 +44,7 @@ KeyboardOverlayDialogView::KeyboardOverlayDialogView(
 KeyboardOverlayDialogView::~KeyboardOverlayDialogView() {
 }
 
-void KeyboardOverlayDialogView::InitDialog() {
-  DOMView::Init(profile(), NULL);
-
-  tab_contents_->set_delegate(this);
-
-  // Set the delegate. This must be done before loading the page. See
-  // the comment above HtmlDialogUI in its header file for why.
-  HtmlDialogUI::GetPropertyAccessor().SetProperty(tab_contents_->property_bag(),
-                                                  this);
-
+void KeyboardOverlayDialogView::RegisterDialogAccelerators() {
   for (size_t i = 0; i < arraysize(kCloseAccelerators); ++i) {
     views::Accelerator accelerator(kCloseAccelerators[i].keycode,
                                    kCloseAccelerators[i].shift_pressed,
@@ -78,8 +69,6 @@ void KeyboardOverlayDialogView::InitDialog() {
     }
     AddAccelerator(accelerator);
   }
-
-  DOMView::LoadURL(GetDialogContentURL());
 }
 
 bool KeyboardOverlayDialogView::AcceleratorPressed(
