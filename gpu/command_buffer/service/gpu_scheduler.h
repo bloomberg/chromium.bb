@@ -160,6 +160,10 @@ class GpuScheduler : public CommandBufferEngine {
   void ScheduleProcessCommands();
 
   // Called via a callback just before we are supposed to call the
+  // user's resize callback.
+  void WillResize(gfx::Size size);
+
+  // Called via a callback just before we are supposed to call the
   // user's swap buffers callback.
   void WillSwapBuffers();
   void ProcessCommands();
@@ -186,6 +190,7 @@ class GpuScheduler : public CommandBufferEngine {
 #endif
 
   ScopedRunnableMethodFactory<GpuScheduler> method_factory_;
+  scoped_ptr<Callback1<gfx::Size>::Type> wrapped_resize_callback_;
   scoped_ptr<Callback0::Type> wrapped_swap_buffers_callback_;
   scoped_ptr<Callback0::Type> command_processed_callback_;
 };

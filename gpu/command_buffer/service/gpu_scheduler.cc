@@ -276,7 +276,10 @@ void GpuScheduler::ResizeOffscreenFrameBuffer(const gfx::Size& size) {
 }
 
 void GpuScheduler::SetResizeCallback(Callback1<gfx::Size>::Type* callback) {
-  decoder_->SetResizeCallback(callback);
+  wrapped_resize_callback_.reset(callback);
+  decoder_->SetResizeCallback(
+      NewCallback(this,
+                  &GpuScheduler::WillResize));
 }
 
 void GpuScheduler::SetSwapBuffersCallback(
@@ -296,6 +299,12 @@ void GpuScheduler::ScheduleProcessCommands() {
   MessageLoop::current()->PostTask(
       FROM_HERE,
       method_factory_.NewRunnableMethod(&GpuScheduler::ProcessCommands));
+}
+
+void GpuScheduler::WillResize(gfx::Size size) {
+  if (wrapped_resize_callback_.get()) {
+    wrapped_resize_callback_->Run(size);
+  }
 }
 
 }  // namespace gpu
