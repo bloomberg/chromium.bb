@@ -4039,6 +4039,8 @@ void TestingAutomationProvider::GetExtensionsInfo(
     extension_value->Set("effective_host_permissions",
                          GetHostPermissions(extension, true));
     extension_value->Set("api_permissions", GetAPIPermissions(extension));
+    extension_value->SetBoolean("is_component_extension",
+                                extension->location() == Extension::COMPONENT);
     extensions_values->Append(extension_value);
   }
   return_value->Set("extensions", extensions_values);
