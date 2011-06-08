@@ -10,60 +10,88 @@
     <script type="application/x-javascript">
       //<![CDATA[
 function enqueueTests(tester, server) {
-  tester.addAsyncTest('nonexistent_file_load', function(status) {
+  tester.addTest('nonexistent_file_load', function() {
+    var callbackDone = false;
+    var testPassed;
     function InvalidCallback() {
-      this.onload = status.wrap(function(nacl_desc) {
-        status.fail('Invalid file load succeeded.');
-      });
-      this.onfail = status.wrap(function(object) {
-        status.pass();
-      });
+      this.onload = function(nacl_desc) {
+        testPassed = false;
+        callbackDone = true;
+      }
+      this.onfail = function(object) {
+        testPassed = true;
+        callbackDone = true;
+      }
     }
-
     // Load of an invalid URL (which should not work).
     var url = 'url_as_nacl_desc_nonexistent_url.html';
     server.__urlAsNaClDesc(url, new InvalidCallback());
+    function wait() {
+      if (!callbackDone) {
+        halt_and_callback(1, wait);
+      } else {
+        assertEqual(testPassed, true);
+      }
+    }
+    wait();
   });
 
-  tester.addAsyncTest('cross_origin_load', function(status) {
+  tester.addTest('cross_origin_load', function() {
+    var callbackDone = false;
+    var testPassed;
     function CrossOriginCallback() {
-      this.onload = status.wrap(function(nacl_desc) {
-        status.fail('Cross origin load succeeded.');
-      });
-      this.onfail = status.wrap(function(object) {
-        status.pass();
-      });
+      this.onload = function(nacl_desc) {
+        testPassed = false;
+        callbackDone = true;
+      }
+      this.onfail = function(object) {
+        testPassed = true;
+        callbackDone = true;
+      }
     }
-
     // Load of a cross-origin file (which should not work).
     var url = 'http://www.google.com/robots.txt';
     server.__urlAsNaClDesc(url, new CrossOriginCallback());
+    function wait() {
+      if (!callbackDone) {
+        halt_and_callback(1, wait);
+      } else {
+        assertEqual(testPassed, true);
+      }
+    }
+    wait();
   });
 
-  tester.addAsyncTest('valid_file_load', function(status) {
-    var ValidCallback = function() {
-      this.onload = status.wrap(function(nacl_desc) {
+  tester.addTest('valid_file_load', function() {
+    var callbackDone = false;
+    var fileString = '';
+    function ValidCallback() {
+      this.onload = function(nacl_desc) {
         // Get the data that was loaded from the file.
         var msg = server.cat(nacl_desc, 4096);
         var len = msg.length;
         var byte;
-        var fileString = '';
         for (var i = 0; i < len && (byte = msg[i]) != 0; i++) {
           fileString += String.fromCharCode(byte);
         }
-
-        status.assert(fileString.indexOf('TEST PASSED') >= 0);
-        status.pass();
-      });
-
-      this.onfail = status.wrap(function(object) {
-        status.fail('__urlAsNaclDesc failed.');
-      });
+        callbackDone = true;
+      }
+      this.onfail = function(object) {
+        callbackDone = true;
+      }
     }
-
     // Load of a valid file.
     var url = 'srpc_url_as_nacl_desc_success.html';
     server.__urlAsNaClDesc(url, new ValidCallback());
+    function wait() {
+      if (!callbackDone) {
+        halt_and_callback(1, wait);
+      } else {
+        var expected_text = 'TEST PASSED';
+        assert(fileString.indexOf(expected_text) >= 0);
+      }
+    }
+    wait();
   });
 }
       //]]>
