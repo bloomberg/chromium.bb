@@ -973,7 +973,7 @@ FileManager.prototype = {
   FileManager.prototype.renderName_ = function(entry, columnId, table) {
     var label = this.document_.createElement('div');
     label.entry = entry;
-    label.className = 'filename-label';
+    label.className = 'detail-name filename-label';
     if (this.currentDirEntry_.name == '') {
       label.textContent = this.getLabelForRootPath_(entry.name);
     } else {
@@ -1819,7 +1819,7 @@ FileManager.prototype = {
       return false;
 
     // Didn't click on the label.
-    if (event.srcElement.className != 'filename-label')
+    if (!event.srcElement.classList.contains('filename-label'))
       return false;
 
     // Wrong button or using a keyboard modifier.
