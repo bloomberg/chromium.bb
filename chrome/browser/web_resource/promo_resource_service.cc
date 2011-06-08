@@ -38,7 +38,7 @@ static const int kMaxTimeSliceHours = 24 * 7 * 4;
 
 // The version of the service (used to expire the cache when upgrading Chrome
 // to versions with different types of promos).
-static const int kPromoServiceVersion = 1;
+static const int kPromoServiceVersion = 2;
 
 // Properties used by the server.
 static const char kAnswerIdProperty[] = "answer_id";
