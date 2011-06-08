@@ -385,7 +385,7 @@ void NativeTabbedPaneWin::DoSelectTabAt(int index, boolean invoke_listener) {
   selected_index_ = index;
   if (content_window_) {
     View* content_root = content_window_->GetRootView();
-    tab_layout_manager_->SwitchToPage(content_root, tab_views_.at(index));
+    tab_layout_manager_->SwitchToPage(content_root, tab_views_[index]);
   }
   if (invoke_listener && tabbed_pane_->listener())
     tabbed_pane_->listener()->TabSelectedAt(index);

@@ -1514,9 +1514,9 @@ TEST_F(FocusManagerTest, IgnoreKeyupForAccelerators) {
   MessageLoopForUI::current()->Run(&accelerator_handler);
   // Make sure we get a key-up and key-down.
   ASSERT_EQ(1U, mtv->keys_pressed().size());
-  EXPECT_EQ(ui::VKEY_9, mtv->keys_pressed().at(0));
+  EXPECT_EQ(ui::VKEY_9, mtv->keys_pressed()[0]);
   ASSERT_EQ(1U, mtv->keys_released().size());
-  EXPECT_EQ(ui::VKEY_9, mtv->keys_released().at(0));
+  EXPECT_EQ(ui::VKEY_9, mtv->keys_released()[0]);
   EXPECT_FALSE(mtv->accelerator_pressed());
   mtv->Reset();
 
@@ -1533,15 +1533,15 @@ TEST_F(FocusManagerTest, IgnoreKeyupForAccelerators) {
   MessageLoopForUI::current()->Run(&accelerator_handler);
   // Make sure we get a key-up and key-down.
   ASSERT_EQ(5U, mtv->keys_pressed().size());
-  EXPECT_EQ(ui::VKEY_9, mtv->keys_pressed().at(0));
-  EXPECT_EQ(ui::VKEY_9, mtv->keys_pressed().at(1));
-  EXPECT_EQ(ui::VKEY_8, mtv->keys_pressed().at(2));
-  EXPECT_EQ(ui::VKEY_9, mtv->keys_pressed().at(3));
-  EXPECT_EQ(ui::VKEY_7, mtv->keys_pressed().at(4));
+  EXPECT_EQ(ui::VKEY_9, mtv->keys_pressed()[0]);
+  EXPECT_EQ(ui::VKEY_9, mtv->keys_pressed()[1]);
+  EXPECT_EQ(ui::VKEY_8, mtv->keys_pressed()[2]);
+  EXPECT_EQ(ui::VKEY_9, mtv->keys_pressed()[3]);
+  EXPECT_EQ(ui::VKEY_7, mtv->keys_pressed()[4]);
   ASSERT_EQ(3U, mtv->keys_released().size());
-  EXPECT_EQ(ui::VKEY_9, mtv->keys_released().at(0));
-  EXPECT_EQ(ui::VKEY_7, mtv->keys_released().at(1));
-  EXPECT_EQ(ui::VKEY_8, mtv->keys_released().at(2));
+  EXPECT_EQ(ui::VKEY_9, mtv->keys_released()[0]);
+  EXPECT_EQ(ui::VKEY_7, mtv->keys_released()[1]);
+  EXPECT_EQ(ui::VKEY_8, mtv->keys_released()[2]);
   EXPECT_FALSE(mtv->accelerator_pressed());
   mtv->Reset();
 

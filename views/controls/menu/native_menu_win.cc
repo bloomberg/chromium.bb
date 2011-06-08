@@ -705,7 +705,7 @@ void NativeMenuWin::UpdateMenuItemInfoForString(
   // Give Windows a pointer to the label string.
   mii->fMask |= MIIM_STRING;
   mii->dwTypeData =
-      const_cast<wchar_t*>(items_.at(model_index)->label.c_str());
+      const_cast<wchar_t*>(items_[model_index]->label.c_str());
 }
 
 UINT NativeMenuWin::GetAlignmentFlags(int alignment) const {
