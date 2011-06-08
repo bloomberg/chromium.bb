@@ -54,7 +54,7 @@ static SkBitmap* kCloseImage = NULL;
 
 namespace browser {
 
-void ShowBookmarkBubbleView(views::Window* parent,
+void ShowBookmarkBubbleView(views::Widget* parent,
                             const gfx::Rect& bounds,
                             BubbleDelegate* delegate,
                             Profile* profile,
@@ -79,7 +79,7 @@ bool IsBookmarkBubbleViewShowing() {
 BookmarkBubbleView* BookmarkBubbleView::bookmark_bubble_ = NULL;
 
 // static
-void BookmarkBubbleView::Show(views::Window* parent,
+void BookmarkBubbleView::Show(views::Widget* parent,
                               const gfx::Rect& bounds,
                               BubbleDelegate* delegate,
                               Profile* profile,

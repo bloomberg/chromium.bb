@@ -39,22 +39,8 @@ const NativeWidget* NativeWindowViews::AsNativeWidget() const {
   return this;
 }
 
-gfx::Rect NativeWindowViews::GetRestoredBounds() const {
-  NOTIMPLEMENTED();
-  return GetView()->bounds();
-}
-
-void NativeWindowViews::ShowNativeWindow(ShowState state) {
-  NOTIMPLEMENTED();
-  GetView()->SetVisible(true);
-}
-
 void NativeWindowViews::BecomeModal() {
   NOTIMPLEMENTED();
-}
-
-
-void NativeWindowViews::EnableClose(bool enable) {
 }
 
 }  // namespace views

@@ -704,7 +704,7 @@ void AutocompletePopupContentsView::UserPressedOptIn(bool opt_in) {
   counter->Hide();
   if (opt_in) {
     browser::ShowInstantConfirmDialogIfNecessary(
-        location_bar_->GetWindow()->GetNativeWindow(), model_->profile());
+        location_bar_->GetWidget()->GetNativeWindow(), model_->profile());
   }
   UpdatePopupAppearance();
 }

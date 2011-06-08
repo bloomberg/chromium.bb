@@ -66,20 +66,6 @@ HWND GetOwner(HWND window) {
   return ::GetWindow(window, GW_OWNER);
 }
 
-// Tells the window its frame (non-client area) has changed.
-void SendFrameChanged(HWND window) {
-  SetWindowPos(window, NULL, 0, 0, 0, 0,
-      SWP_FRAMECHANGED | SWP_NOACTIVATE | SWP_NOCOPYBITS |
-      SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOREPOSITION |
-      SWP_NOSENDCHANGING | SWP_NOSIZE | SWP_NOZORDER);
-}
-
-// Enables or disables the menu item for the specified command and menu.
-void EnableMenuItem(HMENU menu, UINT command, bool enabled) {
-  UINT flags = MF_BYCOMMAND | (enabled ? MF_ENABLED : MF_DISABLED | MF_GRAYED);
-  EnableMenuItem(menu, command, flags);
-}
-
 }  // namespace
 
 namespace internal {
@@ -123,46 +109,6 @@ void EnsureRectIsVisibleInRect(const gfx::Rect& parent_rect,
 
 }  // namespace internal
 
-// A scoping class that prevents a window from being able to redraw in response
-// to invalidations that may occur within it for the lifetime of the object.
-//
-// Why would we want such a thing? Well, it turns out Windows has some
-// "unorthodox" behavior when it comes to painting its non-client areas.
-// Occasionally, Windows will paint portions of the default non-client area
-// right over the top of the custom frame. This is not simply fixed by handling
-// WM_NCPAINT/WM_PAINT, with some investigation it turns out that this
-// rendering is being done *inside* the default implementation of some message
-// handlers and functions:
-//  . WM_SETTEXT
-//  . WM_SETICON
-//  . WM_NCLBUTTONDOWN
-//  . EnableMenuItem, called from our WM_INITMENU handler
-// The solution is to handle these messages and call DefWindowProc ourselves,
-// but prevent the window from being able to update itself for the duration of
-// the call. We do this with this class, which automatically calls its
-// associated Window's lock and unlock functions as it is created and destroyed.
-// See documentation in those methods for the technique used.
-//
-// IMPORTANT: Do not use this scoping object for large scopes or periods of
-//            time! IT WILL PREVENT THE WINDOW FROM BEING REDRAWN! (duh).
-//
-// I would love to hear Raymond Chen's explanation for all this. And maybe a
-// list of other messages that this applies to ;-)
-class NativeWindowWin::ScopedRedrawLock {
- public:
-  explicit ScopedRedrawLock(NativeWindowWin* window) : window_(window) {
-    window_->LockUpdates();
-  }
-
-  ~ScopedRedrawLock() {
-    window_->UnlockUpdates();
-  }
-
- private:
-  // The window having its style changed.
-  NativeWindowWin* window_;
-};
-
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWindowWin, public:
 
@@ -170,9 +116,6 @@ NativeWindowWin::NativeWindowWin(internal::NativeWindowDelegate* delegate)
     : NativeWidgetWin(delegate->AsNativeWidgetDelegate()),
       delegate_(delegate),
       restored_enabled_(false),
-      is_active_(false),
-      lock_updates_(false),
-      saved_window_style_(0),
       ignore_window_pos_changes_(false),
       ignore_pos_changes_factory_(this),
       is_right_mouse_pressed_on_caption_(false),
@@ -187,29 +130,6 @@ NativeWindowWin::NativeWindowWin(internal::NativeWindowDelegate* delegate)
 NativeWindowWin::~NativeWindowWin() {
 }
 
-void NativeWindowWin::Show(int show_state) {
-  ShowWindow(show_state);
-  // When launched from certain programs like bash and Windows Live Messenger,
-  // show_state is set to SW_HIDE, so we need to correct that condition. We
-  // don't just change show_state to SW_SHOWNORMAL because MSDN says we must
-  // always first call ShowWindow with the specified value from STARTUPINFO,
-  // otherwise all future ShowWindow calls will be ignored (!!#@@#!). Instead,
-  // we call ShowWindow again in this case.
-  if (show_state == SW_HIDE) {
-    show_state = SW_SHOWNORMAL;
-    ShowWindow(show_state);
-  }
-
-  // We need to explicitly activate the window if we've been shown with a state
-  // that should activate, because if we're opened from a desktop shortcut while
-  // an existing window is already running it doesn't seem to be enough to use
-  // one of these flags to activate the window.
-  if (show_state == SW_SHOWNORMAL || show_state == SW_SHOWMAXIMIZED)
-    Activate();
-
-  SetInitialFocus();
-}
-
 // static
 gfx::Font NativeWindowWin::GetWindowTitleFont() {
   NONCLIENTMETRICS ncm;
@@ -217,40 +137,6 @@ gfx::Font NativeWindowWin::GetWindowTitleFont() {
   l10n_util::AdjustUIFont(&(ncm.lfCaptionFont));
   base::win::ScopedHFONT caption_font(CreateFontIndirect(&(ncm.lfCaptionFont)));
   return gfx::Font(caption_font);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// NativeWindowWin, protected:
-
-gfx::Insets NativeWindowWin::GetClientAreaInsets() const {
-  // Returning an empty Insets object causes the default handling in
-  // NativeWidgetWin::OnNCCalcSize() to be invoked.
-  if (GetWindow()->ShouldUseNativeFrame())
-    return gfx::Insets();
-
-  if (IsMaximized()) {
-    // Windows automatically adds a standard width border to all sides when a
-    // window is maximized.
-    int border_thickness = GetSystemMetrics(SM_CXSIZEFRAME);
-    return gfx::Insets(border_thickness, border_thickness, border_thickness,
-                       border_thickness);
-  }
-  // This is weird, but highly essential. If we don't offset the bottom edge
-  // of the client rect, the window client area and window area will match,
-  // and when returning to glass rendering mode from non-glass, the client
-  // area will not paint black as transparent. This is because (and I don't
-  // know why) the client area goes from matching the window rect to being
-  // something else. If the client area is not the window rect in both
-  // modes, the blackness doesn't occur. Because of this, we need to tell
-  // the RootView to lay out to fit the window rect, rather than the client
-  // rect when using the opaque frame.
-  // Note: this is only required for non-fullscreen windows. Note that
-  // fullscreen windows are in restored state, not maximized.
-  return gfx::Insets(0, 0, IsFullscreen() ? 0 : 1, 0);
-}
-
-int NativeWindowWin::GetShowState() const {
-  return SW_SHOWNORMAL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -268,81 +154,9 @@ void NativeWindowWin::InitNativeWidget(const Widget::InitParams& params) {
   NativeWidgetWin::InitNativeWidget(params);
 }
 
-void NativeWindowWin::OnActivateApp(BOOL active, DWORD thread_id) {
-  if (!active && thread_id != GetCurrentThreadId()) {
-    // Another application was activated, we should reset any state that
-    // disables inactive rendering now.
-    delegate_->EnableInactiveRendering();
-    // Update the native frame too, since it could be rendering the non-client
-    // area.
-    CallDefaultNCActivateHandler(FALSE);
-  }
-}
-
 void NativeWindowWin::OnDestroy() {
-  delegate_->OnNativeWindowDestroying();
   RestoreEnabledIfNecessary();
   NativeWidgetWin::OnDestroy();
-}
-
-LRESULT NativeWindowWin::OnDwmCompositionChanged(UINT msg,
-                                                 WPARAM w_param,
-                                                 LPARAM l_param) {
-  // For some reason, we need to hide the window while we're changing the frame
-  // type only when we're changing it in response to WM_DWMCOMPOSITIONCHANGED.
-  // If we don't, the client area will be filled with black. I'm suspecting
-  // something skia-ey.
-  // Frame type toggling caused by the user (e.g. switching theme) doesn't seem
-  // to have this requirement.
-  FrameTypeChanged();
-  return 0;
-}
-
-void NativeWindowWin::OnEnterSizeMove() {
-  NativeWidgetWin::OnEnterSizeMove();
-  delegate_->OnNativeWindowBeginUserBoundsChange();
-}
-
-void NativeWindowWin::OnExitSizeMove() {
-  NativeWidgetWin::OnExitSizeMove();
-  delegate_->OnNativeWindowEndUserBoundsChange();
-}
-
-void NativeWindowWin::OnGetMinMaxInfo(MINMAXINFO* minmax_info) {
-  gfx::Size min_window_size(delegate_->GetMinimumSize());
-  minmax_info->ptMinTrackSize.x = min_window_size.width();
-  minmax_info->ptMinTrackSize.y = min_window_size.height();
-  NativeWidgetWin::OnGetMinMaxInfo(minmax_info);
-}
-
-void NativeWindowWin::OnInitMenu(HMENU menu) {
-  // We only need to manually enable the system menu if we're not using a native
-  // frame.
-  if (GetWindow()->ShouldUseNativeFrame())
-    NativeWidgetWin::OnInitMenu(menu);
-
-  bool is_fullscreen = IsFullscreen();
-  bool is_minimized = IsMinimized();
-  bool is_maximized = IsMaximized();
-  bool is_restored = !is_fullscreen && !is_minimized && !is_maximized;
-
-  ScopedRedrawLock lock(this);
-  EnableMenuItem(menu, SC_RESTORE, is_minimized || is_maximized);
-  EnableMenuItem(menu, SC_MOVE, is_restored);
-  EnableMenuItem(menu, SC_SIZE,
-                 GetWindow()->window_delegate()->CanResize() && is_restored);
-  EnableMenuItem(menu, SC_MAXIMIZE,
-                 GetWindow()->window_delegate()->CanMaximize() &&
-                     !is_fullscreen && !is_maximized);
-  EnableMenuItem(menu, SC_MINIMIZE,
-                 GetWindow()->window_delegate()->CanMaximize() &&
-                     !is_minimized);
-}
-
-LRESULT NativeWindowWin::OnMouseActivate(UINT message,
-                                         WPARAM w_param,
-                                         LPARAM l_param) {
-  return delegate_->CanActivate() ? MA_ACTIVATE : MA_NOACTIVATEANDEAT;
 }
 
 LRESULT NativeWindowWin::OnMouseRange(UINT message,
@@ -419,51 +233,6 @@ LRESULT NativeWindowWin::OnMouseRange(UINT message,
 
   NativeWidgetWin::OnMouseRange(message, w_param, l_param);
   return 0;
-}
-
-namespace {
-BOOL CALLBACK EnumChildWindowsForRedraw(HWND hwnd, LPARAM lparam) {
-  DWORD process_id;
-  GetWindowThreadProcessId(hwnd, &process_id);
-  int flags = RDW_INVALIDATE | RDW_NOCHILDREN | RDW_FRAME;
-  if (process_id == GetCurrentProcessId())
-    flags |= RDW_UPDATENOW;
-  RedrawWindow(hwnd, NULL, NULL, flags);
-  return TRUE;
-}
-}  // namespace
-
-LRESULT NativeWindowWin::OnNCActivate(BOOL active) {
-  if (!delegate_->CanActivate())
-    return TRUE;
-
-  is_active_ = !!active;
-  delegate_->OnNativeWindowActivationChanged(is_active_);
-
-  // The frame may need to redraw as a result of the activation change.
-  // We can get WM_NCACTIVATE before we're actually visible. If we're not
-  // visible, no need to paint.
-  if (IsVisible())
-    GetWindow()->non_client_view()->SchedulePaint();
-
-  if (!GetWindow()->ShouldUseNativeFrame()) {
-    // TODO(beng, et al): Hack to redraw this window and child windows
-    //     synchronously upon activation. Not all child windows are redrawing
-    //     themselves leading to issues like http://crbug.com/74604
-    //     We redraw out-of-process HWNDs asynchronously to avoid hanging the
-    //     whole app if a child HWND belonging to a hung plugin is encountered.
-    RedrawWindow(GetNativeView(), NULL, NULL,
-                 RDW_NOCHILDREN | RDW_INVALIDATE | RDW_UPDATENOW);
-    EnumChildWindows(GetNativeView(), EnumChildWindowsForRedraw, NULL);
-  }
-
-  // If we're active again, we should be allowed to render as inactive, so
-  // tell the non-client view.
-  bool inactive_rendering_disabled = delegate_->IsInactiveRenderingDisabled();
-  if (IsActive())
-    delegate_->EnableInactiveRendering();
-
-  return CallDefaultNCActivateHandler(inactive_rendering_disabled || active);
 }
 
 LRESULT NativeWindowWin::OnNCCalcSize(BOOL mode, LPARAM l_param) {
@@ -544,30 +313,6 @@ LRESULT NativeWindowWin::OnNCCalcSize(BOOL mode, LPARAM l_param) {
   if (insets.left() == 0 || insets.top() == 0)
     return 0;
   return mode ? WVR_REDRAW : 0;
-}
-
-LRESULT NativeWindowWin::OnNCHitTest(const CPoint& point) {
-  // If the DWM is rendering the window controls, we need to give the DWM's
-  // default window procedure first chance to handle hit testing.
-  if (GetWindow()->ShouldUseNativeFrame()) {
-    LRESULT result;
-    if (DwmDefWindowProc(GetNativeView(), WM_NCHITTEST, 0,
-                         MAKELPARAM(point.x, point.y), &result)) {
-      return result;
-    }
-  }
-
-  // First, give the NonClientView a chance to test the point to see if it
-  // provides any of the non-client area.
-  POINT temp = point;
-  MapWindowPoints(HWND_DESKTOP, GetNativeView(), &temp, 1);
-  int component = delegate_->GetNonClientComponent(gfx::Point(temp));
-  if (component != HTNOWHERE)
-    return component;
-
-  // Otherwise, we let Windows do all the native frame non-client handling for
-  // us.
-  return NativeWidgetWin::OnNCHitTest(point);
 }
 
 namespace {
@@ -681,99 +426,6 @@ void NativeWindowWin::OnNCPaint(HRGN rgn) {
   SetMsgHandled(!GetWindow()->ShouldUseNativeFrame());
 }
 
-LRESULT NativeWindowWin::OnNCUAHDrawCaption(UINT msg,
-                                            WPARAM w_param,
-                                            LPARAM l_param) {
-  // See comment in widget_win.h at the definition of WM_NCUAHDRAWCAPTION for
-  // an explanation about why we need to handle this message.
-  SetMsgHandled(!GetWindow()->ShouldUseNativeFrame());
-  return 0;
-}
-
-LRESULT NativeWindowWin::OnNCUAHDrawFrame(UINT msg,
-                                          WPARAM w_param,
-                                          LPARAM l_param) {
-  // See comment in widget_win.h at the definition of WM_NCUAHDRAWCAPTION for
-  // an explanation about why we need to handle this message.
-  SetMsgHandled(!GetWindow()->ShouldUseNativeFrame());
-  return 0;
-}
-
-LRESULT NativeWindowWin::OnSetCursor(UINT msg,
-                                     WPARAM w_param,
-                                     LPARAM l_param) {
-  // This shouldn't hurt even if we're using the native frame.
-  ScopedRedrawLock lock(this);
-  return DefWindowProc(GetNativeView(), msg, w_param, l_param);
-}
-
-LRESULT NativeWindowWin::OnSetIcon(UINT size_type, HICON new_icon) {
-  // This shouldn't hurt even if we're using the native frame.
-  ScopedRedrawLock lock(this);
-  return DefWindowProc(GetNativeView(), WM_SETICON, size_type,
-                       reinterpret_cast<LPARAM>(new_icon));
-}
-
-LRESULT NativeWindowWin::OnSetText(const wchar_t* text) {
-  // This shouldn't hurt even if we're using the native frame.
-  ScopedRedrawLock lock(this);
-  return DefWindowProc(GetNativeView(), WM_SETTEXT, NULL,
-                       reinterpret_cast<LPARAM>(text));
-}
-
-void NativeWindowWin::OnSize(UINT size_param, const CSize& new_size) {
-  delegate_->OnNativeWindowBoundsChanged();
-  RedrawWindow(GetNativeView(), NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN);
-  NativeWidgetWin::OnSize(size_param, new_size);
-}
-
-void NativeWindowWin::OnSysCommand(UINT notification_code, CPoint click) {
-  // Windows uses the 4 lower order bits of |notification_code| for type-
-  // specific information so we must exclude this when comparing.
-  static const int sc_mask = 0xFFF0;
-  // Ignore size/move/maximize in fullscreen mode.
-  if (IsFullscreen() &&
-      (((notification_code & sc_mask) == SC_SIZE) ||
-       ((notification_code & sc_mask) == SC_MOVE) ||
-       ((notification_code & sc_mask) == SC_MAXIMIZE)))
-    return;
-  if (!GetWindow()->ShouldUseNativeFrame()) {
-    if ((notification_code & sc_mask) == SC_MINIMIZE ||
-        (notification_code & sc_mask) == SC_MAXIMIZE ||
-        (notification_code & sc_mask) == SC_RESTORE) {
-      GetWindow()->non_client_view()->ResetWindowControls();
-    } else if ((notification_code & sc_mask) == SC_MOVE ||
-               (notification_code & sc_mask) == SC_SIZE) {
-      if (lock_updates_) {
-        // We were locked, before entering a resize or move modal loop. Now that
-        // we've begun to move the window, we need to unlock updates so that the
-        // sizing/moving feedback can be continuous.
-        UnlockUpdates();
-      }
-    }
-  }
-
-  // Handle SC_KEYMENU, which means that the user has pressed the ALT
-  // key and released it, so we should focus the menu bar.
-  if ((notification_code & sc_mask) == SC_KEYMENU && click.x == 0) {
-    // Retrieve the status of shift and control keys to prevent consuming
-    // shift+alt keys, which are used by Windows to change input languages.
-    Accelerator accelerator(ui::KeyboardCodeForWindowsKeyCode(VK_MENU),
-                            !!(GetKeyState(VK_SHIFT) & 0x8000),
-                            !!(GetKeyState(VK_CONTROL) & 0x8000),
-                            false);
-    AsNativeWidget()->GetWidget()->GetFocusManager()->
-        ProcessAccelerator(accelerator);
-    return;
-  }
-
-  // If the delegate can't handle it, the system implementation will be called.
-  if (!delegate_->ExecuteCommand(notification_code)) {
-    DefWindowProc(GetNativeView(), WM_SYSCOMMAND, notification_code,
-                  MAKELPARAM(click.x, click.y));
-  }
-}
-
 void NativeWindowWin::OnWindowPosChanging(WINDOWPOS* window_pos) {
   if (ignore_window_pos_changes_) {
     // If somebody's trying to toggle our visibility, change the nonclient area,
@@ -858,33 +510,6 @@ const NativeWidget* NativeWindowWin::AsNativeWidget() const {
   return this;
 }
 
-gfx::Rect NativeWindowWin::GetRestoredBounds() const {
-  // If we're in fullscreen mode, we've changed the normal bounds to the monitor
-  // rect, so return the saved bounds instead.
-  if (IsFullscreen())
-    return gfx::Rect(saved_window_info_.window_rect);
-
-  gfx::Rect bounds;
-  GetWindowBoundsAndMaximizedState(&bounds, NULL);
-  return bounds;
-}
-
-void NativeWindowWin::ShowNativeWindow(ShowState state) {
-  DWORD native_show_state;
-  switch (state) {
-    case SHOW_INACTIVE:
-      native_show_state = SW_SHOWNOACTIVATE;
-      break;
-    case SHOW_MAXIMIZED:
-      native_show_state = SW_SHOWMAXIMIZED;
-      break;
-    default:
-      native_show_state = GetShowState();
-      break;
-  }
-  Show(native_show_state);
-}
-
 void NativeWindowWin::BecomeModal() {
   // We implement modality by crawling up the hierarchy of windows starting
   // at the owner, disabling all of them so that they don't receive input
@@ -894,22 +519,6 @@ void NativeWindowWin::BecomeModal() {
     ::EnableWindow(start, FALSE);
     start = ::GetParent(start);
   }
-}
-
-void NativeWindowWin::EnableClose(bool enable) {
-  // Disable the native frame's close button regardless of whether or not the
-  // native frame is in use, since this also affects the system menu.
-  EnableMenuItem(GetSystemMenu(GetNativeView(), false), SC_CLOSE, enable);
-  SendFrameChanged(GetNativeView());
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// NativeWindowWin, NativeWidgetWin overrides:
-
-bool NativeWindowWin::IsActive() const {
-  // TODO(beng): evaluate whether or not this is needed. NativeWidgetWin checks
-  //             active-state with the OS using GetWindowInfo().
-  return is_active_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -951,25 +560,6 @@ DWORD NativeWindowWin::CalculateWindowStyle() {
 
 DWORD NativeWindowWin::CalculateWindowExStyle() {
   return delegate_->IsDialogBox() ? WS_EX_DLGMODALFRAME : 0;
-}
-
-void NativeWindowWin::LockUpdates() {
-  lock_updates_ = true;
-  saved_window_style_ = GetWindowLong(GWL_STYLE);
-  SetWindowLong(GWL_STYLE, saved_window_style_ & ~WS_VISIBLE);
-}
-
-void NativeWindowWin::UnlockUpdates() {
-  SetWindowLong(GWL_STYLE, saved_window_style_);
-  lock_updates_ = false;
-}
-
-LRESULT NativeWindowWin::CallDefaultNCActivateHandler(BOOL active) {
-  // The DefWindowProc handling for WM_NCACTIVATE renders the classic-look
-  // window title bar directly, so we need to use a redraw lock here to prevent
-  // it from doing so.
-  ScopedRedrawLock lock(this);
-  return DefWindowProc(GetNativeView(), WM_NCACTIVATE, active, 0);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

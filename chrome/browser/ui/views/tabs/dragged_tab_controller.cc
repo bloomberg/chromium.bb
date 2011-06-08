@@ -926,7 +926,7 @@ void DraggedTabController::Attach(BaseTabStrip* attached_tabstrip,
   }
 
   // Move the corresponding window to the front.
-  attached_tabstrip_->GetWindow()->Activate();
+  attached_tabstrip_->GetWidget()->Activate();
 }
 
 void DraggedTabController::Detach() {
@@ -1275,8 +1275,8 @@ void DraggedTabController::CompleteDrag() {
       }
     }
     // Compel the model to construct a new window for the detached TabContents.
-    views::Window* window = source_tabstrip_->GetWindow();
-    gfx::Rect window_bounds(window->GetNormalBounds());
+    views::Widget* widget = source_tabstrip_->GetWidget();
+    gfx::Rect window_bounds(widget->GetRestoredBounds());
     window_bounds.set_origin(GetWindowCreatePoint());
     // When modifying the following if statement, please make sure not to
     // introduce issue listed in http://crbug.com/6223 comment #11.
@@ -1290,7 +1290,7 @@ void DraggedTabController::CompleteDrag() {
     Browser* new_browser =
         GetModel(source_tabstrip_)->delegate()->CreateNewStripWithContents(
             drag_data_[0].contents, window_bounds, dock_info_,
-            window->IsMaximized());
+            widget->IsMaximized());
     TabStripModel* new_model = new_browser->tabstrip_model();
     new_model->SetTabPinned(
         new_model->GetIndexOfTabContents(drag_data_[0].contents),

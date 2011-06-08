@@ -64,7 +64,7 @@ void WebUILoginDisplay::Init(const std::vector<UserManager::User>& users,
   DCHECK(delegate_);
   users_ = users;
 
-  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.bounds = background_bounds_;
 
   login_window_ = new views::Widget;

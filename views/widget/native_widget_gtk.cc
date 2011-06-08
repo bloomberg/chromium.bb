@@ -445,7 +445,7 @@ void NativeWidgetGtk::DoDrag(const OSExchangeData& data, int operation) {
 }
 
 void NativeWidgetGtk::IsActiveChanged() {
-  GetWidget()->widget_delegate()->OnWidgetActivated(IsActive());
+  delegate_->OnNativeWidgetActivationChanged(IsActive());
 }
 
 void NativeWidgetGtk::SetInitialFocus() {
@@ -927,6 +927,11 @@ gfx::Rect NativeWidgetGtk::GetClientAreaScreenBounds() const {
   return gfx::Rect(x, y, w, h);
 }
 
+gfx::Rect NativeWidgetGtk::GetRestoredBounds() const {
+  // We currently don't support tiling, so this doesn't matter.
+  return GetWindowScreenBounds();
+}
+
 void NativeWidgetGtk::SetBounds(const gfx::Rect& bounds) {
   if (child_) {
     GtkWidget* parent = gtk_widget_get_parent(widget_);
@@ -1020,6 +1025,10 @@ void NativeWidgetGtk::CloseNow() {
   }
 }
 
+void NativeWidgetGtk::EnableClose(bool enable) {
+  gtk_window_set_deletable(GetNativeWindow(), enable);
+}
+
 void NativeWidgetGtk::Show() {
   if (widget_) {
     gtk_widget_show(widget_);
@@ -1034,6 +1043,13 @@ void NativeWidgetGtk::Hide() {
     if (widget_->window)
       gdk_window_lower(widget_->window);
   }
+}
+
+void NativeWidgetGtk::ShowNativeWidget(ShowState state) {
+  // No concept of maximization (yet) on ChromeOS.
+  if (state == NativeWidget::SHOW_INACTIVE)
+    gtk_window_set_focus_on_map(GetNativeWindow(), false);
+  gtk_widget_show(GetNativeView());
 }
 
 bool NativeWidgetGtk::IsVisible() const {
@@ -1077,10 +1093,14 @@ bool NativeWidgetGtk::IsMinimized() const {
 }
 
 void NativeWidgetGtk::Restore() {
-  if (IsMaximized())
-    gtk_window_unmaximize(GetNativeWindow());
-  else if (IsMinimized())
-    gtk_window_deiconify(GetNativeWindow());
+  if (IsFullscreen()) {
+    SetFullscreen(false);
+  } else {
+    if (IsMaximized())
+      gtk_window_unmaximize(GetNativeWindow());
+    else if (IsMinimized())
+      gtk_window_deiconify(GetNativeWindow());
+  }
 }
 
 void NativeWidgetGtk::SetFullscreen(bool fullscreen) {
@@ -1174,7 +1194,7 @@ void NativeWidgetGtk::OnSizeAllocate(GtkWidget* widget,
   if (new_size == size_)
     return;
   size_ = new_size;
-  delegate_->OnSizeChanged(size_);
+  delegate_->OnNativeWidgetSizeChanged(size_);
 }
 
 gboolean NativeWidgetGtk::OnPaint(GtkWidget* widget, GdkEventExpose* event) {
@@ -1440,6 +1460,7 @@ void NativeWidgetGtk::OnGrabNotify(GtkWidget* widget, gboolean was_grabbed) {
 }
 
 void NativeWidgetGtk::OnDestroy(GtkWidget* object) {
+  delegate_->OnNativeWidgetDestroying();
   if (!child_)
     ActiveWindowWatcherX::RemoveObserver(this);
   // Note that this handler is hooked to GtkObject::destroy.

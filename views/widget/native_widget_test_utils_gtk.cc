@@ -17,7 +17,7 @@ NativeWidget* CreateNativeWidget() {
 
 NativeWidget* CreateNativeWidgetWithContents(View* contents_view) {
   Widget* widget = new Widget;
-  Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
+  Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = gfx::Rect(10, 10, 200, 200);
   widget->Init(params);

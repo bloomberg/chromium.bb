@@ -81,7 +81,7 @@ PanelScroller::~PanelScroller() {
 // static
 PanelScroller* PanelScroller::CreateWindow() {
   views::Widget* widget = new views::Widget;
-  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.bounds = gfx::Rect(0, 0, 100, 800);
   widget->Init(params);
 

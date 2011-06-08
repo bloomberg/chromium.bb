@@ -5,7 +5,6 @@
 #include "views/window/window.h"
 
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_font_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -32,9 +31,7 @@ Window::InitParams::InitParams(WindowDelegate* window_delegate)
 Window::Window()
     : native_window_(NULL),
       saved_maximized_state_(false),
-      minimum_size_(100, 100),
-      disable_inactive_rendering_(false),
-      window_closed_(false) {
+      minimum_size_(100, 100) {
 }
 
 Window::~Window() {
@@ -88,95 +85,29 @@ void Window::InitWindow(const InitParams& params) {
   OnNativeWindowCreated(modified_params.widget_init_params.bounds);
 }
 
-gfx::Rect Window::GetBounds() const {
-  return GetWindowScreenBounds();
-}
-
-gfx::Rect Window::GetNormalBounds() const {
-  return native_window_->GetRestoredBounds();
-}
-
-void Window::ShowInactive() {
-  native_window_->ShowNativeWindow(NativeWindow::SHOW_INACTIVE);
-}
-
-void Window::DisableInactiveRendering() {
-  disable_inactive_rendering_ = true;
-  non_client_view()->DisableInactiveRendering(disable_inactive_rendering_);
-}
-
-void Window::EnableClose(bool enable) {
-  non_client_view()->EnableClose(enable);
-  native_window_->EnableClose(enable);
-}
-
-void Window::UpdateWindowTitle() {
-  // If the non-client view is rendering its own title, it'll need to relayout
-  // now.
-  non_client_view()->Layout();
-
-  // Update the native frame's text. We do this regardless of whether or not
-  // the native frame is being used, since this also updates the taskbar, etc.
-  string16 window_title;
-  if (native_window_->AsNativeWidget()->IsScreenReaderActive()) {
-    window_title = WideToUTF16(widget_delegate()->GetAccessibleWindowTitle());
-  } else {
-    window_title = WideToUTF16(widget_delegate()->GetWindowTitle());
-  }
-  base::i18n::AdjustStringForLocaleDirection(&window_title);
-  native_window_->AsNativeWidget()->SetWindowTitle(UTF16ToWide(window_title));
-}
-
-void Window::UpdateWindowIcon() {
-  non_client_view()->UpdateWindowIcon();
-  native_window_->AsNativeWidget()->SetWindowIcons(
-      widget_delegate()->GetWindowIcon(),
-      widget_delegate()->GetWindowAppIcon());
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // Window, Widget overrides:
 
 void Window::Show() {
-  native_window_->ShowNativeWindow(
-      saved_maximized_state_ ? NativeWindow::SHOW_MAXIMIZED
-          : NativeWindow::SHOW_RESTORED);
+  native_window_->AsNativeWidget()->ShowNativeWidget(
+      saved_maximized_state_ ? NativeWidget::SHOW_MAXIMIZED
+          : NativeWidget::SHOW_RESTORED);
   // |saved_maximized_state_| only applies the first time the window is shown.
   // If we don't reset the value the window will be shown maximized every time
   // it is subsequently shown after being hidden.
   saved_maximized_state_ = false;
 }
 
-void Window::Close() {
-  if (window_closed_) {
-    // It appears we can hit this code path if you close a modal dialog then
-    // close the last browser before the destructor is hit, which triggers
-    // invoking Close again.
-    return;
-  }
+Window* Window::AsWindow() {
+  return this;
+}
 
-  if (non_client_view()->CanClose()) {
-    SaveWindowPosition();
-    Widget::Close();
-    window_closed_ = true;
-  }
+const Window* Window::AsWindow() const {
+  return this;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Window, internal::NativeWindowDelegate implementation:
-
-bool Window::CanActivate() const {
-  return widget_delegate()->CanActivate();
-}
-
-bool Window::IsInactiveRenderingDisabled() const {
-  return disable_inactive_rendering_;
-}
-
-void Window::EnableInactiveRendering() {
-  disable_inactive_rendering_ = false;
-  non_client_view()->DisableInactiveRendering(false);
-}
 
 bool Window::IsModal() const {
   return widget_delegate()->IsModal();
@@ -186,62 +117,12 @@ bool Window::IsDialogBox() const {
   return !!widget_delegate()->AsDialogDelegate();
 }
 
-gfx::Size Window::GetMinimumSize() {
-  return non_client_view()->GetMinimumSize();
-}
-
-int Window::GetNonClientComponent(const gfx::Point& point) {
-  return non_client_view()->NonClientHitTest(point);
-}
-
-bool Window::ExecuteCommand(int command_id) {
-  return widget_delegate()->ExecuteWindowsCommand(command_id);
-}
-
 void Window::OnNativeWindowCreated(const gfx::Rect& bounds) {
   if (widget_delegate()->IsModal())
     native_window_->BecomeModal();
 
-  // Create the ClientView, add it to the NonClientView and add the
-  // NonClientView to the RootView. This will cause everything to be parented.
-  non_client_view()->set_client_view(
-      widget_delegate()->CreateClientView(this));
-  SetContentsView(non_client_view());
-
   UpdateWindowTitle();
-  native_window_->AsNativeWidget()->SetAccessibleRole(
-      widget_delegate()->GetAccessibleWindowRole());
-  native_window_->AsNativeWidget()->SetAccessibleState(
-      widget_delegate()->GetAccessibleWindowState());
-
   SetInitialBounds(bounds);
-}
-
-void Window::OnNativeWindowActivationChanged(bool active) {
-  if (!active)
-    SaveWindowPosition();
-  widget_delegate()->OnWindowActivationChanged(active);
-}
-
-void Window::OnNativeWindowBeginUserBoundsChange() {
-  widget_delegate()->OnWindowBeginUserBoundsChange();
-}
-
-void Window::OnNativeWindowEndUserBoundsChange() {
-  widget_delegate()->OnWindowEndUserBoundsChange();
-}
-
-void Window::OnNativeWindowDestroying() {
-  non_client_view()->WindowClosing();
-  widget_delegate()->WindowClosing();
-}
-
-void Window::OnNativeWindowBoundsChanged() {
-  SaveWindowPosition();
-}
-
-Window* Window::AsWindow() {
-  return this;
 }
 
 internal::NativeWidgetDelegate* Window::AsNativeWidgetDelegate() {
@@ -297,22 +178,6 @@ void Window::SetInitialBounds(const gfx::Rect& bounds) {
       SetBoundsConstrained(bounds, NULL);
     }
   }
-}
-
-void Window::SaveWindowPosition() {
-  // The window delegate does the actual saving for us. It seems like (judging
-  // by go/crash) that in some circumstances we can end up here after
-  // WM_DESTROY, at which point the window delegate is likely gone. So just
-  // bail.
-  if (!widget_delegate())
-    return;
-
-  bool maximized;
-  gfx::Rect bounds;
-  native_window_->AsNativeWidget()->GetWindowBoundsAndMaximizedState(
-      &bounds,
-      &maximized);
-  widget_delegate()->SaveWindowPlacement(bounds, maximized);
 }
 
 }  // namespace views

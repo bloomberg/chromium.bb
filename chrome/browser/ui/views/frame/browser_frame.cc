@@ -124,7 +124,7 @@ ThemeProvider* BrowserFrame::GetThemeProvider() const {
       browser_view_->browser()->profile());
 }
 
-void BrowserFrame::OnNativeWindowActivationChanged(bool active) {
+void BrowserFrame::OnNativeWidgetActivationChanged(bool active) {
   if (active) {
     // When running under remote desktop, if the remote desktop client is not
     // active on the users desktop, then none of the windows contained in the
@@ -134,6 +134,6 @@ void BrowserFrame::OnNativeWindowActivationChanged(bool active) {
     // treated as such by the rest of Chrome.
     BrowserList::SetLastActive(browser_view_->browser());
   }
-  Window::OnNativeWindowActivationChanged(active);
+  Window::OnNativeWidgetActivationChanged(active);
 }
 

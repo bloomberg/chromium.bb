@@ -613,7 +613,7 @@ bool TaskManagerView::ExecuteWindowsCommand(int command_id) {
     is_always_on_top_ = !is_always_on_top_;
 
     // Change the menu check state.
-    HMENU system_menu = GetSystemMenu(GetWindow()->GetNativeWindow(), FALSE);
+    HMENU system_menu = GetSystemMenu(GetWidget()->GetNativeWindow(), FALSE);
     MENUITEMINFO menu_info;
     memset(&menu_info, 0, sizeof(MENUITEMINFO));
     menu_info.cbSize = sizeof(MENUITEMINFO);
@@ -738,7 +738,7 @@ void TaskManagerView::AddAlwaysOnTopSystemMenuItem() {
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_ALWAYS_ON_TOP));
 
   // Let's insert a menu to the window.
-  HMENU system_menu = ::GetSystemMenu(GetWindow()->GetNativeWindow(), FALSE);
+  HMENU system_menu = ::GetSystemMenu(GetWidget()->GetNativeWindow(), FALSE);
   int index = ::GetMenuItemCount(system_menu) - 1;
   if (index < 0) {
     // Paranoia check.

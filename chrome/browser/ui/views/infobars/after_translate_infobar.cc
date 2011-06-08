@@ -178,6 +178,6 @@ void AfterTranslateInfoBar::RunMenu(View* source, const gfx::Point& pt) {
   views::MenuModelAdapter menu_model_adapter(menu_model);
   views::MenuItemView menu(&menu_model_adapter);
   menu_model_adapter.BuildMenu(&menu);
-  menu.RunMenuAt(source->GetWindow()->GetNativeWindow(), NULL,
+  menu.RunMenuAt(source->GetWidget()->GetNativeWindow(), NULL,
       gfx::Rect(pt, gfx::Size()), views::MenuItemView::TOPRIGHT, true);
 }

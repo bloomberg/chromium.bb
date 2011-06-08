@@ -172,7 +172,7 @@ void DesktopWindow::CreateTestWindow(const std::wstring& title,
   if (rotate) {
     ui::Transform transform;
     transform.SetRotate(90.0f);
-    transform.SetTranslateX(window->GetBounds().width());
+    transform.SetTranslateX(window->GetWindowScreenBounds().width());
     nwv->GetView()->SetTransform(transform);
   }
 }

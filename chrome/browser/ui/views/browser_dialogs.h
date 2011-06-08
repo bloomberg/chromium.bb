@@ -34,13 +34,14 @@ class Size;
 }
 
 namespace views {
+class Widget;
 class Window;
 }
 
 namespace browser {
 
 // Shows or hides the global bookmark bubble for the star button.
-void ShowBookmarkBubbleView(views::Window* parent,
+void ShowBookmarkBubbleView(views::Widget* parent,
                             const gfx::Rect& bounds,
                             BubbleDelegate* delegate,
                             Profile* profile,

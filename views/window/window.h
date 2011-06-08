@@ -64,34 +64,10 @@ class Window : public Widget,
   // operations are performed.
   void InitWindow(const InitParams& params);
 
-  // Retrieves the window's bounds, including its frame.
-  gfx::Rect GetBounds() const;
-
-  // Retrieves the restored bounds for the window.
-  gfx::Rect GetNormalBounds() const;
-
-  // Like Show(), but does not activate the window.
-  void ShowInactive();
-
-  // Prevents the window from being rendered as deactivated the next time it is.
-  // This state is reset automatically as soon as the window becomes activated
-  // again. There is no ability to control the state through this API as this
-  // leads to sync problems.
-  void DisableInactiveRendering();
-
-  // Toggles the enable state for the Close button (and the Close menu item in
-  // the system menu).
-  void EnableClose(bool enable);
-
-  // Tell the window to update its title from the delegate.
-  void UpdateWindowTitle();
-
-  // Tell the window to update its icon from the delegate.
-  void UpdateWindowIcon();
-
   // Overridden from Widget:
   virtual void Show() OVERRIDE;
-  virtual void Close() OVERRIDE;
+  virtual Window* AsWindow() OVERRIDE;
+  virtual const Window* AsWindow() const OVERRIDE;
 
   WindowDelegate* window_delegate() {
     return const_cast<WindowDelegate*>(
@@ -105,30 +81,14 @@ class Window : public Widget,
 
  protected:
   // Overridden from NativeWindowDelegate:
-  virtual bool CanActivate() const OVERRIDE;
-  virtual bool IsInactiveRenderingDisabled() const OVERRIDE;
-  virtual void EnableInactiveRendering() OVERRIDE;
   virtual bool IsModal() const OVERRIDE;
   virtual bool IsDialogBox() const OVERRIDE;
-  virtual gfx::Size GetMinimumSize() OVERRIDE;
-  virtual int GetNonClientComponent(const gfx::Point& point) OVERRIDE;
-  virtual bool ExecuteCommand(int command_id) OVERRIDE;
   virtual void OnNativeWindowCreated(const gfx::Rect& bounds) OVERRIDE;
-  virtual void OnNativeWindowActivationChanged(bool active) OVERRIDE;
-  virtual void OnNativeWindowBeginUserBoundsChange() OVERRIDE;
-  virtual void OnNativeWindowEndUserBoundsChange() OVERRIDE;
-  virtual void OnNativeWindowDestroying() OVERRIDE;
-  virtual void OnNativeWindowBoundsChanged() OVERRIDE;
-  virtual Window* AsWindow() OVERRIDE;
   virtual internal::NativeWidgetDelegate* AsNativeWidgetDelegate() OVERRIDE;
 
  private:
   // Sizes and positions the window just after it is created.
   void SetInitialBounds(const gfx::Rect& bounds);
-
-  // Persists the window's restored position and maximized state using the
-  // window delegate.
-  void SaveWindowPosition();
 
   NativeWindow* native_window_;
 
@@ -138,13 +98,6 @@ class Window : public Widget,
 
   // The smallest size the window can be.
   gfx::Size minimum_size_;
-
-  // True when the window should be rendered as active, regardless of whether
-  // or not it actually is.
-  bool disable_inactive_rendering_;
-
-  // Set to true if the window is in the process of closing .
-  bool window_closed_;
 
   DISALLOW_COPY_AND_ASSIGN(Window);
 };

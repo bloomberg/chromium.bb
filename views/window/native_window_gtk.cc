@@ -187,11 +187,6 @@ gboolean NativeWindowGtk::OnLeaveNotify(GtkWidget* widget,
   return NativeWidgetGtk::OnLeaveNotify(widget, event);
 }
 
-void NativeWindowGtk::IsActiveChanged() {
-  NativeWidgetGtk::IsActiveChanged();
-  delegate_->OnNativeWindowActivationChanged(IsActive());
-}
-
 void NativeWindowGtk::InitNativeWidget(const Widget::InitParams& params) {
   NativeWidgetGtk::InitNativeWidget(params);
 
@@ -210,24 +205,8 @@ const NativeWidget* NativeWindowGtk::AsNativeWidget() const {
   return this;
 }
 
-gfx::Rect NativeWindowGtk::GetRestoredBounds() const {
-  // We currently don't support tiling, so this doesn't matter.
-  return GetWindowScreenBounds();
-}
-
-void NativeWindowGtk::ShowNativeWindow(ShowState state) {
-  // No concept of maximization (yet) on ChromeOS.
-  if (state == NativeWindow::SHOW_INACTIVE)
-    gtk_window_set_focus_on_map(GetNativeWindow(), false);
-  gtk_widget_show(GetNativeView());
-}
-
 void NativeWindowGtk::BecomeModal() {
   gtk_window_set_modal(GetNativeWindow(), true);
-}
-
-void NativeWindowGtk::EnableClose(bool enable) {
-  gtk_window_set_deletable(GetNativeWindow(), enable);
 }
 
 Window* NativeWindowGtk::GetWindow() {
@@ -240,13 +219,6 @@ const Window* NativeWindowGtk::GetWindow() const {
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWindowGtk, NativeWidgetGtk overrides:
-
-void NativeWindowGtk::Restore() {
-  if (IsFullscreen())
-    SetFullscreen(false);
-  else
-    NativeWidgetGtk::Restore();
-}
 
 gboolean NativeWindowGtk::OnWindowStateEvent(GtkWidget* widget,
                                              GdkEventWindowState* event) {
@@ -274,11 +246,6 @@ void NativeWindowGtk::SaveWindowPosition() {
   GetWindow()->window_delegate()->SaveWindowPlacement(
       GetWidget()->GetWindowScreenBounds(),
       maximized);
-}
-
-void NativeWindowGtk::OnDestroy(GtkWidget* widget) {
-  delegate_->OnNativeWindowDestroying();
-  NativeWidgetGtk::OnDestroy(widget);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

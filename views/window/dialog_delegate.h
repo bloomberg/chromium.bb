@@ -96,10 +96,8 @@ class DialogDelegate : public WindowDelegate {
   virtual bool Accept();
 
   // Overridden from WindowDelegate:
-  virtual View* GetInitiallyFocusedView();
-
-  // Overridden from WindowDelegate:
-  virtual ClientView* CreateClientView(Window* window);
+  virtual View* GetInitiallyFocusedView() OVERRIDE;
+  virtual ClientView* CreateClientView(Widget* widget) OVERRIDE;
 
   // Called when the window has been closed.
   virtual void OnClose() {}

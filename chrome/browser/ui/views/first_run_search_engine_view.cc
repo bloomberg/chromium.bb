@@ -349,7 +349,7 @@ void FirstRunSearchEngineView::SetupControls() {
 
 void FirstRunSearchEngineView::Layout() {
   // Disable the close button.
-  GetWindow()->EnableClose(false);
+  GetWidget()->EnableClose(false);
 
   gfx::Size pref_size = background_image_->GetPreferredSize();
   background_image_->SetBounds(0, 0, GetPreferredSize().width(),

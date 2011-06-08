@@ -15,7 +15,7 @@ namespace views {
 
 class DialogDelegate;
 class NativeButton;
-class Window;
+class Widget;
 namespace internal {
 class RootView;
 }
@@ -36,15 +36,15 @@ class DialogClientView : public ClientView,
                          public ButtonListener,
                          public FocusChangeListener {
  public:
-  DialogClientView(Window* window, View* contents_view);
+  DialogClientView(Widget* widget, View* contents_view);
   virtual ~DialogClientView();
 
-  // Adds the dialog buttons required by the supplied WindowDelegate to the
+  // Adds the dialog buttons required by the supplied DialogDelegate to the
   // view.
   void ShowDialogButtons();
 
   // Updates the enabled state and label of the buttons required by the
-  // supplied WindowDelegate
+  // supplied DialogDelegate
   void UpdateDialogButtons();
 
   // Accept the changes made in the window that contains this ClientView.
@@ -70,7 +70,7 @@ class DialogClientView : public ClientView,
 
   // Overridden from ClientView:
   virtual bool CanClose() OVERRIDE;
-  virtual void WindowClosing() OVERRIDE;
+  virtual void WidgetClosing() OVERRIDE;
   virtual int NonClientHitTest(const gfx::Point& point) OVERRIDE;
   virtual DialogClientView* AsDialogClientView() OVERRIDE;
 
@@ -116,7 +116,7 @@ class DialogClientView : public ClientView,
   // Returns the DialogDelegate for the window.
   DialogDelegate* GetDialogDelegate() const;
 
-  // Closes the window.
+  // Closes the widget.
   void Close();
 
   // Updates focus listener.

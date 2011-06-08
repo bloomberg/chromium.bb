@@ -8,8 +8,8 @@
 #if defined(OS_LINUX)
 #include "views/window/hit_test.h"
 #endif
-#include "views/window/window.h"
-#include "views/window/window_delegate.h"
+#include "views/widget/widget.h"
+#include "views/widget/widget_delegate.h"
 
 namespace views {
 
@@ -20,8 +20,8 @@ const char ClientView::kViewClassName[] =
 ///////////////////////////////////////////////////////////////////////////////
 // ClientView, public:
 
-ClientView::ClientView(Window* window, View* contents_view)
-    : window_(window),
+ClientView::ClientView(Widget* widget, View* contents_view)
+    : widget_(widget),
       contents_view_(contents_view) {
 }
 
@@ -37,7 +37,7 @@ bool ClientView::CanClose() {
   return true;
 }
 
-void ClientView::WindowClosing() {
+void ClientView::WidgetClosing() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////

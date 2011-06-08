@@ -394,7 +394,7 @@ class BrowserView : public BrowserBubbleHost,
   virtual bool GetSavedWindowBounds(gfx::Rect* bounds) const OVERRIDE;
   virtual bool GetSavedMaximizedState(bool* maximized) const OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE;
-  virtual views::ClientView* CreateClientView(views::Window* window) OVERRIDE;
+  virtual views::ClientView* CreateClientView(views::Widget* widget) OVERRIDE;
   virtual void OnWindowActivationChanged(bool active) OVERRIDE;
   virtual void OnWindowBeginUserBoundsChange() OVERRIDE;
   virtual void OnWidgetMove() OVERRIDE;

@@ -126,11 +126,10 @@ void AccessibilityEventRouterViews::DispatchAccessibilityNotification(
   // the most recent profile where accessibility events were sent, or
   // the default profile.
   Profile* profile = NULL;
-  views::Window* window = view->GetWindow();
-  if (window) {
+  views::Widget* widget = view->GetWidget();
+  if (widget) {
     profile = reinterpret_cast<Profile*>(
-        window->AsWidget()->native_widget()->GetNativeWindowProperty(
-            Profile::kProfileKey));
+        widget->native_widget()->GetNativeWindowProperty(Profile::kProfileKey));
   }
   if (!profile)
     profile = most_recent_profile_;

@@ -426,7 +426,7 @@ void NotificationPanel::Show() {
     panel_widget_ = new views::Widget;
     // TODO(oshima): Using window because Popup widget behaves weird
     // when resizing. This needs to be investigated.
-    Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
+    Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
     // Enable double buffering because the panel has both pure views
     // control and native controls (scroll bar).
     params.double_buffer = true;

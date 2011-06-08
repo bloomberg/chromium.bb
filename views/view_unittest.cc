@@ -730,7 +730,7 @@ gfx::Point ConvertPointToView(View* view, const gfx::Point& p) {
 
 TEST_F(ViewTest, HitTestMasks) {
   Widget* widget = new Widget;
-  widget->Init(Widget::InitParams(Widget::InitParams::TYPE_WINDOW));
+  widget->Init(Widget::InitParams(Widget::InitParams::TYPE_POPUP));
   View* root_view = widget->GetRootView();
   root_view->SetBounds(0, 0, 500, 500);
 

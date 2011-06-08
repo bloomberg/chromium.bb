@@ -22,6 +22,7 @@ class ClientView;
 class DialogDelegate;
 class NonClientFrameView;
 class View;
+class Widget;
 class Window;
 
 // WidgetDelegate interface
@@ -137,8 +138,8 @@ class WidgetDelegate {
   virtual View* GetContentsView();
 
   // Called by the Window to create the Client View used to host the contents
-  // of the window.
-  virtual ClientView* CreateClientView(Window* window);
+  // of the widget.
+  virtual ClientView* CreateClientView(Widget* widget);
 
   // Called by the Widget to create the NonClient Frame View for this widget.
   // Return NULL to use the default one.

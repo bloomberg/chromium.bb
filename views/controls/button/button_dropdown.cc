@@ -158,14 +158,14 @@ void ButtonDropDown::ShowDropDownMenu(gfx::NativeView window) {
     MenuItemView menu(&menu_delegate);
     menu_delegate.BuildMenu(&menu);
 
-    menu.RunMenuAt(GetWindow()->GetNativeWindow(), NULL,
+    menu.RunMenuAt(GetWidget()->GetNativeWindow(), NULL,
                    gfx::Rect(menu_position, gfx::Size(0, 0)),
                    views::MenuItemView::TOPLEFT,
                    true);
   } else {
     MenuDelegate menu_delegate;
     MenuItemView menu(&menu_delegate);
-    menu.RunMenuAt(GetWindow()->GetNativeWindow(), NULL,
+    menu.RunMenuAt(GetWidget()->GetNativeWindow(), NULL,
                    gfx::Rect(menu_position, gfx::Size(0, 0)),
                    views::MenuItemView::TOPLEFT,
                    true);

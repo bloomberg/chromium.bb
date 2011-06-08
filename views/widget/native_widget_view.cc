@@ -36,7 +36,7 @@ void NativeWidgetView::ViewHierarchyChanged(bool is_add, View* parent,
 }
 
 void NativeWidgetView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  delegate()->OnSizeChanged(size());
+  delegate()->OnNativeWidgetSizeChanged(size());
 }
 
 void NativeWidgetView::OnPaint(gfx::Canvas* canvas) {

@@ -99,7 +99,6 @@ std::wstring WidgetDelegate::GetWindowName() const {
 
 void WidgetDelegate::SaveWindowPlacement(const gfx::Rect& bounds,
                                          bool maximized) {
-  DCHECK(window_);
   std::wstring window_name = GetWindowName();
   if (!ViewsDelegate::views_delegate || window_name.empty())
     return;
@@ -133,11 +132,11 @@ bool WidgetDelegate::ShouldRestoreWindowSize() const {
 }
 
 View* WidgetDelegate::GetContentsView() {
-  return NULL;
+  return new View;
 }
 
-ClientView* WidgetDelegate::CreateClientView(Window* window) {
-  return new ClientView(window, GetContentsView());
+ClientView* WidgetDelegate::CreateClientView(Widget* widget) {
+  return new ClientView(widget, GetContentsView());
 }
 
 NonClientFrameView* WidgetDelegate::CreateNonClientFrameView() {

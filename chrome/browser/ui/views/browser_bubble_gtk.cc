@@ -95,7 +95,7 @@ void BrowserBubble::InitPopup(const gfx::Insets& content_margins) {
   // TODO(port)
   BubbleWidget* bubble_widget = new BubbleWidget(this, content_margins);
   popup_ = bubble_widget->GetWidget();
-  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.transparent = true;
   params.parent = frame_->GetNativeView();
   params.native_widget = bubble_widget;

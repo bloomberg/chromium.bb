@@ -75,7 +75,7 @@ class BrowserFrame : public views::Window {
   virtual bool GetAccelerator(int command_id,
                               ui::Accelerator* accelerator) OVERRIDE;
   virtual ui::ThemeProvider* GetThemeProvider() const OVERRIDE;
-  virtual void OnNativeWindowActivationChanged(bool active) OVERRIDE;
+  virtual void OnNativeWidgetActivationChanged(bool active) OVERRIDE;
 
  private:
   NativeBrowserFrame* native_browser_frame_;

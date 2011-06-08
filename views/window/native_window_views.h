@@ -29,10 +29,7 @@ class NativeWindowViews : public NativeWidgetViews,
   virtual const Window* GetWindow() const OVERRIDE;
   virtual NativeWidget* AsNativeWidget() OVERRIDE;
   virtual const NativeWidget* AsNativeWidget() const OVERRIDE;
-  virtual gfx::Rect GetRestoredBounds() const OVERRIDE;
-  virtual void ShowNativeWindow(ShowState state) OVERRIDE;
   virtual void BecomeModal() OVERRIDE;
-  virtual void EnableClose(bool enable) OVERRIDE;
 
   internal::NativeWindowDelegate* delegate_;
 

@@ -152,9 +152,11 @@ class NativeWidget {
   virtual void SetAccessibleRole(ui::AccessibilityTypes::Role role) = 0;
   virtual void SetAccessibleState(ui::AccessibilityTypes::State state) = 0;
 
- protected:
-  friend class Widget;
-  friend class NativeWidgetViews;
+  enum ShowState {
+    SHOW_RESTORED,
+    SHOW_MAXIMIZED,
+    SHOW_INACTIVE
+  };
 
   // Returns a handle for the underlying native widget that can be used for
   // accelerated drawing.
@@ -164,6 +166,7 @@ class NativeWidget {
   // See method documentation in Widget.
   virtual gfx::Rect GetWindowScreenBounds() const = 0;
   virtual gfx::Rect GetClientAreaScreenBounds() const = 0;
+  virtual gfx::Rect GetRestoredBounds() const = 0;
   virtual void SetBounds(const gfx::Rect& bounds) = 0;
   virtual void SetSize(const gfx::Size& size) = 0;
   virtual void SetBoundsConstrained(const gfx::Rect& bounds,
@@ -172,8 +175,10 @@ class NativeWidget {
   virtual void SetShape(gfx::NativeRegion shape) = 0;
   virtual void Close() = 0;
   virtual void CloseNow() = 0;
+  virtual void EnableClose(bool enable) = 0;
   virtual void Show() = 0;
   virtual void Hide() = 0;
+  virtual void ShowNativeWidget(ShowState state) = 0;
   virtual bool IsVisible() const = 0;
   virtual void Activate() = 0;
   virtual void Deactivate() = 0;

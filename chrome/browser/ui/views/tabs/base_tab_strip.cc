@@ -136,7 +136,7 @@ void BaseTabStrip::AddTabAt(int model_index, const TabRendererData& data) {
 
   // Don't animate the first tab, it looks weird, and don't animate anything
   // if the containing window isn't visible yet.
-  if (tab_count() > 1 && GetWindow() && GetWindow()->IsVisible())
+  if (tab_count() > 1 && GetWidget() && GetWidget()->IsVisible())
     StartInsertTabAnimation(model_index);
   else
     DoLayout();
@@ -160,7 +160,7 @@ void BaseTabStrip::SetTabData(int model_index, const TabRendererData& data) {
   tab->SetData(data);
 
   if (mini_state_changed) {
-    if (GetWindow() && GetWindow()->IsVisible())
+    if (GetWidget() && GetWidget()->IsVisible())
       StartMiniTabAnimation();
     else
       DoLayout();

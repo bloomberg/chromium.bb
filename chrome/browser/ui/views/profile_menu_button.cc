@@ -55,7 +55,7 @@ void ProfileMenuButton::RunMenu(views::View* source, const gfx::Point &pt) {
   menu_model_adapter.BuildMenu(&menu);
 
   gfx::Point menu_point(pt.x(), pt.y() + kMenuDisplayOffset);
-  menu.RunMenuAt(source->GetWindow()->GetNativeWindow(), NULL,
+  menu.RunMenuAt(source->GetWidget()->GetNativeWindow(), NULL,
                  gfx::Rect(pt, gfx::Size(0, 0)),
                  views::MenuItemView::TOPRIGHT,
                  true);

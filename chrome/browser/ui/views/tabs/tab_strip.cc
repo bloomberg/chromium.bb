@@ -299,7 +299,7 @@ void TabStrip::PaintChildren(gfx::Canvas* canvas) {
     }
   }
 
-  if (GetWindow()->ShouldUseNativeFrame()) {
+  if (GetWidget()->ShouldUseNativeFrame()) {
     bool multiple_tabs_selected = (!selected_tabs.empty() ||
                                    tabs_dragging.size() > 1);
     // Make sure non-active tabs are somewhat transparent.

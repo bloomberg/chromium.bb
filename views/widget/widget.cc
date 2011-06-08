@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/utf_string_conversions.h"
 #include "ui/gfx/compositor/compositor.h"
 #include "views/focus/view_storage.h"
 #include "views/ime/input_method.h"
@@ -90,13 +91,14 @@ Widget::Widget()
     : is_mouse_button_pressed_(false),
       last_mouse_event_was_move_(false),
       native_widget_(NULL),
-      type_(InitParams::TYPE_WINDOW),
       widget_delegate_(NULL),
       non_client_view_(NULL),
       dragged_view_(NULL),
       ownership_(InitParams::NATIVE_WIDGET_OWNS_WIDGET),
       is_secondary_widget_(true),
-      frame_type_(FRAME_TYPE_DEFAULT) {
+      frame_type_(FRAME_TYPE_DEFAULT),
+      disable_inactive_rendering_(false),
+      widget_closed_(false) {
 }
 
 Widget::~Widget() {
@@ -124,7 +126,6 @@ Widget* Widget::GetWidgetForNativeView(gfx::NativeView native_view) {
 }
 
 void Widget::Init(const InitParams& params) {
-  type_ = params.type;
   widget_delegate_ =
       params.delegate ? params.delegate : new DefaultWidgetDelegate;
   ownership_ = params.ownership;
@@ -136,9 +137,13 @@ void Widget::Init(const InitParams& params) {
   if (params.type == InitParams::TYPE_MENU)
     is_mouse_button_pressed_ = native_widget_->IsMouseButtonDown();
   native_widget_->InitNativeWidget(params);
-  if (type_ == InitParams::TYPE_WINDOW) {
+  if (params.type == InitParams::TYPE_WINDOW) {
     non_client_view_ = new NonClientView;
     non_client_view_->SetFrameView(CreateNonClientFrameView());
+    // Create the ClientView, add it to the NonClientView and add the
+    // NonClientView to the RootView. This will cause everything to be parented.
+    non_client_view_->set_client_view(widget_delegate_->CreateClientView(this));
+    SetContentsView(non_client_view_);
   }
 }
 
@@ -189,6 +194,14 @@ void Widget::NotifyNativeViewHierarchyChanged(bool attached,
   root_view_->NotifyNativeViewHierarchyChanged(attached, native_view);
 }
 
+Window* Widget::AsWindow() {
+  return NULL;
+}
+
+const Window* Widget::AsWindow() const {
+  return NULL;
+}
+
 // Converted methods (see header) ----------------------------------------------
 
 Widget* Widget::GetTopLevelWidget() {
@@ -212,6 +225,10 @@ gfx::Rect Widget::GetWindowScreenBounds() const {
 
 gfx::Rect Widget::GetClientAreaScreenBounds() const {
   return native_widget_->GetClientAreaScreenBounds();
+}
+
+gfx::Rect Widget::GetRestoredBounds() const {
+  return native_widget_->GetRestoredBounds();
 }
 
 void Widget::SetBounds(const gfx::Rect& bounds) {
@@ -240,11 +257,30 @@ void Widget::SetShape(gfx::NativeRegion shape) {
 }
 
 void Widget::Close() {
-  native_widget_->Close();
+  if (widget_closed_) {
+    // It appears we can hit this code path if you close a modal dialog then
+    // close the last browser before the destructor is hit, which triggers
+    // invoking Close again.
+    return;
+  }
+
+  bool can_close = true;
+  if (non_client_view_)
+    can_close = non_client_view_->CanClose();
+  if (can_close) {
+    SaveWindowPosition();
+    native_widget_->Close();
+    widget_closed_ = true;
+  }
 }
 
 void Widget::CloseNow() {
   native_widget_->CloseNow();
+}
+
+void Widget::EnableClose(bool enable) {
+  non_client_view_->EnableClose(enable);
+  native_widget_->EnableClose(enable);
 }
 
 void Widget::Show() {
@@ -253,6 +289,10 @@ void Widget::Show() {
 
 void Widget::Hide() {
   native_widget_->Hide();
+}
+
+void Widget::ShowInactive() {
+  native_widget_->ShowNativeWidget(NativeWidget::SHOW_INACTIVE);
 }
 
 void Widget::Activate() {
@@ -265,6 +305,11 @@ void Widget::Deactivate() {
 
 bool Widget::IsActive() const {
   return native_widget_->IsActive();
+}
+
+void Widget::DisableInactiveRendering() {
+  disable_inactive_rendering_ = true;
+  non_client_view_->DisableInactiveRendering(disable_inactive_rendering_);
 }
 
 void Widget::SetAlwaysOnTop(bool on_top) {
@@ -387,6 +432,29 @@ void Widget::ResetLastMouseMoveFlag() {
   last_mouse_event_was_move_ = false;
 }
 
+void Widget::UpdateWindowTitle() {
+  // If the non-client view is rendering its own title, it'll need to relayout
+  // now.
+  non_client_view_->Layout();
+
+  // Update the native frame's text. We do this regardless of whether or not
+  // the native frame is being used, since this also updates the taskbar, etc.
+  string16 window_title;
+  if (native_widget_->IsScreenReaderActive()) {
+    window_title = WideToUTF16(widget_delegate_->GetAccessibleWindowTitle());
+  } else {
+    window_title = WideToUTF16(widget_delegate_->GetWindowTitle());
+  }
+  base::i18n::AdjustStringForLocaleDirection(&window_title);
+  native_widget_->SetWindowTitle(UTF16ToWide(window_title));
+}
+
+void Widget::UpdateWindowIcon() {
+  non_client_view_->UpdateWindowIcon();
+  native_widget_->SetWindowIcons(widget_delegate_->GetWindowIcon(),
+                                 widget_delegate_->GetWindowAppIcon());
+}
+
 FocusTraversable* Widget::GetFocusTraversable() {
   return static_cast<internal::RootView*>(root_view_.get());
 }
@@ -454,6 +522,28 @@ void Widget::NotifyAccessibilityEvent(
 ////////////////////////////////////////////////////////////////////////////////
 // Widget, NativeWidgetDelegate implementation:
 
+bool Widget::CanActivate() const {
+  return widget_delegate_->CanActivate();
+}
+
+bool Widget::IsInactiveRenderingDisabled() const {
+  return disable_inactive_rendering_;
+}
+
+void Widget::EnableInactiveRendering() {
+  disable_inactive_rendering_ = false;
+  non_client_view_->DisableInactiveRendering(false);
+}
+
+void Widget::OnNativeWidgetActivationChanged(bool active) {
+  if (!active)
+    SaveWindowPosition();
+
+  // TODO(beng): merge these two.
+  widget_delegate_->OnWidgetActivated(active);
+  widget_delegate_->OnWindowActivationChanged(active);
+}
+
 void Widget::OnNativeFocus(gfx::NativeView focused_view) {
   GetFocusManager()->GetWidgetFocusManager()->OnWidgetFocusEvent(
       focused_view,
@@ -473,6 +563,17 @@ void Widget::OnNativeWidgetCreated() {
     focus_manager_.reset(new FocusManager(this));
   }
   EnsureCompositor();
+
+  native_widget_->SetAccessibleRole(
+      widget_delegate_->GetAccessibleWindowRole());
+  native_widget_->SetAccessibleState(
+      widget_delegate_->GetAccessibleWindowState());
+}
+
+void Widget::OnNativeWidgetDestroying() {
+  if (non_client_view_)
+    non_client_view_->WindowClosing();
+  widget_delegate_->WindowClosing();
 }
 
 void Widget::OnNativeWidgetDestroyed() {
@@ -480,8 +581,20 @@ void Widget::OnNativeWidgetDestroyed() {
   widget_delegate_ = NULL;
 }
 
-void Widget::OnSizeChanged(const gfx::Size& new_size) {
+gfx::Size Widget::GetMinimumSize() {
+  return non_client_view_->GetMinimumSize();
+}
+
+void Widget::OnNativeWidgetSizeChanged(const gfx::Size& new_size) {
   root_view_->SetSize(new_size);
+}
+
+void Widget::OnNativeWidgetBeginUserBoundsChange() {
+  widget_delegate_->OnWindowBeginUserBoundsChange();
+}
+
+void Widget::OnNativeWidgetEndUserBoundsChange() {
+  widget_delegate_->OnWindowEndUserBoundsChange();
 }
 
 bool Widget::HasFocusManager() const {
@@ -512,6 +625,10 @@ void Widget::OnNativeWidgetPaint(gfx::Canvas* canvas) {
     compositor_->NotifyEnd();
   }
 #endif
+}
+
+int Widget::GetNonClientComponent(const gfx::Point& point) {
+  return non_client_view_->NonClientHitTest(point);
 }
 
 bool Widget::OnKeyEvent(const KeyEvent& event) {
@@ -568,6 +685,10 @@ void Widget::OnMouseCaptureLost() {
   if (is_mouse_button_pressed_)
     GetRootView()->OnMouseCaptureLost();
   is_mouse_button_pressed_ = false;
+}
+
+bool Widget::ExecuteCommand(int command_id) {
+  return widget_delegate_->ExecuteWindowsCommand(command_id);
 }
 
 Widget* Widget::AsWidget() {
@@ -641,5 +762,21 @@ void Widget::EnsureCompositor() {
 bool Widget::ShouldReleaseCaptureOnMouseReleased() const {
   return true;
 }
+
+void Widget::SaveWindowPosition() {
+  // The window delegate does the actual saving for us. It seems like (judging
+  // by go/crash) that in some circumstances we can end up here after
+  // WM_DESTROY, at which point the window delegate is likely gone. So just
+  // bail.
+  if (!widget_delegate_)
+    return;
+
+  bool maximized;
+  gfx::Rect bounds;
+  native_widget_->GetWindowBoundsAndMaximizedState(&bounds, &maximized);
+  widget_delegate_->SaveWindowPlacement(bounds, maximized);
+}
+
+
 
 }  // namespace views

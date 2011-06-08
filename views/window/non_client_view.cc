@@ -60,7 +60,7 @@ bool NonClientView::CanClose() {
 }
 
 void NonClientView::WindowClosing() {
-  client_view_->WindowClosing();
+  client_view_->WidgetClosing();
 }
 
 void NonClientView::UpdateFrame() {
@@ -190,7 +190,7 @@ views::View* NonClientView::GetEventHandlerForPoint(const gfx::Point& point) {
 bool NonClientFrameView::HitTest(const gfx::Point& l) const {
   // For the default case, we assume the non-client frame view never overlaps
   // the client view.
-  return !GetWindow()->client_view()->bounds().Contains(l);
+  return !GetWidget()->client_view()->bounds().Contains(l);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -246,7 +246,7 @@ int NonClientFrameView::GetHTComponentForFrame(const gfx::Point& point,
 }
 
 bool NonClientFrameView::ShouldPaintAsActive() const {
-  return GetWindow()->IsActive() || paint_as_active_;
+  return GetWidget()->IsActive() || paint_as_active_;
 }
 
 void NonClientFrameView::GetAccessibleState(ui::AccessibleViewState* state) {

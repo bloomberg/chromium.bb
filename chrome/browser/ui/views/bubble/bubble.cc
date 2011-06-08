@@ -134,7 +134,7 @@ Bubble::Bubble()
       show_status_(kOpen),
       fade_away_on_close_(false),
 #if defined(TOOLKIT_USES_GTK)
-      type_(views::Widget::InitParams::TYPE_WINDOW),
+      type_(views::Widget::InitParams::TYPE_POPUP),
 #endif
 #if defined(OS_CHROMEOS)
       show_while_screen_is_locked_(false),

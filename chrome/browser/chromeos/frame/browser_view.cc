@@ -358,7 +358,7 @@ bool BrowserView::GetSavedWindowBounds(gfx::Rect* bounds) const {
     // will snap us to full screen size. This results in an ugly
     // resize/paint. To avoid this we always request a full screen size.
     *bounds = views::Screen::GetMonitorWorkAreaNearestWindow(
-        GTK_WIDGET(GetWindow()->GetNativeWindow()));
+        GTK_WIDGET(GetWidget()->GetNativeWindow()));
     return true;
   }
   return ::BrowserView::GetSavedWindowBounds(bounds);
@@ -407,7 +407,7 @@ void BrowserView::ShowContextMenuForView(views::View* source,
   if (hit_test == HTCAPTION || hit_test == HTNOWHERE) {
     // rebuild menu so it reflects current application state
     InitSystemMenu();
-    system_menu_->RunMenuAt(source->GetWindow()->GetNativeWindow(), NULL,
+    system_menu_->RunMenuAt(source->GetWidget()->GetNativeWindow(), NULL,
                             gfx::Rect(p, gfx::Size(0,0)),
                             views::MenuItemView::TOPLEFT,
                             true);
@@ -427,7 +427,7 @@ Profile* BrowserView::GetProfile() const {
 }
 
 gfx::NativeWindow BrowserView::GetNativeWindow() const {
-  return GetWindow()->GetNativeWindow();
+  return GetWidget()->GetNativeWindow();
 }
 
 bool BrowserView::ShouldOpenButtonOptions(

@@ -216,17 +216,6 @@ int View::GetIndexOf(const View* view) const {
 }
 
 // TODO(beng): remove
-const Window* View::GetWindow() const {
-  const Widget* widget = GetWidget();
-  return widget ? widget->GetContainingWindow() : NULL;
-}
-
-// TODO(beng): remove
-Window* View::GetWindow() {
-  return const_cast<Window*>(const_cast<const View*>(this)->GetWindow());
-}
-
-// TODO(beng): remove
 bool View::ContainsNativeView(gfx::NativeView native_view) const {
   for (int i = 0, count = child_count(); i < count; ++i) {
     if (GetChildViewAt(i)->ContainsNativeView(native_view))

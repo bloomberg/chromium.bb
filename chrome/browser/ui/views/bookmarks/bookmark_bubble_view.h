@@ -36,7 +36,7 @@ class BookmarkBubbleView : public views::View,
                            public views::Combobox::Listener,
                            public BubbleDelegate {
  public:
-  static void Show(views::Window* window,
+  static void Show(views::Widget* widget,
                    const gfx::Rect& bounds,
                    BubbleDelegate* delegate,
                    Profile* profile,

@@ -216,7 +216,7 @@ views::Widget* ViewsOobeDisplay::CreateScreenWindow(
     const gfx::Rect& bounds, bool initial_show) {
   widget_ = new views::Widget;
   views::Widget::InitParams widget_params(
-      views::Widget::InitParams::TYPE_WINDOW);
+      views::Widget::InitParams::TYPE_POPUP);
   // Window transparency makes background flicker through controls that
   // are constantly updating its contents (like image view with video
   // stream). Hence enabling double buffer.

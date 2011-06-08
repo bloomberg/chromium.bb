@@ -190,6 +190,7 @@ class NativeWidgetGtk : public NativeWidget,
   virtual void SetAccessibleState(ui::AccessibilityTypes::State state) OVERRIDE;
   virtual gfx::Rect GetWindowScreenBounds() const OVERRIDE;
   virtual gfx::Rect GetClientAreaScreenBounds() const OVERRIDE;
+  virtual gfx::Rect GetRestoredBounds() const OVERRIDE;
   virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
   virtual void SetSize(const gfx::Size& size) OVERRIDE;
   virtual void SetBoundsConstrained(const gfx::Rect& bounds,
@@ -198,8 +199,10 @@ class NativeWidgetGtk : public NativeWidget,
   virtual void SetShape(gfx::NativeRegion shape) OVERRIDE;
   virtual void Close() OVERRIDE;
   virtual void CloseNow() OVERRIDE;
+  virtual void EnableClose(bool enable) OVERRIDE;
   virtual void Show() OVERRIDE;
   virtual void Hide() OVERRIDE;
+  virtual void ShowNativeWidget(ShowState state) OVERRIDE;
   virtual bool IsVisible() const OVERRIDE;
   virtual void Activate() OVERRIDE;
   virtual void Deactivate() OVERRIDE;

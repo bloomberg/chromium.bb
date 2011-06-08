@@ -142,7 +142,7 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
 // info.
 IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest, TestNonClientViewAccObj) {
   views::View* non_client_view =
-  GetBrowserView()->GetWindow()->non_client_view();
+  GetBrowserView()->GetWidget()->non_client_view();
 
   TestViewAccessibilityObject(non_client_view,
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)),

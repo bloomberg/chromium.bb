@@ -80,11 +80,11 @@ gfx::NativeWindow NativeWidgetViews::GetNativeWindow() const {
 }
 
 Window* NativeWidgetViews::GetContainingWindow() {
-  return view_->GetWindow();
+  return view_->GetWidget()->AsWindow();
 }
 
 const Window* NativeWidgetViews::GetContainingWindow() const {
-  return view_->GetWindow();
+  return view_->GetWidget()->AsWindow();
 }
 
 void NativeWidgetViews::ViewRemoved(View* view) {
@@ -183,6 +183,10 @@ gfx::Rect NativeWidgetViews::GetClientAreaScreenBounds() const {
   return GetWindowScreenBounds();
 }
 
+gfx::Rect NativeWidgetViews::GetRestoredBounds() const {
+  return GetWindowScreenBounds();
+}
+
 void NativeWidgetViews::SetBounds(const gfx::Rect& bounds) {
   // |bounds| are supplied in the coordinates of the parent.
   view_->SetBoundsRect(bounds);
@@ -219,12 +223,18 @@ void NativeWidgetViews::CloseNow() {
   delete view_;
 }
 
+void NativeWidgetViews::EnableClose(bool enable) {
+}
+
 void NativeWidgetViews::Show() {
   view_->SetVisible(true);
 }
 
 void NativeWidgetViews::Hide() {
   view_->SetVisible(false);
+}
+
+void NativeWidgetViews::ShowNativeWidget(ShowState state) {
 }
 
 bool NativeWidgetViews::IsVisible() const {

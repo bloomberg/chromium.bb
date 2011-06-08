@@ -105,7 +105,7 @@ bool InputMethodMenuButton::WindowIsActive() {
     return true;
   }
   BrowserWindow* active_window = active_browser->window();
-  const views::Window* current_window = GetWindow();
+  const views::Widget* current_window = GetWidget();
   if (!active_window || !current_window) {
     // Can't get an active or current window. Just return true as well.
     return true;

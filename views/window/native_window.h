@@ -29,12 +29,6 @@ class NonClientFrameView;
 //
 class NativeWindow {
  public:
-  enum ShowState {
-    SHOW_RESTORED,
-    SHOW_MAXIMIZED,
-    SHOW_INACTIVE
-  };
-
   virtual ~NativeWindow() {}
 
   // Creates an appropriate default NativeWindow implementation for the current
@@ -51,18 +45,8 @@ class NativeWindow {
  protected:
   friend class Window;
 
-  // Returns the bounds of the window in screen coordinates for its non-
-  // maximized state, regardless of whether or not it is currently maximized.
-  virtual gfx::Rect GetRestoredBounds() const = 0;
-
-  // Shows the window.
-  virtual void ShowNativeWindow(ShowState state) = 0;
-
   // Makes the NativeWindow modal.
   virtual void BecomeModal() = 0;
-
-  // Enables or disables the close button for the window.
-  virtual void EnableClose(bool enable) = 0;
 };
 
 }  // namespace views

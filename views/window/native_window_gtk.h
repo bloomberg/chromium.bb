@@ -40,7 +40,6 @@ class NativeWindowGtk : public NativeWidgetGtk, public NativeWindow {
   virtual gboolean OnMotionNotify(GtkWidget* widget, GdkEventMotion* event);
   virtual void OnSizeAllocate(GtkWidget* widget, GtkAllocation* allocation);
   virtual gboolean OnLeaveNotify(GtkWidget* widget, GdkEventCrossing* event);
-  virtual void IsActiveChanged();
 
  protected:
   virtual void InitNativeWidget(const Widget::InitParams& params) OVERRIDE;
@@ -48,20 +47,14 @@ class NativeWindowGtk : public NativeWidgetGtk, public NativeWindow {
   // Overridden from NativeWindow:
   virtual NativeWidget* AsNativeWidget() OVERRIDE;
   virtual const NativeWidget* AsNativeWidget() const OVERRIDE;
-  virtual gfx::Rect GetRestoredBounds() const OVERRIDE;
-  virtual void ShowNativeWindow(ShowState state) OVERRIDE;
   virtual void BecomeModal() OVERRIDE;
-  virtual void EnableClose(bool enable) OVERRIDE;
 
   // Overridden from NativeWidgetGtk:
-  virtual void Restore() OVERRIDE;
   virtual gboolean OnWindowStateEvent(GtkWidget* widget,
                                       GdkEventWindowState* event) OVERRIDE;
 
   // For  the constructor.
   friend class Window;
-
-  virtual void OnDestroy(GtkWidget* widget);
 
  private:
   static gboolean CallConfigureEvent(GtkWidget* widget,

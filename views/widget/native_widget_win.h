@@ -88,6 +88,9 @@ class NativeWidgetWin : public ui::WindowImpl,
   // enabled.
   static bool IsAeroGlassEnabled();
 
+  // Show the window with the specified show command.
+  void Show(int show_state);
+
   // Disable Layered Window updates by setting to false.
   void set_can_update_layered_window(bool can_update_layered_window) {
     can_update_layered_window_ = can_update_layered_window;
@@ -211,6 +214,7 @@ class NativeWidgetWin : public ui::WindowImpl,
   virtual void SetAccessibleState(ui::AccessibilityTypes::State state) OVERRIDE;
   virtual gfx::Rect GetWindowScreenBounds() const OVERRIDE;
   virtual gfx::Rect GetClientAreaScreenBounds() const OVERRIDE;
+  virtual gfx::Rect GetRestoredBounds() const OVERRIDE;
   virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
   virtual void SetSize(const gfx::Size& size) OVERRIDE;
   virtual void SetBoundsConstrained(const gfx::Rect& bounds,
@@ -219,8 +223,10 @@ class NativeWidgetWin : public ui::WindowImpl,
   virtual void SetShape(gfx::NativeRegion shape) OVERRIDE;
   virtual void Close() OVERRIDE;
   virtual void CloseNow() OVERRIDE;
+  virtual void EnableClose(bool enable) OVERRIDE;
   virtual void Show() OVERRIDE;
   virtual void Hide() OVERRIDE;
+  virtual void ShowNativeWidget(ShowState state) OVERRIDE;
   virtual bool IsVisible() const OVERRIDE;
   virtual void Activate() OVERRIDE;
   virtual void Deactivate() OVERRIDE;
@@ -418,6 +424,18 @@ class NativeWidgetWin : public ui::WindowImpl,
   // behavior.
   virtual void OnFinalMessage(HWND window);
 
+  // Retrieve the show state of the window. This is one of the SW_SHOW* flags
+  // passed into Windows' ShowWindow method. For normal windows this defaults
+  // to SW_SHOWNORMAL, however windows (e.g. the main window) can override this
+  // method to provide different values (e.g. retrieve the user's specified
+  // show state from the shortcut starutp info).
+  virtual int GetShowState() const;
+
+  // Returns the insets of the client area relative to the non-client area of
+  // the window. Override this function instead of OnNCCalcSize, which is
+  // crazily complicated.
+  virtual gfx::Insets GetClientAreaInsets() const;
+
   // Start tracking all mouse events so that this window gets sent mouse leave
   // messages too.
   void TrackMouseEvents(DWORD mouse_tracking_flags);
@@ -475,6 +493,12 @@ class NativeWidgetWin : public ui::WindowImpl,
   // layered windows only.
   void RedrawLayeredWindowContents();
 
+  // Lock or unlock the window from being able to redraw itself in response to
+  // updates to its invalid region.
+  class ScopedRedrawLock;
+  void LockUpdates();
+  void UnlockUpdates();
+
   // Responds to the client area changing size, either at window creation time
   // or subsequently.
   void ClientAreaSizeChanged();
@@ -483,6 +507,11 @@ class NativeWidgetWin : public ui::WindowImpl,
   // If |force| is true, the window region is reset to NULL even for native
   // frame windows.
   void ResetWindowRegion(bool force);
+
+  // Calls the default WM_NCACTIVATE handler with the specified activation
+  // value, safely wrapping the call in a ScopedRedrawLock to prevent frame
+  // flicker.
+  LRESULT CallDefaultNCActivateHandler(BOOL active);
 
   // Overridden from NativeWidget.
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
@@ -589,6 +618,12 @@ class NativeWidgetWin : public ui::WindowImpl,
   // The window styles before we modified them for the drag frame appearance.
   DWORD drag_frame_saved_window_style_;
   DWORD drag_frame_saved_window_ex_style_;
+
+  // True if updates to this window are currently locked.
+  bool lock_updates_;
+
+  // The window styles of the window before updates were locked.
+  DWORD saved_window_style_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetWin);
 };

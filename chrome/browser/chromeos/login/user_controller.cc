@@ -421,7 +421,7 @@ void UserController::CreateBorderWindow(int index,
   }
 
   border_window_ = new Widget;
-  Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
+  Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
   params.transparent = true;
   params.bounds = gfx::Rect(0, 0, width, height);
   border_window_->Init(params);

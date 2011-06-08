@@ -394,7 +394,7 @@ void LocationBarView::ShowStarBubble(const GURL& url, bool newly_bookmarked) {
   gfx::Point origin(screen_bounds.origin());
   views::View::ConvertPointToScreen(star_view_, &origin);
   screen_bounds.set_origin(origin);
-  browser::ShowBookmarkBubbleView(GetWindow(), screen_bounds, star_view_,
+  browser::ShowBookmarkBubbleView(GetWidget(), screen_bounds, star_view_,
                                   profile_, url, newly_bookmarked);
 }
 

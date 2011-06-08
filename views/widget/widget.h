@@ -220,6 +220,9 @@ class Widget : public internal::NativeWidgetDelegate,
   // Returns the bounds of the Widget's client area in screen coordinates.
   gfx::Rect GetClientAreaScreenBounds() const;
 
+  // Retrieves the restored bounds for the window.
+  gfx::Rect GetRestoredBounds() const;
+
   // Sizes and/or places the widget to the specified bounds, size or position.
   void SetBounds(const gfx::Rect& bounds);
   void SetSize(const gfx::Size& size);
@@ -247,9 +250,16 @@ class Widget : public internal::NativeWidgetDelegate,
   // any code that expects it to be valid beyond this call.
   void CloseNow();
 
+  // Toggles the enable state for the Close button (and the Close menu item in
+  // the system menu).
+  void EnableClose(bool enable);
+
   // Shows or hides the widget, without changing activation state.
   virtual void Show();
   void Hide();
+
+  // Like Show(), but does not activate the window.
+  void ShowInactive();
 
   // Activates the widget, assuming it already exists and is visible.
   void Activate();
@@ -260,6 +270,12 @@ class Widget : public internal::NativeWidgetDelegate,
 
   // Returns whether the Widget is the currently active window.
   virtual bool IsActive() const;
+
+  // Prevents the window from being rendered as deactivated the next time it is.
+  // This state is reset automatically as soon as the window becomes activated
+  // again. There is no ability to control the state through this API as this
+  // leads to sync problems.
+  void DisableInactiveRendering();
 
   // Sets the widget to be on top of all other widgets in the windowing system.
   void SetAlwaysOnTop(bool on_top);
@@ -349,6 +365,12 @@ class Widget : public internal::NativeWidgetDelegate,
   // to cause the close button to highlight.
   void ResetLastMouseMoveFlag();
 
+  // Tell the window to update its title from the delegate.
+  void UpdateWindowTitle();
+
+  // Tell the window to update its icon from the delegate.
+  void UpdateWindowIcon();
+
   // Retrieves the focus traversable for this widget.
   FocusTraversable* GetFocusTraversable();
 
@@ -418,19 +440,33 @@ class Widget : public internal::NativeWidgetDelegate,
   const NativeWidget* native_widget() const { return native_widget_; }
   NativeWidget* native_widget() { return native_widget_; }
 
+  // TODO(beng): remove once Window is folded in.
+  virtual Window* AsWindow();
+  virtual const Window* AsWindow() const;
+
   // Overridden from NativeWidgetDelegate:
+  virtual bool CanActivate() const OVERRIDE;
+  virtual bool IsInactiveRenderingDisabled() const OVERRIDE;
+  virtual void EnableInactiveRendering() OVERRIDE;
+  virtual void OnNativeWidgetActivationChanged(bool active) OVERRIDE;
   virtual void OnNativeFocus(gfx::NativeView focused_view) OVERRIDE;
   virtual void OnNativeBlur(gfx::NativeView focused_view) OVERRIDE;
   virtual void OnNativeWidgetCreated() OVERRIDE;
+  virtual void OnNativeWidgetDestroying() OVERRIDE;
   virtual void OnNativeWidgetDestroyed() OVERRIDE;
-  virtual void OnSizeChanged(const gfx::Size& new_size) OVERRIDE;
+  virtual gfx::Size GetMinimumSize() OVERRIDE;
+  virtual void OnNativeWidgetSizeChanged(const gfx::Size& new_size) OVERRIDE;
+  virtual void OnNativeWidgetBeginUserBoundsChange() OVERRIDE;
+  virtual void OnNativeWidgetEndUserBoundsChange() OVERRIDE;
   virtual bool HasFocusManager() const OVERRIDE;
   virtual bool OnNativeWidgetPaintAccelerated(
       const gfx::Rect& dirty_region) OVERRIDE;
   virtual void OnNativeWidgetPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual int GetNonClientComponent(const gfx::Point& point) OVERRIDE;
   virtual bool OnKeyEvent(const KeyEvent& event) OVERRIDE;
   virtual bool OnMouseEvent(const MouseEvent& event) OVERRIDE;
   virtual void OnMouseCaptureLost() OVERRIDE;
+  virtual bool ExecuteCommand(int command_id) OVERRIDE;
   virtual Widget* AsWidget() OVERRIDE;
   virtual const Widget* AsWidget() const OVERRIDE;
 
@@ -476,9 +512,11 @@ class Widget : public internal::NativeWidgetDelegate,
   // Returns whether capture should be released on mouse release.
   virtual bool ShouldReleaseCaptureOnMouseReleased() const;
 
-  NativeWidget* native_widget_;
+  // Persists the window's restored position and maximized state using the
+  // window delegate.
+  void SaveWindowPosition();
 
-  InitParams::Type type_;
+  NativeWidget* native_widget_;
 
   // Non-owned pointer to the Widget's delegate.  May be NULL if no delegate is
   // being used.
@@ -520,6 +558,13 @@ class Widget : public internal::NativeWidgetDelegate,
   // The current frame type in use by this window. Defaults to
   // FRAME_TYPE_DEFAULT.
   FrameType frame_type_;
+
+  // True when the window should be rendered as active, regardless of whether
+  // or not it actually is.
+  bool disable_inactive_rendering_;
+
+  // Set to true if the widget is in the process of closing.
+  bool widget_closed_;
 
   DISALLOW_COPY_AND_ASSIGN(Widget);
 };

@@ -222,14 +222,6 @@ class View : public AcceleratorTarget {
   // Returns the index of |view|, or -1 if |view| is not a child of this view.
   int GetIndexOf(const View* view) const;
 
-  // TODO(beng): REMOVE (Views need not know about Window).
-  // Gets the Widget that most closely contains this View, if any.
-  // NOTE: almost all views displayed on screen have a Widget, but not
-  // necessarily a Window. This is due to widgets being able to create top
-  // level windows (as is done for popups, bubbles and menus).
-  virtual const Window* GetWindow() const;
-  virtual Window* GetWindow();
-
   // TODO(beng): REMOVE (TBD)
   // Returns true if the native view |native_view| is contained in the view
   // hierarchy beneath this view.

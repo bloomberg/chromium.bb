@@ -734,7 +734,7 @@ void ScreenLocker::Init() {
 
   LockWindow* lock_window = new LockWindow();
   lock_window_ = lock_window->GetWidget();
-  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.bounds = init_bounds;
   params.native_widget = lock_window;
   lock_window_->Init(params);

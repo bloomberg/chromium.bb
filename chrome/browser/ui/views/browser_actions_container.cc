@@ -710,7 +710,7 @@ void BrowserActionsContainer::RunMenu(View* source, const gfx::Point& pt) {
     overflow_menu_ = new BrowserActionOverflowMenuController(
         this, chevron_, browser_action_views_, VisibleBrowserActions());
     overflow_menu_->set_observer(this);
-    overflow_menu_->RunMenu(GetWindow()->GetNativeWindow(), false);
+    overflow_menu_->RunMenu(GetWidget()->GetNativeWindow(), false);
   }
 }
 
@@ -1023,7 +1023,7 @@ void BrowserActionsContainer::ShowDropFolder() {
   overflow_menu_ = new BrowserActionOverflowMenuController(
       this, chevron_, browser_action_views_, VisibleBrowserActions());
   overflow_menu_->set_observer(this);
-  overflow_menu_->RunMenu(GetWindow()->GetNativeWindow(), true);
+  overflow_menu_->RunMenu(GetWidget()->GetNativeWindow(), true);
 }
 
 void BrowserActionsContainer::SetDropIndicator(int x_pos) {

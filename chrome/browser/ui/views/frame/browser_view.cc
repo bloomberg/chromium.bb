@@ -254,8 +254,8 @@ class ResizeCorner : public views::View {
   }
 
   virtual void OnPaint(gfx::Canvas* canvas) {
-    views::Window* window = GetWindow();
-    if (!window || (window->IsMaximized() || window->IsFullscreen()))
+    views::Widget* widget = GetWidget();
+    if (!widget || (widget->IsMaximized() || widget->IsFullscreen()))
       return;
 
     SkBitmap* bitmap = ResourceBundle::GetSharedInstance().GetBitmapNamed(
@@ -274,8 +274,8 @@ class ResizeCorner : public views::View {
   }
 
   virtual gfx::Size GetPreferredSize() {
-    views::Window* window = GetWindow();
-    return (!window || window->IsMaximized() || window->IsFullscreen()) ?
+    views::Widget* widget = GetWidget();
+    return (!widget || widget->IsMaximized() || widget->IsFullscreen()) ?
         gfx::Size() : GetSize();
   }
 
@@ -291,13 +291,6 @@ class ResizeCorner : public views::View {
   }
 
  private:
-  // Returns the NativeWindowWin we're displayed in. Returns NULL if we're not
-  // currently in a window.
-  views::Window* GetWindow() {
-    views::Widget* widget = GetWidget();
-    return widget ? widget->GetContainingWindow() : NULL;
-  }
-
   DISALLOW_COPY_AND_ASSIGN(ResizeCorner);
 };
 
@@ -748,11 +741,11 @@ void BrowserView::SetStarredState(bool is_starred) {
 }
 
 gfx::Rect BrowserView::GetRestoredBounds() const {
-  return frame_->GetNormalBounds();
+  return frame_->GetRestoredBounds();
 }
 
 gfx::Rect BrowserView::GetBounds() const {
-  return frame_->GetBounds();
+  return frame_->GetWindowScreenBounds();
 }
 
 bool BrowserView::IsMaximized() const {
@@ -1001,7 +994,7 @@ void BrowserView::ConfirmSetDefaultSearchProvider(
 
 void BrowserView::ConfirmAddSearchProvider(const TemplateURL* template_url,
                                            Profile* profile) {
-  browser::EditSearchEngine(GetWindow()->GetNativeWindow(), template_url, NULL,
+  browser::EditSearchEngine(GetWidget()->GetNativeWindow(), template_url, NULL,
                             profile);
 }
 
@@ -1014,12 +1007,12 @@ void BrowserView::ShowAboutChromeDialog() {
 }
 
 views::Window* BrowserView::DoShowAboutChromeDialog() {
-  return browser::ShowAboutChromeView(GetWindow()->GetNativeWindow(),
+  return browser::ShowAboutChromeView(GetWidget()->GetNativeWindow(),
                                       browser_->profile());
 }
 
 void BrowserView::ShowUpdateChromeDialog() {
-  UpdateRecommendedMessageBox::ShowMessageBox(GetWindow()->GetNativeWindow());
+  UpdateRecommendedMessageBox::ShowMessageBox(GetWidget()->GetNativeWindow());
 }
 
 void BrowserView::ShowCompactLocationBarUnderSelectedTab() {
@@ -1133,7 +1126,7 @@ void BrowserView::ShowPageInfo(Profile* profile,
                                const GURL& url,
                                const NavigationEntry::SSLStatus& ssl,
                                bool show_history) {
-  gfx::NativeWindow parent = GetWindow()->GetNativeWindow();
+  gfx::NativeWindow parent = GetWidget()->GetNativeWindow();
 
   browser::ShowPageInfoBubble(parent, profile, url, ssl, show_history);
 }
@@ -1561,7 +1554,7 @@ bool BrowserView::ExecuteWindowsCommand(int command_id) {
   // This function handles WM_SYSCOMMAND, WM_APPCOMMAND, and WM_COMMAND.
 #if defined(OS_WIN)
   if (command_id == IDC_DEBUG_FRAME_TOGGLE)
-    GetWindow()->DebugToggleFrameType();
+    GetWidget()->DebugToggleFrameType();
 #endif
   // Translate WM_APPCOMMAND command ids into a command id that the browser
   // knows how to handle.
@@ -1635,8 +1628,7 @@ views::View* BrowserView::GetContentsView() {
   return contents_container_;
 }
 
-views::ClientView* BrowserView::CreateClientView(views::Window* window) {
-  set_window(window);
+views::ClientView* BrowserView::CreateClientView(views::Widget* widget) {
   return this;
 }
 
@@ -2568,7 +2560,7 @@ void BrowserView::ProcessTabSelected(TabContentsWrapper* new_contents,
   //             etc not result in sad tab.
   new_contents->tab_contents()->DidBecomeSelected();
   if (BrowserList::GetLastActive() == browser_ &&
-      !browser_->tabstrip_model()->closing_all() && GetWindow()->IsVisible()) {
+      !browser_->tabstrip_model()->closing_all() && GetWidget()->IsVisible()) {
     // We only restore focus if our window is visible, to avoid invoking blur
     // handlers when we are eventually shown.
     new_contents->view()->RestoreFocus();
@@ -2603,7 +2595,7 @@ BrowserWindow* BrowserWindow::CreateBrowserWindow(Browser* browser) {
   // so we don't need to do anything with the pointer.
   BrowserView* view = new BrowserView(browser);
   (new BrowserFrame(view))->InitBrowserFrame();
-  view->GetWindow()->non_client_view()->SetAccessibleName(
+  view->GetWidget()->non_client_view()->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
   return view;
 }

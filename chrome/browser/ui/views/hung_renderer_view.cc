@@ -447,7 +447,7 @@ gfx::Rect HungRendererDialogView::GetDisplayBounds(
   RECT contents_bounds_rect;
   GetWindowRect(contents_hwnd, &contents_bounds_rect);
   gfx::Rect contents_bounds(contents_bounds_rect);
-  gfx::Rect window_bounds = window()->GetBounds();
+  gfx::Rect window_bounds = window()->GetWindowScreenBounds();
 
   int window_x = contents_bounds.x() +
       (contents_bounds.width() - window_bounds.width()) / 2;

@@ -23,44 +23,14 @@ class NativeWindowDelegate {
  public:
   virtual ~NativeWindowDelegate() {}
 
-  // Returns true if the window can be activated.
-  virtual bool CanActivate() const = 0;
-
-  virtual bool IsInactiveRenderingDisabled() const = 0;
-  virtual void EnableInactiveRendering() = 0;
-
   // Returns true if the window is modal.
   virtual bool IsModal() const = 0;
 
   // Returns true if the window is a dialog box.
   virtual bool IsDialogBox() const = 0;
 
-  // Returns the smallest size the window can be resized to by the user.
-  virtual gfx::Size GetMinimumSize() = 0;
-
-  // Returns the non-client component (see views/window/hit_test.h) containing
-  // |point|, in client coordinates.
-  virtual int GetNonClientComponent(const gfx::Point& point) = 0;
-
-  // Runs the specified native command. Returns true if the command is handled.
-  virtual bool ExecuteCommand(int command_id) = 0;
-
   // Called just after the NativeWindow has been created.
   virtual void OnNativeWindowCreated(const gfx::Rect& bounds) = 0;
-
-  // Called when the activation state of a window has changed.
-  virtual void OnNativeWindowActivationChanged(bool active) = 0;
-
-  // Called when the user begins/ends to change the bounds of the window.
-  virtual void OnNativeWindowBeginUserBoundsChange() = 0;
-  virtual void OnNativeWindowEndUserBoundsChange() = 0;
-
-  // Called just before the native window is destroyed. This is the delegate's
-  // last chance to do anything with the native window handle.
-  virtual void OnNativeWindowDestroying() = 0;
-
-  // Called when the native window's position or size has changed.
-  virtual void OnNativeWindowBoundsChanged() = 0;
 
   //
   virtual Window* AsWindow() = 0;

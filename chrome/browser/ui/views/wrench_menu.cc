@@ -602,7 +602,7 @@ void WrenchMenu::RunMenu(views::MenuButton* host) {
   views::View::ConvertPointToScreen(host, &screen_loc);
   gfx::Rect bounds(screen_loc, host->size());
   UserMetrics::RecordAction(UserMetricsAction("ShowAppMenu"));
-  root_->RunMenuAt(host->GetWindow()->GetNativeWindow(), host, bounds,
+  root_->RunMenuAt(host->GetWidget()->GetNativeWindow(), host, bounds,
       MenuItemView::TOPRIGHT, true);
   if (bookmark_menu_delegate_.get()) {
     BookmarkModel* model = browser_->profile()->GetBookmarkModel();
