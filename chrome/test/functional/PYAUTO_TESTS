@@ -256,6 +256,13 @@
   'EMPTY': {
   },
 
+  # ChromeOS login tests.
+  'CHROMEOS_LOGIN': {
+    'chromeos': [
+      'chromeos_login',
+    ],
+  },
+
   # HTML5 media performance tests.
   'MEDIA_TESTS': {
     'linux': [

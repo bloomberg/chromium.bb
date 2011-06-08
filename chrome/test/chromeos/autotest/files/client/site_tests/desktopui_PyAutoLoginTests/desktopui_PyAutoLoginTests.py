@@ -20,7 +20,8 @@ class desktopui_PyAutoLoginTests(chrome_test.ChromeTestBase):
     version = 1
 
     def initialize(self):
-        chrome_test.ChromeTestBase.initialize(self)
+        chrome_test.ChromeTestBase.initialize(self,
+                                              nuke_browser_norestart=False)
         assert os.geteuid() == 0, 'Need superuser privileges'
 
         deps_dir = os.path.join(self.autodir, 'deps')
@@ -43,26 +44,23 @@ class desktopui_PyAutoLoginTests(chrome_test.ChromeTestBase):
         chronos_id = pwd.getpwnam('chronos')
         os.chown(os.getcwd(), chronos_id.pw_uid, chronos_id.pw_gid)
 
+        # Allow browser restart by its babysitter (session_manager)
+        if os.path.exists(constants.DISABLE_BROWSER_RESTART_MAGIC_FILE):
+            os.remove(constants.DISABLE_BROWSER_RESTART_MAGIC_FILE)
+        assert not os.path.exists(constants.DISABLE_BROWSER_RESTART_MAGIC_FILE)
+
         # Make sure Chrome minidumps are written locally.
         minidumps_file = '/mnt/stateful_partition/etc/enable_chromium_minidumps'
         if not os.path.exists(minidumps_file):
             open(minidumps_file, 'w').close()
-            # Allow browser restart by its babysitter (session_manager)
-            if os.path.exists(constants.DISABLE_BROWSER_RESTART_MAGIC_FILE):
-                os.remove(constants.DISABLE_BROWSER_RESTART_MAGIC_FILE)
             login.nuke_login_manager()
         assert os.path.exists(minidumps_file)
 
-        # Setup /tmp/disable_chrome_restart
-        # Disallow further browser restart by its babysitter.
-        if not os.path.exists(constants.DISABLE_BROWSER_RESTART_MAGIC_FILE):
-            open(constants.DISABLE_BROWSER_RESTART_MAGIC_FILE, 'w').close()
-        assert os.path.exists(constants.DISABLE_BROWSER_RESTART_MAGIC_FILE)
-
     def run_once(self):
-        # Run the login pyauto tests.
+        # Run the CHROMEOS_LOGIN pyauto tests.
         deps_dir = os.path.join(self.autodir, 'deps')
         functional_cmd = cros_ui.xcommand(
             '%s/chrome_test/test_src/chrome/test/functional/'
-            'chromeos_login.py -v' % deps_dir)
+            'pyauto_functional.py --suite=CHROMEOS_LOGIN --no-http-server -v' %
+            deps_dir)
         utils.system(functional_cmd)
