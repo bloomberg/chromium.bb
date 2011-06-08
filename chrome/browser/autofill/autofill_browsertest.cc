@@ -155,7 +155,11 @@ class AutofillTest : public InProcessBrowserTest {
     bool result = false;
     ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
         render_view_host(), L"",
-        L"document.getElementById('firstname').focus();", &result));
+        L"if (document.readyState === 'complete')"
+        L"  document.getElementById('firstname').focus();"
+        L"else"
+        L"  domAutomationController.send(false);",
+        &result));
     ASSERT_TRUE(result);
   }
 
@@ -384,7 +388,8 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, AutofillFormsDistinguishedById) {
 // This test brought to you by http://crbug.com/69204
 #if defined(OS_MACOSX)
 // Sometimes times out on Mac: http://crbug.com/81451
-#define MAYBE_AutofillAfterReload DISABLED_AutofillAfterReload
+// Currently enabled for logging.
+#define MAYBE_AutofillAfterReload AutofillAfterReload
 #else
 #define MAYBE_AutofillAfterReload AutofillAfterReload
 #endif
