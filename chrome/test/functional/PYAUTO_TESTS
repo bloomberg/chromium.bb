@@ -54,8 +54,6 @@
       'execute_javascript',
       'extensions',
       'find_in_page',
-      # crbug.com/84638
-      '-find_in_page.FindMatchTests.testSearchInPDF',
       # Turkish I problem. crbug.com/60638
       '-find_in_page.FindMatchTests.testLocalizationAndCaseOrder',
       'flash',
