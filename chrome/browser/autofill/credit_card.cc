@@ -14,12 +14,15 @@
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/autofill/autofill_country.h"
 #include "chrome/browser/autofill/autofill_regexes.h"
 #include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/field_types.h"
 #include "chrome/common/guid.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "unicode/dtfmtsym.h"
+#include "unicode/uloc.h"
 
 namespace {
 
@@ -119,18 +122,66 @@ std::string GetCreditCardType(const string16& number) {
   return kGenericCard;
 }
 
-bool ConvertDate(const string16& date, int* num) {
-  if (!date.empty()) {
-    bool converted = base::StringToInt(date, num);
-    DCHECK(converted);
-    if (!converted)
-      return false;
-  } else {
-    // Clear the value.
+bool ConvertYear(const string16& year, int* num) {
+  // If the |year| is empty, clear the stored value.
+  if (year.empty()) {
     *num = 0;
+    return true;
   }
 
-  return true;
+  // Try parsing the |year| as a number.
+  if (base::StringToInt(year, num))
+    return true;
+
+  NOTREACHED();
+  *num = 0;
+  return false;
+}
+
+bool ConvertMonth(const string16& month, int* num) {
+  // If the |month| is empty, clear the stored value.
+  if (month.empty()) {
+    *num = 0;
+    return true;
+  }
+
+  // Try parsing the |month| as a number.
+  if (base::StringToInt(month, num))
+    return true;
+
+  // Try parsing the |month| as a named month, e.g. "January" or "Jan".
+  string16 lowercased_month = StringToLowerASCII(month);
+
+  UErrorCode status = U_ZERO_ERROR;
+  icu::Locale locale(AutofillCountry::ApplicationLocale().c_str());
+  icu::DateFormatSymbols date_format_symbols(locale, status);
+  DCHECK(status == U_ZERO_ERROR || status == U_USING_FALLBACK_WARNING ||
+         status == U_USING_DEFAULT_WARNING);
+
+  int32_t num_months;
+  const icu::UnicodeString* months = date_format_symbols.getMonths(num_months);
+  for (int32_t i = 0; i < num_months; ++i) {
+    const string16 icu_month = string16(months[i].getBuffer(),
+                                        months[i].length());
+    if (lowercased_month == StringToLowerASCII(icu_month)) {
+      *num = i + 1;  // Adjust from 0-indexed to 1-indexed.
+      return true;
+    }
+  }
+
+  months = date_format_symbols.getShortMonths(num_months);
+  for (int32_t i = 0; i < num_months; ++i) {
+    const string16 icu_month = string16(months[i].getBuffer(),
+                                        months[i].length());
+    if (lowercased_month == StringToLowerASCII(icu_month)) {
+      *num = i + 1;  // Adjust from 0-indexed to 1-indexed.
+      return true;
+    }
+  }
+
+  NOTREACHED();
+  *num = 0;
+  return false;
 }
 
 }  // namespace
@@ -482,7 +533,7 @@ string16 CreditCard::Expiration2DigitYearAsString() const {
 
 void CreditCard::SetExpirationMonthFromString(const string16& text) {
   int month;
-  if (!ConvertDate(text, &month))
+  if (!ConvertMonth(text, &month))
     return;
 
   SetExpirationMonth(month);
@@ -490,7 +541,7 @@ void CreditCard::SetExpirationMonthFromString(const string16& text) {
 
 void CreditCard::SetExpirationYearFromString(const string16& text) {
   int year;
-  if (!ConvertDate(text, &year))
+  if (!ConvertYear(text, &year))
     return;
 
   SetExpirationYear(year);

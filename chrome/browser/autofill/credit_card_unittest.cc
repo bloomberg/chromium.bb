@@ -134,3 +134,20 @@ TEST(CreditCardTest, SetInfoCreditCardNumber) {
   EXPECT_EQ(ASCIIToUTF16("4321-5432-6543-xxxx"),
             card.GetInfo(CREDIT_CARD_NUMBER));
 }
+
+// Verify that we can handle both numeric and named months.
+TEST(CreditCardTest, SetInfoExpirationMonth) {
+  CreditCard card;
+
+  card.SetInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("05"));
+  EXPECT_EQ(ASCIIToUTF16("05"), card.GetInfo(CREDIT_CARD_EXP_MONTH));
+
+  card.SetInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("7"));
+  EXPECT_EQ(ASCIIToUTF16("07"), card.GetInfo(CREDIT_CARD_EXP_MONTH));
+
+  card.SetInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("January"));
+  EXPECT_EQ(ASCIIToUTF16("01"), card.GetInfo(CREDIT_CARD_EXP_MONTH));
+
+  card.SetInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("Apr"));
+  EXPECT_EQ(ASCIIToUTF16("04"), card.GetInfo(CREDIT_CARD_EXP_MONTH));
+}
