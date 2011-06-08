@@ -51,6 +51,8 @@ class MenuDelegate {
     DROP_ON
   };
 
+  virtual ~MenuDelegate();
+
   // Whether or not an item should be shown as checked. This is invoked for
   // radio buttons and check buttons.
   virtual bool IsItemChecked(int id) const;
