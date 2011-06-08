@@ -65,7 +65,6 @@ extern const char kChromeUIKeyboardURL[];
 extern const char kChromeUINewTabURL[];
 extern const char kChromeUIPluginsURL[];
 extern const char kChromeUIPrintURL[];
-extern const char kChromeUISessionsURL[];
 extern const char kChromeUISettingsURL[];
 extern const char kChromeUITextfieldsURL[];
 
@@ -115,7 +114,6 @@ extern const char kChromeUIPluginsHost[];
 extern const char kChromeUIPrintHost[];
 extern const char kChromeUIResourcesHost[];
 extern const char kChromeUIScreenshotPath[];
-extern const char kChromeUISessionsHost[];
 extern const char kChromeUISettingsHost[];
 extern const char kChromeUISyncInternalsHost[];
 extern const char kChromeUISyncResourcesHost[];

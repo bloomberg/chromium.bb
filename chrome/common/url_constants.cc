@@ -73,7 +73,6 @@ const char kChromeUIKeyboardURL[] = "chrome://keyboard/";
 const char kChromeUINewTabURL[] = "chrome://newtab/";
 const char kChromeUIPluginsURL[] = "chrome://plugins/";
 const char kChromeUIPrintURL[] = "chrome://print/";
-const char kChromeUISessionsURL[] = "chrome://sessions/";
 const char kChromeUISettingsURL[] = "chrome://settings/";
 const char kChromeUITextfieldsURL[] = "chrome://textfields/";
 
@@ -125,7 +124,6 @@ const char kChromeUIPluginsHost[] = "plugins";
 const char kChromeUIPrintHost[] = "print";
 const char kChromeUIResourcesHost[] = "resources";
 const char kChromeUIScreenshotPath[] = "screenshots";
-const char kChromeUISessionsHost[] = "sessions";
 const char kChromeUISettingsHost[] = "settings";
 const char kChromeUISyncInternalsHost[] = "sync-internals";
 const char kChromeUISyncResourcesHost[] = "syncresources";
