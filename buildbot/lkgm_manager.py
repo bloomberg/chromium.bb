@@ -85,10 +85,13 @@ class LKGMManager(manifest_version.BuildSpecsManager):
   LGKM_SUBDIR = 'LKGM-candidates'
   # Wait an additional 5 minutes for any other builder.
 
-  def __init__(self, tmp_dir, source_repo, manifest_repo, branch,
-               build_name, dry_run):
-    super(LKGMManager, self).__init__(tmp_dir, source_repo, manifest_repo,
-                                      branch, build_name, 'patch', dry_run)
+  def __init__(self, source_dir, checkout_repo, manifest_repo, branch,
+               build_name, clobber=False, dry_run=True):
+    super(LKGMManager, self).__init__(
+        source_dir=source_dir, checkout_repo=checkout_repo,
+        manifest_repo=manifest_repo, branch=branch, build_name=build_name,
+        incr_type='patch', clobber=clobber, dry_run=dry_run)
+
     self.compare_versions_fn = lambda s: _LKGMCandidateInfo.VersionCompare(s)
 
   def _LoadSpecs(self, version_info):
@@ -192,6 +195,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
       _SyncGitRepo(self.manifests_dir)
       for builder in builders_array:
         if builder_statuses.get(builder, None) not in ['pass', 'fail']:
+          logging.debug("Checking for builder %s's status" % builder)
           builder_pass = pass_file % {'build_name': builder}
           builder_fail = fail_file % {'build_name': builder}
           builder_inflight = inflight_file % {'build_name': builder}
@@ -207,6 +211,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
             builder_statuses[builder] = 'inflight'
           else:
             builder_statuses[builder] = None
+            logging.debug('No status found for builder %s.' % builder)
 
       if num_complete < len(builders_array):
         logging.info('Waiting for other builds to complete')

@@ -168,6 +168,10 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
     self.build_name = 'x86-generic'
     self.incr_type = 'patch'
 
+    # Change default to something we clean up.
+    self.tmpmandir = tempfile.mkdtemp()
+    manifest_version.BuildSpecsManager._TMP_MANIFEST_DIR = self.tmpmandir
+
     self.manager = manifest_version.BuildSpecsManager(
       self.tmpdir, self.source_repo, self.manifest_repo, self.branch,
       self.build_name, self.incr_type, dry_run=True)
@@ -214,7 +218,7 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
     self.mox.StubOutWithMock(manifest_version, '_RemoveDirs')
     self.mox.StubOutWithMock(manifest_version, '_CloneGitRepo')
     info = manifest_version.VersionInfo(version_string=FAKE_VERSION_STRING,
-                                         incr_type='patch')
+                                        incr_type='branch')
     dir_pfx = '1.2'
     specs_dir = os.path.join(self.manager.manifests_dir, 'buildspecs', dir_pfx)
     m1 = os.path.join(specs_dir, '1.2.3.5.xml')
@@ -293,8 +297,8 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
     print self.manager.UpdateStatus('pass')
 
   def tearDown(self):
-    if os.path.exists(self.tmpdir):
-      shutil.rmtree(self.tmpdir)
+    if os.path.exists(self.tmpdir): shutil.rmtree(self.tmpdir)
+    shutil.rmtree(self.tmpmandir)
 
 
 if __name__ == '__main__':
