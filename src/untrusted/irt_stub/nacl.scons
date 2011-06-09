@@ -5,12 +5,12 @@
 
 Import('env')
 
-stub_sources = ['plugin_main_irt.c', 'thread_creator.c']
-
-irt_stub = env.ComponentObject(
-    'irt_stub', '${SCONSTRUCT_DIR}/src/untrusted/irt/irt_elf_utils.c')
-
-env.ComponentLibrary('libppapi_stub', stub_sources + irt_stub)
+env.ComponentLibrary('libppapi_stub', [
+    'ppapi_plugin_main.c',
+    'ppapi_plugin_start.c',
+    'plugin_main_irt.c',
+    'thread_creator.c'
+    ])
 env.AddLibraryToSdk(['libppapi_stub'])
 env.AddObjectToSdk(['libppapi.a'])
 

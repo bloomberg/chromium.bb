@@ -10,9 +10,9 @@
 
 struct PP_StartFunctions g_pp_functions;
 
-static void irt_ppapi_start(const struct PP_StartFunctions *funcs) {
+static int irt_ppapi_start(const struct PP_StartFunctions *funcs) {
   g_pp_functions = *funcs;
-  PpapiPluginMain();
+  return PpapiPluginMain();
 }
 
 int32_t PPP_InitializeModule(PP_Module module_id,

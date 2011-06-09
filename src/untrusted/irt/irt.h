@@ -136,7 +136,7 @@ struct nacl_irt_blockhook {
 
 #define NACL_IRT_PPAPIHOOK_v0_1 "nacl-irt-ppapihook-0.1"
 struct nacl_irt_ppapihook {
-  void (*ppapi_start)(const struct PP_StartFunctions *);
+  int (*ppapi_start)(const struct PP_StartFunctions *);
   void (*ppapi_register_thread_creator)(const struct PP_ThreadFunctions *);
 };
 
