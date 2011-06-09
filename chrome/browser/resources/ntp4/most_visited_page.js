@@ -8,6 +8,10 @@ cr.define('ntp4', function() {
   var TilePage = ntp4.TilePage;
 
   /**
+   */
+  var tileID = 0;
+
+  /**
    * Creates a new Most Visited object for tiling.
    * @constructor
    * @extends {HTMLAnchorElement}
@@ -63,6 +67,7 @@ cr.define('ntp4', function() {
 
       this.tabIndex = -1;
       this.data_ = null;
+      this.removeAttribute('id');
     },
 
     /**
@@ -76,6 +81,8 @@ cr.define('ntp4', function() {
         return;
       }
 
+      var id = tileID++;
+      this.setAttribute('id', 'tile' + id);
       this.data_ = data;
       this.tabIndex = 0;
       this.classList.remove('filler');
@@ -84,7 +91,10 @@ cr.define('ntp4', function() {
       var faviconUrl = data.faviconUrl || 'chrome://favicon/' + data.url;
       colorBar.style.backgroundImage = url(faviconUrl);
       colorBar.dir = data.direction;
-      // TODO(estade): add a band of color based on the favicon.
+      if (data.faviconDominantColor)
+        this.setBarColor(data.faviconDominantColor);
+      else
+        chrome.send('getFaviconDominantColor', [faviconUrl, id]);
 
       var title = this.querySelector('.title');
       title.textContent = data.title;
@@ -97,6 +107,14 @@ cr.define('ntp4', function() {
       this.href = data.url;
 
       this.updatePinnedState_();
+    },
+
+    /**
+     * Sets the color of the favicon dominant color bar.
+     * @param {string} color The css-parsable value for the color.
+     */
+    setBarColor: function(color) {
+      // TODO(estade): use color.
     },
 
     /**
@@ -390,8 +408,15 @@ cr.define('ntp4', function() {
     return oldData;
   };
 
+  function setFaviconDominantColor(id, color) {
+    var tile = $('tile' + id);
+    if (tile)
+      tile.setBarColor(color);
+  };
+
   return {
     MostVisitedPage: MostVisitedPage,
     refreshData: refreshData,
+    setFaviconDominantColor: setFaviconDominantColor,
   };
 });
