@@ -1,8 +1,6 @@
-/*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
- */
+// Copyright (c) 2011 The Native Client Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include <assert.h>
 
@@ -18,7 +16,7 @@ namespace plugin {
 ArrayPpapi::ArrayPpapi(PluginPpapi* instance) {
   PLUGIN_PRINTF(("ArrayPpapi::ArrayPpapi (this=%p, instance=%p)\n",
                  static_cast<void*>(this), static_cast<void*>(instance)));
-  pp::Var window = instance->GetWindowObject();
+  pp::VarPrivate window = instance->GetWindowObject();
   PLUGIN_PRINTF(("ArrayPpapi::ArrayPpapi (window=%d)\n",
                 !window.is_undefined()));
   js_array_ = window.Call(pp::Var("eval"), pp::Var("new Array;"));

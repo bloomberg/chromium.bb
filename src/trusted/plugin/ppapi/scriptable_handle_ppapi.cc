@@ -1,8 +1,6 @@
-/*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
- */
+// Copyright (c) 2011 The Native Client Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include <assert.h>
 #include <sstream>
@@ -26,7 +24,7 @@ namespace plugin {
 namespace {
 
 pp::Var Error(nacl::string call_name, const char* caller,
-                     const char* error, pp::Var* exception) {
+              const char* error, pp::Var* exception) {
   nacl::stringstream error_stream;
   error_stream << call_name << ": " << error;
   if (!exception->is_undefined()) {
@@ -189,7 +187,7 @@ pp::Var ScriptableHandlePpapi::Invoke(CallType call_type,
         }
       }
 
-      retvar = pp::Var(plugin_ppapi, array);
+      retvar = pp::VarPrivate(plugin_ppapi, array);
     }
     if (!exception->is_undefined()) {
       return Error(call_name, caller, "srpc output marshalling failed",
@@ -316,7 +314,7 @@ ScriptableHandle* ScriptableHandlePpapi::AddRef() {
   // object doesn't get deallocated when the browser discards its references.
   if (var_ == NULL) {
     PluginPpapi* plugin_ppapi = static_cast<PluginPpapi*>(handle()->plugin());
-    var_ = new(std::nothrow) pp::Var(plugin_ppapi, this);
+    var_ = new(std::nothrow) pp::VarPrivate(plugin_ppapi, this);
     CHECK(var_ != NULL);
   }
   PLUGIN_PRINTF(("ScriptableHandlePpapi::AddRef (this=%p, var=%p)\n",

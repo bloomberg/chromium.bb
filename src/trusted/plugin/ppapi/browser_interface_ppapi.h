@@ -1,8 +1,6 @@
-/*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
- */
+// Copyright (c) 2011 The Native Client Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 // PPAPI-based implementation of the interface to call browser functionality.
 
@@ -16,7 +14,7 @@
 #include "ppapi/cpp/instance.h"
 
 namespace pp {
-class Instance;
+class InstancePrivate;
 }  // namespace
 
 namespace plugin {
@@ -69,10 +67,11 @@ class BrowserInterfacePpapi : public BrowserInterface {
 
 // Convert from the API-independent instance identifier to the PPAPI
 // PP_Instance.
-pp::Instance* InstanceIdentifierToPPInstance(InstanceIdentifier id);
+pp::InstancePrivate* InstanceIdentifierToPPInstance(InstanceIdentifier id);
 // Convert from the PPAPI PP_Instance type to the API-independent instance
 // identifier.
-InstanceIdentifier PPInstanceToInstanceIdentifier(pp::Instance* instance);
+InstanceIdentifier PPInstanceToInstanceIdentifier(
+    pp::InstancePrivate* instance);
 
 }  // namespace plugin
 

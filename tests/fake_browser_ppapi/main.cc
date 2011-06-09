@@ -34,6 +34,7 @@
 #include "ppapi/c/ppb_instance.h"
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/c/private/ppb_instance_private.h"
 #include "ppapi/c/private/ppb_uma_private.h"
 
 using fake_browser_ppapi::DebugPrintf;
@@ -51,6 +52,8 @@ const void* FakeGetBrowserInterface(const char* interface_name) {
     ppb = fake_browser_ppapi::Core::GetInterface();
   } else if (std::strcmp(interface_name, PPB_INSTANCE_INTERFACE) == 0) {
     ppb = fake_browser_ppapi::Instance::GetInterface();
+  } else if (std::strcmp(interface_name, PPB_INSTANCE_PRIVATE_INTERFACE) == 0) {
+    ppb = fake_browser_ppapi::Instance::GetPrivateInterface();
   } else if (std::strcmp(interface_name, PPB_VAR_DEPRECATED_INTERFACE) == 0) {
     ppb = host->var_interface();
   } else if (std::strcmp(interface_name, PPB_URLLOADER_INTERFACE) == 0) {
@@ -177,6 +180,7 @@ void TestInstance(PP_Module browser_module_id,
   instance->set_window(&window);
   // Create and initialize plugin instance.
   CHECK(instance_interface->DidCreate(instance_id, argc, argn, argv));
+#ifndef PPAPI_INSTANCE_REMOVE_SCRIPTING
   // Test the scriptable object for the instance.
   PP_Var instance_object = instance_interface->GetInstanceObject(instance_id);
   const PPB_Var_Deprecated* var_interface =
@@ -187,6 +191,7 @@ void TestInstance(PP_Module browser_module_id,
                        var_interface,
                        instance_id,
                        browser_module_id);
+#endif
 }
 
 }  // namespace

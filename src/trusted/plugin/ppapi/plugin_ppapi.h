@@ -19,7 +19,7 @@
 #include "native_client/src/trusted/plugin/plugin.h"
 #include "native_client/src/trusted/plugin/ppapi/file_downloader.h"
 
-#include "ppapi/cpp/instance.h"
+#include "ppapi/cpp/private/instance_private.h"
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/url_loader.h"
 #include "ppapi/cpp/var.h"
@@ -46,7 +46,7 @@ class Manifest;
 class ProgressEvent;
 
 // Encapsulates a PPAPI NaCl plugin.
-class PluginPpapi : public pp::Instance, public Plugin {
+class PluginPpapi : public pp::InstancePrivate, public Plugin {
  public:
   // Factory method for creation.
   static PluginPpapi* New(PP_Instance instance);
@@ -116,7 +116,7 @@ class PluginPpapi : public pp::Instance, public Plugin {
   // with NaClDesc-wrapped file descriptor on success and js_callback.onfail
   // with an error string on failure.
   // This is used by JS-based __urlAsNaClDesc().
-  void UrlAsNaClDesc(const nacl::string& url, pp::Var js_callback);
+  void UrlAsNaClDesc(const nacl::string& url, pp::VarPrivate js_callback);
   // Requests a URL asynchronously resulting in a call to pp_callback with
   // a PP_Error indicating status. On success an open file descriptor
   // corresponding to the url body is recorded for further lookup.
@@ -202,7 +202,7 @@ class PluginPpapi : public pp::Instance, public Plugin {
   // Callback used when loading a URL for JS-based __urlAsNaClDesc().
   void UrlDidOpenForUrlAsNaClDesc(int32_t pp_error,
                                   FileDownloader*& url_downloader,
-                                  pp::Var& js_callback);
+                                  pp::VarPrivate& js_callback);
   // Callback used when loading a URL for SRPC-based StreamAsFile().
   void UrlDidOpenForStreamAsFile(int32_t pp_error,
                                  FileDownloader*& url_downloader,

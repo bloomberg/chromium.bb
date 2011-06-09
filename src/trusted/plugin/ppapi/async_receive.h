@@ -1,13 +1,12 @@
-/*
- * Copyright 2011 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
- */
+// Copyright (c) 2011 The Native Client Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_NPAPI_ASYNC_RECEIVE_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_NPAPI_ASYNC_RECEIVE_H_
 
 #include "native_client/src/trusted/plugin/ppapi/plugin_ppapi.h"
+#include "ppapi/cpp/private/var_private.h"
 
 namespace plugin {
 
@@ -19,7 +18,7 @@ namespace plugin {
 
 struct AsyncNaClToJSThreadArgs {
   // Callback registered with __setAsyncCallback().
-  pp::Var callback;
+  pp::VarPrivate callback;
   // IMC socket to receive messages from.
   nacl::scoped_ptr<nacl::DescWrapper> socket;
 };

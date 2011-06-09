@@ -1,8 +1,6 @@
-/*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
- */
+// Copyright (c) 2011 The Native Client Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 // PPAPI-based implementation of the interface for a scriptable object.
 
@@ -16,7 +14,7 @@
 #include "native_client/src/trusted/plugin/portable_handle.h"
 #include "native_client/src/trusted/plugin/scriptable_handle.h"
 #include "ppapi/cpp/dev/scriptable_object_deprecated.h"
-#include "ppapi/cpp/var.h"
+#include "ppapi/cpp/private/var_private.h"
 
 namespace plugin {
 
@@ -30,12 +28,17 @@ class ScriptableHandlePpapi : public pp::deprecated::ScriptableObject,
   static ScriptableHandlePpapi* New(PortableHandle* handle);
 
   // If not NULL, this var should be reused to pass this object to the browser.
-  pp::Var* var() { return var_; }
+  pp::VarPrivate* var() { return var_; }
 
+// Turn off the ability to set a proxy if we're removing scripting.  In this
+// case, the ScriptableHandle can only refer to the NaCl plugin.
+// TODO(dmichael): Clean up all traces of scripting proxying.
+#ifndef PPAPI_INSTANCE_REMOVE_SCRIPTING
   // If this scriptable handle corresponds to the NaCl plugin itself and the
   // plugin has successfully loaded the NaCl module and started proxied
   // execution, scripting should be redirected via this proxy.
-  void set_scriptable_proxy(pp::Var proxy) { scriptable_proxy_ = proxy; }
+  void set_scriptable_proxy(pp::VarPrivate proxy) { scriptable_proxy_ = proxy; }
+#endif
 
   // ------ Methods inherited from pp::deprecated::ScriptableObject:
 
@@ -99,15 +102,16 @@ class ScriptableHandlePpapi : public pp::deprecated::ScriptableObject,
                  const std::vector<pp::Var>& args, pp::Var* exception);
 
   // When we pass the object owned by the plugin to the browser, we need to wrap
-  // it in a pp::Var, which also registers the object with the browser for
-  // refcounting. It must be registered only once with all other var references
-  // being copies of the original one. Thus, we record the pp::Var here and
-  // reuse it when satisfiying additional browser requests. This way we also
-  // ensure that when the browser clears its references, this object does not
-  // get deallocated while we still hold ours. This is never set for objects
-  // that are not shared with the browser nor for objects created during SRPC
-  // calls as they are taken over by the browser on return.
-  pp::Var* var_;
+  // it in a pp::VarPrivate, which also registers the object with the browser
+  // for refcounting. It must be registered only once with all other var
+  // references being copies of the original one. Thus, we record the
+  // pp::VarPrivate here and reuse it when satisfiying additional browser
+  // requests. This way we also ensure that when the browser clears its
+  // references, this object does not get deallocated while we still hold ours.
+  // This is never set for objects that are not shared with the browser nor for
+  // objects created during SRPC calls as they are taken over by the browser on
+  // return.
+  pp::VarPrivate* var_;
 
   // We should have no more than one internal plugin owner for this object,
   // and only that owner should call Unref(). To CHECK for that keep a counter.
@@ -115,7 +119,18 @@ class ScriptableHandlePpapi : public pp::deprecated::ScriptableObject,
 
   bool handle_is_plugin_;  // Whether (portable) handle() is a plugin.
 
+#ifdef PPAPI_INSTANCE_REMOVE_SCRIPTING
+  // If untrusted scripting is disabled, make this a VarPrivate just so that
+  // it has all the methods it needs to compile.  This is a hack to avoid having
+  // conditional compilation at every call-site for things like HasProperty,
+  // HasMethod, etc.  We turn off untrusted scripting above by removing the
+  // setter for scriptable_proxy_, so it's always invalid.
+  // TODO(dmichael): Remove scriptable_proxy_ and all other traces of untrusted
+  // scripting.
+  pp::VarPrivate scriptable_proxy_;
+#else
   pp::Var scriptable_proxy_;  // Proxy for NaCl module's scripting interface.
+#endif
 };
 
 }  // namespace plugin

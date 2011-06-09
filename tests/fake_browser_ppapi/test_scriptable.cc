@@ -114,7 +114,9 @@ PP_Var PropertyValue(PP_VarType type) {
     case PP_VARTYPE_STRING:
       return MakeString(kStringValue);
     case PP_VARTYPE_OBJECT:
+#ifndef PPAPI_INSTANCE_REMOVE_SCRIPTING
       return g_instance_interface->GetWindowObject(g_instance_id);
+#endif
     case PP_VARTYPE_ARRAY:
     case PP_VARTYPE_DICTIONARY:
       break;

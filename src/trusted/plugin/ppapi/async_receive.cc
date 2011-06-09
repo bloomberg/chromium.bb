@@ -1,20 +1,21 @@
-/*
- * Copyright 2011 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
- */
+// Copyright (c) 2011 The Native Client Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "native_client/src/trusted/plugin/ppapi/async_receive.h"
 
+#include <string>
+
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/plugin/string_encoding.h"
+#include "ppapi/cpp/private/var_private.h"
 
 namespace plugin {
 
 namespace {
 
 struct ReceiveCallbackArgs {
-  pp::Var* callback;
+  pp::VarPrivate* callback;
   nacl::scoped_ptr_malloc<char> data;
   size_t size;
 };
@@ -79,8 +80,8 @@ void WINAPI AsyncNaClToJSThread(void* argument_to_thread) {
         break;
       }
       callback_args->data.reset(data);
-      // We save a pointer to a pp::Var here rather than copying the
-      // pp::Var because it is not safe to do AddRef() in this thread.
+      // We save a pointer to a pp::VarPrivate here rather than copying the
+      // pp::VarPrivate because it is not safe to do AddRef() in this thread.
       // We assume that CallOnMainThread() schedules functions to be
       // called in order, so that the callback function is not freed
       // until later.

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Native Client Authors. All rights reserved.
+// Copyright (c) 2011 The Native Client Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -9,6 +9,8 @@
 #include "native_client/src/shared/ppapi_proxy/object_serialize.h"
 #include "srpcgen/ppb_rpc.h"
 
+//TODO(dmichael): Remove this function from the SRPC interface and here when
+//                scripting functions are removed from PPB_Instance.
 void PpbInstanceRpcServer::PPB_Instance_GetWindowObject(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
@@ -18,15 +20,23 @@ void PpbInstanceRpcServer::PPB_Instance_GetWindowObject(
     nacl_abi_size_t* window_size, char* window_bytes) {
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
-
+#ifdef PPAPI_INSTANCE_REMOVE_SCRIPTING
+  UNREFERENCED_PARAMETER(rpc);
+  UNREFERENCED_PARAMETER(done);
+  UNREFERENCED_PARAMETER(instance);
+  UNREFERENCED_PARAMETER(window_size);
+  UNREFERENCED_PARAMETER(window_bytes);
+#else
   PP_Var window =
       ppapi_proxy::PPBInstanceInterface()->GetWindowObject(instance);
   if (!ppapi_proxy::SerializeTo(&window, window_bytes, window_size))
     return;
 
   rpc->result = NACL_SRPC_RESULT_OK;
+#endif
 }
 
+//TODO(dmichael): Remove this function from the SRPC interface and here.
 void PpbInstanceRpcServer::PPB_Instance_GetOwnerElementObject(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
@@ -37,12 +47,20 @@ void PpbInstanceRpcServer::PPB_Instance_GetOwnerElementObject(
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
+#ifdef PPAPI_INSTANCE_REMOVE_SCRIPTING
+  UNREFERENCED_PARAMETER(rpc);
+  UNREFERENCED_PARAMETER(done);
+  UNREFERENCED_PARAMETER(instance);
+  UNREFERENCED_PARAMETER(owner_size);
+  UNREFERENCED_PARAMETER(owner_bytes);
+#else
   PP_Var owner =
       ppapi_proxy::PPBInstanceInterface()->GetOwnerElementObject(instance);
   if (!ppapi_proxy::SerializeTo(&owner, owner_bytes, owner_size))
     return;
 
   rpc->result = NACL_SRPC_RESULT_OK;
+#endif
 }
 
 void PpbInstanceRpcServer::PPB_Instance_BindGraphics(
@@ -82,6 +100,7 @@ void PpbInstanceRpcServer::PPB_Instance_IsFullFrame(
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
+//TODO(dmichael): Remove this function from the SRPC interface and here.
 void PpbInstanceRpcServer::PPB_Instance_ExecuteScript(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
@@ -95,6 +114,19 @@ void PpbInstanceRpcServer::PPB_Instance_ExecuteScript(
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
+#ifdef PPAPI_INSTANCE_REMOVE_SCRIPTING
+  UNREFERENCED_PARAMETER(rpc);
+  UNREFERENCED_PARAMETER(done);
+  UNREFERENCED_PARAMETER(instance);
+  UNREFERENCED_PARAMETER(script_size);
+  UNREFERENCED_PARAMETER(script_bytes);
+  UNREFERENCED_PARAMETER(exception_in_size);
+  UNREFERENCED_PARAMETER(exception_in_bytes);
+  UNREFERENCED_PARAMETER(result_size);
+  UNREFERENCED_PARAMETER(result_bytes);
+  UNREFERENCED_PARAMETER(exception_size);
+  UNREFERENCED_PARAMETER(exception_bytes);
+#else
   PP_Var script;
   if (!ppapi_proxy::DeserializeTo(
           rpc->channel, script_bytes, script_size, 1, &script))
@@ -112,4 +144,5 @@ void PpbInstanceRpcServer::PPB_Instance_ExecuteScript(
     return;
 
   rpc->result = NACL_SRPC_RESULT_OK;
+#endif
 }

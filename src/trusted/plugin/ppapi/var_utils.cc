@@ -1,9 +1,6 @@
-/*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
- */
-
+// Copyright (c) 2011 The Native Client Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include <assert.h>
 
@@ -84,8 +81,9 @@ template<typename T> void PPVarToArray(const pp::Var& var,
     *exception = "incompatible argument: type is not array";
     return;
   }
+  pp::VarPrivate var_private(var);
 
-  pp::Var length_var = var.GetProperty(pp::Var("length"), exception);
+  pp::Var length_var = var_private.GetProperty(pp::Var("length"), exception);
   PLUGIN_PRINTF(("  PPVarToArray (length=%s)\n",
                  length_var.DebugString().c_str()));
   PPVarToAllocateArray(length_var, array_length, array_data, exception);
@@ -95,7 +93,7 @@ template<typename T> void PPVarToArray(const pp::Var& var,
 
   for (size_t i = 0; i < *array_length; ++i) {
     int32_t index = nacl::assert_cast<int32_t>(i);
-    pp::Var element = var.GetProperty(pp::Var(index), exception);
+    pp::Var element = var_private.GetProperty(pp::Var(index), exception);
     PLUGIN_PRINTF(("  PPVarToArray (array[%d]=%s)\n",
                    index, element.DebugString().c_str()));
     if (!exception->is_undefined()) {
@@ -139,8 +137,9 @@ NaClDesc* PPVarToNaClDesc(const pp::Var& var, pp::Var* exception) {
     *exception = "incompatible argument: type is not object";
     return NULL;
   }
+  pp::VarPrivate var_private(var);
   pp::deprecated::ScriptableObject* scriptable_object =
-      var.AsScriptableObject();
+      var_private.AsScriptableObject();
   if (scriptable_object == NULL) {
     *exception = "incompatible argument: type is not scriptable object";
     return NULL;
@@ -325,7 +324,7 @@ template<typename T> pp::Var ArrayToPPVar(T* array_data,
                        ArrayElementToPPVar(array_data[i]),
                        exception);
   }
-  return pp::Var(plugin, array);
+  return pp::VarPrivate(plugin, array);
 }
 
 
@@ -348,7 +347,7 @@ pp::Var NaClDescToPPVar(NaClDesc* desc, PluginPpapi* plugin,
     *exception = "incompatible argument: failed to create handle var";
     return pp::Var();
   }
-  return pp::Var(plugin, object);
+  return pp::VarPrivate(plugin, object);
 }
 
 
@@ -371,7 +370,7 @@ pp::Var ObjectToPPVar(void* obj) {
 
   PluginPpapi* plugin_ppapi =
       static_cast<PluginPpapi*>(handle_ppapi->handle()->plugin());
-  return pp::Var(plugin_ppapi, handle_ppapi);
+  return pp::VarPrivate(plugin_ppapi, handle_ppapi);
 }
 
 }  // namespace

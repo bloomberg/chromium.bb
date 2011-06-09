@@ -184,6 +184,7 @@ PP_Bool HandleDocumentLoad(PP_Instance instance, PP_Resource url_loader) {
   return PP_FALSE;
 }
 
+#ifndef PPAPI_INSTANCE_REMOVE_SCRIPTING
 PP_Var GetInstanceObject(PP_Instance instance) {
   DebugPrintf("PPP_Instance::GetInstanceObject: instance=%"NACL_PRIu32"\n",
               instance);
@@ -205,6 +206,7 @@ PP_Var GetInstanceObject(PP_Instance instance) {
                           main_channel,
                           true /* is_instance_object */);
 }
+#endif
 
 }  // namespace
 
@@ -216,7 +218,9 @@ const PPP_Instance* BrowserInstance::GetInterface() {
     DidChangeFocus,
     HandleInputEvent,
     HandleDocumentLoad,
+#ifndef PPAPI_INSTANCE_REMOVE_SCRIPTING
     GetInstanceObject
+#endif
   };
   return &instance_interface;
 }

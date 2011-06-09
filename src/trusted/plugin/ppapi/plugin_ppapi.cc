@@ -498,7 +498,7 @@ bool PluginPpapi::Init(uint32_t argc, const char* argn[], const char* argv[]) {
 
   bool status = Plugin::Init(
       browser_interface,
-      PPInstanceToInstanceIdentifier(static_cast<pp::Instance*>(this)),
+      PPInstanceToInstanceIdentifier(static_cast<pp::InstancePrivate*>(this)),
       static_cast<int>(argc),
       // TODO(polina): Can we change the args on our end to be const to
       // avoid these ugly casts? This will also require changes to npapi code.
@@ -560,7 +560,7 @@ bool PluginPpapi::Init(uint32_t argc, const char* argn[], const char* argv[]) {
 
 
 PluginPpapi::PluginPpapi(PP_Instance pp_instance)
-    : pp::Instance(pp_instance),
+    : pp::InstancePrivate(pp_instance),
       last_error_string_(""),
       ppapi_proxy_(NULL),
       replayDidChangeView(false),
@@ -799,11 +799,14 @@ bool PluginPpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel,
 
   ppapi_proxy_ = ppapi_proxy.release();
 
+// TODO(dmichael):  Remove the scripting proxy code entirely.
+#ifndef PPAPI_INSTANCE_REMOVE_SCRIPTING
   ScriptableHandlePpapi* handle =
       static_cast<ScriptableHandlePpapi*>(scriptable_handle());
   PP_Var scriptable_proxy =
       instance_interface->GetInstanceObject(pp_instance());
   handle->set_scriptable_proxy(pp::Var(pp::Var::PassRef(), scriptable_proxy));
+#endif
 
   // Create PPP* interface adapters to forward calls to .nexe.
   find_adapter_.reset(new(std::nothrow) FindAdapter(this));
@@ -1053,7 +1056,7 @@ bool PluginPpapi::SelectNexeURLFromManifest(nacl::string* result,
 
 void PluginPpapi::UrlDidOpenForUrlAsNaClDesc(int32_t pp_error,
                                              FileDownloader*& url_downloader,
-                                             pp::Var& js_callback) {
+                                             pp::VarPrivate& js_callback) {
   PLUGIN_PRINTF(("PluginPpapi::UrlDidOpenForUrlAsNaClDesc "
                  "(pp_error=%"NACL_PRId32", url_downloader=%p)\n",
                  pp_error, reinterpret_cast<void*>(url_downloader)));
@@ -1088,7 +1091,7 @@ void PluginPpapi::UrlDidOpenForUrlAsNaClDesc(int32_t pp_error,
   // We succeeded, so do not unref the wrapper!
   (void)(scoped_desc_wrapper.release());
 
-  js_callback.Call(pp::Var("onload"), pp::Var(this, handle));
+  js_callback.Call(pp::Var("onload"), pp::VarPrivate(this, handle));
 }
 
 
@@ -1124,7 +1127,8 @@ int32_t PluginPpapi::GetPOSIXFileDesc(const nacl::string& url) {
 
 // TODO(polina): reduce code duplication between UrlAsNaClDesc and StreamAsFile.
 
-void PluginPpapi::UrlAsNaClDesc(const nacl::string& url, pp::Var js_callback) {
+void PluginPpapi::UrlAsNaClDesc(const nacl::string& url,
+                                pp::VarPrivate js_callback) {
   PLUGIN_PRINTF(("PluginPpapi::UrlAsNaClDesc (url='%s')\n", url.c_str()));
   FileDownloader* downloader = new FileDownloader();
   downloader->Initialize(this);
@@ -1290,8 +1294,8 @@ void PluginPpapi::DispatchProgressEvent(int32_t result) {
   // Create a function object by evaluating the JavaScript text.
   // TODO(sehr, polina): We should probably cache the created function object to
   // avoid JavaScript reparsing.
-  pp::Var exception;
-  pp::Var function_object = ExecuteScript(kEventClosureJS, &exception);
+  pp::VarPrivate exception;
+  pp::VarPrivate function_object = ExecuteScript(kEventClosureJS, &exception);
   if (!exception.is_undefined() || !function_object.is_object()) {
     PLUGIN_PRINTF(("PluginPpapi::DispatchProgressEvent:"
                    " Function object creation failed.\n"));

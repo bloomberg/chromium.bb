@@ -1,8 +1,6 @@
-/*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
- */
+// Copyright (c) 2011 The Native Client Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include <assert.h>
 
@@ -14,10 +12,9 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/trusted/plugin/api_defines.h"
 #include "native_client/src/trusted/plugin/ppapi/scriptable_handle_ppapi.h"
-#include "native_client/src/trusted/plugin/ppapi/var_utils.h"
 
-#include "ppapi/cpp/instance.h"
-#include "ppapi/cpp/var.h"
+#include "ppapi/cpp/private/instance_private.h"
+#include "ppapi/cpp/private/var_private.h"
 
 using nacl::assert_cast;
 
@@ -25,8 +22,8 @@ namespace plugin {
 
 namespace {
 
-pp::Var GetWindow(plugin::InstanceIdentifier instance_id) {
-  pp::Instance* instance = InstanceIdentifierToPPInstance(instance_id);
+pp::VarPrivate GetWindow(plugin::InstanceIdentifier instance_id) {
+  pp::InstancePrivate* instance = InstanceIdentifierToPPInstance(instance_id);
   return instance->GetWindowObject();
 }
 
@@ -61,7 +58,7 @@ bool BrowserInterfacePpapi::Alert(InstanceIdentifier instance_id,
 bool BrowserInterfacePpapi::AddToConsole(InstanceIdentifier instance_id,
                                          const nacl::string& text) {
   pp::Var exception;
-  pp::Var window = GetWindow(instance_id);
+  pp::VarPrivate window = GetWindow(instance_id);
   window.GetProperty("console", &exception).Call("log", text, &exception);
   return exception.is_undefined();
 }
@@ -77,10 +74,10 @@ bool BrowserInterfacePpapi::EvalString(InstanceIdentifier instance_id,
 bool BrowserInterfacePpapi::GetFullURL(InstanceIdentifier instance_id,
                                        nacl::string* full_url) {
   *full_url = NACL_NO_URL;
-  pp::Var location = GetWindow(instance_id).GetProperty("location");
+  pp::VarPrivate location = GetWindow(instance_id).GetProperty("location");
   PLUGIN_PRINTF(("BrowserInterfacePpapi::GetFullURL (location=%s)\n",
                  location.DebugString().c_str()));
-  pp::Var href = location.GetProperty("href");
+  pp::VarPrivate href = location.GetProperty("href");
   PLUGIN_PRINTF(("BrowserInterfacePpapi::GetFullURL (href=%s)\n",
                  href.DebugString().c_str()));
   if (href.is_string()) {
@@ -98,12 +95,15 @@ ScriptableHandle* BrowserInterfacePpapi::NewScriptableHandle(
 }
 
 
-pp::Instance* InstanceIdentifierToPPInstance(InstanceIdentifier instance_id) {
-  return reinterpret_cast<pp::Instance*>(assert_cast<intptr_t>(instance_id));
+pp::InstancePrivate* InstanceIdentifierToPPInstance(
+    InstanceIdentifier instance_id) {
+  return reinterpret_cast<pp::InstancePrivate*>(
+      assert_cast<intptr_t>(instance_id));
 }
 
 
-InstanceIdentifier PPInstanceToInstanceIdentifier(pp::Instance* instance) {
+InstanceIdentifier PPInstanceToInstanceIdentifier(
+    pp::InstancePrivate* instance) {
   return assert_cast<InstanceIdentifier>(reinterpret_cast<intptr_t>(instance));
 }
 

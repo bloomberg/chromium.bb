@@ -1,8 +1,6 @@
-/*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
- */
+// Copyright (c) 2011 The Native Client Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PPAPI_ARRAY_PPAPI_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PPAPI_ARRAY_PPAPI_H_
@@ -14,7 +12,7 @@
 #include "native_client/src/trusted/plugin/ppapi/plugin_ppapi.h"
 #include "ppapi/cpp/dev/scriptable_object_deprecated.h"
 #include "ppapi/cpp/instance.h"
-#include "ppapi/cpp/var.h"
+#include "ppapi/cpp/private/var_private.h"
 
 namespace plugin {
 
@@ -54,7 +52,7 @@ class ArrayPpapi : public pp::deprecated::ScriptableObject {
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(ArrayPpapi);
 
-  pp::Var js_array_;
+  pp::VarPrivate js_array_;
 };
 
 }  // namespace plugin

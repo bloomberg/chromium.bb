@@ -1,8 +1,6 @@
-/*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
- */
+// Copyright (c) 2011 The Native Client Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #ifndef NATIVE_CLIENT_TESTS_FAKE_BROWSER_PPAPI_FAKE_INSTANCE_H_
 #define NATIVE_CLIENT_TESTS_FAKE_BROWSER_PPAPI_FAKE_INSTANCE_H_
@@ -10,6 +8,8 @@
 #include "native_client/src/include/nacl_macros.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/ppb_instance.h"
+
+struct PPB_Instance_Private;
 
 namespace fake_browser_ppapi {
 
@@ -36,6 +36,7 @@ class Instance {
   virtual PP_Var ExecuteScript(PP_Var script,
                                PP_Var* exception);
   static const PPB_Instance* GetInterface();
+  static const PPB_Instance_Private* GetPrivateInterface();
   static Instance* Invalid() { return &kInvalidInstance; }
  private:
   static Instance kInvalidInstance;
