@@ -499,7 +499,7 @@ void TranslateManager::ReportLanguageDetectionError(TabContents* tab_contents) {
   GURL page_url = tab_contents->controller().GetActiveEntry()->url();
   std::string report_error_url(kReportLanguageDetectionErrorURL);
   report_error_url += "?client=cr&action=langidc&u=";
-  report_error_url += EscapeUrlEncodedData(page_url.spec());
+  report_error_url += EscapeUrlEncodedData(page_url.spec(), true);
   report_error_url += "&sl=";
 
   TranslateTabHelper* helper = TabContentsWrapper::GetCurrentWrapperForContents(
