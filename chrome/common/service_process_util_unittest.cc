@@ -30,10 +30,15 @@
 #endif
 
 #if defined(TOUCH_UI)
-// This test fails http://crbug/84854
+// This test fails http://crbug.com/84854, and is very flaky on CrOS and
+// somewhat flaky on other Linux.
 #define MAYBE_ForceShutdown FAILS_ForceShutdown
 #else
+#if defined(OS_LINUX)
+#define MAYBE_ForceShutdown FLAKY_ForceShutdown
+#else
 #define MAYBE_ForceShutdown ForceShutdown
+#endif
 #endif
 
 namespace {
