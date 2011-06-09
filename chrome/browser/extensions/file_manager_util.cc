@@ -16,7 +16,7 @@
 #include "content/browser/browser_thread.h"
 #include "content/browser/user_metrics.h"
 #include "grit/generated_resources.h"
-#include "net/base/escape.h"
+#include "third_party/libjingle/source/talk/base/urlencode.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
@@ -112,17 +112,16 @@ GURL FileManagerUtil::GetFileBrowserUrlWithParams(
   std::string json = GetArgumentsJson(type, title, default_path, file_types,
                                       file_type_index, default_extension);
   return GURL(FileManagerUtil::GetFileBrowserUrl().spec() + "?" +
-              EscapeUrlEncodedData(json, false));
+              UrlEncodeStringWithoutEncodingSpaceAsPlus(json));
 
 }
-
 // static
 void FileManagerUtil::ShowFullTabUrl(Profile*,
                                      const FilePath& default_path) {
   std::string json = GetArgumentsJson(SelectFileDialog::SELECT_NONE, string16(),
       default_path, NULL, 0, FilePath::StringType());
   GURL url(std::string(kBaseFileBrowserUrl) + "?" +
-           EscapeUrlEncodedData(json, false));
+           UrlEncodeStringWithoutEncodingSpaceAsPlus(json));
   Browser* browser = BrowserList::GetLastActive();
   if (!browser)
     return;
@@ -131,6 +130,7 @@ void FileManagerUtil::ShowFullTabUrl(Profile*,
   browser->ShowSingletonTab(GURL(url));
 }
 
+
 void FileManagerUtil::ViewItem(const FilePath& full_path, bool enqueue) {
   std::string ext = full_path.Extension();
   // For things supported natively by the browser, we should open it
@@ -138,7 +138,7 @@ void FileManagerUtil::ViewItem(const FilePath& full_path, bool enqueue) {
   if (IsSupportedBrowserExtension(ext.data())) {
     std::string path;
     path = "file://";
-    path.append(EscapeUrlEncodedData(full_path.value(), false));
+    path.append(full_path.value());
     if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
       bool result = BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
@@ -190,9 +190,9 @@ std::string FileManagerUtil::GetArgumentsJson(
   arg_value.SetString("defaultPath", default_path.value());
   arg_value.SetString("defaultExtension", default_extension);
 
+  ListValue* types_list = new ListValue();
 
   if (file_types) {
-    ListValue* types_list = new ListValue();
     for (size_t i = 0; i < file_types->extensions.size(); ++i) {
       ListValue* extensions_list = new ListValue();
       for (size_t j = 0; j < file_types->extensions[i].size(); ++j) {
@@ -213,7 +213,6 @@ std::string FileManagerUtil::GetArgumentsJson(
 
       types_list->Set(i, dict);
     }
-    arg_value.Set("typeList", types_list);
   }
 
   std::string rv;

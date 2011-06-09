@@ -143,10 +143,10 @@ std::string GaiaAuthFetcher::MakeClientLoginBody(
     const std::string& login_token,
     const std::string& login_captcha,
     HostedAccountsSetting allow_hosted_accounts) {
-  std::string encoded_username = EscapeUrlEncodedData(username, true);
-  std::string encoded_password = EscapeUrlEncodedData(password, true);
-  std::string encoded_login_token = EscapeUrlEncodedData(login_token, true);
-  std::string encoded_login_captcha = EscapeUrlEncodedData(login_captcha, true);
+  std::string encoded_username = EscapeUrlEncodedData(username);
+  std::string encoded_password = EscapeUrlEncodedData(password);
+  std::string encoded_login_token = EscapeUrlEncodedData(login_token);
+  std::string encoded_login_captcha = EscapeUrlEncodedData(login_captcha);
 
   const char* account_type = allow_hosted_accounts == HostedAccountsAllowed ?
       kAccountTypeHostedOrGoogle :
@@ -179,8 +179,8 @@ std::string GaiaAuthFetcher::MakeIssueAuthTokenBody(
     const std::string& sid,
     const std::string& lsid,
     const char* const service) {
-  std::string encoded_sid = EscapeUrlEncodedData(sid, true);
-  std::string encoded_lsid = EscapeUrlEncodedData(lsid, true);
+  std::string encoded_sid = EscapeUrlEncodedData(sid);
+  std::string encoded_lsid = EscapeUrlEncodedData(lsid);
 
   // All tokens should be session tokens except the gaia auth token.
   bool session = true;
@@ -196,7 +196,7 @@ std::string GaiaAuthFetcher::MakeIssueAuthTokenBody(
 
 // static
 std::string GaiaAuthFetcher::MakeGetUserInfoBody(const std::string& lsid) {
-  std::string encoded_lsid = EscapeUrlEncodedData(lsid, true);
+  std::string encoded_lsid = EscapeUrlEncodedData(lsid);
   return base::StringPrintf(kGetUserInfoFormat, encoded_lsid.c_str());
 }
 
