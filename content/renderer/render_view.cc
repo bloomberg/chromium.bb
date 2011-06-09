@@ -2634,6 +2634,8 @@ void RenderView::didFinishResourceLoad(
     const GURL& error_page_url = GetAlternateErrorPageURL(frame_url, HTTP_404);
     if (error_page_url.is_valid()) {
       WebURLError original_error;
+      original_error.domain = "http";
+      original_error.reason = 404;
       original_error.unreachableURL = frame_url;
 
       navigation_state->set_alt_error_page_fetcher(
