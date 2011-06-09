@@ -512,6 +512,14 @@ HistoryView.prototype.toggleEditMode = function() {
 };
 
 /**
+ * @return {boolean} Whether we are in edit mode where history items can be
+ *    deleted
+ */
+HistoryView.prototype.getEditMode = function() {
+  return this.model_.getEditMode();
+};
+
+/**
  * Reload the current view.
  */
 HistoryView.prototype.reload = function() {
@@ -1022,7 +1030,6 @@ function deleteComplete() {
     deleteNextInQueue();
   } else {
     deleteQueue = [];
-    historyView.reload();
   }
 }
 
@@ -1035,6 +1042,17 @@ function deleteFailed() {
   // The deletion failed - try again later.
   deleteInFlight = false;
   setTimeout(deleteNextInQueue, 500);
+}
+
+/**
+ * We're called when something is deleted (either by us or by someone
+ * else).
+ */
+function historyDeleted() {
+  window.console.log('History deleted');
+  var anyChecked = document.querySelector('.entry input:checked') != null;
+  if (!(historyView.getEditMode() && anyChecked))
+    historyView.reload();
 }
 
 // Add handlers to HTML elements.

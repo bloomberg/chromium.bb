@@ -32,6 +32,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/browser/user_metrics.h"
+#include "content/common/notification_source.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -135,6 +136,9 @@ WebUIMessageHandler* BrowsingHistoryHandler::Attach(WebUI* web_ui) {
   profile->GetChromeURLDataManager()->AddDataSource(
       new FaviconSource(profile, FaviconSource::FAVICON));
 
+  // Get notifications when history is cleared.
+  registrar_.Add(this, NotificationType::HISTORY_URLS_DELETED,
+      Source<Profile>(profile->GetOriginalProfile()));
   return WebUIMessageHandler::Attach(web_ui);
 }
 
@@ -358,6 +362,18 @@ history::QueryOptions BrowsingHistoryHandler::CreateMonthQueryOptions(
   }
 
   return options;
+}
+
+void BrowsingHistoryHandler::Observe(NotificationType type,
+                                     const NotificationSource& source,
+                                     const NotificationDetails& details) {
+  if (type != NotificationType::HISTORY_URLS_DELETED) {
+    NOTREACHED();
+    return;
+  }
+
+  // Some URLs were deleted from history. Reload the list.
+  web_ui_->CallJavascriptFunction("historyDeleted");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
