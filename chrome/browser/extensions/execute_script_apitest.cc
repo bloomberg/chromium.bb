@@ -55,18 +55,18 @@ IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest,
   ASSERT_TRUE(RunExtensionTest(extension_name)) << message_;
 }
 
-#if defined(OS_LINUX) || defined(OS_MACOSX)
-// Flakily times out: http://crbug.com/78802
-#define MAYBE_NavigationRace DISABLED_NavigationRace
-#else
-#define MAYBE_NavigationRace NavigationRace
-#endif
-IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, MAYBE_NavigationRace) {
+IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, NavigationRaceExecuteScript) {
   host_resolver()->AddRule("a.com", "127.0.0.1");
   host_resolver()->AddRule("b.com", "127.0.0.1");
   ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionSubtest("executescript/navigation_race",
                                   "execute_script.html")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, NavigationRaceJavaScriptUrl) {
+  host_resolver()->AddRule("a.com", "127.0.0.1");
+  host_resolver()->AddRule("b.com", "127.0.0.1");
+  ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionSubtest("executescript/navigation_race",
                                   "javascript_url.html")) << message_;
 }
