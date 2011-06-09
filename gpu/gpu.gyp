@@ -269,7 +269,6 @@
         'command_buffer/common/gles2_cmd_format_test_autogen.h',
         'command_buffer/common/gles2_cmd_id_test.cc',
         'command_buffer/common/gles2_cmd_id_test_autogen.h',
-        'command_buffer/common/gles2_cmd_utils_unittest.cc',
         'command_buffer/common/id_allocator_test.cc',
         'command_buffer/common/trace_event.h',
         'command_buffer/common/unittest_main.cc',
