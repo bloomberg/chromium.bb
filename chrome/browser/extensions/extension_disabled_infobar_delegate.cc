@@ -152,14 +152,15 @@ void ExtensionDisabledInfobarDelegate::Observe(
     const NotificationDetails& details) {
   // TODO(mpcomplete): RemoveInfoBar doesn't seem to always result in us getting
   // deleted.
-  const Extension* extension;
+  const Extension* extension = NULL;
   if (type.value == NotificationType::EXTENSION_LOADED) {
     extension = Details<const Extension>(details).ptr();
   } else {
     DCHECK_EQ(NotificationType::EXTENSION_UNLOADED, type.value);
     UnloadedExtensionInfo* info = Details<UnloadedExtensionInfo>(details).ptr();
-    extension = (info->reason == UnloadedExtensionInfo::DISABLE) ?
-        info->extension : NULL;
+    if (info->reason == UnloadedExtensionInfo::DISABLE ||
+        info->reason == UnloadedExtensionInfo::UNINSTALL)
+      extension = info->extension;
   }
   if (extension == extension_)
     tab_contents_->RemoveInfoBar(this);
