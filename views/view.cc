@@ -1764,13 +1764,13 @@ void View::UnregisterAccelerators(bool leave_data_intact) {
 // Focus -----------------------------------------------------------------------
 
 void View::InitFocusSiblings(View* v, int index) {
-  int child_count = child_count();
+  int count = child_count();
 
-  if (child_count == 0) {
+  if (count == 0) {
     v->next_focusable_view_ = NULL;
     v->previous_focusable_view_ = NULL;
   } else {
-    if (index == child_count) {
+    if (index == count) {
       // We are inserting at the end, but the end of the child list may not be
       // the last focusable element. Let's try to find an element with no next
       // focusable element to link to.
