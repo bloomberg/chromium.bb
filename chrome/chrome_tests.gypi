@@ -848,8 +848,6 @@
         'test/webdriver/webdriver_error.cc',
         'test/webdriver/webdriver_key_converter.h',
         'test/webdriver/webdriver_key_converter.cc',
-        'test/webdriver/webdriver_logging.h',
-        'test/webdriver/webdriver_logging.cc',
         'test/webdriver/web_element_id.h',
         'test/webdriver/web_element_id.cc',
         'test/webdriver/commands/alert_commands.h',

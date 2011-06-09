@@ -44,14 +44,6 @@ bool SendAutomationJSONRequest(AutomationMessageSender* sender,
                                std::string* reply,
                                bool* success) WARN_UNUSED_RESULT;
 
-// Same as above, but uses the given |AutomationMessageSender|'s default timeout
-// value.
-bool SendAutomationJSONRequestWithDefaultTimeout(
-    AutomationMessageSender* sender,
-    const std::string& request,
-    std::string* reply,
-    bool* success);
-
 // Requests the current browser and tab indices for the given tab ID.
 // Returns true on success.
 bool SendGetIndicesFromTabIdJSONRequest(

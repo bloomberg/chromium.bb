@@ -156,7 +156,7 @@ bool KeyMap::Press(const scoped_refptr<WindowProxy>& window,
     modifiers = modifiers | ui::EF_ALT_DOWN;
   }
   if (command_) {
-    LOG(INFO) << "Pressing command key on linux!!";
+    VLOG(1) << "Pressing command key on linux!!";
     modifiers = modifiers | ui::EF_COMMAND_DOWN;
   }
 
