@@ -878,9 +878,8 @@ void View::AddAccelerator(const Accelerator& accelerator) {
   if (!accelerators_.get())
     accelerators_.reset(new std::vector<Accelerator>());
 
-  std::vector<Accelerator>::iterator iter =
-      std::find(accelerators_->begin(), accelerators_->end(), accelerator);
-  DCHECK(iter == accelerators_->end())
+  DCHECK(std::find(accelerators_->begin(), accelerators_->end(), accelerator) ==
+      accelerators_->end())
       << "Registering the same accelerator multiple times";
 
   accelerators_->push_back(accelerator);
@@ -888,16 +887,20 @@ void View::AddAccelerator(const Accelerator& accelerator) {
 }
 
 void View::RemoveAccelerator(const Accelerator& accelerator) {
-  std::vector<Accelerator>::iterator iter;
-  if (!accelerators_.get() ||
-      ((iter = std::find(accelerators_->begin(), accelerators_->end(),
-          accelerator)) == accelerators_->end())) {
+  if (!accelerators_.get()) {
     NOTREACHED() << "Removing non-existing accelerator";
     return;
   }
 
-  size_t index = iter - accelerators_->begin();
-  accelerators_->erase(iter);
+  std::vector<Accelerator>::iterator i(
+      std::find(accelerators_->begin(), accelerators_->end(), accelerator));
+  if (i == accelerators_->end()) {
+    NOTREACHED() << "Removing non-existing accelerator";
+    return;
+  }
+
+  size_t index = i - accelerators_->begin();
+  accelerators_->erase(i);
   if (index >= registered_accelerator_count_) {
     // The accelerator is not registered to FocusManager.
     return;
@@ -1347,7 +1350,7 @@ void View::DoRemoveChildView(View* view,
                              bool update_tool_tip,
                              bool delete_removed_view) {
   DCHECK(view);
-  const Views::iterator i = std::find(children_.begin(), children_.end(), view);
+  const Views::iterator i(std::find(children_.begin(), children_.end(), view));
   scoped_ptr<View> view_to_be_deleted;
   if (i != children_.end()) {
     if (update_focus_cycle) {
@@ -1484,7 +1487,7 @@ void View::BoundsChanged(const gfx::Rect& previous_bounds) {
   // Notify interested Views that visible bounds within the root view may have
   // changed.
   if (descendants_to_notify_.get()) {
-    for (Views::iterator i = descendants_to_notify_->begin();
+    for (Views::iterator i(descendants_to_notify_->begin());
          i != descendants_to_notify_->end(); ++i) {
       (*i)->OnVisibleBoundsChanged();
     }
@@ -1539,9 +1542,8 @@ void View::AddDescendantToNotify(View* view) {
 
 void View::RemoveDescendantToNotify(View* view) {
   DCHECK(view && descendants_to_notify_.get());
-  Views::iterator i = std::find(descendants_to_notify_->begin(),
-                                descendants_to_notify_->end(),
-                                view);
+  Views::iterator i(std::find(
+      descendants_to_notify_->begin(), descendants_to_notify_->end(), view));
   DCHECK(i != descendants_to_notify_->end());
   descendants_to_notify_->erase(i);
   if (descendants_to_notify_->empty())
@@ -1733,10 +1735,10 @@ void View::RegisterPendingAccelerators() {
   // Only register accelerators if we are visible.
   if (!IsVisibleInRootView())
     return;
-  std::vector<Accelerator>::const_iterator iter;
-  for (iter = accelerators_->begin() + registered_accelerator_count_;
-       iter != accelerators_->end(); ++iter) {
-    accelerator_focus_manager_->RegisterAccelerator(*iter, this);
+  for (std::vector<Accelerator>::const_iterator i(
+           accelerators_->begin() + registered_accelerator_count_);
+       i != accelerators_->end(); ++i) {
+    accelerator_focus_manager_->RegisterAccelerator(*i, this);
   }
   registered_accelerator_count_ = accelerators_->size();
 }
