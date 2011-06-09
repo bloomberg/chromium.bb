@@ -2002,6 +2002,39 @@ TEST_F(ViewTest, ConvertPointToViewWithTransform) {
   }
 }
 
+// Verify if the child views added under the root are all deleted when
+// calling RemoveAllChildViews.
+// The tree looks like this:
+// root
+// |-- child
+// |   |-- foo
+// |       |-- bar0
+// |       |-- bar1
+// +-------|-- bar2
+TEST_F(ViewTest, RemoveAllChildViews) {
+  View root;
+
+  View* child = new View();
+  root.AddChildView(child);
+
+  View* foo = new View();
+  child->AddChildView(foo);
+
+  // Add some nodes to |foo|.
+  for (int i = 0; i < 3; ++i)
+    foo->AddChildView(new View());
+
+  ASSERT_EQ(1, root.child_count());
+  ASSERT_EQ(1, child->child_count());
+  ASSERT_EQ(3, foo->child_count());
+
+  // Now remove all child views from root.
+  root.RemoveAllChildViews(true);
+
+  ASSERT_EQ(0, root.child_count());
+  ASSERT_FALSE(root.has_children());
+}
+
 TEST_F(ViewTest, Contains) {
   View v1;
   View* v2 = new View();
