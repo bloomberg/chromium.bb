@@ -28,10 +28,9 @@ const PPB_Var_Deprecated* ppb_var_deprecated = NULL;
 bool Object::HasProperty(PP_Var name,
                          PP_Var* exception) {
   UNREFERENCED_PARAMETER(exception);
-  DebugPrintf("Object::HasProperty: object=%p, name=",
-              reinterpret_cast<void*>(this));
-  PluginVarDeprecated::Print(name);
-  DebugPrintf("\n");
+  DebugPrintf("Object::HasProperty: object=%p, name=%s\n",
+              reinterpret_cast<void*>(this),
+              PluginVarDeprecated::DebugString(name).c_str());
   Object* browser_obj = reinterpret_cast<Object*>(this);
   Object::PropertyMap::iterator i =
       browser_obj->properties()->find(PluginVarDeprecated::DebugString(name));
@@ -41,10 +40,9 @@ bool Object::HasProperty(PP_Var name,
 bool Object::HasMethod(PP_Var name,
                        PP_Var* exception) {
   UNREFERENCED_PARAMETER(exception);
-  DebugPrintf("Object::HasMethod: object=%p, name=",
-              reinterpret_cast<void*>(this));
-  PluginVarDeprecated::Print(name);
-  DebugPrintf("\n");
+  DebugPrintf("Object::HasMethod: object=%p, name=%s\n",
+              reinterpret_cast<void*>(this),
+              PluginVarDeprecated::DebugString(name).c_str());
   Object* browser_obj = reinterpret_cast<Object*>(this);
   Object::MethodMap::iterator i =
       browser_obj->methods()->find(PluginVarDeprecated::DebugString(name));
@@ -54,10 +52,9 @@ bool Object::HasMethod(PP_Var name,
 PP_Var Object::GetProperty(PP_Var name,
                            PP_Var* exception) {
   UNREFERENCED_PARAMETER(exception);
-  DebugPrintf("Object::GetProperty: object=%p, name=",
-              reinterpret_cast<void*>(this));
-  PluginVarDeprecated::Print(name);
-  DebugPrintf("\n");
+  DebugPrintf("Object::GetProperty: object=%p, name=%s\n",
+              reinterpret_cast<void*>(this),
+              PluginVarDeprecated::DebugString(name).c_str());
   Object* browser_obj = reinterpret_cast<Object*>(this);
   Object::PropertyMap::iterator i =
       browser_obj->properties()->find(PluginVarDeprecated::DebugString(name));
@@ -114,12 +111,10 @@ void Object::SetProperty(PP_Var name,
                          PP_Var value,
                          PP_Var* exception) {
   UNREFERENCED_PARAMETER(exception);
-  DebugPrintf("Object::SetProperty: object=%p, name=",
-              reinterpret_cast<void*>(this));
-  PluginVarDeprecated::Print(name);
-  DebugPrintf(", value=");
-  PluginVarDeprecated::Print(value);
-  DebugPrintf("\n");
+  DebugPrintf("Object::SetProperty: object=%p, name=%s, value=%s\n",
+              reinterpret_cast<void*>(this),
+              PluginVarDeprecated::DebugString(name).c_str(),
+              PluginVarDeprecated::DebugString(value).c_str());
   Object* browser_obj = reinterpret_cast<Object*>(this);
   // Release the previous value in the map.
   Object::PropertyMap::iterator i =
@@ -137,9 +132,8 @@ void Object::RemoveProperty(PP_Var name,
                             PP_Var* exception) {
   UNREFERENCED_PARAMETER(exception);
   DebugPrintf("Object::RemoveProperty: object=%p, name=",
-              reinterpret_cast<void*>(this));
-  PluginVarDeprecated::Print(name);
-  DebugPrintf("\n");
+              reinterpret_cast<void*>(this),
+              PluginVarDeprecated::DebugString(name).c_str());
   Object* browser_obj = reinterpret_cast<Object*>(this);
   // Release the value.
   Object::PropertyMap::iterator i =
@@ -156,17 +150,18 @@ PP_Var Object::Call(PP_Var method_name,
                     PP_Var* exception) {
   Object* browser_obj = reinterpret_cast<Object*>(this);
   UNREFERENCED_PARAMETER(exception);
-  DebugPrintf("Object::Call: object=%p, method_name=",
-              reinterpret_cast<void*>(this));
-  PluginVarDeprecated::Print(method_name);
-  DebugPrintf(", argc=%"NACL_PRIu32", argv={ ", argc);
+  DebugPrintf("Object::Call: object=%p, method_name=%s, "
+              "argc=%"NACL_PRIu32", argv={\n",
+              reinterpret_cast<void*>(this),
+              PluginVarDeprecated::DebugString(method_name).c_str(),
+              argc);
   for (uint32_t i = 0; i < argc; ++i) {
     PluginVarDeprecated::Print(argv[i]);
     if (i < argc - 1) {
       DebugPrintf(", ");
     }
   }
-  DebugPrintf(" }\n");
+  DebugPrintf("}\n");
   Object::MethodMap::iterator i =
       browser_obj->methods()->find(
           PluginVarDeprecated::DebugString(method_name));

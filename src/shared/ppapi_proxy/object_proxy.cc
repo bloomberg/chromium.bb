@@ -460,7 +460,7 @@ PP_Var ObjectProxy::New(const ObjectCapability& capability,
   }
   if ((*capability_proxy_map)[capability] != NULL) {
     PP_Var var = *(*capability_proxy_map)[capability];
-    // TODO(sehr): increment the ref count here.
+    PPBVarDeprecatedInterface()->AddRef(var);
     return var;
   }
   if (capability.pid() == GETPID()) {
@@ -468,7 +468,7 @@ PP_Var ObjectProxy::New(const ObjectCapability& capability,
     PP_Var var;
     var.type = PP_VARTYPE_OBJECT;
     var.value.as_id = capability.object_id();
-    // TODO(sehr): increment the ref count of the object in var here.
+    PPBVarDeprecatedInterface()->AddRef(var);
     return var;
   }
   Object* proxy =
@@ -481,7 +481,7 @@ PP_Var ObjectProxy::New(const ObjectCapability& capability,
       &Object::object_class,
       proxy);
   (*capability_proxy_map)[capability] = var;
-  // TODO(sehr): increment the ref count of the object in var here.
+  PPBVarDeprecatedInterface()->AddRef(*var);
   return *var;
 }
 

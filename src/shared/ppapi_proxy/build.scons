@@ -149,6 +149,8 @@ env.DualLibrary('ppapi_browser',
 # borrows code from the plugin side proxy. Don't do that.
 env.DualLibrary('ppapi_plugin',
                 ['plugin_ppb_var_deprecated.cc',
+                 'proxy_var.cc',
+                 'proxy_var_cache.cc',
                  common_obj])
 
 
