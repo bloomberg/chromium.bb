@@ -536,6 +536,7 @@ function load() {
   localStrings = new LocalStrings();
   downloads = new Downloads();
   $('term').focus();
+  $('term').setAttribute('aria-labelledby', 'search-submit');
   setSearch('');
 }
 
