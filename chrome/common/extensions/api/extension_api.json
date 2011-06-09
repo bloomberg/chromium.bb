@@ -2448,6 +2448,25 @@
         ]
       },
       {
+        "name": "setKeyboardHeight",
+        "type": "function",
+        "description": "Set the height of the keyboard UI.",
+        "parameters": [
+          { "type": "integer",
+            "name": "height",
+            "minimum": 0,
+            "optional": false,
+            "description": "The height of the keyboard UI."
+          },
+          { "type": "function",
+            "name": "callback",
+            "optional": true,
+            "description": "This function is called when the event processing is completed but the resizeing may be not finished.",
+            "parameters": []
+          }
+        ]
+      },
+      {
         "name": "sendHandwritingStroke",
         "type": "function",
         "description": "Send a handwriting event to Chrome.",

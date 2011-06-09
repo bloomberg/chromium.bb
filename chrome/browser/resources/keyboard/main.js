@@ -463,7 +463,7 @@ Row.prototype = {
     for (var j = 0; j < this.keys_.length; ++j) {
       var key = this.keys_[j];
       for (var i = 0; i < MODES.length; ++i) {
-        this.modeElements_[MODES[i]].appendChild(key.makeDOM(MODES[i]), height);
+        this.modeElements_[MODES[i]].appendChild(key.makeDOM(MODES[i], height));
       }
     }
 
@@ -578,7 +578,7 @@ var allRows = [];  // Populated during start()
  */
 function getRowHeight() {
   var x = window.innerWidth;
-  var y = window.innerHeight - (imeui ? IME_HEIGHT - 2 : 0);
+  var y = window.innerHeight - ((imeui && imeui.visible) ? IME_HEIGHT : 0);
   return (x > kKeyboardAspect * y) ?
       (height = Math.floor(y / 4)) :
       (height = Math.floor(x / (kKeyboardAspect * 4)));
@@ -647,6 +647,8 @@ function sendKeyFunction(key) {
   }
 }
 
+var oldHeight = 0;
+var oldX = 0;
 /**
  * Resize the keyboard according to the new window size.
  * @return {void}
@@ -655,16 +657,23 @@ window.onresize = function() {
   var height = getRowHeight();
   var newX = document.documentElement.clientWidth;
 
-  // All rows should have the same aspect, so just use the first one
-  var totalWidth = Math.floor(height * allRows[0].aspect);
-  var leftPadding = Math.floor((newX - totalWidth) / 2);
-  document.getElementById('b').style.paddingLeft = leftPadding + 'px';
+  if (newX != oldX || height != oldHeight) {
+    // All rows should have the same aspect, so just use the first one
+    var totalWidth = Math.floor(height * allRows[0].aspect);
+    var leftPadding = Math.floor((newX - totalWidth) / 2);
+    document.getElementById('b').style.paddingLeft = leftPadding + 'px';
+  }
 
-  for (var i = 0; i < allRows.length; ++i) {
-    allRows[i].resize(height);
+  if (height != oldHeight) {
+    for (var i = 0; i < allRows.length; ++i) {
+      allRows[i].resize(height);
+    }
   }
 
   updateIme();
+
+  oldHeight = height;
+  oldX = newX;
 }
 
 /**
@@ -680,11 +689,12 @@ window.onload = function() {
     allRows.push(new Row(i, KEYS[i]));
   }
 
+  height = getRowHeight();
   for (var i = 0; i < allRows.length; ++i) {
-    body.appendChild(allRows[i].makeDOM(getRowHeight()));
+    body.appendChild(allRows[i].makeDOM(height));
     allRows[i].showMode(KEY_MODE);
   }
-
+  oldHeight = height;
   window.onresize();
 
   // Restore the keyboard to the default state when it is hidden.

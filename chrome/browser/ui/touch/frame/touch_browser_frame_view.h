@@ -80,6 +80,7 @@ class TouchBrowserFrameView : public OpaqueBrowserFrameView,
   virtual void AnimationEnded(const ui::Animation* animation);
 
   bool keyboard_showing_;
+  int keyboard_height_;
   bool focus_listener_added_;
   KeyboardContainerView* keyboard_;
   NotificationRegistrar registrar_;

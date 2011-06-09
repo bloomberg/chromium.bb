@@ -39,6 +39,12 @@ class HideKeyboardFunction : public AsyncExtensionFunction {
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.input.hideKeyboard");
 };
+
+class SetKeyboardHeightFunction : public AsyncExtensionFunction {
+ public:
+  virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.input.setKeyboardHeight");
+};
 #endif
 
 #if defined(OS_CHROMEOS) && defined(TOUCH_UI)

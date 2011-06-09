@@ -45,6 +45,7 @@ const char kUnknownOrUnsupportedKeyIdentiferError[] = "Unknown or unsupported "
 const char kUnsupportedModifier[] = "Unsupported modifier.";
 const char kNoValidRecipientError[] = "No valid recipient for event.";
 const char kKeyEventUnprocessedError[] = "Event was not handled.";
+const char kInvalidHeight[] = "Invalid height.";
 #if defined(OS_CHROMEOS) && defined(TOUCH_UI)
 const char kCrosLibraryNotLoadedError[] = "Cros shared library not loaded.";
 #endif
@@ -142,6 +143,25 @@ bool HideKeyboardFunction::RunImpl() {
       NotificationType::HIDE_KEYBOARD_INVOKED,
       Source<HideKeyboardFunction>(this),
       NotificationService::NoDetails());
+  return true;
+}
+
+bool SetKeyboardHeightFunction::RunImpl() {
+  int height = 0;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &height));
+
+  if (height < 0) {
+    error_ = kInvalidHeight;
+    return false;
+  }
+
+  // TODO(penghuang) Check the height is not greater than height of browser view
+  // and set the height of virtual keyboard directly instead of using
+  // notification.
+  NotificationService::current()->Notify(
+      NotificationType::SET_KEYBOARD_HEIGHT_INVOKED,
+      Source<SetKeyboardHeightFunction>(this),
+      Details<int>(&height));
   return true;
 }
 #endif

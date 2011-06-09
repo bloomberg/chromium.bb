@@ -28,7 +28,7 @@
 
 namespace {
 
-const int kKeyboardHeight = 360;
+const int kDefaultKeyboardHeight = 300;
 const int kKeyboardSlideDuration = 500;  // In milliseconds
 
 PropertyAccessor<bool>* GetFocusedStateAccessor() {
@@ -54,6 +54,7 @@ TouchBrowserFrameView::TouchBrowserFrameView(BrowserFrame* frame,
                                              BrowserView* browser_view)
     : OpaqueBrowserFrameView(frame, browser_view),
       keyboard_showing_(false),
+      keyboard_height_(kDefaultKeyboardHeight),
       focus_listener_added_(false),
       keyboard_(NULL) {
   registrar_.Add(this,
@@ -67,6 +68,9 @@ TouchBrowserFrameView::TouchBrowserFrameView(BrowserFrame* frame,
                  NotificationService::AllSources());
   registrar_.Add(this,
                  NotificationType::HIDE_KEYBOARD_INVOKED,
+                 NotificationService::AllSources());
+  registrar_.Add(this,
+                 NotificationType::SET_KEYBOARD_HEIGHT_INVOKED,
                  NotificationService::AllSources());
 
   browser_view->browser()->tabstrip_model()->AddObserver(this);
@@ -97,8 +101,8 @@ void TouchBrowserFrameView::Layout() {
     // same bounds as when the keyboard is visible. But
     // |GetBoundsForReservedArea| should not take this into account so that the
     // render view gets the entire area to relayout itself.
-    bounds.set_y(bounds.y() - kKeyboardHeight);
-    bounds.set_height(kKeyboardHeight);
+    bounds.set_y(bounds.y() - keyboard_height_);
+    bounds.set_height(keyboard_height_);
   }
   keyboard_->SetBoundsRect(bounds);
 }
@@ -117,7 +121,7 @@ void TouchBrowserFrameView::FocusWillChange(views::View* focused_before,
 // TouchBrowserFrameView, protected:
 
 int TouchBrowserFrameView::GetReservedHeight() const {
-  return keyboard_showing_ ? kKeyboardHeight : 0;
+  return keyboard_showing_ ? keyboard_height_ : 0;
 }
 
 void TouchBrowserFrameView::ViewHierarchyChanged(bool is_add,
@@ -179,7 +183,7 @@ void TouchBrowserFrameView::UpdateKeyboardAndLayout(bool should_show_keyboard) {
     animation_->Hide();
 
     browser_view()->set_clip_y(ui::Tween::ValueBetween(
-          animation_->GetCurrentValue(), 0, kKeyboardHeight));
+          animation_->GetCurrentValue(), 0, keyboard_height_));
     parent()->Layout();
   }
 }
@@ -291,6 +295,17 @@ void TouchBrowserFrameView::Observe(NotificationType type,
                                              false);
     }
     UpdateKeyboardAndLayout(false);
+  } else if (type == NotificationType::SET_KEYBOARD_HEIGHT_INVOKED) {
+    // TODO(penghuang) Allow extension conrtol the virtual keyboard directly
+    // instead of using Notification.
+    int height = *reinterpret_cast<int*>(details.map_key());
+    if (height != keyboard_height_) {
+      DCHECK_GE(height, 0) << "Height of the keyboard is less than 0.";
+      DCHECK_LE(height, View::height()) << "Height of the keyboard is greater "
+        "than the height of frame view.";
+      keyboard_height_ = height;
+      parent()->Layout();
+    }
   }
 }
 
@@ -299,10 +314,10 @@ void TouchBrowserFrameView::Observe(NotificationType type,
 void TouchBrowserFrameView::AnimationProgressed(const ui::Animation* anim) {
   ui::Transform transform;
   transform.SetTranslateY(
-      ui::Tween::ValueBetween(anim->GetCurrentValue(), kKeyboardHeight, 0));
+      ui::Tween::ValueBetween(anim->GetCurrentValue(), keyboard_height_, 0));
   keyboard_->SetTransform(transform);
   browser_view()->set_clip_y(
-      ui::Tween::ValueBetween(anim->GetCurrentValue(), 0, kKeyboardHeight));
+      ui::Tween::ValueBetween(anim->GetCurrentValue(), 0, keyboard_height_));
   SchedulePaint();
 }
 

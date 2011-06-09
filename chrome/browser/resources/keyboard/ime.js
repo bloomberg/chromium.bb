@@ -9,6 +9,7 @@
 /**
  * Const variables
  */
+const IME_KEYBOARD_HEIGHT = 300;
 const IME_HEIGHT = 48;
 const IME_VMARGIN = 12;
 const IME_HMARGIN = 16;
@@ -123,6 +124,15 @@ ImeUi.prototype = {
     }
 
     this.appendChild(this.pageDown_);
+    this.update();
+  },
+
+  /**
+   * Returns true if Ime Ui is visible.
+   * @return {boolean}
+   */
+  get visible() {
+    return this.style.display != 'none';
   },
 
   /**
@@ -171,14 +181,21 @@ ImeUi.prototype = {
   },
 
   update : function() {
-    // TODO(penghuang) Add API for show and hide ImeUI.
-    // Currently, ImeUi is always visible.
-    if (true || (this.table_ && this.table_.visible) || this.auxiliary_.text_) {
-      this.style.display = 'block';
-    } else {
-      this.style.display = 'none';
+    var visible =
+      (this.table_ && this.table_.visible) || this.auxiliary_.text_;
+
+    if (visible == this.visible) {
+      return;
     }
 
+    if (visible) {
+      chrome.experimental.input.setKeyboardHeight(
+        IME_KEYBOARD_HEIGHT + IME_HEIGHT);
+      this.style.display = 'inline-block';
+    } else {
+      this.style.display = 'none';
+      chrome.experimental.input.setKeyboardHeight(IME_KEYBOARD_HEIGHT);
+    }
     // TODO(penghuang) Adjust the width of all items in ImeUi to fill the width
     // of keyboard.
   },

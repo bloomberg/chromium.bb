@@ -1309,6 +1309,10 @@ class NotificationType {
 #if defined(TOUCH_UI)
     // Sent when an API for hiding the keyboard is invoked from JavaScript code.
     HIDE_KEYBOARD_INVOKED,
+
+    // Sent when an API for set height of the keyboard is invoked from
+    // JavaScript code.
+    SET_KEYBOARD_HEIGHT_INVOKED,
 #endif
 
     // Protocol Handler Registry -----------------------------------------------

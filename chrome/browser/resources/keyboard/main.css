@@ -8,6 +8,7 @@ body {
   background: -webkit-linear-gradient(#131925, #04070B);
   color: white;
   margin: 0;
+  overflow: hidden;
   padding: 0;
   -webkit-user-select: none;
 }

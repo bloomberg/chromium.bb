@@ -280,6 +280,7 @@ void FactoryRegistry::ResetFunctions() {
 
 #if defined(TOUCH_UI)
   RegisterFunction<HideKeyboardFunction>();
+  RegisterFunction<SetKeyboardHeightFunction>();
 #endif
 
 #if defined(OS_CHROMEOS) && defined(TOUCH_UI)
