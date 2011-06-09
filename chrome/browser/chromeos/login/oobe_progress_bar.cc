@@ -119,7 +119,7 @@ void OobeProgressBar::OnPaint(gfx::Canvas* canvas) {
         (next_x - x - 2 * kTextPadding),
         (bounds.height() - dot->height() - 2 * kTextPadding),
         gfx::Canvas::MULTI_LINE | gfx::Canvas::TEXT_ALIGN_CENTER |
-            gfx::Canvas::TEXT_VALIGN_TOP);
+            gfx::Canvas::TEXT_VALIGN_TOP | gfx::Canvas::NO_ELLIPSIS);
 
     x = next_x;
   }
