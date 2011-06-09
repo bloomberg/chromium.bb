@@ -85,6 +85,8 @@
       '-popups.PopupsTest.testUnblockedPopupShowsInHistory',
       '-popups.PopupsTest.testUnblockedPopupAddedToOmnibox',
       'prefs',
+      # crbug.com/85600
+      '-prefs.PrefsTest.testNavigationStateOnSessionRestore',
       'search_engines',
       'shortcuts',
       'special_tabs',
@@ -97,6 +99,8 @@
     ],
 
     'win': [
+      # crbug.com/85597
+      '-cookies.CookiesTest.testCookiesFile',
       # Some download test fails on win official builder, only thru buildbot
       # when downloading the small zip file.
       # crbug.com/50481, crbug.com/54942
@@ -104,6 +108,14 @@
       '-downloads.DownloadsTest.testRemoveDownload',
       # crbug.com/66072
       '-notifications.NotificationsTest.testNotificationOrderAfterClosingOne',
+      # crbug.com/85598
+      '-ntp.NTPTest.testGetAppsWhenInstallApp',
+      '-ntp.NTPTest.testLaunchAppFullScreen',
+      '-ntp.NTPTest.testLaunchAppNewWindow',
+      '-ntp.NTPTest.testLaunchAppPinnedTab',
+      '-ntp.NTPTest.testLaunchAppRegularTab',
+      '-ntp.NTPTest.testLaunchAppWithDefaultSettings',
+      '-ntp.NTPTest.testUninstallApp',
       # crbug.com/70694, crbug.com/73078
       '-passwords.PasswordTest.testInfoBarDisappearByReload',
       '-passwords.PasswordTest.testNeverSavePasswords',
@@ -113,6 +125,9 @@
       # crbug.com/83820
       '-passwords.PasswordTest.testInfoBarDisappearByNavigatingPage',
       '-passwords.PasswordTest.testDisplayAndSavePasswordInfobar',
+      # crbug.com/85596
+      '-themes.ThemesTest.testSetTheme',
+      '-themes.ThemesTest.testThemeInFullScreen',
     ],
 
     'mac': [
@@ -249,6 +264,8 @@
       '-translate.TranslateTest.testToggleTranslateOption',
       # crbug.com/70280
       '-translate.TranslateTest.testSeveralLanguages',
+      # crbug.com/85601
+      '-translate.TranslateTest.testAlwaysTranslateInIncognito',
     ],
 
     'win': [
