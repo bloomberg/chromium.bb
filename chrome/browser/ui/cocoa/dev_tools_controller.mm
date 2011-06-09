@@ -19,12 +19,10 @@
 
 namespace {
 
-// Default offset of the contents splitter in pixels.
-const int kDefaultContentsSplitOffset = 400;
-
-// Never make the web part of the tab contents smaller than this (needed if the
-// window is only a few pixels high).
-const int kMinWebHeight = 50;
+// Minimal height of devtools pane or content pane when devtools are docked
+// to the browser window.
+const int kMinDevToolsHeight = 50;
+const int kMinContentsHeight = 50;
 
 }  // end namespace
 
@@ -100,10 +98,9 @@ const int kMinWebHeight = 50;
       // Load the default split offset.
       splitOffset = profile->GetPrefs()->
           GetInteger(prefs::kDevToolsSplitLocation);
-      if (splitOffset < 0) {
-        // Initial load, set to default value.
-        splitOffset = kDefaultContentsSplitOffset;
-      }
+      if (splitOffset < 0)
+        splitOffset = NSHeight([[subviews objectAtIndex:0] frame]) * 2 / 3;
+
       [splitView_ addSubview:[contentsController_ view]];
     } else {
       DCHECK_EQ([subviews count], 2u);
@@ -112,9 +109,12 @@ const int kMinWebHeight = 50;
     }
 
     // Make sure |splitOffset| isn't too large or too small.
-    splitOffset = std::max(static_cast<CGFloat>(kMinWebHeight), splitOffset);
-    splitOffset =
-        std::min(splitOffset, NSHeight([splitView_ frame]) - kMinWebHeight);
+    splitOffset = std::min(NSHeight([splitView_ frame]) - kMinDevToolsHeight,
+                           splitOffset);
+    splitOffset = std::max(static_cast<CGFloat>(kMinContentsHeight),
+                           splitOffset);
+    if (splitOffset < 0)
+      splitOffset = NSHeight([[subviews objectAtIndex:0] frame]) * 2 / 3;
     DCHECK_GE(splitOffset, 0) << "kMinWebHeight needs to be smaller than "
                               << "smallest available tab contents space.";
 

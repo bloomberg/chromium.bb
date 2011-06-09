@@ -131,6 +131,12 @@ static const int kStatusBubbleHeight = 20;
 static const char* const kBrowserViewKey = "__BROWSER_VIEW__";
 // How frequently we check for hung plugin windows.
 static const int kDefaultHungPluginDetectFrequency = 2000;
+
+// Minimal height of devtools pane or content pane when devtools are docked
+// to the browser window.
+const int kMinDevToolsHeight = 50;
+const int kMinContentsHeight = 50;
+
 // How long do we wait before we consider a window hung (in ms).
 static const int kDefaultPluginMessageResponseTimeout = 30000;
 // The number of milliseconds between loading animation frames.
@@ -2142,14 +2148,15 @@ void BrowserView::UpdateDevToolsForContents(TabContentsWrapper* wrapper) {
     // Restore split offset.
     int split_offset = browser_->profile()->GetPrefs()->
         GetInteger(prefs::kDevToolsSplitLocation);
-    if (split_offset == -1) {
-      // Initial load, set to default value.
-      split_offset = 2 * contents_split_->height() / 3;
-    }
+    if (split_offset == -1)
+      split_offset = contents_split_->height() * 2 / 3;
+
     // Make sure user can see both panes.
-    int min_split_size = contents_split_->height() / 10;
-    split_offset = std::min(contents_split_->height() - min_split_size,
-                            std::max(min_split_size, split_offset));
+    split_offset = std::min(contents_split_->height() - kMinDevToolsHeight,
+                            split_offset);
+    split_offset = std::max(kMinContentsHeight, split_offset);
+    if (split_offset < 0)
+      split_offset = contents_split_->height() * 2 / 3;
     contents_split_->set_divider_offset(split_offset);
 
     devtools_container_->SetVisible(true);

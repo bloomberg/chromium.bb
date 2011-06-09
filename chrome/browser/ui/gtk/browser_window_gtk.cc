@@ -101,11 +101,10 @@ namespace {
 // The number of milliseconds between loading animation frames.
 const int kLoadingAnimationFrameTimeMs = 30;
 
-// Default height of dev tools pane when docked to the browser window.  This
-// matches the value in Views.
-const int kDefaultDevToolsHeight = 200;
-
+// Minimal height of devotools pane or content pane when devtools are docked
+// to the browser window.
 const int kMinDevToolsHeight = 50;
+const int kMinContentsHeight = 50;
 
 const char* kBrowserWindowKey = "__BROWSER_WINDOW_GTK__";
 
@@ -1299,13 +1298,28 @@ void BrowserWindowGtk::UpdateDevToolsForContents(TabContents* contents) {
 
   bool should_show = old_devtools == NULL && devtools_contents != NULL;
   bool should_hide = old_devtools != NULL && devtools_contents == NULL;
+
   if (should_show) {
+    // Restore split offset.
+    GtkAllocation contents_rect;
+    gtk_widget_get_allocation(contents_container_->widget(), &contents_rect);
+
+    int split_offset = browser_->profile()->GetPrefs()->
+        GetInteger(prefs::kDevToolsSplitLocation);
+    if (split_offset == -1)
+      split_offset = contents_rect.height * 2 / 3;
+    // Make sure user can see both panes.
+    split_offset = std::max(kMinContentsHeight, split_offset);
+    split_offset = std::min(contents_rect.height - kMinDevToolsHeight,
+                            split_offset);
+    if (split_offset < 0)
+      split_offset = contents_rect.height * 2 / 3;
+    gtk_paned_set_position(GTK_PANED(contents_split_), split_offset);
     gtk_widget_show(devtools_container_->widget());
   } else if (should_hide) {
-    // Store split offset when hiding devtools window only.
-    gint divider_offset = gtk_paned_get_position(GTK_PANED(contents_split_));
+    gint split_offset = gtk_paned_get_position(GTK_PANED(contents_split_));
     browser_->profile()->GetPrefs()->
-        SetInteger(prefs::kDevToolsSplitLocation, divider_offset);
+        SetInteger(prefs::kDevToolsSplitLocation, split_offset);
     gtk_widget_hide(devtools_container_->widget());
   }
 }
@@ -1686,17 +1700,7 @@ void BrowserWindowGtk::InitWidgets() {
   gtk_paned_pack2(GTK_PANED(contents_split_), devtools_container_->widget(),
                   FALSE, TRUE);
   gtk_box_pack_end(GTK_BOX(render_area_vbox_), contents_split_, TRUE, TRUE, 0);
-  // Restore split offset.
-  int split_offset = browser_->profile()->GetPrefs()->
-      GetInteger(prefs::kDevToolsSplitLocation);
-  if (split_offset != -1) {
-    if (split_offset < kMinDevToolsHeight)
-      split_offset = kMinDevToolsHeight;
-    gtk_paned_set_position(GTK_PANED(contents_split_), split_offset);
-  } else {
-    gtk_widget_set_size_request(devtools_container_->widget(), -1,
-                                kDefaultDevToolsHeight);
-  }
+
   gtk_widget_show_all(render_area_floating_container_);
   gtk_widget_hide(devtools_container_->widget());
   render_area_event_box_ = gtk_event_box_new();
