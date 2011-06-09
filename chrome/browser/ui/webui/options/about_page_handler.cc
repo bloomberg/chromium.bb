@@ -271,7 +271,6 @@ void AboutPageHandler::RegisterMessages() {
 void AboutPageHandler::PageReady(const ListValue* args) {
 #if defined(OS_CHROMEOS)
   // Version information is loaded from a callback
-  loader_.EnablePlatformVersions(true);
   loader_.GetVersion(&consumer_,
                      NewCallback(this, &AboutPageHandler::OnOSVersion),
                      chromeos::VersionLoader::VERSION_FULL);

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,10 +20,6 @@ namespace chromeos {
 
 // File to look for version number in.
 static const char kPathVersion[] = "/etc/lsb-release";
-
-// TODO(rkc): Remove once we change over the Chrome OS version format.
-// Done for http://code.google.com/p/chromium-os/issues/detail?id=15789
-static const size_t kTrimVersion = 2;
 
 // File to look for firmware number in.
 static const char kPathFirmware[] = "/var/log/bios_info.txt";
@@ -80,10 +76,6 @@ VersionLoader::Handle VersionLoader::GetFirmware(
       FROM_HERE,
       NewRunnableMethod(backend_.get(), &Backend::GetFirmware, request));
   return request->handle();
-}
-
-void VersionLoader::EnablePlatformVersions(bool enable) {
-  backend_.get()->set_parse_as_platform(enable);
 }
 
 // static
@@ -147,20 +139,6 @@ void VersionLoader::Backend::GetVersion(
     version = ParseVersion(
         contents,
         (format == VERSION_FULL) ? kFullVersionPrefix : kVersionPrefix);
-
-    // TODO(rkc): Fix this once we move to xx.yyy version numbers for Chrome OS
-    // instead of 0.xx.yyy
-    // Done for http://code.google.com/p/chromium-os/issues/detail?id=15789
-    if (parse_as_platform_) {
-      if (version.size() > kTrimVersion) {
-        version = version.substr(kTrimVersion);
-        // Strip the major version.
-        size_t first_dot = version.find(".");
-        if (first_dot != std::string::npos) {
-          version = version.substr(first_dot + 1);
-        }
-      }
-    }
   }
 
   if (format == VERSION_SHORT_WITH_DATE) {

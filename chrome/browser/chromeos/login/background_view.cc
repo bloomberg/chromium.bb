@@ -28,7 +28,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/views/dom_view.h"
 #include "chrome/browser/ui/views/window.h"
-#include "chrome/common/chrome_version_info.h"
 #include "googleurl/src/gurl.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -48,7 +47,6 @@ using views::Widget;
 namespace {
 
 const SkColor kVersionColor = 0xff5c739f;
-const char kPlatformLabel[] = "cros:";
 
 // Returns the corresponding step id for step constant.
 int GetStepId(size_t step) {
@@ -341,11 +339,10 @@ void BackgroundView::InitInfoLabels() {
   }
 
   if (CrosLibrary::Get()->EnsureLoaded()) {
-    version_loader_.EnablePlatformVersions(true);
     version_loader_.GetVersion(
         &version_consumer_,
         NewCallback(this, &BackgroundView::OnVersion),
-        is_official_build_ ?
+        is_official_build_?
             VersionLoader::VERSION_SHORT_WITH_DATE :
             VersionLoader::VERSION_FULL);
     if (!is_official_build_) {
@@ -408,18 +405,12 @@ void BackgroundView::UpdateVersionLabel() {
   if (version_text_.empty())
     return;
 
-  chrome::VersionInfo version_info;
-  std::string label_text = l10n_util::GetStringUTF8(IDS_PRODUCT_NAME);
+  // TODO(jungshik): Is string concatenation OK here?
+  std::string label_text = l10n_util::GetStringUTF8(IDS_PRODUCT_OS_NAME);
   label_text += ' ';
-  label_text += version_info.Version();
-  label_text += " (";
-  // TODO(rkc): Fix this. This needs to be in a resource file, but we have had
-  // to put it in for merge into R12. Also, look at rtl implications for this
-  // entire string composition code.
-  label_text += kPlatformLabel;
+  label_text += l10n_util::GetStringUTF8(IDS_VERSION_FIELD_PREFIX);
   label_text += ' ';
   label_text += version_text_;
-  label_text += ')';
 
   if (!enterprise_domain_text_.empty()) {
     label_text += ' ';
