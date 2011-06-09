@@ -35,6 +35,7 @@
 #include "chrome/common/profiling.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
+#include "chrome/utility/chrome_content_utility_client.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/common/content_client.h"
 #include "content/common/content_counters.h"
@@ -91,9 +92,11 @@
 #include "chrome/app/breakpad_linux.h"
 #endif
 
-#if !defined(NACL_WIN64)  // We don't build the renderer code on win nacl64.
+#if !defined(NACL_WIN64)  // We don't build the this code on win nacl64.
 base::LazyInstance<chrome::ChromeContentRendererClient>
     g_chrome_content_renderer_client(base::LINKER_INITIALIZED);
+base::LazyInstance<chrome::ChromeContentUtilityClient>
+    g_chrome_content_utility_client(base::LINKER_INITIALIZED);
 #endif   // NACL_WIN64
 
 base::LazyInstance<chrome::ChromeContentPluginClient>
@@ -241,6 +244,11 @@ void InitializeChromeContentClient(const std::string& process_type) {
   } else if (process_type == switches::kRendererProcess ||
              process_type == switches::kExtensionProcess) {
     InitializeChromeContentRendererClient();
+  } else if (process_type == switches::kUtilityProcess) {
+#if !defined(NACL_WIN64)  // We don't build this code on win nacl64.
+    content::GetContentClient()->set_utility(
+        &g_chrome_content_utility_client.Get());
+#endif
   }
 }
 

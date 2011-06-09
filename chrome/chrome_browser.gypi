@@ -3509,8 +3509,6 @@
         'browser/upgrade_detector.h',
         'browser/user_style_sheet_watcher.cc',
         'browser/user_style_sheet_watcher.h',
-        'browser/utility_process_host.cc',
-        'browser/utility_process_host.h',
         'browser/visitedlink/visitedlink_event_listener.cc',
         'browser/visitedlink/visitedlink_event_listener.h',
         'browser/visitedlink/visitedlink_master.cc',
@@ -3837,7 +3835,6 @@
             ],
             'mac_bundle_resources': [
               'browser/nacl_loader.sb',
-              'browser/utility.sb',
             ],
           },
           'actions': [

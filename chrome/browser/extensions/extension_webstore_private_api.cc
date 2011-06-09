@@ -20,6 +20,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
@@ -181,25 +182,42 @@ class SafeBeginInstallHelper : public UtilityProcessHost::Client {
     if (icon_data_.empty())
       icon_decode_complete_ = true;
     else
-      utility_host_->StartImageDecodingBase64(icon_data_);
-    utility_host_->StartJSONParsing(manifest_);
+      utility_host_->Send(new UtilityMsg_DecodeImageBase64(icon_data_));
+    utility_host_->Send(new UtilityMsg_ParseJSON(manifest_));
   }
 
   // Implementing pieces of the UtilityProcessHost::Client interface.
-  virtual void OnDecodeImageSucceeded(const SkBitmap& decoded_image) {
+  virtual bool OnMessageReceived(const IPC::Message& message) {
+    bool handled = true;
+    IPC_BEGIN_MESSAGE_MAP(SafeBeginInstallHelper, message)
+      IPC_MESSAGE_HANDLER(UtilityHostMsg_DecodeImage_Succeeded,
+                          OnDecodeImageSucceeded)
+      IPC_MESSAGE_HANDLER(UtilityHostMsg_DecodeImage_Failed,
+                          OnDecodeImageFailed)
+      IPC_MESSAGE_HANDLER(UtilityHostMsg_ParseJSON_Succeeded,
+                          OnJSONParseSucceeded)
+      IPC_MESSAGE_HANDLER(UtilityHostMsg_ParseJSON_Failed, OnJSONParseFailed)
+      IPC_MESSAGE_UNHANDLED(handled = false)
+    IPC_END_MESSAGE_MAP_EX()
+    return handled;
+  }
+
+  void OnDecodeImageSucceeded(const SkBitmap& decoded_image) {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     icon_ = decoded_image;
     icon_decode_complete_ = true;
     ReportResultsIfComplete();
   }
-  virtual void OnDecodeImageFailed() {
+
+  void OnDecodeImageFailed() {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     icon_decode_complete_ = true;
     error_ = std::string(kImageDecodeError);
     parse_error_ = BeginInstallWithManifestFunction::ICON_ERROR;
     ReportResultsIfComplete();
   }
-  virtual void OnJSONParseSucceeded(const ListValue& wrapper) {
+
+  void OnJSONParseSucceeded(const ListValue& wrapper) {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     manifest_parse_complete_ = true;
     Value* value = NULL;

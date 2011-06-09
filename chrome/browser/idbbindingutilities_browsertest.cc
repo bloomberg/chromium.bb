@@ -4,12 +4,13 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/utility_process_host.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
+#include "content/browser/utility_process_host.h"
 #include "content/common/indexed_db_key.h"
 #include "content/common/serialized_script_value.h"
+#include "content/common/utility_messages.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSerializedScriptValue.h"
@@ -119,9 +120,9 @@ class IDBKeyPathHelper : public UtilityProcessHost::Client {
       return;
     }
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    bool ret =
-        utility_process_host_->StartIDBKeysFromValuesAndKeyPath(
-            id, serialized_values, key_path);
+    bool ret = utility_process_host_->Send(
+        new UtilityMsg_IDBKeysFromValuesAndKeyPath(
+            id, serialized_values, key_path));
     ASSERT_TRUE(ret);
   }
 
@@ -136,12 +137,27 @@ class IDBKeyPathHelper : public UtilityProcessHost::Client {
       return;
     }
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    bool ret = utility_process_host_->StartInjectIDBKey(key, value, key_path);
+    bool ret = utility_process_host_->Send(new UtilityMsg_InjectIDBKey(
+        key, value, key_path));
     ASSERT_TRUE(ret);
   }
 
   // UtilityProcessHost::Client
-  virtual void OnIDBKeysFromValuesAndKeyPathSucceeded(
+  bool OnMessageReceived(const IPC::Message& message) {
+    bool handled = true;
+    IPC_BEGIN_MESSAGE_MAP(IDBKeyPathHelper, message)
+      IPC_MESSAGE_HANDLER(UtilityHostMsg_IDBKeysFromValuesAndKeyPath_Succeeded,
+                          OnIDBKeysFromValuesAndKeyPathSucceeded)
+      IPC_MESSAGE_HANDLER(UtilityHostMsg_IDBKeysFromValuesAndKeyPath_Failed,
+                          OnIDBKeysFromValuesAndKeyPathFailed)
+      IPC_MESSAGE_HANDLER(UtilityHostMsg_InjectIDBKey_Finished,
+                          OnInjectIDBKeyFinished)
+      IPC_MESSAGE_UNHANDLED(handled = false)
+    IPC_END_MESSAGE_MAP_EX()
+    return handled;
+  }
+
+  void OnIDBKeysFromValuesAndKeyPathSucceeded(
       int id, const std::vector<IndexedDBKey>& values) {
     EXPECT_EQ(expected_id_, id);
     EXPECT_FALSE(value_for_key_path_failed_);
@@ -160,14 +176,13 @@ class IDBKeyPathHelper : public UtilityProcessHost::Client {
                             new MessageLoop::QuitTask());
   }
 
-  virtual void OnIDBKeysFromValuesAndKeyPathFailed(int id) {
+  void OnIDBKeysFromValuesAndKeyPathFailed(int id) {
     EXPECT_TRUE(value_for_key_path_failed_);
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             new MessageLoop::QuitTask());
   }
 
-  virtual void OnInjectIDBKeyFinished(
-      const SerializedScriptValue& new_value) {
+  void OnInjectIDBKeyFinished(const SerializedScriptValue& new_value) {
     EXPECT_EQ(expected_value_.data(), new_value.data());
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             new MessageLoop::QuitTask());

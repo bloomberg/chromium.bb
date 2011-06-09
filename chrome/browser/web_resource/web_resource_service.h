@@ -8,17 +8,17 @@
 
 #include <string>
 
-#include "chrome/browser/utility_process_host.h"
+#include "content/browser/utility_process_host.h"
 #include "content/common/notification_type.h"
 
+class DictionaryValue;
 class PrefService;
 class Profile;
 class ResourceDispatcherHost;
 
 // A WebResourceService fetches data from a web resource server and store
 // locally as user preference.
-class WebResourceService
-    : public UtilityProcessHost::Client {
+class WebResourceService : public UtilityProcessHost::Client {
  public:
   // Pass notification_type = NOTIFICATION_TYPE_COUNT if notification is not
   // required.

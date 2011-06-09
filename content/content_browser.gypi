@@ -365,6 +365,8 @@
         'browser/trace_subscriber_stdio.h',
         'browser/user_metrics.cc',
         'browser/user_metrics.h',
+        'browser/utility_process_host.cc',
+        'browser/utility_process_host.h',
         'browser/webui/empty_web_ui_factory.cc',
         'browser/webui/empty_web_ui_factory.h',
         'browser/webui/generic_handler.cc',

@@ -19,6 +19,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_file_util.h"
@@ -229,10 +230,39 @@ SandboxedExtensionUnpacker::~SandboxedExtensionUnpacker() {
       NULL);
 }
 
+bool SandboxedExtensionUnpacker::OnMessageReceived(
+    const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(SandboxedExtensionUnpacker, message)
+    IPC_MESSAGE_HANDLER(UtilityHostMsg_UnpackExtension_Succeeded,
+                        OnUnpackExtensionSucceeded)
+    IPC_MESSAGE_HANDLER(UtilityHostMsg_UnpackExtension_Failed,
+                        OnUnpackExtensionFailed)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP_EX()
+  return handled;
+}
+
+void SandboxedExtensionUnpacker::OnProcessCrashed(int exit_code) {
+  // Don't report crashes if they happen after we got a response.
+  if (got_response_)
+    return;
+
+  // Utility process crashed while trying to install.
+  ReportFailure(
+     UTILITY_PROCESS_CRASHED_WHILE_TRYING_TO_INSTALL,
+     l10n_util::GetStringFUTF8(
+         IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
+         ASCIIToUTF16("UTILITY_PROCESS_CRASHED_WHILE_TRYING_TO_INSTALL")));
+}
+
 void SandboxedExtensionUnpacker::StartProcessOnIOThread(
     const FilePath& temp_crx_path) {
   UtilityProcessHost* host = new UtilityProcessHost(this, thread_identifier_);
-  host->StartExtensionUnpacker(temp_crx_path);
+  // Grant the subprocess access to the entire subdir the extension file is
+  // in, so that it can unpack to that dir.
+  host->set_exposed_dir(temp_crx_path.DirName());
+  host->Send(new UtilityMsg_UnpackExtension(temp_crx_path));
 }
 
 void SandboxedExtensionUnpacker::OnUnpackExtensionSucceeded(
@@ -296,19 +326,6 @@ void SandboxedExtensionUnpacker::OnUnpackExtensionFailed(
       l10n_util::GetStringFUTF8(
            IDS_EXTENSION_PACKAGE_ERROR_MESSAGE,
            ASCIIToUTF16(error)));
-}
-
-void SandboxedExtensionUnpacker::OnProcessCrashed(int exit_code) {
-  // Don't report crashes if they happen after we got a response.
-  if (got_response_)
-    return;
-
-  // Utility process crashed while trying to install.
-  ReportFailure(
-     UTILITY_PROCESS_CRASHED_WHILE_TRYING_TO_INSTALL,
-     l10n_util::GetStringFUTF8(
-         IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
-         ASCIIToUTF16("UTILITY_PROCESS_CRASHED_WHILE_TRYING_TO_INSTALL")));
 }
 
 bool SandboxedExtensionUnpacker::ValidateSignature() {

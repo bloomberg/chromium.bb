@@ -482,12 +482,12 @@
       'msvs_guid': '4D2B38E6-65FF-4F97-B88A-E441DF54EBF7',
       'dependencies': [
         '../base/base.gyp:base',
+        '../content/content.gyp:content_utility',
         '../skia/skia.gyp:skia',
       ],
       'sources': [
-        'utility/utility_main.cc',
-        'utility/utility_thread.cc',
-        'utility/utility_thread.h',
+        'utility/chrome_content_utility_client.cc',
+        'utility/chrome_content_utility_client.h',
       ],
       'include_dirs': [
         '..',

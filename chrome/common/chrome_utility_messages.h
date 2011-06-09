@@ -13,17 +13,14 @@
 #include "base/values.h"
 #include "chrome/common/extensions/update_manifest.h"
 #include "content/common/common_param_traits.h"
-#include "content/common/indexed_db_key.h"
-#include "content/common/indexed_db_param_traits.h"
 #include "content/common/serialized_script_value.h"
 #include "ipc/ipc_message_macros.h"
-#include "ipc/ipc_message_utils.h"
 #include "printing/backend/print_backend.h"
 #include "printing/page_range.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/rect.h"
 
-#define IPC_MESSAGE_START UtilityMsgStart
+#define IPC_MESSAGE_START ChromeUtilityMsgStart
 
 IPC_STRUCT_TRAITS_BEGIN(printing::PageRange)
   IPC_STRUCT_TRAITS_MEMBER(from)
@@ -84,27 +81,9 @@ IPC_MESSAGE_CONTROL5(UtilityMsg_RenderPDFPagesToMetafile,
                      int,                      // DPI
                      std::vector<printing::PageRange>)
 
-// Tell the utility process to extract the given IDBKeyPath from the
-// SerializedScriptValue vector and reply with the corresponding IDBKeys.
-IPC_MESSAGE_CONTROL3(UtilityMsg_IDBKeysFromValuesAndKeyPath,
-                     int,     // id
-                     std::vector<SerializedScriptValue>,
-                     string16)  // IDBKeyPath
-
-IPC_MESSAGE_CONTROL3(UtilityMsg_InjectIDBKey,
-                     IndexedDBKey /* key */,
-                     SerializedScriptValue /* value */,
-                     string16 /* key path*/)
-
 // Tell the utility process to parse a JSON string into a Value object.
 IPC_MESSAGE_CONTROL1(UtilityMsg_ParseJSON,
                      std::string /* JSON to parse */)
-
-// Tells the utility process that it's running in batch mode.
-IPC_MESSAGE_CONTROL0(UtilityMsg_BatchMode_Started)
-
-// Tells the utility process that it can shutdown.
-IPC_MESSAGE_CONTROL0(UtilityMsg_BatchMode_Finished)
 
 // Tells the utility process to get capabilities and defaults for the specified
 // printer. Used on Windows to isolate the service process from printer driver
@@ -170,22 +149,6 @@ IPC_MESSAGE_CONTROL0(UtilityHostMsg_RenderPDFPagesToMetafile_Failed)
 IPC_SYNC_MESSAGE_CONTROL1_0(UtilityHostMsg_PreCacheFont,
                             LOGFONT /* font data */)
 #endif  // defined(OS_WIN)
-
-// Reply when the utility process has succeeded in obtaining the value for
-// IDBKeyPath.
-IPC_MESSAGE_CONTROL2(UtilityHostMsg_IDBKeysFromValuesAndKeyPath_Succeeded,
-                     int /* id */,
-                     std::vector<IndexedDBKey> /* value */)
-
-// Reply when the utility process has failed in obtaining the value for
-// IDBKeyPath.
-IPC_MESSAGE_CONTROL1(UtilityHostMsg_IDBKeysFromValuesAndKeyPath_Failed,
-                     int /* id */)
-
-// Reply when the utility process has finished injecting an IDBKey into
-// a SerializedScriptValue.
-IPC_MESSAGE_CONTROL1(UtilityHostMsg_InjectIDBKey_Finished,
-                     SerializedScriptValue /* new value */)
 
 // Reply when the utility process successfully parsed a JSON string.
 //

@@ -10,7 +10,7 @@
 #include "base/message_loop_proxy.h"
 #include "base/scoped_temp_dir.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/utility_messages.h"
+#include "chrome/common/chrome_utility_messages.h"
 #include "ipc/ipc_switches.h"
 #include "printing/page_range.h"
 #include "ui/base/ui_base_switches.h"

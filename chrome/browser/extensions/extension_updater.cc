@@ -29,13 +29,14 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/utility_process_host.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/pref_names.h"
+#include "content/browser/utility_process_host.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
@@ -640,7 +641,7 @@ class SafeManifestParser : public UtilityProcessHost::Client {
     if (use_utility_process) {
       UtilityProcessHost* host = new UtilityProcessHost(
           this, BrowserThread::UI);
-      host->StartUpdateManifestParse(xml_);
+      host->Send(new UtilityMsg_ParseUpdateManifest(xml_));
     } else {
       UpdateManifest manifest;
       if (manifest.Parse(xml_)) {
@@ -663,8 +664,20 @@ class SafeManifestParser : public UtilityProcessHost::Client {
     }
   }
 
-  // Callback from the utility process when parsing succeeded.
-  virtual void OnParseUpdateManifestSucceeded(
+  // UtilityProcessHost::Client
+  virtual bool OnMessageReceived(const IPC::Message& message) {
+    bool handled = true;
+    IPC_BEGIN_MESSAGE_MAP(SafeManifestParser, message)
+      IPC_MESSAGE_HANDLER(UtilityHostMsg_ParseUpdateManifest_Succeeded,
+                          OnParseUpdateManifestSucceeded)
+      IPC_MESSAGE_HANDLER(UtilityHostMsg_ParseUpdateManifest_Failed,
+                          OnParseUpdateManifestFailed)
+      IPC_MESSAGE_UNHANDLED(handled = false)
+    IPC_END_MESSAGE_MAP_EX()
+    return handled;
+  }
+
+  void OnParseUpdateManifestSucceeded(
       const UpdateManifest::Results& results) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     if (!updater_) {
@@ -673,8 +686,7 @@ class SafeManifestParser : public UtilityProcessHost::Client {
     updater_->HandleManifestResults(*fetch_data_, &results);
   }
 
-  // Callback from the utility process when parsing failed.
-  virtual void OnParseUpdateManifestFailed(const std::string& error_message) {
+  void OnParseUpdateManifestFailed(const std::string& error_message) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     if (!updater_) {
       return;

@@ -1,0 +1,25 @@
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CONTENT_UTILITY_CONTENT_UTILITY_CLIENT_H_
+#define CONTENT_UTILITY_CONTENT_UTILITY_CLIENT_H_
+#pragma once
+
+#include "content/common/content_client.h"
+
+namespace content {
+
+// Embedder API for participating in renderer logic.
+class ContentUtilityClient {
+ public:
+  // Notifies us that the UtilityThread has been created.
+  virtual void UtilityThreadStarted();
+
+  // Allows the embedder to filter messages.
+  virtual bool OnMessageReceived(const IPC::Message& message);
+};
+
+}  // namespace content
+
+#endif  // CONTENT_UTILITY_CONTENT_UTILITY_CLIENT_H_

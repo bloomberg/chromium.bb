@@ -2,67 +2,66 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/utility/utility_thread.h"
-
-#include <stddef.h>
-#include <vector>
+#include "chrome/utility/chrome_content_utility_client.h"
 
 #include "base/base64.h"
-#include "base/file_path.h"
+#include "base/command_line.h"
 #include "base/json/json_reader.h"
-#include "base/logging.h"
-#include "base/memory/ref_counted.h"
-#include "base/values.h"
-#include "build/build_config.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_utility_messages.h"
+#include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_unpacker.h"
 #include "chrome/common/extensions/update_manifest.h"
-#include "chrome/common/utility_messages.h"
 #include "chrome/common/web_resource/web_resource_unpacker.h"
-#include "content/common/child_process.h"
-#include "content/common/indexed_db_key.h"
-#include "content/common/serialized_script_value.h"
-#include "ipc/ipc_message_macros.h"
+#include "content/utility/utility_thread.h"
 #include "printing/backend/print_backend.h"
 #include "printing/page_range.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBKey.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSerializedScriptValue.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/rect.h"
-#include "webkit/glue/idb_bindings.h"
 #include "webkit/glue/image_decoder.h"
 
 #if defined(OS_WIN)
 #include "app/win/iat_patch_function.h"
+#include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/win/scoped_handle.h"
+#include "content/common/content_switches.h"
+#include "content/common/sandbox_init_wrapper.h"
 #include "printing/emf_win.h"
+#endif  // defined(OS_WIN)
+
+namespace chrome {
+
+ChromeContentUtilityClient::ChromeContentUtilityClient() {
+}
+
+ChromeContentUtilityClient::~ChromeContentUtilityClient() {
+}
+
+void ChromeContentUtilityClient::UtilityThreadStarted() {
+#if defined(OS_WIN)
+  // Load the pdf plugin before the sandbox is turned on. This is for Windows
+  // only because we need this DLL only on Windows.
+  FilePath pdf;
+  if (PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf) &&
+      file_util::PathExists(pdf)) {
+    bool rv = !!LoadLibrary(pdf.value().c_str());
+    DCHECK(rv) << "Couldn't load PDF plugin";
+  }
 #endif
 
-namespace {
-
-template<typename SRC, typename DEST>
-void ConvertVector(const SRC& src, DEST* dest) {
-  dest->reserve(src.size());
-  for (typename SRC::const_iterator i = src.begin(); i != src.end(); ++i)
-    dest->push_back(typename DEST::value_type(*i));
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  std::string lang = command_line->GetSwitchValueASCII(switches::kLang);
+  if (!lang.empty())
+    extension_l10n_util::SetProcessLocale(lang);
 }
 
-}  // namespace
-
-
-UtilityThread::UtilityThread()
-    : batch_mode_(false) {
-  ChildProcess::current()->AddRefProcess();
-}
-
-UtilityThread::~UtilityThread() {
-}
-
-bool UtilityThread::OnControlMessageReceived(const IPC::Message& msg) {
+bool ChromeContentUtilityClient::OnMessageReceived(
+    const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(UtilityThread, msg)
+  IPC_BEGIN_MESSAGE_MAP(ChromeContentUtilityClient, message)
     IPC_MESSAGE_HANDLER(UtilityMsg_UnpackExtension, OnUnpackExtension)
     IPC_MESSAGE_HANDLER(UtilityMsg_UnpackWebResource, OnUnpackWebResource)
     IPC_MESSAGE_HANDLER(UtilityMsg_ParseUpdateManifest, OnParseUpdateManifest)
@@ -70,13 +69,7 @@ bool UtilityThread::OnControlMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(UtilityMsg_DecodeImageBase64, OnDecodeImageBase64)
     IPC_MESSAGE_HANDLER(UtilityMsg_RenderPDFPagesToMetafile,
                         OnRenderPDFPagesToMetafile)
-    IPC_MESSAGE_HANDLER(UtilityMsg_IDBKeysFromValuesAndKeyPath,
-                        OnIDBKeysFromValuesAndKeyPath)
-    IPC_MESSAGE_HANDLER(UtilityMsg_InjectIDBKey,
-                        OnInjectIDBKey)
     IPC_MESSAGE_HANDLER(UtilityMsg_ParseJSON, OnParseJSON)
-    IPC_MESSAGE_HANDLER(UtilityMsg_BatchMode_Started, OnBatchModeStarted)
-    IPC_MESSAGE_HANDLER(UtilityMsg_BatchMode_Finished, OnBatchModeFinished)
     IPC_MESSAGE_HANDLER(UtilityMsg_GetPrinterCapsAndDefaults,
                         OnGetPrinterCapsAndDefaults)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -84,20 +77,26 @@ bool UtilityThread::OnControlMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
-void UtilityThread::OnUnpackExtension(const FilePath& extension_path) {
+bool ChromeContentUtilityClient::Send(IPC::Message* message) {
+  return UtilityThread::current()->Send(message);
+}
+
+void ChromeContentUtilityClient::OnUnpackExtension(
+    const FilePath& extension_path) {
   ExtensionUnpacker unpacker(extension_path);
   if (unpacker.Run() && unpacker.DumpImagesToFile() &&
       unpacker.DumpMessageCatalogsToFile()) {
     Send(new UtilityHostMsg_UnpackExtension_Succeeded(
-       *unpacker.parsed_manifest()));
+        *unpacker.parsed_manifest()));
   } else {
     Send(new UtilityHostMsg_UnpackExtension_Failed(unpacker.error_message()));
   }
 
-  ReleaseProcessIfNeeded();
+  UtilityThread::current()->ReleaseProcessIfNeeded();
 }
 
-void UtilityThread::OnUnpackWebResource(const std::string& resource_data) {
+void ChromeContentUtilityClient::OnUnpackWebResource(
+    const std::string& resource_data) {
   // Parse json data.
   // TODO(mrc): Add the possibility of a template that controls parsing, and
   // the ability to download and verify images.
@@ -110,20 +109,20 @@ void UtilityThread::OnUnpackWebResource(const std::string& resource_data) {
         unpacker.error_message()));
   }
 
-  ReleaseProcessIfNeeded();
+  UtilityThread::current()->ReleaseProcessIfNeeded();
 }
 
-void UtilityThread::OnParseUpdateManifest(const std::string& xml) {
+void ChromeContentUtilityClient::OnParseUpdateManifest(const std::string& xml) {
   UpdateManifest manifest;
   if (!manifest.Parse(xml)) {
     Send(new UtilityHostMsg_ParseUpdateManifest_Failed(manifest.errors()));
   } else {
     Send(new UtilityHostMsg_ParseUpdateManifest_Succeeded(manifest.results()));
   }
-  ReleaseProcessIfNeeded();
+  UtilityThread::current()->ReleaseProcessIfNeeded();
 }
 
-void UtilityThread::OnDecodeImage(
+void ChromeContentUtilityClient::OnDecodeImage(
     const std::vector<unsigned char>& encoded_data) {
   webkit_glue::ImageDecoder decoder;
   const SkBitmap& decoded_image = decoder.Decode(&encoded_data[0],
@@ -133,10 +132,10 @@ void UtilityThread::OnDecodeImage(
   } else {
     Send(new UtilityHostMsg_DecodeImage_Succeeded(decoded_image));
   }
-  ReleaseProcessIfNeeded();
+  UtilityThread::current()->ReleaseProcessIfNeeded();
 }
 
-void UtilityThread::OnDecodeImageBase64(
+void ChromeContentUtilityClient::OnDecodeImageBase64(
     const std::string& encoded_string) {
   std::string decoded_string;
 
@@ -153,7 +152,7 @@ void UtilityThread::OnDecodeImageBase64(
   OnDecodeImage(decoded_vector);
 }
 
-void UtilityThread::OnRenderPDFPagesToMetafile(
+void ChromeContentUtilityClient::OnRenderPDFPagesToMetafile(
     base::PlatformFile pdf_file,
     const FilePath& metafile_path,
     const gfx::Rect& render_area,
@@ -176,7 +175,7 @@ void UtilityThread::OnRenderPDFPagesToMetafile(
   if (!succeeded) {
     Send(new UtilityHostMsg_RenderPDFPagesToMetafile_Failed());
   }
-  ReleaseProcessIfNeeded();
+  UtilityThread::current()->ReleaseProcessIfNeeded();
 }
 
 #if defined(OS_WIN)
@@ -226,7 +225,7 @@ DWORD WINAPI UtilityProcess_GetFontDataPatch(
   return rv;
 }
 
-bool UtilityThread::RenderPDFToWinMetafile(
+bool ChromeContentUtilityClient::RenderPDFToWinMetafile(
     base::PlatformFile pdf_file,
     const FilePath& metafile_path,
     const gfx::Rect& render_area,
@@ -317,35 +316,8 @@ bool UtilityThread::RenderPDFToWinMetafile(
 }
 #endif  // defined(OS_WIN)
 
-void UtilityThread::OnIDBKeysFromValuesAndKeyPath(
-    int id,
-    const std::vector<SerializedScriptValue>& serialized_script_values,
-    const string16& idb_key_path) {
-  std::vector<WebKit::WebSerializedScriptValue> web_values;
-  ConvertVector(serialized_script_values, &web_values);
-  std::vector<WebKit::WebIDBKey> web_keys;
-  bool error = webkit_glue::IDBKeysFromValuesAndKeyPath(
-      web_values, idb_key_path, &web_keys);
-  if (error) {
-    Send(new UtilityHostMsg_IDBKeysFromValuesAndKeyPath_Failed(id));
-    return;
-  }
-  std::vector<IndexedDBKey> keys;
-  ConvertVector(web_keys, &keys);
-  Send(new UtilityHostMsg_IDBKeysFromValuesAndKeyPath_Succeeded(id, keys));
-  ReleaseProcessIfNeeded();
-}
 
-void UtilityThread::OnInjectIDBKey(const IndexedDBKey& key,
-                                   const SerializedScriptValue& value,
-                                   const string16& key_path) {
-  SerializedScriptValue new_value(webkit_glue::InjectIDBKey(key, value,
-                                                              key_path));
-  Send(new UtilityHostMsg_InjectIDBKey_Finished(new_value));
-  ReleaseProcessIfNeeded();
-}
-
-void UtilityThread::OnParseJSON(const std::string& json) {
+void ChromeContentUtilityClient::OnParseJSON(const std::string& json) {
   int error_code;
   std::string error;
   Value* value =
@@ -357,18 +329,10 @@ void UtilityThread::OnParseJSON(const std::string& json) {
   } else {
     Send(new UtilityHostMsg_ParseJSON_Failed(error));
   }
-  ReleaseProcessIfNeeded();
+  UtilityThread::current()->ReleaseProcessIfNeeded();
 }
 
-void UtilityThread::OnBatchModeStarted() {
-  batch_mode_ = true;
-}
-
-void UtilityThread::OnBatchModeFinished() {
-  ChildProcess::current()->ReleaseProcess();
-}
-
-void UtilityThread::OnGetPrinterCapsAndDefaults(
+void ChromeContentUtilityClient::OnGetPrinterCapsAndDefaults(
     const std::string& printer_name) {
   scoped_refptr<printing::PrintBackend> print_backend =
       printing::PrintBackend::CreateInstance(NULL);
@@ -379,10 +343,7 @@ void UtilityThread::OnGetPrinterCapsAndDefaults(
   } else {
     Send(new UtilityHostMsg_GetPrinterCapsAndDefaults_Failed(printer_name));
   }
-  ReleaseProcessIfNeeded();
+  UtilityThread::current()->ReleaseProcessIfNeeded();
 }
 
-void UtilityThread::ReleaseProcessIfNeeded() {
-  if (!batch_mode_)
-    ChildProcess::current()->ReleaseProcess();
-}
+}  // namespace chrome

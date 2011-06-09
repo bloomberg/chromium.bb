@@ -11,7 +11,7 @@
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/scoped_temp_dir.h"
-#include "chrome/browser/utility_process_host.h"
+#include "content/browser/utility_process_host.h"
 
 class DictionaryValue;
 class Extension;
@@ -187,10 +187,13 @@ class SandboxedExtensionUnpacker : public UtilityProcessHost::Client {
   // Starts the utility process that unpacks our extension.
   void StartProcessOnIOThread(const FilePath& temp_crx_path);
 
-  // SandboxedExtensionUnpacker
-  virtual void OnUnpackExtensionSucceeded(const DictionaryValue& manifest);
-  virtual void OnUnpackExtensionFailed(const std::string& error_message);
+  // UtilityProcessHost::Client
+  virtual bool OnMessageReceived(const IPC::Message& message);
   virtual void OnProcessCrashed(int exit_code);
+
+  // IPC message handlers.
+  void OnUnpackExtensionSucceeded(const DictionaryValue& manifest);
+  void OnUnpackExtensionFailed(const std::string& error_message);
 
   void ReportFailure(FailureReason reason, const std::string& message);
   void ReportSuccess(const DictionaryValue& original_manifest);

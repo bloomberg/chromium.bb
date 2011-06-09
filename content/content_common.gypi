@@ -228,6 +228,7 @@
         'common/url_constants.h',
         'common/url_fetcher.cc',
         'common/url_fetcher.h',
+        'common/utility_messages.h',
         'common/video_capture_messages.h',
         'common/view_messages.h',
         'common/view_types.cc',

@@ -30,6 +30,7 @@ class ContentBrowserClient;
 class ContentClient;
 class ContentPluginClient;
 class ContentRendererClient;
+class ContentUtilityClient;
 
 // Setter and getter for the client.  The client should be set early, before any
 // content code is called.
@@ -45,9 +46,11 @@ class ContentClient {
   ContentBrowserClient* browser() { return browser_; }
   void set_browser(ContentBrowserClient* c) { browser_ = c; }
   ContentPluginClient* plugin() { return plugin_; }
-  void set_plugin(ContentPluginClient* r) { plugin_ = r; }
+  void set_plugin(ContentPluginClient* p) { plugin_ = p; }
   ContentRendererClient* renderer() { return renderer_; }
   void set_renderer(ContentRendererClient* r) { renderer_ = r; }
+  ContentUtilityClient* utility() { return utility_; }
+  void set_utility(ContentUtilityClient* u) { utility_ = u; }
 
   // Sets the currently active URL.  Use GURL() to clear the URL.
   virtual void SetActiveURL(const GURL& url) {}
@@ -79,6 +82,8 @@ class ContentClient {
   ContentPluginClient* plugin_;
   // The embedder API for participating in renderer logic.
   ContentRendererClient* renderer_;
+  // The embedder API for participating in utility logic.
+  ContentUtilityClient* utility_;
 };
 
 }  // namespace content

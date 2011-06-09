@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/image_decoder.h"
 
 #include "chrome/browser/browser_process.h"
+#include "chrome/common/chrome_utility_messages.h"
 #include "content/browser/browser_thread.h"
 
 namespace chromeos {
@@ -30,6 +31,17 @@ void ImageDecoder::Start() {
          image_data_));
 }
 
+bool ImageDecoder::OnMessageReceived(const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(ImageDecoder, message)
+    IPC_MESSAGE_HANDLER(UtilityHostMsg_DecodeImage_Succeeded,
+                        OnDecodeImageSucceeded)
+    IPC_MESSAGE_HANDLER(UtilityHostMsg_DecodeImage_Failed, OnDecodeImageFailed)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP_EX()
+  return handled;
+}
+
 void ImageDecoder::OnDecodeImageSucceeded(const SkBitmap& decoded_image) {
   DCHECK(BrowserThread::CurrentlyOn(target_thread_id_));
   if (delegate_)
@@ -48,7 +60,7 @@ void ImageDecoder::DecodeImageInSandbox(
   UtilityProcessHost* utility_process_host =
       new UtilityProcessHost(this,
                              target_thread_id_);
-  utility_process_host->StartImageDecoding(image_data);
+  utility_process_host->Send(new UtilityMsg_DecodeImage(image_data));
 }
 
 }  // namespace chromeos

@@ -17,6 +17,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/web_resource/web_resource_unpacker.h"
 #include "content/browser/browser_thread.h"
@@ -111,8 +112,7 @@ class WebResourceService::WebResourceFetcher
 // This class coordinates a web resource unpack and parse task which is run in
 // a separate process.  Results are sent back to this class and routed to
 // the WebResourceService.
-class WebResourceService::UnpackerClient
-    : public UtilityProcessHost::Client {
+class WebResourceService::UnpackerClient : public UtilityProcessHost::Client {
  public:
   UnpackerClient(WebResourceService* web_resource_service,
                  const std::string& json_data)
@@ -151,6 +151,18 @@ class WebResourceService::UnpackerClient
   ~UnpackerClient() {}
 
   // UtilityProcessHost::Client
+  virtual bool OnMessageReceived(const IPC::Message& message) {
+    bool handled = true;
+    IPC_BEGIN_MESSAGE_MAP(WebResourceService::UnpackerClient, message)
+      IPC_MESSAGE_HANDLER(UtilityHostMsg_UnpackWebResource_Succeeded,
+                          OnUnpackWebResourceSucceeded)
+      IPC_MESSAGE_HANDLER(UtilityHostMsg_UnpackWebResource_Failed,
+                          OnUnpackWebResourceFailed)
+      IPC_MESSAGE_UNHANDLED(handled = false)
+    IPC_END_MESSAGE_MAP_EX()
+    return handled;
+  }
+
   virtual void OnProcessCrashed(int exit_code) {
     if (got_response_)
       return;
@@ -159,13 +171,13 @@ class WebResourceService::UnpackerClient
         "Chrome crashed while trying to retrieve web resources.");
   }
 
-  virtual void OnUnpackWebResourceSucceeded(
+  void OnUnpackWebResourceSucceeded(
       const DictionaryValue& parsed_json) {
     web_resource_service_->OnWebResourceUnpacked(parsed_json);
     Cleanup();
   }
 
-  virtual void OnUnpackWebResourceFailed(const std::string& error_message) {
+  void OnUnpackWebResourceFailed(const std::string& error_message) {
     web_resource_service_->EndFetch();
     Cleanup();
   }
@@ -183,7 +195,7 @@ class WebResourceService::UnpackerClient
     UtilityProcessHost* host = new UtilityProcessHost(this, thread_id);
     // TODO(mrc): get proper file path when we start using web resources
     // that need to be unpacked.
-    host->StartWebResourceUnpacker(json_data_);
+    host->Send(new UtilityMsg_UnpackWebResource(json_data_));
   }
 
   scoped_refptr<WebResourceService> web_resource_service_;

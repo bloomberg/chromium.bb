@@ -6,8 +6,10 @@
 
 #include "base/lazy_instance.h"
 #include "base/synchronization/waitable_event.h"
-#include "chrome/browser/utility_process_host.h"
+#include "content/browser/utility_process_host.h"
 #include "content/common/indexed_db_key.h"
+#include "content/common/indexed_db_messages.h"
+#include "content/common/utility_messages.h"
 #include "content/common/serialized_script_value.h"
 
 // This class is used to obtain IndexedDBKeys from SerializedScriptValues
@@ -46,10 +48,13 @@ class KeyUtilityClientImpl
 
     // UtilityProcessHost::Client
     virtual void OnProcessCrashed(int exit_code);
-    virtual void OnIDBKeysFromValuesAndKeyPathSucceeded(
+    virtual bool OnMessageReceived(const IPC::Message& message);
+
+    // IPC message handlers
+    void OnIDBKeysFromValuesAndKeyPathSucceeded(
         int id, const std::vector<IndexedDBKey>& keys);
-    virtual void OnIDBKeysFromValuesAndKeyPathFailed(int id);
-    virtual void OnInjectIDBKeyFinished(const SerializedScriptValue& value);
+    void OnIDBKeysFromValuesAndKeyPathFailed(int id);
+    void OnInjectIDBKeyFinished(const SerializedScriptValue& value);
 
    private:
     KeyUtilityClientImpl* parent_;
@@ -307,8 +312,8 @@ void KeyUtilityClientImpl::CallStartIDBKeyFromValueAndKeyPathFromIOThread(
   }
 
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  utility_process_host_->StartIDBKeysFromValuesAndKeyPath(
-      0, values, key_path);
+  utility_process_host_->Send(new UtilityMsg_IDBKeysFromValuesAndKeyPath(
+      0, values, key_path));
 }
 
 void KeyUtilityClientImpl::CallStartInjectIDBKeyFromIOThread(
@@ -326,7 +331,8 @@ void KeyUtilityClientImpl::CallStartInjectIDBKeyFromIOThread(
   }
 
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  utility_process_host_->StartInjectIDBKey(key, value, key_path);
+  utility_process_host_->Send(new UtilityMsg_InjectIDBKey(
+      key, value, key_path));
 }
 
 void KeyUtilityClientImpl::SetKeys(const std::vector<IndexedDBKey>& keys) {
@@ -359,6 +365,21 @@ KeyUtilityClientImpl::Client::Client(KeyUtilityClientImpl* parent)
 void KeyUtilityClientImpl::Client::OnProcessCrashed(int exit_code) {
   if (parent_->state_ == STATE_CREATING_KEYS)
     parent_->FinishCreatingKeys();
+}
+
+bool KeyUtilityClientImpl::Client::OnMessageReceived(
+    const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(KeyUtilityClientImpl::Client, message)
+    IPC_MESSAGE_HANDLER(UtilityHostMsg_IDBKeysFromValuesAndKeyPath_Succeeded,
+                        OnIDBKeysFromValuesAndKeyPathSucceeded)
+    IPC_MESSAGE_HANDLER(UtilityHostMsg_IDBKeysFromValuesAndKeyPath_Failed,
+                        OnIDBKeysFromValuesAndKeyPathFailed)
+    IPC_MESSAGE_HANDLER(UtilityHostMsg_InjectIDBKey_Finished,
+                        OnInjectIDBKeyFinished)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP_EX()
+  return handled;
 }
 
 void KeyUtilityClientImpl::Client::OnIDBKeysFromValuesAndKeyPathSucceeded(

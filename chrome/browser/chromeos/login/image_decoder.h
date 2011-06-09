@@ -9,7 +9,9 @@
 #include <string>
 #include <vector>
 
-#include "chrome/browser/utility_process_host.h"
+#include "content/browser/utility_process_host.h"
+
+class SkBitmap;
 
 namespace chromeos {
 
@@ -43,8 +45,11 @@ class ImageDecoder : public UtilityProcessHost::Client {
   virtual ~ImageDecoder();
 
   // Overidden from UtilityProcessHost::Client:
-  virtual void OnDecodeImageSucceeded(const SkBitmap& decoded_image);
-  virtual void OnDecodeImageFailed();
+  virtual bool OnMessageReceived(const IPC::Message& message);
+
+  // IPC message handlers.
+  void OnDecodeImageSucceeded(const SkBitmap& decoded_image);
+  void OnDecodeImageFailed();
 
   // Launches sandboxed process that will decode the image.
   void DecodeImageInSandbox(const std::vector<unsigned char>& image_data);
