@@ -155,19 +155,9 @@ SSL_SNISocketConfigHook;
 ;+NSS_CHROMIUM {
 ;+    global:
 SSL_GetNextProto;
-SSL_SetNextProtoNego;
-;+    local:
-;+*;
-;+};
-;+NSS_3.13 {      # NSS 3.13 release
-;+    global:
-SSL_GetPredictedServerHelloData;
-SSL_GetSnapStartResult;
 SSL_GetStapledOCSPResponse;
 SSL_PeerCertificateChain;
-SSL_SetPredictedPeerCertificates;
-SSL_SetPredictedServerHelloData;
-SSL_SetSnapStartApplicationData;
+SSL_SetNextProtoNego;
 ;+    local:
 ;+*;
 ;+};
