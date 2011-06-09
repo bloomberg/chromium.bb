@@ -145,7 +145,7 @@ void ViewScreen<V>::Hide() {
   if (view_) {
     delegate()->GetWizardView()->RemoveChildView(view_);
     // RemoveChildView doesn't delete the view and we also can't delete it here
-    // becuase we are in message processing for the view.
+    // because we are in message processing for the view.
     MessageLoop::current()->DeleteSoon(FROM_HERE, view_);
     view_ = NULL;
   }

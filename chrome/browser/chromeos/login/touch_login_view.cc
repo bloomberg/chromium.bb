@@ -45,8 +45,8 @@ TouchLoginView::TouchLoginView()
 TouchLoginView::~TouchLoginView() {
 }
 
-void TouchLoginView::Init(const GURL& login_url) {
-  WebUILoginView::Init(login_url);
+void TouchLoginView::Init() {
+  WebUILoginView::Init();
   InitVirtualKeyboard();
 
   registrar_.Add(this,

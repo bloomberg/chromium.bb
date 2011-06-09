@@ -75,4 +75,3 @@ void ViewsLoginDisplayHost::ShowBackground() {
 }
 
 }  // namespace chromeos
-

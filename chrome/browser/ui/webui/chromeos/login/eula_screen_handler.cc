@@ -23,7 +23,7 @@ void EulaScreenHandler::PrepareToShow() {
 
 void EulaScreenHandler::Show() {
   scoped_ptr<Value> value(Value::CreateIntegerValue(1));
-  web_ui_->CallJavascriptFunction("toggleStep", *value);
+  web_ui_->CallJavascriptFunction("cr.ui.Oobe.toggleStep", *value);
 }
 
 void EulaScreenHandler::Hide() {

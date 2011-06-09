@@ -16,6 +16,8 @@ class Rect;
 
 namespace chromeos {
 
+class WebUILoginView;
+
 // WebUI-specific implementation of the OOBE/login screen host. Uses
 // WebUILoginDisplay as the login screen UI implementation,
 class WebUILoginDisplayHost : public BaseLoginDisplayHost {
@@ -33,8 +35,22 @@ class WebUILoginDisplayHost : public BaseLoginDisplayHost {
   virtual void SetStatusAreaEnabled(bool enable) OVERRIDE;
   virtual void SetStatusAreaVisible(bool visible) OVERRIDE;
   virtual void ShowBackground() OVERRIDE;
+  virtual void StartWizard(const std::string& first_screen_name,
+                           const GURL& start_url) OVERRIDE;
+  virtual void StartSignInScreen() OVERRIDE;
+
+  // BaseLoginDisplayHost overrides:
+  virtual WizardController* CreateWizardController() OVERRIDE;
 
  private:
+  // Loads given URL. Creates WebUILoginView if needed.
+  void LoadURL(const GURL& url);
+
+  // Container of the screen we are displaying.
+  views::Widget* login_window_;
+  // Container of the view we are displaying.
+  WebUILoginView* login_view_;
+
   DISALLOW_COPY_AND_ASSIGN(WebUILoginDisplayHost);
 };
 

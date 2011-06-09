@@ -22,6 +22,7 @@ class Widget;
 namespace chromeos {
 
 class ExistingUserController;
+class ViewsOobeDisplay;
 class WizardController;
 
 // An abstract base class that defines OOBE/login screen host.
@@ -44,6 +45,9 @@ class BaseLoginDisplayHost : public LoginDisplayHost,
       const GURL& start_url);
   virtual void StartSignInScreen();
 
+  // Implementation specific WizardController creation method.
+  virtual WizardController* CreateWizardController();
+
   const gfx::Rect& background_bounds() const { return background_bounds_; }
 
  private:
@@ -65,6 +69,11 @@ class BaseLoginDisplayHost : public LoginDisplayHost,
 
   // OOBE and some screens (camera, recovery) controller.
   scoped_ptr<WizardController> wizard_controller_;
+
+  // Keeps views based OobeDisplay implementation if any.
+  // TODO(altimofeev): move it to ViewsLoginDisplayHost. Also see comment in
+  // the CreateWizardController().
+  scoped_ptr<ViewsOobeDisplay> oobe_display_;
 
   DISALLOW_COPY_AND_ASSIGN(BaseLoginDisplayHost);
 };

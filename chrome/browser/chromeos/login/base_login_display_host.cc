@@ -119,6 +119,16 @@ void BaseLoginDisplayHost::OnSessionStart() {
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
+WizardController* BaseLoginDisplayHost::CreateWizardController() {
+  // TODO(altimofeev): move this code to ViewsLoginDisplayHost when WebUI
+  // implementation will always be used with WebUILoginDisplayHost.
+  oobe_display_.reset(new ViewsOobeDisplay(background_bounds()));
+  WizardController* wizard_controller  =
+      new WizardController(this, oobe_display_.get());
+  oobe_display_->SetScreenObserver(wizard_controller);
+  return wizard_controller;
+}
+
 void BaseLoginDisplayHost::StartWizard(
     const std::string& first_screen_name,
     const GURL& start_url) {
@@ -129,9 +139,12 @@ void BaseLoginDisplayHost::StartWizard(
   // is done before new controller creation.
   wizard_controller_.reset();
 
-  ViewsOobeDisplay* oobe_display = new ViewsOobeDisplay(background_bounds_);
-  wizard_controller_.reset(new WizardController(this, oobe_display));
-  oobe_display->SetScreenObserver(wizard_controller_.get());
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAllowWebUIOobe)) {
+    wizard_controller_.reset(CreateWizardController());
+  } else {
+    // Force views based implementation.
+    wizard_controller_.reset(BaseLoginDisplayHost::CreateWizardController());
+  }
 
   wizard_controller_->set_start_url(start_url);
   ShowBackground();
@@ -141,6 +154,8 @@ void BaseLoginDisplayHost::StartWizard(
 }
 
 void BaseLoginDisplayHost::StartSignInScreen() {
+  oobe_display_.reset();
+
   DVLOG(1) << "Starting sign in screen";
   std::vector<chromeos::UserManager::User> users =
       chromeos::UserManager::Get()->GetUsers();

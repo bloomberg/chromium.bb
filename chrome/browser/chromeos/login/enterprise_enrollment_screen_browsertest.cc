@@ -31,7 +31,7 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentScreenTest, TestCancel) {
 
   MockScreenObserver mock_screen_observer;
   ViewsOobeDisplay* views_oobe_display =
-      static_cast<ViewsOobeDisplay*>(controller()->oobe_display_.get());
+      static_cast<ViewsOobeDisplay*>(controller()->oobe_display_);
   views_oobe_display->SetScreenObserver(&mock_screen_observer);
 
   EnterpriseEnrollmentScreen* enterprise_enrollment_screen =

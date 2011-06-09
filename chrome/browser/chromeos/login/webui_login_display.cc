@@ -14,17 +14,11 @@
 #include "chrome/browser/chromeos/login/touch_login_view.h"
 #endif
 
-namespace {
-const char kLoginURL[] = "chrome://login";
-}  // namespace
-
 namespace chromeos {
 
 // WebUILoginDisplay, public: --------------------------------------------------
 
 WebUILoginDisplay::~WebUILoginDisplay() {
-  if (login_window_)
-    login_window_->Close();
 }
 
 // WebUILoginDisplay, Singleton implementation: --------------------------------
@@ -48,11 +42,6 @@ views::Widget* WebUILoginDisplay::LoginWindow() {
 void WebUILoginDisplay::Destroy() {
   background_bounds_ = gfx::Rect();
   delegate_ = NULL;
-
-  if (login_window_)
-    login_window_->Close();
-
-  login_window_ = NULL;
 }
 
   // TODO(rharrison): Add mechanism to pass in the show_guest and show_new_user
@@ -62,24 +51,8 @@ void WebUILoginDisplay::Init(const std::vector<UserManager::User>& users,
                              bool show_new_user) {
   // Testing that the delegate has been set.
   DCHECK(delegate_);
+
   users_ = users;
-
-  views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
-  params.bounds = background_bounds_;
-
-  login_window_ = new views::Widget;
-  login_window_->Init(params);
-
-#if defined(TOUCH_UI)
-  TouchLoginView* login_view = new TouchLoginView();
-#else
-  WebUILoginView* login_view = new WebUILoginView();
-#endif
-  login_view->Init(GURL(kLoginURL));
-  login_window_->SetContentsView(login_view);
-  login_view->UpdateWindowType();
-
-  login_window_->Show();
 }
 
 void WebUILoginDisplay::OnBeforeUserRemoved(const std::string& username) {

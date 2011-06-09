@@ -13,6 +13,7 @@
 class DOMView;
 class GURL;
 class Profile;
+class WebUI;
 
 namespace views {
 class Widget;
@@ -33,10 +34,10 @@ class WebUILoginView : public views::View,
   WebUILoginView();
   virtual ~WebUILoginView();
 
-  // Initializes the webui login view. |login_url| must be specified.
-  virtual void Init(const GURL& login_url);
+  // Initializes the webui login view.
+  virtual void Init();
 
-  // Overriden from views::Views:
+  // Overridden from views::Views:
   virtual std::string GetClassName() const OVERRIDE;
 
   // Overridden from StatusAreaHost:
@@ -45,6 +46,12 @@ class WebUILoginView : public views::View,
   // Invokes SetWindowType for the window. This is invoked during startup and
   // after we've painted.
   void UpdateWindowType();
+
+  // Loads given page. Should be called after Init() has been called.
+  void LoadURL(const GURL& url);
+
+  // Returns current WebUI.
+  WebUI* GetWebUI();
 
  protected:
   // Overridden from views::View:

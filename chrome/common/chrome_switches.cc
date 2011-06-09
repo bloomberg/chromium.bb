@@ -41,6 +41,10 @@ const char kAllowScriptingGallery[]         = "allow-scripting-gallery";
 // websocket proxy.
 const char kAllowWebSocketProxy[]           = "allow-websocket-proxy";
 
+// Allows WebUI based OOBE. Note, WebUI will be used iff kWebUILogin is also
+// true.
+const char kAllowWebUIOobe[]                = "allow-webui-oobe";
+
 // This prevents Chrome from requiring authorization to run certain widely
 // installed but less commonly used plug-ins.
 const char kAlwaysAuthorizePlugins[]        = "always-authorize-plugins";

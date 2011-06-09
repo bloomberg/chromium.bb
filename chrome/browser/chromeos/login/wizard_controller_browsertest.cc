@@ -49,7 +49,7 @@ class MockOutShowHide : public T {
 
 #define MOCK_OLD(mock_var, screen_name, mocked_class)                          \
   mock_var = new MockOutShowHide<mocked_class, int>(                           \
-      static_cast<ViewsOobeDisplay*>(controller()->oobe_display_.get()));      \
+      static_cast<ViewsOobeDisplay*>(controller()->oobe_display_));      \
   controller()->screen_name.reset(mock_var);                                   \
   EXPECT_CALL(*mock_var, Show()).Times(0);                                     \
   EXPECT_CALL(*mock_var, Hide()).Times(0);
@@ -260,7 +260,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, MAYBE_Accelerators) {
   //TODO(altimofeev): do not depend on the display realization.
 
   ViewsOobeDisplay* display =
-      static_cast<ViewsOobeDisplay*>(controller()->oobe_display_.get());
+      static_cast<ViewsOobeDisplay*>(controller()->oobe_display_);
   views::View* contents = display->contents_;
 
   EXPECT_EQ(controller()->GetNetworkScreen(), controller()->current_screen());

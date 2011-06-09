@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/views/dom_view.h"
+#include "content/browser/tab_contents/tab_contents.h"
 
 namespace {
 
@@ -32,15 +33,12 @@ WebUILoginView::WebUILoginView()
 WebUILoginView::~WebUILoginView() {
 }
 
-void WebUILoginView::Init(const GURL& login_url) {
-  CHECK(!login_url.is_empty());
-
+void WebUILoginView::Init() {
   profile_ = ProfileManager::GetDefaultProfile();
 
   webui_login_ = new DOMView();
   AddChildView(webui_login_);
   webui_login_->Init(profile_, NULL);
-  webui_login_->LoadURL(login_url);
   webui_login_->SetVisible(true);
 
   InitStatusArea();
@@ -70,6 +68,14 @@ void WebUILoginView::UpdateWindowType() {
       GTK_WIDGET(GetNativeWindow()),
       WM_IPC_WINDOW_LOGIN_WEBUI,
       &params);
+}
+
+void WebUILoginView::LoadURL(const GURL & url) {
+  webui_login_->LoadURL(url);
+}
+
+WebUI* WebUILoginView::GetWebUI() {
+  return webui_login_->tab_contents()->web_ui();
 }
 
 // WebUILoginView protected: ---------------------------------------------------

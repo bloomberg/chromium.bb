@@ -33,8 +33,8 @@ class TouchLoginView : public WebUILoginView,
   TouchLoginView();
   virtual ~TouchLoginView();
 
-  // Initializes the webui login view. |login_url| must be specified.
-  virtual void Init(const GURL& login_url) OVERRIDE;
+  // Overriden from WebUILoginView:
+  virtual void Init() OVERRIDE;
 
   // Overriden from views::Views:
   virtual std::string GetClassName() const OVERRIDE;

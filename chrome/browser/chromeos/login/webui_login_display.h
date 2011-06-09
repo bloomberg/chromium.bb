@@ -72,6 +72,10 @@ class WebUILoginDisplay : public LoginDisplay,
                      const std::string& password) OVERRIDE;
   virtual void LoginAsGuest() OVERRIDE;
 
+  void set_login_window(views::Widget* login_window) {
+    login_window_ = login_window;
+  }
+
  private:
   // Singleton implementation:
   friend struct DefaultSingletonTraits<WebUILoginDisplay>;

@@ -219,7 +219,7 @@ class WizardController : public ScreenObserver {
 
   base::OneShotTimer<WizardController> smooth_show_timer_;
 
-  scoped_ptr<OobeDisplay> oobe_display_;
+  OobeDisplay* oobe_display_;
 
   // State of Usage stat/error reporting checkbox on EULA screen
   // during wizard lifetime.

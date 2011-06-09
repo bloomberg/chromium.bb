@@ -240,7 +240,7 @@ void WizardController::ShowLoginScreen() {
   host_->SetOobeProgress(chromeos::BackgroundView::SIGNIN);
   host_->StartSignInScreen();
   smooth_show_timer_.Stop();
-  oobe_display_.reset(NULL);
+  oobe_display_ = NULL;
 }
 
 void WizardController::ShowUpdateScreen() {
@@ -456,7 +456,7 @@ void WizardController::SetCurrentScreen(WizardScreen* new_current) {
 void WizardController::ShowCurrentScreen() {
   // ShowCurrentScreen may get called by smooth_show_timer_ even after
   // flow has been switched to sign in screen (ExistingUserController).
-  if (!oobe_display_.get())
+  if (!oobe_display_)
     return;
 
   smooth_show_timer_.Stop();
