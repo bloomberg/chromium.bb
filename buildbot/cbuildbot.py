@@ -149,6 +149,7 @@ def RunBuildStages(bot_id, options, build_config):
     with open(completed_stages_file, 'w+') as save_file:
       stages.Results.SaveCompletedStages(save_file)
 
+  print '\n\n\n'
   stages.Results.Report(sys.stdout)
   return stages.Results.Success()
 
