@@ -80,6 +80,7 @@ class PrerenderManager::OnCloseTabContentsDeleter : public TabContentsDelegate {
   }
 
   virtual void CloseContents(TabContents* source) OVERRIDE {
+    tab_->tab_contents()->set_delegate(NULL);
     manager_->ScheduleDeleteOldTabContents(tab_.release(), this);
   }
 
