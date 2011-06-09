@@ -170,7 +170,7 @@ void Automation::InitWithBrowserPath(const FilePath& browser_exe,
   std::string chrome_details = base::StringPrintf(
       "Using Chrome binary at: %" PRFilePath,
       browser_exe.value().c_str());
-  VLOG(1) << chrome_details;
+  LOG(INFO) << chrome_details;
 
   if (!launcher_->LaunchBrowserAndServer(launch_props, true)) {
     *error = new Error(
@@ -181,8 +181,8 @@ void Automation::InitWithBrowserPath(const FilePath& browser_exe,
   }
 
   launcher_->automation()->set_action_timeout_ms(base::kNoTimeout);
-  VLOG(1) << "Chrome launched successfully. Version: "
-          << automation()->server_version();
+  LOG(INFO) << "Chrome launched successfully. Version: "
+            << automation()->server_version();
 
   bool has_automation_version = false;
   *error = CompareVersion(730, 0, &has_automation_version);

@@ -9,7 +9,9 @@
 #include <vector>
 
 #include "base/format_macros.h"
+#include "base/json/json_reader.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop_proxy.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
@@ -20,10 +22,15 @@
 #include "chrome/test/webdriver/commands/command.h"
 #include "chrome/test/webdriver/session_manager.h"
 #include "chrome/test/webdriver/utility_functions.h"
+#include "chrome/test/webdriver/webdriver_logging.h"
 
 namespace webdriver {
 
 namespace {
+
+// Maximum safe size of HTTP response message. Any larger than this,
+// the message may not be transferred at all.
+const int kMaxHttpMessageSize = 1024 * 1024 * 16;  // 16MB
 
 bool ForbidsMessageBody(const std::string& request_method,
                         const HttpResponse& response) {
@@ -59,13 +66,38 @@ void Shutdown(struct mg_connection* connection,
   shutdown_event->Signal();
 }
 
-void SendStatus(struct mg_connection* connection,
-                const struct mg_request_info* request_info,
-                void* user_data) {
-  std::string response = "HTTP/1.1 200 OK\r\n"
-                         "Content-Length:2\r\n\r\n"
-                         "ok";
+void SendOkWithBody(struct mg_connection* connection,
+                    const std::string& content) {
+  const char* response_fmt = "HTTP/1.1 200 OK\r\n"
+                             "Content-Length:%d\r\n\r\n"
+                             "%s";
+  std::string response = base::StringPrintf(
+      response_fmt, content.length(), content.c_str());
   mg_write(connection, response.data(), response.length());
+}
+
+void SendHealthz(struct mg_connection* connection,
+                 const struct mg_request_info* request_info,
+                 void* user_data) {
+  SendOkWithBody(connection, "ok");
+}
+
+void SendLog(struct mg_connection* connection,
+             const struct mg_request_info* request_info,
+             void* user_data) {
+  std::string content, log;
+  if (GetLogContents(&log)) {
+    content = "START ChromeDriver log";
+    const int kMaxSizeWithoutHeaders = kMaxHttpMessageSize - 10000;
+    if (log.size() > kMaxSizeWithoutHeaders) {
+      log = log.substr(log.size() - kMaxSizeWithoutHeaders);
+      content += " (only last several MB)";
+    }
+    content += ":\n" + log + "END ChromeDriver log";
+  } else {
+    content = "No ChromeDriver log found";
+  }
+  SendOkWithBody(connection, content);
 }
 
 void SendNoContentResponse(struct mg_connection* connection,
@@ -99,7 +131,6 @@ void SendNotImplementedError(struct mg_connection* connection,
       "Content-Length:%" PRIuS "\r\n"
       "\r\n", body.length());
 
-  LOG(ERROR) << header << body;
   mg_write(connection, header.data(), header.length());
   mg_write(connection, body.data(), body.length());
 }
@@ -225,18 +256,24 @@ bool ParseRequestInfo(const struct mg_request_info* const request_info,
   base::SplitString(uri, '/', path_segments);
 
   if (*method == "POST" && request_info->post_data_len > 0) {
-    VLOG(1) << "...parsing request body";
     std::string json(request_info->post_data, request_info->post_data_len);
-    std::string error;
-    if (!ParseJSONDictionary(json, parameters, &error)) {
+    std::string error_msg;
+    scoped_ptr<Value> params(base::JSONReader::ReadAndReturnError(
+        json, true, NULL, &error_msg));
+    if (!params.get()) {
       response->SetError(new Error(
           kBadRequest,
-          "Failed to parse command data: " + error + "\n  Data: " + json));
+          "Failed to parse command data: " + error_msg + "\n  Data: " + json));
       return false;
     }
+    if (!params->IsType(Value::TYPE_DICTIONARY)) {
+      response->SetError(new Error(
+          kBadRequest,
+          "Data passed in URL must be a dictionary. Data: " + json));
+      return false;
+    }
+    *parameters = static_cast<DictionaryValue*>(params.release());
   }
-  VLOG(1) << "Parsed " << method << " " << uri
-        << std::string(request_info->post_data, request_info->post_data_len);
   return true;
 }
 
@@ -283,8 +320,12 @@ void Dispatcher::AddShutdown(const std::string& pattern,
                       shutdown_event);
 }
 
-void Dispatcher::AddStatus(const std::string& pattern) {
-  mg_set_uri_callback(context_, (root_ + pattern).c_str(), &SendStatus, NULL);
+void Dispatcher::AddHealthz(const std::string& pattern) {
+  mg_set_uri_callback(context_, (root_ + pattern).c_str(), &SendHealthz, NULL);
+}
+
+void Dispatcher::AddLog(const std::string& pattern) {
+  mg_set_uri_callback(context_, (root_ + pattern).c_str(), &SendLog, NULL);
 }
 
 void Dispatcher::SetNotImplemented(const std::string& pattern) {

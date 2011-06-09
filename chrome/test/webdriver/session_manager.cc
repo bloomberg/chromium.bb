@@ -45,10 +45,8 @@ bool SessionManager::Remove(const std::string& id) {
   Session* session;
   base::AutoLock lock(map_lock_);
   it = map_.find(id);
-  if (it == map_.end()) {
-    VLOG(1) << "No such session with ID " << id;
+  if (it == map_.end())
     return false;
-  }
   session = it->second;
   map_.erase(it);
   return true;
@@ -58,10 +56,8 @@ Session* SessionManager::GetSession(const std::string& id) const {
   std::map<std::string, Session*>::const_iterator it;
   base::AutoLock lock(map_lock_);
   it = map_.find(id);
-  if (it == map_.end()) {
-    VLOG(1) << "No such session with ID " << id;
+  if (it == map_.end())
     return NULL;
-  }
   return it->second;
 }
 

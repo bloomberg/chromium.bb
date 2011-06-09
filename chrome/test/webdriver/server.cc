@@ -27,9 +27,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/test/webdriver/dispatch.h"
-#include "chrome/test/webdriver/session_manager.h"
-#include "chrome/test/webdriver/utility_functions.h"
 #include "chrome/test/webdriver/commands/alert_commands.h"
 #include "chrome/test/webdriver/commands/cookie_commands.h"
 #include "chrome/test/webdriver/commands/create_session.h"
@@ -46,6 +43,10 @@
 #include "chrome/test/webdriver/commands/title_command.h"
 #include "chrome/test/webdriver/commands/url_command.h"
 #include "chrome/test/webdriver/commands/webelement_commands.h"
+#include "chrome/test/webdriver/dispatch.h"
+#include "chrome/test/webdriver/session_manager.h"
+#include "chrome/test/webdriver/utility_functions.h"
+#include "chrome/test/webdriver/webdriver_logging.h"
 #include "third_party/mongoose/mongoose.h"
 
 #if defined(OS_WIN)
@@ -63,7 +64,8 @@ void InitCallbacks(struct mg_context* ctx, Dispatcher* dispatcher,
                    base::WaitableEvent* shutdown_event,
                    bool forbid_other_requests) {
   dispatcher->AddShutdown("/shutdown", shutdown_event);
-  dispatcher->AddStatus("/healthz");
+  dispatcher->AddHealthz("/healthz");
+  dispatcher->AddLog("/log");
 
   dispatcher->Add<CreateSession>("/session");
 
@@ -143,33 +145,6 @@ void InitCallbacks(struct mg_context* ctx, Dispatcher* dispatcher,
 
 }  // namespace webdriver
 
-// Initializes logging for ChromeDriver.
-void InitChromeDriverLogging(const CommandLine& command_line) {
-  bool success = InitLogging(
-      FILE_PATH_LITERAL("chromedriver.log"),
-      logging::LOG_TO_BOTH_FILE_AND_SYSTEM_DEBUG_LOG,
-      logging::LOCK_LOG_FILE,
-      logging::DELETE_OLD_LOG_FILE,
-      logging::DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS);
-  if (!success) {
-    PLOG(ERROR) << "Unable to initialize logging";
-  }
-  logging::SetLogItems(false,  // enable_process_id
-                       false,  // enable_thread_id
-                       true,   // enable_timestamp
-                       false); // enable_tickcount
-  if (command_line.HasSwitch(switches::kLoggingLevel)) {
-    std::string log_level = command_line.GetSwitchValueASCII(
-        switches::kLoggingLevel);
-    int level = 0;
-    if (base::StringToInt(log_level, &level)) {
-      logging::SetMinLogLevel(level);
-    } else {
-      LOG(WARNING) << "Bad log level: " << log_level;
-    }
-  }
-}
-
 // Configures mongoose according to the given command line flags.
 // Returns true on success.
 bool SetMongooseOptions(struct mg_context* ctx,
@@ -209,12 +184,12 @@ int main(int argc, char *argv[]) {
   // built Chrome.
   chrome::RegisterPathProvider();
   TestTimeouts::Initialize();
-  InitChromeDriverLogging(*cmd_line);
 
   // Parse command line flags.
   std::string port = "9515";
   std::string root;
   std::string url_base;
+  bool verbose = false;
   if (cmd_line->HasSwitch("port"))
     port = cmd_line->GetSwitchValueASCII("port");
   // The 'root' flag allows the user to specify a location to serve files from.
@@ -224,6 +199,12 @@ int main(int argc, char *argv[]) {
     root = cmd_line->GetSwitchValueASCII("root");
   if (cmd_line->HasSwitch("url-base"))
     url_base = cmd_line->GetSwitchValueASCII("url-base");
+  // Whether or not to do verbose logging.
+  if (cmd_line->HasSwitch("verbose"))
+    verbose = true;
+
+  webdriver::InitWebDriverLogging(
+      verbose ? logging::LOG_INFO : logging::LOG_WARNING);
 
   webdriver::SessionManager* manager = webdriver::SessionManager::GetInstance();
   manager->set_port(port);

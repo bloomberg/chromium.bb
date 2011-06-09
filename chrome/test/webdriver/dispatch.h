@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/logging.h"
 #include "chrome/test/webdriver/commands/response.h"
 #include "third_party/mongoose/mongoose.h"
 
@@ -68,15 +69,19 @@ void Dispatch(struct mg_connection* connection,
                                  &path_segments,
                                  &parameters,
                                  &response)) {
+    std::string post_data(request_info->post_data, request_info->post_data_len);
+    LOG(INFO) << "Received command, url: " << request_info->uri
+              << ", method: " << request_info->request_method
+              << ", postd data: " << post_data;
     internal::DispatchHelper(
         new CommandType(path_segments, parameters),
         method,
         &response);
   }
-
   internal::SendResponse(connection,
                          request_info->request_method,
                          response);
+  LOG(INFO) << "Sent command response, url: " << request_info->uri;
 }
 
 class Dispatcher {
@@ -100,7 +105,11 @@ class Dispatcher {
   // Registers a callback for the given pattern that will return a simple
   // "HTTP/1.1 200 OK" message with "ok" in the body. Used for checking the
   // status of the server.
-  void AddStatus(const std::string& pattern);
+  void AddHealthz(const std::string& pattern);
+
+  // Registers a callback for the given pattern that will return the current
+  // WebDriver log contents.
+  void AddLog(const std::string& pattern);
 
   // Registers a callback that will always respond with a
   // "HTTP/1.1 501 Not Implemented" message.
