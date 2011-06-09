@@ -23,7 +23,7 @@
 #include "chrome/browser/download/download_history.h"
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_prefs.h"
-#include "chrome/browser/download/download_process_handle.h"
+#include "chrome/browser/download/download_request_handle.h"
 #include "chrome/browser/download/download_safe_browsing_client.h"
 #include "chrome/browser/download/download_status_updater.h"
 #include "chrome/browser/download/download_util.h"
@@ -472,8 +472,8 @@ void DownloadManager::OnPathExistenceAvailable(int32 download_id,
     if (!select_file_dialog_.get())
       select_file_dialog_ = SelectFileDialog::Create(this);
 
-    DownloadProcessHandle process_handle = download->process_handle();
-    TabContents* contents = process_handle.GetTabContents();
+    DownloadRequestHandle request_handle = download->request_handle();
+    TabContents* contents = request_handle.GetTabContents();
     SelectFileDialog::FileTypeInfo file_type_info;
     FilePath::StringType extension = suggested_path.Extension();
     if (!extension.empty()) {
@@ -749,15 +749,13 @@ void DownloadManager::DownloadCancelled(int32 download_id) {
     download_history_->UpdateEntry(download);
   }
 
-  DownloadCancelledInternal(download_id, download->process_handle());
+  DownloadCancelledInternal(download_id, download->request_handle());
 }
 
 void DownloadManager::DownloadCancelledInternal(
-    int download_id, DownloadProcessHandle process_handle) {
+    int download_id, DownloadRequestHandle request_handle) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // Cancel the network request.  RDH is guaranteed to outlive the IO thread.
-  download_util::CancelDownloadRequest(
-      g_browser_process->resource_dispatcher_host(), process_handle);
+  request_handle.CancelRequest();
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
@@ -801,36 +799,9 @@ void DownloadManager::OnDownloadError(int32 download_id,
           file_manager_, &DownloadFileManager::CancelDownload, download_id));
 }
 
-void DownloadManager::PauseDownload(int32 download_id, bool pause) {
-  DownloadMap::iterator it = in_progress_.find(download_id);
-  if (it == in_progress_.end())
-    return;
-
-  DownloadItem* download = it->second;
-  if (pause == download->is_paused())
-    return;
-
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(this,
-                        &DownloadManager::PauseDownloadRequest,
-                        g_browser_process->resource_dispatcher_host(),
-                        download->process_handle(),
-                        pause));
-}
-
 void DownloadManager::UpdateAppIcon() {
   if (status_updater_)
     status_updater_->Update();
-}
-
-void DownloadManager::PauseDownloadRequest(ResourceDispatcherHost* rdh,
-                                           DownloadProcessHandle process_handle,
-                                           bool pause) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  rdh->PauseRequest(process_handle.child_id(),
-                    process_handle.request_id(),
-                    pause);
 }
 
 void DownloadManager::RemoveDownload(int64 download_handle) {
@@ -1047,7 +1018,7 @@ void DownloadManager::FileSelectionCanceled(void* params) {
   VLOG(20) << __FUNCTION__ << "()"
            << " download = " << download->DebugString(true);
 
-  DownloadCancelledInternal(download_id, download->process_handle());
+  DownloadCancelledInternal(download_id, download->request_handle());
 }
 
 // TODO(phajdan.jr): This is apparently not being exercised in tests.
@@ -1162,8 +1133,8 @@ void DownloadManager::ShowDownloadInBrowser(DownloadItem* download) {
   // The 'contents' may no longer exist if the user closed the tab before we
   // get this start completion event. If it does, tell the origin TabContents
   // to display its download shelf.
-  DownloadProcessHandle process_handle = download->process_handle();
-  TabContents* contents = process_handle.GetTabContents();
+  DownloadRequestHandle request_handle = download->request_handle();
+  TabContents* contents = request_handle.GetTabContents();
   TabContentsWrapper* wrapper = NULL;
   if (contents)
       wrapper = TabContentsWrapper::GetCurrentWrapperForContents(contents);

@@ -42,8 +42,8 @@
 #include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "chrome/browser/download/download_item.h"
+#include "chrome/browser/download/download_request_handle.h"
 #include "chrome/browser/download/download_status_updater_delegate.h"
-#include "chrome/browser/download/download_process_handle.h"
 #include "chrome/browser/ui/shell_dialogs.h"
 #include "content/browser/browser_thread.h"
 
@@ -124,7 +124,6 @@ class DownloadManager
 
   // Called from a view when a user clicks a UI button or link.
   void DownloadCancelled(int32 download_id);
-  void PauseDownload(int32 download_id, bool pause);
   void RemoveDownload(int64 download_handle);
 
   // Determine if the download is ready for completion, i.e. has had
@@ -299,10 +298,10 @@ class DownloadManager
                                 const FilePath& chosen_file);
 
   // Download cancel helper function.
-  // |process_handle| is passed by value because it is ultimately passed to
+  // |request_handle| is passed by value because it is ultimately passed to
   // other threads, and this way we don't have to worry about object lifetimes.
   void DownloadCancelledInternal(int download_id,
-                                 DownloadProcessHandle process_handle);
+                                 DownloadRequestHandle request_handle);
 
   // All data has been downloaded.
   // |hash| is sha256 hash for the downloaded file. It is empty when the hash
@@ -314,14 +313,6 @@ class DownloadManager
 
   // Updates the app icon about the overall download progress.
   void UpdateAppIcon();
-
-  // Makes the ResourceDispatcherHost pause/un-pause a download request.
-  // Called on the IO thread.
-  // |process_handle| is passed by value because this is called from other
-  // threads, and this way we don't have to worry about object lifetimes.
-  void PauseDownloadRequest(ResourceDispatcherHost* rdh,
-                            DownloadProcessHandle process_handle,
-                            bool pause);
 
   // Inform observers that the model has changed.
   void NotifyModelChanged();

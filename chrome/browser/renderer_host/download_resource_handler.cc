@@ -13,7 +13,7 @@
 #include "chrome/browser/download/download_create_info.h"
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_file_manager.h"
-#include "chrome/browser/download/download_process_handle.h"
+#include "chrome/browser/download/download_request_handle.h"
 #include "chrome/browser/download/download_util.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/global_request_id.h"
@@ -89,7 +89,8 @@ bool DownloadResourceHandler::OnResponseStarted(int request_id,
   info->state = DownloadItem::IN_PROGRESS;
   info->download_id = download_id_;
   info->has_user_gesture = request_info->has_user_gesture();
-  info->process_handle = DownloadProcessHandle(global_id_.child_id,
+  info->request_handle = DownloadRequestHandle(rdh_,
+                                               global_id_.child_id,
                                                render_view_id_,
                                                global_id_.request_id);
   info->content_disposition = content_disposition_;

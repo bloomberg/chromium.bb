@@ -21,7 +21,7 @@ DownloadFile::DownloadFile(const DownloadCreateInfo* info,
                info->received_bytes,
                info->save_info.file_stream),
       id_(info->download_id),
-      process_handle_(info->process_handle),
+      request_handle_(info->request_handle),
       download_manager_(download_manager) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 }
@@ -30,9 +30,9 @@ DownloadFile::~DownloadFile() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 }
 
-void DownloadFile::CancelDownloadRequest(ResourceDispatcherHost* rdh) {
+void DownloadFile::CancelDownloadRequest() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  download_util::CancelDownloadRequest(rdh, process_handle_);
+  request_handle_.CancelRequest();
 }
 
 DownloadManager* DownloadFile::GetDownloadManager() {
@@ -43,14 +43,10 @@ DownloadManager* DownloadFile::GetDownloadManager() {
 std::string DownloadFile::DebugString() const {
   return base::StringPrintf("{"
                             " id_ = " "%d"
-                            " child_id = " "%d"
-                            " request_id = " "%d"
-                            " render_view_id = " "%d"
+                            " request_handle = %s"
                             " Base File = %s"
                             " }",
                             id_,
-                            process_handle_.child_id(),
-                            process_handle_.request_id(),
-                            process_handle_.render_view_id(),
+                            request_handle_.DebugString().c_str(),
                             BaseFile::DebugString().c_str());
 }

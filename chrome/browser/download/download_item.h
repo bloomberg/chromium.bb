@@ -25,7 +25,7 @@
 #include "base/observer_list.h"
 #include "base/time.h"
 #include "base/timer.h"
-#include "chrome/browser/download/download_process_handle.h"
+#include "chrome/browser/download/download_request_handle.h"
 #include "chrome/browser/download/download_state_info.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
@@ -302,8 +302,8 @@ class DownloadItem : public NotificationObserver {
 
   DownloadHistoryInfo GetHistoryInfo() const;
   DownloadStateInfo state_info() const { return state_info_; }
-  const DownloadProcessHandle& process_handle() const {
-    return process_handle_;
+  const DownloadRequestHandle& request_handle() const {
+    return request_handle_;
   }
 
   // Returns the final target file path for the download.
@@ -360,9 +360,9 @@ class DownloadItem : public NotificationObserver {
   // State information used by the download manager.
   DownloadStateInfo state_info_;
 
-  // The handle to the process information.  Used for operations outside the
+  // The handle to the request information.  Used for operations outside the
   // download system.
-  DownloadProcessHandle process_handle_;
+  DownloadRequestHandle request_handle_;
 
   // Download ID assigned by DownloadResourceHandler.
   int32 download_id_;

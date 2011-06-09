@@ -154,7 +154,7 @@ DownloadItem::DownloadItem(DownloadManager* download_manager,
                   info.has_user_gesture, info.prompt_user_for_save_location,
                   info.path_uniquifier, false, false,
                   info.is_extension_install),
-      process_handle_(info.process_handle),
+      request_handle_(info.request_handle),
       download_id_(info.download_id),
       full_path_(info.path),
       url_chain_(info.url_chain),
@@ -499,7 +499,10 @@ void DownloadItem::Rename(const FilePath& full_path) {
 
 void DownloadItem::TogglePause() {
   DCHECK(IsInProgress());
-  download_manager_->PauseDownload(download_id_, !is_paused_);
+  if (is_paused_)
+    request_handle_.ResumeRequest();
+  else
+    request_handle_.PauseRequest();
   is_paused_ = !is_paused_;
   UpdateObservers();
 }

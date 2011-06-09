@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/download/base_file.h"
-#include "chrome/browser/download/download_process_handle.h"
+#include "chrome/browser/download/download_request_handle.h"
 #include "chrome/browser/download/download_types.h"
 
 struct DownloadCreateInfo;
@@ -29,7 +29,7 @@ class DownloadFile : public BaseFile {
   virtual ~DownloadFile();
 
   // Cancels the download request associated with this file.
-  void CancelDownloadRequest(ResourceDispatcherHost* rdh);
+  void CancelDownloadRequest();
 
   int id() const { return id_; }
   DownloadManager* GetDownloadManager();
@@ -41,9 +41,9 @@ class DownloadFile : public BaseFile {
   // the DownloadFileManager for its internal record keeping.
   int id_;
 
-  // The handle to the process information.  Used for operations outside the
+  // The handle to the request information.  Used for operations outside the
   // download system, specifically canceling a download.
-  DownloadProcessHandle process_handle_;
+  DownloadRequestHandle request_handle_;
 
   // DownloadManager this download belongs to.
   scoped_refptr<DownloadManager> download_manager_;
