@@ -1588,11 +1588,6 @@ bool RenderViewContextMenu::IsDevCommandEnabled(int id) const {
   if (active_entry->IsViewSourceMode())
     return false;
 
-  // Do not inspect Chrome URLs (chrome://network/, chrome://memory/, etc.).
-  // However, do inspect about:blank, which is often used by ordinary web pages.
-  if (active_entry->virtual_url().SchemeIs(chrome::kChromeUIScheme))
-    return false;
-
   if (id == IDC_CONTENT_CONTEXT_INSPECTELEMENT) {
     // Don't enable the web inspector if JavaScript is disabled.
     if (!profile_->GetPrefs()->GetBoolean(prefs::kWebKitJavascriptEnabled) ||
