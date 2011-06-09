@@ -155,9 +155,7 @@ void BrowsingDataFileSystemHelperImpl::NotifyInUIThread() {
 void BrowsingDataFileSystemHelperImpl::DeleteFileSystemOriginInFileThread(
     const GURL& origin) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  scoped_refptr<fileapi::FileSystemContext>
-      context(profile_->GetFileSystemContext());
-  context->DeleteDataForOriginOnFileThread(origin);
+  profile_->GetFileSystemContext()->DeleteDataForOriginOnFileThread(origin);
 }
 
 }  // namespace

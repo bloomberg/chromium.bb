@@ -2286,7 +2286,6 @@
         'browser/automation/automation_tab_helper_browsertest.cc',
         'browser/browser_browsertest.cc',
         'browser/browsing_data_database_helper_browsertest.cc',
-        'browser/browsing_data_file_system_helper_browsertest.cc',
         'browser/browsing_data_helper_browsertest.h',
         'browser/browsing_data_indexed_db_helper_browsertest.cc',
         'browser/browsing_data_local_storage_helper_browsertest.cc',
