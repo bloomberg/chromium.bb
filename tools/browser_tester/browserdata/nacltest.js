@@ -332,7 +332,7 @@ function assertArraysEqual(a, b, message, test_status) {
     dofail();
   }
   for (var i = 0; i < a.length; i++) {
-    if(a[i] !== b[i]) {
+    if (a[i] !== b[i]) {
       dofail();
     }
   }
@@ -518,7 +518,7 @@ function logLoadStatus(rpc, load_errors_are_test_errors, loaded, waiting) {
         return toString(waiting[j].lastError);
       });
     var msg = (name + ' did not load. Status: ' + ready + ' / ' + last);
-    if(load_errors_are_test_errors) {
+    if (load_errors_are_test_errors) {
       rpc.client_error(msg);
     } else {
       rpc.log(msg);
@@ -579,7 +579,7 @@ function TestStatus(tester, name, async) {
     try {
       callback.apply(undefined, args);
     } catch (err) {
-      if(typeof err == 'object' && 'type' in err) {
+      if (typeof err == 'object' && 'type' in err) {
         if (err.type == 'test_halt') {
           // New-style test
           // If we get this exception, we can assume any callbacks or next
@@ -660,8 +660,7 @@ function Tester(body_element) {
 
   var load_errors_are_test_errors = true;
 
-  // Logging that occurs before tests have started need this object.
-  this.currentTest = new TestStatus(this, undefined, false);
+  var parallel = false;
 
   //
   // BEGIN public interface
@@ -672,7 +671,7 @@ function Tester(body_element) {
   }
 
   this.log = function(message) {
-    this.currentTest.log(message);
+    this.rpc.log(message);
   }
 
   // If this kind of test exits cleanly, it passes
@@ -699,6 +698,11 @@ function Tester(body_element) {
     );
   }
 
+  this.runParallel = function() {
+    parallel = true;
+    this.run();
+  }
+
   // Takes an arbitrary number of arguments.
   this.waitFor = function() {
     for (var i = 0; i< arguments.length; i++) {
@@ -710,35 +714,49 @@ function Tester(body_element) {
   // END public interface
   //
 
-  this.initTest = function() {
-    if (this.testIndex < tests.length) {
-      // Setup for the next test.
-      var test = tests[this.testIndex];
-      var currentTest = new TestStatus(this, test.name, test.async)
-      this.currentTest = currentTest;
-      this.rpc.blankLine();
-      this.rpc.begin(this.currentTest.name);
+  this.launchTest = function(testIndex) {
+    var testDecl = tests[testIndex];
+    var currentTest = new TestStatus(this, testDecl.name, testDecl.async);
+    setTimeout(currentTest.wrap(function() {
+      this_.rpc.blankLine();
+      this_.rpc.begin(currentTest.name);
+      testDecl.callback(currentTest);
+    }), 0);
+  }
 
-      setTimeout(currentTest.wrap(function() {
-        test.callback(currentTest);
-      }), 0);
-    } else {
-      // There are no more test suites.
-      this.currentTest = new TestStatus(this, undefined, false);
-      this.rpc.blankLine();
-      this.rpc.shutdown();
-    }
+  this._done = function() {
+    this.rpc.blankLine();
+    this.rpc.shutdown();
   }
 
   this.startTesting = function() {
-    // if tests[0] does not exist (no tests), initTest will shut down testing.
-    this.testIndex = 0;
-    this.initTest();
+    if (tests.length == 0) {
+      // No tests specified.
+      this._done();
+      return;
+    }
+
+    this.testCount = 0;
+    if (parallel) {
+      // Launch all tests.
+      for (var i = 0; i < tests.length; i++) {
+        this.launchTest(i);
+      }
+    } else {
+      // Launch the first test.
+      this.launchTest(0);
+    }
   }
 
   this.testDone = function(test) {
-    // Advance to the next test suite
-    this.testIndex += 1;
-    this.initTest();
+    this.testCount += 1;
+    if (this.testCount < tests.length) {
+      if (!parallel) {
+        // Move on to the next test if they're being run one at a time.
+        this.launchTest(this.testCount);
+      }
+    } else {
+      this._done();
+    }
   }
 }

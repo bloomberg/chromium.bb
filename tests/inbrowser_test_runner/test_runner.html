@@ -14,108 +14,44 @@ Javascript has failed to load.
 
 <script type="text/javascript">
 
-// tools/selenium_tester.py polls nacllib.getStatus() to find out when
-// the test has completed.
-var selenium_status = 'WAIT';
-var log_text = '';
-nacllib = {
-  getMessage: function() {
-    return log_text;
-  },
-  getStatus: function() {
-    return selenium_status;
-  },
-};
+function addTest(tester, url) {
+  tester.addAsyncTest(url, function(status) {
+    var embed = document.createElement('embed');
+    embed.width = 0;
+    embed.height = 0;
+    embed.src = url;
+    embed.type = 'application/x-nacl';
+    embed.name = 'foo';
 
-var rpc = new RPCWrapper();
+    var div = document.createElement('div');
+    div.appendChild(embed);
 
-function log(message) {
-  log_text += message + '\n';
-}
+    // Wait for the load event, which indicates successful loading.
+    div.addEventListener('load', status.wrap(function(e) {
+      status.log('Loaded ' + embed.src);
+      // Make sure the plugin is working OK.
+      var result = embed.run_tests();
+      status.log(result);
+      status.assertEqual(result, 'passed');
+      status.pass();
+    }), true);
 
-function startProcess(url, callback) {
-  var embed = document.createElement('embed');
-  embed.width = 0;
-  embed.height = 0;
-  embed.src = url;
-  embed.type = 'application/x-nacl';
-  embed.name = 'foo';
+    div.addEventListener('error', status.wrap(function(e) {
+      status.fail(embed.lastError);
+    }), true);
 
-  var div = document.createElement('div');
-  div.appendChild(embed);
-  // Wait for the load event, which indicates successful loading.
-  div.addEventListener('load', (function(e) { callback(e.target) }) , true);
-
-  // Insert div into the DOM.  This starts the load of the nacl plugin, etc.
-  document.getElementById('scratch_space').appendChild(div);
-}
-
-function runTest(url, callback) {
-  rpc.begin(url);
-  log(url + ': running...');
-  startProcess(url, function(plugin) {
-    rpc.log(url, 'process has started...');
-    log(url + ': process has started...');
-    try {
-      var result = plugin.run_tests();
-      rpc.log(url, result);
-      log(url + ': ' + result);
-      if (result == 'passed') {
-        rpc.pass(url);
-        log(url + ': passed');
-      } else {
-        rpc.fail(url, result);
-        log(url + ': failed: ' + result);
-      }
-      callback(result == 'passed');
-    } catch(e) {
-      rpc.exception(url, e);
-      log(url + ': failed with exception: ' + result);
-      callback(false);
-    }
+    // Insert div into the DOM.  This starts the load of the nacl plugin, etc.
+    document.getElementById('scratch_space').appendChild(div);
   });
 }
 
-function runAllTests() {
-  // Remove the "failed to load" message.
-  document.getElementById('load_warning').innerHTML = '';
-  log('Starting NaCl test runner...');
+// Remove the "failed to load" message.
+document.getElementById('load_warning').innerHTML = '';
 
-  var test_count = 0;
-  var failed_count = 0;
-  var finished_count = 0;
-
-  function onCompletion(passed) {
-    finished_count++;
-    if (!passed) {
-      failed_count++;
-    }
-
-    if (finished_count == test_count) {
-      log('Ran ' + test_count + ' tests');
-      if (failed_count == 0) {
-        log('PASSED');
-        selenium_status = 'SUCCESS';
-      } else {
-        log(failed_count + ' FAILURE(S)');
-        selenium_status = 'FAILED';
-      }
-      rpc.blankLine();
-      rpc.shutdown();
-    }
-  }
-  function addTest(url) {
-    test_count++;
-    runTest(url, onCompletion);
-  }
-
-  rpc.startup();
-  rpc.blankLine();
-  addTest('dynamic_load_test.nmf');
-  addTest('dynamic_modify_test.nmf');
-  addTest('imc_shm_mmap_test.nmf');
-}
-
-window.onload = runAllTests;
+var tester = new Tester();
+addTest(tester, 'dynamic_load_test.nmf');
+addTest(tester, 'dynamic_modify_test.nmf');
+addTest(tester, 'imc_shm_mmap_test.nmf');
+tester.runParallel();
 
 </script>
