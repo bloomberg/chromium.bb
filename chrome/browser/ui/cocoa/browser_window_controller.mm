@@ -264,13 +264,9 @@
     // Note that this may leave a significant portion of the window
     // offscreen, but there will always be enough window onscreen to
     // drag the whole window back into view.
-    NSSize minSize = [[self window] minSize];
     gfx::Rect desiredContentRect = browser_->GetSavedWindowBounds();
     gfx::Rect windowRect = desiredContentRect;
-    if (windowRect.width() < minSize.width)
-      windowRect.set_width(minSize.width);
-    if (windowRect.height() < minSize.height)
-      windowRect.set_height(minSize.height);
+    windowRect = [self enforceMinWindowSize:windowRect];
 
     // When we are given x/y coordinates of 0 on a created popup window, assume
     // none were given by the window.open() command.
@@ -415,6 +411,13 @@
   return self;
 }
 
+- (void)awakeFromNib {
+  // Set different minimum sizes on tabbed windows vs non-tabbed, e.g. popups.
+  NSSize minSize = [self isTabbedWindow] ?
+      NSMakeSize(400, 272) : NSMakeSize(100, 122);
+  [[self window] setMinSize:minSize];
+}
+
 - (void)dealloc {
   browser_->CloseAllTabs();
   [downloadShelfController_ exiting];
@@ -432,6 +435,18 @@
   [[NSNotificationCenter defaultCenter] removeObserver:self];
 
   [super dealloc];
+}
+
+- (gfx::Rect)enforceMinWindowSize:(gfx::Rect)bounds {
+  gfx::Rect checkedBounds = bounds;
+
+  NSSize minSize = [[self window] minSize];
+  if (bounds.width() < minSize.width)
+      checkedBounds.set_width(minSize.width);
+  if (bounds.height() < minSize.height)
+      checkedBounds.set_height(minSize.height);
+
+  return checkedBounds;
 }
 
 - (BrowserWindow*)browserWindow {

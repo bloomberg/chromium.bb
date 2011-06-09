@@ -76,13 +76,16 @@ void BrowserWindowCocoa::ShowInactive() {
 }
 
 void BrowserWindowCocoa::SetBounds(const gfx::Rect& bounds) {
+  gfx::Rect real_bounds = [controller_ enforceMinWindowSize:bounds];
+
   SetFullscreen(false);
-  NSRect cocoa_bounds = NSMakeRect(bounds.x(), 0, bounds.width(),
-                                   bounds.height());
+  NSRect cocoa_bounds = NSMakeRect(real_bounds.x(), 0,
+                                   real_bounds.width(),
+                                   real_bounds.height());
   // Flip coordinates based on the primary screen.
   NSScreen* screen = [[NSScreen screens] objectAtIndex:0];
   cocoa_bounds.origin.y =
-      [screen frame].size.height - bounds.height() - bounds.y();
+      [screen frame].size.height - real_bounds.height() - real_bounds.y();
 
   [window() setFrame:cocoa_bounds display:YES];
 }

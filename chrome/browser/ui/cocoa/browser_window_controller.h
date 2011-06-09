@@ -25,6 +25,7 @@
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #import "chrome/browser/ui/cocoa/url_drop_target.h"
 #import "chrome/browser/ui/cocoa/view_resizer.h"
+#include "ui/gfx/rect.h"
 
 
 class Browser;
@@ -146,6 +147,9 @@ class TabContents;
 // Call to make the browser go away from other places in the cross-platform
 // code.
 - (void)destroyBrowser;
+
+// Ensure bounds for the window abide by the minimum window size.
+- (gfx::Rect)enforceMinWindowSize:(gfx::Rect)bounds;
 
 // Access the C++ bridge between the NSWindow and the rest of Chromium.
 - (BrowserWindow*)browserWindow;

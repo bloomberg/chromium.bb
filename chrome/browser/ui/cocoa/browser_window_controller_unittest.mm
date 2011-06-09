@@ -132,6 +132,56 @@ TEST_F(BrowserWindowControllerTest, TestNormal) {
   [controller close];
 }
 
+TEST_F(BrowserWindowControllerTest, TestSetBounds) {
+  // Create a normal browser with bounds smaller than the minimum.
+  Browser::CreateParams params(Browser::TYPE_TABBED, browser_helper_.profile());
+  params.initial_bounds = gfx::Rect(0, 0, 50, 50);
+  Browser* browser = Browser::CreateWithParams(params);
+  NSWindow *cocoaWindow = browser->window()->GetNativeHandle();
+  BrowserWindowController* controller =
+    static_cast<BrowserWindowController*>([cocoaWindow windowController]);
+
+  ASSERT_TRUE([controller isTabbedWindow]);
+  BrowserWindow* browser_window = [controller browserWindow];
+  EXPECT_EQ(browser_window, browser->window());
+  gfx::Rect bounds = browser_window->GetBounds();
+  EXPECT_EQ(400, bounds.width());
+  EXPECT_EQ(272, bounds.height());
+
+  // Try to set the bounds smaller than the minimum.
+  browser_window->SetBounds(gfx::Rect(0, 0, 50, 50));
+  bounds = browser_window->GetBounds();
+  EXPECT_EQ(400, bounds.width());
+  EXPECT_EQ(272, bounds.height());
+
+  [controller close];
+}
+
+TEST_F(BrowserWindowControllerTest, TestSetBoundsPopup) {
+  // Create a popup with bounds smaller than the minimum.
+  Browser::CreateParams params(Browser::TYPE_POPUP, browser_helper_.profile());
+  params.initial_bounds = gfx::Rect(0, 0, 50, 50);
+  Browser* browser = Browser::CreateWithParams(params);
+  NSWindow *cocoaWindow = browser->window()->GetNativeHandle();
+  BrowserWindowController* controller =
+    static_cast<BrowserWindowController*>([cocoaWindow windowController]);
+
+  ASSERT_FALSE([controller isTabbedWindow]);
+  BrowserWindow* browser_window = [controller browserWindow];
+  EXPECT_EQ(browser_window, browser->window());
+  gfx::Rect bounds = browser_window->GetBounds();
+  EXPECT_EQ(100, bounds.width());
+  EXPECT_EQ(122, bounds.height());
+
+  // Try to set the bounds smaller than the minimum.
+  browser_window->SetBounds(gfx::Rect(0, 0, 50, 50));
+  bounds = browser_window->GetBounds();
+  EXPECT_EQ(100, bounds.width());
+  EXPECT_EQ(122, bounds.height());
+
+  [controller close];
+}
+
 TEST_F(BrowserWindowControllerTest, TestTheme) {
   [controller_ userChangedTheme];
 }
