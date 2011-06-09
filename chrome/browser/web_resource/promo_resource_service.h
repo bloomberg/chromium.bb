@@ -11,8 +11,6 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/web_resource/web_resource_service.h"
 
-class Profile;
-
 namespace PromoResourceServiceUtil {
 
 // Certain promotions should only be shown to certain classes of users. This

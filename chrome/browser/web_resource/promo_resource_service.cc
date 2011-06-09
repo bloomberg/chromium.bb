@@ -112,7 +112,8 @@ bool PromoResourceService::IsBuildTargeted(platform_util::Channel channel,
 }
 
 PromoResourceService::PromoResourceService(Profile* profile)
-    : WebResourceService(profile->GetPrefs(),
+    : WebResourceService(profile,
+                         profile->GetPrefs(),
                          PromoResourceService::kDefaultPromoResourceServer,
                          true,  // append locale to URL
                          NotificationType::PROMO_RESOURCE_STATE_CHANGED,
