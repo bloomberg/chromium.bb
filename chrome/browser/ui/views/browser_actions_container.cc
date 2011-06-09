@@ -42,7 +42,8 @@
 #include "ui/gfx/canvas_skia.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/button/text_button.h"
-#include "views/controls/menu/menu_2.h"
+#include "views/controls/menu/menu_item_view.h"
+#include "views/controls/menu/menu_model_adapter.h"
 #include "views/drag_utils.h"
 #include "views/metrics.h"
 #include "views/window/window.h"
@@ -66,8 +67,8 @@ BrowserActionButton::BrowserActionButton(const Extension* extension,
       browser_action_(extension->browser_action()),
       extension_(extension),
       ALLOW_THIS_IN_INITIALIZER_LIST(tracker_(this)),
-      showing_context_menu_(false),
-      panel_(panel) {
+      panel_(panel),
+      context_menu_(NULL) {
   set_border(NULL);
   set_alignment(TextButton::ALIGN_CENTER);
 
@@ -79,8 +80,8 @@ BrowserActionButton::BrowserActionButton(const Extension* extension,
 }
 
 void BrowserActionButton::Destroy() {
-  if (showing_context_menu_) {
-    context_menu_menu_->CancelMenu();
+  if (context_menu_) {
+    context_menu_->Cancel();
     MessageLoop::current()->DeleteSoon(FROM_HERE, this);
   } else {
     delete this;
@@ -215,19 +216,12 @@ bool BrowserActionButton::OnMousePressed(const views::MouseEvent& event) {
         MenuButton::OnMousePressed(event) : TextButton::OnMousePressed(event);
   }
 
-  // Get the top left point of this button in screen coordinates.
-  gfx::Point point = gfx::Point(0, 0);
-  ConvertPointToScreen(this, &point);
-
-  // Make the menu appear below the button.
-  point.Offset(0, height());
-
-  ShowContextMenu(point, true);
+  ShowContextMenu(gfx::Point(), true);
   return false;
 }
 
 void BrowserActionButton::OnMouseReleased(const views::MouseEvent& event) {
-  if (IsPopup() || showing_context_menu_) {
+  if (IsPopup() || context_menu_) {
     // TODO(erikkay) this never actually gets called (probably because of the
     // loss of focus).
     MenuButton::OnMouseReleased(event);
@@ -237,7 +231,7 @@ void BrowserActionButton::OnMouseReleased(const views::MouseEvent& event) {
 }
 
 void BrowserActionButton::OnMouseExited(const views::MouseEvent& event) {
-  if (IsPopup() || showing_context_menu_)
+  if (IsPopup() || context_menu_)
     MenuButton::OnMouseExited(event);
   else
     TextButton::OnMouseExited(event);
@@ -253,17 +247,23 @@ void BrowserActionButton::ShowContextMenu(const gfx::Point& p,
   if (!extension()->ShowConfigureContextMenus())
     return;
 
-  showing_context_menu_ = true;
   SetButtonPushed();
 
   // Reconstructs the menu every time because the menu's contents are dynamic.
-  context_menu_contents_ =
-      new ExtensionContextMenuModel(extension(), panel_->browser(), panel_);
-  context_menu_menu_.reset(new views::Menu2(context_menu_contents_.get()));
-  context_menu_menu_->RunContextMenuAt(p);
+  scoped_refptr<ExtensionContextMenuModel> context_menu_contents_(
+      new ExtensionContextMenuModel(extension(), panel_->browser(), panel_));
+  views::MenuModelAdapter menu_model_adapter(context_menu_contents_.get());
+  views::MenuItemView menu(&menu_model_adapter);
+  menu_model_adapter.BuildMenu(&menu);
+
+  context_menu_ = &menu;
+  gfx::Point screen_loc;
+  views::View::ConvertPointToScreen(this, &screen_loc);
+  context_menu_->RunMenuAt(GetWidget()->GetNativeWindow(), NULL,
+      gfx::Rect(screen_loc, size()), views::MenuItemView::TOPLEFT, true);
 
   SetButtonNotPushed();
-  showing_context_menu_ = false;
+  context_menu_ = NULL;
 }
 
 void BrowserActionButton::SetButtonPushed() {
