@@ -137,9 +137,9 @@ void InputMethodMenuButton::UpdateUI(const std::string& input_method_id,
   if (WindowIsActive()) {
     // We don't call these functions if the |current_window| is not active since
     // the calls are relatively expensive (crosbug.com/9206). Please note that
-    // PrepareMenu() is necessary for fixing crosbug.com/7522 when the window
-    // is active.
-    menu_->PrepareMenu();
+    // PrepareMenuModel() is necessary for fixing crosbug.com/7522 when the
+    // window is active.
+    menu_->PrepareMenuModel();
     SchedulePaint();
   }
 

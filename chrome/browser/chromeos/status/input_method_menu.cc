@@ -22,7 +22,11 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "views/controls/menu/menu_model_adapter.h"
+#include "views/controls/menu/submenu_view.h"
+#include "views/window/window.h"
 
 // The language menu consists of 3 parts (in this order):
 //
@@ -128,11 +132,10 @@ InputMethodMenu::InputMethodMenu(PrefService* pref_service,
     : input_method_descriptors_(CrosLibrary::Get()->GetInputMethodLibrary()->
                                 GetActiveInputMethods()),
       model_(NULL),
-      // Be aware that the constructor of |input_method_menu_| calls
-      // GetItemCount() in this class. Therefore, GetItemCount() have to return
-      // 0 when |model_| is NULL.
-      ALLOW_THIS_IN_INITIALIZER_LIST(input_method_menu_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(input_method_menu_delegate_(
+          new views::MenuModelAdapter(this))),
       minimum_input_method_menu_width_(0),
+      menu_alignment_(views::MenuItemView::TOPRIGHT),
       pref_service_(pref_service),
       screen_mode_(screen_mode),
       for_out_of_box_experience_dialog_(for_out_of_box_experience_dialog) {
@@ -367,10 +370,30 @@ void InputMethodMenu::ActivatedAt(int index) {
 ////////////////////////////////////////////////////////////////////////////////
 // views::ViewMenuDelegate implementation:
 
-void InputMethodMenu::RunMenu(
-    views::View* unused_source, const gfx::Point& pt) {
+void InputMethodMenu::RunMenu(views::View* source, const gfx::Point& pt) {
   PrepareForMenuOpen();
-  input_method_menu_.RunMenuAt(pt, views::Menu2::ALIGN_TOPRIGHT);
+
+  views::MenuItemView menu(input_method_menu_delegate_.get());
+  input_method_menu_delegate_->BuildMenu(&menu);
+  if (minimum_input_method_menu_width_ > 0) {
+    DCHECK(menu.HasSubmenu());
+    views::SubmenuView* submenu = menu.GetSubmenu();
+    submenu->set_minimum_preferred_width(minimum_input_method_menu_width_);
+  }
+
+  // TODO(rhashimoto): Remove this workaround when WebUI provides a
+  // top-level widget on the ChromeOS login screen that is a window.
+  // The current BackgroundView class for the ChromeOS login screen
+  // creates a owning Widget that has a native GtkWindow but is not a
+  // Window.  This makes it impossible to get the NativeWindow via
+  // the views API.  This workaround casts the top-level NativeWidget
+  // to a NativeWindow that we can pass to MenuItemView::RunMenuAt().
+  gfx::NativeWindow window = GTK_WINDOW(source->GetWidget()->GetNativeView());
+
+  menu.RunMenuAt(window, NULL,
+                 gfx::Rect(pt, gfx::Size(0, 0)),
+                 menu_alignment_,
+                 true);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -452,17 +475,13 @@ void InputMethodMenu::FirstObserverIsAdded(InputMethodLibrary* obj) {
 
 void InputMethodMenu::PrepareForMenuOpen() {
   UserMetrics::RecordAction(UserMetricsAction("LanguageMenuButton_Open"));
-  PrepareMenu();
+  PrepareMenuModel();
 }
 
-void InputMethodMenu::PrepareMenu() {
+void InputMethodMenu::PrepareMenuModel() {
   input_method_descriptors_.reset(CrosLibrary::Get()->GetInputMethodLibrary()->
                                   GetActiveInputMethods());
   RebuildModel();
-  input_method_menu_.Rebuild();
-  if (minimum_input_method_menu_width_ > 0) {
-    input_method_menu_.SetMinimumWidth(minimum_input_method_menu_width_);
-  }
 }
 
 void InputMethodMenu::ActiveInputMethodsChanged(
@@ -520,6 +539,9 @@ void InputMethodMenu::RebuildModel() {
     model_->AddRadioItem(COMMAND_ID_CUSTOMIZE_LANGUAGE, dummy_label,
                          0 /* dummy */);
   }
+
+  // Wrap new model with views::MenuDelegate interface.
+  input_method_menu_delegate_.reset(new views::MenuModelAdapter(this));
 }
 
 bool InputMethodMenu::IndexIsInInputMethodList(int index) const {

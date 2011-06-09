@@ -14,12 +14,20 @@
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_type.h"
-#include "ui/base/models/simple_menu_model.h"
-#include "views/controls/menu/menu_2.h"
+#include "ui/base/models/menu_model.h"
+#include "views/controls/menu/menu_item_view.h"
 #include "views/controls/menu/view_menu_delegate.h"
 
 class PrefService;
 class SkBitmap;
+
+namespace ui {
+class SimpleMenuModel;
+}  // namespace ui
+
+namespace views {
+class MenuModelAdapter;
+}  // namespace views
 
 namespace chromeos {
 
@@ -59,8 +67,7 @@ class InputMethodMenu : public views::ViewMenuDelegate,
 
   // views::ViewMenuDelegate implementation. Sub classes can override the method
   // to adjust the position of the menu.
-  virtual void RunMenu(views::View* unused_source,
-                       const gfx::Point& pt);
+  virtual void RunMenu(views::View* source, const gfx::Point& pt);
 
   // InputMethodLibrary::Observer implementation.
   virtual void InputMethodChanged(
@@ -85,11 +92,16 @@ class InputMethodMenu : public views::ViewMenuDelegate,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
+  // Specify menu alignment (default TOPRIGHT).
+  void set_menu_alignment(views::MenuItemView::AnchorPosition menu_alignment) {
+    menu_alignment_ = menu_alignment;
+  }
+
   // Sets the minimum width of the dropdown menu.
   void SetMinimumWidth(int width);
 
-  // Rebuilds model and menu2 objects.
-  void PrepareMenu();
+  // Rebuilds menu model.
+  void PrepareMenuModel();
 
   // Registers input method preferences for the login screen.
   static void RegisterPrefs(PrefService* local_state);
@@ -106,11 +118,6 @@ class InputMethodMenu : public views::ViewMenuDelegate,
  protected:
   // Prepares menu: saves user metrics and rebuilds.
   void PrepareForMenuOpen();
-
-  // Returns menu2 object for language menu.
-  views::Menu2& input_method_menu() {
-    return input_method_menu_;
-  }
 
  private:
   // Updates UI of a container of the menu (e.g. the "US" menu button in the
@@ -159,12 +166,15 @@ class InputMethodMenu : public views::ViewMenuDelegate,
 
   // We borrow ui::SimpleMenuModel implementation to maintain the current
   // content of the pop-up menu. The ui::MenuModel is implemented using this
-  // |model_|.
+  // |model_|.  The MenuModelAdapter wraps the model with the
+  // views::MenuDelegate interface required for MenuItemView.
   scoped_ptr<ui::SimpleMenuModel> model_;
+  scoped_ptr<views::MenuModelAdapter> input_method_menu_delegate_;
 
-  // The language menu which pops up when the button in status area is clicked.
-  views::Menu2 input_method_menu_;
   int minimum_input_method_menu_width_;
+
+  // Menu alignment (default TOPRIGHT).
+  views::MenuItemView::AnchorPosition menu_alignment_;
 
   PrefService* pref_service_;
   NotificationRegistrar registrar_;

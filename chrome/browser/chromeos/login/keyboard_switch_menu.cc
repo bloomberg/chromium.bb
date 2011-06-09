@@ -40,17 +40,20 @@ bool KeyboardSwitchMenu::ShouldSupportConfigUI() {
 ////////////////////////////////////////////////////////////////////////////////
 // views::ViewMenuDelegate implementation.
 void KeyboardSwitchMenu::RunMenu(views::View* source, const gfx::Point& pt) {
-  PrepareForMenuOpen();
   gfx::Point new_pt(pt);
   views::MenuButton* button = static_cast<views::MenuButton*>(source);
-  // Keyboard switch menu is aligned on left by default.
+  // Keyboard switch menu is aligned on left by default.  MenuButton passes
+  // in pt the lower left corner for RTL and the lower right corner for
+  // non-RTL (with menu_offset applied).
   int reverse_offset = button->width() + button->menu_offset().x() * 2;
   if (base::i18n::IsRTL()) {
     new_pt.set_x(pt.x() + reverse_offset);
   } else {
     new_pt.set_x(pt.x() - reverse_offset);
   }
-  input_method_menu().RunMenuAt(new_pt, views::Menu2::ALIGN_TOPLEFT);
+
+  set_menu_alignment(views::MenuItemView::TOPLEFT);
+  InputMethodMenu::RunMenu(source, new_pt);
 }
 
 string16 KeyboardSwitchMenu::GetCurrentKeyboardName() const {
