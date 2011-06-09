@@ -172,16 +172,17 @@ PNACL_ROOT = 'toolchain/pnacl_linux_x86_64'
 
 PNACL_LLVM_GCC = PNACL_ROOT + '/bin/pnacl-gcc'
 
-PNACL_LD = PNACL_ROOT + '/bin/pnacl-ld'
-
-PNACL_LIB_DIR = PNACL_ROOT + '/libs-bitcode/'
+# NOTE: Our driver supports going from .c to .nexe in one go
+#       but it maybe useful to inspect the bitcode file so we
+#       split the compilation into two steps.
+PNACL_LD = PNACL_ROOT + '/bin/pnacl-gcc'
 
 COMMANDS_llvm_pnacl_arm = [
     ('compile-bc',
      '%(CC)s %(src)s %(CFLAGS)s -c -o %(tmp)s.bc',
      ),
     ('translate-arm',
-     '%(LD)s %(tmp)s.bc -o %(tmp)s.nexe  -L%(LIB_DIR)s -lc -lnacl -lnosys',
+     '%(LD)s %(tmp)s.bc -o %(tmp)s.nexe',
      ),
     ('qemu-sel_ldr',
      '%(EMU)s run %(SEL_LDR)s -Q %(tmp)s.nexe',
@@ -197,7 +198,6 @@ TOOLCHAIN_CONFIGS['llvm_pnacl_arm_O0'] = ToolchainConfig(
     LD = PNACL_LD + ' -arch arm',
     EMU = EMU_SCRIPT,
     SEL_LDR = SEL_LDR_ARM,
-    LIB_DIR = PNACL_LIB_DIR,
     CFLAGS = '-O0 -static ' + GLOBAL_CFLAGS)
 
 
@@ -209,8 +209,7 @@ TOOLCHAIN_CONFIGS['llvm_pnacl_arm_O9'] = ToolchainConfig(
     LD = PNACL_LD  + ' -arch arm',
     EMU = EMU_SCRIPT,
     SEL_LDR = SEL_LDR_ARM,
-    LIB_DIR = PNACL_LIB_DIR,
-    CFLAGS = '-09 -static ' + GLOBAL_CFLAGS)
+    CFLAGS = '-O9 -static ' + GLOBAL_CFLAGS)
 
 ######################################################################
 # PNACL + SEL_LDR [X8632]
@@ -222,7 +221,7 @@ COMMANDS_llvm_pnacl_x86_O0 = [
      '%(CC)s %(src)s %(CFLAGS)s -c -o %(tmp)s.bc',
      ),
     ('translate-x8632',
-     '%(LD)s %(tmp)s.bc -o %(tmp)s.nexe  -L%(LIB_DIR)s',
+     '%(LD)s %(tmp)s.bc -o %(tmp)s.nexe ',
      ),
     ('sel_ldr',
      '%(SEL_LDR)s %(tmp)s.nexe',
@@ -237,8 +236,16 @@ TOOLCHAIN_CONFIGS['llvm_pnacl_x8632_O0'] = ToolchainConfig(
     CC = PNACL_LLVM_GCC,
     LD = PNACL_LD + ' -arch x86-32',
     SEL_LDR = SEL_LDR_X32,
-    LIB_DIR = PNACL_LIB_DIR,
     CFLAGS = '-O0 -static ' + GLOBAL_CFLAGS)
+
+TOOLCHAIN_CONFIGS['llvm_pnacl_x8632_O9'] = ToolchainConfig(
+    desc='pnacl llvm [x8632]',
+    commands=COMMANDS_llvm_pnacl_x86_O0,
+    tools_needed=[PNACL_LLVM_GCC, PNACL_LD, SEL_LDR_X32],
+    CC = PNACL_LLVM_GCC,
+    LD = PNACL_LD + ' -arch x86-32',
+    SEL_LDR = SEL_LDR_X32,
+    CFLAGS = '-O9 -static ' + GLOBAL_CFLAGS)
 
 ######################################################################
 # PNACL + SEL_LDR [X8664]
@@ -252,5 +259,13 @@ TOOLCHAIN_CONFIGS['llvm_pnacl_x8664_O0'] = ToolchainConfig(
     CC = PNACL_LLVM_GCC,
     LD = PNACL_LD + ' -arch x86-64',
     SEL_LDR = SEL_LDR_X64,
-    LIB_DIR = PNACL_LIB_DIR,
     CFLAGS = '-O0 -static ' + GLOBAL_CFLAGS)
+
+TOOLCHAIN_CONFIGS['llvm_pnacl_x8664_O9'] = ToolchainConfig(
+    desc='pnacl llvm [x8664]',
+    commands=COMMANDS_llvm_pnacl_x86_O0,
+    tools_needed=[PNACL_LLVM_GCC, PNACL_LD, SEL_LDR_X64],
+    CC = PNACL_LLVM_GCC,
+    LD = PNACL_LD + ' -arch x86-64',
+    SEL_LDR = SEL_LDR_X64,
+    CFLAGS = '-O9 -static ' + GLOBAL_CFLAGS)
