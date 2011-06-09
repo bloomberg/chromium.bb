@@ -127,7 +127,7 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
   ssl_helper_.reset(new TabContentsSSLHelper(this));
   content_settings_.reset(new TabSpecificContentSettings(contents));
   translate_tab_helper_.reset(new TranslateTabHelper(contents));
-  print_view_manager_.reset(new printing::PrintViewManager(contents));
+  print_view_manager_.reset(new printing::PrintViewManager(this));
 
   // Create the per-tab observers.
   external_protocol_observer_.reset(new ExternalProtocolObserver(contents));

@@ -14,7 +14,7 @@
 #include "printing/printed_pages_source.h"
 
 class RenderViewHost;
-class TabContents;
+class TabContentsWrapper;
 struct PrintHostMsg_DidPrintPage_Params;
 
 namespace printing {
@@ -29,7 +29,7 @@ class PrintViewManager : public NotificationObserver,
                          public PrintedPagesSource,
                          public TabContentsObserver {
  public:
-  explicit PrintViewManager(TabContents* tab_contents);
+  explicit PrintViewManager(TabContentsWrapper* tab);
   virtual ~PrintViewManager();
 
   // Override the title for this PrintViewManager's PrintJobs using the title
@@ -118,6 +118,9 @@ class PrintViewManager : public NotificationObserver,
   // control flow, print_job_ is initialized whenever possible. No-op is
   // print_job_ is initialized.
   bool OpportunisticallyCreatePrintJob(int cookie);
+
+  // TabContentsWrapper we're associated with.
+  TabContentsWrapper* tab_;
 
   NotificationRegistrar registrar_;
 

@@ -11,6 +11,7 @@
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/printing/printer_query.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/print_preview_ui.h"
 #include "chrome/common/print_messages.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -40,8 +41,9 @@ string16 GenerateRenderSourceName(TabContents* tab_contents) {
 
 namespace printing {
 
-PrintViewManager::PrintViewManager(TabContents* tab_contents)
-    : TabContentsObserver(tab_contents),
+PrintViewManager::PrintViewManager(TabContentsWrapper* tab)
+    : TabContentsObserver(tab->tab_contents()),
+      tab_(tab),
       number_pages_(0),
       printing_succeeded_(false),
       inside_inner_message_loop_(false),
@@ -226,7 +228,7 @@ void PrintViewManager::OnNotifyPrintJobEvent(
 
       NotificationService::current()->Notify(
           NotificationType::PRINT_JOB_RELEASED,
-          Source<TabContents>(tab_contents()),
+          Source<TabContentsWrapper>(tab_),
           NotificationService::NoDetails());
       break;
     }
@@ -256,7 +258,7 @@ void PrintViewManager::OnNotifyPrintJobEvent(
 
       NotificationService::current()->Notify(
           NotificationType::PRINT_JOB_RELEASED,
-          Source<TabContents>(tab_contents()),
+          Source<TabContentsWrapper>(tab_),
           NotificationService::NoDetails());
       break;
     }

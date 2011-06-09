@@ -792,7 +792,7 @@ class NotificationType {
     PRINT_JOB_EVENT,
 
     // Sent when a PrintJob has been released.
-    // Source is the TabContents that holds the print job.
+    // Source is the TabContentsWrapper that holds the print job.
     PRINT_JOB_RELEASED,
 
     // Shutdown ----------------------------------------------------------------
