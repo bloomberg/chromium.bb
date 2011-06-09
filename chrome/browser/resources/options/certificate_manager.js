@@ -202,6 +202,7 @@ cr.define('options', function() {
     handleVisibleChange_: function(e) {
       if (!this.initalized_ && this.visible) {
         this.initalized_ = true;
+        OptionsPage.showTab($('personal-certs-nav-tab'));
         chrome.send('populateCertificateManager');
       }
 

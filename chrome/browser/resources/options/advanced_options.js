@@ -76,7 +76,6 @@ var OptionsPage = options.OptionsPage;
       } else {
         $('certificatesManageButton').onclick = function(event) {
           OptionsPage.navigateToPage('certificates');
-          OptionsPage.showTab($('personal-certs-nav-tab'));
           chrome.send('coreOptionsUserMetricsAction',
                       ['Options_ManageSSLCertificates']);
         };
