@@ -549,7 +549,7 @@ TEST_F(TabStripModelTest, TestBasicAPI) {
 
   // Test Getters
   {
-    EXPECT_EQ(contents2, tabstrip.GetSelectedTabContents());
+    EXPECT_EQ(contents2, tabstrip.GetActiveTabContents());
     EXPECT_EQ(contents2, tabstrip.GetTabContentsAt(0));
     EXPECT_EQ(contents1, tabstrip.GetTabContentsAt(1));
     EXPECT_EQ(0, tabstrip.GetIndexOfTabContents(contents2));
@@ -794,7 +794,7 @@ TEST_F(TabStripModelTest, TestInsertionIndexDetermination) {
                                TabStripModel::ADD_ACTIVE |
                                TabStripModel::ADD_INHERIT_GROUP);
   EXPECT_EQ(1, tabstrip.active_index());
-  EXPECT_EQ(fg_link_contents, tabstrip.GetSelectedTabContents());
+  EXPECT_EQ(fg_link_contents, tabstrip.GetActiveTabContents());
 
   // Now close this contents. The selection should move to the opener contents.
   tabstrip.CloseSelectedTabs();
@@ -812,7 +812,7 @@ TEST_F(TabStripModelTest, TestInsertionIndexDetermination) {
   // to be forgotten...
   tabstrip.ActivateTabAt(tabstrip.count() - 1, true);
   EXPECT_EQ(tabstrip.count() - 1, tabstrip.active_index());
-  EXPECT_EQ(fg_nonlink_contents, tabstrip.GetSelectedTabContents());
+  EXPECT_EQ(fg_nonlink_contents, tabstrip.GetActiveTabContents());
 
   // Verify that all opener relationships are forgotten.
   EXPECT_EQ(-1, tabstrip.GetIndexOfNextTabContentsOpenedBy(opener, 2, false));
@@ -1103,7 +1103,7 @@ TEST_F(TabStripModelTest, TestContextMenuCloseCommands) {
 
   tabstrip.ExecuteContextMenuCommand(0, TabStripModel::CommandCloseTabsToRight);
   EXPECT_EQ(1, tabstrip.count());
-  EXPECT_EQ(opener_contents, tabstrip.GetSelectedTabContents());
+  EXPECT_EQ(opener_contents, tabstrip.GetActiveTabContents());
 
   TabContentsWrapper* dummy_contents = CreateTabContents();
   tabstrip.AppendTabContents(dummy_contents, false);
@@ -1116,12 +1116,12 @@ TEST_F(TabStripModelTest, TestContextMenuCloseCommands) {
 
   int dummy_index = tabstrip.count() - 1;
   tabstrip.ActivateTabAt(dummy_index, true);
-  EXPECT_EQ(dummy_contents, tabstrip.GetSelectedTabContents());
+  EXPECT_EQ(dummy_contents, tabstrip.GetActiveTabContents());
 
   tabstrip.ExecuteContextMenuCommand(dummy_index,
                                      TabStripModel::CommandCloseOtherTabs);
   EXPECT_EQ(1, tabstrip.count());
-  EXPECT_EQ(dummy_contents, tabstrip.GetSelectedTabContents());
+  EXPECT_EQ(dummy_contents, tabstrip.GetActiveTabContents());
 
   tabstrip.CloseAllTabs();
   EXPECT_TRUE(tabstrip.empty());
@@ -1230,13 +1230,13 @@ TEST_F(TabStripModelTest, AddTabContents_MiddleClickLinksAndClose) {
   // TabContents.
   tabstrip.ActivateTabAt(2, true);
   tabstrip.CloseSelectedTabs();
-  EXPECT_EQ(middle_click_contents3, tabstrip.GetSelectedTabContents());
+  EXPECT_EQ(middle_click_contents3, tabstrip.GetActiveTabContents());
   tabstrip.CloseSelectedTabs();
-  EXPECT_EQ(middle_click_contents1, tabstrip.GetSelectedTabContents());
+  EXPECT_EQ(middle_click_contents1, tabstrip.GetActiveTabContents());
   tabstrip.CloseSelectedTabs();
-  EXPECT_EQ(homepage_contents, tabstrip.GetSelectedTabContents());
+  EXPECT_EQ(homepage_contents, tabstrip.GetActiveTabContents());
   tabstrip.CloseSelectedTabs();
-  EXPECT_EQ(typed_page_contents, tabstrip.GetSelectedTabContents());
+  EXPECT_EQ(typed_page_contents, tabstrip.GetActiveTabContents());
 
   EXPECT_EQ(1, tabstrip.count());
 
@@ -1280,12 +1280,12 @@ TEST_F(TabStripModelTest, AddTabContents_LeftClickPopup) {
   EXPECT_EQ(typed_page_contents, tabstrip.GetTabContentsAt(2));
 
   // The newly created tab should be selected.
-  EXPECT_EQ(left_click_contents, tabstrip.GetSelectedTabContents());
+  EXPECT_EQ(left_click_contents, tabstrip.GetActiveTabContents());
 
   // After closing the selected tab, the selection should move to the left, to
   // the opener.
   tabstrip.CloseSelectedTabs();
-  EXPECT_EQ(homepage_contents, tabstrip.GetSelectedTabContents());
+  EXPECT_EQ(homepage_contents, tabstrip.GetActiveTabContents());
 
   EXPECT_EQ(2, tabstrip.count());
 
@@ -1391,23 +1391,23 @@ TEST_F(TabStripModelTest, AddTabContents_ForgetOpeners) {
   // Break out of the context by selecting a tab in a different context.
   EXPECT_EQ(typed_page_contents, tabstrip.GetTabContentsAt(4));
   tabstrip.SelectLastTab();
-  EXPECT_EQ(typed_page_contents, tabstrip.GetSelectedTabContents());
+  EXPECT_EQ(typed_page_contents, tabstrip.GetActiveTabContents());
 
   // Step back into the context by selecting a tab inside it.
   tabstrip.ActivateTabAt(2, true);
-  EXPECT_EQ(middle_click_contents2, tabstrip.GetSelectedTabContents());
+  EXPECT_EQ(middle_click_contents2, tabstrip.GetActiveTabContents());
 
   // Now test that closing tabs selects to the right until there are no more,
   // then to the left, as if there were no context (context has been
   // successfully forgotten).
   tabstrip.CloseSelectedTabs();
-  EXPECT_EQ(middle_click_contents3, tabstrip.GetSelectedTabContents());
+  EXPECT_EQ(middle_click_contents3, tabstrip.GetActiveTabContents());
   tabstrip.CloseSelectedTabs();
-  EXPECT_EQ(typed_page_contents, tabstrip.GetSelectedTabContents());
+  EXPECT_EQ(typed_page_contents, tabstrip.GetActiveTabContents());
   tabstrip.CloseSelectedTabs();
-  EXPECT_EQ(middle_click_contents1, tabstrip.GetSelectedTabContents());
+  EXPECT_EQ(middle_click_contents1, tabstrip.GetActiveTabContents());
   tabstrip.CloseSelectedTabs();
-  EXPECT_EQ(homepage_contents, tabstrip.GetSelectedTabContents());
+  EXPECT_EQ(homepage_contents, tabstrip.GetActiveTabContents());
 
   EXPECT_EQ(1, tabstrip.count());
 
@@ -1472,7 +1472,7 @@ TEST_F(TabStripModelTest, ReselectionConsidersChildrenTest) {
 
   // Select page A.A
   strip.ActivateTabAt(1, true);
-  EXPECT_EQ(page_a_a_contents, strip.GetSelectedTabContents());
+  EXPECT_EQ(page_a_a_contents, strip.GetActiveTabContents());
 
   // Simulate a middle click to open page A.A.A
   TabContentsWrapper* page_a_a_a_contents = CreateTabContents();
@@ -1485,19 +1485,19 @@ TEST_F(TabStripModelTest, ReselectionConsidersChildrenTest) {
   strip.CloseTabContentsAt(strip.active_index(), TabStripModel::CLOSE_NONE);
 
   // Page A.A.A should be selected, NOT A.B
-  EXPECT_EQ(page_a_a_a_contents, strip.GetSelectedTabContents());
+  EXPECT_EQ(page_a_a_a_contents, strip.GetActiveTabContents());
 
   // Close page A.A.A
   strip.CloseTabContentsAt(strip.active_index(), TabStripModel::CLOSE_NONE);
 
   // Page A.B should be selected
-  EXPECT_EQ(page_a_b_contents, strip.GetSelectedTabContents());
+  EXPECT_EQ(page_a_b_contents, strip.GetActiveTabContents());
 
   // Close page A.B
   strip.CloseTabContentsAt(strip.active_index(), TabStripModel::CLOSE_NONE);
 
   // Page A should be selected
-  EXPECT_EQ(page_a_contents, strip.GetSelectedTabContents());
+  EXPECT_EQ(page_a_contents, strip.GetActiveTabContents());
 
   // Clean up.
   strip.CloseAllTabs();

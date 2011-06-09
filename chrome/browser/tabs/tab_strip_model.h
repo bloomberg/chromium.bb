@@ -241,9 +241,8 @@ class TabStripModel : public NotificationObserver {
   // 1)
   void MoveSelectedTabsTo(int index);
 
-  // Returns the currently selected TabContents, or NULL if there is none.
-  // TODO(sky): rename to GetActiveTabContents.
-  TabContentsWrapper* GetSelectedTabContents() const;
+  // Returns the currently active TabContents, or NULL if there is none.
+  TabContentsWrapper* GetActiveTabContents() const;
 
   // Returns the TabContentsWrapper at the specified index, or NULL if there is
   // none.

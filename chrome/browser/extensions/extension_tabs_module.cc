@@ -685,7 +685,7 @@ bool GetSelectedTabFunction::RunImpl() {
     return false;
 
   TabStripModel* tab_strip = browser->tabstrip_model();
-  TabContentsWrapper* contents = tab_strip->GetSelectedTabContents();
+  TabContentsWrapper* contents = tab_strip->GetActiveTabContents();
   if (!contents) {
     error_ = keys::kNoSelectedTabError;
     return false;
@@ -936,7 +936,7 @@ bool UpdateTabFunction::RunImpl() {
     if (selected) {
       if (tab_strip->active_index() != tab_index) {
         tab_strip->ActivateTabAt(tab_index, false);
-        DCHECK_EQ(contents, tab_strip->GetSelectedTabContents());
+        DCHECK_EQ(contents, tab_strip->GetActiveTabContents());
       }
       contents->tab_contents()->Focus();
     }
@@ -1304,7 +1304,7 @@ bool DetectTabLanguageFunction::RunImpl() {
     browser = GetCurrentBrowser();
     if (!browser)
       return false;
-    contents = browser->tabstrip_model()->GetSelectedTabContents();
+    contents = browser->tabstrip_model()->GetActiveTabContents();
     if (!contents)
       return false;
   }

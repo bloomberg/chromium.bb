@@ -128,10 +128,10 @@ void TabStripModel::InsertTabContentsAt(int index,
   // to clear this bit.
   closing_all_ = false;
 
-  // Have to get the selected contents before we monkey with |contents_|
-  // otherwise we run into problems when we try to change the selected contents
+  // Have to get the active contents before we monkey with |contents_|
+  // otherwise we run into problems when we try to change the active contents
   // since the old contents and the new contents will be the same...
-  TabContentsWrapper* selected_contents = GetSelectedTabContents();
+  TabContentsWrapper* selected_contents = GetActiveTabContents();
   TabContentsData* data = new TabContentsData(contents);
   data->pinned = pin;
   if ((add_types & ADD_INHERIT_GROUP) && selected_contents) {
@@ -245,7 +245,7 @@ void TabStripModel::ActivateTabAt(int index, bool user_gesture) {
   bool had_multi = selection_model_.selected_indices().size() > 1;
   TabContentsWrapper* old_contents =
       (active_index() == TabStripSelectionModel::kUnselectedIndex) ?
-      NULL : GetSelectedTabContents();
+      NULL : GetActiveTabContents();
   selection_model_.SetSelectedIndex(index);
   TabContentsWrapper* new_contents = GetContentsAt(index);
   if (old_contents != new_contents && old_contents) {
@@ -310,7 +310,7 @@ void TabStripModel::MoveSelectedTabsTo(int index) {
                          selected_count - selected_mini_count);
 }
 
-TabContentsWrapper* TabStripModel::GetSelectedTabContents() const {
+TabContentsWrapper* TabStripModel::GetActiveTabContents() const {
   return GetTabContentsAt(active_index());
 }
 
@@ -669,7 +669,7 @@ void TabStripModel::AddTabContents(TabContentsWrapper* contents,
   // initial layout and not recalculated later, we need to ensure the first
   // layout is performed with sane view dimensions even when we're opening a
   // new background tab.
-  if (TabContentsWrapper* old_contents = GetSelectedTabContents()) {
+  if (TabContentsWrapper* old_contents = GetActiveTabContents()) {
     if ((add_types & ADD_ACTIVE) == 0) {
       contents->tab_contents()->view()->
           SizeContents(old_contents->tab_contents()->

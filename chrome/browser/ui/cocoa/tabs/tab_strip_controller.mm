@@ -466,7 +466,7 @@ class NotificationBridge : public NotificationObserver {
     // list and create the UI for each.
     const int existingTabCount = tabStripModel_->count();
     const TabContentsWrapper* selection =
-        tabStripModel_->GetSelectedTabContents();
+        tabStripModel_->GetActiveTabContents();
     for (int i = 0; i < existingTabCount; ++i) {
       TabContentsWrapper* currentContents = tabStripModel_->GetTabContentsAt(i);
       [self insertTabWithContents:currentContents

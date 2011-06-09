@@ -360,6 +360,7 @@ class Browser : public TabHandlerDelegate,
   int tab_count() const;
   int active_index() const;
   int GetIndexOfController(const NavigationController* controller) const;
+  // TODO(dpapad): Rename to GetActiveTabContentsWrapper().
   TabContentsWrapper* GetSelectedTabContentsWrapper() const;
   TabContentsWrapper* GetTabContentsWrapperAt(int index) const;
   // Same as above but correctly handles if GetSelectedTabContents() is NULL
@@ -368,6 +369,7 @@ class Browser : public TabHandlerDelegate,
   // objects, but that would require changing about 50+ other files. In order
   // to keep changes localized, the default is to return a TabContents. Note
   // this differs from the TabStripModel because it has far fewer clients.
+  // TODO(dpapad): Rename to GetActiveTabContents().
   TabContents* GetSelectedTabContents() const;
   TabContents* GetTabContentsAt(int index) const;
   void ActivateTabAt(int index, bool user_gesture);

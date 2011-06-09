@@ -1027,7 +1027,7 @@ int Browser::GetIndexOfController(
 }
 
 TabContentsWrapper* Browser::GetSelectedTabContentsWrapper() const {
-  return tabstrip_model()->GetSelectedTabContents();
+  return tabstrip_model()->GetActiveTabContents();
 }
 
 TabContentsWrapper* Browser::GetTabContentsWrapperAt(int index) const {
