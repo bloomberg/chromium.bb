@@ -170,6 +170,8 @@
       # under virtual X on linux.  The CONTINUOUS suite runs under virtual X
       # on the chromium bots, so exlcude these from here.  They're included
       # back in the FULL suite below.
+      # crbug.com/85632
+      '-flash.FlashTest.testDisableFlashPlugin',
       # crbug.com/85310
       '-instant',
       '-omnibox.OmniboxTest.testBookmarkResultInNewTabAndWindow',
