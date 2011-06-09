@@ -187,13 +187,13 @@ TEST_F(PPAPITest, FileRef) {
   RunTestViaHTTP("FileRef");
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_POSIX)
 #define MAYBE_DirectoryReader FLAKY_DirectoryReader
 #else
 #define MAYBE_DirectoryReader DirectoryReader
 #endif
 
-// Flaky on Mac, http://crbug.com/7094008.
+// Flaky on Mac + Linux, maybe http://codereview.chromium.org/7094008
 TEST_F(PPAPITest, MAYBE_DirectoryReader) {
   RunTestViaHTTP("DirectoryReader");
 }
