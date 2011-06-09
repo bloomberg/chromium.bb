@@ -6,7 +6,6 @@
   'targets': [
     {
       'target_name': 'iccjpeg',
-      'product_name': 'iccjpeg',
       'type': 'static_library',
       'dependencies': [
         '<(libjpeg_gyp_path):libjpeg',

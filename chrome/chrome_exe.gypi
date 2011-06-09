@@ -420,18 +420,14 @@
         }],
         ['OS != "mac"', {
           'conditions': [
-            ['branding=="Chrome"', {
-              'product_name': 'chrome'
-            }, {  # else: Branding!="Chrome"
-              # TODO:  change to:
-              #   'product_name': 'chromium'
-              # whenever we convert the rest of the infrastructure
-              # (buildbots etc.) to use "gyp -Dbranding=Chrome".
-              # NOTE: chrome/app/theme/chromium/BRANDING and
-              # chrome/app/theme/google_chrome/BRANDING have the short names,
-              # etc.; should we try to extract from there instead?
-              'product_name': 'chrome'
-            }],
+            # TODO:  add a:
+            #   'product_name': 'chromium'
+            # whenever we convert the rest of the infrastructure
+            # (buildbots etc.) to understand the branding gyp define.
+            # NOTE: chrome/app/theme/chromium/BRANDING and
+            # chrome/app/theme/google_chrome/BRANDING have the short name
+            # "chrome" etc.; should we try to extract from there instead?
+
             # On Mac, this is done in chrome_dll.gypi.
             ['internal_pdf', {
               'dependencies': [

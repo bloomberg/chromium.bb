@@ -6,7 +6,6 @@
   'targets': [
     {
       'target_name': 'qcms',
-      'product_name': 'qcms',
       'type': 'static_library',
       'sources': [
         'qcms.h',

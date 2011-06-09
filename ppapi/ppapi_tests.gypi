@@ -17,7 +17,6 @@
       ],
       'conditions': [
         ['OS=="win"', {
-          'product_name': 'ppapi_example',
           'type': 'shared_library',
           'msvs_guid': 'EE00E36E-9E8C-4DFB-925E-FBE32CEDB91B',
           'sources': [
@@ -32,7 +31,6 @@
           },
         }],
         ['os_posix == 1 and OS != "mac"', {
-          'product_name': 'ppapi_example',
           'type': 'shared_library',
           'cflags': ['-fvisibility=hidden'],
           # -gstabs, used in the official builds, causes an ICE. Simply remove
