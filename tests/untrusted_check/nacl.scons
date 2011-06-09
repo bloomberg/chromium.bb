@@ -13,6 +13,13 @@ env.ComponentProgram('untrusted_check_test.nexe',
                                  'gio',
                                  'pthread'])
 
+# nacl-newlib and nacl-glibc's abort() implementations produce
+# different exit codes.
+if env.Bit('nacl_glibc'):
+  expected_exit_status = 'untrusted_sigill'
+else:
+  expected_exit_status = '1'
+
 node = env.CommandSelLdrTestNacl(
     'untrusted_check_test.out',
     command = [env.File('untrusted_check_test.nexe')],
@@ -21,6 +28,6 @@ node = env.CommandSelLdrTestNacl(
                     '|(Log output.*)"'),
     filter_group_only = 'true',
     stderr_golden = env.File('untrusted_check_test.stderr'),
-    exit_status='hybrid_log_fatal')
+    exit_status=expected_exit_status)
 
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_untrusted_check_test')

@@ -211,16 +211,6 @@ status_map = {
                    ],
         'win64':  -11,
         },
-    'hybrid_log_fatal': {
-        'linux2': {
-            'normal': [ 1,],
-            'untrusted': [ -11 ],
-            }, # newlib vs glibc: exit 1 or signal 11
-        'darwin': 1,
-        'cygwin': 1,
-        'win32': 1,
-        'win64': 1,
-        },
     'trusted_sigabrt' : {
         'linux2': -6, # SIGABRT
         'darwin': -6, # SIGABRT
@@ -258,9 +248,6 @@ def GetSigType(sig):
 
     if (sig[:10]=='untrusted_'):
       return ['untrusted']
-
-    if (sig[:7]=='hybrid_'):
-      return ['normal', 'untrusted']
 
   return ['normal']
 
