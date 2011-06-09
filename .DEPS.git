@@ -37,7 +37,7 @@ deps = {
     'src/third_party/cacheinvalidation/files/src/google':
         Var('git_url') + '/external/google-cache-invalidation-api/src/google.git@5e99c8e5554555fe5fe55c93d8695fcf0da744f7',
     'src/third_party/ffmpeg':
-        Var('git_url') + '/chromium/deps/ffmpeg/source.git@983a3a57c42e31c8ec42af9da9933fe31014272c',
+        Var('git_url') + '/chromium/deps/ffmpeg/source.git@836e6a904fc4aaeb1c43e0ad2d2e91f900307e2e',
     'src/third_party/flac':
         Var('git_url') + '/chromium/deps/flac.git@921080d4f74c6de2119bd3d185ba7908865a375b',
     'src/third_party/hunspell':
@@ -53,7 +53,7 @@ deps = {
     'src/third_party/libjpeg_turbo':
         Var('git_url') + '/chromium/deps/libjpeg_turbo.git@6eb4f2096c80f5f3286f63bb76b671eb5eb97d78',
     'src/third_party/libvpx':
-        Var('git_url') + '/chromium/deps/libvpx.git@466ba7c8ea5ac06ddf1e12a2cb7c656e0060824c',
+        Var('git_url') + '/chromium/deps/libvpx.git@d0f85024d2dd579f9bd928878936387d3af0a893',
     'src/third_party/ots':
         Var('git_url') + '/external/ots.git@7f9bebe3906fb30f0632f9d010754d12dd6c02d7',
     'src/third_party/pylib':
