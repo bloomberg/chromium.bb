@@ -238,11 +238,18 @@ void NaClValidatorMessage(int level,
   level = NaClRecordIfValidatorError(state, level);
   if (NaClPrintValidatorMessages(state, level)) {
     va_list ap;
-    state->error_reporter->printf(
-        state->error_reporter, "VALIDATOR: %s", NaClLogLevelLabel(level));
-    va_start(ap, format);
-    state->error_reporter->printf_v(state->error_reporter, format, ap);
-    va_end(ap);
+    if (state) {
+      state->error_reporter->printf(
+          state->error_reporter, "VALIDATOR: %s", NaClLogLevelLabel(level));
+      va_start(ap, format);
+      state->error_reporter->printf_v(state->error_reporter, format, ap);
+      va_end(ap);
+    } else {
+      printf("VALIDATOR: %s", NaClLogLevelLabel(level));
+      va_start(ap, format);
+      vprintf(format, ap);
+      va_end(ap);
+    }
     NaClRecordErrorReported(state, level);
   }
 }
@@ -253,9 +260,14 @@ void NaClValidatorVarargMessage(int level,
                                 va_list ap) {
   level = NaClRecordIfValidatorError(state, level);
   if (NaClPrintValidatorMessages(state, level)) {
-    state->error_reporter->printf(
-        state->error_reporter, "VALIDATOR: %s", NaClLogLevelLabel(level));
-    state->error_reporter->printf_v(state->error_reporter, format, ap);
+    if (state) {
+      state->error_reporter->printf(
+          state->error_reporter, "VALIDATOR: %s", NaClLogLevelLabel(level));
+      state->error_reporter->printf_v(state->error_reporter, format, ap);
+    } else {
+      printf("VALIDATOR: %s", NaClLogLevelLabel(level));
+      vprintf(format, ap);
+    }
     NaClRecordErrorReported(state, level);
   }
 }
