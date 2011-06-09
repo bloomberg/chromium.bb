@@ -183,8 +183,8 @@ bool TypedUrlModelAssociator::AssociateModels() {
 
         for (int c = 0; c < typed_url.visits_size(); ++c) {
           DCHECK(c == 0 || typed_url.visits(c) > typed_url.visits(c - 1));
-          DCHECK_LE(static_cast<PageTransition::Type>(
-              typed_url.visit_transitions(c)), PageTransition::LAST_CORE);
+          DCHECK_LE(typed_url.visit_transitions(c),
+                    static_cast<int>(PageTransition::LAST_CORE));
           visits.push_back(history::VisitInfo(
               base::Time::FromInternalValue(typed_url.visits(c)),
               static_cast<PageTransition::Type>(
