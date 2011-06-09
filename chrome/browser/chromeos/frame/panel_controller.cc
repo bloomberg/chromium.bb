@@ -184,7 +184,8 @@ void PanelController::Init(bool initial_focus,
   gfx::Rect title_bounds(0, 0, window_bounds.width(), kTitleHeight);
 
   title_window_ = new views::Widget;
-  views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
+  views::Widget::InitParams params(
+      views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.transparent = true;
   params.bounds = title_bounds;
   title_window_->Init(params);

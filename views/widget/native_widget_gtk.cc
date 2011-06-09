@@ -180,6 +180,18 @@ void RemoveExposeHandlerIfExists(GtkWidget* widget) {
   }
 }
 
+GtkWindowType WindowTypeToGtkWindowType(Widget::InitParams::Type type) {
+  switch (type) {
+    case Widget::InitParams::TYPE_WINDOW:
+    case Widget::InitParams::TYPE_WINDOW_FRAMELESS:
+      return GTK_WINDOW_TOPLEVEL;
+    default:
+      return GTK_WINDOW_POPUP;
+  }
+  NOTREACHED();
+  return GTK_WINDOW_TOPLEVEL;
+}
+
 }  // namespace
 
 // During drag and drop GTK sends a drag-leave during a drop. This means we
@@ -1676,9 +1688,7 @@ void NativeWidgetGtk::CreateGtkWidget(const Widget::InitParams& params) {
     }
   } else {
     // Use our own window class to override GtkWindow's move_focus method.
-    widget_ = gtk_views_window_new(
-        params.type == Widget::InitParams::TYPE_WINDOW ? GTK_WINDOW_TOPLEVEL
-                                                       : GTK_WINDOW_POPUP);
+    widget_ = gtk_views_window_new(WindowTypeToGtkWindowType(params.type));
     gtk_widget_set_name(widget_, "views-gtkwidget-window");
     if (transient_to_parent_) {
       gtk_window_set_transient_for(GTK_WINDOW(widget_),

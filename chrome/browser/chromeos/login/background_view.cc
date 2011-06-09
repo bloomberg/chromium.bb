@@ -129,7 +129,7 @@ views::Widget* BackgroundView::CreateWindowContainingView(
     const GURL& background_url,
     BackgroundView** view) {
   Widget* window = new Widget;
-  Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
+  Widget::InitParams params(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.bounds = bounds;
   window->Init(params);
   *view = new BackgroundView();

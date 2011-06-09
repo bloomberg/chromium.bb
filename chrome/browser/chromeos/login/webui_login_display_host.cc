@@ -83,7 +83,8 @@ void WebUILoginDisplayHost::StartSignInScreen() {
 
 void WebUILoginDisplayHost::LoadURL(const GURL& url) {
   if (!login_window_) {
-    views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
+    views::Widget::InitParams params(
+        views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
     params.bounds = background_bounds();
 
     login_window_ = new views::Widget;

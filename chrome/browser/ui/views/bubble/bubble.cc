@@ -68,7 +68,7 @@ Bubble* Bubble::ShowFocusless(
     views::View* contents,
     BubbleDelegate* delegate,
     bool show_while_screen_is_locked) {
-  Bubble* bubble = new Bubble(views::Widget::InitParams::TYPE_POPUP,
+  Bubble* bubble = new Bubble(views::Widget::InitParams::TYPE_WINDOW_FRAMELESS,
                               show_while_screen_is_locked);
   bubble->InitBubble(parent, position_relative_to, arrow_location,
                      contents, delegate);
@@ -134,7 +134,7 @@ Bubble::Bubble()
       show_status_(kOpen),
       fade_away_on_close_(false),
 #if defined(TOOLKIT_USES_GTK)
-      type_(views::Widget::InitParams::TYPE_POPUP),
+      type_(views::Widget::InitParams::TYPE_WINDOW_FRAMELESS),
 #endif
 #if defined(OS_CHROMEOS)
       show_while_screen_is_locked_(false),

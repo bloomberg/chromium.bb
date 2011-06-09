@@ -58,7 +58,8 @@ class ClickNotifyingWidget : public NativeWidgetGtk {
 views::Widget* InitWidget(views::WidgetDelegate* delegate,
                           views::NativeWidget* native_widget,
                           const gfx::Rect& bounds) {
-  views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
+  views::Widget::InitParams params(
+      views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.delegate = delegate;
   params.transparent = true;
   params.bounds = bounds;

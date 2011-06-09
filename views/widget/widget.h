@@ -94,6 +94,8 @@ class Widget : public internal::NativeWidgetDelegate,
   struct InitParams {
     enum Type {
       TYPE_WINDOW,      // A Window, like a frame window.
+      TYPE_WINDOW_FRAMELESS,
+                        // An undecorated Window.
       TYPE_CONTROL,     // A control, like a button.
       TYPE_POPUP,       // An undecorated Window, with transient properties.
       TYPE_MENU         // An undecorated Window, with transient properties
