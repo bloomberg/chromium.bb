@@ -931,7 +931,7 @@ EXPORT NPError API_CALL NP_Initialize(NPNetscapeFuncs* npnetscape_funcs
   return NPERR_NO_ERROR;
 }
 
-EXPORT NPError NP_Shutdown() {
+EXPORT NPError API_CALL NP_Shutdown() {
   LOG(INFO) << "NP_Shutdown";
   delete g_at_exit_manager;
   g_at_exit_manager = NULL;
