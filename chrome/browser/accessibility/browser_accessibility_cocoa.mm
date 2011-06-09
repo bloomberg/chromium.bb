@@ -162,7 +162,7 @@ bool GetState(BrowserAccessibility* accessibility, int state) {
 // Returns whether or not this node should be ignored in the
 // accessibility tree.
 - (BOOL)isIgnored {
-  return [self role] == NSAccessibilityUnknownRole;
+  return [[self role] isEqualToString:NSAccessibilityUnknownRole];
 }
 
 // The origin of this accessibility object in the page's document.
@@ -198,18 +198,19 @@ bool GetState(BrowserAccessibility* accessibility, int state) {
 
 // Returns a string indicating the role description of this object.
 - (NSString*)roleDescription {
+  NSString* role = [self role];
   // The following descriptions are specific to webkit.
-  if ([[self role] isEqualToString:@"AXWebArea"])
+  if ([role isEqualToString:@"AXWebArea"])
     return l10n_util::GetNSString(IDS_AX_ROLE_WEB_AREA);
 
-  if ([[self role] isEqualToString:@"NSAccessibilityLinkRole"])
+  if ([role isEqualToString:@"NSAccessibilityLinkRole"])
     return l10n_util::GetNSString(IDS_AX_ROLE_LINK);
 
-  if ([[self role] isEqualToString:@"AXHeading"])
+  if ([role isEqualToString:@"AXHeading"])
     return l10n_util::GetNSString(IDS_AX_ROLE_HEADING);
 
-  if ([[self role] isEqualToString:NSAccessibilityGroupRole] ||
-      [[self role] isEqualToString:NSAccessibilityRadioButtonRole]) {
+  if ([role isEqualToString:NSAccessibilityGroupRole] ||
+      [role isEqualToString:NSAccessibilityRadioButtonRole]) {
     const std::vector<std::pair<string16, string16> >& htmlAttributes =
         browserAccessibility_->html_attributes();
     WebAccessibility::Role browserAccessibilityRole =
@@ -228,7 +229,7 @@ bool GetState(BrowserAccessibility* accessibility, int state) {
     }
   }
 
-  return NSAccessibilityRoleDescription([self role], nil);
+  return NSAccessibilityRoleDescription(role, nil);
 }
 
 // Returns the size of this object.
@@ -302,7 +303,8 @@ bool GetState(BrowserAccessibility* accessibility, int state) {
     // WebCore uses an attachmentView to get the below behavior.
     // We do not have any native views backing this object, so need
     // to approximate Cocoa ax behavior best as we can.
-    if ([self role] == @"AXHeading") {
+    NSString* role = [self role];
+    if ([role isEqualToString:@"AXHeading"]) {
       NSString* headingLevel =
           NSStringForWebAccessibilityAttribute(
               browserAccessibility_->attributes(),
@@ -311,11 +313,11 @@ bool GetState(BrowserAccessibility* accessibility, int state) {
         return [NSNumber numberWithInt:
             [[headingLevel substringFromIndex:1] intValue]];
       }
-    } else if ([self role] == NSAccessibilityButtonRole) {
+    } else if ([role isEqualToString:NSAccessibilityButtonRole]) {
       // AXValue does not make sense for pure buttons.
       return @"";
-    } else if ([self role] == NSAccessibilityCheckBoxRole ||
-               [self role] == NSAccessibilityRadioButtonRole) {
+    } else if ([role isEqualToString:NSAccessibilityCheckBoxRole] ||
+               [role isEqualToString:NSAccessibilityRadioButtonRole]) {
       return [NSNumber numberWithInt:GetState(
           browserAccessibility_, WebAccessibility::STATE_CHECKED) ? 1 : 0];
     } else {
@@ -436,7 +438,7 @@ bool GetState(BrowserAccessibility* accessibility, int state) {
 // Returns an array of parameterized attributes names that this object will
 // respond to.
 - (NSArray*)accessibilityParameterizedAttributeNames {
-  if ([self role] == NSAccessibilityTextFieldRole) {
+  if ([[self role] isEqualToString:NSAccessibilityTextFieldRole]) {
     return [NSArray arrayWithObjects:
         NSAccessibilityLineForIndexParameterizedAttribute,
         NSAccessibilityRangeForLineParameterizedAttribute,
@@ -454,15 +456,13 @@ bool GetState(BrowserAccessibility* accessibility, int state) {
 
 // Returns an array of action names that this object will respond to.
 - (NSArray*)accessibilityActionNames {
-  NSMutableArray* ret = [[[NSMutableArray alloc] init] autorelease];
-
-  // General actions.
-  [ret addObject:NSAccessibilityShowMenuAction];
-
+  NSMutableArray* ret =
+      [NSMutableArray arrayWithObject:NSAccessibilityShowMenuAction];
+  NSString* role = [self role];
   // TODO(dtseng): this should only get set when there's a default action.
-  if ([self role] != NSAccessibilityStaticTextRole &&
-      [self role] != NSAccessibilityTextAreaRole &&
-      [self role] != NSAccessibilityTextFieldRole) {
+  if (![role isEqualToString:NSAccessibilityStaticTextRole] &&
+      ![role isEqualToString:NSAccessibilityTextAreaRole] &&
+      ![role isEqualToString:NSAccessibilityTextFieldRole]) {
     [ret addObject:NSAccessibilityPressAction];
   }
 
@@ -501,10 +501,8 @@ bool GetState(BrowserAccessibility* accessibility, int state) {
 
 // Returns the list of accessibility attributes that this object supports.
 - (NSArray*)accessibilityAttributeNames {
-  NSMutableArray* ret = [[NSMutableArray alloc] init];
-
   // General attributes.
-  [ret addObjectsFromArray:[NSArray arrayWithObjects:
+  NSMutableArray* ret = [NSMutableArray arrayWithObjects:
       NSAccessibilityChildrenAttribute,
       NSAccessibilityDescriptionAttribute,
       NSAccessibilityEnabledAttribute,
@@ -521,23 +519,18 @@ bool GetState(BrowserAccessibility* accessibility, int state) {
       NSAccessibilityWindowAttribute,
       NSAccessibilityURLAttribute,
       @"AXVisited",
-      nil]];
+      nil];
 
   // Specific role attributes.
-  if ([self role] == NSAccessibilityTableRole) {
+  NSString* role = [self role];
+  if ([role isEqualToString:NSAccessibilityTableRole]) {
     [ret addObjectsFromArray:[NSArray arrayWithObjects:
         NSAccessibilityColumnsAttribute,
         NSAccessibilityRowsAttribute,
         nil]];
-  }
-
-  if ([self role] == @"AXWebArea") {
-    [ret addObjectsFromArray:[NSArray arrayWithObjects:
-        @"AXLoaded",
-        nil]];
-  }
-
-  if ([self role] == NSAccessibilityTextFieldRole) {
+  } else if ([role isEqualToString:@"AXWebArea"]) {
+    [ret addObject:@"AXLoaded"];
+  } else if ([role isEqualToString:NSAccessibilityTextFieldRole]) {
     [ret addObjectsFromArray:[NSArray arrayWithObjects:
         NSAccessibilityInsertionPointLineNumberAttribute,
         NSAccessibilityNumberOfCharactersAttribute,
@@ -545,10 +538,9 @@ bool GetState(BrowserAccessibility* accessibility, int state) {
         NSAccessibilitySelectedTextRangeAttribute,
         NSAccessibilityVisibleCharacterRangeAttribute,
         nil]];
-  }
-
-  if ([self role] == NSAccessibilityTabGroupRole)
+  } else if ([role isEqualToString:NSAccessibilityTabGroupRole]) {
     [ret addObject:NSAccessibilityTabsAttribute];
+  }
 
   return ret;
 }
