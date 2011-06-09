@@ -1764,7 +1764,7 @@ void View::UnregisterAccelerators(bool leave_data_intact) {
 // Focus -----------------------------------------------------------------------
 
 void View::InitFocusSiblings(View* v, int index) {
-  int child_count = static_cast<int>(children_.size());
+  int child_count = child_count();
 
   if (child_count == 0) {
     v->next_focusable_view_ = NULL;
