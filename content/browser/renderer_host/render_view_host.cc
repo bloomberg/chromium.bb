@@ -633,15 +633,11 @@ bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     if (!content::SwappedOutMessages::CanHandleWhileSwappedOut(msg))
       return true;
 
-  {
-    // delegate_->OnMessageReceived can end up deleting |this|, in which case
-    // the destructor for ObserverListBase::Iterator would access the deleted
-    // observers_.
-    ObserverListBase<RenderViewHostObserver>::Iterator it(observers_);
-    RenderViewHostObserver* observer;
-    while ((observer = it.GetNext()) != NULL)
-      if (observer->OnMessageReceived(msg))
-        return true;
+  ObserverListBase<RenderViewHostObserver>::Iterator it(observers_);
+  RenderViewHostObserver* observer;
+  while ((observer = it.GetNext()) != NULL) {
+    if (observer->OnMessageReceived(msg))
+      return true;
   }
 
   if (delegate_->OnMessageReceived(msg))
