@@ -10,16 +10,19 @@
 #include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_event_router_forwarder.h"
+#include "chrome/browser/extensions/extension_event_router.h"
+#include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_id_map.h"
 #include "chrome/browser/extensions/extension_webrequest_api_constants.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/browser_message_filter.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
@@ -84,7 +87,7 @@ const char* ResourceTypeToString(ResourceType::Type type) {
 }
 
 bool ParseResourceType(const std::string& type_str,
-                              ResourceType::Type* type) {
+                       ResourceType::Type* type) {
   const char** iter =
       std::find(kResourceTypeStrings, ARRAYEND(kResourceTypeStrings), type_str);
   if (iter == ARRAYEND(kResourceTypeStrings))
@@ -94,9 +97,9 @@ bool ParseResourceType(const std::string& type_str,
 }
 
 void ExtractRequestInfo(net::URLRequest* request,
-                               int* tab_id,
-                               int* window_id,
-                               ResourceType::Type* resource_type) {
+                        int* tab_id,
+                        int* window_id,
+                        ResourceType::Type* resource_type) {
   if (!request->GetUserData(NULL))
     return;
 
@@ -111,30 +114,6 @@ void ExtractRequestInfo(net::URLRequest* request,
                 info->resource_type());
   *resource_type = (iter != ARRAYEND(kResourceTypeValues)) ?
       *iter : ResourceType::LAST_TYPE;
-}
-
-void AddEventListenerOnIOThread(
-    ProfileId profile_id,
-    const std::string& extension_id,
-    const std::string& event_name,
-    const std::string& sub_event_name,
-    const ExtensionWebRequestEventRouter::RequestFilter& filter,
-    int extra_info_spec) {
-  ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
-      profile_id, extension_id, event_name, sub_event_name, filter,
-      extra_info_spec);
-}
-
-void EventHandledOnIOThread(
-    ProfileId profile_id,
-    const std::string& extension_id,
-    const std::string& event_name,
-    const std::string& sub_event_name,
-    uint64 request_id,
-    ExtensionWebRequestEventRouter::EventResponse* response) {
-  ExtensionWebRequestEventRouter::GetInstance()->OnEventHandled(
-      profile_id, extension_id, event_name, sub_event_name, request_id,
-      response);
 }
 
 // Creates a list of HttpHeaders (see extension_api.json). If |headers| is
@@ -184,6 +163,7 @@ struct ExtensionWebRequestEventRouter::EventListener {
   std::string sub_event_name;
   RequestFilter filter;
   int extra_info_spec;
+  base::WeakPtr<IPC::Message::Sender> ipc_sender;
   mutable std::set<uint64> blocked_requests;
 
   // Comparator to work with std::set.
@@ -341,7 +321,7 @@ ExtensionWebRequestEventRouter::~ExtensionWebRequestEventRouter() {
 
 int ExtensionWebRequestEventRouter::OnBeforeRequest(
     ProfileId profile_id,
-    ExtensionEventRouterForwarder* event_router,
+    ExtensionInfoMap* extension_info_map,
     net::URLRequest* request,
     net::CompletionCallback* callback,
     GURL* new_url) {
@@ -366,7 +346,8 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
 
   int extra_info_spec = 0;
   std::vector<const EventListener*> listeners =
-      GetMatchingListeners(profile_id, keys::kOnBeforeRequest, request->url(),
+      GetMatchingListeners(profile_id, extension_info_map,
+                           keys::kOnBeforeRequest, request->url(),
                            tab_id, window_id, resource_type, &extra_info_spec);
   if (listeners.empty())
     return net::OK;
@@ -385,7 +366,7 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
   dict->SetDouble(keys::kTimeStampKey, base::Time::Now().ToDoubleT() * 1000);
   args.Append(dict);
 
-  if (DispatchEvent(profile_id, event_router, request, listeners, args)) {
+  if (DispatchEvent(profile_id, request, listeners, args)) {
     blocked_requests_[request->identifier()].event = kOnBeforeRequest;
     blocked_requests_[request->identifier()].callback = callback;
     blocked_requests_[request->identifier()].new_url = new_url;
@@ -396,7 +377,7 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
 
 int ExtensionWebRequestEventRouter::OnBeforeSendHeaders(
     ProfileId profile_id,
-    ExtensionEventRouterForwarder* event_router,
+    ExtensionInfoMap* extension_info_map,
     uint64 request_id,
     net::CompletionCallback* callback,
     net::HttpRequestHeaders* headers) {
@@ -415,7 +396,8 @@ int ExtensionWebRequestEventRouter::OnBeforeSendHeaders(
 
   int extra_info_spec = 0;
   std::vector<const EventListener*> listeners =
-      GetMatchingListeners(profile_id, keys::kOnBeforeSendHeaders, request,
+      GetMatchingListeners(profile_id, extension_info_map,
+                           keys::kOnBeforeSendHeaders, request,
                            &extra_info_spec);
   if (listeners.empty())
     return net::OK;
@@ -433,7 +415,7 @@ int ExtensionWebRequestEventRouter::OnBeforeSendHeaders(
 
   args.Append(dict);
 
-  if (DispatchEvent(profile_id, event_router, request, listeners, args)) {
+  if (DispatchEvent(profile_id, request, listeners, args)) {
     blocked_requests_[request->identifier()].event = kOnBeforeSendHeaders;
     blocked_requests_[request->identifier()].callback = callback;
     blocked_requests_[request->identifier()].request_headers = headers;
@@ -444,7 +426,7 @@ int ExtensionWebRequestEventRouter::OnBeforeSendHeaders(
 
 void ExtensionWebRequestEventRouter::OnRequestSent(
     ProfileId profile_id,
-    ExtensionEventRouterForwarder* event_router,
+    ExtensionInfoMap* extension_info_map,
     uint64 request_id,
     const net::HostPortPair& socket_address,
     const net::HttpRequestHeaders& headers) {
@@ -465,8 +447,8 @@ void ExtensionWebRequestEventRouter::OnRequestSent(
 
   int extra_info_spec = 0;
   std::vector<const EventListener*> listeners =
-      GetMatchingListeners(profile_id, keys::kOnRequestSent, request,
-                           &extra_info_spec);
+      GetMatchingListeners(profile_id, extension_info_map,
+                           keys::kOnRequestSent, request, &extra_info_spec);
   if (listeners.empty())
     return;
 
@@ -482,12 +464,12 @@ void ExtensionWebRequestEventRouter::OnRequestSent(
   // TODO(battre): support "request line".
   args.Append(dict);
 
-  DispatchEvent(profile_id, event_router, request, listeners, args);
+  DispatchEvent(profile_id, request, listeners, args);
 }
 
 void ExtensionWebRequestEventRouter::OnBeforeRedirect(
     ProfileId profile_id,
-    ExtensionEventRouterForwarder* event_router,
+    ExtensionInfoMap* extension_info_map,
     net::URLRequest* request,
     const GURL& new_location) {
   if (profile_id == Profile::kInvalidProfileId)
@@ -503,8 +485,8 @@ void ExtensionWebRequestEventRouter::OnBeforeRedirect(
 
   int extra_info_spec = 0;
   std::vector<const EventListener*> listeners =
-      GetMatchingListeners(profile_id, keys::kOnBeforeRedirect, request,
-                           &extra_info_spec);
+      GetMatchingListeners(profile_id, extension_info_map,
+                           keys::kOnBeforeRedirect, request, &extra_info_spec);
   if (listeners.empty())
     return;
 
@@ -526,12 +508,12 @@ void ExtensionWebRequestEventRouter::OnBeforeRedirect(
     dict->Set(keys::kStatusLineKey, GetStatusLine(request->response_headers()));
   args.Append(dict);
 
-  DispatchEvent(profile_id, event_router, request, listeners, args);
+  DispatchEvent(profile_id, request, listeners, args);
 }
 
 void ExtensionWebRequestEventRouter::OnResponseStarted(
     ProfileId profile_id,
-    ExtensionEventRouterForwarder* event_router,
+    ExtensionInfoMap* extension_info_map,
     net::URLRequest* request) {
   if (profile_id == Profile::kInvalidProfileId)
     return;
@@ -544,8 +526,8 @@ void ExtensionWebRequestEventRouter::OnResponseStarted(
 
   int extra_info_spec = 0;
   std::vector<const EventListener*> listeners =
-      GetMatchingListeners(profile_id, keys::kOnResponseStarted, request,
-                           &extra_info_spec);
+      GetMatchingListeners(profile_id, extension_info_map,
+                           keys::kOnResponseStarted, request, &extra_info_spec);
   if (listeners.empty())
     return;
 
@@ -569,12 +551,12 @@ void ExtensionWebRequestEventRouter::OnResponseStarted(
     dict->Set(keys::kStatusLineKey, GetStatusLine(request->response_headers()));
   args.Append(dict);
 
-  DispatchEvent(profile_id, event_router, request, listeners, args);
+  DispatchEvent(profile_id, request, listeners, args);
 }
 
 void ExtensionWebRequestEventRouter::OnCompleted(
     ProfileId profile_id,
-    ExtensionEventRouterForwarder* event_router,
+    ExtensionInfoMap* extension_info_map,
     net::URLRequest* request) {
   if (profile_id == Profile::kInvalidProfileId)
     return;
@@ -587,8 +569,8 @@ void ExtensionWebRequestEventRouter::OnCompleted(
 
   int extra_info_spec = 0;
   std::vector<const EventListener*> listeners =
-      GetMatchingListeners(profile_id, keys::kOnCompleted, request,
-                           &extra_info_spec);
+      GetMatchingListeners(profile_id, extension_info_map,
+                           keys::kOnCompleted, request, &extra_info_spec);
   if (listeners.empty())
     return;
 
@@ -612,12 +594,12 @@ void ExtensionWebRequestEventRouter::OnCompleted(
     dict->Set(keys::kStatusLineKey, GetStatusLine(request->response_headers()));
   args.Append(dict);
 
-  DispatchEvent(profile_id, event_router, request, listeners, args);
+  DispatchEvent(profile_id, request, listeners, args);
 }
 
 void ExtensionWebRequestEventRouter::OnErrorOccurred(
     ProfileId profile_id,
-    ExtensionEventRouterForwarder* event_router,
+    ExtensionInfoMap* extension_info_map,
     net::URLRequest* request) {
   if (profile_id == Profile::kInvalidProfileId)
       return;
@@ -630,8 +612,8 @@ void ExtensionWebRequestEventRouter::OnErrorOccurred(
 
   int extra_info_spec = 0;
   std::vector<const EventListener*> listeners =
-      GetMatchingListeners(profile_id, keys::kOnErrorOccurred, request,
-                           &extra_info_spec);
+      GetMatchingListeners(profile_id, extension_info_map,
+                           keys::kOnErrorOccurred, request, &extra_info_spec);
   if (listeners.empty())
     return;
 
@@ -645,7 +627,7 @@ void ExtensionWebRequestEventRouter::OnErrorOccurred(
   dict->SetDouble(keys::kTimeStampKey, time.ToDoubleT() * 1000);
   args.Append(dict);
 
-  DispatchEvent(profile_id, event_router, request, listeners, args);
+  DispatchEvent(profile_id, request, listeners, args);
 }
 
 void ExtensionWebRequestEventRouter::OnURLRequestDestroyed(
@@ -667,7 +649,6 @@ void ExtensionWebRequestEventRouter::OnHttpTransactionDestroyed(
 
 bool ExtensionWebRequestEventRouter::DispatchEvent(
     ProfileId profile_id,
-    ExtensionEventRouterForwarder* event_router,
     net::URLRequest* request,
     const std::vector<const EventListener*>& listeners,
     const ListValue& args) {
@@ -690,9 +671,10 @@ bool ExtensionWebRequestEventRouter::DispatchEvent(
       dict->Remove(keys::kStatusLineKey, NULL);
 
     base::JSONWriter::Write(args_filtered.get(), false, &json_args);
-    event_router->DispatchEventToExtension(
-        (*it)->extension_id, (*it)->sub_event_name, json_args,
-        profile_id, true, GURL());
+
+    ExtensionEventRouter::DispatchEvent(
+        (*it)->ipc_sender.get(), (*it)->extension_id, (*it)->sub_event_name,
+        json_args, GURL());
     if ((*it)->extra_info_spec & ExtraInfoSpec::BLOCKING) {
       (*it)->blocked_requests.insert(request->identifier());
       ++num_handlers_blocking;
@@ -739,7 +721,8 @@ void ExtensionWebRequestEventRouter::AddEventListener(
     const std::string& event_name,
     const std::string& sub_event_name,
     const RequestFilter& filter,
-    int extra_info_spec) {
+    int extra_info_spec,
+    base::WeakPtr<IPC::Message::Sender> ipc_sender) {
   if (!IsWebRequestEvent(event_name))
     return;
 
@@ -748,6 +731,7 @@ void ExtensionWebRequestEventRouter::AddEventListener(
   listener.sub_event_name = sub_event_name;
   listener.filter = filter;
   listener.extra_info_spec = extra_info_spec;
+  listener.ipc_sender = ipc_sender;
 
   CHECK_EQ(listeners_[profile_id][event_name].count(listener), 0u) <<
       "extension=" << extension_id << " event=" << event_name;
@@ -788,23 +772,39 @@ void ExtensionWebRequestEventRouter::RemoveEventListener(
   listeners_[profile_id][event_name].erase(listener);
 }
 
-std::vector<const ExtensionWebRequestEventRouter::EventListener*>
-ExtensionWebRequestEventRouter::GetMatchingListeners(
+void ExtensionWebRequestEventRouter::OnOTRProfileCreated(
+    ProfileId original_profile_id, ProfileId otr_profile_id) {
+  cross_profile_map_[original_profile_id] = otr_profile_id;
+  cross_profile_map_[otr_profile_id] = original_profile_id;
+}
+
+void ExtensionWebRequestEventRouter::OnOTRProfileDestroyed(
+    ProfileId original_profile_id, ProfileId otr_profile_id) {
+  cross_profile_map_.erase(otr_profile_id);
+  cross_profile_map_.erase(original_profile_id);
+}
+
+void ExtensionWebRequestEventRouter::GetMatchingListenersImpl(
     ProfileId profile_id,
+    ExtensionInfoMap* extension_info_map,
+    bool crosses_incognito,
     const std::string& event_name,
     const GURL& url,
     int tab_id,
     int window_id,
     ResourceType::Type resource_type,
-    int* extra_info_spec) {
-  // TODO(mpcomplete): handle profile_id == invalid (should collect all
-  // listeners).
-  *extra_info_spec = 0;
-
-  std::vector<const EventListener*> matching_listeners;
+    int* extra_info_spec,
+    std::vector<const ExtensionWebRequestEventRouter::EventListener*>*
+        matching_listeners) {
   std::set<EventListener>& listeners = listeners_[profile_id][event_name];
   for (std::set<EventListener>::iterator it = listeners.begin();
        it != listeners.end(); ++it) {
+    if (!it->ipc_sender.get()) {
+      // The IPC sender has been deleted. This listener will be removed soon
+      // via a call to RemoveEventListener. For now, just skip it.
+      continue;
+    }
+
     if (!it->filter.urls.is_empty() && !it->filter.urls.MatchesURL(url))
       continue;
     if (it->filter.tab_id != -1 && tab_id != it->filter.tab_id)
@@ -816,15 +816,57 @@ ExtensionWebRequestEventRouter::GetMatchingListeners(
                   resource_type) == it->filter.types.end())
       continue;
 
-    matching_listeners.push_back(&(*it));
+    // Check if this event crosses incognito boundaries when it shouldn't.
+    // extension_info_map can be NULL if this is a system-level request.
+    if (extension_info_map) {
+      const Extension* extension =
+          extension_info_map->extensions().GetByID(it->extension_id);
+      if (!extension ||
+          (crosses_incognito &&
+           !extension_info_map->CanCrossIncognito(extension)))
+        continue;
+    }
+
+    matching_listeners->push_back(&(*it));
     *extra_info_spec |= it->extra_info_spec;
   }
+}
+
+std::vector<const ExtensionWebRequestEventRouter::EventListener*>
+ExtensionWebRequestEventRouter::GetMatchingListeners(
+    ProfileId profile_id,
+    ExtensionInfoMap* extension_info_map,
+    const std::string& event_name,
+    const GURL& url,
+    int tab_id,
+    int window_id,
+    ResourceType::Type resource_type,
+    int* extra_info_spec) {
+  // TODO(mpcomplete): handle profile_id == invalid (should collect all
+  // listeners).
+  *extra_info_spec = 0;
+
+  std::vector<const ExtensionWebRequestEventRouter::EventListener*>
+      matching_listeners;
+
+  GetMatchingListenersImpl(
+      profile_id, extension_info_map, false, event_name, url,
+      tab_id, window_id, resource_type, extra_info_spec, &matching_listeners);
+  CrossProfileMap::const_iterator cross_profile_id =
+      cross_profile_map_.find(profile_id);
+  if (cross_profile_id != cross_profile_map_.end()) {
+    GetMatchingListenersImpl(
+        cross_profile_id->second, extension_info_map, true, event_name, url,
+        tab_id, window_id, resource_type, extra_info_spec, &matching_listeners);
+  }
+
   return matching_listeners;
 }
 
 std::vector<const ExtensionWebRequestEventRouter::EventListener*>
 ExtensionWebRequestEventRouter::GetMatchingListeners(
     ProfileId profile_id,
+    ExtensionInfoMap* extension_info_map,
     const std::string& event_name,
     net::URLRequest* request,
     int* extra_info_spec) {
@@ -834,8 +876,8 @@ ExtensionWebRequestEventRouter::GetMatchingListeners(
   ExtractRequestInfo(request, &tab_id, &window_id, &resource_type);
 
   return GetMatchingListeners(
-      profile_id, event_name, request->url(), tab_id, window_id, resource_type,
-      extra_info_spec);
+      profile_id, extension_info_map, event_name, request->url(),
+      tab_id, window_id, resource_type, extra_info_spec);
 }
 
 void ExtensionWebRequestEventRouter::DecrementBlockCount(
@@ -955,12 +997,9 @@ bool WebRequestAddEventListener::RunImpl() {
   std::string sub_event_name;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(4, &sub_event_name));
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableFunction(
-          &AddEventListenerOnIOThread,
-          profile()->GetRuntimeId(), extension_id(),
-          event_name, sub_event_name, filter, extra_info_spec));
+  ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
+      profile_id(), extension_id(), event_name, sub_event_name, filter,
+      extra_info_spec, ipc_sender_weak());
 
   return true;
 }
@@ -985,8 +1024,7 @@ bool WebRequestEventHandled::RunImpl() {
 
     if (!value->empty()) {
       base::Time install_time =
-          profile()->GetExtensionService()->extension_prefs()->
-              GetInstallTime(extension_id());
+          extension_info_map()->GetInstallTime(extension_id());
       response.reset(new ExtensionWebRequestEventRouter::EventResponse(
           extension_id(), install_time));
     }
@@ -1036,12 +1074,9 @@ bool WebRequestEventHandled::RunImpl() {
     }
   }
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableFunction(
-          &EventHandledOnIOThread,
-          profile()->GetRuntimeId(), extension_id(),
-          event_name, sub_event_name, request_id, response.release()));
+  ExtensionWebRequestEventRouter::GetInstance()->OnEventHandled(
+      profile_id(), extension_id(), event_name, sub_event_name, request_id,
+      response.release());
 
   return true;
 }

@@ -215,12 +215,8 @@ class PanelBrowserViewTest : public InProcessBrowserTest {
         &error);
     ASSERT_TRUE(extension.get());
     EXPECT_STREQ("", error.c_str());
-    browser()->GetProfile()->GetExtensionService()->AddExtension(
+    browser()->GetProfile()->GetExtensionService()->OnLoadSingleExtension(
         extension.get());
-
-    // Makes sure that async task ExtensionPrefs::OnExtensionInstalled gets a
-    // chance to be procesed.
-    MessageLoop::current()->RunAllPending();
 
     // Creates a panel with the app name that comes from the extension ID.
     PanelBrowserView* browser_view = CreatePanelBrowserView(

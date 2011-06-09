@@ -81,6 +81,18 @@ net::URLRequestContextGetter* Profile::default_request_context_;
 
 namespace {
 
+void NotifyOTRProfileCreatedOnIOThread(ProfileId original_profile_id,
+                                       ProfileId otr_profile_id) {
+  ExtensionWebRequestEventRouter::GetInstance()->OnOTRProfileCreated(
+      original_profile_id, otr_profile_id);
+}
+
+void NotifyOTRProfileDestroyedOnIOThread(ProfileId original_profile_id,
+                                         ProfileId otr_profile_id) {
+  ExtensionWebRequestEventRouter::GetInstance()->OnOTRProfileDestroyed(
+      original_profile_id, otr_profile_id);
+}
+
 }  // namespace
 
 Profile::Profile()
@@ -231,6 +243,12 @@ class OffTheRecordProfileImpl : public Profile,
     // Make the chrome//extension-icon/ resource available.
     ExtensionIconSource* icon_source = new ExtensionIconSource(real_profile);
     GetChromeURLDataManager()->AddDataSource(icon_source);
+
+    BrowserThread::PostTask(
+    BrowserThread::IO, FROM_HERE,
+    NewRunnableFunction(
+        &NotifyOTRProfileCreatedOnIOThread,
+        profile_->GetRuntimeId(), GetRuntimeId()));
   }
 
   virtual ~OffTheRecordProfileImpl() {
@@ -239,6 +257,12 @@ class OffTheRecordProfileImpl : public Profile,
                                            NotificationService::NoDetails());
 
     ProfileDependencyManager::GetInstance()->DestroyProfileServices(this);
+
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        NewRunnableFunction(
+            &NotifyOTRProfileDestroyedOnIOThread,
+            profile_->GetRuntimeId(), GetRuntimeId()));
 
     // Clean up all DB files/directories
     if (db_tracker_)

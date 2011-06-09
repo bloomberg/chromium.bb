@@ -11,16 +11,22 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
+#include "base/process.h"
+#include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
+#include "ipc/ipc_message.h"
 
 class Browser;
+class ChromeRenderMessageFilter;
 class ExtensionFunction;
 class ExtensionFunctionDispatcher;
 class UIThreadExtensionFunction;
+class IOThreadExtensionFunction;
 class ListValue;
 class QuotaLimitHeuristic;
 class RenderViewHost;
@@ -59,6 +65,7 @@ class ExtensionFunction
   ExtensionFunction();
 
   virtual UIThreadExtensionFunction* AsUIThreadExtensionFunction();
+  virtual IOThreadExtensionFunction* AsIOThreadExtensionFunction();
 
   // Execute the API. Clients should initialize the ExtensionFunction using
   // SetArgs(), set_request_id(), and the other setters before calling this
@@ -124,11 +131,17 @@ class ExtensionFunction
   // Sends the result back to the extension.
   virtual void SendResponse(bool success) = 0;
 
+  // Common implementation for SenderResponse.
+  void SendResponseImpl(base::ProcessHandle process,
+                        IPC::Message::Sender* ipc_sender,
+                        int routing_id,
+                        bool success);
+
   // Called when we receive an extension api request that is invalid in a way
   // that JSON validation in the renderer should have caught. This should never
   // happen and could be an attacker trying to exploit the browser, so we crash
   // the renderer instead.
-  virtual void HandleBadMessage() = 0;
+  void HandleBadMessage(base::ProcessHandle process);
 
   // Return true if the argument to this function at |index| was provided and
   // is non-null.
@@ -257,12 +270,52 @@ class UIThreadExtensionFunction : public ExtensionFunction {
     NotificationRegistrar registrar_;
   };
 
-  virtual void HandleBadMessage();
-
   virtual void Destruct() const;
 
   scoped_ptr<RenderViewHostTracker> tracker_;
+};
 
+// Extension functions that run on the IO thread.
+class IOThreadExtensionFunction : public ExtensionFunction {
+ public:
+  IOThreadExtensionFunction();
+
+  virtual IOThreadExtensionFunction* AsIOThreadExtensionFunction() OVERRIDE;
+
+  void set_ipc_sender(base::WeakPtr<ChromeRenderMessageFilter> ipc_sender,
+                      int routing_id) {
+    ipc_sender_ = ipc_sender;
+    routing_id_ = routing_id;
+  }
+  ChromeRenderMessageFilter* ipc_sender() const { return ipc_sender_.get(); }
+  int routing_id() const { return routing_id_; }
+
+  base::WeakPtr<ChromeRenderMessageFilter> ipc_sender_weak() const {
+    return ipc_sender_;
+  }
+
+  void set_extension_info_map(const ExtensionInfoMap* extension_info_map) {
+    extension_info_map_ = extension_info_map;
+  }
+  const ExtensionInfoMap* extension_info_map() const {
+    return extension_info_map_.get();
+  }
+
+ protected:
+  friend struct BrowserThread::DeleteOnThread<BrowserThread::IO>;
+  friend class DeleteTask<IOThreadExtensionFunction>;
+
+  virtual ~IOThreadExtensionFunction();
+
+  virtual void Destruct() const;
+
+  virtual void SendResponse(bool success);
+
+ private:
+  base::WeakPtr<ChromeRenderMessageFilter> ipc_sender_;
+  int routing_id_;
+
+  scoped_refptr<const ExtensionInfoMap> extension_info_map_;
 };
 
 // Base class for an extension function that runs asynchronously *relative to
@@ -290,9 +343,16 @@ class SyncExtensionFunction : public UIThreadExtensionFunction {
 
  protected:
   virtual ~SyncExtensionFunction();
+};
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(SyncExtensionFunction);
+class SyncIOThreadExtensionFunction : public IOThreadExtensionFunction {
+ public:
+  SyncIOThreadExtensionFunction();
+
+  virtual void Run() OVERRIDE;
+
+ protected:
+  virtual ~SyncIOThreadExtensionFunction();
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_FUNCTION_H_

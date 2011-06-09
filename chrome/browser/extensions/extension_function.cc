@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -42,7 +43,7 @@ void UIThreadExtensionFunction::RenderViewHostTracker::Observe(
 
 ExtensionFunction::ExtensionFunction()
     : request_id_(-1),
-      profile_id_(0),
+      profile_id_(Profile::kInvalidProfileId),
       has_callback_(false),
       include_incognito_(false),
       user_gesture_(false),
@@ -54,6 +55,10 @@ ExtensionFunction::~ExtensionFunction() {
 }
 
 UIThreadExtensionFunction* ExtensionFunction::AsUIThreadExtensionFunction() {
+  return NULL;
+}
+
+IOThreadExtensionFunction* ExtensionFunction::AsIOThreadExtensionFunction() {
   return NULL;
 }
 
@@ -84,8 +89,34 @@ bool ExtensionFunction::HasOptionalArgument(size_t index) {
   return args_->Get(index, &value) && !value->IsType(Value::TYPE_NULL);
 }
 
+void ExtensionFunction::SendResponseImpl(base::ProcessHandle process,
+                                         IPC::Message::Sender* ipc_sender,
+                                         int routing_id,
+                                         bool success) {
+  DCHECK(ipc_sender);
+  if (bad_message_) {
+    HandleBadMessage(process);
+    return;
+  }
+
+  ipc_sender->Send(new ExtensionMsg_Response(
+      routing_id, request_id_, success, GetResult(), GetError()));
+}
+
+void ExtensionFunction::HandleBadMessage(base::ProcessHandle process) {
+  LOG(ERROR) << "bad extension message " << name_ << " : terminating renderer.";
+  if (RenderProcessHost::run_renderer_in_process()) {
+    // In single process mode it is better if we don't suicide but just crash.
+    CHECK(false);
+  } else {
+    NOTREACHED();
+    UserMetrics::RecordAction(UserMetricsAction("BadMessageTerminate_EFD"));
+    if (process)
+      base::KillProcess(process, ResultCodes::KILLED_BAD_MESSAGE, false);
+  }
+}
 UIThreadExtensionFunction::UIThreadExtensionFunction()
-    : profile_(NULL) {
+    : render_view_host_(NULL), profile_(NULL) {
 }
 
 UIThreadExtensionFunction::~UIThreadExtensionFunction() {
@@ -113,29 +144,35 @@ Browser* UIThreadExtensionFunction::GetCurrentBrowser() {
 void UIThreadExtensionFunction::SendResponse(bool success) {
   if (!render_view_host_ || !dispatcher())
     return;
-  if (bad_message_) {
-    HandleBadMessage();
-    return;
-  }
 
-  render_view_host_->Send(new ExtensionMsg_Response(
-      render_view_host_->routing_id(), request_id_, success,
-      GetResult(), GetError()));
+  SendResponseImpl(render_view_host_->process()->GetHandle(),
+                   render_view_host_,
+                   render_view_host_->routing_id(),
+                   success);
 }
 
-void UIThreadExtensionFunction::HandleBadMessage() {
-  LOG(ERROR) << "bad extension message " << name_ << " : terminating renderer.";
-  if (RenderProcessHost::run_renderer_in_process()) {
-    // In single process mode it is better if we don't suicide but just crash.
-    CHECK(false);
-  } else {
-    NOTREACHED();
-    UserMetrics::RecordAction(UserMetricsAction("BadMessageTerminate_EFD"));
-    if (render_view_host_) {
-      base::KillProcess(render_view_host_->process()->GetHandle(),
-          ResultCodes::KILLED_BAD_MESSAGE, false);
-    }
-  }
+IOThreadExtensionFunction::IOThreadExtensionFunction()
+    : routing_id_(-1) {
+}
+
+IOThreadExtensionFunction::~IOThreadExtensionFunction() {
+}
+
+IOThreadExtensionFunction*
+IOThreadExtensionFunction::AsIOThreadExtensionFunction() {
+  return this;
+}
+
+void IOThreadExtensionFunction::Destruct() const {
+  BrowserThread::DeleteOnIOThread::Destruct(this);
+}
+
+void IOThreadExtensionFunction::SendResponse(bool success) {
+  if (!ipc_sender())
+    return;
+
+  SendResponseImpl(ipc_sender()->peer_handle(),
+                   ipc_sender(), routing_id_, success);
 }
 
 AsyncExtensionFunction::AsyncExtensionFunction() {
@@ -151,5 +188,15 @@ SyncExtensionFunction::~SyncExtensionFunction() {
 }
 
 void SyncExtensionFunction::Run() {
+  SendResponse(RunImpl());
+}
+
+SyncIOThreadExtensionFunction::SyncIOThreadExtensionFunction() {
+}
+
+SyncIOThreadExtensionFunction::~SyncIOThreadExtensionFunction() {
+}
+
+void SyncIOThreadExtensionFunction::Run() {
   SendResponse(RunImpl());
 }

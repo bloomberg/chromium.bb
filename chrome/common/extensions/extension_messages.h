@@ -218,6 +218,12 @@ IPC_MESSAGE_ROUTED1(ExtensionMsg_NotifyRenderViewType,
 IPC_MESSAGE_ROUTED1(ExtensionHostMsg_Request,
                     ExtensionHostMsg_Request_Params)
 
+// A renderer sends this message when an extension process starts an API
+// request. The browser will always respond with a ExtensionMsg_Response.
+IPC_MESSAGE_CONTROL2(ExtensionHostMsg_RequestForIOThread,
+                     int /* routing_id */,
+                     ExtensionHostMsg_Request_Params)
+
 // Notify the browser that the given extension added a listener to an event.
 IPC_MESSAGE_CONTROL2(ExtensionHostMsg_AddListener,
                      std::string /* extension_id */,

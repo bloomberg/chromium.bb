@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_webrequest_api_constants.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/prefs/pref_member.h"
+#include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_pref_service.h"
 #include "chrome/test/testing_profile.h"
@@ -37,7 +38,7 @@ static void EventHandledOnIOThread(
 
 // A mock event router that responds to events with a pre-arranged queue of
 // Tasks.
-class TestEventRouter : public ExtensionEventRouterForwarder {
+class TestIPCSender : public IPC::Message::Sender {
 public:
   // Adds a Task to the queue. We will fire these in order as events are
   // dispatched.
@@ -48,16 +49,15 @@ public:
   size_t GetNumTasks() { return task_queue_.size(); }
 
 private:
-  // ExtensionEventRouterForwarder:
-  virtual void HandleEvent(const std::string& extension_id,
-                           const std::string& event_name,
-                           const std::string& event_args,
-                           ProfileId profile_id,
-                           bool use_profile_to_restrict_events,
-                           const GURL& event_url) {
-    ASSERT_FALSE(task_queue_.empty());
+  // IPC::Message::Sender
+  virtual bool Send(IPC::Message* message) {
+    EXPECT_EQ(ExtensionMsg_MessageInvoke::ID, message->type());
+
+    EXPECT_FALSE(task_queue_.empty());
     MessageLoop::current()->PostTask(FROM_HERE, task_queue_.front());
     task_queue_.pop();
+
+    return false;
   }
 
   std::queue<Task*> task_queue_;
@@ -66,11 +66,11 @@ private:
 class ExtensionWebRequestTest : public testing::Test {
 protected:
   virtual void SetUp() {
-    event_router_ = new TestEventRouter();
+    event_router_ = new ExtensionEventRouterForwarder();
     enable_referrers_.Init(
         prefs::kEnableReferrers, profile_.GetTestingPrefService(), NULL);
     network_delegate_.reset(new ChromeNetworkDelegate(
-        event_router_.get(), profile_.GetRuntimeId(),
+        event_router_.get(), NULL, profile_.GetRuntimeId(),
         &enable_referrers_));
     context_ = new TestURLRequestContext();
     context_->set_network_delegate(network_delegate_.get());
@@ -80,7 +80,9 @@ protected:
   TestingProfile profile_;
   TestDelegate delegate_;
   BooleanPrefMember enable_referrers_;
-  scoped_refptr<TestEventRouter> event_router_;
+  TestIPCSender ipc_sender_;
+  scoped_refptr<ExtensionEventRouterForwarder> event_router_;
+  scoped_refptr<ExtensionInfoMap> extension_info_map_;
   scoped_ptr<ChromeNetworkDelegate> network_delegate_;
   scoped_refptr<TestURLRequestContext> context_;
 };
@@ -93,14 +95,17 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedence) {
   std::string extension2_id("2");
   ExtensionWebRequestEventRouter::RequestFilter filter;
   const std::string kEventName(keys::kOnBeforeRequest);
+  base::WeakPtrFactory<TestIPCSender> ipc_sender_factory(&ipc_sender_);
   ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
       profile_.GetRuntimeId(), extension1_id, kEventName,
       kEventName + "/1", filter,
-      ExtensionWebRequestEventRouter::ExtraInfoSpec::BLOCKING);
+      ExtensionWebRequestEventRouter::ExtraInfoSpec::BLOCKING,
+      ipc_sender_factory.GetWeakPtr());
   ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
       profile_.GetRuntimeId(), extension2_id, kEventName,
       kEventName + "/2", filter,
-      ExtensionWebRequestEventRouter::ExtraInfoSpec::BLOCKING);
+      ExtensionWebRequestEventRouter::ExtraInfoSpec::BLOCKING,
+      ipc_sender_factory.GetWeakPtr());
 
   net::URLRequest request(GURL("about:blank"), &delegate_);
   request.set_context(context_);
@@ -117,7 +122,7 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedence) {
     response = new ExtensionWebRequestEventRouter::EventResponse(
         extension1_id, base::Time::FromDoubleT(1));
     response->cancel = true;
-    event_router_->PushTask(
+    ipc_sender_.PushTask(
         NewRunnableFunction(&EventHandledOnIOThread,
             profile_.GetRuntimeId(), extension1_id,
             kEventName, kEventName + "/1", request.identifier(), response));
@@ -126,7 +131,7 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedence) {
     response = new ExtensionWebRequestEventRouter::EventResponse(
         extension2_id, base::Time::FromDoubleT(2));
     response->new_url = redirect_url;
-    event_router_->PushTask(
+    ipc_sender_.PushTask(
         NewRunnableFunction(&EventHandledOnIOThread,
             profile_.GetRuntimeId(), extension2_id,
             kEventName, kEventName + "/2", request.identifier(), response));
@@ -134,7 +139,7 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedence) {
     // Extension2 response to the redirected URL. Arrives first, and chosen.
     response = new ExtensionWebRequestEventRouter::EventResponse(
         extension2_id, base::Time::FromDoubleT(2));
-    event_router_->PushTask(
+    ipc_sender_.PushTask(
         NewRunnableFunction(&EventHandledOnIOThread,
             profile_.GetRuntimeId(), extension2_id,
             kEventName, kEventName + "/2", request.identifier(), response));
@@ -143,7 +148,7 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedence) {
     response = new ExtensionWebRequestEventRouter::EventResponse(
         extension1_id, base::Time::FromDoubleT(1));
     response->cancel = true;
-    event_router_->PushTask(
+    ipc_sender_.PushTask(
         NewRunnableFunction(&EventHandledOnIOThread,
             profile_.GetRuntimeId(), extension1_id,
             kEventName, kEventName + "/1", request.identifier(), response));
@@ -156,6 +161,6 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedence) {
     EXPECT_EQ(0, request.status().os_error());
     EXPECT_EQ(redirect_url, request.url());
     EXPECT_EQ(2U, request.url_chain().size());
-    EXPECT_EQ(0U, event_router_->GetNumTasks());
+    EXPECT_EQ(0U, ipc_sender_.GetNumTasks());
   }
 }

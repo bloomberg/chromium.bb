@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/extensions/extension_event_router_forwarder.h"
+#include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_proxy_api.h"
 #include "chrome/browser/extensions/extension_webrequest_api.h"
 #include "chrome/browser/prefs/pref_member.h"
@@ -41,10 +42,12 @@ void ForwardProxyErrors(net::URLRequest* request,
 
 ChromeNetworkDelegate::ChromeNetworkDelegate(
     ExtensionEventRouterForwarder* event_router,
+    ExtensionInfoMap* extension_info_map,
     ProfileId profile_id,
     BooleanPrefMember* enable_referrers)
     : event_router_(event_router),
       profile_id_(profile_id),
+      extension_info_map_(extension_info_map),
       enable_referrers_(enable_referrers) {
   DCHECK(event_router);
   DCHECK(enable_referrers);
@@ -68,7 +71,7 @@ int ChromeNetworkDelegate::OnBeforeURLRequest(
   if (!enable_referrers_->GetValue())
     request->set_referrer(std::string());
   return ExtensionWebRequestEventRouter::GetInstance()->OnBeforeRequest(
-      profile_id_, event_router_.get(), request, callback, new_url);
+      profile_id_, extension_info_map_.get(), request, callback, new_url);
 }
 
 int ChromeNetworkDelegate::OnBeforeSendHeaders(
@@ -76,7 +79,7 @@ int ChromeNetworkDelegate::OnBeforeSendHeaders(
     net::CompletionCallback* callback,
     net::HttpRequestHeaders* headers) {
   return ExtensionWebRequestEventRouter::GetInstance()->OnBeforeSendHeaders(
-      profile_id_, event_router_.get(), request_id, callback, headers);
+      profile_id_, extension_info_map_.get(), request_id, callback, headers);
 }
 
 void ChromeNetworkDelegate::OnRequestSent(
@@ -84,19 +87,20 @@ void ChromeNetworkDelegate::OnRequestSent(
     const net::HostPortPair& socket_address,
     const net::HttpRequestHeaders& headers) {
   ExtensionWebRequestEventRouter::GetInstance()->OnRequestSent(
-      profile_id_, event_router_.get(), request_id, socket_address, headers);
+      profile_id_, extension_info_map_.get(), request_id,
+      socket_address, headers);
 }
 
 void ChromeNetworkDelegate::OnBeforeRedirect(net::URLRequest* request,
                                              const GURL& new_location) {
   ExtensionWebRequestEventRouter::GetInstance()->OnBeforeRedirect(
-      profile_id_, event_router_.get(), request, new_location);
+      profile_id_, extension_info_map_.get(), request, new_location);
 }
 
 
 void ChromeNetworkDelegate::OnResponseStarted(net::URLRequest* request) {
   ExtensionWebRequestEventRouter::GetInstance()->OnResponseStarted(
-      profile_id_, event_router_.get(), request);
+      profile_id_, extension_info_map_.get(), request);
   ForwardProxyErrors(request, event_router_.get(), profile_id_);
 }
 
@@ -112,11 +116,11 @@ void ChromeNetworkDelegate::OnCompleted(net::URLRequest* request) {
             request->response_headers()->response_code());
     if (!is_redirect) {
       ExtensionWebRequestEventRouter::GetInstance()->OnCompleted(
-          profile_id_, event_router_.get(), request);
+          profile_id_, extension_info_map_.get(), request);
     }
   } else if (request->status().status() == net::URLRequestStatus::FAILED) {
     ExtensionWebRequestEventRouter::GetInstance()->OnErrorOccurred(
-            profile_id_, event_router_.get(), request);
+            profile_id_, extension_info_map_.get(), request);
   }
   ForwardProxyErrors(request, event_router_.get(), profile_id_);
 }

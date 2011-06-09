@@ -11,6 +11,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/extensions/extension_event_router.h"
+#include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/metrics/histogram_synchronizer.h"
 #include "chrome/browser/nacl_host/nacl_process_host.h"
@@ -44,8 +45,10 @@ ChromeRenderMessageFilter::ChromeRenderMessageFilter(
     Profile* profile,
     net::URLRequestContextGetter* request_context)
     : render_process_id_(render_process_id),
+      profile_id_(profile->GetRuntimeId()),
       profile_(profile),
-      request_context_(request_context) {
+      request_context_(request_context),
+      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   allow_outdated_plugins_.Init(prefs::kPluginsAllowOutdated,
                                profile_->GetPrefs(), NULL);
   allow_outdated_plugins_.MoveToThread(BrowserThread::IO);
@@ -78,6 +81,8 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_RemoveListener,
                         OnExtensionRemoveListener)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_CloseChannel, OnExtensionCloseChannel)
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_RequestForIOThread,
+                        OnExtensionRequestForIOThread)
 #if defined(USE_TCMALLOC)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RendererTcmalloc, OnRendererTcmalloc)
 #endif
@@ -113,6 +118,11 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
 }
 
 void ChromeRenderMessageFilter::OnDestruct() const {
+  const_cast<ChromeRenderMessageFilter*>(this)->
+      weak_ptr_factory_.DetachFromThread();
+  const_cast<ChromeRenderMessageFilter*>(this)->
+      weak_ptr_factory_.InvalidateWeakPtrs();
+
   // Destroy on the UI thread because we contain a PrefMember.
   BrowserThread::DeleteOnUIThread::Destruct(this);
 }
@@ -331,6 +341,17 @@ void ChromeRenderMessageFilter::OnExtensionCloseChannel(int port_id) {
     profile_->GetExtensionMessageService()->CloseChannel(port_id);
 }
 
+void ChromeRenderMessageFilter::OnExtensionRequestForIOThread(
+    int routing_id,
+    const ExtensionHostMsg_Request_Params& params) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  ChromeURLRequestContext* context = static_cast<ChromeURLRequestContext*>(
+      request_context_->GetURLRequestContext());
+  ExtensionFunctionDispatcher::DispatchOnIOThread(
+      context->extension_info_map(), profile_id_, render_process_id_,
+      weak_ptr_factory_.GetWeakPtr(), routing_id, params);
+}
 
 #if defined(USE_TCMALLOC)
 void ChromeRenderMessageFilter::OnRendererTcmalloc(base::ProcessId pid,

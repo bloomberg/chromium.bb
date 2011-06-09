@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/time.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
@@ -29,15 +30,36 @@ class ExtensionInfoMap : public base::RefCountedThreadSafe<ExtensionInfoMap> {
   }
 
   // Callback for when new extensions are loaded.
-  void AddExtension(const Extension* extension);
+  void AddExtension(const Extension* extension,
+                    base::Time install_time,
+                    bool incognito_enabled);
 
   // Callback for when an extension is unloaded.
-  void RemoveExtension(const std::string& id,
+  void RemoveExtension(const std::string& extension_id,
                        const UnloadedExtensionInfo::Reason reason);
 
+  // Returns the time the extension was installed, or base::Time() if not found.
+  base::Time GetInstallTime(const std::string& extension_id) const;
+
+  // Returns true if the user has allowed this extension to run in incognito
+  // mode.
+  bool IsIncognitoEnabled(const std::string& extension_id) const;
+
+  // Returns true if the given extension can see events and data from another
+  // sub-profile (incognito to original profile, or vice versa).
+  bool CanCrossIncognito(const Extension* extension);
+
  private:
+  // Extra dynamic data related to an extension.
+  struct ExtraData;
+  // Map of extension_id to ExtraData.
+  typedef std::map<std::string, ExtraData> ExtraDataMap;
+
   ExtensionSet extensions_;
   ExtensionSet disabled_extensions_;
+
+  // Extra data associated with enabled extensions.
+  ExtraDataMap extra_data_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_INFO_MAP_H_

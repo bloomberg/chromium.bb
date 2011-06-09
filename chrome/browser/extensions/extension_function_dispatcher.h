@@ -10,10 +10,13 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/profiles/profile.h"
+#include "ipc/ipc_message.h"
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/native_widget_types.h"
 
 class Browser;
+class ChromeRenderMessageFilter;
 class Extension;
 class ExtensionFunction;
 class ListValue;
@@ -72,6 +75,16 @@ class ExtensionFunctionDispatcher
   // Resets all functions to their initial implementation.
   static void ResetFunctions();
 
+  // Dispatches an IO-thread extension function. Only used for specific
+  // functions that must be handled on the IO-thread.
+  static void DispatchOnIOThread(
+      const ExtensionInfoMap* extension_info_map,
+      ProfileId profile_id,
+      int render_process_id,
+      base::WeakPtr<ChromeRenderMessageFilter> ipc_sender,
+      int routing_id,
+      const ExtensionHostMsg_Request_Params& params);
+
   // Public constructor. Callers must ensure that:
   // - |delegate| outlives this object.
   // - This object outlives any RenderViewHost's passed to created
@@ -99,8 +112,22 @@ class ExtensionFunctionDispatcher
   Profile* profile() { return profile_; }
 
  private:
-  // Helper to send an access denied error to the requesting render view.
-  void SendAccessDenied(RenderViewHost* render_view_host, int request_id);
+  // Helper to create an ExtensionFunction to handle the function given by
+  // |params|. Can be called on any thread.
+  // Does not set subclass properties, or include_incognito.
+  static ExtensionFunction* CreateExtensionFunction(
+      const ExtensionHostMsg_Request_Params& params,
+      const Extension* extension,
+      ProfileId profile_id,
+      int render_process_id,
+      IPC::Message::Sender* ipc_sender,
+      int routing_id);
+
+  // Helper to send an access denied error to the requesting renderer. Can be
+  // called on any thread.
+  static void SendAccessDenied(IPC::Message::Sender* ipc_sender,
+                               int routing_id,
+                               int request_id);
 
   Profile* profile_;
 

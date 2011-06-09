@@ -22,18 +22,6 @@ namespace {
 
 const char kDispatchEvent[] = "Event.dispatchJSON";
 
-static void DispatchEvent(RenderProcessHost* renderer,
-                          const std::string& extension_id,
-                          const std::string& event_name,
-                          const std::string& event_args,
-                          const GURL& event_url) {
-  ListValue args;
-  args.Set(0, Value::CreateStringValue(event_name));
-  args.Set(1, Value::CreateStringValue(event_args));
-  renderer->Send(new ExtensionMsg_MessageInvoke(MSG_ROUTING_CONTROL,
-      extension_id, kDispatchEvent, args, event_url));
-}
-
 static void NotifyEventListenerRemovedOnIOThread(
     ProfileId profile_id,
     const std::string& extension_id,
@@ -62,22 +50,16 @@ struct ExtensionEventRouter::EventListener {
 };
 
 // static
-bool ExtensionEventRouter::CanCrossIncognito(Profile* profile,
-                                             const std::string& extension_id) {
-  const Extension* extension =
-      profile->GetExtensionService()->GetExtensionById(extension_id, false);
-  return CanCrossIncognito(profile, extension);
-}
-
-// static
-bool ExtensionEventRouter::CanCrossIncognito(Profile* profile,
-                                             const Extension* extension) {
-  // We allow the extension to see events and data from another profile iff it
-  // uses "spanning" behavior and it has incognito access. "split" mode
-  // extensions only see events for a matching profile.
-  return
-      (profile->GetExtensionService()->IsIncognitoEnabled(extension->id()) &&
-       !extension->incognito_split_mode());
+void ExtensionEventRouter::DispatchEvent(IPC::Message::Sender* ipc_sender,
+                                         const std::string& extension_id,
+                                         const std::string& event_name,
+                                         const std::string& event_args,
+                                         const GURL& event_url) {
+  ListValue args;
+  args.Set(0, Value::CreateStringValue(event_name));
+  args.Set(1, Value::CreateStringValue(event_args));
+  ipc_sender->Send(new ExtensionMsg_MessageInvoke(MSG_ROUTING_CONTROL,
+      extension_id, kDispatchEvent, args, event_url));
 }
 
 ExtensionEventRouter::ExtensionEventRouter(Profile* profile)

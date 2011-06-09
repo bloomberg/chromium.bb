@@ -909,11 +909,19 @@ net::URLRequestContextGetter* ProfileImpl::GetRequestContextForIsolatedApp(
 
 void ProfileImpl::RegisterExtensionWithRequestContexts(
     const Extension* extension) {
+  base::Time install_time;
+  if (extension->location() != Extension::COMPONENT) {
+    install_time = GetExtensionService()->extension_prefs()->
+        GetInstallTime(extension->id());
+  }
+  bool incognito_enabled =
+      GetExtensionService()->IsIncognitoEnabled(extension->id());
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(extension_info_map_.get(),
                         &ExtensionInfoMap::AddExtension,
-                        make_scoped_refptr(extension)));
+                        make_scoped_refptr(extension),
+                        install_time, incognito_enabled));
 }
 
 void ProfileImpl::UnregisterExtensionWithRequestContexts(

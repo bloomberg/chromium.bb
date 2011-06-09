@@ -416,6 +416,7 @@ class ExtensionImpl : public ExtensionBase {
 
     int request_id = args[2]->Int32Value();
     bool has_callback = args[3]->BooleanValue();
+    bool for_io_thread = args[4]->BooleanValue();
 
     v8::Persistent<v8::Context> current_context =
         v8::Persistent<v8::Context>::New(v8::Context::GetCurrent());
@@ -430,8 +431,13 @@ class ExtensionImpl : public ExtensionBase {
     params.request_id = request_id;
     params.has_callback = has_callback;
     params.user_gesture = webframe->isProcessingUserGesture();
-    renderview->Send(new ExtensionHostMsg_Request(
-        renderview->routing_id(), params));
+    if (for_io_thread) {
+      renderview->Send(new ExtensionHostMsg_RequestForIOThread(
+          renderview->routing_id(), params));
+    } else {
+      renderview->Send(new ExtensionHostMsg_Request(
+          renderview->routing_id(), params));
+    }
 
     return v8::Undefined();
   }

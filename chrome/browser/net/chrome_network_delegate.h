@@ -13,6 +13,7 @@
 #include "net/base/network_delegate.h"
 
 class ExtensionEventRouterForwarder;
+class ExtensionInfoMap;
 template<class T> class PrefMember;
 
 typedef PrefMember<bool> BooleanPrefMember;
@@ -28,6 +29,7 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
   // at shutdown.
   ChromeNetworkDelegate(
       ExtensionEventRouterForwarder* event_router,
+      ExtensionInfoMap* extension_info_map,
       ProfileId profile_id,
       BooleanPrefMember* enable_referrers);
   virtual ~ChromeNetworkDelegate();
@@ -59,6 +61,8 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
 
   scoped_refptr<ExtensionEventRouterForwarder> event_router_;
   const ProfileId profile_id_;
+
+  scoped_refptr<ExtensionInfoMap> extension_info_map_;
 
   // Weak, owned by our owner.
   BooleanPrefMember* enable_referrers_;

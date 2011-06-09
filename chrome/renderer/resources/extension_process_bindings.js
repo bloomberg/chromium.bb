@@ -183,31 +183,35 @@ var chrome = chrome || {};
   }
 
   // Send an API request and optionally register a callback.
-  function sendRequest(functionName, args, argSchemas, customCallback) {
+  // |opt_args| is an object with optional parameters as follows:
+  // - noStringify: true if we should not stringify the request arguments.
+  // - customCallback: a callback that should be called instead of the standard
+  //   callback.
+  // - nativeFunction: the v8 native function to handle the request, or
+  //   StartRequest if missing.
+  // - forIOThread: true if this function should be handled on the browser IO
+  //   thread.
+  function sendRequest(functionName, args, argSchemas, opt_args) {
+    if (!opt_args)
+      opt_args = {};
     var request = prepareRequest(args, argSchemas);
-    if (customCallback) {
-      request.customCallback = customCallback;
+    if (opt_args.customCallback) {
+      request.customCallback = opt_args.customCallback;
     }
     // JSON.stringify doesn't support a root object which is undefined.
     if (request.args === undefined)
       request.args = null;
 
-    var sargs = chromeHidden.JSON.stringify(request.args);
+    var sargs = opt_args.noStringify ?
+        request.args : chromeHidden.JSON.stringify(request.args);
+    var nativeFunction = opt_args.nativeFunction || StartRequest;
 
     var requestId = GetNextRequestId();
     requests[requestId] = request;
-    var hasCallback = (request.callback || customCallback) ? true : false;
-    return StartRequest(functionName, sargs, requestId, hasCallback);
-  }
-
-  // Send a special API request that is not JSON stringifiable, and optionally
-  // register a callback.
-  function sendCustomRequest(nativeFunction, functionName, args, argSchemas) {
-    var request = prepareRequest(args, argSchemas);
-    var requestId = GetNextRequestId();
-    requests[requestId] = request;
-    return nativeFunction(functionName, request.args, requestId,
-                          request.callback ? true : false);
+    var hasCallback =
+        (request.callback || opt_args.customCallback) ? true : false;
+    return nativeFunction(functionName, sargs, requestId, hasCallback,
+                          opt_args.forIOThread);
   }
 
   // Helper function for positioning pop-up windows relative to DOM objects.
@@ -625,7 +629,7 @@ var chrome = chrome || {};
             } else {
               retval = sendRequest(this.name, args,
                                    this.definition.parameters,
-                                   this.customCallback);
+                                   {customCallback: this.customCallback});
             }
 
             // Validate return value if defined - only in debug.
@@ -816,7 +820,8 @@ var chrome = chrome || {};
               "is no larger than " + iconSize + " pixels square.");
         }
 
-        sendCustomRequest(nativeFunction, name, [details], parameters);
+        sendRequest(name, [details], parameters,
+                    {noStringify: true, nativeFunction: nativeFunction});
       } else if ("path" in details) {
         var img = new Image();
         img.onerror = function() {
@@ -834,7 +839,8 @@ var chrome = chrome || {};
           delete details.path;
           details.imageData = canvas_context.getImageData(0, 0, canvas.width,
                                                           canvas.height);
-          sendCustomRequest(nativeFunction, name, [details], parameters);
+          sendRequest(name, [details], parameters,
+                      {noStringify: true, nativeFunction: nativeFunction});
         };
         img.src = details.path;
       } else {
@@ -874,7 +880,7 @@ var chrome = chrome || {};
       var id = GetNextContextMenuId();
       args[0].generatedId = id;
       sendRequest(this.name, args, this.definition.parameters,
-                  this.customCallback);
+                  {customCallback: this.customCallback});
       return id;
     };
 
@@ -882,6 +888,20 @@ var chrome = chrome || {};
         function(details) {
       var parseResult = parseOmniboxDescription(details.description);
       sendRequest(this.name, [parseResult], this.definition.parameters);
+    };
+
+    apiFunctions["experimental.webRequest.addEventListener"].handleRequest =
+        function() {
+      var args = Array.prototype.slice.call(arguments);
+      sendRequest(this.name, args, this.definition.parameters,
+                  {forIOThread: true});
+    };
+
+    apiFunctions["experimental.webRequest.eventHandled"].handleRequest =
+        function() {
+      var args = Array.prototype.slice.call(arguments);
+      sendRequest(this.name, args, this.definition.parameters,
+                  {forIOThread: true});
     };
 
     apiFunctions["contextMenus.create"].customCallback =

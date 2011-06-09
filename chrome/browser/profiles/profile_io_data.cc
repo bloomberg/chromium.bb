@@ -406,6 +406,7 @@ void ProfileIOData::LazyInitialize() const {
 
   network_delegate_.reset(new ChromeNetworkDelegate(
         io_thread_globals->extension_event_router_forwarder.get(),
+        profile_params_->extension_info_map,
         profile_params_->profile_id,
         &enable_referrers_));
 

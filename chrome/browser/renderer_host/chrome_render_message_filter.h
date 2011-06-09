@@ -6,8 +6,10 @@
 #define CHROME_BROWSER_RENDERER_HOST_CHROME_RENDER_MESSAGE_FILTER_H_
 #pragma once
 
+#include "base/memory/weak_ptr.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/browser/prefs/pref_member.h"
+#include "chrome/browser/profiles/profile.h"
 #include "content/browser/browser_message_filter.h"
 #include "content/common/dom_storage_common.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
@@ -16,7 +18,6 @@ struct ExtensionHostMsg_Request_Params;
 class FilePath;
 class GURL;
 class HostContentSettingsMap;
-class Profile;
 
 namespace net {
 class URLRequestContextGetter;
@@ -82,6 +83,9 @@ class ChromeRenderMessageFilter : public BrowserMessageFilter {
   void OnExtensionRemoveListener(const std::string& extension_id,
                                  const std::string& event_name);
   void OnExtensionCloseChannel(int port_id);
+  void OnExtensionRequestForIOThread(
+      int routing_id,
+      const ExtensionHostMsg_Request_Params& params);
 #if defined(USE_TCMALLOC)
   void OnRendererTcmalloc(base::ProcessId pid, const std::string& output);
 #endif
@@ -122,6 +126,7 @@ class ChromeRenderMessageFilter : public BrowserMessageFilter {
                    const std::string& cookie);
 
   int render_process_id_;
+  ProfileId profile_id_;
 
   // The Profile associated with our renderer process.  This should only be
   // accessed on the UI thread!
@@ -132,6 +137,8 @@ class ChromeRenderMessageFilter : public BrowserMessageFilter {
 
   BooleanPrefMember allow_outdated_plugins_;
   BooleanPrefMember always_authorize_plugins_;
+
+  base::WeakPtrFactory<ChromeRenderMessageFilter> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeRenderMessageFilter);
 };

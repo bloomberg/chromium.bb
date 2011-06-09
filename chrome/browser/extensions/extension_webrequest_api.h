@@ -21,7 +21,7 @@
 #include "webkit/glue/resource_type.h"
 
 class DictionaryValue;
-class ExtensionEventRouterForwarder;
+class ExtensionInfoMap;
 class GURL;
 class ListValue;
 class StringValue;
@@ -109,7 +109,7 @@ class ExtensionWebRequestEventRouter {
   // the given request. Returns net::ERR_IO_PENDING if an extension is
   // intercepting the request, OK otherwise.
   int OnBeforeRequest(ProfileId profile_id,
-                      ExtensionEventRouterForwarder* event_router,
+                      ExtensionInfoMap* extension_info_map,
                       net::URLRequest* request,
                       net::CompletionCallback* callback,
                       GURL* new_url);
@@ -119,7 +119,7 @@ class ExtensionWebRequestEventRouter {
   // Returns net::ERR_IO_PENDING if an extension is intercepting the request, OK
   // otherwise.
   int OnBeforeSendHeaders(ProfileId profile_id,
-                          ExtensionEventRouterForwarder* event_router,
+                          ExtensionInfoMap* extension_info_map,
                           uint64 request_id,
                           net::CompletionCallback* callback,
                           net::HttpRequestHeaders* headers);
@@ -127,7 +127,7 @@ class ExtensionWebRequestEventRouter {
   // Dispatches the onRequestSent event. This is fired for HTTP(s) requests
   // only.
   void OnRequestSent(ProfileId profile_id,
-                     ExtensionEventRouterForwarder* event_router,
+                     ExtensionInfoMap* extension_info_map,
                      uint64 request_id,
                      const net::HostPortPair& socket_address,
                      const net::HttpRequestHeaders& headers);
@@ -135,24 +135,24 @@ class ExtensionWebRequestEventRouter {
   // Dispatches the onBeforeRedirect event. This is fired for HTTP(s) requests
   // only.
   void OnBeforeRedirect(ProfileId profile_id,
-                        ExtensionEventRouterForwarder* event_router,
+                        ExtensionInfoMap* extension_info_map,
                         net::URLRequest* request,
                         const GURL& new_location);
 
   // Dispatches the onResponseStarted event indicating that the first bytes of
   // the response have arrived.
   void OnResponseStarted(ProfileId profile_id,
-                         ExtensionEventRouterForwarder* event_router,
+                         ExtensionInfoMap* extension_info_map,
                          net::URLRequest* request);
 
   // Dispatches the onComplete event.
   void OnCompleted(ProfileId profile_id,
-                   ExtensionEventRouterForwarder* event_router,
+                   ExtensionInfoMap* extension_info_map,
                    net::URLRequest* request);
 
   // Dispatches an onErrorOccurred event.
   void OnErrorOccurred(ProfileId profile_id,
-                      ExtensionEventRouterForwarder* event_router,
+                      ExtensionInfoMap* extension_info_map,
                       net::URLRequest* request);
 
   // Notifications when objects are going away.
@@ -178,13 +178,20 @@ class ExtensionWebRequestEventRouter {
       const std::string& event_name,
       const std::string& sub_event_name,
       const RequestFilter& filter,
-      int extra_info_spec);
+      int extra_info_spec,
+      base::WeakPtr<IPC::Message::Sender> ipc_sender);
 
   // Removes the listener for the given sub-event.
   void RemoveEventListener(
       ProfileId profile_id,
       const std::string& extension_id,
       const std::string& sub_event_name);
+
+  // Called when an incognito profile is created or destroyed.
+  void OnOTRProfileCreated(ProfileId original_profile_id,
+                           ProfileId otr_profile_id);
+  void OnOTRProfileDestroyed(ProfileId original_profile_id,
+                             ProfileId otr_profile_id);
 
  private:
   friend struct DefaultSingletonTraits<ExtensionWebRequestEventRouter>;
@@ -196,13 +203,13 @@ class ExtensionWebRequestEventRouter {
   typedef std::map<uint64, net::URLRequest*> HttpRequestMap;
   // Map of request_id -> bit vector of EventTypes already signaled
   typedef std::map<uint64, int> SignaledRequestMap;
+  typedef std::map<ProfileId, ProfileId> CrossProfileMap;
 
   ExtensionWebRequestEventRouter();
   ~ExtensionWebRequestEventRouter();
 
   bool DispatchEvent(
       ProfileId profile_id,
-      ExtensionEventRouterForwarder* event_router,
       net::URLRequest* request,
       const std::vector<const EventListener*>& listeners,
       const ListValue& args);
@@ -212,6 +219,7 @@ class ExtensionWebRequestEventRouter {
   // set of extra_info_spec flags that every matching listener asked for.
   std::vector<const EventListener*> GetMatchingListeners(
       ProfileId profile_id,
+      ExtensionInfoMap* extension_info_map,
       const std::string& event_name,
       const GURL& url,
       int tab_id,
@@ -222,9 +230,26 @@ class ExtensionWebRequestEventRouter {
   // Same as above, but retrieves the filter parameters from the request.
   std::vector<const EventListener*> GetMatchingListeners(
       ProfileId profile_id,
+      ExtensionInfoMap* extension_info_map,
       const std::string& event_name,
       net::URLRequest* request,
       int* extra_info_spec);
+
+  // Helper for the above functions. This is called twice: once for the profile
+  // of the event, the next time for the "cross" profile (i.e. the incognito
+  // profile if the event is originally for the normal profile, or vice versa).
+  void GetMatchingListenersImpl(
+      ProfileId profile_id,
+      ExtensionInfoMap* extension_info_map,
+      bool crosses_incognito,
+      const std::string& event_name,
+      const GURL& url,
+      int tab_id,
+      int window_id,
+      ResourceType::Type resource_type,
+      int* extra_info_spec,
+      std::vector<const ExtensionWebRequestEventRouter::EventListener*>*
+          matching_listeners);
 
   // Decrements the count of event handlers blocking the given request. When the
   // count reaches 0, we stop blocking the request and proceed it using the
@@ -232,8 +257,6 @@ class ExtensionWebRequestEventRouter {
   // is decided by extension install time. If |response| is non-NULL, this
   // method assumes ownership.
   void DecrementBlockCount(uint64 request_id, EventResponse* response);
-
-  void OnRequestDeleted(net::URLRequest* request);
 
   // Sets the flag that |event_type| has been signaled for |request_id|.
   // Returns the value of the flag before setting it.
@@ -258,16 +281,20 @@ class ExtensionWebRequestEventRouter {
   // signaled and should not be sent again.
   SignaledRequestMap signaled_requests_;
 
+  // A map of original profile -> corresponding incognito profile (and vice
+  // versa).
+  CrossProfileMap cross_profile_map_;
+
   DISALLOW_COPY_AND_ASSIGN(ExtensionWebRequestEventRouter);
 };
 
-class WebRequestAddEventListener : public SyncExtensionFunction {
+class WebRequestAddEventListener : public SyncIOThreadExtensionFunction {
  public:
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.webRequest.addEventListener");
 };
 
-class WebRequestEventHandled : public SyncExtensionFunction {
+class WebRequestEventHandled : public SyncIOThreadExtensionFunction {
  public:
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.webRequest.eventHandled");

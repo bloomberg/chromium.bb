@@ -84,9 +84,9 @@ TEST_F(ExtensionInfoMapTest, RefCounting) {
   EXPECT_TRUE(extension3->HasOneRef());
 
   // Add a ref to each extension and give it to the info map.
-  info_map->AddExtension(extension1);
-  info_map->AddExtension(extension2);
-  info_map->AddExtension(extension3);
+  info_map->AddExtension(extension1, base::Time(), false);
+  info_map->AddExtension(extension2, base::Time(), false);
+  info_map->AddExtension(extension3, base::Time(), false);
 
   // Release extension1, and the info map should have the only ref.
   const Extension* weak_extension1 = extension1;
@@ -109,8 +109,8 @@ TEST_F(ExtensionInfoMapTest, Properties) {
   scoped_refptr<Extension> extension1(CreateExtension("extension1"));
   scoped_refptr<Extension> extension2(CreateExtension("extension2"));
 
-  info_map->AddExtension(extension1);
-  info_map->AddExtension(extension2);
+  info_map->AddExtension(extension1, base::Time(), false);
+  info_map->AddExtension(extension2, base::Time(), false);
 
   EXPECT_EQ(2u, info_map->extensions().size());
   EXPECT_EQ(extension1.get(), info_map->extensions().GetByID(extension1->id()));
@@ -130,8 +130,8 @@ TEST_F(ExtensionInfoMapTest, CheckPermissions) {
   ASSERT_TRUE(app->is_app());
   ASSERT_TRUE(app->web_extent().MatchesURL(app_url));
 
-  info_map->AddExtension(app);
-  info_map->AddExtension(extension);
+  info_map->AddExtension(app, base::Time(), false);
+  info_map->AddExtension(extension, base::Time(), false);
 
   // The app should have the notifications permission, either from a
   // chrome-extension URL or from its web extent.
