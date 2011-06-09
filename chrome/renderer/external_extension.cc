@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -143,10 +143,10 @@ v8::Handle<v8::Value> ExternalExtensionWrapper::AddSearchProvider(
 v8::Handle<v8::Value> ExternalExtensionWrapper::IsSearchProviderInstalled(
     const v8::Arguments& args) {
   if (!args.Length()) return v8::Undefined();
+  v8::String::Utf8Value utf8name(args[0]);
+  if (!utf8name.length()) return v8::Undefined();
 
-  std::string name = std::string(*v8::String::Utf8Value(args[0]));
-  if (!name.length()) return v8::Undefined();
-
+  std::string name = std::string(*utf8name);
   RenderView* render_view = GetRenderView();
   if (!render_view) return v8::Undefined();
 

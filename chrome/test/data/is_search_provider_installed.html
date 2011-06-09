@@ -52,7 +52,7 @@ try {
   var originWithDifferentPort = document.location.protocol + "//" +
       document.location.hostname + differentPort + "/";
 
-  // Verify existance of the api.
+  // Verify existence of the api.
   var foundApi = false;
   try {
     if (window.external.IsSearchProviderInstalled)
@@ -83,7 +83,8 @@ try {
 
   writeResult();
 } catch (e) {
-  logFailed("An exception occurred. Name: " + e.name + " Message: " + e.message);
+  logFailed("An exception occurred. Name: " + e.name + " Message: " +
+            e.message);
   writeResult();
 }
 </script>
