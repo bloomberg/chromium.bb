@@ -1119,6 +1119,32 @@ TEST_F(FormManagerTest, LabelsInferredFromParagraph) {
       "</FORM>");
 }
 
+TEST_F(FormManagerTest, LabelsInferredFromBold) {
+  ExpectJohnSmithLabels(
+      "<FORM name=\"TestForm\" action=\"http://cnn.com\" method=\"post\">"
+      "  <B>First name:</B><INPUT type=\"text\" "
+      "                           id=\"firstname\" value=\"John\"/>"
+      "  <B>Last name:</B>"
+      "    <INPUT type=\"text\" id=\"lastname\" value=\"Smith\"/>"
+      "  <B>Email:</B>"
+      "    <INPUT type=\"text\" id=\"email\" value=\"john@example.com\"/>"
+      "  <INPUT type=\"submit\" name=\"reply-send\" value=\"Send\"/>"
+      "</FORM>");
+}
+
+TEST_F(FormManagerTest, LabelsInferredPriorToImgOrBr) {
+  ExpectJohnSmithLabels(
+      "<FORM name=\"TestForm\" action=\"http://cnn.com\" method=\"post\">"
+      "  First name:<IMG/><INPUT type=\"text\" "
+      "                          id=\"firstname\" value=\"John\"/>"
+      "  Last name:<IMG/>"
+      "    <INPUT type=\"text\" id=\"lastname\" value=\"Smith\"/>"
+      "  Email:<BR/>"
+      "    <INPUT type=\"text\" id=\"email\" value=\"john@example.com\"/>"
+      "  <INPUT type=\"submit\" name=\"reply-send\" value=\"Send\"/>"
+      "</FORM>");
+}
+
 TEST_F(FormManagerTest, LabelsInferredFromTableCell) {
   ExpectJohnSmithLabels(
       "<FORM name=\"TestForm\" action=\"http://cnn.com\" method=\"post\">"

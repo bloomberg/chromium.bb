@@ -153,29 +153,32 @@ string16 InferLabelFromPrevious(const WebFormControlElement& element) {
 
   // If we didn't find text, check for previous paragraph.
   // Eg. <p>Some Text</p><input ...>
-  // Note the lack of whitespace between <p> and <input> elements.
+  // Eg. <b>Some Text</b><input ...>
+  // Note the lack of whitespace between (<p> or <b>) and <input> elements.
   if (inferred_label.empty() && previous.isElementNode()) {
     WebElement element = previous.to<WebElement>();
-    if (element.hasTagName("p")) {
+    if (element.hasTagName("p") || element.hasTagName("b")) {
       inferred_label = FindChildText(element);
     }
   }
 
   // If we didn't find paragraph, check for previous paragraph to this.
   // Eg. <p>Some Text</p>   <input ...>
-  // Note the whitespace between <p> and <input> elements.
+  // Eg. <b>Some Text</b>   <input ...>
+  // Note the whitespace between (<p> or <b>) and <input> elements.
   if (inferred_label.empty()) {
     WebNode sibling = previous.previousSibling();
     if (!sibling.isNull() && sibling.isElementNode()) {
       WebElement element = sibling.to<WebElement>();
-      if (element.hasTagName("p")) {
+      if (element.hasTagName("p") || element.hasTagName("b")) {
         inferred_label = FindChildText(element);
       }
     }
   }
 
-  // Look for text node prior to <img> tag.
+  // Look for text node prior to <img> or <br> tag.
   // Eg. Some Text<img/><input ...>
+  // Eg. Some Text<br/><input ...>
   if (inferred_label.empty()) {
     while (inferred_label.empty() && !previous.isNull()) {
       if (previous.isTextNode()) {
@@ -183,7 +186,7 @@ string16 InferLabelFromPrevious(const WebFormControlElement& element) {
         TrimWhitespace(inferred_label, TRIM_ALL, &inferred_label);
       } else if (previous.isElementNode()) {
         WebElement element = previous.to<WebElement>();
-        if (!element.hasTagName("img"))
+        if (!element.hasTagName("img") && !element.hasTagName("br"))
           break;
       } else {
         break;
