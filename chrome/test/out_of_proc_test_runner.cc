@@ -623,6 +623,7 @@ int main(int argc, char** argv) {
       "process mode).\n");
 
   testing::InitGoogleTest(&argc, argv);
+  TestTimeouts::Initialize();
 
   // Make sure the entire browser code is loaded into memory. Reading it
   // from disk may be slow on a busy bot, and can easily exceed the default
