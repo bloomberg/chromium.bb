@@ -112,16 +112,6 @@ class ChromeosLogin(pyauto.PyUITest):
     login_info = self.GetLoginInfo()
     self.assertTrue(login_info['is_logged_in'], msg='Login failed.')
 
-  def testNoLoginForNonTransitionedDomainAccount(self):
-    """Test that login is successful with valid credentials for a domain."""
-    credentials = \
-      self._ValidCredentials(account_type='test_domain_account_non_transistion')
-    self.Login(credentials['username'], credentials['password'])
-    login_info = self.GetLoginInfo()
-    self.assertFalse(login_info['is_logged_in'], msg='Login succeeded for a '
-                     'non-transistioned account, this account should have not '
-                     'been able to login.')
-
   def testCachedCredentials(self):
     """Test that we can login without connectivity if we have so before."""
     self.testGoodLogin()
