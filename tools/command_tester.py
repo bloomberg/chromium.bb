@@ -149,44 +149,19 @@ def PrintTotalTime(total_time):
 # SIGSEGV, except for actual x86 segmentation violations.
 status_map = {
     'sigabrt' : {
+        # This is not used on Windows.
         'linux2': -6, # SIGABRT
         'darwin': -6, # SIGABRT
-        'cygwin': -6, # SIGABRT
-        'win32':  -6, # SIGABRT
-        'win64':  -6, # SIGABRT
         },
     'sigpipe': {
+        # This is not used on Windows because Windows does not have an
+        # equivalent of SIGPIPE.
         'linux2': -13, # SIGPIPE
         'darwin': -13, # SIGPIPE
-        'cygwin': -1073741819, # -0x3ffffffb or 0xc0000005
-        'win32':  -1073741819, # -0x3ffffffb or 0xc0000005
-        'win64':  -1073741819, # -0x3ffffffb or 0xc0000005
-        },
-    'sigill' : {
-        'linux2': -11, # SIGSEGV
-        'darwin': -11, # SIGBUS
-        'cygwin': -1073741819, # -0x3ffffffb or 0xc0000005
-        'win32':  -1073741819, # -0x3ffffffb or 0xc0000005
-        'win64':  -1073741819, # -0x3ffffffb or 0xc0000005
-        },
-    'segfault': {
-        'linux2': -11, # SIGSEGV
-        'darwin': -10, # SIGBUS
-        'cygwin': -1073741819, # -0x3ffffffb or 0xc0000005
-        'win32':  -1073741819, # -0x3ffffffb or 0xc0000005
-        'win64':  -1073741819, # -0x3ffffffb or 0xc0000005
-        },
-    'sigsegv_or_equivalent': {
-        'linux2': -11, # SIGSEGV
-        'darwin': -11, # SIGSEGV
-        'cygwin': -1073741819, # -0x3ffffffb or 0xc0000005
-        'win32':  -1073741819, # -0x3ffffffb or 0xc0000005
-        'win64':  -1073741819, # -0x3ffffffb or 0xc0000005
         },
     'untrusted_sigill' : {
         'linux2': -11, # SIGSEGV
-        'darwin': -11, # SIGBUS
-        'cygwin': -1073741819, # -0x3ffffffb or 0xc0000005
+        'darwin': -11, # SIGSEGV
         'win32':  [ -1073741819, # -0x3ffffffb or 0xc0000005
                     -1073741674, # -0x3fffff6a or 0xc0000096
                    ],
@@ -195,14 +170,12 @@ status_map = {
     'untrusted_segfault': {
         'linux2': -11, # SIGSEGV
         'darwin': -10, # SIGBUS
-        'cygwin': -1073741819, # -0x3ffffffb or 0xc0000005
         'win32':  -1073741819, # -0x3ffffffb or 0xc0000005
         'win64':  -11,
         },
     'untrusted_sigsegv_or_equivalent': {
         'linux2': -11, # SIGSEGV
         'darwin': -11, # SIGSEGV
-        'cygwin': -1073741819, # -0x3ffffffb or 0xc0000005
         'win32':  [ -1073741819, # -0x3ffffffb or 0xc0000005
 # TODO(khim): remove this when cause of STATUS_PRIVILEGED_INSTRUCTION will be
 # known.  This only happens on win32 with glibc which is also suspicious.
@@ -211,31 +184,15 @@ status_map = {
                    ],
         'win64':  -11,
         },
-    'trusted_sigabrt' : {
-        'linux2': -6, # SIGABRT
-        'darwin': -6, # SIGABRT
-        'cygwin': -6, # SIGABRT
-        'win32':  -6, # SIGABRT
-        'win64':  -6, # SIGABRT
-        },
-    'trusted_sigill' : {
-        'linux2': -11, # SIGSEGV
-        'darwin': -11, # SIGBUS
-        'cygwin': -4, # SIGILL
-        'win32':  -4, # SIGILL
-        'win64':  -4, # SIGILL
-        },
     'trusted_segfault': {
         'linux2': -11, # SIGSEGV
         'darwin': -10, # SIGBUS
-        'cygwin': -11, # SIGSEGV
         'win32': -11, # SIGSEGV
         'win64': -11, # SIGSEGV
         },
     'trusted_sigsegv_or_equivalent': {
         'linux2': -11, # SIGSEGV
         'darwin': -11, # SIGSEGV
-        'cygwin': -11, # SIGSEGV
         'win32': -11, # SIGSEGV
         'win64': -11, # SIGSEGV
         },
