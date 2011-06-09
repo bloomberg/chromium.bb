@@ -124,7 +124,7 @@ function load() {
   if (!cr.isWindows && !cr.isMac) {
     OptionsPage.registerSubPage(CertificateManager.getInstance(),
                                 AdvancedOptions.getInstance(),
-                                [$('show-cookies-button')]);
+                                [$('certificatesManageButton')]);
     OptionsPage.registerOverlay(CertificateRestoreOverlay.getInstance(),
                                 CertificateManager.getInstance());
     OptionsPage.registerOverlay(CertificateBackupOverlay.getInstance(),
