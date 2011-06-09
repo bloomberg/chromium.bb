@@ -3092,18 +3092,6 @@
    fun:_ZN7history20VisitSegmentDatabase17QuerySegmentUsageEN4base4TimeEiPSt6vectorIP13PageUsageDataSaIS5_EE
 }
 {
-   bug_60890
-   Memcheck:Jump
-   ...
-   fun:find_objects
-   fun:find_objects_by_template
-   fun:nssToken_FindCertificatesBySubject
-   fun:nssTrustDomain_FindCertificatesBySubject
-   fun:nssCertificate_BuildChain
-   fun:NSSCertificate_BuildChain
-   fun:CERT_FindCertIssuer
-}
-{
    bug_69073
    Memcheck:Leak
    fun:malloc
