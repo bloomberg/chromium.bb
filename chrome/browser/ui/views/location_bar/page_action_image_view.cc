@@ -15,7 +15,8 @@
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "ui/base/accessibility/accessible_view_state.h"
-#include "views/controls/menu/menu_2.h"
+#include "views/controls/menu/menu_item_view.h"
+#include "views/controls/menu/menu_model_adapter.h"
 
 PageActionImageView::PageActionImageView(LocationBarView* owner,
                                          Profile* profile,
@@ -123,12 +124,7 @@ void PageActionImageView::OnMouseReleased(const views::MouseEvent& event) {
   } else if (event.IsMiddleMouseButton()) {
     button = 2;
   } else if (event.IsRightMouseButton()) {
-    // Get the top left point of this button in screen coordinates.
-    gfx::Point menu_origin;
-    ConvertPointToScreen(this, &menu_origin);
-    // Make the menu appear below the button.
-    menu_origin.Offset(0, height());
-    ShowContextMenu(menu_origin, true);
+    ShowContextMenu(gfx::Point(), true);
     return;
   }
 
@@ -153,10 +149,17 @@ void PageActionImageView::ShowContextMenu(const gfx::Point& p,
 
   Browser* browser = BrowserView::GetBrowserViewForNativeWindow(
       platform_util::GetTopLevel(GetWidget()->GetNativeView()))->browser();
-  context_menu_contents_ =
-      new ExtensionContextMenuModel(extension, browser, this);
-  context_menu_menu_.reset(new views::Menu2(context_menu_contents_.get()));
-  context_menu_menu_->RunContextMenuAt(p);
+
+  scoped_refptr<ExtensionContextMenuModel> context_menu_model(
+      new ExtensionContextMenuModel(extension, browser, this));
+  views::MenuModelAdapter menu_model_adapter(context_menu_model.get());
+  views::MenuItemView menu(&menu_model_adapter);
+  menu_model_adapter.BuildMenu(&menu);
+
+  gfx::Point screen_loc;
+  views::View::ConvertPointToScreen(this, &screen_loc);
+  menu.RunMenuAt(GetWidget()->GetNativeWindow(), NULL,
+      gfx::Rect(screen_loc ,size()), views::MenuItemView::TOPLEFT, true);
 }
 
 void PageActionImageView::OnImageLoaded(

@@ -16,9 +16,6 @@
 #include "views/controls/image_view.h"
 
 class LocationBarView;
-namespace views {
-class Menu2;
-};
 
 // PageActionImageView is used by the LocationBarView to display the icon for a
 // given PageAction and notify the extension when the icon is clicked.
@@ -84,10 +81,6 @@ class PageActionImageView : public views::ImageView,
   // A cache of bitmaps the page actions might need to show, mapped by path.
   typedef std::map<std::string, SkBitmap> PageActionMap;
   PageActionMap page_action_icons_;
-
-  // The context menu for this page action.
-  scoped_refptr<ExtensionContextMenuModel> context_menu_contents_;
-  scoped_ptr<views::Menu2> context_menu_menu_;
 
   // The object that is waiting for the image loading to complete
   // asynchronously.
