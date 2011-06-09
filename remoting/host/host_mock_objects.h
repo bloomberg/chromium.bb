@@ -64,6 +64,7 @@ class MockChromotingHostContext : public ChromotingHostContext {
   MOCK_METHOD0(main_message_loop, MessageLoop*());
   MOCK_METHOD0(encode_message_loop, MessageLoop*());
   MOCK_METHOD0(network_message_loop, MessageLoop*());
+  MOCK_METHOD0(ui_message_loop, MessageLoop*());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockChromotingHostContext);

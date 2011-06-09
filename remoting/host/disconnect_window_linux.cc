@@ -12,7 +12,7 @@ class DisconnectWindowLinux : public remoting::DisconnectWindow {
  public:
   DisconnectWindowLinux() {}
   virtual void Show(remoting::ChromotingHost* host,
-                   const std::string& username) OVERRIDE;
+                    const std::string& username) OVERRIDE;
   virtual void Hide() OVERRIDE;
 
  private:

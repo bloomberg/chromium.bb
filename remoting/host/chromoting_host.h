@@ -166,6 +166,10 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   void ProcessPreAuthentication(
       const scoped_refptr<protocol::ConnectionToClient>& connection);
 
+  // Show or hide the Disconnect window on the UI thread.  If |show| is false,
+  // hide the window, ignoring the |username| parameter.
+  void ShowDisconnectWindow(bool show, const std::string& username);
+
   // The context that the chromoting host runs on.
   ChromotingHostContext* context_;
 

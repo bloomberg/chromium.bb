@@ -372,7 +372,7 @@ void ChromotingHost::OnClientDisconnected(ConnectionToClient* connection) {
   if (!HasAuthenticatedClients()) {
     EnableCurtainMode(false);
     if (is_me2mom_)
-      desktop_environment_->disconnect_window()->Hide();
+      ShowDisconnectWindow(false, std::string());
   }
 }
 
@@ -471,7 +471,7 @@ void ChromotingHost::LocalLoginSucceeded(
     size_t pos = username.find('/');
     if (pos != std::string::npos)
       username.replace(pos, std::string::npos, "");
-    desktop_environment_->disconnect_window()->Show(this, username);
+    ShowDisconnectWindow(true, username);
   }
 }
 
@@ -501,6 +501,23 @@ void ChromotingHost::ProcessPreAuthentication(
   }
   CHECK(client != clients_.end());
   client->get()->OnAuthorizationComplete(true);
+}
+
+void ChromotingHost::ShowDisconnectWindow(bool show,
+                                          const std::string& username) {
+  if (context_->ui_message_loop() != MessageLoop::current()) {
+    context_->ui_message_loop()->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(this, &ChromotingHost::ShowDisconnectWindow,
+                          show, username));
+    return;
+  }
+
+  if (show) {
+    desktop_environment_->disconnect_window()->Show(this, username);
+  } else {
+    desktop_environment_->disconnect_window()->Hide();
+  }
 }
 
 }  // namespace remoting

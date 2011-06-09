@@ -75,11 +75,15 @@ class ChromotingHostTest : public testing::Test {
         .WillByDefault(Return(&message_loop_));
     ON_CALL(context_, network_message_loop())
         .WillByDefault(Return(&message_loop_));
+    ON_CALL(context_, ui_message_loop())
+        .WillByDefault(Return(&message_loop_));
     EXPECT_CALL(context_, main_message_loop())
         .Times(AnyNumber());
     EXPECT_CALL(context_, encode_message_loop())
         .Times(AnyNumber());
     EXPECT_CALL(context_, network_message_loop())
+        .Times(AnyNumber());
+    EXPECT_CALL(context_, ui_message_loop())
         .Times(AnyNumber());
 
     Capturer* capturer = new CapturerFake();
