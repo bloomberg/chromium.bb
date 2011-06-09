@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script>
+var settings = {
+  "cookies": ["allow", "session_only", "block"],
+  "images": ["allow", "block"],
+  "javascript": ["allow", "block"],
+  "plugins": ["allow", "block"],
+  "popups": ["allow", "block"],
+  // "location": ["allow", "ask", "block"],
+  "notifications": ["allow", "ask", "block"],
+};
+
+var incognito;
+var url;
+
+function init() {
+  chrome.tabs.getSelected(undefined, function(tab) {
+    incognito = tab.incognito;
+    url = tab.url;
+    var types = ["cookies", "images", "javascript", "plugins", "popups",
+                 "notifications"];
+    types.forEach(function(type) {
+      chrome.experimental.contentSettings[type].get({
+            'topLevelUrl': url,
+            'embeddedUrl': url,
+            'incognito': incognito
+          },
+          function(details) {
+            document.getElementById(type).value = details.setting;
+          });
+    });
+  });
+}
+
+function settingChanged(element) {
+  var type = element.id;
+  var setting = element.value;
+  var pattern = {
+    'pattern': url
+  };
+  console.log(type+" setting for "+pattern+": "+setting);
+  chrome.experimental.contentSettings[type].set({
+        'topLevelPattern': pattern,
+        'embeddedPattern': pattern,
+        'setting': setting,
+        'scope': (incognito ? 'incognito_session_only' : 'regular')
+      });
+}
+</script>
+</head>
+<body onload="init()">
+
+<fieldset>
+<dl>
+<dt><label for="cookies">Cookies: </label></dt>
+<dd><select id="cookies" onchange="settingChanged(this);">
+  <option value="allow">Allow</option>
+  <option value="session_only">Session only</option>
+  <option value="block">Block</option>
+</select></dd>
+<dt><label for="images">Images: </label></dt>
+<dd><select id="images" onchange="settingChanged(this);">
+  <option value="allow">Allow</option>
+  <option value="block">Block</option>
+</select>
+<dt><label for="javascript">Javascript: </label></dt>
+<dd><select id="javascript" onchange="settingChanged(this);">
+  <option value="allow">Allow</option>
+  <option value="block">Block</option>
+</select></dd>
+<dt><label for="plugins">Plug-ins: </label></dt>
+<dd><select id="plugins" onchange="settingChanged(this);">
+    <option value="allow">Allow</option>
+    <option value="ask">Click-to-play</option>
+    <option value="block">Block</option>
+  </select></dd>
+<dt><label for="popups">Pop-ups: </label></dt>
+<dd><select id="popups" onchange="settingChanged(this);">
+      <option value="allow">Allow</option>
+      <option value="block">Block</option>
+    </select></dd>
+<dt><label for="location">Location: </label></dt>
+<dd><select id="location" onchange="settingChanged(this);" disabled>
+    <option value="allow">Allow</option>
+    <option value="ask">Ask</option>
+    <option value="block">Block</option>
+  </select></dd>
+<dt><label for="notifications">Notifications: </label></dt>
+<dd><select id="notifications" onchange="settingChanged(this);">
+    <option value="allow">Allow</option>
+    <option value="ask">Ask</option>
+    <option value="block">Block</option>
+  </select></dd>
+</dl>
+</fieldset>
+
+
+</body>
+</html>

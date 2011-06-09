@@ -293,6 +293,7 @@ void HostContentSettingsMap::GetSettingsForOneType(
 void HostContentSettingsMap::SetDefaultContentSetting(
     ContentSettingsType content_type,
     ContentSetting setting) {
+  DCHECK(IsSettingAllowedForType(setting, content_type));
   for (DefaultProviderIterator provider =
            default_content_settings_providers_.begin();
        provider != default_content_settings_providers_.end(); ++provider) {
@@ -305,6 +306,7 @@ void HostContentSettingsMap::SetContentSetting(
     ContentSettingsType content_type,
     const std::string& resource_identifier,
     ContentSetting setting) {
+  DCHECK(IsSettingAllowedForType(setting, content_type));
   for (ProviderIterator provider = content_settings_providers_.begin();
        provider != content_settings_providers_.end();
        ++provider) {
@@ -336,6 +338,34 @@ void HostContentSettingsMap::ClearSettingsForOneType(
        provider != content_settings_providers_.end();
        ++provider) {
     (*provider)->ClearAllContentSettingsRules(content_type);
+  }
+}
+
+// static
+bool HostContentSettingsMap::IsSettingAllowedForType(
+    ContentSetting setting, ContentSettingsType content_type) {
+  // Prerendering doesn't have settings.
+  if (content_type == CONTENT_SETTINGS_TYPE_PRERENDER)
+    return false;
+
+  // For all other types, DEFAULT, ALLOW and BLOCK are always allowed.
+  if (setting == CONTENT_SETTING_DEFAULT ||
+      setting == CONTENT_SETTING_ALLOW ||
+      setting == CONTENT_SETTING_BLOCK) {
+    return true;
+  }
+  switch (content_type) {
+    case CONTENT_SETTINGS_TYPE_COOKIES:
+      return (setting == CONTENT_SETTING_SESSION_ONLY);
+    case CONTENT_SETTINGS_TYPE_PLUGINS:
+      return (setting == CONTENT_SETTING_ASK &&
+              CommandLine::ForCurrentProcess()->HasSwitch(
+                  switches::kEnableClickToPlay));
+    case CONTENT_SETTINGS_TYPE_GEOLOCATION:
+    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
+      return (setting == CONTENT_SETTING_ASK);
+    default:
+      return false;
   }
 }
 

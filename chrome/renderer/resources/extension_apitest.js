@@ -154,21 +154,24 @@ var chrome = chrome || {};
     return true;
   };
 
-  chrome.test.assertEq = function(expected, actual) {
+  chrome.test.assertEq = function(expected, actual, message) {
+    var error_msg = "API Test Error in " + testName(currentTest);
+    if (message)
+      error_msg += ": " + message;
     if (typeof(expected) == 'object') {
       if (!chrome.test.checkDeepEq(expected, actual)) {
-        chrome.test.fail("API Test Error in " + testName(currentTest) +
+        chrome.test.fail(error_msg +
                          "\nActual: " + JSON.stringify(actual) +
                          "\nExpected: " + JSON.stringify(expected));
       }
       return;
     }
     if (expected != actual) {
-      chrome.test.fail("API Test Error in " + testName(currentTest) +
+      chrome.test.fail(error_msg +
                        "\nActual: " + actual + "\nExpected: " + expected);
     }
     if (typeof(expected) != typeof(actual)) {
-      chrome.test.fail("API Test Error in " + testName(currentTest) +
+      chrome.test.fail(error_msg +
                        " (type mismatch)\nActual Type: " + typeof(actual) +
                        "\nExpected Type:" + typeof(expected));
     }

@@ -53,13 +53,10 @@
         }
       },
       "inIncognitoContext": {
-        "type": "object",
+        "type": "boolean",
         "optional": true,
         "unprivileged": true,
-        "description": "True for content scripts running inside incognito tabs, and for extension pages running inside an incognito process. The latter only applies to extensions with 'split' incognito_behavior.",
-        "properties": {
-          "message": { "type": "boolean", "description": "True if the page or script is in an incongito process." }
-        }
+        "description": "True for content scripts running inside incognito tabs, and for extension pages running inside an incognito process. The latter only applies to extensions with 'split' incognito_behavior."
       }
     },
     "functions": [
@@ -5673,22 +5670,246 @@
     ]
   },
   {
-    "namespace": "experimental.contentSettings.global",
+    "namespace": "experimental.contentSettings",
+    "types": [
+      {
+        "id": "ResourceIdentifier",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The resource identifier for the given content type."
+          },
+          "description": {
+            "type": "string",
+            "description": "A human readable description of the resource."
+          }
+        },
+        "description": "Currently, no content types use resource identifiers."
+      },
+      {
+        "id": "Pattern",
+        "type": "object",
+        "properties": {
+          "pattern": {
+            "type": "string",
+            "description": "The pattern string. The pattern should never be constructed directly, but should always be derived from an URL using the methods in the <var>contentSettings.patterns</var> module."
+          }
+        }
+      },
+      {
+        "id": "ContentSettingRule",
+        "type": "object",
+        "properties": {
+          "topLevelPattern": {
+            "$ref": "Pattern",
+            "description": "The pattern for the top-level frame URL."
+          },
+          "embeddedPattern": {
+            "$ref": "Pattern",
+            "description": "The pattern for the frame or object URL."
+          },
+          "resourceIdentifier": {
+            "$ref": "ResourceIdentifier",
+            "optional": true,
+            "description": "The resource identifier for the content type."
+          },
+          "setting": {
+            "type": "any",
+            "description": "The setting applied by this rule. See the description of the individual ContentSetting objects for the possible values."
+          }
+        }
+      },
+      {
+        "id": "ContentSetting",
+        "type": "object",
+        "functions": [
+          {
+            "name": "clear",
+            "type": "function",
+            "description": "Clear all content setting rules set by this extension.",
+            "parameters": [
+              {
+                "name": "details",
+                "type": "object",
+                "properties": {
+                  "scope": {
+                    "type": "string",
+                    "enum": ["regular", "incognito_session_only"],
+                    "optional": true,
+                    "description": "Where to set the setting (default: regular). One of<br><var>regular</var>: setting for regular profile (which is inherited by the incognito profile if not overridden elsewhere),<br><var>incognito_session_only</var>: setting for incognito profile that can only be set during an incognito session and is deleted when the incognito session ends (overrides regular settings)."
+                  }
+                }
+              },
+              {
+                "type": "function",
+                "name": "callback",
+                "optional": true,
+                "parameters": []
+              }
+            ]
+          },
+          {
+            "name": "get",
+            "type": "function",
+            "description": "Get the current content setting for a given pair of URLs.",
+            "parameters": [
+              {
+                "name": "details",
+                "type": "object",
+                "properties": {
+                  "embeddedUrl": {
+                    "type": "string",
+                    "description": "The URL of the frame or object for which the content settings should be retrieved."
+                  },
+                  "topLevelUrl": {
+                    "type": "string",
+                    "description": "The URL of the top-level frame."
+                  },
+                  "resourceIdentifier": {
+                    "$ref": "ResourceIdentifier",
+                    "optional": true,
+                    "description": "A more specific identifier of the type of content for which the settings should be retrieved."
+                  },
+                  "incognito": {
+                    "type": "boolean",
+                    "optional": true,
+                    "description": "Whether to check the content settings for an incognito session. (default false)"
+                  }
+                }
+              },
+              {
+                "type": "function",
+                "name": "callback",
+                "parameters": [
+                  {
+                    "name": "details",
+                    "type": "object",
+                    "properties": {
+                      "setting": {
+                        "type": "any",
+                        "description": "The content setting. See the description of the individual ContentSetting objects for the possible values."
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "set",
+            "type": "function",
+            "description": "Apply a new content setting rule.",
+            "parameters": [
+              {
+                "name": "details",
+                "type": "object",
+                "properties": {
+                  "topLevelPattern": {
+                    "$ref": "Pattern",
+                    "description": "The pattern for the top-level frame URL."
+                  },
+                  "embeddedPattern": {
+                    "$ref": "Pattern",
+                    "description": "The pattern for the frame or object URL."
+                  },
+                  "resourceIdentifier": {
+                    "$ref": "ResourceIdentifier",
+                    "optional": true,
+                    "description": "The resource identifier for the content type."
+                  },
+                  "setting": {
+                    "type": "any",
+                    "description": "The setting applied by this rule. See the description of the individual ContentSetting objects for the possible values."
+                  },
+                  "scope": {
+                    "type": "string",
+                    "enum": ["regular", "incognito_session_only"],
+                    "optional": true,
+                    "description": "Where to clear the setting (default: regular). One of<br><var>regular</var>: setting for regular profile (which is inherited by the incognito profile if not overridden elsewhere),<br><var>incognito_session_only</var>: setting for incognito profile that can only be set during an incognito session and is deleted when the incognito session ends (overrides regular settings)."
+                  }
+                }
+              },
+              {
+                "type": "function",
+                "name": "callback",
+                "optional": true,
+                "parameters": []
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "properties": {
-      "thirdPartyCookiesAllowed": {
-        "$ref": "ChromeSetting",
-        "value": ["thirdPartyCookiesAllowed", {"type": "boolean"}],
-        "description": "Whether third party cookies should be allowed. The value of this preference is of type boolean, and the default value is true."
+      "global": {
+        "type": "object",
+        "value": {},
+        "properties": {
+          "thirdPartyCookiesAllowed": {
+            "$ref": "ChromeSetting",
+            "value": ["thirdPartyCookiesAllowed", {"type": "boolean"}],
+            "description": "Whether third party cookies should be allowed. The value of this preference is of type boolean, and the default value is true."
+          },
+          "referrersEnabled": {
+            "$ref": "ChromeSetting",
+            "value": ["referrersEnabled", {"type":"boolean"}],
+            "description": "Whether referrers should be enabled. The value of this preference is of type boolean, and the default value is true."
+          },
+          "hyperlinkAuditingEnabled": {
+            "$ref": "ChromeSetting",
+            "value": ["hyperlinkAuditingEnabled", {"type":"boolean"}],
+            "description": "Whether to enable hyperlink auditing (\"&lt;a ping&gt;\"). The value of this preference is of type boolean, and the default value is true."
+          }
+        }
       },
-      "referrersEnabled": {
-        "$ref": "ChromeSetting",
-        "value": ["referrersEnabled", {"type":"boolean"}],
-        "description": "Whether referrers should be enabled. The value of this preference is of type boolean, and the default value is true."
+      "cookies": {
+        "$ref": "ContentSetting",
+        "description": "Whether to allow cookies and other local data to be set by websites. One of<br><var>allow</var>: Accept cookies,<br><var>block</var>: Block cookies,<br><var>session_only</var>: Accept cookies only for the current session. Default is <var>allow</var>.",
+        "value": [
+          "cookies",
+          {"type":"string", "enum": ["allow", "block", "session_only"]}
+        ]
       },
-      "hyperlinkAuditingEnabled": {
-        "$ref": "ChromeSetting",
-        "value": ["hyperlinkAuditingEnabled", {"type":"boolean"}],
-        "description": "Whether to enable hyperlink auditing (\"&lt;a ping&gt;\"). The value of this preference is of type boolean, and the default value is true."
+      "images": {
+        "$ref": "ContentSetting",
+        "description": "Whether to show images. One of<br><var>allow</var>: Show images,<br><var>block</var>: Don't show images. Default is <var>allow</var>.",
+        "value": [
+          "images",
+          {"type":"string", "enum": ["allow", "block"]}
+        ]
+      },
+      "javascript": {
+        "$ref": "ContentSetting",
+        "description": "Whether to run Javascript. One of<br><var>allow</var>: Run Javascript,<br><var>block</var>: Don't run Javascript. Default is <var>allow</var>.",
+        "value": [
+          "javascript",
+          {"type":"string", "enum": ["allow", "block"]}
+        ]
+      },
+      "plugins": {
+        "$ref": "ContentSetting",
+        "description": "Whether to run plug-ins. One of<br><var>allow</var>: Run plug-ins automatically,<br><var>block</var>: Don't run plug-ins automatically. Default is <var>allow</var>.",
+        "value": [
+          "plugins",
+          {"type":"string", "enum": ["allow", "block"]}
+        ]
+      },
+      "popups": {
+        "$ref": "ContentSetting",
+        "description": "Whether to allow sites to show pop-ups. One of<br><var>allow</var>: Allow sites to show pop-ups,<br><var>block</var>: Don't allow sites to show pop-ups. Default is <var>block</var>.",
+        "value": [
+          "popups",
+          {"type":"string", "enum": ["allow", "block"]}
+        ]
+      },
+      "notifications": {
+        "$ref": "ContentSetting",
+        "description": "Whether to allow sites to show desktop notifications. One of<br><var>allow</var>: Allow sites to show desktop notifications,<br><var>block</var>: Don't allow sites to show desktop notifications,<br><var>ask</var>: Ask when a site wants to show desktop notifications. Default is <var>ask</var>.",
+        "value": [
+          "notifications",
+          {"type":"string", "enum": ["allow", "block", "ask"]}
+        ]
       }
     }
   },

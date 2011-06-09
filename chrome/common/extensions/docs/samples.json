@@ -538,6 +538,32 @@
     },
     {
       "api_calls": [
+        "chrome.tabs.get",
+        "chrome.tabs.getSelected"
+      ],
+      "description": "Shows the content settings for the current site.",
+      "features": [
+        "browser_action",
+        "contentSettings",
+        "experimental",
+        "popup",
+        "tabs"
+      ],
+      "icon": null,
+      "id": "e1f97e61e28ff33131d66dd28a4ed70a77874a51",
+      "name": "Content settings",
+      "path": "examples\/api\/contentSettings\/",
+      "protocols": [],
+      "search_string": "CONTENT SETTINGS SHOWS THE CONTENT SETTINGS FOR THE CURRENT SITE. BROWSER_ACTION CONTENTSETTINGS EXPERIMENTAL POPUP TABS CHROME.TABS.GET CHROME.TABS.GETSELECTED",
+      "source_files": [
+        "manifest.json",
+        "popup.html"
+      ],
+      "source_hash": "f53b10cf54302a91ee763af603d7c0a3ffe1461f",
+      "zip_path": "examples\/api\/contentSettings.zip"
+    },
+    {
+      "api_calls": [
         "chrome.contextMenus.create"
       ],
       "description": "Shows some of the features of the Context Menus API",
@@ -1471,7 +1497,7 @@
         "util\/sorttable.js",
         "util\/table2CSV.js"
       ],
-      "source_hash": "7e592dbd3446353f7d98d1760f7cd773035aaaad",
+      "source_hash": "67c8c6468fbc9c35433719bfbe9683f92c51248c",
       "zip_path": "examples\/extensions\/benchmark.zip"
     },
     {
@@ -1740,7 +1766,7 @@
         "screenshot.html",
         "screenshot.js"
       ],
-      "source_hash": "a822ee354314b8ff943ddf537e0cdff2e2fd36c9",
+      "source_hash": "559684528065aa7782e802bfba6ebf3ec238d7cc",
       "zip_path": "examples\/api\/tabs\/screenshot.zip"
     },
     {

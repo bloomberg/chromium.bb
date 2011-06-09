@@ -13,16 +13,18 @@ const char kDescriptionKey[] = "description";
 const char kEmbeddedPatternKey[] = "embeddedPattern";
 const char kEmbeddedUrlKey[] = "embeddedUrl";
 const char kIdKey[] = "id";
-const char kIncognitoKey[] = "incognito";
-const char kOnlyNonDefaultKey[] = "onlyNonDefault";
+const char kPatternKey[] = "pattern";
 const char kResourceIdentifierKey[] = "resourceIdentifier";
 const char kRuleKey[] = "rule";
 const char kTopLevelPatternKey[] = "topLevelPattern";
-const char kUrlKey[] = "url";
+const char kTopLevelUrlKey[] = "topLevelUrl";
 
 // Errors.
-const char kInvalidContentSettingError[] =
-    "Invalid content setting \"*\" for content type \"*\".";
+const char kIncognitoContextError[] =
+    "Can't modify regular settings from an incognito context.";
+const char kIncognitoSessionOnlyError[] =
+    "You cannot read incognito content settings when no incognito window "
+    "is open.";
 const char kInvalidUrlError[] = "The URL \"*\" is invalid.";
 
 }  // extension_content_settings_api_constants

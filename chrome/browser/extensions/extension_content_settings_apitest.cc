@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -25,6 +26,59 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentSettings) {
   EXPECT_TRUE(pref->IsExtensionControlled());
   EXPECT_FALSE(pref_service->GetBoolean(prefs::kBlockThirdPartyCookies));
   EXPECT_TRUE(pref_service->GetBoolean(prefs::kEnableReferrers));
+  HostContentSettingsMap* map =
+      browser()->profile()->GetHostContentSettingsMap();
+
+  // Check default content settings by using an unknown URL.
+  GURL example_url("http://www.example.com");
+  EXPECT_EQ(CONTENT_SETTING_SESSION_ONLY,
+            map->GetCookieContentSetting(example_url, example_url,
+                                         false));
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            map->GetContentSetting(example_url, CONTENT_SETTINGS_TYPE_IMAGES,
+                                   std::string()));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            map->GetContentSetting(example_url,
+                                   CONTENT_SETTINGS_TYPE_JAVASCRIPT,
+                                   std::string()));
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            map->GetContentSetting(example_url, CONTENT_SETTINGS_TYPE_PLUGINS,
+                                   std::string()));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            map->GetContentSetting(example_url, CONTENT_SETTINGS_TYPE_POPUPS,
+                                   std::string()));
+#if 0
+  // TODO(bauerb): Enable once geolocation settings are integrated into the
+  // HostContentSettingsMap.
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            map->GetContentSetting(example_url,
+                                   CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                                   std::string()));
+#endif
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            map->GetContentSetting(example_url,
+                                   CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                                   std::string()));
+
+  // Check content settings for www.google.com
+  GURL url("http://www.google.com");
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            map->GetCookieContentSetting(url, url, false));
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            map->GetContentSetting(url, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            map->GetContentSetting(url, CONTENT_SETTINGS_TYPE_JAVASCRIPT, ""));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            map->GetContentSetting(url, CONTENT_SETTINGS_TYPE_PLUGINS, ""));
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            map->GetContentSetting(url, CONTENT_SETTINGS_TYPE_POPUPS, ""));
+#if 0
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            map->GetContentSetting(url, CONTENT_SETTINGS_TYPE_GEOLOCATION, ""));
+#endif
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            map->GetContentSetting(url, CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                                   ""));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PersistentIncognitoContentSettings) {

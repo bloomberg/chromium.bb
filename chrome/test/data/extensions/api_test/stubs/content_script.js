@@ -24,7 +24,7 @@ chrome.extension.sendRequest("getApi", function(apis) {
     ["functions", "events"].forEach(function(section) {
       if (typeof(module[section]) == "undefined")
         return;
-       module[section].forEach(function(entry) {
+      module[section].forEach(function(entry) {
         var path = namespace + "." + entry.name;
         if (entry.unprivileged) {
           unprivilegedPaths.push(path);

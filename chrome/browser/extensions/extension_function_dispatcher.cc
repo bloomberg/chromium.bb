@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/extension_bookmark_manager_api.h"
 #include "chrome/browser/extensions/extension_bookmarks_module.h"
 #include "chrome/browser/extensions/extension_browser_actions_api.h"
+#include "chrome/browser/extensions/extension_content_settings_api.h"
 #include "chrome/browser/extensions/extension_context_menu_api.h"
 #include "chrome/browser/extensions/extension_cookies_api.h"
 #include "chrome/browser/extensions/extension_debugger_api.h"
@@ -359,6 +360,11 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<AttachDebuggerFunction>();
   RegisterFunction<DetachDebuggerFunction>();
   RegisterFunction<SendRequestDebuggerFunction>();
+
+  // Content settings.
+  RegisterFunction<ClearContentSettingsFunction>();
+  RegisterFunction<GetContentSettingFunction>();
+  RegisterFunction<SetContentSettingFunction>();
 }
 
 void FactoryRegistry::GetAllNames(std::vector<std::string>* names) {

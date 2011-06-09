@@ -148,6 +148,9 @@ class HostContentSettingsMap
   // This should only be called on the UI thread.
   void ClearSettingsForOneType(ContentSettingsType content_type);
 
+  static bool IsSettingAllowedForType(ContentSetting setting,
+                                      ContentSettingsType content_type);
+
   // This setting trumps any host-specific settings.
   bool BlockThirdPartyCookies() const { return block_third_party_cookies_; }
   bool IsBlockThirdPartyCookiesManaged() const {

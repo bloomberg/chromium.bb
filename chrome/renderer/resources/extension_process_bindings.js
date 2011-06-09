@@ -125,7 +125,7 @@ var chrome = chrome || {};
                 request.callbackSchema.parameters);
           } catch (exception) {
             return "Callback validation error during " + name + " -- " +
-                   exception;
+                   exception.stack;
           }
         }
 
@@ -347,7 +347,7 @@ var chrome = chrome || {};
   var customBindings = {};
 
   function setupChromeSetting() {
-    customBindings['ChromeSetting'] = function(prefKey, valueSchema) {
+    function ChromeSetting(prefKey, valueSchema) {
       this.get = function(details, callback) {
         var getSchema = this.parameters.get;
         chromeHidden.validate([details, callback], getSchema);
@@ -373,7 +373,37 @@ var chrome = chrome || {};
       this.onChange = new chrome.Event('types.ChromeSetting.' + prefKey +
                                        '.onChange');
     };
-    customBindings['ChromeSetting'].prototype = new CustomBindingsObject();
+    ChromeSetting.prototype = new CustomBindingsObject();
+    customBindings['ChromeSetting'] = ChromeSetting;
+  }
+
+  function setupContentSetting() {
+    function ContentSetting(contentType, settingSchema) {
+      this.get = function(details, callback) {
+        var getSchema = this.parameters.get;
+        chromeHidden.validate([details, callback], getSchema);
+        return sendRequest('experimental.contentSettings.get',
+                           [contentType, details, callback],
+                           extendSchema(getSchema));
+      };
+      this.set = function(details, callback) {
+        var setSchema = this.parameters.set.slice();
+        setSchema[0].properties.setting = settingSchema;
+        chromeHidden.validate([details, callback], setSchema);
+        return sendRequest('experimental.contentSettings.set',
+                           [contentType, details, callback],
+                           extendSchema(setSchema));
+      };
+      this.clear = function(details, callback) {
+        var clearSchema = this.parameters.clear;
+        chromeHidden.validate([details, callback], clearSchema);
+        return sendRequest('experimental.contentSettings.clear',
+                           [contentType, details, callback],
+                           extendSchema(clearSchema));
+      };
+    }
+    ContentSetting.prototype = new CustomBindingsObject();
+    customBindings['ContentSetting'] = ContentSetting;
   }
 
   // Page action events send (pageActionId, {tabId, tabUrl}).
@@ -527,6 +557,10 @@ var chrome = chrome || {};
     // ChromeSetting objects from the API definition.
     setupChromeSetting();
 
+    // Setup the ContentSetting class so we can use it to construct
+    // ContentSetting objects from the API definition.
+    setupContentSetting();
+
     // |apiFunctions| is a hash of name -> object that stores the
     // name & definition of the apiFunction. Custom handling of api functions
     // is implemented by adding a "handleRequest" function to the object.
@@ -625,33 +659,41 @@ var chrome = chrome || {};
         });
       }
 
-
-      // Parse any values defined for properties.
-      if (apiDef.properties) {
-        forEach(apiDef.properties, function(prop, property) {
-          if (property.value) {
+      function addProperties(m, def) {
+        // Parse any values defined for properties.
+        if (def.properties) {
+          forEach(def.properties, function(prop, property) {
             var value = property.value;
-            if (property.type === 'integer') {
-              value = parseInt(value);
-            } else if (property.type === 'boolean') {
-              value = value === "true";
-            } else if (property["$ref"]) {
-              var constructor = customBindings[property["$ref"]];
-              var args = value;
-              // For an object property, |value| is an array of constructor
-              // arguments, but we want to pass the arguments directly
-              // (i.e. not as an array), so we have to fake calling |new| on the
-              // constructor.
-              value = { __proto__: constructor.prototype };
-              constructor.apply(value, args);
-            } else if (property.type !== 'string') {
-              throw "NOT IMPLEMENTED (extension_api.json error): Cannot " +
-                  "parse values for type \"" + property.type + "\"";
+            if (value) {
+              if (property.type === 'integer') {
+                value = parseInt(value);
+              } else if (property.type === 'boolean') {
+                value = value === "true";
+              } else if (property["$ref"]) {
+                var constructor = customBindings[property["$ref"]];
+                var args = value;
+                // For an object property, |value| is an array of constructor
+                // arguments, but we want to pass the arguments directly
+                // (i.e. not as an array), so we have to fake calling |new| on
+                // the constructor.
+                value = { __proto__: constructor.prototype };
+                constructor.apply(value, args);
+              } else if (property.type === 'object') {
+                // Recursively add properties.
+                addProperties(value, property);
+              } else if (property.type !== 'string') {
+                throw "NOT IMPLEMENTED (extension_api.json error): Cannot " +
+                    "parse values for type \"" + property.type + "\"";
+              }
             }
-            module[prop] = value;
-          }
-        });
+            if (value) {
+              m[prop] = value;
+            }
+          });
+        }
       }
+
+      addProperties(module, apiDef);
 
       // getTabContentses is retained for backwards compatibility
       // See http://crbug.com/21433

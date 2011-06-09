@@ -17,15 +17,15 @@ extern const char kDescriptionKey[];
 extern const char kEmbeddedPatternKey[];
 extern const char kEmbeddedUrlKey[];
 extern const char kIdKey[];
-extern const char kIncognitoKey[];
-extern const char kOnlyNonDefaultKey[];
+extern const char kPatternKey[];
 extern const char kResourceIdentifierKey[];
 extern const char kRuleKey[];
 extern const char kTopLevelPatternKey[];
-extern const char kUrlKey[];
+extern const char kTopLevelUrlKey[];
 
 // Errors.
-extern const char kInvalidContentSettingError[];
+extern const char kIncognitoContextError[];
+extern const char kIncognitoSessionOnlyError[];
 extern const char kInvalidUrlError[];
 
 }
