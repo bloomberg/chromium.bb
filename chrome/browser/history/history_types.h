@@ -239,6 +239,10 @@ class VisitRow {
 // We pass around vectors of visits a lot
 typedef std::vector<VisitRow> VisitVector;
 
+// The basic information associated with a visit (timestamp, type of visit),
+// used by HistoryBackend::AddVisits() to create new visits for a URL.
+typedef std::pair<base::Time, PageTransition::Type> VisitInfo;
+
 // Favicons -------------------------------------------------------------------
 
 // Used by the importer to set favicons for imported bookmarks.

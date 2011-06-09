@@ -282,7 +282,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   // While adding visits in batch, the source needs to be provided.
   virtual bool AddVisits(const GURL& url,
-                         const std::vector<base::Time>& visits,
+                         const std::vector<history::VisitInfo>& visits,
                          VisitSource visit_source);
 
   virtual bool RemoveVisits(const VisitVector& visits);
@@ -315,7 +315,8 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   void SetOnBackendDestroyTask(MessageLoop* message_loop, Task* task);
 
   // Adds the given rows to the database if it doesn't exist. A visit will be
-  // added for each given URL at the last visit time in the URLRow.
+  // added for each given URL at the last visit time in the URLRow if the
+  // passed visit type != SOURCE_SYNCED (the sync code manages visits itself).
   // Each visit will have the visit_source type set.
   void AddPagesWithDetails(const std::vector<URLRow>& info,
                            VisitSource visit_source);

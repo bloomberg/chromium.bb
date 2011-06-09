@@ -696,15 +696,18 @@ TEST_F(HistoryBackendTest, AddVisitsSource) {
   ASSERT_TRUE(backend_.get());
 
   GURL url1("http://www.cnn.com");
-  std::vector<base::Time> visits1;
-  visits1.push_back(Time::Now() - base::TimeDelta::FromDays(5));
-  visits1.push_back(Time::Now() - base::TimeDelta::FromDays(1));
-  visits1.push_back(Time::Now());
+  std::vector<VisitInfo> visits1, visits2;
+  visits1.push_back(VisitInfo(
+      Time::Now() - base::TimeDelta::FromDays(5), PageTransition::LINK));
+  visits1.push_back(VisitInfo(
+      Time::Now() - base::TimeDelta::FromDays(1), PageTransition::LINK));
+  visits1.push_back(VisitInfo(
+      Time::Now(), PageTransition::LINK));
 
   GURL url2("http://www.example.com");
-  std::vector<base::Time> visits2;
-  visits2.push_back(Time::Now() - base::TimeDelta::FromDays(10));
-  visits2.push_back(Time::Now());
+  visits2.push_back(VisitInfo(
+      Time::Now() - base::TimeDelta::FromDays(10), PageTransition::LINK));
+  visits2.push_back(VisitInfo(Time::Now(), PageTransition::LINK));
 
   // Clear all history.
   backend_->DeleteAllHistory();
@@ -737,14 +740,15 @@ TEST_F(HistoryBackendTest, RemoveVisitsSource) {
   ASSERT_TRUE(backend_.get());
 
   GURL url1("http://www.cnn.com");
-  std::vector<base::Time> visits1;
-  visits1.push_back(Time::Now() - base::TimeDelta::FromDays(5));
-  visits1.push_back(Time::Now());
+  std::vector<VisitInfo> visits1, visits2;
+  visits1.push_back(VisitInfo(
+      Time::Now() - base::TimeDelta::FromDays(5), PageTransition::LINK));
+  visits1.push_back(VisitInfo(Time::Now(), PageTransition::LINK));
 
   GURL url2("http://www.example.com");
-  std::vector<base::Time> visits2;
-  visits2.push_back(Time::Now() - base::TimeDelta::FromDays(10));
-  visits2.push_back(Time::Now());
+  visits2.push_back(VisitInfo(
+      Time::Now() - base::TimeDelta::FromDays(10), PageTransition::LINK));
+  visits2.push_back(VisitInfo(Time::Now(), PageTransition::LINK));
 
   // Clear all history.
   backend_->DeleteAllHistory();

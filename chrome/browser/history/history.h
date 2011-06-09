@@ -552,8 +552,12 @@ class HistoryService : public CancelableRequestProvider,
   //
   // Calling this function many times may be slow because each call will
   // dispatch to the history thread and will be a separate database
-  // transaction. If this functionality is needed for importing many URLs, a
-  // version that takes an array should probably be added.
+  // transaction. If this functionality is needed for importing many URLs,
+  // callers should use AddPagesWithDetails() instead.
+  //
+  // Note that this routine (and AddPageWithDetails()) always adds a single
+  // visit using the |last_visit| timestamp, and a PageTransition type of LINK,
+  // if |visit_source| != SYNCED.
   void AddPageWithDetails(const GURL& url,
                           const string16& title,
                           int visit_count,

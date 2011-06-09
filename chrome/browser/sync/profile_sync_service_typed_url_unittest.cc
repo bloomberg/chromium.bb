@@ -80,7 +80,7 @@ class HistoryBackendMock : public HistoryBackend {
                                      history::VisitVector* visits));
   MOCK_METHOD2(UpdateURL, bool(history::URLID id, const history::URLRow& url));
   MOCK_METHOD3(AddVisits, bool(const GURL& url,
-                               const std::vector<base::Time>& visits,
+                               const std::vector<history::VisitInfo>& visits,
                                history::VisitSource visit_source));
   MOCK_METHOD1(RemoveVisits, bool(const history::VisitVector& visits));
   MOCK_METHOD2(GetURL, bool(const GURL& url_id, history::URLRow* url_row));
@@ -225,11 +225,10 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
       history::URLRow new_url(GURL(typed_url.url()));
 
       new_url.set_title(UTF8ToUTF16(typed_url.title()));
-      new_url.set_typed_count(typed_url.typed_count());
-      DCHECK(typed_url.visit_size());
-      new_url.set_visit_count(typed_url.visited_count());
+      DCHECK(typed_url.visits_size());
+      DCHECK_EQ(typed_url.visits_size(), typed_url.visit_transitions_size());
       new_url.set_last_visit(base::Time::FromInternalValue(
-          typed_url.visit(typed_url.visit_size() - 1)));
+          typed_url.visits(typed_url.visits_size() - 1)));
       new_url.set_hidden(typed_url.hidden());
 
       urls->push_back(new_url);
@@ -245,10 +244,11 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
   }
 
   static bool URLsEqual(history::URLRow& lhs, history::URLRow& rhs) {
+    // Only verify the fields we explicitly sync (i.e. don't verify typed_count
+    // or visit_count because we rely on the history DB to manage those values
+    // and they are left unchanged by HistoryBackendMock).
     return (lhs.url().spec().compare(rhs.url().spec()) == 0) &&
            (lhs.title().compare(rhs.title()) == 0) &&
-           (lhs.visit_count() == rhs.visit_count()) &&
-           (lhs.typed_count() == rhs.typed_count()) &&
            (lhs.last_visit() == rhs.last_visit()) &&
            (lhs.hidden() == rhs.hidden());
   }
@@ -267,7 +267,8 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
         base::Time::FromInternalValue(last_visit));
     history_url.set_hidden(hidden);
     visits->push_back(history::VisitRow(
-        history_url.id(), history_url.last_visit(), 0, 0, 0));
+        history_url.id(), history_url.last_visit(), 0, PageTransition::TYPED,
+        0));
     history_url.set_visit_count(visits->size());
     return history_url;
   }

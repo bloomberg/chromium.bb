@@ -50,7 +50,7 @@ class TypedUrlModelAssociator
   typedef std::vector<history::URLRow> TypedUrlVector;
   typedef std::vector<std::pair<history::URLID, history::URLRow> >
       TypedUrlUpdateVector;
-  typedef std::vector<std::pair<GURL, std::vector<base::Time> > >
+  typedef std::vector<std::pair<GURL, std::vector<history::VisitInfo> > >
       TypedUrlVisitVector;
 
   static syncable::ModelType model_type() { return syncable::TYPED_URLS; }
@@ -109,18 +109,18 @@ class TypedUrlModelAssociator
     // No changes were noted.
     DIFF_NONE           = 0x0000,
 
-    // Data was modified in the sync node.
-    DIFF_NODE_CHANGED   = 0x0001,
+    // The local sync node needs to be modified.
+    DIFF_UPDATE_NODE   = 0x0001,
 
     // The title changed in the local URLRow. DIFF_ROW_CHANGED will also be set
     // if this is set.
-    DIFF_TITLE_CHANGED  = 0x0002,
+    DIFF_LOCAL_TITLE_CHANGED  = 0x0002,
 
     // The local URLRow has changed (typed_count, visit_count, title, etc).
-    DIFF_ROW_CHANGED    = 0x0004,
+    DIFF_LOCAL_ROW_CHANGED    = 0x0004,
 
     // Visits need to be added to the local URLRow.
-    DIFF_VISITS_ADDED   = 0x0008,
+    DIFF_LOCAL_VISITS_ADDED   = 0x0008,
   };
 
   // Merges the URL information in |typed_url| with the URL information from the
@@ -139,19 +139,21 @@ class TypedUrlModelAssociator
                        const history::URLRow& url,
                        history::VisitVector* visits,
                        history::URLRow* new_url,
-                       std::vector<base::Time>* new_visits);
+                       std::vector<history::VisitInfo>* new_visits);
   static void WriteToSyncNode(const history::URLRow& url,
                               const history::VisitVector& visits,
                               sync_api::WriteNode* node);
 
   static void DiffVisits(const history::VisitVector& old_visits,
                          const sync_pb::TypedUrlSpecifics& new_url,
-                         std::vector<base::Time>* new_visits,
+                         std::vector<history::VisitInfo>* new_visits,
                          history::VisitVector* removed_visits);
 
-  // Initializes the passed |url_row| based on the values in |specifics|.
-  static history::URLRow TypedUrlSpecificsToURLRow(
-      const sync_pb::TypedUrlSpecifics& specifics);
+  // Updates the passed |url_row| based on the values in |specifics|. Fields
+  // that are not contained in |specifics| (such as typed_count) are left
+  // unchanged.
+  static void UpdateURLRowFromTypedUrlSpecifics(
+      const sync_pb::TypedUrlSpecifics& specifics, history::URLRow* url_row);
 
  private:
   typedef std::map<std::string, int64> TypedUrlToSyncIdMap;

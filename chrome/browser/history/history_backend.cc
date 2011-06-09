@@ -785,18 +785,21 @@ void HistoryBackend::AddPagesWithDetails(const std::vector<URLRow>& urls,
                                                 i->title(), string16());
     }
 
-    // Make up a visit to correspond to that page.
-    VisitRow visit_info(url_id, i->last_visit(), 0,
-        PageTransition::LINK | PageTransition::CHAIN_START |
-        PageTransition::CHAIN_END, 0);
-    visit_info.is_indexed = has_indexed;
-    if (!visit_database->AddVisit(&visit_info, visit_source)) {
-      NOTREACHED() << "Adding visit failed.";
-      return;
-    }
+    // Sync code manages the visits itself.
+    if (visit_source != SOURCE_SYNCED) {
+      // Make up a visit to correspond to the last visit to the page.
+      VisitRow visit_info(url_id, i->last_visit(), 0,
+                          PageTransition::LINK | PageTransition::CHAIN_START |
+                          PageTransition::CHAIN_END, 0);
+      visit_info.is_indexed = has_indexed;
+      if (!visit_database->AddVisit(&visit_info, visit_source)) {
+        NOTREACHED() << "Adding visit failed.";
+        return;
+      }
 
-    if (visit_info.visit_time < first_recorded_time_)
-      first_recorded_time_ = visit_info.visit_time;
+      if (visit_info.visit_time < first_recorded_time_)
+        first_recorded_time_ = visit_info.visit_time;
+    }
   }
 
   // Broadcast a notification for typed URLs that have been modified. This
@@ -924,12 +927,13 @@ bool HistoryBackend::UpdateURL(URLID id, const history::URLRow& url) {
 }
 
 bool HistoryBackend::AddVisits(const GURL& url,
-                               const std::vector<base::Time>& visits,
+                               const std::vector<VisitInfo>& visits,
                                VisitSource visit_source) {
   if (db_.get()) {
-    for (std::vector<base::Time>::const_iterator visit = visits.begin();
+    for (std::vector<VisitInfo>::const_iterator visit = visits.begin();
          visit != visits.end(); ++visit) {
-      if (!AddPageVisit(url, *visit, 0, 0, visit_source).first) {
+      if (!AddPageVisit(
+              url, visit->first, 0, visit->second, visit_source).first) {
         return false;
       }
     }

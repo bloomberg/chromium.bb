@@ -85,16 +85,23 @@ bool TypedUrlModelAssociator::AssociateModels() {
 
       sync_api::ReadNode node(&trans);
       if (node.InitByClientTagLookup(syncable::TYPED_URLS, tag)) {
+        // Same URL exists in sync data and in history data - compare the
+        // entries to see if there's any difference.
         const sync_pb::TypedUrlSpecifics& typed_url(
             node.GetTypedUrlSpecifics());
         DCHECK_EQ(tag, typed_url.url());
 
-        history::URLRow new_url(ix->url());
+        // Initialize fields in |new_url| to the same values as the fields in
+        // the existing URLRow in the history DB. This is needed because we
+        // overwrite the existing value below in WriteToHistoryBackend(), but
+        // some of the values in that structure are not synced (like
+        // typed_count).
+        history::URLRow new_url(*ix);
 
-        std::vector<base::Time> added_visits;
+        std::vector<history::VisitInfo> added_visits;
         int difference = MergeUrls(typed_url, *ix, &visits, &new_url,
                                    &added_visits);
-        if (difference & DIFF_NODE_CHANGED) {
+        if (difference & DIFF_UPDATE_NODE) {
           sync_api::WriteNode write_node(&trans);
           if (!write_node.InitByClientTagLookup(syncable::TYPED_URLS, tag)) {
             LOG(ERROR) << "Failed to edit typed_url sync node.";
@@ -103,9 +110,9 @@ bool TypedUrlModelAssociator::AssociateModels() {
           // We don't want to resurrect old visits that have been aged out by
           // other clients, so remove all visits that are older than the
           // earliest existing visit in the sync node.
-          if (typed_url.visit_size() > 0) {
+          if (typed_url.visits_size() > 0) {
             base::Time earliest_visit =
-                base::Time::FromInternalValue(typed_url.visit(0));
+                base::Time::FromInternalValue(typed_url.visits(0));
             for (history::VisitVector::iterator it = visits.begin();
                  it != visits.end() && it->visit_time < earliest_visit; ) {
               it = visits.erase(it);
@@ -119,18 +126,18 @@ bool TypedUrlModelAssociator::AssociateModels() {
           }
           WriteToSyncNode(new_url, visits, &write_node);
         }
-        if (difference & DIFF_TITLE_CHANGED) {
+        if (difference & DIFF_LOCAL_TITLE_CHANGED) {
           titles.push_back(std::pair<GURL, string16>(new_url.url(),
                                                      new_url.title()));
         }
-        if (difference & DIFF_ROW_CHANGED) {
+        if (difference & DIFF_LOCAL_ROW_CHANGED) {
           updated_urls.push_back(
               std::pair<history::URLID, history::URLRow>(ix->id(), new_url));
         }
-        if (difference & DIFF_VISITS_ADDED) {
+        if (difference & DIFF_LOCAL_VISITS_ADDED) {
           new_visits.push_back(
-              std::pair<GURL, std::vector<base::Time> >(ix->url(),
-                                                        added_visits));
+              std::pair<GURL, std::vector<history::VisitInfo> >(ix->url(),
+                                                                added_visits));
         }
 
         Associate(&tag, node.GetId());
@@ -152,6 +159,8 @@ bool TypedUrlModelAssociator::AssociateModels() {
       current_urls.insert(tag);
     }
 
+    // Now walk the sync nodes and detect any URLs that exist there, but not in
+    // the history DB, so we can add them to our local history DB.
     int64 sync_child_id = typed_url_root.GetFirstChildId();
     while (sync_child_id != sync_api::kInvalidId) {
       sync_api::ReadNode sync_child_node(&trans);
@@ -164,16 +173,22 @@ bool TypedUrlModelAssociator::AssociateModels() {
 
       if (current_urls.find(typed_url.url()) == current_urls.end()) {
         new_visits.push_back(
-            std::pair<GURL, std::vector<base::Time> >(
+            std::pair<GURL, std::vector<history::VisitInfo> >(
                 GURL(typed_url.url()),
-                std::vector<base::Time>()));
-        std::vector<base::Time>& visits = new_visits.back().second;
-        history::URLRow new_url = TypedUrlSpecificsToURLRow(typed_url);
+                std::vector<history::VisitInfo>()));
+        std::vector<history::VisitInfo>& visits = new_visits.back().second;
+        history::URLRow new_url(GURL(typed_url.url()));
+        TypedUrlModelAssociator::UpdateURLRowFromTypedUrlSpecifics(
+            typed_url, &new_url);
 
-        // The latest visit gets added automatically, so skip it.
-        for (int c = 0; c < typed_url.visit_size() - 1; ++c) {
-          DCHECK(typed_url.visit(c) < typed_url.visit(c + 1));
-          visits.push_back(base::Time::FromInternalValue(typed_url.visit(c)));
+        for (int c = 0; c < typed_url.visits_size(); ++c) {
+          DCHECK(c == 0 || typed_url.visits(c) > typed_url.visits(c - 1));
+          DCHECK_LE(static_cast<PageTransition::Type>(
+              typed_url.visit_transitions(c)), PageTransition::LAST_CORE);
+          visits.push_back(history::VisitInfo(
+              base::Time::FromInternalValue(typed_url.visits(c)),
+              static_cast<PageTransition::Type>(
+                  typed_url.visit_transitions(c))));
         }
 
         Associate(&typed_url.url(), sync_child_node.GetId());
@@ -324,6 +339,11 @@ bool TypedUrlModelAssociator::WriteToHistoryBackend(
   if (updated_urls) {
     for (TypedUrlUpdateVector::const_iterator url = updated_urls->begin();
          url != updated_urls->end(); ++url) {
+      // Caller should have already initialized the visit and typed counts
+      // appropriately to match what the values should have been before adding
+      // visits.
+      DCHECK(url->second.visit_count());
+      DCHECK(url->second.typed_count());
       DCHECK(IsAssociated(url->second.url().spec()));
       if (!history_backend_->UpdateURL(url->first, url->second)) {
         LOG(ERROR) << "Could not update page: " << url->second.url().spec();
@@ -353,46 +373,49 @@ bool TypedUrlModelAssociator::WriteToHistoryBackend(
 
 // static
 int TypedUrlModelAssociator::MergeUrls(
-    const sync_pb::TypedUrlSpecifics& typed_url,
+    const sync_pb::TypedUrlSpecifics& node,
     const history::URLRow& url,
     history::VisitVector* visits,
     history::URLRow* new_url,
-    std::vector<base::Time>* new_visits) {
+    std::vector<history::VisitInfo>* new_visits) {
   DCHECK(new_url);
-  DCHECK(!typed_url.url().compare(url.url().spec()));
-  DCHECK(!typed_url.url().compare(new_url->url().spec()));
+  DCHECK(!node.url().compare(url.url().spec()));
+  DCHECK(!node.url().compare(new_url->url().spec()));
   DCHECK(visits->size());
+  DCHECK_EQ(node.visits_size(), node.visit_transitions_size());
 
-  int original_visit_count = visits->size();
+  // If we have an old-format node (before we added the visits and
+  // visit_transitions arrays to the protobuf), just overwrite
+  // it with our local history data.
+  if (node.visits_size() == 0)
+    return DIFF_UPDATE_NODE;
 
   // Convert these values only once.
-  string16 typed_title(UTF8ToUTF16(typed_url.title()));
-  base::Time typed_visit =
-      base::Time::FromInternalValue(
-          typed_url.visit(typed_url.visit_size() - 1));
-
+  string16 node_title(UTF8ToUTF16(node.title()));
+  base::Time node_last_visit = base::Time::FromInternalValue(
+      node.visits(node.visits_size() - 1));
 
   // This is a bitfield representing what we'll need to update with the output
   // value.
   int different = DIFF_NONE;
 
   // Check if the non-incremented values changed.
-  if ((typed_title.compare(url.title()) != 0) ||
-      (typed_url.hidden() != url.hidden())) {
+  if ((node_title.compare(url.title()) != 0) ||
+      (node.hidden() != url.hidden())) {
     // Use the values from the most recent visit.
-    if (typed_visit >= url.last_visit()) {
-      new_url->set_title(typed_title);
-      new_url->set_hidden(typed_url.hidden());
-      different |= DIFF_ROW_CHANGED;
+    if (node_last_visit >= url.last_visit()) {
+      new_url->set_title(node_title);
+      new_url->set_hidden(node.hidden());
+      different |= DIFF_LOCAL_ROW_CHANGED;
 
       // If we're changing the local title, note this.
       if (new_url->title().compare(url.title()) != 0) {
-        different |= DIFF_TITLE_CHANGED;
+        different |= DIFF_LOCAL_TITLE_CHANGED;
       }
     } else {
       new_url->set_title(url.title());
       new_url->set_hidden(url.hidden());
-      different |= DIFF_NODE_CHANGED;
+      different |= DIFF_UPDATE_NODE;
     }
   } else {
     // No difference.
@@ -400,93 +423,62 @@ int TypedUrlModelAssociator::MergeUrls(
     new_url->set_hidden(url.hidden());
   }
 
-  // For typed count, we just select the maximum value. This is not technically
-  // correct since it undercounts URLs that have been typed on multiple systems
-  // between syncs, but it's the best we can do.
-  if (typed_url.typed_count() > url.typed_count()) {
-    new_url->set_typed_count(typed_url.typed_count());
-    different |= DIFF_ROW_CHANGED;
-  } else if (typed_url.typed_count() < url.typed_count()) {
-    new_url->set_typed_count(url.typed_count());
-    different |= DIFF_NODE_CHANGED;
-  } else {
-    // No difference.
-    new_url->set_typed_count(typed_url.typed_count());
-  }
-
-  size_t left_num_visits = typed_url.visit_size();
-  size_t right_num_visits = visits->size();
-  size_t left = 0;
-  size_t right = 0;
+  size_t node_num_visits = node.visits_size();
+  size_t history_num_visits = visits->size();
+  size_t node_visit_index = 0;
+  size_t history_visit_index = 0;
   // Walk through the two sets of visits and figure out if any new visits were
-  // added on either side (left = sync node, right = history db entry).
-  while (left < left_num_visits || right < right_num_visits) {
+  // added on either side.
+  while (node_visit_index < node_num_visits ||
+         history_visit_index < history_num_visits) {
     // Time objects are initialized to "earliest possible time".
-    base::Time left_time, right_time;
-    if (left < left_num_visits)
-      left_time = base::Time::FromInternalValue(typed_url.visit(left));
-    if (right < right_num_visits)
-      right_time = (*visits)[right].visit_time;
-    if (left >= left_num_visits ||
-        (right < right_num_visits && left_time > right_time)) {
+    base::Time node_time, history_time;
+    if (node_visit_index < node_num_visits)
+      node_time = base::Time::FromInternalValue(node.visits(node_visit_index));
+    if (history_visit_index < history_num_visits)
+      history_time = (*visits)[history_visit_index].visit_time;
+    if (node_visit_index >= node_num_visits ||
+        (history_visit_index < history_num_visits &&
+         node_time > history_time)) {
       // We found a visit in the history DB that doesn't exist in the sync DB,
       // so mark the node as modified so the caller will update the sync node.
-      different |= DIFF_NODE_CHANGED;
-      ++right;
-    } else if (right >= right_num_visits || left_time < right_time) {
+      different |= DIFF_UPDATE_NODE;
+      ++history_visit_index;
+    } else if (history_visit_index >= history_num_visits ||
+               node_time < history_time) {
       // Found a visit in the sync node that doesn't exist in the history DB, so
       // add it to our list of new visits and set the appropriate flag so the
       // caller will update the history DB.
-      different |= DIFF_VISITS_ADDED;
-      new_visits->push_back(left_time);
+      different |= DIFF_LOCAL_VISITS_ADDED;
+      new_visits->push_back(history::VisitInfo(
+          node_time, node.visit_transitions(node_visit_index)));
       // This visit is added to visits below.
-      ++left;
+      ++node_visit_index;
     } else {
       // Same (already synced) entry found in both DBs - no need to do anything.
-      ++left;
-      ++right;
+      ++node_visit_index;
+      ++history_visit_index;
     }
   }
 
-  if (different & DIFF_VISITS_ADDED) {
+  if (different & DIFF_LOCAL_VISITS_ADDED) {
     // Insert new visits into the apropriate place in the visits vector.
     history::VisitVector::iterator visit_ix = visits->begin();
-    for (std::vector<base::Time>::iterator new_visit = new_visits->begin();
+    for (std::vector<history::VisitInfo>::iterator new_visit =
+             new_visits->begin();
          new_visit != new_visits->end(); ++new_visit) {
-      while (visit_ix != visits->end() && *new_visit > visit_ix->visit_time) {
+      while (visit_ix != visits->end() &&
+             new_visit->first > visit_ix->visit_time) {
         ++visit_ix;
       }
       visit_ix = visits->insert(visit_ix,
-                                history::VisitRow(url.id(), *new_visit,
-                                                  0, 0, 0));
+                                history::VisitRow(url.id(), new_visit->first,
+                                                  0, new_visit->second, 0));
       ++visit_ix;
     }
   }
 
   new_url->set_last_visit(visits->back().visit_time);
-
-  // visit_count is a value that is only loosely correlated with the visit
-  // array (for example, reloading a page does not increment the visit_count
-  // but does register a visit in the visit vector). To determine the merged
-  // visit_count, we'll calculate the largest diff between visit_count and the
-  // sizes of the visit arrays and then apply that to the final visit array.
-  // This is inexact, but the exact value isn't particularly important (it's
-  // just used to help prioritize between various autocomplete suggestions, so
-  // in general just the magnitude is important).
-  int typed_url_visit_delta =
-      typed_url.visit_size() - typed_url.visited_count();
-  int history_url_visit_delta =
-      original_visit_count - url.visit_count();
-  if (std::abs(typed_url_visit_delta) > std::abs(history_url_visit_delta))
-    new_url->set_visit_count(visits->size() - typed_url_visit_delta);
-  else
-    new_url->set_visit_count(visits->size() - history_url_visit_delta);
-
-  if (new_url->visit_count() != url.visit_count())
-    different |= DIFF_ROW_CHANGED;
-  if (new_url->visit_count() != typed_url.visited_count())
-    different |= DIFF_NODE_CHANGED;
-
   return different;
 }
 
@@ -502,13 +494,13 @@ void TypedUrlModelAssociator::WriteToSyncNode(
   sync_pb::TypedUrlSpecifics typed_url;
   typed_url.set_url(url.url().spec());
   typed_url.set_title(UTF16ToUTF8(url.title()));
-  typed_url.set_typed_count(url.typed_count());
   typed_url.set_hidden(url.hidden());
-  typed_url.set_visited_count(url.visit_count());
 
   for (history::VisitVector::const_iterator visit = visits.begin();
        visit != visits.end(); ++visit) {
-    typed_url.add_visit(visit->visit_time.ToInternalValue());
+    typed_url.add_visits(visit->visit_time.ToInternalValue());
+    typed_url.add_visit_transitions(
+        visit->transition & PageTransition::CORE_MASK);
   }
 
   node->SetTypedUrlSpecifics(typed_url);
@@ -518,48 +510,49 @@ void TypedUrlModelAssociator::WriteToSyncNode(
 void TypedUrlModelAssociator::DiffVisits(
     const history::VisitVector& old_visits,
     const sync_pb::TypedUrlSpecifics& new_url,
-    std::vector<base::Time>* new_visits,
+    std::vector<history::VisitInfo>* new_visits,
     history::VisitVector* removed_visits) {
-  size_t left_visit_count = old_visits.size();
-  size_t right_visit_count = new_url.visit_size();
-  size_t left = 0;
-  size_t right = 0;
-  while (left < left_visit_count && right < right_visit_count) {
-    base::Time right_time = base::Time::FromInternalValue(new_url.visit(right));
-    if (old_visits[left].visit_time < right_time) {
-      removed_visits->push_back(old_visits[left]);
-      ++left;
-    } else if (old_visits[left].visit_time > right_time) {
-      new_visits->push_back(right_time);
-      ++right;
+  size_t old_visit_count = old_visits.size();
+  size_t new_visit_count = new_url.visits_size();
+  size_t old_index = 0;
+  size_t new_index = 0;
+  while (old_index < old_visit_count && new_index < new_visit_count) {
+    base::Time new_visit_time =
+        base::Time::FromInternalValue(new_url.visits(new_index));
+    if (old_visits[old_index].visit_time < new_visit_time) {
+      removed_visits->push_back(old_visits[old_index]);
+      ++old_index;
+    } else if (old_visits[old_index].visit_time > new_visit_time) {
+      new_visits->push_back(history::VisitInfo(
+          new_visit_time, new_url.visit_transitions(new_index)));
+      ++new_index;
     } else {
-      ++left;
-      ++right;
+      ++old_index;
+      ++new_index;
     }
   }
 
-  for ( ; left < left_visit_count; ++left) {
-    removed_visits->push_back(old_visits[left]);
+  for ( ; old_index < old_visit_count; ++old_index) {
+    removed_visits->push_back(old_visits[old_index]);
   }
 
-  for ( ; right < right_visit_count; ++right) {
-    new_visits->push_back(base::Time::FromInternalValue(new_url.visit(right)));
+  for ( ; new_index < new_visit_count; ++new_index) {
+    new_visits->push_back(history::VisitInfo(
+        base::Time::FromInternalValue(new_url.visits(new_index)),
+        new_url.visit_transitions(new_index)));
   }
 }
 
 
 // static
-history::URLRow TypedUrlModelAssociator::TypedUrlSpecificsToURLRow(
-    const sync_pb::TypedUrlSpecifics& typed_url) {
-  DCHECK(typed_url.visit_size() > 0);
-  history::URLRow new_url(GURL(typed_url.url()));
-  new_url.set_title(UTF8ToUTF16(typed_url.title()));
-  new_url.set_visit_count(typed_url.visited_count());
-  new_url.set_typed_count(typed_url.typed_count());
-  new_url.set_hidden(typed_url.hidden());
-  new_url.set_last_visit(base::Time::FromInternalValue(
-      typed_url.visit(typed_url.visit_size() - 1)));
-  return new_url;
+void TypedUrlModelAssociator::UpdateURLRowFromTypedUrlSpecifics(
+    const sync_pb::TypedUrlSpecifics& typed_url, history::URLRow* new_url) {
+  DCHECK_GT(typed_url.visits_size(), 0);
+  DCHECK_EQ(typed_url.visit_transitions_size(), typed_url.visits_size());
+  new_url->set_title(UTF8ToUTF16(typed_url.title()));
+  new_url->set_hidden(typed_url.hidden());
+  new_url->set_last_visit(base::Time::FromInternalValue(
+      typed_url.visits(typed_url.visits_size() - 1)));
 }
 
 bool TypedUrlModelAssociator::CryptoReadyIfNecessary() {

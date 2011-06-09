@@ -169,10 +169,15 @@ void TypedUrlChangeProcessor::HandleURLsVisited(
   sync_api::WriteNode update_node(&trans);
   if (!update_node.InitByClientTagLookup(syncable::TYPED_URLS, tag)) {
     // If we don't know about it yet, it will be added later.
+    // TODO(atwilson): This can result in this URL not being synced until the
+    // next full association, as we may not get another notification for this
+    // URL if the navigation resulted in a redirect (http://crbug.com/85135).
     return;
   }
   sync_pb::TypedUrlSpecifics typed_url(update_node.GetTypedUrlSpecifics());
-  typed_url.add_visit(visits.back().visit_time.ToInternalValue());
+  typed_url.add_visits(visits.back().visit_time.ToInternalValue());
+  typed_url.add_visit_transitions(
+      visits.back().transition & PageTransition::CORE_MASK);
   update_node.SetTypedUrlSpecifics(typed_url);
 }
 
@@ -225,28 +230,31 @@ void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
     GURL url(typed_url.url());
 
     if (sync_api::SyncManager::ChangeRecord::ACTION_ADD == changes[i].action) {
-      DCHECK(typed_url.visit_size());
-      if (!typed_url.visit_size()) {
+      DCHECK(typed_url.visits_size());
+      if (!typed_url.visits_size()) {
         continue;
       }
 
-      history::URLRow new_url =
-          TypedUrlModelAssociator::TypedUrlSpecificsToURLRow(typed_url);
+      history::URLRow new_url(GURL(typed_url.url()));
+      TypedUrlModelAssociator::UpdateURLRowFromTypedUrlSpecifics(
+          typed_url, &new_url);
 
       model_associator_->Associate(&new_url.url().spec(), changes[i].id);
       new_urls.push_back(new_url);
 
-      // The latest visit gets added automatically, so skip it.
-      std::vector<base::Time> added_visits;
-      for (int c = 0; c < typed_url.visit_size() - 1; ++c) {
-        DCHECK(typed_url.visit(c) < typed_url.visit(c + 1));
-        added_visits.push_back(
-            base::Time::FromInternalValue(typed_url.visit(c)));
+      std::vector<history::VisitInfo> added_visits;
+      for (int c = 0; c < typed_url.visits_size(); ++c) {
+        DCHECK(c == 0 || typed_url.visits(c) > typed_url.visits(c - 1));
+        added_visits.push_back(history::VisitInfo(
+            base::Time::FromInternalValue(typed_url.visits(c)),
+            typed_url.visit_transitions(c)));
       }
 
-      new_visits.push_back(
-          std::pair<GURL, std::vector<base::Time> >(url, added_visits));
+      new_visits.push_back(std::pair<GURL, std::vector<history::VisitInfo> >(
+          url, added_visits));
     } else {
+      DCHECK_EQ(sync_api::SyncManager::ChangeRecord::ACTION_UPDATE,
+                changes[i].action);
       history::URLRow old_url;
       if (!history_backend_->GetURL(url, &old_url)) {
         error_handler()->OnUnrecoverableError(FROM_HERE,
@@ -261,8 +269,9 @@ void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
         return;
       }
 
-      history::URLRow new_url =
-          TypedUrlModelAssociator::TypedUrlSpecificsToURLRow(typed_url);
+      history::URLRow new_url(old_url);
+      TypedUrlModelAssociator::UpdateURLRowFromTypedUrlSpecifics(
+          typed_url, &new_url);
 
       updated_urls.push_back(
         std::pair<history::URLID, history::URLRow>(old_url.id(), new_url));
@@ -272,13 +281,13 @@ void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
                                                    new_url.title()));
       }
 
-      std::vector<base::Time> added_visits;
+      std::vector<history::VisitInfo> added_visits;
       history::VisitVector removed_visits;
       TypedUrlModelAssociator::DiffVisits(visits, typed_url,
                                           &added_visits, &removed_visits);
       if (added_visits.size()) {
-        new_visits.push_back(
-          std::pair<GURL, std::vector<base::Time> >(url, added_visits));
+        new_visits.push_back(std::pair<GURL, std::vector<history::VisitInfo> >(
+                url, added_visits));
       }
       if (removed_visits.size()) {
         deleted_visits.insert(deleted_visits.end(), removed_visits.begin(),
