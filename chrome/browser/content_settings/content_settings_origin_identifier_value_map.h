@@ -28,13 +28,8 @@ class OriginIdentifierValueMap {
           ContentSettingsPattern top_level_frame_pattern,
           ContentSettingsType content_type,
           ResourceIdentifier identifier,
-          Value* value)
-          : item_pattern(item_pattern),
-            top_level_frame_pattern(top_level_frame_pattern),
-            content_type(content_type),
-            identifier(identifier),
-            value(value) {
-    }
+          Value* value);
+    ~Entry();
 
     ContentSettingsPattern item_pattern;
     ContentSettingsPattern top_level_frame_pattern;
