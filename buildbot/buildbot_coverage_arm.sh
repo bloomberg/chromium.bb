@@ -36,12 +36,12 @@ echo @@@BUILD_STEP partial_sdk@@@
     extra_sdk_clean extra_sdk_update_header install_libpthread extra_sdk_update
 
 echo @@@BUILD_STEP scons_compile@@@
-./scons -j 8 DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
-    --mode=coverage-linux,nacl,doc platform=arm bitcode=1 sdl=none
+./scons -j 8 -k --verbose --mode=coverage-linux,nacl \
+    platform=arm bitcode=1 sdl=none
 
 echo @@@BUILD_STEP coverage@@@
-./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
-    --mode=coverage-linux,nacl,doc coverage platform=arm bitcode=1 sdl=none
+./scons -k --verbose --mode=coverage-linux,nacl coverage platform=arm \
+    bitcode=1 sdl=none
 
 echo @@@BUILD_STEP archive_coverage@@@
 export GSUTIL="/b/build/scripts/slave/gsutil -h Cache-Control:no-cache"

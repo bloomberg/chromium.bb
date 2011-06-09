@@ -34,12 +34,10 @@ echo @@@BUILD_STEP partial_sdk@@@
 extra_sdk_update_header install_libpthread extra_sdk_update
 
 echo @@@BUILD_STEP scons_compile@@@
-./scons -j 8 DOXYGEN=../third_party/doxygen/osx/doxygen -k --verbose \
-    --mode=coverage-mac,nacl,doc platform=x86-32
+./scons -j 8 -k --verbose --mode=coverage-mac,nacl platform=x86-32
 
 echo @@@BUILD_STEP coverage@@@
-./scons DOXYGEN=../third_party/doxygen/osx/doxygen -k --verbose \
-    --mode=coverage-mac,nacl,doc coverage platform=x86-32
+./scons -k --verbose --mode=coverage-mac,nacl coverage platform=x86-32
 
 echo @@@BUILD_STEP archive_coverage@@@
 export GSUTIL="/b/build/scripts/slave/gsutil -h Cache-Control:no-cache"

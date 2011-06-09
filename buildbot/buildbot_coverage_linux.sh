@@ -37,15 +37,14 @@ echo @@@BUILD_STEP partial_sdk@@@
 extra_sdk_update_header install_libpthread extra_sdk_update
 
 echo @@@BUILD_STEP scons_compile@@@
-./scons -j 8 DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
-    --mode=coverage-linux,nacl,doc platform=x86-${BITS}
+./scons -j 8 -k --verbose --mode=coverage-linux,nacl platform=x86-${BITS}
 
 echo @@@BUILD_STEP coverage@@@
 XVFB_PREFIX="xvfb-run --auto-servernum"
 
 $XVFB_PREFIX \
-    ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
-    --mode=coverage-linux,nacl,doc coverage platform=x86-${BITS}
+    ./scons -k --verbose --mode=coverage-linux,nacl coverage \
+    platform=x86-${BITS}
 python tools/coverage_linux.py ${BITS}
 
 echo @@@BUILD_STEP archive_coverage@@@
