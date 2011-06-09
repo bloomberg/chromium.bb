@@ -87,10 +87,6 @@ class SpellCheckHostImpl : public SpellCheckHost,
   // Write a custom dictionary addition to disk.
   void WriteWordToCustomDictionary(const std::string& word);
 
-  // Collects a histogram for dictionary corruption rate
-  // to be uploaded via UMA
-  void RecordDictionaryCorruptionStats(bool corrupted);
-
   // Collects status of spellchecking enabling state, which is
   // to be uploaded via UMA
   virtual void RecordCheckedWordStats(bool misspell);
@@ -98,10 +94,6 @@ class SpellCheckHostImpl : public SpellCheckHost,
   // Collects a histogram for misspelled word replacement
   // to be uploaded via UMA
   virtual void RecordReplacedWordStats(int delta);
-
-  // Collects a histogram for context menu showing as a spell correction
-  // attempt to be uploaded via UMA
-  virtual void RecordSuggestionStats(int delta);
 
   // URLFetcher::Delegate implementation.  Called when we finish downloading the
   // spellcheck dictionary; saves the dictionary to |data_|.
@@ -161,8 +153,6 @@ class SpellCheckHostImpl : public SpellCheckHost,
   int misspelled_word_count_;
   // Number of checked words.
   int spellchecked_word_count_;
-  // Number of suggestion list showings.
-  int suggestion_count_;
   // Number of misspelled words replaced by a user.
   int replaced_word_count_;
 };
