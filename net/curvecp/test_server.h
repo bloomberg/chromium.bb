@@ -8,8 +8,8 @@
 
 #include "base/task.h"
 #include "net/base/completion_callback.h"
+#include "net/base/test_data_stream.h"
 #include "net/curvecp/curvecp_server_socket.h"
-#include "net/curvecp/test_data_stream.h"
 
 namespace net {
 

@@ -85,6 +85,11 @@ std::wstring ChromeFrameDistribution::GetStatsServerURL() {
   return L"https://clients4.google.com/firefox/metrics/collect";
 }
 
+std::string ChromeFrameDistribution::GetNetworkStatsServer() const {
+  // TODO(rtenneti): Return the network stats server name.
+  return "";
+}
+
 std::wstring ChromeFrameDistribution::GetUninstallLinkName() {
   return L"Uninstall Chrome Frame";
 }

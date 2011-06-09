@@ -88,6 +88,8 @@ class BrowserDistribution {
 
   virtual std::wstring GetStatsServerURL();
 
+  virtual std::string GetNetworkStatsServer() const;
+
 #if defined(OS_WIN)
   virtual std::wstring GetDistributionData(HKEY root_key);
 #endif

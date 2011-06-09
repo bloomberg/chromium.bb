@@ -16,6 +16,7 @@
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/io_thread.h"
 #include "chrome/common/metrics_helpers.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
@@ -359,6 +360,14 @@ class MetricsService : public NotificationObserver,
 
   // The URL for the metrics server.
   std::wstring server_url_;
+
+  // The TCP/UDP echo server to collect network connectivity stats.
+  std::string network_stats_server_;
+
+  // The IOThread for accessing global HostResolver to resolve
+  // network_stats_server_ host. |io_thread_| is accessed on IO thread and it is
+  // safe to access it on IO thread.
+  IOThread* io_thread_;
 
   // The identifier that's sent to the server with the log reports.
   std::string client_id_;

@@ -1465,6 +1465,7 @@
         'browser/net/gaia/token_service_unittest.cc',
         'browser/net/gaia/token_service_unittest.h',
         'browser/net/load_timing_observer_unittest.cc',
+        'browser/net/network_stats_unittest.cc',
         'browser/net/passive_log_collector_unittest.cc',
         'browser/net/predictor_unittest.cc',
         'browser/net/pref_proxy_config_service_unittest.cc',

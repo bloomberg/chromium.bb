@@ -174,6 +174,7 @@
 #include "chrome/browser/metrics/histogram_synchronizer.h"
 #include "chrome/browser/metrics/metrics_log.h"
 #include "chrome/browser/metrics/metrics_reporting_scheduler.h"
+#include "chrome/browser/net/network_stats.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
@@ -438,6 +439,7 @@ MetricsService::MetricsService()
       reporting_active_(false),
       state_(INITIALIZED),
       current_fetch_(NULL),
+      io_thread_(NULL),
       idle_since_last_transmission_(false),
       next_window_id_(0),
       ALLOW_THIS_IN_INITIALIZER_LIST(log_sender_factory_(this)),
@@ -694,9 +696,12 @@ void MetricsService::RecordBreakpadHasDebugger(bool has_debugger) {
 void MetricsService::InitializeMetricsState() {
 #if defined(OS_POSIX)
   server_url_ = L"https://clients4.google.com/firefox/metrics/collect";
+  // TODO(rtenneti): Return the network stats server name.
+  network_stats_server_ = "";
 #else
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   server_url_ = dist->GetStatsServerURL();
+  network_stats_server_ = dist->GetNetworkStatsServer();
 #endif
 
   PrefService* pref = g_browser_process->local_state();
@@ -792,6 +797,7 @@ void MetricsService::OnInitTaskComplete(
   DCHECK(state_ == INIT_TASK_SCHEDULED);
   hardware_class_ = hardware_class;
   plugins_ = plugins;
+  io_thread_ = g_browser_process->io_thread();
   if (state_ == INIT_TASK_SCHEDULED)
     state_ = INIT_TASK_DONE;
 }
@@ -1365,6 +1371,10 @@ void MetricsService::OnURLFetchComplete(const URLFetcher* source,
   bool server_is_healthy = upload_succeeded || response_code == 400;
 
   scheduler_->UploadFinished(server_is_healthy, unsent_logs());
+
+  // Collect network stats if UMA upload succeeded.
+  if (server_is_healthy && io_thread_)
+    chrome_browser_net::CollectNetworkStats(network_stats_server_, io_thread_);
 }
 
 void MetricsService::LogBadResponseCode() {

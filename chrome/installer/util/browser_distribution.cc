@@ -179,6 +179,10 @@ std::wstring BrowserDistribution::GetStatsServerURL() {
   return L"";
 }
 
+std::string BrowserDistribution::GetNetworkStatsServer() const {
+  return "";
+}
+
 std::wstring BrowserDistribution::GetDistributionData(HKEY root_key) {
   return L"";
 }

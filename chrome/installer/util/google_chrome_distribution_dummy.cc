@@ -80,6 +80,11 @@ std::wstring GoogleChromeDistribution::GetStatsServerURL() {
   return std::wstring();
 }
 
+std::string GoogleChromeDistribution::GetNetworkStatsServer() const {
+  NOTREACHED();
+  return std::string();
+}
+
 std::wstring GoogleChromeDistribution::GetDistributionData(HKEY root_key) {
   NOTREACHED();
   return std::wstring();

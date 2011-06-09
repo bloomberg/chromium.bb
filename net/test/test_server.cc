@@ -182,6 +182,10 @@ std::string TestServer::GetScheme() const {
       return "http";
     case TYPE_HTTPS:
       return "https";
+    case TYPE_TCP_ECHO:
+      NOTREACHED();
+    case TYPE_UDP_ECHO:
+      NOTREACHED();
     default:
       NOTREACHED();
   }
@@ -357,6 +361,10 @@ bool TestServer::AddCommandLineArguments(CommandLine* command_line) const {
     command_line->AppendArg("-f");
   } else if (type_ == TYPE_SYNC) {
     command_line->AppendArg("--sync");
+  } else if (type_ == TYPE_TCP_ECHO) {
+    command_line->AppendArg("--tcp-echo");
+  } else if (type_ == TYPE_UDP_ECHO) {
+    command_line->AppendArg("--udp-echo");
   } else if (type_ == TYPE_HTTPS) {
     FilePath certificate_path(certificates_dir_);
     certificate_path = certificate_path.Append(

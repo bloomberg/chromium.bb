@@ -422,6 +422,11 @@ std::wstring GoogleChromeDistribution::GetStatsServerURL() {
   return L"https://clients4.google.com/firefox/metrics/collect";
 }
 
+std::string GoogleChromeDistribution::GetNetworkStatsServer() const {
+  // TODO(rtenneti): Return the network stats server name.
+  return "";
+}
+
 std::wstring GoogleChromeDistribution::GetDistributionData(HKEY root_key) {
   std::wstring sub_key(google_update::kRegPathClientState);
   sub_key.append(L"\\");
