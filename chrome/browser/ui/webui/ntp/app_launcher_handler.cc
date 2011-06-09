@@ -50,8 +50,6 @@ const char* kPingLaunchAppByID = "record-app-launch-by-id";
 const char* kPingLaunchWebStore = "record-webstore-launch";
 const char* kPingLaunchAppByURL = "record-app-launch-by-url";
 
-const char* kChromeWebStoreUrl = "https://chrome.google.com/webstore/";
-
 const UnescapeRule::Type kUnescapeRules =
     UnescapeRule::NORMAL | UnescapeRule::URL_SPECIAL_CHARS;
 
@@ -231,7 +229,7 @@ void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
     // Don't include the WebStore.
     // The WebStore launcher gets special treatment in ntp/apps.js.
     if ((*it)->is_app() &&
-        (*it)->GetFullLaunchURL().spec() != kChromeWebStoreUrl) {
+        (*it)->id() != extension_misc::kWebStoreAppId) {
       DictionaryValue* app_info = new DictionaryValue();
       CreateAppInfo(*it, extensions_service_->extension_prefs(), app_info);
       list->Append(app_info);
@@ -241,7 +239,7 @@ void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
   extensions = extensions_service_->disabled_extensions();
   for (it = extensions->begin(); it != extensions->end(); ++it) {
     if ((*it)->is_app() &&
-        (*it)->GetFullLaunchURL().spec() != kChromeWebStoreUrl) {
+        (*it)->id() != extension_misc::kWebStoreAppId) {
       DictionaryValue* app_info = new DictionaryValue();
       CreateAppInfo(*it, extensions_service_->extension_prefs(), app_info);
       list->Append(app_info);
