@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/base/address_list.h"
 #include "net/base/dns_response.h"
+#include "net/base/dns_util.h"
 #include "net/base/net_errors.h"
-#include "net/base/sys_addrinfo.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -67,16 +66,19 @@ namespace net {
 //  /                                               /
 //  +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
 
+// TODO(agayev): add more thorough tests.
 TEST(DnsResponseTest, ResponseWithCnameA) {
-  const std::string kHostname = "codereview.chromium.org";
-  const uint16 kPort = 80;
+  const std::string kHostnameDns("\012codereview\010chromium\003org", 25);
 
-  DnsQuery q1(kHostname, ADDRESS_FAMILY_IPV4, kPort);
+  DnsQuery q1(kHostnameDns, kDNS_A);
   uint8 id_hi = q1.id() >> 8, id_lo = q1.id() & 0xff;
 
   uint8 ip[] = {              // codereview.chromium.org resolves to
     0x4a, 0x7d, 0x5f, 0x79    // 74.125.95.121
   };
+
+  std::vector<IPAddressNumber> expected_ips;
+  expected_ips.push_back(IPAddressNumber(ip, ip + arraysize(ip)));
 
   uint8 response_data[] = {
     // Header
@@ -126,27 +128,11 @@ TEST(DnsResponseTest, ResponseWithCnameA) {
   memcpy(r1.io_buffer()->data(), &response_data[0],
          r1.io_buffer()->size());
 
+  // Verify resolved IPs.
   int response_size = arraysize(response_data);
-  AddressList address_list;
-  EXPECT_EQ(OK, r1.Parse(response_size, &address_list));
-
-  // Verify AddressList content.
-  size_t sockaddr_size = sizeof(struct sockaddr_in);
-  const struct addrinfo* ai = address_list.head();
-  EXPECT_EQ(kPort, address_list.GetPort());
-
-  // addrinfo part.
-  EXPECT_TRUE(ai != NULL);
-  EXPECT_EQ(AF_INET, ai->ai_family);
-  EXPECT_EQ(SOCK_STREAM, ai->ai_socktype);
-  EXPECT_EQ(sockaddr_size, ai->ai_addrlen);
-
-  // sockaddr_in part.
-  struct sockaddr_in* sa = reinterpret_cast<sockaddr_in*>(ai->ai_addr);
-  ASSERT_TRUE(sa != NULL);
-  EXPECT_EQ(AF_INET, sa->sin_family);
-  EXPECT_EQ(kPort, ntohs(sa->sin_port));
-  EXPECT_EQ(0, memcmp(&sa->sin_addr, &ip[0], kIPv4AddressSize));
+  std::vector<IPAddressNumber> actual_ips;
+  EXPECT_EQ(OK, r1.Parse(response_size, &actual_ips));
+  EXPECT_EQ(expected_ips, actual_ips);
 }
 
 }  // namespace net

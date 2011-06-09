@@ -10,10 +10,8 @@
 
 namespace net{
 
-class AddressList;
-
-// A class that encapsulates bits and pieces related to DNS response
-// processing.
+// Represents on-the-wire DNS response as an object; allows extracting
+// records.
 class DnsResponse {
  public:
   // Constructs an object with an IOBuffer large enough to read
@@ -27,9 +25,9 @@ class DnsResponse {
   // read.
   IOBufferWithSize* io_buffer() { return io_buffer_.get(); }
 
-  // Parses response of size nbytes and puts address into |results|,
+  // Parses response of size nbytes and puts address into |ip_addresses|,
   // returns net_error code in case of failure.
-  int Parse(int nbytes, AddressList* results);
+  int Parse(int nbytes, std::vector<IPAddressNumber>* ip_addresses);
 
  private:
   // The matching query; |this| is the response for |query_|.  We do not

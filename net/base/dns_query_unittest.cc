@@ -42,35 +42,11 @@ namespace net {
 //  |                     QCLASS                    |
 //  +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
 
-TEST(DnsQueryTest, RandomIdTest) {
-  const std::string kHostname = "www.google.com";
-  const uint16 kPort = 80;
-
-  DnsQuery q1(kHostname, ADDRESS_FAMILY_IPV4, kPort);
-  EXPECT_TRUE(q1.IsValid());
-  EXPECT_EQ(kPort, q1.port());
-  EXPECT_EQ(kDNS_A, q1.qtype());
-  EXPECT_EQ(kHostname, q1.hostname());
-
-  DnsQuery q2(kHostname, ADDRESS_FAMILY_IPV4, kPort);
-  EXPECT_TRUE(q2.IsValid());
-  EXPECT_EQ(kPort, q2.port());
-  EXPECT_EQ(kDNS_A, q2.qtype());
-  EXPECT_EQ(kHostname, q2.hostname());
-
-  // This has a 1/2^16 probability of failure.
-  EXPECT_FALSE(q1.id() == q2.id());
-}
-
 TEST(DnsQueryTest, ConstructorTest) {
-  const std::string kHostname = "www.google.com";
-  const uint16 kPort = 80;
+  std::string kHostnameDns("\003www\006google\003com", 16);
 
-  DnsQuery q1(kHostname, ADDRESS_FAMILY_IPV4, kPort);
-  EXPECT_TRUE(q1.IsValid());
-  EXPECT_EQ(kPort, q1.port());
+  DnsQuery q1(kHostnameDns, kDNS_A);
   EXPECT_EQ(kDNS_A, q1.qtype());
-  EXPECT_EQ(kHostname, q1.hostname());
 
   uint8 id_hi = q1.id() >> 8, id_lo = q1.id() & 0xff;
 
@@ -96,14 +72,36 @@ TEST(DnsQueryTest, ConstructorTest) {
 
   int expected_size = arraysize(query_data);
   EXPECT_EQ(expected_size, q1.io_buffer()->size());
-  EXPECT_EQ(0, memcmp(q1.io_buffer()->data(), query_data,
-                      q1.io_buffer()->size()));
+  EXPECT_EQ(0, memcmp(q1.io_buffer()->data(), query_data, expected_size));
+}
 
-  // Query with a long hostname.
-  const char hostname_too_long[] = "123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.1234";
+TEST(DnsQueryTest, CloneTest) {
+  std::string kHostnameDns("\003www\006google\003com", 16);
 
-  DnsQuery q2(hostname_too_long, ADDRESS_FAMILY_IPV4, kPort);
-  EXPECT_FALSE(q2.IsValid());
+  DnsQuery q1(kHostnameDns, kDNS_A);
+  scoped_ptr<DnsQuery> q2(q1.CloneWithNewId());
+  EXPECT_EQ(q1.io_buffer()->size(), q2->io_buffer()->size());
+  EXPECT_EQ(q1.qtype(), q2->qtype());
+  EXPECT_EQ(q1.question_size(), q2->question_size());
+  EXPECT_EQ(0, memcmp(q1.question_data(), q2->question_data(),
+                      q1.question_size()));
+}
+
+TEST(DnsQueryTest, RandomIdTest) {
+  std::string kHostnameDns("\003www\006google\003com", 16);
+
+  // Since id fields are 16-bit values, we iterate to reduce the
+  // probability of collision, to avoid a flaky test.
+  bool ids_are_random = false;
+  for (int i = 0; i < 1000; ++i) {
+    DnsQuery q1(kHostnameDns, kDNS_A);
+    DnsQuery q2(kHostnameDns, kDNS_A);
+    scoped_ptr<DnsQuery> q3(q1.CloneWithNewId());
+    ids_are_random = q1.id () != q2.id() && q1.id() != q3->id();
+    if (ids_are_random)
+      break;
+  }
+  EXPECT_TRUE(ids_are_random);
 }
 
 }  // namespace net

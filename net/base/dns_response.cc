@@ -4,7 +4,6 @@
 
 #include "net/base/dns_response.h"
 
-#include "net/base/address_list.h"
 #include "net/base/dns_util.h"
 #include "net/base/net_errors.h"
 
@@ -18,15 +17,12 @@ DnsResponse::DnsResponse(DnsQuery* query)
     : query_(query),
       io_buffer_(new IOBufferWithSize(kMaxResponseSize + 1)) {
   DCHECK(query_);
-  DCHECK(query_->IsValid());
 }
 
 DnsResponse::~DnsResponse() {
 }
 
-int DnsResponse::Parse(int nbytes, AddressList* results) {
-  DCHECK(query_->IsValid());
-
+int DnsResponse::Parse(int nbytes, std::vector<IPAddressNumber>* ip_addresses) {
   // Response includes query, it should be at least that size.
   if (nbytes < query_->io_buffer()->size() || nbytes > kMaxResponseSize)
     return ERR_DNS_MALFORMED_RESPONSE;
@@ -59,14 +55,10 @@ int DnsResponse::Parse(int nbytes, AddressList* results) {
   if (query_count != 1) // Sent a single question, shouldn't have changed.
     return ERR_DNS_MALFORMED_RESPONSE;
 
-  std::string hostname;
-  uint16 qtype, qclass;
-  if (!response.DNSName(&hostname) ||
-      !response.U16(&qtype) ||
-      !response.U16(&qclass) ||
-      hostname != query_->hostname() || // Make sure Question section
-      qtype != query_->qtype() ||       // echoed back.
-      qclass != kClassIN) {
+  base::StringPiece question; // Make sure question section is echoed back.
+  if (!response.Block(&question, query_->question_size()) ||
+      memcmp(question.data(), query_->question_data(),
+             query_->question_size())) {
     return ERR_DNS_MALFORMED_RESPONSE;
   }
 
@@ -76,7 +68,7 @@ int DnsResponse::Parse(int nbytes, AddressList* results) {
   std::vector<IPAddressNumber> rdatas;
   while (answer_count--) {
     uint32 ttl;
-    uint16 rdlength;
+    uint16 rdlength, qtype, qclass;
     if (!response.DNSName(NULL) ||
         !response.U16(&qtype) ||
         !response.U16(&qclass) ||
@@ -84,7 +76,6 @@ int DnsResponse::Parse(int nbytes, AddressList* results) {
         !response.U16(&rdlength)) {
       return ERR_DNS_MALFORMED_RESPONSE;
     }
-
     if (qtype == query_->qtype() &&
         qclass == kClassIN &&
         (rdlength == kIPv4AddressSize || rdlength == kIPv6AddressSize)) {
@@ -99,7 +90,8 @@ int DnsResponse::Parse(int nbytes, AddressList* results) {
   if (rdatas.empty())
     return ERR_NAME_NOT_RESOLVED;
 
-  *results = AddressList::CreateFromIPAddressList(rdatas, query_->port());
+  if (ip_addresses)
+    ip_addresses->swap(rdatas);
   return OK;
 }
 
