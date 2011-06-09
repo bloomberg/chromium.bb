@@ -589,7 +589,8 @@ void SafeBrowsingBlockingPage::RecordUserAction(BlockingPageEvent event) {
   PopulateMultipleThreatStringDictionary(&strings);
 
   string16 title;
-  DCHECK(strings.GetString("title", &title));
+  bool success = strings.GetString("title", &title);
+  DCHECK(success);
 
   std::string action = "SBInterstitial";
   if (title ==
