@@ -223,6 +223,7 @@ const char kPasswordManagerSubPage[] = "passwords";
 const char kSearchEnginesSubPage[] = "searchEngines";
 const char kSyncSetupSubPage[] = "syncSetup";
 #if defined(OS_CHROMEOS)
+const char kAboutOptionsSubPage[] = "about";
 const char kInternetOptionsSubPage[] = "internet";
 const char kSystemOptionsSubPage[] = "system";
 #endif

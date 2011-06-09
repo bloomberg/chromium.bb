@@ -214,6 +214,7 @@ extern const char kPasswordManagerSubPage[];
 extern const char kSearchEnginesSubPage[];
 extern const char kSyncSetupSubPage[];
 #if defined(OS_CHROMEOS)
+extern const char kAboutOptionsSubPage[];
 extern const char kInternetOptionsSubPage[];
 extern const char kSystemOptionsSubPage[];
 #endif
