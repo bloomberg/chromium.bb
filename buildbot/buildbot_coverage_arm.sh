@@ -36,11 +36,11 @@ echo @@@BUILD_STEP partial_sdk@@@
     extra_sdk_clean extra_sdk_update_header install_libpthread extra_sdk_update
 
 echo @@@BUILD_STEP scons_compile@@@
-./scons -j 8 -k --verbose --mode=coverage-host,nacl \
+./scons -j 8 -k --verbose --mode=coverage-linux,nacl \
     platform=arm bitcode=1 sdl=none
 
 echo @@@BUILD_STEP coverage@@@
-./scons -k --verbose --mode=coverage-host,nacl coverage platform=arm \
+./scons -k --verbose --mode=coverage-linux,nacl coverage platform=arm \
     bitcode=1 sdl=none
 
 echo @@@BUILD_STEP archive_coverage@@@

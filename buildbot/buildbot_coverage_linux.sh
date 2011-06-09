@@ -37,13 +37,13 @@ echo @@@BUILD_STEP partial_sdk@@@
 extra_sdk_update_header install_libpthread extra_sdk_update
 
 echo @@@BUILD_STEP scons_compile@@@
-./scons -j 8 -k --verbose --mode=coverage-host,nacl platform=x86-${BITS}
+./scons -j 8 -k --verbose --mode=coverage-linux,nacl platform=x86-${BITS}
 
 echo @@@BUILD_STEP coverage@@@
 XVFB_PREFIX="xvfb-run --auto-servernum"
 
 $XVFB_PREFIX \
-    ./scons -k --verbose --mode=coverage-host,nacl coverage \
+    ./scons -k --verbose --mode=coverage-linux,nacl coverage \
     platform=x86-${BITS}
 python tools/coverage_linux.py ${BITS}
 
