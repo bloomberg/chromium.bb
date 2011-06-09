@@ -8,6 +8,8 @@
 #define CONTENT_COMMON_CONTENT_SWITCHES_H_
 #pragma once
 
+#include "build/build_config.h"
+
 namespace switches {
 
 extern const char kAllowFileAccessFromFiles[];
@@ -126,6 +128,11 @@ extern const char kWebWorkerShareProcesses[];
 extern const char kWorkerProcess[];
 extern const char kZygoteCmdPrefix[];
 extern const char kZygoteProcess[];
+
+#if defined(OS_WIN)
+extern const char kAuditHandles[];
+extern const char kAuditAllHandles[];
+#endif
 
 #if defined(ENABLE_P2P_APIS)
 extern const char kEnableP2PApi[];

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 
 #define NTSTATUS ULONG
 #define STATUS_SUCCESS 0x00000000
+#define STATUS_INFO_LENGTH_MISMATCH 0xC0000004
 #define STATUS_ACCESS_DENIED 0xC0000022
 #define STATUS_BUFFER_OVERFLOW 0x80000005
 
@@ -44,10 +45,44 @@ typedef struct __PUBLIC_OBJECT_TYPE_INFORMATION {
   ULONG Reserved [22];    // reserved for internal use
 } PUBLIC_OBJECT_TYPE_INFORMATION, *PPUBLIC_OBJECT_TYPE_INFORMATION;
 
+typedef enum _POOL_TYPE {
+  NonPagedPool,
+  PagedPool,
+  NonPagedPoolMustSucceed,
+  ReservedType,
+  NonPagedPoolCacheAligned,
+  PagedPoolCacheAligned,
+  NonPagedPoolCacheAlignedMustS
+} POOL_TYPE;
+
+typedef struct _OBJECT_TYPE_INFORMATION {
+  UNICODE_STRING Name;
+  ULONG TotalNumberOfObjects;
+  ULONG TotalNumberOfHandles;
+  ULONG TotalPagedPoolUsage;
+  ULONG TotalNonPagedPoolUsage;
+  ULONG TotalNamePoolUsage;
+  ULONG TotalHandleTableUsage;
+  ULONG HighWaterNumberOfObjects;
+  ULONG HighWaterNumberOfHandles;
+  ULONG HighWaterPagedPoolUsage;
+  ULONG HighWaterNonPagedPoolUsage;
+  ULONG HighWaterNamePoolUsage;
+  ULONG HighWaterHandleTableUsage;
+  ULONG InvalidAttributes;
+  GENERIC_MAPPING GenericMapping;
+  ULONG ValidAccess;
+  BOOLEAN SecurityRequired;
+  BOOLEAN MaintainHandleCount;
+  USHORT MaintainTypeList;
+  POOL_TYPE PoolType;
+  ULONG PagedPoolUsage;
+  ULONG NonPagedPoolUsage;
+} OBJECT_TYPE_INFORMATION, *POBJECT_TYPE_INFORMATION;
+
 typedef struct _OBJECT_NAME_INFORMATION {
   UNICODE_STRING          ObjectName;
 } OBJECT_NAME_INFORMATION, *POBJECT_NAME_INFORMATION;
-
 
 typedef enum _OBJECT_INFORMATION_CLASS {
   ObjectBasicInformation,

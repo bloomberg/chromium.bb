@@ -20,6 +20,7 @@
 
 #if defined(OS_WIN)
 #include "base/file_path.h"
+#include "content/browser/handle_enumerator_win.h"
 #include "content/common/sandbox_policy.h"
 #elif defined(OS_MACOSX)
 #include "chrome/browser/mach_broker_mac.h"
@@ -215,6 +216,20 @@ class ChildProcessLauncher::Context
 
     if (!terminate_child_on_shutdown_)
       return;
+
+#if defined(OS_WIN)
+    const CommandLine& browser_command_line =
+        *CommandLine::ForCurrentProcess();
+    if (browser_command_line.HasSwitch(switches::kAuditHandles) ||
+        browser_command_line.HasSwitch(switches::kAuditAllHandles)) {
+      scoped_refptr<content::HandleEnumerator> handle_enum(
+          new content::HandleEnumerator(process_.handle(),
+              browser_command_line.HasSwitch(switches::kAuditAllHandles)));
+      handle_enum->RunHandleEnumeration();
+      process_.set_handle(base::kNullProcessHandle);
+      return;
+    }
+#endif
 
     // On Posix, EnsureProcessTerminated can lead to 2 seconds of sleep!  So
     // don't this on the UI/IO threads.

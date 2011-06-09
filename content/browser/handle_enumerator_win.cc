@@ -1,0 +1,484 @@
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "content/browser/handle_enumerator_win.h"
+
+#include <windows.h>
+
+#include "base/logging.h"
+#include "base/process.h"
+#include "base/process_util.h"
+#include "base/utf_string_conversions.h"
+#include "base/win/windows_version.h"
+#include "content/browser/browser_child_process_host.h"
+#include "content/browser/browser_thread.h"
+#include "content/browser/renderer_host/render_process_host.h"
+#include "content/common/result_codes.h"
+#include "sandbox/tools/finder/ntundoc.h"
+
+namespace content {
+
+const wchar_t kNtdllDllName[] = L"ntdll.dll";
+const size_t kMaxHandleNameLength = 1024;
+
+void HandleEnumerator::EnumerateHandles() {
+  ULONG pid = 0;
+  pid = ::GetProcessId(handle_);
+  if (!pid)
+    return;
+  ULONG handle_info_size = 0x10000;
+  HMODULE ntdll = ::GetModuleHandle(kNtdllDllName);
+  if (!ntdll)
+    return;
+
+  NTQUERYSYSTEMINFORMATION NtQuerySystemInformation =
+      reinterpret_cast<NTQUERYSYSTEMINFORMATION>(
+          GetProcAddress(ntdll, "NtQuerySystemInformation"));
+  NTQUERYOBJECT NtQueryObject =
+      reinterpret_cast<NTQUERYOBJECT>(GetProcAddress(ntdll, "NtQueryObject"));
+
+  if (!NtQuerySystemInformation || !NtQueryObject)
+    return;
+
+  SYSTEM_HANDLE_INFORMATION_EX* handle_info =
+      reinterpret_cast<SYSTEM_HANDLE_INFORMATION_EX*>(
+          new BYTE[handle_info_size]);
+  while (NtQuerySystemInformation(SystemHandleInformation,
+                                  handle_info,
+                                  handle_info_size,
+                                  &handle_info_size)
+         == STATUS_INFO_LENGTH_MISMATCH) {
+    delete handle_info;
+    handle_info = reinterpret_cast<SYSTEM_HANDLE_INFORMATION_EX*>
+        (new BYTE[handle_info_size]);
+  }
+
+  string16 output = ProcessTypeString(type_);
+  output.append(ASCIIToUTF16(" Process - Handles at shutdown:\n"));
+  for (UINT i = 0; i < handle_info->NumberOfHandles; i++) {
+    SYSTEM_HANDLE_INFORMATION sys_handle = handle_info->Information[i];
+    HANDLE handle = reinterpret_cast<HANDLE>(sys_handle.Handle);
+    if (sys_handle.ProcessId != pid)
+      continue;
+
+    OBJECT_TYPE_INFORMATION* type_info =
+        reinterpret_cast<OBJECT_TYPE_INFORMATION*>(
+            new BYTE[sizeof(OBJECT_TYPE_INFORMATION) + kMaxHandleNameLength]);
+    if (NtQueryObject(handle, ObjectTypeInformation, type_info,
+        sizeof(OBJECT_TYPE_INFORMATION) + kMaxHandleNameLength, NULL) < 0)
+      return;
+
+    UNICODE_STRING* name = reinterpret_cast<UNICODE_STRING*>(
+        new BYTE[kMaxHandleNameLength]);
+    if (NtQueryObject(handle, ObjectNameInformation, name,
+        kMaxHandleNameLength, NULL) < 0)
+      return;
+
+    string16 handle_type;
+    string16 handle_name;
+    WideToUTF16(type_info->Name.Buffer,
+        type_info->Name.Length/2, &handle_type);
+    WideToUTF16(name->Buffer, name->Length/2, &handle_name);
+
+    HandleType current_type = StringToHandleType(handle_type);
+    if (!all_handles_ && (current_type != ProcessHandle &&
+                          current_type != FileHandle &&
+                          current_type != DirectoryHandle &&
+                          current_type != KeyHandle &&
+                          current_type != WindowStationHandle &&
+                          current_type != DesktopHandle &&
+                          current_type != ServiceHandle))
+      continue;
+
+    output += ASCIIToUTF16("[");
+    output += handle_type;
+    output += ASCIIToUTF16("] (");
+    output += handle_name;
+    output += ASCIIToUTF16(")\n");
+    output += GetAccessString(current_type, sys_handle.GrantedAccess);
+  }
+  delete handle_info;
+  LOG(INFO) << output;
+}
+
+void HandleEnumerator::RunHandleEnumeration() {
+  DCHECK(status_ == Starting);
+  if (BrowserThread::CurrentlyOn(BrowserThread::IO))
+    FindProcessOnIOThread();
+  else if (BrowserThread::CurrentlyOn(BrowserThread::UI))
+    FindProcessOnUIThread();
+  else
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        NewRunnableMethod(this,
+                          &HandleEnumerator::FindProcessOnIOThread));
+}
+
+void HandleEnumerator::FindProcessOnIOThread() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  for (BrowserChildProcessHost::Iterator iter; !iter.Done(); ++iter) {
+    if (iter->handle() == handle_) {
+      type_ = iter->type();
+      status_ = Finished;
+      break;
+    }
+  }
+
+  if (status_ == Starting) {
+    status_ = InProgress;
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        NewRunnableMethod(this,
+                          &HandleEnumerator::FindProcessOnUIThread));
+  } else {
+    status_ = Finished;
+    BrowserThread::PostTask(
+        BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
+        NewRunnableMethod(this,
+            &HandleEnumerator::EnumerateHandlesAndTerminateProcess));
+  }
+}
+
+void HandleEnumerator::FindProcessOnUIThread() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  for (RenderProcessHost::iterator renderer_iter(
+       RenderProcessHost::AllHostsIterator()); !renderer_iter.IsAtEnd();
+       renderer_iter.Advance()) {
+    RenderProcessHost* render_process_host = renderer_iter.GetCurrentValue();
+    if (render_process_host->GetHandle() == handle_) {
+      type_ = ChildProcessInfo::RENDER_PROCESS;
+      status_ = Finished;
+      break;
+    }
+  }
+
+  if (status_ == Starting) {
+    status_ = InProgress;
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        NewRunnableMethod(this,
+                          &HandleEnumerator::FindProcessOnIOThread));
+  } else {
+    status_ = Finished;
+    BrowserThread::PostTask(
+        BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
+        NewRunnableMethod(this,
+            &HandleEnumerator::EnumerateHandlesAndTerminateProcess));
+  }
+}
+
+void HandleEnumerator::EnumerateHandlesAndTerminateProcess() {
+  HandleEnumerator::EnumerateHandles();
+  base::Process process(handle_);
+  process.Terminate(ResultCodes::NORMAL_EXIT);
+  process.Close();
+}
+
+string16 ProcessTypeString(ChildProcessInfo::ProcessType process_type) {
+  switch (process_type) {
+    case ChildProcessInfo::UNKNOWN_PROCESS:
+      return ASCIIToUTF16("Unknown");
+    case ChildProcessInfo::BROWSER_PROCESS:
+      return ASCIIToUTF16("Browser");
+    case ChildProcessInfo::RENDER_PROCESS:
+      return ASCIIToUTF16("Renderer");
+    case ChildProcessInfo::PLUGIN_PROCESS:
+      return ASCIIToUTF16("Plugin");
+    case ChildProcessInfo::WORKER_PROCESS:
+      return ASCIIToUTF16("Worker");
+    case ChildProcessInfo::NACL_LOADER_PROCESS:
+      return ASCIIToUTF16("NaCL Loader");
+    case ChildProcessInfo::UTILITY_PROCESS:
+      return ASCIIToUTF16("Utility");
+    case ChildProcessInfo::PROFILE_IMPORT_PROCESS:
+      return ASCIIToUTF16("Profile Import");
+    case ChildProcessInfo::ZYGOTE_PROCESS:
+      return ASCIIToUTF16("Zygote");
+    case ChildProcessInfo::SANDBOX_HELPER_PROCESS:
+      return ASCIIToUTF16("Sandbox Helper");
+    case ChildProcessInfo::NACL_BROKER_PROCESS:
+      return ASCIIToUTF16("NaCL Broker");
+    case ChildProcessInfo::GPU_PROCESS:
+      return ASCIIToUTF16("GPU");
+    case ChildProcessInfo::PPAPI_PLUGIN_PROCESS:
+      return ASCIIToUTF16("Pepper Plugin");
+    case ChildProcessInfo::PPAPI_BROKER_PROCESS:
+      return ASCIIToUTF16("Pepper Broker");
+    default:
+      return string16();
+  }
+}
+
+HandleType StringToHandleType(const string16& type) {
+  if (!type.compare(ASCIIToUTF16("Process")))
+    return ProcessHandle;
+  else if (!type.compare(ASCIIToUTF16("Thread")))
+    return ThreadHandle;
+  else if (!type.compare(ASCIIToUTF16("File")))
+    return FileHandle;
+  else if (!type.compare(ASCIIToUTF16("Directory")))
+    return DirectoryHandle;
+  else if (!type.compare(ASCIIToUTF16("Key")))
+    return KeyHandle;
+  else if (!type.compare(ASCIIToUTF16("WindowStation")))
+    return WindowStationHandle;
+  else if (!type.compare(ASCIIToUTF16("Desktop")))
+    return DesktopHandle;
+  else if (!type.compare(ASCIIToUTF16("Service")))
+    return ServiceHandle;
+  else if (!type.compare(ASCIIToUTF16("Mutex")))
+    return MutexHandle;
+  else if (!type.compare(ASCIIToUTF16("Semaphore")))
+    return SemaphoreHandle;
+  else if (!type.compare(ASCIIToUTF16("Event")))
+    return EventHandle;
+  else if (!type.compare(ASCIIToUTF16("Timer")))
+    return TimerHandle;
+  else if (!type.compare(ASCIIToUTF16("NamedPipe")))
+    return NamedPipeHandle;
+  else if (!type.compare(ASCIIToUTF16("JobObject")))
+    return JobHandle;
+  else if (!type.compare(ASCIIToUTF16("FileMap")))
+    return FileMapHandle;
+  return OtherHandle;
+}
+
+string16 GetAccessString(HandleType handle_type,
+                                           ACCESS_MASK access) {
+  string16 output;
+  if (access & GENERIC_READ)
+    output.append(ASCIIToUTF16("\tGENERIC_READ\n"));
+  if (access & GENERIC_WRITE)
+    output.append(ASCIIToUTF16("\tGENERIC_WRITE\n"));
+  if (access & GENERIC_EXECUTE)
+    output.append(ASCIIToUTF16("\tGENERIC_EXECUTE\n"));
+  if (access & GENERIC_ALL)
+    output.append(ASCIIToUTF16("\tGENERIC_ALL\n"));
+  if (access & DELETE)
+    output.append(ASCIIToUTF16("\tDELETE\n"));
+  if (access & READ_CONTROL)
+    output.append(ASCIIToUTF16("\tREAD_CONTROL\n"));
+  if (access & WRITE_DAC)
+    output.append(ASCIIToUTF16("\tWRITE_DAC\n"));
+  if (access & WRITE_OWNER)
+    output.append(ASCIIToUTF16("\tWRITE_OWNER\n"));
+  if (access & SYNCHRONIZE)
+    output.append(ASCIIToUTF16("\tSYNCHRONIZE\n"));
+
+  switch (handle_type) {
+    case ProcessHandle:
+      if (access & PROCESS_CREATE_PROCESS)
+        output.append(ASCIIToUTF16("\tPROCESS_CREATE_PROCESS\n"));
+      if (access & PROCESS_CREATE_THREAD)
+        output.append(ASCIIToUTF16("\tPROCESS_CREATE_THREAD\n"));
+      if (access & PROCESS_DUP_HANDLE)
+        output.append(ASCIIToUTF16("\tPROCESS_DUP_HANDLE\n"));
+      if (access & PROCESS_QUERY_INFORMATION)
+        output.append(ASCIIToUTF16("\tPROCESS_QUERY_INFORMATION\n"));
+      if (access & PROCESS_QUERY_LIMITED_INFORMATION)
+        output.append(ASCIIToUTF16("\tPROCESS_QUERY_LIMITED_INFORMATION\n"));
+      if (access & PROCESS_SET_INFORMATION)
+        output.append(ASCIIToUTF16("\tPROCESS_SET_INFORMATION\n"));
+      if (access & PROCESS_SET_QUOTA)
+        output.append(ASCIIToUTF16("\tPROCESS_SET_QUOTA\n"));
+      if (access & PROCESS_SUSPEND_RESUME)
+        output.append(ASCIIToUTF16("\tPROCESS_SUSPEND_RESUME\n"));
+      if (access & PROCESS_TERMINATE)
+        output.append(ASCIIToUTF16("\tPROCESS_TERMINATE\n"));
+      if (access & PROCESS_VM_OPERATION)
+        output.append(ASCIIToUTF16("\tPROCESS_VM_OPERATION\n"));
+      if (access & PROCESS_VM_READ)
+        output.append(ASCIIToUTF16("\tPROCESS_VM_READ\n"));
+      if (access & PROCESS_VM_WRITE)
+        output.append(ASCIIToUTF16("\tPROCESS_VM_WRITE\n"));
+      break;
+    case ThreadHandle:
+      if (access & THREAD_DIRECT_IMPERSONATION)
+        output.append(ASCIIToUTF16("\tTHREAD_DIRECT_IMPERSONATION\n"));
+      if (access & THREAD_GET_CONTEXT)
+        output.append(ASCIIToUTF16("\tTHREAD_GET_CONTEXT\n"));
+      if (access & THREAD_IMPERSONATE)
+        output.append(ASCIIToUTF16("\tTHREAD_IMPERSONATE\n"));
+      if (access & THREAD_QUERY_INFORMATION )
+        output.append(ASCIIToUTF16("\tTHREAD_QUERY_INFORMATION\n"));
+      if (access & THREAD_QUERY_LIMITED_INFORMATION)
+        output.append(ASCIIToUTF16("\tTHREAD_QUERY_LIMITED_INFORMATION\n"));
+      if (access & THREAD_SET_CONTEXT)
+        output.append(ASCIIToUTF16("\tTHREAD_SET_CONTEXT\n"));
+      if (access & THREAD_SET_INFORMATION)
+        output.append(ASCIIToUTF16("\tTHREAD_SET_INFORMATION\n"));
+      if (access & THREAD_SET_LIMITED_INFORMATION)
+        output.append(ASCIIToUTF16("\tTHREAD_SET_LIMITED_INFORMATION\n"));
+      if (access & THREAD_SET_THREAD_TOKEN)
+        output.append(ASCIIToUTF16("\tTHREAD_SET_THREAD_TOKEN\n"));
+      if (access & THREAD_SUSPEND_RESUME)
+        output.append(ASCIIToUTF16("\tTHREAD_SUSPEND_RESUME\n"));
+      if (access & THREAD_TERMINATE)
+        output.append(ASCIIToUTF16("\tTHREAD_TERMINATE\n"));
+      break;
+    case FileHandle:
+      if (access & FILE_APPEND_DATA)
+        output.append(ASCIIToUTF16("\tFILE_APPEND_DATA\n"));
+      if (access & FILE_EXECUTE)
+        output.append(ASCIIToUTF16("\tFILE_EXECUTE\n"));
+      if (access & FILE_READ_ATTRIBUTES)
+        output.append(ASCIIToUTF16("\tFILE_READ_ATTRIBUTES\n"));
+      if (access & FILE_READ_DATA)
+        output.append(ASCIIToUTF16("\tFILE_READ_DATA\n"));
+      if (access & FILE_READ_EA)
+        output.append(ASCIIToUTF16("\tFILE_READ_EA\n"));
+      if (access & FILE_WRITE_ATTRIBUTES)
+        output.append(ASCIIToUTF16("\tFILE_WRITE_ATTRIBUTES\n"));
+      if (access & FILE_WRITE_DATA)
+        output.append(ASCIIToUTF16("\tFILE_WRITE_DATA\n"));
+      if (access & FILE_WRITE_EA)
+        output.append(ASCIIToUTF16("\tFILE_WRITE_EA\n"));
+      if (access & FILE_WRITE_EA)
+        output.append(ASCIIToUTF16("\tFILE_WRITE_EA\n"));
+      break;
+    case DirectoryHandle:
+      if (access & FILE_ADD_FILE)
+        output.append(ASCIIToUTF16("\tFILE_ADD_FILE\n"));
+      if (access & FILE_ADD_SUBDIRECTORY)
+        output.append(ASCIIToUTF16("\tFILE_ADD_SUBDIRECTORY\n"));
+      if (access & FILE_APPEND_DATA)
+        output.append(ASCIIToUTF16("\tFILE_APPEND_DATA\n"));
+      if (access & FILE_DELETE_CHILD)
+        output.append(ASCIIToUTF16("\tFILE_DELETE_CHILD\n"));
+      if (access & FILE_LIST_DIRECTORY)
+        output.append(ASCIIToUTF16("\tFILE_LIST_DIRECTORY\n"));
+      if (access & FILE_READ_DATA)
+        output.append(ASCIIToUTF16("\tFILE_READ_DATA\n"));
+      if (access & FILE_TRAVERSE)
+        output.append(ASCIIToUTF16("\tFILE_TRAVERSE\n"));
+      if (access & FILE_WRITE_DATA)
+        output.append(ASCIIToUTF16("\tFILE_WRITE_DATA\n"));
+      break;
+    case KeyHandle:
+      if (access & KEY_CREATE_LINK)
+        output.append(ASCIIToUTF16("\tKEY_CREATE_LINK\n"));
+      if (access & KEY_CREATE_SUB_KEY)
+        output.append(ASCIIToUTF16("\tKEY_CREATE_SUB_KEY\n"));
+      if (access & KEY_ENUMERATE_SUB_KEYS)
+        output.append(ASCIIToUTF16("\tKEY_ENUMERATE_SUB_KEYS\n"));
+      if (access & KEY_EXECUTE)
+        output.append(ASCIIToUTF16("\tKEY_EXECUTE\n"));
+      if (access & KEY_NOTIFY)
+        output.append(ASCIIToUTF16("\tKEY_NOTIFY\n"));
+      if (access & KEY_QUERY_VALUE)
+        output.append(ASCIIToUTF16("\tKEY_QUERY_VALUE\n"));
+      if (access & KEY_READ)
+        output.append(ASCIIToUTF16("\tKEY_READ\n"));
+      if (access & KEY_SET_VALUE)
+        output.append(ASCIIToUTF16("\tKEY_SET_VALUE\n"));
+      if (access & KEY_WOW64_32KEY)
+        output.append(ASCIIToUTF16("\tKEY_WOW64_32KEY\n"));
+      if (access & KEY_WOW64_64KEY)
+        output.append(ASCIIToUTF16("\tKEY_WOW64_64KEY\n"));
+      break;
+    case WindowStationHandle:
+      if (access & WINSTA_ACCESSCLIPBOARD)
+        output.append(ASCIIToUTF16("\tWINSTA_ACCESSCLIPBOARD\n"));
+      if (access & WINSTA_ACCESSGLOBALATOMS)
+        output.append(ASCIIToUTF16("\tWINSTA_ACCESSGLOBALATOMS\n"));
+      if (access & WINSTA_CREATEDESKTOP)
+        output.append(ASCIIToUTF16("\tWINSTA_CREATEDESKTOP\n"));
+      if (access & WINSTA_ENUMDESKTOPS)
+        output.append(ASCIIToUTF16("\tWINSTA_ENUMDESKTOPS\n"));
+      if (access & WINSTA_ENUMERATE)
+        output.append(ASCIIToUTF16("\tWINSTA_ENUMERATE\n"));
+      if (access & WINSTA_EXITWINDOWS)
+        output.append(ASCIIToUTF16("\tWINSTA_EXITWINDOWS\n"));
+      if (access & WINSTA_READATTRIBUTES)
+        output.append(ASCIIToUTF16("\tWINSTA_READATTRIBUTES\n"));
+      if (access & WINSTA_READSCREEN)
+        output.append(ASCIIToUTF16("\tWINSTA_READSCREEN\n"));
+      if (access & WINSTA_WRITEATTRIBUTES)
+        output.append(ASCIIToUTF16("\tWINSTA_WRITEATTRIBUTES\n"));
+      break;
+    case DesktopHandle:
+      if (access & DESKTOP_CREATEMENU)
+        output.append(ASCIIToUTF16("\tDESKTOP_CREATEMENU\n"));
+      if (access & DESKTOP_CREATEWINDOW)
+        output.append(ASCIIToUTF16("\tDESKTOP_CREATEWINDOW\n"));
+      if (access & DESKTOP_ENUMERATE)
+        output.append(ASCIIToUTF16("\tDESKTOP_ENUMERATE\n"));
+      if (access & DESKTOP_HOOKCONTROL)
+        output.append(ASCIIToUTF16("\tDESKTOP_HOOKCONTROL\n"));
+      if (access & DESKTOP_JOURNALPLAYBACK)
+        output.append(ASCIIToUTF16("\tDESKTOP_JOURNALPLAYBACK\n"));
+      if (access & DESKTOP_JOURNALRECORD)
+        output.append(ASCIIToUTF16("\tDESKTOP_JOURNALRECORD\n"));
+      if (access & DESKTOP_READOBJECTS)
+        output.append(ASCIIToUTF16("\tDESKTOP_READOBJECTS\n"));
+      if (access & DESKTOP_SWITCHDESKTOP)
+        output.append(ASCIIToUTF16("\tDESKTOP_SWITCHDESKTOP\n"));
+      if (access & DESKTOP_WRITEOBJECTS)
+        output.append(ASCIIToUTF16("\tDESKTOP_WRITEOBJECTS\n"));
+      break;
+    case ServiceHandle:
+      if (access & SC_MANAGER_CREATE_SERVICE)
+        output.append(ASCIIToUTF16("\tSC_MANAGER_CREATE_SERVICE\n"));
+      if (access & SC_MANAGER_CONNECT)
+        output.append(ASCIIToUTF16("\tSC_MANAGER_CONNECT\n"));
+      if (access & SC_MANAGER_ENUMERATE_SERVICE )
+        output.append(ASCIIToUTF16("\tSC_MANAGER_ENUMERATE_SERVICE\n"));
+      if (access & SC_MANAGER_LOCK)
+        output.append(ASCIIToUTF16("\tSC_MANAGER_LOCK\n"));
+      if (access & SC_MANAGER_MODIFY_BOOT_CONFIG )
+        output.append(ASCIIToUTF16("\tSC_MANAGER_MODIFY_BOOT_CONFIG\n"));
+      if (access & SC_MANAGER_QUERY_LOCK_STATUS )
+        output.append(ASCIIToUTF16("\tSC_MANAGER_QUERY_LOCK_STATUS\n"));
+      break;
+    case EventHandle:
+      if (access & EVENT_MODIFY_STATE)
+        output.append(ASCIIToUTF16("\tEVENT_MODIFY_STATE\n"));
+      break;
+    case MutexHandle:
+      if (access & MUTEX_MODIFY_STATE)
+        output.append(ASCIIToUTF16("\tMUTEX_MODIFY_STATE\n"));
+      break;
+    case SemaphoreHandle:
+      if (access & SEMAPHORE_MODIFY_STATE)
+        output.append(ASCIIToUTF16("\tSEMAPHORE_MODIFY_STATE\n"));
+      break;
+    case TimerHandle:
+      if (access & TIMER_MODIFY_STATE)
+        output.append(ASCIIToUTF16("\tTIMER_MODIFY_STATE\n"));
+      if (access & TIMER_QUERY_STATE)
+        output.append(ASCIIToUTF16("\tTIMER_QUERY_STATE\n"));
+      break;
+    case NamedPipeHandle:
+      if (access & PIPE_ACCESS_INBOUND)
+        output.append(ASCIIToUTF16("\tPIPE_ACCESS_INBOUND\n"));
+      if (access & PIPE_ACCESS_OUTBOUND)
+        output.append(ASCIIToUTF16("\tPIPE_ACCESS_OUTBOUND\n"));
+      break;
+    case JobHandle:
+      if (access & JOB_OBJECT_ASSIGN_PROCESS)
+        output.append(ASCIIToUTF16("\tJOB_OBJECT_ASSIGN_PROCESS\n"));
+      if (access & JOB_OBJECT_QUERY)
+        output.append(ASCIIToUTF16("\tJOB_OBJECT_QUERY\n"));
+      if (access & JOB_OBJECT_SET_ATTRIBUTES)
+        output.append(ASCIIToUTF16("\tJOB_OBJECT_SET_ATTRIBUTES\n"));
+      if (access & JOB_OBJECT_SET_SECURITY_ATTRIBUTES)
+        output.append(ASCIIToUTF16("\tJOB_OBJECT_SET_SECURITY_ATTRIBUTES\n"));
+      if (access & JOB_OBJECT_TERMINATE)
+        output.append(ASCIIToUTF16("\tJOB_OBJECT_TERMINATE\n"));
+      break;
+    case FileMapHandle:
+      if (access & FILE_MAP_EXECUTE)
+        output.append(ASCIIToUTF16("\tFILE_MAP_EXECUTE\n"));
+      if (access & FILE_MAP_READ)
+        output.append(ASCIIToUTF16("\tFILE_MAP_READ\n"));
+      if (access & FILE_MAP_WRITE)
+        output.append(ASCIIToUTF16("\tFILE_MAP_WRITE\n"));
+      break;
+  }
+  return output;
+}
+
+}  // namespace content

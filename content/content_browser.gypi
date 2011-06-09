@@ -136,6 +136,8 @@
         'browser/gpu/gpu_process_host.h',
         'browser/gpu/gpu_process_host_ui_shim.cc',
         'browser/gpu/gpu_process_host_ui_shim.h',
+        'browser/handle_enumerator_win.cc',
+        'browser/handle_enumerator_win.h',
         'browser/host_zoom_map.cc',
         'browser/host_zoom_map.h',
         'browser/in_process_webkit/browser_webkitclient_impl.cc',

@@ -407,6 +407,15 @@ const char kZygoteCmdPrefix[]               = "zygote-cmd-prefix";
 // Causes the process to run as a renderer zygote.
 const char kZygoteProcess[]                 = "zygote";
 
+#if defined(OS_WIN)
+// Enumerates and prints a child process' most dangerous handles when it
+// is terminated.
+const char kAuditHandles[]                  = "enable-handle-auditing";
+
+// The same as kAuditHandles except all handles are enumerated.
+const char kAuditAllHandles[]               = "enable-handle-auditing-all";
+#endif
+
 #if defined(ENABLE_P2P_APIS)
 // Enable Pepper and JavaScript P2P API.
 const char kEnableP2PApi[]                  = "enable-p2papi";
