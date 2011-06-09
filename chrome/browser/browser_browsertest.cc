@@ -590,7 +590,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, AppIdSwitch) {
 #endif
 
 #if defined(OS_WIN)
-// http://crbug.com/46198. On XP/Vista, the failure rate is 5 ~ 6%.
+// http://crbug.com/46198: On XP/Vista, the failure rate is 5 ~ 6%.
 #define MAYBE_PageLanguageDetection FLAKY_PageLanguageDetection
 #else
 #define MAYBE_PageLanguageDetection PageLanguageDetection
@@ -599,20 +599,22 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, AppIdSwitch) {
 IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_PageLanguageDetection) {
   ASSERT_TRUE(test_server()->Start());
 
+  std::string lang;
+
+  // Open a new tab with a page in English.
+  AddTabAtIndex(0, GURL(test_server()->GetURL("files/english_page.html")),
+                PageTransition::TYPED);
+
   TabContents* current_tab = browser()->GetSelectedTabContents();
   TabContentsWrapper* wrapper = browser()->GetSelectedTabContentsWrapper();
   TranslateTabHelper* helper = wrapper->translate_tab_helper();
   Source<TabContents> source(current_tab);
 
-  // Navigate to a page in English.
   ui_test_utils::WindowedNotificationObserverWithDetails<std::string>
       en_language_detected_signal(NotificationType::TAB_LANGUAGE_DETERMINED,
                                   source);
-  ui_test_utils::NavigateToURL(
-      browser(), GURL(test_server()->GetURL("files/english_page.html")));
   EXPECT_TRUE(helper->language_state().original_language().empty());
   en_language_detected_signal.Wait();
-  std::string lang;
   EXPECT_TRUE(en_language_detected_signal.GetDetailsFor(
         source.map_key(), &lang));
   EXPECT_EQ("en", lang);
