@@ -12,7 +12,6 @@
 
 #include "base/base64.h"
 #include "base/command_line.h"
-#include "base/file_util.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
@@ -31,7 +30,6 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/shell_dialogs.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_version_info.h"
@@ -39,9 +37,8 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
-#include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/common/notification_details.h"
+#include "content/common/notification_type.h"
 #include "grit/generated_resources.h"
 #include "grit/net_internals_resources.h"
 #include "net/base/escape.h"
@@ -153,7 +150,6 @@ class NetInternalsHTMLSource : public ChromeURLDataManager::DataSource {
 // TODO(eroman): Can we start on the IO thread to begin with?
 class NetInternalsMessageHandler
     : public WebUIMessageHandler,
-      public SelectFileDialog::Listener,
       public base::SupportsWeakPtr<NetInternalsMessageHandler>,
       public NotificationObserver {
  public:
@@ -182,36 +178,8 @@ class NetInternalsMessageHandler
   void OnGetSystemLog(const ListValue* list);
 #endif
 
-  // SelectFileDialog::Listener implementation
-  virtual void FileSelected(const FilePath& path, int index, void* params);
-  virtual void FileSelectionCanceled(void* params);
-
-  // The only callback handled on the UI thread.  As it needs to access fields
-  // from |web_ui_|, it can't be called on the IO thread.
-  void OnLoadLogFile(const ListValue* list);
-
  private:
   class IOThreadImpl;
-
-  // Task run on the FILE thread to read the contents of a log file.  The result
-  // is then passed to IOThreadImpl's CallJavascriptFunction, which sends it
-  // back to the web page.  IOThreadImpl is used instead of the
-  // NetInternalsMessageHandler directly because it checks if the message
-  // handler has been destroyed in the meantime.
-  class ReadLogFileTask : public Task {
-   public:
-    ReadLogFileTask(IOThreadImpl* proxy, const FilePath& path);
-
-    virtual void Run();
-
-   private:
-    // IOThreadImpl implements existence checks already.  Simpler to reused them
-    // then to reimplement them.
-    scoped_refptr<IOThreadImpl> proxy_;
-
-    // Path of the file to open.
-    const FilePath path_;
-  };
 
 #ifdef OS_CHROMEOS
   // Class that is used for getting network related ChromeOS logs.
@@ -283,9 +251,6 @@ class NetInternalsMessageHandler
   // Class that handles getting and filtering system logs.
   scoped_ptr<SystemLogsGetter> syslogs_getter_;
 #endif
-
-  // Used for loading log files.
-  scoped_refptr<SelectFileDialog> select_log_file_dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(NetInternalsMessageHandler);
 };
@@ -537,8 +502,6 @@ NetInternalsMessageHandler::~NetInternalsMessageHandler() {
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
         NewRunnableMethod(proxy_.get(), &IOThreadImpl::Detach));
   }
-  if (select_log_file_dialog_)
-    select_log_file_dialog_->ListenerDestroyed();
 }
 
 WebUIMessageHandler* NetInternalsMessageHandler::Attach(WebUI* web_ui) {
@@ -561,36 +524,8 @@ WebUIMessageHandler* NetInternalsMessageHandler::Attach(WebUI* web_ui) {
   return result;
 }
 
-void NetInternalsMessageHandler::FileSelected(
-    const FilePath& path, int index, void* params) {
-  select_log_file_dialog_.release();
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      new ReadLogFileTask(proxy_.get(), path));
-}
-
-void NetInternalsMessageHandler::FileSelectionCanceled(void* params) {
-  select_log_file_dialog_.release();
-}
-
-void NetInternalsMessageHandler::OnLoadLogFile(const ListValue* list) {
-  // Only allow a single dialog at a time.
-  if (select_log_file_dialog_.get())
-    return;
-  select_log_file_dialog_ = SelectFileDialog::Create(this);
-  select_log_file_dialog_->SelectFile(
-      SelectFileDialog::SELECT_OPEN_FILE, string16(), FilePath(), NULL, 0,
-      FILE_PATH_LITERAL(""), web_ui_->tab_contents(),
-      web_ui_->tab_contents()->view()->GetTopLevelNativeWindow(), NULL);
-}
-
 void NetInternalsMessageHandler::RegisterMessages() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // Only callback handled on UI thread.
-  web_ui_->RegisterMessageCallback(
-      "loadLogFile",
-      NewCallback(this, &NetInternalsMessageHandler::OnLoadLogFile));
-
   web_ui_->RegisterMessageCallback(
       "notifyReady",
       NewCallback(this, &NetInternalsMessageHandler::OnRendererReady));
@@ -718,25 +653,6 @@ void NetInternalsMessageHandler::OnEnableHttpThrottling(const ListValue* list) {
   }
 
   http_throttling_enabled_.SetValue(enable);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-//
-// NetInternalsMessageHandler::ReadLogFileTask
-//
-////////////////////////////////////////////////////////////////////////////////
-
-NetInternalsMessageHandler::ReadLogFileTask::ReadLogFileTask(
-    IOThreadImpl* proxy, const FilePath& path)
-    : proxy_(proxy), path_(path) {
-}
-
-void NetInternalsMessageHandler::ReadLogFileTask::Run() {
-  std::string file_contents;
-  if (!file_util::ReadFileToString(path_, &file_contents))
-    return;
-  proxy_->CallJavascriptFunction(L"g_browser.loadedLogFile",
-                                 new StringValue(file_contents));
 }
 
 #ifdef OS_CHROMEOS
@@ -1637,5 +1553,5 @@ NetInternalsUI::NetInternalsUI(TabContents* contents) : ChromeWebUI(contents) {
   NetInternalsHTMLSource* html_source = new NetInternalsHTMLSource();
 
   // Set up the chrome://net-internals/ source.
-  contents->profile()->GetChromeURLDataManager()->AddDataSource(html_source);
+  GetProfile()->GetChromeURLDataManager()->AddDataSource(html_source);
 }

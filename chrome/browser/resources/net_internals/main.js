@@ -396,10 +396,6 @@ BrowserBridge.prototype.enableHttpThrottling = function(enable) {
   chrome.send('enableHttpThrottling', [enable]);
 };
 
-BrowserBridge.prototype.loadLogFile = function() {
-  chrome.send('loadLogFile');
-};
-
 BrowserBridge.prototype.refreshSystemLogs = function() {
   chrome.send('refreshSystemLogs');
 };
@@ -613,7 +609,7 @@ BrowserBridge.prototype.loadedLogFile = function(logFileContents) {
       //                removed or added between versions.  Could also happen
       //                with source types, but less likely.
       console.log(
-        'Unrecognized values in log entry: ' + JSON.stringify(entry));
+        'Unrecognized values in log entry: ' + JSON.stringify(entries[i]));
     }
   }
 

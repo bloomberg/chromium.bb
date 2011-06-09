@@ -53,8 +53,9 @@ function DataView(mainBoxId,
   this.capturingTextSpan_ = document.getElementById(capturingTextSpanId);
   this.loggingTextSpan_ = document.getElementById(loggingTextSpanId);
 
-  document.getElementById(loadLogFileId).onclick =
-      g_browser.loadLogFile.bind(g_browser);
+  var loadLogFileElement = document.getElementById(loadLogFileId);
+  loadLogFileElement.onchange =
+      this.logFileChanged.bind(this, loadLogFileElement);
 
   this.updateEventCounts_();
   this.waitingForUpdate_ = false;
@@ -134,6 +135,37 @@ DataView.prototype.onSetSecurityStripping_ =
  */
 DataView.prototype.onSecurityStrippingChanged = function() {
   this.setText_('');
+}
+
+/**
+ * Called when a log file is selected.
+ *
+ * Gets the log file from the input element and tries to read from it.
+ */
+DataView.prototype.logFileChanged = function(loadLogFileElement) {
+  var logFile = loadLogFileElement.files[0];
+  if (logFile) {
+    var fileReader = new FileReader();
+
+    fileReader.onload = this.onLoadLogFile.bind(this);
+    fileReader.onerror = this.onLoadLogFileError.bind(this);
+
+    fileReader.readAsText(logFile);
+  }
+}
+
+/**
+ * Displays an error message when unable to read the selected log file.
+ */
+DataView.prototype.onLoadLogFileError = function(event) {
+  alert('Error ' + event.target.error.code + '.  Unable to load file.');
+}
+
+/**
+ * Tries to load the contents of the log file.
+ */
+DataView.prototype.onLoadLogFile = function(event) {
+  g_browser.loadedLogFile(event.target.result);
 }
 
 /**
