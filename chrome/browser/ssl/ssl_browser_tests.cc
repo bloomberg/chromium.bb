@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "base/time.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -32,6 +34,11 @@ class SSLUITest : public InProcessBrowserTest {
             HTTPSOptions(HTTPSOptions::CERT_MISMATCHED_NAME),
             FilePath(kDocRoot)) {
     EnableDOMAutomation();
+  }
+
+  // Browser will both run and display insecure content.
+  virtual void SetUpCommandLine(CommandLine* command_line) {
+    command_line->AppendSwitch(switches::kAllowRunningInsecureContent);
   }
 
   void CheckAuthenticatedState(TabContents* tab,
@@ -195,6 +202,16 @@ class SSLUITest : public InProcessBrowserTest {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SSLUITest);
+};
+
+class SSLUITestBlock : public SSLUITest {
+ public:
+  SSLUITestBlock() : SSLUITest() {}
+
+  // Browser will neither run nor display insecure content.
+  virtual void SetUpCommandLine(CommandLine* command_line) {
+    command_line->AppendSwitch(switches::kNoDisplayingInsecureContent);
+  }
 };
 
 // Visits a regular page over http.
@@ -455,9 +472,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestDisplaysInsecureContent) {
 // Visits a page that runs insecure content and tries to suppress the insecure
 // content warnings by randomizing location.hash.
 // Based on http://crbug.com/8706
-// Disabled, http://crbug.com/85475.
 IN_PROC_BROWSER_TEST_F(SSLUITest,
-                       DISABLED_TestRunsInsecuredContentRandomizeHash) {
+                       TestRunsInsecuredContentRandomizeHash) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(https_server_.Start());
 
@@ -580,8 +596,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestDisplaysInsecureContentTwoTabs) {
 // Visits two pages from the same origin: one that runs insecure content and one
 // that doesn't.  The test checks that we propagate the insecure content state
 // from one to the other.
-// Disabled, http://crbug.com/85475.
-IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestRunsInsecureContentTwoTabs) {
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestRunsInsecureContentTwoTabs) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(https_server_.Start());
 
@@ -647,9 +662,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestDisplaysCachedInsecureContent) {
 #define MAYBE_TestRunsCachedInsecureContent \
     DISABLED_TestRunsCachedInsecureContent
 #else
-// Disabled, http://crbug.com/85475.
-#define MAYBE_TestRunsCachedInsecureContent \
-    DISABLED_TestRunsCachedInsecureContent
+#define MAYBE_TestRunsCachedInsecureContent TestRunsCachedInsecureContent
 #endif  // defined(OS_CHROMEOS)
 
 // Visits a page with script over http.  Visits another page over https
@@ -1119,6 +1132,45 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestUnsafeContentsInWorker) {
   CheckWorkerLoadResult(tab, true);  // Worker loads insecure content
   CheckAuthenticationBrokenState(tab, 0, true, false);
 }
+
+// Test that when the browser blocks displaying insecure content, the
+// indicator shows a secure page, because the blocking made the otherwise
+// unsafe page safe (the notification of this state is handled by other means).
+IN_PROC_BROWSER_TEST_F(SSLUITestBlock, TestBlockDisplayingInsecureContent) {
+  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(https_server_.Start());
+
+  std::string replacement_path;
+  ASSERT_TRUE(GetFilePathWithHostAndPortReplacement(
+      "files/ssl/page_displays_insecure_content.html",
+      test_server()->host_port_pair(),
+      &replacement_path));
+
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_.GetURL(replacement_path));
+
+  CheckAuthenticatedState(browser()->GetSelectedTabContents(), false);
+}
+
+// Test that when the browser blocks running insecure content, the
+// indicator shows a secure page, because the blocking made the otherwise
+// unsafe page safe (the notification of this state is handled by other means).
+IN_PROC_BROWSER_TEST_F(SSLUITestBlock, TestBlockRunningInsecureContent) {
+  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(https_server_.Start());
+
+  std::string replacement_path;
+  ASSERT_TRUE(GetFilePathWithHostAndPortReplacement(
+      "files/ssl/page_runs_insecure_content.html",
+      test_server()->host_port_pair(),
+      &replacement_path));
+
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_.GetURL(replacement_path));
+
+  CheckAuthenticatedState(browser()->GetSelectedTabContents(), false);
+}
+
 
 // TODO(jcampan): more tests to do below.
 
