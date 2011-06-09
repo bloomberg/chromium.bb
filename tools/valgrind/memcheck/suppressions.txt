@@ -1932,23 +1932,6 @@
    fun:_ZN20LayoutTestController18LocationChangeDoneEv
 }
 {
-   bug_35318
-   Memcheck:Param
-   write(buf)
-   obj:*
-   fun:_ZN3net10FileStream5WriteEPKciP14CallbackRunnerI6Tuple1IiEE
-   fun:_ZN12DownloadFile16AppendDataToFileEPKci
-   fun:_ZN19DownloadFileManager14UpdateDownloadEiP14DownloadBuffer
-   fun:_Z16DispatchToMethodI19DownloadFileManagerMS0_FviP14DownloadBufferEiS2_EvPT_T0_RK6Tuple2IT1_T2_E
-   fun:_ZN14RunnableMethodI19DownloadFileManagerMS0_FviP14DownloadBufferE6Tuple2IiS2_EE3RunEv
-   fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
-   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
-   fun:_ZN11MessageLoop6DoWorkEv
-   fun:_ZN4base19MessagePumpLibevent3RunEPNS_11MessagePump8DelegateE
-   fun:_ZN11MessageLoop11RunInternalEv
-   fun:_ZN11MessageLoop10RunHandlerEv
-}
-{
    bug_36062
    Memcheck:Leak
    fun:malloc
@@ -2864,13 +2847,6 @@
    fun:_ZN11webkit_glue16WebURLLoaderImpl7Context18OnReceivedResponseERKNS_20ResourceResponseInfoEb
    ...
    fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
-}
-{
-   bug_58449
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN11ProfileImpl18GetDownloadManagerEv
 }
 {
    bug_58546
