@@ -1,0 +1,39 @@
+# This is a standard .gitignore file, used to exclude certain files
+# from a 'git status' command and other similar commands.
+# Please keep each section in alphabetical order.
+
+# Ignore these filename patterns
+*~
+*.Makefile
+*.mk
+*.pyc
+*.pyc-2.4
+*.pyo
+*.pyo-2.4
+*.rules
+*.sln
+*.slo
+*.swp
+*.vcproj
+*.xcodeproj/
+
+# Ignore these directories wherever they appear
+.cproject/
+.project/
+.pydevproject/
+.settings/
+hg/
+toolchain/hg-build/
+toolchain/hg-log/
+
+# Ignore these absolute directories (relative to native_client directory)
+/build/Debug/
+/build/Release/
+/chromebinaries/
+/scons-out/
+/src/third_party/valgrind/bin/
+/toolchain/
+/tools/BUILD/
+/tools/out/
+/tools/SRC/
+
