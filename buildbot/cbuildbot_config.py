@@ -26,10 +26,10 @@ chromeos_official -- Set the variable CRHOMEOS_OFFICIAL for the build.
 
 uprev -- Uprevs the local ebuilds to build new changes since last stable.
          build.  If master then also pushes these changes on success.
-rev_overlays -- Select what overlays to look at for revving. This can be
-                'public', 'private' or 'both'.
+overlays -- Select what overlays to look at for revving and prebuilts. This
+            can be 'public', 'private' or 'both'.
 push_overlays -- Select what overlays to push at. This should be a subset of
-                 rev_overlays for the particular builder.  Must be None if
+                 overlays for the particular builder.  Must be None if
                  not a master.  There should only be one master bot pushing
                  changes to each overlay per branch.
 chrome_rev -- Uprev Chrome, values of 'tot', 'stable_release', or None.
@@ -107,7 +107,7 @@ default = {
   'chroot_replace' : False,
 
   'uprev' : False,
-  'rev_overlays': 'public',
+  'overlays': 'public',
   'push_overlays': None,
   'chrome_rev' : None,
 
@@ -176,7 +176,7 @@ full = {
 }
 
 internal = {
-  'rev_overlays' : 'both',
+  'overlays' : 'both',
   'git_url' : MANIFEST_INT_URL,
   'quick_vm' : False,
   'gs_path' : None,
@@ -237,7 +237,7 @@ add_config('x86-generic-pre-flight-queue', [{
   'important': True,
 
   'uprev' : True,
-  'rev_overlays': 'public',
+  'overlays': 'public',
   'push_overlays': 'public',
   'manifest_version': MANIFEST_VERSIONS_URL,
 }])
@@ -249,7 +249,7 @@ add_config('x86-generic-chrome-pre-flight-queue', [{
   'build_type': 'chrome',
   'uprev' : False,
   'chrome_tests' : True,
-  'rev_overlays': 'public',
+  'overlays': 'public',
   'push_overlays': 'public',
 }])
 
@@ -257,7 +257,7 @@ add_config('x86-agz-bin', [{
   'board' : 'x86-agz',
 
   'uprev' : True,
-  'rev_overlays': 'both',
+  'overlays': 'both',
   'push_overlays': None,
   'manifest_version': MANIFEST_VERSIONS_URL,
 }])
@@ -266,7 +266,7 @@ add_config('x86-pineview-bin', [{
   'board' : 'x86-pineview',
 
   'uprev' : True,
-  'rev_overlays': 'public',
+  'overlays': 'public',
   'push_overlays': None,
   'manifest_version': MANIFEST_VERSIONS_URL,
 }])
@@ -275,7 +275,7 @@ add_config('arm-tegra2-bin', [arm, {
   'board' : 'tegra2_dev-board',
 
   'uprev' : True,
-  'rev_overlays': 'public',
+  'overlays': 'public',
   'push_overlays': None,
   'manifest_version': MANIFEST_VERSIONS_URL,
 }])
@@ -284,7 +284,7 @@ add_config('arm-generic-bin', [arm, {
   'board' : 'arm-generic',
 
   'uprev' : True,
-  'rev_overlays': 'public',
+  'overlays': 'public',
   'push_overlays': None,
   'manifest_version': MANIFEST_VERSIONS_URL,
 }])
@@ -319,7 +319,7 @@ add_config('x86-mario-pre-flight-queue', [internal, {
 
   'uprev' : True,
   'quick_vm' : True,
-  'rev_overlays': 'both',
+  'overlays': 'both',
   'push_overlays': 'private',
   'gs_path': 'gs://chromeos-x86-mario/pre-flight-master'
 }])
@@ -329,7 +329,7 @@ add_config('x86-alex-pre-flight-branch', [internal, {
   'master' : False,
 
   'uprev' : True,
-  'rev_overlays': 'both',
+  'overlays': 'both',
   'push_overlays': None,
 }])
 
@@ -338,7 +338,7 @@ add_config('x86-mario-pre-flight-branch', [internal, {
   'master' : True,
 
   'uprev' : True,
-  'rev_overlays': 'both',
+  'overlays': 'both',
   'push_overlays': 'both',
 }])
 

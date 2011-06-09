@@ -189,7 +189,7 @@ class BuilderStage(object):
   # TODO(sosa): Remove these once we have a SEND/RECIEVE IPC mechanism
   # implemented.
   test_tarball = None
-  rev_overlays = None
+  overlays = None
   push_overlays = None
   archive_url = None
 
@@ -220,17 +220,17 @@ class BuilderStage(object):
 
   def _ExtractOverlays(self):
     """Extracts list of overlays into class."""
-    if not BuilderStage.rev_overlays or not BuilderStage.push_overlays:
-      rev_overlays = self._ResolveOverlays(self._build_config['rev_overlays'])
+    if not BuilderStage.overlays or not BuilderStage.push_overlays:
+      overlays = self._ResolveOverlays(self._build_config['overlays'])
       push_overlays = self._ResolveOverlays(self._build_config['push_overlays'])
 
       # Sanity checks.
       # We cannot push to overlays that we don't rev.
-      assert set(push_overlays).issubset(set(rev_overlays))
+      assert set(push_overlays).issubset(set(overlays))
       # Either has to be a master or not have any push overlays.
       assert self._build_config['master'] or not push_overlays
 
-      BuilderStage.rev_overlays = rev_overlays
+      BuilderStage.overlays = overlays
       BuilderStage.push_overlays = push_overlays
 
   def _ResolveOverlays(self, overlays):
@@ -364,12 +364,12 @@ class SyncStage(BuilderStage):
     else:
       board = self._build_config['board']
       commands.PreFlightRinse(self._build_root, board,
-                              BuilderStage.rev_overlays)
+                              BuilderStage.overlays)
       commands.IncrementalCheckout(self._build_root)
 
     # Check that all overlays can be found.
     self._ExtractOverlays() # Our list of overlays are from pre-sync, refresh
-    for path in BuilderStage.rev_overlays:
+    for path in BuilderStage.overlays:
       assert os.path.isdir(path), 'Missing overlay: %s' % path
 
 
@@ -402,7 +402,7 @@ class ManifestVersionedSyncStage(BuilderStage):
   def _PerformStage(self):
     if os.path.isdir(os.path.join(self._build_root, '.repo')):
       commands.PreFlightRinse(self._build_root, self._build_config['board'],
-                              BuilderStage.rev_overlays)
+                              BuilderStage.overlays)
 
     self.InitializeManifestManager()
     next_manifest = self.GetNextManifest()
@@ -423,7 +423,7 @@ class ManifestVersionedSyncStage(BuilderStage):
 
     # Check that all overlays can be found.
     self._ExtractOverlays()
-    for path in BuilderStage.rev_overlays:
+    for path in BuilderStage.overlays:
       assert os.path.isdir(path), 'Missing overlay: %s' % path
 
 
@@ -536,7 +536,7 @@ class BuildBoardStage(BuilderStage):
 
     if self._prebuilt_type == 'chroot':
       commands.UploadPrebuilts(
-          self._build_root, 'amd64-host', self._build_config['rev_overlays'],
+          self._build_root, 'amd64-host', self._build_config['overlays'],
           [], self._prebuilt_type, None, self._options.buildnumber)
 
 
@@ -557,7 +557,7 @@ class UprevStage(BuilderStage):
     if self._build_config['uprev']:
       commands.UprevPackages(self._build_root,
                              self._build_config['board'],
-                             BuilderStage.rev_overlays)
+                             BuilderStage.overlays)
     elif self._options.chrome_rev and not chrome_atom_to_build:
       # TODO(sosa): Do this in a better way.
       sys.exit(0)
@@ -584,7 +584,7 @@ class BuildTargetStage(BuilderStage):
     if self._prebuilt_type == 'full':
       commands.UploadPrebuilts(
           self._build_root, self._build_config['board'],
-          self._build_config['rev_overlays'], [], self._prebuilt_type,
+          self._build_config['overlays'], [], self._prebuilt_type,
           None, self._options.buildnumber)
 
     commands.BuildImage(self._build_root, extra_env=env)
@@ -677,7 +677,7 @@ class PushChangesStage(BuilderStage):
       binhosts.extend(self._GetPortageEnvVar(_PORTAGE_BINHOST, board).split())
       binhosts.extend(self._GetPortageEnvVar(_PORTAGE_BINHOST, None).split())
       commands.UploadPrebuilts(
-          self._build_root, board, self._build_config['rev_overlays'],
+          self._build_root, board, self._build_config['overlays'],
           binhosts, self._prebuilt_type, self._options.chrome_rev,
           self._options.buildnumber)
 

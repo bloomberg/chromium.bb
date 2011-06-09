@@ -56,7 +56,7 @@ class AbstractStageTest(mox.MoxTestBase):
     self.options.buildnumber = 1234
     self.overlay = os.path.join(self.build_root,
                                 'src/third_party/chromiumos-overlay')
-    stages.BuilderStage.rev_overlays = [self.overlay]
+    stages.BuilderStage.overlays = [self.overlay]
     stages.BuilderStage.push_overlays = [self.overlay]
 
     stages.BuilderStage.SetTrackingBranch(self.TRACKING_BRANCH)
@@ -553,7 +553,7 @@ class BuildTargetStageTest(AbstractStageTest):
 
     commands.UploadPrebuilts(
         self.build_root, self.build_config['board'],
-        self.build_config['rev_overlays'], [],
+        self.build_config['overlays'], [],
         self.build_config['build_type'], None, self.options.buildnumber)
 
     commands.BuildImage(self.build_root, extra_env=proper_env)
@@ -657,7 +657,7 @@ class PushChangesStageTest(AbstractStageTest):
     binhosts = self.ConstructBinhosts()
     commands.UploadPrebuilts(
         self.build_root, self.build_config['board'],
-        self.build_config['rev_overlays'], binhosts,
+        self.build_config['overlays'], binhosts,
         self.build_config['build_type'],
         self.options.chrome_rev,
         self.options.buildnumber)
@@ -679,7 +679,7 @@ class PushChangesStageTest(AbstractStageTest):
     binhosts = self.ConstructBinhosts()
     commands.UploadPrebuilts(
         self.build_root, self.build_config['board'],
-        self.build_config['rev_overlays'], binhosts,
+        self.build_config['overlays'], binhosts,
         self.build_config['build_type'],
         self.options.chrome_rev,
         self.options.buildnumber)
