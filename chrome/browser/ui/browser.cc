@@ -259,6 +259,7 @@ Browser::Browser(Type type, Profile* profile)
   profile_pref_registrar_.Add(prefs::kDevToolsDisabled, this);
   profile_pref_registrar_.Add(prefs::kEditBookmarksEnabled, this);
   profile_pref_registrar_.Add(prefs::kInstantEnabled, this);
+  profile_pref_registrar_.Add(prefs::kIncognitoEnabled, this);
 
   InitCommandState();
   BrowserList::AddBrowser(this);
@@ -3690,6 +3691,10 @@ void Browser::Observe(NotificationType type,
         } else {
           CreateInstantIfNecessary();
         }
+      } else if (pref_name == prefs::kIncognitoEnabled) {
+        command_updater_.UpdateCommandEnabled(
+            IDC_NEW_INCOGNITO_WINDOW,
+            profile_->GetPrefs()->GetBoolean(prefs::kIncognitoEnabled));
       } else if (pref_name == prefs::kDevToolsDisabled) {
         UpdateCommandsForDevTools();
         if (profile_->GetPrefs()->GetBoolean(prefs::kDevToolsDisabled))
