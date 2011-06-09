@@ -303,11 +303,13 @@ void RenderWidget::OnResize(const gfx::Size& new_size,
 }
 
 void RenderWidget::OnWasHidden() {
+  TRACE_EVENT0("renderer", "RenderWidget::OnWasHidden");
   // Go into a mode where we stop generating paint and scrolling events.
   SetHidden(true);
 }
 
 void RenderWidget::OnWasRestored(bool needs_repainting) {
+  TRACE_EVENT0("renderer", "RenderWidget::OnWasRestored");
   // During shutdown we can just ignore this message.
   if (!webwidget_)
     return;
@@ -327,7 +329,7 @@ void RenderWidget::OnWasRestored(bool needs_repainting) {
   if (!is_accelerated_compositing_active_) {
     didInvalidateRect(gfx::Rect(size_.width(), size_.height()));
   } else {
-#ifndef WTF_USE_THREADED_COMPOSITING
+#ifdef WTF_USE_THREADED_COMPOSITING
     webwidget_->composite(false);
 #else
     scheduleComposite();
