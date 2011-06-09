@@ -7,7 +7,9 @@
 #include "base/command_line.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "base/test/test_timeouts.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -381,9 +383,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
 
   void OpenDestUrlInNewWindowViaJs() const {
     // Make sure in navigating we have a URL to use in the PrerenderManager.
-    TestPrerenderContents* prerender_contents =
-        static_cast<TestPrerenderContents*>(
-            prerender_manager()->FindEntry(dest_url_));
+    TestPrerenderContents* prerender_contents = GetPrerenderContents();
     ASSERT_TRUE(prerender_contents != NULL);
     prerender_contents->set_quit_message_loop_on_destruction(false);
 
@@ -395,7 +395,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     EXPECT_TRUE(open_window_result);
 
     // If the prerender contents has not been destroyed, run message loop.
-    if (prerender_manager()->FindEntry(dest_url_) != NULL) {
+    if (GetPrerenderContents() != NULL) {
       prerender_contents->set_quit_message_loop_on_destruction(true);
       ui_test_utils::RunMessageLoop();
     }
@@ -403,9 +403,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
 
   void OpenDestUrlInNewWindowViaClick() const {
     // Make sure in navigating we have a URL to use in the PrerenderManager.
-    TestPrerenderContents* prerender_contents =
-        static_cast<TestPrerenderContents*>(
-            prerender_manager()->FindEntry(dest_url_));
+    TestPrerenderContents* prerender_contents = GetPrerenderContents();
     ASSERT_TRUE(prerender_contents != NULL);
     prerender_contents->set_quit_message_loop_on_destruction(false);
 
@@ -417,7 +415,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     EXPECT_TRUE(click_prerendered_link_result);
 
     // If the prerender contents has not been destroyed, run message loop.
-    if (prerender_manager()->FindEntry(dest_url_) != NULL) {
+    if (GetPrerenderContents() != NULL) {
       prerender_contents->set_quit_message_loop_on_destruction(true);
       ui_test_utils::RunMessageLoop();
     }
@@ -465,6 +463,11 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     return safe_browsing_factory_->most_recent_service();
   }
 
+  TestPrerenderContents* GetPrerenderContents() const {
+    return static_cast<TestPrerenderContents*>(
+        prerender_manager()->FindEntry(dest_url_));
+  }
+
  private:
   void PrerenderTestURLImpl(
       const GURL& url,
@@ -510,12 +513,9 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     // handle browser navigation directly.
     browser()->OpenURL(src_url, GURL(), CURRENT_TAB, PageTransition::TYPED);
 
-    TestPrerenderContents* prerender_contents = NULL;
     ui_test_utils::RunMessageLoop();
 
-    prerender_contents =
-        static_cast<TestPrerenderContents*>(
-            prerender_manager()->FindEntry(dest_url_));
+    TestPrerenderContents* prerender_contents = GetPrerenderContents();
 
     if (ShouldRenderPrerenderedPageCorrectly(expected_final_status)) {
       ASSERT_TRUE(prerender_contents != NULL);
@@ -539,7 +539,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
 
   void NavigateToURLImpl(const GURL& dest_url) const {
     // Make sure in navigating we have a URL to use in the PrerenderManager.
-    EXPECT_TRUE(prerender_manager()->FindEntry(dest_url_) != NULL);
+    EXPECT_TRUE(GetPrerenderContents() != NULL);
 
     // ui_test_utils::NavigateToURL waits until DidStopLoading is called on
     // the current tab.  As that tab is going to end up deleted, and may never
@@ -553,7 +553,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     ui_test_utils::RunMessageLoop();
 
     // Make sure the PrerenderContents found earlier was used or removed.
-    EXPECT_TRUE(prerender_manager()->FindEntry(dest_url_) == NULL);
+    EXPECT_TRUE(GetPrerenderContents() == NULL);
 
     if (call_javascript_) {
       // Check if page behaved as expected when actually displayed.
@@ -1338,6 +1338,26 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderLocalStorageWrite) {
                    FINAL_STATUS_USED,
                    1);
   NavigateToDestURL();
+}
+
+// Checks that the favicon is properly loaded on prerender.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderFavicon) {
+  PrerenderTestURL("files/prerender/prerender_favicon.html",
+                   FINAL_STATUS_USED,
+                   1);
+  TestPrerenderContents* prerender_contents = GetPrerenderContents();
+  ASSERT_TRUE(prerender_contents != NULL);
+  prerender_contents->set_quit_message_loop_on_destruction(false);
+  // The Favicon should show within two seconds of navigating to the page,
+  // otherwise something is wrong.
+  MessageLoopForUI::current()->PostDelayedTask(
+      FROM_HERE,
+      new MessageLoop::QuitTask(),
+      TestTimeouts::action_timeout_ms());
+  NavigateToDestURL();
+  ASSERT_TRUE(TabContentsWrapper::GetCurrentWrapperForContents(
+      browser()->GetSelectedTabContents())->favicon_tab_helper()
+              ->FaviconIsValid());
 }
 
 }  // namespace prerender
