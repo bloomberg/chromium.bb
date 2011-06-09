@@ -23,15 +23,6 @@ class NativeWindowDelegate {
  public:
   virtual ~NativeWindowDelegate() {}
 
-  // Returns true if the window is modal.
-  virtual bool IsModal() const = 0;
-
-  // Returns true if the window is a dialog box.
-  virtual bool IsDialogBox() const = 0;
-
-  // Called just after the NativeWindow has been created.
-  virtual void OnNativeWindowCreated(const gfx::Rect& bounds) = 0;
-
   //
   virtual Window* AsWindow() = 0;
 

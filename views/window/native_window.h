@@ -44,9 +44,6 @@ class NativeWindow {
 
  protected:
   friend class Window;
-
-  // Makes the NativeWindow modal.
-  virtual void BecomeModal() = 0;
 };
 
 }  // namespace views

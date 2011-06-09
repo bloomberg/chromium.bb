@@ -25,6 +25,7 @@
 #include "ui/base/gtk/scoped_handle_gtk.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/canvas_skia_paint.h"
+#include "ui/gfx/gtk_util.h"
 #include "ui/gfx/path.h"
 #include "views/controls/textfield/native_textfield_views.h"
 #include "views/focus/view_storage.h"
@@ -36,6 +37,7 @@
 #include "views/widget/gtk_views_window.h"
 #include "views/widget/tooltip_manager_gtk.h"
 #include "views/widget/widget_delegate.h"
+#include "views/window/hit_test.h"
 #include "views/window/native_window_gtk.h"
 
 #if defined(TOUCH_UI)
@@ -190,6 +192,61 @@ GtkWindowType WindowTypeToGtkWindowType(Widget::InitParams::Type type) {
   }
   NOTREACHED();
   return GTK_WINDOW_TOPLEVEL;
+}
+
+// Converts a Windows-style hit test result code into a GDK window edge.
+GdkWindowEdge HitTestCodeToGDKWindowEdge(int hittest_code) {
+  switch (hittest_code) {
+    case HTBOTTOM:
+      return GDK_WINDOW_EDGE_SOUTH;
+    case HTBOTTOMLEFT:
+      return GDK_WINDOW_EDGE_SOUTH_WEST;
+    case HTBOTTOMRIGHT:
+    case HTGROWBOX:
+      return GDK_WINDOW_EDGE_SOUTH_EAST;
+    case HTLEFT:
+      return GDK_WINDOW_EDGE_WEST;
+    case HTRIGHT:
+      return GDK_WINDOW_EDGE_EAST;
+    case HTTOP:
+      return GDK_WINDOW_EDGE_NORTH;
+    case HTTOPLEFT:
+      return GDK_WINDOW_EDGE_NORTH_WEST;
+    case HTTOPRIGHT:
+      return GDK_WINDOW_EDGE_NORTH_EAST;
+    default:
+      NOTREACHED();
+      break;
+  }
+  // Default to something defaultish.
+  return HitTestCodeToGDKWindowEdge(HTGROWBOX);
+}
+
+// Converts a Windows-style hit test result code into a GDK cursor type.
+GdkCursorType HitTestCodeToGdkCursorType(int hittest_code) {
+  switch (hittest_code) {
+    case HTBOTTOM:
+      return GDK_BOTTOM_SIDE;
+    case HTBOTTOMLEFT:
+      return GDK_BOTTOM_LEFT_CORNER;
+    case HTBOTTOMRIGHT:
+    case HTGROWBOX:
+      return GDK_BOTTOM_RIGHT_CORNER;
+    case HTLEFT:
+      return GDK_LEFT_SIDE;
+    case HTRIGHT:
+      return GDK_RIGHT_SIDE;
+    case HTTOP:
+      return GDK_TOP_SIDE;
+    case HTTOPLEFT:
+      return GDK_TOP_LEFT_CORNER;
+    case HTTOPRIGHT:
+      return GDK_TOP_RIGHT_CORNER;
+    default:
+      break;
+  }
+  // Default to something defaultish.
+  return GDK_LEFT_PTR;
 }
 
 }  // namespace
@@ -702,6 +759,8 @@ void NativeWidgetGtk::InitNativeWidget(const Widget::InitParams& params) {
                    G_CALLBACK(&OnMapThunk), this);
   g_signal_connect(widget_, "hide",
                    G_CALLBACK(&OnHideThunk), this);
+  g_signal_connect(widget_, "configure-event",
+                   G_CALLBACK(&OnConfigureEventThunk), this);
 
   // Views/FocusManager (re)sets the focus to the root window,
   // so we need to connect signal handlers to the gtk window.
@@ -912,6 +971,10 @@ void NativeWidgetGtk::SetAccessibleRole(ui::AccessibilityTypes::Role role) {
 }
 
 void NativeWidgetGtk::SetAccessibleState(ui::AccessibilityTypes::State state) {
+}
+
+void NativeWidgetGtk::BecomeModal() {
+  gtk_window_set_modal(GetNativeWindow(), true);
 }
 
 gfx::Rect NativeWidgetGtk::GetWindowScreenBounds() const {
@@ -1207,6 +1270,20 @@ void NativeWidgetGtk::OnSizeAllocate(GtkWidget* widget,
     return;
   size_ = new_size;
   delegate_->OnNativeWidgetSizeChanged(size_);
+
+  if (GetWidget()->non_client_view()) {
+    // The Window's NonClientView may provide a custom shape for the Window.
+    gfx::Path window_mask;
+    GetWidget()->non_client_view()->GetWindowMask(gfx::Size(allocation->width,
+                                                            allocation->height),
+                                                  &window_mask);
+    GdkRegion* mask_region = window_mask.CreateNativeRegion();
+    gdk_window_shape_combine_region(GetNativeView()->window, mask_region, 0, 0);
+    if (mask_region)
+      gdk_region_destroy(mask_region);
+
+    SaveWindowPosition();
+  }
 }
 
 gboolean NativeWidgetGtk::OnPaint(GtkWidget* widget, GdkEventExpose* event) {
@@ -1349,6 +1426,8 @@ gboolean NativeWidgetGtk::OnEnterNotify(GtkWidget* widget,
 
 gboolean NativeWidgetGtk::OnLeaveNotify(GtkWidget* widget,
                                         GdkEventCrossing* event) {
+  gdk_window_set_cursor(widget->window, gfx::GetCursor(GDK_LEFT_PTR));
+
   GetWidget()->ResetLastMouseMoveFlag();
 
   if (!HasMouseCapture() && !GetWidget()->is_mouse_button_pressed_) {
@@ -1360,6 +1439,20 @@ gboolean NativeWidgetGtk::OnLeaveNotify(GtkWidget* widget,
 
 gboolean NativeWidgetGtk::OnMotionNotify(GtkWidget* widget,
                                          GdkEventMotion* event) {
+  if (GetWidget()->non_client_view()) {
+    GdkEventMotion transformed_event = *event;
+    TransformEvent(&transformed_event);
+    gfx::Point translated_location(transformed_event.x, transformed_event.y);
+
+    // Update the cursor for the screen edge.
+    int hittest_code =
+        GetWidget()->non_client_view()->NonClientHitTest(translated_location);
+    if (hittest_code != HTCLIENT) {
+      GdkCursorType cursor_type = HitTestCodeToGdkCursorType(hittest_code);
+      gdk_window_set_cursor(widget->window, gfx::GetCursor(cursor_type));
+    }
+  }
+
   MouseEvent mouse_event(TransformEvent(event));
   delegate_->OnMouseEvent(mouse_event);
   return true;
@@ -1367,6 +1460,55 @@ gboolean NativeWidgetGtk::OnMotionNotify(GtkWidget* widget,
 
 gboolean NativeWidgetGtk::OnButtonPress(GtkWidget* widget,
                                         GdkEventButton* event) {
+  if (GetWidget()->non_client_view()) {
+    GdkEventButton transformed_event = *event;
+    MouseEvent mouse_event(TransformEvent(&transformed_event));
+
+    int hittest_code = GetWidget()->non_client_view()->NonClientHitTest(
+        mouse_event.location());
+    switch (hittest_code) {
+      case HTCAPTION: {
+        // Start dragging if the mouse event is a single click and *not* a right
+        // click. If it is a right click, then pass it through to
+        // NativeWidgetGtk::OnButtonPress so that View class can show
+        // ContextMenu upon a mouse release event. We only start drag on single
+        // clicks as we get a crash in Gtk on double/triple clicks.
+        if (event->type == GDK_BUTTON_PRESS &&
+            !mouse_event.IsOnlyRightMouseButton()) {
+          gfx::Point screen_point(event->x, event->y);
+          View::ConvertPointToScreen(GetWidget()->GetRootView(), &screen_point);
+          gtk_window_begin_move_drag(GetNativeWindow(), event->button,
+                                     screen_point.x(), screen_point.y(),
+                                     event->time);
+          return TRUE;
+        }
+        break;
+      }
+      case HTBOTTOM:
+      case HTBOTTOMLEFT:
+      case HTBOTTOMRIGHT:
+      case HTGROWBOX:
+      case HTLEFT:
+      case HTRIGHT:
+      case HTTOP:
+      case HTTOPLEFT:
+      case HTTOPRIGHT: {
+        gfx::Point screen_point(event->x, event->y);
+        View::ConvertPointToScreen(GetWidget()->GetRootView(), &screen_point);
+        // TODO(beng): figure out how to get a good minimum size.
+        gtk_widget_set_size_request(GetNativeView(), 100, 100);
+        gtk_window_begin_resize_drag(GetNativeWindow(),
+                                     HitTestCodeToGDKWindowEdge(hittest_code),
+                                     event->button, screen_point.x(),
+                                     screen_point.y(), event->time);
+        return TRUE;
+      }
+      default:
+        // Everything else falls into standard client event handling...
+        break;
+    }
+  }
+
   if (event->type == GDK_2BUTTON_PRESS || event->type == GDK_3BUTTON_PRESS) {
     // The sequence for double clicks is press, release, press, 2press, release.
     // This means that at the time we get the second 'press' we don't know
@@ -1508,7 +1650,17 @@ void NativeWidgetGtk::OnHide(GtkWidget* widget) {
 
 gboolean NativeWidgetGtk::OnWindowStateEvent(GtkWidget* widget,
                                              GdkEventWindowState* event) {
+  if (GetWidget()->non_client_view() &&
+      !(event->new_window_state & GDK_WINDOW_STATE_WITHDRAWN)) {
+    SaveWindowPosition();
+  }
   window_state_ = event->new_window_state;
+  return FALSE;
+}
+
+gboolean NativeWidgetGtk::OnConfigureEvent(GtkWidget* widget,
+                                           GdkEventConfigure* event) {
+  SaveWindowPosition();
   return FALSE;
 }
 
@@ -1805,6 +1957,17 @@ void NativeWidgetGtk::DrawTransparentBackground(GtkWidget* widget,
   gdk_cairo_region(cr, event->region);
   cairo_fill(cr);
   cairo_destroy(cr);
+}
+
+void NativeWidgetGtk::SaveWindowPosition() {
+  // The delegate may have gone away on us.
+  if (!GetWidget()->widget_delegate())
+    return;
+
+  bool maximized = window_state_ & GDK_WINDOW_STATE_MAXIMIZED;
+  GetWidget()->widget_delegate()->SaveWindowPlacement(
+      GetWidget()->GetWindowScreenBounds(),
+      maximized);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

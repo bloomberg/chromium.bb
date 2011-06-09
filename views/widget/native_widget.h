@@ -162,6 +162,9 @@ class NativeWidget {
   // accelerated drawing.
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() = 0;
 
+  // Makes the NativeWindow modal.
+  virtual void BecomeModal() = 0;
+
   // Widget pass-thrus, private to Views. --------------------------------------
   // See method documentation in Widget.
   virtual gfx::Rect GetWindowScreenBounds() const = 0;

@@ -11,7 +11,6 @@
 #include "views/window/native_window_delegate.h"
 
 namespace gfx {
-class Font;
 class Rect;
 class Size;
 }  // namespace gfx
@@ -50,22 +49,11 @@ class Window : public Widget,
                                     const gfx::Rect& bounds,
                                     WindowDelegate* window_delegate);
 
-  // Returns the preferred size of the contents view of this window based on
-  // its localized size data. The width in cols is held in a localized string
-  // resource identified by |col_resource_id|, the height in the same fashion.
-  // TODO(beng): This should eventually live somewhere else, probably closer to
-  //             ClientView.
-  static int GetLocalizedContentsWidth(int col_resource_id);
-  static int GetLocalizedContentsHeight(int row_resource_id);
-  static gfx::Size GetLocalizedContentsSize(int col_resource_id,
-                                            int row_resource_id);
-
   // Initializes the window. Must be called before any post-configuration
   // operations are performed.
   void InitWindow(const InitParams& params);
 
   // Overridden from Widget:
-  virtual void Show() OVERRIDE;
   virtual Window* AsWindow() OVERRIDE;
   virtual const Window* AsWindow() const OVERRIDE;
 
@@ -81,23 +69,10 @@ class Window : public Widget,
 
  protected:
   // Overridden from NativeWindowDelegate:
-  virtual bool IsModal() const OVERRIDE;
-  virtual bool IsDialogBox() const OVERRIDE;
-  virtual void OnNativeWindowCreated(const gfx::Rect& bounds) OVERRIDE;
   virtual internal::NativeWidgetDelegate* AsNativeWidgetDelegate() OVERRIDE;
 
  private:
-  // Sizes and positions the window just after it is created.
-  void SetInitialBounds(const gfx::Rect& bounds);
-
   NativeWindow* native_window_;
-
-  // The saved maximized state for this window. See note in SetInitialBounds
-  // that explains why we save this.
-  bool saved_maximized_state_;
-
-  // The smallest size the window can be.
-  gfx::Size minimum_size_;
 
   DISALLOW_COPY_AND_ASSIGN(Window);
 };

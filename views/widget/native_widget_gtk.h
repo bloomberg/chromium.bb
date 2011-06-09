@@ -188,6 +188,7 @@ class NativeWidgetGtk : public NativeWidget,
   virtual void SetAccessibleName(const std::wstring& name) OVERRIDE;
   virtual void SetAccessibleRole(ui::AccessibilityTypes::Role role) OVERRIDE;
   virtual void SetAccessibleState(ui::AccessibilityTypes::State state) OVERRIDE;
+  virtual void BecomeModal() OVERRIDE;
   virtual gfx::Rect GetWindowScreenBounds() const OVERRIDE;
   virtual gfx::Rect GetClientAreaScreenBounds() const OVERRIDE;
   virtual gfx::Rect GetRestoredBounds() const OVERRIDE;
@@ -282,6 +283,8 @@ class NativeWidgetGtk : public NativeWidget,
   CHROMEGTK_CALLBACK_0(NativeWidgetGtk, void, OnHide);
   CHROMEGTK_CALLBACK_1(NativeWidgetGtk, gboolean, OnWindowStateEvent,
                        GdkEventWindowState*);
+  CHROMEGTK_CALLBACK_1(NativeWidgetGtk, gboolean, OnConfigureEvent,
+                       GdkEventConfigure*);
 
   // Invoked when the widget is destroyed and right before the object
   // destruction. Useful for overriding.
@@ -344,6 +347,9 @@ class NativeWidgetGtk : public NativeWidget,
   // A utility function to draw a transparent background onto the |widget|.
   static void DrawTransparentBackground(GtkWidget* widget,
                                         GdkEventExpose* event);
+
+  // Asks the delegate if any to save the window's location and size.
+  void SaveWindowPosition();
 
   // A delegate implementation that handles events received here.
   // See class documentation for Widget in widget.h for a note about ownership.

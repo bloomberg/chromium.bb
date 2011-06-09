@@ -24,6 +24,12 @@ class NativeWidgetDelegate {
  public:
   virtual ~NativeWidgetDelegate() {}
 
+  // Returns true if the window is modal.
+  virtual bool IsModal() const = 0;
+
+  // Returns true if the window is a dialog box.
+  virtual bool IsDialogBox() const = 0;
+
   // Returns true if the window can be activated.
   virtual bool CanActivate() const = 0;
 

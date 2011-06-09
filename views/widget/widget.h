@@ -93,7 +93,8 @@ class Widget : public internal::NativeWidgetDelegate,
 
   struct InitParams {
     enum Type {
-      TYPE_WINDOW,      // A Window, like a frame window.
+      TYPE_WINDOW,      // A decorated Window, like a frame window.
+                        // Widgets of TYPE_WINDOW will have a NonClientView.
       TYPE_WINDOW_FRAMELESS,
                         // An undecorated Window.
       TYPE_CONTROL,     // A control, like a button.
@@ -165,6 +166,17 @@ class Widget : public internal::NativeWidgetDelegate,
 
   // Passes through to NativeWidget::GetWidgetForNativeView().
   static Widget* GetWidgetForNativeView(gfx::NativeView native_view);
+
+
+  // Returns the preferred size of the contents view of this window based on
+  // its localized size data. The width in cols is held in a localized string
+  // resource identified by |col_resource_id|, the height in the same fashion.
+  // TODO(beng): This should eventually live somewhere else, probably closer to
+  //             ClientView.
+  static int GetLocalizedContentsWidth(int col_resource_id);
+  static int GetLocalizedContentsHeight(int row_resource_id);
+  static gfx::Size GetLocalizedContentsSize(int col_resource_id,
+                                            int row_resource_id);
 
   void Init(const InitParams& params);
 
@@ -447,6 +459,8 @@ class Widget : public internal::NativeWidgetDelegate,
   virtual const Window* AsWindow() const;
 
   // Overridden from NativeWidgetDelegate:
+  virtual bool IsModal() const OVERRIDE;
+  virtual bool IsDialogBox() const OVERRIDE;
   virtual bool CanActivate() const OVERRIDE;
   virtual bool IsInactiveRenderingDisabled() const OVERRIDE;
   virtual void EnableInactiveRendering() OVERRIDE;
@@ -518,6 +532,9 @@ class Widget : public internal::NativeWidgetDelegate,
   // window delegate.
   void SaveWindowPosition();
 
+  // Sizes and positions the window just after it is created.
+  void SetInitialBounds(const gfx::Rect& bounds);
+
   NativeWidget* native_widget_;
 
   // Non-owned pointer to the Widget's delegate.  May be NULL if no delegate is
@@ -567,6 +584,13 @@ class Widget : public internal::NativeWidgetDelegate,
 
   // Set to true if the widget is in the process of closing.
   bool widget_closed_;
+
+  // The saved maximized state for this window. See note in SetInitialBounds
+  // that explains why we save this.
+  bool saved_maximized_state_;
+
+  // The smallest size the window can be.
+  gfx::Size minimum_size_;
 
   DISALLOW_COPY_AND_ASSIGN(Widget);
 };

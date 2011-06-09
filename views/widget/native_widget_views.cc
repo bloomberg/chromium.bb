@@ -168,6 +168,10 @@ void NativeWidgetViews::SetAccessibleState(
     ui::AccessibilityTypes::State state) {
 }
 
+void NativeWidgetViews::BecomeModal() {
+  NOTIMPLEMENTED();
+}
+
 gfx::AcceleratedWidget NativeWidgetViews::GetAcceleratedWidget() {
   // TODO(sky):
   return gfx::kNullAcceleratedWidget;

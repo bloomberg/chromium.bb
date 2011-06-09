@@ -31,9 +31,9 @@ class BrowserFrameGtk : public views::NativeWindowGtk,
 
   // Overridden from views::NativeWindowGtk:
   virtual gboolean OnWindowStateEvent(GtkWidget* widget,
-                                      GdkEventWindowState* event);
+                                      GdkEventWindowState* event) OVERRIDE;
   virtual gboolean OnConfigureEvent(GtkWidget* widget,
-                                    GdkEventConfigure* event);
+                                    GdkEventConfigure* event) OVERRIDE;
 
  private:
   NativeBrowserFrameDelegate* delegate_;

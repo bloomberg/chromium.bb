@@ -30,6 +30,7 @@ class ViewProp;
 
 namespace gfx {
 class CanvasSkia;
+class Font;
 class Rect;
 }
 
@@ -87,6 +88,9 @@ class NativeWidgetWin : public ui::WindowImpl,
   // Returns true if we are on Windows Vista or greater and composition is
   // enabled.
   static bool IsAeroGlassEnabled();
+
+  // Returns the system set window title font.
+  static gfx::Font GetWindowTitleFont();
 
   // Show the window with the specified show command.
   void Show(int show_state);
@@ -212,6 +216,7 @@ class NativeWidgetWin : public ui::WindowImpl,
   virtual void SetAccessibleName(const std::wstring& name) OVERRIDE;
   virtual void SetAccessibleRole(ui::AccessibilityTypes::Role role) OVERRIDE;
   virtual void SetAccessibleState(ui::AccessibilityTypes::State state) OVERRIDE;
+  virtual void BecomeModal() OVERRIDE;
   virtual gfx::Rect GetWindowScreenBounds() const OVERRIDE;
   virtual gfx::Rect GetClientAreaScreenBounds() const OVERRIDE;
   virtual gfx::Rect GetRestoredBounds() const OVERRIDE;
@@ -513,6 +518,11 @@ class NativeWidgetWin : public ui::WindowImpl,
   // flicker.
   LRESULT CallDefaultNCActivateHandler(BOOL active);
 
+  // Stops ignoring SetWindowPos() requests (see below).
+  void StopIgnoringPosChanges() { ignore_window_pos_changes_ = false; }
+
+  void RestoreEnabledIfNecessary();
+
   // Overridden from NativeWidget.
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
 
@@ -624,6 +634,28 @@ class NativeWidgetWin : public ui::WindowImpl,
 
   // The window styles of the window before updates were locked.
   DWORD saved_window_style_;
+
+  // When true, this flag makes us discard incoming SetWindowPos() requests that
+  // only change our position/size.  (We still allow changes to Z-order,
+  // activation, etc.)
+  bool ignore_window_pos_changes_;
+
+  // The following factory is used to ignore SetWindowPos() calls for short time
+  // periods.
+  ScopedRunnableMethodFactory<NativeWidgetWin> ignore_pos_changes_factory_;
+
+  // The last-seen monitor containing us, and its rect and work area.  These are
+  // used to catch updates to the rect and work area and react accordingly.
+  HMONITOR last_monitor_;
+  gfx::Rect last_monitor_rect_, last_work_area_;
+
+  // Set to true when the user presses the right mouse button on the caption
+  // area. We need this so we can correctly show the context menu on mouse-up.
+  bool is_right_mouse_pressed_on_caption_;
+
+  // Whether all ancestors have been enabled. This is only used if is_modal_ is
+  // true.
+  bool restored_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetWin);
 };
