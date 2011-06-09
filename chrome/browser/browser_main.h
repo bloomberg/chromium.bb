@@ -129,6 +129,10 @@ class BrowserMainParts {
   // specified timeout value is reached.
   void ConnectBackupJobsFieldTrial();
 
+  // A/B test for disabling revocation checking for sites with pinned
+  // certificates.
+  void RevocationCheckingDisabledFieldTrial();
+
   // Used to initialize NSPR where appropriate.
   virtual void InitializeSSL() = 0;
 

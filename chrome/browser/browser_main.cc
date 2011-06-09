@@ -503,6 +503,23 @@ void BrowserMainParts::ConnectBackupJobsFieldTrial() {
   }
 }
 
+void BrowserMainParts::RevocationCheckingDisabledFieldTrial() {
+  const base::FieldTrial::Probability kDivisor = 100;
+  base::FieldTrial::Probability probability = 50;  // 50/50 trial
+
+  // After August 30, 2011 builds, it will always be in default group.
+  scoped_refptr<base::FieldTrial> trial(
+      new base::FieldTrial(
+          "RevCheckingImpact", kDivisor, "control", 2011, 8, 30));
+
+  int disabled_group = trial->AppendGroup(
+      "disabled", probability);
+
+  int trial_grp = trial->group();
+  if (trial_grp == disabled_group)
+    net::SSLConfigService::DisableRevCheckingForPinnedSites();
+}
+
 // BrowserMainParts: |MainMessageLoopStart()| and related ----------------------
 
 void BrowserMainParts::MainMessageLoopStart() {
@@ -593,6 +610,7 @@ void BrowserMainParts::SetupFieldTrials(bool metrics_recording_enabled) {
   prerender::ConfigurePrefetchAndPrerender(parsed_command_line());
   SpdyFieldTrial();
   ConnectBackupJobsFieldTrial();
+  RevocationCheckingDisabledFieldTrial();
 }
 
 // -----------------------------------------------------------------------------
