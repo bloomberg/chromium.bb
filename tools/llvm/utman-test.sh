@@ -32,6 +32,8 @@ SetScriptPath "${NACL_ROOT}/tools/llvm/utman-test.sh"
 # For different levels of make parallelism change this in your env
 readonly UTMAN_CONCURRENCY=${UTMAN_CONCURRENCY:-8}
 
+readonly OTHER_TEST_SCRIPT="${NACL_ROOT}/buildbot/buildbot_pnacl1.sh"
+
 ######################################################################
 ######################################################################
 #
@@ -77,13 +79,14 @@ show-tests() {
 }
 
 #+ scons-determine-tests  - returns:
-#+    (a) "true smoke_tests [-k]" if all smoke tests should be built and run.
+#+    (a) "true smoke_tests [-k]" if all smoke_tests should be built and run.
 #+ or (b) "false $@" if not all tests should be built because specific tests
 #+        are already identified in $@. The test must be the first element
 #+        of $@, but we don't check that here.
 scons-determine-tests() {
   if [ $# -eq 0 ] || ([ $# -eq 1 ] && [ "$1" == "-k" ]); then
-    echo "true smoke_tests $@" # $@ should only tack on the -k flag or nothing
+    # $@ should only tack on the -k flag or nothing
+    echo "true smoke_tests $@"
   else
     echo "false $@"
   fi
@@ -185,21 +188,42 @@ test-x86-64-pic() {
   test-scons-pic-common x86-64 "$@"
 }
 
+#@ --- Displayless chrome browser tests (for bots / interruption-free testing).
+#@ --- To run a browser test with a display, use plain test-${arch} instead.
+
+# These call out to the other buildbot test script. We should have
+# buildbot_toolchain_arm_untrusted.sh use the same tests directly.
+# TODO(jvoung): remove these when unified.
+
+#@ test-arm-browser      - run arm browser tests via pnacl toolchain.
+test-arm-browser() {
+  ${OTHER_TEST_SCRIPT} browser-tests "arm" \
+    "--mode=opt-host,nacl -j${UTMAN_CONCURRENCY}"
+}
+
+#@ test-x86-32-browser   - run x86-32 browser tests via pnacl toolchain.
+test-x86-32-browser() {
+  ${OTHER_TEST_SCRIPT} browser-tests "x86-32" \
+    "--mode=opt-host,nacl -j${UTMAN_CONCURRENCY}"
+}
+
+#@ test-x86-64-browser   - run all x86-64 browser tests via pnacl toolchain.
+test-x86-64-browser() {
+  ${OTHER_TEST_SCRIPT} browser-tests "x86-64" \
+    "--mode=opt-host,nacl -j${UTMAN_CONCURRENCY}"
+}
+
 #@ test-all              - run arm, x86-32, and x86-64 tests. (all should pass)
-#@ test-all <test>       - run a single test on all architectures.
 test-all() {
-  if [ $# -eq 1 ] && [ "$1" == "-k" ]; then
-    echo "Using -k on test-all is not a good idea."
+  if [ $# -ne 0 ]; then
+    echo "test-all does not take any arguments"
     exit -1
   fi
 
-  test-arm "$@"
-  test-arm-pic "$@"
-  test-x86-64 "$@"
-  test-x86-64-pic "$@"
-  test-x86-32 "$@"
-  test-x86-32-pic "$@"
+  ${OTHER_TEST_SCRIPT} mode-test-all-fast ${UTMAN_CONCURRENCY}
 }
+
+#####
 
 
 #@ test-spec <official-spec-dir> <setup> [ref|train] [<benchmarks>]*

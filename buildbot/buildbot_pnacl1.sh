@@ -7,6 +7,9 @@ set -o xtrace
 set -o nounset
 set -o errexit
 
+# This remembers when any build steps failed, but we ended up continuing.
+RETCODE=0
+
 clobber() {
   echo "@@@BUILD_STEP clobber@@@"
   rm -rf scons-out toolchain compiler hg ../xcodebuild ../sconsbuild ../out \
@@ -134,8 +137,24 @@ single-scons-test() {
   echo "@@@BUILD_STEP scons [${platform}] [${test}] [${extra2}]@@@"
   ${SCONS_COMMON} ${extra} ${extra2} platform=${platform} ${test} || \
      { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
+}
 
-
+single-browser-test() {
+  # Although we could use the "browser_headless=1" Scons option, it runs
+  # xvfb-run once per Chromium invocation.  This is good for isolating
+  # the tests, but xvfb-run has a stupid fixed-period sleep, which would
+  # slow down the tests unnecessarily.
+  local XVFB_PREFIX="xvfb-run --auto-servernum"
+  local platform=$1
+  local extra=$2
+  # this extra is actually printed as part of the build step
+  local extra2=$3
+  local test=$4
+  echo "@@@BUILD_STEP scons [${platform}] [${test}] [${extra2}]@@@"
+  ${XVFB_PREFIX} \
+     ${SCONS_COMMON} ${extra} ${extra2} SILENT=1 platform=${platform} \
+     ${test} || \
+     { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 }
 
 scons-tests() {
@@ -152,12 +171,22 @@ scons-tests() {
   done
 }
 
+browser-tests() {
+  local platforms=$1
+  local extra=$2
+  local test="chrome_browser_tests"
+  for platform in ${platforms} ; do
+    single-browser-test ${platform} "${extra}" "" "${test}"
+  done
+}
+
 ######################################################################
 mode-trybot() {
   clobber
   install-lkgr-toolchains
   partial-sdk "arm x86-32 x86-64"
   scons-tests "arm x86-32 x86-64" "--mode=opt-host,nacl -j8" "smoke_tests"
+  browser-tests "arm x86-32 x86-64" "--mode=opt-host,nacl"
   ad-hoc-shared-lib-tests
 }
 
@@ -169,6 +198,7 @@ mode-buildbot-x8632() {
   scons-tests "x86-32" "--mode=opt-host,nacl -j8" ""
   # Then test (not all nexes which are build are also tested)
   scons-tests "x86-32" "--mode=opt-host,nacl" "smoke_tests"
+  browser-tests "x86-32" "--mode=opt-host,nacl"
   # this really tests arm and x86-32
   ad-hoc-shared-lib-tests
 }
@@ -181,12 +211,18 @@ mode-buildbot-x8664() {
   scons-tests "x86-64" "--mode=opt-host,nacl -j8" ""
   # Then test (not all nexes which are build are also tested)
   scons-tests "x86-64" "--mode=opt-host,nacl" "smoke_tests"
+  browser-tests "x86-64" "--mode=opt-host,nacl"
 }
 
 # These names were originally botnames
 # TOOD(robertm): describe what needs to done when those change
-readonly NAME_ARM_OPT="hardy64-marm-narm-opt/rev_${BUILDBOT_GOT_REVISION}"
-readonly NAME_ARM_DBG="hardy64-marm-narm-dbg/rev_${BUILDBOT_GOT_REVISION}"
+# Thunk them to allow non-bots to run without specifying BUILDBOT_GOT_REVISION.
+NAME_ARM_OPT() {
+  echo "hardy64-marm-narm-opt/rev_${BUILDBOT_GOT_REVISION}"
+}
+NAME_ARM_DBG() {
+  echo "hardy64-marm-narm-dbg/rev_${BUILDBOT_GOT_REVISION}"
+}
 readonly NAME_ARM_TRY="nacl-arm_opt/None"
 
 mode-buildbot-arm() {
@@ -202,16 +238,17 @@ mode-buildbot-arm() {
   scons-tests "arm" "${mode}" "small_tests"
   scons-tests "arm" "${mode}" "medium_tests"
   scons-tests "arm" "${mode}" "large_tests"
+  browser-tests "arm" "${mode}"
 }
 
 mode-buildbot-arm-dbg() {
   mode-buildbot-arm "--mode=dbg-host,nacl"
-  archive-for-hw-bots between_builders/${NAME_ARM_DBG}/build.tgz
+  archive-for-hw-bots between_builders/$(NAME_ARM_DBG)/build.tgz
 }
 
 mode-buildbot-arm-opt() {
   mode-buildbot-arm "--mode=opt-host,nacl"
-  archive-for-hw-bots between_builders/${NAME_ARM_OPT}/build.tgz
+  archive-for-hw-bots between_builders/$(NAME_ARM_OPT)/build.tgz
 }
 
 mode-buildbot-arm-try() {
@@ -224,6 +261,7 @@ mode-buildbot-arm-hw() {
   scons-tests "arm" "${flags}" "small_tests"
   scons-tests "arm" "${flags}" "medium_tests"
   scons-tests "arm" "${flags}" "large_tests"
+  browser-tests "arm" "${flags}"
 }
 
 # NOTE: the hw bots are too slow to build stuff on so we just
@@ -243,13 +281,28 @@ mode-buildbot-arm-hw-try() {
   mode-buildbot-arm-hw "--mode=opt-host,nacl"
 }
 
-# NOTE: clobber and toolchain setup to be done manually
-mode-utman() {
+# NOTE: clobber and toolchain setup to be done manually, since this is for
+# testing a locally built toolchain.
+# This runs tests concurrently, so may be more difficult to parse logs.
+mode-test-all-fast() {
+  local concur=$1
+
   # turn verbose mode off
   set +o xtrace
-  scons-tests "arm x86-32 x86-64" "--mode=opt-host,nacl" "smoke_tests"
+
+  # At least clobber scons-out before building and running the tests though.
+  echo "@@@BUILD_STEP clobber@@@"
+  rm -rf scons-out
+
+  # First build everything.
+  scons-tests "arm x86-32 x86-64" "--mode=opt-host,nacl -j${concur}" ""
+  # Then test everything.
+  scons-tests "arm x86-32 x86-64" "--mode=opt-host,nacl -j${concur}" \
+    "smoke_tests"
+  browser-tests "arm x86-32 x86-64" "--mode=opt-host,nacl -j${concur}"
   ad-hoc-shared-lib-tests
 }
+
 ######################################################################
 # Script assumed to be run in native_client/
 if [[ $(pwd) != */native_client ]]; then
@@ -271,3 +324,8 @@ fi
 
 eval "$@"
 
+if [[ ${RETCODE} != 0 ]]; then
+  echo @@@BUILD_STEP summary@@@
+  echo There were failed stages.
+  exit ${RETCODE}
+fi
