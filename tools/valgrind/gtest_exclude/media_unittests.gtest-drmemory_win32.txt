@@ -1,4 +1,0 @@
-# http://code.google.com/p/drmemory/issues/detail?id=23
-PipelineImplTest.*
-VideoRendererBaseTest.Initialize_Successful
-*Audio*
