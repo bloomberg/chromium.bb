@@ -15,11 +15,6 @@
 
 class BrowserActionsContainer;
 class BrowserActionView;
-class ExtensionContextMenuModel;
-
-namespace views {
-class Menu2;
-}
 
 // This class handles the overflow menu for browser actions (showing the menu,
 // drag and drop, etc). This class manages its own lifetime.
@@ -104,10 +99,6 @@ class BrowserActionOverflowMenuController : public views::MenuDelegate {
 
   // Whether this controller is being used for drop.
   bool for_drop_;
-
-  // The browser action context menu and model.
-  scoped_refptr<ExtensionContextMenuModel> context_menu_contents_;
-  scoped_ptr<views::Menu2> context_menu_menu_;
 
   friend class DeleteTask<BrowserActionOverflowMenuController>;
 
