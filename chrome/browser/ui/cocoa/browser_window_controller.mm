@@ -157,18 +157,8 @@
     MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
 
 @interface NSWindow (LionSDKDeclarations)
-- (void)toggleFullScreen:(id)sender;
 - (void)setRestorable:(BOOL)flag;
 @end
-
-enum {
-  NSWindowCollectionBehaviorFullScreenPrimary = 1 << 7,
-  NSWindowCollectionBehaviorFullScreenAuxiliary = 1 << 8
-};
-
-enum {
-  NSWindowFullScreenButton = 7
-};
 
 #endif  // MAC_OS_X_VERSION_10_7
 
@@ -417,20 +407,7 @@ enum {
     if ([self hasToolbar])  // Do not create the buttons in popups.
       [toolbarController_ createBrowserActionButtons];
 
-    // For versions of Mac OS that provide an "enter fullscreen" button, make
-    // one appear (in a rather hacky manner). http://crbug.com/74065 : When
-    // switching the fullscreen implementation to the new API, revisit how much
-    // of this hacky code is necessary.
-    if ([window respondsToSelector:@selector(toggleFullScreen:)]) {
-      NSWindowCollectionBehavior behavior = [window collectionBehavior];
-      behavior |= NSWindowCollectionBehaviorFullScreenPrimary;
-      [window setCollectionBehavior:behavior];
-
-      NSButton* fullscreenButton =
-          [window standardWindowButton:NSWindowFullScreenButton];
-      [fullscreenButton setAction:@selector(enterFullscreen:)];
-      [fullscreenButton setTarget:self];
-    }
+    [self setUpOSFullScreenButton];
 
     // We are done initializing now.
     initializing_ = NO;
@@ -2059,6 +2036,10 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 
   // We're done moving focus, so re-enable bar visibility changes.
   [self enableBarVisibilityUpdates];
+
+  // This needs to be done when leaving full-screen mode to ensure that the
+  // button's action is set properly.
+  [self setUpOSFullScreenButton];
 
   // Fade back in.
   if (didFadeOut) {

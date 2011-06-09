@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -112,6 +112,12 @@
 // timers/animation.
 - (void)enableBarVisibilityUpdates;
 - (void)disableBarVisibilityUpdates;
+
+// For versions of Mac OS that provide an "enter fullscreen" button, make one
+// appear (in a rather hacky manner). http://crbug.com/74065 : When switching
+// the fullscreen implementation to the new API, revisit how much of this
+// hacky code is necessary.
+- (void)setUpOSFullScreenButton;
 
 @end  // @interface BrowserWindowController(Private)
 
