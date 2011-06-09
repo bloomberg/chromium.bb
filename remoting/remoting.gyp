@@ -204,7 +204,7 @@
       ],
     },  # end of target 'remoting_host_plugin'
     {
-      'target_name': 'webapp_me2mom',
+      'target_name': 'webapp_it2me',
       'type': 'none',
       'dependencies': [
         'remoting_host_plugin',
@@ -223,13 +223,13 @@
       # when the actual project is generated.
       'actions': [
         {
-          'action_name': 'Build Me2Mom WebApp',
+          'action_name': 'Build It2Me WebApp',
           'inputs': [
             'webapp/me2mom/',
             '<(PRODUCT_DIR)/<(plugin_prefix)remoting_host_plugin.<(plugin_extension)',
           ],
           'outputs': [
-            '<(PRODUCT_DIR)/remoting/remoting-me2mom.webapp',
+            '<(PRODUCT_DIR)/remoting/remoting-it2me.webapp',
           ],
           'action': [
             'python', 'webapp/build-webapp.py',
@@ -239,7 +239,7 @@
           ],
         },
       ],
-    }, # end of target 'webapp_me2mom'
+    }, # end of target 'webapp_it2me'
     {
       'target_name': 'remoting_base',
       'type': 'static_library',
