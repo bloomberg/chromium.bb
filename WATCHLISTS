@@ -25,7 +25,7 @@
     },
     'views': {
       # Applies to all files and subdirs within this directory.
-      'filepath': 'views/.*',
+      'filepath': '^views/.*',
     },
     'browser': {
       'filepath': 'chrome/browser/.*',
