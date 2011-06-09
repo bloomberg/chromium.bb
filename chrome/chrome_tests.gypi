@@ -678,6 +678,7 @@
         'browser/ui/webui/ntp/new_tab_ui_uitest.cc',
         'browser/ui/webui/options/options_ui_uitest.cc',
         'browser/ui/webui/print_preview_ui_uitest.cc',
+        'common/chrome_switches_uitest.cc',
         'common/logging_chrome_uitest.cc',
         'renderer/external_extension_uitest.cc',
         'test/automation/automation_proxy_uitest.cc',
