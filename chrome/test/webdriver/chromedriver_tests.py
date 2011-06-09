@@ -503,6 +503,31 @@ class ElementEqualityTest(unittest.TestCase):
     self.assertTrue(result['value'])
 
 
+class LoggingTest(unittest.TestCase):
+
+  def setUp(self):
+    self._launcher = ChromeDriverLauncher(root_path=os.path.dirname(__file__))
+
+  def tearDown(self):
+    self._launcher.Kill()
+
+  def testNoVerboseLogging(self):
+    self._driver = WebDriver(self._launcher.GetURL(), {})
+    self._driver.execute_script('console.log("HI")')
+    request_url = self._launcher.GetURL() + '/log'
+    req = SendRequest(request_url, method='GET')
+    log = req.read()
+    self.assertTrue(':INFO:' not in log, ':INFO: in log: ' + log)
+
+  def testVerboseLogging(self):
+    self._driver = WebDriver(self._launcher.GetURL(), {'chrome.verbose': True})
+    self._driver.execute_script('console.log("HI")')
+    request_url = self._launcher.GetURL() + '/log'
+    req = SendRequest(request_url, method='GET')
+    log = req.read()
+    self.assertTrue(':INFO:' in log, ':INFO: not in log: ' + log)
+
+
 """Chrome functional test section. All implementation tests of ChromeDriver
 should go above.
 

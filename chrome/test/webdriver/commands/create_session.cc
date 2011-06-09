@@ -9,6 +9,7 @@
 
 #include "base/command_line.h"
 #include "base/file_path.h"
+#include "base/logging.h"
 #include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -68,6 +69,20 @@ void CreateSession::ExecutePost(Response* const response) {
         kBadRequest, "Custom switches must be a list"));
     return;
   }
+  Value* verbose_value;
+  if (capabilities->GetWithoutPathExpansion("chrome.verbose", &verbose_value)) {
+    bool verbose;
+    if (verbose_value->GetAsBoolean(&verbose) && verbose) {
+      // Since logging is shared among sessions, if any session requests verbose
+      // logging, verbose logging will be enabled for all sessions. It is not
+      // possible to turn it off.
+      logging::SetMinLogLevel(logging::LOG_INFO);
+    } else {
+      response->SetError(new Error(
+          kBadRequest, "verbose must be a boolean true or false"));
+      return;
+    }
+  }
 
   FilePath browser_exe;
   FilePath::StringType path;
@@ -96,7 +111,7 @@ void CreateSession::ExecutePost(Response* const response) {
     session->set_screenshot_on_error(screenshot_on_error);
   }
 
-  VLOG(1) << "Created session " << session->id();
+  LOG(INFO) << "Created session " << session->id();
   std::ostringstream stream;
   SessionManager* session_manager = SessionManager::GetInstance();
   stream << "http://" << session_manager->GetAddress() << "/session/"

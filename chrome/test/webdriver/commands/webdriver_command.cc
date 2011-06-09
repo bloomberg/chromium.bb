@@ -34,7 +34,6 @@ bool WebDriverCommand::Init(Response* const response) {
     return false;
   }
 
-  VLOG(1) << "Fetching session: " << session_id;
   session_ = SessionManager::GetInstance()->GetSession(session_id);
   if (session_ == NULL) {
     response->SetError(
@@ -42,15 +41,17 @@ bool WebDriverCommand::Init(Response* const response) {
     return false;
   }
 
-  // TODO(kkania): Do not use the standard automation timeout for this,
-  // and throw an error if it does not succeed.
-  scoped_ptr<Error> error(session_->WaitForAllTabsToStopLoading());
-  if (error.get()) {
-    LOG(WARNING) << error->ToString();
+  LOG(INFO) << "Waiting for the page to stop loading";
+  Error* error = session_->WaitForAllTabsToStopLoading();
+  if (error) {
+    response->SetError(error);
+    return false;
   }
-  error.reset(session_->SwitchToTopFrameIfCurrentFrameInvalid());
-  if (error.get()) {
-    LOG(WARNING) << error->ToString();
+  LOG(INFO) << "Done waiting for the page to stop loading";
+  error = session_->SwitchToTopFrameIfCurrentFrameInvalid();
+  if (error) {
+    response->SetError(error);
+    return false;
   }
 
   response->SetField("sessionId", Value::CreateStringValue(session_id));
