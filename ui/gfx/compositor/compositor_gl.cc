@@ -357,9 +357,9 @@ bool CompositorGL::InitShaders() {
 
 // static
 Compositor* Compositor::Create(gfx::AcceleratedWidget widget) {
- gfx::GLSurface::InitializeOneOff();
- if (gfx::GetGLImplementation() != gfx::kGLImplementationNone)
-   return new glHidden::CompositorGL(widget);
+  gfx::GLSurface::InitializeOneOff();
+  if (gfx::GetGLImplementation() != gfx::kGLImplementationNone)
+    return new glHidden::CompositorGL(widget);
   return NULL;
 }
 #else

@@ -762,6 +762,11 @@ void View::set_use_acceleration_when_possible(bool use) {
   use_acceleration_when_possible = use;
 }
 
+// static
+bool View::get_use_acceleration_when_possible() {
+  return use_acceleration_when_possible;
+}
+
 // Input -----------------------------------------------------------------------
 
 View* View::GetEventHandlerForPoint(const gfx::Point& point) {

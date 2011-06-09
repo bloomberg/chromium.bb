@@ -757,7 +757,8 @@ void Widget::EnsureCompositor() {
   // TODO(sad): If there is a parent Widget, then use the same compositor
   //            instead of creating a new one here.
   gfx::AcceleratedWidget widget = native_widget_->GetAcceleratedWidget();
-  if (widget != gfx::kNullAcceleratedWidget)
+  if (widget != gfx::kNullAcceleratedWidget &&
+                View::get_use_acceleration_when_possible())
     compositor_ = ui::Compositor::Create(widget);
 }
 

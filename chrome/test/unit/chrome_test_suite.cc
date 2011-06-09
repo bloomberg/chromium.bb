@@ -21,6 +21,9 @@
 #include "net/base/net_errors.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
+#if defined(TOOLKIT_VIEWS)
+#include "views/view.h"
+#endif
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
@@ -141,6 +144,11 @@ void ChromeTestSuite::Initialize() {
   RemoveSharedMemoryFile(stats_filename_);
   stats_table_ = new base::StatsTable(stats_filename_, 20, 200);
   base::StatsTable::set_current(stats_table_);
+
+#if defined(TOUCH_UI)
+  // Turn of GPU compositing in browser during unit tests.
+  views::View::set_use_acceleration_when_possible(false);
+#endif
 }
 
 void ChromeTestSuite::Shutdown() {

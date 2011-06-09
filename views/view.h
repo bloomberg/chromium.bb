@@ -546,6 +546,7 @@ class View : public AcceleratorTarget {
 
   // Enable/Disable accelerated compositing.
   static void set_use_acceleration_when_possible(bool use);
+  static bool get_use_acceleration_when_possible();
 
   // Input ---------------------------------------------------------------------
   // The points (and mouse locations) in the following functions are in the
