@@ -111,6 +111,10 @@ TEST_F(ContentSettingBubbleModelTest, MultiplePlugins) {
   HostContentSettingsMap* map = profile_->GetHostContentSettingsMap();
   std::string fooPlugin = "foo";
   std::string barPlugin = "bar";
+
+  // Navigating to some sample url prevents the GetURL method from returning an
+  // invalid empty URL.
+  contents()->NavigateAndCommit(GURL("http://www.example.com"));
   GURL url = contents()->GetURL();
   map->AddExceptionForURL(url,
                           CONTENT_SETTINGS_TYPE_PLUGINS,

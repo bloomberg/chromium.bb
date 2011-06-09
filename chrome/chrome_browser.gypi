@@ -761,6 +761,8 @@
         'browser/content_settings/content_settings_extension_provider.h',
         'browser/content_settings/content_settings_notification_provider.cc',
         'browser/content_settings/content_settings_notification_provider.h',
+        'browser/content_settings/content_settings_origin_identifier_value_map.cc',
+        'browser/content_settings/content_settings_origin_identifier_value.h',
         'browser/content_settings/content_settings_pattern.cc',
         'browser/content_settings/content_settings_pattern.h',
         'browser/content_settings/content_settings_pattern_parser.cc',

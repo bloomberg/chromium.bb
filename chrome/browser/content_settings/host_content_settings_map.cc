@@ -260,34 +260,33 @@ void HostContentSettingsMap::GetSettingsForOneType(
     const std::string& resource_identifier,
     SettingsForOneType* settings) const {
   DCHECK(settings);
-  settings->clear();
-
   // Collect content_settings::Rules for the given content_type and
   // resource_identifier from the content settings providers.
-  Rules content_settings_rules;
+  std::map<std::string, PatternSettingPair>
+      pattern_str_pattern_setting_pair_map;
   for (ConstProviderIterator provider = content_settings_providers_.begin();
-       provider != content_settings_providers_.end();
-       ++provider) {
-    // TODO(markusheintz): Only the rules that are applied should be collected.
-    // Merge rules.
-    // TODO(markusheintz): GetAllContentSettingsRules should maybe not clear the
-    // passed vector in case rule sets are just unified.
+     provider != content_settings_providers_.end();
+     ++provider) {
     Rules rules;
     (*provider)->GetAllContentSettingsRules(
         content_type, resource_identifier, &rules);
-    content_settings_rules.insert(content_settings_rules.end(),
-                                  rules.begin(),
-                                  rules.end());
+    // TODO(markusheintz): Only the rules that are applied should be collected.
+    for (Rules::iterator rule = rules.begin();
+         rule != rules.end();
+         ++rule) {
+      const ContentSettingsPattern& pattern(rule->requesting_url_pattern);
+      pattern_str_pattern_setting_pair_map[pattern.ToString()] =
+          PatternSettingPair(pattern, rule->content_setting);
+    }
   }
 
-  // convert Rules to SettingsForOneType
-  for (const_rules_iterator rule_iterator =
-           content_settings_rules.begin();
-       rule_iterator != content_settings_rules.end();
-       ++rule_iterator) {
-    settings->push_back(std::make_pair(ContentSettingsPattern(
-        rule_iterator->requesting_url_pattern),
-        rule_iterator->content_setting));
+  settings->clear();
+  // Rely on the maps iterator to sort the rules.
+  for (std::map<std::string, PatternSettingPair>::iterator i(
+           pattern_str_pattern_setting_pair_map.begin());
+       i != pattern_str_pattern_setting_pair_map.end();
+       ++i) {
+    settings->push_back(i->second);
   }
 }
 
@@ -321,11 +320,11 @@ void HostContentSettingsMap::AddExceptionForURL(
     ContentSetting setting) {
   // Make sure there is no entry that would override the pattern we are about
   // to insert for exactly this URL.
-  SetContentSetting(ContentSettingsPattern::LegacyFromURLNoWildcard(url),
+  SetContentSetting(ContentSettingsPattern::FromURLNoWildcard(url),
                     content_type,
                     resource_identifier,
                     CONTENT_SETTING_DEFAULT);
-  SetContentSetting(ContentSettingsPattern::LegacyFromURL(url),
+  SetContentSetting(ContentSettingsPattern::FromURL(url),
                     content_type,
                     resource_identifier,
                     setting);

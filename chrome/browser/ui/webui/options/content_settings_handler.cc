@@ -662,7 +662,7 @@ void ContentSettingsHandler::RemoveException(const ListValue* args) {
     // got destroyed before we received this message.
     if (settings_map) {
       settings_map->SetContentSetting(
-          ContentSettingsPattern::LegacyFromString(pattern),
+          ContentSettingsPattern::FromString(pattern),
           ContentSettingsTypeFromGroupName(type_string),
           "",
           CONTENT_SETTING_DEFAULT);
@@ -697,7 +697,7 @@ void ContentSettingsHandler::SetException(const ListValue* args) {
   if (!settings_map)
     return;
 
-  settings_map->SetContentSetting(ContentSettingsPattern::LegacyFromString(
+  settings_map->SetContentSetting(ContentSettingsPattern::FromString(
                                       pattern),
                                   type,
                                   "",
@@ -715,7 +715,7 @@ void ContentSettingsHandler::CheckExceptionPatternValidity(
   CHECK(args->GetString(arg_i++, &pattern_string));
 
   ContentSettingsPattern pattern =
-      ContentSettingsPattern::LegacyFromString(pattern_string);
+      ContentSettingsPattern::FromString(pattern_string);
 
   scoped_ptr<Value> mode_value(Value::CreateStringValue(mode_string));
   scoped_ptr<Value> pattern_value(Value::CreateStringValue(pattern_string));

@@ -99,12 +99,8 @@ class ContentSettingsPattern {
   // all subdomains and ports.
   static ContentSettingsPattern FromURL(const GURL& url);
 
-  static ContentSettingsPattern LegacyFromURL(const GURL& url);
-
   // Returns a pattern that matches exactly this URL.
   static ContentSettingsPattern FromURLNoWildcard(const GURL& url);
-
-  static ContentSettingsPattern LegacyFromURLNoWildcard(const GURL& url);
 
   // Returns a pattern that matches the given pattern specification.
   // Valid patterns specifications are:

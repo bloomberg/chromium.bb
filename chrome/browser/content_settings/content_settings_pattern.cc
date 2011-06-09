@@ -310,35 +310,6 @@ ContentSettingsPattern ContentSettingsPattern::FromURL(
 }
 
 // static
-ContentSettingsPattern ContentSettingsPattern::LegacyFromURL(
-    const GURL& url) {
-  scoped_ptr<ContentSettingsPattern::BuilderInterface> builder(
-      ContentSettingsPattern::CreateBuilder(true));
-
-  if (url.SchemeIsFile()) {
-    builder->WithScheme(url.scheme())->WithPath(url.path());
-  } else {
-    // Please keep the order of the ifs below as URLs with an IP as host can
-    // also have a "http" scheme.
-    // TODO(markusheintz): For HTTPS we will create scheme specific patterns as
-    // soon as the pattern matching code in the HostContentSettingsMap is
-    // replaced.
-    if (url.HostIsIPAddress()) {
-      builder->WithSchemeWildcard()->WithHost(url.host());
-    } else if (url.SchemeIs(chrome::kHttpScheme)) {
-      builder->WithSchemeWildcard()->WithDomainWildcard()->WithHost(url.host());
-    } else if (url.SchemeIs(chrome::kHttpsScheme)) {
-      builder->WithSchemeWildcard()->WithDomainWildcard()->WithHost(
-          url.host());
-    } else {
-      // Unsupported scheme
-    }
-    builder->WithPortWildcard();
-  }
-  return builder->Build();
-}
-
-// static
 ContentSettingsPattern ContentSettingsPattern::FromURLNoWildcard(
     const GURL& url) {
   scoped_ptr<ContentSettingsPattern::BuilderInterface> builder(
@@ -354,21 +325,6 @@ ContentSettingsPattern ContentSettingsPattern::FromURLNoWildcard(
       builder->WithPort(url.port());
     }
   }
-  return builder->Build();
-}
-
-// static
-ContentSettingsPattern ContentSettingsPattern::LegacyFromURLNoWildcard(
-    const GURL& url) {
-  scoped_ptr<ContentSettingsPattern::BuilderInterface> builder(
-      ContentSettingsPattern::CreateBuilder(true));
-
-  if (url.SchemeIsFile()) {
-    builder->WithScheme(url.scheme())->WithPath(url.path());
-  } else {
-    builder->WithSchemeWildcard()->WithHost(url.host());
-  }
-  builder->WithPortWildcard();
   return builder->Build();
 }
 
