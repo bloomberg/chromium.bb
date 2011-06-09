@@ -384,6 +384,33 @@ void Directory::Kernel::Release() {
     delete this;
 }
 
+void Directory::Kernel::AddChangeListener(
+    DirectoryChangeListener* listener) {
+  base::AutoLock lock(change_listeners_lock_);
+  change_listeners_.AddObserver(listener);
+}
+
+void Directory::Kernel::RemoveChangeListener(
+    DirectoryChangeListener* listener) {
+  base::AutoLock lock(change_listeners_lock_);
+  change_listeners_.RemoveObserver(listener);
+}
+
+// Note: it is possible that a listener will remove itself after we
+// have made a copy, but before the copy is consumed. This could
+// theoretically result in accessing a garbage pointer, but can only
+// occur when an about:sync window is closed in the middle of a
+// notification.  See crbug.com/85481.
+void Directory::Kernel::CopyChangeListeners(
+    ObserverList<DirectoryChangeListener>* change_listeners) {
+  DCHECK_EQ(0U, change_listeners->size());
+  base::AutoLock lock(change_listeners_lock_);
+  ObserverListBase<DirectoryChangeListener>::Iterator it(change_listeners_);
+  DirectoryChangeListener* obs;
+  while ((obs = it.GetNext()) != NULL)
+    change_listeners->AddObserver(obs);
+}
+
 Directory::Kernel::~Kernel() {
   CHECK_EQ(0, refcount);
   delete channel;
@@ -1160,11 +1187,11 @@ void Directory::CheckTreeInvariants(syncable::BaseTransaction* trans,
 }
 
 void Directory::AddChangeListener(DirectoryChangeListener* listener) {
-  kernel_->change_listeners_.AddObserver(listener);
+  kernel_->AddChangeListener(listener);
 }
 
 void Directory::RemoveChangeListener(DirectoryChangeListener* listener) {
-  kernel_->change_listeners_.RemoveObserver(listener);
+  kernel_->RemoveChangeListener(listener);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1238,22 +1265,25 @@ bool BaseTransaction::NotifyTransactionChangingAndEnding(
         << " seconds.";
   }
 
+  ObserverList<DirectoryChangeListener> change_listeners;
+  dirkernel_->CopyChangeListeners(&change_listeners);
+
   if (NULL == originals.get() || originals->empty() ||
-      (dirkernel_->change_listeners_.size() == 0)) {
+      (change_listeners.size() == 0)) {
     dirkernel_->transaction_mutex.Release();
     return false;
   }
 
   if (writer_ == syncable::SYNCAPI) {
     FOR_EACH_OBSERVER(DirectoryChangeListener,
-                      dirkernel_->change_listeners_,
+                      change_listeners,
                       HandleCalculateChangesChangeEventFromSyncApi(
                           *originals.get(),
                           writer_,
                           this));
   } else {
     FOR_EACH_OBSERVER(DirectoryChangeListener,
-                      dirkernel_->change_listeners_,
+                      change_listeners,
                       HandleCalculateChangesChangeEventFromSyncer(
                           *originals.get(),
                           writer_,
@@ -1264,8 +1294,7 @@ bool BaseTransaction::NotifyTransactionChangingAndEnding(
   // the HandleTransactionEndingChangeEvent call to each
   // DirectoryChangeListener.
   {
-    ObserverList<DirectoryChangeListener>::Iterator it(
-        dirkernel_->change_listeners_);
+    ObserverList<DirectoryChangeListener>::Iterator it(change_listeners);
     DirectoryChangeListener* obs = NULL;
     while ((obs = it.GetNext()) != NULL) {
       *models_with_changes |= obs->HandleTransactionEndingChangeEvent(this);
@@ -1283,10 +1312,12 @@ bool BaseTransaction::NotifyTransactionChangingAndEnding(
 
 void BaseTransaction::NotifyTransactionComplete(
     ModelTypeBitSet models_with_changes) {
-    FOR_EACH_OBSERVER(DirectoryChangeListener,
-                      dirkernel_->change_listeners_,
-                      HandleTransactionCompleteChangeEvent(
-                          models_with_changes));
+  ObserverList<DirectoryChangeListener> change_listeners;
+  dirkernel_->CopyChangeListeners(&change_listeners);
+  FOR_EACH_OBSERVER(DirectoryChangeListener,
+                    change_listeners,
+                    HandleTransactionCompleteChangeEvent(
+                        models_with_changes));
 }
 
 ReadTransaction::ReadTransaction(Directory* directory, const char* file,

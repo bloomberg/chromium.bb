@@ -996,6 +996,12 @@ class Directory {
     void AddRef();  // For convenience.
     void Release();
 
+    void AddChangeListener(DirectoryChangeListener* listener);
+    void RemoveChangeListener(DirectoryChangeListener* listener);
+
+    void CopyChangeListeners(
+        ObserverList<DirectoryChangeListener>* change_listeners);
+
     FilePath const db_path;
     // TODO(timsteele): audit use of the member and remove if possible
     volatile base::subtle::AtomicWord refcount;
@@ -1038,10 +1044,6 @@ class Directory {
     // TODO(ncarter): Figure out what the hell this is, and comment it.
     Channel* const channel;
 
-    // The listeners for directory change events, triggered when the
-    // transaction is ending.
-    ObserverList<DirectoryChangeListener> change_listeners_;
-
     KernelShareInfoStatus info_status;
 
     // These 3 members are backed in the share_info table, and
@@ -1065,6 +1067,12 @@ class Directory {
     // Keep a history of recently flushed metahandles for debugging
     // purposes.  Protected by the save_changes_mutex.
     DebugQueue<int64, 1000> flushed_metahandles;
+
+   private:
+    // The listeners for directory change events, triggered when the
+    // transaction is ending (and its lock).
+    base::Lock change_listeners_lock_;
+    ObserverList<DirectoryChangeListener> change_listeners_;
   };
 
   // Helper method used to do searches on |parent_id_child_index|.

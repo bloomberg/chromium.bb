@@ -117,14 +117,6 @@
 }
 
 {
-  bug_82279
-  ThreadSanitizer:Race
-  ...
-  fun:ObserverListBase::Iterator::Iterator
-  fun:syncable::BaseTransaction::NotifyTransactionChangingAndEnding
-}
-
-{
   bug_83564
   ThreadSanitizer:Race
   fun:base::Thread::message_loop
