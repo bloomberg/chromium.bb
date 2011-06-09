@@ -80,18 +80,18 @@ echo @@@BUILD_STEP gyp_tests@@@
 python trusted_test.py --config ${GYPMODE}
 
 echo @@@BUILD_STEP scons_compile@@@
-./scons -j 8 -k --verbose ${GLIBCOPTS} --mode=${MODE}-mac,nacl \
+./scons -j 8 -k --verbose ${GLIBCOPTS} --mode=${MODE}-host,nacl \
     platform=x86-${BITS}
 
 echo @@@BUILD_STEP small_tests@@@
-./scons -k --verbose ${GLIBCOPTS} --mode=${MODE}-mac,nacl small_tests \
+./scons -k --verbose ${GLIBCOPTS} --mode=${MODE}-host,nacl small_tests \
     platform=x86-${BITS} ||
     { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 
 if [[ $TOOLCHAIN = glibc ]]; then
   echo @@@BUILD_STEP dynamic_library_browser_tests${BITS}@@@
     ./scons -k --verbose browser_headless=1 \
-    ${GLIBCOPTS} --mode=${MODE}-mac,nacl SILENT=1 platform=x86-${BITS} \
+    ${GLIBCOPTS} --mode=${MODE}-host,nacl SILENT=1 platform=x86-${BITS} \
     dynamic_library_browser_tests ||
     { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 fi
@@ -99,13 +99,13 @@ fi
 # TODO(khim): run other tests with glibc toolchain
 if [[ $TOOLCHAIN != glibc ]]; then
   echo @@@BUILD_STEP medium_tests@@@
-  ./scons -k --verbose ${GLIBCOPTS} --mode=${MODE}-mac,nacl medium_tests \
+  ./scons -k --verbose ${GLIBCOPTS} --mode=${MODE}-host,nacl medium_tests \
       platform=x86-${BITS} ||
       { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 
   echo @@@BUILD_STEP large_tests@@@
   ./scons -k --verbose \
-      ${GLIBCOPTS} --mode=${MODE}-mac,nacl large_tests \
+      ${GLIBCOPTS} --mode=${MODE}-host,nacl large_tests \
       platform=x86-${BITS} ||
       { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 
@@ -113,13 +113,13 @@ if [[ $TOOLCHAIN != glibc ]]; then
 
   echo @@@BUILD_STEP chrome_browser_tests@@@
   ./scons -k --verbose \
-      ${GLIBCOPTS} --mode=${MODE}-mac,nacl SILENT=1 platform=x86-${BITS} \
+      ${GLIBCOPTS} --mode=${MODE}-host,nacl SILENT=1 platform=x86-${BITS} \
       chrome_browser_tests ||
       { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 
   echo @@@BUILD_STEP chrome_browser_tests using GYP@@@
   ./scons -k --verbose \
-      ${GLIBCOPTS} --mode=${MODE}-mac,nacl SILENT=1 platform=x86-${BITS} \
+      ${GLIBCOPTS} --mode=${MODE}-host,nacl SILENT=1 platform=x86-${BITS} \
       force_ppapi_plugin=../xcodebuild/${GYPMODE}/libppGoogleNaClPlugin.dylib \
       force_sel_ldr=../xcodebuild/${GYPMODE}/sel_ldr \
       chrome_browser_tests ||
@@ -129,13 +129,13 @@ if [[ $TOOLCHAIN != glibc ]]; then
   # See http://code.google.com/p/nativeclient/issues/detail?id=1691
   echo @@@BUILD_STEP chrome_browser_tests without IRT@@@
   ./scons -k --verbose \
-      ${GLIBCOPTS} --mode=${MODE}-mac,nacl SILENT=1 platform=x86-${BITS} \
+      ${GLIBCOPTS} --mode=${MODE}-host,nacl SILENT=1 platform=x86-${BITS} \
       chrome_browser_tests irt=0 ||
       { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 
   echo @@@BUILD_STEP pyauto_tests@@@
   ./scons -k --verbose \
-      ${GLIBCOPTS} --mode=${MODE}-mac,nacl SILENT=1 platform=x86-${BITS} \
+      ${GLIBCOPTS} --mode=${MODE}-host,nacl SILENT=1 platform=x86-${BITS} \
       pyauto_tests ||
       { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 

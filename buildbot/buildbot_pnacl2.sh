@@ -12,7 +12,7 @@ set -o errexit
 ######################################################################
 
 CLOBBER=${CLOBBER:-yes}
-SCONS_COMMON="./scons --mode=opt-linux bitcode=1 -j8"
+SCONS_COMMON="./scons --mode=opt-host bitcode=1 -j8"
 SPEC_HARNESS=${SPEC_HARNESS:-${HOME}/cpu2000-redhat64-ia32}/
 
 # Rough test running time classification for ARM which is our bottleneck

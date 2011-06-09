@@ -87,18 +87,18 @@ echo @@@BUILD_STEP gyp_tests@@@
 python trusted_test.py --config ${GYPMODE} --bits ${BITS}
 
 echo @@@BUILD_STEP scons_compile${BITS}@@@
-./scons -j 8 -k --verbose ${GLIBCOPTS} --mode=${MODE}-linux,nacl \
+./scons -j 8 -k --verbose ${GLIBCOPTS} --mode=${MODE}-host,nacl \
     platform=x86-${BITS}
 
 echo @@@BUILD_STEP small_tests${BITS}@@@
-./scons -k --verbose ${GLIBCOPTS} --mode=${MODE}-linux,nacl small_tests \
+./scons -k --verbose ${GLIBCOPTS} --mode=${MODE}-host,nacl small_tests \
     platform=x86-${BITS} ||
     { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 
 if [[ $TOOLCHAIN = glibc ]]; then
   echo @@@BUILD_STEP dynamic_library_browser_tests${BITS}@@@
   ./scons -k --verbose browser_headless=1 \
-      ${GLIBCOPTS} --mode=${MODE}-linux,nacl SILENT=1 platform=x86-${BITS} \
+      ${GLIBCOPTS} --mode=${MODE}-host,nacl SILENT=1 platform=x86-${BITS} \
       dynamic_library_browser_tests ||
       { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 fi
@@ -106,12 +106,12 @@ fi
 # TODO(khim): run other tests with glibc toolchain
 if [[ $TOOLCHAIN != glibc ]]; then
   echo @@@BUILD_STEP medium_tests${BITS}@@@
-  ./scons -k --verbose ${GLIBCOPTS} --mode=${MODE}-linux,nacl medium_tests \
+  ./scons -k --verbose ${GLIBCOPTS} --mode=${MODE}-host,nacl medium_tests \
       platform=x86-${BITS} ||
       { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 
   echo @@@BUILD_STEP large_tests${BITS}@@@
-  ./scons -k --verbose ${GLIBCOPTS} --mode=${MODE}-linux,nacl large_tests \
+  ./scons -k --verbose ${GLIBCOPTS} --mode=${MODE}-host,nacl large_tests \
       platform=x86-${BITS} ||
       { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 
@@ -125,13 +125,13 @@ if [[ $TOOLCHAIN != glibc ]]; then
     XVFB_PREFIX="xvfb-run --auto-servernum"
 
     $XVFB_PREFIX \
-        ./scons -k --verbose ${GLIBCOPTS} --mode=${MODE}-linux,nacl SILENT=1 \
+        ./scons -k --verbose ${GLIBCOPTS} --mode=${MODE}-host,nacl SILENT=1 \
         platform=x86-${BITS} chrome_browser_tests ||
         { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 
     echo @@@BUILD_STEP chrome_browser_tests using GYP@@@
     $XVFB_PREFIX \
-        ./scons -k --verbose ${GLIBCOPTS} --mode=${MODE}-linux,nacl SILENT=1 \
+        ./scons -k --verbose ${GLIBCOPTS} --mode=${MODE}-host,nacl SILENT=1 \
         platform=x86-${BITS} \
         force_ppapi_plugin=../out/$GYPMODE/lib.target/libppGoogleNaClPlugin.so \
         force_sel_ldr=../out/${GYPMODE}/sel_ldr \
@@ -142,13 +142,13 @@ if [[ $TOOLCHAIN != glibc ]]; then
     # See http://code.google.com/p/nativeclient/issues/detail?id=1691
     echo @@@BUILD_STEP chrome_browser_tests without IRT@@@
     $XVFB_PREFIX \
-        ./scons -k --verbose ${GLIBCOPTS} --mode=${MODE}-linux,nacl SILENT=1 \
+        ./scons -k --verbose ${GLIBCOPTS} --mode=${MODE}-host,nacl SILENT=1 \
         platform=x86-${BITS} chrome_browser_tests irt=0 ||
         { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 
     echo @@@BUILD_STEP pyauto_tests${BITS}@@@
     $XVFB_PREFIX \
-        ./scons -k --verbose ${GLIBCOPTS} --mode=${MODE}-linux,nacl SILENT=1 \
+        ./scons -k --verbose ${GLIBCOPTS} --mode=${MODE}-host,nacl SILENT=1 \
         platform=x86-${BITS} pyauto_tests ||
         { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 
