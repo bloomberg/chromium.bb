@@ -150,7 +150,7 @@ class BrowserTest(pyauto.PyUITest):
     self.assertEquals(popup_pid, parent_pid,
                       msg='Parent and popup are not sharing a process.')
 
-   def testPopupSharesSameProcessInIncognito(self):
+  def testPopupSharesSameProcessInIncognito(self):
     """Verify parent incognito and popup share same process id"""
     self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
     file_url = self.GetFileURLForDataPath('popup_blocker',
