@@ -2006,26 +2006,31 @@ TEST_F(ViewTest, ConvertPointToViewWithTransform) {
 // calling RemoveAllChildViews.
 // The tree looks like this:
 // root
-// |-- child
+// |-- child1
 // |   |-- foo
 // |       |-- bar0
 // |       |-- bar1
-// +-------|-- bar2
+// |       |-- bar2
+// |-- child2
+// +-- child3
 TEST_F(ViewTest, RemoveAllChildViews) {
   View root;
 
-  View* child = new View();
-  root.AddChildView(child);
+  View* child1 = new View();
+  root.AddChildView(child1);
+
+  for (int i = 0; i < 2; ++i)
+    root.AddChildView(new View());
 
   View* foo = new View();
-  child->AddChildView(foo);
+  child1->AddChildView(foo);
 
   // Add some nodes to |foo|.
   for (int i = 0; i < 3; ++i)
     foo->AddChildView(new View());
 
-  ASSERT_EQ(1, root.child_count());
-  ASSERT_EQ(1, child->child_count());
+  ASSERT_EQ(3, root.child_count());
+  ASSERT_EQ(1, child1->child_count());
   ASSERT_EQ(3, foo->child_count());
 
   // Now remove all child views from root.

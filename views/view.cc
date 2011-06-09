@@ -187,9 +187,8 @@ void View::RemoveChildView(View* view) {
 }
 
 void View::RemoveAllChildViews(bool delete_children) {
-  Views::iterator iter;
-  while ((iter = children_.begin()) != children_.end())
-    DoRemoveChildView(*iter, false, false, delete_children);
+  while (!children_.empty())
+    DoRemoveChildView(children_.front(), false, false, delete_children);
   UpdateTooltip();
 }
 
