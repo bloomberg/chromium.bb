@@ -586,6 +586,11 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
           input_method_library->current_config_values_.begin(),
           input_method_library->current_config_values_.end());
       input_method_library->FlushImeConfig();
+
+      input_method_library->ChangeInputMethod(
+          input_method_library->previous_input_method().id);
+      input_method_library->ChangeInputMethod(
+          input_method_library->current_input_method().id);
     }
   }
 
