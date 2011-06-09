@@ -249,7 +249,6 @@ add_config('x86-generic-chrome-pre-flight-queue', [{
   'chrome_tests' : True,
   'rev_overlays': 'public',
   'push_overlays': 'public',
-  'quick_vm' : False,
 }])
 
 add_config('x86-agz-bin', [{
