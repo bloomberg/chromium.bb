@@ -75,6 +75,8 @@
       # crbug.com/85307
       '-plugins.PluginsTest.testDisableEnableAllPlugins',
       '-plugins.PluginsTest.testKillAndReloadAllPlugins',
+      # crbug.com/85748
+      '-plugins.PluginsTest.testBlockPluginException',
       'plugins_check',
       'popups',
       # crbug.com/82629 - real bug.
