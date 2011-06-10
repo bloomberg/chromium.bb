@@ -1622,10 +1622,3 @@
    ...
    fun:WebKitContextTest_Basic_Test::TestBody
 }
-{
-   bug_85641
-   Heapcheck:Leak
-   ...
-   fun:ExtensionEventRouter::DispatchEvent
-   fun:ExtensionWebRequestEventRouter::DispatchEvent
-}

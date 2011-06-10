@@ -57,7 +57,8 @@ private:
     MessageLoop::current()->PostTask(FROM_HERE, task_queue_.front());
     task_queue_.pop();
 
-    return false;
+    delete message;
+    return true;
   }
 
   std::queue<Task*> task_queue_;

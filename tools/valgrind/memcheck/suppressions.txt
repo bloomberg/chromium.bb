@@ -4664,13 +4664,6 @@
    ...
    fun:_ZN28WebKitContextTest_Basic_Test8TestBodyEv
 }
-{
-   bug_85641
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN20ExtensionEventRouter13DispatchEventEPN3IPC7Message6SenderERKSsS5_S5_RK4GURL
-   fun:_ZN30ExtensionWebRequestEventRouter13DispatchEventEiPN3net10URLRequestERKSt6vectorIPKNS_13EventListenerESaIS6_EERK9ListValue
-}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
