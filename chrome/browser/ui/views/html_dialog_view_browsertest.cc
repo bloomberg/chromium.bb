@@ -206,7 +206,7 @@ IN_PROC_BROWSER_TEST_F(HtmlDialogBrowserTest, MAYBE_SizeWindow) {
       WindowChangedObserver::GetInstance());
 }
 
-IN_PROC_BROWSER_TEST_F(HtmlDialogBrowserTest, TestStateTransition) {
+IN_PROC_BROWSER_TEST_F(HtmlDialogBrowserTest, FLAKY_TestStateTransition) {
   HtmlDialogUIDelegate* delegate = new TestHtmlDialogUIDelegate();
 
   HtmlDialogView* html_view =
