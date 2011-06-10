@@ -532,8 +532,16 @@ void OmniboxViewMac::EmphasizeURLComponents() {
 
 void OmniboxViewMac::ApplyTextAttributes(const string16& display_text,
                                          NSMutableAttributedString* as) {
+  NSUInteger as_length = [as length];
+  NSRange as_entire_string = NSMakeRange(0, as_length);
+
   [as addAttribute:NSFontAttributeName value:GetFieldFont()
-             range:NSMakeRange(0, [as length])];
+             range:as_entire_string];
+
+  // A kinda hacky way to add breaking at periods. This is what Safari does.
+  // This works for IDNs too, despite the "en_US".
+  [as addAttribute:@"NSLanguage" value:@"en_US_POSIX"
+             range:as_entire_string];
 
   // Make a paragraph style locking in the standard line height as the maximum,
   // otherwise the baseline may shift "downwards".
@@ -541,11 +549,11 @@ void OmniboxViewMac::ApplyTextAttributes(const string16& display_text,
       paragraph_style([[NSMutableParagraphStyle alloc] init]);
   [paragraph_style setMaximumLineHeight:line_height_];
   [as addAttribute:NSParagraphStyleAttributeName value:paragraph_style
-             range:NSMakeRange(0, [as length])];
+             range:as_entire_string];
 
   // Grey out the suggest text.
   [as addAttribute:NSForegroundColorAttributeName value:SuggestTextColor()
-             range:NSMakeRange([as length] - suggest_text_length_,
+             range:NSMakeRange(as_length - suggest_text_length_,
                                suggest_text_length_)];
 
   url_parse::Component scheme, host;
@@ -554,7 +562,7 @@ void OmniboxViewMac::ApplyTextAttributes(const string16& display_text,
   const bool emphasize = model_->CurrentTextIsURL() && (host.len > 0);
   if (emphasize) {
     [as addAttribute:NSForegroundColorAttributeName value:BaseTextColor()
-               range:NSMakeRange(0, [as length])];
+               range:as_entire_string];
 
     [as addAttribute:NSForegroundColorAttributeName value:HostTextColor()
                range:ComponentToNSRange(host)];
