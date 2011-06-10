@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "base/test/test_timeouts.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
@@ -317,7 +318,8 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
       : safe_browsing_factory_(new TestSafeBrowsingServiceFactory()),
         prerender_contents_factory_(NULL),
         use_https_src_server_(false),
-        call_javascript_(true) {
+        call_javascript_(true),
+        loader_path_("files/prerender/prerender_loader.html") {
     EnableDOMAutomation();
   }
 
@@ -468,6 +470,10 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
         prerender_manager()->FindEntry(dest_url_));
   }
 
+  void set_loader_path(const std::string& path) {
+    loader_path_ = path;
+  }
+
  private:
   void PrerenderTestURLImpl(
       const GURL& url,
@@ -480,7 +486,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
         make_pair("REPLACE_WITH_PRERENDER_URL", dest_url_.spec()));
     std::string replacement_path;
     ASSERT_TRUE(net::TestServer::GetFilePathWithReplacements(
-        "files/prerender/prerender_loader.html",
+        loader_path_,
         replacement_text,
         &replacement_path));
 
@@ -571,6 +577,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
   GURL dest_url_;
   bool use_https_src_server_;
   bool call_javascript_;
+  std::string loader_path_;
 };
 
 // Checks that a page is correctly prerendered in the case of a
@@ -1358,6 +1365,17 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderFavicon) {
   ASSERT_TRUE(TabContentsWrapper::GetCurrentWrapperForContents(
       browser()->GetSelectedTabContents())->favicon_tab_helper()
               ->FaviconIsValid());
+}
+
+// Checks that when a prerendered page is swapped in to a referring page, the
+// unload handlers on the referring page are executed.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderUnload) {
+  set_loader_path("files/prerender/prerender_loader_with_unload.html");
+  PrerenderTestURL("files/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
+  ui_test_utils::TitleWatcher title_watcher(browser()->GetSelectedTabContents(),
+                                            ASCIIToUTF16("Unloaded"));
+  NavigateToDestURL();
+  EXPECT_TRUE(title_watcher.Wait());
 }
 
 }  // namespace prerender

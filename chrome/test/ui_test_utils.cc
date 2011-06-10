@@ -889,6 +889,45 @@ void WindowedNotificationObserver::Observe(NotificationType type,
   }
 }
 
+TitleWatcher::TitleWatcher(TabContents* tab_contents,
+                           const string16& expected_title)
+    : expected_tab_(tab_contents),
+      expected_title_(expected_title),
+      title_observed_(false),
+      quit_loop_on_observation_(false) {
+  EXPECT_TRUE(tab_contents != NULL);
+  notification_registrar_.Add(this,
+                              NotificationType::TAB_CONTENTS_TITLE_UPDATED,
+                              Source<TabContents>(tab_contents));
+}
+
+TitleWatcher::~TitleWatcher() {
+}
+
+bool TitleWatcher::Wait() {
+  if (title_observed_)
+    return true;
+  quit_loop_on_observation_ = true;
+  ui_test_utils::RunMessageLoop();
+  return title_observed_;
+}
+
+void TitleWatcher::Observe(NotificationType type,
+                           const NotificationSource& source,
+                           const NotificationDetails& details) {
+  if (type != NotificationType::TAB_CONTENTS_TITLE_UPDATED)
+    return;
+
+  TabContents* source_contents = Source<TabContents>(source).ptr();
+  ASSERT_EQ(expected_tab_, source_contents);
+  if (source_contents->GetTitle() != expected_title_)
+    return;
+
+  title_observed_ = true;
+  if (quit_loop_on_observation_)
+    MessageLoopForUI::current()->Quit();
+}
+
 DOMMessageQueue::DOMMessageQueue() {
   registrar_.Add(this, NotificationType::DOM_OPERATION_RESPONSE,
                  NotificationService::AllSources());

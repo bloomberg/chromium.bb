@@ -471,6 +471,34 @@ class WindowedNotificationObserverWithDetails
   DISALLOW_COPY_AND_ASSIGN(WindowedNotificationObserverWithDetails);
 };
 
+// Watches title changes on a tab, blocking until an expected title is set.
+class TitleWatcher : public NotificationObserver {
+ public:
+  // |tab_contents| must be non-NULL and needs to stay alive for the
+  // entire lifetime of |this|. |expected_title| is the title that |this|
+  // will wait for.
+  TitleWatcher(TabContents* tab_contents, const string16& expected_title);
+  ~TitleWatcher();
+
+  // Waits until the title for the tab is set to the |expected_title|
+  // passed into the constructor.
+  bool Wait() WARN_UNUSED_RESULT;
+
+ private:
+  // NotificationObserver
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) OVERRIDE;
+
+  TabContents* expected_tab_;
+  string16 expected_title_;
+  NotificationRegistrar notification_registrar_;
+  bool title_observed_;
+  bool quit_loop_on_observation_;
+
+  DISALLOW_COPY_AND_ASSIGN(TitleWatcher);
+};
+
 // See SendKeyPressAndWait.  This function additionally performs a check on the
 // NotificationDetails using the provided Details<U>.
 template <class U>
