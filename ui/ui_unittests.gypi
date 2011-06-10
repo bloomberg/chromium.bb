@@ -25,6 +25,8 @@
         'base/animation/slide_animation_unittest.cc',
         'base/clipboard/clipboard_unittest.cc',
         'base/gtk/gtk_im_context_util_unittest.cc',
+        'base/models/tree_node_iterator_unittest.cc',
+        'base/models/tree_node_model_unittest.cc',
         'base/range/range_unittest.cc',
         'base/range/range_unittest.mm',
         'gfx/blit_unittest.cc',

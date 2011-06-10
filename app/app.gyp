@@ -34,8 +34,6 @@
         '../ui/base/dragdrop/os_exchange_data_win_unittest.cc',
         '../ui/base/l10n/l10n_util_mac_unittest.mm',
         '../ui/base/l10n/l10n_util_unittest.cc',
-        '../ui/base/models/tree_node_iterator_unittest.cc',
-        '../ui/base/models/tree_node_model_unittest.cc',
         '../ui/base/resource/data_pack_unittest.cc',
         '../ui/base/resource/resource_bundle_unittest.cc',
         '../ui/base/test/data/resource.h',
