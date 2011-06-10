@@ -530,7 +530,10 @@ be available for now. -->
       </message>
       <!-- Print Preview -->
       <message name="IDS_PRINT_PREVIEW_NO_PLUGIN" desc="Message to display when the PDF viewer is missing.">
-      Sorry! Chromium does not include the PDF viewer built into Google Chrome, which is required to show the print preview.
+        Chromium does not include the PDF viewer which is required for Print Preview to function.
+      </message>
+      <message name="IDS_PRINT_PREVIEW_NATIVE_DIALOG" desc="Option offering the user to open the native print dialog, displayed when the PDF viewer is missing.">
+        Launch native print dialog
       </message>
 
       <if expr="os == 'darwin'">

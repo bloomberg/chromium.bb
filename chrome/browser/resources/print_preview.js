@@ -42,7 +42,9 @@ function onLoad() {
   $('cancel-button').addEventListener('click', handleCancelButtonClick);
 
   if (!checkCompatiblePluginExists()) {
-    displayErrorMessage(localStrings.getString('noPlugin'), false);
+    displayErrorMessageWithButton(localStrings.getString('noPlugin'),
+                                  localStrings.getString('launchNativeDialog'),
+                                  showSystemDialog);
     $('mainview').parentElement.removeChild($('dummy-viewer'));
     return;
   }
@@ -141,10 +143,10 @@ function showSystemDialog() {
  * @param {string} initiatorTabURL The URL of the initiator tab.
  */
 function onInitiatorTabClosed(initiatorTabURL) {
-  $('reopen-page').addEventListener('click', function() {
-      window.location = initiatorTabURL;
-  });
-  displayErrorMessage(localStrings.getString('initiatorTabClosed'), true);
+  displayErrorMessageWithButton(
+      localStrings.getString('initiatorTabClosed'),
+      localStrings.getString('reopenPage'),
+      function() { window.location = initiatorTabURL; });
 }
 
 /**
@@ -437,19 +439,12 @@ function setColor(color) {
 /**
  * Display an error message in the center of the preview area.
  * @param {string} errorMessage The error message to be displayed.
- * @param {boolean} showButton Indivates whether the "Reopen the page" button
- * should be displayed.
  */
-function displayErrorMessage(errorMessage, showButton) {
+function displayErrorMessage(errorMessage) {
   $('overlay-layer').classList.remove('invisible');
   $('dancing-dots-text').classList.add('hidden');
   $('error-text').innerHTML = errorMessage;
   $('error-text').classList.remove('hidden');
-  if (showButton)
-    $('reopen-page').classList.remove('hidden');
-  else
-    $('reopen-page').classList.add('hidden');
-
   removeEventListeners();
   var pdfViewer = $('pdf-viewer');
   if (pdfViewer)
@@ -457,11 +452,28 @@ function displayErrorMessage(errorMessage, showButton) {
 }
 
 /**
+ * Display an error message in the center of the preview area followed by a
+ * button.
+ * @param {string} errorMessage The error message to be displayed.
+ * @param {string} buttonText The text to be displayed within the button.
+ * @param {string} buttonListener The listener to be executed when the button is
+ * clicked.
+ */
+function displayErrorMessageWithButton(
+    errorMessage, buttonText, buttonListener) {
+  var errorButton = $('error-button');
+  errorButton.innerHTML = buttonText;
+  errorButton.onclick = buttonListener;
+  errorButton.classList.remove('hidden');
+  displayErrorMessage(errorMessage);
+}
+
+/**
  * Display an error message when print preview fails.
  * Called from PrintPreviewMessageHandler::OnPrintPreviewFailed().
  */
 function printPreviewFailed() {
-  displayErrorMessage(localStrings.getString('previewFailed'), false);
+  displayErrorMessage(localStrings.getString('previewFailed'));
 }
 
 /**
