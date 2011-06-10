@@ -56,14 +56,14 @@ inline bool NeedsRefcounting(const PP_Var& var) {
 using namespace deprecated;
 
 Var::Var() {
+  memset(&var_, 0, sizeof(var_));
   var_.type = PP_VARTYPE_UNDEFINED;
-  var_.padding = 0;
   needs_release_ = false;
 }
 
 Var::Var(Null) {
+  memset(&var_, 0, sizeof(var_));
   var_.type = PP_VARTYPE_NULL;
-  var_.padding = 0;
   needs_release_ = false;
 }
 
