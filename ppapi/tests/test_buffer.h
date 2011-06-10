@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,6 +23,7 @@ class TestBuffer : public TestCase {
   std::string TestInvalidSize();
   std::string TestInitToZero();
   std::string TestIsBuffer();
+  std::string TestBasicLifeCycle();
 
   // Used by the tests that access the C API directly.
   const PPB_Buffer_Dev* buffer_interface_;

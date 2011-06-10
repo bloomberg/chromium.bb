@@ -10,6 +10,7 @@ struct PPB_AudioConfig;
 struct PPB_AudioTrusted;
 struct PPB_BrokerTrusted;
 struct PPB_Buffer_Dev;
+struct PPB_BufferTrusted;
 struct PPB_CharSet_Dev;
 struct PPB_CursorControl_Dev;
 struct PPB_DirectoryReader_Dev;
@@ -31,6 +32,7 @@ const PPB_AudioConfig* GetPPB_AudioConfig_Thunk();
 const PPB_AudioTrusted* GetPPB_AudioTrusted_Thunk();
 const PPB_BrokerTrusted* GetPPB_Broker_Thunk();
 const PPB_Buffer_Dev* GetPPB_Buffer_Thunk();
+const PPB_BufferTrusted* GetPPB_BufferTrusted_Thunk();
 const PPB_CharSet_Dev* GetPPB_CharSet_Thunk();
 const PPB_CursorControl_Dev* GetPPB_CursorControl_Thunk();
 const PPB_DirectoryReader_Dev* GetPPB_DirectoryReader_Thunk();
@@ -48,5 +50,3 @@ const PPB_ImageData* GetPPB_ImageData_Thunk();
 }  // namespace ppapi
 
 #endif  // PPAPI_THUNK_THUNK_H_
-
-

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,6 +23,7 @@ void TestBuffer::RunTest() {
   instance_->LogTest("InvalidSize", TestInvalidSize());
   instance_->LogTest("InitToZero", TestInitToZero());
   instance_->LogTest("IsBuffer", TestIsBuffer());
+  instance_->LogTest("BasicLifecyle", TestBasicLifeCycle());
 }
 
 std::string TestBuffer::TestInvalidSize() {
@@ -75,3 +76,28 @@ std::string TestBuffer::TestIsBuffer() {
   PASS();
 }
 
+std::string TestBuffer::TestBasicLifeCycle() {
+  enum { kBufferSize = 100 };
+
+  pp::Buffer_Dev *buffer = new pp::Buffer_Dev(instance_, kBufferSize);
+  if (buffer->is_null() ||
+      !buffer_interface_->IsBuffer(buffer->pp_resource()) ||
+      buffer->size() != kBufferSize) {
+    return "Error creating buffer (earlier test should have failed)";
+  }
+
+  // Test that the buffer got created & mapped.
+  if (buffer->data() == NULL)
+    return "Failed to Map() buffer";
+
+  // Test that the buffer is writeable.
+  char* data = static_cast<char*>(buffer->data());
+  for (int i = 0; i < kBufferSize; ++i)
+    data[i] = 'X';
+
+  // Implicitly test that destroying the buffer doesn't encounter a fatal error
+  // in Unmap.
+  delete buffer;
+
+  PASS();
+}

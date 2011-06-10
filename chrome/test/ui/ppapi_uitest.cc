@@ -26,6 +26,8 @@ const char library_name[] = "libppapi_tests.so";
 
 }  // namespace
 
+// In-process plugin test runner.  See OutOfProcessPPAPITest below for the
+// out-of-process version.
 class PPAPITest : public UITest {
  public:
   PPAPITest() {
@@ -116,6 +118,16 @@ class PPAPITest : public UITest {
   }
 };
 
+// Variant of PPAPITest that runs plugins out-of-process to test proxy
+// codepaths.
+class OutOfProcessPPAPITest : public PPAPITest {
+ public:
+  OutOfProcessPPAPITest() {
+    // Run PPAPI out-of-process to exercise proxy implementations.
+    launch_arguments_.AppendSwitch(switches::kPpapiOutOfProcess);
+  }
+};
+
 TEST_F(PPAPITest, Broker) {
   RunTest("Broker");
 }
@@ -139,6 +151,11 @@ TEST_F(PPAPITest, ImageData) {
 TEST_F(PPAPITest, Buffer) {
   RunTest("Buffer");
 }
+#if !defined(OS_MACOSX)
+TEST_F(OutOfProcessPPAPITest, Buffer) {
+  RunTest("Buffer");
+}
+#endif
 
 TEST_F(PPAPITest, URLLoader) {
   RunTestViaHTTP("URLLoader");

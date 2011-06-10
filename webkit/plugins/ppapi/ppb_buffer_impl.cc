@@ -15,6 +15,7 @@
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 
 using ::ppapi::thunk::PPB_Buffer_API;
+using ::ppapi::thunk::PPB_BufferTrusted_API;
 
 namespace webkit {
 namespace ppapi {
@@ -42,6 +43,10 @@ PPB_Buffer_Impl* PPB_Buffer_Impl::AsPPB_Buffer_Impl() {
 }
 
 PPB_Buffer_API* PPB_Buffer_Impl::AsPPB_Buffer_API() {
+  return this;
+}
+
+PPB_BufferTrusted_API* PPB_Buffer_Impl::AsPPB_BufferTrusted_API() {
   return this;
 }
 
@@ -73,6 +78,18 @@ void* PPB_Buffer_Impl::Map() {
 
 void PPB_Buffer_Impl::Unmap() {
   shared_memory_->Unmap();
+}
+
+int32_t PPB_Buffer_Impl::GetSharedMemory(int* shm_handle) {
+#if defined(OS_POSIX)
+  *shm_handle = shared_memory_->handle().fd;
+#elif defined(OS_WIN)
+  *shm_handle = reinterpret_cast<int>(
+      shared_memory_->handle());
+#else
+#error "Platform not supported."
+#endif
+  return PP_OK;
 }
 
 BufferAutoMapper::BufferAutoMapper(PPB_Buffer_API* api) : api_(api) {

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,5 +41,8 @@ Buffer_Dev::Buffer_Dev(Instance* instance, uint32_t size)
     *this = Buffer_Dev();
 }
 
-}  // namespace pp
+Buffer_Dev::~Buffer_Dev() {
+  get_interface<PPB_Buffer_Dev>()->Unmap(pp_resource());
+}
 
+}  // namespace pp

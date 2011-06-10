@@ -24,7 +24,7 @@ namespace thunk {
 // A functional API for creating resource types. Separating out the creation
 // functions here allows us to implement most resources as a pure "resource
 // API", meaning all calls are routed on a per-resource-object basis. The
-// creationg functions are not per-object (since there's no object during
+// creation functions are not per-object (since there's no object during
 // creation) so need functional routing based on the instance ID.
 class ResourceCreationAPI {
  public:

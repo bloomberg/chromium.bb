@@ -59,6 +59,8 @@
         'thunk/ppb_broker_thunk.cc',
         'thunk/ppb_buffer_api.h',
         'thunk/ppb_buffer_thunk.cc',
+        'thunk/ppb_buffer_trusted_api.h',
+        'thunk/ppb_buffer_trusted_thunk.cc',
         'thunk/ppb_char_set_api.h',
         'thunk/ppb_char_set_thunk.cc',
         'thunk/ppb_cursor_control_api.h',

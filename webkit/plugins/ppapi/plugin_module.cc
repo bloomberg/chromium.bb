@@ -66,6 +66,7 @@
 #include "ppapi/c/private/ppb_uma_private.h"
 #include "ppapi/c/trusted/ppb_audio_trusted.h"
 #include "ppapi/c/trusted/ppb_broker_trusted.h"
+#include "ppapi/c/trusted/ppb_buffer_trusted.h"
 #include "ppapi/c/trusted/ppb_image_data_trusted.h"
 #include "ppapi/c/trusted/ppb_url_loader_trusted.h"
 #include "ppapi/thunk/thunk.h"
@@ -257,6 +258,8 @@ const void* GetInterface(const char* name) {
     return ::ppapi::thunk::GetPPB_Broker_Thunk();
   if (strcmp(name, PPB_BUFFER_DEV_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_Buffer_Thunk();
+  if (strcmp(name, PPB_BUFFER_TRUSTED_INTERFACE) == 0)
+    return ::ppapi::thunk::GetPPB_BufferTrusted_Thunk();
   if (strcmp(name, PPB_CHAR_SET_DEV_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_CharSet_Thunk();
   if (strcmp(name, PPB_CONSOLE_DEV_INTERFACE) == 0)

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,12 +15,14 @@ class Buffer_Dev : public Resource {
  public:
   // Creates an is_null() Buffer object.
   Buffer_Dev();
-
   Buffer_Dev(const Buffer_Dev& other);
 
-  // Allocates a new Buffer in the browser with the given size. The
-  // resulting object will be is_null() if the allocation failed.
+  // Creates & Maps a new Buffer in the browser with the given size. The
+  // resulting object will be is_null() if either Create() or Map() fails.
   Buffer_Dev(Instance* instance, uint32_t size);
+
+  // Unmap the underlying shared memory.
+  virtual ~Buffer_Dev();
 
   uint32_t size() const { return size_; }
   void* data() const { return data_; }
@@ -33,4 +35,3 @@ class Buffer_Dev : public Resource {
 }  // namespace pp
 
 #endif  // PPAPI_CPP_DEV_BUFFER_DEV_H_
-

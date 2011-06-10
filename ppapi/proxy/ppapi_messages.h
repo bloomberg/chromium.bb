@@ -289,7 +289,7 @@ IPC_SYNC_MESSAGE_ROUTED2_2(PpapiHostMsg_PPBBuffer_Create,
                            PP_Instance /* instance */,
                            uint32_t /* size */,
                            pp::proxy::HostResource /* result_resource */,
-                           int32_t /* result_shm_handle */)
+                           base::SharedMemoryHandle /* result_shm_handle */)
 
 // PPB_Console.
 IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBConsole_Log,
@@ -789,4 +789,3 @@ IPC_SYNC_MESSAGE_ROUTED4_3(PpapiHostMsg_ResourceCreation_ImageData,
                            pp::proxy::HostResource /* result_resource */,
                            std::string /* image_data_desc */,
                            pp::proxy::ImageHandle /* result */)
-
