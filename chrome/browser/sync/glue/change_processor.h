@@ -52,6 +52,24 @@ class ChangeProcessor {
   // datatypes need this, so we provide an empty default version.
   virtual void CommitChangesFromSyncModel();
 
+  // This ensures that startobserving gets called after stopobserving even
+  // if there is an early return in the function.
+  template <class T>
+  class ScopedStopObserving {
+   public:
+    explicit ScopedStopObserving(T* processor)
+        : processor_(processor) {
+      processor_->StopObserving();
+    }
+    ~ScopedStopObserving() {
+      processor_->StartObserving();
+    }
+
+   private:
+    ScopedStopObserving() {}
+    T* processor_;
+  };
+
  protected:
   // These methods are invoked by Start() and Stop() to do
   // implementation-specific work.

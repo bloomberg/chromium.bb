@@ -80,19 +80,7 @@ class AutofillProfileChangeProcessor : public ChangeProcessor,
       sync_api::ReadNode& autofill_root);
 
  private:
-
-  // This ensures that startobsrving gets called after stopobserving even
-  // if there is an early return in the function.
-  // TODO(lipalani) - generalize this and add it to other change processors.
-  class ScopedStopObserving {
-   public:
-    explicit ScopedStopObserving(AutofillProfileChangeProcessor* processor);
-    ~ScopedStopObserving();
-
-   private:
-    ScopedStopObserving() {}
-    AutofillProfileChangeProcessor* processor_;
-  };
+  friend class ScopedStopObserving<AutofillProfileChangeProcessor>;
 
   void StartObserving();
   void StopObserving();
@@ -118,4 +106,3 @@ class AutofillProfileChangeProcessor : public ChangeProcessor,
 }  // namespace browser_sync
 
 #endif  // CHROME_BROWSER_SYNC_GLUE_AUTOFILL_PROFILE_CHANGE_PROCESSOR_H_
-

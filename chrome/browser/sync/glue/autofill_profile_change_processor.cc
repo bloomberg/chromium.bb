@@ -46,22 +46,12 @@ AutofillProfileChangeProcessor::AutofillProfileChangeProcessor(
 
 AutofillProfileChangeProcessor::~AutofillProfileChangeProcessor() {}
 
-AutofillProfileChangeProcessor::ScopedStopObserving::ScopedStopObserving(
-    AutofillProfileChangeProcessor* processor) {
-  processor_ = processor;
-  processor_->StopObserving();
-}
-
-AutofillProfileChangeProcessor::ScopedStopObserving::~ScopedStopObserving() {
-  processor_->StartObserving();
-}
-
 void AutofillProfileChangeProcessor::ApplyChangesFromSyncModel(
     const sync_api::BaseTransaction *write_trans,
     const sync_api::SyncManager::ChangeRecord* changes,
     int change_count) {
 
-  ScopedStopObserving observer(this);
+  ScopedStopObserving<AutofillProfileChangeProcessor> observer(this);
 
   sync_api::ReadNode autofill_profile_root(write_trans);
   if (!autofill_profile_root.InitByTagLookup(kAutofillProfileTag)) {
@@ -174,7 +164,7 @@ void AutofillProfileChangeProcessor::CommitChangesFromSyncModel() {
   if (!running())
     return;
 
-  ScopedStopObserving observer(this);
+  ScopedStopObserving<AutofillProfileChangeProcessor> observer(this);
 
   for (unsigned int i = 0;i < autofill_changes_.size(); ++i) {
     if (sync_api::SyncManager::ChangeRecord::ACTION_DELETE ==
