@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/extensions/extensions_ui.h"
+#include "chrome/browser/history/history_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/bookmarks_ui.h"
 #include "chrome/browser/ui/webui/bug_report_ui.h"
@@ -290,6 +291,7 @@ void ChromeWebUIFactory::GetFaviconForURL(
         GetFaviconResourceBytes(page_url));
     favicon.known_icon = favicon.image_data.get() != NULL &&
                              favicon.image_data->size() > 0;
+    favicon.icon_type = history::FAVICON;
     request->ForwardResultAsync(
         FaviconService::FaviconDataCallback::TupleType(request->handle(),
                                                        favicon));
