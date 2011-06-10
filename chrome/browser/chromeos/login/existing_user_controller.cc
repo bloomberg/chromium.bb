@@ -401,12 +401,13 @@ void ExistingUserController::OnPasswordChangeDetected(
     // Another attempt will be invoked after verification completion.
     return;
   }
-  // TODO(altimofeev): remove this constrain when full sync for the owner will
-  // be correctly handled.
-  bool full_sync_disabled = (UserCrosSettingsProvider::cached_owner() ==
-      last_login_attempt_username_);
 
-  PasswordChangedView* view = new PasswordChangedView(this, full_sync_disabled);
+  // Passing 'false' here enables "full sync" mode in the dialog,
+  // which disables the requirement for the old owner password,
+  // allowing us to recover from a lost owner password/homedir.
+  // TODO(gspencer): We shouldn't have to erase stateful data when
+  // doing this.  See http://crosbug.com/9115 http://crosbug.com/7792
+  PasswordChangedView* view = new PasswordChangedView(this, false);
   views::Window* window = browser::CreateViewsWindow(GetNativeWindow(),
                                                      gfx::Rect(),
                                                      view);
