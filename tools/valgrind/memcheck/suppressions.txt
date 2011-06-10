@@ -2849,6 +2849,13 @@
    fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
 }
 {
+   bug_58449
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN11ProfileImpl18GetDownloadManagerEv
+}
+{
    bug_58546
    Memcheck:Leak
    fun:_Znw*
