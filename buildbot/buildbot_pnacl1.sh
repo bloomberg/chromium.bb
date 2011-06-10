@@ -267,12 +267,12 @@ mode-buildbot-arm-hw() {
 # NOTE: the hw bots are too slow to build stuff on so we just
 #       use pre-built executables
 mode-buildbot-arm-hw-dbg() {
-  unarchive-for-hw-bots between_builders/${NAME_ARM_DBG}/build.tgz
+  unarchive-for-hw-bots between_builders/$(NAME_ARM_DBG)/build.tgz
   mode-buildbot-arm-hw "--mode=dbg-host,nacl"
 }
 
 mode-buildbot-arm-hw-opt() {
-  unarchive-for-hw-bots between_builders/${NAME_ARM_OPT}/build.tgz
+  unarchive-for-hw-bots between_builders/$(NAME_ARM_OPT)/build.tgz
   mode-buildbot-arm-hw "--mode=opt-host,nacl"
 }
 
