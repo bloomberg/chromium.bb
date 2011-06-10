@@ -32,13 +32,17 @@ DictionaryValue* CreateTabValue(const TabContents* tab_contents);
 DictionaryValue* CreateTabValue(const TabContents* tab_contents,
                                 TabStripModel* tab_strip,
                                 int tab_index);
+// Create a tab value, overriding its kSelectedKey to the provided boolean.
+DictionaryValue* CreateTabValueActive(const TabContents* tab_contents,
+                                      bool active);
 DictionaryValue* CreateWindowValue(const Browser* browser,
                                    bool populate_tabs);
 // Gets the |tab_strip_model| and |tab_index| for the given |tab_contents|.
 bool GetTabStripModel(const TabContents* tab_contents,
                       TabStripModel** tab_strip_model,
                       int* tab_index);
-bool GetDefaultTab(Browser* browser, TabContentsWrapper** contents,
+bool GetDefaultTab(Browser* browser,
+                   TabContentsWrapper** contents,
                    int* tab_id);
 // Any out parameter (|browser|, |tab_strip|, |contents|, & |tab_index|) may
 // be NULL and will not be set within the function.
@@ -120,7 +124,8 @@ class UpdateTabFunction : public AsyncExtensionFunction,
   virtual ~UpdateTabFunction() {}
   virtual bool RunImpl();
   virtual bool OnMessageReceived(const IPC::Message& message);
-  void OnExecuteCodeFinished(int request_id, bool success,
+  void OnExecuteCodeFinished(int request_id,
+                             bool success,
                              const std::string& error);
   DECLARE_EXTENSION_FUNCTION_NAME("tabs.update")
 };

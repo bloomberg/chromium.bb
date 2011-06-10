@@ -18,9 +18,7 @@ chrome.test.runTests([
     chrome.test.listenOnce(chrome.tabs.onCreated, function(tab) {
       assertEq(pageUrl("f"), tab.url);
       otherTabId = tab.id;
-      // TODO(jstritar): http://crbug.com/59194 tab.selected is always false
-      //                 when passed into chrome.tabs.onCreated listener
-      //assertEq(true, tab.selected);
+      assertEq(true, tab.selected);
     });
 
     chrome.tabs.create({"windowId": firstWindowId, "url": pageUrl("f"),

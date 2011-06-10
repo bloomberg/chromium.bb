@@ -215,22 +215,22 @@ void ExtensionBrowserEventRouter::OnBrowserSetLastActive(
 
 void ExtensionBrowserEventRouter::TabCreatedAt(TabContents* contents,
                                                int index,
-                                               bool foreground) {
+                                               bool active) {
   DispatchEventWithTab(contents->profile(), "", events::kOnTabCreated,
-                       contents);
+                       contents, active);
 
   RegisterForTabNotifications(contents);
 }
 
 void ExtensionBrowserEventRouter::TabInsertedAt(TabContentsWrapper* contents,
                                                 int index,
-                                                bool foreground) {
+                                                bool active) {
   // If tab is new, send created event.
   int tab_id = ExtensionTabUtil::GetTabId(contents->tab_contents());
   if (!GetTabEntry(contents->tab_contents())) {
     tab_entries_[tab_id] = TabEntry();
 
-    TabCreatedAt(contents->tab_contents(), index, foreground);
+    TabCreatedAt(contents->tab_contents(), index, active);
     return;
   }
 
@@ -386,12 +386,14 @@ void ExtensionBrowserEventRouter::DispatchEventWithTab(
     Profile* profile,
     const std::string& extension_id,
     const char* event_name,
-    const TabContents* tab_contents) {
+    const TabContents* tab_contents,
+    bool active) {
   if (!profile_->IsSameProfile(profile))
     return;
 
   ListValue args;
-  args.Append(ExtensionTabUtil::CreateTabValue(tab_contents));
+  args.Append(ExtensionTabUtil::CreateTabValueActive(
+      tab_contents, active));
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);
   if (!extension_id.empty()) {
@@ -543,7 +545,7 @@ void ExtensionBrowserEventRouter::PageActionExecuted(
     return;
   }
   DispatchEventWithTab(profile, extension_id, "pageAction.onClicked",
-                       tab_contents->tab_contents());
+                       tab_contents->tab_contents(), true);
 }
 
 void ExtensionBrowserEventRouter::BrowserActionExecuted(
@@ -553,5 +555,5 @@ void ExtensionBrowserEventRouter::BrowserActionExecuted(
   if (!ExtensionTabUtil::GetDefaultTab(browser, &tab_contents, &tab_id))
     return;
   DispatchEventWithTab(profile, extension_id, "browserAction.onClicked",
-                       tab_contents->tab_contents());
+                       tab_contents->tab_contents(), true);
 }

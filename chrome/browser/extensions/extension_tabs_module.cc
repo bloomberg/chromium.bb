@@ -78,7 +78,8 @@ Browser* GetBrowserInProfileWithId(Profile* profile,
 
 // |error_message| can optionally be passed in and will be set with an
 // appropriate message if the tab cannot be found by id.
-bool GetTabById(int tab_id, Profile* profile,
+bool GetTabById(int tab_id,
+                Profile* profile,
                 bool include_incognito,
                 Browser** browser,
                 TabStripModel** tab_strip,
@@ -177,8 +178,9 @@ ListValue* ExtensionTabUtil::CreateTabList(const Browser* browser) {
   return tab_list;
 }
 
-DictionaryValue* ExtensionTabUtil::CreateTabValue(
-    const TabContents* contents, TabStripModel* tab_strip, int tab_index) {
+DictionaryValue* ExtensionTabUtil::CreateTabValue(const TabContents* contents,
+                                                  TabStripModel* tab_strip,
+                                                  int tab_index) {
   DictionaryValue* result = new DictionaryValue();
   result->SetInteger(keys::kIdKey, ExtensionTabUtil::GetTabId(contents));
   result->SetInteger(keys::kIndexKey, tab_index);
@@ -202,6 +204,14 @@ DictionaryValue* ExtensionTabUtil::CreateTabValue(
     }
   }
 
+  return result;
+}
+
+DictionaryValue* ExtensionTabUtil::CreateTabValueActive(
+    const TabContents* contents,
+    bool active) {
+  DictionaryValue* result = ExtensionTabUtil::CreateTabValue(contents);
+  result->SetBoolean(keys::kSelectedKey, active);
   return result;
 }
 
@@ -273,7 +283,8 @@ bool ExtensionTabUtil::GetDefaultTab(Browser* browser,
   return false;
 }
 
-bool ExtensionTabUtil::GetTabById(int tab_id, Profile* profile,
+bool ExtensionTabUtil::GetTabById(int tab_id,
+                                  Profile* profile,
                                   bool include_incognito,
                                   Browser** browser,
                                   TabStripModel** tab_strip,
@@ -629,11 +640,11 @@ bool UpdateWindowFunction::RunImpl() {
   if (set_bounds)
     browser->window()->SetBounds(bounds);
 
-  bool selected_val = false;
+  bool active_val = false;
   if (update_props->HasKey(keys::kFocusedKey)) {
     EXTENSION_FUNCTION_VALIDATE(update_props->GetBoolean(
-        keys::kFocusedKey, &selected_val));
-    if (selected_val)
+        keys::kFocusedKey, &active_val));
+    if (active_val)
       browser->window()->Activate();
     else
       browser->window()->Deactivate();

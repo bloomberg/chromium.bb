@@ -59,7 +59,7 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
 
   // TabStripModelObserver
   virtual void TabInsertedAt(TabContentsWrapper* contents, int index,
-                             bool foreground);
+                             bool active);
   virtual void TabClosingAt(TabStripModel* tab_strip_model,
                             TabContentsWrapper* contents,
                             int index);
@@ -97,7 +97,7 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
                        const NotificationDetails& details);
  private:
   // "Synthetic" event. Called from TabInsertedAt if new tab is detected.
-  void TabCreatedAt(TabContents* contents, int index, bool foreground);
+  void TabCreatedAt(TabContents* contents, int index, bool active);
 
   // Internal processing of tab updated events. Is called by both TabChangedAt
   // and Observe/NAV_ENTRY_COMMITTED.
@@ -118,7 +118,8 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
   void DispatchEventWithTab(Profile* profile,
                             const std::string& extension_id,
                             const char* event_name,
-                            const TabContents* tab_contents);
+                            const TabContents* tab_contents,
+                            bool active);
 
   void DispatchSimpleBrowserEvent(Profile* profile,
                                   const int window_id,
