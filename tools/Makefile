@@ -806,24 +806,8 @@ endif
 .PHONY: gcc-redirector
 gcc-redirector:
 ifeq ($(PLATFORM), win)
-	for exe in "$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/bin/"* ; do \
-	  echo "The next command can hang on FAT partiton; use NTFS!" ; \
-	  ln -fn redirector.exe \
-	    "$(DESTDIR)$(SDKROOT)/nacl/bin/`basename $$exe`"; \
-	done; \
-	for exe in "$(DESTDIR)$(SDKROOT)/bin/$(CROSSARCH)-"*.exe ; do \
-	  N="`basename $$exe`"; \
-	  echo "The next command can hang on FAT partiton; use NTFS!" ; \
-	  ln -fn redirector.exe \
-	    "$(DESTDIR)$(SDKROOT)/bin/nacl-$${N/$(CROSSARCH)-}"; \
-	  ln -fn "$(DESTDIR)$(SDKROOT)/libexec/$$N" \
-	    "$(DESTDIR)$(SDKROOT)/libexec/nacl-$${N/$(CROSSARCH)-}"; \
-	done; \
-	for exe in "$(DESTDIR)$(SDKROOT)/bin/$(CROSSARCH)-"* ; do \
-	  N="`basename $$exe`"; \
-	  echo "The next command can hang on FAT partiton; use NTFS!" ; \
-	  ln -n "$$exe" "$(DESTDIR)$(SDKROOT)/bin/nacl-$${N/$(CROSSARCH)-}"| \
-	    true; \
+	redirector.exe | while read from ; do \
+	  ln -fn redirector.exe "$(DESTDIR)$(SDKROOT)$$from"; \
 	done;
 else
 	for exe in "$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/bin/"* ; do \
