@@ -402,7 +402,12 @@ cr.define('options', function() {
      */
     updateCustomStartupPageControlStates_: function() {
       var disable = !this.shouldEnableCustomStartupPageControls();
-      $('startupPagesList').disabled = disable;
+      var startupPagesList = $('startupPagesList');
+      startupPagesList.disabled = disable;
+      // Explicitly set disabled state for input text elements.
+      var inputs = startupPagesList.querySelectorAll("input[type='text']");
+      for (var i = 0; i < inputs.length; i++)
+        inputs[i].disabled = disable;
       $('startupUseCurrentButton').disabled = disable;
     },
 
