@@ -640,6 +640,36 @@ void Planet::SetSurface(Surface surface) {
 // Setups and initializes planet data structures.
 // Seed planet, eye, and light
 Planet::Planet(int numRegions, bool multi, Texture *tex) :
+    planet_radius_(1.0f),
+    planet_spin_(0.0f),
+    planet_x_(0.0f),
+    planet_y_(0.0f),
+    planet_z_(0.0f),
+    planet_pole_x_(0.0f),
+    planet_pole_y_(0.0f),
+    planet_pole_z_(0.0f),
+    planet_equator_x_(0.0f),
+    planet_equator_y_(0.0f),
+    planet_equator_z_(0.0f),
+    eye_x_(0.0f),
+    eye_y_(0.0f),
+    eye_z_(0.0f),
+    light_x_(0.0f),
+    light_y_(0.0f),
+    light_z_(0.0f),
+    diffuse_r_(0.0f),
+    diffuse_g_(0.0f),
+    diffuse_b_(0.0f),
+    ambient_r_(0.0f),
+    ambient_g_(0.0f),
+    ambient_b_(0.0f),
+    planet_xyz_(0.0f),
+    planet_pole_x_equator_x_(0.0f),
+    planet_pole_x_equator_y_(0.0f),
+    planet_pole_x_equator_z_(0.0f),
+    planet_radius2_(0.0f),
+    planet_one_over_radius_(0.0f),
+    eye_xyz_(0.0f),
     surface_(NULL, 0, 0) {
   num_regions_ = numRegions;
   workers_ = multi ? new WorkerThreadManager() : NULL;
