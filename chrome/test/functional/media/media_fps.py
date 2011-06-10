@@ -66,7 +66,7 @@ class MediaPerformanceTest(MediaTestBase):
           remove_first_result=True, parameter_string=self.parameter_str,
           trace_list=self.FPS_TRACE_LIST,
           reference_build=self.reference_build,
-          display_filter=['playertime', 'fps'])
+          display_filter=['playertime', 'fps', 'droppedframe'])
 
   def PostEachRunProcess(self, run_counter):
     """A method to execute after each run.

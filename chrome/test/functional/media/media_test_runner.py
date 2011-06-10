@@ -47,7 +47,7 @@ def main():
   DEFAULT_NUMBER_OF_RUNS = 3
   # The interval between measurement calls.
   DEFAULT_MEASURE_INTERVALS = 3
-  DEFAULT_SUITE_NAME = 'MEDIA_TESTS'
+  DEFAULT_SUITE_NAME = 'AV_PERF'
   # This script is used to run the PYAUTO suite.
   pyauto_functional_script_name = os.path.join(os.path.dirname(__file__),
                                                'pyauto_media.py')

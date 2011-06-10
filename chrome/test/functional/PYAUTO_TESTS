@@ -313,12 +313,18 @@
   },
 
   # HTML5 media performance tests.
-  'MEDIA_TESTS': {
-    'linux': [
-      'media.media_playbacktime',
-      'media.media_perf',
-      'media.media_fps',
-      'media.media_event_simple_test',
-    ],
+  'AV_PERF': {
+     'linux': [
+       'media.media_playbacktime',
+       'media.media_perf',
+       'media.media_fps',
+     ],
+  },
+
+  # HTML5 media functional tests.   
+  'AV_FUNC': {
+     'linux': [
+       'media.media_event_simple_test',
+     ],
   },
 }
