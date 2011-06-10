@@ -494,6 +494,17 @@
                       '<(INTERMEDIATE_DIR)/repack/resources.pak'
                   ],
                 },
+                {
+                  'destination': '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/resources',
+                  'files': [],
+                  'conditions': [
+                    ['debug_devtools!=0', {
+                      'files': [
+                         '<(PRODUCT_DIR)/resources/inspector',
+                      ],
+                    }],
+                  ],
+                },
               ],
               'conditions': [
                 ['mac_breakpad==1', {
