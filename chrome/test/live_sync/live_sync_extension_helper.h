@@ -20,10 +20,6 @@ class Profile;
 
 class LiveSyncExtensionHelper {
  public:
-  enum ExtensionState { DISABLED, PENDING, ENABLED };
-
-  typedef std::map<std::string, ExtensionState> ExtensionStateMap;
-
   LiveSyncExtensionHelper();
   ~LiveSyncExtensionHelper();
 
@@ -41,6 +37,18 @@ class LiveSyncExtensionHelper {
   // Uninstalls the extension with the given name from |profile|.
   void UninstallExtension(Profile* profile, const std::string& name);
 
+  // Enables the extension with the given name on |profile|.
+  void EnableExtension(Profile* profile, const std::string& name);
+
+  // Disables the extension with the given name on |profile|.
+  void DisableExtension(Profile* profile, const std::string& name);
+
+  // Enables the extension with the given name to run in incognito mode
+  void IncognitoEnableExtension(Profile* profile, const std::string& name);
+
+  // Disables the extension with the given name from running in incognito mode
+  void IncognitoDisableExtension(Profile* profile, const std::string& name);
+
   // Returns true iff the extension with the given id is pending
   // install in |profile|.
   bool IsExtensionPendingInstallForSync(
@@ -50,14 +58,29 @@ class LiveSyncExtensionHelper {
   // type.
   void InstallExtensionsPendingForSync(Profile* profile, Extension::Type type);
 
-  // Returns a map from |profile|'s installed extensions to their
-  // state.
-  ExtensionStateMap GetExtensionStates(Profile* profile) const;
+  // Returns true iff |profile1| and |profile2| have the same extensions and
+  // they are all in the same state.
+  static bool ExtensionStatesMatch(Profile* profile1, Profile* profile2);
 
  private:
+  struct ExtensionState {
+    enum EnabledState { DISABLED, PENDING, ENABLED };
+
+    ExtensionState();
+    ~ExtensionState();
+    bool Equals(const ExtensionState &other) const;
+
+    EnabledState enabled_state;
+    bool incognito_enabled;
+  };
+
+  typedef std::map<std::string, ExtensionState> ExtensionStateMap;
   typedef std::map<std::string, scoped_refptr<Extension> > ExtensionNameMap;
   typedef std::map<Profile*, ExtensionNameMap> ProfileExtensionNameMap;
   typedef std::map<std::string, std::string> StringMap;
+
+  // Returns a map from |profile|'s installed extensions to their state.
+  static ExtensionStateMap GetExtensionStates(Profile* profile);
 
   // Initializes extensions for |profile| and creates an entry in
   // |profile_extensions_| for it.

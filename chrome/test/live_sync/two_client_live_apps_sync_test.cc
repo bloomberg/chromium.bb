@@ -147,6 +147,89 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAppsSyncTest, Uninstall) {
   ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
 }
 
+// TCM ID - 3699295.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveAppsSyncTest, Merge) {
+  ASSERT_TRUE(SetupSync());
+  ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
+
+  InstallApp(GetProfile(0), 0);
+  InstallApp(GetProfile(1), 0);
+  ASSERT_TRUE(AwaitQuiescence());
+
+  UninstallApp(GetProfile(0), 0);
+  InstallApp(GetProfile(0), 1);
+  InstallApp(verifier(), 1);
+
+  InstallApp(GetProfile(0), 2);
+  InstallApp(GetProfile(1), 2);
+  InstallApp(verifier(), 2);
+
+  InstallApp(GetProfile(1), 3);
+  InstallApp(verifier(), 3);
+
+  ASSERT_TRUE(AwaitQuiescence());
+  InstallAppsPendingForSync(GetProfile(0));
+  InstallAppsPendingForSync(GetProfile(1));
+  ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
+}
+
+// TCM ID - 7723126.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveAppsSyncTest, UpdateEnableDisableApp) {
+  ASSERT_TRUE(SetupSync());
+  ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
+
+  InstallApp(GetProfile(0), 0);
+  InstallApp(GetProfile(1), 0);
+  InstallApp(verifier(), 0);
+  ASSERT_TRUE(AwaitQuiescence());
+  ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
+
+  DisableApp(GetProfile(0), 0);
+  DisableApp(verifier(), 0);
+  ASSERT_TRUE(HasSameAppsAsVerifier(0));
+  ASSERT_FALSE(HasSameAppsAsVerifier(1));
+
+  ASSERT_TRUE(AwaitQuiescence());
+  ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
+
+  EnableApp(GetProfile(1), 0);
+  EnableApp(verifier(), 0);
+  ASSERT_TRUE(HasSameAppsAsVerifier(1));
+  ASSERT_FALSE(HasSameAppsAsVerifier(0));
+
+  ASSERT_TRUE(AwaitQuiescence());
+  ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
+}
+
+// TCM ID - 7706637.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveAppsSyncTest,
+                       UpdateIncognitoEnableDisable) {
+  ASSERT_TRUE(SetupSync());
+  ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
+
+  InstallApp(GetProfile(0), 0);
+  InstallApp(GetProfile(1), 0);
+  InstallApp(verifier(), 0);
+  ASSERT_TRUE(AwaitQuiescence());
+  ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
+
+  IncognitoEnableApp(GetProfile(0), 0);
+  IncognitoEnableApp(verifier(), 0);
+  ASSERT_TRUE(HasSameAppsAsVerifier(0));
+  ASSERT_FALSE(HasSameAppsAsVerifier(1));
+
+  ASSERT_TRUE(AwaitQuiescence());
+  ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
+
+  IncognitoDisableApp(GetProfile(1), 0);
+  IncognitoDisableApp(verifier(), 0);
+  ASSERT_TRUE(HasSameAppsAsVerifier(1));
+  ASSERT_FALSE(HasSameAppsAsVerifier(0));
+
+  ASSERT_TRUE(AwaitQuiescence());
+  ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
+}
+
 // TCM ID - 3718276.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveAppsSyncTest, DisableApps) {
   ASSERT_TRUE(SetupSync());

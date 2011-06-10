@@ -41,6 +41,18 @@ class LiveExtensionsSyncTest : public LiveSyncTest {
   // Installs all pending synced extensions for |profile|.
   void InstallExtensionsPendingForSync(Profile* profile);
 
+  // Enables the extension for the given index on |profile|.
+  void EnableExtension(Profile* profile, int index);
+
+  // Disables the extension for the given index on |profile|.
+  void DisableExtension(Profile* profile, int index);
+
+  // Enables the extension for the given index in incognito mode on |profile|.
+  void IncognitoEnableExtension(Profile* profile, int index);
+
+  // Disables the extension for the given index in incognito mode on |profile|.
+  void IncognitoDisableExtension(Profile* profile, int index);
+
  private:
   LiveSyncExtensionHelper extension_helper_;
 

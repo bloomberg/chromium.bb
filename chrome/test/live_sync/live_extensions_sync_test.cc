@@ -31,13 +31,7 @@ bool LiveExtensionsSyncTest::SetupClients() {
 }
 
 bool LiveExtensionsSyncTest::HasSameExtensionsAsVerifier(int index) {
-  LiveSyncExtensionHelper::ExtensionStateMap
-      verifier_extension_state_map(
-          extension_helper_.GetExtensionStates(verifier()));
-  LiveSyncExtensionHelper::ExtensionStateMap
-      extension_state_map(
-          extension_helper_.GetExtensionStates(GetProfile(index)));
-  return (extension_state_map == verifier_extension_state_map);
+  return extension_helper_.ExtensionStatesMatch(GetProfile(index), verifier());
 }
 
 bool LiveExtensionsSyncTest::AllProfilesHaveSameExtensionsAsVerifier() {
@@ -60,6 +54,28 @@ void LiveExtensionsSyncTest::InstallExtension(Profile* profile, int index) {
 void LiveExtensionsSyncTest::UninstallExtension(Profile* profile, int index) {
   return extension_helper_.UninstallExtension(profile,
                                               CreateFakeExtensionName(index));
+}
+
+void LiveExtensionsSyncTest::EnableExtension(Profile* profile, int index) {
+  return extension_helper_.EnableExtension(profile,
+                                           CreateFakeExtensionName(index));
+}
+
+void LiveExtensionsSyncTest::DisableExtension(Profile* profile, int index) {
+  return extension_helper_.DisableExtension(profile,
+                                            CreateFakeExtensionName(index));
+}
+
+void LiveExtensionsSyncTest::IncognitoEnableExtension(Profile* profile,
+                                                      int index) {
+  return extension_helper_.IncognitoEnableExtension(
+      profile, CreateFakeExtensionName(index));
+}
+
+void LiveExtensionsSyncTest::IncognitoDisableExtension(Profile* profile,
+                                                       int index) {
+  return extension_helper_.IncognitoDisableExtension(
+      profile, CreateFakeExtensionName(index));
 }
 
 void LiveExtensionsSyncTest::InstallExtensionsPendingForSync(

@@ -32,15 +32,8 @@ bool LiveAppsSyncTest::SetupClients() {
 
 bool LiveAppsSyncTest::HasSameAppsAsVerifier(int index) {
   // TODO(akalin): We may want to filter out non-apps for some tests.
-  LiveSyncExtensionHelper::ExtensionStateMap
-      verifier_extension_state_map(
-          extension_helper_.GetExtensionStates(verifier()));
-  LiveSyncExtensionHelper::ExtensionStateMap
-      extension_state_map(
-          extension_helper_.GetExtensionStates(GetProfile(index)));
-  return (extension_state_map == verifier_extension_state_map);
+  return extension_helper_.ExtensionStatesMatch(GetProfile(index), verifier());
 }
-
 
 bool LiveAppsSyncTest::AllProfilesHaveSameAppsAsVerifier() {
   for (int i = 0; i < num_clients(); ++i) {
@@ -62,6 +55,26 @@ void LiveAppsSyncTest::InstallApp(Profile* profile, int index) {
 void LiveAppsSyncTest::UninstallApp(Profile* profile, int index) {
   return extension_helper_.UninstallExtension(profile,
                                               CreateFakeAppName(index));
+}
+
+void LiveAppsSyncTest::EnableApp(Profile* profile, int index) {
+  return extension_helper_.EnableExtension(profile,
+                                           CreateFakeAppName(index));
+}
+
+void LiveAppsSyncTest::DisableApp(Profile* profile, int index) {
+  return extension_helper_.DisableExtension(profile,
+                                            CreateFakeAppName(index));
+}
+
+void LiveAppsSyncTest::IncognitoEnableApp(Profile* profile, int index) {
+  return extension_helper_.IncognitoEnableExtension(profile,
+                                                    CreateFakeAppName(index));
+}
+
+void LiveAppsSyncTest::IncognitoDisableApp(Profile* profile, int index) {
+  return extension_helper_.IncognitoDisableExtension(profile,
+                                                     CreateFakeAppName(index));
 }
 
 void LiveAppsSyncTest::InstallAppsPendingForSync(
