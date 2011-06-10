@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/basictypes.h"
 #include "base/string16.h"
-#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/tree_node_model.h"
@@ -127,42 +127,42 @@ TEST_F(TreeNodeModelTest, RemoveNode) {
 // The tree looks like this:
 // root
 // |-- child1
-// |   |-- foo1
-// |       |-- child0
-// |       |-- child1
-// +-------|-- child2
+// |   |-- foo
+// |       |-- bar0
+// |       |-- bar1
+// |       |-- bar2
+// |-- child2
+// +-- child3
 TEST_F(TreeNodeModelTest, RemoveAllNodes) {
-  TreeNodeWithValue<int>* root =
-      new TreeNodeWithValue<int>(ASCIIToUTF16("root"), 0);
-  TreeNodeModel<TreeNodeWithValue<int> > model(root);
-  model.AddObserver(this);
-  ClearCounts();
+  TreeNodeWithValue<int> root;
 
-  // Create the first child node.
-  TreeNodeWithValue<int>* child1 =
-      new TreeNodeWithValue<int>(ASCIIToUTF16("child 1"), 1);
-  model.Add(root, child1, 0);
+  TreeNodeWithValue<int> child1;
+  TreeNodeWithValue<int> child2;
+  TreeNodeWithValue<int> child3;
 
-  TreeNodeWithValue<int>* foo1 =
-      new TreeNodeWithValue<int>(ASCIIToUTF16("foo1"), 2);
-  model.Add(child1, foo1, 0);
+  root.Add(&child1, 0);
+  root.Add(&child2, 1);
+  root.Add(&child3, 2);
 
-  // Add some nodes to |foo1|.
-  for (int i = 0; i < 3; ++i) {
-    model.Add(foo1,
-              new TreeNodeWithValue<int>(ASCIIToUTF16("child") +
-                                         base::IntToString16(i), i), i);
-  }
+  TreeNodeWithValue<int>* foo = new TreeNodeWithValue<int>(2);
+  child1.Add(foo, 0);
 
-  ASSERT_EQ(3, model.GetChildCount(foo1));
+  // Add some nodes to |foo|.
+  for (int i = 0; i < 3; ++i)
+    foo->Add(new TreeNodeWithValue<int>(i), i);
 
-  // Now remove all nodes from root.
-  root->RemoveAll();
+  ASSERT_EQ(3, root.child_count());
+  ASSERT_EQ(1, child1.child_count());
+  ASSERT_EQ(3, foo->child_count());
 
-  // Release memory, so we don't leak.
-  delete child1;
+  // Now remove the child nodes from root.
+  root.RemoveAll();
 
-  ASSERT_EQ(0, model.GetChildCount(root));
+  ASSERT_EQ(0, root.child_count());
+  ASSERT_TRUE(root.empty());
+
+  ASSERT_EQ(1, child1.child_count());
+  ASSERT_EQ(3, foo->child_count());
 }
 
 // Verify if the model returns correct indexes for the specified nodes.
