@@ -7,7 +7,6 @@
     {
       'target_name': 'v2',
       'type': 'static_library',
-      'msvs_guid': '70760ECA-4D8B-47A4-ACDC-D3E7F25F0543',
       'dependencies': [
         '../skia/skia.gyp:skia',
         '../ui/base/strings/ui_strings.gyp:ui_strings',

@@ -7,7 +7,6 @@
     {
       'target_name': 'ui_unittests',
       'type': 'executable',
-      'msvs_guid': 'C412B00F-2098-4833-B3DE-A1B8B7A094F0',
       'dependencies': [
         '../base/base.gyp:base',
         '../base/base.gyp:test_support_base',

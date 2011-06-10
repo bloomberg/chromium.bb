@@ -7,7 +7,6 @@
     {
       'target_name': 'ui_strings',
       'type': 'none',
-      'msvs_guid': 'BC3C49A3-D061-4E78-84EE-742DA064DC46',
       'actions': [
         {
           'action_name': 'app_strings',

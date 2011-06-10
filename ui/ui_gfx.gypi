@@ -9,7 +9,6 @@
       # waterfall instead of gfx_unittests.
       'target_name': 'gfx_unittests',
       'type': 'none',
-      'msvs_guid': '1D386FA9-2501-41E2-8FE8-527DAF479CE6',
       'conditions': [
         ['inside_chromium_build==1', {
           'dependencies': [
@@ -39,7 +38,6 @@
     {
       'target_name': 'ui_gfx',
       'type': 'static_library',
-      'msvs_guid': '13A8D36C-0467-4B4E-BAA3-FD69C45F076A',
       'dependencies': [
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
@@ -164,7 +162,6 @@
     {
       'target_name': 'gfx_resources',
       'type': 'none',
-      'msvs_guid' : '5738AE53-E919-4987-A2EF-15FDBD8F90F6',
       'variables': {
         'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/ui/gfx',
       },
