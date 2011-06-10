@@ -192,7 +192,13 @@ TEST_F(BrowserTest, MAYBE_OtherRedirectsDontForkProcess) {
   ASSERT_EQ(orig_process_count, process_count);
 }
 
-TEST_F(VisibleBrowserTest, WindowOpenClose) {
+#if defined (OS_CHROMEOS)
+#define MAYBE_WindowOpenClose FLAKY_WindowOpenClose
+#else
+#define MAYBE_WindowOpenClose WindowOpenClose
+#endif
+
+TEST_F(VisibleBrowserTest, MAYBE_WindowOpenClose) {
   FilePath test_file(test_data_directory_);
   test_file = test_file.AppendASCII("window.close.html");
 
