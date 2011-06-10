@@ -775,10 +775,16 @@ if (not env.CrossToolsBuild() and
                   ] + VALIDATOR_LIBS
                   + DEBUG_LIBS)
 
+  # NaClAbort() behaves differently when code coverage is enabled: it
+  # calls exit() rather than abort().
+  if env.Bit('coverage_enabled'):
+    expected_exit_status = 'naclabort_coverage'
+  else:
+    expected_exit_status = 'sigabrt'
   node = env.CommandTest(
       'sel_ldr_thread_death_test.out',
       command=[sel_ldr_thread_death_test_exe],
-      exit_status='sigabrt')
+      exit_status=expected_exit_status)
 
   # TODO(tuduce): Make it work on windows.
   env.AddNodeToTestSuite(node, ['medium_tests'],

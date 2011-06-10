@@ -160,6 +160,13 @@ status_map = {
         'linux2': [-6], # SIGABRT
         'darwin': [-6], # SIGABRT
         },
+    'naclabort_coverage' : {
+        # This case is here because NaClAbort() behaves differently when
+        # code coverage is enabled.
+        # This is not used on Windows.
+        'linux2': [IndirectSignal(6)], # SIGABRT
+        'darwin': [IndirectSignal(6)], # SIGABRT
+        },
     'sigpipe': {
         # This is not used on Windows because Windows does not have an
         # equivalent of SIGPIPE.
