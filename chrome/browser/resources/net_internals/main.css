@@ -78,9 +78,16 @@ body {
   background: rgb(244,244,255);
 }
 
-#eventsListTableBody .selected,
-#eventsListTableBody .mouseover .selected {
+#eventsListTableBody .selected {
   background: #C3D9FF;
+}
+
+#eventsListTableBody .error {
+  background: #FFF5F5;
+}
+
+#eventsListTableBody .inactive {
+  background: #F5FFF5;
 }
 
 #eventsListTableBody .source_CONNECT_JOB {
@@ -89,12 +96,12 @@ body {
 
 #eventsListTableBody .source_HOST_RESOLVER_IMPL_JOB,
 #eventsListTableBody .source_HOST_RESOLVER_IMPL_REQUEST {
-  color: #308080;
+  color: #206060;
 }
 
 #eventsListTableBody .source_DISK_CACHE_ENTRY,
 #eventsListTableBody .source_MEMORY_CACHE_ENTRY {
-  color: gray;
+  color: #707070;
 }
 
 #eventsListTableBody .source_SOCKET {

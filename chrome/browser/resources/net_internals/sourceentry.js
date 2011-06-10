@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,22 +15,72 @@ function SourceEntry(parentView, maxPreviousSourceId) {
   this.parentView_ = parentView;
   this.isSelected_ = false;
   this.isMatchedByFilter_ = false;
-  // If the first entry is a BEGIN_PHASE, set to true.
-  // Set to false when an END_PHASE matching the first entry is encountered.
-  this.isActive_ = false;
+
+  // Used to set CSS class for display.  Must only be modified by calling
+  // corresponding set functions.
+  this.isSelected_ = false;
+  this.isMouseOver_ = false;
+  // Set to true on most net errors.
+  this.isError_ = false;
+  // If the first entry is a BEGIN_PHASE, set to false.
+  // Set to true when an END_PHASE matching the first entry is encountered.
+  this.isInactive_ = true;
 }
 
 SourceEntry.prototype.isSelected = function() {
   return this.isSelected_;
 };
 
+/**
+ * Changes |row_|'s class based on currently set flags.  Clears any previous
+ * class set by this method.  This method is needed so that some styles
+ * override others.
+ */
+SourceEntry.prototype.updateClass_ = function() {
+  if (!this.row_)
+    return;
+
+  // Each element of this list contains a property of |this| and the
+  // corresponding class name to set if that property is true.  Entries earlier
+  // in the list take precedence.
+  var propertyNames = [
+    ['isSelected_', 'selected'],
+    ['isMouseOver_', 'mouseover'],
+    ['isError_', 'error'],
+    ['isInactive_', 'inactive']];
+
+  // Loop through |propertyNames| in order, checking if each property
+  // is true.  For the first such property found, if any, add the
+  // corresponding class to the SourceEntry's row.  Remove classes
+  // that correspond to any other property.
+  var noStyleSet = true;
+  for (var i = 0; i < propertyNames.length; ++i) {
+    var setStyle = noStyleSet && this[propertyNames[i][0]];
+    changeClassName(this.row_, propertyNames[i][1], setStyle);
+    if (setStyle)
+      noStyleSet = false;
+  }
+};
+
+SourceEntry.prototype.setInactive_ = function(isInactive) {
+  this.isInactive_ = isInactive;
+  this.updateClass_();
+};
+
+SourceEntry.prototype.setError_ = function(isError) {
+  this.isError_ = isError;
+  this.updateClass_();
+};
+
 SourceEntry.prototype.setSelectedStyles = function(isSelected) {
-  changeClassName(this.row_, 'selected', isSelected);
+  this.isSelected_ = isSelected;
   this.getSelectionCheckbox().checked = isSelected;
+  this.updateClass_();
 };
 
 SourceEntry.prototype.setMouseoverStyle = function(isMouseOver) {
-  changeClassName(this.row_, 'mouseover', isMouseOver);
+  this.isMouseOver_ = isMouseOver;
+  this.updateClass_();
 };
 
 SourceEntry.prototype.setIsMatchedByFilter = function(isMatchedByFilter) {
@@ -66,14 +116,30 @@ SourceEntry.prototype.setFilterStyles = function(isMatchedByFilter) {
 
 SourceEntry.prototype.update = function(logEntry) {
   if (logEntry.phase == LogEventPhase.PHASE_BEGIN &&
-      this.entries_.length == 0)
-    this.isActive_ = true;
+      this.entries_.length == 0) {
+    this.setInactive_(false);
+  }
 
   // Only the last event should have the same type first event,
-  if (this.isActive_ &&
+  if (!this.isInactive_ &&
       logEntry.phase == LogEventPhase.PHASE_END &&
-      logEntry.type == this.entries_[0].type)
-    this.isActive_ = false;
+      logEntry.type == this.entries_[0].type) {
+    this.setInactive_(true);
+  }
+
+  // If we have a net error code, update |this.isError_| if apporpriate.
+  if (logEntry.params) {
+    var netErrorCode = logEntry.params.net_error;
+    // Skip both cases where netErrorCode is undefined, and cases where it is
+    // 0, indicating no actual error occurred.
+    if (netErrorCode) {
+      // Ignore error code caused by not finding an entry in the cache.
+      if (logEntry.type != LogEventType.HTTP_CACHE_OPEN_ENTRY ||
+          netErrorCode != NetError.FAILED) {
+        this.setError_(true);
+      }
+    }
+  }
 
   var prevStartEntry = this.getStartEntry_();
   this.entries_.push(logEntry);
@@ -101,9 +167,13 @@ SourceEntry.prototype.matchesFilter = function(filter) {
   if (this.row_ == null)
     return false;
 
-  if (filter.isActive && !this.isActive_)
+  if (filter.isActive && this.isInactive_)
     return false;
-  if (filter.isInactive && this.isActive_)
+  if (filter.isInactive && !this.isInactive_)
+    return false;
+  if (filter.isError && !this.isError_)
+    return false;
+  if (filter.isNotError && this.isError_)
     return false;
 
   // Check source type, if needed.
@@ -198,6 +268,8 @@ SourceEntry.prototype.createRow_ = function() {
   // Add a CSS classname specific to this source type (so CSS can specify
   // different stylings for different types).
   changeClassName(this.row_, 'source_' + sourceTypeString, true);
+
+  this.updateClass_();
 };
 
 /**
@@ -298,14 +370,14 @@ SourceEntry.prototype.getMaxPreviousEntrySourceId = function() {
 };
 
 SourceEntry.prototype.isActive = function() {
-  return this.isActive_;
+  return !this.isInactive_;
 };
 
 /**
  * Returns time of last event if inactive.  Returns current time otherwise.
  */
 SourceEntry.prototype.getEndTime = function() {
-  if (this.isActive_) {
+  if (!this.isInactive_) {
     return (new Date()).getTime();
   }
   else {
