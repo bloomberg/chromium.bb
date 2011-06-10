@@ -259,7 +259,6 @@ add_config('x86-agz-bin', [{
   'uprev' : True,
   'overlays': 'both',
   'push_overlays': None,
-  'manifest_version': MANIFEST_VERSIONS_URL,
 }])
 
 add_config('x86-pineview-bin', [{
@@ -268,7 +267,6 @@ add_config('x86-pineview-bin', [{
   'uprev' : True,
   'overlays': 'public',
   'push_overlays': None,
-  'manifest_version': MANIFEST_VERSIONS_URL,
 }])
 
 add_config('arm-tegra2-bin', [arm, {
@@ -277,7 +275,6 @@ add_config('arm-tegra2-bin', [arm, {
   'uprev' : True,
   'overlays': 'public',
   'push_overlays': None,
-  'manifest_version': MANIFEST_VERSIONS_URL,
 }])
 
 add_config('arm-generic-bin', [arm, {
@@ -286,7 +283,6 @@ add_config('arm-generic-bin', [arm, {
   'uprev' : True,
   'overlays': 'public',
   'push_overlays': None,
-  'manifest_version': MANIFEST_VERSIONS_URL,
 }])
 
 add_config('arm-generic-full', [arm, full, {
