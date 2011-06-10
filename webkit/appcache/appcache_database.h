@@ -5,6 +5,7 @@
 #ifndef WEBKIT_APPCACHE_APPCACHE_DATABASE_H_
 #define WEBKIT_APPCACHE_APPCACHE_DATABASE_H_
 
+#include <map>
 #include <set>
 #include <vector>
 
@@ -20,10 +21,6 @@ class Connection;
 class MetaTable;
 class Statement;
 class StatementID;
-}
-
-namespace webkit_database {
-class QuotaTable;
 }
 
 namespace appcache {
@@ -86,9 +83,8 @@ class AppCacheDatabase {
   void Disable();
   bool is_disabled() const { return is_disabled_; }
 
-  int64 GetDefaultOriginQuota() { return 5 * 1024 * 1024; }
   int64 GetOriginUsage(const GURL& origin);
-  int64 GetOriginQuota(const GURL& origin);
+  bool GetAllOriginUsage(std::map<GURL, int64>* usage_map);
 
   bool FindOriginsWithGroups(std::set<GURL>* origins);
   bool FindLastStorageIds(
@@ -198,7 +194,6 @@ class AppCacheDatabase {
   FilePath db_file_path_;
   scoped_ptr<sql::Connection> db_;
   scoped_ptr<sql::MetaTable> meta_table_;
-  scoped_ptr<webkit_database::QuotaTable> quota_table_;
   bool is_disabled_;
   bool is_recreating_;
 
@@ -210,7 +205,7 @@ class AppCacheDatabase {
   FRIEND_TEST_ALL_PREFIXES(AppCacheDatabaseTest, OnlineWhiteListRecords);
   FRIEND_TEST_ALL_PREFIXES(AppCacheDatabaseTest, ReCreate);
   FRIEND_TEST_ALL_PREFIXES(AppCacheDatabaseTest, DeletableResponseIds);
-  FRIEND_TEST_ALL_PREFIXES(AppCacheDatabaseTest, Quotas);
+  FRIEND_TEST_ALL_PREFIXES(AppCacheDatabaseTest, OriginUsage);
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheDatabase);
 };

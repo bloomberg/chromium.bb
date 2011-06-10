@@ -12,6 +12,7 @@
 #include "webkit/appcache/appcache_entry.h"
 #include "webkit/appcache/appcache_group.h"
 #include "webkit/appcache/appcache_response.h"
+#include "webkit/appcache/appcache_service.h"
 
 // This is a quick and easy 'mock' implementation of the storage interface
 // that doesn't put anything to disk.
@@ -41,6 +42,12 @@ MockAppCacheStorage::MockAppCacheStorage(AppCacheService* service)
 
 MockAppCacheStorage::~MockAppCacheStorage() {
   STLDeleteElements(&pending_tasks_);
+}
+
+void MockAppCacheStorage::GetAllInfo(Delegate* delegate) {
+  ScheduleTask(method_factory_.NewRunnableMethod(
+      &MockAppCacheStorage::ProcessGetAllInfo,
+      make_scoped_refptr(GetOrCreateDelegateReference(delegate))));
 }
 
 void MockAppCacheStorage::LoadCache(int64 id, Delegate* delegate) {
@@ -162,6 +169,12 @@ void MockAppCacheStorage::DeleteResponses(
     doomed_response_ids_.insert(*it);
     ++it;
   }
+}
+
+void MockAppCacheStorage::ProcessGetAllInfo(
+    scoped_refptr<DelegateReference> delegate_ref) {
+  if (delegate_ref->delegate)
+    delegate_ref->delegate->OnAllInfo(simulated_appcache_info_);
 }
 
 void MockAppCacheStorage::ProcessLoadCache(

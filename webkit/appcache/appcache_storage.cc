@@ -6,6 +6,9 @@
 
 #include "base/stl_util-inl.h"
 #include "webkit/appcache/appcache_response.h"
+#include "webkit/appcache/appcache_service.h"
+#include "webkit/quota/quota_client.h"
+#include "webkit/quota/quota_manager.h"
 
 namespace appcache {
 
@@ -85,6 +88,43 @@ void AppCacheStorage::LoadResponseInfo(
   DCHECK(id == info_load->response_id());
   info_load->AddDelegate(GetOrCreateDelegateReference(delegate));
   info_load->StartIfNeeded();
+}
+
+void AppCacheStorage::UpdateUsageMapAndNotify(
+    const GURL& origin, int64 new_usage) {
+  DCHECK_GE(new_usage, 0);
+  int64 old_usage = usage_map_[origin];
+  if (new_usage > 0)
+    usage_map_[origin] = new_usage;
+  else
+    usage_map_.erase(origin);
+  if (new_usage != old_usage && service()->quota_manager_proxy()) {
+    service()->quota_manager_proxy()->NotifyStorageModified(
+        quota::QuotaClient::kAppcache,
+        origin, quota::kStorageTypeTemporary,
+        new_usage - old_usage);
+  }
+}
+
+void AppCacheStorage::ClearUsageMapAndNotify() {
+  if (service()->quota_manager_proxy()) {
+    for (UsageMap::const_iterator iter = usage_map_.begin();
+         iter != usage_map_.end(); ++iter) {
+      service()->quota_manager_proxy()->NotifyStorageModified(
+          quota::QuotaClient::kAppcache,
+          iter->first, quota::kStorageTypeTemporary,
+          -(iter->second));
+    }
+  }
+  usage_map_.clear();
+}
+
+void AppCacheStorage::NotifyStorageAccessed(const GURL& origin) {
+  if (service()->quota_manager_proxy() &&
+      usage_map_.find(origin) != usage_map_.end())
+    service()->quota_manager_proxy()->NotifyStorageAccessed(
+        quota::QuotaClient::kAppcache,
+        origin, quota::kStorageTypeTemporary);
 }
 
 }  // namespace appcache

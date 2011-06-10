@@ -35,6 +35,7 @@ class SpecialStoragePolicy;
 namespace appcache {
 
 class AppCacheBackendImpl;
+class AppCacheQuotaClient;
 class AppCachePolicy;
 
 // Refcounted container to avoid copying the collection in callbacks.
@@ -84,6 +85,12 @@ class AppCacheService {
   void DeleteAppCacheGroup(const GURL& manifest_url,
                            net::CompletionCallback* callback);
 
+  // Deletes all appcaches for the origin, 'callback' is invoked upon
+  // completion. This method always completes asynchronously.
+  // (virtual for unittesting)
+  virtual void DeleteAppCachesForOrigin(const GURL& origin,
+                                        net::CompletionCallback* callback);
+
   // Context for use during cache updates, should only be accessed
   // on the IO thread. We do NOT add a reference to the request context,
   // it is the callers responsibility to ensure that the pointer
@@ -110,6 +117,10 @@ class AppCacheService {
     return quota_manager_proxy_.get();
   }
 
+  AppCacheQuotaClient* quota_client() const {
+    return quota_client_;
+  }
+
   // Each child process in chrome uses a distinct backend instance.
   // See chrome/browser/AppCacheDispatcherHost.
   void RegisterBackend(AppCacheBackendImpl* backend_impl);
@@ -122,15 +133,20 @@ class AppCacheService {
   AppCacheStorage* storage() const { return storage_.get(); }
 
  protected:
+  friend class AppCacheStorageImplTest;
+  friend class AppCacheServiceTest;
+
   class AsyncHelper;
   class CanHandleOfflineHelper;
   class DeleteHelper;
+  class DeleteOriginHelper;
   class GetInfoHelper;
 
   typedef std::set<AsyncHelper*> PendingAsyncHelpers;
   typedef std::map<int, AppCacheBackendImpl*> BackendMap;
 
   AppCachePolicy* appcache_policy_;
+  AppCacheQuotaClient* quota_client_;
   scoped_ptr<AppCacheStorage> storage_;
   scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
   scoped_refptr<quota::QuotaManagerProxy> quota_manager_proxy_;

@@ -31,6 +31,7 @@ struct HttpResponseInfoIOBuffer;
 
 class AppCacheStorage {
  public:
+  typedef std::map<GURL, int64> UsageMap;
 
   class Delegate {
    public:
@@ -180,10 +181,14 @@ class AppCacheStorage {
   // The working set of object instances currently in memory.
   AppCacheWorkingSet* working_set() { return &working_set_; }
 
+  // A map of origins to usage.
+  const UsageMap* usage_map() { return &usage_map_; }
+
   // Simple ptr back to the service object that owns us.
   AppCacheService* service() { return service_; }
 
  protected:
+  friend class AppCacheQuotaClientTest;
   friend class AppCacheResponseTest;
   friend class AppCacheStorageTest;
 
@@ -280,11 +285,17 @@ class AppCacheStorage {
     return ++last_response_id_;
   }
 
+  // Helpers to query and notify the QuotaManager.
+  void UpdateUsageMapAndNotify(const GURL& origin, int64 new_usage);
+  void ClearUsageMapAndNotify();
+  void NotifyStorageAccessed(const GURL& origin);
+
   // The last storage id used for different object types.
   int64 last_cache_id_;
   int64 last_group_id_;
   int64 last_response_id_;
 
+  UsageMap usage_map_;  // maps origin to usage
   AppCacheWorkingSet working_set_;
   AppCacheService* service_;
   DelegateReferenceMap delegate_references_;
@@ -294,6 +305,7 @@ class AppCacheStorage {
   static const int64 kUnitializedId;
 
   FRIEND_TEST_ALL_PREFIXES(AppCacheStorageTest, DelegateReferences);
+  FRIEND_TEST_ALL_PREFIXES(AppCacheStorageTest, UsageMap);
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheStorage);
 };

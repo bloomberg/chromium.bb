@@ -9,6 +9,7 @@
 #include "base/stl_util-inl.h"
 #include "webkit/appcache/appcache_backend_impl.h"
 #include "webkit/appcache/appcache_entry.h"
+#include "webkit/appcache/appcache_quota_client.h"
 #include "webkit/appcache/appcache_storage_impl.h"
 #include "webkit/quota/quota_manager.h"
 #include "webkit/quota/special_storage_policy.h"
@@ -58,7 +59,10 @@ class AppCacheService::AsyncHelper
 };
 
 void AppCacheService::AsyncHelper::Cancel() {
-  CallCallback(net::ERR_ABORTED);
+  if (callback_) {
+    callback_->Run(net::ERR_ABORTED);
+    callback_ = NULL;
+  }
   service_->storage()->CancelDelegateCallbacks(this);
   service_ = NULL;
 }
@@ -143,6 +147,95 @@ void AppCacheService::DeleteHelper::OnGroupMadeObsolete(
   delete this;
 }
 
+// DeleteOriginHelper -------
+
+class AppCacheService::DeleteOriginHelper : public AsyncHelper {
+ public:
+  DeleteOriginHelper(
+      AppCacheService* service, const GURL& origin,
+      net::CompletionCallback* callback)
+      : AsyncHelper(service, callback), origin_(origin),
+        successes_(0), failures_(0) {
+  }
+
+  virtual void Start() {
+    // We start by listing all caches, continues in OnAllInfo().
+    service_->storage()->GetAllInfo(this);
+  }
+
+ private:
+  // AppCacheStorage::Delegate methods
+  virtual void OnAllInfo(AppCacheInfoCollection* collection);
+  virtual void OnGroupLoaded(
+      appcache::AppCacheGroup* group, const GURL& manifest_url);
+  virtual void OnGroupMadeObsolete(
+      appcache::AppCacheGroup* group, bool success);
+
+  void CacheCompleted(bool success);
+
+  GURL origin_;
+  AppCacheInfoVector caches_to_delete_;
+  int successes_;
+  int failures_;
+  DISALLOW_COPY_AND_ASSIGN(DeleteOriginHelper);
+};
+
+void AppCacheService::DeleteOriginHelper::OnAllInfo(
+      AppCacheInfoCollection* collection) {
+  if (!collection) {
+    // Failed to get a listing.
+    CallCallback(net::ERR_FAILED);
+    delete this;
+    return;
+  }
+  std::map<GURL, AppCacheInfoVector>::iterator found =
+      collection->infos_by_origin.find(origin_);
+  if (found == collection->infos_by_origin.end() || found->second.empty()) {
+    // No caches for this origin.
+    CallCallback(net::OK);
+    delete this;
+    return;
+  }
+
+  // We have some caches to delete.
+  caches_to_delete_.swap(found->second);
+  successes_ = 0;
+  failures_ = 0;
+  for (AppCacheInfoVector::iterator iter = caches_to_delete_.begin();
+       iter != caches_to_delete_.end(); ++iter) {
+    service_->storage()->LoadOrCreateGroup(iter->manifest_url, this);
+  }
+}
+
+void AppCacheService::DeleteOriginHelper::OnGroupLoaded(
+      appcache::AppCacheGroup* group, const GURL& manifest_url) {
+  if (group) {
+    group->set_being_deleted(true);
+    group->CancelUpdate();
+    service_->storage()->MakeGroupObsolete(group, this);
+  } else {
+    CacheCompleted(false);
+  }
+}
+
+void AppCacheService::DeleteOriginHelper::OnGroupMadeObsolete(
+      appcache::AppCacheGroup* group, bool success) {
+  CacheCompleted(success);
+}
+
+void AppCacheService::DeleteOriginHelper::CacheCompleted(bool success) {
+  if (success)
+    ++successes_;
+  else
+    ++failures_;
+  if ((successes_ + failures_) < static_cast<int>(caches_to_delete_.size()))
+    return;
+
+  CallCallback(!failures_ ? net::OK : net::ERR_FAILED);
+  delete this;
+}
+
+
 // GetInfoHelper -------
 
 class AppCacheService::GetInfoHelper : AsyncHelper {
@@ -177,9 +270,13 @@ void AppCacheService::GetInfoHelper::OnAllInfo(
 // AppCacheService -------
 
 AppCacheService::AppCacheService(quota::QuotaManagerProxy* quota_manager_proxy)
-    : appcache_policy_(NULL), quota_manager_proxy_(quota_manager_proxy),
+    : appcache_policy_(NULL), quota_client_(NULL),
+      quota_manager_proxy_(quota_manager_proxy),
       request_context_(NULL)  {
-  // TODO(michaeln): Create and register our QuotaClient.
+  if (quota_manager_proxy_) {
+    quota_client_ = new AppCacheQuotaClient(this);
+    quota_manager_proxy_->RegisterClient(quota_client_);
+  }
 }
 
 AppCacheService::~AppCacheService() {
@@ -188,6 +285,8 @@ AppCacheService::~AppCacheService() {
                 pending_helpers_.end(),
                 std::mem_fun(&AsyncHelper::Cancel));
   STLDeleteElements(&pending_helpers_);
+  if (quota_client_)
+    quota_client_->NotifyAppCacheDestroyed();
 }
 
 void AppCacheService::Initialize(const FilePath& cache_directory,
@@ -216,6 +315,12 @@ void AppCacheService::GetAllAppCacheInfo(AppCacheInfoCollection* collection,
 void AppCacheService::DeleteAppCacheGroup(const GURL& manifest_url,
                                           net::CompletionCallback* callback) {
   DeleteHelper* helper = new DeleteHelper(this, manifest_url, callback);
+  helper->Start();
+}
+
+void AppCacheService::DeleteAppCachesForOrigin(
+    const GURL& origin,  net::CompletionCallback* callback) {
+  DeleteOriginHelper* helper = new DeleteOriginHelper(this, origin, callback);
   helper->Start();
 }
 

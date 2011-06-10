@@ -16,6 +16,7 @@
 #include "webkit/appcache/appcache_policy.h"
 #include "webkit/appcache/appcache_service.h"
 #include "webkit/appcache/appcache_storage_impl.h"
+#include "webkit/quota/quota_manager.h"
 #include "webkit/tools/test_shell/simple_appcache_system.h"
 
 namespace appcache {
@@ -34,9 +35,16 @@ const GURL kFallbackTestUrl("http://blah/fallback_namespace/longer/test");
 const GURL kOnlineNamespace("http://blah/online_namespace");
 const GURL kOnlineNamespaceWithinFallback(
     "http://blah/fallback_namespace/online/");
+const GURL kOrigin(kManifestUrl.GetOrigin());
 
 const int kManifestEntryIdOffset = 100;
 const int kFallbackEntryIdOffset = 1000;
+
+const GURL kDefaultEntryUrl("http://blah/makecacheandgroup_default_entry");
+const int kDefaultEntrySize = 10;
+const int kDefaultEntryIdOffset = 12345;
+
+const int kMockQuota = 5000;
 
 // For the duration of this test case, we hijack the AppCacheThread API
 // calls and implement them in terms of the io and db threads created here.
@@ -176,6 +184,80 @@ class AppCacheStorageImplTest : public testing::Test {
     AppCacheStorageImplTest* test_;
   };
 
+  class MockQuotaManager : public quota::QuotaManager {
+   public:
+    MockQuotaManager()
+      : QuotaManager(true /* is_incognito */, FilePath(),
+                     io_thread->message_loop_proxy(),
+                     db_thread->message_loop_proxy(),
+                     NULL),
+        async_(false) {}
+
+    virtual void GetUsageAndQuota(
+        const GURL& origin, quota::StorageType type,
+        GetUsageAndQuotaCallback* callback) {
+      EXPECT_EQ(kOrigin, origin);
+      EXPECT_EQ(quota::kStorageTypeTemporary, type);
+      if (async_) {
+        MessageLoop::current()->PostTask(FROM_HERE,
+            NewRunnableMethod(this, &MockQuotaManager::CallCallbackAndDelete,
+                              callback));
+        return;
+      }
+      CallCallbackAndDelete(callback);
+    }
+
+    void CallCallbackAndDelete(GetUsageAndQuotaCallback* callback) {
+      callback->Run(quota::kQuotaStatusOk, 0, kMockQuota);
+      delete callback;
+    }
+
+    bool async_;
+  };
+
+  class MockQuotaManagerProxy : public quota::QuotaManagerProxy {
+   public:
+    MockQuotaManagerProxy()
+        : QuotaManagerProxy(NULL, NULL),
+          notify_storage_accessed_count_(0),
+          notify_storage_modified_count_(0),
+          last_delta_(0),
+          mock_manager_(new MockQuotaManager) {
+      manager_ = mock_manager_;
+    }
+
+    virtual void NotifyStorageAccessed(quota::QuotaClient::ID client_id,
+                                       const GURL& origin,
+                                       quota::StorageType type) {
+      EXPECT_EQ(quota::QuotaClient::kAppcache, client_id);
+      EXPECT_EQ(quota::kStorageTypeTemporary, type);
+      ++notify_storage_accessed_count_;
+      last_origin_ = origin;
+    }
+
+    virtual void NotifyStorageModified(quota::QuotaClient::ID client_id,
+                                       const GURL& origin,
+                                       quota::StorageType type,
+                                       int64 delta) {
+      EXPECT_EQ(quota::QuotaClient::kAppcache, client_id);
+      EXPECT_EQ(quota::kStorageTypeTemporary, type);
+      ++notify_storage_modified_count_;
+      last_origin_ = origin;
+      last_delta_ = delta;
+    }
+
+    // Not needed for our tests.
+    virtual void RegisterClient(quota::QuotaClient* client) {}
+    virtual void NotifyOriginInUse(const GURL& origin) {}
+    virtual void NotifyOriginNoLongerInUse(const GURL& origin) {}
+
+    int notify_storage_accessed_count_;
+    int notify_storage_modified_count_;
+    GURL last_origin_;
+    int last_delta_;
+    scoped_refptr<MockQuotaManager> mock_manager_;
+  };
+
   // Helper class run a test on our io_thread. The io_thread
   // is spun up once and reused for all tests.
   template <class Method>
@@ -243,6 +325,8 @@ class AppCacheStorageImplTest : public testing::Test {
     DCHECK(MessageLoop::current() == io_thread->message_loop());
     service_.reset(new AppCacheService(NULL));
     service_->Initialize(FilePath(), NULL);
+    mock_quota_manager_proxy_ = new MockQuotaManagerProxy();
+    service_->quota_manager_proxy_ = mock_quota_manager_proxy_;
     delegate_.reset(new MockStorageDelegate(this));
   }
 
@@ -252,6 +336,7 @@ class AppCacheStorageImplTest : public testing::Test {
     group_ = NULL;
     cache_ = NULL;
     cache2_ = NULL;
+    mock_quota_manager_proxy_ = NULL;
     delegate_.reset();
     service_.reset();
     FlushDbThreadTasks();
@@ -312,6 +397,8 @@ class AppCacheStorageImplTest : public testing::Test {
   void Verify_LoadCache_Miss() {
     EXPECT_EQ(111, delegate()->loaded_cache_id_);
     EXPECT_FALSE(delegate()->loaded_cache_);
+    EXPECT_EQ(0, mock_quota_manager_proxy_->notify_storage_accessed_count_);
+    EXPECT_EQ(0, mock_quota_manager_proxy_->notify_storage_modified_count_);
     TestFinished();
   }
 
@@ -331,6 +418,8 @@ class AppCacheStorageImplTest : public testing::Test {
     storage()->LoadCache(cache_id, delegate());
     EXPECT_EQ(cache_id, delegate()->loaded_cache_id_);
     EXPECT_EQ(cache.get(), delegate()->loaded_cache_.get());
+    EXPECT_EQ(0, mock_quota_manager_proxy_->notify_storage_accessed_count_);
+    EXPECT_EQ(0, mock_quota_manager_proxy_->notify_storage_modified_count_);
     TestFinished();
   }
 
@@ -354,7 +443,7 @@ class AppCacheStorageImplTest : public testing::Test {
 
     // Since the origin has groups, storage class will have to
     // consult the database and completion will be async.
-    storage()->origins_with_groups_.insert(kManifestUrl.GetOrigin());
+    storage()->usage_map_[kOrigin] = kDefaultEntrySize;
 
     storage()->LoadOrCreateGroup(kManifestUrl, delegate());
     EXPECT_FALSE(delegate()->loaded_group_.get());
@@ -370,6 +459,9 @@ class AppCacheStorageImplTest : public testing::Test {
     AppCacheDatabase::GroupRecord record;
     EXPECT_FALSE(database()->FindGroup(
         delegate()->loaded_group_->group_id(), &record));
+
+    EXPECT_EQ(0, mock_quota_manager_proxy_->notify_storage_accessed_count_);
+    EXPECT_EQ(0, mock_quota_manager_proxy_->notify_storage_modified_count_);
 
     TestFinished();
   }
@@ -403,6 +495,9 @@ class AppCacheStorageImplTest : public testing::Test {
     EXPECT_TRUE(delegate()->loaded_cache_->owning_group()->HasOneRef());
     EXPECT_EQ(1, delegate()->loaded_cache_->owning_group()->group_id());
 
+    EXPECT_EQ(1, mock_quota_manager_proxy_->notify_storage_accessed_count_);
+    EXPECT_EQ(0, mock_quota_manager_proxy_->notify_storage_modified_count_);
+
     // Drop things from the working set.
     delegate()->loaded_cache_ = NULL;
     EXPECT_FALSE(delegate()->loaded_group_);
@@ -420,6 +515,8 @@ class AppCacheStorageImplTest : public testing::Test {
     EXPECT_TRUE(delegate()->loaded_group_->newest_complete_cache());
     delegate()->loaded_groups_newest_cache_ = NULL;
     EXPECT_TRUE(delegate()->loaded_group_->HasOneRef());
+    EXPECT_EQ(2, mock_quota_manager_proxy_->notify_storage_accessed_count_);
+    EXPECT_EQ(0, mock_quota_manager_proxy_->notify_storage_modified_count_);
     TestFinished();
   }
 
@@ -435,8 +532,13 @@ class AppCacheStorageImplTest : public testing::Test {
     group_ = new AppCacheGroup(
         service(), kManifestUrl, storage()->NewGroupId());
     cache_ = new AppCache(service(), storage()->NewCacheId());
+    cache_->AddEntry(kEntryUrl, AppCacheEntry(AppCacheEntry::EXPLICIT, 1,
+                                              kDefaultEntrySize));
     // Hold a ref to the cache simulate the UpdateJob holding that ref,
     // and hold a ref to the group to simulate the CacheHost holding that ref.
+
+    // Have the quota manager retrun asyncly for this test.
+    mock_quota_manager_proxy_->mock_manager_->async_ = true;
 
     // Conduct the store test.
     storage()->StoreGroupAndNewestCache(group_, cache_, delegate());
@@ -454,6 +556,13 @@ class AppCacheStorageImplTest : public testing::Test {
     AppCacheDatabase::CacheRecord cache_record;
     EXPECT_TRUE(database()->FindGroup(group_->group_id(), &group_record));
     EXPECT_TRUE(database()->FindCache(cache_->cache_id(), &cache_record));
+
+    // Verify quota bookkeeping
+    EXPECT_EQ(kDefaultEntrySize, storage()->usage_map_[kOrigin]);
+    EXPECT_EQ(1, mock_quota_manager_proxy_->notify_storage_modified_count_);
+    EXPECT_EQ(kOrigin, mock_quota_manager_proxy_->last_origin_);
+    EXPECT_EQ(kDefaultEntrySize, mock_quota_manager_proxy_->last_delta_);
+
     TestFinished();
   }
 
@@ -467,9 +576,12 @@ class AppCacheStorageImplTest : public testing::Test {
     // Setup some preconditions. Create a group and old complete cache
     // that appear to be "stored"
     MakeCacheAndGroup(kManifestUrl, 1, 1, true);
+    EXPECT_EQ(kDefaultEntrySize, storage()->usage_map_[kOrigin]);
 
     // And a newest unstored complete cache.
     cache2_ = new AppCache(service(), 2);
+    cache2_->AddEntry(kEntryUrl, AppCacheEntry(AppCacheEntry::MASTER, 1,
+                                               kDefaultEntrySize + 100));
 
     // Conduct the test.
     storage()->StoreGroupAndNewestCache(group_, cache2_, delegate());
@@ -490,6 +602,13 @@ class AppCacheStorageImplTest : public testing::Test {
 
     // The old cache should have been deleted
     EXPECT_FALSE(database()->FindCache(1, &cache_record));
+
+    // Verify quota bookkeeping
+    EXPECT_EQ(kDefaultEntrySize + 100, storage()->usage_map_[kOrigin]);
+    EXPECT_EQ(1, mock_quota_manager_proxy_->notify_storage_modified_count_);
+    EXPECT_EQ(kOrigin, mock_quota_manager_proxy_->last_origin_);
+    EXPECT_EQ(100, mock_quota_manager_proxy_->last_delta_);
+
     TestFinished();
   }
 
@@ -503,6 +622,7 @@ class AppCacheStorageImplTest : public testing::Test {
     // Setup some preconditions. Create a group and old complete cache
     // that appear to be "stored"
     MakeCacheAndGroup(kManifestUrl, 1, 1, true);
+    EXPECT_EQ(kDefaultEntrySize, storage()->usage_map_[kOrigin]);
 
     // Change the cache.
     base::Time now = base::Time::Now();
@@ -530,16 +650,24 @@ class AppCacheStorageImplTest : public testing::Test {
     EXPECT_EQ(1, cache_record.group_id);
     EXPECT_FALSE(cache_record.online_wildcard);
     EXPECT_TRUE(expected_update_time == cache_record.update_time);
-    EXPECT_EQ(100, cache_record.cache_size);
+    EXPECT_EQ(100 + kDefaultEntrySize, cache_record.cache_size);
 
     std::vector<AppCacheDatabase::EntryRecord> entry_records;
     EXPECT_TRUE(database()->FindEntriesForCache(1, &entry_records));
-    EXPECT_EQ(1U, entry_records.size());
+    EXPECT_EQ(2U, entry_records.size());
+    if (entry_records[0].url == kDefaultEntryUrl)
+      entry_records.erase(entry_records.begin());
     EXPECT_EQ(1 , entry_records[0].cache_id);
     EXPECT_EQ(kEntryUrl, entry_records[0].url);
     EXPECT_EQ(AppCacheEntry::MASTER, entry_records[0].flags);
     EXPECT_EQ(1, entry_records[0].response_id);
     EXPECT_EQ(100, entry_records[0].response_size);
+
+    // Verify quota bookkeeping
+    EXPECT_EQ(100 + kDefaultEntrySize, storage()->usage_map_[kOrigin]);
+    EXPECT_EQ(1, mock_quota_manager_proxy_->notify_storage_modified_count_);
+    EXPECT_EQ(kOrigin, mock_quota_manager_proxy_->last_origin_);
+    EXPECT_EQ(100, mock_quota_manager_proxy_->last_delta_);
 
     TestFinished();
   }
@@ -577,6 +705,9 @@ class AppCacheStorageImplTest : public testing::Test {
     EXPECT_FALSE(database()->FindGroup(group_->group_id(), &group_record));
     EXPECT_FALSE(database()->FindCache(cache_->cache_id(), &cache_record));
 
+    EXPECT_EQ(0, mock_quota_manager_proxy_->notify_storage_accessed_count_);
+    EXPECT_EQ(0, mock_quota_manager_proxy_->notify_storage_modified_count_);
+
     TestFinished();
   }
 
@@ -590,7 +721,7 @@ class AppCacheStorageImplTest : public testing::Test {
     // Setup some preconditions. Create a group and newest cache that
     // appears to be "stored" and "currently in use".
     MakeCacheAndGroup(kManifestUrl, 1, 1, true);
-    EXPECT_FALSE(storage()->origins_with_groups_.empty());
+    EXPECT_EQ(kDefaultEntrySize, storage()->usage_map_[kOrigin]);
 
     // Also insert some related records.
     AppCacheDatabase::EntryRecord entry_record;
@@ -622,7 +753,7 @@ class AppCacheStorageImplTest : public testing::Test {
     EXPECT_TRUE(delegate()->obsoleted_success_);
     EXPECT_EQ(group_.get(), delegate()->obsoleted_group_.get());
     EXPECT_TRUE(group_->is_obsolete());
-    EXPECT_TRUE(storage()->origins_with_groups_.empty());
+    EXPECT_TRUE(storage()->usage_map_.empty());
 
     // The cache and group have been deleted from the database.
     AppCacheDatabase::GroupRecord group_record;
@@ -640,6 +771,12 @@ class AppCacheStorageImplTest : public testing::Test {
     std::vector<AppCacheDatabase::OnlineWhiteListRecord> whitelist_records;
     database()->FindOnlineWhiteListForCache(1, &whitelist_records);
     EXPECT_TRUE(whitelist_records.empty());
+
+    // Verify quota bookkeeping
+    EXPECT_TRUE(storage()->usage_map_.empty());
+    EXPECT_EQ(1, mock_quota_manager_proxy_->notify_storage_modified_count_);
+    EXPECT_EQ(kOrigin, mock_quota_manager_proxy_->last_origin_);
+    EXPECT_EQ(-kDefaultEntrySize, mock_quota_manager_proxy_->last_delta_);
 
     TestFinished();
   }
@@ -836,7 +973,16 @@ class AppCacheStorageImplTest : public testing::Test {
     std::vector<AppCacheDatabase::OnlineWhiteListRecord> whitelists;
     cache_->ToDatabaseRecords(group_,
         &cache_record, &entries, &fallbacks, &whitelists);
-    EXPECT_TRUE(database()->InsertEntryRecords(entries));
+
+    std::vector<AppCacheDatabase::EntryRecord>::const_iterator iter =
+        entries.begin();
+    while (iter != entries.end()) {
+      // MakeCacheAndGroup has inserted  the default entry record already
+      if (iter->url != kDefaultEntryUrl)
+        EXPECT_TRUE(database()->InsertEntry(&(*iter)));
+      ++iter;
+    }
+
     EXPECT_TRUE(database()->InsertFallbackNameSpaceRecords(fallbacks));
     EXPECT_TRUE(database()->InsertOnlineWhiteListRecords(whitelists));
     if (drop_from_working_set) {
@@ -1125,8 +1271,12 @@ class AppCacheStorageImplTest : public testing::Test {
   void MakeCacheAndGroup(
       const GURL& manifest_url, int64 group_id, int64 cache_id,
       bool add_to_database) {
+    AppCacheEntry default_entry(
+        AppCacheEntry::EXPLICIT, cache_id + kDefaultEntryIdOffset,
+        kDefaultEntrySize);
     group_ = new AppCacheGroup(service(), manifest_url, group_id);
     cache_ = new AppCache(service(), cache_id);
+    cache_->AddEntry(kDefaultEntryUrl, default_entry);
     cache_->set_complete(true);
     group_->AddCache(cache_);
     if (add_to_database) {
@@ -1140,8 +1290,18 @@ class AppCacheStorageImplTest : public testing::Test {
       cache_record.group_id = group_id;
       cache_record.online_wildcard = false;
       cache_record.update_time = kZeroTime;
+      cache_record.cache_size = kDefaultEntrySize;
       EXPECT_TRUE(database()->InsertCache(&cache_record));
-      storage()->origins_with_groups_.insert(manifest_url.GetOrigin());
+      AppCacheDatabase::EntryRecord entry_record;
+      entry_record.cache_id = cache_id;
+      entry_record.url = kDefaultEntryUrl;
+      entry_record.flags = default_entry.types();
+      entry_record.response_id = default_entry.response_id();
+      entry_record.response_size = default_entry.response_size();
+      EXPECT_TRUE(database()->InsertEntry(&entry_record));
+
+      storage()->usage_map_[manifest_url.GetOrigin()] =
+          default_entry.response_size();
     }
   }
 
@@ -1152,6 +1312,7 @@ class AppCacheStorageImplTest : public testing::Test {
   MockAppCachePolicy policy_;
   scoped_ptr<AppCacheService> service_;
   scoped_ptr<MockStorageDelegate> delegate_;
+  scoped_refptr<MockQuotaManagerProxy> mock_quota_manager_proxy_;
   scoped_refptr<AppCacheGroup> group_;
   scoped_refptr<AppCache> cache_;
   scoped_refptr<AppCache> cache2_;

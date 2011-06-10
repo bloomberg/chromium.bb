@@ -36,6 +36,8 @@
         'appcache_interfaces.cc',
         'appcache_interfaces.h',
         'appcache_policy.h',
+        'appcache_quota_client.cc',
+        'appcache_quota_client.h',
         'appcache_request_handler.cc',
         'appcache_request_handler.h',
         'appcache_response.cc',

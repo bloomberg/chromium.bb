@@ -540,7 +540,7 @@ TEST(AppCacheDatabaseTest, DeletableResponseIds) {
     EXPECT_EQ(i + 5, ids[i]);
 }
 
-TEST(AppCacheDatabaseTest, Quotas) {
+TEST(AppCacheDatabaseTest, OriginUsage) {
   const GURL kManifestUrl("http://blah/manifest");
   const GURL kManifestUrl2("http://blah/manifest2");
   const GURL kOrigin(kManifestUrl.GetOrigin());
@@ -555,7 +555,6 @@ TEST(AppCacheDatabaseTest, Quotas) {
   db.db_->set_error_delegate(error_delegate);
 
   std::vector<AppCacheDatabase::CacheRecord> cache_records;
-  EXPECT_EQ(db.GetDefaultOriginQuota(), db.GetOriginQuota(kOrigin));
   EXPECT_EQ(0, db.GetOriginUsage(kOrigin));
   EXPECT_TRUE(db.FindCachesForOrigin(kOrigin, &cache_records));
   EXPECT_TRUE(cache_records.empty());
@@ -606,6 +605,12 @@ TEST(AppCacheDatabaseTest, Quotas) {
   cache_records.clear();
   EXPECT_TRUE(db.FindCachesForOrigin(kOtherOrigin, &cache_records));
   EXPECT_EQ(1U, cache_records.size());
+
+  std::map<GURL, int64> usage_map;
+  EXPECT_TRUE(db.GetAllOriginUsage(&usage_map));
+  EXPECT_EQ(2U, usage_map.size());
+  EXPECT_EQ(1100, usage_map[kOrigin]);
+  EXPECT_EQ(5000, usage_map[kOtherOrigin]);
 }
 
 }  // namespace appcache

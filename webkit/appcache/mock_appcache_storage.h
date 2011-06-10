@@ -29,7 +29,7 @@ class MockAppCacheStorage : public AppCacheStorage {
   explicit MockAppCacheStorage(AppCacheService* service);
   virtual ~MockAppCacheStorage();
 
-  virtual void GetAllInfo(Delegate* delegate) {}  // not implemented
+  virtual void GetAllInfo(Delegate* delegate);
   virtual void LoadCache(int64 id, Delegate* delegate);
   virtual void LoadOrCreateGroup(const GURL& manifest_url, Delegate* delegate);
   virtual void StoreGroupAndNewestCache(
@@ -59,6 +59,7 @@ class MockAppCacheStorage : public AppCacheStorage {
   typedef std::map<GURL, scoped_refptr<AppCacheGroup> > StoredGroupMap;
   typedef std::set<int64> DoomedResponseIds;
 
+  void ProcessGetAllInfo(scoped_refptr<DelegateReference> delegate_ref);
   void ProcessLoadCache(
       int64 id, scoped_refptr<DelegateReference> delegate_ref);
   void ProcessLoadOrCreateGroup(
@@ -145,6 +146,10 @@ class MockAppCacheStorage : public AppCacheStorage {
     simulated_found_network_namespace_ = network_namespace;
   }
 
+  void SimulateGetAllInfo(AppCacheInfoCollection* info) {
+    simulated_appcache_info_ = info;
+  }
+
   StoredCacheMap stored_caches_;
   StoredGroupMap stored_groups_;
   DoomedResponseIds doomed_response_ids_;
@@ -163,6 +168,7 @@ class MockAppCacheStorage : public AppCacheStorage {
   GURL simulated_found_fallback_url_;
   GURL simulated_found_manifest_url_;
   bool simulated_found_network_namespace_;
+  scoped_refptr<AppCacheInfoCollection> simulated_appcache_info_;
 
   FRIEND_TEST_ALL_PREFIXES(MockAppCacheStorageTest, BasicFindMainResponse);
   FRIEND_TEST_ALL_PREFIXES(MockAppCacheStorageTest,
@@ -178,6 +184,7 @@ class MockAppCacheStorage : public AppCacheStorage {
   FRIEND_TEST_ALL_PREFIXES(MockAppCacheStorageTest, StoreExistingGroup);
   FRIEND_TEST_ALL_PREFIXES(MockAppCacheStorageTest,
                            StoreExistingGroupExistingCache);
+  FRIEND_TEST_ALL_PREFIXES(AppCacheServiceTest, DeleteAppCachesForOrigin);
 
   DISALLOW_COPY_AND_ASSIGN(MockAppCacheStorage);
 };

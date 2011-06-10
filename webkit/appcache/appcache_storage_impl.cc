@@ -4,6 +4,8 @@
 
 #include "webkit/appcache/appcache_storage_impl.h"
 
+#include <set>
+
 #include "app/sql/connection.h"
 #include "app/sql/transaction.h"
 #include "base/file_util.h"
@@ -19,9 +21,12 @@
 #include "webkit/appcache/appcache_group.h"
 #include "webkit/appcache/appcache_histograms.h"
 #include "webkit/appcache/appcache_policy.h"
+#include "webkit/appcache/appcache_quota_client.h"
 #include "webkit/appcache/appcache_response.h"
 #include "webkit/appcache/appcache_service.h"
 #include "webkit/appcache/appcache_thread.h"
+#include "webkit/quota/quota_client.h"
+#include "webkit/quota/quota_manager.h"
 #include "webkit/quota/special_storage_policy.h"
 
 namespace {
@@ -32,6 +37,9 @@ void DeleteDirectory(const FilePath& path) {
 }
 
 namespace appcache {
+
+// Hard coded default when not using quota management.
+static const int kDefaultQuota = 5 * 1024 * 1024;
 
 static const int kMaxDiskCacheSize = 250 * 1024 * 1024;
 static const int kMaxMemDiskCacheSize = 10 * 1024 * 1024;
@@ -146,14 +154,14 @@ class AppCacheStorageImpl::InitTask : public DatabaseTask {
   int64 last_cache_id_;
   int64 last_response_id_;
   int64 last_deletable_response_rowid_;
-  std::set<GURL> origins_with_groups_;
+  std::map<GURL, int64> usage_map_;
 };
 
 void AppCacheStorageImpl::InitTask::Run() {
   database_->FindLastStorageIds(
       &last_group_id_, &last_cache_id_, &last_response_id_,
       &last_deletable_response_rowid_);
-  database_->FindOriginsWithGroups(&origins_with_groups_);
+  database_->GetAllOriginUsage(&usage_map_);
 }
 
 void AppCacheStorageImpl::InitTask::RunCompleted() {
@@ -163,14 +171,16 @@ void AppCacheStorageImpl::InitTask::RunCompleted() {
   storage_->last_deletable_response_rowid_ = last_deletable_response_rowid_;
 
   if (!storage_->is_disabled()) {
-    storage_->origins_with_groups_.swap(origins_with_groups_);
-
+    storage_->usage_map_.swap(usage_map_);
     const int kDelayMillis = 5 * 60 * 1000;  // Five minutes.
     MessageLoop::current()->PostDelayedTask(FROM_HERE,
       storage_->method_factory_.NewRunnableMethod(
           &AppCacheStorageImpl::DelayedStartDeletingUnusedResponses),
       kDelayMillis);
   }
+
+  if (storage_->service()->quota_client())
+    storage_->service()->quota_client()->NotifyAppCacheReady();
 }
 
 // CloseConnectionTask -------
@@ -302,6 +312,8 @@ void AppCacheStorageImpl::StoreOrLoadTask::CreateCacheAndGroupFromRecords(
     cache->get()->GetEntry(*iter)->add_types(AppCacheEntry::FOREIGN);
   }
 
+  storage_->NotifyStorageAccessed(group_record_.origin);
+
   // TODO(michaeln): Maybe verify that the responses we expect to exist
   // do actually exist in the disk_cache (and if not then what?)
 }
@@ -395,6 +407,10 @@ class AppCacheStorageImpl::StoreGroupAndCacheTask : public StoreOrLoadTask {
   StoreGroupAndCacheTask(AppCacheStorageImpl* storage, AppCacheGroup* group,
                          AppCache* newest_cache);
 
+  void GetQuotaThenSchedule();
+  void OnQuotaCallback(
+      quota::QuotaStatusCode status, int64 usage, int64 quota);
+
   virtual void Run();
   virtual void RunCompleted();
   virtual void CancelCompletion();
@@ -403,7 +419,8 @@ class AppCacheStorageImpl::StoreGroupAndCacheTask : public StoreOrLoadTask {
   scoped_refptr<AppCache> cache_;
   bool success_;
   bool would_exceed_quota_;
-  int64 quota_override_;
+  int64 space_available_;
+  int64 new_origin_usage_;
   std::vector<int64> newly_deletable_response_ids_;
 };
 
@@ -411,7 +428,7 @@ AppCacheStorageImpl::StoreGroupAndCacheTask::StoreGroupAndCacheTask(
     AppCacheStorageImpl* storage, AppCacheGroup* group, AppCache* newest_cache)
     : StoreOrLoadTask(storage), group_(group), cache_(newest_cache),
       success_(false), would_exceed_quota_(false),
-      quota_override_(-1) {
+      space_available_(-1), new_origin_usage_(-1) {
   group_record_.group_id = group->group_id();
   group_record_.manifest_url = group->manifest_url();
   group_record_.origin = group_record_.manifest_url.GetOrigin();
@@ -419,12 +436,43 @@ AppCacheStorageImpl::StoreGroupAndCacheTask::StoreGroupAndCacheTask(
       group,
       &cache_record_, &entry_records_, &fallback_namespace_records_,
       &online_whitelist_records_);
+}
 
-  if (storage->service()->special_storage_policy() &&
-      storage->service()->special_storage_policy()->IsStorageUnlimited(
-          group_record_.origin)) {
-    quota_override_ = kint64max;
+void AppCacheStorageImpl::StoreGroupAndCacheTask::GetQuotaThenSchedule() {
+  quota::QuotaManager* quota_manager = NULL;
+  if (storage_->service()->quota_manager_proxy()) {
+    quota_manager =
+        storage_->service()->quota_manager_proxy()->quota_manager();
   }
+
+  if (!quota_manager) {
+    if (storage_->service()->special_storage_policy() &&
+        storage_->service()->special_storage_policy()->IsStorageUnlimited(
+            group_record_.origin))
+      space_available_ = kint64max;
+    Schedule();
+    return;
+  }
+
+  // We have to ask the quota manager for the value.
+  AddRef();  // balanced in the OnQuotaCallback
+  storage_->pending_quota_queries_.insert(this);
+  quota_manager->GetUsageAndQuota(
+      group_record_.origin, quota::kStorageTypeTemporary,
+      NewCallback(this, &StoreGroupAndCacheTask::OnQuotaCallback));
+}
+
+void AppCacheStorageImpl::StoreGroupAndCacheTask::OnQuotaCallback(
+    quota::QuotaStatusCode status, int64 usage, int64 quota) {
+  if (storage_) {
+    if (status == quota::kQuotaStatusOk)
+      space_available_ = std::max(static_cast<int64>(0), quota - usage);
+    else
+      space_available_ = 0;
+    storage_->pending_quota_queries_.erase(this);
+    Schedule();
+  }
+  Release();  // balanced in GetQuotaThenSchedule
 }
 
 void AppCacheStorageImpl::StoreGroupAndCacheTask::Run() {
@@ -436,6 +484,8 @@ void AppCacheStorageImpl::StoreGroupAndCacheTask::Run() {
   sql::Transaction transaction(connection);
   if (!transaction.Begin())
     return;
+
+  int64 old_origin_usage = database_->GetOriginUsage(group_record_.origin);
 
   AppCacheDatabase::GroupRecord existing_group;
   success_ = database_->FindGroup(group_record_.group_id, &existing_group);
@@ -494,11 +544,29 @@ void AppCacheStorageImpl::StoreGroupAndCacheTask::Run() {
   if (!success_)
     return;
 
-  int64 quota = (quota_override_ >= 0) ?
-      quota_override_ :
-      database_->GetOriginQuota(group_record_.origin);
+  new_origin_usage_ = database_->GetOriginUsage(group_record_.origin);
 
-  if (database_->GetOriginUsage(group_record_.origin) > quota) {
+  // Only check quota when the new usage exceeds the old usage.
+  if (new_origin_usage_ <= old_origin_usage) {
+    success_ = transaction.Commit();
+    return;
+  }
+
+  // Use a simple hard-coded value when not using quota management.
+  if (space_available_ == -1) {
+    if (new_origin_usage_ > kDefaultQuota) {
+      would_exceed_quota_ = true;
+      success_ = false;
+      return;
+    }
+    success_ = transaction.Commit();
+    return;
+  }
+
+  // Check limits based on the space availbable given to us via the
+  // quota system.
+  int64 delta = new_origin_usage_ - old_origin_usage;
+  if (delta > space_available_) {
     would_exceed_quota_ = true;
     success_ = false;
     return;
@@ -509,7 +577,8 @@ void AppCacheStorageImpl::StoreGroupAndCacheTask::Run() {
 
 void AppCacheStorageImpl::StoreGroupAndCacheTask::RunCompleted() {
   if (success_) {
-    storage_->origins_with_groups_.insert(group_->manifest_url().GetOrigin());
+    storage_->UpdateUsageMapAndNotify(
+        group_->manifest_url().GetOrigin(), new_origin_usage_);
     if (cache_ != group_->newest_complete_cache()) {
       cache_->set_complete(true);
       group_->AddCache(cache_);
@@ -523,6 +592,9 @@ void AppCacheStorageImpl::StoreGroupAndCacheTask::RunCompleted() {
                                                 would_exceed_quota_));
   group_ = NULL;
   cache_ = NULL;
+
+  // TODO(michaeln): if (would_exceed_quota_) what if the current usage
+  // also exceeds the quota? http://crbug.com/83968
 }
 
 void AppCacheStorageImpl::StoreGroupAndCacheTask::CancelCompletion() {
@@ -837,15 +909,17 @@ class AppCacheStorageImpl::MakeGroupObsoleteTask : public DatabaseTask {
 
   scoped_refptr<AppCacheGroup> group_;
   int64 group_id_;
+  GURL origin_;
   bool success_;
-  std::set<GURL> origins_with_groups_;
+  int64 new_origin_usage_;
   std::vector<int64> newly_deletable_response_ids_;
 };
 
 AppCacheStorageImpl::MakeGroupObsoleteTask::MakeGroupObsoleteTask(
     AppCacheStorageImpl* storage, AppCacheGroup* group)
     : DatabaseTask(storage), group_(group), group_id_(group->group_id()),
-      success_(false) {
+      origin_(group->manifest_url().GetOrigin()),
+      success_(false), new_origin_usage_(-1) {
 }
 
 void AppCacheStorageImpl::MakeGroupObsoleteTask::Run() {
@@ -861,9 +935,12 @@ void AppCacheStorageImpl::MakeGroupObsoleteTask::Run() {
   AppCacheDatabase::GroupRecord group_record;
   if (!database_->FindGroup(group_id_, &group_record)) {
     // This group doesn't exists in the database, nothing todo here.
+    new_origin_usage_ = database_->GetOriginUsage(origin_);
     success_ = true;
     return;
   }
+
+  DCHECK_EQ(group_record.origin, origin_);
 
   AppCacheDatabase::CacheRecord cache_record;
   if (database_->FindCacheForGroup(group_id_, &cache_record)) {
@@ -881,16 +958,15 @@ void AppCacheStorageImpl::MakeGroupObsoleteTask::Run() {
     success_ = database_->DeleteGroup(group_id_);
   }
 
-  success_ = success_ &&
-             database_->FindOriginsWithGroups(&origins_with_groups_) &&
-             transaction.Commit();
+  new_origin_usage_ = database_->GetOriginUsage(origin_);
+  success_ = success_ && transaction.Commit();
 }
 
 void AppCacheStorageImpl::MakeGroupObsoleteTask::RunCompleted() {
   if (success_) {
     group_->set_obsolete(true);
     if (!storage_->is_disabled()) {
-      storage_->origins_with_groups_.swap(origins_with_groups_);
+      storage_->UpdateUsageMapAndNotify(origin_, new_origin_usage_);
       group_->AddNewlyDeletableResponseIds(&newly_deletable_response_ids_);
 
       // Also remove from the working set, caches for an 'obsolete' group
@@ -970,8 +1046,11 @@ class AppCacheStorageImpl::UpdateGroupLastAccessTimeTask
     : public DatabaseTask {
  public:
   UpdateGroupLastAccessTimeTask(
-      AppCacheStorageImpl* storage, int64 group_id, base::Time time)
-      : DatabaseTask(storage), group_id_(group_id), last_access_time_(time) {}
+      AppCacheStorageImpl* storage, AppCacheGroup* group, base::Time time)
+      : DatabaseTask(storage), group_id_(group->group_id()),
+        last_access_time_(time) {
+    storage->NotifyStorageAccessed(group->manifest_url().GetOrigin());
+  }
 
   virtual void Run();
 
@@ -1002,6 +1081,9 @@ AppCacheStorageImpl::AppCacheStorageImpl(AppCacheService* service)
 AppCacheStorageImpl::~AppCacheStorageImpl() {
   STLDeleteElements(&pending_simple_tasks_);
 
+  std::for_each(pending_quota_queries_.begin(),
+                pending_quota_queries_.end(),
+                std::mem_fun(&DatabaseTask::CancelCompletion));
   std::for_each(scheduled_database_tasks_.begin(),
                 scheduled_database_tasks_.end(),
                 std::mem_fun(&DatabaseTask::CancelCompletion));
@@ -1030,7 +1112,7 @@ void AppCacheStorageImpl::Disable() {
     return;
   VLOG(1) << "Disabling appcache storage.";
   is_disabled_ = true;
-  origins_with_groups_.clear();
+  ClearUsageMapAndNotify();
   working_set()->Disable();
   if (disk_cache_.get())
     disk_cache_->Disable();
@@ -1058,7 +1140,7 @@ void AppCacheStorageImpl::LoadCache(int64 id, Delegate* delegate) {
     if (cache->owning_group()) {
       scoped_refptr<DatabaseTask> update_task(
           new UpdateGroupLastAccessTimeTask(
-              this, cache->owning_group()->group_id(), base::Time::Now()));
+              this, cache->owning_group(), base::Time::Now()));
       update_task->Schedule();
     }
     return;
@@ -1087,7 +1169,7 @@ void AppCacheStorageImpl::LoadOrCreateGroup(
     delegate->OnGroupLoaded(group, manifest_url);
     scoped_refptr<DatabaseTask> update_task(
         new UpdateGroupLastAccessTimeTask(
-            this, group->group_id(), base::Time::Now()));
+            this, group, base::Time::Now()));
     update_task->Schedule();
     return;
   }
@@ -1098,8 +1180,7 @@ void AppCacheStorageImpl::LoadOrCreateGroup(
     return;
   }
 
-  if (origins_with_groups_.find(manifest_url.GetOrigin()) ==
-      origins_with_groups_.end()) {
+  if (usage_map_.find(manifest_url.GetOrigin()) == usage_map_.end()) {
     // No need to query the database, return a new group immediately.
     scoped_refptr<AppCacheGroup> group(new AppCacheGroup(
         service_, manifest_url, NewGroupId()));
@@ -1124,7 +1205,7 @@ void AppCacheStorageImpl::StoreGroupAndNewestCache(
   scoped_refptr<StoreGroupAndCacheTask> task(
       new StoreGroupAndCacheTask(this, group, newest_cache));
   task->AddDelegate(GetOrCreateDelegateReference(delegate));
-  task->Schedule();
+  task->GetQuotaThenSchedule();
 }
 
 void AppCacheStorageImpl::FindResponseForMainRequest(
@@ -1168,8 +1249,7 @@ void AppCacheStorageImpl::FindResponseForMainRequest(
     }
   }
 
-  if (IsInitTaskComplete() &&
-      origins_with_groups_.find(origin) == origins_with_groups_.end()) {
+  if (IsInitTaskComplete() &&  usage_map_.find(origin) == usage_map_.end()) {
     // No need to query the database, return async'ly but without going thru
     // the DB thread.
     scoped_refptr<AppCacheGroup> no_group;

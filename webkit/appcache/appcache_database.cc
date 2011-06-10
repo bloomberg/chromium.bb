@@ -15,7 +15,6 @@
 #include "base/utf_string_conversions.h"
 #include "webkit/appcache/appcache_entry.h"
 #include "webkit/appcache/appcache_histograms.h"
-#include "webkit/database/quota_table.h"
 
 // Schema -------------------------------------------------------------------
 namespace {
@@ -196,12 +195,15 @@ int64 AppCacheDatabase::GetOriginUsage(const GURL& origin) {
   return origin_usage;
 }
 
-int64 AppCacheDatabase::GetOriginQuota(const GURL& origin) {
-  if (!LazyOpen(false))
-    return GetDefaultOriginQuota();
-  int64 quota = quota_table_->GetOriginQuota(
-      UTF8ToUTF16(origin.spec().c_str()));
-  return (quota >= 0) ? quota : GetDefaultOriginQuota();
+bool AppCacheDatabase::GetAllOriginUsage(std::map<GURL, int64>* usage_map) {
+  std::set<GURL> origins;
+  if (!FindOriginsWithGroups(&origins))
+    return false;
+  for (std::set<GURL>::const_iterator origin = origins.begin();
+       origin != origins.end(); ++origin) {
+    (*usage_map)[*origin] = GetOriginUsage(*origin);
+  }
+  return true;
 }
 
 bool AppCacheDatabase::FindOriginsWithGroups(std::set<GURL>* origins) {
@@ -1004,7 +1006,6 @@ bool AppCacheDatabase::LazyOpen(bool create_if_needed) {
 
   db_.reset(new sql::Connection);
   meta_table_.reset(new sql::MetaTable);
-  quota_table_.reset(new webkit_database::QuotaTable(db_.get()));
 
   db_->set_error_delegate(GetErrorHandlerForAppCacheDb());
 
@@ -1069,10 +1070,8 @@ bool AppCacheDatabase::CreateSchema() {
   if (!transaction.Begin())
     return false;
 
-  if (!meta_table_->Init(db_.get(), kCurrentVersion, kCompatibleVersion) ||
-      !quota_table_->Init()) {
+  if (!meta_table_->Init(db_.get(), kCurrentVersion, kCompatibleVersion))
     return false;
-  }
 
   for (int i = 0; i < kTableCount; ++i) {
     std::string sql("CREATE TABLE ");
@@ -1108,7 +1107,6 @@ bool AppCacheDatabase::UpgradeSchema() {
 }
 
 void AppCacheDatabase::ResetConnectionAndTables() {
-  quota_table_.reset();
   meta_table_.reset();
   db_.reset();
 }

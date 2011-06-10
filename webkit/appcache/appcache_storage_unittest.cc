@@ -17,6 +17,45 @@ class AppCacheStorageTest : public testing::Test {
   class MockStorageDelegate : public AppCacheStorage::Delegate {
    public:
   };
+
+  class MockQuotaManagerProxy : public quota::QuotaManagerProxy {
+   public:
+    MockQuotaManagerProxy()
+        : QuotaManagerProxy(NULL, NULL),
+          notify_storage_accessed_count_(0),
+          notify_storage_modified_count_(0),
+          last_delta_(0) {}
+
+    virtual void NotifyStorageAccessed(quota::QuotaClient::ID client_id,
+                                       const GURL& origin,
+                                       quota::StorageType type) {
+      EXPECT_EQ(quota::QuotaClient::kAppcache, client_id);
+      EXPECT_EQ(quota::kStorageTypeTemporary, type);
+      ++notify_storage_accessed_count_;
+      last_origin_ = origin;
+    }
+
+    virtual void NotifyStorageModified(quota::QuotaClient::ID client_id,
+                                       const GURL& origin,
+                                       quota::StorageType type,
+                                       int64 delta) {
+      EXPECT_EQ(quota::QuotaClient::kAppcache, client_id);
+      EXPECT_EQ(quota::kStorageTypeTemporary, type);
+      ++notify_storage_modified_count_;
+      last_origin_ = origin;
+      last_delta_ = delta;
+    }
+
+    // Not needed for our tests.
+    virtual void RegisterClient(quota::QuotaClient* client) {}
+    virtual void NotifyOriginInUse(const GURL& origin) {}
+    virtual void NotifyOriginNoLongerInUse(const GURL& origin) {}
+
+    int notify_storage_accessed_count_;
+    int notify_storage_modified_count_;
+    GURL last_origin_;
+    int last_delta_;
+  };
 };
 
 TEST_F(AppCacheStorageTest, AddRemoveCache) {
@@ -105,6 +144,49 @@ TEST_F(AppCacheStorageTest, DelegateReferences) {
   EXPECT_TRUE(delegate_reference2->HasOneRef());
   EXPECT_EQ(&delegate, delegate_reference2->delegate);
   EXPECT_NE(delegate_reference1.get(), delegate_reference2.get());
+}
+
+TEST_F(AppCacheStorageTest, UsageMap) {
+  const GURL kOrigin("http://origin/");
+  const GURL kOrigin2("http://origin2/");
+
+  MockAppCacheService service;
+  scoped_refptr<MockQuotaManagerProxy> mock_proxy(new MockQuotaManagerProxy);
+  service.set_quota_manager_proxy(mock_proxy);
+
+  service.storage()->UpdateUsageMapAndNotify(kOrigin, 0);
+  EXPECT_EQ(0, mock_proxy->notify_storage_modified_count_);
+
+  service.storage()->UpdateUsageMapAndNotify(kOrigin, 10);
+  EXPECT_EQ(1, mock_proxy->notify_storage_modified_count_);
+  EXPECT_EQ(10, mock_proxy->last_delta_);
+  EXPECT_EQ(kOrigin, mock_proxy->last_origin_);
+
+  service.storage()->UpdateUsageMapAndNotify(kOrigin, 100);
+  EXPECT_EQ(2, mock_proxy->notify_storage_modified_count_);
+  EXPECT_EQ(90, mock_proxy->last_delta_);
+  EXPECT_EQ(kOrigin, mock_proxy->last_origin_);
+
+  service.storage()->UpdateUsageMapAndNotify(kOrigin, 0);
+  EXPECT_EQ(3, mock_proxy->notify_storage_modified_count_);
+  EXPECT_EQ(-100, mock_proxy->last_delta_);
+  EXPECT_EQ(kOrigin, mock_proxy->last_origin_);
+
+  service.storage()->NotifyStorageAccessed(kOrigin2);
+  EXPECT_EQ(0, mock_proxy->notify_storage_accessed_count_);
+
+  service.storage()->usage_map_[kOrigin2] = 1;
+  service.storage()->NotifyStorageAccessed(kOrigin2);
+  EXPECT_EQ(1, mock_proxy->notify_storage_accessed_count_);
+  EXPECT_EQ(kOrigin2, mock_proxy->last_origin_);
+
+  service.storage()->usage_map_.clear();
+  service.storage()->usage_map_[kOrigin] = 5000;
+  service.storage()->ClearUsageMapAndNotify();
+  EXPECT_EQ(4, mock_proxy->notify_storage_modified_count_);
+  EXPECT_EQ(-5000, mock_proxy->last_delta_);
+  EXPECT_EQ(kOrigin, mock_proxy->last_origin_);
+  EXPECT_TRUE(service.storage()->usage_map_.empty());
 }
 
 }  // namespace appcache
