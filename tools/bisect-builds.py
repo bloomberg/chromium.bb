@@ -12,33 +12,13 @@ unzipping, and opening Chromium for you. After testing the specific revision,
 it will ask you whether it is good or bad before continuing the search.
 """
 
-# Base URL to download snapshots from.
-BUILD_BASE_URL = 'http://build.chromium.org/f/chromium/continuous/'
-
-# The index file that lists all the builds. This lives in BUILD_BASE_URL.
-BUILD_INDEX_FILE = 'all_builds.txt'
-
-# The type (platform) of the build archive. This is what's passed in to the
-# '-a/--archive' option.
-BUILD_ARCHIVE_TYPE = ''
-
-# The location of the builds. Format this with a (date, revision) tuple, which
-# can be obtained through ParseIndexLine().
-BUILD_ARCHIVE_URL = '/%s/%d/'
-
-# Name of the build archive.
-BUILD_ZIP_NAME = ''
-
-# Directory name inside the archive.
-BUILD_DIR_NAME = ''
-
-# Name of the executable.
-BUILD_EXE_NAME = ''
+# The root URL for storage.
+BASE_URL = 'http://commondatastorage.googleapis.com/chromium-browser-continuous'
 
 # URL to the ViewVC commit page.
 BUILD_VIEWVC_URL = 'http://src.chromium.org/viewvc/chrome?view=rev&revision=%d'
 
-# Changelogs URL
+# Changelogs URL.
 CHANGELOG_URL = 'http://build.chromium.org/f/chromium/' \
                 'perf/dashboard/ui/changelog.html?url=/trunk/src&range=%d:%d'
 
@@ -53,7 +33,68 @@ import shutil
 import sys
 import tempfile
 import urllib
+from xml.etree import ElementTree
 import zipfile
+
+class PathContext(object):
+  """A PathContext is used to carry the information used to construct URLs and
+  paths when dealing with the storage server and archives."""
+  def __init__(self, platform, good_revision, bad_revision):
+    super(PathContext, self).__init__()
+    # Store off the input parameters.
+    self.platform = platform  # What's passed in to the '-a/--archive' option.
+    self.good_revision = good_revision
+    self.bad_revision = bad_revision
+
+    # The name of the ZIP file in a revision directory on the server.
+    self.archive_name = None
+
+    # Set some internal members:
+    #   _listing_platform_dir = Directory that holds revisions. Ends with a '/'.
+    #   _archive_extract_dir = Uncompressed directory in the archive_name file.
+    #   _binary_name = The name of the executable to run.
+    if self.platform == 'linux' or self.platform == 'linux-64':
+      self._listing_platform_dir = 'Linux/'
+      self.archive_name = 'chrome-linux.zip'
+      self._archive_extract_dir = 'chrome-linux'
+      self._binary_name = 'chrome'
+      # Linux and x64 share all the same path data except for the archive dir.
+      if self.platform == 'linux-64':
+        self._listing_platform_dir = 'Linux_x64/'
+    elif self.platform == 'mac':
+      self._listing_platform_dir = 'Mac/'
+      self.archive_name = 'chrome-mac.zip'
+      self._archive_extract_dir = 'chrome-mac'
+      self._binary_name = 'Chromium.app/Contents/MacOS/Chromium'
+    elif self.platform == 'win':
+      self._listing_platform_dir = 'Win/'
+      self.archive_name = 'chrome-win32.zip'
+      self._archive_extract_dir = 'chrome-win32'
+      self._binary_name = 'chrome.exe'
+    else:
+      raise Exception("Invalid platform")
+
+  def GetListingURL(self, marker=None):
+    """Returns the URL for a directory listing, with an optional marker."""
+    marker_param = ''
+    if marker:
+      marker_param = '&marker=' + str(marker)
+    return BASE_URL + '/?delimiter=/&prefix=' + self._listing_platform_dir + \
+        marker_param
+
+  def GetDownloadURL(self, revision):
+    """Gets the download URL for a build archive of a specific revision."""
+    return BASE_URL + '/' + self._listing_platform_dir + str(revision) + '/' + \
+        self.archive_name
+
+  def GetLastChangeURL(self):
+    """Returns a URL to the LAST_CHANGE file."""
+    return BASE_URL + '/' + self._listing_platform_dir + 'LAST_CHANGE'
+
+  def GetLaunchPath(self):
+    """Returns a relative path (presumably from the archive extraction location)
+    that is used to run the executable."""
+    return os.path.join(self._archive_extract_dir, self._binary_name)
 
 
 def UnzipFilenameToDir(filename, dir):
@@ -86,89 +127,76 @@ def UnzipFilenameToDir(filename, dir):
     sys.exit(1)
 
 
-def SetArchiveVars(archive):
-  """Set a bunch of global variables appropriate for the specified archive."""
-  global BUILD_ARCHIVE_TYPE
-  global BUILD_ZIP_NAME
-  global BUILD_DIR_NAME
-  global BUILD_EXE_NAME
-  global BUILD_BASE_URL
+def ParseDirectoryIndex(context):
+  """Parses the Google Storage directory listing into a list of revision
+  numbers. The range starts with context.good_revision and goes until the latest
+  revision."""
+  def _FetchAndParse(url):
+    """Fetches a URL and returns a 2-Tuple of ([revisions], next-marker). If
+    next-marker is not None, then the listing is a partial listing and another
+    fetch should be performed with next-marker being the marker= GET
+    parameter."""
+    handle = urllib.urlopen(url)
+    document = ElementTree.parse(handle)
 
-  BUILD_ARCHIVE_TYPE = archive
+    # All nodes in the tree are namespaced. Get the root's tag name to extract
+    # the namespace. Etree does namespaces as |{namespace}tag|.
+    root_tag = document.getroot().tag
+    end_ns_pos = root_tag.find('}')
+    if end_ns_pos == -1:
+      raise Exception("Could not locate end namespace for directory index")
+    namespace = root_tag[:end_ns_pos + 1]
 
-  if BUILD_ARCHIVE_TYPE in ('linux', 'linux64', 'linux-chromiumos'):
-    BUILD_ZIP_NAME = 'chrome-linux.zip'
-    BUILD_DIR_NAME = 'chrome-linux'
-    BUILD_EXE_NAME = 'chrome'
-  elif BUILD_ARCHIVE_TYPE in ('mac'):
-    BUILD_ZIP_NAME = 'chrome-mac.zip'
-    BUILD_DIR_NAME = 'chrome-mac'
-    BUILD_EXE_NAME = 'Chromium.app/Contents/MacOS/Chromium'
-  elif BUILD_ARCHIVE_TYPE in ('win'):
-    BUILD_ZIP_NAME = 'chrome-win32.zip'
-    BUILD_DIR_NAME = 'chrome-win32'
-    BUILD_EXE_NAME = 'chrome.exe'
+    # Find the prefix (_listing_platform_dir) and whether or not the list is
+    # truncated.
+    prefix = document.find(namespace + 'Prefix').text
+    next_marker = None
+    is_truncated = document.find(namespace + 'IsTruncated')
+    if is_truncated is not None and is_truncated.text.lower() == 'true':
+      next_marker = document.find(namespace + 'NextMarker').text
 
+    # Get a list of all the revisions.
+    all_prefixes = document.findall(namespace + 'CommonPrefixes/' +
+                                    namespace + 'Prefix')
+    # The <Prefix> nodes have content of the form of
+    # |_listing_platform_dir/revision/|. Strip off the platform dir and the
+    # trailing slash to just have a number.
+    revisions = map(lambda x: x.text[len(prefix):-1], all_prefixes)
+    return (revisions, next_marker)
 
-def ParseDirectoryIndex(url):
-  """Parses the all_builds.txt index file. The format of this file is:
-    mac/2011-02-16/75130
-    mac/2011-02-16/75218
-    mac/2011-02-16/75226
-    mac/2011-02-16/75234
-    mac/2011-02-16/75184
-  This function will return a list of DATE/REVISION strings for the platform
-  specified by BUILD_ARCHIVE_TYPE.
-  """
-  handle = urllib.urlopen(url)
-  dirindex = handle.readlines()
-  handle.close()
+  # Fetch the first list of revisions.
+  (revisions, next_marker) = _FetchAndParse(context.GetListingURL())
+  # If the result list was truncated, refetch with the next marker. Do this
+  # until an entire directory listing is done.
+  while next_marker:
+    (new_revisions, next_marker) = _FetchAndParse(
+        context.GetListingURL(next_marker))
+    revisions.extend(new_revisions)
 
-  # Only return values for the specified platform. Include the trailing slash to
-  # not confuse linux and linux64.
-  archtype = BUILD_ARCHIVE_TYPE + '/'
-  dirindex = filter(lambda l: l.startswith(archtype), dirindex)
-
-  # Remove the newline separator and the platform token.
-  dirindex = map(lambda l: l[len(archtype):].strip(), dirindex)
-  dirindex.sort()
-  return dirindex
-
-
-def ParseIndexLine(iline):
-  """Takes an index line returned by ParseDirectoryIndex() and returns a
-  2-tuple of (date, revision). |date| is a string and |revision| is an int."""
-  split = iline.split('/')
-  assert(len(split) == 2)
-  return (split[0], int(split[1]))
+  return revisions
 
 
-def GetRevision(iline):
-    """Takes an index line, parses it, and returns the revision."""
-    return ParseIndexLine(iline)[1]
-
-
-def GetRevList(good, bad):
-  """Gets the list of revision numbers between |good| and |bad|."""
-  # Download the main revlist.
-  revlist = ParseDirectoryIndex(BUILD_BASE_URL + BUILD_INDEX_FILE)
-  revrange = range(good, bad)
-  revlist = filter(lambda r: GetRevision(r) in revrange, revlist)
+def GetRevList(context):
+  """Gets the list of revision numbers between |good_revision| and
+  |bad_revision| of the |context|."""
+  # Download the revlist and filter for just the range between good and bad.
+  rev_range = range(context.good_revision, context.bad_revision)
+  revlist = map(int, ParseDirectoryIndex(context))
+  revlist = filter(lambda r: r in rev_range, revlist)
   revlist.sort()
   return revlist
 
 
-def TryRevision(iline, profile, args):
-  """Downloads revision from |iline|, unzips it, and opens it for the user to
-  test. |profile| is the profile to use."""
+def TryRevision(context, rev, profile, args):
+  """Downloads revision |rev|, unzips it, and opens it for the user to test.
+  |profile| is the profile to use."""
   # Do this in a temp dir so we don't collide with user files.
   cwd = os.getcwd()
   tempdir = tempfile.mkdtemp(prefix='bisect_tmp')
   os.chdir(tempdir)
 
   # Download the file.
-  download_url = BUILD_BASE_URL + BUILD_ARCHIVE_TYPE + \
-      (BUILD_ARCHIVE_URL % ParseIndexLine(iline)) + BUILD_ZIP_NAME
+  download_url = context.GetDownloadURL(rev)
   def _ReportHook(blocknum, blocksize, totalsize):
     size = blocknum * blocksize
     if totalsize == -1:  # Total size not known.
@@ -182,7 +210,7 @@ def TryRevision(iline, profile, args):
     sys.stdout.flush()
   try:
     print 'Fetching ' + download_url
-    urllib.urlretrieve(download_url, BUILD_ZIP_NAME, _ReportHook)
+    urllib.urlretrieve(download_url, context.archive_name, _ReportHook)
     print
   except Exception, e:
     print('Could not retrieve the download. Sorry.')
@@ -190,13 +218,12 @@ def TryRevision(iline, profile, args):
 
   # Unzip the file.
   print 'Unzipping ...'
-  UnzipFilenameToDir(BUILD_ZIP_NAME, os.curdir)
+  UnzipFilenameToDir(context.archive_name, os.curdir)
 
   # Tell the system to open the app.
   args = ['--user-data-dir=%s' % profile] + args
   flags = ' '.join(map(pipes.quote, args))
-  exe = os.path.join(os.getcwd(), BUILD_DIR_NAME, BUILD_EXE_NAME)
-  cmd = '%s %s' % (exe, flags)
+  cmd = '%s %s' % (context.GetLaunchPath(), flags)
   print 'Running %s' % cmd
   os.system(cmd)
 
@@ -208,13 +235,14 @@ def TryRevision(iline, profile, args):
     pass
 
 
-def AskIsGoodBuild(iline):
-  """Ask the user whether build from index line |iline| is good or bad."""
+def AskIsGoodBuild(rev):
+  """Ask the user whether build |rev| is good or bad."""
   # Loop until we get a response that we can parse.
   while True:
-    response = raw_input('\nBuild %d is [(g)ood/(b)ad]: ' % GetRevision(iline))
+    response = raw_input('\nBuild %d is [(g)ood/(b)ad]: ' % int(rev))
     if response and response in ('g', 'b'):
       return response == 'g'
+
 
 def main():
   usage = ('%prog [options] [-- chromium-options]\n'
@@ -250,7 +278,8 @@ def main():
     parser.print_help()
     return 1
 
-  SetArchiveVars(opts.archive)
+  # Create the context. Initialize 0 for the revisions as they are set below.
+  context = PathContext(opts.archive, 0, 0)
 
   # Pick a starting point, try to get HEAD for this.
   if opts.bad:
@@ -259,8 +288,7 @@ def main():
     bad_rev = 0
     try:
       # Location of the latest build revision number
-      BUILD_LATEST_URL = '%s/LATEST/REVISION' % (BUILD_BASE_URL)
-      nh = urllib.urlopen(BUILD_LATEST_URL)
+      nh = urllib.urlopen(context.GetLastChangeURL())
       latest = int(nh.read())
       nh.close()
       bad_rev = raw_input('Bad revision [HEAD:%d]: ' % latest)
@@ -281,8 +309,12 @@ def main():
     except Exception, e:
       pass
 
+  # Set the input parameters now that they've been validated.
+  context.good_revision = good_rev
+  context.bad_revision = bad_rev
+
   # Get a list of revisions to bisect across.
-  revlist = GetRevList(good_rev, bad_rev)
+  revlist = GetRevList(context)
   if len(revlist) < 2:  # Don't have enough builds to bisect
     print 'We don\'t have enough builds to bisect. revlist: %s' % revlist
     sys.exit(1)
@@ -304,7 +336,7 @@ def main():
       print('%d candidates. %d tries left.' %
           (num_poss, round(math.log(num_poss, 2))))
     else:
-      print('Candidates: %s' % map(GetRevision, revlist[good:bad]))
+      print('Candidates: %s' % revlist[good:bad])
 
     # Cut the problem in half...
     test = int((bad - good) / 2) + good
@@ -314,7 +346,7 @@ def main():
     profile = opts.profile
     if not profile:
       profile = 'profile'  # In a temp dir.
-    TryRevision(test_rev, profile, args)
+    TryRevision(context, test_rev, profile, args)
     if AskIsGoodBuild(test_rev):
       last_known_good_rev = revlist[good]
       good = test + 1
@@ -322,12 +354,11 @@ def main():
       bad = test
 
   # We're done. Let the user know the results in an official manner.
-  bad_revision = GetRevision(revlist[bad])
-  print('You are probably looking for build %d.' % bad_revision)
+  print('You are probably looking for build %d.' % revlist[bad])
   print('CHANGELOG URL:')
-  print(CHANGELOG_URL % (GetRevision(last_known_good_rev), bad_revision))
+  print(CHANGELOG_URL % (last_known_good_rev, revlist[bad]))
   print('Built at revision:')
-  print(BUILD_VIEWVC_URL % bad_revision)
+  print(BUILD_VIEWVC_URL % revlist[bad])
 
 if __name__ == '__main__':
   sys.exit(main())
