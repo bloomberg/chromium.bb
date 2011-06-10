@@ -96,7 +96,6 @@ body {
   position: fixed;
   top: 0;
   width: 100%;
-  -webkit-mask-image: -webkit-linear-gradient(bottom, transparent, black 30px);
 }
 
 #page-list {
@@ -108,7 +107,8 @@ body {
 #attribution {
   bottom: 0;
   position: absolute;
-  right: 0;
+  /* Leave room for the scrollbar. */
+  right: 13px;
   z-index: -5;
 }
 

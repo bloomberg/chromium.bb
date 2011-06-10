@@ -265,8 +265,9 @@ cr.define('ntp4', function() {
   var TILE_SPACING_FRACTION = 1 / 8;
 
   // The smallest amount of horizontal blank space to display on the sides when
-  // displaying a wide arrangement.
-  var MIN_WIDE_MARGIN = 44;
+  // displaying a wide arrangement. There is an additional 26px of margin from
+  // the tile page padding.
+  var MIN_WIDE_MARGIN = 18;
 
   /**
    * Creates a new TilePage object. This object contains tiles and controls
@@ -559,15 +560,15 @@ cr.define('ntp4', function() {
       }
 
       var leftMargin = this.layoutValues_.leftMargin;
-      var fadeDistance = 20;
+      var fadeDistance = Math.min(leftMargin, 20);
       var gradient =
           '-webkit-linear-gradient(left,' +
               'transparent, ' +
               'transparent ' + (leftMargin - fadeDistance) + 'px, ' +
               'black ' + leftMargin + 'px, ' +
-              'black ' + (this.clientWidth - leftMargin) + 'px, ' +
-              'transparent ' + (this.clientWidth - leftMargin + fadeDistance) +
-                  'px, ' +
+              'black ' + (this.tileGrid_.clientWidth - leftMargin) + 'px, ' +
+              'transparent ' + (this.tileGrid_.clientWidth - leftMargin +
+                                fadeDistance) + 'px, ' +
               'transparent)';
       this.tileGrid_.style.WebkitMaskBoxImage = gradient;
     },

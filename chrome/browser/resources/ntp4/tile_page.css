@@ -6,12 +6,19 @@
 .tile-page {
   overflow-y: scroll;
   padding-top: 100px;
+  position: relative;
   text-align: center;
   width: 100%;
-}
-
-.tile-page::-webkit-scrollbar {
-  width: 0;
+  -webkit-mask-image: -webkit-linear-gradient(bottom, transparent, black 30px);
+  /* The following four properties are necessary so that the mask won't clip
+   * the scrollbar. */
+  box-sizing: border-box;
+  /* Scrollbar + balance right padding.  */
+  padding-left: 26px;
+  /* Same width as the scrollbar. */
+  padding-right: 13px;
+  /* Don't apply clip mask to padding. */
+  -webkit-mask-clip: content-box;
 }
 
 .tile-page-title {
@@ -22,6 +29,7 @@
 }
 
 .tile-grid {
+  overflow: hidden;
   position: relative;
   z-index: 100;
 }
@@ -59,4 +67,18 @@
 
 .animating-tile-page .top-margin {
   -webkit-transition: margin-bottom 200ms;
+}
+
+/** Scrollbars ****************************************************************/
+
+.tile-page::-webkit-scrollbar {
+  width: 13px;
+}
+
+.tile-page::-webkit-scrollbar-button {
+  display: none;
+}
+
+.tile-page::-webkit-scrollbar-thumb:not(:disabled) {
+  border-radius: 5px;
 }

@@ -71,6 +71,10 @@ body {
   background-color: $10; /* COLOR_NTP_SECTION */;
 }
 
+.tile-page::-webkit-scrollbar-thumb:not(:disabled) {
+  background-color: $8; /* COLOR_NTP_TEXT */
+}
+
 /* Footer *********************************************************************/
 
 #footer-border {
