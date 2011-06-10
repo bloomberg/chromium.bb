@@ -94,6 +94,11 @@ html[dir='rtl'] .network-item-text {
   -webkit-box-flex: 1;
 }
 
+.displaytable > section > .network-title {
+  vertical-align: top;
+  padding-top: 20px;
+}
+
 #detailsInternetPage {
   min-width: 440px;
   min-height: 420px;
