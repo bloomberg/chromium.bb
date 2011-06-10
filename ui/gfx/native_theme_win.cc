@@ -11,11 +11,13 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_handle.h"
+#include "base/scoped_ptr.h"
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/scoped_hdc.h"
 #include "base/win/windows_version.h"
 #include "skia/ext/skia_utils_win.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "ui/gfx/gdi_util.h"
 #include "ui/gfx/rect.h"
@@ -127,15 +129,68 @@ gfx::Size NativeThemeWin::GetPartSize(Part part,
   return SUCCEEDED(hr) ? Size(size.cx, size.cy) : Size();
 }
 
+void NativeThemeWin::PaintToNonPlatformCanvas(SkCanvas* canvas,
+                                              Part part,
+                                              State state,
+                                              const gfx::Rect& rect,
+                                              const ExtraParams& extra) const {
+  // TODO(asvitkine): This path is pretty inefficient - for each paint operation
+  //                  it creates a new offscreen bitmap Skia canvas. This can
+  //                  be sped up by doing it only once per part/state and
+  //                  keeping a cache of the resulting bitmaps.
+
+  // Create an offscreen canvas that is backed by an HDC.
+  scoped_ptr<SkCanvas> offscreen_canvas(
+      skia::CreateBitmapCanvas(rect.width(), rect.height(), false));
+  DCHECK(offscreen_canvas.get());
+  DCHECK(skia::SupportsPlatformPaint(offscreen_canvas.get()));
+
+  // Some of the Windows theme drawing operations do not write correct alpha
+  // values for fully-opaque pixels; instead the pixels get alpha 0. This is
+  // especially a problem on Windows XP or when using the Classic theme.
+  //
+  // To work-around this, mark all pixels with a placeholder value, to detect
+  // which pixels get touched by the paint operation. After paint, set any
+  // pixels that have alpha 0 to opaque and placeholders to fully-transparent.
+  const SkColor placeholder = SkColorSetARGB(1, 0, 0, 0);
+  offscreen_canvas->clear(placeholder);
+
+  // Offset destination rects to have origin (0,0).
+  gfx::Rect adjusted_rect(rect.width(), rect.height());
+  ExtraParams adjusted_extra(extra);
+  adjusted_extra.progress_bar.value_rect_x = 0;
+  adjusted_extra.progress_bar.value_rect_y = 0;
+  // Draw the theme controls using existing HDC-drawing code.
+  Paint(offscreen_canvas.get(), part, state, adjusted_rect, adjusted_extra);
+
+  // Post-process the bitmap to fix up the alpha values (see big comment above).
+  const SkBitmap& bitmap = offscreen_canvas->getDevice()->accessBitmap(true);
+  const int pixel_count = rect.width() * rect.height();
+  SkColor* pixels = static_cast<SkColor*>(bitmap.getPixels());
+  for (int i = 0; i < pixel_count; i++) {
+    if (pixels[i] == placeholder) {
+      // Pixel wasn't touched - make it fully transparent.
+      pixels[i] = SkColorSetA(pixels[i], 0);
+    } else if (SkColorGetA(pixels[i]) == 0) {
+      // Pixel was touched but has incorrect alpha of 0, make it fully opaque.
+      pixels[i] = SkColorSetA(pixels[i], 0xFF);
+    }
+  }
+
+  // Draw the offscreen bitmap to the destination canvas.
+  canvas->drawBitmap(offscreen_canvas->getDevice()->accessBitmap(false),
+                     rect.x(),
+                     rect.y());
+}
+
 void NativeThemeWin::Paint(SkCanvas* canvas,
                            Part part,
                            State state,
                            const gfx::Rect& rect,
                            const ExtraParams& extra) const {
   if (!skia::SupportsPlatformPaint(canvas)) {
-    // TODO(alokp): Implement this path.
     // This block will only get hit with --enable-accelerated-drawing flag.
-    DLOG(INFO) << "Could not paint native UI control";
+    PaintToNonPlatformCanvas(canvas, part, state, rect, extra);
     return;
   }
 

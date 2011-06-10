@@ -109,6 +109,12 @@ class NativeThemeWin : public NativeTheme {
                      const gfx::Rect& rect,
                      const ExtraParams& extra) const;
 
+  void PaintToNonPlatformCanvas(SkCanvas* canvas,
+                                Part part,
+                                State state,
+                                const gfx::Rect& rect,
+                                const ExtraParams& extra) const;
+
   HRESULT GetThemePartSize(ThemeName themeName,
                            HDC hdc,
                            int part_id,
