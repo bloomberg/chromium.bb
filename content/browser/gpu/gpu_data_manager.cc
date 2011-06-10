@@ -70,10 +70,8 @@ Value* GpuDataManager::GetFeatureStatus() {
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
   if (gpu_blacklist_.get())
     return gpu_blacklist_->GetFeatureStatus(GpuAccessAllowed(),
-        browser_command_line.HasSwitch(
-            switches::kDisableAcceleratedCompositing),
-        browser_command_line.HasSwitch(
-            switches::kDisableAccelerated2dCanvas),
+        browser_command_line.HasSwitch(switches::kDisableAcceleratedCompositing),
+        browser_command_line.HasSwitch(switches::kEnableAccelerated2dCanvas),
         browser_command_line.HasSwitch(switches::kDisableExperimentalWebGL),
         browser_command_line.HasSwitch(switches::kDisableGLMultisampling));
   return NULL;
@@ -151,8 +149,7 @@ void GpuDataManager::AppendRendererCommandLine(
   if (flags & GpuFeatureFlags::kGpuFeatureAcceleratedCompositing) {
     const char* switches[] = {
         switches::kDisableAcceleratedCompositing,
-        switches::kDisableExperimentalWebGL,
-        switches::kDisableAccelerated2dCanvas
+        switches::kDisableExperimentalWebGL
     };
     const int switch_count = sizeof(switches) / sizeof(char*);
     for (int i = 0; i < switch_count; ++i) {

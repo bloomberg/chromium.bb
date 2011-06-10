@@ -168,6 +168,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kDisableGpuVsync)
   },
+  {
+    "gpu-canvas-2d",  // FLAGS:RECORD_UMA
+    IDS_FLAGS_ACCELERATED_CANVAS_2D_NAME,
+    IDS_FLAGS_ACCELERATED_CANVAS_2D_DESCRIPTION,
+    kOsWin | kOsLinux | kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kEnableAccelerated2dCanvas)
+  },
 #if !defined(GOOGLE_CHROME_BUILD) || defined(OS_MACOSX)
   // Only expose this for Chromium builds where users may not have the PDF
   // plugin. Do not give Google Chrome users the option to disable it here,
