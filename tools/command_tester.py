@@ -22,7 +22,6 @@ import test_lib
 GlobalPlatform=None  # for pychecker, initialized in ProcessOptions
 GlobalReportStream = [sys.stdout]
 GlobalSettings = {}
-GlobalSigType = ['normal']
 
 # Hook print to we can print to both stdout and a file
 def Print(message):
@@ -145,81 +144,70 @@ def PrintTotalTime(total_time):
     Print('Test %s took %f secs' % (GlobalSettings['name'], total_time))
 
 
+# On POSIX systems, exit() codes are 8-bit.  You cannot use exit() to
+# make it look like the process was killed by a signal.  Instead,
+# NaCl's signal handler encodes the signal number into the exit() code
+# by returning with exit(-signum) or equivalently, exit((-signum) & 0xff).
+# NaCl uses the same encoding on Windows.
+def IndirectSignal(signum):
+  return 256 - signum
+
 # Mac OS X returns SIGBUS in most of the cases where Linux returns
 # SIGSEGV, except for actual x86 segmentation violations.
 status_map = {
     'sigabrt' : {
         # This is not used on Windows.
-        'linux2': -6, # SIGABRT
-        'darwin': -6, # SIGABRT
+        'linux2': [-6], # SIGABRT
+        'darwin': [-6], # SIGABRT
         },
     'sigpipe': {
         # This is not used on Windows because Windows does not have an
         # equivalent of SIGPIPE.
-        'linux2': -13, # SIGPIPE
-        'darwin': -13, # SIGPIPE
+        'linux2': [-13], # SIGPIPE
+        'darwin': [-13], # SIGPIPE
         },
     'untrusted_sigill' : {
-        'linux2': -11, # SIGSEGV
-        'darwin': -11, # SIGSEGV
+        'linux2': [IndirectSignal(11)], # SIGSEGV
+        'darwin': [IndirectSignal(11)], # SIGSEGV
         'win32':  [ -1073741819, # -0x3ffffffb or 0xc0000005
                     -1073741674, # -0x3fffff6a or 0xc0000096
                    ],
-        'win64':  -4,
+        'win64':  [IndirectSignal(4)], # SIGILL, as mapped by NaCl
         },
     'untrusted_segfault': {
-        'linux2': -11, # SIGSEGV
-        'darwin': -10, # SIGBUS
-        'win32':  -1073741819, # -0x3ffffffb or 0xc0000005
-        'win64':  -11,
+        'linux2': [IndirectSignal(11)], # SIGSEGV
+        'darwin': [IndirectSignal(10)], # SIGBUS
+        'win32':  [-1073741819], # -0x3ffffffb or 0xc0000005
+        'win64':  [IndirectSignal(11)],
         },
     'untrusted_sigsegv_or_equivalent': {
-        'linux2': -11, # SIGSEGV
-        'darwin': -11, # SIGSEGV
+        'linux2': [IndirectSignal(11)], # SIGSEGV
+        'darwin': [IndirectSignal(11)], # SIGSEGV
         'win32':  [ -1073741819, # -0x3ffffffb or 0xc0000005
 # TODO(khim): remove this when cause of STATUS_PRIVILEGED_INSTRUCTION will be
 # known.  This only happens on win32 with glibc which is also suspicious.
 # See: http://code.google.com/p/nativeclient/issues/detail?id=1689
                     -1073741674, # -0x3fffff6a or 0xc0000096
                    ],
-        'win64':  -11,
+        'win64':  [IndirectSignal(11)],
         },
     'trusted_segfault': {
-        'linux2': -11, # SIGSEGV
-        'darwin': -10, # SIGBUS
-        'win32': -11, # SIGSEGV
-        'win64': -11, # SIGSEGV
+        'linux2': [IndirectSignal(11)], # SIGSEGV
+        'darwin': [IndirectSignal(10)], # SIGBUS
+        'win32':  [IndirectSignal(11)], # SIGSEGV
+        'win64':  [IndirectSignal(11)], # SIGSEGV
         },
     'trusted_sigsegv_or_equivalent': {
-        'linux2': -11, # SIGSEGV
-        'darwin': -11, # SIGSEGV
-        'win32': -11, # SIGSEGV
-        'win64': -11, # SIGSEGV
+        'linux2': [IndirectSignal(11)], # SIGSEGV
+        'darwin': [IndirectSignal(11)], # SIGSEGV
+        'win32':  [IndirectSignal(11)], # SIGSEGV
+        'win64':  [IndirectSignal(11)], # SIGSEGV
         },
     }
-
-def GetSigType(sig):
-  if (type(sig)==type('string')):
-    if (sig[:8]=='trusted_'):
-      return ['trusted']
-
-    if (sig[:10]=='untrusted_'):
-      return ['untrusted']
-
-  return ['normal']
-
-
-def MassageExitStatus(v):
-  global GlobalPlatform
-  if v in status_map:
-    return status_map[v][GlobalPlatform]
-  else:
-    return int(v)
 
 
 def ProcessOptions(argv):
   global GlobalPlatform
-  global GlobalSigType
 
   """Process command line options and return the unprocessed left overs."""
   ResetGlobalSettings()
@@ -245,29 +233,18 @@ def ProcessOptions(argv):
   else:
     GlobalPlatform = sys.platform
 
-  GlobalSigType = GetSigType(GlobalSettings['exit_status'])
-  # In win32, we can't catch a signal, so it always appears as a 'normal' exit
-  if GlobalPlatform == 'win32' and GlobalSigType == ['untrusted']:
-    GlobalSigType = ['normal']
   # return the unprocessed options, i.e. the command
   return args
 
 
 # Parse output for signal type and number
 #
-# The '** Signal' output is from the nacl signal handler code and is
-# only appropriate for non-qemu runs; when the emulator is used, the
-# 2nd match with 'qemu: uncaught target signal ddd' yields the signal
-# number.
+# The '** Signal' output is from the nacl signal handler code.
 #
 # Since it is possible for there to be an output race with another
 # thread, or additional output due to atexit functions, we scan the
 # output in reverse order for the signal signature.
-#
-# TODO(noelallen,bsy): when nacl_signal testing is enabled for arm,
-# remove/fix the explicit qemu match code below.
-#
-def ExitStatusInfo(stderr):
+def GetNaClSignalInfoFromStderr(stderr):
   sigNum = 0
   sigType = 'normal'
 
@@ -276,91 +253,71 @@ def ExitStatusInfo(stderr):
   # Scan for signal msg in reverse order
   for curline in reversed(lines):
     words = curline.split()
-    if len(words) > 4:
-      if words[0] == '**' and words[1] == 'Signal':
-        sigNum = -int(words[2])
-        sigType= words[4]
-        break
-      if (words[0] == 'qemu:' and words[1] == 'uncaught' and
-          words[2] == 'target' and words[3] == 'signal'):
-        sigNum = -int(words[4])
-        break
+    if len(words) > 4 and words[0] == '**' and words[1] == 'Signal':
+      sigNum = -int(words[2])
+      sigType = words[4]
+      break
   return sigNum, sigType
 
-# On linux return codes are 8 bit. So -n = 256 + (-n) (eg: 243 = -11)
-# python does not understand this 8 bit wraparound.
-# Thus, we convert the desired val and returned val if negative to postive
-# before comparing.
-def ExitStatusIsOK(expected, actual, stderr):
-  global GlobalSigType
+def GetQemuSignalFromStderr(stderr, default):
+  for line in reversed(stderr.splitlines()):
+    # Look for 'qemu: uncaught target signal XXX'.
+    words = line.split()
+    if (len(words) > 4 and
+        words[0] == 'qemu:' and words[1] == 'uncaught' and
+        words[2] == 'target' and words[3] == 'signal'):
+      return -int(words[4])
+  return default
 
-  sigNum, sigType = ExitStatusInfo(stderr)
-
-  # If scanning the output reveals an exit status of a type unexpected
-  if sigType not in GlobalSigType:
-    return False
-
-  if isinstance(expected, dict):
-    if sigType not in expected:
-      return False
-    expected = expected[sigType]
-  return ExitStatusIsOKNoSignals(expected, actual)
-
-# Version that skips checking signals.
-def ExitStatusIsOKNoSignals(expected, actual):
-  # If the expected value is a list
-  if isinstance(expected, list):
-    for e in expected:
-      a = actual
-      if e < 0:
-        e = e % 256
-        a = a % 256
-      if e == a:
-        return True
-    return False
+def CheckExitStatus(failed, req_status, exit_status, stdout, stderr):
+  if req_status in status_map:
+    expected_statuses = status_map[req_status][GlobalPlatform]
+    if req_status.startswith('trusted_'):
+      expected_sigtype = 'trusted'
+    elif req_status.startswith('untrusted_'):
+      expected_sigtype = 'untrusted'
+    else:
+      expected_sigtype = 'normal'
   else:
-    if expected < 0:
-      expected = expected % 256
-      actual = actual % 256
+    expected_statuses = [int(req_status)]
+    expected_sigtype = 'normal'
 
-    val = expected == actual
-    return val
+  # On 32-bit Windows, we cannot catch a signal that occurs in x86-32
+  # untrusted code, so it always appears as a 'normal' exit, which
+  # means that the signal handler does not print a message.
+  if GlobalPlatform == 'win32' and expected_sigtype == 'untrusted':
+    expected_sigtype = 'normal'
 
-def CheckExitStatusWithSignals(failed,
-                               req_status,
-                               exit_status,
-                               stdout,
-                               stderr):
-  exitOk = ExitStatusIsOK(req_status, exit_status, stderr)
+  # If an uncaught signal occurs under QEMU (on ARM), the exit status
+  # contains the signal number, mangled as per IndirectSignal().  We
+  # extract the unadulterated signal number from QEMU's log message in
+  # stderr instead.  If we are not using QEMU, or no signal is raised
+  # under QEMU, this is a no-op.
+  if stderr is not None:
+    exit_status = GetQemuSignalFromStderr(stderr, exit_status)
+
+  exitOk = exit_status in expected_statuses
+  if stderr is None:
+    printed_sigtype = 'unknown'
+  else:
+    printed_signum, printed_sigtype = GetNaClSignalInfoFromStderr(stderr)
+    exitOk = exitOk and printed_sigtype == expected_sigtype
+
   if exitOk and not failed:
     return True
   if failed:
     Print('Command failed')
   else:
-    sigNum, sigType = ExitStatusInfo(stderr)
-    Print('\nERROR: Command returned %s %s, expecting %s %s for %s' %
-          (sigType, str(exit_status),
-           str(GlobalSigType), str(req_status), GlobalPlatform))
-    Banner('Stdout')
-    Print(stdout)
-    Banner('Stderr')
-    Print(stderr)
-    Print(FailureMessage())
-  return False
-
-def CheckExitStatusNoSignals(failed,
-                             req_status,
-                             exit_status):
-  exitOk = ExitStatusIsOKNoSignals(req_status, exit_status)
-  if exitOk and not failed:
-    return True
-  if failed:
-    Print('Command failed')
-  else:
-    Print('\nERROR: Command returned %s, expecting %s for %s' %
-          (str(exit_status),
-           str(req_status),
+    Print('\nERROR: Command returned %s with type=%r, '
+          'but expected %s with type=%r for platform=%s' %
+          (exit_status, printed_sigtype,
+           expected_statuses, expected_sigtype,
            GlobalPlatform))
+    if stderr is not None:
+      Banner('Stdout')
+      Print(stdout)
+      Banner('Stderr')
+      Print(stderr)
     Print(FailureMessage())
   return False
 
@@ -412,7 +369,6 @@ def ProcessLogOutput(stdout, stderr):
   return True
 
 def main(argv):
-  global GlobalSigType
   global GlobalPlatform
   global GlobalReportStream
   command = ProcessOptions(argv)
@@ -467,22 +423,16 @@ def main(argv):
     (total_time, exit_status, failed) = test_lib.RunTestWithInput(command,
                                                                   stdin_data)
     PrintTotalTime(total_time)
-    req_status = MassageExitStatus(GlobalSettings['exit_status'])
-    if not CheckExitStatusNoSignals(failed,
-                                    req_status,
-                                    exit_status):
+    if not CheckExitStatus(failed, GlobalSettings['exit_status'], exit_status,
+                           None, None):
       return -1
   else:
     (total_time, exit_status,
      failed, stdout, stderr) = test_lib.RunTestWithInputOutput(
          command, stdin_data)
     PrintTotalTime(total_time)
-    req_status = MassageExitStatus(GlobalSettings['exit_status'])
-    if not CheckExitStatusWithSignals(failed,
-                                       req_status,
-                                       exit_status,
-                                       stdout,
-                                       stderr):
+    if not CheckExitStatus(failed, GlobalSettings['exit_status'], exit_status,
+                           stdout, stderr):
       return -1
     if not CheckGoldenOutput(stdout, stderr):
       return -1
