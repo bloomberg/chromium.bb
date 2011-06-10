@@ -116,11 +116,19 @@ static int IsTrustedWrite(uint8_t *dst,
 #if NACL_WINDOWS == 1
 static void* valloc(size_t s) {
   /* allocate twice as much then round up to nearest s */
-  uintptr_t m = (uintptr_t) malloc(2 * s);
-  /* check for power of 2: */
-  CHECK(0 == (s & (s - 1)));
-  m = (m + s) & ~(s - 1);
-  return (void*) m;
+  void* m_ptr = malloc(2 * s);
+  if (m_ptr != NULL) {
+    uintptr_t m = (uintptr_t) m_ptr;
+    /* check for power of 2: */
+    if (0 == (s & (s - 1))) {
+      m = (m + s) & ~(s - 1);
+      m_ptr = (void*) m;
+    } else {
+      free((void*) m_ptr);
+      m_ptr = NULL;
+    }
+  }
+  return (void*) m_ptr;
 }
 #endif
 
@@ -162,7 +170,7 @@ static Bool SerializeAllProcessors() {
     g_squashybuffer = valloc(size);
   }
   if (size == 0) return FALSE;
-  if (NULL != g_squashybuffer) return FALSE;
+  if (NULL == g_squashybuffer) return FALSE;
   prot = (prot == prot_a ? prot_b : prot_a);
   rv = mprotect(g_squashybuffer, size, prot);
   if (rv) return FALSE;
@@ -223,7 +231,7 @@ static Bool CopyInstructionInternal(uint8_t *dst,
     }
     memcpy(dst, src, sz);
 
-    SerializeAllProcessors();
+    if (!SerializeAllProcessors()) return FALSE;
 
     /* flip first byte back */
     firstbyte_p[0] = firstbyte;
