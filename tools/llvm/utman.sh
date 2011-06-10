@@ -1141,6 +1141,55 @@ build-libgcc_eh-bitcode() {
   spopd
 }
 
+#+ build-compiler-rt - build/install llvm's replacement for libgcc.a
+build-compiler-rt() {
+  readonly TC_BUILD_COMPILER_RT="${TC_BUILD}/compiler_rt"
+  mkdir -p "${TC_BUILD_COMPILER_RT}"
+  spushd "${TC_BUILD_COMPILER_RT}"
+  # TODO(robertm): we need to set up our own repo for this eventually
+  StepBanner "compiler rt" "checkout"
+  rm -rf  src
+  svn co http://llvm.org/svn/llvm-project/compiler-rt/trunk -r 132756 src
+
+  for arch in arm x86-32 x86-64; do
+    StepBanner "compiler rt" "build ${arch}"
+    rm -rf "${arch}"
+    mkdir -p "${arch}"
+    spushd "${arch}"
+    # NOTE: div*i?.c  only includes integer division and excludes the
+    # float and complex versions
+    # NOTE: this is likely not the final set of .c file that should comprise
+    # the library
+    for file in ../src/lib/div*i?.c ../src/lib/udiv*.c \
+                ../src/lib/mod*.c ../src/lib/umod*.c \
+                ../src/lib/fix*.c ../src/lib/float*.c ; do
+      out=$(/usr/bin/basename "${file}" ".c")
+      flags="-arch ${arch} \
+             -fPIC \
+             --pnacl-allow-translate \
+             -I../src/lib \
+             -D_YUGA_LITTLE_ENDIAN=1 \
+             -D_YUGA_BIG_ENDIAN=0"
+      if [ ${arch} == "arm" ] ; then
+        # NOTE: this causes the generation of aeabi alias form some libgcc
+        #       functions, e.g. __divsi3  == __aeabi_idiv
+        # TODO(robertm): fix the llc arm backend to emit the standard names
+        flags="${flags} -D__ARM_EABI__"
+      fi
+      ${PNACL_GCC} ${file} ${flags} -c -o ${out}.o
+    done
+    ${PNACL_AR} rc libgcc.a *.o
+    ls -l libgcc.a
+    spopd
+  done
+
+  StepBanner "compiler rt" "install"
+  cp arm/libgcc.a "${PNACL_ARM_ROOT}/"
+  cp x86-32/libgcc.a "${PNACL_X8632_ROOT}/"
+  cp x86-64/libgcc.a "${PNACL_X8664_ROOT}/"
+  spopd
+}
+
 #+ xgcc-patch          - Patch xgcc and clean libgcc
 xgcc-patch() {
   # This is a hack. Ideally gcc would be configured with a pnacl-nacl target
