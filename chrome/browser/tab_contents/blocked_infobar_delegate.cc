@@ -46,6 +46,11 @@ bool BlockedInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
   return false;
 }
 
+BlockedRunningInfoBarDelegate*
+BlockedInfoBarDelegate::AsBlockedRunningInfoBarDelegate() {
+  return NULL;
+}
+
 BlockedDisplayingInfoBarDelegate::BlockedDisplayingInfoBarDelegate(
     TabContentsWrapper* wrapper)
     : BlockedInfoBarDelegate(

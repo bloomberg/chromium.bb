@@ -31,9 +31,7 @@ class BlockedInfoBarDelegate : public ConfirmInfoBarDelegate {
   int message_resource_id() const { return message_resource_id_; }
 
   // Type-checking downcast routine.
-  virtual BlockedRunningInfoBarDelegate *AsBlockedRunningInfoBarDelegate() {
-    return NULL;
-  }
+  virtual BlockedRunningInfoBarDelegate* AsBlockedRunningInfoBarDelegate();
 
  protected:
   TabContentsWrapper* wrapper() { return wrapper_; }
