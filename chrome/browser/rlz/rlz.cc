@@ -23,8 +23,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -68,9 +66,11 @@ bool SendFinancialPing(const std::wstring& brand, const std::wstring& lang,
 // the user first interacted with the omnibox and set a global accordingly.
 class OmniBoxUsageObserver : public NotificationObserver {
  public:
-  OmniBoxUsageObserver(bool first_run, bool send_ping_immediately)
+  OmniBoxUsageObserver(bool first_run, bool send_ping_immediately,
+                       bool google_default_search)
     : first_run_(first_run),
-      send_ping_immediately_(send_ping_immediately) {
+      send_ping_immediately_(send_ping_immediately),
+      google_default_search_(google_default_search) {
     registrar_.Add(this, NotificationType::OMNIBOX_OPENED_URL,
                    NotificationService::AllSources());
     // If instant is enabled we'll start searching as soon as the user starts
@@ -112,6 +112,7 @@ class OmniBoxUsageObserver : public NotificationObserver {
   NotificationRegistrar registrar_;
   bool first_run_;
   bool send_ping_immediately_;
+  bool google_default_search_;
 };
 
 bool OmniBoxUsageObserver::omnibox_used_ = false;
@@ -160,8 +161,9 @@ class DailyPingTask : public Task {
 // This task needs to run on the UI thread.
 class DelayedInitTask : public Task {
  public:
-  explicit DelayedInitTask(bool first_run)
-      : first_run_(first_run) {
+  explicit DelayedInitTask(bool first_run, bool google_default_search)
+      : first_run_(first_run),
+        google_default_search_(google_default_search) {
   }
   virtual ~DelayedInitTask() {
   }
@@ -195,7 +197,7 @@ class DelayedInitTask : public Task {
                                      rlz_lib::CHROME_HOME_PAGE,
                                      rlz_lib::INSTALL);
       // Record if google is the initial search provider.
-      if (IsGoogleDefaultSearch()) {
+      if (google_default_search_) {
         RLZTracker::RecordProductEvent(rlz_lib::CHROME,
                                        rlz_lib::CHROME_OMNIBOX,
                                        rlz_lib::SET_TO_GOOGLE);
@@ -213,26 +215,6 @@ class DelayedInitTask : public Task {
   }
 
  private:
-  bool IsGoogleDefaultSearch() {
-    if (!g_browser_process)
-      return false;
-    FilePath user_data_dir;
-    if (!PathService::Get(chrome::DIR_USER_DATA, &user_data_dir))
-      return false;
-    ProfileManager* profile_manager = g_browser_process->profile_manager();
-    Profile* profile = profile_manager->GetDefaultProfile(user_data_dir);
-    if (!profile)
-      return false;
-    const TemplateURL* url_template = TemplateURLServiceFactory::GetForProfile(
-        profile)->GetDefaultSearchProvider();
-    if (!url_template)
-      return false;
-    const TemplateURLRef* urlref = url_template->url();
-    if (!urlref)
-      return false;
-    return urlref->HasGoogleBaseURLs();
-  }
-
   // Flag that remembers if the delayed task already ran or not.  This is
   // needed only in the first_run case, since we don't want to record the
   // set-to-google event more than once.  We need to worry about this event
@@ -240,7 +222,11 @@ class DelayedInitTask : public Task {
   static bool already_ran_;
 
   bool first_run_;
-  DISALLOW_IMPLICIT_CONSTRUCTORS(DelayedInitTask);
+
+  // True if Google is the default search engine for the first profile starting
+  // in a browser during first run.
+  bool google_default_search_;
+
 };
 
 bool DelayedInitTask::already_ran_ = false;
@@ -259,7 +245,8 @@ void OmniBoxUsageObserver::Observe(NotificationType type,
     omnibox_used_ = true;
   else if (send_ping_immediately_) {
     BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE, new DelayedInitTask(first_run_));
+        BrowserThread::FILE, FROM_HERE, new DelayedInitTask(first_run_,
+            google_default_search_));
   }
 
   delete this;
@@ -267,7 +254,8 @@ void OmniBoxUsageObserver::Observe(NotificationType type,
 
 }  // namespace
 
-bool RLZTracker::InitRlzDelayed(bool first_run, int delay) {
+bool RLZTracker::InitRlzDelayed(bool first_run, int delay,
+                                bool google_default_search) {
   // A negative delay means that a financial ping should be sent immediately
   // after a first search is recorded, without waiting for the next restart
   // of chrome.  However, we only want this behaviour on first run.
@@ -287,11 +275,15 @@ bool RLZTracker::InitRlzDelayed(bool first_run, int delay) {
   delay = (delay > kMaxDelay) ? kMaxDelay : delay;
 
   if (!OmniBoxUsageObserver::used())
-    new OmniBoxUsageObserver(first_run, send_ping_immediately);
+    new OmniBoxUsageObserver(first_run, send_ping_immediately,
+                             google_default_search);
 
   // Schedule the delayed init items.
   BrowserThread::PostDelayedTask(
-      BrowserThread::FILE, FROM_HERE, new DelayedInitTask(first_run), delay);
+      BrowserThread::FILE,
+      FROM_HERE,
+      new DelayedInitTask(first_run, google_default_search),
+      delay);
   return true;
 }
 

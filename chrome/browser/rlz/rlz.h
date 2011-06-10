@@ -35,7 +35,8 @@ class RLZTracker {
   //
   // If the chrome brand is organic (no partners) then the RLZ library is not
   // loaded or initialized and the pings don't ocurr.
-  static bool InitRlzDelayed(bool first_run, int delay);
+  static bool InitRlzDelayed(bool first_run, int delay,
+                             bool google_default_search);
 
   // Records an RLZ event. Some events can be access point independent.
   // Returns false it the event could not be recorded. Requires write access

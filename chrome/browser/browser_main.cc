@@ -1720,7 +1720,17 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // Init the RLZ library. This just binds the dll and schedules a task on the
   // file thread to be run sometime later. If this is the first run we record
   // the installation event.
-  RLZTracker::InitRlzDelayed(is_first_run, master_prefs.ping_delay);
+  bool google_search_default = false;
+  const TemplateURL* url_template =
+      profile->GetTemplateURLModel()->GetDefaultSearchProvider();
+  if (url_template) {
+    const TemplateURLRef* urlref = url_template->url();
+    if (urlref) {
+      google_search_default = urlref->HasGoogleBaseURLs();
+    }
+  }
+  RLZTracker::InitRlzDelayed(is_first_run, master_prefs.ping_delay,
+                             google_search_default);
 #endif  // GOOGLE_CHROME_BUILD
 #endif  // OS_WIN
 
