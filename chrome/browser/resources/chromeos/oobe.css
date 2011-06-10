@@ -1,5 +1,248 @@
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ *
+ * This is the stylesheet used by the Out of the box experience (OOBE) flow.
+ */
+
 body {
-  cursor: default;
+  background: -webkit-gradient(radial, center center, 0, center center, 400,
+              from(#fefefe), to(#efefef));
+  font-size: 14px;
+  padding: 10px;
+}
+
+#oobe {
+  left: 50%;
+  margin-left: -320px;
+  margin-top: -270px;
+  position: absolute;
+  top: 50%;
+  width: 640px;
+}
+
+#inner-container {
+  -webkit-transition: height .2s ease-in-out;
+  height: 294px;
+  padding: 20px;
+  position: relative;
+  width: 640px;
+}
+
+a {
+  color: #006668;
+  text-decoration: none;
+}
+
+hr.topshadow {
+  -webkit-mask: -webkit-linear-gradient(left, rgba(0,0,0,0),
+                                        black 50%, rgba(0,0,0,0));
+  -webkit-mask-clip: padding-box;
+  background: -webkit-linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.0));
+  border: none;
+  border-top: 1px solid rgba(0,0,0,0.5);
+  height: 4px;
+  opacity: 0.3;
+}
+
+hr.bottomshadow {
+  -webkit-mask: -webkit-linear-gradient(left, rgba(0,0,0,0),
+                                        black 50%, rgba(0,0,0,0));
+  -webkit-mask-clip: padding-box;
+  background: -webkit-linear-gradient(bottom, top,
+                                      rgba(0,0,0,0.2)), rgba(0,0,0,0.0));
+  border: none;
+  border-bottom: 1px solid rgba(0,0,0,0.5);
+  height: 2px;
+  opacity: 0.3;
+}
+
+#header {
+  background: url('chrome://theme/IDR_PRODUCT_LOGO_64') left center no-repeat;
+  background-size: 48px;
+  color: #737373;
+  display: -webkit-box;
+  font-size: 20px;
+  height: 48px;
+  line-height: 48px;
+  padding-left: 54px;
+}
+
+#header-sections {
+  display: inline-block;
+  position: relative;
+}
+
+.header-section:before {
+  /* Divider in header between product name and title,
+     like "[Product name] > [step header]"  */
+  content: "\00A0\203A\00A0\00A0";
+}
+
+.header-section {
+  -webkit-transition: left .2s, opacity .2s ease-in-out;
+  position: absolute;
+  width: 20em;
+}
+
+.header-section.right {
+  left: 50px;
+  opacity: 0;
+}
+
+.header-section.left {
+  left: -20px;
+  opacity: 0;
+}
+
+.step {
+  -webkit-transition: left .2s, opacity .2s, visibility .2s ease-in-out;
+  left: 0;
+  min-height: 294px;
+  opacity: 1;
+  position: absolute;
+  width: 640px;
+}
+
+.step.right {
+  left: 100px;
+  opacity: 0;
+}
+
+.step.left {
+  left: -50px;
+  opacity: 0;
+}
+
+.step.hidden {
+  visibility: hidden;
+}
+
+#progress {
+  float: left;
+  padding: 10px;
+}
+
+.progdot {
+  background: black;
+  border-radius: 2px;
+  float: left;
+  height: 8px;
+  margin-right: 12px;
+  opacity: 0.1;
+  width: 8px;
+}
+
+.progdot-active {
+  opacity: 0.5;
+}
+
+.control-with-label {
+  margin: 10px 0 10px 0;
+  display: -webkit-box;
+}
+
+.label {
+  margin: 5px 5px 5px 0;
+  padding: 5px 5px 5px 0;
+  width: 170px;
+}
+
+.menu-area {
+  margin: 5px 5px 5px 5px;
+}
+
+.menu-control {
+  width: 150px;
+}
+
+#connect {
+  box-sizing: border-box;
+  padding: 60px 0 0 145px;
+}
+
+#logging {
+  clear: both;
+  margin-top: 20px;
+}
+
+#footer button {
+  display: none;
+}
+
+#oobe.connect #continue-button,
+#oobe.eula #back-button,
+#oobe.eula #accept-button {
+  display: inline-block;
+}
+
+#oobe.connect #connect-dot,
+#oobe.eula #eula-dot,
+#oobe.signin #signin-dot,
+#oobe.photo #photo-dot {
+  opacity: 0.4;
+}
+
+#connect table {
+  margin: 7em auto;
+}
+
+#security-info {
+  bottom: 10px;
+  position: absolute;
+  text-align: center;
+  visibility: hidden;
+  width: 98%;
+}
+
+#security-info a {
+  color: #8c8c8c;
   font-size: 13px;
-  background: #f1f1f1;
+}
+
+#oobe.eula + #security-info {
+  visibility: visible;
+}
+
+#update div {
+  margin: 6em auto;
+  width: 32em;
+}
+
+#update progress {
+  margin: 13px 0;
+  width: 380px;
+}
+
+button {
+  min-width: 80px;
+}
+
+.eula-columns {
+  display: -webkit-box;
+  width: 630px;
+}
+
+.eula-frame {
+  border: none;
+  height: 200px;
+  margin-right: 20px;
+  padding: 0 0 0 10px;
+  width: 270px;
+}
+
+#eulas.one-column #cros-eula {
+  width: 100%;
+}
+
+#eulas.one-column #cros-eula-frame {
+  width: 100%;
+}
+
+#eulas.one-column #oem-eula {
+  display: none;
+}
+
+.button-strip {
+  float: right;
 }

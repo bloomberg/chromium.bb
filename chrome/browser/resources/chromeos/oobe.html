@@ -2,8 +2,95 @@
 <html i18n-values="dir:textdirection">
 <head>
 <title i18n-content="title"></title>
+<link rel="stylesheet" href="chrome://resources/css/button.css">
+<link rel="stylesheet" href="chrome://resources/css/select.css">
 <link rel="stylesheet" href="oobe.css">
+<script src="chrome://resources/js/cr.js"></script>
+<script src="chrome://resources/js/cr/event_target.js"></script>
+<script src="chrome://resources/js/local_strings.js"></script>
+<script src="chrome://resources/js/util.js"></script>
+<script src="oobe.js"></script>
 </head>
 <body i18n-values=".style.fontFamily:fontfamily;">
+  <div id="oobe" class="connect">
+    <div id="outer-container">
+      <div id="header">
+        <div>
+          <span i18n-content="productName"></span>
+        </div>
+        <div id="header-sections">
+          <span id="header-connect" class="header-section"
+              i18n-content="networkScreenTitle"></span>
+          <span id="header-eula" class="header-section right"
+              i18n-content="eulaScreenTitle"></span>
+          <span id="header-update" class="header-section right"
+              i18n-content="updateScreenTitle"></span>
+        </div>
+      </div>
+      <hr class="topshadow">
+      <div id="inner-container">
+        <div class="step" id="connect">
+          <div class="control-with-label">
+            <div i18n-content="selectLanguage" class="label"
+                class="menu-control"></div>
+            <div class="menu-area">
+              <select id='language-select' class="menu-control"></select>
+            </div>
+          </div>
+          <div class="control-with-label">
+            <div i18n-content="selectKeyboard" class="label"></div>
+            <div class="menu-area">
+              <select id='keyboard-select' class="menu-control"></select>
+            </div>
+          </div>
+          <div class="control-with-label">
+            <div i18n-content="selectNetwork" class="label"
+                class="menu-control"></div>
+            <div class="menu-area">
+              <!-- TODO(nkostylev): Embed network control. -->
+            </div>
+          </div>
+        </div>
+        <div class="step right hidden" id="eula">
+          <div id="eulas" class="eula-columns one-column">
+            <div id="cros-eula">
+              <iframe id="cros-eula-frame" class="eula-frame"
+                  src="chrome://about/terms"></iframe>
+            </div>
+            <div id="oem-eula"><iframe id="oem-eula-frame"
+                class="eula-frame"></iframe></div>
+          </div>
+          <p id="logging">
+            <input type="checkbox"/><span i18n-content="checkboxLogging"></span>
+            <a id="stats-help-link" href="#" i18n-content="learnMore"></a>
+          </p>
+        </div>
+        <div class="step right hidden" id="update">
+          <div>
+            <p i18n-content="installingUpdate"></p>
+            <progress id="" max="100" value="0"></progress>
+            <p i18n-content="installingUpdateDesc"></p>
+          </div>
+        </div>
+      </div>
+      <hr class="bottomshadow">
+      <div id="footer">
+        <div id="progress">
+          <div id="connect-dot" class="progdot"></div>
+          <div id="eula-dot" class="progdot"></div>
+          <div id="signin-dot" class="progdot"></div>
+          <div id="photo-dot" class="progdot"></div>
+        </div>
+        <div class="button-strip">
+          <button id="continue-button" i18n-content="continueButton"></button>
+          <button id="back-button" i18n-content="back"></button>
+          <button id="accept-button" i18n-content="acceptAgreement"></button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="security-info">
+    <a id="security-link" href="#" i18n-content="eulaSystemSecuritySetting"></a>
+  </div>
 </body>
 </html>

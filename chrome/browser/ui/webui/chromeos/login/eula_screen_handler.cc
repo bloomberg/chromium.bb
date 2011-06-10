@@ -36,16 +36,17 @@ void EulaScreenHandler::SetDelegate(Delegate* delegate) {
 void EulaScreenHandler::GetLocalizedSettings(
     DictionaryValue* localized_strings) {
   localized_strings->SetString("eulaScreenTitle",
-                    l10n_util::GetStringFUTF16(IDS_EULA_SCREEN_TITLE,
-                        l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
-  localized_strings->SetString("acceptAgreement",
-      l10n_util::GetStringUTF16(IDS_EULA_ACCEPT_AND_CONTINUE_BUTTON));
-  localized_strings->SetString("back",
-                    l10n_util::GetStringUTF16(IDS_EULA_BACK_BUTTON));
+      l10n_util::GetStringUTF16(IDS_EULA_SCREEN_TITLE));
   localized_strings->SetString("checkboxLogging",
       l10n_util::GetStringUTF16(IDS_EULA_CHECKBOX_ENABLE_LOGGING));
   localized_strings->SetString("learnMore",
-                    l10n_util::GetStringUTF16(IDS_LEARN_MORE));
+      l10n_util::GetStringUTF16(IDS_LEARN_MORE));
+  localized_strings->SetString("eulaSystemSecuritySetting",
+      l10n_util::GetStringUTF16(IDS_EULA_SYSTEM_SECURITY_SETTING));
+  localized_strings->SetString("back",
+      l10n_util::GetStringUTF16(IDS_EULA_BACK_BUTTON));
+  localized_strings->SetString("acceptAgreement",
+      l10n_util::GetStringUTF16(IDS_EULA_ACCEPT_AND_CONTINUE_BUTTON));
 }
 
 void EulaScreenHandler::Initialize() {

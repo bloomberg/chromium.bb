@@ -69,9 +69,7 @@ void NetworkScreenHandler::EnableContinue(bool enabled) {
 void NetworkScreenHandler::GetLocalizedSettings(
     DictionaryValue* localized_strings) {
   localized_strings->SetString("networkScreenTitle",
-      l10n_util::GetStringFUTF16(
-          IDS_WELCOME_SCREEN_TITLE,
-          l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
+      l10n_util::GetStringUTF16(IDS_WELCOME_SCREEN_TITLE));
   localized_strings->SetString("selectLanguage",
       l10n_util::GetStringUTF16(IDS_LANGUAGE_SELECTION_SELECT));
   localized_strings->SetString("selectKeyboard",

@@ -18,6 +18,9 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "grit/browser_resources.h"
+#include "grit/chromium_strings.h"
+#include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace {
@@ -114,6 +117,15 @@ CoreOobeHandler::~CoreOobeHandler() {
 }
 
 void CoreOobeHandler::GetLocalizedSettings(DictionaryValue* localized_strings) {
+  localized_strings->SetString("productName",
+      l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
+  localized_strings->SetString("updateScreenTitle",
+      l10n_util::GetStringUTF16(IDS_UPDATE_SCREEN_TITLE));
+  localized_strings->SetString("installingUpdate",
+      l10n_util::GetStringFUTF16(IDS_INSTALLING_UPDATE,
+          l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
+  localized_strings->SetString("installingUpdateDesc",
+      l10n_util::GetStringUTF16(IDS_INSTALLING_UPDATE_DESC));
 }
 
 void CoreOobeHandler::Initialize() {

@@ -20,6 +20,8 @@ without changes to the corresponding grd file. paaaae -->
                file="shared/css/list.css" type="BINDATA" />
       <include name="IDR_SHARED_CSS_MENU"
                file="shared/css/menu.css" type="BINDATA" />
+      <include name="IDR_SHARED_CSS_SELECT"
+               file="shared/css/select.css" type="BINDATA" />
       <include name="IDR_SHARED_CSS_TABLE"
                file="shared/css/table.css" type="BINDATA" />
       <include name="IDR_SHARED_CSS_TABS"
