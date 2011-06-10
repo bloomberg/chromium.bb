@@ -34,8 +34,8 @@ class TestBackgroundModeManager : public BackgroundModeManager {
       : BackgroundModeManager(command_line),
         enabled_(true) {}
   MOCK_METHOD1(EnableLaunchOnStartup, void(bool));
-  MOCK_METHOD1(CreateStatusTrayIcon, void(Profile*));  // NOLINT
-  MOCK_METHOD1(RemoveStatusTrayIcon, void(Profile*));  // NOLINT
+  MOCK_METHOD0(CreateStatusTrayIcon, void());
+  MOCK_METHOD0(RemoveStatusTrayIcon, void());
   virtual bool IsBackgroundModePrefEnabled() { return enabled_; }
   void SetEnabled(bool enabled) { enabled_ = enabled; }
  private:
@@ -47,7 +47,7 @@ TEST_F(BackgroundModeManagerTest, BackgroundAppLoadUnload) {
   TestingProfile profile;
   TestBackgroundModeManager manager(command_line_.get());
   manager.RegisterProfile(&profile);
-  EXPECT_CALL(manager, RemoveStatusTrayIcon(_));
+  EXPECT_CALL(manager, RemoveStatusTrayIcon());
   EXPECT_FALSE(BrowserList::WillKeepAlive());
   // Call to AppLoaded() will not cause the status tray to be created,
   // because no apps have been installed. However the call to AppUnloaded()
@@ -67,13 +67,13 @@ TEST_F(BackgroundModeManagerTest, BackgroundAppInstallUninstall) {
   // Call to AppInstalled() will cause chrome to be set to launch on startup,
   // and call to AppUninstalled() set chrome to not launch on startup.
   EXPECT_CALL(manager, EnableLaunchOnStartup(true));
-  EXPECT_CALL(manager, CreateStatusTrayIcon(_));
-  EXPECT_CALL(manager, RemoveStatusTrayIcon(_)).Times(2);
+  EXPECT_CALL(manager, CreateStatusTrayIcon());
+  EXPECT_CALL(manager, RemoveStatusTrayIcon());
   EXPECT_CALL(manager, EnableLaunchOnStartup(false));
-  manager.OnBackgroundAppInstalled(NULL, &profile);
+  manager.OnBackgroundAppInstalled(NULL);
   manager.OnBackgroundAppLoaded();
   manager.OnBackgroundAppUnloaded();
-  manager.OnBackgroundAppUninstalled(&profile);}
+  manager.OnBackgroundAppUninstalled();}
 
 // App installs while disabled should do nothing.
 TEST_F(BackgroundModeManagerTest, BackgroundAppInstallUninstallWhileDisabled) {
@@ -82,17 +82,16 @@ TEST_F(BackgroundModeManagerTest, BackgroundAppInstallUninstallWhileDisabled) {
   TestBackgroundModeManager manager(command_line_.get());
   manager.RegisterProfile(&profile);
   // Turn off background mode.
-  EXPECT_CALL(manager, RemoveStatusTrayIcon(_));
   manager.SetEnabled(false);
   manager.DisableBackgroundMode();
 
   // Status tray icons will not be created, launch on startup status will be set
   // to "do not launch on startup".
   EXPECT_CALL(manager, EnableLaunchOnStartup(false));
-  manager.OnBackgroundAppInstalled(NULL, &profile);
+  manager.OnBackgroundAppInstalled(NULL);
   manager.OnBackgroundAppLoaded();
   manager.OnBackgroundAppUnloaded();
-  manager.OnBackgroundAppUninstalled(&profile);
+  manager.OnBackgroundAppUninstalled();
 
   // Re-enable background mode.
   manager.SetEnabled(true);
@@ -107,15 +106,15 @@ TEST_F(BackgroundModeManagerTest, EnableAfterBackgroundAppInstall) {
   TestBackgroundModeManager manager(command_line_.get());
   manager.RegisterProfile(&profile);
   EXPECT_CALL(manager, EnableLaunchOnStartup(true));
-  EXPECT_CALL(manager, CreateStatusTrayIcon(_));
-  EXPECT_CALL(manager, RemoveStatusTrayIcon(_));
+  EXPECT_CALL(manager, CreateStatusTrayIcon());
+  EXPECT_CALL(manager, RemoveStatusTrayIcon());
   EXPECT_CALL(manager, EnableLaunchOnStartup(false));
   EXPECT_CALL(manager, EnableLaunchOnStartup(true));
-  EXPECT_CALL(manager, RemoveStatusTrayIcon(_)).Times(2);
+  EXPECT_CALL(manager, RemoveStatusTrayIcon());
   EXPECT_CALL(manager, EnableLaunchOnStartup(false));
 
   // Install app, should show status tray icon.
-  manager.OnBackgroundAppInstalled(NULL, &profile);
+  manager.OnBackgroundAppInstalled(NULL);
   // OnBackgroundAppInstalled does not actually add an app to the
   // BackgroundApplicationListModel which would result in another
   // call to CreateStatusTray.
@@ -132,7 +131,7 @@ TEST_F(BackgroundModeManagerTest, EnableAfterBackgroundAppInstall) {
 
   // Uninstall app, should hide status tray icon again.
   manager.OnBackgroundAppUnloaded();
-  manager.OnBackgroundAppUninstalled(&profile);
+  manager.OnBackgroundAppUninstalled();
 }
 
 TEST_F(BackgroundModeManagerTest, MultiProfile) {
@@ -143,23 +142,24 @@ TEST_F(BackgroundModeManagerTest, MultiProfile) {
   manager.RegisterProfile(&profile1);
   manager.RegisterProfile(&profile2);
   EXPECT_CALL(manager, EnableLaunchOnStartup(true));
-  EXPECT_CALL(manager, CreateStatusTrayIcon(_)).Times(2);
-  EXPECT_CALL(manager, RemoveStatusTrayIcon(_)).Times(2);
+  EXPECT_CALL(manager, CreateStatusTrayIcon()).Times(2);
+  EXPECT_CALL(manager, RemoveStatusTrayIcon());
   EXPECT_CALL(manager, EnableLaunchOnStartup(false));
   EXPECT_CALL(manager, EnableLaunchOnStartup(true));
-  EXPECT_CALL(manager, RemoveStatusTrayIcon(_)).Times(4);
+  EXPECT_CALL(manager, CreateStatusTrayIcon());
+  EXPECT_CALL(manager, RemoveStatusTrayIcon());
   EXPECT_CALL(manager, EnableLaunchOnStartup(false));
   EXPECT_FALSE(BrowserList::WillKeepAlive());
 
   // Install app, should show status tray icon.
-  manager.OnBackgroundAppInstalled(NULL, &profile1);
+  manager.OnBackgroundAppInstalled(NULL);
   // OnBackgroundAppInstalled does not actually add an app to the
   // BackgroundApplicationListModel which would result in another
   // call to CreateStatusTray.
   manager.OnBackgroundAppLoaded();
 
   // Install app for other profile, hsould show other status tray icon.
-  manager.OnBackgroundAppInstalled(NULL, &profile2);
+  manager.OnBackgroundAppInstalled(NULL);
   manager.OnBackgroundAppLoaded();
 
   // Should hide both status tray icons.
@@ -171,10 +171,10 @@ TEST_F(BackgroundModeManagerTest, MultiProfile) {
   manager.EnableBackgroundMode();
 
   manager.OnBackgroundAppUnloaded();
-  manager.OnBackgroundAppUninstalled(&profile1);
+  manager.OnBackgroundAppUninstalled();
   // There is still one background app alive
   EXPECT_TRUE(BrowserList::WillKeepAlive());
   manager.OnBackgroundAppUnloaded();
-  manager.OnBackgroundAppUninstalled(&profile2);
+  manager.OnBackgroundAppUninstalled();
   EXPECT_FALSE(BrowserList::WillKeepAlive());
 }

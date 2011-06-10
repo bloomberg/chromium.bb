@@ -235,6 +235,16 @@ Other platform defines such as use_titlecase are declared in build/common.gypi.
       <message name="IDS_BACKGROUND_CRASHED_EXTENSION_BALLOON_MESSAGE" desc="The contents of the balloon that is displayed when an extension crashes">
         <ph name="APP_NAME">$1<ex>Extension</ex></ph> has crashed. Click this balloon to reload the extension.
       </message>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_BACKGROUND_APP_NOT_INSTALLED" desc="In Title Case: Label displayed in the status icon context menu when a profile does not have any background apps running.">
+          No Background Apps Running
+        </message>
+      </if>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_BACKGROUND_APP_NOT_INSTALLED" desc="Label displayed in the status icon context menu when a profile does not have any background apps running.">
+          No background apps running
+        </message>
+      </if>
 
       <message name="IDS_SHOWFULLHISTORY_LINK" desc="The label of the Show Full History link at the bottom of the back/forward menu.">
         Show Full History
@@ -8159,6 +8169,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
           not signed in
         </message>
       </if>
+      <message name="IDS_PROFILES_DEFAULT_NAME" desc="The name to display for a profile when the user is not signed in.">
+        Default
+      </message>
       <message name="IDS_SYNC_CUSTOMIZE_LINK_LABEL" desc="The text to display on the link to customize the sync preferences.">
         Customize
       </message>
