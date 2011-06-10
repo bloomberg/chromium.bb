@@ -181,6 +181,8 @@ ContentSetting HostContentSettingsMap::GetCookieContentSetting(
     const GURL& url,
     const GURL& first_party_url,
     bool setting_cookie) const {
+  if (ShouldAllowAllContent(first_party_url))
+    return CONTENT_SETTING_ALLOW;
   ContentSetting setting = CONTENT_SETTING_ALLOW;
   if (BlockThirdPartyCookies()) {
     bool strict = CommandLine::ForCurrentProcess()->HasSwitch(

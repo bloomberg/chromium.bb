@@ -908,6 +908,7 @@ TEST_F(HostContentSettingsMapTest, ResetToDefaultsWhenManaged) {
 const GURL kBlockedSite = GURL("http://ads.thirdparty.com");
 const GURL kAllowedSite = GURL("http://good.allays.com");
 const GURL kFirstPartySite = GURL("http://cool.things.com");
+const GURL kExtensionURL = GURL("chrome-extension://deadbeef");
 
 TEST_F(HostContentSettingsMapTest, CookiesBlockSingle) {
   TestingProfile profile;
@@ -1013,6 +1014,14 @@ TEST_F(HostContentSettingsMapTest, CookiesThirdPartyAlwaysBlocked) {
             host_content_settings_map->GetCookieContentSetting(
                 kAllowedSite, kFirstPartySite, true));
 
+  // Extensions should always be allowed to use cookies.
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetCookieContentSetting(
+                kAllowedSite, kExtensionURL, false));
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetCookieContentSetting(
+                kAllowedSite, kExtensionURL, true));
+
   CommandLine* cmd = CommandLine::ForCurrentProcess();
   AutoReset<CommandLine> auto_reset(cmd, *cmd);
   cmd->AppendSwitch(switches::kBlockReadingThirdPartyCookies);
@@ -1020,6 +1029,14 @@ TEST_F(HostContentSettingsMapTest, CookiesThirdPartyAlwaysBlocked) {
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             host_content_settings_map->GetCookieContentSetting(
                 kAllowedSite, kFirstPartySite, false));
+
+  // Extensions should always be allowed to use cookies.
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetCookieContentSetting(
+                kAllowedSite, kExtensionURL, false));
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetCookieContentSetting(
+                kAllowedSite, kExtensionURL, true));
 }
 
 TEST_F(HostContentSettingsMapTest, CookiesBlockEverything) {
