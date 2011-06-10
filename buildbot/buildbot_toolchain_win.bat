@@ -5,4 +5,5 @@
 setlocal
 call "%~dp0cygwin_env.bat"
 bash -c "buildbot/buildbot_toolchain.sh win"
+if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
 endlocal
