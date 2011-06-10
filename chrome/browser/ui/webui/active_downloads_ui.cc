@@ -33,7 +33,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/browser/ui/webui/favicon_source.h"
+#include "chrome/browser/ui/webui/fileicon_source_cros.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/jstemplate_builder.h"
@@ -147,8 +147,12 @@ void ActiveDownloadsUIHTMLSource::StartDataRequest(const std::string& path,
                                               bool is_incognito,
                                               int request_id) {
   DictionaryValue localized_strings;
-  localized_strings.SetString("allowdownload",
+  localized_strings.SetString("dangerousfile",
+      l10n_util::GetStringUTF16(IDS_PROMPT_DANGEROUS_DOWNLOAD));
+  localized_strings.SetString("dangerousextension",
       l10n_util::GetStringUTF16(IDS_PROMPT_DANGEROUS_DOWNLOAD_EXTENSION));
+  localized_strings.SetString("dangerousurl",
+      l10n_util::GetStringUTF16(IDS_PROMPT_UNSAFE_DOWNLOAD_URL));
   localized_strings.SetString("cancel",
       l10n_util::GetStringUTF16(IDS_DOWNLOAD_LINK_CANCEL));
   localized_strings.SetString("discard",
@@ -205,10 +209,8 @@ ActiveDownloadsHandler::~ActiveDownloadsHandler() {
 }
 
 WebUIMessageHandler* ActiveDownloadsHandler::Attach(WebUI* web_ui) {
-  // Create our favicon data source.
   profile_ = web_ui->GetProfile();
-  profile_->GetChromeURLDataManager()->AddDataSource(
-      new FaviconSource(profile_, FaviconSource::FAVICON));
+  profile_->GetChromeURLDataManager()->AddDataSource(new FileIconSourceCros());
   tab_contents_ = web_ui->tab_contents();
   return WebUIMessageHandler::Attach(web_ui);
 }
