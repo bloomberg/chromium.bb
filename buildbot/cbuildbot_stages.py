@@ -310,6 +310,10 @@ class BuilderStage(object):
 
   def _Begin(self):
     """Can be overridden.  Called before a stage is performed."""
+
+    # Tell the buildbot we are starting a new step for the waterfall
+    print '@@@BUILD_STEP %s@@@' % self._name
+
     self._PrintLoudly('Start Stage %s - %s\n\n%s' % (
         self._name, time.strftime('%H:%M:%S'), self.__doc__))
 
@@ -343,6 +347,9 @@ class BuilderStage(object):
       print >> sys.stderr, description
       elapsed_time = time.time() - start_time
       Results.Record(self._name, e, description, time=elapsed_time)
+
+      # Tell the build bot this step failed for the waterfall
+      print '@@@STEP_FAILURE@@@'
 
       raise BuildException()
     else:
