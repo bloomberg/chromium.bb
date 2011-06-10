@@ -261,9 +261,7 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   virtual void OnMouseActivate();
   void ForwardWheelEvent(const WebKit::WebMouseWheelEvent& wheel_event);
   virtual void ForwardKeyboardEvent(const NativeWebKeyboardEvent& key_event);
-#if defined(TOUCH_UI)
   virtual void ForwardTouchEvent(const WebKit::WebTouchEvent& touch_event);
-#endif
 
 
   // Update the text direction of the focused input element and notify it to a
@@ -589,6 +587,19 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   // mechanism as for mouse moves (just dropping old events when multiple ones
   // would be queued) results in very slow scrolling.
   WheelEventQueue coalesced_mouse_wheel_events_;
+
+  // True if a touch move event was sent to the renderer view and we are waiting
+  // for a corresponding ACK message.
+  bool touch_move_pending_;
+
+  // If a touch move event comes in while we are waiting for an ACK for a
+  // previously sent touch move event, it will be stored here. A touch event
+  // stores the location of the moved point, instead of the amount that it
+  // moved. So it is not necessary to coalesce the move events (as is done for
+  // mouse wheel events). Storing the most recent event for dispatch is
+  // sufficient.
+  WebKit::WebTouchEvent queued_touch_event_;
+  bool touch_event_is_queued_;
 
   // The time when an input event was sent to the RenderWidget.
   base::TimeTicks input_event_start_time_;

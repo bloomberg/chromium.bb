@@ -75,6 +75,8 @@ RenderWidgetHost::RenderWidgetHost(RenderProcessHost* process,
       resize_ack_pending_(false),
       mouse_move_pending_(false),
       mouse_wheel_pending_(false),
+      touch_move_pending_(false),
+      touch_event_is_queued_(false),
       needs_repainting_on_restore_(false),
       is_unresponsive_(false),
       in_get_backing_store_(false),
@@ -643,13 +645,25 @@ void RenderWidgetHost::ForwardInputEvent(const WebInputEvent& input_event,
   StartHangMonitorTimeout(TimeDelta::FromMilliseconds(kHungRendererDelayMs));
 }
 
-#if defined(TOUCH_UI)
 void RenderWidgetHost::ForwardTouchEvent(
     const WebKit::WebTouchEvent& touch_event) {
   TRACE_EVENT0("renderer_host", "RenderWidgetHost::ForwardTouchEvent");
+  if (ignore_input_events_ || process_->ignore_input_events())
+    return;
+
+  if (touch_event.type == WebInputEvent::TouchMove &&
+      touch_move_pending_) {
+    touch_event_is_queued_ = true;
+    queued_touch_event_ = touch_event;
+    return;
+  }
+
+  if (touch_event.type == WebInputEvent::TouchMove)
+    touch_move_pending_ = true;
+  else
+    touch_move_pending_ = false;
   ForwardInputEvent(touch_event, sizeof(WebKit::WebTouchEvent), false);
 }
-#endif
 
 void RenderWidgetHost::RendererExited(base::TerminationStatus status,
                                       int exit_code) {
@@ -663,6 +677,8 @@ void RenderWidgetHost::RendererExited(base::TerminationStatus status,
   next_mouse_move_.reset();
   mouse_wheel_pending_ = false;
   coalesced_mouse_wheel_events_.clear();
+  touch_move_pending_ = false;
+  touch_event_is_queued_ = false;
 
   // Must reset these to ensure that keyboard events work with a new renderer.
   key_queue_.clear();
@@ -992,6 +1008,12 @@ void RenderWidgetHost::OnMsgInputEventAck(const IPC::Message& message) {
     }
 
     ProcessKeyboardEventAck(type, processed);
+  } else if (type == WebInputEvent::TouchMove) {
+    touch_move_pending_ = false;
+    if (touch_event_is_queued_) {
+      touch_event_is_queued_ = false;
+      ForwardTouchEvent(queued_touch_event_);
+    }
   }
   // This is used only for testing.
   NotificationService::current()->Notify(
