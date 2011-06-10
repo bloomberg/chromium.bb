@@ -248,9 +248,6 @@ bool IsSingleProcess();
 // Enables/Disables Spdy for requests afterwards. Used for benchmarking.
 void EnableSpdy(bool enable);
 
-// Notifies the browser that the given action has been performed.
-void UserMetricsRecordAction(const std::string& action);
-
 #if defined(OS_LINUX)
 // Return a read-only file descriptor to the font which best matches the given
 // properties or -1 on failure.

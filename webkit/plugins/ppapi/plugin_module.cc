@@ -90,7 +90,6 @@
 #include "webkit/plugins/ppapi/ppb_graphics_2d_impl.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
 #include "webkit/plugins/ppapi/ppb_layer_compositor_impl.h"
-#include "webkit/plugins/ppapi/ppb_pdf_impl.h"
 #include "webkit/plugins/ppapi/ppb_proxy_impl.h"
 #include "webkit/plugins/ppapi/ppb_scrollbar_impl.h"
 #include "webkit/plugins/ppapi/ppb_transport_impl.h"
@@ -310,8 +309,6 @@ const void* GetInterface(const char* name) {
     return PluginInstance::GetPrivateInterface();
   if (strcmp(name, PPB_MESSAGING_INTERFACE) == 0)
     return PluginInstance::GetMessagingInterface();
-  if (strcmp(name, PPB_PDF_INTERFACE) == 0)
-    return PPB_PDF_Impl::GetInterface();
   if (strcmp(name, PPB_PROXY_PRIVATE_INTERFACE) == 0)
     return PPB_Proxy_Impl::GetInterface();
   if (strcmp(name, PPB_SCROLLBAR_DEV_INTERFACE) == 0)

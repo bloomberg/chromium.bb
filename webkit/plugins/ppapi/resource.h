@@ -42,8 +42,7 @@ namespace ppapi {
   F(PPB_URLResponseInfo_Impl) \
   F(PPB_VideoDecoder_Impl) \
   F(PPB_VideoLayer_Impl) \
-  F(PPB_Widget_Impl) \
-  F(PrivateFontFile)
+  F(PPB_Widget_Impl)
 
 // Forward declaration of Resource classes.
 #define DECLARE_RESOURCE_CLASS(RESOURCE) class RESOURCE;

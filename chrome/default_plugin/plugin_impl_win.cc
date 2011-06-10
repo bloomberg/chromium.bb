@@ -16,6 +16,7 @@
 #include "googleurl/src/gurl.h"
 #include "grit/webkit_strings.h"
 #include "net/base/net_errors.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "unicode/locid.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/plugins/npapi/default_plugin_shared.h"
@@ -202,8 +203,8 @@ void PluginInstallerImpl::DisplayAvailablePluginStatus() {
       IDS_DEFAULT_PLUGIN_GET_PLUGIN_MSG_NO_PLUGIN_NAME,
       plugin_name_);
   optional_additional_message_ =
-      webkit_glue::GetLocalizedString(IDS_DEFAULT_PLUGIN_GET_PLUGIN_MSG_2);
-  get_plugin_link_message_ = webkit_glue::GetLocalizedString(
+      l10n_util::GetStringUTF16(IDS_DEFAULT_PLUGIN_GET_PLUGIN_MSG_2);
+  get_plugin_link_message_ = l10n_util::GetStringUTF16(
       IDS_DEFAULT_PLUGIN_GET_THE_PLUGIN_BTN_MSG);
   RefreshDisplay();
 }
@@ -211,13 +212,13 @@ void PluginInstallerImpl::DisplayAvailablePluginStatus() {
 void PluginInstallerImpl::DisplayStatus(int message_resource_id) {
   ClearDisplay();
   command_ =
-      webkit_glue::GetLocalizedString(message_resource_id);
+      l10n_util::GetStringUTF16(message_resource_id);
   RefreshDisplay();
 }
 
 void PluginInstallerImpl::DisplayPluginDownloadFailedStatus() {
   ClearDisplay();
-  command_ = webkit_glue::GetLocalizedString(
+  command_ = l10n_util::GetStringUTF16(
       IDS_DEFAULT_PLUGIN_DOWNLOAD_FAILED_MSG);
   command_ = ReplaceStringPlaceholders(
       command_,
@@ -287,10 +288,10 @@ std::wstring PluginInstallerImpl::ReplaceStringForPossibleEmptyReplacement(
   // placeholder with the replacement_string. Otherwise return the string
   // identified by resource id messsage_id_without_placeholders.
   if (replacement_string.empty()) {
-    return webkit_glue::GetLocalizedString(messsage_id_without_placeholders);
+    return l10n_util::GetStringUTF16(messsage_id_without_placeholders);
   } else {
     std::wstring string_with_placeholders =
-        webkit_glue::GetLocalizedString(message_id_with_placeholders);
+        l10n_util::GetStringUTF16(message_id_with_placeholders);
     return ReplaceStringPlaceholders(string_with_placeholders,
                                      replacement_string, NULL);
   }

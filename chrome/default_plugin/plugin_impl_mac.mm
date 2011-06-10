@@ -13,6 +13,7 @@
 #include "googleurl/src/gurl.h"
 #include "grit/default_plugin_resources.h"
 #include "grit/webkit_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image.h"
@@ -47,7 +48,7 @@ bool PluginInstallerImpl::Initialize(void* module_handle, NPP instance,
   instance_ = instance;
   mime_type_ = mime_type;
 
-  command_ = [l10n_util::FixUpWindowsStyleLabel(webkit_glue::GetLocalizedString(
+  command_ = [l10n_util::FixUpWindowsStyleLabel(l10n_util::GetStringUTF16(
       IDS_DEFAULT_PLUGIN_NO_PLUGIN_AVAILABLE_MSG)) retain];
 
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();

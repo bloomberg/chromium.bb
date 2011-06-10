@@ -8,8 +8,10 @@
 #include "base/rand_util_c.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/renderer/chrome_ppb_pdf_impl.h"
 #include "content/renderer/render_thread.h"
 #include "ppapi/c/private/ppb_nacl_private.h"
+#include "ppapi/c/private/ppb_pdf.h"
 #include "webkit/plugins/ppapi/ppapi_interface_factory.h"
 
 #if !defined(DISABLE_NACL)
@@ -60,9 +62,20 @@ const PPB_NaCl_Private ppb_nacl = {
   &UrandomFD,
 };
 
+class PPB_NaCl_Impl {
+ public:
+  // Returns a pointer to the interface implementing PPB_NaCl_Private that is
+  // exposed to the plugin.
+  static const PPB_NaCl_Private* GetInterface() {
+    return &ppb_nacl;
+  }
+};
+
 const void* ChromePPAPIInterfaceFactory(const std::string& interface_name) {
   if (interface_name == PPB_NACL_PRIVATE_INTERFACE)
-    return &ppb_nacl;
+    return chrome::PPB_NaCl_Impl::GetInterface();
+  if (interface_name == PPB_PDF_INTERFACE)
+    return chrome::PPB_PDF_Impl::GetInterface();
   return NULL;
 }
 

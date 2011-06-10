@@ -10,6 +10,7 @@
 #include "base/string_util.h"
 #include "chrome/default_plugin/plugin_impl.h"
 #include "grit/webkit_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "webkit/glue/webkit_glue.h"
 
 typedef base::hash_map<const std::wstring, PluginInstallDialog*> DialogMap;
@@ -149,13 +150,13 @@ LRESULT PluginInstallDialog::OnInitDialog(UINT message, WPARAM wparam,
   SetWindowText(dialog_title.c_str());
 
   std::wstring get_the_plugin_btn_msg =
-      webkit_glue::GetLocalizedString(
+      l10n_util::GetStringUTF16(
           IDS_DEFAULT_PLUGIN_GET_THE_PLUGIN_BTN_MSG);
   AdjustTextDirectionality(&get_the_plugin_btn_msg);
   SetDlgItemText(IDB_GET_THE_PLUGIN, get_the_plugin_btn_msg.c_str());
 
   std::wstring cancel_plugin_download_msg =
-      webkit_glue::GetLocalizedString(
+      l10n_util::GetStringUTF16(
           IDS_DEFAULT_PLUGIN_CANCEL_PLUGIN_DOWNLOAD_MSG);
   AdjustTextDirectionality(&cancel_plugin_download_msg);
   SetDlgItemText(IDCANCEL, cancel_plugin_download_msg.c_str());

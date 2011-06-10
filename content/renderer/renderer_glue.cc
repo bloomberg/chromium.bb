@@ -30,6 +30,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_switches.h"
 #include "webkit/glue/scoped_clipboard_writer_glue.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/websocketstreamhandle_bridge.h"
@@ -268,5 +269,18 @@ bool GetFontTable(int fd, uint32_t table, uint8_t* output,
       fd, table, output, output_length);
 }
 #endif
+
+std::string GetWebKitLocale() {
+  // The browser process should have passed the locale to the renderer via the
+  // --lang command line flag.  In single process mode, this will return the
+  // wrong value.  TODO(tc): Fix this for single process mode.
+  const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
+  const std::string& lang =
+      parsed_command_line.GetSwitchValueASCII(switches::kLang);
+  DCHECK(!lang.empty() ||
+      (!parsed_command_line.HasSwitch(switches::kRendererProcess) &&
+       !parsed_command_line.HasSwitch(switches::kPluginProcess)));
+  return lang;
+}
 
 }  // namespace webkit_glue

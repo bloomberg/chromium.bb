@@ -99,6 +99,8 @@
         'renderer/chrome_content_renderer_client.h',
         'renderer/chrome_ppapi_interfaces.cc',
         'renderer/chrome_ppapi_interfaces.h',
+        'renderer/chrome_ppb_pdf_impl.cc',
+        'renderer/chrome_ppb_pdf_impl.h',
         'renderer/chrome_render_process_observer.cc',
         'renderer/chrome_render_process_observer.h',
         'renderer/chrome_render_view_observer.cc',

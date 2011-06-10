@@ -13,11 +13,6 @@
 
 namespace webkit_glue {
 
-void UserMetricsRecordAction(const std::string& action) {
-  RenderThread::current()->Send(
-      new ViewHostMsg_UserMetricsRecordAction(action));
-}
-
 std::string GetProductVersion() {
   chrome::VersionInfo version_info;
   std::string product("Chrome/");

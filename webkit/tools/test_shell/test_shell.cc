@@ -662,9 +662,6 @@ void EnableSpdy(bool enable) {
   // Used in benchmarking,  Ignored for test_shell.
 }
 
-void UserMetricsRecordAction(const std::string& action) {
-}
-
 std::string GetProductVersion() {
   return std::string("Chrome/0.0.0.0");
 }

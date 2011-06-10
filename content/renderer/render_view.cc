@@ -1489,7 +1489,8 @@ void RenderView::didExecuteCommand(const WebString& command_name) {
       StartsWithASCII(name, "Insert", true) ||
       StartsWithASCII(name, "Delete", true))
     return;
-  webkit_glue::UserMetricsRecordAction(name);
+  RenderThread::current()->Send(
+      new ViewHostMsg_UserMetricsRecordAction(name));
 }
 
 void RenderView::SendPendingAccessibilityNotifications() {

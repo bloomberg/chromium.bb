@@ -2,17 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/plugins/ppapi/ppb_pdf_impl.h"
+#include "chrome/renderer/chrome_ppb_pdf_impl.h"
 
 #include "base/metrics/histogram.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "content/common/view_messages.h"
+#include "content/renderer/render_thread.h"
 #include "grit/webkit_resources.h"
 #include "grit/webkit_strings.h"
-#include "skia/ext/platform_canvas.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/private/ppb_pdf.h"
+#include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "unicode/usearch.h"
 #include "webkit/glue/webkit_glue.h"
@@ -22,32 +25,32 @@
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
 #include "webkit/plugins/ppapi/var.h"
 
-namespace webkit {
-namespace ppapi {
+namespace chrome {
 
 #if defined(OS_LINUX)
-class PrivateFontFile : public Resource {
+class PrivateFontFile : public webkit::ppapi::Resource {
  public:
-  PrivateFontFile(PluginInstance* instance, int fd)
-      : Resource(instance),
+  PrivateFontFile(webkit::ppapi::PluginInstance* instance, int fd)
+      : webkit::ppapi::Resource(instance),
         fd_(fd) {
   }
   virtual ~PrivateFontFile() {
   }
 
-  // Resource overrides.
-  PrivateFontFile* AsPrivateFontFile() { return this; }
-
   bool GetFontTable(uint32_t table,
                     void* output,
-                    uint32_t* output_length);
+                    uint32_t* output_length) {
+    size_t temp_size = static_cast<size_t>(*output_length);
+    bool rv = webkit_glue::GetFontTable(
+        fd_, table, static_cast<uint8_t*>(output), &temp_size);
+    *output_length = static_cast<uint32_t>(temp_size);
+    return rv;
+  }
 
  private:
   int fd_;
 };
 #endif
-
-namespace {
 
 struct ResourceImageInfo {
   PP_ResourceImage pp_id;
@@ -107,24 +110,25 @@ static const ResourceImageInfo kResourceImageMap[] = {
 
 PP_Var GetLocalizedString(PP_Instance instance_id,
                           PP_ResourceString string_id) {
-  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
+  webkit::ppapi::PluginInstance* instance =
+      webkit::ppapi::ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance)
     return PP_MakeUndefined();
 
   std::string rv;
   if (string_id == PP_RESOURCESTRING_PDFGETPASSWORD) {
-    rv = UTF16ToUTF8(webkit_glue::GetLocalizedString(IDS_PDF_NEED_PASSWORD));
+    rv = UTF16ToUTF8(l10n_util::GetStringUTF16(IDS_PDF_NEED_PASSWORD));
   } else if (string_id == PP_RESOURCESTRING_PDFLOADING) {
-    rv = UTF16ToUTF8(webkit_glue::GetLocalizedString(IDS_PDF_PAGE_LOADING));
+    rv = UTF16ToUTF8(l10n_util::GetStringUTF16(IDS_PDF_PAGE_LOADING));
   } else if (string_id == PP_RESOURCESTRING_PDFLOAD_FAILED) {
-    rv = UTF16ToUTF8(webkit_glue::GetLocalizedString(IDS_PDF_PAGE_LOAD_FAILED));
+    rv = UTF16ToUTF8(l10n_util::GetStringUTF16(IDS_PDF_PAGE_LOAD_FAILED));
   } else if (string_id == PP_RESOURCESTRING_PDFPROGRESSLOADING) {
-    rv = UTF16ToUTF8(webkit_glue::GetLocalizedString(IDS_PDF_PROGRESS_LOADING));
+    rv = UTF16ToUTF8(l10n_util::GetStringUTF16(IDS_PDF_PROGRESS_LOADING));
   } else {
     NOTREACHED();
   }
 
-  return StringVar::StringToPPVar(instance->module(), rv);
+  return webkit::ppapi::StringVar::StringToPPVar(instance->module(), rv);
 }
 
 PP_Resource GetResourceImage(PP_Instance instance_id,
@@ -142,17 +146,19 @@ PP_Resource GetResourceImage(PP_Instance instance_id,
   SkBitmap* res_bitmap =
       ResourceBundle::GetSharedInstance().GetBitmapNamed(res_id);
 
-  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
+  webkit::ppapi::PluginInstance* instance =
+      webkit::ppapi::ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance)
     return 0;
-  scoped_refptr<PPB_ImageData_Impl> image_data(
-      new PPB_ImageData_Impl(instance));
-  if (!image_data->Init(PPB_ImageData_Impl::GetNativeImageDataFormat(),
-                        res_bitmap->width(), res_bitmap->height(), false)) {
+  scoped_refptr<webkit::ppapi::PPB_ImageData_Impl> image_data(
+      new webkit::ppapi::PPB_ImageData_Impl(instance));
+  if (!image_data->Init(
+          webkit::ppapi::PPB_ImageData_Impl::GetNativeImageDataFormat(),
+          res_bitmap->width(), res_bitmap->height(), false)) {
     return 0;
   }
 
-  ImageDataAutoMapper mapper(image_data);
+  webkit::ppapi::ImageDataAutoMapper mapper(image_data);
   if (!mapper.is_valid())
     return 0;
 
@@ -169,11 +175,13 @@ PP_Resource GetFontFileWithFallback(
     const PP_FontDescription_Dev* description,
     PP_PrivateFontCharset charset) {
 #if defined(OS_LINUX)
-  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
+  webkit::ppapi::PluginInstance* instance =
+      webkit::ppapi::ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance)
     return 0;
 
-  scoped_refptr<StringVar> face_name(StringVar::FromPPVar(description->face));
+  scoped_refptr<webkit::ppapi::StringVar>
+      face_name(webkit::ppapi::StringVar::FromPPVar(description->face));
   if (!face_name)
     return 0;
 
@@ -200,9 +208,13 @@ bool GetFontTableForPrivateFontFile(PP_Resource font_file,
                                     void* output,
                                     uint32_t* output_length) {
 #if defined(OS_LINUX)
-  scoped_refptr<PrivateFontFile> font(
-      Resource::GetAs<PrivateFontFile>(font_file));
-  if (!font.get())
+  scoped_refptr<webkit::ppapi::Resource>
+      resource(webkit::ppapi::ResourceTracker::Get()->GetResource(font_file));
+  if (!resource.get())
+    return false;
+
+  PrivateFontFile* font = static_cast<PrivateFontFile*>(resource.get());
+  if (!font)
     return false;
   return font->GetFontTable(table, output, output_length);
 #else
@@ -261,21 +273,24 @@ void SearchString(PP_Instance instance,
 }
 
 void DidStartLoading(PP_Instance instance_id) {
-  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
+  webkit::ppapi::PluginInstance* instance =
+      webkit::ppapi::ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance)
     return;
   instance->delegate()->DidStartLoading();
 }
 
 void DidStopLoading(PP_Instance instance_id) {
-  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
+  webkit::ppapi::PluginInstance* instance =
+      webkit::ppapi::ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance)
     return;
   instance->delegate()->DidStopLoading();
 }
 
 void SetContentRestriction(PP_Instance instance_id, int restrictions) {
-  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
+  webkit::ppapi::PluginInstance* instance =
+      webkit::ppapi::ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance)
     return;
   instance->delegate()->SetContentRestriction(restrictions);
@@ -286,13 +301,16 @@ void HistogramPDFPageCount(int count) {
 }
 
 void UserMetricsRecordAction(PP_Var action) {
-  scoped_refptr<StringVar> action_str(StringVar::FromPPVar(action));
+  scoped_refptr<webkit::ppapi::StringVar>
+      action_str(webkit::ppapi::StringVar::FromPPVar(action));
   if (action_str)
-    webkit_glue::UserMetricsRecordAction(action_str->value());
+    RenderThread::current()->Send(
+        new ViewHostMsg_UserMetricsRecordAction(action_str->value()));
 }
 
 void HasUnsupportedFeature(PP_Instance instance_id) {
-  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
+  webkit::ppapi::PluginInstance* instance =
+      webkit::ppapi::ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance)
     return;
 
@@ -304,7 +322,8 @@ void HasUnsupportedFeature(PP_Instance instance_id) {
 }
 
 void SaveAs(PP_Instance instance_id) {
-  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
+  webkit::ppapi::PluginInstance* instance =
+      webkit::ppapi::ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance)
     return;
   instance->delegate()->SaveURLAs(instance->plugin_url());
@@ -325,24 +344,10 @@ const PPB_PDF ppb_pdf = {
   &SaveAs
 };
 
-}  // namespace
-
 // static
 const PPB_PDF* PPB_PDF_Impl::GetInterface() {
   return &ppb_pdf;
 }
 
-#if defined(OS_LINUX)
-bool PrivateFontFile::GetFontTable(uint32_t table,
-                                   void* output,
-                                   uint32_t* output_length) {
-  size_t temp_size = static_cast<size_t>(*output_length);
-  bool rv = webkit_glue::GetFontTable(
-      fd_, table, static_cast<uint8_t*>(output), &temp_size);
-  *output_length = static_cast<uint32_t>(temp_size);
-  return rv;
-}
-#endif
+}  // namespace chrome
 
-}  // namespace ppapi
-}  // namespace webkit
