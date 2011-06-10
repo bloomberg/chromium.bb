@@ -792,7 +792,7 @@ endif
 .PHONY: gcc-redirector
 gcc-redirector:
 ifeq ($(PLATFORM), win)
-	redirector.exe | while read from ; do \
+	./redirector.exe | while read from ; do \
 	  ln -fn redirector.exe "$(DESTDIR)$(SDKROOT)$$from"; \
 	done;
 else
