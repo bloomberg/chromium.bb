@@ -656,6 +656,9 @@ def ParseOptions():
   return options
 
 def main():
+  # Set umask to a sane value so that files created as root are readable.
+  os.umask(022)
+
   options = ParseOptions()
 
   # Calculate a list of Packages index files to compare against. Whenever we
