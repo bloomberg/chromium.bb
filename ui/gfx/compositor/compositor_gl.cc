@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/threading/thread_restrictions.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkMatrix.h"
 #include "third_party/skia/include/core/SkScalar.h"
@@ -356,6 +357,10 @@ bool CompositorGL::InitShaders() {
 
 // static
 Compositor* Compositor::Create(gfx::AcceleratedWidget widget) {
+  // The following line of code exists soley to disable IO restrictions
+  // on this thread long enough to perform the GL bindings.
+  // TODO(wjmaclean) Remove this when GL initialisation cleaned up.
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   gfx::GLSurface::InitializeOneOff();
   if (gfx::GetGLImplementation() != gfx::kGLImplementationNone)
     return new glHidden::CompositorGL(widget);
