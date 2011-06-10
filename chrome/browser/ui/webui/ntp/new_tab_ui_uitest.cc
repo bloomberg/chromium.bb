@@ -32,7 +32,13 @@ class NewTabUITest : public UITest {
   }
 };
 
-TEST_F(NewTabUITest, NTPHasThumbnails) {
+#if defined(OS_LINUX)
+// This test is flaky on Linux and CrOS: http://crbug/
+#define MAYBE_NTPHasThumbnails FLAKY_NTPHasThumbnails
+#else
+#define MAYBE_NTPHasThumbnails NTPHasThumbnails
+#endif
+TEST_F(NewTabUITest, MAYBE_NTPHasThumbnails) {
   // Switch to the "new tab" tab, which should be any new tab after the
   // first (the first is about:blank).
   scoped_refptr<BrowserProxy> window(automation()->GetBrowserWindow(0));
