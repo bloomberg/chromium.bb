@@ -144,3 +144,10 @@ fun_r:gaih_inet
 # Strange reports below _IO_getline, every time in "Concurrent access".
 # Probably the reports are there since we're missing the libc internal locks
 fun_r:_IO_getline*
+
+# A benign race in glib on something called "contention_counter". 
+fun:g_slice_alloc
+
+# A benign race in glibc on "random_time_bits".
+fun:__gen_tempname
+
