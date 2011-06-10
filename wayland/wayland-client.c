@@ -113,6 +113,7 @@ wl_display_add_global_listener(struct wl_display *display,
 			       wl_display_global_func_t handler, void *data)
 {
 	struct wl_global_listener *listener;
+	struct wl_global *global;
 
 	listener = malloc(sizeof *listener);
 	if (listener == NULL)
@@ -121,6 +122,10 @@ wl_display_add_global_listener(struct wl_display *display,
 	listener->handler = handler;
 	listener->data = data;
 	wl_list_insert(display->global_listener_list.prev, &listener->link);
+
+	wl_list_for_each(global, &display->global_list, link)
+		(*listener->handler)(display, global->id, global->interface,
+				     global->version, listener->data);
 
 	return listener;
 }
