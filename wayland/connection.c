@@ -327,6 +327,10 @@ void
 wl_connection_write(struct wl_connection *connection,
 		    const void *data, size_t count)
 {
+	if (connection->out.head - connection->out.tail +
+	    count > ARRAY_LENGTH(connection->out.data))
+		wl_connection_data(connection, WL_CONNECTION_WRITABLE);
+
 	wl_buffer_put(&connection->out, data, count);
 
 	if (connection->out.head - connection->out.tail == count)
