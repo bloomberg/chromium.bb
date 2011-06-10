@@ -21,16 +21,18 @@
 
 class Profile;
 
-// BrowsingDataFileSystemHelper is an interface for classes dealing with
-// aggregating and deleting browsing data stored in local filesystems.  A
-// client of this class needs to call StartFetching from the UI thread to
-// initiate the flow, and it'll be notified by the callback in its UI thread at
-// some later point.  The client must call CancelNotification() if it's
-// destroyed before the callback is notified.
+// Defines an interface for classes that deal with aggregating and deleting
+// browsing data stored in an origin's file systems. Clients of this interface
+// must call StartFetching from the UI thread to initiate the flow, and will
+// be notified via a callback at some later point (also in the UI thread). If
+// the client is destroyed before the callback is triggered, it must call
+// CancelNotification.
 class BrowsingDataFileSystemHelper
     : public base::RefCountedThreadSafe<BrowsingDataFileSystemHelper> {
  public:
-  // Contains detailed information about a filesystem
+  // Detailed information about a file system, including it's origin GURL,
+  // the presence or absence of persistent and temporary storage, and the
+  // amount of data (in bytes) each contains.
   struct FileSystemInfo {
     FileSystemInfo(
         const GURL& origin,
@@ -40,10 +42,6 @@ class BrowsingDataFileSystemHelper
         int64 usage_temporary);
     ~FileSystemInfo();
 
-    bool IsFileSchemeData() {
-      return origin.scheme() == chrome::kFileScheme;
-    }
-
     GURL origin;
     bool has_persistent;
     bool has_temporary;
@@ -51,20 +49,23 @@ class BrowsingDataFileSystemHelper
     int64 usage_temporary;
   };
 
-  // Create a BrowsingDataFileSystemHelper instance for the filesystems
+  // Create a BrowsingDataFileSystemHelper instance for the file systems
   // stored in |profile|'s user data directory.
   static BrowsingDataFileSystemHelper* Create(Profile* profile);
 
-  // Starts the fetching process, which will notify its completion via
-  // callback.
+  // Starts the process of fetching file system data, which will call |callback|
+  // upon completion, passing it a constant vector of FileSystemInfo objects.
   // This must be called only in the UI thread.
   virtual void StartFetching(
       Callback1<const std::vector<FileSystemInfo>& >::Type* callback) = 0;
-  // Cancels the notification callback (i.e., the window that created it no
-  // longer exists).
-  // This must be called only in the UI thread.
+
+  // Cancels the notification callback associated with StartFetching. Clients
+  // that are destroyed before the callback is triggered must call this, and
+  // it must be called only on the UI thread.
   virtual void CancelNotification() = 0;
-  // Requests a single filesystem to be deleted in the FILE thread.
+
+  // Deletes all file systems associated with |origin|. The deletion will occur
+  // on the FILE thread, but this function must be called only on the UI thread.
   virtual void DeleteFileSystemOrigin(const GURL& origin) = 0;
 
  protected:
@@ -72,26 +73,31 @@ class BrowsingDataFileSystemHelper
   virtual ~BrowsingDataFileSystemHelper() {}
 };
 
-// This class is an implementation of BrowsingDataFileSystemHelper that does
-// not fetch its information from the filesystem tracker, but gets it passed
-// in as a parameter.
+// An implementation of the BrowsingDataFileSystemHelper interface that can
+// be manually populated with data, rather than fetching data from the file
+// systems created in a particular Profile.
 class CannedBrowsingDataFileSystemHelper
     : public BrowsingDataFileSystemHelper {
  public:
+  // |profile| is unused in this canned implementation, but it's the interface
+  // we're writing to, so we'll accept it, but not store it.
   explicit CannedBrowsingDataFileSystemHelper(Profile* profile);
 
-  // Return a copy of the filesystem helper. Only one consumer can use the
-  // StartFetching method at a time, so we need to create a copy of the helper
-  // everytime we instantiate a cookies tree model for it.
+  // Creates a copy of the file system helper. StartFetching can only respond
+  // to one client at a time; we need to be able to act on multiple parallel
+  // requests in certain situations (see CookiesTreeModel and its clients). For
+  // these cases, simply clone the object and fire off another fetching process.
   CannedBrowsingDataFileSystemHelper* Clone();
 
-  // Add a filesystem to the set of canned filesystems that is
-  // returned by this helper.
+  // Manually add a filesystem to the set of canned file systems that this
+  // helper returns via StartFetching. If an origin contains both a temporary
+  // and a persistent filesystem, AddFileSystem must be called twice (once for
+  // each file system type).
   void AddFileSystem(const GURL& origin,
                      fileapi::FileSystemType type,
                      int64 size);
 
-  // Clear the list of canned filesystems.
+  // Clear this helper's list of canned filesystems.
   void Reset();
 
   // True if no filesystems are currently stored.
@@ -104,6 +110,14 @@ class CannedBrowsingDataFileSystemHelper
   virtual void DeleteFileSystemOrigin(const GURL& origin) {}
 
  private:
+  // Used by Clone() to create an object without a Profile
+  CannedBrowsingDataFileSystemHelper();
+  virtual ~CannedBrowsingDataFileSystemHelper();
+
+  // AddFileSystem doesn't store file systems directly, but holds them until
+  // StartFetching is called. At that point, the pending file system data is
+  // merged with the current file system data before being returned to the
+  // client.
   struct PendingFileSystemInfo {
     PendingFileSystemInfo();
     PendingFileSystemInfo(const GURL& origin,
@@ -116,25 +130,27 @@ class CannedBrowsingDataFileSystemHelper
     int64 size;
   };
 
-  // StartFetching's callback should be executed asynchronously, Notify handles
-  // that nicely.
-  void Notify();
+  // Triggers the success callback as the end of a StartFetching workflow. This
+  // must be called on the UI thread.
+  void NotifyOnUIThread();
 
-  virtual ~CannedBrowsingDataFileSystemHelper();
-
-  Profile* profile_;
-
+  // Holds file systems that have been added to the helper until StartFetching
+  // is called.
   std::vector<PendingFileSystemInfo> pending_file_system_info_;
 
+  // Holds the current list of file systems returned to the client after
+  // StartFetching is called.
   std::vector<FileSystemInfo> file_system_info_;
 
+  // Holds the callback passed in at the beginning of the StartFetching workflow
+  // so that it can be triggered via NotifyOnUIThread.
   scoped_ptr<Callback1<const std::vector<FileSystemInfo>& >::Type >
       completion_callback_;
 
-  // Indicates whether or not we're currently fetching information:
-  // it's true when StartFetching() is called in the UI thread, and it's reset
-  // after we notified the callback in the UI thread.
-  // This only mutates on the UI thread.
+  // Indicates whether or not we're currently fetching information: set to true
+  // when StartFetching is called on the UI thread, and reset to false when
+  // NotifyOnUIThread triggers the success callback.
+  // This property only mutates on the UI thread.
   bool is_fetching_;
 
   DISALLOW_COPY_AND_ASSIGN(CannedBrowsingDataFileSystemHelper);
