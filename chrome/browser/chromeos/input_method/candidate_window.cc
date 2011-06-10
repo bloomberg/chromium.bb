@@ -585,6 +585,16 @@ class CandidateWindowController::Impl : public CandidateWindowView::Observer {
   static void OnUpdateLookupTable(void* input_method_library,
                                   const InputMethodLookupTable& lookup_table);
 
+  // The function is called when |UpdatePreeditText| signal is received
+  // in libcros. |input_method_library| is a void pointer to this object.
+  static void OnUpdatePreeditText(void* input_method_library,
+                                  const std::string& utf8_text,
+                                  unsigned int cursor, bool visible);
+
+  // The function is called when |HidePreeditText| signal is received
+  // in libcros. |input_method_library| is a void pointer to this object.
+  static void OnHidePreeditText(void* input_method_library);
+
   // This function is called by libcros when ibus connects or disconnects.
   // |input_method_library| is a void pointer to this object.
   static void OnConnectionChange(void* input_method_library, bool connected);
@@ -1247,6 +1257,10 @@ bool CandidateWindowController::Impl::Init() {
   MonitorInputMethodConnection(
       ui_status_connection_,
       &CandidateWindowController::Impl::OnConnectionChange);
+  MonitorInputMethodPreeditText(
+      ui_status_connection_,
+      &CandidateWindowController::Impl::OnHidePreeditText,
+      &CandidateWindowController::Impl::OnUpdatePreeditText);
 
   // Create the candidate window view.
   CreateView();
@@ -1294,6 +1308,10 @@ void CandidateWindowController::Impl::OnHideLookupTable(
       static_cast<CandidateWindowController::Impl*>(input_method_library);
 
   controller->candidate_window_->HideLookupTable();
+}
+
+void CandidateWindowController::Impl::OnHidePreeditText(
+    void* input_method_library) {
 }
 
 void CandidateWindowController::Impl::OnSetCursorLocation(
@@ -1354,6 +1372,11 @@ void CandidateWindowController::Impl::OnUpdateLookupTable(
   controller->candidate_window_->UpdateCandidates(lookup_table);
   controller->candidate_window_->ResizeAndMoveParentFrame();
   controller->frame_->Show();
+}
+
+void CandidateWindowController::Impl::OnUpdatePreeditText(
+    void* input_method_library,
+    const std::string& utf8_text, unsigned int cursor, bool visible) {
 }
 
 void CandidateWindowController::Impl::OnCandidateCommitted(int index,
