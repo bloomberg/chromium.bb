@@ -128,16 +128,9 @@ bool OmxVideoDecodeAccelerator::Initialize(const std::vector<uint32>& config) {
     return false;
   }
 
-  // After AllocateInputBuffers ideally this should be AllocateOutputBuffers.
-  // Since in this case app provides the output buffers,
-  // we query this through ProvidePictureBuffers.
-  // This is call to ppapi to provide the output buffers initially.
-  // ProvidePictureBuffers will provide
-  // - SharedMemHandle in case of decoding to system memory.
-  // - Textures in case of decoding to egl-images.
-
-  // Output buffers will be eventually handed to us via
-  // Assign{GLES,Sysmem}Buffers().
+  // In order to allocate output buffers we need to have textures in hand, so we
+  // call ProvidePictureBuffers on the client and complete initialization in
+  // AssignGLESBuffers.
   message_loop_->PostTask(
       FROM_HERE,
       base::Bind(&Client::ProvidePictureBuffers, base::Unretained(client_),
