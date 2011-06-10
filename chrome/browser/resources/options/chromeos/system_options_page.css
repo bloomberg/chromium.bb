@@ -1,3 +1,22 @@
 .touchpad-sensitivity-more {
   float: right;
 }
+
+html[dir=rtl] .touchpad-sensitivity-more {
+  float: left;
+}
+
+.option-name {
+   display: inline;
+}
+
+#timezone-value {
+   display: inline-block;
+   vertical-align: baseline;
+}
+
+#touchpad-value,
+#slider-control {
+   display: inline-block;
+   vertical-align: top;
+}
