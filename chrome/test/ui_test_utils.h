@@ -478,7 +478,7 @@ class TitleWatcher : public NotificationObserver {
   // entire lifetime of |this|. |expected_title| is the title that |this|
   // will wait for.
   TitleWatcher(TabContents* tab_contents, const string16& expected_title);
-  ~TitleWatcher();
+  virtual ~TitleWatcher();
 
   // Waits until the title for the tab is set to the |expected_title|
   // passed into the constructor.
