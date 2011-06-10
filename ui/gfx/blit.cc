@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "skia/ext/platform_canvas.h"
-#include "skia/ext/platform_device.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 
@@ -25,7 +24,7 @@ namespace {
 
 // Returns true if the given canvas has any part of itself clipped out or
 // any non-identity tranform.
-bool HasClipOrTransform(const skia::PlatformCanvas& canvas) {
+bool HasClipOrTransform(const SkCanvas& canvas) {
   if (!canvas.getTotalMatrix().isIdentity())
     return true;
 
@@ -91,10 +90,11 @@ void BlitContextToContext(NativeDrawingContext dst_context,
 #endif
 }
 
-void BlitContextToCanvas(skia::PlatformCanvas *dst_canvas,
+void BlitContextToCanvas(SkCanvas *dst_canvas,
                          const Rect& dst_rect,
                          NativeDrawingContext src_context,
                          const Point& src_origin) {
+  DCHECK(skia::SupportsPlatformPaint(dst_canvas));
   BlitContextToContext(skia::BeginPlatformPaint(dst_canvas), dst_rect,
                        src_context, src_origin);
   skia::EndPlatformPaint(dst_canvas);
@@ -102,17 +102,20 @@ void BlitContextToCanvas(skia::PlatformCanvas *dst_canvas,
 
 void BlitCanvasToContext(NativeDrawingContext dst_context,
                          const Rect& dst_rect,
-                         skia::PlatformCanvas *src_canvas,
+                         SkCanvas *src_canvas,
                          const Point& src_origin) {
+  DCHECK(skia::SupportsPlatformPaint(src_canvas));
   BlitContextToContext(dst_context, dst_rect,
                        skia::BeginPlatformPaint(src_canvas), src_origin);
   skia::EndPlatformPaint(src_canvas);
 }
 
-void BlitCanvasToCanvas(skia::PlatformCanvas *dst_canvas,
+void BlitCanvasToCanvas(SkCanvas *dst_canvas,
                         const Rect& dst_rect,
-                        skia::PlatformCanvas *src_canvas,
+                        SkCanvas *src_canvas,
                         const Point& src_origin) {
+  DCHECK(skia::SupportsPlatformPaint(dst_canvas));
+  DCHECK(skia::SupportsPlatformPaint(src_canvas));
   BlitContextToContext(skia::BeginPlatformPaint(dst_canvas), dst_rect,
                        skia::BeginPlatformPaint(src_canvas), src_origin);
   skia::EndPlatformPaint(src_canvas);
@@ -121,10 +124,11 @@ void BlitCanvasToCanvas(skia::PlatformCanvas *dst_canvas,
 
 #if defined(OS_WIN)
 
-void ScrollCanvas(skia::PlatformCanvas* canvas,
+void ScrollCanvas(SkCanvas* canvas,
                   const gfx::Rect& clip,
                   const gfx::Point& amount) {
   DCHECK(!HasClipOrTransform(*canvas));  // Don't support special stuff.
+  DCHECK(skia::SupportsPlatformPaint(canvas));
   skia::ScopedPlatformPaint scoped_platform_paint(canvas);
   HDC hdc = scoped_platform_paint.GetPlatformSurface();
 
@@ -138,7 +142,7 @@ void ScrollCanvas(skia::PlatformCanvas* canvas,
 // use platform scroll code, but it's complex so we just use the same path
 // here. Either way it will be software-only, so it shouldn't matter much.
 
-void ScrollCanvas(skia::PlatformCanvas* canvas,
+void ScrollCanvas(SkCanvas* canvas,
                   const gfx::Rect& in_clip,
                   const gfx::Point& amount) {
   DCHECK(!HasClipOrTransform(*canvas));  // Don't support special stuff.

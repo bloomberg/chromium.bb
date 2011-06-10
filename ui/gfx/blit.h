@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,9 +8,7 @@
 
 #include "ui/gfx/native_widget_types.h"
 
-namespace skia {
-class PlatformCanvas;
-}  // namespace skia
+class SkCanvas;
 
 namespace gfx {
 
@@ -24,7 +22,7 @@ void BlitContextToContext(NativeDrawingContext dst_context,
                           const Point& src_origin);
 
 // Blits a rectangle from the source context into the destination canvas.
-void BlitContextToCanvas(skia::PlatformCanvas *dst_canvas,
+void BlitContextToCanvas(SkCanvas *dst_canvas,
                          const Rect& dst_rect,
                          NativeDrawingContext src_context,
                          const Point& src_origin);
@@ -32,19 +30,19 @@ void BlitContextToCanvas(skia::PlatformCanvas *dst_canvas,
 // Blits a rectangle from the source canvas into the destination context.
 void BlitCanvasToContext(NativeDrawingContext dst_context,
                          const Rect& dst_rect,
-                         skia::PlatformCanvas *src_canvas,
+                         SkCanvas *src_canvas,
                          const Point& src_origin);
 
 // Blits a rectangle from the source canvas into the destination canvas.
-void BlitCanvasToCanvas(skia::PlatformCanvas *dst_canvas,
+void BlitCanvasToCanvas(SkCanvas *dst_canvas,
                         const Rect& dst_rect,
-                        skia::PlatformCanvas *src_canvas,
+                        SkCanvas *src_canvas,
                         const Point& src_origin);
 
 // Scrolls the given subset of the given canvas by the given amount.
 // The canvas should not have a clip or a transform applied, since platforms
 // may implement those operations differently.
-void ScrollCanvas(skia::PlatformCanvas* canvas,
+void ScrollCanvas(SkCanvas* canvas,
                   const Rect& clip,
                   const Point& amount);
 
