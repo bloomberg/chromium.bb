@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/json/json_reader.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -604,8 +605,12 @@ bool CreatePrintDialogFromCommandLine(const CommandLine& command_line) {
             switches::kCloudPrintJobTitle);
         print_job_title = string16(native_job_title);
 #elif defined(OS_POSIX)
-        // TODO(abodenha@chromium.org) Implement this for OS_POSIX
-        // Command line string types are different
+        // POSIX Command line string types are different.
+        CommandLine::StringType native_job_title;
+        native_job_title = command_line.GetSwitchValueASCII(
+            switches::kCloudPrintJobTitle);
+        // Convert the ASCII string to UTF16 to prepare to pass.
+        print_job_title = string16(ASCIIToUTF16(native_job_title));
 #endif
       }
       std::string file_type = "application/pdf";
