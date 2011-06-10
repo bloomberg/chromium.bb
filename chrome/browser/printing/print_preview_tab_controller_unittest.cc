@@ -111,3 +111,45 @@ TEST_F(PrintPreviewTabControllerTest, MultiplePreviewTabs) {
   tab_controller->GetOrCreatePreviewTab(tab_contents_1);
   EXPECT_EQ(preview_tab_1_index, browser()->active_index());
 }
+
+// Clear the initiator tab details associated with preview tab.
+TEST_F(PrintPreviewTabControllerTest, ClearInitiatorTabDetails) {
+  ASSERT_TRUE(browser());
+  BrowserList::SetLastActive(browser());
+  ASSERT_TRUE(BrowserList::GetLastActive());
+
+  // Lets start with one window with one tab.
+  EXPECT_EQ(1u, BrowserList::size());
+  EXPECT_EQ(0, browser()->tab_count());
+  browser()->NewTab();
+  EXPECT_EQ(1, browser()->tab_count());
+
+  // Create a reference to initiator tab contents.
+  TabContents* initiator_tab = browser()->GetSelectedTabContents();
+
+  scoped_refptr<printing::PrintPreviewTabController>
+      tab_controller(new printing::PrintPreviewTabController());
+  ASSERT_TRUE(tab_controller);
+
+  // Get the preview tab for initiator tab.
+  TabContents* preview_tab =
+      tab_controller->GetOrCreatePreviewTab(initiator_tab);
+
+  // New print preview tab is created. Current focus is on preview tab.
+  EXPECT_EQ(2, browser()->tab_count());
+  EXPECT_NE(initiator_tab, preview_tab);
+
+  // Clear the initiator tab details associated with the preview tab.
+  tab_controller->EraseInitiatorTabInfo(preview_tab);
+
+  // Activate initiator_tab.
+  initiator_tab->Activate();
+
+  // Get the print preview tab for initiator tab.
+  TabContents* new_preview_tab =
+      tab_controller->GetOrCreatePreviewTab(initiator_tab);
+
+  // New preview tab is created.
+  EXPECT_EQ(3, browser()->tab_count());
+  EXPECT_NE(new_preview_tab, preview_tab);
+}

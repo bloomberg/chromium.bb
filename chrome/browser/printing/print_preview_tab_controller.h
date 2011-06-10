@@ -60,6 +60,9 @@ class PrintPreviewTabController
   // Returns true if |tab| is a print preview tab.
   static bool IsPrintPreviewTab(TabContents* tab);
 
+  // Erase the initiator tab info associated with |preview_tab|.
+  void EraseInitiatorTabInfo(TabContents* preview_tab);
+
  private:
   friend class base::RefCounted<PrintPreviewTabController>;
 

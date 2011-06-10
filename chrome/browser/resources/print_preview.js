@@ -33,6 +33,15 @@ var printSettings = new PrintSettings();
 // The name of the default or last used printer.
 var defaultOrLastUsedPrinterName = '';
 
+// True when a pending print preview request exists.
+var hasPendingPreviewRequest = false;
+
+// True when a pending print file request exists.
+var hasPendingPrintFileRequest = false;
+
+// True when preview tab has some error.
+var hasError = false;
+
 /**
  * Window onload handler, sets up the page and starts print preview by getting
  * the printer list.
@@ -51,17 +60,59 @@ function onLoad() {
   $('mainview').parentElement.removeChild($('dummy-viewer'));
 
   $('printer-list').disabled = true;
-  $('print-button').disabled = true;
+  $('print-button').onclick = printFile;
+
+  setDefaultHandlersForPagesAndCopiesControls();
   showLoadingAnimation();
   chrome.send('getDefaultPrinter');
+}
+
+/**
+ * Handles the individual pages input event.
+ */
+function handleIndividualPagesInputEvent() {
+  $('print-pages').checked = true;
+  resetPageRangeFieldTimer();
+}
+
+/**
+ * Handles the individual pages blur event.
+ */
+function onPageRangesFieldBlur() {
+  $('print-pages').checked = true;
+  validatePageRangesField();
+  updatePrintButtonState();
+}
+
+/**
+ * Sets the default event handlers for pages and copies controls.
+ */
+function setDefaultHandlersForPagesAndCopiesControls() {
+  var allPages = $('all-pages');
+  var printPages = $('print-pages');
+  var individualPages = $('individual-pages');
+
+  allPages.onclick = null;
+  printPages.onclick = null;
+  individualPages.oninput = null;
+  individualPages.onfocus = null;
+  individualPages.onblur = null;
+
+  if (!hasError) {
+    allPages.onclick = updatePrintButtonState;
+    printPages.onclick = handleIndividualPagesCheckbox;
+    individualPages.onblur = onPageRangesFieldBlur;
+  }
+
+  $('copies').oninput = copiesFieldChanged;
+  $('increment').onclick = function() { onCopiesButtonsClicked(1); };
+  $('decrement').onclick = function() { onCopiesButtonsClicked(-1); };
 }
 
 /**
  * Adds event listeners to the settings controls.
  */
 function addEventListeners() {
-  $('print-button').onclick = printFile;
-
   // Controls that require preview rendering.
   $('all-pages').onclick = onPageSelectionMayHaveChanged;
   $('print-pages').onclick = handleIndividualPagesCheckbox;
@@ -71,7 +122,7 @@ function addEventListeners() {
       onPageSelectionMayHaveChanged();
   };
   individualPages.onfocus = addTimerToPageRangeField;
-  individualPages.oninput = resetPageRangeFieldTimer;
+  individualPages.oninput = handleIndividualPagesInputEvent;
   $('landscape').onclick = onLayoutModeToggle;
   $('portrait').onclick = onLayoutModeToggle;
   $('printer-list').onchange = updateControlsWithSelectedPrinterCapabilities;
@@ -101,26 +152,18 @@ function addEventListeners() {
  * Removes event listeners from the settings controls.
  */
 function removeEventListeners() {
-  // Controls that require preview rendering.
-  $('print-button').disabled = true;
-  $('all-pages').onclick = null;
-  $('print-pages').onclick = null;
-  var individualPages = $('individual-pages');
-  individualPages.onblur = null;
-  individualPages.onfocus = null;
-  individualPages.oninput = null;
   clearTimeout(timerId);
+  setDefaultHandlersForPagesAndCopiesControls();
+
+  // Controls that require preview rendering
   $('landscape').onclick = null;
   $('portrait').onclick = null;
   $('printer-list').onchange = null;
 
   // Controls that dont require preview rendering.
-  $('copies').oninput = copiesFieldChanged;
   $('two-sided').onclick = null;
   $('color').onclick = null;
   $('bw').onclick = null;
-  $('increment').onclick = function() { onCopiesButtonsClicked(1); };
-  $('decrement').onclick = function() { onCopiesButtonsClicked(-1); };
 }
 
 /**
@@ -330,6 +373,14 @@ function getSelectedPrinterName() {
  * Asks the browser to print the preview PDF based on current print settings.
  */
 function printFile() {
+  hasPendingPrintFileRequest = hasPendingPreviewRequest;
+
+  if (hasPendingPrintFileRequest) {
+    if (getSelectedPrinterName() != PRINT_TO_PDF)
+      chrome.send('hidePreview');
+    return;
+  }
+
   if (getSelectedPrinterName() != PRINT_TO_PDF) {
     $('print-button').classList.add('loading');
     $('cancel-button').classList.add('loading');
@@ -337,14 +388,16 @@ function printFile() {
     removeEventListeners();
     window.setTimeout(function() { chrome.send('print', [getSettingsJSON()]); },
                       1000);
-  } else
+  } else {
     chrome.send('print', [getSettingsJSON()]);
+  }
 }
 
 /**
  * Asks the browser to generate a preview PDF based on current print settings.
  */
 function requestPrintPreview() {
+  hasPendingPreviewRequest = true;
   removeEventListeners();
   printSettings.save();
   showLoadingAnimation();
@@ -440,6 +493,8 @@ function setColor(color) {
  * @param {string} errorMessage The error message to be displayed.
  */
 function displayErrorMessage(errorMessage) {
+  hasError = true;
+  $('print-button').disabled = true;
   $('overlay-layer').classList.remove('invisible');
   $('dancing-dots-text').classList.add('hidden');
   $('error-text').innerHTML = errorMessage;
@@ -509,6 +564,8 @@ function updatePrintPreview(pageCount, jobTitle, modifiable, previewUid) {
 
   previewModifiable = modifiable;
 
+  hasPendingPreviewRequest = false;
+
   if (totalPageCount == -1)
     totalPageCount = pageCount;
 
@@ -541,6 +598,9 @@ function updatePrintPreview(pageCount, jobTitle, modifiable, previewUid) {
   updatePrintSummary();
   updatePrintButtonState();
   addEventListeners();
+
+  if (hasPendingPrintFileRequest)
+    printFile();
 }
 
 /**
@@ -612,13 +672,9 @@ function copiesFieldChanged() {
 }
 
 /**
- * Executes whenever a blur event occurs on the 'individual-pages'
- * field or when the timer expires. It takes care of
- * 1) showing/hiding warnings/suggestions
- * 2) updating print button/summary
+ * Validates the page ranges text and updates the hint accordingly.
  */
-function pageRangesFieldChanged() {
-  var currentlySelectedPages = getSelectedPagesSet();
+function validatePageRangesField() {
   var individualPagesField = $('individual-pages');
   var individualPagesHint = $('individual-pages-hint');
 
@@ -634,6 +690,16 @@ function pageRangesFieldChanged() {
                                     'examplePageRangeText'));
     fadeInElement(individualPagesHint);
   }
+}
+
+/**
+ * Executes whenever a blur event occurs on the 'individual-pages'
+ * field or when the timer expires. It takes care of
+ * 1) showing/hiding warnings/suggestions
+ * 2) updating print button/summary
+ */
+function pageRangesFieldChanged() {
+  validatePageRangesField();
 
   resetPageRangeFieldTimer();
   updatePrintButtonState();
@@ -812,13 +878,17 @@ function isSelectedPagesValid() {
 
     var match = part.match(/^([0-9]+)-([0-9]*)$/);
     if (match && isValidNonZeroPositiveInteger(match[1])) {
+      if (!match[2] && totalPageCount == -1) {
+        successfullyParsed += 1;
+        continue;
+      }
       var from = parseInt(match[1], 10);
       var to = match[2] ? parseInt(match[2], 10) : totalPageCount;
 
       if (!to || from > to)
         return false;
-    } else if (!isValidNonZeroPositiveInteger(part) ||
-               !(parseInt(part, 10) <= totalPageCount)) {
+    } else if (!isValidNonZeroPositiveInteger(part) || (totalPageCount != -1 &&
+               !(parseInt(part, 10) <= totalPageCount))) {
       return false;
     }
     successfullyParsed += 1;

@@ -56,6 +56,10 @@ class PrintPreviewHandler : public WebUIMessageHandler,
   // First element of |args| is a job settings JSON string.
   void HandlePrint(const ListValue* args);
 
+  // Handles the request to hide the preview tab for printing.
+  // |args| is unused.
+  void HandleHidePreview(const ListValue* args);
+
   // Get the printer capabilities.
   // First element of |args| is the printer name.
   void HandleGetPrinterCapabilities(const ListValue* args);
@@ -93,6 +97,12 @@ class PrintPreviewHandler : public WebUIMessageHandler,
 
   // Adds all the recorded stats taken so far to histogram counts.
   void ReportStats();
+
+  // Helper function to hide the preview tab for printing.
+  void HidePreviewTab();
+
+  // Helper function to clear initiator tab details for this preview tab.
+  void ClearInitiatorTabDetails();
 
   // Pointer to current print system.
   scoped_refptr<printing::PrintBackend> print_backend_;

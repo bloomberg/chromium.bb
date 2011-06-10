@@ -98,4 +98,8 @@ std::set<TabContentsWrapper*>::const_iterator
   return printing_contents_.end();
 }
 
+bool BackgroundPrintingManager::HasTabContents(TabContentsWrapper* entry) {
+  return printing_contents_.find(entry) != printing_contents_.end();
+}
+
 }  // namespace printing

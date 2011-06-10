@@ -158,6 +158,16 @@ bool PrintPreviewTabController::IsPrintPreviewTab(TabContents* tab) {
           url.host() == chrome::kChromeUIPrintHost);
 }
 
+void PrintPreviewTabController::EraseInitiatorTabInfo(
+    TabContents* preview_tab) {
+  PrintPreviewTabMap::iterator it = preview_tab_map_.find(preview_tab);
+  if (it == preview_tab_map_.end())
+    return;
+
+  RemoveObservers(it->second);
+  preview_tab_map_[preview_tab] = NULL;
+}
+
 TabContents* PrintPreviewTabController::GetInitiatorTab(
     TabContents* preview_tab) {
   PrintPreviewTabMap::iterator it = preview_tab_map_.find(preview_tab);

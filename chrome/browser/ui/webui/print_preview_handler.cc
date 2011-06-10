@@ -152,6 +152,10 @@ void ReportPrintSettingsStats(const DictionaryValue& settings) {
     ReportPrintSettingHistogram(is_color ? COLOR : BLACK_AND_WHITE);
 }
 
+printing::BackgroundPrintingManager* GetBackgroundPrintingManager() {
+  return g_browser_process->background_printing_manager();
+}
+
 }  // namespace
 
 class PrintSystemTaskProxy
@@ -374,6 +378,8 @@ void PrintPreviewHandler::RegisterMessages() {
       NewCallback(this, &PrintPreviewHandler::HandleManagePrinters));
   web_ui_->RegisterMessageCallback("closePrintPreviewTab",
       NewCallback(this, &PrintPreviewHandler::HandleClosePreviewTab));
+  web_ui_->RegisterMessageCallback("hidePreview",
+      NewCallback(this, &PrintPreviewHandler::HandleHidePreview));
 }
 
 TabContents* PrintPreviewHandler::preview_tab() {
@@ -478,12 +484,13 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
 
     SelectFile(default_filename);
   } else {
+    ClearInitiatorTabDetails();
     ReportPrintSettingsStats(*settings);
     ReportUserActionHistogram(PRINT_TO_PRINTER);
     UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.PrintToPrinter",
                          GetPageCountFromSettingsDictionary(*settings));
-    g_browser_process->background_printing_manager()->OwnTabContents(
-        preview_tab_wrapper);
+
+    HidePreviewTab();
 
     // The PDF being printed contains only the pages that the user selected,
     // so ignore the page range and print all pages.
@@ -491,6 +498,10 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
     RenderViewHost* rvh = web_ui_->GetRenderViewHost();
     rvh->Send(new PrintMsg_PrintForPrintPreview(rvh->routing_id(), *settings));
   }
+}
+
+void PrintPreviewHandler::HandleHidePreview(const ListValue* args) {
+  HidePreviewTab();
 }
 
 void PrintPreviewHandler::HandleGetPrinterCapabilities(
@@ -644,4 +655,25 @@ void PrintPreviewHandler::FileSelected(const FilePath& path,
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, task);
 
   ActivateInitiatorTabAndClosePreviewTab();
+}
+
+void PrintPreviewHandler::HidePreviewTab() {
+  TabContentsWrapper* preview_tab_wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(preview_tab());
+  if (GetBackgroundPrintingManager()->HasTabContents(preview_tab_wrapper))
+    return;
+  GetBackgroundPrintingManager()->OwnTabContents(preview_tab_wrapper);
+}
+
+void PrintPreviewHandler::ClearInitiatorTabDetails() {
+  TabContents* initiator_tab = GetInitiatorTab();
+  if (initiator_tab) {
+    // We no longer require the intiator tab details. Remove those details
+    // associated with the preview tab to allow the initiator tab to create
+    // another preview tab.
+    printing::PrintPreviewTabController* tab_controller =
+       printing::PrintPreviewTabController::GetInstance();
+    if (tab_controller)
+      tab_controller->EraseInitiatorTabInfo(preview_tab());
+  }
 }
