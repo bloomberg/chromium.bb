@@ -33,6 +33,7 @@
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/safe_browsing/client_side_detection_host.h"
+#include "chrome/browser/tab_contents/blocked_infobar_delegate.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/tab_contents/simple_alert_infobar_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents_ssl_helper.h"
@@ -380,6 +381,10 @@ bool TabContentsWrapper::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_Snapshot, OnSnapshot)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PDFHasUnsupportedFeature,
                         OnPDFHasUnsupportedFeature)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DidBlockDisplayingInsecureContent,
+                        OnDidBlockDisplayingInsecureContent)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DidBlockRunningInsecureContent,
+                        OnDidBlockRunningInsecureContent)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -563,6 +568,29 @@ void TabContentsWrapper::OnPDFHasUnsupportedFeature() {
   PDFHasUnsupportedFeature(this);
 }
 
+void TabContentsWrapper::OnDidBlockDisplayingInsecureContent() {
+  // At most one infobar and do not supersede the stronger running content bar.
+  for (size_t i = 0; i < infobar_count(); ++i) {
+    if (GetInfoBarDelegateAt(i)->AsBlockedInfoBarDelegate())
+      return;
+  }
+  AddInfoBar(new BlockedDisplayingInfoBarDelegate(this));
+}
+
+void TabContentsWrapper::OnDidBlockRunningInsecureContent() {
+  // At most one infobar but supersede the weaker displaying content bar.
+  for (size_t i = 0; i < infobar_count(); ++i) {
+    BlockedInfoBarDelegate* blocked =
+        GetInfoBarDelegateAt(i)->AsBlockedInfoBarDelegate();
+    if (blocked) {
+      if (blocked->AsBlockedRunningInfoBarDelegate())
+        return;
+      RemoveInfoBar(blocked);
+    }
+  }
+  AddInfoBar(new BlockedRunningInfoBarDelegate(this));
+}
+
 GURL TabContentsWrapper::GetAlternateErrorPageURL() const {
   GURL url;
   // Disable alternate error pages when in Incognito mode.
@@ -593,3 +621,4 @@ void TabContentsWrapper::UpdateRendererPreferences() {
       tab_contents()->GetMutableRendererPrefs(), profile());
   render_view_host()->SyncRendererPrefs();
 }
+

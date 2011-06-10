@@ -52,6 +52,10 @@ InfoBarDelegate::Type InfoBarDelegate::GetInfoBarType() const {
   return WARNING_TYPE;
 }
 
+BlockedInfoBarDelegate* InfoBarDelegate::AsBlockedInfoBarDelegate() {
+  return NULL;
+}
+
 ConfirmInfoBarDelegate* InfoBarDelegate::AsConfirmInfoBarDelegate() {
   return NULL;
 }

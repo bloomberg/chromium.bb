@@ -140,6 +140,8 @@ ChromeRenderViewObserver::ChromeRenderViewObserver(
       translate_helper_(translate_helper),
       phishing_classifier_(phishing_classifier),
       last_indexed_page_id_(-1),
+      allow_displaying_insecure_content_(false),
+      allow_running_insecure_content_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(page_info_method_factory_(this)) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kDomAutomationController)) {
@@ -168,6 +170,10 @@ bool ChromeRenderViewObserver::OnMessageReceived(const IPC::Message& message) {
         OnGetSerializedHtmlDataForCurrentPageWithLocalLinks)
     IPC_MESSAGE_HANDLER(IconMsg_DownloadFavicon, OnDownloadFavicon)
     IPC_MESSAGE_HANDLER(ViewMsg_EnableViewSourceMode, OnEnableViewSourceMode)
+    IPC_MESSAGE_HANDLER(ViewMsg_SetAllowDisplayingInsecureContent,
+                        OnSetAllowDisplayingInsecureContent)
+    IPC_MESSAGE_HANDLER(ViewMsg_SetAllowRunningInsecureContent,
+                        OnSetAllowRunningInsecureContent)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -292,8 +298,19 @@ void ChromeRenderViewObserver::OnEnableViewSourceMode() {
   WebFrame* main_frame = render_view()->webview()->mainFrame();
   if (!main_frame)
     return;
-
   main_frame->enableViewSourceMode(true);
+}
+
+void ChromeRenderViewObserver::OnSetAllowDisplayingInsecureContent(bool allow) {
+  allow_displaying_insecure_content_ = allow;
+  WebFrame* main_frame = render_view()->webview()->mainFrame();
+  if (main_frame)
+    main_frame->reload();
+}
+
+void ChromeRenderViewObserver::OnSetAllowRunningInsecureContent(bool allow) {
+  allow_running_insecure_content_ = allow;
+  OnSetAllowDisplayingInsecureContent(allow);
 }
 
 void ChromeRenderViewObserver::didSerializeDataForFrame(
@@ -365,6 +382,30 @@ bool ChromeRenderViewObserver::allowWriteToClipboard(WebFrame* frame,
   Send(new ViewHostMsg_CanTriggerClipboardWrite(
       routing_id(), frame->url(), &allowed));
   return allowed;
+}
+
+bool ChromeRenderViewObserver::allowDisplayingInsecureContent(
+    WebKit::WebFrame*,
+    bool allowed_per_settings,
+    const WebKit::WebSecurityOrigin&,
+    const WebKit::WebURL&) {
+  if (allowed_per_settings || allow_displaying_insecure_content_)
+    return true;
+
+  Send(new ViewHostMsg_DidBlockDisplayingInsecureContent(routing_id()));
+  return false;
+}
+
+bool ChromeRenderViewObserver::allowRunningInsecureContent(
+    WebKit::WebFrame*,
+    bool allowed_per_settings,
+    const WebKit::WebSecurityOrigin&,
+    const WebKit::WebURL&) {
+  if (allowed_per_settings || allow_running_insecure_content_)
+    return true;
+
+  Send(new ViewHostMsg_DidBlockRunningInsecureContent(routing_id()));
+  return false;
 }
 
 void ChromeRenderViewObserver::didNotAllowPlugins(WebFrame* frame) {

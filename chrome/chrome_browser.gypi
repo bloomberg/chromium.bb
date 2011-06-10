@@ -2042,6 +2042,8 @@
         'browser/tab_closeable_state_watcher.h',
         'browser/tab_contents/background_contents.cc',
         'browser/tab_contents/background_contents.h',
+        'browser/tab_contents/blocked_infobar_delegate.cc',
+        'browser/tab_contents/blocked_infobar_delegate.h',
         'browser/tab_contents/chrome_interstitial_page.cc',
         'browser/tab_contents/chrome_interstitial_page.h',
         'browser/tab_contents/confirm_infobar_delegate.cc',

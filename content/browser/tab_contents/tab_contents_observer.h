@@ -77,6 +77,10 @@ class TabContentsObserver : public IPC::Channel::Listener,
                                       unsigned changed_flags) { }
 #endif
 
+  // IPC::Message::Sender implementation.
+  virtual bool Send(IPC::Message* message);
+  int routing_id() const;
+
  protected:
   // Use this constructor when the object is tied to a single TabContents for
   // its entire lifetime.
@@ -100,11 +104,7 @@ class TabContentsObserver : public IPC::Channel::Listener,
   // IPC::Channel::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message);
 
-  // IPC::Message::Sender implementation.
-  virtual bool Send(IPC::Message* message);
-
   TabContents* tab_contents() const { return tab_contents_; }
-  int routing_id() const;
 
  private:
   friend class TabContents;

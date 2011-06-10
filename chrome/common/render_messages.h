@@ -261,6 +261,14 @@ IPC_MESSAGE_ROUTED1(ViewMsg_SetIsPrerendering,
 IPC_MESSAGE_CONTROL1(ViewMsg_SetIsIncognitoProcess,
                      bool /* is_incognito_processs */)
 
+// Sent in response to ViewHostMsg_DidBlockDisplayingInsecureContent.
+IPC_MESSAGE_ROUTED1(ViewMsg_SetAllowDisplayingInsecureContent,
+                    bool /* allowed */)
+
+// Sent in response to ViewHostMsg_DidBlockRunningInsecureContent.
+IPC_MESSAGE_ROUTED1(ViewMsg_SetAllowRunningInsecureContent,
+                    bool /* allowed */)
+
 //-----------------------------------------------------------------------------
 // TabContents messages
 // These are messages sent from the renderer to the browser process.
@@ -480,6 +488,14 @@ IPC_SYNC_MESSAGE_ROUTED1_1(ViewHostMsg_CanTriggerClipboardRead,
 IPC_SYNC_MESSAGE_ROUTED1_1(ViewHostMsg_CanTriggerClipboardWrite,
                            GURL /* url */,
                            bool /* allowed */)
+
+// Sent when the renderer was prevented from displaying insecure content in
+// a secure page by a security policy.  The page may appear incomplete.
+IPC_MESSAGE_ROUTED0(ViewHostMsg_DidBlockDisplayingInsecureContent)
+
+// Sent when the renderer was prevented from running insecure content in
+// a secure origin by a security policy.  The page may appear incomplete.
+IPC_MESSAGE_ROUTED0(ViewHostMsg_DidBlockRunningInsecureContent)
 
 // Suggest results -----------------------------------------------------------
 

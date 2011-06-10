@@ -4475,6 +4475,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
          <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is no longer updating because your operating system is obsolete.
       </message>
 
+      <!-- Blocked Displaying/Running Insecure Content info bar -->
+      <message name="IDS_BLOCKED_DISPLAYING_INSECURE_CONTENT" desc="Message shown when a website has asked chrome to display mixed content.  The message is followed by a learn more link and an allow button.">
+        Some displayable content on this website is insecure, and has been blocked for your safety.
+      </message>
+      <message name="IDS_BLOCKED_RUNNING_INSECURE_CONTENT" desc="Message shown when a website has asked chrome to run active mixed content.  The message is followed by a learn more link and an allow button.">
+        Some script content on this website is insecure, and has been blocked for your safety.
+      </message>
+      <message name="IDS_ALLOW_INSECURE_CONTENT_BUTTON" desc="Button to allow insecure content to be displayed">
+        Load anyway (not recommended)
+      </message>
       <if expr="pp_ifdef('chromeos')">
         <!-- Locale Change Notification-->
         <message name="IDS_LOCALE_CHANGE_MESSAGE" desc="Message shown when locale was changed based on profile content.">

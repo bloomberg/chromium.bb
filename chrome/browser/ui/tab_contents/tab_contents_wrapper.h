@@ -216,6 +216,8 @@ class TabContentsWrapper : public TabContentsObserver,
                                  const string16& title);
   void OnSnapshot(const SkBitmap& bitmap);
   void OnPDFHasUnsupportedFeature();
+  void OnDidBlockDisplayingInsecureContent();
+  void OnDidBlockRunningInsecureContent();
 
   // Returns the server that can provide alternate error pages.  If the returned
   // URL is empty, the default error page built into WebKit will be used.
