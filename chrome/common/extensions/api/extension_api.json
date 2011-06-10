@@ -1139,12 +1139,12 @@
                 "description": "A URL to navigate the tab to."
               },
               "selected": {
-                "type": "boolean", 
+                "type": "boolean",
                 "optional": true,
                 "description": "Whether the tab should be selected."
               },
               "pinned": {
-                "type": "boolean", 
+                "type": "boolean",
                 "optional": true,
                 "description": "Whether the tab should be pinned."
               }
@@ -1454,13 +1454,13 @@
         "description": "Fires when a tab is closed. Note: A listener can be registered for this event without requesting the 'tabs' permission in the manifest.",
         "parameters": [
           {"type": "integer", "name": "tabId", "minimum": 0},
-          { 
+          {
             "type": "object",
             "name": "removeInfo",
             "properties": {
               "isWindowClosing": {"type": "boolean", "description": "True when the tab is being closed because its window is being closed." }
-            }            
-          }          
+            }
+          }
         ]
       }
     ]
@@ -3252,12 +3252,12 @@
             "name": "callback",
             "parameters": [
               {
-                "name": "enabled", 
+                "name": "enabled",
                 "type": "boolean",
                 "description": "The actual value set. If it is not the one passed in parameter, the value couldn't be changed (e.g. because of security)."
               }
             ]
-          }          
+          }
         ]
       },
       {
@@ -3392,7 +3392,8 @@
                 "description": "Dictionary which contains all requested properties",
                 "properties": {
                   "hwid": {"type": "string", "optional": "true", "description": "Hardware ID"},
-                  "homeProvider" : {"type": "string", "optional": "true", "description": "Home provider which is used by the cellular device"}
+                  "homeProvider" : {"type": "string", "optional": "true", "description": "Home provider which is used by the cellular device"},
+                  "initialLocale" : {"type": "string", "optional": "true", "description": "Initial locale for the device"}
                 }
               }
             ]
@@ -5527,11 +5528,11 @@
             "maximum": 65535,
             "description": "TCP port number."
           },
-          { 
+          {
             "type": "function",
             "name": "callback",
             "parameters": [
-              { 
+              {
                 "type": "string",
                 "name": "passport",
                 "description": "Passport for passing to proxy."

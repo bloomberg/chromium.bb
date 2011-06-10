@@ -5,16 +5,27 @@
   function getTestFunctionFor(keys, fails) {
     return function generatedTest () {
       // Debug.
-      console.log("keys: " + keys + ", fails: " + fails);
+      console.log("keys: " + keys + "; fails: " + fails);
 
       chrome.chromeosInfoPrivate.get(
           keys,
-          pass(function(values) {
-            // Debug
-            console.log("values: ", values);
-            for (var i = 0; i < keys.length; ++i)
-              chrome.test.assertEq(!(i in fails), keys[i] in values);
-            }));
+          pass(
+            function(values) {
+              for (var i = 0; i < keys.length; ++i) {
+                // Debug
+                if (keys[i] in values) {
+                  console.log("  values['" + keys[i] + "'] = " +
+                              values[keys[i]]);
+                } else {
+                  console.log("  " + keys[i] + " is missing in values");
+                }
+
+                chrome.test.assertEq(fails.indexOf(keys[i]) == -1,
+                                     keys[i] in values);
+              }
+            }
+          )
+      );
     }
   }
 
@@ -25,8 +36,8 @@
     // Test with all the keys at one.
     tests.push(getTestFunctionFor(keys, []));
     // Tests with key which hasn't corresponding value.
-    var noValueKey = "no-value-for-this-key";
-    tests.push(getTestFunctionFor([noValueKey], [0]));
+    var noValueKey = "noValueForThisKey";
+    tests.push(getTestFunctionFor([noValueKey], [noValueKey]));
 
     if (keys.length > 1) {
       // Tests with the separate keys.
@@ -34,13 +45,14 @@
         tests.push(getTestFunctionFor([keys[i]], []));
       }
     }
-    if (keys.length > 2) {
+    if (keys.length >= 2) {
       tests.push(getTestFunctionFor([keys[0], keys[1]], []));
-      tests.push(getTestFunctionFor([keys[0], noValueKey, keys[1]], [1]));
+      tests.push(getTestFunctionFor([keys[0], noValueKey, keys[1]],
+                                    [noValueKey]));
     }
     return tests;
   }
 
-  var tests = generateTestsForKeys(["hwid", "homeProvider"])
+  var tests = generateTestsForKeys(["hwid", "homeProvider", "initialLocale"])
   chrome.test.runTests(tests);
 </script>

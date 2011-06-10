@@ -7,6 +7,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
+#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/system_access.h"
 
 using chromeos::CrosLibrary;
@@ -22,6 +23,9 @@ const char kPropertyHWID[] = "hwid";
 
 // Key which corresponds to the home provider property.
 const char kPropertyHomeProvider[] = "homeProvider";
+
+// Key which corresponds to the initial_locale property.
+const char kPropertyInitialLocale[] = "initialLocale";
 
 }  // namespace
 
@@ -60,6 +64,8 @@ bool GetChromeosInfoFunction::GetValue(const std::string& property_name,
     } else {
       LOG(ERROR) << "CrosLibrary can't be loaded.";
     }
+  } else if (property_name == kPropertyInitialLocale) {
+    *value = chromeos::WizardController::GetInitialLocale();
   } else {
     LOG(ERROR) << "Unknown property request: " << property_name;
     return false;
