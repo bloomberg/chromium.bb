@@ -142,18 +142,6 @@ else
 endif
 
 ##################################################################
-#  The default alignment used by the tools.
-#  DEFAULT_ALIGN_BYTES is the alignment constraint that is enforced
-#  by the tools.  No instruction may span a multiple of this value.
-#  DEFAULT_ALIGN_POW2 is the log base 2 of DEFAULT_ALIGN_BYTES.
-#  Both of these variables are used to set the default values of
-#  alignment for gcc and gas.  Command-line flags may override the
-#  values.
-##################################################################
-DEFAULT_ALIGN_BYTES=32
-DEFAULT_ALIGN_POW2=5
-
-##################################################################
 #  The version numbers for the tools we will be building.
 ##################################################################
 GCC_VERSION=4.4.3
@@ -171,7 +159,7 @@ cloog-ppl: $(CLOOG_PPL_VERSION)
 endef
 
 ##################################################################
-# Get or update the sources
+# Get or update the sources.
 ##################################################################
 
 SRC:
@@ -354,7 +342,7 @@ BUILD/stamp-$(CROSSARCH)-binutils: | SRC/binutils BUILD
 	# us from building with -Werror today.
 	cd BUILD/build-binutils-$(CROSSARCH) && \
 	  CC="gcc" \
-	  CFLAGS="-m$(HOST_TOOLCHAIN_BITS) -O2 -DNACL_ALIGN_BYTES=$(DEFAULT_ALIGN_BYTES) -DNACL_ALIGN_POW2=$(DEFAULT_ALIGN_POW2) $(CFLAGS)" \
+	  CFLAGS="-m$(HOST_TOOLCHAIN_BITS) -O2 $(CFLAGS)" \
 	  LDFLAGS="-s $(LDFLAGS)" \
 	  ../../SRC/binutils/configure \
 	    --prefix=$(SDKROOT) \
@@ -411,9 +399,7 @@ GCC_CFLAGS = -O2 $(CFLAGS)
 
 GCC_DEFINES = \
     -Dinhibit_libc \
-    -D__gthr_posix_h \
-    -DNACL_ALIGN_BYTES=$(DEFAULT_ALIGN_BYTES) \
-    -DNACL_ALIGN_POW2=$(DEFAULT_ALIGN_POW2)
+    -D__gthr_posix_h
 
 GCC_LDFLAGS = -s $(LDFLAGS)
 
