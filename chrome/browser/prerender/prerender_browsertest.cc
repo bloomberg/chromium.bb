@@ -1348,7 +1348,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderLocalStorageWrite) {
 }
 
 // Checks that the favicon is properly loaded on prerender.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderFavicon) {
+// FLAKY: http://crbug.com/85729
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, FLAKY_PrerenderFavicon) {
   PrerenderTestURL("files/prerender/prerender_favicon.html",
                    FINAL_STATUS_USED,
                    1);
