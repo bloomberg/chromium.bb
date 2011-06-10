@@ -36,8 +36,6 @@ void SetLocalizedStrings(DictionaryValue* localized_strings) {
   localized_strings->SetString(std::string("noPlugin"),
       l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_NO_PLUGIN));
 #endif
-  localized_strings->SetString(std::string("launchNativeDialog"),
-      l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_NATIVE_DIALOG));
   localized_strings->SetString(std::string("previewFailed"),
       l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_FAILED));
   localized_strings->SetString(std::string("initiatorTabClosed"),
