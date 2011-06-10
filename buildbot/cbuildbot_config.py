@@ -349,12 +349,10 @@ add_config('arm-tegra2_seaboard-private-bin', [internal, arm, binary, {
 
 add_config('arm-tegra2_kaen-private-bin', [internal, arm, binary, {
   'board' : 'tegra2_kaen',
-  'prebuilts' : False,
 }])
 
 add_config('arm-tegra2_aebl-private-bin', [internal, arm, binary, {
   'board' : 'tegra2_aebl',
-  'prebuilts' : False,
 }])
 
 add_config('arm-tegra2_dev-board-private-bin', [internal, arm, binary, {
