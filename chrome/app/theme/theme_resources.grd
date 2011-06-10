@@ -215,18 +215,7 @@
       <!-- NOTE: product_logo_*.* files beyond what's listed above are
            referenced by installer code; don't remove them unless you know what
            you're doing! -->
-      <include name="IDR_PROFILE_TAG_CENTER_AERO" file="profile_tag_center_aero.png" type="BINDATA" />
-      <include name="IDR_PROFILE_TAG_LEFT_AERO" file="profile_tag_left_aero.png" type="BINDATA" />
-      <include name="IDR_PROFILE_TAG_RIGHT_AERO" file="profile_tag_right_aero.png" type="BINDATA" />
-      <include name="IDR_PROFILE_TAG_INACTIVE_CENTER_AERO" file="profile_tag_inactive_center_aero.png" type="BINDATA" />
-      <include name="IDR_PROFILE_TAG_INACTIVE_LEFT_AERO" file="profile_tag_inactive_left_aero.png" type="BINDATA" />
-      <include name="IDR_PROFILE_TAG_INACTIVE_RIGHT_AERO" file="profile_tag_inactive_right_aero.png" type="BINDATA" />
-      <include name="IDR_PROFILE_TAG_CENTER_THEMED" file="profile_tag_center_opaque.png" type="BINDATA" />
-      <include name="IDR_PROFILE_TAG_LEFT_THEMED" file="profile_tag_left_opaque.png" type="BINDATA" />
-      <include name="IDR_PROFILE_TAG_RIGHT_THEMED" file="profile_tag_right_opaque.png" type="BINDATA" />
-      <include name="IDR_PROFILE_TAG_CENTER_MASK" file="profile_tag_center_mask.png" type="BINDATA" />
-      <include name="IDR_PROFILE_TAG_LEFT_MASK" file="profile_tag_left_mask.png" type="BINDATA" />
-      <include name="IDR_PROFILE_TAG_RIGHT_MASK" file="profile_tag_right_mask.png" type="BINDATA" />
+      <include name="IDR_PROFILE_AVATAR_1" file="avatar_cupcake.png" type="BINDATA" />
       <include name="IDR_RESTORE_BUTTON_MASK" file="restore_button_mask.png" type="BINDATA" />
       <include name="IDR_SAD_FAVICON" file="sadfavicon.png" type="BINDATA" />
       <include name="IDR_SAD_TAB" file="sadtab.png" type="BINDATA" />

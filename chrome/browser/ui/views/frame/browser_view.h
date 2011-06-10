@@ -165,9 +165,8 @@ class BrowserView : public BrowserBubbleHost,
   // incognito.
   bool IsOffTheRecord() const;
 
-  // Returns true if the non-client view should render the Incognito
-  // avatar icon if the window is incognito.
-  virtual bool ShouldShowOffTheRecordAvatar() const;
+  // Returns true if the non-client view should render an avatar icon.
+  virtual bool ShouldShowAvatar() const;
 
   // Handle the specified |accelerator| being pressed.
   virtual bool AcceleratorPressed(const views::Accelerator& accelerator);

@@ -14,9 +14,7 @@
 #include "views/window/non_client_view.h"
 
 class BrowserView;
-class ProfileMenuButton;
-class ProfileMenuModel;
-class ProfileTagView;
+class AvatarMenuButton;
 class SkBitmap;
 
 class GlassBrowserFrameView : public BrowserNonClientFrameView,
@@ -66,13 +64,11 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
 
   // Paint various sub-components of this view.
   void PaintToolbarBackground(gfx::Canvas* canvas);
-  void PaintOTRAvatar(gfx::Canvas* canvas);
   void PaintRestoredClientEdge(gfx::Canvas* canvas);
 
   // Layout various sub-components of this view.
-  void LayoutOTRAvatar();
+  void LayoutAvatar();
   void LayoutClientView();
-  void LayoutProfileTag();
 
   // Returns the bounds of the client area for the specified view size.
   gfx::Rect CalculateClientAreaBounds(int width, int height) const;
@@ -92,11 +88,8 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   // Receive notifications when the user's Google services user name changes.
   void RegisterLoginNotifications();
 
-  // Returns true if the ProfileButton has been created.
-  bool show_profile_button() const { return profile_button_.get() != NULL; }
-
-  // The layout rect of the OTR avatar icon, if visible.
-  gfx::Rect otr_avatar_bounds_;
+  // The layout rect of the avatar icon, if visible.
+  gfx::Rect avatar_bounds_;
 
   // The frame that hosts this view.
   BrowserFrame* frame_;
@@ -107,11 +100,9 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   // The bounds of the ClientView.
   gfx::Rect client_view_bounds_;
 
-  // Menu button that displays user's name and multi-profile menu.
-  scoped_ptr<ProfileMenuButton> profile_button_;
-
-  // Image tag displayed on frame beneath profile_button_.
-  scoped_ptr<ProfileTagView> profile_tag_;
+  // Menu button that displays that either the incognito icon or the profile
+  // icon.
+  scoped_ptr<AvatarMenuButton> avatar_button_;
 
   // Whether or not the window throbber is currently animating.
   bool throbber_running_;
