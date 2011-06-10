@@ -71,9 +71,11 @@ void GpuVideoServiceHost::SetOnInitialized(
 }
 
 GpuVideoDecodeAcceleratorHost* GpuVideoServiceHost::CreateVideoAccelerator(
-    media::VideoDecodeAccelerator::Client* client) {
+    media::VideoDecodeAccelerator::Client* client,
+    int command_buffer_route_id) {
   base::AutoLock auto_lock(lock_);
   DCHECK(channel_);
   return new GpuVideoDecodeAcceleratorHost(
-      &router_, channel_, next_decoder_host_id_++, client);
+      &router_, channel_, next_decoder_host_id_++,
+      command_buffer_route_id, client);
 }

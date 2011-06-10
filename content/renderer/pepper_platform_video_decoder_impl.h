@@ -9,6 +9,7 @@
 
 #include "base/scoped_ptr.h"
 #include "base/memory/ref_counted.h"
+#include "base/message_loop.h"
 #include "media/video/video_decode_accelerator.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 
@@ -20,7 +21,8 @@ class PlatformVideoDecoderImpl
       public base::RefCountedThreadSafe<PlatformVideoDecoderImpl> {
  public:
   explicit PlatformVideoDecoderImpl(
-      media::VideoDecodeAccelerator::Client* client);
+      media::VideoDecodeAccelerator::Client* client,
+      uint32 command_buffer_route_id);
   virtual ~PlatformVideoDecoderImpl();
 
   // PlatformVideoDecoder implementation.
@@ -59,11 +61,17 @@ class PlatformVideoDecoderImpl
   // Client lifetime must exceed lifetime of this class.
   media::VideoDecodeAccelerator::Client* client_;
 
+  // Route ID for the command buffer associated with video decoder's context.
+  uint32 command_buffer_route_id_;
+
   // Host for GpuVideoDecodeAccelerator.
   scoped_ptr<media::VideoDecodeAccelerator> decoder_;
 
   // Host for Gpu Channel.
   scoped_refptr<GpuChannelHost> channel_;
+
+  // Message loop on which plugin is initialized.
+  MessageLoop* message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformVideoDecoderImpl);
 };

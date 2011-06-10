@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/logging.h"
+#include "base/message_loop.h"
 #include "media/video/picture.h"
 #include "ppapi/c/dev/pp_video_dev.h"
 #include "ppapi/c/dev/ppb_video_decoder_dev.h"
@@ -18,6 +19,7 @@
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_buffer_impl.h"
+#include "webkit/plugins/ppapi/ppb_context_3d_impl.h"
 #include "webkit/plugins/ppapi/resource_tracker.h"
 #include "webkit/plugins/ppapi/var.h"
 
@@ -54,6 +56,7 @@ PP_Resource Create(PP_Instance instance_id) {
 }
 
 int32_t Initialize(PP_Resource video_decoder,
+                   PP_Resource context_id,
                    const PP_VideoConfigElement* decoder_config,
                    struct PP_CompletionCallback callback) {
   scoped_refptr<PPB_VideoDecoder_Impl> decoder(
@@ -61,7 +64,7 @@ int32_t Initialize(PP_Resource video_decoder,
   if (!decoder)
     return PP_ERROR_BADRESOURCE;
 
-  return decoder->Initialize(decoder_config, callback);
+  return decoder->Initialize(context_id, decoder_config, callback);
 }
 
 PP_Bool IsVideoDecoder(PP_Resource resource) {
@@ -220,15 +223,29 @@ bool PPB_VideoDecoder_Impl::GetConfigs(
 }
 
 int32_t PPB_VideoDecoder_Impl::Initialize(
+    PP_Resource context_id,
     const PP_VideoConfigElement* decoder_config,
     PP_CompletionCallback callback) {
   if (!callback.func)
     return PP_ERROR_BADARGUMENT;
+
   if (!instance())
     return PP_ERROR_FAILED;
 
+  scoped_refptr<webkit::ppapi::PPB_Context3D_Impl> context3d =
+      webkit::ppapi::Resource::GetAs<webkit::ppapi::PPB_Context3D_Impl>(
+          context_id);
+  if (!context3d)
+    return PP_ERROR_BADRESOURCE;
+
+  int command_buffer_route_id =
+      context3d->platform_context()->GetCommandBufferRouteId();
+  if (command_buffer_route_id == 0)
+    return PP_ERROR_FAILED;
+
   platform_video_decoder_.reset(
-      instance()->delegate()->CreateVideoDecoder(this));
+      instance()->delegate()->CreateVideoDecoder(
+          this, command_buffer_route_id));
 
   if (!platform_video_decoder_.get())
     return PP_ERROR_FAILED;
@@ -348,7 +365,8 @@ void PPB_VideoDecoder_Impl::ProvidePictureBuffers(
   PP_Size out_dim = PP_MakeSize(dimensions.width(), dimensions.height());
   ScopedResourceId resource(this);
   ppp_videodecoder_->ProvidePictureBuffers(
-      resource.id, requested_num_of_buffers, out_dim, out_type);
+      instance()->pp_instance(), resource.id, requested_num_of_buffers,
+      out_dim, out_type);
 }
 
 void PPB_VideoDecoder_Impl::PictureReady(const media::Picture& picture) {
@@ -358,7 +376,8 @@ void PPB_VideoDecoder_Impl::PictureReady(const media::Picture& picture) {
   ScopedResourceId resource(this);
   PP_Picture_Dev out_pic;
   CopyToPictureDev(picture, &out_pic);
-  ppp_videodecoder_->PictureReady(resource.id, out_pic);
+  ppp_videodecoder_->PictureReady(
+      instance()->pp_instance(), resource.id, out_pic);
 }
 
 void PPB_VideoDecoder_Impl::DismissPictureBuffer(int32 picture_buffer_id) {
@@ -366,7 +385,8 @@ void PPB_VideoDecoder_Impl::DismissPictureBuffer(int32 picture_buffer_id) {
     return;
 
   ScopedResourceId resource(this);
-  ppp_videodecoder_->DismissPictureBuffer(resource.id, picture_buffer_id);
+  ppp_videodecoder_->DismissPictureBuffer(
+      instance()->pp_instance(), resource.id, picture_buffer_id);
 }
 
 void PPB_VideoDecoder_Impl::NotifyEndOfStream() {
@@ -374,7 +394,7 @@ void PPB_VideoDecoder_Impl::NotifyEndOfStream() {
     return;
 
   ScopedResourceId resource(this);
-  ppp_videodecoder_->EndOfStream(resource.id);
+  ppp_videodecoder_->EndOfStream(instance()->pp_instance(), resource.id);
 }
 
 void PPB_VideoDecoder_Impl::NotifyError(
@@ -387,7 +407,7 @@ void PPB_VideoDecoder_Impl::NotifyError(
   // PP_VideoDecodeError_Dev have identical enum values. There is no compiler
   // assert to guarantee this. We either need to add such asserts or
   // merge these two enums.
-  ppp_videodecoder_->NotifyError(resource.id,
+  ppp_videodecoder_->NotifyError(instance()->pp_instance(), resource.id,
       static_cast<PP_VideoDecodeError_Dev>(error));
 }
 
@@ -429,18 +449,17 @@ void PPB_VideoDecoder_Impl::NotifyInitializeDone() {
 
 // These functions are declared in picture.h but are defined here because of
 // dependencies (we can't depend on ppapi types from media).
+// TODO(fischman/vrk): Find a way to clean this up as it violates the spirit of
+// checkdeps.
 namespace media {
 BaseBuffer::BaseBuffer(const PP_BufferInfo_Dev& info)
     : id_(info.id),
       size_(info.size.width, info.size.height) {
 }
 
-// TODO(vrk): This assigns the PP_Resource context to be
-// the context_id. Not sure what it's actually supposed to be.
 GLESBuffer::GLESBuffer(const PP_GLESBuffer_Dev& buffer)
     : BaseBuffer(buffer.info),
-      texture_id_(buffer.texture_id),
-      context_id_(buffer.context) {
+      texture_id_(buffer.texture_id) {
 }
 
 SysmemBuffer::SysmemBuffer(const PP_SysmemBuffer_Dev& buffer)

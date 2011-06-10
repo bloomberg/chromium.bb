@@ -9,8 +9,8 @@
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_var.h"
 
-#define PPB_VIDEODECODER_DEV_INTERFACE_0_8 "PPB_VideoDecoder(Dev);0.8"
-#define PPB_VIDEODECODER_DEV_INTERFACE PPB_VIDEODECODER_DEV_INTERFACE_0_8
+#define PPB_VIDEODECODER_DEV_INTERFACE_0_9 "PPB_VideoDecoder(Dev);0.9"
+#define PPB_VIDEODECODER_DEV_INTERFACE PPB_VIDEODECODER_DEV_INTERFACE_0_9
 
 // Video decoder interface.
 //
@@ -139,11 +139,14 @@ struct PPB_VideoDecoder_Dev {
   //
   // Parameters:
   //   |video_decoder| is the previously created handle to the decoder resource.
+  //   |context| the GL context in which decoding will happen. This should be a
+  //   resource of type PPB_Context3D_Dev.
   //   |decoder_config| the configuration to use to initialize the decoder.
   //   |callback| called after initialization is complete.
   //
   // Returns an error code from pp_errors.h.
   int32_t (*Initialize)(PP_Resource video_decoder,
+                        PP_Resource context,
                         const PP_VideoConfigElement* decoder_config,
                         struct PP_CompletionCallback callback);
 

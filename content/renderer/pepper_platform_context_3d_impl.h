@@ -32,6 +32,7 @@ class PlatformContext3DImpl
   virtual void SetSwapBuffersCallback(Callback0::Type* callback);
   virtual unsigned GetBackingTextureId();
   virtual gpu::CommandBuffer* GetCommandBuffer();
+  virtual int GetCommandBufferRouteId();
   virtual void SetContextLostCallback(Callback0::Type* callback);
 
  private:

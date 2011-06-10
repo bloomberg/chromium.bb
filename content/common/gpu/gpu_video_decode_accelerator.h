@@ -50,16 +50,14 @@ class GpuVideoDecodeAccelerator
     video_decode_accelerator_.reset(accelerator);
   }
 
+  void AssignGLESBuffers(const std::vector<media::GLESBuffer>& buffers);
+
  private:
   // Handlers for IPC messages.
   void OnGetConfigs(const std::vector<uint32>& config,
                     std::vector<uint32>* configs);
   void OnInitialize(const std::vector<uint32>& configs);
   void OnDecode(int32 id, base::SharedMemoryHandle handle, int32 size);
-  void OnAssignGLESBuffers(const std::vector<int32> buffer_ids,
-                           const std::vector<uint32> texture_ids,
-                           const std::vector<uint32> context_ids,
-                           const std::vector<gfx::Size> sizes);
   void OnAssignSysmemBuffers(const std::vector<int32> buffer_ids,
                              const std::vector<base::SharedMemoryHandle> data,
                              const std::vector<gfx::Size> sizes);

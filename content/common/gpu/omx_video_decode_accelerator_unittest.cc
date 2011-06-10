@@ -495,10 +495,8 @@ void EglRenderingVDAClient::ProvidePictureBuffers(
     base::WaitableEvent done(false, false);
     rendering_helper_->CreateTexture(rendering_window_id_, &texture_id, &done);
     done.Wait();
-    // TODO(fischman): context_id is always 0.  Can it be removed from the API?
-    // (since it's always inferrable from context).
     media::GLESBuffer* buffer =
-        new media::GLESBuffer(id, dimensions, texture_id, 0 /* context_id */);
+        new media::GLESBuffer(id, dimensions, texture_id);
     CHECK(picture_buffers_by_id_.insert(std::make_pair(id, buffer)).second);
     buffers.push_back(*buffer);
   }
