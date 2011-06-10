@@ -22,6 +22,7 @@ enum ServerExperiment {
   ACCEPTANCE_RATIO_05_WINNER_LEAD_RATIO_25,
   ACCEPTANCE_RATIO_05_WINNER_LEAD_RATIO_15_MIN_FORM_SCORE_5,
   TOOLBAR_DATA_ONLY,
+  ACCEPTANCE_RATIO_04_WINNER_LEAD_RATIO_3_MIN_FORM_SCORE_4,
   NUM_SERVER_EXPERIMENTS
 };
 
@@ -289,6 +290,8 @@ void AutofillMetrics::LogServerExperimentId(
     metric = ACCEPTANCE_RATIO_05_WINNER_LEAD_RATIO_15_MIN_FORM_SCORE_5;
   else if (experiment_id == "tbar1")
     metric = TOOLBAR_DATA_ONLY;
+  else if (experiment_id == "ar04wr3fs4")
+    metric = ACCEPTANCE_RATIO_04_WINNER_LEAD_RATIO_3_MIN_FORM_SCORE_4;
 
   DCHECK(metric < NUM_SERVER_EXPERIMENTS);
   UMA_HISTOGRAM_ENUMERATION("Autofill.ServerExperimentId", metric,
