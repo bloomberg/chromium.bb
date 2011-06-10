@@ -201,6 +201,8 @@
         'cpp/dev/surface_3d_dev.h',
         'cpp/dev/url_util_dev.cc',
         'cpp/dev/url_util_dev.h',
+        'cpp/dev/video_decoder_client_dev.cc',
+        'cpp/dev/video_decoder_client_dev.h',
         'cpp/dev/video_decoder_dev.cc',
         'cpp/dev/video_decoder_dev.h',
         'cpp/dev/widget_client_dev.cc',

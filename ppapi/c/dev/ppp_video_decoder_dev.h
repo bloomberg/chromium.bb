@@ -5,9 +5,11 @@
 #ifndef PPAPI_C_DEV_PPP_VIDEO_DECODER_DEV_H_
 #define PPAPI_C_DEV_PPP_VIDEO_DECODER_DEV_H_
 
+#include "ppapi/c/pp_instance.h"
+#include "ppapi/c/pp_resource.h"
 #include "ppapi/c/dev/pp_video_dev.h"
 
-#define PPP_VIDEODECODER_DEV_INTERFACE "PPP_VideoDecoder(Dev);0.3"
+#define PPP_VIDEODECODER_DEV_INTERFACE "PPP_VideoDecoder(Dev);0.4"
 
 // PPP_VideoDecoder_Dev structure contains the function pointers that the
 // plugin MUST implement to provide services needed by the video decoder
@@ -21,11 +23,13 @@ struct PPP_VideoDecoder_Dev {
   // Decoding will not proceed until buffers have been provided.
   //
   // Parameters:
-  //  |decoder| is pointer to the Pepper Video Decoder instance.
+  //  |instance| the plugin instance to which the callback is responding.
+  //  |decoder| is pointer to the Pepper Video Decoder resource.
   //  |req_num_of_bufs| tells how many buffers are needed by the decoder.
   //  |dimensions| tells the dimensions of the buffer to allocate.
   //  |type| specifies whether the buffer lives in system memory or GL texture.
   void (*ProvidePictureBuffers)(
+      PP_Instance instance,
       PP_Resource decoder,
       uint32_t req_num_of_bufs,
       struct PP_Size dimensions,
@@ -35,9 +39,11 @@ struct PPP_VideoDecoder_Dev {
   // the plugin.
   //
   // Parameters:
-  //  |decoder| is pointer to the Pepper Video Decoder instance.
+  //  |instance| the plugin instance to which the callback is responding.
+  //  |decoder| is pointer to the Pepper Video Decoder resource.
   //  |picture_buffer| points to the picture buffer that is no longer needed.
-  void (*DismissPictureBuffer)(PP_Resource decoder,
+  void (*DismissPictureBuffer)(PP_Instance instance,
+                               PP_Resource decoder,
                                int32_t picture_buffer_id);
 
   // Callback function for decoder to deliver decoded pictures ready to be
@@ -45,9 +51,11 @@ struct PPP_VideoDecoder_Dev {
   // decoder through ReusePictureBuffer function in PPB Video Decoder API.
   //
   // Parameters:
-  //  |decoder| is pointer to the Pepper Video Decoder instance.
+  //  |instance| the plugin instance to which the callback is responding.
+  //  |decoder| is pointer to the Pepper Video Decoder resource.
   //  |picture| is the picture that is ready.
-  void (*PictureReady)(PP_Resource decoder,
+  void (*PictureReady)(PP_Instance instance,
+                       PP_Resource decoder,
                        struct PP_Picture_Dev picture);
 
   // Callback function to tell the plugin that decoder has decoded end of stream
@@ -55,8 +63,9 @@ struct PPP_VideoDecoder_Dev {
   // stream.
   //
   // Parameters:
-  //  |decoder| is pointer to the Pepper Video Decoder instance.
-  void (*EndOfStream)(PP_Resource decoder);
+  //  |instance| the plugin instance to which the callback is responding.
+  //  |decoder| is pointer to the Pepper Video Decoder resource.
+  void (*EndOfStream)(PP_Instance instance, PP_Resource decoder);
 
   // Error handler callback for decoder to deliver information about detected
   // errors to the plugin.
@@ -64,9 +73,12 @@ struct PPP_VideoDecoder_Dev {
   // TODO(vmr): Fill out error result codes and corresponding actions.
   //
   // Parameters:
-  //  |decoder| is pointer to the Pepper Video Decoder instance.
+  //  |instance| the plugin instance to which the callback is responding.
+  //  |decoder| is pointer to the Pepper Video Decoder resource.
   //  |error| error is the enumeration specifying the error.
-  void (*NotifyError)(PP_Resource decoder, enum PP_VideoDecodeError_Dev error);
+  void (*NotifyError)(PP_Instance instance,
+                      PP_Resource decoder,
+                      enum PP_VideoDecodeError_Dev error);
 };
 
 #endif  /* PPAPI_C_DEV_PPP_VIDEO_DECODER_DEV_H_ */

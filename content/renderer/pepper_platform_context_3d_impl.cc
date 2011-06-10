@@ -103,8 +103,13 @@ gpu::CommandBuffer* PlatformContext3DImpl::GetCommandBuffer() {
   return command_buffer_;
 }
 
+int PlatformContext3DImpl::GetCommandBufferRouteId() {
+  DCHECK(command_buffer_);
+  return command_buffer_->route_id();
+}
+
 void PlatformContext3DImpl::SetContextLostCallback(Callback0::Type* callback) {
-    context_lost_callback_.reset(callback);
+  context_lost_callback_.reset(callback);
 }
 
 void PlatformContext3DImpl::OnContextLost() {

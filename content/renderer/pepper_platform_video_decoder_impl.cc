@@ -17,9 +17,11 @@
 using media::BitstreamBuffer;
 
 PlatformVideoDecoderImpl::PlatformVideoDecoderImpl(
-    VideoDecodeAccelerator::Client* client)
+    VideoDecodeAccelerator::Client* client, uint32 command_buffer_route_id)
     : client_(client),
-      decoder_(NULL) {
+      command_buffer_route_id_(command_buffer_route_id),
+      decoder_(NULL),
+      message_loop_(NULL) {
   DCHECK(client);
 }
 
@@ -39,6 +41,8 @@ bool PlatformVideoDecoderImpl::Initialize(const std::vector<uint32>& config) {
 
   RenderThread* render_thread = RenderThread::current();
   DCHECK(render_thread);
+  message_loop_ = MessageLoop::current();
+  DCHECK(message_loop_);
 
   channel_ = render_thread->EstablishGpuChannelSync(
       content::CAUSE_FOR_GPU_LAUNCH_VIDEODECODEACCELERATOR_INITIALIZE);
@@ -72,7 +76,8 @@ void PlatformVideoDecoderImpl::InitializeDecoder(
     return;
   }
   GpuVideoServiceHost* video_service = channel_->gpu_video_service_host();
-  decoder_.reset(video_service->CreateVideoAccelerator(this));
+  decoder_.reset(video_service->CreateVideoAccelerator(
+      this, command_buffer_route_id_));
 
   // Send IPC message to initialize decoder in GPU process.
   decoder_->Initialize(configs);
@@ -136,6 +141,13 @@ void PlatformVideoDecoderImpl::PictureReady(const media::Picture& picture) {
 }
 
 void PlatformVideoDecoderImpl::NotifyInitializeDone() {
+  if (message_loop_ != MessageLoop::current() ) {
+    message_loop_->
+        PostTask(FROM_HERE, base::Bind(
+            &PlatformVideoDecoderImpl::NotifyInitializeDone,
+            base::Unretained(this)));
+    return;
+  }
   client_->NotifyInitializeDone();
 }
 

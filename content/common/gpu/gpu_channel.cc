@@ -18,6 +18,7 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/gpu/gpu_video_service.h"
 #include "content/common/gpu/transport_texture.h"
+#include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_surface.h"
 
 #if defined(OS_POSIX)
@@ -205,6 +206,8 @@ bool GpuChannel::OnControlMessageReceived(const IPC::Message& msg) {
         OnDestroyVideoDecoder)
     IPC_MESSAGE_HANDLER(GpuChannelMsg_CreateTransportTexture,
         OnCreateTransportTexture)
+    IPC_MESSAGE_HANDLER(GpuChannelMsg_AssignTexturesToVideoDecoder,
+        OnAssignTexturesToVideoDecoder)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   DCHECK(handled);
@@ -295,24 +298,26 @@ void GpuChannel::OnDestroySurface(int route_id) {
 #endif
 }
 
-void GpuChannel::OnCreateVideoDecoder(
-    int32 decoder_host_id, const std::vector<uint32>& configs) {
-// TODO(cevans): do NOT re-enable this until GpuVideoService has been checked
-// for integer overflows, including the classic "width * height" overflow.
-#if 0
-  VLOG(1) << "GpuChannel::OnCreateVideoDecoder";
+void GpuChannel::OnCreateVideoDecoder(int32 decoder_host_id,
+                                      uint32 command_buffer_route_id,
+                                      const std::vector<uint32>& configs) {
   GpuVideoService* service = GpuVideoService::GetInstance();
   if (service == NULL) {
     // TODO(hclam): Need to send a failure message.
     return;
   }
 
+  GpuCommandBufferStub* stub = stubs_.Lookup(command_buffer_route_id);
+  // TODO(vrk): Need to notify renderer that given route is invalid.
+  if (!stub)
+    return;
+
   int32 decoder_id = GenerateRouteID();
 
   bool ret = service->CreateVideoDecoder(
-      this, &router_, decoder_host_id, decoder_id, configs);
+      this, &router_, decoder_host_id, decoder_id, stub->scheduler()->decoder(),
+      configs);
   DCHECK(ret) << "Failed to create a GpuVideoDecodeAccelerator";
-#endif
 }
 
 void GpuChannel::OnDestroyVideoDecoder(int32 decoder_id) {
@@ -341,7 +346,16 @@ void GpuChannel::OnCreateTransportTexture(int32 context_route_id,
        host_id, route_id);
    Send(msg);
  #endif
- }
+}
+
+void GpuChannel::OnAssignTexturesToVideoDecoder(
+    int32 decoder_id,
+    const std::vector<int32>& buffer_ids,
+    const std::vector<uint32>& texture_ids,
+    const std::vector<gfx::Size>& sizes) {
+  GpuVideoService* service = GpuVideoService::GetInstance();
+  service->AssignTexturesToDecoder(decoder_id, buffer_ids, texture_ids, sizes);
+}
 
 bool GpuChannel::Init(base::MessageLoopProxy* io_message_loop,
                       base::WaitableEvent* shutdown_event) {
