@@ -464,10 +464,8 @@ bool BrowserView::IsOffTheRecord() const {
   return browser_->profile()->IsOffTheRecord();
 }
 
-bool BrowserView::ShouldShowAvatar() const {
-  return IsBrowserTypeNormal() &&
-      (IsOffTheRecord() ||
-       CommandLine::ForCurrentProcess()->HasSwitch(switches::kMultiProfiles));
+bool BrowserView::ShouldShowOffTheRecordAvatar() const {
+  return IsOffTheRecord() && IsBrowserTypeNormal();
 }
 
 bool BrowserView::AcceleratorPressed(const views::Accelerator& accelerator) {

@@ -653,7 +653,13 @@ gfx::Size TextButton::GetPreferredSize() {
 void TextButton::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   TextButtonBase::PaintButton(canvas, mode);
 
-  const SkBitmap& icon = GetImageToPaint();
+  SkBitmap icon = icon_;
+  if (show_multiple_icon_states_) {
+    if (has_hover_icon_ && (state() == BS_HOT))
+      icon = icon_hover_;
+    else if (has_pushed_icon_ && (state() == BS_PUSHED))
+      icon = icon_pushed_;
+  }
 
   if (icon.width() > 0) {
     gfx::Rect text_bounds = GetTextBounds();
@@ -696,7 +702,14 @@ void TextButton::GetExtraParams(gfx::NativeTheme::ExtraParams* params) const {
 gfx::Rect TextButton::GetTextBounds() const {
   int extra_width = 0;
 
-  const SkBitmap& icon = GetImageToPaint();
+  SkBitmap icon = icon_;
+  if (show_multiple_icon_states_) {
+    if (has_hover_icon_ && (state() == BS_HOT))
+      icon = icon_hover_;
+    else if (has_pushed_icon_ && (state() == BS_PUSHED))
+      icon = icon_pushed_;
+  }
+
   if (icon.width() > 0)
     extra_width = icon.width() + (text_.empty() ? 0 : icon_text_spacing_);
 
@@ -712,16 +725,6 @@ gfx::Rect TextButton::GetTextBounds() const {
   }
 
   return bounds;
-}
-
-const SkBitmap& TextButton::GetImageToPaint() const {
-  if (show_multiple_icon_states_) {
-    if (has_hover_icon_ && (state() == BS_HOT))
-      return icon_hover_;
-    if (has_pushed_icon_ && (state() == BS_PUSHED))
-      return icon_pushed_;
-  }
-  return icon_;
 }
 
 }  // namespace views
