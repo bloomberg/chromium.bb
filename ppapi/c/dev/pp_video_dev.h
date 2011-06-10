@@ -201,6 +201,9 @@ struct PP_BufferInfo_Dev {
 
 // Struct for specifying texture-backed picture data.
 struct PP_GLESBuffer_Dev {
+  // Context allocated using PPB_Context3D_Dev.
+  PP_Resource context;
+
   // Texture ID in the given context where picture is stored.
   GLuint texture_id;
 

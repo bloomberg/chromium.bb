@@ -261,9 +261,8 @@ IPC_MESSAGE_CONTROL1(GpuChannelMsg_DestroySurface,
 // Create hardware video decoder && associate it with the output |decoder_id|;
 // We need this to be control message because we had to map the GpuChannel and
 // |decoder_id|.
-IPC_MESSAGE_CONTROL3(GpuChannelMsg_CreateVideoDecoder,
+IPC_MESSAGE_CONTROL2(GpuChannelMsg_CreateVideoDecoder,
                      int32, /* decoder_id */
-                     uint32, /* command buffer route id*/
                      std::vector<uint32>) /* configs */
 
 // Release all resource of the hardware video decoder which was assocaited
@@ -277,13 +276,6 @@ IPC_MESSAGE_CONTROL2(GpuChannelMsg_CreateTransportTexture,
                      int32, /* context_route_id */
                      int32 /* host_id */)
 
-// Sent from Renderer process to the GPU process to give the texture IDs for
-// the textures the decoder will use for output.
-IPC_MESSAGE_CONTROL4(GpuChannelMsg_AssignTexturesToVideoDecoder,
-                     int32, /* Decoder ID */
-                     std::vector<int32>, /* Picture buffer ID */
-                     std::vector<uint32>, /* Texture ID */
-                     std::vector<gfx::Size>) /* Size */
 //------------------------------------------------------------------------------
 // GPU Command Buffer Messages
 // These are messages between a renderer process to the GPU process relating to
@@ -423,6 +415,14 @@ IPC_MESSAGE_ROUTED3(AcceleratedVideoDecoderMsg_Decode,
                     int32, /* bitstream_buffer_id */
                     base::SharedMemoryHandle, /* input_buffer_handle */
                     int32) /* size */
+
+// Sent from Renderer process to the GPU process to give the texture IDs for
+// the textures the decoder will use for output.
+IPC_MESSAGE_ROUTED4(AcceleratedVideoDecoderMsg_AssignGLESBuffers,
+                    std::vector<int32>, /* Picture buffer ID */
+                    std::vector<uint32>, /* Texture ID */
+                    std::vector<uint32>, /* Context ID */
+                    std::vector<gfx::Size>) /* Size */
 
 // Sent from Renderer process to the GPU process to give the system memory
 // buffers that the decoder will use for output.

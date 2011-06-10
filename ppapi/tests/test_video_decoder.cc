@@ -35,7 +35,7 @@ std::string TestVideoDecoder::TestCreateAndInitialize() {
     return "Create: error creating the decoder";
 
   int32_t pp_error = video_decoder_interface_->Initialize(
-      decoder, 0, NULL, PP_BlockUntilComplete());
+      decoder, NULL, PP_BlockUntilComplete());
   pp::Module::Get()->core()->ReleaseResource(decoder);
   if (pp_error != PP_ERROR_BADARGUMENT)
     return "Initialize: error detecting null callback";

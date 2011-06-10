@@ -174,10 +174,6 @@ class PluginDelegate {
     // destroyed.
     virtual ::gpu::CommandBuffer* GetCommandBuffer() = 0;
 
-    // If the command buffer is routed in the GPU channel, return the route id.
-    // Otherwise return 0.
-    virtual int GetCommandBufferRouteId() = 0;
-
     // Set an optional callback that will be invoked when the context is lost
     // (e.g. gpu process crash). Takes ownership of the callback.
     virtual void SetContextLostCallback(Callback0::Type* callback) = 0;
@@ -262,8 +258,7 @@ class PluginDelegate {
 
   // The caller will own the pointer returned from this.
   virtual PlatformVideoDecoder* CreateVideoDecoder(
-      media::VideoDecodeAccelerator::Client* client,
-      int command_buffer_route_id) = 0;
+      media::VideoDecodeAccelerator::Client* client) = 0;
 
   // The caller is responsible for calling Shutdown() on the returned pointer
   // to clean up the corresponding resources allocated during this call.

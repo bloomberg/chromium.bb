@@ -19,13 +19,11 @@ GpuVideoDecodeAcceleratorHost::GpuVideoDecodeAcceleratorHost(
     MessageRouter* router,
     IPC::Message::Sender* ipc_sender,
     int32 decoder_host_id,
-    uint32 command_buffer_route_id,
     VideoDecodeAccelerator::Client* client)
     : router_(router),
       ipc_sender_(ipc_sender),
       decoder_host_id_(decoder_host_id),
       decoder_id_(0),
-      command_buffer_route_id_(command_buffer_route_id),
       client_(client) {
 }
 
@@ -81,7 +79,7 @@ bool GpuVideoDecodeAcceleratorHost::Initialize(
   configs_ = configs;
 
   if (!ipc_sender_->Send(new GpuChannelMsg_CreateVideoDecoder(
-          decoder_id_, command_buffer_route_id_, configs))) {
+          decoder_id_, configs))) {
     LOG(ERROR) << "Send(GpuChannelMsg_CreateVideoDecoder) failed";
     return false;
   }
@@ -105,15 +103,17 @@ void GpuVideoDecodeAcceleratorHost::AssignGLESBuffers(
   // Rearrange data for IPC command.
   std::vector<int32> buffer_ids;
   std::vector<uint32> texture_ids;
+  std::vector<uint32> context_ids;
   std::vector<gfx::Size> sizes;
   for (uint32 i = 0; i < buffers.size(); i++) {
     const media::GLESBuffer& buffer = buffers[i];
     texture_ids.push_back(buffer.texture_id());
+    context_ids.push_back(buffer.context_id());
     buffer_ids.push_back(buffer.id());
     sizes.push_back(buffer.size());
   }
-  if (!ipc_sender_->Send(new GpuChannelMsg_AssignTexturesToVideoDecoder(
-          decoder_id_, buffer_ids, texture_ids, sizes))) {
+  if (!ipc_sender_->Send(new AcceleratedVideoDecoderMsg_AssignGLESBuffers(
+          decoder_id_, buffer_ids, texture_ids, context_ids, sizes))) {
     LOG(ERROR) << "Send(AcceleratedVideoDecoderMsg_AssignGLESBuffers) failed";
   }
 }

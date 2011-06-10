@@ -25,7 +25,6 @@ class GpuVideoDecodeAcceleratorHost : public IPC::Channel::Listener,
   GpuVideoDecodeAcceleratorHost(MessageRouter* router,
                                 IPC::Message::Sender* ipc_sender,
                                 int32 decoder_host_id,
-                                uint32 command_buffer_route_id,
                                 media::VideoDecodeAccelerator::Client* client);
   virtual ~GpuVideoDecodeAcceleratorHost();
 
@@ -75,10 +74,6 @@ class GpuVideoDecodeAcceleratorHost : public IPC::Channel::Listener,
 
   // ID of VideoDecodeAccelerator in the Gpu process.
   int32 decoder_id_;
-
-  // Route ID for the command buffer associated with the context the GPU Video
-  // Decoder uses.
-  uint32 command_buffer_route_id_;
 
   // Temporarily store configs here in between Create and Initialize phase.
   std::vector<uint32> configs_;

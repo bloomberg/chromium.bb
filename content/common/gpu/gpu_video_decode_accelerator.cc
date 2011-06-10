@@ -32,6 +32,8 @@ bool GpuVideoDecodeAccelerator::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderMsg_Decode, OnDecode)
     IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderMsg_AssignSysmemBuffers,
                         OnAssignSysmemBuffers)
+    IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderMsg_AssignGLESBuffers,
+                        OnAssignGLESBuffers)
     IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderMsg_ReusePictureBuffer,
                         OnReusePictureBuffer)
     IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderMsg_Flush, OnFlush)
@@ -120,11 +122,13 @@ void GpuVideoDecodeAccelerator::OnDecode(int32 id,
   video_decode_accelerator_->Decode(media::BitstreamBuffer(id, handle, size));
 }
 
-void GpuVideoDecodeAccelerator::AssignGLESBuffers(
-    const std::vector<media::GLESBuffer>& buffers) {
-  if (!video_decode_accelerator_.get())
-    return;
-  video_decode_accelerator_->AssignGLESBuffers(buffers);
+void GpuVideoDecodeAccelerator::OnAssignGLESBuffers(
+    const std::vector<int32> buffer_ids,
+    const std::vector<uint32> texture_ids,
+    const std::vector<uint32> context_ids,
+    const std::vector<gfx::Size> sizes) {
+  // TODO(vrk): Implement.
+  NOTIMPLEMENTED();
 }
 
 void GpuVideoDecodeAccelerator::OnAssignSysmemBuffers(

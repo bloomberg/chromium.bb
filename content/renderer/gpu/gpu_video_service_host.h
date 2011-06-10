@@ -37,8 +37,7 @@ class GpuVideoServiceHost : public IPC::ChannelProxy::MessageFilter {
   // Called on RenderThread to create a hardware accelerated video decoder
   // in the GPU process.
   GpuVideoDecodeAcceleratorHost* CreateVideoAccelerator(
-      media::VideoDecodeAccelerator::Client* client,
-      int command_buffer_route_id);
+      media::VideoDecodeAccelerator::Client* client);
 
  private:
   // Guards all members other than |router_|.

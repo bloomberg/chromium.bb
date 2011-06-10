@@ -46,8 +46,7 @@ class PPB_VideoDecoder_Impl : public Resource,
                   PP_VideoConfigElement* matching_configs,
                   uint32_t matching_configs_size,
                   uint32_t* num_of_matching_configs);
-  int32_t Initialize(PP_Resource context_id,
-                     const PP_VideoConfigElement* dec_config,
+  int32_t Initialize(const PP_VideoConfigElement* dec_config,
                      PP_CompletionCallback callback);
   int32_t Decode(const PP_VideoBitstreamBuffer_Dev* bitstream_buffer,
                  PP_CompletionCallback callback);
