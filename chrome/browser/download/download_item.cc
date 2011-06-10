@@ -55,7 +55,7 @@ namespace {
 // Update frequency (milliseconds).
 const int kUpdateTimeMs = 1000;
 
-void DeleteDownloadedFile(const FilePath& path) {
+static void DeleteDownloadedFile(const FilePath& path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   // Make sure we only delete files.
@@ -213,19 +213,32 @@ DownloadItem::DownloadItem(DownloadManager* download_manager,
 }
 
 DownloadItem::~DownloadItem() {
+  // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   state_ = REMOVING;
   UpdateObservers();
+  download_manager_->AssertNotInQueues(this);
 }
 
 void DownloadItem::AddObserver(Observer* observer) {
+  // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   observers_.AddObserver(observer);
 }
 
 void DownloadItem::RemoveObserver(Observer* observer) {
+  // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   observers_.RemoveObserver(observer);
 }
 
 void DownloadItem::UpdateObservers() {
+  // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   FOR_EACH_OBSERVER(Observer, observers_, OnDownloadUpdated(this));
 }
 
@@ -247,6 +260,9 @@ void DownloadItem::OpenFilesBasedOnExtension(bool open) {
 }
 
 void DownloadItem::OpenDownload() {
+  // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   if (IsPartialDownload()) {
     open_when_complete_ = !open_when_complete_;
   } else if (IsComplete()) {
@@ -274,6 +290,9 @@ void DownloadItem::OpenDownload() {
 }
 
 void DownloadItem::ShowDownloadInShell() {
+  // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
 #if defined(OS_MACOSX)
   // Mac needs to run this operation on the UI thread.
   platform_util::ShowItemInFolder(full_path());
@@ -286,6 +305,9 @@ void DownloadItem::ShowDownloadInShell() {
 }
 
 void DownloadItem::DangerousDownloadValidated() {
+  // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   UMA_HISTOGRAM_ENUMERATION("Download.DangerousDownloadValidated",
                             GetDangerType(),
                             DANGEROUS_TYPE_MAX);
@@ -293,6 +315,9 @@ void DownloadItem::DangerousDownloadValidated() {
 }
 
 void DownloadItem::UpdateSize(int64 bytes_so_far) {
+  // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   received_bytes_ = bytes_so_far;
 
   // If we've received more data than we were expecting (bad server info?),
@@ -302,11 +327,17 @@ void DownloadItem::UpdateSize(int64 bytes_so_far) {
 }
 
 void DownloadItem::StartProgressTimer() {
+  // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   update_timer_.Start(base::TimeDelta::FromMilliseconds(kUpdateTimeMs), this,
                       &DownloadItem::UpdateObservers);
 }
 
 void DownloadItem::StopProgressTimer() {
+  // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   update_timer_.Stop();
 }
 
@@ -314,6 +345,9 @@ void DownloadItem::StopProgressTimer() {
 // was being cancelled in the UI thread, so we'll accept them unless we're
 // complete.
 void DownloadItem::Update(int64 bytes_so_far) {
+  // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   if (!IsInProgress()) {
     NOTREACHED();
     return;
@@ -324,6 +358,9 @@ void DownloadItem::Update(int64 bytes_so_far) {
 
 // Triggered by a user action.
 void DownloadItem::Cancel(bool update_history) {
+  // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   VLOG(20) << __FUNCTION__ << "() download = " << DebugString(true);
   if (!IsPartialDownload()) {
     // Small downloads might be complete before this method has
@@ -341,12 +378,18 @@ void DownloadItem::Cancel(bool update_history) {
 }
 
 void DownloadItem::MarkAsComplete() {
+  // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   DCHECK(all_data_saved_);
   state_ = COMPLETE;
   UpdateObservers();
 }
 
 void DownloadItem::OnAllDataSaved(int64 size) {
+  // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   DCHECK(!all_data_saved_);
   all_data_saved_ = true;
   UpdateSize(size);
@@ -354,6 +397,9 @@ void DownloadItem::OnAllDataSaved(int64 size) {
 }
 
 void DownloadItem::Completed() {
+  // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   VLOG(20) << __FUNCTION__ << "() " << DebugString(false);
 
   DCHECK(all_data_saved_);
@@ -381,6 +427,9 @@ void DownloadItem::Completed() {
 }
 
 void DownloadItem::StartCrxInstall() {
+  // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   DCHECK(is_extension_install());
   DCHECK(all_data_saved_);
 
@@ -406,6 +455,9 @@ void DownloadItem::StartCrxInstall() {
 void DownloadItem::Observe(NotificationType type,
                            const NotificationSource& source,
                            const NotificationDetails& details) {
+  // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   DCHECK(type == NotificationType::CRX_INSTALLER_DONE);
 
   // No need to listen for CRX_INSTALLER_DONE anymore.
@@ -420,6 +472,9 @@ void DownloadItem::Observe(NotificationType type,
 }
 
 void DownloadItem::Interrupted(int64 size, int os_error) {
+  // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   if (!IsInProgress())
     return;
   state_ = INTERRUPTED;
@@ -431,6 +486,9 @@ void DownloadItem::Interrupted(int64 size, int os_error) {
 }
 
 void DownloadItem::Delete(DeleteReason reason) {
+  // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   switch (reason) {
     case DELETE_DUE_TO_USER_DISCARD:
       UMA_HISTOGRAM_ENUMERATION("Download.UserDiscard", GetDangerType(),
@@ -451,6 +509,9 @@ void DownloadItem::Delete(DeleteReason reason) {
 }
 
 void DownloadItem::Remove() {
+  // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   Cancel(true);
   state_ = REMOVING;
   download_manager_->RemoveDownload(db_handle_);
@@ -490,6 +551,9 @@ int DownloadItem::PercentComplete() const {
 }
 
 void DownloadItem::Rename(const FilePath& full_path) {
+  // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   VLOG(20) << __FUNCTION__ << "()"
            << " full_path = \"" << full_path.value() << "\""
            << " " << DebugString(true);
@@ -498,6 +562,9 @@ void DownloadItem::Rename(const FilePath& full_path) {
 }
 
 void DownloadItem::TogglePause() {
+  // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   DCHECK(IsInProgress());
   if (is_paused_)
     request_handle_.ResumeRequest();
@@ -508,6 +575,9 @@ void DownloadItem::TogglePause() {
 }
 
 void DownloadItem::OnDownloadCompleting(DownloadFileManager* file_manager) {
+  // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   VLOG(20) << __FUNCTION__ << "()"
            << " needs rename = " << NeedsRename()
            << " " << DebugString(true);
@@ -531,6 +601,9 @@ void DownloadItem::OnDownloadCompleting(DownloadFileManager* file_manager) {
 }
 
 void DownloadItem::OnDownloadRenamedToFinalName(const FilePath& full_path) {
+  // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   VLOG(20) << __FUNCTION__ << "()"
            << " full_path = \"" << full_path.value() << "\""
            << " needed rename = " << NeedsRename()
@@ -579,6 +652,9 @@ bool DownloadItem::MatchesQuery(const string16& query) const {
 }
 
 void DownloadItem::SetFileCheckResults(const DownloadStateInfo& state) {
+  // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   VLOG(20) << " " << __FUNCTION__ << "()" << " this = " << DebugString(true);
   state_info_ = state;
   VLOG(20) << " " << __FUNCTION__ << "()" << " this = " << DebugString(true);
@@ -588,6 +664,9 @@ void DownloadItem::SetFileCheckResults(const DownloadStateInfo& state) {
 }
 
 void DownloadItem::UpdateTarget() {
+  // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   if (state_info_.target_name.value().empty())
     state_info_.target_name = full_path_.BaseName();
 }
@@ -602,12 +681,18 @@ bool DownloadItem::IsDangerous() const {
 }
 
 void DownloadItem::MarkFileDangerous() {
+  // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   state_info_.is_dangerous_file = true;
   safety_state_ = GetSafetyState(state_info_.is_dangerous_file,
                                  state_info_.is_dangerous_url);
 }
 
 void DownloadItem::MarkUrlDangerous() {
+  // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   state_info_.is_dangerous_url = true;
   safety_state_ = GetSafetyState(state_info_.is_dangerous_file,
                                  state_info_.is_dangerous_url);
@@ -643,6 +728,9 @@ FilePath DownloadItem::GetUserVerifiedFilePath() const {
 }
 
 void DownloadItem::Init(bool active) {
+  // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   UpdateTarget();
   if (active) {
     StartProgressTimer();

@@ -114,14 +114,19 @@ void DownloadManager::Shutdown() {
   // At this point, all dangerous downloads have had their files removed
   // and all in progress downloads have been cancelled.  We can now delete
   // anything left.
-  STLDeleteElements(&downloads_);
 
-  // And clear all non-owning containers.
+  // Copy downloads_ to separate container so as not to set off checks
+  // in DownloadItem destruction.
+  DownloadSet downloads_to_delete;
+  downloads_to_delete.swap(downloads_);
+
   in_progress_.clear();
   active_downloads_.clear();
+  history_downloads_.clear();
 #if !defined(NDEBUG)
   save_page_as_downloads_.clear();
 #endif
+  STLDeleteElements(&downloads_to_delete);
 
   file_manager_ = NULL;
 
@@ -637,6 +642,14 @@ void DownloadManager::CheckDownloadHashDone(int32 download_id,
 
   DVLOG(1) << "CheckDownloadHashDone, url: "
            << active_downloads_[download_id]->GetURL().spec();
+}
+
+void DownloadManager::AssertNotInQueues(DownloadItem* download) {
+  // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
+  CHECK(!ContainsKey(downloads_, download));
+  CHECK(!ContainsKey(active_downloads_, download->id()));
+  CHECK(!ContainsKey(in_progress_, download->id()));
+  CHECK(!ContainsKey(history_downloads_, download->db_handle()));
 }
 
 bool DownloadManager::IsDownloadReadyForCompletion(DownloadItem* download) {
