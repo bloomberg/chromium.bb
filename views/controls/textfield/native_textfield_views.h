@@ -182,8 +182,11 @@ class NativeTextfieldViews : public View,
   // Repaint the cursor.
   void RepaintCursor();
 
+  // Returns the bounds of character at the current cursor.
+  gfx::Rect GetCursorBounds(size_t cursor_pos, bool insert_mode) const;
+
   // Update the cursor_bounds and text_offset.
-  void UpdateCursorBoundsAndTextOffset();
+  void UpdateCursorBoundsAndTextOffset(size_t cursor_pos, bool insert_mode);
 
   void PaintTextAndCursor(gfx::Canvas* canvas);
 
@@ -242,14 +245,15 @@ class NativeTextfieldViews : public View,
   // The x offset for the text to be drawn, without insets;
   int text_offset_;
 
-  // Cursor's bounds in the textfield's coordinates.
-  gfx::Rect cursor_bounds_;
-
   // True if the textfield is in insert mode.
   bool insert_;
 
-  // The drawing state of cursor. True to draw.
+  // The local bounds and visibility of the textfield's text cursor.
+  gfx::Rect cursor_bounds_;
   bool is_cursor_visible_;
+
+  // The drop cursor is a visual cue for where dragged text will be dropped.
+  bool is_drop_cursor_visible_;
 
   // True if InputMethod::CancelComposition() should not be called.
   bool skip_input_method_cancel_composition_;

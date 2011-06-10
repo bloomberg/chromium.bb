@@ -181,9 +181,6 @@ class TextfieldViewsModel {
   // The current composition text will be confirmed.
   bool MoveCursorTo(size_t position, bool select);
 
-  // Returns the bounds of character at the current cursor.
-  gfx::Rect GetCursorBounds(const gfx::Font& font) const;
-
   // Returns the bounds of selected text.
   gfx::Rect GetSelectionBounds(const gfx::Font& font) const;
 

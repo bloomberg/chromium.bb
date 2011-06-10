@@ -167,6 +167,7 @@ class NativeTextfieldViewsTest : public ViewsTestBase,
 
     textfield_view_
         = static_cast<NativeTextfieldViews*>(textfield_->native_wrapper());
+    textfield_view_->SetBoundsRect(params.bounds);
     textfield_->set_id(1);
 
     for (int i = 1; i < count; i++) {
