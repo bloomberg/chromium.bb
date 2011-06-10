@@ -23,7 +23,8 @@ class InfoBarContainerView : public AccessiblePaneView,
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
   // InfobarContainer:
-  virtual void PlatformSpecificAddInfoBar(InfoBar* infobar) OVERRIDE;
+  virtual void PlatformSpecificAddInfoBar(InfoBar* infobar,
+                                          size_t position) OVERRIDE;
   virtual void PlatformSpecificRemoveInfoBar(InfoBar* infobar) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(InfoBarContainerView);

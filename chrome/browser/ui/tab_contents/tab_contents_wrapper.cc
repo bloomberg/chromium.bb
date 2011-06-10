@@ -515,14 +515,10 @@ void TabContentsWrapper::ReplaceInfoBar(InfoBarDelegate* old_delegate,
       Source<TabContentsWrapper>(this),
       Details<ReplaceDetails>(&replace_details));
 
-  // Remove the old one.
-  infobar_delegates_.erase(it);
-
-  // Add the new one.
   DCHECK(find(infobar_delegates_.begin(),
               infobar_delegates_.end(), new_delegate) ==
          infobar_delegates_.end());
-  infobar_delegates_.push_back(new_delegate);
+  infobar_delegates_.erase(infobar_delegates_.insert(it, new_delegate) + 1);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

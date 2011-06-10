@@ -92,7 +92,8 @@ class InfoBarContainer : public NotificationObserver {
 
   // These must be implemented on each platform to e.g. adjust the visible
   // object hierarchy.
-  virtual void PlatformSpecificAddInfoBar(InfoBar* infobar) = 0;
+  virtual void PlatformSpecificAddInfoBar(InfoBar* infobar,
+                                          size_t position) = 0;
   virtual void PlatformSpecificRemoveInfoBar(InfoBar* infobar) = 0;
 
  private:
@@ -105,16 +106,18 @@ class InfoBarContainer : public NotificationObserver {
 
   // Removes an InfoBar for the specified delegate, in response to a
   // notification from the selected TabContentsWrapper. The InfoBar's
-  // disappearance will be animated if |use_animation| is true.
-  void RemoveInfoBar(InfoBarDelegate* delegate, bool use_animation);
+  // disappearance will be animated if |use_animation| is true.  Returns the
+  // position within |infobars_| the infobar was previously at.
+  size_t RemoveInfoBar(InfoBarDelegate* delegate, bool use_animation);
 
-  // Adds |infobar| to this container and calls Show() on it.  |animate| is
-  // passed along to infobar->Show().  Depending on the value of
-  // |callback_status|, this calls infobar->set_container(this) either before or
-  // after the call to Show() so that OnInfoBarAnimated() either will or won't
-  // be called as a result.
+  // Adds |infobar| to this container before the existing infobar at position
+  // |position| and calls Show() on it.  |animate| is passed along to
+  // infobar->Show().  Depending on the value of |callback_status|, this calls
+  // infobar->set_container(this) either before or after the call to Show() so
+  // that OnInfoBarStateChanged() either will or won't be called as a result.
   enum CallbackStatus { NO_CALLBACK, WANT_CALLBACK };
   void AddInfoBar(InfoBar* infobar,
+                  size_t position,
                   bool animate,
                   CallbackStatus callback_status);
 

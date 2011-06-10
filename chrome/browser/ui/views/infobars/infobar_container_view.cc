@@ -44,8 +44,10 @@ void InfoBarContainerView::GetAccessibleState(ui::AccessibleViewState* state) {
   state->name = l10n_util::GetStringUTF16(IDS_ACCNAME_INFOBAR_CONTAINER);
 }
 
-void InfoBarContainerView::PlatformSpecificAddInfoBar(InfoBar* infobar) {
-  AddChildView(static_cast<InfoBarView*>(infobar));
+void InfoBarContainerView::PlatformSpecificAddInfoBar(InfoBar* infobar,
+                                                      size_t position) {
+  AddChildViewAt(static_cast<InfoBarView*>(infobar),
+                 static_cast<int>(position));
 }
 
 void InfoBarContainerView::PlatformSpecificRemoveInfoBar(InfoBar* infobar) {

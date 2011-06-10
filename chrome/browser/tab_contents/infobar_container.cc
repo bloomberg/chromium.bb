@@ -56,7 +56,7 @@ void InfoBarContainer::ChangeTabContents(TabContentsWrapper* contents) {
       // OnInfoBarAnimated() for each infobar.
       AddInfoBar(
           tab_contents_->GetInfoBarDelegateAt(i)->CreateInfoBar(tab_contents_),
-          false, NO_CALLBACK);
+          i, false, NO_CALLBACK);
     }
   }
 
@@ -124,8 +124,8 @@ void InfoBarContainer::Observe(NotificationType type,
   switch (type.value) {
     case NotificationType::TAB_CONTENTS_INFOBAR_ADDED:
       AddInfoBar(
-          Details<InfoBarDelegate>(details)->CreateInfoBar(tab_contents_), true,
-          WANT_CALLBACK);
+          Details<InfoBarDelegate>(details)->CreateInfoBar(tab_contents_),
+          infobars_.size(), true, WANT_CALLBACK);
       break;
 
     case NotificationType::TAB_CONTENTS_INFOBAR_REMOVED: {
@@ -138,9 +138,8 @@ void InfoBarContainer::Observe(NotificationType type,
     case NotificationType::TAB_CONTENTS_INFOBAR_REPLACED: {
       typedef std::pair<InfoBarDelegate*, InfoBarDelegate*> ReplaceDetails;
       ReplaceDetails* replace_details = Details<ReplaceDetails>(details).ptr();
-      RemoveInfoBar(replace_details->first, false);
-      AddInfoBar(replace_details->second->CreateInfoBar(tab_contents_), false,
-                 WANT_CALLBACK);
+      AddInfoBar(replace_details->second->CreateInfoBar(tab_contents_),
+          RemoveInfoBar(replace_details->first, false), false, WANT_CALLBACK);
       break;
     }
 
@@ -150,8 +149,8 @@ void InfoBarContainer::Observe(NotificationType type,
   }
 }
 
-void InfoBarContainer::RemoveInfoBar(InfoBarDelegate* delegate,
-                                     bool use_animation) {
+size_t InfoBarContainer::RemoveInfoBar(InfoBarDelegate* delegate,
+                                       bool use_animation) {
   // Search for the infobar associated with |delegate|.  We cannot search for
   // |delegate| in |tab_contents_|, because an InfoBar remains alive until its
   // close animation completes, while the delegate is removed from the tab
@@ -159,23 +158,28 @@ void InfoBarContainer::RemoveInfoBar(InfoBarDelegate* delegate,
   for (InfoBars::iterator i(infobars_.begin()); i != infobars_.end(); ++i) {
     InfoBar* infobar = *i;
     if (infobar->delegate() == delegate) {
+      size_t position = i - infobars_.begin();
       // We merely need hide the infobar; it will call back to RemoveInfoBar()
       // itself once it's hidden.
       infobar->Hide(use_animation);
       UpdateInfoBarArrowTargetHeights();
-      break;
+      return position;
     }
   }
+  NOTREACHED();
+  return infobars_.size();
 }
 
 void InfoBarContainer::AddInfoBar(InfoBar* infobar,
+                                  size_t position,
                                   bool animate,
                                   CallbackStatus callback_status) {
   DCHECK(std::find(infobars_.begin(), infobars_.end(), infobar) ==
       infobars_.end());
-  infobars_.push_back(infobar);
+  DCHECK_LE(position, infobars_.size());
+  infobars_.insert(infobars_.begin() + position, infobar);
   UpdateInfoBarArrowTargetHeights();
-  PlatformSpecificAddInfoBar(infobar);
+  PlatformSpecificAddInfoBar(infobar, position);
   if (callback_status == WANT_CALLBACK)
     infobar->set_container(this);
   infobar->Show(animate);
