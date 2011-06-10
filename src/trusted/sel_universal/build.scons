@@ -45,8 +45,9 @@ if env.Bit('sdl_sel_universal'):
     ErrorUnsupportedPlatform(env)
 
   sdl_multimedia_srcs += ['sdl_ppapi_event_translator.cc',
-                          'multimedia_sdl.cc',
-                          'multimedia_handler.cc',
+                          'primitives_sdl.cc',
+                          'non_standard_pepper_events.cc',
+                          'pepper_emu_handler.cc',
                           'pepper_emu_fileio.cc',
                           'pepper_emu_core.cc',
                           'pepper_emu_postmessage.cc',

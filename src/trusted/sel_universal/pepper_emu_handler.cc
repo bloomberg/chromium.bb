@@ -41,7 +41,7 @@
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 
 #include "native_client/src/trusted/sel_universal/rpc_universal.h"
-#include "native_client/src/trusted/sel_universal/multimedia.h"
+#include "native_client/src/trusted/sel_universal/primitives.h"
 #include "native_client/src/trusted/sel_universal/parsing.h"
 #include "native_client/src/trusted/sel_universal/pepper_emu.h"
 #include "native_client/src/trusted/sel_universal/srpc_helper.h"
@@ -459,7 +459,8 @@ static void PPB_AudioConfig_GetSampleFrameCount(SRPC_PARAMS) {
 
 // TODO(robertm): rename this to HandlerPepperEmuInitialize
 #define TUPLE(a, b) #a #b, a
-bool HandlerSDLInitialize(NaClCommandLoop* ncl, const vector<string>& args) {
+bool HandlerPepperEmuInitialize(NaClCommandLoop* ncl,
+                                const vector<string>& args) {
   NaClLog(LOG_INFO, "HandlerSDLInitialize\n");
   if (args.size() < 5) {
     NaClLog(LOG_ERROR, "Insufficient arguments to 'rpc' command.\n");
@@ -575,7 +576,8 @@ bool GetNextEvent(PP_InputEvent* event) {
 // This can be sometime useful for debugging but is wasting cycles
 // #define USE_POLLING
 
-bool HandlerSDLEventLoop(NaClCommandLoop* ncl, const vector<string>& args) {
+bool HandlerPepperEmuEventLoop(NaClCommandLoop* ncl,
+                               const vector<string>& args) {
   NaClLog(LOG_INFO, "HandlerSDLEventLoop\n");
   UNREFERENCED_PARAMETER(args);
   UNREFERENCED_PARAMETER(ncl);

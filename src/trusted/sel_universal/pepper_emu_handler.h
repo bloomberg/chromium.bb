@@ -25,12 +25,12 @@ void ReplayPPAPIEvents(std::string filename);
 
 
 // initialize multimedia (SDL) subsystem
-bool HandlerSDLInitialize(NaClCommandLoop* ncl,
-                          const std::vector<std::string>& args);
+bool HandlerPepperEmuInitialize(NaClCommandLoop* ncl,
+                                const std::vector<std::string>& args);
 
 // start multimedia event loop
-bool HandlerSDLEventLoop(NaClCommandLoop* ncl,
-                         const std::vector<std::string>& args);
+bool HandlerPepperEmuEventLoop(NaClCommandLoop* ncl,
+                               const std::vector<std::string>& args);
 
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_SEL_UNIVERASAL_MULTIMEDIA_HANDLER_H_ */

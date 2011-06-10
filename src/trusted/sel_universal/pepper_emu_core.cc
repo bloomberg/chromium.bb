@@ -9,8 +9,8 @@
 // which is a generated file
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/shared/platform/nacl_log.h"
-#include "native_client/src/trusted/sel_universal/multimedia.h"
 #include "native_client/src/trusted/sel_universal/pepper_emu.h"
+#include "native_client/src/trusted/sel_universal/primitives.h"
 #include "native_client/src/trusted/sel_universal/rpc_universal.h"
 #include "native_client/src/trusted/sel_universal/srpc_helper.h"
 

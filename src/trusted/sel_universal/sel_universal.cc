@@ -32,7 +32,7 @@
 #if defined(NACL_SEL_UNIVERSAL_INCLUDE_SDL)
 // NOTE: we need to include this so that it can "hijack" main
 #include <SDL/SDL.h>
-#include "native_client/src/trusted/sel_universal/multimedia_handler.h"
+#include "native_client/src/trusted/sel_universal/pepper_emu_handler.h"
 #endif
 
 #include "native_client/src/trusted/service_runtime/nacl_error_code.h"
@@ -293,8 +293,12 @@ int raii_main(int argc, char* argv[]) {
   loop.AddHandler("sync_socket_create", HandlerSyncSocketCreate);
   loop.AddHandler("sync_socket_write", HandlerSyncSocketWrite);
 #if  NACL_SEL_UNIVERSAL_INCLUDE_SDL
-  loop.AddHandler("sdl_initialize", HandlerSDLInitialize);
-  loop.AddHandler("sdl_event_loop", HandlerSDLEventLoop);
+  // obsolete names
+  loop.AddHandler("sdl_initialize", HandlerPepperEmuInitialize);
+  loop.AddHandler("sdl_event_loop", HandlerPepperEmuEventLoop);
+  // new names
+  loop.AddHandler("pepper_emu_initialize", HandlerPepperEmuInitialize);
+  loop.AddHandler("pepper_emu_event_loop", HandlerPepperEmuEventLoop);
 #endif
 
   NaClLog(1, "populating initial vars\n");

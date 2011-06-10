@@ -4,8 +4,8 @@
  * be found in the LICENSE file.
  */
 
-#ifndef NATIVE_CLIENT_SRC_TRUSTED_SEL_UNIVERASAL_MULTIMEDIA_H_
-#define NATIVE_CLIENT_SRC_TRUSTED_SEL_UNIVERASAL_MULTIMEDIA_H_
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_SEL_UNIVERASAL_PRIMITIVES_H_
+#define NATIVE_CLIENT_SRC_TRUSTED_SEL_UNIVERASAL_PRIMITIVES_H_
 
 // Abstract multimedia interface
 // NOTE: currently only video and simple events are supported
@@ -64,4 +64,4 @@ class IMultimedia {
 /* Currently, there is only an SDL implementation */
 IMultimedia* MakeMultimediaSDL(int width, int heigth, const char* title);
 
-#endif  /* NATIVE_CLIENT_SRC_TRUSTED_SEL_UNIVERASAL_MULTIMEDIA_H_ */
+#endif  /* NATIVE_CLIENT_SRC_TRUSTED_SEL_UNIVERASAL_PRIMITIVES_H_ */

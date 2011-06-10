@@ -22,7 +22,7 @@
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 
 // TODO(robertm): the next include file should be moved to src/untrusted
-#include "native_client/src/trusted/sel_universal/multimedia.h"
+#include "native_client/src/trusted/sel_universal/primitives.h"
 #include "native_client/src/trusted/sel_universal/workqueue.h"
 
 // from sdl_ppapi_event_translator.cc
