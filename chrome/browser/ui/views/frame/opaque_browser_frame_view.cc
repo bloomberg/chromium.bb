@@ -660,13 +660,19 @@ void OpaqueBrowserFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
 
   // Fill with the frame color first so we have a constant background for
   // areas not covered by the theme image.
-  canvas->FillRectInt(frame_color, 0, 0, width(), theme_frame->height());
+  int top_area_height = theme_frame->height();
+  if (browser_view_->IsTabStripVisible() && !browser_view_->UseVerticalTabs()) {
+    top_area_height = std::max(top_area_height,
+      GetBoundsForTabStrip(browser_view_->tabstrip()).bottom());
+  }
+  canvas->FillRectInt(frame_color, 0, 0, width(), top_area_height);
+
   // Now fill down the sides.
-  canvas->FillRectInt(frame_color, 0, theme_frame->height(), left_edge->width(),
-                      height() - theme_frame->height());
+  canvas->FillRectInt(frame_color, 0, top_area_height, left_edge->width(),
+                      height() - top_area_height);
   canvas->FillRectInt(frame_color, width() - right_edge->width(),
-                      theme_frame->height(), right_edge->width(),
-                      height() - theme_frame->height());
+                      top_area_height, right_edge->width(),
+                      height() - top_area_height);
   // Now fill the bottom area.
   canvas->FillRectInt(frame_color, left_edge->width(),
                       height() - bottom_edge->height(),
