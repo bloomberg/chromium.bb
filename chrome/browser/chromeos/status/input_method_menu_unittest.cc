@@ -84,6 +84,12 @@ TEST(InputMethodMenuTest, GetTextForIndicatorTest) {
               InputMethodMenu::GetTextForIndicator(desc));
   }
   {
+    InputMethodDescriptor desc("pinyin-dv", "Pinyin",
+                               "us(dvorak)", "us(dvorak)", "zh-CN");
+    EXPECT_EQ(UTF8ToWide("\xe6\x8b\xbc"),
+              InputMethodMenu::GetTextForIndicator(desc));
+  }
+  {
     InputMethodDescriptor desc("mozc-chewing", "Chewing", "us", "us", "zh-TW");
     EXPECT_EQ(UTF8ToWide("\xe9\x85\xb7"),
               InputMethodMenu::GetTextForIndicator(desc));

@@ -104,6 +104,7 @@ TEST_F(InputMethodUtilTest, GetKeyboardLayoutName) {
   // Supported cases (samples).
   EXPECT_EQ("jp", GetKeyboardLayoutName("mozc-jp"));
   EXPECT_EQ("us", GetKeyboardLayoutName("pinyin"));
+  EXPECT_EQ("us(dvorak)", GetKeyboardLayoutName("pinyin-dv"));
   EXPECT_EQ("us", GetKeyboardLayoutName("m17n:ar:kbd"));
   EXPECT_EQ("es", GetKeyboardLayoutName("xkb:es::spa"));
   EXPECT_EQ("es(cat)", GetKeyboardLayoutName("xkb:es:cat:cat"));

@@ -18,6 +18,7 @@ cr.define('options', function() {
     'mozc-dv': 'languageMozc',
     'mozc-jp': 'languageMozc',
     'pinyin': 'languagePinyin',
+    'pinyin-dv': 'languagePinyin',
   };
 
   /////////////////////////////////////////////////////////////////////////////

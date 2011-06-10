@@ -173,6 +173,8 @@ const struct EnglishToResouceId {
   { "Mozc Chewing (Chewing)",
     IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_INPUT_METHOD },
   { "Pinyin", IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_INPUT_METHOD },
+  { "Pinyin (for US Dvorak keyboard)",
+    IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_DV_INPUT_METHOD },
   { "Mozc (US keyboard layout)",
     IDS_OPTIONS_SETTINGS_LANGUAGES_JAPANESE_MOZC_US_INPUT_METHOD },
   { "Mozc (US Dvorak keyboard layout)",
@@ -450,13 +452,14 @@ std::string GetLanguageCodeFromDescriptor(
   // Handle some Chinese input methods as zh-CN/zh-TW, rather than zh.
   // TODO: we should fix this issue in engines rather than here.
   if (descriptor.language_code == "zh") {
-    if (descriptor.id == "pinyin") {
+    if (descriptor.id == "pinyin" || descriptor.id == "pinyin-dv") {
       return "zh-CN";
     } else if (descriptor.id == "mozc-chewing" ||
                descriptor.id == "m17n:zh:cangjie" ||
                descriptor.id == "m17n:zh:quick") {
       return "zh-TW";
     }
+    LOG(ERROR) << "Unhandled Chinese engine: " << descriptor.id;
   }
 
   std::string language_code = NormalizeLanguageCode(descriptor.language_code);

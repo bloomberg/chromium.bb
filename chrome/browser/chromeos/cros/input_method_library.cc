@@ -1028,6 +1028,9 @@ class InputMethodLibraryStubImpl : public InputMethodLibrary {
     descriptions->push_back(InputMethodDescriptor(
         "pinyin", "Pinyin", "us", "us", "zh"));
     descriptions->push_back(InputMethodDescriptor(
+        "pinyin-dv", "Pinyin (for US Dvorak keyboard)",
+        "us(dvorak)", "us(dvorak)", "zh"));
+    descriptions->push_back(InputMethodDescriptor(
         "m17n:ar:kbd", "kbd (m17n)", "us", "us", "ar"));
     descriptions->push_back(InputMethodDescriptor(
         "m17n:hi:itrans", "itrans (m17n)", "us", "us", "hi"));

@@ -11409,6 +11409,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
                desc="The label for the Pinyin simplified Chinese input method">
         Pinyin input method
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_DV_INPUT_METHOD"
+               desc="The label for the Pinyin simplified Chinese input method">
+        Pinyin input method (for US Dvorak keyboard)
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_JAPANESE_MOZC_US_INPUT_METHOD"
                desc="The label for the Japanese input method for US keyboard">
         Japanese input method (for US keyboard)

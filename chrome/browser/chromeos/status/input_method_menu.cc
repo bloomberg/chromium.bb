@@ -102,6 +102,7 @@ const struct {
   { "zinnia-japanese", "\xe6\x89\x8b" },  // U+624B, "hand"
   // For simplified Chinese input methods
   { "pinyin", "\xe6\x8b\xbc" },  // U+62FC
+  { "pinyin-dv", "\xe6\x8b\xbc" },
   // For traditional Chinese input methods
   { "mozc-chewing", "\xe9\x85\xb7" },  // U+9177
   { "m17n:zh:cangjie", "\xe5\x80\x89" },  // U+5009
