@@ -99,10 +99,19 @@ class BrowserTest(pyauto.PyUITest):
     """Verify window resizing and persistence after restart."""
     def _VerifySize(x, y, width, height):
       info = self.GetBrowserInfo()
-      self.assertEqual(x, info['windows'][0]['x'])
-      self.assertEqual(y, info['windows'][0]['y'])
-      self.assertEqual(width, info['windows'][0]['width'])
-      self.assertEqual(height, info['windows'][0]['height'])
+      self.assertEqual(x, info['windows'][0]['x'],
+                       msg='Window x value should be %d, but was %d.' % (
+                           x, info['windows'][0]['x']))
+      self.assertEqual(y, info['windows'][0]['y'],
+                       msg='Window y value should be %d, but was %d.' % (
+                           y, info['windows'][0]['y']))
+      self.assertEqual(width, info['windows'][0]['width'],
+                       msg='Window width value should be %d, but was %d.' % (
+                           width, info['windows'][0]['width']))
+      self.assertEqual(height, info['windows'][0]['height'],
+                       msg='Window height value should be %d, but was %d.' % (
+                           height, info['windows'][0]['height']))
+
     self.SetWindowDimensions(x=20, y=40, width=600, height=300)
     _VerifySize(20, 40, 600, 300)
     self.RestartBrowser(clear_profile=False)

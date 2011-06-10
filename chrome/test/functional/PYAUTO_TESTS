@@ -8,10 +8,16 @@
 # Tests can be enabled on a per-platform basis. Tests not listed here will
 # not be run.
 #
+# Within each platform, tests are specified in up to 3 groups: (1) enabled
+# tests; (2) tests that are permanently disabled because they do not apply
+# to the given platform and hence should not be run; and (3) disabled tests
+# that need to be investigated/fixed.  Tests are listed alphabetically within
+# each group.
+#
 # Test names can be specified in any of the following ways:
 # 1. as a module, in which case all tests in that module will be run
 #      example: 'test_basic'
-# 2. or as a test case, in which case all tess in that test case will be run
+# 2. or as a test case, in which case all tests in that test case will be run
 #      example: 'test_basic.SimpleTest'
 # 3. or as an individual test
 #      example: 'test_basic.SimpleTest.testCanOpenGoogle'
@@ -28,6 +34,45 @@
   'CONTINUOUS': {
     'all': [
       'autofill',
+      'bookmark_bar',
+      'bookmarks',
+      'browser',
+      'browsing_data',
+      'codesign',
+      'content',
+      'cookies',
+      'crash_reporter',
+      'databases',
+      'downloads',
+      'execute_javascript',
+      'extensions',
+      'find_in_page',
+      'flash',
+      'history',
+      'https',
+      'imports',
+      'infobars',
+      'instant',
+      'navigation',
+      'notifications',
+      'ntp',
+      'omnibox',
+      'passwords',
+      'pdf',
+      'plugins',
+      'plugins_check',
+      'popups',
+      'prefs',
+      'search_engines',
+      'shortcuts',
+      'special_tabs',
+      'sync',
+      'test_basic',
+      'themes',
+
+      # ==================================================
+      # Disabled tests that need to be investigated/fixed.
+      # ==================================================
       # crbug.com/83655
       '-autofill.AutofillTest.testAutofillInvalid',
       # crbug.com/83686
@@ -35,50 +80,22 @@
       # crbug.com/81271
       '-autofill.AutofillTest.testMergeAggregatedProfilesWithSameAddress',
       '-autofill.AutofillTest.testProfilesNotMergedWhenNoMinAddressData',
-      'bookmark_bar',
-      'bookmarks',
-      'browser',
-      'browsing_data',
-      'codesign',
-      'content',
       '-content.ContentTest.testTopSitesContent',  # crbug.com/71824
-      'cookies',
-      'crash_reporter',
-      'databases',
       # crbug.com/84060
       '-databases.DatabasesTest.testIncognitoCannotReadRegularDatabase',
       '-databases.DatabasesTest.testIncognitoDBPersistentAcrossTabs',
       '-databases.DatabasesTest.testIncognitoDatabaseNotPersistent',
       '-databases.DatabasesTest.testRegularCannotReadIncognitoDatabase',
-      'downloads',
-      'execute_javascript',
-      'extensions',
-      'find_in_page',
       # Turkish I problem. crbug.com/60638
       '-find_in_page.FindMatchTests.testLocalizationAndCaseOrder',
-      'flash',
-      'history',
-      'https',
-      'imports',
-      'infobars',
-      'instant',
       # crbug.com/83459
       '-instant.InstantTest.testPreFetchInstantURLSetsNoCookies',
-      'navigation',
-      'notifications',
-      'ntp',
-      'omnibox',
       '-omnibox.OmniboxTest.testHistoryResult',  # crbug.com/71715
-      'passwords',
-      'pdf',
-      'plugins',
+      # crbug.com/85748
+      '-plugins.PluginsTest.testBlockPluginException',
       # crbug.com/85307
       '-plugins.PluginsTest.testDisableEnableAllPlugins',
       '-plugins.PluginsTest.testKillAndReloadAllPlugins',
-      # crbug.com/85748
-      '-plugins.PluginsTest.testBlockPluginException',
-      'plugins_check',
-      'popups',
       # crbug.com/82629 - real bug.
       '-popups.PopupsTest.testPopupsLaunchUponBrowserBackButton',
       # crbug.com/47935
@@ -86,21 +103,17 @@
       # crbug.com/83827
       '-popups.PopupsTest.testUnblockedPopupShowsInHistory',
       '-popups.PopupsTest.testUnblockedPopupAddedToOmnibox',
-      'prefs',
       # crbug.com/85600
       '-prefs.PrefsTest.testNavigationStateOnSessionRestore',
-      'search_engines',
-      'shortcuts',
-      'special_tabs',
       # Flaky: crbug.com/67851
       '-special_tabs.SpecialTabsTest.testAboutDNSTab',
-      'sync',
       '-sync',  # causes browser crash. crbug.com/84494
-      'test_basic',
-      'themes',
     ],
 
     'win': [
+      # ==================================================
+      # Disabled tests that need to be investigated/fixed.
+      # ==================================================
       # crbug.com/85597
       '-cookies.CookiesTest.testCookiesFile',
       # Some download test fails on win official builder, only thru buildbot
@@ -123,23 +136,24 @@
       '-passwords.PasswordTest.testNeverSavePasswords',
       # crbug.com/67588
       '-passwords.PasswordTest.testSavedPasswordInTabsAndWindows',
-      '-prefs.PrefsTest.testDownloadDirPref',
       # crbug.com/83820
       '-passwords.PasswordTest.testInfoBarDisappearByNavigatingPage',
       '-passwords.PasswordTest.testDisplayAndSavePasswordInfobar',
+      '-prefs.PrefsTest.testDownloadDirPref',
       # crbug.com/85596
       '-themes.ThemesTest.testSetTheme',
       '-themes.ThemesTest.testThemeInFullScreen',
     ],
 
     'mac': [
-      # Keychain popups make password & autofill tests difficult.
-      # crbug.com/49378
-      '-passwords',
+      # ==================================================
+      # Disabled tests that need to be investigated/fixed.
+      # ==================================================
+      # Keychain popups make autofill/password tests difficult: crbug.com/49378
       '-autofill',
       # codesign tests should run *after* signing. crbug.com/50481
-      '-crash_reporter.CrashReporterTest.testRendererCrash',  # crbug.com/69464
       '-codesign',
+      '-crash_reporter.CrashReporterTest.testRendererCrash',  # crbug.com/69464
       # crbug.com/75724
       '-downloads.DownloadsTest.testDeclineDangerousDownload',
       # crbug.com/75724
@@ -153,6 +167,8 @@
       '-ntp.NTPTest.testLaunchAppNewWindow',  # crbug.com/79812
       # crbug.com/70437
       '-omnibox.OmniboxTest.testHistoryResult',
+      # Keychain popups make autofill/password tests difficult: crbug.com/49378
+      '-passwords',
       # crbug.com/79263
       '-popups.PopupsTest.testPopupsLaunchUponBrowserBackButton',
       # crbug.com/69619
@@ -162,26 +178,32 @@
     ],
 
     'linux': [  # linux != chromeos
-      '-browser.BrowserTest.testWindowResize',  # crbug.com/44963
-      # System password manager obstructs password automation.
-      '-passwords',
-      # Gnome / kwallet popups on linux break sync tests.  crbug.com/80329
-      '-sync',
-
+      # ===========================
+      # Permanently-disabled tests.
+      # ===========================
+      '-browser.BrowserTest.testWindowResize',  # Details at: crbug.com/44963
       # Several omnibox tests do not show omnibox results when run
       # under virtual X on linux.  The CONTINUOUS suite runs under virtual X
       # on the chromium bots, so exlcude these from here.  They're included
       # back in the FULL suite below.
-      # crbug.com/85632
-      '-flash.FlashTest.testDisableFlashPlugin',
-      # crbug.com/85310
-      '-instant',
       '-omnibox.OmniboxTest.testBookmarkResultInNewTabAndWindow',
       '-omnibox.OmniboxTest.testDifferentTypesOfResults',
       '-omnibox.OmniboxTest.testFetchHistoryResultItems',
       '-omnibox.OmniboxTest.testInlinAutoComplete',
       '-omnibox.OmniboxTest.testSelect',
       '-omnibox.OmniboxTest.testSuggestPref',
+      # System password manager obstructs password automation.
+      '-passwords',
+
+      # ==================================================
+      # Disabled tests that need to be investigated/fixed.
+      # ==================================================
+      # crbug.com/85632
+      '-flash.FlashTest.testDisableFlashPlugin',
+      # crbug.com/85310
+      '-instant',
+      # Gnome / kwallet popups on linux break sync tests.  crbug.com/80329
+      '-sync',
     ],
 
     # ChromeOS is linux, but note that this section does not include the
@@ -196,45 +218,31 @@
       'chromeos_wifi',
       'chromeos_firmware_version_checker',
 
-      # you cannot resize browser window on chromeos
+      # ===========================
+      # Permanently-disabled tests.
+      # ===========================
+      # You cannot resize the browser window on ChromeOS.
       '-browser.BrowserTest.testWindowResize',
+      # No codesign verification on ChromeOS.
+      '-codesign',
+      # Import tests are invalid on ChromeOS since Chrome is the only browser.
+      '-imports',
+
+      # ==================================================
+      # Disabled tests that need to be investigated/fixed.
+      # ==================================================
       # Flaky: crosbug.com/14394
       '-browsing_data.BrowsingDataTest.testClearHistoryAndDownloads',
-      # no codesign verification on chromeos
-      '-codesign',
       # Downloads panel stays even after declining a download.
       # crosbug.com/14728
       '-downloads.DownloadsTest.testDeclineDangerousDownload',
       # Need internal data dirs in autotest package. crosbug.com/6855
       '-find_in_page.FindMatchTests.testSearchInPDF',
-      # Importer tests are invalid on chromeos since chrome is the only browser
-      '-imports',
       # Plugin crash infobar does not show up for file:/// flash urls
       # crosbug.com/14971
       '-infobars.InfobarTest.testPluginCrashInfobar',
       # Flaky: crosbug.com/14439
       '-instant.InstantSettingsTest.testEnableDisableInstant',
-
-      # Deal with i18n chars.  crosbug.com/12639
-      '-autofill.AutofillTest.testFillProfileCrazyCharacters',
-      '-downloads.DownloadsTest.testCrazyFilenames',
-      '-omnibox.OmniboxTest.testCrazyFilenames',
-
-      # Session restore not working with PyAuto.  crosbug.com/12648
-      '-prefs.PrefsTest.testNavigationStateOnSessionRestore',
-      '-prefs.PrefsTest.testSessionRestoreURLs',
-      '-prefs.PrefsTest.testSessionRestore',
-
-      # crosbug.com/14256
-      '-ntp.NTPTest.testLaunchAppFullScreen',
-
-      # Content history broken in omnibox.  crosbug.com/14416
-      '-omnibox.OmniboxTest.testContentHistory',
-
-      # onunload popups get created in the same window on chromeos
-      # crosbug.com/14924
-      '-popups.PopupsTest.testPopupsLaunchWhenTabIsClosed',
-
       # Failing notifications tests  crbug.com/81624
       '-notifications.NotificationsTest.testCloseNotification',
       '-notifications.NotificationsTest.testCreateDenyCloseNotifications',
@@ -250,9 +258,24 @@
       '-notifications.NotificationsTest.testOriginPrefsNotSavedInIncognito',
       '-notifications.NotificationsTest.testPermissionInfobarAppears',
       '-notifications.NotificationsTest.testKillNotificationProcess',
-
+      # crosbug.com/14256
+      '-ntp.NTPTest.testLaunchAppFullScreen',
+      # Content history broken in omnibox.  crosbug.com/14416
+      '-omnibox.OmniboxTest.testContentHistory',
+      # onunload popups get created in the same window on chromeos
+      # crosbug.com/14924
+      '-popups.PopupsTest.testPopupsLaunchWhenTabIsClosed',
+      # Session restore not working with PyAuto.  crosbug.com/12648
+      '-prefs.PrefsTest.testNavigationStateOnSessionRestore',
+      '-prefs.PrefsTest.testSessionRestoreURLs',
+      '-prefs.PrefsTest.testSessionRestore',
       # sync tests were running into a secondary passphrase. crosbug.com/15016.
       '-sync',
+
+      # Deal with i18n chars.  crosbug.com/12639
+      '-autofill.AutofillTest.testFillProfileCrazyCharacters',
+      '-downloads.DownloadsTest.testCrazyFilenames',
+      '-omnibox.OmniboxTest.testCrazyFilenames',
     ],
   },
 
@@ -262,6 +285,10 @@
     'all': [
       '@CONTINUOUS',
       'translate',
+
+      # ==================================================
+      # Disabled tests that need to be investigated/fixed.
+      # ==================================================
       # This test fails due to crbug.com/35485
       '-translate.TranslateTest.testBarNotVisibleOnSSLErrorPage',
       # This test fails due to crbug.com/50706
@@ -290,11 +317,18 @@
       'omnibox.OmniboxTest.testInlinAutoComplete',
       'omnibox.OmniboxTest.testSelect',
       'omnibox.OmniboxTest.testSuggestPref',
+
+      # ==================================================
+      # Disabled tests that need to be investigated/fixed.
+      # ==================================================
       # crbug.com/83459
       '-instant.InstantTest.testPreFetchInstantURLSetsNoCookies',
     ],
 
     'chromeos': [
+      # ==================================================
+      # Disabled tests that need to be investigated/fixed.
+      # ==================================================
       # Session restore not working with PyAuto.  crosbug.com/12648
       '-translate.TranslateTest.testSessionRestore',
       # Deal with i18n chars.  crosbug.com/12639
