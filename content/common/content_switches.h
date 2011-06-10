@@ -47,6 +47,7 @@ extern const char kDisableSeccompSandbox[];
 extern const char kDisableSessionStorage[];
 extern const char kDisableSharedWorkers[];
 extern const char kDisableSpeechInput[];
+extern const char kDisableSpellcheckAPI[];
 extern const char kDisableWebSockets[];
 extern const char kEnableAcceleratedDrawing[];
 extern const char kEnableAccessibility[];

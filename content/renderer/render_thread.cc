@@ -627,6 +627,9 @@ void RenderThread::EnsureWebKitInitialized() {
 
   WebRuntimeFeatures::enableQuota(true);
 
+  WebRuntimeFeatures::enableSpellCheckAPI(
+      !command_line.HasSwitch(switches::kDisableSpellcheckAPI));
+
   FOR_EACH_OBSERVER(RenderProcessObserver, observers_, WebKitInitialized());
 }
 

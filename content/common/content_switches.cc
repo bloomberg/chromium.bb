@@ -118,6 +118,9 @@ const char kDisableSharedWorkers[]          = "disable-shared-workers";
 // Disables speech input.
 const char kDisableSpeechInput[]            = "disable-speech-input";
 
+// Disable Spellcheck API.
+const char kDisableSpellcheckAPI[]          = "disable-spellcheck-api";
+
 // Disable Web Sockets support.
 const char kDisableWebSockets[]             = "disable-web-sockets";
 
