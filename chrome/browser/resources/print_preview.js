@@ -204,7 +204,6 @@ function updateWithPrinterCapabilities(settingInfo) {
   if (colorOption.checked != setColorAsDefault) {
     colorOption.checked = setColorAsDefault;
     bwOption.checked = !setColorAsDefault;
-    setColor(colorOption.checked);
   }
 }
 
@@ -485,6 +484,8 @@ function onPDFLoad() {
   else
     $('pdf-viewer').fitToHeight();
 
+  setColor($('color').checked);
+
   hideLoadingAnimation();
 
   if (!previewModifiable)
@@ -554,13 +555,10 @@ function createPDFPlugin(previewUid) {
 
   var pdfViewer = $('pdf-viewer');
   if (pdfViewer) {
-    // Older version of the PDF plugin may not have this method.
-    // TODO(thestig) Eventually remove this check.
-    if (pdfViewer.goToPage) {
-      // Need to call this before the reload(), where the plugin resets its
-      // internal page count.
-      pdfViewer.goToPage('0');
-    }
+    // Need to call this before the reload(), where the plugin resets its
+    // internal page count.
+    pdfViewer.goToPage('0');
+
     pdfViewer.reload();
     pdfViewer.grayscale(!isColor());
     return;
@@ -573,13 +571,7 @@ function createPDFPlugin(previewUid) {
   var mainView = $('mainview');
   mainView.appendChild(pdfPlugin);
   pdfPlugin.onload('onPDFLoad()');
-
-  // Older version of the PDF plugin may not have this method.
-  // TODO(thestig) Eventually remove this check.
-  if (pdfPlugin.removePrintButton) {
-    pdfPlugin.removePrintButton();
-  }
-
+  pdfPlugin.removePrintButton();
   pdfPlugin.grayscale(true);
 }
 
@@ -588,7 +580,9 @@ function createPDFPlugin(previewUid) {
  */
 function checkCompatiblePluginExists() {
   var dummyPlugin = $('dummy-viewer')
-  return !!dummyPlugin.onload;
+  return (dummyPlugin.onload &&
+          dummyPlugin.goToPage &&
+          dummyPlugin.removePrintButton);
 }
 
 /**
