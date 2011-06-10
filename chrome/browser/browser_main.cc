@@ -1722,12 +1722,16 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // file thread to be run sometime later. If this is the first run we record
   // the installation event.
   bool google_search_default = false;
-  const TemplateURL* url_template =
-      profile->GetTemplateURLModel()->GetDefaultSearchProvider();
-  if (url_template) {
-    const TemplateURLRef* urlref = url_template->url();
-    if (urlref) {
-      google_search_default = urlref->HasGoogleBaseURLs();
+  TemplateURLService* template_url_service =
+      TemplateURLServiceFactory::GetForProfile(profile);
+  if (template_url_service) {
+    const TemplateURL* url_template =
+        template_url_service->GetDefaultSearchProvider();
+    if (url_template) {
+      const TemplateURLRef* urlref = url_template->url();
+      if (urlref) {
+        google_search_default = urlref->HasGoogleBaseURLs();
+      }
     }
   }
   RLZTracker::InitRlzDelayed(is_first_run, master_prefs.ping_delay,
