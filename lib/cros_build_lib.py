@@ -312,6 +312,17 @@ def FindRepoDir(path=None):
   return None
 
 
+def GetProjectDir(cwd, project):
+  """Returns the absolute path to a project.
+
+  Args:
+    cwd: a directory within a repo-managed checkout.
+    project: the name of the project to get the path for.
+  """
+  cmd = ['repo', 'forall', project, '-c', 'pwd']
+  return RunCommand(cmd, cwd=cwd, redirect_stdout=True).output.strip()
+
+
 def ReinterpretPathForChroot(path):
   """Returns reinterpreted path from outside the chroot for use inside.
 
@@ -333,6 +344,16 @@ def ReinterpretPathForChroot(path):
   return new_path
 
 
+def DoesLocalBranchExist(repo_dir, branch):
+  """Returns True if the local branch exists.
+
+  Args:
+    repo_dir: Directory of the git repository to check.
+    branch: The name of the branch to test for.
+  """
+  return branch in os.listdir(os.path.join(repo_dir, '.git/refs/heads'))
+
+
 def GetCurrentBranch(cwd):
   """Returns current branch of a repo, and None if repo is on detached HEAD."""
   try:
@@ -342,6 +363,20 @@ def GetCurrentBranch(cwd):
   except RunCommandError:
     return None
   return current_branch
+
+
+def GetShortBranchName(remote, ref):
+  """Return branch name in the form 'cros/master' given a remote and a ref.
+
+  Args:
+    remote: The git remote name - i.e., 'cros'
+    ref: The ref that exists on the remote - i.e., 'refs/heads/master'
+
+  Returns:
+    Concatenated name of the ref - i.e., 'cros/master'
+  """
+  assert(ref.startswith('refs/heads/'))
+  return os.path.join(remote, ref.replace('refs/heads/', ''))
 
 
 class ManifestHandler(xml.sax.handler.ContentHandler):
@@ -404,6 +439,35 @@ def GetManifestDefaultBranch(cwd):
   return ref.replace('refs/heads/', '')
 
 
+class NoTrackingBranchException(Exception):
+  """Raised by GetTrackingBranch."""
+  pass
+
+
+def GetTrackingBranch(branch, cwd):
+  """Get the tracking branch of a branch.
+
+  Returns:
+    A tuple of the remote and the ref name of the tracking branch.
+
+  Raises:
+    NoTrackingBranchException if the passed in branch is not tracking anything.
+  """
+  KEY_NOT_FOUND_ERROR_CODE = 1
+  info = {}
+  try:
+    for key in ('remote', 'merge'):
+      cmd = ['git', 'config', 'branch.%s.%s' % (branch, key)]
+      info[key] = RunCommand(cmd, redirect_stdout=True, cwd=cwd).output.strip()
+  except RunCommandError as e:
+    if e.error_code == KEY_NOT_FOUND_ERROR_CODE:
+      raise NoTrackingBranchException()
+    else:
+      raise e
+
+  return info['remote'], info['merge']
+
+
 def GetPushBranch(branch, cwd):
   """Gets the appropriate push branch for the specified branch / directory.
 
@@ -415,19 +479,15 @@ def GetPushBranch(branch, cwd):
     branch: Branch to examine for tracking branch.
     cwd: Directory to look in.
   """
-  info = {}
-  for key in ('remote', 'merge'):
-    cmd = ['git', 'config', 'branch.%s.%s' % (branch, key)]
-    info[key] = RunCommand(cmd, redirect_stdout=True, cwd=cwd).output.strip()
-  if not info['merge'].startswith('refs/heads/'):
+  (remote, merge) = GetTrackingBranch(branch, cwd)
+  if not merge.startswith('refs/heads/'):
     # If tracking branch is a revision, use the default manifest branch.
     # This won't work for projects like kernel that override the default
     # manifest branch.  But we are not pushing to them, so things are
     # good for now.
-    info['merge'] = 'refs/heads/' + GetManifestDefaultBranch(cwd)
+    merge = 'refs/heads/' + GetManifestDefaultBranch(cwd)
 
-  assert info['merge'].startswith('refs/heads/')
-  return info['remote'], info['merge'].replace('refs/heads/', '')
+  return remote, merge.replace('refs/heads/', '')
 
 
 def GitPushWithRetry(branch, cwd, dryrun=False, retries=5):

@@ -28,11 +28,6 @@ _FULL_BINHOST = 'FULL_BINHOST'
 # =========================== Command Helpers =================================
 
 
-def _DoesLocalBranchExist(repo_dir, branch):
-  """Returns True if the local branch exists."""
-  return branch in os.listdir(os.path.join(repo_dir, '.git/refs/heads'))
-
-
 def _BuildRootGitCleanup(buildroot):
   """Put buildroot onto manifest branch. Delete branches created on last run."""
   manifest_branch = 'remotes/m/' + cros_lib.GetManifestDefaultBranch(buildroot)
@@ -40,19 +35,26 @@ def _BuildRootGitCleanup(buildroot):
                                      redirect_stdout=True,
                                      cwd=buildroot).output.splitlines()
   for project in project_list:
+    # The 'git clean' command below might remove some repositories.
+    if not os.path.exists(project):
+      continue
+
+    cros_lib.RunCommand(['git', 'am', '--abort'], print_cmd=False,
+                        redirect_stdout=True, redirect_stderr=True,
+                        error_ok=True, cwd=project)
     cros_lib.RunCommand(['git', 'rebase', '--abort'], print_cmd=False,
                         redirect_stdout=True, redirect_stderr=True,
                         error_ok=True, cwd=project)
     cros_lib.RunCommand(['git', 'reset', '--hard', 'HEAD'], print_cmd=False,
                         redirect_stdout=True, cwd=project)
-    cros_lib.RunCommand(['git', 'clean', '-f'], print_cmd=False,
-                        redirect_stdout=True, cwd=project)
     cros_lib.RunCommand(['git', 'checkout', manifest_branch], print_cmd=False,
                         redirect_stdout=True, redirect_stderr=True,
                         cwd=project)
+    cros_lib.RunCommand(['git', 'clean', '-f', '-d'], print_cmd=False,
+                        redirect_stdout=True, cwd=project)
 
     for branch in constants.CREATED_BRANCHES:
-      if _DoesLocalBranchExist(project, branch):
+      if cros_lib.DoesLocalBranchExist(project, branch):
         cros_lib.RunCommand(['repo', 'abandon', branch, '.'], cwd=project)
 
 
@@ -117,7 +119,7 @@ def _WipeOldOutput(buildroot):
 # =========================== Main Commands ===================================
 
 
-def PreFlightRinse(buildroot, board, overlays):
+def PreFlightRinse(buildroot):
   """Cleans up any leftover state from previous runs."""
   _BuildRootGitCleanup(buildroot)
   _CleanUpMountPoints(buildroot)
@@ -580,73 +582,3 @@ def PushImages(buildroot, board, branch_name, archive_dir):
         archive_dir]
 
   cros_lib.RunCommand(cmd, cwd=os.path.join(buildroot, 'crostools'))
-
-
-class PatchException(Exception):
-  """Exception thrown by GetGerritPatchInfo."""
-  pass
-
-
-class GerritPatch(object):
-  """Object that contains info about a Gerrit CL.
-
-  Properties:
-    internal: Whether the CL is an internal CL.
-    id: The CL's ChangeId.
-    ref: The remote ref that contains the patch.
-    revision: The CL's SHA1 hash.
-    project: The project the CL belongs to.
-    branch: The upstream branch of the CL.
-  """
-  def __init__(self, patch_dict, internal):
-    """Construct a GerritPatch object from Gerrit query results
-
-    Args:
-      patch_dict: A dictionary containing the parsed JSON gerrit query results.
-      internal: Whether the CL is an internal CL.
-    """
-    self.internal = internal
-    self.id = patch_dict['id']
-    self.ref = patch_dict['currentPatchSet']['ref']
-    self.revision = patch_dict['currentPatchSet']['revision']
-    self.project = patch_dict['project']
-    self.branch = patch_dict['branch']
-
-
-def GetGerritPatchInfo(patches):
-  """Query Gerrit server for patch information.
-
-  Args:
-    patches: a list of patch ID's to query.  Internal patches start with a '*'.
-
-  Returns:
-    A list of GerritPatch objects describing each patch.
-
-  Raises:
-    PatchException if a patch can't be found.
-  """
-  # TODO(rcui): move patch-related classes and commands into new module.
-  parsed_patches = []
-  tracking_branch = None
-  for patch in patches:
-    if patch.startswith('*'):
-      # Internal CL's have a '*' in front
-      internal = True
-      server, port = constants.GERRIT_INT_HOST, constants.GERRIT_INT_PORT
-      patch = patch[1:]
-    else:
-      internal = False
-      server, port = constants.GERRIT_HOST, constants.GERRIT_PORT
-
-    cmd = ['ssh', '-p', port, server, 'gerrit', 'query', '--current-patch-set',
-           '--format=JSON', patch]
-
-    result = cros_lib.RunCommand(cmd, redirect_stdout=True)
-    result_dict = json.loads(result.output.splitlines()[0])
-    if 'id' in result_dict:
-      parsed_patches.append(GerritPatch(result_dict, internal))
-    else:
-      raise PatchException('Change-ID %s not found on server %s.'
-                           % (patch, server))
-
-  return parsed_patches

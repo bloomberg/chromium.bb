@@ -38,8 +38,9 @@ class RunBuildStagesTest(mox.MoxTestBase):
     self.build_config['master'] = False
     self.build_config['important'] = False
 
-    self.options = self.mox.CreateMockAnything()
-    self.options.buildroot = '.'
+    # Use the cbuildbot parser to create properties and populate default values.
+    self.parser = cbuildbot._CreateParser()
+    (self.options, _) = self.parser.parse_args(['-r', '.'])
     self.options.resume = False
     self.options.sync = False
     self.options.build = False

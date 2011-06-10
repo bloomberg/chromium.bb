@@ -141,7 +141,6 @@ class SyncStageTest(AbstractStageTest):
   def setUp(self):
     mox.MoxTestBase.setUp(self)
     AbstractStageTest.setUp(self)
-    self.mox.StubOutWithMock(commands, 'PreFlightRinse')
 
   def ConstructStage(self):
     return stages.SyncStage(self.bot_id, self.options, self.build_config)
@@ -166,9 +165,6 @@ class SyncStageTest(AbstractStageTest):
     self.mox.StubOutWithMock(stages.BuilderStage, '_GetPortageEnvVar')
 
     os.path.isdir(self.build_root + '/.repo').AndReturn(True)
-    board = self.build_config['board']
-    commands.PreFlightRinse(self.build_root, board,
-                            [self.overlay])
     os.path.isdir(self.build_root + '/.repo').AndReturn(True)
     commands.IncrementalCheckout(self.build_root)
     os.path.isdir(self.overlay).AndReturn(True)
@@ -211,7 +207,6 @@ class ManifestVersionedSyncStageTest(AbstractStageTest):
                              'GetNextBuildSpec')
     self.mox.StubOutWithMock(commands, 'ManifestCheckout')
 
-    os.path.isdir(self.build_root + '/.repo').AndReturn(False)
     os.path.isdir(self.build_root + '/.repo').AndReturn(False)
 
     self.manager.GetNextBuildSpec(stages.VERSION_FILE,

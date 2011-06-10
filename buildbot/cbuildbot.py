@@ -22,6 +22,7 @@ if __name__ == '__main__':
 from chromite.buildbot import cbuildbot_commands as commands
 from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import cbuildbot_stages as stages
+from chromite.buildbot import patch as cros_patch
 from chromite.lib import cros_build_lib as cros_lib
 
 
@@ -78,21 +79,43 @@ def _CheckBuildRootBranch(buildroot, tracking_branch):
                  'Buildroot checked out to %s\n' % manifest_branch)
 
 
-def _PreProcessPatches(patches):
-  patch_info = None
+def _PreProcessPatches(gerrit_patches, local_patches, tracking_branch):
+  """Validate patches ASAP to catch user errors.  Also generate patch info.
 
-  if patches:
-    try:
-      patch_info = commands.GetGerritPatchInfo(patches)
-    except commands.PatchException as e:
-      cros_lib.Die(str(e))
+  Args:
+    gerrit_patches: List of gerrit CL ID's passed in by user.
+    local_patches: List of local project branches to generate patches from.
+    tracking_branch: The branch the buildroot will be checked out to.
 
-  return patch_info
+  Returns:
+    A tuple containing a list of cros_patch.GerritPatch and a list of
+    cros_patch.LocalPatch objects.
+  """
+  gerrit_patch_info = []
+  local_patch_info = []
+
+  try:
+    if gerrit_patches:
+      gerrit_patch_info = cros_patch.GetGerritPatchInfo(gerrit_patches)
+
+    if local_patches:
+      local_patch_info = cros_patch.PrepareLocalPatches(local_patches,
+                                                   tracking_branch)
+
+  except cros_patch.PatchException as e:
+    cros_lib.Die(str(e))
+
+  return gerrit_patch_info, local_patch_info
+
+
+def _IsIncrementalBuild(buildroot, clobber):
+  """Returns True if we are reusing an existing buildroot."""
+  repo_dir = os.path.join(buildroot, '.repo')
+  return not clobber and os.path.isdir(repo_dir)
 
 
 def RunBuildStages(bot_id, options, build_config):
   """Run the requested build stages."""
-
   completed_stages_file = os.path.join(options.buildroot, '.completed_stages')
 
   if options.resume and os.path.exists(completed_stages_file):
@@ -117,11 +140,13 @@ def RunBuildStages(bot_id, options, build_config):
   tracking_branch = _GetChromiteTrackingBranch()
   stages.BuilderStage.SetTrackingBranch(tracking_branch)
 
-  repo_dir = os.path.join(options.buildroot, '.repo')
-  if not options.clobber and os.path.isdir(repo_dir):
-    _CheckBuildRootBranch(options.buildroot, tracking_branch)
+  gerrit_patches, local_patches = _PreProcessPatches(options.gerrit_patches,
+                                                     options.local_patches,
+                                                     tracking_branch)
 
-  patches = _PreProcessPatches(options.patches)
+  if _IsIncrementalBuild(options.buildroot, options.clobber):
+    _CheckBuildRootBranch(options.buildroot, tracking_branch)
+    commands.PreFlightRinse(options.buildroot)
 
   build_success = False
   build_and_test_success = False
@@ -130,8 +155,9 @@ def RunBuildStages(bot_id, options, build_config):
     if options.sync:
       sync_stage_class(bot_id, options, build_config).Run()
 
-    if options.patches:
-      stages.PatchChangesStage(bot_id, options, build_config, patches).Run()
+    if options.gerrit_patches or options.local_patches:
+      stages.PatchChangesStage(bot_id, options, build_config, gerrit_patches,
+                               local_patches).Run()
 
     if options.build:
       stages.BuildBoardStage(bot_id, options, build_config).Run()
@@ -245,10 +271,51 @@ def _DetermineDefaultBuildRoot(git_url):
 # Parser related functions
 
 
-def _CheckPatches(option, opt_str, value, parser):
+def _CheckLocalPatches(option, opt_str, value, parser):
+  """Do an early quick check of the passed-in patches.
+
+  If the branch of a project is not specified we append the current branch the
+  project is on.
+  """
+  patch_args = value.split()
+  if not patch_args:
+    raise optparse.OptionValueError('No patches specified')
+
+  parser.values.local_patches = []
+  for patch in patch_args:
+    components = patch.split(':')
+    if len(components) > 2:
+      msg = 'Specify local patches in project[:branch] format.'
+      raise optparse.OptionValueError(msg)
+
+    # validate project
+    project = components[0]
+    try:
+      project_dir = cros_lib.GetProjectDir('.', project)
+    except cros_lib.RunCommandError:
+      raise optparse.OptionValueError('Project %s does not exist.' % project)
+
+    # If no branch was specified, we use the project's current branch.
+    if len(components) == 1:
+      branch = cros_lib.GetCurrentBranch(project_dir)
+      if not branch:
+        raise optparse.OptionValueError('project %s is not on a branch!'
+                                        % project)
+      # Append branch information to patch
+      patch = '%s:%s' % (project, branch)
+    else:
+      branch = components[1]
+      if not cros_lib.DoesLocalBranchExist(project_dir, branch):
+        raise optparse.OptionValueError('Project %s does not have branch %s'
+                                        % (project, branch))
+
+  parser.values.local_patches.append(patch)
+
+
+def _CheckGerritPatches(option, opt_str, value, parser):
   """Do an early quick check of the passed-in patches."""
-  parser.values.patches = value.split()
-  if not len(parser.values.patches):
+  parser.values.gerrit_patches = value.split()
+  if not parser.values.gerrit_patches:
     raise optparse.OptionValueError('No patches specified')
 
 
@@ -294,18 +361,26 @@ def _CreateParser():
                     callback=_CheckChromeRevOption,
                     help=('Revision of Chrome to use, of type '
                           '[%s]' % '|'.join(constants.VALID_CHROME_REVISIONS)))
-  parser.add_option('-l', '--list', action='store_true', dest='list',
-                    default=False,
-                    help="List the valid buildbot configs to use.")
-  parser.add_option('-p', '--patches', action='callback', dest='patches',
+  parser.add_option('-g', '--gerrit-patches', action='callback',
+                    type='string', callback=_CheckGerritPatches,
                     metavar="'Id1 *int_Id2...IdN'",
-                    default=None, type='string', callback=_CheckPatches,
                     help=("Space-separated list of short-form Gerrit "
                           "Change-Id's or change numbers to patch.  Please "
                           "prepend '*' to internal Change-Id's"))
+  parser.add_option('-l', '--list', action='store_true', dest='list',
+                    default=False,
+                    help="List the valid buildbot configs to use.")
+  parser.add_option('-p', '--local-patches', action='callback',
+                    metavar="'<project1>[:<branch1>]...<projectN>[:<branchN>]'",
+                    type='string', callback=_CheckLocalPatches,
+                    help=('Space-separated list of project branches with '
+                          'patches to apply.  Projects are specified by name. '
+                          'If no branch is specified the current branch of the '
+                          'project will be used.'))
   parser.add_option('--profile', default=None, type='string', action='store',
                     dest='profile',
                     help=('Name of profile to sub-specify board variant.'))
+
 
   # Advanced options
   group = optparse.OptionGroup(

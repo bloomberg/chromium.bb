@@ -19,6 +19,7 @@ from chromite.buildbot import cbuildbot_commands as commands
 from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import lkgm_manager
 from chromite.buildbot import manifest_version
+from chromite.buildbot import patch as cros_patch
 from chromite.lib import cros_build_lib as cros_lib
 
 _FULL_BINHOST = 'FULL_BINHOST'
@@ -443,9 +444,6 @@ class SyncStage(BuilderStage):
                             self._tracking_branch,
                             url=self._build_config['git_url'])
     else:
-      board = self._build_config['board']
-      commands.PreFlightRinse(self._build_root, board,
-                              BuilderStage.overlays)
       commands.IncrementalCheckout(self._build_root)
 
     # Check that all overlays can be found.
@@ -456,30 +454,29 @@ class SyncStage(BuilderStage):
 
 class PatchChangesStage(BuilderStage):
   """Stage that patches a set of Gerrit changes to the buildroot source tree."""
-  def __init__(self, bot_id, options, build_config, patches):
+  def __init__(self, bot_id, options, build_config, gerrit_patches,
+               local_patches):
+    """Construct a PatchChangesStage.
+
+    Args:
+      bot_id, options, build_config: See arguments to BuilderStage.__init__()
+      gerrit_patches: A list of cros_patch.GerritPatch objects to apply.
+                      Cannot be None.
+      local_patches: A list cros_patch.LocalPatch objects to apply. Cannot be
+                     None.
+    """
     BuilderStage.__init__(self, bot_id, options, build_config)
-    self.patches = patches
+    assert(gerrit_patches is not None and local_patches is not None)
+    self.gerrit_patches = gerrit_patches
+    self.local_patches = local_patches
 
   def _PerformStage(self):
-    PUBLIC_URL = os.path.join(constants.GERRIT_HTTP_URL, 'gerrit/p')
+    for patch in self.gerrit_patches + self.local_patches:
+      patch.Apply(self._build_root)
 
-    for patch in self.patches:
-      url_prefix = constants.INTERNAL_SSH_URL if patch.internal else PUBLIC_URL
-      url = os.path.join(url_prefix, patch.project)
-
-      cmd = ['repo', 'forall', patch.project, '-c', 'pwd']
-      project_dir = cros_lib.RunCommand(cmd, cwd=self._build_root,
-                                        redirect_stdout=True).output.strip()
-
-      cros_lib.RunCommand(['git', 'fetch', url, patch.ref], cwd=project_dir)
-      cros_lib.RunCommand(['git', 'checkout', '--no-track',
-                           '-b', constants.PATCH_BRANCH,
-                           'FETCH_HEAD'], cwd=project_dir)
-
-      (remote, ref) = cros_lib.GetProjectManifestBranch(self._build_root,
-                                                        patch.project)
-      manifest_branch = os.path.join(remote, ref.replace('refs/heads/', ''))
-      cros_lib.RunCommand(['git', 'rebase', manifest_branch], cwd=project_dir)
+    if self.local_patches:
+      patch_root = os.path.dirname(self.local_patches[0].patch_dir)
+      cros_patch.RemovePatchRoot(patch_root)
 
 
 class ManifestVersionedSyncStage(BuilderStage):
@@ -510,10 +507,6 @@ class ManifestVersionedSyncStage(BuilderStage):
         VERSION_FILE, force_version=self._options.force_version, latest=True)
 
   def _PerformStage(self):
-    if os.path.isdir(os.path.join(self._build_root, '.repo')):
-      commands.PreFlightRinse(self._build_root, self._build_config['board'],
-                              BuilderStage.overlays)
-
     self.InitializeManifestManager()
     next_manifest = self.GetNextManifest()
     if not next_manifest:
