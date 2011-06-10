@@ -147,17 +147,19 @@ void AdvancedOptionsHandler::GetLocalizedValues(
       IDS_OPTIONS_IMPROVE_BROWSING_EXPERIENCE },
     { "disableWebServices",
       IDS_OPTIONS_DISABLE_WEB_SERVICES },
-#if !defined(OS_CHROMEOS)
+    { "cloudPrintOptionsStaticLabel",
+      IDS_CLOUD_PRINT_SETUP_DIALOG_TITLE },
+    { "cloudPrintProxyEnabledManageButton",
+      IDS_OPTIONS_CLOUD_PRINT_PROXY_ENABLED_MANAGE_BUTTON },
     { "advancedSectionTitleCloudPrint",
       IDS_OPTIONS_ADVANCED_SECTION_TITLE_CLOUD_PRINT },
+#if !defined(OS_CHROMEOS)
     { "cloudPrintProxyDisabledLabel",
       IDS_OPTIONS_CLOUD_PRINT_PROXY_DISABLED_LABEL },
     { "cloudPrintProxyDisabledButton",
       IDS_OPTIONS_CLOUD_PRINT_PROXY_DISABLED_BUTTON },
     { "cloudPrintProxyEnabledButton",
       IDS_OPTIONS_CLOUD_PRINT_PROXY_ENABLED_BUTTON },
-    { "cloudPrintProxyEnabledManageButton",
-      IDS_OPTIONS_CLOUD_PRINT_PROXY_ENABLED_MANAGE_BUTTON },
     { "cloudPrintProxyEnablingButton",
       IDS_OPTIONS_CLOUD_PRINT_PROXY_ENABLING_BUTTON },
 #endif
@@ -272,6 +274,9 @@ void AdvancedOptionsHandler::RegisterMessages() {
       NewCallback(this,
                   &AdvancedOptionsHandler::ShowManageSSLCertificates));
 #endif
+  web_ui_->RegisterMessageCallback("showCloudPrintManagePage",
+      NewCallback(this,
+                  &AdvancedOptionsHandler::ShowCloudPrintManagePage));
 #if !defined(OS_CHROMEOS)
   if (cloud_print_proxy_ui_enabled_) {
     web_ui_->RegisterMessageCallback("showCloudPrintSetupDialog",
@@ -280,9 +285,6 @@ void AdvancedOptionsHandler::RegisterMessages() {
     web_ui_->RegisterMessageCallback("disableCloudPrintProxy",
         NewCallback(this,
                     &AdvancedOptionsHandler::HandleDisableCloudPrintProxy));
-    web_ui_->RegisterMessageCallback("showCloudPrintManagePage",
-        NewCallback(this,
-                    &AdvancedOptionsHandler::ShowCloudPrintManagePage));
   }
   web_ui_->RegisterMessageCallback("showNetworkProxySettings",
       NewCallback(this,
@@ -459,6 +461,14 @@ void AdvancedOptionsHandler::ShowManageSSLCertificates(const ListValue* args) {
 }
 #endif
 
+void AdvancedOptionsHandler::ShowCloudPrintManagePage(const ListValue* args) {
+  UserMetricsRecordAction(UserMetricsAction("Options_ManageCloudPrinters"));
+  // Open a new tab in the current window for the management page.
+  web_ui_->tab_contents()->OpenURL(
+      CloudPrintURL(web_ui_->GetProfile()).GetCloudPrintServiceManageURL(),
+      GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
+}
+
 #if !defined(OS_CHROMEOS)
 void AdvancedOptionsHandler::ShowCloudPrintSetupDialog(const ListValue* args) {
   UserMetricsRecordAction(UserMetricsAction("Options_EnableCloudPrintProxy"));
@@ -472,14 +482,6 @@ void AdvancedOptionsHandler::HandleDisableCloudPrintProxy(
     const ListValue* args) {
   UserMetricsRecordAction(UserMetricsAction("Options_DisableCloudPrintProxy"));
   web_ui_->GetProfile()->GetCloudPrintProxyService()->DisableForUser();
-}
-
-void AdvancedOptionsHandler::ShowCloudPrintManagePage(const ListValue* args) {
-  UserMetricsRecordAction(UserMetricsAction("Options_ManageCloudPrinters"));
-  // Open a new tab in the current window for the management page.
-  web_ui_->tab_contents()->OpenURL(
-      CloudPrintURL(web_ui_->GetProfile()).GetCloudPrintServiceManageURL(),
-      GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
 }
 
 void AdvancedOptionsHandler::RefreshCloudPrintStatusFromService() {

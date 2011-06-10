@@ -90,6 +90,10 @@ class AdvancedOptionsHandler
   void ShowManageSSLCertificates(const ListValue* args);
 #endif
 
+  // Callback for the Cloud Print manage button.  This will open a new
+  // tab pointed at the management URL.
+  void ShowCloudPrintManagePage(const ListValue* args);
+
 #if !defined(OS_CHROMEOS)
   // Callback for the Sign in to Cloud Print button.  This will start
   // the authentication process.
@@ -98,10 +102,6 @@ class AdvancedOptionsHandler
   // Callback for the Disable Cloud Print button.  This will sign out
   // of cloud print.
   void HandleDisableCloudPrintProxy(const ListValue* args);
-
-  // Callback for the Cloud Print manage button.  This will open a new
-  // tab pointed at the management URL.
-  void ShowCloudPrintManagePage(const ListValue* args);
 
   // Pings the service to send us it's current notion of the enabled state.
   void RefreshCloudPrintStatusFromService();

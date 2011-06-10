@@ -217,6 +217,19 @@
       </div>
     </section>
 </if>
+<if expr="pp_ifdef('chromeos')">
+  <section id="cloud-print-proxy-section">
+    <h3 i18n-content="advancedSectionTitleCloudPrint"></h3>
+    <div>
+      <div id="Div1"
+           i18n-content="cloudPrintOptionsStaticLabel"></div>
+      <div class="section-group">
+        <button id="cloudPrintProxyManageButton"
+                i18n-content="cloudPrintProxyEnabledManageButton"></button>
+      </div>
+    </div>
+  </section>
+</if>
 <if expr="os != 'darwin' and not pp_ifdef('chromeos')">
     <section id="background-section">
       <h3 i18n-content="advancedSectionTitleBackground"></h3>

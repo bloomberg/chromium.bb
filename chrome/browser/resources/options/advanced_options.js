@@ -133,10 +133,10 @@ var OptionsPage = options.OptionsPage;
             chrome.send('disableCloudPrintProxy');
           }
         };
-        $('cloudPrintProxyManageButton').onclick = function(event) {
-          chrome.send('showCloudPrintManagePage');
-        };
       }
+      $('cloudPrintProxyManageButton').onclick = function(event) {
+        chrome.send('showCloudPrintManagePage');
+      };
 
   }
   };
