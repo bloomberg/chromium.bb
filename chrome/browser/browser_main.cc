@@ -1035,7 +1035,8 @@ void InitializeToolkit(const MainFunctionParams& parameters) {
   INITCOMMONCONTROLSEX config;
   config.dwSize = sizeof(config);
   config.dwICC = ICC_WIN95_CLASSES;
-  InitCommonControlsEx(&config);
+  if (!InitCommonControlsEx(&config))
+    LOG_GETLASTERROR(FATAL);
 #endif
 }
 
