@@ -29,7 +29,7 @@
 namespace {
 
 const int kDefaultKeyboardHeight = 300;
-const int kKeyboardSlideDuration = 500;  // In milliseconds
+const int kKeyboardSlideDuration = 300;  // In milliseconds
 
 PropertyAccessor<bool>* GetFocusedStateAccessor() {
   static PropertyAccessor<bool> state;
