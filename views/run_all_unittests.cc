@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,7 +19,7 @@ class ViewTestSuite : public base::TestSuite {
     base::TestSuite::Initialize();
     ResourceBundle::InitSharedInstance("en-US");
 
-#if defined(TOUCH_UI)
+#if defined(OS_LINUX)
     // Disable GPU browser compositor during unit tests.
     views::View::set_use_acceleration_when_possible(false);
 #endif

@@ -102,9 +102,7 @@ class RootView : public View,
   virtual bool IsVisibleInRootView() const OVERRIDE;
   virtual std::string GetClassName() const OVERRIDE;
   virtual void SchedulePaintInRect(const gfx::Rect& rect) OVERRIDE;
-#if defined(COMPOSITOR_2)
   virtual void SchedulePaintInternal(const gfx::Rect& rect) OVERRIDE;
-#endif
   virtual bool OnMousePressed(const MouseEvent& event) OVERRIDE;
   virtual bool OnMouseDragged(const MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const MouseEvent& event) OVERRIDE;

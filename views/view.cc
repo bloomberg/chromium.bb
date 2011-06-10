@@ -106,9 +106,6 @@ View::View()
       clip_y_(0.0),
       needs_layout_(true),
       flip_canvas_on_paint_for_rtl_ui_(false),
-#if !defined(COMPOSITOR_2)
-      texture_id_(0),  // TODO(sadrul): 0 can be a valid texture id.
-#endif
       texture_needs_updating_(true),
       paint_to_texture_(false),
       accelerator_registration_delayed_(false),
@@ -177,9 +174,8 @@ void View::AddChildViewAt(View* view, int index) {
 
   if (layout_manager_.get())
     layout_manager_->ViewAdded(this, view);
-#if defined(COMPOSITOR_2)
+
   view->MarkTextureDirty();
-#endif
 }
 
 void View::RemoveChildView(View* view) {
@@ -402,16 +398,13 @@ void View::SetTransform(const ui::Transform& transform) {
     if (!transform_.get())
       return;
     transform_.reset(NULL);
-#if !defined(COMPOSITOR_2)
-    canvas_.reset();
-#else
+
     if (!paint_to_texture_)
       texture_.reset();
-#endif
+
     SchedulePaint();
   } else {
     transform_.reset(new ui::Transform(transform));
-#if defined(COMPOSITOR_2)
     if (!texture_.get()) {
       // We don't yet have a texture. SchedulePaint so one is created.
       SchedulePaint();
@@ -426,19 +419,16 @@ void View::SetTransform(const ui::Transform& transform) {
       if (widget)
         widget->SchedulePaintInRect(widget->GetRootView()->bounds());
     }
-#endif
   }
 }
 
 void View::SetPaintToTexture(bool value) {
-#if defined(COMPOSITOR_2)
   if (value == paint_to_texture_)
     return;
 
   paint_to_texture_ = value;
   if (!ShouldPaintToTexture())
     texture_.reset();
-#endif
 }
 
 // RTL positioning -------------------------------------------------------------
@@ -630,18 +620,8 @@ void View::SchedulePaintInRect(const gfx::Rect& rect) {
   if (!IsVisible())
     return;
 
-#if defined(COMPOSITOR_2)
   MarkTextureDirty();
   SchedulePaintInternal(rect);
-#else
-  if (parent_) {
-    // Translate the requested paint rect to the parent's coordinate system
-    // then pass this notification up to the parent.
-    gfx::Rect paint_rect = ConvertRectToParent(rect);
-    paint_rect.Offset(GetMirroredPosition());
-    parent_->SchedulePaintInRect(paint_rect);
-  }
-#endif
 }
 
 void View::Paint(gfx::Canvas* canvas) {
@@ -652,13 +632,6 @@ void View::Paint(gfx::Canvas* canvas) {
   scoped_ptr<gfx::Canvas> texture_canvas;
   gfx::Rect texture_rect;
 
-#if !defined(COMPOSITOR_2)
-  if (use_acceleration_when_possible &&
-      transform_.get() && transform_->HasChange()) {
-    // This view has a transformation. So this maintains its own canvas.
-    if (!canvas_.get())
-      canvas_.reset(gfx::Canvas::CreateCanvas(width(), height(), false));
-#else
   if (ShouldPaintToTexture()) {
     gfx::Rect dirty_rect;
     if (!texture_clip_rect_.IsEmpty()) {
@@ -689,7 +662,6 @@ void View::Paint(gfx::Canvas* canvas) {
     texture_canvas->TranslateInt(-dirty_rect.x(), -dirty_rect.y());
     canvas = texture_canvas.get();
     texture_rect = dirty_rect;
-#endif
   } else {
     // We're going to modify the canvas, save its state first.
     scoped_canvas.SetCanvas(canvas);
@@ -732,13 +704,6 @@ void View::Paint(gfx::Canvas* canvas) {
 
   PaintChildren(canvas);
 
-#if !defined(COMPOSITOR_2)
-  if (canvas == canvas_.get()) {
-    texture_id_ = canvas->GetTextureID();
-
-    // TODO(sadrul): Make sure the Widget's compositor tree updates itself?
-  }
-#else
   if (texture_canvas.get()) {
     texture_->SetBitmap(
         texture_canvas->AsCanvasSkia()->getDevice()->accessBitmap(false),
@@ -746,7 +711,6 @@ void View::Paint(gfx::Canvas* canvas) {
         size());
     texture_needs_updating_ = false;
   }
-#endif
 }
 
 ThemeProvider* View::GetThemeProvider() const {
@@ -1155,22 +1119,6 @@ void View::OnPaintFocusBorder(gfx::Canvas* canvas) {
 
 // Accelerated Painting --------------------------------------------------------
 
-#if !defined(COMPOSITOR_2)
-void View::PaintComposite(ui::Compositor* compositor) {
-  compositor->SaveTransform();
-
-  // TODO(sad): Push a transform matrix for the offset and bounds of the view?
-  if (texture_id_)
-    compositor->DrawTextureWithTransform(texture_id_, GetTransform());
-
-  for (int i = 0, count = child_count(); i < count; ++i) {
-    View* child = GetChildViewAt(i);
-    child->PaintComposite(compositor);
-  }
-
-  compositor->RestoreTransform();
-}
-#else
 void View::PaintComposite() {
   if (!IsVisible())
     return;
@@ -1229,8 +1177,6 @@ void View::PaintToTexture(const gfx::Rect& dirty_region) {
 
 void View::OnWillCompositeTexture() {
 }
-
-#endif
 
 bool View::ShouldPaintToTexture() const {
   return use_acceleration_when_possible &&
@@ -1447,11 +1393,6 @@ void View::VisibilityChangedImpl(View* starting_from, bool is_visible) {
 }
 
 void View::BoundsChanged(const gfx::Rect& previous_bounds) {
-#if !defined(COMPOSITOR_2)
-  if (canvas_.get())
-    canvas_.reset(gfx::Canvas::CreateCanvas(width(), height(), false));
-#endif
-
   if (IsVisible()) {
     if (parent_) {
       // Paint the old bounds.
@@ -1616,7 +1557,6 @@ bool View::ConvertPointFromAncestor(const View* ancestor,
 
 // Accelerated painting --------------------------------------------------------
 
-#if defined(COMPOSITOR_2)
 void View::MarkTextureDirty() {
   View* owner = this;
   while (!((owner->transform_.get() && owner->transform_->HasChange()) ||
@@ -1624,14 +1564,11 @@ void View::MarkTextureDirty() {
     owner = owner->parent();
   owner->texture_needs_updating_ = true;
 }
-#endif
 
 void View::ResetTexture() {
-#if defined(COMPOSITOR_2)
   texture_.reset();
   for (int i = child_count() - 1; i >= 0; --i)
     GetChildViewAt(i)->ResetTexture();
-#endif
 }
 
 // Input -----------------------------------------------------------------------
@@ -1876,11 +1813,7 @@ std::string View::PrintViewGraph(bool first) {
   result.append("\"");
   if (!parent())
     result.append(", shape=box");
-#if defined(COMPOSITOR_2)
   if (texture_.get())
-#else
-  if (canvas_.get())
-#endif
     result.append(", color=green");
   result.append("]\n");
 

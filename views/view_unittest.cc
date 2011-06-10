@@ -1585,7 +1585,7 @@ class TransformPaintView : public TestView {
   gfx::Rect scheduled_paint_rect() const { return scheduled_paint_rect_; }
 
   // Overridden from View:
-  virtual void SchedulePaintInRect(const gfx::Rect& rect) {
+  virtual void SchedulePaintInternal(const gfx::Rect& rect) {
     gfx::Rect xrect = ConvertRectToParent(rect);
     scheduled_paint_rect_ = scheduled_paint_rect_.Union(xrect);
   }

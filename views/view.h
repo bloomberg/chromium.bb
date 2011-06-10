@@ -1002,12 +1002,6 @@ class View : public AcceleratorTarget {
 
   // Accelerated painting ------------------------------------------------------
 
-#if !defined(COMPOSITOR_2)
-
-  // Performs accelerated painting using the compositor.
-  virtual void PaintComposite(ui::Compositor* compositor);
-#else
-
   // Invoked from SchedulePaintInRect. Invokes SchedulePaintInternal on the
   // parent. This does not mark the texture as dirty. It's assumed the caller
   // has done this. You should not need to invoke this, use SchedulePaint or
@@ -1030,7 +1024,6 @@ class View : public AcceleratorTarget {
   // Invoked from |PaintComposite| if this view has a texture and before the
   // texture is rendered by the compositor.
   virtual void OnWillCompositeTexture();
-#endif
 
   // Returns true if this view should paint using a texture.
   virtual bool ShouldPaintToTexture() const;
@@ -1229,10 +1222,8 @@ class View : public AcceleratorTarget {
 
   // Accelerated painting ------------------------------------------------------
 
-#if defined(COMPOSITOR_2)
   // Marks the texture this view draws into as dirty.
   void MarkTextureDirty();
-#endif
 
   // Releases the texture of this and recurses through all children.
   void ResetTexture();
@@ -1384,22 +1375,12 @@ class View : public AcceleratorTarget {
 
   // Accelerated painting ------------------------------------------------------
 
-#if !defined(COMPOSITOR_2)
-  // Each transformed view will maintain its own canvas.
-  scoped_ptr<gfx::Canvas> canvas_;
-
-  // Texture ID used for accelerated painting.
-  // TODO(sadrul): This will eventually be replaced by an abstract texture
-  //               object.
-  ui::TextureID texture_id_;
-#else
   scoped_ptr<ui::Texture> texture_;
 
   // If not empty and Paint() is invoked, the canvas is created with the
   // specified size.
   // TODO(sky): this should be passed in.
   gfx::Rect texture_clip_rect_;
-#endif
 
   // Is the texture out of date?
   bool texture_needs_updating_;

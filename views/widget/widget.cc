@@ -651,9 +651,6 @@ bool Widget::HasFocusManager() const {
 }
 
 bool Widget::OnNativeWidgetPaintAccelerated(const gfx::Rect& dirty_region) {
-#if !defined(COMPOSITOR_2)
-  return false;
-#else
   if (!compositor_.get())
     return false;
 
@@ -662,18 +659,10 @@ bool Widget::OnNativeWidgetPaintAccelerated(const gfx::Rect& dirty_region) {
   GetRootView()->PaintComposite();
   compositor_->NotifyEnd();
   return true;
-#endif
 }
 
 void Widget::OnNativeWidgetPaint(gfx::Canvas* canvas) {
   GetRootView()->Paint(canvas);
-#if !defined(COMPOSITOR_2)
-  if (compositor_.get()) {
-    compositor_->NotifyStart();
-    root_view_->PaintComposite(compositor_.get());
-    compositor_->NotifyEnd();
-  }
-#endif
 }
 
 int Widget::GetNonClientComponent(const gfx::Point& point) {

@@ -145,7 +145,7 @@ void ChromeTestSuite::Initialize() {
   stats_table_ = new base::StatsTable(stats_filename_, 20, 200);
   base::StatsTable::set_current(stats_table_);
 
-#if defined(TOUCH_UI)
+#if defined(TOOLKIT_VIEWS) && defined(OS_LINUX)
   // Turn of GPU compositing in browser during unit tests.
   views::View::set_use_acceleration_when_possible(false);
 #endif

@@ -23,7 +23,6 @@
 
 namespace ui {
 
-#if defined COMPOSITOR_2
 namespace glHidden {
 
 class CompositorGL;
@@ -362,71 +361,5 @@ Compositor* Compositor::Create(gfx::AcceleratedWidget widget) {
     return new glHidden::CompositorGL(widget);
   return NULL;
 }
-#else
-class CompositorGL : public Compositor {
- public:
-  explicit CompositorGL(gfx::AcceleratedWidget widget);
-
- private:
-  // Overridden from Compositor.
-  void NotifyStart() OVERRIDE;
-  void NotifyEnd() OVERRIDE;
-  void DrawTextureWithTransform(TextureID txt,
-                                const ui::Transform& transform) OVERRIDE;
-  void SaveTransform() OVERRIDE;
-  void RestoreTransform() OVERRIDE;
-
-  // The GL context used for compositing.
-  scoped_refptr<gfx::GLSurface> gl_surface_;
-  scoped_refptr<gfx::GLContext> gl_context_;
-
-  // Keep track of whether compositing has started or not.
-  bool started_;
-
-  DISALLOW_COPY_AND_ASSIGN(CompositorGL);
-};
-
-CompositorGL::CompositorGL(gfx::AcceleratedWidget widget)
-    : started_(false) {
-  gl_surface_ = gfx::GLSurface::CreateViewGLSurface(widget);
-  gl_context_ = gfx::GLContext::CreateGLContext(NULL, gl_surface_.get());
-}
-
-void CompositorGL::NotifyStart() {
-  started_ = true;
-  gl_context_->MakeCurrent(gl_surface_.get());
-}
-
-void CompositorGL::NotifyEnd() {
-  DCHECK(started_);
-  gl_surface_->SwapBuffers();
-  started_ = false;
-}
-
-void CompositorGL::DrawTextureWithTransform(TextureID txt,
-                                            const ui::Transform& transform) {
-  DCHECK(started_);
-
-  // TODO(wjmaclean):
-  NOTIMPLEMENTED();
-}
-
-void CompositorGL::SaveTransform() {
-  // TODO(sadrul):
-  NOTIMPLEMENTED();
-}
-
-void CompositorGL::RestoreTransform() {
-  // TODO(sadrul):
-  NOTIMPLEMENTED();
-}
-
-// static
-Compositor* Compositor::Create(gfx::AcceleratedWidget widget) {
-  if (gfx::GetGLImplementation() != gfx::kGLImplementationNone)
-    return new CompositorGL(widget);
-  return NULL;
-}
-#endif
 
 }  // namespace ui

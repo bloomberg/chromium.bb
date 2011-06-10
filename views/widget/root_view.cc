@@ -157,13 +157,11 @@ std::string RootView::GetClassName() const {
 }
 
 void RootView::SchedulePaintInRect(const gfx::Rect& rect) {
-#if defined(COMPOSITOR_2)
   MarkTextureDirty();
   SchedulePaintInternal(rect);
 }
 
 void RootView::SchedulePaintInternal(const gfx::Rect& rect) {
-#endif
   gfx::Rect xrect = ConvertRectToParent(rect);
   gfx::Rect invalid_rect = GetLocalBounds().Intersect(xrect);
   if (!invalid_rect.IsEmpty())
