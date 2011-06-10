@@ -2240,11 +2240,16 @@ newlib-configure-common() {
     PATH="/usr/bin:/bin" \
     "${STD_ENV_FOR_NEWLIB[@]}" \
     ${srcdir}/newlib-trunk/configure \
-        --disable-libgloss \
         --disable-multilib \
         --prefix="${NEWLIB_INSTALL_DIR}" \
         --disable-newlib-supplied-syscalls \
         --disable-texinfo \
+        --disable-libgloss \
+        --enable-newlib-iconv \
+        --enable-newlib-io-long-long \
+        --enable-newlib-io-long-double \
+        --enable-newlib-io-c99-formats \
+        --enable-newlib-io-mb \
         --target="${REAL_CROSS_TARGET}"
   spopd
 }
