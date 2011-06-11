@@ -1327,7 +1327,7 @@ class View : public AcceleratorTarget {
   gfx::Rect bounds_;
 
   // Whether this view is visible.
-  bool is_visible_;
+  bool visible_;
 
   // Whether this view is enabled.
   bool enabled_;

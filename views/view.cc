@@ -99,7 +99,7 @@ View::View()
       id_(0),
       group_(-1),
       parent_(NULL),
-      is_visible_(true),
+      visible_(true),
       enabled_(true),
       registered_for_visible_bounds_notification_(false),
       clip_x_(0.0),
@@ -343,26 +343,26 @@ int View::GetHeightForWidth(int w) {
 }
 
 void View::SetVisible(bool visible) {
-  if (visible != is_visible_) {
+  if (visible != visible_) {
     // If the tab is currently visible, schedule paint to refresh parent.
-    if (is_visible_)
+    if (visible_)
       SchedulePaint();
     else
       ResetTexture();
 
-    is_visible_ = visible;
+    visible_ = visible;
 
     // This notifies all sub-views recursively.
-    PropagateVisibilityNotifications(this, is_visible_);
+    PropagateVisibilityNotifications(this, visible_);
 
     // If we are newly visible, schedule paint.
-    if (is_visible_)
+    if (visible_)
       SchedulePaint();
   }
 }
 
 bool View::IsVisible() const {
-  return is_visible_;
+  return visible_;
 }
 
 bool View::IsVisibleInRootView() const {
