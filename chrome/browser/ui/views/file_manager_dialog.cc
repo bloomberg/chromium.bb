@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/file_manager_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/extensions/extension_dialog.h"
 #include "chrome/browser/ui/views/window.h"
 #include "content/browser/browser_thread.h"
@@ -21,7 +22,20 @@ namespace {
 const int kFileManagerWidth = 720;  // pixels
 const int kFileManagerHeight = 580;  // pixels
 
+// Returns the browser represented by |window| or NULL if not found.
+// TODO(jamescook):  Move this to browser_list.h.
+Browser* FindBrowserWithWindow(gfx::NativeWindow window) {
+  for (BrowserList::const_iterator it = BrowserList::begin();
+       it != BrowserList::end();
+       ++it) {
+    Browser* browser = *it;
+    if (browser->window() && browser->window()->GetNativeHandle() == window)
+      return browser;
+  }
+  return NULL;
 }
+
+}  // namespace
 
 // Linking this implementation of SelectFileDialog::Create into the target
 // selects FileManagerDialog as the dialog of choice.
@@ -80,20 +94,21 @@ void FileManagerDialog::SelectFileImpl(
     LOG(ERROR) << "File dialog already in use!";
     return;
   }
-  Browser* active_browser = BrowserList::GetLastActive();
-  if (!active_browser)
+  Browser* owner_browser = FindBrowserWithWindow(owner_window);
+  if (!owner_browser) {
+    NOTREACHED() << "Can't find owning browser";
     return;
+  }
 
   GURL file_browser_url = FileManagerUtil::GetFileBrowserUrlWithParams(
       type, title, default_path, file_types, file_type_index,
       default_extension);
   extension_dialog_ = ExtensionDialog::Show(file_browser_url,
-      active_browser, kFileManagerWidth, kFileManagerHeight,
+      owner_browser, kFileManagerWidth, kFileManagerHeight,
       this /* ExtensionDialog::Observer */);
 
   // Connect our listener to FileDialogFunction's per-tab callbacks.
-  Browser* extension_browser = extension_dialog_->host()->view()->browser();
-  TabContents* contents = extension_browser->GetSelectedTabContents();
+  TabContents* contents = owner_browser->GetSelectedTabContents();
   int32 tab_id = (contents ? contents->controller().session_id().id() : 0);
   FileDialogFunction::Callback::Add(tab_id, listener_, params);
 

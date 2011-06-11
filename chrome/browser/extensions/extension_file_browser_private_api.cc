@@ -909,6 +909,12 @@ const FileDialogFunction::Callback& FileDialogFunction::GetCallback() const {
   return Callback::Find(GetTabId());
 }
 
+void FileDialogFunction::RemoveCallback() {
+  // Listeners expect to be invoked exactly once, so we need to remove our
+  // callback objects afterwards.
+  Callback::Remove(GetTabId());
+}
+
 // GetFileSystemRootPathOnFileThread can only be called from the file thread,
 // so here we are. This function takes a vector of virtual paths, converts
 // them to local paths and calls GetLocalPathsResponseOnUIThread with the
@@ -995,6 +1001,7 @@ void SelectFileFunction::GetLocalPathsResponseOnUIThread(
     callback.listener()->FileSelected(files[0],
                                       index,
                                       callback.params());
+    RemoveCallback();  // Listeners expect to be invoked exactly once.
   }
   SendResponse(true);
 }
@@ -1089,6 +1096,7 @@ void SelectFilesFunction::GetLocalPathsResponseOnUIThread(
   DCHECK(!callback.IsNull());
   if (!callback.IsNull()) {
     callback.listener()->MultiFilesSelected(files, callback.params());
+    RemoveCallback();  // Listeners expect to be invoked exactly once.
   }
   SendResponse(true);
 }
@@ -1098,6 +1106,7 @@ bool CancelFileDialogFunction::RunImpl() {
   DCHECK(!callback.IsNull());
   if (!callback.IsNull()) {
     callback.listener()->FileSelectionCanceled(callback.params());
+    RemoveCallback();  // Listeners expect to be invoked exactly once.
   }
   SendResponse(true);
   return true;

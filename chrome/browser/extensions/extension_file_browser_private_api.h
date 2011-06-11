@@ -167,6 +167,9 @@ class FileDialogFunction
   // Get the callback for the hosting tab.
   const Callback& GetCallback() const;
 
+  // Remove the callback for the hosting tab.
+  void RemoveCallback();
+
  private:
   // Figure out the tab_id of the hosting tab.
   int32 GetTabId() const;
