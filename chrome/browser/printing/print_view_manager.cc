@@ -73,6 +73,13 @@ bool PrintViewManager::PrintPreviewNow() {
   return Send(new PrintMsg_InitiatePrintPreview(routing_id()));
 }
 
+void PrintViewManager::PreviewPrintingRequestCancelled() {
+  if (!tab_contents())
+    return;
+  RenderViewHost* rvh = tab_contents()->render_view_host();
+  rvh->Send(new PrintMsg_PreviewPrintingRequestCancelled(rvh->routing_id()));
+}
+
 void PrintViewManager::StopNavigation() {
   // Cancel the current job, wait for the worker to finish.
   TerminatePrintJob(true);

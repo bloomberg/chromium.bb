@@ -380,6 +380,8 @@ void PrintPreviewHandler::RegisterMessages() {
       NewCallback(this, &PrintPreviewHandler::HandleClosePreviewTab));
   web_ui_->RegisterMessageCallback("hidePreview",
       NewCallback(this, &PrintPreviewHandler::HandleHidePreview));
+  web_ui_->RegisterMessageCallback("cancelPendingPrintRequest",
+      NewCallback(this, &PrintPreviewHandler::HandleCancelPendingPrintRequest));
 }
 
 TabContents* PrintPreviewHandler::preview_tab() {
@@ -502,6 +504,25 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
 
 void PrintPreviewHandler::HandleHidePreview(const ListValue* args) {
   HidePreviewTab();
+}
+
+void PrintPreviewHandler::HandleCancelPendingPrintRequest(
+    const ListValue* args) {
+  TabContentsWrapper* wrapper = NULL;
+  TabContents* initiator_tab = GetInitiatorTab();
+  if (initiator_tab) {
+    wrapper = TabContentsWrapper::GetCurrentWrapperForContents(initiator_tab);
+    ClearInitiatorTabDetails();
+  } else {
+    // Initiator tab does not exists. Get the wrapper contents of current tab.
+    Browser* browser = BrowserList::GetLastActive();
+    if (browser)
+      wrapper = browser->GetSelectedTabContentsWrapper();
+  }
+
+  if (wrapper)
+    wrapper->print_view_manager()->PreviewPrintingRequestCancelled();
+  delete TabContentsWrapper::GetCurrentWrapperForContents(preview_tab());
 }
 
 void PrintPreviewHandler::HandleGetPrinterCapabilities(

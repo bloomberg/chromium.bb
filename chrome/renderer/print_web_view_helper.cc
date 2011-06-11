@@ -177,6 +177,8 @@ bool PrintWebViewHelper::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(PrintMsg_PrintingDone, OnPrintingDone)
     IPC_MESSAGE_HANDLER(PrintMsg_ResetScriptedPrintCount,
                         ResetScriptedPrintCount)
+    IPC_MESSAGE_HANDLER(PrintMsg_PreviewPrintingRequestCancelled,
+                        DisplayPrintJobError)
     IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
   return handled;
@@ -353,13 +355,7 @@ void PrintWebViewHelper::PrintPreview(WebKit::WebFrame* frame,
 
 void PrintWebViewHelper::DidFinishPrinting(PrintingResult result) {
   if (result == FAIL_PRINT) {
-    WebView* web_view = print_web_view_;
-    if (!web_view)
-      web_view = render_view()->webview();
-
-    render_view()->runModalAlertDialog(
-        web_view->mainFrame(),
-        l10n_util::GetStringUTF16(IDS_PRINT_SPOOL_FAILED_ERROR_TEXT));
+    DisplayPrintJobError();
 
     if (notify_browser_of_print_failure_) {
       int cookie = print_pages_params_->params.document_cookie;
@@ -750,4 +746,14 @@ void PrintWebViewHelper::ResetScriptedPrintCount() {
 void PrintWebViewHelper::IncrementScriptedPrintCount() {
   ++user_cancelled_scripted_print_count_;
   last_cancelled_script_print_ = base::Time::Now();
+}
+
+void PrintWebViewHelper::DisplayPrintJobError() {
+  WebView* web_view = print_web_view_;
+  if (!web_view)
+    web_view = render_view()->webview();
+
+  render_view()->runModalAlertDialog(
+      web_view->mainFrame(),
+      l10n_util::GetStringUTF16(IDS_PRINT_SPOOL_FAILED_ERROR_TEXT));
 }

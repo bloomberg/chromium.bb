@@ -251,6 +251,9 @@ class PrintWebViewHelper : public RenderViewObserver ,
   // Scripted printing will be blocked for a limited amount of time.
   void IncrementScriptedPrintCount();
 
+  // Displays the print job error message to the user.
+  void DisplayPrintJobError();
+
   WebKit::WebView* print_web_view_;
 
   // The frame to print for script initiated print preview.

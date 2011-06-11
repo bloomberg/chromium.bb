@@ -47,6 +47,9 @@ class PrintViewManager : public NotificationObserver,
   // print preview is impossible at the moment.
   bool PrintPreviewNow();
 
+  // Handles cancelled preview printing request.
+  void PreviewPrintingRequestCancelled();
+
   // PrintedPagesSource implementation.
   virtual string16 RenderSourceName();
   virtual GURL RenderSourceUrl();

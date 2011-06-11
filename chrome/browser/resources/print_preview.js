@@ -42,6 +42,9 @@ var hasPendingPrintFileRequest = false;
 // True when preview tab has some error.
 var hasError = false;
 
+// True when preview tab is hidden.
+var isTabHidden = false;
+
 /**
  * Window onload handler, sets up the page and starts print preview by getting
  * the printer list.
@@ -376,21 +379,41 @@ function printFile() {
   hasPendingPrintFileRequest = hasPendingPreviewRequest;
 
   if (hasPendingPrintFileRequest) {
-    if (getSelectedPrinterName() != PRINT_TO_PDF)
+    if (getSelectedPrinterName() != PRINT_TO_PDF) {
+      isTabHidden = true;
       chrome.send('hidePreview');
+    }
     return;
   }
 
-  if (getSelectedPrinterName() != PRINT_TO_PDF) {
+  if ($('print-button').disabled) {
+    if (isTabHidden)
+      cancelPendingPrintRequest();
+    return;
+  }
+
+  if (isTabHidden || getSelectedPrinterName() == PRINT_TO_PDF) {
+    sendPrintFileRequest();
+  } else {
     $('print-button').classList.add('loading');
     $('cancel-button').classList.add('loading');
     $('print-summary').innerHTML = localStrings.getString('printing');
     removeEventListeners();
-    window.setTimeout(function() { chrome.send('print', [getSettingsJSON()]); },
-                      1000);
-  } else {
-    chrome.send('print', [getSettingsJSON()]);
+    window.setTimeout(function() { sendPrintFileRequest(); }, 1000);
   }
+}
+/**
+ * Sends a message to cancel the pending print request.
+ */
+function cancelPendingPrintRequest() {
+  chrome.send('cancelPendingPrintRequest');
+}
+
+/**
+ * Sends a message to initiate print workflow.
+ */
+function sendPrintFileRequest() {
+  chrome.send('print', [getSettingsJSON()]);
 }
 
 /**
@@ -503,6 +526,9 @@ function displayErrorMessage(errorMessage) {
   var pdfViewer = $('pdf-viewer');
   if (pdfViewer)
     $('mainview').removeChild(pdfViewer);
+
+  if (hasPendingPrintFileRequest && isTabHidden)
+    cancelPendingPrintRequest();
 }
 
 /**

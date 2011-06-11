@@ -60,6 +60,10 @@ class PrintPreviewHandler : public WebUIMessageHandler,
   // |args| is unused.
   void HandleHidePreview(const ListValue* args);
 
+  // Handles the request to cancel the pending print request.
+  // |args| is unused.
+  void HandleCancelPendingPrintRequest(const ListValue* args);
+
   // Get the printer capabilities.
   // First element of |args| is the printer name.
   void HandleGetPrinterCapabilities(const ListValue* args);
