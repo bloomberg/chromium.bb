@@ -47,12 +47,18 @@ function fadeOutElement(el) {
 
 function showLoadingAnimation() {
   $('dancing-dots-text').classList.remove('hidden');
+  var pdfViewer = $('pdf-viewer');
+  if (pdfViewer)
+    pdfViewer.classList.add('invisible');
   $('overlay-layer').classList.remove('invisible');
 }
 
 function hideLoadingAnimation() {
   var overlayLayer = $('overlay-layer');
   overlayLayer.addEventListener('webkitTransitionEnd', loadingAnimationCleanup);
+  var pdfViewer = $('pdf-viewer');
+  if (pdfViewer)
+    pdfViewer.classList.remove('invisible');
   overlayLayer.classList.add('invisible');
 }
 

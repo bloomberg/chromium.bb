@@ -645,8 +645,21 @@ select {
 }
 
 #pdf-viewer {
+  /* pluginFadeInTransitionDuration = 0.2s */
+  -webkit-transition: opacity 0.2s linear;
+  /* pluginFadeInTransitionDelay = overlayFadeOutTransitionDuration = 0.1s */
+  -webkit-transition-delay: 0.1s;
   height: 100%;
+  opacity: 1;
   width: 100%;
+}
+
+#pdf-viewer.invisible {
+  /* pluginFadeOutTransitionDuration = 0.1s */
+  -webkit-transition: opacity 0.1s linear;
+  /* pluginFadeOutTransitionDelay = 0.25s */
+  -webkit-transition-delay: 0.25s;
+  opacity: 0;
 }
 
 #no-plugin {
@@ -658,7 +671,10 @@ select {
 }
 
 #overlay-layer {
-  -webkit-transition: opacity 0.5s linear;
+  -webkit-transition: opacity 0.2s linear;
+  /* overlayFadeInTransitionDelay = pluginFadeOutTransitionDelay +
+   *     pluginFadeOutTransitionDuration = 0.35s */
+  -webkit-transition-delay: 0.35s;
   -webkit-user-select: none;
   background: -webkit-radial-gradient(#eaeaea, #b8b8b8);
   height: 100%;
@@ -669,7 +685,8 @@ select {
 }
 
 #overlay-layer.invisible {
-  -webkit-transition: opacity 0.7s linear;
+  /* overlayFadeOutTransitionDuration = 0.1s */
+  -webkit-transition: opacity 0.1s linear;
   opacity: 0;
   pointer-events: none;
 }
