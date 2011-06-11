@@ -205,7 +205,8 @@ Widget* NativeTabbedPaneGtk::GetWidgetAt(int index) {
 
 View* NativeTabbedPaneGtk::GetTabViewAt(int index) {
   Widget* widget = GetWidgetAt(index);
-  DCHECK(widget && widget->GetRootView()->child_count() == 1);
+  DCHECK(widget);
+  DCHECK_EQ(1, widget->GetRootView()->child_count());
   return widget->GetRootView()->GetChildViewAt(0);
 }
 

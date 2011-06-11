@@ -23,7 +23,7 @@ void FillLayout::Layout(View* host) {
 }
 
 gfx::Size FillLayout::GetPreferredSize(View* host) {
-  DCHECK(host->child_count() == 1);
+  DCHECK_EQ(1, host->child_count());
   return host->GetChildViewAt(0)->GetPreferredSize();
 }
 
