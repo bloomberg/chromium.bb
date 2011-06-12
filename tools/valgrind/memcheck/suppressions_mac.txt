@@ -539,6 +539,7 @@
    fun:_internal_class_createInstanceFromZone
    fun:_internal_class_createInstance
    fun:+[NSObject allocWithZone:]
+   ...
    fun:_decodeObjectBinary
    fun:_decodeObject
    fun:-[NSButtonCell initWithCoder:]
@@ -555,8 +556,6 @@
    fun:_decodeObjectBinary
    fun:_decodeObject
    fun:-[NSWindowTemplate initWithCoder:]
-   fun:_decodeObjectBinary
-   fun:_decodeObject
 }
 {
    bug_40429b
