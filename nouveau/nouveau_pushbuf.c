@@ -270,7 +270,8 @@ nouveau_pushbuf_flush(struct nouveau_channel *chan, unsigned min)
 	nvpb->nr_push = 0;
 
 	/* Allocate space for next push buffer */
-	assert(!nouveau_pushbuf_space(chan, min));
+	if (nouveau_pushbuf_space(chan, min))
+		assert(0);
 
 	if (chan->flush_notify)
 		chan->flush_notify(chan);
