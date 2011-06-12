@@ -74,3 +74,11 @@ AutomatedUITestBase.ShowBookmarkBar
 
 # Video decoding under valgrind is really slow, see http://crbug.com/53825
 MediaTest.VideoBear*
+
+# Flakily times out.
+# http://crbug.com/85865
+AppCacheUITest.AppCacheLayoutTests_NoPHP
+
+# Flakily times out.
+# http://crbug.com/85866
+MetricsServiceTest.CloseRenderersNormally
