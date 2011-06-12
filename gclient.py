@@ -579,6 +579,7 @@ class GClient(Dependency):
     "unix": "unix",
     "linux": "unix",
     "linux2": "unix",
+    "linux3": "unix",
   }
 
   DEFAULT_CLIENT_FILE_TEXT = ("""\
