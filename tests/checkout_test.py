@@ -181,7 +181,7 @@ class BaseTest(fake_repos.FakeReposTestBase):
       self.FAKE_REPOS.svn_dirty = True
 
     self.assertEquals(root, co.project_path)
-    self.assertEquals(self.previous_log['revision'], co.prepare())
+    self.assertEquals(self.previous_log['revision'], co.prepare(None))
     self.assertEquals('pouet', co.get_settings('bar'))
     self.assertTree(self.get_trunk(False), root)
     patches = self.get_patches()
@@ -206,13 +206,13 @@ class BaseTest(fake_repos.FakeReposTestBase):
 
     if read_only:
       self.assertEquals('FAKE', revision)
-      self.assertEquals(self.previous_log['revision'], co.prepare())
+      self.assertEquals(self.previous_log['revision'], co.prepare(None))
       # Changes should be reverted now.
       self.assertTree(self.get_trunk(False), root)
       expected = self.previous_log
     else:
       self.assertEquals(self.previous_log['revision'] + 1, revision)
-      self.assertEquals(self.previous_log['revision'] + 1, co.prepare())
+      self.assertEquals(self.previous_log['revision'] + 1, co.prepare(None))
       self.assertTree(self.get_trunk(True), root)
       expected = expected.copy()
       expected['msg'] = 'msg'
@@ -223,7 +223,7 @@ class BaseTest(fake_repos.FakeReposTestBase):
     self.assertEquals(expected, actual)
 
   def _check_exception(self, co, err_msg):
-    co.prepare()
+    co.prepare(None)
     try:
       co.apply_patch([patch.FilePatchDiff('svn_utils_test.txt', BAD_PATCH, [])])
       self.fail()
@@ -237,7 +237,7 @@ class BaseTest(fake_repos.FakeReposTestBase):
   def _test_process(self, co):
     """Makes sure the process lambda is called correctly."""
     co.post_processors = [lambda *args: results.append(args)]
-    co.prepare()
+    co.prepare(None)
     ps = self.get_patches()
     results = []
     co.apply_patch(ps)
@@ -281,6 +281,9 @@ class SvnBaseTest(BaseTest):
         data['revprops'].append((prop.attrib['name'], prop.text))
     return data
 
+  def _test_prepare(self, co):
+    self.assertEquals(1, co.prepare(1))
+
 
 class SvnCheckout(SvnBaseTest):
   def _get_co(self, read_only):
@@ -317,7 +320,7 @@ class SvnCheckout(SvnBaseTest):
 
   def testSvnProps(self):
     co = self._get_co(False)
-    co.prepare()
+    co.prepare(None)
     try:
       # svn:ignore can only be applied to directories.
       svn_props = [('svn:ignore', 'foo')]
@@ -332,7 +335,7 @@ class SvnCheckout(SvnBaseTest):
           '--non-interactive;\n'
           'patching file svn_utils_test.txt\n'
           'svn: Cannot set \'svn:ignore\' on a file (\'svn_utils_test.txt\')\n')
-    co.prepare()
+    co.prepare(None)
     svn_props = [('svn:eol-style', 'LF'), ('foo', 'bar')]
     co.apply_patch(
         [patch.FilePatchDiff('svn_utils_test.txt', NAKED_PATCH, svn_props)])
@@ -379,7 +382,7 @@ class SvnCheckout(SvnBaseTest):
     co = self._get_co(False)
     co.svn_config = checkout.SvnConfig(
         os.path.join(ROOT_DIR, 'subversion_config'))
-    co.prepare()
+    co.prepare(None)
     patches = self.get_patches()
     co.apply_patch(patches)
     self.assertEquals(
@@ -397,6 +400,13 @@ class SvnCheckout(SvnBaseTest):
         None, None,
         self.svn_url)
     self._test_process(co)
+
+  def testPrepare(self):
+    co = checkout.SvnCheckout(
+        self.root_dir, self.name,
+        None, None,
+        self.svn_url)
+    self._test_prepare(co)
 
 
 class GitSvnCheckout(SvnBaseTest):
@@ -430,7 +440,7 @@ class GitSvnCheckout(SvnBaseTest):
   def testGitSvnPremade(self):
     # Test premade git-svn clone. First make a git-svn clone.
     git_svn_co = self._get_co(True)
-    revision = git_svn_co.prepare()
+    revision = git_svn_co.prepare(None)
     self.assertEquals(self.previous_log['revision'], revision)
     # Then use GitSvnClone to clone it to lose the git-svn connection and verify
     # git svn init / git svn fetch works.
@@ -438,7 +448,8 @@ class GitSvnCheckout(SvnBaseTest):
         self.root_dir, self.name[:-4] + '2', 'trunk',
         self.usr, self.pwd,
         self.svn_base, self.svn_trunk, git_svn_co.project_path)
-    self.assertEquals(self.previous_log['revision'], git_svn_clone.prepare())
+    self.assertEquals(
+        self.previous_log['revision'], git_svn_clone.prepare(None))
 
   def testException(self):
     self._check_exception(
@@ -446,7 +457,7 @@ class GitSvnCheckout(SvnBaseTest):
 
   def testSvnProps(self):
     co = self._get_co(False)
-    co.prepare()
+    co.prepare(None)
     try:
       svn_props = [('foo', 'bar')]
       co.apply_patch(
@@ -457,7 +468,7 @@ class GitSvnCheckout(SvnBaseTest):
       self.assertEquals(
           e.status,
           'Cannot apply svn property foo to file svn_utils_test.txt.')
-    co.prepare()
+    co.prepare(None)
     # svn:eol-style is ignored.
     svn_props = [('svn:eol-style', 'LF')]
     co.apply_patch(
@@ -470,6 +481,13 @@ class GitSvnCheckout(SvnBaseTest):
         self.svn_url)
     self._test_process(co)
 
+  def testPrepare(self):
+    co = checkout.SvnCheckout(
+        self.root_dir, self.name,
+        None, None,
+        self.svn_url)
+    self._test_prepare(co)
+
 
 class RawCheckout(SvnBaseTest):
   def setUp(self):
@@ -477,7 +495,7 @@ class RawCheckout(SvnBaseTest):
     # Use a svn checkout as the base.
     self.base_co = checkout.SvnCheckout(
         self.root_dir, self.name, None, None, self.svn_url)
-    self.base_co.prepare()
+    self.base_co.prepare(None)
 
   def _get_co(self, read_only):
     co = checkout.RawCheckout(self.root_dir, self.name, None)
@@ -491,7 +509,7 @@ class RawCheckout(SvnBaseTest):
 
     # A copy of BaseTest._check_base()
     self.assertEquals(root, co.project_path)
-    self.assertEquals(None, co.prepare())
+    self.assertEquals(None, co.prepare(None))
     self.assertEquals('pouet', co.get_settings('bar'))
     self.assertTree(self.get_trunk(False), root)
     patches = self.get_patches()
@@ -513,7 +531,7 @@ class RawCheckout(SvnBaseTest):
         pass
     self.assertTree(self.get_trunk(True), root)
     # Verify that prepare() is a no-op.
-    self.assertEquals(None, co.prepare())
+    self.assertEquals(None, co.prepare(None))
     self.assertTree(self.get_trunk(True), root)
 
   def testAllRW(self):
@@ -536,6 +554,13 @@ class RawCheckout(SvnBaseTest):
         None, None,
         self.svn_url)
     self._test_process(co)
+
+  def testPrepare(self):
+    co = checkout.SvnCheckout(
+        self.root_dir, self.name,
+        None, None,
+        self.svn_url)
+    self._test_prepare(co)
 
 
 if __name__ == '__main__':

@@ -80,11 +80,14 @@ class CheckoutBase(object):
   def get_settings(self, key):
     return get_code_review_setting(self.project_path, key)
 
-  def prepare(self):
+  def prepare(self, revision):
     """Checks out a clean copy of the tree and removes any local modification.
 
     This function shouldn't throw unless the remote repository is inaccessible,
     there is no free disk space or hard issues like that.
+
+    Args:
+      revision: The revision it should sync to, SCM specific.
     """
     raise NotImplementedError()
 
@@ -109,7 +112,7 @@ class RawCheckout(CheckoutBase):
 
   To be used by the try server.
   """
-  def prepare(self):
+  def prepare(self, revision):
     """Stubbed out."""
     pass
 
@@ -244,17 +247,13 @@ class SvnCheckout(CheckoutBase, SvnMixIn):
     self.svn_url = svn_url
     assert bool(self.commit_user) >= bool(self.commit_pwd)
 
-  def prepare(self):
+  def prepare(self, revision):
     # Will checkout if the directory is not present.
     assert self.svn_url
     if not os.path.isdir(self.project_path):
       logging.info('Checking out %s in %s' %
           (self.project_name, self.project_path))
-    revision = self._revert()
-    if revision != self._last_seen_revision:
-      logging.info('Updated at revision %d' % revision)
-      self._last_seen_revision = revision
-    return revision
+    return self._revert(revision)
 
   def apply_patch(self, patches):
     for p in patches:
@@ -351,11 +350,13 @@ class SvnCheckout(CheckoutBase, SvnMixIn):
           'Couldn\'t make sense out of svn commit message:\n' + out)
     return int(match.group(1))
 
-  def _revert(self):
+  def _revert(self, revision):
     """Reverts local modifications or checks out if the directory is not
     present. Use depot_tools's functionality to do this.
     """
     flags = ['--ignore-externals']
+    if revision:
+      flags.extend(['--revision', str(revision)])
     if not os.path.isdir(self.project_path):
       logging.info(
           'Directory %s is not present, checking it out.' % self.project_path)
@@ -365,9 +366,15 @@ class SvnCheckout(CheckoutBase, SvnMixIn):
       scm.SVN.Revert(self.project_path)
       # Revive files that were deleted in scm.SVN.Revert().
       self._check_call_svn(['update', '--force'] + flags)
+    return self._get_revision()
 
+  def _get_revision(self):
     out = self._check_output_svn(['info', '.'])
-    return int(self._parse_svn_info(out, 'revision'))
+    revision = int(self._parse_svn_info(out, 'revision'))
+    if revision != self._last_seen_revision:
+      logging.info('Updated to revision %d' % revision)
+      self._last_seen_revision = revision
+    return revision
 
 
 class GitCheckoutBase(CheckoutBase):
@@ -381,7 +388,7 @@ class GitCheckoutBase(CheckoutBase):
     self.remote_branch = remote_branch
     self.working_branch = 'working_branch'
 
-  def prepare(self):
+  def prepare(self, revision):
     """Resets the git repository in a clean state.
 
     Checks it out if not present and deletes the working branch.
@@ -389,12 +396,21 @@ class GitCheckoutBase(CheckoutBase):
     assert self.remote_branch
     assert os.path.isdir(self.project_path)
     self._check_call_git(['reset', '--hard', '--quiet'])
-    branches, active = self._branches()
-    if active != 'master':
-      self._check_call_git(['checkout', 'master', '--force', '--quiet'])
-    self._check_call_git(['pull', self.remote, self.remote_branch, '--quiet'])
-    if self.working_branch in branches:
-      self._call_git(['branch', '-D', self.working_branch])
+    if revision:
+      try:
+        revision = self._check_output_git(['rev-parse', revision])
+      except subprocess.CalledProcessError:
+        self._check_call_git(
+            ['fetch', self.remote, self.remote_branch, '--quiet'])
+        revision = self._check_output_git(['rev-parse', revision])
+      self._check_call_git(['checkout', '--force', '--quiet', revision])
+    else:
+      branches, active = self._branches()
+      if active != 'master':
+        self._check_call_git(['checkout', '--force', '--quiet', 'master'])
+      self._check_call_git(['pull', self.remote, self.remote_branch, '--quiet'])
+      if self.working_branch in branches:
+        self._call_git(['branch', '-D', self.working_branch])
 
   def apply_patch(self, patches):
     """Applies a patch on 'working_branch' and switch to it.
@@ -510,25 +526,37 @@ class GitSvnCheckoutBase(GitCheckoutBase, SvnMixIn):
     assert self.trunk
     self._cache_svn_auth()
 
-  def prepare(self):
+  def prepare(self, revision):
     """Resets the git repository in a clean state."""
     self._check_call_git(['reset', '--hard', '--quiet'])
-    branches, active = self._branches()
-    if active != 'master':
-      if not 'master' in branches:
+    if revision:
+      try:
+        revision = self._check_output_git(
+            ['svn', 'find-rev', 'r%d' % revision])
+      except subprocess.CalledProcessError:
         self._check_call_git(
-            ['checkout', '--quiet', '-b', 'master',
-             '%s/%s' % (self.remote, self.remote_branch)])
-      else:
-        self._check_call_git(['checkout', 'master', '--force', '--quiet'])
-    # git svn rebase --quiet --quiet doesn't work, use two steps to silence it.
-    self._check_call_git_svn(['fetch', '--quiet', '--quiet'])
-    self._check_call_git(
-        ['rebase', '--quiet', '--quiet',
-          '%s/%s' % (self.remote, self.remote_branch)])
-    if self.working_branch in branches:
-      self._call_git(['branch', '-D', self.working_branch])
-    return int(self._git_svn_info('revision'))
+            ['fetch', self.remote, self.remote_branch, '--quiet'])
+        revision = self._check_output_git(
+            ['svn', 'find-rev', 'r%d' % revision])
+      super(GitSvnCheckoutBase, self).prepare(revision)
+    else:
+      branches, active = self._branches()
+      if active != 'master':
+        if not 'master' in branches:
+          self._check_call_git(
+              ['checkout', '--quiet', '-b', 'master',
+              '%s/%s' % (self.remote, self.remote_branch)])
+        else:
+          self._check_call_git(['checkout', 'master', '--force', '--quiet'])
+      # git svn rebase --quiet --quiet doesn't work, use two steps to silence
+      # it.
+      self._check_call_git_svn(['fetch', '--quiet', '--quiet'])
+      self._check_call_git(
+          ['rebase', '--quiet', '--quiet',
+            '%s/%s' % (self.remote, self.remote_branch)])
+      if self.working_branch in branches:
+        self._call_git(['branch', '-D', self.working_branch])
+    return self._get_revision()
 
   def _git_svn_info(self, key):
     """Calls git svn info. This doesn't support nor need --config-dir."""
@@ -573,7 +601,7 @@ class GitSvnCheckoutBase(GitCheckoutBase, SvnMixIn):
   def _get_revision(self):
     revision = int(self._git_svn_info('revision'))
     if revision != self._last_seen_revision:
-      logging.info('Updated at revision %d' % revision)
+      logging.info('Updated to revision %d' % revision)
       self._last_seen_revision = revision
     return revision
 
@@ -595,7 +623,7 @@ class GitSvnPremadeCheckout(GitSvnCheckoutBase):
     self.git_url = git_url
     assert self.git_url
 
-  def prepare(self):
+  def prepare(self, revision):
     """Creates the initial checkout for the repo."""
     if not os.path.isdir(self.project_path):
       logging.info('Checking out %s in %s' %
@@ -619,8 +647,7 @@ class GitSvnPremadeCheckout(GitSvnCheckoutBase):
            '-T', self.trunk,
            self.svn_url])
     self._check_call_git_svn(['fetch'])
-    super(GitSvnPremadeCheckout, self).prepare()
-    return self._get_revision()
+    return super(GitSvnPremadeCheckout, self).prepare(revision)
 
 
 class GitSvnCheckout(GitSvnCheckoutBase):
@@ -637,8 +664,9 @@ class GitSvnCheckout(GitSvnCheckoutBase):
         commit_user, commit_pwd,
         svn_url, trunk, post_processors)
 
-  def prepare(self):
+  def prepare(self, revision):
     """Creates the initial checkout for the repo."""
+    assert not revision, 'Implement revision if necessary'
     if not os.path.isdir(self.project_path):
       logging.info('Checking out %s in %s' %
           (self.project_name, self.project_path))
@@ -652,8 +680,7 @@ class GitSvnCheckout(GitSvnCheckoutBase):
            '--quiet'],
           cwd=self.root_dir,
           stderr=subprocess2.STDOUT)
-    super(GitSvnCheckout, self).prepare()
-    return self._get_revision()
+    return super(GitSvnCheckout, self).prepare(revision)
 
 
 class ReadOnlyCheckout(object):
@@ -661,8 +688,8 @@ class ReadOnlyCheckout(object):
   def __init__(self, checkout):
     self.checkout = checkout
 
-  def prepare(self):
-    return self.checkout.prepare()
+  def prepare(self, revision):
+    return self.checkout.prepare(revision)
 
   def get_settings(self, key):
     return self.checkout.get_settings(key)
