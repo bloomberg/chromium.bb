@@ -101,20 +101,23 @@ case $host in
   ;;
 esac
 
-AC_CONFIG_FILES([Makefile
-                 doc/Makefile
-                 man/Makefile
-                 liblouis/Makefile
-                 liblouis/liblouis.h
-                 tables/Makefile
-		 liblouis.pc
-                 tests/Makefile
-                 tests/table_test_corpuses/Makefile
-                 tests/tables/Makefile
-		 python/Makefile
-		 python/louis/Makefile
-                 tools/Makefile
-		 gnulib/Makefile
-		 m4/Makefile])
+AC_CONFIG_FILES([
+	Makefile
+        doc/Makefile
+        man/Makefile
+        liblouis/Makefile
+        liblouis/liblouis.h
+	windows/Makefile
+	windows/include/Makefile
+        tables/Makefile
+	liblouis.pc
+        tests/Makefile
+        tests/table_test_corpuses/Makefile
+        tests/tables/Makefile
+	python/Makefile
+	python/louis/Makefile
+        tools/Makefile
+	gnulib/Makefile
+	m4/Makefile])
 AC_OUTPUT
 
