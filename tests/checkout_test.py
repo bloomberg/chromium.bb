@@ -236,10 +236,11 @@ class BaseTest(fake_repos.FakeReposTestBase):
 
   def _test_process(self, co):
     """Makes sure the process lambda is called correctly."""
+    co.post_processors = [lambda *args: results.append(args)]
     co.prepare()
     ps = self.get_patches()
     results = []
-    co.apply_patch(ps, [lambda *args: results.append(args)])
+    co.apply_patch(ps)
     expected = [(co, p) for p in ps.patches]
     self.assertEquals(expected, results)
 
@@ -479,7 +480,7 @@ class RawCheckout(SvnBaseTest):
     self.base_co.prepare()
 
   def _get_co(self, read_only):
-    co = checkout.RawCheckout(self.root_dir, self.name)
+    co = checkout.RawCheckout(self.root_dir, self.name, None)
     if read_only:
       return checkout.ReadOnlyCheckout(co)
     return co
