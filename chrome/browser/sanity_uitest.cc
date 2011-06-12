@@ -21,7 +21,13 @@ class GoogleTest : public UITest {
   }
 };
 
-TEST_F(GoogleTest, Crash) {
+// Flakily fails under Valgrind, see http://crbug.com/85863.
+#if defined(OS_MACOSX)
+#define MAYBE_Crash FLAKY_Crash
+#else
+#define MAYBE_Crash Crash
+#endif  // defined(OS_MACOSX)
+TEST_F(GoogleTest, MAYBE_Crash) {
   std::wstring page_title = L"Google";
 
   // Make sure the navigation succeeded.
@@ -38,7 +44,8 @@ class ColumnLayout : public UITest {
   }
 };
 
-TEST_F(ColumnLayout, Crash) {
+// Flakily fails under Valgrind, see http://crbug.com/85863.
+TEST_F(ColumnLayout, MAYBE_Crash) {
   std::wstring page_title = L"Column test";
 
   // Make sure the navigation succeeded.
