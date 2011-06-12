@@ -21,13 +21,7 @@ class GoogleTest : public UITest {
   }
 };
 
-// Flakily fails under Valgrind, see http://crbug.com/85863.
-#if defined(OS_MACOSX)
-#define MAYBE_Crash FLAKY_Crash
-#elese
-#define MAYBE_Crash Crash
-#endif  // defined(OS_MACOSX)
-TEST_F(GoogleTest, MAYBE_Crash) {
+TEST_F(GoogleTest, Crash) {
   std::wstring page_title = L"Google";
 
   // Make sure the navigation succeeded.
