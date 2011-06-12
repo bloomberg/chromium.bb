@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright (c) 2009 Google Inc. All rights reserved.
+# Copyright (c) 2011 Google Inc. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -211,6 +211,7 @@ def main(argv=None):
       'cygwin':   'msvs',
       'win32':    'msvs',
       'linux2':   'make',
+      'linux3':   'make',
       'darwin':   'xcode',
     }[sys.platform] ]
 

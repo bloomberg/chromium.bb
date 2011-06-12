@@ -47,7 +47,7 @@ def GypTestFormat(title, format, msvs_version=None):
 
 def GypBuild():
   retcode = 0
-  if sys.platform in ['linux', 'linux2']:
+  if sys.platform.startswith('linux'):
     retcode += GypTestFormat('scons', format='scons')
     retcode += GypTestFormat('make', format='make')
   elif sys.platform == 'darwin':
