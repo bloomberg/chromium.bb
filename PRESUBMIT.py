@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 Google Inc. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -19,8 +19,17 @@ def CheckChangeOnUpload(input_api, output_api):
 
 def CheckChangeOnCommit(input_api, output_api):
   report = []
+  license = (
+      r'.*? Copyright \(c\) %(year)s Google Inc\. All rights reserved\.\n'
+      r'.*? Use of this source code is governed by a BSD-style license that '
+        r'can be\n'
+      r'.*? found in the LICENSE file\.\n'
+  ) % {
+      'year': input_api.time.strftime('%Y'),
+  }
+
   report.extend(input_api.canned_checks.PanProjectChecks(
-      input_api, output_api))
+      input_api, output_api, license_header=license))
   report.extend(input_api.canned_checks.CheckTreeIsOpen(
       input_api, output_api,
       'http://gyp-status.appspot.com/status',
