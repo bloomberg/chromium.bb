@@ -271,6 +271,8 @@ ProfileIOData::RequestContext::~RequestContext() {}
 ProfileIOData::ProfileParams::ProfileParams()
     : is_incognito(false),
       clear_local_state_on_exit(false),
+      io_thread(NULL),
+      notification_service(NULL),
       profile_id(Profile::kInvalidProfileId) {}
 ProfileIOData::ProfileParams::~ProfileParams() {}
 
