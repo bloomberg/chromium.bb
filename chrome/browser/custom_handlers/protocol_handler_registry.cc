@@ -27,7 +27,8 @@ ProtocolHandlerRegistry::ProtocolHandlerRegistry(Profile* profile,
     Delegate* delegate)
     : profile_(profile),
       delegate_(delegate),
-      enabled_(true) {
+      enabled_(true),
+      is_loading_(false) {
 }
 
 ProtocolHandlerRegistry::~ProtocolHandlerRegistry() {
