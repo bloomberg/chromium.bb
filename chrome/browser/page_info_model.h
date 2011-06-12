@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,6 +33,7 @@ class PageInfoModel {
     SECTION_INFO_IDENTITY = 0,
     SECTION_INFO_CONNECTION,
     SECTION_INFO_FIRST_VISIT,
+    SECTION_INFO_INTERNAL_PAGE,  // Used for chrome:// pages, etc.
   };
 
   // NOTE: ICON_STATE_OK ... ICON_STATE_ERROR must be listed in increasing
@@ -49,7 +50,9 @@ class PageInfoModel {
     // For example, unverified identity over HTTPS.
     ICON_STATE_ERROR,
     // An information icon.
-    ICON_STATE_INFO
+    ICON_STATE_INFO,
+    // Icon for internal pages.
+    ICON_STATE_INTERNAL_PAGE,
   };
 
   struct SectionInfo {

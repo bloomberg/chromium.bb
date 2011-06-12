@@ -14,6 +14,8 @@
 #include "chrome/browser/ssl/ssl_error_info.h"
 #include "content/browser/cert_store.h"
 #include "content/browser/ssl/ssl_manager.h"
+#include "content/common/url_constants.h"
+#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "net/base/cert_status_flags.h"
@@ -30,6 +32,15 @@ PageInfoModel::PageInfoModel(Profile* profile,
                              PageInfoModelObserver* observer)
     : observer_(observer) {
   Init();
+
+  if (url.SchemeIs(chrome::kChromeUIScheme)) {
+    sections_.push_back(
+        SectionInfo(ICON_STATE_INTERNAL_PAGE,
+                    ASCIIToUTF16(""),
+                    l10n_util::GetStringUTF16(IDS_PAGE_INFO_INTERNAL_PAGE),
+                    SECTION_INFO_INTERNAL_PAGE));
+    return;
+  }
 
   SectionStateIcon icon_id = ICON_STATE_OK;
   string16 headline;
@@ -344,4 +355,5 @@ void PageInfoModel::Init() {
   icons_.push_back(&rb.GetNativeImageNamed(IDR_PAGEINFO_WARNING_MAJOR));
   icons_.push_back(&rb.GetNativeImageNamed(IDR_PAGEINFO_BAD));
   icons_.push_back(&rb.GetNativeImageNamed(IDR_PAGEINFO_INFO));
+  icons_.push_back(&rb.GetNativeImageNamed(IDR_PAGEINFO_INTERNAL));
 }

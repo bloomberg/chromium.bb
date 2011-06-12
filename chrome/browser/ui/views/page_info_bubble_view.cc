@@ -31,12 +31,12 @@ namespace {
 
 // Layout constants.
 const int kHGapToBorder = 11;
-const int kVGapToImage = 10;
-const int kVGapToHeadline = 7;
+const int kVerticalSectionPadding = 8;
+const int kVGapToHeadline = 5;
 const int kHGapImageToDescription = 6;
 const int kTextPaddingRight = 10;
-const int kPaddingBelowSeparator = 4;
-const int kPaddingAboveSeparator = 13;
+const int kPaddingBelowSeparator = 6;
+const int kPaddingAboveSeparator = 4;
 const int kIconHorizontalOffset = 27;
 const int kIconVerticalOffset = -7;
 
@@ -182,8 +182,11 @@ void PageInfoBubbleView::LayoutSections() {
                      0);  // Minimum size.
 
   int count = model_.GetSectionCount();
+  bool only_internal_section = false;
   for (int i = 0; i < count; ++i) {
     PageInfoModel::SectionInfo info = model_.GetSectionInfo(i);
+    if (count == 1 && info.type == PageInfoModel::SECTION_INFO_INTERNAL_PAGE)
+      only_internal_section = true;
     layout->StartRow(0, 0);
     const SkBitmap* icon = *model_.GetIconImage(info.icon_id);
     Section* section = new Section(this, info, icon, cert_id_ > 0);
@@ -204,19 +207,23 @@ void PageInfoBubbleView::LayoutSections() {
       layout->AddView(section);
     }
 
-    // Add separator after all sections.
-    layout->AddPaddingRow(0, kPaddingAboveSeparator);
-    layout->StartRow(0, 0);
-    layout->AddView(new views::Separator());
-    layout->AddPaddingRow(0, kPaddingBelowSeparator);
+    // Add separator after all sections, except internal info.
+    if (!only_internal_section) {
+      layout->AddPaddingRow(0, kPaddingAboveSeparator);
+      layout->StartRow(0, 0);
+      layout->AddView(new views::Separator());
+      layout->AddPaddingRow(0, kPaddingBelowSeparator);
+    }
   }
 
   // Then add the help center link at the bottom.
-  layout->StartRow(0, 1);
-  help_center_link_ = new views::Link(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_PAGE_INFO_HELP_CENTER_LINK)));
-  help_center_link_->set_listener(this);
-  layout->AddView(help_center_link_);
+  if (!only_internal_section) {
+    layout->StartRow(0, 1);
+    help_center_link_ = new views::Link(
+        UTF16ToWide(l10n_util::GetStringUTF16(IDS_PAGE_INFO_HELP_CENTER_LINK)));
+    help_center_link_->set_listener(this);
+    layout->AddView(help_center_link_);
+  }
 
   layout->Layout(this);
 }
@@ -240,9 +247,11 @@ gfx::Size PageInfoBubbleView::GetPreferredSize() {
   size.Enlarge(0, (count - 1) * separator_plus_padding);
 
   // Account for the Help Center link and the separator above it.
-  gfx::Size link_size = help_center_link_->GetPreferredSize();
-  size.Enlarge(0, separator_plus_padding +
-                  link_size.height());
+  if (help_center_link_) {
+    gfx::Size link_size = help_center_link_->GetPreferredSize();
+    size.Enlarge(0, separator_plus_padding +
+                    link_size.height());
+  }
 
   if (!resize_animation_.is_animating())
     return size;
@@ -381,7 +390,7 @@ void Section::LinkClicked(views::Link* source, int event_flags) {
 
 gfx::Size Section::LayoutItems(bool compute_bounds_only, int width) {
   int x = kHGapToBorder;
-  int y = kVGapToImage;
+  int y = kVerticalSectionPadding;
 
   // Layout the image, head-line and description.
   gfx::Size size;
@@ -390,12 +399,14 @@ gfx::Size Section::LayoutItems(bool compute_bounds_only, int width) {
     if (!compute_bounds_only)
       status_image_->SetBounds(x, y, size.width(), size.height());
   }
-  int image_height = y + size.height();
+  int image_height = size.height();
   x += size.width() + kHGapImageToDescription;
   int w = width - x - kTextPaddingRight;
   y = kVGapToHeadline;
+  int headline_height = 0;
   if (!headline_label_->GetText().empty()) {
     size = headline_label_->GetPreferredSize();
+    headline_height = size.height();
     if (!compute_bounds_only)
       headline_label_->SetBounds(x, y, w > 0 ? w : 0, size.height());
     y += size.height();
@@ -405,6 +416,11 @@ gfx::Size Section::LayoutItems(bool compute_bounds_only, int width) {
   }
   if (w > 0) {
     int height = description_label_->GetHeightForWidth(w);
+    if (headline_height == 0 && height < image_height) {
+      // Descriptions without headlines that take up less space vertically than
+      // the image, should center align against the image.
+      y = status_image_->y() + (image_height - height) / 2;
+    }
     if (!compute_bounds_only)
       description_label_->SetBounds(x, y, w, height);
     y += height;
@@ -420,7 +436,7 @@ gfx::Size Section::LayoutItems(bool compute_bounds_only, int width) {
   }
 
   // Make sure the image is not truncated if the text doesn't contain much.
-  y = std::max(y, image_height);
+  y = std::max(y, (2 * kVerticalSectionPadding) + image_height);
   return gfx::Size(width, y);
 }
 
