@@ -13,7 +13,7 @@
 #include "chrome/browser/crash_upload_list.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/crashes_ui.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/jstemplate_builder.h"
@@ -34,9 +34,8 @@
 #include "base/win/windows_version.h"
 #endif
 
-namespace {
-
-const int kTimeout = 8 * 1000;  // 8 seconds.
+static const char kAboutFlashJsFile[] = "about_flash.js";
+static const char kStringsJsFile[] = "strings.js";
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -44,10 +43,9 @@ const int kTimeout = 8 * 1000;  // 8 seconds.
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-class FlashUIHTMLSource : public ChromeURLDataManager::DataSource {
+class FlashUIHTMLSource : public ChromeWebUIDataSource {
  public:
-  FlashUIHTMLSource()
-      : DataSource(chrome::kChromeUIFlashHost, MessageLoop::current()) {}
+  FlashUIHTMLSource();
 
   // Called when the network layer has requested a resource underneath
   // the path we registered.
@@ -55,40 +53,41 @@ class FlashUIHTMLSource : public ChromeURLDataManager::DataSource {
                                 bool is_incognito,
                                 int request_id);
 
-  virtual std::string GetMimeType(const std::string&) const {
-    return "text/html";
-  }
+  virtual std::string GetMimeType(const std::string&) const;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FlashUIHTMLSource);
 };
 
-void FlashUIHTMLSource::StartDataRequest(const std::string& path,
-                                             bool is_incognito,
-                                             int request_id) {
-  // Strings used in the JsTemplate file.
-  DictionaryValue localized_strings;
-  localized_strings.SetString("loadingMessage",
-      l10n_util::GetStringUTF16(IDS_CONFLICTS_LOADING_MESSAGE));
-  localized_strings.SetString("flashLongTitle", "About Flash");
-
-  ChromeURLDataManager::DataSource::SetFontAndTextDirection(&localized_strings);
-
-  static const base::StringPiece html(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_ABOUT_FLASH_HTML));
-  std::string full_html(html.data(), html.size());
-  jstemplate_builder::AppendJsonHtml(&localized_strings, &full_html);
-  jstemplate_builder::AppendI18nTemplateSourceHtml(&full_html);
-  jstemplate_builder::AppendI18nTemplateProcessHtml(&full_html);
-  jstemplate_builder::AppendJsTemplateSourceHtml(&full_html);
-
-  scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
-  html_bytes->data.resize(full_html.size());
-  std::copy(full_html.begin(), full_html.end(), html_bytes->data.begin());
-
-  SendResponse(request_id, html_bytes);
+FlashUIHTMLSource::FlashUIHTMLSource()
+    : ChromeWebUIDataSource(chrome::kChromeUIFlashHost) {
+  AddLocalizedString("loadingMessage", IDS_FLASH_LOADING_MESSAGE);
+  AddLocalizedString("flashLongTitle", IDS_FLASH_TITLE_MESSAGE);
 }
+
+void FlashUIHTMLSource::StartDataRequest(const std::string& path,
+                                         bool is_incognito,
+                                         int request_id) {
+  if (path == kStringsJsFile) {
+    SendLocalizedStringsAsJSON(request_id);
+  } else {
+    int id = (path == kAboutFlashJsFile ?
+              IDR_ABOUT_FLASH_JS :
+              IDR_ABOUT_FLASH_HTML);
+    SendFromResourceBundle(request_id, id);
+  }
+}
+
+std::string FlashUIHTMLSource::GetMimeType(const std::string& path) const {
+  if (path == kAboutFlashJsFile || path == kStringsJsFile)
+    return "application/javascript";
+
+  return "text/html";
+}
+
+namespace {
+
+const int kTimeout = 8 * 1000;  // 8 seconds.
 
 ////////////////////////////////////////////////////////////////////////////////
 //

@@ -4545,6 +4545,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
 
+      <!-- chrome://flash strings -->
+      <message name="IDS_FLASH_LOADING_MESSAGE" desc="Shown while loading until full list of modules is retrieved">
+      Loading...
+      </message>
+      <message name="IDS_FLASH_TITLE_MESSAGE" desc="Shown while loading until full list of modules is retrieved">
+      About Flash
+      </message>
+
       <!-- about:version strings -->
       <message name="IDS_ABOUT_VERSION_TITLE" desc="Title on the about:version page">
         About Version
