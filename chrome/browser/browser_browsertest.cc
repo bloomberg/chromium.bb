@@ -614,7 +614,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_PageLanguageDetection) {
   ui_test_utils::WindowedNotificationObserverWithDetails<std::string>
       en_language_detected_signal(NotificationType::TAB_LANGUAGE_DETERMINED,
                                   source);
-  EXPECT_TRUE(helper->language_state().original_language().empty());
+  EXPECT_EQ("", helper->language_state().original_language());
   en_language_detected_signal.Wait();
   EXPECT_TRUE(en_language_detected_signal.GetDetailsFor(
         source.map_key(), &lang));
@@ -627,7 +627,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_PageLanguageDetection) {
                                   source);
   ui_test_utils::NavigateToURL(
       browser(), GURL(test_server()->GetURL("files/french_page.html")));
-  EXPECT_TRUE(helper->language_state().original_language().empty());
+  EXPECT_EQ("", helper->language_state().original_language());
   fr_language_detected_signal.Wait();
   lang.clear();
   EXPECT_TRUE(fr_language_detected_signal.GetDetailsFor(
