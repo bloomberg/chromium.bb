@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/load_from_memory_cache_details.h"
+#include "content/browser/load_from_memory_cache_details.h"
 
 LoadFromMemoryCacheDetails::LoadFromMemoryCacheDetails(
     const GURL& url,

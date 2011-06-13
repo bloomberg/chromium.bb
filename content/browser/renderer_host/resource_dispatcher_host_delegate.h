@@ -14,6 +14,7 @@ class GURL;
 class ResourceDispatcherHostLoginDelegate;
 class ResourceHandler;
 struct ResourceHostMsg_Request;
+struct ResourceResponse;
 
 namespace content {
 class ResourceContext;
@@ -87,6 +88,14 @@ class ResourceDispatcherHostDelegate {
   // Otherwise, the content layer decides.
   virtual bool ShouldForceDownloadResource(
       const GURL& url, const std::string& mime_type);
+
+  // Informs the delegate that a response has started.
+  virtual void OnResponseStarted(net::URLRequest* request,
+                                 ResourceResponse* response);
+
+  // Informs the delegate that a request has been redirected.
+  virtual void OnRequestRedirected(net::URLRequest* request,
+                                   ResourceResponse* response);
 
  protected:
   ResourceDispatcherHostDelegate();

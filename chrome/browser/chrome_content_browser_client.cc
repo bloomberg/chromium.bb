@@ -63,6 +63,10 @@
 #include "chrome/browser/crash_handler_host_linux.h"
 #endif
 
+#if defined(USE_NSS)
+#include "chrome/browser/ui/crypto_module_password_dialog.h"
+#endif
+
 namespace {
 
 void InitRenderViewHostForExtensions(RenderViewHost* render_view_host) {
@@ -508,6 +512,15 @@ int ChromeContentBrowserClient::GetCrashSignalFD(
     return GpuCrashHandlerHostLinux::GetInstance()->GetDeathSignalSocket();
 
   return -1;
+}
+#endif
+
+#if defined(USE_NSS)
+crypto::CryptoModuleBlockingPasswordDelegate*
+    ChromeContentBrowserClient::GetCryptoPasswordDelegate(
+        const GURL& url) {
+  return browser::NewCryptoModuleBlockingDialogDelegate(
+      browser::kCryptoModulePasswordKeygen, url.host());
 }
 #endif
 

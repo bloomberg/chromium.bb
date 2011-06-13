@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
+#include "chrome/browser/net/load_timing_observer.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/renderer_host/safe_browsing_resource_handler.h"
@@ -196,4 +197,14 @@ bool ChromeResourceDispatcherHostDelegate::ShouldForceDownloadResource(
     const GURL& url, const std::string& mime_type) {
   // Special-case user scripts to get downloaded instead of viewed.
   return UserScript::IsURLUserScript(url, mime_type);
+}
+
+void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
+    net::URLRequest* request, ResourceResponse* response) {
+  LoadTimingObserver::PopulateTimingInfo(request, response);
+}
+
+void ChromeResourceDispatcherHostDelegate::OnRequestRedirected(
+    net::URLRequest* request, ResourceResponse* response) {
+  LoadTimingObserver::PopulateTimingInfo(request, response);
 }

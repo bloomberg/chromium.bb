@@ -28,6 +28,10 @@ class TabContents;
 class WorkerProcessHost;
 struct DesktopNotificationHostMsg_Show_Params;
 
+namespace crypto {
+class CryptoModuleBlockingPasswordDelegate;
+}
+
 namespace net {
 class CookieList;
 class CookieOptions;
@@ -179,7 +183,8 @@ class ContentBrowserClient {
       int notification_id);
 
   // Returns true if the given page is allowed to open a window of the given
-  // type. This is called on the IO thread.
+  // type.
+  // This is called on the IO thread.
   virtual bool CanCreateWindow(
       const GURL& source_url,
       WindowContainerType container_type,
@@ -198,6 +203,14 @@ class ContentBrowserClient {
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Can return an optional fd for crash handling, otherwise returns -1.
   virtual int GetCrashSignalFD(const std::string& process_type);
+#endif
+
+#if defined(USE_NSS)
+  // Return a delegate to authenticate and unlock |module|.
+  // This is called on a worker thread.
+  virtual
+      crypto::CryptoModuleBlockingPasswordDelegate* GetCryptoPasswordDelegate(
+          const GURL& url);
 #endif
 };
 

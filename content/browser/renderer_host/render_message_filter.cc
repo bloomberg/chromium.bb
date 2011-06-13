@@ -63,9 +63,6 @@
 #if defined(OS_WIN)
 #include "content/common/child_process_host.h"
 #endif
-#if defined(USE_NSS)
-#include "chrome/browser/ui/crypto_module_password_dialog.h"
-#endif
 
 using net::CookieStore;
 
@@ -808,8 +805,7 @@ void RenderMessageFilter::OnKeygenOnWorkerThread(
 #if defined(USE_NSS)
   // Attach a password delegate so we can authenticate.
   keygen_handler.set_crypto_module_password_delegate(
-      browser::NewCryptoModuleBlockingDialogDelegate(
-          browser::kCryptoModulePasswordKeygen, url.host()));
+      content::GetContentClient()->browser()->GetCryptoPasswordDelegate(url));
 #endif  // defined(USE_NSS)
 
   ViewHostMsg_Keygen::WriteReplyParams(

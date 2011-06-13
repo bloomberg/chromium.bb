@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_LOAD_FROM_MEMORY_CACHE_DETAILS_H__
-#define CHROME_BROWSER_LOAD_FROM_MEMORY_CACHE_DETAILS_H__
+#ifndef CONTENT_BROWSER_LOAD_FROM_MEMORY_CACHE_DETAILS_H_
+#define CONTENT_BROWSER_LOAD_FROM_MEMORY_CACHE_DETAILS_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -32,4 +32,4 @@ class LoadFromMemoryCacheDetails {
   DISALLOW_COPY_AND_ASSIGN(LoadFromMemoryCacheDetails);
 };
 
-#endif  // CHROME_BROWSER_LOAD_FROM_MEMORY_CACHE_DETAILS_H__
+#endif  // CONTENT_BROWSER_LOAD_FROM_MEMORY_CACHE_DETAILS_H_

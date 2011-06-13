@@ -1342,8 +1342,6 @@
         'browser/language_combobox_model.h',
         'browser/language_order_table_model.cc',
         'browser/language_order_table_model.h',
-        'browser/load_from_memory_cache_details.cc',
-        'browser/load_from_memory_cache_details.h',
         'browser/mach_broker_mac.cc',
         'browser/mach_broker_mac.h',
         'browser/memory_details.cc',

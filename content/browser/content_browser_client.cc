@@ -168,4 +168,11 @@ int ContentBrowserClient::GetCrashSignalFD(const std::string& process_type) {
 }
 #endif
 
+#if defined(USE_NSS)
+crypto::CryptoModuleBlockingPasswordDelegate*
+    ContentBrowserClient::GetCryptoPasswordDelegate(const GURL& url) {
+  return NULL;
+}
+#endif
+
 }  // namespace content

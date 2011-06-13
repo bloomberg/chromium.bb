@@ -6,9 +6,9 @@
 
 #include "base/logging.h"
 #include "chrome/browser/debugger/devtools_netlog_observer.h"
-#include "chrome/browser/net/load_timing_observer.h"
 #include "content/browser/renderer_host/global_request_id.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
+#include "content/browser/renderer_host/resource_dispatcher_host_delegate.h"
 #include "content/browser/renderer_host/resource_message_filter.h"
 #include "content/common/resource_messages.h"
 #include "net/base/io_buffer.h"
@@ -41,7 +41,9 @@ bool SyncResourceHandler::OnRequestRedirected(int request_id,
                                               bool* defer) {
   net::URLRequest* request = rdh_->GetURLRequest(
       GlobalRequestID(filter_->child_id(), request_id));
-  LoadTimingObserver::PopulateTimingInfo(request, response);
+  if (rdh_->delegate())
+    rdh_->delegate()->OnRequestRedirected(request, response);
+
   DevToolsNetLogObserver::PopulateResponseInfo(request, response);
   // TODO(darin): It would be much better if this could live in WebCore, but
   // doing so requires API changes at all levels.  Similar code exists in
@@ -58,7 +60,9 @@ bool SyncResourceHandler::OnResponseStarted(int request_id,
                                             ResourceResponse* response) {
   net::URLRequest* request = rdh_->GetURLRequest(
       GlobalRequestID(filter_->child_id(), request_id));
-  LoadTimingObserver::PopulateTimingInfo(request, response);
+  if (rdh_->delegate())
+    rdh_->delegate()->OnResponseStarted(request, response);
+
   DevToolsNetLogObserver::PopulateResponseInfo(request, response);
 
   // We don't care about copying the status here.

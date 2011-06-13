@@ -66,3 +66,11 @@ bool ResourceDispatcherHostDelegate::ShouldForceDownloadResource(
     const GURL& url, const std::string& mime_type) {
   return false;
 }
+
+void ResourceDispatcherHostDelegate::OnResponseStarted(
+    net::URLRequest* request, ResourceResponse* response) {
+}
+
+void ResourceDispatcherHostDelegate::OnRequestRedirected(
+    net::URLRequest* request, ResourceResponse* response) {
+}

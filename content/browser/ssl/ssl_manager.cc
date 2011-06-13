@@ -5,8 +5,8 @@
 #include "content/browser/ssl/ssl_manager.h"
 
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/load_from_memory_cache_details.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/load_from_memory_cache_details.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/browser/renderer_host/resource_request_details.h"

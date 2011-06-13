@@ -11,10 +11,10 @@
 #include "base/logging.h"
 #include "base/shared_memory.h"
 #include "chrome/browser/debugger/devtools_netlog_observer.h"
-#include "chrome/browser/net/load_timing_observer.h"
 #include "content/browser/host_zoom_map.h"
 #include "content/browser/renderer_host/global_request_id.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
+#include "content/browser/renderer_host/resource_dispatcher_host_delegate.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/browser/renderer_host/resource_message_filter.h"
 #include "content/common/resource_response.h"
@@ -105,7 +105,9 @@ bool AsyncResourceHandler::OnRequestRedirected(int request_id,
   *defer = true;
   net::URLRequest* request = rdh_->GetURLRequest(
       GlobalRequestID(filter_->child_id(), request_id));
-  LoadTimingObserver::PopulateTimingInfo(request, response);
+  if (rdh_->delegate())
+    rdh_->delegate()->OnRequestRedirected(request, response);
+
   DevToolsNetLogObserver::PopulateResponseInfo(request, response);
   return filter_->Send(new ResourceMsg_ReceivedRedirect(
       routing_id_, request_id, new_url, response->response_head));
@@ -121,7 +123,9 @@ bool AsyncResourceHandler::OnResponseStarted(int request_id,
   net::URLRequest* request = rdh_->GetURLRequest(
       GlobalRequestID(filter_->child_id(), request_id));
 
-  LoadTimingObserver::PopulateTimingInfo(request, response);
+  if (rdh_->delegate())
+    rdh_->delegate()->OnResponseStarted(request, response);
+
   DevToolsNetLogObserver::PopulateResponseInfo(request, response);
 
   ResourceDispatcherHostRequestInfo* info = rdh_->InfoForRequest(request);
