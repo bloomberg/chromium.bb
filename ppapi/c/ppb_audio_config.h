@@ -124,8 +124,6 @@ struct PPB_AudioConfig {
    * @param[in] sample_rate A PP_AudioSampleRate which is either
    * PP_AUDIOSAMPLERATE_44100 or PP_AUDIOSAMPLERATE_48000.
    * @param[in] requested_sample_frame_count A uint_32t requested frame count.
-   * If you pass 0 as the requested sample count, the recommended sample for
-   * the local system is returned.
    * @return A uint32_t containing the recommended sample frame count if
    * successful.
    */

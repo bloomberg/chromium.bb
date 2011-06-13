@@ -86,11 +86,9 @@ class AudioConfig : public Resource {
   /// @param[in] sample_rate A PP_AudioSampleRate which is either
   /// PP_AUDIOSAMPLERATE_44100 or PP_AUDIOSAMPLERATE_48000.
   /// @param[in] requested_sample_frame_count A uint_32t requested frame count.
-  /// If you pass 0 as the requested sample count, the recommended sample for
-  /// the local system is returned.
   /// @return A uint32_t containing the recommended sample frame count if
   /// successful. If the sample frame count or bit rate is not supported,
-  /// this function will fail and 0.
+  /// this function will fail and return 0.
   static uint32_t RecommendSampleFrameCount(
       PP_AudioSampleRate sample_rate,
       uint32_t requested_sample_frame_count);
