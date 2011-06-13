@@ -555,7 +555,6 @@
    fun:-[NSView initWithCoder:]
    fun:_decodeObjectBinary
    fun:_decodeObject
-   fun:-[NSWindowTemplate initWithCoder:]
 }
 {
    bug_40429b
