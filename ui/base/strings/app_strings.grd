@@ -121,6 +121,7 @@ need to be translated for each locale.-->
     <output filename="app_strings_ko.pak" type="data_package" lang="ko" />
     <if expr="pp_ifdef('use_third_party_translations')">
       <output filename="app_strings_ku.pak" type="data_package" lang="ku" />
+      <output filename="app_strings_kw.pak" type="data_package" lang="kw" />
     </if>
     <output filename="app_strings_lt.pak" type="data_package" lang="lt" />
     <output filename="app_strings_lv.pak" type="data_package" lang="lv" />
@@ -189,6 +190,7 @@ need to be translated for each locale.-->
     <file path="app_strings_kn.xtb" lang="kn" />
     <file path="app_strings_ko.xtb" lang="ko" />
     <file path="../../../third_party/launchpad_translations/app_strings_ku.xtb" lang="ku" />
+    <file path="../../../third_party/launchpad_translations/app_strings_kw.xtb" lang="kw" />
     <file path="app_strings_lt.xtb" lang="lt" />
     <file path="app_strings_lv.xtb" lang="lv" />
     <file path="app_strings_ml.xtb" lang="ml" />

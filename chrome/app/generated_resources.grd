@@ -123,6 +123,7 @@ Other platform defines such as use_titlecase are declared in build/common.gypi.
     <output filename="generated_resources_ko.pak" type="data_package" lang="ko" />
     <if expr="pp_ifdef('use_third_party_translations')">
       <output filename="generated_resources_ku.pak" type="data_package" lang="ku" />
+      <output filename="generated_resources_kw.pak" type="data_package" lang="kw" />
     </if>
     <output filename="generated_resources_lt.pak" type="data_package" lang="lt" />
     <output filename="generated_resources_lv.pak" type="data_package" lang="lv" />
@@ -191,6 +192,7 @@ Other platform defines such as use_titlecase are declared in build/common.gypi.
     <file path="resources/generated_resources_kn.xtb" lang="kn" />
     <file path="resources/generated_resources_ko.xtb" lang="ko" />
     <file path="../../third_party/launchpad_translations/generated_resources_ku.xtb" lang="ku" />
+    <file path="../../third_party/launchpad_translations/generated_resources_kw.xtb" lang="kw" />
     <file path="resources/generated_resources_lt.xtb" lang="lt" />
     <file path="resources/generated_resources_lv.xtb" lang="lv" />
     <file path="resources/generated_resources_ml.xtb" lang="ml" />

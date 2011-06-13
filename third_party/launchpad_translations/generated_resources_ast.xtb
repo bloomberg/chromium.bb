@@ -721,7 +721,6 @@ un certificáu válidu d'otra entidá emisora.</translation>
 <translation id="2466804342846034717">Introduz la contraseña correcta enriba y, de siguío, escribi los carauteres qu'apaecen na imaxe d'abaxo.</translation>
 <translation id="2476990193835943955">Caltén Control, Alt o Mayús pa ver los atayos&lt;br&gt;de tecláu pa los modificadores.</translation>
 <translation id="2480626392695177423">Alternar mou de puntuación d'anchu mediu o completu</translation>
-<translation id="2524947000814989347">Si perdisti la contraseña, vas tener que parar la sincronización vía panel de Google.</translation>
 <translation id="2604243255129603442">Desactivóse <ph name="NAME_OF_EXTENSION"/>. Si dexes de sincronizar los marcadores, pues reactivala na páxina d'estensiones, accesible al traviés del menú de ferramientes.</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME"/> nun pudo completar la instalación, pero continuará executándose dende la imaxe de discu.</translation>
 <translation id="2635102990349508383">Los detalles de la cuenta entá nun s'introduxeron.</translation>
@@ -1065,7 +1064,6 @@ un certificáu válidu d'otra entidá emisora.</translation>
 <translation id="1639192739400715787">P'acceder a la configuración de seguridá introduz el PIN de la tarxeta SIM</translation>
 <translation id="1646136617204068573">Tecláu Húngaru</translation>
 <translation id="1697068104427956555">Seleiciona una rexón cuadrada de la imaxen.</translation>
-<translation id="1784284518684746740">Seleiciona un ficheru pa guardar</translation>
 <translation id="1829192082282182671">A&amp;llonxar</translation>
 <translation id="19094784437781028">Tarxeta de créditu Solo</translation>
 <translation id="1947424002851288782">Tecláu Alemán</translation>
@@ -1086,7 +1084,6 @@ un certificáu válidu d'otra entidá emisora.</translation>
 <translation id="2757031529886297178">Contador FPS</translation>
 <translation id="2760009672169282879">Tecláu búlgaru fonéticu</translation>
 <translation id="2790805296069989825">Tecláu rusu</translation>
-<translation id="2874027208508018603">Chrome usará datos 3G cuando nun heba una conexón inalámbrica.</translation>
 <translation id="289426338439836048">Otra rede móvil...</translation>
 <translation id="2963783323012015985">Tecláu turcu</translation>
 <translation id="2966459079597787514">Tecláu suecu</translation>
@@ -1234,7 +1231,6 @@ un certificáu válidu d'otra entidá emisora.</translation>
 <translation id="3829932584934971895">Triba de proveedor:</translation>
 <translation id="3831099738707437457">&amp;Tapecer panel d'ortografía</translation>
 <translation id="3834901049798243128">Ignorar escepciones y nun permitir que s'afiten cookies de terceros</translation>
-<translation id="3838186299160040975">Mercar más...</translation>
 <translation id="3842552989725514455">Tipografía Serif</translation>
 <translation id="3850258314292525915">Desactivar sincronización</translation>
 <translation id="385051799172605136">Tornar</translation>
@@ -1266,4 +1262,53 @@ un certificáu válidu d'otra entidá emisora.</translation>
 <translation id="2492538245231809938">Tipos de datos encriptaos</translation>
 <translation id="2498131838700757846">Activar el motor esperimental LevelDB pa IndexedDB.</translation>
 <translation id="2589855374197350858">Tipos de Datos Encriptaos</translation>
+<translation id="1071139452646369777"><ph name="HANDLER_TITLE"/> ya se ta usando pa remanar enllaces de <ph name="PROTOCOL"/>:.</translation>
+<translation id="1119447706177454957">Fallu internu</translation>
+<translation id="1476822615785139447">Xestionar imprentadores...</translation>
+<translation id="1662837784918284394">(dengún)</translation>
+<translation id="1707463636381878959">Compartir esta rede con otros usuarios</translation>
+<translation id="2448312741937722512">Triba</translation>
+<translation id="2519040785135695148">Esti sitiu torga rexistrar un remanador URL personalizáu.</translation>
+<translation id="26224892172169984">Nun permitir a dengún sitiu remanar protocolos</translation>
+<translation id="2744221223678373668">Compartíu</translation>
+<translation id="2954705784594331199"><ph name="BEGIN_LINK"/>Recargar<ph name="END_LINK"/> esta páxina web dempués:</translation>
+<translation id="3042282020249392540">Amiesta
+        <ph name="PRODUCT_NAME"/>
+        como un programa permitíu na configuración del to antivirus o torgafueos. Si ya ta
+        como un programa permitiu, intenta desanicialu de la llista de programes permitios
+        y amestalu otra vuelta.</translation>
+<translation id="3058212636943679650">Si dacuando tienes que restaurar el sistema operativu del equipu vas necesitar una tarxeta SD o una memoria USB de recuperación.</translation>
+<translation id="3128628928070793746">Vete a
+          <ph name="BEGIN_BOLD"/>
+          menú de la llave fixa &gt;
+          <ph name="SETTINGS_TITLE"/>
+          &gt;
+          <ph name="ADVANCED_TITLE"/>
+          &gt;
+          <ph name="PROXIES_TITLE"/>
+          <ph name="END_BOLD"/>
+          y asegúrate de que la configuración tea afitada como «ensin proxy» o «direutu».</translation>
+<translation id="3154015489111064513">Usar DHCP</translation>
+<translation id="3233454090437339537">¿Prestaríate usar <ph name="HANDLER_TITLE"/> (<ph name="HANDLER_HOSTNAME"/>) pa remanar enllaces <ph name="PROTOCOL"/>: en verz de <ph name="REPLACED_HANDLER_TITLE"/> de magar agora?</translation>
+<translation id="3250798078333049843">Encriptar tolos datos</translation>
+<translation id="3317459757438853210">De dos llaos</translation>
+<translation id="3399068503715460757">Usar IP estática</translation>
+<translation id="350945665292790777">Usa composición acelerada por GPU en toles páxines, non sólo aquelles qu'incluyan capes aceleraes por GPU.</translation>
+<translation id="3529020546926570314">Robla p'acceder a imprentadores de la ñube...</translation>
+<translation id="3596315483920932980">Permitir que los datos llocales s'afiten solo pa esta sesión</translation>
+<translation id="3651020361689274926">El recursu que pidiste yá nun existe y nun hai direición de redireición. Espérase que seya una condición permanente.</translation>
+<translation id="3924129493187796992">Amestar un patrón d'anfitrión nuevu</translation>
+<translation id="3944384147860595744">Imprentar dende cualquier sitiu.</translation>
+<translation id="3954582159466790312">Activar &amp;soníu</translation>
+<translation id="3966072572894326936">Escoyer otra carpeta...</translation>
+<translation id="3968739731834770921">Kana</translation>
+<translation id="3978212384680351466">Marcadores sincronizaos</translation>
+<translation id="3978267865113951599">(Colgáu)</translation>
+<translation id="3979748722126423326">Activar <ph name="NETWORKDEVICE"/></translation>
+<translation id="3981760180856053153">Triba d'almacenamientu inválidu</translation>
+<translation id="3994878504415702912">Aum&amp;entar</translation>
+<translation id="40027638859996362">Movimientu de pallabres</translation>
+<translation id="4010065515774514159">Aición del navegador</translation>
+<translation id="4013794286379809233">Robla otra vuelta</translation>
+<translation id="4018133169783460046">Amosar <ph name="PRODUCT_NAME"/> nesta llingua</translation>
 </translationbundle>

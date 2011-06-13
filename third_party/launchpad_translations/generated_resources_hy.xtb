@@ -35,4 +35,296 @@
 <translation id="6867459744367338172">Լեզուներ եւ ներածում</translation>
 <translation id="6872947427305732831">Մաքրել հիշողությունը</translation>
 <translation id="6896758677409633944">Պատճենել</translation>
+<translation id="1002064594444093641">Շրջանակի տպում...</translation>
+<translation id="1006316751839332762">Գաղտնագրման անցաբառը</translation>
+<translation id="1017280919048282932">&amp;Ավելացնել բառարանին</translation>
+<translation id="1031362278801463162">Նախադիտման բեռնում</translation>
+<translation id="1031460590482534116">Սպասառուի վկայագիրը պահպանելիս տեղի ունեցավ սխալ՝ <ph name="ERROR_NUMBER"/> (<ph name="ERROR_NAME"/>)։</translation>
+<translation id="1035650339541835006">Ինքնալրացման կարգավորումներ...</translation>
+<translation id="1036561994998035917">Շարունակել օգտագործել <ph name="ENGINE_NAME"/></translation>
+<translation id="1040471547130882189">Բաղադիրը չի պատասխանում</translation>
+<translation id="1047726139967079566">Էջանշել այս էջը...</translation>
+<translation id="1055006259534905434">(ընտրե՛ք խնդիրը ստորեւ)</translation>
+<translation id="1055216403268280980">Պատկերի չափերը</translation>
+<translation id="1058418043520174283"><ph name="INDEX"/>՝ <ph name="COUNT"/>֊ից</translation>
+<translation id="10614374240317010">Երբեք չեն պահվել</translation>
+<translation id="1065245965611933814">Կցել ցուցադրիչի նկարը՝</translation>
+<translation id="1065449928621190041">Կանադական ֆրանսերեն ստեղնաշար</translation>
+<translation id="1071917609930274619">Տվյալների գաղտնագրում</translation>
+<translation id="1077946062898560804">Ինքնաբար թարմացումների կարգավորում՝ բոլոր օգտվողների համար</translation>
+<translation id="1084824384139382525">Պատճենել հղման հասցեն</translation>
+<translation id="1087119889335281750">&amp;Չկան ուղղագրական առաջարկներ</translation>
+<translation id="1093148655619282731">Տեղեկություն ընտրված վկայագրի մասին՝</translation>
+<translation id="1103523840287552314">Միշտ թարգմանել <ph name="LANGUAGE"/>֊ը</translation>
+<translation id="1103966635949043187">Անցե՛ք գլխավոր էջ հետեւյալ կայքի՝</translation>
+<translation id="1108600514891325577">&amp;Կանգ</translation>
+<translation id="1110772031432362678">Ցանցեր չեն գտնվել։</translation>
+<translation id="1114901192629963971">Ձեր գաղտնաբառը չի կարող ստուգվել այս ցանցում։ Խնդրում ենք ընտրել այլ ցանց։</translation>
+<translation id="1116694919640316211">Մասին</translation>
+<translation id="111844081046043029">Դուք իրո՞ք կամենում եք լքել այս էջը։</translation>
+<translation id="1119447706177454957">Ներքին սխալ</translation>
+<translation id="1120026268649657149">Հիմնաբառը պետք է լինի դատարկ կամ եզակի</translation>
+<translation id="112343676265501403">Բացառություններ բաղադիրների համար</translation>
+<translation id="1125520545229165057">Դվորակ (Hsu)</translation>
+<translation id="1128987120443782698">Հիշողության սարքն ունի կարողություններ՝ <ph name="DEVICE_CAPACITY"/>։ Խնդրում ենք մտցնել SD քարտ կամ USB կրիչ՝ 4 ԳԲ ծավալից ոչ պակաս։</translation>
+<translation id="1131850611586448366"><ph name="HOST_NAME"/> ոստայն կայքը մեր տվյալներով հանդիսանում է ձկնորսական։  Ձկնորսական կայքերը խարդախությամբ օգտվողներից ստանում են անձնական կամ ֆինանսական տեղեկությունը, ձեւացնելով յուր կայքերը որպես վստահելի կազմակերպությունների, օրինակ դրամատների, կայքեր։</translation>
+<translation id="1135328998467923690">Անվավեր փաթեթ՝ «<ph name="ERROR_CODE"/>»։</translation>
+<translation id="1139892513581762545">Կողմնային ներդիրներ</translation>
+<translation id="114140604515785785">Ընդլայնման արմատային գրացուցակ՝</translation>
+<translation id="1143142264369994168">Վկայագրի ստորագրող</translation>
+<translation id="1144684570366564048">Բացառությունների կառավարում...</translation>
+<translation id="1152775729948968688">Սակայն այս էջը պարունակում է այլ պաշարներ, որոնք անվտանգ չեն։ Այդ պաշարները տվյալների փոխանակման ժամանակ կարող են դիտարկվել երրորդ անձանց կողմից, ինչպես նաեւ կարող են փոփոխվել ոճրագործի կողմից՝ էջի վարքը փոփոխելու նպատակով։</translation>
+<translation id="1161575384898972166">Սպասառուի վկայագիրը արտահանելու համար, մուտք գործեք <ph name="TOKEN_NAME"/>։</translation>
+<translation id="1163931534039071049">&amp;Տեսնել շրջանակի աղբյուրը</translation>
+<translation id="1164369517022005061"><ph name="NUMBER_DEFAULT"/> ժամ</translation>
+<translation id="1166212789817575481">Փակել աջ կողմի ներդիրները</translation>
+<translation id="1168020859489941584">Բացել <ph name="TIME_REMAINING"/> հետո...</translation>
+<translation id="1177437665183591855">Սպասարկչի վկայագրի անհայտ սխալ</translation>
+<translation id="1190844492833803334">Զննարկիչը փակելիս</translation>
+<translation id="1195977189444203128"><ph name="PLUGIN_NAME"/> բաղադիրը հնացած է։</translation>
+<translation id="1196338895211115272">Չհաջողվեց արտահանել գաղտնի բանալին։</translation>
+<translation id="1197979282329025000"><ph name="PRINTER_NAME"/> տպիչի հատկությունների մասին տեղեկություն ստանալու պահին տեղի ունեցավ սխալ։ Չհաջողվեց գրանցել տպիչը <ph name="CLOUD_PRINT_NAME"/> միջոցով։</translation>
+<translation id="1198271701881992799">Եկեք սկսենք</translation>
+<translation id="1199232041627643649">Ելնելու համար սեղմած պահե՛ք <ph name="KEY_EQUIVALENT"/>։</translation>
+<translation id="119944043368869598">Մաքրել բոլորը</translation>
+<translation id="1201402288615127009">Հաջորդը</translation>
+<translation id="1202290638211552064">Ուղեմուտի կամ մոտակա սպասարկչի կողմից վերադաս սպասարկչի պատասխանը սպասելու ժամանակը սպառվել է։</translation>
+<translation id="1204242529756846967">Այս լեզուն օգտագործվում է ուղղագրության ստուգման համար</translation>
+<translation id="1205605488412590044">Ստեղծել հավելվածի դյուրանցում...</translation>
+<translation id="1209866192426315618"><ph name="NUMBER_DEFAULT"/> րոպե</translation>
+<translation id="1213999834285861200">Բացառություններ Նկարների համար</translation>
+<translation id="121632099317611328">Խցիկի նախակարգման սխալ։</translation>
+<translation id="1217515703261622005">Համարների հատուկ փոխարկում</translation>
+<translation id="121827551500866099">Ցույց տալ բոլոր ներբեռնումները...</translation>
+<translation id="122082903575839559">Վկայագրի ստորագրության հաշվեկարգ</translation>
+<translation id="1221024147024329929">PKCS #1 MD2՝ RSA գաղտնագրմամբ</translation>
+<translation id="1221462285898798023">Խնդրում ենք մեկնարկել <ph name="PRODUCT_NAME"/>֊ը սօվորական օգտվողի անունից։ Գերօգտվողի անունից մեկնարկելու համար, --user-data-dir բանալու միջոցով նշե՛ք այլ գրացուցակ՝ հատկագրի տվյալները պահպանելու համար։</translation>
+<translation id="1225544122210684390">Կոշտ սկավառակ</translation>
+<translation id="1232569758102978740">Անվերնագիր</translation>
+<translation id="1234466194727942574">Ներդիրների շերտ</translation>
+<translation id="1242521815104806351">Կապի մասին մանրամասներ</translation>
+<translation id="1254593899333212300">Ուղիղ կապակցում</translation>
+<translation id="1269138312169077280">Որոշ կարգավորումներն անջատվել են Ձեր համակարգի կառավարչի կողմից։</translation>
+<translation id="1272079795634619415">Կանգ</translation>
+<translation id="1273291576878293349">Բացել բոլոր ներդիրները ծպտյալ աշխատակերպի պատուհանում</translation>
+<translation id="1275018677838892971"><ph name="HOST_NAME"/> ոստայն կայքը բովանդակում է այլ կայքերի տարրեր, որոնք մեր տվյալներով հանդիսանում են ձկնորսական։ Ձկնորսական կայքերը խարդախությամբ օգտվողներից ստանում են անձնական կամ ֆինանսական տեղեկությունը, ձեւացնելով յուր կայքերը որպես վստահելի կազմակերպությունների, օրինակ դրամատների, կայքեր։</translation>
+<translation id="1275718070701477396">Ընտրված է</translation>
+<translation id="1285320974508926690">Երբեք չթարգմանել այս կայքը</translation>
+<translation id="1291144580684226670">Հիմնօրինակային տառատեսակ</translation>
+<translation id="1293556467332435079">Նշոցներ</translation>
+<translation id="1294298200424241932">Խմբագրել վստահության կայանքները՝</translation>
+<translation id="129553762522093515">Վերջերս փակված</translation>
+<translation id="1297175357211070620">Նպատակակետ</translation>
+<translation id="1307041843857566458">Հաստատել վերամիացումը</translation>
+<translation id="1313405956111467313">Մոտակա սպասարկչի ինքնաբար կարգավորում</translation>
+<translation id="131364520783682672">Caps Lock</translation>
+<translation id="131461803491198646">Տան ցանց, առանց ռոումինգի</translation>
+<translation id="1317130519471511503">Խմբագրել տարրերը...</translation>
+<translation id="1319824869167805246">Բացել բոլոր էջանիշերը նոր պատուհանում</translation>
+<translation id="1325040735987616223">Համակարգի թարմացում</translation>
+<translation id="1335588927966684346">Օժանդակ ծրագիր՝</translation>
+<translation id="1336254985736398701">Տեսնել էջի մասին տեղեկուտյունը</translation>
+<translation id="1337036551624197047">Չեխերեն ստեղնաշար</translation>
+<translation id="1344519653668879001">Անջատել գերկապերի ստուգումը</translation>
+<translation id="1346104802985271895">Վիետնամական մուտքագրման եղանակ (TELEX)</translation>
+<translation id="1352060938076340443">Ընդհատվել է</translation>
+<translation id="1354868058853714482">Adobe Reader ծրագիրը հնացել է եւ նրա օգտագործումը կարող է վտանգ ներկայացնել Ձեր համակարգչին։</translation>
+<translation id="1358032944105037487">Ճապոներեն ստեղնաշար</translation>
+<translation id="1358741672408003399">Ուղղագրություն եւ քերականություն</translation>
+<translation id="1361655923249334273">Չի օգտագործվում</translation>
+<translation id="1362165759943288856"><ph name="DATE"/>֊ին Դուք ձեռք եք բերել անսահմանափակ երթեւեկություն ունեցող սակագնի փաթեթ։</translation>
+<translation id="1363055550067308502">Փոխանջատել լի/կես լայնության աշխատակերպը</translation>
+<translation id="1367951781824006909">Ընտրե՛ք նշոց</translation>
+<translation id="1368352873613152012">Գաղտնիության քաղաքականությունների անվտանգ դիտարկում</translation>
+<translation id="1368832886055348810">Ձախից աջ</translation>
+<translation id="1375198122581997741">Տարբերակի մասին</translation>
+<translation id="1375215959205954975">Նորո՛ւյթ։ Գաղտնաբառերի համաժամացման կարգավորում։</translation>
+<translation id="1375321115329958930">Պահպանված գաղտնաբառեր</translation>
+<translation id="1378451347523657898">Չուղարկել ցուցադրիչի լուսանկարը</translation>
+<translation id="1383861834909034572">Բացում ավարտից հետո</translation>
+<translation id="1383876407941801731">Որոնում</translation>
+<translation id="1384616079544830839">Այս կայքի նույնականացման տվյալները ստուգվել են <ph name="ISSUER"/>֊ի կողմից։</translation>
+<translation id="1384617406392001144">Ձեր զննարկումների պատմությունը</translation>
+<translation id="1384721974622518101">Գիտե՞ք արդյոք, որ Դուք կարող եք սկսել որոնել անմիջապես վերեւի պատուհանից։</translation>
+<translation id="1387022316521171484">Այս փորձնական հնարավորությունները կարող են փոխվել, անգործուն դառնալ կամ անհետանալ ցանկացած պահին։ Մենք բացարձակապես ոչ մի երաշխիք չենք տալիս, թե ինչ կարող է պատահել, եթե Դուք միացնեք այս հնարավորություններից որեւէ մեկը, եւ Ձեր զննարկիչը կարող է նույնիսկ ինքնաբուխ վառվել։ Կատակները մի կողմ դնենք, Ձեր զննարկիչը կարող ջնջել Ձեր բոլոր տվյալները կամ վտանգի ենթարկել Ձեր անվտանգությունը եւ անձնական տվյալները։ Խնդրում ենք զգույշ լինել։</translation>
+<translation id="1388866984373351434">Զննարկումների տվյալները</translation>
+<translation id="1394630846966197578">Չհաջողվեց կապակցվել խոսքի մշակման սպասարկիչներին։</translation>
+<translation id="1394853081832053657">Ձայնի ճանաչման ընտրանքներ</translation>
+<translation id="1398853756734560583">Խոշորացնել</translation>
+<translation id="1401874662068168819">Ջին յեհ</translation>
+<translation id="1407050882688520094">Դուք ունեք վկայագրեր, որոնք նույնականացնում են վկայագրման հետեւյալ կենտրոնները՝</translation>
+<translation id="1408167824939409937">Նավարկման սեղմ վահանակ</translation>
+<translation id="1416836038590872660">EAP-MD5</translation>
+<translation id="14171126816530869"><ph name="ORGANIZATION"/> վերաբերվող նույնականացման տվյալները <ph name="LOCALITY"/>֊ում ստուգվել են <ph name="ISSUER"/>֊ի կողմից։</translation>
+<translation id="1420684932347524586">Չհաջողվեց ստեղծել պատահական RSA գաղտնի բանալի։</translation>
+<translation id="1421046588786494306">Արտաքին նիստեր</translation>
+<translation id="1425127764082410430">&amp;Որոնել <ph name="SEARCH_ENGINE"/> «<ph name="SEARCH_TERMS"/>»</translation>
+<translation id="1425734930786274278">Արգելափակվել են հետեւյալ թխուկները (կողմնակի թխուկներն արգելափակվում են առանց բացառության)՝</translation>
+<translation id="1425975335069981043">Ռոումինգ՝</translation>
+<translation id="1426410128494586442">Այո</translation>
+<translation id="1430915738399379752">Տպել</translation>
+<translation id="1437399238463685286">Անթույլատրելի նիշ հետեւյալ նշոցի անվան մեջ՝ $1</translation>
+<translation id="144136026008224475">Այլ ընդլայնումներ &gt;&gt;</translation>
+<translation id="1441458099223378239">Չեմ կարող մուտք գործել իմ հաշիվ</translation>
+<translation id="144518587530125858">Չհաջողվեց բեռնել «<ph name="IMAGE_PATH"/>֊ը»՝ թեմայի համար։</translation>
+<translation id="1446056151692539374">，．</translation>
+<translation id="1455548678241328678">Նորվեգերեն ստեղնաշար</translation>
+<translation id="146000042969587795">Այս շրջանակն արգելափակված է, քանզի բովանդակում է ոչ անվտանգ տարրեր։</translation>
+<translation id="1464570622807304272">Պարզապես մուտքագրե՛ք «խոլորձներ» և սեղմեք Enter։</translation>
+<translation id="1465619815762735808">Կտտացրե՛ք՝ նվագարկելու համար</translation>
+<translation id="1467071896935429871">Ներբեռնվում է համակարգի թարմացումը՝ <ph name="PERCENT"/>%։</translation>
+<translation id="1470719357688513792">Թխուկների նոր կարգավորումներն ուժի մեջ կմտնեն էջը թարմացնելուց հետո։</translation>
+<translation id="1471300011765310414"><ph name="PRODUCT_NAME"/>
+        անհնար է ցուցադրել էջը, քանի որ Ձեր համակարգիչը համացանցին միացված չէ։</translation>
+<translation id="1474842329983231719">Տպման կարգավորումների կառավարում...</translation>
+<translation id="1476822615785139447">Տպիչների կառավարում...</translation>
+<translation id="1478632774608054702">Գործարկել PPAPI Flash֊ը մշակման գործընթացի ժամանակ</translation>
+<translation id="1481244281142949601">Դուք գտնվում եք փորձնական վավեր միջավայրում։</translation>
+<translation id="1485146213770915382">Մտցնել <ph name="SEARCH_TERMS_LITERAL"/>֊ն URL ֊ի մեջ, որտեղ պետք է նշվեն որոնման հարցումները։</translation>
+<translation id="1492188167929010410">Խորտակում նույնականացուցիչ <ph name="CRASH_ID"/></translation>
+<translation id="1492817554256909552">Միացման կետի անունը՝</translation>
+<translation id="1493263392339817010">Ընտրակայել տառատեսակները...</translation>
+<translation id="149347756975725155">Չի հաջողվում բեռնել ընդլայնման «<ph name="ICON"/>» պատկերակը։</translation>
+<translation id="1493492096534259649">Այս լեզուն անհնար է օգտագործել ուղղագրության ստուգման համար</translation>
+<translation id="1497270430858433901"><ph name="DATE"/>֊ին Դուք ստացել եք <ph name="DATA_AMOUNT"/> չափի անվճար երթեւեկություն։</translation>
+<translation id="1497897566809397301">Թույլ տալ պահպանել տեղային տվյալները (հանձնարարվում է)</translation>
+<translation id="1502960562739459116">Չի հաջողվում ամբողջությամբ ցույց տալ տվյալ փաստաթուղը PDF ձեւաչափով։ Տեղադրե՞լ Adobe Reader։</translation>
+<translation id="1503894213707460512"><ph name="PLUGIN_NAME"/> բաղադիրը գործարկելու համար պահանջվում է թույլտվություն։</translation>
+<translation id="1510030919967934016">Այս էջի կողմից Ձեր տեղադրության հետեւելն արգելափակվել է։</translation>
+<translation id="1512064327686280138">Գործունացման ձախողում</translation>
+<translation id="151501797353681931">Ներմուծվել Safari֊ից</translation>
+<translation id="1516602185768225813">Վերաբացել վերջին բաց էջերը</translation>
+<translation id="1519704592140256923">Ընտրե՛ք դիրքը</translation>
+<translation id="152234381334907219">Երբեք չեն պահվել</translation>
+<translation id="152482086482215392"><ph name="NUMBER_ONE"/> վայրկյան</translation>
+<translation id="1526560967942511387">Անվերնագիր փաստաթուղթ</translation>
+<translation id="1526811905352917883">Անհրաժեշտ է նորից կապակցել՝ SSL 3.0. օգտագործմամբ։ Սա սովորաբար նշանակում է, որ սպասարկչի վրա օգտագործվում է հնացած ծրագրաշար, եւ կարող են լինել անվտանգության այլ խնդիրներ։</translation>
+<translation id="1529968269513889022">Անցյալ շաբաթ</translation>
+<translation id="153384433402665971"><ph name="PLUGIN_NAME"/> բաղադիրն արգելափակվել էր, քանի որ հնացած է։</translation>
+<translation id="1533897085022183721">Պակաս քան <ph name="MINUTES"/>։</translation>
+<translation id="1541725072327856736">Կատականայի կես լայնությունը</translation>
+<translation id="1545775234664667895">Տեղադրված է «<ph name="THEME_NAME"/>» թեման</translation>
+<translation id="1545786162090505744">Հղում %s կայանքով հարցման փոխարեն</translation>
+<translation id="1548132948283577726">Այստեղ կհայտնվեն կայքերը, որոնք երբեք չեն պահում գաղտնաբառերը։</translation>
+<translation id="1553538517812678578">անսահմանափակ</translation>
+<translation id="1556537182262721003">Չհաջողվեց տեղաշարժել ընդլայնումների գրացուցակն առ հատկագիր։</translation>
+<translation id="155865706765934889">Զգայուն վահանակ</translation>
+<translation id="1559235587769913376">Մտցնել Unicode նշաններ</translation>
+<translation id="1559528461873125649">Նման նշոց կամ գրացուցակ չկա</translation>
+<translation id="1560991001553749272">Էջանիշն ավելացվա՛ծ է։</translation>
+<translation id="1562633988311880769">Մտնել <ph name="CLOUD_PRINT_NAME"/></translation>
+<translation id="1567993339577891801">JavaScript վահանակ (Console)</translation>
+<translation id="1570242578492689919">Տառատեսակներ և կոդավորում</translation>
+<translation id="1581962803218266616">Ցույց տալ Finder֊ում</translation>
+<translation id="1587275751631642843">&amp;JavaScript վահանակ</translation>
+<translation id="1588343679702972132">Այս կայքը պահանջել է նույնականացում վկայագրի միջոցով՝</translation>
+<translation id="158849752021629804">Հարկավոր է տան ցանց</translation>
+<translation id="1589055389569595240">Ցույց տալ ուղղագրությունը և քերականությունը</translation>
+<translation id="1594030484168838125">Ընտրել</translation>
+<translation id="1603914832182249871">(Ծպտյալ)</translation>
+<translation id="1607220950420093847">Ձեր հաշիվը ջնջվել էր կամ անջատվել։ Խնդրում ենք ելնել։</translation>
+<translation id="1608306110678187802">Շրջանակի տ&amp;պում...</translation>
+<translation id="1618661679583408047">Սպասարկչի անվտանգության վկայագիրն առայժմ անվավե՛ր է։</translation>
+<translation id="1621207256975573490">Պահել &amp;շրջանակը որպես...</translation>
+<translation id="1623661092385839831">Ձեր համակարգիչը բովանդակում է անվտանգության սարք վստահելի հարթակային մոդուլով, որը օգտագործվում է Chrome ՕՀ֊ի բազում կարեւոր հնարավորությունների իրականացման համար։</translation>
+<translation id="1628736721748648976">Կոդավորում</translation>
+<translation id="163309982320328737">Նիշի սկզբնական լայնությունն ամբողջն է</translation>
+<translation id="1634788685286903402">Վստահել այս վկայագրին՝ էլ. փոստի օգտվողների նույնականացման համար։</translation>
+<translation id="1636842079139032947">Անջատել այս հաշիվը...</translation>
+<translation id="1636959874332483835"><ph name="HOST_NAME"/>֊ը վնասական  բովանդակություն ունի։ Ձեր համակարգիչը կարող է գրոհվել վիրուսով, եթե Դուք որոշեք այցելել այդ կայքը։</translation>
+<translation id="1639058970766796751">Հերթին ավելացնել</translation>
+<translation id="1639192739400715787">Անվտանգության կարգավորումներին մուտք ստանալու համար, մուտքագրե՛ք SIM քարտի PIN֊ը։</translation>
+<translation id="1640283014264083726">PKCS #1 MD4՝ RSA գաղտնագրմամբ</translation>
+<translation id="1641504961675316934"><ph name="CLOUD_PRINT_NAME"/></translation>
+<translation id="1644574205037202324">Պատմություն</translation>
+<translation id="1646136617204068573">Հունգարերեն ստեղնաշար</translation>
+<translation id="1650709179466243265">Ավելացնել www. և .com և բացել հասցեն</translation>
+<translation id="1652965563555864525">&amp;Կտրել ձայնը</translation>
+<translation id="1657406563541664238">Օգնե՛ք լավարկել <ph name="PRODUCT_NAME"/>֊ը, ինքնաբար կերպով ուղարկելով Google ընկերությանն օգտագործման վիճակագրությունը և խորտակումների մասին հաշվետվությունը։</translation>
+<translation id="1661245713600520330">Այս էջի վրա թվարկված են հիմնական գործընթացի մեջ բեռնված մոդուլները, ինչպես նաեւ գրանցված մոդուլները, որոնք կարող են բեռնվել ավելի ուշ։</translation>
+<translation id="1661867754829461514">PIN ծածկագիրը բացակայում է</translation>
+<translation id="16620462294541761">Ավաղ, չհաջողվեց հաստատել գաղտնաբառը։ Փորձե՛ք դարձյալ։</translation>
+<translation id="166278006618318542">Սուբյեկտի բաց բանալու ալգորիթմը</translation>
+<translation id="1662837784918284394">(ոչինչ)</translation>
+<translation id="1664314758578115406">Ավելացնել էջ...</translation>
+<translation id="1664712100580477121">Դուք իրո՞ք կամենում եք գրառել պատկերը հետեւյալ սարքի վրա՝</translation>
+<translation id="1665770420914915777">Բացել արագ մուտքի էջը</translation>
+<translation id="1666788816626221136">Դուք ունեք վկայագրեր, որոնք չեն համապատասխանում հետեւյալ դասերից ոչ մեկին՝</translation>
+<translation id="1674989413181946727">Համակարգչի SSL կարգավորումները՝</translation>
+<translation id="1676388805288306495">Փոխել լեզուն և  էջերի լռելյայն տառատեսակը։</translation>
+<translation id="1679068421605151609">Մշակողի գործիքներ</translation>
+<translation id="1681614449735360921">Դիտել անհամատեղելիությունները</translation>
+<translation id="1682548588986054654">Նոր պատուհան ծպտյալ աշխատակերպում</translation>
+<translation id="1684861821302948641">Փակել էջերը</translation>
+<translation id="1691063574428301566">Թարմացումների տեղադրումից հետո համակարգիչը կվերագործարկվի։</translation>
+<translation id="1692799361700686467">Թխուկները տարբեր կայքերից թույլատրված են։</translation>
+<translation id="1693754753824026215">Հաստատե՛ք գործողությունը <ph name="SITE"/> կայքում՝</translation>
+<translation id="1697068104427956555">Ընտրեք քառակուսի շրջան պատկերի վրա։</translation>
+<translation id="1699395855685456105">Սարքաշարի տարբերակը՝</translation>
+<translation id="1701567960725324452">Եթե կանգնեցնել համաժամացումը, ապա այս համակարգչի վրա պահվող տվյալները և Ձեր Google հաշվի տվյալները կմնան իրենց տեղերում։ Սակայն նոր տվյալներ ստանալու կամ փոփոխություններ կատարելու դեպքում համաժամացումը չի կատարվի։</translation>
+<translation id="1702534956030472451">Արեվմտյան</translation>
+<translation id="1704967159337061587">Թաքցնել գործիքագոտին</translation>
+<translation id="1707463636381878959">Թույլատրել այլ օգտվողներին մուտքն այս ցանցին</translation>
+<translation id="1709220265083931213">Ընդլայնվածներ</translation>
+<translation id="1710259589646384581">ՕՀ</translation>
+<translation id="1715941336038158809">Անվավեր օգտանուն կամ գաղտնաբառ։</translation>
+<translation id="1718559768876751602">Ստեղծել հաշիվ Google֊ում</translation>
+<translation id="1720318856472900922">TLS WWW սպասարկչի վավերացում</translation>
+<translation id="1722567105086139392">Հղում</translation>
+<translation id="1723824996674794290">&amp;Նոր պատուհան</translation>
+<translation id="1725068750138367834">&amp;Նշոցների կառավարիչ</translation>
+<translation id="1725149567830788547">Ցույց տալ &amp;վերահսկումները</translation>
+<translation id="172612876728038702">Կատարվում է վստահված հարթակային մոդուլի կարգավորում։ Դա կարող է տեւել մի քանի րոպե։</translation>
+<translation id="1731346223650886555">Կետ֊ստորակետ</translation>
+<translation id="1731589410171062430">Ընդամենը՝ <ph name="NUMBER_OF_SHEETS"/> <ph name="SHEETS_LABEL"/> (<ph name="NUMBER_OF_PAGES"/> <ph name="PAGE_OR_PAGES_LABEL"/>)</translation>
+<translation id="1731911755844941020">Հարցման ուղարկում...</translation>
+<translation id="1732215134274276513">Վերացնել ներդիրները</translation>
+<translation id="1734072960870006811">Ֆաքս</translation>
+<translation id="1737968601308870607">Հայտնել սխալի մասին</translation>
+<translation id="1741763547273950878"><ph name="SITE"/> կայքի էջի վրա</translation>
+<translation id="1742300158964248589">Չհաջողվե՛ց գրառել պատկերը։</translation>
+<translation id="175196451752279553">Վեր&amp;աբացել փակված ներդիրը</translation>
+<translation id="1753682364559456262">Պատկերների արգելափակման կառավարում...</translation>
+<translation id="1753905327828125965">Ամենաայցելվողները</translation>
+<translation id="1757915090001272240">Լայն լատինական</translation>
+<translation id="1758018619400202187">EAP-TLS</translation>
+<translation id="1761265592227862828">Համաժամացնել բոլոր կայանքները և տվյալները\n(կարող է տեւել որոշ ժամանակ)</translation>
+<translation id="1763046204212875858">Հավելվածների դյուրանցումների ստեղծում</translation>
+<translation id="1763138995382273070">Անջատել HTML5 փոխգործուն ձեւերի ստուգումը</translation>
+<translation id="1765313842989969521">(այս ընդլայնումը կառավարվող է և չի կարող ապատեղադրվել կամ անջատվել)</translation>
+<translation id="176587472219019965">&amp;Նոր պատուհան</translation>
+<translation id="1767519210550978135">Հսու</translation>
+<translation id="176759384517330673">Համաժամացվել է <ph name="USER_EMAIL_ADDRESS"/>֊ի հետ։ Վերջին համաժամացումը՝ <ph name="LAST_SYNC_TIME"/></translation>
+<translation id="1768211415369530011">Եթե Դուք ընդունեք այս հարցումը, կգործարկվի հետեւյալ հավելվածը՝\n\n <ph name="APPLICATION"/></translation>
+<translation id="1769104665586091481">Բացել հղումը նոր պատուհանում</translation>
+<translation id="1776883657531386793"><ph name="OID"/>՝ <ph name="INFO"/></translation>
+<translation id="1779392088388639487">Ներմուծման սխալ PKCS #12</translation>
+<translation id="1779766957982586368">Փակել պատուհանը</translation>
+<translation id="1782924894173027610">Համաժամացման սպասարկիչը զբաղված է, փորձե՛ք քիչ ուշ։</translation>
+<translation id="1788636309517085411">Օգտագործել լռելյայն</translation>
+<translation id="179767530217573436">վերջին 4 շաբաթ</translation>
+<translation id="1800035677272595847">Ձկնորսություն</translation>
+<translation id="1801827354178857021">Ժամանակամիջոց</translation>
+<translation id="1808792122276977615">Ավելացնել էջ...</translation>
+<translation id="1810107444790159527">Ցանկ</translation>
+<translation id="1812631533912615985">Վերացնել ներդիրները</translation>
+<translation id="1813278315230285598">Ծառայություններ</translation>
+<translation id="1818606096021558659">Էջ</translation>
+<translation id="1851266746056575977">Թարմացնել այժմ</translation>
+<translation id="1901303067676059328">Ընտրել &amp;բոլորը</translation>
+<translation id="1911483096198679472">Ի՞նչ է սա։</translation>
+<translation id="1947424002851288782">Գերմաներեն ստեղնաշար</translation>
+<translation id="1959258573753840401">'''   <ph name="LABEL"/>'''</translation>
+<translation id="1963227389609234879">Ջնջել բոլորը</translation>
+<translation id="939519157834106403">SSID</translation>
+<translation id="939598580284253335">Մուտքագրե՛ք անցաբառը</translation>
+<translation id="939736085109172342">Նոր պանակ</translation>
+<translation id="940425055435005472">Տառատեսակի չափը՝</translation>
+<translation id="953692523250483872">Նշոցներ չեն ընտրվել</translation>
+<translation id="964324710553558337">C</translation>
+<translation id="969892804517981540">Պաշտոնական տարբերակ</translation>
+<translation id="98515147261107953">Բնապատկեր</translation>
+<translation id="987264212798334818">Հիմնական</translation>
+<translation id="989988560359834682">Խմբագրել հասցեն</translation>
+<translation id="996250603853062861">Անվտանգ միացման ստեղծում...</translation>
 </translationbundle>

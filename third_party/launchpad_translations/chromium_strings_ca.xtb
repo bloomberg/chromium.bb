@@ -5,5 +5,80 @@
 <translation id="1929939181775079593">El Chromium no està responent. Voleu tornar a executar-lo?</translation>
 <translation id="1105130903706696483">El Chromium no es va tancar correctament. Per obrir les pàgines que teníeu obertes feu clic a «Restaura».</translation>
 <translation id="1708666629004767631">Hi ha una versió més nova i segura del Chromium.</translation>
-<translation id="1221340462641866827">El Chromium OS no és compatible amb l'execució d'aplicacions externes que gestionen els enllaços <ph name="SCHEME"/>. L'enllaç que s'ha sol·licitat és del tipus <ph name="PROTOLINK"/>.</translation>
+<translation id="1221340462641866827">El Chromium OS no és compatible amb l'execució d'aplicacions externes que gestionin els enllaços <ph name="SCHEME"/>. L'enllaç que s'ha sol·licitat és del tipus <ph name="PROTOLINK"/>.</translation>
+<translation id="1293235220023151515">S'ha trobat al sistema una instal·lació amb conflictes. Desinstal·leu-la i proveu de nou.</translation>
+<translation id="1774152462503052664">Permet que el Chromium s'executi en segon pla</translation>
+<translation id="1967743265616885482">Un mòdul amb el mateix nom es conegut per provocar conflictes amb el Chromium.</translation>
+<translation id="205900032229966545">Heu provat d'accedir a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, però el servidor ha presentat un certificat caducat. No hi ha cap informació disponible sobre si el certificat ha estat compromès des que va caducar. Això vol dir que el Chromium no pot garantir que esteu comunicant-vos amb &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; i no amb un atacant. No hauríeu de continuar.</translation>
+<translation id="2407806170074302369">Quant al Chromium Frame...</translation>
+<translation id="2485422356828889247">Desinstal·la</translation>
+<translation id="2558235863893655150">Voleu que el Chromium desi la vostra contrasenya?</translation>
+<translation id="2572494885440352020">Auxiliar del Chromium</translation>
+<translation id="2632329825580776666">El fitxer de preferències està malmès o és invàlid.\n\nEl Chromium no pot recuperar la vostra configuració.</translation>
+<translation id="263863604136125912">Inicia el Chromium</translation>
+<translation id="2648074677641340862">S'ha produït un error de sistema operatiu durant la instal·lació. Torneu a baixar el Chromium de nou.</translation>
+<translation id="2712549016134575851">S'ha detectat un conflicte amb una altra aplicació instal·lada.</translation>
+<translation id="275588974610408078">No està disponible l'enviament d'errors al Chromium.</translation>
+<translation id="2770231113462710648">Canvia el navegador per defecta a:</translation>
+<translation id="2843244238218937196">Renderitzador del Chromium</translation>
+<translation id="2927042866129133279">Els arguments no són vàlids. El Chromium Frame no pot instal·lar-se en mode preparat sense instal·lar també el Chromium.</translation>
+<translation id="2966088006374919794">El Chromium necessita executar una aplicació externa per gestionar els enllaços <ph name="SCHEME"/>. L'enllaç que s'ha soŀlicitat és <ph name="PROTOLINK"/>.</translation>
+<translation id="3014684866565908571">Utilitat del Chromium</translation>
+<translation id="3069161343438701711">Treballador del Chromium</translation>
+<translation id="309634601461115233">Sortiu del Chromium OS i torneu a entrar per tal que el canvi tingui efecte.</translation>
+<translation id="3096463977885168586">Copyright © 2006-2011 Els autors de Chromium. Tots els drets reservats.</translation>
+<translation id="3103660991484857065">L'instal·lador no ha pogut descomprimir el fitxer. Torneu baixar el Chromium de nou.</translation>
+<translation id="3190315855212034486">Ha fallat el Chromium. Voleu tornar-lo a executar?</translation>
+<translation id="3296368748942286671">Continua l'execució d'aplicacions en segon pla quan es tanca el Chromium</translation>
+<translation id="3509308970982693815">Tanqueu totes les finestres del Chromium i proveu de nou.</translation>
+<translation id="3555616473548901994">S'ha completat la desinstal·lació.</translation>
+<translation id="3848258323044014972"><ph name="PAGE_TITLE"/> - Chromium</translation>
+<translation id="3849925841547750267">Els paràmetres del Mozilla Firefox no estan disponibles mentre el navegador s'està executant. Per importar aquests paràmetres al Chromium, deseu la vostra feina i tanqueu totes les finestres del Firefox. Després feu clic sobre «Continua».</translation>
+<translation id="4077262827416206768">Tanqueu totes les finestres del Chromium i torneu a executar-lo per tal que aquest canvi tingui efecte.</translation>
+<translation id="4179848566211676653">Surt del Chromium</translation>
+<translation id="4222661289444749267">Actualització del Chromium Frame.</translation>
+<translation id="4285930937574705105">Ha fallat la instal·lació per un error no especificat. Si el Chromium s'està executant, tanqueu-li i torneu a obrir-lo de nou.</translation>
+<translation id="4330297532943865716">S'ha trobat una instaŀlació conflictiva del Chromium o del Chromium Frame al sistema. Desinstaŀleu-la i torneu a provar de nou.</translation>
+<translation id="4464530290860906238">No es fa servir al Chromium. Marcador per mantenir els mapes de recursos sincronitzats.</translation>
+<translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
+<translation id="4649468518813464896">http://www.google.com/support/chrome/bin/answer.py?hl=[GRITLANGCODE]&amp;answer=161796</translation>
+<translation id="4736009297872521264">El Chromium s'està comportant de forma estranya</translation>
+<translation id="4818993768077639880">El Chromium ja està instaŀlat i disponible per a tots els usuaris d'aquest ordinador. Si voleu instaŀlar el Chromium a nivell de l'usuari, heu de desinstaŀlar primer la versió a nivell de sistema per mitjà d'un administrador.</translation>
+<translation id="4932687624772039103">El Chromium no és compatible amb <ph name="OS_NAME"/>.</translation>
+<translation id="5398878173008909840">Hi ha disponible una versió nova del Chromium.</translation>
+<translation id="5559945513746540383">El Chromium no està instal·lat o no s'ha pogut trobar el directori d'instaŀlació. Baixeu el Chromium de nou.</translation>
+<translation id="5820394555380036790">Chromium OS</translation>
+<translation id="5862307444128926510">Us donem la benvinguda al Chromium</translation>
+<translation id="5947389362804196214">No es poden llegir les vostres preferències.\n\nAlgunes característiques no estaran disponibles i no es desaran els canvis a les preferències.</translation>
+<translation id="6089587093203430357">Instantani</translation>
+<translation id="6248213926982192922">Estableix el Chromium com a navegador per defecte</translation>
+<translation id="6287463253129672858">No es pot instałlar la mateixa versió del Chromium Frame que la que s'està executant actualment. Tanqueu el Chromium Frame i proveu de nou.</translation>
+<translation id="6373523479360886564">Esteu segur que voleu desinstałlar el Chromium?</translation>
+<translation id="6510925080656968729">Desinstałla el Chromium</translation>
+<translation id="6676384891291319759">Accediu a Internet</translation>
+<translation id="6714487516757221107">No s'ha trobat cap instałlació del Chromium o del Chromium Frame per actualitar.</translation>
+<translation id="6893813176749746474">S'ha actualitzat el Chromium, però no l'heu utilitzat com a mínim durant els darrers 30 dies.</translation>
+<translation id="6953661834318318668">Barra d'eines del Chromium</translation>
+<translation id="7138853919861947730">El Chromium utilitzarà serveis web per millorar la vostra experiència de navegació.</translation>
+<translation id="7196020411877309443">Per què estic veient això?</translation>
+<translation id="7223968959479464213">Gestor de tasques - Chromium</translation>
+<translation id="7278516633989165382">S'ha actualitzat el Chromium Frame. Torneu a executar el navegador. Versió del Chrome: <ph name="TODO_0001"/>, versió del Chromium Frame: <ph name="TODO_0002"/></translation>
+<translation id="7337881442233988129">Chromium</translation>
+<translation id="7421823331379285070">El Chromium necessita el Windows XP o una versió posterior. Algunes característiques no funcionaran.</translation>
+<translation id="7483335560992089831">No es pot instałlar la mateixa versió del Chromium que s'està executant actualment. Tanqueu el Chromium i proveu de nou.</translation>
+<translation id="7641113255207688324">El Chromium no és el vostre navegador per defecte.</translation>
+<translation id="7747138024166251722">L'instałlador no ha pogut crear un directori temporal. Comproveu que teniu espai suficient al disc i els permisos per instałlar programari.</translation>
+<translation id="786596160034915371">Aquest ordinador ja té una versió més recent del Chromium. Si el programari no està funcionant, desinstałleu el Chromium i torneu-lo a baixar.</translation>
+<translation id="8046283042877435986">Aquest lloc us recomana el Chromium Frame (ja instałlat).</translation>
+<translation id="8422904359318093226">El Chromium s'està comportant de forma estranya.</translation>
+<translation id="8453117565092476964">L'arxiu de l'instałlador està malmès o no és vàlid. Torneu a baixar el Chromium.</translation>
+<translation id="8621669128220841554">Ha fallat la instałlació degut a un error no especificat. Torenu a baixar el Chromium.</translation>
+<translation id="8628626585870903697">El Chromium no inclou el vusualitzador de PDF que es requereix per a la funció «Previsualització d'impressió».</translation>
+<translation id="872034308864968620">Permet al Chromium executar-se en segon pla</translation>
+<translation id="8738921060445980047">Versió desconeguda.</translation>
+<translation id="8770560772173120024">El Chromium està important les adreces d'interès.</translation>
+<translation id="8971920611044657379">Chromium Frame</translation>
+<translation id="911206726377975832">Voleu eliminar també les dades de navegació?</translation>
+<translation id="980185455267101462">Aquest ordinador ja té una versió més recent del Chromium Frame. Si el programari no funciona, desinstałleu el Chromium Frame i baixeu-lo de nou.</translation>
+<translation id="985602178874221306">Els autors del Chromium</translation>
 </translationbundle>

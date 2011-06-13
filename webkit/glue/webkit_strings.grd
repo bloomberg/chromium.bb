@@ -151,6 +151,7 @@ below:
     <output filename="webkit_strings_ko.pak" type="data_package" lang="ko" />
     <if expr="pp_ifdef('use_third_party_translations')">
       <output filename="webkit_strings_ku.pak" type="data_package" lang="ku" />
+      <output filename="webkit_strings_kw.pak" type="data_package" lang="kw" />
     </if>
     <output filename="webkit_strings_lt.pak" type="data_package" lang="lt" />
     <output filename="webkit_strings_lv.pak" type="data_package" lang="lv" />

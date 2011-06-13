@@ -100,8 +100,10 @@
 <translation id="7278516633989165382">Chromium Frame har uppdaterats. Starta om din webbläsare. Chrome version: <ph name="TODO_0001"/>, Chromium Frame version: <ph name="TODO_0002"/></translation>
 <translation id="2886012850691518054">Valfritt: Hjälp till att göra Chromium bättre genom att automatiskt skicka användningsstatistik och kraschrapporter till Google.</translation>
 <translation id="378917192836375108">Chromium låter dig klicka på ett telefonnummer på webben och ringa upp det med Skype!</translation>
-<translation id="5994107996638824097">Tyvärr! Chromium inkluderar inte PDF-visaren som är inbyggd i Google Chrome, vilket krävs för att förhandsvisa utskriften.</translation>
 <translation id="3296368748942286671">Fortsätt att köra bakgrundsprogram när Chromium har stängts</translation>
 <translation id="872034308864968620">Låt Chromium köras i bakgrunden</translation>
 <translation id="1774152462503052664">Låt Chromium köra i bakgrunden</translation>
+<translation id="5211087808649701653">Starta klassisk utskriftsdialog</translation>
+<translation id="6714487516757221107">Ingen installation av Chromium eller Chromium Frame hittades att uppdatera.</translation>
+<translation id="8628626585870903697">Chromium inkluderar inte PDF-visaren som krävs för att förhandsvisning av utskrifter ska fungera.</translation>
 </translationbundle>

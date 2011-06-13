@@ -11,7 +11,7 @@
 <translation id="2485422356828889247">Desinstalar</translation>
 <translation id="2558235863893655150">Desexa que Chromium garde o seu contrasinal?</translation>
 <translation id="2572494885440352020">Axuda de Chromium</translation>
-<translation id="2632329825580776666">O seu ficheiro de preferencias está ganado ou non é válido.\n\nChromium non pode recuperar as súas preferencias.</translation>
+<translation id="2632329825580776666">O seu ficheiro de preferencias está danado ou non é correcto.\n\nChromium non pode recuperar as súas preferencias.</translation>
 <translation id="263863604136125912">Iniciar Chromium</translation>
 <translation id="2648074677641340862">Produciuse un erro do sistema operativo durante a instalación. Descargue Chromium de novo.</translation>
 <translation id="2682584270762546522">Tentou acceder a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; pero o servidor mostrou un certificado caducado. Non hai información dispoñíbel que indique se se pode confiar no certificado. Chromium non pode garantir de boa fonte que se estea comunicando con &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; e non cun atacante. Debería asegurarse de que o reloxo e o fuso horario do seu equipo estean correctamente configurados. Se son correctas, non debería continuar.</translation>
@@ -40,7 +40,7 @@
 <translation id="4736009297872521264">Chromium estase comportando mal</translation>
 <translation id="4818993768077639880">Chromium xa está instalado e dispoñíbel para todos os usuarios deste equipo. Se quere instalar Chromium a nivel de usuario, primeiro ten que desinstalar a versión instalada a nivel de sistema por un administrador.</translation>
 <translation id="4890456338028740446">Tentou acceder a  &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, pero o servidor mostrou un certificado emitido por unha entidade que non ten a confianza do sistema operativo deste equipo. Isto pode significar que o servidor xerou as súas propias credenciais de seguranza, e Chromium non pode confiar nestas no que respecta á información sobre identidade, ou un atacante pode estar tentando interceptar as súas comunicacións. Non debería continuar &lt;strong&gt;especialmente&lt;/strong&gt; se nunca viu este aviso neste sitio web.</translation>
-<translation id="4931128279570440880">Neste caso, o enderezo listado no certificado non coincide co enderezo do sitio web que o seu navegador tenta acceder. Unha das posíbeis razóns é que as súas comunicacións están sendo interceptadas por un atacante que está mostrando un certificado para un sitio web distinto, o que podería causar unha discordancia. Outra posíbel razón é que o servidor está configurado para devolver o mesmo certificado para varios sitios web, incluíndo o que está tentando visitar, aínda que o certificado non é válido para todos eses sitios. Chromium pode asegurar que accedeu a &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, pero non pode verificar que sexa o mesmo sitio &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; ao que quere chegar. Se continúa, Chromium non comprobará máis discordancias de nomes. En xeral, é mellor non continuar máis aló de este punto.</translation>
+<translation id="4931128279570440880">Neste caso, o enderezo listado no certificado non coincide co enderezo do sitio web que o seu navegador tenta acceder. Unha das posíbeis razóns é que as súas comunicacións están sendo interceptadas por un atacante que está mostrando un certificado para un sitio web distinto, o que podería causar unha discordancia. Outra posíbel razón é que o servidor está configurado para devolver o mesmo certificado para varios sitios web, incluíndo o que está tentando visitar, aínda que o certificado non é válido para todos eses sitios. Chromium pode asegurar que accedeu a &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, pero non pode verificar que sexa o mesmo sitio &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; ao que quere chegar. Se continúa, Chromium non comprobará máis discordancias de nomes. En xeral, é mellor non continuar máis aló deste punto.</translation>
 <translation id="4932687624772039103">Chromium non funciona en <ph name="OS_NAME"/>.</translation>
 <translation id="5398878173008909840">Está dispoñíbel unha nova versión de Chromium.</translation>
 <translation id="5498103559159810756">Chromium usa o seu motor de busca predeterminado que actualmente é <ph name="PAGE_TITLE"/>. Desexa manter o seu motor de busca predeterminado?</translation>
@@ -74,7 +74,7 @@
 <translation id="7747138024166251722">O instalador non puido crear un cartafol temporal. Comprobe se ten espacio libre no disco e permiso para instalar software.</translation>
 <translation id="786596160034915371">Este equipo xa ten unha versión máis recente de Chromium instalada. Se o software non funciona, desinstale Chromium e descárgueo de novo.</translation>
 <translation id="8422904359318093226">Chromium estase portando mal</translation>
-<translation id="8453117565092476964">O ficheiro do instalador está danado ou non é válido. Descargue Chromium de novo.</translation>
+<translation id="8453117565092476964">O ficheiro do instalador está danado ou non é correcto. Descargue Chromium de novo.</translation>
 <translation id="8621669128220841554">A instalación fallou debido a un erro non especificado. Descargue Chromium de novo.</translation>
 <translation id="8738921060445980047">Versión descoñecida</translation>
 <translation id="8770560772173120024">Chromium está importando os favoritos/marcadores.</translation>
@@ -100,8 +100,10 @@
 <translation id="7278516633989165382">Foi actualizado Chromium Frame. Volva a iniciar o seu navegador. Versión Chrome: <ph name="TODO_0001"/>, Versión Chromium Frame: <ph name="TODO_0002"/></translation>
 <translation id="2886012850691518054">Opcional: Axude a mellorar Chromium, enviando automaticamente estatísticas de uso e informes de quebras a Google.</translation>
 <translation id="378917192836375108">Chromium permítelle premer nun número de teléfono no web e chamalo con Skype!</translation>
-<translation id="5994107996638824097">Chromium non inclúe un visor de PDF integrado en Google Chrome, e é necesario para mostrar a vista previa de impresión.</translation>
 <translation id="3296368748942286671">Continuar executando os aplicativos en segundo plano cando Chromium estea pechado</translation>
 <translation id="872034308864968620">Deixar a Chromium executándose en segundo plano</translation>
 <translation id="1774152462503052664">Deixar a Chromium executandose en segundo plano</translation>
+<translation id="5211087808649701653">Iniciar o dialogo nativo de impresión</translation>
+<translation id="6714487516757221107">Non se atopa unha instalación de Chromium ou Chromium Frame que actualizar.</translation>
+<translation id="8628626585870903697">Chromium non inclúe o visor de PDF requirido para función de vista preliminar.</translation>
 </translationbundle>
