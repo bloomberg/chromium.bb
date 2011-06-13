@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_COOKIES_VIEW_HANDLER_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/cookies_tree_model.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
@@ -20,18 +21,19 @@ class CookiesViewHandler : public OptionsPageUIHandler,
   virtual void GetLocalizedValues(DictionaryValue* localized_strings);
   virtual void RegisterMessages();
 
-  // ui::TreeModel::Observer implementation.
+  // CookiesTreeModel::Observer implementation.
   virtual void TreeNodesAdded(ui::TreeModel* model,
                               ui::TreeModelNode* parent,
                               int start,
-                              int count);
+                              int count) OVERRIDE;
   virtual void TreeNodesRemoved(ui::TreeModel* model,
                                 ui::TreeModelNode* parent,
                                 int start,
-                                int count);
-  virtual void TreeNodeChanged(ui::TreeModel* model, ui::TreeModelNode* node) {}
-  virtual void TreeModelBeginBatch(CookiesTreeModel* model);
-  virtual void TreeModelEndBatch(CookiesTreeModel* model);
+                                int count) OVERRIDE;
+  virtual void TreeNodeChanged(ui::TreeModel* model,
+                               ui::TreeModelNode* node) OVERRIDE {}
+  virtual void TreeModelBeginBatch(CookiesTreeModel* model) OVERRIDE;
+  virtual void TreeModelEndBatch(CookiesTreeModel* model) OVERRIDE;
 
  private:
   // Creates the CookiesTreeModel if neccessary.

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -17,7 +18,8 @@ class TreeNodeModelTest : public testing::Test, public TreeModelObserver {
         removed_count_(0),
         changed_count_(0) {}
 
-  void AssertObserverCount(int added_count, int removed_count,
+  void AssertObserverCount(int added_count,
+                           int removed_count,
                            int changed_count) {
     ASSERT_EQ(added_count, added_count_);
     ASSERT_EQ(removed_count, removed_count_);
@@ -29,15 +31,19 @@ class TreeNodeModelTest : public testing::Test, public TreeModelObserver {
   }
 
   // Begin TreeModelObserver implementation.
-  virtual void TreeNodesAdded(TreeModel* model, TreeModelNode* parent,
-                              int start, int count) {
+  virtual void TreeNodesAdded(TreeModel* model,
+                              TreeModelNode* parent,
+                              int start,
+                              int count) OVERRIDE {
     added_count_++;
   }
-  virtual void TreeNodesRemoved(TreeModel* model, TreeModelNode* parent,
-                                int start, int count) {
+  virtual void TreeNodesRemoved(TreeModel* model,
+                                TreeModelNode* parent,
+                                int start,
+                                int count) OVERRIDE {
     removed_count_++;
   }
-  virtual void TreeNodeChanged(TreeModel* model, TreeModelNode* node) {
+  virtual void TreeNodeChanged(TreeModel* model, TreeModelNode* node) OVERRIDE {
     changed_count_++;
   }
   // End TreeModelObserver implementation.

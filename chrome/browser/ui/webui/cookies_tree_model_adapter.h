@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_COOKIES_TREE_MODEL_ADAPTER_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/cookies_tree_model.h"
 
 class ListValue;
@@ -32,14 +33,15 @@ class CookiesTreeModelAdapter : public CookiesTreeModel::Observer {
   virtual void TreeNodesAdded(ui::TreeModel* model,
                               ui::TreeModelNode* parent,
                               int start,
-                              int count);
+                              int count) OVERRIDE;
   virtual void TreeNodesRemoved(ui::TreeModel* model,
                                 ui::TreeModelNode* parent,
                                 int start,
-                                int count);
-  virtual void TreeNodeChanged(ui::TreeModel* model, ui::TreeModelNode* node) {}
-  virtual void TreeModelBeginBatch(CookiesTreeModel* model);
-  virtual void TreeModelEndBatch(CookiesTreeModel* model);
+                                int count) OVERRIDE;
+  virtual void TreeNodeChanged(ui::TreeModel* model,
+                               ui::TreeModelNode* node) OVERRIDE {}
+  virtual void TreeModelBeginBatch(CookiesTreeModel* model) OVERRIDE;
+  virtual void TreeModelEndBatch(CookiesTreeModel* model) OVERRIDE;
 
   // JS callback that gets the tree node using the tree path info in |args| and
   // call SendChildren to pass back children nodes data to WebUI.

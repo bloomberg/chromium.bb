@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include <map>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/models/tree_model.h"
 #include "views/controls/native_control.h"
@@ -120,17 +121,18 @@ class TreeView : public NativeControl, ui::TreeModelObserver {
   void SetRootShown(bool root_visible);
 
   // Begin TreeModelObserver implementation.
-  // Don't call these directly, instead your model
-  // should notify the observer TreeView adds to it.
+  // These methods shouldn't be called directly. The model is responsible for
+  // firing them.
   virtual void TreeNodesAdded(ui::TreeModel* model,
                               ui::TreeModelNode* parent,
                               int start,
-                              int count);
+                              int count) OVERRIDE;
   virtual void TreeNodesRemoved(ui::TreeModel* model,
                                 ui::TreeModelNode* parent,
                                 int start,
-                                int count);
-  virtual void TreeNodeChanged(ui::TreeModel* model, ui::TreeModelNode* node);
+                                int count) OVERRIDE;
+  virtual void TreeNodeChanged(ui::TreeModel* model,
+                               ui::TreeModelNode* node) OVERRIDE;
   // End TreeModelObserver implementation.
 
   // Sets the controller, which may be null. TreeView does not take ownership
