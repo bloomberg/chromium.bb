@@ -62,9 +62,6 @@ void GpuVideoDecodeAccelerator::ProvidePictureBuffers(
 
 void GpuVideoDecodeAccelerator::DismissPictureBuffer(
     int32 picture_buffer_id) {
-  // TODO(vrk): Unmap picture buffer.
-  NOTIMPLEMENTED();
-
   // Notify client that picture buffer is now unused.
   if (!Send(new AcceleratedVideoDecoderHostMsg_DismissPictureBuffer(
           route_id_, picture_buffer_id))) {
