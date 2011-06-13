@@ -42,6 +42,7 @@
 #include "remoting/host/disconnect_window.h"
 #include "remoting/host/event_executor.h"
 #include "remoting/host/heartbeat_sender.h"
+#include "remoting/host/local_input_monitor.h"
 #include "remoting/host/json_host_config.h"
 #include "remoting/host/register_support_host_request.h"
 #include "remoting/host/self_access_verifier.h"
@@ -174,10 +175,12 @@ class SimpleHost {
       remoting::Curtain* curtain = remoting::Curtain::Create();
       remoting::DisconnectWindow* disconnect_window =
           remoting::DisconnectWindow::Create();
+      remoting::LocalInputMonitor* local_input_monitor =
+          remoting::LocalInputMonitor::Create();
       host = ChromotingHost::Create(
           &context, config,
           new DesktopEnvironment(capturer, event_executor, curtain,
-                                 disconnect_window),
+                                 disconnect_window, local_input_monitor),
           access_verifier.release());
     } else {
       host = ChromotingHost::Create(&context, config,
