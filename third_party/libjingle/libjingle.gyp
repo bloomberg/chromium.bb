@@ -26,18 +26,19 @@
     'include_dirs': [
       './overrides',
       './source',
-      '../../third_party/expat/files'
     ],
     'dependencies': [
       '../expat/expat.gyp:expat',
       '../../base/base.gyp:base',
       '../../net/net.gyp:net',
     ],
+    'export_dependent_settings': [
+      '../expat/expat.gyp:expat',
+    ],
     'direct_dependent_settings': {
       'include_dirs': [
         './overrides',
         './source',
-        '../../third_party/expat/files'
       ],
       'defines': [
         'FEATURE_ENABLE_SSL',

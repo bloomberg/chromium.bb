@@ -13,7 +13,7 @@ vars = {
   "nacl_irt_hash_x86_64": "aaa92d6ee2fa307965338ee7874f0f2557d9cf2d",
   "nacl_revision": "5586",
   "nacl_tools_revision": "5580",
-  "libjingle_revision": "63",
+  "libjingle_revision": "66",
   "libvpx_revision": "88361",
   "ffmpeg_revision": "88382",
   "skia_revision": "1562",
