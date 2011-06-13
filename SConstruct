@@ -285,6 +285,14 @@ def SetUpArgumentBits(env):
     desc='Use the integrated runtime (IRT) untrusted blob library when '
       'running tests')
 
+  BitFromArgument(env, 'disable_crash_dialog', default=True,
+    desc='Disable Windows\' crash dialog box, which Windows pops up when a '
+      'process exits with an unhandled fault.  Windows enables this by '
+      'default for processes launched from the command line or from the '
+      'GUI.  Our default is to disable it, because the dialog turns crashes '
+      'into hangs on Buildbot, and our test suite includes various crash '
+      'tests.')
+
 
 def CheckArguments():
   for key in ARGUMENTS:
@@ -399,6 +407,19 @@ pre_base_env.AddMethod(IrtIsBroken)
 # This function should be called ASAP after the environment is created, but
 # after ExpandArguments.
 SetUpArgumentBits(pre_base_env)
+
+def DisableCrashDialog():
+  if sys.platform == 'win32':
+    import win32api
+    import win32con
+    # The double call is to preserve existing flags, as discussed at
+    # http://blogs.msdn.com/oldnewthing/archive/2004/07/27/198410.aspx
+    new_flags = win32con.SEM_NOGPFAULTERRORBOX
+    existing_flags = win32api.SetErrorMode(new_flags)
+    win32api.SetErrorMode(existing_flags | new_flags)
+
+if pre_base_env.Bit('disable_crash_dialog'):
+  DisableCrashDialog()
 
 # Scons normally wants to scrub the environment.  However, sometimes
 # we want to allow PATH and other variables through so that Scons
