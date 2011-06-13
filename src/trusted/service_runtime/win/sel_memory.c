@@ -126,7 +126,7 @@ int   NaCl_page_alloc(void    **p,
          chunk = (void *) (((char *) chunk) + NACL_MAP_PAGESIZE)) {
       if (NULL == VirtualAlloc(chunk,
                                NACL_MAP_PAGESIZE,
-                               MEM_COMMIT | MEM_RESERVE,
+                               MEM_RESERVE,
                                PAGE_NOACCESS)) {
         NaClLog(0, ("NaCl_page_alloc: re-allocation failed at "
                     "0x%016"NACL_PRIxPTR","
