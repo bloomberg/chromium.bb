@@ -12,7 +12,6 @@
 #include "remoting/host/client_session.h"
 #include "remoting/host/disconnect_window.h"
 #include "remoting/host/event_executor.h"
-#include "remoting/host/local_input_monitor.h"
 #include "remoting/host/user_authenticator.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -54,15 +53,6 @@ class MockDisconnectWindow : public DisconnectWindow {
   MOCK_METHOD0(Hide, void());
 };
 
-class MockLocalInputMonitor : public LocalInputMonitor {
- public:
-  MockLocalInputMonitor();
-  virtual ~MockLocalInputMonitor();
-
-  MOCK_METHOD1(Start, void(remoting::ChromotingHost* host));
-  MOCK_METHOD0(Stop, void());
-};
-
 class MockChromotingHostContext : public ChromotingHostContext {
  public:
   MockChromotingHostContext();
@@ -91,7 +81,7 @@ class MockClientSessionEventHandler : public ClientSession::EventHandler {
                void(scoped_refptr<protocol::ConnectionToClient>));
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MockClientSessionEventHandler);
+   DISALLOW_COPY_AND_ASSIGN(MockClientSessionEventHandler);
 };
 
 class MockEventExecutor : public EventExecutor {

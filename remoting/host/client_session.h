@@ -5,12 +5,9 @@
 #ifndef REMOTING_HOST_CLIENT_SESSION_H_
 #define REMOTING_HOST_CLIENT_SESSION_H_
 
-#include <list>
-
 #include "remoting/protocol/connection_to_client.h"
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/input_stub.h"
-#include "ui/gfx/point.h"
 
 namespace remoting {
 
@@ -68,13 +65,6 @@ class ClientSession : public protocol::HostStub,
     return authenticated_;
   }
 
-  // Indicate that local mouse activity has been detected. This causes remote
-  // inputs to be ignored for a short time so that the local user will always
-  // have the upper hand in 'pointer wars'.
-  void LocalMouseMoved(const gfx::Point& new_pos);
-
-  bool ShouldIgnoreRemoteInput() const;
-
  private:
   friend class base::RefCountedThreadSafe<ClientSession>;
   virtual ~ClientSession();
@@ -92,11 +82,6 @@ class ClientSession : public protocol::HostStub,
 
   // Whether this client is authenticated.
   bool authenticated_;
-
-  // State to control remote input blocking while the local pointer is in use.
-  uint32 remote_mouse_button_state_;
-  std::list<gfx::Point> recent_remote_mouse_positions_;
-  base::Time latest_local_input_time_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientSession);
 };

@@ -90,10 +90,9 @@ class ChromotingHostTest : public testing::Test {
     event_executor_ = new MockEventExecutor();
     curtain_ = new MockCurtain();
     disconnect_window_ = new MockDisconnectWindow();
-    local_input_monitor_ = new MockLocalInputMonitor();
     DesktopEnvironment* desktop =
         new DesktopEnvironment(capturer, event_executor_, curtain_,
-                               disconnect_window_, local_input_monitor_);
+                               disconnect_window_);
     MockAccessVerifier* access_verifier = new MockAccessVerifier();
 
     host_ = ChromotingHost::Create(&context_, config_,
@@ -217,7 +216,6 @@ class ChromotingHostTest : public testing::Test {
   MockEventExecutor* event_executor_;
   MockCurtain* curtain_;
   MockDisconnectWindow* disconnect_window_;
-  MockLocalInputMonitor* local_input_monitor_;
 };
 
 TEST_F(ChromotingHostTest, StartAndShutdown) {
@@ -432,7 +430,7 @@ TEST_F(ChromotingHostTest, CurtainModeFailSecond) {
 
 ACTION_P(SetBool, var) { *var = true; }
 
-TEST_F(ChromotingHostTest, CurtainModeIT2Me) {
+TEST_F(ChromotingHostTest, CurtainModeMe2Mom) {
   host_->Start(NewRunnableFunction(&PostQuitTask, &message_loop_));
   host_->set_me2mom(true);
 
@@ -444,7 +442,7 @@ TEST_F(ChromotingHostTest, CurtainModeIT2Me) {
   bool curtain_activated = false;
   std::string mockJid("user@domain/rest-of-jid");
   {
-    Sequence s1, s2;
+    InSequence s;
     // Can't just expect Times(0) because if it fails then the host will
     // not be shut down and the message loop will never exit.
     EXPECT_CALL(*curtain_, EnableCurtainMode(_))
@@ -452,25 +450,17 @@ TEST_F(ChromotingHostTest, CurtainModeIT2Me) {
         .WillRepeatedly(SetBool(&curtain_activated));
     EXPECT_CALL(*session_, jid())
         .Times(1)
-        .InSequence(s1)
         .WillOnce(ReturnRef(mockJid));
     EXPECT_CALL(*disconnect_window_, Show(_, "user@domain"))
-        .Times(1)
-        .InSequence(s1);
-    EXPECT_CALL(*local_input_monitor_, Start(_))
-        .Times(1)
-        .InSequence(s2);
+        .Times(1);
     EXPECT_CALL(video_stub_, ProcessVideoPacket(_, _))
-        .InSequence(s1, s2)
         .WillOnce(DoAll(
             InvokeWithoutArgs(host_.get(), &ChromotingHost::Shutdown),
             RunDoneTask()))
         .RetiresOnSaturation();
     EXPECT_CALL(video_stub_, ProcessVideoPacket(_, _))
-        .Times(AnyNumber())
-        .InSequence(s1, s2);
+        .Times(AnyNumber());
     EXPECT_CALL(*connection_.get(), Disconnect())
-        .InSequence(s1, s2)
         .RetiresOnSaturation();
   }
   SimulateClientConnection(0, true);
