@@ -4273,7 +4273,7 @@
    fun:_ZN7WebCoreL15allocV8NPObjectEP4_NPPP7NPClass
    fun:_NPN_CreateObject
    fun:_ZN7WebCore22npCreateV8ScriptObjectEP4_NPPN2v86HandleINS2_6ObjectEEEPNS_9DOMWindowE
-   fun:_ZN6WebKit16makeIntArrayImplERKNS_9WebVectorIiEE
+   fun:_ZN6WebKitL16makeIntArrayImplERKNS_9WebVectorIiEE
    fun:_ZN6WebKit11WebBindings12makeIntArrayERKNS_9WebVectorIiEE
 }
 {
