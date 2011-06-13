@@ -35,7 +35,6 @@ class AeroTooltipManager : public TooltipManagerWin {
   virtual void OnMouse(UINT u_msg, WPARAM w_param, LPARAM l_param);
 
  private:
-  void Init();
   void OnTimer();
 
   class InitialTimer : public base::RefCounted<InitialTimer> {

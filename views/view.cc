@@ -1245,7 +1245,8 @@ void View::Blur() {
 
 void View::TooltipTextChanged() {
   Widget* widget = GetWidget();
-  if (widget)
+  // TooltipManager may be null if there is a problem creating it.
+  if (widget && widget->native_widget()->GetTooltipManager())
     widget->native_widget()->GetTooltipManager()->TooltipTextChanged(this);
 }
 

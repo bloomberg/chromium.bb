@@ -1162,6 +1162,12 @@ LRESULT NativeWidgetWin::OnCreate(CREATESTRUCT* create_struct) {
   } else {
     tooltip_manager_.reset(new TooltipManagerWin(GetWidget()));
   }
+  if (!tooltip_manager_->Init()) {
+    // There was a problem creating the TooltipManager. Common error is 127.
+    // See 82193 for details.
+    LOG_GETLASTERROR(WARNING) << "tooltip creation failed, disabling tooltips";
+    tooltip_manager_.reset();
+  }
 
   // This message initializes the window so that focus border are shown for
   // windows.
@@ -1478,7 +1484,8 @@ LRESULT NativeWidgetWin::OnMouseRange(UINT message,
   MouseEvent event(msg);
 
   if (!(event.flags() & ui::EF_IS_NON_CLIENT))
-    tooltip_manager_->OnMouse(message, w_param, l_param);
+    if (tooltip_manager_.get())
+      tooltip_manager_->OnMouse(message, w_param, l_param);
 
   if (event.type() == ui::ET_MOUSE_MOVED && !HasMouseCapture()) {
     // Windows only fires WM_MOUSELEAVE events if the application begins

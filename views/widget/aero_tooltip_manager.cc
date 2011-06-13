@@ -72,32 +72,6 @@ void AeroTooltipManager::OnMouse(UINT u_msg, WPARAM w_param, LPARAM l_param) {
 ///////////////////////////////////////////////////////////////////////////////
 // AeroTooltipManager, private:
 
-void AeroTooltipManager::Init() {
-  // Create the tooltip control.
-  tooltip_hwnd_ = CreateWindowEx(
-      WS_EX_TRANSPARENT | l10n_util::GetExtendedTooltipStyles(),
-      TOOLTIPS_CLASS, NULL, TTS_NOPREFIX, 0, 0, 0, 0,
-      GetParent(), NULL, NULL, NULL);
-  ui::CheckWindowCreated(tooltip_hwnd_);
-
-  l10n_util::AdjustUIFontForWindow(tooltip_hwnd_);
-
-  // Add one tool that is used for all tooltips.
-  toolinfo_.cbSize = sizeof(toolinfo_);
-
-  // We use tracking tooltips on Vista to allow us to manually control the
-  // visibility of the tooltip.
-  toolinfo_.uFlags = TTF_TRANSPARENT | TTF_IDISHWND | TTF_TRACK | TTF_ABSOLUTE;
-  toolinfo_.hwnd = GetParent();
-  toolinfo_.uId = (UINT_PTR)GetParent();
-
-  // Setting this tells windows to call GetParent() back (using a WM_NOTIFY
-  // message) for the actual tooltip contents.
-  toolinfo_.lpszText = LPSTR_TEXTCALLBACK;
-  SetRectEmpty(&toolinfo_.rect);
-  ::SendMessage(tooltip_hwnd_, TTM_ADDTOOL, 0, (LPARAM)&toolinfo_);
-}
-
 void AeroTooltipManager::OnTimer() {
   initial_timer_ = NULL;
 

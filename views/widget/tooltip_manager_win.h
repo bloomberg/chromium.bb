@@ -62,6 +62,11 @@ class TooltipManagerWin : public TooltipManager {
   explicit TooltipManagerWin(Widget* widget);
   virtual ~TooltipManagerWin();
 
+  // Initializes the TooltipManager returning whether initialization was
+  // successful. If this returns false the TooltipManager should be destroyed
+  // and not used.
+  bool Init();
+
   // Notification that the view hierarchy has changed in some way.
   virtual void UpdateTooltip();
 
@@ -79,8 +84,6 @@ class TooltipManagerWin : public TooltipManager {
   LRESULT OnNotify(int w_param, NMHDR* l_param, bool* handled);
 
  protected:
-  virtual void Init();
-
   // Returns the Widget we're showing tooltips for.
   gfx::NativeView GetParent();
 

@@ -36,7 +36,8 @@ static gfx::Font DetermineDefaultFont() {
   HWND window = CreateWindowEx(
       WS_EX_TRANSPARENT | l10n_util::GetExtendedTooltipStyles(),
       TOOLTIPS_CLASS, NULL, 0 , 0, 0, 0, 0, NULL, NULL, NULL, NULL);
-  ui::CheckWindowCreated(window);
+  if (!window)
+    return gfx::Font();
   HFONT hfont = reinterpret_cast<HFONT>(SendMessage(window, WM_GETFONT, 0, 0));
   gfx::Font font = hfont ? gfx::Font(hfont) : gfx::Font();
   DestroyWindow(window);
@@ -90,13 +91,14 @@ TooltipManagerWin::~TooltipManagerWin() {
     DestroyWindow(keyboard_tooltip_hwnd_);
 }
 
-void TooltipManagerWin::Init() {
+bool TooltipManagerWin::Init() {
   // Create the tooltip control.
   tooltip_hwnd_ = CreateWindowEx(
       WS_EX_TRANSPARENT | l10n_util::GetExtendedTooltipStyles(),
       TOOLTIPS_CLASS, NULL, TTS_NOPREFIX, 0, 0, 0, 0,
       GetParent(), NULL, NULL, NULL);
-  ui::CheckWindowCreated(tooltip_hwnd_);
+  if (!tooltip_hwnd_)
+    return false;
 
   l10n_util::AdjustUIFontForWindow(tooltip_hwnd_);
 
@@ -117,6 +119,7 @@ void TooltipManagerWin::Init() {
   toolinfo_.lpszText = LPSTR_TEXTCALLBACK;
   SetRectEmpty(&toolinfo_.rect);
   SendMessage(tooltip_hwnd_, TTM_ADDTOOL, 0, (LPARAM)&toolinfo_);
+  return true;
 }
 
 gfx::NativeView TooltipManagerWin::GetParent() {
@@ -335,7 +338,9 @@ void TooltipManagerWin::ShowKeyboardTooltip(View* focused_view) {
   keyboard_tooltip_hwnd_ = CreateWindowEx(
       WS_EX_TRANSPARENT | l10n_util::GetExtendedTooltipStyles(),
       TOOLTIPS_CLASS, NULL, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL);
-  ui::CheckWindowCreated(keyboard_tooltip_hwnd_);
+  if (!keyboard_tooltip_hwnd_)
+    return;
+
   SendMessage(keyboard_tooltip_hwnd_, TTM_SETMAXTIPWIDTH, 0,
               std::numeric_limits<short>::max());
   int tooltip_width;

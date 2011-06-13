@@ -170,22 +170,8 @@ void CenterAndSizeWindow(HWND parent,
 }
 
 void CheckWindowCreated(HWND hwnd) {
-  if (hwnd)
-    return;
-
-  LPWSTR error_string = NULL;
-  DWORD last_error = GetLastError();
-  FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER |
-                FORMAT_MESSAGE_FROM_SYSTEM,
-                0,  // Use the internal message table.
-                last_error,
-                0,  // Use default language.
-                reinterpret_cast<LPWSTR>(&error_string),
-                0,  // Buffer size.
-                0);  // Arguments (unused).
-  // Typical reason for failure is ERROR_NOT_ENOUGH_MEMORY (8).
-  CHECK(false) << "Create failed error=" << last_error <<
-      " message=" << error_string;
+  if (!hwnd)
+    LOG_GETLASTERROR(FATAL);
 }
 
 }  // namespace ui

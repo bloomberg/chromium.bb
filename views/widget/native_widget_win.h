@@ -461,7 +461,8 @@ class NativeWidgetWin : public ui::WindowImpl,
     focus_on_creation_ = focus_on_creation;
   }
 
-  // The TooltipManager.
+  // The TooltipManager. This is NULL if there is a problem creating the
+  // underlying tooltip window.
   // WARNING: RootView's destructor calls into the TooltipManager. As such, this
   // must be destroyed AFTER root_view_.
   scoped_ptr<TooltipManagerWin> tooltip_manager_;
