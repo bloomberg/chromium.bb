@@ -109,10 +109,6 @@ class URLFetcher::Core
     void DidCreateTempFile(base::PlatformFileError error_code,
                            base::PassPlatformFile file_handle,
                            FilePath file_path);
-    void DidCloseTempFile(base::PlatformFileError error_code);
-    void DidReopenTempFile(base::PlatformFileError error_code,
-                           base::PassPlatformFile file_handle,
-                           bool created);
 
     // Record |num_bytes_| response bytes in |core_->buffer_| to the file.
     void WriteBuffer(int num_bytes);
@@ -317,6 +313,7 @@ void URLFetcher::Core::TempFileWriter::CreateTempFile() {
   CHECK(file_message_loop_proxy_.get());
   base::FileUtilProxy::CreateTemporary(
       file_message_loop_proxy_,
+      0,  // No additional file flags.
       callback_factory_.NewCallback(
           &URLFetcher::Core::TempFileWriter::DidCreateTempFile));
 }
@@ -332,50 +329,6 @@ void URLFetcher::Core::TempFileWriter::DidCreateTempFile(
   }
 
   temp_file_ = file_path;
-
-  // The file was opened with async writes enabled.   FileUtilProxy::Write()
-  // treats a write that returns IO_PENDING as an error, and does not inform
-  // the caller.  We need to close and reopen the file with asyncronus writes
-  // disabled.
-  // TODO(skerner): Make FileUtilProxy::Write() play nice with async IO.
-  base::FileUtilProxy::Close(
-      file_message_loop_proxy_,
-      file_handle.ReleaseValue(),
-      callback_factory_.NewCallback(
-          &URLFetcher::Core::TempFileWriter::DidCloseTempFile));
-}
-
-void URLFetcher::Core::TempFileWriter::DidCloseTempFile(
-    base::PlatformFileError error_code) {
-  if (base::PLATFORM_FILE_OK != error_code) {
-    error_code_ = error_code;
-    core_->InformDelegateFetchIsComplete();
-    return;
-  }
-
-  int file_flags =
-      base::PLATFORM_FILE_CREATE_ALWAYS |
-      base::PLATFORM_FILE_WRITE |
-      base::PLATFORM_FILE_TEMPORARY;
-
-  base::FileUtilProxy::CreateOrOpen(
-      file_message_loop_proxy_,
-      temp_file_,
-      file_flags,
-      callback_factory_.NewCallback(
-          &URLFetcher::Core::TempFileWriter::DidReopenTempFile));
-}
-
-void URLFetcher::Core::TempFileWriter::DidReopenTempFile(
-    base::PlatformFileError error_code,
-    base::PassPlatformFile file_handle,
-    bool created) {
-  if (base::PLATFORM_FILE_OK != error_code) {
-    error_code_ = error_code;
-    core_->InformDelegateFetchIsComplete();
-    return;
-  }
-
   temp_file_handle_ = file_handle.ReleaseValue();
   total_bytes_written_ = 0;
 

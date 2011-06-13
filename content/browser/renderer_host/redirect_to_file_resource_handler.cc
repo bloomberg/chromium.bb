@@ -76,6 +76,7 @@ bool RedirectToFileResourceHandler::OnWillStart(int request_id,
     *defer = true;
     base::FileUtilProxy::CreateTemporary(
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
+        base::PLATFORM_FILE_ASYNC,
         callback_factory_.NewCallback(
             &RedirectToFileResourceHandler::DidCreateTemporaryFile));
     return true;
