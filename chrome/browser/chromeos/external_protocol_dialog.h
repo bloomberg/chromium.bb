@@ -36,7 +36,6 @@ class ExternalProtocolDialog : public views::DialogDelegate {
   virtual views::View* GetContentsView() OVERRIDE;
 
   // views::WidgetDelegate Methods:
-  virtual bool IsAlwaysOnTop() const OVERRIDE;
   virtual bool IsModal() const OVERRIDE;
   virtual const views::Widget* GetWidget() const OVERRIDE;
   virtual views::Widget* GetWidget() OVERRIDE;

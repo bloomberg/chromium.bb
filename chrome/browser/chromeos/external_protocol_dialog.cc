@@ -79,10 +79,6 @@ views::View* ExternalProtocolDialog::GetContentsView() {
   return message_box_view_;
 }
 
-bool ExternalProtocolDialog::IsAlwaysOnTop() const {
-  return false;
-}
-
 bool ExternalProtocolDialog::IsModal() const {
   return false;
 }
