@@ -22,7 +22,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/string16.h"
-#include "base/synchronization/waitable_event.h"
 #include "chrome/browser/autofill/field_types.h"
 #include "chrome/common/automation_constants.h"
 #include "chrome/common/content_settings.h"
@@ -387,9 +386,6 @@ class AutomationProvider
 
   // ID of automation channel.
   std::string channel_id_;
-
-  // Needed for SyncChannel
-  base::WaitableEvent fake_shutdown_event_;
 
   DISALLOW_COPY_AND_ASSIGN(AutomationProvider);
 };

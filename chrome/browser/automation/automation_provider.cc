@@ -90,7 +90,6 @@
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/common/json_value_serializer.h"
 #include "content/common/view_messages.h"
-#include "ipc/ipc_sync_channel.h"
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request_context.h"
@@ -111,8 +110,7 @@ AutomationProvider::AutomationProvider(Profile* profile)
       reinitialize_on_channel_error_(false),
       is_connected_(false),
       initial_tab_loads_complete_(false),
-      network_library_initialized_(true),
-      fake_shutdown_event_(true, false) {
+      network_library_initialized_(true) {
   TRACE_EVENT_BEGIN_ETW("AutomationProvider::AutomationProvider", 0, "");
 
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -160,13 +158,11 @@ bool AutomationProvider::InitializeChannel(const std::string& channel_id) {
     automation_resource_message_filter_ = new AutomationResourceMessageFilter;
   }
 
-  channel_.reset(new IPC::SyncChannel(
+  channel_.reset(new IPC::ChannelProxy(
       effective_channel_id,
       GetChannelMode(use_named_interface),
       this,
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
-      true,
-      &fake_shutdown_event_));
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
   channel_->AddFilter(automation_resource_message_filter_);
 
 #if defined(OS_CHROMEOS)
