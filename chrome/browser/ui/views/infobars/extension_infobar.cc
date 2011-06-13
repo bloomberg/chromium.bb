@@ -18,8 +18,10 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
 #include "views/controls/button/menu_button.h"
-#include "views/controls/menu/menu_2.h"
+#include "views/controls/menu/menu_item_view.h"
+#include "views/controls/menu/menu_model_adapter.h"
 #include "views/widget/widget.h"
+#include "views/window/window.h"
 
 // ExtensionInfoBarDelegate ---------------------------------------------------
 
@@ -176,16 +178,20 @@ void ExtensionInfoBar::RunMenu(View* source, const gfx::Point& pt) {
   if (!extension->ShowConfigureContextMenus())
     return;
 
-  if (!options_menu_contents_.get()) {
-    Browser* browser = BrowserView::GetBrowserViewForNativeWindow(
-        platform_util::GetTopLevel(source->GetWidget()->GetNativeView()))->
-            browser();
-    options_menu_contents_ = new ExtensionContextMenuModel(extension, browser,
-                                                           NULL);
-  }
+  Browser* browser = BrowserView::GetBrowserViewForNativeWindow(
+      platform_util::GetTopLevel(source->GetWidget()->GetNativeView()))->
+      browser();
+  scoped_refptr<ExtensionContextMenuModel> options_menu_contents =
+      new ExtensionContextMenuModel(extension, browser, NULL);
+  views::MenuModelAdapter options_menu_delegate(options_menu_contents.get());
+  views::MenuItemView options_menu(&options_menu_delegate);
+  options_menu_delegate.BuildMenu(&options_menu);
 
-  options_menu_menu_.reset(new views::Menu2(options_menu_contents_.get()));
-  options_menu_menu_->RunMenuAt(pt, views::Menu2::ALIGN_TOPLEFT);
+  gfx::Point screen_point;
+  views::View::ConvertPointToScreen(menu_, &screen_point);
+  options_menu.RunMenuAt(GetWidget()->GetNativeWindow(), menu_,
+      gfx::Rect(screen_point, menu_->size()), views::MenuItemView::TOPLEFT,
+      true);
 }
 
 ExtensionInfoBarDelegate* ExtensionInfoBar::GetDelegate() {

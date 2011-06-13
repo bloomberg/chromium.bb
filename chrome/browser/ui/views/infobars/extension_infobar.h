@@ -16,7 +16,6 @@ class ExtensionContextMenuModel;
 class TabContentsWrapper;
 namespace views {
 class MenuButton;
-class Menu2;
 }
 
 class ExtensionInfoBar : public InfoBarView,
@@ -60,8 +59,6 @@ class ExtensionInfoBar : public InfoBarView,
   InfoBarDelegate* delegate_;
 
   // The dropdown menu for accessing the contextual extension actions.
-  scoped_refptr<ExtensionContextMenuModel> options_menu_contents_;
-  scoped_ptr<views::Menu2> options_menu_menu_;
   views::MenuButton* menu_;
 
   // Keeps track of images being loaded on the File thread.
