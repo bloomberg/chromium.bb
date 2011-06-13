@@ -120,9 +120,6 @@ bool TypedUrlModelAssociator::AssociateModels() {
             // Should never be possible to delete all the items, since the
             // visit vector contains all the items in typed_url.visits.
             DCHECK(visits.size() > 0);
-          } else {
-            NOTREACHED() << "Syncing typed URL with no visits: " <<
-                typed_url.url();
           }
           WriteToSyncNode(new_url, visits, &write_node);
         }
@@ -171,6 +168,15 @@ bool TypedUrlModelAssociator::AssociateModels() {
       const sync_pb::TypedUrlSpecifics& typed_url(
         sync_child_node.GetTypedUrlSpecifics());
 
+      sync_child_id = sync_child_node.GetSuccessorId();
+
+      // Ignore old sync nodes that don't have any transition data stored with
+      // them.
+      if (typed_url.visit_transitions_size() == 0) {
+        VLOG(1) << "Ignoring obsolete sync node with no visit transition info.";
+        continue;
+      }
+
       if (current_urls.find(typed_url.url()) == current_urls.end()) {
         new_visits.push_back(
             std::pair<GURL, std::vector<history::VisitInfo> >(
@@ -194,8 +200,6 @@ bool TypedUrlModelAssociator::AssociateModels() {
         Associate(&typed_url.url(), sync_child_node.GetId());
         new_urls.push_back(new_url);
       }
-
-      sync_child_id = sync_child_node.GetSuccessorId();
     }
   }
 
