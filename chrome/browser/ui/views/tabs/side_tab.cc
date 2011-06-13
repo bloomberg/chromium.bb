@@ -17,7 +17,7 @@
 namespace {
 const int kVerticalTabHeight = 27;
 const int kTitleCloseSpacing = 4;
-const SkScalar kRoundRectRadius = 4;
+const int kRoundRectRadius = 4;
 const SkColor kTabBackgroundColor = SK_ColorWHITE;
 const SkColor kTextColor = SK_ColorBLACK;
 
