@@ -17,6 +17,7 @@
 #include "base/task.h"
 #include "base/threading/worker_pool.h"
 #include "chrome/browser/cocoa/authorization_util.h"
+#import "chrome/browser/cocoa/keystone_registration.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/common/chrome_constants.h"
 #include "grit/chromium_strings.h"
@@ -26,50 +27,7 @@
 
 namespace {
 
-// Provide declarations of the Keystone registration bits needed here.  From
-// KSRegistration.h.
-typedef enum {
-  kKSPathExistenceChecker,
-} KSExistenceCheckerType;
-
-typedef enum {
-  kKSRegistrationUserTicket,
-  kKSRegistrationSystemTicket,
-  kKSRegistrationDontKnowWhatKindOfTicket,
-} KSRegistrationTicketType;
-
-NSString* const KSRegistrationVersionKey = @"Version";
-NSString* const KSRegistrationExistenceCheckerTypeKey = @"ExistenceCheckerType";
-NSString* const KSRegistrationExistenceCheckerStringKey =
-    @"ExistenceCheckerString";
-NSString* const KSRegistrationServerURLStringKey = @"URLString";
-NSString* const KSRegistrationPreserveTrustedTesterTokenKey = @"PreserveTTT";
-NSString* const KSRegistrationTagKey = @"Tag";
-NSString* const KSRegistrationTagPathKey = @"TagPath";
-NSString* const KSRegistrationTagKeyKey = @"TagKey";
-NSString* const KSRegistrationBrandPathKey = @"BrandPath";
-NSString* const KSRegistrationBrandKeyKey = @"BrandKey";
-NSString* const KSRegistrationVersionPathKey = @"VersionPath";
-NSString* const KSRegistrationVersionKeyKey = @"VersionKey";
-
-NSString* const KSRegistrationDidCompleteNotification =
-    @"KSRegistrationDidCompleteNotification";
-NSString* const KSRegistrationPromotionDidCompleteNotification =
-    @"KSRegistrationPromotionDidCompleteNotification";
-
-NSString* const KSRegistrationCheckForUpdateNotification =
-    @"KSRegistrationCheckForUpdateNotification";
-NSString* KSRegistrationStatusKey = @"Status";
-NSString* KSRegistrationUpdateCheckErrorKey = @"Error";
-
-NSString* const KSRegistrationStartUpdateNotification =
-    @"KSRegistrationStartUpdateNotification";
-NSString* const KSUpdateCheckSuccessfulKey = @"CheckSuccessful";
-NSString* const KSUpdateCheckSuccessfullyInstalledKey =
-    @"SuccessfullyInstalled";
-
-NSString* const KSRegistrationRemoveExistingTag = @"";
-#define KSRegistrationPreserveExistingTag nil
+namespace ksr = keystone_registration;
 
 // Constants for the brand file (uses an external file so it can survive
 // updates to Chrome.)
@@ -140,22 +98,6 @@ class PerformBridge : public base::RefCountedThreadSafe<PerformBridge> {
 };
 
 }  // namespace
-
-@interface KSRegistration : NSObject
-
-+ (id)registrationWithProductID:(NSString*)productID;
-
-- (BOOL)registerWithParameters:(NSDictionary*)args;
-
-- (BOOL)promoteWithParameters:(NSDictionary*)args
-                authorization:(AuthorizationRef)authorization;
-
-- (void)setActive;
-- (void)checkForUpdate;
-- (void)startUpdate;
-- (KSRegistrationTicketType)ticketType;
-
-@end  // @interface KSRegistration
 
 @interface KeystoneGlue (Private)
 
@@ -270,22 +212,22 @@ NSString* const kVersionKey = @"KSVersion";
 
     [center addObserver:self
                selector:@selector(registrationComplete:)
-                   name:KSRegistrationDidCompleteNotification
+                   name:ksr::KSRegistrationDidCompleteNotification
                  object:nil];
 
     [center addObserver:self
                selector:@selector(promotionComplete:)
-                   name:KSRegistrationPromotionDidCompleteNotification
+                   name:ksr::KSRegistrationPromotionDidCompleteNotification
                  object:nil];
 
     [center addObserver:self
                selector:@selector(checkForUpdateComplete:)
-                   name:KSRegistrationCheckForUpdateNotification
+                   name:ksr::KSRegistrationCheckForUpdateNotification
                  object:nil];
 
     [center addObserver:self
                selector:@selector(installUpdateComplete:)
-                   name:KSRegistrationStartUpdateNotification
+                   name:ksr::KSRegistrationStartUpdateNotification
                  object:nil];
   }
 
@@ -334,7 +276,7 @@ NSString* const kVersionKey = @"KSVersion";
   // The stable channel has no tag.  If updating to stable, remove the
   // dev and beta tags since we've been "promoted".
   if (channel == nil)
-    channel = KSRegistrationRemoveExistingTag;
+    channel = ksr::KSRegistrationRemoveExistingTag;
 
   productID_ = [productID retain];
   appPath_ = [appPath retain];
@@ -483,7 +425,7 @@ NSString* const kVersionKey = @"KSVersion";
 }
 
 - (NSDictionary*)keystoneParameters {
-  NSNumber* xcType = [NSNumber numberWithInt:kKSPathExistenceChecker];
+  NSNumber* xcType = [NSNumber numberWithInt:ksr::kKSPathExistenceChecker];
   NSNumber* preserveTTToken = [NSNumber numberWithBool:YES];
   NSString* appInfoPlistPath = [self appInfoPlistPath];
   NSString* brandKey = kBrandKey;
@@ -496,18 +438,18 @@ NSString* const kVersionKey = @"KSVersion";
   }
 
   return [NSDictionary dictionaryWithObjectsAndKeys:
-             version_, KSRegistrationVersionKey,
-             appInfoPlistPath, KSRegistrationVersionPathKey,
-             kVersionKey, KSRegistrationVersionKeyKey,
-             xcType, KSRegistrationExistenceCheckerTypeKey,
-             appPath_, KSRegistrationExistenceCheckerStringKey,
-             url_, KSRegistrationServerURLStringKey,
-             preserveTTToken, KSRegistrationPreserveTrustedTesterTokenKey,
-             channel_, KSRegistrationTagKey,
-             appInfoPlistPath, KSRegistrationTagPathKey,
-             kChannelKey, KSRegistrationTagKeyKey,
-             brandPath, KSRegistrationBrandPathKey,
-             brandKey, KSRegistrationBrandKeyKey,
+             version_, ksr::KSRegistrationVersionKey,
+             appInfoPlistPath, ksr::KSRegistrationVersionPathKey,
+             kVersionKey, ksr::KSRegistrationVersionKeyKey,
+             xcType, ksr::KSRegistrationExistenceCheckerTypeKey,
+             appPath_, ksr::KSRegistrationExistenceCheckerStringKey,
+             url_, ksr::KSRegistrationServerURLStringKey,
+             preserveTTToken, ksr::KSRegistrationPreserveTrustedTesterTokenKey,
+             channel_, ksr::KSRegistrationTagKey,
+             appInfoPlistPath, ksr::KSRegistrationTagPathKey,
+             kChannelKey, ksr::KSRegistrationTagKeyKey,
+             brandPath, ksr::KSRegistrationBrandPathKey,
+             brandKey, ksr::KSRegistrationBrandKeyKey,
              nil];
 }
 
@@ -520,8 +462,8 @@ NSString* const kVersionKey = @"KSVersion";
     return;
   }
 
-  // Upon completion, KSRegistrationDidCompleteNotification will be posted,
-  // and -registrationComplete: will be called.
+  // Upon completion, ksr::KSRegistrationDidCompleteNotification will be
+  // posted, and -registrationComplete: will be called.
 
   // Mark an active RIGHT NOW; don't wait an hour for the first one.
   [registration_ setActive];
@@ -536,7 +478,7 @@ NSString* const kVersionKey = @"KSVersion";
 
 - (void)registrationComplete:(NSNotification*)notification {
   NSDictionary* userInfo = [notification userInfo];
-  if ([[userInfo objectForKey:KSRegistrationStatusKey] boolValue]) {
+  if ([[userInfo objectForKey:ksr::KSRegistrationStatusKey] boolValue]) {
     [self updateStatus:kAutoupdateRegistered version:nil];
   } else {
     // Dump registration_?
@@ -565,19 +507,20 @@ NSString* const kVersionKey = @"KSVersion";
 
   [registration_ checkForUpdate];
 
-  // Upon completion, KSRegistrationCheckForUpdateNotification will be posted,
-  // and -checkForUpdateComplete: will be called.
+  // Upon completion, ksr::KSRegistrationCheckForUpdateNotification will be
+  // posted, and -checkForUpdateComplete: will be called.
 }
 
 - (void)checkForUpdateComplete:(NSNotification*)notification {
   NSDictionary* userInfo = [notification userInfo];
 
-  if ([[userInfo objectForKey:KSRegistrationUpdateCheckErrorKey] boolValue]) {
+  if ([[userInfo objectForKey:ksr::KSRegistrationUpdateCheckErrorKey]
+          boolValue]) {
     [self updateStatus:kAutoupdateCheckFailed version:nil];
-  } else if ([[userInfo objectForKey:KSRegistrationStatusKey] boolValue]) {
+  } else if ([[userInfo objectForKey:ksr::KSRegistrationStatusKey] boolValue]) {
     // If an update is known to be available, go straight to
     // -updateStatus:version:.  It doesn't matter what's currently on disk.
-    NSString* version = [userInfo objectForKey:KSRegistrationVersionKey];
+    NSString* version = [userInfo objectForKey:ksr::KSRegistrationVersionKey];
     [self updateStatus:kAutoupdateAvailable version:version];
   } else {
     // If no updates are available, check what's on disk, because an update
@@ -599,15 +542,15 @@ NSString* const kVersionKey = @"KSVersion";
 
   [registration_ startUpdate];
 
-  // Upon completion, KSRegistrationStartUpdateNotification will be posted,
-  // and -installUpdateComplete: will be called.
+  // Upon completion, ksr::KSRegistrationStartUpdateNotification will be
+  // posted, and -installUpdateComplete: will be called.
 }
 
 - (void)installUpdateComplete:(NSNotification*)notification {
   NSDictionary* userInfo = [notification userInfo];
 
-  if (![[userInfo objectForKey:KSUpdateCheckSuccessfulKey] boolValue] ||
-      ![[userInfo objectForKey:KSUpdateCheckSuccessfullyInstalledKey]
+  if (![[userInfo objectForKey:ksr::KSUpdateCheckSuccessfulKey] boolValue] ||
+      ![[userInfo objectForKey:ksr::KSUpdateCheckSuccessfullyInstalledKey]
           intValue]) {
     [self updateStatus:kAutoupdateInstallFailed version:nil];
   } else {
@@ -712,7 +655,7 @@ NSString* const kVersionKey = @"KSVersion";
 }
 
 - (BOOL)isUserTicket {
-  return [registration_ ticketType] == kKSRegistrationUserTicket;
+  return [registration_ ticketType] == ksr::kKSRegistrationUserTicket;
 }
 
 - (BOOL)isOnReadOnlyFilesystem {
@@ -875,7 +818,7 @@ NSString* const kVersionKey = @"KSVersion";
     NSMutableDictionary* temp_parameters =
         [[parameters mutableCopy] autorelease];
     [temp_parameters setObject:SystemBrandFilePath()
-                        forKey:KSRegistrationBrandPathKey];
+                        forKey:ksr::KSRegistrationBrandPathKey];
     parameters = temp_parameters;
   }
 
@@ -886,13 +829,13 @@ NSString* const kVersionKey = @"KSVersion";
     return;
   }
 
-  // Upon completion, KSRegistrationPromotionDidCompleteNotification will be
-  // posted, and -promotionComplete: will be called.
+  // Upon completion, ksr::KSRegistrationPromotionDidCompleteNotification will
+  // be posted, and -promotionComplete: will be called.
 }
 
 - (void)promotionComplete:(NSNotification*)notification {
   NSDictionary* userInfo = [notification userInfo];
-  if ([[userInfo objectForKey:KSRegistrationStatusKey] boolValue]) {
+  if ([[userInfo objectForKey:ksr::KSRegistrationStatusKey] boolValue]) {
     if (synchronousPromotion_) {
       // Short-circuit: if performing a synchronous promotion, the promotion
       // came from the installer, which already set the permissions properly.

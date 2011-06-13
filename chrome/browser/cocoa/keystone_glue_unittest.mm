@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,14 +6,52 @@
 #import <objc/objc-class.h>
 
 #import "chrome/browser/cocoa/keystone_glue.h"
+#import "chrome/browser/cocoa/keystone_registration.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
-@interface FakeGlueRegistration : NSObject
+namespace ksr = keystone_registration;
+
+
+@interface FakeKeystoneRegistration : KSRegistration
 @end
 
 
-@implementation FakeGlueRegistration
+// This unit test implements FakeKeystoneRegistration as a KSRegistration
+// subclass. It won't be linked against KSRegistration, so provide a stub
+// KSRegistration class on which to base FakeKeystoneRegistration.
+@implementation KSRegistration
+
++ (id)registrationWithProductID:(NSString*)productID {
+  return nil;
+}
+
+- (BOOL)registerWithParameters:(NSDictionary*)args {
+  return NO;
+}
+
+- (BOOL)promoteWithParameters:(NSDictionary*)args
+                authorization:(AuthorizationRef)authorization {
+  return NO;
+}
+
+- (void)setActive {
+}
+
+- (void)checkForUpdate {
+}
+
+- (void)startUpdate {
+}
+
+- (ksr::KSRegistrationTicketType)ticketType {
+  return ksr::kKSRegistrationDontKnowWhatKindOfTicket;
+}
+
+@end
+
+
+@implementation FakeKeystoneRegistration
 
 // Send the notifications that a real KeystoneGlue object would send.
 
@@ -23,14 +61,14 @@
   NSDictionary* dictionary = [NSDictionary dictionaryWithObject:yesNumber
                                                          forKey:statusKey];
   NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
-  [center postNotificationName:@"KSRegistrationCheckForUpdateNotification"
+  [center postNotificationName:ksr::KSRegistrationCheckForUpdateNotification
                         object:nil
                       userInfo:dictionary];
 }
 
 - (void)startUpdate {
   NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
-  [center postNotificationName:@"KSRegistrationStartUpdateNotification"
+  [center postNotificationName:ksr::KSRegistrationStartUpdateNotification
                         object:nil];
 }
 
@@ -103,7 +141,7 @@
 }
 
 - (void)addFakeRegistration {
-  registration_ = [[FakeGlueRegistration alloc] init];
+  registration_ = [[FakeKeystoneRegistration alloc] init];
 }
 
 - (void)fakeAboutWindowCallback:(NSNotification*)notification {

@@ -752,6 +752,8 @@
         'browser/cocoa/install_from_dmg.mm',
         'browser/cocoa/keystone_glue.h',
         'browser/cocoa/keystone_glue.mm',
+        'browser/cocoa/keystone_registration.h',
+        'browser/cocoa/keystone_registration.mm',
         'browser/cocoa/scoped_authorizationref.h',
         'browser/command_updater.cc',
         'browser/command_updater.h',
