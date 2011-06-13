@@ -107,6 +107,13 @@ WebKit::WebInputEvent::Type TouchEventTypeFromEvent(
   }
 }
 
+inline void UpdateTouchParams(const views::TouchEvent& event,
+                              WebKit::WebTouchPoint* tpoint) {
+  tpoint->radiusX = event.radius_x();
+  tpoint->radiusY = event.radius_y();
+  tpoint->rotationAngle = event.angle();
+}
+
 void UpdateTouchPointPosition(const views::TouchEvent* event,
                               const gfx::Point& origin,
                               WebKit::WebTouchPoint* tpoint) {
@@ -562,6 +569,8 @@ views::View::TouchStatus RenderWidgetHostViewViews::OnTouchEvent(
 
   if (status != TOUCH_STATUS_START)
     status = TOUCH_STATUS_CONTINUE;
+
+  UpdateTouchParams(event, point);
 
   // Update the location and state of the point.
   point->state = TouchPointStateFromEvent(&event);

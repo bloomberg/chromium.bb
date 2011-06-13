@@ -185,22 +185,22 @@ TouchEvent::TouchEvent(ui::EventType type,
                        int y,
                        int flags,
                        int touch_id,
-                       float radius,
-                       float angle,
-                       float ratio)
+                       float radius_x,
+                       float radius_y,
+                       float angle)
       : LocatedEvent(type, gfx::Point(x, y), flags),
         touch_id_(touch_id),
-        radius_(radius),
-        angle_(angle),
-        ratio_(ratio) {
+        radius_x_(radius_x),
+        radius_y_(radius_y),
+        angle_(angle) {
 }
 
 TouchEvent::TouchEvent(const TouchEvent& model, View* source, View* target)
     : LocatedEvent(model, source, target),
       touch_id_(model.touch_id_),
-      radius_(model.radius_),
-      angle_(model.angle_),
-      ratio_(model.ratio_) {
+      radius_x_(model.radius_x_),
+      radius_y_(model.radius_y_),
+      angle_(model.angle_) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -209,9 +209,9 @@ TouchEvent::TouchEvent(const TouchEvent& model, View* source, View* target)
 TouchEvent::TouchEvent(const TouchEvent& model, View* root)
     : LocatedEvent(model, root),
       touch_id_(model.touch_id_),
-      radius_(model.radius_),
-      angle_(model.angle_),
-      ratio_(model.ratio_) {
+      radius_x_(model.radius_x_),
+      radius_y_(model.radius_y_),
+      angle_(model.angle_) {
 }
 #endif
 

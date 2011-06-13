@@ -245,53 +245,13 @@ uint16 GetCharacterFromXKeyEvent(XKeyEvent* key) {
           result.length() == 1) ? result[0] : 0;
 }
 
-float GetTouchRadiusFromXEvent(XEvent* xev) {
-  float diameter = 0.0;
-
+float GetTouchParamFromXEvent(XEvent* xev,
+                              TouchFactory::TouchParam tp,
+                              float default_value) {
 #if defined(HAVE_XINPUT2)
-  TouchFactory* touch_factory = TouchFactory::GetInstance();
-  touch_factory->ExtractTouchParam(*xev, TouchFactory::TP_TOUCH_MAJOR,
-                                   &diameter);
+  TouchFactory::GetInstance()->ExtractTouchParam(*xev, tp, &default_value);
 #endif
-
-  return diameter / 2.0;
-}
-
-float GetTouchAngleFromXEvent(XEvent* xev) {
-  float angle = 0.0;
-
-#if defined(HAVE_XINPUT2)
-  TouchFactory* touch_factory = TouchFactory::GetInstance();
-  touch_factory->ExtractTouchParam(*xev, TouchFactory::TP_ORIENTATION,
-                                   &angle);
-#endif
-
-  return angle;
-}
-
-
-float GetTouchRatioFromXEvent(XEvent* xev) {
-  float ratio = 1.0;
-
-#if defined(HAVE_XINPUT2)
-  TouchFactory* touch_factory = TouchFactory::GetInstance();
-  float major_v = -1.0;
-  float minor_v = -1.0;
-
-  if (!touch_factory->ExtractTouchParam(*xev,
-                                        TouchFactory::TP_TOUCH_MAJOR,
-                                        &major_v) ||
-      !touch_factory->ExtractTouchParam(*xev,
-                                        TouchFactory::TP_TOUCH_MINOR,
-                                        &minor_v))
-    return ratio;
-
-  // In case minor axis exists but is zero.
-  if (minor_v > 0.0)
-    ratio = major_v / minor_v;
-#endif
-
-  return ratio;
+  return default_value;
 }
 
 }  // namespace
@@ -421,9 +381,15 @@ TouchEvent::TouchEvent(NativeEvent2 native_event_2,
                        FromNativeEvent2 from_native)
     : LocatedEvent(native_event_2, from_native),
       touch_id_(GetTouchIDFromXEvent(native_event_2)),
-      radius_(GetTouchRadiusFromXEvent(native_event_2)),
-      angle_(GetTouchAngleFromXEvent(native_event_2)),
-      ratio_(GetTouchRatioFromXEvent(native_event_2)) {
+      radius_x_(GetTouchParamFromXEvent(native_event_2,
+                                        TouchFactory::TP_TOUCH_MAJOR,
+                                        2.0) / 2.0),
+      radius_y_(GetTouchParamFromXEvent(native_event_2,
+                                        TouchFactory::TP_TOUCH_MINOR,
+                                        2.0) / 2.0),
+      angle_(GetTouchParamFromXEvent(native_event_2,
+                                     TouchFactory::TP_ORIENTATION,
+                                     0.0)) {
   if (type() == ui::ET_TOUCH_PRESSED || type() == ui::ET_TOUCH_RELEASED) {
     TouchFactory* factory = TouchFactory::GetInstance();
     float slot;
