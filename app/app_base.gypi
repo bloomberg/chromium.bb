@@ -7,7 +7,6 @@
     {
       'target_name': 'app_base',
       'type': 'static_library',
-      'msvs_guid': '4631946D-7D5F-44BD-A5A8-504C0A7033BE',
       'dependencies': [
         '../base/base.gyp:base',
         '../base/base.gyp:base_static',

@@ -27,7 +27,6 @@
         {
           'target_name': 'breakpad_sender',
           'type': 'static_library',
-          'msvs_guid': '9946A048-043B-4F8F-9E07-9297B204714C',
           'variables': {
             'breakpad_sender_target': 1,
           },
@@ -42,7 +41,6 @@
         {
           'target_name': 'breakpad_sender_win64',
           'type': 'static_library',
-          'msvs_guid': '237AEB58-9D74-41EF-9D49-A6ECE24EA8BC',
           'variables': {
             'breakpad_sender_target': 1,
           },

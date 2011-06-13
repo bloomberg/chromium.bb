@@ -13,7 +13,6 @@
     {
       'target_name': 'app_unittests',
       'type': 'executable',
-      'msvs_guid': 'B4D59AE8-8D2F-97E1-A8E9-6D2826729530',
       'dependencies': [
         'app_base',
         'app_resources',
@@ -81,7 +80,6 @@
     {
       'target_name': 'app_resources',
       'type': 'none',
-      'msvs_guid': '3FBC4235-3FBD-46DF-AEDC-BADBBA13A095',
       'variables': {
         'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/app/app_resources',
       },
