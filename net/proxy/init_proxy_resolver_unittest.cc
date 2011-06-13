@@ -4,7 +4,9 @@
 
 #include <vector>
 
+#include "base/message_loop.h"
 #include "base/string_util.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
@@ -576,6 +578,8 @@ class SynchronousSuccessDhcpFetcher : public DhcpProxyScriptFetcher {
  private:
   GURL gurl_;
   string16 expected_text_;
+
+  DISALLOW_COPY_AND_ASSIGN(SynchronousSuccessDhcpFetcher);
 };
 
 // All of the tests above that use InitProxyResolver have tested
@@ -631,6 +635,69 @@ TEST(InitProxyResolverTest, AutodetectDhcpFailParse) {
   EXPECT_EQ(NULL, resolver.script_data());
 
   EXPECT_FALSE(effective_config.has_pac_url());
+}
+
+class AsyncFailDhcpFetcher
+    : public DhcpProxyScriptFetcher,
+      public base::RefCountedThreadSafe<AsyncFailDhcpFetcher> {
+ public:
+  AsyncFailDhcpFetcher() : callback_(NULL) {
+  }
+
+  int Fetch(string16* utf16_text, CompletionCallback* callback) OVERRIDE {
+    callback_ = callback;
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(this, &AsyncFailDhcpFetcher::CallbackWithFailure));
+    return ERR_IO_PENDING;
+  }
+
+  void Cancel() OVERRIDE {
+    callback_ = NULL;
+  }
+
+  const GURL& GetPacURL() const OVERRIDE {
+    return dummy_gurl_;
+  }
+
+  void CallbackWithFailure() {
+    if (callback_)
+      callback_->Run(ERR_PAC_NOT_IN_DHCP);
+  }
+
+ private:
+  GURL dummy_gurl_;
+  CompletionCallback* callback_;
+};
+
+TEST(InitProxyResolverTest, DhcpCancelledByDestructor) {
+  // This regression test would crash before
+  // http://codereview.chromium.org/7044058/
+  // Thus, we don't care much about actual results (hence no EXPECT or ASSERT
+  // macros below), just that it doesn't crash.
+  Rules rules;
+  RuleBasedProxyResolver resolver(&rules, true /*expects_pac_bytes*/);
+  RuleBasedProxyScriptFetcher fetcher(&rules);
+
+  scoped_refptr<AsyncFailDhcpFetcher> dhcp_fetcher(new AsyncFailDhcpFetcher());
+
+  ProxyConfig config;
+  config.set_auto_detect(true);
+  rules.AddFailDownloadRule("http://wpad/wpad.dat");
+
+  TestCompletionCallback callback;
+
+  // Scope so InitProxyResolver gets destroyed early.
+  {
+    InitProxyResolver init(&resolver, &fetcher, dhcp_fetcher.get(), NULL);
+    init.Init(config, base::TimeDelta(), NULL, &callback);
+  }
+
+  // Run the message loop to let the DHCP fetch complete and post the results
+  // back. Before the fix linked to above, this would try to invoke on
+  // the callback object provided by InitProxyResolver after it was
+  // no longer valid.
+  MessageLoop::current()->RunAllPending();
 }
 
 }  // namespace

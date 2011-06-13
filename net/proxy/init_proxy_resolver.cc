@@ -371,6 +371,10 @@ void InitProxyResolver::Cancel() {
       break;
   }
 
+  // This is safe to call in any state.
+  if (dhcp_proxy_script_fetcher_)
+    dhcp_proxy_script_fetcher_->Cancel();
+
   DidCompleteInit();
 }
 
