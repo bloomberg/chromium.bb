@@ -44,3 +44,6 @@ NaClHasDuplicatePrefix
 
 # Flag defining that more than one segment prefix has been specified.
 NaClHasAmbigSegmentPrefixes
+
+# Flag defining that the REX prefix is not located last.
+NaClRexPrefixNotLast

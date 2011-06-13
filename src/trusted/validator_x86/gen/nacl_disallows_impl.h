@@ -19,6 +19,7 @@ static const char* const g_NaClDisallowsFlagName[NaClDisallowsFlagEnumSize + 1] 
   "NaClData16Disallowed",
   "NaClHasDuplicatePrefix",
   "NaClHasAmbigSegmentPrefixes",
+  "NaClRexPrefixNotLast",
   "NaClDisallowsFlagEnumSize"
 };
 

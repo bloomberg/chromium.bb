@@ -1,4 +1,5 @@
-/* Copyright (c) 2009 The Native Client Authors. All rights reserved.
+/*
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -180,7 +181,15 @@ static NaClOpFlags NaClGetArg2PlusFlags(NaClInstCat icat,
       }
     case Exchange:
       if (op_index == 2) {
+        /* The second argument is always both a set and a use. */
         if (visible_index == 2) {
+          return NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpDest);
+        } else {
+          return NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse);
+        }
+      } else if (op_index == 3) {
+        /* If it has a 3rd argument, it is like a cmpxchg. */
+        if (visible_index == 1) {
           return NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpDest);
         } else {
           return NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse);

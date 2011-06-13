@@ -124,7 +124,6 @@ static Bool NaClConsumePrefixBytes(NaClInstState* state) {
   uint8_t next_byte;
   int i;
   uint32_t prefix_form;
-  int rex_index = -1;
   for (i = 0; i < kNaClMaximumPrefixBytes; ++i) {
     /* Quit early if no more bytes in segment. */
     if (state->bytes.length >= state->length_limit) break;
@@ -161,27 +160,11 @@ static Bool NaClConsumePrefixBytes(NaClInstState* state) {
     /* If the prefix byte is a REX prefix, record its value, since
      * bits 5-8 of this prefix bit may be needed later.
      */
-    if (NACL_TARGET_SUBARCH == 64) {
-      if (prefix_form == kPrefixREX) {
-        state->rexprefix = next_byte;
-        DEBUG(NaClLog(LOG_INFO,
-                      "  rexprefix = %02"NACL_PRIx8"\n", state->rexprefix));
-        ++state->num_rex_prefixes;
-        rex_index = i;
-      }
-    }
-  }
-  if (NACL_TARGET_SUBARCH == 64) {
-    /* REX prefix must be last, unless FO exists. If FO
-     * exists, it must be after REX (Intel Manual).
-     *
-     * NOTE: (karl) It appears that this constraint is violated
-     * with compiled code of /bin/ld_static. According to AMD,
-     * the rex prefix must be last. Changing code to allow REX
-     * prefix to occur anywhere.
-     */
-    if (rex_index >= 0) {
-      return (Bool) ((rex_index + 1) == state->num_prefix_bytes);
+    if ((NACL_TARGET_SUBARCH == 64) && prefix_form == kPrefixREX) {
+      state->rexprefix = next_byte;
+      DEBUG(NaClLog(LOG_INFO,
+                    "  rexprefix = %02"NACL_PRIx8"\n", state->rexprefix));
+      ++state->num_rex_prefixes;
     }
   }
   return TRUE;

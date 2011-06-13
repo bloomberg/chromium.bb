@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /* Captures instructions that can be locked.
@@ -36,8 +36,8 @@ static const NaClMnemonic kLockableOp[] = {
   /* Note: The following two instructions are not implemented as separate
    * instructions from Cmpxchg, but are separated in the AMD manual.
    */
-  /* InstCmpxchg8b, */
-  /* InstCmpxchg16b, */
+  InstCmpxchg8b,
+  InstCmpxchg16b,
   InstDec,
   InstInc,
   InstNeg,

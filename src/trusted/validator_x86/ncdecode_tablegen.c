@@ -25,7 +25,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include <time.h>
 #include <string.h>
 
 #define NEEDSNACLINSTTYPESTRING
@@ -1981,10 +1980,6 @@ void NaClInstPrintTablegen(struct Gio* f, int index,
  */
 static void NaClPrintHeader(struct Gio* f, const char* argv0,
                             const char* fname) {
-  time_t timeofday;
-  if (time(&timeofday) < 0) {
-    NaClFatal("time() failed\n");
-  }
   gprintf(f, "/*\n");
   gprintf(f, " * THIS FILE IS AUTO-GENERATED. DO NOT EDIT.\n");
   gprintf(f, " * Compiled for %s.\n", NaClRunModeName(NACL_FLAGS_run_mode));

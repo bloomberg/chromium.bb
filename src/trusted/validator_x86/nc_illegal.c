@@ -67,6 +67,8 @@ static const char* NaClReasonWhyDisallowed(NaClDisallowsFlag flag) {
       return
           "Specifying different segment registers using prefix bytes "
           "is not allowed by Native Client";
+    case NaClRexPrefixNotLast:
+      return "REX prefix byte must appear last";
     default:
       return NULL;
   }
@@ -114,6 +116,9 @@ static void NaClCheckForPrefixIssues(NaClValidatorState* state,
                   NaClGetReasonWhyDisallowed(NaClMarkedInvalid)));
   }
 
+  /* If there aren't prefix bytes, there isn't anything to check. */
+  if (num_prefix_bytes == 0) return;
+
   /* Don't allow multiple prefix bytes, except for the special
    * case of the pair DATA16 and LOCK (allowed so that one can
    * lock short integers).
@@ -122,11 +127,10 @@ static void NaClCheckForPrefixIssues(NaClValidatorState* state,
    * recognized as special cases, and need not be processed here.
    */
   if (num_prefix_bytes > 1) {
-    /* Allow data prefix if lock prefix also given. */
     if ((num_prefix_bytes == 2) &&
         (inst_state->prefix_mask & kPrefixDATA16) &&
         (inst_state->prefix_mask & kPrefixLOCK)) {
-      /* Allow special case. */
+      /* Allow data prefix if lock prefix also given. */
     } else {
       *is_legal = FALSE;
       *disallows_flags |= NACL_DISALLOWS_FLAG(NaClTooManyPrefixBytes);
@@ -232,6 +236,54 @@ static void NaClCheckForPrefixIssues(NaClValidatorState* state,
     DEBUG(NaClLog(LOG_INFO, "%s\n",
                   NaClGetReasonWhyDisallowed(NaClHasDuplicatePrefix)));
   }
+
+  /* Check the location of the REX prefix, if one is specified.. */
+  if (inst_state->prefix_mask & kPrefixREX) {
+    /* First find the locations of the REX prefix. */
+    int i;
+    int rex_index = -1;
+    for (i = 0; i < inst_state->num_prefix_bytes; ++i) {
+      char prefix = inst_state->bytes.byte[i];
+      switch (prefix) {
+        case 0x40:
+        case 0x41:
+        case 0x42:
+        case 0x43:
+        case 0x44:
+        case 0x45:
+        case 0x46:
+        case 0x47:
+        case 0x48:
+        case 0x49:
+        case 0x4a:
+        case 0x4b:
+        case 0x4c:
+        case 0x4d:
+        case 0x4e:
+        case 0x4f:
+          rex_index = i;
+          break;
+        default:
+          break;
+      }
+    }
+    /* NOTE: REX prefix must be last, unless FO exists. If FO
+     * exists, it must be after REX (Intel Manual).
+     *
+     * NOTE: (karl) It appears that this constraint is violated
+     * with compiled code of /bin/ld_static. According to AMD,
+     * the rex prefix must be last.
+     *
+     * For now, we will follow the convention of gcc, which places
+     * the LOCK byte in front of the REX byte.
+     */
+    if (rex_index >= 0) {
+      if ((rex_index + 1) != inst_state->num_prefix_bytes) {
+        *is_legal = FALSE;
+        *disallows_flags |= NACL_DISALLOWS_FLAG(NaClRexPrefixNotLast);
+      }
+    }
+  }
 }
 
 /* Checks instruction details of the current instruction to see if there
@@ -270,7 +322,6 @@ static void NaClCheckIfMarkedIllegal(NaClValidatorState* state,
     case NACLi_LONGMODE:
     case NACLi_SVM:
     case NACLi_3BYTE:
-    case NACLi_CMPXCHG16B:
     case NACLi_UNDEFINED:
       *is_legal = FALSE;
       *disallows_flags |= NACL_DISALLOWS_FLAG(NaClMarkedIllegal);

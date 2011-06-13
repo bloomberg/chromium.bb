@@ -2902,13 +2902,13 @@ Target: x86-32 bit mode
     Cmpxchg {%al}, $Eb, $Gb
       RegAL                   OpUse OpSet OpImplicit
       E_Operand               OpUse OpSet OpDest
-      G_Operand               OpUse
+      G_Operand               OpUse OpSet
   --- b1 ---
   0f b1                       386 OpcodeUsesModRm OpcodeLockable OpcodeAllowsData16 OperandSize_w OperandSize_v
     Cmpxchg {$rAXv}, $Ev, $Gv
       RegREAX                 OpUse OpSet OpImplicit
       E_Operand               OpUse OpSet OpDest
-      G_Operand               OpUse
+      G_Operand               OpUse OpSet
   --- b2 ---
   0f b2                       386 ModRmModIsnt0x3 OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v NaClIllegal
     Lss $SGz, $Mp
@@ -3026,11 +3026,11 @@ Target: x86-32 bit mode
       Xmm_E_Operand           OpUse
       I_Operand               OpUse
   --- c7 ---
-  0f c7 / 1                   CMPXCHG8B OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm OperandSize_v
+  0f c7 / 1                   CMPXCHG8B OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm OpcodeLockable OperandSize_v
     Cmpxchg8b {%edx}, {%eax}, $Mq
       RegEDX                  OpUse OpSet OpImplicit
       RegEAX                  OpUse OpSet OpImplicit
-      Mo_Operand              OpUse
+      Mo_Operand              OpUse OpSet OpDest
   0f c7                       INVALID OpcodeUsesModRm NaClIllegal
   --- c8 ---
   0f c8 - r0                  386 OpcodePlusR OpcodeAllowsData16 OperandSize_w OperandSize_v

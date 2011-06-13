@@ -295,7 +295,7 @@ test_env.ComponentLibrary('ncdis_util',
 
 def TestGeneratedInstructionTables(target_subarch, golden_filename, groups):
   test_name = 'ncdecode_tablegen_inst_tables_' + target_subarch + '.out'
-  golden_output = env.File(TESTDATA_DIR + test_subarch + '/' + golden_filename)
+  golden_output = env.File('gen/' + golden_filename + '_' + target_subarch + '.h')
   test = test_env.CommandTest(
       test_name,
       [ncdecode_tablegen, '-m%s' % (target_subarch,)],
@@ -305,7 +305,7 @@ def TestGeneratedInstructionTables(target_subarch, golden_filename, groups):
 
 def TestGeneratedSubregisterTables(target_subarch, golden_filename, groups):
   test_name = 'ncdecode_tablegen_subreg_tables_' + target_subarch + '.out'
-  golden_output = env.File(TESTDATA_DIR + test_subarch + '/' + golden_filename)
+  golden_output = env.File('gen/' + golden_filename + '_' + target_subarch + '.h')
   test = test_env.CommandTest(
       test_name,
       [ncdecode_tablegen, '-m%s -nacl_subregs' % (target_subarch,)],
@@ -320,9 +320,9 @@ def TestGeneratedSubregisterTables(target_subarch, golden_filename, groups):
 # to make sure if the 32-bit generator is used, we still generate the
 # same source files.
 for test_subarch in ['32', '64']:
-  TestGeneratedInstructionTables(test_subarch, 'nc_opcode_table.h',
+  TestGeneratedInstructionTables(test_subarch, 'nc_opcode_table',
                                  ['small_tests', 'validator_tests'])
-  TestGeneratedSubregisterTables(test_subarch, 'nc_subregs.h',
+  TestGeneratedSubregisterTables(test_subarch, 'nc_subregs',
                                  ['small_tests', 'validator_tests'])
 
 # ======================================================================

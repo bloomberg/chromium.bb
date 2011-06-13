@@ -24,7 +24,8 @@ typedef enum NaClDisallowsFlag {
   NaClData16Disallowed = 9,
   NaClHasDuplicatePrefix = 10,
   NaClHasAmbigSegmentPrefixes = 11,
-  NaClDisallowsFlagEnumSize = 12, /* special size marker */
+  NaClRexPrefixNotLast = 12,
+  NaClDisallowsFlagEnumSize = 13, /* special size marker */
 } NaClDisallowsFlag;
 
 /* Returns the name of an NaClDisallowsFlag constant. */

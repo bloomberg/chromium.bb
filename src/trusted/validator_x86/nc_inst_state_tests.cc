@@ -576,7 +576,7 @@ TEST_F(NcInstStateTests, ConsumeRexThenNonRexPrefixPairs) {
       for (uint8_t rex = NaClRexMin; rex <= NaClRexMax; ++rex) {
         Plant(rex);
         Plant(prefix_values[i].byte);
-        EXPECT_FALSE(Bool2bool(NaClConsumePrefixBytes(_state)));
+        EXPECT_TRUE(Bool2bool(NaClConsumePrefixBytes(_state)));
         VerifyConsumedPrefixBytes(2, 1, prefix_values[i].mask | kPrefixREX);
         ResetInput();
         ResetState();

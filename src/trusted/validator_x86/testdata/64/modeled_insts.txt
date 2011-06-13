@@ -2807,13 +2807,13 @@ Target: x86-64 bit mode
     Cmpxchg {%al}, $Eb, $Gb
       RegAL                   OpUse OpSet OpImplicit
       E_Operand               OpUse OpSet OpDest
-      G_Operand               OpUse
+      G_Operand               OpUse OpSet
   --- b1 ---
   0f b1                       386 OpcodeUsesModRm OpcodeLockable OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Cmpxchg {$rAXv}, $Ev, $Gv
       RegREAX                 OpUse OpSet OpImplicit
       E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
-      G_Operand               OpUse
+      G_Operand               OpUse OpSet OperandZeroExtends_v
   --- b2 ---
   0f b2                       386 ModRmModIsnt0x3 OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o NaClIllegal
     Lss $SGz, $Mp
@@ -2931,16 +2931,16 @@ Target: x86-64 bit mode
       Xmm_E_Operand           OpUse
       I_Operand               OpUse
   --- c7 ---
-  0f c7 / 1                   CMPXCHG8B OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm OperandSize_v
+  0f c7 / 1                   CMPXCHG8B OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm OpcodeLockable OperandSize_v
     Cmpxchg8b {%edx}, {%eax}, $Mq
       RegEDX                  OpUse OpSet OpImplicit
       RegEAX                  OpUse OpSet OpImplicit
-      Mo_Operand              OpUse
-  0f c7 / 1                   CMPXCHG16B OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm OperandSize_o
+      Mo_Operand              OpUse OpSet OpDest
+  0f c7 / 1                   CMPXCHG16B OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm OpcodeLockable OperandSize_o
     Cmpxchg16b {%rdx}, {%eax}, $Mdq
       RegRDX                  OpUse OpSet OpImplicit
       RegEAX                  OpUse OpSet OpImplicit
-      Mdq_Operand             OpUse
+      Mdq_Operand             OpUse OpSet OpDest
   0f c7                       INVALID OpcodeUsesModRm NaClIllegal
   --- c8 ---
   0f c8 - r0                  386 OpcodePlusR OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
