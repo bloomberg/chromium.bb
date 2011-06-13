@@ -183,8 +183,8 @@ void ChromotingHost::AddStatusObserver(
 void ChromotingHost::OnConnectionOpened(ConnectionToClient* connection) {
   DCHECK_EQ(context_->network_message_loop(), MessageLoop::current());
   VLOG(1) << "Connection to client established.";
+  // TODO(wez): ChromotingHost shouldn't need to know about Me2Mom.
   if (is_me2mom_) {
-    // TODO(wez): Improve our authentication framework.
     context_->main_message_loop()->PostTask(
         FROM_HERE,
         NewRunnableMethod(this, &ChromotingHost::ProcessPreAuthentication,
@@ -276,6 +276,13 @@ void ChromotingHost::OnNewClientSession(
     protocol::SessionManager::IncomingSessionResponse* response) {
   base::AutoLock auto_lock(lock_);
   if (state_ != kStarted) {
+    *response = protocol::SessionManager::DECLINE;
+    return;
+  }
+
+  // If we are running Me2Mom and already have an authenticated client then
+  // reject the connection immediately.
+  if (is_me2mom_ && HasAuthenticatedClients()) {
     *response = protocol::SessionManager::DECLINE;
     return;
   }
@@ -413,6 +420,7 @@ bool ChromotingHost::HasAuthenticatedClients() const {
 void ChromotingHost::EnableCurtainMode(bool enable) {
   // TODO(jamiewalch): This will need to be more sophisticated when we think
   // about proper crash recovery and daemon mode.
+  // TODO(wez): CurtainMode shouldn't be driven directly by ChromotingHost.
   if (is_me2mom_ || enable == is_curtained_)
     return;
   desktop_environment_->curtain()->EnableCurtainMode(enable);
