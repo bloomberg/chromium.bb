@@ -393,24 +393,34 @@ void GpuCommandBufferStub::SwapBuffersCallback() {
 
 void GpuCommandBufferStub::AcceleratedSurfaceBuffersSwapped(
     uint64 swap_buffers_count) {
-  TRACE_EVENT0("gpu",
-               "GpuCommandBufferStub::AcceleratedSurfaceBuffersSwapped");
+  TRACE_EVENT1("gpu",
+               "GpuCommandBufferStub::AcceleratedSurfaceBuffersSwapped",
+               "frame", swap_buffers_count);
 
   // Multiple swapbuffers may get consolidated together into a single
   // AcceleratedSurfaceBuffersSwapped call. Since OnSwapBuffers expects to be
   // called one time for every swap, make up the difference here.
   uint64 delta = swap_buffers_count -
       scheduler_->acknowledged_swap_buffers_count();
-
   scheduler_->set_acknowledged_swap_buffers_count(swap_buffers_count);
 
-  for(uint64 i = 0; i < delta; i++)
+  for(uint64 i = 0; i < delta; i++) {
     OnSwapBuffers();
-
-  // Wake up the GpuScheduler to start doing work again.
-  scheduler_->SetScheduled(true);
+    // Wake up the GpuScheduler to start doing work again.
+    scheduler_->SetScheduled(true);
+  }
 }
 #endif  // defined(OS_MACOSX)
+
+void GpuCommandBufferStub::CommandBufferWasDestroyed() {
+  TRACE_EVENT0("gpu", "GpuCommandBufferStub::CommandBufferWasDestroyed");
+  // In case the renderer is currently blocked waiting for a sync reply from
+  // the stub, this method allows us to cleanup and unblock pending messages.
+  while (!scheduler_->IsScheduled())
+    scheduler_->SetScheduled(true);
+  // Handle any deferred messages now that the scheduler is scheduled.
+  HandleDeferredMessages();
+}
 
 void GpuCommandBufferStub::ResizeCallback(gfx::Size size) {
   if (handle_ == gfx::kNullPluginWindow) {

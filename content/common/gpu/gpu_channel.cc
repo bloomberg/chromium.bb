@@ -9,6 +9,7 @@
 #include "content/common/gpu/gpu_channel.h"
 
 #include "base/command_line.h"
+#include "base/debug/trace_event.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
 #include "content/common/child_process.h"
@@ -254,6 +255,8 @@ void GpuChannel::OnCreateOffscreenCommandBuffer(
       0, 0, watchdog_));
   router_.AddRoute(*route_id, stub.get());
   stubs_.AddWithID(stub.release(), *route_id);
+  TRACE_EVENT1("gpu", "GpuChannel::OnCreateOffscreenCommandBuffer",
+               "route_id", route_id);
 #else
   *route_id = MSG_ROUTING_NONE;
 #endif
@@ -261,7 +264,14 @@ void GpuChannel::OnCreateOffscreenCommandBuffer(
 
 void GpuChannel::OnDestroyCommandBuffer(int32 route_id) {
 #if defined(ENABLE_GPU)
+  TRACE_EVENT1("gpu", "GpuChannel::OnDestroyCommandBuffer",
+               "route_id", route_id);
   if (router_.ResolveRoute(route_id)) {
+    GpuCommandBufferStub* stub = stubs_.Lookup(route_id);
+    // In case the renderer is currently blocked waiting for a sync reply from
+    // the stub, allow the stub to clean up and unblock pending messages here:
+    if (stub != NULL)
+      stub->CommandBufferWasDestroyed();
     router_.RemoveRoute(route_id);
     stubs_.Remove(route_id);
   }

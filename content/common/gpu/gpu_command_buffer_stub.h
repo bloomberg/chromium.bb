@@ -77,6 +77,10 @@ class GpuCommandBufferStub
   void AcceleratedSurfaceBuffersSwapped(uint64 swap_buffers_count);
 #endif  // defined(OS_MACOSX)
 
+  // Called when the command buffer was destroyed, and the stub should now
+  // unblock itself and handle pending messages.
+  void CommandBufferWasDestroyed();
+
  private:
   // Message handlers:
   void OnInitialize(base::SharedMemoryHandle ring_buffer,

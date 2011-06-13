@@ -76,7 +76,6 @@ class RenderWidgetHostViewMac;
 
 - (id)initWithRenderWidgetHostViewMac:(RenderWidgetHostViewMac*)r
                          pluginHandle:(gfx::PluginWindowHandle)pluginHandle;
-- (void)drawView;
 
 // Sets the list of rectangles that should show the web page, rather than the
 // accelerated plugin. This is used to simulate the iframe-based trick that web

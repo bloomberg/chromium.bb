@@ -137,7 +137,7 @@ const unsigned int kMaxOutstandingSwapBuffersCallsPerOnscreenContext = 1;
 #endif
 
 void GpuScheduler::PutChanged(bool sync) {
-  TRACE_EVENT0("gpu", "GpuScheduler:PutChanged");
+  TRACE_EVENT1("gpu", "GpuScheduler:PutChanged", "this", this);
   CommandBuffer::State state = command_buffer_->GetState();
   parser_->set_put(state.put_offset);
 
@@ -148,7 +148,7 @@ void GpuScheduler::PutChanged(bool sync) {
 }
 
 void GpuScheduler::ProcessCommands() {
-  TRACE_EVENT0("gpu", "GpuScheduler:ProcessCommands");
+  TRACE_EVENT1("gpu", "GpuScheduler:ProcessCommands", "this", this);
   CommandBuffer::State state = command_buffer_->GetState();
   if (state.error != error::kNoError)
     return;
@@ -173,6 +173,7 @@ void GpuScheduler::ProcessCommands() {
   if (do_rate_limiting &&
       swap_buffers_count_ - acknowledged_swap_buffers_count_ >=
       kMaxOutstandingSwapBuffersCallsPerOnscreenContext) {
+    TRACE_EVENT0("gpu", "EarlyOut_OSX_Throttle");
     // Stop doing work on this command buffer. In the GPU process,
     // receipt of the GpuMsg_AcceleratedSurfaceBuffersSwappedACK
     // message causes ProcessCommands to be scheduled again.
@@ -226,8 +227,9 @@ void GpuScheduler::ProcessCommands() {
 }
 
 void GpuScheduler::SetScheduled(bool scheduled) {
-  TRACE_EVENT2("gpu", "GpuScheduler:SetScheduled", "scheduled", scheduled,
-               "unscheduled_count_", unscheduled_count_);
+  TRACE_EVENT2("gpu", "GpuScheduler:SetScheduled", "this", this,
+               "new unscheduled_count_",
+               unscheduled_count_ + (scheduled? -1 : 1));
   if (scheduled) {
     --unscheduled_count_;
     DCHECK_GE(unscheduled_count_, 0);
