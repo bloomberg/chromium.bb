@@ -151,15 +151,6 @@ def BuildScript(status, context):
             r'build\all.sln',
             '/build', context['gyp_mode']
             ])
-  with Step('gyp_tests', status, halt_on_fail=False):
-    Command(
-        context,
-        cmd=[
-            sys.executable,
-            'trusted_test.py',
-            '--config', context['gyp_mode'],
-            '--bits', '32'
-            ])
 
   # The main compile step.
   with Step('scons_compile', status):

@@ -83,9 +83,6 @@ fi
 echo @@@BUILD_STEP gyp_compile@@@
 make -C .. -k -j12 V=1 BUILDTYPE=${GYPMODE}
 
-echo @@@BUILD_STEP gyp_tests@@@
-python trusted_test.py --config ${GYPMODE} --bits ${BITS}
-
 echo @@@BUILD_STEP scons_compile${BITS}@@@
 ./scons -j 8 -k --verbose ${GLIBCOPTS} --mode=${MODE}-host,nacl \
     platform=x86-${BITS}

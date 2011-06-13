@@ -76,9 +76,6 @@ fi
 echo @@@BUILD_STEP gyp_compile@@@
 xcodebuild -project build/all.xcodeproj -configuration ${GYPMODE}
 
-echo @@@BUILD_STEP gyp_tests@@@
-python trusted_test.py --config ${GYPMODE}
-
 echo @@@BUILD_STEP scons_compile@@@
 ./scons -j 8 -k --verbose ${GLIBCOPTS} --mode=${MODE}-host,nacl \
     platform=x86-${BITS}

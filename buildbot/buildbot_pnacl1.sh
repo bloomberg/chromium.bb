@@ -104,9 +104,6 @@ gyp-arm-build() {
 
   echo "@@@BUILD_STEP gyp_compile [${gypmode}]@@@"
   make -C .. -k -j8 V=1 BUILDTYPE=${gypmode}
-
-  echo "@@@BUILD_STEP gyp_tests [${gypmode}]@@@"
-  python trusted_test.py --config ${gypmode}
 }
 
 

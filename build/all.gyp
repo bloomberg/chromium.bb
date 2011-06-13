@@ -27,9 +27,6 @@
         '../src/trusted/plugin/plugin.gyp:*',
         '../src/trusted/sel_universal/sel_universal.gyp:*',
         '../src/trusted/service_runtime/service_runtime.gyp:*',
-        # Tests
-#        '../src/shared/platform/platform_tests.gyp:*',
-        '../src/trusted/service_runtime/service_runtime_tests.gyp:*',
       ],
       'conditions': [
         ['target_arch=="arm"', {

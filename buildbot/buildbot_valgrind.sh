@@ -43,9 +43,6 @@ ${GLIBCOPTS} extra_sdk_update_header ${SDKHDRINSTALL} extra_sdk_update
 echo @@@BUILD_STEP gyp_compile@@@
 make -C .. -k -j12 V=1 BUILDTYPE=Debug
 
-echo @@@BUILD_STEP gyp_tests@@@
-python trusted_test.py --config Debug --bits 64
-
 echo @@@BUILD_STEP scons_compile@@@
 ./scons -j 8 -k --verbose ${GLIBCOPTS} --mode=dbg-host,nacl platform=x86-64
 
