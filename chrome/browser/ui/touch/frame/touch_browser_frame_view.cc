@@ -242,6 +242,10 @@ void TouchBrowserFrameView::ActiveTabChanged(TabContentsWrapper* old_contents,
   UpdateKeyboardAndLayout(editable ? *editable : false);
 }
 
+void TouchBrowserFrameView::TabStripEmpty() {
+  if (animation_->is_animating())
+    animation_->Stop();
+}
 
 void TouchBrowserFrameView::Observe(NotificationType type,
                                     const NotificationSource& source,

@@ -69,6 +69,7 @@ class TouchBrowserFrameView : public OpaqueBrowserFrameView,
                                 TabContentsWrapper* new_contents,
                                 int index,
                                 bool user_gesture);
+  virtual void TabStripEmpty();
 
   // Overridden from NotificationObserver.
   virtual void Observe(NotificationType type,
