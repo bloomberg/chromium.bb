@@ -88,8 +88,16 @@ class SpellCheckHost
   // to be uploaded via UMA
   virtual void RecordCheckedWordStats(bool misspell) = 0;
 
+  // Collects a histogram for context menu showing as a spell correction
+  // attempt to be uploaded via UMA.
+  // The value of |delta| is accumulated to the total count, and only
+  // update tracked ratio if |delta| is zero.
+  virtual void RecordSuggestionStats(int delta) = 0;
+
   // Collects a histogram for misspelled word replacement
-  // to be uploaded via UMA
+  // to be uploaded via UMA.
+  // The value of |delta| is accumulated to the total count, and only
+  // update tracked ratio if |delta| is zero.
   virtual void RecordReplacedWordStats(int delta) = 0;
 
   // This function computes a vector of strings which are to be displayed in

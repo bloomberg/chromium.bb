@@ -741,8 +741,14 @@ void RenderViewContextMenu::AppendEditableItems() {
     menu_model_.AddItem(IDC_SPELLCHECK_SUGGESTION_0 + static_cast<int>(i),
                         params_.dictionary_suggestions[i]);
   }
-  if (!params_.dictionary_suggestions.empty())
+  if (!params_.dictionary_suggestions.empty()) {
     menu_model_.AddSeparator();
+
+    SpellCheckHost* spellcheck_host = profile_->GetSpellCheckHost();
+    DCHECK(spellcheck_host);
+    if (spellcheck_host)
+      spellcheck_host->RecordSuggestionStats(1);
+  }
 
   // If word is misspelled, give option for "Add to dictionary"
   if (!params_.misspelled_word.empty()) {
