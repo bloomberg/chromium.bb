@@ -127,6 +127,10 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
     is_me2mom_ = is_me2mom;
   }
 
+  // Notify all active client sessions that local input has been detected, and
+  // that remote input should be ignored for a short time.
+  void LocalMouseMoved(const gfx::Point& new_pos);
+
  private:
   friend class base::RefCountedThreadSafe<ChromotingHost>;
   friend class ChromotingHostTest;
@@ -162,6 +166,8 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   bool HasAuthenticatedClients() const;
 
   void EnableCurtainMode(bool enable);
+
+  void MonitorLocalInputs(bool enable);
 
   void ProcessPreAuthentication(
       const scoped_refptr<protocol::ConnectionToClient>& connection);
@@ -210,8 +216,8 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   // Configuration of the protocol.
   scoped_ptr<protocol::CandidateSessionConfig> protocol_config_;
 
-  // Whether or not the host is currently curtained.
   bool is_curtained_;
+  bool is_monitoring_local_inputs_;
 
   // Whether or not the host is running in "Me2Mom" mode, in which connections
   // are pre-authenticated, and hence the local login challenge can be bypassed.

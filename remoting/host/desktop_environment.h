@@ -12,20 +12,25 @@ namespace remoting {
 
 class Capturer;
 class Curtain;
-class EventExecutor;
 class DisconnectWindow;
+class EventExecutor;
+class LocalInputMonitor;
 
 class DesktopEnvironment {
  public:
   // DesktopEnvironment takes ownership of all the objects passed the ctor.
   DesktopEnvironment(Capturer* capturer, EventExecutor* event_executor,
-                     Curtain* curtain, DisconnectWindow* disconnect_window);
+                     Curtain* curtain, DisconnectWindow* disconnect_window,
+                     LocalInputMonitor* monitor);
   virtual ~DesktopEnvironment();
 
   Capturer* capturer() const { return capturer_.get(); }
   EventExecutor* event_executor() const { return event_executor_.get(); }
   Curtain* curtain() const { return curtain_.get(); }
   DisconnectWindow* disconnect_window() { return disconnect_window_.get(); }
+  LocalInputMonitor* local_input_monitor() {
+    return local_input_monitor_.get();
+  }
 
  private:
   // Capturer to be used by ScreenRecorder.
@@ -39,6 +44,10 @@ class DesktopEnvironment {
 
   // Provide a user interface allowing the host user to close the connection.
   scoped_ptr<DisconnectWindow> disconnect_window_;
+
+  // Monitor local inputs to allow remote inputs to be blocked while the local
+  // user is trying to do something.
+  scoped_ptr<LocalInputMonitor> local_input_monitor_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopEnvironment);
 };

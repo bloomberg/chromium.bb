@@ -17,6 +17,7 @@
 #include "remoting/host/event_executor.h"
 #include "remoting/host/host_config.h"
 #include "remoting/host/host_key_pair.h"
+#include "remoting/host/local_input_monitor.h"
 #include "remoting/host/screen_recorder.h"
 #include "remoting/host/user_authenticator.h"
 #include "remoting/proto/auth.pb.h"
@@ -41,9 +42,10 @@ ChromotingHost* ChromotingHost::Create(ChromotingHostContext* context,
       EventExecutor::Create(context->ui_message_loop(), capturer);
   Curtain* curtain = Curtain::Create();
   DisconnectWindow* disconnect_window = DisconnectWindow::Create();
+  LocalInputMonitor* local_input_monitor = LocalInputMonitor::Create();
   return Create(context, config,
                 new DesktopEnvironment(capturer, event_executor, curtain,
-                                       disconnect_window),
+                                       disconnect_window, local_input_monitor),
                 access_verifier);
 }
 
@@ -66,6 +68,7 @@ ChromotingHost::ChromotingHost(ChromotingHostContext* context,
       state_(kInitial),
       protocol_config_(protocol::CandidateSessionConfig::CreateDefault()),
       is_curtained_(false),
+      is_monitoring_local_inputs_(false),
       is_me2mom_(false) {
   DCHECK(desktop_environment_.get());
 }
@@ -335,6 +338,21 @@ void ChromotingHost::set_protocol_config(
   protocol_config_.reset(config);
 }
 
+void ChromotingHost::LocalMouseMoved(const gfx::Point& new_pos) {
+  if (MessageLoop::current() != context_->main_message_loop()) {
+    context_->main_message_loop()->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(this,
+                          &ChromotingHost::LocalMouseMoved,
+                          new_pos));
+    return;
+  }
+  ClientList::iterator client;
+  for (client = clients_.begin(); client != clients_.end(); ++client) {
+    client->get()->LocalMouseMoved(new_pos);
+  }
+}
+
 void ChromotingHost::OnServerClosed() {
   // Don't need to do anything here.
 }
@@ -371,8 +389,10 @@ void ChromotingHost::OnClientDisconnected(ConnectionToClient* connection) {
 
   if (!HasAuthenticatedClients()) {
     EnableCurtainMode(false);
-    if (is_me2mom_)
+    if (is_me2mom_) {
+      MonitorLocalInputs(false);
       ShowDisconnectWindow(false, std::string());
+    }
   }
 }
 
@@ -417,6 +437,17 @@ void ChromotingHost::EnableCurtainMode(bool enable) {
     return;
   desktop_environment_->curtain()->EnableCurtainMode(enable);
   is_curtained_ = enable;
+}
+
+void ChromotingHost::MonitorLocalInputs(bool enable) {
+  if (enable == is_monitoring_local_inputs_)
+    return;
+  if (enable) {
+    desktop_environment_->local_input_monitor()->Start(this);
+  } else {
+    desktop_environment_->local_input_monitor()->Stop();
+  }
+  is_monitoring_local_inputs_ = enable;
 }
 
 void ChromotingHost::LocalLoginSucceeded(
@@ -465,8 +496,11 @@ void ChromotingHost::LocalLoginSucceeded(
   // Immediately add the connection and start the session.
   recorder_->AddConnection(connection);
   recorder_->Start();
+  // TODO(jamiewalch): Tidy up actions to be taken on connect/disconnect,
+  // including closing the connection on failure of a critical operation.
   EnableCurtainMode(true);
   if (is_me2mom_) {
+    MonitorLocalInputs(true);
     std::string username = connection->session()->jid();
     size_t pos = username.find('/');
     if (pos != std::string::npos)

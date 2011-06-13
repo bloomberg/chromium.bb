@@ -8,17 +8,20 @@
 #include "remoting/host/curtain.h"
 #include "remoting/host/event_executor.h"
 #include "remoting/host/disconnect_window.h"
+#include "remoting/host/local_input_monitor.h"
 
 namespace remoting {
 
 DesktopEnvironment::DesktopEnvironment(Capturer* capturer,
                                        EventExecutor* event_executor,
                                        Curtain* curtain,
-                                       DisconnectWindow* disconnect_window)
+                                       DisconnectWindow* disconnect_window,
+                                       LocalInputMonitor* local_input_monitor)
     : capturer_(capturer),
       event_executor_(event_executor),
       curtain_(curtain),
-      disconnect_window_(disconnect_window) {
+      disconnect_window_(disconnect_window),
+      local_input_monitor_(local_input_monitor) {
 }
 
 DesktopEnvironment::~DesktopEnvironment() {
