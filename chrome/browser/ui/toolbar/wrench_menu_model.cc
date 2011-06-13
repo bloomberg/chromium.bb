@@ -200,7 +200,9 @@ BookmarkSubMenuModel::~BookmarkSubMenuModel() {}
 void BookmarkSubMenuModel::Build(Browser* browser) {
   AddCheckItemWithStringId(IDC_SHOW_BOOKMARK_BAR, IDS_SHOW_BOOKMARK_BAR);
   AddItemWithStringId(IDC_SHOW_BOOKMARK_MANAGER, IDS_BOOKMARK_MANAGER);
+#if !defined(OS_CHROMEOS)
   AddItemWithStringId(IDC_IMPORT_SETTINGS, IDS_IMPORT_SETTINGS_TITLE);
+#endif
 #if defined(OS_MACOSX) || defined(TOOLKIT_VIEWS)
   AddSeparator();
 #else
