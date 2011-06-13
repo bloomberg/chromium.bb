@@ -231,7 +231,7 @@ SkTypeface* SkFontHost::Deserialize(SkStream* stream) {
 }
 
 // static
-uint32_t SkFontHost::NextLogicalFont(SkFontID fontID) {
+uint32_t SkFontHost::NextLogicalFont(SkFontID curr, SkFontID orig) {
     // We don't handle font fallback, WebKit does.
     return 0;
 }
