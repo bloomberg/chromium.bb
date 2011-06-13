@@ -410,11 +410,12 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_PostMessageBasic) {
   SimpleBrowserTest(IE, kPostMessageBasicPage);
 }
 
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeFF_PostMessageBasic) {
+TEST_F(ChromeFrameTestWithWebServer, DISABLED_WidgetModeFF_PostMessageBasic) {
   SimpleBrowserTest(FIREFOX, kPostMessageBasicPage);
 }
 
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeOpera_PostMessageBasic) {
+TEST_F(ChromeFrameTestWithWebServer,
+       DISABLED_WidgetModeOpera_PostMessageBasic) {
   OptionalBrowserTest(OPERA, kPostMessageBasicPage);
 }
 
@@ -435,11 +436,11 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_Resize) {
   SimpleBrowserTest(IE, L"chrome_frame_resize.html");
 }
 
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeFF_Resize) {
+TEST_F(ChromeFrameTestWithWebServer, DISABLED_WidgetModeFF_Resize) {
   SimpleBrowserTest(FIREFOX, L"chrome_frame_resize.html");
 }
 
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeOpera_Resize) {
+TEST_F(ChromeFrameTestWithWebServer, DISABLED_WidgetModeOpera_Resize) {
   OptionalBrowserTest(OPERA, L"chrome_frame_resize.html");
 }
 
@@ -450,11 +451,13 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_NavigateURLAbsolute) {
   SimpleBrowserTest(IE, kNavigateURLAbsolutePage);
 }
 
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeFF_NavigateURLAbsolute) {
+TEST_F(ChromeFrameTestWithWebServer,
+       DISABLED_WidgetModeFF_NavigateURLAbsolute) {
   SimpleBrowserTest(FIREFOX, kNavigateURLAbsolutePage);
 }
 
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeOpera_NavigateURLAbsolute) {
+TEST_F(ChromeFrameTestWithWebServer,
+       DISABLED_WidgetModeOpera_NavigateURLAbsolute) {
   OptionalBrowserTest(OPERA, kNavigateURLAbsolutePage);
 }
 
@@ -465,17 +468,19 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_NavigateURLRelative) {
   SimpleBrowserTest(IE, kNavigateURLRelativePage);
 }
 
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeFF_NavigateURLRelative) {
+TEST_F(ChromeFrameTestWithWebServer,
+       DISABLED_WidgetModeFF_NavigateURLRelative) {
   SimpleBrowserTest(FIREFOX, kNavigateURLRelativePage);
 }
 
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeOpera_NavigateURLRelative) {
+TEST_F(ChromeFrameTestWithWebServer,
+       DISABLED_WidgetModeOpera_NavigateURLRelative) {
   OptionalBrowserTest(OPERA, kNavigateURLRelativePage);
 }
 
 const wchar_t kNavigateSimpleObjectFocus[] = L"simple_object_focus.html";
 
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeFF_ObjectFocus) {
+TEST_F(ChromeFrameTestWithWebServer, DISABLED_WidgetModeFF_ObjectFocus) {
   SimpleBrowserTest(FIREFOX, kNavigateSimpleObjectFocus);
 }
 
@@ -512,11 +517,11 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_iframeBasic) {
   SimpleBrowserTest(IE, kiframeBasicPage);
 }
 
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeFF_iframeBasic) {
+TEST_F(ChromeFrameTestWithWebServer, DISABLED_WidgetModeFF_iframeBasic) {
   SimpleBrowserTest(FIREFOX, kiframeBasicPage);
 }
 
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeOpera_iframeBasic) {
+TEST_F(ChromeFrameTestWithWebServer, DISABLED_WidgetModeOpera_iframeBasic) {
   OptionalBrowserTest(OPERA, kiframeBasicPage);
 }
 
@@ -526,11 +531,11 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_SrcProperty) {
   SimpleBrowserTest(IE, kSrcPropertyTestPage);
 }
 
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeFF_SrcProperty) {
+TEST_F(ChromeFrameTestWithWebServer, DISABLED_WidgetModeFF_SrcProperty) {
   SimpleBrowserTest(FIREFOX, kSrcPropertyTestPage);
 }
 
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeOpera_SrcProperty) {
+TEST_F(ChromeFrameTestWithWebServer, DISABLED_WidgetModeOpera_SrcProperty) {
   OptionalBrowserTest(OPERA, kSrcPropertyTestPage);
 }
 
@@ -541,7 +546,7 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_CFInstanceBasic) {
 }
 
 // http://crbug.com/37085
-TEST_F(ChromeFrameTestWithWebServer, FLAKY_WidgetModeFF_CFInstanceBasic) {
+TEST_F(ChromeFrameTestWithWebServer, DISABLED_WidgetModeFF_CFInstanceBasic) {
   SimpleBrowserTest(FIREFOX, kCFInstanceBasicTestPage);
 }
 
@@ -551,7 +556,8 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_CFInstanceSingleton) {
   SimpleBrowserTest(IE, kCFISingletonPage);
 }
 
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeFF_CFInstanceSingleton) {
+TEST_F(ChromeFrameTestWithWebServer,
+       DISABLED_WidgetModeFF_CFInstanceSingleton) {
   SimpleBrowserTest(FIREFOX, kCFISingletonPage);
 }
 
@@ -576,11 +582,13 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_WidgetModeIE_CFInstanceFallback) {
   SimpleBrowserTest(IE, kCFIFallbackPage);
 }
 
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeFF_CFInstanceFallback) {
+TEST_F(ChromeFrameTestWithWebServer,
+       DISABLED_WidgetModeFF_CFInstanceFallback) {
   SimpleBrowserTest(FIREFOX, kCFIFallbackPage);
 }
 
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeOpera_CFInstanceFallback) {
+TEST_F(ChromeFrameTestWithWebServer,
+       DISABLED_WidgetModeOpera_CFInstanceFallback) {
   OptionalBrowserTest(OPERA, kCFIFallbackPage);
 }
 
@@ -590,11 +598,12 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_CFInstanceNoSrc) {
   SimpleBrowserTest(IE, kCFINoSrcPage);
 }
 
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeFF_CFInstanceNoSrc) {
+TEST_F(ChromeFrameTestWithWebServer, DISABLED_WidgetModeFF_CFInstanceNoSrc) {
   SimpleBrowserTest(FIREFOX, kCFINoSrcPage);
 }
 
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeOpera_CFInstanceNoSrc) {
+TEST_F(ChromeFrameTestWithWebServer,
+       DISABLED_WidgetModeOpera_CFInstanceNoSrc) {
   OptionalBrowserTest(OPERA, kCFINoSrcPage);
 }
 
@@ -606,11 +615,13 @@ TEST_F(ChromeFrameTestWithWebServer,
   SimpleBrowserTest(IE, kCFIIfrOnLoadPage);
 }
 
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeFF_CFInstanceIfrOnLoad) {
+TEST_F(ChromeFrameTestWithWebServer,
+       DISABLED_WidgetModeFF_CFInstanceIfrOnLoad) {
   SimpleBrowserTest(FIREFOX, kCFIIfrOnLoadPage);
 }
 
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeOpera_CFInstanceIfrOnLoad) {
+TEST_F(ChromeFrameTestWithWebServer,
+       DISABLED_WidgetModeOpera_CFInstanceIfrOnLoad) {
   OptionalBrowserTest(OPERA, kCFIIfrOnLoadPage);
 }
 
@@ -620,11 +631,13 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_CFInstanceZeroSize) {
   SimpleBrowserTest(IE, kCFIZeroSizePage);
 }
 
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeFF_CFInstanceZeroSize) {
+TEST_F(ChromeFrameTestWithWebServer,
+       DISABLED_WidgetModeFF_CFInstanceZeroSize) {
   SimpleBrowserTest(FIREFOX, kCFIZeroSizePage);
 }
 
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeOpera_CFInstanceZeroSize) {
+TEST_F(ChromeFrameTestWithWebServer,
+       DISABLED_WidgetModeOpera_CFInstanceZeroSize) {
   OptionalBrowserTest(OPERA, kCFIZeroSizePage);
 }
 
@@ -637,7 +650,7 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_WidgetModeIE_CFInstanceIfrPost) {
 
 // Flakes out on the bots, http://crbug.com/26372
 TEST_F(ChromeFrameTestWithWebServer,
-       FLAKY_WidgetModeFF_CFInstanceIfrPost) {
+       DISABLED_WidgetModeFF_CFInstanceIfrPost) {
   SimpleBrowserTest(FIREFOX, kCFIIfrPostPage);
 }
 
@@ -645,11 +658,13 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeChrome_CFInstanceIfrPost) {
   SimpleBrowserTest(CHROME, kCFIIfrPostPage);
 }
 
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeSafari_CFInstanceIfrPost) {
+TEST_F(ChromeFrameTestWithWebServer,
+       DISABLED_WidgetModeSafari_CFInstanceIfrPost) {
   OptionalBrowserTest(SAFARI, kCFIIfrPostPage);
 }
 
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeOpera_CFInstanceIfrPost) {
+TEST_F(ChromeFrameTestWithWebServer,
+       DISABLED_WidgetModeOpera_CFInstanceIfrPost) {
   OptionalBrowserTest(OPERA, kCFIIfrPostPage);
 }
 
@@ -665,7 +680,7 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_CFInstancePost) {
 
 // This test randomly fails on the ChromeFrame builder.
 // Bug http://code.google.com/p/chromium/issues/detail?id=31532
-TEST_F(ChromeFrameTestWithWebServer, FLAKY_WidgetModeFF_CFInstancePost) {
+TEST_F(ChromeFrameTestWithWebServer, DISABLED_WidgetModeFF_CFInstancePost) {
   SimpleBrowserTest(FIREFOX, kCFIPostPage);
 }
 
@@ -673,7 +688,8 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeChrome_CFInstancePost) {
   SimpleBrowserTest(CHROME, kCFIPostPage);
 }
 
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeSafari_CFInstancePost) {
+TEST_F(ChromeFrameTestWithWebServer,
+       DISABLED_WidgetModeSafari_CFInstancePost) {
   OptionalBrowserTest(SAFARI, kCFIPostPage);
 }
 
@@ -693,7 +709,7 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_CFInstanceRPC) {
 
 // This test randomly fails on the ChromeFrame builder.
 // Bug http://code.google.com/p/chromium/issues/detail?id=31532
-TEST_F(ChromeFrameTestWithWebServer, FLAKY_WidgetModeFF_CFInstanceRPC) {
+TEST_F(ChromeFrameTestWithWebServer, DISABLED_WidgetModeFF_CFInstanceRPC) {
   SimpleBrowserTest(FIREFOX, kCFIRPCPage);
 }
 
@@ -701,7 +717,7 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeChrome_CFInstanceRPC) {
   SimpleBrowserTest(CHROME, kCFIRPCPage);
 }
 
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeSafari_CFInstanceRPC) {
+TEST_F(ChromeFrameTestWithWebServer, DISABLED_WidgetModeSafari_CFInstanceRPC) {
   OptionalBrowserTest(SAFARI, kCFIRPCPage);
 }
 
@@ -721,7 +737,8 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_CFInstanceRPCInternal) {
 }
 
 // http://code.google.com/p/chromium/issues/detail?id=37204
-TEST_F(ChromeFrameTestWithWebServer, FLAKY_WidgetModeFF_CFInstanceRPCInternal) {
+TEST_F(ChromeFrameTestWithWebServer,
+       DISABLED_WidgetModeFF_CFInstanceRPCInternal) {
   SimpleBrowserTest(FIREFOX, kCFIRPCInternalPage);
 }
 
@@ -729,7 +746,8 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeChrome_CFInstanceRPCInternal) {
   SimpleBrowserTest(CHROME, kCFIRPCInternalPage);
 }
 
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeSafari_CFInstanceRPCInternal) {
+TEST_F(ChromeFrameTestWithWebServer,
+       DISABLED_WidgetModeSafari_CFInstanceRPCInternal) {
   OptionalBrowserTest(SAFARI, kCFIRPCInternalPage);
 }
 
@@ -740,7 +758,8 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_CFInstanceDefaultCtor) {
   SimpleBrowserTest(IE, kCFIDefaultCtorPage);
 }
 
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeFF_CFInstanceDefaultCtor) {
+TEST_F(ChromeFrameTestWithWebServer,
+       DISABLED_WidgetModeFF_CFInstanceDefaultCtor) {
   SimpleBrowserTest(FIREFOX, kCFIDefaultCtorPage);
 }
 
@@ -794,7 +813,7 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_CFHttpHeaderFrameSet) {
   SimpleBrowserTest(IE, kFullTabHttpHeaderPageFrameset);
 }
 
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeFF_InitializeHidden) {
+TEST_F(ChromeFrameTestWithWebServer, DISABLED_WidgetModeFF_InitializeHidden) {
   SimpleBrowserTest(FIREFOX, kInitializeHiddenPage);
 }
 
@@ -807,7 +826,7 @@ TEST_F(ChromeFrameTestWithWebServer,
 
 const wchar_t kInHeadPage[] = L"in_head.html";
 
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeFF_InHead) {
+TEST_F(ChromeFrameTestWithWebServer, DISABLED_WidgetModeFF_InHead) {
   SimpleBrowserTest(FIREFOX, kInHeadPage);
 }
 
@@ -827,11 +846,11 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_EventListener) {
   SimpleBrowserTest(IE, kEventListenerPage);
 }
 
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeFF_EventListener) {
+TEST_F(ChromeFrameTestWithWebServer, DISABLED_WidgetModeFF_EventListener) {
   SimpleBrowserTest(FIREFOX, kEventListenerPage);
 }
 
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeOpera_EventListener) {
+TEST_F(ChromeFrameTestWithWebServer, DISABLED_WidgetModeOpera_EventListener) {
   OptionalBrowserTest(OPERA, kEventListenerPage);
 }
 
@@ -841,11 +860,11 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_PrivilegedApis) {
   SimpleBrowserTest(IE, kPrivilegedApisPage);
 }
 
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeFF_PrivilegedApis) {
+TEST_F(ChromeFrameTestWithWebServer, DISABLED_WidgetModeFF_PrivilegedApis) {
   SimpleBrowserTest(FIREFOX, kPrivilegedApisPage);
 }
 
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeOpera_PrivilegedApis) {
+TEST_F(ChromeFrameTestWithWebServer, DISABLED_WidgetModeOpera_PrivilegedApis) {
   OptionalBrowserTest(OPERA, kPrivilegedApisPage);
 }
 
@@ -1041,7 +1060,7 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_WindowClose) {
   SimpleBrowserTest(IE, kWindowCloseTestUrl);
 }
 
-TEST_F(ChromeFrameTestWithWebServer, FullTabModeFF_WindowClose) {
+TEST_F(ChromeFrameTestWithWebServer, DISABLED_FullTabModeFF_WindowClose) {
   SimpleBrowserTest(FIREFOX, kWindowCloseTestUrl);
 }
 
