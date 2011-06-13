@@ -25,11 +25,6 @@ class BlockedInfoBarDelegate : public ConfirmInfoBarDelegate {
                          int button_resource_id,
                          const GURL& url);
 
-  // Returns the |message_resource_id| with which the infobar was created.
-  // Useful for determining how many infobars with this same message text
-  // are already present.
-  int message_resource_id() const { return message_resource_id_; }
-
   // Type-checking downcast routine.
   virtual BlockedRunningInfoBarDelegate* AsBlockedRunningInfoBarDelegate();
 
@@ -57,6 +52,8 @@ class BlockedInfoBarDelegate : public ConfirmInfoBarDelegate {
 class BlockedDisplayingInfoBarDelegate : public BlockedInfoBarDelegate {
  public:
   explicit BlockedDisplayingInfoBarDelegate(TabContentsWrapper* wrapper);
+ private:
+  virtual void InfoBarDismissed() OVERRIDE;
   virtual bool Accept() OVERRIDE;
 };
 
@@ -66,6 +63,8 @@ class BlockedRunningInfoBarDelegate : public BlockedInfoBarDelegate {
   explicit BlockedRunningInfoBarDelegate(TabContentsWrapper* wrapper);
   virtual BlockedRunningInfoBarDelegate*
       AsBlockedRunningInfoBarDelegate() OVERRIDE;
+ private:
+  virtual void InfoBarDismissed() OVERRIDE;
   virtual bool Accept() OVERRIDE;
 };
 
