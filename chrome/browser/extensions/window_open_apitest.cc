@@ -168,11 +168,6 @@ class WindowOpenPanelTest : public ExtensionApiTest {
   }
 };
 
-#if !defined(TOOLKIT_VIEWS)
-#define MAYBE_WindowOpenPanel WindowOpenPanel
-#else
-#define MAYBE_WindowOpenPanel DISABLED_WindowOpenPanel
-#endif
-IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest, MAYBE_WindowOpenPanel) {
+IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest, WindowOpenPanel) {
   ASSERT_TRUE(RunExtensionTest("window_open/panel")) << message_;
 }
