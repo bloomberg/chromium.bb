@@ -64,6 +64,7 @@ void ContentsContainer::MakePreviewContentsActiveContents() {
 
   active_ = preview_;
   preview_ = NULL;
+  preview_tab_contents_ = NULL;
   Layout();
 }
 
