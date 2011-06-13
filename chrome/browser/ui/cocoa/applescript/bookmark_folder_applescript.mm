@@ -25,8 +25,7 @@
     if (!node->is_folder())
       continue;
     scoped_nsobject<BookmarkFolderAppleScript> bookmarkFolder(
-        [[BookmarkFolderAppleScript alloc]
-            initWithBookmarkNode:node]);
+        [[BookmarkFolderAppleScript alloc] initWithBookmarkNode:node]);
     [bookmarkFolder setContainer:self
                         property:AppleScript::kBookmarkFoldersProperty];
     [bookmarkFolders addObject:bookmarkFolder];
@@ -96,9 +95,8 @@
 
     if (!node->is_url())
       continue;
-    scoped_nsobject<BookmarkFolderAppleScript> bookmarkItem(
-        [[BookmarkItemAppleScript alloc]
-            initWithBookmarkNode:node]);
+    scoped_nsobject<BookmarkItemAppleScript> bookmarkItem(
+        [[BookmarkItemAppleScript alloc] initWithBookmarkNode:node]);
     [bookmarkItem setContainer:self
                       property:AppleScript::kBookmarkItemsProperty];
     [bookmarkItems addObject:bookmarkItem];
