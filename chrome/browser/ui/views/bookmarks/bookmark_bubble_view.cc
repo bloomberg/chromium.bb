@@ -33,7 +33,6 @@
 #include "views/layout/grid_layout.h"
 #include "views/layout/layout_constants.h"
 #include "views/window/client_view.h"
-#include "views/window/window.h"
 
 using views::ColumnSet;
 using views::GridLayout;

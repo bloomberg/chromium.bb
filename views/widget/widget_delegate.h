@@ -10,6 +10,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "ui/base/accessibility/accessibility_types.h"
+#include "views/view.h"
 
 class SkBitmap;
 
@@ -23,7 +24,6 @@ class DialogDelegate;
 class NonClientFrameView;
 class View;
 class Widget;
-class Window;
 
 // WidgetDelegate interface
 // Handles events on Widgets in context-specific ways.
@@ -134,10 +134,14 @@ class WidgetDelegate {
   virtual void OnWindowBeginUserBoundsChange() {}
   virtual void OnWindowEndUserBoundsChange() {}
 
-  // Returns the View that is contained within this Window.
+  // Returns the Widget associated with this delegate.
+  virtual Widget* GetWidget();
+  virtual const Widget* GetWidget() const;
+
+  // Returns the View that is contained within this Widget.
   virtual View* GetContentsView();
 
-  // Called by the Window to create the Client View used to host the contents
+  // Called by the Widget to create the Client View used to host the contents
   // of the widget.
   virtual ClientView* CreateClientView(Widget* widget);
 
@@ -151,15 +155,30 @@ class WidgetDelegate {
   // manage the positions by ourselves.
   virtual bool WillProcessWorkAreaChange() const;
 
-  Window* window() const { return window_; }
-
  protected:
   virtual ~WidgetDelegate() {}
 
  private:
-  friend class Window;
-  // The Window this delegate is bound to. Weak reference.
-  Window* window_;
+  View* default_contents_view_;
+
+  DISALLOW_COPY_AND_ASSIGN(WidgetDelegate);
+};
+
+// A WidgetDelegate implementation that is-a View. Used to override GetWidget()
+// to call View's GetWidget() for the common case where a WidgetDelegate
+// implementation is-a View.
+class WidgetDelegateView : public WidgetDelegate,
+                           public View {
+ public:
+  WidgetDelegateView();
+  virtual ~WidgetDelegateView();
+
+  // Overridden from WidgetDelegate:
+  virtual Widget* GetWidget() OVERRIDE;
+  virtual const Widget* GetWidget() const OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WidgetDelegateView);
 };
 
 }  // namespace views

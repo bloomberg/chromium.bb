@@ -9,17 +9,17 @@
 #include "base/basictypes.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/native_browser_frame.h"
-#include "views/window/native_window_win.h"
+#include "views/widget/native_widget_win.h"
 
 class BrowserView;
 
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserFrameWin
 //
-//  BrowserFrame is a NativeWindowWin subclass that provides the window frame
+//  BrowserFrameWin is a NativeWidgetWin subclass that provides the window frame
 //  for the Chrome browser window.
 //
-class BrowserFrameWin : public views::NativeWindowWin,
+class BrowserFrameWin : public views::NativeWidgetWin,
                         public NativeBrowserFrame {
  public:
   BrowserFrameWin(BrowserFrame* browser_frame, BrowserView* browser_view);
@@ -33,7 +33,7 @@ class BrowserFrameWin : public views::NativeWindowWin,
   static void SetShowState(int state);
 
  protected:
-  // Overridden from views::NativeWindowWin:
+  // Overridden from views::NativeWidgetWin:
   virtual int GetShowState() const OVERRIDE;
   virtual gfx::Insets GetClientAreaInsets() const OVERRIDE;
   virtual void UpdateFrameAfterFrameChange() OVERRIDE;
@@ -46,8 +46,8 @@ class BrowserFrameWin : public views::NativeWindowWin,
   virtual bool ShouldUseNativeFrame() const OVERRIDE;
 
   // Overridden from NativeBrowserFrame:
-  virtual views::NativeWindow* AsNativeWindow() OVERRIDE;
-  virtual const views::NativeWindow* AsNativeWindow() const OVERRIDE;
+  virtual views::NativeWidget* AsNativeWidget() OVERRIDE;
+  virtual const views::NativeWidget* AsNativeWidget() const OVERRIDE;
   virtual int GetMinimizeButtonOffset() const OVERRIDE;
   virtual void TabStripDisplayModeChanged() OVERRIDE;
 

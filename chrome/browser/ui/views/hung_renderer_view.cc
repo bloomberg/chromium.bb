@@ -27,9 +27,9 @@
 #include "views/controls/table/group_table_view.h"
 #include "views/layout/grid_layout.h"
 #include "views/layout/layout_constants.h"
+#include "views/widget/widget.h"
 #include "views/window/client_view.h"
 #include "views/window/dialog_delegate.h"
-#include "views/window/window.h"
 
 class HungRendererDialogView;
 
@@ -123,8 +123,7 @@ void HungPagesTableModel::GetGroupRangeForItem(int item,
 ///////////////////////////////////////////////////////////////////////////////
 // HungRendererDialogView
 
-class HungRendererDialogView : public views::View,
-                               public views::DialogDelegate,
+class HungRendererDialogView : public views::DialogDelegateView,
                                public views::ButtonListener,
                                public TabContentsObserver {
  public:
@@ -233,7 +232,7 @@ HungRendererDialogView::~HungRendererDialogView() {
 }
 
 void HungRendererDialogView::ShowForTabContents(TabContents* contents) {
-  DCHECK(contents && window());
+  DCHECK(contents && GetWidget());
   contents_ = contents;
   Observe(contents);
 
@@ -243,20 +242,20 @@ void HungRendererDialogView::ShowForTabContents(TabContents* contents) {
   HWND frame_hwnd = GetAncestor(contents->GetNativeView(), GA_ROOT);
   HWND foreground_window = GetForegroundWindow();
   if (foreground_window != frame_hwnd &&
-      foreground_window != window()->GetNativeWindow()) {
+      foreground_window != GetWidget()->GetNativeWindow()) {
     return;
   }
 
-  if (!window()->IsActive()) {
+  if (!GetWidget()->IsActive()) {
     volatile TabContents* passed_c = contents;
     volatile TabContents* this_contents = contents_;
 
     gfx::Rect bounds = GetDisplayBounds(contents);
     views::Widget* insert_after =
         views::Widget::GetWidgetForNativeView(frame_hwnd);
-    window()->SetBoundsConstrained(bounds, insert_after);
+    GetWidget()->SetBoundsConstrained(bounds, insert_after);
     if (insert_after)
-      window()->MoveAboveWidget(insert_after);
+      GetWidget()->MoveAboveWidget(insert_after);
 
     // We only do this if the window isn't active (i.e. hasn't been shown yet,
     // or is currently shown but deactivated for another TabContents). This is
@@ -265,7 +264,7 @@ void HungRendererDialogView::ShowForTabContents(TabContents* contents) {
     // the list of hung pages for a potentially unrelated renderer while this
     // one is showing.
     hung_pages_table_model_->InitForTabContents(contents);
-    window()->Show();
+    GetWidget()->Show();
   }
 }
 
@@ -273,7 +272,7 @@ void HungRendererDialogView::EndForTabContents(TabContents* contents) {
   DCHECK(contents);
   if (contents_ && contents_->GetRenderProcessHost() ==
       contents->GetRenderProcessHost()) {
-    window()->Close();
+    GetWidget()->Close();
     // Since we're closing, we no longer need this TabContents.
     contents_ = NULL;
     Observe(NULL);
@@ -447,7 +446,7 @@ gfx::Rect HungRendererDialogView::GetDisplayBounds(
   RECT contents_bounds_rect;
   GetWindowRect(contents_hwnd, &contents_bounds_rect);
   gfx::Rect contents_bounds(contents_bounds_rect);
-  gfx::Rect window_bounds = window()->GetWindowScreenBounds();
+  gfx::Rect window_bounds = GetWidget()->GetWindowScreenBounds();
 
   int window_x = contents_bounds.x() +
       (contents_bounds.width() - window_bounds.width()) / 2;
@@ -468,7 +467,7 @@ void HungRendererDialogView::InitClass() {
 
 static HungRendererDialogView* CreateHungRendererDialogView() {
   HungRendererDialogView* cv = new HungRendererDialogView;
-  views::Window::CreateChromeWindow(NULL, gfx::Rect(), cv);
+  views::Widget::CreateWindow(cv);
   return cv;
 }
 

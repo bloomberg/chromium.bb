@@ -37,7 +37,6 @@
 #include "views/events/event.h"
 #include "views/screen.h"
 #include "views/widget/widget.h"
-#include "views/window/window.h"
 
 #if defined(TOOLKIT_USES_GTK)
 #include <gdk/gdk.h>  // NOLINT

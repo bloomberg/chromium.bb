@@ -15,7 +15,7 @@
 #include "base/task.h"
 #include "base/threading/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "views/window/window_delegate.h"
+#include "views/widget/widget_delegate.h"
 
 class Task;
 
@@ -60,7 +60,7 @@ class Size;
 //   // Then use this to schedule another mouse move.
 //   ScheduleMouseMoveInBackground(loc.x, loc.y);
 
-class ViewEventTestBase : public views::WindowDelegate,
+class ViewEventTestBase : public views::WidgetDelegate,
                           public testing::Test {
  public:
   ViewEventTestBase();
@@ -75,11 +75,11 @@ class ViewEventTestBase : public views::WindowDelegate,
   // Destroys the window.
   virtual void TearDown();
 
-  virtual bool CanResize() const;
-
-  // WindowDelegate method. Calls into CreateContentsView to get the actual
-  // view.
-  virtual views::View* GetContentsView();
+  // Overridden from views::WidgetDelegate:
+  virtual bool CanResize() const OVERRIDE;
+  virtual views::View* GetContentsView() OVERRIDE;
+  virtual const views::Widget* GetWidget() const OVERRIDE;
+  virtual views::Widget* GetWidget() OVERRIDE;
 
   // Overriden to do nothing so that this class can be used in runnable tasks.
   void AddRef() {}
@@ -116,7 +116,7 @@ class ViewEventTestBase : public views::WindowDelegate,
   // Spawns a new thread posts a MouseMove in the background.
   void ScheduleMouseMoveInBackground(int x, int y);
 
-  views::Window* window_;
+  views::Widget* window_;
 
  private:
   // Stops the thread started by ScheduleMouseMoveInBackground.

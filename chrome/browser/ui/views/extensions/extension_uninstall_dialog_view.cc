@@ -18,8 +18,8 @@
 #include "views/controls/label.h"
 #include "views/layout/layout_constants.h"
 #include "views/view.h"
+#include "views/widget/widget.h"
 #include "views/window/dialog_delegate.h"
-#include "views/window/window.h"
 
 namespace {
 

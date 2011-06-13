@@ -39,11 +39,17 @@ namespace views {
 class DropTargetWin;
 class RootView;
 class TooltipManagerWin;
-class Window;
 
 namespace internal {
 class NativeWidgetDelegate;
-}
+
+// This is exposed only for testing
+// Adjusts the value of |child_rect| if necessary to ensure that it is
+// completely visible within |parent_rect|.
+void EnsureRectIsVisibleInRect(const gfx::Rect& parent_rect,
+                               gfx::Rect* child_rect,
+                               int padding);
+}  // namespace internal
 
 // A Windows message reflected from other windows. This message is sent
 // with the following arguments:
@@ -191,11 +197,9 @@ class NativeWidgetWin : public ui::WindowImpl,
   virtual const Widget* GetWidget() const OVERRIDE;
   virtual gfx::NativeView GetNativeView() const OVERRIDE;
   virtual gfx::NativeWindow GetNativeWindow() const OVERRIDE;
-  virtual Window* GetContainingWindow() OVERRIDE;
-  virtual const Window* GetContainingWindow() const OVERRIDE;
   virtual void ViewRemoved(View* view) OVERRIDE;
   virtual void SetNativeWindowProperty(const char* name, void* value) OVERRIDE;
-  virtual void* GetNativeWindowProperty(const char* name) OVERRIDE;
+  virtual void* GetNativeWindowProperty(const char* name) const OVERRIDE;
   virtual TooltipManager* GetTooltipManager() const OVERRIDE;
   virtual bool IsScreenReaderActive() const OVERRIDE;
   virtual void SendNativeAccessibilityEvent(
@@ -469,9 +473,6 @@ class NativeWidgetWin : public ui::WindowImpl,
 
   scoped_refptr<DropTargetWin> drop_target_;
 
-  // Are a subclass of NativeWindowWin?
-  bool is_window_;
-
   const gfx::Rect& invalid_rect() const { return invalid_rect_; }
 
   // Saved window information from before entering fullscreen mode.
@@ -480,10 +481,6 @@ class NativeWidgetWin : public ui::WindowImpl,
 
  private:
   typedef ScopedVector<ui::ViewProp> ViewProps;
-
-  // Implementation of GetWindow. Ascends the parents of |hwnd| returning the
-  // first ancestor that is a Window.
-  static Window* GetWindowImpl(HWND hwnd);
 
   // Called after the WM_ACTIVATE message has been processed by the default
   // windows procedure.

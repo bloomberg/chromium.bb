@@ -16,7 +16,7 @@
 #include "views/controls/throbber.h"
 #include "views/layout/grid_layout.h"
 #include "views/layout/layout_constants.h"
-#include "views/window/window.h"
+#include "views/widget/widget.h"
 
 ImportProgressDialogView::ImportProgressDialogView(
     HWND parent_window,
@@ -98,7 +98,7 @@ ImportProgressDialogView::~ImportProgressDialogView() {
 }
 
 gfx::Size ImportProgressDialogView::GetPreferredSize() {
-  return gfx::Size(views::Window::GetLocalizedContentsSize(
+  return gfx::Size(views::Widget::GetLocalizedContentsSize(
       IDS_IMPORTPROGRESS_DIALOG_WIDTH_CHARS,
       IDS_IMPORTPROGRESS_DIALOG_HEIGHT_LINES));
 }
@@ -275,7 +275,7 @@ void ImportProgressDialogView::ImportEnded() {
   // In every case, we need to close the UI now.
   importing_ = false;
   importer_host_->SetObserver(NULL);
-  window()->Close();
+  GetWidget()->Close();
   if (importer_observer_)
     importer_observer_->ImportCompleted();
 }
@@ -298,8 +298,8 @@ void ShowImportProgressDialog(HWND parent_window,
       source_profile.importer_name,
       source_profile.importer_type == importer::BOOKMARKS_HTML);
 
-  views::Window* window = views::Window::CreateChromeWindow(
-      parent_window, gfx::Rect(), progress_view);
+  views::Widget* window =
+      views::Widget::CreateWindowWithParent(progress_view, parent_window);
 
   if (!importer_host->is_headless() && !first_run)
     window->Show();

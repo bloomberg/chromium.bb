@@ -17,10 +17,9 @@
 #include "views/events/event.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
-#include "views/window/window.h"
 
 #if defined(TOOLKIT_USES_GTK)
-#include "views/window/native_window_gtk.h"
+#include "views/widget/native_widget_gtk.h"
 #endif
 
 class RenderWidgetHost;
@@ -34,8 +33,8 @@ gfx::NativeWindow ShowHtmlDialog(gfx::NativeWindow parent, Profile* profile,
       new HtmlDialogView(profile, delegate);
   browser::CreateViewsWindow(parent, gfx::Rect(), html_view);
   html_view->InitDialog();
-  html_view->window()->Show();
-  return html_view->window()->GetNativeWindow();
+  html_view->GetWidget()->Show();
+  return html_view->GetWidget()->GetNativeWindow();
 }
 
 }  // namespace browser
@@ -127,6 +126,14 @@ bool HtmlDialogView::ShouldShowWindowTitle() const {
   return ShouldShowDialogTitle();
 }
 
+views::Widget* HtmlDialogView::GetWidget() {
+  return View::GetWidget();
+}
+
+const views::Widget* HtmlDialogView::GetWidget() const {
+  return View::GetWidget();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // HtmlDialogUIDelegate implementation:
 
@@ -168,7 +175,7 @@ void HtmlDialogView::OnDialogClosed(const std::string& json_retval) {
     delegate_ = NULL;  // We will not communicate further with the delegate.
     dialog_delegate->OnDialogClosed(json_retval);
   }
-  window()->Close();
+  GetWidget()->Close();
 }
 
 void HtmlDialogView::OnWindowClosed() {
@@ -213,8 +220,8 @@ void HtmlDialogView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
   DefWindowProc(event.os_event.hwnd, event.os_event.message,
                   event.os_event.wParam, event.os_event.lParam);
 #elif defined(TOOLKIT_USES_GTK)
-  views::NativeWindowGtk* window_gtk =
-      static_cast<views::NativeWindowGtk*>(window()->native_window());
+  views::NativeWidgetGtk* window_gtk =
+      static_cast<views::NativeWidgetGtk*>(GetWidget()->native_widget());
   if (event.os_event && !event.skip_in_browser) {
     views::KeyEvent views_event(reinterpret_cast<GdkEvent*>(event.os_event));
     window_gtk->HandleKeyboardEvent(views_event);

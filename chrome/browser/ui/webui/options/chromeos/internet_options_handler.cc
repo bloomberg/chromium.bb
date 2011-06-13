@@ -44,7 +44,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "views/window/window.h"
+#include "views/widget/widget.h"
 
 static const char kOtherNetworksFakePath[] = "?";
 
@@ -813,8 +813,8 @@ void InternetOptionsHandler::SetActivationButtonVisibility(
   }
 }
 
-void InternetOptionsHandler::CreateModalPopup(views::WindowDelegate* view) {
-  views::Window* window = browser::CreateViewsWindow(GetNativeWindow(),
+void InternetOptionsHandler::CreateModalPopup(views::WidgetDelegate* view) {
+  views::Widget* window = browser::CreateViewsWindow(GetNativeWindow(),
                                                      gfx::Rect(),
                                                      view);
   window->SetAlwaysOnTop(true);

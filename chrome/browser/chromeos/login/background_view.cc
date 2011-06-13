@@ -41,7 +41,7 @@
 #include "views/controls/button/text_button.h"
 #include "views/controls/label.h"
 #include "views/screen.h"
-#include "views/window/window.h"
+#include "views/widget/widget.h"
 
 using views::Widget;
 
@@ -151,8 +151,8 @@ views::Widget* BackgroundView::CreateWindowContainingView(
   return window;
 }
 
-void BackgroundView::CreateModalPopup(views::WindowDelegate* view) {
-  views::Window* window = browser::CreateViewsWindow(
+void BackgroundView::CreateModalPopup(views::WidgetDelegate* view) {
+  views::Widget* window = browser::CreateViewsWindow(
       GetNativeWindow(), gfx::Rect(), view);
   window->SetAlwaysOnTop(true);
   window->Show();

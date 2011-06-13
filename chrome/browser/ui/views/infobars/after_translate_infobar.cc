@@ -12,7 +12,7 @@
 #include "views/controls/label.h"
 #include "views/controls/menu/menu_item_view.h"
 #include "views/controls/menu/menu_model_adapter.h"
-#include "views/window/window.h"
+#include "views/widget/widget.h"
 
 AfterTranslateInfoBar::AfterTranslateInfoBar(
     TabContentsWrapper* owner,

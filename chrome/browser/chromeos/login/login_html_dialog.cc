@@ -13,7 +13,7 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
-#include "views/window/window.h"
+#include "views/widget/widget.h"
 
 namespace chromeos {
 
@@ -52,7 +52,7 @@ void LoginHtmlDialog::Show() {
   HtmlDialogView* html_view =
       new HtmlDialogView(ProfileManager::GetDefaultProfile(), this);
   if (style_ & STYLE_BUBBLE) {
-    views::Window* bubble_window = BubbleWindow::Create(
+    views::Widget* bubble_window = BubbleWindow::Create(
         parent_window_, gfx::Rect(),
         static_cast<BubbleWindow::Style>(
             BubbleWindow::STYLE_XBAR | BubbleWindow::STYLE_THROBBER),
@@ -60,7 +60,7 @@ void LoginHtmlDialog::Show() {
     bubble_frame_view_ = static_cast<BubbleFrameView*>(
         bubble_window->non_client_view()->frame_view());
   } else {
-    views::Window::CreateChromeWindow(parent_window_, gfx::Rect(), html_view);
+    views::Widget::CreateWindowWithParent(html_view, parent_window_);
   }
   if (bubble_frame_view_) {
     bubble_frame_view_->StartThrobber();
@@ -69,7 +69,7 @@ void LoginHtmlDialog::Show() {
                                 NotificationService::AllSources());
   }
   html_view->InitDialog();
-  html_view->window()->Show();
+  html_view->GetWidget()->Show();
   is_open_ = true;
 }
 

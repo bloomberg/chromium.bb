@@ -9,7 +9,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "views/widget/root_view.h"
 #include "views/widget/native_widget_win.h"
-#include "views/window/window.h"
+#include "views/widget/widget.h"
 
 class BubbleWidget : public views::NativeWidgetWin {
  public:

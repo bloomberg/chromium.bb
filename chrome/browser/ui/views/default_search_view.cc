@@ -25,7 +25,7 @@
 #include "views/layout/grid_layout.h"
 #include "views/layout/layout_constants.h"
 #include "views/window/dialog_client_view.h"
-#include "views/window/window.h"
+#include "views/widget/widget.h"
 
 namespace {
 
@@ -226,7 +226,7 @@ void DefaultSearchView::SetupControls(PrefService* prefs) {
       layout->AddColumnSet(kWholeDialogViewSetId);
   whole_dialog_column_set->AddColumn(GridLayout::LEADING, GridLayout::LEADING,
                                      1, GridLayout::FIXED,
-                                     views::Window::GetLocalizedContentsWidth(
+                                     views::Widget::GetLocalizedContentsWidth(
                                          IDS_DEFAULT_SEARCH_WIDTH_CHARS),
                                      0);
 

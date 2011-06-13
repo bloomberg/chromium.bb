@@ -36,7 +36,6 @@
 #include "views/focus/view_storage.h"
 #include "views/widget/tooltip_manager.h"
 #include "views/window/non_client_view.h"
-#include "views/window/window.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/enumerate_modules_model_win.h"

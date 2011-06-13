@@ -24,7 +24,7 @@ class Clipboard;
 namespace views {
 
 class View;
-class Window;
+class Widget;
 
 // ViewsDelegate is an interface implemented by an object using the views
 // framework. It is used to obtain various high level application utilities
@@ -41,20 +41,20 @@ class ViewsDelegate {
 
   // Saves the position, size and maximized state for the window with the
   // specified name.
-  virtual void SaveWindowPlacement(views::Window* window,
+  virtual void SaveWindowPlacement(const Widget* widget,
                                    const std::wstring& window_name,
                                    const gfx::Rect& bounds,
                                    bool maximized) = 0;
 
   // Retrieves the saved position and size for the window with the specified
   // name.
-  virtual bool GetSavedWindowBounds(views::Window* window,
+  virtual bool GetSavedWindowBounds(const Widget* widget,
                                     const std::wstring& window_name,
                                     gfx::Rect* bounds) const = 0;
 
   // Retrieves the saved maximized state for the window with the specified
   // name.
-  virtual bool GetSavedMaximizedState(views::Window* window,
+  virtual bool GetSavedMaximizedState(const Widget* widget,
                                       const std::wstring& window_name,
                                       bool* maximized) const = 0;
 

@@ -11,7 +11,6 @@
 #include "ui/base/message_box_flags.h"
 #include "views/controls/message_box_view.h"
 #include "views/widget/widget.h"
-#include "views/window/window.h"
 
 // static
 FilePath UserDataDirDialog::RunUserDataDirDialog(
@@ -34,7 +33,7 @@ UserDataDirDialog::UserDataDirDialog(const FilePath& user_data_dir)
       ui::MessageBoxFlags::kIsConfirmMessageBox,
       message_text.c_str(), std::wstring(), kDialogWidth);
 
-  views::Window::CreateChromeWindow(NULL, gfx::Rect(), this)->Show();
+  views::Widget::CreateWindow(this)->Show();
 }
 
 UserDataDirDialog::~UserDataDirDialog() {

@@ -19,14 +19,14 @@ class DesktopViewsDelegate : public ViewsDelegate {
  private:
   // Overridden from ViewsDelegate:
   virtual ui::Clipboard* GetClipboard() const OVERRIDE;
-  virtual void SaveWindowPlacement(views::Window* window,
+  virtual void SaveWindowPlacement(const Widget* widget,
                                    const std::wstring& window_name,
                                    const gfx::Rect& bounds,
                                    bool maximized) OVERRIDE;
-  virtual bool GetSavedWindowBounds(views::Window* window,
+  virtual bool GetSavedWindowBounds(const Widget* widget,
                                     const std::wstring& window_name,
                                     gfx::Rect* bounds) const OVERRIDE;
-  virtual bool GetSavedMaximizedState(views::Window* window,
+  virtual bool GetSavedMaximizedState(const Widget* widget,
                                       const std::wstring& window_name,
                                       bool* maximized) const OVERRIDE;
   virtual void NotifyAccessibilityEvent(

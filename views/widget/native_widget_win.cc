@@ -42,13 +42,53 @@
 #include "views/widget/root_view.h"
 #include "views/widget/widget_delegate.h"
 #include "views/window/native_frame_view.h"
-#include "views/window/native_window_win.h"
 
 #pragma comment(lib, "dwmapi.lib")
 
 using ui::ViewProp;
 
 namespace views {
+
+namespace internal {
+
+void EnsureRectIsVisibleInRect(const gfx::Rect& parent_rect,
+                               gfx::Rect* child_rect,
+                               int padding) {
+  DCHECK(child_rect);
+
+  // We use padding here because it allows some of the original web page to
+  // bleed through around the edges.
+  int twice_padding = padding * 2;
+
+  // FIRST, clamp width and height so we don't open child windows larger than
+  // the containing parent.
+  if (child_rect->width() > (parent_rect.width() + twice_padding))
+    child_rect->set_width(std::max(0, parent_rect.width() - twice_padding));
+  if (child_rect->height() > parent_rect.height() + twice_padding)
+    child_rect->set_height(std::max(0, parent_rect.height() - twice_padding));
+
+  // SECOND, clamp x,y position to padding,padding so we don't position child
+  // windows in hyperspace.
+  // TODO(mpcomplete): I don't see what the second check in each 'if' does that
+  // isn't handled by the LAST set of 'ifs'.  Maybe we can remove it.
+  if (child_rect->x() < parent_rect.x() ||
+      child_rect->x() > parent_rect.right()) {
+    child_rect->set_x(parent_rect.x() + padding);
+  }
+  if (child_rect->y() < parent_rect.y() ||
+      child_rect->y() > parent_rect.bottom()) {
+    child_rect->set_y(parent_rect.y() + padding);
+  }
+
+  // LAST, nudge the window back up into the client area if its x,y position is
+  // within the parent bounds but its width/height place it off-screen.
+  if (child_rect->bottom() > parent_rect.bottom())
+    child_rect->set_y(parent_rect.bottom() - child_rect->height() - padding);
+  if (child_rect->right() > parent_rect.right())
+    child_rect->set_x(parent_rect.right() - child_rect->width() - padding);
+}
+
+}  // namespace internal
 
 namespace {
 
@@ -328,8 +368,7 @@ class NativeWidgetWin::ScopedRedrawLock {
 // NativeWidgetWin, public:
 
 NativeWidgetWin::NativeWidgetWin(internal::NativeWidgetDelegate* delegate)
-    : is_window_(false),
-      delegate_(delegate),
+    : delegate_(delegate),
       close_widget_factory_(this),
       active_mouse_tracking_flags_(0),
       use_layered_buffer_(false),
@@ -514,14 +553,6 @@ gfx::NativeWindow NativeWidgetWin::GetNativeWindow() const {
   return WindowImpl::hwnd();
 }
 
-Window* NativeWidgetWin::GetContainingWindow() {
-  return GetWindowImpl(hwnd());
-}
-
-const Window* NativeWidgetWin::GetContainingWindow() const {
-  return GetWindowImpl(hwnd());
-}
-
 void NativeWidgetWin::ViewRemoved(View* view) {
   if (drop_target_.get())
     drop_target_->ResetTargetViewIfEquals(view);
@@ -542,7 +573,7 @@ void NativeWidgetWin::SetNativeWindowProperty(const char* name, void* value) {
     props_.push_back(new ViewProp(hwnd(), name, value));
 }
 
-void* NativeWidgetWin::GetNativeWindowProperty(const char* name) {
+void* NativeWidgetWin::GetNativeWindowProperty(const char* name) const {
   return ViewProp::GetValue(hwnd(), name);
 }
 
@@ -1156,8 +1187,8 @@ LRESULT NativeWidgetWin::OnCreate(CREATESTRUCT* create_struct) {
   // Windows special DWM window frame requires a special tooltip manager so
   // that window controls in Chrome windows don't flicker when you move your
   // mouse over them. See comment in aero_tooltip_manager.h.
-  Window* window = GetWidget()->GetContainingWindow();
-  if (window && window->ShouldUseNativeFrame()) {
+  Widget* widget = GetWidget()->GetTopLevelWidget();
+  if (widget && widget->ShouldUseNativeFrame()) {
     tooltip_manager_.reset(new AeroTooltipManager(GetWidget()));
   } else {
     tooltip_manager_.reset(new TooltipManagerWin(GetWidget()));
@@ -2094,21 +2125,6 @@ void NativeWidgetWin::ExecuteSystemMenuCommand(int command) {
 // NativeWidgetWin, private:
 
 // static
-Window* NativeWidgetWin::GetWindowImpl(HWND hwnd) {
-  // NOTE: we can't use GetAncestor here as constrained windows are a Window,
-  // but not a top level window.
-  HWND parent = hwnd;
-  while (parent) {
-    NativeWidgetWin* widget =
-        reinterpret_cast<NativeWidgetWin*>(ui::GetWindowUserData(parent));
-    if (widget && widget->is_window_)
-      return static_cast<NativeWindowWin*>(widget)->GetWindow();
-    parent = ::GetParent(parent);
-  }
-  return NULL;
-}
-
-// static
 void NativeWidgetWin::PostProcessActivateMessage(NativeWidgetWin* widget,
                                                  int activation_state) {
   if (!widget->delegate_->HasFocusManager()) {
@@ -2257,8 +2273,8 @@ void NativeWidgetWin::UnlockUpdates() {
 
 void NativeWidgetWin::ClientAreaSizeChanged() {
   RECT r;
-  Window* window = GetWidget()->GetContainingWindow();
-  if (IsZoomed() || (window && window->ShouldUseNativeFrame()))
+  Widget* widget = GetWidget()->GetTopLevelWidget();
+  if (IsZoomed() || (widget && widget->ShouldUseNativeFrame()))
     GetClientRect(&r);
   else
     GetWindowRect(&r);

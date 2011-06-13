@@ -21,7 +21,7 @@
 #include "content/common/notification_source.h"
 #include "content/common/notification_type.h"
 #include "views/widget/root_view.h"
-#include "views/window/window.h"
+#include "views/widget/widget.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/wm_ipc.h"
@@ -77,7 +77,7 @@ void ExtensionPopup::Show(bool activate) {
     return;
 
 #if defined(OS_WIN)
-  frame_->GetContainingWindow()->DisableInactiveRendering();
+  frame_->GetTopLevelWidget()->DisableInactiveRendering();
 #endif
 
   ResizeToView();

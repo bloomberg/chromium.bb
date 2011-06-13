@@ -26,10 +26,9 @@ class NativeViewHost;
 class TextButton;
 }  // namespace views
 
-class AboutIPCDialog : public views::DialogDelegate,
+class AboutIPCDialog : public views::DialogDelegateView,
                        public views::ButtonListener,
-                       public IPC::Logging::Consumer,
-                       public views::View {
+                       public IPC::Logging::Consumer {
  public:
   // This dialog is a singleton. If the dialog is already opened, it won't do
   // anything, so you can just blindly call this function all you want.

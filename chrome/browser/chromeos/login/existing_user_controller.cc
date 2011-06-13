@@ -35,7 +35,7 @@
 #include "content/common/notification_type.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "views/window/window.h"
+#include "views/widget/widget.h"
 
 namespace chromeos {
 
@@ -264,7 +264,7 @@ void ExistingUserController::OnLoginFailure(const LoginFailure& failure) {
             new CaptchaView(failure.error().captcha().image_url, false);
         view->Init();
         view->set_delegate(this);
-        views::Window* window = browser::CreateViewsWindow(
+        views::Widget* window = browser::CreateViewsWindow(
             GetNativeWindow(), gfx::Rect(), view);
         window->SetAlwaysOnTop(true);
         window->Show();
@@ -408,7 +408,7 @@ void ExistingUserController::OnPasswordChangeDetected(
   // TODO(gspencer): We shouldn't have to erase stateful data when
   // doing this.  See http://crosbug.com/9115 http://crosbug.com/7792
   PasswordChangedView* view = new PasswordChangedView(this, false);
-  views::Window* window = browser::CreateViewsWindow(GetNativeWindow(),
+  views::Widget* window = browser::CreateViewsWindow(GetNativeWindow(),
                                                      gfx::Rect(),
                                                      view);
   window->SetAlwaysOnTop(true);

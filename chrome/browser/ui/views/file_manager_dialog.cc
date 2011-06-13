@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/views/window.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "views/window/window.h"
 
 namespace {
 

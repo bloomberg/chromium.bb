@@ -29,7 +29,7 @@
 #include "ui/gfx/skbitmap_operations.h"
 #include "views/controls/menu/menu_item_view.h"
 #include "views/controls/menu/submenu_view.h"
-#include "views/window/window.h"
+#include "views/widget/widget.h"
 
 namespace {
 
@@ -510,7 +510,7 @@ void NetworkMenuModel::ActivatedAt(int index) {
 // Meanwhile, if MenuUI::IsEnabled() is true, always show the settings UI,
 // otherwise show NetworkConfigView only to get passwords when not connected.
 void NetworkMenuModel::ShowNetworkConfigView(NetworkConfigView* view) const {
-  views::Window* window = browser::CreateViewsWindow(
+  views::Widget* window = browser::CreateViewsWindow(
       owner_->GetNativeWindow(), gfx::Rect(), view);
   window->SetAlwaysOnTop(true);
   window->Show();

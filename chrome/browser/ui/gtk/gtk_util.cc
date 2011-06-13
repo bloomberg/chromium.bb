@@ -44,7 +44,6 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/frame/browser_view.h"
 #include "chrome/browser/chromeos/native_dialog_window.h"
-#include "views/window/window.h"
 #else
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #endif
@@ -1082,9 +1081,9 @@ void ShowDialogWithLocalizedSize(GtkWidget* dialog,
                                  int height_id,
                                  bool resizeable) {
   int width = (width_id == -1) ? 0 :
-      views::Window::GetLocalizedContentsWidth(width_id);
+      views::Widget::GetLocalizedContentsWidth(width_id);
   int height = (height_id == -1) ? 0 :
-      views::Window::GetLocalizedContentsHeight(height_id);
+      views::Widget::GetLocalizedContentsHeight(height_id);
 
   chromeos::ShowNativeDialog(GetDialogTransientParent(GTK_WINDOW(dialog)),
       dialog,
@@ -1097,7 +1096,7 @@ void ShowDialogWithLocalizedSize(GtkWidget* dialog,
 void ShowDialogWithMinLocalizedWidth(GtkWidget* dialog,
                                      int width_id) {
   int width = (width_id == -1) ? 0 :
-      views::Window::GetLocalizedContentsWidth(width_id);
+      views::Widget::GetLocalizedContentsWidth(width_id);
 
   chromeos::ShowNativeDialog(GetDialogTransientParent(GTK_WINDOW(dialog)),
       dialog,

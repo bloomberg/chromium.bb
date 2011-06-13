@@ -14,7 +14,7 @@
 
 class SkBitmap;
 namespace views {
-class WindowDelegate;
+class WidgetDelegate;
 }
 
 // ChromeOS internet options page UI handler.
@@ -49,7 +49,7 @@ class InternetOptionsHandler
 
  private:
   // Opens a modal popup dialog.
-  void CreateModalPopup(views::WindowDelegate* view);
+  void CreateModalPopup(views::WidgetDelegate* view);
   gfx::NativeWindow GetNativeWindow() const;
 
   // Passes data needed to show details overlay for network.

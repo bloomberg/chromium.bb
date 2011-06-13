@@ -30,13 +30,13 @@ namespace chromeos {
 // static
 const SkColor BubbleWindow::kBackgroundColor = SK_ColorWHITE;
 
-BubbleWindow::BubbleWindow(views::Window* window, Style style)
-    : views::NativeWindowGtk(window),
+BubbleWindow::BubbleWindow(views::Widget* window, Style style)
+    : views::NativeWidgetGtk(window),
       style_(style) {
 }
 
 void BubbleWindow::InitNativeWidget(const views::Widget::InitParams& params) {
-  views::NativeWindowGtk::InitNativeWidget(params);
+  views::NativeWidgetGtk::InitNativeWidget(params);
 
   // Turn on double buffering so that the hosted GtkWidgets does not
   // flash as in http://crosbug.com/9065.
@@ -57,14 +57,14 @@ void BubbleWindow::InitNativeWidget(const views::Widget::InitParams& params) {
 }
 
 views::NonClientFrameView* BubbleWindow::CreateNonClientFrameView() {
-  views::Window* window = GetWindow();
-  return new BubbleFrameView(window, window->window_delegate(), style_);
+  views::Widget* window = GetWidget();
+  return new BubbleFrameView(window, window->widget_delegate(), style_);
 }
 
 void BubbleWindow::TrimMargins(int margin_left, int margin_right,
                                int margin_top, int margin_bottom,
                                int border_radius) {
-  gfx::Size size = GetWindow()->non_client_view()->GetPreferredSize();
+  gfx::Size size = GetWidget()->non_client_view()->GetPreferredSize();
   const int w = size.width() - margin_left - margin_right;
   const int h = size.height() - margin_top - margin_bottom;
   GdkRectangle rect0 = {0, border_radius, w, h - 2 * border_radius};
@@ -114,22 +114,20 @@ void BubbleWindow::TrimMargins(int margin_left, int margin_right,
   gdk_region_destroy(region);
 }
 
-views::Window* BubbleWindow::Create(
+views::Widget* BubbleWindow::Create(
     gfx::NativeWindow parent,
     const gfx::Rect& bounds,
     Style style,
-    views::WindowDelegate* window_delegate) {
-  views::Window* window = new views::Window;
+    views::WidgetDelegate* widget_delegate) {
+  views::Widget* window = new views::Widget;
   BubbleWindow* bubble_window = new BubbleWindow(window, style);
-  views::Window::InitParams params(window_delegate);
-  params.parent_window = parent;
-  params.native_window = bubble_window;
-  params.widget_init_params.parent = GTK_WIDGET(parent);
-  params.widget_init_params.bounds = bounds;
-  params.widget_init_params.parent = GTK_WIDGET(parent);
-  params.widget_init_params.native_widget = bubble_window;
-  params.widget_init_params.transparent = true;
-  window->InitWindow(params);
+  views::Widget::InitParams params;
+  params.delegate = widget_delegate;
+  params.native_widget = bubble_window;
+  params.parent = GTK_WIDGET(parent);
+  params.bounds = bounds;
+  params.transparent = true;
+  window->Init(params);
 
   if (style == STYLE_XSHAPE) {
     const int kMarginLeft = 14;
@@ -137,9 +135,8 @@ views::Window* BubbleWindow::Create(
     const int kMarginTop = 12;
     const int kMarginBottom = 16;
     const int kBorderRadius = 8;
-    static_cast<BubbleWindow*>(window->native_window())->
-        TrimMargins(kMarginLeft, kMarginRight, kMarginTop, kMarginBottom,
-                    kBorderRadius);
+    bubble_window->TrimMargins(kMarginLeft, kMarginRight, kMarginTop,
+                               kMarginBottom, kBorderRadius);
   }
 
   return window;

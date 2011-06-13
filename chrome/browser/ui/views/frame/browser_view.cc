@@ -98,9 +98,8 @@
 #include "views/layout/grid_layout.h"
 #include "views/widget/native_widget.h"
 #include "views/widget/root_view.h"
+#include "views/widget/widget.h"
 #include "views/window/dialog_delegate.h"
-#include "views/window/native_window.h"
-#include "views/window/window.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/aeropeek_manager.h"
@@ -646,7 +645,7 @@ void BrowserView::FlashFrame() {
 }
 
 gfx::NativeWindow BrowserView::GetNativeHandle() {
-  return GetWidget()->GetContainingWindow()->GetNativeWindow();
+  return GetWidget()->GetTopLevelWidget()->GetNativeWindow();
 }
 
 BrowserWindowTesting* BrowserView::GetBrowserWindowTesting() {
@@ -1014,7 +1013,7 @@ void BrowserView::ShowAboutChromeDialog() {
   DoShowAboutChromeDialog();
 }
 
-views::Window* BrowserView::DoShowAboutChromeDialog() {
+views::Widget* BrowserView::DoShowAboutChromeDialog() {
   return browser::ShowAboutChromeView(GetWidget()->GetNativeWindow(),
                                       browser_->profile());
 }
@@ -1583,7 +1582,7 @@ void BrowserView::SaveWindowPlacement(const gfx::Rect& bounds,
   // we're catching the going-into-fullscreen sizing and positioning calls,
   // which we want to ignore.
   if (!IsFullscreen() && browser_->ShouldSaveWindowPlacement()) {
-    WindowDelegate::SaveWindowPlacement(bounds, maximized);
+    WidgetDelegate::SaveWindowPlacement(bounds, maximized);
     browser_->SaveWindowPlacement(bounds, maximized);
   }
 }
@@ -1671,6 +1670,14 @@ void BrowserView::OnWidgetMove() {
   LocationBarView* location_bar_view = GetLocationBarView();
   if (location_bar_view)
     location_bar_view->location_entry()->ClosePopup();
+}
+
+views::Widget* BrowserView::GetWidget() {
+  return View::GetWidget();
+}
+
+const views::Widget* BrowserView::GetWidget() const {
+  return View::GetWidget();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2264,9 +2271,8 @@ void BrowserView::ProcessFullscreen(bool fullscreen) {
 #endif
   }
 #if defined(OS_WIN)
-  static_cast<views::NativeWidgetWin*>(
-      frame_->native_window()->AsNativeWidget())->
-          PushForceHidden();
+  static_cast<views::NativeWidgetWin*>(frame_->native_widget())->
+      PushForceHidden();
 #endif
 
   // Notify bookmark bar, so it can set itself to the appropriate drawing state.
@@ -2307,9 +2313,8 @@ void BrowserView::ProcessFullscreen(bool fullscreen) {
   ignore_layout_ = false;
   Layout();
 #if defined(OS_WIN)
-  static_cast<views::NativeWidgetWin*>(
-      frame_->native_window()->AsNativeWidget())->
-          PopForceHidden();
+  static_cast<views::NativeWidgetWin*>(frame_->native_widget())->
+      PopForceHidden();
 #endif
 }
 

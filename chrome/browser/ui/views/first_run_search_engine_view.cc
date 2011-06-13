@@ -37,7 +37,6 @@
 #include "views/layout/layout_constants.h"
 #include "views/view_text_utils.h"
 #include "views/widget/widget.h"
-#include "views/window/window.h"
 
 namespace {
 
@@ -64,9 +63,7 @@ void ShowFirstRunDialog(Profile* profile,
     return;
   }
 
-  views::Window* window = views::Window::CreateChromeWindow(
-      NULL,
-      gfx::Rect(),
+  views::Widget* window = views::Widget::CreateWindow(
       new FirstRunSearchEngineView(
           profile, randomize_search_engine_experiment));
   DCHECK(window);
@@ -301,7 +298,7 @@ void FirstRunSearchEngineView::OnTemplateURLServiceChanged() {
 }
 
 gfx::Size FirstRunSearchEngineView::GetPreferredSize() {
-  return views::Window::GetLocalizedContentsSize(
+  return views::Widget::GetLocalizedContentsSize(
       IDS_FIRSTRUN_SEARCH_ENGINE_SELECTION_WIDTH_CHARS,
       IDS_FIRSTRUN_SEARCH_ENGINE_SELECTION_HEIGHT_LINES);
 }

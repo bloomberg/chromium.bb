@@ -14,7 +14,7 @@
 #include "chrome/browser/automation/ui_controls.h"
 #include "chrome/test/ui_test_utils.h"
 #include "views/view.h"
-#include "views/window/window.h"
+#include "views/widget/widget.h"
 
 namespace {
 
@@ -77,7 +77,7 @@ void ViewEventTestBase::SetUp() {
 #if defined(OS_WIN)
   OleInitialize(NULL);
 #endif
-  window_ = views::Window::CreateChromeWindow(NULL, gfx::Rect(), this);
+  window_ = views::Widget::CreateWindow(this);
 }
 
 void ViewEventTestBase::TearDown() {
@@ -110,6 +110,14 @@ views::View* ViewEventTestBase::GetContentsView() {
     content_view_ = test_view;
   }
   return content_view_;
+}
+
+const views::Widget* ViewEventTestBase::GetWidget() const {
+  return content_view_->GetWidget();
+}
+
+views::Widget* ViewEventTestBase::GetWidget() {
+  return content_view_->GetWidget();
 }
 
 ViewEventTestBase::~ViewEventTestBase() {

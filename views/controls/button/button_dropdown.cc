@@ -14,7 +14,6 @@
 #include "views/controls/menu/menu_item_view.h"
 #include "views/controls/menu/menu_model_adapter.h"
 #include "views/widget/widget.h"
-#include "views/window/window.h"
 
 namespace views {
 

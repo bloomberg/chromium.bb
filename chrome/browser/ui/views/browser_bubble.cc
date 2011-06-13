@@ -8,7 +8,7 @@
 #if defined(OS_WIN)
 #include "chrome/browser/external_tab_container_win.h"
 #endif
-#include "views/window/window.h"
+#include "views/widget/widget.h"
 
 namespace {
 
@@ -17,7 +17,7 @@ BrowserBubbleHost* GetBubbleHostFromFrame(views::Widget* frame) {
     return NULL;
 
   BrowserBubbleHost* bubble_host = NULL;
-  views::Window* window = frame->GetContainingWindow();
+  views::Widget* window = frame->GetTopLevelWidget();
   if (window) {
     bubble_host = BrowserView::GetBrowserViewForNativeWindow(
         window->GetNativeWindow());

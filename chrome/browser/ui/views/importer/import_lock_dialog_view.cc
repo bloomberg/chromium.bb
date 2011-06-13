@@ -15,7 +15,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "views/controls/label.h"
 #include "views/layout/layout_constants.h"
-#include "views/window/window.h"
+#include "views/widget/widget.h"
 
 // Default size of the dialog window.
 static const int kDefaultWindowWidth = 320;
@@ -34,9 +34,7 @@ void ShowImportLockDialog(gfx::NativeWindow parent,
 // static
 void ImportLockDialogView::Show(gfx::NativeWindow parent,
                                 ImporterHost* importer_host) {
-  views::Window::CreateChromeWindow(
-      NULL, gfx::Rect(),
-      new ImportLockDialogView(importer_host))->Show();
+  views::Widget::CreateWindow(new ImportLockDialogView(importer_host))->Show();
 }
 
 ImportLockDialogView::ImportLockDialogView(ImporterHost* importer_host)
@@ -53,7 +51,7 @@ ImportLockDialogView::~ImportLockDialogView() {
 }
 
 gfx::Size ImportLockDialogView::GetPreferredSize() {
-  return gfx::Size(views::Window::GetLocalizedContentsSize(
+  return gfx::Size(views::Widget::GetLocalizedContentsSize(
       IDS_IMPORTLOCK_DIALOG_WIDTH_CHARS,
       IDS_IMPORTLOCK_DIALOG_HEIGHT_LINES));
 }

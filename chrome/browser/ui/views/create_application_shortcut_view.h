@@ -18,7 +18,6 @@
 namespace views {
 class Checkbox;
 class Label;
-class Window;
 };  // namespace views
 
 class Extension;

@@ -6,7 +6,7 @@
 #define VIEWS_DESKTOP_DESKTOP_WINDOW_H_
 
 #include "views/view.h"
-#include "views/window/window_delegate.h"
+#include "views/widget/widget_delegate.h"
 
 namespace views {
 class NativeWidgetViews;
@@ -14,7 +14,7 @@ class NativeWidgetViews;
 namespace desktop {
 
 class DesktopWindow : public View,
-                      public WindowDelegate {
+                      public WidgetDelegate {
  public:
    DesktopWindow();
    virtual ~DesktopWindow();
@@ -29,7 +29,7 @@ class DesktopWindow : public View,
   // Overridden from View:
   virtual void Layout() OVERRIDE;
 
-  // Overridden from WindowDelegate:
+  // Overridden from WidgetDelegate:
   virtual bool CanResize() const OVERRIDE;
   virtual bool CanMaximize() const OVERRIDE;
   virtual std::wstring GetWindowTitle() const OVERRIDE;

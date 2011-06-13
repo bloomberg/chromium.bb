@@ -55,7 +55,6 @@ class LayoutManager;
 class ScrollView;
 class TextInputClient;
 class Widget;
-class Window;
 
 namespace internal {
 class RootView;

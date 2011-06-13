@@ -24,7 +24,7 @@ const gfx::Font& BrowserFrame::GetTitleFont() {
 
 BrowserFrameGtk::BrowserFrameGtk(BrowserFrame* browser_frame,
                                  BrowserView* browser_view)
-    : views::NativeWindowGtk(browser_frame),
+    : views::NativeWidgetGtk(browser_frame),
       browser_view_(browser_view) {
   // Don't focus anything on creation, selecting a tab will set the focus.
   set_focus_on_creation(false);
@@ -36,11 +36,11 @@ BrowserFrameGtk::~BrowserFrameGtk() {
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserFrameGtk, NativeBrowserFrame implementation:
 
-views::NativeWindow* BrowserFrameGtk::AsNativeWindow() {
+views::NativeWidget* BrowserFrameGtk::AsNativeWidget() {
   return this;
 }
 
-const views::NativeWindow* BrowserFrameGtk::AsNativeWindow() const {
+const views::NativeWidget* BrowserFrameGtk::AsNativeWidget() const {
   return this;
 }
 
@@ -58,12 +58,12 @@ void BrowserFrameGtk::TabStripDisplayModeChanged() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// BrowserFrameGtk, NativeWindowGtk overrides:
+// BrowserFrameGtk, NativeWidgetGtk overrides:
 
 gboolean BrowserFrameGtk::OnWindowStateEvent(GtkWidget* widget,
                                              GdkEventWindowState* event) {
   bool was_full_screen = IsFullscreen();
-  gboolean result = views::NativeWindowGtk::OnWindowStateEvent(widget, event);
+  gboolean result = views::NativeWidgetGtk::OnWindowStateEvent(widget, event);
   if ((!IsVisible() || IsMinimized()) && browser_view_->GetStatusBubble()) {
     // The window is effectively hidden. We have to hide the status bubble as
     // unlike windows gtk has no notion of child windows that are hidden along
@@ -78,7 +78,7 @@ gboolean BrowserFrameGtk::OnWindowStateEvent(GtkWidget* widget,
 gboolean BrowserFrameGtk::OnConfigureEvent(GtkWidget* widget,
                                            GdkEventConfigure* event) {
   browser_view_->WindowMoved();
-  return views::NativeWindowGtk::OnConfigureEvent(widget, event);
+  return views::NativeWidgetGtk::OnConfigureEvent(widget, event);
 }
 
 

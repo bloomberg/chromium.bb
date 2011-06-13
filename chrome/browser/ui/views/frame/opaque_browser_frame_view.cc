@@ -35,7 +35,6 @@
 #include "views/controls/button/image_button.h"
 #include "views/controls/image_view.h"
 #include "views/widget/root_view.h"
-#include "views/window/window.h"
 #include "views/window/window_resources.h"
 #include "views/window/window_shape.h"
 
@@ -245,7 +244,7 @@ gfx::Rect OpaqueBrowserFrameView::GetBoundsForReservedArea() const {
 int OpaqueBrowserFrameView::NonClientTopBorderHeight(
     bool restored,
     bool ignore_vertical_tabs) const {
-  views::WindowDelegate* delegate = frame_->window_delegate();
+  views::WidgetDelegate* delegate = frame_->widget_delegate();
   // |delegate| may be NULL if called from callback of InputMethodChanged while
   // a window is being destroyed.
   // See more discussion at http://crosbug.com/8958
@@ -308,7 +307,7 @@ gfx::Size OpaqueBrowserFrameView::GetMinimumSize() {
   min_size.Enlarge(2 * border_thickness,
                    NonClientTopBorderHeight(false, false) + border_thickness);
 
-  views::WindowDelegate* delegate = frame_->window_delegate();
+  views::WidgetDelegate* delegate = frame_->widget_delegate();
   int min_titlebar_width = (2 * FrameBorderThickness(false)) +
       kIconLeftSpacing +
       (delegate && delegate->ShouldShowWindowIcon() ?
@@ -379,7 +378,7 @@ int OpaqueBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
       minimize_button_->GetMirroredBounds().Contains(point))
     return HTMINBUTTON;
 
-  views::WindowDelegate* delegate = frame_->window_delegate();
+  views::WidgetDelegate* delegate = frame_->widget_delegate();
   if (!delegate) {
     LOG(WARNING) << "delegate is NULL, returning safe default.";
     return HTCAPTION;
@@ -507,7 +506,7 @@ bool OpaqueBrowserFrameView::ShouldTabIconViewAnimate() const {
 }
 
 SkBitmap OpaqueBrowserFrameView::GetFaviconForTabIconView() {
-  views::WindowDelegate* delegate = frame_->window_delegate();
+  views::WidgetDelegate* delegate = frame_->widget_delegate();
   if (!delegate) {
     LOG(WARNING) << "delegate is NULL, returning safe default.";
     return SkBitmap();
@@ -576,7 +575,7 @@ gfx::Rect OpaqueBrowserFrameView::IconBounds() const {
   int size = IconSize();
   int frame_thickness = FrameBorderThickness(false);
   int y;
-  views::WindowDelegate* delegate = frame_->window_delegate();
+  views::WidgetDelegate* delegate = frame_->widget_delegate();
   if (delegate && (delegate->ShouldShowWindowIcon() ||
                    delegate->ShouldShowWindowTitle())) {
     // Our frame border has a different "3D look" than Windows'.  Theirs has a
@@ -802,7 +801,7 @@ void OpaqueBrowserFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
 
 void OpaqueBrowserFrameView::PaintTitleBar(gfx::Canvas* canvas) {
   // The window icon is painted by the TabIconView.
-  views::WindowDelegate* delegate = frame_->window_delegate();
+  views::WidgetDelegate* delegate = frame_->widget_delegate();
   if (!delegate) {
     LOG(WARNING) << "delegate is NULL";
     return;
@@ -1036,7 +1035,7 @@ void OpaqueBrowserFrameView::LayoutWindowControls() {
 
 #if defined(OS_CHROMEOS)
   // LayoutWindowControls could be triggered from
-  // NativeWindowGtk::UpdateWindowTitle(), which could happen when user
+  // NativeWidgetGtk::UpdateWindowTitle(), which could happen when user
   // navigates in fullscreen mode. And because
   // BrowserFrameChromeos::IsMaximized() return false for fullscreen mode, we
   // explicitly test fullscreen mode here and make it use the same code path
@@ -1098,7 +1097,7 @@ void OpaqueBrowserFrameView::LayoutTitleBar() {
   // The window title is based on the calculated icon position, even when there
   // is no icon.
   gfx::Rect icon_bounds(IconBounds());
-  views::WindowDelegate* delegate = frame_->window_delegate();
+  views::WidgetDelegate* delegate = frame_->widget_delegate();
   if (delegate && delegate->ShouldShowWindowIcon())
     window_icon_->SetBoundsRect(icon_bounds);
 

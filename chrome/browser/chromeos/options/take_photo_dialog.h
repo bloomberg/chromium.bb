@@ -15,7 +15,6 @@
 
 namespace views {
 class View;
-class Window;
 }
 
 namespace chromeos {

@@ -28,7 +28,6 @@
 #include "views/view.h"
 #include "views/widget/native_widget.h"
 #include "views/widget/widget.h"
-#include "views/window/window.h"
 
 using views::FocusManager;
 

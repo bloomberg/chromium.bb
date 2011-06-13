@@ -15,11 +15,6 @@ class GURL;
 class Profile;
 class WebUI;
 
-namespace views {
-class Widget;
-class WindowDelegate;
-}
-
 namespace chromeos {
 
 class StatusAreaView;

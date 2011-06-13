@@ -18,8 +18,8 @@
 #include "views/controls/label.h"
 #include "views/layout/layout_constants.h"
 #include "views/view.h"
+#include "views/widget/widget.h"
 #include "views/window/dialog_delegate.h"
-#include "views/window/window.h"
 
 namespace {
 
@@ -338,7 +338,7 @@ void ShowExtensionInstallDialog(
   ExtensionInstallDialogView* dialog = new ExtensionInstallDialogView(
       delegate, extension, icon, permissions, type);
 
-  views::Window* window =  browser::CreateViewsWindow(
+  views::Widget* window =  browser::CreateViewsWindow(
       browser_window->GetNativeHandle(), gfx::Rect(), dialog);
 
   window->Show();

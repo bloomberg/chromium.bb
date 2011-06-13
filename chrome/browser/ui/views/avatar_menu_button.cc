@@ -6,7 +6,7 @@
 
 #include "ui/gfx/canvas_skia.h"
 #include "views/controls/menu/menu_model_adapter.h"
-#include "views/window/window.h"
+#include "views/widget/widget.h"
 
 // Menu should display below the image on the frame. This
 // offset size depends on whether the frame is in glass or opaque mode.

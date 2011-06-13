@@ -34,7 +34,6 @@
 #include "views/layout/layout_constants.h"
 #include "views/widget/widget.h"
 #include "views/window/dialog_delegate.h"
-#include "views/window/window.h"
 
 // The task manager window default size.
 static const int kDefaultWidth = 460;
@@ -257,9 +256,8 @@ class BackgroundColorGroupTableView : public views::GroupTableView {
 };
 
 // The Task manager UI container.
-class TaskManagerView : public views::View,
-                        public views::ButtonListener,
-                        public views::DialogDelegate,
+class TaskManagerView : public views::ButtonListener,
+                        public views::DialogDelegateView,
                         public views::TableViewObserver,
                         public views::LinkListener,
                         public views::ContextMenuController,
@@ -567,18 +565,18 @@ void TaskManagerView::Show(bool highlight_background_resources) {
   if (instance_) {
     if (instance_->highlight_background_resources_ !=
         highlight_background_resources) {
-      instance_->window()->Close();
+      instance_->GetWidget()->Close();
     } else {
       // If there's a Task manager window open already, just activate it.
-      instance_->window()->Activate();
+      instance_->GetWidget()->Activate();
       return;
     }
   }
   instance_ = new TaskManagerView(highlight_background_resources);
-  views::Window::CreateChromeWindow(NULL, gfx::Rect(), instance_);
+  views::Widget::CreateWindow(instance_);
   instance_->InitAlwaysOnTopState();
   instance_->model_->StartUpdating();
-  instance_->window()->Show();
+  instance_->GetWidget()->Show();
 
   // Set the initial focus to the list of tasks.
   views::FocusManager* focus_manager = instance_->GetFocusManager();
@@ -626,7 +624,7 @@ bool TaskManagerView::ExecuteWindowsCommand(int command_id) {
     r = SetMenuItemInfo(system_menu, IDC_ALWAYS_ON_TOP, FALSE, &menu_info);
 
     // Now change the actual window's behavior.
-    window()->SetAlwaysOnTop(is_always_on_top_);
+    GetWidget()->SetAlwaysOnTop(is_always_on_top_);
 
     // Save the state.
     if (g_browser_process->local_state()) {
@@ -718,7 +716,7 @@ void TaskManagerView::ExecuteCommand(int id) {
 void TaskManagerView::InitAlwaysOnTopState() {
   is_always_on_top_ = false;
   if (GetSavedAlwaysOnTopState(&is_always_on_top_))
-    window()->SetAlwaysOnTop(is_always_on_top_);
+    GetWidget()->SetAlwaysOnTop(is_always_on_top_);
   AddAlwaysOnTopSystemMenuItem();
 }
 

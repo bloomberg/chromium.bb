@@ -73,6 +73,7 @@ class DialogClientView : public ClientView,
   virtual void WidgetClosing() OVERRIDE;
   virtual int NonClientHitTest(const gfx::Point& point) OVERRIDE;
   virtual DialogClientView* AsDialogClientView() OVERRIDE;
+  virtual const DialogClientView* AsDialogClientView() const OVERRIDE;
 
   // FocusChangeListener implementation:
   virtual void FocusWillChange(View* focused_before,

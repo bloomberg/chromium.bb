@@ -13,16 +13,16 @@ class Rect;
 }
 
 namespace views {
-class Window;
-class WindowDelegate;
+class Widget;
+class WidgetDelegate;
 }
 
 namespace browser {
 
 // Create a window for given |delegate| using default frame view.
-views::Window* CreateViewsWindow(gfx::NativeWindow parent,
+views::Widget* CreateViewsWindow(gfx::NativeWindow parent,
                                  const gfx::Rect& bounds,
-                                 views::WindowDelegate* delegate);
+                                 views::WidgetDelegate* delegate);
 
 }  // namespace browser
 

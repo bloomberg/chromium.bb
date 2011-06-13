@@ -17,7 +17,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "views/widget/widget.h"
-#include "views/window/window.h"
 
 using testing::Eq;
 
@@ -131,10 +130,10 @@ IN_PROC_BROWSER_TEST_F(HtmlDialogBrowserTest, MAYBE_SizeWindow) {
       new HtmlDialogView(browser()->profile(), delegate);
   TabContents* tab_contents = browser()->GetSelectedTabContents();
   ASSERT_TRUE(tab_contents != NULL);
-  views::Window::CreateChromeWindow(tab_contents->GetDialogRootWindow(),
-                                    gfx::Rect(), html_view);
+  views::Widget::CreateWindowWithParent(html_view,
+                                        tab_contents->GetDialogRootWindow());
   html_view->InitDialog();
-  html_view->window()->Show();
+  html_view->GetWidget()->Show();
 
   MessageLoopForUI::current()->AddObserver(
       WindowChangedObserver::GetInstance());
@@ -213,13 +212,13 @@ IN_PROC_BROWSER_TEST_F(HtmlDialogBrowserTest, FLAKY_TestStateTransition) {
       new HtmlDialogView(browser()->profile(), delegate);
   TabContents* tab_contents = browser()->GetSelectedTabContents();
   ASSERT_TRUE(tab_contents != NULL);
-  views::Window::CreateChromeWindow(tab_contents->GetDialogRootWindow(),
-                                    gfx::Rect(), html_view);
+  views::Widget::CreateWindowWithParent(html_view,
+                                        tab_contents->GetDialogRootWindow());
   // Test if the state transitions from INITIALIZED to -> PAINTED
   EXPECT_EQ(HtmlDialogView::INITIALIZED, html_view->state_);
 
   html_view->InitDialog();
-  html_view->window()->Show();
+  html_view->GetWidget()->Show();
 
   MessageLoopForUI::current()->AddObserver(
       WindowChangedObserver::GetInstance());

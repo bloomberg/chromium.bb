@@ -12,14 +12,13 @@
 #include "ui/gfx/size.h"
 #include "views/controls/button/native_button.h"
 #include "views/view.h"
-#include "views/window/window_delegate.h"
+#include "views/widget/widget_delegate.h"
 
 namespace views {
 class ButtonListener;
 class ImageView;
 class Label;
 class Separator;
-class Window;
 }
 
 class Profile;
@@ -77,9 +76,8 @@ class SearchEngineChoice : public views::NativeButton {
 // This class displays a large search engine choice dialog view during
 // initial first run import.
 class FirstRunSearchEngineView
-    : public views::View,
-      public views::ButtonListener,
-      public views::WindowDelegate,
+    : public views::ButtonListener,
+      public views::WidgetDelegateView,
       public TemplateURLServiceObserver {
  public:
   // |profile| allows us to get the set of imported search engines.
@@ -96,7 +94,7 @@ class FirstRunSearchEngineView
   virtual void Layout() OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
-  // Overridden from views::WindowDelegate:
+  // Overridden from views::WidgetDelegate:
   virtual std::wstring GetWindowTitle() const OVERRIDE;
   views::View* GetContentsView() OVERRIDE { return this; }
   bool CanResize() const OVERRIDE{ return false; }

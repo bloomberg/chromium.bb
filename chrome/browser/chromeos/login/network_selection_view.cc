@@ -32,7 +32,6 @@
 #include "views/layout/layout_constants.h"
 #include "views/widget/widget.h"
 #include "views/window/non_client_view.h"
-#include "views/window/window.h"
 
 using views::Background;
 using views::GridLayout;

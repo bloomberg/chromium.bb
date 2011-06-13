@@ -9,12 +9,12 @@
 #include "base/basictypes.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/native_browser_frame.h"
-#include "views/window/native_window_gtk.h"
+#include "views/widget/native_widget_gtk.h"
 
 class BrowserNonClientFrameView;
 class BrowserRootView;
 
-class BrowserFrameGtk : public views::NativeWindowGtk,
+class BrowserFrameGtk : public views::NativeWidgetGtk,
                         public NativeBrowserFrame {
  public:
   // Normally you will create this class by calling BrowserFrame::Create.
@@ -24,12 +24,12 @@ class BrowserFrameGtk : public views::NativeWindowGtk,
 
  protected:
   // Overridden from NativeBrowserFrame:
-  virtual views::NativeWindow* AsNativeWindow() OVERRIDE;
-  virtual const views::NativeWindow* AsNativeWindow() const OVERRIDE;
+  virtual views::NativeWidget* AsNativeWidget() OVERRIDE;
+  virtual const views::NativeWidget* AsNativeWidget() const OVERRIDE;
   virtual int GetMinimizeButtonOffset() const OVERRIDE;
   virtual void TabStripDisplayModeChanged() OVERRIDE;
 
-  // Overridden from views::NativeWindowGtk:
+  // Overridden from views::NativeWidgetGtk:
   virtual gboolean OnWindowStateEvent(GtkWidget* widget,
                                       GdkEventWindowState* event) OVERRIDE;
   virtual gboolean OnConfigureEvent(GtkWidget* widget,

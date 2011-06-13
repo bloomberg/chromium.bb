@@ -12,8 +12,8 @@
 #include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
 #include "ui/gfx/canvas_skia.h"
 #include "views/metrics.h"
+#include "views/widget/widget.h"
 #include "views/window/non_client_view.h"
-#include "views/window/window.h"
 
 static const int kTouchTabStripHeight = 64;
 static const int kTouchTabWidth = 64;

@@ -15,12 +15,9 @@
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "ui/gfx/size.h"
-#include "views/window/window_delegate.h"
+#include "views/widget/widget_delegate.h"
 
 class Browser;
-namespace views {
-class Window;
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -39,7 +36,7 @@ class HtmlDialogView
     : public DOMView,
       public HtmlDialogTabContentsDelegate,
       public HtmlDialogUIDelegate,
-      public views::WindowDelegate,
+      public views::WidgetDelegate,
       public NotificationObserver {
  public:
   HtmlDialogView(Profile* profile, HtmlDialogUIDelegate* delegate);
@@ -49,42 +46,48 @@ class HtmlDialogView
   void InitDialog();
 
   // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize();
-  virtual bool AcceleratorPressed(const views::Accelerator& accelerator);
-  virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual bool AcceleratorPressed(const views::Accelerator& accelerator)
+      OVERRIDE;
+  virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child)
+      OVERRIDE;
 
-  // Overridden from views::WindowDelegate:
-  virtual bool CanResize() const;
-  virtual bool IsModal() const;
-  virtual std::wstring GetWindowTitle() const;
-  virtual void WindowClosing();
-  virtual views::View* GetContentsView();
-  virtual views::View* GetInitiallyFocusedView();
-  virtual bool ShouldShowWindowTitle() const;
+  // Overridden from views::WidgetDelegate:
+  virtual bool CanResize() const OVERRIDE;
+  virtual bool IsModal() const OVERRIDE;
+  virtual std::wstring GetWindowTitle() const OVERRIDE;
+  virtual void WindowClosing() OVERRIDE;
+  virtual views::View* GetContentsView() OVERRIDE;
+  virtual views::View* GetInitiallyFocusedView() OVERRIDE;
+  virtual bool ShouldShowWindowTitle() const OVERRIDE;
+  virtual views::Widget* GetWidget() OVERRIDE;
+  virtual const views::Widget* GetWidget() const OVERRIDE;
 
   // Overridden from HtmlDialogUIDelegate:
-  virtual bool IsDialogModal() const;
-  virtual std::wstring GetDialogTitle() const;
-  virtual GURL GetDialogContentURL() const;
+  virtual bool IsDialogModal() const OVERRIDE;
+  virtual std::wstring GetDialogTitle() const OVERRIDE;
+  virtual GURL GetDialogContentURL() const OVERRIDE;
   virtual void GetWebUIMessageHandlers(
-      std::vector<WebUIMessageHandler*>* handlers) const;
-  virtual void GetDialogSize(gfx::Size* size) const;
-  virtual std::string GetDialogArgs() const;
-  virtual void OnWindowClosed();
-  virtual void OnDialogClosed(const std::string& json_retval);
-  virtual void OnCloseContents(TabContents* source, bool* out_close_dialog);
-  virtual bool ShouldShowDialogTitle() const;
-  virtual bool HandleContextMenu(const ContextMenuParams& params);
+      std::vector<WebUIMessageHandler*>* handlers) const OVERRIDE;
+  virtual void GetDialogSize(gfx::Size* size) const OVERRIDE;
+  virtual std::string GetDialogArgs() const OVERRIDE;
+  virtual void OnWindowClosed() OVERRIDE;
+  virtual void OnDialogClosed(const std::string& json_retval) OVERRIDE;
+  virtual void OnCloseContents(TabContents* source, bool* out_close_dialog)
+      OVERRIDE;
+  virtual bool ShouldShowDialogTitle() const OVERRIDE;
+  virtual bool HandleContextMenu(const ContextMenuParams& params) OVERRIDE;
 
   // Overridden from TabContentsDelegate:
-  virtual void MoveContents(TabContents* source, const gfx::Rect& pos);
-  virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
-  virtual void CloseContents(TabContents* source);
+  virtual void MoveContents(TabContents* source, const gfx::Rect& pos) OVERRIDE;
+  virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event)
+      OVERRIDE;
+  virtual void CloseContents(TabContents* source) OVERRIDE;
 
   // Overridden from NotificationObserver
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
  protected:
   // Register accelerators for this dialog.

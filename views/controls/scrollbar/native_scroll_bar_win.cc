@@ -75,11 +75,11 @@ class ScrollBarContainer : public ui::WindowImpl {
  private:
 
   LRESULT OnCreate(LPCREATESTRUCT create_struct) {
-    scrollbar_ = CreateWindow(L"SCROLLBAR", L"",
-                              WS_CHILD | (parent_->IsHorizontal() ?
-                                          SBS_HORZ : SBS_VERT),
-                              0, 0, parent_->width(), parent_->height(),
-                              hwnd(), NULL, NULL, NULL);
+    scrollbar_ = CreateWindowW(L"SCROLLBAR", L"",
+                               WS_CHILD | (parent_->IsHorizontal() ?
+                                           SBS_HORZ : SBS_VERT),
+                               0, 0, parent_->width(), parent_->height(),
+                               hwnd(), NULL, NULL, NULL);
     ui::CheckWindowCreated(scrollbar_);
     ShowWindow(scrollbar_, SW_SHOW);
     return 1;

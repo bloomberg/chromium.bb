@@ -21,7 +21,6 @@
 #include "ui/gfx/scrollbar_size.h"
 #include "ui/gfx/size.h"
 #include "views/controls/single_split_view.h"
-#include "views/window/window.h"
 
 #if !defined(OS_WIN)
 #include "views/window/hit_test.h"

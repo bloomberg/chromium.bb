@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "views/window/window_delegate.h"
+#include "views/widget/widget_delegate.h"
 
 namespace views {
 class Label;
@@ -19,15 +19,17 @@ class View;
 namespace examples {
 
 // ExamplesMainBase creates all view examples and start event loop.
-class ExamplesMain : public views::WindowDelegate {
+class ExamplesMain : public views::WidgetDelegate {
  public:
   ExamplesMain();
   virtual ~ExamplesMain();
 
-  // views::WindowDelegate implementation:
-  virtual bool CanResize() const;
-  virtual views::View* GetContentsView();
-  virtual void WindowClosing();
+  // views::WidgetDelegate implementation:
+  virtual bool CanResize() const OVERRIDE;
+  virtual views::View* GetContentsView() OVERRIDE;
+  virtual void WindowClosing() OVERRIDE;
+  virtual views::Widget* GetWidget() OVERRIDE;
+  virtual const views::Widget* GetWidget() const OVERRIDE;
 
   // Prints a message in the status area, at the bottom of the window.
   void SetStatus(const std::wstring& status);

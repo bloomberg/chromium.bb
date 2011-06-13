@@ -83,10 +83,6 @@ class NativeWidget {
   virtual gfx::NativeView GetNativeView() const = 0;
   virtual gfx::NativeWindow GetNativeWindow() const = 0;
 
-  // Returns the enclosing Window, or NULL if there is no enclosing Window.
-  virtual Window* GetContainingWindow() = 0;
-  virtual const Window* GetContainingWindow() const = 0;
-
   // Notifies the NativeWidget that a view was removed from the Widget's view
   // hierarchy.
   virtual void ViewRemoved(View* view) = 0;
@@ -95,7 +91,7 @@ class NativeWidget {
   // Returns NULL if the property does not exist. Setting the property value to
   // NULL removes the property.
   virtual void SetNativeWindowProperty(const char* name, void* value) = 0;
-  virtual void* GetNativeWindowProperty(const char* name) = 0;
+  virtual void* GetNativeWindowProperty(const char* name) const = 0;
 
   // Returns the native widget's tooltip manager. Called from the View hierarchy
   // to update tooltips.

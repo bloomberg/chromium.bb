@@ -197,10 +197,6 @@ class ExternalTabContainer : public TabContentsDelegate,
   // Returns NULL if we fail to find the cookie in the map.
   static scoped_refptr<ExternalTabContainer> RemovePendingTab(uintptr_t cookie);
 
-  // Overridden from views::NativeWidgetWin:
-  virtual views::Window* GetContainingWindow() OVERRIDE;
-  virtual const views::Window* GetContainingWindow() const OVERRIDE;
-
   // Handles the specified |accelerator| being pressed.
   bool AcceleratorPressed(const views::Accelerator& accelerator);
 

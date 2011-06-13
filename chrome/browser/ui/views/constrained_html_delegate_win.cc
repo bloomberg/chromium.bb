@@ -11,7 +11,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "ui/gfx/rect.h"
 #include "views/view.h"
-#include "views/window/window_delegate.h"
+#include "views/widget/widget_delegate.h"
 
 class ConstrainedHtmlDelegateWin : public TabContentsContainer,
                                    public ConstrainedHtmlUIDelegate,
@@ -26,7 +26,7 @@ class ConstrainedHtmlDelegateWin : public TabContentsContainer,
   virtual HtmlDialogUIDelegate* GetHtmlDialogUIDelegate();
   virtual void OnDialogClose();
 
-  // ConstrainedWindowDelegate (aka views::WindowDelegate) interface.
+  // ConstrainedWindowDelegate (aka views::WidgetDelegate) interface.
   virtual bool CanResize() const { return true; }
   virtual views::View* GetContentsView() {
     return this;

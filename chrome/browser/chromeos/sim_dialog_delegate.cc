@@ -58,7 +58,7 @@ void SimDialogDelegate::ShowDialog(gfx::NativeWindow owning_window,
                                  gfx::Rect(),
                                  chromeos::BubbleWindow::STYLE_GENERIC,
                                  html_view);
-  html_view->window()->Show();
+  html_view->GetWidget()->Show();
 }
 
 SimDialogDelegate::SimDialogDelegate(SimDialogMode dialog_mode)

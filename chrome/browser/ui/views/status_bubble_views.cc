@@ -29,7 +29,6 @@
 #include "views/screen.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
-#include "views/window/window.h"
 
 using views::Widget;
 
@@ -794,7 +793,7 @@ bool StatusBubbleViews::IsFrameVisible() {
   if (!frame->IsVisible())
     return false;
 
-  views::Window* window = frame->GetContainingWindow();
+  views::Widget* window = frame->GetTopLevelWidget();
   return !window || !window->IsMinimized();
 }
 

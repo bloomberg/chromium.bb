@@ -17,9 +17,9 @@
 #include "views/controls/button/image_button.h"
 #include "views/controls/label.h"
 #include "views/controls/throbber.h"
+#include "views/widget/widget.h"
+#include "views/widget/widget_delegate.h"
 #include "views/window/hit_test.h"
-#include "views/window/window.h"
-#include "views/window/window_delegate.h"
 #include "third_party/skia/include/core/SkPaint.h"
 
 namespace {
@@ -39,8 +39,8 @@ static const int kTitleFontSizeDelta = 1;
 
 namespace chromeos {
 
-BubbleFrameView::BubbleFrameView(views::Window* frame,
-                                 views::WindowDelegate* window_delegate,
+BubbleFrameView::BubbleFrameView(views::Widget* frame,
+                                 views::WidgetDelegate* widget_delegate,
                                  BubbleWindow::Style style)
     : frame_(frame),
       style_(style),
@@ -49,8 +49,8 @@ BubbleFrameView::BubbleFrameView(views::Window* frame,
       throbber_(NULL) {
   set_border(new BubbleBorder(BubbleBorder::NONE));
 
-  if (window_delegate->ShouldShowWindowTitle()) {
-    title_ = new views::Label(window_delegate->GetWindowTitle());
+  if (widget_delegate->ShouldShowWindowTitle()) {
+    title_ = new views::Label(widget_delegate->GetWindowTitle());
     title_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
     title_->SetFont(title_->font().DeriveFont(kFontSizeCorrectionDelta,
                                               gfx::Font::BOLD));
@@ -89,7 +89,7 @@ void BubbleFrameView::StopThrobber() {
   DCHECK(throbber_ != NULL);
   throbber_->Stop();
   if (title_)
-    title_->SetText(frame_->window_delegate()->GetWindowTitle());
+    title_->SetText(frame_->widget_delegate()->GetWindowTitle());
 }
 
 gfx::Rect BubbleFrameView::GetBoundsForClientView() const {

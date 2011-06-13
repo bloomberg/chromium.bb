@@ -11,7 +11,7 @@
 #include "views/views_delegate.h"
 
 namespace views {
-class Window;
+class Widget;
 }
 
 class TestViewsDelegate : public views::ViewsDelegate {
@@ -21,15 +21,15 @@ class TestViewsDelegate : public views::ViewsDelegate {
 
   // Overridden from views::ViewsDelegate:
   virtual ui::Clipboard* GetClipboard() const;
-  virtual void SaveWindowPlacement(views::Window* window,
+  virtual void SaveWindowPlacement(const views::Widget* window,
                                    const std::wstring& window_name,
                                    const gfx::Rect& bounds,
                                    bool maximized) OVERRIDE { }
-  virtual bool GetSavedWindowBounds(views::Window* window,
+  virtual bool GetSavedWindowBounds(const views::Widget* window,
                                     const std::wstring& window_name,
                                     gfx::Rect* bounds) const;
 
-  virtual bool GetSavedMaximizedState(views::Window* window,
+  virtual bool GetSavedMaximizedState(const views::Widget* window,
                                       const std::wstring& window_name,
                                       bool* maximized) const;
 

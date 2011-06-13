@@ -39,7 +39,6 @@
 #include "views/controls/button/image_button.h"
 #include "views/controls/native/native_view_host.h"
 #include "views/widget/widget.h"
-#include "views/window/window.h"
 
 namespace {
 

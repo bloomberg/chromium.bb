@@ -6,13 +6,16 @@
 
 #include "views/view.h"
 #include "views/views_delegate.h"
+#include "views/widget/widget.h"
 #include "views/window/client_view.h"
-#include "views/window/window.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace views {
 
-WidgetDelegate::WidgetDelegate() : window_(NULL) {
+////////////////////////////////////////////////////////////////////////////////
+// WidgetDelegate:
+
+WidgetDelegate::WidgetDelegate() : default_contents_view_(NULL) {
 }
 
 void WidgetDelegate::OnWidgetActivated(bool active) {
@@ -104,35 +107,43 @@ void WidgetDelegate::SaveWindowPlacement(const gfx::Rect& bounds,
     return;
 
   ViewsDelegate::views_delegate->SaveWindowPlacement(
-      window_, window_name, bounds, maximized);
+      GetWidget(), window_name, bounds, maximized);
 }
 
 bool WidgetDelegate::GetSavedWindowBounds(gfx::Rect* bounds) const {
-  DCHECK(window_);
   std::wstring window_name = GetWindowName();
   if (!ViewsDelegate::views_delegate || window_name.empty())
     return false;
 
   return ViewsDelegate::views_delegate->GetSavedWindowBounds(
-      window_, window_name, bounds);
+      GetWidget(), window_name, bounds);
 }
 
 bool WidgetDelegate::GetSavedMaximizedState(bool* maximized) const {
-  DCHECK(window_);
   std::wstring window_name = GetWindowName();
   if (!ViewsDelegate::views_delegate || window_name.empty())
     return false;
 
   return ViewsDelegate::views_delegate->GetSavedMaximizedState(
-      window_, window_name, maximized);
+      GetWidget(), window_name, maximized);
 }
 
 bool WidgetDelegate::ShouldRestoreWindowSize() const {
   return true;
 }
 
+Widget* WidgetDelegate::GetWidget() {
+  return NULL;
+}
+
+const Widget* WidgetDelegate::GetWidget() const {
+  return NULL;
+}
+
 View* WidgetDelegate::GetContentsView() {
-  return new View;
+  if (!default_contents_view_)
+    default_contents_view_ = new View;
+  return default_contents_view_;
 }
 
 ClientView* WidgetDelegate::CreateClientView(Widget* widget) {
@@ -145,6 +156,23 @@ NonClientFrameView* WidgetDelegate::CreateNonClientFrameView() {
 
 bool WidgetDelegate::WillProcessWorkAreaChange() const {
   return false;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// WidgetDelegateView:
+
+WidgetDelegateView::WidgetDelegateView() {
+}
+
+WidgetDelegateView::~WidgetDelegateView() {
+}
+
+Widget* WidgetDelegateView::GetWidget() {
+  return View::GetWidget();
+}
+
+const Widget* WidgetDelegateView::GetWidget() const {
+  return View::GetWidget();
 }
 
 }  // namespace views

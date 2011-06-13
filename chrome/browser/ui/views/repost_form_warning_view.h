@@ -17,7 +17,6 @@ class TabContents;
 
 namespace views {
 class MessageBoxView;
-class Window;
 }
 
 // Displays a dialog that warns the user that they are about to resubmit

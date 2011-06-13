@@ -38,7 +38,7 @@
 #include "views/controls/menu/menu_item_view.h"
 #include "views/controls/menu/menu_scroll_view_container.h"
 #include "views/controls/menu/submenu_view.h"
-#include "views/window/window.h"
+#include "views/widget/widget.h"
 
 using ui::MenuModel;
 using views::CustomButton;

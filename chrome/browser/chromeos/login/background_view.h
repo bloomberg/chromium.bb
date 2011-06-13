@@ -18,7 +18,7 @@ namespace views {
 class Label;
 class TextButton;
 class Widget;
-class WindowDelegate;
+class WidgetDelegate;
 }
 
 class DOMView;
@@ -69,7 +69,7 @@ class BackgroundView : public views::View,
       BackgroundView** view);
 
   // Create a modal popup view.
-  void CreateModalPopup(views::WindowDelegate* view);
+  void CreateModalPopup(views::WidgetDelegate* view);
 
   // Overridden from StatusAreaHost:
   virtual gfx::NativeWindow GetNativeWindow() const;

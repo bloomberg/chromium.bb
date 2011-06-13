@@ -33,6 +33,10 @@ DialogClientView* ClientView::AsDialogClientView() {
   return NULL;
 }
 
+const DialogClientView* ClientView::AsDialogClientView() const {
+  return NULL;
+}
+
 bool ClientView::CanClose() {
   return true;
 }

@@ -9,20 +9,20 @@
 #include "views/desktop/desktop_background.h"
 #include "views/desktop/desktop_window_root_view.h"
 #include "views/widget/native_widget_view.h"
-#include "views/window/native_window_views.h"
-#include "views/window/window.h"
+#include "views/widget/native_widget_views.h"
+#include "views/widget/widget.h"
 
 #if defined(OS_WIN)
-#include "views/window/native_window_win.h"
+#include "views/widget/native_widget_win.h"
 #elif defined(TOOLKIT_USES_GTK)
-#include "views/window/native_window_gtk.h"
+#include "views/widget/native_widget_gtk.h"
 #endif
 
 namespace views {
 namespace desktop {
 
 // TODO(beng): resolve naming!
-class DesktopWindowWindow : public Window {
+class DesktopWindowWindow : public Widget {
  public:
   explicit DesktopWindowWindow(DesktopWindow* desktop_window)
       : desktop_window_(desktop_window) {}
@@ -40,7 +40,7 @@ class DesktopWindowWindow : public Window {
 };
 
 class TestWindowContentView : public View,
-                              public WindowDelegate {
+                              public WidgetDelegate {
  public:
   TestWindowContentView(const std::wstring& title, SkColor color)
       : title_(title),
@@ -81,18 +81,19 @@ DesktopWindow::~DesktopWindow() {
 // static
 void DesktopWindow::CreateDesktopWindow() {
   DesktopWindow* desktop = new DesktopWindow;
-  views::Window* window = new DesktopWindowWindow(desktop);
-  views::Window::InitParams params(desktop);
+  views::Widget* window = new DesktopWindowWindow(desktop);
+  views::Widget::InitParams params;
+  params.delegate = desktop;
   // In this environment, CreateChromeWindow will default to creating a views-
-  // window, so we need to construct a NativeWindowWin by hand.
+  // window, so we need to construct a NativeWidgetWin by hand.
   // TODO(beng): Replace this with NativeWindow::CreateNativeRootWindow().
 #if defined(OS_WIN)
-  params.native_window = new views::NativeWindowWin(window);
+  params.native_widget = new views::NativeWidgetWin(window);
 #elif defined(TOOLKIT_USES_GTK)
-  params.native_window = new views::NativeWindowGtk(window);
+  params.native_widget = new views::NativeWidgetGtk(window);
 #endif
-  params.widget_init_params.bounds = gfx::Rect(20, 20, 1920, 1200);
-  window->InitWindow(params);
+  params.bounds = gfx::Rect(20, 20, 1920, 1200);
+  window->Init(params);
   window->Show();
 
   desktop->CreateTestWindow(L"Sample Window 1", SK_ColorWHITE,
@@ -161,12 +162,13 @@ void DesktopWindow::CreateTestWindow(const std::wstring& title,
                                      SkColor color,
                                      gfx::Rect initial_bounds,
                                      bool rotate) {
-  views::Window* window = new views::Window;
-  views::NativeWindowViews* nwv = new views::NativeWindowViews(this, window);
-  views::Window::InitParams params(new TestWindowContentView(title, color));
-  params.native_window = nwv;
-  params.widget_init_params.bounds = initial_bounds;
-  window->InitWindow(params);
+  views::Widget* window = new views::Widget;
+  views::NativeWidgetViews* nwv = new views::NativeWidgetViews(this, window);
+  views::Widget::InitParams params;
+  params.delegate = new TestWindowContentView(title, color);
+  params.native_widget = nwv;
+  params.bounds = initial_bounds;
+  window->Init(params);
   window->Show();
 
   if (rotate) {

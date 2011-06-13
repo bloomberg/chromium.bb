@@ -20,7 +20,6 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "views/widget/widget.h"
-#include "views/window/window.h"
 #include "unicode/datefmt.h"
 
 namespace {

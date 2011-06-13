@@ -16,7 +16,7 @@
 
 class MessageLoop;
 namespace views {
-class Window;
+class Widget;
 }
 
 // The status of the upgrade. UPGRADE_STARTED and UPGRADE_CHECK_STARTED are
@@ -94,7 +94,7 @@ class GoogleUpdate : public base::RefCountedThreadSafe<GoogleUpdate> {
   // |window| should point to a foreground window. This is needed to ensure
   // that Vista/Windows 7 UAC prompts show up in the foreground. It may also
   // be null.
-  void CheckForUpdate(bool install_if_newer, views::Window* window);
+  void CheckForUpdate(bool install_if_newer, views::Widget* window);
 
   // Pass NULL to clear the listener
   void set_status_listener(GoogleUpdateStatusListener* listener) {
@@ -123,7 +123,7 @@ class GoogleUpdate : public base::RefCountedThreadSafe<GoogleUpdate> {
   // to the message loop that we want the response to come from.
   // |window| should point to a foreground window. This is needed to ensure that
   // Vista/Windows 7 UAC prompts show up in the foreground. It may also be null.
-  bool InitiateGoogleUpdateCheck(bool install_if_newer, views::Window* window,
+  bool InitiateGoogleUpdateCheck(bool install_if_newer, views::Widget* window,
                                  MessageLoop* main_loop);
 
   // This function reports the results of the GoogleUpdate operation to the

@@ -15,9 +15,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "ui/base/theme_provider.h"
 #include "views/widget/native_widget.h"
-#include "views/widget/widget.h"
-#include "views/window/native_window.h"
-#include "views/window/window.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/ui/views/frame/glass_browser_frame_view.h"
@@ -41,11 +38,10 @@ BrowserFrame::~BrowserFrame() {
 void BrowserFrame::InitBrowserFrame() {
   native_browser_frame_ =
       NativeBrowserFrame::CreateNativeBrowserFrame(this, browser_view_);
-  views::Window::InitParams params(browser_view_);
-  params.native_window = native_browser_frame_->AsNativeWindow();
-  params.widget_init_params.native_widget =
-      params.native_window->AsNativeWidget();
-  InitWindow(params);
+  views::Widget::InitParams params;
+  params.delegate = browser_view_;
+  params.native_widget = native_browser_frame_->AsNativeWidget();
+  Init(params);
 #if defined(OS_CHROMEOS)
   // On ChromeOS we always want top-level windows to appear active.
   if (!browser_view_->IsBrowserTypePopup())
@@ -89,10 +85,10 @@ bool BrowserFrame::IsMaximized() const {
 #if defined(OS_CHROMEOS)
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kChromeosFrame)) {
     return !IsFullscreen() &&
-        (!browser_view_->IsBrowserTypePopup() || Window::IsMaximized());
+        (!browser_view_->IsBrowserTypePopup() || Widget::IsMaximized());
   }
 #endif
-  return Window::IsMaximized();
+  return Widget::IsMaximized();
 }
 
 views::internal::RootView* BrowserFrame::CreateRootView() {
@@ -128,12 +124,12 @@ void BrowserFrame::OnNativeWidgetActivationChanged(bool active) {
   if (active) {
     // When running under remote desktop, if the remote desktop client is not
     // active on the users desktop, then none of the windows contained in the
-    // remote desktop will be activated.  However, NativeWindowWin::Activate()
+    // remote desktop will be activated.  However, NativeWidgetWin::Activate()
     // will still bring this browser window to the foreground.  We explicitly
     // set ourselves as the last active browser window to ensure that we get
     // treated as such by the rest of Chrome.
     BrowserList::SetLastActive(browser_view_->browser());
   }
-  Window::OnNativeWidgetActivationChanged(active);
+  Widget::OnNativeWidgetActivationChanged(active);
 }
 

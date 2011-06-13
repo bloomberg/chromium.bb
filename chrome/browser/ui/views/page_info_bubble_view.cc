@@ -25,7 +25,6 @@
 #include "views/controls/separator.h"
 #include "views/layout/grid_layout.h"
 #include "views/widget/widget.h"
-#include "views/window/window.h"
 
 namespace {
 
@@ -195,7 +194,7 @@ void PageInfoBubbleView::LayoutSections() {
       // according to the animation stage, and let it know how transparent it
       // should draw itself.
       section->SetAnimationStage(resize_animation_.GetCurrentValue());
-      gfx::Size sz(views::Window::GetLocalizedContentsSize(
+      gfx::Size sz(views::Widget::GetLocalizedContentsSize(
           IDS_PAGEINFOBUBBLE_WIDTH_CHARS, IDS_PAGEINFOBUBBLE_HEIGHT_LINES));
       layout->AddView(section,
                       1, 1,  // Colspan & Rowspan.
@@ -229,7 +228,7 @@ void PageInfoBubbleView::LayoutSections() {
 }
 
 gfx::Size PageInfoBubbleView::GetPreferredSize() {
-  gfx::Size size(views::Window::GetLocalizedContentsSize(
+  gfx::Size size(views::Widget::GetLocalizedContentsSize(
       IDS_PAGEINFOBUBBLE_WIDTH_CHARS, IDS_PAGEINFOBUBBLE_HEIGHT_LINES));
   size.set_height(0);
 

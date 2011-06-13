@@ -19,7 +19,6 @@
 #include "ui/gfx/rect.h"
 #include "views/widget/native_widget.h"
 #include "views/widget/widget.h"
-#include "views/window/window.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/app_icon_win.h"
@@ -33,10 +32,9 @@ namespace {
 // been initialized.
 // TODO(mirandac): This function will also separate windows by profile in a
 // multi-profile environment.
-PrefService* GetPrefsForWindow(views::Window* window) {
+PrefService* GetPrefsForWindow(const views::Widget* window) {
   Profile* profile = reinterpret_cast<Profile*>(
-      window->AsWidget()->native_widget()->GetNativeWindowProperty(
-          Profile::kProfileKey));
+      window->native_widget()->GetNativeWindowProperty(Profile::kProfileKey));
   if (!profile) {
     // Use local state for windows that have no explicit profile.
     return g_browser_process->local_state();
@@ -53,7 +51,7 @@ ui::Clipboard* ChromeViewsDelegate::GetClipboard() const {
   return g_browser_process->clipboard();
 }
 
-void ChromeViewsDelegate::SaveWindowPlacement(views::Window* window,
+void ChromeViewsDelegate::SaveWindowPlacement(const views::Widget* window,
                                               const std::wstring& window_name,
                                               const gfx::Rect& bounds,
                                               bool maximized) {
@@ -80,7 +78,7 @@ void ChromeViewsDelegate::SaveWindowPlacement(views::Window* window,
   window_preferences->SetInteger("work_area_bottom", work_area.bottom());
 }
 
-bool ChromeViewsDelegate::GetSavedWindowBounds(views::Window* window,
+bool ChromeViewsDelegate::GetSavedWindowBounds(const views::Widget* window,
                                                const std::wstring& window_name,
                                                gfx::Rect* bounds) const {
   PrefService* prefs = GetPrefsForWindow(window);
@@ -102,7 +100,7 @@ bool ChromeViewsDelegate::GetSavedWindowBounds(views::Window* window,
 }
 
 bool ChromeViewsDelegate::GetSavedMaximizedState(
-    views::Window* window,
+    const views::Widget* window,
     const std::wstring& window_name,
     bool* maximized) const {
   PrefService* prefs = GetPrefsForWindow(window);

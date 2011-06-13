@@ -30,7 +30,6 @@
 #include "views/metrics.h"
 #include "views/views_delegate.h"
 #include "views/widget/widget.h"
-#include "views/window/window.h"
 
 #if defined(OS_LINUX)
 #include "ui/gfx/gtk_util.h"

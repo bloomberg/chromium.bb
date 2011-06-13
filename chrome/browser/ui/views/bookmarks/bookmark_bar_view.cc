@@ -58,7 +58,6 @@
 #include "views/view_constants.h"
 #include "views/widget/tooltip_manager.h"
 #include "views/widget/widget.h"
-#include "views/window/window.h"
 
 using views::CustomButton;
 using views::DropTargetEvent;

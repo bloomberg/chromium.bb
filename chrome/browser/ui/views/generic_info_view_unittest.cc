@@ -11,7 +11,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "views/controls/label.h"
 #include "views/controls/textfield/textfield.h"
-#include "views/window/window.h"
+#include "views/widget/widget.h"
 
 // This class is only used on windows for now.
 #if defined(OS_WIN)

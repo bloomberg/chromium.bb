@@ -18,7 +18,6 @@ class FilePath;
 
 namespace views {
 class MessageBoxView;
-class Window;
 }
 
 class UserDataDirDialog : public views::DialogDelegate,

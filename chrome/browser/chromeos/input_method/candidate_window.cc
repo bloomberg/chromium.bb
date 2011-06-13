@@ -25,8 +25,6 @@
 #include "views/screen.h"
 #include "views/widget/widget.h"
 #include "views/window/non_client_view.h"
-#include "views/window/window.h"
-#include "views/window/window_delegate.h"
 
 namespace {
 

@@ -12,10 +12,6 @@
 #include "ui/base/accessibility/accessibility_types.h"
 #include "views/views_delegate.h"
 
-namespace views {
-class Window;
-}
-
 class ChromeViewsDelegate : public views::ViewsDelegate {
  public:
   ChromeViewsDelegate() {}
@@ -23,14 +19,14 @@ class ChromeViewsDelegate : public views::ViewsDelegate {
 
   // Overridden from views::ViewsDelegate:
   virtual ui::Clipboard* GetClipboard() const OVERRIDE;
-  virtual void SaveWindowPlacement(views::Window* window,
+  virtual void SaveWindowPlacement(const views::Widget* window,
                                    const std::wstring& window_name,
                                    const gfx::Rect& bounds,
                                    bool maximized) OVERRIDE;
-  virtual bool GetSavedWindowBounds(views::Window* window,
+  virtual bool GetSavedWindowBounds(const views::Widget* window,
                                     const std::wstring& window_name,
                                     gfx::Rect* bounds) const OVERRIDE;
-  virtual bool GetSavedMaximizedState(views::Window* window,
+  virtual bool GetSavedMaximizedState(const views::Widget* window,
                                       const std::wstring& window_name,
                                       bool* maximized) const OVERRIDE;
   virtual void NotifyAccessibilityEvent(

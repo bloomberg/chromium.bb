@@ -27,7 +27,7 @@
 #include "views/controls/menu/menu_item_view.h"
 #include "views/controls/menu/submenu_view.h"
 #include "views/views_delegate.h"
-#include "views/window/window.h"
+#include "views/widget/widget.h"
 
 #if defined(OS_LINUX)
 // See http://crbug.com/40040 for details.
@@ -66,16 +66,16 @@ class ViewsDelegateImpl : public views::ViewsDelegate {
  public:
   ViewsDelegateImpl() {}
   virtual ui::Clipboard* GetClipboard() const { return NULL; }
-  virtual void SaveWindowPlacement(views::Window* window,
+  virtual void SaveWindowPlacement(const views::Widget* window,
                                    const std::wstring& window_name,
                                    const gfx::Rect& bounds,
                                    bool maximized) {}
-  virtual bool GetSavedWindowBounds(views::Window* window,
+  virtual bool GetSavedWindowBounds(const views::Widget* window,
                                     const std::wstring& window_name,
                                     gfx::Rect* bounds) const {
     return false;
   }
-  virtual bool GetSavedMaximizedState(views::Window* window,
+  virtual bool GetSavedMaximizedState(const views::Widget* window,
                                       const std::wstring& window_name,
                                       bool* maximized) const {
     return false;

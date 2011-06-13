@@ -9,7 +9,6 @@
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
 #include "views/window/hit_test.h"
-#include "views/window/window.h"
 #include "ui/base/theme_provider.h"
 
 namespace {

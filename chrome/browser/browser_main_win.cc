@@ -42,7 +42,7 @@
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/base/message_box_win.h"
 #include "views/focus/accelerator_handler.h"
-#include "views/window/window.h"
+#include "views/widget/widget.h"
 
 namespace {
 
@@ -100,8 +100,7 @@ void RecordBrowserStartupTime() {
 
 int AskForUninstallConfirmation() {
   int ret = ResultCodes::NORMAL_EXIT;
-  views::Window::CreateChromeWindow(NULL, gfx::Rect(),
-                                    new UninstallView(ret))->Show();
+  views::Widget::CreateWindow(new UninstallView(ret))->Show();
   views::AcceleratorHandler accelerator_handler;
   MessageLoopForUI::current()->Run(&accelerator_handler);
   return ret;

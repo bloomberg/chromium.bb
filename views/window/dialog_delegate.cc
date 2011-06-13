@@ -6,11 +6,12 @@
 
 #include "base/logging.h"
 #include "views/controls/button/native_button.h"
-#include "views/window/window.h"
+#include "views/widget/widget.h"
 
 namespace views {
 
-// Overridden from WindowDelegate:
+////////////////////////////////////////////////////////////////////////////////
+// DialogDelegate:
 
 DialogDelegate* DialogDelegate::AsDialogDelegate() { return this; }
 
@@ -72,7 +73,7 @@ bool DialogDelegate::Accept() {
 
 View* DialogDelegate::GetInitiallyFocusedView() {
   // Focus the default button if any.
-  DialogClientView* dcv = GetDialogClientView();
+  const DialogClientView* dcv = GetDialogClientView();
   int default_button = GetDefaultDialogButton();
   if (default_button == MessageBoxFlags::DIALOGBUTTON_NONE)
     return NULL;
@@ -94,12 +95,33 @@ ClientView* DialogDelegate::CreateClientView(Widget* widget) {
   return new DialogClientView(widget, GetContentsView());
 }
 
-DialogClientView* DialogDelegate::GetDialogClientView() const {
-  return window()->client_view()->AsDialogClientView();
+const DialogClientView* DialogDelegate::GetDialogClientView() const {
+  return GetWidget()->client_view()->AsDialogClientView();
+}
+
+DialogClientView* DialogDelegate::GetDialogClientView() {
+  return GetWidget()->client_view()->AsDialogClientView();
 }
 
 ui::AccessibilityTypes::Role DialogDelegate::GetAccessibleWindowRole() const {
   return ui::AccessibilityTypes::ROLE_DIALOG;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// DialogDelegateView:
+
+DialogDelegateView::DialogDelegateView() {
+}
+
+DialogDelegateView::~DialogDelegateView() {
+}
+
+Widget* DialogDelegateView::GetWidget() {
+  return View::GetWidget();
+}
+
+const Widget* DialogDelegateView::GetWidget() const {
+  return View::GetWidget();
 }
 
 }  // namespace views

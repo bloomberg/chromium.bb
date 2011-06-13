@@ -302,6 +302,10 @@ DialogClientView* DialogClientView::AsDialogClientView() {
   return this;
 }
 
+const DialogClientView* DialogClientView::AsDialogClientView() const {
+  return this;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // DialogClientView, View overrides:
 

@@ -14,7 +14,6 @@
 #include "chrome/browser/chromeos/views/dropdown_button.h"
 #include "views/controls/link_listener.h"
 #include "views/view.h"
-#include "views/window/window_delegate.h"
 
 namespace gfx {
 class Size;

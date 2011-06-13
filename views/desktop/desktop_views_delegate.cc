@@ -27,21 +27,22 @@ ui::Clipboard* DesktopViewsDelegate::GetClipboard() const {
   return NULL;
 }
 
-void DesktopViewsDelegate::SaveWindowPlacement(views::Window* window,
-                                   const std::wstring& window_name,
-                                   const gfx::Rect& bounds,
-                                   bool maximized) {
+void DesktopViewsDelegate::SaveWindowPlacement(const Widget* widget,
+                                               const std::wstring& window_name,
+                                               const gfx::Rect& bounds,
+                                               bool maximized) {
 }
 
-bool DesktopViewsDelegate::GetSavedWindowBounds(views::Window* window,
+bool DesktopViewsDelegate::GetSavedWindowBounds(const Widget* widget,
                                                 const std::wstring& window_name,
                                                 gfx::Rect* bounds) const {
   return false;
 }
 
-bool DesktopViewsDelegate::GetSavedMaximizedState(views::Window* window,
-                                      const std::wstring& window_name,
-                                      bool* maximized) const {
+bool DesktopViewsDelegate::GetSavedMaximizedState(
+    const Widget* widget,
+    const std::wstring& window_name,
+    bool* maximized) const {
   return false;
 }
 

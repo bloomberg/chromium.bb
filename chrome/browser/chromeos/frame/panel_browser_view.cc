@@ -8,7 +8,6 @@
 #include "chrome/browser/chromeos/frame/panel_controller.h"
 #include "third_party/cros/chromeos_wm_ipc_enums.h"
 #include "views/widget/widget.h"
-#include "views/window/window.h"
 
 namespace {
 

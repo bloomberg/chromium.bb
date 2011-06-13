@@ -54,7 +54,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/view_prop.h"
 #include "views/layout/grid_layout.h"
-#include "views/window/window.h"
 
 using ui::ViewProp;
 
@@ -951,15 +950,6 @@ void ExternalTabContainer::InfoBarContainerStateChanged(bool is_animating) {
 
 bool ExternalTabContainer::DrawInfoBarArrows(int* x) const {
   return false;
-}
-
-// ExternalTabContainer instances do not have a window.
-views::Window* ExternalTabContainer::GetContainingWindow() {
-  return NULL;
-}
-
-const views::Window* ExternalTabContainer::GetContainingWindow() const {
-  return NULL;
 }
 
 bool ExternalTabContainer::AcceleratorPressed(

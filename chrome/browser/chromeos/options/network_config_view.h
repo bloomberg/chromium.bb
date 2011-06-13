@@ -14,7 +14,6 @@
 namespace views {
 class NativeButton;
 class View;
-class Window;
 }
 
 namespace chromeos {
@@ -22,8 +21,7 @@ namespace chromeos {
 class ChildNetworkConfigView;
 
 // A dialog box for showing a password textfield.
-class NetworkConfigView : public views::View,
-                          public views::DialogDelegate,
+class NetworkConfigView : public views::DialogDelegateView,
                           public views::ButtonListener {
  public:
   class Delegate {
@@ -56,7 +54,7 @@ class NetworkConfigView : public views::View,
   virtual bool Accept() OVERRIDE;
   virtual views::View* GetExtraView() OVERRIDE;
 
-  // views::WindowDelegate method.
+  // views::WidgetDelegate methods.
   virtual bool IsModal() const OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE;
   virtual std::wstring GetWindowTitle() const OVERRIDE;

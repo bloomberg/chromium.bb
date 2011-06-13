@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/constrained_window_views.h"
 
-#include "views/window/native_window_win.h"
+#include "views/widget/native_widget_win.h"
 
 namespace {
 bool IsNonClientHitTestCode(UINT hittest) {
@@ -13,10 +13,10 @@ bool IsNonClientHitTestCode(UINT hittest) {
 }
 
 class NativeConstrainedWindowWin : public NativeConstrainedWindow,
-                                   public views::NativeWindowWin {
+                                   public views::NativeWidgetWin {
  public:
   explicit NativeConstrainedWindowWin(NativeConstrainedWindowDelegate* delegate)
-      : views::NativeWindowWin(delegate->AsNativeWindowDelegate()),
+      : views::NativeWidgetWin(delegate->AsNativeWidgetDelegate()),
         delegate_(delegate) {
   }
 
@@ -25,21 +25,21 @@ class NativeConstrainedWindowWin : public NativeConstrainedWindow,
 
  private:
   // Overridden from NativeConstrainedWindow:
-  virtual views::NativeWindow* AsNativeWindow() OVERRIDE {
+  virtual views::NativeWidget* AsNativeWidget() OVERRIDE {
     return this;
   }
 
-  // Overridden from views::NativeWindowWin:
+  // Overridden from views::NativeWidgetWin:
   virtual void OnFinalMessage(HWND window) OVERRIDE {
     delegate_->OnNativeConstrainedWindowDestroyed();
-    NativeWindowWin::OnFinalMessage(window);
+    NativeWidgetWin::OnFinalMessage(window);
   }
   virtual LRESULT OnMouseActivate(UINT message,
                                   WPARAM w_param,
                                   LPARAM l_param) OVERRIDE {
     if (IsNonClientHitTestCode(static_cast<UINT>(LOWORD(l_param))))
       delegate_->OnNativeConstrainedWindowMouseActivate();
-    return NativeWindowWin::OnMouseActivate(message, w_param, l_param);
+    return NativeWidgetWin::OnMouseActivate(message, w_param, l_param);
   }
 
   NativeConstrainedWindowDelegate* delegate_;

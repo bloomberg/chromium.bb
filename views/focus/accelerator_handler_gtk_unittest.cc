@@ -9,14 +9,14 @@
 #include "views/focus/accelerator_handler.h"
 #include "views/focus/focus_manager.h"
 #include "views/view.h"
-#include "views/window/window.h"
-#include "views/window/window_delegate.h"
+#include "views/widget/widget.h"
+#include "views/widget/widget_delegate.h"
 
 namespace views {
 
 class AcceleratorHandlerGtkTest
     : public testing::Test,
-      public WindowDelegate,
+      public WidgetDelegate,
       public AcceleratorTarget {
  public:
   AcceleratorHandlerGtkTest()
@@ -26,8 +26,7 @@ class AcceleratorHandlerGtkTest
   }
 
   virtual void SetUp() {
-    window_ = Window::CreateChromeWindow(
-        NULL, gfx::Rect(0, 0, 500, 500), this);
+    window_ = Widget::CreateWindowWithBounds(this, gfx::Rect(0, 0, 500, 500));
     window_->Show();
     FocusManager* focus_manager = window_->GetFocusManager();
     focus_manager->RegisterAccelerator(kMenuAccelerator, this);
@@ -67,11 +66,17 @@ class AcceleratorHandlerGtkTest
     return true;
   }
 
-  // WindowDelegate Implementation.
+  // WidgetDelegate Implementation.
   virtual View* GetContentsView() {
     if (!content_view_)
       content_view_ = new View();
     return content_view_;
+  }
+  virtual const views::Widget* GetWidget() const {
+    return content_view_->GetWidget();
+  }
+  virtual views::Widget* GetWidget() {
+    return content_view_->GetWidget();
   }
 
   virtual void InitContentView() {
@@ -84,7 +89,7 @@ class AcceleratorHandlerGtkTest
  private:
   Accelerator kMenuAccelerator;
   Accelerator kHomepageAccelerator;
-  Window* window_;
+  Widget* window_;
   View* content_view_;
   MessageLoopForUI message_loop_;
   DISALLOW_COPY_AND_ASSIGN(AcceleratorHandlerGtkTest);

@@ -27,8 +27,8 @@
 #include "ui/gfx/size.h"
 #include "views/controls/image_view.h"
 #include "views/widget/default_theme_provider.h"
+#include "views/widget/widget.h"
 #include "views/window/non_client_view.h"
-#include "views/window/window.h"
 
 #if defined(OS_WIN)
 #include "views/widget/monitor_win.h"

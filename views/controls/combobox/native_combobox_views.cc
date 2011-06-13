@@ -20,7 +20,7 @@
 #include "views/controls/focusable_border.h"
 #include "views/controls/menu/submenu_view.h"
 #include "views/widget/root_view.h"
-#include "views/window/window.h"
+#include "views/widget/widget.h"
 
 #if defined(OS_LINUX)
 #include "ui/gfx/gtk_util.h"

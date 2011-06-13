@@ -28,9 +28,9 @@
 #include "views/controls/textfield/textfield.h"
 #include "views/focus/accelerator_handler.h"
 #include "views/widget/root_view.h"
+#include "views/widget/widget.h"
+#include "views/widget/widget_delegate.h"
 #include "views/window/non_client_view.h"
-#include "views/window/window.h"
-#include "views/window/window_delegate.h"
 
 #if defined(OS_LINUX)
 #include "ui/base/keycodes/keyboard_code_conversion_gtk.h"
@@ -99,7 +99,7 @@ const int kThumbnailSuperStarID = count++;
 
 namespace views {
 
-class FocusManagerTest : public testing::Test, public WindowDelegate {
+class FocusManagerTest : public testing::Test, public WidgetDelegate {
  public:
   FocusManagerTest()
       : window_(NULL),
@@ -117,7 +117,7 @@ class FocusManagerTest : public testing::Test, public WindowDelegate {
   }
 
   virtual void SetUp() {
-    window_ = Window::CreateChromeWindow(NULL, bounds(), this);
+    window_ = Widget::CreateWindowWithBounds(this, bounds());
     InitContentView();
     window_->Show();
   }
@@ -151,7 +151,7 @@ class FocusManagerTest : public testing::Test, public WindowDelegate {
 #endif
   }
 
-  // WindowDelegate Implementation.
+  // WidgetDelegate Implementation.
   virtual View* GetContentsView() {
     if (!content_view_)
       content_view_ = new View();
@@ -188,7 +188,7 @@ class FocusManagerTest : public testing::Test, public WindowDelegate {
 
   MessageLoopForUI* message_loop() { return &message_loop_; }
 
-  Window* window_;
+  Widget* window_;
   View* content_view_;
 
   void AddFocusChangeListener(FocusChangeListener* listener) {
@@ -1664,15 +1664,16 @@ class FocusManagerDtorTest : public FocusManagerTest {
     DtorTrackVector* dtor_tracker_;
   };
 
-  class WindowDtorTracked : public Window {
+  class WindowDtorTracked : public Widget {
    public:
-    WindowDtorTracked(WindowDelegate* window_delegate,
+    WindowDtorTracked(WidgetDelegate* widget_delegate,
                       DtorTrackVector* dtor_tracker)
         : dtor_tracker_(dtor_tracker) {
       tracked_focus_manager_ = new FocusManagerDtorTracked(this, dtor_tracker_);
-      Window::InitParams params(window_delegate);
-      params.widget_init_params.bounds = gfx::Rect(0, 0, 100, 100);
-      InitWindow(params);
+      Widget::InitParams params;
+      params.delegate = widget_delegate;
+      params.bounds = gfx::Rect(0, 0, 100, 100);
+      Init(params);
       ReplaceFocusManager(tracked_focus_manager_);
     }
 

@@ -22,7 +22,6 @@
 #include "views/controls/textfield/textfield.h"
 #include "views/layout/grid_layout.h"
 #include "views/layout/layout_constants.h"
-#include "views/window/window.h"
 
 namespace {
 

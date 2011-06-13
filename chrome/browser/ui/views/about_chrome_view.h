@@ -21,7 +21,6 @@
 namespace views {
 class Textfield;
 class Throbber;
-class Window;
 }
 
 class Profile;
@@ -33,8 +32,7 @@ class Profile;
 // and check for updates.
 //
 ////////////////////////////////////////////////////////////////////////////////
-class AboutChromeView : public views::View,
-                        public views::DialogDelegate,
+class AboutChromeView : public views::DialogDelegateView,
                         public views::LinkListener
 #if defined(OS_WIN)
                         , public GoogleUpdateStatusListener

@@ -20,8 +20,8 @@
 #include "ui/base/models/table_model_observer.h"
 #include "views/controls/table/table_view.h"
 #include "views/controls/table/table_view2.h"
-#include "views/window/window.h"
-#include "views/window/window_delegate.h"
+#include "views/widget/widget.h"
+#include "views/widget/widget_delegate.h"
 
 using ui::TableModel;
 using ui::TableModelObserver;  // TODO(beng): remove these
@@ -139,7 +139,7 @@ int TestTableModel::CompareValues(int row1, int row2, int column_id) {
 
 // TableViewTest ---------------------------------------------------------------
 
-class TableViewTest : public testing::Test, views::WindowDelegate {
+class TableViewTest : public testing::Test, views::WidgetDelegate {
  public:
   virtual void SetUp();
   virtual void TearDown();
@@ -174,7 +174,7 @@ class TableViewTest : public testing::Test, views::WindowDelegate {
 
  private:
   MessageLoopForUI message_loop_;
-  views::Window* window_;
+  views::Widget* window_;
 };
 
 void TableViewTest::SetUp() {
@@ -186,9 +186,9 @@ void TableViewTest::SetUp() {
   columns[1].id = 1;
   table_ = new TableView(model_.get(), columns, views::ICON_AND_TEXT,
                          false, false, false);
-  window_ =
-      views::Window::CreateChromeWindow(NULL, gfx::Rect(100, 100, 512, 512),
-                                        this);
+  window_ = views::Widget::CreateWindowWithBounds(
+      this,
+      gfx::Rect(100, 100, 512, 512));
 }
 
 void TableViewTest::TearDown() {
@@ -466,7 +466,7 @@ TEST_F(NullModelTableViewTest, DISABLED_NullModel) {
 ////////////////////////////////////////////////////////////////////////////////
 // TableView2 Tests
 
-class TableView2Test : public testing::Test, views::WindowDelegate {
+class TableView2Test : public testing::Test, views::WidgetDelegate {
  public:
   virtual void SetUp();
   virtual void TearDown();
@@ -493,7 +493,7 @@ class TableView2Test : public testing::Test, views::WindowDelegate {
 
  private:
   MessageLoopForUI message_loop_;
-  views::Window* window_;
+  views::Widget* window_;
 };
 
 void TableView2Test::SetUp() {
@@ -507,9 +507,9 @@ void TableView2Test::SetUp() {
   columns[1].id = 1;
   table_ = new views::TableView2(model_.get(), columns, GetTableType(),
                                  views::TableView2::NONE);
-  window_ = views::Window::CreateChromeWindow(NULL,
-                                              gfx::Rect(100, 100, 512, 512),
-                                              this);
+  window_ = views::Widget::CreateWindowWithBounds(
+      this,
+      gfx::Rect(100, 100, 512, 512));
   window_->Show();
 }
 

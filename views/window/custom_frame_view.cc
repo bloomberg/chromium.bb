@@ -12,16 +12,16 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/path.h"
+#include "views/widget/widget_delegate.h"
 #include "views/window/client_view.h"
 #include "views/window/window_shape.h"
-#include "views/window/window_delegate.h"
 
 #if defined(OS_LINUX)
 #include "views/window/hit_test.h"
 #endif
 
 #if defined(OS_WIN)
-#include "views/window/native_window_win.h"
+#include "views/widget/native_widget_win.h"
 #endif
 
 namespace views {
@@ -568,7 +568,7 @@ void CustomFrameView::InitClass() {
   static bool initialized = false;
   if (!initialized) {
 #if defined(OS_WIN)
-    title_font_ = new gfx::Font(NativeWindowWin::GetWindowTitleFont());
+    title_font_ = new gfx::Font(NativeWidgetWin::GetWindowTitleFont());
 #elif defined(OS_LINUX)
     // TODO(ben): need to resolve what font this is.
     title_font_ = new gfx::Font();

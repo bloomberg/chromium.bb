@@ -36,7 +36,7 @@
 #include "views/controls/label.h"
 #include "views/layout/grid_layout.h"
 #include "views/layout/layout_constants.h"
-#include "views/window/window.h"
+#include "views/widget/widget.h"
 
 namespace {
 
@@ -198,15 +198,17 @@ namespace browser {
 
 void ShowCreateWebAppShortcutsDialog(gfx::NativeWindow parent_window,
                                      TabContentsWrapper* tab_contents) {
-  views::Window::CreateChromeWindow(parent_window, gfx::Rect(),
-      new CreateUrlApplicationShortcutView(tab_contents))->Show();
+  views::Widget::CreateWindowWithParent(
+      new CreateUrlApplicationShortcutView(tab_contents),
+      parent_window)->Show();
 }
 
 void ShowCreateChromeAppShortcutsDialog(gfx::NativeWindow parent_window,
                                         Profile* profile,
                                         const Extension* app) {
-  views::Window::CreateChromeWindow(parent_window, gfx::Rect(),
-      new CreateChromeApplicationShortcutView(profile, app))->Show();
+  views::Widget::CreateWindowWithParent(
+      new CreateChromeApplicationShortcutView(profile, app),
+      parent_window)->Show();
 }
 
 }  // namespace browser

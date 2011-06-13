@@ -31,7 +31,6 @@
 #include "views/layout/layout_constants.h"
 #include "views/painter.h"
 #include "views/widget/widget.h"
-#include "views/window/window.h"
 
 #if defined(OS_WIN)
 #include <commctrl.h>

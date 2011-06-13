@@ -27,7 +27,6 @@
 #include "views/widget/tooltip_manager.h"
 #include "views/widget/widget.h"
 #include "views/window/non_client_view.h"
-#include "views/window/window.h"
 
 static const int kLeftPadding = 16;
 static const int kTopPadding = 6;
@@ -449,8 +448,7 @@ void Tab::PaintInactiveTabBackground(gfx::Canvas* canvas) {
   int offset = GetMirroredX() + background_offset_.x();
 
   int tab_id;
-  if (GetWidget() &&
-      GetWidget()->GetContainingWindow()->ShouldUseNativeFrame()) {
+  if (GetWidget() && GetWidget()->GetTopLevelWidget()->ShouldUseNativeFrame()) {
     tab_id = IDR_THEME_TAB_BACKGROUND_V;
   } else {
     tab_id = data().incognito ? IDR_THEME_TAB_BACKGROUND_INCOGNITO :

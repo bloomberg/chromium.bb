@@ -22,7 +22,6 @@ namespace views {
 class Label;
 class Menu2;
 class NativeButton;
-class Window;
 }
 
 class BookmarkEditorViewTest;
@@ -41,10 +40,9 @@ class Profile;
 // To use BookmarkEditorView invoke the static show method.
 
 class BookmarkEditorView : public BookmarkEditor,
-                           public views::View,
                            public views::ButtonListener,
                            public views::TreeViewController,
-                           public views::DialogDelegate,
+                           public views::DialogDelegateView,
                            public views::TextfieldController,
                            public views::ContextMenuController,
                            public ui::SimpleMenuModel::Delegate,

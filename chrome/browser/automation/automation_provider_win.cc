@@ -26,7 +26,6 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "views/focus/accelerator_handler.h"
 #include "views/widget/root_view.h"
-#include "views/window/window.h"
 
 // This task just adds another task to the event queue.  This is useful if
 // you want to ensure that any tasks added to the event queue after this one

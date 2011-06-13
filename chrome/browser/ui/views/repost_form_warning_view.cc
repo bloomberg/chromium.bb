@@ -14,7 +14,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/message_box_flags.h"
 #include "views/controls/message_box_view.h"
-#include "views/window/window.h"
 
 namespace browser {
 

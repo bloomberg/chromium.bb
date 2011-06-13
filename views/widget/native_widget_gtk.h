@@ -163,11 +163,9 @@ class NativeWidgetGtk : public NativeWidget,
   virtual const Widget* GetWidget() const OVERRIDE;
   virtual gfx::NativeView GetNativeView() const OVERRIDE;
   virtual gfx::NativeWindow GetNativeWindow() const OVERRIDE;
-  virtual Window* GetContainingWindow() OVERRIDE;
-  virtual const Window* GetContainingWindow() const OVERRIDE;
   virtual void ViewRemoved(View* view) OVERRIDE;
   virtual void SetNativeWindowProperty(const char* name, void* value) OVERRIDE;
-  virtual void* GetNativeWindowProperty(const char* name) OVERRIDE;
+  virtual void* GetNativeWindowProperty(const char* name) const OVERRIDE;
   virtual TooltipManager* GetTooltipManager() const OVERRIDE;
   virtual bool IsScreenReaderActive() const OVERRIDE;
   virtual void SendNativeAccessibilityEvent(
@@ -301,13 +299,6 @@ class NativeWidgetGtk : public NativeWidget,
   // when a window holding grab is closed without releasing grab.
   virtual void HandleXGrabBroke();
 
-  // Are we a subclass of NativeWindowGtk?
-  bool is_window_;
-
-  // State of the window, such as fullscreen, hidden...
-  // TODO(beng): move to private once NativeWindowGtk no longer refers to it.
-  GdkWindowState window_state_;
-
  private:
   class DropObserver;
   friend class DropObserver;
@@ -328,9 +319,6 @@ class NativeWidgetGtk : public NativeWidget,
   // RegisterChildChildExposeHandler.
   void OnChildExpose(GtkWidget* child);
   static gboolean ChildExposeHandler(GtkWidget* widget, GdkEventExpose* event);
-
-  // Returns the first ancestor of |widget| that is a window.
-  static Window* GetWindowImpl(GtkWidget* widget);
 
   // Creates the GtkWidget.
   void CreateGtkWidget(const Widget::InitParams& params);
@@ -402,6 +390,9 @@ class NativeWidgetGtk : public NativeWidget,
   // True to enable debug painting. Enabling causes the damaged
   // region to be painted to flash in red.
   static bool debug_paint_enabled_;
+
+  // State of the window, such as fullscreen, hidden...
+  GdkWindowState window_state_;
 
   // Are we active?
   bool is_active_;

@@ -28,7 +28,7 @@
 #include "views/controls/menu/menu_2.h"
 #include "views/painter.h"
 #include "views/screen.h"
-#include "views/window/window.h"
+#include "views/widget/widget_delegate.h"
 #include "views/window/window_shape.h"
 
 #if !defined(OS_WIN)
@@ -200,7 +200,7 @@ PanelBrowserFrameView::PanelBrowserFrameView(BrowserFrame* frame,
       title_icon_(NULL),
       title_label_(NULL) {
   EnsureResourcesInitialized();
-  frame_->set_frame_type(views::Window::FRAME_TYPE_FORCE_CUSTOM);
+  frame_->set_frame_type(views::Widget::FRAME_TYPE_FORCE_CUSTOM);
 
   settings_button_ =  new views::MenuButton(NULL, std::wstring(), this, false);
   settings_button_->SetIcon(*(settings_button_resources.normal_image));
@@ -291,7 +291,7 @@ int PanelBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
   int window_component = GetHTComponentForFrame(point,
       NonClientBorderThickness(), NonClientBorderThickness(),
       0, 0,
-      frame_->window_delegate()->CanResize());
+      frame_->widget_delegate()->CanResize());
   // Fall back to the caption if no other component matches.
   return (window_component == HTNOWHERE) ? HTCAPTION : window_component;
 }
@@ -494,7 +494,7 @@ bool PanelBrowserFrameView::ShouldTabIconViewAnimate() const {
 }
 
 SkBitmap PanelBrowserFrameView::GetFaviconForTabIconView() {
-  return frame_->window_delegate()->GetWindowIcon();
+  return frame_->widget_delegate()->GetWindowIcon();
 }
 
 void PanelBrowserFrameView::ExtensionDialogAccepted() {
@@ -626,8 +626,7 @@ void PanelBrowserFrameView::PaintClientEdge(gfx::Canvas* canvas) {
 }
 
 void PanelBrowserFrameView::UpdateTitleBar() {
-  title_label_->SetText(
-      frame_->window_delegate()->GetWindowTitle());
+  title_label_->SetText(frame_->widget_delegate()->GetWindowTitle());
 }
 
 void PanelBrowserFrameView::OnActivationChanged(bool active) {

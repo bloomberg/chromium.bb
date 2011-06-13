@@ -79,14 +79,6 @@ gfx::NativeWindow NativeWidgetViews::GetNativeWindow() const {
   return GetParentNativeWidget()->GetNativeWindow();
 }
 
-Window* NativeWidgetViews::GetContainingWindow() {
-  return view_->GetWidget()->AsWindow();
-}
-
-const Window* NativeWidgetViews::GetContainingWindow() const {
-  return view_->GetWidget()->AsWindow();
-}
-
 void NativeWidgetViews::ViewRemoved(View* view) {
   return GetParentNativeWidget()->ViewRemoved(view);
 }
@@ -95,7 +87,7 @@ void NativeWidgetViews::SetNativeWindowProperty(const char* name, void* value) {
   NOTIMPLEMENTED();
 }
 
-void* NativeWidgetViews::GetNativeWindowProperty(const char* name) {
+void* NativeWidgetViews::GetNativeWindowProperty(const char* name) const {
   NOTIMPLEMENTED();
   return NULL;
 }

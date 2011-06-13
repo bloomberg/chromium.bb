@@ -47,7 +47,6 @@
 #include "views/layout/layout_constants.h"
 #include "views/layout/layout_manager.h"
 #include "views/window/dialog_delegate.h"
-#include "views/window/window.h"
 
 namespace {
 
@@ -79,8 +78,7 @@ struct FillLayoutWithBorder : public views::LayoutManager {
 };
 
 // System security setting dialog.
-class TpmInfoView : public views::View,
-                    public views::DialogDelegate {
+class TpmInfoView : public views::DialogDelegateView {
  public:
   explicit TpmInfoView(std::string* password)
       : ALLOW_THIS_IN_INITIALIZER_LIST(runnable_method_factory_(this)),
@@ -91,7 +89,7 @@ class TpmInfoView : public views::View,
   void Init();
 
  protected:
-  // views::DialogDelegate overrides:
+  // views::DialogDelegateView overrides:
   virtual bool Accept() { return true; }
   virtual bool IsModal() const { return true; }
   virtual views::View* GetContentsView() { return this; }
@@ -106,7 +104,7 @@ class TpmInfoView : public views::View,
   }
 
   gfx::Size GetPreferredSize() {
-    return gfx::Size(views::Window::GetLocalizedContentsSize(
+    return gfx::Size(views::Widget::GetLocalizedContentsSize(
         IDS_TPM_INFO_DIALOG_WIDTH_CHARS,
         IDS_TPM_INFO_DIALOG_HEIGHT_LINES));
   }
@@ -457,7 +455,7 @@ void EulaView::LinkClicked(views::Link* source, int event_flags) {
     TpmInfoView* view =
         new TpmInfoView(actor_->screen()->GetTpmPasswordStorage());
     view->Init();
-    views::Window* window = browser::CreateViewsWindow(parent_window,
+    views::Widget* window = browser::CreateViewsWindow(parent_window,
                                                        gfx::Rect(),
                                                        view);
     window->SetAlwaysOnTop(true);

@@ -23,8 +23,7 @@ class CheckmarkThrobber;
 class Label;
 }
 
-class ImportProgressDialogView : public views::View,
-                                 public views::DialogDelegate,
+class ImportProgressDialogView : public views::DialogDelegateView,
                                  public importer::ImporterProgressObserver {
  public:
   // |items| is a bitmask of importer::ImportItem being imported.

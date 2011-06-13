@@ -27,8 +27,8 @@
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/gfx/native_widget_types.h"
 #include "views/controls/single_split_view.h"
+#include "views/widget/widget_delegate.h"
 #include "views/window/client_view.h"
-#include "views/window/window_delegate.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/hang_monitor/hung_plugin_action.h"
@@ -84,7 +84,7 @@ class BrowserView : public BrowserBubbleHost,
                     public NotificationObserver,
                     public TabStripModelObserver,
                     public ui::SimpleMenuModel::Delegate,
-                    public views::WindowDelegate,
+                    public views::WidgetDelegate,
                     public views::ClientView,
                     public InfoBarContainer::Delegate,
                     public views::SingleSplitView::Observer {
@@ -374,7 +374,7 @@ class BrowserView : public BrowserBubbleHost,
   virtual string16 GetLabelForCommandId(int command_id) const OVERRIDE;
   virtual void ExecuteCommand(int command_id) OVERRIDE;
 
-  // Overridden from views::WindowDelegate:
+  // Overridden from views::WidgetDelegate:
   virtual bool CanResize() const OVERRIDE;
   virtual bool CanMaximize() const OVERRIDE;
   virtual bool CanActivate() const OVERRIDE;
@@ -397,6 +397,8 @@ class BrowserView : public BrowserBubbleHost,
   virtual void OnWindowActivationChanged(bool active) OVERRIDE;
   virtual void OnWindowBeginUserBoundsChange() OVERRIDE;
   virtual void OnWidgetMove() OVERRIDE;
+  virtual views::Widget* GetWidget() OVERRIDE;
+  virtual const views::Widget* GetWidget() const OVERRIDE;
 
   // Overridden from views::ClientView:
   virtual bool CanClose() OVERRIDE;
@@ -550,7 +552,7 @@ class BrowserView : public BrowserBubbleHost,
   gfx::Size GetResizeCornerSize() const;
 
   // Shows the about chrome modal dialog and returns the Window object.
-  views::Window* DoShowAboutChromeDialog();
+  views::Widget* DoShowAboutChromeDialog();
 
   // Shows the Compact Location Bar under the selected tab.
   void ShowCompactLocationBarUnderSelectedTab();

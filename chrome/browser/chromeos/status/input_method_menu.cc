@@ -26,7 +26,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "views/controls/menu/menu_model_adapter.h"
 #include "views/controls/menu/submenu_view.h"
-#include "views/window/window.h"
+#include "views/widget/widget.h"
 
 // The language menu consists of 3 parts (in this order):
 //

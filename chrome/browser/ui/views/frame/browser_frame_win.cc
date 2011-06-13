@@ -16,8 +16,9 @@
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/font.h"
 #include "views/screen.h"
+#include "views/widget/native_widget_win.h"
+#include "views/widget/widget.h"
 #include "views/window/non_client_view.h"
-#include "views/window/window.h"
 
 // static
 static const int kClientEdgeThickness = 3;
@@ -33,7 +34,7 @@ static int explicit_show_state = -1;
 
 BrowserFrameWin::BrowserFrameWin(BrowserFrame* browser_frame,
                                  BrowserView* browser_view)
-    : views::NativeWindowWin(browser_frame),
+    : views::NativeWidgetWin(browser_frame),
       browser_view_(browser_view),
       browser_frame_(browser_frame) {
   // Don't focus anything on creation, selecting a tab will set the focus.
@@ -49,7 +50,7 @@ void BrowserFrameWin::SetShowState(int state) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// BrowserFrameWin, views::NativeWindowWin overrides:
+// BrowserFrameWin, views::NativeWidgetWin overrides:
 
 int BrowserFrameWin::GetShowState() const {
   if (explicit_show_state != -1)
@@ -65,9 +66,9 @@ int BrowserFrameWin::GetShowState() const {
 gfx::Insets BrowserFrameWin::GetClientAreaInsets() const {
   // Use the default client insets for an opaque frame or a glass popup/app
   // frame.
-  if (!GetWindow()->ShouldUseNativeFrame() ||
+  if (!GetWidget()->ShouldUseNativeFrame() ||
       !browser_view_->IsBrowserTypeNormal()) {
-    return NativeWindowWin::GetClientAreaInsets();
+    return NativeWidgetWin::GetClientAreaInsets();
   }
 
   int border_thickness = GetSystemMetrics(SM_CXSIZEFRAME);
@@ -84,7 +85,7 @@ void BrowserFrameWin::UpdateFrameAfterFrameChange() {
   // We need to update the glass region on or off before the base class adjusts
   // the window region.
   UpdateDWMFrame();
-  NativeWindowWin::UpdateFrameAfterFrameChange();
+  NativeWidgetWin::UpdateFrameAfterFrameChange();
 }
 
 void BrowserFrameWin::OnEndSession(BOOL ending, UINT logoff) {
@@ -97,7 +98,7 @@ void BrowserFrameWin::OnInitMenuPopup(HMENU menu, UINT position,
 }
 
 void BrowserFrameWin::OnWindowPosChanged(WINDOWPOS* window_pos) {
-  NativeWindowWin::OnWindowPosChanged(window_pos);
+  NativeWidgetWin::OnWindowPosChanged(window_pos);
   UpdateDWMFrame();
 
   // Windows lies to us about the position of the minimize button before a
@@ -110,14 +111,14 @@ void BrowserFrameWin::OnWindowPosChanged(WINDOWPOS* window_pos) {
   // SWP_SHOWWINDOW, however callers typically are careful about not specifying
   // this flag unless necessary to avoid flicker.
   if (window_pos->flags & SWP_SHOWWINDOW) {
-    GetWindow()->non_client_view()->Layout();
-    GetWindow()->non_client_view()->SchedulePaint();
+    GetWidget()->non_client_view()->Layout();
+    GetWidget()->non_client_view()->SchedulePaint();
   }
 }
 
 void BrowserFrameWin::OnScreenReaderDetected() {
   BrowserAccessibilityState::GetInstance()->OnScreenReaderDetected();
-  NativeWindowWin::OnScreenReaderDetected();
+  NativeWidgetWin::OnScreenReaderDetected();
 }
 
 bool BrowserFrameWin::ShouldUseNativeFrame() const {
@@ -129,7 +130,7 @@ bool BrowserFrameWin::ShouldUseNativeFrame() const {
   // theme is active for normal browser windows, we don't want to use the custom
   // frame for popups/apps.
   if (!browser_view_->IsBrowserTypeNormal() &&
-      NativeWindowWin::ShouldUseNativeFrame()) {
+      NativeWidgetWin::ShouldUseNativeFrame()) {
     return true;
   }
 
@@ -141,11 +142,11 @@ bool BrowserFrameWin::ShouldUseNativeFrame() const {
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserFrameWin, NativeBrowserFrame implementation:
 
-views::NativeWindow* BrowserFrameWin::AsNativeWindow() {
+views::NativeWidget* BrowserFrameWin::AsNativeWidget() {
   return this;
 }
 
-const views::NativeWindow* BrowserFrameWin::AsNativeWindow() const {
+const views::NativeWidget* BrowserFrameWin::AsNativeWidget() const {
   return this;
 }
 
@@ -170,7 +171,7 @@ void BrowserFrameWin::TabStripDisplayModeChanged() {
 
 void BrowserFrameWin::UpdateDWMFrame() {
   // Nothing to do yet, or we're not showing a DWM frame.
-  if (!GetWindow()->client_view() || !browser_frame_->ShouldUseNativeFrame())
+  if (!GetWidget()->client_view() || !browser_frame_->ShouldUseNativeFrame())
     return;
 
   MARGINS margins = { 0 };
@@ -204,7 +205,7 @@ void BrowserFrameWin::UpdateDWMFrame() {
 // static
 const gfx::Font& BrowserFrame::GetTitleFont() {
   static gfx::Font* title_font =
-      new gfx::Font(views::NativeWindowWin::GetWindowTitleFont());
+      new gfx::Font(views::NativeWidgetWin::GetWindowTitleFont());
   return *title_font;
 }
 

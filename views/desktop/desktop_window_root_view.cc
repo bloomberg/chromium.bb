@@ -6,7 +6,7 @@
 
 #include "views/desktop/desktop_window.h"
 #include "views/widget/native_widget_view.h"
-#include "views/window/window.h"
+#include "views/widget/widget.h"
 
 namespace views {
 namespace desktop {
@@ -15,7 +15,7 @@ namespace desktop {
 // DesktopWindowRootView, public:
 
 DesktopWindowRootView::DesktopWindowRootView(DesktopWindow* desktop_window,
-                                             Window* window)
+                                             Widget* window)
     : internal::RootView(window),
       desktop_window_(desktop_window) {
 }

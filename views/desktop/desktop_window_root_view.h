@@ -14,7 +14,7 @@ class DesktopWindow;
 
 class DesktopWindowRootView : public internal::RootView {
  public:
-  DesktopWindowRootView(DesktopWindow* desktop_window, Window* window);
+  DesktopWindowRootView(DesktopWindow* desktop_window, Widget* window);
   virtual ~DesktopWindowRootView();
 
  private:

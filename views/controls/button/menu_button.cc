@@ -18,7 +18,6 @@
 #include "views/screen.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
-#include "views/window/window.h"
 
 using base::Time;
 using base::TimeDelta;

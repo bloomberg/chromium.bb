@@ -30,7 +30,6 @@
 #if defined(TOOLKIT_VIEWS) || defined(OS_WIN)
 #include "views/focus/focus_manager.h"
 #include "views/view.h"
-#include "views/window/window.h"
 #endif
 
 #if defined(TOOLKIT_VIEWS)

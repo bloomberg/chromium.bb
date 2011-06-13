@@ -25,29 +25,31 @@ class JSModalDialogViews : public NativeAppModalDialog,
   virtual ~JSModalDialogViews();
 
   // Overridden from NativeAppModalDialog:
-  virtual int GetAppModalDialogButtons() const;
-  virtual void ShowAppModalDialog();
-  virtual void ActivateAppModalDialog();
-  virtual void CloseAppModalDialog();
-  virtual void AcceptAppModalDialog();
-  virtual void CancelAppModalDialog();
+  virtual int GetAppModalDialogButtons() const OVERRIDE;
+  virtual void ShowAppModalDialog() OVERRIDE;
+  virtual void ActivateAppModalDialog() OVERRIDE;
+  virtual void CloseAppModalDialog() OVERRIDE;
+  virtual void AcceptAppModalDialog() OVERRIDE;
+  virtual void CancelAppModalDialog() OVERRIDE;
 
   // Overridden from views::DialogDelegate:
-  virtual int GetDefaultDialogButton() const;
-  virtual int GetDialogButtons() const;
-  virtual std::wstring GetWindowTitle() const;
-  virtual void WindowClosing();
-  virtual void DeleteDelegate();
-  virtual bool Cancel();
-  virtual bool Accept();
+  virtual int GetDefaultDialogButton() const OVERRIDE;
+  virtual int GetDialogButtons() const OVERRIDE;
+  virtual std::wstring GetWindowTitle() const OVERRIDE;
+  virtual void WindowClosing() OVERRIDE;
+  virtual void DeleteDelegate() OVERRIDE;
+  virtual bool Cancel() OVERRIDE;
+  virtual bool Accept() OVERRIDE;
   virtual std::wstring GetDialogButtonLabel(
-      ui::MessageBoxFlags::DialogButton button) const;
+      ui::MessageBoxFlags::DialogButton button) const OVERRIDE;
 
   // Overridden from views::WindowDelegate:
-  virtual bool IsModal() const;
-  virtual views::View* GetContentsView();
-  virtual views::View* GetInitiallyFocusedView();
-  virtual void OnClose();
+  virtual bool IsModal() const OVERRIDE;
+  virtual views::View* GetContentsView() OVERRIDE;
+  virtual views::View* GetInitiallyFocusedView() OVERRIDE;
+  virtual void OnClose() OVERRIDE;
+  virtual views::Widget* GetWidget() OVERRIDE;
+  virtual const views::Widget* GetWidget() const OVERRIDE;
 
  private:
   // A pointer to the AppModalDialog that owns us.

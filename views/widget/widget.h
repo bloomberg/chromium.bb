@@ -26,6 +26,9 @@
 #if defined(IsMinimized)
 #undef IsMinimized
 #endif
+#if defined(CreateWindow)
+#undef CreateWindow
+#endif
 #endif
 
 namespace gfx {
@@ -52,7 +55,6 @@ class NonClientFrameView;
 class TooltipManager;
 class View;
 class WidgetDelegate;
-class Window;
 namespace internal {
 class RootView;
 }
@@ -143,6 +145,16 @@ class Widget : public internal::NativeWidgetDelegate,
   Widget();
   virtual ~Widget();
 
+  // Creates a decorated window Widget with the specified properties.
+  static Widget* CreateWindow(WidgetDelegate* delegate);
+  static Widget* CreateWindowWithParent(WidgetDelegate* delegate,
+                                        gfx::NativeWindow parent);
+  static Widget* CreateWindowWithBounds(WidgetDelegate* delegate,
+                                        const gfx::Rect& bounds);
+  static Widget* CreateWindowWithParentAndBounds(WidgetDelegate* delegate,
+                                                 gfx::NativeWindow parent,
+                                                 const gfx::Rect& bounds);
+
   // Enumerates all windows pertaining to us and notifies their
   // view hierarchies that the locale has changed.
   static void NotifyLocaleChanged();
@@ -195,11 +207,6 @@ class Widget : public internal::NativeWidgetDelegate,
   // Returns the accelerator given a command id. Returns false if there is
   // no accelerator associated with a given id, which is a common condition.
   virtual bool GetAccelerator(int cmd_id, ui::Accelerator* accelerator);
-
-  // Returns the Window containing this Widget, or NULL if not contained in a
-  // window.
-  Window* GetContainingWindow();
-  const Window* GetContainingWindow() const;
 
   // Forwarded from the RootView so that the widget can do any cleanup.
   void ViewHierarchyChanged(bool is_add, View* parent, View* child);
@@ -453,10 +460,6 @@ class Widget : public internal::NativeWidgetDelegate,
 
   const NativeWidget* native_widget() const { return native_widget_; }
   NativeWidget* native_widget() { return native_widget_; }
-
-  // TODO(beng): remove once Window is folded in.
-  virtual Window* AsWindow();
-  virtual const Window* AsWindow() const;
 
   // Overridden from NativeWidgetDelegate:
   virtual bool IsModal() const OVERRIDE;

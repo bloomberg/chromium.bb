@@ -30,7 +30,6 @@
 #include "views/layout/grid_layout.h"
 #include "views/layout/layout_constants.h"
 #include "views/widget/widget.h"
-#include "views/window/window.h"
 
 using views::Button;
 using views::ColumnSet;
@@ -152,7 +151,7 @@ gfx::Size BookmarkEditorView::GetPreferredSize() {
   if (!show_tree_)
     return views::View::GetPreferredSize();
 
-  return gfx::Size(views::Window::GetLocalizedContentsSize(
+  return gfx::Size(views::Widget::GetLocalizedContentsSize(
       IDS_EDITBOOKMARK_DIALOG_WIDTH_CHARS,
       IDS_EDITBOOKMARK_DIALOG_HEIGHT_LINES));
 }
@@ -224,11 +223,11 @@ void BookmarkEditorView::ExecuteCommand(int command_id) {
 }
 
 void BookmarkEditorView::Show(HWND parent_hwnd) {
-  views::Window::CreateChromeWindow(parent_hwnd, gfx::Rect(), this);
+  views::Widget::CreateWindowWithParent(this, parent_hwnd);
   UserInputChanged();
   if (show_tree_ && bb_model_->IsLoaded())
     ExpandAndSelect();
-  window()->Show();
+  GetWidget()->Show();
   // Select all the text in the name Textfield.
   title_tf_.SelectAll();
   // Give focus to the name Textfield.
@@ -236,8 +235,8 @@ void BookmarkEditorView::Show(HWND parent_hwnd) {
 }
 
 void BookmarkEditorView::Close() {
-  DCHECK(window());
-  window()->Close();
+  DCHECK(GetWidget());
+  GetWidget()->Close();
 }
 
 void BookmarkEditorView::ShowContextMenuForView(View* source,
@@ -391,7 +390,7 @@ void BookmarkEditorView::BookmarkNodeRemoved(BookmarkModel* model,
        details_.existing_node->HasAncestor(node)) ||
       (parent_ && parent_->HasAncestor(node))) {
     // The node, or its parent was removed. Close the dialog.
-    window()->Close();
+    GetWidget()->Close();
   } else {
     Reset();
   }

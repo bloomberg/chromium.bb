@@ -29,7 +29,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
-#include "views/window/window.h"
+#include "views/widget/widget.h"
 
 namespace {
 

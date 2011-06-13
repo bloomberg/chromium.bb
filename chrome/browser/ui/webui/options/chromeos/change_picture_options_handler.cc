@@ -19,7 +19,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "views/window/window.h"
+#include "views/widget/widget.h"
 
 namespace chromeos {
 
@@ -113,7 +113,7 @@ void ChangePictureOptionsHandler::ChooseFile(const ListValue* args) {
 
 void ChangePictureOptionsHandler::TakePhoto(const ListValue* args) {
   DCHECK(args && args->empty());
-  views::Window* window = browser::CreateViewsWindow(
+  views::Widget* window = browser::CreateViewsWindow(
       GetBrowserWindow(),
       gfx::Rect(),
       new TakePhotoDialog());

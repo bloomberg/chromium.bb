@@ -24,7 +24,6 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "views/window/non_client_view.h"
-#include "views/window/window.h"
 
 namespace {
 

@@ -25,7 +25,7 @@
 #include "views/focus/focus_manager.h"
 #include "views/layout/layout_constants.h"
 #include "views/widget/native_widget_win.h"
-#include "views/window/window.h"
+#include "views/widget/widget.h"
 
 namespace {
 
@@ -201,7 +201,7 @@ void FirstRunBubbleView::Layout() {
 }
 
 gfx::Size FirstRunBubbleView::GetPreferredSize() {
-  return gfx::Size(views::Window::GetLocalizedContentsSize(
+  return gfx::Size(views::Widget::GetLocalizedContentsSize(
       IDS_FIRSTRUNBUBBLE_DIALOG_WIDTH_CHARS,
       IDS_FIRSTRUNBUBBLE_DIALOG_HEIGHT_LINES));
 }
@@ -453,7 +453,7 @@ void FirstRunMinimalBubbleView::Layout() {
 }
 
 gfx::Size FirstRunMinimalBubbleView::GetPreferredSize() {
-  return gfx::Size(views::Window::GetLocalizedContentsSize(
+  return gfx::Size(views::Widget::GetLocalizedContentsSize(
       IDS_FIRSTRUN_MINIMAL_BUBBLE_DIALOG_WIDTH_CHARS,
       IDS_FIRSTRUN_MINIMAL_BUBBLE_DIALOG_HEIGHT_LINES));
 }
@@ -517,7 +517,7 @@ void FirstRunBubble::EnableParent() {
   views::NativeWidget* parent =
       views::NativeWidget::GetNativeWidgetForNativeView(GetParent());
   if (parent)
-    parent->GetWidget()->GetContainingWindow()->DisableInactiveRendering();
+    parent->GetWidget()->GetTopLevelWidget()->DisableInactiveRendering();
   // Reactivate the FirstRunBubble so it responds to OnActivate messages.
   SetWindowPos(GetParent(), 0, 0, 0, 0,
                SWP_NOSIZE | SWP_NOMOVE | SWP_NOREDRAW | SWP_SHOWWINDOW);

@@ -113,6 +113,38 @@ Widget::~Widget() {
 }
 
 // static
+Widget* Widget::CreateWindow(WidgetDelegate* delegate) {
+  return CreateWindowWithParentAndBounds(delegate, NULL, gfx::Rect());
+}
+
+// static
+Widget* Widget::CreateWindowWithParent(WidgetDelegate* delegate,
+                                       gfx::NativeWindow parent) {
+  return CreateWindowWithParentAndBounds(delegate, parent, gfx::Rect());
+}
+
+// static
+Widget* Widget::CreateWindowWithBounds(WidgetDelegate* delegate,
+                                       const gfx::Rect& bounds) {
+  return CreateWindowWithParentAndBounds(delegate, NULL, bounds);
+}
+
+// static
+Widget* Widget::CreateWindowWithParentAndBounds(WidgetDelegate* delegate,
+                                                gfx::NativeWindow parent,
+                                                const gfx::Rect& bounds) {
+  Widget* widget = new Widget;
+  Widget::InitParams params;
+  params.delegate = delegate;
+#if defined(OS_WIN)
+  params.parent = parent;
+#endif
+  params.bounds = bounds;
+  widget->Init(params);
+  return widget;
+}
+
+// static
 void Widget::SetPureViews(bool pure) {
   use_pure_views = pure;
 }
@@ -186,14 +218,6 @@ bool Widget::GetAccelerator(int cmd_id, ui::Accelerator* accelerator) {
   return false;
 }
 
-Window* Widget::GetContainingWindow() {
-  return native_widget_->GetContainingWindow();
-}
-
-const Window* Widget::GetContainingWindow() const {
-  return native_widget_->GetContainingWindow();
-}
-
 void Widget::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
   if (!is_add) {
     if (child == dragged_view_)
@@ -217,14 +241,6 @@ void Widget::NotifyNativeViewHierarchyChanged(bool attached,
       focus_manager->ViewRemoved(root_view_.get());
   }
   root_view_->NotifyNativeViewHierarchyChanged(attached, native_view);
-}
-
-Window* Widget::AsWindow() {
-  return NULL;
-}
-
-const Window* Widget::AsWindow() const {
-  return NULL;
 }
 
 // Converted methods (see header) ----------------------------------------------

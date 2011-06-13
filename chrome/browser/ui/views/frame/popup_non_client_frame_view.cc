@@ -14,7 +14,7 @@
 #endif
 
 PopupNonClientFrameView::PopupNonClientFrameView(BrowserFrame* frame) {
-  frame->set_frame_type(views::Window::FRAME_TYPE_FORCE_NATIVE);
+  frame->set_frame_type(views::Widget::FRAME_TYPE_FORCE_NATIVE);
 }
 
 gfx::Rect PopupNonClientFrameView::GetBoundsForClientView() const {

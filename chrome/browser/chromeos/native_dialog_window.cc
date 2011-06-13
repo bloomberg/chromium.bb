@@ -12,9 +12,9 @@
 #include "chrome/browser/ui/views/window.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "views/controls/native/native_view_host.h"
+#include "views/widget/widget.h"
 #include "views/window/dialog_delegate.h"
 #include "views/window/non_client_view.h"
-#include "views/window/window.h"
 
 namespace {
 
@@ -50,8 +50,7 @@ GtkWidget* GetDialogDefaultWidget(GtkDialog* dialog) {
 
 namespace chromeos {
 
-class NativeDialogHost : public views::View,
-                         public views::DialogDelegate {
+class NativeDialogHost : public views::DialogDelegateView {
  public:
   NativeDialogHost(gfx::NativeView native_dialog,
                    int flags,
@@ -143,11 +142,12 @@ void NativeDialogHost::OnCheckResize(GtkWidget* widget) {
       CheckSize();
       SizeToPreferredSize();
 
-      gfx::Size window_size = window()->non_client_view()->GetPreferredSize();
-      gfx::Rect window_bounds = window()->GetWindowScreenBounds();
+      gfx::Size window_size =
+          GetWidget()->non_client_view()->GetPreferredSize();
+      gfx::Rect window_bounds = GetWidget()->GetWindowScreenBounds();
       window_bounds.set_width(window_size.width());
       window_bounds.set_height(window_size.height());
-      window()->SetBoundsConstrained(window_bounds, NULL);
+      GetWidget()->SetBoundsConstrained(window_bounds, NULL);
     }
   }
 }
@@ -155,7 +155,7 @@ void NativeDialogHost::OnCheckResize(GtkWidget* widget) {
 void NativeDialogHost::OnDialogDestroy(GtkWidget* widget) {
   dialog_ = NULL;
   destroy_signal_id_ = 0;
-  window()->Close();
+  GetWidget()->Close();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -225,7 +225,7 @@ void NativeDialogHost::Init() {
   AddChildView(contents_view_);
   contents_view_->Attach(contents);
 
-  g_signal_connect(window()->GetNativeWindow(), "check-resize",
+  g_signal_connect(GetWidget()->GetNativeWindow(), "check-resize",
       G_CALLBACK(&OnCheckResizeThunk), this);
 
   const int padding = 2 * kDialogPadding;
@@ -272,13 +272,13 @@ void ShowNativeDialog(gfx::NativeWindow parent,
   NativeDialogHost* native_dialog_host =
       new NativeDialogHost(native_dialog, flags, size, min_size);
   browser::CreateViewsWindow(parent, gfx::Rect(), native_dialog_host);
-  native_dialog_host->window()->Show();
+  native_dialog_host->GetWidget()->Show();
 }
 
 gfx::NativeWindow GetNativeDialogWindow(gfx::NativeView native_dialog) {
   NativeDialogHost* host = reinterpret_cast<NativeDialogHost*>(
       g_object_get_data(G_OBJECT(native_dialog), kNativeDialogHost));
-  return host ? host->window()->GetNativeWindow() : NULL;
+  return host ? host->GetWidget()->GetNativeWindow() : NULL;
 }
 
 gfx::Rect GetNativeDialogContentsBounds(gfx::NativeView native_dialog) {

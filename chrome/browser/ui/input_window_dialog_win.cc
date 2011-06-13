@@ -13,13 +13,17 @@
 #include "views/controls/textfield/textfield_controller.h"
 #include "views/layout/grid_layout.h"
 #include "views/layout/layout_constants.h"
+#include "views/widget/widget.h"
 #include "views/window/dialog_delegate.h"
-#include "views/window/window.h"
 
 // Width to make the text field, in pixels.
 static const int kTextfieldWidth = 200;
 
 class ContentView;
+
+namespace views {
+class Widget;
+}
 
 // The Windows implementation of the cross platform input dialog interface.
 class WinInputWindowDialog : public InputWindowDialog {
@@ -42,7 +46,7 @@ class WinInputWindowDialog : public InputWindowDialog {
 
  private:
   // Our chrome views window.
-  views::Window* window_;
+  views::Widget* window_;
 
   // Strings to feed to the on screen window.
   std::wstring window_title_;
@@ -207,8 +211,8 @@ WinInputWindowDialog::WinInputWindowDialog(HWND parent,
       label_(label),
       contents_(contents),
       delegate_(delegate) {
-  window_ = views::Window::CreateChromeWindow(parent, gfx::Rect(),
-                                              new ContentView(this));
+  window_ = views::Widget::CreateWindowWithParent(new ContentView(this),
+                                                  parent);
   window_->client_view()->AsDialogClientView()->UpdateDialogButtons();
 }
 

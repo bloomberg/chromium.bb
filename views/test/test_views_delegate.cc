@@ -23,13 +23,13 @@ ui::Clipboard* TestViewsDelegate::GetClipboard() const {
 }
 
 
-bool TestViewsDelegate::GetSavedWindowBounds(views::Window* window,
+bool TestViewsDelegate::GetSavedWindowBounds(const views::Widget* window,
                                              const std::wstring& window_name,
                                              gfx::Rect* bounds) const {
   return false;
 }
 
-bool TestViewsDelegate::GetSavedMaximizedState(views::Window* window,
+bool TestViewsDelegate::GetSavedMaximizedState(const views::Widget* window,
                                                const std::wstring& window_name,
                                                bool* maximized) const {
   return false;

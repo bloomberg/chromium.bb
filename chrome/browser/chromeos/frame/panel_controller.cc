@@ -36,7 +36,6 @@
 #include "views/painter.h"
 #include "views/view.h"
 #include "views/widget/widget.h"
-#include "views/window/window.h"
 
 #if defined(TOUCH_UI)
 namespace {

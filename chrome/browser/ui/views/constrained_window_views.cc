@@ -28,16 +28,14 @@
 #include "ui/gfx/rect.h"
 #include "views/controls/button/image_button.h"
 #include "views/focus/focus_manager.h"
+#include "views/widget/widget.h"
 #include "views/window/client_view.h"
-#include "views/window/native_window.h"
 #include "views/window/non_client_view.h"
 #include "views/window/window_resources.h"
 #include "views/window/window_shape.h"
-#include "views/window/window.h"
 
 #if defined(OS_WIN)
 #include "views/widget/native_widget_win.h"
-#include "views/window/native_window_win.h"
 #endif
 
 using base::TimeDelta;
@@ -274,7 +272,7 @@ ConstrainedWindowFrameView::ConstrainedWindowFrameView(
 
   // Constrained windows always use the custom frame - they just have a
   // different set of bitmaps.
-  container->set_frame_type(views::Window::FRAME_TYPE_FORCE_CUSTOM);
+  container->set_frame_type(views::Widget::FRAME_TYPE_FORCE_CUSTOM);
 
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   close_button_->SetImage(views::CustomButton::BS_NORMAL,
@@ -335,7 +333,7 @@ int ConstrainedWindowFrameView::NonClientHitTest(const gfx::Point& point) {
 
   int window_component = GetHTComponentForFrame(point, kFrameBorderThickness,
       NonClientBorderThickness(), kResizeAreaCornerSize, kResizeAreaCornerSize,
-      container_->window_delegate()->CanResize());
+      container_->widget_delegate()->CanResize());
   // Fall back to the caption if no other component matches.
   return (window_component == HTNOWHERE) ? HTCAPTION : window_component;
 }
@@ -490,7 +488,7 @@ void ConstrainedWindowFrameView::PaintFrameBorder(gfx::Canvas* canvas) {
 
 void ConstrainedWindowFrameView::PaintTitleBar(gfx::Canvas* canvas) {
   canvas->DrawStringInt(
-      container_->window_delegate()->GetWindowTitle(),
+      container_->widget_delegate()->GetWindowTitle(),
       *title_font_, GetTitleColor(), GetMirroredXForRect(title_bounds_),
       title_bounds_.y(), title_bounds_.width(), title_bounds_.height());
 }
@@ -556,7 +554,7 @@ void ConstrainedWindowFrameView::InitClass() {
   static bool initialized = false;
   if (!initialized) {
 #if defined(OS_WIN)
-    title_font_ = new gfx::Font(views::NativeWindowWin::GetWindowTitleFont());
+    title_font_ = new gfx::Font(views::NativeWidgetWin::GetWindowTitleFont());
 #endif
     initialized = true;
   }
@@ -567,17 +565,16 @@ void ConstrainedWindowFrameView::InitClass() {
 
 ConstrainedWindowViews::ConstrainedWindowViews(
     TabContents* owner,
-    views::WindowDelegate* window_delegate)
+    views::WidgetDelegate* widget_delegate)
     : owner_(owner),
       ALLOW_THIS_IN_INITIALIZER_LIST(native_constrained_window_(
           NativeConstrainedWindow::CreateNativeConstrainedWindow(this))) {
-  views::Window::InitParams params(window_delegate);
-  params.native_window = native_constrained_window_->AsNativeWindow();
-  params.widget_init_params.child = true;
-  params.widget_init_params.parent = owner->GetNativeView();
-  params.widget_init_params.native_widget =
-      native_constrained_window_->AsNativeWindow()->AsNativeWidget();
-  InitWindow(params);
+  views::Widget::InitParams params;
+  params.delegate = widget_delegate;
+  params.child = true;
+  params.parent = owner->GetNativeView();
+  params.native_widget = native_constrained_window_->AsNativeWidget();
+  Init(params);
 }
 
 ConstrainedWindowViews::~ConstrainedWindowViews() {
@@ -609,9 +606,9 @@ void ConstrainedWindowViews::CloseConstrainedWindow() {
 void ConstrainedWindowViews::FocusConstrainedWindow() {
   if ((!owner_->delegate() ||
        owner_->delegate()->ShouldFocusConstrainedWindow()) &&
-      window_delegate() &&
-      window_delegate()->GetInitiallyFocusedView()) {
-    window_delegate()->GetInitiallyFocusedView()->RequestFocus();
+      widget_delegate() &&
+      widget_delegate()->GetInitiallyFocusedView()) {
+    widget_delegate()->GetInitiallyFocusedView()->RequestFocus();
   }
 }
 
@@ -635,8 +632,8 @@ void ConstrainedWindowViews::OnNativeConstrainedWindowMouseActivate() {
   Activate();
 }
 
-views::internal::NativeWindowDelegate*
-    ConstrainedWindowViews::AsNativeWindowDelegate() {
+views::internal::NativeWidgetDelegate*
+    ConstrainedWindowViews::AsNativeWidgetDelegate() {
   return this;
 }
 
@@ -647,6 +644,6 @@ views::internal::NativeWindowDelegate*
 // static
 ConstrainedWindow* ConstrainedWindow::CreateConstrainedDialog(
     TabContents* parent,
-    views::WindowDelegate* window_delegate) {
-  return new ConstrainedWindowViews(parent, window_delegate);
+    views::WidgetDelegate* widget_delegate) {
+  return new ConstrainedWindowViews(parent, widget_delegate);
 }

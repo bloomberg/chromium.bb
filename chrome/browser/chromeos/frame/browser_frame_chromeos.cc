@@ -40,11 +40,11 @@ void BrowserFrameChromeos::InitBrowserFrame() {
 
 bool BrowserFrameChromeos::IsMaximized() const {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kChromeosFrame))
-    return NativeWindowGtk::IsMaximized();
+    return NativeWidgetGtk::IsMaximized();
   bool is_popup_or_panel = browser_view()->IsBrowserTypePopup() ||
                            browser_view()->IsBrowserTypePanel();
   return !IsFullscreen() &&
-      (!is_popup_or_panel || NativeWindowGtk::IsMaximized());
+      (!is_popup_or_panel || NativeWidgetGtk::IsMaximized());
 }
 
 }  // namespace chromeos

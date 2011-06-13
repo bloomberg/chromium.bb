@@ -5,8 +5,8 @@
 #include "base/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "views/controls/tabbed_pane/tabbed_pane.h"
-#include "views/window/window.h"
-#include "views/window/window_delegate.h"
+#include "views/widget/widget.h"
+#include "views/widget/widget_delegate.h"
 
 namespace views {
 
@@ -26,7 +26,8 @@ class FixedSizeView : public View {
   DISALLOW_COPY_AND_ASSIGN(FixedSizeView);
 };
 
-class TabbedPaneTest : public testing::Test, WindowDelegate {
+class TabbedPaneTest : public testing::Test,
+                       public WidgetDelegate {
  public:
   TabbedPaneTest() {}
 
@@ -39,7 +40,7 @@ class TabbedPaneTest : public testing::Test, WindowDelegate {
  private:
   virtual void SetUp() {
     tabbed_pane_ = new TabbedPane();
-    window_ = Window::CreateChromeWindow(NULL, gfx::Rect(0, 0, 100, 100), this);
+    window_ = Widget::CreateWindowWithBounds(this, gfx::Rect(0, 0, 100, 100));
     window_->Show();
   }
 
@@ -53,7 +54,7 @@ class TabbedPaneTest : public testing::Test, WindowDelegate {
   }
 
   MessageLoopForUI message_loop_;
-  Window* window_;
+  Widget* window_;
 
   DISALLOW_COPY_AND_ASSIGN(TabbedPaneTest);
 };

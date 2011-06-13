@@ -34,7 +34,6 @@
 #include "views/layout/grid_layout.h"
 #include "views/layout/layout_constants.h"
 #include "views/widget/widget.h"
-#include "views/window/window.h"
 
 namespace {
 
@@ -214,8 +213,7 @@ AboutIPCDialog::~AboutIPCDialog() {
 void AboutIPCDialog::RunDialog() {
   if (!g_active_dialog) {
     g_active_dialog = new AboutIPCDialog;
-    views::Window::CreateChromeWindow(NULL, gfx::Rect(),
-                                      g_active_dialog)->Show();
+    views::Widget::CreateWindow(g_active_dialog)->Show();
   } else {
     // TODO(brettw) it would be nice to focus the existing window.
   }

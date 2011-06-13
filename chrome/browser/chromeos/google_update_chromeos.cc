@@ -13,9 +13,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "content/browser/browser_thread.h"
 #include "third_party/cros/chromeos_update.h"
-#include "views/window/window.h"
-
-using views::Window;
+#include "views/widget/widget.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // GoogleUpdate, public:
@@ -31,7 +29,8 @@ GoogleUpdate::~GoogleUpdate() {
 ////////////////////////////////////////////////////////////////////////////////
 // GoogleUpdate, views::DialogDelegate implementation:
 
-void GoogleUpdate::CheckForUpdate(bool install_if_newer, Window* window) {
+void GoogleUpdate::CheckForUpdate(bool install_if_newer,
+                                  views::Widget* window) {
   // We need to shunt this request over to InitiateGoogleUpdateCheck and have
   // it run in the file thread.
   BrowserThread::PostTask(
@@ -45,7 +44,7 @@ void GoogleUpdate::CheckForUpdate(bool install_if_newer, Window* window) {
 // GoogleUpdate, private:
 
 bool GoogleUpdate::InitiateGoogleUpdateCheck(bool install_if_newer,
-                                             Window* window,
+                                             views::Widget* window,
                                              MessageLoop* main_loop) {
   chromeos::UpdateInformation result;
   bool success = false;

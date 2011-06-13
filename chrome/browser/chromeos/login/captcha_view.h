@@ -18,14 +18,12 @@ namespace views {
 class ImageView;
 class TextButton;
 class View;
-class Window;
 }  // namespace views
 
 namespace chromeos {
 
 // A dialog box that shows a CAPTCHA image and allows user to input response.
-class CaptchaView : public views::View,
-                    public views::DialogDelegate,
+class CaptchaView : public views::DialogDelegateView,
                     public views::TextfieldController,
                     public ImageDecoder::Delegate,
                     public views::ButtonListener {

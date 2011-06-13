@@ -20,7 +20,6 @@
 #include "views/layout/grid_layout.h"
 #include "views/layout/layout_constants.h"
 #include "views/widget/widget.h"
-#include "views/window/window.h"
 
 namespace chromeos {
 
@@ -132,16 +131,16 @@ void NetworkConfigView::ShowAdvancedView() {
   child_config_view_ = new WifiConfigView(this, true /* show_8021x */);
   AddChildView(child_config_view_);
   // Resize the window to be able to hold the new widgets.
-  gfx::Size size = views::Window::GetLocalizedContentsSize(
+  gfx::Size size = views::Widget::GetLocalizedContentsSize(
       IDS_JOIN_WIFI_NETWORK_DIALOG_ADVANCED_WIDTH_CHARS,
       IDS_JOIN_WIFI_NETWORK_DIALOG_ADVANCED_MINIMUM_HEIGHT_LINES);
   // Get the new bounds with desired size at the same center point.
-  gfx::Rect bounds = window()->GetWindowScreenBounds();
+  gfx::Rect bounds = GetWidget()->GetWindowScreenBounds();
   int horiz_padding = bounds.width() - size.width();
   int vert_padding = bounds.height() - size.height();
   bounds.Inset(horiz_padding / 2, vert_padding / 2,
                horiz_padding / 2, vert_padding / 2);
-  window()->SetBoundsConstrained(bounds, NULL);
+  GetWidget()->SetBoundsConstrained(bounds, NULL);
   Layout();
   child_config_view_->InitFocus();
 }
@@ -151,7 +150,7 @@ void NetworkConfigView::Layout() {
 }
 
 gfx::Size NetworkConfigView::GetPreferredSize() {
-  gfx::Size result(views::Window::GetLocalizedContentsSize(
+  gfx::Size result(views::Widget::GetLocalizedContentsSize(
       IDS_JOIN_WIFI_NETWORK_DIALOG_WIDTH_CHARS,
       IDS_JOIN_WIFI_NETWORK_DIALOG_MINIMUM_HEIGHT_LINES));
   gfx::Size size = child_config_view_->GetPreferredSize();

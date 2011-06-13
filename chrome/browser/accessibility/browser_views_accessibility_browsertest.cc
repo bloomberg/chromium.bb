@@ -20,7 +20,7 @@
 #include "ui/base/accessibility/accessibility_types.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "views/accessibility/native_view_accessibility_win.h"
-#include "views/window/window.h"
+#include "views/widget/widget.h"
 
 namespace {
 
@@ -248,12 +248,12 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
 IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
                        TestAboutChromeViewAccObj) {
   //  Firstly, test that the WindowDelegate got updated.
-  views::Window* about_chrome_window =
+  views::Widget* about_chrome_window =
       GetBrowserView()->DoShowAboutChromeDialog();
   EXPECT_STREQ(
-      about_chrome_window->window_delegate()->GetWindowTitle().c_str(),
+      about_chrome_window->widget_delegate()->GetWindowTitle().c_str(),
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_ABOUT_CHROME_TITLE)).c_str());
-  EXPECT_EQ(about_chrome_window->window_delegate()->GetAccessibleWindowRole(),
+  EXPECT_EQ(about_chrome_window->widget_delegate()->GetAccessibleWindowRole(),
             ui::AccessibilityTypes::ROLE_DIALOG);
 
   // Also test the accessibility object directly.

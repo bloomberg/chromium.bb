@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/views/frame/native_browser_frame_delegate.h"
-#include "views/window/window.h"
+#include "views/widget/widget.h"
 
 class AeroGlassNonClientView;
 class BrowserNonClientFrameView;
@@ -31,11 +31,10 @@ class ThemeProvider;
 
 namespace views {
 class View;
-class Window;
 }
 
 // This is a virtual interface that allows system specific browser frames.
-class BrowserFrame : public views::Window {
+class BrowserFrame : public views::Widget {
  public:
   explicit BrowserFrame(BrowserView* browser_view);
   virtual ~BrowserFrame();
@@ -68,7 +67,7 @@ class BrowserFrame : public views::Window {
   // its frame treatment if necessary.
   void TabStripDisplayModeChanged();
 
-  // Overridden from views::Window:
+  // Overridden from views::Widget:
   virtual bool IsMaximized() const OVERRIDE;
   virtual views::internal::RootView* CreateRootView() OVERRIDE;
   virtual views::NonClientFrameView* CreateNonClientFrameView() OVERRIDE;

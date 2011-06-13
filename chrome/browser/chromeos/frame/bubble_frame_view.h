@@ -21,7 +21,7 @@ class Size;
 namespace views {
 class ImageButton;
 class Label;
-class Window;
+class Widget;
 }
 
 namespace chromeos {
@@ -30,8 +30,8 @@ namespace chromeos {
 class BubbleFrameView : public views::NonClientFrameView,
                         public views::ButtonListener {
  public:
-  BubbleFrameView(views::Window* frame,
-                  views::WindowDelegate* window_delegate,
+  BubbleFrameView(views::Widget* frame,
+                  views::WidgetDelegate* widget_delegate,
                   BubbleWindow::Style style);
   virtual ~BubbleFrameView();
 
@@ -61,7 +61,7 @@ class BubbleFrameView : public views::NonClientFrameView,
 
  private:
   // The window that owns this view.
-  views::Window* frame_;
+  views::Widget* frame_;
 
   // Allows to tweak appearance of the view.
   BubbleWindow::Style style_;

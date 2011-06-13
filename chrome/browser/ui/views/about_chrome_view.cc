@@ -41,7 +41,6 @@
 #include "views/layout/layout_constants.h"
 #include "views/view_text_utils.h"
 #include "views/widget/widget.h"
-#include "views/window/window.h"
 #include "webkit/glue/webkit_glue.h"
 
 #if defined(OS_WIN)
@@ -82,17 +81,15 @@ std::wstring StringSubRange(const std::wstring& text, size_t start,
 
 namespace browser {
 
-  // Declared in browser_dialogs.h so that others don't
-  // need to depend on our .h.
-  views::Window* ShowAboutChromeView(gfx::NativeWindow parent,
-                                     Profile* profile) {
-      views::Window* about_chrome_window =
-        browser::CreateViewsWindow(parent,
-        gfx::Rect(),
-        new AboutChromeView(profile));
+// Declared in browser_dialogs.h so that others don't
+// need to depend on our .h.
+views::Widget* ShowAboutChromeView(gfx::NativeWindow parent, Profile* profile) {
+  views::Widget* about_chrome_window =
+      browser::CreateViewsWindow(parent, gfx::Rect(),
+                                 new AboutChromeView(profile));
       about_chrome_window->Show();
-      return about_chrome_window;
-  }
+  return about_chrome_window;
+}
 
 }  // namespace browser
 
@@ -278,7 +275,7 @@ void AboutChromeView::Init() {
                            main_label_chunk2_ + open_source_url_->GetText() +
                            main_label_chunk3_;
 
-  dialog_dimensions_ = views::Window::GetLocalizedContentsSize(
+  dialog_dimensions_ = views::Widget::GetLocalizedContentsSize(
       IDS_ABOUT_DIALOG_WIDTH_CHARS,
       IDS_ABOUT_DIALOG_MINIMUM_HEIGHT_LINES);
 
@@ -530,7 +527,7 @@ void AboutChromeView::ViewHierarchyChanged(bool is_add,
             !base::win::UserAccountControlIsEnabled())) {
         UpdateStatus(UPGRADE_CHECK_STARTED, GOOGLE_UPDATE_NO_ERROR);
         // CheckForUpdate(false, ...) means don't upgrade yet.
-        google_updater_->CheckForUpdate(false, window());
+        google_updater_->CheckForUpdate(false, GetWidget());
       }
 #endif
     } else {
@@ -698,7 +695,7 @@ void AboutChromeView::UpdateStatus(GoogleUpdateUpgradeResult result,
       google_updater_->set_status_listener(this);
       UpdateStatus(UPGRADE_STARTED, GOOGLE_UPDATE_NO_ERROR);
       // CheckForUpdate(true,...) means perform upgrade if new version found.
-      google_updater_->CheckForUpdate(true, window());
+      google_updater_->CheckForUpdate(true, GetWidget());
       // TODO(seanparent): Need to see if this code needs to change to
       // force a machine restart.
       return;
@@ -784,8 +781,8 @@ void AboutChromeView::UpdateStatus(GoogleUpdateUpgradeResult result,
   parent()->Layout();
 
   // Check button may have appeared/disappeared. We cannot call this during
-  // ViewHierarchyChanged because the |window()| pointer hasn't been set yet.
-  if (window())
+  // ViewHierarchyChanged because the view hasn't been added to a Widget yet.
+  if (GetWidget())
     GetDialogClientView()->UpdateDialogButtons();
 }
 

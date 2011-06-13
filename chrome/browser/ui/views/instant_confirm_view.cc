@@ -18,7 +18,7 @@
 #include "views/controls/link.h"
 #include "views/layout/grid_layout.h"
 #include "views/layout/layout_constants.h"
-#include "views/window/window.h"
+#include "views/widget/widget.h"
 
 InstantConfirmView::InstantConfirmView(Profile* profile) : profile_(profile) {
   views::Label* description_label = new views::Label(
@@ -67,7 +67,7 @@ std::wstring InstantConfirmView::GetWindowTitle() const {
 
 gfx::Size InstantConfirmView::GetPreferredSize() {
   DCHECK(GetLayoutManager());
-  int pref_width = views::Window::GetLocalizedContentsWidth(
+  int pref_width = views::Widget::GetLocalizedContentsWidth(
       IDS_INSTANT_CONFIRM_DIALOG_WIDTH_CHARS);
   int pref_height =
       GetLayoutManager()->GetPreferredHeightForWidth(this, pref_width);
@@ -87,8 +87,8 @@ void InstantConfirmView::LinkClicked(views::Link* source, int event_flags) {
 namespace browser {
 
 void ShowInstantConfirmDialog(gfx::NativeWindow parent, Profile* profile) {
-  views::Window::CreateChromeWindow(parent, gfx::Rect(),
-                                    new InstantConfirmView(profile))->Show();
+  views::Widget::CreateWindowWithParent(new InstantConfirmView(profile),
+                                        parent)->Show();
 }
 
 }  // namespace browser

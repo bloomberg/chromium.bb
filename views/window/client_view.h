@@ -35,6 +35,7 @@ class ClientView : public View {
 
   // Manual RTTI ftw.
   virtual DialogClientView* AsDialogClientView();
+  virtual const DialogClientView* AsDialogClientView() const;
 
   // Returns true to signal that the Widget can be closed. Specialized
   // ClientView subclasses can override this default behavior to allow the

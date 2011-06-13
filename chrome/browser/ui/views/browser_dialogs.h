@@ -35,7 +35,6 @@ class Size;
 
 namespace views {
 class Widget;
-class Window;
 }
 
 namespace browser {
@@ -51,7 +50,7 @@ void HideBookmarkBubbleView();
 bool IsBookmarkBubbleViewShowing();
 
 // Shows the about dialog. See AboutChromeView.
-views::Window* ShowAboutChromeView(gfx::NativeWindow parent,
+views::Widget* ShowAboutChromeView(gfx::NativeWindow parent,
                                    Profile* profile);
 
 // Creates and returns a find bar for the given browser window. See FindBarWin.

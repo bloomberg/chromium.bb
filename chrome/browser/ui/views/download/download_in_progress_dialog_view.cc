@@ -18,7 +18,7 @@
 #include "views/border.h"
 #include "views/controls/label.h"
 #include "views/layout/grid_layout.h"
-#include "views/window/window.h"
+#include "views/widget/widget.h"
 
 DownloadInProgressDialogView::DownloadInProgressDialogView(Browser* browser)
     : browser_(browser),
@@ -79,7 +79,7 @@ DownloadInProgressDialogView::DownloadInProgressDialogView(Browser* browser)
   layout->StartRow(0, columnset_id);
   layout->AddView(explanation_);
 
-  dialog_dimensions_ = views::Window::GetLocalizedContentsSize(
+  dialog_dimensions_ = views::Widget::GetLocalizedContentsSize(
       IDS_DOWNLOAD_IN_PROGRESS_WIDTH_CHARS,
       IDS_DOWNLOAD_IN_PROGRESS_MINIMUM_HEIGHT_LINES);
   const int height =

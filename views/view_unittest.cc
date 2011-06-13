@@ -28,7 +28,6 @@
 #include "views/widget/native_widget.h"
 #include "views/widget/root_view.h"
 #include "views/window/dialog_delegate.h"
-#include "views/window/window.h"
 
 #if defined(OS_WIN)
 #include "views/controls/button/native_button_win.h"
@@ -1076,9 +1075,9 @@ class TestViewWithControls : public View {
   Textfield* text_field_;
 };
 
-class SimpleWindowDelegate : public WindowDelegate {
+class SimpleWidgetDelegate : public WidgetDelegate {
  public:
-  explicit SimpleWindowDelegate(View* contents) : contents_(contents) {  }
+  explicit SimpleWidgetDelegate(View* contents) : contents_(contents) {  }
 
   virtual void DeleteDelegate() { delete this; }
 
@@ -1099,15 +1098,15 @@ class SimpleWindowDelegate : public WindowDelegate {
 //   area that it opens the test windows. --beng
 TEST_F(ViewTest, DISABLED_RerouteMouseWheelTest) {
   TestViewWithControls* view_with_controls = new TestViewWithControls();
-  Window* window1 = Window::CreateChromeWindow(
-      NULL, gfx::Rect(0, 0, 100, 100),
-      new SimpleWindowDelegate(view_with_controls));
+  Widget* window1 = Widget::CreateWindowWithBounds(
+      new SimpleWidgetDelegate(view_with_controls),
+      gfx::Rect(0, 0, 100, 100));
   window1->Show();
   ScrollView* scroll_view = new ScrollView();
   scroll_view->SetContents(new ScrollableTestView());
-  Window* window2 = Window::CreateChromeWindow(
-      NULL, gfx::Rect(200, 200, 100, 100),
-      new SimpleWindowDelegate(scroll_view));
+  Widget* window2 = Widget::CreateWindowWithBounds(
+      new SimpleWidgetDelegate(scroll_view),
+      gfx::Rect(200, 200, 100, 100));
   window2->Show();
   EXPECT_EQ(0, scroll_view->GetVisibleRect().y());
 
@@ -1197,11 +1196,11 @@ class TestDialog : public DialogDelegate, public ButtonListener {
   }
 
   // DialogDelegate implementation:
-  virtual int GetDefaultDialogButton() const {
+  virtual int GetDefaultDialogButton() const OVERRIDE {
     return MessageBoxFlags::DIALOGBUTTON_OK;
   }
 
-  virtual View* GetContentsView() {
+  virtual View* GetContentsView() OVERRIDE {
     if (!contents_) {
       contents_ = new View();
       button1_ = new NativeButtonBase(this, L"Button1");
@@ -1218,17 +1217,24 @@ class TestDialog : public DialogDelegate, public ButtonListener {
 
   // Prevent the dialog from really closing (so we can click the OK/Cancel
   // buttons to our heart's content).
-  virtual bool Cancel() {
+  virtual bool Cancel() OVERRIDE {
     canceled_ = true;
     return false;
   }
-  virtual bool Accept() {
+  virtual bool Accept() OVERRIDE {
     oked_ = true;
     return false;
   }
 
+  virtual Widget* GetWidget() OVERRIDE {
+    return widget_;
+  }
+  virtual const Widget* GetWidget() const OVERRIDE {
+    return widget_;
+  }
+
   // ButtonListener implementation.
-  virtual void ButtonPressed(Button* sender, const Event& event) {
+  virtual void ButtonPressed(Button* sender, const Event& event) OVERRIDE {
     last_pressed_button_ = sender;
   }
 
@@ -1259,6 +1265,7 @@ class TestDialog : public DialogDelegate, public ButtonListener {
 
   bool canceled_;
   bool oked_;
+  Widget* widget_;
 };
 
 class DefaultButtonTest : public ViewTest {
@@ -1280,8 +1287,9 @@ class DefaultButtonTest : public ViewTest {
 
   virtual void SetUp() {
     test_dialog_ = new TestDialog(NULL);
-    Window* window = Window::CreateChromeWindow(NULL, gfx::Rect(0, 0, 100, 100),
-                                                test_dialog_);
+    Widget* window =
+        Widget::CreateWindowWithBounds(test_dialog_, gfx::Rect(0, 0, 100, 100));
+    test_dialog_->widget_ = window;
     window->Show();
     focus_manager_ = test_dialog_->contents_->GetFocusManager();
     ASSERT_TRUE(focus_manager_ != NULL);
@@ -1384,8 +1392,9 @@ class ButtonDropDownTest : public ViewTest {
 
   virtual void SetUp() {
     test_dialog_ = new TestDialog(&mock_menu_model_);
-    Window* window = Window::CreateChromeWindow(NULL, gfx::Rect(0, 0, 100, 100),
-                                                test_dialog_);
+    Widget* window =
+        Widget::CreateWindowWithBounds(test_dialog_, gfx::Rect(0, 0, 100, 100));
+    test_dialog_->widget_ = window;
     window->Show();
     test_dialog_->button_drop_->SetBounds(0, 0, 100, 100);
     // We have to cast the button back into a View in order to invoke it's
@@ -1479,7 +1488,7 @@ class TestChangeNativeViewHierarchy {
     host_->GetRootView()->AddChildView(native_host_);
     for (size_t i = 0; i < TestNativeViewHierarchy::kTotalViews; ++i) {
       windows_[i] = new Widget;
-      Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
+      Widget::InitParams params(Widget::InitParams::TYPE_CONTROL);
       params.parent = host_->GetNativeView();
       params.bounds = gfx::Rect(0, 0, 500, 300);
       windows_[i]->Init(params);
@@ -1499,7 +1508,7 @@ class TestChangeNativeViewHierarchy {
   }
 
   void CheckEnumeratingNativeWidgets() {
-    if (!host_->GetContainingWindow())
+    if (!host_->GetTopLevelWidget())
       return;
     NativeWidget::NativeWidgets widgets;
     NativeWidget::GetAllNativeWidgets(host_->GetNativeView(), &widgets);

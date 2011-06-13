@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/webui/html_dialog_tab_contents_delegate.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "chrome/browser/ui/views/html_dialog_view.h"
-#include "views/window/window_delegate.h"
 
 class BrowserView;
 

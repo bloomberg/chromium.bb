@@ -13,8 +13,8 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/window.h"
-#include "views/window/dialog_delegate.h"
-#include "views/window/window.h"
+#include "views/widget/widget.h"
+#include "views/widget/widget_delegate.h"
 
 namespace chromeos {
 
@@ -26,13 +26,13 @@ NetworkLoginObserver::~NetworkLoginObserver() {
   CrosLibrary::Get()->GetNetworkLibrary()->RemoveNetworkManagerObserver(this);
 }
 
-void NetworkLoginObserver::CreateModalPopup(views::WindowDelegate* view) {
+void NetworkLoginObserver::CreateModalPopup(views::WidgetDelegate* view) {
   Browser* browser = BrowserList::GetLastActive();
   if (browser && !browser->is_type_tabbed()) {
     browser = BrowserList::FindTabbedBrowser(browser->profile(), true);
   }
   if (browser) {
-    views::Window* window = browser::CreateViewsWindow(
+    views::Widget* window = browser::CreateViewsWindow(
         browser->window()->GetNativeHandle(), gfx::Rect(), view);
     window->SetAlwaysOnTop(true);
     window->Show();

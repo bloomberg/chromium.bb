@@ -38,7 +38,6 @@
 #include "views/widget/tooltip_manager_gtk.h"
 #include "views/widget/widget_delegate.h"
 #include "views/window/hit_test.h"
-#include "views/window/native_window_gtk.h"
 
 #if defined(TOUCH_UI)
 #if defined(HAVE_XINPUT2)
@@ -353,9 +352,7 @@ GtkWidget* NativeWidgetGtk::null_parent_ = NULL;
 // NativeWidgetGtk, public:
 
 NativeWidgetGtk::NativeWidgetGtk(internal::NativeWidgetDelegate* delegate)
-    : is_window_(false),
-      window_state_(GDK_WINDOW_STATE_WITHDRAWN),
-      delegate_(delegate),
+    : delegate_(delegate),
       widget_(NULL),
       window_contents_(NULL),
       child_(false),
@@ -366,6 +363,7 @@ NativeWidgetGtk::NativeWidgetGtk(internal::NativeWidgetDelegate* delegate)
       ignore_drag_leave_(false),
       opacity_(255),
       drag_data_(NULL),
+      window_state_(GDK_WINDOW_STATE_WITHDRAWN),
       is_active_(false),
       transient_to_parent_(false),
       got_initial_focus_in_(false),
@@ -851,14 +849,6 @@ gfx::NativeWindow NativeWidgetGtk::GetNativeWindow() const {
   return child_ ? NULL : GTK_WINDOW(widget_);
 }
 
-Window* NativeWidgetGtk::GetContainingWindow() {
-  return GetWindowImpl(widget_);
-}
-
-const Window* NativeWidgetGtk::GetContainingWindow() const {
-  return GetWindowImpl(widget_);
-}
-
 void NativeWidgetGtk::ViewRemoved(View* view) {
   if (drop_target_.get())
     drop_target_->ResetTargetViewIfEquals(view);
@@ -868,7 +858,7 @@ void NativeWidgetGtk::SetNativeWindowProperty(const char* name, void* value) {
   g_object_set_data(G_OBJECT(widget_), name, value);
 }
 
-void* NativeWidgetGtk::GetNativeWindowProperty(const char* name) {
+void* NativeWidgetGtk::GetNativeWindowProperty(const char* name) const {
   return g_object_get_data(G_OBJECT(widget_), name);
 }
 
@@ -1772,19 +1762,6 @@ gboolean NativeWidgetGtk::ChildExposeHandler(GtkWidget* widget,
   NativeWidgetGtk* widget_gtk = static_cast<NativeWidgetGtk*>(native_widget);
   widget_gtk->OnChildExpose(widget);
   return false;
-}
-
-// static
-Window* NativeWidgetGtk::GetWindowImpl(GtkWidget* widget) {
-  GtkWidget* parent = widget;
-  while (parent) {
-    NativeWidgetGtk* widget_gtk = static_cast<NativeWidgetGtk*>(
-        NativeWidget::GetNativeWidgetForNativeView(parent));
-    if (widget_gtk && widget_gtk->is_window_)
-      return static_cast<NativeWindowGtk*>(widget_gtk)->GetWindow();
-    parent = gtk_widget_get_parent(parent);
-  }
-  return NULL;
 }
 
 void NativeWidgetGtk::CreateGtkWidget(const Widget::InitParams& params) {

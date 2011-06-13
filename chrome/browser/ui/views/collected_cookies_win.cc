@@ -27,7 +27,7 @@
 #include "views/layout/box_layout.h"
 #include "views/layout/grid_layout.h"
 #include "views/layout/layout_constants.h"
-#include "views/window/window.h"
+#include "views/widget/widget.h"
 
 namespace browser {
 
@@ -385,6 +385,14 @@ bool CollectedCookiesWin::Cancel() {
 
 views::View* CollectedCookiesWin::GetContentsView() {
   return this;
+}
+
+views::Widget* CollectedCookiesWin::GetWidget() {
+  return View::GetWidget();
+}
+
+const views::Widget* CollectedCookiesWin::GetWidget() const {
+  return View::GetWidget();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

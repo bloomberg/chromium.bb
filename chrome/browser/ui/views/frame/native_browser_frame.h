@@ -17,8 +17,8 @@ class NativeBrowserFrame {
       BrowserFrame* browser_frame,
       BrowserView* browser_view);
 
-  virtual views::NativeWindow* AsNativeWindow() = 0;
-  virtual const views::NativeWindow* AsNativeWindow() const = 0;
+  virtual views::NativeWidget* AsNativeWidget() = 0;
+  virtual const views::NativeWidget* AsNativeWidget() const = 0;
 
  protected:
   friend class BrowserFrame;

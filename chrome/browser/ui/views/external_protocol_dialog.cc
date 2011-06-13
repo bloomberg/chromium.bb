@@ -19,7 +19,7 @@
 #include "ui/base/message_box_flags.h"
 #include "ui/base/text/text_elider.h"
 #include "views/controls/message_box_view.h"
-#include "views/window/window.h"
+#include "views/widget/widget.h"
 
 namespace {
 
@@ -157,7 +157,7 @@ ExternalProtocolDialog::ExternalProtocolDialog(TabContents* tab_contents,
     root_hwnd = NULL;
   }
 
-  views::Window::CreateChromeWindow(root_hwnd, gfx::Rect(), this)->Show();
+  views::Widget::CreateWindowWithParent(this, root_hwnd)->Show();
 }
 
 // static

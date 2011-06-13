@@ -18,7 +18,6 @@
 #include "views/events/event.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
-#include "views/window/window.h"
 
 namespace {
 struct Accelerator {
@@ -94,7 +93,7 @@ void KeyboardOverlayDialogView::ShowDialog(
                                  gfx::Rect(),
                                  chromeos::BubbleWindow::STYLE_XSHAPE,
                                  html_view);
-  html_view->window()->Show();
+  html_view->GetWidget()->Show();
 }
 
 bool KeyboardOverlayDialogView::IsCloseAccelerator(

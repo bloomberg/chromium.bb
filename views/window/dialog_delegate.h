@@ -8,8 +8,8 @@
 
 #include "ui/base/accessibility/accessibility_types.h"
 #include "ui/base/message_box_flags.h"
+#include "views/widget/widget_delegate.h"
 #include "views/window/dialog_client_view.h"
-#include "views/window/window_delegate.h"
 
 using ui::MessageBoxFlags;
 
@@ -27,7 +27,7 @@ class View;
 //  certain events.
 //
 ///////////////////////////////////////////////////////////////////////////////
-class DialogDelegate : public WindowDelegate {
+class DialogDelegate : public WidgetDelegate {
  public:
   virtual DialogDelegate* AsDialogDelegate();
 
@@ -104,12 +104,31 @@ class DialogDelegate : public WindowDelegate {
 
   // A helper for accessing the DialogClientView object contained by this
   // delegate's Window.
-  DialogClientView* GetDialogClientView() const;
+  const DialogClientView* GetDialogClientView() const;
+  DialogClientView* GetDialogClientView();
 
  protected:
   // Overridden from WindowDelegate:
   virtual ui::AccessibilityTypes::Role GetAccessibleWindowRole() const OVERRIDE;
 };
+
+// A DialogDelegate implementation that is-a View. Used to override GetWidget()
+// to call View's GetWidget() for the common case where a DialogDelegate
+// implementation is-a View.
+class DialogDelegateView : public DialogDelegate,
+                           public View {
+ public:
+  DialogDelegateView();
+  virtual ~DialogDelegateView();
+
+  // Overridden from DialogDelegate:
+  virtual Widget* GetWidget() OVERRIDE;
+  virtual const Widget* GetWidget() const OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DialogDelegateView);
+};
+
 
 }  // namespace views
 

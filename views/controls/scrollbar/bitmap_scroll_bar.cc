@@ -21,7 +21,6 @@
 #include "views/controls/menu/menu.h"
 #include "views/controls/scroll_view.h"
 #include "views/widget/widget.h"
-#include "views/window/window.h"
 
 #undef min
 #undef max

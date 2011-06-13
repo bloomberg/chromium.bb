@@ -14,7 +14,6 @@
 #include "views/layout/fill_layout.h"
 #include "views/widget/widget.h"
 #include "views/window/client_view.h"
-#include "views/window/window.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/wm_ipc.h"
@@ -173,7 +172,7 @@ void Bubble::InitBubble(views::Widget* parent,
 
   // Create the main window.
 #if defined(OS_WIN)
-  views::Window* parent_window = parent->GetContainingWindow();
+  views::Widget* parent_window = parent->GetTopLevelWidget();
   if (parent_window)
     parent_window->DisableInactiveRendering();
   set_window_style(WS_POPUP | WS_CLIPCHILDREN);

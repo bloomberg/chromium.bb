@@ -13,7 +13,7 @@
 #include "ui/base/message_box_flags.h"
 #include "views/controls/message_box_view.h"
 #include "views/controls/textfield/textfield.h"
-#include "views/window/window.h"
+#include "views/widget/widget.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // JSModalDialogViews, public:
@@ -46,16 +46,16 @@ int JSModalDialogViews::GetAppModalDialogButtons() const {
 }
 
 void JSModalDialogViews::ShowAppModalDialog() {
-  window()->Show();
+  GetWidget()->Show();
 }
 
 void JSModalDialogViews::ActivateAppModalDialog() {
-  window()->Show();
-  window()->Activate();
+  GetWidget()->Show();
+  GetWidget()->Activate();
 }
 
 void JSModalDialogViews::CloseAppModalDialog() {
-  window()->Close();
+  GetWidget()->Close();
 }
 
 void JSModalDialogViews::AcceptAppModalDialog() {
@@ -116,6 +116,14 @@ bool JSModalDialogViews::Accept() {
 
 void JSModalDialogViews::OnClose() {
   parent_->OnClose();
+}
+
+views::Widget* JSModalDialogViews::GetWidget() {
+  return message_box_view_->GetWidget();
+}
+
+const views::Widget* JSModalDialogViews::GetWidget() const {
+  return message_box_view_->GetWidget();
 }
 
 std::wstring JSModalDialogViews::GetDialogButtonLabel(

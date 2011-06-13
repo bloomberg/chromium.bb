@@ -42,7 +42,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/window.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "views/window/window.h"
 #endif  // defined(OS_CHROMEOS)
 #if defined(TOOLKIT_GTK)
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"

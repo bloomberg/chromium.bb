@@ -21,7 +21,7 @@
 #include "views/controls/textfield/textfield.h"
 #include "views/layout/grid_layout.h"
 #include "views/layout/layout_constants.h"
-#include "views/window/window.h"
+#include "views/widget/widget.h"
 
 using views::GridLayout;
 using views::ImageView;
@@ -66,8 +66,8 @@ void EditSearchEngineDialog::Show(gfx::NativeWindow parent,
       new EditSearchEngineDialog(template_url, delegate, profile);
   // Window interprets an empty rectangle as needing to query the content for
   // the size as well as centering relative to the parent.
-  views::Window::CreateChromeWindow(parent, gfx::Rect(), contents);
-  contents->window()->Show();
+  views::Widget::CreateWindowWithParent(contents, parent);
+  contents->GetWidget()->Show();
   contents->GetDialogClientView()->UpdateDialogButtons();
   contents->title_tf_->SelectAll();
   contents->title_tf_->RequestFocus();

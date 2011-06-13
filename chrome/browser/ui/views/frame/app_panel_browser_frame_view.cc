@@ -19,7 +19,8 @@
 #include "ui/gfx/font.h"
 #include "ui/gfx/path.h"
 #include "views/controls/button/image_button.h"
-#include "views/window/window.h"
+#include "views/widget/widget.h"
+#include "views/widget/widget_delegate.h"
 #include "views/window/window_resources.h"
 
 #if !defined(OS_WIN)
@@ -65,7 +66,7 @@ AppPanelBrowserFrameView::AppPanelBrowserFrameView(BrowserFrame* frame,
   DCHECK(browser_view->ShouldShowWindowIcon());
   DCHECK(browser_view->ShouldShowWindowTitle());
 
-  frame_->set_frame_type(views::Window::FRAME_TYPE_FORCE_CUSTOM);
+  frame_->set_frame_type(views::Widget::FRAME_TYPE_FORCE_CUSTOM);
 
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   close_button_->SetImage(views::CustomButton::BS_NORMAL,
@@ -164,7 +165,7 @@ int AppPanelBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
   int window_component = GetHTComponentForFrame(point,
       NonClientBorderThickness(), NonClientBorderThickness(),
       kResizeAreaCornerSize, kResizeAreaCornerSize,
-      frame_->window_delegate()->CanResize());
+      frame_->widget_delegate()->CanResize());
   // Fall back to the caption if no other component matches.
   return (window_component == HTNOWHERE) ? HTCAPTION : window_component;
 }
@@ -248,7 +249,7 @@ bool AppPanelBrowserFrameView::ShouldTabIconViewAnimate() const {
 }
 
 SkBitmap AppPanelBrowserFrameView::GetFaviconForTabIconView() {
-  return frame_->window_delegate()->GetWindowIcon();
+  return frame_->widget_delegate()->GetWindowIcon();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -399,7 +400,7 @@ void AppPanelBrowserFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
 
 void AppPanelBrowserFrameView::PaintTitleBar(gfx::Canvas* canvas) {
   // The window icon is painted by the TabIconView.
-  views::WindowDelegate* d = frame_->window_delegate();
+  views::WidgetDelegate* d = frame_->widget_delegate();
   canvas->DrawStringInt(d->GetWindowTitle(), BrowserFrame::GetTitleFont(),
       SK_ColorBLACK, GetMirroredXForRect(title_bounds_), title_bounds_.y(),
       title_bounds_.width(), title_bounds_.height());

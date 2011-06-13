@@ -9,7 +9,7 @@
 #include "base/task.h"
 #include "views/screen.h"
 #include "views/view.h"
-#include "views/window/window.h"
+#include "views/widget/widget.h"
 
 namespace views {
 

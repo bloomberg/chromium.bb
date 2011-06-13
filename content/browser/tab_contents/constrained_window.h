@@ -12,10 +12,10 @@
 // dialogs.
 #if defined(OS_WIN)
 namespace views {
-class WindowDelegate;
+class WidgetDelegate;
 class DialogDelegate;
 }
-typedef views::WindowDelegate ConstrainedWindowDelegate;
+typedef views::WidgetDelegate ConstrainedWindowDelegate;
 typedef views::DialogDelegate ConstrainedDialogDelegate;
 #elif defined(OS_MACOSX)
 class ConstrainedWindowMacDelegate;

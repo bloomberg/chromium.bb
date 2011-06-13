@@ -19,8 +19,7 @@
 #include "views/widget/native_widget.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
-#include "views/window/window.h"
-#include "views/window/window_delegate.h"
+#include "views/widget/widget_delegate.h"
 
 #if defined(TOOLKIT_VIEWS)
 
@@ -31,17 +30,17 @@ class AccessibilityViewsDelegate : public views::ViewsDelegate {
 
   // Overridden from views::ViewsDelegate:
   virtual ui::Clipboard* GetClipboard() const { return NULL; }
-  virtual void SaveWindowPlacement(views::Window* window,
+  virtual void SaveWindowPlacement(const views::Widget* window,
                                    const std::wstring& window_name,
                                    const gfx::Rect& bounds,
                                    bool maximized) {
   }
-  virtual bool GetSavedWindowBounds(views::Window* window,
+  virtual bool GetSavedWindowBounds(const views::Widget* window,
                                     const std::wstring& window_name,
                                     gfx::Rect* bounds) const {
     return false;
   }
-  virtual bool GetSavedMaximizedState(views::Window* window,
+  virtual bool GetSavedMaximizedState(const views::Widget* window,
                                       const std::wstring& window_name,
                                       bool* maximized) const {
     return false;
@@ -72,14 +71,18 @@ class AccessibilityViewsDelegate : public views::ViewsDelegate {
   DISALLOW_COPY_AND_ASSIGN(AccessibilityViewsDelegate);
 };
 
-class AccessibilityWindowDelegate : public views::WindowDelegate {
+class AccessibilityWindowDelegate : public views::WidgetDelegate {
  public:
   explicit AccessibilityWindowDelegate(views::View* contents)
       : contents_(contents) { }
 
-  virtual void DeleteDelegate() { delete this; }
-
-  virtual views::View* GetContentsView() { return contents_; }
+  // Overridden from views::WidgetDelegate:
+  virtual void DeleteDelegate() OVERRIDE { delete this; }
+  virtual views::View* GetContentsView() OVERRIDE { return contents_; }
+  virtual const views::Widget* GetWidget() const OVERRIDE {
+    return contents_->GetWidget();
+  }
+  virtual views::Widget* GetWidget() OVERRIDE { return contents_->GetWidget(); }
 
  private:
   views::View* contents_;
@@ -101,10 +104,10 @@ class AccessibilityEventRouterViewsTest
       delete window_delegate_;
   }
 
-  views::Window* CreateWindowWithContents(views::View* contents) {
+  views::Widget* CreateWindowWithContents(views::View* contents) {
     window_delegate_ = new AccessibilityWindowDelegate(contents);
-    return views::Window::CreateChromeWindow(
-        NULL, gfx::Rect(0, 0, 500, 500), window_delegate_);
+    return views::Widget::CreateWindowWithBounds(window_delegate_,
+                                                 gfx::Rect(0, 0, 500, 500));
   }
 
  protected:
@@ -145,7 +148,7 @@ TEST_F(AccessibilityEventRouterViewsTest, TestFocusNotification) {
   contents->AddChildView(button3);
 
   // Put the view in a window.
-  views::Window* window = CreateWindowWithContents(contents);
+  views::Widget* window = CreateWindowWithContents(contents);
 
   // Set focus to the first button initially.
   button1->RequestFocus();

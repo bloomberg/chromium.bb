@@ -18,7 +18,7 @@
 #include "views/controls/textfield/textfield.h"
 #include "views/layout/grid_layout.h"
 #include "views/layout/layout_constants.h"
-#include "views/window/window.h"
+#include "views/widget/widget.h"
 
 using views::Button;
 using views::GridLayout;
@@ -75,7 +75,7 @@ std::wstring PasswordChangedView::GetWindowTitle() const {
 
 gfx::Size PasswordChangedView::GetPreferredSize() {
   // TODO(nkostylev): Once UI is finalized, create locale settings.
-  return gfx::Size(views::Window::GetLocalizedContentsSize(
+  return gfx::Size(views::Widget::GetLocalizedContentsSize(
       IDS_PASSWORD_CHANGED_DIALOG_WIDTH_CHARS,
       IDS_PASSWORD_CHANGED_DIALOG_HEIGHT_LINES));
 }
