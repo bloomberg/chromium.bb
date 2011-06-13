@@ -149,7 +149,7 @@ void ChromeFrameAutomationProxyImpl::SendAsAsync(
     IPC::SyncMessage* msg,
     SyncMessageReplyDispatcher::SyncMessageCallContext* context, void* key) {
   sync_->Push(msg, context, key);
-  channel_->ChannelProxy::Send(msg);
+  channel_->Send(msg);
 }
 
 void ChromeFrameAutomationProxyImpl::CancelAsync(void* key) {

@@ -49,9 +49,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   virtual int VisibleWidgetCount() const;
   virtual void AddWord(const string16& word);
   virtual bool FastShutdownIfPossible();
-  virtual bool SendWithTimeout(IPC::Message* msg, int timeout_ms);
   virtual base::ProcessHandle GetHandle();
-
   virtual TransportDIB* GetTransportDIB(TransportDIB::Id dib_id);
 
   // IPC::Channel::Sender via RenderProcessHost.

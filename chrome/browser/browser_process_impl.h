@@ -91,7 +91,6 @@ class BrowserProcessImpl : public BrowserProcess,
   virtual const std::string& GetApplicationLocale();
   virtual void SetApplicationLocale(const std::string& locale);
   virtual DownloadStatusUpdater* download_status_updater();
-  virtual base::WaitableEvent* shutdown_event();
   virtual TabCloseableStateWatcher* tab_closeable_state_watcher();
   virtual BackgroundModeManager* background_mode_manager();
   virtual StatusTray* status_tray();
@@ -275,9 +274,6 @@ class BrowserProcessImpl : public BrowserProcess,
   // are global per-application. DownloadStatusUpdater does no work in the ctor
   // so we don't have to worry about lazy initialization.
   DownloadStatusUpdater download_status_updater_;
-
-  // An event that notifies when we are shutting-down.
-  scoped_ptr<base::WaitableEvent> shutdown_event_;
 
   // Ensures that the observers of plugin/print disable/enable state
   // notifications are properly added and removed.

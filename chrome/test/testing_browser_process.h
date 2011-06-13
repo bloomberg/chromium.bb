@@ -100,7 +100,6 @@ class TestingBrowserProcess : public BrowserProcess {
   virtual const std::string& GetApplicationLocale();
   virtual void SetApplicationLocale(const std::string& app_locale);
   virtual DownloadStatusUpdater* download_status_updater();
-  virtual base::WaitableEvent* shutdown_event();
   virtual bool plugin_finder_disabled() const;
   virtual void CheckForInspectorFiles() {}
 
@@ -123,7 +122,6 @@ class TestingBrowserProcess : public BrowserProcess {
 
  private:
   NotificationService notification_service_;
-  scoped_ptr<base::WaitableEvent> shutdown_event_;
   unsigned int module_ref_count_;
   scoped_ptr<ui::Clipboard> clipboard_;
   std::string app_locale_;

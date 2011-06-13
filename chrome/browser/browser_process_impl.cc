@@ -146,8 +146,6 @@ BrowserProcessImpl::BrowserProcessImpl(const CommandLine& command_line)
   // Must be created after the NotificationService.
   print_job_manager_.reset(new printing::PrintJobManager);
 
-  shutdown_event_.reset(new base::WaitableEvent(true, false));
-
   net_log_.reset(new ChromeNetLog);
 
   extension_event_router_forwarder_ = new ExtensionEventRouterForwarder;
@@ -330,11 +328,6 @@ unsigned int BrowserProcessImpl::ReleaseModule() {
 }
 
 void BrowserProcessImpl::EndSession() {
-#if defined(OS_WIN) || defined(USE_X11)
-  // Notify we are going away.
-  shutdown_event_->Signal();
-#endif
-
   // Mark all the profiles as clean.
   ProfileManager* pm = profile_manager();
   std::vector<Profile*> profiles(pm->GetLoadedProfiles());
@@ -600,10 +593,6 @@ void BrowserProcessImpl::SetApplicationLocale(const std::string& locale) {
 
 DownloadStatusUpdater* BrowserProcessImpl::download_status_updater() {
   return &download_status_updater_;
-}
-
-base::WaitableEvent* BrowserProcessImpl::shutdown_event() {
-  return shutdown_event_.get();
 }
 
 TabCloseableStateWatcher* BrowserProcessImpl::tab_closeable_state_watcher() {

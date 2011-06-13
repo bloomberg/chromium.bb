@@ -44,10 +44,9 @@ void ServiceProcessControl::ConnectInternal() {
 
   // TODO(hclam): Handle error connecting to channel.
   const IPC::ChannelHandle channel_id = GetServiceProcessChannel();
-  channel_.reset(new IPC::SyncChannel(
+  channel_.reset(new IPC::ChannelProxy(
       channel_id, IPC::Channel::MODE_NAMED_CLIENT, this,
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO), true,
-      g_browser_process->shutdown_event()));
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
 }
 
 void ServiceProcessControl::RunConnectDoneTasks() {
@@ -198,7 +197,6 @@ bool ServiceProcessControl::OnMessageReceived(const IPC::Message& message) {
 
 void ServiceProcessControl::OnChannelConnected(int32 peer_pid) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  channel_->set_sync_messages_with_no_timeout_allowed(false);
 
   // We just established a channel with the service process. Notify it if an
   // upgrade is available.

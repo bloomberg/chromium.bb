@@ -43,7 +43,6 @@ class WatchDogThread;
 
 namespace base {
 class Thread;
-class WaitableEvent;
 }
 
 #if defined(OS_CHROMEOS)
@@ -181,9 +180,6 @@ class BrowserProcess {
 
   DownloadRequestLimiter* download_request_limiter();
   virtual DownloadStatusUpdater* download_status_updater() = 0;
-
-  // Returns an event that is signaled when the browser shutdown.
-  virtual base::WaitableEvent* shutdown_event() = 0;
 
   // Returns a reference to the user-data-dir based profiles vector.
   std::vector<std::wstring>& user_data_dir_profiles() {

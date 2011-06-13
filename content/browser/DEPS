@@ -6,8 +6,6 @@ include_rules = [
 
   "+chrome/browser/accessibility/browser_accessibility_state.h",
 
-  "+chrome/browser/browser_process.h",
-
   "+chrome/browser/browser_url_handler.h",
 
   # http://crbug.com/84078

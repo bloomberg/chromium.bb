@@ -378,6 +378,11 @@ const char kUnlimitedQuotaForIndexedDB[]    = "unlimited-quota-for-indexeddb";
 // A string used to override the default user agent with a custom one.
 const char kUserAgent[]                     = "user-agent";
 
+// On POSIX only: the contents of this flag are prepended to the utility
+// process command line. Useful values might be "valgrind" or "xterm -e gdb
+// --args".
+const char kUtilityCmdPrefix[]              = "utility-cmd-prefix";
+
 // Causes the process to run as a utility subprocess.
 const char kUtilityProcess[]                = "utility";
 

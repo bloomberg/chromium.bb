@@ -11,8 +11,8 @@
 #include "base/string_util.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/browser_process.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/content_browser_client.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
@@ -45,7 +45,8 @@ class ResourceRequestTask : public Task {
         process_id_(process_id),
         render_view_host_id_(render_view_host_id),
         resource_dispatcher_host_(
-            g_browser_process->resource_dispatcher_host()) {
+            content::GetContentClient()->browser()->
+                GetResourceDispatcherHost()) {
   }
 
   virtual void Run() {
@@ -560,8 +561,10 @@ void InterstitialPage::TakeActionOnResourceDispatcher(
   // we don't have one.
   RenderViewHost* rvh = RenderViewHost::FromID(original_child_id_,
                                                original_rvh_id_);
-  if (!rvh || !g_browser_process->resource_dispatcher_host())
+  if (!rvh ||
+      !content::GetContentClient()->browser()->GetResourceDispatcherHost()) {
     return;
+  }
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,

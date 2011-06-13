@@ -15,7 +15,6 @@
 #include "base/process_util.h"
 #include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time.h"
@@ -144,11 +143,6 @@ void Shutdown() {
   // WARNING: During logoff/shutdown (WM_ENDSESSION) we may not have enough
   // time to get here. If you have something that *must* happen on end session,
   // consider putting it in BrowserProcessImpl::EndSession.
-  DCHECK(g_browser_process);
-
-  // Notifies we are going away.
-  g_browser_process->shutdown_event()->Signal();
-
   PrefService* prefs = g_browser_process->local_state();
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   PrefService* user_prefs = profile_manager->GetDefaultProfile()->GetPrefs();

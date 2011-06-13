@@ -5,9 +5,11 @@
 #include "content/browser/content_browser_client.h"
 
 #include "base/memory/singleton.h"
+#include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/ssl/ssl_client_auth_handler.h"
 #include "content/browser/webui/empty_web_ui_factory.h"
 #include "googleurl/src/gurl.h"
+#include "ui/base/clipboard/clipboard.h"
 
 namespace content {
 
@@ -147,6 +149,17 @@ bool ContentBrowserClient::CanCreateWindow(
 std::string ContentBrowserClient::GetWorkerProcessTitle(
     const GURL& url, const content::ResourceContext& context) {
   return std::string();
+}
+
+ResourceDispatcherHost* ContentBrowserClient::GetResourceDispatcherHost() {
+  static ResourceQueue::DelegateSet temp;
+  static ResourceDispatcherHost rdh(temp);
+  return &rdh;
+}
+
+ui::Clipboard* ContentBrowserClient::GetClipboard() {
+  static ui::Clipboard clipboard;
+  return &clipboard;
 }
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)

@@ -158,12 +158,11 @@ bool AutomationProvider::InitializeChannel(const std::string& channel_id) {
     automation_resource_message_filter_ = new AutomationResourceMessageFilter;
   }
 
-  channel_.reset(new IPC::SyncChannel(
+  channel_.reset(new IPC::ChannelProxy(
       effective_channel_id,
       GetChannelMode(use_named_interface),
       this,
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
-      true, g_browser_process->shutdown_event()));
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
   channel_->AddFilter(automation_resource_message_filter_);
 
 #if defined(OS_CHROMEOS)

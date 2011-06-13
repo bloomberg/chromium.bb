@@ -120,6 +120,7 @@ extern const char kTestSandbox[];
 extern const char kUnlimitedQuotaForFiles[];
 extern const char kUnlimitedQuotaForIndexedDB[];
 extern const char kUserAgent[];
+extern const char kUtilityCmdPrefix[];
 extern const char kUtilityProcess[];
 extern const char kUtilityProcessAllowedDir[];
 extern const char kWaitForDebuggerChildren[];

@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "base/path_service.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/in_process_browser_test.h"

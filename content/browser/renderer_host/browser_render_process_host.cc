@@ -26,7 +26,6 @@
 #include "base/string_util.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -274,14 +273,9 @@ bool BrowserRenderProcessHost::Init(bool is_accessibility_enabled) {
   // Setup the IPC channel.
   const std::string channel_id =
       ChildProcessInfo::GenerateRandomChannelID(this);
-  channel_.reset(new IPC::SyncChannel(
+  channel_.reset(new IPC::ChannelProxy(
       channel_id, IPC::Channel::MODE_SERVER, this,
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO), true,
-      g_browser_process->shutdown_event()));
-  // As a preventive mesure, we DCHECK if someone sends a synchronous message
-  // with no time-out, which in the context of the browser process we should not
-  // be doing.
-  channel_->set_sync_messages_with_no_timeout_allowed(false);
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
 
   // Call the embedder first so that their IPC filters have priority.
   content::GetContentClient()->browser()->BrowserRenderProcessHostCreated(this);
@@ -353,7 +347,7 @@ void BrowserRenderProcessHost::CreateMessageFilters() {
       id(), ChildProcessInfo::RENDER_PROCESS,
       &profile()->GetResourceContext(),
       new RendererURLRequestContextSelector(profile(), id()),
-      g_browser_process->resource_dispatcher_host());
+      content::GetContentClient()->browser()->GetResourceDispatcherHost());
 
   channel_->AddFilter(resource_message_filter);
   channel_->AddFilter(new AudioInputRendererHost());
@@ -393,7 +387,7 @@ void BrowserRenderProcessHost::CreateMessageFilters() {
       new WorkerMessageFilter(
           id(),
           &profile()->GetResourceContext(),
-          g_browser_process->resource_dispatcher_host(),
+          content::GetContentClient()->browser()->GetResourceDispatcherHost(),
           NewCallbackWithReturnValue(
               widget_helper_.get(), &RenderWidgetHelper::GetNextRoutingID)));
 
@@ -692,15 +686,6 @@ bool BrowserRenderProcessHost::FastShutdownIfPossible() {
   child_process_launcher_.reset();
   fast_shutdown_started_ = true;
   return true;
-}
-
-bool BrowserRenderProcessHost::SendWithTimeout(IPC::Message* msg,
-                                               int timeout_ms) {
-  if (!channel_.get()) {
-    delete msg;
-    return false;
-  }
-  return channel_->SendWithTimeout(msg, timeout_ms);
 }
 
 // This is a platform specific function for mapping a transport DIB given its id

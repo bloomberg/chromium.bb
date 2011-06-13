@@ -40,9 +40,9 @@ class RenderWidgetHostProcess : public MockRenderProcessHost {
         update_msg_reply_flags_(0) {
     // DANGER! This is a hack. The RenderWidgetHost checks the channel to see
     // if the process is still alive, but it doesn't actually dereference it.
-    // An IPC::SyncChannel is nontrivial, so we just fake it here. If you end up
+    // An IPC::ChannelProxy is nontrivial, so we just fake it here. If you end up
     // crashing by dereferencing 1, then you'll have to make a real channel.
-    channel_.reset(reinterpret_cast<IPC::SyncChannel*>(0x1));
+    channel_.reset(reinterpret_cast<IPC::ChannelProxy*>(0x1));
   }
   ~RenderWidgetHostProcess() {
     // We don't want to actually delete the channel, since it's not a real

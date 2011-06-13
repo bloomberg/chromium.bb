@@ -58,7 +58,6 @@ class BrowserRenderProcessHost : public RenderProcessHost,
   virtual void WidgetHidden();
   virtual int VisibleWidgetCount() const;
   virtual bool FastShutdownIfPossible();
-  virtual bool SendWithTimeout(IPC::Message* msg, int timeout_ms);
   virtual base::ProcessHandle GetHandle();
   virtual TransportDIB* GetTransportDIB(TransportDIB::Id dib_id);
 

@@ -5,7 +5,6 @@
 #include "chrome/test/testing_browser_process.h"
 
 #include "base/string_util.h"
-#include "base/synchronization/waitable_event.h"
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
@@ -18,8 +17,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 TestingBrowserProcess::TestingBrowserProcess()
-    : shutdown_event_(new base::WaitableEvent(true, false)),
-      module_ref_count_(0),
+    : module_ref_count_(0),
       app_locale_("en"),
       local_state_(NULL) {
 }
@@ -216,10 +214,6 @@ void TestingBrowserProcess::SetApplicationLocale(
 
 DownloadStatusUpdater* TestingBrowserProcess::download_status_updater() {
   return NULL;
-}
-
-base::WaitableEvent* TestingBrowserProcess::shutdown_event() {
-  return shutdown_event_.get();
 }
 
 bool TestingBrowserProcess::plugin_finder_disabled() const {

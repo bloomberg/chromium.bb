@@ -21,6 +21,7 @@ class PluginProcessHost;
 class Profile;
 class QuotaPermissionContext;
 class RenderViewHost;
+class ResourceDispatcherHost;
 class SSLCertErrorHandler;
 class SSLClientAuthHandler;
 class TabContents;
@@ -32,6 +33,10 @@ class CookieList;
 class CookieOptions;
 class URLRequest;
 class X509Certificate;
+}
+
+namespace ui {
+class Clipboard;
 }
 
 namespace content {
@@ -185,6 +190,10 @@ class ContentBrowserClient {
   // This is called on the IO thread.
   virtual std::string GetWorkerProcessTitle(
       const GURL& url, const content::ResourceContext& context);
+
+  // Getters for common objects.
+  virtual ResourceDispatcherHost* GetResourceDispatcherHost();
+  virtual ui::Clipboard* GetClipboard();
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Can return an optional fd for crash handling, otherwise returns -1.

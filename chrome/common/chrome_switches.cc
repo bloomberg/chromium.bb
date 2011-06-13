@@ -987,11 +987,6 @@ const char kUserDataDir[]                   = "user-data-dir";
 // directory to locate user scripts in as an over-ride of the default
 const char kUserScriptsDir[]                = "user-scripts-dir";
 
-// On POSIX only: the contents of this flag are prepended to the utility
-// process command line. Useful values might be "valgrind" or "xterm -e gdb
-// --args".
-const char kUtilityCmdPrefix[]              = "utility-cmd-prefix";
-
 // Print version information and quit.
 const char kVersion[]                       = "version";
 

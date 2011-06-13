@@ -8,6 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/singleton.h"
+#include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/sys_info.h"
 #include "base/time.h"

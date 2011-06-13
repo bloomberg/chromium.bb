@@ -12,7 +12,6 @@
 #include "base/threading/thread.h"
 #include "base/threading/worker_pool.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_types.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -275,7 +274,8 @@ RenderMessageFilter::RenderMessageFilter(
     Profile* profile,
     net::URLRequestContextGetter* request_context,
     RenderWidgetHelper* render_widget_helper)
-    : resource_dispatcher_host_(g_browser_process->resource_dispatcher_host()),
+    : resource_dispatcher_host_(
+          content::GetContentClient()->browser()->GetResourceDispatcherHost()),
       plugin_service_(plugin_service),
       profile_(profile),
       extension_info_map_(profile->GetExtensionInfoMap()),

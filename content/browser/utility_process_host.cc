@@ -6,8 +6,8 @@
 
 #include "base/command_line.h"
 #include "base/message_loop.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/common/chrome_switches.h"
+#include "content/browser/content_browser_client.h"
+#include "content/common/content_switches.h"
 #include "content/common/utility_messages.h"
 #include "ipc/ipc_switches.h"
 #include "ui/base/ui_base_switches.h"
@@ -87,7 +87,8 @@ bool UtilityProcessHost::StartProcess() {
   cmd_line->AppendSwitchASCII(switches::kProcessType,
                               switches::kUtilityProcess);
   cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id());
-  std::string locale = g_browser_process->GetApplicationLocale();
+  std::string locale =
+      content::GetContentClient()->browser()->GetApplicationLocale();
   cmd_line->AppendSwitchASCII(switches::kLang, locale);
 
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
@@ -95,11 +96,6 @@ bool UtilityProcessHost::StartProcess() {
     cmd_line->AppendSwitch(switches::kChromeFrame);
   if (browser_command_line.HasSwitch(switches::kNoSandbox))
     cmd_line->AppendSwitch(switches::kNoSandbox);
-
-  if (browser_command_line.HasSwitch(
-      switches::kEnableExperimentalExtensionApis)) {
-    cmd_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
-  }
 
 #if defined(OS_POSIX)
   // TODO(port): Sandbox this on Linux.  Also, zygote this to work with

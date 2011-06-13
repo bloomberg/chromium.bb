@@ -19,7 +19,7 @@
 #include "base/task.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
-#include "ipc/ipc_sync_channel.h"
+#include "ipc/ipc_channel_proxy.h"
 
 class CommandLine;
 
@@ -144,7 +144,7 @@ class ServiceProcessControl : public IPC::Channel::Sender,
   static void RunAllTasksHelper(TaskList* task_list);
 
   // IPC channel to the service process.
-  scoped_ptr<IPC::SyncChannel> channel_;
+  scoped_ptr<IPC::ChannelProxy> channel_;
 
   // Service process launcher.
   scoped_refptr<Launcher> launcher_;

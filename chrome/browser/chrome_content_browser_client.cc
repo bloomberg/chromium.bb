@@ -212,9 +212,9 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 
   std::string process_type =
       command_line->GetSwitchValueASCII(switches::kProcessType);
+  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
   if (process_type == switches::kExtensionProcess ||
       process_type == switches::kRendererProcess) {
-    const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
     FilePath user_data_dir =
         browser_command_line.GetSwitchValuePath(switches::kUserDataDir);
     if (!user_data_dir.empty())
@@ -240,6 +240,11 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
     // in the browser process.
     if (!g_browser_process->safe_browsing_detection_service())
       command_line->AppendSwitch(switches::kDisableClientSidePhishingDetection);
+  } else if (process_type == switches::kUtilityProcess) {
+    if (browser_command_line.HasSwitch(
+            switches::kEnableExperimentalExtensionApis)) {
+      command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
+    }
   }
 }
 
@@ -476,6 +481,15 @@ std::string ChromeContentBrowserClient::GetWorkerProcessTitle(
   const Extension* extension =
       io_data->GetExtensionInfoMap()->extensions().GetByID(url.host());
   return extension ? extension->name() : std::string();
+}
+
+ResourceDispatcherHost*
+    ChromeContentBrowserClient::GetResourceDispatcherHost() {
+  return g_browser_process->resource_dispatcher_host();
+}
+
+ui::Clipboard* ChromeContentBrowserClient::GetClipboard() {
+  return g_browser_process->clipboard();
 }
 
 #if defined(OS_LINUX)

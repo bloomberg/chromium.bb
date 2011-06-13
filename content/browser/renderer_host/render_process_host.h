@@ -13,7 +13,7 @@
 #include "base/process.h"
 #include "base/process_util.h"
 #include "base/time.h"
-#include "ipc/ipc_sync_channel.h"
+#include "ipc/ipc_channel_proxy.h"
 #include "ui/gfx/surface/transport_dib.h"
 
 class Profile;
@@ -122,7 +122,7 @@ class RenderProcessHost : public IPC::Channel::Sender,
     return listeners_.Lookup(routing_id);
   }
 
-  IPC::SyncChannel* channel() { return channel_.get(); }
+  IPC::ChannelProxy* channel() { return channel_.get(); }
 
   // Called to inform the render process host of a new "max page id" for a
   // render view host.  The render process host computes the largest page id
@@ -204,11 +204,6 @@ class RenderProcessHost : public IPC::Channel::Sender,
   // Returns True if it was able to do fast shutdown.
   virtual bool FastShutdownIfPossible() = 0;
 
-  // Synchronously sends the message, waiting for the specified timeout. The
-  // implementor takes ownership of the given Message regardless of whether or
-  // not this method succeeds. Returns true on success.
-  virtual bool SendWithTimeout(IPC::Message* msg, int timeout_ms) = 0;
-
   // Returns the process object associated with the child process.  In certain
   // tests or single-process mode, this will actually represent the current
   // process.
@@ -269,7 +264,7 @@ class RenderProcessHost : public IPC::Channel::Sender,
  protected:
   // A proxy for our IPC::Channel that lives on the IO thread (see
   // browser_process.h)
-  scoped_ptr<IPC::SyncChannel> channel_;
+  scoped_ptr<IPC::ChannelProxy> channel_;
 
   // The registered listeners. When this list is empty or all NULL, we should
   // delete ourselves
