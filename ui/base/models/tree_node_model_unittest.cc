@@ -209,25 +209,38 @@ TEST_F(TreeNodeModelTest, GetIndexOf) {
 // The tree looks like this:
 // root
 // |-- child1
-// |-- child2
+// |   |-- foo1
+// +-- child2
 TEST_F(TreeNodeModelTest, HasAncestor) {
-  TreeNodeWithValue<int>* root =
-      new TreeNodeWithValue<int>(ASCIIToUTF16("root"), 0);
-  TreeNodeModel<TreeNodeWithValue<int> > model(root);
+  TreeNodeWithValue<int> root;
+  TreeNodeWithValue<int>* child1 = new TreeNodeWithValue<int>(0);
+  TreeNodeWithValue<int>* child2 = new TreeNodeWithValue<int>(0);
 
-  TreeNodeWithValue<int>* child1 =
-      new TreeNodeWithValue<int>(ASCIIToUTF16("child 1"), 0);
-  model.Add(root, child1, 0);
+  root.Add(child1, 0);
+  root.Add(child2, 1);
 
-  TreeNodeWithValue<int>* child2 =
-      new TreeNodeWithValue<int>(ASCIIToUTF16("child 2"), 1);
-  model.Add(root, child2, 1);
+  TreeNodeWithValue<int>* foo1 = new TreeNodeWithValue<int>(0);
+  child1->Add(foo1, 0);
 
-  ASSERT_TRUE(root->HasAncestor(root));
-  ASSERT_FALSE(root->HasAncestor(child1));
-  ASSERT_TRUE(child1->HasAncestor(root));
+  ASSERT_TRUE(root.HasAncestor(&root));
+  ASSERT_FALSE(root.HasAncestor(child1));
+  ASSERT_FALSE(root.HasAncestor(child2));
+  ASSERT_FALSE(root.HasAncestor(foo1));
+
+  ASSERT_TRUE(child1->HasAncestor(child1));
+  ASSERT_TRUE(child1->HasAncestor(&root));
   ASSERT_FALSE(child1->HasAncestor(child2));
+  ASSERT_FALSE(child1->HasAncestor(foo1));
+
+  ASSERT_TRUE(child2->HasAncestor(child2));
+  ASSERT_TRUE(child2->HasAncestor(&root));
   ASSERT_FALSE(child2->HasAncestor(child1));
+  ASSERT_FALSE(child2->HasAncestor(foo1));
+
+  ASSERT_TRUE(foo1->HasAncestor(foo1));
+  ASSERT_TRUE(foo1->HasAncestor(child1));
+  ASSERT_TRUE(foo1->HasAncestor(&root));
+  ASSERT_FALSE(foo1->HasAncestor(child2));
 }
 
 // The tree looks like this:
