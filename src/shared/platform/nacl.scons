@@ -20,6 +20,7 @@ platform_inputs = [
     'linux/condition_variable.c',
     'linux/lock.c',
     'linux/nacl_exit.c',
+    'linux/nacl_thread_id.c',
     'linux/nacl_threads.c',
     'linux/nacl_timestamp.c',
     'nacl_sync_checked.c',

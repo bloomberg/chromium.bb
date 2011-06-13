@@ -130,7 +130,3 @@ void NaClThreadExit(int exit_code) {
 void NaClThreadKill(struct NaClThread *target) {
   pthread_kill(target->tid, SIGKILL);
 }
-
-uint32_t NaClThreadId(void) {
-  return (uintptr_t) pthread_self();
-}
