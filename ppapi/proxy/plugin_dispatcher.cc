@@ -253,8 +253,9 @@ void PluginDispatcher::ForceFreeAllInstances() {
     if (i->second == this) {
       // Synthesize an "instance destroyed" message, this will notify the
       // plugin and also remove it from our list of tracked plugins.
-      OnMessageReceived(
-          PpapiMsg_PPPInstance_DidDestroy(INTERFACE_ID_PPP_INSTANCE, i->first));
+      PpapiMsg_PPPInstance_DidDestroy msg(INTERFACE_ID_PPP_INSTANCE, i->first);
+      OnMessageReceived(msg);
+      delete msg.GetReplyDeserializer();
     }
   }
 }
@@ -300,4 +301,3 @@ void PluginDispatcher::OnMsgSetPreferences(const ::ppapi::Preferences& prefs) {
 
 }  // namespace proxy
 }  // namespace pp
-

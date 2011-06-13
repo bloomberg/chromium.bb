@@ -4664,27 +4664,6 @@
    ...
    fun:_ZN28WebKitContextTest_Basic_Test8TestBodyEv
 }
-{
-   bug_85825
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN3IPC16MessageWithReplyI6Tuple1IiE6Tuple0EC2EijRKS1_IRKiERKS3_
-   fun:_ZN31PpapiMsg_PPPInstance_DidDestroyC1EiRKi
-   fun:_ZN2pp5proxy16PluginDispatcher21ForceFreeAllInstancesEv
-   fun:_ZN2pp5proxy16PluginDispatcher14OnChannelErrorEv
-   fun:_ZN3IPC12ChannelProxy7Context15OnDispatchErrorEv
-   fun:_Z16DispatchToMethodIN3IPC12ChannelProxy7ContextEMS2_FvvEEvPT_T0_RK6Tuple0
-   fun:_ZN14RunnableMethodIN3IPC12ChannelProxy7ContextEMS2_FvvE6Tuple0E3RunEv
-   fun:_ZN12_GLOBAL__N_118TaskClosureAdapter3RunEv
-   fun:_ZN4base8internal8Invoker1ILb0ENS0_15InvokerStorage1IMN12_GLOBAL__N_118TaskClosureAdapterEFvvEPS4_EES6_E8DoInvokeEPNS0_18InvokerStorageBaseE
-   fun:_ZNK4base8CallbackIFvvEE3RunEv
-   fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
-   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
-   fun:_ZN11MessageLoop6DoWorkEv
-   fun:_ZN4base19MessagePumpLibevent3RunEPNS_11MessagePump8DelegateE
-   fun:_ZN11MessageLoop11RunInternalEv
-   fun:_ZN11MessageLoop10RunHandlerEv
-}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
