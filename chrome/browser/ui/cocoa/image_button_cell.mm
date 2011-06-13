@@ -8,7 +8,7 @@
 #import "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/image_utils.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
-#include "ui/gfx/image.h"
+#include "ui/gfx/image/image.h"
 
 namespace {
 

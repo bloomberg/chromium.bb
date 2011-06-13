@@ -60,7 +60,7 @@
 #include "ui/base/models/accelerator_cocoa.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/image.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/rect.h"
 
 namespace {

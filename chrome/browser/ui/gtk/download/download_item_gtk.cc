@@ -33,7 +33,7 @@
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/font.h"
-#include "ui/gfx/image.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/skia_utils_gtk.h"
 
 namespace {

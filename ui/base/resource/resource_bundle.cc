@@ -13,7 +13,7 @@
 #include "ui/base/resource/data_pack.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/font.h"
-#include "ui/gfx/image.h"
+#include "ui/gfx/image/image.h"
 
 namespace ui {
 

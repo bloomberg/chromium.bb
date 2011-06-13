@@ -8,8 +8,8 @@
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/gfx/image.h"
-#include "ui/gfx/image_unittest_util.h"
+#include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_unittest_util.h"
 
 namespace {
 

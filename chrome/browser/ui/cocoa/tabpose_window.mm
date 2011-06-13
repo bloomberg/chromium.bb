@@ -38,7 +38,7 @@
 #include "skia/ext/skia_utils_mac.h"
 #include "third_party/skia/include/utils/mac/SkCGUtils.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/image.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/scoped_cg_context_save_gstate_mac.h"
 
 // Height of the bottom gradient, in pixels.

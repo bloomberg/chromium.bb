@@ -5,10 +5,10 @@
 // Because the unit tests for gfx::Image are spread across multiple
 // implementation files, this header contains the reusable components.
 
-#ifndef UI_GFX_IMAGE_UNITTEST_UTIL_H_
-#define UI_GFX_IMAGE_UNITTEST_UTIL_H_
+#ifndef UI_GFX_IMAGE_IMAGE_UNITTEST_UTIL_H_
+#define UI_GFX_IMAGE_IMAGE_UNITTEST_UTIL_H_
 
-#include "ui/gfx/image.h"
+#include "ui/gfx/image/image.h"
 
 namespace gfx {
 namespace test {
@@ -30,4 +30,4 @@ gfx::Image::RepresentationType GetPlatformRepresentationType();
 }  // namespace test
 }  // namespace gfx
 
-#endif  // UI_GFX_IMAGE_UNITTEST_UTIL_H_
+#endif  // UI_GFX_IMAGE_IMAGE_UNITTEST_UTIL_H_

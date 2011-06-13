@@ -202,8 +202,8 @@
         '../content/common/test_url_constants.h',
         '../content/common/test_url_fetcher_factory.cc',
         '../content/common/test_url_fetcher_factory.h',
-        '../ui/gfx/image_unittest_util.h',
-        '../ui/gfx/image_unittest_util.cc',
+        '../ui/gfx/image/image_unittest_util.h',
+        '../ui/gfx/image/image_unittest_util.cc',
       ],
       'conditions': [
         ['chromeos==0', {

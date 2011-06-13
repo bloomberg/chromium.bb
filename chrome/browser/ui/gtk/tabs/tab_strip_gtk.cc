@@ -34,7 +34,7 @@
 #include "ui/base/dragdrop/gtk_dnd_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/gtk_util.h"
-#include "ui/gfx/image.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/point.h"
 
 namespace {

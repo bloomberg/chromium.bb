@@ -17,7 +17,7 @@
 #include "chrome/browser/ui/gtk/infobars/infobar_container_gtk.h"
 #include "content/common/notification_service.h"
 #include "ui/gfx/gtk_util.h"
-#include "ui/gfx/image.h"
+#include "ui/gfx/image/image.h"
 
 namespace {
 

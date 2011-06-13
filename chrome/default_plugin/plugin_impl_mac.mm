@@ -16,7 +16,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/image.h"
+#include "ui/gfx/image/image.h"
 #include "unicode/locid.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/plugins/npapi/default_plugin_shared.h"

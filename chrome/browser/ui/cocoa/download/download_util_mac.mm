@@ -10,7 +10,7 @@
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_manager.h"
 #import "chrome/browser/ui/cocoa/dock_icon.h"
-#include "ui/gfx/image.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace download_util {

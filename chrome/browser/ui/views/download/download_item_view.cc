@@ -29,7 +29,7 @@
 #include "ui/base/text/text_elider.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/gfx/image.h"
+#include "ui/gfx/image/image.h"
 #include "unicode/uchar.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/label.h"

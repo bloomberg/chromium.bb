@@ -25,7 +25,7 @@
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
-#include "ui/gfx/image.h"
+#include "ui/gfx/image/image.h"
 
 @interface PageInfoBubbleController (Private)
 - (PageInfoModel*)model;

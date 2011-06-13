@@ -64,7 +64,7 @@
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/gtk_util.h"
-#include "ui/gfx/image.h"
+#include "ui/gfx/image/image.h"
 #include "webkit/glue/window_open_disposition.h"
 
 namespace {

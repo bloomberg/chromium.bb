@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/timer.h"
-#include "ui/gfx/image.h"
+#include "ui/gfx/image/image.h"
 
 class PrefService;
 

@@ -22,7 +22,7 @@
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/image.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
 namespace {

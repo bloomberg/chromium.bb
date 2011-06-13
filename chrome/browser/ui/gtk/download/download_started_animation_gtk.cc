@@ -13,7 +13,7 @@
 #include "grit/theme_resources.h"
 #include "ui/base/animation/linear_animation.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/image.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/rect.h"
 
 namespace {

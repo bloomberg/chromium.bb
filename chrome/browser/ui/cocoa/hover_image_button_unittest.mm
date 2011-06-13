@@ -12,7 +12,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/image.h"
+#include "ui/gfx/image/image.h"
 
 namespace {
 

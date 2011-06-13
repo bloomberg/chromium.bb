@@ -14,7 +14,7 @@
 #include "net/base/escape.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
-#include "ui/gfx/image.h"
+#include "ui/gfx/image/image.h"
 
 // The path used in internal URLs to file icon data.
 static const char kFileIconPath[] = "fileicon";

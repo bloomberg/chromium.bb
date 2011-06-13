@@ -13,7 +13,7 @@
 #include "base/synchronization/lock.h"
 #include "base/sys_info.h"
 #include "base/sys_string_conversions.h"
-#include "ui/gfx/image.h"
+#include "ui/gfx/image/image.h"
 
 namespace ui {
 

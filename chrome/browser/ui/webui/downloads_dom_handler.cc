@@ -28,7 +28,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/user_metrics.h"
 #include "grit/generated_resources.h"
-#include "ui/gfx/image.h"
+#include "ui/gfx/image/image.h"
 
 namespace {
 

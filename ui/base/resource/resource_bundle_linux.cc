@@ -19,7 +19,7 @@
 #include "ui/base/ui_base_paths.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/gtk_util.h"
-#include "ui/gfx/image.h"
+#include "ui/gfx/image/image.h"
 
 namespace ui {
 

@@ -12,7 +12,7 @@
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
-#include "ui/gfx/image.h"
+#include "ui/gfx/image/image.h"
 
 // Simple class to remember how many mouseEntered: and mouseExited:
 // calls it gets.  Only used by BookmarkMouseForwarding but placed

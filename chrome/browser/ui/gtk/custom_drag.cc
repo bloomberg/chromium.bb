@@ -12,7 +12,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
 #include "ui/gfx/gtk_util.h"
-#include "ui/gfx/image.h"
+#include "ui/gfx/image/image.h"
 
 namespace {
 

@@ -40,7 +40,7 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/gtk_util.h"
-#include "ui/gfx/image.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/skia_utils_gtk.h"

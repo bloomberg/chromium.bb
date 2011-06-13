@@ -20,7 +20,7 @@
 #include "ui/base/resource/data_pack.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/codec/png_codec.h"
-#include "ui/gfx/image.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/skbitmap_operations.h"
 
 namespace {

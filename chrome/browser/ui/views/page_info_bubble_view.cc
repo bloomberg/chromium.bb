@@ -18,7 +18,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia.h"
-#include "ui/gfx/image.h"
+#include "ui/gfx/image/image.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
 #include "views/controls/link.h"

@@ -17,7 +17,7 @@
 #include "chrome/common/extensions/extension_action.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/image.h"
+#include "ui/gfx/image/image.h"
 
 // When an extension is installed on Mac with neither browser action nor
 // page action icons, show an infobar instead of a popup bubble.

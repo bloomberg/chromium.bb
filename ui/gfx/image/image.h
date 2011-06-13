@@ -13,8 +13,8 @@
 // counted member. When all Images referencing this storage are deleted, the
 // actual representations are deleted, too.
 
-#ifndef UI_GFX_IMAGE_H_
-#define UI_GFX_IMAGE_H_
+#ifndef UI_GFX_IMAGE_IMAGE_H_
+#define UI_GFX_IMAGE_IMAGE_H_
 #pragma once
 
 #include <map>
@@ -127,4 +127,4 @@ class Image {
 
 }  // namespace gfx
 
-#endif  // UI_GFX_IMAGE_H_
+#endif  // UI_GFX_IMAGE_IMAGE_H_

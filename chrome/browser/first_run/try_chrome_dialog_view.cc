@@ -17,7 +17,7 @@
 #include "grit/theme_resources_standard.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/image.h"
+#include "ui/gfx/image/image.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/button/radio_button.h"
 #include "views/controls/image_view.h"

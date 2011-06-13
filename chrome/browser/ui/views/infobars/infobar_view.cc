@@ -18,7 +18,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia_paint.h"
-#include "ui/gfx/image.h"
+#include "ui/gfx/image/image.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/button/text_button.h"

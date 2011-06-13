@@ -6,7 +6,7 @@
 // implementation files, this header contains the reusable components.
 
 #include "base/memory/scoped_ptr.h"
-#include "ui/gfx/image_unittest_util.h"
+#include "ui/gfx/image/image_unittest_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 

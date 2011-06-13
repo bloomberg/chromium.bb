@@ -14,7 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop_proxy.h"
-#include "ui/gfx/image.h"
+#include "ui/gfx/image/image.h"
 
 #if defined(TOOLKIT_USES_GTK)
 #include "base/file_path.h"

@@ -39,7 +39,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/gtk_util.h"
-#include "ui/gfx/image.h"
+#include "ui/gfx/image/image.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/frame/browser_view.h"

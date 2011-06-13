@@ -12,7 +12,7 @@
 #import "third_party/GTM/AppKit/GTMNSColor+Luminance.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/gfx/image.h"
+#include "ui/gfx/image/image.h"
 #include "skia/ext/skia_utils_mac.h"
 
 NSString* const kBrowserThemeDidChangeNotification =
