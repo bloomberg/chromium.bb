@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/task.h"
 #include "chrome/browser/browser_process_sub_thread.h"
 #include "chrome/browser/net/ssl_config_service_manager.h"
 #include "chrome/browser/prefs/pref_member.h"
@@ -145,9 +146,11 @@ class IOThread : public BrowserProcessSubThread {
   net::HttpAuthHandlerFactory* CreateDefaultAuthHandlerFactory(
       net::HostResolver* resolver);
 
+  void InitSystemRequestContext();
+
   // Lazy initialization of system request context for
   // SystemURLRequestContextGetter. To be called on IO thread.
-  void InitSystemRequestContext();
+  void InitSystemRequestContextOnIOThread();
 
   void InitNetworkPredictorOnIOThread(
       bool prefetching_enabled,
@@ -224,6 +227,8 @@ class IOThread : public BrowserProcessSubThread {
   // ChromeURLRequestContexts can be released during
   // IOThread::CleanUp().
   std::list<ChromeURLRequestContextGetter*> url_request_context_getters_;
+
+  ScopedRunnableMethodFactory<IOThread> method_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(IOThread);
 };

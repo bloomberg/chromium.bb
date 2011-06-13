@@ -15,6 +15,7 @@
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_event_router_forwarder.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
@@ -289,9 +290,7 @@ SystemURLRequestContextGetter::~SystemURLRequestContextGetter() {}
 
 net::URLRequestContext* SystemURLRequestContextGetter::GetURLRequestContext() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  if (!io_thread_->globals()->system_request_context)
-    io_thread_->InitSystemRequestContext();
+  DCHECK(io_thread_->globals()->system_request_context);
 
   return io_thread_->globals()->system_request_context;
 }
@@ -320,7 +319,8 @@ IOThread::IOThread(
       extension_event_router_forwarder_(extension_event_router_forwarder),
       globals_(NULL),
       speculative_interceptor_(NULL),
-      predictor_(NULL) {
+      predictor_(NULL),
+      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   // We call RegisterPrefs() here (instead of inside browser_prefs.cc) to make
   // sure that everything is initialized in the right order.
   RegisterPrefs(local_state);
@@ -338,6 +338,9 @@ IOThread::IOThread(
                                                     local_state);
   ssl_config_service_manager_.reset(
       SSLConfigServiceManager::CreateDefaultManager(local_state));
+  MessageLoop::current()->PostTask(FROM_HERE,
+                                   method_factory_.NewRunnableMethod(
+                                       &IOThread::InitSystemRequestContext));
 }
 
 IOThread::~IOThread() {
@@ -412,11 +415,7 @@ void IOThread::ChangedToOnTheRecord() {
 net::URLRequestContextGetter* IOThread::system_url_request_context_getter() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!system_url_request_context_getter_) {
-    system_proxy_config_service_.reset(
-        ProxyServiceFactory::CreateProxyConfigService(
-            pref_proxy_config_tracker_));
-    system_url_request_context_getter_ =
-        new SystemURLRequestContextGetter(this);
+    InitSystemRequestContext();
   }
   return system_url_request_context_getter_;
 }
@@ -668,6 +667,21 @@ net::SSLConfigService* IOThread::GetSSLConfigService() {
 }
 
 void IOThread::InitSystemRequestContext() {
+  if (system_url_request_context_getter_)
+    return;
+  system_proxy_config_service_.reset(
+      ProxyServiceFactory::CreateProxyConfigService(
+          pref_proxy_config_tracker_));
+  system_url_request_context_getter_ =
+      new SystemURLRequestContextGetter(this);
+  message_loop()->PostTask(
+      FROM_HERE,
+      NewRunnableMethod(
+          this,
+          &IOThread::InitSystemRequestContextOnIOThread));
+}
+
+void IOThread::InitSystemRequestContextOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(!globals_->system_proxy_service.get());
   DCHECK(system_proxy_config_service_.get());
