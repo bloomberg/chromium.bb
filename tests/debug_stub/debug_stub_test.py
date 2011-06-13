@@ -1,6 +1,6 @@
-# Copyright 2011 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 import os
 import re
@@ -75,6 +75,11 @@ class GdbRspConnection(object):
         return
     raise Exception('Could not connect to sel_ldr\'s debug stub in %i seconds'
                     % timeout_in_seconds)
+
+  # Send an rsp message, but don't wait for or expect a reply.
+  def RspSendOnly(self, data):
+    msg = '$%s#%02x' % (data, RspChecksum(data))
+    return self._socket.send(msg)
 
   def RspRequest(self, data):
     msg = '$%s#%02x' % (data, RspChecksum(data))

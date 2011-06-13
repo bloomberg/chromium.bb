@@ -1301,7 +1301,8 @@ def PPAPIBrowserTesterIsBroken(env):
 pre_base_env.AddMethod(PPAPIBrowserTesterIsBroken)
 
 
-def PyAutoTester(env, target, test, files=[], log_verbosity=2, args=[]):
+def PyAutoTester(env, target, test, files=[], log_verbosity=2,
+                 extra_chrome_flags=[], args=[]):
   if 'TRUSTED_ENV' not in env:
     return []
 
@@ -1324,19 +1325,24 @@ def PyAutoTester(env, target, test, files=[], log_verbosity=2, args=[]):
     # On Mac, we match the version of python used to build pyautolib (2.5).
     pyauto_python = 'python2.5'
 
-  # Construct chrome flags and pass them on to pyauto as one string.
-  chrome_flags = ''
+  # Construct chrome flags as a list and pass them on to pyauto as one string.
+  chrome_flags = []
   if not env.Bit('disable_dynamic_plugin_loading'):
-    chrome_flags += ('--register-pepper-plugins=%s;application/x-nacl' %
-                     GetPPAPIPluginPath(env['TRUSTED_ENV']))
-    chrome_flags += ' --no-sandbox'
+    chrome_flags.append('--register-pepper-plugins=%s;application/x-nacl' %
+                        GetPPAPIPluginPath(env['TRUSTED_ENV']))
+    chrome_flags.append('--no-sandbox')
   else:
-    chrome_flags += '--enable-nacl'
+    chrome_flags.append('--enable-nacl')
+  # For flags passed in through |extra_chrome_flags|, if they are not already
+  # in |chrome_flags| then add them.
+  for extra_chrome_flag in extra_chrome_flags:
+    if not extra_chrome_flag in chrome_flags:
+      chrome_flags.append(extra_chrome_flag)
 
   # Silence chrome's complaints that we are running without a sandbox and that
   # the chrome source code is missing from the NaCl bots.
   # Note: Fatal errors in chrome will still be logged at this level.
-  chrome_flags += ' --log-level=3'
+  chrome_flags.append('--log-level=3')
 
   osenv = []
   if not env.Bit('disable_dynamic_plugin_loading'):
@@ -1366,7 +1372,7 @@ def PyAutoTester(env, target, test, files=[], log_verbosity=2, args=[]):
   command = (GetHeadlessPrefix(env) +
              [pyauto_python, '-u', test, pyautolib_dir,
               '--http-data-dir=%s' % http_data_dir,
-              '--chrome-flags="%s"' % chrome_flags])
+              '--chrome-flags="%s"' %' '.join(chrome_flags)])
   command.extend(args)
 
   node = env.CommandTest(target,
@@ -1698,13 +1704,16 @@ def CommandTest(env, name, command, size='small', direct_emulation=True,
 
   for flag_name, flag_value in extra.iteritems():
     assert flag_name in TEST_EXTRA_ARGS
-    script_flags.append('--' + flag_name)
     if isinstance(flag_value, list):
       # Options to command_tester.py which are actually lists must not be
       # separated by whitespace. This stringifies the lists with a separator
       # char to satisfy command_tester.
       flag_value =  command_tester.StringifyList(flag_value)
-    script_flags.append(flag_value)
+    # do not add --flag + |flag_name| |flag_value| if
+    # |flag_value| is false (empty).
+    if flag_value:
+      script_flags.append('--' + flag_name)
+      script_flags.append(flag_value)
 
   # Other extra flags
   if not capture_output:
