@@ -95,6 +95,7 @@ readonly TC_SRC_LLVM="${TC_SRC}/llvm"
 readonly TC_SRC_LLVM_GCC="${TC_SRC}/llvm-gcc"
 readonly TC_SRC_BINUTILS="${TC_SRC}/binutils"
 readonly TC_SRC_NEWLIB="${TC_SRC}/newlib"
+readonly TC_SRC_COMPILER_RT="${TC_SRC}/compiler-rt"
 readonly TC_SRC_LIBSTDCPP="${TC_SRC_LLVM_GCC}/llvm-gcc-4.2/libstdc++-v3"
 
 # Unfortunately, binutils/configure generates this untracked file
@@ -115,6 +116,7 @@ readonly TC_BUILD_BINUTILS_ARM="${TC_BUILD}/binutils-arm"
 readonly TC_BUILD_BINUTILS_LIBERTY="${TC_BUILD}/binutils-liberty"
 readonly TC_BUILD_NEWLIB_ARM="${TC_BUILD}/newlib-arm"
 readonly TC_BUILD_NEWLIB_BITCODE="${TC_BUILD}/newlib-bitcode"
+readonly TC_BUILD_COMPILER_RT="${TC_BUILD}/compiler_rt"
 
 # This apparently has to be at this location or gcc install breaks.
 readonly TC_BUILD_LIBSTDCPP="${TC_BUILD_LLVM_GCC1}/${CROSS_TARGET_ARM}/libstdc++-v3"
@@ -185,12 +187,14 @@ readonly LLVM_REV=0d3856fc6b19
 readonly LLVM_GCC_REV=90bef7731935
 readonly NEWLIB_REV=9bef47f82918
 readonly BINUTILS_REV=569e4fcf08da
+readonly COMPILER_RT_REV=31d5d91b81cc
 
 # Repositories
 readonly REPO_LLVM_GCC="llvm-gcc.nacl-llvm-branches"
 readonly REPO_LLVM="nacl-llvm-branches"
 readonly REPO_NEWLIB="newlib.nacl-llvm-branches"
 readonly REPO_BINUTILS="binutils.nacl-llvm-branches"
+readonly REPO_COMPILER_RT="compiler-rt.nacl-llvm-branches"
 
 
 # TODO(espindola): This should be ${CXX:-}, but llvm-gcc's configure has a
@@ -281,6 +285,7 @@ hg-info-all() {
   hg-info "${TC_SRC_LLVM_GCC}"   ${LLVM_GCC_REV}
   hg-info "${TC_SRC_NEWLIB}"     ${NEWLIB_REV}
   hg-info "${TC_SRC_BINUTILS}"   ${BINUTILS_REV}
+  hg-info "${TC_SRC_COMPILER_RT}" ${COMPILER_RT_REV}
 }
 
 #@ hg-update-all      - Update all repos to the latest stable rev
@@ -289,6 +294,7 @@ hg-update-all() {
   hg-update-llvm
   hg-update-newlib
   hg-update-binutils
+  hg-update-compiler-rt
 }
 
 hg-assert-safe-to-update() {
@@ -391,6 +397,11 @@ hg-update-binutils() {
   binutils-mess-unhide
 }
 
+#@ hg-update-compiler-rt - Update compiler-rt to the stable revision
+hg-update-compiler-rt() {
+  hg-update-common "compiler-rt" ${COMPILER_RT_REV} "${TC_SRC_COMPILER_RT}"
+}
+
 #@ hg-pull-all           - Pull all repos. (but do not update working copy)
 #@ hg-pull-REPO          - Pull repository REPO.
 #@                         (REPO can be llvm-gcc, llvm, newlib, binutils)
@@ -400,6 +411,7 @@ hg-pull-all() {
   hg-pull-llvm
   hg-pull-newlib
   hg-pull-binutils
+  hg-pull-compiler-rt
 }
 
 hg-pull-llvm-gcc() {
@@ -416,6 +428,10 @@ hg-pull-newlib() {
 
 hg-pull-binutils() {
   hg-pull "${TC_SRC_BINUTILS}"
+}
+
+hg-pull-compiler-rt() {
+  hg-pull "${TC_SRC_COMPILER_RT}"
 }
 
 #@ hg-checkout-all       - check out mercurial repos needed to build toolchain
@@ -443,6 +459,10 @@ hg-checkout-binutils() {
 hg-checkout-newlib() {
   hg-checkout ${REPO_NEWLIB}   ${TC_SRC_NEWLIB}   ${NEWLIB_REV}
   newlib-nacl-headers
+}
+
+hg-checkout-compiler-rt() {
+  hg-checkout ${REPO_COMPILER_RT}   ${TC_SRC_COMPILER_RT}   ${COMPILER_RT_REV}
 }
 
 #@ hg-clean              - Remove all repos. (WARNING: local changes are lost)
@@ -1143,47 +1163,34 @@ build-libgcc_eh-bitcode() {
 
 #+ build-compiler-rt - build/install llvm's replacement for libgcc.a
 build-compiler-rt() {
-  readonly TC_BUILD_COMPILER_RT="${TC_BUILD}/compiler_rt"
+  src="${TC_SRC_COMPILER_RT}/compiler-rt/lib"
   mkdir -p "${TC_BUILD_COMPILER_RT}"
   spushd "${TC_BUILD_COMPILER_RT}"
-  # TODO(robertm): we need to set up our own repo for this eventually
-  StepBanner "compiler rt" "checkout"
-  rm -rf  src
-  svn co http://llvm.org/svn/llvm-project/compiler-rt/trunk -r 132756 src
 
   for arch in arm x86-32 x86-64; do
     StepBanner "compiler rt" "build ${arch}"
     rm -rf "${arch}"
     mkdir -p "${arch}"
     spushd "${arch}"
-    # NOTE: div*i?.c  only includes integer division and excludes the
-    # float and complex versions
-    # NOTE: this is likely not the final set of .c file that should comprise
-    # the library
-    for file in ../src/lib/div*i?.c ../src/lib/udiv*.c \
-                ../src/lib/mod*.c ../src/lib/umod*.c \
-                ../src/lib/fix*.c ../src/lib/float*.c ; do
-      out=$(/usr/bin/basename "${file}" ".c")
-      flags="-arch ${arch} \
-             -fPIC \
-             --pnacl-allow-translate \
-             -I../src/lib \
-             -D_YUGA_LITTLE_ENDIAN=1 \
-             -D_YUGA_BIG_ENDIAN=0"
-      if [ ${arch} == "arm" ] ; then
+    flags=""
+    if [ ${arch} == "arm" ] ; then
         # NOTE: this causes the generation of aeabi alias form some libgcc
         #       functions, e.g. __divsi3  == __aeabi_idiv
         # TODO(robertm): fix the llc arm backend to emit the standard names
         flags="${flags} -D__ARM_EABI__"
-      fi
-      ${PNACL_GCC} ${file} ${flags} -c -o ${out}.o
-    done
-    ${PNACL_AR} rc libgcc.a *.o
-    ls -l libgcc.a
+    fi
+    RunWithLog libgcc.${arch}.make \
+        make -j ${UTMAN_CONCURRENCY} -f ${src}/Makefile-pnacl libgcc.a \
+          "SRC_DIR=${src}" \
+          "ARCH=${arch}" \
+          "CC=${PNACL_GCC}" \
+          "AR=${PNACL_AR}" \
+          "CFLAGS=${flags}"
     spopd
   done
 
-  StepBanner "compiler rt" "install"
+  StepBanner "compiler rt" "install all"
+  ls -l */libgcc.a
   cp arm/libgcc.a "${PNACL_ARM_ROOT}/"
   cp x86-32/libgcc.a "${PNACL_X8632_ROOT}/"
   cp x86-64/libgcc.a "${PNACL_X8664_ROOT}/"
