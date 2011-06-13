@@ -295,6 +295,8 @@
       '-translate.TranslateTest.testSeveralLanguages',
       # crbug.com/85601
       '-translate.TranslateTest.testAlwaysTranslateInIncognito',
+      # This test fails due to crbug.com/85633
+      '-translate.TranslateTest.testSessionRestore',
     ],
 
     'win': [
