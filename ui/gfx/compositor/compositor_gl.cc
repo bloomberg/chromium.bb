@@ -259,8 +259,13 @@ void CompositorGL::NotifyStart() {
   glViewport(0, 0,
              gl_surface_->GetSize().width(), gl_surface_->GetSize().height());
 
+#if defined(DEBUG)
   // Clear to 'psychedelic' purple to make it easy to spot un-rendered regions.
   glClearColor(223.0 / 255, 0, 1, 1);
+#else
+  // Clear to transparent black.
+  glClearColor(0, 0, 0, 0);
+#endif
   glColorMask(true, true, true, true);
   glClear(GL_COLOR_BUFFER_BIT);
   // Disable alpha writes, since we're using blending anyways.
