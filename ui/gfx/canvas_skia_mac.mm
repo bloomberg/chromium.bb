@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,7 +57,7 @@ void CanvasSkia::DrawStringInt(const string16& text,
                                              blue:SkColorGetB(color) / 255.0
                                             alpha:SkColorGetA(color) / 255.0];
   NSMutableParagraphStyle *ns_style =
-      [[[NSParagraphStyle alloc] init] autorelease];
+      [[[NSMutableParagraphStyle alloc] init] autorelease];
   if (flags & TEXT_ALIGN_CENTER)
     [ns_style setAlignment:NSCenterTextAlignment];
   // TODO(awalker): Implement the rest of the Canvas text flags
