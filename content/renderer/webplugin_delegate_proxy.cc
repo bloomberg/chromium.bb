@@ -728,6 +728,15 @@ void WebPluginDelegateProxy::Paint(WebKit::WebCanvas* canvas,
 
   // We're using the native OS APIs from here on out.
 #if WEBKIT_USING_SKIA
+  if (!skia::SupportsPlatformPaint(canvas)) {
+    // TODO(alokp): Implement this path.
+    // This block will only get hit with --enable-accelerated-drawing flag.
+    // With accelerated canvas, we do not have a bitmap that can be provided
+    // to the plugin for compositing. We may have to implement a solution
+    // described in crbug.com/12586.
+    DLOG(WARNING) << "Could not paint plugin";
+    return;
+  }
   skia::ScopedPlatformPaint scoped_platform_paint(canvas);
   gfx::NativeDrawingContext context =
       scoped_platform_paint.GetPlatformSurface();
