@@ -40,19 +40,23 @@ class ClientUsageTracker::GatherUsageTaskBase : public QuotaTask {
     // We do not get usage for origins for which we have valid usage cache.
     client_tracker()->DetermineOriginsToGetUsage(origins, &origins_to_process);
     if (origins_to_process.empty()) {
-      // Nothing to be done.
       CallCompleted();
       DeleteSoon();
+      return;
     }
+
+    // First, fully populate the pending queue because GetOriginUsage may call
+    // the completion callback immediately.
     for (std::set<GURL>::const_iterator iter = origins_to_process.begin();
-         iter != origins_to_process.end();
-         iter++) {
+         iter != origins_to_process.end(); iter++)
       pending_origins_.push_back(*iter);
+
+    for (std::set<GURL>::const_iterator iter = origins_to_process.begin();
+         iter != origins_to_process.end(); iter++)
       client_->GetOriginUsage(
           *iter,
           tracker_->type(),
           callback_factory_.NewCallback(&GatherUsageTaskBase::DidGetUsage));
-    }
   }
 
   bool IsOriginDone(const GURL& origin) const {
