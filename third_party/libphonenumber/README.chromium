@@ -28,3 +28,8 @@ some multi-byte locales.
 The folders included in our repository for now are
   cpp/
   resource/
+
+TODO(georgey) : remove following lines when updated to version after 186
+  cpp/src/phonelibutil.cc made icu::Transliteration member of PhoneUtil
+  to improve performance, Not needed in recent versions.
+
