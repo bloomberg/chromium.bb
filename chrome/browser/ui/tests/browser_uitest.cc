@@ -192,8 +192,11 @@ TEST_F(BrowserTest, MAYBE_OtherRedirectsDontForkProcess) {
   ASSERT_EQ(orig_process_count, process_count);
 }
 
-// WindowOpenClose fails consistently on ChromeOS. http://crbug.com/85763.
+// WindowOpenClose is flaky on ChromeOS and fails consistently on linux views.
+// See http://crbug.com/85763.
 #if defined (OS_CHROMEOS)
+#define MAYBE_WindowOpenClose FLAKY_WindowOpenClose
+#elif defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
 #define MAYBE_WindowOpenClose FAILS_WindowOpenClose
 #else
 #define MAYBE_WindowOpenClose WindowOpenClose
