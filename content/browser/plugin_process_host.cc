@@ -20,7 +20,6 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/content_browser_client.h"
@@ -28,6 +27,7 @@
 #include "content/browser/plugin_service.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_message_filter.h"
+#include "content/common/content_switches.h"
 #include "content/common/plugin_messages.h"
 #include "content/common/resource_messages.h"
 #include "ipc/ipc_switches.h"
@@ -191,18 +191,12 @@ bool PluginProcessHost::Init(const webkit::npapi::WebPluginInfo& info,
     switches::kEnableStatsTable,
     switches::kFullMemoryCrashReport,
     switches::kLoggingLevel,
-#if defined(OS_CHROMEOS)
-    switches::kLoginProfile,
-#endif
     switches::kLogPluginMessages,
-    switches::kMemoryProfiling,
     switches::kNoSandbox,
     switches::kPluginStartupDialog,
-    switches::kSilentDumpOnDCHECK,
     switches::kTestSandbox,
     switches::kUseGL,
     switches::kUserAgent,
-    switches::kUserDataDir,
     switches::kV,
   };
 

@@ -4,8 +4,6 @@ include_rules = [
   # Listing of the remaining #chrome includes in content\browser.  People are
   # actively working on reducing this to 0.  Do not add any more!
 
-  "+chrome/browser/accessibility/browser_accessibility_state.h",
-
   "+chrome/browser/browser_url_handler.h",
 
   # http://crbug.com/84078
@@ -33,7 +31,6 @@ include_rules = [
   "+chrome/browser/tab_contents/render_view_host_delegate_helper.h",
 
   "+chrome/common/chrome_constants.h",
-  "+chrome/common/chrome_switches.h",
   "+chrome/common/chrome_paths.h",
   "+chrome/common/logging_chrome.h",
 

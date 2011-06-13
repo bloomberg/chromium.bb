@@ -1215,6 +1215,11 @@ bool IsCrashReportingEnabled(const PrefService* local_state) {
 int BrowserMain(const MainFunctionParams& parameters) {
   TRACE_EVENT_BEGIN_ETW("BrowserMain", 0, "");
 
+  // Override the default ContentBrowserClient to let Chrome participate in
+  // content logic.
+  chrome::ChromeContentBrowserClient browser_client;
+  content::GetContentClient()->set_browser(&browser_client);
+
   // If we're running tests (ui_task is non-null).
   if (parameters.ui_task)
     browser_defaults::enable_help_app = false;
@@ -1461,11 +1466,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // any callbacks, I just want to initialize the mechanism.)
   SecKeychainAddCallback(&KeychainCallback, 0, NULL);
 #endif
-
-  // Override the default ContentBrowserClient to let Chrome participate in
-  // content logic.  Must be done before any tabs or profiles are created.
-  chrome::ChromeContentBrowserClient browser_client;
-  content::GetContentClient()->set_browser(&browser_client);
 
   CreateChildThreads(browser_process.get());
 

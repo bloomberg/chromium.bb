@@ -8,9 +8,9 @@
 #include "base/memory/mru_cache.h"
 #include "base/sys_info.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_switches.h"
 #include "content/browser/renderer_host/backing_store.h"
 #include "content/browser/renderer_host/render_widget_host.h"
+#include "content/common/content_switches.h"
 #include "content/common/notification_service.h"
 
 namespace {

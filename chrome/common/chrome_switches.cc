@@ -169,15 +169,6 @@ const char kDeviceManagementUrl[]           = "device-management-url";
 // Triggers a pletora of diagnostic modes.
 const char kDiagnostics[]                   = "diagnostics";
 
-// Disable gpu-accelerated 2d canvas.
-const char kDisableAccelerated2dCanvas[]    = "disable-accelerated-2d-canvas";
-
-// Disables the hardware acceleration of 3D CSS and animation.
-const char kDisableAcceleratedLayers[]      = "disable-accelerated-layers";
-
-// Disables GPU accelerated video display.
-const char kDisableAcceleratedVideo[]       = "disable-accelerated-video";
-
 // Replaces the audio IPC layer for <audio> and <video> with a mock audio
 // device, useful when using remote desktop or machines without sound cards.
 // This is temporary until we fix the underlying problem.
@@ -222,11 +213,6 @@ const char kDisableExtensionsFileAccessCheck[] =
 // Disables the sandbox for the built-in flash player.
 const char kDisableFlashSandbox[]           = "disable-flash-sandbox";
 
-// Suppresses hang monitor dialogs in renderer processes.  This may allow slow
-// unload handlers on a page to prevent the tab from closing, but the Task
-// Manager can be used to terminate the offending process in this case.
-const char kDisableHangMonitor[]            = "disable-hang-monitor";
-
 // Disable the use of the HistoryQuickProvider for autocomplete results.
 const char kDisableHistoryQuickProvider[]   = "disable-history-quick-provider";
 
@@ -266,9 +252,6 @@ const char kDisablePromptOnRepost[]         = "disable-prompt-on-repost";
 // Disable remote web font support. SVG font should always work whether
 // this option is specified or not.
 const char kDisableRemoteFonts[]            = "disable-remote-fonts";
-
-// Turns off the accessibility in the renderer.
-const char kDisableRendererAccessibility[]  = "disable-renderer-accessibility";
 
 // Prevents the URLs of BackgroundContents from being remembered and re-launched
 // when the browser restarts.
@@ -357,9 +340,6 @@ const char kDomAutomationController[]       = "dom-automation";
 // logging to be enabled to really do anything).  Used by developers and test
 // scripts.
 const char kDumpHistogramsOnExit[]          = "dump-histograms-on-exit";
-
-// Enables the hardware acceleration of plugins.
-const char kEnableAcceleratedPlugins[]      = "enable-accelerated-plugins";
 
 // Enables AeroPeek for each tab. (This switch only works on Windows 7).
 const char kEnableAeroPeekTabs[]            = "enable-aero-peek-tabs";
@@ -563,11 +543,6 @@ const char kForceAppsPromoVisible[]         = "force-apps-promo-visible";
 // the base layer even when compositing is not strictly required.
 const char kForceCompositingMode[]          = "force-compositing-mode";
 
-// Force renderer accessibility to be on instead of enabling it on demand when
-// a screen reader is detected. The disable-renderer-accessibility switch
-// overrides this if present.
-const char kForceRendererAccessibility[]    = "force-renderer-accessibility";
-
 // Specifies a custom name for the GSSAPI library to load.
 const char kGSSAPILibraryName[]             = "gssapi-library-name";
 
@@ -622,9 +597,6 @@ const char kHostResolverRules[]             = "host-resolver-rules";
 // The JSON format is the same as that persisted in
 // <profile_dir>/Default/TransportSecurity
 const char kHstsHosts[]                     = "hsts-hosts";
-
-// Ignores GPU blacklist.
-const char kIgnoreGpuBlacklist[]            = "ignore-gpu-blacklist";
 
 // Perform importing from another browser. The value associated with this
 // setting encodes the target browser and what items to import.

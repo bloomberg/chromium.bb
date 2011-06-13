@@ -30,8 +30,17 @@ const char kChromeFrame[]                   = "chrome-frame";
 // support for controlling access to these APIs.
 const char kDisable3DAPIs[]                 = "disable-3d-apis";
 
+// Disable gpu-accelerated 2d canvas.
+const char kDisableAccelerated2dCanvas[]    = "disable-accelerated-2d-canvas";
+
 // Disables accelerated compositing.
 const char kDisableAcceleratedCompositing[] = "disable-accelerated-compositing";
+
+// Disables the hardware acceleration of 3D CSS and animation.
+const char kDisableAcceleratedLayers[]      = "disable-accelerated-layers";
+
+// Disables GPU accelerated video display.
+const char kDisableAcceleratedVideo[]       = "disable-accelerated-video";
 
 // Disables the alternate window station for the renderer.
 const char kDisableAltWinstation[]          = "disable-winsta";
@@ -77,6 +86,11 @@ const char kDisableGLSLTranslator[]         = "disable-glsl-translator";
 // Disable the GPU process sandbox.
 const char kDisableGpuSandbox[]             = "disable-gpu-sandbox";
 
+// Suppresses hang monitor dialogs in renderer processes.  This may allow slow
+// unload handlers on a page to prevent the tab from closing, but the Task
+// Manager can be used to terminate the offending process in this case.
+const char kDisableHangMonitor[]            = "disable-hang-monitor";
+
 // Disable the thread that crashes the GPU process if it stops responding to
 // messages.
 const char kDisableGpuWatchdog[]            = "disable-gpu-watchdog";
@@ -106,6 +120,9 @@ const char kDisablePlugins[]                = "disable-plugins";
 // Disable pop-up blocking.
 const char kDisablePopupBlocking[]          = "disable-popup-blocking";
 
+// Turns off the accessibility in the renderer.
+const char kDisableRendererAccessibility[]  = "disable-renderer-accessibility";
+
 // Disable the seccomp sandbox (Linux only)
 const char kDisableSeccompSandbox[]         = "disable-seccomp-sandbox";
 
@@ -124,11 +141,17 @@ const char kDisableSpellcheckAPI[]          = "disable-spellcheck-api";
 // Disable Web Sockets support.
 const char kDisableWebSockets[]             = "disable-web-sockets";
 
+// Enable gpu-accelerated 2d canvas.
+const char kEnableAccelerated2dCanvas[]     = "enable-accelerated-2d-canvas";
+
 // Enable hardware accelerated page drawing.
 // Please note that this flag is honored only if chromium is compiled with
 // SKIA_GPU flag, which can be enabled by setting use_skia_gpu variable to 1
 // in build/features_override.gypi.
 const char kEnableAcceleratedDrawing[]      = "enable-accelerated-drawing";
+
+// Enables the hardware acceleration of plugins.
+const char kEnableAcceleratedPlugins[]      = "enable-accelerated-plugins";
 
 // Enables WebKit accessibility within the renderer process.
 const char kEnableAccessibility[]           = "enable-accessibility";
@@ -200,6 +223,11 @@ const char kExtensionProcess[]              = "extension";
 // current details.
 const char kForceFieldTestNameAndValue[]    = "force-fieldtest";
 
+// Force renderer accessibility to be on instead of enabling it on demand when
+// a screen reader is detected. The disable-renderer-accessibility switch
+// overrides this if present.
+const char kForceRendererAccessibility[]    = "force-renderer-accessibility";
+
 // Extra command line options for launching the GPU process (normally used
 // for debugging). Use like renderer-cmd-prefix.
 const char kGpuLauncher[]                   = "gpu-launcher";
@@ -209,6 +237,9 @@ const char kGpuProcess[]                    = "gpu-process";
 
 // Causes the GPU process to display a dialog on launch.
 const char kGpuStartupDialog[]              = "gpu-startup-dialog";
+
+// Ignores GPU blacklist.
+const char kIgnoreGpuBlacklist[]            = "ignore-gpu-blacklist";
 
 // Run the GPU process as a thread in the browser process.
 const char kInProcessGPU[]                  = "in-process-gpu";

@@ -5,10 +5,10 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/test/test_timeouts.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/ui/ui_layout_test.h"
 #include "chrome/test/ui_test_utils.h"
+#include "content/common/content_switches.h"
 #include "net/base/net_util.h"
 
 static const char* kRootFiles[] = {

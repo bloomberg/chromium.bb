@@ -23,9 +23,9 @@
 #include "base/string_tokenizer.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/common/chrome_switches.h"
 #include "content/browser/geolocation/empty_device_data_provider.h"
 #include "content/browser/geolocation/gateway_data_provider_common.h"
+#include "content/common/content_switches.h"
 
 namespace {
 const unsigned int kMaxArpIterations = 30;

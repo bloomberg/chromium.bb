@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "chrome/app/breakpad_mac.h"
+#include "chrome/browser/accessibility/browser_accessibility_state.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/character_encoding.h"
 #include "chrome/browser/chrome_plugin_message_filter.h"
@@ -135,6 +136,9 @@ void ChromeContentBrowserClient::RenderViewHostCreated(
   new DevToolsHandler(render_view_host);
   new ExtensionMessageHandler(render_view_host);
 
+  if (BrowserAccessibilityState::GetInstance()->IsAccessibleBrowser())
+    render_view_host->EnableRendererAccessibility();
+
   InitRenderViewHostForExtensions(render_view_host);
 }
 
@@ -244,11 +248,77 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
     // in the browser process.
     if (!g_browser_process->safe_browsing_detection_service())
       command_line->AppendSwitch(switches::kDisableClientSidePhishingDetection);
+
+    static const char* const kSwitchNames[] = {
+      switches::kAllowHTTPBackgroundPage,
+      switches::kAllowScriptingGallery,
+      switches::kAppsCheckoutURL,
+      switches::kAppsGalleryURL,
+      switches::kDebugPrint,
+#if defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
+      // Enabled by default in Google Chrome builds, except on CrOS.
+      switches::kDisablePrintPreview,
+#else
+      // Disabled by default in Chromium builds and on CrOS.
+      switches::kEnablePrintPreview,
+#endif
+      switches::kDomAutomationController,
+      switches::kDumpHistogramsOnExit,
+      switches::kEnableClickToPlay,
+      switches::kEnableCrxlessWebApps,
+      switches::kEnableExperimentalExtensionApis,
+      switches::kEnableInBrowserThumbnailing,
+      switches::kEnableIPCFuzzing,
+      switches::kEnableNaCl,
+      switches::kEnableRemoting,
+      switches::kEnableResourceContentSettings,
+      switches::kEnableSearchProviderApiV2,
+      switches::kEnableWatchdog,
+      switches::kExperimentalSpellcheckerFeatures,
+      switches::kMemoryProfiling,
+      switches::kMessageLoopHistogrammer,
+      switches::kPpapiFlashArgs,
+      switches::kPpapiFlashInProcess,
+      switches::kPpapiFlashPath,
+      switches::kPpapiFlashVersion,
+      switches::kProfilingAtStart,
+      switches::kProfilingFile,
+      switches::kProfilingFlush,
+      switches::kRemoteShellPort,
+      switches::kSilentDumpOnDCHECK,
+    };
+
+    command_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
+                                   arraysize(kSwitchNames));
   } else if (process_type == switches::kUtilityProcess) {
     if (browser_command_line.HasSwitch(
             switches::kEnableExperimentalExtensionApis)) {
       command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
     }
+  } else if (process_type == switches::kPluginProcess) {
+    static const char* const kSwitchNames[] = {
+  #if defined(OS_CHROMEOS)
+      switches::kLoginProfile,
+  #endif
+      switches::kMemoryProfiling,
+      switches::kSilentDumpOnDCHECK,
+      switches::kUserDataDir,
+    };
+
+    command_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
+                                   arraysize(kSwitchNames));
+  } else if (process_type == switches::kZygoteProcess) {
+    static const char* const kSwitchNames[] = {
+      switches::kEnableRemoting,
+      switches::kUserDataDir,  // Make logs go to the right file.
+      // Load (in-process) Pepper plugins in-process in the zygote pre-sandbox.
+      switches::kPpapiFlashInProcess,
+      switches::kPpapiFlashPath,
+      switches::kPpapiFlashVersion,
+    };
+
+    command_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
+                                   arraysize(kSwitchNames));
   }
 }
 

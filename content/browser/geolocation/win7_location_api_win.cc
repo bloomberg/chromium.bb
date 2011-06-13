@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
-#include "chrome/common/chrome_switches.h"
+#include "content/common/content_switches.h"
 #include "content/common/geoposition.h"
 
 namespace {

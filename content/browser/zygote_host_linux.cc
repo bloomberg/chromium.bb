@@ -9,6 +9,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/eintr_wrapper.h"
 #include "base/environment.h"
@@ -22,8 +23,9 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_switches.h"
+#include "content/browser/content_browser_client.h"
 #include "content/browser/renderer_host/render_sandbox_host_linux.h"
+#include "content/common/content_switches.h"
 #include "content/common/process_watcher.h"
 #include "content/common/result_codes.h"
 #include "content/common/unix_domain_socket_posix.h"
@@ -104,20 +106,17 @@ void ZygoteHost::Init(const std::string& sandbox_cmd) {
     switches::kAllowSandboxDebugging,
     switches::kLoggingLevel,
     switches::kEnableLogging,  // Support, e.g., --enable-logging=stderr.
-    switches::kEnableRemoting,
     switches::kV,
     switches::kVModule,
-    switches::kUserDataDir,  // Make logs go to the right file.
-    // Load (in-process) Pepper plugins in-process in the zygote pre-sandbox.
-    switches::kPpapiFlashInProcess,
-    switches::kPpapiFlashPath,
-    switches::kPpapiFlashVersion,
     switches::kRegisterPepperPlugins,
     switches::kDisableSeccompSandbox,
     switches::kEnableSeccompSandbox,
   };
   cmd_line.CopySwitchesFrom(browser_command_line, kForwardSwitches,
                             arraysize(kForwardSwitches));
+
+  content::GetContentClient()->browser()->AppendExtraCommandLineSwitches(
+      &cmd_line, -1);
 
   sandbox_binary_ = sandbox_cmd.c_str();
   struct stat st;

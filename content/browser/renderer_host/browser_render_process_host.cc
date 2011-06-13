@@ -28,7 +28,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
 #include "content/browser/appcache/appcache_dispatcher_host.h"
 #include "content/browser/browser_child_process_host.h"
@@ -68,6 +67,7 @@
 #include "content/browser/worker_host/worker_message_filter.h"
 #include "content/common/child_process_info.h"
 #include "content/common/child_process_messages.h"
+#include "content/common/content_switches.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/notification_service.h"
 #include "content/common/process_watcher.h"
@@ -512,14 +512,9 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
   // Propagate the following switches to the renderer command line (along
   // with any associated values) if present in the browser command line.
   static const char* const kSwitchNames[] = {
-    switches::kAllowHTTPBackgroundPage,
-    switches::kAllowScriptingGallery,
-    switches::kAppsCheckoutURL,
-    switches::kAppsGalleryURL,
     // We propagate the Chrome Frame command line here as well in case the
     // renderer is not run in the sandbox.
     switches::kChromeFrame,
-    switches::kDebugPrint,
     switches::kDisable3DAPIs,
     switches::kDisableAcceleratedCompositing,
     switches::kDisableApplicationCache,
@@ -538,49 +533,29 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kDisableJavaScriptI18NAPI,
     switches::kDisableLocalStorage,
     switches::kDisableLogging,
-#if defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
-    // Enabled by default in Google Chrome builds, except on CrOS.
-    switches::kDisablePrintPreview,
-#else
-    // Disabled by default in Chromium builds and on CrOS.
-    switches::kEnablePrintPreview,
-#endif
     switches::kDisableSeccompSandbox,
     switches::kDisableSessionStorage,
     switches::kDisableSharedWorkers,
     switches::kDisableSpeechInput,
     switches::kDisableWebSockets,
-    switches::kDomAutomationController,
-    switches::kDumpHistogramsOnExit,
     switches::kEnableAdaptive,
     switches::kEnableBenchmarking,
-    switches::kEnableClickToPlay,
-    switches::kEnableCrxlessWebApps,
     switches::kEnableDCHECK,
-    switches::kEnableExperimentalExtensionApis,
-    switches::kEnableInBrowserThumbnailing,
-    switches::kEnableIPCFuzzing,
     switches::kEnableLogging,
-    switches::kEnableNaCl,
     switches::kEnableOpenMax,
 #if defined(ENABLE_P2P_APIS)
     switches::kEnableP2PApi,
 #endif
     switches::kEnablePepperTesting,
-    switches::kEnableRemoting,
-    switches::kEnableResourceContentSettings,
 #if defined(OS_MACOSX)
     // Allow this to be set when invoking the browser and relayed along.
     switches::kEnableSandboxLogging,
 #endif
-    switches::kEnableSearchProviderApiV2,
     switches::kEnableSeccompSandbox,
     switches::kEnableStatsTable,
     switches::kEnableVideoFullscreen,
     switches::kEnableVideoLogging,
-    switches::kEnableWatchdog,
     switches::kEnableWebAudio,
-    switches::kExperimentalSpellcheckerFeatures,
     switches::kFullMemoryCrashReport,
 #if !defined (GOOGLE_CHROME_BUILD)
     // These are unsupported and not fully tested modes, so don't enable them
@@ -590,23 +565,13 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kInProcessWebGL,
     switches::kJavaScriptFlags,
     switches::kLoggingLevel,
-    switches::kMemoryProfiling,
-    switches::kMessageLoopHistogrammer,
     switches::kNoJsRandomness,
     switches::kNoReferrers,
     switches::kNoSandbox,
     switches::kPlaybackMode,
-    switches::kPpapiFlashArgs,
-    switches::kPpapiFlashInProcess,
-    switches::kPpapiFlashPath,
-    switches::kPpapiFlashVersion,
     switches::kPpapiOutOfProcess,
-    switches::kProfilingAtStart,
-    switches::kProfilingFile,
-    switches::kProfilingFlush,
     switches::kRecordMode,
     switches::kRegisterPepperPlugins,
-    switches::kRemoteShellPort,
     switches::kRendererAssertTest,
 #if !defined(OFFICIAL_BUILD)
     switches::kRendererCheckFalseTest,
@@ -614,7 +579,6 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kRendererCrashTest,
     switches::kRendererStartupDialog,
     switches::kShowPaintRects,
-    switches::kSilentDumpOnDCHECK,
     switches::kSimpleDataSource,
     switches::kTestSandbox,
     // This flag needs to be propagated to the renderer process for
