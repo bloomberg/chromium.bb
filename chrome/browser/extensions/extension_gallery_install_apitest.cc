@@ -91,7 +91,7 @@ bool RunningOnXP() {
 
 // TODO(asargent) - for some reason this test occasionally fails on XP,
 // but not other versions of windows. http://crbug.com/55642
-#if defined (OS_WIN)
+#if defined (TOOLKIT_VIEWS)
 #define MAYBE_InstallAndUninstall DISABLED_InstallAndUninstall
 #else
 #define MAYBE_InstallAndUninstall InstallAndUninstall
