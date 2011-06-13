@@ -48,7 +48,7 @@ int sem_destroy(sem_t *sem) {
     errno = EINVAL;
     return -1;
   }
-  int rv = close(sem->handle);
+  int rv = __nc_irt_sem.sem_destroy(sem->handle);
   sem->handle = NC_INVALID_HANDLE;
   if (0 != rv) {
     errno = EINVAL;

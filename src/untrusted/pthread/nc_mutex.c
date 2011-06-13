@@ -57,7 +57,7 @@ int pthread_mutex_destroy (pthread_mutex_t *mutex) {
     /* the mutex is still locked - cannot destroy */
     return EBUSY;
   }
-  retval = close(mutex->mutex_handle);
+  retval = __nc_irt_mutex.mutex_destroy(mutex->mutex_handle);
   mutex->mutex_handle = NC_INVALID_HANDLE;
   mutex->owner_thread_id = NACL_PTHREAD_ILLEGAL_THREAD_ID;
   mutex->recursion_counter = 0;

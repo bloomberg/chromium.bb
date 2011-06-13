@@ -53,7 +53,7 @@ int pthread_cond_init (pthread_cond_t *cond,
 int pthread_cond_destroy (pthread_cond_t *cond) {
   int retval;
   pthread_cond_validate(cond);
-  retval = close(cond->handle);
+  retval = __nc_irt_cond.cond_destroy(cond->handle);
   cond->handle = NC_INVALID_HANDLE;
   return retval;
 }
