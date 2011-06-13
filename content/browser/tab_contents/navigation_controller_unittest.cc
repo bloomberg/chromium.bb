@@ -414,6 +414,104 @@ TEST_F(NavigationControllerTest, LoadURL_IgnorePreemptsPending) {
   contents()->set_delegate(NULL);
 }
 
+// Tests that the pending entry state is correct after an abort.
+TEST_F(NavigationControllerTest, LoadURL_AbortCancelsPending) {
+  TestNotificationTracker notifications;
+  RegisterForAllNavNotifications(&notifications, &controller());
+
+  // Set a TabContentsDelegate to listen for state changes.
+  scoped_ptr<TestTabContentsDelegate> delegate(new TestTabContentsDelegate());
+  EXPECT_FALSE(contents()->delegate());
+  contents()->set_delegate(delegate.get());
+
+  // Without any navigations, the renderer starts at about:blank.
+  const GURL kExistingURL("about:blank");
+
+  // Now make a pending new navigation.
+  const GURL kNewURL("http://eh");
+  controller().LoadURL(kNewURL, GURL(), PageTransition::TYPED);
+  EXPECT_EQ(0U, notifications.size());
+  EXPECT_EQ(-1, controller().pending_entry_index());
+  EXPECT_TRUE(controller().pending_entry());
+  EXPECT_EQ(-1, controller().last_committed_entry_index());
+  EXPECT_EQ(1, delegate->navigation_state_change_count());
+
+  // It may abort before committing, if it's a download or due to a stop or
+  // a new navigation from the user.
+  rvh()->TestOnMessageReceived(
+      ViewHostMsg_DidFailProvisionalLoadWithError(0,  // routing_id
+                                                  1,  // frame_id
+                                                  true,  // is_main_frame
+                                                  net::ERR_ABORTED,  // error
+                                                  kNewURL,  // url
+                                                  false));  // repost
+
+  // This should clear the pending entry and notify of a navigation state
+  // change, so that we do not keep displaying kNewURL.
+  EXPECT_EQ(-1, controller().pending_entry_index());
+  EXPECT_FALSE(controller().pending_entry());
+  EXPECT_EQ(-1, controller().last_committed_entry_index());
+  EXPECT_EQ(2, delegate->navigation_state_change_count());
+
+  contents()->set_delegate(NULL);
+}
+
+// Tests that the pending entry state is correct after a redirect and abort.
+// http://crbug.com/83031.
+TEST_F(NavigationControllerTest, LoadURL_RedirectAbortCancelsPending) {
+  TestNotificationTracker notifications;
+  RegisterForAllNavNotifications(&notifications, &controller());
+
+  // Set a TabContentsDelegate to listen for state changes.
+  scoped_ptr<TestTabContentsDelegate> delegate(new TestTabContentsDelegate());
+  EXPECT_FALSE(contents()->delegate());
+  contents()->set_delegate(delegate.get());
+
+  // Without any navigations, the renderer starts at about:blank.
+  const GURL kExistingURL("about:blank");
+
+  // Now make a pending new navigation.
+  const GURL kNewURL("http://eh");
+  controller().LoadURL(kNewURL, GURL(), PageTransition::TYPED);
+  EXPECT_EQ(0U, notifications.size());
+  EXPECT_EQ(-1, controller().pending_entry_index());
+  EXPECT_TRUE(controller().pending_entry());
+  EXPECT_EQ(-1, controller().last_committed_entry_index());
+  EXPECT_EQ(1, delegate->navigation_state_change_count());
+
+  // Now the navigation redirects.
+  const GURL kRedirectURL("http://bee");
+  rvh()->TestOnMessageReceived(
+      ViewHostMsg_DidRedirectProvisionalLoad(0,  // routing_id
+                                             -1,  // pending page_id
+                                             false,  // opener
+                                             kNewURL,  // old url
+                                             kRedirectURL));  // new url
+
+  // We don't want to change the NavigationEntry's url, in case it cancels.
+  // Prevents regression of http://crbug.com/77786.
+  EXPECT_EQ(kNewURL, controller().pending_entry()->url());
+
+  // It may abort before committing, if it's a download or due to a stop or
+  // a new navigation from the user.
+  rvh()->TestOnMessageReceived(
+      ViewHostMsg_DidFailProvisionalLoadWithError(0,  // routing_id
+                                                  1,  // frame_id
+                                                  true,  // is_main_frame
+                                                  net::ERR_ABORTED,  // error
+                                                  kRedirectURL,  // url
+                                                  false));  // repost
+
+  // This should clear the pending entry and notify of a navigation state
+  // change, so that we do not keep displaying kNewURL.
+  EXPECT_EQ(-1, controller().pending_entry_index());
+  EXPECT_FALSE(controller().pending_entry());
+  EXPECT_EQ(-1, controller().last_committed_entry_index());
+  EXPECT_EQ(2, delegate->navigation_state_change_count());
+
+  contents()->set_delegate(NULL);
+}
+
 TEST_F(NavigationControllerTest, Reload) {
   TestNotificationTracker notifications;
   RegisterForAllNavNotifications(&notifications, &controller());

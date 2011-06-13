@@ -853,14 +853,17 @@ void TabContents::OnDidFailProvisionalLoadWithError(
       return;
     }
 
-    // This will discard our pending entry if we cancelled the load (e.g., if we
-    // decided to download the file instead of load it). Only discard the
-    // pending entry if the URLs match, otherwise the user initiated a navigate
-    // before the page loaded so that the discard would discard the wrong entry.
+    // Discard our pending entry if the load canceled (e.g. if we decided to
+    // download the file instead of load it).  We do not verify that the URL
+    // being canceled matches the pending entry's URL because they will not
+    // match if a redirect occurred (in which case we do not want to leave a
+    // stale redirect URL showing).  This means that we also cancel the pending
+    // entry if the user started a new navigation.  As a result, the navigation
+    // controller may not remember that a load is in progress, but the
+    // navigation will still commit even if there is no pending entry.
     NavigationEntry* pending_entry = controller_.pending_entry();
-    if (pending_entry && pending_entry->url() == validated_url) {
+    if (pending_entry)
       DidCancelLoading();
-    }
 
     render_manager_.RendererAbortedProvisionalLoad(render_view_host());
   }
