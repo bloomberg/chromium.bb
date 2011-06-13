@@ -77,12 +77,20 @@ class FlashTest(pyauto.PyUITest):
 
   def testDisableFlashPlugin(self):
     """Verify that we can disable the Flash plugin."""
+    # Helper function to wait until the flash plugins get registered.
+    def _GotFlashPluginInfo():
+      for plugin in self.GetPluginsInfo().Plugins():
+        for mime_type in plugin['mimeTypes']:
+          if mime_type['mimeType'] == 'application/x-shockwave-flash':
+            return True
+      return False
+    self.assertTrue(self.WaitUntil(_GotFlashPluginInfo))
     for plugin in self.GetPluginsInfo().Plugins():
       if re.search('Shockwave Flash', plugin['name']):
         self.assertTrue(plugin['enabled'])
         # Toggle plugin to disable flash.
         self.DisablePlugin(plugin['path'])
-    flash_url = self.GetFileURLForDataPath('plugin', 'flash.swf')
+    flash_url = self.GetFileURLForDataPath('plugin', 'flash.html')
     self.NavigateToURL(flash_url)
     # Verify shockwave flash process not present.
     self._AssertFlashProcessNotPresent()
