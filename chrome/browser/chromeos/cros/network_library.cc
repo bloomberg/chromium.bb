@@ -2994,10 +2994,10 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     connect_data_.service_name = ssid;
     connect_data_.eap_method = eap_method;
     connect_data_.eap_auth = eap_auth;
-    connect_data_.eap_server_ca_cert_nss_nickname =
+    connect_data_.server_ca_cert_nss_nickname =
         eap_server_ca_cert_nss_nickname;
     connect_data_.eap_use_system_cas = eap_use_system_cas;
-    connect_data_.eap_client_cert_pkcs11_id = eap_client_cert_pkcs11_id;
+    connect_data_.client_cert_pkcs11_id = eap_client_cert_pkcs11_id;
     connect_data_.eap_identity = eap_identity;
     connect_data_.eap_anonymous_identity = eap_anonymous_identity;
     connect_data_.passphrase = passphrase;
@@ -3037,9 +3037,9 @@ class NetworkLibraryImpl : public NetworkLibrary  {
       // Enterprise 802.1X EAP network.
       wifi->SetEAPMethod(data.eap_method);
       wifi->SetEAPPhase2Auth(data.eap_auth);
-      wifi->SetEAPServerCaCertNssNickname(data.eap_server_ca_cert_nss_nickname);
+      wifi->SetEAPServerCaCertNssNickname(data.server_ca_cert_nss_nickname);
       wifi->SetEAPUseSystemCAs(data.eap_use_system_cas);
-      wifi->SetEAPClientCertPkcs11Id(data.eap_client_cert_pkcs11_id);
+      wifi->SetEAPClientCertPkcs11Id(data.client_cert_pkcs11_id);
       wifi->SetEAPIdentity(data.eap_identity);
       wifi->SetEAPAnonymousIdentity(data.eap_anonymous_identity);
       wifi->SetEAPPassphrase(data.passphrase);
@@ -3099,7 +3099,8 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   virtual void ConnectToVirtualNetworkCert(
       const std::string& service_name,
       const std::string& server_hostname,
-      const std::string& client_cert_id,
+      const std::string& server_ca_cert_nss_nickname,
+      const std::string& client_cert_pkcs11_id,
       const std::string& username,
       const std::string& user_passphrase) {
     if (!EnsureCrosLoaded())
@@ -3107,7 +3108,8 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     // Store the connection data to be used by the callback.
     connect_data_.service_name = service_name;
     connect_data_.server_hostname = server_hostname;
-    connect_data_.vpn_client_cert_pkcs11_id = client_cert_id;
+    connect_data_.server_ca_cert_nss_nickname = server_ca_cert_nss_nickname;
+    connect_data_.client_cert_pkcs11_id = client_cert_pkcs11_id;
     connect_data_.psk_username = username;
     connect_data_.passphrase = user_passphrase;
     RequestVirtualNetwork(service_name.c_str(),
@@ -3148,8 +3150,8 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     vpn->set_added(true);
     if (!data.server_hostname.empty())
       vpn->set_server_hostname(data.server_hostname);
-    vpn->SetCACertNSS("");
-    vpn->SetClientCertID(data.vpn_client_cert_pkcs11_id);
+    vpn->SetCACertNSS(data.server_ca_cert_nss_nickname);
+    vpn->SetClientCertID(data.client_cert_pkcs11_id);
     vpn->SetPSKPassphrase(data.psk_key);
     vpn->SetUsername(data.psk_username);
     vpn->SetUserPassphrase(data.passphrase);
@@ -4877,18 +4879,17 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     ConnectionSecurity security;
     std::string service_name;  // For example, SSID.
     std::string passphrase;
+    std::string server_hostname;
+    std::string server_ca_cert_nss_nickname;
+    std::string client_cert_pkcs11_id;
     EAPMethod eap_method;
     EAPPhase2Auth eap_auth;
-    std::string eap_server_ca_cert_nss_nickname;
     bool eap_use_system_cas;
-    std::string eap_client_cert_pkcs11_id;
     std::string eap_identity;
     std::string eap_anonymous_identity;
-    bool save_credentials;
     std::string psk_key;
     std::string psk_username;
-    std::string server_hostname;
-    std::string vpn_client_cert_pkcs11_id;
+    bool save_credentials;
   };
   ConnectData connect_data_;
 
@@ -5041,7 +5042,8 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
   virtual void ConnectToVirtualNetworkCert(
       const std::string& service_name,
       const std::string& server_hostname,
-      const std::string& client_cert_id,
+      const std::string& server_ca_cert_nss_nickname,
+      const std::string& client_cert_pkcs11_id,
       const std::string& username,
       const std::string& user_passphrase) {}
   virtual void SignalCellularPlanPayment() {}

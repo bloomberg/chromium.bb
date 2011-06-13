@@ -81,6 +81,7 @@ class VPNConfigView : public ChildNetworkConfigView,
   const std::string GetPSKPassphrase() const;
   const std::string GetUsername() const;
   const std::string GetUserPassphrase() const;
+  const std::string GetServerCACertNssNickname() const;
   const std::string GetUserCertID() const;
 
   std::string server_hostname_;
@@ -98,6 +99,8 @@ class VPNConfigView : public ChildNetworkConfigView,
   views::Textfield* psk_passphrase_textfield_;
   views::Label* user_cert_label_;
   views::Combobox* user_cert_combobox_;
+  views::Label* server_ca_cert_label_;
+  views::Combobox* server_ca_cert_combobox_;
   views::Textfield* username_textfield_;
   views::Textfield* user_passphrase_textfield_;
   views::Label* error_label_;

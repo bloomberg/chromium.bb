@@ -1164,7 +1164,8 @@ class NetworkLibrary {
   virtual void ConnectToVirtualNetworkCert(
       const std::string& service_name,
       const std::string& server_hostname,
-      const std::string& client_cert_id,
+      const std::string& server_ca_cert_nss_nickname,
+      const std::string& client_cert_pkcs11_id,
       const std::string& username,
       const std::string& user_passphrase) = 0;
 

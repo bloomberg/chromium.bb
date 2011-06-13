@@ -26,6 +26,9 @@
 
 namespace {
 
+// Root CA certificates that are built into Chrome use this token name.
+const char* const kRootCertificateTokenName = "Builtin Object Token";
+
 string16 ProviderTypeToString(chromeos::VirtualNetwork::ProviderType type) {
   switch (type) {
     case chromeos::VirtualNetwork::PROVIDER_TYPE_L2TP_IPSEC_PSK:
@@ -66,6 +69,66 @@ class ProviderTypeComboboxModel : public ui::ComboboxModel {
   DISALLOW_COPY_AND_ASSIGN(ProviderTypeComboboxModel);
 };
 
+// TODO(stevenjb): Integrate with changes from chromium-os:15829.
+class ServerCACertComboboxModel : public ui::ComboboxModel {
+ public:
+  ServerCACertComboboxModel() {
+    net::CertDatabase cert_db;
+    net::CertificateList cert_list;
+    cert_db.ListCerts(&cert_list);
+    // Find all the CA certificates.
+    for (net::CertificateList::const_iterator it = cert_list.begin();
+        it != cert_list.end(); ++it) {
+      net::X509Certificate* cert = it->get();
+      net::X509Certificate::OSCertHandle cert_handle = cert->os_cert_handle();
+      net::CertType type = x509_certificate_model::GetType(cert_handle);
+      if (type == net::CA_CERT) {
+        // Exclude root CA certificates that are built into Chrome.
+        std::string token_name =
+            x509_certificate_model::GetTokenName(cert_handle);
+        if (token_name != kRootCertificateTokenName)
+          ca_certs_.push_back(*it);
+      }
+    }
+  }
+  virtual ~ServerCACertComboboxModel() {}
+
+  virtual int GetItemCount() {
+    return static_cast<int>(ca_certs_.size() + 1);  // "Default" + certs
+  }
+
+  virtual string16 GetItemAt(int index) {
+    if (index == 0)
+      return l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_SERVER_CA_DEFAULT);
+    int cert_index = index - 1;
+    if (cert_index >= 0 && cert_index < static_cast<int>(ca_certs_.size())) {
+      net::X509Certificate* cert = ca_certs_[cert_index].get();
+      std::string name =
+          x509_certificate_model::GetCertNameOrNickname(cert->os_cert_handle());
+      return UTF8ToUTF16(name);
+    }
+    return string16();
+  }
+
+  int GetCertCount() {
+    return static_cast<int>(ca_certs_.size());
+  }
+
+  std::string GetCertNssNickname(int cert_index) {
+    if (0 <= cert_index && cert_index < static_cast<int>(ca_certs_.size())) {
+      net::X509Certificate* cert = ca_certs_[cert_index].get();
+      return x509_certificate_model::GetNickname(cert->os_cert_handle());
+    }
+    return std::string();
+  }
+
+ private:
+  net::CertificateList ca_certs_;
+  DISALLOW_COPY_AND_ASSIGN(ServerCACertComboboxModel);
+};
+
+// TODO(stevenjb): Integrate with changes from chromium-os:15829.
 class UserCertComboboxModel : public ui::ComboboxModel {
  public:
   UserCertComboboxModel() {
@@ -236,6 +299,8 @@ void VPNConfigView::ItemChanged(views::Combobox* combo_box,
     UpdateErrorLabel();
   } else if (combo_box == user_cert_combobox_) {
     // Nothing to do for now.
+  } else if (combo_box == server_ca_cert_combobox_) {
+    // Nothing to do for now.
   } else {
     NOTREACHED();
   }
@@ -256,6 +321,7 @@ bool VPNConfigView::Login() {
       case VirtualNetwork::PROVIDER_TYPE_L2TP_IPSEC_USER_CERT: {
         cros->ConnectToVirtualNetworkCert(GetService(),
                                           GetServer(),
+                                          GetServerCACertNssNickname(),
                                           GetUserCertID(),
                                           GetUsername(),
                                           GetUserPassphrase());
@@ -315,6 +381,8 @@ void VPNConfigView::InitFocus() {
     psk_passphrase_textfield_->RequestFocus();
   else if (user_cert_combobox_ && user_cert_combobox_->IsEnabled())
     user_cert_combobox_->RequestFocus();
+  else if (server_ca_cert_combobox_ && server_ca_cert_combobox_->IsEnabled())
+    server_ca_cert_combobox_->RequestFocus();
 }
 
 const std::string VPNConfigView::GetTextFromField(
@@ -352,6 +420,19 @@ const std::string VPNConfigView::GetUsername() const {
 
 const std::string VPNConfigView::GetUserPassphrase() const {
   return GetTextFromField(user_passphrase_textfield_, false);
+}
+
+const std::string VPNConfigView::GetServerCACertNssNickname() const {
+  int selected = server_ca_cert_combobox_->selected_item();
+  if (selected == 0) {
+    // First item is "Default".
+    return std::string();
+  } else {
+    int cert_index = selected - 1;
+    ServerCACertComboboxModel* model = static_cast<ServerCACertComboboxModel*>(
+        server_ca_cert_combobox_->model());
+    return model->GetCertNssNickname(cert_index);
+  }
 }
 
 const std::string VPNConfigView::GetUserCertID() const {
@@ -453,6 +534,29 @@ void VPNConfigView::Init(VirtualNetwork* vpn) {
   layout->AddView(psk_passphrase_textfield_);
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
+  // Server CA certificate
+  layout->StartRow(0, column_view_set_id);
+  server_ca_cert_label_ =
+      new views::Label(UTF16ToWide(l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_SERVER_CA)));
+  layout->AddView(server_ca_cert_label_);
+  ServerCACertComboboxModel* server_ca_cert_model =
+      new ServerCACertComboboxModel();
+  server_ca_cert_combobox_ = new views::Combobox(server_ca_cert_model);
+  if (vpn && !vpn->ca_cert_nss().empty()) {
+    // Select the current server CA certificate in the combobox.
+    for (int i = 0; i < server_ca_cert_model->GetCertCount(); ++i) {
+      std::string cert_name = server_ca_cert_model->GetCertNssNickname(i);
+      if (cert_name == vpn->ca_cert_nss()) {
+        int item_index = i + 1;  // First item is "Default"
+        server_ca_cert_combobox_->SetSelectedItem(item_index);
+        break;
+      }
+    }
+  }
+  layout->AddView(server_ca_cert_combobox_);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+
   // User certificate label and input.
   layout->StartRow(0, column_view_set_id);
   user_cert_label_ = new views::Label(UTF16ToWide(l10n_util::GetStringUTF16(
@@ -518,18 +622,29 @@ void VPNConfigView::EnableControls() {
     case VirtualNetwork::PROVIDER_TYPE_L2TP_IPSEC_PSK:
       psk_passphrase_label_->SetEnabled(true);
       psk_passphrase_textfield_->SetEnabled(true);
+      server_ca_cert_label_->SetEnabled(false);
+      server_ca_cert_combobox_->SetEnabled(false);
       user_cert_label_->SetEnabled(false);
       user_cert_combobox_->SetEnabled(false);
       break;
     case VirtualNetwork::PROVIDER_TYPE_L2TP_IPSEC_USER_CERT:
-    case VirtualNetwork::PROVIDER_TYPE_OPEN_VPN: {
       psk_passphrase_label_->SetEnabled(false);
       psk_passphrase_textfield_->SetEnabled(false);
+      server_ca_cert_label_->SetEnabled(true);
+      server_ca_cert_combobox_->SetEnabled(true);
       user_cert_label_->SetEnabled(true);
       // Only enable the combobox if the user actually has a cert to select.
       user_cert_combobox_->SetEnabled(HaveUserCerts());
       break;
-    }
+    case VirtualNetwork::PROVIDER_TYPE_OPEN_VPN:
+      psk_passphrase_label_->SetEnabled(false);
+      psk_passphrase_textfield_->SetEnabled(false);
+      server_ca_cert_label_->SetEnabled(false);
+      server_ca_cert_combobox_->SetEnabled(false);
+      user_cert_label_->SetEnabled(true);
+      // Only enable the combobox if the user actually has a cert to select.
+      user_cert_combobox_->SetEnabled(HaveUserCerts());
+      break;
     default:
       NOTREACHED();
       break;
