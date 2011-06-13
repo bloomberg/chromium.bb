@@ -159,10 +159,10 @@ class BrowserLauncher(object):
   def IsRunning(self):
     return self.handle.poll() is None
 
-  def Run(self, url):
+  def Run(self, url, port):
     self.binary = EscapeSpaces(self.FindBinary())
     self.profile = self.CreateProfile()
-    cmd = self.MakeCmd(url)
+    cmd = self.MakeCmd(url, port)
     self.Launch(cmd, MakeEnv(self.options.debug))
 
 
@@ -211,7 +211,7 @@ class ChromeLauncher(BrowserLauncher):
 
     return profile
 
-  def MakeCmd(self, url):
+  def MakeCmd(self, url, port):
     cmd = [self.binary,
             '--disable-web-resources',
             '--disable-preconnect',
@@ -220,6 +220,13 @@ class ChromeLauncher(BrowserLauncher):
             '--enable-logging',
             '--log-level=1',
             '--safebrowsing-disable-auto-update',
+            # Chrome explicitly blacklists some ports as "unsafe" because
+            # certain protocols use them.  Chrome gives an error like this:
+            # Error 312 (net::ERR_UNSAFE_PORT): Unknown error
+            # Unfortunately, the browser tester can randomly choose a
+            # blacklisted port.  To work around this, the tester whitelists
+            # whatever port it is using.
+            '--explicitly-allowed-ports=%d' % port,
             '--user-data-dir=%s' % self.profile]
     if self.options.ppapi_plugin is None:
       cmd.append('--enable-nacl')

@@ -106,7 +106,7 @@ def Run(url, options):
 
   browser = browsertester.browserlauncher.ChromeLauncher(options)
 
-  browser.Run('http://%s:%d/%s' % (host, port, url))
+  browser.Run('http://%s:%d/%s' % (host, port, url), port)
   server.TestingBegun(0.125)
 
   # In Python 2.5, server.handle_request may block indefinitely.  Serving pages
