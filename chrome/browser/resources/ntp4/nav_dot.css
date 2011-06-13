@@ -21,17 +21,14 @@
 /* TODO(estade): improve focus indicator. */
 .dot {
   border-top: 5px solid;
+  box-sizing: border-box;
   cursor: pointer;
   font-size: 9pt;
-  height: 100%;
-  margin: 0 10px;
-  padding-top: 5px;
+  margin: 12px 10px 12px 0;
   text-align: left;
-  width: 60px;
-  -webkit-box-sizing: border-box;
-  -webkit-padding-start: 5px;
-  -webkit-transition: -webkit-transform 500ms,
-                      background-color 250ms;
+  width: 80px;
+  -webkit-padding-start: 2px;
+  -webkit-transition: border-color 0.2s;
 }
 
 .dot.new {
@@ -41,11 +38,41 @@
 .dot input {
   background-color: transparent;
   cursor: inherit;
+  /* TODO(estade): the font needs tweaking. */
+  font-size: 8pt;
+  font-weight: bold;
+  padding-top: 0;
   /* 10 less than the width of the dot. */
-  width: 50px;
+  width: 70px;
   -webkit-appearance: caret;
+  -webkit-transition: color 0.2s;
 }
 
 .dot input:focus {
   cursor: auto;
 }
+
+/* Everything below here should be themed but we don't have appropriate colors
+ * yet.
+ */
+.dot {
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.dot:hover {
+  border-color: rgba(0, 0, 0, 0.2);
+}
+
+.dot.selected {
+  border-color: rgba(0, 0, 0, 0.4);
+}
+
+.dot input {
+  color: rgba(0, 0, 0, 0.2);
+}
+
+.dot.selected input,
+.dot:hover input {
+  color: rgba(0, 0, 0, 0.4);
+}
+

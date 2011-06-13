@@ -134,18 +134,27 @@
   background-image: url('../ntp/ntp_close_p.png');
 }
 
-.most-visited .color-bar {
-  background: no-repeat 0 50%;
+.most-visited .favicon {
+  background: no-repeat 5px 50%;
   background-size: 16px;
-  bottom: 5px;
+  bottom: 7px;
+  box-sizing: border-box;
   display: block;
   height: 16px;
-  left: 0;
   position: absolute;
-  right: 0;
-  -webkit-margin-start: 5px;
-  -webkit-padding-end: 0;
-  -webkit-padding-start: 20px;
+  width: 100%;
+}
+
+.most-visited .color-stripe {
+  border-bottom-left-radius: 3px 3px;
+  border-bottom-right-radius: 3px 3px;
+  /* Matches height of title.  */
+  bottom: 23px;
+  height: 3px;
+  opacity: 0.5;
+  position: absolute;
+  width: 100%;
+  z-index: 100;
 }
 
 .most-visited .title {
@@ -181,16 +190,15 @@
 .thumbnail-wrapper {
   border: 1px solid transparent;
   border-radius: 5px;
-  box-shadow: 0px 2px 2px hsla(0, 0%, 0%, 0);
   display: block;
   position: relative;
   z-index: 5;
   -webkit-box-flex: 1;
   -webkit-transition: background-color .15s,
-      border-top-left-radius 0, border-top-right-radius 0, box-shadow .15s;
+      border-top-left-radius 0, border-top-right-radius 0;
   /* The border radiuses have 0 transition duration but .15s delay, meaning they
    * will snap into place after .15s. */
-  -webkit-transition-delay: 0, .15s, .15s, 0;
+  -webkit-transition-delay: 0, .15s, .15s;
 }
 
 .filler .thumbnail-wrapper {
@@ -202,15 +210,14 @@
 .most-visited:hover .thumbnail-wrapper {
   border-top-left-radius: 0;
   border-top-right-radius: 0;
-  box-shadow: 0px 2px 2px hsla(0, 0%, 0%, .5);
 }
 
 .most-visited:hover .thumbnail-wrapper {
   /* Make the corner radius transitions match the edit bar's slide. */
-  -webkit-transition-delay: 0, .5s, .5s, 0;
+  -webkit-transition-delay: 0, .5s, .5s;
 }
 
 .most-visited:focus .thumbnail-wrapper {
   /* In the focus case, the transition is not delayed. */
-  -webkit-transition-delay: 0, 0, 0, 0;
+  -webkit-transition-delay: 0, 0, 0;
 }

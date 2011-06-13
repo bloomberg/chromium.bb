@@ -60,8 +60,9 @@ cr.define('ntp4', function() {
                 // thumbnail-shield provides a gradient fade effect.
                 '<div class="thumbnail-shield fills-parent"></div>' +
               '</span>' +
-              '<span class="color-bar"></span>' +
+              '<span class="favicon"></span>' +
             '</span>' +
+            '<div class="color-stripe"></div>' +
             '<span class="title"></span>' +
           '</div>';
 
@@ -87,12 +88,12 @@ cr.define('ntp4', function() {
       this.tabIndex = 0;
       this.classList.remove('filler');
 
-      var colorBar = this.querySelector('.color-bar');
+      var faviconDiv = this.querySelector('.favicon');
       var faviconUrl = data.faviconUrl || 'chrome://favicon/' + data.url;
-      colorBar.style.backgroundImage = url(faviconUrl);
-      colorBar.dir = data.direction;
+      faviconDiv.style.backgroundImage = url(faviconUrl);
+      faviconDiv.dir = data.direction;
       if (data.faviconDominantColor)
-        this.setBarColor(data.faviconDominantColor);
+        this.setStripeColor(data.faviconDominantColor);
       else
         chrome.send('getFaviconDominantColor', [faviconUrl, id]);
 
@@ -113,8 +114,8 @@ cr.define('ntp4', function() {
      * Sets the color of the favicon dominant color bar.
      * @param {string} color The css-parsable value for the color.
      */
-    setBarColor: function(color) {
-      // TODO(estade): use color.
+    setStripeColor: function(color) {
+      this.querySelector('.color-stripe').style.backgroundColor = color;
     },
 
     /**
@@ -411,7 +412,7 @@ cr.define('ntp4', function() {
   function setFaviconDominantColor(id, color) {
     var tile = $('tile' + id);
     if (tile)
-      tile.setBarColor(color);
+      tile.setStripeColor(color);
   };
 
   return {
