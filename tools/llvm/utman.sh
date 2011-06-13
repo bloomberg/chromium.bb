@@ -442,6 +442,7 @@ hg-checkout-all() {
   hg-checkout-llvm
   hg-checkout-binutils
   hg-checkout-newlib
+  hg-checkout-compiler-rt
 }
 
 hg-checkout-llvm-gcc() {
