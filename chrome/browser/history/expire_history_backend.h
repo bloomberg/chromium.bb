@@ -88,6 +88,10 @@ class ExpireHistoryBackend {
   void ExpireHistoryBetween(const std::set<GURL>& restrict_urls,
                             base::Time begin_time, base::Time end_time);
 
+  // Removes the given list of visits, updating the URLs accordingly (similar to
+  // ExpireHistoryBetween(), but affecting a specific set of visits).
+  void ExpireVisits(const VisitVector& visits);
+
   // Archives all visits before and including the given time, updating the URLs
   // accordingly. This function is intended for migrating old databases
   // (which encompased all time) to the tiered structure and testing, and

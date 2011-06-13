@@ -247,6 +247,10 @@ void ExpireHistoryBackend::ExpireHistoryBetween(
         visits.push_back(*visit);
     }
   }
+  ExpireVisits(visits);
+}
+
+void ExpireHistoryBackend::ExpireVisits(const VisitVector& visits) {
   if (visits.empty())
     return;
 
@@ -451,12 +455,14 @@ void ExpireHistoryBackend::ExpireURLsForVisits(
   std::map<URLID, ChangedURL> changed_urls;
   for (size_t i = 0; i < visits.size(); i++) {
     ChangedURL& cur = changed_urls[visits[i].url_id];
-    cur.visit_count++;
     // NOTE: This code must stay in sync with HistoryBackend::AddPageVisit().
     // TODO(pkasting): http://b/1148304 We shouldn't be marking so many URLs as
-    // typed, which would eliminate the need for this code.
+    // typed, which would help eliminate the need for this code (we still would
+    // need to handle RELOAD transitions specially, though).
     PageTransition::Type transition =
         PageTransition::StripQualifier(visits[i].transition);
+    if (transition != PageTransition::RELOAD)
+      cur.visit_count++;
     if ((transition == PageTransition::TYPED &&
          !PageTransition::IsRedirect(visits[i].transition)) ||
         transition == PageTransition::KEYWORD_GENERATED)

@@ -944,35 +944,12 @@ bool HistoryBackend::AddVisits(const GURL& url,
 }
 
 bool HistoryBackend::RemoveVisits(const VisitVector& visits) {
-  if (db_.get()) {
-    std::map<URLID, int> url_visits_removed;
-    for (VisitVector::const_iterator visit = visits.begin();
-         visit != visits.end(); ++visit) {
-      db_->DeleteVisit(*visit);
-      std::map<URLID, int>::iterator visit_count =
-          url_visits_removed.find(visit->url_id);
-      if (visit_count == url_visits_removed.end()) {
-        url_visits_removed[visit->url_id] = 1;
-      } else {
-        ++visit_count->second;
-      }
-    }
-    for (std::map<URLID, int>::iterator count = url_visits_removed.begin();
-         count != url_visits_removed.end(); ++count) {
-      history::URLRow url_row;
-      if (!db_->GetURLRow(count->first, &url_row)) {
-        return false;
-      }
-      DCHECK(count->second <= url_row.visit_count());
-      url_row.set_visit_count(url_row.visit_count() - count->second);
-      if (!db_->UpdateURLRow(url_row.id(), url_row)) {
-        return false;
-      }
-    }
-    ScheduleCommit();
-    return true;
-  }
-  return false;
+  if (!db_.get())
+    return false;
+
+  expirer_.ExpireVisits(visits);
+  ScheduleCommit();
+  return true;
 }
 
 bool HistoryBackend::GetURL(const GURL& url, history::URLRow* url_row) {

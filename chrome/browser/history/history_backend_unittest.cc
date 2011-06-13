@@ -736,6 +736,58 @@ TEST_F(HistoryBackendTest, AddVisitsSource) {
     EXPECT_EQ(history::SOURCE_SYNCED, visit_sources[visits[i].visit_id]);
 }
 
+TEST_F(HistoryBackendTest, RemoveVisitsTransitions) {
+  ASSERT_TRUE(backend_.get());
+
+  // Clear all history.
+  backend_->DeleteAllHistory();
+
+  GURL url1("http://www.cnn.com");
+  VisitInfo typed_visit(
+      Time::Now() - base::TimeDelta::FromDays(6), PageTransition::TYPED);
+  VisitInfo reload_visit(
+      Time::Now() - base::TimeDelta::FromDays(5), PageTransition::RELOAD);
+  VisitInfo link_visit(
+      Time::Now() - base::TimeDelta::FromDays(4), PageTransition::LINK);
+  std::vector<VisitInfo> visits_to_add;
+  visits_to_add.push_back(typed_visit);
+  visits_to_add.push_back(reload_visit);
+  visits_to_add.push_back(link_visit);
+
+  // Add the visits.
+  backend_->AddVisits(url1, visits_to_add, history::SOURCE_SYNCED);
+
+  // Verify that the various counts are what we expect.
+  VisitVector visits;
+  URLRow row;
+  URLID id = backend_->db()->GetRowForURL(url1, &row);
+  ASSERT_TRUE(backend_->db()->GetVisitsForURL(id, &visits));
+  ASSERT_EQ(3U, visits.size());
+  ASSERT_EQ(1, row.typed_count());
+  ASSERT_EQ(2, row.visit_count());
+
+  // Now, delete the typed visit and verify that typed_count is updated.
+  ASSERT_TRUE(backend_->RemoveVisits(VisitVector(1, visits[0])));
+  id = backend_->db()->GetRowForURL(url1, &row);
+  ASSERT_TRUE(backend_->db()->GetVisitsForURL(id, &visits));
+  ASSERT_EQ(2U, visits.size());
+  ASSERT_EQ(0, row.typed_count());
+  ASSERT_EQ(1, row.visit_count());
+
+  // Delete the reload visit now and verify that none of the counts have
+  // changed.
+  ASSERT_TRUE(backend_->RemoveVisits(VisitVector(1, visits[0])));
+  id = backend_->db()->GetRowForURL(url1, &row);
+  ASSERT_TRUE(backend_->db()->GetVisitsForURL(id, &visits));
+  ASSERT_EQ(1U, visits.size());
+  ASSERT_EQ(0, row.typed_count());
+  ASSERT_EQ(1, row.visit_count());
+
+  // Delete the last visit and verify that we delete the URL.
+  ASSERT_TRUE(backend_->RemoveVisits(VisitVector(1, visits[0])));
+  ASSERT_EQ(0, backend_->db()->GetRowForURL(url1, &row));
+}
+
 TEST_F(HistoryBackendTest, RemoveVisitsSource) {
   ASSERT_TRUE(backend_.get());
 
