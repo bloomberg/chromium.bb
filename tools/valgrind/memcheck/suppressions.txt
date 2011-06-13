@@ -2767,21 +2767,6 @@
    fun:_ZN24ExtensionProcessBindings16SetFunctionNamesERKSt6vectorISsSaISsEE
 }
 {
-   bug_57799
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN7cricket9Transport17OnRemoteCandidateERKNS_9CandidateE
-   fun:_ZN7cricket9Transport18OnRemoteCandidatesERKSt6vectorINS_9CandidateESaIS2_EE
-   ...
-   fun:_ZN7cricket7Session22OnTransportInfoMessageERKNS_14SessionMessageEPNS_12MessageErrorE
-   fun:_ZN7cricket7Session17OnIncomingMessageERKNS_14SessionMessageE
-   fun:_ZN7cricket14SessionManager17OnIncomingMessageEPKN4buzz10XmlElementE
-   fun:_ZN8remoting18SessionManagerPair14DeliverMessageEPN7cricket14SessionManagerEPN4buzz10XmlElementE
-   fun:_ZN8remoting18SessionManagerPair16DoProcessMessageEPN7cricket14SessionManagerEPN4buzz10XmlElementE
-   fun:_Z16DispatchToMethodIN8remoting18SessionManagerPairEMS1_FvPN7cricket14SessionManagerEPN4buzz10XmlElementEES4_S7_EvPT_T0_RK6Tuple2IT1_T2_E
-   fun:_ZN14RunnableMethodIN8remoting18SessionManagerPairEMS1_FvPN7cricket14SessionManagerEPN4buzz10XmlElementEE6Tuple2IS4_S7_EE3RunEv
-}
-{
    bug_57949
    Memcheck:Addr4
    fun:_ZNK22OpaqueBrowserFrameView24NonClientTopBorderHeightEbb
