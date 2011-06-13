@@ -29,6 +29,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
 #include "webkit/glue/scoped_clipboard_writer_glue.h"
@@ -281,6 +282,13 @@ std::string GetWebKitLocale() {
       (!parsed_command_line.HasSwitch(switches::kRendererProcess) &&
        !parsed_command_line.HasSwitch(switches::kPluginProcess)));
   return lang;
+}
+
+// TODO(ananta)
+// We should probably ask the embedder(chrome) for resources like strings, etc.
+// http://code.google.com/p/chromium/issues/detail?id=85757
+string16 GetLocalizedString(int message_id) {
+  return l10n_util::GetStringUTF16(message_id);
 }
 
 }  // namespace webkit_glue

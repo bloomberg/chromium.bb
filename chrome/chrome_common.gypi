@@ -144,7 +144,6 @@
         'common/cloud_print/cloud_print_proxy_info.cc',
         'common/cloud_print/cloud_print_proxy_info.h',
         'common/common_api.h',
-        'common/common_glue.cc',
         'common/common_message_generator.cc',
         'common/common_message_generator.h',
         'common/common_param_traits.cc',
