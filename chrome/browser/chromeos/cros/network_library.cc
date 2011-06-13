@@ -1416,6 +1416,10 @@ void VirtualNetwork::EraseCredentials() {
   WipeString(&user_passphrase_);
 }
 
+bool VirtualNetwork::RequiresUserProfile() const {
+  return true;
+}
+
 bool VirtualNetwork::NeedMoreInfoToConnect() const {
   if (server_hostname_.empty() || username_.empty() || user_passphrase_.empty())
     return true;
@@ -1433,6 +1437,27 @@ bool VirtualNetwork::NeedMoreInfoToConnect() const {
       break;
   }
   return false;
+}
+
+std::string VirtualNetwork::GetProviderTypeString() const {
+  switch (this->provider_type_) {
+    case PROVIDER_TYPE_L2TP_IPSEC_PSK:
+      return l10n_util::GetStringUTF8(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_L2TP_IPSEC_PSK);
+      break;
+    case PROVIDER_TYPE_L2TP_IPSEC_USER_CERT:
+      return l10n_util::GetStringUTF8(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_L2TP_IPSEC_USER_CERT);
+      break;
+    case PROVIDER_TYPE_OPEN_VPN:
+      return l10n_util::GetStringUTF8(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_OPEN_VPN);
+      break;
+    default:
+      return l10n_util::GetStringUTF8(
+          IDS_CHROMEOS_NETWORK_ERROR_UNKNOWN);
+      break;
+  }
 }
 
 void VirtualNetwork::SetCACertNSS(const std::string& ca_cert_nss) {
@@ -1455,27 +1480,6 @@ void VirtualNetwork::SetUsername(const std::string& username) {
 void VirtualNetwork::SetUserPassphrase(const std::string& user_passphrase) {
   SetStringProperty(kL2TPIPSecPasswordProperty, user_passphrase,
                     &user_passphrase_);
-}
-
-std::string VirtualNetwork::GetProviderTypeString() const {
-  switch (this->provider_type_) {
-    case PROVIDER_TYPE_L2TP_IPSEC_PSK:
-      return l10n_util::GetStringUTF8(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_L2TP_IPSEC_PSK);
-      break;
-    case PROVIDER_TYPE_L2TP_IPSEC_USER_CERT:
-      return l10n_util::GetStringUTF8(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_L2TP_IPSEC_USER_CERT);
-      break;
-    case PROVIDER_TYPE_OPEN_VPN:
-      return l10n_util::GetStringUTF8(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_OPEN_VPN);
-      break;
-    default:
-      return l10n_util::GetStringUTF8(
-          IDS_CHROMEOS_NETWORK_ERROR_UNKNOWN);
-      break;
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

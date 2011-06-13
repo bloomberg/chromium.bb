@@ -477,7 +477,12 @@ class VirtualNetwork : public Network {
   const std::string& username() const { return username_; }
   const std::string& user_passphrase() const { return user_passphrase_; }
 
+  // Network overrides.
+  virtual bool RequiresUserProfile() const;
+
+  // Public getters.
   bool NeedMoreInfoToConnect() const;
+  std::string GetProviderTypeString() const;
 
   // Public setters.
   void SetCACertNSS(const std::string& ca_cert_nss);
@@ -485,8 +490,6 @@ class VirtualNetwork : public Network {
   void SetClientCertID(const std::string& cert_id);
   void SetUsername(const std::string& username);
   void SetUserPassphrase(const std::string& user_passphrase);
-
-  std::string GetProviderTypeString() const;
 
  private:
   // Network overrides.
