@@ -1,10 +1,12 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef VIEWS_CONTROLS_NATIVE_NATIVE_VIEW_HOST_WRAPPER_H_
 #define VIEWS_CONTROLS_NATIVE_NATIVE_VIEW_HOST_WRAPPER_H_
 #pragma once
+
+#include "ui/gfx/native_widget_types.h"
 
 namespace views {
 
@@ -55,6 +57,10 @@ class NativeViewHostWrapper {
 
   // Sets focus to the gfx::NativeView.
   virtual void SetFocus() = 0;
+
+  // Return the native view accessible corresponding to the wrapped native
+  // view.
+  virtual gfx::NativeViewAccessible GetNativeViewAccessible() = 0;
 
   // Creates a platform-specific instance of an object implementing this
   // interface.

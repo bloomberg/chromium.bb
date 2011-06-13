@@ -21,7 +21,7 @@
 
 namespace views {
 
-NativeViewAccessibilityWin* View::GetNativeViewAccessibilityWin() {
+gfx::NativeViewAccessible View::GetNativeViewAccessible() {
   if (!native_view_accessibility_win_.get())
     native_view_accessibility_win_ =
         NativeViewAccessibilityWin::Create(this);

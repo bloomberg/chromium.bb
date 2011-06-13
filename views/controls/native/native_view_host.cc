@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -198,6 +198,17 @@ bool NativeViewHost::ContainsNativeView(gfx::NativeView native_view) const {
   }
 
   return View::ContainsNativeView(native_view);
+}
+
+gfx::NativeViewAccessible NativeViewHost::GetNativeViewAccessible() {
+  if (native_wrapper_.get()) {
+    gfx::NativeViewAccessible accessible_view =
+        native_wrapper_->GetNativeViewAccessible();
+    if (accessible_view)
+      return accessible_view;
+  }
+
+  return View::GetNativeViewAccessible();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -256,6 +256,10 @@ void NativeViewHostGtk::SetFocus() {
   gtk_widget_grab_focus(host_->native_view());
 }
 
+gfx::NativeViewAccessible NativeViewHostGtk::GetNativeViewAccessible() {
+  return NULL;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NativeViewHostGtk, private:
 

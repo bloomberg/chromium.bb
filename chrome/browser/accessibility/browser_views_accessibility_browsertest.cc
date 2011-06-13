@@ -84,10 +84,7 @@ class BrowserViewsAccessibilityTest : public InProcessBrowserTest {
                                    int32 role) {
     ASSERT_TRUE(NULL != view);
 
-    TestAccessibilityInfo(
-        NativeViewAccessibilityWin::GetAccessibleForView(view),
-        name,
-        role);
+    TestAccessibilityInfo(view->GetNativeViewAccessible(), name, role);
   }
 
 

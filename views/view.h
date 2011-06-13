@@ -172,10 +172,6 @@ class View : public AcceleratorTarget {
   // Returns whether the view is hot-tracked.
   virtual bool IsHotTracked() const;
 
-  // FATE TBD ------------------------------------------------------------------
-  // TODO(beng): Figure out what these methods are for and delete them.
-  virtual Widget* GetChildWidget();
-
   // Creation and lifetime -----------------------------------------------------
 
   View();
@@ -872,11 +868,8 @@ class View : public AcceleratorTarget {
   // Modifies |state| to reflect the current accessible state of this view.
   virtual void GetAccessibleState(ui::AccessibleViewState* state) { }
 
-#if defined(OS_WIN)
-  // Returns an instance of the Windows-specific accessibility interface
-  // for this View.
-  NativeViewAccessibilityWin* GetNativeViewAccessibilityWin();
-#endif
+  // Returns an instance of the native accessibility interface for this view.
+  virtual gfx::NativeViewAccessible GetNativeViewAccessible();
 
   // Scrolling -----------------------------------------------------------------
   // TODO(beng): Figure out if this can live somewhere other than View, i.e.
@@ -1428,8 +1421,8 @@ class View : public AcceleratorTarget {
 
   // Accessibility -------------------------------------------------------------
 
+  // The Windows-specific accessibility implementation for this view.
 #if defined(OS_WIN)
-  // The Windows-specific accessibility implementation for this View.
   scoped_refptr<NativeViewAccessibilityWin> native_view_accessibility_win_;
 #endif
 

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_container_win.h"
 
+#include "chrome/browser/renderer_host/render_widget_host_view_win.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/tab_contents/tab_contents_container.h"
 #include "chrome/browser/ui/views/tab_contents/tab_contents_view_views.h"
@@ -133,6 +134,20 @@ void NativeTabContentsContainerWin::AboutToRequestFocusFromTabTraversal(
 void NativeTabContentsContainerWin::GetAccessibleState(
     ui::AccessibleViewState* state) {
   state->role = ui::AccessibilityTypes::ROLE_GROUPING;
+}
+
+gfx::NativeViewAccessible
+    NativeTabContentsContainerWin::GetNativeViewAccessible() {
+  TabContents* tab_contents = container_->tab_contents();
+  if (tab_contents) {
+    RenderWidgetHostViewWin* host_view_win =
+        static_cast<RenderWidgetHostViewWin*>(
+            tab_contents->GetRenderWidgetHostView());
+    if (host_view_win)
+      return host_view_win->GetIAccessible();
+  }
+
+  return View::GetNativeViewAccessible();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

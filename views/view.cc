@@ -89,12 +89,6 @@ bool View::IsHotTracked() const {
   return false;
 }
 
-// FATE TBD --------------------------------------------------------------------
-
-Widget* View::GetChildWidget() {
-  return NULL;
-}
-
 // Creation and lifetime -------------------------------------------------------
 
 View::View()

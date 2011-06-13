@@ -59,8 +59,7 @@ STDMETHODIMP AutocompleteAccessibility::get_accParent(IDispatch** disp_parent) {
   }
 
   // Retrieve the IDispatch interface for the parent view.
-  *disp_parent = NativeViewAccessibilityWin::GetAccessibleForView(
-      omnibox_view_->parent_view());
+  *disp_parent = omnibox_view_->parent_view()->GetNativeViewAccessible();
   // Increment the reference count for the retrieved interface.
   (*disp_parent)->AddRef();
   return S_OK;

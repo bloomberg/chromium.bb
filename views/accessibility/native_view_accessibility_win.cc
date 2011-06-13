@@ -28,33 +28,6 @@ scoped_refptr<NativeViewAccessibilityWin> NativeViewAccessibilityWin::Create(
   return scoped_refptr<NativeViewAccessibilityWin>(instance);
 }
 
-// static
-IAccessible* NativeViewAccessibilityWin::GetAccessibleForView(
-    views::View* view) {
-  IAccessible* accessible = NULL;
-
-  // First, check to see if the view is a native view.
-  if (view->GetClassName() == views::NativeViewHost::kViewClassName) {
-    views::NativeViewHost* native_host =
-        static_cast<views::NativeViewHost*>(view);
-    if (GetNativeIAccessibleInterface(native_host, &accessible) == S_OK)
-      return accessible;
-  }
-
-  // Next, see if the view is a widget container.
-  if (view->GetChildWidget()) {
-    views::NativeWidgetWin* native_widget =
-      reinterpret_cast<views::NativeWidgetWin*>(view->GetChildWidget());
-    if (GetNativeIAccessibleInterface(
-        native_widget->GetNativeView(), &accessible) == S_OK) {
-      return accessible;
-    }
-  }
-
-  // Finally, use our NativeViewAccessibilityWin implementation.
-  return view->GetNativeViewAccessibilityWin();
-}
-
 NativeViewAccessibilityWin::NativeViewAccessibilityWin() : view_(NULL) {
 }
 
@@ -86,7 +59,7 @@ STDMETHODIMP NativeViewAccessibilityWin::accHitTest(
     child->lVal = CHILDID_SELF;
   } else {
     child->vt = VT_DISPATCH;
-    child->pdispVal = GetAccessibleForView(view);
+    child->pdispVal = view->GetNativeViewAccessible();
     child->pdispVal->AddRef();
   }
   return S_OK;
@@ -156,7 +129,7 @@ STDMETHODIMP NativeViewAccessibilityWin::accNavigate(
 
       views::View* child = view_->GetChildViewAt(child_id);
       end->vt = VT_DISPATCH;
-      end->pdispVal = GetAccessibleForView(child);
+      end->pdispVal = child->GetNativeViewAccessible();
       end->pdispVal->AddRef();
       return S_OK;
     }
@@ -190,7 +163,7 @@ STDMETHODIMP NativeViewAccessibilityWin::accNavigate(
         }
 
         views::View* child = parent->GetChildViewAt(view_index);
-        end->pdispVal = GetAccessibleForView(child);
+        end->pdispVal = child->GetNativeViewAccessible();
         end->vt = VT_DISPATCH;
         end->pdispVal->AddRef();
         return S_OK;
@@ -270,7 +243,7 @@ STDMETHODIMP NativeViewAccessibilityWin::get_accChild(VARIANT var_child,
     return E_FAIL;
   }
 
-  *disp_child = GetAccessibleForView(child_view);
+  *disp_child = child_view->GetNativeViewAccessible();
   (*disp_child)->AddRef();
   return S_OK;
 }
@@ -344,7 +317,7 @@ STDMETHODIMP NativeViewAccessibilityWin::get_accFocus(VARIANT* focus_child) {
     focus_child->lVal = CHILDID_SELF;
   } else if (focus && view_->Contains(focus)) {
     // Return the child object that has the keyboard focus.
-    focus_child->pdispVal = GetAccessibleForView(focus);
+    focus_child->pdispVal = focus->GetNativeViewAccessible();
     focus_child->pdispVal->AddRef();
     return S_OK;
   } else {
@@ -432,7 +405,7 @@ STDMETHODIMP NativeViewAccessibilityWin::get_accParent(
     return S_OK;
   }
 
-  *disp_parent = GetAccessibleForView(parent_view);
+  *disp_parent = parent_view->GetNativeViewAccessible();
   (*disp_parent)->AddRef();
   return S_OK;
 }
@@ -723,33 +696,4 @@ int32 NativeViewAccessibilityWin::MSAAState(AccessibilityTypes::State state) {
   if (state & AccessibilityTypes::STATE_UNAVAILABLE)
     msaa_state |= STATE_SYSTEM_UNAVAILABLE;
   return msaa_state;
-}
-
-// static
-HRESULT NativeViewAccessibilityWin::GetNativeIAccessibleInterface(
-    views::NativeViewHost* native_host, IAccessible** accessible) {
-  if (!native_host || !accessible)
-    return E_INVALIDARG;
-
-  HWND native_view_window = static_cast<HWND>(
-      ui::ViewProp::GetValue(native_host->native_view(),
-                             views::kViewsNativeHostPropForAccessibility));
-  if (!IsWindow(native_view_window)) {
-    native_view_window = native_host->native_view();
-  }
-
-  return GetNativeIAccessibleInterface(native_view_window, accessible);
-}
-
-// static
-HRESULT NativeViewAccessibilityWin::GetNativeIAccessibleInterface(
-    HWND native_view_window , IAccessible** accessible) {
-  if (IsWindow(native_view_window)) {
-    LRESULT ret = SendMessage(native_view_window, WM_GETOBJECT, 0,
-                              OBJID_CLIENT);
-    return ObjectFromLresult(ret, IID_IDispatch, 0,
-                             reinterpret_cast<void**>(accessible));
-  }
-
-  return E_FAIL;
 }

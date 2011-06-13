@@ -49,7 +49,6 @@ class NativeTabbedPaneWin : public NativeControlWin,
   virtual void Layout();
   virtual FocusTraversable* GetFocusTraversable();
   virtual void ViewHierarchyChanged(bool is_add, View *parent, View *child);
-  virtual Widget* GetChildWidget();
 
  private:
   // Called upon creation of native control to initialize tabs that are added

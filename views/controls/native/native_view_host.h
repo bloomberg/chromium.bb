@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -82,6 +82,7 @@ class NativeViewHost : public View {
   virtual void VisibilityChanged(View* starting_from, bool is_visible);
   virtual void OnFocus();
   virtual bool ContainsNativeView(gfx::NativeView native_view) const;
+  virtual gfx::NativeViewAccessible GetNativeViewAccessible();
 
  protected:
   virtual bool NeedsNotificationWhenVisibleBoundsChange() const;

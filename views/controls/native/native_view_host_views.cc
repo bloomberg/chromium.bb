@@ -75,4 +75,8 @@ void NativeViewHostViews::SetFocus() {
   host_->views_view()->RequestFocus();
 }
 
+gfx::NativeViewAccessible NativeViewHostViews::GetNativeViewAccessible() {
+  return NULL;
+}
+
 }  // namespace views

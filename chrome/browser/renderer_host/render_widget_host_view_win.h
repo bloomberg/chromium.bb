@@ -77,6 +77,8 @@ class RenderWidgetHostViewWin
 
   void ScheduleComposite();
 
+  IAccessible* GetIAccessible();
+
   DECLARE_WND_CLASS_EX(kRenderWidgetHostHWNDClass, CS_DBLCLKS, 0);
 
   BEGIN_MSG_MAP(RenderWidgetHostHWND)
@@ -363,8 +365,6 @@ class RenderWidgetHostViewWin
   WebKit::WebTextInputType text_input_type_;
 
   ScopedVector<ui::ViewProp> props_;
-
-  scoped_ptr<ui::ViewProp> accessibility_prop_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewWin);
 };

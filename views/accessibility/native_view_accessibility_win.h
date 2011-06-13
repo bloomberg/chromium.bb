@@ -16,11 +16,8 @@
 #include "views/controls/native/native_view_host.h"
 #include "views/view.h"
 
-namespace views {
-extern const char kViewsNativeHostPropForAccessibility[];
 // Note: do not put NativeViewAccessibilityWin in the namespace "views";
 // Visual Studio 2005 does not allow an ATL::CComObject symbol in a namespace.
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -42,9 +39,6 @@ class ATL_NO_VTABLE NativeViewAccessibilityWin
 
   // Create method for view accessibility.
   static scoped_refptr<NativeViewAccessibilityWin> Create(views::View* view);
-
-  // Returns the IAccessible interface for a view.
-  static IAccessible* GetAccessibleForView(views::View* view);
 
   virtual ~NativeViewAccessibilityWin();
 
@@ -149,14 +143,6 @@ class ATL_NO_VTABLE NativeViewAccessibilityWin
 
   // Helper function which sets applicable states of view.
   void SetState(VARIANT* msaa_state, views::View* view);
-
-  // Returns the IAccessible interface for a native view if applicable.
-  // Returns S_OK on success.
-  static HRESULT GetNativeIAccessibleInterface(
-      views::NativeViewHost* native_host, IAccessible** accessible);
-
-  static HRESULT GetNativeIAccessibleInterface(
-      HWND native_view_window, IAccessible** accessible);
 
   // Give CComObject access to the class constructor.
   template <class Base> friend class CComObject;

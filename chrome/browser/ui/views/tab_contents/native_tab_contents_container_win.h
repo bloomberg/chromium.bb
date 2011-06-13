@@ -31,6 +31,7 @@ class NativeTabContentsContainerWin : public NativeTabContentsContainer,
   virtual void RequestFocus() OVERRIDE;
   virtual void AboutToRequestFocusFromTabTraversal(bool reverse) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual gfx::NativeViewAccessible GetNativeViewAccessible();
 
  private:
   TabContentsContainer* container_;

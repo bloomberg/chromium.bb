@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/utf_string_conversions.h"
 #include "base/win/scoped_comptr.h"
 #include "chrome/browser/automation/ui_controls.h"
 #include "chrome/browser/renderer_host/render_widget_host_view_win.h"
@@ -136,54 +137,53 @@ HRESULT QueryIAccessible2(IAccessible* accessible, IAccessible2** accessible2) {
   return hr;
 }
 
-// Sets result to true if the child is located in the parent's tree. An
-// exhustive search is perform here because we determine equality using
-// IAccessible2::get_unique_id which is only supported by the child node.
-void AccessibleContainsAccessible(
-    IAccessible* parent, IAccessible2* child, bool* result) {
-  vector<base::win::ScopedComPtr<IAccessible>> accessible_list;
-  accessible_list.push_back(base::win::ScopedComPtr<IAccessible>(parent));
+// Recursively search through all of the descendants reachable from an
+// IAccessible node and return true if we find one with the given role
+// and name.
+void RecursiveFindNodeInAccessibilityTree(
+    IAccessible* node,
+    int32 expected_role,
+    const wstring& expected_name,
+    int32 depth,
+    bool* found) {
+  CComBSTR name_bstr;
+  node->get_accName(CreateI4Variant(CHILDID_SELF), &name_bstr);
+  wstring name(name_bstr.m_str, SysStringLen(name_bstr));
+  VARIANT role = {0};
+  node->get_accRole(CreateI4Variant(CHILDID_SELF), &role);
 
-  LONG unique_id;
-  HRESULT hr = child->get_uniqueID(&unique_id);
+  // Print the accessibility tree as we go, because if this test fails
+  // on the bots, this is really helpful in figuring out why.
+  for (int i = 0; i < depth; i++) {
+    printf("  ");
+  }
+  printf("role=%d name=%s\n", role.lVal, WideToUTF8(name).c_str());
+
+  if (expected_role == role.lVal && expected_name == name) {
+    *found = true;
+    return;
+  }
+
+  LONG child_count = 0;
+  HRESULT hr = node->get_accChildCount(&child_count);
   ASSERT_EQ(S_OK, hr);
-  *result = false;
 
-  while (accessible_list.size()) {
-    base::win::ScopedComPtr<IAccessible> accessible = accessible_list.back();
-    accessible_list.pop_back();
+  scoped_array<VARIANT> child_array(new VARIANT[child_count]);
+  LONG obtained_count = 0;
+  hr = AccessibleChildren(
+      node, 0, child_count, child_array.get(), &obtained_count);
+  ASSERT_EQ(S_OK, hr);
+  ASSERT_EQ(child_count, obtained_count);
 
-    base::win::ScopedComPtr<IAccessible2> accessible2;
-    hr = QueryIAccessible2(accessible, accessible2.Receive());
-    if (SUCCEEDED(hr)) {
-      LONG child_id;
-      accessible2->get_uniqueID(&child_id);
-      if (child_id == unique_id) {
-        *result = true;
-        break;
-      }
-    }
-
-    LONG child_count;
-    hr = accessible->get_accChildCount(&child_count);
-    ASSERT_EQ(S_OK, hr);
-    if (child_count == 0)
-      continue;
-
-    scoped_array<VARIANT> child_array(new VARIANT[child_count]);
-    LONG obtained_count = 0;
-    hr = AccessibleChildren(
-        accessible, 0, child_count, child_array.get(), &obtained_count);
-    ASSERT_EQ(S_OK, hr);
-    ASSERT_EQ(child_count, obtained_count);
-
-    for (int index = 0; index < obtained_count; index++) {
-      base::win::ScopedComPtr<IAccessible> child_accessible(
-        GetAccessibleFromResultVariant(accessible, &child_array.get()[index]));
-      if (child_accessible.get()) {
-        accessible_list.push_back(
-            base::win::ScopedComPtr<IAccessible>(child_accessible));
-      }
+  for (int index = 0; index < obtained_count; index++) {
+    base::win::ScopedComPtr<IAccessible> child_accessible(
+        GetAccessibleFromResultVariant(node, &child_array.get()[index]));
+    if (child_accessible.get()) {
+      RecursiveFindNodeInAccessibilityTree(
+          child_accessible.get(), expected_role, expected_name, depth + 1,
+          found);
+      if (*found)
+        return;
     }
   }
 }
@@ -589,14 +589,18 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   document_checker.CheckAccessible(GetRendererAccessible());
 }
 
-// FAILS crbug.com/54220
-// This test verifies that browser-side cache of the renderer accessibility
-// tree is reachable from the browser's tree. Tools that analyze windows
-// accessibility trees like AccExplorer32 should be able to drill into the
-// cached renderer accessibility tree.
+// This test verifies that the web content's accessibility tree is a
+// descendant of the main browser window's accessibility tree, so that
+// tools like AccExplorer32 or AccProbe can be used to examine Chrome's
+// accessibility support.
+//
+// If you made a change and this test now fails, check that the NativeViewHost
+// that wraps the tab contents returns the IAccessible implementation
+// provided by RenderWidgetHostViewWin in GetNativeViewAccessible().
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       DISABLED_ContainsRendererAccessibilityTree) {
-  GURL tree_url("data:text/html,<body><input type='checkbox' /></body>");
+                       ContainsRendererAccessibilityTree) {
+  GURL tree_url("data:text/html,<html><head><title>MyDocument</title></head>"
+                "<body>Content</body></html>");
   browser()->OpenURL(tree_url, GURL(), CURRENT_TAB, PageTransition::TYPED);
   GetRendererAccessible();
   ui_test_utils::WaitForNotification(
@@ -612,45 +616,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
       reinterpret_cast<void**>(browser_accessible.Receive()));
   ASSERT_EQ(S_OK, hr);
 
-  // Get the accessibility object for the renderer client document.
-  base::win::ScopedComPtr<IAccessible> document_accessible(
-      GetRendererAccessible());
-  ASSERT_NE(document_accessible.get(), reinterpret_cast<IAccessible*>(NULL));
-  base::win::ScopedComPtr<IAccessible2> document_accessible2;
-  hr = QueryIAccessible2(document_accessible, document_accessible2.Receive());
-  ASSERT_EQ(S_OK, hr);
-
-  // TODO(ctguil): Pointer comparison of retrieved IAccessible pointers dosen't
-  // seem to work for here. Perhaps make IAccessible2 available in views to make
-  // unique id comparison available.
   bool found = false;
-  base::win::ScopedComPtr<IAccessible> parent = document_accessible;
-  while (parent.get()) {
-    base::win::ScopedComPtr<IDispatch> parent_dispatch;
-    hr = parent->get_accParent(parent_dispatch.Receive());
-    ASSERT_TRUE(SUCCEEDED(hr));
-    if (!parent_dispatch.get()) {
-      ASSERT_EQ(hr, S_FALSE);
-      break;
-    }
-
-    parent.Release();
-    hr = parent_dispatch.QueryInterface(parent.Receive());
-    ASSERT_EQ(S_OK, hr);
-
-    if (parent.get() == browser_accessible.get()) {
-      found = true;
-      break;
-    }
-  }
-
-  // If pointer comparison fails resort to the exhuasive search that can use
-  // IAccessible2::get_unique_id for equality comparison.
-  if (!found) {
-    AccessibleContainsAccessible(
-        browser_accessible, document_accessible2, &found);
-  }
-
+  RecursiveFindNodeInAccessibilityTree(
+      browser_accessible.get(), ROLE_SYSTEM_DOCUMENT, L"MyDocument", 0, &found);
   ASSERT_EQ(found, true);
 }
 

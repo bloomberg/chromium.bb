@@ -508,13 +508,6 @@ void RenderWidgetHostViewWin::Show() {
   SetParent(parent_hwnd_);
   ShowWindow(SW_SHOW);
 
-  // Save away our HWND in the parent window as a property so that the
-  // accessibility code can find it.
-  accessibility_prop_.reset(new ViewProp(
-      GetParent(),
-      views::kViewsNativeHostPropForAccessibility,
-      m_hWnd));
-
   DidBecomeSelected();
 }
 
@@ -524,8 +517,6 @@ void RenderWidgetHostViewWin::Hide() {
         parent_hwnd_ << ":" << GetParent();
     return;
   }
-
-  accessibility_prop_.reset();
 
   if (::GetFocus() == m_hWnd)
     ::SetFocus(NULL);
@@ -786,12 +777,6 @@ LRESULT RenderWidgetHostViewWin::OnCreate(CREATESTRUCT* create_struct) {
   props_.push_back(views::SetWindowSupportsRerouteMouseWheel(m_hWnd));
   props_.push_back(new ViewProp(m_hWnd, kRenderWidgetHostViewKey,
                                 static_cast<RenderWidgetHostView*>(this)));
-  // Save away our HWND in the parent window as a property so that the
-  // accessibility code can find it.
-  accessibility_prop_.reset(new ViewProp(
-      GetParent(),
-      views::kViewsNativeHostPropForAccessibility,
-      m_hWnd));
 
   return 0;
 }
@@ -1627,6 +1612,24 @@ void RenderWidgetHostViewWin::AccessibilityDoDefaultAction(int acc_obj_id) {
       render_widget_host_->routing_id(), acc_obj_id));
 }
 
+IAccessible* RenderWidgetHostViewWin::GetIAccessible() {
+  if (render_widget_host_ && !render_widget_host_->renderer_accessible()) {
+    // Attempt to detect screen readers by sending an event with our custom id.
+    NotifyWinEvent(EVENT_SYSTEM_ALERT, m_hWnd, kIdCustom, CHILDID_SELF);
+  }
+
+  if (!browser_accessibility_manager_.get()) {
+    // Return busy document tree while renderer accessibility tree loads.
+    webkit_glue::WebAccessibility loading_tree;
+    loading_tree.role = WebAccessibility::ROLE_DOCUMENT;
+    loading_tree.state = (1 << WebAccessibility::STATE_BUSY);
+    browser_accessibility_manager_.reset(
+      BrowserAccessibilityManager::Create(m_hWnd, loading_tree, this));
+  }
+
+  return browser_accessibility_manager_->GetRoot()->toBrowserAccessibilityWin();
+}
+
 LRESULT RenderWidgetHostViewWin::OnGetObject(UINT message, WPARAM wparam,
                                              LPARAM lparam, BOOL& handled) {
   if (kIdCustom == lparam) {
@@ -1644,24 +1647,9 @@ LRESULT RenderWidgetHostViewWin::OnGetObject(UINT message, WPARAM wparam,
     return static_cast<LRESULT>(0L);
   }
 
-  if (render_widget_host_ && !render_widget_host_->renderer_accessible()) {
-    // Attempt to detect screen readers by sending an event with our custom id.
-    NotifyWinEvent(EVENT_SYSTEM_ALERT, m_hWnd, kIdCustom, CHILDID_SELF);
-  }
-
-  if (!browser_accessibility_manager_.get()) {
-    // Return busy document tree while renderer accessibility tree loads.
-    webkit_glue::WebAccessibility loading_tree;
-    loading_tree.role = WebAccessibility::ROLE_DOCUMENT;
-    loading_tree.state = (1 << WebAccessibility::STATE_BUSY);
-    browser_accessibility_manager_.reset(
-      BrowserAccessibilityManager::Create(m_hWnd, loading_tree, this));
-  }
-
-  base::win::ScopedComPtr<IAccessible> root(
-      browser_accessibility_manager_->GetRoot()->toBrowserAccessibilityWin());
-  if (root.get())
-    return LresultFromObject(IID_IAccessible, wparam, root.Detach());
+  IAccessible* iaccessible = GetIAccessible();
+  if (iaccessible)
+    return LresultFromObject(IID_IAccessible, wparam, iaccessible);
 
   handled = false;
   return static_cast<LRESULT>(0L);

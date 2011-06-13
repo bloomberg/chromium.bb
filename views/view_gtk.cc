@@ -10,6 +10,11 @@
 
 namespace views {
 
+gfx::NativeViewAccessible View::GetNativeViewAccessible() {
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
 int View::GetHorizontalDragThreshold() {
   static bool determined_threshold = false;
   static int drag_threshold = 8;

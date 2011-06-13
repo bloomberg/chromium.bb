@@ -1292,8 +1292,7 @@ LRESULT NativeWidgetWin::OnGetObject(UINT uMsg,
   if (OBJID_CLIENT == l_param) {
     // Retrieve MSAA dispatch object for the root view.
     base::win::ScopedComPtr<IAccessible> root(
-        NativeViewAccessibilityWin::GetAccessibleForView(
-            GetWidget()->GetRootView()));
+        GetWidget()->GetRootView()->GetNativeViewAccessible());
 
     // Create a reference that MSAA will marshall to the client.
     reference_result = LresultFromObject(IID_IAccessible, w_param,
