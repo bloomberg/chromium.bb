@@ -51,6 +51,7 @@ class PPB_Buffer_Impl : public Resource,
 
   scoped_ptr<base::SharedMemory> shared_memory_;
   uint32_t size_;
+  int map_count_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_Buffer_Impl);
 };

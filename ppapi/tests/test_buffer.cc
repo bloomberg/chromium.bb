@@ -95,9 +95,20 @@ std::string TestBuffer::TestBasicLifeCycle() {
   for (int i = 0; i < kBufferSize; ++i)
     data[i] = 'X';
 
+  // Implicitly test that the copy constructor doesn't cause a double-unmap on
+  // delete.
+  pp::Buffer_Dev* copy = new pp::Buffer_Dev(*buffer);
+
   // Implicitly test that destroying the buffer doesn't encounter a fatal error
   // in Unmap.
   delete buffer;
+
+  // Test that we can still write to copy's copy of the data.
+  char* copy_data = static_cast<char*>(copy->data());
+  for (int i = 0; i < kBufferSize; ++i)
+    copy_data[i] = 'Y';
+
+  delete copy;
 
   PASS();
 }

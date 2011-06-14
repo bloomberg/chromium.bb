@@ -57,6 +57,7 @@ class Buffer : public ppapi::thunk::PPB_Buffer_API,
   base::SharedMemory shm_;
   uint32_t size_;
   void* mapped_data_;
+  int map_count_;
 
   DISALLOW_COPY_AND_ASSIGN(Buffer);
 };
@@ -67,7 +68,8 @@ Buffer::Buffer(const HostResource& resource,
     : PluginResource(resource),
       shm_(shm_handle, false),
       size_(size),
-      mapped_data_(NULL) {
+      mapped_data_(NULL),
+      map_count_(0) {
 }
 
 Buffer::~Buffer() {
@@ -92,13 +94,14 @@ PP_Bool Buffer::IsMapped() {
 }
 
 void* Buffer::Map() {
-  if (!shm_.memory())
+  if (map_count_++ == 0)
     shm_.Map(size_);
   return shm_.memory();
 }
 
 void Buffer::Unmap() {
-  shm_.Unmap();
+  if (--map_count_ == 0)
+    shm_.Unmap();
 }
 
 PPB_Buffer_Proxy::PPB_Buffer_Proxy(Dispatcher* dispatcher,

@@ -21,7 +21,7 @@ namespace webkit {
 namespace ppapi {
 
 PPB_Buffer_Impl::PPB_Buffer_Impl(PluginInstance* instance)
-    : Resource(instance), size_(0) {
+    : Resource(instance), size_(0), map_count_(0) {
 }
 
 PPB_Buffer_Impl::~PPB_Buffer_Impl() {
@@ -71,13 +71,14 @@ PP_Bool PPB_Buffer_Impl::IsMapped() {
 void* PPB_Buffer_Impl::Map() {
   DCHECK(size_);
   DCHECK(shared_memory_.get());
-  if (!shared_memory_->Map(size_))
-    return NULL;
+  if (map_count_++ == 0)
+    shared_memory_->Map(size_);
   return shared_memory_->memory();
 }
 
 void PPB_Buffer_Impl::Unmap() {
-  shared_memory_->Unmap();
+  if (--map_count_ == 0)
+    shared_memory_->Unmap();
 }
 
 int32_t PPB_Buffer_Impl::GetSharedMemory(int* shm_handle) {
