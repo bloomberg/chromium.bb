@@ -15,7 +15,7 @@ class TabContentsWrapper;
 class RestoreTabHelper : public TabContentsObserver {
  public:
   explicit RestoreTabHelper(TabContentsWrapper* tab);
-  ~RestoreTabHelper();
+  virtual ~RestoreTabHelper();
 
   // Returns the identifier used by session restore for this tab.
   const SessionID& session_id() const { return session_id_; }
