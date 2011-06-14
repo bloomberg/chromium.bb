@@ -58,8 +58,13 @@ class UserManager : public UserImageLoader::Delegate,
     const SkBitmap& image() const { return image_; }
 
    private:
+    friend class UserManager;
+
     std::string email_;
     SkBitmap image_;
+
+    // Cached flag of whether any users has same display name.
+    bool is_displayname_unique_;
   };
 
   // Gets a shared instance of a UserManager. Not thread-safe...should

@@ -199,7 +199,7 @@ class RemoveAttempt : public CryptohomeLibrary::Delegate {
 
 }  // namespace
 
-UserManager::User::User() {
+UserManager::User::User() : is_displayname_unique_(false) {
   image_ = *ResourceBundle::GetSharedInstance().GetBitmapNamed(
       kDefaultImageResources[0]);
 }
@@ -215,17 +215,7 @@ std::string UserManager::User::GetDisplayName() const {
 }
 
 bool UserManager::User::NeedsNameTooltip() const {
-  const std::vector<User>& users = UserManager::Get()->GetUsers();
-  const std::string& display_name = GetDisplayName();
-  const std::string& user_email = email();
-
-  for (std::vector<User>::const_iterator it = users.begin();
-       it != users.end();
-       ++it) {
-    if (display_name == it->GetDisplayName() && user_email != it->email())
-      return true;
-  }
-  return false;
+  return !is_displayname_unique_;
 }
 
 std::string UserManager::User::GetNameTooltip() const {
@@ -267,6 +257,8 @@ std::vector<UserManager::User> UserManager::GetUsers() const {
   const DictionaryValue* prefs_images = local_state->GetDictionary(kUserImages);
 
   if (prefs_users) {
+    std::map<std::string, size_t> display_name_count;
+
     for (ListValue::const_iterator it = prefs_users->begin();
          it != prefs_users->end();
          ++it) {
@@ -297,8 +289,18 @@ std::vector<UserManager::User> UserManager::GetUsers() const {
         } else {
           user.set_image(image_it->second);
         }
+
+        // Makes table to determine whether displayname is unique.
+        const std::string& display_name = user.GetDisplayName();
+        ++display_name_count[display_name];
+
         users.push_back(user);
       }
+    }
+
+    for (UserVector::iterator it = users.begin(); it != users.end(); ++it) {
+      const std::string& display_name = it->GetDisplayName();
+      it->is_displayname_unique_ = display_name_count[display_name] <= 1;
     }
   }
   return users;
