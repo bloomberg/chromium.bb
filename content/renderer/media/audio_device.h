@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_AUDIO_DEVICE_H_
-#define CONTENT_RENDERER_AUDIO_DEVICE_H_
+#ifndef CONTENT_RENDERER_MEDIA_AUDIO_DEVICE_H_
+#define CONTENT_RENDERER_MEDIA_AUDIO_DEVICE_H_
 #pragma once
 
 #include <vector>
@@ -12,7 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/shared_memory.h"
 #include "base/threading/simple_thread.h"
-#include "content/renderer/audio_message_filter.h"
+#include "content/renderer/media/audio_message_filter.h"
 
 struct AudioParameters;
 
@@ -118,4 +118,4 @@ class AudioDevice : public AudioMessageFilter::Delegate,
   DISALLOW_COPY_AND_ASSIGN(AudioDevice);
 };
 
-#endif  // CONTENT_RENDERER_AUDIO_DEVICE_H_
+#endif  // CONTENT_RENDERER_MEDIA_AUDIO_DEVICE_H_

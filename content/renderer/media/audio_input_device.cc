@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/audio_input_device.h"
+#include "content/renderer/media/audio_input_device.h"
 
 #include "base/memory/singleton.h"
 #include "base/message_loop.h"

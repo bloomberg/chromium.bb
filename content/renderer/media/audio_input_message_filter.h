@@ -9,8 +9,8 @@
 // This implementation only supports low-latency (based on SyncSocket)
 // messaging.
 
-#ifndef CONTENT_RENDERER_AUDIO_INPUT_MESSAGE_FILTER_H_
-#define CONTENT_RENDERER_AUDIO_INPUT_MESSAGE_FILTER_H_
+#ifndef CONTENT_RENDERER_MEDIA_AUDIO_INPUT_MESSAGE_FILTER_H_
+#define CONTENT_RENDERER_MEDIA_AUDIO_INPUT_MESSAGE_FILTER_H_
 #pragma once
 
 #include "base/id_map.h"
@@ -87,4 +87,4 @@ class AudioInputMessageFilter : public IPC::ChannelProxy::MessageFilter {
   DISALLOW_IMPLICIT_CONSTRUCTORS(AudioInputMessageFilter);
 };
 
-#endif  // CONTENT_RENDERER_AUDIO_INPUT_MESSAGE_FILTER_H_
+#endif  // CONTENT_RENDERER_MEDIA_AUDIO_INPUT_MESSAGE_FILTER_H_

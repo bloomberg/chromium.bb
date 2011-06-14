@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/audio_input_message_filter.h"
+#include "content/renderer/media/audio_input_message_filter.h"
 
 #include "base/message_loop.h"
 #include "base/time.h"

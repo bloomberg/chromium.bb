@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "content/renderer/audio_device.h"
+#include "content/renderer/media/audio_device.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAudioDevice.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebVector.h"
 
