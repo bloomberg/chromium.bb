@@ -23,15 +23,17 @@ class RestartMessageBox : public views::DialogDelegate {
 
  protected:
   // views::DialogDelegate:
-  virtual int GetDialogButtons() const;
+  virtual int GetDialogButtons() const OVERRIDE;
   virtual std::wstring GetDialogButtonLabel(
-      MessageBoxFlags::DialogButton button) const;
-  virtual std::wstring GetWindowTitle() const;
+      MessageBoxFlags::DialogButton button) const OVERRIDE;
+  virtual std::wstring GetWindowTitle() const OVERRIDE;
 
   // views::WindowDelegate:
-  virtual void DeleteDelegate();
-  virtual bool IsModal() const;
-  virtual views::View* GetContentsView();
+  virtual void DeleteDelegate() OVERRIDE;
+  virtual bool IsModal() const OVERRIDE;
+  virtual views::View* GetContentsView() OVERRIDE;
+  virtual views::Widget* GetWidget() OVERRIDE;
+  virtual const views::Widget* GetWidget() const OVERRIDE;
 
  private:
   explicit RestartMessageBox(gfx::NativeWindow parent_window);

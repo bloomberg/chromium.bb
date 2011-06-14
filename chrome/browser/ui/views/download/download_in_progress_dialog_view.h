@@ -24,8 +24,7 @@ namespace views {
 class Label;
 }
 
-class DownloadInProgressDialogView : public views::View,
-                                     public views::DialogDelegate {
+class DownloadInProgressDialogView : public views::DialogDelegateView {
  public:
   explicit DownloadInProgressDialogView(Browser* browser);
   virtual ~DownloadInProgressDialogView();

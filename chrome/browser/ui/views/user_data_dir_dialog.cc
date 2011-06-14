@@ -87,6 +87,14 @@ views::View* UserDataDirDialog::GetContentsView() {
   return message_box_view_;
 }
 
+views::Widget* UserDataDirDialog::GetWidget() {
+  return message_box_view_->GetWidget();
+}
+
+const views::Widget* UserDataDirDialog::GetWidget() const {
+  return message_box_view_->GetWidget();
+}
+
 bool UserDataDirDialog::Dispatch(const MSG& msg) {
   TranslateMessage(&msg);
   DispatchMessage(&msg);

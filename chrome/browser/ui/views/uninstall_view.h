@@ -19,9 +19,8 @@ class Label;
 // UninstallView implements the dialog that confirms Chrome uninstallation
 // and asks whether to delete Chrome profile. Also if currently Chrome is set
 // as default browser, it asks users whether to set another browser as default.
-class UninstallView : public views::View,
-                      public views::ButtonListener,
-                      public views::DialogDelegate,
+class UninstallView : public views::ButtonListener,
+                      public views::DialogDelegateView,
                       public ui::ComboboxModel {
  public:
   explicit UninstallView(int& user_selection);

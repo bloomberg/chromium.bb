@@ -35,23 +35,26 @@ class UserDataDirDialog : public views::DialogDelegate,
 
   // views::DialogDelegate Methods:
   virtual std::wstring GetDialogButtonLabel(
-      MessageBoxFlags::DialogButton button) const;
-  virtual std::wstring GetWindowTitle() const;
-  virtual void DeleteDelegate();
-  virtual bool Accept();
-  virtual bool Cancel();
+      MessageBoxFlags::DialogButton button) const OVERRIDE;
+  virtual std::wstring GetWindowTitle() const OVERRIDE;
+  virtual void DeleteDelegate() OVERRIDE;
+  virtual bool Accept() OVERRIDE;
+  virtual bool Cancel() OVERRIDE;
 
   // views::WindowDelegate Methods:
-  virtual bool IsAlwaysOnTop() const { return false; }
-  virtual bool IsModal() const { return false; }
-  virtual views::View* GetContentsView();
+  virtual bool IsModal() const OVERRIDE { return false; }
+  virtual views::View* GetContentsView() OVERRIDE;
+  virtual views::Widget* GetWidget() OVERRIDE;
+  virtual const views::Widget* GetWidget() const OVERRIDE;
 
   // MessageLoop::Dispatcher Method:
-  virtual bool Dispatch(const MSG& msg);
+  virtual bool Dispatch(const MSG& msg) OVERRIDE;
 
   // SelectFileDialog::Listener Methods:
-  virtual void FileSelected(const FilePath& path, int index, void* params);
-  virtual void FileSelectionCanceled(void* params);
+  virtual void FileSelected(const FilePath& path,
+                            int index,
+                            void* params) OVERRIDE;
+  virtual void FileSelectionCanceled(void* params) OVERRIDE;
 
  private:
   explicit UserDataDirDialog(const FilePath& user_data_dir);

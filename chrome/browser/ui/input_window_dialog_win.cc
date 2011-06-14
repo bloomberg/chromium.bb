@@ -59,8 +59,7 @@ class WinInputWindowDialog : public InputWindowDialog {
 
 // ContentView, as the name implies, is the content view for the InputWindow.
 // It registers accelerators that accept/cancel the input.
-class ContentView : public views::View,
-                    public views::DialogDelegate,
+class ContentView : public views::DialogDelegateView,
                     public views::TextfieldController {
  public:
   explicit ContentView(WinInputWindowDialog* delegate)

@@ -30,14 +30,16 @@ class ExternalProtocolDialog : public views::DialogDelegate {
   virtual ~ExternalProtocolDialog();
 
   // views::DialogDelegate Methods:
-  virtual int GetDefaultDialogButton() const;
+  virtual int GetDefaultDialogButton() const OVERRIDE;
   virtual std::wstring GetDialogButtonLabel(
-      MessageBoxFlags::DialogButton button) const;
-  virtual std::wstring GetWindowTitle() const;
-  virtual void DeleteDelegate();
-  virtual bool Cancel();
-  virtual bool Accept();
-  virtual views::View* GetContentsView();
+      MessageBoxFlags::DialogButton button) const OVERRIDE;
+  virtual std::wstring GetWindowTitle() const OVERRIDE;
+  virtual void DeleteDelegate() OVERRIDE;
+  virtual bool Cancel() OVERRIDE;
+  virtual bool Accept() OVERRIDE;
+  virtual views::View* GetContentsView() OVERRIDE;
+  virtual views::Widget* GetWidget() OVERRIDE;
+  virtual const views::Widget* GetWidget() const OVERRIDE;
 
   // views::WindowDelegate Methods:
   virtual bool IsAlwaysOnTop() const { return false; }

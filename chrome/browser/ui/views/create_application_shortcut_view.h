@@ -31,8 +31,7 @@ class TabContentsWrapper;
 // Shortcuts that load a URL in an app-like window, and shortcuts that load
 // a chrome app (the kind you see under "apps" on the new tabs page) in an app
 // window.  These are implemented as subclasses of CreateShortcutViewCommon.
-class CreateApplicationShortcutView : public views::View,
-                                      public views::DialogDelegate,
+class CreateApplicationShortcutView : public views::DialogDelegateView,
                                       public views::ButtonListener {
  public:
   explicit CreateApplicationShortcutView(Profile* profile);

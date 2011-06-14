@@ -20,8 +20,7 @@ class ImporterHost;
 
 // ImportLockDialogView asks the user to shut down Firefox before starting the
 // profile import.
-class ImportLockDialogView : public views::View,
-                             public views::DialogDelegate {
+class ImportLockDialogView : public views::DialogDelegateView {
  public:
   static void Show(gfx::NativeWindow parent, ImporterHost* importer_host);
 

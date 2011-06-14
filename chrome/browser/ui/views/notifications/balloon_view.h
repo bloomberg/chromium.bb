@@ -45,9 +45,8 @@ class SlideAnimation;
 // A balloon view is the UI component for a desktop notification toasts.
 // It draws a border, and within the border an HTML renderer.
 class BalloonViewImpl : public BalloonView,
-                        public views::View,
                         public views::ViewMenuDelegate,
-                        public views::WidgetDelegate,
+                        public views::WidgetDelegateView,
                         public views::ButtonListener,
                         public NotificationObserver,
                         public ui::AnimationDelegate {

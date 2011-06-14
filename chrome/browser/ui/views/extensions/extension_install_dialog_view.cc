@@ -61,8 +61,7 @@ const int kHeadingFontSizeDelta = 1;
 }  // namespace
 
 // Implements the extension installation dialog for TOOLKIT_VIEWS.
-class ExtensionInstallDialogView : public views::View,
-                                   public views::DialogDelegate {
+class ExtensionInstallDialogView : public views::DialogDelegateView {
  public:
   ExtensionInstallDialogView(ExtensionInstallUI::Delegate* delegate,
                              const Extension* extension,

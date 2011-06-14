@@ -20,8 +20,7 @@ class View;
 namespace chromeos {
 
 // A dialog box for taking new user picture.
-class TakePhotoDialog : public views::View,
-                        public views::DialogDelegate,
+class TakePhotoDialog : public views::DialogDelegateView,
                         public TakePhotoView::Delegate,
                         public CameraController::Delegate,
                         public NotificationObserver {

@@ -36,6 +36,8 @@ class UpdateRecommendedMessageBox : public views::DialogDelegate {
   virtual void DeleteDelegate() OVERRIDE;
   virtual bool IsModal() const OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE;
+  virtual views::Widget* GetWidget() OVERRIDE;
+  virtual const views::Widget* GetWidget() const OVERRIDE;
 
  private:
   explicit UpdateRecommendedMessageBox(gfx::NativeWindow parent_window);

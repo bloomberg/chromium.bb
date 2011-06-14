@@ -47,6 +47,14 @@ views::View* RestartMessageBox::GetContentsView() {
   return message_box_view_;
 }
 
+views::Widget* RestartMessageBox::GetWidget() {
+  return message_box_view_->GetWidget();
+}
+
+const views::Widget* RestartMessageBox::GetWidget() const {
+  return message_box_view_->GetWidget();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // RestartMessageBox, private:
 

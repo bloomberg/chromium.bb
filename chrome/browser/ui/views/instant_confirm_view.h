@@ -15,8 +15,7 @@
 class Profile;
 
 // The view shown in the instant confirm dialog.
-class InstantConfirmView : public views::View,
-                           public views::DialogDelegate,
+class InstantConfirmView : public views::DialogDelegateView,
                            public views::LinkListener {
  public:
   explicit InstantConfirmView(Profile* profile);

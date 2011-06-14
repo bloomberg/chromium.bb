@@ -25,8 +25,7 @@ namespace chromeos {
 // A dialog box that is shown when password change was detected.
 // User is presented with an option to sync all settings or
 // enter old password and sync only delta.
-class PasswordChangedView : public views::View,
-                            public views::DialogDelegate,
+class PasswordChangedView : public views::DialogDelegateView,
                             public views::ButtonListener,
                             public views::TextfieldController {
  public:
