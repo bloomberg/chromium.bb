@@ -533,7 +533,7 @@ or verify this branch is set up to track another (via the --track argument to
                                 '%s...' % (upstream_branch)]).strip()
 
     if not author:
-      author = RunGit(['config', 'user.email'])
+      author = RunGit(['config', 'user.email']).strip()
     change = presubmit_support.GitChange(
         name,
         description,
