@@ -91,9 +91,14 @@ def _PrepForChanges(git_repo, use_repo=False):
     else:
       cros_lib.RunCommand(['git', 'pull', '--force'], cwd=git_repo)
 
+# TODO Test fix for chromium-os:16249
+#    cros_lib.RunCommand(['git',
+#                         'config',
+#                         'url.ssh://gerrit.chromium.org:29418.pushinsteadof',
+#                         'http://git.chromium.org'], cwd=git_repo)
     cros_lib.RunCommand(['git',
                          'config',
-                         'url.ssh://gerrit.chromium.org:29418.pushinsteadof',
+                         'url.ssh://gerrit.chromium.org:29418.insteadof',
                          'http://git.chromium.org'], cwd=git_repo)
   except cros_lib.RunCommandError, e:
     err_msg = 'Failed to prep for edit in %s with %s' % (git_repo, e.message)
