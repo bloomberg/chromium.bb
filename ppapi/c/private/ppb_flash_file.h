@@ -11,6 +11,7 @@
 
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
+#include "ppapi/c/pp_resource.h"
 
 #ifdef _WIN32
 typedef HANDLE PP_FileHandle;
