@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(jhawkins): Rewrite these tests to handle the new inlined sync UI.
-
 #include "chrome/browser/sync/sync_setup_wizard.h"
 
 #include "base/json/json_writer.h"
@@ -359,6 +357,7 @@ TEST_F(SyncSetupWizardTest, EnterPassphraseRequired) {
                                 "\"mode\":\"gaia\"}"));
   handler_.HandlePassphraseEntry(&value);
   EXPECT_EQ("myPassphrase", service_->passphrase_);
+  CloseSetupUI();
 }
 
 TEST_F(SyncSetupWizardTest, DialogCancelled) {
@@ -407,6 +406,7 @@ TEST_F(SyncSetupWizardTest, InvalidTransitions) {
 
   wizard_->Step(SyncSetupWizard::FATAL_ERROR);
   EXPECT_EQ(SyncSetupWizard::FATAL_ERROR, flow_->current_state_);
+  CloseSetupUI();
 }
 
 TEST_F(SyncSetupWizardTest, FullSuccessfulRunSetsPref) {
@@ -485,6 +485,7 @@ TEST_F(SyncSetupWizardTest, DiscreteRunGaiaLogin) {
   service_->set_auth_state(kTestUser, AuthError::None());
 
   wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
+  CloseSetupUI();
 }
 
 TEST_F(SyncSetupWizardTest, NonFatalError) {

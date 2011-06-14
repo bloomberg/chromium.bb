@@ -1622,10 +1622,3 @@
    ...
    fun:WebKitContextTest_Basic_Test::TestBody
 }
-{
-   bug_86006
-   Heapcheck:Leak
-   ...
-   fun:SyncSetupFlow::Run
-   fun:SyncSetupWizard::Step
-}

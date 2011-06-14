@@ -4649,13 +4649,6 @@
    ...
    fun:_ZN28WebKitContextTest_Basic_Test8TestBodyEv
 }
-{
-   bug_86006
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN13SyncSetupFlow3RunEP18ProfileSyncServiceP22SyncSetupFlowContainerN15SyncSetupWizard5StateES5_
-   fun:_ZN15SyncSetupWizard4StepENS_5StateE
-}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
