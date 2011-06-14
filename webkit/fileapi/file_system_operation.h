@@ -104,7 +104,6 @@ class FileSystemOperation {
   friend class FileSystemOperationWriteTest;
   friend class FileWriterDelegateTest;
   friend class FileSystemTestOriginHelper;
-  friend class FileSystemQuotaTest;
 
   bool GetUsageAndQuotaThenCallback(
       const GURL& origin_url,
