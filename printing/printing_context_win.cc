@@ -348,7 +348,7 @@ PrintingContext::Result PrintingContextWin::UpdatePrintSettings(
   DEVMODE* dev_mode = NULL;
   LONG buffer_size = DocumentProperties(NULL, printer, device_name_wide,
                                         NULL, NULL, 0);
-  if (buffer_size) {
+  if (buffer_size > 0) {
     buffer.reset(new uint8[buffer_size]);
     memset(buffer.get(), 0, buffer_size);
     if (DocumentProperties(NULL, printer, device_name_wide,
