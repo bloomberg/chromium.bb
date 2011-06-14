@@ -95,8 +95,8 @@ node = debug_env.PyAutoTester(
 env.AddNodeToTestSuite(node,
                        ['pyauto_tests'],
                        'run_pyauto_browser_debug_test',
-                       is_broken=True)
-#                      is_broken=env.PyAutoTesterIsBroken() or is_broken)
+                       is_broken=env.PyAutoTesterIsBroken() or is_broken)
+
 
 # This test will fail until we fix chrome issue
 # http://code.google.com/p/chromium/issues/detail?id=85070
