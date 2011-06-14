@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Native Client Authors. All rights reserved.
+// Copyright (c) 2011 The Native Client Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -200,7 +200,13 @@ class EventInstance : public pp::Instance {
     std::printf("EventInstance::GetInstanceObject\n");
     event_handler_ = new EventHandler(this->pp_instance());
     // pp::Var takes ownership of the new EventHandler object.
+    // TODO(dmichael): Update this example.
+#ifdef PPAPI_INSTANCE_REMOVE_SCRIPTING
+    NACL_NOTREACHED();
+    return pp::Var();
+#else
     return pp::Var(this, event_handler_);
+#endif
   }
 
   // Handle an incoming input event by switching on type, converting the event

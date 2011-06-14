@@ -24,6 +24,8 @@
 #include <ppapi/cpp/var.h>
 #include <string>
 
+#include "native_client/src/include/nacl_compiler_annotations.h"
+
 namespace {
 // Helper function to set the scripting exception.  Both |exception| and
 // |except_string| can be NULL.  If |exception| is NULL, this function does
@@ -168,7 +170,13 @@ class HelloWorldInstance : public pp::Instance {
   // and is responsible for deallocating memory.
   virtual pp::Var GetInstanceObject() {
     HelloWorldScriptableObject* hw_object = new HelloWorldScriptableObject();
+#ifdef PPAPI_INSTANCE_REMOVE_SCRIPTING
+    UNREFERENCED_PARAMETER(hw_object);
+    NACL_NOTREACHED();
+    return pp::Var();
+#else
     return pp::Var(this, hw_object);
+#endif
   }
 };
 

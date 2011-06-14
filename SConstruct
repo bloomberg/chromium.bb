@@ -293,6 +293,12 @@ def SetUpArgumentBits(env):
       'into hangs on Buildbot, and our test suite includes various crash '
       'tests.')
 
+  BitFromArgument(env, 'pepper_scripting', default=True,
+    desc='When pepper_scripting is on, we build with synchronous scripting '
+         'functions available and proxied. If scripting is off, we define '
+         'PPAPI_INSTANCE_REMOVE_SCRIPTING and PPAPI_VAR_REMOVE_SCRIPTING which '
+         'removes synchronous scripting functions from PPAPI for NaCl modules.')
+
 
 def CheckArguments():
   for key in ARGUMENTS:
@@ -377,7 +383,7 @@ pre_base_env = Environment(
 DeclareBit('coverage_enabled', 'The build should be instrumented to generate'
            'coverage information')
 
-# If the environment valriable BUILDBOT_BUILDERNAME is set, we can determine
+# If the environment variable BUILDBOT_BUILDERNAME is set, we can determine
 # if we are running in a VM by the lack of a '-bare-' (aka bare metal) in the
 # bot name.  Otherwise if the builder name is not set, then assume real HW.
 DeclareBit('running_on_vm', 'Returns true when environment is running in a VM')
@@ -2024,6 +2030,14 @@ if not base_env.Bit('target_x86_64'):
         'src/trusted/validator_arm/build.scons',
       ])
 
+# TODO(dmichael): Remove this flag when all tests are migrated from scripting.
+if not base_env.Bit('pepper_scripting'):
+  base_env.Append(
+      CPPDEFINES = [
+        'PPAPI_INSTANCE_REMOVE_SCRIPTING',
+        'PPAPI_VAR_REMOVE_SCRIPTING',
+      ])
+
 base_env.Replace(
     NACL_BUILD_FAMILY = 'TRUSTED',
 
@@ -2447,6 +2461,11 @@ if nacl_env.Bit('bitcode'):
   #       sneak in startup and cleanup code
   nacl_env.Prepend(EMULATOR=EMULATOR)
 
+# TODO(dmichael): Remove this flag when all tests are migrated from scripting.
+if not nacl_env.Bit('pepper_scripting'):
+  nacl_env.Append(CPPDEFINES = ['PPAPI_INSTANCE_REMOVE_SCRIPTING',
+                                'PPAPI_VAR_REMOVE_SCRIPTING'])
+
 # We use a special environment for building the IRT image because it must
 # always use the newlib toolchain, regardless of --nacl_glibc.  We clone
 # it from nacl_env here, before too much other cruft has been added.
@@ -2502,7 +2521,6 @@ def AddTargetRootSuffix(env, bit_name, suffix):
 AddTargetRootSuffix(nacl_env, 'bitcode', 'pnacl')
 AddTargetRootSuffix(nacl_env, 'nacl_pic', 'pic')
 AddTargetRootSuffix(nacl_env, 'nacl_glibc', 'glibc')
-
 
 if nacl_env.Bit('running_on_valgrind'):
   nacl_env.Append(CCFLAGS = ['-g', '-Wno-overlength-strings',
@@ -2716,6 +2734,7 @@ if nacl_extra_sdk_env.Bit('disable_nosys_linker_warnings'):
                   'stub_warning(n)=struct xyzzy',
                   'link_warning(n,m)=struct xyzzy',
                   ])
+
 # TODO(robertm): remove this work-around for an llvm debug info bug
 # http://code.google.com/p/nativeclient/issues/detail?id=235
 if nacl_extra_sdk_env.Bit('target_arm'):

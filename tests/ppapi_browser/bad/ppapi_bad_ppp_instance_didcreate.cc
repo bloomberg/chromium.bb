@@ -67,8 +67,10 @@ const struct PPP_Instance instance_interface = {
   DidChangeView,
   DidChangeFocus,
   HandleInputEvent,
-  HandleDocumentLoad,
-  GetInstance
+  HandleDocumentLoad
+#ifndef PPAPI_INSTANCE_REMOVE_SCRIPTING
+  , GetInstance
+#endif
 };
 
 }  // namespace

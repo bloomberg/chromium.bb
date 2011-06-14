@@ -677,8 +677,11 @@ static const void* GetInstanceInterface() {
     NULL,  // DidChangeView
     NULL,  // DidChangeFocus
     NULL,  // HandleInputEvent
-    NULL,  // HandleDocumentLoad
-    GetInstanceObject
+    NULL  // HandleDocumentLoad
+// TODO(dmichael): This test should probably just be removed.
+#ifndef PPAPI_INSTANCE_REMOVE_SCRIPTING
+    , GetInstanceObject
+#endif
   };
 
   return reinterpret_cast<const void*>(&instance_class);

@@ -155,8 +155,10 @@ PP_EXPORT const void* PPP_GetInterface(const char* interface_name) {
       DidChangeView,
       DidChangeFocus,
       HandleInputEvent,
-      HandleDocumentLoad,
-      GetInstanceObject
+      HandleDocumentLoad
+#ifndef PPAPI_INSTANCE_REMOVE_SCRIPTING
+      , GetInstanceObject
+#endif
     };
     return &instance_interface;
   } else if (0 == strncmp(PPP_MESSAGING_INTERFACE, interface_name,

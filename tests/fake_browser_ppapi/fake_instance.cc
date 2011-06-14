@@ -26,7 +26,6 @@ static PP_Bool IsFullFrame(PP_Instance instance) {
   return static_cast<PP_Bool>(GetInstance(instance)->IsFullFrame());
 }
 
-#ifndef PPAPI_INSTANCE_REMOVE_SCRIPTING
 static PP_Var GetWindowObject(PP_Instance instance) {
   return GetInstance(instance)->GetWindowObject();
 }
@@ -40,7 +39,6 @@ static PP_Var ExecuteScript(PP_Instance instance,
                             PP_Var* exception) {
   return GetInstance(instance)->ExecuteScript(script, exception);
 }
-#endif
 
 }  // namespace
 

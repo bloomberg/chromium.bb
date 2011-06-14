@@ -133,9 +133,14 @@ class MyInstance : public pp::Instance {
     // since this interface is deprecated.  This will need to be
     // replaced with a postMessage() call when postMessage() is
     // implemented.
+    // TODO(dmichael): Update this test to use PostMessage.
+#ifdef PPAPI_INSTANCE_REMOVE_SCRIPTING
+    NACL_NOTREACHED();
+#else
     pp::Var exception;
     instance->GetWindowObject().Call("StopPlaybackCompleted",
                                      pp::Var(result), &exception);
+#endif
   }
 
   // To enable basic tests, use basic_tests="1" in the embed tag.

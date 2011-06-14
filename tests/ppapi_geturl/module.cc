@@ -150,7 +150,9 @@ Module::Module(PP_Module module_id, PPB_GetInterface get_browser_interface)
   instance_interface.DidChangeFocus = Instance_DidChangeFocus;
   instance_interface.HandleInputEvent = Instance_HandleInputEvent;
   instance_interface.HandleDocumentLoad = Instance_HandleDocumentLoad;
+#ifndef PPAPI_INSTANCE_REMOVE_SCRIPTING
   instance_interface.GetInstanceObject = Instance_GetInstanceObject;
+#endif
   ppb_core_interface_ =
       reinterpret_cast<const PPB_Core*>(
           GetBrowserInterface(PPB_CORE_INTERFACE));
@@ -258,7 +260,13 @@ void Module::ReportResult(PP_Instance pp_instance,
     printf("--- GetBrowserInterface("PPB_VAR_DEPRECATED_INTERFACE") failed\n");
     return;
   }
-  PP_Var window_var = ppb_instance_interface->GetWindowObject(pp_instance);
+  PP_Var window_var = PP_MakeUndefined();
+#ifdef PPAPI_INSTANCE_REMOVE_SCRIPTING
+  UNREFERENCED_PARAMETER(pp_instance);
+  NACL_NOTREACHED();
+#else
+  window_var = ppb_instance_interface->GetWindowObject(pp_instance);
+#endif
   if (PP_VARTYPE_OBJECT != window_var.type) {
     printf("--- PPB_Instance::GetWindowObject() failed\n");
     return;

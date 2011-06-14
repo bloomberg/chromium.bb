@@ -146,6 +146,12 @@ PP_Var ExecuteScript(PP_Instance instance, PP_Var script, PP_Var* exception) {
 }  // namespace
 
 const PPB_Instance* PluginInstance::GetInterface() {
+#ifdef PPAPI_INSTANCE_REMOVE_SCRIPTING
+  static const PPB_Instance instance_interface = {
+    BindGraphics,
+    IsFullFrame
+  };
+#else
   static const PPB_Instance instance_interface = {
     GetWindowObject,
     GetOwnerElementObject,
@@ -153,6 +159,7 @@ const PPB_Instance* PluginInstance::GetInterface() {
     IsFullFrame,
     ExecuteScript
   };
+#endif
   return &instance_interface;
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Native Client Authors. All rights reserved.
+// Copyright (c) 2011 The Native Client Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -69,7 +69,6 @@ const char** GetCharpArray(uint32_t count, char* str, uint32_t total_len) {
 }
 
 }  // namespace
-
 
 void PppInstanceRpcServer::PPP_Instance_DidCreate(
     NaClSrpcRpc* rpc,
@@ -229,6 +228,9 @@ void PppInstanceRpcServer::PPP_Instance_GetInstanceObject(
     uint32_t* capability_bytes, char* capability) {
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   NaClSrpcClosureRunner runner(done);
+#ifdef PPAPI_INSTANCE_REMOVE_SCRIPTING
+  NACL_NOTREACHED();
+#else
   const PPP_Instance* instance_interface = GetInstanceInterface();
   if (instance_interface == NULL ||
       instance_interface->GetInstanceObject == NULL ||
@@ -244,4 +246,5 @@ void PppInstanceRpcServer::PPP_Instance_GetInstanceObject(
   *reinterpret_cast<ppapi_proxy::ObjectCapability*>(capability) = cap;
   *capability_bytes = sizeof(ppapi_proxy::ObjectCapability);
   rpc->result = NACL_SRPC_RESULT_OK;
+#endif
 }

@@ -189,9 +189,11 @@ static PP_Bool Instance_HandleDocumentLoad(PP_Instance pp_instance,
   return PP_FALSE;
 }
 
+#ifndef PPAPI_INSTANCE_REMOVE_SCRIPTING
 static struct PP_Var Instance_GetInstanceObject(PP_Instance pp_instance) {
   return PP_MakeNull();
 }
+#endif
 
 static struct PPP_Instance instance_interface = {
   &Instance_DidCreate,
@@ -199,8 +201,10 @@ static struct PPP_Instance instance_interface = {
   &Instance_DidChangeView,
   &Instance_DidChangeFocus,
   &Instance_HandleInputEvent,
-  &Instance_HandleDocumentLoad,
-  &Instance_GetInstanceObject,
+  &Instance_HandleDocumentLoad
+#ifndef PPAPI_INSTANCE_REMOVE_SCRIPTING
+  , &Instance_GetInstanceObject
+#endif
 };
 
 

@@ -126,8 +126,10 @@ const PPP_Instance ppp_instance_interface = {
   DidChangeView,
   DidChangeFocus,
   HandleInputEvent,
-  HandleDocumentLoad,
-  GetInstanceObject
+  HandleDocumentLoad
+#ifndef PPAPI_INSTANCE_REMOVE_SCRIPTING
+  , GetInstanceObject
+#endif
 };
 
 ///////////////////////////////////////////////////////////////////////////////

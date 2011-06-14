@@ -135,12 +135,14 @@ void ReportCallbackInvocationToJS(const char* callback_name) {
                                                         strlen(callback_name));
   // Report using synchronous scripting for sync tests.
   // This is deprecated and will be removed shortly.
+#ifndef PPAPI_INSTANCE_REMOVE_SCRIPTING
   PP_Var window = PPBInstance()->GetWindowObject(pp_instance());
   CHECK(window.type == PP_VARTYPE_OBJECT);
 
   PP_Var exception = PP_MakeUndefined();
   PPBVarDeprecated()->Call(window, callback_var, 0, NULL, &exception);
   PPBVarDeprecated()->Release(window);
+#endif
 
   // Report using postmessage for async tests.
   PPBMessaging()->PostMessage(pp_instance(), callback_var);
