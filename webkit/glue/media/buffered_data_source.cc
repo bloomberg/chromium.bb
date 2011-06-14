@@ -18,6 +18,10 @@ namespace webkit_glue {
 // of FFmpeg.
 static const int kInitialReadBufferSize = 32768;
 
+// Number of cache misses we allow for a single Read() before signalling an
+// error.
+static const int kNumCacheMissRetries = 3;
+
 static WebDataSource* NewBufferedDataSource(MessageLoop* render_loop,
                                             WebKit::WebFrame* frame) {
   return new BufferedDataSource(render_loop, frame);
@@ -55,7 +59,8 @@ BufferedDataSource::BufferedDataSource(
       media_is_paused_(true),
       media_has_played_(false),
       preload_(media::METADATA),
-      using_range_request_(true) {
+      using_range_request_(true),
+      cache_miss_retries_left_(kNumCacheMissRetries) {
 }
 
 BufferedDataSource::~BufferedDataSource() {}
@@ -240,6 +245,7 @@ void BufferedDataSource::ReadTask(
   read_position_ = position;
   read_size_ = read_size;
   read_buffer_ = buffer;
+  cache_miss_retries_left_ = kNumCacheMissRetries;
 
   // Call to read internal to perform the actual read.
   ReadInternal();
@@ -537,7 +543,8 @@ void BufferedDataSource::ReadCallback(int error) {
     // Stop the resource load if it failed.
     loader_->Stop();
 
-    if (error == net::ERR_CACHE_MISS) {
+    if (error == net::ERR_CACHE_MISS && cache_miss_retries_left_ > 0) {
+      cache_miss_retries_left_--;
       render_loop_->PostTask(FROM_HERE,
           NewRunnableMethod(this, &BufferedDataSource::RestartLoadingTask));
       return;

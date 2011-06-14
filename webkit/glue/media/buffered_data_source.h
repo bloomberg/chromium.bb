@@ -205,6 +205,9 @@ class BufferedDataSource : public WebDataSource {
   // request.
   bool using_range_request_;
 
+  // Number of cache miss retries left.
+  int cache_miss_retries_left_;
+
   DISALLOW_COPY_AND_ASSIGN(BufferedDataSource);
 };
 

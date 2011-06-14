@@ -37,6 +37,7 @@ namespace webkit_glue {
 static const char* kHttpUrl = "http://test";
 static const char* kFileUrl = "file://test";
 static const int kDataSize = 1024;
+static const int kMaxCacheMissesBeforeFailTest = 20;
 
 enum NetworkState {
   NONE,
@@ -358,6 +359,58 @@ class BufferedDataSourceTest : public testing::Test {
     message_loop_->RunAllPending();
   }
 
+  BufferedResourceLoader* InvokeCacheMissCreateResourceLoader(int64 start,
+                                                              int64 end) {
+    NiceMock<MockBufferedResourceLoader>* new_loader =
+        new NiceMock<MockBufferedResourceLoader>();
+
+    EXPECT_CALL(*new_loader, Start(NotNull(), NotNull(), NotNull()))
+        .WillOnce(DoAll(Assign(&error_, net::OK),
+                        Invoke(this,
+                               &BufferedDataSourceTest::InvokeStartCallback)));
+
+    EXPECT_CALL(*new_loader, range_supported())
+        .WillRepeatedly(Return(loader_->range_supported()));
+
+    int error = net::ERR_FAILED;
+    if (cache_miss_count_ < kMaxCacheMissesBeforeFailTest) {
+      cache_miss_count_++;
+      error = net::ERR_CACHE_MISS;
+    }
+
+    EXPECT_CALL(*new_loader, Read(start, _, NotNull(), NotNull()))
+        .WillOnce(DoAll(Assign(&error_, error),
+                        Invoke(this,
+                               &BufferedDataSourceTest::InvokeReadCallback)));
+
+    loader_ = new_loader;
+    return new_loader;
+  }
+
+  void ReadDataSourceAlwaysCacheMiss(int64 position, int size) {
+    cache_miss_count_ = 0;
+
+    EXPECT_CALL(*data_source_, CreateResourceLoader(position, -1))
+        .WillRepeatedly(Invoke(
+            this,
+            &BufferedDataSourceTest::InvokeCacheMissCreateResourceLoader));
+
+    EXPECT_CALL(*loader_, Read(position, size, NotNull(), NotNull()))
+        .WillOnce(DoAll(Assign(&error_, net::ERR_CACHE_MISS),
+                        Invoke(this,
+                               &BufferedDataSourceTest::InvokeReadCallback)));
+
+    EXPECT_CALL(*this, ReadCallback(media::DataSource::kReadError));
+
+    data_source_->Read(
+        position, size, buffer_,
+        NewCallback(this, &BufferedDataSourceTest::ReadCallback));
+
+    message_loop_->RunAllPending();
+
+    EXPECT_LT(cache_miss_count_, kMaxCacheMissesBeforeFailTest);
+  }
+
   MOCK_METHOD1(ReadCallback, void(size_t size));
 
   scoped_refptr<NiceMock<MockBufferedResourceLoader> > loader_;
@@ -373,6 +426,8 @@ class BufferedDataSourceTest : public testing::Test {
   int error_;
   uint8 buffer_[1024];
   uint8 data_[1024];
+
+  int cache_miss_count_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BufferedDataSourceTest);
@@ -516,6 +571,16 @@ TEST_F(BufferedDataSourceTest, AbortDuringPendingRead) {
 
   // Verify that Read() was not called on the loader.
   EXPECT_FALSE(read_called);
+}
+
+// Test that we only allow a limited number of cache misses for a
+// single Read() request.
+TEST_F(BufferedDataSourceTest, BoundedCacheMisses) {
+  InitializeDataSource(kHttpUrl, net::OK, true, 1024, LOADING);
+
+  ReadDataSourceAlwaysCacheMiss(0, 10);
+
+  StopDataSource();
 }
 
 }  // namespace webkit_glue
