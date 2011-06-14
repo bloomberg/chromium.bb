@@ -26,6 +26,36 @@ namespace {
 bool use_pure_views = false;
 }
 
+// This class is used to keep track of the event a Widget is processing, and
+// restore any previously active event afterwards.
+class ScopedEvent {
+ public:
+  ScopedEvent(Widget* widget, const Event& event)
+      : widget_(widget),
+        event_(&event) {
+    widget->event_stack_.push(this);
+  }
+
+  ~ScopedEvent() {
+    if (widget_)
+      widget_->event_stack_.pop();
+  }
+
+  void reset() {
+    widget_ = NULL;
+  }
+
+  const Event* event() {
+    return event_;
+  }
+
+ private:
+  Widget* widget_;
+  const Event* event_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedEvent);
+};
+
 // A default implementation of WidgetDelegate, used by Widget when no
 // WidgetDelegate is supplied.
 class DefaultWidgetDelegate : public WidgetDelegate {
@@ -96,6 +126,7 @@ Widget::Widget()
       widget_delegate_(NULL),
       non_client_view_(NULL),
       dragged_view_(NULL),
+      event_stack_(),
       ownership_(InitParams::NATIVE_WIDGET_OWNS_WIDGET),
       is_secondary_widget_(true),
       frame_type_(FRAME_TYPE_DEFAULT),
@@ -106,6 +137,11 @@ Widget::Widget()
 }
 
 Widget::~Widget() {
+  while (!event_stack_.empty()) {
+    event_stack_.top()->reset();
+    event_stack_.pop();
+  }
+
   DestroyRootView();
 
   if (ownership_ == InitParams::WIDGET_OWNS_NATIVE_WIDGET)
@@ -573,6 +609,10 @@ void Widget::NotifyAccessibilityEvent(
     native_widget_->SendNativeAccessibilityEvent(view, event_type);
 }
 
+const Event* Widget::GetCurrentEvent() {
+  return event_stack_.empty() ? NULL : event_stack_.top()->event();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Widget, NativeWidgetDelegate implementation:
 
@@ -686,10 +726,12 @@ int Widget::GetNonClientComponent(const gfx::Point& point) {
 }
 
 bool Widget::OnKeyEvent(const KeyEvent& event) {
+  ScopedEvent scoped(this, event);
   return static_cast<internal::RootView*>(GetRootView())->OnKeyEvent(event);
 }
 
 bool Widget::OnMouseEvent(const MouseEvent& event) {
+  ScopedEvent scoped(this, event);
   switch (event.type()) {
     case ui::ET_MOUSE_PRESSED:
       last_mouse_event_was_move_ = false;

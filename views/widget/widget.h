@@ -6,7 +6,7 @@
 #define VIEWS_WIDGET_WIDGET_H_
 #pragma once
 
-#include <vector>
+#include <stack>
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -52,6 +52,7 @@ class DefaultThemeProvider;
 class InputMethod;
 class NativeWidget;
 class NonClientFrameView;
+class ScopedEvent;
 class TooltipManager;
 class View;
 class WidgetDelegate;
@@ -461,6 +462,12 @@ class Widget : public internal::NativeWidgetDelegate,
   const NativeWidget* native_widget() const { return native_widget_; }
   NativeWidget* native_widget() { return native_widget_; }
 
+  // Returns the current event being processed. If there are multiple events
+  // being processed at the same time (e.g. one event triggers another event),
+  // then the most recent event is returned. Returns NULL if no event is being
+  // processed.
+  const Event* GetCurrentEvent();
+
   // Overridden from NativeWidgetDelegate:
   virtual bool IsModal() const OVERRIDE;
   virtual bool IsDialogBox() const OVERRIDE;
@@ -525,6 +532,8 @@ class Widget : public internal::NativeWidgetDelegate,
   gfx::Point last_mouse_event_position_;
 
  private:
+  friend class ScopedEvent;
+
   // Try to create a compositor if one hasn't been created yet.
   void EnsureCompositor();
 
@@ -567,6 +576,9 @@ class Widget : public internal::NativeWidgetDelegate,
   // Valid for the lifetime of RunShellDrag(), indicates the view the drag
   // started from.
   View* dragged_view_;
+
+  // The event stack.
+  std::stack<ScopedEvent*> event_stack_;
 
   // The compositor for accelerated drawing.
   scoped_refptr<ui::Compositor> compositor_;
