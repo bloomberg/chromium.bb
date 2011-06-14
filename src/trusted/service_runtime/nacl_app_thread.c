@@ -12,7 +12,6 @@
 #include "native_client/src/trusted/service_runtime/nacl_desc_effector_ldr.h"
 
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
-#include "native_client/src/trusted/service_runtime/nacl_oop_debugger_hooks.h"
 #include "native_client/src/trusted/service_runtime/nacl_tls.h"
 #include "native_client/src/trusted/service_runtime/nacl_switch_to_app.h"
 #include "native_client/src/trusted/service_runtime/nacl_stack_safety.h"
@@ -52,8 +51,6 @@ void WINAPI NaClThreadLauncher(void *state) {
   if (NULL != natp->nap->debug_stub_callbacks) {
     natp->nap->debug_stub_callbacks->thread_create_hook(natp);
   }
-
-  NaClOopDebuggerThreadCreateHook(natp);
 
   NaClStartThreadInApp(natp, natp->user.prog_ctr);
 }
