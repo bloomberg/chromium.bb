@@ -20,6 +20,7 @@
 #include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/printing/printer_manager_dialog.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
+#include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -614,8 +615,12 @@ TabContents* PrintPreviewHandler::GetInitiatorTab() {
 }
 
 void PrintPreviewHandler::ClosePrintPreviewTab() {
+  TabContentsWrapper* tab =
+      TabContentsWrapper::GetCurrentWrapperForContents(preview_tab());
+  if (!tab)
+    return;
   Browser* preview_tab_browser = BrowserList::FindBrowserWithID(
-      preview_tab()->controller().window_id().id());
+      tab->restore_tab_helper()->window_id().id());
   if (!preview_tab_browser)
     return;
   TabStripModel* tabstrip = preview_tab_browser->tabstrip_model();

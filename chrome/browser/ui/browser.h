@@ -855,8 +855,6 @@ class Browser : public TabHandlerDelegate,
       const MainFrameCommitDetails& details);
   virtual content::JavaScriptDialogCreator* GetJavaScriptDialogCreator()
       OVERRIDE;
-  virtual void RenderViewCreated(TabContents* source,
-                                 RenderViewHost* host) OVERRIDE;
 
   // Overridden from TabContentsWrapperDelegate:
   virtual void OnDidGetApplicationInfo(TabContentsWrapper* source,

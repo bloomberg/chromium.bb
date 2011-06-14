@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/syncable/syncable.h"
@@ -95,7 +96,7 @@ int64 SessionModelAssociator::GetSyncIdFromSessionTag(const std::string& tag) {
   return node.GetId();
 }
 
-const TabContents*
+const TabContentsWrapper*
 SessionModelAssociator::GetChromeNodeFromSyncId(int64 sync_id) {
   NOTREACHED();
   return NULL;
@@ -141,11 +142,11 @@ void SessionModelAssociator::ReassociateWindows(bool reload_tabs) {
       // Store the order of tabs.
       bool found_tabs = false;
       for (int j = 0; j < (*i)->tab_count(); ++j) {
-        TabContents* tab = (*i)->GetTabContentsAt(j);
+        TabContentsWrapper* tab = (*i)->GetTabContentsWrapperAt(j);
         DCHECK(tab);
-        if (IsValidTab(*tab)) {
+        if (IsValidTab(*(tab->tab_contents()))) {
           found_tabs = true;
-          window_s.add_tab(tab->controller().session_id().id());
+          window_s.add_tab(tab->restore_tab_helper()->session_id().id());
           if (reload_tabs) {
             ReassociateTab(*tab);
           }
@@ -176,23 +177,23 @@ bool SessionModelAssociator::ShouldSyncWindow(const Browser* browser) {
 }
 
 void SessionModelAssociator::ReassociateTabs(
-    const std::vector<TabContents*>& tabs) {
+    const std::vector<TabContentsWrapper*>& tabs) {
   DCHECK(CalledOnValidThread());
-  for (std::vector<TabContents*>::const_iterator i = tabs.begin();
+  for (std::vector<TabContentsWrapper*>::const_iterator i = tabs.begin();
        i != tabs.end();
        ++i) {
     ReassociateTab(**i);
   }
 }
 
-void SessionModelAssociator::ReassociateTab(const TabContents& tab) {
+void SessionModelAssociator::ReassociateTab(const TabContentsWrapper& tab) {
   DCHECK(CalledOnValidThread());
-  if (!IsValidTab(tab))
+  if (!IsValidTab(*(tab.tab_contents())))
     return;
 
   int64 sync_id;
-  SessionID::id_type id = tab.controller().session_id().id();
-  if (tab.is_being_destroyed()) {
+  SessionID::id_type id = tab.restore_tab_helper()->session_id().id();
+  if (tab.tab_contents()->is_being_destroyed()) {
     // This tab is closing.
     TabLinksMap::iterator tab_iter = tab_map_.find(id);
     if (tab_iter == tab_map_.end()) {
@@ -215,11 +216,12 @@ void SessionModelAssociator::ReassociateTab(const TabContents& tab) {
   Associate(&tab, sync_id);
 }
 
-void SessionModelAssociator::Associate(const TabContents* tab, int64 sync_id) {
+void SessionModelAssociator::Associate(const TabContentsWrapper* tab,
+                                       int64 sync_id) {
   DCHECK(CalledOnValidThread());
-  SessionID::id_type session_id = tab->controller().session_id().id();
+  SessionID::id_type session_id = tab->restore_tab_helper()->session_id().id();
   Browser* browser = BrowserList::FindBrowserWithID(
-      tab->controller().window_id().id());
+      tab->restore_tab_helper()->window_id().id());
   if (!browser)  // Can happen for weird things like developer console.
     return;
 
@@ -232,7 +234,7 @@ void SessionModelAssociator::Associate(const TabContents* tab, int64 sync_id) {
 
 bool SessionModelAssociator::WriteTabContentsToSyncModel(
     const Browser& browser,
-    const TabContents& tab,
+    const TabContentsWrapper& tab,
     int64 sync_id,
     sync_api::WriteTransaction* trans) {
   DCHECK(CalledOnValidThread());
@@ -246,24 +248,21 @@ bool SessionModelAssociator::WriteTabContentsToSyncModel(
   session_s.set_session_tag(GetCurrentMachineTag());
   sync_pb::SessionTab* tab_s = session_s.mutable_tab();
 
-  SessionID::id_type tab_id = tab.controller().session_id().id();
+  SessionID::id_type tab_id = tab.restore_tab_helper()->session_id().id();
   tab_s->set_tab_id(tab_id);
-  tab_s->set_window_id(tab.controller().window_id().id());
+  tab_s->set_window_id(tab.restore_tab_helper()->window_id().id());
   const int current_index = tab.controller().GetCurrentEntryIndex();
   const int min_index = std::max(0,
                                  current_index - max_sync_navigation_count);
   const int max_index = std::min(current_index + max_sync_navigation_count,
                                  tab.controller().entry_count());
   const int pending_index = tab.controller().pending_entry_index();
-  int index_in_window = browser.tabstrip_model()->GetWrapperIndex(&tab);
+  int index_in_window = browser.tabstrip_model()->GetIndexOfTabContents(&tab);
   DCHECK(index_in_window != TabStripModel::kNoTab);
   tab_s->set_pinned(browser.tabstrip_model()->IsTabPinned(index_in_window));
-  TabContentsWrapper* wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(
-          const_cast<TabContents*>(&tab));
-  if (wrapper->extension_tab_helper()->extension_app()) {
+  if (tab.extension_tab_helper()->extension_app()) {
     tab_s->set_extension_app_id(
-        wrapper->extension_tab_helper()->extension_app()->id());
+        tab.extension_tab_helper()->extension_app()->id());
   }
   for (int i = min_index; i < max_index; ++i) {
     const NavigationEntry* entry = (i == pending_index) ?

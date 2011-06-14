@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/extension_tab_id_map.h"
 
+#include "chrome/browser/sessions/restore_tab_helper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -56,6 +58,10 @@ void ExtensionTabIdMap::TabObserver::Observe(
   switch (type.value) {
     case NotificationType::RENDER_VIEW_HOST_CREATED_FOR_TAB: {
       TabContents* contents = Source<TabContents>(source).ptr();
+      TabContentsWrapper* tab =
+          TabContentsWrapper::GetCurrentWrapperForContents(contents);
+      if (!tab)
+        break;
       RenderViewHost* host = Details<RenderViewHost>(details).ptr();
       // TODO(mpcmoplete): How can we tell if window_id is bogus? It may not
       // have been set yet.
@@ -65,22 +71,21 @@ void ExtensionTabIdMap::TabObserver::Observe(
               ExtensionTabIdMap::GetInstance(),
               &ExtensionTabIdMap::SetTabAndWindowId,
               host->process()->id(), host->routing_id(),
-              contents->controller().session_id().id(),
-              contents->controller().window_id().id()));
+              tab->restore_tab_helper()->session_id().id(),
+              tab->restore_tab_helper()->window_id().id()));
       break;
     }
     case NotificationType::TAB_PARENTED: {
-      NavigationController* controller =
-          Source<NavigationController>(source).ptr();
-      RenderViewHost* host = controller->tab_contents()->render_view_host();
+      TabContentsWrapper* tab = Source<TabContentsWrapper>(source).ptr();
+      RenderViewHost* host = tab->render_view_host();
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
           NewRunnableMethod(
               ExtensionTabIdMap::GetInstance(),
               &ExtensionTabIdMap::SetTabAndWindowId,
               host->process()->id(), host->routing_id(),
-              controller->session_id().id(),
-              controller->window_id().id()));
+              tab->restore_tab_helper()->session_id().id(),
+              tab->restore_tab_helper()->window_id().id()));
       break;
     }
     case NotificationType::RENDER_VIEW_HOST_DELETED: {

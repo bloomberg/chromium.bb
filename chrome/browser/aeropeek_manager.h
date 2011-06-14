@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,6 +19,7 @@ class Size;
 class AeroPeekWindow;
 class SkBitmap;
 class TabContents;
+class TabContentsWrapper;
 
 // A class which defines interfaces called from AeroPeekWindow.
 // This class is used for dispatching an event received by a thumbnail window
@@ -168,8 +169,8 @@ class AeroPeekManager : public TabStripModelObserver,
   // we need to check if the tab is still alive.
   TabContents* GetTabContents(int tab_id) const;
 
-  // Returns the tab ID from the specified TabContents.
-  int GetTabID(TabContents* contents) const;
+  // Returns the tab ID from the specified TabContentsWrapper.
+  int GetTabID(TabContentsWrapper* contents) const;
 
  private:
   // The parent window of the place-holder windows used by AeroPeek.

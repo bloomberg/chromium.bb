@@ -5,6 +5,7 @@
 #include "chrome/browser/printing/print_preview_tab_controller.h"
 
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -178,8 +179,12 @@ TabContents* PrintPreviewTabController::GetInitiatorTab(
 
 TabContents* PrintPreviewTabController::CreatePrintPreviewTab(
     TabContents* initiator_tab) {
+  // TODO: this should be converted to TabContentsWrapper.
+  TabContentsWrapper* tab =
+      TabContentsWrapper::GetCurrentWrapperForContents(initiator_tab);
+  DCHECK(tab);
   Browser* current_browser = BrowserList::FindBrowserWithID(
-      initiator_tab->controller().window_id().id());
+      tab->restore_tab_helper()->window_id().id());
   if (!current_browser) {
     if (initiator_tab->delegate()->IsExternalTabContainer()) {
       current_browser = Browser::CreateForType(Browser::TYPE_POPUP,

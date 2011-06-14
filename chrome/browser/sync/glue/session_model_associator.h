@@ -27,6 +27,7 @@
 #include "chrome/browser/sync/protocol/session_specifics.pb.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/tab_contents/tab_contents.h"
 
 class Profile;
@@ -49,7 +50,7 @@ static const char kSessionsTag[] = "google_chrome_sessions";
 // Contains all logic for associating the Chrome sessions model and
 // the sync sessions model.
 class SessionModelAssociator
-    : public PerDataTypeAssociatorInterface<TabContents, size_t>,
+    : public PerDataTypeAssociatorInterface<TabContentsWrapper, size_t>,
       public base::NonThreadSafe {
  public:
   // Does not take ownership of sync_service.
@@ -82,7 +83,7 @@ class SessionModelAssociator
   virtual int64 GetSyncIdFromSessionTag(const std::string& tag);
 
   // Not used.
-  virtual const TabContents* GetChromeNodeFromSyncId(int64 sync_id);
+  virtual const TabContentsWrapper* GetChromeNodeFromSyncId(int64 sync_id);
 
   // Not used.
   virtual bool InitSyncNodeFromChromeId(const size_t& id,
@@ -98,15 +99,15 @@ class SessionModelAssociator
   void ReassociateWindows(bool reload_tabs);
 
   // Loads and reassociates the local tabs referenced in |tabs|.
-  void ReassociateTabs(const std::vector<TabContents*>& tabs);
+  void ReassociateTabs(const std::vector<TabContentsWrapper*>& tabs);
 
   // Reassociates a single tab with the sync model. Will check if the tab
   // already is associated with a sync node and allocate one if necessary.
-  void ReassociateTab(const TabContents& tab);
+  void ReassociateTab(const TabContentsWrapper& tab);
 
   // Associate a local tab and it's sync node. Will overwrite the contents of
   // the sync node with new specifics built from the tab.
-  virtual void Associate(const TabContents* tab, int64 sync_id);
+  virtual void Associate(const TabContentsWrapper* tab, int64 sync_id);
 
   // Looks up the specified sync node, and marks that tab as closed, then marks
   // the node as free and deletes association.
@@ -198,10 +199,10 @@ class SessionModelAssociator
 
     // We only ever have either a SessionTab (for foreign tabs), or a
     // TabContents (for local tabs).
-    TabLinks(int64 sync_id, const TabContents* tab)
+    TabLinks(int64 sync_id, const TabContentsWrapper* tab)
       : sync_id_(sync_id),
         session_tab_(NULL) {
-      tab_ = const_cast<TabContents*>(tab);
+      tab_ = const_cast<TabContentsWrapper*>(tab);
     }
     TabLinks(int64 sync_id, const SessionTab* session_tab)
       : sync_id_(sync_id),
@@ -211,11 +212,11 @@ class SessionModelAssociator
 
     inline int64 sync_id() const { return sync_id_; }
     inline const SessionTab* session_tab() const { return session_tab_; }
-    inline const TabContents* tab() const { return tab_; }
+    inline const TabContentsWrapper* tab() const { return tab_; }
    private:
     int64 sync_id_;
     SessionTab* session_tab_;
-    TabContents* tab_;
+    TabContentsWrapper* tab_;
   };
 
   // A pool for managing free/used tab sync nodes. Performs lazy creation
@@ -326,7 +327,7 @@ class SessionModelAssociator
   // Fills a tab sync node with data from a TabContents object.
   // (from a local navigation event)
   bool WriteTabContentsToSyncModel(const Browser& browser,
-                                   const TabContents& tab,
+                                   const TabContentsWrapper& tab,
                                    const int64 sync_id,
                                    sync_api::WriteTransaction* trans);
 

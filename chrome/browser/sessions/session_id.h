@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,12 +7,6 @@
 #pragma once
 
 #include "base/basictypes.h"
-
-class NavigationController;
-class SessionService;
-namespace browser_sync {
-  class SessionModelAssociator;
-}
 
 // Uniquely identifies a tab or window for the duration of a session.
 class SessionID {
@@ -23,18 +17,10 @@ class SessionID {
   ~SessionID() {}
 
   // Returns the underlying id.
+  void set_id(id_type id) { id_ = id; }
   id_type id() const { return id_; }
 
  private:
-  friend class NavigationController;
-  friend class SessionService;
-  friend class browser_sync::SessionModelAssociator;
-
-  explicit SessionID(id_type id) : id_(id) {}
-
-  // Resets the id. This is used when restoring a session
-  void set_id(id_type id) { id_ = id; }
-
   id_type id_;
 };
 

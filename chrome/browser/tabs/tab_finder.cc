@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/navigation_entry.h"
@@ -114,9 +115,8 @@ void TabFinder::Observe(NotificationType type,
   DCHECK_EQ(type.value, NotificationType::TAB_PARENTED);
 
   // The tab was added to a browser. Query for its state now.
-  NavigationController* controller =
-      Source<NavigationController>(source).ptr();
-  TrackTab(controller->tab_contents());
+  TabContentsWrapper* tab = Source<TabContentsWrapper>(source).ptr();
+  TrackTab(tab->tab_contents());
 }
 
 TabFinder::TabFinder() {

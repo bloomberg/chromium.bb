@@ -14,7 +14,9 @@
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_action_button.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_actions_container_view.h"
 #import "chrome/browser/ui/cocoa/extensions/chevron_menu_button.h"
@@ -843,11 +845,11 @@ class ExtensionServiceObserverBridge : public NotificationObserver,
 }
 
 - (int)currentTabId {
-  TabContents* selected_tab = browser_->GetSelectedTabContents();
+  TabContentsWrapper* selected_tab = browser_->GetSelectedTabContentsWrapper();
   if (!selected_tab)
     return -1;
 
-  return selected_tab->controller().session_id().id();
+  return selected_tab->restore_tab_helper()->session_id().id();
 }
 
 #pragma mark -

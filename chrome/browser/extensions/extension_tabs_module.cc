@@ -18,6 +18,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
@@ -143,16 +144,22 @@ int ExtensionTabUtil::GetWindowId(const Browser* browser) {
   return browser->session_id().id();
 }
 
+// TODO: this function should really take a TabContentsWrapper.
 int ExtensionTabUtil::GetTabId(const TabContents* tab_contents) {
-  return tab_contents->controller().session_id().id();
+  const TabContentsWrapper* tab =
+      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
+  return tab ? tab->restore_tab_helper()->session_id().id() : -1;
 }
 
 std::string ExtensionTabUtil::GetTabStatusText(bool is_loading) {
   return is_loading ? keys::kStatusValueLoading : keys::kStatusValueComplete;
 }
 
+// TODO: this function should really take a TabContentsWrapper.
 int ExtensionTabUtil::GetWindowIdOfTab(const TabContents* tab_contents) {
-  return tab_contents->controller().window_id().id();
+  const TabContentsWrapper* tab =
+      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
+  return tab ? tab->restore_tab_helper()->window_id().id() : -1;
 }
 
 DictionaryValue* ExtensionTabUtil::CreateTabValue(
@@ -302,7 +309,8 @@ bool ExtensionTabUtil::GetTabById(int tab_id,
       for (int i = 0; i < target_tab_strip->count(); ++i) {
         TabContentsWrapper* target_contents =
             target_tab_strip->GetTabContentsAt(i);
-        if (target_contents->controller().session_id().id() == tab_id) {
+        if (target_contents->restore_tab_helper()->session_id().id() ==
+            tab_id) {
           if (browser)
             *browser = target_browser;
           if (tab_strip)

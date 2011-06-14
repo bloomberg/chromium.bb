@@ -237,9 +237,5 @@ TabContentsDelegate::GetJavaScriptDialogCreator() {
   return JavaScriptDialogCreatorStub::GetInstance();
 }
 
-void TabContentsDelegate::RenderViewCreated(TabContents* source,
-                                            RenderViewHost* host) {
-}
-
 TabContentsDelegate::~TabContentsDelegate() {
 }

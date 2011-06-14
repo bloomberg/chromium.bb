@@ -681,8 +681,8 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, DISABLED_ReservedAccelerators) {
   EXPECT_NO_FATAL_FAILURE(TestKeyEvent(0, kTestCtrlOrCmdT));
 
   ASSERT_NO_FATAL_FAILURE(
-      wait_for_new_tab.WaitFor(Source<NavigationController>(
-      &browser()->GetTabContentsAt(1)->controller())));
+      wait_for_new_tab.WaitFor(Source<TabContentsWrapper>(
+      browser()->GetTabContentsWrapperAt(1))));
 
   int result_length;
   ASSERT_NO_FATAL_FAILURE(GetResultLength(0, &result_length));

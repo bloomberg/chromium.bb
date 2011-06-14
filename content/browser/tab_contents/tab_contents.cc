@@ -1272,9 +1272,6 @@ void TabContents::RenderViewCreated(RenderViewHost* render_view_host) {
 
   FOR_EACH_OBSERVER(
       TabContentsObserver, observers_, RenderViewCreated(render_view_host));
-
-  if (delegate())
-    delegate()->RenderViewCreated(this, render_view_host);
 }
 
 void TabContents::RenderViewReady(RenderViewHost* rvh) {

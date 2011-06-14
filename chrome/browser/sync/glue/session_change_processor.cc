@@ -15,6 +15,7 @@
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/session_model_associator.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_details.h"
@@ -60,7 +61,7 @@ void SessionChangeProcessor::Observe(NotificationType type,
   DCHECK(profile_);
 
   // Track which windows and/or tabs are modified.
-  std::vector<TabContents*> modified_tabs;
+  std::vector<TabContentsWrapper*> modified_tabs;
   bool windows_changed = false;
   switch (type.value) {
     case NotificationType::BROWSER_OPENED: {
@@ -74,54 +75,57 @@ void SessionChangeProcessor::Observe(NotificationType type,
     }
 
     case NotificationType::TAB_PARENTED: {
-      NavigationController* controller =
-          Source<NavigationController>(source).ptr();
-      if (controller->profile() != profile_) {
+      TabContentsWrapper* tab = Source<TabContentsWrapper>(source).ptr();
+      if (tab->profile() != profile_) {
         return;
       }
       windows_changed = true;
-      modified_tabs.push_back(controller->tab_contents());
+      modified_tabs.push_back(tab);
       break;
     }
 
     case NotificationType::TAB_CLOSED: {
-      NavigationController* controller =
-          Source<NavigationController>(source).ptr();
-      if (controller->profile() != profile_) {
+      TabContentsWrapper* tab =
+          TabContentsWrapper::GetCurrentWrapperForContents(
+              Source<NavigationController>(source).ptr()->tab_contents());
+      if (!tab || tab->profile() != profile_) {
         return;
       }
       windows_changed = true;
-      modified_tabs.push_back(controller->tab_contents());
+      modified_tabs.push_back(tab);
       break;
     }
 
     case NotificationType::NAV_LIST_PRUNED: {
-      NavigationController* controller =
-          Source<NavigationController>(source).ptr();
-      if (controller->profile() != profile_) {
+      TabContentsWrapper* tab =
+          TabContentsWrapper::GetCurrentWrapperForContents(
+              Source<NavigationController>(source).ptr()->tab_contents());
+      if (!tab || tab->profile() != profile_) {
         return;
       }
-      modified_tabs.push_back(controller->tab_contents());
+      modified_tabs.push_back(tab);
       break;
     }
 
     case NotificationType::NAV_ENTRY_CHANGED: {
-      NavigationController* controller =
-          Source<NavigationController>(source).ptr();
-      if (controller->profile() != profile_) {
+      TabContentsWrapper* tab =
+          TabContentsWrapper::GetCurrentWrapperForContents(
+              Source<NavigationController>(source).ptr()->tab_contents());
+      if (!tab || tab->profile() != profile_) {
         return;
       }
-      modified_tabs.push_back(controller->tab_contents());
+      modified_tabs.push_back(tab);
       break;
     }
 
     case NotificationType::NAV_ENTRY_COMMITTED: {
-      NavigationController* controller =
-          Source<NavigationController>(source).ptr();
-      if (controller->profile() != profile_) {
+      TabContentsWrapper* tab =
+          TabContentsWrapper::GetCurrentWrapperForContents(
+              Source<NavigationController>(source).ptr()->tab_contents());
+      if (!tab || tab->profile() != profile_) {
         return;
       }
-      modified_tabs.push_back(controller->tab_contents());
+      modified_tabs.push_back(tab);
       break;
     }
 
@@ -132,7 +136,7 @@ void SessionChangeProcessor::Observe(NotificationType type,
         return;
       }
       if (extension_tab_helper->extension_app()) {
-        modified_tabs.push_back(extension_tab_helper->tab_contents());
+        modified_tabs.push_back(extension_tab_helper->tab_contents_wrapper());
       }
       break;
     }

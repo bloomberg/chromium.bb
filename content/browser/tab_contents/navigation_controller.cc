@@ -1047,13 +1047,6 @@ void NavigationController::InsertOrReplaceEntry(NavigationEntry* entry,
   tab_contents_->UpdateMaxPageID(entry->page_id());
 }
 
-void NavigationController::SetWindowID(const SessionID& id) {
-  window_id_ = id;
-  NotificationService::current()->Notify(NotificationType::TAB_PARENTED,
-                                         Source<NavigationController>(this),
-                                         NotificationService::NoDetails());
-}
-
 void NavigationController::NavigateToPendingEntry(ReloadType reload_type) {
   needs_reload_ = false;
 

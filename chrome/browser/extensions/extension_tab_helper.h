@@ -68,6 +68,10 @@ class ExtensionTabHelper : public TabContentsObserver,
   // Extension::EXTENSION_ICON_SMALLISH).
   SkBitmap* GetExtensionAppIcon();
 
+  TabContentsWrapper* tab_contents_wrapper() {
+    return wrapper_;
+  }
+
   TabContents* tab_contents() const {
       return TabContentsObserver::tab_contents();
   }

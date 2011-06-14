@@ -6,6 +6,7 @@
 
 #include "chrome/browser/printing/print_job.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
+#include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -42,7 +43,7 @@ void BackgroundPrintingManager::OwnTabContents(TabContentsWrapper* contents) {
 
   // Detach |contents| from its tab strip.
   Browser* browser = BrowserList::FindBrowserWithID(
-      contents->controller().window_id().id());
+      contents->restore_tab_helper()->window_id().id());
   TabStripModel* tabstrip = browser->tabstrip_model();
   tabstrip->DetachTabContentsAt(tabstrip->GetIndexOfTabContents(contents));
 

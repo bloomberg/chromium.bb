@@ -20,6 +20,7 @@
 #include "chrome/browser/debugger/devtools_remote_message.h"
 #include "chrome/browser/debugger/inspectable_tab_proxy.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/devtools_messages.h"
@@ -302,12 +303,11 @@ void ExtensionPortsRemoteService::ConnectCommand(
   data->GetInteger(kTabIdKey, &tab_id);  // optional.
   int port_id;
   if (tab_id != -1) {  // Resolve the tab ID.
-    const InspectableTabProxy::ControllersMap& navcon_map =
-        delegate_->inspectable_tab_proxy()->controllers_map();
-    InspectableTabProxy::ControllersMap::const_iterator it =
-        navcon_map.find(tab_id);
+    const InspectableTabProxy::TabMap& tab_map =
+        delegate_->inspectable_tab_proxy()->tab_map();
+    InspectableTabProxy::TabMap::const_iterator it = tab_map.find(tab_id);
     TabContents* tab_contents = NULL;
-    if (it != navcon_map.end())
+    if (it != tab_map.end())
       tab_contents = it->second->tab_contents();
     if (!tab_contents) {
       VLOG(1) << "tab not found: " << tab_id;

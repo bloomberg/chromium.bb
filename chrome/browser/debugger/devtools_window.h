@@ -97,7 +97,7 @@ class DevToolsWindow
   virtual void FrameNavigating(const std::string& url) {}
 
   Profile* profile_;
-  TabContents* inspected_tab_;
+  TabContentsWrapper* inspected_tab_;
   TabContentsWrapper* tab_contents_;
   Browser* browser_;
   bool docked_;

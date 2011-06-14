@@ -15,6 +15,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
@@ -91,7 +92,8 @@ DevToolsWindow::DevToolsWindow(Profile* profile,
                  Source<NavigationController>(&tab_contents_->controller()));
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
-  inspected_tab_ = inspected_rvh->delegate()->GetAsTabContents();
+  inspected_tab_ = TabContentsWrapper::GetCurrentWrapperForContents(
+      inspected_rvh->delegate()->GetAsTabContents());
 }
 
 DevToolsWindow::~DevToolsWindow() {
@@ -132,7 +134,7 @@ void DevToolsWindow::InspectedTabClosing() {
 
 void DevToolsWindow::TabReplaced(TabContentsWrapper* new_tab) {
   DCHECK_EQ(profile_, new_tab->profile());
-  inspected_tab_ = new_tab->tab_contents();
+  inspected_tab_ = new_tab;
 }
 
 void DevToolsWindow::Show(DevToolsToggleAction action) {
@@ -288,7 +290,8 @@ void DevToolsWindow::UpdateFrontendAttachedState() {
 
 void DevToolsWindow::AddDevToolsExtensionsToClient() {
   if (inspected_tab_) {
-    FundamentalValue tabId(inspected_tab_->controller().session_id().id());
+    FundamentalValue tabId(
+        inspected_tab_->restore_tab_helper()->session_id().id());
     CallClientFunction(ASCIIToUTF16("WebInspector.setInspectedTabId"), tabId);
   }
   ListValue results;
@@ -317,11 +320,10 @@ void DevToolsWindow::OpenURLFromTab(TabContents* source,
                                     const GURL& referrer,
                                     WindowOpenDisposition disposition,
                                     PageTransition::Type transition) {
-  if (inspected_tab_)
-    inspected_tab_->OpenURL(url,
-                            GURL(),
-                            NEW_FOREGROUND_TAB,
-                            PageTransition::LINK);
+  if (inspected_tab_) {
+    inspected_tab_->tab_contents()->OpenURL(
+        url, GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
+  }
 }
 
 void DevToolsWindow::CallClientFunction(const string16& function_name,
@@ -430,11 +432,8 @@ void DevToolsWindow::AddNewContents(TabContents* source,
                                     WindowOpenDisposition disposition,
                                     const gfx::Rect& initial_pos,
                                     bool user_gesture) {
-  inspected_tab_->delegate()->AddNewContents(source,
-                                             new_contents,
-                                             disposition,
-                                             initial_pos,
-                                             user_gesture);
+  inspected_tab_->tab_contents()->delegate()->AddNewContents(
+      source, new_contents, disposition, initial_pos, user_gesture);
 }
 
 bool DevToolsWindow::CanReloadContents(TabContents* source) const {

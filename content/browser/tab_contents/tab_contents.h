@@ -723,6 +723,10 @@ class TabContents : public PageNavigator,
   // via WillClose() when it is being destroyed.
   void AddConstrainedDialog(ConstrainedWindow* window);
 
+  // Stores random bits of data for others to associate with this object.
+  // WARNING: this needs to be deleted after NavigationController.
+  PropertyBag property_bag_;
+
   // Data for core operation ---------------------------------------------------
 
   // Delegate for notifying our owner about stuff. Not owned by us.
@@ -738,9 +742,6 @@ class TabContents : public PageNavigator,
 
   // Manages creation and swapping of render views.
   RenderViewHostManager render_manager_;
-
-  // Stores random bits of data for others to associate with this object.
-  PropertyBag property_bag_;
 
   // Registers and unregisters us for notifications.
   NotificationRegistrar registrar_;

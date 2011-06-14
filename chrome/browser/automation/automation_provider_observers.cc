@@ -44,6 +44,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
@@ -329,7 +330,10 @@ void TabStripNotificationObserver::Observe(NotificationType type,
                                            const NotificationSource& source,
                                            const NotificationDetails& details) {
   if (type == notification_) {
-    ObserveTab(Source<NavigationController>(source).ptr());
+    if (type == NotificationType::TAB_PARENTED)
+      ObserveTab(&(Source<TabContentsWrapper>(source).ptr()->controller()));
+    else
+      ObserveTab(Source<NavigationController>(source).ptr());
     delete this;
   } else {
     NOTREACHED();
@@ -833,7 +837,11 @@ void BrowserOpenedNotificationObserver::Observe(
         Source<Browser>(source).ptr());
   } else if (type.value == NotificationType::LOAD_STOP) {
     // Only send the result if the loaded tab is in the new window.
-    int window_id = Source<NavigationController>(source)->window_id().id();
+    NavigationController* controller =
+        Source<NavigationController>(source).ptr();
+    TabContentsWrapper* tab = TabContentsWrapper::GetCurrentWrapperForContents(
+        controller->tab_contents());
+    int window_id = tab ? tab->restore_tab_helper()->window_id().id() : -1;
     if (window_id == new_window_id_) {
       if (for_browser_command_) {
         AutomationMsg_WindowExecuteCommand::WriteReplyParams(
@@ -2134,7 +2142,12 @@ void AppLaunchObserver::Observe(NotificationType type,
       return;
     } else {
       // The app has launched only if the loaded tab is in the new window.
-      int window_id = Source<NavigationController>(source)->window_id().id();
+      NavigationController* controller =
+          Source<NavigationController>(source).ptr();
+      TabContentsWrapper* tab =
+          TabContentsWrapper::GetCurrentWrapperForContents(
+              controller->tab_contents());
+      int window_id = tab ? tab->restore_tab_helper()->window_id().id() : -1;
       if (window_id == new_window_id_) {
         if (automation_) {
           AutomationJSONReply(automation_,
@@ -2491,7 +2504,8 @@ void NewTabObserver::Observe(NotificationType type,
                              const NotificationSource& source,
                              const NotificationDetails& details) {
   DCHECK_EQ(NotificationType::TAB_PARENTED, type.value);
-  NavigationController* controller = Source<NavigationController>(source).ptr();
+  NavigationController* controller =
+      &(Source<TabContentsWrapper>(source).ptr()->controller());
   if (automation_) {
     // TODO(phajdan.jr): Clean up this hack. We write the correct return type
     // here, but don't send the message. NavigationNotificationObserver

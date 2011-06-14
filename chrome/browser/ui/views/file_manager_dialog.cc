@@ -8,9 +8,11 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/extension_file_browser_private_api.h"
 #include "chrome/browser/extensions/file_manager_util.h"
+#include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/views/extensions/extension_dialog.h"
 #include "chrome/browser/ui/views/window.h"
 #include "content/browser/browser_thread.h"
@@ -107,8 +109,8 @@ void FileManagerDialog::SelectFileImpl(
       this /* ExtensionDialog::Observer */);
 
   // Connect our listener to FileDialogFunction's per-tab callbacks.
-  TabContents* contents = owner_browser->GetSelectedTabContents();
-  int32 tab_id = (contents ? contents->controller().session_id().id() : 0);
+  TabContentsWrapper* tab = owner_browser->GetSelectedTabContentsWrapper();
+  int32 tab_id = (tab ? tab->restore_tab_helper()->session_id().id() : 0);
   FileDialogFunction::Callback::Add(tab_id, listener_, params);
 
   tab_id_ = tab_id;

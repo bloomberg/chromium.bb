@@ -32,6 +32,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/browser/renderer_preferences_util.h"
+#include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/safe_browsing/client_side_detection_host.h"
 #include "chrome/browser/tab_contents/blocked_infobar_delegate.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
@@ -119,6 +120,7 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
   favicon_tab_helper_.reset(new FaviconTabHelper(contents));
   find_tab_helper_.reset(new FindTabHelper(contents));
   history_tab_helper_.reset(new HistoryTabHelper(contents));
+  restore_tab_helper_.reset(new RestoreTabHelper(this));
   password_manager_delegate_.reset(new PasswordManagerDelegateImpl(this));
   password_manager_.reset(
       new PasswordManager(contents, password_manager_delegate_.get()));
@@ -337,9 +339,19 @@ void TabContentsWrapper::CaptureSnapshot() {
   Send(new ViewMsg_CaptureSnapshot(routing_id()));
 }
 
+// static
 TabContentsWrapper* TabContentsWrapper::GetCurrentWrapperForContents(
     TabContents* contents) {
   TabContentsWrapper** wrapper =
+      property_accessor()->GetProperty(contents->property_bag());
+
+  return wrapper ? *wrapper : NULL;
+}
+
+// static
+const TabContentsWrapper* TabContentsWrapper::GetCurrentWrapperForContents(
+    const TabContents* contents) {
+  TabContentsWrapper* const* wrapper =
       property_accessor()->GetProperty(contents->property_bag());
 
   return wrapper ? *wrapper : NULL;

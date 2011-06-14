@@ -733,7 +733,7 @@ class SessionRestoreImpl : public NotificationObserver {
     SessionService* session_service =
         SessionServiceFactory::GetForProfile(profile_);
     for (int i = initial_count; i < browser->tab_count(); ++i)
-      session_service->TabRestored(&browser->GetTabContentsAt(i)->controller(),
+      session_service->TabRestored(browser->GetTabContentsWrapperAt(i),
                                    browser->tabstrip_model()->IsTabPinned(i));
   }
 

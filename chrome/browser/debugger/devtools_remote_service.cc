@@ -14,6 +14,8 @@
 #include "chrome/browser/debugger/devtools_protocol_handler.h"
 #include "chrome/browser/debugger/devtools_remote_message.h"
 #include "chrome/browser/debugger/inspectable_tab_proxy.h"
+#include "chrome/browser/sessions/restore_tab_helper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/common/devtools_messages.h"
@@ -75,18 +77,18 @@ void DevToolsRemoteService::ProcessJson(DictionaryValue* json,
     response.SetString(kDataKey, kVersion);
   } else if (command == DevToolsRemoteServiceCommand::kListTabs) {
     ListValue* data = new ListValue();
-    const InspectableTabProxy::ControllersMap& navcon_map =
-        delegate_->inspectable_tab_proxy()->controllers_map();
-    for (InspectableTabProxy::ControllersMap::const_iterator it =
-        navcon_map.begin(), end = navcon_map.end(); it != end; ++it) {
-      NavigationEntry* entry = it->second->GetActiveEntry();
+    const InspectableTabProxy::TabMap& tab_map =
+        delegate_->inspectable_tab_proxy()->tab_map();
+    for (InspectableTabProxy::TabMap::const_iterator it =
+        tab_map.begin(), end = tab_map.end(); it != end; ++it) {
+      NavigationEntry* entry = it->second->controller().GetActiveEntry();
       if (entry == NULL) {
         continue;
       }
       if (entry->url().is_valid()) {
         ListValue* tab = new ListValue();
         tab->Append(Value::CreateIntegerValue(
-            static_cast<int32>(it->second->session_id().id())));
+                        it->second->restore_tab_helper()->session_id().id()));
         tab->Append(Value::CreateStringValue(entry->url().spec()));
         data->Append(tab);
       }

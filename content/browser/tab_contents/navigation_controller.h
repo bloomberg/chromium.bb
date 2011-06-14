@@ -14,7 +14,6 @@
 #include "base/memory/linked_ptr.h"
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
-#include "chrome/browser/sessions/session_id.h"
 #include "content/browser/ssl/ssl_manager.h"
 #include "content/common/navigation_types.h"
 #include "content/common/page_transition_types.h"
@@ -277,13 +276,6 @@ class NavigationController {
 
   // Random data ---------------------------------------------------------------
 
-  // Returns the identifier used by session restore.
-  const SessionID& session_id() const { return session_id_; }
-
-  // Identifier of the window we're in.
-  void SetWindowID(const SessionID& id);
-  const SessionID& window_id() const { return window_id_; }
-
   SSLManager* ssl_manager() { return &ssl_manager_; }
 
   // Returns true if a reload happens when activated (SetActive(true) is
@@ -462,14 +454,6 @@ class NavigationController {
 
   // Whether we need to be reloaded when made active.
   bool needs_reload_;
-
-  // Unique identifier of this controller for session restore. This id is only
-  // unique within the current session, and is not guaranteed to be unique
-  // across sessions.
-  SessionID session_id_;
-
-  // Unique identifier of the window we're in. Used by session restore.
-  SessionID window_id_;
 
   // The time ticks at which the last document was loaded.
   base::TimeTicks last_document_loaded_;

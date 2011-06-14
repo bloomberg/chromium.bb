@@ -18,6 +18,7 @@
 #include "chrome/browser/debugger/devtools_client_host.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/devtools_ui.h"
 #include "content/browser/browser_thread.h"
@@ -254,7 +255,7 @@ static PageList GeneratePageList(
         GetDevToolsClientHostFor(tab_contents->tab_contents()->
                                       render_view_host());
     PageInfo page_info;
-    page_info.id = controller.session_id().id();
+    page_info.id = tab_contents->restore_tab_helper()->session_id().id();
     page_info.attached = client_host != NULL;
     page_info.url = entry->url().spec();
     page_info.title = UTF16ToUTF8(EscapeForHTML(entry->title()));
@@ -522,11 +523,9 @@ TabContents* DevToolsHttpProtocolHandler::GetTabContents(int session_id) {
 
   for (InspectableTabs::iterator it = inspectable_tabs.begin();
        it != inspectable_tabs.end(); ++it) {
-    TabContentsWrapper* tab_contents = *it;
-    NavigationController& controller =
-        tab_contents->controller();
-    if (controller.session_id().id() == session_id)
-      return controller.tab_contents();
+    TabContentsWrapper* tab = *it;
+    if (tab->restore_tab_helper()->session_id().id() == session_id)
+      return tab->tab_contents();
   }
   return NULL;
 }

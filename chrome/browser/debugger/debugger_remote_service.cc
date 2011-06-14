@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,7 @@
 #include "chrome/browser/debugger/devtools_protocol_handler.h"
 #include "chrome/browser/debugger/devtools_remote_message.h"
 #include "chrome/browser/debugger/inspectable_tab_proxy.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -132,11 +133,10 @@ void DebuggerRemoteService::SendResponse(const Value& response,
 // Gets a TabContents instance corresponding to the |tab_uid| using the
 // InspectableTabProxy controllers map, or NULL if none found.
 TabContents* DebuggerRemoteService::ToTabContents(int32 tab_uid) {
-  const InspectableTabProxy::ControllersMap& navcon_map =
-      delegate_->inspectable_tab_proxy()->controllers_map();
-  InspectableTabProxy::ControllersMap::const_iterator it =
-      navcon_map.find(tab_uid);
-  if (it != navcon_map.end()) {
+  const InspectableTabProxy::TabMap& tab_map =
+      delegate_->inspectable_tab_proxy()->tab_map();
+  InspectableTabProxy::TabMap::const_iterator it = tab_map.find(tab_uid);
+  if (it != tab_map.end()) {
     TabContents* tab_contents = it->second->tab_contents();
     if (tab_contents == NULL) {
       return NULL;

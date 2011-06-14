@@ -10,6 +10,7 @@
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/download/save_package.h"
+#include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/ui/cocoa/applescript/error_applescript.h"
 #include "chrome/browser/ui/download/download_tab_helper.h"
@@ -61,7 +62,7 @@
     tabContents_ = aTabContent;
     scoped_nsobject<NSNumber> numID(
         [[NSNumber alloc]
-            initWithInt:tabContents_->controller().session_id().id()]);
+            initWithInt:tabContents_->restore_tab_helper()->session_id().id()]);
     [self setUniqueID:numID];
   }
   return self;
@@ -75,7 +76,7 @@
   tabContents_ = aTabContent;
   scoped_nsobject<NSNumber> numID(
       [[NSNumber alloc]
-          initWithInt:tabContents_->controller().session_id().id()]);
+          initWithInt:tabContents_->restore_tab_helper()->session_id().id()]);
   [self setUniqueID:numID];
 
   [self setURL:[self tempURL]];

@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/gtk/cairo_cached_surface.h"
 #include "chrome/browser/ui/gtk/extensions/extension_popup_gtk.h"
@@ -24,6 +25,7 @@
 #include "chrome/browser/ui/gtk/hover_controller_gtk.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "chrome/browser/ui/gtk/view_id_util.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_resource.h"
@@ -460,11 +462,11 @@ BrowserActionsToolbarGtk::~BrowserActionsToolbarGtk() {
 }
 
 int BrowserActionsToolbarGtk::GetCurrentTabId() {
-  TabContents* selected_tab = browser_->GetSelectedTabContents();
+  TabContentsWrapper* selected_tab = browser_->GetSelectedTabContentsWrapper();
   if (!selected_tab)
     return -1;
 
-  return selected_tab->controller().session_id().id();
+  return selected_tab->restore_tab_helper()->session_id().id();
 }
 
 void BrowserActionsToolbarGtk::Update() {

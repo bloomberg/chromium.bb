@@ -18,6 +18,7 @@
 #include "chrome/browser/app_icon_win.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
+#include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -1040,12 +1041,12 @@ void AeroPeekManager::DeleteAeroPeekWindowForTab(TabContentsWrapper* tab) {
   // Delete the AeroPeekWindow object associated with this tab and all its
   // resources. (AeroPeekWindow::Destory() also removes this tab from the tab
   // list of Windows.)
-  AeroPeekWindow* window = GetAeroPeekWindow(GetTabID(tab->tab_contents()));
+  AeroPeekWindow* window = GetAeroPeekWindow(GetTabID(tab));
   if (!window)
     return;
 
   window->Destroy();
-  DeleteAeroPeekWindow(GetTabID(tab->tab_contents()));
+  DeleteAeroPeekWindow(GetTabID(tab));
 }
 
 AeroPeekWindow* AeroPeekManager::GetAeroPeekWindow(int tab_id) const {
@@ -1061,13 +1062,13 @@ AeroPeekWindow* AeroPeekManager::GetAeroPeekWindow(int tab_id) const {
 
 void AeroPeekManager::CreateAeroPeekWindowIfNecessary(TabContentsWrapper* tab,
                                                       bool foreground) {
-  if (GetAeroPeekWindow(GetTabID(tab->tab_contents())))
+  if (GetAeroPeekWindow(GetTabID(tab)))
     return;
 
   AeroPeekWindow* window =
       new AeroPeekWindow(application_window_,
                          this,
-                         GetTabID(tab->tab_contents()),
+                         GetTabID(tab),
                          foreground,
                          tab->tab_contents()->GetTitle(),
                          tab->favicon_tab_helper()->GetFavicon());
@@ -1076,17 +1077,16 @@ void AeroPeekManager::CreateAeroPeekWindowIfNecessary(TabContentsWrapper* tab,
 
 TabContents* AeroPeekManager::GetTabContents(int tab_id) const {
   for (TabContentsIterator iterator; !iterator.done(); ++iterator) {
-    TabContents* target_contents = (*iterator)->tab_contents();
-    if (target_contents->controller().session_id().id() == tab_id)
-      return target_contents;
+    if (GetTabID(*iterator) == tab_id)
+      return (*iterator)->tab_contents();
   }
   return NULL;
 }
 
-int AeroPeekManager::GetTabID(TabContents* contents) const {
+int AeroPeekManager::GetTabID(TabContentsWrapper* contents) const {
   if (!contents)
     return -1;
-  return contents->controller().session_id().id();
+  return contents->restore_tab_helper()->session_id().id();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1121,15 +1121,13 @@ void AeroPeekManager::ActiveTabChanged(TabContentsWrapper* old_contents,
   // Deactivate the old window in the thumbnail list and activate the new one
   // to synchronize the thumbnail list with TabStrip.
   if (old_contents) {
-    AeroPeekWindow* old_window =
-        GetAeroPeekWindow(GetTabID(old_contents->tab_contents()));
+    AeroPeekWindow* old_window = GetAeroPeekWindow(GetTabID(old_contents));
     if (old_window)
       old_window->Deactivate();
   }
 
   if (new_contents) {
-    AeroPeekWindow* new_window =
-        GetAeroPeekWindow(GetTabID(new_contents->tab_contents()));
+    AeroPeekWindow* new_window = GetAeroPeekWindow(GetTabID(new_contents));
     if (new_window)
       new_window->Activate();
   }
@@ -1164,8 +1162,7 @@ void AeroPeekManager::TabChangedAt(TabContentsWrapper* contents,
 
   // Retrieve the AeroPeekWindow object associated with this tab, update its
   // title, and post a task that update its thumbnail image if necessary.
-  AeroPeekWindow* window =
-      GetAeroPeekWindow(GetTabID(contents->tab_contents()));
+  AeroPeekWindow* window = GetAeroPeekWindow(GetTabID(contents));
   if (!window)
     return;
 

@@ -7,6 +7,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "content/browser/tab_contents/navigation_controller.h"
 
 void BrowserTabRestoreServiceDelegate::ShowBrowserWindow() {
   browser_->window()->Show();

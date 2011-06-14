@@ -57,9 +57,10 @@ class ExternalTabContainer : public TabContentsDelegate,
   typedef std::map<uintptr_t, scoped_refptr<ExternalTabContainer> > PendingTabs;
 
   ExternalTabContainer(AutomationProvider* automation,
-      AutomationResourceMessageFilter* filter);
+                       AutomationResourceMessageFilter* filter);
 
   TabContents* tab_contents() const;
+  TabContentsWrapper* tab_contents_wrapper() { return tab_contents_.get(); }
 
   // Temporary hack so we can send notifications back
   void SetTabHandle(int handle);

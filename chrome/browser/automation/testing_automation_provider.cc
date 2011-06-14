@@ -64,6 +64,7 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/tab_contents/link_infobar_delegate.h"
@@ -5415,15 +5416,18 @@ void TestingAutomationProvider::GetIndicesFromTab(
     return;
   }
   int id = id_or_handle;
-  if (has_handle)
-    id = tab_tracker_->GetResource(id_or_handle)->session_id().id();
+  if (has_handle) {
+    TabContentsWrapper* tab = TabContentsWrapper::GetCurrentWrapperForContents(
+        tab_tracker_->GetResource(id_or_handle)->tab_contents());
+    id = tab->restore_tab_helper()->session_id().id();
+  }
   BrowserList::const_iterator iter = BrowserList::begin();
   int browser_index = 0;
   for (; iter != BrowserList::end(); ++iter, ++browser_index) {
     Browser* browser = *iter;
     for (int tab_index = 0; tab_index < browser->tab_count(); ++tab_index) {
-      TabContents* tab = browser->GetTabContentsAt(tab_index);
-      if (tab->controller().session_id().id() == id) {
+      TabContentsWrapper* tab = browser->GetTabContentsWrapperAt(tab_index);
+      if (tab->restore_tab_helper()->session_id().id() == id) {
         DictionaryValue dict;
         dict.SetInteger("windex", browser_index);
         dict.SetInteger("tab_index", tab_index);
@@ -5640,7 +5644,8 @@ void TestingAutomationProvider::GetTabIds(
   for (; iter != BrowserList::end(); ++iter) {
     Browser* browser = *iter;
     for (int i = 0; i < browser->tab_count(); ++i) {
-      int id = browser->GetTabContentsAt(i)->controller().session_id().id();
+      int id = browser->GetTabContentsWrapperAt(i)->restore_tab_helper()->
+          session_id().id();
       id_list->Append(Value::CreateIntegerValue(id));
     }
   }
@@ -5662,8 +5667,8 @@ void TestingAutomationProvider::IsTabIdValid(
   for (; iter != BrowserList::end(); ++iter) {
     Browser* browser = *iter;
     for (int i = 0; i < browser->tab_count(); ++i) {
-      TabContents* tab = browser->GetTabContentsAt(i);
-      if (tab->controller().session_id().id() == id) {
+      TabContentsWrapper* tab = browser->GetTabContentsWrapperAt(i);
+      if (tab->restore_tab_helper()->session_id().id() == id) {
         is_valid = true;
         break;
       }

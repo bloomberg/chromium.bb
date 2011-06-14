@@ -20,12 +20,12 @@
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 
-class NavigationController;
 class NavigationEntry;
 class Profile;
 class SessionCommand;
 struct SessionTab;
 struct SessionWindow;
+class TabContentsWrapper;
 
 // SessionService ------------------------------------------------------------
 
@@ -133,8 +133,7 @@ class SessionService : public BaseSessionService,
 
   // Notification that a tab has restored its entries or a closed tab is being
   // reused.
-  void TabRestored(NavigationController* controller,
-                   bool pinned);
+  void TabRestored(TabContentsWrapper* tab, bool pinned);
 
   // Sets the index of the selected entry in the navigation controller for the
   // specified tab.
@@ -303,13 +302,13 @@ class SessionService : public BaseSessionService,
                             std::map<int, SessionWindow*>* windows);
 
   // Adds commands to commands that will recreate the state of the specified
-  // NavigationController. This adds at most kMaxNavigationCountToPersist
-  // navigations (in each direction from the current navigation index).
+  // tab. This adds at most kMaxNavigationCountToPersist navigations (in each
+  // direction from the current navigation index).
   // A pair is added to tab_to_available_range indicating the range of
   // indices that were written.
   void BuildCommandsForTab(
       const SessionID& window_id,
-      NavigationController* controller,
+      TabContentsWrapper* tab,
       int index_in_window,
       bool is_pinned,
       std::vector<SessionCommand*>* commands,

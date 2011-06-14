@@ -61,6 +61,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_flow.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/session_types.h"
@@ -103,7 +104,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/profiling.h"
 #include "chrome/common/url_constants.h"
@@ -1157,7 +1157,7 @@ TabContents* Browser::AddRestoredTab(
   SessionService* session_service =
       SessionServiceFactory::GetForProfileIfExisting(profile_);
   if (session_service)
-    session_service->TabRestored(&new_tab->controller(), pin);
+    session_service->TabRestored(wrapper, pin);
   return new_tab;
 }
 
@@ -2700,7 +2700,6 @@ void Browser::DuplicateContentsAt(int index) {
   TabContentsWrapper* contents = GetTabContentsWrapperAt(index);
   CHECK(contents);
   TabContentsWrapper* contents_dupe = contents->Clone();
-  TabContents* new_contents = contents_dupe->tab_contents();
 
   bool pinned = false;
   if (CanSupportWindowFeature(FEATURE_TABSTRIP)) {
@@ -2743,7 +2742,7 @@ void Browser::DuplicateContentsAt(int index) {
   SessionService* session_service =
       SessionServiceFactory::GetForProfileIfExisting(profile_);
   if (session_service)
-    session_service->TabRestored(&new_contents->controller(), pinned);
+    session_service->TabRestored(contents_dupe, pinned);
 }
 
 void Browser::CloseFrameAfterDragSession() {
@@ -2857,14 +2856,7 @@ void Browser::TabInsertedAt(TabContentsWrapper* contents,
                             int index,
                             bool foreground) {
   SetAsDelegate(contents, this);
-  contents->controller().SetWindowID(session_id());
-
-  // Extension code in the renderer holds the ID of the window that hosts it.
-  // Notify it that the window ID changed.
-  // TODO(sky): move this to a better place.
-  contents->render_view_host()->Send(new ExtensionMsg_UpdateBrowserWindowId(
-      contents->render_view_host()->routing_id(),
-      contents->controller().window_id().id()));
+  contents->restore_tab_helper()->SetWindowID(session_id());
 
   SyncHistoryWithTabs(index);
 
@@ -2991,8 +2983,7 @@ void Browser::TabReplacedAt(TabStripModel* tab_strip_model,
     // The new_contents may end up with a different navigation stack. Force
     // the session service to update itself.
     session_service->TabRestored(
-        &new_contents->controller(),
-        tab_handler_->GetTabStripModel()->IsTabPinned(index));
+        new_contents, tab_handler_->GetTabStripModel()->IsTabPinned(index));
   }
 
   DevToolsManager* devtools_manager = DevToolsManager::GetInstance();
@@ -3006,7 +2997,7 @@ void Browser::TabPinnedStateChanged(TabContentsWrapper* contents, int index) {
   if (session_service) {
     session_service->SetPinnedState(
         session_id(),
-        GetTabContentsAt(index)->controller().session_id(),
+        GetTabContentsWrapperAt(index)->restore_tab_helper()->session_id(),
         tab_handler_->GetTabStripModel()->IsTabPinned(index));
   }
 }
@@ -3437,14 +3428,6 @@ void Browser::DidNavigateMainFramePostCommit(
 
 content::JavaScriptDialogCreator* Browser::GetJavaScriptDialogCreator() {
   return GetJavaScriptDialogCreatorInstance();
-}
-
-void Browser::RenderViewCreated(TabContents* source, RenderViewHost* host) {
-  // TODO(sky): move this to a TabContentsObserver hung off TabContentsWrapper,
-  // then nuke this method.
-  host->Send(new ExtensionMsg_UpdateBrowserWindowId(
-                 host->routing_id(),
-                 source->controller().window_id().id()));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -4250,13 +4233,13 @@ void Browser::SyncHistoryWithTabs(int index) {
       SessionServiceFactory::GetForProfileIfExisting(profile());
   if (session_service) {
     for (int i = index; i < tab_count(); ++i) {
-      TabContents* contents = GetTabContentsAt(i);
-      if (contents) {
+      TabContentsWrapper* tab = GetTabContentsWrapperAt(i);
+      if (tab) {
         session_service->SetTabIndexInWindow(
-            session_id(), contents->controller().session_id(), i);
+            session_id(), tab->restore_tab_helper()->session_id(), i);
         session_service->SetPinnedState(
             session_id(),
-            contents->controller().session_id(),
+            tab->restore_tab_helper()->session_id(),
             tab_handler_->GetTabStripModel()->IsTabPinned(i));
       }
     }
@@ -4700,7 +4683,7 @@ void Browser::ViewSource(TabContentsWrapper* contents,
   SessionService* session_service =
       SessionServiceFactory::GetForProfileIfExisting(profile_);
   if (session_service)
-    session_service->TabRestored(&view_source_contents->controller(), false);
+    session_service->TabRestored(view_source_contents, false);
 }
 
 int Browser::GetContentRestrictionsForSelectedTab() {

@@ -46,6 +46,7 @@ class OmniboxSearchHint;
 class PasswordManager;
 class PasswordManagerDelegate;
 class PluginObserver;
+class RestoreTabHelper;
 class SearchEngineTabHelper;
 class TabContentsSSLHelper;
 class TabContentsWrapperDelegate;
@@ -98,6 +99,8 @@ class TabContentsWrapper : public TabContentsObserver,
   // chrome/ code instead of TabContents.
   static TabContentsWrapper* GetCurrentWrapperForContents(
       TabContents* contents);
+  static const TabContentsWrapper* GetCurrentWrapperForContents(
+      const TabContents* contents);
 
   TabContentsWrapperDelegate* delegate() const { return delegate_; }
   void set_delegate(TabContentsWrapperDelegate* d) { delegate_ = d; }
@@ -141,6 +144,10 @@ class TabContentsWrapper : public TabContentsObserver,
     return extension_tab_helper_.get();
   }
 
+  const ExtensionTabHelper* extension_tab_helper() const {
+    return extension_tab_helper_.get();
+  }
+
   FindTabHelper* find_tab_helper() { return find_tab_helper_.get(); }
 
   FaviconTabHelper* favicon_tab_helper() { return favicon_tab_helper_.get(); }
@@ -171,6 +178,14 @@ class TabContentsWrapper : public TabContentsObserver,
 
   prerender::PrerenderObserver* prerender_observer() {
     return prerender_observer_.get();
+  }
+
+  RestoreTabHelper* restore_tab_helper() {
+    return restore_tab_helper_.get();
+  }
+
+  const RestoreTabHelper* restore_tab_helper() const {
+    return restore_tab_helper_.get();
   }
 
   // Overrides -----------------------------------------------------------------
@@ -264,6 +279,7 @@ class TabContentsWrapper : public TabContentsObserver,
   scoped_ptr<FaviconTabHelper> favicon_tab_helper_;
   scoped_ptr<FindTabHelper> find_tab_helper_;
   scoped_ptr<HistoryTabHelper> history_tab_helper_;
+  scoped_ptr<RestoreTabHelper> restore_tab_helper_;
 
   // PasswordManager and its delegate. The delegate must outlive the manager,
   // per documentation in password_manager.h.

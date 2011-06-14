@@ -13,6 +13,7 @@
 #include "chrome/browser/automation/ui_controls.h"
 #include "chrome/browser/external_tab_container_win.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -257,7 +258,8 @@ void AutomationProvider::CreateExternalTab(
     *tab_handle = external_tab_container->tab_handle();
     *tab_container_window = external_tab_container->GetNativeView();
     *tab_window = tab_contents->GetNativeView();
-    *session_id = tab_contents->controller().session_id().id();
+    *session_id = external_tab_container->tab_contents_wrapper()->
+        restore_tab_helper()->session_id().id();
   } else {
     external_tab_container->Uninitialize();
   }
@@ -395,7 +397,8 @@ void AutomationProvider::ConnectExternalTab(
     *tab_handle = external_tab_container->tab_handle();
     *tab_container_window = external_tab_container->GetNativeView();
     *tab_window = tab_contents->GetNativeView();
-    *session_id = tab_contents->controller().session_id().id();
+    *session_id = external_tab_container->tab_contents_wrapper()->
+        restore_tab_helper()->session_id().id();
   } else {
     external_tab_container->Uninitialize();
   }

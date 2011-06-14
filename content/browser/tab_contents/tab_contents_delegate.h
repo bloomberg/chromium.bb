@@ -308,9 +308,6 @@ class TabContentsDelegate {
   // and displays nothing.
   virtual content::JavaScriptDialogCreator* GetJavaScriptDialogCreator();
 
-  // Invoked when a new renderer is created.
-  virtual void RenderViewCreated(TabContents* source, RenderViewHost* host);
-
  protected:
   virtual ~TabContentsDelegate();
 };

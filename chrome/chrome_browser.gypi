@@ -1862,6 +1862,8 @@
         'browser/service/service_process_control.h',
         'browser/sessions/base_session_service.cc',
         'browser/sessions/base_session_service.h',
+        'browser/sessions/restore_tab_helper.cc',
+        'browser/sessions/restore_tab_helper.h',
         'browser/sessions/session_backend.cc',
         'browser/sessions/session_backend.h',
         'browser/sessions/session_command.cc',

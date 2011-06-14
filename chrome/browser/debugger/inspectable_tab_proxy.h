@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,25 +15,24 @@
 class DebuggerRemoteService;
 class DevToolsClientHost;
 class DevToolsClientHostImpl;
-class NavigationController;
 struct DevToolsMessageData;
+class TabContentsWrapper;
 
-// Proxies debugged tabs' NavigationControllers using their UIDs.
+// Proxies debugged tabs' TabContentsWrapper using their UIDs.
 // Keeps track of tabs being debugged so that we can detach from
 // them on remote debugger connection loss.
 class InspectableTabProxy {
  public:
-  typedef base::hash_map<int32, NavigationController*> ControllersMap;
+  typedef base::hash_map<int32, TabContentsWrapper*> TabMap;
   typedef base::hash_map<int32, DevToolsClientHostImpl*> IdToClientHostMap;
 
   InspectableTabProxy();
   virtual ~InspectableTabProxy();
 
-  // Returns a map of NavigationControllerKeys to NavigationControllers
-  // for all Browser instances. Clients should not keep the result around
-  // for extended periods of time as tabs might get closed thus invalidating
-  // the map.
-  const ControllersMap& controllers_map();
+  // Returns a map of SessionID to TabContentsWrapper for all Browser
+  // instances. Clients should not keep the result around for extended periods
+  // of time as tabs might get closed thus invalidating the map.
+  const TabMap& tab_map();
 
   // Returns a DevToolsClientHostImpl for the given tab |id|.
   DevToolsClientHostImpl* ClientHostForTabId(int32 id);
@@ -51,7 +50,7 @@ class InspectableTabProxy {
   void OnRemoteDebuggerDetached();
 
  private:
-  ControllersMap controllers_map_;
+  TabMap tab_map_;
   IdToClientHostMap id_to_client_host_map_;
   DISALLOW_COPY_AND_ASSIGN(InspectableTabProxy);
 };
