@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,7 +15,6 @@
 #include "base/path_service.h"
 #include "base/shared_memory.h"
 #include "base/string_util.h"
-#include "base/sys_info.h"
 #include "base/utf_string_conversions.h"
 #include "base/version.h"
 #include "base/win/windows_version.h"
@@ -57,11 +56,7 @@ DllRedirector* DllRedirector::GetInstance() {
 bool DllRedirector::BuildSecurityAttributesForLock(
     CSecurityAttributes* sec_attr) {
   DCHECK(sec_attr);
-  int32 major_version, minor_version, fix_version;
-  base::SysInfo::OperatingSystemVersionNumbers(&major_version,
-                                               &minor_version,
-                                               &fix_version);
-  if (major_version < 6) {
+  if (base::win::GetVersion() < base::win::VERSION_VISTA) {
     // Don't bother with changing ACLs on pre-vista.
     return false;
   }

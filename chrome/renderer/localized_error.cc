@@ -8,7 +8,6 @@
 #include "base/logging.h"
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
-#include "base/sys_info.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension_set.h"
@@ -20,6 +19,10 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLError.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "webkit/glue/webkit_glue.h"
+
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
 
 using WebKit::WebURLError;
 
@@ -442,14 +445,12 @@ void LocalizedError::GetStrings(const WebKit::WebURLError& error,
         IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED_PLATFORM;
 #if defined(OS_WIN)
     // Different versions of Windows have different instructions.
-    int32 major_version, minor_version, bugfix_version;
-    base::SysInfo::OperatingSystemVersionNumbers(
-        &major_version, &minor_version, &bugfix_version);
-    if (major_version < 6) {
+    base::win::Version windows_version = base::win::GetVersion();
+    if (windows_version < base::win::VERSION_VISTA) {
       // XP, XP64, and Server 2003.
       platform_string_id =
           IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED_PLATFORM_XP;
-    } else if (major_version == 6 && minor_version == 0) {
+    } else if (windows_version == base::win::VERSION_VISTA) {
       // Vista
       platform_string_id =
           IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED_PLATFORM_VISTA;

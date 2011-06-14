@@ -5,10 +5,10 @@
 #include "chrome_frame/dll_redirector.h"
 
 #include "base/shared_memory.h"
-#include "base/sys_info.h"
 #include "base/utf_string_conversions.h"
 #include "base/version.h"
 #include "base/win/scoped_handle.h"
+#include "base/win/windows_version.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "gtest/gtest.h"
 
@@ -329,11 +329,7 @@ TEST_F(DllRedirectorTest, LowIntegrityAccess) {
       shared_memory.Unlock();
   }
 
-  int32 major_version, minor_version, fix_version;
-  base::SysInfo::OperatingSystemVersionNumbers(&major_version,
-                                               &minor_version,
-                                               &fix_version);
-  if (major_version >= 6) {
+  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
     // Now move to low integrity
     chrome_frame_test::LowIntegrityToken low_integrity_token;
     ASSERT_TRUE(low_integrity_token.Impersonate());
@@ -375,11 +371,7 @@ TEST_F(DllRedirectorTest, LowIntegrityAccessDenied) {
       shared_memory.Unlock();
   }
 
-  int32 major_version, minor_version, fix_version;
-  base::SysInfo::OperatingSystemVersionNumbers(&major_version,
-                                               &minor_version,
-                                               &fix_version);
-  if (major_version >= 6) {
+  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
     // Now move to low integrity
     chrome_frame_test::LowIntegrityToken low_integrity_token;
     low_integrity_token.Impersonate();

@@ -8,16 +8,12 @@
 #include <shellapi.h>
 
 #include "base/logging.h"
-#include "base/sys_info.h"
+#include "base/win/windows_version.h"
 
 static bool IsPlatformFullScreenMode() {
   // SHQueryUserNotificationState is only available for Vista and above.
 #if defined(NTDDI_VERSION) && (NTDDI_VERSION >= NTDDI_VISTA)
-  int32 major_version, minor_version, fix_version;
-  base::SysInfo::OperatingSystemVersionNumbers(&major_version,
-                                               &minor_version,
-                                               &fix_version);
-  if (major_version < 6)
+  if (base::win::GetVersion() < base::win::VERSION_VISTA)
     return false;
 
   typedef HRESULT(WINAPI *SHQueryUserNotificationStatePtr)(
