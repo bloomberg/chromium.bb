@@ -77,6 +77,7 @@ SyncSetupWizard::State SyncSetupWizard::GetEndStateForDiscreteRun(
   if (start_state == GAIA_LOGIN) {
     result = GAIA_SUCCESS;
   } else if (start_state == ENTER_PASSPHRASE ||
+             start_state == NONFATAL_ERROR ||
              start_state == SYNC_EVERYTHING ||
              start_state == CONFIGURE) {
     result = DONE;

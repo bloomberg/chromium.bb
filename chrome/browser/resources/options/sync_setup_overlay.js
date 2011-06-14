@@ -269,12 +269,6 @@ cr.define('options', function() {
     },
 
     setChooseDataTypesCheckboxes_: function(args) {
-      // If this frame is on top, the focus should be on it, so pressing enter
-      // submits this form.
-      if (args.iframeToShow == 'configure') {
-        $('choose-datatypes-ok').focus();
-      }
-
       var datatypeSelect = document.getElementById('sync-select-datatypes');
       datatypeSelect.selectedIndex = args.keepEverythingSynced ? 0 : 1;
 
@@ -359,7 +353,6 @@ cr.define('options', function() {
       this.setErrorState_(args);
     },
 
-    // Called once, when this html/js is loaded.
     showConfigure_: function(args) {
       var datatypeSelect = document.getElementById('sync-select-datatypes');
       var self = this;
@@ -456,6 +449,9 @@ cr.define('options', function() {
       var index = syncEverything ? 0 : 1;
       document.getElementById('sync-select-datatypes').selectedIndex = index;
       this.setDataTypeCheckboxesEnabled_(!syncEverything);
+
+      // The passphrase input may need to take over focus from the OK button, so
+      // set focus before that logic.
       $('choose-datatypes-ok').focus();
 
       if (args && args['show_passphrase'])
@@ -700,20 +696,19 @@ cr.define('options', function() {
       $('sign-in').value = localStrings.getString('settingUp');
     },
 
-    /** @inheritDoc */
-    shouldClose: function() {
-      if (!$('cancel-warning-box').hidden) {
-        chrome.send('SyncSetupPassphraseCancel', ['']);
-        return true;
-      } else if (!$('sync-setup-passphrase').hidden) {
-        // The Passphrase page is showing, and the use has pressed escape.
-        // Activate the cancel logic in this case.
-        this.showCancelWarning_();
-        return false;
-      }
-
-      return true;
+    /**
+     * Initiates attachment to the Sync setup flow and steps into the
+     * appropriate error UI.
+     * @private
+     */
+    showErrorUI_: function() {
+      this.attach_();
+      chrome.send('SyncSetupShowErrorUI');
     },
+  };
+
+  SyncSetupOverlay.showErrorUI = function() {
+    SyncSetupOverlay.getInstance().showErrorUI_();
   };
 
   SyncSetupOverlay.showSyncDialog = function() {

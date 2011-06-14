@@ -34,13 +34,16 @@ class SyncSetupWizard {
     CONFIGURE,
     // Show the screen that prompts for your passphrase
     ENTER_PASSPHRASE,
-    // The panic switch.  Something went terribly wrong during setup and we
-    // can't recover.
+    // An error has occurred in the backend. The next appropriate step is picked
+    // based on which error has occurred.
+    NONFATAL_ERROR,
+    // The panic switch. Something went terribly wrong during setup and we can't
+    // recover.
     FATAL_ERROR,
     // The client can't set up sync at the moment due to a concurrent operation
     // to clear cloud data being in progress on the server.
     SETUP_ABORTED_BY_PENDING_CLEAR,
-    // Loading screen with spinny throbber.
+    // Loading screen with throbber.
     SETTING_UP,
     // A catch-all done case for any setup process.
     DONE
@@ -64,6 +67,8 @@ class SyncSetupWizard {
   // not visible.
   void Focus();
 
+  // TODO(jhawkins): Refactor to take a State parameter and handle the call to
+  // Step() as well as hooking up the handler.
   SyncSetupFlow* AttachSyncSetupHandler(SyncSetupFlowHandler* handler);
 
  private:

@@ -61,12 +61,6 @@ class SyncSetupFlow {
       ProfileSyncService* service,
       DictionaryValue* args);
 
-  // Fills |args| for the enter passphrase screen.
-  static void GetArgsForEnterPassphrase(
-      bool tried_creating_explicit_passphrase,
-      bool tried_setting_explicit_passphrase,
-      DictionaryValue* args);
-
   void AttachSyncSetupHandler(SyncSetupFlowHandler* handler);
 
   // Triggers a state machine transition to advance_state.
@@ -106,6 +100,7 @@ class SyncSetupFlow {
   FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest,
                            DiscreteRunChooseDataTypesAbortedByPendingClear);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, EnterPassphraseRequired);
+  FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, NonFatalError);
 
   // Use static Run method to get an instance.
   SyncSetupFlow(SyncSetupWizard::State start_state,

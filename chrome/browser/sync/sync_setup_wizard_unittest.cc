@@ -15,9 +15,9 @@
 #include "chrome/browser/sync/profile_sync_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_setup_flow.h"
-#include "chrome/browser/sync/sync_setup_flow_handler.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/webui/options/sync_setup_handler.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/browser_with_test_window_test.h"
@@ -32,17 +32,41 @@ static const char kTestCaptchaUrl[] = "http://pizzamyheart/";
 
 typedef GoogleServiceAuthError AuthError;
 
+class MockSyncSetupHandler : public SyncSetupHandler {
+ public:
+  MockSyncSetupHandler() {}
+
+  // SyncSetupFlowHandler implementation.
+  virtual void ShowGaiaLogin(const DictionaryValue& args) {}
+  virtual void ShowGaiaSuccessAndClose() {}
+  virtual void ShowGaiaSuccessAndSettingUp() {}
+  virtual void ShowConfigure(const DictionaryValue& args) {}
+  virtual void ShowPassphraseEntry(const DictionaryValue& args) {}
+  virtual void ShowSettingUp() {}
+  virtual void ShowSetupDone(const std::wstring& user) {
+    flow()->OnDialogClosed("");
+  }
+
+  void CloseSetupUI() {
+    ShowSetupDone(std::wstring());
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockSyncSetupHandler);
+};
+
 // A PSS subtype to inject.
 class ProfileSyncServiceForWizardTest : public ProfileSyncService {
  public:
   ProfileSyncServiceForWizardTest(ProfileSyncFactory* factory, Profile* profile)
       : ProfileSyncService(factory, profile, ""),
-        user_cancelled_dialog_(false) {
+        user_cancelled_dialog_(false),
+        is_using_secondary_passphrase_(false) {
     RegisterPreferences();
     ResetTestStats();
   }
 
-  virtual ~ProfileSyncServiceForWizardTest() { }
+  virtual ~ProfileSyncServiceForWizardTest() {}
 
   virtual void OnUserSubmittedAuth(const std::string& username,
                                    const std::string& password,
@@ -73,13 +97,31 @@ class ProfileSyncServiceForWizardTest : public ProfileSyncService {
     return UTF8ToUTF16(username_);
   }
 
+  virtual bool IsUsingSecondaryPassphrase() const {
+    // The only value of |is_using_secondary_passphrase_| we current care about
+    // is when it's true.
+    if (!is_using_secondary_passphrase_)
+      return ProfileSyncService::IsUsingSecondaryPassphrase();
+    else
+      return is_using_secondary_passphrase_;
+  }
+
   void set_auth_state(const std::string& last_email,
                       const AuthError& error) {
     last_attempted_user_email_ = last_email;
     last_auth_error_ = error;
   }
 
-  void SetPassphraseRequiredReason(sync_api::PassphraseRequiredReason reason) {
+  void set_last_auth_error(const AuthError& error) {
+    last_auth_error_ = error;
+  }
+
+  void set_is_using_secondary_passphrase(bool secondary) {
+    is_using_secondary_passphrase_ = secondary;
+  }
+
+  void set_passphrase_required_reason(
+      sync_api::PassphraseRequiredReason reason) {
     passphrase_required_reason_ = reason;
   }
 
@@ -99,6 +141,7 @@ class ProfileSyncServiceForWizardTest : public ProfileSyncService {
   bool user_cancelled_dialog_;
   bool user_chose_data_types_;
   bool keep_everything_synced_;
+  bool is_using_secondary_passphrase_;
   syncable::ModelTypeSet chosen_data_types_;
 
   std::string passphrase_;
@@ -121,61 +164,21 @@ class TestingProfileWithSyncService : public TestingProfile {
   scoped_ptr<ProfileSyncService> sync_service_;
 };
 
-class TestBrowserWindowForWizardTest : public TestBrowserWindow {
- public:
-  explicit TestBrowserWindowForWizardTest(Browser* browser)
-      : TestBrowserWindow(browser), flow_(NULL),
-        was_show_html_dialog_called_(false) {
-  }
-
-  virtual ~TestBrowserWindowForWizardTest() {
-    if (flow_.get()) {
-      // The handler contract is that they are valid for the lifetime of the
-      // sync login overlay, but are cleaned up after the dialog is closed
-      // and/or deleted.
-      flow_.reset();
-    }
-  }
-
-  bool TestAndResetWasShowHTMLDialogCalled() {
-    bool ret = was_show_html_dialog_called_;
-    was_show_html_dialog_called_ = false;
-    return ret;
-  }
-
-  // Simulates the user (or browser view hierarchy) closing the html dialog.
-  // Handles cleaning up the delegate and associated handlers.
-  void CloseDialog() {
-    if (flow_.get()) {
-      // The flow deletes itself here.  Don't use reset().
-      flow_.release()->OnDialogClosed("");
-    }
-  }
-
-  SyncSetupFlow* flow() { return flow_.get(); }
-
- private:
-  // In real life, this is owned by the view that is opened by the browser.  We
-  // mock all that out, so we need to take ownership so the flow doesn't leak.
-  scoped_ptr<SyncSetupFlow> flow_;
-
-  bool was_show_html_dialog_called_;
-};
-
+// TODO(jhawkins): Subclass Browser (specifically, ShowOptionsTab) and inject it
+// here to test the visibility of the Sync UI.
 class SyncSetupWizardTest : public BrowserWithTestWindowTest {
  public:
   SyncSetupWizardTest()
-      : test_window_(NULL),
-        wizard_(NULL) { }
-  virtual ~SyncSetupWizardTest() { }
+      : wizard_(NULL),
+        service_(NULL),
+        flow_(NULL) {}
+  virtual ~SyncSetupWizardTest() {}
   virtual void SetUp() {
     set_profile(new TestingProfileWithSyncService());
     profile()->CreateBookmarkModel(false);
     // Wait for the bookmarks model to load.
     profile()->BlockUntilBookmarkModelLoaded();
     set_browser(new Browser(Browser::TYPE_TABBED, profile()));
-    test_window_ = new TestBrowserWindowForWizardTest(browser());
-    set_window(test_window_);
     browser()->set_window(window());
     BrowserList::SetLastActive(browser());
     service_ = static_cast<ProfileSyncServiceForWizardTest*>(
@@ -184,14 +187,34 @@ class SyncSetupWizardTest : public BrowserWithTestWindowTest {
   }
 
   virtual void TearDown() {
-    test_window_ = NULL;
-    service_ = NULL;
     wizard_.reset();
+    service_ = NULL;
+    flow_ = NULL;
   }
 
-  TestBrowserWindowForWizardTest* test_window_;
+ protected:
+  void AttachSyncSetupHandler() {
+    flow_ = wizard_->AttachSyncSetupHandler(&handler_);
+  }
+
+  void CompleteSetup() {
+    // For a discrete run, we need to have ran through setup once.
+    wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
+    AttachSyncSetupHandler();
+    wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
+    wizard_->Step(SyncSetupWizard::SYNC_EVERYTHING);
+    wizard_->Step(SyncSetupWizard::SETTING_UP);
+    wizard_->Step(SyncSetupWizard::DONE);
+  }
+
+  void CloseSetupUI() {
+    handler_.CloseSetupUI();
+  }
+
   scoped_ptr<SyncSetupWizard> wizard_;
   ProfileSyncServiceForWizardTest* service_;
+  SyncSetupFlow* flow_;
+  MockSyncSetupHandler handler_;
 };
 
 // See http://code.google.com/p/chromium/issues/detail?id=40715 for
@@ -205,7 +228,7 @@ class SyncSetupWizardTest : public BrowserWithTestWindowTest {
 #define SKIP_TEST_ON_MACOSX() do {} while (0)
 #endif
 
-TEST_F(SyncSetupWizardTest, DISABLED_InitialStepLogin) {
+TEST_F(SyncSetupWizardTest, InitialStepLogin) {
   SKIP_TEST_ON_MACOSX();
   DictionaryValue dialog_args;
   SyncSetupFlow::GetArgsForGaiaLogin(service_, &dialog_args);
@@ -220,40 +243,35 @@ TEST_F(SyncSetupWizardTest, DISABLED_InitialStepLogin) {
   credentials.Append(new StringValue(auth));
 
   EXPECT_FALSE(wizard_->IsVisible());
-  EXPECT_FALSE(test_window_->flow());
+  EXPECT_EQ(static_cast<SyncSetupFlow*>(NULL), flow_);
   wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
+  AttachSyncSetupHandler();
 
   EXPECT_TRUE(wizard_->IsVisible());
-  EXPECT_TRUE(test_window_->TestAndResetWasShowHTMLDialogCalled());
-  EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, test_window_->flow()->current_state_);
-  EXPECT_EQ(SyncSetupWizard::DONE, test_window_->flow()->end_state_);
-  EXPECT_EQ(json_start_args, test_window_->flow()->dialog_start_args_);
+  EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, flow_->current_state_);
+  EXPECT_EQ(SyncSetupWizard::DONE, flow_->end_state_);
+  EXPECT_EQ(json_start_args, flow_->dialog_start_args_);
 
-#if 0
   // Simulate the user submitting credentials.
-  test_window_->flow()->flow_handler_->HandleSubmitAuth(&credentials);
+  handler_.HandleSubmitAuth(&credentials);
   EXPECT_TRUE(wizard_->IsVisible());
-  EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, test_window_->flow()->current_state_);
+  EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, flow_->current_state_);
   EXPECT_EQ(kTestUser, service_->username_);
   EXPECT_EQ(kTestPassword, service_->password_);
   EXPECT_EQ(kTestCaptcha, service_->captcha_);
   EXPECT_FALSE(service_->user_cancelled_dialog_);
   service_->ResetTestStats();
-#endif
 
   // Simulate failed credentials.
   AuthError invalid_gaia(AuthError::INVALID_GAIA_CREDENTIALS);
   service_->set_auth_state(kTestUser, invalid_gaia);
   wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
+  AttachSyncSetupHandler();
   EXPECT_TRUE(wizard_->IsVisible());
-  EXPECT_FALSE(test_window_->TestAndResetWasShowHTMLDialogCalled());
-  EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, test_window_->flow()->current_state_);
+  EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, flow_->current_state_);
   dialog_args.Clear();
   SyncSetupFlow::GetArgsForGaiaLogin(service_, &dialog_args);
-  EXPECT_EQ(5U, dialog_args.size());
-  std::string iframe_to_show;
-  dialog_args.GetString("iframeToShow", &iframe_to_show);
-  EXPECT_EQ("login", iframe_to_show);
+  EXPECT_EQ(4U, dialog_args.size());
   std::string actual_user;
   dialog_args.GetString("user", &actual_user);
   EXPECT_EQ(kTestUser, actual_user);
@@ -267,10 +285,9 @@ TEST_F(SyncSetupWizardTest, DISABLED_InitialStepLogin) {
       std::string(), GURL(kTestCaptchaUrl), GURL()));
   service_->set_auth_state(kTestUser, captcha_error);
   wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
+  AttachSyncSetupHandler();
   SyncSetupFlow::GetArgsForGaiaLogin(service_, &dialog_args);
-  EXPECT_EQ(5U, dialog_args.size());
-  dialog_args.GetString("iframeToShow", &iframe_to_show);
-  EXPECT_EQ("login", iframe_to_show);
+  EXPECT_EQ(4U, dialog_args.size());
   std::string captcha_url;
   dialog_args.GetString("captchaUrl", &captcha_url);
   EXPECT_EQ(kTestCaptchaUrl, GURL(captcha_url).spec());
@@ -282,210 +299,183 @@ TEST_F(SyncSetupWizardTest, DISABLED_InitialStepLogin) {
   // Simulate success.
   wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
   EXPECT_TRUE(wizard_->IsVisible());
-  EXPECT_FALSE(test_window_->TestAndResetWasShowHTMLDialogCalled());
   // In a non-discrete run, GAIA_SUCCESS immediately transitions you to
   // SYNC_EVERYTHING.
-  EXPECT_EQ(SyncSetupWizard::SYNC_EVERYTHING,
-            test_window_->flow()->current_state_);
+  EXPECT_EQ(SyncSetupWizard::SYNC_EVERYTHING, flow_->current_state_);
 
   // That's all we're testing here, just move on to DONE.  We'll test the
   // "choose data types" scenarios elsewhere.
   wizard_->Step(SyncSetupWizard::SETTING_UP);  // No merge and sync.
   wizard_->Step(SyncSetupWizard::DONE);  // No merge and sync.
-  EXPECT_TRUE(wizard_->IsVisible());
-  EXPECT_FALSE(test_window_->TestAndResetWasShowHTMLDialogCalled());
-  EXPECT_EQ(SyncSetupWizard::DONE, test_window_->flow()->current_state_);
+  EXPECT_FALSE(wizard_->IsVisible());
 }
 
-TEST_F(SyncSetupWizardTest, DISABLED_ChooseDataTypesSetsPrefs) {
+TEST_F(SyncSetupWizardTest, ChooseDataTypesSetsPrefs) {
   SKIP_TEST_ON_MACOSX();
   wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
+  AttachSyncSetupHandler();
   wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
   wizard_->Step(SyncSetupWizard::CONFIGURE);
 
   ListValue data_type_choices_value;
-  std::string data_type_choices = "{\"keepEverythingSynced\":false,";
-  data_type_choices += "\"syncBookmarks\":true,\"syncPreferences\":true,";
-  data_type_choices += "\"syncThemes\":false,\"syncPasswords\":false,";
-  data_type_choices += "\"syncAutofill\":false,\"syncExtensions\":false,";
-  data_type_choices += "\"syncTypedUrls\":true,\"syncApps\":true,";
-  data_type_choices += "\"syncSessions\":false,\"usePassphrase\":false}";
+  std::string data_type_choices =
+      "{\"keepEverythingSynced\":false,\"syncBookmarks\":true,"
+      "\"syncPreferences\":true,\"syncThemes\":false,\"syncPasswords\":false,"
+      "\"syncAutofill\":false,\"syncExtensions\":false,\"syncTypedUrls\":true,"
+      "\"syncApps\":true,\"syncSessions\":false,\"usePassphrase\":false,"
+      "\"encryptAllData\":false}";
   data_type_choices_value.Append(new StringValue(data_type_choices));
 
-#if 0
-  // Simulate the user choosing data types; bookmarks, prefs, typed
-  // URLS, and apps are on, the rest are off.
-  test_window_->flow()->flow_handler_->HandleConfigure(
-      &data_type_choices_value);
+  // Simulate the user choosing data types; bookmarks, prefs, typed URLS, and
+  // apps are on, the rest are off.
+  handler_.HandleConfigure(&data_type_choices_value);
   EXPECT_TRUE(wizard_->IsVisible());
-  EXPECT_TRUE(test_window_->TestAndResetWasShowHTMLDialogCalled());
   EXPECT_FALSE(service_->keep_everything_synced_);
-  EXPECT_EQ(service_->chosen_data_types_.count(syncable::BOOKMARKS), 1U);
-  EXPECT_EQ(service_->chosen_data_types_.count(syncable::PREFERENCES), 1U);
-  EXPECT_EQ(service_->chosen_data_types_.count(syncable::THEMES), 0U);
-  EXPECT_EQ(service_->chosen_data_types_.count(syncable::PASSWORDS), 0U);
-  EXPECT_EQ(service_->chosen_data_types_.count(syncable::AUTOFILL), 0U);
-  EXPECT_EQ(service_->chosen_data_types_.count(syncable::EXTENSIONS), 0U);
-  EXPECT_EQ(service_->chosen_data_types_.count(syncable::TYPED_URLS), 1U);
-  EXPECT_EQ(service_->chosen_data_types_.count(syncable::APPS), 1U);
-#endif
-  test_window_->CloseDialog();
+  EXPECT_EQ(1U, service_->chosen_data_types_.count(syncable::BOOKMARKS));
+  EXPECT_EQ(1U, service_->chosen_data_types_.count(syncable::PREFERENCES));
+  EXPECT_EQ(0U, service_->chosen_data_types_.count(syncable::THEMES));
+  EXPECT_EQ(0U, service_->chosen_data_types_.count(syncable::PASSWORDS));
+  EXPECT_EQ(0U, service_->chosen_data_types_.count(syncable::AUTOFILL));
+  EXPECT_EQ(0U, service_->chosen_data_types_.count(syncable::EXTENSIONS));
+  EXPECT_EQ(1U, service_->chosen_data_types_.count(syncable::TYPED_URLS));
+  EXPECT_EQ(1U, service_->chosen_data_types_.count(syncable::APPS));
+
+  CloseSetupUI();
 }
 
-TEST_F(SyncSetupWizardTest, DISABLED_EnterPassphraseRequired) {
+TEST_F(SyncSetupWizardTest, EnterPassphraseRequired) {
   SKIP_TEST_ON_MACOSX();
   wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
+  AttachSyncSetupHandler();
   wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
   wizard_->Step(SyncSetupWizard::CONFIGURE);
   wizard_->Step(SyncSetupWizard::SETTING_UP);
-  service_->SetPassphraseRequiredReason(sync_api::REASON_ENCRYPTION);
+  service_->set_passphrase_required_reason(sync_api::REASON_ENCRYPTION);
   wizard_->Step(SyncSetupWizard::ENTER_PASSPHRASE);
-  EXPECT_EQ(SyncSetupWizard::ENTER_PASSPHRASE,
-            test_window_->flow()->current_state_);
-#if 0
+  EXPECT_EQ(SyncSetupWizard::ENTER_PASSPHRASE, flow_->current_state_);
+
   ListValue value;
   value.Append(new StringValue("{\"passphrase\":\"myPassphrase\","
                                 "\"mode\":\"gaia\"}"));
-  test_window_->flow()->flow_handler_->HandlePassphraseEntry(&value);
+  handler_.HandlePassphraseEntry(&value);
   EXPECT_EQ("myPassphrase", service_->passphrase_);
-#endif
 }
 
-TEST_F(SyncSetupWizardTest, DISABLED_DialogCancelled) {
+TEST_F(SyncSetupWizardTest, DialogCancelled) {
   SKIP_TEST_ON_MACOSX();
   wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
+  AttachSyncSetupHandler();
   // Simulate the user closing the dialog.
-  test_window_->CloseDialog();
+  CloseSetupUI();
   EXPECT_FALSE(wizard_->IsVisible());
   EXPECT_TRUE(service_->user_cancelled_dialog_);
   EXPECT_EQ(std::string(), service_->username_);
   EXPECT_EQ(std::string(), service_->password_);
 
   wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
+  AttachSyncSetupHandler();
   EXPECT_TRUE(wizard_->IsVisible());
-  EXPECT_TRUE(test_window_->TestAndResetWasShowHTMLDialogCalled());
   wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
-  EXPECT_FALSE(test_window_->TestAndResetWasShowHTMLDialogCalled());
 
-  test_window_->CloseDialog();
+  CloseSetupUI();
   EXPECT_FALSE(wizard_->IsVisible());
   EXPECT_TRUE(service_->user_cancelled_dialog_);
   EXPECT_EQ(std::string(), service_->username_);
   EXPECT_EQ(std::string(), service_->password_);
 }
 
-TEST_F(SyncSetupWizardTest, DISABLED_InvalidTransitions) {
+TEST_F(SyncSetupWizardTest, InvalidTransitions) {
   SKIP_TEST_ON_MACOSX();
   wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
   EXPECT_FALSE(wizard_->IsVisible());
-  EXPECT_FALSE(test_window_->TestAndResetWasShowHTMLDialogCalled());
 
   wizard_->Step(SyncSetupWizard::DONE);
   EXPECT_FALSE(wizard_->IsVisible());
-  EXPECT_FALSE(test_window_->TestAndResetWasShowHTMLDialogCalled());
 
   wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
+  AttachSyncSetupHandler();
 
   wizard_->Step(SyncSetupWizard::DONE);
-  EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, test_window_->flow()->current_state_);
+  EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, flow_->current_state_);
 
   wizard_->Step(SyncSetupWizard::SETUP_ABORTED_BY_PENDING_CLEAR);
-  EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN,
-            test_window_->flow()->current_state_);
+  AttachSyncSetupHandler();
+  EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, flow_->current_state_);
 
   wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
-  EXPECT_EQ(SyncSetupWizard::SYNC_EVERYTHING,
-            test_window_->flow()->current_state_);
+  EXPECT_EQ(SyncSetupWizard::SYNC_EVERYTHING, flow_->current_state_);
 
   wizard_->Step(SyncSetupWizard::FATAL_ERROR);
-  EXPECT_EQ(SyncSetupWizard::FATAL_ERROR, test_window_->flow()->current_state_);
+  EXPECT_EQ(SyncSetupWizard::FATAL_ERROR, flow_->current_state_);
 }
 
-TEST_F(SyncSetupWizardTest, DISABLED_FullSuccessfulRunSetsPref) {
+TEST_F(SyncSetupWizardTest, FullSuccessfulRunSetsPref) {
   SKIP_TEST_ON_MACOSX();
-  wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
-  wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
-  wizard_->Step(SyncSetupWizard::SETTING_UP);
-  wizard_->Step(SyncSetupWizard::DONE);
-  test_window_->CloseDialog();
+  CompleteSetup();
   EXPECT_FALSE(wizard_->IsVisible());
   EXPECT_TRUE(service_->profile()->GetPrefs()->GetBoolean(
       prefs::kSyncHasSetupCompleted));
 }
 
-TEST_F(SyncSetupWizardTest, DISABLED_AbortedByPendingClear) {
+TEST_F(SyncSetupWizardTest, AbortedByPendingClear) {
   SKIP_TEST_ON_MACOSX();
   wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
+  AttachSyncSetupHandler();
   wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
   wizard_->Step(SyncSetupWizard::SETUP_ABORTED_BY_PENDING_CLEAR);
   EXPECT_EQ(SyncSetupWizard::SETUP_ABORTED_BY_PENDING_CLEAR,
-            test_window_->flow()->current_state_);
-  test_window_->CloseDialog();
+            flow_->current_state_);
+  CloseSetupUI();
   EXPECT_FALSE(wizard_->IsVisible());
 }
 
-TEST_F(SyncSetupWizardTest, DISABLED_DiscreteRunChooseDataTypes) {
+TEST_F(SyncSetupWizardTest, DiscreteRunChooseDataTypes) {
   SKIP_TEST_ON_MACOSX();
-  // For a discrete run, we need to have ran through setup once.
-  wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
-  wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
-  wizard_->Step(SyncSetupWizard::DONE);
-  test_window_->CloseDialog();
-  EXPECT_TRUE(test_window_->TestAndResetWasShowHTMLDialogCalled());
+
+  CompleteSetup();
 
   wizard_->Step(SyncSetupWizard::CONFIGURE);
-  EXPECT_TRUE(test_window_->TestAndResetWasShowHTMLDialogCalled());
-  EXPECT_EQ(SyncSetupWizard::DONE, test_window_->flow()->end_state_);
+  AttachSyncSetupHandler();
+  EXPECT_EQ(SyncSetupWizard::DONE, flow_->end_state_);
 
-  wizard_->Step(SyncSetupWizard::DONE);
-  test_window_->CloseDialog();
-  EXPECT_FALSE(wizard_->IsVisible());
-}
-
-TEST_F(SyncSetupWizardTest,
-       DISABLED_DiscreteRunChooseDataTypesAbortedByPendingClear) {
-  SKIP_TEST_ON_MACOSX();
-  // For a discrete run, we need to have ran through setup once.
-  wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
-  wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
-  wizard_->Step(SyncSetupWizard::DONE);
-  test_window_->CloseDialog();
-  EXPECT_TRUE(test_window_->TestAndResetWasShowHTMLDialogCalled());
-
-  wizard_->Step(SyncSetupWizard::CONFIGURE);
-  EXPECT_TRUE(test_window_->TestAndResetWasShowHTMLDialogCalled());
-  EXPECT_EQ(SyncSetupWizard::DONE, test_window_->flow()->end_state_);
-   wizard_->Step(SyncSetupWizard::SETUP_ABORTED_BY_PENDING_CLEAR);
-  EXPECT_EQ(SyncSetupWizard::SETUP_ABORTED_BY_PENDING_CLEAR,
-            test_window_->flow()->current_state_);
-
-  test_window_->CloseDialog();
-  EXPECT_FALSE(wizard_->IsVisible());
-}
-
-TEST_F(SyncSetupWizardTest, DISABLED_DiscreteRunGaiaLogin) {
-  SKIP_TEST_ON_MACOSX();
-  DictionaryValue dialog_args;
-  // For a discrete run, we need to have ran through setup once.
-  wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
-  wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
   wizard_->Step(SyncSetupWizard::SETTING_UP);
   wizard_->Step(SyncSetupWizard::DONE);
-  test_window_->CloseDialog();
-  EXPECT_TRUE(test_window_->TestAndResetWasShowHTMLDialogCalled());
+  EXPECT_FALSE(wizard_->IsVisible());
+}
+
+TEST_F(SyncSetupWizardTest, DiscreteRunChooseDataTypesAbortedByPendingClear) {
+  SKIP_TEST_ON_MACOSX();
+
+  CompleteSetup();
+
+  wizard_->Step(SyncSetupWizard::CONFIGURE);
+  AttachSyncSetupHandler();
+  EXPECT_EQ(SyncSetupWizard::DONE, flow_->end_state_);
+  wizard_->Step(SyncSetupWizard::SETUP_ABORTED_BY_PENDING_CLEAR);
+  EXPECT_EQ(SyncSetupWizard::SETUP_ABORTED_BY_PENDING_CLEAR,
+            flow_->current_state_);
+
+  CloseSetupUI();
+  EXPECT_FALSE(wizard_->IsVisible());
+}
+
+TEST_F(SyncSetupWizardTest, DiscreteRunGaiaLogin) {
+  SKIP_TEST_ON_MACOSX();
+
+  CompleteSetup();
 
   wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
-  EXPECT_EQ(SyncSetupWizard::GAIA_SUCCESS, test_window_->flow()->end_state_);
+  AttachSyncSetupHandler();
+  EXPECT_EQ(SyncSetupWizard::GAIA_SUCCESS, flow_->end_state_);
 
   AuthError invalid_gaia(AuthError::INVALID_GAIA_CREDENTIALS);
   service_->set_auth_state(kTestUser, invalid_gaia);
   wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
   EXPECT_TRUE(wizard_->IsVisible());
+
+  DictionaryValue dialog_args;
   SyncSetupFlow::GetArgsForGaiaLogin(service_, &dialog_args);
-  EXPECT_EQ(5U, dialog_args.size());
-  std::string iframe_to_show;
-  dialog_args.GetString("iframeToShow", &iframe_to_show);
-  EXPECT_EQ("login", iframe_to_show);
+  EXPECT_EQ(4U, dialog_args.size());
   std::string actual_user;
   dialog_args.GetString("user", &actual_user);
   EXPECT_EQ(kTestUser, actual_user);
@@ -495,7 +485,74 @@ TEST_F(SyncSetupWizardTest, DISABLED_DiscreteRunGaiaLogin) {
   service_->set_auth_state(kTestUser, AuthError::None());
 
   wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
-  EXPECT_TRUE(test_window_->TestAndResetWasShowHTMLDialogCalled());
+}
+
+TEST_F(SyncSetupWizardTest, NonFatalError) {
+  SKIP_TEST_ON_MACOSX();
+
+  CompleteSetup();
+
+  // Set up the ENTER_PASSPHRASE case.
+  service_->set_passphrase_required_reason(sync_api::REASON_ENCRYPTION);
+  service_->set_is_using_secondary_passphrase(true);
+  wizard_->Step(SyncSetupWizard::NONFATAL_ERROR);
+  AttachSyncSetupHandler();
+  EXPECT_EQ(SyncSetupWizard::ENTER_PASSPHRASE, flow_->current_state_);
+  EXPECT_EQ(SyncSetupWizard::DONE, flow_->end_state_);
+  CloseSetupUI();
+  EXPECT_FALSE(wizard_->IsVisible());
+
+  // Reset.
+  service_->set_passphrase_required_reason(
+      sync_api::REASON_PASSPHRASE_NOT_REQUIRED);
+  service_->set_is_using_secondary_passphrase(false);
+
+  // Test the various auth error states that lead to GAIA_LOGIN.
+
+  service_->set_last_auth_error(
+      AuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
+  wizard_->Step(SyncSetupWizard::NONFATAL_ERROR);
+  AttachSyncSetupHandler();
+  EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, flow_->current_state_);
+  EXPECT_EQ(SyncSetupWizard::DONE, flow_->end_state_);
+  CloseSetupUI();
+  EXPECT_FALSE(wizard_->IsVisible());
+
+  service_->set_last_auth_error(
+      AuthError(GoogleServiceAuthError::CAPTCHA_REQUIRED));
+  wizard_->Step(SyncSetupWizard::NONFATAL_ERROR);
+  AttachSyncSetupHandler();
+  EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, flow_->current_state_);
+  EXPECT_EQ(SyncSetupWizard::DONE, flow_->end_state_);
+  CloseSetupUI();
+  EXPECT_FALSE(wizard_->IsVisible());
+
+  service_->set_last_auth_error(
+      AuthError(GoogleServiceAuthError::ACCOUNT_DELETED));
+  wizard_->Step(SyncSetupWizard::NONFATAL_ERROR);
+  AttachSyncSetupHandler();
+  EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, flow_->current_state_);
+  EXPECT_EQ(SyncSetupWizard::DONE, flow_->end_state_);
+  CloseSetupUI();
+  EXPECT_FALSE(wizard_->IsVisible());
+
+  service_->set_last_auth_error(
+      AuthError(GoogleServiceAuthError::ACCOUNT_DISABLED));
+  wizard_->Step(SyncSetupWizard::NONFATAL_ERROR);
+  AttachSyncSetupHandler();
+  EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, flow_->current_state_);
+  EXPECT_EQ(SyncSetupWizard::DONE, flow_->end_state_);
+  CloseSetupUI();
+  EXPECT_FALSE(wizard_->IsVisible());
+
+  service_->set_last_auth_error(
+      AuthError(GoogleServiceAuthError::SERVICE_UNAVAILABLE));
+  wizard_->Step(SyncSetupWizard::NONFATAL_ERROR);
+  AttachSyncSetupHandler();
+  EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, flow_->current_state_);
+  EXPECT_EQ(SyncSetupWizard::DONE, flow_->end_state_);
+  CloseSetupUI();
+  EXPECT_FALSE(wizard_->IsVisible());
 }
 
 #undef SKIP_TEST_ON_MACOSX

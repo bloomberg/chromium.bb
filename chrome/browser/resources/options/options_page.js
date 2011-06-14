@@ -118,11 +118,14 @@ cr.define('options', function() {
         page.willHidePage();
     }
 
+    var prevVisible = false;
+
     // Update visibilities to show only the hierarchy of the target page.
     for (var name in this.registeredPages) {
       var page = this.registeredPages[name];
       if (!page.parentPage && isRootPageLocked)
         continue;
+      prevVisible = page.visible;
       page.visible = name == pageName ||
           (!document.documentElement.classList.contains('hide-menu') &&
            page.isAncestorOfPage(targetPage));
@@ -140,7 +143,7 @@ cr.define('options', function() {
       var page = this.registeredPages[name];
       if (!page.parentPage && isRootPageLocked)
         continue;
-      if (page.didShowPage && (name == pageName ||
+      if (!prevVisible && page.didShowPage && (name == pageName ||
           page.isAncestorOfPage(targetPage)))
         page.didShowPage();
     }
@@ -207,8 +210,11 @@ cr.define('options', function() {
     if ((!rootPage || !rootPage.sticky) && overlay.parentPage)
       this.showPageByName(overlay.parentPage.name, false);
 
-    overlay.visible = true;
-    if (overlay.didShowPage) overlay.didShowPage();
+    if (!overlay.visible) {
+      overlay.visible = true;
+      if (overlay.didShowPage) overlay.didShowPage();
+    }
+
     return true;
   };
 
@@ -219,15 +225,6 @@ cr.define('options', function() {
    */
   OptionsPage.isOverlayVisible_ = function() {
     return this.getVisibleOverlay_() != null;
-  };
-
-  /**
-   * @return {boolean} True if the visible overlay should be closed.
-   * @private
-   */
-  OptionsPage.shouldCloseOverlay_ = function() {
-    var overlay = this.getVisibleOverlay_();
-    return overlay && overlay.shouldClose();
   };
 
   /**
@@ -746,12 +743,10 @@ cr.define('options', function() {
   OptionsPage.keyDownEventHandler_ = function(event) {
     // Close the top overlay or sub-page on esc.
     if (event.keyCode == 27) {  // Esc
-      if (this.isOverlayVisible_()) {
-        if (this.shouldCloseOverlay_())
-          this.closeOverlay();
-      } else {
+      if (this.isOverlayVisible_())
+        this.closeOverlay();
+      else
         this.closeTopSubPage_();
-      }
     }
   };
 
@@ -1006,15 +1001,6 @@ cr.define('options', function() {
      * @return {boolean} True if the page should be shown
      */
     canShowPage: function() {
-      return true;
-    },
-
-    /**
-     * Whether an overlay should be closed. Used by overlay implementation to
-     * handle special closing behaviors.
-     * @return {boolean} True if the overlay should be closed.
-     */
-    shouldClose: function() {
       return true;
     },
   };

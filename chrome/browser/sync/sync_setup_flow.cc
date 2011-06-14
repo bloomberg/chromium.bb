@@ -35,6 +35,34 @@ void DisablePasswordSync(ProfileSyncService* service) {
   service->OnUserChoseDatatypes(false, types);
 }
 
+// Fills |args| for the enter passphrase screen.
+void GetArgsForEnterPassphrase(bool tried_creating_explicit_passphrase,
+                               bool tried_setting_explicit_passphrase,
+                               DictionaryValue* args) {
+  args->SetBoolean("show_passphrase", true);
+  args->SetBoolean("passphrase_creation_rejected",
+                   tried_creating_explicit_passphrase);
+  args->SetBoolean("passphrase_setting_rejected",
+                   tried_setting_explicit_passphrase);
+}
+
+// Returns the next step for the non-fatal error case.
+SyncSetupWizard::State GetStepForNonFatalError(ProfileSyncService* service) {
+  if (service->IsPassphraseRequired() && service->IsUsingSecondaryPassphrase())
+      return SyncSetupWizard::ENTER_PASSPHRASE;
+
+  const GoogleServiceAuthError& error = service->GetAuthError();
+  if (error.state() == GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS ||
+      error.state() == GoogleServiceAuthError::CAPTCHA_REQUIRED ||
+      error.state() == GoogleServiceAuthError::ACCOUNT_DELETED ||
+      error.state() == GoogleServiceAuthError::ACCOUNT_DISABLED ||
+      error.state() == GoogleServiceAuthError::SERVICE_UNAVAILABLE)
+    return SyncSetupWizard::GAIA_LOGIN;
+
+  NOTREACHED();
+  return SyncSetupWizard::FATAL_ERROR;
+}
+
 }  // namespace
 
 SyncConfiguration::SyncConfiguration()
@@ -53,13 +81,16 @@ SyncSetupFlow* SyncSetupFlow::Run(ProfileSyncService* service,
                                   SyncSetupFlowContainer* container,
                                   SyncSetupWizard::State start,
                                   SyncSetupWizard::State end) {
+  if (start == SyncSetupWizard::NONFATAL_ERROR)
+    start = GetStepForNonFatalError(service);
+
   DictionaryValue args;
   if (start == SyncSetupWizard::GAIA_LOGIN)
     SyncSetupFlow::GetArgsForGaiaLogin(service, &args);
   else if (start == SyncSetupWizard::CONFIGURE)
     SyncSetupFlow::GetArgsForConfigure(service, &args);
   else if (start == SyncSetupWizard::ENTER_PASSPHRASE)
-    SyncSetupFlow::GetArgsForEnterPassphrase(false, false, &args);
+    GetArgsForEnterPassphrase(false, false, &args);
 
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);
@@ -146,20 +177,9 @@ void SyncSetupFlow::GetArgsForConfigure(ProfileSyncService* service,
   args->SetBoolean("usePassphrase", service->IsUsingSecondaryPassphrase());
 }
 
-// static
-void SyncSetupFlow::GetArgsForEnterPassphrase(
-    bool tried_creating_explicit_passphrase,
-    bool tried_setting_explicit_passphrase,
-    DictionaryValue* args) {
-  args->SetBoolean("show_passphrase", true);
-  args->SetBoolean("passphrase_creation_rejected",
-                   tried_creating_explicit_passphrase);
-  args->SetBoolean("passphrase_setting_rejected",
-                   tried_setting_explicit_passphrase);
-}
-
 void SyncSetupFlow::AttachSyncSetupHandler(SyncSetupFlowHandler* handler) {
   flow_handler_ = handler;
+  handler->SetFlow(this);
   ActivateState(current_state_);
 }
 
@@ -181,9 +201,8 @@ void SyncSetupFlow::Focus() {
 void SyncSetupFlow::OnDialogClosed(const std::string& json_retval) {
   DCHECK(json_retval.empty());
   container_->set_flow(NULL);  // Sever ties from the wizard.
-  if (current_state_ == SyncSetupWizard::DONE) {
+  if (current_state_ == SyncSetupWizard::DONE)
     service_->SetSyncSetupCompleted();
-  }
 
   // Record the state at which the user cancelled the signon dialog.
   switch (current_state_) {
@@ -303,13 +322,13 @@ bool SyncSetupFlow::ShouldAdvance(SyncSetupWizard::State state) {
              current_state_ == SyncSetupWizard::CONFIGURE ||
              current_state_ == SyncSetupWizard::SETTING_UP;
     case SyncSetupWizard::SETUP_ABORTED_BY_PENDING_CLEAR:
-      DCHECK(current_state_ != SyncSetupWizard::GAIA_LOGIN &&
-             current_state_ != SyncSetupWizard::GAIA_SUCCESS);
-      return true;
+      return (current_state_ != SyncSetupWizard::GAIA_LOGIN &&
+              current_state_ != SyncSetupWizard::GAIA_SUCCESS);
     case SyncSetupWizard::SETTING_UP:
       return current_state_ == SyncSetupWizard::SYNC_EVERYTHING ||
              current_state_ == SyncSetupWizard::CONFIGURE ||
              current_state_ == SyncSetupWizard::ENTER_PASSPHRASE;
+    case SyncSetupWizard::NONFATAL_ERROR:
     case SyncSetupWizard::FATAL_ERROR:
       return true;  // You can always hit the panic button.
     case SyncSetupWizard::DONE:
@@ -322,6 +341,11 @@ bool SyncSetupFlow::ShouldAdvance(SyncSetupWizard::State state) {
 }
 
 void SyncSetupFlow::ActivateState(SyncSetupWizard::State state) {
+  if (state == SyncSetupWizard::NONFATAL_ERROR)
+    state = GetStepForNonFatalError(service_);
+
+  current_state_ = state;
+
   switch (state) {
     case SyncSetupWizard::GAIA_LOGIN: {
       DictionaryValue args;
@@ -334,7 +358,7 @@ void SyncSetupFlow::ActivateState(SyncSetupWizard::State state) {
         flow_handler_->ShowGaiaSuccessAndClose();
         break;
       }
-      state = SyncSetupWizard::SYNC_EVERYTHING;
+      current_state_ = SyncSetupWizard::SYNC_EVERYTHING;
       //  Fall through.
     case SyncSetupWizard::SYNC_EVERYTHING: {
       DictionaryValue args;
@@ -352,10 +376,9 @@ void SyncSetupFlow::ActivateState(SyncSetupWizard::State state) {
     case SyncSetupWizard::ENTER_PASSPHRASE: {
       DictionaryValue args;
       SyncSetupFlow::GetArgsForConfigure(service_, &args);
-      SyncSetupFlow::GetArgsForEnterPassphrase(
-          tried_creating_explicit_passphrase_,
-          tried_setting_explicit_passphrase_,
-          &args);
+      GetArgsForEnterPassphrase(tried_creating_explicit_passphrase_,
+                                tried_setting_explicit_passphrase_,
+                                &args);
       flow_handler_->ShowPassphraseEntry(args);
       break;
     }
@@ -386,5 +409,4 @@ void SyncSetupFlow::ActivateState(SyncSetupWizard::State state) {
     default:
       NOTREACHED() << "Invalid advance state: " << state;
   }
-  current_state_ = state;
 }

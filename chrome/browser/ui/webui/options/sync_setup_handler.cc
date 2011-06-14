@@ -275,6 +275,8 @@ void SyncSetupHandler::RegisterMessages() {
       NewCallback(this, &SyncSetupHandler::HandlePassphraseCancel));
   web_ui_->RegisterMessageCallback("SyncSetupAttachHandler",
       NewCallback(this, &SyncSetupHandler::HandleAttachHandler));
+  web_ui_->RegisterMessageCallback("SyncSetupShowErrorUI",
+      NewCallback(this, &SyncSetupHandler::HandleShowErrorUI));
 }
 
 void SyncSetupHandler::ShowGaiaLogin(const DictionaryValue& args) {
@@ -397,6 +399,7 @@ void SyncSetupHandler::HandlePassphraseCancel(const ListValue* args) {
   flow_->OnPassphraseCancel();
 }
 
+// TODO(jhawkins): Too much logic going on in this method: refactor.
 void SyncSetupHandler::HandleAttachHandler(const ListValue* args) {
   DCHECK(web_ui_);
 
@@ -410,21 +413,26 @@ void SyncSetupHandler::HandleAttachHandler(const ListValue* args) {
     return;
   }
 
-  if (sync_service->get_wizard().IsVisible()) {
-    // The wizard and setup flow have been configured, all we need to do is
-    // attach the handler if we haven't already done so.
-    if (!flow_)
-      flow_ = sync_service->get_wizard().AttachSyncSetupHandler(this);
-    return;
-  }
+  SyncSetupWizard::State state;
 
   // The user is trying to manually load a syncSetup URL.  We should bring up
   // either a login or a configure flow based on the state of sync.
-  if (sync_service->HasSyncSetupCompleted()) {
-    sync_service->ShowConfigure(web_ui_, false);
-  } else {
-    sync_service->ShowLoginDialog(web_ui_);
-    ProfileSyncService::SyncEvent(ProfileSyncService::START_FROM_URL);
-  }
+  if (sync_service->HasSyncSetupCompleted())
+    state = SyncSetupWizard::CONFIGURE;
+  else
+    state = SyncSetupWizard::GAIA_LOGIN;
+
+  DCHECK(!flow_);
+  sync_service->get_wizard().Step(state);
+
+  // The SyncSetupFlow will set itself as the |flow_|.
+  sync_service->get_wizard().AttachSyncSetupHandler(this);
 }
 
+void SyncSetupHandler::HandleShowErrorUI(const ListValue* args) {
+  DCHECK(!flow_);
+  ProfileSyncService* service =
+    web_ui_->GetProfile()->GetProfileSyncService();
+  service->get_wizard().Step(SyncSetupWizard::NONFATAL_ERROR);
+  flow_ = service->get_wizard().AttachSyncSetupHandler(this);
+}

@@ -33,16 +33,16 @@ cr.define('options', function() {
 
       var self = this;
       $('sync-action-link').onclick = function(event) {
-        chrome.send('showSyncActionDialog');
+        SyncSetupOverlay.showErrorUI();
       };
       $('start-stop-sync').onclick = function(event) {
         if (self.syncSetupCompleted)
           self.showStopSyncingOverlay_();
         else
-          chrome.send('showSyncLoginDialog');
+          OptionsPage.navigateToPage('syncSetup');
       };
       $('customize-sync').onclick = function(event) {
-        chrome.send('showCustomizeSyncDialog');
+        OptionsPage.navigateToPage('syncSetup');
       };
       $('manage-passwords').onclick = function(event) {
         OptionsPage.navigateToPage('passwords');

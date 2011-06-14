@@ -32,15 +32,32 @@ class SyncSetupHandler : public OptionsPageUIHandler,
 
   virtual void SetFlow(SyncSetupFlow* flow);
 
- private:
-  // Callbacks from the page.
+ protected:
+  FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, InitialStepLogin);
+  FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, ChooseDataTypesSetsPrefs);
+  FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, DialogCancelled);
+  FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, InvalidTransitions);
+  FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, FullSuccessfulRunSetsPref);
+  FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, AbortedByPendingClear);
+  FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, DiscreteRunGaiaLogin);
+  FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, DiscreteRunChooseDataTypes);
+  FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest,
+                           DiscreteRunChooseDataTypesAbortedByPendingClear);
+  FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, EnterPassphraseRequired);
+
+  // Callbacks from the page. Protected in order to be called by the
+  // SyncSetupWizardTest.
   void OnDidClosePage(const ListValue* args);
   void HandleSubmitAuth(const ListValue* args);
   void HandleConfigure(const ListValue* args);
   void HandlePassphraseEntry(const ListValue* args);
   void HandlePassphraseCancel(const ListValue* args);
   void HandleAttachHandler(const ListValue* args);
+  void HandleShowErrorUI(const ListValue* args);
 
+  SyncSetupFlow* flow() { return flow_; }
+
+ private:
   // Weak reference.
   SyncSetupFlow* flow_;
 

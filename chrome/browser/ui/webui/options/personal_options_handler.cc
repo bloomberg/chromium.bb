@@ -191,15 +191,6 @@ void PersonalOptionsHandler::GetLocalizedValues(
 void PersonalOptionsHandler::RegisterMessages() {
   DCHECK(web_ui_);
   web_ui_->RegisterMessageCallback(
-      "showSyncActionDialog",
-      NewCallback(this, &PersonalOptionsHandler::ShowSyncActionDialog));
-  web_ui_->RegisterMessageCallback(
-      "showSyncLoginDialog",
-      NewCallback(this, &PersonalOptionsHandler::ShowSyncLoginDialog));
-  web_ui_->RegisterMessageCallback(
-      "showCustomizeSyncDialog",
-      NewCallback(this, &PersonalOptionsHandler::ShowCustomizeSyncDialog));
-  web_ui_->RegisterMessageCallback(
       "themesReset",
       NewCallback(this, &PersonalOptionsHandler::ThemesReset));
 #if defined(TOOLKIT_GTK)
@@ -383,25 +374,6 @@ void PersonalOptionsHandler::Initialize() {
   } else {
     web_ui_->CallJavascriptFunction("options.PersonalOptions.hideSyncSection");
   }
-}
-
-void PersonalOptionsHandler::ShowSyncActionDialog(const ListValue* args) {
-  ProfileSyncService* service = web_ui_->GetProfile()->GetProfileSyncService();
-  DCHECK(service);
-  service->ShowErrorUI(web_ui_);
-}
-
-void PersonalOptionsHandler::ShowSyncLoginDialog(const ListValue* args) {
-  ProfileSyncService* service = web_ui_->GetProfile()->GetProfileSyncService();
-  DCHECK(service);
-  service->ShowLoginDialog(web_ui_);
-  ProfileSyncService::SyncEvent(ProfileSyncService::START_FROM_OPTIONS);
-}
-
-void PersonalOptionsHandler::ShowCustomizeSyncDialog(const ListValue* args) {
-  ProfileSyncService* service = web_ui_->GetProfile()->GetProfileSyncService();
-  DCHECK(service);
-  service->ShowConfigure(web_ui_, false);
 }
 
 void PersonalOptionsHandler::ThemesReset(const ListValue* args) {

@@ -43,7 +43,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
 #include "content/common/notification_type.h"
@@ -542,7 +541,7 @@ void ProfileSyncService::OnBackendInitialized() {
 
   if (!cros_user_.empty()) {
     if (profile_->GetPrefs()->GetBoolean(prefs::kSyncSuppressStart)) {
-      ShowConfigure(NULL, true);
+      ShowConfigure(true);
     } else {
       SetSyncSetupCompleted();
     }
@@ -709,7 +708,7 @@ void ProfileSyncService::OnMigrationNeededForTypes(
   migrator_->MigrateTypes(types);
 }
 
-void ProfileSyncService::ShowLoginDialog(WebUI* web_ui) {
+void ProfileSyncService::ShowLoginDialog() {
   if (WizardIsVisible()) {
     wizard_.Focus();
     // Force the wizard to step to the login screen (which will only actually
@@ -724,59 +723,44 @@ void ProfileSyncService::ShowLoginDialog(WebUI* web_ui) {
     auth_error_time_ = base::TimeTicks();  // Reset auth_error_time_ to null.
   }
 
-  ShowSyncSetup(web_ui, SyncSetupWizard::GAIA_LOGIN);
+  ShowSyncSetup(SyncSetupWizard::GAIA_LOGIN);
 
   NotifyObservers();
 }
 
-void ProfileSyncService::ShowErrorUI(WebUI* web_ui) {
-  if (IsPassphraseRequired()) {
-    if (IsUsingSecondaryPassphrase())
-      PromptForExistingPassphrase(web_ui);
-    else
-      NOTREACHED();  // Migration no longer supported.
-
+void ProfileSyncService::ShowErrorUI() {
+  if (WizardIsVisible()) {
+    wizard_.Focus();
     return;
   }
 
-  const GoogleServiceAuthError& error = GetAuthError();
-  if (error.state() == GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS ||
-      error.state() == GoogleServiceAuthError::CAPTCHA_REQUIRED ||
-      error.state() == GoogleServiceAuthError::ACCOUNT_DELETED ||
-      error.state() == GoogleServiceAuthError::ACCOUNT_DISABLED ||
-      error.state() == GoogleServiceAuthError::SERVICE_UNAVAILABLE) {
-    ShowLoginDialog(web_ui);
-  }
+  ShowSyncSetup(SyncSetupWizard::NONFATAL_ERROR);
 }
 
-void ProfileSyncService::ShowConfigure(WebUI* web_ui, bool sync_everything) {
+void ProfileSyncService::ShowConfigure(bool sync_everything) {
   if (WizardIsVisible()) {
     wizard_.Focus();
     return;
   }
 
   if (sync_everything)
-    ShowSyncSetup(web_ui, SyncSetupWizard::SYNC_EVERYTHING);
+    ShowSyncSetup(SyncSetupWizard::SYNC_EVERYTHING);
   else
-    ShowSyncSetup(web_ui, SyncSetupWizard::CONFIGURE);
+    ShowSyncSetup(SyncSetupWizard::CONFIGURE);
 }
 
-void ProfileSyncService::PromptForExistingPassphrase(WebUI* web_ui) {
+void ProfileSyncService::PromptForExistingPassphrase() {
   if (WizardIsVisible()) {
     wizard_.Focus();
     return;
   }
 
-  ShowSyncSetup(web_ui, SyncSetupWizard::ENTER_PASSPHRASE);
+  ShowSyncSetup(SyncSetupWizard::ENTER_PASSPHRASE);
 }
 
-void ProfileSyncService::ShowSyncSetup(WebUI* web_ui,
-                                       SyncSetupWizard::State state) {
+void ProfileSyncService::ShowSyncSetup(SyncSetupWizard::State state) {
   wizard_.Step(state);
-  if (web_ui)
-    web_ui->CallJavascriptFunction("options.SyncSetupOverlay.showSyncDialog");
-  else
-    BrowserList::GetLastActive()->ShowOptionsTab(chrome::kSyncSetupSubPage);
+  BrowserList::GetLastActive()->ShowOptionsTab(chrome::kSyncSetupSubPage);
 }
 
 SyncBackendHost::StatusSummary ProfileSyncService::QuerySyncStatusSummary() {

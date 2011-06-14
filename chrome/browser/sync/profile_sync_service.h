@@ -38,7 +38,6 @@ class NotificationSource;
 class Profile;
 class ProfileSyncFactory;
 class SigninManager;
-class WebUI;
 
 namespace browser_sync {
 class BackendMigrator;
@@ -244,27 +243,22 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   SyncSetupWizard& get_wizard() { return wizard_; }
 
-  // Shows the login screen of the Sync setup wizard.  |web_ui| is the WebUI
-  // object for a current settings tab, NULL if one doesn't exist or the calling
-  // code doesn't know.
-  virtual void ShowLoginDialog(WebUI* web_ui);
+  // Shows the login screen of the Sync setup wizard.
+  virtual void ShowLoginDialog();
 
   // This method handles clicks on "sync error" UI, showing the appropriate
-  // dialog for the error condition (relogin / enter passphrase).  |web_ui| is
-  // the WebUI object for a current settings tab, NULL if one doesn't exist or
-  // the calling code doesn't know.
-  virtual void ShowErrorUI(WebUI* web_ui);
+  // dialog for the error condition (relogin / enter passphrase).
+  virtual void ShowErrorUI();
 
   // Shows the configure screen of the Sync setup wizard. If |sync_everything|
   // is true, shows the corresponding page in the customize screen; otherwise,
   // displays the page that gives the user the ability to select which data
-  // types to sync.  |web_ui| is the WebUI object for a current settings tab,
-  // NULL if one doesn't exist or the calling code doesn't know.
-  void ShowConfigure(WebUI* web_ui, bool sync_everything);
+  // types to sync.
+  void ShowConfigure(bool sync_everything);
 
-  void PromptForExistingPassphrase(WebUI* web_ui);
+  void PromptForExistingPassphrase();
 
-  void ShowSyncSetup(WebUI* web_ui, SyncSetupWizard::State state);
+  void ShowSyncSetup(SyncSetupWizard::State state);
 
   // Pretty-printed strings for a given StatusSummary.
   static std::string BuildSyncStatusSummaryText(
