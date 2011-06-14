@@ -31,6 +31,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_closure.h"
 #include "native_client/src/trusted/service_runtime/nacl_debug_init.h"
+#include "native_client/src/trusted/service_runtime/nacl_oop_debugger_hooks.h"
 #include "native_client/src/trusted/service_runtime/nacl_sync_queue.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
 #include "native_client/src/trusted/service_runtime/nacl_text.h"
@@ -701,6 +702,9 @@ int NaClCreateMainThread(struct NaClApp     *nap,
   /* We are ready to distinguish crashes in trusted and untrusted code. */
   NaClSignalRegisterApp(nap);
 
+  /* NaClApp initialization is completed, call OOP debugger hook. */
+  NaClOopDebuggerAppCreateHook(nap);
+
   NaClXMutexLock(&nap->mu);
   nap->running = 1;
   NaClXMutexUnlock(&nap->mu);
@@ -759,6 +763,8 @@ int NaClWaitForMainThreadToExit(struct NaClApp  *nap) {
   if (NULL != nap->debug_stub_callbacks) {
     nap->debug_stub_callbacks->process_exit_hook(nap->exit_status);
   }
+
+  NaClOopDebuggerAppExitHook(nap->exit_status);
 
   return (nap->exit_status);
 }
