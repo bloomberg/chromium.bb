@@ -21,8 +21,8 @@ EXTRA_ENV = {
 
   'AS_FLAGS'      : '${AS_FLAGS_%ARCH%}',
   'AS_FLAGS_ARM'  : '-mfpu=vfp -march=armv7-a',
-  'AS_FLAGS_X8632': '--32 --nacl-align 5 -n -march=pentium4 -mtune=i386',
-  'AS_FLAGS_X8664': '--64 --nacl-align 5 -n -mtune=core2',
+  'AS_FLAGS_X8632': '--32 -n -march=pentium4 -mtune=i386',
+  'AS_FLAGS_X8664': '--64 -n -mtune=core2',
 
   'MC_FLAGS'       : '${MC_FLAGS_%ARCH%}',
   'MC_FLAGS_ARM'   : '-assemble -filetype=obj -arch=arm -triple=armv7a-nacl',
