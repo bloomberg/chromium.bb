@@ -1612,6 +1612,50 @@ TEST_F(FormManagerTest, LabelsInferredFromDivTable) {
       "</FORM>");
 }
 
+TEST_F(FormManagerTest, LabelsInferredFromDefinitionListRatherThanDivTable) {
+  ExpectJohnSmithLabels(
+      "<FORM name=\"TestForm\" action=\"http://cnn.com\" method=\"post\">"
+      "<DIV>This is not a label.<BR>"
+      "<DL>"
+      "  <DT>"
+      "    <SPAN>"
+      "      First name:"
+      "    </SPAN>"
+      "  </DT>"
+      "  <DD>"
+      "    <FONT>"
+      "      <INPUT type=\"text\" id=\"firstname\" value=\"John\"/>"
+      "    </FONT>"
+      "  </DD>"
+      "  <DT>"
+      "    <SPAN>"
+      "      Last name:"
+      "    </SPAN>"
+      "  </DT>"
+      "  <DD>"
+      "    <FONT>"
+      "      <INPUT type=\"text\" id=\"lastname\" value=\"Smith\"/>"
+      "    </FONT>"
+      "  </DD>"
+      "  <DT>"
+      "    <SPAN>"
+      "      Email:"
+      "    </SPAN>"
+      "  </DT>"
+      "  <DD>"
+      "    <FONT>"
+      "      <INPUT type=\"text\" id=\"email\" value=\"john@example.com\"/>"
+      "    </FONT>"
+      "  </DD>"
+      "  <DT></DT>"
+      "  <DD>"
+      "    <INPUT type=\"submit\" name=\"reply-send\" value=\"Send\"/>"
+      "  </DD>"
+      "</DL>"
+      "</DIV>"
+      "</FORM>");
+}
+
 TEST_F(FormManagerTest, FillFormMaxLength) {
   LoadHTML("<FORM name=\"TestForm\" action=\"http://buh.com\" method=\"post\">"
            "  <INPUT type=\"text\" id=\"firstname\" maxlength=\"5\"/>"

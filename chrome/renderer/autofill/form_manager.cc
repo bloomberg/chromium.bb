@@ -310,13 +310,13 @@ string16 InferLabelForElement(const WebFormControlElement& element) {
   if (inferred_label.empty())
     inferred_label = InferLabelFromTable(element);
 
-  // If we didn't find a label, check for div table case.
-  if (inferred_label.empty())
-    inferred_label = InferLabelFromDivTable(element);
-
   // If we didn't find a label, check for definition list case.
   if (inferred_label.empty())
     inferred_label = InferLabelFromDefinitionList(element);
+
+  // If we didn't find a label, check for div table case.
+  if (inferred_label.empty())
+    inferred_label = InferLabelFromDivTable(element);
 
   return inferred_label;
 }
