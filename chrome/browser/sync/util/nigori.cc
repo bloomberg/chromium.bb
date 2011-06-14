@@ -168,7 +168,8 @@ std::string GenerateRandomString(size_t size) {
 
 // Enc[Kenc,Kmac](value)
 bool Nigori::Encrypt(const std::string& value, std::string* encrypted) const {
-  DCHECK_LT(0U, value.size());
+  if (0U >= value.size())
+    return false;
 
   std::string iv = GenerateRandomString(kIvSize);
 

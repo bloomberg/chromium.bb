@@ -979,6 +979,9 @@ void SyncBackendHost::HandleInitializationCompletedOnFrontendLoop() {
   if (!frontend_)
     return;
   syncapi_initialized_ = true;
+  // Now that the syncapi is initialized, we can update the cryptographer (and
+  // can handle any ON_PASSPHRASE_REQUIRED notifications that may arise).
+  core_->syncapi()->RefreshEncryption();
   frontend_->OnBackendInitialized();
 }
 
