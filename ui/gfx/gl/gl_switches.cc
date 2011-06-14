@@ -17,4 +17,8 @@ const char kDisableGpuVsync[]               = "disable-gpu-vsync";
 //  osmesa: The OSMesa software renderer.
 const char kUseGL[]                         = "use-gl";
 
+// Turns on GPU logging (debug build only).
+const char kEnableGPUServiceLogging[]       = "enable-gpu-service-logging";
+const char kEnableGPUClientLogging[]        = "enable-gpu-client-logging";
+
 }  // namespace switches

@@ -120,6 +120,7 @@
       'target_name': 'gles2_c_lib',
       'type': 'static_library',
       'dependencies': [
+        '../base/base.gyp:base',
         'gles2_implementation',
       ],
       'sources': [

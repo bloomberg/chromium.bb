@@ -536,6 +536,8 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kEnableAdaptive,
     switches::kEnableBenchmarking,
     switches::kEnableDCHECK,
+    switches::kEnableGPUServiceLogging,
+    switches::kEnableGPUClientLogging,
     switches::kEnableLogging,
     switches::kEnableOpenMax,
 #if defined(ENABLE_P2P_APIS)
