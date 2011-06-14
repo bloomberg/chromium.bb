@@ -562,9 +562,13 @@ bool WifiConfigView::GetEapUseSystemCas() const {
 
 std::string WifiConfigView::GetEapClientCertPkcs11Id() const {
   DCHECK(client_cert_combobox_);
-  // Certificates are listed in the order they appear in the model.
-  int selected = client_cert_combobox_->selected_item();
-  return wifi_config_model_->GetUserCertPkcs11Id(selected);
+  if (wifi_config_model_->GetUserCertCount() == 0) {
+    return std::string();  // "None installed"
+  } else {
+    // Certificates are listed in the order they appear in the model.
+    int selected = client_cert_combobox_->selected_item();
+    return wifi_config_model_->GetUserCertPkcs11Id(selected);
+  }
 }
 
 std::string WifiConfigView::GetEapIdentity() const {
