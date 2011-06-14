@@ -91,9 +91,13 @@ LoginDisplayHost* BaseLoginDisplayHost::default_host_ = NULL;
 
 BaseLoginDisplayHost::BaseLoginDisplayHost(const gfx::Rect& background_bounds)
     : background_bounds_(background_bounds) {
+  // We need to listen to APP_EXITING but not APP_TERMINATING because
+  // APP_TERMINATING will never be fired as long as this keeps ref-count.
+  // APP_EXITING is safe here because there will be no browser instance that
+  // will block the shutdown.
   registrar_.Add(
       this,
-      NotificationType::APP_TERMINATING,
+      NotificationType::APP_EXITING,
       NotificationService::AllSources());
   DCHECK(default_host_ == NULL);
   default_host_ = this;
@@ -193,12 +197,12 @@ void BaseLoginDisplayHost::StartSignInScreen() {
 void BaseLoginDisplayHost::Observe(NotificationType type,
                                    const NotificationSource& source,
                                    const NotificationDetails& details) {
-  CHECK(type == NotificationType::APP_TERMINATING);
+  CHECK(type == NotificationType::APP_EXITING);
 
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);
   MessageLoop::current()->Quit();
   registrar_.Remove(this,
-                    NotificationType::APP_TERMINATING,
+                    NotificationType::APP_EXITING,
                     NotificationService::AllSources());
 }
 
