@@ -484,7 +484,7 @@ PP_Var TestStress() {
 
 }  // namespace
 
-void SetupScriptableTests() {
+void SetupTests() {
   RegisterScriptableTest("testCreate", TestCreate);
   RegisterScriptableTest("testIsGraphics2D", TestIsGraphics2D);
   RegisterScriptableTest("testDescribe", TestDescribe);

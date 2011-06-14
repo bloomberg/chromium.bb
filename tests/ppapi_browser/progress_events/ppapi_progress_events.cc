@@ -4,7 +4,7 @@
 
 #include "native_client/tests/ppapi_test_lib/test_interface.h"
 
-void SetupScriptableTests() {
+void SetupTests() {
   // none
 }
 

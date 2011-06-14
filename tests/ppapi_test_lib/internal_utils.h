@@ -25,7 +25,7 @@ PP_Instance pp_instance();
 PP_Var GetScriptableObject(PP_Instance instance);
 
 bool HasScriptableTest(nacl::string test_name);
-
 PP_Var RunScriptableTest(nacl::string test_name);
 
+void RunTest(nacl::string test_name);
 #endif  // NATIVE_CLIENT_TESTS_PPAPI_TEST_PPB_TEMPLATE_INTERNAL_UTILS_H

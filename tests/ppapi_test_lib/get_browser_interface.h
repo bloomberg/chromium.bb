@@ -14,6 +14,7 @@ struct PPB_FileIO_Dev;
 struct PPB_Graphics2D;
 struct PPB_ImageData;
 struct PPB_Instance;
+struct PPB_Messaging;
 struct PPB_Scrollbar_Dev;
 struct PPB_Surface3D_Dev;
 struct PPB_URLLoader;
@@ -35,6 +36,7 @@ const PPB_Core* PPBCore();
 const PPB_Graphics2D* PPBGraphics2D();
 const PPB_ImageData* PPBImageData();
 const PPB_Instance* PPBInstance();
+const PPB_Messaging* PPBMessaging();
 const PPB_URLLoader* PPBURLLoader();
 const PPB_URLRequestInfo* PPBURLRequestInfo();
 const PPB_URLResponseInfo* PPBURLResponseInfo();
@@ -47,7 +49,7 @@ const PPB_Var_Deprecated* PPBVarDeprecated();
 //
 
 const PPB_Context3D_Dev* PPBContext3DDev();
-const PPB_FileIO_Dev* PPBfileIODev();
+const PPB_FileIO_Dev* PPBFileIODev();
 const PPB_Scrollbar_Dev* PPBScrollbarDev();
 const PPB_Surface3D_Dev* PPBSurface3DDev();
 

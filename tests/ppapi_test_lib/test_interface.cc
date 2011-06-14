@@ -19,6 +19,19 @@
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppb_instance.h"
+#include "ppapi/c/ppb_messaging.h"
+
+void PostTestMessage(nacl::string test_name, nacl::string message) {
+  nacl::string test_message = test_name;
+  test_message += ":";
+  test_message += message;
+  // TODO(polina): use PPBVar
+  PP_Var post_var = PPBVarDeprecated()->VarFromUtf8(pp_instance(),
+                                                    test_message.c_str(),
+                                                    test_message.size());
+  PPBMessaging()->PostMessage(pp_instance(), post_var);
+  PPBVarDeprecated()->Release(post_var);
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Test registration
@@ -34,30 +47,49 @@ class TestTable {
     return &table;
   }
 
+  void AddScriptableTest(nacl::string test_name,
+                         ScriptableTestFunction test_function) {
+    scriptable_test_map_[test_name] = test_function;
+  }
+  bool HasScriptableTest(nacl::string test_name);
+  PP_Var RunScriptableTest(nacl::string test_name);
+
   void AddTest(nacl::string test_name, TestFunction test_function) {
     test_map_[test_name] = test_function;
   }
-  bool HasTest(nacl::string test_name);
-  PP_Var RunTest(nacl::string test_name);
+  void RunTest(nacl::string test_name);
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(TestTable);
 
   TestTable() {}
 
+  typedef std::map<nacl::string, ScriptableTestFunction> ScriptableTestMap;
+  ScriptableTestMap scriptable_test_map_;  // DEPRECATED.
   typedef std::map<nacl::string, TestFunction> TestMap;
   TestMap test_map_;
 };
 
-bool TestTable::HasTest(nacl::string test_name) {
-  TestMap::iterator it = test_map_.find(test_name);
-  return it != test_map_.end();
+bool TestTable::HasScriptableTest(nacl::string test_name) {
+  ScriptableTestMap::iterator it = scriptable_test_map_.find(test_name);
+  return it != scriptable_test_map_.end();
 }
 
-PP_Var TestTable::RunTest(nacl::string test_name) {
-  TestMap::iterator it = test_map_.find(test_name);
-  if (it == test_map_.end())
+PP_Var TestTable::RunScriptableTest(nacl::string test_name) {
+  ScriptableTestMap::iterator it = scriptable_test_map_.find(test_name);
+  if (it == scriptable_test_map_.end())
     return PP_MakeUndefined();
+  CHECK(it->second != NULL);
+  ScriptableTestFunction test_function = it->second;
+  return test_function();
+}
+
+void TestTable::RunTest(nacl::string test_name) {
+  TestMap::iterator it = test_map_.find(test_name);
+  if (it == test_map_.end()) {
+    PostTestMessage(test_name, "NOTFOUND");
+    return;
+  }
   CHECK(it->second != NULL);
   TestFunction test_function = it->second;
   return test_function();
@@ -65,16 +97,25 @@ PP_Var TestTable::RunTest(nacl::string test_name) {
 
 }  // namespace
 
-void RegisterScriptableTest(nacl::string test_name, TestFunction test_func) {
-  TestTable::Get()->AddTest(test_name, test_func);
+void RegisterScriptableTest(nacl::string test_name,
+                            ScriptableTestFunction test_func) {
+  TestTable::Get()->AddScriptableTest(test_name, test_func);
 }
 
 bool HasScriptableTest(nacl::string test_name) {
-  return TestTable::Get()->HasTest(test_name);
+  return TestTable::Get()->HasScriptableTest(test_name);
 }
 
 PP_Var RunScriptableTest(nacl::string test_name) {
-  return TestTable::Get()->RunTest(test_name);
+  return TestTable::Get()->RunScriptableTest(test_name);
+}
+
+void RegisterTest(nacl::string test_name, TestFunction test_func) {
+  TestTable::Get()->AddTest(test_name, test_func);
+}
+
+void RunTest(nacl::string test_name) {
+  TestTable::Get()->RunTest(test_name);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -89,17 +130,21 @@ struct CallbackInfo {
 };
 
 void ReportCallbackInvocationToJS(const char* callback_name) {
-  PP_Var js_callback = PPBVarDeprecated()->VarFromUtf8(pp_module(),
-                                                       callback_name,
-                                                       strlen(callback_name));
+  PP_Var callback_var = PPBVarDeprecated()->VarFromUtf8(pp_module(),
+                                                        callback_name,
+                                                        strlen(callback_name));
+  // Report using synchronous scripting for sync tests.
+  // This is deprecated and will be removed shortly.
   PP_Var window = PPBInstance()->GetWindowObject(pp_instance());
   CHECK(window.type == PP_VARTYPE_OBJECT);
 
   PP_Var exception = PP_MakeUndefined();
-  PPBVarDeprecated()->Call(window, js_callback, 0, NULL, &exception);
-
-  PPBVarDeprecated()->Release(js_callback);
+  PPBVarDeprecated()->Call(window, callback_var, 0, NULL, &exception);
   PPBVarDeprecated()->Release(window);
+
+  // Report using postmessage for async tests.
+  PPBMessaging()->PostMessage(pp_instance(), callback_var);
+  PPBVarDeprecated()->Release(callback_var);
 }
 
 void CallbackWrapper(void* user_data, int32_t result) {
@@ -112,7 +157,7 @@ void CallbackWrapper(void* user_data, int32_t result) {
 }  // namespace
 
 PP_CompletionCallback MakeTestableCompletionCallback(
-    const char* callback_name,  // Also passed to JS waitForCallback()
+    const char* callback_name,  // Tested for by JS harness.
     PP_CompletionCallback_Func func,
     void* user_data) {
   CHECK(callback_name != NULL && strlen(callback_name) > 0);

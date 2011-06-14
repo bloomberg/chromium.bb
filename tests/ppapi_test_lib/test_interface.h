@@ -5,19 +5,19 @@
 // Functions and constants for test registration and setup.
 //
 // NOTE: These must be implemented by the tester:
-// - SetupScriptableTests()
+// - SetupTests()
 // - SetupPluginInterfaces()
 //
 // Sample Usage:
 //
 //   void MyCallback(void* user_data, int32_t result) { ... }
 //
-//   PP_Var TestPPBFoo() {
-//     // sync test
+//   PP_Var TestPPBFooDeprecated() {
+//     // sync test case
 //     PP_Resource my_resource = PPBFoo()->Create(kInvalidInstance);
 //     EXPECT(my_resource == kInvalidResource);
 //
-//     // async test
+//     // async test case
 //     PP_CompletionCallback testable_callback = MakeTestableCompletionCallback(
 //         "MyCallback", MyCallback, NULL);
 //     int32_t pp_error = PPBFoo()->AsyncFunction(testable_callback);
@@ -26,8 +26,23 @@
 //     return TEST_PASSED;
 //   }
 //
-//   void SetupScriptableTests() {
-//     RegisterScriptableTest("testFoo", TestPPBFoo);
+//   void TestPPBFoo() {
+//     // sync test case
+//     PP_Resource my_resource = PPBFoo()->Create(kInvalidInstance);
+//     EXPECT_ASYNC(my_resource == kInvalidResource);
+//
+//     // async test case
+//     PP_CompletionCallback testable_callback = MakeTestableCompletionCallback(
+//         "MyCallback", MyCallback, NULL);
+//     int32_t pp_error = PPBFoo()->AsyncFunction(testable_callback);
+//     EXPECT_ASYNC(pp_error == PP_OK_COMPLETIONPENDING);
+//
+//     TEST_PASSED_ASYNC;
+//   }
+//
+//   void SetupTests() {
+//     RegisterScriptableTest("TestFooDeprecated", TestPPBFooDeprecated);
+//     RegisterTest("TestPPBFoo", TestPPBFoo);
 //   }
 //
 //   const PPP_Bar ppp_bar_interface = { ... };
@@ -54,8 +69,9 @@
 // These must be implemented by the tester
 ////////////////////////////////////////////////////////////////////////////////
 
-// Use RegisterScriptableTest() to register each TestFunction.
-void SetupScriptableTests();
+// Use RegisterTest() to register each TestFunction.
+// Use RegisterScriptableTest() to register each ScriptableTestFunction.
+void SetupTests();
 // Use RegisterPluginInterface() to register custom PPP_ interfaces other than
 // PPP_Instance that is required and provided by default.
 void SetupPluginInterfaces();
@@ -64,9 +80,16 @@ void SetupPluginInterfaces();
 // Test helpers
 ////////////////////////////////////////////////////////////////////////////////
 
-// Registers test_function, so it is callable from JS using plugin.test_name().
-typedef PP_Var (*TestFunction)();
-void RegisterScriptableTest(nacl::string test_name, TestFunction test_function);
+// Registers test_function, so it is callable from JS using
+// plugin.postMessage(test_name);
+typedef void (*TestFunction)();
+void RegisterTest(nacl::string test_name, TestFunction test_function);
+
+// DEPRECATED: Registers test_function, so it is callable from JS
+// using plugin.test_name().
+typedef PP_Var (*ScriptableTestFunction)();
+void RegisterScriptableTest(nacl::string test_name,
+                            ScriptableTestFunction test_function);
 
 // Registers ppp_interface, so it is returned by PPP_GetInterface().
 void RegisterPluginInterface(const char* interface_name,
@@ -78,17 +101,30 @@ PP_CompletionCallback MakeTestableCompletionCallback(
     PP_CompletionCallback_Func func,
     void* user_data);
 
-// Use this macro to test the result of a test. If the test passed the test
-// function will continue. Otherwise, failure will be returned.
+// Uses PPB_Messaging interface to post "test_name:message".
+void PostTestMessage(nacl::string test_name, nacl::string message);
+
+// Use these macros to verify the result of a test and report failures.
+// TODO(polina): rename EXPECT_ASYNC to EXPECT when sync scripting is removed.
+#define EXPECT_ASYNC(expr) do { \
+  if (!(expr)) { \
+    fprintf(stderr, \
+            "ERROR: [%s] failed at %s:%d\n", #expr, __FILE__, __LINE__); \
+    PostTestMessage(__FUNCTION__, "ERROR"); \
+  } \
+} while (0)
+
 #define EXPECT(expr) do { \
   if (!(expr)) { \
-    fprintf(stderr, "ERROR: test failure at %s:%d\n", __FILE__, __LINE__); \
+    fprintf(stderr, \
+            "ERROR: [%s] failed at %s:%d\n", #expr, __FILE__, __LINE__); \
     return PP_MakeBool(PP_FALSE); \
   } \
 } while (0)
 
-// Use this macro to return from a TestFunction after all tests passed.
-#define TEST_PASSED PP_MakeBool(PP_TRUE);
+// Use these macros to report success.
+#define TEST_PASSED_ASYNC PostTestMessage(__FUNCTION__, "PASSED");
+#define TEST_PASSED PP_MakeBool(PP_TRUE)  // Usage: return TEST_PASSED;
 
 // Use this constant for stress testing
 // (i.e. creating and using a large number of resources).

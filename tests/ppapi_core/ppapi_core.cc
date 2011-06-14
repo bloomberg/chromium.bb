@@ -221,7 +221,7 @@ PP_Var TestAddRefAndReleaseInvalidResource() {
 
 }  // namespace
 
-void SetupScriptableTests() {
+void SetupTests() {
   RegisterScriptableTest("testGetTime", TestGetTime);
   RegisterScriptableTest("testGetTimeTicks", TestGetTimeTicks);
   RegisterScriptableTest("testIsMainThread_FromMainThread",

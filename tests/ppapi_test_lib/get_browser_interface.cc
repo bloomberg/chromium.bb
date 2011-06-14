@@ -15,6 +15,7 @@
 #include "ppapi/c/ppb_graphics_2d.h"
 #include "ppapi/c/ppb_image_data.h"
 #include "ppapi/c/ppb_instance.h"
+#include "ppapi/c/ppb_messaging.h"
 #include "ppapi/c/ppb_url_loader.h"
 #include "ppapi/c/ppb_url_request_info.h"
 #include "ppapi/c/ppb_url_response_info.h"
@@ -49,6 +50,11 @@ const PPB_ImageData* PPBImageData() {
 const PPB_Instance* PPBInstance() {
   return reinterpret_cast<const PPB_Instance*>(
       GetBrowserInterfaceSafe(PPB_INSTANCE_INTERFACE));
+}
+
+const PPB_Messaging* PPBMessaging() {
+  return reinterpret_cast<const PPB_Messaging*>(
+      GetBrowserInterfaceSafe(PPB_MESSAGING_INTERFACE));
 }
 
 const PPB_URLLoader* PPBURLLoader() {
@@ -92,4 +98,3 @@ const PPB_Surface3D_Dev* PPBSurface3DDev() {
   return  reinterpret_cast<const PPB_Surface3D_Dev*>(
       GetBrowserInterface(PPB_SURFACE_3D_DEV_INTERFACE));
 }
-

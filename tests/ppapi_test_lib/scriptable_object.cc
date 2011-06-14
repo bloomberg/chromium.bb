@@ -108,7 +108,5 @@ const PPP_Class_Deprecated ppp_class_interface = {
 ///////////////////////////////////////////////////////////////////////////////
 
 PP_Var GetScriptableObject(PP_Instance instance) {
-  CHECK(ppb_get_interface() != NULL);
-  SetupScriptableTests();
   return PPBVarDeprecated()->CreateObject(instance, &ppp_class_interface, NULL);
 }

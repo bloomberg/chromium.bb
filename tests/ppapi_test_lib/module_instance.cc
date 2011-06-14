@@ -13,9 +13,12 @@
 #include <map>
 
 #include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/shared/platform/nacl_check.h"
+#include "native_client/tests/ppapi_test_lib/get_browser_interface.h"
 #include "native_client/tests/ppapi_test_lib/internal_utils.h"
 #include "native_client/tests/ppapi_test_lib/test_interface.h"
 
+#include "ppapi/c/dev/ppb_var_deprecated.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_module.h"
@@ -23,6 +26,7 @@
 #include "ppapi/c/ppb.h"
 #include "ppapi/c/ppp.h"
 #include "ppapi/c/ppp_instance.h"
+#include "ppapi/c/ppp_messaging.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Plugin interface registration
@@ -64,7 +68,7 @@ void RegisterPluginInterface(const char* interface_name,
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// PPP_Instance default implementation
+// PPP_Instance implementation
 ///////////////////////////////////////////////////////////////////////////////
 
 namespace {
@@ -73,7 +77,20 @@ PP_Bool DidCreate(PP_Instance instance,
                   uint32_t /*argc*/,
                   const char* /*argn*/[],
                   const char* /*argv*/[]) {
+  CHECK(ppb_get_interface() != NULL);
+  CHECK(PPBCore() != NULL);
+  CHECK(PPBGraphics2D() != NULL);
+  CHECK(PPBImageData() != NULL);
+  CHECK(PPBInstance() != NULL);
+  CHECK(PPBMessaging() != NULL);
+  CHECK(PPBURLLoader() != NULL);
+  CHECK(PPBURLRequestInfo() != NULL);
+  CHECK(PPBURLResponseInfo() != NULL);
+  CHECK(PPBVarDeprecated() != NULL);
+
   set_pp_instance(instance);
+  SetupTests();
+
   return PP_TRUE;
 }
 
@@ -103,7 +120,7 @@ PP_Var GetInstanceObject(PP_Instance instance) {
   return GetScriptableObject(instance);
 }
 
-const PPP_Instance default_ppp_instance_interface = {
+const PPP_Instance ppp_instance_interface = {
   DidCreate,
   DidDestroy,
   DidChangeView,
@@ -111,6 +128,23 @@ const PPP_Instance default_ppp_instance_interface = {
   HandleInputEvent,
   HandleDocumentLoad,
   GetInstanceObject
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// PPP_Messaging implementation
+///////////////////////////////////////////////////////////////////////////////
+
+void HandleMessage(PP_Instance instance, PP_Var message) {
+  if (message.type != PP_VARTYPE_STRING)
+    return;
+  uint32_t len = 0;
+  // TODO(polina): use PPBVar.
+  const char* test_name = PPBVarDeprecated()->VarToUtf8(message, &len);
+  RunTest(test_name);
+}
+
+const PPP_Messaging ppp_messaging_interface = {
+  HandleMessage
 };
 
 }  // namespace
@@ -131,11 +165,16 @@ void PPP_ShutdownModule() {
 }
 
 const void* PPP_GetInterface(const char* interface_name) {
-  // This PPP_Instance interface is required, so we provide the default.
+  // The PPP_Instance interface is required for every plugin.
   if (0 == strncmp(PPP_INSTANCE_INTERFACE, interface_name,
                    strlen(PPP_INSTANCE_INTERFACE))) {
-    return &default_ppp_instance_interface;
+    return &ppp_instance_interface;
   }
-
+  // The PPP_Messaging interface is required for the test set-up.
+  if (0 == strncmp(PPP_MESSAGING_INTERFACE, interface_name,
+                   strlen(PPP_MESSAGING_INTERFACE))) {
+    return &ppp_messaging_interface;
+  }
+  // All other interfaces are to be optionally supplied by the tester.
   return PluginInterfaceTable::Get()->GetInterface(interface_name);
 }

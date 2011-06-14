@@ -109,7 +109,7 @@ struct PP_Var TestSetTickMarks() {
 
 }  // namespace
 
-void SetupScriptableTests() {
+void SetupTests() {
   RegisterScriptableTest("testCreate", TestCreate);
   RegisterScriptableTest("testGetThickness", TestGetThickness);
   RegisterScriptableTest("testValue", TestValue);
@@ -121,4 +121,3 @@ void SetupScriptableTests() {
 
 void SetupPluginInterfaces() {
 }
-
