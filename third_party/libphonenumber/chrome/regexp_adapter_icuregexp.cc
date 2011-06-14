@@ -4,8 +4,11 @@
 
 #include "third_party/libphonenumber/cpp/src/regexp_adapter.h"
 
+#include <map>
+
 // Setup all of the Chromium and WebKit defines
 #include "base/logging.h"
+#include "base/memory/singleton.h"
 #include "base/scoped_ptr.h"
 #include "build/build_config.h"
 #include "unicode/regex.h"
@@ -103,10 +106,43 @@ class IcuRegularExpression : public reg_exp::RegularExpression {
                        bool global,
                        const char* replacement_string) const;
  private:
-  scoped_ptr<icu::RegexPattern> utf8_regexp_;
+  icu::RegexPattern utf8_regexp_;
 
   DISALLOW_COPY_AND_ASSIGN(IcuRegularExpression);
 };
+
+class RegExpCache {
+ public:
+  static RegExpCache* GetInstance();
+  const icu::RegexPattern& GetRegExp(const std::string& reg_exp);
+
+ private:
+  std::map<std::string, icu::RegexPattern> reg_exp_cache_;
+  icu::RegexPattern empty_regexp_;
+};
+
+RegExpCache* RegExpCache::GetInstance() {
+  return Singleton<RegExpCache>::get();
+}
+
+const icu::RegexPattern& RegExpCache::GetRegExp(const std::string& reg_exp) {
+  std::map<std::string, icu::RegexPattern>::iterator it =
+      reg_exp_cache_.find(reg_exp);
+  UParseError pe;
+  UErrorCode status = U_ZERO_ERROR;
+  if (it == reg_exp_cache_.end()) {
+    scoped_ptr<icu::RegexPattern> pattern(icu::RegexPattern::compile(
+        icu::UnicodeString::fromUTF8(reg_exp), 0, pe, status));
+    if (U_SUCCESS(status)) {
+      it = reg_exp_cache_.insert(std::make_pair(reg_exp, *pattern)).first;
+    } else {
+      // All of the passed regular expressions should compile correctly.
+      NOTREACHED();
+      return empty_regexp_;
+    }
+  }
+  return it->second;
+}
 
 IcuRegularExpressionInput::IcuRegularExpressionInput(const char* utf8_input)
     : pos_(0) {
@@ -132,15 +168,8 @@ std::string IcuRegularExpressionInput::ToString() const {
 
 IcuRegularExpression::IcuRegularExpression(const char* utf8_regexp) {
   DCHECK(utf8_regexp);
-  UParseError pe;
-  UErrorCode status = U_ZERO_ERROR;
-  utf8_regexp_.reset(icu::RegexPattern::compile(
-      icu::UnicodeString::fromUTF8(utf8_regexp), 0, pe, status));
-  if (U_FAILURE(status)) {
-    // All of the passed regular expressions should compile correctly.
-    utf8_regexp_.reset(NULL);
-    NOTREACHED();
-  }
+  std::string regexp_key(utf8_regexp);
+  utf8_regexp_ = RegExpCache::GetInstance()->GetRegExp(regexp_key);
 }
 
 bool IcuRegularExpression::Consume(
@@ -153,14 +182,11 @@ bool IcuRegularExpression::Consume(
   // matched_string1 may be NULL
   // matched_string2 may be NULL
   // matched_string3 may be NULL
-  if (!utf8_regexp_.get())
-    return false;
-
   IcuRegularExpressionInput* input =
       reinterpret_cast<IcuRegularExpressionInput *>(input_string);
   UErrorCode status = U_ZERO_ERROR;
-  scoped_ptr<icu::RegexMatcher> matcher(utf8_regexp_->matcher(*(input->Data()),
-                                                              status));
+  scoped_ptr<icu::RegexMatcher> matcher(utf8_regexp_.matcher(*(input->Data()),
+                                                             status));
 
   if (U_FAILURE(status))
     return false;
@@ -198,13 +224,11 @@ bool IcuRegularExpression::Match(const char* input_string,
                                  std::string* matched_string) const {
   DCHECK(input_string);
   // matched_string may be NULL
-  if (!utf8_regexp_.get())
-    return false;
 
   IcuRegularExpressionInput input(input_string);
   UErrorCode status = U_ZERO_ERROR;
-  scoped_ptr<icu::RegexMatcher> matcher(utf8_regexp_->matcher(*(input.Data()),
-                                                              status));
+  scoped_ptr<icu::RegexMatcher> matcher(utf8_regexp_.matcher(*(input.Data()),
+                                                             status));
 
   if (U_FAILURE(status))
     return false;
@@ -264,8 +288,8 @@ bool IcuRegularExpression::Replace(std::string* string_to_process,
 
   IcuRegularExpressionInput input(string_to_process->c_str());
   UErrorCode status = U_ZERO_ERROR;
-  scoped_ptr<icu::RegexMatcher> matcher(utf8_regexp_->matcher(*(input.Data()),
-                                                              status));
+  scoped_ptr<icu::RegexMatcher> matcher(utf8_regexp_.matcher(*(input.Data()),
+                                                             status));
   if (U_FAILURE(status))
     return false;
 

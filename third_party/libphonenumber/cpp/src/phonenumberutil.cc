@@ -1765,30 +1765,32 @@ void PhoneNumberUtil::NormalizeDigitsOnly(string* number) {
   UParseError error;
   icu::ErrorCode status;
 
-  scoped_ptr<icu::Transliterator> transliterator(
-    icu::Transliterator::createFromRules(
-      "NormalizeDecimalDigits",
-      "[[:nv=0:]-[0]-[:^nt=de:]]>0;"
-      "[[:nv=1:]-[1]-[:^nt=de:]]>1;"
-      "[[:nv=2:]-[2]-[:^nt=de:]]>2;"
-      "[[:nv=3:]-[3]-[:^nt=de:]]>3;"
-      "[[:nv=4:]-[4]-[:^nt=de:]]>4;"
-      "[[:nv=5:]-[5]-[:^nt=de:]]>5;"
-      "[[:nv=6:]-[6]-[:^nt=de:]]>6;"
-      "[[:nv=7:]-[7]-[:^nt=de:]]>7;"
-      "[[:nv=8:]-[8]-[:^nt=de:]]>8;"
-      "[[:nv=9:]-[9]-[:^nt=de:]]>9;",
-      UTRANS_FORWARD,
-      error,
-      status
-    )
-  );
+  if (!GetInstance()->transliterator_.get()) {
+    GetInstance()->transliterator_.reset(
+      icu::Transliterator::createFromRules(
+        "NormalizeDecimalDigits",
+        "[[:nv=0:]-[0]-[:^nt=de:]]>0;"
+        "[[:nv=1:]-[1]-[:^nt=de:]]>1;"
+        "[[:nv=2:]-[2]-[:^nt=de:]]>2;"
+        "[[:nv=3:]-[3]-[:^nt=de:]]>3;"
+        "[[:nv=4:]-[4]-[:^nt=de:]]>4;"
+        "[[:nv=5:]-[5]-[:^nt=de:]]>5;"
+        "[[:nv=6:]-[6]-[:^nt=de:]]>6;"
+        "[[:nv=7:]-[7]-[:^nt=de:]]>7;"
+        "[[:nv=8:]-[8]-[:^nt=de:]]>8;"
+        "[[:nv=9:]-[9]-[:^nt=de:]]>9;",
+        UTRANS_FORWARD,
+        error,
+        status
+      )
+    );
+  }
   if (!status.isSuccess()) {
     logger->Error("Error creating ICU Transliterator");
     return;
   }
   icu::UnicodeString utf16(icu::UnicodeString::fromUTF8(number->c_str()));
-  transliterator->transliterate(utf16);
+  GetInstance()->transliterator_->transliterate(utf16);
   number->clear();
   utf16.toUTF8String(*number);
 }

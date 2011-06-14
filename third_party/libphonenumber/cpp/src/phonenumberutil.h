@@ -26,6 +26,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <unicode/translit.h>
 
 #include "base/scoped_ptr.h"
 #include "base/singleton.h"
@@ -57,7 +58,7 @@ class PhoneNumberUtil {
  public:
   // INTERNATIONAL and NATIONAL formats are consistent with the definition
   // in ITU-T Recommendation E. 123. For example, the number of the Google
-  // Zürich office will be written as "+41 44 668 1800" in INTERNATIONAL
+  // Zurich office will be written as "+41 44 668 1800" in INTERNATIONAL
   // format, and as "044 668 1800" in NATIONAL format. E164 format is as per
   // INTERNATIONAL format but with no formatting applied e.g. +41446681800.
   // RFC3966 is as per INTERNATIONAL format, but with all spaces and other
@@ -668,6 +669,8 @@ class PhoneNumberUtil {
                         bool keep_raw_input,
                         bool check_region,
                         PhoneNumber* phone_number) const;
+
+  scoped_ptr<icu::Transliterator> transliterator_;
 
   DISALLOW_COPY_AND_ASSIGN(PhoneNumberUtil);
 };

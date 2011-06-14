@@ -93,7 +93,7 @@ class TestPersonalDataManager : public PersonalDataManager {
                                      month, year);
     credit_card->set_guid("00000000-0000-0000-0000-000000000007");
     credit_cards_->push_back(credit_card);
- }
+  }
 
  private:
   void CreateTestAutofillProfiles(ScopedVector<AutofillProfile>* profiles) {
@@ -2140,4 +2140,52 @@ TEST_F(AutofillManagerTest, AuxiliaryProfilesReset) {
   ASSERT_FALSE(profile()->GetPrefs()->GetBoolean(
       prefs::kAutofillAuxiliaryProfilesEnabled));
 #endif
+}
+
+TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesForUpload) {
+  test_personal_data_->ClearAutofillProfiles();
+  const int kNumProfiles = 5;
+  for (int i = 0; i < kNumProfiles; ++i) {
+    AutofillProfile* profile = new AutofillProfile;
+    autofill_test::SetProfileInfo(profile,
+                                  StringPrintf("John%d", i).c_str(),
+                                  "",
+                                  StringPrintf("Doe%d", i).c_str(),
+                                  StringPrintf("JohnDoe%d@somesite.com",
+                                               i).c_str(),
+                                  "",
+                                  StringPrintf("%d 1st st.", i).c_str(),
+                                  "",
+                                  "Memphis", "Tennessee", "38116", "USA",
+                                  StringPrintf("650234%04d", i).c_str(),
+                                  "");
+    profile->set_guid(
+        StringPrintf("00000000-0000-0000-0001-00000000%04d", i).c_str());
+    test_personal_data_->AddProfile(profile);
+  }
+  FormData form;
+  CreateTestAddressFormData(&form);
+  ASSERT_LT(3U, form.fields.size());
+  form.fields[0].value = ASCIIToUTF16("6502340001");
+  form.fields[1].value = ASCIIToUTF16("John1");
+  form.fields[2].value = ASCIIToUTF16("12345");
+  FormStructure form_structure(form);
+  autofill_manager_->DeterminePossibleFieldTypesForUpload(&form_structure);
+  ASSERT_LT(3U, form_structure.field_count());
+  const FieldTypeSet& possible_types0 =
+      form_structure.field(0)->possible_types();
+  EXPECT_EQ(2U, possible_types0.size());
+  EXPECT_TRUE(possible_types0.find(PHONE_HOME_WHOLE_NUMBER) !=
+              possible_types0.end());
+  EXPECT_TRUE(possible_types0.find(PHONE_HOME_CITY_AND_NUMBER) !=
+              possible_types0.end());
+  const FieldTypeSet& possible_types1 =
+      form_structure.field(1)->possible_types();
+  EXPECT_EQ(1U, possible_types1.size());
+  EXPECT_TRUE(possible_types1.find(NAME_FIRST) != possible_types1.end());
+  const FieldTypeSet& possible_types2 =
+      form_structure.field(2)->possible_types();
+  EXPECT_EQ(1U, possible_types2.size());
+  EXPECT_TRUE(possible_types2.find(UNKNOWN_TYPE) !=
+              possible_types2.end());
 }
