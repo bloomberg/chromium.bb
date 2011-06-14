@@ -95,7 +95,8 @@ TabContents* TabFinder::FindTab(Browser* browser,
   // Then check other browsers.
   for (BrowserList::const_iterator i = BrowserList::begin();
        i != BrowserList::end(); ++i) {
-    if (!(*i)->profile()->IsOffTheRecord()) {
+    if (!(*i)->profile()->IsOffTheRecord() &&
+         (*i)->profile()->IsSameProfile(browser->profile())) {
       tab_in_browser = FindTabInBrowser(*i, url);
       if (tab_in_browser) {
         *existing_browser = *i;
