@@ -39,14 +39,26 @@ void VideoCaptureHost::OnError(const VideoCaptureControllerID& id) {
                         id.device_id));
 }
 
+void VideoCaptureHost::OnBufferCreated(
+    const VideoCaptureControllerID& id,
+    base::SharedMemoryHandle handle,
+    int length,
+    int buffer_id) {
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      NewRunnableMethod(this, &VideoCaptureHost::DoSendNewBuffer,
+                        id.routing_id, id.device_id, handle, length,
+                        buffer_id));
+}
+
 void VideoCaptureHost::OnBufferReady(
     const VideoCaptureControllerID& id,
-    TransportDIB::Handle handle,
+    int buffer_id,
     base::Time timestamp) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(this, &VideoCaptureHost::DoSendFilledBuffer,
-                        id.routing_id, id.device_id, handle, timestamp));
+                        id.routing_id, id.device_id, buffer_id, timestamp));
 }
 
 void VideoCaptureHost::OnFrameInfo(const VideoCaptureControllerID& id,
@@ -66,13 +78,20 @@ void VideoCaptureHost::OnReadyToDelete(const VideoCaptureControllerID& id) {
                         id));
 }
 
-void VideoCaptureHost::DoSendFilledBuffer(int32 routing_id,
-                                          int device_id,
-                                          TransportDIB::Handle handle,
-                                          base::Time timestamp) {
+void VideoCaptureHost::DoSendNewBuffer(
+    int32 routing_id, int device_id, base::SharedMemoryHandle handle,
+    int length, int buffer_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  Send(new VideoCaptureMsg_BufferReady(routing_id, device_id, handle,
+  Send(new VideoCaptureMsg_NewBuffer(routing_id, device_id, handle,
+                                     length, buffer_id));
+}
+
+void VideoCaptureHost::DoSendFilledBuffer(
+    int32 routing_id, int device_id, int buffer_id, base::Time timestamp) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  Send(new VideoCaptureMsg_BufferReady(routing_id, device_id, buffer_id,
                                        timestamp));
 }
 
@@ -158,16 +177,15 @@ void VideoCaptureHost::OnPauseCapture(const IPC::Message& msg, int device_id) {
                                         media::VideoCapture::kError));
 }
 
-void VideoCaptureHost::OnReceiveEmptyBuffer(const IPC::Message& msg,
-                                            int device_id,
-                                            TransportDIB::Handle handle) {
+void VideoCaptureHost::OnReceiveEmptyBuffer(
+    const IPC::Message& msg, int device_id, int buffer_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   VideoCaptureControllerID controller_id(msg.routing_id(), device_id);
   EntryMap::iterator it = entries_.find(controller_id);
   if (it != entries_.end()) {
     scoped_refptr<VideoCaptureController> controller = it->second;
-    controller->ReturnTransportDIB(handle);
+    controller->ReturnBuffer(buffer_id);
   }
 }
 

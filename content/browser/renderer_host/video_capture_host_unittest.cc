@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <list>
+#include <map>
 #include <string>
 
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
+#include "base/stl_util-inl.h"
 #include "base/stringprintf.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/media_stream/video_capture_manager.h"
@@ -70,11 +71,18 @@ class DumpVideo {
 class MockVideoCaptureHost : public VideoCaptureHost {
  public:
   MockVideoCaptureHost() : return_buffers_(false), dump_video_(false) {}
-  virtual ~MockVideoCaptureHost() {}
+  virtual ~MockVideoCaptureHost() {
+    STLDeleteContainerPairSecondPointers(filled_dib_.begin(),
+                                         filled_dib_.end());
+  }
 
   // A list of mock methods.
+  MOCK_METHOD5(OnNewBufferCreated,
+               void(int routing_id, int device_id,
+                    base::SharedMemoryHandle handle,
+                    int length, int buffer_id));
   MOCK_METHOD3(OnBufferFilled,
-               void(int routing_id, int device_id, TransportDIB::Handle));
+               void(int routing_id, int device_id, int buffer_id));
   MOCK_METHOD3(OnStateChanged,
                void(int routing_id, int device_id,
                     media::VideoCapture::State state));
@@ -90,19 +98,21 @@ class MockVideoCaptureHost : public VideoCaptureHost {
 
   // Return Dibs we currently have received.
   void ReturnReceivedDibs(int device_id)  {
-    TransportDIB::Handle handle = GetReceivedDib();
-    while (TransportDIB::is_valid_handle(handle)) {
+    int handle = GetReceivedDib();
+    while (handle) {
       IPC::Message msg;
       msg.set_routing_id(kRouteId);
       this->OnReceiveEmptyBuffer(msg, device_id, handle);
       handle = GetReceivedDib();
     }
   }
-  TransportDIB::Handle GetReceivedDib() {
+  int GetReceivedDib() {
     if (filled_dib_.empty())
-      return TransportDIB::DefaultHandleValue();
-    TransportDIB::Handle h = filled_dib_.front();
-    filled_dib_.pop_front();
+      return 0;
+    std::map<int, base::SharedMemory*>::iterator it = filled_dib_.begin();
+    int h = it->first;
+    delete it->second;
+    filled_dib_.erase(it);
 
     return h;
   }
@@ -118,6 +128,7 @@ class MockVideoCaptureHost : public VideoCaptureHost {
     // we are the renderer.
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(MockVideoCaptureHost, *message)
+      IPC_MESSAGE_HANDLER(VideoCaptureMsg_NewBuffer, OnNewBufferCreated)
       IPC_MESSAGE_HANDLER(VideoCaptureMsg_BufferReady, OnBufferFilled)
       IPC_MESSAGE_HANDLER(VideoCaptureMsg_StateChanged, OnStateChanged)
       IPC_MESSAGE_HANDLER(VideoCaptureMsg_DeviceInfo, OnDeviceInfo)
@@ -130,19 +141,26 @@ class MockVideoCaptureHost : public VideoCaptureHost {
   }
 
   // These handler methods do minimal things and delegate to the mock methods.
+  void OnNewBufferCreated(const IPC::Message& msg, int device_id,
+                          base::SharedMemoryHandle handle,
+                          int length, int buffer_id) {
+    OnNewBufferCreated(msg.routing_id(), device_id, handle, length, buffer_id);
+    base::SharedMemory* dib = new base::SharedMemory(handle, false);
+    dib->Map(length);
+    filled_dib_[buffer_id] = dib;
+  }
+
   void OnBufferFilled(const IPC::Message& msg, int device_id,
-                      TransportDIB::Handle  dib_handle) {
+                      int buffer_id) {
     if (dump_video_) {
-      TransportDIB* dib = TransportDIB::Map(dib_handle);
+      base::SharedMemory* dib = filled_dib_[buffer_id];
       ASSERT_TRUE(dib != NULL);
       dumper_.NewVideoFrame(dib->memory());
     }
 
-    OnBufferFilled(msg.routing_id(), device_id, dib_handle);
+    OnBufferFilled(msg.routing_id(), device_id, buffer_id);
     if (return_buffers_) {
-      VideoCaptureHost::OnReceiveEmptyBuffer(msg, device_id, dib_handle);
-    } else {
-      filled_dib_.push_back(dib_handle);
+      VideoCaptureHost::OnReceiveEmptyBuffer(msg, device_id, buffer_id);
     }
   }
 
@@ -159,7 +177,7 @@ class MockVideoCaptureHost : public VideoCaptureHost {
     OnDeviceInfo(msg.routing_id(), device_id);
   }
 
-  std::list<TransportDIB::Handle> filled_dib_;
+  std::map<int, base::SharedMemory*> filled_dib_;
   bool return_buffers_;
   bool dump_video_;
   DumpVideo dumper_;
@@ -237,14 +255,19 @@ class VideoCaptureHostTest : public testing::Test {
 
   void StartCapture() {
     InSequence s;
-    // 1. First - get info about the new resolution
+    // 1. Newly created buffers will arrive.
+    EXPECT_CALL(*host_, OnNewBufferCreated(kRouteId, kDeviceId, _, _, _))
+        .Times(AnyNumber())
+        .WillRepeatedly(Return());
+
+    // 2. First - get info about the new resolution
     EXPECT_CALL(*host_, OnDeviceInfo(kRouteId, kDeviceId));
 
-    // 2. Change state to started
+    // 3. Change state to started
     EXPECT_CALL(*host_, OnStateChanged(kRouteId, kDeviceId,
                                        media::VideoCapture::kStarted));
 
-    // 3. First filled buffer will arrive.
+    // 4. First filled buffer will arrive.
     EXPECT_CALL(*host_, OnBufferFilled(kRouteId, kDeviceId, _))
         .Times(AnyNumber())
         .WillOnce(ExitMessageLoop(message_loop_.get()));

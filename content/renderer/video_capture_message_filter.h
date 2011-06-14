@@ -13,17 +13,20 @@
 #include <map>
 
 #include "base/message_loop_proxy.h"
+#include "base/shared_memory.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "media/video/capture/video_capture.h"
-#include "ui/gfx/surface/transport_dib.h"
 
 class VideoCaptureMessageFilter : public IPC::ChannelProxy::MessageFilter {
  public:
   class Delegate {
    public:
+    // Called when a video frame buffer is created in the browser process.
+    virtual void OnBufferCreated(base::SharedMemoryHandle handle,
+                                 int length, int buffer_id) = 0;
+
     // Called when a video frame buffer is received from the browser process.
-    virtual void OnBufferReceived(TransportDIB::Handle handle,
-                                  base::Time timestamp) = 0;
+    virtual void OnBufferReceived(int buffer_id, base::Time timestamp) = 0;
 
     // Called when state of a video capture device has changed in the browser
     // process.
@@ -66,10 +69,14 @@ class VideoCaptureMessageFilter : public IPC::ChannelProxy::MessageFilter {
   virtual void OnFilterRemoved();
   virtual void OnChannelClosing();
 
+  // Receive a newly created buffer from browser process.
+  void OnBufferCreated(const IPC::Message& msg, int device_id,
+                       base::SharedMemoryHandle handle,
+                       int length, int buffer_id);
+
   // Receive a buffer from browser process.
   void OnBufferReceived(const IPC::Message& msg, int device_id,
-                        TransportDIB::Handle handle,
-                        base::Time timestamp);
+                        int buffer_id, base::Time timestamp);
 
   // State of browser process' video capture device has changed.
   void OnDeviceStateChanged(int device_id,

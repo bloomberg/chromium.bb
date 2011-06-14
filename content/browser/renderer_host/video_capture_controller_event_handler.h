@@ -5,10 +5,8 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_VIDEO_CAPTURE_CONTROLLER_EVENT_HANDLER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_VIDEO_CAPTURE_CONTROLLER_EVENT_HANDLER_H_
 
-#include <map>
-
+#include "base/shared_memory.h"
 #include "base/time.h"
-#include "ui/gfx/surface/transport_dib.h"
 
 // ID used for identifying an object of VideoCaptureController.
 struct VideoCaptureControllerID {
@@ -25,12 +23,17 @@ struct VideoCaptureControllerID {
 // BufferReady, FrameInfo, Error, etc.
 class VideoCaptureControllerEventHandler {
  public:
-  // An Error have occurred in the VideoCaptureDevice.
+  // An Error has occurred in the VideoCaptureDevice.
   virtual void OnError(const VideoCaptureControllerID& id) = 0;
 
-  // An TransportDIB have been filled with I420 video.
+  // A buffer has been newly created.
+  virtual void OnBufferCreated(const VideoCaptureControllerID& id,
+                               base::SharedMemoryHandle handle,
+                               int length, int buffer_id) = 0;
+
+  // A buffer has been filled with I420 video.
   virtual void OnBufferReady(const VideoCaptureControllerID& id,
-                             TransportDIB::Handle handle,
+                             int buffer_id,
                              base::Time timestamp) = 0;
 
   // The frame resolution the VideoCaptureDevice capture video in.

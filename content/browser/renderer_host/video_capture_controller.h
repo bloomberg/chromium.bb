@@ -50,9 +50,9 @@ class VideoCaptureController
   // device is stopped.
   void StopCapture(Task* stopped_task);
 
-  // Return a DIB previously given in
+  // Return a buffer previously given in
   // VideoCaptureControllerEventHandler::OnBufferReady.
-  void ReturnTransportDIB(TransportDIB::Handle handle);
+  void ReturnBuffer(int buffer_id);
 
   // Implement media::VideoCaptureDevice::EventHandler.
   virtual void OnIncomingCapturedFrame(const uint8* data,
@@ -70,8 +70,8 @@ class VideoCaptureController
   // Handle to the render process that will receive the DIBs.
   base::ProcessHandle render_handle_;
   bool report_ready_to_delete_;
-  typedef std::list<TransportDIB::Handle> DIBHandleList;
-  typedef std::map<TransportDIB::Handle, TransportDIB*> DIBMap;
+  typedef std::list<int> DIBHandleList;
+  typedef std::map<int, base::SharedMemory*> DIBMap;
 
   // Free DIBS that can be filled with video frames.
   DIBHandleList free_dibs_;

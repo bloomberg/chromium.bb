@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/message_loop.h"
+#include "base/shared_memory.h"
 #include "content/common/video_capture_messages.h"
 #include "content/renderer/video_capture_message_filter.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -17,10 +18,16 @@ class MockVideoCaptureDelegate : public VideoCaptureMessageFilter::Delegate {
     device_id_ = 0;
   }
 
-  virtual void OnBufferReceived(TransportDIB::Handle handle,
-                                base::Time timestamp) {
-    buffer_received_ = true;
+  virtual void OnBufferCreated(base::SharedMemoryHandle handle,
+                               int length, int buffer_id) {
+    buffer_created_ = true;
     handle_ = handle;
+  }
+
+  // Called when a video frame buffer is received from the browser process.
+  virtual void OnBufferReceived(int buffer_id, base::Time timestamp) {
+    buffer_received_ = true;
+    buffer_id_ = buffer_id;
     timestamp_ = timestamp;
   }
 
@@ -42,8 +49,11 @@ class MockVideoCaptureDelegate : public VideoCaptureMessageFilter::Delegate {
   }
 
   void Reset() {
+    buffer_created_ = false;
+    handle_ = base::SharedMemory::NULLHandle();
+
     buffer_received_ = false;
-    handle_ = TransportDIB::DefaultHandleValue();
+    buffer_id_ = -1;
     timestamp_ = base::Time();
 
     state_changed_received_ = false;
@@ -55,8 +65,11 @@ class MockVideoCaptureDelegate : public VideoCaptureMessageFilter::Delegate {
     params_.frame_per_second = 0;
   }
 
+  bool buffer_created() { return buffer_created_; }
+  base::SharedMemoryHandle received_buffer_handle() { return handle_; }
+
   bool buffer_received() { return buffer_received_; }
-  TransportDIB::Handle received_buffer_handle() { return handle_; }
+  int received_buffer_id() { return buffer_id_; }
   base::Time received_buffer_ts() { return timestamp_; }
 
   bool state_changed_received() { return state_changed_received_; }
@@ -69,8 +82,11 @@ class MockVideoCaptureDelegate : public VideoCaptureMessageFilter::Delegate {
   int32 device_id() { return device_id_; }
 
  private:
+  bool buffer_created_;
+  base::SharedMemoryHandle handle_;
+
   bool buffer_received_;
-  TransportDIB::Handle handle_;
+  int buffer_id_;
   base::Time timestamp_;
 
   bool state_changed_received_;
@@ -107,19 +123,29 @@ TEST(VideoCaptureMessageFilterTest, Basic) {
   EXPECT_TRUE(media::VideoCapture::kStarted == delegate.state());
   delegate.Reset();
 
+  // VideoCaptureMsg_NewBuffer
+  const base::SharedMemoryHandle handle =
+#if defined(OS_WIN)
+      reinterpret_cast<base::SharedMemoryHandle>(10);
+#else
+      base::SharedMemoryHandle(10, true);
+#endif
+  EXPECT_FALSE(delegate.buffer_created());
+  filter->OnMessageReceived(VideoCaptureMsg_NewBuffer(
+      kRouteId, delegate.device_id(), handle, 1, 1));
+  EXPECT_TRUE(delegate.buffer_created());
+  EXPECT_EQ(handle, delegate.received_buffer_handle());
+  delegate.Reset();
+
   // VideoCaptureMsg_BufferReady
-  const TransportDIB::Handle handle = TransportDIB::GetFakeHandleForTest();
+  int buffer_id = 1;
   base::Time timestamp = base::Time::FromInternalValue(1);
 
   EXPECT_FALSE(delegate.buffer_received());
   filter->OnMessageReceived(VideoCaptureMsg_BufferReady(
-      kRouteId, delegate.device_id(), handle, timestamp));
+      kRouteId, delegate.device_id(), buffer_id, timestamp));
   EXPECT_TRUE(delegate.buffer_received());
-#if defined(OS_MACOSX)
-  EXPECT_EQ(handle.fd, delegate.received_buffer_handle().fd);
-#else
-  EXPECT_EQ(handle, delegate.received_buffer_handle());
-#endif  // defined(OS_MACOSX)
+  EXPECT_EQ(buffer_id, delegate.received_buffer_id());
   EXPECT_TRUE(timestamp == delegate.received_buffer_ts());
   delegate.Reset();
 

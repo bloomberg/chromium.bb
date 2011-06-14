@@ -34,8 +34,9 @@ class VideoCaptureImpl
   virtual int CaptureFrameRate();
 
   // VideoCaptureMessageFilter::Delegate interface.
-  virtual void OnBufferReceived(TransportDIB::Handle handle,
-                                base::Time timestamp);
+  virtual void OnBufferCreated(base::SharedMemoryHandle handle,
+                               int length, int buffer_id);
+  virtual void OnBufferReceived(int buffer_id, base::Time timestamp);
   virtual void OnStateChanged(const media::VideoCapture::State& state);
   virtual void OnDeviceInfoReceived(
       const media::VideoCaptureParams& device_info);
@@ -57,10 +58,11 @@ class VideoCaptureImpl
 
   struct DIBBuffer {
    public:
-    DIBBuffer(TransportDIB* d, media::VideoCapture::VideoFrameBuffer* ptr);
+    DIBBuffer(base::SharedMemory* d,
+              media::VideoCapture::VideoFrameBuffer* ptr);
     ~DIBBuffer();
 
-    TransportDIB* dib;
+    base::SharedMemory* dib;
     scoped_refptr<media::VideoCapture::VideoFrameBuffer> mapped_memory;
   };
 
@@ -84,7 +86,7 @@ class VideoCaptureImpl
   int device_id_;
 
   // Pool of DIBs.
-  typedef std::list<DIBBuffer*> CachedDIB;
+  typedef std::map<int, DIBBuffer*> CachedDIB;
   CachedDIB cached_dibs_;
 
   typedef std::map<media::VideoCapture::EventHandler*, VideoCaptureCapability>

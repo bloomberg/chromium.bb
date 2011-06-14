@@ -23,10 +23,17 @@ IPC_MESSAGE_ROUTED2(VideoCaptureMsg_StateChanged,
                     int /* device id */,
                     media::VideoCapture::State /* new state */)
 
+// Tell the renderer process that a new buffer is allocated for video capture.
+IPC_MESSAGE_ROUTED4(VideoCaptureMsg_NewBuffer,
+                    int /* device id */,
+                    base::SharedMemoryHandle /* handle */,
+                    int /* length */,
+                    int /* buffer_id */)
+
 // Tell the renderer process that a buffer is available from video capture.
 IPC_MESSAGE_ROUTED3(VideoCaptureMsg_BufferReady,
                     int /* device id */,
-                    TransportDIB::Handle /* DIB */,
+                    int /* buffer_id */,
                     base::Time /* timestamp */)
 
 // Tell the renderer process the width, height and frame rate the camera use.
@@ -51,4 +58,4 @@ IPC_MESSAGE_ROUTED1(VideoCaptureHostMsg_Stop,
 // device (routing_id, device_id) to fill up.
 IPC_MESSAGE_ROUTED2(VideoCaptureHostMsg_BufferReady,
                     int /* device_id */,
-                    TransportDIB::Handle /* handle */)
+                    int /* buffer_id */)

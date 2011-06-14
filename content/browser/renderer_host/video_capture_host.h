@@ -56,8 +56,11 @@ class VideoCaptureHost : public BrowserMessageFilter,
 
   // VideoCaptureControllerEventHandler implementation.
   virtual void OnError(const VideoCaptureControllerID& id);
+  virtual void OnBufferCreated(const VideoCaptureControllerID& id,
+                               base::SharedMemoryHandle handle,
+                               int length, int buffer_id);
   virtual void OnBufferReady(const VideoCaptureControllerID& id,
-                             TransportDIB::Handle handle,
+                             int buffer_id,
                              base::Time timestamp);
   virtual void OnFrameInfo(const VideoCaptureControllerID& id,
                            int width,
@@ -90,17 +93,24 @@ class VideoCaptureHost : public BrowserMessageFilter,
   // referenced by |device_id|.
   void OnReceiveEmptyBuffer(const IPC::Message& msg,
                             int device_id,
-                            TransportDIB::Handle handle);
+                            int buffer_id);
 
 
   // Called on the IO thread when VideoCaptureController have
   // reported that all DIBs have been returned.
   void DoDeleteVideoCaptureController(const VideoCaptureControllerID& id);
 
+  // Send a newly created buffer to the VideoCaptureMessageFilter.
+  void DoSendNewBuffer(int32 routing_id,
+                       int device_id,
+                       base::SharedMemoryHandle handle,
+                       int length,
+                       int buffer_id);
+
   // Send a filled buffer to the VideoCaptureMessageFilter.
   void DoSendFilledBuffer(int32 routing_id,
                           int device_id,
-                          TransportDIB::Handle handle,
+                          int buffer_id,
                           base::Time timestamp);
 
   // Send a information about frame resolution and frame rate

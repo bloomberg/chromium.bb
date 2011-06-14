@@ -4,11 +4,12 @@
 
 #include "content/renderer/media/video_capture_impl.h"
 
+#include "base/stl_util-inl.h"
 #include "content/common/child_process.h"
 #include "content/common/video_capture_messages.h"
 
 VideoCaptureImpl::DIBBuffer::DIBBuffer(
-    TransportDIB* d, media::VideoCapture::VideoFrameBuffer* ptr)
+    base::SharedMemory* d, media::VideoCapture::VideoFrameBuffer* ptr)
     : dib(d),
       mapped_memory(ptr) {}
 
@@ -51,7 +52,10 @@ VideoCaptureImpl::VideoCaptureImpl(
   DCHECK(filter);
 }
 
-VideoCaptureImpl::~VideoCaptureImpl() {}
+VideoCaptureImpl::~VideoCaptureImpl() {
+  STLDeleteContainerPairSecondPointers(cached_dibs_.begin(),
+                                       cached_dibs_.end());
+}
 
 void VideoCaptureImpl::Init() {
   base::MessageLoopProxy* io_message_loop_proxy =
@@ -127,8 +131,9 @@ void VideoCaptureImpl::StartCapture(
         (capability.width != width_ || capability.height != height_)) {
       new_width_ = capability.width;
       new_height_ = capability.height;
-      DLOG(INFO) << "StartCapture: Got master client with new resolution "
-          "during started, try to restart.";
+      DLOG(INFO) << "StartCapture: Got master client with new resolution ("
+                 << new_width_ << ", " << new_height_ << ") "
+                 << "during started, try to restart.";
       StopDevice();
     }
     handler->OnStarted(this);
@@ -139,7 +144,9 @@ void VideoCaptureImpl::StartCapture(
     if (capability.resolution_fixed || !pending_start()) {
       new_width_ = capability.width;
       new_height_ = capability.height;
-      DLOG(INFO) << "StartCapture: Got new resolution, already in stopping.";
+      DLOG(INFO) << "StartCapture: Got new resolution ("
+                 << new_width_ << ", " << new_height_ << ") "
+                 << ", already in stopping.";
     }
     handler->OnStarted(this);
     return;
@@ -151,6 +158,8 @@ void VideoCaptureImpl::StartCapture(
   new_height_ = 0;
   width_ = capability.width;
   height_ = capability.height;
+  DLOG(INFO) << "StartCapture: resolution ("
+             << width_ << ", " << height_ << "). ";
 
   StartCaptureInternal();
 }
@@ -199,7 +208,9 @@ void VideoCaptureImpl::StopCapture(media::VideoCapture::EventHandler* handler) {
       if (maxw < width_ && maxh < height_) {
         new_width_ = maxw;
         new_height_ = maxh;
-        DLOG(INFO) << "StopCapture: New smaller resolution, stopping ...";
+        DLOG(INFO) << "StopCapture: New smaller resolution ("
+                   << new_width_ << ", " << new_height_ << ") "
+                   << "), stopping ...";
         StopDevice();
       }
       return;
@@ -208,7 +219,9 @@ void VideoCaptureImpl::StopCapture(media::VideoCapture::EventHandler* handler) {
     if (state_ == kStopping) {
       new_width_ = maxw;
       new_height_ = maxh;
-      DLOG(INFO) << "StopCapture: New resolution, during stopping.";
+      DLOG(INFO) << "StopCapture: New resolution ("
+                 << new_width_ << ", " << new_height_ << ") "
+                 << "), during stopping.";
       return;
     }
   } else {
@@ -219,46 +232,54 @@ void VideoCaptureImpl::StopCapture(media::VideoCapture::EventHandler* handler) {
   }
 }
 
-void VideoCaptureImpl::OnBufferReceived(TransportDIB::Handle handle,
-                                        base::Time timestamp) {
+void VideoCaptureImpl::OnBufferCreated(
+    base::SharedMemoryHandle handle,
+    int length, int buffer_id) {
   if (!ml_proxy_->BelongsToCurrentThread()) {
     ml_proxy_->PostTask(FROM_HERE,
-        NewRunnableMethod(this, &VideoCaptureImpl::OnBufferReceived,
-                          handle, timestamp));
-    return;
-  }
-
-  if (state_ != kStarted) {
-    Send(new VideoCaptureHostMsg_BufferReady(0, device_id_, handle));
+        NewRunnableMethod(this, &VideoCaptureImpl::OnBufferCreated,
+                          handle, length, buffer_id));
     return;
   }
 
   media::VideoCapture::VideoFrameBuffer* buffer;
-  CachedDIB::iterator it;
-  for (it = cached_dibs_.begin(); it != cached_dibs_.end(); it++) {
-    if ((*it)->dib->handle() == handle)
-      break;
-  }
-  if (it == cached_dibs_.end()) {
-    TransportDIB* dib = TransportDIB::Map(handle);
-    buffer = new VideoFrameBuffer();
-    buffer->memory_pointer = dib->memory();
-    buffer->buffer_size = dib->size();
-    buffer->width = width_;
-    buffer->height = height_;
+  DCHECK(cached_dibs_.find(buffer_id) == cached_dibs_.end());
 
-    DIBBuffer* dib_buffer = new DIBBuffer(dib, buffer);
-    cached_dibs_.push_back(dib_buffer);
-  } else {
-    buffer = (*it)->mapped_memory;
+  base::SharedMemory* dib = new base::SharedMemory(handle, false);
+  dib->Map(length);
+  buffer = new VideoFrameBuffer();
+  buffer->memory_pointer = dib->memory();
+  buffer->buffer_size = length;
+  buffer->width = width_;
+  buffer->height = height_;
+
+  DIBBuffer* dib_buffer = new DIBBuffer(dib, buffer);
+  cached_dibs_[buffer_id] = dib_buffer;
+}
+
+void VideoCaptureImpl::OnBufferReceived(int buffer_id, base::Time timestamp) {
+  if (!ml_proxy_->BelongsToCurrentThread()) {
+    ml_proxy_->PostTask(FROM_HERE,
+        NewRunnableMethod(this, &VideoCaptureImpl::OnBufferReceived,
+                          buffer_id, timestamp));
+    return;
   }
+
+  if (state_ != kStarted) {
+    Send(new VideoCaptureHostMsg_BufferReady(0, device_id_, buffer_id));
+    return;
+  }
+
+  media::VideoCapture::VideoFrameBuffer* buffer;
+  DCHECK(cached_dibs_.find(buffer_id) != cached_dibs_.end());
+  buffer = cached_dibs_[buffer_id]->mapped_memory;
 
   // TODO(wjia): handle buffer sharing with downstream modules.
   for (ClientInfo::iterator it = clients_.begin(); it != clients_.end(); it++) {
     it->first->OnBufferReady(this, buffer);
   }
 
-  Send(new VideoCaptureHostMsg_BufferReady(0, device_id_, handle));
+  Send(new VideoCaptureHostMsg_BufferReady(0, device_id_, buffer_id));
 }
 
 void VideoCaptureImpl::OnStateChanged(
@@ -342,6 +363,9 @@ void VideoCaptureImpl::StopDevice() {
     state_ = kStopping;
     Send(new VideoCaptureHostMsg_Stop(0, device_id_));
     width_ = height_ = 0;
+    STLDeleteContainerPairSecondPointers(cached_dibs_.begin(),
+                                         cached_dibs_.end());
+    cached_dibs_.clear();
   }
 }
 

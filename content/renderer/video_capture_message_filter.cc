@@ -35,6 +35,7 @@ bool VideoCaptureMessageFilter::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(VideoCaptureMessageFilter, message)
     IPC_MESSAGE_HANDLER(VideoCaptureMsg_BufferReady, OnBufferReceived)
     IPC_MESSAGE_HANDLER(VideoCaptureMsg_StateChanged, OnDeviceStateChanged)
+    IPC_MESSAGE_HANDLER(VideoCaptureMsg_NewBuffer, OnBufferCreated)
     IPC_MESSAGE_HANDLER(VideoCaptureMsg_DeviceInfo, OnDeviceInfoReceived)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -63,10 +64,33 @@ void VideoCaptureMessageFilter::OnChannelClosing() {
   channel_ = NULL;
 }
 
+void VideoCaptureMessageFilter::OnBufferCreated(const IPC::Message& msg,
+    int device_id,
+    base::SharedMemoryHandle handle,
+    int length,
+    int buffer_id) {
+  Delegate* delegate = NULL;
+  if (delegates_.find(device_id) != delegates_.end())
+    delegate = delegates_.find(device_id)->second;
+
+  if (!delegate) {
+    DLOG(WARNING) << "OnBufferCreated: Got video frame buffer for a "
+        "non-existent or removed video capture.";
+
+    // Send the buffer back to Host in case it's waiting for all buffers
+    // to be returned.
+    base::SharedMemory::CloseHandle(handle);
+    Send(new VideoCaptureHostMsg_BufferReady(0, device_id, buffer_id));
+    return;
+  }
+
+  delegate->OnBufferCreated(handle, length, buffer_id);
+}
+
 void VideoCaptureMessageFilter::OnBufferReceived(const IPC::Message& msg,
-                                                 int device_id,
-                                                 TransportDIB::Handle handle,
-                                                 base::Time timestamp) {
+    int device_id,
+    int buffer_id,
+    base::Time timestamp) {
   Delegate* delegate = NULL;
   if (delegates_.find(device_id) != delegates_.end())
     delegate = delegates_.find(device_id)->second;
@@ -77,11 +101,11 @@ void VideoCaptureMessageFilter::OnBufferReceived(const IPC::Message& msg,
 
     // Send the buffer back to Host in case it's waiting for all buffers
     // to be returned.
-    Send(new VideoCaptureHostMsg_BufferReady(0, device_id, handle));
+    Send(new VideoCaptureHostMsg_BufferReady(0, device_id, buffer_id));
     return;
   }
 
-  delegate->OnBufferReceived(handle, timestamp);
+  delegate->OnBufferReceived(buffer_id, timestamp);
 }
 
 void VideoCaptureMessageFilter::OnDeviceStateChanged(
@@ -143,4 +167,3 @@ void VideoCaptureMessageFilter::RemoveDelegate(Delegate* delegate) {
     }
   }
 }
-

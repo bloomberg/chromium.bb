@@ -4,15 +4,10 @@
 
 #include "content/browser/renderer_host/video_capture_controller.h"
 
-#include "base/logging.h"
 #include "base/stl_util-inl.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/media_stream/video_capture_manager.h"
 #include "media/base/yuv_convert.h"
-
-#if defined(OS_WIN)
-#include "content/common/section_util_win.h"
-#endif
 
 // The number of TransportDIBs VideoCaptureController allocate.
 static const size_t kNoOfDIBS = 3;
@@ -54,13 +49,13 @@ void VideoCaptureController::StopCapture(Task* stopped_task) {
                                   stopped_task));
 }
 
-void VideoCaptureController::ReturnTransportDIB(TransportDIB::Handle handle) {
+void VideoCaptureController::ReturnBuffer(int buffer_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   bool ready_to_delete;
   {
     base::AutoLock lock(lock_);
-    free_dibs_.push_back(handle);
+    free_dibs_.push_back(buffer_id);
     ready_to_delete = (free_dibs_.size() == owned_dibs_.size());
   }
   if (report_ready_to_delete_ && ready_to_delete) {
@@ -75,16 +70,16 @@ void VideoCaptureController::ReturnTransportDIB(TransportDIB::Handle handle) {
 void VideoCaptureController::OnIncomingCapturedFrame(const uint8* data,
                                                      int length,
                                                      base::Time timestamp) {
-  TransportDIB::Handle handle;
-  TransportDIB* dib = NULL;
+  int buffer_id = 0;
+  base::SharedMemory* dib = NULL;
   // Check if there is a TransportDIB to fill.
   bool buffer_exist = false;
   {
     base::AutoLock lock(lock_);
     if (!report_ready_to_delete_ && free_dibs_.size() > 0) {
-      handle = free_dibs_.back();
-      free_dibs_.pop_back();
-      DIBMap::iterator it = owned_dibs_.find(handle);
+      buffer_id = free_dibs_.front();
+      free_dibs_.pop_front();
+      DIBMap::iterator it = owned_dibs_.find(buffer_id);
       if (it != owned_dibs_.end()) {
         dib = it->second;
         buffer_exist = true;
@@ -96,16 +91,10 @@ void VideoCaptureController::OnIncomingCapturedFrame(const uint8* data,
     return;
   }
 
-  if (!dib->Map()) {
-    VLOG(1) << "OnIncomingCapturedFrame - Failed to map handle.";
-    base::AutoLock lock(lock_);
-    free_dibs_.push_back(handle);
-    return;
-  }
   uint8* target = static_cast<uint8*>(dib->memory());
-  CHECK(dib->size() >= static_cast<size_t> (frame_info_.width *
-                                            frame_info_.height * 3) /
-                                            2);
+  CHECK(dib->created_size() >= static_cast<size_t> (frame_info_.width *
+                                                    frame_info_.height * 3) /
+                                                    2);
 
   // Do color conversion from the camera format to I420.
   switch (frame_info_.color) {
@@ -160,7 +149,7 @@ void VideoCaptureController::OnIncomingCapturedFrame(const uint8* data,
       NOTREACHED();
   }
 
-  event_handler_->OnBufferReady(id_, handle, timestamp);
+  event_handler_->OnBufferReady(id_, buffer_id, timestamp);
 }
 
 void VideoCaptureController::OnError() {
@@ -172,24 +161,21 @@ void VideoCaptureController::OnFrameInfo(
   DCHECK(owned_dibs_.empty());
   bool frames_created = true;
   const size_t needed_size = (info.width * info.height * 3) / 2;
-  for (size_t i = 0; i < kNoOfDIBS; ++i) {
-    TransportDIB* dib = TransportDIB::Create(needed_size, i);
-    if (!dib) {
+  for (size_t i = 1; i <= kNoOfDIBS; ++i) {
+    base::SharedMemory* shared_memory = new base::SharedMemory();
+    if (!shared_memory->CreateAndMapAnonymous(needed_size)) {
       frames_created = false;
       break;
     }
-    // Lock needed since the buffers are used in OnIncomingFrame
-    // and we need to use it there in order to avoid memcpy of complete frames.
+    base::SharedMemoryHandle remote_handle;
+    shared_memory->ShareToProcess(render_handle_, &remote_handle);
+
     base::AutoLock lock(lock_);
-#if defined(OS_WIN)
-    // On Windows we need to get a handle the can be used in the render process.
-    TransportDIB::Handle handle = chrome::GetSectionForProcess(
-        dib->handle(), render_handle_, false);
-#else
-    TransportDIB::Handle handle = dib->handle();
-#endif
-    owned_dibs_.insert(std::make_pair(handle, dib));
-    free_dibs_.push_back(handle);
+    owned_dibs_.insert(std::make_pair(i, shared_memory));
+    free_dibs_.push_back(i);
+    event_handler_->OnBufferCreated(id_, remote_handle,
+                                    static_cast<int>(needed_size),
+                                    static_cast<int>(i));
   }
   frame_info_= info;
 
@@ -197,8 +183,7 @@ void VideoCaptureController::OnFrameInfo(
   if (!frames_created) {
     event_handler_->OnError(id_);
   }
-  event_handler_->OnFrameInfo(id_, info.width, info.height,
-                              info.frame_rate);
+  event_handler_->OnFrameInfo(id_, info.width, info.height, info.frame_rate);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
