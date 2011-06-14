@@ -1065,10 +1065,13 @@ Network::~Network() {}
 void Network::SetState(ConnectionState new_state) {
   if (new_state == state_)
     return;
+  ConnectionState old_state = state_;
   state_ = new_state;
   if (new_state == STATE_FAILURE) {
-    // The user needs to be notified of this failure.
-    notify_failure_ = true;
+    if (old_state != STATE_UNKNOWN) {
+      // New failure, the user needs to be notified.
+      notify_failure_ = true;
+    }
   } else {
     // State changed, so refresh IP address.
     // Note: blocking DBus call. TODO(stevenjb): refactor this.
