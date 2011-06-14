@@ -93,6 +93,9 @@ int wl_display_add_global(struct wl_display *display,
 			  struct wl_object *object,
 			  wl_global_bind_func_t func);
 
+int wl_display_remove_global(struct wl_display *display,
+                             struct wl_object *object);
+
 struct wl_client *wl_client_create(struct wl_display *display, int fd);
 void wl_client_destroy(struct wl_client *client);
 void wl_client_post_error(struct wl_client *client, struct wl_object *object,

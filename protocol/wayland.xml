@@ -53,6 +53,11 @@
       <arg name="version" type="uint"/>
     </event>
 
+    <!-- Notify the client of removed global objects. -->
+    <event name="global_remove">
+      <arg name="id" type="uint" />
+    </event>
+
     <!-- Internal, deprecated, and will be changed.  This is an object
          IDs range that is used by the client to allocate object IDs
          in "new_id" type arguments.  The server sends range

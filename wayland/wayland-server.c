@@ -58,6 +58,7 @@ struct wl_client {
 	struct wl_display *display;
 	struct wl_list resource_list;
 	uint32_t id_count;
+	struct wl_list link;
 };
 
 struct wl_display {
@@ -72,6 +73,7 @@ struct wl_display {
 
 	struct wl_list global_list;
 	struct wl_list socket_list;
+	struct wl_list client_list;
 };
 
 struct wl_frame_listener {
@@ -262,6 +264,8 @@ wl_client_create(struct wl_display *display, int fd)
 		return NULL;
 	}
 
+	wl_list_insert(display->client_list.prev, &client->link);
+
 	wl_list_init(&client->resource_list);
 
 	wl_display_post_range(display, client);
@@ -335,6 +339,7 @@ wl_client_destroy(struct wl_client *client)
 
 	wl_event_source_remove(client->source);
 	wl_connection_destroy(client->connection);
+	wl_list_remove(&client->link);
 	free(client);
 }
 
@@ -596,6 +601,7 @@ wl_display_create(void)
 	wl_list_init(&display->frame_list);
 	wl_list_init(&display->global_list);
 	wl_list_init(&display->socket_list);
+	wl_list_init(&display->client_list);
 
 	display->client_id_range = 256; /* Gah, arbitrary... */
 
@@ -655,6 +661,31 @@ wl_display_add_global(struct wl_display *display,
 	global->object = object;
 	global->func = func;
 	wl_list_insert(display->global_list.prev, &global->link);
+
+	return 0;
+}
+
+WL_EXPORT int
+wl_display_remove_global(struct wl_display *display,
+                         struct wl_object *object)
+{
+	struct wl_global *global;
+	struct wl_client *client;
+
+	wl_list_for_each(global, &display->global_list, link)
+		if (global->object == object)
+			break;
+
+	if (&global->link == &display->global_list)
+		return -1;
+
+	wl_list_for_each(client, &display->client_list, link)
+		wl_client_post_event(client,
+				     &client->display->object,
+				     WL_DISPLAY_GLOBAL_REMOVE,
+				     global->object->id);
+	wl_list_remove(&global->link);
+	free(global);
 
 	return 0;
 }

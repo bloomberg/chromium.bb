@@ -259,6 +259,20 @@ display_handle_global(void *data,
 }
 
 static void
+display_handle_global_remove(void *data,
+                             struct wl_display *display, uint32_t id)
+{
+	struct wl_global *global;
+
+	wl_list_for_each(global, &display->global_list, link)
+		if (global->id == id) {
+			wl_list_remove(&global->link);
+			free(global);
+			break;
+		}
+}
+
+static void
 display_handle_range(void *data,
 		     struct wl_display *display, uint32_t range)
 {
@@ -298,6 +312,7 @@ display_handle_key(void *data,
 static const struct wl_display_listener display_listener = {
 	display_handle_error,
 	display_handle_global,
+	display_handle_global_remove,
 	display_handle_range,
 	display_handle_key
 };
