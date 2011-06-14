@@ -11,6 +11,7 @@
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/profiles/profile.h"
+#include "content/browser/cancelable_request.h"
 
 namespace {
 
@@ -66,10 +67,11 @@ LiveTypedUrlsSyncTest::GetTypedUrlsFromClient(int index) {
 
 std::vector<history::URLRow>
 LiveTypedUrlsSyncTest::GetTypedUrlsFromHistoryService(HistoryService *service) {
+  CancelableRequestConsumer cancelable_consumer;
   std::vector<history::URLRow> rows;
   base::WaitableEvent wait_event(true, false);
   service->ScheduleDBTask(new GetTypedUrlsTask(&rows, &wait_event),
-                          &cancelable_consumer_);
+                          &cancelable_consumer);
   wait_event.Wait();
   return rows;
 }
@@ -121,11 +123,12 @@ void LiveTypedUrlsSyncTest::DeleteUrlFromHistory(int index, const GURL& url) {
 }
 
 void LiveTypedUrlsSyncTest::WaitForHistoryDBThread(int index) {
+  CancelableRequestConsumer cancelable_consumer;
   HistoryService* service =
       GetProfile(index)->GetHistoryServiceWithoutCreating();
   base::WaitableEvent wait_event(true, false);
   service->ScheduleDBTask(new FlushHistoryDBQueueTask(&wait_event),
-                          &cancelable_consumer_);
+                          &cancelable_consumer);
   wait_event.Wait();
 }
 

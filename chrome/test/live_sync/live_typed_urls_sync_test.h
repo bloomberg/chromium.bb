@@ -10,7 +10,6 @@
 
 #include "chrome/browser/history/history_types.h"
 #include "chrome/test/live_sync/live_sync_test.h"
-#include "content/browser/cancelable_request.h"
 
 namespace base {
 class Time;
@@ -64,11 +63,6 @@ class LiveTypedUrlsSyncTest : public LiveSyncTest {
 
   std::vector<history::URLRow> GetTypedUrlsFromHistoryService(
       HistoryService* service);
-
-
-  // Helper object to make sure we don't leave tasks running on the history
-  // thread.
-  CancelableRequestConsumerT<int, 0> cancelable_consumer_;
 
   base::Time timestamp_;
   DISALLOW_COPY_AND_ASSIGN(LiveTypedUrlsSyncTest);

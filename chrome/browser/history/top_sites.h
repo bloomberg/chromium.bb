@@ -326,7 +326,10 @@ class TopSites
   // Lock used to access |thread_safe_cache_|.
   mutable base::Lock lock_;
 
-  CancelableRequestConsumer cancelable_consumer_;
+  // Need a separate consumer for each CancelableRequestProvider we interact
+  // with (HistoryService and TopSitesBackend).
+  CancelableRequestConsumer history_consumer_;
+  CancelableRequestConsumer top_sites_consumer_;
 
   // Timer that asks history for the top sites. This is used to make sure our
   // data stays in sync with history.

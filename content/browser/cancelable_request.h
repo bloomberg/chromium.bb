@@ -344,6 +344,9 @@ size_t CancelableRequestConsumerTSimple<T>::PendingRequestCount() const {
 
 template<class T>
 void CancelableRequestConsumerTSimple<T>::CancelAllRequests() {
+  // TODO(atwilson): This code is not thread safe as it is called from the
+  // consumer thread (via the destructor) and accesses pending_requests_
+  // without acquiring the provider lock (http://crbug.com/85970).
   PendingRequestList copied_requests(pending_requests_);
   for (typename PendingRequestList::iterator i = copied_requests.begin();
        i != copied_requests.end(); ++i)
@@ -387,6 +390,13 @@ template<class T>
 void CancelableRequestConsumerTSimple<T>::OnRequestAdded(
     CancelableRequestProvider* provider,
     CancelableRequestProvider::Handle handle) {
+  // Make sure we're not mixing/matching providers (since the provider is
+  // responsible for providing thread safety until http://crbug.com/85970 is
+  // fixed, we can't use the same consumer with multiple providers).
+#ifndef NDEBUG
+  if (!pending_requests_.empty())
+    DCHECK(pending_requests_.begin()->first.provider == provider);
+#endif
   DCHECK(pending_requests_.find(PendingRequest(provider, handle)) ==
          pending_requests_.end());
   pending_requests_[PendingRequest(provider, handle)] = get_initial_t();

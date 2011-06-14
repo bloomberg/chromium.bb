@@ -169,7 +169,7 @@ void TopSites::Init(const FilePath& db_name) {
   backend_ = new TopSitesBackend;
   backend_->Init(db_name);
   backend_->GetMostVisitedThumbnails(
-      &cancelable_consumer_,
+      &top_sites_consumer_,
       NewCallback(this, &TopSites::OnGotMostVisitedThumbnails));
 
   // History may have already finished loading by the time we're created.
@@ -288,7 +288,7 @@ void TopSites::MigrateFromHistory() {
       new LoadThumbnailsFromHistoryTask(
           this,
           num_results_to_request_from_history()),
-      &cancelable_consumer_);
+      &history_consumer_);
   MigratePinnedURLs();
 }
 
@@ -319,7 +319,7 @@ void TopSites::FinishHistoryMigration(const ThumbnailMigration& data) {
   // that notifies us when done. When done we'll know everything was written and
   // we can tell history to finish its part of migration.
   backend_->DoEmptyRequest(
-      &cancelable_consumer_,
+      &top_sites_consumer_,
       NewCallback(this, &TopSites::OnHistoryMigrationWrittenToDisk));
 }
 
@@ -463,7 +463,8 @@ void TopSites::Shutdown() {
   // Cancel all requests so that the service doesn't callback to us after we've
   // invoked Shutdown (this could happen if we have a pending request and
   // Shutdown is invoked).
-  cancelable_consumer_.CancelAllRequests();
+  history_consumer_.CancelAllRequests();
+  top_sites_consumer_.CancelAllRequests();
   backend_->Shutdown();
 }
 
@@ -520,7 +521,7 @@ CancelableRequestProvider::Handle TopSites::StartQueryForMostVisited() {
     return hs->QueryMostVisitedURLs(
         num_results_to_request_from_history(),
         kDaysOfHistory,
-        &cancelable_consumer_,
+        &history_consumer_,
         NewCallback(this, &TopSites::OnTopSitesAvailableFromHistory));
   }
   return 0;
