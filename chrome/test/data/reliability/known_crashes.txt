@@ -189,6 +189,3 @@ PREFIX: `anonymous namespace'::establishchannelcallback::send___`anonymous names
 
 # 84872
 SUBSTRING: webcore::element::getattribute___webcore::floatwidthofsubstringusingsvgfont___webcore::svgtextrunrenderingcontext::floatwidthusingsvgfont___webcore::font::width
-
-# 85991
-PREFIX : views::dialogdelegate::getinitiallyfocusedview___views::nativewidgetwin::setinitialfocus___views::nativewidgetwin::shownativewidget___views::widget::show___browserview::confirmbrowserclosewithpendingdownloads___browser::canclosewithinprogressdownloads
