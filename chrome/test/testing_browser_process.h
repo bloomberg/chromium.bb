@@ -21,6 +21,7 @@
 class BackgroundModeManager;
 class IOThread;
 class GoogleURLTracker;
+class MHTMLGenerationManager;
 class NotificationUIManager;
 class PrefService;
 class WatchDogThread;
@@ -113,6 +114,7 @@ class TestingBrowserProcess : public BrowserProcess {
 #if defined(IPC_MESSAGE_LOG_ENABLED)
   virtual void SetIPCLoggingEnabled(bool enable) {}
 #endif
+  virtual MHTMLGenerationManager* mhtml_generation_manager();
 
   // Set the local state for tests. Consumer is responsible for cleaning it up
   // afterwards (using ScopedTestingLocalState, for example).

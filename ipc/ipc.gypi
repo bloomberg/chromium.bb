@@ -30,6 +30,7 @@
           'ipc_message_utils.cc',
           'ipc_message_utils.h',
           'ipc_param_traits.h',
+          'ipc_platform_file.cc',
           'ipc_platform_file.h',
           'ipc_switches.cc',
           'ipc_switches.h',

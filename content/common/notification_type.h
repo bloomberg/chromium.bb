@@ -1192,6 +1192,11 @@ class NotificationType {
     // The source is the corresponding RenderViewHost. There are no details.
     DOWNLOAD_INITIATED,
 
+    // Sent when a page generation to MHTML has finished.
+    // The source is the corresponding RenderViewHost. The details is a
+    // MHTMLGenerationManager::NotificationDetails.
+    MHTML_GENERATED,
+
     // Misc --------------------------------------------------------------------
 
 #if defined(OS_CHROMEOS)

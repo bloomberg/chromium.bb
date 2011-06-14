@@ -44,6 +44,7 @@
 #include "chrome/renderer/external_extension.h"
 #include "chrome/renderer/loadtimes_extension_bindings.h"
 #include "chrome/renderer/localized_error.h"
+#include "chrome/renderer/mhtml_generator.h"
 #include "chrome/renderer/net/renderer_net_predictor.h"
 #include "chrome/renderer/page_click_tracker.h"
 #include "chrome/renderer/page_load_histograms.h"
@@ -197,6 +198,7 @@ void ChromeContentRendererClient::RenderViewCreated(RenderView* render_view) {
       new ContentSettingsObserver(render_view);
   new DevToolsAgent(render_view);
   new ExtensionHelper(render_view, extension_dispatcher_.get());
+  new MHTMLGenerator(render_view);
   new PageLoadHistograms(render_view, histogram_snapshots_.get());
   new PrintWebViewHelper(render_view);
   new SearchBox(render_view);

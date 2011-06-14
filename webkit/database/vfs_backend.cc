@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,30 +12,6 @@
 namespace webkit_database {
 
 static const int kFileTypeMask = 0x00007F00;
-
-// static
-void VfsBackend::GetFileHandleForProcess(base::ProcessHandle process_handle,
-                                         const base::PlatformFile& file_handle,
-                                         base::PlatformFile* target_handle,
-                                         bool close_source_handle) {
-  if (file_handle == base::kInvalidPlatformFileValue) {
-    *target_handle = base::kInvalidPlatformFileValue;
-    return;
-  }
-
-#if defined(OS_WIN)
-  // Duplicate the file handle.
-  if (!DuplicateHandle(GetCurrentProcess(), file_handle,
-                       process_handle, target_handle, 0, false,
-                       DUPLICATE_SAME_ACCESS |
-                       (close_source_handle ? DUPLICATE_CLOSE_SOURCE : 0))) {
-    // file_handle is closed whether or not DuplicateHandle succeeds.
-    *target_handle = INVALID_HANDLE_VALUE;
-  }
-#elif defined(OS_POSIX)
-  *target_handle = file_handle;
-#endif
-}
 
 // static
 bool VfsBackend::FileTypeIsMainDB(int desired_flags) {

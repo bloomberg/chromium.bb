@@ -120,6 +120,8 @@
         'renderer/external_extension.h',
         'renderer/localized_error.cc',
         'renderer/localized_error.h',
+        'renderer/mhtml_generator.cc',
+        'renderer/mhtml_generator.h',
         'renderer/page_click_listener.h',
         'renderer/page_click_tracker.cc',
         'renderer/page_click_tracker.h',

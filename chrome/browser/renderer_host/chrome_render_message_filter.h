@@ -124,6 +124,7 @@ class ChromeRenderMessageFilter : public BrowserMessageFilter {
                    const GURL& url,
                    const GURL& first_party_for_cookies,
                    const std::string& cookie);
+  void OnSavedPageAsMHTML(int job_id, bool success);
 
   int render_process_id_;
   ProfileId profile_id_;

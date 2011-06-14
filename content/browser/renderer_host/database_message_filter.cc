@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/platform_file.h"
 #include "base/string_util.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
@@ -143,7 +144,8 @@ void DatabaseMessageFilter::OnDatabaseOpenFile(const string16& vfs_file_name,
                                                IPC::Message* reply_msg) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   base::PlatformFile file_handle = base::kInvalidPlatformFileValue;
-  base::PlatformFile target_handle = base::kInvalidPlatformFileValue;
+  IPC::PlatformFileForTransit target_handle =
+      IPC::InvalidPlatformFileForTransit();
   string16 origin_identifier;
   string16 database_name;
 
@@ -182,17 +184,10 @@ void DatabaseMessageFilter::OnDatabaseOpenFile(const string16& vfs_file_name,
   // process. The original handle is closed, unless we saved it in the
   // database tracker.
   bool auto_close = !db_tracker_->HasSavedIncognitoFileHandle(vfs_file_name);
-  VfsBackend::GetFileHandleForProcess(peer_handle(), file_handle,
-                                      &target_handle, auto_close);
+  target_handle =
+      IPC::GetFileHandleForProcess(file_handle, peer_handle(), auto_close);
 
-  DatabaseHostMsg_OpenFile::WriteReplyParams(
-      reply_msg,
-#if defined(OS_WIN)
-      target_handle
-#elif defined(OS_POSIX)
-      base::FileDescriptor(target_handle, auto_close)
-#endif
-      );
+  DatabaseHostMsg_OpenFile::WriteReplyParams(reply_msg, target_handle);
   Send(reply_msg);
 }
 

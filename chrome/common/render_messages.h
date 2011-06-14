@@ -26,6 +26,7 @@
 #include "chrome/common/translate_errors.h"
 #include "content/common/common_param_traits.h"
 #include "ipc/ipc_message_macros.h"
+#include "ipc/ipc_platform_file.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
 #include "ui/gfx/rect.h"
@@ -269,6 +270,11 @@ IPC_MESSAGE_ROUTED1(ViewMsg_SetAllowDisplayingInsecureContent,
 IPC_MESSAGE_ROUTED1(ViewMsg_SetAllowRunningInsecureContent,
                     bool /* allowed */)
 
+// Instructs the renderer to save the current page to MHTML.
+IPC_MESSAGE_ROUTED2(ViewMsg_SavePageAsMHTML,
+                    int /* job_id */,
+                    IPC::PlatformFileForTransit /* file handle */)
+
 //-----------------------------------------------------------------------------
 // TabContents messages
 // These are messages sent from the renderer to the browser process.
@@ -496,6 +502,11 @@ IPC_MESSAGE_ROUTED0(ViewHostMsg_DidBlockDisplayingInsecureContent)
 // Sent when the renderer was prevented from running insecure content in
 // a secure origin by a security policy.  The page may appear incomplete.
 IPC_MESSAGE_ROUTED0(ViewHostMsg_DidBlockRunningInsecureContent)
+
+// Notifies the browser that the page was or was not saved as MHTML.
+IPC_MESSAGE_ROUTED2(ViewHostMsg_SavedPageAsMHTML,
+                    int /* job_id*/,
+                    bool /* success */)
 
 // Suggest results -----------------------------------------------------------
 

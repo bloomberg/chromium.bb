@@ -26,6 +26,7 @@
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/debugger/devtools_protocol_handler.h"
 #include "chrome/browser/download/download_file_manager.h"
+#include "chrome/browser/download/mhtml_generation_manager.h"
 #include "chrome/browser/download/save_file_manager.h"
 #include "chrome/browser/extensions/extension_event_router_forwarder.h"
 #include "chrome/browser/extensions/extension_tab_id_map.h"
@@ -689,6 +690,13 @@ prerender::PrerenderTracker* BrowserProcessImpl::prerender_tracker() {
     prerender_tracker_.reset(new prerender::PrerenderTracker);
 
   return prerender_tracker_.get();
+}
+
+MHTMLGenerationManager* BrowserProcessImpl::mhtml_generation_manager() {
+  if (!mhtml_generation_manager_.get())
+    mhtml_generation_manager_ = new MHTMLGenerationManager();
+
+  return mhtml_generation_manager_.get();
 }
 
 void BrowserProcessImpl::ClearLocalState(const FilePath& profile_path) {

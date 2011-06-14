@@ -2360,6 +2360,7 @@
         'browser/content_settings/content_settings_browsertest.cc',
         'browser/crash_recovery_browsertest.cc',
         'browser/download/download_browsertest.cc',
+        'browser/download/mhtml_generation_browsertest.cc',
         'browser/download/save_page_browsertest.cc',
         'browser/extensions/alert_apitest.cc',
         'browser/extensions/all_urls_apitest.cc',

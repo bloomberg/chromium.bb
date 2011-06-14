@@ -4,6 +4,7 @@
 
 #include "ppapi/proxy/proxy_channel.h"
 
+#include "ipc/ipc_platform_file.h"
 #include "ipc/ipc_test_sink.h"
 
 namespace pp {
@@ -49,28 +50,8 @@ int ProxyChannel::GetRendererFD() {
 IPC::PlatformFileForTransit ProxyChannel::ShareHandleWithRemote(
       base::PlatformFile handle,
       bool should_close_source) {
-  IPC::PlatformFileForTransit out_handle;
-#if defined(OS_WIN)
-  DWORD options = DUPLICATE_SAME_ACCESS;
-  if (should_close_source)
-    options |= DUPLICATE_CLOSE_SOURCE;
-  if (!::DuplicateHandle(::GetCurrentProcess(),
-                         handle,
-                         remote_process_handle_,
-                         &out_handle,
-                         0,
-                         FALSE,
-                         options))
-    out_handle = IPC::InvalidPlatformFileForTransit();
-#elif defined(OS_POSIX)
-  // If asked to close the source, we can simply re-use the source fd instead of
-  // dup()ing and close()ing.
-  int fd = should_close_source ? handle : ::dup(handle);
-  out_handle = base::FileDescriptor(fd, true);
-#else
-  #error Not implemented.
-#endif
-  return out_handle;
+  return IPC::GetFileHandleForProcess(handle, remote_process_handle_,
+                                      should_close_source);
 }
 
 bool ProxyChannel::Send(IPC::Message* msg) {

@@ -30,6 +30,7 @@ class IconManager;
 class IntranetRedirectDetector;
 class IOThread;
 class MetricsService;
+class MHTMLGenerationManager;
 class NotificationUIManager;
 class PrefService;
 class ProfileManager;
@@ -238,6 +239,8 @@ class BrowserProcess {
   void set_plugin_data_remover_mime_type(const std::string& mime_type) {
     plugin_data_remover_mime_type_ = mime_type;
   }
+
+  virtual MHTMLGenerationManager* mhtml_generation_manager() = 0;
 
  private:
   // User-data-dir based profiles.

@@ -116,6 +116,8 @@ class BrowserProcessImpl : public BrowserProcess,
   virtual void SetIPCLoggingEnabled(bool enable);
 #endif
 
+  virtual MHTMLGenerationManager* mhtml_generation_manager();
+
  private:
   void ClearLocalState(const FilePath& profile_path);
   bool ShouldClearLocalState(FilePath* profile_path);
@@ -291,6 +293,8 @@ class BrowserProcessImpl : public BrowserProcess,
 
   NotificationRegistrar notification_registrar_;
   scoped_refptr<PluginDataRemover> plugin_data_remover_;
+
+  scoped_refptr<MHTMLGenerationManager> mhtml_generation_manager_;
 
   // Monitors the state of the 'DisablePluginFinder' policy.
   BooleanPrefMember plugin_finder_disabled_pref_;
