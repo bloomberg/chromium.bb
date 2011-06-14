@@ -1914,6 +1914,8 @@ FileManager.prototype = {
   FileManager.prototype.commitRename_ = function() {
     var entry = this.renameInput_.currentEntry;
     var newName = this.renameInput_.value;
+    if (!this.validateFileName_(newName, entry.isDirectory))
+      return;
 
     this.renameInput_.currentEntry = null;
     this.lastLabelClick_ = null;
@@ -1982,10 +1984,7 @@ FileManager.prototype = {
       if (!name)
         return;
 
-      if (name.indexOf('/') == -1)
-        break;
-
-      alert(strf('ERROR_INVALID_FOLDER_CHARACTER', '/'));
+      if (this.validateFileName_(name, true)) break;
     }
 
     var self = this;
@@ -2105,6 +2104,8 @@ FileManager.prototype = {
       var filename = this.filenameInput_.value;
       if (!filename)
         throw new Error('Missing filename!');
+      if (!this.validateFileName_(filename, false))
+        return;
 
       chrome.fileBrowserPrivate.selectFile(
           currentDirUrl + encodeURIComponent(filename),
@@ -2163,4 +2164,31 @@ FileManager.prototype = {
     window.close();
   };
 
+  /**
+   * Verifies the user entered name for file or folder to be created or
+   * renamed to. Name restrictions must correspond to File API restrictions
+   * (see DOMFilePath::isValidPath). Curernt WebKit implementation is
+   * out of date (spec is
+   * http://dev.w3.org/2009/dap/file-system/file-dir-sys.html, 8.3) and going to
+   * be fixed. Shows message box if the name is invalid.
+   *
+   * @param {name} name New file or folder name.
+   * @param {boolean} isFolder If true error message will be adjusted for
+   *                           folders.
+   * @return {boolean} True if name is vaild.
+   */
+  FileManager.prototype.validateFileName_ = function(name, isFolder) {
+    var testResult = /[\/\\\<\>\:\?\*\"\|]/.exec(name);
+    if (testResult) {
+      var msgId = isFolder ? 'ERROR_INVALID_FOLDER_CHARACTER' :
+                             'ERROR_INVALID_FILE_CHARACTER'
+      window.alert(strf(msgId, testResult[0]));
+      return false;
+    }
+    if (/^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])$/i.test(name)) {
+      window.alert(str('ERROR_RESERVED_NAME'));
+      return false;
+    }
+    return true;
+  };
 })();

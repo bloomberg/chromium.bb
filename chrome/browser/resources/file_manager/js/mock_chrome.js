@@ -130,6 +130,7 @@ chrome.fileBrowserPrivate = {
       ERROR_CREATING_FOLDER: 'Unable to create folder "$1": $2',
       ERROR_INVALID_FOLDER_CHARACTER: 'Invalid character in folder name: $1',
       ERROR_INVALID_FILE_CHARACTER: 'Invalid character in file name: $1',
+      ERROR_RESERVED_NAME: 'This name may not be used as a file of folder name',
       NEW_FOLDER_PROMPT: 'Enter a name for the new folder',
       NEW_FOLDER_BUTTON_LABEL: 'New folder',
       FILENAME_LABEL: 'File Name',
