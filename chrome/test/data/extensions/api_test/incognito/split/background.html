@@ -138,8 +138,16 @@ chrome.test.getConfig(function(config) {
                                  "created node != source");
         }));
       }));
+    },
+
+    // Tests that we can set cookies in both processes.
+    function setDocumentCookie() {
+      document.cookie = "k=v";
+      chrome.test.assertTrue(document.cookie.indexOf("k=v") != -1);
+      chrome.test.succeed();
     }
   ]);
+
 });
 
 </script>

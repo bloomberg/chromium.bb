@@ -156,9 +156,7 @@ void OffTheRecordProfileIOData::LazyInitializeInternal(
   const char* schemes[] = {chrome::kChromeDevToolsScheme,
                            chrome::kExtensionScheme};
   extensions_cookie_store->SetCookieableSchemes(schemes, 2);
-
-  extensions_context->set_cookie_store(
-      new net::CookieMonster(NULL, NULL));
+  extensions_context->set_cookie_store(extensions_cookie_store);
 
   net::HttpCache::BackendFactory* main_backend =
       net::HttpCache::DefaultBackend::InMemory(0);
