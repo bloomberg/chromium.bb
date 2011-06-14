@@ -1,10 +1,10 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "chrome/browser/ui/cocoa/wrench_menu/menu_tracked_button.h"
 
-#include <cmath>
+#include "base/mac/mac_util.h"
 
 @interface MenuTrackedButton (Private)
 - (void)doHighlight:(BOOL)highlight;
@@ -104,15 +104,9 @@
 }
 
 - (BOOL)shouldHighlightOnHover {
-  // Apple does not define NSAppKitVersionNumber10_5 when using the 10.5 SDK.
-  // The Internets have come up with this solution.
-  #ifndef NSAppKitVersionNumber10_5
-  #define NSAppKitVersionNumber10_5 949
-  #endif
-
   // There's a cell drawing bug in 10.5 that was fixed on 10.6.  Hover states
   // look terrible due to this, so disable highlighting on 10.5.
-  return std::floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_5;
+  return base::mac::IsOSSnowLeopardOrLater();
 }
 
 @end

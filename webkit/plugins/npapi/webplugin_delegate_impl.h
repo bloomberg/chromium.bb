@@ -404,9 +404,6 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
   // Uses a CARenderer to draw the plug-in's layer in our OpenGL surface.
   void DrawLayerInSurface();
 
-  // Returns true if plugin IME is supported.
-  bool IsImeSupported();
-
 #ifndef NP_NO_CARBON
   // Moves our dummy window to match the current screen location of the plugin.
   void UpdateDummyWindowBounds(const gfx::Point& plugin_origin);

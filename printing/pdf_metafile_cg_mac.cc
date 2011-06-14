@@ -6,8 +6,8 @@
 
 #include "base/file_path.h"
 #include "base/logging.h"
+#include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "base/sys_info.h"
 #include "base/sys_string_conversions.h"
 #include "base/threading/thread_local.h"
 #include "ui/gfx/rect.h"
@@ -36,17 +36,6 @@ namespace {
 
 base::ThreadLocalPointer<struct __CFSet> thread_pdf_docs;
 
-bool PDFBugFixed() {
-  int32 major_version;
-  int32 minor_version;
-  int32 bugfix_version;
-  base::SysInfo::OperatingSystemVersionNumbers(&major_version,
-                                               &minor_version,
-                                               &bugfix_version);
-  return
-      major_version > 10 || (major_version == 10 && minor_version >= 7);
-}
-
 }  // namespace
 
 namespace printing {
@@ -54,8 +43,7 @@ namespace printing {
 PdfMetafileCg::PdfMetafileCg()
     : page_is_open_(false),
       thread_pdf_docs_owned_(false) {
-  static bool bug_fixed = PDFBugFixed();
-  if (!thread_pdf_docs.Get() && !bug_fixed) {
+  if (!thread_pdf_docs.Get() && base::mac::IsOSSnowLeopardOrEarlier()) {
     thread_pdf_docs_owned_ = true;
     thread_pdf_docs.Set(CFSetCreateMutable(kCFAllocatorDefault,
                                            0,

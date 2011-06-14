@@ -2,11 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#if defined(OS_MACOSX)
-#include <signal.h>
-#include <unistd.h>
-#endif  // OS_MACOSX
-
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/i18n/rtl.h"
@@ -33,9 +28,11 @@
 #include "ui/base/ui_base_switches.h"
 
 #if defined(OS_MACOSX)
-#include <Carbon/Carbon.h>  // TISCreateInputSourceList
+#include <Carbon/Carbon.h>
+#include <signal.h>
+#include <unistd.h>
 
-#include "base/sys_info.h"
+#include "base/mac/mac_util.h"
 #include "third_party/mach_override/mach_override.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #endif  // OS_MACOSX
@@ -52,14 +49,10 @@ CFArrayRef ChromeTISCreateInputSourceList(
 }
 
 void InstallFrameworkHacks() {
-  int32 os_major, os_minor, os_bugfix;
-  base::SysInfo::OperatingSystemVersionNumbers(
-      &os_major, &os_minor, &os_bugfix);
-
   // See http://crbug.com/31225
   // TODO: Don't do this on newer OS X revisions that have a fix for
   // http://openradar.appspot.com/radar?id=1156410
-  if (os_major == 10 && os_minor >= 6) {
+  if (base::mac::IsOSSnowLeopardOrLater()) {
     // Chinese Handwriting was introduced in 10.6. Since doing this override
     // regresses page cycler memory usage on 10.5, don't do the unnecessary
     // override there.

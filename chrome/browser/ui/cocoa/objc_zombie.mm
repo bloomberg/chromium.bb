@@ -11,9 +11,9 @@
 #import <objc/objc-class.h>
 
 #include "base/logging.h"
+#include "base/mac/mac_util.h"
 #include "base/metrics/histogram.h"
 #include "base/synchronization/lock.h"
-#include "base/sys_info.h"
 #import "chrome/app/breakpad_mac.h"
 #import "chrome/browser/ui/cocoa/objc_method_swizzle.h"
 
@@ -279,25 +279,19 @@ BOOL ZombieInit() {
     return YES;
 
   // Whitelist releases that are compatible with objc zombies.
-  int32 major_version = 0, minor_version = 0, bugfix_version = 0;
-  base::SysInfo::OperatingSystemVersionNumbers(
-      &major_version, &minor_version, &bugfix_version);
-
-  if (major_version < 10 || (major_version == 10 && minor_version < 5)) {
-    return NO;
-  } else if (major_version == 10 && minor_version == 5) {
+  if (base::mac::IsOSLeopard()) {
     g_objectDestruct = LookupObjectDestruct_10_5();
     if (!g_objectDestruct) {
       RecordZombieFailure(FAILED_10_5);
       return NO;
     }
-  } else if (major_version == 10 && minor_version == 6) {
+  } else if (base::mac::IsOSSnowLeopard()) {
     g_objectDestruct = LookupObjectDestruct_10_6();
     if (!g_objectDestruct) {
       RecordZombieFailure(FAILED_10_6);
       return NO;
     }
-  } else {
+  } else if (base::mac::IsOSLionOrLater()) {
     // Assume the future looks like the present.
     g_objectDestruct = LookupObjectDestruct_10_6();
 
@@ -309,6 +303,8 @@ BOOL ZombieInit() {
       RecordZombieFailure(FAILED_MAX);
       return NO;
     }
+  } else {
+    return NO;
   }
 
   Class rootClass = [NSObject class];

@@ -11,7 +11,6 @@
 #include "base/mac/mac_util.h"
 #include "base/memory/scoped_nsobject.h"
 #include "base/synchronization/lock.h"
-#include "base/sys_info.h"
 #include "base/sys_string_conversions.h"
 #include "ui/gfx/image/image.h"
 
@@ -48,13 +47,8 @@ FilePath ResourceBundle::GetResourcesFilePath() {
 
 // static
 FilePath ResourceBundle::GetLargeIconResourcesFilePath() {
-  int32 major = 0;
-  int32 minor = 0;
-  int32 bugfix = 0;
-  base::SysInfo::OperatingSystemVersionNumbers(&major, &minor, &bugfix);
-
-  // Only load the large resource pak on if we're running on 10.7 or above.
-  if (major > 10 || (major == 10 && minor >= 7))
+  // Only load the large resource pak when running on 10.7 or later.
+  if (base::mac::IsOSLionOrLater())
     return GetResourcesPakFilePath(@"theme_resources_large", nil);
   else
     return FilePath();

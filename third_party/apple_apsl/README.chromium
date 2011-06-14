@@ -31,9 +31,9 @@ Modifications:
 - Added an #include of the CFRuntime.h file.
 - Removed everything but the definition of __CFAllocator.
 - Modified the reference of CFRuntimeBase to ChromeCFRuntimeBase.
-- Renamed __CFAllocator to ChromeCFAllocator9and10 to avoid possible name
+- Renamed __CFAllocator to ChromeCFAllocatorLeopards to avoid possible name
   conflicts.
-- Added a presumed definition of ChromeCFAllocator11.
+- Added a presumed definition of ChromeCFAllocatorLion.
 
 cssmapplePriv.h from:
 http://www.opensource.apple.com/source/libsecurity_cssm/libsecurity_cssm-31536/lib/cssmapplePriv.h

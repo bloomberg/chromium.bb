@@ -30,7 +30,7 @@
 #include "webkit/plugins/npapi/webplugininfo.h"
 
 #if defined(OS_MACOSX)
-#include "base/sys_info.h"
+#include "base/mac/mac_util.h"
 #endif
 
 using WebKit::WebBindings;
@@ -58,10 +58,7 @@ static PluginInstance* FindInstance(NPP id) {
 // Returns true if the OS supports shared accelerated surfaces via IOSurface.
 // This is true on Snow Leopard and higher.
 static bool SupportsSharingAcceleratedSurfaces() {
-  int32 major, minor, bugfix;
-  base::SysInfo::OperatingSystemVersionNumbers(&major, &minor, &bugfix);
-  bool isSnowLeopardOrLater = major > 10 || (major == 10 && minor > 5);
-  if (!isSnowLeopardOrLater)
+  if (base::mac::IsOSLeopardOrEarlier())
     return false;
   // We also need to be running with desktop GL and not the software
   // OSMesa renderer in order to share accelerated surfaces between
@@ -871,9 +868,7 @@ NPError NPN_GetValue(NPP id, NPNVariable variable, void* value) {
       // We support the clarifications to the Cocoa IME event spec, but since
       // IME currently only works on 10.6, only answer true there.
       NPBool* supports_update = reinterpret_cast<NPBool*>(value);
-      int32 major, minor, bugfix;
-      base::SysInfo::OperatingSystemVersionNumbers(&major, &minor, &bugfix);
-      *supports_update = major > 10 || (major == 10 && minor > 5);
+      *supports_update = base::mac::IsOSSnowLeopardOrLater();
       rv = NPERR_NO_ERROR;
       break;
     }

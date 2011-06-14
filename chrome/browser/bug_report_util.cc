@@ -167,11 +167,7 @@ void BugReportUtil::SetOSVersion(std::string* os_version) {
   if (service_pack > 0)
     os_version->append(StringPrintf("Service Pack %d", service_pack));
 #elif defined(OS_MACOSX)
-  int32 major;
-  int32 minor;
-  int32 bugFix;
-  base::SysInfo::OperatingSystemVersionNumbers(&major, &minor, &bugFix);
-  *os_version = StringPrintf("%d.%d.%d", major, minor, bugFix);
+  *os_version = base::SysInfo::OperatingSystemVersion();
 #else
   *os_version = "unknown";
 #endif

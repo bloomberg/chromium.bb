@@ -30,7 +30,7 @@
 
 #include "CFRuntime.h"
 
-struct ChromeCFAllocator9and10 {
+struct ChromeCFAllocatorLeopards {
     ChromeCFRuntimeBase _base;
 #if DEPLOYMENT_TARGET_MACOSX || DEPLOYMENT_TARGET_EMBEDDED
     size_t (*size)(struct _malloc_zone_t *zone, const void *ptr); /* returns the size of a block or 0 if not in this zone; must be fast, especially for negative answers */
@@ -51,7 +51,7 @@ struct ChromeCFAllocator9and10 {
 };
 
 // TODO(avi): update upon source release; http://crbug.com/74589
-struct ChromeCFAllocator11 {
+struct ChromeCFAllocatorLion {
   ChromeCFRuntimeBase _base;
   // CFAllocator in Darwin 9 included a complete copy of _malloc_zone_t. The
   // version in Darwin 10 had an abbreviated _malloc_zone_t that ended after the

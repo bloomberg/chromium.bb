@@ -18,7 +18,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
-#include "base/sys_info.h"
 #include "base/utf_string_conversions.h"
 #include "base/version.h"
 #include "content/common/child_process.h"
@@ -52,6 +51,10 @@
 
 #if defined(OS_POSIX)
 #include "ipc/ipc_channel_posix.h"
+#endif
+
+#if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
 #endif
 
 using WebKit::WebBindings;
@@ -272,13 +275,6 @@ static bool SilverlightColorIsTransparent(const std::string& color) {
 }
 
 #if defined(OS_MACOSX)
-// Returns true if the OS is 10.5 (Leopard).
-static bool OSIsLeopard() {
-  int32 major, minor, bugfix;
-  base::SysInfo::OperatingSystemVersionNumbers(&major, &minor, &bugfix);
-  return major == 10 && minor == 5;
-}
-
 // Returns true if the given Flash version assumes QuickDraw support is present
 // instead of checking using the negotiation system.
 static bool FlashVersionAssumesQuickDrawSupport(const string16& version) {
@@ -365,7 +361,7 @@ bool WebPluginDelegateProxy::Initialize(
   // (where Flash doesn't use CA) to prevent QuickDraw from being used.
   // TODO(stuartmorgan): Remove this code once the two latest major Flash
   // releases negotiate correctly.
-  if (flash && !transparent_ && OSIsLeopard() &&
+  if (flash && !transparent_ && base::mac::IsOSLeopardOrEarlier() &&
       FlashVersionAssumesQuickDrawSupport(info_.version)) {
     params.arg_names.push_back("wmode");
     params.arg_values.push_back("opaque");

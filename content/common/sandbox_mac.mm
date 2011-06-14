@@ -384,18 +384,6 @@ NSString* LoadSandboxTemplate(Sandbox::SandboxProcessType sandbox_type) {
   return [common_sandbox_prefix_data stringByAppendingString:sandbox_data];
 }
 
-// Retrieve OS X version, output parameters are self explanatory.
-void GetOSVersion(bool* snow_leopard_or_higher, bool* lion_or_higher) {
-  int32 major_version, minor_version, bugfix_version;
-  base::SysInfo::OperatingSystemVersionNumbers(&major_version,
-                                               &minor_version,
-                                               &bugfix_version);
-  *snow_leopard_or_higher =
-      (major_version > 10 || (major_version == 10 && minor_version >= 6));
-  *lion_or_higher =
-      (major_version > 10 || (major_version == 10 && minor_version >= 7));
-}
-
 // static
 bool Sandbox::PostProcessSandboxProfile(
         NSString* sandbox_template,
@@ -506,14 +494,13 @@ bool Sandbox::EnableSandbox(SandboxProcessType sandbox_type,
     [tokens_to_remove addObject:@";ENABLE_LOGGING"];
   }
 
-  bool snow_leopard_or_higher;
-  bool lion_or_higher;
-  GetOSVersion(&snow_leopard_or_higher, &lion_or_higher);
+  bool snow_leopard_or_later = base::mac::IsOSSnowLeopardOrLater();
+  bool lion_or_later = base::mac::IsOSLionOrLater();
 
   // Without this, the sandbox will print a message to the system log every
   // time it denies a request.  This floods the console with useless spew. The
   // (with no-log) syntax is only supported on 10.6+
-  if (snow_leopard_or_higher && !enable_logging) {
+  if (snow_leopard_or_later && !enable_logging) {
     substitutions["DISABLE_SANDBOX_DENIAL_LOGGING"] =
         SandboxSubstring("(with no-log)");
   } else {
@@ -531,12 +518,12 @@ bool Sandbox::EnableSandbox(SandboxProcessType sandbox_type,
       SandboxSubstring(home_dir_canonical.value(),
           SandboxSubstring::LITERAL);
 
-  if (lion_or_higher) {
+  if (lion_or_later) {
     // >=10.7 Sandbox rules.
     [tokens_to_remove addObject:@";10.7_OR_ABOVE"];
   }
 
-  if (snow_leopard_or_higher) {
+  if (snow_leopard_or_later) {
     // >=10.6 Sandbox rules.
     [tokens_to_remove addObject:@";10.6_OR_ABOVE"];
   } else {

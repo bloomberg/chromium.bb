@@ -10,9 +10,9 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/mac/mac_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
-#include "base/sys_info.h"
 #include "base/threading/thread.h"
 
 // Default constructor.
@@ -380,11 +380,9 @@ bool ProcessInfoSnapshot::Sample(std::vector<base::ProcessId> pid_list) {
 
   // Get memory information using top.
   bool memory_info_success = false;
-  int32 major, minor, bugfix;
-  base::SysInfo::OperatingSystemVersionNumbers(&major, &minor, &bugfix);
-  if (major == 10 && minor == 5)
+  if (base::mac::IsOSLeopardOrEarlier())
     memory_info_success = GetProcessMemoryInfoUsingTop_10_5(proc_info_entries_);
-  else if ((major == 10 && minor >= 6) || major > 10)
+  else
     memory_info_success = GetProcessMemoryInfoUsingTop(proc_info_entries_);
 
   // If top didn't work then fall back to ps.

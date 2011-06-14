@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "base/sys_info.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
@@ -25,19 +24,6 @@
 // our backing store in a CGLayer that can get cached in GPU memory.  This
 // allows acclerated drawing into the layer and lets scrolling and such happen
 // all or mostly on the GPU, which is good for performance.
-
-namespace {
-
-// Returns whether this version of OS X has broken CGLayers, see
-// http://crbug.com/45553 , comments 5 and 6.
-bool NeedsLayerWorkaround() {
-  int32 os_major, os_minor, os_bugfix;
-  base::SysInfo::OperatingSystemVersionNumbers(
-      &os_major, &os_minor, &os_bugfix);
-  return os_major == 10 && os_minor == 5;
-}
-
-}  // namespace
 
 BackingStoreMac::BackingStoreMac(RenderWidgetHost* widget,
                                  const gfx::Size& size)
@@ -155,8 +141,9 @@ void BackingStoreMac::ScrollBackingStore(int dx, int dy,
 
   if ((dx || dy) && abs(dx) < size().width() && abs(dy) < size().height()) {
     if (cg_layer()) {
-      // See http://crbug.com/45553 , comments 5 and 6.
-      static bool needs_layer_workaround = NeedsLayerWorkaround();
+      // Whether this version of OS X has broken CGLayers. See
+      // http://crbug.com/45553 , comments 5 and 6.
+      bool needs_layer_workaround = base::mac::IsOSLeopardOrEarlier();
 
       base::mac::ScopedCFTypeRef<CGLayerRef> new_layer;
       CGContextRef layer;
