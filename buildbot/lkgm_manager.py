@@ -50,13 +50,13 @@ class _LKGMCandidateInfo(manifest_version.VersionInfo):
       match = re.search(self.LKGM_RE, version_string)
       assert match, 'LKGM did not re %s' % self.LKGM_RE
       super(_LKGMCandidateInfo, self).__init__(match.group(1),
-                                               incr_type='patch')
+                                               incr_type='branch')
       if match.group(2):
         self.ver_revision = int(match.group(2))
 
     else:
       super(_LKGMCandidateInfo, self).__init__(version_file=version_file,
-                                               incr_type='patch')
+                                               incr_type='branch')
     if not self.ver_revision:
       self.ver_revision = 1
 
@@ -90,9 +90,9 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     super(LKGMManager, self).__init__(
         source_dir=source_dir, checkout_repo=checkout_repo,
         manifest_repo=manifest_repo, branch=branch, build_name=build_name,
-        incr_type='patch', clobber=clobber, dry_run=dry_run)
+        incr_type='branch', clobber=clobber, dry_run=dry_run)
 
-    self.compare_versions_fn = lambda s: _LKGMCandidateInfo.VersionCompare(s)
+    self.compare_versions_fn = _LKGMCandidateInfo.VersionCompare
 
   def _LoadSpecs(self, version_info):
     """Loads the specifications from the working directory.

@@ -302,6 +302,13 @@ class VersionInfo(object):
     """returns the version string"""
     return '%s.%s.%s.%s' % (self.ver_maj, self.ver_min, self.ver_sp,
                             self.ver_patch)
+
+  @classmethod
+  def VersionCompare(cls, version_string):
+    """Useful method to return a comparable version of a LKGM string."""
+    info = cls(version_string)
+    return map(int, [info.ver_maj, info.ver_min, info.ver_sp, info.ver_patch])
+
   def DirPrefix(self):
     """returns the sub directory suffix in manifest-versions"""
     return '%s.%s' % (self.ver_maj, self.ver_min)
@@ -355,7 +362,7 @@ class BuildSpecsManager(object):
     self.latest = None
     self.latest_unprocessed = None
     self.current_build_spec = None
-    self.compare_versions_fn = lambda s: map(int, s.split('.'))
+    self.compare_versions_fn = VersionInfo.VersionCompare
 
     self.current_version = None
 
@@ -369,12 +376,7 @@ class BuildSpecsManager(object):
     if os.path.exists(directory):
       all_manifests = os.listdir(directory)
       match_string = version_info.BuildPrefix() + '.*.xml'
-
-      if self.incr_type == 'branch':
-        match_string = version_info.BuildPrefix() + '.*.0.xml'
-
-      matched_manifests = fnmatch.filter(
-          all_manifests, match_string)
+      matched_manifests = fnmatch.filter(all_manifests, match_string)
       matched_manifests = [os.path.splitext(m)[0] for m in matched_manifests]
 
     return sorted(matched_manifests, key=self.compare_versions_fn)
@@ -420,14 +422,12 @@ class BuildSpecsManager(object):
       # Remove unprocessed candidates that are older than the latest processed.
       to_be_removed = []
       for build in self.unprocessed:
-        build1 = map(int, build.split('.'))
-        build2 = map(int, latest_processed.split('.'))
+        build1 = self.compare_versions_fn(build)
+        build2 = self.compare_versions_fn(latest_processed)
 
         if build1 > build2:
           logging.debug('Still need to build %s' % build)
         else:
-          logging.debug('Ignoring build %s less than %s' %
-                        (build, latest_processed))
           to_be_removed.append(build)
 
       for build in to_be_removed:
