@@ -26,13 +26,13 @@
 #include "native_client/src/trusted/desc/nrd_all_modules.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
 #include "native_client/src/trusted/reverse_service/reverse_service.h"
+#include "native_client/src/trusted/sel_universal/pepper_emu_handler.h"
 #include "native_client/src/trusted/sel_universal/replay_handler.h"
 #include "native_client/src/trusted/sel_universal/rpc_universal.h"
 
 #if defined(NACL_SEL_UNIVERSAL_INCLUDE_SDL)
 // NOTE: we need to include this so that it can "hijack" main
 #include <SDL/SDL.h>
-#include "native_client/src/trusted/sel_universal/pepper_emu_handler.h"
 #endif
 
 #include "native_client/src/trusted/service_runtime/nacl_error_code.h"
@@ -55,10 +55,8 @@ static const char* kUsage =
     "sel_universal arguments are:\n"
     "\n"
     "  --help\n"
-#if NACL_SEL_UNIVERSAL_INCLUDE_SDL
     "  --event_record <file>\n"
     "  --event_replay <file>\n"
-#endif
     "  --debug\n"
     "  --abort_on_error\n"
     "  --silence_nexe\n"
@@ -100,7 +98,6 @@ static nacl::string ProcessArguments(int argc,
     if (flag == "--help") {
       printf("%s", kUsage);
       exit(0);
-#if  NACL_SEL_UNIVERSAL_INCLUDE_SDL
     } else if (flag == "--event_record") {
       if (argc <= i + 1) {
         NaClLog(LOG_FATAL, "not enough args for --event_record option\n");
@@ -111,7 +108,6 @@ static nacl::string ProcessArguments(int argc,
         NaClLog(LOG_FATAL, "not enough args for --event_replay option\n");
       }
       ReplayPPAPIEvents(argv[i + 1]);
-#endif
     } else if (flag == "--debug") {
       NaClLogSetVerbosity(1);
     } else if (flag == "--abort_on_error") {
@@ -292,14 +288,12 @@ int raii_main(int argc, char* argv[]) {
   loop.AddHandler("file_size", HandlerFileSize);
   loop.AddHandler("sync_socket_create", HandlerSyncSocketCreate);
   loop.AddHandler("sync_socket_write", HandlerSyncSocketWrite);
-#if  NACL_SEL_UNIVERSAL_INCLUDE_SDL
   // obsolete names
   loop.AddHandler("sdl_initialize", HandlerPepperEmuInitialize);
   loop.AddHandler("sdl_event_loop", HandlerPepperEmuEventLoop);
   // new names
   loop.AddHandler("pepper_emu_initialize", HandlerPepperEmuInitialize);
   loop.AddHandler("pepper_emu_event_loop", HandlerPepperEmuEventLoop);
-#endif
 
   NaClLog(1, "populating initial vars\n");
   for (map<string, string>::iterator it = initial_vars.begin();

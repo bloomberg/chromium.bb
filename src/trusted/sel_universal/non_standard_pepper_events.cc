@@ -7,7 +7,6 @@
 // This file provides utilty functions for creating custom pepper events
 // which do not interfere with regualar pepper events.
 
-#include <stdint.h>
 #include "ppapi/c/pp_input_event.h"
 
 #include "native_client/src/trusted/sel_universal/primitives.h"

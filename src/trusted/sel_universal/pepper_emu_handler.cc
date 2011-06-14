@@ -499,7 +499,7 @@ bool HandlerPepperEmuInitialize(NaClCommandLoop* ncl,
   Global.title = args[4];
 
   // NOTE: we decide at linktime which incarnation to use here
-  Global.sdl_engine = MakeMultimediaSDL(Global.screen_width,
+  Global.sdl_engine = MakeEmuPrimitives(Global.screen_width,
                                         Global.screen_height,
                                         Global.title.c_str());
   PepperEmuInitCore(ncl, Global.sdl_engine);
@@ -645,7 +645,13 @@ bool HandlerPepperEmuEventLoop(NaClCommandLoop* ncl,
           ins[3]->u.hval = Global.desc_audio_sync_out->desc();
 
           BuildArgVec(outs, out, 0);
+#if (NACL_LINUX || NACL_OSX)
           sleep(1);
+#elif NACL_WINDOWS
+          Sleep(1 * 1000);
+#else
+#error "Please specify platform as NACL_LINUX, NACL_OSX or NACL_WINDOWS"
+ #endif
           ncl->InvokeNexeRpc("PPP_Audio_StreamCreated:ihih:", ins, outs);
           break;
 

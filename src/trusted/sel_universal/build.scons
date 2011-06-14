@@ -37,22 +37,18 @@ def EnvSDLUpdateLinux(env):
     env.Append(LIBPATH=['/usr/lib32'])
 
 
-sdl_multimedia_srcs = []
+primitives_srcs = None
 if env.Bit('sdl_sel_universal'):
   if env.Bit('host_linux'):
     EnvSDLUpdateLinux(env)
   else:
     ErrorUnsupportedPlatform(env)
 
-  sdl_multimedia_srcs += ['sdl_ppapi_event_translator.cc',
-                          'primitives_sdl.cc',
-                          'non_standard_pepper_events.cc',
-                          'pepper_emu_handler.cc',
-                          'pepper_emu_fileio.cc',
-                          'pepper_emu_core.cc',
-                          'pepper_emu_postmessage.cc',
-                          ]
-
+  primitives_srcs = ['sdl_ppapi_event_translator.cc',
+                     'primitives_sdl.cc',
+                     ]
+else:
+  primitives_srcs = ['primitives_simple.cc']
 
 # NOTE: Probably because of GetPluginDir()
 if env.Bit('linux') and env.Bit('target_x86'):
@@ -61,12 +57,17 @@ if env.Bit('linux') and env.Bit('target_x86'):
 # NOTE: we need Cocoa because of the GetPluginDir() implementation
 #       on mac (nonnacl_util_c)
 env.ComponentProgram('sel_universal',
-                    ['sel_universal.cc',
-                     'rpc_universal.cc',
-                     'replay_handler.cc',
-                     'parsing.cc',
-                     'rpc_universal_system.cc',
-                     ] + sdl_multimedia_srcs,
+                     ['non_standard_pepper_events.cc',
+                      'parsing.cc',
+                      'pepper_emu_fileio.cc',
+                      'pepper_emu_core.cc',
+                      'pepper_emu_handler.cc',
+                      'pepper_emu_postmessage.cc',
+                      'replay_handler.cc',
+                      'rpc_universal_system.cc',
+                      'rpc_universal.cc',
+                      'sel_universal.cc',
+                     ] + primitives_srcs,
                     EXTRA_LIBS=['nonnacl_util',
                                 'nonnacl_srpc',
                                 'reverse_service',

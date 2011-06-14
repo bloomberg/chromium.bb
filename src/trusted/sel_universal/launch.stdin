@@ -10,14 +10,11 @@ set_variable TAGS C(23,id\000name\000src\000style\000type\000)
 set_variable VALUES C(74,naclModule\000naclModule\000ppapi.nexe\000background-color:gray\000application/x-nacl\000)
 
 echo
-echo "*** INITIALIZE SDL PEPPER"
+echo "*** INITIALIZE PEPPER EMULATION"
 # this registers the currently supported PPB_xxx rpcs
-sdl_initialize  ${INSTANCE} ${WIDTH} ${HEIGHT} demo
+pepper_emu_initialize ${INSTANCE} ${WIDTH} ${HEIGHT} demo
 echo
 
-echo "*** INITIALIZE POST_MESSAGE"
-# this registers the currently supported PPB_xxx rpcs
-postmessage_initialize
 
 echo
 echo "*** CREATE UPCALL SERVICE"
@@ -42,9 +39,7 @@ rpc PPP_Instance_DidChangeView ${INSTANCE} I(4,8,79,${WIDTH},${HEIGHT}) I(4,0,0,
 echo
 echo "*** ENTER EVENT LOOP"
 # wait for sdl events and forward them via PPP_Instance_HandleInputEvent
-sdl_event_loop
-
-
+pepper_emu_event_loop
 
 ######################################################################
 ## EPILOG

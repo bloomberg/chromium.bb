@@ -10,7 +10,7 @@
 // Abstract multimedia interface
 // NOTE: currently only video and simple events are supported
 
-class PP_InputEvent;
+struct PP_InputEvent;
 
 const int MY_EVENT_FLUSH_CALL_BACK = 88;
 const int MY_EVENT_INIT_AUDIO = 89;
@@ -62,6 +62,6 @@ class IMultimedia {
 };
 
 /* Currently, there is only an SDL implementation */
-IMultimedia* MakeMultimediaSDL(int width, int heigth, const char* title);
+IMultimedia* MakeEmuPrimitives(int width, int heigth, const char* title);
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_SEL_UNIVERASAL_PRIMITIVES_H_ */

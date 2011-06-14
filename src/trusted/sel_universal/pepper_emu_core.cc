@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 //
 
+#include <stdio.h>
+#include <string>
+
 // Note: this file defines hooks for all pepper related srpc calls
 // it would be nice to keep this synchronized with
 // src/shared/ppapi_proxy/ppb_rpc_server.cc
@@ -14,8 +17,7 @@
 #include "native_client/src/trusted/sel_universal/rpc_universal.h"
 #include "native_client/src/trusted/sel_universal/srpc_helper.h"
 
-#include <stdio.h>
-#include <string>
+using std::string;
 
 namespace {
 
@@ -26,26 +28,26 @@ IMultimedia* GlobalMultiMediaInterface = 0;
 //       They undoubtedly need to be updated when ppapi changes.
 //       We do not use defines like PPB_CORE_INTERFACE because
 //       the implementation/emulation needs to be updated as well.
-bool IsSupportedInterface(string interface) {
+bool IsSupportedInterface(string if_name) {
   return
-    interface == "PPB_Audio;0.6" ||
-    interface == "PPB_AudioConfig;0.5" ||
-    interface == "PPB_Core;0.4" ||
-    interface == "PPB_FileIO(Dev);0.3" ||
-    interface == "PPB_Graphics2D;0.3" ||
-    interface == "PPB_ImageData;0.3" ||
-    interface == "PPB_Instance;0.4" ||
-    interface == "PPB_URLLoader;0.1" ||
-    interface == "PPB_URLRequestInfo;0.2" ||
-    interface == "PPB_URLResponseInfo;0.1";
+    if_name == "PPB_Audio;0.6" ||
+    if_name == "PPB_AudioConfig;0.5" ||
+    if_name == "PPB_Core;0.4" ||
+    if_name == "PPB_FileIO(Dev);0.3" ||
+    if_name == "PPB_Graphics2D;0.3" ||
+    if_name == "PPB_ImageData;0.3" ||
+    if_name == "PPB_Instance;0.4" ||
+    if_name == "PPB_URLLoader;0.1" ||
+    if_name == "PPB_URLRequestInfo;0.2" ||
+    if_name == "PPB_URLResponseInfo;0.1";
 }
 
 // void* PPB_GetInterface(const char* interface_name);
 // PPB_GetInterface:s:i
 void PPB_GetInterface(SRPC_PARAMS) {
-  string interface(ins[0]->arrays.str);
-  NaClLog(1, "PPB_GetInterface(%s)\n", interface.c_str());
-  bool supported = IsSupportedInterface(interface);
+  string if_name(ins[0]->arrays.str);
+  NaClLog(1, "PPB_GetInterface(%s)\n", if_name.c_str());
+  bool supported = IsSupportedInterface(if_name);
   if (!supported) {
     NaClLog(LOG_ERROR, "unsupported interface\n");
   }

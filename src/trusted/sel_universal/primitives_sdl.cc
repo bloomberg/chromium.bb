@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -418,6 +418,6 @@ static Uint32 TimerCallBack(Uint32 interval, void* data) {
 }
 
 // Factor, so we can hide class MultimediaSDL from the outside world
-IMultimedia* MakeMultimediaSDL(int width, int heigth, const char* title) {
+IMultimedia* MakeEmuPrimitives(int width, int heigth, const char* title) {
   return new MultimediaSDL(width, heigth, title);
 }
