@@ -505,6 +505,8 @@ function logLoadStatus(rpc, load_errors_are_test_errors, loaded, waiting) {
       return '<exception>';
     }
   }
+
+  var errored = false;
   for (var j = 0; j < waiting.length; j++) {
     var name = getCarefully(function(){
         return embed_name(waiting[j]);
@@ -520,10 +522,12 @@ function logLoadStatus(rpc, load_errors_are_test_errors, loaded, waiting) {
     var msg = (name + ' did not load. Status: ' + ready + ' / ' + last);
     if (load_errors_are_test_errors) {
       rpc.client_error(msg);
+      errored = true;
     } else {
       rpc.log(msg);
     }
   }
+  return errored;
 }
 
 
@@ -689,8 +693,15 @@ function Tester(body_element) {
 
     this.waiter.run(
       function(loaded, waiting) {
-        logLoadStatus(this_.rpc, load_errors_are_test_errors, loaded, waiting);
-        this_.startTesting();
+        var errored = logLoadStatus(this_.rpc, load_errors_are_test_errors,
+                                    loaded, waiting);
+        if (errored) {
+          this_.rpc.blankLine();
+          this_.rpc.log('A nexe load error occured, aborting testing.');
+          this_._done();
+        } else {
+          this_.startTesting();
+        }
       },
       function() {
         this_.rpc.ping();
