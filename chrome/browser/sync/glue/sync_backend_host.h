@@ -178,7 +178,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   // Encrypts the specified datatypes and marks them as needing encryption on
   // other machines. This affects all machines synced to this account and all
   // data belonging to the specified types.
-  // Note: actual work is done on core_thread_'s message loop.
+  // Note: actual work is done on sync_thread_'s message loop.
   virtual void EncryptDataTypes(
       const syncable::ModelTypeSet& encrypted_types);
 
@@ -338,22 +338,22 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     // It calls us on a dedicated thread to actually perform synchronous
     // (and potentially blocking) syncapi operations.
     //
-    // Called on the SyncBackendHost core_thread_ to perform initialization
+    // Called on the SyncBackendHost sync_thread_ to perform initialization
     // of the syncapi on behalf of SyncBackendHost::Initialize.
     void DoInitialize(const DoInitializeOptions& options);
 
-    // Called on our SyncBackendHost's core_thread_ to perform credential
+    // Called on our SyncBackendHost's sync_thread_ to perform credential
     // update on behalf of SyncBackendHost::UpdateCredentials
     void DoUpdateCredentials(const sync_api::SyncCredentials& credentials);
 
     // Called when the user disables or enables a sync type.
     void DoUpdateEnabledTypes();
 
-    // Called on the SyncBackendHost core_thread_ to tell the syncapi to start
+    // Called on the SyncBackendHost sync_thread_ to tell the syncapi to start
     // syncing (generally after initialization and authentication).
     void DoStartSyncing();
 
-    // Called on the SyncBackendHost core_thread_ to nudge/pause/resume the
+    // Called on the SyncBackendHost sync_thread_ to nudge/pause/resume the
     // syncer.
     void DoRequestNudge(const tracked_objects::Location& location);
     void DoRequestClearServerData();
@@ -361,7 +361,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     // Sets |deferred_nudge_for_cleanup_requested_| to true. See comment below.
     void DeferNudgeForCleanup();
 
-    // Called on our SyncBackendHost's |core_thread_| to set the passphrase
+    // Called on our SyncBackendHost's |sync_thread_| to set the passphrase
     // on behalf of SyncBackendHost::SupplyPassphrase.
     void DoSetPassphrase(const std::string& passphrase, bool is_explicit);
 
@@ -371,22 +371,23 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     bool processing_passphrase() const;
     void set_processing_passphrase();
 
-    // Called on SyncBackendHost's |core_thread_| to set the datatypes we need
+    // Called on SyncBackendHost's |sync_thread_| to set the datatypes we need
     // to encrypt as well as encrypt all local data of that type.
     void DoEncryptDataTypes(const syncable::ModelTypeSet& encrypted_types);
 
     // The shutdown order is a bit complicated:
-    // 1) From |core_thread_|, invoke the syncapi Shutdown call to do a final
-    //    SaveChanges, close sqlite handles, and halt the syncer thread (which
-    //    could potentially block for 1 minute).
-    // 2) Then, from |frontend_loop_|, halt the core_thread_. This causes
-    //    syncapi thread-exit handlers to run and make use of cached pointers to
-    //    various components owned implicitly by us.
-    // 3) Destroy this Core. That will delete syncapi components in a safe order
-    //    because the thread that was using them has exited (in step 2).
+    // 1) From |sync_thread_|, invoke the syncapi Shutdown call to do
+    //    a final SaveChanges, and close sqlite handles.
+    // 2) Then, from |frontend_loop_|, halt the sync_thread_ (which is
+    //    a blocking call). This causes syncapi thread-exit handlers
+    //    to run and make use of cached pointers to various components
+    //    owned implicitly by us.
+    // 3) Destroy this Core. That will delete syncapi components in a
+    //    safe order because the thread that was using them has exited
+    //    (in step 2).
     void DoShutdown(bool stopping_sync);
 
-    // Posts a config request on the core thread.
+    // Posts a config request on the sync thread.
     virtual void DoRequestConfig(const syncable::ModelTypeBitSet& added_types,
         sync_api::ConfigureReason reason);
 
@@ -444,19 +445,19 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     // Invoked when initialization of syncapi is complete and we can start
     // our timer.
     // This must be called from the thread on which SaveChanges is intended to
-    // be run on; the host's |core_thread_|.
+    // be run on; the host's |sync_thread_|.
     void StartSavingChanges();
 
     // Invoked periodically to tell the syncapi to persist its state
     // by writing to disk.
     // This is called from the thread we were created on (which is the
-    // SyncBackendHost |core_thread_|), using a repeating timer that is kicked
+    // SyncBackendHost |sync_thread_|), using a repeating timer that is kicked
     // off as soon as the SyncManager tells us it completed
     // initialization.
     void SaveChanges();
 
-    // Dispatched to from HandleAuthErrorEventOnCoreLoop to handle updating
-    // frontend UI components.
+    // Dispatched to from OnAuthError to handle updating frontend UI
+    // components.
     void HandleAuthErrorEventOnFrontendLoop(
         const GoogleServiceAuthError& new_auth_error);
 
@@ -535,7 +536,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   // set up initial conditions.
   virtual void HandleInitializationCompletedOnFrontendLoop();
 
-  // Posts a nudge request on the core thread.
+  // Posts a nudge request on the sync thread.
   virtual void RequestNudge(const tracked_objects::Location& location);
 
   // Called to finish the job of ConfigureDataTypes once the syncer is in
@@ -550,7 +551,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   virtual sync_api::HttpPostProviderFactory* MakeHttpBridgeFactory(
       net::URLRequestContextGetter* getter);
 
-  MessageLoop* core_loop() { return core_thread_.message_loop(); }
+  MessageLoop* sync_loop() { return sync_thread_.message_loop(); }
 
   void set_syncapi_initialized() { syncapi_initialized_ = true; }
 
@@ -599,10 +600,8 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
       sync_api::ConfigureReason reason,
       bool nigori_enabled);
 
-  // A thread we dedicate for use by our Core to perform initialization,
-  // authentication, handle messages from the syncapi, and periodically tell
-  // the syncapi to persist itself.
-  base::Thread core_thread_;
+  // A thread where all the sync operations happen.
+  base::Thread sync_thread_;
 
   // A reference to the MessageLoop used to construct |this|, so we know how
   // to safely talk back to the SyncFrontend.
@@ -629,7 +628,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   // The syncapi needs to periodically get a consistent snapshot of the state,
   // and it does so from a different thread.  Therefore, we protect creation,
   // destruction, and re-routing events by acquiring this lock.  Note that the
-  // SyncBackendHost may read (on the UI thread or core thread) from registrar_
+  // SyncBackendHost may read (on the UI thread or sync thread) from registrar_
   // without acquiring the lock (which is typically "read ModelSafeWorker
   // pointer value", and then invoke methods), because lifetimes are managed on
   // the UI thread.  Of course, this comment only applies to ModelSafeWorker

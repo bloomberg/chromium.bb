@@ -2,12 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/synchronization/waitable_event.h"
+#include "base/bind.h"
+#include "base/callback.h"
+#include "base/compiler_specific.h"
+#include "base/memory/scoped_callback_factory.h"
+#include "base/message_loop.h"
+#include "base/task.h"
 #include "base/test/test_timeouts.h"
 #include "chrome/browser/sync/engine/mock_model_safe_workers.h"
 #include "chrome/browser/sync/engine/configure_reason.h"
+#include "chrome/browser/sync/engine/sync_scheduler.h"
 #include "chrome/browser/sync/engine/syncer.h"
-#include "chrome/browser/sync/engine/syncer_thread.h"
 #include "chrome/browser/sync/sessions/test_util.h"
 #include "chrome/test/sync/engine/mock_connection_manager.h"
 #include "chrome/test/sync/engine/test_directory_setter_upper.h"
@@ -44,11 +49,37 @@ struct SyncShareRecords {
   std::vector<linked_ptr<SyncSessionSnapshot> > snapshots;
 };
 
+void QuitLoopNow() {
+  // We use QuitNow() instead of Quit() as the latter may get stalled
+  // indefinitely in the presence of repeated timers with low delays
+  // and a slow test (e.g., ThrottlingDoesThrottle [which has a poll
+  // delay of 5ms] run under TSAN on the trybots).
+  MessageLoop::current()->QuitNow();
+}
+
+void RunLoop() {
+  MessageLoop::current()->Run();
+}
+
+void PumpLoop() {
+  // Do it this way instead of RunAllPending to pump loop exactly once
+  // (necessary in the presence of timers; see comment in
+  // QuitLoopNow).
+  MessageLoop::current()->PostTask(FROM_HERE, base::Bind(&QuitLoopNow));
+  RunLoop();
+}
+
 // Convenient to use in tests wishing to analyze SyncShare calls over time.
 static const size_t kMinNumSamples = 5;
-class SyncerThreadTest : public testing::Test {
+class SyncSchedulerTest : public testing::Test {
  public:
-  class MockDelayProvider : public SyncerThread::DelayProvider {
+  SyncSchedulerTest()
+      : callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+        context_(NULL),
+        syncer_(NULL),
+        delay_(NULL) {}
+
+  class MockDelayProvider : public SyncScheduler::DelayProvider {
    public:
     MOCK_METHOD1(GetDelay, TimeDelta(const TimeDelta&));
   };
@@ -70,11 +101,11 @@ class SyncerThreadTest : public testing::Test {
         registrar_.get(), std::vector<SyncEngineEventListener*>());
     context_->set_notifications_enabled(true);
     context_->set_account_name("Test");
-    syncer_thread_.reset(
-        new SyncerThread("TestSyncerThread", context_, syncer_));
+    scheduler_.reset(
+        new SyncScheduler("TestSyncScheduler", context_, syncer_));
   }
 
-  SyncerThread* syncer_thread() { return syncer_thread_.get(); }
+  SyncScheduler* scheduler() { return scheduler_.get(); }
   MockSyncer* syncer() { return syncer_; }
   MockDelayProvider* delay() { return delay_; }
   MockConnectionManager* connection() { return connection_.get(); }
@@ -84,7 +115,9 @@ class SyncerThreadTest : public testing::Test {
   }
 
   virtual void TearDown() {
-    syncer_thread()->Stop();
+    PumpLoop();
+    scheduler_.reset();
+    PumpLoop();
     syncdb_.TearDown();
   }
 
@@ -101,16 +134,32 @@ class SyncerThreadTest : public testing::Test {
     }
   }
 
-  bool GetBackoffAndResetTest(base::WaitableEvent* done) {
+  void DoQuitLoopNow() {
+    QuitLoopNow();
+  }
+
+  void StartSyncScheduler(SyncScheduler::Mode mode) {
+    scheduler()->Start(
+        mode,
+        callback_factory_.NewCallback(&SyncSchedulerTest::DoQuitLoopNow));
+  }
+
+  bool GetBackoffAndResetTest() {
     syncable::ModelTypeBitSet nudge_types;
-    syncer_thread()->Start(SyncerThread::NORMAL_MODE, NULL);
-    syncer_thread()->ScheduleNudge(zero(), NUDGE_SOURCE_LOCAL, nudge_types,
-                                   FROM_HERE);
-    done->TimedWait(timeout());
-    TearDown();
-    done->Reset();
+    StartSyncScheduler(SyncScheduler::NORMAL_MODE);
+    RunLoop();
+
+    scheduler()->ScheduleNudge(
+        zero(), NUDGE_SOURCE_LOCAL, nudge_types, FROM_HERE);
+    RunLoop();
+
+    bool backing_off = scheduler()->IsBackingOff();
+    scheduler()->Stop();
+    syncdb_.TearDown();
+
     Mock::VerifyAndClearExpectations(syncer());
-    bool backing_off = syncer_thread()->IsBackingOff();
+
+    TearDown();
     SetUp();
     UseMockDelayProvider();
     EXPECT_CALL(*delay(), GetDelay(_))
@@ -120,26 +169,7 @@ class SyncerThreadTest : public testing::Test {
 
   void UseMockDelayProvider() {
     delay_ = new MockDelayProvider();
-    syncer_thread_->delay_provider_.reset(delay_);
-  }
-
-  void PostSignalTask(base::WaitableEvent* done) {
-    syncer_thread_->thread_.message_loop()->PostTask(FROM_HERE,
-        NewRunnableFunction(&SyncerThreadTest::SignalWaitableEvent, done));
-  }
-
-  void FlushLastTask(base::WaitableEvent* done) {
-    PostSignalTask(done);
-    done->TimedWait(timeout());
-    done->Reset();
-  }
-
-  static void SignalWaitableEvent(base::WaitableEvent* event) {
-    event->Signal();
-  }
-
-  static void QuitMessageLoop() {
-    MessageLoop::current()->Quit();
+    scheduler_->delay_provider_.reset(delay_);
   }
 
   // Compare a ModelTypeBitSet to a ModelTypePayloadMap, ignoring
@@ -161,7 +191,9 @@ class SyncerThreadTest : public testing::Test {
   SyncSessionContext* context() { return context_; }
 
  private:
-  scoped_ptr<SyncerThread> syncer_thread_;
+  base::ScopedCallbackFactory<SyncSchedulerTest> callback_factory_;
+  MessageLoop message_loop_;
+  scoped_ptr<SyncScheduler> scheduler_;
   scoped_ptr<MockConnectionManager> connection_;
   SyncSessionContext* context_;
   MockSyncer* syncer_;
@@ -170,49 +202,59 @@ class SyncerThreadTest : public testing::Test {
   MockDirectorySetterUpper syncdb_;
 };
 
-bool RecordSyncShareImpl(SyncSession* s, SyncShareRecords* record,
-                         size_t signal_after) {
+void RecordSyncShareImpl(SyncSession* s, SyncShareRecords* record) {
   record->times.push_back(TimeTicks::Now());
   record->snapshots.push_back(make_linked_ptr(new SyncSessionSnapshot(
       s->TakeSnapshot())));
-  return record->times.size() >= signal_after;
 }
 
-ACTION_P4(RecordSyncShareAndPostSignal, record, signal_after, test, event) {
-  if (RecordSyncShareImpl(arg0, record, signal_after) && event)
-    test->PostSignalTask(event);
+ACTION_P(RecordSyncShare, record) {
+  RecordSyncShareImpl(arg0, record);
+  QuitLoopNow();
 }
 
-ACTION_P3(RecordSyncShare, record, signal_after, event) {
-  if (RecordSyncShareImpl(arg0, record, signal_after) && event)
-    event->Signal();
+ACTION_P2(RecordSyncShareMultiple, record, quit_after) {
+  RecordSyncShareImpl(arg0, record);
+  EXPECT_LE(record->times.size(), quit_after);
+  if (record->times.size() >= quit_after) {
+    QuitLoopNow();
+  }
 }
 
-ACTION_P(SignalEvent, event) {
-  SyncerThreadTest::SignalWaitableEvent(event);
+ACTION(AddFailureAndQuitLoopNow) {
+  ADD_FAILURE();
+  QuitLoopNow();
+}
+
+ACTION(QuitLoopNowAction) {
+  QuitLoopNow();
 }
 
 // Test nudge scheduling.
-TEST_F(SyncerThreadTest, Nudge) {
-  syncer_thread()->Start(SyncerThread::NORMAL_MODE, NULL);
-  base::WaitableEvent done(false, false);
+TEST_F(SyncSchedulerTest, Nudge) {
   SyncShareRecords records;
   syncable::ModelTypeBitSet model_types;
   model_types[syncable::BOOKMARKS] = true;
 
   EXPECT_CALL(*syncer(), SyncShare(_,_,_))
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateSuccess),
-          WithArg<0>(RecordSyncShare(&records, 1U, &done))))
+                      WithArg<0>(RecordSyncShare(&records))))
       .RetiresOnSaturation();
-  syncer_thread()->ScheduleNudge(zero(), NUDGE_SOURCE_LOCAL, model_types,
-                                 FROM_HERE);
-  done.TimedWait(timeout());
 
-  EXPECT_EQ(1U, records.snapshots.size());
+  StartSyncScheduler(SyncScheduler::NORMAL_MODE);
+  RunLoop();
+
+  scheduler()->ScheduleNudge(
+      zero(), NUDGE_SOURCE_LOCAL, model_types, FROM_HERE);
+  RunLoop();
+
+  ASSERT_EQ(1U, records.snapshots.size());
   EXPECT_TRUE(CompareModelTypeBitSetToModelTypePayloadMap(model_types,
       records.snapshots[0]->source.types));
   EXPECT_EQ(GetUpdatesCallerInfo::LOCAL,
             records.snapshots[0]->source.updates_source);
+
+  Mock::VerifyAndClearExpectations(syncer());
 
   // Make sure a second, later, nudge is unaffected by first (no coalescing).
   SyncShareRecords records2;
@@ -220,12 +262,12 @@ TEST_F(SyncerThreadTest, Nudge) {
   model_types[syncable::AUTOFILL] = true;
   EXPECT_CALL(*syncer(), SyncShare(_,_,_))
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateSuccess),
-          WithArg<0>(RecordSyncShare(&records2, 1U, &done))));
-  syncer_thread()->ScheduleNudge(zero(), NUDGE_SOURCE_LOCAL, model_types,
-                                 FROM_HERE);
-  done.TimedWait(timeout());
+                      WithArg<0>(RecordSyncShare(&records2))));
+  scheduler()->ScheduleNudge(
+      zero(), NUDGE_SOURCE_LOCAL, model_types, FROM_HERE);
+  RunLoop();
 
-  EXPECT_EQ(1U, records2.snapshots.size());
+  ASSERT_EQ(1U, records2.snapshots.size());
   EXPECT_TRUE(CompareModelTypeBitSetToModelTypePayloadMap(model_types,
       records2.snapshots[0]->source.types));
   EXPECT_EQ(GetUpdatesCallerInfo::LOCAL,
@@ -234,23 +276,23 @@ TEST_F(SyncerThreadTest, Nudge) {
 
 // Make sure a regular config command is scheduled fine in the absence of any
 // errors.
-TEST_F(SyncerThreadTest, Config) {
-  base::WaitableEvent done(false, false);
+TEST_F(SyncSchedulerTest, Config) {
   SyncShareRecords records;
   syncable::ModelTypeBitSet model_types;
   model_types[syncable::BOOKMARKS] = true;
 
   EXPECT_CALL(*syncer(), SyncShare(_,_,_))
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateSuccess),
-          WithArg<0>(RecordSyncShare(&records, 1U, &done))));
+                      WithArg<0>(RecordSyncShare(&records))));
 
-  syncer_thread()->Start(SyncerThread::CONFIGURATION_MODE, NULL);
+  StartSyncScheduler(SyncScheduler::CONFIGURATION_MODE);
+  RunLoop();
 
-  syncer_thread()->ScheduleConfig(model_types,
-      sync_api::CONFIGURE_REASON_RECONFIGURATION);
-  done.TimedWait(timeout());
+  scheduler()->ScheduleConfig(
+      model_types, sync_api::CONFIGURE_REASON_RECONFIGURATION);
+  RunLoop();
 
-  EXPECT_EQ(1U, records.snapshots.size());
+  ASSERT_EQ(1U, records.snapshots.size());
   EXPECT_TRUE(CompareModelTypeBitSetToModelTypePayloadMap(model_types,
       records.snapshots[0]->source.types));
   EXPECT_EQ(GetUpdatesCallerInfo::RECONFIGURATION,
@@ -258,9 +300,7 @@ TEST_F(SyncerThreadTest, Config) {
 }
 
 // Simulate a failure and make sure the config request is retried.
-TEST_F(SyncerThreadTest, ConfigWithBackingOff) {
-  base::WaitableEvent done(false, false);
-  base::WaitableEvent* dummy = NULL;
+TEST_F(SyncSchedulerTest, ConfigWithBackingOff) {
   UseMockDelayProvider();
   EXPECT_CALL(*delay(), GetDelay(_))
       .WillRepeatedly(Return(TimeDelta::FromMilliseconds(1)));
@@ -270,17 +310,22 @@ TEST_F(SyncerThreadTest, ConfigWithBackingOff) {
 
   EXPECT_CALL(*syncer(), SyncShare(_,_,_))
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateCommitFailed),
-          WithArg<0>(RecordSyncShare(&records, 1U, dummy))))
+                      WithArg<0>(RecordSyncShare(&records))))
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateSuccess),
-          WithArg<0>(RecordSyncShare(&records, 1U, &done))));
+                      WithArg<0>(RecordSyncShare(&records))));
 
-  syncer_thread()->Start(SyncerThread::CONFIGURATION_MODE, NULL);
+  StartSyncScheduler(SyncScheduler::CONFIGURATION_MODE);
+  RunLoop();
 
-  syncer_thread()->ScheduleConfig(model_types,
-      sync_api::CONFIGURE_REASON_RECONFIGURATION);
-  done.TimedWait(timeout());
+  ASSERT_EQ(0U, records.snapshots.size());
+  scheduler()->ScheduleConfig(
+      model_types, sync_api::CONFIGURE_REASON_RECONFIGURATION);
+  RunLoop();
 
-  EXPECT_EQ(2U, records.snapshots.size());
+  ASSERT_EQ(1U, records.snapshots.size());
+  RunLoop();
+
+  ASSERT_EQ(2U, records.snapshots.size());
   EXPECT_TRUE(CompareModelTypeBitSetToModelTypePayloadMap(model_types,
       records.snapshots[1]->source.types));
   EXPECT_EQ(GetUpdatesCallerInfo::SYNC_CYCLE_CONTINUATION,
@@ -289,13 +334,10 @@ TEST_F(SyncerThreadTest, ConfigWithBackingOff) {
 
 // Issue 2 config commands. Second one right after the first has failed
 // and make sure LATEST is executed.
-TEST_F(SyncerThreadTest, MultipleConfigWithBackingOff) {
+TEST_F(SyncSchedulerTest, MultipleConfigWithBackingOff) {
   syncable::ModelTypeBitSet model_types1, model_types2;
   model_types1[syncable::BOOKMARKS] = true;
   model_types2[syncable::AUTOFILL] = true;
-  base::WaitableEvent done(false, false);
-  base::WaitableEvent done1(false, false);
-  base::WaitableEvent* dummy = NULL;
   UseMockDelayProvider();
   EXPECT_CALL(*delay(), GetDelay(_))
       .WillRepeatedly(Return(TimeDelta::FromMilliseconds(30)));
@@ -303,24 +345,29 @@ TEST_F(SyncerThreadTest, MultipleConfigWithBackingOff) {
 
   EXPECT_CALL(*syncer(), SyncShare(_,_,_))
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateCommitFailed),
-          WithArg<0>(RecordSyncShare(&records, 1U, dummy))))
+                      WithArg<0>(RecordSyncShare(&records))))
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateCommitFailed),
-          WithArg<0>(RecordSyncShare(&records, 1U, &done1))))
+                      WithArg<0>(RecordSyncShare(&records))))
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateSuccess),
-          WithArg<0>(RecordSyncShare(&records, 1U, &done))));
+                      WithArg<0>(RecordSyncShare(&records))));
 
-  syncer_thread()->Start(SyncerThread::CONFIGURATION_MODE, NULL);
+  StartSyncScheduler(SyncScheduler::CONFIGURATION_MODE);
+  RunLoop();
 
-  syncer_thread()->ScheduleConfig(model_types1,
-      sync_api::CONFIGURE_REASON_RECONFIGURATION);
+  ASSERT_EQ(0U, records.snapshots.size());
+  scheduler()->ScheduleConfig(
+      model_types1, sync_api::CONFIGURE_REASON_RECONFIGURATION);
+  RunLoop();
 
-  // done1 indicates the first config failed.
-  done1.TimedWait(timeout());
-  syncer_thread()->ScheduleConfig(model_types2,
-      sync_api::CONFIGURE_REASON_RECONFIGURATION);
-  done.TimedWait(timeout());
+  ASSERT_EQ(1U, records.snapshots.size());
+  scheduler()->ScheduleConfig(
+      model_types2, sync_api::CONFIGURE_REASON_RECONFIGURATION);
+  RunLoop();
 
-  EXPECT_EQ(3U, records.snapshots.size());
+  ASSERT_EQ(2U, records.snapshots.size());
+  RunLoop();
+
+  ASSERT_EQ(3U, records.snapshots.size());
   EXPECT_TRUE(CompareModelTypeBitSetToModelTypePayloadMap(model_types2,
       records.snapshots[2]->source.types));
   EXPECT_EQ(GetUpdatesCallerInfo::RECONFIGURATION,
@@ -329,13 +376,9 @@ TEST_F(SyncerThreadTest, MultipleConfigWithBackingOff) {
 
 // Issue a nudge when the config has failed. Make sure both the config and
 // nudge are executed.
-TEST_F(SyncerThreadTest, NudgeWithConfigWithBackingOff) {
+TEST_F(SyncSchedulerTest, NudgeWithConfigWithBackingOff) {
   syncable::ModelTypeBitSet model_types;
   model_types[syncable::BOOKMARKS] = true;
-  base::WaitableEvent done(false, false);
-  base::WaitableEvent done1(false, false);
-  base::WaitableEvent done2(false, false);
-  base::WaitableEvent* dummy = NULL;
   UseMockDelayProvider();
   EXPECT_CALL(*delay(), GetDelay(_))
       .WillRepeatedly(Return(TimeDelta::FromMilliseconds(50)));
@@ -343,27 +386,36 @@ TEST_F(SyncerThreadTest, NudgeWithConfigWithBackingOff) {
 
   EXPECT_CALL(*syncer(), SyncShare(_,_,_))
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateCommitFailed),
-          WithArg<0>(RecordSyncShare(&records, 1U, dummy))))
+                      WithArg<0>(RecordSyncShare(&records))))
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateCommitFailed),
-          WithArg<0>(RecordSyncShare(&records, 1U, &done1))))
+                      WithArg<0>(RecordSyncShare(&records))))
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateSuccess),
-          WithArg<0>(RecordSyncShare(&records, 1U, &done2))))
+                      WithArg<0>(RecordSyncShare(&records))))
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateSuccess),
-          WithArg<0>(RecordSyncShare(&records, 1U, &done))));
+                      WithArg<0>(RecordSyncShare(&records))));
 
-  syncer_thread()->Start(SyncerThread::CONFIGURATION_MODE, NULL);
+  StartSyncScheduler(SyncScheduler::CONFIGURATION_MODE);
+  RunLoop();
 
-  syncer_thread()->ScheduleConfig(model_types,
-      sync_api::CONFIGURE_REASON_RECONFIGURATION);
-  done1.TimedWait(timeout());
-  syncer_thread()->ScheduleNudge(zero(), NUDGE_SOURCE_LOCAL, model_types,
-                                 FROM_HERE);
+  ASSERT_EQ(0U, records.snapshots.size());
+  scheduler()->ScheduleConfig(
+      model_types, sync_api::CONFIGURE_REASON_RECONFIGURATION);
+  RunLoop();
 
-  // done2 indicates config suceeded. Now change the mode so nudge can execute.
-  done2.TimedWait(timeout());
-  syncer_thread()->Start(SyncerThread::NORMAL_MODE, NULL);
-  done.TimedWait(timeout());
-  EXPECT_EQ(4U, records.snapshots.size());
+  ASSERT_EQ(1U, records.snapshots.size());
+  scheduler()->ScheduleNudge(
+      zero(), NUDGE_SOURCE_LOCAL, model_types, FROM_HERE);
+  RunLoop();
+
+  ASSERT_EQ(2U, records.snapshots.size());
+  RunLoop();
+
+  // Now change the mode so nudge can execute.
+  ASSERT_EQ(3U, records.snapshots.size());
+  StartSyncScheduler(SyncScheduler::NORMAL_MODE);
+  RunLoop();
+
+  ASSERT_EQ(4U, records.snapshots.size());
 
   EXPECT_TRUE(CompareModelTypeBitSetToModelTypePayloadMap(model_types,
       records.snapshots[2]->source.types));
@@ -377,43 +429,45 @@ TEST_F(SyncerThreadTest, NudgeWithConfigWithBackingOff) {
 
 }
 
-
 // Test that nudges are coalesced.
-TEST_F(SyncerThreadTest, NudgeCoalescing) {
-  syncer_thread()->Start(SyncerThread::NORMAL_MODE, NULL);
-  base::WaitableEvent done(false, false);
+TEST_F(SyncSchedulerTest, NudgeCoalescing) {
+  StartSyncScheduler(SyncScheduler::NORMAL_MODE);
+  RunLoop();
+
   SyncShareRecords r;
   EXPECT_CALL(*syncer(), SyncShare(_,_,_))
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateSuccess),
-           WithArg<0>(RecordSyncShare(&r, 1U, &done))));
+                      WithArg<0>(RecordSyncShare(&r))));
   syncable::ModelTypeBitSet types1, types2, types3;
   types1[syncable::BOOKMARKS] = true;
   types2[syncable::AUTOFILL] = true;
   types3[syncable::THEMES] = true;
-  TimeDelta delay = TimeDelta::FromMilliseconds(
-      TestTimeouts::tiny_timeout_ms());
+  TimeDelta delay = zero();
   TimeTicks optimal_time = TimeTicks::Now() + delay;
-  syncer_thread()->ScheduleNudge(delay, NUDGE_SOURCE_UNKNOWN, types1,
-                                 FROM_HERE);
-  syncer_thread()->ScheduleNudge(zero(), NUDGE_SOURCE_LOCAL, types2,
-                                 FROM_HERE);
-  done.TimedWait(timeout());
+  scheduler()->ScheduleNudge(
+      delay, NUDGE_SOURCE_UNKNOWN, types1, FROM_HERE);
+  scheduler()->ScheduleNudge(
+      zero(), NUDGE_SOURCE_LOCAL, types2, FROM_HERE);
+  RunLoop();
 
-  EXPECT_EQ(1U, r.snapshots.size());
+  ASSERT_EQ(1U, r.snapshots.size());
   EXPECT_GE(r.times[0], optimal_time);
   EXPECT_TRUE(CompareModelTypeBitSetToModelTypePayloadMap(
       types1 | types2, r.snapshots[0]->source.types));
   EXPECT_EQ(GetUpdatesCallerInfo::LOCAL,
             r.snapshots[0]->source.updates_source);
 
+  Mock::VerifyAndClearExpectations(syncer());
+
   SyncShareRecords r2;
   EXPECT_CALL(*syncer(), SyncShare(_,_,_))
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateSuccess),
-           WithArg<0>(RecordSyncShare(&r2, 1U, &done))));
-  syncer_thread()->ScheduleNudge(zero(), NUDGE_SOURCE_NOTIFICATION, types3,
-                                 FROM_HERE);
-  done.TimedWait(timeout());
-  EXPECT_EQ(1U, r2.snapshots.size());
+                      WithArg<0>(RecordSyncShare(&r2))));
+  scheduler()->ScheduleNudge(
+      zero(), NUDGE_SOURCE_NOTIFICATION, types3, FROM_HERE);
+  RunLoop();
+
+  ASSERT_EQ(1U, r2.snapshots.size());
   EXPECT_TRUE(CompareModelTypeBitSetToModelTypePayloadMap(types3,
       r2.snapshots[0]->source.types));
   EXPECT_EQ(GetUpdatesCallerInfo::NOTIFICATION,
@@ -421,25 +475,28 @@ TEST_F(SyncerThreadTest, NudgeCoalescing) {
 }
 
 // Test nudge scheduling.
-TEST_F(SyncerThreadTest, NudgeWithPayloads) {
-  syncer_thread()->Start(SyncerThread::NORMAL_MODE, NULL);
-  base::WaitableEvent done(false, false);
+TEST_F(SyncSchedulerTest, NudgeWithPayloads) {
+  StartSyncScheduler(SyncScheduler::NORMAL_MODE);
+  RunLoop();
+
   SyncShareRecords records;
   syncable::ModelTypePayloadMap model_types_with_payloads;
   model_types_with_payloads[syncable::BOOKMARKS] = "test";
 
   EXPECT_CALL(*syncer(), SyncShare(_,_,_))
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateSuccess),
-          WithArg<0>(RecordSyncShare(&records, 1U, &done))))
+                      WithArg<0>(RecordSyncShare(&records))))
       .RetiresOnSaturation();
-  syncer_thread()->ScheduleNudgeWithPayloads(zero(), NUDGE_SOURCE_LOCAL,
-      model_types_with_payloads, FROM_HERE);
-  done.TimedWait(timeout());
+  scheduler()->ScheduleNudgeWithPayloads(
+      zero(), NUDGE_SOURCE_LOCAL, model_types_with_payloads, FROM_HERE);
+  RunLoop();
 
-  EXPECT_EQ(1U, records.snapshots.size());
+  ASSERT_EQ(1U, records.snapshots.size());
   EXPECT_EQ(model_types_with_payloads, records.snapshots[0]->source.types);
   EXPECT_EQ(GetUpdatesCallerInfo::LOCAL,
             records.snapshots[0]->source.updates_source);
+
+  Mock::VerifyAndClearExpectations(syncer());
 
   // Make sure a second, later, nudge is unaffected by first (no coalescing).
   SyncShareRecords records2;
@@ -447,39 +504,39 @@ TEST_F(SyncerThreadTest, NudgeWithPayloads) {
   model_types_with_payloads[syncable::AUTOFILL] = "test2";
   EXPECT_CALL(*syncer(), SyncShare(_,_,_))
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateSuccess),
-          WithArg<0>(RecordSyncShare(&records2, 1U, &done))));
-  syncer_thread()->ScheduleNudgeWithPayloads(zero(), NUDGE_SOURCE_LOCAL,
-      model_types_with_payloads, FROM_HERE);
-  done.TimedWait(timeout());
+                      WithArg<0>(RecordSyncShare(&records2))));
+  scheduler()->ScheduleNudgeWithPayloads(
+      zero(), NUDGE_SOURCE_LOCAL, model_types_with_payloads, FROM_HERE);
+  RunLoop();
 
-  EXPECT_EQ(1U, records2.snapshots.size());
+  ASSERT_EQ(1U, records2.snapshots.size());
   EXPECT_EQ(model_types_with_payloads, records2.snapshots[0]->source.types);
   EXPECT_EQ(GetUpdatesCallerInfo::LOCAL,
             records2.snapshots[0]->source.updates_source);
 }
 
 // Test that nudges are coalesced.
-TEST_F(SyncerThreadTest, NudgeWithPayloadsCoalescing) {
-  syncer_thread()->Start(SyncerThread::NORMAL_MODE, NULL);
-  base::WaitableEvent done(false, false);
+TEST_F(SyncSchedulerTest, NudgeWithPayloadsCoalescing) {
+  StartSyncScheduler(SyncScheduler::NORMAL_MODE);
+  RunLoop();
+
   SyncShareRecords r;
   EXPECT_CALL(*syncer(), SyncShare(_,_,_))
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateSuccess),
-           WithArg<0>(RecordSyncShare(&r, 1U, &done))));
+                      WithArg<0>(RecordSyncShare(&r))));
   syncable::ModelTypePayloadMap types1, types2, types3;
   types1[syncable::BOOKMARKS] = "test1";
   types2[syncable::AUTOFILL] = "test2";
   types3[syncable::THEMES] = "test3";
-  TimeDelta delay = TimeDelta::FromMilliseconds(
-      TestTimeouts::tiny_timeout_ms());
+  TimeDelta delay = zero();
   TimeTicks optimal_time = TimeTicks::Now() + delay;
-  syncer_thread()->ScheduleNudgeWithPayloads(delay, NUDGE_SOURCE_UNKNOWN,
-      types1, FROM_HERE);
-  syncer_thread()->ScheduleNudgeWithPayloads(zero(), NUDGE_SOURCE_LOCAL,
-      types2, FROM_HERE);
-  done.TimedWait(timeout());
+  scheduler()->ScheduleNudgeWithPayloads(
+      delay, NUDGE_SOURCE_UNKNOWN, types1, FROM_HERE);
+  scheduler()->ScheduleNudgeWithPayloads(
+      zero(), NUDGE_SOURCE_LOCAL, types2, FROM_HERE);
+  RunLoop();
 
-  EXPECT_EQ(1U, r.snapshots.size());
+  ASSERT_EQ(1U, r.snapshots.size());
   EXPECT_GE(r.times[0], optimal_time);
   syncable::ModelTypePayloadMap coalesced_types;
   syncable::CoalescePayloads(&coalesced_types, types1);
@@ -488,121 +545,138 @@ TEST_F(SyncerThreadTest, NudgeWithPayloadsCoalescing) {
   EXPECT_EQ(GetUpdatesCallerInfo::LOCAL,
             r.snapshots[0]->source.updates_source);
 
+  Mock::VerifyAndClearExpectations(syncer());
+
   SyncShareRecords r2;
   EXPECT_CALL(*syncer(), SyncShare(_,_,_))
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateSuccess),
-           WithArg<0>(RecordSyncShare(&r2, 1U, &done))));
-  syncer_thread()->ScheduleNudgeWithPayloads(zero(), NUDGE_SOURCE_NOTIFICATION,
-      types3, FROM_HERE);
-  done.TimedWait(timeout());
-  EXPECT_EQ(1U, r2.snapshots.size());
+                      WithArg<0>(RecordSyncShare(&r2))));
+  scheduler()->ScheduleNudgeWithPayloads(
+      zero(), NUDGE_SOURCE_NOTIFICATION, types3, FROM_HERE);
+  RunLoop();
+
+  ASSERT_EQ(1U, r2.snapshots.size());
   EXPECT_EQ(types3, r2.snapshots[0]->source.types);
   EXPECT_EQ(GetUpdatesCallerInfo::NOTIFICATION,
             r2.snapshots[0]->source.updates_source);
 }
 
 // Test that polling works as expected.
-TEST_F(SyncerThreadTest, Polling) {
+TEST_F(SyncSchedulerTest, Polling) {
   SyncShareRecords records;
-  base::WaitableEvent done(false, false);
   TimeDelta poll_interval(TimeDelta::FromMilliseconds(30));
-  syncer_thread()->OnReceivedLongPollIntervalUpdate(poll_interval);
   EXPECT_CALL(*syncer(), SyncShare(_,_,_)).Times(AtLeast(kMinNumSamples))
       .WillRepeatedly(DoAll(Invoke(sessions::test_util::SimulateSuccess),
-           WithArg<0>(RecordSyncShare(&records, kMinNumSamples, &done))));
+           WithArg<0>(RecordSyncShareMultiple(&records, kMinNumSamples))));
+
+  scheduler()->OnReceivedLongPollIntervalUpdate(poll_interval);
 
   TimeTicks optimal_start = TimeTicks::Now() + poll_interval;
-  syncer_thread()->Start(SyncerThread::NORMAL_MODE, NULL);
-  done.TimedWait(timeout());
-  syncer_thread()->Stop();
+  StartSyncScheduler(SyncScheduler::NORMAL_MODE);
+  RunLoop();
 
+  // Run again to wait for polling.
+  RunLoop();
+
+  scheduler()->Stop();
   AnalyzePollRun(records, kMinNumSamples, optimal_start, poll_interval);
 }
 
 // Test that the short poll interval is used.
-TEST_F(SyncerThreadTest, PollNotificationsDisabled) {
+TEST_F(SyncSchedulerTest, PollNotificationsDisabled) {
   SyncShareRecords records;
-  base::WaitableEvent done(false, false);
   TimeDelta poll_interval(TimeDelta::FromMilliseconds(30));
-  syncer_thread()->OnReceivedShortPollIntervalUpdate(poll_interval);
-  syncer_thread()->set_notifications_enabled(false);
   EXPECT_CALL(*syncer(), SyncShare(_,_,_)).Times(AtLeast(kMinNumSamples))
       .WillRepeatedly(DoAll(Invoke(sessions::test_util::SimulateSuccess),
-           WithArg<0>(RecordSyncShare(&records, kMinNumSamples, &done))));
+           WithArg<0>(RecordSyncShareMultiple(&records, kMinNumSamples))));
+
+  scheduler()->OnReceivedShortPollIntervalUpdate(poll_interval);
+  scheduler()->set_notifications_enabled(false);
 
   TimeTicks optimal_start = TimeTicks::Now() + poll_interval;
-  syncer_thread()->Start(SyncerThread::NORMAL_MODE, NULL);
-  done.TimedWait(timeout());
-  syncer_thread()->Stop();
+  StartSyncScheduler(SyncScheduler::NORMAL_MODE);
+  RunLoop();
 
+  // Run again to wait for polling.
+  RunLoop();
+
+  scheduler()->Stop();
   AnalyzePollRun(records, kMinNumSamples, optimal_start, poll_interval);
 }
 
 // Test that polling intervals are updated when needed.
-TEST_F(SyncerThreadTest, PollIntervalUpdate) {
+TEST_F(SyncSchedulerTest, PollIntervalUpdate) {
   SyncShareRecords records;
-  base::WaitableEvent done(false, false);
   TimeDelta poll1(TimeDelta::FromMilliseconds(120));
   TimeDelta poll2(TimeDelta::FromMilliseconds(30));
-  syncer_thread()->OnReceivedLongPollIntervalUpdate(poll1);
+  scheduler()->OnReceivedLongPollIntervalUpdate(poll1);
   EXPECT_CALL(*syncer(), SyncShare(_,_,_)).Times(AtLeast(kMinNumSamples))
       .WillOnce(WithArg<0>(
           sessions::test_util::SimulatePollIntervalUpdate(poll2)))
-      .WillRepeatedly(DoAll(Invoke(sessions::test_util::SimulateSuccess),
-           WithArg<0>(RecordSyncShare(&records, kMinNumSamples, &done))));
+      .WillRepeatedly(
+          DoAll(Invoke(sessions::test_util::SimulateSuccess),
+                WithArg<0>(
+                    RecordSyncShareMultiple(&records, kMinNumSamples))));
 
   TimeTicks optimal_start = TimeTicks::Now() + poll1 + poll2;
-  syncer_thread()->Start(SyncerThread::NORMAL_MODE, NULL);
-  done.TimedWait(timeout());
-  syncer_thread()->Stop();
+  StartSyncScheduler(SyncScheduler::NORMAL_MODE);
+  RunLoop();
 
+  // Run again to wait for polling.
+  RunLoop();
+
+  scheduler()->Stop();
   AnalyzePollRun(records, kMinNumSamples, optimal_start, poll2);
 }
 
 // Test that a sync session is run through to completion.
-TEST_F(SyncerThreadTest, HasMoreToSync) {
-  syncer_thread()->Start(SyncerThread::NORMAL_MODE, NULL);
-  base::WaitableEvent done(false, false);
+TEST_F(SyncSchedulerTest, HasMoreToSync) {
   EXPECT_CALL(*syncer(), SyncShare(_,_,_))
       .WillOnce(Invoke(sessions::test_util::SimulateHasMoreToSync))
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateSuccess),
-                      SignalEvent(&done)));
-  syncer_thread()->ScheduleNudge(zero(), NUDGE_SOURCE_LOCAL, ModelTypeBitSet(),
-                                 FROM_HERE);
-  done.TimedWait(timeout());
+                      QuitLoopNowAction()));
+  StartSyncScheduler(SyncScheduler::NORMAL_MODE);
+  RunLoop();
+
+  scheduler()->ScheduleNudge(
+      zero(), NUDGE_SOURCE_LOCAL, ModelTypeBitSet(), FROM_HERE);
+  RunLoop();
   // If more nudges are scheduled, they'll be waited on by TearDown, and would
   // cause our expectation to break.
 }
 
 // Test that no syncing occurs when throttled.
-TEST_F(SyncerThreadTest, ThrottlingDoesThrottle) {
+TEST_F(SyncSchedulerTest, ThrottlingDoesThrottle) {
   syncable::ModelTypeBitSet types;
   types[syncable::BOOKMARKS] = true;
-  base::WaitableEvent done(false, false);
   TimeDelta poll(TimeDelta::FromMilliseconds(5));
   TimeDelta throttle(TimeDelta::FromMinutes(10));
-  syncer_thread()->OnReceivedLongPollIntervalUpdate(poll);
+  scheduler()->OnReceivedLongPollIntervalUpdate(poll);
   EXPECT_CALL(*syncer(), SyncShare(_,_,_))
-      .WillOnce(WithArg<0>(sessions::test_util::SimulateThrottled(throttle)));
+      .WillOnce(WithArg<0>(sessions::test_util::SimulateThrottled(throttle)))
+      .WillRepeatedly(AddFailureAndQuitLoopNow());
 
-  syncer_thread()->Start(SyncerThread::NORMAL_MODE, NULL);
-  syncer_thread()->ScheduleNudge(zero(), NUDGE_SOURCE_LOCAL, types,
-                                 FROM_HERE);
-  FlushLastTask(&done);
+  StartSyncScheduler(SyncScheduler::NORMAL_MODE);
+  RunLoop();
 
-  syncer_thread()->Start(SyncerThread::CONFIGURATION_MODE, NULL);
-  syncer_thread()->ScheduleConfig(types,
-      sync_api::CONFIGURE_REASON_RECONFIGURATION);
-  FlushLastTask(&done);
+  scheduler()->ScheduleNudge(
+      zero(), NUDGE_SOURCE_LOCAL, types, FROM_HERE);
+  PumpLoop();
+
+  StartSyncScheduler(SyncScheduler::CONFIGURATION_MODE);
+  RunLoop();
+
+  scheduler()->ScheduleConfig(
+      types, sync_api::CONFIGURE_REASON_RECONFIGURATION);
+  PumpLoop();
 }
 
-TEST_F(SyncerThreadTest, ThrottlingExpires) {
+TEST_F(SyncSchedulerTest, ThrottlingExpires) {
   SyncShareRecords records;
-  base::WaitableEvent done(false, false);
   TimeDelta poll(TimeDelta::FromMilliseconds(15));
   TimeDelta throttle1(TimeDelta::FromMilliseconds(150));
   TimeDelta throttle2(TimeDelta::FromMinutes(10));
-  syncer_thread()->OnReceivedLongPollIntervalUpdate(poll);
+  scheduler()->OnReceivedLongPollIntervalUpdate(poll);
 
   ::testing::InSequence seq;
   EXPECT_CALL(*syncer(), SyncShare(_,_,_))
@@ -610,110 +684,116 @@ TEST_F(SyncerThreadTest, ThrottlingExpires) {
       .RetiresOnSaturation();
   EXPECT_CALL(*syncer(), SyncShare(_,_,_))
       .WillRepeatedly(DoAll(Invoke(sessions::test_util::SimulateSuccess),
-           WithArg<0>(RecordSyncShare(&records, kMinNumSamples, &done))));
+           WithArg<0>(RecordSyncShareMultiple(&records, kMinNumSamples))));
 
   TimeTicks optimal_start = TimeTicks::Now() + poll + throttle1;
-  syncer_thread()->Start(SyncerThread::NORMAL_MODE, NULL);
-  done.TimedWait(timeout());
-  syncer_thread()->Stop();
+  StartSyncScheduler(SyncScheduler::NORMAL_MODE);
+  RunLoop();
 
+  // Run again to wait for polling.
+  RunLoop();
+
+  scheduler()->Stop();
   AnalyzePollRun(records, kMinNumSamples, optimal_start, poll);
 }
 
 // Test nudges / polls don't run in config mode and config tasks do.
-TEST_F(SyncerThreadTest, ConfigurationMode) {
+TEST_F(SyncSchedulerTest, ConfigurationMode) {
   TimeDelta poll(TimeDelta::FromMilliseconds(15));
   SyncShareRecords records;
-  base::WaitableEvent done(false, false);
-  base::WaitableEvent* dummy = NULL;
-  syncer_thread()->OnReceivedLongPollIntervalUpdate(poll);
+  scheduler()->OnReceivedLongPollIntervalUpdate(poll);
   EXPECT_CALL(*syncer(), SyncShare(_,_,_))
       .WillOnce((Invoke(sessions::test_util::SimulateSuccess),
-           WithArg<0>(RecordSyncShare(&records, 1U, dummy))));
-  syncer_thread()->Start(SyncerThread::CONFIGURATION_MODE, NULL);
+           WithArg<0>(RecordSyncShare(&records))));
+
+  StartSyncScheduler(SyncScheduler::CONFIGURATION_MODE);
+  RunLoop();
+
   syncable::ModelTypeBitSet nudge_types;
   nudge_types[syncable::AUTOFILL] = true;
-  syncer_thread()->ScheduleNudge(zero(), NUDGE_SOURCE_LOCAL, nudge_types,
-                                 FROM_HERE);
-  syncer_thread()->ScheduleNudge(zero(), NUDGE_SOURCE_LOCAL, nudge_types,
-                                 FROM_HERE);
+  scheduler()->ScheduleNudge(
+      zero(), NUDGE_SOURCE_LOCAL, nudge_types, FROM_HERE);
+  scheduler()->ScheduleNudge(
+      zero(), NUDGE_SOURCE_LOCAL, nudge_types, FROM_HERE);
 
   syncable::ModelTypeBitSet config_types;
   config_types[syncable::BOOKMARKS] = true;
 
-  syncer_thread()->ScheduleConfig(config_types,
-      sync_api::CONFIGURE_REASON_RECONFIGURATION);
-  FlushLastTask(&done);
-  syncer_thread()->Stop();
+  scheduler()->ScheduleConfig(
+      config_types, sync_api::CONFIGURE_REASON_RECONFIGURATION);
+  RunLoop();
 
-  EXPECT_EQ(1U, records.snapshots.size());
+  ASSERT_EQ(1U, records.snapshots.size());
   EXPECT_TRUE(CompareModelTypeBitSetToModelTypePayloadMap(config_types,
       records.snapshots[0]->source.types));
 }
 
 // Test that exponential backoff is properly triggered.
-TEST_F(SyncerThreadTest, BackoffTriggers) {
-  base::WaitableEvent done(false, false);
+TEST_F(SyncSchedulerTest, BackoffTriggers) {
   UseMockDelayProvider();
 
   EXPECT_CALL(*syncer(), SyncShare(_,_,_))
       .WillOnce(Invoke(sessions::test_util::SimulateDownloadUpdatesFailed))
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateSuccess),
-          SignalEvent(&done)));
-  EXPECT_FALSE(GetBackoffAndResetTest(&done));
+                      QuitLoopNowAction()));
+  EXPECT_FALSE(GetBackoffAndResetTest());
   // Note GetBackoffAndResetTest clears mocks and re-instantiates the syncer.
   EXPECT_CALL(*syncer(), SyncShare(_,_,_))
       .WillOnce(Invoke(sessions::test_util::SimulateCommitFailed))
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateSuccess),
-          SignalEvent(&done)));
-  EXPECT_FALSE(GetBackoffAndResetTest(&done));
+                      QuitLoopNowAction()));
+  EXPECT_FALSE(GetBackoffAndResetTest());
   EXPECT_CALL(*syncer(), SyncShare(_,_,_))
       .WillOnce(Invoke(sessions::test_util::SimulateDownloadUpdatesFailed))
       .WillRepeatedly(DoAll(Invoke(
           sessions::test_util::SimulateDownloadUpdatesFailed),
-          SignalEvent(&done)));
-  EXPECT_TRUE(GetBackoffAndResetTest(&done));
+                            QuitLoopNowAction()));
+  EXPECT_TRUE(GetBackoffAndResetTest());
   EXPECT_CALL(*syncer(), SyncShare(_,_,_))
       .WillOnce(Invoke(sessions::test_util::SimulateCommitFailed))
       .WillRepeatedly(DoAll(Invoke(sessions::test_util::SimulateCommitFailed),
-          SignalEvent(&done)));
-  EXPECT_TRUE(GetBackoffAndResetTest(&done));
+                            QuitLoopNowAction()));
+  EXPECT_TRUE(GetBackoffAndResetTest());
   EXPECT_CALL(*syncer(), SyncShare(_,_,_))
       .WillOnce(Invoke(sessions::test_util::SimulateDownloadUpdatesFailed))
       .WillOnce(Invoke(sessions::test_util::SimulateDownloadUpdatesFailed))
       .WillRepeatedly(DoAll(Invoke(sessions::test_util::SimulateSuccess),
-          SignalEvent(&done)));
-  EXPECT_FALSE(GetBackoffAndResetTest(&done));
+                            QuitLoopNowAction()));
+  EXPECT_FALSE(GetBackoffAndResetTest());
   EXPECT_CALL(*syncer(), SyncShare(_,_,_))
       .WillOnce(Invoke(sessions::test_util::SimulateCommitFailed))
       .WillOnce(Invoke(sessions::test_util::SimulateCommitFailed))
       .WillRepeatedly(DoAll(Invoke(sessions::test_util::SimulateSuccess),
-          SignalEvent(&done)));
-  EXPECT_FALSE(GetBackoffAndResetTest(&done));
+                            QuitLoopNowAction()));
+  EXPECT_FALSE(GetBackoffAndResetTest());
 }
 
 // Test that no polls or extraneous nudges occur when in backoff.
-TEST_F(SyncerThreadTest, BackoffDropsJobs) {
+TEST_F(SyncSchedulerTest, BackoffDropsJobs) {
   SyncShareRecords r;
   TimeDelta poll(TimeDelta::FromMilliseconds(5));
-  base::WaitableEvent done(false, false);
   syncable::ModelTypeBitSet types;
   types[syncable::BOOKMARKS] = true;
-  syncer_thread()->OnReceivedLongPollIntervalUpdate(poll);
+  scheduler()->OnReceivedLongPollIntervalUpdate(poll);
   UseMockDelayProvider();
 
   EXPECT_CALL(*syncer(), SyncShare(_,_,_)).Times(2)
       .WillRepeatedly(DoAll(Invoke(sessions::test_util::SimulateCommitFailed),
-          RecordSyncShareAndPostSignal(&r, 2U, this, &done)));
-  EXPECT_CALL(*delay(), GetDelay(_))
-      .WillRepeatedly(Return(TimeDelta::FromDays(1)));
+          RecordSyncShareMultiple(&r, 2U)));
+  EXPECT_CALL(*delay(), GetDelay(_)).
+      WillRepeatedly(Return(TimeDelta::FromDays(1)));
 
-  syncer_thread()->Start(SyncerThread::NORMAL_MODE, NULL);
-  ASSERT_TRUE(done.TimedWait(timeout()));
-  done.Reset();
+  StartSyncScheduler(SyncScheduler::NORMAL_MODE);
+  RunLoop();
+
+  // Run again to wait for polling.
+  RunLoop();
+
+  // Pump loop to get rid of nudge.
+  PumpLoop();
 
   Mock::VerifyAndClearExpectations(syncer());
-  EXPECT_EQ(2U, r.snapshots.size());
+  ASSERT_EQ(2U, r.snapshots.size());
   EXPECT_EQ(GetUpdatesCallerInfo::PERIODIC,
             r.snapshots[0]->source.updates_source);
   EXPECT_EQ(GetUpdatesCallerInfo::SYNC_CYCLE_CONTINUATION,
@@ -721,43 +801,45 @@ TEST_F(SyncerThreadTest, BackoffDropsJobs) {
 
   EXPECT_CALL(*syncer(), SyncShare(_,_,_)).Times(1)
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateCommitFailed),
-          RecordSyncShareAndPostSignal(&r, 1U, this, &done)));
+          RecordSyncShare(&r)));
 
   // We schedule a nudge with enough delay (10X poll interval) that at least
   // one or two polls would have taken place.  The nudge should succeed.
-  syncer_thread()->ScheduleNudge(poll * 10, NUDGE_SOURCE_LOCAL, types,
-                                 FROM_HERE);
-  ASSERT_TRUE(done.TimedWait(timeout()));
-  done.Reset();
+  scheduler()->ScheduleNudge(
+      poll * 10, NUDGE_SOURCE_LOCAL, types, FROM_HERE);
+  RunLoop();
 
   Mock::VerifyAndClearExpectations(syncer());
   Mock::VerifyAndClearExpectations(delay());
-  EXPECT_EQ(3U, r.snapshots.size());
+  ASSERT_EQ(3U, r.snapshots.size());
   EXPECT_EQ(GetUpdatesCallerInfo::LOCAL,
             r.snapshots[2]->source.updates_source);
 
   EXPECT_CALL(*syncer(), SyncShare(_,_,_)).Times(0);
   EXPECT_CALL(*delay(), GetDelay(_)).Times(0);
 
-  syncer_thread()->Start(SyncerThread::CONFIGURATION_MODE, NULL);
-  syncer_thread()->ScheduleConfig(types,
-      sync_api::CONFIGURE_REASON_RECONFIGURATION);
-  FlushLastTask(&done);
+  StartSyncScheduler(SyncScheduler::CONFIGURATION_MODE);
+  RunLoop();
 
-  syncer_thread()->Start(SyncerThread::NORMAL_MODE, NULL);
-  syncer_thread()->ScheduleNudge(zero(), NUDGE_SOURCE_LOCAL, types,
-                                 FROM_HERE);
-  syncer_thread()->ScheduleNudge(zero(), NUDGE_SOURCE_LOCAL, types,
-                                 FROM_HERE);
-  FlushLastTask(&done);
+  scheduler()->ScheduleConfig(
+      types, sync_api::CONFIGURE_REASON_RECONFIGURATION);
+  PumpLoop();
+
+  StartSyncScheduler(SyncScheduler::NORMAL_MODE);
+  RunLoop();
+
+  scheduler()->ScheduleNudge(
+      zero(), NUDGE_SOURCE_LOCAL, types, FROM_HERE);
+  scheduler()->ScheduleNudge(
+      zero(), NUDGE_SOURCE_LOCAL, types, FROM_HERE);
+  PumpLoop();
 }
 
 // Test that backoff is shaping traffic properly with consecutive errors.
-TEST_F(SyncerThreadTest, BackoffElevation) {
+TEST_F(SyncSchedulerTest, BackoffElevation) {
   SyncShareRecords r;
   const TimeDelta poll(TimeDelta::FromMilliseconds(10));
-  base::WaitableEvent done(false, false);
-  syncer_thread()->OnReceivedLongPollIntervalUpdate(poll);
+  scheduler()->OnReceivedLongPollIntervalUpdate(poll);
   UseMockDelayProvider();
 
   const TimeDelta first = TimeDelta::FromSeconds(1);
@@ -768,7 +850,7 @@ TEST_F(SyncerThreadTest, BackoffElevation) {
 
   EXPECT_CALL(*syncer(), SyncShare(_,_,_)).Times(kMinNumSamples)
       .WillRepeatedly(DoAll(Invoke(sessions::test_util::SimulateCommitFailed),
-          RecordSyncShareAndPostSignal(&r, kMinNumSamples, this, &done)));
+          RecordSyncShareMultiple(&r, kMinNumSamples)));
 
   EXPECT_CALL(*delay(), GetDelay(Eq(first))).WillOnce(Return(second))
       .RetiresOnSaturation();
@@ -778,9 +860,13 @@ TEST_F(SyncerThreadTest, BackoffElevation) {
       .RetiresOnSaturation();
   EXPECT_CALL(*delay(), GetDelay(Eq(fourth))).WillOnce(Return(fifth));
 
-  syncer_thread()->Start(SyncerThread::NORMAL_MODE, NULL);
-  ASSERT_TRUE(done.TimedWait(timeout()));
+  StartSyncScheduler(SyncScheduler::NORMAL_MODE);
+  RunLoop();
 
+  // Run again to wait for polling.
+  RunLoop();
+
+  ASSERT_EQ(kMinNumSamples, r.snapshots.size());
   EXPECT_GE(r.times[2] - r.times[1], second);
   EXPECT_GE(r.times[3] - r.times[2], third);
   EXPECT_GE(r.times[4] - r.times[3], fourth);
@@ -788,11 +874,10 @@ TEST_F(SyncerThreadTest, BackoffElevation) {
 
 // Test that things go back to normal once a canary task makes forward progress
 // following a succession of failures.
-TEST_F(SyncerThreadTest, BackoffRelief) {
+TEST_F(SyncSchedulerTest, BackoffRelief) {
   SyncShareRecords r;
   const TimeDelta poll(TimeDelta::FromMilliseconds(10));
-  base::WaitableEvent done(false, false);
-  syncer_thread()->OnReceivedLongPollIntervalUpdate(poll);
+  scheduler()->OnReceivedLongPollIntervalUpdate(poll);
   UseMockDelayProvider();
 
   const TimeDelta backoff = TimeDelta::FromMilliseconds(100);
@@ -801,14 +886,18 @@ TEST_F(SyncerThreadTest, BackoffRelief) {
       .WillOnce(Invoke(sessions::test_util::SimulateCommitFailed))
       .WillOnce(Invoke(sessions::test_util::SimulateCommitFailed))
       .WillRepeatedly(DoAll(Invoke(sessions::test_util::SimulateSuccess),
-          RecordSyncShareAndPostSignal(&r, kMinNumSamples, this, &done)));
+          RecordSyncShareMultiple(&r, kMinNumSamples)));
   EXPECT_CALL(*delay(), GetDelay(_)).WillOnce(Return(backoff));
 
   // Optimal start for the post-backoff poll party.
   TimeTicks optimal_start = TimeTicks::Now() + poll + backoff;
-  syncer_thread()->Start(SyncerThread::NORMAL_MODE, NULL);
-  done.TimedWait(timeout());
-  syncer_thread()->Stop();
+  StartSyncScheduler(SyncScheduler::NORMAL_MODE);
+  RunLoop();
+
+  // Run again to wait for polling.
+  RunLoop();
+
+  scheduler()->Stop();
 
   // Check for healthy polling after backoff is relieved.
   // Can't use AnalyzePollRun because first sync is a continuation. Bleh.
@@ -822,96 +911,106 @@ TEST_F(SyncerThreadTest, BackoffRelief) {
   }
 }
 
-TEST_F(SyncerThreadTest, GetRecommendedDelay) {
+TEST_F(SyncSchedulerTest, GetRecommendedDelay) {
   EXPECT_LE(TimeDelta::FromSeconds(0),
-            SyncerThread::GetRecommendedDelay(TimeDelta::FromSeconds(0)));
+            SyncScheduler::GetRecommendedDelay(TimeDelta::FromSeconds(0)));
   EXPECT_LE(TimeDelta::FromSeconds(1),
-            SyncerThread::GetRecommendedDelay(TimeDelta::FromSeconds(1)));
+            SyncScheduler::GetRecommendedDelay(TimeDelta::FromSeconds(1)));
   EXPECT_LE(TimeDelta::FromSeconds(50),
-            SyncerThread::GetRecommendedDelay(TimeDelta::FromSeconds(50)));
+            SyncScheduler::GetRecommendedDelay(TimeDelta::FromSeconds(50)));
   EXPECT_LE(TimeDelta::FromSeconds(10),
-            SyncerThread::GetRecommendedDelay(TimeDelta::FromSeconds(10)));
+            SyncScheduler::GetRecommendedDelay(TimeDelta::FromSeconds(10)));
   EXPECT_EQ(TimeDelta::FromSeconds(kMaxBackoffSeconds),
-            SyncerThread::GetRecommendedDelay(
+            SyncScheduler::GetRecommendedDelay(
                 TimeDelta::FromSeconds(kMaxBackoffSeconds)));
   EXPECT_EQ(TimeDelta::FromSeconds(kMaxBackoffSeconds),
-            SyncerThread::GetRecommendedDelay(
+            SyncScheduler::GetRecommendedDelay(
                 TimeDelta::FromSeconds(kMaxBackoffSeconds + 1)));
 }
 
 // Test that appropriate syncer steps are requested for each job type.
-TEST_F(SyncerThreadTest, SyncerSteps) {
+TEST_F(SyncSchedulerTest, SyncerSteps) {
   // Nudges.
-  base::WaitableEvent done(false, false);
   EXPECT_CALL(*syncer(), SyncShare(_, SYNCER_BEGIN, SYNCER_END))
       .Times(1);
-  syncer_thread()->Start(SyncerThread::NORMAL_MODE, NULL);
-  syncer_thread()->ScheduleNudge(zero(), NUDGE_SOURCE_LOCAL, ModelTypeBitSet(),
-                                 FROM_HERE);
-  FlushLastTask(&done);
-  syncer_thread()->Stop();
+  StartSyncScheduler(SyncScheduler::NORMAL_MODE);
+  RunLoop();
+
+  scheduler()->ScheduleNudge(
+      zero(), NUDGE_SOURCE_LOCAL, ModelTypeBitSet(), FROM_HERE);
+  PumpLoop();
+  // Pump again to run job.
+  PumpLoop();
+
+  scheduler()->Stop();
   Mock::VerifyAndClearExpectations(syncer());
 
   // ClearUserData.
   EXPECT_CALL(*syncer(), SyncShare(_, CLEAR_PRIVATE_DATA, SYNCER_END))
       .Times(1);
-  syncer_thread()->Start(SyncerThread::NORMAL_MODE, NULL);
-  syncer_thread()->ScheduleClearUserData();
-  FlushLastTask(&done);
-  syncer_thread()->Stop();
+  StartSyncScheduler(SyncScheduler::NORMAL_MODE);
+  RunLoop();
+
+  scheduler()->ScheduleClearUserData();
+  PumpLoop();
+  PumpLoop();
+
+  scheduler()->Stop();
+
   Mock::VerifyAndClearExpectations(syncer());
   // Configuration.
   EXPECT_CALL(*syncer(), SyncShare(_, DOWNLOAD_UPDATES, APPLY_UPDATES));
-  syncer_thread()->Start(SyncerThread::CONFIGURATION_MODE, NULL);
-  syncer_thread()->ScheduleConfig(ModelTypeBitSet(),
-      sync_api::CONFIGURE_REASON_RECONFIGURATION);
-  FlushLastTask(&done);
-  syncer_thread()->Stop();
+  StartSyncScheduler(SyncScheduler::CONFIGURATION_MODE);
+  RunLoop();
+
+  scheduler()->ScheduleConfig(
+      ModelTypeBitSet(), sync_api::CONFIGURE_REASON_RECONFIGURATION);
+  PumpLoop();
+  PumpLoop();
+
+  scheduler()->Stop();
   Mock::VerifyAndClearExpectations(syncer());
 
   // Poll.
   EXPECT_CALL(*syncer(), SyncShare(_, SYNCER_BEGIN, SYNCER_END))
       .Times(AtLeast(1))
-      .WillRepeatedly(SignalEvent(&done));
+      .WillRepeatedly(QuitLoopNowAction());
   const TimeDelta poll(TimeDelta::FromMilliseconds(10));
-  syncer_thread()->OnReceivedLongPollIntervalUpdate(poll);
-  syncer_thread()->Start(SyncerThread::NORMAL_MODE, NULL);
-  done.TimedWait(timeout());
-  syncer_thread()->Stop();
+  scheduler()->OnReceivedLongPollIntervalUpdate(poll);
+
+  StartSyncScheduler(SyncScheduler::NORMAL_MODE);
+  RunLoop();
+
+  // Run again to wait for polling.
+  RunLoop();
+
+  scheduler()->Stop();
   Mock::VerifyAndClearExpectations(syncer());
-  done.Reset();
 }
 
 // Test config tasks don't run during normal mode.
 // TODO(tim): Implement this test and then the functionality!
-TEST_F(SyncerThreadTest, DISABLED_NoConfigDuringNormal) {
+TEST_F(SyncSchedulerTest, DISABLED_NoConfigDuringNormal) {
 }
 
 // Test that starting the syncer thread without a valid connection doesn't
 // break things when a connection is detected.
-TEST_F(SyncerThreadTest, StartWhenNotConnected) {
-  base::WaitableEvent done(false, false);
-  MessageLoop cur;
+TEST_F(SyncSchedulerTest, StartWhenNotConnected) {
   connection()->SetServerNotReachable();
-  EXPECT_CALL(*syncer(), SyncShare(_,_,_)).WillOnce(SignalEvent(&done));
-  syncer_thread()->Start(SyncerThread::NORMAL_MODE, NULL);
-  syncer_thread()->ScheduleNudge(zero(), NUDGE_SOURCE_LOCAL, ModelTypeBitSet(),
-                                 FROM_HERE);
-  FlushLastTask(&done);
+  EXPECT_CALL(*syncer(), SyncShare(_,_,_)).WillOnce(QuitLoopNowAction());
+  StartSyncScheduler(SyncScheduler::NORMAL_MODE);
+  RunLoop();
+
+  scheduler()->ScheduleNudge(
+      zero(), NUDGE_SOURCE_LOCAL, ModelTypeBitSet(), FROM_HERE);
+  // Should save the nudge for until after the server is reachable.
+  PumpLoop();
 
   connection()->SetServerReachable();
-  cur.PostTask(FROM_HERE, NewRunnableFunction(
-      &SyncerThreadTest::QuitMessageLoop));
-  cur.Run();
-
-  // By now, the server connection event should have been posted to the
-  // SyncerThread.
-  FlushLastTask(&done);
-  done.TimedWait(timeout());
+  PumpLoop();
 }
 
-TEST_F(SyncerThreadTest, SetsPreviousRoutingInfo) {
-  base::WaitableEvent done(false, false);
+TEST_F(SyncSchedulerTest, SetsPreviousRoutingInfo) {
   ModelSafeRoutingInfo info;
   EXPECT_TRUE(info == context()->previous_session_routing_info());
   ModelSafeRoutingInfo expected;
@@ -919,16 +1018,18 @@ TEST_F(SyncerThreadTest, SetsPreviousRoutingInfo) {
   ASSERT_FALSE(expected.empty());
   EXPECT_CALL(*syncer(), SyncShare(_,_,_)).Times(1);
 
-  syncer_thread()->Start(SyncerThread::NORMAL_MODE, NULL);
-  syncer_thread()->ScheduleNudge(zero(), NUDGE_SOURCE_LOCAL, ModelTypeBitSet(),
-                                 FROM_HERE);
-  FlushLastTask(&done);
-  syncer_thread()->Stop();
+  StartSyncScheduler(SyncScheduler::NORMAL_MODE);
+  RunLoop();
+
+  scheduler()->ScheduleNudge(
+      zero(), NUDGE_SOURCE_LOCAL, ModelTypeBitSet(), FROM_HERE);
+  PumpLoop();
+  // Pump again to run job.
+  PumpLoop();
+
+  scheduler()->Stop();
 
   EXPECT_TRUE(expected == context()->previous_session_routing_info());
 }
 
 }  // namespace browser_sync
-
-// SyncerThread won't outlive the test!
-DISABLE_RUNNABLE_METHOD_REFCOUNT(browser_sync::SyncerThreadTest);

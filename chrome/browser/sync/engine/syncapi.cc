@@ -37,8 +37,8 @@
 #include "chrome/browser/sync/engine/nudge_source.h"
 #include "chrome/browser/sync/engine/net/server_connection_manager.h"
 #include "chrome/browser/sync/engine/net/syncapi_server_connection_manager.h"
+#include "chrome/browser/sync/engine/sync_scheduler.h"
 #include "chrome/browser/sync/engine/syncer.h"
-#include "chrome/browser/sync/engine/syncer_thread.h"
 #include "chrome/browser/sync/engine/http_post_provider_factory.h"
 #include "chrome/browser/sync/js_arg_list.h"
 #include "chrome/browser/sync/js_backend.h"
@@ -86,7 +86,7 @@ using browser_sync::ServerConnectionEventListener;
 using browser_sync::SyncEngineEvent;
 using browser_sync::SyncEngineEventListener;
 using browser_sync::Syncer;
-using browser_sync::SyncerThread;
+using browser_sync::SyncScheduler;
 using browser_sync::kNigoriTag;
 using browser_sync::sessions::SyncSessionContext;
 using std::list;
@@ -106,7 +106,7 @@ typedef GoogleServiceAuthError AuthError;
 
 static const int kThreadExitTimeoutMsec = 60000;
 static const int kSSLPort = 443;
-static const int kSyncerThreadDelayMsec = 250;
+static const int kSyncSchedulerDelayMsec = 250;
 
 #if defined(OS_CHROMEOS)
 static const int kChromeOSNetworkChangeReactionDelayHackMsec = 5000;
@@ -1129,7 +1129,7 @@ class SyncManager::SyncInternal
  public:
   SyncInternal(const std::string& name, SyncManager* sync_manager)
       : name_(name),
-        core_message_loop_(NULL),
+        sync_loop_(NULL),
         parent_router_(NULL),
         sync_manager_(sync_manager),
         registrar_(NULL),
@@ -1169,7 +1169,7 @@ class SyncManager::SyncInternal
   }
 
   virtual ~SyncInternal() {
-    CHECK(!core_message_loop_);
+    CHECK(!sync_loop_);
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   }
 
@@ -1258,7 +1258,7 @@ class SyncManager::SyncInternal
   SyncAPIServerConnectionManager* connection_manager() {
     return connection_manager_.get();
   }
-  SyncerThread* syncer_thread() { return syncer_thread_.get(); }
+  SyncScheduler* scheduler() { return scheduler_.get(); }
   UserShare* GetUserShare() { return &share_; }
 
   // Return the currently active (validated) username for use with syncable
@@ -1274,6 +1274,8 @@ class SyncManager::SyncInternal
   void RequestNudgeWithDataTypes(const TimeDelta& delay,
       browser_sync::NudgeSource source, const ModelTypeBitSet& types,
       const tracked_objects::Location& nudge_location);
+
+  void RequestEarlyExit();
 
   // See SyncManager::Shutdown for information.
   void Shutdown();
@@ -1539,7 +1541,7 @@ class SyncManager::SyncInternal
   // constructing any transaction type.
   UserShare share_;
 
-  MessageLoop* core_message_loop_;
+  MessageLoop* sync_loop_;
 
   // We have to lock around every observers_ access because it can get accessed
   // from any thread and added to/removed from on the core thread.
@@ -1552,8 +1554,9 @@ class SyncManager::SyncInternal
   // client (the Syncer) and the sync server.
   scoped_ptr<SyncAPIServerConnectionManager> connection_manager_;
 
-  // The thread that runs the Syncer. Needs to be explicitly Start()ed.
-  scoped_ptr<SyncerThread> syncer_thread_;
+  // The scheduler that runs the Syncer. Needs to be explicitly
+  // Start()ed.
+  scoped_ptr<SyncScheduler> scheduler_;
 
   // The SyncNotifier which notifies us when updates need to be downloaded.
   sync_notifier::SyncNotifier* sync_notifier_;
@@ -1580,22 +1583,24 @@ class SyncManager::SyncInternal
   // The instance is shared between the SyncManager and the Syncer.
   ModelSafeWorkerRegistrar* registrar_;
 
-  // Set to true once Init has been called, and we know of an authenticated
-  // valid) username either from a fresh authentication attempt (as in
-  // first-use case) or from a previous attempt stored in our UserSettings
-  // (as in the steady-state), and the syncable::Directory has been opened,
-  // meaning we are ready to accept changes.  Protected by initialized_mutex_
-  // as it can get read/set by both the SyncerThread and the AuthWatcherThread.
+  // Set to true once Init has been called, and we know of an
+  // authenticated valid) username either from a fresh authentication
+  // attempt (as in first-use case) or from a previous attempt stored
+  // in our UserSettings (as in the steady-state), and the
+  // syncable::Directory has been opened, meaning we are ready to
+  // accept changes.  Protected by initialized_mutex_ as it can get
+  // read/set by both the SyncScheduler and the AuthWatcherThread.
   bool initialized_;
   mutable base::Lock initialized_mutex_;
 
-  // True if the SyncManager should be running in test mode (no syncer thread
-  // actually communicating with the server).
+  // True if the SyncManager should be running in test mode (no sync
+  // scheduler actually communicating with the server).
   bool setup_for_test_mode_;
 
   ScopedRunnableMethodFactory<SyncManager::SyncInternal> method_factory_;
 
-  // Map used to store the notification info to be displayed in about:sync page.
+  // Map used to store the notification info to be displayed in
+  // about:sync page.
   NotificationInfoMap notification_info_map_;
 
   browser_sync::JsDirectoryChangeListener js_directory_change_listener_;
@@ -1694,30 +1699,31 @@ void SyncManager::RequestNudge(const tracked_objects::Location& location) {
 }
 
 void SyncManager::RequestClearServerData() {
-  if (data_->syncer_thread())
-    data_->syncer_thread()->ScheduleClearUserData();
+  if (data_->scheduler())
+    data_->scheduler()->ScheduleClearUserData();
 }
 
 void SyncManager::RequestConfig(const syncable::ModelTypeBitSet& types,
     ConfigureReason reason) {
-  if (!data_->syncer_thread()) {
-    VLOG(0) << "SyncManager::RequestConfig: bailing out because syncer thread "
-            << "null";
+  if (!data_->scheduler()) {
+    LOG(INFO)
+        << "SyncManager::RequestConfig: bailing out because scheduler is "
+        << "null";
     return;
   }
   StartConfigurationMode(NULL);
-  data_->syncer_thread()->ScheduleConfig(types, reason);
+  data_->scheduler()->ScheduleConfig(types, reason);
 }
 
 void SyncManager::StartConfigurationMode(ModeChangeCallback* callback) {
-  if (!data_->syncer_thread()) {
-    VLOG(0) << "SyncManager::StartConfigurationMode: could not start "
-            << "configuration mode because because syncer thread is not "
-            << "created";
+  if (!data_->scheduler()) {
+    LOG(INFO)
+        << "SyncManager::StartConfigurationMode: could not start "
+        << "configuration mode because because scheduler is null";
     return;
   }
-  data_->syncer_thread()->Start(
-      browser_sync::SyncerThread::CONFIGURATION_MODE, callback);
+  data_->scheduler()->Start(
+      browser_sync::SyncScheduler::CONFIGURATION_MODE, callback);
 }
 
 const std::string& SyncManager::GetAuthenticatedUsername() {
@@ -1740,8 +1746,8 @@ bool SyncManager::SyncInternal::Init(
 
   VLOG(1) << "Starting SyncInternal initialization.";
 
-  core_message_loop_ = MessageLoop::current();
-  DCHECK(core_message_loop_);
+  sync_loop_ = MessageLoop::current();
+  DCHECK(sync_loop_);
   registrar_ = model_safe_worker_registrar;
   setup_for_test_mode_ = setup_for_test_mode;
 
@@ -1759,7 +1765,7 @@ bool SyncManager::SyncInternal::Init(
 
   // TODO(akalin): CheckServerReachable() can block, which may cause jank if we
   // try to shut down sync.  Fix this.
-  core_message_loop_->PostTask(FROM_HERE,
+  sync_loop_->PostTask(FROM_HERE,
       method_factory_.NewRunnableMethod(&SyncInternal::CheckServerReachable));
 
   // Test mode does not use a syncer context or syncer thread.
@@ -1775,16 +1781,15 @@ bool SyncManager::SyncInternal::Init(
         model_safe_worker_registrar,
         listeners);
     context->set_account_name(credentials.email);
-    // The SyncerThread takes ownership of |context|.
-    syncer_thread_.reset(
-        new SyncerThread(name_, context, new Syncer()));
+    // The SyncScheduler takes ownership of |context|.
+    scheduler_.reset(new SyncScheduler(name_, context, new Syncer()));
   }
 
   bool signed_in = SignIn(credentials);
 
-  if (signed_in && syncer_thread()) {
-    syncer_thread()->Start(
-        browser_sync::SyncerThread::CONFIGURATION_MODE, NULL);
+  if (signed_in && scheduler()) {
+    scheduler()->Start(
+        browser_sync::SyncScheduler::CONFIGURATION_MODE, NULL);
   }
 
   // Do this once the directory is opened.
@@ -1797,7 +1802,7 @@ void SyncManager::SyncInternal::BootstrapEncryption(
     const std::string& restored_key_for_bootstrapping) {
   syncable::ScopedDirLookup lookup(dir_manager(), username_for_share());
   if (!lookup.good()) {
-    VLOG(0) << "BootstrapEncryption: lookup not good so bailing out";
+    LOG(INFO) << "BootstrapEncryption: lookup not good so bailing out";
     NOTREACHED();
     return;
   }
@@ -1842,12 +1847,11 @@ void SyncManager::SyncInternal::BootstrapEncryption(
 }
 
 void SyncManager::SyncInternal::StartSyncingNormally() {
-  // Start the syncer thread. This won't actually
-  // result in any syncing until at least the
-  // DirectoryManager broadcasts the OPENED event,
-  // and a valid server connection is detected.
-  if (syncer_thread())  // NULL during certain unittests.
-    syncer_thread()->Start(SyncerThread::NORMAL_MODE, NULL);
+  // Start the sync scheduler. This won't actually result in any
+  // syncing until at least the DirectoryManager broadcasts the OPENED
+  // event, and a valid server connection is detected.
+  if (scheduler())  // NULL during certain unittests.
+    scheduler()->Start(SyncScheduler::NORMAL_MODE, NULL);
 }
 
 void SyncManager::SyncInternal::MarkAndNotifyInitializationComplete() {
@@ -1871,7 +1875,7 @@ void SyncManager::SyncInternal::MarkAndNotifyInitializationComplete() {
 }
 
 void SyncManager::SyncInternal::SendNotification() {
-  DCHECK_EQ(MessageLoop::current(), core_message_loop_);
+  DCHECK_EQ(MessageLoop::current(), sync_loop_);
   if (!sync_notifier_) {
     VLOG(1) << "Not sending notification: sync_notifier_ is NULL";
     return;
@@ -1916,7 +1920,7 @@ bool SyncManager::SyncInternal::OpenDirectory() {
 }
 
 bool SyncManager::SyncInternal::SignIn(const SyncCredentials& credentials) {
-  DCHECK_EQ(MessageLoop::current(), core_message_loop_);
+  DCHECK_EQ(MessageLoop::current(), sync_loop_);
   DCHECK(share_.name.empty());
   share_.name = credentials.email;
 
@@ -1947,7 +1951,7 @@ bool SyncManager::SyncInternal::SignIn(const SyncCredentials& credentials) {
 
 void SyncManager::SyncInternal::UpdateCredentials(
     const SyncCredentials& credentials) {
-  DCHECK_EQ(MessageLoop::current(), core_message_loop_);
+  DCHECK_EQ(MessageLoop::current(), sync_loop_);
   DCHECK_EQ(credentials.email, share_.name);
   DCHECK(!credentials.email.empty());
   DCHECK(!credentials.sync_token.empty());
@@ -1960,7 +1964,7 @@ void SyncManager::SyncInternal::UpdateCredentials(
 }
 
 void SyncManager::SyncInternal::UpdateEnabledTypes() {
-  DCHECK_EQ(MessageLoop::current(), core_message_loop_);
+  DCHECK_EQ(MessageLoop::current(), sync_loop_);
   ModelSafeRoutingInfo routes;
   registrar_->GetModelSafeRoutingInfo(&routes);
   syncable::ModelTypeSet enabled_types;
@@ -2202,6 +2206,16 @@ browser_sync::JsBackend* SyncManager::GetJsBackend() {
   return data_;
 }
 
+void SyncManager::RequestEarlyExit() {
+  data_->RequestEarlyExit();
+}
+
+void SyncManager::SyncInternal::RequestEarlyExit() {
+  if (scheduler()) {
+    scheduler()->RequestEarlyExit();
+  }
+}
+
 void SyncManager::Shutdown() {
   data_->Shutdown();
 }
@@ -2209,10 +2223,8 @@ void SyncManager::Shutdown() {
 void SyncManager::SyncInternal::Shutdown() {
   method_factory_.RevokeAll();
 
-  if (syncer_thread()) {
-    syncer_thread()->Stop();
-    syncer_thread_.reset();
-  }
+  // Automatically stops the scheduler.
+  scheduler_.reset();
 
   // We NULL out sync_notifer_ so that any pending tasks do not
   // trigger further notifications.
@@ -2221,18 +2233,17 @@ void SyncManager::SyncInternal::Shutdown() {
     sync_notifier_->RemoveObserver(this);
   }
 
-  // |this| is about to be destroyed, so we have to ensure any messages
-  // that were posted to core_thread_ before or during syncer thread shutdown
-  // are flushed out, else they refer to garbage memory.  SendNotification
-  // is an example.
-  // TODO(tim): Remove this monstrosity, perhaps with ObserverListTS once core
-  // thread is removed. Bug 78190.
+  // |this| is about to be destroyed, so we have to ensure any
+  // messages that were posted to sync_thread_ are flushed out, else
+  // they refer to garbage memory.  SendNotification is an example.
+  // TODO(akalin): Remove this monstrosity, perhaps with
+  // ObserverListTS once core thread is removed. Bug 78190.
   {
-    CHECK(core_message_loop_);
-    bool old_state = core_message_loop_->NestableTasksAllowed();
-    core_message_loop_->SetNestableTasksAllowed(true);
-    core_message_loop_->RunAllPending();
-    core_message_loop_->SetNestableTasksAllowed(old_state);
+    CHECK(sync_loop_);
+    bool old_state = sync_loop_->NestableTasksAllowed();
+    sync_loop_->SetNestableTasksAllowed(true);
+    sync_loop_->RunAllPending();
+    sync_loop_->SetNestableTasksAllowed(old_state);
   }
 
   net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
@@ -2248,7 +2259,7 @@ void SyncManager::SyncInternal::Shutdown() {
   // handles to backing files.
   share_.dir_manager.reset();
 
-  core_message_loop_ = NULL;
+  sync_loop_ = NULL;
 }
 
 void SyncManager::SyncInternal::OnIPAddressChanged() {
@@ -2379,10 +2390,10 @@ void SyncManager::SyncInternal::HandleCalculateChangesChangeEventFromSyncApi(
         only_preference_changes = false;
     }
   }
-  if (exists_unsynced_items && syncer_thread()) {
+  if (exists_unsynced_items && scheduler()) {
     int nudge_delay = only_preference_changes ?
         kPreferencesNudgeDelayMilliseconds : kDefaultNudgeDelayMilliseconds;
-    core_message_loop_->PostTask(FROM_HERE,
+    sync_loop_->PostTask(FROM_HERE,
         NewRunnableMethod(this, &SyncInternal::RequestNudgeWithDataTypes,
         TimeDelta::FromMilliseconds(nudge_delay),
         browser_sync::NUDGE_SOURCE_LOCAL,
@@ -2466,8 +2477,8 @@ SyncManager::Status SyncManager::SyncInternal::GetStatus() {
 
 void SyncManager::SyncInternal::RequestNudge(
     const tracked_objects::Location& location) {
-  if (syncer_thread())
-     syncer_thread()->ScheduleNudge(
+  if (scheduler())
+     scheduler()->ScheduleNudge(
         TimeDelta::FromMilliseconds(0), browser_sync::NUDGE_SOURCE_LOCAL,
         ModelTypeBitSet(), location);
 }
@@ -2476,14 +2487,15 @@ void SyncManager::SyncInternal::RequestNudgeWithDataTypes(
     const TimeDelta& delay,
     browser_sync::NudgeSource source, const ModelTypeBitSet& types,
     const tracked_objects::Location& nudge_location) {
-  if (syncer_thread())
-     syncer_thread()->ScheduleNudge(delay, source, types, nudge_location);
+  if (scheduler())
+     scheduler()->ScheduleNudge(delay, source, types, nudge_location);
 }
 
 void SyncManager::SyncInternal::OnSyncEngineEvent(
     const SyncEngineEvent& event) {
   if (!HaveObservers()) {
-    VLOG(0) << "OnSyncEngineEvent returning because observers_.size() is zero";
+    LOG(INFO)
+        << "OnSyncEngineEvent returning because observers_.size() is zero";
     return;
   }
 
@@ -2550,8 +2562,8 @@ void SyncManager::SyncInternal::OnSyncEngineEvent(
     }
 
     if (!initialized()) {
-      VLOG(0) << "OnSyncCycleCompleted not sent because sync api is not "
-              << "initialized";
+      LOG(INFO) << "OnSyncCycleCompleted not sent because sync api is not "
+                << "initialized";
       return;
     }
 
@@ -2572,7 +2584,7 @@ void SyncManager::SyncInternal::OnSyncEngineEvent(
         (event.snapshot->syncer_status.num_successful_commits > 0);
     if (is_notifiable_commit) {
       allstatus_.IncrementNotifiableCommits();
-      core_message_loop_->PostTask(
+      sync_loop_->PostTask(
           FROM_HERE,
           NewRunnableMethod(
               this,
@@ -2842,8 +2854,8 @@ void SyncManager::SyncInternal::OnNotificationStateChange(
   VLOG(1) << "P2P: Notifications enabled = "
           << (notifications_enabled ? "true" : "false");
   allstatus_.SetNotificationsEnabled(notifications_enabled);
-  if (syncer_thread()) {
-    syncer_thread()->set_notifications_enabled(notifications_enabled);
+  if (scheduler()) {
+    scheduler()->set_notifications_enabled(notifications_enabled);
   }
   if (parent_router_) {
     DictionaryValue details;
@@ -2866,9 +2878,9 @@ void SyncManager::SyncInternal::UpdateNotificationInfo(
 void SyncManager::SyncInternal::OnIncomingNotification(
     const syncable::ModelTypePayloadMap& type_payloads) {
   if (!type_payloads.empty()) {
-    if (syncer_thread()) {
-      syncer_thread()->ScheduleNudgeWithPayloads(
-          TimeDelta::FromMilliseconds(kSyncerThreadDelayMsec),
+    if (scheduler()) {
+      scheduler()->ScheduleNudgeWithPayloads(
+          TimeDelta::FromMilliseconds(kSyncSchedulerDelayMsec),
           browser_sync::NUDGE_SOURCE_NOTIFICATION,
           type_payloads, FROM_HERE);
     }

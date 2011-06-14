@@ -912,15 +912,14 @@ class SyncManager {
   // types, as we do not currently support decrypting datatypes.
   void EncryptDataTypes(const syncable::ModelTypeSet& encrypted_types);
 
-  // Puts the SyncerThread into a mode where no normal nudge or poll traffic
+  // Puts the SyncScheduler into a mode where no normal nudge or poll traffic
   // will occur, but calls to RequestConfig will be supported.  If |callback|
-  // is provided, it will be invoked (from the internal SyncerThread) when
+  // is provided, it will be invoked (from the internal SyncScheduler) when
   // the thread has changed to configuration mode.
   void StartConfigurationMode(ModeChangeCallback* callback);
 
-  // For the new SyncerThread impl, this switches the mode of operation to
-  // CONFIGURATION_MODE and schedules a config task to fetch updates for
-  // |types|.
+  // Switches the mode of operation to CONFIGURATION_MODE and
+  // schedules a config task to fetch updates for |types|.
   void RequestConfig(const syncable::ModelTypeBitSet& types,
      sync_api::ConfigureReason reason);
 
@@ -1026,6 +1025,8 @@ class SyncManager {
   // Call periodically from a database-safe thread to persist recent changes
   // to the syncapi model.
   void SaveChanges();
+
+  void RequestEarlyExit();
 
   // Issue a final SaveChanges, close sqlite handles, and stop running threads.
   // Must be called from the same thread that called Init().

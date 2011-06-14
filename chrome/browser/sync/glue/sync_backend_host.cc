@@ -61,7 +61,7 @@ using sync_api::SyncCredentials;
 SyncBackendHost::SyncBackendHost(Profile* profile)
     : core_(new Core(profile->GetDebugName(),
                      ALLOW_THIS_IN_INITIALIZER_LIST(this))),
-      core_thread_("Chrome_SyncCoreThread"),
+      sync_thread_("Chrome_SyncThread"),
       frontend_loop_(MessageLoop::current()),
       profile_(profile),
       frontend_(NULL),
@@ -72,7 +72,7 @@ SyncBackendHost::SyncBackendHost(Profile* profile)
 }
 
 SyncBackendHost::SyncBackendHost()
-    : core_thread_("Chrome_SyncCoreThread"),
+    : sync_thread_("Chrome_SyncThread"),
       frontend_loop_(MessageLoop::current()),
       profile_(NULL),
       frontend_(NULL),
@@ -92,7 +92,7 @@ void SyncBackendHost::Initialize(
     net::URLRequestContextGetter* baseline_context_getter,
     const SyncCredentials& credentials,
     bool delete_sync_data_folder) {
-  if (!core_thread_.Start())
+  if (!sync_thread_.Start())
     return;
 
   frontend_ = frontend;
@@ -191,13 +191,13 @@ sync_api::HttpPostProviderFactory* SyncBackendHost::MakeHttpBridgeFactory(
 }
 
 void SyncBackendHost::InitCore(const Core::DoInitializeOptions& options) {
-  core_thread_.message_loop()->PostTask(FROM_HERE,
+  sync_thread_.message_loop()->PostTask(FROM_HERE,
       NewRunnableMethod(core_.get(), &SyncBackendHost::Core::DoInitialize,
                         options));
 }
 
 void SyncBackendHost::UpdateCredentials(const SyncCredentials& credentials) {
-  core_thread_.message_loop()->PostTask(FROM_HERE,
+  sync_thread_.message_loop()->PostTask(FROM_HERE,
       NewRunnableMethod(core_.get(),
                         &SyncBackendHost::Core::DoUpdateCredentials,
                         credentials));
@@ -205,7 +205,7 @@ void SyncBackendHost::UpdateCredentials(const SyncCredentials& credentials) {
 
 void SyncBackendHost::StartSyncingWithServer() {
   VLOG(1) << "SyncBackendHost::StartSyncingWithServer called.";
-  core_thread_.message_loop()->PostTask(FROM_HERE,
+  sync_thread_.message_loop()->PostTask(FROM_HERE,
       NewRunnableMethod(core_.get(), &SyncBackendHost::Core::DoStartSyncing));
 }
 
@@ -226,24 +226,25 @@ void SyncBackendHost::SetPassphrase(const std::string& passphrase,
   core_->set_processing_passphrase();
 
   // If encryption is enabled and we've got a SetPassphrase
-  core_thread_.message_loop()->PostTask(FROM_HERE,
+  sync_thread_.message_loop()->PostTask(FROM_HERE,
       NewRunnableMethod(core_.get(), &SyncBackendHost::Core::DoSetPassphrase,
                         passphrase, is_explicit));
 }
 
 void SyncBackendHost::Shutdown(bool sync_disabled) {
   // Thread shutdown should occur in the following order:
-  // - SyncerThread
-  // - CoreThread
+  // - Sync Thread
   // - UI Thread (stops some time after we return from this call).
-  if (core_thread_.IsRunning()) {  // Not running in tests.
-    core_thread_.message_loop()->PostTask(FROM_HERE,
+  if (sync_thread_.IsRunning()) {  // Not running in tests.
+    // TODO(akalin): Remove the need for this.
+    core_->syncapi()->RequestEarlyExit();
+    sync_thread_.message_loop()->PostTask(FROM_HERE,
         NewRunnableMethod(core_.get(),
                           &SyncBackendHost::Core::DoShutdown,
                           sync_disabled));
   }
 
-  // Before joining the core_thread_, we wait for the UIModelWorker to
+  // Before joining the sync_thread_, we wait for the UIModelWorker to
   // give us the green light that it is not depending on the frontend_loop_ to
   // process any more tasks. Stop() blocks until this termination condition
   // is true.
@@ -251,7 +252,7 @@ void SyncBackendHost::Shutdown(bool sync_disabled) {
     ui_worker()->Stop();
 
   // Stop will return once the thread exits, which will be after DoShutdown
-  // runs. DoShutdown needs to run from core_thread_ because the sync backend
+  // runs. DoShutdown needs to run from sync_thread_ because the sync backend
   // requires any thread that opened sqlite handles to relinquish them
   // personally. We need to join threads, because otherwise the main Chrome
   // thread (ui loop) can exit before DoShutdown finishes, at which point
@@ -263,7 +264,7 @@ void SyncBackendHost::Shutdown(bool sync_disabled) {
   // this, see bug 19757.
   {
     base::ThreadRestrictions::ScopedAllowIO allow_io;
-    core_thread_.Stop();
+    sync_thread_.Stop();
   }
 
   registrar_.routing_info.clear();
@@ -427,8 +428,8 @@ void SyncBackendHost::StartConfiguration(Callback0::Type* callback) {
   // Put syncer in the config mode. DTM will put us in normal mode once it is.
   // done. This is to ensure we dont do a normal sync when we are doing model
   // association.
-  core_thread_.message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
-    core_.get(),&SyncBackendHost::Core::DoStartConfiguration, callback));
+  sync_thread_.message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
+      core_.get(), &SyncBackendHost::Core::DoStartConfiguration, callback));
 }
 
 void SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop() {
@@ -447,7 +448,7 @@ void SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop() {
   VLOG(1) << "Syncer in config mode. SBH executing"
           << "FinishConfigureDataTypesOnFrontendLoop";
   if (pending_config_mode_state_->deleted_type) {
-    core_thread_.message_loop()->PostTask(FROM_HERE,
+    sync_thread_.message_loop()->PostTask(FROM_HERE,
         NewRunnableMethod(core_.get(),
         &SyncBackendHost::Core::DeferNudgeForCleanup));
   }
@@ -480,7 +481,7 @@ void SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop() {
       types_copy.set(syncable::NIGORI);
     VLOG(1) <<  "SyncBackendHost(" << this << "):New Types added. "
             << "Calling DoRequestConfig";
-    core_thread_.message_loop()->PostTask(FROM_HERE,
+    sync_thread_.message_loop()->PostTask(FROM_HERE,
          NewRunnableMethod(core_.get(),
                            &SyncBackendHost::Core::DoRequestConfig,
                            types_copy,
@@ -490,14 +491,14 @@ void SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop() {
   pending_config_mode_state_.reset();
 
   // Notify the SyncManager about the new types.
-  core_thread_.message_loop()->PostTask(FROM_HERE,
+  sync_thread_.message_loop()->PostTask(FROM_HERE,
       NewRunnableMethod(core_.get(),
                         &SyncBackendHost::Core::DoUpdateEnabledTypes));
 }
 
 void SyncBackendHost::EncryptDataTypes(
     const syncable::ModelTypeSet& encrypted_types) {
-  core_thread_.message_loop()->PostTask(FROM_HERE,
+  sync_thread_.message_loop()->PostTask(FROM_HERE,
      NewRunnableMethod(core_.get(),
                        &SyncBackendHost::Core::DoEncryptDataTypes,
                        encrypted_types));
@@ -509,7 +510,7 @@ syncable::ModelTypeSet SyncBackendHost::GetEncryptedDataTypes() const {
 }
 
 void SyncBackendHost::RequestNudge(const tracked_objects::Location& location) {
-  core_thread_.message_loop()->PostTask(FROM_HERE,
+  sync_thread_.message_loop()->PostTask(FROM_HERE,
       NewRunnableMethod(core_.get(), &SyncBackendHost::Core::DoRequestNudge,
                         location));
 }
@@ -551,7 +552,7 @@ void SyncBackendHost::DeactivateDataType(
 }
 
 bool SyncBackendHost::RequestClearServerData() {
-  core_thread_.message_loop()->PostTask(FROM_HERE,
+  sync_thread_.message_loop()->PostTask(FROM_HERE,
      NewRunnableMethod(core_.get(),
      &SyncBackendHost::Core::DoRequestClearServerData));
   return true;
@@ -740,7 +741,7 @@ std::string MakeUserAgentForSyncapi() {
 }
 
 void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
-  DCHECK(MessageLoop::current() == host_->core_thread_.message_loop());
+  DCHECK(MessageLoop::current() == host_->sync_thread_.message_loop());
   processing_passphrase_ = false;
 
   // Blow away the partial or corrupt sync data folder before doing any more
@@ -773,17 +774,17 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
 
 void SyncBackendHost::Core::DoUpdateCredentials(
     const SyncCredentials& credentials) {
-  DCHECK(MessageLoop::current() == host_->core_thread_.message_loop());
+  DCHECK(MessageLoop::current() == host_->sync_thread_.message_loop());
   syncapi_->UpdateCredentials(credentials);
 }
 
 void SyncBackendHost::Core::DoUpdateEnabledTypes() {
-  DCHECK(MessageLoop::current() == host_->core_thread_.message_loop());
+  DCHECK(MessageLoop::current() == host_->sync_thread_.message_loop());
   syncapi_->UpdateEnabledTypes();
 }
 
 void SyncBackendHost::Core::DoStartSyncing() {
-  DCHECK(MessageLoop::current() == host_->core_thread_.message_loop());
+  DCHECK(MessageLoop::current() == host_->sync_thread_.message_loop());
   syncapi_->StartSyncingNormally();
   if (deferred_nudge_for_cleanup_requested_)
     syncapi_->RequestNudge(FROM_HERE);
@@ -792,7 +793,7 @@ void SyncBackendHost::Core::DoStartSyncing() {
 
 void SyncBackendHost::Core::DoSetPassphrase(const std::string& passphrase,
                                             bool is_explicit) {
-  DCHECK(MessageLoop::current() == host_->core_thread_.message_loop());
+  DCHECK(MessageLoop::current() == host_->sync_thread_.message_loop());
   syncapi_->SetPassphrase(passphrase, is_explicit);
 }
 
@@ -808,7 +809,7 @@ void SyncBackendHost::Core::set_processing_passphrase() {
 
 void SyncBackendHost::Core::DoEncryptDataTypes(
     const syncable::ModelTypeSet& encrypted_types) {
-  DCHECK(MessageLoop::current() == host_->core_thread_.message_loop());
+  DCHECK(MessageLoop::current() == host_->sync_thread_.message_loop());
   syncapi_->EncryptDataTypes(encrypted_types);
 }
 
@@ -832,7 +833,7 @@ UIModelWorker* SyncBackendHost::ui_worker() {
 }
 
 void SyncBackendHost::Core::DoShutdown(bool sync_disabled) {
-  DCHECK(MessageLoop::current() == host_->core_thread_.message_loop());
+  DCHECK(MessageLoop::current() == host_->sync_thread_.message_loop());
 
   save_changes_timer_.Stop();
   syncapi_->Shutdown();  // Stops the SyncerThread.
@@ -964,7 +965,7 @@ void SyncBackendHost::Core::OnInitializationComplete() {
                         &Core::HandleInitalizationCompletedOnFrontendLoop));
 
   // Initialization is complete, so we can schedule recurring SaveChanges.
-  host_->core_thread_.message_loop()->PostTask(FROM_HERE,
+  host_->sync_thread_.message_loop()->PostTask(FROM_HERE,
       NewRunnableMethod(this, &Core::StartSavingChanges));
 }
 
@@ -1141,7 +1142,7 @@ void SyncBackendHost::Core::SetParentJsEventRouter(JsEventRouter* router) {
   DCHECK_EQ(MessageLoop::current(), host_->frontend_loop_);
   DCHECK(router);
   parent_router_ = router;
-  MessageLoop* core_message_loop = host_->core_thread_.message_loop();
+  MessageLoop* core_message_loop = host_->sync_thread_.message_loop();
   CHECK(core_message_loop);
   core_message_loop->PostTask(
       FROM_HERE,
@@ -1152,7 +1153,7 @@ void SyncBackendHost::Core::SetParentJsEventRouter(JsEventRouter* router) {
 void SyncBackendHost::Core::RemoveParentJsEventRouter() {
   DCHECK_EQ(MessageLoop::current(), host_->frontend_loop_);
   parent_router_ = NULL;
-  MessageLoop* core_message_loop = host_->core_thread_.message_loop();
+  MessageLoop* core_message_loop = host_->sync_thread_.message_loop();
   CHECK(core_message_loop);
   core_message_loop->PostTask(
       FROM_HERE,
@@ -1169,7 +1170,7 @@ void SyncBackendHost::Core::ProcessMessage(
     const std::string& name, const JsArgList& args,
     const JsEventHandler* sender) {
   DCHECK_EQ(MessageLoop::current(), host_->frontend_loop_);
-  MessageLoop* core_message_loop = host_->core_thread_.message_loop();
+  MessageLoop* core_message_loop = host_->sync_thread_.message_loop();
   CHECK(core_message_loop);
   core_message_loop->PostTask(
       FROM_HERE,
@@ -1179,7 +1180,7 @@ void SyncBackendHost::Core::ProcessMessage(
 }
 
 void SyncBackendHost::Core::ConnectChildJsEventRouter() {
-  DCHECK_EQ(MessageLoop::current(), host_->core_thread_.message_loop());
+  DCHECK_EQ(MessageLoop::current(), host_->sync_thread_.message_loop());
   // We need this check since AddObserver() can be called at most once
   // for a given observer.
   if (!syncapi_->GetJsBackend()->GetParentJsEventRouter()) {
@@ -1189,7 +1190,7 @@ void SyncBackendHost::Core::ConnectChildJsEventRouter() {
 }
 
 void SyncBackendHost::Core::DisconnectChildJsEventRouter() {
-  DCHECK_EQ(MessageLoop::current(), host_->core_thread_.message_loop());
+  DCHECK_EQ(MessageLoop::current(), host_->sync_thread_.message_loop());
   syncapi_->GetJsBackend()->RemoveParentJsEventRouter();
   syncapi_->RemoveObserver(&sync_manager_observer_);
 }
@@ -1197,12 +1198,12 @@ void SyncBackendHost::Core::DisconnectChildJsEventRouter() {
 void SyncBackendHost::Core::DoProcessMessage(
     const std::string& name, const JsArgList& args,
     const JsEventHandler* sender) {
-  DCHECK_EQ(MessageLoop::current(), host_->core_thread_.message_loop());
+  DCHECK_EQ(MessageLoop::current(), host_->sync_thread_.message_loop());
   syncapi_->GetJsBackend()->ProcessMessage(name, args, sender);
 }
 
 void SyncBackendHost::Core::DeferNudgeForCleanup() {
-  DCHECK_EQ(MessageLoop::current(), host_->core_thread_.message_loop());
+  DCHECK_EQ(MessageLoop::current(), host_->sync_thread_.message_loop());
   deferred_nudge_for_cleanup_requested_ = true;
 }
 

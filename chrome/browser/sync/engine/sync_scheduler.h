@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// A class to run the syncer on a thread.
-#ifndef CHROME_BROWSER_SYNC_ENGINE_SYNCER_THREAD_H_
-#define CHROME_BROWSER_SYNC_ENGINE_SYNCER_THREAD_H_
+// A class to schedule syncer tasks intelligently.
+#ifndef CHROME_BROWSER_SYNC_ENGINE_SYNC_SCHEDULER_H_
+#define CHROME_BROWSER_SYNC_ENGINE_SYNC_SCHEDULER_H_
 #pragma once
 
 #include <string>
 
 #include "base/callback.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/task.h"
-#include "base/threading/thread.h"
 #include "base/time.h"
 #include "base/timer.h"
 #include "chrome/browser/sync/engine/configure_reason.h"
@@ -27,12 +27,14 @@
 #include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/sessions/sync_session_context.h"
 
+class MessageLoop;
+
 namespace browser_sync {
 
 struct ServerConnectionEvent;
 
-class SyncerThread : public sessions::SyncSession::Delegate,
-                     public ServerConnectionEventListener {
+class SyncScheduler : public sessions::SyncSession::Delegate,
+                      public ServerConnectionEventListener {
  public:
   enum Mode {
     // In this mode, the thread only performs configuration tasks.  This is
@@ -45,29 +47,35 @@ class SyncerThread : public sessions::SyncSession::Delegate,
     NORMAL_MODE,
   };
 
+  // All methods of SyncScheduler must be called on the same thread
+  // (except for RequestEarlyExit()).
+
   // |name| is a display string to identify the syncer thread.  Takes
   // |ownership of both |context| and |syncer|.
-  SyncerThread(const std::string& name,
-               sessions::SyncSessionContext* context, Syncer* syncer);
-  virtual ~SyncerThread();
+  SyncScheduler(const std::string& name,
+                sessions::SyncSessionContext* context, Syncer* syncer);
+
+  // Calls Stop().
+  virtual ~SyncScheduler();
 
   typedef Callback0::Type ModeChangeCallback;
 
-  // Change the mode of operation.
-  // We don't use a lock when changing modes, so we won't cause currently
-  // scheduled jobs to adhere to the new mode.  We could protect it, but it
-  // doesn't buy very much as a) a session could already be in progress and it
-  // will continue no matter what, b) the scheduled sessions already contain
-  // all their required state and won't be affected by potential change at
-  // higher levels (i.e. the registrar), and c) we service tasks FIFO, so once
-  // the mode changes all future jobs will be run against the updated mode.
-  // If supplied, |callback| will be invoked when the mode has been
-  // changed to |mode| *from the SyncerThread*, and not from the caller
-  // thread.
+  // Start the scheduler with the given mode.  If the scheduler is
+  // already started, switch to the given mode, although some
+  // scheduled tasks from the old mode may still run.  If non-NULL,
+  // |callback| will be invoked when the mode has been changed to
+  // |mode|.  Takes ownership of |callback|.
   void Start(Mode mode, ModeChangeCallback* callback);
 
-  // Joins on the thread as soon as possible (currently running session
-  // completes).
+  // Request that any running syncer task stop as soon as possible.
+  // This function can be called from any thread.  Stop must still be
+  // called to stop future schedule tasks.
+  //
+  // TODO(akalin): This function is awkward.  Find a better way to let
+  // the UI thread stop the syncer thread.
+  void RequestEarlyExit();
+
+  // Cancel all scheduled tasks.  Can be called even if already stopped.
   void Stop();
 
   // The meat and potatoes.
@@ -145,25 +153,25 @@ class SyncerThread : public sessions::SyncSession::Delegate,
     // that came in.
     tracked_objects::Location nudge_location;
   };
-  friend class SyncerThreadTest;
-  friend class SyncerThreadWhiteboxTest;
+  friend class SyncSchedulerTest;
+  friend class SyncSchedulerWhiteboxTest;
 
-  FRIEND_TEST_ALL_PREFIXES(SyncerThreadWhiteboxTest,
+  FRIEND_TEST_ALL_PREFIXES(SyncSchedulerWhiteboxTest,
       DropNudgeWhileExponentialBackOff);
-  FRIEND_TEST_ALL_PREFIXES(SyncerThreadWhiteboxTest, SaveNudge);
-  FRIEND_TEST_ALL_PREFIXES(SyncerThreadWhiteboxTest, ContinueNudge);
-  FRIEND_TEST_ALL_PREFIXES(SyncerThreadWhiteboxTest, DropPoll);
-  FRIEND_TEST_ALL_PREFIXES(SyncerThreadWhiteboxTest, ContinuePoll);
-  FRIEND_TEST_ALL_PREFIXES(SyncerThreadWhiteboxTest, ContinueConfiguration);
-  FRIEND_TEST_ALL_PREFIXES(SyncerThreadWhiteboxTest,
+  FRIEND_TEST_ALL_PREFIXES(SyncSchedulerWhiteboxTest, SaveNudge);
+  FRIEND_TEST_ALL_PREFIXES(SyncSchedulerWhiteboxTest, ContinueNudge);
+  FRIEND_TEST_ALL_PREFIXES(SyncSchedulerWhiteboxTest, DropPoll);
+  FRIEND_TEST_ALL_PREFIXES(SyncSchedulerWhiteboxTest, ContinuePoll);
+  FRIEND_TEST_ALL_PREFIXES(SyncSchedulerWhiteboxTest, ContinueConfiguration);
+  FRIEND_TEST_ALL_PREFIXES(SyncSchedulerWhiteboxTest,
                            SaveConfigurationWhileThrottled);
-  FRIEND_TEST_ALL_PREFIXES(SyncerThreadWhiteboxTest,
+  FRIEND_TEST_ALL_PREFIXES(SyncSchedulerWhiteboxTest,
                            SaveNudgeWhileThrottled);
-  FRIEND_TEST_ALL_PREFIXES(SyncerThreadWhiteboxTest,
+  FRIEND_TEST_ALL_PREFIXES(SyncSchedulerWhiteboxTest,
                            ContinueClearUserDataUnderAllCircumstances);
-  FRIEND_TEST_ALL_PREFIXES(SyncerThreadWhiteboxTest,
+  FRIEND_TEST_ALL_PREFIXES(SyncSchedulerWhiteboxTest,
                            ContinueCanaryJobConfig);
-  FRIEND_TEST_ALL_PREFIXES(SyncerThreadWhiteboxTest,
+  FRIEND_TEST_ALL_PREFIXES(SyncSchedulerWhiteboxTest,
       ContinueNudgeWhileExponentialBackOff);
 
   // A component used to get time delays associated with exponential backoff.
@@ -196,7 +204,7 @@ class SyncerThread : public sessions::SyncSession::Delegate,
     // interval and mode == EXPONENTIAL_BACKOFF.
     bool had_nudge;
     base::TimeDelta length;
-    base::OneShotTimer<SyncerThread> timer;
+    base::OneShotTimer<SyncScheduler> timer;
 
     // Configure jobs are saved only when backing off or throttling. So we
     // expose the pointer here.
@@ -227,6 +235,9 @@ class SyncerThread : public sessions::SyncSession::Delegate,
 
   // Helper to configure polling intervals. Used by Start and ScheduleNextSync.
   void AdjustPolling(const SyncSessionJob* old_job);
+
+  // Helper to restart waiting with |wait_interval_|'s timer.
+  void RestartWaiting();
 
   // Helper to ScheduleNextSync in case of consecutive sync errors.
   void HandleConsecutiveContinuationError(const SyncSessionJob& old_job);
@@ -302,9 +313,17 @@ class SyncerThread : public sessions::SyncSession::Delegate,
   // the client starts up and does not need to perform an initial sync.
   void SendInitialSnapshot();
 
+  ScopedRunnableMethodFactory<SyncScheduler> method_factory_;
+
+  // Used for logging.
   const std::string name_;
 
-  base::Thread thread_;
+  // The message loop this object is on.  Almost all methods have to
+  // be called on this thread.
+  MessageLoop* const sync_loop_;
+
+  // Set in Start(), unset in Stop().
+  bool started_;
 
   // Modifiable versions of kDefaultLongPollIntervalSeconds which can be
   // updated by the server.
@@ -312,9 +331,9 @@ class SyncerThread : public sessions::SyncSession::Delegate,
   base::TimeDelta syncer_long_poll_interval_seconds_;
 
   // Periodic timer for polling.  See AdjustPolling.
-  base::RepeatingTimer<SyncerThread> poll_timer_;
+  base::RepeatingTimer<SyncScheduler> poll_timer_;
 
-  // The mode of operation. We don't use a lock, see Start(...) comment.
+  // The mode of operation.
   Mode mode_;
 
   // TODO(tim): Bug 26339. This needs to track more than just time I think,
@@ -337,13 +356,9 @@ class SyncerThread : public sessions::SyncSession::Delegate,
 
   scoped_ptr<sessions::SyncSessionContext> session_context_;
 
-  DISALLOW_COPY_AND_ASSIGN(SyncerThread);
+  DISALLOW_COPY_AND_ASSIGN(SyncScheduler);
 };
 
 }  // namespace browser_sync
 
-// The SyncerThread manages its own internal thread and thus outlives it. We
-// don't need refcounting for posting tasks to this internal thread.
-DISABLE_RUNNABLE_METHOD_REFCOUNT(browser_sync::SyncerThread);
-
-#endif  // CHROME_BROWSER_SYNC_ENGINE_SYNCER_THREAD_H_
+#endif  // CHROME_BROWSER_SYNC_ENGINE_SYNC_SCHEDULER_H_
