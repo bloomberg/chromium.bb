@@ -4,12 +4,12 @@
 //
 // A URLRequestMockHTTPJob class that inserts a time delay in processing.
 
-#ifndef CHROME_BROWSER_NET_URL_REQUEST_SLOW_HTTP_JOB_H_
-#define CHROME_BROWSER_NET_URL_REQUEST_SLOW_HTTP_JOB_H_
+#ifndef CONTENT_BROWSER_NET_URL_REQUEST_SLOW_HTTP_JOB_H_
+#define CONTENT_BROWSER_NET_URL_REQUEST_SLOW_HTTP_JOB_H_
 #pragma once
 
 #include "base/timer.h"
-#include "chrome/browser/net/url_request_mock_http_job.h"
+#include "content/browser/net/url_request_mock_http_job.h"
 
 class URLRequestSlowHTTPJob : public URLRequestMockHTTPJob {
  public:
@@ -39,4 +39,4 @@ class URLRequestSlowHTTPJob : public URLRequestMockHTTPJob {
   static FilePath base_path_;
 };
 
-#endif  // CHROME_BROWSER_NET_URL_REQUEST_SLOW_HTTP_JOB_H_
+#endif  // CONTENT_BROWSER_NET_URL_REQUEST_SLOW_HTTP_JOB_H_

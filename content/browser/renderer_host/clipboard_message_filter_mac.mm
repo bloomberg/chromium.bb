@@ -7,8 +7,8 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/sys_string_conversions.h"
-#import "chrome/browser/ui/cocoa/find_pasteboard.h"
 #include "content/browser/browser_thread.h"
+#import "content/browser/find_pasteboard.h"
 
 // The number of utf16 code units that will be written to the find pasteboard,
 // longer texts are silently ignored. This is to prevent that a compromised

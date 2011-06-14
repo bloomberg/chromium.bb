@@ -7,8 +7,8 @@
 #include "base/threading/platform_thread.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/ui/ui_test.h"
-#include "chrome/browser/net/url_request_failed_dns_job.h"
-#include "chrome/browser/net/url_request_mock_http_job.h"
+#include "content/browser/net/url_request_failed_dns_job.h"
+#include "content/browser/net/url_request_mock_http_job.h"
 #include "net/test/test_server.h"
 
 class ErrorPageTest : public UITest {

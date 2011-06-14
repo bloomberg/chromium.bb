@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_COCOA_FIND_PASTEBOARD_H_
-#define CHROME_BROWSER_UI_COCOA_FIND_PASTEBOARD_H_
+#ifndef CONTENT_BROWSER_FIND_PASTEBOARD_H_
+#define CONTENT_BROWSER_FIND_PASTEBOARD_H_
 #pragma once
 
 #include "base/string16.h"
@@ -55,4 +55,4 @@ extern NSString* kFindPasteboardChangedNotification;
 // Also provide a c++ interface
 string16 GetFindPboardText();
 
-#endif  // CHROME_BROWSER_UI_COCOA_FIND_PASTEBOARD_H_
+#endif  // CONTENT_BROWSER_FIND_PASTEBOARD_H_

@@ -5,8 +5,8 @@
 // download manager.  Requests to |kUnknownSizeUrl| and |kKnownSizeUrl| start
 // downloads that pause after the first
 
-#ifndef CHROME_BROWSER_NET_URL_REQUEST_SLOW_DOWNLOAD_JOB_H_
-#define CHROME_BROWSER_NET_URL_REQUEST_SLOW_DOWNLOAD_JOB_H_
+#ifndef CONTENT_BROWSER_NET_URL_REQUEST_SLOW_DOWNLOAD_JOB_H_
+#define CONTENT_BROWSER_NET_URL_REQUEST_SLOW_DOWNLOAD_JOB_H_
 #pragma once
 
 #include <string>
@@ -61,4 +61,4 @@ class URLRequestSlowDownloadJob : public net::URLRequestJob {
   ScopedRunnableMethodFactory<URLRequestSlowDownloadJob> method_factory_;
 };
 
-#endif  // CHROME_BROWSER_NET_URL_REQUEST_SLOW_DOWNLOAD_JOB_H_
+#endif  // CONTENT_BROWSER_NET_URL_REQUEST_SLOW_DOWNLOAD_JOB_H_

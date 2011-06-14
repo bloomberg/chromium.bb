@@ -6,10 +6,10 @@
 
 #include "base/file_path.h"
 #include "base/test/test_timeouts.h"
-#include "chrome/browser/net/url_request_mock_http_job.h"
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/ui/npapi_test_helper.h"
 #include "chrome/test/ui_test_utils.h"
+#include "content/browser/net/url_request_mock_http_job.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
 const char kTestCompleteCookie[] = "status";

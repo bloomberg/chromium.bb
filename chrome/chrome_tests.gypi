@@ -82,12 +82,6 @@
         'browser/mock_browsing_data_indexed_db_helper.h',
         'browser/mock_browsing_data_local_storage_helper.cc',
         'browser/mock_browsing_data_local_storage_helper.h',
-        # TODO:  these should live here but are currently used by
-        # production code code in libbrowser (in chrome.gyp).
-        #'browser/net/url_request_mock_http_job.cc',
-        #'browser/net/url_request_mock_http_job.h',
-        'browser/net/url_request_mock_net_error_job.cc',
-        'browser/net/url_request_mock_net_error_job.h',
         'browser/notifications/notification_test_util.cc',
         'browser/notifications/notification_test_util.h',
         'browser/prefs/pref_observer_mock.cc',
@@ -188,6 +182,12 @@
         '../content/browser/geolocation/mock_location_provider.h',
         '../content/browser/mock_resource_context.cc',
         '../content/browser/mock_resource_context.h',
+        # TODO:  these should live here but are currently used by
+        # production code code in libbrowser (in chrome.gyp).
+        #'../content/browser/net/url_request_mock_http_job.cc',
+        #'../content/browser/net/url_request_mock_http_job.h',
+        '../content/browser/net/url_request_mock_net_error_job.cc',
+        '../content/browser/net/url_request_mock_net_error_job.h',
         '../content/browser/renderer_host/mock_render_process_host.cc',
         '../content/browser/renderer_host/mock_render_process_host.h',
         '../content/browser/renderer_host/test_backing_store.cc',

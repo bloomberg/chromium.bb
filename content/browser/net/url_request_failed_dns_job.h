@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 // This class simulates what wininet does when a dns lookup fails.
 
-#ifndef CHROME_BROWSER_NET_URL_REQUEST_FAILED_DNS_JOB_H_
-#define CHROME_BROWSER_NET_URL_REQUEST_FAILED_DNS_JOB_H_
+#ifndef CONTENT_BROWSER_NET_URL_REQUEST_FAILED_DNS_JOB_H_
+#define CONTENT_BROWSER_NET_URL_REQUEST_FAILED_DNS_JOB_H_
 #pragma once
 
 #include "base/task.h"
@@ -34,4 +34,4 @@ class URLRequestFailedDnsJob : public net::URLRequestJob {
   ScopedRunnableMethodFactory<URLRequestFailedDnsJob> method_factory_;
 };
 
-#endif  // CHROME_BROWSER_NET_URL_REQUEST_FAILED_DNS_JOB_H_
+#endif  // CONTENT_BROWSER_NET_URL_REQUEST_FAILED_DNS_JOB_H_

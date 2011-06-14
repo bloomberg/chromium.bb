@@ -6,12 +6,12 @@
 // related).
 // It is based on URLRequestMockHttpJob.
 
-#ifndef CHROME_BROWSER_NET_URL_REQUEST_MOCK_NET_ERROR_JOB_H_
-#define CHROME_BROWSER_NET_URL_REQUEST_MOCK_NET_ERROR_JOB_H_
+#ifndef CONTENT_BROWSER_NET_URL_REQUEST_MOCK_NET_ERROR_JOB_H_
+#define CONTENT_BROWSER_NET_URL_REQUEST_MOCK_NET_ERROR_JOB_H_
 #pragma once
 
 #include "base/task.h"
-#include "chrome/browser/net/url_request_mock_http_job.h"
+#include "content/browser/net/url_request_mock_http_job.h"
 
 class URLRequestMockNetErrorJob : public URLRequestMockHTTPJob {
  public:
@@ -59,4 +59,4 @@ class URLRequestMockNetErrorJob : public URLRequestMockHTTPJob {
   DISALLOW_COPY_AND_ASSIGN(URLRequestMockNetErrorJob);
 };
 
-#endif  // CHROME_BROWSER_NET_URL_REQUEST_MOCK_NET_ERROR_JOB_H_
+#endif  // CONTENT_BROWSER_NET_URL_REQUEST_MOCK_NET_ERROR_JOB_H_
