@@ -5,7 +5,6 @@
 #include "base/compiler_specific.h"
 #include "base/stl_util-inl.h"
 #include "base/string16.h"
-#include "chrome/common/chrome_constants.h"
 #include "chrome/test/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/browsing_instance.h"
@@ -19,6 +18,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/webui/empty_web_ui_factory.h"
 #include "content/common/content_client.h"
+#include "content/common/content_constants.h"
 #include "content/common/url_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -472,7 +472,7 @@ TEST_F(SiteInstanceTest, ProcessSharingByType) {
 
   // Make a bunch of mock renderers so that we hit the limit.
   std::vector<MockRenderProcessHost*> hosts;
-  for (size_t i = 0; i < chrome::kMaxRendererProcessCount; ++i)
+  for (size_t i = 0; i < content::kMaxRendererProcessCount; ++i)
     hosts.push_back(new MockRenderProcessHost(NULL));
 
   // Create some extension instances and make sure they share a process.
@@ -502,7 +502,7 @@ TEST_F(SiteInstanceTest, ProcessSharingByType) {
   // Make sure none of differing privilege processes are mixed.
   EXPECT_NE(extension1_instance->GetProcess(), webui1_instance->GetProcess());
 
-  for (size_t i = 0; i < chrome::kMaxRendererProcessCount; ++i) {
+  for (size_t i = 0; i < content::kMaxRendererProcessCount; ++i) {
     EXPECT_NE(extension1_instance->GetProcess(), hosts[i]);
     EXPECT_NE(webui1_instance->GetProcess(), hosts[i]);
   }

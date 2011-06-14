@@ -14,7 +14,6 @@
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/common/chrome_paths.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/content_browser_client.h"
 #include "content/browser/ppapi_plugin_process_host.h"
@@ -106,14 +105,6 @@ PluginService::PluginService()
   registrar_.Add(this, NotificationType::APP_ACTIVATED,
                  NotificationService::AllSources());
 #elif defined(OS_POSIX)
-  // Also find plugins in a user-specific plugins dir,
-  // e.g. ~/.config/chromium/Plugins.
-  FilePath user_data_dir;
-  if (PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
-    webkit::npapi::PluginList::Singleton()->AddExtraPluginDir(
-        user_data_dir.Append("Plugins"));
-  }
-
 // The FilePathWatcher produces too many false positives on MacOS (access time
 // updates?) which will lead to enforcing updates of the plugins way too often.
 // On ChromeOS the user can't install plugins anyway and on Windows all

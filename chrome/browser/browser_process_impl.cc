@@ -766,6 +766,16 @@ void BrowserProcessImpl::CreateIOThread() {
     webkit::npapi::PluginList::Singleton()->AddExtraPluginPath(path);
   }
 
+#if defined(OS_POSIX)
+  // Also find plugins in a user-specific plugins dir,
+  // e.g. ~/.config/chromium/Plugins.
+  FilePath user_data_dir;
+  if (PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
+    webkit::npapi::PluginList::Singleton()->AddExtraPluginDir(
+        user_data_dir.Append("Plugins"));
+  }
+#endif
+
   scoped_ptr<IOThread> thread(new IOThread(
       local_state(), net_log_.get(), extension_event_router_forwarder_.get()));
   base::Thread::Options options;

@@ -11,7 +11,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_url_handler.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_constants.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/in_process_webkit/session_storage_namespace.h"
 #include "content/browser/site_instance.h"

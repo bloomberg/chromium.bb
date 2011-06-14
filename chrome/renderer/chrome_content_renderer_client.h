@@ -58,7 +58,6 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   virtual bool WillSendRequest(WebKit::WebFrame* frame,
                                const GURL& url,
                                GURL* new_url) OVERRIDE;
-  virtual FilePath GetMediaLibraryPath() OVERRIDE;
   virtual bool ShouldPumpEventsDuringCookieMessage() OVERRIDE;
   virtual void DidCreateScriptContext(WebKit::WebFrame* frame) OVERRIDE;
   virtual void DidDestroyScriptContext(WebKit::WebFrame* frame) OVERRIDE;

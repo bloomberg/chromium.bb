@@ -7,7 +7,6 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_constants.h"
 #include "content/browser/site_instance.h"
 #include "content/common/content_constants.h"
 #include "content/common/url_constants.h"

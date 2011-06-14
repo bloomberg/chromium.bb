@@ -26,6 +26,8 @@
 #include "content/renderer/render_view.h"
 #include "content/renderer/render_view_visitor.h"
 #include "crypto/nss_util.h"
+#include "media/base/media.h"
+#include "media/base/media_switches.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_module.h"
 #include "third_party/sqlite/sqlite3.h"
@@ -34,6 +36,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCrossOriginPreflightResultCache.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFontCache.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebRuntimeFeatures.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "v8/include/v8.h"
 
@@ -49,6 +52,7 @@
 using WebKit::WebCache;
 using WebKit::WebCrossOriginPreflightResultCache;
 using WebKit::WebFontCache;
+using WebKit::WebRuntimeFeatures;
 
 namespace {
 
@@ -379,6 +383,22 @@ ChromeRenderProcessObserver::ChromeRenderProcessObserver() {
   std::string error;
   base::LoadNativeLibrary(FilePath(L"crypt32.dll"), &error);
 #endif
+
+  // Note that under Linux, the media library will normally already have
+  // been initialized by the Zygote before this instance became a Renderer.
+  FilePath media_path;
+  PathService::Get(chrome::DIR_MEDIA_LIBS, &media_path);
+  if (!media_path.empty())
+    media::InitializeMediaLibrary(media_path);
+
+#if !defined(OS_MACOSX)
+  // TODO(hclam): Add more checks here. Currently this is not used.
+  if (media::IsMediaLibraryInitialized() &&
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableOpenMax)) {
+    media::InitializeOpenMaxLibrary(media_path);
+  }
+#endif
 }
 
 ChromeRenderProcessObserver::~ChromeRenderProcessObserver() {
@@ -403,6 +423,15 @@ bool ChromeRenderProcessObserver::OnControlMessageReceived(
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
+}
+
+void ChromeRenderProcessObserver::WebKitInitialized() {
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+
+  WebRuntimeFeatures::enableMediaPlayer(media::IsMediaLibraryInitialized());
+
+  WebRuntimeFeatures::enableSpellCheckAPI(
+      !command_line.HasSwitch(switches::kDisableSpellcheckAPI));
 }
 
 void ChromeRenderProcessObserver::OnSetIsIncognitoProcess(

@@ -30,10 +30,6 @@ include_rules = [
 
   "+chrome/browser/tab_contents/render_view_host_delegate_helper.h",
 
-  "+chrome/common/chrome_constants.h",
-  "+chrome/common/chrome_paths.h",
-  "+chrome/common/logging_chrome.h",
-
   # ONLY USED BY TESTS
   "+chrome/browser/net/url_request_failed_dns_job.h",
   "+chrome/browser/net/url_request_mock_http_job.h",

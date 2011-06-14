@@ -21,14 +21,12 @@
 #include "base/hash_tables.h"
 #include "base/linux_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/path_service.h"
 #include "base/pickle.h"
 #include "base/process_util.h"
 #include "base/rand_util.h"
 #include "base/sys_info.h"
 #include "build/build_config.h"
 #include "crypto/nss_util.h"
-#include "chrome/common/chrome_paths.h"
 #include "content/common/chrome_descriptors.h"
 #include "content/common/content_switches.h"
 #include "content/common/font_config_ipc_linux.h"
@@ -39,7 +37,6 @@
 #include "content/common/sandbox_methods_linux.h"
 #include "content/common/set_process_title.h"
 #include "content/common/unix_domain_socket_posix.h"
-#include "media/base/media.h"
 #include "seccompsandbox/sandbox.h"
 #include "skia/ext/SkFontHost_fontconfig_control.h"
 #include "unicode/timezone.h"
@@ -603,12 +600,6 @@ static void PreSandboxInit() {
   // cached and there's no more need to access the file system.
   scoped_ptr<icu::TimeZone> zone(icu::TimeZone::createDefault());
 
-  // Each Renderer we spawn will re-attempt initialization of the media
-  // libraries, at which point failure will be detected and handled, so
-  // we do not need to cope with initialization failures here.
-  FilePath media_path;
-  if (PathService::Get(chrome::DIR_MEDIA_LIBS, &media_path))
-    media::InitializeMediaLibrary(media_path);
 #if defined(USE_NSS)
   // NSS libraries are loaded before sandbox is activated. This is to allow
   // successful initialization of NSS which tries to load extra library files.

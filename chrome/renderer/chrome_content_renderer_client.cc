@@ -504,12 +504,6 @@ bool ChromeContentRendererClient::WillSendRequest(WebKit::WebFrame* frame,
   return false;
 }
 
-FilePath ChromeContentRendererClient::GetMediaLibraryPath() {
-  FilePath rv;
-  PathService::Get(chrome::DIR_MEDIA_LIBS, &rv);
-  return rv;
-}
-
 bool ChromeContentRendererClient::ShouldPumpEventsDuringCookieMessage() {
   // We only need to pump events for chrome frame processes as the
   // cookie policy is controlled by the host browser (IE). If the

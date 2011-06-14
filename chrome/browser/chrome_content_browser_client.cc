@@ -41,6 +41,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
+#include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
@@ -217,6 +218,9 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
                                     child_process_logging::GetClientId());
   }
 #endif  // OS_MACOSX
+
+  if (logging::DialogsAreSuppressed())
+    command_line->AppendSwitch(switches::kNoErrorDialogs);
 
   std::string process_type =
       command_line->GetSwitchValueASCII(switches::kProcessType);

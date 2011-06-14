@@ -112,8 +112,6 @@ const FilePath::CharType kJumpListIconDirname[] = FPL("JumpListIcons");
 const FilePath::CharType kWebAppDirname[] = FPL("Web Applications");
 const FilePath::CharType kServiceStateFileName[] = FPL("Service State");
 
-// This number used to be limited to 32 in the past (see b/535234).
-const unsigned int kMaxRendererProcessCount = 42;
 const int kStatsMaxThreads = 32;
 const int kStatsMaxCounters = 3000;
 

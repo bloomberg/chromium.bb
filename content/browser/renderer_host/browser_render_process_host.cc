@@ -27,8 +27,6 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_paths.h"
-#include "chrome/common/logging_chrome.h"
 #include "content/browser/appcache/appcache_dispatcher_host.h"
 #include "content/browser/browser_child_process_host.h"
 #include "content/browser/child_process_security_policy.h"
@@ -471,9 +469,6 @@ void BrowserRenderProcessHost::AppendRendererCommandLine(
   command_line->AppendSwitchASCII(switches::kProcessType,
       is_extension_process_ ? switches::kExtensionProcess :
                               switches::kRendererProcess);
-
-  if (logging::DialogsAreSuppressed())
-    command_line->AppendSwitch(switches::kNoErrorDialogs);
 
   if (accessibility_enabled_)
     command_line->AppendSwitch(switches::kEnableAccessibility);

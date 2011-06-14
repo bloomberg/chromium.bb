@@ -83,9 +83,6 @@ class ContentRendererClient {
                                const GURL& url,
                                GURL* new_url);
 
-  // Returns the file path where the media library files are.
-  virtual FilePath GetMediaLibraryPath();
-
   // Whether to pump events when sending sync cookie messages.  Needed if the
   // embedder can potentiall put up a modal dialog on the UI thread as a result.
   virtual bool ShouldPumpEventsDuringCookieMessage();

@@ -6,6 +6,8 @@
 
 namespace content {
 
+// This number used to be limited to 32 in the past (see b/535234).
+const unsigned int kMaxRendererProcessCount = 42;
 const int kMaxSessionHistoryEntries = 50;
 const size_t kMaxTitleChars = 4 * 1024;
 const size_t kMaxURLChars = 2 * 1024 * 1024;

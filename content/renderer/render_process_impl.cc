@@ -25,8 +25,6 @@
 #include "content/renderer/render_view.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message_utils.h"
-#include "media/base/media.h"
-#include "media/base/media_switches.h"
 #include "skia/ext/platform_canvas.h"
 #include "ui/gfx/surface/transport_dib.h"
 #include "webkit/plugins/npapi/plugin_instance.h"
@@ -74,22 +72,6 @@ RenderProcessImpl::RenderProcessImpl()
     webkit_glue::SetJavaScriptFlags(
         command_line.GetSwitchValueASCII(switches::kJavaScriptFlags));
   }
-
-  // Note that under Linux, the media library will normally already have
-  // been initialized by the Zygote before this instance became a Renderer.
-  FilePath media_path =
-      content::GetContentClient()->renderer()->GetMediaLibraryPath();
-  if (!media_path.empty())
-    media::InitializeMediaLibrary(media_path);
-
-#if !defined(OS_MACOSX)
-  // TODO(hclam): Add more checks here. Currently this is not used.
-  if (media::IsMediaLibraryInitialized() &&
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableOpenMax)) {
-    media::InitializeOpenMaxLibrary(media_path);
-  }
-#endif
 }
 
 RenderProcessImpl::~RenderProcessImpl() {
@@ -193,10 +175,6 @@ void RenderProcessImpl::ReleaseTransportDIB(TransportDIB* mem) {
 
 bool RenderProcessImpl::UseInProcessPlugins() const {
   return in_process_plugins_;
-}
-
-bool RenderProcessImpl::HasInitializedMediaLibrary() const {
-  return media::IsMediaLibraryInitialized();
 }
 
 bool RenderProcessImpl::GetTransportDIBFromCache(TransportDIB** mem,

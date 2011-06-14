@@ -44,6 +44,7 @@
 #include "content/common/sandbox_init_wrapper.h"
 #include "content/common/set_process_title.h"
 #include "ipc/ipc_switches.h"
+#include "media/base/media.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
@@ -429,6 +430,13 @@ int RunZygote(const MainFunctionParams& main_function_params) {
     { switches::kNaClLoaderProcess,  NaClMain },
 #endif
   };
+
+  // Each Renderer we spawn will re-attempt initialization of the media
+  // libraries, at which point failure will be detected and handled, so
+  // we do not need to cope with initialization failures here.
+  FilePath media_path;
+  if (PathService::Get(chrome::DIR_MEDIA_LIBS, &media_path))
+    media::InitializeMediaLibrary(media_path);
 
   // This function call can return multiple times, once per fork().
   if (!ZygoteMain(main_function_params))

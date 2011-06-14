@@ -13,7 +13,6 @@
 #include "base/process_util.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
-#include "chrome/common/chrome_constants.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/content_browser_client.h"
 #include "content/browser/renderer_host/resource_message_filter.h"

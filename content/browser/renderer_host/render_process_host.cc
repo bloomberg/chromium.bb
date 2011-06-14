@@ -6,10 +6,10 @@
 
 #include "base/rand_util.h"
 #include "base/sys_info.h"
-#include "chrome/common/chrome_constants.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/common/child_process_info.h"
+#include "content/common/content_constants.h"
 #include "content/common/notification_service.h"
 
 namespace {
@@ -51,7 +51,7 @@ size_t GetMaxRendererProcessCount() {
   if (!max_count) {
     size_t memory_tier = base::SysInfo::AmountOfPhysicalMemoryMB() / 256;
     if (memory_tier >= arraysize(kMaxRenderersByRamTier))
-      max_count = chrome::kMaxRendererProcessCount;
+      max_count = content::kMaxRendererProcessCount;
     else
       max_count = kMaxRenderersByRamTier[memory_tier];
   }

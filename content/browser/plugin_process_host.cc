@@ -19,8 +19,6 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/common/chrome_paths.h"
-#include "chrome/common/logging_chrome.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/content_browser_client.h"
 #include "content/browser/resolve_proxy_msg_helper.h"
@@ -177,9 +175,6 @@ bool PluginProcessHost::Init(const webkit::npapi::WebPluginInfo& info,
   // in process listings using native process management tools.
   cmd_line->AppendSwitchASCII(switches::kProcessType, switches::kPluginProcess);
   cmd_line->AppendSwitchPath(switches::kPluginPath, info.path);
-
-  if (logging::DialogsAreSuppressed())
-    cmd_line->AppendSwitch(switches::kNoErrorDialogs);
 
   // Propagate the following switches to the plugin command line (along with
   // any associated values) if present in the browser command line

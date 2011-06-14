@@ -65,10 +65,6 @@ bool ContentRendererClient::WillSendRequest(WebFrame* frame,
   return false;
 }
 
-FilePath ContentRendererClient::GetMediaLibraryPath() {
-  return FilePath();
-}
-
 bool ContentRendererClient::ShouldPumpEventsDuringCookieMessage() {
   return false;
 }

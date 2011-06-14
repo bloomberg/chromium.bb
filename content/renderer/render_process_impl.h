@@ -27,7 +27,6 @@ class RenderProcessImpl : public RenderProcess {
                                                  const gfx::Rect& rect);
   virtual void ReleaseTransportDIB(TransportDIB* memory);
   virtual bool UseInProcessPlugins() const;
-  virtual bool HasInitializedMediaLibrary() const;
 
   // Like UseInProcessPlugins(), but called before RenderProcess is created
   // and does not allow overriding by tests. This just checks the command line

@@ -6,7 +6,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
-#include "chrome/common/chrome_constants.h"
 #include "chrome/test/testing_browser_process.h"
 #include "chrome/test/testing_browser_process_test.h"
 #include "chrome/test/thread_test_helper.h"
@@ -14,6 +13,11 @@
 #include "content/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/appcache/appcache_storage_impl.h"
+
+namespace {
+const FilePath::CharType kTestingAppCacheDirname[] =
+    FILE_PATH_LITERAL("Application Cache");
+}
 
 namespace appcache {
 
@@ -40,7 +44,7 @@ class ChromeAppCacheServiceTest : public TestingBrowserProcessTest {
 
 TEST_F(ChromeAppCacheServiceTest, KeepOnDestruction) {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  FilePath appcache_path = temp_dir_.path().Append(chrome::kAppCacheDirname);
+  FilePath appcache_path = temp_dir_.path().Append(kTestingAppCacheDirname);
   scoped_refptr<ChromeAppCacheService> appcache_service =
       new ChromeAppCacheService(NULL);
   const content::ResourceContext* resource_context = NULL;
@@ -72,7 +76,7 @@ TEST_F(ChromeAppCacheServiceTest, KeepOnDestruction) {
 
 TEST_F(ChromeAppCacheServiceTest, RemoveOnDestruction) {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  FilePath appcache_path = temp_dir_.path().Append(chrome::kAppCacheDirname);
+  FilePath appcache_path = temp_dir_.path().Append(kTestingAppCacheDirname);
   scoped_refptr<ChromeAppCacheService> appcache_service =
       new ChromeAppCacheService(NULL);
   const content::ResourceContext* resource_context = NULL;

@@ -22,7 +22,6 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/common/chrome_constants.h"
 #include "content/browser/content_browser_client.h"
 #include "content/browser/renderer_host/render_sandbox_host_linux.h"
 #include "content/common/content_switches.h"

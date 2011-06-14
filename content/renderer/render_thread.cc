@@ -569,9 +569,6 @@ void RenderThread::EnsureWebKitInitialized() {
   web_database_observer_impl_.reset(new WebDatabaseObserverImpl(this));
   WebKit::WebDatabase::setObserver(web_database_observer_impl_.get());
 
-  WebRuntimeFeatures::enableMediaPlayer(
-      RenderProcess::current()->HasInitializedMediaLibrary());
-
   WebRuntimeFeatures::enableSockets(
       !command_line.HasSwitch(switches::kDisableWebSockets));
 
@@ -626,9 +623,6 @@ void RenderThread::EnsureWebKitInitialized() {
       !command_line.HasSwitch(switches::kDisableJavaScriptI18NAPI));
 
   WebRuntimeFeatures::enableQuota(true);
-
-  WebRuntimeFeatures::enableSpellCheckAPI(
-      !command_line.HasSwitch(switches::kDisableSpellcheckAPI));
 
   FOR_EACH_OBSERVER(RenderProcessObserver, observers_, WebKitInitialized());
 }
