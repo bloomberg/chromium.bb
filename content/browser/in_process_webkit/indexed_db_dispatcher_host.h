@@ -68,6 +68,8 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
   void OnIDBFactoryDeleteDatabase(
       const IndexedDBHostMsg_FactoryDeleteDatabase_Params& p);
 
+  void ResetDispatcherHosts();
+
   // Helper templates.
   template <class ReturnType>
   ReturnType* GetOrTerminateProcess(

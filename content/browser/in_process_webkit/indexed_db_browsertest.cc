@@ -26,6 +26,10 @@ class IndexedDBBrowserTest : public InProcessBrowserTest {
     EnableDOMAutomation();
   }
 
+  virtual void SetUpCommandLine(CommandLine* command_line) {
+    command_line->AppendSwitch(switches::kUnlimitedQuotaForIndexedDB);
+  }
+
   GURL testUrl(const FilePath& file_path) {
     const FilePath kTestDir(FILE_PATH_LITERAL("indexeddb"));
     return ui_test_utils::GetTestUrl(kTestDir, file_path);
@@ -98,6 +102,13 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DISABLED_DoesntHangTest) {
       FILE_PATH_LITERAL("transaction_run_forever.html"))));
   ui_test_utils::CrashTab(browser()->GetSelectedTabContents());
   SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("transaction_test.html"))));
+}
+
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, Bug84933Test) {
+  const GURL url = testUrl(FilePath(FILE_PATH_LITERAL("bug_84933.html")));
+
+  // Just navigate to the URL. Test will crash if it fails.
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(), url, 1);
 }
 
 // In proc browser test is needed here because ClearLocalState indirectly calls

@@ -80,18 +80,28 @@ IndexedDBDispatcherHost::~IndexedDBDispatcherHost() {
 
 void IndexedDBDispatcherHost::OnChannelClosing() {
   BrowserMessageFilter::OnChannelClosing();
-  BrowserThread::DeleteSoon(
-        BrowserThread::WEBKIT, FROM_HERE, database_dispatcher_host_.release());
-  BrowserThread::DeleteSoon(
-        BrowserThread::WEBKIT, FROM_HERE, index_dispatcher_host_.release());
-  BrowserThread::DeleteSoon(
-        BrowserThread::WEBKIT, FROM_HERE,
-        object_store_dispatcher_host_.release());
-  BrowserThread::DeleteSoon(
-        BrowserThread::WEBKIT, FROM_HERE, cursor_dispatcher_host_.release());
-  BrowserThread::DeleteSoon(
-        BrowserThread::WEBKIT, FROM_HERE,
-        transaction_dispatcher_host_.release());
+
+  bool success = BrowserThread::PostTask(
+      BrowserThread::WEBKIT, FROM_HERE,
+      NewRunnableMethod(this, &IndexedDBDispatcherHost::ResetDispatcherHosts));
+
+  if (!success)
+    ResetDispatcherHosts();
+}
+
+void IndexedDBDispatcherHost::ResetDispatcherHosts() {
+  // It is important that the various *_dispatcher_host_ members are reset
+  // on the WebKit thread, since there might be incoming messages on that
+  // thread, and we must not reset the dispatcher hosts until after those
+  // messages are processed.
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT) ||
+         CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess));
+
+  database_dispatcher_host_.reset();
+  index_dispatcher_host_.reset();
+  object_store_dispatcher_host_.reset();
+  cursor_dispatcher_host_.reset();
+  transaction_dispatcher_host_.reset();
 }
 
 void IndexedDBDispatcherHost::OverrideThreadForMessage(
@@ -108,8 +118,6 @@ bool IndexedDBDispatcherHost::OnMessageReceived(const IPC::Message& message,
 
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
 
-  // TODO(dgrogan): The page cycler test can crash here because
-  // database_dispatcher_host_ becomes invalid.
   bool handled =
       database_dispatcher_host_->OnMessageReceived(message, message_was_ok) ||
       index_dispatcher_host_->OnMessageReceived(message, message_was_ok) ||
