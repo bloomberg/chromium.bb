@@ -14,6 +14,9 @@ extern "C" {
 #include "base/memory/scoped_ptr.h"
 #include "ui/base/x/x11_util.h"
 
+using std::map;
+using std::string;
+
 namespace chromeos {
 
 namespace {
@@ -27,13 +30,16 @@ struct AtomInfo {
 
 // Each value from the Atom enum must be present here.
 static const AtomInfo kAtomInfos[] = {
-  { WmIpc::ATOM_CHROME_LOGGED_IN,        "_CHROME_LOGGED_IN" },
-  { WmIpc::ATOM_CHROME_WINDOW_TYPE,      "_CHROME_WINDOW_TYPE" },
-  { WmIpc::ATOM_CHROME_WM_MESSAGE,       "_CHROME_WM_MESSAGE" },
-  { WmIpc::ATOM_MANAGER,                 "MANAGER" },
-  { WmIpc::ATOM_STRING,                  "STRING" },
-  { WmIpc::ATOM_UTF8_STRING,             "UTF8_STRING" },
-  { WmIpc::ATOM_WM_S0,                   "WM_S0" },
+  { WmIpc::ATOM_CHROME_LOGGED_IN,             "_CHROME_LOGGED_IN" },
+  { WmIpc::ATOM_CHROME_STATE,                 "_CHROME_STATE" },
+  { WmIpc::ATOM_CHROME_STATE_COLLAPSED_PANEL, "_CHROME_STATE_COLLAPSED_PANEL" },
+  { WmIpc::ATOM_CHROME_STATE_STATUS_HIDDEN,   "_CHROME_STATE_STATUS_HIDDEN" },
+  { WmIpc::ATOM_CHROME_WINDOW_TYPE,           "_CHROME_WINDOW_TYPE" },
+  { WmIpc::ATOM_CHROME_WM_MESSAGE,            "_CHROME_WM_MESSAGE" },
+  { WmIpc::ATOM_MANAGER,                      "MANAGER" },
+  { WmIpc::ATOM_STRING,                       "STRING" },
+  { WmIpc::ATOM_UTF8_STRING,                  "UTF8_STRING" },
+  { WmIpc::ATOM_WM_S0,                        "WM_S0" },
 };
 
 bool SetIntProperty(XID xid, Atom xatom, const std::vector<int>& values) {
@@ -66,6 +72,22 @@ WmIpc* WmIpc::instance() {
   return g_wm_ipc.Pointer();
 }
 
+string WmIpc::GetAtomName(AtomType type) const {
+  map<AtomType, Atom>::const_iterator atom_it = type_to_atom_.find(type);
+  DCHECK(atom_it != type_to_atom_.end()) << "Unknown AtomType " << type;
+  if (atom_it == type_to_atom_.end())
+    return "";
+
+  map<Atom, string>::const_iterator name_it =
+      atom_to_string_.find(atom_it->second);
+  DCHECK(name_it != atom_to_string_.end())
+      << "Unknown atom " << atom_it->second << " for AtomType " << type;
+  if (name_it == atom_to_string_.end())
+    return "";
+
+  return name_it->second;
+}
+
 bool WmIpc::SetWindowType(GtkWidget* widget,
                           WmIpcWindowType type,
                           const std::vector<int>* params) {
@@ -82,7 +104,7 @@ WmIpcWindowType WmIpc::GetWindowType(GtkWidget* widget,
   std::vector<int> properties;
   if (ui::GetIntArrayProperty(
           ui::GetX11WindowFromGtkWidget(widget),
-          atom_to_string_[type_to_atom_[ATOM_CHROME_WINDOW_TYPE]],
+          GetAtomName(ATOM_CHROME_WINDOW_TYPE),
           &properties)) {
     int type = properties.front();
     if (params) {
@@ -93,6 +115,29 @@ WmIpcWindowType WmIpc::GetWindowType(GtkWidget* widget,
   } else {
     return WM_IPC_WINDOW_UNKNOWN;
   }
+}
+
+bool WmIpc::GetWindowState(GtkWidget* widget,
+                           std::set<WmIpc::AtomType>* atom_types) {
+  atom_types->clear();
+
+  std::vector<Atom> atoms;
+  if (!ui::GetAtomArrayProperty(
+          ui::GetX11WindowFromGtkWidget(widget),
+          GetAtomName(ATOM_CHROME_STATE),
+          &atoms)) {
+    return false;
+  }
+
+  for (std::vector<Atom>::const_iterator it = atoms.begin();
+       it != atoms.end(); ++it) {
+    std::map<Atom, AtomType>::const_iterator type_it = atom_to_type_.find(*it);
+    if (type_it != atom_to_type_.end())
+      atom_types->insert(type_it->second);
+    else
+      LOG(WARNING) << "Unknown state atom " << *it;
+  }
+  return true;
 }
 
 void WmIpc::SendMessage(const Message& msg) {
@@ -184,6 +229,7 @@ WmIpc::WmIpc() {
 
   for (int i = 0; i < kNumAtoms; ++i) {
     type_to_atom_[kAtomInfos[i].atom] = atoms[i];
+    atom_to_type_[atoms[i]] = kAtomInfos[i].atom;
     atom_to_string_[atoms[i]] = kAtomInfos[i].name;
   }
 

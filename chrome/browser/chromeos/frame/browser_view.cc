@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/frame/browser_view.h"
 
 #include <algorithm>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -52,6 +53,9 @@ const int kStatusAreaVerticalAdjustment = -1;
 // If a popup window is larger than this fraction of the screen, create a tab.
 const float kPopupMaxWidthFactor = 0.5;
 const float kPopupMaxHeightFactor = 0.6;
+
+// GDK representation of the _CHROME_STATE X atom.
+static GdkAtom g_chrome_state_gdk_atom = 0;
 
 // This MenuItemView delegate class forwards to the
 // SimpleMenuModel::Delegate() implementation.
@@ -252,7 +256,8 @@ class BrowserViewLayout : public ::BrowserViewLayout {
       return 0;
 
     tabstrip_->SetVisible(true);
-    status_area_->SetVisible(true);
+    status_area_->SetVisible(
+        !chromeos_browser_view()->has_hide_status_area_property());
 
     // Layout status area after tab strip.
     gfx::Size status_size = status_area_->GetPreferredSize();
@@ -277,13 +282,22 @@ class BrowserViewLayout : public ::BrowserViewLayout {
 BrowserView::BrowserView(Browser* browser)
     : ::BrowserView(browser),
       status_area_(NULL),
-      saved_focused_widget_(NULL) {
+      saved_focused_widget_(NULL),
+      has_hide_status_area_property_(false) {
   system_menu_delegate_.reset(new SimpleMenuModelDelegateAdapter(this));
+  MessageLoopForUI::current()->AddObserver(this);
+
+  if (!g_chrome_state_gdk_atom)
+    g_chrome_state_gdk_atom =
+        gdk_atom_intern(
+            WmIpc::instance()->GetAtomName(WmIpc::ATOM_CHROME_STATE).c_str(),
+            FALSE);  // !only_if_exists
 }
 
 BrowserView::~BrowserView() {
   if (toolbar())
     toolbar()->RemoveMenuListener(this);
+  MessageLoopForUI::current()->RemoveObserver(this);
 }
 
 // BrowserView, ::BrowserView overrides:
@@ -300,6 +314,11 @@ void BrowserView::Init() {
   // Listen to wrench menu opens.
   if (toolbar())
     toolbar()->AddMenuListener(this);
+
+  // Listen for PropertyChange events (which we receive in DidProcessEvent()).
+  gtk_widget_add_events(GTK_WIDGET(frame()->GetNativeWindow()),
+                        GDK_PROPERTY_CHANGE_MASK);
+  FetchHideStatusAreaProperty();
 
   // Make sure the window is set to the right type.
   std::vector<int> params;
@@ -467,6 +486,27 @@ StatusAreaHost::TextStyle BrowserView::GetTextStyle() const {
           StatusAreaHost::kWhitePlain : StatusAreaHost::kGrayEmbossed);
 }
 
+// BrowserView, MessageLoopForUI::Observer implementation.
+
+void BrowserView::DidProcessEvent(GdkEvent* event) {
+  if (event->type == GDK_PROPERTY_NOTIFY) {
+    if (!frame()->GetNativeWindow())
+      return;
+
+    GdkEventProperty* property_event =
+        reinterpret_cast<GdkEventProperty*>(event);
+    if (property_event->window ==
+        GTK_WIDGET(frame()->GetNativeWindow())->window) {
+      if (property_event->atom == g_chrome_state_gdk_atom) {
+        const bool had_property = has_hide_status_area_property_;
+        FetchHideStatusAreaProperty();
+        if (has_hide_status_area_property_ != had_property)
+          Layout();
+      }
+    }
+  }
+}
+
 // BrowserView protected:
 
 void BrowserView::GetAccessiblePanes(
@@ -488,6 +528,18 @@ void BrowserView::InitSystemMenu() {
   system_menu_->AppendMenuItemWithLabel(
       IDC_TASK_MANAGER,
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_TASK_MANAGER)));
+}
+
+void BrowserView::FetchHideStatusAreaProperty() {
+  std::set<WmIpc::AtomType> state_atoms;
+  if (WmIpc::instance()->GetWindowState(
+          GTK_WIDGET(frame()->GetNativeWindow()), &state_atoms)) {
+    if (state_atoms.count(WmIpc::ATOM_CHROME_STATE_STATUS_HIDDEN)) {
+      has_hide_status_area_property_ = true;
+      return;
+    }
+  }
+  has_hide_status_area_property_ = false;
 }
 
 }  // namespace chromeos

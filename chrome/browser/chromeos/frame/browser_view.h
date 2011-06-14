@@ -8,6 +8,7 @@
 
 #include <vector>
 
+#include "base/message_loop.h"
 #include "chrome/browser/chromeos/status/status_area_host.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "views/controls/menu/menu_wrapper.h"
@@ -42,7 +43,8 @@ class StatusAreaButton;
 class BrowserView : public ::BrowserView,
                     public views::ContextMenuController,
                     public views::MenuListener,
-                    public StatusAreaHost {
+                    public StatusAreaHost,
+                    public MessageLoopForUI::Observer {
  public:
   explicit BrowserView(Browser* browser);
   virtual ~BrowserView();
@@ -79,8 +81,16 @@ class BrowserView : public ::BrowserView,
   virtual ScreenMode GetScreenMode() const OVERRIDE;
   virtual TextStyle GetTextStyle() const OVERRIDE;
 
+  // MessageLoopForUI::Observer overrides.
+  virtual void WillProcessEvent(GdkEvent* event) OVERRIDE {}
+  virtual void DidProcessEvent(GdkEvent* event) OVERRIDE;
+
   gfx::NativeView saved_focused_widget() const {
     return saved_focused_widget_;
+  }
+
+  bool has_hide_status_area_property() const {
+    return has_hide_status_area_property_;
   }
 
   // static implementation for chromeos::PanelBrowserView.
@@ -96,6 +106,9 @@ class BrowserView : public ::BrowserView,
 
   void ShowInternal(bool is_active);
 
+  // Updates |has_hide_status_area_property_| by querying the X server.
+  void FetchHideStatusAreaProperty();
+
   // Status Area view.
   StatusAreaView* status_area_;
 
@@ -106,6 +119,11 @@ class BrowserView : public ::BrowserView,
   // Focused native widget before wrench menu shows up. We need this to properly
   // perform cut, copy and paste. See http://crosbug.com/8496
   gfx::NativeView saved_focused_widget_;
+
+  // Is the _CHROME_STATE_STATUS_HIDDEN atom present in our toplevel window's
+  // _CHROME_STATE X property?  This gets set by window manager to tell us to
+  // hide the status area.
+  bool has_hide_status_area_property_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserView);
 };
