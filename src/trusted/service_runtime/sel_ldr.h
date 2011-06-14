@@ -58,19 +58,6 @@ EXTERN_C_BEGIN
 
 #define NACL_SANDBOX_CHROOT_FD  "SBX_D"
 
-#if NACL_WINDOWS
-#define WINDOWS_EXCEPTION_TRY do { __try {
-#define WINDOWS_EXCEPTION_CATCH } __except(EXCEPTION_EXECUTE_HANDLER) { \
-                                  NaClLog(LOG_ERROR, \
-                                      "Unhandled Windows exception\n"); \
-                                  exit(1); \
-                                } \
-                              } while (0)
-#else
-#define WINDOWS_EXCEPTION_TRY do {
-#define WINDOWS_EXCEPTION_CATCH } while (0)
-#endif
-
 struct NaClAppThread;
 struct NaClDesc;  /* see native_client/src/trusted/desc/nacl_desc_base.h */
 struct NaClDynamicRegion;

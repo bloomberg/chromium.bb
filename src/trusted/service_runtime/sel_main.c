@@ -239,12 +239,6 @@ int main(int  argc,
   redir_queue = NULL;
   redir_qend = &redir_queue;
 
-  /*
-   * Set an exception handler so Windows won't show a message box if
-   * an exception occurs
-   */
-  WINDOWS_EXCEPTION_TRY;
-
   NaClAllModulesInit();
 
   verbosity = NaClLogGetVerbosity();
@@ -869,8 +863,6 @@ int main(int  argc,
 
   if (handle_signals) NaClSignalHandlerFini();
   NaClAllModulesFini();
-
-  WINDOWS_EXCEPTION_CATCH;
 
   NaClExit(ret_code);
 

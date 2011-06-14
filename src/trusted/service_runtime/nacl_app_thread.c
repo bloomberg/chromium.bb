@@ -52,14 +52,7 @@ void WINAPI NaClThreadLauncher(void *state) {
     natp->nap->debug_stub_callbacks->thread_create_hook(natp);
   }
 
-  /*
-   * We need to set an exception handler in every thread we start,
-   * otherwise the system's default handler is called and a message box is
-   * shown.
-   */
-  WINDOWS_EXCEPTION_TRY;
   NaClStartThreadInApp(natp, natp->user.prog_ctr);
-  WINDOWS_EXCEPTION_CATCH;
 }
 
 int NaClAppThreadCtor(struct NaClAppThread  *natp,
