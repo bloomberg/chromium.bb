@@ -274,17 +274,6 @@ static AtomicInt32 CompareAndSwap(volatile AtomicInt32* ptr,
   return __sync_val_compare_and_swap(ptr, old_value, new_value);
 }
 
-void nc_spinlock_lock(volatile int *lock) {
-  uint32_t val;
-  do {
-    val = CompareAndSwap(lock, 0, 1);
-  } while (val != 0);
-}
-
-void nc_spinlock_unlock(volatile int *lock) {
-  *lock = 0;
-}
-
 uint32_t __nacl_tdb_id_function(nc_hash_entry_t *entry) {
   nc_basic_thread_data_t *basic_data =
       HASH_ENTRY_TO_ENTRY_TYPE(entry, nc_basic_thread_data, hash_entry);
