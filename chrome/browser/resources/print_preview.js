@@ -260,21 +260,8 @@ function updateWithPrinterCapabilities(settingInfo) {
  * @return {boolean} true if the number of copies is valid else returns false.
  */
 function isNumberOfCopiesValid() {
-  var copiesFieldText = $('copies').value.replace(/\s/g, '');
-  if (copiesFieldText == '')
-    return true;
-
-  return (isInteger(copiesFieldText) && Number(copiesFieldText) > 0);
-}
-
-/**
- * Returns true if |toTest| contains only digits. Leading and trailing
- * whitespace is allowed.
- * @param {string} toTest The string to be tested.
- */
-function isInteger(toTest) {
-  var numericExp = /^\s*[0-9]+\s*$/;
-  return numericExp.test(toTest);
+  var copiesFieldText = $('copies').value;
+  return copiesFieldText == '' ? true : isPositiveInteger(copiesFieldText);
 }
 
 /**
@@ -348,15 +335,16 @@ function getSettingsJSON() {
   var deviceName = getSelectedPrinterName();
   var printToPDF = (deviceName == PRINT_TO_PDF);
 
-  return JSON.stringify({'deviceName': deviceName,
-                         'pageRange': getSelectedPageRanges(),
-                         'printAll': printAll,
-                         'duplex': getDuplexMode(),
-                         'copies': getCopies(),
-                         'collate': isCollated(),
-                         'landscape': isLandscape(),
-                         'color': isColor(),
-                         'printToPDF': printToPDF});
+  return JSON.stringify(
+      {'deviceName': deviceName,
+       'pageRange': pageSetToPageRanges(getSelectedPagesSet()),
+       'printAll': printAll,
+       'duplex': getDuplexMode(),
+       'copies': getCopies(),
+       'collate': isCollated(),
+       'landscape': isLandscape(),
+       'color': isColor(),
+       'printToPDF': printToPDF});
 }
 
 /**
@@ -635,9 +623,8 @@ function updatePrintPreview(pageCount, jobTitle, modifiable, previewUid) {
  */
 function createPDFPlugin(previewUid) {
   // Enable the print button.
-  if (!$('printer-list').disabled) {
+  if (!$('printer-list').disabled)
     $('print-button').disabled = false;
-  }
 
   var pdfViewer = $('pdf-viewer');
   if (pdfViewer) {
@@ -650,15 +637,14 @@ function createPDFPlugin(previewUid) {
     return;
   }
 
-  var pdfPlugin = document.createElement('embed');
-  pdfPlugin.setAttribute('id', 'pdf-viewer');
-  pdfPlugin.setAttribute('type', 'application/pdf');
-  pdfPlugin.setAttribute('src', 'chrome://print/' + previewUid + '/print.pdf');
-  var mainView = $('mainview');
-  mainView.appendChild(pdfPlugin);
-  pdfPlugin.onload('onPDFLoad()');
-  pdfPlugin.removePrintButton();
-  pdfPlugin.grayscale(true);
+  pdfViewer = document.createElement('embed');
+  pdfViewer.setAttribute('id', 'pdf-viewer');
+  pdfViewer.setAttribute('type', 'application/pdf');
+  pdfViewer.setAttribute('src', 'chrome://print/' + previewUid + '/print.pdf');
+  $('mainview').appendChild(pdfViewer);
+  pdfViewer.onload('onPDFLoad()');
+  pdfViewer.removePrintButton();
+  pdfViewer.grayscale(true);
 }
 
 /**
@@ -771,8 +757,8 @@ function updatePrintSummary() {
     return;
   }
 
-  var pageList = getSelectedPagesSet();
-  var numOfSheets = pageList.length;
+  var pageSet = getSelectedPagesSet();
+  var numOfSheets = pageSet.length;
   var sheetsLabel = localStrings.getString('printPreviewSheetsLabelSingular');
   var numOfPagesText = '';
   var pagesLabel = '';
@@ -785,8 +771,8 @@ function updatePrintSummary() {
     sheetsLabel = localStrings.getString('printPreviewSheetsLabelPlural');
 
   var html = '';
-  if (pageList.length * copies != numOfSheets) {
-    numOfPagesText = pageList.length * copies;
+  if (pageSet.length * copies != numOfSheets) {
+    numOfPagesText = pageSet.length * copies;
     pagesLabel = localStrings.getString('printPreviewPageLabelPlural');
     html = localStrings.getStringF('printPreviewSummaryFormatLong',
                                    '<b>' + numOfSheets + '</b>',
@@ -843,44 +829,18 @@ function setDefaultValuesAndRegeneratePreview() {
 }
 
 /**
- * Returns a list of all pages in the specified ranges. The pages are listed in
- * the order they appear in the 'individual-pages' textbox and duplicates are
- * not eliminated. If the page ranges can't be parsed an empty list is
- * returned.
+ * Returns the selected pages in ascending order without any duplicates.
  *
  * @return {Array}
  */
-function getSelectedPages() {
-  var pageText = $('individual-pages').value;
+function getSelectedPagesSet() {
+  var pageRangeText = $('individual-pages').value;
 
-  if ($('all-pages').checked || pageText.length == 0)
-    pageText = '1-' + totalPageCount;
+  if ($('all-pages').checked || pageRangeText.length == 0)
+    pageRangeText = '1-' + totalPageCount;
 
-  var pageList = [];
-  var parts = pageText.split(/,/);
-
-  for (var i = 0; i < parts.length; ++i) {
-    var part = parts[i];
-    var match = part.match(/^\s*([0-9]+)\s*-\s*([0-9]*)\s*$/);
-
-    if (match && match[1]) {
-      var from = parseInt(match[1], 10);
-      var to = match[2] ? parseInt(match[2], 10) : totalPageCount;
-
-      if (from && to) {
-        for (var j = from; j <= to; ++j)
-          if (j <= totalPageCount)
-            pageList.push(j);
-      }
-    } else {
-      var singlePageNumber = parseInt(part, 10);
-      if (singlePageNumber && singlePageNumber > 0 &&
-          singlePageNumber <= totalPageCount) {
-        pageList.push(parseInt(part, 10));
-      }
-    }
-  }
-  return pageList;
+  var pageList = pageRangeTextToPageList(pageRangeText, totalPageCount);
+  return pageListToPageSet(pageList);
 }
 
 /**
@@ -889,94 +849,12 @@ function getSelectedPages() {
  * @return {boolean} true if the text is valid.
  */
 function isSelectedPagesValid() {
-  var pageText = $('individual-pages').value;
+  var pageRangeText = $('individual-pages').value;
 
-  if ($('all-pages').checked || pageText.length == 0)
+  if ($('all-pages').checked || pageRangeText.length == 0)
     return true;
 
-  var successfullyParsed = 0;
-  var parts = pageText.split(/,/);
-
-  for (var i = 0; i < parts.length; ++i) {
-    var part = parts[i].replace(/\s*/g, '');
-    if (part.length == 0)
-      continue;
-
-    var match = part.match(/^([0-9]+)-([0-9]*)$/);
-    if (match && isValidNonZeroPositiveInteger(match[1])) {
-      if (!match[2] && totalPageCount == -1) {
-        successfullyParsed += 1;
-        continue;
-      }
-      var from = parseInt(match[1], 10);
-      var to = match[2] ? parseInt(match[2], 10) : totalPageCount;
-
-      if (!to || from > to)
-        return false;
-    } else if (!isValidNonZeroPositiveInteger(part) || (totalPageCount != -1 &&
-               !(parseInt(part, 10) <= totalPageCount))) {
-      return false;
-    }
-    successfullyParsed += 1;
-  }
-  return successfullyParsed > 0
-}
-
-/**
- * Returns true if |value| is a valid non zero positive integer.
- * @param {string} value The string to be tested.
- */
-function isValidNonZeroPositiveInteger(value) {
-  return isInteger(value) && parseInt(value, 10) > 0;
-}
-
-/**
- * Parses the selected page ranges, processes them and returns the results.
- * It squashes whenever possible. Example '1-2,3,5-7' becomes 1-3,5-7
- *
- * @return {Array} an array of page range objects. A page range object has
- *     fields 'from' and 'to'.
- */
-function getSelectedPageRanges() {
-  var pageList = getSelectedPagesSet();
-  var pageRanges = [];
-  for (var i = 0; i < pageList.length; ++i) {
-    tempFrom = pageList[i];
-    while (i + 1 < pageList.length && pageList[i + 1] == pageList[i] + 1)
-      ++i;
-    tempTo = pageList[i];
-    pageRanges.push({'from': tempFrom, 'to': tempTo});
-  }
-  return pageRanges;
-}
-
-/**
- * Returns the selected pages in ascending order without any duplicates.
- */
-function getSelectedPagesSet() {
-  var pageList = getSelectedPages();
-  pageList.sort(function(a,b) { return a - b; });
-  pageList = removeDuplicates(pageList);
-  return pageList;
-}
-
-/**
- * Removes duplicate elements from |inArray| and returns a new  array.
- * |inArray| is not affected. It assumes that the array is already sorted.
- *
- * @param {Array} inArray The array to be processed.
- */
-function removeDuplicates(inArray) {
-  var out = [];
-
-  if(inArray.length == 0)
-    return out;
-
-  out.push(inArray[0]);
-  for (var i = 1; i < inArray.length; ++i)
-    if(inArray[i] != inArray[i - 1])
-      out.push(inArray[i]);
-  return out;
+  return isPageRangeTextValid(pageRangeText, totalPageCount);
 }
 
 /**
@@ -1019,18 +897,6 @@ function onPageSelectionMayHaveChanged() {
 
   previouslySelectedPages = currentlySelectedPages;
   requestPrintPreview();
-}
-
-/**
- * Returns true if the contents of the two arrays are equal.
- */
-function areArraysEqual(array1, array2) {
-  if (array1.length != array2.length)
-    return false;
-  for (var i = 0; i < array1.length; i++)
-    if(array1[i] != array2[i])
-      return false;
-  return true;
 }
 
 /**
