@@ -243,6 +243,8 @@ TEST_F(TreeNodeModelTest, HasAncestor) {
   ASSERT_FALSE(foo1->HasAncestor(child2));
 }
 
+// Verify if GetTotalNodeCount returns the correct number of nodes from the node
+// specifed. The count should include the node itself.
 // The tree looks like this:
 // root
 // |-- child1
@@ -254,49 +256,41 @@ TEST_F(TreeNodeModelTest, HasAncestor) {
 // |   |-- foo4
 // +-- bar1
 //
-// The TotalNodeCount of root is:   9
-// The TotalNodeCount of child1 is: 3
-// The TotalNodeCount of bar1 is:   1
+// The TotalNodeCount of root is:            9
+// The TotalNodeCount of child1 is:          3
+// The TotalNodeCount of child2 and foo2 is: 2
+// The TotalNodeCount of bar1 is:            1
 // And so on...
-// The purpose here is to verify if the function returns the total of nodes
-// under the specifed node correctly. The count should include the node it self.
 TEST_F(TreeNodeModelTest, GetTotalNodeCount) {
-  TreeNodeWithValue<int>* root =
-      new TreeNodeWithValue<int>(ASCIIToUTF16("root"), 0);
-  TreeNodeModel<TreeNodeWithValue<int> > model(root);
+  TreeNodeWithValue<int> root;
 
-  TreeNodeWithValue<int>* child1 =
-      new TreeNodeWithValue<int>(ASCIIToUTF16("child1"), 1);
-  TreeNodeWithValue<int>* child2 =
-      new TreeNodeWithValue<int>(ASCIIToUTF16("child2"), 2);
-  TreeNodeWithValue<int>* child3 =
-      new TreeNodeWithValue<int>(ASCIIToUTF16("child3"), 3);
-  TreeNodeWithValue<int>* foo1 =
-      new TreeNodeWithValue<int>(ASCIIToUTF16("foo1"), 4);
-  TreeNodeWithValue<int>* foo2 =
-      new TreeNodeWithValue<int>(ASCIIToUTF16("foo2"), 5);
-  TreeNodeWithValue<int>* foo3 =
-      new TreeNodeWithValue<int>(ASCIIToUTF16("foo3"), 6);
-  TreeNodeWithValue<int>* foo4 =
-      new TreeNodeWithValue<int>(ASCIIToUTF16("foo4"), 7);
-  TreeNodeWithValue<int>* bar1 =
-      new TreeNodeWithValue<int>(ASCIIToUTF16("bar1"), 8);
+  TreeNodeWithValue<int>* child1 = new TreeNodeWithValue<int>();
+  TreeNodeWithValue<int>* child2 = new TreeNodeWithValue<int>();
+  TreeNodeWithValue<int>* child3 = new TreeNodeWithValue<int>();
 
-  model.Add(root, child1, 0);
-  model.Add(child1, child2, 0);
-  model.Add(child2, child3, 0);
+  root.Add(child1, 0);
+  child1->Add(child2, 0);
+  child2->Add(child3, 0);
 
-  model.Add(root, foo1, 1);
-  model.Add(foo1, foo2, 0);
-  model.Add(foo1, foo4, 1);
-  model.Add(foo2, foo3, 0);
+  TreeNodeWithValue<int>* foo1 = new TreeNodeWithValue<int>();
+  TreeNodeWithValue<int>* foo2 = new TreeNodeWithValue<int>();
+  TreeNodeWithValue<int>* foo3 = new TreeNodeWithValue<int>();
+  TreeNodeWithValue<int>* foo4 = new TreeNodeWithValue<int>();
 
-  model.Add(root, bar1, 0);
+  root.Add(foo1, 1);
+  foo1->Add(foo2, 0);
+  foo2->Add(foo3, 0);
+  foo1->Add(foo4, 1);
 
-  ASSERT_EQ(9, root->GetTotalNodeCount());
+  TreeNodeWithValue<int>* bar1 = new TreeNodeWithValue<int>();
+
+  root.Add(bar1, 2);
+
+  ASSERT_EQ(9, root.GetTotalNodeCount());
   ASSERT_EQ(3, child1->GetTotalNodeCount());
-  ASSERT_EQ(1, bar1->GetTotalNodeCount());
+  ASSERT_EQ(2, child2->GetTotalNodeCount());
   ASSERT_EQ(2, foo2->GetTotalNodeCount());
+  ASSERT_EQ(1, bar1->GetTotalNodeCount());
 }
 
 // Makes sure that we are notified when the node is renamed,
