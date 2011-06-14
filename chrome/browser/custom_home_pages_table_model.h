@@ -33,6 +33,11 @@ class CustomHomePagesTableModel : public ui::TableModel {
   // Sets the set of urls that this model contains.
   void SetURLs(const std::vector<GURL>& urls);
 
+  // Collect all entries indexed by |index_list|, and moves them to be right
+  // before the element addressed by |insert_before|. Used by Drag&Drop.
+  // Expects |index_list| to be ordered ascending.
+  void MoveURLs(int insert_before, const std::vector<int>& index_list);
+
   // Adds an entry at the specified index.
   void Add(int index, const GURL& url);
 

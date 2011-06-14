@@ -80,6 +80,7 @@ cr.define('options.browser_options', function() {
       urlField.addEventListener('blur', function(event) {
         self.parentNode.autocompleteList.detach();
       });
+      this.draggable = true;
     },
 
     /** @inheritDoc */
@@ -117,6 +118,23 @@ cr.define('options.browser_options', function() {
      */
     autocompleteList: null,
 
+    /**
+     * The drop position information: "below" or "above".
+     */
+    dropPos: null,
+
+    /** @inheritDoc */
+    decorate: function() {
+      InlineEditableItemList.prototype.decorate.call(this);
+
+      // Listen to drag and drop events.
+      this.addEventListener('dragstart', this.handleDragStart_.bind(this));
+      this.addEventListener('dragenter', this.handleDragEnter_.bind(this));
+      this.addEventListener('dragover', this.handleDragOver_.bind(this));
+      this.addEventListener('drop', this.handleDrop_.bind(this));
+      this.addEventListener('dragleave', this.handleDragLeave_.bind(this));
+    },
+
     /** @inheritDoc */
     createItem: function(pageInfo) {
       var item = new StartupPageListItem(pageInfo);
@@ -127,6 +145,140 @@ cr.define('options.browser_options', function() {
     /** @inheritDoc */
     deleteItemAtIndex: function(index) {
       chrome.send('removeStartupPages', [String(index)]);
+    },
+
+    /*
+     * Computes the target item of drop event.
+     * @param {Event} e The drop or dragover event.
+     * @private
+     */
+    getTargetFromDropEvent_ : function(e) {
+      var target = e.target;
+      // e.target may be an inner element of the list item
+      while (target != null && !(target instanceof StartupPageListItem)) {
+        target = target.parentNode;
+      }
+      return target;
+    },
+
+    /*
+     * Handles the dragstart event.
+     * @param {Event} e The dragstart event.
+     * @private
+     */
+    handleDragStart_: function(e) {
+      var target = e.target;
+      // StartupPageListItem should be the only draggable element type in the
+      // page but let's make sure.
+      if (target instanceof StartupPageListItem) {
+        this.draggedItem = target;
+        this.draggedItem.editable = false;
+        e.dataTransfer.effectAllowed = 'move';
+        // We need to put some kind of data in the drag or it will be
+        // ignored.  Use the URL in case the user drags to a text field or the
+        // desktop.
+        e.dataTransfer.setData('text/plain', target.urlField_.value);
+      }
+    },
+
+    /*
+     * Handles the dragenter event.
+     * @param {Event} e The dragenter event.
+     * @private
+     */
+    handleDragEnter_: function(e) {
+      e.preventDefault();
+    },
+
+    /*
+     * Handles the dragover event.
+     * @param {Event} e The dragover event.
+     * @private
+     */
+    handleDragOver_: function(e) {
+      var dropTarget = this.getTargetFromDropEvent_(e);
+      // Determines whether the drop target is to accept the drop.
+      // The drop is only successful on another StartupPageListItem.
+      if (!(dropTarget instanceof StartupPageListItem) ||
+          dropTarget == this.draggedItem || dropTarget.isPlaceholder) {
+        this.hideDropMarker_();
+        return;
+      }
+      // Compute the drop postion. Should we move the dragged item to
+      // below or above the drop target?
+      var rect = dropTarget.getBoundingClientRect();
+      var dy = e.clientY - rect.top;
+      var yRatio = dy / rect.height;
+      var dropPos = yRatio <= .5 ? 'above' : 'below';
+      this.dropPos = dropPos;
+      this.showDropMarker_(dropTarget, dropPos);
+      e.preventDefault();
+    },
+
+    /*
+     * Handles the drop event.
+     * @param {Event} e The drop event.
+     * @private
+     */
+    handleDrop_: function(e) {
+      var dropTarget = this.getTargetFromDropEvent_(e);
+      this.hideDropMarker_();
+
+      // Insert the selection at the new position.
+      var newIndex = this.dataModel.indexOf(dropTarget.pageInfo_);
+      if (this.dropPos == 'below')
+        newIndex += 1;
+
+      var selected = this.selectionModel.selectedIndexes;
+      var stringized_selected = [];
+      for (var j = 0; j < selected.length; j++)
+        stringized_selected.push(String(selected[j]));
+
+      chrome.send('dragDropStartupPage',
+          [String(newIndex), stringized_selected] );
+    },
+
+    /*
+     * Handles the dragleave event.
+     * @param {Event} e The dragleave event
+     * @private
+     */
+    handleDragLeave_ : function(e) {
+      this.hideDropMarker_();
+    },
+
+    /*
+     * Shows and positions the marker to indicate the drop target.
+     * @param {HTMLElement} target The current target list item of drop
+     * @param {string} pos 'below' or 'above'
+     * @private
+     */
+    showDropMarker_ : function(target, pos) {
+      window.clearTimeout(this.hideDropMarkerTimer_);
+      var marker = $('startupPagesListDropmarker');
+      var rect = target.getBoundingClientRect();
+      var markerHeight = 6;
+      if (pos == 'above') {
+        marker.style.top = (rect.top - markerHeight/2) + 'px';
+      } else {
+        marker.style.top = (rect.bottom - markerHeight/2) + 'px';
+      }
+      marker.style.width = rect.width + 'px';
+      marker.style.left = rect.left + 'px';
+      marker.style.display = 'block';
+    },
+
+    /*
+     * Hides the drop marker.
+     * @private
+     */
+    hideDropMarker_ : function() {
+      // Hide the marker in a timeout to reduce flickering as we move between
+      // valid drop targets.
+      window.clearTimeout(this.hideDropMarkerTimer_);
+      this.hideDropMarkerTimer_ = window.setTimeout(function() {
+        $('startupPagesListDropmarker').style.display = '';
+      }, 100);
     },
   };
 

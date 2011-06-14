@@ -66,6 +66,64 @@ void CustomHomePagesTableModel::SetURLs(const std::vector<GURL>& urls) {
     observer_->OnModelChanged();
 }
 
+/**
+ * Move a number of existing entries to a new position, reordering the table.
+ *
+ * We determine the range of elements affected by the move, save the moved
+ * elements, compact the remaining ones, and re-insert moved elements.
+ * Expects |index_list| to be ordered ascending.
+ */
+void CustomHomePagesTableModel::MoveURLs(int insert_before,
+                                         const std::vector<int>& index_list)
+{
+  DCHECK(insert_before >= 0 && insert_before <= RowCount());
+
+  // The range of elements that needs to be reshuffled is [ |first|, |last| ).
+  int first = std::min(insert_before, index_list.front());
+  int last = std::max(insert_before, index_list.back() + 1);
+
+  // Save the dragged elements. Also, adjust insertion point if it is before a
+  // dragged element.
+  std::vector<Entry> moved_entries;
+  for (size_t i = 0; i < index_list.size(); ++i) {
+    moved_entries.push_back(entries_[index_list[i]]);
+    if (index_list[i] == insert_before)
+      insert_before++;
+  }
+
+  // Compact the range between beginning and insertion point, moving downwards.
+  size_t skip_count = 0;
+  for (int i = first; i < insert_before; ++i) {
+    if (skip_count < index_list.size() && index_list[skip_count] == i)
+      skip_count++;
+    else
+      entries_[i - skip_count]=entries_[i];
+  }
+
+  // Moving items down created a gap. We start compacting up after it.
+  first = insert_before;
+  insert_before -= skip_count;
+
+  // Now compact up for elements after the insertion point.
+  skip_count = 0;
+  for (int i = last - 1; i >= first; --i) {
+    if (skip_count < index_list.size() &&
+        index_list[index_list.size() - skip_count - 1] == i) {
+      skip_count++;
+    } else {
+      entries_[i + skip_count] = entries_[i];
+    }
+  }
+
+  // Insert moved elements.
+  std::copy(moved_entries.begin(), moved_entries.end(),
+      entries_.begin() + insert_before);
+
+  // Possibly large change, so tell the view to just rebuild itself.
+  if (observer_)
+    observer_->OnModelChanged();
+}
+
 void CustomHomePagesTableModel::Add(int index, const GURL& url) {
   DCHECK(index >= 0 && index <= RowCount());
   entries_.insert(entries_.begin() + static_cast<size_t>(index), Entry());

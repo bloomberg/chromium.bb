@@ -114,6 +114,9 @@ void BrowserOptionsHandler::RegisterMessages() {
       "setStartupPagesToCurrentPages",
       NewCallback(this, &BrowserOptionsHandler::SetStartupPagesToCurrentPages));
   web_ui_->RegisterMessageCallback(
+      "dragDropStartupPage",
+      NewCallback(this, &BrowserOptionsHandler::DragDropStartupPage));
+  web_ui_->RegisterMessageCallback(
       "requestAutocompleteSuggestions",
       NewCallback(this,
                   &BrowserOptionsHandler::RequestAutocompleteSuggestions));
@@ -403,6 +406,30 @@ void BrowserOptionsHandler::EditStartupPage(const ListValue* args) {
   std::vector<GURL> urls = startup_custom_pages_table_model_->GetURLs();
   urls[index] = URLFixerUpper::FixupURL(url_string, std::string());
   startup_custom_pages_table_model_->SetURLs(urls);
+}
+
+void BrowserOptionsHandler::DragDropStartupPage(const ListValue* args) {
+  CHECK_EQ(args->GetSize(), 2U);
+
+  std::string value;
+  int to_index;
+
+  CHECK(args->GetString(0, &value));
+  base::StringToInt(value, &to_index);
+
+  ListValue* selected;
+  CHECK(args->GetList(1, &selected));
+
+  std::vector<int> index_list;
+  for (size_t i = 0; i < selected->GetSize(); ++i) {
+    int index;
+    CHECK(selected->GetString(i, &value));
+    base::StringToInt(value, &index);
+    index_list.push_back(index);
+  }
+
+  startup_custom_pages_table_model_->MoveURLs(to_index, index_list);
+  SaveStartupPagesPref();
 }
 
 void BrowserOptionsHandler::SaveStartupPagesPref() {

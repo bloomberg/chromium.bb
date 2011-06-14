@@ -79,6 +79,9 @@ class BrowserOptionsHandler : public OptionsPageUIHandler,
   // Sets the startup page set to the current pages. Called from WebUI.
   void SetStartupPagesToCurrentPages(const ListValue* args);
 
+  // Writes the current set of startup pages to prefs. Called from WebUI.
+  void DragDropStartupPage(const ListValue* args);
+
   // Gets autocomplete suggestions asychronously for the given string.
   // Called from WebUI.
   void RequestAutocompleteSuggestions(const ListValue* args);

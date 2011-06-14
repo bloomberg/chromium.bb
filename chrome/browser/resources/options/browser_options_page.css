@@ -16,6 +16,22 @@
   color: #666;
 }
 
+#startupPagesListDropmarker {
+  background-clip: padding-box;
+  background-color: hsl(214, 91%, 65%);
+  border-bottom-color: transparent;
+  border-radius: 0;
+  border-top-color: transparent;
+  border: 2px solid hsl(214, 91%, 65%);
+  box-sizing: border-box;
+  display: none;
+  height: 6px;
+  overflow: hidden;
+  pointer-events: none;
+  position: fixed;
+  z-index: 10;
+}
+
 #customHomePageGroup {
   display: -webkit-box;
   -webkit-box-orient: horizontal;
