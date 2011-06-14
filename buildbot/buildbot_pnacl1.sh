@@ -229,7 +229,7 @@ mode-buildbot-x8664() {
   install-lkgr-toolchains
   partial-sdk "x86-64"
   # First build everything
-  scons-tests "x86-64" "--mode=opt-host,nacl -j8 -k"
+  scons-tests "x86-64" "--mode=opt-host,nacl -j8 -k" ""
   # Then test (not all nexes which are build are also tested)
   scons-tests "x86-64" "--mode=opt-host,nacl -k" "smoke_tests"
   browser-tests "x86-64" "--mode=opt-host,nacl -k"
