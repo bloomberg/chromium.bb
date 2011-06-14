@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 
 #include <algorithm>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/stl_util-inl.h"
@@ -461,7 +462,9 @@ bool TabStrip::ShouldHighlightCloseButtonAfterRemove() {
 void TabStrip::DoLayout() {
   BaseTabStrip::DoLayout();
 
-  newtab_button_->SetBoundsRect(newtab_button_bounds_);
+  // It is possible we don't have a new tab button yet.
+  if (newtab_button_)
+    newtab_button_->SetBoundsRect(newtab_button_bounds_);
 }
 
 void TabStrip::LayoutDraggedTabsAt(const std::vector<BaseTab*>& tabs,
@@ -721,7 +724,7 @@ void TabStrip::RemoveMessageLoopObserver() {
 gfx::Rect TabStrip::GetDropBounds(int drop_index,
                                   bool drop_before,
                                   bool* is_beneath) {
-  DCHECK(drop_index != -1);
+  DCHECK_NE(drop_index, -1);
   int center_x;
   if (drop_index < tab_count()) {
     Tab* tab = GetTabAtTabDataIndex(drop_index);

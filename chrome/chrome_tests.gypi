@@ -1830,6 +1830,7 @@
         'browser/ui/toolbar/back_forward_menu_model_unittest.cc',
         'browser/ui/toolbar/encoding_menu_controller_unittest.cc',
         'browser/ui/toolbar/wrench_menu_model_unittest.cc',
+        'browser/ui/touch/tabs/touch_tab_strip_unittest.cc',
         'browser/ui/views/accessibility_event_router_views_unittest.cc',
         'browser/ui/views/bookmarks/bookmark_bar_view_unittest.cc',
         'browser/ui/views/bookmarks/bookmark_context_menu_test.cc',
@@ -1840,6 +1841,11 @@
         'browser/ui/views/reload_button_unittest.cc',
         'browser/ui/views/shell_dialogs_win_unittest.cc',
         'browser/ui/views/status_icons/status_tray_win_unittest.cc',
+        'browser/ui/views/tabs/base_tab_strip_test_fixture.h',
+        'browser/ui/views/tabs/fake_base_tab_strip_controller.cc',
+        'browser/ui/views/tabs/fake_base_tab_strip_controller.h',
+        'browser/ui/views/tabs/side_tab_strip_unittest.cc',
+        'browser/ui/views/tabs/tab_strip_unittest.cc',
         'browser/ui/webui/chromeos/enterprise_enrollment_ui_unittest.cc',
         'browser/ui/webui/html_dialog_tab_contents_delegate_unittest.cc',
         'browser/ui/webui/ntp/shown_sections_handler_unittest.cc',
@@ -2019,6 +2025,7 @@
         }],
         ['touchui==0', {
           'sources/': [
+            ['exclude', '^browser/ui/touch/'],
             ['exclude', '^browser/ui/webui/chromeos/login/'],
           ],
         }],
