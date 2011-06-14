@@ -313,7 +313,7 @@ class BuilderStage(object):
     """Can be overridden.  Called before a stage is performed."""
 
     # Tell the buildbot we are starting a new step for the waterfall
-    print '@@@BUILD_STEP %s@@@' % self._name
+    print '@@@BUILD_STEP %s@@@\n' % self._name
 
     self._PrintLoudly('Start Stage %s - %s\n\n%s' % (
         self._name, time.strftime('%H:%M:%S'), self.__doc__))
