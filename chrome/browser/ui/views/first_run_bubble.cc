@@ -44,6 +44,15 @@ const int kStringSeparationPadding = 2;
 // Margin around close button.
 const int kMarginRightOfCloseButton = 7;
 
+// The bubble's HWND is actually owned by the border widget, and it's the border
+// widget that's owned by the frame window the bubble is anchored to. This
+// function makes the two leaps necessary to go from the bubble contents HWND
+// to the frame HWND.
+HWND GetLogicalBubbleOwner(HWND bubble_hwnd) {
+  HWND border_widget_hwnd = GetWindow(bubble_hwnd, GW_OWNER);
+  return GetWindow(border_widget_hwnd, GW_OWNER);
+}
+
 }  // namespace
 
 // Base class for implementations of the client view which appears inside the
@@ -514,10 +523,11 @@ void FirstRunBubble::EnableParent() {
   // have to call it again before activating the bubble to prevent the parent
   // window from rendering inactive.
   // TODO(beng): this only works in custom-frame mode, not glass-frame mode.
+  HWND bubble_owner = GetLogicalBubbleOwner(GetNativeView());
   views::NativeWidget* parent =
-      views::NativeWidget::GetNativeWidgetForNativeView(GetParent());
+      views::NativeWidget::GetNativeWidgetForNativeView(bubble_owner);
   if (parent)
-    parent->GetWidget()->GetTopLevelWidget()->DisableInactiveRendering();
+    parent->GetWidget()->DisableInactiveRendering();
   // Reactivate the FirstRunBubble so it responds to OnActivate messages.
   SetWindowPos(GetParent(), 0, 0, 0, 0,
                SWP_NOSIZE | SWP_NOMOVE | SWP_NOREDRAW | SWP_SHOWWINDOW);
