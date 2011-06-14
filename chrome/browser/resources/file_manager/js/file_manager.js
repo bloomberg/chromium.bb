@@ -54,6 +54,9 @@ function FileManager(dialogDom, rootEntries, params) {
 
   this.defaultPath_ = this.params_.defaultPath || '/';
 
+  // Optional list of file types.
+  this.fileTypes_ = this.params_.typeList;
+
   // This is set to just the directory portion of defaultPath in initDialogType.
   this.defaultFolder_ = '/';
 
@@ -552,6 +555,29 @@ FileManager.prototype = {
 
     this.onResize_();
     this.dialogDom_.style.opacity = '1';
+  };
+
+  /**
+   * "Save a file" dialog is supposed to have a combo box with available
+   * file types. Selecting an item filters files by extension and specifies how
+   * file should be saved.
+   * @return {intener} Index of selected type from this.fileTypes_ + 1. 0
+   *                   means value is not specified.
+   */
+  FileManager.prototype.getSelectedFilterIndex_= function(fileName) {
+    // TODO(serya): Implement the combo box
+    // For now try to guess choice by file extension.
+    if (!this.fileTypes_ || this.fileTypes_.length == 0) return 0;
+
+    var extension = /\.[^\.]+$/.exec(fileName);
+    extension = extension ? extension[0].substring(1).toLowerCase() : "";
+    var result = 0;  // Use first type by default.
+    for (var i = 0; i < this.fileTypes_.length; i++) {
+      if (this.fileTypes_[i].extensions.indexOf(extension)) {
+        result = i;
+      }
+    }
+    return result + 1;  // 1-based index.
   };
 
   /**
@@ -2080,8 +2106,9 @@ FileManager.prototype = {
       if (!filename)
         throw new Error('Missing filename!');
 
-      chrome.fileBrowserPrivate.selectFile(currentDirUrl + encodeURI(filename),
-                                           0);
+      chrome.fileBrowserPrivate.selectFile(
+          currentDirUrl + encodeURIComponent(filename),
+          this.getSelectedFilterIndex_(filename));
       window.close();
       return;
     }
@@ -2102,7 +2129,7 @@ FileManager.prototype = {
         continue;
       }
 
-      ary.push(currentDirUrl + encodeURI(entry.name));
+      ary.push(currentDirUrl + encodeURIComponent(entry.name));
     }
 
     // Multi-file selection has no other restrictions.
@@ -2131,7 +2158,8 @@ FileManager.prototype = {
         throw new Error('Selected entry is not a file!');
     }
 
-    chrome.fileBrowserPrivate.selectFile(ary[0], 0);
+    chrome.fileBrowserPrivate.selectFile(
+        ary[0], this.getSelectedFilterIndex_(ary[0]));
     window.close();
   };
 

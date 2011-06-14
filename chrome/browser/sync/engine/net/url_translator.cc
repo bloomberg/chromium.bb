@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -27,7 +27,7 @@ string CgiEscapeString(const char* src) {
 }
 
 string CgiEscapeString(const string& src) {
-  return EscapeUrlEncodedData(src);
+  return EscapeUrlEncodedData(src, true);
 }
 
 // This method appends the query string to the sync server path.
