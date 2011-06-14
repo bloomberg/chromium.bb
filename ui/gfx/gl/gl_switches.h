@@ -12,6 +12,8 @@ namespace switches {
 
 extern const char kDisableGpuVsync[];
 extern const char kUseGL[];
+extern const char kEnableGPUServiceLogging[];
+extern const char kEnableGPUClientLogging[];
 
 }  // namespace switches
 

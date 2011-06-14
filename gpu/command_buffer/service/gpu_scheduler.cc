@@ -33,6 +33,10 @@ GpuScheduler::GpuScheduler(CommandBuffer* command_buffer,
   DCHECK(command_buffer);
   decoder_.reset(gles2::GLES2Decoder::Create(surface_manager, group));
   decoder_->set_engine(this);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableGPUServiceLogging)) {
+    decoder_->set_debug(true);
+  }
 }
 
 GpuScheduler::GpuScheduler(CommandBuffer* command_buffer,

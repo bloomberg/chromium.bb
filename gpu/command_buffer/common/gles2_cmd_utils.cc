@@ -5,6 +5,7 @@
 // This file is here so other GLES2 related files can have a common set of
 // includes where appropriate.
 
+#include <stdio.h>
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 #include <GLES2/gles2_command_buffer.h>
@@ -525,6 +526,43 @@ uint32 GLES2Util::GetChannelsForFormat(int format) {
       return 0x0000;
   }
 }
+
+std::string GLES2Util::GetStringEnum(uint32 value) {
+  const EnumToString* entry = enum_to_string_table_;
+  const EnumToString* end = entry + enum_to_string_table_len_;
+  for (;entry < end; ++entry) {
+    if (value == entry->value) {
+      return entry->name;
+    }
+  }
+  char buffer[20];
+  sprintf(buffer, (value < 0x10000) ? "0x%04x" : "0x%08x", value);
+  return buffer;
+}
+
+std::string GLES2Util::GetStringError(uint32 value) {
+  static EnumToString string_table[] = {
+    { GL_NONE, "GL_NONE" },
+  };
+  return GLES2Util::GetQualifiedEnumString(
+      string_table, arraysize(string_table), value);
+}
+
+std::string GLES2Util::GetStringBool(uint32 value) {
+  return value ? "true" : "false";
+}
+
+std::string GLES2Util::GetQualifiedEnumString(
+    const EnumToString* table, size_t count, uint32 value) {
+  for (const EnumToString* end = table + count; table < end; ++table) {
+    if (table->value == value) {
+      return table->name;
+    }
+  }
+  return GetStringEnum(value);
+}
+
+#include "../common/gles2_cmd_utils_implementation_autogen.h"
 
 }  // namespace gles2
 }  // namespace gpu

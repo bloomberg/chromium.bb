@@ -524,11 +524,21 @@ def GenerateSource(file, functions, set_name):
     file.write('\n')
     file.write('static %s GL_BINDING_CALL Debug_%s(%s) {\n' %
         (return_type, names[0], arguments))
-    argument_names = re.sub(r'(const )?[a-zA-Z0-9]+\** ([a-zA-Z0-9]+)', r'\2',
+    argument_names = re.sub(r'(const )?[a-zA-Z0-9_]+\** ([a-zA-Z0-9_]+)', r'\2',
                               arguments)
-    argument_names = re.sub(r'(const )?[a-zA-Z0-9]+\** ([a-zA-Z0-9]+)', r'\2',
+    argument_names = re.sub(r'(const )?[a-zA-Z0-9_]+\** ([a-zA-Z0-9_]+)', r'\2',
                               argument_names)
-    log_argument_names = argument_names.replace(',', ' << ", " <<');
+    log_argument_names = re.sub(
+        r'(const )?[a-zA-Z0-9_]+\* ([a-zA-Z0-9_]+)',
+        r'CONSTVOID_\2', arguments)
+    log_argument_names = re.sub(
+        r'(const )?[a-zA-Z0-9_]+\** ([a-zA-Z0-9_]+)', r'\2', log_argument_names)
+    log_argument_names = re.sub(
+        r'(const )?[a-zA-Z0-9_]+\** ([a-zA-Z0-9_]+)', r'\2', log_argument_names)
+    log_argument_names = re.sub(
+        r'CONSTVOID_([a-zA-Z0-9_]+)',
+        r'static_cast<const void*>(\1)', log_argument_names);
+    log_argument_names = log_argument_names.replace(',', ' << ", " <<');
     if argument_names == 'void' or argument_names == '':
       argument_names = ''
       log_argument_names = ''
