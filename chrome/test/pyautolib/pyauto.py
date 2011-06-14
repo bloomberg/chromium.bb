@@ -300,7 +300,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     profile_dir = '/home/chronos/user'
     for item in os.listdir(profile_dir):
       # Deleting .pki causes stateful partition to get erased
-      if item != '.pki' and item != 'log':
+      if item != 'log' and not item.startswith('.'):
         pyauto_utils.RemovePath(os.path.join(profile_dir, item))
 
     chronos_dir = '/home/chronos'
