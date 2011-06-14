@@ -1527,7 +1527,7 @@ gboolean NativeWidgetGtk::OnButtonRelease(GtkWidget* widget,
 }
 
 gboolean NativeWidgetGtk::OnScroll(GtkWidget* widget, GdkEventScroll* event) {
-  MouseEvent mouse_event(TransformEvent(event));
+  MouseWheelEvent mouse_event(TransformEvent(event));
   return delegate_->OnMouseEvent(mouse_event);
 }
 
