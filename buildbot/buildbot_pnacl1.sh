@@ -7,9 +7,38 @@ set -o xtrace
 set -o nounset
 set -o errexit
 
+# If true, terminate script when first scons error is encountered.
+FAIL_FAST=1
 # This remembers when any build steps failed, but we ended up continuing.
 RETCODE=0
 
+readonly SCONS_COMMON="./scons --verbose bitcode=1"
+
+# extract the relavant scons flags for reporting
+relevant() {
+  for i in "$@" ; do
+    case $i in
+      nacl_pic=1)
+        echo $i
+        ;;
+      use_sandboxed_translator=1)
+        echo $i
+        ;;
+    esac
+  done
+}
+
+# called when a scons invocation fails
+handle-error() {
+  RETCODE=1
+  echo "@@@STEP_FAILURE@@@"
+  if [ ${FAIL_FAST} == "1" ] ; then
+    echo "FAIL_FAST enabled"
+    exit 1
+  fi
+}
+
+# clear out object, temporary, and toolchain directories
 clobber() {
   echo "@@@BUILD_STEP clobber@@@"
   rm -rf scons-out toolchain compiler hg ../xcodebuild ../sconsbuild ../out \
@@ -123,17 +152,12 @@ ad-hoc-shared-lib-tests() {
   popd
 }
 
-readonly SCONS_COMMON="./scons --verbose bitcode=1 -k"
-
 single-scons-test() {
   local platform=$1
   local extra=$2
-  # this extra is actually printed as part of the build step
-  local extra2=$3
-  local test=$4
-  echo "@@@BUILD_STEP scons [${platform}] [${test}] [${extra2}]@@@"
-  ${SCONS_COMMON} ${extra} ${extra2} platform=${platform} ${test} || \
-     { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
+  local test=$3
+  echo "@@@BUILD_STEP scons [${platform}] [${test}] [$(relevant ${extra})]@@@"
+  ${SCONS_COMMON} ${extra} platform=${platform} ${test} || handle-error
 }
 
 single-browser-test() {
@@ -144,14 +168,11 @@ single-browser-test() {
   local XVFB_PREFIX="xvfb-run --auto-servernum"
   local platform=$1
   local extra=$2
-  # this extra is actually printed as part of the build step
-  local extra2=$3
-  local test=$4
-  echo "@@@BUILD_STEP scons [${platform}] [${test}] [${extra2}]@@@"
+  local test=$3
+  echo "@@@BUILD_STEP scons [${platform}] [${test}] [$(relevant ${extra})]@@@"
   ${XVFB_PREFIX} \
-     ${SCONS_COMMON} ${extra} ${extra2} SILENT=1 platform=${platform} \
-     ${test} || \
-     { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
+     ${SCONS_COMMON} ${extra} SILENT=1 platform=${platform} ${test} || \
+         handle-error
 }
 
 scons-tests() {
@@ -159,11 +180,11 @@ scons-tests() {
   local extra=$2
   local test=$3
   for platform in ${platforms} ; do
-    single-scons-test ${platform} "${extra}" "" "${test}"
-    single-scons-test ${platform} "${extra}" "nacl_pic=1" "${test}"
+    single-scons-test ${platform} "${extra}" "${test}"
+    single-scons-test ${platform} "${extra} nacl_pic=1" "${test}"
     if [ "${platform}" != "arm" ] ; then
-      single-scons-test ${platform} "${extra}" \
-        "use_sandboxed_translator=1" "${test}"
+      single-scons-test ${platform} "${extra} use_sandboxed_translator=1" \
+        "${test}"
     fi
   done
 }
@@ -173,42 +194,45 @@ browser-tests() {
   local extra=$2
   local test="chrome_browser_tests"
   for platform in ${platforms} ; do
-    single-browser-test ${platform} "${extra}" "" "${test}"
+    single-browser-test ${platform} "${extra}" "${test}"
   done
 }
 
 ######################################################################
 mode-trybot() {
+  FAIL_FAST=0
   clobber
   install-lkgr-toolchains
   partial-sdk "arm x86-32 x86-64"
-  scons-tests "arm x86-32 x86-64" "--mode=opt-host,nacl -j8" "smoke_tests"
-  browser-tests "arm x86-32 x86-64" "--mode=opt-host,nacl"
+  scons-tests "arm x86-32 x86-64" "--mode=opt-host,nacl -j8 -k" "smoke_tests"
+  browser-tests "arm x86-32 x86-64" "--mode=opt-host,nacl -k"
   ad-hoc-shared-lib-tests
 }
 
 mode-buildbot-x8632() {
+  FAIL_FAST=0
   clobber
   install-lkgr-toolchains
   partial-sdk "x86-32"
   # First build everything
-  scons-tests "x86-32" "--mode=opt-host,nacl -j8" ""
+  scons-tests "x86-32" "--mode=opt-host,nacl -j8 -k" ""
   # Then test (not all nexes which are build are also tested)
-  scons-tests "x86-32" "--mode=opt-host,nacl" "smoke_tests"
-  browser-tests "x86-32" "--mode=opt-host,nacl"
+  scons-tests "x86-32" "--mode=opt-host,nacl -k" "smoke_tests"
+  browser-tests "x86-32" "--mode=opt-host,nacl -k"
   # this really tests arm and x86-32
   ad-hoc-shared-lib-tests
 }
 
 mode-buildbot-x8664() {
+  FAIL_FAST=0
   clobber
   install-lkgr-toolchains
   partial-sdk "x86-64"
   # First build everything
-  scons-tests "x86-64" "--mode=opt-host,nacl -j8" ""
+  scons-tests "x86-64" "--mode=opt-host,nacl -j8 -k"
   # Then test (not all nexes which are build are also tested)
-  scons-tests "x86-64" "--mode=opt-host,nacl" "smoke_tests"
-  browser-tests "x86-64" "--mode=opt-host,nacl"
+  scons-tests "x86-64" "--mode=opt-host,nacl -k" "smoke_tests"
+  browser-tests "x86-64" "--mode=opt-host,nacl -k"
 }
 
 # These names were originally botnames
@@ -223,6 +247,7 @@ NAME_ARM_DBG() {
 readonly NAME_ARM_TRY="nacl-arm_opt/None"
 
 mode-buildbot-arm() {
+  FAIL_FAST=0
   local mode=$1
 
   clobber
@@ -231,10 +256,10 @@ mode-buildbot-arm() {
 
   gyp-arm-build Release
 
-  scons-tests "arm" "${mode} -j8" ""
-  scons-tests "arm" "${mode}" "small_tests"
-  scons-tests "arm" "${mode}" "medium_tests"
-  scons-tests "arm" "${mode}" "large_tests"
+  scons-tests "arm" "${mode} -j8 -k" ""
+  scons-tests "arm" "${mode} -k" "small_tests"
+  scons-tests "arm" "${mode} -k" "medium_tests"
+  scons-tests "arm" "${mode} -k" "large_tests"
   browser-tests "arm" "${mode}"
 }
 
@@ -254,10 +279,11 @@ mode-buildbot-arm-try() {
 }
 
 mode-buildbot-arm-hw() {
+  FAIL_FAST=0
   local flags="naclsdk_validate=0 built_elsewhere=1 $1"
-  scons-tests "arm" "${flags}" "small_tests"
-  scons-tests "arm" "${flags}" "medium_tests"
-  scons-tests "arm" "${flags}" "large_tests"
+  scons-tests "arm" "${flags} -k" "small_tests"
+  scons-tests "arm" "${flags} -k" "medium_tests"
+  scons-tests "arm" "${flags} -k" "large_tests"
   browser-tests "arm" "${flags}"
 }
 
@@ -322,7 +348,7 @@ fi
 eval "$@"
 
 if [[ ${RETCODE} != 0 ]]; then
-  echo @@@BUILD_STEP summary@@@
+  echo "@@@BUILD_STEP summary@@@"
   echo There were failed stages.
   exit ${RETCODE}
 fi
