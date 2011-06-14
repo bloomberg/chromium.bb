@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -271,27 +271,37 @@ void InitChromeLogging(const CommandLine& command_line,
 #if defined(OS_POSIX) && defined(IPC_MESSAGE_LOG_ENABLED)
   IPC::Logging::set_log_function_map(&g_log_function_mapping);
 #endif
+  LoggingDestination logging_dest = DetermineLogMode(command_line);
+  FilePath log_path;
+#if defined(OS_CHROMEOS)
+    FilePath target_path;
+#endif
 
-  FilePath log_path = GetLogFileName();
+  // Don't resolve the log path unless we need to. Otherwise we leave an open
+  // ALPC handle after sandbox lockdown on Windows.
+  if (logging_dest == LOG_ONLY_TO_FILE ||
+      logging_dest == LOG_TO_BOTH_FILE_AND_SYSTEM_DEBUG_LOG) {
+    log_path = GetLogFileName();
 
 #if defined(OS_CHROMEOS)
-  // For BWSI (Incognito) logins, we want to put the logs in the user
-  // profile directory that is created for the temporary session instead
-  // of in the system log directory, for privacy reasons.
-  if (command_line.HasSwitch(switches::kGuestSession))
-    log_path = GetSessionLogFile(command_line);
+    // For BWSI (Incognito) logins, we want to put the logs in the user
+    // profile directory that is created for the temporary session instead
+    // of in the system log directory, for privacy reasons.
+    if (command_line.HasSwitch(switches::kGuestSession))
+      log_path = GetSessionLogFile(command_line);
 
-  // On ChromeOS we log to the symlink.  We force creation of a new
-  // symlink if we've been asked to delete the old log, since that
-  // indicates the start of a new session.
-  FilePath target_path = SetUpSymlinkIfNeeded(
-      log_path, delete_old_log_file == logging::DELETE_OLD_LOG_FILE);
+    // On ChromeOS we log to the symlink.  We force creation of a new
+    // symlink if we've been asked to delete the old log, since that
+    // indicates the start of a new session.
+    target_path = SetUpSymlinkIfNeeded(
+        log_path, delete_old_log_file == logging::DELETE_OLD_LOG_FILE);
 
-  // Because ChromeOS manages the move to a new session by redirecting
-  // the link, it shouldn't remove the old file in the logging code,
-  // since that will remove the newly created link instead.
-  delete_old_log_file = logging::APPEND_TO_OLD_LOG_FILE;
+    // Because ChromeOS manages the move to a new session by redirecting
+    // the link, it shouldn't remove the old file in the logging code,
+    // since that will remove the newly created link instead.
+    delete_old_log_file = logging::APPEND_TO_OLD_LOG_FILE;
 #endif
+  }
 
   logging::DcheckState dcheck_state =
       command_line.HasSwitch(switches::kEnableDCHECK) ?
@@ -299,7 +309,7 @@ void InitChromeLogging(const CommandLine& command_line,
       logging::DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS;
 
   bool success = InitLogging(log_path.value().c_str(),
-                             DetermineLogMode(command_line),
+                             logging_dest,
                              logging::LOCK_LOG_FILE,
                              delete_old_log_file,
                              dcheck_state);
