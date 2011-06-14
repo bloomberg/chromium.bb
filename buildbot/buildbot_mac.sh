@@ -140,6 +140,13 @@ if [[ $TOOLCHAIN != glibc ]]; then
   fi
 fi
 
+# x86-64 is not fully supported on Mac.  Not everything works, but we
+# want to stop x86-64 sel_ldr from regressing, so do a minimal test here.
+echo @@@BUILD_STEP minimal x86-64 test@@@
+./scons -j 8 -k --verbose ${GLIBCOPTS} --mode=${MODE}-host,nacl \
+    run_hello_world_test platform=x86-64 ||
+    { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
+
 if [[ ${RETCODE} != 0 ]]; then
   echo @@@BUILD_STEP summary@@@
   echo There were failed stages.
