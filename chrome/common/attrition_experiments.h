@@ -26,6 +26,14 @@ const wchar_t kAll[] = L"*";
 // A comma-separated list of brand codes that are associated with Skype.
 const wchar_t kSkype[] = L"SKPC,SKPG,SKPH,SKPI,SKPL,SKPM,SKPN";
 
+// Constants for the "infobar plugins" experiment. These strings become
+// the registry omaha |client| value. The last one is considered to be
+// the control group which reflects the current behavior.
+const wchar_t kPluginNoBlockNoOOD[] = L"PI01";
+const wchar_t kPluginNoBlockDoOOD[] = L"PI02";
+const wchar_t kPluginDoBlockNoOOD[] = L"PI04";
+const wchar_t kPluginDoBlockDoOOD[] = L"PI10";
+
 }  // namespace
 
 #endif  // CHROME_COMMON_ATTRITION_EXPERIMENTS_H_

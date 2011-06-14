@@ -238,6 +238,31 @@ bool LaunchSetupAsConsoleUser(const FilePath& setup_path,
   return launched;
 }
 
+// The plugin infobar experiment is just setting the client registry value
+// to one of four possible values from 10% of the elegible population, which
+// is defined as active users that have opted-in for sending stats.
+// Chrome reads this value and modifies the plugin blocking and infobar
+// behavior accordingly.
+bool DoInfobarPluginsExperiment(int dir_age_hours) {
+  if (!GoogleUpdateSettings::GetCollectStatsConsent())
+    return false;
+  if (dir_age_hours > (24 * 14))
+    return false;
+  if (base::RandInt(0, 9))
+    return false;
+
+  const wchar_t* buckets[] = {
+    attrition_experiments::kPluginNoBlockNoOOD,
+    attrition_experiments::kPluginNoBlockDoOOD,
+    attrition_experiments::kPluginDoBlockNoOOD,
+    attrition_experiments::kPluginDoBlockDoOOD
+  };
+
+  size_t group = base::RandInt(0, arraysize(buckets)-1);
+  GoogleUpdateSettings::SetClient(buckets[group]);
+  VLOG(1) << "Plugin infobar experiment group: " << group;
+  return true;
+}
 }  // namespace
 
 GoogleChromeDistribution::GoogleChromeDistribution()
@@ -545,6 +570,7 @@ bool GoogleChromeDistribution::GetExperimentDetails(
   // The big experiment in Apr 2010 used TMxx and TNxx.
   // The big experiment in Oct 2010 used TVxx TWxx TXxx TYxx.
   // The big experiment in Feb 2011 used SJxx SKxx SLxx SMxx.
+  // Note: the plugin infobar experiment uses PIxx codes.
   using namespace attrition_experiments;
   static const struct UserExperimentDetails {
     const wchar_t* locale;  // Locale to show this experiment for (* for all).
@@ -620,8 +646,9 @@ bool GoogleChromeDistribution::GetExperimentDetails(
   return false;
 }
 
-// Currently we only have one experiment: the inactive user toast. Which only
-// applies for users doing upgrades.
+// Currently we have two experiments: 1) The inactive user toast. Which only
+// applies to users doing upgrades, and 2) The plugin infobar experiment
+// which only applies for active users.
 //
 // There are three scenarios when this function is called:
 // 1- Is a per-user-install and it updated: perform the experiment
@@ -666,13 +693,16 @@ void GoogleChromeDistribution::LaunchUserExperiment(
     // chrome user data directory.
     FilePath user_data_dir(installation.GetUserDataPath());
 
-    const bool experiment_enabled = false;
+    const bool toast_experiment_enabled = false;
     const int kThirtyDays = 30 * 24;
 
     int dir_age_hours = GetDirectoryWriteAgeInHours(
         user_data_dir.value().c_str());
-    if (!experiment_enabled) {
-      VLOG(1) << "Toast experiment is disabled.";
+    if (!toast_experiment_enabled) {
+      // Ok, no toast, but what about the plugin infobar experiment?
+      if (!DoInfobarPluginsExperiment(dir_age_hours)) {
+        VLOG(1) << "No infobar experiment";
+      }
       return;
     } else if (dir_age_hours < 0) {
       // This means that we failed to find the user data dir. The most likely
@@ -681,7 +711,6 @@ void GoogleChromeDistribution::LaunchUserExperiment(
       SetClient(base_group + kToastUDDirFailure, true);
       return;
     } else if (dir_age_hours < kThirtyDays) {
-      // An active user, so it does not qualify.
       VLOG(1) << "Chrome used in last " << dir_age_hours << " hours";
       SetClient(base_group + kToastActiveGroup, true);
       return;
