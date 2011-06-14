@@ -55,7 +55,7 @@ if __name__ == '__main__':
   try:
     sys.exit(trychange.TryChange(
         args, file_list=[], swallow_exception=False,
-        prog='git-try',
+        prog='git try',
         extra_epilog='\n'
                      'git try will diff against your tracked branch and will '
                      'detect your rietveld\n'
