@@ -51,23 +51,14 @@ CloudPolicySubsystem::ObserverRegistrar::~ObserverRegistrar() {
 
 CloudPolicySubsystem::CloudPolicySubsystem(
     CloudPolicyIdentityStrategy* identity_strategy,
-    CloudPolicyCacheBase* policy_cache)
-    : identity_strategy_(identity_strategy) {
-  net::NetworkChangeNotifier::AddIPAddressObserver(this);
-  notifier_.reset(new PolicyNotifier());
+    CloudPolicyCacheBase* policy_cache) {
+  std::string device_management_url;
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kDeviceManagementUrl)) {
-    device_management_service_.reset(new DeviceManagementService(
-        command_line->GetSwitchValueASCII(switches::kDeviceManagementUrl)));
-    cloud_policy_cache_.reset(policy_cache);
-    cloud_policy_cache_->set_policy_notifier(notifier_.get());
-    cloud_policy_cache_->Load();
-
-    device_token_fetcher_.reset(
-        new DeviceTokenFetcher(device_management_service_.get(),
-                               cloud_policy_cache_.get(),
-                               notifier_.get()));
+    device_management_url =
+        command_line->GetSwitchValueASCII(switches::kDeviceManagementUrl);
   }
+  Initialize(identity_strategy, policy_cache, device_management_url);
 }
 
 CloudPolicySubsystem::~CloudPolicySubsystem() {
@@ -85,24 +76,35 @@ void CloudPolicySubsystem::OnIPAddressChanged() {
   }
 }
 
-void CloudPolicySubsystem::Initialize(const char* refresh_pref_name,
-                                      int64 delay_milliseconds) {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kDeviceManagementUrl)) {
+void CloudPolicySubsystem::Initialize(
+    CloudPolicyIdentityStrategy* identity_strategy,
+    CloudPolicyCacheBase* policy_cache,
+    const std::string& device_management_url) {
+  device_management_url_ = device_management_url;
+  identity_strategy_ = identity_strategy;
+  net::NetworkChangeNotifier::AddIPAddressObserver(this);
+  notifier_.reset(new PolicyNotifier());
+  if (!device_management_url_.empty()) {
+    device_management_service_.reset(new DeviceManagementService(
+        device_management_url));
+    cloud_policy_cache_.reset(policy_cache);
+    cloud_policy_cache_->set_policy_notifier(notifier_.get());
+    cloud_policy_cache_->Load();
+    CreateDeviceTokenFetcher();
+  }
+}
+
+void CloudPolicySubsystem::CompleteInitialization(
+    const char* refresh_pref_name,
+    int64 delay_milliseconds) {
+  if (!device_management_url_.empty()) {
     DCHECK(device_management_service_.get());
     DCHECK(cloud_policy_cache_.get());
     DCHECK(device_token_fetcher_.get());
     DCHECK(identity_strategy_);
 
     refresh_pref_name_ = refresh_pref_name;
-    DCHECK(!cloud_policy_controller_.get());
-    cloud_policy_controller_.reset(
-        new CloudPolicyController(device_management_service_.get(),
-                                  cloud_policy_cache_.get(),
-                                  device_token_fetcher_.get(),
-                                  identity_strategy_,
-                                  notifier_.get()));
-
+    CreateCloudPolicyController();
     device_management_service_->ScheduleInitialization(delay_milliseconds);
 
     PrefService* local_state = g_browser_process->local_state();
@@ -187,6 +189,27 @@ void CloudPolicySubsystem::ScheduleServiceInitialization(
     int64 delay_milliseconds) {
   if (device_management_service_.get())
     device_management_service_->ScheduleInitialization(delay_milliseconds);
+}
+
+
+void CloudPolicySubsystem::CreateDeviceTokenFetcher() {
+  device_token_fetcher_.reset(
+      new DeviceTokenFetcher(device_management_service_.get(),
+                             cloud_policy_cache_.get(),
+                             notifier_.get()));
+}
+
+void CloudPolicySubsystem::CreateCloudPolicyController() {
+  DCHECK(!cloud_policy_controller_.get());
+  cloud_policy_controller_.reset(
+      new CloudPolicyController(device_management_service_.get(),
+                                cloud_policy_cache_.get(),
+                                device_token_fetcher_.get(),
+                                identity_strategy_,
+                                notifier_.get()));
+}
+
+CloudPolicySubsystem::CloudPolicySubsystem() {
 }
 
 }  // namespace policy

@@ -9,6 +9,7 @@
 #include "base/scoped_temp_dir.h"
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/policy/device_management_service.h"
+#include "chrome/browser/policy/logging_work_scheduler.h"
 #include "chrome/browser/policy/mock_device_management_backend.h"
 #include "chrome/browser/policy/mock_device_management_service.h"
 #include "chrome/browser/policy/policy_notifier.h"
@@ -106,7 +107,8 @@ TEST_F(DeviceTokenFetcherTest, RetryOnError) {
       MockDeviceManagementBackendFailRegister(
           DeviceManagementBackend::kErrorRequestFailed)).WillOnce(
       MockDeviceManagementBackendSucceedRegister());
-  DeviceTokenFetcher fetcher(&service_, cache_.get(), &notifier_, 0, 0, 0);
+  DeviceTokenFetcher fetcher(&service_, cache_.get(), &notifier_,
+                             new DummyWorkScheduler);
   MockTokenAvailableObserver observer;
   EXPECT_CALL(observer, OnDeviceTokenAvailable());
   fetcher.AddObserver(&observer);

@@ -77,8 +77,10 @@ class CloudPolicySubsystem
   virtual void OnIPAddressChanged() OVERRIDE;
 
   // Initializes the subsystem. The first network request will only be made
-  // after |delay_milliseconds|.
-  void Initialize(const char* refresh_pref_name, int64 delay_milliseconds);
+  // after |delay_milliseconds|. It can be scheduled to be happen earlier by
+  // calling |ScheduleInitialization|.
+  void CompleteInitialization(const char* refresh_pref_name,
+                              int64 delay_milliseconds);
 
   // Shuts the subsystem down. This must be called before threading and network
   // infrastructure goes away.
@@ -102,6 +104,14 @@ class CloudPolicySubsystem
   void ScheduleServiceInitialization(int64 delay_milliseconds);
 
  private:
+  friend class TestingCloudPolicySubsystem;
+
+  CloudPolicySubsystem();
+
+  void Initialize(CloudPolicyIdentityStrategy* identity_strategy,
+                  CloudPolicyCacheBase* policy_cache,
+                  const std::string& device_management_url);
+
   // Updates the policy controller with a new refresh rate value.
   void UpdatePolicyRefreshRate(int64 refresh_rate);
 
@@ -109,6 +119,10 @@ class CloudPolicySubsystem
   PolicyNotifier* notifier() {
     return notifier_.get();
   }
+
+  // Factory methods that may be overridden in tests.
+  virtual void CreateDeviceTokenFetcher();
+  virtual void CreateCloudPolicyController();
 
   // NotificationObserver overrides.
   virtual void Observe(NotificationType type,
@@ -129,6 +143,8 @@ class CloudPolicySubsystem
   scoped_ptr<DeviceTokenFetcher> device_token_fetcher_;
   scoped_ptr<CloudPolicyCacheBase> cloud_policy_cache_;
   scoped_ptr<CloudPolicyController> cloud_policy_controller_;
+
+  std::string device_management_url_;
 
   DISALLOW_COPY_AND_ASSIGN(CloudPolicySubsystem);
 };

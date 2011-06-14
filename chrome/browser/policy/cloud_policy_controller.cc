@@ -6,6 +6,8 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/rand_util.h"
@@ -65,23 +67,19 @@ CloudPolicyController::CloudPolicyController(
     CloudPolicyCacheBase* cache,
     DeviceTokenFetcher* token_fetcher,
     CloudPolicyIdentityStrategy* identity_strategy,
-    PolicyNotifier* notifier)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+    PolicyNotifier* notifier) {
   Initialize(service,
              cache,
              token_fetcher,
              identity_strategy,
              notifier,
-             kPolicyRefreshRateInMilliseconds,
-             kPolicyRefreshDeviationFactorPercent,
-             kPolicyRefreshDeviationMaxInMilliseconds,
-             kPolicyRefreshErrorDelayInMilliseconds);
+             new DelayedWorkScheduler);
 }
 
 CloudPolicyController::~CloudPolicyController() {
   token_fetcher_->RemoveObserver(this);
   identity_strategy_->RemoveObserver(this);
-  CancelDelayedWork();
+  scheduler_->CancelDelayedWork();
 }
 
 void CloudPolicyController::SetRefreshRate(int64 refresh_rate_milliseconds) {
@@ -93,12 +91,12 @@ void CloudPolicyController::SetRefreshRate(int64 refresh_rate_milliseconds) {
 }
 
 void CloudPolicyController::Retry() {
-  CancelDelayedWork();
+  scheduler_->CancelDelayedWork();
   DoWork();
 }
 
 void CloudPolicyController::StopAutoRetry() {
-  CancelDelayedWork();
+  scheduler_->CancelDelayedWork();
   backend_.reset();
 }
 
@@ -170,7 +168,8 @@ void CloudPolicyController::OnCredentialsChanged() {
   notifier_->Inform(CloudPolicySubsystem::UNENROLLED,
                     CloudPolicySubsystem::NO_DETAILS,
                     PolicyNotifier::POLICY_CONTROLLER);
-  effective_policy_refresh_error_delay_ms_ = policy_refresh_error_delay_ms_;
+  effective_policy_refresh_error_delay_ms_ =
+      kPolicyRefreshErrorDelayInMilliseconds;
   SetState(STATE_TOKEN_UNAVAILABLE);
 }
 
@@ -180,20 +179,13 @@ CloudPolicyController::CloudPolicyController(
     DeviceTokenFetcher* token_fetcher,
     CloudPolicyIdentityStrategy* identity_strategy,
     PolicyNotifier* notifier,
-    int64 policy_refresh_rate_ms,
-    int policy_refresh_deviation_factor_percent,
-    int64 policy_refresh_deviation_max_ms,
-    int64 policy_refresh_error_delay_ms)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+    DelayedWorkScheduler* scheduler) {
   Initialize(service,
              cache,
              token_fetcher,
              identity_strategy,
              notifier,
-             policy_refresh_rate_ms,
-             policy_refresh_deviation_factor_percent,
-             policy_refresh_deviation_max_ms,
-             policy_refresh_error_delay_ms);
+             scheduler);
 }
 
 void CloudPolicyController::Initialize(
@@ -202,10 +194,7 @@ void CloudPolicyController::Initialize(
     DeviceTokenFetcher* token_fetcher,
     CloudPolicyIdentityStrategy* identity_strategy,
     PolicyNotifier* notifier,
-    int64 policy_refresh_rate_ms,
-    int policy_refresh_deviation_factor_percent,
-    int64 policy_refresh_deviation_max_ms,
-    int64 policy_refresh_error_delay_ms) {
+    DelayedWorkScheduler* scheduler) {
   DCHECK(cache);
 
   service_ = service;
@@ -214,14 +203,10 @@ void CloudPolicyController::Initialize(
   identity_strategy_ = identity_strategy;
   notifier_ = notifier;
   state_ = STATE_TOKEN_UNAVAILABLE;
-  delayed_work_task_ = NULL;
-  policy_refresh_rate_ms_ = policy_refresh_rate_ms;
-  policy_refresh_deviation_factor_percent_ =
-      policy_refresh_deviation_factor_percent;
-  policy_refresh_deviation_max_ms_ = policy_refresh_deviation_max_ms;
-  policy_refresh_error_delay_ms_ = policy_refresh_error_delay_ms;
-  effective_policy_refresh_error_delay_ms_ = policy_refresh_error_delay_ms;
-
+  policy_refresh_rate_ms_ = kPolicyRefreshRateInMilliseconds;
+  effective_policy_refresh_error_delay_ms_ =
+      kPolicyRefreshErrorDelayInMilliseconds;
+  scheduler_.reset(scheduler);
   token_fetcher_->AddObserver(this);
   identity_strategy_->AddObserver(this);
   if (!identity_strategy_->GetDeviceToken().empty())
@@ -270,12 +255,6 @@ void CloudPolicyController::SendPolicyRequest() {
                                  policy_request, this);
 }
 
-void CloudPolicyController::DoDelayedWork() {
-  DCHECK(delayed_work_task_);
-  delayed_work_task_ = NULL;
-  DoWork();
-}
-
 void CloudPolicyController::DoWork() {
   switch (state_) {
     case STATE_TOKEN_UNAVAILABLE:
@@ -293,13 +272,6 @@ void CloudPolicyController::DoWork() {
   }
 
   NOTREACHED() << "Unhandled state" << state_;
-}
-
-void CloudPolicyController::CancelDelayedWork() {
-  if (delayed_work_task_) {
-    delayed_work_task_->Cancel();
-    delayed_work_task_ = NULL;
-  }
 }
 
 void CloudPolicyController::SetState(
@@ -335,7 +307,8 @@ void CloudPolicyController::SetState(
       // Delay is only reset if the policy fetch operation was successful. This
       // will ensure the server won't get overloaded with retries in case of
       // a bug on either side.
-      effective_policy_refresh_error_delay_ms_ = policy_refresh_error_delay_ms_;
+      effective_policy_refresh_error_delay_ms_ =
+          kPolicyRefreshErrorDelayInMilliseconds;
       refresh_at =
           last_refresh + base::TimeDelta::FromMilliseconds(GetRefreshDelay());
       notifier_->Inform(CloudPolicySubsystem::SUCCESS,
@@ -370,20 +343,19 @@ void CloudPolicyController::SetState(
   }
 
   // Update the delayed work task.
-  CancelDelayedWork();
+  scheduler_->CancelDelayedWork();
   if (!refresh_at.is_null()) {
     int64 delay = std::max<int64>((refresh_at - now).InMilliseconds(), 0);
-    delayed_work_task_ = method_factory_.NewRunnableMethod(
-        &CloudPolicyController::DoDelayedWork);
-    MessageLoop::current()->PostDelayedTask(FROM_HERE, delayed_work_task_,
-                                            delay);
+    scheduler_->PostDelayedWork(
+        base::Bind(&CloudPolicyController::DoWork, base::Unretained(this)),
+        delay);
   }
 }
 
 int64 CloudPolicyController::GetRefreshDelay() {
-  int64 deviation = (policy_refresh_deviation_factor_percent_ *
+  int64 deviation = (kPolicyRefreshDeviationFactorPercent *
                      policy_refresh_rate_ms_) / 100;
-  deviation = std::min(deviation, policy_refresh_deviation_max_ms_);
+  deviation = std::min(deviation, kPolicyRefreshDeviationMaxInMilliseconds);
   return policy_refresh_rate_ms_ - base::RandGenerator(deviation + 1);
 }
 

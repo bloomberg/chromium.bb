@@ -211,7 +211,7 @@ void BrowserPolicyConnector::FetchPolicy() {
 
 void BrowserPolicyConnector::Initialize() {
   if (cloud_policy_subsystem_.get()) {
-    cloud_policy_subsystem_->Initialize(
+    cloud_policy_subsystem_->CompleteInitialization(
         prefs::kDevicePolicyRefreshRate,
         kServiceInitializationStartupDelay);
   }

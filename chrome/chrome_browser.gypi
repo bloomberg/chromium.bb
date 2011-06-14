@@ -1574,6 +1574,8 @@
         'browser/policy/cloud_policy_identity_strategy.h',
         'browser/policy/cloud_policy_subsystem.cc',
         'browser/policy/cloud_policy_subsystem.h',
+        'browser/policy/delayed_work_scheduler.cc',
+        'browser/policy/delayed_work_scheduler.h',
         'browser/policy/config_dir_policy_provider.cc',
         'browser/policy/config_dir_policy_provider.h',
         'browser/policy/configuration_policy_loader_win.cc',

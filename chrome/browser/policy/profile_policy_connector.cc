@@ -74,8 +74,9 @@ void ProfilePolicyConnector::Initialize() {
   if (identity_strategy_.get())
     identity_strategy_->LoadTokenCache();
   if (cloud_policy_subsystem_.get()) {
-    cloud_policy_subsystem_->Initialize(prefs::kUserPolicyRefreshRate,
-                                        kServiceInitializationStartupDelay);
+    cloud_policy_subsystem_->CompleteInitialization(
+        prefs::kUserPolicyRefreshRate,
+        kServiceInitializationStartupDelay);
     // Temporarily set the subsystem to listen to profile pref service, since
     // we cannot yet serve user cloud policy to |local_state| and we don't want
     // the profile reference in the subsystem.

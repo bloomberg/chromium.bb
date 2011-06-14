@@ -33,6 +33,7 @@ class MessageLoopProxy;
 namespace net {
 class HostPortPair;
 class HttpResponseHeaders;
+class HttpRequestHeaders;
 class URLRequestContextGetter;
 class URLRequestStatus;
 typedef std::vector<std::string> ResponseCookies;
@@ -123,7 +124,9 @@ class URLFetcher {
   // URLFetcher does not take ownership of |factory|. A value of NULL results
   // in a URLFetcher being created directly.
 #if defined(UNIT_TEST)
-  static void set_factory(Factory* factory) { factory_ = factory; }
+  static void set_factory(Factory* factory) {
+    factory_ = factory;
+  }
 #endif
 
   // Normally interception is disabled for URLFetcher, but you can use this
@@ -171,6 +174,8 @@ class URLFetcher {
   // Set extra headers on the request.  Must be called before the request
   // is started.
   void set_extra_request_headers(const std::string& extra_request_headers);
+
+  void GetExtraRequestHeaders(net::HttpRequestHeaders* headers);
 
   // Set the net::URLRequestContext on the request.  Must be called before the
   // request is started.

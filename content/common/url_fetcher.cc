@@ -872,6 +872,10 @@ void URLFetcher::set_extra_request_headers(
   core_->extra_request_headers_.AddHeadersFromString(extra_request_headers);
 }
 
+void URLFetcher::GetExtraRequestHeaders(net::HttpRequestHeaders* headers) {
+  headers->CopyFrom(core_->extra_request_headers_);
+}
+
 void URLFetcher::set_request_context(
     net::URLRequestContextGetter* request_context_getter) {
   core_->request_context_getter_ = request_context_getter;

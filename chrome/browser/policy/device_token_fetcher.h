@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/task.h"
+#include "chrome/browser/policy/delayed_work_scheduler.h"
 #include "chrome/browser/policy/device_management_backend.h"
 #include "chrome/browser/policy/policy_notifier.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
@@ -42,12 +43,11 @@ class DeviceTokenFetcher
                      CloudPolicyCacheBase* cache,
                      PolicyNotifier* notifier);
   // Version for tests that allows to set timing parameters.
+  // Takes ownership of |scheduler|.
   DeviceTokenFetcher(DeviceManagementService* service,
                      CloudPolicyCacheBase* cache,
                      PolicyNotifier* notifier,
-                     int64 token_fetch_error_delay_ms,
-                     int64 token_fetch_error_max_delay_ms,
-                     int64 unmanaged_device_refresh_rate_ms);
+                     DelayedWorkScheduler* scheduler);
   virtual ~DeviceTokenFetcher();
 
   // Starts fetching a token.
@@ -104,9 +104,7 @@ class DeviceTokenFetcher
   void Initialize(DeviceManagementService* service,
                   CloudPolicyCacheBase* cache,
                   PolicyNotifier* notifier,
-                  int64 token_fetch_error_delay_ms,
-                  int64 token_fetch_error_max_delay_ms,
-                  int64 unmanaged_device_refresh_rate_ms);
+                  DelayedWorkScheduler* scheduler);
 
   // Moves the fetcher into a new state.
   void SetState(FetcherState state);
@@ -115,11 +113,8 @@ class DeviceTokenFetcher
   // an actual token fetch.
   void FetchTokenInternal();
 
-  // Called back from the |retry_task_|.
-  void ExecuteRetryTask();
-
-  // Cancels the |retry_task_|.
-  void CancelRetryTask();
+  // DelayedWorkScheduler::Client:
+  virtual void DoWork();
 
   // Service and backend. A new backend is created whenever the fetcher gets
   // reset.
@@ -154,10 +149,7 @@ class DeviceTokenFetcher
   // Contains physical machine model to send to server.
   std::string machine_model_;
 
-  // Task that has been scheduled to retry fetching a token.
-  CancelableTask* retry_task_;
-
-  ScopedRunnableMethodFactory<DeviceTokenFetcher> method_factory_;
+  scoped_ptr<DelayedWorkScheduler> scheduler_;
 
   ObserverList<Observer, true> observer_list_;
 };

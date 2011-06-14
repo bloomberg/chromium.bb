@@ -6,6 +6,8 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/message_loop.h"
 #include "chrome/browser/policy/cloud_policy_cache_base.h"
 #include "chrome/browser/policy/device_management_service.h"
@@ -30,34 +32,26 @@ namespace em = enterprise_management;
 DeviceTokenFetcher::DeviceTokenFetcher(
     DeviceManagementService* service,
     CloudPolicyCacheBase* cache,
-    PolicyNotifier* notifier)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+    PolicyNotifier* notifier) {
   Initialize(service,
              cache,
              notifier,
-             kTokenFetchErrorDelayMilliseconds,
-             kTokenFetchErrorMaxDelayMilliseconds,
-             kUnmanagedDeviceRefreshRateMilliseconds);
+             new DelayedWorkScheduler);
 }
 
 DeviceTokenFetcher::DeviceTokenFetcher(
     DeviceManagementService* service,
     CloudPolicyCacheBase* cache,
     PolicyNotifier* notifier,
-    int64 token_fetch_error_delay_ms,
-    int64 token_fetch_error_max_delay_ms,
-    int64 unmanaged_device_refresh_rate_ms)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+    DelayedWorkScheduler* scheduler) {
   Initialize(service,
              cache,
              notifier,
-             token_fetch_error_delay_ms,
-             token_fetch_error_max_delay_ms,
-             unmanaged_device_refresh_rate_ms);
+             scheduler);
 }
 
 DeviceTokenFetcher::~DeviceTokenFetcher() {
-  CancelRetryTask();
+  scheduler_->CancelDelayedWork();
 }
 
 void DeviceTokenFetcher::FetchToken(
@@ -106,7 +100,7 @@ const std::string& DeviceTokenFetcher::GetDeviceToken() {
 }
 
 void DeviceTokenFetcher::StopAutoRetry() {
-  CancelRetryTask();
+  scheduler_->CancelDelayedWork();
   backend_.reset();
   device_token_.clear();
   auth_token_.clear();
@@ -157,18 +151,13 @@ void DeviceTokenFetcher::OnError(DeviceManagementBackend::ErrorCode code) {
 void DeviceTokenFetcher::Initialize(DeviceManagementService* service,
                                     CloudPolicyCacheBase* cache,
                                     PolicyNotifier* notifier,
-                                    int64 token_fetch_error_delay_ms,
-                                    int64 token_fetch_error_max_delay_ms,
-                                    int64 unmanaged_device_refresh_rate_ms) {
+                                    DelayedWorkScheduler* scheduler) {
   service_ = service;
   cache_ = cache;
   notifier_ = notifier;
-  token_fetch_error_delay_ms_ = token_fetch_error_delay_ms;
-  token_fetch_error_max_delay_ms_ = token_fetch_error_max_delay_ms;
-  effective_token_fetch_error_delay_ms_ = token_fetch_error_delay_ms;
-  unmanaged_device_refresh_rate_ms_ = unmanaged_device_refresh_rate_ms;
+  effective_token_fetch_error_delay_ms_ = kTokenFetchErrorDelayMilliseconds;
   state_ = STATE_INACTIVE;
-  retry_task_ = NULL;
+  scheduler_.reset(scheduler);
 
   if (cache_->is_unmanaged())
     SetState(STATE_UNMANAGED);
@@ -177,7 +166,7 @@ void DeviceTokenFetcher::Initialize(DeviceManagementService* service,
 void DeviceTokenFetcher::SetState(FetcherState state) {
   state_ = state;
   if (state_ != STATE_TEMPORARY_ERROR)
-    effective_token_fetch_error_delay_ms_ = token_fetch_error_delay_ms_;
+    effective_token_fetch_error_delay_ms_ = kTokenFetchErrorDelayMilliseconds;
 
   base::Time delayed_work_at;
   switch (state_) {
@@ -197,7 +186,8 @@ void DeviceTokenFetcher::SetState(FetcherState state) {
       break;
     case STATE_UNMANAGED:
       delayed_work_at = cache_->last_policy_refresh_time() +
-          base::TimeDelta::FromMilliseconds(unmanaged_device_refresh_rate_ms_);
+          base::TimeDelta::FromMilliseconds(
+              kUnmanagedDeviceRefreshRateMilliseconds);
       notifier_->Inform(CloudPolicySubsystem::UNMANAGED,
                         CloudPolicySubsystem::NO_DETAILS,
                         PolicyNotifier::TOKEN_FETCHER);
@@ -208,13 +198,14 @@ void DeviceTokenFetcher::SetState(FetcherState state) {
               effective_token_fetch_error_delay_ms_);
       effective_token_fetch_error_delay_ms_ =
           std::min(effective_token_fetch_error_delay_ms_ * 2,
-                   token_fetch_error_max_delay_ms_);
+                   kTokenFetchErrorMaxDelayMilliseconds);
       notifier_->Inform(CloudPolicySubsystem::NETWORK_ERROR,
                         CloudPolicySubsystem::DMTOKEN_NETWORK_ERROR,
                         PolicyNotifier::TOKEN_FETCHER);
       break;
     case STATE_ERROR:
-      effective_token_fetch_error_delay_ms_ = token_fetch_error_max_delay_ms_;
+      effective_token_fetch_error_delay_ms_ =
+          kTokenFetchErrorMaxDelayMilliseconds;
       delayed_work_at = base::Time::Now() +
           base::TimeDelta::FromMilliseconds(
               effective_token_fetch_error_delay_ms_);
@@ -230,21 +221,16 @@ void DeviceTokenFetcher::SetState(FetcherState state) {
       break;
   }
 
-  CancelRetryTask();
+  scheduler_->CancelDelayedWork();
   if (!delayed_work_at.is_null()) {
     base::Time now(base::Time::Now());
     int64 delay = std::max<int64>((delayed_work_at - now).InMilliseconds(), 0);
-    retry_task_ = method_factory_.NewRunnableMethod(
-            &DeviceTokenFetcher::ExecuteRetryTask);
-    MessageLoop::current()->PostDelayedTask(FROM_HERE, retry_task_,
-                                            delay);
+    scheduler_->PostDelayedWork(
+        base::Bind(&DeviceTokenFetcher::DoWork, base::Unretained(this)), delay);
   }
 }
 
-void DeviceTokenFetcher::ExecuteRetryTask() {
-  DCHECK(retry_task_);
-  retry_task_ = NULL;
-
+void DeviceTokenFetcher::DoWork() {
   switch (state_) {
     case STATE_INACTIVE:
     case STATE_TOKEN_AVAILABLE:
@@ -255,13 +241,6 @@ void DeviceTokenFetcher::ExecuteRetryTask() {
     case STATE_BAD_AUTH:
       FetchTokenInternal();
       break;
-  }
-}
-
-void DeviceTokenFetcher::CancelRetryTask() {
-  if (retry_task_) {
-    retry_task_->Cancel();
-    retry_task_ = NULL;
   }
 }
 
