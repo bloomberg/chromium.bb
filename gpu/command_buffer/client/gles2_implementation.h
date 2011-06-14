@@ -18,21 +18,8 @@
 #include "../client/gles2_cmd_helper.h"
 #include "../client/ring_buffer.h"
 
-#if !defined(NDEBUG) && !defined(__native_client__) && !defined(GLES2_CONFORMANCE_TESTS)  // NOLINT
-  #if defined(GLES2_INLINE_OPTIMIZATION)
-    // TODO(gman): Replace with macros that work with inline optmization.
-    #define GPU_CLIENT_LOG(args)
-    #define GPU_CLIENT_LOG_CODE_BLOCK(code)
-  #else
-    #include "base/logging.h"
-    #define GPU_CLIENT_LOG(args)  DLOG_IF(INFO, debug_) << args;
-    #define GPU_CLIENT_LOG_CODE_BLOCK(code) code
-    #define GPU_CLIENT_DEBUG
-  #endif
-#else
-  #define GPU_CLIENT_LOG(args)
-  #define GPU_CLIENT_LOG_CODE_BLOCK(code)
-#endif
+// TODO(gman): replace with logging code expansion.
+#define GPU_CLIENT_LOG(args)
 
 namespace gpu {
 
@@ -338,9 +325,6 @@ class GLES2Implementation {
 
   // Current GL error bits.
   uint32 error_bits_;
-
-  // Whether or not to print debugging info.
-  bool debug_;
 
   // Map of GLenum to Strings for glGetString.  We need to cache these because
   // the pointer passed back to the client has to remain valid for eternity.

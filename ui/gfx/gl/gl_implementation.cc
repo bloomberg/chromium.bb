@@ -88,11 +88,6 @@ bool InitializeRequestedGLBindings(
     InitializeGLBindings(default_implementation);
   }
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableGPUServiceLogging)) {
-    InitializeDebugGLBindings();
-  }
-
   if (GetGLImplementation() == kGLImplementationNone) {
     LOG(ERROR) << "Could not initialize GL.";
     return false;

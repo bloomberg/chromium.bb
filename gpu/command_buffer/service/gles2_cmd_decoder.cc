@@ -2709,7 +2709,7 @@ error::Error GLES2DecoderImpl::DoCommand(
   error::Error result = error::kNoError;
   if (debug()) {
     // TODO(gman): Change output to something useful for NaCl.
-    DLOG(INFO) << "[" << this << "]" << "cmd: " << GetCommandName(command);
+    DVLOG(1) << "cmd: " << GetCommandName(command);
   }
   unsigned int command_index = command - kStartPoint - 1;
   if (command_index < arraysize(g_command_info)) {
@@ -2735,8 +2735,7 @@ error::Error GLES2DecoderImpl::DoCommand(
         while ((error = glGetError()) != GL_NO_ERROR) {
           // TODO(gman): Change output to something useful for NaCl.
           SetGLError(error, NULL);
-          DLOG(INFO) << "[" << this << "]"
-              << "GL ERROR: " << error << " : " << GetCommandName(command);
+          DVLOG(1) << "GL ERROR: " << error << " : " << GetCommandName(command);
         }
       }
     } else {

@@ -1774,10 +1774,10 @@ class CWriter(object):
   def __FindSplit(self, string):
     """Finds a place to split a string."""
     splitter = string.find('=')
-    if splitter >= 1 and not string[splitter + 1] == '=' and splitter < 80:
+    if splitter >= 0 and not string[splitter + 1] == '=' and splitter < 80:
       return splitter
     # parts = string.split('(')
-    parts = re.split("(?<=[^\"])\((?!\")", string)
+    parts = re.split("(?<=[^\"])\(", string)
     fptr = re.compile('\*\w*\)')
     if len(parts) > 1:
       splitter = len(parts[0])
@@ -2235,20 +2235,6 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
                   func.MakeTypedOriginalArgString("")))
       file.Write("\n")
 
-  def WriteClientGLCallLog(self, func, file):
-    """Writes a logging macro for the client side code."""
-    comma = ""
-    if len(func.GetOriginalArgs()):
-      comma = " << "
-    file.Write(
-        '  GPU_CLIENT_LOG("[" << this << "] gl%s("%s%s << ")");\n' %
-        (func.original_name, comma, func.MakeLogArgString()))
-
-  def WriteClientGLReturnLog(self, func, file):
-    """Writes the return value logging code."""
-    if func.return_type != "void":
-      file.Write('  GPU_CLIENT_LOG("return:" << result)\n')
-
   def WriteGLES2ImplementationHeader(self, func, file):
     """Writes the GLES2 Implemention."""
     impl_func = func.GetInfo('impl_func')
@@ -2261,12 +2247,10 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
       file.Write("%s %s(%s) {\n" %
                  (func.return_type, func.original_name,
                   func.MakeTypedOriginalArgString("")))
-      self.WriteClientGLCallLog(func, file)
       for arg in func.GetOriginalArgs():
         arg.WriteClientSideValidationCode(file, func)
       file.Write("  helper_->%s(%s);\n" %
                  (func.name, func.MakeOriginalArgString("")))
-      self.WriteClientGLReturnLog(func, file)
       file.Write("}\n")
       file.Write("\n")
     else:
@@ -2684,7 +2668,6 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
       file.Write("%s %s(%s) {\n" %
                  (func.return_type, func.original_name,
                   func.MakeTypedOriginalArgString("")))
-      self.WriteClientGLCallLog(func, file)
       for arg in func.GetOriginalArgs():
         arg.WriteClientSideValidationCode(file, func)
       code = """  if (Is%(type)sReservedId(%(id)s)) {
@@ -2751,13 +2734,6 @@ class GENnHandler(TypeHandler):
         'count_name': func.GetOriginalArgs()[0].name,
       }
     file.Write("%(return_type)s %(name)s(%(typed_args)s) {\n" % args)
-    self.WriteClientGLCallLog(func, file)
-    file.Write("""  GPU_CLIENT_LOG_CODE_BLOCK({
-    for (GLsizei i = 0; i < n; ++i) {
-      GPU_CLIENT_LOG("  " << i << ": " << %s[i]);
-    }
-  });
-""" % func.GetOriginalArgs()[1].name)
     for arg in func.GetOriginalArgs():
       arg.WriteClientSideValidationCode(file, func)
     code = """  %(resource_type)s_id_handler_->MakeIds(0, %(args)s);
@@ -2986,14 +2962,12 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     file.Write("%s %s(%s) {\n" %
                (func.return_type, func.original_name,
                 func.MakeTypedOriginalArgString("")))
-    self.WriteClientGLCallLog(func, file)
     for arg in func.GetOriginalArgs():
       arg.WriteClientSideValidationCode(file, func)
     file.Write("  GLuint client_id;\n")
     file.Write("  program_and_shader_id_handler_->MakeIds(0, 1, &client_id);\n")
     file.Write("  helper_->%s(%s);\n" %
                (func.name, func.MakeCmdArgString("")))
-    file.Write('  GPU_CLIENT_LOG("returned " << client_id);\n')
     file.Write("  return client_id;\n")
     file.Write("}\n")
     file.Write("\n")
@@ -3014,7 +2988,6 @@ class DeleteHandler(TypeHandler):
     file.Write("%s %s(%s) {\n" %
                (func.return_type, func.original_name,
                 func.MakeTypedOriginalArgString("")))
-    self.WriteClientGLCallLog(func, file)
     for arg in func.GetOriginalArgs():
       arg.WriteClientSideValidationCode(file, func)
     file.Write("  program_and_shader_id_handler_->FreeIds(1, &%s);\n" %
@@ -3132,16 +3105,9 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs) {
           'count_name': func.GetOriginalArgs()[0].name,
         }
       file.Write("%(return_type)s %(name)s(%(typed_args)s) {\n" % args)
-      self.WriteClientGLCallLog(func, file)
-      file.Write("""  GPU_CLIENT_LOG_CODE_BLOCK({
-    for (GLsizei i = 0; i < n; ++i) {
-      GPU_CLIENT_LOG("  " << i << ": " << %s[i]);
-    }
-  });
-""" % func.GetOriginalArgs()[1].name)
       for arg in func.GetOriginalArgs():
         arg.WriteClientSideValidationCode(file, func)
-      code = """  %(resource_type)s_id_handler_->FreeIds(%(args)s);
+      code = """%(resource_type)s_id_handler_->FreeIds(%(args)s);
   helper_->%(name)sImmediate(%(args)s);
 }
 
@@ -3306,7 +3272,6 @@ class GETnHandler(TypeHandler):
       file.Write("%s %s(%s) {\n" %
                  (func.return_type, func.original_name,
                   func.MakeTypedOriginalArgString("")))
-      self.WriteClientGLCallLog(func, file)
       for arg in func.GetOriginalArgs():
         arg.WriteClientSideValidationCode(file, func)
       all_but_last_args = func.GetOriginalArgs()[:-1]
@@ -3319,11 +3284,6 @@ class GETnHandler(TypeHandler):
       result_shm_id(), result_shm_offset());
   WaitForCmd();
   result->CopyResult(params);
-  GPU_CLIENT_LOG_CODE_BLOCK({
-    for (int32 i = 0; i < result->GetNumResults(); ++i) {
-      GPU_CLIENT_LOG("  " << i << ": " << result->GetData()[i]);
-    }
-  });
 }
 """
       file.Write(code % {
@@ -3489,11 +3449,6 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     file.Write("%s %s(%s) {\n" %
                (func.return_type, func.original_name,
                 func.MakeTypedOriginalArgString("")))
-    self.WriteClientGLCallLog(func, file)
-    last_arg_name = func.GetLastOriginalArg().name
-    values_str = ' << ", " << '.join(
-        ["%s[%d]" % (last_arg_name, ndx) for ndx in range(0, func.info.count)])
-    file.Write('  GPU_CLIENT_LOG("values: " << %s);\n' % values_str)
     for arg in func.GetOriginalArgs():
       arg.WriteClientSideValidationCode(file, func)
     file.Write("  helper_->%sImmediate(%s);\n" %
@@ -3713,17 +3668,6 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     file.Write("%s %s(%s) {\n" %
                (func.return_type, func.original_name,
                 func.MakeTypedOriginalArgString("")))
-    self.WriteClientGLCallLog(func, file)
-    last_arg_name = func.GetLastOriginalArg().name
-    file.Write("""  GPU_CLIENT_LOG_CODE_BLOCK({
-    for (GLsizei i = 0; i < count; ++i) {
-""")
-    values_str = ' << ", " << '.join(
-        ["%s[%d + i * %d]" % (
-            last_arg_name, ndx, func.info.count) for ndx in range(
-                0, func.info.count)])
-    file.Write('       GPU_CLIENT_LOG("  " << i << ": " << %s);\n' % values_str)
-    file.Write("    }\n  });\n")
     for arg in func.GetOriginalArgs():
       arg.WriteClientSideValidationCode(file, func)
     file.Write("  helper_->%sImmediate(%s);\n" %
@@ -4098,7 +4042,6 @@ TEST_F(%(test_name)s, %(name)sInvalidArgsBadSharedMemoryId) {
       file.Write("%s %s(%s) {\n" %
                  (func.return_type, func.original_name,
                   func.MakeTypedOriginalArgString("")))
-      self.WriteClientGLCallLog(func, file)
       file.Write("  typedef %s::Result Result;\n" % func.name)
       file.Write("  Result* result = GetResultAs<Result*>();\n")
       file.Write("  *result = 0;\n")
@@ -4109,7 +4052,6 @@ TEST_F(%(test_name)s, %(name)sInvalidArgsBadSharedMemoryId) {
       file.Write("  helper_->%s(%s%sresult_shm_id(), result_shm_offset());\n" %
                  (func.name, arg_string, comma))
       file.Write("  WaitForCmd();\n")
-      file.Write('  GPU_CLIENT_LOG("returned " << *result);\n')
       file.Write("  return *result;\n")
       file.Write("}\n")
       file.Write("\n")
@@ -4135,11 +4077,6 @@ class STRnHandler(TypeHandler):
   def WriteGLES2ImplementationHeader(self, func, file):
     """Overrriden from TypeHandler."""
     code = """%(return_type)s %(func_name)s(%(args)s) {
-  GPU_CLIENT_LOG("[" << this << "] gl%(func_name)s" << "("
-      << %(arg0)s << ", "
-      << %(arg1)s << ", "
-      << static_cast<void*>(%(arg2)s) << ", "
-      << static_cast<void*>(%(arg3)s) << ")");
   helper_->SetBucketSize(kResultBucketId, 0);
   helper_->%(func_name)s(%(id_name)s, kResultBucketId);
   if (bufsize > 0) {
@@ -4152,7 +4089,6 @@ class STRnHandler(TypeHandler):
       }
       memcpy(%(dest_name)s, str.c_str(), max_size);
       %(dest_name)s[max_size] = '\\0';
-      GPU_CLIENT_LOG("------\\n" << %(dest_name)s << "\\n------");
     }
   }
 }
@@ -4166,10 +4102,6 @@ class STRnHandler(TypeHandler):
           'bufsize_name': args[1].name,
           'length_name': args[2].name,
           'dest_name': args[3].name,
-          'arg0': args[0].name,
-          'arg1': args[1].name,
-          'arg2': args[2].name,
-          'arg3': args[3].name,
         })
 
   def WriteServiceUnitTest(self, func, file):
@@ -4300,14 +4232,6 @@ class Argument(object):
     """returns an invalid value and expected parse result by index."""
     return ("---ERROR0---", "---ERROR2---", None)
 
-  def GetLogArg(self):
-    """Get argument appropriate for LOG macro."""
-    if self.type == 'GLboolean':
-      return 'GLES2Util::GetStringBool(%s)' % self.name
-    if self.type == 'GLenum':
-      return 'GLES2Util::GetStringEnum(%s)' % self.name
-    return self.name
-
   def WriteGetCode(self, file):
     """Writes the code to get an argument from a command structure."""
     file.Write("  %s %s = static_cast<%s>(c.%s);\n" %
@@ -4346,7 +4270,6 @@ class Argument(object):
   def GetBucketVersion(self):
     """Gets the bucket version of this argument."""
     return self
-
 
 class DataSizeArgument(Argument):
   """class for data_size which Bucket commands do not need."""
@@ -4470,11 +4393,6 @@ class EnumArgument(EnumBaseArgument):
   def __init__(self, name, type):
     EnumBaseArgument.__init__(self, name, "GLenum", type, "GL_INVALID_ENUM")
 
-  def GetLogArg(self):
-    """Overridden from Argument."""
-    return ("GLES2Util::GetString%s(%s)" %
-            (self.type_name, self.name))
-
 
 class IntArgument(EnumBaseArgument):
   """A class for a GLint argument that can only except specific values.
@@ -4496,10 +4414,6 @@ class BoolArgument(EnumBaseArgument):
 
   def __init__(self, name, type):
     EnumBaseArgument.__init__(self, name, "GLboolean", type, "GL_INVALID_VALUE")
-
-  def GetLogArg(self):
-    """Overridden from Argument."""
-    return 'GLES2Util::GetStringBool(%s)' % self.name
 
 
 class ImmediatePointerArgument(Argument):
@@ -4536,10 +4450,6 @@ class ImmediatePointerArgument(Argument):
     """Overridden from Argument."""
     self.WriteDestinationInitalizationValidatationIfNeeded(file, func)
 
-  def GetLogArg(self):
-    """Overridden from Argument."""
-    return "static_cast<const void*>(%s)" % self.name
-
 
 class BucketPointerArgument(Argument):
   """A class that represents an bucket argument to a function."""
@@ -4568,10 +4478,6 @@ class BucketPointerArgument(Argument):
   def WriteDestinationInitalizationValidation(self, file, func):
     """Overridden from Argument."""
     self.WriteDestinationInitalizationValidatationIfNeeded(file, func)
-
-  def GetLogArg(self):
-    """Overridden from Argument."""
-    return "static_cast<const void*>(%s)" % self.name
 
 
 class PointerArgument(Argument):
@@ -4603,10 +4509,6 @@ class PointerArgument(Argument):
     else:
       return ("shared_memory_id_, kInvalidSharedMemoryOffset",
               "kOutOfBounds", None)
-
-  def GetLogArg(self):
-    """Overridden from Argument."""
-    return "static_cast<const void*>(%s)" % self.name
 
   def AddCmdArgs(self, args):
     """Overridden from Argument."""
@@ -4902,11 +4804,6 @@ class Function(object):
     arg_string = ", ".join(
         ["%s%s" % (prefix, arg.name) for arg in args])
     return self.__GetArgList(arg_string, add_comma)
-
-  def MakeLogArgString(self):
-    """Makes a string of the arguments for the LOG macros"""
-    args = self.GetOriginalArgs()
-    return ' << ", " << '.join([arg.GetLogArg() for arg in args])
 
   def WriteCommandDescription(self, file):
     """Writes a description of the command."""
@@ -5479,12 +5376,23 @@ class GLGenerator(object):
                  (func.return_type, func.name,
                   func.MakeTypedOriginalArgString("")))
       func.WriteDestinationInitalizationValidation(file)
-      result_string = "return "
+      comma = ""
+      if len(func.GetOriginalArgs()):
+        comma = " << "
+      file.Write(
+          '  GPU_CLIENT_LOG("%s" << "("%s%s << ")");\n' %
+          (func.original_name, comma, func.MakeOriginalArgString(
+              "", separator=' << ", " << ')))
+      result_string = "%s result = " % func.return_type
+      return_string = (
+          '  GPU_CLIENT_LOG("return:" << result)\n  return result;\n')
       if func.return_type == "void":
         result_string = ""
+        return_string = ""
       file.Write("  %sgles2::GetGLContext()->%s(%s);\n" %
                  (result_string, func.original_name,
                   func.MakeOriginalArgString("")))
+      file.Write(return_string)
       file.Write("}\n")
 
     file.Write("\n")
@@ -5544,66 +5452,6 @@ class GLGenerator(object):
         })
       pre = '  '
     file.Write("}\n\n");
-    file.Close()
-
-  def WriteCommonUtilsHeader(self, filename):
-    """Writes the gles2 common utility header."""
-    file = CHeaderWriter(filename)
-    enums = sorted(_ENUM_LISTS.keys())
-    for enum in enums:
-      if _ENUM_LISTS[enum]['type'] == 'GLenum':
-        file.Write("static std::string GetString%s(uint32 value);\n" % enum)
-    file.Write("\n")
-    file.Close()
-
-  def WriteCommonUtilsImpl(self, filename):
-    """Writes the gles2 common utility header."""
-    enum_re = re.compile(r'\#define\s+(GL_[a-zA-Z0-9_]+)\s+([0-9A-Fa-fx]+)')
-    dict = {}
-    for fname in ['../GLES2/gl2.h', '../GLES2/gl2ext.h']:
-      lines = open(fname).readlines()
-      for line in lines:
-        m = enum_re.match(line)
-        if m:
-          name = m.group(1)
-          value = m.group(2)
-          if not value in dict:
-            dict[value] = name
-
-    file = CHeaderWriter(filename)
-    file.Write("static GLES2Util::EnumToString enum_to_string_table[] = {\n")
-    for value in dict:
-      file.Write('  { %s, "%s", },\n' % (value, dict[value]))
-    file.Write("""};
-
-const GLES2Util::EnumToString* GLES2Util::enum_to_string_table_ =
-    enum_to_string_table;
-const size_t GLES2Util::enum_to_string_table_len_ =
-    sizeof(enum_to_string_table) / sizeof(enum_to_string_table[0]);
-
-""")
-
-    enums = sorted(_ENUM_LISTS.keys())
-    for enum in enums:
-      if _ENUM_LISTS[enum]['type'] == 'GLenum':
-        file.Write("std::string GLES2Util::GetString%s(uint32 value) {\n" %
-                   enum)
-        if len(_ENUM_LISTS[enum]['valid']) > 0:
-          file.Write("  static EnumToString string_table[] = {\n")
-          for value in _ENUM_LISTS[enum]['valid']:
-            file.Write('    { %s, "%s" },\n' % (value, value))
-          file.Write("""  };
-  return GLES2Util::GetQualifiedEnumString(
-      string_table, arraysize(string_table), value);
-}
-
-""")
-        else:
-          file.Write("""  return GLES2Util::GetQualifiedEnumString(
-      NULL, 0, value);
-}
-
-""")
     file.Close()
 
   def WritePepperGLES2Interface(self, filename):
@@ -5936,8 +5784,6 @@ def main(argv):
     gen.WriteServiceUtilsHeader("service/gles2_cmd_validation_autogen.h")
     gen.WriteServiceUtilsImplementation(
         "service/gles2_cmd_validation_implementation_autogen.h")
-    gen.WriteCommonUtilsHeader("common/gles2_cmd_utils_autogen.h")
-    gen.WriteCommonUtilsImpl("common/gles2_cmd_utils_implementation_autogen.h")
 
     if options.generate_command_id_tests:
       gen.WriteCommandIdTest("common/gles2_cmd_id_test_autogen.h")

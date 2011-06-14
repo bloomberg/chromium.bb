@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,16 +22,12 @@
 // spec defines the behavior of OpenGL function, not us. :-(
 #if defined(__native_client__) || defined(GLES2_CONFORMANCE_TESTS)
   #define GL_CLIENT_VALIDATE_DESTINATION_INITALIZATION_ASSERT(v)
-  #define GL_CLIENT_DCHECK(v)
 #elif defined(GPU_DCHECK)
   #define GL_CLIENT_VALIDATE_DESTINATION_INITALIZATION_ASSERT(v) GPU_DCHECK(v)
-  #define GL_CLIENT_DCHECK(v) GPU_DCHECK(v)
 #elif defined(DCHECK)
   #define GL_CLIENT_VALIDATE_DESTINATION_INITALIZATION_ASSERT(v) DCHECK(v)
-  #define GL_CLIENT_DCHECK(v) DCHECK(v)
 #else
   #define GL_CLIENT_VALIDATE_DESTINATION_INITALIZATION_ASSERT(v) ASSERT(v)
-  #define GL_CLIENT_DCHECK(v) ASSERT(v)
 #endif
 
 #define GL_CLIENT_VALIDATE_DESTINATION_INITALIZATION(type, ptr) \

@@ -198,7 +198,7 @@ GpuProcessHost* GpuProcessHost::GetForRenderer(
   return NULL;
 }
 
-// static
+// static 
 void GpuProcessHost::SendOnIO(int renderer_id,
                               content::CauseForGpuLaunch cause,
                               IPC::Message* message) {
@@ -414,7 +414,7 @@ void GpuProcessHost::OnChannelEstablished(
                           GPUInfo());
     RouteOnUIThread(GpuHostMsg_OnLogMessage(
         logging::LOG_WARNING,
-        "WARNING",
+        "WARNING", 
         "Hardware acceleration is unavailable."));
     return;
   }
@@ -527,7 +527,6 @@ bool GpuProcessHost::LaunchGpuProcess() {
     switches::kDisableGpuVsync,
     switches::kDisableGpuWatchdog,
     switches::kDisableLogging,
-    switches::kEnableGPUServiceLogging,
     switches::kEnableLogging,
 #if defined(OS_MACOSX)
     switches::kEnableSandboxLogging,
