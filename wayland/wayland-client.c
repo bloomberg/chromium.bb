@@ -413,8 +413,18 @@ wl_display_connect(const char *name)
 WL_EXPORT void
 wl_display_destroy(struct wl_display *display)
 {
+	struct wl_global *global, *gnext;
+	struct wl_global_listener *listener, *lnext;
+
 	wl_connection_destroy(display->connection);
 	wl_hash_table_destroy(display->objects);
+	wl_list_for_each_safe(global, gnext,
+			      &display->global_list, link)
+		free(global);
+	wl_list_for_each_safe(listener, lnext,
+			      &display->global_listener_list, link)
+		free(listener);
+
 	close(display->fd);
 	free(display);
 }

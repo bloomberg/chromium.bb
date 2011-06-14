@@ -617,10 +617,10 @@ WL_EXPORT void
 wl_display_destroy(struct wl_display *display)
 {
 	struct wl_socket *s, *next;
+	struct wl_global *global, *gnext;
 
-	wl_event_loop_destroy(display->loop);
-	wl_hash_table_destroy(display->objects);
-	
+  	wl_event_loop_destroy(display->loop);
+ 	wl_hash_table_destroy(display->objects);
 	wl_list_for_each_safe(s, next, &display->socket_list, link) {
 		close(s->fd);
 		unlink(s->addr.sun_path);
@@ -628,6 +628,9 @@ wl_display_destroy(struct wl_display *display)
 		unlink(s->lock_addr);
 		free(s);
 	}
+
+	wl_list_for_each_safe(global, gnext, &display->global_list, link)
+		free(global);
 
 	free(display);
 }
