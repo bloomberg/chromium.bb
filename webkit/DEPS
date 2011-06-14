@@ -9,6 +9,7 @@ include_rules = [
   # For bridge/c/c_utility.h in npruntime_util.cc
   "+bridge",
   "+grit",  # For generated headers
+  "+skia",
   "+third_party/sqlite",
   "+third_party/tcmalloc",
   "+ui/gfx",
