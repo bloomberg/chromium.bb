@@ -1,2 +1,5 @@
 # Excceds timeout on our TSan (Mac) bot, see http://crbug.com/85892
 SyncerThreadTest.ThrottlingDoesThrottle
+SyncerThreadTest.ThrottlingExpires
+SyncerThreadTest.BackoffDropsJobs
+SyncerThreadTest.BackoffRelief
