@@ -1,0 +1,122 @@
+# -*- python -*-
+# Copyright 2011 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+Import('env')
+
+# If this test is failing on the bots, you can find the seed
+# from the output of the bot. Look for "--seed=".
+# To reproduce the exact problem, set settings['seed'] below
+# to the fixed seed you found on the bot.
+
+#
+# Calling Convention Test
+#
+# The "generate.py" script generates 4 modules (module0.c ... module3.c).
+# Each module has functions, and calls to other functions in other modules.
+# Each function has multiple fixed and variable arguments.
+# This tests (by brute force) the correctness of the calling convention.
+#
+# To test toolchain compatibility, some of the modules are built
+# using PNaCl, and some with NNaCl.
+
+import random
+
+base_env = env.Clone()
+callingconv_h = base_env.File('callingconv.h').srcnode()
+extra_cflags = [ '-Wno-long-long', '-I' + callingconv_h.dir.abspath ]
+base_env.Append(CFLAGS = extra_cflags)
+
+settings = {
+  'seed'             : random.getrandbits(64),
+  'num_functions'    : 200,
+  'calls_per_func'   : 4,
+  'max_args_per_func': 16,
+  'num_modules'      : 4,
+}
+
+# va_arg of struct types is broken in PNaCl
+if env.Bit('bitcode'):
+  settings['allow_struct_va_arg'] = 0
+
+# long long / double's are not correctly stack-aligned in PNaCl
+if env.Bit('bitcode') and env.Bit('target_x86_32'):
+  settings['allow_longlong'] = 0
+  settings['allow_double'] = 0
+  # The structures contain long long / double
+  settings['allow_struct'] = 0
+  # va_list is not yet matched correctly between NNaCl and PNNaCl
+  settings['allow_vcheck'] = 0
+
+# Structure passing in X86-64 PNaCl does not match NNaCl
+if env.Bit('bitcode') and env.Bit('target_x86_64'):
+  settings['allow_struct'] = 0
+
+
+# Environments for building module sources
+envlist = []
+
+if env.Bit('bitcode'):
+  # For PNaCl, do a mixed test:
+  # Compile two modules with PNaCl (straight to native code)
+  # and the other modules with the native toolchain.
+  pnacl_env = base_env.Clone()
+  pnacl_env.PNaClForceNative()
+  envlist.append(pnacl_env)
+
+  # On X86-32 and X86-64, test against nacl-gcc also.
+  # For ARM, we can only test PNaCl's self-consistency.
+  if not base_env.Bit('target_arm'):
+    native_env = base_env.PNaClGetNNaClEnv()  # Clears CFLAGS
+    native_env.Append(CFLAGS = extra_cflags)
+    envlist.append(native_env)
+
+  link_env = pnacl_env
+else:
+  # For NNaCl toolchain, just test self-consistency
+  link_env = base_env
+  envlist.append(base_env)
+
+num_modules = settings['num_modules']
+module_filenames = [ 'module%d.c' % i for i in xrange(num_modules) ]
+
+# Generate the module source files (module0.c, module1.c, ...)
+settings_args = ['--%s=%s' % (k,str(v)) for k,v in settings.iteritems()]
+base_env['GENERATOR_SETTINGS'] = ' '.join(settings_args)
+
+nodes = base_env.Command(
+          ['callingconv.golden'] + module_filenames,
+          base_env.File('generate.py'),
+          Action('${PYTHON} ${SOURCE} ${GENERATOR_SETTINGS} -- ${TARGETS}'))
+
+# All the modules and callingconv.c depend on the header file
+base_env.Depends(nodes, callingconv_h)
+
+# Assign each module a build environment
+module_env = []
+j = 0
+for i in xrange(num_modules):
+  module_env.append(envlist[j])
+  j = (j+1) % len(envlist)
+
+# Create the module component objects
+modules = []
+for i in xrange(num_modules):
+  modules.append(module_env[i].ComponentObject(nodes[i+1]))
+
+# Compile callingconv.c
+callingconv = link_env.ComponentObject('callingconv.c')
+
+prog = link_env.ComponentProgram('callingconv.nexe',
+                                 [callingconv] + modules)
+
+node = link_env.CommandSelLdrTestNacl(
+         'callingconv.out',
+         command=[prog],
+         stdout_golden=nodes[0])
+
+env.AddNodeToTestSuite(node, [ 'medium_tests' ], 'run_callingconv_test',
+                       # This test takes too long to compile for ARM
+                       # and the resulting code doesn't pass this test.
+                       is_broken=env.Bit('target_arm'))

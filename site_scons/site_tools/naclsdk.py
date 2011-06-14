@@ -281,6 +281,26 @@ def _SetEnvForSdkManually(env):
               RANLIB=GetEnvOrDummy('RANLIB'),
               )
 
+def PNaClForceNative(env):
+  assert(env.Bit('bitcode'))
+  env.Replace(OBJSUFFIX='.o')
+  env.Append(CCFLAGS=['-arch', '${TARGET_FULLARCH}',
+                            '--pnacl-allow-translate'])
+  env.Append(LINKFLAGS=['--pnacl-allow-native'])
+
+# Get an environment for nacl-gcc when in PNaCl mode.
+def PNaClGetNNaClEnv(env):
+  assert(env.Bit('bitcode'))
+  assert(not env.Bit('target_arm'))
+
+  # This is kind of a hack. We clone the environment,
+  # clear the bitcode bit, and then reload naclsdk.py
+  native_env = env.Clone()
+  native_env.ClearBits('bitcode')
+  native_env = native_env.Clone(tools = ['naclsdk'])
+  return native_env
+
+
 # This adds architecture specific defines for the target architecture.
 # These are normally omitted by PNaCl.
 # For example: __i686__, __arm__, __x86_64__
@@ -348,6 +368,8 @@ def generate(env):
   # make these methods to the top level scons file
   env.AddMethod(ValidateSdk)
   env.AddMethod(AddBiasForPNaCl)
+  env.AddMethod(PNaClForceNative)
+  env.AddMethod(PNaClGetNNaClEnv)
 
   sdk_mode = SCons.Script.ARGUMENTS.get('naclsdk_mode', 'download')
 

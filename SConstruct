@@ -2530,6 +2530,7 @@ nacl_env.Append(
     'tests/browser_dynamic_library/nacl.scons',
     'tests/browser_startup_time/nacl.scons',
     'tests/bundle_size/nacl.scons',
+    'tests/callingconv/nacl.scons',
     'tests/chrome_extension/nacl.scons',
     'tests/computed_gotos/nacl.scons',
     'tests/data_not_executable/nacl.scons',
