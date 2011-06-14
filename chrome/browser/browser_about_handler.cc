@@ -105,10 +105,11 @@ namespace {
 
 // Add paths here to be included in chrome://chrome-urls/.
 // These paths will also be suggested by BuiltinProvider.
-const char *kChromePaths[] = {
+const char* kChromePaths[] = {
   chrome::kChromeUIAppCacheInternalsHost,
   chrome::kChromeUIBlobInternalsHost,
   chrome::kChromeUIChromeURLsHost,
+  chrome::kChromeUICrashesHost,
   chrome::kChromeUICreditsHost,
   chrome::kChromeUIDNSHost,
   chrome::kChromeUIFlagsHost,
@@ -119,6 +120,7 @@ const char *kChromePaths[] = {
   chrome::kChromeUINetInternalsHost,
   chrome::kChromeUINetworkViewCacheHost,
   chrome::kChromeUIPluginsHost,
+  chrome::kChromeUISettingsHost,
   chrome::kChromeUIStatsHost,
   chrome::kChromeUISyncInternalsHost,
   chrome::kChromeUITCMallocHost,
@@ -141,7 +143,7 @@ const char *kChromePaths[] = {
 
 // Debug paths, presented without links in chrome://about.
 // These paths will not be suggested by BuiltinProvider.
-const char *kDebugChromePaths[] = {
+const char* kDebugChromePaths[] = {
   chrome::kChromeUICrashHost,
   chrome::kChromeUIKillHost,
   chrome::kChromeUIHangHost,

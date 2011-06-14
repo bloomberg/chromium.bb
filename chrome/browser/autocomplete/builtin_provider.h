@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 //
 // This file contains the autocomplete provider for built-in URLs,
-// such as about:settings.
+// such as about:settings and chrome://version.
 //
 // For more information on the autocomplete system in general, including how
 // the autocomplete controller and autocomplete providers work, see
@@ -17,6 +17,7 @@
 
 #include "base/string16.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
+#include "chrome/browser/autocomplete/autocomplete_match.h"
 
 class BuiltinProvider : public AutocompleteProvider {
  public:
@@ -27,9 +28,12 @@ class BuiltinProvider : public AutocompleteProvider {
   virtual void Start(const AutocompleteInput& input, bool minimal_changes);
 
  private:
+  typedef std::vector<string16> Builtins;
+
   static const int kRelevance;
 
-  typedef std::vector<string16> Builtins;
+  void AddMatch(const string16& match_string,
+                const ACMatchClassifications& styles);
 
   Builtins builtins_;
 
