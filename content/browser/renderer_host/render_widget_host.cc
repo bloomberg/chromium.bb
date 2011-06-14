@@ -29,10 +29,6 @@
 #include "webkit/glue/webcursor.h"
 #include "webkit/plugins/npapi/webplugin.h"
 
-#if defined(TOOLKIT_VIEWS)
-#include "views/view.h"
-#endif
-
 using base::Time;
 using base::TimeDelta;
 using base::TimeTicks;
