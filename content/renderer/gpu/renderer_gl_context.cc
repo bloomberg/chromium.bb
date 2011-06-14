@@ -379,6 +379,7 @@ bool RendererGLContext::Initialize(bool onscreen,
 
   // Allocate a frame buffer ID with respect to the parent.
   if (parent_.get()) {
+    TRACE_EVENT0("gpu", "RendererGLContext::Initialize::flushParent");
     // Flush any remaining commands in the parent context to make sure the
     // texture id accounting stays consistent.
     int32 token = parent_->gles2_helper_->InsertToken();
@@ -420,6 +421,8 @@ bool RendererGLContext::Initialize(bool onscreen,
       LOG(ERROR) << "Invalid surface handle for onscreen context.";
       command_buffer_ = NULL;
     } else {
+      TRACE_EVENT0("gpu",
+                   "RendererGLContext::Initialize::CreateViewCommandBuffer");
       command_buffer_ = channel_->CreateViewCommandBuffer(
           render_surface,
           render_view_id,
@@ -443,10 +446,14 @@ bool RendererGLContext::Initialize(bool onscreen,
     return false;
   }
 
-  // Initiaize the command buffer.
-  if (!command_buffer_->Initialize(kCommandBufferSize)) {
-    Destroy();
-    return false;
+  {
+    TRACE_EVENT0("gpu",
+                 "RendererGLContext::Initialize::InitializeCommandBuffer");
+    // Initiaize the command buffer.
+    if (!command_buffer_->Initialize(kCommandBufferSize)) {
+      Destroy();
+      return false;
+    }
   }
 
   command_buffer_->SetSwapBuffersCallback(
@@ -462,14 +469,16 @@ bool RendererGLContext::Initialize(bool onscreen,
     return false;
   }
 
-  // Create a transfer buffer used to copy resources between the renderer
-  // process and the GPU process.
-  transfer_buffer_id_ =
-      command_buffer_->CreateTransferBuffer(kTransferBufferSize,
-                                            gpu::kCommandBufferSharedMemoryId);
-  if (transfer_buffer_id_ < 0) {
-    Destroy();
-    return false;
+  {
+    TRACE_EVENT0("gpu", "RendererGLContext::Initialize::CreateTransferBuffer");
+    // Create a transfer buffer used to copy resources between the renderer
+    // process and the GPU process.
+    transfer_buffer_id_ = command_buffer_->CreateTransferBuffer(
+        kTransferBufferSize, gpu::kCommandBufferSharedMemoryId);
+    if (transfer_buffer_id_ < 0) {
+      Destroy();
+      return false;
+    }
   }
 
   // Map the buffer into the renderer process's address space.

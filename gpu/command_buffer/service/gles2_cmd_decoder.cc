@@ -3783,6 +3783,7 @@ void GLES2DecoderImpl::DoRenderbufferStorage(
 }
 
 void GLES2DecoderImpl::DoLinkProgram(GLuint program) {
+  TRACE_EVENT0("gpu", "GLES2DecoderImpl::DoLinkProgram");
   ProgramManager::ProgramInfo* info = GetProgramInfoNotShader(
       program, "glLinkProgram");
   if (!info) {
@@ -4519,6 +4520,7 @@ error::Error GLES2DecoderImpl::HandleShaderSourceBucket(
 }
 
 void GLES2DecoderImpl::DoCompileShader(GLuint client_id) {
+  TRACE_EVENT0("gpu", "GLES2DecoderImpl::DoCompileShader");
   ShaderManager::ShaderInfo* info = GetShaderInfoNotProgram(
       client_id, "glCompileShader");
   if (!info) {

@@ -909,6 +909,8 @@ void RenderWidget::didScrollRect(int dx, int dy, const WebRect& clip_rect) {
 }
 
 void RenderWidget::didActivateAcceleratedCompositing(bool active) {
+  TRACE_EVENT1("gpu", "RenderWidget::didActivateAcceleratedCompositing",
+               "active", active);
   is_accelerated_compositing_active_ = active;
   Send(new ViewHostMsg_DidActivateAcceleratedCompositing(
       routing_id_, is_accelerated_compositing_active_));

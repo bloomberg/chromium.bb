@@ -1701,6 +1701,8 @@ void GLES2Implementation::UnmapTexSubImage2DCHROMIUM(const void* mem) {
 }
 
 const GLchar* GLES2Implementation::GetRequestableExtensionsCHROMIUM() {
+  TRACE_EVENT0("gpu",
+               "GLES2Implementation::GetRequestableExtensionsCHROMIUM()");
   const char* result = NULL;
   // Clear the bucket so if the command fails nothing will be in it.
   helper_->SetBucketSize(kResultBucketId, 0);
