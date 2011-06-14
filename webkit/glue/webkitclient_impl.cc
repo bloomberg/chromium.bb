@@ -440,6 +440,11 @@ double WebKitClientImpl::currentTime() {
   return base::Time::Now().ToDoubleT();
 }
 
+double WebKitClientImpl::monotonicallyIncreasingTime() {
+  return base::TimeTicks::Now().ToInternalValue() /
+      static_cast<double>(base::Time::kMicrosecondsPerSecond);
+}
+
 void WebKitClientImpl::cryptographicallyRandomValues(
     unsigned char* buffer, size_t length) {
   base::RandBytes(buffer, length);
