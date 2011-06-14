@@ -48,17 +48,11 @@ GLES2DecoderTestBase::GLES2DecoderTestBase()
 GLES2DecoderTestBase::~GLES2DecoderTestBase() {}
 
 void GLES2DecoderTestBase::SetUp() {
-  InitDecoder("", true, true, false, true, true, false);
+  InitDecoder("", true);
 }
 
 void GLES2DecoderTestBase::InitDecoder(
-    const char* extensions,
-    bool has_alpha,
-    bool has_depth,
-    bool has_stencil,
-    bool request_alpha,
-    bool request_depth,
-    bool request_stencil) {
+    const char* extensions, bool has_alpha_backbuffer) {
   gl_.reset(new StrictMock<MockGLInterface>());
   ::gfx::GLInterface::SetGLInterface(gl_.get());
   surface_manager_.reset(new StrictMock<MockSurfaceManager>);
@@ -71,6 +65,9 @@ void GLES2DecoderTestBase::InitDecoder(
 
   EXPECT_TRUE(group_->Initialize(DisallowedExtensions(), extensions));
 
+  EXPECT_CALL(*gl_, GetIntegerv(GL_ALPHA_BITS, _))
+      .WillOnce(SetArgumentPointee<1>(has_alpha_backbuffer ? 8 : 0))
+      .RetiresOnSaturation();
   EXPECT_CALL(*gl_, EnableVertexAttribArray(0))
       .Times(1)
       .RetiresOnSaturation();
@@ -116,16 +113,6 @@ void GLES2DecoderTestBase::InitDecoder(
       .Times(1)
       .RetiresOnSaturation();
 
-  EXPECT_CALL(*gl_, GetIntegerv(GL_ALPHA_BITS, _))
-       .WillOnce(SetArgumentPointee<1>(has_alpha ? 8 : 0))
-       .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, GetIntegerv(GL_DEPTH_BITS, _))
-       .WillOnce(SetArgumentPointee<1>(has_depth ? 24 : 0))
-       .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, GetIntegerv(GL_STENCIL_BITS, _))
-       .WillOnce(SetArgumentPointee<1>(has_stencil ? 8 : 0))
-       .RetiresOnSaturation();
-
   EXPECT_CALL(*gl_, Enable(GL_VERTEX_PROGRAM_POINT_SIZE))
       .Times(1)
       .RetiresOnSaturation();
@@ -147,22 +134,10 @@ void GLES2DecoderTestBase::InitDecoder(
 
   context_ = new gfx::GLContextStub;
 
-  // From <EGL/egl.h>.
-  const int32 EGL_ALPHA_SIZE = 0x3021;
-  const int32 EGL_DEPTH_SIZE = 0x3025;
-  const int32 EGL_STENCIL_SIZE = 0x3026;
-
-  int32 attributes[] = {
-    EGL_ALPHA_SIZE, request_alpha ? 8 : 0,
-    EGL_DEPTH_SIZE, request_depth ? 24 : 0,
-    EGL_STENCIL_SIZE, request_stencil ? 8 : 0,
-  };
-  std::vector<int32> attribs(attributes, attributes + arraysize(attributes));
-
   decoder_.reset(GLES2Decoder::Create(surface_manager_.get(), group_.get()));
   decoder_->Initialize(
       surface_, context_, surface_->GetSize(), DisallowedExtensions(),
-      NULL, attribs, NULL, 0);
+      NULL, std::vector<int32>(), NULL, 0);
   decoder_->set_engine(engine_.get());
 
   EXPECT_CALL(*gl_, GenBuffersARB(_, _))
@@ -288,8 +263,12 @@ void GLES2DecoderTestBase::SetupExpectationsForFramebufferAttachment(
     GLclampf restore_green,
     GLclampf restore_blue,
     GLclampf restore_alpha,
+    GLuint restore_color_mask,
     GLuint restore_stencil,
+    GLuint restore_stencil_front_mask,
+    GLuint restore_stencil_back_mask,
     GLclampf restore_depth,
+    GLboolean restore_depth_mask,
     bool restore_scissor_test) {
   InSequence sequence;
   EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(GL_FRAMEBUFFER))
@@ -329,10 +308,26 @@ void GLES2DecoderTestBase::SetupExpectationsForFramebufferAttachment(
       restore_red, restore_green, restore_blue, restore_alpha))
       .Times(1)
       .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, ColorMask(
+      ((restore_color_mask & 0x1000) != 0) ? 1 : 0,
+      ((restore_color_mask & 0x0100) != 0) ? 1 : 0,
+      ((restore_color_mask & 0x0010) != 0) ? 1 : 0,
+      ((restore_color_mask & 0x0001) != 0) ? 1 : 0))
+      .Times(1)
+      .RetiresOnSaturation();
   EXPECT_CALL(*gl_, ClearStencil(restore_stencil))
       .Times(1)
       .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, StencilMaskSeparate(GL_FRONT, restore_stencil_front_mask))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, StencilMaskSeparate(GL_BACK, restore_stencil_back_mask))
+      .Times(1)
+      .RetiresOnSaturation();
   EXPECT_CALL(*gl_, ClearDepth(restore_depth))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, DepthMask(restore_depth_mask))
       .Times(1)
       .RetiresOnSaturation();
   if (restore_scissor_test) {
@@ -389,43 +384,6 @@ void GLES2DecoderTestBase::DoDeleteBuffer(
   cmd.Init(1, shared_memory_id_, shared_memory_offset_);
   memcpy(shared_memory_address_, &client_id, sizeof(client_id));
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-}
-
-void GLES2DecoderTestBase::SetupExpectationsForApplyingDirtyState(
-    bool framebuffer_is_rgb,
-    bool framebuffer_has_depth,
-    bool framebuffer_has_stencil,
-    GLuint color_bits,
-    bool depth_mask,
-    GLuint front_stencil_mask,
-    GLuint back_stencil_mask) {
-  EXPECT_CALL(*gl_, ColorMask(
-      (color_bits & 0x1000) != 0,
-      (color_bits & 0x0100) != 0,
-      (color_bits & 0x0010) != 0,
-      (color_bits & 0x0001) && !framebuffer_is_rgb))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, DepthMask(depth_mask))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, StencilMaskSeparate(GL_FRONT, front_stencil_mask))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, StencilMaskSeparate(GL_BACK, back_stencil_mask))
-      .Times(1)
-      .RetiresOnSaturation();
-}
-
-void GLES2DecoderTestBase::SetupExpectationsForApplyingDefaultDirtyState() {
-  SetupExpectationsForApplyingDirtyState(
-      false,   // Framebuffer is RGB
-      false,   // Framebuffer has depth
-      false,   // Framebuffer has stencil
-      0x1111,  // color bits
-      true,    // depth mask
-      0,       // front stencil mask
-      0);      // back stencil mask
 }
 
 void GLES2DecoderTestBase::DoBindFramebuffer(
@@ -577,10 +535,7 @@ const int GLES2DecoderTestBase::kBackBufferHeight;
 
 void GLES2DecoderWithShaderTestBase::SetUp() {
   GLES2DecoderTestBase::SetUp();
-  SetupDefaultProgram();
-}
 
-void GLES2DecoderWithShaderTestBase::SetupDefaultProgram() {
   {
     static AttribInfo attribs[] = {
       { kAttrib1Name, kAttrib1Size, kAttrib1Type, kAttrib1Location, },

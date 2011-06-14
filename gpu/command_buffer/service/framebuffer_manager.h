@@ -36,7 +36,6 @@ class FramebufferManager {
       virtual GLsizei samples() const = 0;
       virtual bool cleared() const = 0;
       virtual void set_cleared() = 0;
-      virtual bool IsTexture(TextureManager::TextureInfo* texture) const = 0;
     };
 
     explicit FramebufferInfo(GLuint service_id);
@@ -73,12 +72,8 @@ class FramebufferManager {
       return has_been_bound_ && !IsDeleted();
     }
 
-    bool HasDepthAttachment() const;
-    bool HasStencilAttachment() const;
-    GLenum GetColorAttachmentFormat() const;
-
     // We can't know if the frame buffer is complete since that is
-    // implementation dependent and we'd have to check after every glTexImage
+    // implementation  dependent and we'd have to check after every glTexImage
     // call but we can know in certain cases that it's NOT complete which we
     // need to enforce the OpenGL ES 2.0 spec on top of DesktopGL.
     bool IsNotComplete() const;

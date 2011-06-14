@@ -1134,7 +1134,7 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoClearDepthf',
     'gl_test_func': 'glClearDepth',
   },
-  'ColorMask': {'decoder_func': 'DoColorMask', 'expectation': False},
+  'ColorMask': {'decoder_func': 'DoColorMask'},
   'ClearStencil': {'decoder_func': 'DoClearStencil'},
   'CommandBufferEnableCHROMIUM': {
     'type': 'Custom',
@@ -1192,7 +1192,7 @@ _FUNCTION_INFO = {
   },
   'DeleteTextures': {'type': 'DELn'},
   'DepthRangef': {'decoder_func': 'glDepthRange'},
-  'DepthMask': {'decoder_func': 'DoDepthMask', 'expectation': False},
+  'DepthMask': {'decoder_func': 'DoDepthMask'},
   'DetachShader': {'decoder_func': 'DoDetachShader'},
   'Disable': {
     'decoder_func': 'DoDisable',
@@ -1507,11 +1507,8 @@ _FUNCTION_INFO = {
     'cmd_args':
         'GLuint shader, const char* data',
   },
-  'StencilMask': {'decoder_func': 'DoStencilMask', 'expectation': False},
-  'StencilMaskSeparate': {
-    'decoder_func': 'DoStencilMaskSeparate',
-    'expectation': False,
-  },
+  'StencilMask': {'decoder_func': 'DoStencilMask'},
+  'StencilMaskSeparate': {'decoder_func': 'DoStencilMaskSeparate'},
   'SwapBuffers': {
     'type': 'Custom',
     'impl_func': False,
@@ -4274,22 +4271,6 @@ class Argument(object):
     """Gets the bucket version of this argument."""
     return self
 
-
-class BoolArgument(Argument):
-  """class for GLboolean"""
-
-  def __init__(self, name, type):
-    Argument.__init__(self, name, 'GLboolean')
-
-  def GetValidArg(self, func, offset, index):
-    """Gets a valid value for this argument."""
-    return 'true'
-
-  def GetValidGLArg(self, func, offset, index):
-    """Gets a valid GL value for this argument."""
-    return 'true'
-
-
 class DataSizeArgument(Argument):
   """class for data_size which Bucket commands do not need."""
 
@@ -4354,7 +4335,7 @@ class SizeNotNegativeArgument(SizeArgument):
 
 
 class EnumBaseArgument(Argument):
-  """Base class for EnumArgument, IntArgument and ValidatedBoolArgument"""
+  """Base class for EnumArgument, IntArgument and BoolArgument"""
 
   def __init__(self, name, gl_type, type, gl_error):
     Argument.__init__(self, name, gl_type)
@@ -4424,7 +4405,7 @@ class IntArgument(EnumBaseArgument):
     EnumBaseArgument.__init__(self, name, "GLint", type, "GL_INVALID_VALUE")
 
 
-class ValidatedBoolArgument(EnumBaseArgument):
+class BoolArgument(EnumBaseArgument):
   """A class for a GLboolean argument that can only except specific values.
 
   For example glUniformMatrix takes a GLboolean for it's transpose but it
@@ -5078,8 +5059,6 @@ def CreateArg(arg_string):
   elif arg_parts[0].startswith('GLenum') and len(arg_parts[0]) > 6:
     return EnumArgument(arg_parts[-1], " ".join(arg_parts[0:-1]))
   elif arg_parts[0].startswith('GLboolean') and len(arg_parts[0]) > 9:
-    return ValidatedBoolArgument(arg_parts[-1], " ".join(arg_parts[0:-1]))
-  elif arg_parts[0].startswith('GLboolean'):
     return BoolArgument(arg_parts[-1], " ".join(arg_parts[0:-1]))
   elif (arg_parts[0].startswith('GLint') and len(arg_parts[0]) > 5 and
         not arg_parts[0].startswith('GLintptr')):

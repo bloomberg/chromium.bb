@@ -326,9 +326,10 @@ TEST_F(GLES2DecoderTest1, ClearStencilValidArgs) {
 }
 
 TEST_F(GLES2DecoderTest1, ColorMaskValidArgs) {
+  EXPECT_CALL(*gl_, ColorMask(1, 2, 3, 4));
   SpecializedSetup<ColorMask, 0>(true);
   ColorMask cmd;
-  cmd.Init(true, true, true, true);
+  cmd.Init(1, 2, 3, 4);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
@@ -641,9 +642,10 @@ TEST_F(GLES2DecoderTest1, DepthFuncValidArgs) {
 }
 
 TEST_F(GLES2DecoderTest1, DepthMaskValidArgs) {
+  EXPECT_CALL(*gl_, DepthMask(1));
   SpecializedSetup<DepthMask, 0>(true);
   DepthMask cmd;
-  cmd.Init(true);
+  cmd.Init(1);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }

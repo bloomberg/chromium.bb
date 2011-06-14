@@ -59,22 +59,6 @@ void GLES2DecoderTestBase::SpecializedSetup<CheckFramebufferStatus, 0>(
 };
 
 template <>
-void GLES2DecoderTestBase::SpecializedSetup<Clear, 0>(bool valid) {
-  if (valid) {
-    SetupExpectationsForApplyingDefaultDirtyState();
-  }
-};
-
-template <>
-void GLES2DecoderTestBase::SpecializedSetup<ColorMask, 0>(
-    bool /* valid */) {
-  // We bind a framebuffer color the colormask test since the framebuffer
-  // will be considered RGB.
-  DoBindFramebuffer(GL_FRAMEBUFFER, client_framebuffer_id_,
-                    kServiceFramebufferId);
-};
-
-template <>
 void GLES2DecoderTestBase::SpecializedSetup<CopyTexImage2D, 0>(
     bool valid) {
   if (valid) {
