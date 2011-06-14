@@ -11,28 +11,30 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/language_combobox_model.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
-#include "views/controls/menu/menu_delegate.h"
+#include "ui/base/models/simple_menu_model.h"
+#include "views/controls/menu/menu_2.h"
 #include "views/controls/menu/view_menu_delegate.h"
 #include "views/view.h"
 
 class WizardControllerTest_SwitchLanguage_Test;
-
-namespace views {
-class MenuItemView;
-}  // namespace views
 
 namespace chromeos {
 
 class ScreenObserver;
 
 class LanguageSwitchMenu : public views::ViewMenuDelegate,
-                           public views::MenuDelegate {
+                           public ui::SimpleMenuModel::Delegate {
  public:
   LanguageSwitchMenu();
   virtual ~LanguageSwitchMenu();
 
   // Initializes language selection menu contents.
   void InitLanguageMenu();
+
+  // Sets menu's alignment.
+  void set_menu_alignment(views::Menu2::Alignment alignment) {
+    menu_alignment_ = alignment;
+  }
 
   // Returns current locale name to be placed on the language menu-button.
   string16 GetCurrentLocaleName() const;
@@ -53,16 +55,25 @@ class LanguageSwitchMenu : public views::ViewMenuDelegate,
   static void LoadFontsForCurrentLocale();
 
   // views::ViewMenuDelegate implementation.
-  virtual void RunMenu(views::View* source, const gfx::Point& pt) OVERRIDE;
+  virtual void RunMenu(views::View* source, const gfx::Point& pt);
 
-  // views::MenuDelegate implementation.
-  virtual void ExecuteCommand(int command_id) OVERRIDE;
+  // ui::SimpleMenuModel::Delegate implementation.
+  virtual bool IsCommandIdChecked(int command_id) const;
+  virtual bool IsCommandIdEnabled(int command_id) const;
+  virtual bool GetAcceleratorForCommandId(int command_id,
+                                          ui::Accelerator* accelerator);
+  virtual void ExecuteCommand(int command_id);
 
   // Dialog controls that we own ourselves.
-  scoped_ptr<views::MenuItemView> menu_;
+  ui::SimpleMenuModel menu_model_;
+  ui::SimpleMenuModel menu_model_submenu_;
+  scoped_ptr<views::Menu2> menu_;
 
   // Language locale name storage.
   scoped_ptr<LanguageList> language_list_;
+
+  // Menu alignment.
+  views::Menu2::Alignment menu_alignment_;
 
   FRIEND_TEST(::WizardControllerTest, SwitchLanguage);
   DISALLOW_COPY_AND_ASSIGN(LanguageSwitchMenu);

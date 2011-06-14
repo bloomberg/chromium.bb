@@ -21,10 +21,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/platform_font_gtk.h"
 #include "views/controls/button/menu_button.h"
-#include "views/controls/menu/menu_item_view.h"
-#include "views/controls/menu/submenu_view.h"
 #include "views/widget/widget.h"
-#include "views/window/window.h"
 
 namespace {
 
@@ -38,7 +35,9 @@ const int kMoreLanguagesSubMenu = 200;
 namespace chromeos {
 
 LanguageSwitchMenu::LanguageSwitchMenu()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(menu_(new views::MenuItemView(this))) {
+    : ALLOW_THIS_IN_INITIALIZER_LIST(menu_model_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(menu_model_submenu_(this)),
+      menu_alignment_(views::Menu2::ALIGN_TOPRIGHT) {
 }
 
 LanguageSwitchMenu::~LanguageSwitchMenu() {}
@@ -49,32 +48,25 @@ void LanguageSwitchMenu::InitLanguageMenu() {
   language_list_->CopySpecifiedLanguagesUp(kLanguagesTopped);
 
   // Clear older menu items.
-  if (menu_->HasSubmenu()) {
-    const int old_count = menu_->GetSubmenu()->child_count();
-    for (int i = 0; i < old_count; ++i)
-      menu_->RemoveMenuItemAt(0);
-  }
+  menu_model_.Clear();
+  menu_model_submenu_.Clear();
 
   // Fill menu items with updated items.
   for (int line = 0; line != kLanguageMainMenuSize; line++) {
-    menu_->AppendMenuItemWithLabel(
-        line,
-        UTF16ToWide(language_list_->GetLanguageNameAt(line)));
+    menu_model_.AddItem(line, language_list_->GetLanguageNameAt(line));
   }
-
-  menu_->AppendSeparator();
-  views::MenuItemView* submenu = menu_->AppendSubMenu(
-      kMoreLanguagesSubMenu,
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_LANGUAGES_MORE)));
-
+  menu_model_.AddSeparator();
+  menu_model_.AddSubMenuWithStringId(kMoreLanguagesSubMenu,
+                                     IDS_LANGUAGES_MORE,
+                                     &menu_model_submenu_);
   for (int line = kLanguageMainMenuSize;
        line != language_list_->get_languages_count(); line++) {
-    submenu->AppendMenuItemWithLabel(
-        line,
-        UTF16ToWide(language_list_->GetLanguageNameAt(line)));
+    menu_model_submenu_.AddItem(
+        line, language_list_->GetLanguageNameAt(line));
   }
 
-  menu_->ChildrenChanged();
+  // Initialize menu here so it appears fast when called.
+  menu_.reset(new views::Menu2(&menu_model_));
 }
 
 string16 LanguageSwitchMenu::GetCurrentLocaleName() const {
@@ -87,8 +79,7 @@ string16 LanguageSwitchMenu::GetCurrentLocaleName() const {
 
 void LanguageSwitchMenu::SetFirstLevelMenuWidth(int width) {
   DCHECK(menu_ != NULL);
-
-  menu_->GetSubmenu()->set_minimum_preferred_width(width);
+  menu_->SetMinimumWidth(width);
 }
 
 // static
@@ -160,23 +151,34 @@ void LanguageSwitchMenu::SwitchLanguageAndEnableKeyboardLayouts(
 void LanguageSwitchMenu::RunMenu(views::View* source, const gfx::Point& pt) {
   DCHECK(menu_ != NULL);
   views::MenuButton* button = static_cast<views::MenuButton*>(source);
-
-  // We align on the left edge of the button for non RTL case.
-  // MenuButton passes in pt the lower left corner for RTL and the
-  // lower right corner for non-RTL (with menu_offset applied).
-  const int reverse_offset = button->width() + button->menu_offset().x() * 2;
+  // We align the on left edge of the button for non RTL case.
   gfx::Point new_pt(pt);
-  if (base::i18n::IsRTL())
-    new_pt.set_x(pt.x() + reverse_offset);
-  else
-    new_pt.set_x(pt.x() - reverse_offset);
-
-  menu_->RunMenuAt(button->GetWidget()->GetNativeWindow(), button,
-      gfx::Rect(new_pt, gfx::Size()), views::MenuItemView::TOPLEFT, true);
+  if (menu_alignment_ == views::Menu2::ALIGN_TOPLEFT) {
+    int reverse_offset = button->width() + button->menu_offset().x() * 2;
+    if (base::i18n::IsRTL()) {
+      new_pt.set_x(pt.x() + reverse_offset);
+    } else {
+      new_pt.set_x(pt.x() - reverse_offset);
+    }
+  }
+  menu_->RunMenuAt(new_pt, menu_alignment_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// views::MenuDelegate implementation.
+// ui::SimpleMenuModel::Delegate implementation.
+
+bool LanguageSwitchMenu::IsCommandIdChecked(int command_id) const {
+  return false;
+}
+
+bool LanguageSwitchMenu::IsCommandIdEnabled(int command_id) const {
+  return true;
+}
+
+bool LanguageSwitchMenu::GetAcceleratorForCommandId(
+    int command_id, ui::Accelerator* accelerator) {
+  return false;
+}
 
 void LanguageSwitchMenu::ExecuteCommand(int command_id) {
   const std::string locale = language_list_->GetLocaleFromIndex(command_id);
