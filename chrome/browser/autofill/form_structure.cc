@@ -85,7 +85,8 @@ FormStructure::FormStructure(const FormData& form)
       source_url_(form.origin),
       target_url_(form.action),
       autofill_count_(0),
-      upload_required_(USE_UPLOAD_RATES) {
+      upload_required_(USE_UPLOAD_RATES),
+      server_experiment_id_("unknown experiment") {
   // Copy the form fields.
   std::vector<webkit_glue::FormField>::const_iterator field;
   for (field = form.fields.begin();
@@ -252,7 +253,7 @@ void FormStructure::ParseQueryResponse(const std::string& response_xml,
     return;
 
   metric_logger.LogServerQueryMetric(AutofillMetrics::QUERY_RESPONSE_PARSED);
-  metric_logger.LogServerExperimentId(experiment_id);
+  metric_logger.LogServerExperimentIdForQuery(experiment_id);
 
   bool heuristics_detected_fillable_field = false;
   bool query_response_overrode_heuristics = false;
@@ -386,6 +387,8 @@ void FormStructure::UpdateFromCache(const FormStructure& cached_form) {
 void FormStructure::LogQualityMetrics(
     const AutofillMetrics& metric_logger) const {
   std::string experiment_id = server_experiment_id();
+  metric_logger.LogServerExperimentIdForUpload(experiment_id);
+
   for (size_t i = 0; i < field_count(); ++i) {
     const AutofillField* field = this->field(i);
     metric_logger.LogQualityMetric(AutofillMetrics::FIELD_SUBMITTED,

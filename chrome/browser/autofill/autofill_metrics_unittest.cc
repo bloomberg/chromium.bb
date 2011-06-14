@@ -49,7 +49,9 @@ class MockAutofillMetrics : public AutofillMetrics {
   MOCK_CONST_METHOD1(LogIsAutofillEnabledAtStartup, void(bool enabled));
   MOCK_CONST_METHOD1(LogStoredProfileCount, void(size_t num_profiles));
   MOCK_CONST_METHOD1(LogAddressSuggestionsCount, void(size_t num_suggestions));
-  MOCK_CONST_METHOD1(LogServerExperimentId,
+  MOCK_CONST_METHOD1(LogServerExperimentIdForQuery,
+                     void(const std::string& experiment_id));
+  MOCK_CONST_METHOD1(LogServerExperimentIdForUpload,
                      void(const std::string& experiment_id));
 
  private:
@@ -289,6 +291,8 @@ TEST_F(AutofillMetricsTest, QualityMetrics) {
 
   // Establish our expectations.
   ::testing::InSequence dummy;
+  EXPECT_CALL(*autofill_manager_->metric_logger(),
+              LogServerExperimentIdForUpload(std::string()));
   // Autofilled field
   EXPECT_CALL(*autofill_manager_->metric_logger(),
               LogQualityMetric(AutofillMetrics::FIELD_SUBMITTED,
@@ -467,6 +471,8 @@ TEST_F(AutofillMetricsTest, QualityMetricsForFailure) {
   // Establish our expectations.
   ::testing::FLAGS_gmock_verbose = "error";
   ::testing::InSequence dummy;
+  EXPECT_CALL(*autofill_manager_->metric_logger(),
+              LogServerExperimentIdForUpload(std::string()));
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(failure_cases); ++i) {
     EXPECT_CALL(*autofill_manager_->metric_logger(),
                 LogQualityMetric(AutofillMetrics::FIELD_SUBMITTED,
@@ -542,6 +548,8 @@ TEST_F(AutofillMetricsTest, SaneMetricsWithCacheMismatch) {
   // Establish our expectations.
   ::testing::InSequence dummy;
   // New field
+  EXPECT_CALL(*autofill_manager_->metric_logger(),
+              LogServerExperimentIdForUpload(std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
               LogQualityMetric(AutofillMetrics::FIELD_SUBMITTED,
                                std::string()));
@@ -731,6 +739,8 @@ TEST_F(AutofillMetricsTest, QualityMetricsWithExperimentId) {
 
   // Establish our expectations.
   ::testing::InSequence dummy;
+  EXPECT_CALL(*autofill_manager_->metric_logger(),
+              LogServerExperimentIdForUpload(experiment_id));
   // Autofilled field
   EXPECT_CALL(*autofill_manager_->metric_logger(),
               LogQualityMetric(AutofillMetrics::FIELD_SUBMITTED,
@@ -963,7 +973,7 @@ TEST_F(AutofillMetricsTest, CreditCardInfoBar) {
 }
 
 // Test that server query response experiment id metrics are logged correctly.
-TEST_F(AutofillMetricsTest, ServerQueryExperimentId) {
+TEST_F(AutofillMetricsTest, ServerQueryExperimentIdForQuery) {
   MockAutofillMetrics metric_logger;
   ::testing::InSequence dummy;
 
@@ -973,7 +983,7 @@ TEST_F(AutofillMetricsTest, ServerQueryExperimentId) {
   EXPECT_CALL(metric_logger,
               LogServerQueryMetric(AutofillMetrics::QUERY_RESPONSE_PARSED));
   EXPECT_CALL(metric_logger,
-              LogServerExperimentId(std::string()));
+              LogServerExperimentIdForQuery(std::string()));
   EXPECT_CALL(metric_logger,
               LogServerQueryMetric(
                   AutofillMetrics::QUERY_RESPONSE_MATCHED_LOCAL_HEURISTICS));
@@ -987,7 +997,7 @@ TEST_F(AutofillMetricsTest, ServerQueryExperimentId) {
   EXPECT_CALL(metric_logger,
               LogServerQueryMetric(AutofillMetrics::QUERY_RESPONSE_PARSED));
   EXPECT_CALL(metric_logger,
-              LogServerExperimentId("ar1"));
+              LogServerExperimentIdForQuery("ar1"));
   EXPECT_CALL(metric_logger,
               LogServerQueryMetric(
                   AutofillMetrics::QUERY_RESPONSE_MATCHED_LOCAL_HEURISTICS));

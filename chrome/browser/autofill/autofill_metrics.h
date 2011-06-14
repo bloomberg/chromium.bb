@@ -116,7 +116,12 @@ class AutofillMetrics {
   virtual void LogAddressSuggestionsCount(size_t num_suggestions) const;
 
   // Logs the experiment id corresponding to a server query response.
-  virtual void LogServerExperimentId(const std::string& experiment_id) const;
+  virtual void LogServerExperimentIdForQuery(
+      const std::string& experiment_id) const;
+
+  // Logs the experiment id corresponding to an upload to the server.
+  virtual void LogServerExperimentIdForUpload(
+      const std::string& experiment_id) const;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AutofillMetrics);
