@@ -55,7 +55,6 @@ const char kAboutBrowserCrash[] = "about:inducebrowsercrashforrealz";
 const char kChromeUIAboutURL[] = "chrome://about/";
 const char kChromeUIBookmarksURL[] = "chrome://bookmarks/";
 const char kChromeUIBugReportURL[] = "chrome://bugreport/";
-const char kChromeUIChromeURLsURL[] = "chrome://chrome-urls/";
 const char kChromeUICloudPrintResourcesURL[] = "chrome://cloudprintresources/";
 const char kChromeUIConflictsURL[] = "chrome://conflicts/";
 const char kChromeUIConstrainedHTMLTestURL[] = "chrome://constrained-test/";

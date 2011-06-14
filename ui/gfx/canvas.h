@@ -178,8 +178,8 @@ class Canvas {
   // Draws text with the specified color, font and location. The text is
   // aligned to the left, vertically centered, clipped to the region. If the
   // text is too big, it is truncated and '...' is added to the end.
-  virtual void DrawStringInt(const string16& text,
-                             const gfx::Font& font,
+  virtual void DrawStringInt(const string16& text, const
+                             gfx::Font& font,
                              const SkColor& color,
                              int x, int y, int w, int h) = 0;
   virtual void DrawStringInt(const string16& text,
