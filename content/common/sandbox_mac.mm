@@ -346,6 +346,9 @@ NSString* LoadSandboxTemplate(Sandbox::SandboxProcessType sandbox_type) {
     case Sandbox::SANDBOX_TYPE_GPU:
       sandbox_config_filename = @"gpu";
       break;
+    case Sandbox::SANDBOX_TYPE_PPAPI:
+      sandbox_config_filename = @"ppapi";
+      break;
     default:
       NOTREACHED();
       return nil;

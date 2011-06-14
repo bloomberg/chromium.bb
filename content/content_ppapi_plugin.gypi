@@ -28,6 +28,15 @@
       'include_dirs': [
         '..',
       ],
+      'conditions': [
+        ['OS=="mac"', {
+          'link_settings': {
+            'mac_bundle_resources': [
+              'ppapi_plugin/ppapi.sb',
+            ],
+          },
+        }],
+      ],
     },
   ],
 }

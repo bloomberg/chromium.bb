@@ -78,6 +78,9 @@ class Sandbox {
     // GPU process.
     SANDBOX_TYPE_GPU,
 
+    // The PPAPI plugin process.
+    SANDBOX_TYPE_PPAPI,
+
     SANDBOX_AFTER_TYPE_LAST_TYPE,  // Placeholder to ease iteration.
   };
 

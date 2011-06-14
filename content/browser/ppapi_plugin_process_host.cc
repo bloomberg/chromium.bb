@@ -49,6 +49,7 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
   // TODO(vtl): Stop passing flash args in the command line, on windows is
   // going to explode.
   static const char* kForwardSwitches[] = {
+    switches::kNoSandbox,
     switches::kPpapiFlashArgs,
     switches::kPpapiStartupDialog
   };

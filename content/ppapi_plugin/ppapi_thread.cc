@@ -6,10 +6,13 @@
 
 #include <limits>
 
+#include "base/command_line.h"
 #include "base/process_util.h"
 #include "base/rand_util.h"
 #include "base/stringprintf.h"
 #include "content/common/child_process.h"
+#include "content/common/content_switches.h"
+#include "content/common/sandbox_init_wrapper.h"
 #include "content/ppapi_plugin/broker_process_dispatcher.h"
 #include "content/ppapi_plugin/plugin_process_dispatcher.h"
 #include "content/ppapi_plugin/ppapi_webkit_thread.h"
@@ -144,6 +147,17 @@ void PpapiThread::OnMsgLoadPlugin(const FilePath& path) {
       LOG(WARNING) << "No PPP_GetInterface in plugin library";
       return;
     }
+
+#if defined(OS_MACOSX)
+    // We need to do this after getting |PPP_GetInterface()| (or presumably
+    // doing something nontrivial with the library), else the sandbox
+    // intercedes.
+    CommandLine* parsed_command_line = CommandLine::ForCurrentProcess();
+    SandboxInitWrapper sandbox_wrapper;
+    if (!sandbox_wrapper.InitializeSandbox(*parsed_command_line,
+                                           switches::kPpapiPluginProcess))
+      LOG(WARNING) << "Failed to initialize sandbox";
+#endif
 
     // Get the InitializeModule function (required).
     pp::proxy::Dispatcher::InitModuleFunc init_module =
