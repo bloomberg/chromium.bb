@@ -13,19 +13,6 @@
                 # main chrome tree as well.
       'cpp/src',
       '<(protoc_out_dir)',
-      '../protobuf/src',
-      '../icu/public/common',
-      '../icu/public/i18n',
-    ],
-    'defines': [
-      'U_USING_ICU_NAMESPACE=0',
-    ],
-    'conditions': [
-      ['OS!="win" or component=="static_library"', {
-        'defines': [
-          'U_STATIC_IMPLEMENTATION',
-        ],
-      }],
     ],
   },
   'targets': [{
