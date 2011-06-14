@@ -562,10 +562,19 @@ class BuildBoardStage(BuilderStage):
       if os.path.isdir(board_path):
         continue
 
+      env = {}
+      if self._build_config['gcc_46']:
+        env['GCC_PV'] = '4.6.0'
+        env['USE'] = 'svn_sources'
+
+      latest_toolchain = self._build_config['latest_toolchain']
+
       commands.SetupBoard(self._build_root,
                           board=board_to_build,
                           fast=self._build_config['fast'],
-                          usepkg=self._build_config['usepkg_setup_board'])
+                          usepkg=self._build_config['usepkg_setup_board'],
+                          latest_toolchain=latest_toolchain,
+                          extra_env=env)
 
     if self._prebuilt_type == 'chroot':
       commands.UploadPrebuilts(
@@ -608,8 +617,13 @@ class BuildTargetStage(BuilderStage):
     if self._build_config.get('useflags'):
       env['USE'] = ' '.join(self._build_config['useflags'])
 
+    # If we are using ToT toolchain, don't attempt to update
+    # the toolchain during build_packages.
+    skip_toolchain_update = self._build_config['latest_toolchain']
+
     commands.Build(self._build_root,
                    build_autotest=build_autotest,
+                   skip_toolchain_update=skip_toolchain_update,
                    fast=self._build_config['fast'],
                    usepkg=self._build_config['usepkg_build_packages'],
                    extra_env=env)

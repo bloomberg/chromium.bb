@@ -181,7 +181,8 @@ def RunChrootUpgradeHooks(buildroot):
                       enter_chroot=True)
 
 
-def SetupBoard(buildroot, board, fast, usepkg):
+def SetupBoard(buildroot, board, fast, usepkg, latest_toolchain,
+               extra_env=None):
   """Wrapper around setup_board."""
   cwd = os.path.join(buildroot, 'src', 'scripts')
   cmd = ['./setup_board', '--default', '--board=%s' % board]
@@ -194,11 +195,15 @@ def SetupBoard(buildroot, board, fast, usepkg):
   else:
     cmd.append('--nofast')
 
-  cros_lib.OldRunCommand(cmd, cwd=cwd, enter_chroot=True)
+  if latest_toolchain:
+    cmd.append('--latest_toolchain')
+
+  cros_lib.RunCommand(cmd, cwd=cwd, enter_chroot=True, extra_env=extra_env)
   # TODO(sosa): Add prebuilt call for boards in build_type == chroot.
 
 
-def Build(buildroot, build_autotest, fast, usepkg, extra_env=None):
+def Build(buildroot, build_autotest, fast, usepkg, skip_toolchain_update,
+          extra_env=None):
   """Wrapper around build_packages."""
   cwd = os.path.join(buildroot, 'src', 'scripts')
   cmd = ['./build_packages']
@@ -213,6 +218,8 @@ def Build(buildroot, build_autotest, fast, usepkg, extra_env=None):
     cmd.append('--nofast')
 
   if not build_autotest: cmd.append('--nowithautotest')
+
+  if skip_toolchain_update: cmd.append('--skip_toolchain_update')
 
   if usepkg:
     key = 'EXTRA_BOARD_FLAGS'

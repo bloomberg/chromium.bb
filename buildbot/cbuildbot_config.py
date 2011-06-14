@@ -76,6 +76,9 @@ git_url -- git repository URL for our manifests.
 manifest_version -- URL to git repo to store per-build manifest.
                     Usually None or
                     _MANIFEST_VERSIONS_INT_URL
+
+latest_toolchain -- Use the newest ebuilds for all the toolchain packages.
+gcc_46 -- Use gcc-4.6 to build ChromeOS. Only works when latest_toolchain=True.
 """
 
 import constants
@@ -106,6 +109,8 @@ default = {
   'usepkg_chroot' : True,
   'usepkg_setup_board' : True,
   'usepkg_build_packages' : True,
+  'latest_toolchain' : False,
+  'gcc_46' : False,
 
   'chroot_replace' : False,
 
@@ -313,6 +318,28 @@ add_config('x86-pineview-full', [full, {
   'board' : 'x86-pineview',
 }])
 
+add_config('x86-generic-gcc_46', [full, {
+  'board' : 'x86-generic',
+  'latest_toolchain' : True,
+  'gcc_46' : True,
+}])
+
+add_config('arm-tegra2-seaboard-gcc_46', [arm, full, {
+  'board' : 'tegra2_seaboard',
+  'latest_toolchain' : True,
+  'gcc_46' : True,
+}])
+
+add_config('x86-generic-toolchain', [full, {
+  'board' : 'x86-generic',
+  'latest_toolchain' : True,
+}])
+
+add_config('arm-tegra2-seaboard-toolchain', [arm, full, {
+  'board' : 'tegra2_seaboard',
+  'latest_toolchain' : True,
+}])
+
 #
 # Internal Builds
 #
@@ -376,6 +403,24 @@ add_config('x86-mario-private-bin', [internal, binary, {
 
 add_config('x86-alex-private-bin', [internal, binary, {
   'board' : 'x86-alex',
+}])
+
+add_config('x86-alex-toolchain', [internal, full, official, {
+  'board' : 'x86-alex',
+  'build_tests' : True,
+  'chrome_tests' : True,
+  'prebuilts' : False,
+  'latest_toolchain' : True,
+  'useflags' : ['chrome_internal'],
+}])
+
+add_config('arm-tegra2_seaboard-toolchain', [arm, internal, full, official, {
+  'board' : 'tegra2_seaboard',
+  'build_tests' : True,
+  'chrome_tests' : True,
+  'prebuilts' : False,
+  'latest_toolchain' : True,
+  'useflags' : ['chrome_internal'],
 }])
 
 add_config('x86-mario-release', [internal, full, official, release, {

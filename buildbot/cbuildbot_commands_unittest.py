@@ -195,13 +195,14 @@ class CBuildBotTest(mox.MoxTestBase):
     commands.Build(buildroot=buildroot,
                    build_autotest=False,
                    fast=True,
-                   usepkg=False)
+                   usepkg=False,
+                   skip_toolchain_update=False)
     self.mox.VerifyAll()
 
   def testBuildMaximum(self):
     """Base case where Build is called with all options (except extra_evn)."""
     buildroot = '/bob/'
-    cros_lib.RunCommand(['./build_packages', '--fast'],
+    cros_lib.RunCommand(['./build_packages', '--fast', '--skip_toolchain_update'],
                         cwd=mox.StrContains(buildroot),
                         enter_chroot=True,
                         extra_env={'EXTRA_BOARD_FLAGS': '--rebuilt-binaries'})
@@ -209,7 +210,8 @@ class CBuildBotTest(mox.MoxTestBase):
     commands.Build(buildroot=buildroot,
                    fast=True,
                    build_autotest=True,
-                   usepkg=True)
+                   usepkg=True,
+                   skip_toolchain_update=True)
     self.mox.VerifyAll()
 
   def testBuildWithEnv(self):
@@ -227,6 +229,7 @@ class CBuildBotTest(mox.MoxTestBase):
                    build_autotest=False,
                    fast=False,
                    usepkg=False,
+                   skip_toolchain_update=False,
                    extra_env=extra)
     self.mox.VerifyAll()
 

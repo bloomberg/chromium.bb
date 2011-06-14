@@ -307,7 +307,9 @@ class BuildBoardTest(AbstractStageTest):
     commands.SetupBoard(self.build_root,
                         board=self.build_config['board'],
                         fast=True,
-                        usepkg=False)
+                        usepkg=False,
+                        latest_toolchain=False,
+                        extra_env={})
 
     self.mox.ReplayAll()
     self.RunStage()
@@ -348,7 +350,9 @@ class BuildBoardTest(AbstractStageTest):
     commands.SetupBoard(self.build_root,
                         board=self.build_config['board'],
                         fast=self.build_config['fast'],
-                        usepkg=self.build_config['usepkg_setup_board'])
+                        usepkg=self.build_config['usepkg_setup_board'],
+                        latest_toolchain=self.build_config['latest_toolchain'],
+                        extra_env={})
 
     self.mox.ReplayAll()
     self.RunStage()
@@ -550,12 +554,15 @@ class BuildTargetStageTest(AbstractStageTest):
     self.build_config['usepkg_build_packages'] = True
     self.build_config['fast'] = True
     self.build_config['useflags'] = ['ALPHA', 'BRAVO', 'CHARLIE']
+    self.build_config['skip_toolchain_update'] = False
+
     proper_env = {'USE' : ' '.join(self.build_config['useflags'])}
 
     commands.Build(self.build_root,
                    build_autotest=True,
                    usepkg=True,
                    fast=True,
+                   skip_toolchain_update=False,
                    extra_env=proper_env)
 
     commands.UploadPrebuilts(
@@ -578,6 +585,7 @@ class BuildTargetStageTest(AbstractStageTest):
                    build_autotest=mox.IgnoreArg(),
                    fast=mox.IgnoreArg(),
                    usepkg=mox.IgnoreArg(),
+                   skip_toolchain_update=mox.IgnoreArg(),
                    extra_env={})
     commands.BuildImage(self.build_root, extra_env={})
 
