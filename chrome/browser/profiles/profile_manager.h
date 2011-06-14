@@ -96,6 +96,9 @@ class ProfileManager : public base::NonThreadSafe,
   // been stored in Local State, hand back the Default profile.
   Profile* GetLastUsedProfile(const FilePath& user_data_dir);
 
+  // Same as instance method but provides the default user_data_dir as well.
+  static Profile* GetLastUsedProfile();
+
   // Register the mapping of a directory to a profile name in Local State.
   void RegisterProfileName(Profile* profile);
 

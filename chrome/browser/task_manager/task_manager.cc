@@ -954,7 +954,7 @@ void TaskManager::OpenAboutMemory() {
     if (!g_browser_process || !g_browser_process->profile_manager())
       return;
     Profile* profile =
-        g_browser_process->profile_manager()->GetDefaultProfile();
+        g_browser_process->profile_manager()->GetLastUsedProfile();
     if (!profile)
       return;
     browser = Browser::Create(profile);

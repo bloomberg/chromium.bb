@@ -78,6 +78,14 @@ Profile* ProfileManager::GetDefaultProfile() {
   return profile_manager->GetDefaultProfile(user_data_dir);
 }
 
+// static
+Profile* ProfileManager::GetLastUsedProfile() {
+  FilePath user_data_dir;
+  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  return profile_manager->GetLastUsedProfile(user_data_dir);
+}
+
 ProfileManager::ProfileManager() : logged_in_(false) {
   BrowserList::AddObserver(this);
 #if defined(OS_CHROMEOS)
