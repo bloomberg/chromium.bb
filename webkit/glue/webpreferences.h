@@ -90,6 +90,7 @@ struct WebPreferences {
   bool fullscreen_enabled;
   bool allow_displaying_insecure_content;
   bool allow_running_insecure_content;
+  bool should_print_backgrounds;
 
   // We try to keep the default values the same as the default values in
   // chrome, except for the cases where it would require lots of extra work for
