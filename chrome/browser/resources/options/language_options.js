@@ -305,7 +305,13 @@ cr.define('options', function() {
         languageDisplayName += ' - ' + languageNativeDisplayName;
       }
       // Update the currently selected language name.
-      $('language-options-language-name').textContent = languageDisplayName;
+      var languageName = $('language-options-language-name');
+      if (languageDisplayName) {
+        languageName.hidden = false;
+        languageName.textContent = languageDisplayName;
+      } else {
+        languageName.hidden = true;
+      }
     },
 
     /**
@@ -364,6 +370,7 @@ cr.define('options', function() {
      * @private
      */
     updateSpellCheckLanguageButton_: function(languageCode) {
+      var display = 'block';
       var spellCheckLanguageButton = $(
           'language-options-spell-check-language-button');
       // Check if the language code matches the current spell check language.
@@ -386,6 +393,8 @@ cr.define('options', function() {
         // Add an event listner to the click event.
         spellCheckLanguageButton.addEventListener('click',
             this.handleSpellCheckLanguageButtonClick_.bind(this));
+      } else if (!languageCode) {
+        display = 'none';
       } else {
         // If the language is not supported as spell check language, the
         // button just says that this language cannot be used for spell
@@ -395,7 +404,7 @@ cr.define('options', function() {
         spellCheckLanguageButton.className = 'text-button';
         spellCheckLanguageButton.onclick = undefined;
       }
-      spellCheckLanguageButton.style.display = 'block';
+      spellCheckLanguageButton.style.display = display;
       $('language-options-ui-notification-bar').style.display = 'none';
     },
 
