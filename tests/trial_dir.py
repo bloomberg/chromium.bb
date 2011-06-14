@@ -65,8 +65,7 @@ class TrialDir(object):
       logging.error('Leaking %s' % TrialDir.TRIAL_ROOT)
 
 
-class TestCase(unittest.TestCase):
-  """Base unittest class that cleans off a trial directory in tearDown()."""
+class TrialDirMixIn(object):
   def setUp(self):
     # Create a specific directory just for the test.
     self.trial = TrialDir(self.id())
@@ -78,6 +77,17 @@ class TestCase(unittest.TestCase):
   @property
   def root_dir(self):
     return self.trial.root_dir
+
+
+class TestCase(unittest.TestCase, TrialDirMixIn):
+  """Base unittest class that cleans off a trial directory in tearDown()."""
+  def setUp(self):
+    unittest.TestCase.setUp(self)
+    TrialDirMixIn.setUp(self)
+
+  def tearDown(self):
+    TrialDirMixIn.tearDown(self)
+    unittest.TestCase.tearDown(self)
 
 
 if '-l' in sys.argv:
