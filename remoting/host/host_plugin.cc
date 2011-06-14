@@ -892,6 +892,24 @@ NPError SetWindow(NPP instance, NPWindow* pNPWindow) {
 // TODO(fix): Temporary hack while we figure out threading models correctly.
 DISABLE_RUNNABLE_METHOD_REFCOUNT(HostNPScriptObject);
 
+#if defined(OS_WIN)
+HMODULE g_hModule = NULL;
+
+BOOL APIENTRY DllMain(HMODULE hModule, DWORD dwReason, LPVOID lpReserved) {
+  switch (dwReason) {
+    case DLL_PROCESS_ATTACH:
+      g_hModule = hModule;
+      DisableThreadLibraryCalls(hModule);
+      break;
+    case DLL_PROCESS_DETACH:
+    case DLL_THREAD_ATTACH:
+    case DLL_THREAD_DETACH:
+      break;
+  }
+  return TRUE;
+}
+#endif
+
 // The actual required NPAPI Entry points
 
 extern "C" {

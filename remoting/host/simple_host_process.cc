@@ -53,6 +53,12 @@
 #include "ui/gfx/gtk_util.h"
 #endif
 
+#if defined(OS_WIN)
+// TODO(garykac) Make simple host into a proper GUI app on Windows so that we
+// have an hModule for the dialog resource.
+HMODULE g_hModule = NULL;
+#endif
+
 using remoting::ChromotingHost;
 using remoting::DesktopEnvironment;
 using remoting::kChromotingTokenDefaultServiceName;

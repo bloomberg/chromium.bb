@@ -154,6 +154,7 @@
         'host/host_plugin.cc',
         'host/host_plugin.def',
         'host/host_plugin.rc',
+        'host/host_plugin_resource.h',
       ],
       'conditions': [
         ['OS=="mac"', {
