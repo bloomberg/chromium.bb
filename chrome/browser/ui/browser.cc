@@ -3788,8 +3788,6 @@ void Browser::SwapTabContents(TabContentsWrapper* old_tab_contents,
   DCHECK_NE(TabStripModel::kNoTab, index);
   tab_handler_->GetTabStripModel()->ReplaceTabContentsAt(index,
                                                          new_tab_contents);
-  // TODO(tburkard): Run unload handlers like Instant does in
-  // InstantUnloadHandler::RunUnloadListenersOrDestroy
 }
 
 void Browser::SetSuggestedText(const string16& text,
