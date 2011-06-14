@@ -202,7 +202,7 @@ UserShare::~UserShare() {}
 ////////////////////////////////////
 // BaseNode member definitions.
 
-BaseNode::BaseNode() : password_data_(new sync_pb::PasswordSpecificsData) {}
+BaseNode::BaseNode() {}
 
 BaseNode::~BaseNode() {}
 
@@ -245,10 +245,8 @@ bool BaseNode::DecryptIfNecessary() {
     // Passwords have their own legacy encryption structure.
     scoped_ptr<sync_pb::PasswordSpecificsData> data(DecryptPasswordSpecifics(
         specifics, GetTransaction()->GetCryptographer()));
-    if (!data.get()) {
-      LOG(ERROR) << "Failed to decrypt password specifics.";
+    if (!data.get())
       return false;
-    }
     password_data_.swap(data);
     return true;
   }
@@ -261,8 +259,9 @@ bool BaseNode::DecryptIfNecessary() {
       specifics.encrypted();
   std::string plaintext_data = GetTransaction()->GetCryptographer()->
       DecryptToString(encrypted);
-  if (plaintext_data.length() == 0 ||
-      !unencrypted_data_.ParseFromString(plaintext_data)) {
+  if (plaintext_data.length() == 0)
+    return false;
+  if (!unencrypted_data_.ParseFromString(plaintext_data)) {
     LOG(ERROR) << "Failed to decrypt encrypted node of type " <<
       syncable::ModelTypeToString(GetModelType()) << ".";
     return false;
@@ -405,6 +404,7 @@ const sync_pb::NigoriSpecifics& BaseNode::GetNigoriSpecifics() const {
 
 const sync_pb::PasswordSpecificsData& BaseNode::GetPasswordSpecifics() const {
   DCHECK_EQ(syncable::PASSWORDS, GetModelType());
+  DCHECK(password_data_.get());
   return *password_data_;
 }
 
@@ -571,9 +571,7 @@ void WriteNode::SetPasswordSpecifics(
 
   sync_pb::PasswordSpecifics new_value;
   if (!cryptographer->Encrypt(data, new_value.mutable_encrypted())) {
-    NOTREACHED() << "Failed to encrypt password, possibly due to sync node "
-                 << "corruption";
-    return;
+    NOTREACHED();
   }
 
   sync_pb::EntitySpecifics entity_specifics;
@@ -1205,12 +1203,6 @@ class SyncManager::SyncInternal
   // Whether or not the Nigori node is encrypted using an explicit passphrase.
   bool IsUsingExplicitPassphrase();
 
-  // Update the Cryptographer from the current nigori node.
-  // Note: opens a transaction and can trigger an ON_PASSPHRASE_REQUIRED, so
-  // should only be called after syncapi is fully initialized.
-  // Returns true if cryptographer is ready, false otherwise.
-  bool UpdateCryptographerFromNigori();
-
   // Set the datatypes we want to encrypt and encrypt any nodes as necessary.
   void EncryptDataTypes(const syncable::ModelTypeSet& encrypted_types);
 
@@ -1808,42 +1800,50 @@ bool SyncManager::SyncInternal::Init(
 
 void SyncManager::SyncInternal::BootstrapEncryption(
     const std::string& restored_key_for_bootstrapping) {
-  // Cryptographer should only be accessed while holding a transaction.
-  ReadTransaction trans(GetUserShare());
-  Cryptographer* cryptographer = trans.GetCryptographer();
-
-  // Set the bootstrap token before bailing out if nigori node is not there.
-  // This could happen if server asked us to migrate nigri.
-  cryptographer->Bootstrap(restored_key_for_bootstrapping);
-}
-
-bool SyncManager::SyncInternal::UpdateCryptographerFromNigori() {
   syncable::ScopedDirLookup lookup(dir_manager(), username_for_share());
   if (!lookup.good()) {
-    NOTREACHED() << "BootstrapEncryption: lookup not good so bailing out";
-    return false;
-  }
-  if (!lookup->initial_sync_ended_for_type(syncable::NIGORI))
-    return false;  // Should only happen during first time sync.
-
-  ReadTransaction trans(GetUserShare());
-  Cryptographer* cryptographer = trans.GetCryptographer();
-
-  ReadNode node(&trans);
-  if (!node.InitByTagLookup(kNigoriTag)) {
+    LOG(INFO) << "BootstrapEncryption: lookup not good so bailing out";
     NOTREACHED();
-    return false;
-  }
-  Cryptographer::UpdateResult result =
-      cryptographer->Update(node.GetNigoriSpecifics());
-  if (result == Cryptographer::NEEDS_PASSPHRASE) {
-    ObserverList<SyncManager::Observer> temp_obs_list;
-    CopyObservers(&temp_obs_list);
-    FOR_EACH_OBSERVER(SyncManager::Observer, temp_obs_list,
-                      OnPassphraseRequired(sync_api::REASON_DECRYPTION));
+    return;
   }
 
-  return cryptographer->is_ready();
+  sync_pb::NigoriSpecifics nigori;
+  syncable::ModelTypeSet encrypted_types;
+  {
+    // Cryptographer should only be accessed while holding a transaction.
+    ReadTransaction trans(GetUserShare());
+    Cryptographer* cryptographer = trans.GetCryptographer();
+
+    // Set the bootstrap token before bailing out if nigori node is not there.
+    // This could happen if server asked us to migrate nigri.
+    cryptographer->Bootstrap(restored_key_for_bootstrapping);
+
+    if (!lookup->initial_sync_ended_for_type(syncable::NIGORI))
+      return;
+
+    ReadNode node(&trans);
+    if (!node.InitByTagLookup(kNigoriTag)) {
+      NOTREACHED();
+      return;
+    }
+
+    nigori.CopyFrom(node.GetNigoriSpecifics());
+    Cryptographer::UpdateResult result = cryptographer->Update(nigori);
+    if (result == Cryptographer::NEEDS_PASSPHRASE) {
+      ObserverList<SyncManager::Observer> temp_obs_list;
+      CopyObservers(&temp_obs_list);
+      FOR_EACH_OBSERVER(SyncManager::Observer, temp_obs_list,
+                        OnPassphraseRequired(sync_api::REASON_DECRYPTION));
+    }
+
+    // Refresh list of encrypted datatypes.
+    encrypted_types = GetEncryptedTypes(&trans);
+  }
+
+
+
+  // Ensure any datatypes that need encryption are encrypted.
+  EncryptDataTypes(encrypted_types);
 }
 
 void SyncManager::SyncInternal::StartSyncingNormally() {
@@ -2089,18 +2089,13 @@ void SyncManager::SyncInternal::EncryptDataTypes(
   WriteTransaction trans(GetUserShare());
   WriteNode node(&trans);
   if (!node.InitByTagLookup(kNigoriTag)) {
-    NOTREACHED() << "Unable to set encrypted datatypes because Nigori node not "
-                 << "found.";
+    LOG(ERROR) << "Unable to set encrypted datatypes because Nigori node not "
+               << "found.";
+    NOTREACHED();
     return;
   }
 
   Cryptographer* cryptographer = trans.GetCryptographer();
-
-  if (!cryptographer->is_initialized()) {
-    NOTREACHED() << "Attempting to encrypt datatypes when cryptographer not "
-                 << "initialized.";
-    return;
-  }
 
   // Update the Nigori node set of encrypted datatypes so other machines notice.
   // Note, we merge the current encrypted types with those requested. Once a
@@ -3007,16 +3002,11 @@ UserShare* SyncManager::GetUserShare() const {
   return data_->GetUserShare();
 }
 
-void SyncManager::RefreshEncryption() {
-  DCHECK(data_->initialized());
-  if (data_->UpdateCryptographerFromNigori())
-    data_->EncryptDataTypes(syncable::ModelTypeSet());
-}
-
 syncable::ModelTypeSet SyncManager::GetEncryptedDataTypes() const {
   sync_api::ReadTransaction trans(GetUserShare());
   return GetEncryptedTypes(&trans);
 }
+
 
 bool SyncManager::HasUnsyncedItems() const {
   sync_api::ReadTransaction trans(GetUserShare());

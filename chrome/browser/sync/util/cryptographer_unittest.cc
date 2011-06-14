@@ -25,15 +25,6 @@ TEST(CryptographerTest, EmptyCantDecrypt) {
   EXPECT_FALSE(cryptographer.CanDecrypt(encrypted));
 }
 
-TEST(CryptographerTest, EmptyCantEncrypt) {
-  Cryptographer cryptographer;
-  EXPECT_FALSE(cryptographer.is_ready());
-
-  sync_pb::EncryptedData encrypted;
-  sync_pb::PasswordSpecificsData original;
-  EXPECT_FALSE(cryptographer.Encrypt(original, &encrypted));
-}
-
 TEST(CryptographerTest, MissingCantDecrypt) {
   Cryptographer cryptographer;
 

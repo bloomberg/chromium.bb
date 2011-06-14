@@ -44,21 +44,19 @@ bool Cryptographer::CanDecryptUsingDefaultKey(
 
 bool Cryptographer::Encrypt(const ::google::protobuf::MessageLite& message,
                             sync_pb::EncryptedData* encrypted) const {
-  if (!encrypted || !default_nigori_) {
-    LOG(ERROR) << "Cryptographer not ready, failed to encrypt.";
-    return false;
-  }
+  DCHECK(encrypted);
+  DCHECK(default_nigori_);
 
   std::string serialized;
   if (!message.SerializeToString(&serialized)) {
-    LOG(ERROR) << "Message is invalid/missing a required field.";
+    NOTREACHED();  // |message| is invalid/missing a required field.
     return false;
   }
 
   encrypted->set_key_name(default_nigori_->first);
   if (!default_nigori_->second->Encrypt(serialized,
                                         encrypted->mutable_blob())) {
-    LOG(ERROR) << "Failed to encrypt data.";
+    NOTREACHED();  // Encrypt should not fail.
     return false;
   }
   return true;
