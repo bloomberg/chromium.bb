@@ -36,8 +36,9 @@ class Compositor;
 class Texture;
 class ThemeProvider;
 class Transform;
-
-typedef unsigned int TextureID;
+#if defined(TOUCH_UI)
+enum TouchStatus;
+#endif
 }
 
 #if defined(OS_WIN)
@@ -144,21 +145,6 @@ class View : public AcceleratorTarget {
  public:
   typedef std::vector<View*> Views;
 
-#if defined(TOUCH_UI)
-  enum TouchStatus {
-    TOUCH_STATUS_UNKNOWN = 0,  // Unknown touch status. This is used to indicate
-                               // that the touch event was not handled.
-    TOUCH_STATUS_START,        // The touch event initiated a touch sequence.
-    TOUCH_STATUS_CONTINUE,     // The touch event is part of a previously
-                               // started touch sequence.
-    TOUCH_STATUS_END,          // The touch event ended the touch sequence.
-    TOUCH_STATUS_CANCEL,       // The touch event was cancelled, but didn't
-                               // terminate the touch sequence.
-    TOUCH_STATUS_SYNTH_MOUSE   // The touch event was not processed, but a
-                               // synthetic mouse event generated from the
-                               // unused touch event was handled.
-  };
-#endif
 
   // TO BE MOVED ---------------------------------------------------------------
   // TODO(beng): These methods are to be moved to other files/classes.
@@ -620,7 +606,7 @@ class View : public AcceleratorTarget {
 #if defined(TOUCH_UI)
   // This method is invoked for each touch event. Default implementation
   // does nothing. Override as needed.
-  virtual TouchStatus OnTouchEvent(const TouchEvent& event);
+  virtual ui::TouchStatus OnTouchEvent(const TouchEvent& event);
 #endif
 
   // Set the MouseHandler for a drag session.
@@ -1231,7 +1217,7 @@ class View : public AcceleratorTarget {
 #if defined(TOUCH_UI)
   // RootView will invoke this with incoming TouchEvents. Returns the
   // the result of OnTouchEvent.
-  TouchStatus ProcessTouchEvent(const TouchEvent& event);
+  ui::TouchStatus ProcessTouchEvent(const TouchEvent& event);
 #endif
 
   // Accelerators --------------------------------------------------------------

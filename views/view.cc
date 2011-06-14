@@ -800,9 +800,9 @@ void View::OnMouseExited(const MouseEvent& event) {
 }
 
 #if defined(TOUCH_UI)
-View::TouchStatus View::OnTouchEvent(const TouchEvent& event) {
+ui::TouchStatus View::OnTouchEvent(const TouchEvent& event) {
   DVLOG(1) << "visited the OnTouchEvent";
-  return TOUCH_STATUS_UNKNOWN;
+  return ui::TOUCH_STATUS_UNKNOWN;
 }
 #endif
 
@@ -1626,7 +1626,7 @@ void View::ProcessMouseReleased(const MouseEvent& event) {
 }
 
 #if defined(TOUCH_UI)
-View::TouchStatus View::ProcessTouchEvent(const TouchEvent& event) {
+ui::TouchStatus View::ProcessTouchEvent(const TouchEvent& event) {
   // TODO(rjkroege): Implement a grab scheme similar to as
   // as is found in MousePressed.
   return OnTouchEvent(event);

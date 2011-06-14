@@ -84,7 +84,7 @@ class TestView : public View {
   virtual bool OnMouseDragged(const MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const MouseEvent& event) OVERRIDE;
 #if defined(TOUCH_UI)
-  virtual TouchStatus OnTouchEvent(const TouchEvent& event);
+  virtual ui::TouchStatus OnTouchEvent(const TouchEvent& event);
 #endif
   virtual void Paint(gfx::Canvas* canvas) OVERRIDE;
   virtual void SchedulePaintInRect(const gfx::Rect& rect) OVERRIDE;
@@ -135,7 +135,7 @@ class MockGestureManager : public GestureManager {
 
   bool ProcessTouchEventForGesture(const TouchEvent& event,
                                    View* source,
-                                   View::TouchStatus status);
+                                   ui::TouchStatus status);
   MockGestureManager();
 
   bool previously_handled_flag_;
@@ -154,7 +154,7 @@ class TestViewIgnoreTouch : public TestView {
 
   virtual ~TestViewIgnoreTouch() {}
  private:
-  virtual TouchStatus OnTouchEvent(const TouchEvent& event);
+  virtual ui::TouchStatus OnTouchEvent(const TouchEvent& event);
 };
 #endif
 
@@ -351,14 +351,14 @@ TEST_F(ViewTest, MouseEvent) {
 bool MockGestureManager::ProcessTouchEventForGesture(
     const TouchEvent& event,
     View* source,
-    View::TouchStatus status) {
-  if (status != View::TOUCH_STATUS_UNKNOWN) {
+    ui::TouchStatus status) {
+  if (status != ui::TOUCH_STATUS_UNKNOWN) {
     dispatched_synthetic_event_ = false;
     return false;
   }
   last_touch_event_ =  event.type();
   last_view_ = source;
-  previously_handled_flag_ = status != View::TOUCH_STATUS_UNKNOWN;
+  previously_handled_flag_ = status != ui::TOUCH_STATUS_UNKNOWN;
   dispatched_synthetic_event_ = true;
   return true;
 }
@@ -366,27 +366,27 @@ bool MockGestureManager::ProcessTouchEventForGesture(
 MockGestureManager::MockGestureManager() {
 }
 
-View::TouchStatus TestView::OnTouchEvent(const TouchEvent& event) {
+ui::TouchStatus TestView::OnTouchEvent(const TouchEvent& event) {
   last_touch_event_type_ = event.type();
   location_.SetPoint(event.x(), event.y());
   if (!in_touch_sequence_) {
     if (event.type() == ui::ET_TOUCH_PRESSED) {
       in_touch_sequence_ = true;
-      return TOUCH_STATUS_START;
+      return ui::TOUCH_STATUS_START;
     }
   } else {
     if (event.type() == ui::ET_TOUCH_RELEASED) {
       in_touch_sequence_ = false;
-      return TOUCH_STATUS_END;
+      return ui::TOUCH_STATUS_END;
     }
-    return TOUCH_STATUS_CONTINUE;
+    return ui::TOUCH_STATUS_CONTINUE;
   }
-  return last_touch_event_was_handled_ ? TOUCH_STATUS_CONTINUE :
-                                         TOUCH_STATUS_UNKNOWN;
+  return last_touch_event_was_handled_ ? ui::TOUCH_STATUS_CONTINUE :
+                                         ui::TOUCH_STATUS_UNKNOWN;
 }
 
-View::TouchStatus TestViewIgnoreTouch::OnTouchEvent(const TouchEvent& event) {
-  return TOUCH_STATUS_UNKNOWN;
+ui::TouchStatus TestViewIgnoreTouch::OnTouchEvent(const TouchEvent& event) {
+  return ui::TOUCH_STATUS_UNKNOWN;
 }
 
 TEST_F(ViewTest, TouchEvent) {

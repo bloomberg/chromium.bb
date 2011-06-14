@@ -8,6 +8,10 @@
 
 #include "chrome/browser/ui/views/tabs/base_tab_strip.h"
 
+namespace ui {
+enum TouchStatus;
+}
+
 class TouchTab;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -68,8 +72,7 @@ class TouchTabStrip : public BaseTabStrip {
   // Overridden from views::View.
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void PaintChildren(gfx::Canvas* canvas) OVERRIDE;
-  virtual views::View::TouchStatus OnTouchEvent(
-      const views::TouchEvent& event) OVERRIDE;
+  virtual ui::TouchStatus OnTouchEvent(const views::TouchEvent& event) OVERRIDE;
   virtual void ViewHierarchyChanged(bool is_add,
                                     View* parent,
                                     View* child) OVERRIDE;

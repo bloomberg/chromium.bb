@@ -80,8 +80,7 @@ bool DispatchX2Event(Widget* widget, XEvent* xev) {
         // If the TouchEvent is processed by |root|, then return. Otherwise let
         // it fall through so it can be used as a MouseEvent, if desired.
         TouchEvent touch(xev, from_native);
-        View* root = widget->GetRootView();
-        if (root->OnTouchEvent(touch) != views::View::TOUCH_STATUS_UNKNOWN)
+        if (widget->OnTouchEvent(touch) != ui::TOUCH_STATUS_UNKNOWN)
           return true;
 
         // We do not want to generate a mouse event for an unprocessed touch

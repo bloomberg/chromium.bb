@@ -512,14 +512,14 @@ void RenderWidgetHostViewViews::OnMouseExited(const views::MouseEvent& event) {
   // Already generated synthetically by webkit.
 }
 
-views::View::TouchStatus RenderWidgetHostViewViews::OnTouchEvent(
+ui::TouchStatus RenderWidgetHostViewViews::OnTouchEvent(
     const views::TouchEvent& event) {
   if (!host_)
-    return TOUCH_STATUS_UNKNOWN;
+    return ui::TOUCH_STATUS_UNKNOWN;
 
   // Update the list of touch points first.
   WebKit::WebTouchPoint* point = NULL;
-  TouchStatus status = TOUCH_STATUS_UNKNOWN;
+  ui::TouchStatus status = ui::TOUCH_STATUS_UNKNOWN;
 
   switch (event.type()) {
     case ui::ET_TOUCH_PRESSED:
@@ -531,7 +531,7 @@ views::View::TouchStatus RenderWidgetHostViewViews::OnTouchEvent(
 
         if (touch_event_.touchPointsLength == 1) {
           // A new touch sequence has started.
-          status = TOUCH_STATUS_START;
+          status = ui::TOUCH_STATUS_START;
 
           // We also want the focus.
           RequestFocus();
@@ -565,10 +565,10 @@ views::View::TouchStatus RenderWidgetHostViewViews::OnTouchEvent(
   }
 
   if (!point)
-    return TOUCH_STATUS_UNKNOWN;
+    return ui::TOUCH_STATUS_UNKNOWN;
 
-  if (status != TOUCH_STATUS_START)
-    status = TOUCH_STATUS_CONTINUE;
+  if (status != ui::TOUCH_STATUS_START)
+    status = ui::TOUCH_STATUS_CONTINUE;
 
   UpdateTouchParams(event, point);
 
@@ -608,9 +608,9 @@ views::View::TouchStatus RenderWidgetHostViewViews::OnTouchEvent(
       touch_event_.touchPoints[i] = touch_event_.touchPoints[i + 1];
     }
     if (touch_event_.touchPointsLength == 0)
-      status = TOUCH_STATUS_END;
+      status = ui::TOUCH_STATUS_END;
   } else if (event.type() == ui::ET_TOUCH_CANCELLED) {
-    status = TOUCH_STATUS_CANCEL;
+    status = ui::TOUCH_STATUS_CANCEL;
   }
 
   return status;

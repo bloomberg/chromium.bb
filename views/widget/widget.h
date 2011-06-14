@@ -43,6 +43,9 @@ class Accelerator;
 class Compositor;
 class OSExchangeData;
 class ThemeProvider;
+#if defined(TOUCH_UI)
+enum TouchStatus;
+#endif
 }
 using ui::ThemeProvider;
 
@@ -492,6 +495,9 @@ class Widget : public internal::NativeWidgetDelegate,
   virtual bool OnKeyEvent(const KeyEvent& event) OVERRIDE;
   virtual bool OnMouseEvent(const MouseEvent& event) OVERRIDE;
   virtual void OnMouseCaptureLost() OVERRIDE;
+#if defined(TOUCH_UI)
+  virtual ui::TouchStatus OnTouchEvent(const TouchEvent& event) OVERRIDE;
+#endif
   virtual bool ExecuteCommand(int command_id) OVERRIDE;
   virtual Widget* AsWidget() OVERRIDE;
   virtual const Widget* AsWidget() const OVERRIDE;

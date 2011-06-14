@@ -9,6 +9,10 @@
 #include "base/memory/singleton.h"
 #include "views/view.h"
 
+namespace ui {
+enum TouchStatus;
+}
+
 namespace views {
 class TouchEvent;
 
@@ -33,7 +37,7 @@ class GestureManager {
   // Returns true if the event resulted in firing a synthetic event.
   virtual bool ProcessTouchEventForGesture(const TouchEvent& event,
                                            View* source,
-                                           View::TouchStatus status);
+                                           ui::TouchStatus status);
 
   // TODO(rjkroege): Write the remainder of this class.
   // It will appear in a subsequent CL.

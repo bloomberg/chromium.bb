@@ -329,20 +329,20 @@ bool RootView::OnMouseWheel(const MouseWheelEvent& event) {
 }
 
 #if defined(TOUCH_UI)
-View::TouchStatus RootView::OnTouchEvent(const TouchEvent& event) {
+ui::TouchStatus RootView::OnTouchEvent(const TouchEvent& event) {
   TouchEvent e(event, this);
 
   // If touch_pressed_handler_ is non null, we are currently processing
   // a touch down on the screen situation. In that case we send the
   // event to touch_pressed_handler_
-  View::TouchStatus status = TOUCH_STATUS_UNKNOWN;
+  ui::TouchStatus status = ui::TOUCH_STATUS_UNKNOWN;
 
   if (touch_pressed_handler_) {
     TouchEvent touch_event(e, this, touch_pressed_handler_);
     status = touch_pressed_handler_->ProcessTouchEvent(touch_event);
     if (gesture_manager_->ProcessTouchEventForGesture(e, this, status))
-      status = View::TOUCH_STATUS_SYNTH_MOUSE;
-    if (status == TOUCH_STATUS_END)
+      status = ui::TOUCH_STATUS_SYNTH_MOUSE;
+    if (status == ui::TOUCH_STATUS_END)
       touch_pressed_handler_ = NULL;
     return status;
   }
@@ -354,7 +354,7 @@ View::TouchStatus RootView::OnTouchEvent(const TouchEvent& event) {
     if (!touch_pressed_handler_->IsEnabled()) {
       // Disabled views eat events but are treated as not handled by the
       // the GestureManager.
-      status = TOUCH_STATUS_UNKNOWN;
+      status = ui::TOUCH_STATUS_UNKNOWN;
       break;
     }
 
@@ -370,17 +370,17 @@ View::TouchStatus RootView::OnTouchEvent(const TouchEvent& event) {
 
     // The touch event wasn't processed. Go up the view hierarchy and dispatch
     // the touch event.
-    if (status == TOUCH_STATUS_UNKNOWN)
+    if (status == ui::TOUCH_STATUS_UNKNOWN)
       continue;
 
     // If the touch didn't initiate a touch-sequence, then reset the touch event
     // handler. Otherwise, leave it set so that subsequent touch events are
     // dispatched to the same handler.
-    if (status != TOUCH_STATUS_START)
+    if (status != ui::TOUCH_STATUS_START)
       touch_pressed_handler_ = NULL;
 
     if (gesture_manager_->ProcessTouchEventForGesture(e, this, status))
-      status = View::TOUCH_STATUS_SYNTH_MOUSE;
+      status = ui::TOUCH_STATUS_SYNTH_MOUSE;
     return status;
   }
 
@@ -389,7 +389,7 @@ View::TouchStatus RootView::OnTouchEvent(const TouchEvent& event) {
 
   // Give the touch event to the gesture manager.
   if (gesture_manager_->ProcessTouchEventForGesture(e, this, status))
-    status = View::TOUCH_STATUS_SYNTH_MOUSE;
+    status = ui::TOUCH_STATUS_SYNTH_MOUSE;
   return status;
 }
 #endif

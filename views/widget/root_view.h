@@ -13,6 +13,12 @@
 #include "views/focus/focus_search.h"
 #include "views/view.h"
 
+#if defined(TOUCH_UI)
+namespace ui {
+enum TouchStatus;
+}
+#endif
+
 namespace views {
 
 class Widget;
@@ -111,7 +117,7 @@ class RootView : public View,
   virtual void OnMouseExited(const MouseEvent& event) OVERRIDE;
   virtual bool OnMouseWheel(const MouseWheelEvent& event) OVERRIDE;
 #if defined(TOUCH_UI)
-  virtual TouchStatus OnTouchEvent(const TouchEvent& event) OVERRIDE;
+  virtual ui::TouchStatus OnTouchEvent(const TouchEvent& event) OVERRIDE;
 #endif
   virtual void SetMouseHandler(View* new_mouse_handler) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;

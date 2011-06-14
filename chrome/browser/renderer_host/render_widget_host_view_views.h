@@ -21,6 +21,10 @@
 #include "views/view.h"
 #include "webkit/glue/webcursor.h"
 
+namespace ui {
+enum TouchStatus;
+}
+
 class RenderWidgetHost;
 struct NativeWebKeyboardEvent;
 
@@ -97,8 +101,7 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   virtual void OnMouseMoved(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
-  virtual View::TouchStatus OnTouchEvent(
-      const views::TouchEvent& event) OVERRIDE;
+  virtual ui::TouchStatus OnTouchEvent(const views::TouchEvent& event) OVERRIDE;
   virtual bool OnKeyPressed(const views::KeyEvent& event) OVERRIDE;
   virtual bool OnKeyReleased(const views::KeyEvent& event) OVERRIDE;
   virtual bool OnMouseWheel(const views::MouseWheelEvent& event) OVERRIDE;

@@ -51,6 +51,22 @@ enum MouseEventFlags {
   EF_IS_NON_CLIENT      = 1 << 17
 };
 
+#if defined(TOUCH_UI)
+enum TouchStatus {
+  TOUCH_STATUS_UNKNOWN = 0,  // Unknown touch status. This is used to indicate
+                             // that the touch event was not handled.
+  TOUCH_STATUS_START,        // The touch event initiated a touch sequence.
+  TOUCH_STATUS_CONTINUE,     // The touch event is part of a previously
+                             // started touch sequence.
+  TOUCH_STATUS_END,          // The touch event ended the touch sequence.
+  TOUCH_STATUS_CANCEL,       // The touch event was cancelled, but didn't
+                             // terminate the touch sequence.
+  TOUCH_STATUS_SYNTH_MOUSE   // The touch event was not processed, but a
+                             // synthetic mouse event generated from the
+                             // unused touch event was handled.
+};
+#endif
+
 }  // namespace ui
 
 #endif  // UI_BASE_EVENTS_H_

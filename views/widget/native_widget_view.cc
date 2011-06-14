@@ -79,11 +79,8 @@ void NativeWidgetView::OnMouseExited(const MouseEvent& event) {
 }
 
 #if defined(TOUCH_UI)
-View::TouchStatus NativeWidgetView::OnTouchEvent(const TouchEvent& event) {
-  NOTIMPLEMENTED();
-  // TODO(beng): TouchEvents don't go through the Widget right now... so we
-  //             can't just pass them to the delegate...
-  return TOUCH_STATUS_UNKNOWN;
+ui::TouchStatus NativeWidgetView::OnTouchEvent(const TouchEvent& event) {
+  return delegate()->OnTouchEvent(event);
 }
 #endif
 

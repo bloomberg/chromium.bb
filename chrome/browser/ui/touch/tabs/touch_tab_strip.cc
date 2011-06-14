@@ -324,14 +324,14 @@ void TouchTabStrip::PaintChildren(gfx::Canvas* canvas) {
     dragging_tab->Paint(canvas);
 }
 
-views::View::TouchStatus TouchTabStrip::OnTouchEvent(
+ui::TouchStatus TouchTabStrip::OnTouchEvent(
     const views::TouchEvent& event) {
   if (event.type() != ui::ET_TOUCH_PRESSED)
-    return TOUCH_STATUS_UNKNOWN;
+    return ui::TOUCH_STATUS_UNKNOWN;
 
   views::View* view = GetEventHandlerForPoint(event.location());
   if (view && view != this && view->id() != VIEW_ID_TAB)
-    return TOUCH_STATUS_UNKNOWN;
+    return ui::TOUCH_STATUS_UNKNOWN;
 
   base::TimeDelta delta = event.time_stamp() - last_tap_time_;
 
@@ -346,12 +346,12 @@ views::View::TouchStatus TouchTabStrip::OnTouchEvent(
 
     last_tap_time_ = base::Time::FromInternalValue(0);
     last_tapped_view_ = NULL;
-    return TOUCH_STATUS_END;
+    return ui::TOUCH_STATUS_END;
   }
 
   last_tap_time_ = event.time_stamp();
   last_tapped_view_ = view;
-  return TOUCH_STATUS_UNKNOWN;
+  return ui::TOUCH_STATUS_UNKNOWN;
 }
 
 void TouchTabStrip::ViewHierarchyChanged(bool is_add,
