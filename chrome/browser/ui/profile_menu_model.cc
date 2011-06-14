@@ -5,13 +5,16 @@
 #include "chrome/browser/ui/profile_menu_model.h"
 
 #include "chrome/browser/profiles/profile_manager.h"
+#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 ProfileMenuModel::ProfileMenuModel()
     : ALLOW_THIS_IN_INITIALIZER_LIST(ui::SimpleMenuModel(this)) {
-  AddItem(COMMAND_CREATE_NEW_PROFILE, l10n_util::GetStringUTF16(
-      IDS_PROFILES_CREATE_NEW_PROFILE_OPTION));
+  const string16 short_product_name =
+      l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);
+  AddItem(COMMAND_CREATE_NEW_PROFILE, l10n_util::GetStringFUTF16(
+      IDS_PROFILES_CREATE_NEW_PROFILE_OPTION, short_product_name));
 }
 
 ProfileMenuModel::~ProfileMenuModel() {

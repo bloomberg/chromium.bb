@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CHROME_APP_CHROME_COMMAND_IDS_H_
+#define CHROME_APP_CHROME_COMMAND_IDS_H_
+#pragma once
+
 // This file lists all the command IDs understood by e.g. the browser.
 // It is used by Windows RC files, Mac NIB files, and other platforms too.
 
@@ -166,6 +170,8 @@
 #define IDC_PROFILING_ENABLED           40030
 #define IDC_FILE_MANAGER                40031
 #define IDC_BOOKMARKS_MENU              40032
+#define IDC_PROFILE_MENU                40033
+#define IDC_CREATE_NEW_PROFILE          40034
 
 // Spell-check
 // Insert any additional suggestions before _LAST; these have to be consecutive.
@@ -276,3 +282,5 @@
 
 // Context menu items in the status tray
 #define IDC_STATUS_TRAY_KEEP_CHROME_RUNNING_IN_BACKGROUND 51100
+
+#endif  // CHROME_APP_CHROME_COMMAND_IDS_H_

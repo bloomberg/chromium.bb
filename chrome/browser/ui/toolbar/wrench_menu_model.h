@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_TOOLBAR_WRENCH_MENU_MODEL_H_
 #pragma once
 
+#include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/tabs/tab_strip_model_observer.h"
 #include "content/common/notification_observer.h"
@@ -79,6 +80,36 @@ class BookmarkSubMenuModel : public ui::SimpleMenuModel {
   void Build(Browser* browser);
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkSubMenuModel);
+};
+
+class ProfilesSubMenuModel : public ui::SimpleMenuModel,
+                             public ui::SimpleMenuModel::Delegate {
+ public:
+  ProfilesSubMenuModel(ui::SimpleMenuModel::Delegate* delegate,
+                       Browser* browser);
+
+  virtual void ExecuteCommand(int command_id) OVERRIDE;
+  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
+  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
+  virtual bool GetAcceleratorForCommandId(
+      int command_id,
+      ui::Accelerator* accelerator) OVERRIDE;
+
+ private:
+  enum {
+    // The profiles submenu contains a menu item for each profile. For
+    // the i'th profile the command ID is COMMAND_SWITCH_TO_PROFILE + i.
+    // If the profile matches the profile of the wrench button's browser
+    // then the menu item is checked.
+    COMMAND_SWITCH_TO_PROFILE,
+  };
+
+  void Build();
+
+  Browser* browser_;  // weak
+  ui::SimpleMenuModel::Delegate* delegate_;  // weak
+
+  DISALLOW_COPY_AND_ASSIGN(ProfilesSubMenuModel);
 };
 
 // A menu model that builds the contents of the wrench menu.
@@ -155,6 +186,9 @@ class WrenchMenuModel : public ui::SimpleMenuModel,
 
   // Bookmark submenu.
   scoped_ptr<BookmarkSubMenuModel> bookmark_sub_menu_model_;
+
+  // Profiles submenu.
+  scoped_ptr<ProfilesSubMenuModel> profiles_sub_menu_model_;
 
   ui::AcceleratorProvider* provider_;  // weak
 

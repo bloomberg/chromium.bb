@@ -32,6 +32,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_job.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/cros/cros_library.h"
@@ -251,6 +252,8 @@ void ProfileManager::CreateProfileAsync(const FilePath& user_data_dir,
     if (info->created) {
       // Profile has already been created. Call observer immediately.
       observer->OnProfileCreated(info->profile.get());
+      if (observer->DeleteAfterCreation())
+        delete observer;
     } else {
       // Profile is being created. Add observer to list.
       info->observers.push_back(observer);
@@ -302,6 +305,7 @@ ProfileManager::ProfileInfo* ProfileManager::RegisterProfile(Profile* profile,
   ProfileInfo* info = new ProfileInfo(profile, created);
   ProfilesInfoMap::iterator new_elem =
       (profiles_info_.insert(std::make_pair(profile->GetPath(), info))).first;
+
   return info;
 }
 
@@ -428,4 +432,67 @@ void ProfileManager::RegisterPrefs(PrefService* prefs) {
   prefs->RegisterStringPref(prefs::kProfileLastUsed, "");
   prefs->RegisterDictionaryPref(prefs::kProfileDirectoryMap);
   prefs->RegisterIntegerPref(prefs::kProfilesNumCreated, 1);
+}
+
+
+size_t ProfileManager::GetNumberOfProfiles() {
+  const DictionaryValue* path_map =
+      g_browser_process->local_state()->GetDictionary(
+          prefs::kProfileDirectoryMap);
+  return path_map ? path_map->size() : 0;
+}
+
+string16 ProfileManager::GetNameOfProfileAtIndex(size_t index) {
+  return GetSortedProfilesFromDirectoryMap()[index].second;
+}
+
+FilePath ProfileManager::GetFilePathOfProfileAtIndex(
+    size_t index,
+    const FilePath& user_data_dir) {
+  FilePath base_name = GetSortedProfilesFromDirectoryMap()[index].first;
+  return user_data_dir.Append(base_name);
+}
+
+bool ProfileManager::CompareProfilePathAndName(
+    const ProfileManager::ProfilePathAndName& pair1,
+    const ProfileManager::ProfilePathAndName& pair2) {
+  int name_compare = pair1.second.compare(pair2.second);
+  if (name_compare < 0) {
+    return true;
+  } else if (name_compare > 0) {
+    return false;
+  } else {
+    return pair1.first < pair2.first;
+  }
+}
+
+ProfileManager::ProfilePathAndNames
+ProfileManager::GetSortedProfilesFromDirectoryMap() {
+  ProfilePathAndNames profiles;
+
+  const DictionaryValue* path_map =
+      g_browser_process->local_state()->GetDictionary(
+          prefs::kProfileDirectoryMap);
+  if (!path_map)
+    return profiles;
+
+  for (DictionaryValue::key_iterator it = path_map->begin_keys();
+       it != path_map->end_keys(); ++it) {
+    std::string name_ascii;
+    path_map->GetString(*it, &name_ascii);
+    string16 name = ASCIIToUTF16(name_ascii);
+    if (name.empty())
+      name = l10n_util::GetStringUTF16(IDS_DEFAULT_PROFILE_NAME);
+#if defined(OS_POSIX)
+    FilePath file_path(*it);
+#elif defined(OS_WIN)
+    FilePath file_path(ASCIIToWide(*it));
+#endif
+
+    // Pending, need to insert it alphabetically.
+    profiles.push_back(std::pair<FilePath, string16>(file_path, name));
+  }
+
+  std::sort(profiles.begin(), profiles.end(), CompareProfilePathAndName);
+  return profiles;
 }

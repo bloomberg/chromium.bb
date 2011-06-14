@@ -35,6 +35,8 @@ class ProfileManagerObserver {
   // If true, delete the observer after the profile has been created. Default
   // is false.
   virtual bool DeleteAfterCreation();
+
+  virtual ~ProfileManagerObserver() {}
 };
 
 class ProfileManager : public base::NonThreadSafe,
@@ -61,6 +63,12 @@ class ProfileManager : public base::NonThreadSafe,
   // dir. This will return an existing profile it had already been created,
   // otherwise it will create and manage it.
   Profile* GetProfile(const FilePath& profile_dir);
+
+  // Multi-profile support.
+  size_t GetNumberOfProfiles();
+  string16 GetNameOfProfileAtIndex(size_t index);
+  FilePath GetFilePathOfProfileAtIndex(size_t index,
+                                       const FilePath& user_data_dir);
 
   // Explicit asynchronous creation of the profile. |observer| is called
   // when profile is created. If profile has already been created, observer
@@ -172,6 +180,14 @@ class ProfileManager : public base::NonThreadSafe,
   // Registers profile with given info. Returns pointer to created ProfileInfo
   // entry.
   ProfileInfo* RegisterProfile(Profile* profile, bool created);
+
+  typedef std::pair<FilePath, string16> ProfilePathAndName;
+  typedef std::vector<ProfilePathAndName> ProfilePathAndNames;
+  ProfilePathAndNames GetSortedProfilesFromDirectoryMap();
+
+  static bool CompareProfilePathAndName(
+      const ProfileManager::ProfilePathAndName& pair1,
+      const ProfileManager::ProfilePathAndName& pair2);
 
   NotificationRegistrar registrar_;
 
