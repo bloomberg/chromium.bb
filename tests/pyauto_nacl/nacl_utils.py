@@ -6,6 +6,7 @@
 import pyauto_nacl  # Must be imported before pyauto
 import pyauto
 
+
 def AssertTrueOrLogTab(browser, ok, msg, tab_index=0):
   """If passed False, scrapes the content of the tab and prints it before
   throwing an axception.
@@ -37,12 +38,15 @@ window.domAutomationController.send(text);
     print '*** END OF FAILED TAB LOG ***'
     raise
 
+
 def WaitForNexeLoad(browser, tab_index=0):
   """Waits until a nexe has been fully loaded by the browser in the tab
   tab_index. Assumes that the caller has actually navigated to a nexe prior to
   calling this method. Also assumes that the nexe displays the string
   '[SHUTDOWN]' after fully loading.
   """
+  # Make sure the window has focus (runs about 10x faster on multitab tests.)
+  browser.GetBrowserWindow(0).ActivateTab(tab_index)
   AssertTrueOrLogTab(browser, browser.WaitUntil(
       lambda:
         browser.FindInPage('[SHUTDOWN]', tab_index=tab_index)['match_count'],
@@ -50,16 +54,20 @@ def WaitForNexeLoad(browser, tab_index=0):
                      'nexe did not load',
                      tab_index)
 
+
 def VerifyAllTestsPassed(browser, tab_index=0):
   """Returns true if all tests run by a nexe that was loaded by the browser in
   the tab tab_index have passed. Assumes that the nexe has fully loaded. Also
   assumes that the nexe displays the string '0 failed, 0 errors' when all tests
   have passed.
   """
+  # Make sure the window has focus (runs about 10x faster on multitab tests.)
+  browser.GetBrowserWindow(0).ActivateTab(tab_index)
   AssertTrueOrLogTab(browser, browser.FindInPage(
       '0 failed, 0 errors', tab_index=tab_index)['match_count'] == 1,
                      'nexe test did not report success',
                      tab_index)
+
 
 def CheckForSnap(browser):
   browser.NavigateToURL('about:histograms')
