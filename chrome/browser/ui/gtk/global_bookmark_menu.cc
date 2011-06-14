@@ -11,6 +11,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_utils_gtk.h"
 #include "chrome/browser/ui/gtk/global_bookmark_menu.h"
@@ -60,7 +61,8 @@ GlobalBookmarkMenu::GlobalBookmarkMenu(Browser* browser)
   default_favicon_ = GtkThemeService::GetDefaultFavicon(true);
   default_folder_ = GtkThemeService::GetFolderIcon(true);
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
-                 Source<Profile>(profile_));
+                 Source<ThemeService>(
+                     ThemeServiceFactory::GetForProfile(profile_)));
 }
 
 GlobalBookmarkMenu::~GlobalBookmarkMenu() {

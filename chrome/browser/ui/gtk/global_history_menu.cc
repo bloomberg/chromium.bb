@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
+#include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tab_restore_service_delegate.h"
 #include "chrome/browser/ui/gtk/global_menu_bar.h"
@@ -137,7 +138,8 @@ void GlobalHistoryMenu::Init(GtkWidget* history_menu,
     }
 
     registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
-                   Source<Profile>(profile_));
+                   Source<ThemeService>(
+                       ThemeServiceFactory::GetForProfile(profile_)));
   }
 }
 
