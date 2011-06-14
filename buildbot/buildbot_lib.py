@@ -11,6 +11,18 @@ import sys
 import traceback
 
 
+def GetHostPlatform():
+  sys_platform = sys.platform.lower()
+  if sys_platform in ('linux', 'linux2'):
+    return 'linux'
+  elif sys_platform in ('win', 'win32', 'windows', 'cygwin'):
+    return 'win'
+  elif sys_platform in ('darwin', 'mac'):
+    return 'mac'
+  else:
+    raise Exception('Can not determine the platform!')
+
+
 def ParseStandardCommandLine(context):
   """
   The standard buildbot scripts require 3 arguments to run.  The first
@@ -43,18 +55,25 @@ def ParseStandardCommandLine(context):
   if clib not in ('newlib', 'glibc'):
     parser.error('Invalid clib %r' % clib)
 
+  # TODO(ncbray) allow a command-line override
+  platform = GetHostPlatform()
+
+  context['platform'] = platform
   context['mode'] = mode
   context['bits'] = bits
+  # TODO(ncbray) turn derived values into methods.
   context['gyp_mode'] = {'opt': 'Release', 'dbg': 'Debug'}[mode]
+  context['gyp_arch'] = {'32': 'ia32', '64': 'x64'}[bits]
   context['vc_arch'] = {'32': 'x86', '64': 'x64'}[bits]
   context['default_scons_platform'] = 'x86-'+bits
-  context['default_scons_mode'] = [mode + '-win', 'nacl']
+  context['default_scons_mode'] = [mode + '-host', 'nacl']
   context['use_glibc'] = clib == 'glibc'
   context['max_jobs'] = 8
   context['dry_run'] = options.dry_run
   context['inside_toolchain'] = options.inside_toolchain
 
-  context.printConfig()
+  for key, value in sorted(context.config.items()):
+    print '%s=%s' % (key, value)
 
 
 def EnsureDirectoryExists(path):
@@ -123,7 +142,7 @@ def FileCanBeFound(name, paths):
 
 # Execute a command using Python's subprocess module.
 def Command(context, cmd, cwd=None):
-  print 'Running command: %r' % cmd
+  print 'Running command: %s' % ' '.join(cmd)
 
   # Python's subprocess has a quirk.  A subprocess can execute with an
   # arbitrary, user-defined environment.  The first argument of the command,
@@ -138,7 +157,7 @@ def Command(context, cmd, cwd=None):
   os.environ['PATH'] = env['PATH']
 
   try:
-    if FileCanBeFound(cmd[0], env['PATH']):
+    if FileCanBeFound(cmd[0], env['PATH']) or context['dry_run']:
       # Make sure that print statements before the subprocess call have been
       # flushed, otherwise the output of the subprocess call may appear before
       # the print statements.
@@ -163,25 +182,37 @@ def Command(context, cmd, cwd=None):
 
 
 # A specialized version of CommandStep.
-def SCons(context, mode=None, platform=None, parallel=False, args=(), **kargs):
+def SCons(context, mode=None, platform=None, parallel=False, browser_test=False,
+          args=(), cwd=None):
+  if context.Windows():
+    scons = 'scons.bat'
+  else:
+    scons = './scons'
   if mode is None: mode = context['default_scons_mode']
   if platform is None: platform = context['default_scons_platform']
   if parallel:
     jobs = context['max_jobs']
   else:
     jobs = 1
-  cmd = [
-      'scons.bat',
+  cmd = []
+  if browser_test and context.Linux():
+    # Although we could use the "browser_headless=1" Scons option, it runs
+    # xvfb-run once per Chromium invocation.  This is good for isolating
+    # the tests, but xvfb-run has a stupid fixed-period sleep, which would
+    # slow down the tests unnecessarily.
+    cmd.extend(['xvfb-run', '--auto-servernum'])
+  cmd.extend([
+      scons,
       '--verbose',
       '-k',
       '-j%d' % jobs,
       '--mode='+','.join(mode),
       'platform='+platform,
-      ]
+      ])
   if context['use_glibc']: cmd.append('--nacl_glibc')
   # Append used-specified arguments.
   cmd.extend(args)
-  Command(context, cmd, **kargs)
+  Command(context, cmd, cwd)
 
 
 class StepFailed(Exception):
@@ -257,6 +288,16 @@ class Step(object):
     return True
 
 
+# Adds an arbitrary link inside the build stage on the waterfall.
+def StepLink(text, link):
+  print '@@@STEP_LINK@%s@%s@@@' % (text, link)
+
+
+# Adds arbitrary text inside the build stage on the waterfall.
+def StepText(text):
+  print '@@@STEP_TEXT@%s@@@' % (text)
+
+
 class BuildStatus(object):
   """
   Keeps track of the overall status of the build.
@@ -319,6 +360,15 @@ class BuildContext(object):
   def __setitem__(self, key, value):
     self.config[key] = value
 
+  def Windows(self):
+    return self.config['platform'] == 'win'
+
+  def Linux(self):
+    return self.config['platform'] == 'linux'
+
+  def Mac(self):
+    return self.config['platform'] == 'mac'
+
   def GetEnv(self, name):
     return self.global_env[name]
 
@@ -332,20 +382,12 @@ class BuildContext(object):
     e.update(self.global_env)
     return e
 
-  def printConfig(self):
-    for key, value in sorted(self.config.items()):
-      print '%s=%s' % (key, value)
 
-
-def RunScript(script, status, context):
+def RunBuild(script, status, context):
   try:
     script(status, context)
   except StopBuild:
     pass
-
-
-def RunBuild(script, status, context):
-  RunScript(script, status, context)
 
   # Workaround for an annotator bug.
   # TODO(bradnelson@google.com) remove when the bug is fixed.

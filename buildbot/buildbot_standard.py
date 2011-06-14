@@ -74,6 +74,9 @@ def SetupWindowsEnvironment(context):
   context['msvc'] = msvc
 
 
+def SetupLinuxEnvironment(context):
+  context.SetEnv('GYP_DEFINES', 'target_arch='+context['gyp_arch'])
+
 def PartialSDK(context, platform):
   args = ['--download', 'extra_sdk_update_header', 'extra_sdk_update']
   if not context['use_glibc']:
@@ -93,25 +96,41 @@ def BuildScript(status, context):
 
   # If we're running browser tests on a 64-bit Windows machine, build a 32-bit
   # plugin.
-  need_plugin_32 = context['bits'] == '64' and not inside_toolchain
+  need_plugin_32 = (context.Windows() and
+                    context['bits'] == '64' and
+                    not inside_toolchain)
 
   # Clean out build directories.
+  # Remove all directories on all platforms.  Overkill, but it allows for
+  # straight-line code.
   with Step('clobber', status):
     RemoveDirectory(r'scons-out')
-    RemoveDirectory(r'build\Debug')
-    RemoveDirectory(r'build\Release')
-    RemoveDirectory(r'build\Debug-Win32')
-    RemoveDirectory(r'build\Release-Win32')
-    RemoveDirectory(r'build\Debug-x64')
-    RemoveDirectory(r'build\Release-x64')
+
+    # Windows
+    RemoveDirectory('build/Debug')
+    RemoveDirectory('build/Release')
+    RemoveDirectory('build/Debug-Win32')
+    RemoveDirectory('build/Release-Win32')
+    RemoveDirectory('build/Debug-x64')
+    RemoveDirectory('build/Release-x64')
+
+    # Linux
+    RemoveDirectory('hg')
+    RemoveDirectory('../xcodebuild')
+    RemoveDirectory('../sconsbuild')
+    RemoveDirectory('../out')
+    RemoveDirectory('src/third_party/nacl_sdk/arm-newlib')
 
   with Step('cleanup_temp', status):
     # Picking out drive letter on which the build is happening so we can use
     # it for the temp directory.
-    build_drive = os.path.splitdrive(os.path.abspath(__file__))[0]
-    tmp_dir = os.path.join(build_drive, os.path.sep + 'temp')
-    context.SetEnv('TEMP', tmp_dir)
-    context.SetEnv('TMP', tmp_dir)
+    if context.Windows():
+      build_drive = os.path.splitdrive(os.path.abspath(__file__))[0]
+      tmp_dir = os.path.join(build_drive, os.path.sep + 'temp')
+      context.SetEnv('TEMP', tmp_dir)
+      context.SetEnv('TMP', tmp_dir)
+    else:
+      tmp_dir = '/tmp'
     print 'Making sure %s exists...' % tmp_dir
     EnsureDirectoryExists(tmp_dir)
     print 'Cleaning up the contents of %s...' % tmp_dir
@@ -131,7 +150,11 @@ def BuildScript(status, context):
           cwd='..')
   else:
     with Step('gclient_runhooks', status):
-      Command(context, cmd=['gclient.bat', 'runhooks', '--force'])
+      if context.Windows():
+        gclient = 'gclient.bat'
+      else:
+        gclient = 'gclient'
+      Command(context, cmd=[gclient, 'runhooks', '--force'])
 
     # On windows 64 we build a 32-bit plugin for integration tests.
     # In this case, we'll also need to run a 32-bit partial SDK.
@@ -144,13 +167,16 @@ def BuildScript(status, context):
 
   # Make sure out Gyp build is working.
   with Step('gyp_compile', status):
-    Command(
-        context,
-        cmd=[
-            os.path.join(context['msvc'], 'Common7', 'IDE', 'devenv.com'),
-            r'build\all.sln',
-            '/build', context['gyp_mode']
-            ])
+    if context.Windows():
+      Command(
+          context,
+          cmd=[os.path.join(context['msvc'], 'Common7', 'IDE', 'devenv.com'),
+               r'build\all.sln',
+               '/build', context['gyp_mode']])
+    else:
+      Command(context, cmd=['make', '-C', '..', '-k',
+                            '-j%d' % context['max_jobs'], 'V=1',
+                            'BUILDTYPE=' + context['gyp_mode']])
 
   # The main compile step.
   with Step('scons_compile', status):
@@ -164,7 +190,7 @@ def BuildScript(status, context):
   with Step('small_tests', status, halt_on_fail=False):
     SCons(context, args=['small_tests'])
 
-  # Skip these tests to save time.
+  # Skip these because they don't work, yet.
   if not context['use_glibc']:
     with Step('medium_tests', status, halt_on_fail=False):
       SCons(context, args=['medium_tests'])
@@ -173,36 +199,85 @@ def BuildScript(status, context):
 
   if do_integration_tests:
     with Step('chrome_browser_tests', status, halt_on_fail=False):
-      SCons(context, args=['SILENT=1', 'chrome_browser_tests'])
+      SCons(context, browser_test=True,
+            args=['SILENT=1', 'chrome_browser_tests'])
 
-    plugin = 'ppGoogleNaClPlugin.dll'
-    if context['bits'] == '32':
-      sel_ldr = 'sel_ldr.exe'
-    else:
-      sel_ldr = 'sel_ldr64.exe'
+    # Use SCons to test the binaries built by GYP.
     with Step('chrome_browser_tests using GYP', status, halt_on_fail=False):
+      if context.Windows():
+        base = os.path.join('build', context['gyp_mode'])
+        plugin = os.path.join(base, 'ppGoogleNaClPlugin.dll')
+        if context['bits'] == '32':
+          sel_ldr = os.path.join(base, 'sel_ldr.exe')
+        else:
+          sel_ldr = os.path.join(base, 'sel_ldr64.exe')
+      elif context.Linux():
+        base = os.path.join('..', 'out', context['gyp_mode'])
+        plugin = os.path.join(base, 'lib.target/libppGoogleNaClPlugin.so')
+        sel_ldr = os.path.join(base, 'sel_ldr')
+      else:
+        raise Exception('Unknown platform')
+
       SCons(
           context,
-          args=[
-              r'force_ppapi_plugin=build\%s\%s' % (context['gyp_mode'], plugin),
-              r'force_sel_ldr=build\%s\%s' % (context['gyp_mode'], sel_ldr),
-              'SILENT=1',
-              'chrome_browser_tests',
-              ])
+          browser_test=True,
+          args=['force_ppapi_plugin=' + plugin,
+                'force_sel_ldr=' + sel_ldr,
+                'SILENT=1',
+                'chrome_browser_tests'])
 
     # TODO(mcgrathr): Drop support for non-IRT builds and remove this entirely.
     # See http://code.google.com/p/nativeclient/issues/detail?id=1691
     with Step('chrome_browser_tests without IRT', status, halt_on_fail=False):
-      SCons(context, args=['SILENT=1', 'irt=0', 'chrome_browser_tests'])
-
+      SCons(context, browser_test=True,
+            args=['SILENT=1', 'irt=0', 'chrome_browser_tests'])
 
     with Step('pyauto_tests', status, halt_on_fail=False):
-      SCons(context, args=['SILENT=1', 'pyauto_tests'])
+      SCons(context, browser_test=True, args=['SILENT=1', 'pyauto_tests'])
 
   if do_dso_tests:
     with Step('dynamic_library_browser_tests', status, halt_on_fail=False):
-      SCons(context, args=['SILENT=1', 'dynamic_library_browser_tests'])
+      SCons(context, browser_test=True,
+            args=['SILENT=1', 'dynamic_library_browser_tests'])
   ### END tests ###
+
+  if context.Linux():
+    with Step('archive irt.nexe', status):
+      # Upload the integrated runtime (IRT) library so that it can be pulled
+      # into the Chromium build, so that a NaCl toolchain will not be needed
+      # to build a NaCl-enabled Chromium.  We strip the IRT to save space
+      # and download time.
+      # TODO(mseaborn): It might be better to do the stripping in Scons.
+      irt_path = 'scons-out/nacl_irt-x86-%s/staging/irt.nexe' % context['bits']
+      stripped_irt_path = irt_path + '.stripped'
+
+      if os.environ.get('ARCHIVE_IRT') == '1':
+        Command(
+          context,
+          cmd=['toolchain/linux_x86_newlib/bin/nacl-strip',
+               '--strip-debug',
+               irt_path,
+               '-o', stripped_irt_path])
+
+        irt_dir = 'nativeclient-archive2/irt'
+        gsdview = 'http://gsdview.appspot.com'
+        rev = os.environ['BUILDBOT_GOT_REVISION']
+        gs_path = '%s/r%s/irt_x86_%s.nexe' % (irt_dir, rev, context['bits'])
+
+        def GSCPCommand(context, cmd):
+          gs_util = '/b/build/scripts/slave/gsutil'
+          Command(context, cmd=[gs_util, '-h', 'Cache-Control:no-cache', 'cp',
+                                '-a', 'public-read'] + cmd)
+
+        # Upload the stripped IRT
+        GSCPCommand(context, cmd=[stripped_irt_path, 'gs://' + gs_path])
+        StepLink('stripped', '/'.join([gsdview, gs_path]))
+
+        # Upload the unstripped IRT, in case it's needed for debugging.
+        GSCPCommand(context, cmd=[irt_path, 'gs://' + gs_path + '.unstripped'])
+        StepLink('unstripped', '/'.join([gsdview, gs_path]) + '.unstripped')
+      else:
+        StepText('not uploading on this bot')
 
 
 def Main():
@@ -210,7 +285,12 @@ def Main():
   status = BuildStatus()
   context = BuildContext()
   ParseStandardCommandLine(context)
-  SetupWindowsEnvironment(context)
+  if context.Windows():
+    SetupWindowsEnvironment(context)
+  elif context.Linux():
+    SetupLinuxEnvironment(context)
+  else:
+    raise Exception("Unsupported platform.")
   RunBuild(BuildScript, status, context)
 
 
