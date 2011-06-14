@@ -150,19 +150,20 @@ void View::AddChildView(View* view) {
 void View::AddChildViewAt(View* view, int index) {
   CHECK(view != this) << "You cannot add a view as its own child";
 
-  // Remove the view from its current parent if any.
-  if (view->parent())
-    view->parent()->RemoveChildView(view);
+  // If |view| has a parent, remove it from its parent.
+  View* parent = view->parent_;
+  if (parent)
+    parent->RemoveChildView(view);
 
   // Sets the prev/next focus views.
   InitFocusSiblings(view, index);
 
   // Let's insert the view.
-  children_.insert(children_.begin() + index, view);
   view->parent_ = this;
+  children_.insert(children_.begin() + index, view);
 
-  for (View* p = this; p; p = p->parent())
-    p->ViewHierarchyChangedImpl(false, true, this, view);
+  for (View* v = this; v; v = v->parent_)
+    v->ViewHierarchyChangedImpl(false, true, this, view);
 
   view->PropagateAddNotifications(this, view);
   UpdateTooltip();
@@ -290,7 +291,7 @@ gfx::Rect View::GetVisibleBounds() const {
 
     vis_bounds = view->ConvertRectToParent(vis_bounds);
     vis_bounds.Offset(view->GetMirroredPosition());
-    const View* ancestor = view->parent();
+    const View* ancestor = view->parent_;
     if (ancestor != NULL) {
       ancestor_bounds.SetRect(0, 0, ancestor->width(), ancestor->height());
       vis_bounds = vis_bounds.Intersect(ancestor_bounds);
@@ -363,7 +364,7 @@ bool View::IsVisible() const {
 }
 
 bool View::IsVisibleInRootView() const {
-  return IsVisible() && parent() ? parent()->IsVisibleInRootView() : false;
+  return IsVisible() && parent_ ? parent_->IsVisibleInRootView() : false;
 }
 
 void View::SetEnabled(bool enabled) {
@@ -441,7 +442,7 @@ gfx::Point View::GetMirroredPosition() const {
 }
 
 int View::GetMirroredX() const {
-  return parent() ? parent()->GetMirroredXForRect(bounds_) : x();
+  return parent_ ? parent_->GetMirroredXForRect(bounds_) : x();
 }
 
 int View::GetMirroredXForRect(const gfx::Rect& bounds) const {
@@ -509,7 +510,7 @@ std::string View::GetClassName() const {
 }
 
 View* View::GetAncestorWithClassName(const std::string& name) {
-  for (View* view = this; view; view = view->parent()) {
+  for (View* view = this; view; view = view->parent_) {
     if (view->GetClassName() == name)
       return view;
   }
@@ -1016,10 +1017,10 @@ bool View::ExceededDragThreshold(int delta_x, int delta_y) {
 void View::ScrollRectToVisible(const gfx::Rect& rect) {
   // We must take RTL UI mirroring into account when adjusting the position of
   // the region.
-  if (parent()) {
+  if (parent_) {
     gfx::Rect scroll_rect(rect);
     scroll_rect.Offset(GetMirroredX(), y());
-    parent()->ScrollRectToVisible(scroll_rect);
+    parent_->ScrollRectToVisible(scroll_rect);
   }
 }
 
@@ -1329,7 +1330,7 @@ void View::PropagateRemoveNotifications(View* parent) {
   for (int i = 0, count = child_count(); i < count; ++i)
     GetChildViewAt(i)->PropagateRemoveNotifications(parent);
 
-  for (View* v = this; v; v = v->parent())
+  for (View* v = this; v; v = v->parent_)
     v->ViewHierarchyChangedImpl(true, false, parent, this);
 }
 
@@ -1396,7 +1397,7 @@ void View::BoundsChanged(const gfx::Rect& previous_bounds) {
       // Paint the old bounds.
       if (base::i18n::IsRTL()) {
         gfx::Rect paint_rect = previous_bounds;
-        paint_rect.set_x(parent()->GetMirroredXForRect(paint_rect));
+        paint_rect.set_x(parent_->GetMirroredXForRect(paint_rect));
         parent_->SchedulePaintInRect(paint_rect);
       } else {
         parent_->SchedulePaintInRect(previous_bounds);
@@ -1453,22 +1454,17 @@ void View::RegisterForVisibleBoundsNotification() {
     return;
 
   registered_for_visible_bounds_notification_ = true;
-  View* ancestor = parent();
-  while (ancestor) {
+  for (View* ancestor = parent_; ancestor; ancestor = ancestor->parent_)
     ancestor->AddDescendantToNotify(this);
-    ancestor = ancestor->parent();
-  }
 }
 
 void View::UnregisterForVisibleBoundsNotification() {
   if (!registered_for_visible_bounds_notification_)
     return;
+
   registered_for_visible_bounds_notification_ = false;
-  View* ancestor = parent();
-  while (ancestor) {
+  for (View* ancestor = parent_; ancestor; ancestor = ancestor->parent_)
     ancestor->RemoveDescendantToNotify(this);
-    ancestor = ancestor->parent();
-  }
 }
 
 void View::AddDescendantToNotify(View* view) {
@@ -1558,8 +1554,8 @@ bool View::ConvertPointFromAncestor(const View* ancestor,
 void View::MarkTextureDirty() {
   View* owner = this;
   while (!((owner->transform_.get() && owner->transform_->HasChange()) ||
-           owner->paint_to_texture_) && owner->parent())
-    owner = owner->parent();
+           owner->paint_to_texture_) && owner->parent_)
+    owner = owner->parent_;
   owner->texture_needs_updating_ = true;
 }
 
@@ -1809,17 +1805,17 @@ std::string View::PrintViewGraph(bool first) {
   result.append(" [label=\"");
   result.append(GetClassName().substr(baseNameIndex).c_str());
   result.append("\"");
-  if (!parent())
+  if (!parent_)
     result.append(", shape=box");
   if (texture_.get())
     result.append(", color=green");
   result.append("]\n");
 
   // Link to parent.
-  if (parent()) {
+  if (parent_) {
     char pp[kMaxPointerStringLength];
 
-    snprintf(pp, kMaxPointerStringLength, "%p", parent());
+    snprintf(pp, kMaxPointerStringLength, "%p", parent_);
     result.append("  N");
     result.append(pp+2);
     result.append(" -> N");
