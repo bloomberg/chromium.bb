@@ -17,4 +17,4 @@ FILE *tmpfile(void) {
 }
 
 #include "native_client/src/untrusted/nosys/warning.h"
-stub_warning(tmpfile)
+stub_warning(tmpfile);
