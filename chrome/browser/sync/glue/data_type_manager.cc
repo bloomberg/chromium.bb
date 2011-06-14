@@ -10,6 +10,8 @@ DataTypeManager::ConfigureResultWithErrorLocation::
     ~ConfigureResultWithErrorLocation() {}
 
 DataTypeManager::ConfigureResultWithErrorLocation::
-    ConfigureResultWithErrorLocation() {}
+    ConfigureResultWithErrorLocation()
+    : result(OK) {
+}
 
 }  // namespace browser_sync
