@@ -576,8 +576,8 @@ def RunPylint(input_api, output_api, white_list=None, black_list=None):
 
   The default white_list enforces looking only a *.py files.
   """
-  white_list = white_list or ['.*\.py$']
-  black_list = black_list or input_api.DEFAULT_BLACK_LIST
+  white_list = tuple(white_list or ('.*\.py$',))
+  black_list = tuple(black_list or input_api.DEFAULT_BLACK_LIST)
   if input_api.is_committing:
     error_type = output_api.PresubmitError
   else:
@@ -846,11 +846,11 @@ def PanProjectChecks(input_api, output_api,
   Returns:
     A list of warning or error objects.
   """
-  excluded_paths = excluded_paths or  tuple()
-  text_files = text_files or (
+  excluded_paths = tuple(excluded_paths or [])
+  text_files = tuple(text_files or (
       r'.+\.txt$',
       r'.+\.json$',
-  )
+  ))
   project_name = project_name or 'Chromium'
   license_header = license_header or (
       r'.*? Copyright \(c\) %(year)s The %(project)s Authors\. '

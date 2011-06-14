@@ -10,6 +10,7 @@
 
 import StringIO
 import sys
+import time
 
 # Fixes include path.
 from super_mox import mox, SuperMoxTestBase
@@ -1361,6 +1362,8 @@ class CannedChecksUnittest(PresubmitTestsBase):
     input_api.tbr = False
     input_api.python_executable = 'pyyyyython'
     input_api.platform = sys.platform
+    input_api.time = time
+    input_api.canned_checks = presubmit_canned_checks
     return input_api
 
   def testMembersChanged(self):
@@ -2156,6 +2159,44 @@ mac|success|blew
     self.assertEqual(results, [])
     self.checkstdout(
         'Running %s\n' % presubmit.os.path.join('random_directory', 'b'))
+
+  def testPanProjectChecks(self):
+    # Make sure it accepts both list and tuples.
+    change = presubmit.Change(
+        'foo1', 'description1', self.fake_root_dir, None, 0, 0, None)
+    input_api = self.MockInputApi(change, False)
+    affected_file = self.mox.CreateMock(presubmit.SvnAffectedFile)
+    for _ in range(3):
+      input_api.AffectedFiles(file_filter=mox.IgnoreArg(), include_deletes=False
+          ).AndReturn([affected_file])
+      affected_file.NewContents().AndReturn('Hey!\nHo!\nHey!\nHo!\n\n')
+    affected_file.ChangedContents().AndReturn([
+        (0, 'Hey!\n'),
+        (1, 'Ho!\n'),
+        (2, 'Hey!\n'),
+        (3, 'Ho!\n'),
+        (4, '\n')])
+    for _ in range(5):
+      affected_file.LocalPath().AndReturn('hello.py')
+    input_api.AffectedSourceFiles(mox.IgnoreArg()).AndReturn([affected_file])
+    input_api.ReadFile(affected_file).AndReturn('Hey!\nHo!\nHey!\nHo!\n\n')
+    input_api.AffectedSourceFiles(mox.IgnoreArg()).AndReturn([affected_file])
+    for _ in range(4):
+      affected_file.LocalPath().AndReturn('hello.py')
+
+    self.mox.ReplayAll()
+    results = presubmit_canned_checks.PanProjectChecks(
+        input_api,
+        presubmit.OutputApi,
+        excluded_paths=None,
+        text_files=None,
+        license_header=None,
+        project_name=None,
+        owners_check=True)
+    self.assertEqual(1, len(results))
+    self.assertEqual(
+        'Found line ending with white spaces in:', results[0]._message)
+    self.checkstdout('')
 
 
 if __name__ == '__main__':
