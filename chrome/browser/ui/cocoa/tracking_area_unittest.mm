@@ -4,7 +4,6 @@
 
 #include "base/memory/scoped_nsobject.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
-#include "chrome/browser/ui/cocoa/objc_zombie.h"
 #import "chrome/browser/ui/cocoa/tracking_area.h"
 
 // A test object that counts the number of times a message is sent to it.
@@ -67,22 +66,6 @@ TEST_F(CrTrackingAreaTest, OwnerAutomaticallyStopsForwardingOnClose) {
 
   [[trackingArea_ owner] performMessage];
   EXPECT_EQ(1U, [owner_ messageCount]);
-}
-
-TEST_F(CrTrackingAreaTest, ZombieOwner) {
-  EXPECT_TRUE(ObjcEvilDoers::ZombieEnable(NO, 20));
-
-  [[trackingArea_ owner] performMessage];
-  EXPECT_EQ(1U, [owner_ messageCount]);
-
-  [owner_ shouldBecomeCrZombie];
-  owner_.reset();
-  [trackingArea_ clearOwner];
-
-  [[trackingArea_ owner] performMessage];
-  // Don't crash!
-
-  ObjcEvilDoers::ZombieDisable();
 }
 
 TEST_F(CrTrackingAreaTest, ScoperInit) {
