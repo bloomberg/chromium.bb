@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "base/memory/ref_counted_memory.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"

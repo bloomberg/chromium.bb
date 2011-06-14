@@ -6,10 +6,11 @@
 #define CHROME_RENDERER_CHROME_RENDER_VIEW_OBSERVER_H_
 #pragma once
 
+#include <string>
 #include <vector>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/task.h"
-#include "base/scoped_ptr.h"
 #include "content/renderer/render_view.h"
 #include "content/renderer/render_view_observer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPageSerializerClient.h"

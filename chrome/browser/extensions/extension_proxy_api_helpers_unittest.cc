@@ -4,7 +4,7 @@
 
 // Unit tests for helper functions for the Chrome Extensions Proxy Settings API.
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_proxy_api_constants.h"
 #include "chrome/browser/extensions/extension_proxy_api_helpers.h"

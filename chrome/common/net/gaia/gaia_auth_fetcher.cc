@@ -171,7 +171,6 @@ std::string GaiaAuthFetcher::MakeClientLoginBody(
                             service,
                             encoded_login_token.c_str(),
                             encoded_login_captcha.c_str());
-
 }
 
 // static
@@ -283,7 +282,6 @@ void GaiaAuthFetcher::StartClientLogin(
 void GaiaAuthFetcher::StartIssueAuthToken(const std::string& sid,
                                           const std::string& lsid,
                                           const char* const service) {
-
   DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
 
   VLOG(1) << "Starting IssueAuthToken for: " << service;

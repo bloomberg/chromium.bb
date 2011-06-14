@@ -1,4 +1,4 @@
- // Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,10 +6,11 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_WEBUI_LOGIN_DISPLAY_H_
 #pragma once
 
+#include <string>
 #include <vector>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
-#include "base/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/login_display.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/login_ui.h"

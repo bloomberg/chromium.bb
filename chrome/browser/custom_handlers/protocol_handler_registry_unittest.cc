@@ -4,11 +4,12 @@
 
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 
-#include "base/scoped_ptr.h"
+#include <set>
+
+#include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/custom_handlers/protocol_handler.h"
 #include "chrome/test/testing_browser_process.h"
-#include "chrome/test/testing_browser_process_test.h"
 #include "chrome/test/testing_browser_process_test.h"
 #include "chrome/test/testing_pref_service.h"
 #include "chrome/test/testing_profile.h"
@@ -150,7 +151,8 @@ class ProtocolHandlerRegistryTest : public RenderViewHostTestHarness {
     delegate_ = new FakeDelegate();
     registry_ = new ProtocolHandlerRegistry(profile(), delegate());
     registry_->Load();
-    test_protocol_handler_ = CreateProtocolHandler("test", GURL("http://test.com/%s"), "Test");
+    test_protocol_handler_ =
+        CreateProtocolHandler("test", GURL("http://test.com/%s"), "Test");
 
     ProtocolHandlerRegistry::RegisterPrefs(pref_service());
   }

@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_browsertest.h"

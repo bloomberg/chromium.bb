@@ -5,8 +5,9 @@
 #include "chrome/browser/ui/panels/panel_manager.h"
 
 #include <algorithm>
+
 #include "base/logging.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/window_sizer.h"
@@ -33,7 +34,7 @@ const int kPanelsHorizontalSpacing = 4;
 
 // Single instance of PanelManager.
 scoped_ptr<PanelManager> panel_instance;
-} // namespace
+}  // namespace
 
 // static
 PanelManager* PanelManager::GetInstance() {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/download/download_request_infobar_delegate.h"
 #include "chrome/browser/download/download_request_limiter.h"
 #include "testing/gtest/include/gtest/gtest.h"

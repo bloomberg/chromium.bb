@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/eula_screen_actor.h"
 #include "chrome/browser/chromeos/login/wizard_screen.h"
 #include "googleurl/src/gurl.h"

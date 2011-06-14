@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_OPTIONS_TAKE_PHOTO_DIALOG_H_
 #pragma once
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/camera_controller.h"
 #include "chrome/browser/chromeos/login/take_photo_view.h"
 #include "content/common/notification_observer.h"

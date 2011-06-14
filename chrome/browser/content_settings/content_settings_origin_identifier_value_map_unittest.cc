@@ -4,7 +4,7 @@
 
 #include "chrome/browser/content_settings/content_settings_origin_identifier_value_map.h"
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"

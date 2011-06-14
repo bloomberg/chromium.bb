@@ -5,9 +5,10 @@
 #include "chrome/browser/ui/gtk/unity_service.h"
 
 #include <dlfcn.h>
+#include <string>
 
 #include "base/environment.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/shell_integration.h"
 
 // Unity data typedefs.

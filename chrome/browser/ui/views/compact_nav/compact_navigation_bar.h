@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_COMPACT_NAV_COMPACT_NAVIGATION_BAR_H_
 
 #include "base/basictypes.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/command_updater.h"
 #include "views/controls/button/button.h"
 #include "views/view.h"

@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/tab_contents/link_infobar_delegate.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"

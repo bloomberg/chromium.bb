@@ -395,5 +395,4 @@ bool GaiaAuthenticator::Authenticate(const string& user_name,
                       empty);
 }
 
-}  // namepace gaia
-
+}  // namespace gaia
