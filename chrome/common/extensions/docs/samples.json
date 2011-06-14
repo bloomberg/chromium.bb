@@ -239,7 +239,7 @@
         "background.html",
         "manifest.json"
       ],
-      "source_hash": "dfbb05ead54a0228a6d2f591ce1038d5c625249a",
+      "source_hash": "174cf55b15678010dff3a18983b940ef9091b115",
       "zip_path": "examples\/api\/browserAction\/make_page_red.zip"
     },
     {
