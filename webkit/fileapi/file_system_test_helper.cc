@@ -125,6 +125,8 @@ void FileSystemTestOriginHelper::SetUp(
   // how much the size of the origin directory has grown.
   initial_usage_size_ = file_util::ComputeDirectorySize(
       GetOriginRootPath());
+
+  FileSystemUsageCache::UpdateUsage(usage_cache_path, initial_usage_size_);
 }
 
 void FileSystemTestOriginHelper::TearDown() {
@@ -162,7 +164,8 @@ FilePath FileSystemTestOriginHelper::GetUsageCachePath() const {
 }
 
 int64 FileSystemTestOriginHelper::GetCachedOriginUsage() const {
-  return FileSystemUsageCache::GetUsage(GetUsageCachePath());
+  return FileSystemUsageCache::GetUsage(GetUsageCachePath()) -
+      initial_usage_size_;
 }
 
 int64 FileSystemTestOriginHelper::ComputeCurrentOriginUsage() const {
