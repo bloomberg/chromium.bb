@@ -198,7 +198,7 @@ class MediaTestMatrix:
         tag = ['audio', 'video'][is_video]
         if ((not NOT_AVAILABLE_STRING in info) and
             ((not video_only) or (video_only and is_video))):
-          media_infos.append([tag, url, nickname])
+          media_infos.append([tag, url, nickname, name])
     return media_infos
 
   @staticmethod
@@ -216,6 +216,6 @@ class MediaTestMatrix:
                   (such as bear.webm).
         tag: HTML5 tag for the video/audio.
     """
-    for tag, url, nickname in compact_list:
+    for tag, url, nickname, title in compact_list:
       if target == nickname:
-        return (tag, url, nickname)
+        return (tag, url, nickname, title)

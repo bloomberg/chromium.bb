@@ -1,0 +1,44 @@
+<!-- 
+This HTML file contains a div for a player which is used for track testing 
+(chrome/test/functional/media_track.py). This file is modification of
+http://www.annacavender.com/track/demo1/trackdemo.html.
+
+The query string should contain the following information: 
+   tag (optional): HTML video/audio tag (default is video).
+   media (required): media file name.
+   t (optional): if specified, disables the media cache.
+   track (required): the name of the track file (out-of-band).
+   
+   Example: "media_track.html?tag=video&media=foo.webm&track=track.vtt"
+-->
+<html>
+<body onload="getTrackInfo()">
+<div id='player_container'></div>
+<textarea rows="50" cols="50" id="text">  Default text.
+</textarea>
+<script type='text/javascript' src='player.js'></script>
+<script>
+function getTrackInfo() {
+  var tr = document.getElementById('track');
+  var ta = document.getElementById('text');  
+  ta.value = "track src = " + tr.src + "\n";
+  ta.value += "track srclang = " + tr.srclang + "\n";
+  ta.value += "track kind = " + tr.kind + "\n";
+  ta.value += "track label = " + tr.label + "\n";
+  ta.value += "track default = " + tr.getAttribute('default') + "\n\n";
+  ta.value += "CUES: (" + tr.track.cues.length + ")\n";
+  for (var i = 0; i < tr.track.cues.length; i++) {
+    ta.value += tr.track.cues[i].id + ": ";
+    ta.value += tr.track.cues[i].startTime + " --> " + tr.track.cues[i].endTime
+                + "\n";
+    ta.value += tr.track.cues[i].getCueAsSource() + "\n";
+  }
+  ta.value += "END\n";
+}
+  
+if (ok) {
+  player.play();
+}
+</script>
+</body>
+</html>

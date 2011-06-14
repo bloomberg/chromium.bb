@@ -359,6 +359,7 @@
   'AV_FUNC': {
      'linux': [
        'media.media_event_simple_test',
+       'media.media_track',
      ],
   },
 }

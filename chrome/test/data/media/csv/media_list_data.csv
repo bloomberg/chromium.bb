@@ -1,6 +1,6 @@
-"comment","tag(video or audio)","filename","filename_nickname",
-"video","bear_silent.ogv","bear_silent.ogv"
-"video","bear_silent.webm","bear_silent.webm"
-"video","bear.ogv","bear.ogv"
-"audio","bear.wav","bear.wav"
-"video","bear.webm","bear.webm"
+"comment","tag(video or audio)","filename","filename_nickname","title"
+"video","bear_silent.ogv","bear_silent.ogv","bear_silent"
+"video","bear_silent.webm","bear_silent.webm","bear_silent"
+"video","bear.ogv","bear.ogv","bear"
+"audio","bear.wav","bear.wav","bear"
+"video","bear.webm","bear.webm","bear"

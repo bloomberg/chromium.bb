@@ -1,10 +1,10 @@
 <!--
-This HTML file contains a player div which is used for event testing
+This HTML file contains a div for a player which is used for event testing
 (chrome/test/functional/media_event_*.py).
 The query string should contain the following information:
   tag (required): HTML video/audio tag.
   video file (required): video file name.
-  t (optional): add the "t" parameter to disable the media cache.
+  t (optional): if specified, disables the media cache.
   actions (optional): add a list of triples (time, action, action_argument)
     delimited by '|'. For example, '3000|seek|5000' means 'at second 3, seek
     to second 5'. Possible actions are 'play', 'pause', 'seek', or

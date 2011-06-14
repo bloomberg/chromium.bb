@@ -25,7 +25,8 @@ class MediaTestEnvNames:
   EXTRA_NICKNAME_ENV_NAME = 'EXTRA_NICKNAME'
 
   # Define this environment variable when you do not want to report
-  # the first result output. First result includes time to start up the browser.
+  # the first result output. First result includes time to start up the
+  # browser.
   REMOVE_FIRST_RESULT_ENV_NAME = 'REMOVE_FIRST_RESULT'
 
   # Add t=Data() parameter in query string to disable media cache
@@ -59,3 +60,6 @@ class MediaTestEnvNames:
 
   # Define the path to the directory that contains binaries of reference build.
   REFERENCE_BUILD_DIR_ENV_NAME = 'REFERENCE_BUILD_DIR'
+
+  # Define track(caption) file.
+  TRACK_FILE_ENV_NAME = 'TRACK_FILE'

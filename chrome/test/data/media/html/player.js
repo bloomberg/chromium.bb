@@ -1,3 +1,7 @@
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
 // Javascript that is needed for HTML files with the HTML5 media player.
 // It does the following:
 // * Parses query strings and sets the HTML tag.
@@ -94,3 +98,15 @@ InstallEventHandler('playing', 'document.title = "PLAYING"');
 InstallEventHandler('ended', 'document.title = "END"');
 
 player.src = media_url;
+
+if (queryString('track')) {
+  var track_file = queryString('track');
+  var trackElement = document.createElement('track');
+  trackElement.setAttribute('id', 'track');
+  trackElement.setAttribute('kind', 'captions');
+  trackElement.setAttribute('src', track_file);
+  trackElement.setAttribute('srclang', 'en');
+  trackElement.setAttribute('label', 'English');
+  trackElement.setAttribute('default', 'true');
+  player.appendChild(trackElement);
+}
