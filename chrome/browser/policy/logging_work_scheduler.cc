@@ -11,22 +11,38 @@
 
 namespace policy {
 
-bool EventLogger::Task::operator< (const Task& rhs) const {
-  if (trigger_time == rhs.trigger_time) {
-    return secondary_key < rhs.secondary_key;
-  } else {
-    return trigger_time > rhs.trigger_time;
-  }
-}
-
 EventLogger::Task::Task() {
 }
 
-EventLogger::Task::Task(
-    int64 trigger_time, int64 secondar_key, linked_ptr<base::Closure> callback)
-        : trigger_time(trigger_time),
-          secondary_key(secondary_key),
-          callback(callback) {
+EventLogger::Task::Task(int64 trigger_time,
+                        int64 secondary_key,
+                        linked_ptr<base::Closure> callback)
+    : trigger_time_(trigger_time),
+      secondary_key_(secondary_key),
+      callback_(callback) {
+}
+
+EventLogger::Task::~Task() {
+}
+
+bool EventLogger::Task::operator< (const Task& rhs) const {
+  if (trigger_time_ == rhs.trigger_time_) {
+    return secondary_key_ < rhs.secondary_key_;
+  } else {
+    return trigger_time_ > rhs.trigger_time_;
+  }
+}
+
+int64 EventLogger::Task::trigger_time() const {
+  return trigger_time_;
+}
+
+base::Closure EventLogger::Task::GetAndResetCallback() {
+  // Make a copy.
+  base::Closure callback = *(callback_.get());
+  // Reset the original callback, which is shared with LoggingTaskScheduler.
+  callback_->Reset();
+  return callback;
 }
 
 EventLogger::EventLogger()
@@ -80,13 +96,10 @@ void EventLogger::Step() {
   if (scheduled_tasks_.empty())
     return;
   // Take the next scheduled task from the queue.
-  const Task& next = scheduled_tasks_.top();
-  base::Closure callback = *(next.callback.get());
-  int64 trigger_time = next.trigger_time;
-  // Mark as cancelled, because LoggingTaskScheduler still owns a linked_ptr to
-  // this task and it uses it to avoid owning more than one pending tasks.
-  next.callback->Reset();
+  Task next = scheduled_tasks_.top();
   scheduled_tasks_.pop();
+  base::Closure callback = next.GetAndResetCallback();
+  int64 trigger_time = next.trigger_time();
   DCHECK(trigger_time >= current_time_);
   // Execute the next scheduled task if it was not cancelled.
   if (!callback.is_null()) {

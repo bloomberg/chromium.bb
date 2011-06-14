@@ -56,23 +56,35 @@ class EventLogger {
                          int64 start, int64 length);
 
  private:
-  struct Task {
+  class Task {
+   public:
     Task();
-    Task(int64 trigger_time_, int64 secondary_key,
+    Task(int64 trigger_time,
+         int64 secondary_key,
          linked_ptr<base::Closure> callback);
+    ~Task();
 
     // Returns true if |this| should be executed before |rhs|.
     // Used for sorting by the priority queue.
     bool operator< (const Task& rhs) const;
 
+    int64 trigger_time() const;
+
+    // Returns a copy of the callback object of this task, and resets the
+    // original callback object. (LoggingTaskScheduler owns a linked_ptr to
+    // its task's callback objects and it only allows firing new tasks if the
+    // previous task's callback object has been reset.)
+    base::Closure GetAndResetCallback();
+
+   private:
     // The virtual time when this task will trigger.
     // Smaller times win.
-    int64 trigger_time;
+    int64 trigger_time_;
     // Used for sorting tasks that have the same trigger_time.
     // Bigger keys win.
-    int64 secondary_key;
+    int64 secondary_key_;
 
-    linked_ptr<base::Closure> callback;
+    linked_ptr<base::Closure> callback_;
   };
 
   // Updates |current_time_| and triggers the next scheduled task. This method
