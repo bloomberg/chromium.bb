@@ -37,8 +37,16 @@ class ExtensionInstallUIBrowserTest : public ExtensionBrowserTest {
   }
 };
 
+// Flaky on linux. See http://crbug.com/86105
+#if defined(OS_LINUX)
+#define MAYBE_TestThemeInstallUndoResetsToDefault \
+FLAKY_TestThemeInstallUndoResetsToDefault
+#else
+#define MAYBE_TestThemeInstallUndoResetsToDefault \
+TestThemeInstallUndoResetsToDefault
+#endif
 IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
-                       TestThemeInstallUndoResetsToDefault) {
+                       MAYBE_TestThemeInstallUndoResetsToDefault) {
   // Install theme once and undo to verify we go back to default theme.
   FilePath theme_crx = PackExtension(test_data_dir_.AppendASCII("theme"));
   ASSERT_TRUE(InstallExtensionWithUI(theme_crx, 1));
@@ -64,8 +72,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
   ASSERT_EQ(NULL, GetTheme());
 }
 
+// Flaky on linux. See http://crbug.com/86105
+#if defined(OS_LINUX)
+#define MAYBE_TestThemeInstallUndoResetsToPreviousTheme \
+FLAKY_TestThemeInstallUndoResetsToPreviousTheme
+#else
+#define MAYBE_TestThemeInstallUndoResetsToPreviousTheme \
+TestThemeInstallUndoResetsToPreviousTheme
+#endif
 IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
-                       TestThemeInstallUndoResetsToPreviousTheme) {
+                       MAYBE_TestThemeInstallUndoResetsToPreviousTheme) {
   // Install first theme.
   FilePath theme_path = test_data_dir_.AppendASCII("theme");
   ASSERT_TRUE(InstallExtensionWithUI(theme_path, 1));
