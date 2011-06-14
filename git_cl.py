@@ -510,7 +510,8 @@ or verify this branch is set up to track another (via the --track argument to
       self.SetPatchset(0)
     self.has_issue = False
 
-  def RunHook(self, committing, upstream_branch, tbr, may_prompt, verbose):
+  def RunHook(self, committing, upstream_branch, tbr, may_prompt, verbose,
+      author):
     """Calls sys.exit() if the hook fails; returns a HookResults otherwise."""
     root = RunCommand(['git', 'rev-parse', '--show-cdup']).strip() or '.'
     absroot = os.path.abspath(root)
@@ -530,6 +531,9 @@ or verify this branch is set up to track another (via the --track argument to
       # with these log messages.
       description = RunCommand(['git', 'log', '--pretty=format:%s%n%n%b',
                                 '%s...' % (upstream_branch)]).strip()
+
+    if not author:
+      author = RunGit(['config', 'user.email'])
     change = presubmit_support.GitChange(
         name,
         description,
@@ -537,7 +541,7 @@ or verify this branch is set up to track another (via the --track argument to
         files,
         issue,
         patchset,
-        None)
+        author)
 
     # Apply watchlists on upload.
     if not committing:
@@ -893,7 +897,8 @@ def CMDpresubmit(parser, args):
     base_branch = cl.GetUpstreamBranch()
 
   cl.RunHook(committing=not options.upload, upstream_branch=base_branch,
-             tbr=False, may_prompt=False, verbose=options.verbose)
+             tbr=False, may_prompt=False, verbose=options.verbose,
+             author=None)
   return 0
 
 
@@ -939,7 +944,8 @@ def CMDupload(parser, args):
   if not options.bypass_hooks and not options.force:
     hook_results = cl.RunHook(committing=False, upstream_branch=base_branch,
                               tbr=False, may_prompt=True,
-                              verbose=options.verbose)
+                              verbose=options.verbose,
+                              author=None)
     if not options.reviewers and hook_results.reviewers:
       options.reviewers = hook_results.reviewers
 
@@ -1094,7 +1100,8 @@ def SendUpstream(parser, args, cmd):
 
   if not options.bypass_hooks and not options.force:
     cl.RunHook(committing=True, upstream_branch=base_branch,
-               tbr=options.tbr, may_prompt=True, verbose=options.verbose)
+               tbr=options.tbr, may_prompt=True, verbose=options.verbose,
+               author=options.contributor)
 
     if cmd == 'dcommit':
       # Check the tree status if the tree status URL is set.
