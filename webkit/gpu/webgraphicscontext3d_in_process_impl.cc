@@ -1590,9 +1590,11 @@ bool WebGraphicsContext3DInProcessImpl::AngleCreateCompilers() {
   resources.MaxDrawBuffers = 1;
 
   fragment_compiler_ = ShConstructCompiler(
-      SH_FRAGMENT_SHADER, SH_WEBGL_SPEC, &resources);
+      SH_FRAGMENT_SHADER, SH_WEBGL_SPEC,
+      is_gles2_ ? SH_ESSL_OUTPUT : SH_GLSL_OUTPUT, &resources);
   vertex_compiler_ = ShConstructCompiler(
-      SH_VERTEX_SHADER, SH_WEBGL_SPEC, &resources);
+      SH_VERTEX_SHADER, SH_WEBGL_SPEC,
+      is_gles2_ ? SH_ESSL_OUTPUT : SH_GLSL_OUTPUT, &resources);
   return (fragment_compiler_ && vertex_compiler_);
 }
 
@@ -1637,21 +1639,10 @@ bool WebGraphicsContext3DInProcessImpl::AngleValidateShaderSource(
   }
 
   int length = 0;
-  if (is_gles2_) {
-    // ANGLE does not yet have a GLSL ES backend. Therefore if the
-    // compile succeeds we send the original source down.
-    length = strlen(entry->source.get());
-    if (length > 0)
-      ++length;  // Add null terminator
-  } else {
-    ShGetInfo(compiler, SH_OBJECT_CODE_LENGTH, &length);
-  }
+  ShGetInfo(compiler, SH_OBJECT_CODE_LENGTH, &length);
   if (length > 1) {
     entry->translated_source.reset(new char[length]);
-    if (is_gles2_)
-      strncpy(entry->translated_source.get(), entry->source.get(), length);
-    else
-      ShGetObjectCode(compiler, entry->translated_source.get());
+    ShGetObjectCode(compiler, entry->translated_source.get());
   }
   entry->is_valid = true;
   return true;
