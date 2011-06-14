@@ -1,4 +1,4 @@
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -280,7 +280,8 @@
     'labs': ['thakis@chromium.org'],
     'fileapi': ['kinuko+watch@chromium.org'],
     'pepper_api': ['piman+watch@chromium.org'],
-    'prerender': ['cbentzel+watch@chromium.org', 'tburkard+watch@chromium.org'],
+    'prerender': ['cbentzel+watch@chromium.org', 'tburkard+watch@chromium.org',
+                  'dominich+watch@chromium.org'],
     'chromedriver': ['kkania@chromium.org'],
     'dom_login': ['rharrison@chromium.org'],
     'imageburner': ['achuith+watch@chromium.org', 'tbarzic+watch@chromium.org'],
