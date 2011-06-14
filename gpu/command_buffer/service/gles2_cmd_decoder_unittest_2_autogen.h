@@ -282,10 +282,10 @@ TEST_F(GLES2DecoderTest2, RenderbufferStorageInvalidArgs3_0) {
 }
 
 TEST_F(GLES2DecoderTest2, SampleCoverageValidArgs) {
-  EXPECT_CALL(*gl_, SampleCoverage(1, 2));
+  EXPECT_CALL(*gl_, SampleCoverage(1, true));
   SpecializedSetup<SampleCoverage, 0>(true);
   SampleCoverage cmd;
-  cmd.Init(1, 2);
+  cmd.Init(1, true);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
@@ -343,7 +343,6 @@ TEST_F(GLES2DecoderTest2, StencilFuncSeparateValidArgs) {
 }
 
 TEST_F(GLES2DecoderTest2, StencilMaskValidArgs) {
-  EXPECT_CALL(*gl_, StencilMask(1));
   SpecializedSetup<StencilMask, 0>(true);
   StencilMask cmd;
   cmd.Init(1);
@@ -352,7 +351,6 @@ TEST_F(GLES2DecoderTest2, StencilMaskValidArgs) {
 }
 
 TEST_F(GLES2DecoderTest2, StencilMaskSeparateValidArgs) {
-  EXPECT_CALL(*gl_, StencilMaskSeparate(GL_FRONT, 2));
   SpecializedSetup<StencilMaskSeparate, 0>(true);
   StencilMaskSeparate cmd;
   cmd.Init(GL_FRONT, 2);

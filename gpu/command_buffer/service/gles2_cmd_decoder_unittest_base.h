@@ -162,7 +162,14 @@ class GLES2DecoderTestBase : public testing::Test {
 
   void SetBucketAsCString(uint32 bucket_id, const char* str);
 
-  void InitDecoder(const char* extensions, bool has_alpha_backbuffer);
+  void InitDecoder(
+      const char* extensions,
+      bool has_alpha,
+      bool has_depth,
+      bool has_stencil,
+      bool request_alpha,
+      bool request_depth,
+      bool request_stencil);
 
   const ContextGroup& group() const {
     return *group_.get();
@@ -232,13 +239,20 @@ class GLES2DecoderTestBase : public testing::Test {
     GLclampf restore_green,
     GLclampf restore_blue,
     GLclampf restore_alpha,
-    GLuint restore_color_mask,
     GLuint restore_stencil,
-    GLuint restore_stencil_front_mask,
-    GLuint restore_stencil_back_mask,
     GLclampf restore_depth,
-    GLboolean restore_depth_mask,
     bool restore_scissor_test);
+
+  void SetupExpectationsForApplyingDirtyState(
+    bool framebuffer_is_rgb,
+    bool framebuffer_has_depth,
+    bool framebuffer_has_stencil,
+    GLuint color_bits,  // NOTE! bits are 0x1000, 0x0100, 0x0010, and 0x0001
+    bool depth_mask,
+    GLuint front_stencil_mask,
+    GLuint back_stencil_mask);
+
+  void SetupExpectationsForApplyingDefaultDirtyState();
 
   GLvoid* BufferOffset(unsigned i) {
     return static_cast<int8 *>(NULL)+(i);
@@ -382,6 +396,7 @@ class GLES2DecoderWithShaderTestBase : public GLES2DecoderTestBase {
   virtual void SetUp();
   virtual void TearDown();
 
+  void SetupDefaultProgram();
   void SetupTexture();
 
   void DoEnableVertexAttribArray(GLint index);
