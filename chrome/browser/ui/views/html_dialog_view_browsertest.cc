@@ -205,7 +205,8 @@ IN_PROC_BROWSER_TEST_F(HtmlDialogBrowserTest, MAYBE_SizeWindow) {
       WindowChangedObserver::GetInstance());
 }
 
-IN_PROC_BROWSER_TEST_F(HtmlDialogBrowserTest, FLAKY_TestStateTransition) {
+// This is timing out about 5~10% of runs. See crbug.com/86059.
+IN_PROC_BROWSER_TEST_F(HtmlDialogBrowserTest, DISABLED_TestStateTransition) {
   HtmlDialogUIDelegate* delegate = new TestHtmlDialogUIDelegate();
 
   HtmlDialogView* html_view =
