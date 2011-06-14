@@ -243,8 +243,11 @@ void TouchBrowserFrameView::ActiveTabChanged(TabContentsWrapper* old_contents,
 }
 
 void TouchBrowserFrameView::TabStripEmpty() {
-  if (animation_->is_animating())
+  if (animation_->is_animating()) {
+    // Reset the delegate so the AnimationEnded callback doesn't trigger.
+    animation_->set_delegate(NULL);
     animation_->Stop();
+  }
 }
 
 void TouchBrowserFrameView::Observe(NotificationType type,
