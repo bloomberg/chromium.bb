@@ -77,7 +77,10 @@ void PrefMemberBase::VerifyPref() const {
     UpdateValueFromPref();
 }
 
-PrefMemberBase::Internal::Internal() : thread_id_(BrowserThread::UI) { }
+PrefMemberBase::Internal::Internal()
+    : thread_id_(BrowserThread::UI),
+      is_managed_(false) {
+}
 PrefMemberBase::Internal::~Internal() { }
 
 bool PrefMemberBase::Internal::IsOnCorrectThread() const {
