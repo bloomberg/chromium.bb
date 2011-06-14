@@ -146,7 +146,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_CaptureVisibleTabPng) {
                                   "test_png.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_CaptureVisibleTabRace) {
+// Times out on non-Windows. See http://crbug.com/80212
+#if defined(OS_WIN)
+#define MAYBE_CaptureVisibleTabRace CaptureVisibleTabRace
+#else
+#define MAYBE_CaptureVisibleTabRace DISABLED_CaptureVisibleTabRace
+#endif
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_CaptureVisibleTabRace) {
   ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionSubtest("tabs/capture_visible_tab",
                                   "test_race.html")) << message_;
