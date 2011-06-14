@@ -34,7 +34,8 @@ class FrameRateTest : public UIPerfTest {
     return test_path;
   }
 
-  void RunTest(const std::string& name, const std::string& suffix) {
+  void RunTest(const std::string& name, const std::string& gesture,
+               const std::string& suffix) {
     FilePath test_path = GetDataPath(name);
     ASSERT_TRUE(file_util::DirectoryExists(test_path))
         << "Missing test directory: " << test_path.value();
@@ -48,7 +49,8 @@ class FrameRateTest : public UIPerfTest {
               tab->NavigateToURL(net::FilePathToFileURL(test_path)));
 
     // Start the test.
-    ASSERT_TRUE(tab->NavigateToURLAsync(GURL("javascript:__start();")));
+    ASSERT_TRUE(tab->NavigateToURLAsync(GURL("javascript:__start('" +
+        gesture + "');")));
 
     // Block until the test completes.
     ASSERT_TRUE(WaitUntilJavaScriptCondition(
@@ -95,8 +97,20 @@ class FrameRateTest_Reference : public FrameRateTest {
   }
 };
 
-TEST_F(FrameRateTest, Blank) {
-  RunTest("blank", "");
+TEST_F(FrameRateTest, Blank_Steady) {
+  RunTest("blank", "steady", "");
+}
+
+TEST_F(FrameRateTest, Blank_Reading) {
+  RunTest("blank", "reading", "");
+}
+
+TEST_F(FrameRateTest, Blank_Mouse_Wheel) {
+  RunTest("blank", "mouse_wheel", "");
+}
+
+TEST_F(FrameRateTest, Blank_Mac_Fling) {
+  RunTest("blank", "mac_fling", "");
 }
 
 // TODO(darin): Need to update the reference build to a version that supports
