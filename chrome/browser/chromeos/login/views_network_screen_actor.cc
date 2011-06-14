@@ -44,7 +44,6 @@ ViewsNetworkScreenActor::ViewsNetworkScreenActor(
         kWelcomeScreenHeight),
       bubble_(NULL),
       screen_(NULL) {
-  language_switch_menu_.set_menu_alignment(views::Menu2::ALIGN_TOPLEFT);
 }
 
 ViewsNetworkScreenActor::~ViewsNetworkScreenActor() {
