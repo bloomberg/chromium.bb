@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/video_capture_message_filter_creator.h"
+#include "content/renderer/media/video_capture_message_filter_creator.h"
 
-#include "content/renderer/video_capture_message_filter.h"
+#include "content/renderer/media/video_capture_message_filter.h"
 
 VideoCaptureMessageFilterCreator::VideoCaptureMessageFilterCreator() {
   filter_ = new VideoCaptureMessageFilter(1);

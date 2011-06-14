@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_VIDEO_CAPTURE_MESSAGE_FILTER_CREATOR_H_
-#define CONTENT_RENDERER_VIDEO_CAPTURE_MESSAGE_FILTER_CREATOR_H_
+#ifndef CONTENT_RENDERER_MEDIA_VIDEO_CAPTURE_MESSAGE_FILTER_CREATOR_H_
+#define CONTENT_RENDERER_MEDIA_VIDEO_CAPTURE_MESSAGE_FILTER_CREATOR_H_
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
@@ -31,5 +31,5 @@ class VideoCaptureMessageFilterCreator {
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureMessageFilterCreator);
 };
 
-#endif  // CONTENT_RENDERER_VIDEO_CAPTURE_MESSAGE_FILTER_CREATOR_H_
+#endif  // CONTENT_RENDERER_MEDIA_VIDEO_CAPTURE_MESSAGE_FILTER_CREATOR_H_
 

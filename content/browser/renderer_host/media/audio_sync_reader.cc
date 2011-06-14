@@ -1,8 +1,8 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/audio_sync_reader.h"
+#include "content/browser/renderer_host/media/audio_sync_reader.h"
 
 #include "base/process_util.h"
 #include "base/shared_memory.h"

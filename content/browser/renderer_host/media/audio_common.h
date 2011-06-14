@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_AUDIO_COMMON_H_
-#define CONTENT_BROWSER_RENDERER_HOST_AUDIO_COMMON_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_AUDIO_COMMON_H_
+#define CONTENT_BROWSER_RENDERER_HOST_MEDIA_AUDIO_COMMON_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -14,4 +14,4 @@ struct AudioParameters;
 // of audio parameters.
 uint32 SelectSamplesPerPacket(const AudioParameters& params);
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_AUDIO_COMMON_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_MEDIA_AUDIO_COMMON_H_

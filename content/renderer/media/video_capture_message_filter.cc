@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/video_capture_message_filter.h"
+#include "content/renderer/media/video_capture_message_filter.h"
 
 #include "content/common/video_capture_messages.h"
 #include "content/common/view_messages.h"

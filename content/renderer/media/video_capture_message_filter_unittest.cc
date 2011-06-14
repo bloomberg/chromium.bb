@@ -5,7 +5,7 @@
 #include "base/message_loop.h"
 #include "base/shared_memory.h"
 #include "content/common/video_capture_messages.h"
-#include "content/renderer/video_capture_message_filter.h"
+#include "content/renderer/media/video_capture_message_filter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

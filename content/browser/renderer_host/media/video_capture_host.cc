@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/video_capture_host.h"
+#include "content/browser/renderer_host/media/video_capture_host.h"
 
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util-inl.h"

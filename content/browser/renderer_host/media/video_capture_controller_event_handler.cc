@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/video_capture_controller_event_handler.h"
+#include "content/browser/renderer_host/media/video_capture_controller_event_handler.h"
 
 VideoCaptureControllerID::VideoCaptureControllerID(int32 rid, int did)
     : routing_id(rid),

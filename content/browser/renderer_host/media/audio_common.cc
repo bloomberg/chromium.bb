@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/audio_common.h"
+#include "content/browser/renderer_host/media/audio_common.h"
 
 #include "base/time.h"
 #include "media/audio/audio_parameters.h"

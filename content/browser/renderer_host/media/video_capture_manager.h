@@ -7,14 +7,14 @@
 // the Browser::IO thread. VideoCaptureManager will open OS dependent instances
 // of VideoCaptureDevice. A device can only be opened once.
 
-#ifndef CONTENT_BROWSER_MEDIA_STREAM_VIDEO_CAPTURE_MANAGER_H_
-#define CONTENT_BROWSER_MEDIA_STREAM_VIDEO_CAPTURE_MANAGER_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_VIDEO_CAPTURE_MANAGER_H_
+#define CONTENT_BROWSER_RENDERER_HOST_MEDIA_VIDEO_CAPTURE_MANAGER_H_
 
 #include <map>
 
 #include "base/lazy_instance.h"
 #include "base/threading/thread.h"
-#include "content/browser/media_stream/media_stream_provider.h"
+#include "content/browser/renderer_host/media/media_stream_provider.h"
 #include "media/video/capture/video_capture_device.h"
 #include "media/video/capture/video_capture_types.h"
 
@@ -122,4 +122,4 @@ class VideoCaptureManager : public MediaStreamProvider {
 
 DISABLE_RUNNABLE_METHOD_REFCOUNT(media_stream::VideoCaptureManager);
 
-#endif  // CONTENT_BROWSER_MEDIA_STREAM_VIDEO_CAPTURE_MANAGER_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_MEDIA_VIDEO_CAPTURE_MANAGER_H_

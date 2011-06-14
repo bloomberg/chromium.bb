@@ -12,8 +12,8 @@
 // from a VideoCaptureDevice object and do color conversion straight into the
 // TransportDIBs to avoid a memory copy.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_VIDEO_CAPTURE_CONTROLLER_H_
-#define CONTENT_BROWSER_RENDERER_HOST_VIDEO_CAPTURE_CONTROLLER_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_VIDEO_CAPTURE_CONTROLLER_H_
+#define CONTENT_BROWSER_RENDERER_HOST_MEDIA_VIDEO_CAPTURE_CONTROLLER_H_
 
 #include <list>
 #include <map>
@@ -22,7 +22,7 @@
 #include "base/process.h"
 #include "base/synchronization/lock.h"
 #include "base/task.h"
-#include "content/browser/renderer_host/video_capture_controller_event_handler.h"
+#include "content/browser/renderer_host/media/video_capture_controller_event_handler.h"
 #include "media/video/capture/video_capture_device.h"
 #include "media/video/capture/video_capture_types.h"
 #include "ui/gfx/surface/transport_dib.h"
@@ -90,4 +90,4 @@ class VideoCaptureController
   DISALLOW_IMPLICIT_CONSTRUCTORS(VideoCaptureController);
 };
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_VIDEO_CAPTURE_CONTROLLER_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_MEDIA_VIDEO_CAPTURE_CONTROLLER_H_

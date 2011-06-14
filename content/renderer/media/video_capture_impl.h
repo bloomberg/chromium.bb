@@ -12,7 +12,7 @@
 #include <list>
 #include <map>
 
-#include "content/renderer/video_capture_message_filter.h"
+#include "content/renderer/media/video_capture_message_filter.h"
 #include "media/video/capture/video_capture.h"
 #include "ui/gfx/surface/transport_dib.h"
 

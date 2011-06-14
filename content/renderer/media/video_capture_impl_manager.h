@@ -16,7 +16,7 @@
 #include "base/message_loop_proxy.h"
 #include "base/synchronization/lock.h"
 #include "content/renderer/media/video_capture_impl.h"
-#include "content/renderer/video_capture_message_filter.h"
+#include "content/renderer/media/video_capture_message_filter.h"
 #include "media/base/callback.h"
 #include "media/base/message_loop_factory.h"
 #include "media/video/capture/video_capture.h"

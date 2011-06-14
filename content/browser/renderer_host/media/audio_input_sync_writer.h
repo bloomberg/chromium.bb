@@ -1,35 +1,33 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_AUDIO_SYNC_READER_H_
-#define CONTENT_BROWSER_RENDERER_HOST_AUDIO_SYNC_READER_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_AUDIO_INPUT_SYNC_WRITER_H_
+#define CONTENT_BROWSER_RENDERER_HOST_MEDIA_AUDIO_INPUT_SYNC_WRITER_H_
 #pragma once
 
 #include "base/file_descriptor_posix.h"
 #include "base/process.h"
 #include "base/sync_socket.h"
-#include "media/audio/audio_output_controller.h"
+#include "media/audio/audio_input_controller.h"
 
 namespace base {
-
 class SharedMemory;
-
 }
 
-// A AudioOutputController::SyncReader implementation using SyncSocket. This
-// is used by AudioOutputController to provide a low latency data source for
+// A AudioInputController::SyncWriter implementation using SyncSocket. This
+// is used by AudioInputController to provide a low latency data source for
 // transmitting audio packets between the browser process and the renderer
 // process.
-class AudioSyncReader : public media::AudioOutputController::SyncReader {
+class AudioInputSyncWriter : public media::AudioInputController::SyncWriter {
  public:
-  explicit AudioSyncReader(base::SharedMemory* shared_memory);
+  explicit AudioInputSyncWriter(base::SharedMemory* shared_memory);
 
-  virtual ~AudioSyncReader();
+  virtual ~AudioInputSyncWriter();
 
-  // media::AudioOutputController::SyncReader implementations.
-  virtual void UpdatePendingBytes(uint32 bytes);
-  virtual uint32 Read(void* data, uint32 size);
+  // media::AudioOutputController::SyncWriter implementation.
+  virtual void UpdateRecordedBytes(uint32 bytes);
+  virtual uint32 Write(const void* data, uint32 size);
   virtual void Close();
 
   bool Init();
@@ -50,7 +48,7 @@ class AudioSyncReader : public media::AudioOutputController::SyncReader {
   // PrepareForeignSocketHandle() is called and ran successfully.
   scoped_ptr<base::SyncSocket> foreign_socket_;
 
-  DISALLOW_COPY_AND_ASSIGN(AudioSyncReader);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(AudioInputSyncWriter);
 };
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_AUDIO_SYNC_READER_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_MEDIA_AUDIO_INPUT_SYNC_WRITER_H_

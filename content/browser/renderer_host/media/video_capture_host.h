@@ -33,14 +33,14 @@
 //      |         (kStopped)                  |
 //      v                                     v
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_VIDEO_CAPTURE_HOST_H_
-#define CONTENT_BROWSER_RENDERER_HOST_VIDEO_CAPTURE_HOST_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_VIDEO_CAPTURE_HOST_H_
+#define CONTENT_BROWSER_RENDERER_HOST_MEDIA_VIDEO_CAPTURE_HOST_H_
 
 #include <map>
 
 #include "base/memory/ref_counted.h"
 #include "content/browser/browser_message_filter.h"
-#include "content/browser/renderer_host/video_capture_controller.h"
+#include "content/browser/renderer_host/media/video_capture_controller.h"
 #include "ipc/ipc_message.h"
 
 class VideoCaptureHost : public BrowserMessageFilter,
@@ -134,4 +134,4 @@ class VideoCaptureHost : public BrowserMessageFilter,
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureHost);
 };
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_VIDEO_CAPTURE_HOST_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_MEDIA_VIDEO_CAPTURE_HOST_H_

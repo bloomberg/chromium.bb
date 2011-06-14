@@ -9,8 +9,8 @@
 // The MediaStreamManager is expected to be called on Browser::IO thread and
 // the listener will be called on the same thread.
 
-#ifndef CONTENT_BROWSER_MEDIA_STREAM_MEDIA_STREAM_PROVIDER_H_
-#define CONTENT_BROWSER_MEDIA_STREAM_MEDIA_STREAM_PROVIDER_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_MEDIA_STREAM_PROVIDER_H_
+#define CONTENT_BROWSER_RENDERER_HOST_MEDIA_MEDIA_STREAM_PROVIDER_H_
 
 #include <list>
 #include <string>
@@ -105,4 +105,4 @@ class MediaStreamProvider {
 
 }  // namespace media_stream
 
-#endif  // CONTENT_BROWSER_MEDIA_STREAM_MEDIA_STREAM_PROVIDER_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_MEDIA_MEDIA_STREAM_PROVIDER_H_

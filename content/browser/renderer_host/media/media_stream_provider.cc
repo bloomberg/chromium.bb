@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/media_stream/media_stream_provider.h"
+#include "content/browser/renderer_host/media/media_stream_provider.h"
 
 namespace media_stream {
 

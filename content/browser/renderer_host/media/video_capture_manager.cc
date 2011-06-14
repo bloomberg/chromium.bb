@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/media_stream/video_capture_manager.h"
+#include "content/browser/renderer_host/media/video_capture_manager.h"
 
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/browser_thread.h"

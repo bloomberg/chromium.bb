@@ -15,8 +15,8 @@
 // For low latency audio, a SyncSocket pair is used to signal buffer readiness
 // without having to route messages using the IO thread.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_AUDIO_INPUT_RENDERER_HOST_H_
-#define CONTENT_BROWSER_RENDERER_HOST_AUDIO_INPUT_RENDERER_HOST_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_AUDIO_INPUT_RENDERER_HOST_H_
+#define CONTENT_BROWSER_RENDERER_HOST_MEDIA_AUDIO_INPUT_RENDERER_HOST_H_
 #pragma once
 
 #include <map>
@@ -161,4 +161,4 @@ class AudioInputRendererHost : public BrowserMessageFilter,
   DISALLOW_COPY_AND_ASSIGN(AudioInputRendererHost);
 };
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_AUDIO_INPUT_RENDERER_HOST_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_MEDIA_AUDIO_INPUT_RENDERER_HOST_H_

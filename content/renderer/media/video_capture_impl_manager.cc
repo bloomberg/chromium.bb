@@ -5,7 +5,7 @@
 #include "content/renderer/media/video_capture_impl_manager.h"
 
 #include "base/memory/singleton.h"
-#include "content/renderer/video_capture_message_filter_creator.h"
+#include "content/renderer/media/video_capture_message_filter_creator.h"
 #include "media/base/message_loop_factory_impl.h"
 
 VideoCaptureImplManager::VideoCaptureImplManager() {

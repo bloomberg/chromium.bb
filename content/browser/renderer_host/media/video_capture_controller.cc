@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/video_capture_controller.h"
+#include "content/browser/renderer_host/media/video_capture_controller.h"
 
 #include "base/stl_util-inl.h"
 #include "content/browser/browser_thread.h"
-#include "content/browser/media_stream/video_capture_manager.h"
+#include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "media/base/yuv_convert.h"
 
 // The number of TransportDIBs VideoCaptureController allocate.

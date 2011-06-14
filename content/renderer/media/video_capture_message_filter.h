@@ -7,8 +7,8 @@
 // render process. It intercepts video capture messages and process them on
 // IO thread since these messages are time critical.
 
-#ifndef CONTENT_RENDERER_VIDEO_CAPTURE_MESSAGE_FILTER_H_
-#define CONTENT_RENDERER_VIDEO_CAPTURE_MESSAGE_FILTER_H_
+#ifndef CONTENT_RENDERER_MEDIA_VIDEO_CAPTURE_MESSAGE_FILTER_H_
+#define CONTENT_RENDERER_MEDIA_VIDEO_CAPTURE_MESSAGE_FILTER_H_
 
 #include <map>
 
@@ -100,4 +100,4 @@ class VideoCaptureMessageFilter : public IPC::ChannelProxy::MessageFilter {
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureMessageFilter);
 };
 
-#endif  // CONTENT_RENDERER_VIDEO_CAPTURE_MESSAGE_FILTER_H_
+#endif  // CONTENT_RENDERER_MEDIA_VIDEO_CAPTURE_MESSAGE_FILTER_H_

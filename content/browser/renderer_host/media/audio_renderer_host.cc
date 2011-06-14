@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/audio_renderer_host.h"
+#include "content/browser/renderer_host/media/audio_renderer_host.h"
 
 #include "base/metrics/histogram.h"
 #include "base/process.h"
 #include "base/shared_memory.h"
-#include "content/browser/renderer_host/audio_common.h"
-#include "content/browser/renderer_host/audio_sync_reader.h"
+#include "content/browser/renderer_host/media/audio_common.h"
+#include "content/browser/renderer_host/media/audio_sync_reader.h"
 #include "content/common/audio_messages.h"
 #include "ipc/ipc_logging.h"
 
