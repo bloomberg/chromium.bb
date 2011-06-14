@@ -1,8 +1,7 @@
 # -*- python -*-
-# Copyright 2008 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
-
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 Import('env')
 
@@ -49,6 +48,8 @@ sources = ['access.c',
            'pthread_cleanup_push.c',
            'pthread_cleanup_pop.c',
            'readlink.c',
+           'remove.c',
+           'rename.c',
            'rmdir.c',
            'select.c',
            'setegid.c',
@@ -57,8 +58,11 @@ sources = ['access.c',
            'setpwent.c',
            'settimeofday.c',
            'setuid.c',
+           'signal.c',
            'symlink.c',
+           'system.c',
            'times.c',
+           'tmpfile.c',
            'truncate.c',
            'ttyname.c',
            'ttyname_r.c',
@@ -70,9 +74,6 @@ sources = ['access.c',
            'wait.c',
            'waitpid.c',
            ]
-
-if env.Bit('bitcode'):
-  sources.append('misc_pnacl.c')
 
 # TODO(robertm): this is likely not necessary anymore, double check
 if env.Bit('target_arm'):
