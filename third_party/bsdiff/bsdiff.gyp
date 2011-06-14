@@ -7,7 +7,6 @@
     {
       'target_name': 'bsdiff',
       'type': 'executable',
-      'msvs_guid': 'E1D0B89E-257B-4BCA-A0C6-A2CD997A2FDC',
       'dependencies': [
         '../bspatch/bspatch.gyp:bspatch',
       ],

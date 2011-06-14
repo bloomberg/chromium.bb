@@ -49,7 +49,6 @@
         '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_resources',
         '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_support_common',
       ],
-      'msvs_guid': '77C32787-1B96-CB84-B905-7F170629F0AC',
       'sources': [
         'mac/test_shell_webview.h',
         'mac/test_shell_webview.mm',
@@ -201,7 +200,6 @@
         'chromium_code': 1,
       },
       'mac_bundle': 1,
-      'msvs_guid': 'FA39524D-3067-4141-888D-28A86C66F2B9',
       'dependencies': [
         'test_shell_common',
         '<(DEPTH)/net/net.gyp:net_test_support',
@@ -338,7 +336,6 @@
       'variables': {
         'chromium_code': 1,
       },
-      'msvs_guid': 'E6766F81-1FCD-4CD7-BC16-E36964A14867',
       #TODO(dmichael): Remove this #define once all plugins are ported from
       #                PPP_Instance and PPB_Instance scripting functions.
       'defines': [
@@ -561,7 +558,6 @@
             'chromium_code': 1,
           },
           'mac_bundle': 1,
-          'msvs_guid': '0D04AEC1-6B68-492C-BCCF-808DFD69ABC6',
           'dependencies': [
             '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
             'npapi_test_common',

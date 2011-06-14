@@ -17,7 +17,6 @@
     {
       'target_name': 'iaccessible2',
       'type': 'static_library',
-      'msvs_guid': 'C974E070-3787-490A-87B0-E333B06CA1E2',
       'sources': [
         'ia2_api_all.idl',
         '<(INTERMEDIATE_DIR)/ia2_api_all.h',
@@ -35,7 +34,6 @@
     {
       'target_name': 'IAccessible2Proxy',
       'type': 'shared_library',
-      'msvs_guid': '39B1D9D7-7405-42D7-B76F-D26F13E7610E',
       'defines': [ 'REGISTER_PROXY_DLL' ],
       'dependencies': [ 'iaccessible2' ],
       'sources': [

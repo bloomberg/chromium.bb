@@ -17,7 +17,6 @@
     {
       'target_name': 'isimpledom',
       'type': 'static_library',
-      'msvs_guid': '1814CEEB-49E2-407F-AF99-FA755A7D2607',
       'sources': [
         'ISimpleDOMDocument.idl',
         'ISimpleDOMNode.idl',

@@ -38,7 +38,6 @@
           },
         }, { # else: os_posix != 1 or OS == "mac" or ! use_system_libxml
           'type': 'static_library',
-          'msvs_guid': 'FC0E1FD0-5DD7-4041-A1C9-CD3C376E4EED',
           'sources': [
             'libxslt/attributes.c',
             'libxslt/attributes.h',

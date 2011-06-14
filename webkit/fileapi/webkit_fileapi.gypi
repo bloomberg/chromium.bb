@@ -7,7 +7,6 @@
     {
       'target_name': 'fileapi',
       'type': 'static_library',
-      'msvs_guid': '40B53211-03ED-4932-8D53-52B172599DFE',
       'dependencies': [
         '<(DEPTH)/app/app.gyp:app_base',
         '<(DEPTH)/base/base.gyp:base',

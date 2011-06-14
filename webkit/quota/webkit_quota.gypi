@@ -7,7 +7,6 @@
     {
       'target_name': 'quota',
       'type': 'static_library',
-      'msvs_guid': '36A9AAD2-10DD-42CF-BF51-3CC79D26FCB4',
       'dependencies': [
         '<(DEPTH)/app/app.gyp:app_base',
         '<(DEPTH)/base/base.gyp:base',

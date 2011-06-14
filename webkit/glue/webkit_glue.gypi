@@ -16,7 +16,6 @@
     {
       'target_name': 'webkit_resources',
       'type': 'none',
-      'msvs_guid': '0B469837-3D46-484A-AFB3-C5A6C68730B9',
       'variables': {
         'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/webkit',
       },
@@ -41,7 +40,6 @@
     {
       'target_name': 'webkit_strings',
       'type': 'none',
-      'msvs_guid': '60B43839-95E6-4526-A661-209F16335E0E',
       'variables': {
         'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/webkit',
       },
@@ -59,7 +57,6 @@
     {
       'target_name': 'webkit_user_agent',
       'type': 'static_library',
-      'msvs_guid': 'DB162DE1-7D56-4C4A-8A9F-80D396CD7AA8',
       'dependencies': [
         '<(DEPTH)/app/app.gyp:app_base',
         '<(DEPTH)/base/base.gyp:base_i18n',
@@ -103,7 +100,6 @@
     {
       'target_name': 'glue',
       'type': 'static_library',
-      'msvs_guid': 'C66B126D-0ECE-4CA2-B6DC-FA780AFBBF09',
       #TODO(dmichael): Remove this #define once all plugins are ported from
       #                PPP_Instance and PPB_Instance scripting functions.
       'defines': [
