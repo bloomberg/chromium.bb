@@ -676,7 +676,7 @@ select {
    *     pluginFadeOutTransitionDuration = 0.35s */
   -webkit-transition-delay: 0.35s;
   -webkit-user-select: none;
-  background: -webkit-radial-gradient(#eaeaea, #b8b8b8);
+  background: #cccccc;
   height: 100%;
   margin: 0;
   opacity: 1;
