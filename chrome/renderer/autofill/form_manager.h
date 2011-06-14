@@ -63,6 +63,8 @@ class FormManager {
   // Returns the corresponding label for |element|.  WARNING: This method can
   // potentially be very slow.  Do not use during any code paths where the page
   // is loading.
+  // TODO(isherman): Refactor autofill_agent.cc not to require this method to be
+  // exposed.
   static string16 LabelForElement(const WebKit::WebFormControlElement& element);
 
   // Fills out a FormData object from a given WebFormElement. If |get_values|
@@ -71,35 +73,29 @@ class FormManager {
   // out. Returns true if |form| is filled out; it's possible that |element|
   // won't meet the requirements in |requirements|. This also returns false if
   // there are no fields in |form|.
-  // TODO(jhawkins): Remove the user of this in RenderView and move this to
-  // private.
   static bool WebFormElementToFormData(const WebKit::WebFormElement& element,
                                        RequirementsMask requirements,
                                        ExtractMask extract_mask,
                                        webkit_glue::FormData* form);
 
   // Scans the DOM in |frame| extracting and storing forms.
-  void ExtractForms(const WebKit::WebFrame* frame);
-
-  // Returns a vector of forms in |frame| that match |requirements|.
-  void GetFormsInFrame(const WebKit::WebFrame* frame,
-                       RequirementsMask requirements,
-                       std::vector<webkit_glue::FormData>* forms);
+  // Returns a vector of the extracted forms.
+  void ExtractForms(const WebKit::WebFrame* frame,
+                    std::vector<webkit_glue::FormData>* forms);
 
   // Finds the form that contains |element| and returns it in |form|. Returns
   // false if the form is not found.
   bool FindFormWithFormControlElement(
       const WebKit::WebFormControlElement& element,
-      RequirementsMask requirements,
       webkit_glue::FormData* form);
 
   // Fills the form represented by |form|. |node| is the input element that
   // initiated the auto-fill process.
-  bool FillForm(const webkit_glue::FormData& form, const WebKit::WebNode& node);
+  void FillForm(const webkit_glue::FormData& form, const WebKit::WebNode& node);
 
   // Previews the form represented by |form|. |node| is the input element that
   // initiated the preview process.
-  bool PreviewForm(const webkit_glue::FormData& form,
+  void PreviewForm(const webkit_glue::FormData& form,
                    const WebKit::WebNode &node);
 
   // Clears the values of all input elements in the form that contains |node|.
@@ -112,9 +108,6 @@ class FormManager {
   // is not found.
   bool ClearPreviewedFormWithNode(const WebKit::WebNode& node,
                                   bool was_autofilled);
-
-  // Resets the stored set of forms.
-  void Reset();
 
   // Resets the forms for the specified |frame|.
   void ResetFrame(const WebKit::WebFrame* frame);
@@ -131,11 +124,6 @@ class FormManager {
   // Type for cache of FormElement objects.
   typedef ScopedVector<FormElement> FormElementList;
 
-  // The callback type used by ForEachMatchingFormField().
-  typedef Callback3<WebKit::WebFormControlElement*,
-                    const webkit_glue::FormField*,
-                    bool>::Type Callback;
-
   // Finds the cached FormElement that contains |node|.
   bool FindCachedFormElementWithNode(const WebKit::WebNode& node,
                                      FormElement** form_element);
@@ -143,31 +131,6 @@ class FormManager {
   // Uses the data in |form| to find the cached FormElement.
   bool FindCachedFormElement(const webkit_glue::FormData& form,
                              FormElement** form_element);
-
-  // For each field in |data| that matches the corresponding field in |form|
-  // and meets the |requirements|, |callback| is called with the actual
-  // WebFormControlElement and the FormField data from |form|. The field that
-  // matches |node| is not required to be empty if |requirements| includes
-  // REQUIRE_EMPTY.  This method owns |callback|.
-  void ForEachMatchingFormField(FormElement* form,
-                                const WebKit::WebNode& node,
-                                RequirementsMask requirements,
-                                const webkit_glue::FormData& data,
-                                Callback* callback);
-
-  // A ForEachMatchingFormField() callback that sets |field|'s value using the
-  // value in |data|.  This method also sets the autofill attribute, causing the
-  // background to be yellow.
-  void FillFormField(WebKit::WebFormControlElement* field,
-                     const webkit_glue::FormField* data,
-                     bool is_initiating_node);
-
-  // A ForEachMatchingFormField() callback that sets |field|'s placeholder value
-  // using the value in |data|, causing the test to be greyed-out.  This method
-  // also sets the autofill attribute, causing the background to be yellow.
-  void PreviewFormField(WebKit::WebFormControlElement* field,
-                        const webkit_glue::FormField* data,
-                        bool is_initiating_node);
 
   // The cached FormElement objects.
   FormElementList form_elements_;

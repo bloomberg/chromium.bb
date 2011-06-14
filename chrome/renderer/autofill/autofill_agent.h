@@ -121,9 +121,6 @@ class AutofillAgent : public RenderViewObserver,
                             int unique_id,
                             AutofillAction action);
 
-  // Scans the given frame for forms and sends them up to the browser.
-  void SendForms(WebKit::WebFrame* frame);
-
   // Fills |form| and |field| with the FormData and FormField corresponding to
   // |node|. Returns true if the data was found; and false otherwise.
   bool FindFormAndFieldForNode(
