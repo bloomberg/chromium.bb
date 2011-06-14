@@ -155,7 +155,7 @@ class AppCacheService::DeleteOriginHelper : public AsyncHelper {
       AppCacheService* service, const GURL& origin,
       net::CompletionCallback* callback)
       : AsyncHelper(service, callback), origin_(origin),
-        successes_(0), failures_(0) {
+        num_caches_to_delete_(0), successes_(0), failures_(0) {
   }
 
   virtual void Start() {
@@ -174,7 +174,7 @@ class AppCacheService::DeleteOriginHelper : public AsyncHelper {
   void CacheCompleted(bool success);
 
   GURL origin_;
-  AppCacheInfoVector caches_to_delete_;
+  int num_caches_to_delete_;
   int successes_;
   int failures_;
   DISALLOW_COPY_AND_ASSIGN(DeleteOriginHelper);
@@ -198,11 +198,12 @@ void AppCacheService::DeleteOriginHelper::OnAllInfo(
   }
 
   // We have some caches to delete.
-  caches_to_delete_.swap(found->second);
+  const AppCacheInfoVector& caches_to_delete = found->second;
   successes_ = 0;
   failures_ = 0;
-  for (AppCacheInfoVector::iterator iter = caches_to_delete_.begin();
-       iter != caches_to_delete_.end(); ++iter) {
+  num_caches_to_delete_ = static_cast<int>(caches_to_delete.size());
+  for (AppCacheInfoVector::const_iterator iter = caches_to_delete.begin();
+       iter != caches_to_delete.end(); ++iter) {
     service_->storage()->LoadOrCreateGroup(iter->manifest_url, this);
   }
 }
@@ -228,7 +229,7 @@ void AppCacheService::DeleteOriginHelper::CacheCompleted(bool success) {
     ++successes_;
   else
     ++failures_;
-  if ((successes_ + failures_) < static_cast<int>(caches_to_delete_.size()))
+  if ((successes_ + failures_) < num_caches_to_delete_)
     return;
 
   CallCallback(!failures_ ? net::OK : net::ERR_FAILED);
