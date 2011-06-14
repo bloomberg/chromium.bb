@@ -92,6 +92,9 @@
       'direct_dependent_settings': {
         'include_dirs': [
           '..',
+          #  Allow other targets to depend on common for the SafeBrowsing
+          # protobuf generated targets.
+          '<(protoc_out_dir)',
         ],
       },
       'dependencies': [
@@ -105,6 +108,7 @@
         'common_net',
         'default_plugin/default_plugin.gyp:default_plugin',
         'safe_browsing_csd_proto',
+        'safe_browsing_proto',
         'theme_resources',
         'theme_resources_standard',
         '../app/app.gyp:app_base',
@@ -122,6 +126,7 @@
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/libxml/libxml.gyp:libxml',
+        '../third_party/protobuf/protobuf.gyp:protobuf_lite',
         '../third_party/sqlite/sqlite.gyp:sqlite',
         '../third_party/zlib/zlib.gyp:zlib',
         '../webkit/support/webkit_support.gyp:glue',
@@ -214,6 +219,8 @@
         'common/random.h',
         'common/render_messages.cc',
         'common/render_messages.h',
+        '<(protoc_out_dir)/chrome/common/safe_browsing/client_model.pb.cc',
+        '<(protoc_out_dir)/chrome/common/safe_browsing/client_model.pb.h',
         '<(protoc_out_dir)/chrome/common/safe_browsing/csd.pb.cc',
         '<(protoc_out_dir)/chrome/common/safe_browsing/csd.pb.h',
         'common/search_provider.h',
@@ -336,6 +343,7 @@
       'export_dependent_settings': [
         '../app/app.gyp:app_base',
         '../base/base.gyp:base',
+        '../third_party/protobuf/protobuf.gyp:protobuf_lite',
       ],
     },
     {
@@ -397,6 +405,52 @@
           },
         ],
        ],
+    },
+    {
+      # Protobuf compiler / generator for the safebrowsing client model proto.
+      'target_name': 'safe_browsing_proto',
+      'type': 'none',
+      'sources': [ 'common/safe_browsing/client_model.proto' ],
+      'rules': [
+        {
+          'rule_name': 'genproto',
+          'extension': 'proto',
+          'inputs': [
+            '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)protoc<(EXECUTABLE_SUFFIX)',
+          ],
+          'variables': {
+            # The protoc compiler requires a proto_path argument with the
+            # directory containing the .proto file.
+            # There's no generator variable that corresponds to this, so fake
+            # it.
+            'rule_input_relpath': 'common/safe_browsing',
+          },
+          'outputs': [
+            '<(protoc_out_dir)/chrome/<(rule_input_relpath)/<(RULE_INPUT_ROOT).pb.h',
+            '<(protoc_out_dir)/chrome/<(rule_input_relpath)/<(RULE_INPUT_ROOT).pb.cc',
+          ],
+          'action': [
+            '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)protoc<(EXECUTABLE_SUFFIX)',
+            '--proto_path=./<(rule_input_relpath)',
+            './<(rule_input_relpath)/<(RULE_INPUT_ROOT)<(RULE_INPUT_EXT)',
+            '--cpp_out=<(protoc_out_dir)/chrome/<(rule_input_relpath)',
+          ],
+          'message': 'Generating C++ code from <(RULE_INPUT_PATH)',
+        },
+      ],
+      'dependencies': [
+        '../third_party/protobuf/protobuf.gyp:protobuf_lite',
+        '../third_party/protobuf/protobuf.gyp:protoc#host',
+      ],
+      'direct_dependent_settings': {
+        'include_dirs': [
+          '<(protoc_out_dir)',
+        ]
+      },
+      'export_dependent_settings': [
+        '../third_party/protobuf/protobuf.gyp:protobuf_lite',
+      ],
+      'hard_dependency': 1,
     },
     {
       # Protobuf compiler / generator for the safebrowsing client-side detection

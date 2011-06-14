@@ -11,7 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/string_piece.h"
-#include "chrome/renderer/safe_browsing/client_model.pb.h"
+#include "chrome/common/safe_browsing/client_model.pb.h"
 #include "chrome/renderer/safe_browsing/features.h"
 
 namespace {
@@ -33,9 +33,9 @@ void RecordScorerCreationStatus(ScorerCreationStatus status) {
 }
 }  // namespace
 
-namespace safe_browsing {
+static const size_t kPhishingModelMaxSizeBytes = 512 * 1024;
 
-const int Scorer::kMaxPhishingModelSizeBytes = 90 * 1024;
+namespace safe_browsing {
 
 // Helper function which converts log odds to a probability in the range
 // [0.0,1.0].
@@ -63,7 +63,6 @@ class ScorerLoader {
       : file_thread_proxy_(file_thread_proxy),
         model_file_(model_file),
         creation_callback_(creation_callback) {
-    memset(buffer_, 0, sizeof(buffer_));
   }
 
   ~ScorerLoader() {}
@@ -75,7 +74,7 @@ class ScorerLoader {
         file_thread_proxy_,
         model_file_,
         0,  // offset
-        Scorer::kMaxPhishingModelSizeBytes,
+        kPhishingModelMaxSizeBytes,
         NewCallback(this, &ScorerLoader::ModelReadDone));
     DCHECK(success) << "Unable to post a task to read the phishing model file";
   }
@@ -88,15 +87,8 @@ class ScorerLoader {
     if (error_code != base::PLATFORM_FILE_OK) {
       DLOG(ERROR) << "Error reading phishing model file: " << error_code;
       RecordScorerCreationStatus(SCORER_FAIL_MODEL_OPEN_FAIL);
-    } else if (bytes_read <= 0) {
-      DLOG(ERROR) << "Empty phishing model file";
-      RecordScorerCreationStatus(SCORER_FAIL_MODEL_FILE_EMPTY);
-    } else if (bytes_read == Scorer::kMaxPhishingModelSizeBytes) {
-      DLOG(ERROR) << "Phishing model is too large, ignoring";
-      RecordScorerCreationStatus(SCORER_FAIL_MODEL_FILE_TOO_LARGE);
     } else {
-      memcpy(buffer_, data, bytes_read);
-      scorer = Scorer::Create(base::StringPiece(buffer_, bytes_read));
+      scorer = Scorer::Create(base::StringPiece(data, bytes_read));
     }
     RunCallback(scorer);
   }
@@ -110,7 +102,6 @@ class ScorerLoader {
   scoped_refptr<base::MessageLoopProxy> file_thread_proxy_;
   base::PlatformFile model_file_;
   scoped_ptr<Scorer::CreationCallback> creation_callback_;
-  char buffer_[Scorer::kMaxPhishingModelSizeBytes];
 
   DISALLOW_COPY_AND_ASSIGN(ScorerLoader);
 };
@@ -124,16 +115,9 @@ Scorer::~Scorer() {}
 Scorer* Scorer::Create(const base::StringPiece& model_str) {
   scoped_ptr<Scorer> scorer(new Scorer());
   ClientSideModel& model = scorer->model_;
-  if (!model.ParseFromArray(model_str.data(), model_str.size())) {
-    DLOG(ERROR) << "Unable to parse phishing model.  This Scorer object is "
-                << "invalid.";
-    RecordScorerCreationStatus(SCORER_FAIL_MODEL_PARSE_ERROR);
-    return NULL;
-  }
-  if (!model.IsInitialized()) {
-    DLOG(ERROR) << "Unable to parse phishing model.  The model is missing "
-                << "some required fields.  Maybe the .proto file changed?";
-    RecordScorerCreationStatus(SCORER_FAIL_MODEL_MISSING_FIELDS);
+  if (!model.ParseFromArray(model_str.data(), model_str.size()) ||
+      !model.IsInitialized()) {
+    DLOG(ERROR) << "Invalid client model";
     return NULL;
   }
   RecordScorerCreationStatus(SCORER_SUCCESS);
@@ -163,6 +147,10 @@ double Scorer::ComputeScore(const FeatureMap& features) const {
     logodds += ComputeRuleScore(model_.rule(i), features);
   }
   return LogOdds2Prob(logodds);
+}
+
+int Scorer::model_version() const {
+  return model_.version();
 }
 
 const base::hash_set<std::string>& Scorer::page_terms() const {

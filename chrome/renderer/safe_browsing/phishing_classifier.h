@@ -56,7 +56,9 @@ class PhishingClassifier {
   virtual ~PhishingClassifier();
 
   // Sets a scorer for the classifier to use in computing the phishiness score.
-  // This must live at least as long as the PhishingClassifier.
+  // This must live at least as long as the PhishingClassifier.  The caller is
+  // expected to cancel any pending classification before setting a phishing
+  // scorer.
   void set_phishing_scorer(const Scorer* scorer);
 
   // Returns true if the classifier is ready to classify pages, i.e. it

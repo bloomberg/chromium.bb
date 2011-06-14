@@ -68,4 +68,9 @@ message ClientSideModel {
 
   // Page terms in page_term contain at most this many page words.
   required int32 max_words_per_term = 5;
+
+  // Model version number.  Every model that we train should have a different
+  // version number and it should always be larger than the previous model
+  // version.
+  optional int32 version = 6;
 }

@@ -3,9 +3,10 @@
 // found in the LICENSE file.
 //
 // Helper class which handles communication with the SafeBrowsing backends for
-// client-side phishing detection.  This class can be used to get a file
-// descriptor to the client-side phishing model and also to send a ping back to
-// Google to verify if a particular site is really phishing or not.
+// client-side phishing detection.  This class is used to fetch the client-side
+// model and send a file descriptor that points to the model file to all
+// renderers.  This class is also used to send a ping back to Google to verify
+// if a particular site is really phishing or not.
 //
 // This class is not thread-safe and expects all calls to be made on the UI
 // thread.  We also expect that the calling thread runs a message loop and that
@@ -39,6 +40,10 @@
 #include "net/base/net_util.h"
 
 class RenderProcessHost;
+
+namespace base {
+class TimeDelta;
+}
 
 namespace net {
 class URLRequestContextGetter;
@@ -114,17 +119,38 @@ class ClientSideDetectionService : public URLFetcher::Delegate,
       const FilePath& model_path,
       net::URLRequestContextGetter* request_context_getter);
 
+  // Enum used to keep stats about why we fail to get the client model.
+  enum ClientModelStatus {
+    MODEL_SUCCESS,
+    MODEL_NOT_CHANGED,
+    MODEL_FETCH_FAILED,
+    MODEL_EMPTY,
+    MODEL_TOO_LARGE,
+    MODEL_PARSE_ERROR,
+    MODEL_MISSING_FIELDS,
+    MODEL_INVALID_VERSION_NUMBER,
+    MODEL_FILE_UTIL_PROXY_ERROR,
+    MODEL_CREATE_TMP_FILE_FAILED,
+    MODEL_WRITE_TMP_FILE_FAILED,
+    MODEL_CLOSE_TMP_FILE_FAILED,
+    MODEL_REOPEN_TMP_FILE_FAILED,
+    MODEL_MOVE_TMP_FILE_ERROR,
+    MODEL_STATUS_MAX  // Always add new values before this one.
+  };
+
+  // Starts fetching the model from the network or the cache.  This method
+  // is called periodically to check whether a new client model is available
+  // for download.
+  void StartFetchModel();
+
+  // This method is called when we're done fetching the model either because
+  // we hit an error somewhere or because we're actually done writing the model
+  // to the temporary file.
+  virtual void EndFetchModel(ClientModelStatus status);  // Virtual for testing.
+
  private:
   friend class ClientSideDetectionServiceTest;
-
-  enum ModelStatus {
-    // It's unclear whether or not the model was already fetched.
-    UNKNOWN_STATUS,
-    // Model is fetched and is stored on disk.
-    READY_STATUS,
-    // Error occured during fetching or writing.
-    ERROR_STATUS,
-  };
+  FRIEND_TEST_ALL_PREFIXES(ClientSideDetectionServiceTest, FetchModelTest);
 
   // CacheState holds all information necessary to respond to a caller without
   // actually making a HTTP request.
@@ -142,40 +168,45 @@ class ClientSideDetectionService : public URLFetcher::Delegate,
 
   static const char kClientReportPhishingUrl[];
   static const char kClientModelUrl[];
+  static const size_t kMaxModelSizeBytes;
   static const int kMaxReportsPerInterval;
+  static const int kClientModelFetchIntervalMs;
+  static const int kInitialClientModelFetchDelayMs;
   static const base::TimeDelta kReportsInterval;
   static const base::TimeDelta kNegativeCacheInterval;
   static const base::TimeDelta kPositiveCacheInterval;
 
-  // Sets the model status and invokes all the pending callbacks in
-  // |open_callbacks_| with the current |model_file_| as parameter.
-  void SetModelStatus(ModelStatus status);
-
-  // Called once the initial open() of the model file is done.  If the file
-  // exists we're done and we can call all the pending callbacks.  If the
-  // file doesn't exist this method will asynchronously fetch the model
-  // from the server by invoking StartFetchingModel().
-  void OpenModelFileDone(base::PlatformFileError error_code,
-                         base::PassPlatformFile file,
-                         bool created);
-
-  // Callback that is invoked once the attempt to create the model
+  // Callback that is invoked once the attempt to create the temporary model
   // file on disk is done.  If the file was created successfully we
   // start writing the model to disk (asynchronously).  Otherwise, we
   // give up and send an invalid platform file to all the pending callbacks.
-  void CreateModelFileDone(base::PlatformFileError error_code,
-                           base::PassPlatformFile file,
-                           bool created);
+  void CreateTmpModelFileDone(base::PlatformFileError error_code,
+                              base::PassPlatformFile file,
+                              FilePath tmp_model_path);
 
   // Callback is invoked once we're done writing the model file to disk.
-  // If everything went well then |model_file_| is a valid platform file
-  // that can be sent to all the pending callbacks.  If an error occurs
-  // we give up and send an invalid platform file to all the pending callbacks.
-  void WriteModelFileDone(base::PlatformFileError error_code,
-                          int bytes_written);
+  // If everything went well then |tmp_model_file_| is a valid platform file.
+  // If an error occurs we give up and send an invalid platform file to all the
+  // pending callbacks.
+  void WriteTmpModelFileDone(base::PlatformFileError error_code,
+                             int bytes_written);
 
-  // Helper function which closes the |model_file_| if necessary.
-  void CloseModelFile();
+  // Called when we're done closing the writable model file and we're
+  // ready to re-open the temporary model file in read-only mode.
+  void CloseTmpModelFileDone(base::PlatformFileError error_code);
+
+  // Reopen the temporary model file in read-only mode to make sure we don't
+  // pass a writable file descritor to the renderer.
+  void ReOpenTmpModelFileDone(base::PlatformFileError error_code,
+                              base::PassPlatformFile file,
+                              bool created);
+
+  // Callback is invoked when the temporary model file was moved to its final
+  // destination where the model is stored on disk.
+  void MoveTmpModelFileDone(base::PlatformFileError error_code);
+
+  // Helper function which closes the given model file if necessary.
+  void CloseModelFile(base::PlatformFile* file);
 
   // Starts sending the request to the client-side detection frontends.
   // This method takes ownership of both pointers.
@@ -214,11 +245,19 @@ class ClientSideDetectionService : public URLFetcher::Delegate,
   // Send the model to the given renderer.
   void SendModelToProcess(RenderProcessHost* process);
 
+  // Same as above but sends the model to all rendereres.
+  void SendModelToRenderers();
+
   FilePath model_path_;
-  ModelStatus model_status_;
   base::PlatformFile model_file_;
+  int model_version_;
   scoped_ptr<URLFetcher> model_fetcher_;
-  scoped_ptr<std::string> tmp_model_string_;
+
+  FilePath tmp_model_path_;
+  base::PlatformFile tmp_model_file_;
+  int tmp_model_version_;
+  std::string tmp_model_string_;
+  scoped_ptr<base::TimeDelta> tmp_model_max_age_;
 
   // Map of client report phishing request to the corresponding callback that
   // has to be invoked when the request is done.

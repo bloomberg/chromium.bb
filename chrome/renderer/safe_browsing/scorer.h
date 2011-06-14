@@ -24,7 +24,7 @@
 #include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
 #include "base/string_piece.h"
-#include "chrome/renderer/safe_browsing/client_model.pb.h"
+#include "chrome/common/safe_browsing/client_model.pb.h"
 
 namespace safe_browsing {
 class FeatureMap;
@@ -56,6 +56,9 @@ class Scorer {
   // (range is inclusive on both ends).
   virtual double ComputeScore(const FeatureMap& features) const;
 
+  // Returns the version number of the loaded client model.
+  int model_version() const;
+
   // -- Accessors used by the page feature extractor ---------------------------
 
   // Returns a set of hashed page terms that appear in the model in binary
@@ -68,10 +71,6 @@ class Scorer {
 
   // Return the maximum number of words per term for the loaded model.
   size_t max_words_per_term() const;
-
-  // The maximum size of a client-side phishing model file that we
-  // expect to load.
-  static const int kMaxPhishingModelSizeBytes;
 
  protected:
   // Most clients should use the factory method.  This constructor is public

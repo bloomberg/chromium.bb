@@ -8,6 +8,7 @@
 #include "base/file_path.h"
 #include "base/file_util_proxy.h"
 #include "base/logging.h"
+#include "base/time.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
@@ -16,6 +17,7 @@
 #include "base/task.h"
 #include "base/time.h"
 #include "chrome/common/net/http_return.h"
+#include "chrome/common/safe_browsing/client_model.pb.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome/common/safe_browsing/safebrowsing_messages.h"
 #include "content/browser/browser_thread.h"
@@ -25,6 +27,7 @@
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_platform_file.h"
 #include "net/base/load_flags.h"
+#include "net/http/http_response_headers.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 
@@ -34,7 +37,12 @@
 
 namespace safe_browsing {
 
+const size_t ClientSideDetectionService::kMaxModelSizeBytes = 90 * 1024;
 const int ClientSideDetectionService::kMaxReportsPerInterval = 3;
+// TODO(noelutz): once we know this mechanism works as intended we should fetch
+// the model much more frequently.  E.g., every 5 minutes or so.
+const int ClientSideDetectionService::kClientModelFetchIntervalMs = 3600 * 1000;
+const int ClientSideDetectionService::kInitialClientModelFetchDelayMs = 10000;
 
 const base::TimeDelta ClientSideDetectionService::kReportsInterval =
     base::TimeDelta::FromDays(1);
@@ -48,11 +56,8 @@ const char ClientSideDetectionService::kClientReportPhishingUrl[] =
 // Note: when updatng the model version, don't forget to change the filename
 // in chrome/common/chrome_constants.cc as well, or else existing users won't
 // download the new model.
-//
-// TODO(bryner): add version metadata so that clients can download new models
-// without needing a new model filename.
 const char ClientSideDetectionService::kClientModelUrl[] =
-    "https://ssl.gstatic.com/safebrowsing/csd/client_model_v1.pb";
+    "https://ssl.gstatic.com/safebrowsing/csd/client_model_v2.pb";
 
 struct ClientSideDetectionService::ClientReportInfo {
   scoped_ptr<ClientReportPhishingRequestCallback> callback;
@@ -67,8 +72,10 @@ ClientSideDetectionService::ClientSideDetectionService(
     const FilePath& model_path,
     net::URLRequestContextGetter* request_context_getter)
     : model_path_(model_path),
-      model_status_(UNKNOWN_STATUS),
       model_file_(base::kInvalidPlatformFileValue),
+      model_version_(-1),
+      tmp_model_file_(base::kInvalidPlatformFileValue),
+      tmp_model_version_(-1),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(callback_factory_(this)),
       request_context_getter_(request_context_getter) {
@@ -81,7 +88,7 @@ ClientSideDetectionService::~ClientSideDetectionService() {
   STLDeleteContainerPairPointers(client_phishing_reports_.begin(),
                                  client_phishing_reports_.end());
   client_phishing_reports_.clear();
-  CloseModelFile();
+  CloseModelFile(&model_file_);
 }
 
 /* static */
@@ -95,26 +102,25 @@ ClientSideDetectionService* ClientSideDetectionService::Create(
     UMA_HISTOGRAM_COUNTS("SBClientPhishing.InitPrivateNetworksFailed", 1);
     return NULL;
   }
+  // We fetch the model at every browser restart.  In a lot of cases the model
+  // will be in the cache so it won't actually be fetched from the network.
+  // We delay the first model fetch to avoid slowing down browser startup.
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      service->method_factory_.NewRunnableMethod(
+          &ClientSideDetectionService::StartFetchModel),
+      kInitialClientModelFetchDelayMs);
 
-  // We try to open the model file right away and start fetching it if
-  // it does not already exist on disk.
-  base::FileUtilProxy::CreateOrOpenCallback* cb =
-      service.get()->callback_factory_.NewCallback(
-          &ClientSideDetectionService::OpenModelFileDone);
-  if (!base::FileUtilProxy::CreateOrOpen(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
-          model_path,
-          base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ,
-          cb)) {
-    delete cb;
-    return NULL;
-  }
-
-  // Delete the previous-version model file.
+  // Delete the previous-version model files.
   // TODO(bryner): Remove this for M14.
   base::FileUtilProxy::Delete(
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
       model_path.DirName().AppendASCII("Safe Browsing Phishing Model"),
+      false /* not recursive */,
+      NULL /* not interested in result */);
+  base::FileUtilProxy::Delete(
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
+      model_path.DirName().AppendASCII("Safe Browsing Phishing Model v1"),
       false /* not recursive */,
       NULL /* not interested in result */);
   return service.release();
@@ -170,12 +176,8 @@ void ClientSideDetectionService::OnURLFetchComplete(
 void ClientSideDetectionService::Observe(NotificationType type,
                                          const NotificationSource& source,
                                          const NotificationDetails& details) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(type == NotificationType::RENDERER_PROCESS_CREATED);
-  if (model_status_ == UNKNOWN_STATUS) {
-    // The model isn't ready.  When it's known, we'll call all renderers.
-    return;
-  }
-
   RenderProcessHost* process = Source<RenderProcessHost>(source).ptr();
   SendModelToProcess(process);
 }
@@ -183,8 +185,8 @@ void ClientSideDetectionService::Observe(NotificationType type,
 void ClientSideDetectionService::SendModelToProcess(
     RenderProcessHost* process) {
   if (model_file_ == base::kInvalidPlatformFileValue)
+    // Model might not be ready or maybe there was an error.
     return;
-
   IPC::PlatformFileForTransit file;
 #if defined(OS_POSIX)
   file = base::FileDescriptor(model_file_, false);
@@ -196,96 +198,184 @@ void ClientSideDetectionService::SendModelToProcess(
   process->Send(new SafeBrowsingMsg_SetPhishingModel(file));
 }
 
-void ClientSideDetectionService::SetModelStatus(ModelStatus status) {
-  DCHECK_NE(READY_STATUS, model_status_);
-  model_status_ = status;
-
+void ClientSideDetectionService::SendModelToRenderers() {
   for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
        !i.IsAtEnd(); i.Advance()) {
     RenderProcessHost* process = i.GetCurrentValue();
-    if (process->GetHandle())
+    if (process->GetHandle()) {
       SendModelToProcess(process);
+    }
   }
 }
 
-void ClientSideDetectionService::OpenModelFileDone(
-    base::PlatformFileError error_code,
-    base::PassPlatformFile file,
-    bool created) {
-  DCHECK(!created);
-  if (base::PLATFORM_FILE_OK == error_code) {
-    // The model file already exists.  There is no need to fetch the model.
-    model_file_ = file.ReleaseValue();
-    SetModelStatus(READY_STATUS);
-#if defined(OS_MACOSX)
-    base::mac::SetFileBackupExclusion(model_path_);
-#endif
-  } else if (base::PLATFORM_FILE_ERROR_NOT_FOUND == error_code) {
-    // We need to fetch the model since it does not exist yet.
-    model_fetcher_.reset(URLFetcher::Create(0 /* ID is not used */,
-                                            GURL(kClientModelUrl),
-                                            URLFetcher::GET,
-                                            this));
-    model_fetcher_->set_request_context(request_context_getter_.get());
-    model_fetcher_->Start();
+void ClientSideDetectionService::StartFetchModel() {
+  // Start fetching the model either from the cache or possibly from the
+  // network if the model isn't in the cache.
+  model_fetcher_.reset(URLFetcher::Create(0 /* ID is not used */,
+                                          GURL(kClientModelUrl),
+                                          URLFetcher::GET,
+                                          this));
+  model_fetcher_->set_request_context(request_context_getter_.get());
+  model_fetcher_->Start();
+}
+
+void ClientSideDetectionService::EndFetchModel(ClientModelStatus status) {
+  UMA_HISTOGRAM_ENUMERATION("SBClientPhishing.ClientModelStatus",
+                            status,
+                            MODEL_STATUS_MAX);
+  // If there is already a valid model but we're unable to reload one
+  // we leave the old model.
+  if (status == MODEL_SUCCESS) {
+    base::PlatformFile old_file = model_file_;
+    // Replace the model file and version;
+    model_file_ = tmp_model_file_;
+    model_version_ = tmp_model_version_;
+    // Now we can safely close the old model file.
+    CloseModelFile(&old_file);
+    SendModelToRenderers();
   } else {
-    // It is not clear what we should do in this case.  For now we simply fail.
-    // Hopefully, we'll be able to read the model during the next browser
-    // restart.
-    SetModelStatus(ERROR_STATUS);
-  }
-}
-
-void ClientSideDetectionService::CreateModelFileDone(
-    base::PlatformFileError error_code,
-    base::PassPlatformFile file,
-    bool created) {
-  model_file_ = file.ReleaseValue();
-  base::FileUtilProxy::WriteCallback* cb = callback_factory_.NewCallback(
-      &ClientSideDetectionService::WriteModelFileDone);
-  if (!created ||
-      base::PLATFORM_FILE_OK != error_code ||
-      !base::FileUtilProxy::Write(
+    CloseModelFile(&tmp_model_file_);
+    // Delete the temporary model file if necessay.
+    if (!tmp_model_path_.empty()) {
+      base::FileUtilProxy::Delete(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
-          model_file_,
-          0 /* offset */, tmp_model_string_->data(), tmp_model_string_->size(),
-          cb)) {
-    delete cb;
-    // An error occurred somewhere.  We close the model file if necessary and
-    // then run all the pending callbacks giving them an invalid model file.
-    CloseModelFile();
-    SetModelStatus(ERROR_STATUS);
-#if defined(OS_MACOSX)
+          tmp_model_path_,
+          false /* recursive */,
+          NULL);
+    }
+  }
+  // Delete up the temporary state.
+  tmp_model_path_.clear();
+  tmp_model_string_.clear();
+
+  int delay_ms = kClientModelFetchIntervalMs;
+  // If the most recently fetched model had a valid max-age and the model was
+  // valid we're scheduling the next model update for after the max-age expired.
+  if (tmp_model_max_age_.get() &&
+      (status == MODEL_SUCCESS || status == MODEL_NOT_CHANGED)) {
+    // We're adding 60s of additional delay to make sure we're past
+    // the model's age.
+    *tmp_model_max_age_ += base::TimeDelta::FromMinutes(1);
+    delay_ms = tmp_model_max_age_->InMilliseconds();
+  }
+  tmp_model_max_age_.reset();
+
+  // Schedule the next model reload.
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      method_factory_.NewRunnableMethod(
+          &ClientSideDetectionService::StartFetchModel),
+      delay_ms);
+}
+
+void ClientSideDetectionService::CreateTmpModelFileDone(
+    base::PlatformFileError error_code,
+    base::PassPlatformFile file,
+    FilePath tmp_model_path) {
+  if (base::PLATFORM_FILE_OK != error_code) {
+    EndFetchModel(MODEL_CREATE_TMP_FILE_FAILED);
   } else {
-    base::mac::SetFileBackupExclusion(model_path_);
-#endif
+    // Keep this around because we need to rename it later.
+    tmp_model_path_ = tmp_model_path;
+    tmp_model_file_ = file.ReleaseValue();
+    base::FileUtilProxy::WriteCallback* cb = callback_factory_.NewCallback(
+        &ClientSideDetectionService::WriteTmpModelFileDone);
+    if (!base::FileUtilProxy::Write(
+            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
+            tmp_model_file_,
+            0 /* offset */,
+            tmp_model_string_.data(), tmp_model_string_.size(),
+            cb)) {
+      delete cb;
+      EndFetchModel(MODEL_FILE_UTIL_PROXY_ERROR);
+    }
   }
 }
 
-void ClientSideDetectionService::WriteModelFileDone(
+void ClientSideDetectionService::WriteTmpModelFileDone(
     base::PlatformFileError error_code,
     int bytes_written) {
-  if (base::PLATFORM_FILE_OK == error_code) {
-    SetModelStatus(READY_STATUS);
+  if (base::PLATFORM_FILE_OK != error_code ||
+      bytes_written != static_cast<int>(tmp_model_string_.size())) {
+    EndFetchModel(MODEL_WRITE_TMP_FILE_FAILED);
   } else {
-    // TODO(noelutz): maybe we should retry writing the model since we
-    // did already fetch the model?
-    CloseModelFile();
-    SetModelStatus(ERROR_STATUS);
+    // Now we close the writable temporary model file and then we
+    // reopen it in read only mode.  We don't want to send a writable
+    // file descriptor to the renderer.
+    base::FileUtilProxy::StatusCallback* cb =
+        callback_factory_.NewCallback(
+            &ClientSideDetectionService::CloseTmpModelFileDone);
+    if (!base::FileUtilProxy::Close(
+            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
+            tmp_model_file_,
+            cb)) {
+      delete cb;
+      EndFetchModel(MODEL_FILE_UTIL_PROXY_ERROR);
+    }
   }
-  // Delete the model string that we kept around while we were writing the
-  // string to disk - we don't need it anymore.
-  tmp_model_string_.reset();
 }
 
-void ClientSideDetectionService::CloseModelFile() {
-  if (model_file_ != base::kInvalidPlatformFileValue) {
+void ClientSideDetectionService::CloseTmpModelFileDone(
+    base::PlatformFileError error_code) {
+  if (base::PLATFORM_FILE_OK != error_code) {
+    EndFetchModel(MODEL_CLOSE_TMP_FILE_FAILED);
+  } else {
+    base::FileUtilProxy::CreateOrOpenCallback* cb =
+        callback_factory_.NewCallback(
+            &ClientSideDetectionService::ReOpenTmpModelFileDone);
+    if (!base::FileUtilProxy::CreateOrOpen(
+            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
+            tmp_model_path_,
+            base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ,
+            cb)) {
+      delete cb;
+      EndFetchModel(MODEL_FILE_UTIL_PROXY_ERROR);
+    }
+  }
+}
+
+void ClientSideDetectionService::ReOpenTmpModelFileDone(
+    base::PlatformFileError error_code,
+    base::PassPlatformFile file,
+    bool created) {
+  if (base::PLATFORM_FILE_OK != error_code) {
+    EndFetchModel(MODEL_REOPEN_TMP_FILE_FAILED);
+  } else {
+    CloseModelFile(&tmp_model_file_);  // Close the writable file handle.
+    tmp_model_file_ = file.ReleaseValue();
+    base::FileUtilProxy::StatusCallback* cb = callback_factory_.NewCallback(
+        &ClientSideDetectionService::MoveTmpModelFileDone);
+    if (!base::FileUtilProxy::Move(
+            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
+            tmp_model_path_,
+            model_path_,
+            cb)) {
+      delete cb;
+      EndFetchModel(MODEL_FILE_UTIL_PROXY_ERROR);
+    }
+  }
+}
+
+void ClientSideDetectionService::MoveTmpModelFileDone(
+    base::PlatformFileError error_code) {
+  if (base::PLATFORM_FILE_OK == error_code) {
+#if defined(OS_MACOSX)
+    base::mac::SetFileBackupExclusion(model_path_);
+#endif
+    EndFetchModel(MODEL_SUCCESS);
+  } else {
+    EndFetchModel(MODEL_MOVE_TMP_FILE_ERROR);
+  }
+}
+
+void ClientSideDetectionService::CloseModelFile(base::PlatformFile* file) {
+  if (*file != base::kInvalidPlatformFileValue) {
     base::FileUtilProxy::Close(
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
-        model_file_,
+        *file,
         NULL);
   }
-  model_file_ = base::kInvalidPlatformFileValue;
+  *file = base::kInvalidPlatformFileValue;
 }
 
 void ClientSideDetectionService::StartClientReportPhishingRequest(
@@ -330,27 +420,45 @@ void ClientSideDetectionService::HandleModelResponse(
     int response_code,
     const net::ResponseCookies& cookies,
     const std::string& data) {
-  if (status.is_success() && RC_REQUEST_OK == response_code) {
-    // Copy the model because it has to be accessible after this function
-    // returns.  Once we have written the model to a file we will delete the
-    // temporary model string. TODO(noelutz): don't store the model to disk if
-    // it's invalid.
-    tmp_model_string_.reset(new std::string(data));
-    base::FileUtilProxy::CreateOrOpenCallback* cb =
+  base::TimeDelta max_age;
+  if (status.is_success() && RC_REQUEST_OK == response_code &&
+      source->response_headers() &&
+      source->response_headers()->GetMaxAgeValue(&max_age)) {
+    tmp_model_max_age_.reset(new base::TimeDelta(max_age));
+  }
+  ClientSideModel model;
+  if (!status.is_success() || RC_REQUEST_OK != response_code) {
+    EndFetchModel(MODEL_FETCH_FAILED);
+  } else if (data.empty()) {
+    EndFetchModel(MODEL_EMPTY);
+  } else if (data.size() > kMaxModelSizeBytes) {
+    EndFetchModel(MODEL_TOO_LARGE);
+  } else if (!model.ParseFromString(data)) {
+    EndFetchModel(MODEL_PARSE_ERROR);
+  } else if (!model.IsInitialized() || !model.has_version()) {
+    EndFetchModel(MODEL_MISSING_FIELDS);
+  } else if (model.version() < 0 ||
+             (model_version_ > 0 && model.version() < model_version_)) {
+    EndFetchModel(MODEL_INVALID_VERSION_NUMBER);
+  } else if (model.version() == model_version_) {
+    EndFetchModel(MODEL_NOT_CHANGED);
+  } else {
+    // The model will be written to a temporary file.  In the mean time we
+    // copy the model string because it has to be accessible after this
+    // function returns.  Once we have written the model to a file we will
+    // delete the temporary model string.
+    tmp_model_version_ = model.version();
+    tmp_model_string_.assign(data);
+    base::FileUtilProxy::CreateTemporaryCallback* cb =
         callback_factory_.NewCallback(
-            &ClientSideDetectionService::CreateModelFileDone);
-    if (!base::FileUtilProxy::CreateOrOpen(
+            &ClientSideDetectionService::CreateTmpModelFileDone);
+    if (!base::FileUtilProxy::CreateTemporary(
             BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
-            model_path_,
-            base::PLATFORM_FILE_CREATE_ALWAYS |
-            base::PLATFORM_FILE_WRITE |
-            base::PLATFORM_FILE_READ,
+            0 /* no additional file flags */,
             cb)) {
       delete cb;
-      SetModelStatus(ERROR_STATUS);
+      EndFetchModel(MODEL_FILE_UTIL_PROXY_ERROR);
     }
-  } else {
-    SetModelStatus(ERROR_STATUS);
   }
 }
 
@@ -470,5 +578,4 @@ bool ClientSideDetectionService::InitializePrivateNetworks() {
   }
   return true;
 }
-
 }  // namespace safe_browsing
