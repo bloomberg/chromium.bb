@@ -20,6 +20,7 @@ struct PPB_Surface3D_Dev;
 struct PPB_URLLoader;
 struct PPB_URLRequestInfo;
 struct PPB_URLResponseInfo;
+struct PPB_Var;
 struct PPB_Var_Deprecated;
 
 // Looks up the interface and returns its pointer or NULL.
@@ -40,6 +41,7 @@ const PPB_Messaging* PPBMessaging();
 const PPB_URLLoader* PPBURLLoader();
 const PPB_URLRequestInfo* PPBURLRequestInfo();
 const PPB_URLResponseInfo* PPBURLResponseInfo();
+const PPB_Var* PPBVar();
 
 const PPB_Var_Deprecated* PPBVarDeprecated();
 

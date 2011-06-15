@@ -212,19 +212,20 @@ FakeWindow::FakeWindow(PP_Module browser_module,
   Object* window_object = new Object(browser_module, browser_instance,
                                      properties, methods);
   window_var_ =
-      host_->var_interface()->CreateObject(browser_instance,
-                                           &ppapi_proxy::Object::object_class,
-                                           window_object);
+      host_->var_deprecated_interface()->CreateObject(
+          browser_instance,
+          &ppapi_proxy::Object::object_class,
+          window_object);
   g_browser_module = browser_module;
   g_browser_instance = browser_instance;
 }
 
 FakeWindow::~FakeWindow() {
-  host_->var_interface()->Release(window_var_);
+  host_->var_deprecated_interface()->Release(window_var_);
 }
 
 PP_Var FakeWindow::FakeWindowObject() {
-  host_->var_interface()->AddRef(window_var_);
+  host_->var_deprecated_interface()->AddRef(window_var_);
   return window_var_;
 }
 
