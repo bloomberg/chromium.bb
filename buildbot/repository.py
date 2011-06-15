@@ -6,6 +6,7 @@
 Repository module to handle different types of repositories the Builders use.
 """
 
+import constants
 import filecmp
 import logging
 import os
@@ -18,6 +19,15 @@ from chromite.lib import cros_build_lib as cros_lib
 class SrcCheckOutException(Exception):
   """Exception gets thrown for failure to sync sources"""
   pass
+
+
+def FixExternalRepoPushUrls(buildroot):
+  """Set up SSH push for public repo's."""
+  cros_lib.RunCommand(['repo', 'forall', '-c',
+                       'git', 'config',
+                       'url.%s.pushinsteadof' % constants.GERRIT_SSH_URL,
+                       'http://git.chromium.org'
+                      ], cwd=buildroot)
 
 
 class RepoRepository(object):
@@ -88,6 +98,7 @@ class RepoRepository(object):
       cros_lib.OldRunCommand(['repo', 'sync', '--quiet', '--jobs', '8'],
                              cwd=self.directory, redirect_stdout=True,
                              redirect_stderr=True, num_retries=2)
+      FixExternalRepoPushUrls(self.directory)
     except cros_lib.RunCommandError, e:
       err_msg = 'Failed to sync sources %s' % e.message
       logging.error(err_msg)

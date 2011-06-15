@@ -79,15 +79,7 @@ def _RepoSync(buildroot, retries=_DEFAULT_RETRIES):
   while retries > 0:
     try:
       cros_lib.OldRunCommand(['repo', 'sync', '-q', '--jobs=4'], cwd=buildroot)
-      cros_lib.OldRunCommand(
-          ['repo',
-           'forall',
-           '-c',
-           'git',
-           'config',
-           'url.ssh://gerrit.chromium.org:29418.pushinsteadof',
-           'http://git.chromium.org'
-          ], cwd=buildroot)
+      repository.FixExternalRepoPushUrls(buildroot)
       retries = 0
     except:
       retries -= 1
