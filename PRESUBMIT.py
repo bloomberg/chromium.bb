@@ -32,7 +32,7 @@ def CommonChecks(input_api, output_api):
   results.extend(input_api.canned_checks.RunPylint(
       input_api,
       output_api,
-      white_list=[r'.*\.py$', r'^git-try$'],
+      white_list=[r'.*\.py$'],
       black_list=black_list))
 
   # TODO(maruel): Make sure at least one file is modified first.
