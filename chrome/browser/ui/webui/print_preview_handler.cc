@@ -683,6 +683,11 @@ void PrintPreviewHandler::FileSelected(const FilePath& path,
   ActivateInitiatorTabAndClosePreviewTab();
 }
 
+void PrintPreviewHandler::FileSelectionCanceled(void* params) {
+  PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(web_ui_);
+  print_preview_ui->OnFileSelectionCancelled();
+}
+
 void PrintPreviewHandler::HidePreviewTab() {
   TabContentsWrapper* preview_tab_wrapper =
       TabContentsWrapper::GetCurrentWrapperForContents(preview_tab());

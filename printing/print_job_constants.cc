@@ -39,4 +39,7 @@ const char kSettingPrinterName[] = "printerName";
 // Print to PDF option: true if selected, false if not.
 const char kSettingPrintToPDF[] = "printToPDF";
 
+// True when draft preview document is required.
+const char kSettingDraftDocument[] = "draftDocument";
+
 }  // namespace printing

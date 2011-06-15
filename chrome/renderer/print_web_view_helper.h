@@ -176,14 +176,19 @@ class PrintWebViewHelper : public RenderViewObserver ,
   bool RenderPagesForPrint(WebKit::WebFrame* frame, WebKit::WebNode* node);
 
   // Render the frame for preview.
-  bool RenderPagesForPreview(WebKit::WebFrame* frame, WebKit::WebNode* node);
+  // |draft| is true when the output is only going to the screen and not the
+  // printer.
+  bool RenderPagesForPreview(WebKit::WebFrame* frame,
+                             WebKit::WebNode* node,
+                             bool draft);
 
   // Renders all the pages listed in |params| for preview.
   // On success, Send PrintHostMsg_PagesReadyForPreview message with a
   // valid metafile data handle.
   bool CreatePreviewDocument(const PrintMsg_PrintPages_Params& params,
                              WebKit::WebFrame* frame,
-                             WebKit::WebNode* node);
+                             WebKit::WebNode* node,
+                             bool draft);
 
   // Platform specific helper function for rendering page(s) to |metafile|.
 #if defined(OS_WIN)

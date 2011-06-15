@@ -27,9 +27,10 @@ using WebKit::WebNode;
 
 bool PrintWebViewHelper::CreatePreviewDocument(
     const PrintMsg_PrintPages_Params& params, WebKit::WebFrame* frame,
-    WebKit::WebNode* node) {
+    WebKit::WebNode* node, bool draft) {
   int page_count = 0;
   printing::PreviewMetafile metafile;
+  metafile.set_draft(draft);
   if (!metafile.Init())
     return false;
 

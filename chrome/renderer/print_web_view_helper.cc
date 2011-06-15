@@ -18,6 +18,7 @@
 #include "content/renderer/render_view.h"
 #include "grit/generated_resources.h"
 #include "printing/metafile.h"
+#include "printing/print_job_constants.h"
 #include "printing/units.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
@@ -348,8 +349,11 @@ void PrintWebViewHelper::PrintPreview(WebKit::WebFrame* frame,
     return;
   }
 
+  bool draft;
+  settings.GetBoolean(printing::kSettingDraftDocument, &draft);
+
   // Render Pages for printing.
-  if (!RenderPagesForPreview(frame, node))
+  if (!RenderPagesForPreview(frame, node, draft))
     DidFinishPrinting(FAIL_PREVIEW);
 }
 
@@ -649,12 +653,13 @@ bool PrintWebViewHelper::RenderPagesForPrint(WebKit::WebFrame* frame,
 }
 
 bool PrintWebViewHelper::RenderPagesForPreview(WebKit::WebFrame* frame,
-                                               WebKit::WebNode* node) {
+                                               WebKit::WebNode* node,
+                                               bool draft) {
   PrintMsg_PrintPages_Params print_settings = *print_pages_params_;
   // PDF printer device supports alpha blending.
   print_settings.params.supports_alpha_blend = true;
   // TODO(kmadhusu): Handle print selection.
-  return CreatePreviewDocument(print_settings, frame, node);
+  return CreatePreviewDocument(print_settings, frame, node, draft);
 }
 
 base::TimeTicks PrintWebViewHelper::ReportPreviewPageRenderTime(

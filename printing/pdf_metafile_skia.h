@@ -59,8 +59,14 @@ class PdfMetafileSkia : public Metafile {
 #if defined(OS_CHROMEOS)
   virtual bool SaveToFD(const base::FileDescriptor& fd) const;
 #endif  // if defined(OS_CHROMEOS)
+
+  virtual void set_draft(bool draft) const;
+
  private:
   scoped_ptr<PdfMetafileSkiaData> data_;
+
+  // True when a draft version of metafile is requested.
+  mutable bool draft_;
 
   DISALLOW_COPY_AND_ASSIGN(PdfMetafileSkia);
 };

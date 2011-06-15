@@ -55,7 +55,7 @@ void PrintWebViewHelper::PrintPageInternal(
 
 bool PrintWebViewHelper::CreatePreviewDocument(
     const PrintMsg_PrintPages_Params& params, WebKit::WebFrame* frame,
-    WebKit::WebNode* node) {
+    WebKit::WebNode* node, bool draft) {
   PrintMsg_Print_Params printParams = params.params;
   UpdatePrintableSizeInPrintParameters(frame, node, &printParams);
 
@@ -67,6 +67,7 @@ bool PrintWebViewHelper::CreatePreviewDocument(
     return false;
 
   printing::PreviewMetafile metafile;
+  metafile.set_draft(draft);
   if (!metafile.Init())
     return false;
 

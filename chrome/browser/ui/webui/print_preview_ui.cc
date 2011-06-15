@@ -69,6 +69,10 @@ void PrintPreviewUI::OnPreviewDataIsAvailable(int expected_pages_count,
                          is_preview_modifiable, ui_identifier);
 }
 
+void PrintPreviewUI::OnFileSelectionCancelled() {
+  CallJavascriptFunction("fileSelectionCancelled");
+}
+
 PrintPreviewDataService* PrintPreviewUI::print_preview_data_service() {
   return PrintPreviewDataService::GetInstance();
 }

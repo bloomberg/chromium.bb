@@ -44,6 +44,9 @@ class PrintPreviewUI : public ChromeWebUI {
   // message.
   void OnInitiatorTabClosed(const std::string& initiator_tab_url);
 
+  // Notify the Web UI renderer that file selection has been cancelled.
+  void OnFileSelectionCancelled();
+
  private:
   // Helper function
   PrintPreviewDataService* print_preview_data_service();

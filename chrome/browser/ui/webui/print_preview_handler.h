@@ -33,6 +33,7 @@ class PrintPreviewHandler : public WebUIMessageHandler,
 
   // SelectFileDialog::Listener implementation.
   virtual void FileSelected(const FilePath& path, int index, void* params);
+  virtual void FileSelectionCanceled(void* params);
 
   // Displays a modal dialog, prompting the user to select a file.
   void SelectFile(const FilePath& default_path);

@@ -45,6 +45,9 @@ var hasError = false;
 // True when preview tab is hidden.
 var isTabHidden = false;
 
+// True when draft preview data is requested for preview.
+var draftDocument = true;
+
 /**
  * Window onload handler, sets up the page and starts print preview by getting
  * the printer list.
@@ -346,7 +349,8 @@ function getSettingsJSON() {
        'collate': isCollated(),
        'landscape': isLandscape(),
        'color': isColor(),
-       'printToPDF': printToPDF});
+       'printToPDF': printToPDF,
+       'draftDocument': draftDocument});
 }
 
 /**
@@ -367,9 +371,10 @@ function getSelectedPrinterName() {
  */
 function printFile() {
   hasPendingPrintFileRequest = hasPendingPreviewRequest;
+  var deviceName = getSelectedPrinterName();
 
   if (hasPendingPrintFileRequest) {
-    if (getSelectedPrinterName() != PRINT_TO_PDF) {
+    if (deviceName != PRINT_TO_PDF) {
       isTabHidden = true;
       chrome.send('hidePreview');
     }
@@ -382,7 +387,13 @@ function printFile() {
     return;
   }
 
-  if (isTabHidden || getSelectedPrinterName() == PRINT_TO_PDF) {
+  if (draftDocument) {
+    hasPendingPrintFileRequest = true;
+    requestPrintPreview();
+    return;
+  }
+
+  if (isTabHidden || deviceName == PRINT_TO_PDF) {
     sendPrintFileRequest();
   } else {
     $('print-button').classList.add('loading');
@@ -392,6 +403,7 @@ function printFile() {
     window.setTimeout(function() { sendPrintFileRequest(); }, 1000);
   }
 }
+
 /**
  * Sends a message to cancel the pending print request.
  */
@@ -413,8 +425,21 @@ function requestPrintPreview() {
   hasPendingPreviewRequest = true;
   removeEventListeners();
   printSettings.save();
-  showLoadingAnimation();
+  if (isTabHidden || hasPendingPrintFileRequest)
+    draftDocument = false;
+  else
+    showLoadingAnimation();
+
   chrome.send('getPreview', [getSettingsJSON()]);
+}
+
+/**
+ * Called from PrintPreviewUI::OnFileSelectionCancelled to notify the print
+ * preview tab regarding the file selection cancel event.
+ */
+function fileSelectionCancelled() {
+  draftDocument = true;
+  hasPendingPrintFileRequest = false;
 }
 
 /**
