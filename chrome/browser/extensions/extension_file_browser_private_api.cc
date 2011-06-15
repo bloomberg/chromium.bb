@@ -998,10 +998,13 @@ void SelectFileFunction::GetLocalPathsResponseOnUIThread(
   const Callback& callback = GetCallback();
   DCHECK(!callback.IsNull());
   if (!callback.IsNull()) {
+    LOG(INFO) << "FileBrowser: FileSelected";
     callback.listener()->FileSelected(files[0],
                                       index,
                                       callback.params());
     RemoveCallback();  // Listeners expect to be invoked exactly once.
+  } else {
+    LOG(WARNING) << "Callback not found";
   }
   SendResponse(true);
 }
@@ -1095,8 +1098,11 @@ void SelectFilesFunction::GetLocalPathsResponseOnUIThread(
   const Callback& callback = GetCallback();
   DCHECK(!callback.IsNull());
   if (!callback.IsNull()) {
+    LOG(INFO) << "FileBrowser: MultiFilesSelected";
     callback.listener()->MultiFilesSelected(files, callback.params());
     RemoveCallback();  // Listeners expect to be invoked exactly once.
+  } else {
+    LOG(WARNING) << "Callback not found";
   }
   SendResponse(true);
 }
@@ -1105,8 +1111,11 @@ bool CancelFileDialogFunction::RunImpl() {
   const Callback& callback = GetCallback();
   DCHECK(!callback.IsNull());
   if (!callback.IsNull()) {
+    LOG(INFO) << "FileBrowser: Cancel";
     callback.listener()->FileSelectionCanceled(callback.params());
     RemoveCallback();  // Listeners expect to be invoked exactly once.
+  } else {
+    LOG(WARNING) << "Callback not found";
   }
   SendResponse(true);
   return true;

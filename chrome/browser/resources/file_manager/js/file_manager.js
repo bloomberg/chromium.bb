@@ -2075,13 +2075,24 @@ FileManager.prototype = {
   };
 
   /**
+   * Close the extension window, but first give the extension API time to
+   * process the last request.  Disable the UI during the wait.
+   * TODO(jamescook): Remove this hack by listening for an "OK to close"
+   * event from the C++ extension API, then call window.close().
+   */
+  FileManager.prototype.closeWindow_ = function() {
+    this.dialogDom_.style.opacity = '0';
+    setTimeout(function() { window.close(); }, 0);
+  };
+
+  /**
    * Handle a click of the cancel button.  Closes the window.
    *
    * @param {Event} event The click event.
    */
   FileManager.prototype.onCancel_ = function(event) {
     chrome.fileBrowserPrivate.cancelDialog();
-    window.close();
+    this.closeWindow_();
   };
 
   /**
@@ -2110,7 +2121,7 @@ FileManager.prototype = {
       chrome.fileBrowserPrivate.selectFile(
           currentDirUrl + encodeURIComponent(filename),
           this.getSelectedFilterIndex_(filename));
-      window.close();
+      this.closeWindow_();
       return;
     }
 
@@ -2136,7 +2147,7 @@ FileManager.prototype = {
     // Multi-file selection has no other restrictions.
     if (this.dialogType_ == FileManager.DialogType.SELECT_OPEN_MULTI_FILE) {
       chrome.fileBrowserPrivate.selectFiles(ary);
-      window.close();
+      this.closeWindow_();
       return;
     }
 
@@ -2161,7 +2172,7 @@ FileManager.prototype = {
 
     chrome.fileBrowserPrivate.selectFile(
         ary[0], this.getSelectedFilterIndex_(ary[0]));
-    window.close();
+    this.closeWindow_();
   };
 
   /**

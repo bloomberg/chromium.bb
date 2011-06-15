@@ -70,6 +70,7 @@ void FileManagerDialog::ListenerDestroyed() {
 }
 
 void FileManagerDialog::ExtensionDialogIsClosing(ExtensionDialog* dialog) {
+  LOG(INFO) << "FileBrowser: ExtensionDialogIsClosing";
   owner_window_ = NULL;
   // Release our reference to the dialog to allow it to close.
   extension_dialog_ = NULL;
@@ -91,6 +92,8 @@ void FileManagerDialog::SelectFileImpl(
     const FilePath::StringType& default_extension,
     gfx::NativeWindow owner_window,
     void* params) {
+  LOG(INFO) << "FileBrowser: SelectFileImpl default_path "
+      << default_path.value();
   if (owner_window_) {
     LOG(ERROR) << "File dialog already in use!";
     return;
