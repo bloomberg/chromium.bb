@@ -149,6 +149,7 @@ elif env.Bit('build_arm'):
 if env.Bit('windows'):
   ldr_inputs += [
     'win/nacl_ldt.c',
+    'win/nacl_oop_debugger_hooks.c',
     'win/nacl_thread_nice.c',
     'win/sel_memory.c',
     'win/sel_segments.c',
@@ -156,6 +157,7 @@ if env.Bit('windows'):
 elif env.Bit('mac'):
   ldr_inputs += [
     'osx/nacl_ldt.c',
+    'osx/nacl_oop_debugger_hooks.c',
     'osx/nacl_thread_nice.c',
     'linux/sel_memory.c',
     'linux/x86/sel_segments.c',
@@ -164,6 +166,7 @@ elif env.Bit('mac'):
 elif env.Bit('linux'):
   ldr_inputs += [
     'linux/sel_memory.c',
+    'linux/nacl_oop_debugger_hooks.c',
     'linux/nacl_thread_nice.c',
   ]
   if env.Bit('build_x86'):

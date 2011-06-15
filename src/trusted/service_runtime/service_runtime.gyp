@@ -100,6 +100,7 @@
             ['OS=="mac"', {
               'sources': [
                 'osx/nacl_ldt.c',
+                'osx/nacl_oop_debugger_hooks.c',
                 'osx/nacl_thread_nice.c',
                 'linux/sel_memory.c',
                 'linux/x86/sel_segments.c',
@@ -109,6 +110,7 @@
             ['OS=="win"', {
               'sources': [
                 'win/nacl_ldt.c',
+                'win/nacl_oop_debugger_hooks.c',
                 'win/nacl_thread_nice.c',
                 'win/sel_memory.c',
                 'win/sel_segments.c',
@@ -133,6 +135,7 @@
             ['OS=="linux"', {
               'sources': [
                 'linux/sel_memory.c',
+                'linux/nacl_oop_debugger_hooks.c',
                 'linux/nacl_thread_nice.c',
               ],
               'conditions': [
