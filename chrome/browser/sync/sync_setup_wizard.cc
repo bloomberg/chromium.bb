@@ -55,9 +55,8 @@ bool SyncSetupWizard::IsVisible() const {
 
 void SyncSetupWizard::Focus() {
   SyncSetupFlow* flow = flow_container_->get_flow();
-  if (flow) {
+  if (flow)
     flow->Focus();
-  }
 }
 
 SyncSetupFlow* SyncSetupWizard::AttachSyncSetupHandler(
@@ -66,7 +65,9 @@ SyncSetupFlow* SyncSetupWizard::AttachSyncSetupHandler(
   if (!flow)
     return NULL;
 
-  flow->AttachSyncSetupHandler(handler);
+  if (!flow->AttachSyncSetupHandler(handler))
+    return NULL;
+
   return flow;
 }
 

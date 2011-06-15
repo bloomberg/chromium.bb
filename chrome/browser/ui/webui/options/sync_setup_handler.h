@@ -29,8 +29,8 @@ class SyncSetupHandler : public OptionsPageUIHandler,
   virtual void ShowPassphraseEntry(const DictionaryValue& args);
   virtual void ShowSettingUp();
   virtual void ShowSetupDone(const std::wstring& user);
-
   virtual void SetFlow(SyncSetupFlow* flow);
+  virtual void Focus();
 
  protected:
   FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, InitialStepLogin);
@@ -54,6 +54,7 @@ class SyncSetupHandler : public OptionsPageUIHandler,
   void HandlePassphraseCancel(const ListValue* args);
   void HandleAttachHandler(const ListValue* args);
   void HandleShowErrorUI(const ListValue* args);
+  void HandleShowSetupUI(const ListValue* args);
 
   SyncSetupFlow* flow() { return flow_; }
 

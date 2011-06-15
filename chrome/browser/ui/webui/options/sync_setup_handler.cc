@@ -12,6 +12,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_setup_flow.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -277,6 +278,8 @@ void SyncSetupHandler::RegisterMessages() {
       NewCallback(this, &SyncSetupHandler::HandleAttachHandler));
   web_ui_->RegisterMessageCallback("SyncSetupShowErrorUI",
       NewCallback(this, &SyncSetupHandler::HandleShowErrorUI));
+  web_ui_->RegisterMessageCallback("SyncSetupShowSetupUI",
+      NewCallback(this, &SyncSetupHandler::HandleShowSetupUI));
 }
 
 void SyncSetupHandler::ShowGaiaLogin(const DictionaryValue& args) {
@@ -319,6 +322,10 @@ void SyncSetupHandler::ShowSetupDone(const std::wstring& user) {
 
 void SyncSetupHandler::SetFlow(SyncSetupFlow* flow) {
   flow_ = flow;
+}
+
+void SyncSetupHandler::Focus() {
+  web_ui_->tab_contents()->Activate();
 }
 
 void SyncSetupHandler::OnDidClosePage(const ListValue* args) {
@@ -399,13 +406,12 @@ void SyncSetupHandler::HandlePassphraseCancel(const ListValue* args) {
   flow_->OnPassphraseCancel();
 }
 
-// TODO(jhawkins): Too much logic going on in this method: refactor.
 void SyncSetupHandler::HandleAttachHandler(const ListValue* args) {
   DCHECK(web_ui_);
+  DCHECK(!flow_);
 
-  ProfileSyncService* sync_service =
-      web_ui_->GetProfile()->GetProfileSyncService();
-  if (!sync_service) {
+  ProfileSyncService* service = web_ui_->GetProfile()->GetProfileSyncService();
+  if (!service) {
     // If there's no sync service, the user tried to manually invoke a syncSetup
     // URL, but sync features are disabled.  We need to close the overlay for
     // this (rare) case.
@@ -413,26 +419,57 @@ void SyncSetupHandler::HandleAttachHandler(const ListValue* args) {
     return;
   }
 
-  SyncSetupWizard::State state;
-
-  // The user is trying to manually load a syncSetup URL.  We should bring up
-  // either a login or a configure flow based on the state of sync.
-  if (sync_service->HasSyncSetupCompleted())
-    state = SyncSetupWizard::CONFIGURE;
-  else
-    state = SyncSetupWizard::GAIA_LOGIN;
-
-  DCHECK(!flow_);
-  sync_service->get_wizard().Step(state);
+  // If the wizard is not visible, step into the appropriate UI state.
+  if (!service->get_wizard().IsVisible())
+    HandleShowSetupUI(NULL);
 
   // The SyncSetupFlow will set itself as the |flow_|.
-  sync_service->get_wizard().AttachSyncSetupHandler(this);
+  if (!service->get_wizard().AttachSyncSetupHandler(this)) {
+    // If attach fails, a wizard is already activated and attached to a flow
+    // handler.
+    web_ui_->CallJavascriptFunction("OptionsPage.closeOverlay");
+    service->get_wizard().Focus();
+  }
 }
 
 void SyncSetupHandler::HandleShowErrorUI(const ListValue* args) {
   DCHECK(!flow_);
+
   ProfileSyncService* service =
     web_ui_->GetProfile()->GetProfileSyncService();
+  DCHECK(service);
+
   service->get_wizard().Step(SyncSetupWizard::NONFATAL_ERROR);
-  flow_ = service->get_wizard().AttachSyncSetupHandler(this);
+
+  // The SyncSetupFlow will set itself as the |flow_|.
+  if (!service->get_wizard().AttachSyncSetupHandler(this)) {
+    web_ui_->CallJavascriptFunction("OptionsPage.closeOverlay");
+    service->get_wizard().Focus();
+  }
+}
+
+void SyncSetupHandler::HandleShowSetupUI(const ListValue* args) {
+  DCHECK(!flow_);
+
+  ProfileSyncService* service =
+      web_ui_->GetProfile()->GetProfileSyncService();
+  DCHECK(service);
+
+  // If the wizard is already visible, focus it.
+  if (service->get_wizard().IsVisible()) {
+    web_ui_->CallJavascriptFunction("OptionsPage.closeOverlay");
+    service->get_wizard().Focus();
+    return;
+  }
+
+  // The user is trying to manually load a syncSetup URL.  We should bring up
+  // either a login or a configure flow based on the state of sync.
+  if (service->HasSyncSetupCompleted())
+    service->get_wizard().Step(SyncSetupWizard::CONFIGURE);
+  else
+    service->get_wizard().Step(SyncSetupWizard::GAIA_LOGIN);
+
+  // Show the Sync Setup page.
+  scoped_ptr<Value> page(Value::CreateStringValue("syncSetup"));
+  web_ui_->CallJavascriptFunction("OptionsPage.navigateToPage", *page);
 }

@@ -61,7 +61,9 @@ class SyncSetupFlow {
       ProfileSyncService* service,
       DictionaryValue* args);
 
-  void AttachSyncSetupHandler(SyncSetupFlowHandler* handler);
+  // Attaches the |handler| to this flow. Returns true if successful and false
+  // if a handler has already been attached.
+  bool AttachSyncSetupHandler(SyncSetupFlowHandler* handler);
 
   // Triggers a state machine transition to advance_state.
   void Advance(SyncSetupWizard::State advance_state);

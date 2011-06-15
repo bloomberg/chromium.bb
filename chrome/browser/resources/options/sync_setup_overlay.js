@@ -697,13 +697,20 @@ cr.define('options', function() {
     },
 
     /**
-     * Initiates attachment to the Sync setup flow and steps into the
-     * appropriate error UI.
+     * Steps into the appropriate Sync Setup error UI.
      * @private
      */
     showErrorUI_: function() {
-      this.attach_();
       chrome.send('SyncSetupShowErrorUI');
+    },
+
+    /**
+     * Determines the appropriate page to show in the Sync Setup UI based on
+     * the state of the Sync backend.
+     * @private
+     */
+    showSetupUI_: function() {
+      chrome.send('SyncSetupShowSetupUI');
     },
   };
 
@@ -711,8 +718,8 @@ cr.define('options', function() {
     SyncSetupOverlay.getInstance().showErrorUI_();
   };
 
-  SyncSetupOverlay.showSyncDialog = function() {
-    SyncSetupOverlay.getInstance().attach_();
+  SyncSetupOverlay.showSetupUI = function() {
+    SyncSetupOverlay.getInstance().showSetupUI_();
   };
 
   SyncSetupOverlay.showSyncSetupPage = function(page, args) {

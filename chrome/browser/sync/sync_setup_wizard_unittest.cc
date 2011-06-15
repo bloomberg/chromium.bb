@@ -264,7 +264,6 @@ TEST_F(SyncSetupWizardTest, InitialStepLogin) {
   AuthError invalid_gaia(AuthError::INVALID_GAIA_CREDENTIALS);
   service_->set_auth_state(kTestUser, invalid_gaia);
   wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
-  AttachSyncSetupHandler();
   EXPECT_TRUE(wizard_->IsVisible());
   EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, flow_->current_state_);
   dialog_args.Clear();
@@ -283,7 +282,6 @@ TEST_F(SyncSetupWizardTest, InitialStepLogin) {
       std::string(), GURL(kTestCaptchaUrl), GURL()));
   service_->set_auth_state(kTestUser, captcha_error);
   wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
-  AttachSyncSetupHandler();
   SyncSetupFlow::GetArgsForGaiaLogin(service_, &dialog_args);
   EXPECT_EQ(4U, dialog_args.size());
   std::string captcha_url;
@@ -398,7 +396,6 @@ TEST_F(SyncSetupWizardTest, InvalidTransitions) {
   EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, flow_->current_state_);
 
   wizard_->Step(SyncSetupWizard::SETUP_ABORTED_BY_PENDING_CLEAR);
-  AttachSyncSetupHandler();
   EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, flow_->current_state_);
 
   wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);

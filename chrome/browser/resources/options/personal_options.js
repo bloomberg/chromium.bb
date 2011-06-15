@@ -39,10 +39,10 @@ cr.define('options', function() {
         if (self.syncSetupCompleted)
           self.showStopSyncingOverlay_();
         else
-          OptionsPage.navigateToPage('syncSetup');
+          SyncSetupOverlay.showSetupUI();
       };
       $('customize-sync').onclick = function(event) {
-        OptionsPage.navigateToPage('syncSetup');
+        SyncSetupOverlay.showSetupUI();
       };
       $('manage-passwords').onclick = function(event) {
         OptionsPage.navigateToPage('passwords');

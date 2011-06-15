@@ -177,10 +177,14 @@ void SyncSetupFlow::GetArgsForConfigure(ProfileSyncService* service,
   args->SetBoolean("usePassphrase", service->IsUsingSecondaryPassphrase());
 }
 
-void SyncSetupFlow::AttachSyncSetupHandler(SyncSetupFlowHandler* handler) {
+bool SyncSetupFlow::AttachSyncSetupHandler(SyncSetupFlowHandler* handler) {
+  if (flow_handler_)
+    return false;
+
   flow_handler_ = handler;
   handler->SetFlow(this);
   ActivateState(current_state_);
+  return true;
 }
 
 void SyncSetupFlow::Advance(SyncSetupWizard::State advance_state) {
@@ -194,7 +198,8 @@ void SyncSetupFlow::Advance(SyncSetupWizard::State advance_state) {
 }
 
 void SyncSetupFlow::Focus() {
-  // TODO(jhawkins): Implement this.
+  DCHECK(flow_handler_);
+  flow_handler_->Focus();
 }
 
 // A callback to notify the delegate that the dialog closed.
@@ -341,6 +346,8 @@ bool SyncSetupFlow::ShouldAdvance(SyncSetupWizard::State state) {
 }
 
 void SyncSetupFlow::ActivateState(SyncSetupWizard::State state) {
+  DCHECK(flow_handler_);
+
   if (state == SyncSetupWizard::NONFATAL_ERROR)
     state = GetStepForNonFatalError(service_);
 
