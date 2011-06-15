@@ -11,6 +11,7 @@
 #include "chrome/browser/content_settings/content_settings_policy_provider.h"
 #include "chrome/browser/content_settings/content_settings_pref_provider.h"
 #include "chrome/browser/content_settings/content_settings_provider.h"
+#include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
@@ -162,6 +163,8 @@ ContentSetting HostContentSettingsMap::GetContentSetting(
     ContentSettingsType content_type,
     const std::string& resource_identifier) const {
   DCHECK_NE(CONTENT_SETTINGS_TYPE_COOKIES, content_type);
+  DCHECK_NE(content_settings::RequiresResourceIdentifier(content_type),
+            resource_identifier.empty());
   return GetContentSettingInternal(url, content_type, resource_identifier);
 }
 
@@ -261,6 +264,8 @@ void HostContentSettingsMap::GetSettingsForOneType(
     ContentSettingsType content_type,
     const std::string& resource_identifier,
     SettingsForOneType* settings) const {
+  DCHECK_NE(content_settings::RequiresResourceIdentifier(content_type),
+            resource_identifier.empty());
   DCHECK(settings);
   // Collect content_settings::Rules for the given content_type and
   // resource_identifier from the content settings providers.
@@ -309,6 +314,8 @@ void HostContentSettingsMap::SetContentSetting(
     const std::string& resource_identifier,
     ContentSetting setting) {
   DCHECK(IsSettingAllowedForType(setting, content_type));
+  DCHECK_NE(content_settings::RequiresResourceIdentifier(content_type),
+            resource_identifier.empty());
   for (ProviderIterator provider = content_settings_providers_.begin();
        provider != content_settings_providers_.end();
        ++provider) {

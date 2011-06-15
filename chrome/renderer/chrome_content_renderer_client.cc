@@ -267,7 +267,9 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
   DCHECK(group != NULL);
 
   ContentSetting plugin_setting = CONTENT_SETTING_DEFAULT;
-  std::string resource = group->identifier();
+  std::string resource;
+  if (cmd->HasSwitch(switches::kEnableResourceContentSettings))
+    resource = group->identifier();
   render_view->Send(new ViewHostMsg_GetPluginContentSetting(
       frame->top()->url(), resource, &plugin_setting));
   DCHECK(plugin_setting != CONTENT_SETTING_DEFAULT);
@@ -350,9 +352,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         frame, params, info.path, actual_mime_type);
   }
 
-  observer->DidBlockContentType(CONTENT_SETTINGS_TYPE_PLUGINS,
-      cmd->HasSwitch(switches::kEnableResourceContentSettings) ?
-          resource : std::string());
+  observer->DidBlockContentType(CONTENT_SETTINGS_TYPE_PLUGINS, resource);
   if (plugin_setting == CONTENT_SETTING_ASK) {
     return CreatePluginPlaceholder(
         render_view, frame, params, *group, IDR_CLICK_TO_PLAY_PLUGIN_HTML,

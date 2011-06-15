@@ -458,8 +458,6 @@ void PrefProvider::GetAllContentSettingsRules(
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier,
       Rules* content_setting_rules) const {
-  DCHECK_NE(RequiresResourceIdentifier(content_type),
-            resource_identifier.empty());
   DCHECK(content_setting_rules);
   content_setting_rules->clear();
 
@@ -493,12 +491,6 @@ void PrefProvider::SetContentSetting(
 
   DCHECK(kTypeNames[content_type] != NULL);  // Don't call this for Geolocation.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_NE(RequiresResourceIdentifier(content_type),
-            resource_identifier.empty());
-  DCHECK(content_type != CONTENT_SETTINGS_TYPE_PLUGINS ||
-         setting != CONTENT_SETTING_ASK ||
-         CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableClickToPlay));
 
   updating_preferences_ = true;
   {
