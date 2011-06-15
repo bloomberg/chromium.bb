@@ -63,9 +63,9 @@ class AutofillManager : public TabContentsObserver,
   virtual bool OnMessageReceived(const IPC::Message& message);
 
   // AutofillDownloadManager::Observer implementation:
-  virtual void OnLoadedAutofillHeuristics(const std::string& heuristic_xml);
-  virtual void OnUploadedAutofillHeuristics(const std::string& form_signature);
-  virtual void OnHeuristicsRequestError(
+  virtual void OnLoadedServerPredictions(const std::string& response_xml);
+  virtual void OnUploadedPossibleFieldTypes();
+  virtual void OnServerRequestError(
       const std::string& form_signature,
       AutofillDownloadManager::AutofillRequestType request_type,
       int http_error);

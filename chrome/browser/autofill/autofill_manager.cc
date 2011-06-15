@@ -624,18 +624,17 @@ void AutofillManager::OnDidShowAutofillSuggestions() {
       NotificationService::NoDetails());
 }
 
-void AutofillManager::OnLoadedAutofillHeuristics(
-    const std::string& heuristic_xml) {
-  FormStructure::ParseQueryResponse(heuristic_xml,
+void AutofillManager::OnLoadedServerPredictions(
+    const std::string& response_xml) {
+  FormStructure::ParseQueryResponse(response_xml,
                                     form_structures_.get(),
                                     *metric_logger_);
 }
 
-void AutofillManager::OnUploadedAutofillHeuristics(
-    const std::string& form_signature) {
+void AutofillManager::OnUploadedPossibleFieldTypes() {
 }
 
-void AutofillManager::OnHeuristicsRequestError(
+void AutofillManager::OnServerRequestError(
     const std::string& form_signature,
     AutofillDownloadManager::AutofillRequestType request_type,
     int http_error) {

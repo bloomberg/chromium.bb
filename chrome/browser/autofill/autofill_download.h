@@ -13,6 +13,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_vector.h"
 #include "base/time.h"
 #include "chrome/browser/autofill/autofill_type.h"
@@ -39,22 +40,20 @@ class AutofillDownloadManager : public URLFetcher::Delegate {
   // Notifications are *not* guaranteed to be called.
   class Observer {
    public:
-    // Called when field types are successfully received from the server.
-    // |heuristic_xml| - server response.
-    virtual void OnLoadedAutofillHeuristics(
-        const std::string& heuristic_xml) = 0;
+    // Called when field type predictions are successfully received from the
+    // server.
+    // |response_xml| - server response.
+    virtual void OnLoadedServerPredictions(const std::string& response_xml) = 0;
     // Called when heuristic either successfully considered for upload and
     // not send or uploaded.
-    // |form_signature| - the signature of the requesting form.
-    virtual void OnUploadedAutofillHeuristics(
-        const std::string& form_signature) = 0;
+    virtual void OnUploadedPossibleFieldTypes() = 0;
     // Called when there was an error during the request.
     // |form_signature| - the signature of the requesting form.
     // |request_type| - type of request that failed.
     // |http_error| - HTTP error code.
-    virtual void OnHeuristicsRequestError(const std::string& form_signature,
-                                          AutofillRequestType request_type,
-                                          int http_error) = 0;
+    virtual void OnServerRequestError(const std::string& form_signature,
+                                      AutofillRequestType request_type,
+                                      int http_error) = 0;
    protected:
     virtual ~Observer() {}
   };
@@ -64,7 +63,7 @@ class AutofillDownloadManager : public URLFetcher::Delegate {
   virtual ~AutofillDownloadManager();
 
   // |observer| - observer to notify on successful completion or error.
-  void SetObserver(AutofillDownloadManager::Observer *observer);
+  void SetObserver(AutofillDownloadManager::Observer* observer);
 
   // Starts a query request to Autofill servers. The observer is called with the
   // list of the fields of all requested forms.
@@ -91,20 +90,9 @@ class AutofillDownloadManager : public URLFetcher::Delegate {
   bool CancelRequest(const std::string& form_signature,
                      AutofillRequestType request_type);
 
-  // Probability of the form upload. Between 0 (no upload) and 1 (upload all).
-  // GetPositiveUploadRate() is for matched forms,
-  // GetNegativeUploadRate() for non matched.
-  double GetPositiveUploadRate() const;
-  double GetNegativeUploadRate() const;
-  // These functions called very rarely outside of the unit-tests. With current
-  // percentages, they would be called once per 100 auto-fillable forms filled
-  // and submitted by user. The order of magnitude would remain similar in the
-  // future.
-  void SetPositiveUploadRate(double rate);
-  void SetNegativeUploadRate(double rate);
-
  private:
   friend class AutofillDownloadTestHelper;  // unit-test.
+  FRIEND_TEST_ALL_PREFIXES(AutofillDownloadTest, QueryAndUploadTest);
 
   struct FormRequestData;
   typedef std::list<std::pair<std::string, std::string> > QueryRequestCache;
@@ -144,6 +132,14 @@ class AutofillDownloadManager : public URLFetcher::Delegate {
                                   int response_code,
                                   const net::ResponseCookies& cookies,
                                   const std::string& data);
+
+  // Probability of the form upload. Between 0 (no upload) and 1 (upload all).
+  // GetPositiveUploadRate() is for matched forms,
+  // GetNegativeUploadRate() for non-matched.
+  double GetPositiveUploadRate() const;
+  double GetNegativeUploadRate() const;
+  void SetPositiveUploadRate(double rate);
+  void SetNegativeUploadRate(double rate);
 
   // Profile for preference storage.
   Profile* profile_;

@@ -68,19 +68,18 @@ class AutofillDownloadTestHelper : public AutofillDownloadManager::Observer {
   }
 
   // AutofillDownloadManager::Observer overridables:
-  virtual void OnLoadedAutofillHeuristics(
-      const std::string& heuristic_xml) {
+  virtual void OnLoadedServerPredictions(const std::string& response_xml) {
     ResponseData response;
-    response.response = heuristic_xml;
+    response.response = response_xml;
     response.type_of_response = QUERY_SUCCESSFULL;
     responses_.push_back(response);
   };
-  virtual void OnUploadedAutofillHeuristics(const std::string& form_signature) {
+  virtual void OnUploadedPossibleFieldTypes() {
     ResponseData response;
     response.type_of_response = UPLOAD_SUCCESSFULL;
     responses_.push_back(response);
   }
-  virtual void OnHeuristicsRequestError(
+  virtual void OnServerRequestError(
       const std::string& form_signature,
       AutofillDownloadManager::AutofillRequestType request_type,
       int http_error) {

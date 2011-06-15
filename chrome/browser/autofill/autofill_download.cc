@@ -22,13 +22,13 @@
 #include "net/http/http_response_headers.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlparser.h"
 
-#define AUTO_FILL_QUERY_SERVER_REQUEST_URL \
-    "http://toolbarqueries.clients.google.com:80/tbproxy/af/query"
-#define AUTO_FILL_UPLOAD_SERVER_REQUEST_URL \
-    "http://toolbarqueries.clients.google.com:80/tbproxy/af/upload"
-#define AUTO_FILL_QUERY_SERVER_NAME_START_IN_HEADER "GFE/"
-
 namespace {
+const char kAutofillQueryServerRequestUrl[] =
+    "http://toolbarqueries.clients.google.com:80/tbproxy/af/query";
+const char kAutofillUploadServerRequestUrl[] =
+    "http://toolbarqueries.clients.google.com:80/tbproxy/af/upload";
+const char kAutofillQueryServerNameStartInHeader[] = "GFE/";
+
 const size_t kMaxFormCacheSize = 16;
 };
 
@@ -62,7 +62,7 @@ AutofillDownloadManager::~AutofillDownloadManager() {
 }
 
 void AutofillDownloadManager::SetObserver(
-    AutofillDownloadManager::Observer *observer) {
+    AutofillDownloadManager::Observer* observer) {
   if (observer) {
     DCHECK(!observer_);
     observer_ = observer;
@@ -93,7 +93,7 @@ bool AutofillDownloadManager::StartQueryRequest(
     VLOG(1) << "AutofillDownloadManager: query request has been retrieved from"
             << "the cache";
     if (observer_)
-      observer_->OnLoadedAutofillHeuristics(query_data);
+      observer_->OnLoadedServerPredictions(query_data);
     return true;
   }
 
@@ -196,9 +196,9 @@ bool AutofillDownloadManager::StartRequest(
     return false;
   std::string request_url;
   if (request_data.request_type == AutofillDownloadManager::REQUEST_QUERY)
-    request_url = AUTO_FILL_QUERY_SERVER_REQUEST_URL;
+    request_url = kAutofillQueryServerRequestUrl;
   else
-    request_url = AUTO_FILL_UPLOAD_SERVER_REQUEST_URL;
+    request_url = kAutofillUploadServerRequestUrl;
 
   // Id is ignored for regular chrome, in unit test id's for fake fetcher
   // factory will be 0, 1, 2, ...
@@ -299,7 +299,7 @@ void AutofillDownloadManager::OnURLFetchComplete(
         if (!source->response_headers()->EnumerateHeader(NULL, "server",
                                                          &server_header) ||
             StartsWithASCII(server_header.c_str(),
-                            AUTO_FILL_QUERY_SERVER_NAME_START_IN_HEADER,
+                            kAutofillQueryServerNameStartInHeader,
                             false) != 0)
           break;
         // Bad gateway was received from Autofill servers. Fall through to back
@@ -322,9 +322,9 @@ void AutofillDownloadManager::OnURLFetchComplete(
     LOG(WARNING) << "AutofillDownloadManager: " << type_of_request
                  << " request has failed with response " << response_code;
     if (observer_) {
-      observer_->OnHeuristicsRequestError(it->second.form_signatures[0],
-                                          it->second.request_type,
-                                          response_code);
+      observer_->OnServerRequestError(it->second.form_signatures[0],
+                                      it->second.request_type,
+                                      response_code);
     }
   } else {
     VLOG(1) << "AutofillDownloadManager: " << type_of_request
@@ -332,7 +332,7 @@ void AutofillDownloadManager::OnURLFetchComplete(
     if (it->second.request_type == AutofillDownloadManager::REQUEST_QUERY) {
       CacheQueryRequest(it->second.form_signatures, data);
       if (observer_)
-        observer_->OnLoadedAutofillHeuristics(data);
+        observer_->OnLoadedServerPredictions(data);
     } else {
       double new_positive_upload_rate = 0;
       double new_negative_upload_rate = 0;
@@ -346,7 +346,7 @@ void AutofillDownloadManager::OnURLFetchComplete(
       }
 
       if (observer_)
-        observer_->OnUploadedAutofillHeuristics(it->second.form_signatures[0]);
+        observer_->OnUploadedPossibleFieldTypes();
     }
   }
   delete it->first;
