@@ -4663,6 +4663,13 @@
    fun:_ZN12SideTabStrip20CreateTabForDraggingEv
    fun:_ZN35gtest_case_BaseTabStripTestFixture_20CreateTabForDraggingI12SideTabStripE8TestBodyEv
 }
+{
+   bug_86146
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN8chromeos12input_method14IBusController6CreateEv
+   fun:_ZN8chromeos22InputMethodLibraryImpl4InitEv
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
