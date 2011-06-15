@@ -21,8 +21,8 @@ namespace input_method {
 // to be in chromeos_input_method.h since Chrome also creates an instance of
 // the class.
 struct InputMethodDescriptor {
-  InputMethodDescriptor() {
-  }
+  InputMethodDescriptor();
+  ~InputMethodDescriptor();
 
   // Do not call this function directly. Use CreateInputMethodDescriptor() in
   // chromeos_input_method.cc whenever possible.
@@ -94,20 +94,10 @@ struct ImeProperty {
               const std::string& in_label,
               bool in_is_selection_item,
               bool in_is_selection_item_checked,
-              int in_selection_item_id)
-      : key(in_key),
-        label(in_label),
-        is_selection_item(in_is_selection_item),
-        is_selection_item_checked(in_is_selection_item_checked),
-        selection_item_id(in_selection_item_id) {
-    DCHECK(!key.empty());
-  }
+              int in_selection_item_id);
 
-  ImeProperty()
-      : is_selection_item(false),
-        is_selection_item_checked(false),
-        selection_item_id(kInvalidSelectionItemId) {
-  }
+  ImeProperty();
+  ~ImeProperty();
 
   // Debug print function.
   std::string ToString() const {
@@ -140,11 +130,8 @@ typedef std::vector<ImeProperty> ImePropertyList;
 // This struct is used by SetImeConfig().
 // TODO(yusukes): Rename this struct. "InputMethodConfigValue" might be better?
 struct ImeConfigValue {
-  ImeConfigValue()
-      : type(kValueTypeString),
-        int_value(0),
-        bool_value(false) {
-  }
+  ImeConfigValue();
+  ~ImeConfigValue();
 
   // Debug print function.
   std::string ToString() const {

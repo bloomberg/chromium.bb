@@ -36,6 +36,43 @@ const char* kXkbLayoutsWhitelist[] = {
 namespace chromeos {
 namespace input_method {
 
+InputMethodDescriptor::InputMethodDescriptor() {
+}
+
+InputMethodDescriptor::~InputMethodDescriptor() {
+}
+
+ImeProperty::ImeProperty(const std::string& in_key,
+                         const std::string& in_label,
+                         bool in_is_selection_item,
+                         bool in_is_selection_item_checked,
+                         int in_selection_item_id)
+    : key(in_key),
+      label(in_label),
+      is_selection_item(in_is_selection_item),
+      is_selection_item_checked(in_is_selection_item_checked),
+      selection_item_id(in_selection_item_id) {
+  DCHECK(!key.empty());
+}
+
+ImeProperty::ImeProperty()
+    : is_selection_item(false),
+      is_selection_item_checked(false),
+      selection_item_id(kInvalidSelectionItemId) {
+}
+
+ImeProperty::~ImeProperty() {
+}
+
+ImeConfigValue::ImeConfigValue()
+    : type(kValueTypeString),
+      int_value(0),
+      bool_value(false) {
+}
+
+ImeConfigValue::~ImeConfigValue() {
+}
+
 // TODO(satorux): The function is used via
 // InputMethodLibrary::GetSupportedInputMethodDescriptors(). The
 // indirection is unnecessary once we get rid of libcros. We should
