@@ -336,14 +336,12 @@ cr.define('options', function() {
       inetDns = data.ipconfigDHCP.dns;
     }
 
-    // Hide the dhcp/static radio if not ethernet or wifi
-    var ethernet_wifi = data.type == options.internet.Constants.TYPE_WIFI ||
-                        data.type == options.internet.Constants.TYPE_ETHERNET;
-    $('ipTypeDHCPDiv').hidden = !ethernet_wifi;
-    $('ipTypeStaticDiv').hidden = !ethernet_wifi;
+    // Hide the dhcp/static radio if needed.
+    $('ipTypeDHCPDiv').hidden = !data.showStaticIPConfig;
+    $('ipTypeStaticDiv').hidden = !data.showStaticIPConfig;
 
     var ipConfigList = $('ipConfigList');
-    ipConfigList.disabled = $('ipTypeDHCP').checked || !ethernet_wifi;
+    ipConfigList.disabled = $('ipTypeDHCP').checked || !data.showStaticIPConfig;
     options.internet.IPConfigList.decorate(ipConfigList);
     ipConfigList.autoExpands = true;
     var model = new ArrayDataModel([]);

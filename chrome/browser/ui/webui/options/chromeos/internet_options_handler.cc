@@ -668,6 +668,12 @@ void InternetOptionsHandler::PopulateDictionaryDetails(
   dictionary.SetBoolean("connected", network->connected());
   dictionary.SetString("connectionState", network->GetStateString());
 
+  // Hide the dhcp/static radio if not ethernet or wifi (or if not enabled)
+  bool staticIPConfig = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableStaticIPConfig);
+  dictionary.SetBoolean("showStaticIPConfig", staticIPConfig &&
+      (type == chromeos::TYPE_WIFI || type == chromeos::TYPE_ETHERNET));
+
   if (type == chromeos::TYPE_WIFI) {
     dictionary.SetBoolean("deviceConnected", cros_->wifi_connected());
     const chromeos::WifiNetwork* wifi =

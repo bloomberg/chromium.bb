@@ -324,6 +324,18 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kPreloadInstantSearch)
   },
+  {
+    "static-ip-config",
+    IDS_FLAGS_STATIC_IP_CONFIG_NAME,
+    IDS_FLAGS_STATIC_IP_CONFIG_DESCRIPTION,
+    kOsCrOS,
+#if defined(OS_CHROMEOS)
+    // This switch exists only on Chrome OS.
+    SINGLE_VALUE_TYPE(switches::kEnableStaticIPConfig)
+#else
+    SINGLE_VALUE_TYPE("")
+#endif
+  },
 };
 
 const Experiment* experiments = kExperiments;
