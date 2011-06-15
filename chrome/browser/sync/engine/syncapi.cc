@@ -1413,9 +1413,6 @@ class SyncManager::SyncInternal
   // already initialized, this is a no-op.
   void MarkAndNotifyInitializationComplete();
 
-  // Sends notifications to peers.
-  void SendNotification();
-
   // Determine if the parents or predecessors differ between the old and new
   // versions of an entry stored in |a| and |b|.  Note that a node's index may
   // change without its NEXT_ID changing if the node at NEXT_ID also moved (but
@@ -1874,15 +1871,6 @@ void SyncManager::SyncInternal::MarkAndNotifyInitializationComplete() {
                     OnInitializationComplete());
 }
 
-void SyncManager::SyncInternal::SendNotification() {
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  if (!sync_notifier_) {
-    VLOG(1) << "Not sending notification: sync_notifier_ is NULL";
-    return;
-  }
-  sync_notifier_->SendNotification();
-}
-
 bool SyncManager::SyncInternal::OpenDirectory() {
   DCHECK(!initialized()) << "Should only happen once";
 
@@ -2239,8 +2227,11 @@ void SyncManager::SyncInternal::Shutdown() {
   }
 
   // |this| is about to be destroyed, so we have to ensure any
-  // messages that were posted to sync_thread_ are flushed out, else
-  // they refer to garbage memory.  SendNotification is an example.
+  // messages that were posted to sync_loop_ are flushed out, else
+  // they refer to garbage memory.
+  //
+  // HandleCalculateChangesChangeEventFromSyncApi is an example.
+  //
   // TODO(akalin): Remove this monstrosity, perhaps with
   // ObserverListTS once core thread is removed. Bug 78190.
   {
@@ -2498,6 +2489,7 @@ void SyncManager::SyncInternal::RequestNudgeWithDataTypes(
 
 void SyncManager::SyncInternal::OnSyncEngineEvent(
     const SyncEngineEvent& event) {
+  DCHECK_EQ(MessageLoop::current(), sync_loop_);
   if (!HaveObservers()) {
     LOG(INFO)
         << "OnSyncEngineEvent returning because observers_.size() is zero";
@@ -2581,19 +2573,18 @@ void SyncManager::SyncInternal::OnSyncEngineEvent(
     }
 
     // This is here for tests, which are still using p2p notifications.
-    // SendNotification does not do anything if we are using server based
-    // notifications.
+    //
     // TODO(chron): Consider changing this back to track has_more_to_sync
     // only notify peers if a successful commit has occurred.
     bool is_notifiable_commit =
         (event.snapshot->syncer_status.num_successful_commits > 0);
     if (is_notifiable_commit) {
       allstatus_.IncrementNotifiableCommits();
-      sync_loop_->PostTask(
-          FROM_HERE,
-          NewRunnableMethod(
-              this,
-              &SyncManager::SyncInternal::SendNotification));
+      if (sync_notifier_) {
+        sync_notifier_->SendNotification();
+      } else {
+        VLOG(1) << "Not sending notification: sync_notifier_ is NULL";
+      }
     }
   }
 
