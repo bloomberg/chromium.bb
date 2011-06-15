@@ -107,7 +107,8 @@ TEST_P(FullTabUITest, FLAKY_KeyboardBackForward) {
 }
 
 // Tests new window behavior with ctrl+N.
-TEST_P(FullTabUITest, CtrlN) {
+// Flaky on Chrome Frame Tests (ie6), http://crbug.com/86251.
+TEST_P(FullTabUITest, FLAKY_CtrlN) {
   if (IsWorkstationLocked()) {
     LOG(ERROR) << "This test cannot be run in a locked workstation.";
     return;
