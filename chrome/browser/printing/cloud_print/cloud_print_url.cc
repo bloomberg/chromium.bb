@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
@@ -52,7 +53,7 @@ GURL CloudPrintURL::GetCloudPrintServiceDialogURL() {
   replacements.SetPathStr(path);
   GURL cloud_print_dialog_url = cloud_print_service_url.ReplaceComponents(
       replacements);
-  return cloud_print_dialog_url;
+  return google_util::AppendGoogleLocaleParam(cloud_print_dialog_url);
 }
 
 GURL CloudPrintURL::GetCloudPrintServiceManageURL() {
