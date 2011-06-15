@@ -19,7 +19,7 @@
         <include name="IDR_BLUR_FX" file="resources\blur.fx" type="BINDATA" />
       </if>
 
-      <if expr="os == 'linux2' or os.find('bsd') != -1 or os == 'sunos5'">
+      <if expr="is_posix and not is_macosx">
         <include name="IDR_LINUX_CHECKBOX_DISABLED_INDETERMINATE" file="resources\linux-checkbox-disabled-indeterminate.png" type="BINDATA" />
         <include name="IDR_LINUX_CHECKBOX_DISABLED_OFF" file="resources\linux-checkbox-disabled-off.png" type="BINDATA" />
         <include name="IDR_LINUX_CHECKBOX_DISABLED_ON" file="resources\linux-checkbox-disabled-on.png" type="BINDATA" />
