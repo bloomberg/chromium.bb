@@ -111,9 +111,7 @@ def _CheckAuthorizedAuthor(input_api, output_api):
   valid_authors = [item.group(1).lower() for item in valid_authors if item]
   if input_api.verbose:
     print 'Valid authors are %s' % ', '.join(valid_authors)
-  if not any(
-      True for valid in valid_authors
-      if fnmatch.fnmatch(author.lower(), valid)):
+  if not any(fnmatch.fnmatch(author.lower(), valid) for valid in valid_authors):
     return [output_api.PresubmitPromptWarning(
         ('%s is not in AUTHORS file. If you are a new contributor, please visit'
         '\n'
