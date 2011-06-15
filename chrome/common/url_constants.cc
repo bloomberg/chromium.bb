@@ -183,6 +183,7 @@ const char kChromeUIActivationMessageHost[] = "activationmessage";
 const char kChromeUIActiveDownloadsHost[] = "active-downloads";
 const char kChromeUIChooseMobileNetworkHost[] = "choose-mobile-network";
 const char kChromeUICollectedCookiesHost[] = "collected-cookies";
+const char kChromeUICryptohomeHost[] = "cryptohome";
 const char kChromeUIEnterpriseEnrollmentHost[] = "enterprise-enrollment";
 const char kChromeUIHttpAuthHost[] = "http-auth";
 const char kChromeUIImageBurnerHost[] = "imageburner";

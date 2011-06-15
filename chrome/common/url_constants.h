@@ -174,6 +174,7 @@ extern const char kChromeUIActivationMessageHost[];
 extern const char kChromeUIActiveDownloadsHost[];
 extern const char kChromeUIChooseMobileNetworkHost[];
 extern const char kChromeUICollectedCookiesHost[];
+extern const char kChromeUICryptohomeHost[];
 extern const char kChromeUIEnterpriseEnrollmentHost[];
 extern const char kChromeUIHttpAuthHost[];
 extern const char kChromeUIImageBurnerHost[];

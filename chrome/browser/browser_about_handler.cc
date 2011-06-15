@@ -69,6 +69,7 @@
 #include "chrome/browser/enumerate_modules_model_win.h"
 #elif defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/version_loader.h"
@@ -135,6 +136,7 @@ const char *kChromePaths[] = {
 #endif
 #if defined(OS_CHROMEOS)
   chrome::kChromeUINetworkHost,
+  chrome::kChromeUICryptohomeHost,
   chrome::kChromeUIOSCreditsHost,
 #endif
 };
@@ -174,6 +176,7 @@ const char *kAboutSourceNames[] = {
 #endif
 #if defined(OS_CHROMEOS)
   chrome::kChromeUINetworkHost,
+  chrome::kChromeUICryptohomeHost,
   chrome::kChromeUIOSCreditsHost,
 #endif
 };
@@ -373,21 +376,50 @@ std::string ChromeURLs() {
 
 #if defined(OS_CHROMEOS)
 
+namespace {
 // Html output helper functions
 // TODO(stevenjb): L10N this.
 
 // Helper function to wrap Html with <th> tag.
-static std::string WrapWithTH(std::string text) {
+std::string WrapWithTH(const std::string& text) {
   return "<th>" + text + "</th>";
 }
 
 // Helper function to wrap Html with <td> tag.
-static std::string WrapWithTD(std::string text) {
+std::string WrapWithTD(const std::string& text) {
   return "<td>" + text + "</td>";
 }
 
+// Helper function to wrap Html with <tr> tag.
+std::string WrapWithTR(const std::string& text) {
+  return "<tr>" + text + "</tr>";
+}
+
+std::string AboutHeader(int refresh, const std::string& name) {
+  std::string output;
+  output.append("<head>");
+  output.append("<title>About " + name + "</title>");
+  if (refresh > 0)
+    output.append("<meta http-equiv=\"refresh\" content=\"" +
+                  base::IntToString(refresh) + "\"/>");
+  output.append("</head>");
+  return output;
+}
+
+std::string AboutRefresh(int refresh, const std::string& name) {
+  std::string output;
+  if (refresh > 0) {
+    output.append("(Auto-refreshing page every " +
+                  base::IntToString(refresh) + "s)");
+  } else {
+    output.append("(To auto-refresh this page: about:" + name
+                  + "/&lt;secs&gt;)");
+  }
+  return output;
+}
+
 // Helper function to create an Html table header for a Network.
-static std::string ToHtmlTableHeader(const chromeos::Network* network) {
+std::string ToHtmlTableHeader(const chromeos::Network* network) {
   std::string str =
       WrapWithTH("Name") +
       WrapWithTH("Active") +
@@ -418,11 +450,11 @@ static std::string ToHtmlTableHeader(const chromeos::Network* network) {
   }
   str += WrapWithTH("Error");
   str += WrapWithTH("IP Address");
-  return str;
+  return WrapWithTR(str);
 }
 
 // Helper function to create an Html table row for a Network.
-static std::string ToHtmlTableRow(const chromeos::Network* network) {
+std::string ToHtmlTableRow(const chromeos::Network* network) {
   std::string str =
       WrapWithTD(network->name()) +
       WrapWithTD(base::IntToString(network->is_active())) +
@@ -460,31 +492,24 @@ static std::string ToHtmlTableRow(const chromeos::Network* network) {
   }
   str += WrapWithTD(network->failed() ? network->GetErrorString() : "");
   str += WrapWithTD(network->ip_address());
-  return str;
+  return WrapWithTR(str);
 }
 
 std::string GetNetworkHtmlInfo(int refresh) {
   chromeos::NetworkLibrary* cros =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
   std::string output;
-  output.append("<html><head><title>About Network</title>");
-  if (refresh > 0)
-    output.append("<meta http-equiv=\"refresh\" content=\"" +
-                  base::IntToString(refresh) + "\"/>");
-  output.append("</head><body>");
-  if (refresh > 0) {
-    output.append("(Auto-refreshing page every " +
-                  base::IntToString(refresh) + "s)");
-  } else {
-    output.append("(To auto-refresh this page: about:network/&lt;secs&gt;)");
-  }
+  output.append("<html>");
+  output.append(AboutHeader(refresh, "Network"));
+  output.append("<body>");
+  output.append(AboutRefresh(refresh, "network"));
 
   if (cros->ethernet_enabled()) {
     output.append("<h3>Ethernet:</h3><table border=1>");
     const chromeos::EthernetNetwork* ethernet = cros->ethernet_network();
     if (ethernet) {
-      output.append("<tr>" + ToHtmlTableHeader(ethernet) + "</tr>");
-      output.append("<tr>" + ToHtmlTableRow(ethernet) + "</tr>");
+      output.append(ToHtmlTableHeader(ethernet));
+      output.append(ToHtmlTableRow(ethernet));
     }
   }
 
@@ -493,9 +518,8 @@ std::string GetNetworkHtmlInfo(int refresh) {
     const chromeos::WifiNetworkVector& wifi_networks = cros->wifi_networks();
     for (size_t i = 0; i < wifi_networks.size(); ++i) {
       if (i == 0)
-        output.append("<tr>" + ToHtmlTableHeader(wifi_networks[i]) +
-                      "</tr>");
-      output.append("<tr>" + ToHtmlTableRow(wifi_networks[i]) + "</tr>");
+        output.append(ToHtmlTableHeader(wifi_networks[i]));
+      output.append(ToHtmlTableRow(wifi_networks[i]));
     }
   }
 
@@ -505,9 +529,8 @@ std::string GetNetworkHtmlInfo(int refresh) {
         cros->cellular_networks();
     for (size_t i = 0; i < cellular_networks.size(); ++i) {
       if (i == 0)
-        output.append("<tr>" + ToHtmlTableHeader(cellular_networks[i]) +
-                      "</tr>");
-      output.append("<tr>" + ToHtmlTableRow(cellular_networks[i]) + "</tr>");
+        output.append(ToHtmlTableHeader(cellular_networks[i]));
+      output.append(ToHtmlTableRow(cellular_networks[i]));
     }
   }
 
@@ -517,9 +540,8 @@ std::string GetNetworkHtmlInfo(int refresh) {
         cros->virtual_networks();
     for (size_t i = 0; i < virtual_networks.size(); ++i) {
       if (i == 0)
-        output.append("<tr>" + ToHtmlTableHeader(virtual_networks[i]) +
-                      "</tr>");
-      output.append("<tr>" + ToHtmlTableRow(virtual_networks[i]) + "</tr>");
+        output.append(ToHtmlTableHeader(virtual_networks[i]));
+      output.append(ToHtmlTableRow(virtual_networks[i]));
     }
   }
 
@@ -530,10 +552,9 @@ std::string GetNetworkHtmlInfo(int refresh) {
         cros->remembered_wifi_networks();
     for (size_t i = 0; i < remembered_wifi_networks.size(); ++i) {
       if (i == 0)
-        output.append("<tr>" +
-                      ToHtmlTableHeader(remembered_wifi_networks[i]) + "</tr>");
-      output.append("<tr>" + ToHtmlTableRow(remembered_wifi_networks[i]) +
-                    "</tr>");
+        output.append(
+            ToHtmlTableHeader(remembered_wifi_networks[i]));
+      output.append(ToHtmlTableRow(remembered_wifi_networks[i]));
     }
   }
 
@@ -546,6 +567,43 @@ std::string AboutNetwork(const std::string& query) {
   base::StringToInt(query, &refresh);
   return GetNetworkHtmlInfo(refresh);
 }
+
+std::string AddBoolRow(const std::string& name, bool value) {
+  std::string row;
+  row.append(WrapWithTD(name));
+  row.append(WrapWithTD(value ? "true" : "false"));
+  return WrapWithTR(row);
+}
+
+std::string GetCryptohomeHtmlInfo(int refresh) {
+  chromeos::CryptohomeLibrary* cryptohome =
+      chromeos::CrosLibrary::Get()->GetCryptohomeLibrary();
+  std::string output;
+  output.append("<html>");
+  output.append(AboutHeader(refresh, "Cryptohome"));
+  output.append("<body>");
+  output.append(AboutRefresh(refresh, "cryptohome"));
+
+  output.append("<h3>CryptohomeLibrary:</h3><table>");
+  output.append(AddBoolRow("IsMounted", cryptohome->IsMounted()));
+  output.append(AddBoolRow("TpmIsReady", cryptohome->TpmIsReady()));
+  output.append(AddBoolRow("TpmIsEnabled", cryptohome->TpmIsEnabled()));
+  output.append(AddBoolRow("TpmIsOwned", cryptohome->TpmIsOwned()));
+  output.append(AddBoolRow("TpmIsBeingOwned", cryptohome->TpmIsBeingOwned()));
+  output.append(AddBoolRow("Pkcs11IsTpmTokenReady",
+                           cryptohome->Pkcs11IsTpmTokenReady()));
+
+  output.append("</table></body></html>");
+  return output;
+}
+
+std::string AboutCryptohome(const std::string& query) {
+  int refresh;
+  base::StringToInt(query, &refresh);
+  return GetCryptohomeHtmlInfo(refresh);
+}
+
+}  // namespace
 #endif
 
 // AboutDnsHandler bounces the request back to the IO thread to collect
@@ -1072,6 +1130,8 @@ void AboutSource::StartDataRequest(const std::string& path,
         IDR_OS_CREDITS_HTML).as_string();
   } else if (host == chrome::kChromeUINetworkHost) {
     response = AboutNetwork(path);
+  } else if (host == chrome::kChromeUICryptohomeHost) {
+    response = AboutCryptohome(path);
 #endif
   } else if (host == chrome::kChromeUITermsHost) {
 #if defined(OS_CHROMEOS)
