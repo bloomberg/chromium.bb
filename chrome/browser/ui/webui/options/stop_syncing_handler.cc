@@ -23,11 +23,11 @@ StopSyncingHandler::~StopSyncingHandler() {
 void StopSyncingHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
-  localized_strings->SetString("stop_syncing_explanation",
+  localized_strings->SetString("stopSyncingExplanation",
       l10n_util::GetStringUTF16(IDS_SYNC_STOP_SYNCING_EXPLANATION_LABEL));
-  localized_strings->SetString("stop_syncing_title",
+  localized_strings->SetString("stopSyncingTitle",
       l10n_util::GetStringUTF16(IDS_SYNC_STOP_SYNCING_DIALOG_TITLE));
-  localized_strings->SetString("stop_syncing_confirm",
+  localized_strings->SetString("stopSyncingConfirm",
       l10n_util::GetStringUTF16(IDS_SYNC_STOP_SYNCING_CONFIRM_BUTTON_LABEL));
 }
 

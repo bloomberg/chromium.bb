@@ -37,7 +37,7 @@ cr.define('options', function() {
       };
       $('start-stop-sync').onclick = function(event) {
         if (self.syncSetupCompleted)
-          self.showStopSyncingOverlay_();
+          SyncSetupOverlay.showStopSyncingUI();
         else
           SyncSetupOverlay.showSetupUI();
       };
@@ -101,14 +101,6 @@ cr.define('options', function() {
         autofillEnabled.checked = false;
         cr.dispatchSimpleEvent(autofillEnabled, 'change');
       }
-    },
-
-    showStopSyncingOverlay_: function() {
-      AlertOverlay.show(localStrings.getString('stop_syncing_title'),
-                        localStrings.getString('stop_syncing_explanation'),
-                        localStrings.getString('stop_syncing_confirm'),
-                        localStrings.getString('cancel'),
-                        function() { chrome.send('stopSyncing'); });
     },
 
     setSyncEnabled_: function(enabled) {

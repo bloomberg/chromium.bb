@@ -61,8 +61,10 @@ cr.define('options', function() {
       $('google-option').onchange = $('explicit-option').onchange = function() {
         self.onPassphraseRadioChanged_();
       };
-      $('choose-datatypes-cancel').onclick = $('sync-setup-cancel').onclick =
-          $('confirm-everything-cancel').onclick = function() {
+      $('choose-datatypes-cancel').onclick =
+          $('sync-setup-cancel').onclick =
+          $('confirm-everything-cancel').onclick =
+          $('stop-syncing-cancel').onclick =  function() {
         self.closeOverlay_();
       };
       $('customize-link').onclick = function() {
@@ -73,6 +75,10 @@ cr.define('options', function() {
       };
       $('use-default-link').onclick = function() {
         self.showSyncEverythingPage_();
+      };
+      $('stop-syncing-ok').onclick = function() {
+        chrome.send('stopSyncing');
+        self.closeOverlay_();
       };
     },
 
@@ -697,6 +703,24 @@ cr.define('options', function() {
     },
 
     /**
+      * Displays the stop syncing dialog.
+      * @private
+      */
+    showStopSyncingUI_: function() {
+      // Hide any visible children of the overlay.
+      var overlay = $('sync-setup-overlay');
+      for (var i = 0; i < overlay.children.length; i++)
+        overlay.children[i].hidden = true;
+
+      // Bypass OptionsPage.navigateToPage because it will call didShowPage
+      // which will set its own visible page, based on the flow state.
+      this.visible = true;
+
+      $('sync-setup-stop-syncing').hidden = false;
+      $('stop-syncing-cancel').focus();
+    },
+
+    /**
      * Steps into the appropriate Sync Setup error UI.
      * @private
      */
@@ -732,6 +756,10 @@ cr.define('options', function() {
 
   SyncSetupOverlay.showSuccessAndSettingUp = function() {
     SyncSetupOverlay.getInstance().showSuccessAndSettingUp_();
+  };
+
+  SyncSetupOverlay.showStopSyncingUI = function() {
+    SyncSetupOverlay.getInstance().showStopSyncingUI_();
   };
 
   // Export
