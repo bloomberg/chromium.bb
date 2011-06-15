@@ -4656,6 +4656,13 @@
    fun:_ZN5Value17CreateStringValueERKSs
    fun:_ZN6policy24CloudPolicySubsystemTest11ExecuteTestERKSs
 }
+{
+   bug_86136
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN12SideTabStrip20CreateTabForDraggingEv
+   fun:_ZN35gtest_case_BaseTabStripTestFixture_20CreateTabForDraggingI12SideTabStripE8TestBodyEv
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
