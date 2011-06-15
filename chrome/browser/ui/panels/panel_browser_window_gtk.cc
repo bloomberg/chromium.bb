@@ -71,6 +71,62 @@ bool PanelBrowserWindowGtk::UseCustomFrame() {
   return TRUE;
 }
 
+void PanelBrowserWindowGtk::ShowPanel() {
+  Show();
+}
+
+void PanelBrowserWindowGtk::SetPanelBounds(const gfx::Rect& bounds) {
+  SetBounds(bounds);
+}
+
+void PanelBrowserWindowGtk::MinimizePanel() {
+  NOTIMPLEMENTED();
+}
+
+void PanelBrowserWindowGtk::RestorePanel() {
+  NOTIMPLEMENTED();
+}
+
+void PanelBrowserWindowGtk::ClosePanel() {
+  Close();
+}
+
+void PanelBrowserWindowGtk::ActivatePanel() {
+  Activate();
+}
+
+void PanelBrowserWindowGtk::DeactivatePanel() {
+  Deactivate();
+}
+
+bool PanelBrowserWindowGtk::IsPanelActive() const {
+  return IsActive();
+}
+
+gfx::NativeWindow PanelBrowserWindowGtk::GetNativePanelHandle() {
+  return GetNativeHandle();
+}
+
+void PanelBrowserWindowGtk::UpdatePanelTitleBar() {
+  UpdateTitleBar();
+}
+
+void PanelBrowserWindowGtk::ShowTaskManagerForPanel() {
+  ShowTaskManager();
+}
+
+void PanelBrowserWindowGtk::NotifyPanelOnUserChangedTheme() {
+  UserChangedTheme();
+}
+
+void PanelBrowserWindowGtk::FlashPanelFrame() {
+  FlashFrame();
+}
+
+void PanelBrowserWindowGtk::DestroyPanelBrowser() {
+  DestroyBrowser();
+}
+
 void PanelBrowserWindowGtk::SetBoundsImpl() {
   const gfx::Rect& bounds = panel_->GetBounds();
   gtk_window_move(window_, bounds.x(), bounds.y());

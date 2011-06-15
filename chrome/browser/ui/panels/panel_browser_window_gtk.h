@@ -6,10 +6,12 @@
 #define CHROME_BROWSER_UI_PANELS_PANEL_BROWSER_WINDOW_GTK_H_
 
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
+#include "chrome/browser/ui/panels/native_panel.h"
 
 class Panel;
 
-class PanelBrowserWindowGtk : public BrowserWindowGtk {
+class PanelBrowserWindowGtk : public BrowserWindowGtk,
+                              public NativePanel {
  public:
   PanelBrowserWindowGtk(Browser* browser, Panel* panel);
   virtual ~PanelBrowserWindowGtk();
@@ -30,6 +32,22 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk {
   virtual void SaveWindowPosition() OVERRIDE;
   virtual void SetGeometryHints() OVERRIDE;
   virtual bool UseCustomFrame() OVERRIDE;
+
+  // Overridden from NativePanel:
+  virtual void ShowPanel() OVERRIDE;
+  virtual void SetPanelBounds(const gfx::Rect& bounds) OVERRIDE;
+  virtual void MinimizePanel() OVERRIDE;
+  virtual void RestorePanel() OVERRIDE;
+  virtual void ClosePanel() OVERRIDE;
+  virtual void ActivatePanel() OVERRIDE;
+  virtual void DeactivatePanel() OVERRIDE;
+  virtual bool IsPanelActive() const OVERRIDE;
+  virtual gfx::NativeWindow GetNativePanelHandle() OVERRIDE;
+  virtual void UpdatePanelTitleBar() OVERRIDE;
+  virtual void ShowTaskManagerForPanel() OVERRIDE;
+  virtual void NotifyPanelOnUserChangedTheme() OVERRIDE;
+  virtual void FlashPanelFrame() OVERRIDE;
+  virtual void DestroyPanelBrowser() OVERRIDE;
 
  private:
   void SetBoundsImpl();
