@@ -319,7 +319,7 @@ void KeyboardOverlayHandler::RegisterMessages() {
 void KeyboardOverlayHandler::GetKeyboardOverlayId(const ListValue* args) {
   chromeos::InputMethodLibrary* library =
       chromeos::CrosLibrary::Get()->GetInputMethodLibrary();
-  const chromeos::InputMethodDescriptor& descriptor =
+  const chromeos::input_method::InputMethodDescriptor& descriptor =
       library->current_input_method();
   const std::string keyboard_overlay_id =
       library->GetKeyboardOverlayId(descriptor.id);

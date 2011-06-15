@@ -191,14 +191,14 @@ bool InputMethodMenu::IsItemCheckedAt(int index) const {
   DCHECK(input_method_descriptors_.get());
 
   if (IndexIsInInputMethodList(index)) {
-    const InputMethodDescriptor& input_method
+    const input_method::InputMethodDescriptor& input_method
         = input_method_descriptors_->at(index);
     return input_method == CrosLibrary::Get()->GetInputMethodLibrary()->
           current_input_method();
   }
 
   if (GetPropertyIndex(index, &index)) {
-    const ImePropertyList& property_list
+    const input_method::ImePropertyList& property_list
         = CrosLibrary::Get()->GetInputMethodLibrary()->current_ime_properties();
     return property_list.at(index).is_selection_item_checked;
   }
@@ -216,7 +216,7 @@ int InputMethodMenu::GetGroupIdAt(int index) const {
   }
 
   if (GetPropertyIndex(index, &index)) {
-    const ImePropertyList& property_list
+    const input_method::ImePropertyList& property_list
         = CrosLibrary::Get()->GetInputMethodLibrary()->current_ime_properties();
     return property_list.at(index).selection_item_id;
   }
@@ -283,7 +283,7 @@ ui::MenuModel::ItemType InputMethodMenu::GetTypeAt(int index) const {
   }
 
   if (GetPropertyIndex(index, &index)) {
-    const ImePropertyList& property_list
+    const input_method::ImePropertyList& property_list
         = CrosLibrary::Get()->GetInputMethodLibrary()->current_ime_properties();
     if (property_list.at(index).is_selection_item) {
       return ui::MenuModel::TYPE_RADIO;
@@ -309,7 +309,8 @@ string16 InputMethodMenu::GetLabelAt(int index) const {
     name = GetTextForMenu(input_method_descriptors_->at(index));
   } else if (GetPropertyIndex(index, &index)) {
     InputMethodLibrary* library = CrosLibrary::Get()->GetInputMethodLibrary();
-    const ImePropertyList& property_list = library->current_ime_properties();
+    const input_method::ImePropertyList& property_list =
+        library->current_ime_properties();
     const std::string& input_method_id = library->current_input_method().id;
     return input_method::GetStringUTF16(
         property_list.at(index).label, input_method_id);
@@ -329,7 +330,7 @@ void InputMethodMenu::ActivatedAt(int index) {
 
   if (IndexIsInInputMethodList(index)) {
     // Inter-IME switching.
-    const InputMethodDescriptor& input_method
+    const input_method::InputMethodDescriptor& input_method
         = input_method_descriptors_->at(index);
     CrosLibrary::Get()->GetInputMethodLibrary()->ChangeInputMethod(
         input_method.id);
@@ -340,7 +341,7 @@ void InputMethodMenu::ActivatedAt(int index) {
 
   if (GetPropertyIndex(index, &index)) {
     // Intra-IME switching (e.g. Japanese-Hiragana to Japanese-Katakana).
-    const ImePropertyList& property_list
+    const input_method::ImePropertyList& property_list
         = CrosLibrary::Get()->GetInputMethodLibrary()->current_ime_properties();
     const std::string key = property_list.at(index).key;
     if (property_list.at(index).is_selection_item) {
@@ -402,15 +403,15 @@ void InputMethodMenu::RunMenu(views::View* source, const gfx::Point& pt) {
 
 void InputMethodMenu::InputMethodChanged(
     InputMethodLibrary* obj,
-    const InputMethodDescriptor& current_input_method,
+    const input_method::InputMethodDescriptor& current_input_method,
     size_t num_active_input_methods) {
   UpdateUIFromInputMethod(current_input_method, num_active_input_methods);
 }
 
 void InputMethodMenu::PreferenceUpdateNeeded(
     InputMethodLibrary* obj,
-    const InputMethodDescriptor& previous_input_method,
-    const InputMethodDescriptor& current_input_method) {
+    const input_method::InputMethodDescriptor& previous_input_method,
+    const input_method::InputMethodDescriptor& current_input_method) {
   if (screen_mode_ == StatusAreaHost::kBrowserMode) {
     if (pref_service_) {  // make sure we're not in unit tests.
       // Sometimes (e.g. initial boot) |previous_input_method.id| is empty.
@@ -429,7 +430,7 @@ void InputMethodMenu::PreferenceUpdateNeeded(
 
 void InputMethodMenu::PropertyListChanged(
     InputMethodLibrary* obj,
-    const ImePropertyList& current_ime_properties) {
+    const input_method::ImePropertyList& current_ime_properties) {
   // Usual order of notifications of input method change is:
   // 1. RegisterProperties(empty)
   // 2. RegisterProperties(list-of-new-properties)
@@ -444,7 +445,8 @@ void InputMethodMenu::PropertyListChanged(
   // awkward clear-then-register behavior.
   if (!current_ime_properties.empty()) {
     InputMethodLibrary* library = CrosLibrary::Get()->GetInputMethodLibrary();
-    const InputMethodDescriptor& input_method = library->current_input_method();
+    const input_method::InputMethodDescriptor& input_method =
+        library->current_input_method();
     size_t num_active_input_methods = library->GetNumActiveInputMethods();
     UpdateUIFromInputMethod(input_method, num_active_input_methods);
   }
@@ -487,7 +489,7 @@ void InputMethodMenu::PrepareMenuModel() {
 
 void InputMethodMenu::ActiveInputMethodsChanged(
     InputMethodLibrary* obj,
-    const InputMethodDescriptor& current_input_method,
+    const input_method::InputMethodDescriptor& current_input_method,
     size_t num_active_input_methods) {
   // Update the icon if active input methods are changed. See also
   // comments in UpdateUI() in input_method_menu_button.cc.
@@ -495,7 +497,7 @@ void InputMethodMenu::ActiveInputMethodsChanged(
 }
 
 void InputMethodMenu::UpdateUIFromInputMethod(
-    const InputMethodDescriptor& input_method,
+    const input_method::InputMethodDescriptor& input_method,
     size_t num_active_input_methods) {
   const std::wstring name = GetTextForIndicator(input_method);
   const std::wstring tooltip = GetTextForMenu(input_method);
@@ -519,7 +521,7 @@ void InputMethodMenu::RebuildModel() {
     need_separator = true;
   }
 
-  const ImePropertyList& property_list
+  const input_method::ImePropertyList& property_list
       = CrosLibrary::Get()->GetInputMethodLibrary()->current_ime_properties();
   if (!property_list.empty()) {
     if (need_separator) {
@@ -569,7 +571,7 @@ bool InputMethodMenu::GetPropertyIndex(int index, int* property_index) const {
   if ((model_->GetTypeAt(index) == ui::MenuModel::TYPE_RADIO) &&
       (model_->GetCommandIdAt(index) == COMMAND_ID_IME_PROPERTIES)) {
     const int tmp_property_index = model_->GetGroupIdAt(index);
-    const ImePropertyList& property_list
+    const input_method::ImePropertyList& property_list
         = CrosLibrary::Get()->GetInputMethodLibrary()->current_ime_properties();
     if (tmp_property_index < static_cast<int>(property_list.size())) {
       *property_index = tmp_property_index;
@@ -591,7 +593,7 @@ bool InputMethodMenu::IndexPointsToConfigureImeMenuItem(int index) const {
 }
 
 std::wstring InputMethodMenu::GetTextForIndicator(
-    const InputMethodDescriptor& input_method) {
+    const input_method::InputMethodDescriptor& input_method) {
   // For the status area, we use two-letter, upper-case language code like
   // "US" and "JP".
   std::wstring text;
@@ -642,7 +644,7 @@ std::wstring InputMethodMenu::GetTextForIndicator(
 }
 
 std::wstring InputMethodMenu::GetTextForMenu(
-    const InputMethodDescriptor& input_method) {
+    const input_method::InputMethodDescriptor& input_method) {
   // We don't show language here.  Name of keyboard layout or input method
   // usually imply (or explicitly include) its language.
 

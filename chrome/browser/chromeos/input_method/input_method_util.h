@@ -86,10 +86,10 @@ std::string GetKeyboardLayoutName(const std::string& input_method_id);
 //
 // Examples:
 //
-// "us"                => "en_US"
-// "us(dvorak)"        => "en_US_dvorak"
-// "gb"                => "en_GB"
-std::string GetKeyboardOverlayId(const std::string& input_method_name);
+// "xkb:us::eng"       => "en_US"
+// "xkb:us:dvorak:eng" => "en_US_dvorak"
+// "xkb:gb::eng"       => "en_GB"
+std::string GetKeyboardOverlayId(const std::string& input_method_id);
 
 // Converts an input method ID to a language code of the IME. Returns "Eng"
 // when |input_method_id| is unknown.
@@ -107,7 +107,7 @@ std::string GetInputMethodDisplayNameFromId(const std::string& input_method_id);
 // when |input_method_id| is unknown.
 // Example: "pinyin" => { id: "pinyin", display_name: "Pinyin",
 //                        keyboard_layout: "us", language_code: "zh" }
-const chromeos::InputMethodDescriptor* GetInputMethodDescriptorFromId(
+const InputMethodDescriptor* GetInputMethodDescriptorFromId(
     const std::string& input_method_id);
 
 // Converts a language code to a language display name, using the

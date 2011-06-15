@@ -10,6 +10,8 @@
 
 namespace chromeos {
 
+using input_method::InputMethodDescriptor;
+
 TEST(InputMethodMenuTest, GetTextForIndicatorTest) {
   ScopedStubCrosEnabler enabler;
   // Test normal cases. Two-letter language code should be returned.

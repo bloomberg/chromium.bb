@@ -159,7 +159,7 @@ bool InputMethodMenuButton::ShouldSupportConfigUI() {
 void InputMethodMenuButton::UpdateUIFromCurrentInputMethod() {
   chromeos::InputMethodLibrary* input_method_library =
       chromeos::CrosLibrary::Get()->GetInputMethodLibrary();
-  const InputMethodDescriptor& input_method =
+  const input_method::InputMethodDescriptor& input_method =
       input_method_library->current_input_method();
   const std::wstring name = InputMethodMenu::GetTextForIndicator(input_method);
   const std::wstring tooltip = InputMethodMenu::GetTextForMenu(input_method);

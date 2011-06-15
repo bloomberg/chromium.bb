@@ -72,19 +72,19 @@ class InputMethodMenu : public views::ViewMenuDelegate,
   // InputMethodLibrary::Observer implementation.
   virtual void InputMethodChanged(
       InputMethodLibrary* obj,
-      const InputMethodDescriptor& current_input_method,
+      const input_method::InputMethodDescriptor& current_input_method,
       size_t num_active_input_methods);
   virtual void ActiveInputMethodsChanged(
       InputMethodLibrary* obj,
-      const InputMethodDescriptor& current_input_method,
+      const input_method::InputMethodDescriptor& current_input_method,
       size_t num_active_input_methods);
   virtual void PreferenceUpdateNeeded(
     InputMethodLibrary* obj,
-    const InputMethodDescriptor& previous_input_method,
-    const InputMethodDescriptor& current_input_method);
+    const input_method::InputMethodDescriptor& previous_input_method,
+    const input_method::InputMethodDescriptor& current_input_method);
   virtual void PropertyListChanged(
       InputMethodLibrary* obj,
-      const ImePropertyList& current_ime_properties);
+      const input_method::ImePropertyList& current_ime_properties);
   virtual void FirstObserverIsAdded(InputMethodLibrary* obj);
 
   // NotificationObserver implementation.
@@ -109,11 +109,12 @@ class InputMethodMenu : public views::ViewMenuDelegate,
   // Returns a string for the indicator on top right corner of the Chrome
   // window. The method is public for unit tests.
   static std::wstring GetTextForIndicator(
-      const InputMethodDescriptor& input_method);
+      const input_method::InputMethodDescriptor& input_method);
 
   // Returns a string for the drop-down menu and the tooltip for the indicator.
   // The method is public for unit tests.
-  static std::wstring GetTextForMenu(const InputMethodDescriptor& input_method);
+  static std::wstring GetTextForMenu(
+      const input_method::InputMethodDescriptor& input_method);
 
  protected:
   // Prepares menu: saves user metrics and rebuilds.
@@ -137,8 +138,9 @@ class InputMethodMenu : public views::ViewMenuDelegate,
   virtual void OpenConfigUI() = 0;
 
   // Parses |input_method| and then calls UpdateUI().
-  void UpdateUIFromInputMethod(const InputMethodDescriptor& input_method,
-                               size_t num_active_input_methods);
+  void UpdateUIFromInputMethod(
+      const input_method::InputMethodDescriptor& input_method,
+      size_t num_active_input_methods);
 
   // Rebuilds |model_|. This function should be called whenever
   // |input_method_descriptors_| is updated, or ImePropertiesChanged() is
@@ -158,7 +160,7 @@ class InputMethodMenu : public views::ViewMenuDelegate,
   bool IndexPointsToConfigureImeMenuItem(int index) const;
 
   // The current input method list.
-  scoped_ptr<InputMethodDescriptors> input_method_descriptors_;
+  scoped_ptr<input_method::InputMethodDescriptors> input_method_descriptors_;
 
   // Objects for reading/writing the Chrome prefs.
   StringPrefMember previous_input_method_pref_;

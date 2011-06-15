@@ -1,20 +1,21 @@
-// Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_INPUT_METHOD_H_
-#define CHROMEOS_INPUT_METHOD_H_
+#ifndef CHROME_BROWSER_CHROMEOS_INPUT_METHOD_IBUS_CONTROLLER_H_
+#define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_IBUS_CONTROLLER_H_
 
 #include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include <base/basictypes.h>
-#include <base/logging.h>  // DCHECK
-#include <base/string_split.h>
+#include "base/basictypes.h"
+#include "base/logging.h"  // DCHECK
+#include "base/string_split.h"
 
 namespace chromeos {
+namespace input_method {
 
 // A structure which represents an input method. All methods in this class have
 // to be in chromeos_input_method.h since Chrome also creates an instance of
@@ -189,122 +190,126 @@ struct ImeConfigValue {
   std::vector<std::string> string_list_value;
 };
 
-// A monitor function which is called when current input method is changed by a
-// user.
-typedef void(*LanguageCurrentInputMethodMonitorFunction)(
-    void* language_library, const InputMethodDescriptor& current_input_method);
-
-// A monitor function which is called when "RegisterProperties" signal is sent
-// from ibus-daemon. The signal contains a list of properties for a specific
-// input method engine. For example, Japanese input method might have the
-// following properties:
-//
-// ----------------------------------
-//   key: InputMode.Hiragana
-//   label: Hiragana
-//   is_selection_item: true
-//   is_selection_item_checked: true
-//   selection_item_id: 1
-// ----------------------------------
-//   key: InputMode.Katakana
-//   label: Katakana
-//   is_selection_item: true
-//   is_selection_item_checked: false
-//   selection_item_id: 1
-// ----------------------------------
-//   ...
-// ----------------------------------
-typedef void(*LanguageRegisterImePropertiesFunction)(
-    void* language_library, const ImePropertyList& prop_list);
-
-// A monitor function which is called when "UpdateProperty" signal is sent
-// from ibus-daemon. The signal contains one or more properties which is updated
-// recently. Keys the signal contains are a subset of keys registered by the
-// "RegisterProperties" signal above. For example,
-// Japanese input method might send the following properties:
-//
-// ----------------------------------
-//   key: InputMode.Hiragana
-//   label: Hiragana
-//   is_selection_item: true
-//   is_selection_item_checked: false
-//   selection_item_id: ...
-// ----------------------------------
-//   key: InputMode.Katakana
-//   label: Katakana
-//   is_selection_item: true
-//   is_selection_item_checked: true
-//   selection_item_id: ...
-// ----------------------------------
-//
-// Note: Please do not use selection_item_ids in |prop_list|. Dummy values are
-//       filled in the field.
-typedef void(*LanguageUpdateImePropertyFunction)(
-    void* language_library, const ImePropertyList& prop_list);
-
-// A monitor function which is called when ibus connects or disconnects.
-typedef void(*LanguageConnectionChangeMonitorFunction)(
-    void* language_library, bool connected);
-
-// Establishes IBus connection to the ibus-daemon. LanguageXXXFunction functions
-// will be called when status of input method engines is changed.
-class InputMethodStatusConnection;
-extern InputMethodStatusConnection* (*MonitorInputMethodStatus)(
-    void* language_library,
-    LanguageCurrentInputMethodMonitorFunction current_input_method,
-    LanguageRegisterImePropertiesFunction register_ime_properties,
-    LanguageUpdateImePropertyFunction update_ime_property,
-    LanguageConnectionChangeMonitorFunction connection_changed);
-
-// Stops ibus-daemon. Returns true on success.
-extern bool (*StopInputMethodProcess)(InputMethodStatusConnection* connection);
-
-// Gets all input method engines that are supported, including ones not active.
-// Caller has to delete the returned list. This function never returns NULL.
-extern InputMethodDescriptors* (*GetSupportedInputMethodDescriptors)();
-
-// Changes the current input method engine to |name|. Returns true on success.
-// Examples of names: "pinyin", "m17n:ar:kbd", "xkb:us:dvorak:eng".
-extern bool (*ChangeInputMethod)(
-    InputMethodStatusConnection* connection, const char* name);
-
-// Sets whether the input method property specified by |key| is activated.
-// If |activated| is true, activates the property. If |activated| is false,
-// deactivates the property.
-// TODO(yusukes): "SetInputMethodPropertyActivated" might be better?
-extern void (*SetImePropertyActivated)(InputMethodStatusConnection* connection,
-                                       const char* key,
-                                       bool activated);
-
-// Sets a configuration of ibus-daemon or IBus engines to |value|.
-// Returns true if the configuration is successfully set.
-//
-// To set 'panel/custom_font', |section| should be "panel", and
-// |config_name| should be "custom_font".
-// TODO(yusukes): "SetInputMethodConfig" might be better?
-extern bool (*SetImeConfig)(InputMethodStatusConnection* connection,
-                            const char* section,
-                            const char* config_name,
-                            const ImeConfigValue& value);
-
-// Returns the keyboard overlay ID corresponding to |input_method_id|.
-// Returns an empty string if there is no corresponding keyboard overlay ID.
-extern std::string (*GetKeyboardOverlayId)(
-    const std::string& input_method_id);
-
-// Sends a handwriting stroke to ibus-daemon. The std::pair contains x and y
-// coordinates. (0.0, 0.0) represents the top-left corner of a handwriting area,
-// and (1.0, 1.0) does the bottom-right. For example, the second stroke for ロ
-// (Katakana character Ro) would be something like [(0,0), (1,0), (1,1)].
-// stroke.size() should always be >= 2 (i.e. a single dot is not allowed).
 typedef std::vector<std::pair<double, double> > HandwritingStroke;
-extern void (*SendHandwritingStroke)(
-    InputMethodStatusConnection* connection, const HandwritingStroke& stroke);
 
-// Clears the last N handwriting strokes. Pass zero for clearing all strokes.
-// TODO(yusukes): Currently ibus-daemon only accepts 0 for |n_strokes|.
-extern void (*CancelHandwriting)(InputMethodStatusConnection* connection,
-                                 int n_strokes);
+// IBusController is used to interact with the IBus daemon.
+class IBusController {
+ public:
+  class Observer {
+   public:
+    virtual ~Observer() {}
+
+    // Called when current input method is changed by a user.
+    virtual void  OnCurrentInputMethodChanged(
+        const InputMethodDescriptor& current_input_method) = 0;
+
+    // Called when "RegisterProperties" signal is sent from
+    // ibus-daemon. The signal contains a list of properties for a
+    // specific input method engine. For example, Japanese input method
+    // might have the following properties:
+    //
+    // ----------------------------------
+    //   key: InputMode.Hiragana
+    //   label: Hiragana
+    //   is_selection_item: true
+    //   is_selection_item_checked: true
+    //   selection_item_id: 1
+    // ----------------------------------
+    //   key: InputMode.Katakana
+    //   label: Katakana
+    //   is_selection_item: true
+    //   is_selection_item_checked: false
+    //   selection_item_id: 1
+    // ----------------------------------
+    //   ...
+    // ----------------------------------
+    virtual void OnRegisterImeProperties(const ImePropertyList& prop_list) = 0;
+
+    // Called when "UpdateProperty" signal is sent from ibus-daemon. The
+    // signal contains one or more properties which is updated
+    // recently. Keys the signal contains are a subset of keys registered
+    // by the "RegisterProperties" signal above. For example, Japanese
+    // input method might send the following properties:
+    //
+    // ----------------------------------
+    //   key: InputMode.Hiragana
+    //   label: Hiragana
+    //   is_selection_item: true
+    //   is_selection_item_checked: false
+    //   selection_item_id: ...
+    // ----------------------------------
+    //   key: InputMode.Katakana
+    //   label: Katakana
+    //   is_selection_item: true
+    //   is_selection_item_checked: true
+    //   selection_item_id: ...
+    // ----------------------------------
+    //
+    // Note: Please do not use selection_item_ids in |prop_list|. Dummy
+    //       values are filled in the field.
+    virtual void OnUpdateImeProperty(const ImePropertyList& prop_list) = 0;
+
+    // Called when ibus connects or disconnects.
+    virtual void OnConnectionChange(bool connected) = 0;
+  };
+
+  // Creates an instance of the class. The constructor is unused.
+  static IBusController* Create();
+
+  virtual ~IBusController();
+
+  // Connects to the IBus daemon.
+  virtual void Connect() = 0;
+
+  // Adds and removes observers for IBus UI notifications. Clients must be
+  // sure to remove the observer before they go away. To capture the
+  // initial connection change, you should add an observer before calling
+  // Connect().
+  virtual void AddObserver(Observer* observer) = 0;
+  virtual void RemoveObserver(Observer* observer) = 0;
+
+  // Stops ibus-daemon. Returns true on success.
+  virtual bool StopInputMethodProcess() = 0;
+
+  // Changes the current input method engine to |name|. Returns true on
+  // success.  Examples of names: "pinyin", "m17n:ar:kbd",
+  // "xkb:us:dvorak:eng".
+  virtual bool ChangeInputMethod(const std::string& name) = 0;
+
+  // Sets whether the input method property specified by |key| is activated.
+  // If |activated| is true, activates the property. If |activated| is false,
+  // deactivates the property.
+  // TODO(yusukes): "SetInputMethodPropertyActivated" might be better?
+  virtual void SetImePropertyActivated(const std::string& key,
+                                       bool activated) = 0;
+
+  // Sets a configuration of ibus-daemon or IBus engines to |value|.
+  // Returns true if the configuration is successfully set.
+  //
+  // To set 'panel/custom_font', |section| should be "panel", and
+  // |config_name| should be "custom_font".
+  // TODO(yusukes): "SetInputMethodConfig" might be better?
+  virtual bool SetImeConfig(const std::string& section,
+                            const std::string& config_name,
+                            const ImeConfigValue& value) = 0;
+
+  // Sends a handwriting stroke to ibus-daemon. The std::pair contains x
+  // and y coordinates. (0.0, 0.0) represents the top-left corner of a
+  // handwriting area, and (1.0, 1.0) does the bottom-right. For example,
+  // the second stroke for U+30ED (Katakana character Ro) would be
+  // something like [(0,0), (1,0), (1,1)].  stroke.size() should always be
+  // >= 2 (i.e. a single dot is not allowed).
+  virtual void SendHandwritingStroke(const HandwritingStroke& stroke) = 0;
+
+  // Clears the last N handwriting strokes. Pass zero for clearing all strokes.
+  // TODO(yusukes): Currently ibus-daemon only accepts 0 for |n_strokes|.
+  virtual void CancelHandwriting(int n_strokes) = 0;
+};
+
+// Gets all input method engines that are supported, including ones not
+// active.  Caller has to delete the returned list. This function never
+// returns NULL.
+InputMethodDescriptors* GetSupportedInputMethodDescriptors();
 
 //
 // FUNCTIONS BELOW ARE ONLY FOR UNIT TESTS. DO NOT USE THEM.
@@ -317,6 +322,7 @@ InputMethodDescriptor CreateInputMethodDescriptor(
     const std::string& raw_layout,
     const std::string& language_code);
 
+}  // namespace input_method
 }  // namespace chromeos
 
-#endif  // CHROMEOS_INPUT_METHOD_H_
+#endif  // CHROME_BROWSER_CHROMEOS_INPUT_METHOD_IBUS_CONTROLLER_H_

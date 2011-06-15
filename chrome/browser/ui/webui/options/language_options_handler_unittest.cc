@@ -17,20 +17,21 @@
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_CHROMEOS)
-static chromeos::InputMethodDescriptors CreateInputMethodDescriptors() {
-  chromeos::InputMethodDescriptors descriptors;
+
+using chromeos::input_method::InputMethodDescriptor;
+using chromeos::input_method::InputMethodDescriptors;
+
+static InputMethodDescriptors CreateInputMethodDescriptors() {
+  InputMethodDescriptors descriptors;
   descriptors.push_back(
-      chromeos::InputMethodDescriptor("xkb:us::eng", "USA",
-                                      "us", "us", "eng"));
+      InputMethodDescriptor("xkb:us::eng", "USA", "us", "us", "eng"));
   descriptors.push_back(
-      chromeos::InputMethodDescriptor("xkb:fr::fra", "France",
-                                      "fr", "fr", "fra"));
+      InputMethodDescriptor("xkb:fr::fra", "France", "fr", "fr", "fra"));
   descriptors.push_back(
-      chromeos::InputMethodDescriptor("xkb:be::fra", "Belgium",
-                                      "be", "be", "fr"));
+      InputMethodDescriptor("xkb:be::fra", "Belgium", "be", "be", "fr"));
   descriptors.push_back(
-      chromeos::InputMethodDescriptor("mozc", "Mozc (US keyboard layout)",
-                                      "us", "us", "ja"));
+      InputMethodDescriptor("mozc", "Mozc (US keyboard layout)",
+                            "us", "us", "ja"));
   return descriptors;
 }
 
@@ -44,7 +45,7 @@ TEST(LanguageOptionsHandlerTest, GetInputMethodList) {
   chromeos::CrosLibrary::Get()->GetTestApi()->SetInputMethodLibrary(NULL,
                                                                     false);
 
-  chromeos::InputMethodDescriptors descriptors = CreateInputMethodDescriptors();
+  InputMethodDescriptors descriptors = CreateInputMethodDescriptors();
   scoped_ptr<ListValue> list(
       chromeos::CrosLanguageOptionsHandler::GetInputMethodList(descriptors));
   ASSERT_EQ(4U, list->GetSize());
@@ -98,7 +99,7 @@ TEST(LanguageOptionsHandlerTest, GetInputMethodList) {
 }
 
 TEST(LanguageOptionsHandlerTest, GetLanguageList) {
-  chromeos::InputMethodDescriptors descriptors = CreateInputMethodDescriptors();
+  InputMethodDescriptors descriptors = CreateInputMethodDescriptors();
   scoped_ptr<ListValue> list(
       chromeos::CrosLanguageOptionsHandler::GetLanguageList(descriptors));
   ASSERT_EQ(7U, list->GetSize());

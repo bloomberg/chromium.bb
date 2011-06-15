@@ -120,8 +120,8 @@ class ScreenLockObserver : public chromeos::ScreenLockLibrary::Observer,
 
       saved_previous_input_method_id_ = library->previous_input_method().id;
       saved_current_input_method_id_ = library->current_input_method().id;
-      scoped_ptr<chromeos::InputMethodDescriptors> active_input_method_list(
-          library->GetActiveInputMethods());
+      scoped_ptr<chromeos::input_method::InputMethodDescriptors>
+          active_input_method_list(library->GetActiveInputMethods());
 
       const std::string hardware_keyboard_id =
           chromeos::input_method::GetHardwareInputMethodId();
@@ -130,8 +130,8 @@ class ScreenLockObserver : public chromeos::ScreenLockLibrary::Observer,
       // keyboard on the screen locker.
       bool should_add_hardware_keyboard = true;
 
-      chromeos::ImeConfigValue value;
-      value.type = chromeos::ImeConfigValue::kValueTypeStringList;
+      chromeos::input_method::ImeConfigValue value;
+      value.type = chromeos::input_method::ImeConfigValue::kValueTypeStringList;
       for (size_t i = 0; i < active_input_method_list->size(); ++i) {
         const std::string& input_method_id = active_input_method_list->at(i).id;
         saved_active_input_method_list_.push_back(input_method_id);
@@ -162,8 +162,8 @@ class ScreenLockObserver : public chromeos::ScreenLockLibrary::Observer,
       chromeos::InputMethodLibrary* library =
           chromeos::CrosLibrary::Get()->GetInputMethodLibrary();
 
-      chromeos::ImeConfigValue value;
-      value.type = chromeos::ImeConfigValue::kValueTypeStringList;
+      chromeos::input_method::ImeConfigValue value;
+      value.type = chromeos::input_method::ImeConfigValue::kValueTypeStringList;
       value.string_list_value = saved_active_input_method_list_;
       library->SetEnableAutoImeShutdown(true);
       library->SetImeConfig(

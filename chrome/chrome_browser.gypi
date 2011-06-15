@@ -443,6 +443,8 @@
         'browser/chromeos/gview_request_interceptor.h',
         'browser/chromeos/input_method/candidate_window.cc',
         'browser/chromeos/input_method/candidate_window.h',
+        'browser/chromeos/input_method/ibus_controller.cc',
+        'browser/chromeos/input_method/ibus_controller.h',
         'browser/chromeos/input_method/input_method_util.cc',
         'browser/chromeos/input_method/input_method_util.h',
         'browser/chromeos/input_method/virtual_keyboard_selector.cc',
@@ -3630,6 +3632,11 @@
             'browser/platform_util_linux.cc',
             'browser/upgrade_detector_impl.cc',
             'browser/upgrade_detector_impl.h',
+          ],
+        }],
+        ['use_ibus==1', {
+          'dependencies': [
+            '../build/linux/system.gyp:ibus',
           ],
         }],
         ['use_cups==1', {

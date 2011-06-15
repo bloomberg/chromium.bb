@@ -27,12 +27,20 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_collator.h"
 
+#if defined(HAVE_IBUS)
+// TODO(satorux): Move these to Chrome tree.
+#include <cros/chromeos_keyboard_overlay_map.h>
+#endif
+
+namespace chromeos {
+namespace input_method {
+
 namespace {
 
 // Map from language code to associated input method IDs, etc.
 typedef std::multimap<std::string, std::string> LanguageCodeToIdsMap;
 // Map from input method ID to associated input method descriptor.
-typedef std::map<std::string, chromeos::InputMethodDescriptor>
+typedef std::map<std::string, InputMethodDescriptor>
     InputMethodIdToDescriptorMap;
 // Map from layout name to associated overlay ID
 typedef std::map<std::string, std::string> InputMethodNameToOverlayIdMap;
@@ -49,9 +57,9 @@ struct IdMaps {
   }
 
   void ReloadMaps() {
-    chromeos::InputMethodLibrary* library =
-        chromeos::CrosLibrary::Get()->GetInputMethodLibrary();
-    scoped_ptr<chromeos::InputMethodDescriptors> supported_input_methods(
+    InputMethodLibrary* library =
+        CrosLibrary::Get()->GetInputMethodLibrary();
+    scoped_ptr<InputMethodDescriptors> supported_input_methods(
         library->GetSupportedInputMethods());
     if (supported_input_methods->size() <= 1) {
       LOG(ERROR) << "GetSupportedInputMethods returned a fallback ID";
@@ -65,12 +73,10 @@ struct IdMaps {
     name_to_overlay_id->clear();
 
     for (size_t i = 0; i < supported_input_methods->size(); ++i) {
-      const chromeos::InputMethodDescriptor& input_method =
+      const InputMethodDescriptor& input_method =
           supported_input_methods->at(i);
       const std::string language_code =
-          chromeos::input_method::GetLanguageCodeFromDescriptor(input_method);
-      const std::string keyboard_overlay_id =
-          library->GetKeyboardOverlayId(input_method.id);
+          GetLanguageCodeFromDescriptor(input_method);
       language_code_to_ids->insert(
           std::make_pair(language_code, input_method.id));
       // Remember the pairs.
@@ -78,12 +84,9 @@ struct IdMaps {
           std::make_pair(input_method.id, language_code));
       id_to_descriptor->insert(
           std::make_pair(input_method.id, input_method));
-      name_to_overlay_id->insert(
-          std::make_pair(input_method.keyboard_layout, keyboard_overlay_id));
     }
 
     // Go through the languages listed in kExtraLanguages.
-    using chromeos::input_method::kExtraLanguages;
     for (size_t i = 0; i < arraysize(kExtraLanguages); ++i) {
       const char* language_code = kExtraLanguages[i].language_code;
       const char* input_method_id = kExtraLanguages[i].input_method_id;
@@ -92,13 +95,9 @@ struct IdMaps {
       // If the associated input method descriptor is found, add the
       // language code and the input method.
       if (iter != id_to_descriptor->end()) {
-        const chromeos::InputMethodDescriptor& input_method = iter->second;
-        const std::string keyboard_overlay_id =
-            library->GetKeyboardOverlayId(input_method.id);
+        const InputMethodDescriptor& input_method = iter->second;
         language_code_to_ids->insert(
             std::make_pair(language_code, input_method.id));
-        name_to_overlay_id->insert(
-            std::make_pair(input_method.keyboard_layout, keyboard_overlay_id));
       }
     }
   }
@@ -292,9 +291,9 @@ struct CompareLanguageCodesByLanguageName
   // list is short (about 40 at most).
   bool operator()(const std::string& s1, const std::string& s2) const {
     const string16 key1 =
-        chromeos::input_method::GetLanguageDisplayNameFromCode(s1);
+        GetLanguageDisplayNameFromCode(s1);
     const string16 key2 =
-        chromeos::input_method::GetLanguageDisplayNameFromCode(s2);
+        GetLanguageDisplayNameFromCode(s2);
     return l10n_util::StringComparator<string16>(collator_)(key1, key2);
   }
 
@@ -365,9 +364,6 @@ bool GetLocalizedString(const std::string& english_string,
 };
 
 }  // namespace
-
-namespace chromeos {
-namespace input_method {
 
 std::wstring GetString(const std::string& english_string,
                        const std::string& input_method_id) {
@@ -503,11 +499,15 @@ std::string GetKeyboardLayoutName(const std::string& input_method_id) {
       "" : iter->second.keyboard_layout;
 }
 
-std::string GetKeyboardOverlayId(const std::string& input_method_name) {
-  std::map<std::string, std::string>::const_iterator iter
-      = IdMaps::GetInstance()->name_to_overlay_id->find(input_method_name);
-  return (iter == IdMaps::GetInstance()->name_to_overlay_id->end()) ?
-      "" : iter->second;
+std::string GetKeyboardOverlayId(const std::string& input_method_id) {
+#if defined(HAVE_IBUS)
+  for (size_t i = 0; i < arraysize(kKeyboardOverlayMap); ++i) {
+    if (kKeyboardOverlayMap[i].input_method_id == input_method_id) {
+      return kKeyboardOverlayMap[i].keyboard_overlay_id;
+    }
+  }
+#endif  // defined(HAVE_IBUS)
+  return "";
 }
 
 std::string GetInputMethodDisplayNameFromId(
@@ -518,7 +518,7 @@ std::string GetInputMethodDisplayNameFromId(
       "" : GetStringUTF8(iter->second.display_name, input_method_id);
 }
 
-const chromeos::InputMethodDescriptor* GetInputMethodDescriptorFromId(
+const InputMethodDescriptor* GetInputMethodDescriptorFromId(
     const std::string& input_method_id) {
   InputMethodIdToDescriptorMap::const_iterator iter
       = IdMaps::GetInstance()->id_to_descriptor->find(input_method_id);
@@ -608,8 +608,8 @@ void GetFirstLoginInputMethodIds(
   std::string most_popular_id;
   std::vector<std::string> input_method_ids;
   // This returns the input methods sorted by popularity.
-  input_method::GetInputMethodIdsFromLanguageCode(
-      language_code, input_method::kAllInputMethods, &input_method_ids);
+  GetInputMethodIdsFromLanguageCode(
+      language_code, kAllInputMethods, &input_method_ids);
   for (size_t i = 0; i < input_method_ids.size(); ++i) {
     const std::string& input_method_id = input_method_ids[i];
     // Pick the first one.

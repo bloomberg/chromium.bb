@@ -34,14 +34,14 @@ class CrosLanguageOptionsHandler : public LanguageOptionsHandlerCommon {
   // Note that true in languageCodeSet does not mean anything. We just use
   // the dictionary as a set.
   static ListValue* GetInputMethodList(
-      const chromeos::InputMethodDescriptors& descriptors);
+      const input_method::InputMethodDescriptors& descriptors);
 
   // Gets the list of languages from the given input descriptors.
   // The return value will look like:
   // [{'code': 'fi', 'displayName': 'Finnish', 'nativeDisplayName': 'suomi'},
   //  ...]
   static ListValue* GetLanguageList(
-      const chromeos::InputMethodDescriptors& descriptors);
+      const input_method::InputMethodDescriptors& descriptors);
 
  private:
   // LanguageOptionsHandlerCommon implementation.

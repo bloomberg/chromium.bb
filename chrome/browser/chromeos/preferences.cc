@@ -445,8 +445,8 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
 void Preferences::SetLanguageConfigBoolean(const char* section,
                                            const char* name,
                                            bool value) {
-  ImeConfigValue config;
-  config.type = ImeConfigValue::kValueTypeBool;
+  input_method::ImeConfigValue config;
+  config.type = input_method::ImeConfigValue::kValueTypeBool;
   config.bool_value = value;
   CrosLibrary::Get()->GetInputMethodLibrary()->
       SetImeConfig(section, name, config);
@@ -455,8 +455,8 @@ void Preferences::SetLanguageConfigBoolean(const char* section,
 void Preferences::SetLanguageConfigInteger(const char* section,
                                            const char* name,
                                            int value) {
-  ImeConfigValue config;
-  config.type = ImeConfigValue::kValueTypeInt;
+  input_method::ImeConfigValue config;
+  config.type = input_method::ImeConfigValue::kValueTypeInt;
   config.int_value = value;
   CrosLibrary::Get()->GetInputMethodLibrary()->
       SetImeConfig(section, name, config);
@@ -465,8 +465,8 @@ void Preferences::SetLanguageConfigInteger(const char* section,
 void Preferences::SetLanguageConfigString(const char* section,
                                           const char* name,
                                           const std::string& value) {
-  ImeConfigValue config;
-  config.type = ImeConfigValue::kValueTypeString;
+  input_method::ImeConfigValue config;
+  config.type = input_method::ImeConfigValue::kValueTypeString;
   config.string_value = value;
   CrosLibrary::Get()->GetInputMethodLibrary()->
       SetImeConfig(section, name, config);
@@ -476,8 +476,8 @@ void Preferences::SetLanguageConfigStringList(
     const char* section,
     const char* name,
     const std::vector<std::string>& values) {
-  ImeConfigValue config;
-  config.type = ImeConfigValue::kValueTypeStringList;
+  input_method::ImeConfigValue config;
+  config.type = input_method::ImeConfigValue::kValueTypeStringList;
   for (size_t i = 0; i < values.size(); ++i)
     config.string_list_value.push_back(values[i]);
 

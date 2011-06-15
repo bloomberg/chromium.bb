@@ -7,8 +7,8 @@
 
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
+#include "chrome/browser/chromeos/input_method/ibus_controller.h"
 #include "chrome/test/in_process_browser_test.h"
-#include "third_party/cros/chromeos_input_method.h"
 
 namespace chromeos {
 
@@ -83,7 +83,7 @@ class CrosMock {
 
   // Creates input method descriptors. This is a helper function for
   // SetInputMethodLibraryStatusAreaExpectations().
-  static InputMethodDescriptors* CreateInputMethodDescriptors();
+  static input_method::InputMethodDescriptors* CreateInputMethodDescriptors();
 
   // TestApi gives access to CrosLibrary private members.
   chromeos::CrosLibrary::TestApi* test_api();
@@ -100,9 +100,9 @@ class CrosMock {
   MockSpeechSynthesisLibrary* mock_speech_synthesis_library_;
   MockTouchpadLibrary* mock_touchpad_library_;
 
-  ImePropertyList ime_properties_;
-  InputMethodDescriptor current_input_method_;
-  InputMethodDescriptor previous_input_method_;
+  input_method::ImePropertyList ime_properties_;
+  input_method::InputMethodDescriptor current_input_method_;
+  input_method::InputMethodDescriptor previous_input_method_;
   WifiNetworkVector wifi_networks_;
   CellularNetworkVector cellular_networks_;
   VirtualNetworkVector virtual_networks_;

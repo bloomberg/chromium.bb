@@ -1,14 +1,12 @@
-// Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos_input_method.h"
+#include "chrome/browser/chromeos/input_method/ibus_controller.h"
 
-#include "chromeos_input_method_ui.h"
-#include "chromeos_input_method_whitelist.h"
-#include "chromeos_keyboard_overlay_map.h"
-
+#if defined(HAVE_IBUS)
 #include <ibus.h>
+#endif
 
 #include <algorithm>  // for std::reverse.
 #include <cstdio>
@@ -18,11 +16,45 @@
 #include <stack>
 #include <utility>
 
+#if defined(HAVE_IBUS)
+// TODO(satorux): Move these to Chrome tree.
+#include <cros/chromeos_input_method_whitelist.h>
+#include <cros/ibus_input_methods.h>
+#else
+const char* kInputMethodIdsWhitelist[] = {
+  "xkb:us::eng",
+};
+const char* kXkbLayoutsWhitelist[] = {
+  "us",
+};
+#endif  // defined(HAVE_IBUS)
+
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
-#include "ibus_input_methods.h"
+#include "base/observer_list.h"
 
 namespace chromeos {
+namespace input_method {
+
+// TODO(satorux): The function is used via
+// InputMethodLibrary::GetSupportedInputMethodDescriptors(). The
+// indirection is unnecessary once we get rid of libcros. We should
+// refactor the two functions.
+InputMethodDescriptors* GetSupportedInputMethodDescriptors() {
+  InputMethodDescriptors* input_methods = new InputMethodDescriptors;
+#if defined(HAVE_IBUS)
+  for (size_t i = 0; i < arraysize(chromeos::kIBusEngines); ++i) {
+    if (InputMethodIdIsWhitelisted(chromeos::kIBusEngines[i].name)) {
+      input_methods->push_back(CreateInputMethodDescriptor(
+          chromeos::kIBusEngines[i].name,
+          chromeos::kIBusEngines[i].longname,
+          chromeos::kIBusEngines[i].layout,
+          chromeos::kIBusEngines[i].language));
+    }
+  }
+#endif  // defined(HAVE_IBUS)
+  return input_methods;
+}
 
 // Returns true if |input_method_id| is whitelisted.
 bool InputMethodIdIsWhitelisted(const std::string& input_method_id) {
@@ -79,6 +111,9 @@ InputMethodDescriptor CreateInputMethodDescriptor(
                                virtual_keyboard_layout,
                                language_code);
 }
+
+#if defined(HAVE_IBUS)
+const char kPanelObjectKey[] = "panel-object";
 
 namespace {
 
@@ -149,7 +184,7 @@ void AddInputMethodNames(const GList* engines, InputMethodDescriptors* out) {
                                                  longname,
                                                  layout,
                                                  language));
-      DLOG(INFO) << name << " (preloaded)";
+      VLOG(1) << name << " (preloaded)";
     }
   }
 }
@@ -196,7 +231,7 @@ bool ConvertProperty(IBusProperty* ibus_prop,
   }
   if ((!has_sub_props) && (ibus_prop->type == PROP_TYPE_MENU)) {
     // This is usually not an error. ibus-daemon sometimes sends empty props.
-    DLOG(INFO) << "Property list is empty";
+    VLOG(1) << "Property list is empty";
     return false;
   }
   if (ibus_prop->type == PROP_TYPE_SEPARATOR ||
@@ -439,45 +474,21 @@ std::string PrintPropList(IBusPropList *prop_list, int tree_level) {
 
 }  // namespace
 
-// A singleton class that holds IBus connections.
-class InputMethodStatusConnection {
+// The real implementation of the IBusController.
+class IBusControllerImpl : public IBusController {
  public:
-  // Returns a singleton object of the class. If the singleton object is already
-  // initialized, the arguments are ignored.
-  // Warning: you can call the callback functions only in the ibus callback
-  // functions like FocusIn(). See http://crosbug.com/5217#c9 for details.
-  static InputMethodStatusConnection* GetConnection(
-      void* language_library,
-      LanguageCurrentInputMethodMonitorFunction current_input_method_changed,
-      LanguageRegisterImePropertiesFunction register_ime_properties,
-      LanguageUpdateImePropertyFunction update_ime_property,
-      LanguageConnectionChangeMonitorFunction connection_change_handler) {
-    DCHECK(language_library);
-    DCHECK(current_input_method_changed),
-    DCHECK(register_ime_properties);
-    DCHECK(update_ime_property);
-
-    InputMethodStatusConnection* object = GetInstance();
-    if (!object->language_library_) {
-      object->language_library_ = language_library;
-      object->current_input_method_changed_ = current_input_method_changed;
-      object->register_ime_properties_= register_ime_properties;
-      object->update_ime_property_ = update_ime_property;
-      object->connection_change_handler_ = connection_change_handler;
-      object->MaybeRestoreConnections();
-    } else if (object->language_library_ != language_library) {
-      LOG(ERROR) << "Unknown language_library is passed";
-    }
-    return object;
+  // TODO(satorux,yusukes): Remove use of singleton here.
+  static IBusControllerImpl* GetInstance() {
+    return Singleton<IBusControllerImpl,
+        LeakySingletonTraits<IBusControllerImpl> >::get();
   }
 
-  static InputMethodStatusConnection* GetInstance() {
-    return Singleton<InputMethodStatusConnection,
-        LeakySingletonTraits<InputMethodStatusConnection> >::get();
+  virtual void Connect() {
+    MaybeRestoreConnections();
   }
 
-  // Called by cros API ChromeOSStopInputMethodProcess().
-  bool StopInputMethodProcess() {
+  // IBusController override.
+  virtual bool StopInputMethodProcess() {
     if (!IBusConnectionsAreAlive()) {
       LOG(ERROR) << "StopInputMethodProcess: IBus connection is not alive";
       return false;
@@ -500,13 +511,14 @@ class InputMethodStatusConnection {
     return true;
   }
 
-  // Called by cros API ChromeOS(Activate|Deactive)ImeProperty().
-  void SetImePropertyActivated(const char* key, bool activated) {
+  // IBusController override.
+  virtual void SetImePropertyActivated(const std::string& key,
+                                       bool activated) {
     if (!IBusConnectionsAreAlive()) {
       LOG(ERROR) << "SetImePropertyActivated: IBus connection is not alive";
       return;
     }
-    if (!key || (key[0] == '\0')) {
+    if (key.empty()) {
       return;
     }
     if (input_context_path_.empty()) {
@@ -520,7 +532,8 @@ class InputMethodStatusConnection {
     }
     // Activate the property *asynchronously*.
     ibus_input_context_property_activate(
-        context, key, (activated ? PROP_STATE_CHECKED : PROP_STATE_UNCHECKED));
+        context, key.c_str(),
+        (activated ? PROP_STATE_CHECKED : PROP_STATE_UNCHECKED));
 
     // We don't have to call ibus_proxy_destroy(context) explicitly here,
     // i.e. we can just call g_object_unref(context), since g_object_unref can
@@ -530,13 +543,13 @@ class InputMethodStatusConnection {
     g_object_unref(context);
   }
 
-  // Called by cros API ChromeOSChangeInputMethod().
-  bool ChangeInputMethod(const char* name) {
+  // IBusController override.
+  virtual bool ChangeInputMethod(const std::string& name) {
     if (!IBusConnectionsAreAlive()) {
       LOG(ERROR) << "ChangeInputMethod: IBus connection is not alive";
       return false;
     }
-    if (!name) {
+    if (name.empty()) {
       return false;
     }
     if (!InputMethodIdIsWhitelisted(name)) {
@@ -551,11 +564,11 @@ class InputMethodStatusConnection {
     // until a text area is focused. Therefore, we have to clear the old input
     // method properties here to keep the input method switcher status
     // consistent.
-    RegisterProperties(NULL);
+    DoRegisterProperties(NULL);
 
     // Change the global engine *asynchronously*.
     ibus_bus_set_global_engine_async(ibus_,
-                                     name,
+                                     name.c_str(),
                                      -1,  // use the default ibus timeout
                                      NULL,  // cancellable
                                      NULL,  // callback
@@ -563,14 +576,10 @@ class InputMethodStatusConnection {
     return true;
   }
 
-  // Updates a configuration of ibus-daemon or IBus engines with |value|.
-  // Returns true if the configuration is successfully updated.
-  //
-  // For more information, please read a comment for SetImeConfig() function
-  // in chromeos_language.h.
-  bool SetImeConfig(const std::string& section,
-                    const std::string& config_name,
-                    const ImeConfigValue& value) {
+  // IBusController override.
+  virtual bool SetImeConfig(const std::string& section,
+                            const std::string& config_name,
+                            const ImeConfigValue& value) {
     // See comments in GetImeConfig() where ibus_config_get_value() is used.
     if (!IBusConnectionsAreAlive()) {
       LOG(ERROR) << "SetImeConfig: IBus connection is not alive";
@@ -633,13 +642,14 @@ class InputMethodStatusConnection {
     // (takes ownership of) the variable.
 
     if (is_preload_engines) {
-      DLOG(INFO) << "SetImeConfig: " << section << "/" << config_name
-                 << ": " << value.ToString();
+      VLOG(1) << "SetImeConfig: " << section << "/" << config_name
+              << ": " << value.ToString();
     }
     return true;
   }
 
-  void SendHandwritingStroke(const HandwritingStroke& stroke) {
+  // IBusController override.
+  virtual void SendHandwritingStroke(const HandwritingStroke& stroke) {
     if (stroke.size() < 2) {
       LOG(WARNING) << "Empty stroke data or a single dot is passed.";
       return;
@@ -661,7 +671,8 @@ class InputMethodStatusConnection {
     g_object_unref(context);
   }
 
-  void CancelHandwriting(int n_strokes) {
+  // IBusController override.
+  virtual void CancelHandwriting(int n_strokes) {
     IBusInputContext* context = GetInputContext(input_context_path_, ibus_);
     if (!context) {
       return;
@@ -670,19 +681,73 @@ class InputMethodStatusConnection {
     g_object_unref(context);
   }
 
+  // IBusController override.
+  virtual void AddObserver(Observer* observer) {
+    observers_.AddObserver(observer);
+  }
+
+  // IBusController override.
+  virtual void RemoveObserver(Observer* observer) {
+    observers_.RemoveObserver(observer);
+  }
+
  private:
-  friend struct DefaultSingletonTraits<InputMethodStatusConnection>;
-  InputMethodStatusConnection()
-      : current_input_method_changed_(NULL),
-        register_ime_properties_(NULL),
-        update_ime_property_(NULL),
-        connection_change_handler_(NULL),
-        language_library_(NULL),
-        ibus_(NULL),
+  // Functions that end with Thunk are used to deal with glib callbacks.
+  //
+  // Note that we cannot use CHROMEG_CALLBACK_0() here as we'll define
+  // IBusBusConnected() inline. If we are to define the function outside
+  // of the class definition, we should use CHROMEG_CALLBACK_0() here.
+  //
+  // CHROMEG_CALLBACK_0(Impl,
+  //                    void, IBusBusConnected, IBusBus*);
+  static void IBusBusConnectedThunk(IBusBus* sender, gpointer userdata) {
+    return reinterpret_cast<IBusControllerImpl*>(userdata)
+        ->IBusBusConnected(sender);
+  }
+  static void IBusBusDisconnectedThunk(IBusBus* sender, gpointer userdata) {
+    return reinterpret_cast<IBusControllerImpl*>(userdata)
+        ->IBusBusDisconnected(sender);
+  }
+  static void IBusBusGlobalEngineChangedThunk(IBusBus* sender,
+                                              const gchar* engine_name,
+                                              gpointer userdata) {
+    return reinterpret_cast<IBusControllerImpl*>(userdata)
+        ->IBusBusGlobalEngineChanged(sender, engine_name);
+  }
+  static void IBusBusNameOwnerChangedThunk(IBusBus* sender,
+                                           const gchar* name,
+                                           const gchar* old_name,
+                                           const gchar* new_name,
+                                           gpointer userdata) {
+    return reinterpret_cast<IBusControllerImpl*>(userdata)
+        ->IBusBusNameOwnerChanged(sender, name, old_name, new_name);
+  }
+  static void FocusInThunk(IBusPanelService* sender,
+                           const gchar* input_context_path,
+                           gpointer userdata) {
+    return reinterpret_cast<IBusControllerImpl*>(userdata)
+        ->FocusIn(sender, input_context_path);
+  }
+  static void RegisterPropertiesThunk(IBusPanelService* sender,
+                                      IBusPropList* prop_list,
+                                      gpointer userdata) {
+    return reinterpret_cast<IBusControllerImpl*>(userdata)
+        ->RegisterProperties(sender, prop_list);
+  }
+  static void UpdatePropertyThunk(IBusPanelService* sender,
+                                  IBusProperty* ibus_prop,
+                                  gpointer userdata) {
+    return reinterpret_cast<IBusControllerImpl*>(userdata)
+        ->UpdateProperty(sender, ibus_prop);
+  }
+
+  friend struct DefaultSingletonTraits<IBusControllerImpl>;
+  IBusControllerImpl()
+      : ibus_(NULL),
         ibus_config_(NULL) {
   }
 
-  ~InputMethodStatusConnection() {
+  ~IBusControllerImpl() {
     // Since the class is used as a leaky singleton, this destructor is never
     // called. However, if you would delete an instance of this class, you have
     // to disconnect all signals so the handler functions will not be called
@@ -717,10 +782,8 @@ class InputMethodStatusConnection {
     MaybeRestoreIBusConfig();
     if (IBusConnectionsAreAlive()) {
       ConnectPanelServiceSignals();
-      if (connection_change_handler_) {
-        LOG(INFO) << "Notifying Chrome that IBus is ready.";
-        connection_change_handler_(language_library_, true);
-      }
+      VLOG(1) << "Notifying Chrome that IBus is ready.";
+      FOR_EACH_OBSERVER(Observer, observers_, OnConnectionChange(true));
     }
   }
 
@@ -750,7 +813,7 @@ class InputMethodStatusConnection {
     ibus_bus_set_watch_ibus_signal(ibus_, TRUE);
 
     if (ibus_bus_is_connected(ibus_)) {
-      LOG(INFO) << "IBus connection is ready.";
+      VLOG(1) << "IBus connection is ready.";
     }
   }
 
@@ -767,8 +830,8 @@ class InputMethodStatusConnection {
     if (!ibus_config_) {
       GDBusConnection* ibus_connection = ibus_bus_get_connection(ibus_);
       if (!ibus_connection) {
-        LOG(INFO) << "Couldn't create an ibus config object since "
-                  << "IBus connection is not ready.";
+        VLOG(1) << "Couldn't create an ibus config object since "
+                << "IBus connection is not ready.";
         return;
       }
       const gboolean disconnected
@@ -797,7 +860,7 @@ class InputMethodStatusConnection {
       // libcros to detect the delivery of the "destroy" glib signal the
       // |ibus_config_| object.
       g_object_ref(ibus_config_);
-      LOG(INFO) << "ibus_config_ is ready.";
+      VLOG(1) << "ibus_config_ is ready.";
     }
   }
 
@@ -816,20 +879,9 @@ class InputMethodStatusConnection {
     }
   }
 
-  // Handles "FocusIn" signal from chromeos_input_method_ui.
-  void FocusIn(const char* input_context_path) {
-    if (!input_context_path) {
-      LOG(ERROR) << "NULL context passed";
-    } else {
-      DLOG(INFO) << "FocusIn: " << input_context_path;
-    }
-    // Remember the current ic path.
-    input_context_path_ = Or(input_context_path, "");
-  }
-
   // Handles "RegisterProperties" signal from chromeos_input_method_ui.
-  void RegisterProperties(IBusPropList* ibus_prop_list) {
-    DLOG(INFO) << "RegisterProperties" << (ibus_prop_list ? "" : " (clear)");
+  void DoRegisterProperties(IBusPropList* ibus_prop_list) {
+    VLOG(1) << "RegisterProperties" << (ibus_prop_list ? "" : " (clear)");
 
     ImePropertyList prop_list;  // our representation.
     if (ibus_prop_list) {
@@ -838,33 +890,14 @@ class InputMethodStatusConnection {
       // here to dump |ibus_prop_list|.
       if (!FlattenPropertyList(ibus_prop_list, &prop_list)) {
         // Clear properties on errors.
-        RegisterProperties(NULL);
+        DoRegisterProperties(NULL);
         return;
       }
     }
+    VLOG(1) << "RegisterProperties" << (ibus_prop_list ? "" : " (clear)");
     // Notify the change.
-    register_ime_properties_(language_library_, prop_list);
-  }
-
-  // Handles "UpdateProperty" signal from chromeos_input_method_ui.
-  void UpdateProperty(IBusProperty* ibus_prop) {
-    DLOG(INFO) << "UpdateProperty";
-    DCHECK(ibus_prop);
-
-    // You can call
-    //   LOG(INFO) << "\n" << PrintProp(ibus_prop, 0);
-    // here to dump |ibus_prop|.
-
-    ImePropertyList prop_list;  // our representation.
-    if (!FlattenProperty(ibus_prop, &prop_list)) {
-      // Don't update the UI on errors.
-      LOG(ERROR) << "Malformed properties are detected";
-      return;
-    }
-    // Notify the change.
-    if (!prop_list.empty()) {
-      update_ime_property_(language_library_, prop_list);
-    }
+    FOR_EACH_OBSERVER(Observer, observers_,
+                      OnRegisterImeProperties(prop_list));
   }
 
   // Retrieves input method status and notifies them to the UI.
@@ -895,11 +928,12 @@ class InputMethodStatusConnection {
                                     engine_info->layout,
                                     engine_info->language);
 
-    DLOG(INFO) << "Updating the UI. ID:" << current_input_method.id
-               << ", keyboard_layout:" << current_input_method.keyboard_layout;
+    VLOG(1) << "Updating the UI. ID:" << current_input_method.id
+            << ", keyboard_layout:" << current_input_method.keyboard_layout;
 
     // Notify the change to update UI.
-    current_input_method_changed_(language_library_, current_input_method);
+    FOR_EACH_OBSERVER(Observer, observers_,
+                      OnCurrentInputMethodChanged(current_input_method));
   }
 
   // Installs gobject signal handlers to |ibus_|.
@@ -914,20 +948,20 @@ class InputMethodStatusConnection {
     // to |ibus_|, and the callback in this file use the attached object.
     g_signal_connect_after(ibus_,
                            "connected",
-                           G_CALLBACK(IBusBusConnectedCallback),
+                           G_CALLBACK(IBusBusConnectedThunk),
                            this);
 
     g_signal_connect(ibus_,
                      "disconnected",
-                     G_CALLBACK(IBusBusDisconnectedCallback),
+                     G_CALLBACK(IBusBusDisconnectedThunk),
                      this);
     g_signal_connect(ibus_,
                      "global-engine-changed",
-                     G_CALLBACK(IBusBusGlobalEngineChangedCallback),
+                     G_CALLBACK(IBusBusGlobalEngineChangedThunk),
                      this);
     g_signal_connect(ibus_,
                      "name-owner-changed",
-                     G_CALLBACK(IBusBusNameOwnerChangedCallback),
+                     G_CALLBACK(IBusBusNameOwnerChangedThunk),
                      this);
   }
 
@@ -948,69 +982,54 @@ class InputMethodStatusConnection {
 
     g_signal_connect(ibus_panel_service,
                      "focus-in",
-                     G_CALLBACK(FocusInCallback),
+                     G_CALLBACK(FocusInThunk),
                      this);
     g_signal_connect(ibus_panel_service,
                      "register-properties",
-                     G_CALLBACK(RegisterPropertiesCallback),
+                     G_CALLBACK(RegisterPropertiesThunk),
                      this);
     g_signal_connect(ibus_panel_service,
                      "update-property",
-                     G_CALLBACK(UpdatePropertyCallback),
+                     G_CALLBACK(UpdatePropertyThunk),
                      this);
   }
 
   // Handles "connected" signal from ibus-daemon.
-  static void IBusBusConnectedCallback(IBusBus* bus, gpointer user_data) {
+  void IBusBusConnected(IBusBus* bus) {
     LOG(WARNING) << "IBus connection is recovered.";
-    // ibus-daemon might be restarted, or the daemon was not running when Chrome
-    // started. Anyway, since |ibus_| connection is now ready, it's possible to
-    // create |ibus_config_| object by calling MaybeRestoreConnections().
-    g_return_if_fail(user_data);
-    InputMethodStatusConnection* self
-        = static_cast<InputMethodStatusConnection*>(user_data);
-    self->MaybeRestoreConnections();
+    MaybeRestoreConnections();
   }
 
   // Handles "disconnected" signal from ibus-daemon.
-  static void IBusBusDisconnectedCallback(IBusBus* bus, gpointer user_data) {
+  void IBusBusDisconnected(IBusBus* bus) {
     LOG(WARNING) << "IBus connection is terminated.";
-    g_return_if_fail(user_data);
-    InputMethodStatusConnection* self
-        = static_cast<InputMethodStatusConnection*>(user_data);
     // ibus-daemon might be terminated. Since |ibus_| object will automatically
     // connect to the daemon if it restarts, we don't have to set NULL on ibus_.
     // Call MaybeDestroyIBusConfig() to set |ibus_config_| to NULL temporarily.
-    self->MaybeDestroyIBusConfig();
-    if (self->connection_change_handler_) {
-      LOG(INFO) << "Notifying Chrome that IBus is terminated.";
-      self->connection_change_handler_(self->language_library_, false);
-    }
+    MaybeDestroyIBusConfig();
+    VLOG(1) << "Notifying Chrome that IBus is terminated.";
+    FOR_EACH_OBSERVER(Observer, observers_, OnConnectionChange(false));
   }
 
   // Handles "global-engine-changed" signal from ibus-daemon.
-  static void IBusBusGlobalEngineChangedCallback(
-      IBusBus* bus, const gchar* engine_name, gpointer user_data) {
+  void IBusBusGlobalEngineChanged(IBusBus* bus, const gchar* engine_name) {
     DCHECK(engine_name);
-    DLOG(INFO) << "Global engine is changed to " << engine_name;
-    g_return_if_fail(user_data);
-    InputMethodStatusConnection* self
-        = static_cast<InputMethodStatusConnection*>(user_data);
-    self->UpdateUI(engine_name);
+    VLOG(1) << "Global engine is changed to " << engine_name;
+    UpdateUI(engine_name);
   }
 
   // Handles "name-owner-changed" signal from ibus-daemon. The signal is sent
   // to libcros when an IBus component such as ibus-memconf, ibus-engine-*, ..
   // is started.
-  static void IBusBusNameOwnerChangedCallback(
-      IBusBus* bus,
-      const gchar* name, const gchar* old_name, const gchar* new_name,
-      gpointer user_data) {
+  void IBusBusNameOwnerChanged(IBusBus* bus,
+                               const gchar* name,
+                               const gchar* old_name,
+                               const gchar* new_name) {
     DCHECK(name);
     DCHECK(old_name);
     DCHECK(new_name);
-    DLOG(INFO) << "Name owner is changed: name=" << name
-               << ", old_name=" << old_name << ", new_name=" << new_name;
+    VLOG(1) << "Name owner is changed: name=" << name
+            << ", old_name=" << old_name << ", new_name=" << new_name;
 
     if (name != std::string("org.freedesktop.IBus.Config")) {
       // Not a signal for ibus-memconf.
@@ -1023,52 +1042,57 @@ class InputMethodStatusConnection {
       LOG(WARNING) << "Unexpected name owner change: name=" << name
                    << ", old_name=" << old_name << ", new_name=" << new_name;
       // TODO(yusukes): it might be nice to set |ibus_config_| to NULL and call
-      // |connection_change_handler_| with false here to allow Chrome to
+      // |OnConnectionChange| with false here to allow Chrome to
       // recover all input method configurations when ibus-memconf is
       // automatically restarted by ibus-daemon. Though ibus-memconf is pretty
       // stable and unlikely crashes.
       return;
     }
 
-    LOG(INFO) << "IBus config daemon is started. Recovering ibus_config_";
-    g_return_if_fail(user_data);
-    InputMethodStatusConnection* self
-        = static_cast<InputMethodStatusConnection*>(user_data);
+    VLOG(1) << "IBus config daemon is started. Recovering ibus_config_";
 
     // Try to recover |ibus_config_|. If the |ibus_config_| object is
-    // successfully created, |connection_change_handler_| will be called to
+    // successfully created, |OnConnectionChange| will be called to
     // notify Chrome that IBus is ready.
-    self->MaybeRestoreConnections();
+    MaybeRestoreConnections();
   }
 
   // Handles "FocusIn" signal from chromeos_input_method_ui.
-  static void FocusInCallback(IBusPanelService* panel,
-                              const gchar* path,
-                              gpointer user_data) {
-    g_return_if_fail(user_data);
-    InputMethodStatusConnection* self
-        = static_cast<InputMethodStatusConnection*>(user_data);
-    self->FocusIn(path);
+  void FocusIn(IBusPanelService* panel, const gchar* input_context_path) {
+    if (!input_context_path) {
+      LOG(ERROR) << "NULL context passed";
+    } else {
+      VLOG(1) << "FocusIn: " << input_context_path;
+    }
+    // Remember the current ic path.
+    input_context_path_ = Or(input_context_path, "");
   }
 
   // Handles "RegisterProperties" signal from chromeos_input_method_ui.
-  static void RegisterPropertiesCallback(IBusPanelService* panel,
-                                         IBusPropList* prop_list,
-                                         gpointer user_data) {
-    g_return_if_fail(user_data);
-    InputMethodStatusConnection* self
-        = static_cast<InputMethodStatusConnection*>(user_data);
-    self->RegisterProperties(prop_list);
+  void RegisterProperties(IBusPanelService* panel, IBusPropList* prop_list) {
+    DoRegisterProperties(prop_list);
   }
 
   // Handles "UpdateProperty" signal from chromeos_input_method_ui.
-  static void UpdatePropertyCallback(IBusPanelService* panel,
-                                     IBusProperty* ibus_prop,
-                                     gpointer user_data) {
-    g_return_if_fail(user_data);
-    InputMethodStatusConnection* self
-        = static_cast<InputMethodStatusConnection*>(user_data);
-    self->UpdateProperty(ibus_prop);
+  void UpdateProperty(IBusPanelService* panel, IBusProperty* ibus_prop) {
+    VLOG(1) << "UpdateProperty";
+    DCHECK(ibus_prop);
+
+    // You can call
+    //   LOG(INFO) << "\n" << PrintProp(ibus_prop, 0);
+    // here to dump |ibus_prop|.
+
+    ImePropertyList prop_list;  // our representation.
+    if (!FlattenProperty(ibus_prop, &prop_list)) {
+      // Don't update the UI on errors.
+      LOG(ERROR) << "Malformed properties are detected";
+      return;
+    }
+    // Notify the change.
+    if (!prop_list.empty()) {
+      FOR_EACH_OBSERVER(Observer, observers_,
+                        OnUpdateImeProperty(prop_list));
+    }
   }
 
   // A callback function that will be called when ibus_config_set_value_async()
@@ -1097,17 +1121,6 @@ class InputMethodStatusConnection {
     g_object_unref(config);
   }
 
-  // A function pointers which point LanguageLibrary::XXXHandler functions.
-  // The functions are used when libcros receives signals from ibus-daemon.
-  LanguageCurrentInputMethodMonitorFunction current_input_method_changed_;
-  LanguageRegisterImePropertiesFunction register_ime_properties_;
-  LanguageUpdateImePropertyFunction update_ime_property_;
-  LanguageConnectionChangeMonitorFunction connection_change_handler_;
-
-  // Points to a chromeos::LanguageLibrary object. |language_library_| is used
-  // as the first argument of the monitor functions above.
-  void* language_library_;
-
   // Connection to the ibus-daemon via IBus API. These objects are used to
   // call ibus-daemon's API (e.g. activate input methods, set config, ...)
   IBusBus* ibus_;
@@ -1115,103 +1128,66 @@ class InputMethodStatusConnection {
 
   // Current input context path.
   std::string input_context_path_;
+
+  ObserverList<Observer> observers_;
 };
 
+#endif  // defined(HAVE_IBUS)
+
+// The stub implementation is used if IBus is not present.
 //
-// cros APIs
-//
-
-// The function will be bound to chromeos::MonitorInputMethodStatus with dlsym()
-// in load.cc so it needs to be in the C linkage, so the symbol name does not
-// get mangled.
-extern "C"
-InputMethodStatusConnection* ChromeOSMonitorInputMethodStatus(
-    void* language_library,
-    LanguageCurrentInputMethodMonitorFunction current_input_method_changed,
-    LanguageRegisterImePropertiesFunction register_ime_properties,
-    LanguageUpdateImePropertyFunction update_ime_property,
-    LanguageConnectionChangeMonitorFunction connection_changed) {
-  DLOG(INFO) << "MonitorInputMethodStatus";
-  return InputMethodStatusConnection::GetConnection(
-      language_library,
-      current_input_method_changed,
-      register_ime_properties,
-      update_ime_property,
-      connection_changed);
-}
-
-extern "C"
-bool ChromeOSStopInputMethodProcess(InputMethodStatusConnection* connection) {
-  g_return_val_if_fail(connection, false);
-  return connection->StopInputMethodProcess();
-}
-
-extern "C"
-InputMethodDescriptors* ChromeOSGetSupportedInputMethodDescriptors() {
-  InputMethodDescriptors* input_methods = new InputMethodDescriptors;
-  for (size_t i = 0; i < arraysize(chromeos::kIBusEngines); ++i) {
-    if (InputMethodIdIsWhitelisted(chromeos::kIBusEngines[i].name)) {
-      input_methods->push_back(chromeos::CreateInputMethodDescriptor(
-          chromeos::kIBusEngines[i].name,
-          chromeos::kIBusEngines[i].longname,
-          chromeos::kIBusEngines[i].layout,
-          chromeos::kIBusEngines[i].language));
-    }
+// Note that this class is intentionally built even if HAVE_IBUS is
+// defined so that we can easily tell build breakage when we change the
+// IBusControllerImpl but forget to update the stub implementation.
+class IBusControllerStubImpl : public IBusController {
+ public:
+  IBusControllerStubImpl() {
   }
-  return input_methods;
-}
 
-extern "C"
-void ChromeOSSetImePropertyActivated(
-    InputMethodStatusConnection* connection, const char* key, bool activated) {
-  DLOG(INFO) << "SetImePropertyeActivated: " << key << ": " << activated;
-  DCHECK(key);
-  g_return_if_fail(connection);
-  connection->SetImePropertyActivated(key, activated);
-}
+  virtual void Connect() {
+  };
 
-extern "C"
-bool ChromeOSChangeInputMethod(
-    InputMethodStatusConnection* connection, const char* name) {
-  DCHECK(name);
-  DLOG(INFO) << "ChangeInputMethod: " << name;
-  g_return_val_if_fail(connection, false);
-  return connection->ChangeInputMethod(name);
-}
-
-extern "C"
-bool ChromeOSSetImeConfig(InputMethodStatusConnection* connection,
-                          const char* section,
-                          const char* config_name,
-                          const ImeConfigValue& value) {
-  DCHECK(section);
-  DCHECK(config_name);
-  g_return_val_if_fail(connection, FALSE);
-  return connection->SetImeConfig(section, config_name, value);
-}
-
-extern "C"
-std::string ChromeOSGetKeyboardOverlayId(const std::string& input_method_id) {
-  for (size_t i = 0; i < arraysize(kKeyboardOverlayMap); ++i) {
-    if (kKeyboardOverlayMap[i].input_method_id == input_method_id) {
-      return kKeyboardOverlayMap[i].keyboard_overlay_id;
-    }
+  virtual void AddObserver(Observer* observer) {
   }
-  return "";
+
+  virtual void RemoveObserver(Observer* observer) {
+  }
+
+  virtual bool StopInputMethodProcess() {
+    return true;
+  }
+
+  virtual bool ChangeInputMethod(const std::string& name) {
+    return true;
+  }
+
+  virtual void SetImePropertyActivated(const std::string& key,
+                                       bool activated) {
+  }
+
+  virtual bool SetImeConfig(const std::string& section,
+                            const std::string& config_name,
+                            const ImeConfigValue& value) {
+    return true;
+  }
+
+  virtual void SendHandwritingStroke(const HandwritingStroke& stroke) {
+  }
+
+  virtual void CancelHandwriting(int n_strokes) {
+  }
+};
+
+IBusController* IBusController::Create() {
+#if defined(HAVE_IBUS)
+  return IBusControllerImpl::GetInstance();
+#else
+  return new IBusControllerStubImpl;
+#endif
 }
 
-extern "C"
-void ChromeOSSendHandwritingStroke(InputMethodStatusConnection* connection,
-                                   const HandwritingStroke& stroke) {
-  g_return_if_fail(connection);
-  connection->SendHandwritingStroke(stroke);
+IBusController::~IBusController() {
 }
 
-extern "C"
-void ChromeOSCancelHandwriting(InputMethodStatusConnection* connection,
-                               int n_strokes) {
-  g_return_if_fail(connection);
-  connection->CancelHandwriting(n_strokes);
-}
-
+}  // namespace input_method
 }  // namespace chromeos

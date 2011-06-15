@@ -21,23 +21,29 @@ class MockInputMethodLibrary : public InputMethodLibrary {
   MOCK_METHOD1(AddObserver, void(Observer*));
   MOCK_METHOD1(RemoveObserver, void(Observer*));
 
-  MOCK_METHOD0(GetActiveInputMethods, InputMethodDescriptors*(void));
+  MOCK_METHOD0(GetActiveInputMethods,
+               input_method::InputMethodDescriptors*(void));
   MOCK_METHOD0(GetNumActiveInputMethods, size_t(void));
-  MOCK_METHOD0(GetSupportedInputMethods, InputMethodDescriptors*(void));
+  MOCK_METHOD0(GetSupportedInputMethods,
+               input_method::InputMethodDescriptors*(void));
   MOCK_METHOD1(ChangeInputMethod, void(const std::string&));
   MOCK_METHOD2(SetImePropertyActivated, void(const std::string&, bool));
   MOCK_METHOD1(InputMethodIsActivated, bool(const std::string&));
   MOCK_METHOD3(SetImeConfig, bool(const std::string&, const std::string&,
-                                  const ImeConfigValue&));
-  MOCK_CONST_METHOD0(previous_input_method, InputMethodDescriptor(void));
-  MOCK_CONST_METHOD0(current_input_method, InputMethodDescriptor(void));
-  MOCK_CONST_METHOD0(current_ime_properties, const ImePropertyList&(void));
+                                  const input_method::ImeConfigValue&));
+  MOCK_CONST_METHOD0(previous_input_method,
+                     input_method::InputMethodDescriptor(void));
+  MOCK_CONST_METHOD0(current_input_method,
+                     input_method::InputMethodDescriptor(void));
+  MOCK_CONST_METHOD0(current_ime_properties,
+                     const input_method::ImePropertyList&(void));
   MOCK_METHOD1(GetKeyboardOverlayId, std::string(const std::string&));
   MOCK_METHOD0(StartInputMethodDaemon, bool(void));
   MOCK_METHOD0(StopInputMethodDaemon, void(void));
   MOCK_METHOD1(SetDeferImeStartup, void(bool));
   MOCK_METHOD1(SetEnableAutoImeShutdown, void(bool));
-  MOCK_METHOD1(SendHandwritingStroke, void(const HandwritingStroke&));
+  MOCK_METHOD1(SendHandwritingStroke,
+               void(const input_method::HandwritingStroke&));
   MOCK_METHOD1(CancelHandwritingStrokes, void(int));
 };
 

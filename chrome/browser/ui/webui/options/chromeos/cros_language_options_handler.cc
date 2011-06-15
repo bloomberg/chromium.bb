@@ -61,7 +61,7 @@ void CrosLanguageOptionsHandler::GetLocalizedValues(
   // GetSupportedInputMethods() never return NULL.
   InputMethodLibrary *im_library =
       CrosLibrary::Get()->GetInputMethodLibrary();
-  scoped_ptr<chromeos::InputMethodDescriptors> descriptors(
+  scoped_ptr<input_method::InputMethodDescriptors> descriptors(
       im_library->GetSupportedInputMethods());
   localized_strings->Set("languageList", GetLanguageList(*descriptors));
   localized_strings->Set("inputMethodList", GetInputMethodList(*descriptors));
@@ -84,15 +84,16 @@ void CrosLanguageOptionsHandler::RegisterMessages() {
 }
 
 ListValue* CrosLanguageOptionsHandler::GetInputMethodList(
-    const chromeos::InputMethodDescriptors& descriptors) {
+    const input_method::InputMethodDescriptors& descriptors) {
   ListValue* input_method_list = new ListValue();
 
   for (size_t i = 0; i < descriptors.size(); ++i) {
-    const chromeos::InputMethodDescriptor& descriptor = descriptors[i];
+    const input_method::InputMethodDescriptor& descriptor =
+        descriptors[i];
     const std::string language_code =
-        chromeos::input_method::GetLanguageCodeFromDescriptor(descriptor);
+        input_method::GetLanguageCodeFromDescriptor(descriptor);
     const std::string display_name =
-        chromeos::input_method::GetInputMethodDisplayNameFromId(descriptor.id);
+        input_method::GetInputMethodDisplayNameFromId(descriptor.id);
 
     DictionaryValue* dictionary = new DictionaryValue();
     dictionary->SetString("id", descriptor.id);
@@ -104,12 +105,12 @@ ListValue* CrosLanguageOptionsHandler::GetInputMethodList(
     language_codes->SetBoolean(language_code, true);
     // Check kExtraLanguages to see if there are languages associated with
     // this input method. If these are present, add these.
-    for (size_t j = 0; j < arraysize(chromeos::input_method::kExtraLanguages);
+    for (size_t j = 0; j < arraysize(input_method::kExtraLanguages);
          ++j) {
       const std::string extra_input_method_id =
-          chromeos::input_method::kExtraLanguages[j].input_method_id;
+          input_method::kExtraLanguages[j].input_method_id;
       const std::string extra_language_code =
-          chromeos::input_method::kExtraLanguages[j].language_code;
+          input_method::kExtraLanguages[j].language_code;
       if (extra_input_method_id == descriptor.id) {
         language_codes->SetBoolean(extra_language_code, true);
       }
@@ -123,20 +124,20 @@ ListValue* CrosLanguageOptionsHandler::GetInputMethodList(
 }
 
 ListValue* CrosLanguageOptionsHandler::GetLanguageList(
-    const chromeos::InputMethodDescriptors& descriptors) {
+    const input_method::InputMethodDescriptors& descriptors) {
   std::set<std::string> language_codes;
   // Collect the language codes from the supported input methods.
   for (size_t i = 0; i < descriptors.size(); ++i) {
-    const chromeos::InputMethodDescriptor& descriptor = descriptors[i];
+    const input_method::InputMethodDescriptor& descriptor = descriptors[i];
     const std::string language_code =
-        chromeos::input_method::GetLanguageCodeFromDescriptor(descriptor);
+        input_method::GetLanguageCodeFromDescriptor(descriptor);
     language_codes.insert(language_code);
   }
   // Collect the language codes from kExtraLanguages.
-  for (size_t i = 0; i < arraysize(chromeos::input_method::kExtraLanguages);
+  for (size_t i = 0; i < arraysize(input_method::kExtraLanguages);
        ++i) {
     const char* language_code =
-        chromeos::input_method::kExtraLanguages[i].language_code;
+        input_method::kExtraLanguages[i].language_code;
     language_codes.insert(language_code);
   }
 
@@ -154,9 +155,9 @@ ListValue* CrosLanguageOptionsHandler::GetLanguageList(
   for (std::set<std::string>::const_iterator iter = language_codes.begin();
        iter != language_codes.end(); ++iter) {
     const string16 display_name =
-        chromeos::input_method::GetLanguageDisplayNameFromCode(*iter);
+        input_method::GetLanguageDisplayNameFromCode(*iter);
     const string16 native_display_name =
-        chromeos::input_method::GetLanguageNativeDisplayNameFromCode(*iter);
+        input_method::GetLanguageNativeDisplayNameFromCode(*iter);
     display_names.push_back(display_name);
     language_map[display_name] =
         std::make_pair(*iter, native_display_name);
