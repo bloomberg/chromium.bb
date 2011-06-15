@@ -28,6 +28,13 @@ CHROMEOS_VERSION_BRANCH=3
 CHROMEOS_VERSION_PATCH=4
 """
 
+FAKE_VERSION_NEXT = """
+CHROMEOS_VERSION_MAJOR=1
+CHROMEOS_VERSION_MINOR=2
+CHROMEOS_VERSION_BRANCH=3
+CHROMEOS_VERSION_PATCH=5
+"""
+
 FAKE_VERSION_STRING = '1.2.3.4'
 FAKE_VERSION_STRING_NEXT = '1.2.3.5'
 
@@ -116,6 +123,14 @@ class VersionInfoTest(mox.MoxTestBase):
     os.close(version_file_fh)
     return version_file
 
+  @classmethod
+  def ResetFakeVersionFile(cls, version_file, version=FAKE_VERSION):
+    """Helper method to create a version file from FAKE_VERSION."""
+    version_file_fh = open(version_file, 'w')
+    version_file_fh.write(version)
+    version_file_fh.close()
+    return version_file
+
   def testLoadFromFile(self):
     """Tests whether we can load from a version file."""
     version_file = self.CreateFakeVersionFile(self.tmpdir)
@@ -130,19 +145,13 @@ class VersionInfoTest(mox.MoxTestBase):
   def testIncrementVersionPatch(self):
     """Tests whether we can increment a version file."""
     message = 'Incrementing cuz I sed so'
-    self.mox.StubOutWithMock(manifest_version, '_PrepForChanges')
-    self.mox.StubOutWithMock(manifest_version, '_PushGitChanges')
-
-    manifest_version._PrepForChanges(self.tmpdir)
 
     version_file = self.CreateFakeVersionFile(self.tmpdir)
-
-    manifest_version._PushGitChanges(self.tmpdir, message, dry_run=False)
 
     self.mox.ReplayAll()
     info = manifest_version.VersionInfo(version_file=version_file,
                                          incr_type='patch')
-    info.IncrementVersion(message, dry_run=False)
+    info.IncrementVersion(message)
     new_info = manifest_version.VersionInfo(version_file=version_file,
                                              incr_type='patch')
     self.assertEqual(new_info.VersionString(), FAKE_VERSION_STRING_NEXT)
@@ -262,24 +271,27 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
 
   def testCreateNewBuildIncrement(self):
     """Tests that we create a new version if a previous one exists."""
-    self.mox.StubOutWithMock(manifest_version.VersionInfo, 'IncrementVersion')
     self.mox.StubOutWithMock(repository.RepoRepository, 'ExportManifest')
 
     self.mox.StubOutWithMock(repository.RepoRepository, 'Sync')
     self.mox.StubOutWithMock(manifest_version, '_PrepForChanges')
     self.mox.StubOutWithMock(manifest_version, '_PushGitChanges')
 
+    # Prepare for test run
     version_file = VersionInfoTest.CreateFakeVersionFile(self.tmpdir)
     info = manifest_version.VersionInfo(version_file=version_file,
-                                         incr_type='patch')
+                                        incr_type='patch')
     self.manager.all_specs_dir = os.path.join(self.manager.manifests_dir,
                                               'buildspecs', '1.2')
-    info.IncrementVersion(
-        'Automatic: %s - Updating to a new version number from %s' % (
-            self.build_name, FAKE_VERSION_STRING),
-        dry_run=True).AndReturn(FAKE_VERSION_STRING_NEXT)
 
+    # Mock out pushing the version increment change
+    manifest_version._PrepForChanges(mox.IsA(str))
+    manifest_version._PushGitChanges(mox.IsA(str), mox.IsA(str), dry_run=True)
+
+    # Mock out the sync
     repository.RepoRepository.Sync('default')
+
+    # Mock out the export of the new manifest
     manifest_version._PrepForChanges(mox.IsA(str))
     repository.RepoRepository.ExportManifest(mox.IgnoreArg())
     manifest_version._PushGitChanges(mox.IsA(str), mox.IsA(str), dry_run=True)
@@ -290,6 +302,93 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
     version = self.manager._CreateNewBuildSpec(info)
     self.mox.VerifyAll()
     self.assertEqual(FAKE_VERSION_STRING_NEXT, version)
+
+  def testCreateNewBuildIncrementSomeSyncDelay(self):
+    """Tests limited git propagation delay during _CreateNewBuildSpec"""
+
+    # Shorten the sleep timer for errors for faster tests
+    manifest_version.GERRIT_MIRROR_DELAY = 1
+
+    self.mox.StubOutWithMock(repository.RepoRepository, 'ExportManifest')
+    self.mox.StubOutWithMock(repository.RepoRepository, 'Sync')
+    self.mox.StubOutWithMock(manifest_version, '_PrepForChanges')
+    self.mox.StubOutWithMock(manifest_version, '_PushGitChanges')
+
+    # Prepare for test run
+    version_file = VersionInfoTest.CreateFakeVersionFile(self.tmpdir)
+    info = manifest_version.VersionInfo(version_file=version_file,
+                                        incr_type='patch')
+    self.manager.all_specs_dir = os.path.join(self.manager.manifests_dir,
+                                              'buildspecs', '1.2')
+
+    # Mock out pushing the version increment change
+    manifest_version._PrepForChanges(mox.IsA(str))
+    manifest_version._PushGitChanges(mox.IsA(str), mox.IsA(str), dry_run=True)
+
+    def simulate_propogation_delay(_):
+      VersionInfoTest.ResetFakeVersionFile(version_file)
+
+    def simulate_propogation_over(_):
+      VersionInfoTest.ResetFakeVersionFile(version_file, FAKE_VERSION_NEXT)
+
+    # Mock out the sync
+    repository.RepoRepository.Sync('default').WithSideEffects(
+                                                 simulate_propogation_delay)
+    repository.RepoRepository.Sync('default').WithSideEffects(
+                                                 simulate_propogation_over)
+
+    # Mock out the export of the new manifest
+    manifest_version._PrepForChanges(mox.IsA(str))
+    repository.RepoRepository.ExportManifest(mox.IgnoreArg())
+    manifest_version._PushGitChanges(mox.IsA(str), mox.IsA(str), dry_run=True)
+
+    self.mox.ReplayAll()
+    # Add to existing so we are forced to increment.
+    self.manager.all = [FAKE_VERSION_STRING]
+    version = self.manager._CreateNewBuildSpec(info)
+    self.mox.VerifyAll()
+    self.assertEqual(FAKE_VERSION_STRING_NEXT, version)
+
+  def testCreateNewBuildIncrementExcessiveSyncDelay(self):
+    """Tests catastrophic git propagation delay during _CreateNewBuildSpec"""
+
+    # Shorten the sleep timer for errors for faster tests
+    manifest_version.GERRIT_MIRROR_DELAY = 1
+
+    self.mox.StubOutWithMock(repository.RepoRepository, 'ExportManifest')
+
+    self.mox.StubOutWithMock(repository.RepoRepository, 'Sync')
+    self.mox.StubOutWithMock(manifest_version, '_PrepForChanges')
+    self.mox.StubOutWithMock(manifest_version, '_PushGitChanges')
+
+    # Prepare for test run
+    version_file = VersionInfoTest.CreateFakeVersionFile(self.tmpdir)
+    info = manifest_version.VersionInfo(version_file=version_file,
+                                        incr_type='patch')
+    self.manager.all_specs_dir = os.path.join(self.manager.manifests_dir,
+                                              'buildspecs', '1.2')
+
+    # Mock out pushing the version increment change
+    manifest_version._PrepForChanges(mox.IsA(str))
+    manifest_version._PushGitChanges(mox.IsA(str), mox.IsA(str), dry_run=True)
+
+    def simulate_propogation_delay(_):
+      VersionInfoTest.ResetFakeVersionFile(version_file)
+
+    # Mock out the sync
+    repository.RepoRepository.Sync('default').WithSideEffects(
+                                                 simulate_propogation_delay)
+    repository.RepoRepository.Sync('default').WithSideEffects(
+                                                 simulate_propogation_delay)
+    repository.RepoRepository.Sync('default').WithSideEffects(
+                                                 simulate_propogation_delay)
+
+    self.mox.ReplayAll()
+    # Add to existing so we are forced to increment.
+    self.manager.all = [FAKE_VERSION_STRING]
+    self.assertRaises(repository.SrcCheckOutException,
+                      lambda : self.manager._CreateNewBuildSpec(info))
+    self.mox.VerifyAll()
 
   def NotestGetNextBuildSpec(self):
     """Meta test.  Re-enable if you want to use it to do a big test."""

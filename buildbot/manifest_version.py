@@ -12,6 +12,7 @@ import os
 import re
 import shutil
 import tempfile
+import time
 
 from chromite.buildbot import repository
 from chromite.lib import cros_build_lib as cros_lib
@@ -24,6 +25,9 @@ logging.basicConfig(level=logging.DEBUG, format=logging_format,
 # Pattern for matching build name format. E.g, 12.3.4.5,1.0.25.3
 VER_PATTERN = '(\d+).(\d+).(\d+).(\d+)'
 _PUSH_BRANCH = 'temp_auto_checkin_branch'
+
+# How long to wait for git changes to propagate to the http mirros in seconds
+GERRIT_MIRROR_DELAY=10
 
 class VersionUpdateException(Exception):
   """Exception gets thrown for failing to update the version file"""
@@ -88,13 +92,7 @@ def _PrepForChanges(git_repo):
     else:
       cros_lib.RunCommand(['git', 'pull', '--force'], cwd=git_repo)
 
-# TODO Test fix for chromium-os:16249
-#    repository.FixExternalRepoPushUrls(git_repo)
-    cros_lib.RunCommand(['git',
-                         'config',
-                         'url.ssh://gerrit.chromium.org:29418.insteadof',
-                         'http://git.chromium.org'], cwd=git_repo)
-
+    repository.FixExternalRepoPushUrls(git_repo)
   except cros_lib.RunCommandError, e:
     err_msg = 'Failed to prep for edit in %s with %s' % (git_repo, e.message)
     logging.error(err_msg)
@@ -245,11 +243,10 @@ class VersionInfo(object):
       return match.group(2)
     return None
 
-  def IncrementVersion(self, message, dry_run):
+  def IncrementVersion(self, message):
     """Updates the version file by incrementing the patch component.
     Args:
       message:  Commit message to use when incrementing the version.
-      dry_run: Git dry_run.
     """
     if not self.version_file:
       raise VersionUpdateException('Cannot call IncrementVersion without '
@@ -284,14 +281,8 @@ class VersionInfo(object):
         temp_fh.close()
       source_version_fh.close()
 
-    repo_dir = os.path.dirname(self.version_file)
-
-    _PrepForChanges(repo_dir)
-
     shutil.copyfile(temp_file, self.version_file)
     os.unlink(temp_file)
-
-    _PushGitChanges(repo_dir, message, dry_run=dry_run)
 
     return self.VersionString()
 
@@ -465,9 +456,26 @@ class BuildSpecsManager(object):
     if version in self.all:
       message = ('Automatic: %s - Updating to a new version number from %s' % (
                  self.build_name, version))
-      version = version_info.IncrementVersion(message, dry_run=self.dry_run)
+
+      repo_dir = os.path.dirname(version_info.version_file)
+      _PrepForChanges(repo_dir)
+      version = version_info.IncrementVersion(message)
+      _PushGitChanges(repo_dir, message, dry_run=self.dry_run)
       logging.debug('Incremented version number to  %s', version)
-      self.cros_source.Sync(repository.RepoRepository.DEFAULT_MANIFEST)
+
+      # This retry loop is needed because we pushed via ssh and then pull
+      # via http mirror, which has a propogation delay.
+      for _ in range(3):
+        self.cros_source.Sync(repository.RepoRepository.DEFAULT_MANIFEST)
+        sync_version_info = VersionInfo(version_file=version_info.version_file)
+        sync_version = sync_version_info.VersionString()
+        if version == sync_version:
+          break
+        time.sleep(GERRIT_MIRROR_DELAY)
+      else:
+        err_msg = ('Synced version %s, expected %s' % (sync_version, version))
+        logging.error(err_msg)
+        raise repository.SrcCheckOutException(err_msg)
 
     self._PrepSpecChanges()
     spec_file = '%s.xml' % os.path.join(self.all_specs_dir, version)
