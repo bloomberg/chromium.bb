@@ -6,46 +6,10 @@
 
 #include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/plugins/npapi/mock_plugin_list.h"
 
 namespace webkit {
 namespace npapi {
-
-namespace plugin_test_internal {
-
-// A PluginList for tests that avoids file system IO. There is also no reason
-// to use |lock_| (but it doesn't hurt either).
-class PluginListWithoutFileIO : public PluginList {
- public:
-  PluginListWithoutFileIO(const PluginGroupDefinition* group_definitions,
-                          size_t num_group_definitions) :
-      PluginList(group_definitions, num_group_definitions) {}
-  virtual ~PluginListWithoutFileIO() {}
-
-  void AddPluginToLoad(const WebPluginInfo& plugin) {
-    plugins_to_load_.push_back(plugin);
-  }
-
-  void ClearPluginsToLoad() {
-    plugins_to_load_.clear();
-  }
-
-  void AddPluginGroupDefinition(const PluginGroupDefinition& definition) {
-    hardcoded_definitions_.push_back(definition);
-  }
-
- private:
-  std::vector<WebPluginInfo> plugins_to_load_;
-  std::vector<PluginGroupDefinition> hardcoded_definitions_;
-
-  // PluginList methods:
-  virtual void LoadPluginsInternal(
-      ScopedVector<PluginGroup>* plugin_groups) OVERRIDE {
-    for (size_t i = 0; i < plugins_to_load_.size(); ++i)
-      AddToPluginGroups(plugins_to_load_[i], plugin_groups);
-  }
-};
-
-}  // namespace plugin_test_internal
 
 namespace {
 
@@ -103,7 +67,7 @@ class PluginListTest : public testing::Test {
   }
 
  protected:
-  plugin_test_internal::PluginListWithoutFileIO plugin_list_;
+  MockPluginList plugin_list_;
   WebPluginInfo foo_plugin_;
   WebPluginInfo bar_plugin_;
 };

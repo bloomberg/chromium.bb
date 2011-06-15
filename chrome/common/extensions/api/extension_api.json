@@ -5702,6 +5702,7 @@
           },
           "description": {
             "type": "string",
+            "optional": true,
             "description": "A human readable description of the resource."
           }
         },
@@ -5855,6 +5856,27 @@
                 "name": "callback",
                 "optional": true,
                 "parameters": []
+              }
+            ]
+          },
+          {
+            "name": "getResourceIdentifiers",
+            "type": "function",
+            "description": "",
+            "parameters": [
+              {
+                "name": "callback",
+                "type": "function",
+                "parameters": [
+                  {
+                    "type": "array",
+                    "description": "A list of resource identifiers for this content type, or <var>undefined</var> if this content type does not use resource identifiers.",
+                    "optional": true,
+                    "items": {
+                      "$ref": "ResourceIdentifier"
+                    }
+                  }
+                ]
               }
             ]
           }

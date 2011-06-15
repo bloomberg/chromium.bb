@@ -4,6 +4,10 @@
 
 #include "chrome/browser/extensions/extension_content_settings_api.h"
 
+#include <vector>
+
+#include "base/bind.h"
+#include "base/command_line.h"
 #include "base/values.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/extensions/extension_content_settings_api_constants.h"
@@ -13,12 +17,21 @@
 #include "chrome/browser/extensions/extension_preference_helpers.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_error_utils.h"
+#include "webkit/plugins/npapi/plugin_group.h"
+#include "webkit/plugins/npapi/plugin_list.h"
 
 namespace helpers = extension_content_settings_helpers;
 namespace keys = extension_content_settings_api_constants;
 namespace pref_helpers = extension_preference_helpers;
 namespace pref_keys = extension_preference_api_constants;
+
+namespace {
+
+webkit::npapi::PluginList* g_plugin_list = NULL;
+
+}  // namespace
 
 bool ClearContentSettingsFunction::RunImpl() {
   std::string content_type_str;
@@ -240,4 +253,55 @@ bool SetContentSettingFunction::RunImpl() {
                                     embedded_pattern, content_type,
                                     resource_identifier, setting, scope);
   return true;
+}
+
+bool GetResourceIdentifiersFunction::RunImpl() {
+  std::string content_type_str;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &content_type_str));
+  ContentSettingsType content_type =
+      helpers::StringToContentSettingsType(content_type_str);
+  EXTENSION_FUNCTION_VALIDATE(content_type != CONTENT_SETTINGS_TYPE_DEFAULT);
+
+  if (content_type == CONTENT_SETTINGS_TYPE_PLUGINS &&
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableResourceContentSettings)) {
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
+        base::Bind(&GetResourceIdentifiersFunction::GetPluginsOnFileThread,
+                   this));
+  } else {
+    SendResponse(true);
+  }
+
+  return true;
+}
+
+void GetResourceIdentifiersFunction::GetPluginsOnFileThread() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  webkit::npapi::PluginList* plugin_list = g_plugin_list;
+  if (!plugin_list) {
+    plugin_list = webkit::npapi::PluginList::Singleton();
+  }
+
+  std::vector<webkit::npapi::PluginGroup> groups;
+  plugin_list->GetPluginGroups(true, &groups);
+
+  ListValue* list = new ListValue();
+  for (std::vector<webkit::npapi::PluginGroup>::iterator it = groups.begin();
+       it != groups.end(); ++it) {
+    DictionaryValue* dict = new DictionaryValue();
+    dict->SetString(keys::kIdKey, it->identifier());
+    dict->SetString(keys::kDescriptionKey, it->GetGroupName());
+    list->Append(dict);
+  }
+  result_.reset(list);
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE, base::Bind(
+          &GetResourceIdentifiersFunction::SendResponse, this, true));
+}
+
+// static
+void GetResourceIdentifiersFunction::SetPluginListForTesting(
+    webkit::npapi::PluginList* plugin_list) {
+  g_plugin_list = plugin_list;
 }

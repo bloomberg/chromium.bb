@@ -405,6 +405,14 @@ var chrome = chrome || {};
                            [contentType, details, callback],
                            extendSchema(clearSchema));
       };
+      this.getResourceIdentifiers = function(callback) {
+        var schema = this.parameters.getResourceIdentifiers;
+        chromeHidden.validate([callback], schema);
+        return sendRequest(
+            'experimental.contentSettings.getResourceIdentifiers',
+            [contentType, callback],
+            extendSchema(schema));
+      };
     }
     ContentSetting.prototype = new CustomBindingsObject();
     customBindings['ContentSetting'] = ContentSetting;

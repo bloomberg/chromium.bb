@@ -26,9 +26,7 @@ namespace webkit {
 namespace npapi {
 
 class PluginList;
-namespace plugin_test_internal {
-class PluginListWithoutFileIO;
-}
+class MockPluginList;
 
 // Hard-coded version ranges for plugin groups.
 struct VersionRangeDefinition {
@@ -202,7 +200,7 @@ class PluginGroup {
 
  private:
   friend class PluginList;
-  friend class plugin_test_internal::PluginListWithoutFileIO;
+  friend class MockPluginList;
   friend class PluginGroupTest;
   friend class ::TableModelArrayControllerTest;
   friend class ::PluginExceptionsTableModelTest;

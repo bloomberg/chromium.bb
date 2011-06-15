@@ -364,6 +364,7 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<SendRequestDebuggerFunction>();
 
   // Content settings.
+  RegisterFunction<GetResourceIdentifiersFunction>();
   RegisterFunction<ClearContentSettingsFunction>();
   RegisterFunction<GetContentSettingFunction>();
   RegisterFunction<SetContentSettingFunction>();

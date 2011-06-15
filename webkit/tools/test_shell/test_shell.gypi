@@ -331,6 +331,17 @@
       ],
     },
     {
+      'target_name': 'test_shell_test_support',
+      'type': 'static_library',
+      'dependencies': [
+        '<(DEPTH)/webkit/support/webkit_support.gyp:glue'
+      ],
+      'sources': [
+        '../../plugins/npapi/mock_plugin_list.cc',
+        '../../plugins/npapi/mock_plugin_list.h',
+      ]
+    },
+    {
       'target_name': 'test_shell_tests',
       'type': 'executable',
       'variables': {
@@ -343,6 +354,7 @@
       ],
       'dependencies': [
         'test_shell_common',
+        'test_shell_test_support',
         '<(DEPTH)/base/base.gyp:test_support_base',
         '<(DEPTH)/media/media.gyp:media_test_support',
         '<(DEPTH)/net/net.gyp:net',

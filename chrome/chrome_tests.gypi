@@ -2287,6 +2287,7 @@
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
         '../v8/tools/gyp/v8.gyp:v8',
+        '../webkit/webkit.gyp:test_shell_test_support',
         # Runtime dependencies
         '../third_party/mesa/mesa.gyp:osmesa',
         '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:copy_TestNetscapePlugIn',

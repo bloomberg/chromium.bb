@@ -2,13 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/extensions/extension_content_settings_api.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "webkit/plugins/npapi/mock_plugin_list.h"
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentSettings) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -168,4 +171,40 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentSettingsOnChange) {
 
   EXPECT_TRUE(RunExtensionTestIncognito("content_settings/onchange")) <<
       message_;
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
+                       ContentSettingsGetResourceIdentifiers) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableExperimentalExtensionApis);
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableResourceContentSettings);
+
+  FilePath::CharType kFooPath[] = FILE_PATH_LITERAL("/plugins/foo.plugin");
+  FilePath::CharType kBarPath[] = FILE_PATH_LITERAL("/plugins/bar.plugin");
+  const char* kFooName = "Foo Plugin";
+  const char* kBarName = "Bar Plugin";
+  const webkit::npapi::PluginGroupDefinition kPluginDefinitions[] = {
+    { "foo", "Foo", kFooName, NULL, 0,
+      "http://example.com/foo" },
+  };
+
+  webkit::npapi::MockPluginList plugin_list(kPluginDefinitions,
+                                            arraysize(kPluginDefinitions));
+  plugin_list.AddPluginToLoad(
+      webkit::npapi::WebPluginInfo(ASCIIToUTF16(kFooName),
+                                   FilePath(kFooPath),
+                                   ASCIIToUTF16("1.2.3"),
+                                   ASCIIToUTF16("foo")));
+  plugin_list.AddPluginToLoad(
+      webkit::npapi::WebPluginInfo(ASCIIToUTF16(kBarName),
+                                   FilePath(kBarPath),
+                                   ASCIIToUTF16("2.3.4"),
+                                   ASCIIToUTF16("bar")));
+  GetResourceIdentifiersFunction::SetPluginListForTesting(&plugin_list);
+
+  EXPECT_TRUE(RunExtensionTest("content_settings/getresourceidentifiers"))
+      << message_;
+
+  GetResourceIdentifiersFunction::SetPluginListForTesting(NULL);
 }
