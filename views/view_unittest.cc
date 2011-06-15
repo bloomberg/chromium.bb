@@ -1510,14 +1510,14 @@ class TestChangeNativeViewHierarchy {
   void CheckEnumeratingNativeWidgets() {
     if (!host_->GetTopLevelWidget())
       return;
-    Widget::Widgets widgets;
-    Widget::GetAllChildWidgets(host_->GetNativeView(), &widgets);
+    NativeWidget::NativeWidgets widgets;
+    NativeWidget::GetAllNativeWidgets(host_->GetNativeView(), &widgets);
     EXPECT_EQ(TestNativeViewHierarchy::kTotalViews + 1, widgets.size());
     // Unfortunately there is no guarantee the sequence of views here so always
     // go through all of them.
-    for (Widget::Widgets::iterator i = widgets.begin();
+    for (NativeWidget::NativeWidgets::iterator i = widgets.begin();
          i != widgets.end(); ++i) {
-      View* root_view = (*i)->GetRootView();
+      View* root_view = (*i)->GetWidget()->GetRootView();
       if (host_->GetRootView() == root_view)
         continue;
       size_t j;

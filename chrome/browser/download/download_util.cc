@@ -630,7 +630,7 @@ void DragDownload(const DownloadItem* download,
     return;
 
   views::NativeWidgetGtk* widget = static_cast<views::NativeWidgetGtk*>(
-      views::Widget::GetWidgetForNativeView(root)->native_widget());
+      views::NativeWidget::GetNativeWidgetForNativeView(root));
   if (!widget)
     return;
 

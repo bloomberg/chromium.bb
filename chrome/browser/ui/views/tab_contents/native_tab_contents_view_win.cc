@@ -88,7 +88,7 @@ void NativeTabContentsViewWin::InitNativeTabContentsView() {
 void NativeTabContentsViewWin::Unparent() {
   // Note that we do not DCHECK on focus_manager_ as it may be NULL when used
   // with an external tab container.
-  views::Widget::ReparentNativeView(GetNativeView(), GetHiddenTabHostWindow());
+  NativeWidget::ReparentNativeView(GetNativeView(), GetHiddenTabHostWindow());
 }
 
 RenderWidgetHostView* NativeTabContentsViewWin::CreateRenderWidgetHostView(

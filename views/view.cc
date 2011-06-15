@@ -20,7 +20,7 @@
 #include "views/background.h"
 #include "views/layout/layout_manager.h"
 #include "views/views_delegate.h"
-#include "views/widget/native_widget_private.h"
+#include "views/widget/native_widget.h"
 #include "views/widget/root_view.h"
 #include "views/widget/tooltip_manager.h"
 #include "views/widget/widget.h"
@@ -1240,10 +1240,8 @@ void View::Blur() {
 void View::TooltipTextChanged() {
   Widget* widget = GetWidget();
   // TooltipManager may be null if there is a problem creating it.
-  if (widget && widget->native_widget_private()->GetTooltipManager()) {
-    widget->native_widget_private()->GetTooltipManager()->
-        TooltipTextChanged(this);
-  }
+  if (widget && widget->native_widget()->GetTooltipManager())
+    widget->native_widget()->GetTooltipManager()->TooltipTextChanged(this);
 }
 
 // Context menus ---------------------------------------------------------------
@@ -1760,8 +1758,8 @@ void View::UpdateTooltip() {
   // TODO(beng): The TooltipManager NULL check can be removed when we
   //             consolidate Init() methods and make views_unittests Init() all
   //             Widgets that it uses.
-  if (widget && widget->native_widget_private()->GetTooltipManager())
-    widget->native_widget_private()->GetTooltipManager()->UpdateTooltip();
+  if (widget && widget->native_widget()->GetTooltipManager())
+    widget->native_widget()->GetTooltipManager()->UpdateTooltip();
 }
 
 // Drag and drop ---------------------------------------------------------------

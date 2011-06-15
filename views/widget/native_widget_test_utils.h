@@ -8,13 +8,13 @@
 
 namespace views {
 class View;
+class NativeWidget;
 namespace internal {
-class NativeWidgetPrivate;
 
 // Create dummy Widgets for use in testing.
-NativeWidgetPrivate* CreateNativeWidget();
-NativeWidgetPrivate* CreateNativeWidgetWithContents(View* contents_view);
-NativeWidgetPrivate* CreateNativeWidgetWithParent(NativeWidgetPrivate* parent);
+NativeWidget* CreateNativeWidget();
+NativeWidget* CreateNativeWidgetWithContents(View* contents_view);
+NativeWidget* CreateNativeWidgetWithParent(NativeWidget* parent);
 
 }  // namespace internal
 }  // namespace views

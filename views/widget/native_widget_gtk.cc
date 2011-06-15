@@ -163,10 +163,12 @@ void EnumerateChildWidgetsForNativeWidgets(GtkWidget* child_widget,
                           param);
   }
 
-  Widget* widget = Widget::GetWidgetForNativeView(child_widget);
-  if (widget) {
-    Widget::Widgets* widgets = reinterpret_cast<Widget::Widgets*>(param);
-    widgets->insert(widget);
+  NativeWidget* native_widget =
+      NativeWidget::GetNativeWidgetForNativeView(child_widget);
+  if (native_widget) {
+    NativeWidget::NativeWidgets* widgets =
+        reinterpret_cast<NativeWidget::NativeWidgets*>(param);
+    widgets->insert(native_widget);
   }
 }
 
@@ -278,8 +280,7 @@ class NativeWidgetGtk::DropObserver : public MessageLoopForUI::Observer {
       return NULL;
 
     return static_cast<NativeWidgetGtk*>(
-        internal::NativeWidgetPrivate::GetNativeWidgetForNativeView(
-            gtk_widget));
+        NativeWidget::GetNativeWidgetForNativeView(gtk_widget));
   }
 
   DISALLOW_COPY_AND_ASSIGN(DropObserver);
@@ -1001,7 +1002,7 @@ void NativeWidgetGtk::SetBounds(const gfx::Rect& bounds) {
     GtkWidget* parent = gtk_widget_get_parent(widget_);
     if (GTK_IS_VIEWS_FIXED(parent)) {
       NativeWidgetGtk* parent_widget = static_cast<NativeWidgetGtk*>(
-          internal::NativeWidgetPrivate::GetNativeWidgetForNativeView(parent));
+          NativeWidget::GetNativeWidgetForNativeView(parent));
       parent_widget->PositionChild(widget_, bounds.x(), bounds.y(),
                                    bounds.width(), bounds.height());
     } else {
@@ -1111,7 +1112,7 @@ void NativeWidgetGtk::Hide() {
 
 void NativeWidgetGtk::ShowNativeWidget(ShowState state) {
   // No concept of maximization (yet) on ChromeOS.
-  if (state == internal::NativeWidgetPrivate::SHOW_INACTIVE)
+  if (state == NativeWidget::SHOW_INACTIVE)
     gtk_window_set_focus_on_map(GetNativeWindow(), false);
   gtk_widget_show(GetNativeView());
 }
@@ -1755,10 +1756,10 @@ gboolean NativeWidgetGtk::ChildExposeHandler(GtkWidget* widget,
                                              GdkEventExpose* event) {
   GtkWidget* toplevel = gtk_widget_get_ancestor(widget, GTK_TYPE_WINDOW);
   CHECK(toplevel);
-  Widget* views_widget = Widget::GetWidgetForNativeView(toplevel);
-  CHECK(views_widget);
-  NativeWidgetGtk* widget_gtk =
-      static_cast<NativeWidgetGtk*>(views_widget->native_widget());
+  NativeWidget* native_widget =
+      NativeWidget::GetNativeWidgetForNativeView(toplevel);
+  CHECK(native_widget);
+  NativeWidgetGtk* widget_gtk = static_cast<NativeWidgetGtk*>(native_widget);
   widget_gtk->OnChildExpose(widget);
   return false;
 }
@@ -1953,10 +1954,10 @@ void NativeWidgetGtk::SaveWindowPosition() {
 void Widget::NotifyLocaleChanged() {
   GList *window_list = gtk_window_list_toplevels();
   for (GList* element = window_list; element; element = g_list_next(element)) {
-    Widget* widget =
-        Widget::GetWidgetForNativeWindow(GTK_WINDOW(element->data));
-    if (widget)
-      widget->LocaleChanged();
+    NativeWidget* native_widget =
+        NativeWidget::GetNativeWidgetForNativeWindow(GTK_WINDOW(element->data));
+    if (native_widget)
+      native_widget->GetWidget()->LocaleChanged();
   }
   g_list_free(window_list);
 }
@@ -1966,9 +1967,13 @@ void Widget::CloseAllSecondaryWidgets() {
   GList* windows = gtk_window_list_toplevels();
   for (GList* window = windows; window;
        window = g_list_next(window)) {
-    Widget* widget = Widget::GetWidgetForNativeView(GTK_WIDGET(window->data));
-    if (widget && widget->is_secondary_widget())
-      widget->Close();
+    NativeWidget* native_widget = NativeWidget::GetNativeWidgetForNativeView(
+        GTK_WIDGET(window->data));
+    if (native_widget) {
+      Widget* widget = native_widget->GetWidget();
+      if (widget->is_secondary_widget())
+        widget->Close();
+    }
   }
   g_list_free(windows);
 }
@@ -1999,19 +2004,17 @@ bool Widget::ConvertRect(const Widget* source,
   return false;
 }
 
-namespace internal {
-
 ////////////////////////////////////////////////////////////////////////////////
-// NativeWidgetPrivate, public:
+// NativeWidget, public:
 
 // static
-NativeWidgetPrivate* NativeWidgetPrivate::CreateNativeWidget(
-    NativeWidgetDelegate* delegate) {
+NativeWidget* NativeWidget::CreateNativeWidget(
+    internal::NativeWidgetDelegate* delegate) {
   return new NativeWidgetGtk(delegate);
 }
 
 // static
-NativeWidgetPrivate* NativeWidgetPrivate::GetNativeWidgetForNativeView(
+NativeWidget* NativeWidget::GetNativeWidgetForNativeView(
     gfx::NativeView native_view) {
   if (!native_view)
     return NULL;
@@ -2020,7 +2023,7 @@ NativeWidgetPrivate* NativeWidgetPrivate::GetNativeWidgetForNativeView(
 }
 
 // static
-NativeWidgetPrivate* NativeWidgetPrivate::GetNativeWidgetForNativeWindow(
+NativeWidget* NativeWidget::GetNativeWidgetForNativeWindow(
     gfx::NativeWindow native_window) {
   if (!native_window)
     return NULL;
@@ -2029,15 +2032,15 @@ NativeWidgetPrivate* NativeWidgetPrivate::GetNativeWidgetForNativeWindow(
 }
 
 // static
-NativeWidgetPrivate* NativeWidgetPrivate::GetTopLevelNativeWidget(
+NativeWidget* NativeWidget::GetTopLevelNativeWidget(
     gfx::NativeView native_view) {
   if (!native_view)
     return NULL;
 
-  NativeWidgetPrivate* widget = NULL;
+  NativeWidget* widget = NULL;
 
   GtkWidget* parent_gtkwidget = native_view;
-  NativeWidgetPrivate* parent_widget;
+  NativeWidget* parent_widget;
   do {
     parent_widget = GetNativeWidgetForNativeView(parent_gtkwidget);
     if (parent_widget)
@@ -2049,22 +2052,22 @@ NativeWidgetPrivate* NativeWidgetPrivate::GetTopLevelNativeWidget(
 }
 
 // static
-void NativeWidgetPrivate::GetAllChildWidgets(gfx::NativeView native_view,
-                                             Widget::Widgets* children) {
+void NativeWidget::GetAllNativeWidgets(gfx::NativeView native_view,
+                                       NativeWidgets* children) {
   if (!native_view)
     return;
 
-  Widget* widget = Widget::GetWidgetForNativeView(native_view);
-  if (widget)
-    children->insert(widget);
+  NativeWidget* native_widget = GetNativeWidgetForNativeView(native_view);
+  if (native_widget)
+    children->insert(native_widget);
   gtk_container_foreach(GTK_CONTAINER(native_view),
                         EnumerateChildWidgetsForNativeWidgets,
                         reinterpret_cast<gpointer>(children));
 }
 
 // static
-void NativeWidgetPrivate::ReparentNativeView(gfx::NativeView native_view,
-                                             gfx::NativeView new_parent) {
+void NativeWidget::ReparentNativeView(gfx::NativeView native_view,
+                                      gfx::NativeView new_parent) {
   if (!native_view)
     return;
 
@@ -2072,16 +2075,17 @@ void NativeWidgetPrivate::ReparentNativeView(gfx::NativeView native_view,
   if (previous_parent == new_parent)
     return;
 
-  Widget::Widgets widgets;
-  GetAllChildWidgets(native_view, &widgets);
+  NativeWidgets widgets;
+  GetAllNativeWidgets(native_view, &widgets);
 
   // First notify all the widgets that they are being disassociated
   // from their previous parent.
-  for (Widget::Widgets::iterator it = widgets.begin();
+  for (NativeWidgets::iterator it = widgets.begin();
        it != widgets.end(); ++it) {
     // TODO(beng): Rename this notification to NotifyNativeViewChanging()
     // and eliminate the bool parameter.
-    (*it)->NotifyNativeViewHierarchyChanged(false, previous_parent);
+    (*it)->GetWidget()->NotifyNativeViewHierarchyChanged(false,
+                                                         previous_parent);
   }
 
   if (gtk_widget_get_parent(native_view))
@@ -2090,11 +2094,11 @@ void NativeWidgetPrivate::ReparentNativeView(gfx::NativeView native_view,
     gtk_container_add(GTK_CONTAINER(new_parent), native_view);
 
   // And now, notify them that they have a brand new parent.
-  for (Widget::Widgets::iterator it = widgets.begin();
+  for (NativeWidgets::iterator it = widgets.begin();
        it != widgets.end(); ++it) {
-    (*it)->NotifyNativeViewHierarchyChanged(true, new_parent);
+    (*it)->GetWidget()->NotifyNativeViewHierarchyChanged(true,
+                                                         new_parent);
   }
 }
 
-}  // namespace internal
 }  // namespace views

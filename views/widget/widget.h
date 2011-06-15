@@ -60,7 +60,6 @@ class TooltipManager;
 class View;
 class WidgetDelegate;
 namespace internal {
-class NativeWidgetPrivate;
 class RootView;
 }
 
@@ -92,8 +91,6 @@ class RootView;
 class Widget : public internal::NativeWidgetDelegate,
                public FocusTraversable {
  public:
-  typedef std::set<Widget*> Widgets;
-
   enum FrameType {
     FRAME_TYPE_DEFAULT,         // Use whatever the default would be.
     FRAME_TYPE_FORCE_CUSTOM,    // Force the custom frame.
@@ -183,25 +180,9 @@ class Widget : public internal::NativeWidgetDelegate,
   static void SetPureViews(bool pure);
   static bool IsPureViews();
 
-  // Retrieves the Widget implementation associated with the given
-  // NativeView or Window, or NULL if the supplied handle has no associated
-  // Widget.
+  // Passes through to NativeWidget::GetWidgetForNativeView().
   static Widget* GetWidgetForNativeView(gfx::NativeView native_view);
-  static Widget* GetWidgetForNativeWindow(gfx::NativeWindow native_window);
 
-  // Retrieves the highest Widget in a native view hierarchy starting at
-  // |native_view|, which may or may not be a Widget itself.
-  static Widget* GetTopLevelWidgetForNativeView(gfx::NativeView native_view);
-
-  // Returns all Widgets in |native_view|'s hierarchy, including itself if
-  // it is one.
-  static void GetAllChildWidgets(gfx::NativeView native_view,
-                                 Widgets* children);
-
-  // Re-parent a NativeView and notify all Widgets in |native_view|'s hierarchy
-  // of the change.
-  static void ReparentNativeView(gfx::NativeView native_view,
-                                 gfx::NativeView new_parent);
 
   // Returns the preferred size of the contents view of this window based on
   // its localized size data. The width in cols is held in a localized string
@@ -409,12 +390,6 @@ class Widget : public internal::NativeWidgetDelegate,
   // to cause the close button to highlight.
   void ResetLastMouseMoveFlag();
 
-  // Sets/Gets a native window property on the underlying native window object.
-  // Returns NULL if the property does not exist. Setting the property value to
-  // NULL removes the property.
-  void SetNativeWindowProperty(const char* name, void* value);
-  void* GetNativeWindowProperty(const char* name) const;
-
   // Tell the window to update its title from the delegate.
   void UpdateWindowTitle();
 
@@ -487,15 +462,8 @@ class Widget : public internal::NativeWidgetDelegate,
       ui::AccessibilityTypes::Event event_type,
       bool send_native_event);
 
-  const NativeWidget* native_widget() const;
-  NativeWidget* native_widget();
-
-  internal::NativeWidgetPrivate* native_widget_private() {
-    return native_widget_;
-  }
-  const internal::NativeWidgetPrivate* native_widget_private() const {
-    return native_widget_;
-  }
+  const NativeWidget* native_widget() const { return native_widget_; }
+  NativeWidget* native_widget() { return native_widget_; }
 
   // Returns the current event being processed. If there are multiple events
   // being processed at the same time (e.g. one event triggers another event),
@@ -585,7 +553,7 @@ class Widget : public internal::NativeWidgetDelegate,
   // Sizes and positions the window just after it is created.
   void SetInitialBounds(const gfx::Rect& bounds);
 
-  internal::NativeWidgetPrivate* native_widget_;
+  NativeWidget* native_widget_;
 
   // Non-owned pointer to the Widget's delegate.  May be NULL if no delegate is
   // being used.

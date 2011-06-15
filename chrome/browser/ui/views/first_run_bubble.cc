@@ -524,9 +524,10 @@ void FirstRunBubble::EnableParent() {
   // window from rendering inactive.
   // TODO(beng): this only works in custom-frame mode, not glass-frame mode.
   HWND bubble_owner = GetLogicalBubbleOwner(GetNativeView());
-  views::Widget* parent = views::Widget::GetWidgetForNativeView(bubble_owner);
+  views::NativeWidget* parent =
+      views::NativeWidget::GetNativeWidgetForNativeView(bubble_owner);
   if (parent)
-    parent->DisableInactiveRendering();
+    parent->GetWidget()->DisableInactiveRendering();
   // Reactivate the FirstRunBubble so it responds to OnActivate messages.
   SetWindowPos(GetParent(), 0, 0, 0, 0,
                SWP_NOSIZE | SWP_NOMOVE | SWP_NOREDRAW | SWP_SHOWWINDOW);

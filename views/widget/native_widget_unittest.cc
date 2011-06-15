@@ -6,7 +6,7 @@
 #include "views/test/views_test_base.h"
 #include "views/view.h"
 #include "views/controls/native/native_view_host.h"
-#include "views/widget/native_widget_private.h"
+#include "views/widget/native_widget.h"
 #include "views/widget/widget.h"
 #include "views/widget/native_widget_test_utils.h"
 
@@ -14,20 +14,20 @@ namespace views {
 
 class ScopedTestWidget {
  public:
-  ScopedTestWidget(internal::NativeWidgetPrivate* native_widget)
+  ScopedTestWidget(NativeWidget* native_widget)
       : native_widget_(native_widget) {
   }
   ~ScopedTestWidget() {
     native_widget_->GetWidget()->CloseNow();
   }
 
-  internal::NativeWidgetPrivate* operator->() const  {
+  NativeWidget* operator->() const  {
     return native_widget_.get();
   }
-  internal::NativeWidgetPrivate* get() const { return native_widget_.get(); }
+  NativeWidget* get() const { return native_widget_.get(); }
 
  private:
-  scoped_ptr<internal::NativeWidgetPrivate> native_widget_;
+  scoped_ptr<NativeWidget> native_widget_;
   DISALLOW_COPY_AND_ASSIGN(ScopedTestWidget);
 };
 
@@ -48,7 +48,7 @@ TEST_F(NativeWidgetTest, CreateNativeWidget) {
 TEST_F(NativeWidgetTest, GetNativeWidgetForNativeView) {
   ScopedTestWidget widget(internal::CreateNativeWidget());
   EXPECT_EQ(widget.get(),
-            internal::NativeWidgetPrivate::GetNativeWidgetForNativeView(
+            NativeWidget::GetNativeWidgetForNativeView(
                 widget->GetWidget()->GetNativeView()));
 }
 
@@ -56,7 +56,7 @@ TEST_F(NativeWidgetTest, GetNativeWidgetForNativeView) {
 TEST_F(NativeWidgetTest, GetTopLevelNativeWidget1) {
   ScopedTestWidget widget(internal::CreateNativeWidget());
   EXPECT_EQ(widget.get(),
-            internal::NativeWidgetPrivate::GetTopLevelNativeWidget(
+            NativeWidget::GetTopLevelNativeWidget(
                 widget->GetWidget()->GetNativeView()));
 }
 
@@ -70,7 +70,7 @@ TEST_F(NativeWidgetTest, GetTopLevelNativeWidget2) {
   child_host->Attach(child_widget->GetWidget()->GetNativeView());
 
   EXPECT_EQ(toplevel_widget.get(),
-            internal::NativeWidgetPrivate::GetTopLevelNativeWidget(
+            NativeWidget::GetTopLevelNativeWidget(
                 child_widget->GetWidget()->GetNativeView()));
 }
 

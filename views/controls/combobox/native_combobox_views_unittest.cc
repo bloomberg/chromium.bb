@@ -9,7 +9,7 @@
 #include "views/controls/combobox/native_combobox_views.h"
 #include "views/ime/mock_input_method.h"
 #include "views/test/views_test_base.h"
-#include "views/widget/native_widget_private.h"
+#include "views/widget/native_widget.h"
 #include "views/widget/widget.h"
 
 namespace {
@@ -114,7 +114,7 @@ class NativeComboboxViewsTest : public ViewsTestBase {
     ASSERT_TRUE(combobox_view_);
 
     input_method_ = new MockInputMethod();
-    widget_->native_widget_private()->ReplaceInputMethod(input_method_);
+    widget_->native_widget()->ReplaceInputMethod(input_method_);
 
     // Assumes the Widget is always focused.
     input_method_->OnFocus();

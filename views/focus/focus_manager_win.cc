@@ -25,8 +25,9 @@ void FocusManager::FocusNativeView(gfx::NativeView native_view) {
 FocusManager* FocusManager::GetFocusManagerForNativeView(
     gfx::NativeView native_view) {
   // TODO(beng): This method probably isn't necessary.
-  Widget* widget = Widget::GetWidgetForNativeView(native_view);
-  return widget ? widget->GetFocusManager() : NULL;
+  views::NativeWidget* native_widget =
+      views::NativeWidget::GetTopLevelNativeWidget(native_view);
+  return native_widget ? native_widget->GetWidget()->GetFocusManager() : NULL;
 }
 
 // static

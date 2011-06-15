@@ -22,7 +22,7 @@
 #include "views/focus/focus_manager.h"
 #include "views/ime/input_method_delegate.h"
 #include "views/layout/layout_manager.h"
-#include "views/widget/native_widget_private.h"
+#include "views/widget/native_widget.h"
 
 namespace ui {
 class ViewProp;
@@ -84,7 +84,7 @@ const int WM_NCUAHDRAWFRAME = 0xAF;
 //
 ///////////////////////////////////////////////////////////////////////////////
 class NativeWidgetWin : public ui::WindowImpl,
-                        public internal::NativeWidgetPrivate,
+                        public NativeWidget,
                         public MessageLoopForUI::Observer,
                         public internal::InputMethodDelegate {
  public:
@@ -187,7 +187,7 @@ class NativeWidgetWin : public ui::WindowImpl,
     return ::GetClientRect(GetNativeView(), rect);
   }
 
-  // Overridden from internal::NativeWidgetPrivate:
+  // Overridden from NativeWidget:
   virtual void InitNativeWidget(const Widget::InitParams& params) OVERRIDE;
   virtual NonClientFrameView* CreateNonClientFrameView() OVERRIDE;
   virtual void UpdateFrameAfterFrameChange() OVERRIDE;

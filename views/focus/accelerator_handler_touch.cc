@@ -32,13 +32,13 @@ Widget* FindWidgetForGdkWindow(GdkWindow* gdk_window) {
     DLOG(WARNING) << "no GtkWidget found for that GdkWindow";
     return NULL;
   }
-  Widget* widget = Widget::GetWidgetForNativeView(gtk_widget);
+  NativeWidget* widget = NativeWidget::GetNativeWidgetForNativeView(gtk_widget);
 
   if (!widget) {
     DLOG(WARNING) << "no NativeWidgetGtk found for that GtkWidget";
     return NULL;
   }
-  return widget;
+  return widget->GetWidget();
 }
 
 }  // namespace

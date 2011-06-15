@@ -9,7 +9,7 @@
 #include "views/controls/menu/menu_item_view.h"
 #include "views/controls/menu/native_menu_host.h"
 #include "views/controls/menu/submenu_view.h"
-#include "views/widget/native_widget_private.h"
+#include "views/widget/native_widget.h"
 #include "views/widget/widget.h"
 
 namespace views {
@@ -72,8 +72,8 @@ void MenuHost::SetMenuHostBounds(const gfx::Rect& bounds) {
 }
 
 void MenuHost::ReleaseMenuHostCapture() {
-  if (native_widget_private()->HasMouseCapture())
-    native_widget_private()->ReleaseMouseCapture();
+  if (native_widget()->HasMouseCapture())
+    native_widget()->ReleaseMouseCapture();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

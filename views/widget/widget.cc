@@ -15,7 +15,7 @@
 #include "views/views_delegate.h"
 #include "views/widget/default_theme_provider.h"
 #include "views/widget/root_view.h"
-#include "views/widget/native_widget_private.h"
+#include "views/widget/native_widget.h"
 #include "views/widget/widget_delegate.h"
 #include "views/window/custom_frame_view.h"
 
@@ -192,37 +192,9 @@ bool Widget::IsPureViews() {
 
 // static
 Widget* Widget::GetWidgetForNativeView(gfx::NativeView native_view) {
-  internal::NativeWidgetPrivate* native_widget =
-      internal::NativeWidgetPrivate::GetNativeWidgetForNativeView(native_view);
+  NativeWidget* native_widget =
+      NativeWidget::GetNativeWidgetForNativeView(native_view);
   return native_widget ? native_widget->GetWidget() : NULL;
-}
-
-// static
-Widget* Widget::GetWidgetForNativeWindow(gfx::NativeWindow native_window) {
-  internal::NativeWidgetPrivate* native_widget =
-      internal::NativeWidgetPrivate::GetNativeWidgetForNativeWindow(
-          native_window);
-  return native_widget ? native_widget->GetWidget() : NULL;
-}
-
-// static
-Widget* Widget::GetTopLevelWidgetForNativeView(gfx::NativeView native_view) {
-  internal::NativeWidgetPrivate* native_widget =
-      internal::NativeWidgetPrivate::GetTopLevelNativeWidget(native_view);
-  return native_widget ? native_widget->GetWidget() : NULL;
-}
-
-
-// static
-void Widget::GetAllChildWidgets(gfx::NativeView native_view,
-                                Widgets* children) {
-  internal::NativeWidgetPrivate::GetAllChildWidgets(native_view, children);
-}
-
-// static
-void Widget::ReparentNativeView(gfx::NativeView native_view,
-                                gfx::NativeView new_parent) {
-  internal::NativeWidgetPrivate::ReparentNativeView(native_view, new_parent);
 }
 
 // static
@@ -248,9 +220,9 @@ void Widget::Init(const InitParams& params) {
   widget_delegate_ =
       params.delegate ? params.delegate : new DefaultWidgetDelegate;
   ownership_ = params.ownership;
-  native_widget_ = params.native_widget ?
-      params.native_widget->AsNativeWidgetPrivate() :
-      internal::NativeWidgetPrivate::CreateNativeWidget(this);
+  native_widget_ =
+      params.native_widget ? params.native_widget
+                           : NativeWidget::CreateNativeWidget(this);
   GetRootView();
   default_theme_provider_.reset(new DefaultThemeProvider);
   if (params.type == InitParams::TYPE_MENU)
@@ -315,8 +287,8 @@ Widget* Widget::GetTopLevelWidget() {
 }
 
 const Widget* Widget::GetTopLevelWidget() const {
-  internal::NativeWidgetPrivate* native_widget =
-      internal::NativeWidgetPrivate::GetTopLevelNativeWidget(GetNativeView());
+  NativeWidget* native_widget =
+      NativeWidget::GetTopLevelNativeWidget(GetNativeView());
   return native_widget ? native_widget->GetWidget() : NULL;
 }
 
@@ -391,8 +363,8 @@ void Widget::EnableClose(bool enable) {
 void Widget::Show() {
   if (non_client_view_) {
     native_widget_->ShowNativeWidget(
-        saved_maximized_state_ ? internal::NativeWidgetPrivate::SHOW_MAXIMIZED
-                               : internal::NativeWidgetPrivate::SHOW_RESTORED);
+        saved_maximized_state_ ? NativeWidget::SHOW_MAXIMIZED
+                               : NativeWidget::SHOW_RESTORED);
     // |saved_maximized_state_| only applies the first time the window is shown.
     // If we don't reset the value the window will be shown maximized every time
     // it is subsequently shown after being hidden.
@@ -407,8 +379,7 @@ void Widget::Hide() {
 }
 
 void Widget::ShowInactive() {
-  native_widget_->ShowNativeWidget(
-      internal::NativeWidgetPrivate::SHOW_INACTIVE);
+  native_widget_->ShowNativeWidget(NativeWidget::SHOW_INACTIVE);
 }
 
 void Widget::Activate() {
@@ -511,7 +482,7 @@ FocusManager* Widget::GetFocusManager() {
 InputMethod* Widget::GetInputMethod() {
   Widget* toplevel_widget = GetTopLevelWidget();
   return toplevel_widget ?
-      toplevel_widget->native_widget_->GetInputMethodNative() : NULL;
+      toplevel_widget->native_widget()->GetInputMethodNative() : NULL;
 }
 
 bool Widget::ContainsNativeView(gfx::NativeView native_view) {
@@ -546,14 +517,6 @@ void Widget::SetCursor(gfx::NativeCursor cursor) {
 
 void Widget::ResetLastMouseMoveFlag() {
   last_mouse_event_was_move_ = false;
-}
-
-void Widget::SetNativeWindowProperty(const char* name, void* value) {
-  native_widget_->SetNativeWindowProperty(name, value);
-}
-
-void* Widget::GetNativeWindowProperty(const char* name) const {
-  return native_widget_->GetNativeWindowProperty(name);
 }
 
 void Widget::UpdateWindowTitle() {
@@ -644,14 +607,6 @@ void Widget::NotifyAccessibilityEvent(
 
   if (send_native_event)
     native_widget_->SendNativeAccessibilityEvent(view, event_type);
-}
-
-const NativeWidget* Widget::native_widget() const {
-  return native_widget_;
-}
-
-NativeWidget* Widget::native_widget() {
-  return native_widget_;
 }
 
 const Event* Widget::GetCurrentEvent() {
@@ -976,14 +931,5 @@ void Widget::SetInitialBounds(const gfx::Rect& bounds) {
   }
 }
 
-namespace internal {
 
-////////////////////////////////////////////////////////////////////////////////
-// internal::NativeWidgetPrivate, NativeWidget implementation:
-
-internal::NativeWidgetPrivate* NativeWidgetPrivate::AsNativeWidgetPrivate() {
-  return this;
-}
-
-}  // namespace internal
 }  // namespace views

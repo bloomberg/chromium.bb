@@ -143,13 +143,15 @@ bool ProcessChildWindowMessage(UINT message,
   return false;
 }
 
-// Enumeration callback for NativeWidget::GetAllChildWidgets(). Called for each
+// Enumeration callback for NativeWidget::GetAllNativeWidgets(). Called for each
 // child HWND beneath the original HWND.
 BOOL CALLBACK EnumerateChildWindowsForNativeWidgets(HWND hwnd, LPARAM l_param) {
-  Widget* widget = Widget::GetWidgetForNativeView(hwnd);
-  if (widget) {
-    Widget::Widgets* widgets = reinterpret_cast<Widget::Widgets*>(l_param);
-    widgets->insert(widget);
+  NativeWidget* native_widget =
+      NativeWidget::GetNativeWidgetForNativeView(hwnd);
+  if (native_widget) {
+    NativeWidget::NativeWidgets* native_widgets =
+        reinterpret_cast<NativeWidget::NativeWidgets*>(l_param);
+    native_widgets->insert(native_widget);
   }
   return TRUE;
 }
@@ -2374,9 +2376,13 @@ void Widget::NotifyLocaleChanged() {
 
 namespace {
 BOOL CALLBACK WindowCallbackProc(HWND hwnd, LPARAM lParam) {
-  Widget* widget = Widget::GetWidgetForNativeView(hwnd);
-  if (widget && widget->is_secondary_widget())
-    widget->Close();
+  NativeWidget* native_widget =
+      NativeWidget::GetNativeWidgetForNativeView(hwnd);
+  if (native_widget) {
+    Widget* widget = native_widget->GetWidget();
+    if (widget->is_secondary_widget())
+      widget->Close();
+  }
   return TRUE;
 }
 }  // namespace
@@ -2408,32 +2414,30 @@ bool Widget::ConvertRect(const Widget* source,
   return false;
 }
 
-namespace internal {
-
 ////////////////////////////////////////////////////////////////////////////////
-// internal::NativeWidgetPrivate, public:
+// NativeWidget, public:
 
 // static
-NativeWidgetPrivate* NativeWidgetPrivate::CreateNativeWidget(
+NativeWidget* NativeWidget::CreateNativeWidget(
     internal::NativeWidgetDelegate* delegate) {
   return new NativeWidgetWin(delegate);
 }
 
 // static
-NativeWidgetPrivate* NativeWidgetPrivate::GetNativeWidgetForNativeView(
+NativeWidget* NativeWidget::GetNativeWidgetForNativeView(
     gfx::NativeView native_view) {
   return reinterpret_cast<NativeWidgetWin*>(
       ViewProp::GetValue(native_view, kNativeWidgetKey));
 }
 
 // static
-NativeWidgetPrivate* NativeWidgetPrivate::GetNativeWidgetForNativeWindow(
+NativeWidget* NativeWidget::GetNativeWidgetForNativeWindow(
     gfx::NativeWindow native_window) {
   return GetNativeWidgetForNativeView(native_window);
 }
 
 // static
-NativeWidgetPrivate* NativeWidgetPrivate::GetTopLevelNativeWidget(
+NativeWidget* NativeWidget::GetTopLevelNativeWidget(
     gfx::NativeView native_view) {
   if (!native_view)
     return NULL;
@@ -2443,13 +2447,13 @@ NativeWidgetPrivate* NativeWidgetPrivate::GetTopLevelNativeWidget(
   if (!root)
     return NULL;
 
-  NativeWidgetPrivate* widget = GetNativeWidgetForNativeView(root);
+  NativeWidget* widget = GetNativeWidgetForNativeView(root);
   if (widget)
     return widget;
 
   // Second, try to locate the last Widget window in the parent hierarchy.
   HWND parent_hwnd = native_view;
-  NativeWidgetPrivate* parent_widget;
+  NativeWidget* parent_widget;
   do {
     parent_widget = GetNativeWidgetForNativeView(parent_hwnd);
     if (parent_widget) {
@@ -2462,21 +2466,21 @@ NativeWidgetPrivate* NativeWidgetPrivate::GetTopLevelNativeWidget(
 }
 
 // static
-void NativeWidgetPrivate::GetAllChildWidgets(gfx::NativeView native_view,
-                                             Widget::Widgets* children) {
+void NativeWidget::GetAllNativeWidgets(gfx::NativeView native_view,
+                                       NativeWidgets* children) {
   if (!native_view)
     return;
 
-  Widget* widget = Widget::GetWidgetForNativeView(native_view);
-  if (widget)
-    children->insert(widget);
+  NativeWidget* native_widget = GetNativeWidgetForNativeView(native_view);
+  if (native_widget)
+    children->insert(native_widget);
   EnumChildWindows(native_view, EnumerateChildWindowsForNativeWidgets,
-                   reinterpret_cast<LPARAM>(children));
+      reinterpret_cast<LPARAM>(children));
 }
 
 // static
-void NativeWidgetPrivate::ReparentNativeView(gfx::NativeView native_view,
-                                             gfx::NativeView new_parent) {
+void NativeWidget::ReparentNativeView(gfx::NativeView native_view,
+                                      gfx::NativeView new_parent) {
   if (!native_view)
     return;
 
@@ -2484,26 +2488,27 @@ void NativeWidgetPrivate::ReparentNativeView(gfx::NativeView native_view,
   if (previous_parent == new_parent)
     return;
 
-  Widget::Widgets widgets;
-  GetAllChildWidgets(native_view, &widgets);
+  NativeWidgets widgets;
+  GetAllNativeWidgets(native_view, &widgets);
 
   // First notify all the widgets that they are being disassociated
   // from their previous parent.
-  for (Widget::Widgets::iterator it = widgets.begin();
+  for (NativeWidgets::iterator it = widgets.begin();
        it != widgets.end(); ++it) {
     // TODO(beng): Rename this notification to NotifyNativeViewChanging()
     // and eliminate the bool parameter.
-    (*it)->NotifyNativeViewHierarchyChanged(false, previous_parent);
+    (*it)->GetWidget()->NotifyNativeViewHierarchyChanged(false,
+                                                         previous_parent);
   }
 
   ::SetParent(native_view, new_parent);
 
   // And now, notify them that they have a brand new parent.
-  for (Widget::Widgets::iterator it = widgets.begin();
+  for (NativeWidgets::iterator it = widgets.begin();
        it != widgets.end(); ++it) {
-    (*it)->NotifyNativeViewHierarchyChanged(true, new_parent);
+    (*it)->GetWidget()->NotifyNativeViewHierarchyChanged(true,
+                                                         new_parent);
   }
 }
 
-}  // namespace internal
 }  // namespace views

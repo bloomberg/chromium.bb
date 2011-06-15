@@ -13,6 +13,7 @@
 #include "ui/gfx/point.h"
 #include "views/controls/menu/menu_wrapper.h"
 #include "views/view.h"
+#include "views/widget/native_widget.h"
 #include "views/widget/widget.h"
 
 namespace {
@@ -122,9 +123,10 @@ void TestingAutomationProvider::WindowGetViewBounds(int handle,
 
   if (window_tracker_->ContainsHandle(handle)) {
     gfx::NativeWindow window = window_tracker_->GetResource(handle);
-    views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
-    if (widget) {
-      views::View* root_view = widget->GetRootView();
+    views::NativeWidget* native_widget =
+        views::NativeWidget::GetNativeWidgetForNativeWindow(window);
+    if (native_widget) {
+      views::View* root_view = native_widget->GetWidget()->GetRootView();
       views::View* view = root_view->GetViewByID(view_id);
       if (view) {
         *success = true;

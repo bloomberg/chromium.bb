@@ -319,15 +319,12 @@ void NativeWidgetViews::SetCursor(gfx::NativeCursor cursor) {
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetViews, private:
 
-internal::NativeWidgetPrivate* NativeWidgetViews::GetParentNativeWidget() {
-  return static_cast<internal::NativeWidgetPrivate*>(
-      view_->GetWidget()->native_widget());
+NativeWidget* NativeWidgetViews::GetParentNativeWidget() {
+  return view_->GetWidget()->native_widget();
 }
 
-const internal::NativeWidgetPrivate*
-    NativeWidgetViews::GetParentNativeWidget() const {
-  return static_cast<const internal::NativeWidgetPrivate*>(
-      view_->GetWidget()->native_widget());
+const NativeWidget* NativeWidgetViews::GetParentNativeWidget() const {
+  return view_->GetWidget()->native_widget();
 }
 
 }  // namespace views

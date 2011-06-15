@@ -27,7 +27,7 @@
 #include "views/test/test_views_delegate.h"
 #include "views/test/views_test_base.h"
 #include "views/views_delegate.h"
-#include "views/widget/native_widget_private.h"
+#include "views/widget/native_widget.h"
 #include "views/widget/widget.h"
 
 namespace {
@@ -181,7 +181,7 @@ class NativeTextfieldViewsTest : public ViewsTestBase,
     model_->ClearEditHistory();
 
     input_method_ = new MockInputMethod();
-    widget_->native_widget_private()->ReplaceInputMethod(input_method_);
+    widget_->native_widget()->ReplaceInputMethod(input_method_);
 
     // Assumes the Widget is always focused.
     input_method_->OnFocus();
