@@ -81,6 +81,7 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
+        '../ui/gfx/gl/gl.gyp:gl',
         'gles2_cmd_helper',
       ],
       'all_dependent_settings': {
