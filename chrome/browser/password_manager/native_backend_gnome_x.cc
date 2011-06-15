@@ -121,13 +121,6 @@ bool LoadGnomeKeyring() {
   return true;
 }
 
-// Older versions of GNOME Keyring have bugs that prevent them from working
-// correctly with the find_itemsv API. (In particular, the non-pageable memory
-// allocator is rather busted.) There is no official way to check the version,
-// nor could we figure out any reasonable unofficial way to do it. So we work
-// around it by using a much slower API.
-#define GNOME_KEYRING_WORK_AROUND_MEMORY_CORRUPTION
-
 #else  // !defined(DLOPEN_GNOME_KEYRING)
 
 bool LoadGnomeKeyring() {
@@ -254,15 +247,8 @@ class GKRMethod {
   void UpdateLoginSearch(const PasswordForm& form);
   void RemoveLogin(const PasswordForm& form);
   void GetLogins(const PasswordForm& form);
-#if !defined(GNOME_KEYRING_WORK_AROUND_MEMORY_CORRUPTION)
   void GetLoginsList(uint32_t blacklisted_by_user);
   void GetAllLogins();
-#else
-  void GetKeyrings();
-  void GetItemIds(const char* keyring);
-  void GetItemAttrs(const char* keyring, guint id);
-  void GetItemInfo(const char* keyring, guint id);
-#endif
 
   // Use after AddLogin, RemoveLogin.
   GnomeKeyringResult WaitResult();
@@ -271,20 +257,6 @@ class GKRMethod {
   // GetAllLogins.
   GnomeKeyringResult WaitResult(PasswordFormList* forms);
 
-#if defined(GNOME_KEYRING_WORK_AROUND_MEMORY_CORRUPTION)
-  // Use after GetKeyrings().
-  GnomeKeyringResult WaitResult(std::vector<std::string>* keyrings);
-
-  // Use after GetItemIds().
-  GnomeKeyringResult WaitResult(std::vector<guint>* item_ids);
-
-  // Use after GetItemAttrs().
-  GnomeKeyringResult WaitResult(PasswordForm** form);
-
-  // Use after GetItemInfo().
-  GnomeKeyringResult WaitResult(string16* password);
-#endif
-
  private:
   // All these callbacks are called on UI thread.
   static void OnOperationDone(GnomeKeyringResult result, gpointer data);
@@ -292,31 +264,9 @@ class GKRMethod {
   static void OnOperationGetList(GnomeKeyringResult result, GList* list,
                                  gpointer data);
 
-#if defined(GNOME_KEYRING_WORK_AROUND_MEMORY_CORRUPTION)
-  static void OnOperationGetKeyrings(GnomeKeyringResult result, GList* list,
-                                     gpointer data);
-
-  static void OnOperationGetIds(GnomeKeyringResult result, GList* list,
-                                gpointer data);
-
-  static void OnOperationGetAttrs(GnomeKeyringResult result,
-                                  GnomeKeyringAttributeList* attrs,
-                                  gpointer data);
-
-  static void OnOperationGetInfo(GnomeKeyringResult result,
-                                 GnomeKeyringItemInfo* info,
-                                 gpointer data);
-#endif
-
   base::WaitableEvent event_;
   GnomeKeyringResult result_;
   NativeBackendGnome::PasswordFormList forms_;
-#if defined(GNOME_KEYRING_WORK_AROUND_MEMORY_CORRUPTION)
-  std::vector<std::string> keyrings_;
-  std::vector<guint> item_ids_;
-  scoped_ptr<PasswordForm> form_;
-  string16 password_;
-#endif
 };
 
 void GKRMethod::AddLogin(const PasswordForm& form) {
@@ -431,7 +381,6 @@ void GKRMethod::GetLogins(const PasswordForm& form) {
       NULL);
 }
 
-#if !defined(GNOME_KEYRING_WORK_AROUND_MEMORY_CORRUPTION)
 void GKRMethod::GetLoginsList(uint32_t blacklisted_by_user) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Search GNOME Keyring for matching passwords.
@@ -460,28 +409,6 @@ void GKRMethod::GetAllLogins() {
       GNOME_KEYRING_APPLICATION_CHROME,
       NULL);
 }
-#else
-void GKRMethod::GetKeyrings() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  gnome_keyring_list_keyring_names(OnOperationGetKeyrings, this, NULL);
-}
-
-void GKRMethod::GetItemIds(const char* keyring) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  gnome_keyring_list_item_ids(keyring, OnOperationGetIds, this, NULL);
-}
-
-void GKRMethod::GetItemAttrs(const char* keyring, guint id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  gnome_keyring_item_get_attributes(keyring, id, OnOperationGetAttrs, this,
-                                    NULL);
-}
-
-void GKRMethod::GetItemInfo(const char* keyring, guint id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  gnome_keyring_item_get_info(keyring, id, OnOperationGetInfo, this, NULL);
-}
-#endif
 
 GnomeKeyringResult GKRMethod::WaitResult() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
@@ -495,36 +422,6 @@ GnomeKeyringResult GKRMethod::WaitResult(PasswordFormList* forms) {
   forms->swap(forms_);
   return result_;
 }
-
-#if defined(GNOME_KEYRING_WORK_AROUND_MEMORY_CORRUPTION)
-GnomeKeyringResult GKRMethod::WaitResult(std::vector<std::string>* keyrings) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-  event_.Wait();
-  keyrings->swap(keyrings_);
-  return result_;
-}
-
-GnomeKeyringResult GKRMethod::WaitResult(std::vector<guint>* item_ids) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-  event_.Wait();
-  item_ids->swap(item_ids_);
-  return result_;
-}
-
-GnomeKeyringResult GKRMethod::WaitResult(PasswordForm** form) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-  event_.Wait();
-  *form = form_.release();
-  return result_;
-}
-
-GnomeKeyringResult GKRMethod::WaitResult(string16* password) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-  event_.Wait();
-  *password = password_;
-  return result_;
-}
-#endif
 
 // static
 void GKRMethod::OnOperationDone(GnomeKeyringResult result, gpointer data) {
@@ -543,70 +440,6 @@ void GKRMethod::OnOperationGetList(GnomeKeyringResult result, GList* list,
   ConvertFormList(list, &method->forms_);
   method->event_.Signal();
 }
-
-#if defined(GNOME_KEYRING_WORK_AROUND_MEMORY_CORRUPTION)
-// static
-void GKRMethod::OnOperationGetKeyrings(GnomeKeyringResult result, GList* list,
-                                       gpointer data) {
-  GKRMethod* method = static_cast<GKRMethod*>(data);
-  method->result_ = result;
-  method->keyrings_.clear();
-  GList* element = g_list_first(list);
-  while (element != NULL) {
-    const char* data = static_cast<const char*>(element->data);
-    method->keyrings_.push_back(std::string(data));
-    element = g_list_next(element);
-  }
-  method->event_.Signal();
-}
-
-// static
-void GKRMethod::OnOperationGetIds(GnomeKeyringResult result, GList* list,
-                                  gpointer data) {
-  GKRMethod* method = static_cast<GKRMethod*>(data);
-  method->result_ = result;
-  method->item_ids_.clear();
-  // |list| will be freed after this callback returns, so save it now.
-  for (GList* i = list; i; i = i->next) {
-    guint id = GPOINTER_TO_UINT(i->data);
-    method->item_ids_.push_back(id);
-  }
-  method->event_.Signal();
-}
-
-// static
-void GKRMethod::OnOperationGetAttrs(GnomeKeyringResult result,
-                                    GnomeKeyringAttributeList* attrs,
-                                    gpointer data) {
-  GKRMethod* method = static_cast<GKRMethod*>(data);
-  method->result_ = result;
-  // |attrs| will be freed after this callback returns, so convert it now.
-  if (result == GNOME_KEYRING_RESULT_OK)
-    method->form_.reset(FormFromAttributes(attrs));
-  method->event_.Signal();
-}
-
-// static
-void GKRMethod::OnOperationGetInfo(GnomeKeyringResult result,
-                                   GnomeKeyringItemInfo* info,
-                                   gpointer data) {
-  GKRMethod* method = static_cast<GKRMethod*>(data);
-  method->result_ = result;
-  // |info| will be freed after this callback returns, so use it now.
-  if (result == GNOME_KEYRING_RESULT_OK) {
-    char* secret = gnome_keyring_item_info_get_secret(info);
-    if (secret) {
-      method->password_ = UTF8ToUTF16(secret);
-      // gnome_keyring_item_info_get_secret() allocates and returns a new copy
-      // of the secret, so we have to free it afterward.
-      free(secret);
-    } else {
-      LOG(WARNING) << "Unable to access password from item info!";
-    }
-  }
-  method->event_.Signal();
-}
-#endif
 
 }  // namespace
 
@@ -817,7 +650,6 @@ bool NativeBackendGnome::GetLoginsList(PasswordFormList* forms,
 
   uint32_t blacklisted_by_user = !autofillable;
 
-#if !defined(GNOME_KEYRING_WORK_AROUND_MEMORY_CORRUPTION)
   GKRMethod method;
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           NewRunnableMethod(&method,
@@ -832,24 +664,10 @@ bool NativeBackendGnome::GetLoginsList(PasswordFormList* forms,
     return false;
   }
   return true;
-#else
-  PasswordFormList all_forms;
-  if (!GetAllLogins(&all_forms))
-    return false;
-  // Now manually filter the results for the values we care about.
-  for (size_t i = 0; i < all_forms.size(); ++i) {
-    if (all_forms[i]->blacklisted_by_user == blacklisted_by_user)
-      forms->push_back(all_forms[i]);
-    else
-      delete all_forms[i];
-  }
-  return true;
-#endif
 }
 
 bool NativeBackendGnome::GetAllLogins(PasswordFormList* forms) {
   GKRMethod method;
-#if !defined(GNOME_KEYRING_WORK_AROUND_MEMORY_CORRUPTION)
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           NewRunnableMethod(&method,
                                             &GKRMethod::GetAllLogins));
@@ -862,100 +680,4 @@ bool NativeBackendGnome::GetAllLogins(PasswordFormList* forms) {
     return false;
   }
   return true;
-#else
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          NewRunnableMethod(&method,
-                                            &GKRMethod::GetKeyrings));
-  std::vector<std::string> keyrings;
-  GnomeKeyringResult result = method.WaitResult(&keyrings);
-  if (result != GNOME_KEYRING_RESULT_OK) {
-    LOG(ERROR) << "Keyring list failed: "
-               << gnome_keyring_result_to_message(result);
-    return false;
-  }
-
-  // We could parallelize this, but there probably aren't many keyrings.
-  std::vector<std::pair<const char *, guint> > item_list;
-  for (size_t i = 0; i < keyrings.size(); ++i) {
-    const char *keyring = keyrings[i].c_str();
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            NewRunnableMethod(&method,
-                                              &GKRMethod::GetItemIds,
-                                              keyring));
-    std::vector<guint> item_ids;
-    GnomeKeyringResult result = method.WaitResult(&item_ids);
-    if (result != GNOME_KEYRING_RESULT_OK) {
-      LOG(ERROR) << "Keyring itemid list failed: "
-                 << gnome_keyring_result_to_message(result);
-      return false;
-    }
-    for (size_t j = 0; j < item_ids.size(); ++j)
-      item_list.push_back(std::make_pair(keyring, item_ids[j]));
-  }
-
-  // We can parallelize getting the item attributes.
-  GKRMethod* methods = new GKRMethod[item_list.size()];
-  for (size_t i = 0; i < item_list.size(); ++i) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            NewRunnableMethod(&methods[i],
-                                              &GKRMethod::GetItemAttrs,
-                                              item_list[i].first,
-                                              item_list[i].second));
-  }
-
-  bool success = true;
-
-  // We can also parallelize getting the item info (i.e. passwords).
-  PasswordFormList all_forms;
-  all_forms.resize(item_list.size());
-  for (size_t i = 0; i < item_list.size(); ++i) {
-    result = methods[i].WaitResult(&all_forms[i]);
-    if (result != GNOME_KEYRING_RESULT_OK) {
-      LOG(ERROR) << "Keyring get item attributes failed: "
-                 << gnome_keyring_result_to_message(result);
-      // We explicitly do not break out here. We must wait on all the other
-      // methods first, and we may have already posted new methods. So, we just
-      // note the failure and continue.
-      success = false;
-    }
-    if (all_forms[i]) {
-      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                              NewRunnableMethod(&methods[i],
-                                                &GKRMethod::GetItemInfo,
-                                                item_list[i].first,
-                                                item_list[i].second));
-    }
-  }
-
-  // Now just wait for all the passwords to come in.
-  for (size_t i = 0; i < item_list.size(); ++i) {
-    if (!all_forms[i])
-      continue;
-    result = methods[i].WaitResult(&all_forms[i]->password_value);
-    if (result != GNOME_KEYRING_RESULT_OK) {
-      LOG(ERROR) << "Keyring get item info failed: "
-                 << gnome_keyring_result_to_message(result);
-      delete all_forms[i];
-      all_forms[i] = NULL;
-      // We explicitly do not break out here (see above).
-      success = false;
-    }
-  }
-
-  delete[] methods;
-
-  if (success) {
-    // If we succeeded, output all the forms.
-    for (size_t i = 0; i < item_list.size(); ++i) {
-      if (all_forms[i])
-        forms->push_back(all_forms[i]);
-    }
-  } else {
-    // Otherwise, free them.
-    for (size_t i = 0; i < item_list.size(); ++i)
-      delete all_forms[i];
-  }
-
-  return success;
-#endif
 }
