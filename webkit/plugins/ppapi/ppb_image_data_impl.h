@@ -48,23 +48,16 @@ class PPB_ImageData_Impl : public Resource,
     return platform_image_.get();
   }
 
-  // Returns a pointer to the interface implementing PPB_ImageData that is
-  // exposed to the plugin.
-  static const PPB_ImageData* GetInterface();
-  static const PPB_ImageDataTrusted* GetTrustedInterface();
-
-  virtual ::ppapi::thunk::PPB_ImageData_API* AsPPB_ImageData_API();
+  virtual ::ppapi::thunk::PPB_ImageData_API* AsPPB_ImageData_API() OVERRIDE;
 
   // Resource overrides.
-  virtual PPB_ImageData_Impl* AsPPB_ImageData_Impl();
+  virtual PPB_ImageData_Impl* AsPPB_ImageData_Impl() OVERRIDE;
 
   // PPB_ImageData_API implementation.
-  virtual PP_Bool Describe(PP_ImageDataDesc* desc);
-  virtual void* Map();
-  virtual void Unmap();
-
-  // PPB_ImageDataTrusted implementation.
-  int GetSharedMemoryHandle(uint32* byte_count) const;
+  virtual PP_Bool Describe(PP_ImageDataDesc* desc) OVERRIDE;
+  virtual void* Map() OVERRIDE;
+  virtual void Unmap() OVERRIDE;
+  virtual int32_t GetSharedMemory(int* handle, uint32_t* byte_count) OVERRIDE;
 
   // The mapped bitmap and canvas will be NULL if the image is not mapped.
   skia::PlatformCanvas* mapped_canvas() const { return mapped_canvas_.get(); }

@@ -20,8 +20,10 @@
 #include "ppapi/c/dev/ppb_crypto_dev.h"
 #include "ppapi/c/dev/ppb_cursor_control_dev.h"
 #include "ppapi/c/dev/ppb_directory_reader_dev.h"
+#include "ppapi/c/dev/ppb_file_chooser_dev.h"
 #include "ppapi/c/dev/ppb_file_io_dev.h"
 #include "ppapi/c/dev/ppb_file_io_trusted_dev.h"
+#include "ppapi/c/dev/ppb_file_ref_dev.h"
 #include "ppapi/c/dev/ppb_file_system_dev.h"
 #include "ppapi/c/dev/ppb_find_dev.h"
 #include "ppapi/c/dev/ppb_font_dev.h"
@@ -58,8 +60,6 @@
 #include "ppapi/c/private/ppb_flash.h"
 #include "ppapi/c/private/ppb_flash_clipboard.h"
 #include "ppapi/c/private/ppb_flash_file.h"
-#include "ppapi/c/private/ppb_flash_menu.h"
-#include "ppapi/c/private/ppb_flash_net_connector.h"
 #include "ppapi/c/private/ppb_instance_private.h"
 #include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/c/private/ppb_proxy_private.h"
@@ -77,10 +77,6 @@
 #include "webkit/plugins/ppapi/ppb_console_impl.h"
 #include "webkit/plugins/ppapi/ppb_crypto_impl.h"
 #include "webkit/plugins/ppapi/ppb_directory_reader_impl.h"
-#include "webkit/plugins/ppapi/ppb_file_chooser_impl.h"
-#include "webkit/plugins/ppapi/ppb_file_io_impl.h"
-#include "webkit/plugins/ppapi/ppb_file_ref_impl.h"
-#include "webkit/plugins/ppapi/ppb_file_system_impl.h"
 #include "webkit/plugins/ppapi/ppb_flash_clipboard_impl.h"
 #include "webkit/plugins/ppapi/ppb_flash_file_impl.h"
 #include "webkit/plugins/ppapi/ppb_flash_impl.h"
@@ -292,7 +288,7 @@ const void* GetInterface(const char* name) {
   if (strcmp(name, PPB_FLASH_FILE_MODULELOCAL_INTERFACE) == 0)
     return PPB_Flash_File_ModuleLocal_Impl::GetInterface();
   if (strcmp(name, PPB_FLASH_MENU_INTERFACE) == 0)
-    return PPB_Flash_Menu_Impl::GetInterface();
+    return ::ppapi::thunk::GetPPB_Flash_Menu_Thunk();
   if (strcmp(name, PPB_FONT_DEV_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_Font_Thunk();
   if (strcmp(name, PPB_FULLSCREEN_DEV_INTERFACE) == 0)
@@ -300,9 +296,9 @@ const void* GetInterface(const char* name) {
   if (strcmp(name, PPB_GRAPHICS_2D_INTERFACE) == 0)
     return PPB_Graphics2D_Impl::GetInterface();
   if (strcmp(name, PPB_IMAGEDATA_INTERFACE) == 0)
-    return PPB_ImageData_Impl::GetInterface();
+    return ::ppapi::thunk::GetPPB_ImageData_Thunk();
   if (strcmp(name, PPB_IMAGEDATA_TRUSTED_INTERFACE) == 0)
-    return PPB_ImageData_Impl::GetTrustedInterface();
+    return ::ppapi::thunk::GetPPB_ImageDataTrusted_Thunk();
   if (name_prefix == GetInterfacePrefix(PPB_INSTANCE_INTERFACE))
     return PluginInstance::GetInterface(name);
   if (strcmp(name, PPB_INSTANCE_PRIVATE_INTERFACE) == 0)
@@ -360,7 +356,7 @@ const void* GetInterface(const char* name) {
 
 #ifdef ENABLE_FLAPPER_HACKS
   if (strcmp(name, PPB_FLASH_NETCONNECTOR_INTERFACE) == 0)
-    return PPB_Flash_NetConnector_Impl::GetInterface();
+    return ::ppapi::thunk::GetPPB_Flash_NetConnector_Thunk();
 #endif  // ENABLE_FLAPPER_HACKS
 
 #if defined(ENABLE_P2P_APIS)

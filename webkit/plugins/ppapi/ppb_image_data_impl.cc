@@ -19,28 +19,10 @@
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 
+using ::ppapi::thunk::PPB_ImageData_API;
+
 namespace webkit {
 namespace ppapi {
-
-namespace {
-
-int32_t GetSharedMemory(PP_Resource resource,
-                        int* handle,
-                        uint32_t* byte_count) {
-  scoped_refptr<PPB_ImageData_Impl> image_data(
-      Resource::GetAs<PPB_ImageData_Impl>(resource));
-  if (image_data) {
-    *handle = image_data->GetSharedMemoryHandle(byte_count);
-    return PP_OK;
-  }
-  return PP_ERROR_BADRESOURCE;
-}
-
-const PPB_ImageDataTrusted ppb_imagedata_trusted = {
-  &GetSharedMemory,
-};
-
-}  // namespace
 
 PPB_ImageData_Impl::PPB_ImageData_Impl(PluginInstance* instance)
     : Resource(instance),
@@ -52,17 +34,7 @@ PPB_ImageData_Impl::PPB_ImageData_Impl(PluginInstance* instance)
 PPB_ImageData_Impl::~PPB_ImageData_Impl() {
 }
 
-// static
-const PPB_ImageData* PPB_ImageData_Impl::GetInterface() {
-  return ::ppapi::thunk::GetPPB_ImageData_Thunk();
-}
-
-// static
-const PPB_ImageDataTrusted* PPB_ImageData_Impl::GetTrustedInterface() {
-  return &ppb_imagedata_trusted;
-}
-
-::ppapi::thunk::PPB_ImageData_API* PPB_ImageData_Impl::AsPPB_ImageData_API() {
+PPB_ImageData_API* PPB_ImageData_Impl::AsPPB_ImageData_API() {
   return this;
 }
 
@@ -122,8 +94,10 @@ void PPB_ImageData_Impl::Unmap() {
   // in the future to save some memory.
 }
 
-int PPB_ImageData_Impl::GetSharedMemoryHandle(uint32* byte_count) const {
-  return platform_image_->GetSharedMemoryHandle(byte_count);
+int32_t PPB_ImageData_Impl::GetSharedMemory(int* handle,
+                                            uint32_t* byte_count) {
+  *handle = platform_image_->GetSharedMemoryHandle(byte_count);
+  return PP_OK;
 }
 
 const SkBitmap* PPB_ImageData_Impl::GetMappedBitmap() const {

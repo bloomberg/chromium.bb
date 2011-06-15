@@ -25,9 +25,8 @@ class PPB_Flash_Menu_Proxy : public InterfaceProxy {
 
   static const Info* GetInfo();
 
-  const PPB_Flash_Menu* ppb_flash_menu_target() const {
-    return static_cast<const PPB_Flash_Menu*>(target_interface());
-  }
+  static PP_Resource CreateProxyResource(PP_Instance instance_id,
+                                         const PP_Flash_Menu* menu_data);
 
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);

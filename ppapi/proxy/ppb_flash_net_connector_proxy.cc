@@ -8,10 +8,19 @@
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_flash_net_connector.h"
+#include "ppapi/proxy/enter_proxy.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/serialized_var.h"
+#include "ppapi/thunk/enter.h"
+#include "ppapi/thunk/ppb_flash_net_connector_api.h"
+#include "ppapi/thunk/resource_creation_api.h"
+#include "ppapi/thunk/thunk.h"
+
+using ppapi::thunk::EnterFunctionNoLock;
+using ppapi::thunk::PPB_Flash_NetConnector_API;
+using ppapi::thunk::ResourceCreationAPI;
 
 namespace pp {
 namespace proxy {
@@ -39,62 +48,128 @@ class AbortCallbackTask : public Task {
   PP_CompletionCallback callback_;
 };
 
-class FlashNetConnector : public PluginResource {
+class FlashNetConnector : public PPB_Flash_NetConnector_API,
+                          public PluginResource {
  public:
-  FlashNetConnector(const HostResource& resource)
-      : PluginResource(resource),
-        callback_(PP_BlockUntilComplete()),
-        local_addr_out_(NULL),
-        remote_addr_out_(NULL) {
-  }
-  ~FlashNetConnector() {
-    if (callback_.func) {
-      MessageLoop::current()->PostTask(FROM_HERE,
-                                       new AbortCallbackTask(callback_));
-    }
-  }
+  explicit FlashNetConnector(const HostResource& resource);
+  virtual ~FlashNetConnector();
 
-  // Resource overrides.
-  virtual FlashNetConnector* AsFlashNetConnector() {
-    return this;
-  }
+  // ResourceObjectBase overrides.
+  virtual PPB_Flash_NetConnector_API* AsPPB_Flash_NetConnector_API() OVERRIDE;
 
-  bool HasCallback() const {
-    return callback_.func != NULL;
-  }
-
-  void SetCallback(const PP_CompletionCallback& callback,
-                   PP_FileHandle* socket_out,
-                   PP_Flash_NetAddress* local_addr_out,
-                   PP_Flash_NetAddress* remote_addr_out) {
-    callback_ = callback;
-    socket_out_ = socket_out;
-    local_addr_out_ = local_addr_out;
-    remote_addr_out_ = remote_addr_out;
-  }
+  // PPB_Flash_NetConnector_API implementation.
+  virtual int32_t ConnectTcp(const char* host,
+                             uint16_t port,
+                             PP_FileHandle* socket_out,
+                             PP_Flash_NetAddress* local_addr_out,
+                             PP_Flash_NetAddress* remote_addr_out,
+                             PP_CompletionCallback callback) OVERRIDE;
+  virtual int32_t ConnectTcpAddress(const PP_Flash_NetAddress* addr,
+                                    PP_FileHandle* socket_out,
+                                    PP_Flash_NetAddress* local_addr_out,
+                                    PP_Flash_NetAddress* remote_addr_out,
+                                    PP_CompletionCallback callback) OVERRIDE;
 
   void ConnectComplete(int32_t result,
                        base::PlatformFile file,
                        const std::string& local_addr_as_string,
-                       const std::string& remote_addr_as_string) {
-    if (!callback_.func) {
-      base::ClosePlatformFile(file);
-      return;
-    }
-
-    *socket_out_ = static_cast<PP_FileHandle>(file);
-    StringToNetAddress(local_addr_as_string, local_addr_out_);
-    StringToNetAddress(remote_addr_as_string, remote_addr_out_);
-
-    PP_RunAndClearCompletionCallback(&callback_, result);
-  }
+                       const std::string& remote_addr_as_string);
 
  private:
+  // Backend for both ConnectTcp and ConnectTcpAddress. To keep things generic,
+  // the message is passed in (on error, it's deleted).
+  int32_t ConnectWithMessage(IPC::Message* msg,
+                             PP_FileHandle* socket_out,
+                             PP_Flash_NetAddress* local_addr_out,
+                             PP_Flash_NetAddress* remote_addr_out,
+                             PP_CompletionCallback callback);
+
   PP_CompletionCallback callback_;
   PP_FileHandle* socket_out_;
   PP_Flash_NetAddress* local_addr_out_;
   PP_Flash_NetAddress* remote_addr_out_;
 };
+
+FlashNetConnector::FlashNetConnector(const HostResource& resource)
+    : PluginResource(resource),
+      callback_(PP_BlockUntilComplete()),
+      local_addr_out_(NULL),
+      remote_addr_out_(NULL) {
+}
+
+FlashNetConnector::~FlashNetConnector() {
+  if (callback_.func) {
+    MessageLoop::current()->PostTask(FROM_HERE,
+                                     new AbortCallbackTask(callback_));
+  }
+}
+
+PPB_Flash_NetConnector_API* FlashNetConnector::AsPPB_Flash_NetConnector_API() {
+  return this;
+}
+
+int32_t FlashNetConnector::ConnectTcp(
+    const char* host,
+    uint16_t port,
+    PP_FileHandle* socket_out,
+    PP_Flash_NetAddress* local_addr_out,
+    PP_Flash_NetAddress* remote_addr_out,
+    PP_CompletionCallback callback) {
+  return ConnectWithMessage(
+      new PpapiHostMsg_PPBFlashNetConnector_ConnectTcp(
+          INTERFACE_ID_PPB_FLASH_NETCONNECTOR, host_resource(), host, port),
+      socket_out, local_addr_out, remote_addr_out, callback);
+}
+
+int32_t FlashNetConnector::ConnectTcpAddress(
+    const PP_Flash_NetAddress* addr,
+    PP_FileHandle* socket_out,
+    PP_Flash_NetAddress* local_addr_out,
+    PP_Flash_NetAddress* remote_addr_out,
+    PP_CompletionCallback callback) {
+  return ConnectWithMessage(
+      new PpapiHostMsg_PPBFlashNetConnector_ConnectTcpAddress(
+          INTERFACE_ID_PPB_FLASH_NETCONNECTOR,
+          host_resource(), NetAddressToString(*addr)),
+      socket_out, local_addr_out, remote_addr_out, callback);
+}
+
+void FlashNetConnector::ConnectComplete(
+    int32_t result,
+    base::PlatformFile file,
+    const std::string& local_addr_as_string,
+    const std::string& remote_addr_as_string) {
+  if (!callback_.func) {
+    base::ClosePlatformFile(file);
+    return;
+  }
+
+  *socket_out_ = static_cast<PP_FileHandle>(file);
+  StringToNetAddress(local_addr_as_string, local_addr_out_);
+  StringToNetAddress(remote_addr_as_string, remote_addr_out_);
+
+  PP_RunAndClearCompletionCallback(&callback_, result);
+}
+
+int32_t FlashNetConnector::ConnectWithMessage(
+    IPC::Message* msg,
+    PP_FileHandle* socket_out,
+    PP_Flash_NetAddress* local_addr_out,
+    PP_Flash_NetAddress* remote_addr_out,
+    PP_CompletionCallback callback) {
+  scoped_ptr<IPC::Message> msg_deletor(msg);
+  if (callback_.func != NULL)
+    return PP_ERROR_INPROGRESS;  // Can only have one pending request.
+
+  // Send the request, it will call us back via ConnectACK.
+  GetDispatcher()->Send(msg_deletor.release());
+
+  callback_ = callback;
+  socket_out_ = socket_out;
+  local_addr_out_ = local_addr_out;
+  remote_addr_out_ = remote_addr_out;
+  return PP_OK_COMPLETIONPENDING;
+}
 
 // Contains the data that the host interface will write to so we can send it
 // to the plugin. This is created when a request is initiated, and deleted in
@@ -113,94 +188,6 @@ struct PPB_Flash_NetConnector_Proxy::ConnectCallbackInfo {
 };
 
 namespace {
-
-PP_Resource Create(PP_Instance instance_id) {
-  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance_id);
-  if (!dispatcher)
-    return 0;
-
-  HostResource result;
-  dispatcher->Send(new PpapiHostMsg_PPBFlashNetConnector_Create(
-      INTERFACE_ID_PPB_FLASH_NETCONNECTOR, instance_id, &result));
-  if (result.is_null())
-    return 0;
-
-  linked_ptr<FlashNetConnector> object(new FlashNetConnector(result));
-  return PluginResourceTracker::GetInstance()->AddResource(object);
-}
-
-PP_Bool IsFlashNetConnector(PP_Resource resource_id) {
-  FlashNetConnector* object =
-      PluginResource::GetAs<FlashNetConnector>(resource_id);
-  return BoolToPPBool(!!object);
-}
-
-// Backend for both ConnectTcp and ConnectTcpAddress. To keep things generic,
-// the message is passed in (on error, it's deleted).
-int32_t ConnectWithMessage(FlashNetConnector* object,
-                           IPC::Message* msg,
-                           PP_FileHandle* socket_out,
-                           struct PP_Flash_NetAddress* local_addr_out,
-                           struct PP_Flash_NetAddress* remote_addr_out,
-                           struct PP_CompletionCallback callback) {
-  scoped_ptr<IPC::Message> msg_deletor(msg);
-  if (object->HasCallback())
-    return PP_ERROR_INPROGRESS;  // Can only have one pending request.
-
-  // Send the request, it will call us back via ConnectACK.
-  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(
-      object->instance());
-  if (!dispatcher)
-    return PP_ERROR_BADARGUMENT;
-  dispatcher->Send(msg_deletor.release());
-
-  object->SetCallback(callback, socket_out, local_addr_out, remote_addr_out);
-  return PP_OK_COMPLETIONPENDING;
-}
-
-int32_t ConnectTcp(PP_Resource connector_id,
-                   const char* host,
-                   uint16_t port,
-                   PP_FileHandle* socket_out,
-                   struct PP_Flash_NetAddress* local_addr_out,
-                   struct PP_Flash_NetAddress* remote_addr_out,
-                   struct PP_CompletionCallback callback) {
-  FlashNetConnector* object =
-      PluginResource::GetAs<FlashNetConnector>(connector_id);
-  if (!object)
-    return PP_ERROR_BADARGUMENT;
-  return ConnectWithMessage(
-      object,
-      new PpapiHostMsg_PPBFlashNetConnector_ConnectTcp(
-          INTERFACE_ID_PPB_FLASH_NETCONNECTOR,
-          object->host_resource(), host, port),
-      socket_out, local_addr_out, remote_addr_out, callback);
-}
-
-int32_t ConnectTcpAddress(PP_Resource connector_id,
-                          const struct PP_Flash_NetAddress* addr,
-                          PP_FileHandle* socket_out,
-                          struct PP_Flash_NetAddress* local_addr_out,
-                          struct PP_Flash_NetAddress* remote_addr_out,
-                          struct PP_CompletionCallback callback) {
-  FlashNetConnector* object =
-      PluginResource::GetAs<FlashNetConnector>(connector_id);
-  if (!object)
-    return PP_ERROR_BADARGUMENT;
-  return ConnectWithMessage(
-      object,
-      new PpapiHostMsg_PPBFlashNetConnector_ConnectTcpAddress(
-          INTERFACE_ID_PPB_FLASH_NETCONNECTOR,
-          object->host_resource(), NetAddressToString(*addr)),
-      socket_out, local_addr_out, remote_addr_out, callback);
-}
-
-const PPB_Flash_NetConnector flash_netconnector_interface = {
-  &Create,
-  &IsFlashNetConnector,
-  &ConnectTcp,
-  &ConnectTcpAddress
-};
 
 InterfaceProxy* CreateFlashNetConnectorProxy(Dispatcher* dispatcher,
                                              const void* target_interface) {
@@ -221,13 +208,30 @@ PPB_Flash_NetConnector_Proxy::~PPB_Flash_NetConnector_Proxy() {
 // static
 const InterfaceProxy::Info* PPB_Flash_NetConnector_Proxy::GetInfo() {
   static const Info info = {
-    &flash_netconnector_interface,
+    ppapi::thunk::GetPPB_Flash_NetConnector_Thunk(),
     PPB_FLASH_NETCONNECTOR_INTERFACE,
     INTERFACE_ID_PPB_FLASH_NETCONNECTOR,
     false,
     &CreateFlashNetConnectorProxy
   };
   return &info;
+}
+
+// static
+PP_Resource PPB_Flash_NetConnector_Proxy::CreateProxyResource(
+    PP_Instance instance) {
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
+  if (!dispatcher)
+    return 0;
+
+  HostResource result;
+  dispatcher->Send(new PpapiHostMsg_PPBFlashNetConnector_Create(
+      INTERFACE_ID_PPB_FLASH_NETCONNECTOR, instance, &result));
+  if (result.is_null())
+    return 0;
+
+  linked_ptr<FlashNetConnector> object(new FlashNetConnector(result));
+  return PluginResourceTracker::GetInstance()->AddResource(object);
 }
 
 bool PPB_Flash_NetConnector_Proxy::OnMessageReceived(const IPC::Message& msg) {
@@ -246,11 +250,14 @@ bool PPB_Flash_NetConnector_Proxy::OnMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
-void PPB_Flash_NetConnector_Proxy::OnMsgCreate(PP_Instance instance_id,
+void PPB_Flash_NetConnector_Proxy::OnMsgCreate(PP_Instance instance,
                                                HostResource* result) {
-  result->SetHostResource(
-      instance_id,
-      ppb_flash_net_connector_target()->Create(instance_id));
+  EnterFunctionNoLock<ResourceCreationAPI> enter(instance, true);
+  if (enter.succeeded()) {
+    result->SetHostResource(
+        instance,
+        enter.functions()->CreateFlashNetConnector(instance));
+  }
 }
 
 void PPB_Flash_NetConnector_Proxy::OnMsgConnectTcp(
@@ -261,10 +268,13 @@ void PPB_Flash_NetConnector_Proxy::OnMsgConnectTcp(
   CompletionCallback callback = callback_factory_.NewCallback(
       &PPB_Flash_NetConnector_Proxy::OnCompleteCallbackInHost, info);
 
-  int32_t result = ppb_flash_net_connector_target()->ConnectTcp(
-      resource.host_resource(), host.c_str(), port,
-      &info->handle, &info->local_addr, &info->remote_addr,
-      callback.pp_completion_callback());
+  EnterHostFromHostResource<PPB_Flash_NetConnector_API> enter(resource);
+  int32_t result = PP_ERROR_BADRESOURCE;
+  if (enter.succeeded()) {
+    result = enter.object()->ConnectTcp(
+        host.c_str(), port, &info->handle, &info->local_addr,
+        &info->remote_addr, callback.pp_completion_callback());
+  }
   if (result != PP_OK_COMPLETIONPENDING)
     OnCompleteCallbackInHost(result, info);
 }
@@ -279,10 +289,13 @@ void PPB_Flash_NetConnector_Proxy::OnMsgConnectTcpAddress(
   PP_Flash_NetAddress net_address;
   StringToNetAddress(net_address_as_string, &net_address);
 
-  int32_t result = ppb_flash_net_connector_target()->ConnectTcpAddress(
-      resource.host_resource(), &net_address,
-      &info->handle, &info->local_addr, &info->remote_addr,
-      callback.pp_completion_callback());
+  EnterHostFromHostResource<PPB_Flash_NetConnector_API> enter(resource);
+  int32_t result = PP_ERROR_BADRESOURCE;
+  if (enter.succeeded()) {
+    result = enter.object()->ConnectTcpAddress(
+        &net_address, &info->handle, &info->local_addr, &info->remote_addr,
+        callback.pp_completion_callback());
+  }
   if (result != PP_OK_COMPLETIONPENDING)
     OnCompleteCallbackInHost(result, info);
 }
@@ -296,20 +309,12 @@ void PPB_Flash_NetConnector_Proxy::OnMsgConnectACK(
   base::PlatformFile platform_file =
       IPC::PlatformFileForTransitToPlatformFile(handle);
 
-  PP_Resource plugin_resource =
-      PluginResourceTracker::GetInstance()->PluginResourceForHostResource(
-          host_resource);
-  if (!plugin_resource) {
+  EnterPluginFromHostResource<PPB_Flash_NetConnector_API> enter(host_resource);
+  if (enter.failed()) {
     base::ClosePlatformFile(platform_file);
     return;
   }
-  FlashNetConnector* object =
-      PluginResource::GetAs<FlashNetConnector>(plugin_resource);
-  if (!object) {
-    base::ClosePlatformFile(platform_file);
-    return;
-  }
-
+  FlashNetConnector* object = static_cast<FlashNetConnector*>(enter.object());
   object->ConnectComplete(result, platform_file,
                           load_addr_as_string, remote_addr_as_string);
 }

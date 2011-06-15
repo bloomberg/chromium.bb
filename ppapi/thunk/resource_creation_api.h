@@ -15,6 +15,7 @@
 #include "ppapi/c/ppb_image_data.h"
 #include "ppapi/proxy/interface_id.h"
 
+struct PP_Flash_Menu;
 struct PP_FontDescription_Dev;
 struct PP_Size;
 
@@ -50,6 +51,9 @@ class ResourceCreationAPI {
                                     const char* path) = 0;
   virtual PP_Resource CreateFileSystem(PP_Instance instance,
                                        PP_FileSystemType_Dev type) = 0;
+  virtual PP_Resource CreateFlashMenu(PP_Instance instance,
+                                      const PP_Flash_Menu* menu_data) = 0;
+  virtual PP_Resource CreateFlashNetConnector(PP_Instance instance) = 0;
   // Note: can't be called CreateFont due to Windows #defines.
   virtual PP_Resource CreateFontObject(
       PP_Instance instance,

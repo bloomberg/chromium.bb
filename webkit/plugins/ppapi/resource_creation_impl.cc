@@ -15,6 +15,8 @@
 #include "webkit/plugins/ppapi/ppb_file_io_impl.h"
 #include "webkit/plugins/ppapi/ppb_file_ref_impl.h"
 #include "webkit/plugins/ppapi/ppb_file_system_impl.h"
+#include "webkit/plugins/ppapi/ppb_flash_menu_impl.h"
+#include "webkit/plugins/ppapi/ppb_flash_net_connector_impl.h"
 #include "webkit/plugins/ppapi/ppb_font_impl.h"
 #include "webkit/plugins/ppapi/ppb_graphics_2d_impl.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
@@ -104,6 +106,17 @@ PP_Resource ResourceCreationImpl::CreateFileSystem(
     PP_Instance instance,
     PP_FileSystemType_Dev type) {
   return PPB_FileSystem_Impl::Create(instance, type);
+}
+
+PP_Resource ResourceCreationImpl::CreateFlashMenu(
+    PP_Instance instance,
+    const PP_Flash_Menu* menu_data) {
+  return PPB_Flash_Menu_Impl::Create(instance, menu_data);
+}
+
+PP_Resource ResourceCreationImpl::CreateFlashNetConnector(
+    PP_Instance instance) {
+  return PPB_Flash_NetConnector_Impl::Create(instance);
 }
 
 PP_Resource ResourceCreationImpl::CreateFontObject(

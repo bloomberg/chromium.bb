@@ -44,7 +44,7 @@ class Buffer : public ppapi::thunk::PPB_Buffer_API,
   // Resource overrides.
   virtual Buffer* AsBuffer() OVERRIDE;
 
-  // ResourceObjectBase overries.
+  // ResourceObjectBase overrides.
   virtual ppapi::thunk::PPB_Buffer_API* AsPPB_Buffer_API() OVERRIDE;
 
   // PPB_Buffer_API implementation.

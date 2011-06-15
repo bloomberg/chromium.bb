@@ -8,34 +8,38 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "ppapi/c/private/ppb_flash_net_connector.h"
+#include "ppapi/thunk/ppb_flash_net_connector_api.h"
 #include "webkit/plugins/ppapi/callbacks.h"
 #include "webkit/plugins/ppapi/resource.h"
 
 namespace webkit {
 namespace ppapi {
 
-class PPB_Flash_NetConnector_Impl : public Resource {
+class PPB_Flash_NetConnector_Impl
+    : public Resource,
+      public ::ppapi::thunk::PPB_Flash_NetConnector_API {
  public:
   explicit PPB_Flash_NetConnector_Impl(PluginInstance* instance);
   virtual ~PPB_Flash_NetConnector_Impl();
 
-  static const PPB_Flash_NetConnector* GetInterface();
+  static PP_Resource Create(PP_Instance pp_instance);
 
-  // Resource override.
-  virtual PPB_Flash_NetConnector_Impl* AsPPB_Flash_NetConnector_Impl();
+  // ResourceObjectBase override.
+  virtual ::ppapi::thunk::PPB_Flash_NetConnector_API*
+      AsPPB_Flash_NetConnector_API() OVERRIDE;
 
   // PPB_Flash_NetConnector implementation.
-  int32_t ConnectTcp(const char* host,
-                     uint16_t port,
-                     PP_FileHandle* socket_out,
-                     PP_Flash_NetAddress* local_addr_out,
-                     PP_Flash_NetAddress* remote_addr_out,
-                     PP_CompletionCallback callback);
-  int32_t ConnectTcpAddress(const PP_Flash_NetAddress* addr,
-                            PP_FileHandle* socket_out,
-                            PP_Flash_NetAddress* local_addr_out,
-                            PP_Flash_NetAddress* remote_addr_out,
-                            PP_CompletionCallback callback);
+  virtual int32_t ConnectTcp(const char* host,
+                             uint16_t port,
+                             PP_FileHandle* socket_out,
+                             PP_Flash_NetAddress* local_addr_out,
+                             PP_Flash_NetAddress* remote_addr_out,
+                             PP_CompletionCallback callback) OVERRIDE;
+  virtual int32_t ConnectTcpAddress(const PP_Flash_NetAddress* addr,
+                                    PP_FileHandle* socket_out,
+                                    PP_Flash_NetAddress* local_addr_out,
+                                    PP_Flash_NetAddress* remote_addr_out,
+                                    PP_CompletionCallback callback) OVERRIDE;
 
   // Called to complete |ConnectTcp()| and |ConnectTcpAddress()|.
   void CompleteConnectTcp(PP_FileHandle socket,

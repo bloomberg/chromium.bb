@@ -11,64 +11,10 @@
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 
+using ::ppapi::thunk::PPB_Flash_NetConnector_API;
+
 namespace webkit {
 namespace ppapi {
-
-namespace {
-
-PP_Resource Create(PP_Instance instance_id) {
-  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
-  if (!instance)
-    return 0;
-
-  scoped_refptr<PPB_Flash_NetConnector_Impl> connector(
-      new PPB_Flash_NetConnector_Impl(instance));
-  return connector->GetReference();
-}
-
-PP_Bool IsFlashNetConnector(PP_Resource resource) {
-  return BoolToPPBool(!!Resource::GetAs<PPB_Flash_NetConnector_Impl>(resource));
-}
-
-int32_t ConnectTcp(PP_Resource connector_id,
-                   const char* host,
-                   uint16_t port,
-                   PP_FileHandle* socket_out,
-                   PP_Flash_NetAddress* local_addr_out,
-                   PP_Flash_NetAddress* remote_addr_out,
-                   PP_CompletionCallback callback) {
-  scoped_refptr<PPB_Flash_NetConnector_Impl> connector(
-      Resource::GetAs<PPB_Flash_NetConnector_Impl>(connector_id));
-  if (!connector.get())
-    return PP_ERROR_BADRESOURCE;
-
-  return connector->ConnectTcp(
-      host, port, socket_out, local_addr_out, remote_addr_out, callback);
-}
-
-int32_t ConnectTcpAddress(PP_Resource connector_id,
-                          const PP_Flash_NetAddress* addr,
-                          PP_FileHandle* socket_out,
-                          PP_Flash_NetAddress* local_addr_out,
-                          PP_Flash_NetAddress* remote_addr_out,
-                          PP_CompletionCallback callback) {
-  scoped_refptr<PPB_Flash_NetConnector_Impl> connector(
-      Resource::GetAs<PPB_Flash_NetConnector_Impl>(connector_id));
-  if (!connector.get())
-    return PP_ERROR_BADRESOURCE;
-
-  return connector->ConnectTcpAddress(
-      addr, socket_out, local_addr_out, remote_addr_out, callback);
-}
-
-const PPB_Flash_NetConnector ppb_flash_netconnector = {
-  &Create,
-  &IsFlashNetConnector,
-  &ConnectTcp,
-  &ConnectTcpAddress,
-};
-
-}  // namespace
 
 PPB_Flash_NetConnector_Impl::PPB_Flash_NetConnector_Impl(
     PluginInstance* instance)
@@ -79,12 +25,18 @@ PPB_Flash_NetConnector_Impl::~PPB_Flash_NetConnector_Impl() {
 }
 
 // static
-const PPB_Flash_NetConnector* PPB_Flash_NetConnector_Impl::GetInterface() {
-  return &ppb_flash_netconnector;
+PP_Resource PPB_Flash_NetConnector_Impl::Create(PP_Instance pp_instance) {
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(pp_instance);
+  if (!instance)
+    return 0;
+
+  scoped_refptr<PPB_Flash_NetConnector_Impl> connector(
+      new PPB_Flash_NetConnector_Impl(instance));
+  return connector->GetReference();
 }
 
-PPB_Flash_NetConnector_Impl*
-    PPB_Flash_NetConnector_Impl::AsPPB_Flash_NetConnector_Impl() {
+PPB_Flash_NetConnector_API*
+    PPB_Flash_NetConnector_Impl::AsPPB_Flash_NetConnector_API() {
   return this;
 }
 

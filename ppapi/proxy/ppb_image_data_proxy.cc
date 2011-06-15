@@ -109,6 +109,13 @@ void ImageData::Unmap() {
   // We need to add a method to TransportDIB to release the handles.
 }
 
+int32_t ImageData::GetSharedMemory(int* /* handle */,
+                                   uint32_t* /* byte_count */) {
+  // Not supported in the proxy (this method is for actually implementing the
+  // proxy in the host).
+  return PP_ERROR_NOACCESS;
+}
+
 #if defined(OS_WIN)
 const ImageHandle ImageData::NullHandle = NULL;
 #elif defined(OS_MACOSX)

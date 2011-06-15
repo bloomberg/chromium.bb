@@ -13,44 +13,12 @@
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 
+using ::ppapi::thunk::PPB_Flash_Menu_API;
+
 namespace webkit {
 namespace ppapi {
 
 namespace {
-
-PP_Resource Create(PP_Instance instance_id, const PP_Flash_Menu* menu_data) {
-  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
-  if (!instance)
-    return 0;
-
-  scoped_refptr<PPB_Flash_Menu_Impl> menu(new PPB_Flash_Menu_Impl(instance));
-  if (!menu->Init(menu_data))
-    return 0;
-
-  return menu->GetReference();
-}
-
-PP_Bool IsFlashMenu(PP_Resource resource) {
-  return BoolToPPBool(!!Resource::GetAs<PPB_Flash_Menu_Impl>(resource));
-}
-
-int32_t Show(PP_Resource menu_id,
-             const PP_Point* location,
-             int32_t* selected_id,
-             PP_CompletionCallback callback) {
-  scoped_refptr<PPB_Flash_Menu_Impl> menu(
-      Resource::GetAs<PPB_Flash_Menu_Impl>(menu_id));
-  if (!menu.get())
-    return PP_ERROR_BADRESOURCE;
-
-  return menu->Show(location, selected_id, callback);
-}
-
-const PPB_Flash_Menu ppb_flash_menu = {
-  &Create,
-  &IsFlashMenu,
-  &Show,
-};
 
 // Maximum depth of submenus allowed (e.g., 1 indicates that submenus are
 // allowed, but not sub-submenus).
@@ -130,6 +98,23 @@ PPB_Flash_Menu_Impl::PPB_Flash_Menu_Impl(PluginInstance* instance)
     : Resource(instance) {
 }
 
+PPB_Flash_Menu_Impl::~PPB_Flash_Menu_Impl() {
+}
+
+// static
+PP_Resource PPB_Flash_Menu_Impl::Create(PP_Instance pp_instance,
+                                        const PP_Flash_Menu* menu_data) {
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(pp_instance);
+  if (!instance)
+    return 0;
+
+  scoped_refptr<PPB_Flash_Menu_Impl> menu(new PPB_Flash_Menu_Impl(instance));
+  if (!menu->Init(menu_data))
+    return 0;
+
+  return menu->GetReference();
+}
+
 bool PPB_Flash_Menu_Impl::Init(const PP_Flash_Menu* menu_data) {
   menu_id_map_.clear();
   menu_id_map_.push_back(0);  // Reserve |menu_id_map_[0]|.
@@ -141,15 +126,7 @@ bool PPB_Flash_Menu_Impl::Init(const PP_Flash_Menu* menu_data) {
   return true;
 }
 
-PPB_Flash_Menu_Impl::~PPB_Flash_Menu_Impl() {
-}
-
-// static
-const PPB_Flash_Menu* PPB_Flash_Menu_Impl::GetInterface() {
-  return &ppb_flash_menu;
-}
-
-PPB_Flash_Menu_Impl* PPB_Flash_Menu_Impl::AsPPB_Flash_Menu_Impl() {
+PPB_Flash_Menu_API* PPB_Flash_Menu_Impl::AsPPB_Flash_Menu_API() {
   return this;
 }
 

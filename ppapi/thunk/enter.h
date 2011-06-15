@@ -52,11 +52,9 @@ class EnterFunction {
   bool succeeded() const { return !!functions_; }
   bool failed() const { return !functions_; }
 
-  PP_Instance instance() const { return instance_; }
   FunctionsT* functions() { return functions_; }
 
  private:
-  PP_Instance instance_;
   FunctionsT* functions_;
 
   DISALLOW_COPY_AND_ASSIGN(EnterFunction);

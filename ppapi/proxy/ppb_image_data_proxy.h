@@ -55,15 +55,16 @@ class ImageData : public PluginResource,
   virtual ~ImageData();
 
   // ResourceObjectBase overrides.
-  virtual ::ppapi::thunk::PPB_ImageData_API* AsPPB_ImageData_API();
+  virtual ::ppapi::thunk::PPB_ImageData_API* AsPPB_ImageData_API() OVERRIDE;
 
   // Resource overrides.
-  virtual ImageData* AsImageData();
+  virtual ImageData* AsImageData() OVERRIDE;
 
   // PPB_ImageData API.
-  virtual PP_Bool Describe(PP_ImageDataDesc* desc);
-  virtual void* Map();
-  virtual void Unmap();
+  virtual PP_Bool Describe(PP_ImageDataDesc* desc) OVERRIDE;
+  virtual void* Map() OVERRIDE;
+  virtual void Unmap() OVERRIDE;
+  virtual int32_t GetSharedMemory(int* handle, uint32_t* byte_count) OVERRIDE;
 
   skia::PlatformCanvas* mapped_canvas() const { return mapped_canvas_.get(); }
 

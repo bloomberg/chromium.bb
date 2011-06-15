@@ -27,10 +27,7 @@ class PPB_Flash_NetConnector_Proxy : public InterfaceProxy {
 
   static const Info* GetInfo();
 
-  const PPB_Flash_NetConnector* ppb_flash_net_connector_target() const {
-    return reinterpret_cast<const PPB_Flash_NetConnector*>(
-        target_interface());
-  }
+  static PP_Resource CreateProxyResource(PP_Instance instance);
 
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
