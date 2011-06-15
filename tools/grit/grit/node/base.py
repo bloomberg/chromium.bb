@@ -480,12 +480,19 @@ class Node(grit.format.interface.ItemFormatter):
       lang = root.output_language
     if hasattr(root, 'defines'):
       defs = root.defines
-    return eval(expr, {},
-                {'lang' : lang,
-                 'defs' : defs,
-                 'os': sys.platform,
-                 'pp_ifdef' : pp_ifdef,
-                 'pp_if' : pp_if})
+    variable_map = {
+        'lang' : lang,
+        'defs' : defs,
+        'os': sys.platform,
+        'is_linux': sys.platform.startswith('linux'),
+        'is_macosx': sys.platform == 'darwin',
+        'is_win': sys.platform in ('cygwin', 'win32'),
+        'is_posix': (sys.platform in ('darwin', 'linux2', 'linux3', 'sunos5')
+                     or sys.platform.find('bsd') != -1),
+        'pp_ifdef' : pp_ifdef,
+        'pp_if' : pp_if,
+    }
+    return eval(expr, {}, variable_map)
 
   def OnlyTheseTranslations(self, languages):
     '''Turns off loading of translations for languages not in the provided list.

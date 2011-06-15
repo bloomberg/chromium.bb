@@ -2,13 +2,9 @@
 
 <!--
 This file contains definitions of resources that will be translated for each
-locale. OS values are passed through from Python's sys.platform:
-
-  win32 - Windows
-  darwin - Mac
-  linux2 - Linux (both Views and GTK+)
-
-Other platform defines such as use_titlecase are declared in build/common.gypi.
+locale.  The variables is_win, is_macosx, is_linux, and is_posix are available
+for making strings OS specific.  Other platform defines such as use_titlecase
+are declared in build/common.gypi.
 -->
 
 <grit base_dir="." latest_public_release="0" current_release="1"
@@ -1030,7 +1026,7 @@ Other platform defines such as use_titlecase are declared in build/common.gypi.
           Preferences...
         </message>
       </if>
-      <if expr="os == 'linux2' or os.find('bsd') != -1 or os == 'sunos5'">
+      <if expr="is_posix and not is_macosx">
         <message name="IDS_PREFERENCES" desc="The text label of the Preferences menu item.">
           Preferences
         </message>
@@ -2444,7 +2440,7 @@ Other platform defines such as use_titlecase are declared in build/common.gypi.
       <message name="IDS_CREATE_SHORTCUTS_QUICK_LAUNCH_BAR_CHKBOX" desc="Label of the checkbox to create an application shortcut in quick launch bar.">
         Quick launch bar
       </message>
-      <if expr="os == 'linux2' or os.find('bsd') != -1 or os == 'sunos5'">
+      <if expr="is_posix and not is_macosx">
         <message name="IDS_CREATE_SHORTCUTS_ERROR_TITLE" desc="Title of the error dialog box when creating an application shortcut failed.">
           Failed to Create Application Shortcut
         </message>
@@ -6221,7 +6217,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
           and deselect any proxies that have been selected.
         </message>
       </if>
-      <if expr="os == 'linux2' or os.find('bsd') != -1 or os == 'sunos5'">
+      <if expr="is_posix and not is_macosx">
         <message name="IDS_ERRORPAGES_SUGGESTION_PROXY_DISABLE_PLATFORM" desc="Linux and ChromeOS instructions for disabling use of a proxy server.">
           Go to
           <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>
@@ -6381,7 +6377,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
           to test your connection.
         </message>
       </if>
-      <if expr="os != 'darwin' and os != 'linux2' and os.find('bsd') == -1 and os != 'sunos5'">
+      <if expr="is_win">
         <message name="IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED_PLATFORM" desc="Summary (platform dependent section) in the error page when the network connection failed.  Describes how to get to the network Diagnostics screen under Windows 7 and later.">
           Go to
           <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>
@@ -7042,7 +7038,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Settings
         </message>
       </if>
-      <if expr="not pp_ifdef('chromeos') and (os == 'darwin' or os == 'linux2' or os.find('bsd') != -1 or os == 'sunos5')">
+      <if expr="not pp_ifdef('chromeos') and is_posix">
         <message name="IDS_SETTINGS_TITLE" desc="Title for the settings tab.">
           Preferences
         </message>
@@ -7379,7 +7375,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
 
-      <if expr="os == 'darwin' or os.find('bsd') != -1 or os == 'sunos5' or (os =='linux2' and not pp_ifdef('chromeos'))">
+      <if expr="is_posix and not pp_ifdef('chromeos')">
         <message name="IDS_AUTOFILL_OPTIONS_TITLE" desc="The title of the Autofill dialog.">
           Autofill Preferences
         </message>
@@ -7596,7 +7592,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
 
-      <if expr="os == 'linux2' or os.find('bsd') != -1 or os == 'sunos5'">
+      <if expr="is_posix and not is_macosx">
         <message name="IDS_APPEARANCE_GROUP_NAME" desc="In Title Case: The title of the themes group">
           Appearance
         </message>
@@ -7680,7 +7676,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Some settings have been disabled by your IT administrator.
         </message>
       </if>
-      <if expr="not pp_ifdef('chromeos') and (os == 'darwin' or os == 'linux2' or os.find('bsd') != -1 or os == 'sunos5')">
+      <if expr="not pp_ifdef('chromeos') and is_posix">
         <message name="IDS_OPTIONS_MANAGED_PREFS" desc="Mac/Linux banner displayed in case there are managed options the user won't be able to change.">
           Some preferences have been disabled by your IT administrator.
         </message>
@@ -7720,7 +7716,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Search settings
         </message>
       </if>
-      <if expr="not pp_ifdef('chromeos') and (os == 'darwin' or os == 'linux2' or os.find('bsd') != -1 or os == 'sunos5')">
+      <if expr="not pp_ifdef('chromeos') and is_posix">
         <message name="IDS_OPTIONS_SEARCH_PLACEHOLDER" desc="Text placeholder for an empty search field on Mac/Linux.">
           Search preferences
         </message>
@@ -9727,7 +9723,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </if> <!-- os == 'darwin' -->
 
       <!-- Linux Global Menubar Menus -->
-      <if expr="os == 'linux2' or os.find('bsd') != -1 or os == 'sunos5'">
+      <if expr="is_posix and not is_macosx">
         <!-- Unity and some other GNOME configurations now have a permanent,
              Mac-like menu bar that lives outside the window at the top of the
              screen. The following strings should be in Linux style, not Mac
@@ -12502,7 +12498,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       Import bookmarks now...
     </message>
 
-    <if expr="os == 'linux2' or os.find('bsd') != -1 or os == 'sunos5'">
+    <if expr="is_posix and not is_macosx">
       <!-- Linux proxy configuration fallback help -->
       <message name="IDS_ABOUT_LINUX_PROXY_CONFIG_TITLE" desc="Title of HTML page shown on systems where system proxy configuration is unsupported.">
         Proxy Configuration Help
