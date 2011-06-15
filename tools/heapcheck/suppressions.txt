@@ -1622,3 +1622,9 @@
    ...
    fun:WebKitContextTest_Basic_Test::TestBody
 }
+{
+   bug_86135
+   Heapcheck:Leak
+   fun:Value::CreateStringValue
+   fun:policy::CloudPolicySubsystemTest::ExecuteTest
+}
