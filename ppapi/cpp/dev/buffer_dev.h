@@ -24,10 +24,14 @@ class Buffer_Dev : public Resource {
   // Unmap the underlying shared memory.
   virtual ~Buffer_Dev();
 
+  Buffer_Dev& operator=(const Buffer_Dev& rhs);
+
   uint32_t size() const { return size_; }
   void* data() const { return data_; }
 
  private:
+  void Init();
+
   void* data_;
   uint32_t size_;
 };
