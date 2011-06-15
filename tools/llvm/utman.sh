@@ -565,6 +565,14 @@ everything() {
   gcc-stage1 ${CROSS_TARGET_X86_64}
 
   rebuild-pnacl-libs
+  # NOTE: This overwrites the native libgcc.a's with a new native versions
+  #       build from compiler-rt and libgcc_eh with a new bitcode version
+  #       build from the regular llvm-gcc sources.
+  #       It will soon make most of the gcc-stage1 invocations obsolete after
+  #       which the exact place where those two functions are being called
+  #       from should reconsidered.
+  build-compiler-rt
+  build-libgcc_eh-bitcode arm-none-linux-gnueabi
 
   # NOTE: we delay the tool building till after the sdk is essentially
   #      complete, so that sdk sanity checks don't fail
