@@ -26,7 +26,6 @@
 #include "base/sha1.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
-#include "base/synchronization/lock.h"
 #include "base/task.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
@@ -1267,7 +1266,10 @@ class SyncManager::SyncInternal
     return connection_manager_.get();
   }
   SyncScheduler* scheduler() { return scheduler_.get(); }
-  UserShare* GetUserShare() { return &share_; }
+  UserShare* GetUserShare() {
+    DCHECK(initialized_);
+    return &share_;
+  }
 
   // Return the currently active (validated) username for use with syncable
   // types.
@@ -1287,13 +1289,6 @@ class SyncManager::SyncInternal
 
   // See SyncManager::Shutdown for information.
   void Shutdown();
-
-  // Whether we're initialized to the point of being able to accept changes
-  // (and hence allow transaction creation). See initialized_ for details.
-  bool initialized() const {
-    base::AutoLock lock(initialized_mutex_);
-    return initialized_;
-  }
 
   // If this is a deletion for a password, sets the legacy
   // ExtraPasswordChangeRecordData field of |buffer|. Otherwise sets
@@ -1407,11 +1402,6 @@ class SyncManager::SyncInternal
   // Helper to call OnAuthError when no authentication credentials are
   // available.
   void RaiseAuthNeededEvent();
-
-  // Helper to set initialized_ to true and raise an event to clients to notify
-  // that initialization is complete and it is safe to send us changes. If
-  // already initialized, this is a no-op.
-  void MarkAndNotifyInitializationComplete();
 
   // Determine if the parents or predecessors differ between the old and new
   // versions of an entry stored in |a| and |b|.  Note that a node's index may
@@ -1588,15 +1578,8 @@ class SyncManager::SyncInternal
   // The instance is shared between the SyncManager and the Syncer.
   ModelSafeWorkerRegistrar* registrar_;
 
-  // Set to true once Init has been called, and we know of an
-  // authenticated valid) username either from a fresh authentication
-  // attempt (as in first-use case) or from a previous attempt stored
-  // in our UserSettings (as in the steady-state), and the
-  // syncable::Directory has been opened, meaning we are ready to
-  // accept changes.  Protected by initialized_mutex_ as it can get
-  // read/set by both the SyncScheduler and the AuthWatcherThread.
+  // Set to true once Init has been called.
   bool initialized_;
-  mutable base::Lock initialized_mutex_;
 
   // True if the SyncManager should be running in test mode (no sync
   // scheduler actually communicating with the server).
@@ -1748,6 +1731,7 @@ bool SyncManager::SyncInternal::Init(
     sync_notifier::SyncNotifier* sync_notifier,
     const std::string& restored_key_for_bootstrapping,
     bool setup_for_test_mode) {
+  CHECK(!initialized_);
 
   VLOG(1) << "Starting SyncInternal initialization.";
 
@@ -1796,14 +1780,18 @@ bool SyncManager::SyncInternal::Init(
         browser_sync::SyncScheduler::CONFIGURATION_MODE, NULL);
   }
 
-  // Do this once the directory is opened.
-  BootstrapEncryption(restored_key_for_bootstrapping);
-  MarkAndNotifyInitializationComplete();
+  initialized_ = true;
 
-  // Only listen to notification once we are completely initialized. This is
-  // necessary because calls to e.g. |SetState| or |UpdateCredentials| may
-  // trigger notifications, and those can be called before initialized_ is set
-  // to true.
+  // Notify that initialization is complete.
+  ObserverList<SyncManager::Observer> temp_obs_list;
+  CopyObservers(&temp_obs_list);
+  FOR_EACH_OBSERVER(SyncManager::Observer, temp_obs_list,
+                    OnInitializationComplete());
+
+  // The following calls check that initialized_ is true.
+
+  BootstrapEncryption(restored_key_for_bootstrapping);
+
   sync_notifier_->AddObserver(this);
 
   return signed_in;
@@ -1821,6 +1809,7 @@ void SyncManager::SyncInternal::BootstrapEncryption(
 }
 
 bool SyncManager::SyncInternal::UpdateCryptographerFromNigori() {
+  DCHECK(initialized_);
   syncable::ScopedDirLookup lookup(dir_manager(), username_for_share());
   if (!lookup.good()) {
     NOTREACHED() << "BootstrapEncryption: lookup not good so bailing out";
@@ -1857,28 +1846,8 @@ void SyncManager::SyncInternal::StartSyncingNormally() {
     scheduler()->Start(SyncScheduler::NORMAL_MODE, NULL);
 }
 
-void SyncManager::SyncInternal::MarkAndNotifyInitializationComplete() {
-  // There is only one real time we need this mutex.  If we get an auth
-  // success, and before the initial sync ends we get an auth failure.  In this
-  // case we'll be listening to both the AuthWatcher and Syncer, and it's a race
-  // between their respective threads to call MarkAndNotify.  We need to make
-  // sure the observer is notified once and only once.
-  {
-    base::AutoLock lock(initialized_mutex_);
-    if (initialized_)
-      return;
-    initialized_ = true;
-  }
-
-  // Notify that initialization is complete.
-  ObserverList<SyncManager::Observer> temp_obs_list;
-  CopyObservers(&temp_obs_list);
-  FOR_EACH_OBSERVER(SyncManager::Observer, temp_obs_list,
-                    OnInitializationComplete());
-}
-
 bool SyncManager::SyncInternal::OpenDirectory() {
-  DCHECK(!initialized()) << "Should only happen once";
+  DCHECK(!initialized_) << "Should only happen once";
 
   bool share_opened = dir_manager()->Open(username_for_share());
   DCHECK(share_opened);
@@ -2077,6 +2046,7 @@ bool SyncManager::SyncInternal::IsUsingExplicitPassphrase() {
 
 void SyncManager::SyncInternal::EncryptDataTypes(
     const syncable::ModelTypeSet& encrypted_types) {
+  DCHECK(initialized_);
   VLOG(1) << "Attempting to encrypt datatypes "
           << syncable::ModelTypeSetToString(encrypted_types);
 
@@ -2564,7 +2534,7 @@ void SyncManager::SyncInternal::OnSyncEngineEvent(
       }
     }
 
-    if (!initialized()) {
+    if (!initialized_) {
       LOG(INFO) << "OnSyncCycleCompleted not sent because sync api is not "
                 << "initialized";
       return;
@@ -3000,12 +2970,10 @@ BaseTransaction::~BaseTransaction() {
 }
 
 UserShare* SyncManager::GetUserShare() const {
-  DCHECK(data_->initialized()) << "GetUserShare requires initialization!";
   return data_->GetUserShare();
 }
 
 void SyncManager::RefreshEncryption() {
-  DCHECK(data_->initialized());
   if (data_->UpdateCryptographerFromNigori())
     data_->EncryptDataTypes(syncable::ModelTypeSet());
 }
