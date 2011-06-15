@@ -340,10 +340,9 @@ void DragBookmarks(Profile* profile,
   bool was_nested = MessageLoop::current()->IsNested();
   MessageLoop::current()->SetNestableTasksAllowed(true);
 
-  views::NativeWidget* native_widget =
-      views::NativeWidget::GetNativeWidgetForNativeView(view);
-  if (native_widget) {
-    native_widget->GetWidget()->RunShellDrag(NULL, data,
+  views::Widget* widget = views::Widget::GetWidgetForNativeView(view);
+  if (widget) {
+    widget->RunShellDrag(NULL, data,
         ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_MOVE |
         ui::DragDropTypes::DRAG_LINK);
   }

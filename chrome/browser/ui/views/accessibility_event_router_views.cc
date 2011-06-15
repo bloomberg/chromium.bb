@@ -128,7 +128,7 @@ void AccessibilityEventRouterViews::DispatchAccessibilityNotification(
   views::Widget* widget = view->GetWidget();
   if (widget) {
     profile = reinterpret_cast<Profile*>(
-        widget->native_widget()->GetNativeWindowProperty(Profile::kProfileKey));
+        widget->GetNativeWindowProperty(Profile::kProfileKey));
   }
   if (!profile)
     profile = most_recent_profile_;

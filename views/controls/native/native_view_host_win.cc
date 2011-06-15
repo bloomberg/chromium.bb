@@ -37,8 +37,8 @@ void NativeViewHostWin::NativeViewAttached() {
   // borders), when we change the parent below.
   ShowWindow(host_->native_view(), SW_HIDE);
 
-  NativeWidget::ReparentNativeView(host_->native_view(),
-                                   host_->GetWidget()->GetNativeView());
+  Widget::ReparentNativeView(host_->native_view(),
+                             host_->GetWidget()->GetNativeView());
   host_->Layout();
 }
 

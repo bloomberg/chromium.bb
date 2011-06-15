@@ -34,7 +34,7 @@ namespace {
 // multi-profile environment.
 PrefService* GetPrefsForWindow(const views::Widget* window) {
   Profile* profile = reinterpret_cast<Profile*>(
-      window->native_widget()->GetNativeWindowProperty(Profile::kProfileKey));
+      window->GetNativeWindowProperty(Profile::kProfileKey));
   if (!profile) {
     // Use local state for windows that have no explicit profile.
     return g_browser_process->local_state();
