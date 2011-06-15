@@ -68,13 +68,13 @@ IN_PROC_BROWSER_TEST_F(IndexedDBLevelDBBrowserTest, CursorTest) {
   SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("cursor_test.html"))));
 }
 
-// Flaky: http://crbug.com/70773
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DISABLED_IndexTest) {
+// TODO(hans): If this starts failing, please disable and ping crbug.com/70773.
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, IndexTest) {
   SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("index_test.html"))));
 }
 
-// Flaky: http://crbug.com/70773
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DISABLED_KeyPathTest) {
+// TODO(hans): If this starts failing, please disable and ping crbug.com/70773.
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, KeyPathTest) {
   SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("key_path_test.html"))));
 }
 
@@ -82,8 +82,8 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, TransactionGetTest) {
   SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("transaction_get_test.html"))));
 }
 
-// Flaky: http://crbug.com/70773
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DISABLED_ObjectStoreTest) {
+// TODO(hans): If this starts failing, please disable and ping crbug.com/70773.
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, ObjectStoreTest) {
   SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("object_store_test.html"))));
 }
 
@@ -91,13 +91,13 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DatabaseTest) {
   SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("database_test.html"))));
 }
 
-// Flaky: http://crbug.com/70773
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DISABLED_TransactionTest) {
+// TODO(hans): If this starts failing, please disable and ping crbug.com/70773.
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, TransactionTest) {
   SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("transaction_test.html"))));
 }
 
-// Flaky: http://crbug.com/70773
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DISABLED_DoesntHangTest) {
+// TODO(hans): If this starts failing, please disable and ping crbug.com/70773.
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DoesntHangTest) {
   SimpleTest(testUrl(FilePath(
       FILE_PATH_LITERAL("transaction_run_forever.html"))));
   ui_test_utils::CrashTab(browser()->GetSelectedTabContents());

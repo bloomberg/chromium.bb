@@ -40,12 +40,13 @@ function newTransactionCompleted()
 function employeeAdded()
 {
   debug('Added an employee inside the transaction.');
+  newTransaction.abort();
 }
 
 function onSetVersionComplete()
 {
   debug('Creating new transaction.');
-  var newTransaction = db.transaction([], IDBTransaction.READ_WRITE);
+  window.newTransaction = db.transaction([], IDBTransaction.READ_WRITE);
   newTransaction.oncomplete = newTransactionCompleted;
   newTransaction.onabort = newTransactionAborted;
 
@@ -53,8 +54,6 @@ function onSetVersionComplete()
       {id: 0, name: 'John Doe', desk: 'LON-BEL-123'});
   request.onsuccess = employeeAdded;
   request.onerror = unexpectedErrorCallback;
-
-  newTransaction.abort();
 }
 
 function onSetVersion()

@@ -42,7 +42,7 @@ function onKeyCursor()
 
   debug('Got key through cursor.');
   shouldBe('event.target.result.key', '55');
-  shouldBe('event.target.result.value', '1');
+  shouldBe('event.target.result.primaryKey', '1');
   gotKeyThroughCursor = true;
 
   cursor.continue();
@@ -94,7 +94,7 @@ function indexSuccess()
   debug('Index created successfully.');
 
   shouldBe("index.name", "'myIndex'");
-  shouldBe("index.storeName", "'test'");
+  shouldBe("index.objectStore.name", "'test'");
   shouldBe("index.keyPath", "'aKey'");
   shouldBe("index.unique", "true");
 
