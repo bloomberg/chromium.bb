@@ -113,7 +113,9 @@ gfx::Size get_best_frame_size(int fd,
 }
 
 // Default camera device name.
-const char kDeviceName[] = "/dev/video0";
+const char kDeviceNameFormat[] = "/dev/video%d";
+// Number of times we retry initializing camera with different device index.
+const int kOpenDeviceRetries = 10;
 // Default width of each frame received from the camera.
 const int kFrameWidth = 640;
 // Default height of each frame received from the camera.
@@ -131,7 +133,6 @@ const long kSelectTimeout = 1 * base::Time::kMicrosecondsPerSecond;
 Camera::Camera(Delegate* delegate, base::Thread* thread, bool mirrored)
     : delegate_(delegate),
       thread_(thread),
-      device_name_(kDeviceName),
       device_descriptor_(-1),
       is_capturing_(false),
       desired_width_(kFrameWidth),
@@ -142,6 +143,7 @@ Camera::Camera(Delegate* delegate, base::Thread* thread, bool mirrored)
 }
 
 Camera::~Camera() {
+  Uninitialize();
   DCHECK_EQ(-1, device_descriptor_) << "Don't forget to uninitialize camera.";
 }
 
@@ -186,7 +188,15 @@ void Camera::DoInitialize(int desired_width, int desired_height) {
     return;
   }
 
-  int fd = OpenDevice(device_name_.c_str());
+  int fd = -1;
+  for (int i = 0; i < kOpenDeviceRetries; ++i) {
+    device_name_ = StringPrintf(kDeviceNameFormat, i);
+    fd = OpenDevice(device_name_.c_str());
+    if (fd != -1)
+      break;
+    LOG(WARNING) << "Failed to open device: " << device_name_;
+  }
+
   if (fd == -1) {
     ReportFailure();
     return;
@@ -223,7 +233,7 @@ void Camera::DoInitialize(int desired_width, int desired_height) {
   format.fmt.pix.pixelformat = V4L2_PIX_FMT_YUYV;
   format.fmt.pix.field = V4L2_FIELD_INTERLACED;
   if (xioctl(fd, VIDIOC_S_FMT, &format) == -1) {
-    LOG(ERROR) << "VIDIOC_S_FMT failed.";
+    log_errno("VIDIOC_S_FMT failed.");
     ReportFailure();
     return;
   }
@@ -335,7 +345,7 @@ int Camera::OpenDevice(const char* device_name) const {
   DCHECK(IsOnCameraThread());
   struct stat st;
   if (stat(device_name, &st) == -1) {
-    log_errno(base::StringPrintf("Cannot identify %s", device_name));
+    log_errno(base::StringPrintf("Cannot find %s", device_name));
     return -1;
   }
   if (!S_ISCHR(st.st_mode)) {
