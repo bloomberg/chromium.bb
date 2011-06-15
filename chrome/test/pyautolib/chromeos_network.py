@@ -141,13 +141,20 @@ class PyNetworkUITest(pyauto.PyUITest):
     # test harness might be using and putting wifi ahead.
     self._PushServiceOrder('vpn,bluetooth,wifi,wimax,cellular,ethernet')
     pyauto.PyUITest.setUp(self)
+    self.ForgetAllRememberedNetworks()
     self._wifi_power_strip = None
 
   def tearDown(self):
+    self.ForgetAllRememberedNetworks()
     pyauto.PyUITest.tearDown(self)
     self._PopServiceOrder()
     if self._wifi_power_strip:
       self._wifi_power_strip.TurnOffUsedRouters()
+
+  def ForgetAllRememberedNetworks(self):
+    """Forgets all networks that the device has marked as remembered."""
+    for service in self.GetNetworkInfo()['remembered_wifi']:
+      self.ForgetWifiNetwork(service)
 
   def _SetServiceOrder(self, service_order):
     self._manager.SetServiceOrder(service_order)
@@ -168,10 +175,10 @@ class PyNetworkUITest(pyauto.PyUITest):
     # Verify services that are present in both the service_order
     # we set and the one retrieved from device are in the correct order.
     set_service_order = self._manager.GetServiceOrder().split(',')
-    union_service = set(service_order).union(set(set_service_order))
+    common_service = set(service_order) & set(set_service_order)
 
-    service_order = [s for s in service_order if s in union_service]
-    set_service_order = [s for s in set_service_order if s in union_service]
+    service_order = [s for s in service_order if s in common_service]
+    set_service_order = [s for s in set_service_order if s in common_service]
 
     assert service_order == set_service_order, \
         'Flimflam service order not set properly. %s != %s' % \
@@ -184,10 +191,10 @@ class PyNetworkUITest(pyauto.PyUITest):
     # we set and the one retrieved from device are in the correct order.
     old_service_order = self._old_service_order.split(',')
     set_service_order = self._manager.GetServiceOrder().split(',')
-    union_service = set(old_service_order).union(set(set_service_order))
+    common_service = set(old_service_order) & set(set_service_order)
 
-    old_service_order = [s for s in old_service_order if s in union_service]
-    set_service_order = [s for s in set_service_order if s in union_service]
+    old_service_order = [s for s in old_service_order if s in common_service]
+    set_service_order = [s for s in set_service_order if s in common_service]
 
     assert old_service_order == set_service_order, \
         'Flimflam service order not set properly. %s != %s' % \

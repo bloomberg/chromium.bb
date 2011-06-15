@@ -2155,6 +2155,8 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
       &TestingAutomationProvider::ConnectToHiddenWifiNetwork;
   handler_map["DisconnectFromWifiNetwork"] =
       &TestingAutomationProvider::DisconnectFromWifiNetwork;
+  handler_map["ForgetWifiNetwork"] =
+      &TestingAutomationProvider::ForgetWifiNetwork;
 
   handler_map["GetUpdateInfo"] = &TestingAutomationProvider::GetUpdateInfo;
   handler_map["UpdateCheck"] = &TestingAutomationProvider::UpdateCheck;

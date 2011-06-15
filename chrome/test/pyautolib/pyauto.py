@@ -3015,13 +3015,23 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
                     u'name': u'WifiNetworkName2',
                     u'service_path':
                     u'status': u'Idle',
-                    u'strength': 79}}}
+                    u'strength': 79}},
+        u'remembered_wifi': [ u'/profile/default/ethernet_abcd',
+                              u'/profile/default/ethernet_efgh',]}
+
 
     Raises:
       pyauto_errors.JSONInterfaceError if the automation call returns an error.
     """
     cmd_dict = { 'command': 'GetNetworkInfo' }
-    return self._GetResultFromJSONRequest(cmd_dict, windex=-1)
+    network_info = self._GetResultFromJSONRequest(cmd_dict, windex=-1)
+
+    # Remembered networks do not have /service/ prepended to the service path
+    # even though wifi_networks does.  We want this prepended to allow for
+    # consistency and easy string comparison with wifi_networks.
+    network_info['remembered_wifi'] = ['/service/' + service for service in
+                                       network_info['remembered_wifi']]
+    return network_info
 
   def NetworkScan(self):
     """Causes ChromeOS to scan for available wifi networks.
@@ -3131,8 +3141,33 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     return self._GetResultFromJSONRequest(cmd_dict, windex=-1)
 
-  def ConnectToWifiNetwork(self, service_path,
-                           password='', identity='', certpath=''):
+  def ForgetWifiNetwork(self, service_path):
+    """Forget a remembered network by its service path.
+
+    This function is equivalent to clicking the 'Forget Network' button in the
+    chrome://settings/internet page.  This function does not indicate whether
+    or not forget succeeded or failed.  It is up to the caller to call
+    GetNetworkInfo to check the updated remembered_wifi list to verify the
+    service has been removed.
+
+    Args:
+      service_path: Flimflam path that defines the remembered network.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    # Usually the service_path is prepended with '/service/', such as when the
+    # service path is retrieved from GetNetworkInfo.  ForgetWifiNetwork works
+    # only for service paths where this has already been stripped.
+    service_path = service_path.split('/service/')[-1]
+    cmd_dict = {
+        'command': 'ForgetWifiNetwork',
+        'service_path': service_path,
+    }
+    self._GetResultFromJSONRequest(cmd_dict, windex=-1, timeout=50000)
+
+
+  def ConnectToWifiNetwork(self, service_path, password=''):
     """Connect to a wifi network by its service path.
 
     Blocks until connection succeeds or fails.
@@ -3140,8 +3175,6 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     Args:
       service_path: Flimflam path that defines the wifi network.
       password: Passphrase for connecting to the wifi network.
-      identity: Identity for 802.11x networks.
-      certpath: Certificate path for 802.11x networks.
 
     Returns:
       An error string if an error occured.
@@ -3154,8 +3187,6 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
         'command': 'ConnectToWifiNetwork',
         'service_path': service_path,
         'password': password,
-        'identity': identity,
-        'certpath': certpath,
     }
     result = self._GetResultFromJSONRequest(cmd_dict, windex=-1, timeout=50000)
     return result.get('error_string')

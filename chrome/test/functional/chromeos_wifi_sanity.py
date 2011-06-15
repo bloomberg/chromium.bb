@@ -9,7 +9,7 @@ import pyauto_functional
 import chromeos_network  # pyauto_functional must come before chromeos_network
 
 
-class ChromeosWifi(chromeos_network.PyNetworkUITest):
+class ChromeosWifiSanity(chromeos_network.PyNetworkUITest):
   """Tests for ChromeOS wifi."""
 
   def testNetworkInfoAndScan(self):
@@ -35,6 +35,15 @@ class ChromeosWifi(chromeos_network.PyNetworkUITest):
     error = self.ConnectToHiddenWifiNetwork(ssid, 'SECURITY_NONE')
     self.assertTrue(error, msg='Device connected to a non-existent '
                                            'network "%s".' % ssid)
+
+  def testForgetWifiNetwork(self):
+    """Basic test to verify there are no problems calling ForgetWifiNetwork."""
+    self.ForgetAllRememberedNetworks()
+    # This call should have no problems regardless of whether or not
+    # the network exists.
+    self.ForgetWifiNetwork('')
+    self.assertFalse(self.GetNetworkInfo()['remembered_wifi'], 'All '
+                     'remembered wifi networks should have been removed')
 
 
 if __name__ == '__main__':

@@ -213,7 +213,7 @@
       'chromeos_power',
       'chromeos_security',
       'chromeos_update',
-      'chromeos_wifi',
+      'chromeos_wifi_sanity',
       'chromeos_firmware_version_checker',
 
       # ===========================

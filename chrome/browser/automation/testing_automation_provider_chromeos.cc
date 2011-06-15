@@ -358,6 +358,18 @@ void TestingAutomationProvider::GetNetworkInfo(DictionaryValue* args,
     return_value->Set("cellular_networks", items);
   }
 
+  // Remembered Wifi Networks.
+  const chromeos::WifiNetworkVector& remembered_wifi =
+      network_library->remembered_wifi_networks();
+  ListValue* items = new ListValue;
+  for (chromeos::WifiNetworkVector::const_iterator iter =
+       remembered_wifi.begin(); iter != remembered_wifi.end();
+       ++iter) {
+      const chromeos::WifiNetwork* wifi = *iter;
+      items->Append(Value::CreateStringValue(wifi->service_path()));
+  }
+  return_value->Set("remembered_wifi", items);
+
   AutomationJSONReply(this, reply_message).SendSuccess(return_value.get());
 }
 
@@ -416,11 +428,9 @@ void TestingAutomationProvider::ConnectToWifiNetwork(
     return;
 
   AutomationJSONReply reply(this, reply_message);
-  std::string service_path, password, identity, certpath;
+  std::string service_path, password;
   if (!args->GetString("service_path", &service_path) ||
-      !args->GetString("password", &password) ||
-      !args->GetString("identity", &identity) ||
-      !args->GetString("certpath", &certpath)) {
+      !args->GetString("password", &password)) {
     reply.SendError("Invalid or missing args.");
     return;
   }
@@ -434,10 +444,6 @@ void TestingAutomationProvider::ConnectToWifiNetwork(
   }
   if (!password.empty())
     wifi->SetPassphrase(password);
-  if (!identity.empty())
-    wifi->SetIdentity(identity);
-  if (!certpath.empty())
-    wifi->SetCertPath(certpath);
 
   // Set up an observer (it will delete itself).
   new ServicePathConnectObserver(this, reply_message, service_path);
@@ -446,20 +452,32 @@ void TestingAutomationProvider::ConnectToWifiNetwork(
   network_library->RequestNetworkScan();
 }
 
-void TestingAutomationProvider::ConnectToHiddenWifiNetwork(
+void TestingAutomationProvider::ForgetWifiNetwork(
     DictionaryValue* args, IPC::Message* reply_message) {
-  if (!CrosLibrary::Get()->EnsureLoaded()) {
-    AutomationJSONReply(this, reply_message)
-        .SendError("Could not load cros library.");
+  if (!EnsureCrosLibraryLoaded(this, reply_message))
+    return;
+  std::string service_path;
+  if (!args->GetString("service_path", &service_path)) {
+    AutomationJSONReply(this, reply_message).SendError(
+        "Invalid or missing args.");
     return;
   }
+
+  CrosLibrary::Get()->GetNetworkLibrary()->ForgetWifiNetwork(service_path);
+  AutomationJSONReply(this, reply_message).SendSuccess(NULL);
+}
+
+void TestingAutomationProvider::ConnectToHiddenWifiNetwork(
+    DictionaryValue* args, IPC::Message* reply_message) {
+  if (!EnsureCrosLibraryLoaded(this, reply_message))
+    return;
 
   std::string ssid, security, password;
   if (!args->GetString("ssid", &ssid) ||
       !args->GetString("security", &security) ||
       !args->GetString("password", &password)) {
-    AutomationJSONReply(this, reply_message)
-        .SendError("Invalid or missing args.");
+    AutomationJSONReply(this, reply_message).SendError(
+        "Invalid or missing args.");
     return;
   }
 
@@ -471,8 +489,8 @@ void TestingAutomationProvider::ConnectToHiddenWifiNetwork(
   connection_security_map["SECURITY_8021X"] = chromeos::SECURITY_8021X;
 
   if (connection_security_map.find(security) == connection_security_map.end()) {
-    AutomationJSONReply(this, reply_message)
-        .SendError("Unknown security type.");
+    AutomationJSONReply(this, reply_message).SendError(
+        "Unknown security type.");
     return;
   }
   chromeos::ConnectionSecurity connection_security =
