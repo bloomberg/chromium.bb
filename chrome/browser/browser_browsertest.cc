@@ -627,7 +627,6 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_PageLanguageDetection) {
                                   source);
   ui_test_utils::NavigateToURL(
       browser(), GURL(test_server()->GetURL("files/french_page.html")));
-  EXPECT_EQ("", helper->language_state().original_language());
   fr_language_detected_signal.Wait();
   lang.clear();
   EXPECT_TRUE(fr_language_detected_signal.GetDetailsFor(
