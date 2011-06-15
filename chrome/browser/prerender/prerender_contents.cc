@@ -558,4 +558,15 @@ void PrerenderContents::CommitHistory(TabContentsWrapper* tab) {
     tab_contents_delegate_->CommitHistory(tab);
 }
 
+Value* PrerenderContents::GetAsValue() const {
+  if (!prerender_contents_.get())
+    return NULL;
+  DictionaryValue* dict_value = new DictionaryValue();
+  dict_value->SetString("url", prerender_url_.spec());
+  base::TimeTicks current_time = base::TimeTicks::Now();
+  base::TimeDelta duration = current_time - load_start_time_;
+  dict_value->SetInteger("duration", duration.InSeconds());
+  return dict_value;
+}
+
 }  // namespace prerender

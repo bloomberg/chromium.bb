@@ -32,6 +32,7 @@ found in the LICENSE file.
     <script src="serviceprovidersview.js"></script>
     <script src="httpthrottlingview.js"></script>
     <script src="logsview.js"></script>
+    <script src="prerenderview.js"></script>
   </head>
   <body onload="onLoaded()">
     <!-- Tab switcher for main categories. -->
@@ -50,6 +51,7 @@ found in the LICENSE file.
         <li><a href="#tests" id=testTab>Tests</a></li>
         <li><a href="#hsts" id=hstsTab>HSTS</a></li>
         <li><a href="#logs" id=logsTab style="display: none;">Logs</a></li>
+        <li><a href="#prerender" id=prerenderTab>Prerender</a></li>
       </ul>
       <div style="clear: both;"></div>
     </div>
@@ -209,6 +211,19 @@ found in the LICENSE file.
       </p>
       <p><input id=enableHttpThrottlingCheckbox type=checkbox />
         Throttle HTTP requests if the server has been overloaded or encountered an error.
+      </p>
+    </div>
+    <div id=prerenderTabContent>
+      <h4>Prerender</h4>
+      <p>
+        Active Prerender Pages
+        <div id=prerenderActiveDiv>
+        </div>
+      </p>
+      <p>
+        Prerender History
+        <div id=prerenderHistoryDiv>
+        </div>
       </p>
     </div>
     <!-- Only shown on Windows -->

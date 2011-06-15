@@ -135,6 +135,9 @@ function onLoaded() {
                             'logsRefreshBtn');
   }
 
+  var prerenderView = new PrerenderView(
+      'prerenderTabContent', 'prerenderHistoryDiv', 'prerenderActiveDiv');
+
   // Create a view which lets you tab between the different sub-views.
   var categoryTabSwitcher = new TabSwitcherView('categoryTabHandles');
   g_browser.setTabSwitcher(categoryTabSwitcher);
@@ -154,6 +157,7 @@ function onLoaded() {
   categoryTabSwitcher.addTab('httpThrottlingTab', httpThrottlingView, false);
   if (g_browser.isChromeOS())
     categoryTabSwitcher.addTab('logsTab', logsView, false);
+  categoryTabSwitcher.addTab('prerenderTab', prerenderView, false);
 
   // Build a map from the anchor name of each tab handle to its "tab ID".
   // We will consider navigations to the #hash as a switch tab request.
@@ -229,6 +233,9 @@ function BrowserBridge() {
         new PollableDataHelper('onServiceProvidersChanged',
                                this.sendGetServiceProviders.bind(this));
   }
+  this.pollableDataHelpers_.prerenderInfo =
+      new PollableDataHelper('onPrerenderInfoChanged',
+                             this.sendGetPrerenderInfo.bind(this));
 
   // Cache of the data received.
   this.numPassivelyCapturedEvents_ = 0;
@@ -383,6 +390,10 @@ BrowserBridge.prototype.sendGetSpdyAlternateProtocolMappings = function() {
 BrowserBridge.prototype.sendGetServiceProviders = function() {
   chrome.send('getServiceProviders');
 };
+
+BrowserBridge.prototype.sendGetPrerenderInfo = function() {
+  chrome.send('getPrerenderInfo');
+}
 
 BrowserBridge.prototype.enableIPv6 = function() {
   chrome.send('enableIPv6');
@@ -554,6 +565,10 @@ BrowserBridge.prototype.receivedHttpThrottlingEnabledPrefChanged = function(
     this.httpThrottlingObservers_[i].onHttpThrottlingEnabledPrefChanged(
         enabled);
   }
+};
+
+BrowserBridge.prototype.receivedPrerenderInfo = function(prerenderInfo) {
+  this.pollableDataHelpers_.prerenderInfo.update(prerenderInfo);
 };
 
 BrowserBridge.prototype.loadedLogFile = function(logFileContents) {
@@ -796,6 +811,16 @@ BrowserBridge.prototype.addHSTSObserver = function(observer) {
 BrowserBridge.prototype.addHttpThrottlingObserver = function(observer) {
   this.httpThrottlingObservers_.push(observer);
 };
+
+/**
+ * Adds a listener for updated prerender info events
+ * |observer| will be called back with:
+ *
+ *   observer.onPrerenderInfoChanged(prerenderInfo);
+ */
+BrowserBridge.prototype.addPrerenderInfoObserver = function(observer) {
+  this.pollableDataHelpers_.prerenderInfo.addObserver(observer);
+}
 
 /**
  * The browser gives us times in terms of "time ticks" in milliseconds.

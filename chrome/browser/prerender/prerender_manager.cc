@@ -15,6 +15,7 @@
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
+#include "chrome/browser/prerender/prerender_history.h"
 #include "chrome/browser/prerender/prerender_observer.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/profiles/profile.h"
@@ -67,6 +68,9 @@ const char* const kValidHttpMethods[] = {
   "HEAD",
   "TRACE",
 };
+
+// Length of prerender history, for display in chrome://net-internals
+const int kHistoryLength = 100;
 
 }  // namespace
 
@@ -253,7 +257,8 @@ PrerenderManager::PrerenderManager(Profile* profile,
       prerender_contents_factory_(PrerenderContents::CreateFactory()),
       last_prerender_start_time_(GetCurrentTimeTicks() -
           base::TimeDelta::FromMilliseconds(kMinTimeBetweenPrerendersMs)),
-      runnable_method_factory_(this) {
+      runnable_method_factory_(this),
+      prerender_history_(new PrerenderHistory(kHistoryLength)) {
   // There are some assumptions that the PrerenderManager is on the UI thread.
   // Any other checks simply make sure that the PrerenderManager is accessed on
   // the same thread that it was created on.
@@ -574,6 +579,10 @@ bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tab_contents,
     // No unload handler to run, so delete asap.
     ScheduleDeleteOldTabContents(old_tab_contents, NULL);
   }
+
+  // TODO(cbentzel): Should prerender_contents move to the pending delete
+  //                 list, instead of deleting directly here?
+  AddToHistory(prerender_contents.get());
   return true;
 }
 
@@ -635,6 +644,7 @@ void PrerenderManager::DeletePendingDeleteEntries() {
   while (!pending_delete_list_.empty()) {
     PrerenderContents* contents = pending_delete_list_.front();
     pending_delete_list_.pop_front();
+    AddToHistory(contents);
     delete contents;
   }
 }
@@ -981,6 +991,34 @@ void PrerenderManager::ScheduleDeleteOldTabContents(
     DCHECK(i != on_close_tab_contents_deleters_.end());
     on_close_tab_contents_deleters_.erase(i);
   }
+}
+
+Value* PrerenderManager::GetAsValue() const {
+  DCHECK(CalledOnValidThread());
+  DictionaryValue* dict_value = new DictionaryValue();
+  dict_value->Set("history", prerender_history_->GetEntriesAsValue());
+  dict_value->Set("active", GetActivePrerendersAsValue());
+  return dict_value;
+}
+
+Value* PrerenderManager::GetActivePrerendersAsValue() const {
+  ListValue* list_value = new ListValue();
+  for (std::list<PrerenderContentsData>::const_iterator it =
+           prerender_list_.begin();
+       it != prerender_list_.end();
+       ++it) {
+    Value* prerender_value = it->contents_->GetAsValue();
+    if (!prerender_value)
+      continue;
+    list_value->Append(prerender_value);
+  }
+  return list_value;
+}
+
+void PrerenderManager::AddToHistory(PrerenderContents* contents) {
+  PrerenderHistory::Entry entry(contents->prerender_url(),
+                                contents->final_status());
+  prerender_history_->AddEntry(entry);
 }
 
 }  // namespace prerender

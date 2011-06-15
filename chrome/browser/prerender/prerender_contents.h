@@ -93,6 +93,7 @@ class PrerenderContents : public NotificationObserver,
   string16 title() const { return title_; }
   int32 page_id() const { return page_id_; }
   GURL icon_url() const { return icon_url_; }
+  const GURL& prerender_url() const { return prerender_url_; }
   bool has_stopped_loading() const { return has_stopped_loading_; }
   bool prerendering_has_started() const { return prerendering_has_started_; }
 
@@ -162,14 +163,14 @@ class PrerenderContents : public NotificationObserver,
 
   int32 starting_page_id() { return starting_page_id_; }
 
+  Value* GetAsValue() const;
+
  protected:
   PrerenderContents(PrerenderManager* prerender_manager,
                     PrerenderTracker* prerender_tracker,
                     Profile* profile,
                     const GURL& url,
                     const GURL& referrer);
-
-  const GURL& prerender_url() const { return prerender_url_; }
 
   NotificationRegistrar& notification_registrar() {
     return notification_registrar_;

@@ -39,6 +39,7 @@ struct hash<TabContents*> {
 
 namespace prerender {
 
+class PrerenderHistory;
 class PrerenderTracker;
 
 // Adds either a preload or a pending preload to the PrerenderManager.
@@ -189,6 +190,11 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // Returns true if the method given is invalid for prerendering.
   static bool IsValidHttpMethod(const std::string& method);
 
+  // Returns a Value object containing the active pages being prerendered, and
+  // a history of pages which were prerendered. The caller is responsible for
+  // deleting the return value.
+  Value* GetAsValue() const;
+
  protected:
   struct PendingContentsData;
 
@@ -279,6 +285,13 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   void ScheduleDeleteOldTabContents(TabContentsWrapper* tab,
                                     OnCloseTabContentsDeleter* deleter);
 
+  // Adds to the history list.
+  void AddToHistory(PrerenderContents* contents);
+
+  // Returns a new Value representing the pages currently being prerendered. The
+  // caller is responsible for delete'ing the return value.
+  Value* GetActivePrerendersAsValue() const;
+
   // Specifies whether prerendering is currently enabled for this
   // manager. The value can change dynamically during the lifetime
   // of the PrerenderManager.
@@ -342,6 +355,8 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   ScopedRunnableMethodFactory<PrerenderManager> runnable_method_factory_;
 
   ScopedVector<OnCloseTabContentsDeleter> on_close_tab_contents_deleters_;
+
+  scoped_ptr<PrerenderHistory> prerender_history_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderManager);
 };

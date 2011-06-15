@@ -29,6 +29,7 @@
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_member.h"
+#include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/chrome_paths.h"
@@ -177,6 +178,7 @@ class NetInternalsMessageHandler
   void OnRefreshSystemLogs(const ListValue* list);
   void OnGetSystemLog(const ListValue* list);
 #endif
+  void OnGetPrerenderInfo(const ListValue* list);
 
  private:
   class IOThreadImpl;
@@ -246,6 +248,8 @@ class NetInternalsMessageHandler
 
   // This is the "real" message handler, which lives on the IO thread.
   scoped_refptr<IOThreadImpl> proxy_;
+
+  base::WeakPtr<prerender::PrerenderManager> prerender_manager_;
 
 #ifdef OS_CHROMEOS
   // Class that handles getting and filtering system logs.
@@ -520,6 +524,14 @@ WebUIMessageHandler* NetInternalsMessageHandler::Attach(WebUI* web_ui) {
   renderer_ready_io_callback_.reset(
       proxy_->CreateCallback(&IOThreadImpl::OnRendererReady));
 
+  prerender::PrerenderManager* prerender_manager =
+      web_ui->GetProfile()->GetPrerenderManager();
+  if (prerender_manager) {
+    prerender_manager_ = prerender_manager->AsWeakPtr();
+  } else {
+    prerender_manager_ = base::WeakPtr<prerender::PrerenderManager>();
+  }
+
   WebUIMessageHandler* result = WebUIMessageHandler::Attach(web_ui);
   return result;
 }
@@ -600,10 +612,12 @@ void NetInternalsMessageHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback(
       "setLogLevel",
       proxy_->CreateCallback(&IOThreadImpl::OnSetLogLevel));
-
   web_ui_->RegisterMessageCallback(
       "enableHttpThrottling",
       NewCallback(this, &NetInternalsMessageHandler::OnEnableHttpThrottling));
+  web_ui_->RegisterMessageCallback(
+      "getPrerenderInfo",
+      NewCallback(this, &NetInternalsMessageHandler::OnGetPrerenderInfo));
 }
 
 void NetInternalsMessageHandler::CallJavascriptFunction(
@@ -654,6 +668,20 @@ void NetInternalsMessageHandler::OnEnableHttpThrottling(const ListValue* list) {
 
   http_throttling_enabled_.SetValue(enable);
 }
+
+void NetInternalsMessageHandler::OnGetPrerenderInfo(const ListValue* list) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  Value* value = NULL;
+  prerender::PrerenderManager* prerender_manager = prerender_manager_.get();
+  if (!prerender_manager) {
+    value = new ListValue();
+  } else {
+    value = prerender_manager->GetAsValue();
+  }
+  CallJavascriptFunction(L"g_browser.receivedPrerenderInfo", value);
+}
+
 
 #ifdef OS_CHROMEOS
 ////////////////////////////////////////////////////////////////////////////////

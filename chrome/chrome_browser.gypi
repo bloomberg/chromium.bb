@@ -1689,6 +1689,8 @@
         'browser/prerender/prerender_field_trial.h',
         'browser/prerender/prerender_final_status.cc',
         'browser/prerender/prerender_final_status.h',
+        'browser/prerender/prerender_history.h',
+        'browser/prerender/prerender_history.cc',
         'browser/prerender/prerender_manager.cc',
         'browser/prerender/prerender_manager.h',
         'browser/prerender/prerender_observer.cc',
