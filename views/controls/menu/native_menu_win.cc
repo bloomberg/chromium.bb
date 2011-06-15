@@ -399,7 +399,7 @@ NativeMenuWin::~NativeMenuWin() {
 void NativeMenuWin::RunMenuAt(const gfx::Point& point, int alignment) {
   CreateHostWindow();
   UpdateStates();
-  UINT flags = TPM_LEFTBUTTON | TPM_RECURSE;
+  UINT flags = TPM_LEFTBUTTON | TPM_RIGHTBUTTON | TPM_RECURSE;
   flags |= GetAlignmentFlags(alignment);
   menu_action_ = MENU_ACTION_NONE;
 
@@ -567,7 +567,7 @@ LRESULT CALLBACK NativeMenuWin::MenuMessageHook(
   }
 
   MSG* msg = reinterpret_cast<MSG*>(l_param);
-  if (msg->message == WM_LBUTTONUP) {
+  if (msg->message == WM_LBUTTONUP || msg->message == WM_RBUTTONUP) {
     HighlightedMenuItemInfo info;
     if (GetHighlightedMenuItemInfo(this_ptr->menu_, &info) && info.menu) {
       // It appears that when running a menu by way of TrackPopupMenu(Ex) win32
