@@ -198,13 +198,13 @@ FilePath IconTheme::GetIconPath(const std::string& icon_name, int size,
     }
   }
   // Now looking for the mostly matched.
-  int min_delta_seen = 9999;
+  size_t min_delta_seen = 9999;
 
   for (subdir_iter = subdirs_.begin();
        subdir_iter != subdirs_.end();
        ++subdir_iter) {
     SubDirInfo* info = &info_array_[subdir_iter->second];
-    int delta = abs(MatchesSize(info, size));
+    size_t delta = MatchesSize(info, size);
     if (delta < min_delta_seen) {
       FilePath path = GetIconPathUnderSubdir(icon_name, subdir_iter->first);
       if (!path.empty()) {
@@ -325,24 +325,22 @@ bool IconTheme::LoadIndexTheme(const FilePath& file) {
 
 size_t IconTheme::MatchesSize(SubDirInfo* info, size_t size) {
   if (info->type == SubDirInfo::Fixed) {
-    return size - info->size;
+    if (size > info->size)
+      return size - info->size;
+    else
+      return info->size - size;
   } else if (info->type == SubDirInfo::Scalable) {
-    if (size >= info->min_size && size <= info->max_size) {
-      return 0;
-    } else {
-      return abs(size - info->min_size) < abs(size - info->max_size) ?
-          (size - info->min_size) : (size - info->max_size);
-    }
+    if (size < info->min_size)
+      return info->min_size - size;
+    if (size > info->max_size)
+      return size - info->max_size;
+    return 0;
   } else {
-    if (size >= info->size - info->threshold &&
-        size <= info->size + info->threshold) {
-      return 0;
-    } else {
-      return abs(size - info->size - info->threshold) <
-          abs(size - info->size + info->threshold)
-          ? size - info->size - info->threshold
-          : size - info->size + info->threshold;
-    }
+    if (size + info->threshold < info->size)
+      return info->size - size - info->threshold;
+    if (size > info->size + info->threshold)
+      return size - info->size - info->threshold;
+    return 0;
   }
 }
 
