@@ -31,10 +31,10 @@ class ThemesTest(pyauto.PyUITest):
     crx_file = os.path.abspath(
         os.path.join(self.DataDir(), 'extensions', 'theme.crx'))
     self.assertTrue(self.SetTheme(pyauto.FilePath(crx_file)))
-    theme = self.GetThemeInfo()
-    self.assertEqual('camo theme', theme['name'])
     # Verify "theme installed" infobar shows up
     self.assertTrue(self.WaitForInfobarCount(1))
+    theme = self.GetThemeInfo()
+    self.assertEqual('camo theme', theme['name'])
     self.assertTrue(self.GetBrowserInfo()['windows'][0]['tabs'][0]['infobars'])
 
   def testThemeInFullScreen(self):
@@ -44,6 +44,8 @@ class ThemesTest(pyauto.PyUITest):
     crx_file = os.path.abspath(
         os.path.join(self.DataDir(), 'extensions', 'theme.crx'))
     self.assertTrue(self.SetTheme(pyauto.FilePath(crx_file)))
+    # Verify "theme installed" infobar shows up
+    self.assertTrue(self.WaitForInfobarCount(1))
     theme = self.GetThemeInfo()
     self.assertEqual('camo theme', theme['name'])
 

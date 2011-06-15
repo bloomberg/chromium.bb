@@ -142,9 +142,6 @@
       '-passwords.PasswordTest.testInfoBarDisappearByNavigatingPage',
       '-passwords.PasswordTest.testDisplayAndSavePasswordInfobar',
       '-prefs.PrefsTest.testDownloadDirPref',
-      # crbug.com/85596
-      '-themes.ThemesTest.testSetTheme',
-      '-themes.ThemesTest.testThemeInFullScreen',
     ],
 
     'mac': [
