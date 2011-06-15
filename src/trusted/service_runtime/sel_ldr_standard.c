@@ -22,9 +22,12 @@
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/shared/platform/nacl_time.h"
+
+#include "native_client/src/trusted/manifest_name_service_proxy/manifest_proxy.h"
 #include "native_client/src/trusted/perf_counter/nacl_perf_counter.h"
 
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
+#include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 
 #include "native_client/src/trusted/service_runtime/arch/sel_ldr_arch.h"
 #include "native_client/src/trusted/service_runtime/elf_util.h"
@@ -38,6 +41,7 @@
 #include "native_client/src/trusted/service_runtime/outer_sandbox.h"
 #include "native_client/src/trusted/service_runtime/sel_memory.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
+#include "native_client/src/trusted/service_runtime/sel_ldr_thread_interface.h"
 #include "native_client/src/trusted/service_runtime/sel_util.h"
 #include "native_client/src/trusted/service_runtime/sel_addrspace.h"
 
@@ -523,8 +527,99 @@ int NaClAddrIsValidEntryPt(struct NaClApp *nap,
 }
 
 int NaClAppLaunchServiceThreads(struct NaClApp *nap) {
+  struct NaClManifestProxy  *manifest_proxy = NULL;
+  int                       rv;
+
   NaClNameServiceLaunch(nap->name_service);
-  return 1;
+
+  /*
+   * The locking here isn't really needed.  Here is why:
+   * reverse_channel_initialized is written in reverse_setup RPC
+   * handler of the secure command channel RPC handler thread.  and
+   * the RPC order requires that the plugin invoke reverse_setup prior
+   * to invoking start_module, so there will have been plenty of other
+   * synchronization operations to force cache coherency
+   * (module_may_start, for example, is set in the cache of the secure
+   * channel RPC handler (in start_module) and read by the main
+   * thread, and the synchronization operations needed to propagate
+   * its value properly suffices to propagate
+   * reverse_channel_initialized as well).  However, reading it while
+   * holding a lock is more obviously correct for tools like tsan.
+   * Due to the RPC order, it is impossible for
+   * reverse_channel_initialized to get set after the unlock and
+   * before the if test.
+   */
+  NaClXMutexLock(&nap->mu);
+  rv = !nap->reverse_channel_initialized;
+  NaClXMutexUnlock(&nap->mu);
+  if (rv) {
+    NaClLog(3,
+            ("NaClAppLaunchServiceThreads: no reverse channel;"
+             " NOT launching manifest proxy\n"));
+    goto done;
+  }
+
+  rv = 0;
+  /*
+   * Allocate/construct the manifest proxy without grabbing global
+   * locks.
+   */
+  NaClLog(3, "NaClAppLaunchServiceThreads: launching manifest proxy\n");
+
+  /*
+   * ReverseClientSetup RPC should be done via the command channel
+   * prior to the load_module / start_module RPCs, and
+   *  occurs after that, so checking
+   * nap->reverse_client suffices for determining whether the proxy is
+   * exporting reverse services.
+   */
+  manifest_proxy = (struct NaClManifestProxy *) malloc(sizeof *manifest_proxy);
+  if (NULL == manifest_proxy) {
+    NaClLog(LOG_ERROR, "No memory for manifest proxy\n");
+    goto manifest_proxy_alloc_failure;
+  }
+  if (!NaClManifestProxyCtor(manifest_proxy,
+                             NaClAddrSpSquattingThreadIfFactoryFunction,
+                             (void *) nap,
+                             nap)) {
+    NaClLog(LOG_ERROR, "ManifestProxyCtor failed\n");
+    goto manifest_proxy_ctor_failure;
+  }
+
+  /*
+   * NaClSimpleServiceStartServiceThread requires the nap->mu lock.
+   */
+  if (!NaClSimpleServiceStartServiceThread((struct NaClSimpleService *)
+                                           manifest_proxy)) {
+    NaClLog(LOG_ERROR, "ManifestProxy start service failed\n");
+    NaClRefCountUnref((struct NaClRefCount *) manifest_proxy);
+    manifest_proxy = NULL;
+    goto manifest_proxy_start_failed;
+  }
+
+  NaClXMutexLock(&nap->mu);
+  CHECK(NULL == nap->manifest_proxy);
+
+  nap->manifest_proxy = manifest_proxy;
+  manifest_proxy = NULL;
+
+  NaClLog(3,
+          ("NaClAppLaunchServiceThreads: adding manifest proxy to"
+           " name service\n"));
+  (*NACL_VTBL(NaClNameService, nap->name_service)->
+   CreateDescEntry)(nap->name_service,
+                    "manifest_proxy", NACL_ABI_O_RDWR,
+                    NaClDescRef(nap->manifest_proxy->base.bound_and_cap[1]));
+
+  rv = 1;
+  NaClXMutexUnlock(&nap->mu);
+
+manifest_proxy_start_failed:
+manifest_proxy_ctor_failure:
+  free(manifest_proxy);
+manifest_proxy_alloc_failure:
+done:
+  return rv;
 }
 
 /*

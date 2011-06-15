@@ -41,7 +41,7 @@ int NaClAddrSpSquattingThreadIfCtor_protected(
   NACL_VTBL(NaClRefCount, self) =
       (struct NaClRefCountVtbl *) &kNaClAddrSpSquattingThreadInterfaceVtbl;
 
-  NaClLog(3, "Leaving NaClAddrSpSquattingThreadIfCtor_protectedn");
+  NaClLog(3, "Leaving NaClAddrSpSquattingThreadIfCtor_protected\n");
   return 1;
 }
 

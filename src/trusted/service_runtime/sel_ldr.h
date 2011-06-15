@@ -61,8 +61,10 @@ EXTERN_C_BEGIN
 struct NaClAppThread;
 struct NaClDesc;  /* see native_client/src/trusted/desc/nacl_desc_base.h */
 struct NaClDynamicRegion;
+struct NaClManifestProxy;
 struct NaClSecureService;
 struct NaClSecureReverseService;
+struct NaClThreadInterface;  /* see sel_ldr_thread_interface.h */
 
 struct NaClDebugCallbacks {
   void (*thread_create_hook)(struct NaClAppThread *natp);
@@ -201,6 +203,9 @@ struct NaClApp {
   struct NaClDesc           *name_service_conn_cap;
 
   struct NaClSecureService        *secure_service;
+  struct NaClThread               reverse_setup_thread;
+  /* used only during setup, thread dtors before exiting */
+  struct NaClManifestProxy        *manifest_proxy;
   struct NaClSecureReverseClient  *reverse_client;
   int                             reverse_channel_initialized;
   NaClSrpcChannel                 reverse_channel;
@@ -519,6 +524,14 @@ void NaClSendServiceAddressTo(struct NaClApp  *nap,
                               int             desc);
 
 void NaClSecureCommandChannel(struct NaClApp  *nap);
+
+int NaClSecureReverseClientInsertHandler(
+    struct NaClSecureReverseClient *self,
+    void                            (*handler)(
+        void                                   *handler_state,
+        struct NaClThreadInterface             *thread_if,
+        struct NaClDesc                        *new_conn),
+    void                            *handler_state) NACL_WUR;
 
 NaClErrorCode NaClWaitForLoadModuleStatus(struct NaClApp *nap) NACL_WUR;
 

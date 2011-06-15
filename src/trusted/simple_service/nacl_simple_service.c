@@ -31,7 +31,7 @@ int NaClSimpleServiceConnectionCtor(
     struct NaClDesc                     *conn,
     void                                *instance_data) {
   NaClLog(4,
-          "NaClSimpleServiceConnectionCtor: this 0x%"NACL_PRIxPTR"\n",
+          "NaClSimpleServiceConnectionCtor: self 0x%"NACL_PRIxPTR"\n",
           (uintptr_t) self);
   if (!NaClRefCountCtor((struct NaClRefCount *) self)) {
     return 0;
@@ -121,7 +121,7 @@ static int NaClSimpleServiceCtorIntern(
     NaClThreadIfFactoryFunction       thread_factory_fn,
     void                              *thread_factory_data) {
   NaClLog(4,
-          "NaClSimpleServiceCtorIntern, this 0x%"NACL_PRIxPTR"\n",
+          "NaClSimpleServiceCtorIntern, self 0x%"NACL_PRIxPTR"\n",
           (uintptr_t) self);
   if (!NaClRefCountCtor((struct NaClRefCount *) self)) {
     NaClLog(4, "NaClSimpleServiceCtorIntern: NaClRefCountCtor failed\n");
@@ -143,7 +143,7 @@ int NaClSimpleServiceCtor(
     NaClThreadIfFactoryFunction       thread_factory_fn,
     void                              *thread_factory_data) {
   NaClLog(4,
-          "NaClSimpleServiceCtor: this 0x%"NACL_PRIxPTR"\n",
+          "Entered NaClSimpleServiceCtor: self 0x%"NACL_PRIxPTR"\n",
           (uintptr_t) self);
 
   if (0 != NaClCommonDescMakeBoundSock(self->bound_and_cap)) {
@@ -166,7 +166,7 @@ int NaClSimpleServiceWithSocketCtor(
     struct NaClDesc                   *service_port,
     struct NaClDesc                   *sock_addr) {
   NaClLog(4,
-          "NaClSimpleServiceWithSocketCtor: this 0x%"NACL_PRIxPTR"\n",
+          "NaClSimpleServiceWithSocketCtor: self 0x%"NACL_PRIxPTR"\n",
           (uintptr_t) self);
   if (!NaClSimpleServiceCtorIntern(self, srpc_handlers,
                                    thread_factory_fn, thread_factory_data)) {
@@ -276,8 +276,13 @@ int NaClSimpleServiceAcceptConnection(
     goto cleanup;
   }
   /* all okay! */
-  NaClLog(4, "conn is 0x%"NACL_PRIxPTR"\n", (uintptr_t) conn);
-  NaClLog(4, "out  is 0x%"NACL_PRIxPTR"\n", (uintptr_t) out);
+
+  NaClLog(4,
+          "NaClSimpleServiceAcceptConnection: conn is 0x%"NACL_PRIxPTR"\n",
+          (uintptr_t) conn);
+  NaClLog(4,
+          "NaClSimpleServiceAcceptConnection: out  is 0x%"NACL_PRIxPTR"\n",
+          (uintptr_t) out);
   *out = conn;
   status = 0;
 cleanup:
@@ -303,7 +308,9 @@ int NaClSimpleServiceAcceptAndSpawnHandler(
   if (0 != status) {
     goto abort;
   }
-  NaClLog(4, "conn is 0x%"NACL_PRIxPTR"\n", (uintptr_t) conn);
+  NaClLog(4,
+          "NaClSimpleServiceAcceptAndSpawnHandler: conn is 0x%"NACL_PRIxPTR"\n",
+          (uintptr_t) conn);
   NaClLog(4, "NaClSimpleServiceAcceptAndSpawnHandler: spawning thread\n");
 
   CHECK(NULL == conn->thread);

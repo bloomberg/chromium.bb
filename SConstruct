@@ -1993,6 +1993,7 @@ base_env.Append(
     'src/trusted/gdb_rsp/build.scons',
     'src/trusted/gio/build.scons',
     'src/trusted/handle_pass/build.scons',
+    'src/trusted/manifest_name_service_proxy/build.scons',
     'src/trusted/nacl_base/build.scons',
     'src/trusted/nonnacl_util/build.scons',
     'src/trusted/perf_counter/build.scons',

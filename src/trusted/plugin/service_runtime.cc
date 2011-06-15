@@ -70,7 +70,7 @@ void LogToJavaScriptConsole(nacl::WeakRef<LogToJavaScriptConsoleResource>* wr,
                                                p->message);
 }
 
-void LogToJavaScriptConsoleInterface::Log(nacl::string message) {
+void PluginReverseInterface::Log(nacl::string message) {
   (void) WeakRefCompletionCallback(anchor_, 0,
                                    LogToJavaScriptConsole,
                                    new LogToJavaScriptConsoleResource(
@@ -87,7 +87,7 @@ ServiceRuntime::ServiceRuntime(Plugin* plugin)
       async_receive_desc_(NULL),
       async_send_desc_(NULL),
       anchor_(new nacl::WeakRefAnchor()),
-      log_interface_(new LogToJavaScriptConsoleInterface(anchor_, plugin)) {
+      rev_interface_(new PluginReverseInterface(anchor_, plugin)) {
 }
 
 bool ServiceRuntime::InitCommunication(nacl::Handle bootstrap_socket,
@@ -156,7 +156,7 @@ bool ServiceRuntime::InitCommunication(nacl::Handle bootstrap_socket,
     return false;
   }
   out_conn_cap = NULL;  // ownership passed
-  reverse_service_ = new nacl::ReverseService(conn_cap, log_interface_->Ref());
+  reverse_service_ = new nacl::ReverseService(conn_cap, rev_interface_->Ref());
   if (!reverse_service_->Start()) {
     *error_string = "ServiceRuntime: starting reverse services failed";
     return false;
@@ -341,7 +341,7 @@ ServiceRuntime::~ServiceRuntime() {
     reverse_service_->Unref();
   }
 
-  log_interface_->Unref();
+  rev_interface_->Unref();
 
   // TODO(sehr,mseaborn): use scoped_ptr for management of DescWrappers.
   delete async_receive_desc_;

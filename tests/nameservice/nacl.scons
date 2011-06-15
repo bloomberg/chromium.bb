@@ -13,3 +13,35 @@ node = env.CommandSelLdrTestNacl(
     'nameservice_test.out',
     command=[env.File('nameservice_test.nexe')])
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_nameservice_test')
+
+srpc_ns_obj = env.ComponentObject('srpc_nameservice_test.o',
+                                  'srpc_nameservice_test.c')
+srpc_ns_nexe_name = 'srpc_nameservice_test_%s.nexe' % env.get('TARGET_FULLARCH')
+srpc_ns_nexe = env.ComponentProgram(srpc_ns_nexe_name,
+                                    srpc_ns_obj,
+                                    EXTRA_LIBS=[
+                                        'srpc',
+                                        'platform',
+                                        'gio',
+                                        'imc',
+                                        'imc_syscalls',
+                                        'pthread',
+                                        '${NON_PPAPI_BROWSER_LIBS}'])
+env.Publish(srpc_ns_nexe_name, 'run',
+            ['srpc_nameservice_test.html',
+             'srpc_nameservice.nmf'])
+
+env.AddPrebuiltBinaryToRepository(srpc_ns_nexe)
+
+# chrome_browser_tests
+
+node = env.PPAPIBrowserTester(
+    'srpc_ns_browser_test.out',
+    url='srpc_nameservice_test.html',
+    files=env.ExtractPublishedFiles(srpc_ns_nexe_name),
+    args=['--debug', '--enable_experimental_js'])
+
+env.AddNodeToTestSuite(node,
+                       ['chrome_browser_tests'],
+                       'run_srpc_nameservice_chrome_browser_test',
+                       is_broken=env.PPAPIBrowserTesterIsBroken())

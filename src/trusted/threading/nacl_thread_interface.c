@@ -18,8 +18,17 @@ void WINAPI NaClThreadInterfaceStart(void *data) {
       (struct NaClThreadInterface *) data;
   void                        *thread_return;
 
+  NaClLog(4,
+          ("Entered NaClThreadInterfaceStart: thread object 0x%"NACL_PRIxPTR
+           " starting.\n"),
+          (uintptr_t) tif);  /* NaClThreadId() implicitly printed */
   (*NACL_VTBL(NaClThreadInterface, tif)->LaunchCallback)(tif);
   thread_return = (*tif->fn_ptr)(tif);
+  NaClLog(4,
+          ("NaClThreadInterfaceStart: thread object 0x%"NACL_PRIxPTR
+           " returned 0x%"NACL_PRIxPTR".\n"),
+          (uintptr_t) tif,
+          (uintptr_t) thread_return);  /* NaClThreadId() implicitly printed */
   (*NACL_VTBL(NaClThreadInterface, tif)->Exit)(tif, thread_return);
   NaClLog(LOG_FATAL,
           "NaClThreadInterface: Exit member function did not exit thread\n");
@@ -79,7 +88,8 @@ int NaClThreadInterfaceThreadFactory(
                 thread_stack_size))) {
     *out_new_thread = new_thread;
     NaClLog(3,
-            "NaClThreadInterfaceThreadFactory: new thread 0x%"NACL_PRIxPTR"\n",
+            "NaClThreadInterfaceThreadFactory: new thread object"
+            " 0x%"NACL_PRIxPTR" (not started)\n",
             (uintptr_t) new_thread);
     new_thread = NULL;
   }
@@ -103,7 +113,9 @@ void NaClThreadInterfaceDtor(struct NaClRefCount *vself) {
 int NaClThreadInterfaceStartThread(struct NaClThreadInterface  *self) {
   int rv;
 
-  NaClLog(3, "Entered NaClThreadInterfaceStartThread\n");
+  NaClLog(3,
+          "Entered NaClThreadInterfaceStartThread: self 0x%"NACL_PRIxPTR"\n",
+          (uintptr_t) self);
   CHECK(self->thread_started == 0);
 
   rv = NaClThreadCtor(&self->thread,

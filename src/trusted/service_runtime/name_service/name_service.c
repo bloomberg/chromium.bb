@@ -128,6 +128,10 @@ int NaClNameServiceCreateDescEntry(
   struct NaClNameServiceEntry *found = NULL;
   char                        *dup_name = STRDUP(name);
 
+  NaClLog(3,
+          "NaClNameServiceCreateDescEntry: entering %s, %d (0x%x)\n",
+          name,
+          mode, mode);
   /*
    * common case is insertion success, so we pre-allocate memory
    * (strdup, malloc) to avoid doing memory allocations while holding
@@ -151,7 +155,7 @@ int NaClNameServiceCreateDescEntry(
   name_entry->name = dup_name;
   dup_name = (char *) NULL;
   name_entry->mode = mode;
-  name_entry->entry = NaClDescRef(new_desc);
+  name_entry->entry = new_desc;
   name_entry->factory = (NaClNameServiceFactoryFn_t) NULL;
   name_entry->state = (void *) NULL;
   nnsp->head = name_entry;
@@ -177,6 +181,12 @@ int NaClNameServiceCreateFactoryEntry(
   struct NaClNameServiceEntry *found = NULL;
   char                        *dup_name = STRDUP(name);
 
+  NaClLog(3,
+          ("NaClNameServiceCreateFactoryEntry: entering %s,"
+           " 0x%"NACL_PRIxPTR", 0x%"NACL_PRIxPTR"\n"),
+          name,
+          (uintptr_t) factory_fn,
+          (uintptr_t) factory_state);
   /*
    * common case is insertion success, so we pre-allocate memory
    * (strdup, malloc) to avoid doing memory allocation while holding
@@ -222,7 +232,12 @@ int NaClNameServiceResolveName(struct NaClNameService  *nnsp,
   struct NaClNameServiceEntry *nnsep;
   int                         status = NACL_NAME_SERVICE_NAME_NOT_FOUND;
 
-  if (0 != (flags & NACL_ABI_O_ACCMODE)) {
+  NaClLog(3,
+          "NaClNameServiceResolveName: looking up %s, flags %d (0x%x)\n",
+          name,
+          flags, flags);
+  if (0 != (flags & ~NACL_ABI_O_ACCMODE)) {
+    NaClLog(2, "NaClNameServiceResolveName:  bad flags!\n");
     status = NACL_NAME_SERVICE_PERMISSION_DENIED;
     goto quit;
   }
@@ -231,30 +246,47 @@ int NaClNameServiceResolveName(struct NaClNameService  *nnsp,
   nnsep = *NameServiceSearch(&nnsp->head, name);
   if (NULL != nnsep) {
     if (NULL != nnsep->entry) {
+      NaClLog(3,
+              "NaClNameServiceResolveName: found %s, mode %d (0x%x)\n",
+              name,
+              nnsep->mode, nnsep->mode);
       /* check flags against nnsep->mode */
+      NaClLog(4,
+              ("NaClNameServiceResolveName: checking mode/flags"
+               " compatibility\n"));
       switch (flags) {
         case NACL_ABI_O_RDONLY:
           if (NACL_ABI_O_WRONLY == nnsep->mode) {
             status = NACL_NAME_SERVICE_PERMISSION_DENIED;
+            NaClLog(4,
+                    "NaClNameServiceResolveName: incompatible,"
+                    " not readable\n");
             goto unlock_and_quit;
           }
           break;
         case NACL_ABI_O_WRONLY:
           if (NACL_ABI_O_RDONLY == nnsep->mode) {
             status = NACL_NAME_SERVICE_PERMISSION_DENIED;
+            NaClLog(4,
+                    "NaClNameServiceResolveName: incompatible,"
+                    " not writeable\n");
             goto unlock_and_quit;
           }
           break;
         case NACL_ABI_O_RDWR:
           if (NACL_ABI_O_RDWR != nnsep->mode) {
             status = NACL_NAME_SERVICE_PERMISSION_DENIED;
+            NaClLog(4, "NaClNameServiceResolveName: incompatible,"
+                    " not for both read and write\n");
             goto unlock_and_quit;
           }
           break;
         default:
           status = NACL_NAME_SERVICE_INVALID_ARGUMENT;
+          NaClLog(4, "NaClNameServiceResolveName: invalid flag\n");
           goto unlock_and_quit;
       }
+      NaClLog(4, "NaClNameServiceResolveName: mode and flags are compatible\n");
       *out = NaClDescRef(nnsep->entry);
       status = NACL_NAME_SERVICE_SUCCESS;
     } else {
@@ -334,6 +366,10 @@ static void NaClNameServiceNameInsertRpc(
   int                     mode  = in_args[1]->u.ival;
   struct NaClDesc         *desc = in_args[2]->u.hval;
 
+  NaClLog(3,
+          "NaClNameServiceNameInsertRpc: inserting %s, %d (0x%x)\n",
+          name,
+          mode, mode);
   out_args[0]->u.ival = (*NACL_VTBL(NaClNameService, nnsp)->CreateDescEntry)(
       nnsp, name, mode, desc);
   rpc->result = NACL_SRPC_RESULT_OK;
@@ -353,6 +389,7 @@ static void NaClNameServiceNameLookupOldRpc(
 
   NaClLog(LOG_WARNING,
           "NaClNameServiceNameLookupOldRpc: DEPRECATED interface used.\n");
+  NaClLog(3, "NaClNameServiceNameLookupOldRpc: looking up %s\n", name);
   status = (*NACL_VTBL(NaClNameService, nnsp)->ResolveName)(
       nnsp, name, NACL_ABI_O_RDONLY, &desc);
   out_args[0]->u.ival = status;
@@ -375,12 +412,17 @@ static void NaClNameServiceNameLookupRpc(
   int                     status;
   struct NaClDesc         *desc;
 
+  NaClLog(3, "NaClNameServiceNameLookupRpc: looking up %s\n", name);
+  NaClLog(3, "NaClNameServiceNameLookupRpc: flags %d (0x%x)\n", flags, flags);
   status = (*NACL_VTBL(NaClNameService, nnsp)->ResolveName)(
       nnsp, name, flags, &desc);
   out_args[0]->u.ival = status;
   out_args[1]->u.hval = (NACL_NAME_SERVICE_SUCCESS == status)
       ? desc
       : (struct NaClDesc *) NaClDescInvalidMake();
+  NaClLog(3, "NaClNameServiceNameLookupRpc: status %d\n", status);
+  NaClLog(3, "NaClNameServiceNameLookupRpc: desc 0x%"NACL_PRIxPTR"\n",
+          (uintptr_t) desc);
   rpc->result = NACL_SRPC_RESULT_OK;
   (*done_cls->Run)(done_cls);
 }

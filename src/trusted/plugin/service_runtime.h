@@ -59,16 +59,15 @@ template <typename R> bool WeakRefCompletionCallback(
   return true;
 }
 
-class LogToJavaScriptConsoleInterface: public nacl::ReverseInterface {
+class PluginReverseInterface: public nacl::ReverseInterface {
  public:
-  explicit LogToJavaScriptConsoleInterface(
-      nacl::WeakRefAnchor* anchor,
-      Plugin* plugin)
+  PluginReverseInterface(nacl::WeakRefAnchor* anchor,
+                         Plugin* plugin)
       : anchor_(anchor),
         plugin_(plugin) {
   }
 
-  virtual ~LogToJavaScriptConsoleInterface() {}
+  virtual ~PluginReverseInterface() {}
 
   virtual void Log(nacl::string message);
 
@@ -125,7 +124,7 @@ class ServiceRuntime {
 
   nacl::WeakRefAnchor *anchor_;
 
-  LogToJavaScriptConsoleInterface* log_interface_;
+  PluginReverseInterface* rev_interface_;
 };
 
 }  // namespace plugin

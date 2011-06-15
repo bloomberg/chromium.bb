@@ -57,7 +57,7 @@ int NaClNameServiceCreateDescEntry(
     struct NaClNameService  *self,
     char const              *name,
     int                     mode,
-    struct NaClDesc         *new_desc);  /* takes new ref */
+    struct NaClDesc         *new_desc);  /* takes ownership of ref */
 
 typedef int (*NaClNameServiceFactoryFn_t)(void             *factory_state,
                                           char const       *name,
@@ -104,7 +104,7 @@ struct NaClNameServiceVtbl {
       struct NaClNameService  *self,
       char const              *name,
       int                     mode,
-      struct NaClDesc         *new_desc);  /* takes new ref */
+      struct NaClDesc         *new_desc);  /* takes ownership of ref */
   int                           (*CreateFactoryEntry)(
       struct NaClNameService      *self,
       char const                  *name,

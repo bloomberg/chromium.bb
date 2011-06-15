@@ -6,14 +6,17 @@
 
 #include "native_client/src/trusted/service_runtime/name_service/default_name_service.h"
 
-#include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
+#include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/desc/nacl_desc_rng.h"
+#include "native_client/src/trusted/manifest_name_service_proxy/manifest_proxy.h"
+#include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
+#include "native_client/src/trusted/service_runtime/sel_ldr_thread_interface.h"
 
 int NaClDefaultNameServiceInit(struct NaClNameService *ns) {
   /*
    * Create an CSPRNG and enter it into the name server.
    */
-  struct NaClDescRng *rng = NULL;
+  struct NaClDescRng  *rng = NULL;
 
   rng = (struct NaClDescRng *) malloc(sizeof *rng);
   if (NULL == rng) {
@@ -34,7 +37,7 @@ int NaClDefaultNameServiceInit(struct NaClNameService *ns) {
    CreateDescEntry)(ns,
                     "SecureRandom", NACL_ABI_O_RDWR,
                     (struct NaClDesc *) rng);
-  NaClDescUnref((struct NaClDesc *) rng);
+  rng = NULL;
 
   return 1;
 

@@ -11,7 +11,10 @@
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/include/nacl_string.h"
+#include "native_client/src/trusted/reverse_service/manifest_rpc.h"
+#include "native_client/src/trusted/reverse_service/reverse_control_rpc.h"
 #include "native_client/src/trusted/reverse_service/reverse_socket.h"
+#include "native_client/src/trusted/service_runtime/include/sys/nacl_name_service.h"
 #include "native_client/src/shared/platform/refcount_base.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
 
