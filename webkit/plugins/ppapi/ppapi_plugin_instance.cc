@@ -534,6 +534,8 @@ bool PluginInstance::BindGraphics(PP_Resource graphics_id) {
     // Refuse to bind if we're transitioning to fullscreen.
     if (fullscreen_container_ && !fullscreen_)
       return false;
+    if (graphics_2d->instance() != this)
+      return false;  // Can't bind other instance's contexts.
     if (!graphics_2d->BindToInstance(this))
       return false;  // Can't bind to more than one instance.
 
