@@ -1094,32 +1094,6 @@ TEST_F(FormManagerTest, LabelsInferredFromTableCell) {
       "</FORM>");
 }
 
-TEST_F(FormManagerTest, LabelsInferredFromTableCellTH) {
-  ExpectJohnSmithLabels(
-      "<FORM name=\"TestForm\" action=\"http://cnn.com\" method=\"post\">"
-      "<TABLE>"
-      "  <TR>"
-      "    <TH>First name:</TH>"
-      "    <TD><INPUT type=\"text\" id=\"firstname\" value=\"John\"/></TD>"
-      "  </TR>"
-      "  <TR>"
-      "    <TH>Last name:</TH>"
-      "    <TD><INPUT type=\"text\" id=\"lastname\" value=\"Smith\"/></TD>"
-      "  </TR>"
-      "  <TR>"
-      "    <TH>Email:</TH>"
-      "    <TD><INPUT type=\"text\" id=\"email\""
-      "               value=\"john@example.com\"/></TD>"
-      "  </TR>"
-      "  <TR>"
-      "    <TD></TD>"
-      "    <TD>"
-      "      <INPUT type=\"submit\" name=\"reply-send\" value=\"Send\"/>"
-      "    </TD>"
-      "  </TR>"
-      "</TABLE>"
-      "</FORM>");
-}
 TEST_F(FormManagerTest, LabelsInferredFromTableCellNested) {
   std::vector<string16> labels, names, values;
 

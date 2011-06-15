@@ -237,9 +237,7 @@ string16 InferLabelFromPrevious(const WebFormControlElement& element) {
 // Helper for |InferLabelForElement()| that infers a label, if possible, from
 // surrounding table structure,
 // e.g. <tr><td>Some Text</td><td><input ...></td></tr>
-// or   <tr><th>Some Text</th><td><input ...></td></tr>
 // or   <tr><td><b>Some Text</b></td><td><b><input ...></b></td></tr>
-// or   <tr><th><b>Some Text</b></th><td><b><input ...></b></td></tr>
 string16 InferLabelFromTable(const WebFormControlElement& element) {
   WebNode parent = element.parentNode();
   while (!parent.isNull() && parent.isElementNode() &&
@@ -252,7 +250,7 @@ string16 InferLabelFromTable(const WebFormControlElement& element) {
   string16 inferred_label;
   WebNode previous = parent;
   while (inferred_label.empty() && !previous.isNull()) {
-    if (HasTagName(previous, "td") || HasTagName(previous, "th"))
+    if (HasTagName(previous, "td"))
       inferred_label = FindChildText(previous.to<WebElement>());
 
     previous = previous.previousSibling();
