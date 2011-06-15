@@ -119,10 +119,14 @@ static PP_Resource MakeAndBindDeviceContext(PP_Instance instance,
 
   device_context =
     g_MyState.graphics_2d_interface->Create(instance, size, PP_FALSE);
-  if (!device_context) return 0;
+  if (!device_context) {
+    DebugPrintf("MakeAndBindDeviceContext: could not Create 2d graphics\n");
+    return 0;
+  }
 
   if (!g_MyState.instance_interface->BindGraphics(instance, device_context)) {
     g_MyState.core_interface->ReleaseResource(device_context);
+    DebugPrintf("MakeAndBindDeviceContext: could not bind 2d graphics\n");
     return 0;
   }
   return device_context;

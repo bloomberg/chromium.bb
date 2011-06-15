@@ -10,7 +10,6 @@
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/ppb.h"
 #include "ppapi/c/ppb_core.h"
-#include "ppapi/c/ppb_var.h"
 #include "ppapi/c/ppp_messaging.h"
 
 struct NaClSrpcChannel;
@@ -41,7 +40,6 @@ const void* GetBrowserInterfaceSafe(const char* interface_name);
 // plugin side of the proxy, so they can be used by the shared proxy code
 // under both trusted and untrusted compilation.
 const PPB_Core* PPBCoreInterface();  // shared
-const PPB_Var* PPBVarInterface();  // shared
 const PPB_Var_Deprecated* PPBVarDeprecatedInterface();  // shared
 const PPP_Messaging* PPPMessagingInterface();
 

@@ -133,7 +133,7 @@ NaClSrpcChannel* GetMainSrpcChannel(NaClSrpcRpc* upcall_rpc) {
   // The upcall channel's server_instance_data member is initialized to point
   // to the main channel for this instance.  Here it is retrieved to use in
   // constructing a RemoteCallbackInfo.
-  return static_cast<NaClSrpcChannel*>(
+  return reinterpret_cast<NaClSrpcChannel*>(
       upcall_rpc->channel->server_instance_data);
 }
 
@@ -159,87 +159,73 @@ const void* GetBrowserInterfaceSafe(const char* interface_name) {
 
 const PPB_Context3D_Dev* PPBContext3DInterface() {
   static const PPB_Context3D_Dev* ppb =
-      static_cast<const PPB_Context3D_Dev*>(
+      reinterpret_cast<const PPB_Context3D_Dev*>(
           GetBrowserInterfaceSafe(PPB_CONTEXT_3D_DEV_INTERFACE));
   return ppb;
 }
 
 const PPB_Context3DTrusted_Dev* PPBContext3DTrustedInterface() {
   static const PPB_Context3DTrusted_Dev* ppb =
-      static_cast<const PPB_Context3DTrusted_Dev*>(
+      reinterpret_cast<const PPB_Context3DTrusted_Dev*>(
           GetBrowserInterfaceSafe(PPB_CONTEXT_3D_TRUSTED_DEV_INTERFACE));
   return ppb;
 }
 
 const PPB_Core* PPBCoreInterface() {
-  static const PPB_Core* ppb = static_cast<const PPB_Core*>(
+  static const PPB_Core* ppb = reinterpret_cast<const PPB_Core*>(
       GetBrowserInterfaceSafe(PPB_CORE_INTERFACE));
   return ppb;
 }
 
 const PPB_Graphics2D* PPBGraphics2DInterface() {
-  static const PPB_Graphics2D* ppb = static_cast<const PPB_Graphics2D*>(
+  static const PPB_Graphics2D* ppb = reinterpret_cast<const PPB_Graphics2D*>(
       GetBrowserInterfaceSafe(PPB_GRAPHICS_2D_INTERFACE));
   return ppb;
 }
 
 const PPB_ImageData* PPBImageDataInterface() {
-  static const PPB_ImageData* ppb = static_cast<const PPB_ImageData*>(
+  static const PPB_ImageData* ppb = reinterpret_cast<const PPB_ImageData*>(
       GetBrowserInterfaceSafe(PPB_IMAGEDATA_INTERFACE));
   return ppb;
 }
 
 const PPB_ImageDataTrusted* PPBImageDataTrustedInterface() {
   static const PPB_ImageDataTrusted* ppb =
-      static_cast<const PPB_ImageDataTrusted*>(
+      reinterpret_cast<const PPB_ImageDataTrusted*>(
       GetBrowserInterfaceSafe(PPB_IMAGEDATA_TRUSTED_INTERFACE));
   return ppb;
 }
 
 const PPB_Instance* PPBInstanceInterface() {
-  static const PPB_Instance* ppb = static_cast<const PPB_Instance*>(
+  static const PPB_Instance* ppb = reinterpret_cast<const PPB_Instance*>(
       GetBrowserInterfaceSafe(PPB_INSTANCE_INTERFACE));
-  return ppb;
-}
-
-const PPB_Messaging* PPBMessagingInterface() {
-  static const PPB_Messaging* ppb =
-      static_cast<const PPB_Messaging*>(
-          GetBrowserInterfaceSafe(PPB_MESSAGING_INTERFACE));
   return ppb;
 }
 
 const PPB_URLLoader* PPBURLLoaderInterface() {
   static const PPB_URLLoader* ppb =
-      static_cast<const PPB_URLLoader*>(
+      reinterpret_cast<const PPB_URLLoader*>(
           GetBrowserInterfaceSafe(PPB_URLLOADER_INTERFACE));
   return ppb;
 }
 
 const PPB_URLRequestInfo* PPBURLRequestInfoInterface() {
   static const PPB_URLRequestInfo* ppb =
-      static_cast<const PPB_URLRequestInfo*>(
+      reinterpret_cast<const PPB_URLRequestInfo*>(
           GetBrowserInterfaceSafe(PPB_URLREQUESTINFO_INTERFACE));
   return ppb;
 }
 
 const PPB_URLResponseInfo* PPBURLResponseInfoInterface() {
   static const PPB_URLResponseInfo* ppb =
-      static_cast<const PPB_URLResponseInfo*>(
+      reinterpret_cast<const PPB_URLResponseInfo*>(
           GetBrowserInterfaceSafe(PPB_URLRESPONSEINFO_INTERFACE));
-  return ppb;
-}
-
-const PPB_Var* PPBVarInterface() {
-  static const PPB_Var* ppb =
-      static_cast<const PPB_Var*>(
-          GetBrowserInterfaceSafe(PPB_VAR_INTERFACE));
   return ppb;
 }
 
 const PPB_Var_Deprecated* PPBVarDeprecatedInterface() {
   static const PPB_Var_Deprecated* ppb =
-      static_cast<const PPB_Var_Deprecated*>(
+      reinterpret_cast<const PPB_Var_Deprecated*>(
           GetBrowserInterfaceSafe(PPB_VAR_DEPRECATED_INTERFACE));
   return ppb;
 }
@@ -247,70 +233,77 @@ const PPB_Var_Deprecated* PPBVarDeprecatedInterface() {
 // Dev interfaces.
 const PPB_CursorControl_Dev* PPBCursorControlInterface() {
   static const PPB_CursorControl_Dev* ppb =
-      static_cast<const PPB_CursorControl_Dev*>(
+      reinterpret_cast<const PPB_CursorControl_Dev*>(
           GetBrowserInterfaceSafe(PPB_CURSOR_CONTROL_DEV_INTERFACE));
   return ppb;
 }
 
 const PPB_FileIO_Dev* PPBFileIOInterface() {
   static const PPB_FileIO_Dev* ppb =
-      static_cast<const PPB_FileIO_Dev*>(
+      reinterpret_cast<const PPB_FileIO_Dev*>(
         GetBrowserInterfaceSafe(PPB_FILEIO_DEV_INTERFACE));
   return ppb;
 }
 
 const PPB_FileSystem_Dev* PPBFileSystemInterface() {
   static const PPB_FileSystem_Dev* ppb =
-      static_cast<const PPB_FileSystem_Dev*>(
+      reinterpret_cast<const PPB_FileSystem_Dev*>(
         GetBrowserInterfaceSafe(PPB_FILESYSTEM_DEV_INTERFACE));
   return ppb;
 }
 
 const PPB_Find_Dev* PPBFindInterface() {
   static const PPB_Find_Dev* ppb =
-      static_cast<const PPB_Find_Dev*>(
+      reinterpret_cast<const PPB_Find_Dev*>(
         GetBrowserInterfaceSafe(PPB_FIND_DEV_INTERFACE));
   return ppb;
 }
 
 const PPB_Font_Dev* PPBFontInterface() {
   static const PPB_Font_Dev* ppb =
-      static_cast<const PPB_Font_Dev*>(
+      reinterpret_cast<const PPB_Font_Dev*>(
         GetBrowserInterfaceSafe(PPB_FONT_DEV_INTERFACE));
   return ppb;
 }
 
 const PPB_Scrollbar_Dev* PPBScrollbarInterface() {
   static const PPB_Scrollbar_Dev* ppb =
-      static_cast<const PPB_Scrollbar_Dev*>(
+      reinterpret_cast<const PPB_Scrollbar_Dev*>(
           GetBrowserInterfaceSafe(PPB_SCROLLBAR_DEV_INTERFACE));
+  return ppb;
+}
+
+const PPB_Messaging* PPBMessagingInterface() {
+  static const PPB_Messaging* ppb =
+      reinterpret_cast<const PPB_Messaging*>(
+          GetBrowserInterfaceSafe(PPB_MESSAGING_INTERFACE));
   return ppb;
 }
 
 const PPB_Surface3D_Dev* PPBSurface3DInterface() {
   static const PPB_Surface3D_Dev* ppb =
-      static_cast<const PPB_Surface3D_Dev*>(
+      reinterpret_cast<const PPB_Surface3D_Dev*>(
           GetBrowserInterfaceSafe(PPB_SURFACE_3D_DEV_INTERFACE));
   return ppb;
 }
 
 const PPB_Testing_Dev* PPBTestingInterface() {
   static const PPB_Testing_Dev* ppb =
-      static_cast<const PPB_Testing_Dev*>(
+      reinterpret_cast<const PPB_Testing_Dev*>(
           GetBrowserInterfaceSafe(PPB_TESTING_DEV_INTERFACE));
   return ppb;
 }
 
 const PPB_Widget_Dev* PPBWidgetInterface() {
   static const PPB_Widget_Dev* ppb =
-      static_cast<const PPB_Widget_Dev*>(
+      reinterpret_cast<const PPB_Widget_Dev*>(
           GetBrowserInterfaceSafe(PPB_WIDGET_DEV_INTERFACE));
   return ppb;
 }
 
 const PPB_Zoom_Dev* PPBZoomInterface() {
   static const PPB_Zoom_Dev* ppb =
-      static_cast<const PPB_Zoom_Dev*>(
+      reinterpret_cast<const PPB_Zoom_Dev*>(
           GetBrowserInterfaceSafe(PPB_ZOOM_DEV_INTERFACE));
   return ppb;
 }
@@ -318,7 +311,7 @@ const PPB_Zoom_Dev* PPBZoomInterface() {
 // Private interfaces.
 const PPB_PDF* PPBPDFInterface() {
   static const PPB_PDF* ppb =
-      static_cast<const PPB_PDF*>(
+      reinterpret_cast<const PPB_PDF*>(
           GetBrowserInterfaceSafe(PPB_PDF_INTERFACE));
   return ppb;
 }

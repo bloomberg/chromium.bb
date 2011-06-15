@@ -19,7 +19,6 @@
 #include "ppapi/c/ppb_url_loader.h"
 #include "ppapi/c/ppb_url_request_info.h"
 #include "ppapi/c/ppb_url_response_info.h"
-#include "ppapi/c/ppb_var.h"
 
 const void* GetBrowserInterface(const char* interface_name) {
   return (*ppb_get_interface())(interface_name);
@@ -71,11 +70,6 @@ const PPB_URLRequestInfo* PPBURLRequestInfo() {
 const PPB_URLResponseInfo* PPBURLResponseInfo() {
   return reinterpret_cast<const PPB_URLResponseInfo*>(
       GetBrowserInterfaceSafe(PPB_URLRESPONSEINFO_INTERFACE));
-}
-
-const PPB_Var* PPBVar() {
-  return reinterpret_cast<const PPB_Var*>(
-      GetBrowserInterfaceSafe(PPB_VAR_INTERFACE));
 }
 
 const PPB_Var_Deprecated* PPBVarDeprecated() {

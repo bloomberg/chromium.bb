@@ -6,7 +6,7 @@
 Import('env')
 
 if (not env.Bit('bitcode')):
-  flags = ['-mfpmath=sse', '-msse2', '-O3', '-ffast-math',
+  flags = ['-static', '-mfpmath=sse', '-msse2', '-O3', '-ffast-math',
            '-fomit-frame-pointer']
   env.Append(CCFLAGS=flags)
   env.Append(CXXFLAGS=flags)
@@ -48,13 +48,13 @@ if not env.Bit('nacl_glibc'):
     image=[cnexe],
     )
   env.AddNodeToTestSuite(node, ['validator_tests', 'small_tests'],
-                         'run_earth_c')
+                         'validate_earth_c')
   node = env.CommandValidatorTestNacl(
     'earth_test_val_cc.out',
     image=[ccnexe],
     )
   env.AddNodeToTestSuite(node, ['validator_tests', 'small_tests'],
-                         'run_earth_cc')
+                         'validate_earth_cc')
 
 # TODO(robertm): enable arm support ASAP
 if env.Bit('target_arm'):
@@ -72,7 +72,7 @@ node = env.PPAPIBrowserTester(
     args=['--enable_experimental_js']
     )
 
-env.AddNodeToTestSuite(node, ['chrome_browser_tests'], 'earth_browser_test_c')
+env.AddNodeToTestSuite(node, ['chrome_browser_tests'], 'run_earth_c')
 
 node = env.PPAPIBrowserTester(
     'earth_browser_test_cc.out',
@@ -84,4 +84,4 @@ node = env.PPAPIBrowserTester(
     args=['--enable_experimental_js']
     )
 
-env.AddNodeToTestSuite(node, ['chrome_browser_tests'], 'earth_browser_test_cc')
+env.AddNodeToTestSuite(node, ['chrome_browser_tests'], 'run_earth_cc')

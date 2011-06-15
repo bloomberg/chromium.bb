@@ -29,7 +29,6 @@
 #include "ppapi/c/ppb_url_loader.h"
 #include "ppapi/c/ppb_url_request_info.h"
 #include "ppapi/c/ppb_url_response_info.h"
-#include "ppapi/c/ppb_var.h"
 #include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/c/trusted/ppb_image_data_trusted.h"
 
@@ -104,7 +103,6 @@ const PPB_Testing_Dev* PPBTestingInterface();
 const PPB_URLLoader* PPBURLLoaderInterface();
 const PPB_URLRequestInfo* PPBURLRequestInfoInterface();
 const PPB_URLResponseInfo* PPBURLResponseInfoInterface();
-const PPB_Var* PPBVarInterface();  // shared
 const PPB_Var_Deprecated* PPBVarDeprecatedInterface();  // shared
 const PPB_Widget_Dev* PPBWidgetInterface();
 const PPB_Zoom_Dev* PPBZoomInterface();

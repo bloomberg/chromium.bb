@@ -10,16 +10,15 @@
 #include "native_client/tests/earth/earth.h"
 
 // Pepper includes
-#include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/cpp/completion_callback.h"
-#include <ppapi/cpp/graphics_2d.h>
-#include <ppapi/cpp/image_data.h>
+#include "ppapi/cpp/graphics_2d.h"
+#include "ppapi/cpp/image_data.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
-#include <ppapi/cpp/rect.h>
-#include <ppapi/cpp/size.h>
+#include "ppapi/cpp/rect.h"
+#include "ppapi/cpp/size.h"
 
 const int kNumberOfImages = 2;
 

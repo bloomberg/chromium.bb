@@ -24,7 +24,6 @@
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppb.h"
-#include "ppapi/c/ppb_var.h"
 #include "ppapi/c/ppp.h"
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/c/ppp_messaging.h"
@@ -87,7 +86,6 @@ PP_Bool DidCreate(PP_Instance instance,
   CHECK(PPBURLLoader() != NULL);
   CHECK(PPBURLRequestInfo() != NULL);
   CHECK(PPBURLResponseInfo() != NULL);
-  CHECK(PPBVar() != NULL);
   CHECK(PPBVarDeprecated() != NULL);
 
   set_pp_instance(instance);
@@ -142,7 +140,8 @@ void HandleMessage(PP_Instance instance, PP_Var message) {
   if (message.type != PP_VARTYPE_STRING)
     return;
   uint32_t len = 0;
-  const char* test_name = PPBVar()->VarToUtf8(message, &len);
+  // TODO(polina): use PPBVar.
+  const char* test_name = PPBVarDeprecated()->VarToUtf8(message, &len);
   RunTest(test_name);
 }
 
