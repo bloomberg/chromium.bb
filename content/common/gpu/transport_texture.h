@@ -15,7 +15,7 @@
 #include <map>
 
 #include "base/basictypes.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/task.h"
 #include "ipc/ipc_channel.h"
 
@@ -30,7 +30,7 @@ class GLES2Decoder;
 class TransportTexture : public IPC::Channel::Listener {
  public:
   enum Format {
-    RGBA, // GL_RGBA
+    RGBA,  // GL_RGBA
   };
 
   // |channel| is the owner of this object.

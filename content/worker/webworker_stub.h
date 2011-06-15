@@ -6,7 +6,9 @@
 #define CONTENT_WORKER_WEBWORKER_STUB_H_
 #pragma once
 
-#include "base/scoped_ptr.h"
+#include <vector>
+
+#include "base/memory/scoped_ptr.h"
 #include "content/worker/webworker_stub_base.h"
 #include "content/worker/webworkerclient_proxy.h"
 #include "googleurl/src/gurl.h"

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_FILEAPI_FILE_SYSTEM_DIRECTORY_DATABASE_H
-#define WEBKIT_FILEAPI_FILE_SYSTEM_DIRECTORY_DATABASE_H
+#ifndef WEBKIT_FILEAPI_FILE_SYSTEM_DIRECTORY_DATABASE_H_
+#define WEBKIT_FILEAPI_FILE_SYSTEM_DIRECTORY_DATABASE_H_
 
 #include <string>
 #include <vector>
 
 #include "base/file_path.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "third_party/leveldb/include/leveldb/db.h"
 
@@ -51,7 +51,7 @@ class FileSystemDirectoryDatabase {
     base::Time modification_time;
   };
 
-  FileSystemDirectoryDatabase(const FilePath& path);
+  explicit FileSystemDirectoryDatabase(const FilePath& path);
   ~FileSystemDirectoryDatabase();
 
   bool GetChildWithName(
@@ -98,4 +98,4 @@ class FileSystemDirectoryDatabase {
 
 }  // namespace fileapi
 
-#endif  // WEBKIT_FILEAPI_FILE_SYSTEM_DIRECTORY_DATABASE_H
+#endif  // WEBKIT_FILEAPI_FILE_SYSTEM_DIRECTORY_DATABASE_H_

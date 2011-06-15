@@ -5,10 +5,11 @@
 #include "webkit/fileapi/file_system_file_util.h"
 
 #include <stack>
+#include <vector>
 
 #include "base/file_util_proxy.h"
 #include "base/logging.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 
 namespace fileapi {
@@ -26,7 +27,7 @@ bool ParentExists(FileSystemOperationContext* context,
   return file_util->DirectoryExists(context, parent);
 }
 
-}
+}  // namespace
 
 // static
 FileSystemFileUtil* FileSystemFileUtil::GetInstance() {
@@ -205,8 +206,9 @@ PlatformFileError FileSystemFileUtil::Delete(
       return DeleteSingleDirectory(context, file_path);
     else
       return DeleteDirectoryRecursive(context, file_path);
-  } else
+  } else {
     return DeleteFile(context, file_path);
+  }
 }
 
 PlatformFileError FileSystemFileUtil::Touch(

@@ -7,8 +7,8 @@
 
 #include <vector>
 
-#include "base/scoped_ptr.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "media/video/video_decode_accelerator.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"

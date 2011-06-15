@@ -6,7 +6,7 @@
 #define NET_CURVECP_CLIENT_PACKETIZER_H_
 #pragma once
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/task.h"
 #include "net/base/address_list.h"
 #include "net/base/completion_callback.h"

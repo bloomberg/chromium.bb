@@ -5,8 +5,10 @@
 #ifndef CONTENT_RENDERER_P2P_P2P_TRANSPORT_IMPL_H_
 #define CONTENT_RENDERER_P2P_P2P_TRANSPORT_IMPL_H_
 
+#include <string>
+
 #include "base/basictypes.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "net/base/completion_callback.h"
 #include "third_party/libjingle/source/talk/base/sigslot.h"
 #include "webkit/glue/p2p_transport.h"
@@ -43,7 +45,7 @@ class P2PTransportImpl : public webkit_glue::P2PTransport,
   // Creates P2PTransportImpl using specified
   // P2PSocketDispatcher. This constructor creates IpcNetworkManager
   // and IpcPacketSocketFactory, and keeps ownership of these objects.
-  P2PTransportImpl(P2PSocketDispatcher* socket_dispatcher);
+  explicit P2PTransportImpl(P2PSocketDispatcher* socket_dispatcher);
 
   virtual ~P2PTransportImpl();
 

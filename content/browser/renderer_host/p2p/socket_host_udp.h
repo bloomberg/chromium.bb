@@ -6,11 +6,12 @@
 #define CONTENT_BROWSER_RENDERER_HOST_P2P_SOCKET_HOST_UDP_H_
 
 #include <set>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/scoped_ptr.h"
 #include "content/browser/renderer_host/p2p/socket_host.h"
 #include "content/common/p2p_sockets.h"
 #include "net/base/ip_endpoint.h"

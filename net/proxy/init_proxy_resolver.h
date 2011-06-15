@@ -8,10 +8,10 @@
 
 #include <vector>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/time.h"
 #include "base/timer.h"
-#include "base/scoped_ptr.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_api.h"

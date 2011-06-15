@@ -4,7 +4,9 @@
 
 #include "webkit/plugins/ppapi/webkit_forwarding_impl.h"
 
-#include "base/scoped_ptr.h"
+#include <string>
+
+#include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/utf_string_conversions.h"

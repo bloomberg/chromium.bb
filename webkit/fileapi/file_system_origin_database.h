@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/file_path.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "third_party/leveldb/include/leveldb/db.h"
 
 namespace fileapi {
@@ -30,7 +30,7 @@ class FileSystemOriginDatabase {
 
   // Only one instance of FileSystemOriginDatabase should exist for a given path
   // at a given time.
-  FileSystemOriginDatabase(const FilePath& path);
+  explicit FileSystemOriginDatabase(const FilePath& path);
   ~FileSystemOriginDatabase();
 
   bool HasOriginPath(const std::string& origin);

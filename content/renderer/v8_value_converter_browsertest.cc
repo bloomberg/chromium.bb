@@ -4,7 +4,7 @@
 
 #include <cmath>
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "content/renderer/v8_value_converter.h"
 #include "testing/gtest/include/gtest/gtest.h"

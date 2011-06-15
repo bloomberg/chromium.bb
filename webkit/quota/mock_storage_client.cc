@@ -6,9 +6,9 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop_proxy.h"
-#include "base/scoped_ptr.h"
 #include "base/stl_util-inl.h"
 #include "net/base/net_util.h"
 #include "webkit/quota/quota_manager.h"

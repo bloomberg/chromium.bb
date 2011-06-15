@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "webkit/glue/webkitclient_impl.h"
 
 class PpapiWebKitClientImpl : public webkit_glue::WebKitClientImpl {

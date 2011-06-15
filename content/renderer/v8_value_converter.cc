@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/logging.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "v8/include/v8.h"
 

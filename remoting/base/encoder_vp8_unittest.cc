@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "remoting/base/capture_data.h"
 #include "remoting/base/codec_test.h"
 #include "remoting/base/encoder_vp8.h"

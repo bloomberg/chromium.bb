@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GPU_GLES2_CONFORM_TEST_DISPLAY_H_
-#define GPU_GLES2_CONFORM_TEST_DISPLAY_H_
+#ifndef GPU_GLES2_CONFORM_SUPPORT_EGL_DISPLAY_H_
+#define GPU_GLES2_CONFORM_SUPPORT_EGL_DISPLAY_H_
 
 #include <EGL/egl.h>
 
 #include "base/basictypes.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 
 namespace gpu {
 class CommandBufferService;
@@ -74,4 +74,4 @@ class Display {
 
 }  // namespace egl
 
-#endif  // GPU_GLES2_CONFORM_TEST_DISPLAY_H_
+#endif  // GPU_GLES2_CONFORM_SUPPORT_EGL_DISPLAY_H_
