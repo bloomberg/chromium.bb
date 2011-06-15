@@ -124,20 +124,12 @@ void DownloadsDOMHandler::ModelChanged() {
                                      &download_items_);
   sort(download_items_.begin(), download_items_.end(), DownloadItemSorter());
 
-  // Scan for any in progress downloads and add ourself to them as an observer.
+  // Add ourself to all download items as an observer.
   for (OrderedDownloads::iterator it = download_items_.begin();
        it != download_items_.end(); ++it) {
     if (static_cast<int>(it - download_items_.begin()) > kMaxDownloads)
       break;
-
-    DownloadItem* download = *it;
-    if (download->IsInProgress()) {
-      // We want to know what happens as the download progresses.
-      download->AddObserver(this);
-    } else if (download->safety_state() == DownloadItem::DANGEROUS) {
-      // We need to be notified when the user validates the dangerous download.
-      download->AddObserver(this);
-    }
+    (*it)->AddObserver(this);
   }
 
   SendCurrentDownloads();
@@ -151,6 +143,8 @@ void DownloadsDOMHandler::HandleGetDownloads(const ListValue* args) {
   } else {
     SendCurrentDownloads();
   }
+
+  download_manager_->CheckForHistoryFilesRemoval();
 }
 
 void DownloadsDOMHandler::HandleOpenFile(const ListValue* args) {

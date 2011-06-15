@@ -86,7 +86,6 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
     parent_(parent),
     status_text_(UTF16ToWide(
         l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_STARTING))),
-    show_status_text_(true),
     body_state_(NORMAL),
     drop_down_state_(NORMAL),
     progress_angle_(download_util::kStartAngleDegrees),
@@ -355,8 +354,6 @@ void DownloadItemView::OnDownloadUpdated(DownloadItem* download) {
       complete_animation_->SetSlideDuration(kInterruptedAnimationDurationMs);
       complete_animation_->SetTweenType(ui::Tween::LINEAR);
       complete_animation_->Show();
-      if (status_text.empty())
-        show_status_text_ = false;
       SchedulePaint();
       LoadIcon();
       break;
@@ -370,8 +367,6 @@ void DownloadItemView::OnDownloadUpdated(DownloadItem* download) {
       complete_animation_->SetSlideDuration(kCompleteAnimationDurationMs);
       complete_animation_->SetTweenType(ui::Tween::LINEAR);
       complete_animation_->Show();
-      if (status_text.empty())
-        show_status_text_ = false;
       SchedulePaint();
       LoadIcon();
       break;
@@ -723,7 +718,7 @@ void DownloadItemView::OnPaint(gfx::Canvas* canvas) {
 
   // Draw status before button image to effectively lighten text.
   if (!IsDangerousMode()) {
-    if (show_status_text_) {
+    if (!status_text_.empty()) {
       int mirrored_x = GetMirroredXWithWidthInView(
           download_util::kSmallProgressIconSize, kTextWidth);
       // Add font_.height() to compensate for title, which is drawn later.
@@ -856,8 +851,8 @@ void DownloadItemView::OnPaint(gfx::Canvas* canvas) {
     SkColor file_name_color = GetThemeProvider()->GetColor(
         ThemeService::COLOR_BOOKMARK_TEXT);
     int y =
-        box_y_ + (show_status_text_ ? kVerticalPadding :
-                                      (box_height_ - font_.GetHeight()) / 2);
+        box_y_ + (status_text_.empty() ?
+                  ((box_height_ - font_.GetHeight()) / 2) : kVerticalPadding);
 
     // Draw the file's name.
     canvas->DrawStringInt(filename, font_,

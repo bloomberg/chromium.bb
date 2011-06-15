@@ -235,6 +235,16 @@ class DownloadManager
   // Called when the user has validated the download of a dangerous file.
   void DangerousDownloadValidated(DownloadItem* download);
 
+  // Checks whether downloaded files still exist. Updates state of downloads
+  // that refer to removed files. The check runs in the background and may
+  // finish asynchronously after this method returns.
+  void CheckForHistoryFilesRemoval();
+
+  // Checks whether a downloaded file still exists and updates the file's state
+  // if the file is already removed. The check runs in the background and may
+  // finish asynchronously after this method returns.
+  void CheckForFileRemoval(DownloadItem* download_item);
+
   // Callback function after url is checked with safebrowsing service.
   void CheckDownloadUrlDone(int32 download_id, bool is_dangerous_url);
 
@@ -282,6 +292,14 @@ class DownloadManager
   friend class OtherDownloadManagerObserver;
 
   virtual ~DownloadManager();
+
+  // Called on the FILE thread to check the existence of a downloaded file.
+  void CheckForFileRemovalOnFileThread(int64 db_handle, const FilePath& path);
+
+  // Called on the UI thread if the FILE thread detects the removal of
+  // the downloaded file. The UI thread updates the state of the file
+  // and then notifies this update to the file's observer.
+  void OnFileRemovalDetected(int64 db_handle);
 
   // Called on the download thread to check whether the suggested file path
   // exists.  We don't check if the file exists on the UI thread to avoid UI

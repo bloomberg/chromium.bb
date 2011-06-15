@@ -63,6 +63,7 @@ DownloadsUIHTMLSource::DownloadsUIHTMLSource()
 
   // Status.
   AddLocalizedString("status_cancelled", IDS_DOWNLOAD_TAB_CANCELED);
+  AddLocalizedString("status_removed", IDS_DOWNLOAD_FILE_REMOVED);
   AddLocalizedString("status_paused", IDS_DOWNLOAD_PROGRESS_PAUSED);
   AddLocalizedString("status_interrupted", IDS_DOWNLOAD_PROGRESS_INTERRUPTED);
 

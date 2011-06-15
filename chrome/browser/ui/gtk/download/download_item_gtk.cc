@@ -125,23 +125,18 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
   g_object_unref(no_padding_style);
 
   name_label_ = gtk_label_new(NULL);
+  // Left align and vertically center the labels.
+  gtk_misc_set_alignment(GTK_MISC(name_label_), 0, 0.5);
+  // Until we switch to vector graphics, force the font size.
+  gtk_util::ForceFontSizePixels(name_label_, kTextSize);
 
   UpdateNameLabel();
 
-  status_label_ = gtk_label_new(NULL);
-  g_signal_connect(status_label_, "destroy",
-                   G_CALLBACK(gtk_widget_destroyed), &status_label_);
-  // Left align and vertically center the labels.
-  gtk_misc_set_alignment(GTK_MISC(name_label_), 0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(status_label_), 0, 0.5);
-  // Until we switch to vector graphics, force the font size.
-  gtk_util::ForceFontSizePixels(name_label_, kTextSize);
-  gtk_util::ForceFontSizePixels(status_label_, kTextSize);
+  status_label_ = NULL;
 
   // Stack the labels on top of one another.
-  GtkWidget* text_stack = gtk_vbox_new(FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(text_stack), name_label_, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(text_stack), status_label_, FALSE, FALSE, 0);
+  text_stack_ = gtk_vbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(text_stack_), name_label_, TRUE, TRUE, 0);
 
   // We use a GtkFixed because we don't want it to have its own window.
   // This choice of widget is not critically important though.
@@ -157,7 +152,7 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
   GtkWidget* body_hbox = gtk_hbox_new(FALSE, 0);
   gtk_container_add(GTK_CONTAINER(body_.get()), body_hbox);
   gtk_box_pack_start(GTK_BOX(body_hbox), progress_area_.get(), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(body_hbox), text_stack, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(body_hbox), text_stack_, TRUE, TRUE, 0);
 
   menu_button_ = gtk_button_new();
   gtk_widget_set_app_paintable(menu_button_, TRUE);
@@ -349,19 +344,7 @@ void DownloadItemGtk::OnDownloadUpdated(DownloadItem* download) {
       NOTREACHED();
   }
 
-  // Now update the status label. We may have already removed it; if so, we
-  // do nothing.
-  if (!status_label_) {
-    return;
-  }
-
   status_text_ = UTF16ToUTF8(download_model_->GetStatusText());
-  // Remove the status text label.
-  if (status_text_.empty()) {
-    gtk_widget_destroy(status_label_);
-    return;
-  }
-
   UpdateStatusLabel(status_text_);
 }
 
@@ -498,8 +481,26 @@ void DownloadItemGtk::UpdateNameLabel() {
 }
 
 void DownloadItemGtk::UpdateStatusLabel(const std::string& status_text) {
-  if (!status_label_)
+  // If |status_text| is empty, only |name_label_| is displayed at the
+  // vertical center of |text_stack_|. Otherwise, |name_label_| is displayed
+  // on the upper half of |text_stack_| and |status_label_| is displayed
+  // on the lower half of |text_stack_|.
+  if (status_text.empty() && status_label_) {
+    gtk_widget_destroy(status_label_);
     return;
+  }
+  if (!status_label_) {
+    status_label_ = gtk_label_new(NULL);
+    g_signal_connect(status_label_, "destroy",
+                     G_CALLBACK(gtk_widget_destroyed), &status_label_);
+    // Left align and vertically center the labels.
+    gtk_misc_set_alignment(GTK_MISC(status_label_), 0, 0.5);
+    // Until we switch to vector graphics, force the font size.
+    gtk_util::ForceFontSizePixels(status_label_, kTextSize);
+
+    gtk_box_pack_start(GTK_BOX(text_stack_), status_label_, FALSE, FALSE, 0);
+    gtk_widget_show_all(hbox_.get());
+  }
 
   GdkColor text_color;
   if (!theme_service_->UsingNativeTheme()) {
@@ -785,7 +786,6 @@ gboolean DownloadItemGtk::OnButtonPress(GtkWidget* button,
     ShowPopupMenu(NULL, event);
     return TRUE;
   }
-
   return FALSE;
 }
 
@@ -833,7 +833,6 @@ gboolean DownloadItemGtk::OnMenuButtonPressEvent(GtkWidget* button,
     gtk_widget_queue_draw(button);
     return TRUE;
   }
-
   return FALSE;
 }
 

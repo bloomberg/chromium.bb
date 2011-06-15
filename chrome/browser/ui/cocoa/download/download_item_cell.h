@@ -43,6 +43,7 @@ enum DownloadItemMousePosition {
   BOOL isStatusTextVisible_;
   CGFloat titleY_;
   CGFloat statusAlpha_;
+  scoped_nsobject<NSAnimation> showStatusAnimation_;
   scoped_nsobject<NSAnimation> hideStatusAnimation_;
 
   scoped_ptr<ui::ThemeProvider> themeProvider_;

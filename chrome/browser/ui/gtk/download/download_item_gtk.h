@@ -160,6 +160,9 @@ class DownloadItemGtk : public DownloadItem::Observer,
   // animation.
   OwnedWidgetGtk body_;
 
+  // The widget that contains the texts of |name_label_| and |status_label_|.
+  GtkWidget* text_stack_;
+
   // The GtkLabel that holds the download title text.
   GtkWidget* name_label_;
 

@@ -197,7 +197,6 @@ class DownloadItemView : public views::ButtonListener,
 
   // Elements of our particular download
   std::wstring status_text_;
-  bool show_status_text_;
 
   // The font used to print the file name and status.
   gfx::Font font_;

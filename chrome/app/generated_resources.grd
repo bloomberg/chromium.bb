@@ -2181,8 +2181,11 @@ Other platform defines such as use_titlecase are declared in build/common.gypi.
                desc="Temporary status shown when a user has clicked to open a downloaded file.">
         Opening <ph name="FILE">$1<ex>image.jpg</ex></ph>...
       </message>
-      <message name="IDS_DOWNLOAD_STATUS_CANCELED" desc="Canceled text.">
+      <message name="IDS_DOWNLOAD_STATUS_CANCELED" desc="Text that appears under the downloaded files that have been canceled.">
         Canceled
+      </message>
+      <message name="IDS_DOWNLOAD_STATUS_REMOVED" desc="Text that appears under the downloaded files that have been removed.">
+        Removed
       </message>
       <message name="IDS_DOWNLOAD_UNCONFIRMED_PREFIX" desc="The prefix used in the unconfirmed download file.">
         Unconfirmed
@@ -2253,8 +2256,12 @@ Other platform defines such as use_titlecase are declared in build/common.gypi.
         </message>
       </if>
       <message name="IDS_DOWNLOAD_TAB_CANCELED"
-               desc="Cancel link text">
+               desc="Text that appears next to the downloaded files that have been canceled">
         Canceled
+      </message>
+      <message name="IDS_DOWNLOAD_FILE_REMOVED"
+               desc="Text that appears next to the downloaded files that have been removed">
+        Removed
       </message>
       <message name="IDS_DOWNLOAD_TAB_PROGRESS_STATUS_TIME_UNKNOWN"
                desc="The status text for a download in progress in the download manager. This includes information such as speed and received byte counts and is used when we do not know the remaining time">

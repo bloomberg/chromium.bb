@@ -68,6 +68,7 @@ const CGFloat kDropdownArrowHeight = 3;
 const CGFloat kDropdownAreaY = -2;
 
 // Duration of the two-lines-to-one-line animation, in seconds.
+NSTimeInterval kShowStatusDuration = 0.3;
 NSTimeInterval kHideStatusDuration = 0.3;
 
 // Duration of the 'download complete' animation, in seconds.
@@ -87,6 +88,7 @@ const int kInterruptedAnimationDuration = 2.5;
 
 @interface DownloadItemCell(Private)
 - (void)updateTrackingAreas:(id)sender;
+- (void)showSecondaryTitle;
 - (void)hideSecondaryTitle;
 - (void)animation:(NSAnimation*)animation
        progressed:(NSAnimationProgress)progress;
@@ -142,6 +144,8 @@ const int kInterruptedAnimationDuration = 2.5;
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   if ([completionAnimation_ isAnimating])
     [completionAnimation_ stopAnimation];
+  if ([showStatusAnimation_ isAnimating])
+    [showStatusAnimation_ stopAnimation];
   if ([hideStatusAnimation_ isAnimating])
     [hideStatusAnimation_ stopAnimation];
   if (trackingAreaButton_) {
@@ -170,6 +174,7 @@ const int kInterruptedAnimationDuration = 2.5;
     // Set status text.
     NSString* statusString = base::SysUTF16ToNSString(statusText);
     [self setSecondaryTitle:statusString];
+    [self showSecondaryTitle];
     isStatusTextVisible_ = YES;
   }
 
@@ -593,6 +598,21 @@ const int kInterruptedAnimationDuration = 2.5;
                     kImageHeight);
 }
 
+- (void)showSecondaryTitle {
+  if (!isStatusTextVisible_) {
+    // No core animation -- text in CA layers is not subpixel antialiased :-/
+    showStatusAnimation_.reset([[DownloadItemCellAnimation alloc]
+        initWithDownloadItemCell:self
+                        duration:kShowStatusDuration
+                  animationCurve:NSAnimationEaseIn]);
+    [showStatusAnimation_.get() setDelegate:self];
+    [showStatusAnimation_.get() startAnimation];
+  } else {
+    // If the status line continues to be visible, don't show an animation
+    [self animation:nil progressed:0.0];
+  }
+}
+
 - (void)hideSecondaryTitle {
   if (isStatusTextVisible_) {
     // No core animation -- text in CA layers is not subpixel antialiased :-/
@@ -611,7 +631,12 @@ const int kInterruptedAnimationDuration = 2.5;
 
 - (void)animation:(NSAnimation*)animation
       progressed:(NSAnimationProgress)progress {
-  if (animation == hideStatusAnimation_ || animation == nil) {
+  if (animation == showStatusAnimation_) {
+    titleY_ = (1 - progress)*kPrimaryTextOnlyPosTop +
+      kPrimaryTextPosTop;
+    statusAlpha_ = progress;
+    [[self controlView] setNeedsDisplay:YES];
+  } else if (animation == hideStatusAnimation_ || animation == nil) {
     titleY_ = progress*kPrimaryTextOnlyPosTop +
         (1 - progress)*kPrimaryTextPosTop;
     statusAlpha_ = 1 - progress;
@@ -622,7 +647,9 @@ const int kInterruptedAnimationDuration = 2.5;
 }
 
 - (void)animationDidEnd:(NSAnimation *)animation {
-  if (animation == hideStatusAnimation_)
+  if (animation == showStatusAnimation_)
+    showStatusAnimation_.reset();
+  else if (animation == hideStatusAnimation_)
     hideStatusAnimation_.reset();
   else if (animation == completionAnimation_)
     completionAnimation_.reset();

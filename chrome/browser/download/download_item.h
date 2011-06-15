@@ -135,7 +135,11 @@ class DownloadItem : public NotificationObserver {
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  // Returns true if it is OK to open this download.
+  // Returns true if it is OK to open a folder which this file is inside.
+  bool CanShowInFolder();
+
+  // Returns true if it is OK to register the type of this file so that
+  // it opens automatically.
   bool CanOpenDownload();
 
   // Tests if a file type should be opened automatically.
@@ -170,12 +174,15 @@ class DownloadItem : public NotificationObserver {
   // when resuming a download (assuming the server supports byte ranges).
   void Cancel(bool update_history);
 
-  // Called when all data has been saved.  Only has display effects.
-  void OnAllDataSaved(int64 size);
-
   // Called by external code (SavePackage) using the DownloadItem interface
   // to display progress when the DownloadItem should be considered complete.
   void MarkAsComplete();
+
+  // Called when all data has been saved. Only has display effects.
+  void OnAllDataSaved(int64 size);
+
+  // Called when the downloaded file is removed.
+  void OnDownloadedFileRemoved();
 
   // Download operation had an error.
   // |size| is the amount of data received so far, and |os_error| is the error
@@ -278,6 +285,7 @@ class DownloadItem : public NotificationObserver {
   bool is_paused() const { return is_paused_; }
   bool open_when_complete() const { return open_when_complete_; }
   void set_open_when_complete(bool open) { open_when_complete_ = open; }
+  bool file_externally_removed() const { return file_externally_removed_; }
   SafetyState safety_state() const { return safety_state_; }
   void set_safety_state(SafetyState safety_state) {
     safety_state_ = safety_state;
@@ -431,6 +439,9 @@ class DownloadItem : public NotificationObserver {
 
   // A flag for indicating if the download should be opened at completion.
   bool open_when_complete_;
+
+  // A flag for indicating if the downloaded file is externally removed.
+  bool file_externally_removed_;
 
   // Indicates if the download is considered potentially safe or dangerous
   // (executable files are typically considered dangerous).

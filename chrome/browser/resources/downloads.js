@@ -329,6 +329,7 @@ Download.prototype.update = function(download) {
   this.fileName_ = download.file_name;
   this.url_ = download.url;
   this.state_ = download.state;
+  this.fileExternallyRemoved_ = download.file_externally_removed;
   this.dangerType_ = download.danger_type;
 
   this.since_ = download.since_string;
@@ -351,19 +352,24 @@ Download.prototype.update = function(download) {
   } else {
     this.nodeImg_.src = 'chrome://fileicon/' + this.filePath_;
 
-    if (this.state_ == Download.States.COMPLETE) {
+    if (this.state_ == Download.States.COMPLETE &&
+        !this.fileExternallyRemoved_) {
       this.nodeFileLink_.innerHTML = this.fileName_;
       this.nodeFileLink_.href = this.filePath_;
     } else {
       this.nodeFileName_.innerHTML = this.fileName_;
     }
 
-    showInline(this.nodeFileLink_, this.state_ == Download.States.COMPLETE);
+    showInline(this.nodeFileLink_,
+               this.state_ == Download.States.COMPLETE &&
+                   !this.fileExternallyRemoved_);
     // nodeFileName_ has to be inline-block to avoid the 'interaction' with
     // nodeStatus_. If both are inline, it appears that their text contents
     // are merged before the bidi algorithm is applied leading to an
     // undesirable reordering. http://crbug.com/13216
-    showInlineBlock(this.nodeFileName_, this.state_ != Download.States.COMPLETE);
+    showInlineBlock(this.nodeFileName_,
+                    this.state_ != Download.States.COMPLETE ||
+                        this.fileExternallyRemoved_);
 
     if (this.state_ == Download.States.IN_PROGRESS) {
       this.nodeProgressForeground_.style.display = 'block';
@@ -396,7 +402,9 @@ Download.prototype.update = function(download) {
     }
 
     if (this.controlShow_) {
-      showInline(this.controlShow_, this.state_ == Download.States.COMPLETE);
+      showInline(this.controlShow_,
+                 this.state_ == Download.States.COMPLETE &&
+                     !this.fileExternallyRemoved_);
     }
     showInline(this.controlRetry_, this.state_ == Download.States.CANCELLED);
     this.controlRetry_.href = this.url_;
@@ -457,7 +465,8 @@ Download.prototype.getStatusText_ = function() {
     case Download.States.INTERRUPTED:
       return localStrings.getString('status_interrupted');
     case Download.States.COMPLETE:
-      return '';
+      return this.fileExternallyRemoved_ ?
+          localStrings.getString('status_removed') : '';
   }
 }
 
@@ -532,7 +541,15 @@ Download.prototype.cancel_ = function() {
 // Page:
 var downloads, localStrings, resultsTimeout;
 
+/**
+ * The FIFO array that stores updates of download files to be appeared
+ * on the download page. It is guaranteed that the updates in this array
+ * are reflected to the download page in a FIFO order.
+*/
+var fifo_results;
+
 function load() {
+  fifo_results = new Array();
   localStrings = new LocalStrings();
   downloads = new Downloads();
   $('term').focus();
@@ -541,12 +558,14 @@ function load() {
 }
 
 function setSearch(searchText) {
+  fifo_results.length = 0;
   downloads.clear();
   downloads.setSearchText(searchText);
   chrome.send('getDownloads', [searchText.toString()]);
 }
 
 function clearAll() {
+  fifo_results.length = 0;
   downloads.clear();
   downloads.setSearchText('');
   chrome.send('clearAll', []);
@@ -563,6 +582,7 @@ function downloadsList(results) {
   if (resultsTimeout)
     clearTimeout(resultsTimeout);
   window.console.log('results');
+  fifo_results.length = 0;
   downloads.clear();
   downloadUpdated(results);
   downloads.updateSummary();
@@ -576,13 +596,23 @@ function downloadUpdated(results) {
   if (!downloads)
     return;
 
+  fifo_results = fifo_results.concat(results);
+  tryDownloadUpdatedPeriodically();
+}
+
+/**
+ * Try to reflect as much updates as possible within 50ms.
+ * This function is scheduled again and again until all updates are reflected.
+ */
+function tryDownloadUpdatedPeriodically() {
   var start = Date.now();
-  for (var i = 0; i < results.length; i++) {
-    downloads.updated(results[i]);
+  while (fifo_results.length) {
+    var result = fifo_results.shift();
+    downloads.updated(result);
     // Do as much as we can in 50ms.
     if (Date.now() - start > 50) {
       clearTimeout(resultsTimeout);
-      resultsTimeout = setTimeout(downloadUpdated, 5, results.slice(i + 1));
+      resultsTimeout = setTimeout(tryDownloadUpdatedPeriodically, 5);
       break;
     }
   }

@@ -274,6 +274,48 @@ void DownloadManager::StartDownload(int32 download_id) {
       NewCallback(this, &DownloadManager::CheckDownloadUrlDone));
 }
 
+void DownloadManager::CheckForHistoryFilesRemoval() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  for (DownloadMap::iterator it = history_downloads_.begin();
+       it != history_downloads_.end(); ++it) {
+    CheckForFileRemoval(it->second);
+  }
+}
+
+void DownloadManager::CheckForFileRemoval(DownloadItem* download_item) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (download_item->IsComplete() &&
+      !download_item->file_externally_removed()) {
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
+        NewRunnableMethod(this,
+                          &DownloadManager::CheckForFileRemovalOnFileThread,
+                          download_item->db_handle(),
+                          download_item->GetTargetFilePath()));
+  }
+}
+
+void DownloadManager::CheckForFileRemovalOnFileThread(
+    int64 db_handle, const FilePath& path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  if (!file_util::PathExists(path)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        NewRunnableMethod(this,
+                          &DownloadManager::OnFileRemovalDetected,
+                          db_handle));
+  }
+}
+
+void DownloadManager::OnFileRemovalDetected(int64 db_handle) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DownloadMap::iterator it = history_downloads_.find(db_handle);
+  if (it != history_downloads_.end()) {
+    DownloadItem* download_item = it->second;
+    download_item->OnDownloadedFileRemoved();
+  }
+}
+
 void DownloadManager::CheckDownloadUrlDone(int32 download_id,
                                            bool is_dangerous_url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -1085,6 +1127,7 @@ void DownloadManager::OnQueryDownloadEntriesComplete(
              << " download = " << download->DebugString(true);
   }
   NotifyModelChanged();
+  CheckForHistoryFilesRemoval();
 }
 
 // Once the new DownloadItem's creation info has been committed to the history

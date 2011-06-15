@@ -82,7 +82,11 @@ string16 DownloadItemModel::GetStatusText() {
       }
       break;
     case DownloadItem::COMPLETE:
-      status_text.clear();
+      if (download_->file_externally_removed()) {
+        status_text = l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_REMOVED);
+      } else {
+        status_text.clear();
+      }
       break;
     case DownloadItem::CANCELLED:
       status_text = l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_CANCELED);

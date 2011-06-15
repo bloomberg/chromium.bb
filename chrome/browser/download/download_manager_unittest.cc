@@ -6,14 +6,19 @@
 #include <set>
 
 #include "base/file_util.h"
+#include "base/i18n/number_formatting.h"
+#include "base/i18n/rtl.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
+#include "base/string16.h"
+#include "base/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/download/download_create_info.h"
 #include "chrome/browser/download/download_file.h"
 #include "chrome/browser/download/download_file_manager.h"
 #include "chrome/browser/download/download_item.h"
+#include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_status_updater.h"
@@ -23,9 +28,11 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_profile.h"
 #include "content/browser/browser_thread.h"
+#include "grit/generated_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gmock_mutant.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/l10n/l10n_util.h"
 
 class DownloadManagerTest : public testing::Test {
  public:
@@ -396,6 +403,7 @@ TEST_F(DownloadManagerTest, DownloadInterruptTest) {
   info->download_id = static_cast<int>(0);
   info->prompt_user_for_save_location = false;
   info->url_chain.push_back(GURL());
+  info->total_bytes = static_cast<int64>(kTestDataLen);
   const FilePath new_path(FILE_PATH_LITERAL("foo.zip"));
   const FilePath cr_path(download_util::GetCrDownloadPath(new_path));
 
@@ -413,6 +421,8 @@ TEST_F(DownloadManagerTest, DownloadInterruptTest) {
 
   DownloadItem* download = GetActiveDownloadItem(0);
   ASSERT_TRUE(download != NULL);
+  scoped_ptr<DownloadItemModel> download_item_model(
+      new DownloadItemModel(download));
 
   EXPECT_EQ(DownloadItem::IN_PROGRESS, download->state());
   scoped_ptr<ItemObserver> observer(new ItemObserver(download));
@@ -423,11 +433,11 @@ TEST_F(DownloadManagerTest, DownloadInterruptTest) {
   message_loop_.RunAllPending();
   EXPECT_TRUE(GetActiveDownloadItem(0) != NULL);
 
-  OnDownloadError(0, 1024, -6);
+  int64 error_size = 3;
+  OnDownloadError(0, error_size, -6);
   message_loop_.RunAllPending();
 
   EXPECT_TRUE(GetActiveDownloadItem(0) == NULL);
-  EXPECT_EQ(DownloadItem::INTERRUPTED, download->state());
   EXPECT_TRUE(observer->hit_state(DownloadItem::IN_PROGRESS));
   EXPECT_TRUE(observer->hit_state(DownloadItem::INTERRUPTED));
   EXPECT_FALSE(observer->hit_state(DownloadItem::COMPLETE));
@@ -435,10 +445,19 @@ TEST_F(DownloadManagerTest, DownloadInterruptTest) {
   EXPECT_FALSE(observer->hit_state(DownloadItem::REMOVING));
   EXPECT_TRUE(observer->was_updated());
   EXPECT_FALSE(observer->was_opened());
+  EXPECT_FALSE(download->file_externally_removed());
+  EXPECT_EQ(DownloadItem::INTERRUPTED, download->state());
+  DataUnits amount_units = GetByteDisplayUnits(kTestDataLen);
+  const string16 simple_size = FormatBytes(error_size, amount_units, false);
+  string16 simple_total = base::i18n::GetDisplayStringInLTRDirectionality(
+      FormatBytes(kTestDataLen, amount_units, true));
+  EXPECT_EQ(download_item_model->GetStatusText(),
+            l10n_util::GetStringFUTF16(IDS_DOWNLOAD_STATUS_INTERRUPTED,
+                                       simple_size,
+                                       simple_total));
 
   download->Cancel(true);
 
-  EXPECT_EQ(DownloadItem::INTERRUPTED, download->state());
   EXPECT_TRUE(observer->hit_state(DownloadItem::IN_PROGRESS));
   EXPECT_TRUE(observer->hit_state(DownloadItem::INTERRUPTED));
   EXPECT_FALSE(observer->hit_state(DownloadItem::COMPLETE));
@@ -446,6 +465,10 @@ TEST_F(DownloadManagerTest, DownloadInterruptTest) {
   EXPECT_FALSE(observer->hit_state(DownloadItem::REMOVING));
   EXPECT_TRUE(observer->was_updated());
   EXPECT_FALSE(observer->was_opened());
+  EXPECT_FALSE(download->file_externally_removed());
+  EXPECT_EQ(DownloadItem::INTERRUPTED, download->state());
+  EXPECT_EQ(download->received_bytes(), error_size);
+  EXPECT_EQ(download->total_bytes(), static_cast<int64>(kTestDataLen));
 }
 
 TEST_F(DownloadManagerTest, DownloadCancelTest) {
@@ -478,6 +501,8 @@ TEST_F(DownloadManagerTest, DownloadCancelTest) {
 
   DownloadItem* download = GetActiveDownloadItem(0);
   ASSERT_TRUE(download != NULL);
+  scoped_ptr<DownloadItemModel> download_item_model(
+      new DownloadItemModel(download));
 
   EXPECT_EQ(DownloadItem::IN_PROGRESS, download->state());
   scoped_ptr<ItemObserver> observer(new ItemObserver(download));
@@ -499,6 +524,10 @@ TEST_F(DownloadManagerTest, DownloadCancelTest) {
   EXPECT_FALSE(observer->hit_state(DownloadItem::REMOVING));
   EXPECT_TRUE(observer->was_updated());
   EXPECT_FALSE(observer->was_opened());
+  EXPECT_FALSE(download->file_externally_removed());
+  EXPECT_EQ(DownloadItem::CANCELLED, download->state());
+  EXPECT_EQ(download_item_model->GetStatusText(),
+            l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_CANCELED));
 
   EXPECT_FALSE(file_util::PathExists(new_path));
   EXPECT_FALSE(file_util::PathExists(cr_path));
@@ -544,6 +573,8 @@ TEST_F(DownloadManagerTest, DownloadOverwriteTest) {
 
   DownloadItem* download = GetActiveDownloadItem(0);
   ASSERT_TRUE(download != NULL);
+  scoped_ptr<DownloadItemModel> download_item_model(
+      new DownloadItemModel(download));
 
   EXPECT_EQ(DownloadItem::IN_PROGRESS, download->state());
   scoped_ptr<ItemObserver> observer(new ItemObserver(download));
@@ -579,7 +610,9 @@ TEST_F(DownloadManagerTest, DownloadOverwriteTest) {
   EXPECT_FALSE(observer->hit_state(DownloadItem::REMOVING));
   EXPECT_TRUE(observer->was_updated());
   EXPECT_FALSE(observer->was_opened());
+  EXPECT_FALSE(download->file_externally_removed());
   EXPECT_EQ(DownloadItem::COMPLETE, download->state());
+  EXPECT_EQ(download_item_model->GetStatusText(), ASCIIToUTF16(""));
 
   EXPECT_TRUE(file_util::PathExists(new_path));
   EXPECT_FALSE(file_util::PathExists(cr_path));
@@ -587,4 +620,96 @@ TEST_F(DownloadManagerTest, DownloadOverwriteTest) {
   std::string file_contents;
   EXPECT_TRUE(file_util::ReadFileToString(new_path, &file_contents));
   EXPECT_EQ(std::string(kTestData), file_contents);
+}
+
+TEST_F(DownloadManagerTest, DownloadRemoveTest) {
+  using ::testing::_;
+  using ::testing::CreateFunctor;
+  using ::testing::Invoke;
+  using ::testing::Return;
+
+  // Create a temporary directory.
+  ScopedTempDir temp_dir_;
+  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+
+  // File names we're using.
+  const FilePath new_path(temp_dir_.path().AppendASCII("foo.txt"));
+  const FilePath cr_path(download_util::GetCrDownloadPath(new_path));
+  EXPECT_FALSE(file_util::PathExists(new_path));
+
+  // Normally, the download system takes ownership of info, and is
+  // responsible for deleting it.  In these unit tests, however, we
+  // don't call the function that deletes it, so we do so ourselves.
+  scoped_ptr<DownloadCreateInfo> info(new DownloadCreateInfo);
+  info->download_id = static_cast<int>(0);
+  info->prompt_user_for_save_location = true;
+  info->url_chain.push_back(GURL());
+
+  download_manager_->CreateDownloadItem(info.get());
+
+  DownloadItem* download = GetActiveDownloadItem(0);
+  ASSERT_TRUE(download != NULL);
+  scoped_ptr<DownloadItemModel> download_item_model(
+      new DownloadItemModel(download));
+
+  EXPECT_EQ(DownloadItem::IN_PROGRESS, download->state());
+  scoped_ptr<ItemObserver> observer(new ItemObserver(download));
+
+  // Create and initialize the download file.  We're bypassing the first part
+  // of the download process and skipping to the part after the final file
+  // name has been chosen, so we need to initialize the download file
+  // properly.
+  DownloadFile* download_file(
+      new DownloadFile(info.get(), download_manager_));
+  download_file->Rename(cr_path);
+  // This creates the .crdownload version of the file.
+  download_file->Initialize(false);
+  // |download_file| is owned by DownloadFileManager.
+  AddDownloadToFileManager(info->download_id, download_file);
+
+  ContinueDownloadWithPath(download, new_path);
+  message_loop_.RunAllPending();
+  EXPECT_TRUE(GetActiveDownloadItem(0) != NULL);
+
+  download_file->AppendDataToFile(kTestData, kTestDataLen);
+
+  // Finish the download.
+  OnAllDataSaved(0, kTestDataLen, "");
+  message_loop_.RunAllPending();
+
+  // Download is complete.
+  EXPECT_TRUE(GetActiveDownloadItem(0) == NULL);
+  EXPECT_TRUE(observer->hit_state(DownloadItem::IN_PROGRESS));
+  EXPECT_FALSE(observer->hit_state(DownloadItem::CANCELLED));
+  EXPECT_FALSE(observer->hit_state(DownloadItem::INTERRUPTED));
+  EXPECT_TRUE(observer->hit_state(DownloadItem::COMPLETE));
+  EXPECT_FALSE(observer->hit_state(DownloadItem::REMOVING));
+  EXPECT_TRUE(observer->was_updated());
+  EXPECT_FALSE(observer->was_opened());
+  EXPECT_FALSE(download->file_externally_removed());
+  EXPECT_EQ(DownloadItem::COMPLETE, download->state());
+  EXPECT_EQ(download_item_model->GetStatusText(), ASCIIToUTF16(""));
+
+  EXPECT_TRUE(file_util::PathExists(new_path));
+  EXPECT_FALSE(file_util::PathExists(cr_path));
+
+  // Remove the downloaded file.
+  ASSERT_TRUE(file_util::Delete(new_path, false));
+  download->OnDownloadedFileRemoved();
+  message_loop_.RunAllPending();
+
+  EXPECT_TRUE(GetActiveDownloadItem(0) == NULL);
+  EXPECT_TRUE(observer->hit_state(DownloadItem::IN_PROGRESS));
+  EXPECT_FALSE(observer->hit_state(DownloadItem::CANCELLED));
+  EXPECT_FALSE(observer->hit_state(DownloadItem::INTERRUPTED));
+  EXPECT_TRUE(observer->hit_state(DownloadItem::COMPLETE));
+  EXPECT_FALSE(observer->hit_state(DownloadItem::REMOVING));
+  EXPECT_TRUE(observer->was_updated());
+  EXPECT_FALSE(observer->was_opened());
+  EXPECT_TRUE(download->file_externally_removed());
+  EXPECT_EQ(DownloadItem::COMPLETE, download->state());
+  EXPECT_EQ(download_item_model->GetStatusText(),
+            l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_REMOVED));
+
+  EXPECT_FALSE(file_util::PathExists(new_path));
 }

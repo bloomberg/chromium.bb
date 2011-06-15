@@ -26,7 +26,7 @@ bool DownloadShelfContextMenu::IsCommandIdEnabled(int command_id) const {
   switch (command_id) {
     case SHOW_IN_FOLDER:
     case OPEN_WHEN_COMPLETE:
-      return !download_item_->IsCancelled();
+      return download_item_->CanShowInFolder();
     case ALWAYS_OPEN_TYPE:
       return download_item_->CanOpenDownload();
     case CANCEL:

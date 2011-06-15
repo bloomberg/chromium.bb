@@ -132,6 +132,7 @@ DownloadItem::DownloadItem(DownloadManager* download_manager,
       download_manager_(download_manager),
       is_paused_(false),
       open_when_complete_(false),
+      file_externally_removed_(false),
       safety_state_(SAFE),
       auto_opened_(false),
       is_otr_(false),
@@ -173,6 +174,7 @@ DownloadItem::DownloadItem(DownloadManager* download_manager,
       download_manager_(download_manager),
       is_paused_(false),
       open_when_complete_(false),
+      file_externally_removed_(false),
       safety_state_(SAFE),
       auto_opened_(false),
       is_otr_(is_otr),
@@ -202,6 +204,7 @@ DownloadItem::DownloadItem(DownloadManager* download_manager,
       download_manager_(download_manager),
       is_paused_(false),
       open_when_complete_(false),
+      file_externally_removed_(false),
       safety_state_(SAFE),
       auto_opened_(false),
       is_otr_(is_otr),
@@ -242,8 +245,13 @@ void DownloadItem::UpdateObservers() {
   FOR_EACH_OBSERVER(Observer, observers_, OnDownloadUpdated(this));
 }
 
+bool DownloadItem::CanShowInFolder() {
+  return !IsCancelled() && !file_externally_removed_;
+}
+
 bool DownloadItem::CanOpenDownload() {
-  return !Extension::IsExtension(state_info_.target_name);
+  return !Extension::IsExtension(state_info_.target_name) &&
+    !file_externally_removed_;
 }
 
 bool DownloadItem::ShouldOpenFileBasedOnExtension() {
@@ -265,7 +273,12 @@ void DownloadItem::OpenDownload() {
 
   if (IsPartialDownload()) {
     open_when_complete_ = !open_when_complete_;
-  } else if (IsComplete()) {
+  } else if (IsComplete() && !file_externally_removed_) {
+    // Ideally, we want to detect errors in opening and report them, but we
+    // don't generally have the proper interface for that to the external
+    // program that opens the file.  So instead we spawn a check to update
+    // the UI if the file has been deleted in parallel with the open.
+    download_manager_->CheckForFileRemoval(this);
     opened_ = true;
     FOR_EACH_OBSERVER(Observer, observers_, OnDownloadOpened(this));
 
@@ -394,6 +407,11 @@ void DownloadItem::OnAllDataSaved(int64 size) {
   all_data_saved_ = true;
   UpdateSize(size);
   StopProgressTimer();
+}
+
+void DownloadItem::OnDownloadedFileRemoved() {
+  file_externally_removed_ = true;
+  UpdateObservers();
 }
 
 void DownloadItem::Completed() {
