@@ -6,7 +6,8 @@
 
 namespace content_settings {
 
-ProviderInterface::Rule::Rule() {
+ProviderInterface::Rule::Rule()
+    : content_setting(CONTENT_SETTING_DEFAULT) {
 }
 
 ProviderInterface::Rule::Rule(const ContentSettingsPattern& requesting_pattern,
