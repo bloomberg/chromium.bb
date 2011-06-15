@@ -44,6 +44,7 @@ VirtualKeyboardSelector::VirtualKeyboardSelector()
 
 VirtualKeyboardSelector::~VirtualKeyboardSelector() {
   STLDeleteElements(&keyboards_);
+  STLDeleteElements(&system_keyboards_);
 }
 
 void VirtualKeyboardSelector::AddVirtualKeyboard(
