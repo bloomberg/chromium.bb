@@ -87,14 +87,14 @@ SessionModelAssociator* ForeignSessionHandler::GetModelAssociator() {
 
 void ForeignSessionHandler::HandleGetForeignSessions(const ListValue* args) {
   SessionModelAssociator* associator = GetModelAssociator();
-  std::vector<const ForeignSession*> sessions;
+  std::vector<const SyncedSession*> sessions;
 
   if (associator == NULL) {
     // Called before associator created, exit.
     return;
   }
 
-  // Note: we don't own the ForeignSessions themselves.
+  // Note: we don't own the SyncedSessions themselves.
   if (!associator->GetAllForeignSessions(&sessions)) {
     LOG(ERROR) << "ForeignSessionHandler failed to get session data from"
         "SessionModelAssociator.";
@@ -102,10 +102,10 @@ void ForeignSessionHandler::HandleGetForeignSessions(const ListValue* args) {
   }
   int added_count = 0;
   ListValue session_list;
-  for (std::vector<const ForeignSession*>::const_iterator i =
+  for (std::vector<const SyncedSession*>::const_iterator i =
       sessions.begin(); i != sessions.end() &&
       added_count < kMaxSessionsToShow; ++i) {
-    const ForeignSession* foreign_session = *i;
+    const SyncedSession* foreign_session = *i;
     scoped_ptr<ListValue> window_list(new ListValue());
     for (std::vector<SessionWindow*>::const_iterator it =
         foreign_session->windows.begin(); it != foreign_session->windows.end();
@@ -113,8 +113,7 @@ void ForeignSessionHandler::HandleGetForeignSessions(const ListValue* args) {
       SessionWindow* window = *it;
       scoped_ptr<DictionaryValue> window_data(new DictionaryValue());
       if (SessionWindowToValue(*window, window_data.get())) {
-        window_data->SetString("sessionTag",
-            foreign_session->foreign_session_tag);
+        window_data->SetString("sessionTag", foreign_session->session_tag);
 
         // Give ownership to |list_value|.
         window_list->Append(window_data.release());

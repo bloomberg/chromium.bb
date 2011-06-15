@@ -63,7 +63,7 @@ class TestSessionService
   // at destruction time so that complex tests can keep comparing against old
   // SessionWindow data. Note that since we're constantly creating new foreign
   // sessions, we don't have to worry about duplicates.
-  ScopedVector<ForeignSession> foreign_sessions_;
+  ScopedVector<SyncedSession> foreign_sessions_;
 
   // Barrier for saving session.
   base::WaitableEvent done_saving_;
@@ -130,7 +130,7 @@ class LiveSessionsSyncTest : public LiveSyncTest {
 
   // Fills the sessions vector with the model associator's foreign session data.
   // Caller owns |sessions|, but not ForeignSession objects within.
-  bool GetSessionData(int index, std::vector<const ForeignSession*>* sessions)
+  bool GetSessionData(int index, std::vector<const SyncedSession*>* sessions)
       WARN_UNUSED_RESULT;
 
   // Compare session windows based on their first tab's url.
@@ -144,11 +144,11 @@ class LiveSessionsSyncTest : public LiveSyncTest {
   // Compares a foreign session based on the first session window.
   // Returns true based on the comparison of the session windows.
   static bool CompareForeignSessions(
-      const ForeignSession* lhs,
-      const ForeignSession* rhs);
+      const SyncedSession* lhs,
+      const SyncedSession* rhs);
 
   // Sort a foreign session vector using our custom foreign session comparator.
-  void SortForeignSessions(std::vector<const ForeignSession*>* sessions);
+  void SortForeignSessions(std::vector<const SyncedSession*>* sessions);
 
   // Compares two tab navigations base on the parameters we sync.
   // (Namely, we don't sync state or type mask)

@@ -372,7 +372,7 @@ bool SessionModelAssociator::AssociateModels() {
   DCHECK(CalledOnValidThread());
 
   // Ensure that we disassociated properly, otherwise memory might leak.
-  DCHECK(foreign_session_tracker_.empty());
+  DCHECK(synced_session_tracker_.empty());
   DCHECK_EQ(0U, tab_pool_.capacity());
 
   local_session_syncid_ = sync_api::kInvalidId;
@@ -417,7 +417,7 @@ bool SessionModelAssociator::AssociateModels() {
 
 bool SessionModelAssociator::DisassociateModels() {
   DCHECK(CalledOnValidThread());
-  foreign_session_tracker_.clear();
+  synced_session_tracker_.clear();
   tab_map_.clear();
   tab_pool_.clear();
   local_session_syncid_ = sync_api::kInvalidId;
@@ -507,9 +507,9 @@ bool SessionModelAssociator::AssociateForeignSpecifics(
     // Header data contains window information and ordered tab id's for each
     // window.
 
-    // Load (or create) the ForeignSession object for this client.
-    ForeignSession* foreign_session =
-        foreign_session_tracker_.GetForeignSession(foreign_session_tag);
+    // Load (or create) the SyncedSession object for this client.
+    SyncedSession* foreign_session =
+        synced_session_tracker_.GetSession(foreign_session_tag);
 
     const sync_pb::SessionHeader& header = specifics.header();
     foreign_session->windows.reserve(header.window_size());
@@ -526,7 +526,7 @@ bool SessionModelAssociator::AssociateForeignSpecifics(
                                          window_s,
                                          modification_time,
                                          foreign_session->windows[i],
-                                         &foreign_session_tracker_);
+                                         &synced_session_tracker_);
     }
     // Remove any remaining windows (in case windows were closed)
     for (; i < foreign_session->windows.size(); ++i) {
@@ -537,9 +537,9 @@ bool SessionModelAssociator::AssociateForeignSpecifics(
     const sync_pb::SessionTab& tab_s = specifics.tab();
     SessionID::id_type tab_id = tab_s.tab_id();
     SessionTab* tab =
-        foreign_session_tracker_.GetSessionTab(foreign_session_tag,
-                                               tab_id,
-                                               false);
+        synced_session_tracker_.GetSessionTab(foreign_session_tag,
+                                              tab_id,
+                                              false);
     PopulateSessionTabFromSpecifics(tab_s, modification_time, tab);
   } else {
     NOTREACHED();
@@ -552,7 +552,7 @@ bool SessionModelAssociator::AssociateForeignSpecifics(
 void SessionModelAssociator::DisassociateForeignSession(
     const std::string& foreign_session_tag) {
   DCHECK(CalledOnValidThread());
-  foreign_session_tracker_.DeleteForeignSession(foreign_session_tag);
+  synced_session_tracker_.DeleteSession(foreign_session_tag);
 }
 
 // Static
@@ -561,7 +561,7 @@ void SessionModelAssociator::PopulateSessionWindowFromSpecifics(
     const sync_pb::SessionWindow& specifics,
     int64 mtime,
     SessionWindow* session_window,
-    ForeignSessionTracker* tracker) {
+    SyncedSessionTracker* tracker) {
   if (specifics.has_window_id())
     session_window->window_id.set_id(specifics.window_id());
   if (specifics.has_selected_tab_index())
@@ -758,16 +758,16 @@ void SessionModelAssociator::TabNodePool::FreeTabNode(int64 sync_id) {
 }
 
 bool SessionModelAssociator::GetAllForeignSessions(
-    std::vector<const ForeignSession*>* sessions) {
+    std::vector<const SyncedSession*>* sessions) {
   DCHECK(CalledOnValidThread());
-  return foreign_session_tracker_.LookupAllForeignSessions(sessions);
+  return synced_session_tracker_.LookupAllForeignSessions(sessions);
 }
 
 bool SessionModelAssociator::GetForeignSession(
     const std::string& tag,
     std::vector<SessionWindow*>* windows) {
   DCHECK(CalledOnValidThread());
-  return foreign_session_tracker_.LookupSessionWindows(tag, windows);
+  return synced_session_tracker_.LookupSessionWindows(tag, windows);
 }
 
 bool SessionModelAssociator::GetForeignTab(
@@ -775,7 +775,7 @@ bool SessionModelAssociator::GetForeignTab(
     const SessionID::id_type tab_id,
     const SessionTab** tab) {
   DCHECK(CalledOnValidThread());
-  return foreign_session_tracker_.LookupSessionTab(tag, tab_id, tab);
+  return synced_session_tracker_.LookupSessionTab(tag, tab_id, tab);
 }
 
 // Static

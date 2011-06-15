@@ -231,7 +231,7 @@ TEST_F(ProfileSyncServiceSessionTest, MAYBE_WriteFilledSessionToNode) {
   ASSERT_NE(sync_api::kInvalidId, sync_id);
 
   // Check that this machine's data is not included in the foreign windows.
-  std::vector<const ForeignSession*> foreign_sessions;
+  std::vector<const SyncedSession*> foreign_sessions;
   model_associator_->GetAllForeignSessions(&foreign_sessions);
   ASSERT_EQ(foreign_sessions.size(), 0U);
 
@@ -303,14 +303,14 @@ TEST_F(ProfileSyncServiceSessionTest, WriteForeignSessionToNode) {
   }
 
   // Check that the foreign session was associated and retrieve the data.
-  std::vector<const ForeignSession*> foreign_sessions;
+  std::vector<const SyncedSession*> foreign_sessions;
   model_associator_->GetAllForeignSessions(&foreign_sessions);
   ASSERT_EQ(1U, foreign_sessions.size());
-  ASSERT_EQ(machine_tag, foreign_sessions[0]->foreign_session_tag);
+  ASSERT_EQ(machine_tag, foreign_sessions[0]->session_tag);
   ASSERT_EQ(1U,  foreign_sessions[0]->windows.size());
   ASSERT_EQ(1U, foreign_sessions[0]->windows[0]->tabs.size());
   ASSERT_EQ(1U, foreign_sessions[0]->windows[0]->tabs[0]->navigations.size());
-  ASSERT_EQ(foreign_sessions[0]->foreign_session_tag, machine_tag);
+  ASSERT_EQ(foreign_sessions[0]->session_tag, machine_tag);
   ASSERT_EQ(1, foreign_sessions[0]->windows[0]->selected_tab_index);
   ASSERT_EQ(1, foreign_sessions[0]->windows[0]->type);
   ASSERT_EQ(13, foreign_sessions[0]->windows[0]->tabs[0]->tab_visual_index);

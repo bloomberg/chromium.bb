@@ -26,7 +26,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest, SingleClientChanged) {
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
 
   // Get foreign session data from client 1.
-  std::vector<const ForeignSession*> sessions1;
+  std::vector<const SyncedSession*> sessions1;
   ASSERT_TRUE(GetSessionData(1, &sessions1));
 
   // Verify client 1's foreign session matches client 0 current window.
@@ -62,7 +62,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest,
 
   // Get foreign session data from client 1.
   ASSERT_TRUE(IsEncrypted(1));
-  std::vector<const ForeignSession*> sessions1;
+  std::vector<const SyncedSession*> sessions1;
   ASSERT_TRUE(GetSessionData(1, &sessions1));
 
   // Verify client 1's foreign session matches client 0 current window.
@@ -102,8 +102,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest, BothChanged) {
   ASSERT_TRUE(AwaitQuiescence());
 
   // Get foreign session data from client 0 and 1.
-  std::vector<const ForeignSession*> sessions0;
-  std::vector<const ForeignSession*> sessions1;
+  std::vector<const SyncedSession*> sessions0;
+  std::vector<const SyncedSession*> sessions1;
   ASSERT_TRUE(GetSessionData(0, &sessions0));
   ASSERT_TRUE(GetSessionData(1, &sessions1));
 
@@ -144,7 +144,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest,
   ASSERT_TRUE(IsEncrypted(0));
   ASSERT_TRUE(IsEncrypted(1));
   // Get foreign session data from client 0 and 1.
-  std::vector<const ForeignSession*> sessions1;
+  std::vector<const SyncedSession*> sessions1;
   ASSERT_TRUE(GetSessionData(1, &sessions1));
 
   // Verify client 1's foreign session matches client 0's current window and
@@ -188,7 +188,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest,
   ASSERT_TRUE(IsEncrypted(0));
   ASSERT_TRUE(IsEncrypted(1));
   // Get foreign session data from client 0 and 1.
-  std::vector<const ForeignSession*> sessions1;
+  std::vector<const SyncedSession*> sessions1;
   ASSERT_TRUE(GetSessionData(1, &sessions1));
 
   // Verify client 1's foreign session matches client 0's current window and
@@ -237,8 +237,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest,
   ASSERT_TRUE(IsEncrypted(1));
   // The session data from client 1 got overwritten. As a result, client 0
   // should have no foreign session data.
-  std::vector<const ForeignSession*> sessions0;
-  std::vector<const ForeignSession*> sessions1;
+  std::vector<const SyncedSession*> sessions0;
+  std::vector<const SyncedSession*> sessions1;
   ASSERT_FALSE(GetSessionData(0, &sessions0));
   ASSERT_FALSE(GetSessionData(1, &sessions1));
 }
@@ -279,8 +279,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest,
   ASSERT_TRUE(IsEncrypted(1));
   // Client 0's foreign data should match client 1's local data. Client 1's
   // foreign data is empty because client 0 did not open any tabs.
-  std::vector<const ForeignSession*> sessions0;
-  std::vector<const ForeignSession*> sessions1;
+  std::vector<const SyncedSession*> sessions0;
+  std::vector<const SyncedSession*> sessions1;
   ASSERT_TRUE(GetSessionData(0, &sessions0));
   ASSERT_FALSE(GetSessionData(1, &sessions1));
   ASSERT_EQ(1U, sessions0.size());
@@ -327,8 +327,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest,
   ASSERT_TRUE(IsEncrypted(0));
   ASSERT_TRUE(IsEncrypted(1));
   // Get foreign session data from client 0 and 1.
-  std::vector<const ForeignSession*> sessions0;
-  std::vector<const ForeignSession*> sessions1;
+  std::vector<const SyncedSession*> sessions0;
+  std::vector<const SyncedSession*> sessions1;
   ASSERT_TRUE(GetSessionData(0, &sessions0));
   ASSERT_TRUE(GetSessionData(1, &sessions1));
 

@@ -75,7 +75,7 @@ void TestSessionService::DoReadWindows() {
 
 void TestSessionService::OnGotSession(int handle,
                                       std::vector<SessionWindow*>* windows) {
-  scoped_ptr<ForeignSession> foreign_session(new ForeignSession());
+  scoped_ptr<SyncedSession> foreign_session(new SyncedSession());
   for (size_t w = 0; w < windows->size(); ++w) {
     const SessionWindow& window = *windows->at(w);
     scoped_ptr<SessionWindow> new_window(new SessionWindow());
@@ -179,7 +179,7 @@ int LiveSessionsSyncTest::GetNumWindows(int index) {
 }
 
 int LiveSessionsSyncTest::GetNumForeignSessions(int index) {
-  std::vector<const ForeignSession*> sessions;
+  std::vector<const SyncedSession*> sessions;
   if (!GetProfile(index)->GetProfileSyncService()->
       GetSessionModelAssociator()->GetAllForeignSessions(&sessions))
     return 0;
@@ -188,7 +188,7 @@ int LiveSessionsSyncTest::GetNumForeignSessions(int index) {
 
 bool LiveSessionsSyncTest::GetSessionData(
     int index,
-    std::vector<const ForeignSession*>* sessions) {
+    std::vector<const SyncedSession*>* sessions) {
   if (!GetProfile(index)->GetProfileSyncService()->
       GetSessionModelAssociator()->GetAllForeignSessions(sessions))
     return false;
@@ -221,8 +221,8 @@ void LiveSessionsSyncTest::SortSessionWindows(
 
 // static
 bool LiveSessionsSyncTest::CompareForeignSessions(
-    const ForeignSession* lhs,
-    const ForeignSession* rhs) {
+    const SyncedSession* lhs,
+    const SyncedSession* rhs) {
   if (!lhs ||
       !rhs ||
       lhs->windows.size() < 1 ||
@@ -235,7 +235,7 @@ bool LiveSessionsSyncTest::CompareForeignSessions(
 }
 
 void LiveSessionsSyncTest::SortForeignSessions(
-    std::vector<const ForeignSession*>* sessions) {
+    std::vector<const SyncedSession*>* sessions) {
   std::sort(sessions->begin(), sessions->end(),
             LiveSessionsSyncTest::CompareForeignSessions);
 }
@@ -283,7 +283,7 @@ bool LiveSessionsSyncTest::WindowsMatch(
 bool LiveSessionsSyncTest::CheckForeignSessionsAgainst(
     int index,
     const std::vector<std::vector<SessionWindow*>* >& windows) {
-  std::vector<const ForeignSession*> sessions;
+  std::vector<const SyncedSession*> sessions;
   if (!GetSessionData(index, &sessions))
     return false;
   if ((size_t)(num_clients()-1) != sessions.size())

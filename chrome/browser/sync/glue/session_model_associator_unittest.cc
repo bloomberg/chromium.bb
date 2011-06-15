@@ -14,7 +14,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using browser_sync::SessionModelAssociator;
-using browser_sync::ForeignSessionTracker;
+using browser_sync::SyncedSessionTracker;
 namespace browser_sync {
 
 typedef testing::Test SessionModelAssociatorTest;
@@ -58,8 +58,8 @@ TEST_F(SessionModelAssociatorTest, PopulateSessionWindow) {
   window_s.set_selected_tab_index(1);
 
   std::string tag = "tag";
-  ForeignSessionTracker tracker;
-  ForeignSession* session = tracker.GetForeignSession(tag);
+  SyncedSessionTracker tracker;
+  SyncedSession* session = tracker.GetSession(tag);
   SessionWindow* win = new SessionWindow();
   session->windows.push_back(win);
   SessionModelAssociator::PopulateSessionWindowFromSpecifics(
@@ -67,8 +67,8 @@ TEST_F(SessionModelAssociatorTest, PopulateSessionWindow) {
   ASSERT_EQ(1U, win->tabs.size());
   ASSERT_EQ(1, win->selected_tab_index);
   ASSERT_EQ(1, win->type);
-  ASSERT_EQ(1U, tracker.num_foreign_sessions());
-  ASSERT_EQ(1U, tracker.num_foreign_tabs(std::string("tag")));
+  ASSERT_EQ(1U, tracker.num_synced_sessions());
+  ASSERT_EQ(1U, tracker.num_synced_tabs(std::string("tag")));
 
   // We do this so that when the destructor for the tracker is called, it will
   // be able to delete the session, window, and tab. We can't delete these
@@ -104,41 +104,41 @@ TEST_F(SessionModelAssociatorTest, PopulateSessionTab) {
   ASSERT_EQ(GURL("http://foo/1"), tab.navigations[0].virtual_url());
 }
 
-TEST_F(SessionModelAssociatorTest, ForeignSessionTracker) {
+TEST_F(SessionModelAssociatorTest, SyncedSessionTracker) {
   const std::string tag1 = "tag";
   const std::string tag2 = "tag2";
   const std::string tag3 = "tag3";
-  ForeignSessionTracker tracker;
+  SyncedSessionTracker tracker;
   ASSERT_TRUE(tracker.empty());
-  ASSERT_EQ(0U, tracker.num_foreign_sessions());
-  ASSERT_EQ(0U, tracker.num_foreign_tabs(tag1));
+  ASSERT_EQ(0U, tracker.num_synced_sessions());
+  ASSERT_EQ(0U, tracker.num_synced_tabs(tag1));
   SessionTab* tab = tracker.GetSessionTab(tag1, 0, false);
-  ASSERT_EQ(1U, tracker.num_foreign_tabs(tag1));
-  ASSERT_EQ(0U, tracker.num_foreign_sessions());
+  ASSERT_EQ(1U, tracker.num_synced_tabs(tag1));
+  ASSERT_EQ(0U, tracker.num_synced_sessions());
   SessionTab* tab2 = tracker.GetSessionTab(tag1, 0, false);
-  ASSERT_EQ(1U, tracker.num_foreign_tabs(tag1));
-  ASSERT_EQ(0U, tracker.num_foreign_sessions());
+  ASSERT_EQ(1U, tracker.num_synced_tabs(tag1));
+  ASSERT_EQ(0U, tracker.num_synced_sessions());
   ASSERT_EQ(tab, tab2);
   tab2 = tracker.GetSessionTab(tag2, 0, false);
-  ASSERT_EQ(1U, tracker.num_foreign_tabs(tag1));
-  ASSERT_EQ(1U, tracker.num_foreign_tabs(tag2));
-  ASSERT_EQ(0U, tracker.num_foreign_sessions());
+  ASSERT_EQ(1U, tracker.num_synced_tabs(tag1));
+  ASSERT_EQ(1U, tracker.num_synced_tabs(tag2));
+  ASSERT_EQ(0U, tracker.num_synced_sessions());
 
-  ASSERT_FALSE(tracker.DeleteForeignSession(tag1));
-  ASSERT_FALSE(tracker.DeleteForeignSession(tag3));
+  ASSERT_FALSE(tracker.DeleteSession(tag1));
+  ASSERT_FALSE(tracker.DeleteSession(tag3));
 
-  ForeignSession* session = tracker.GetForeignSession(tag1);
-  ForeignSession* session2 = tracker.GetForeignSession(tag2);
-  ForeignSession* session3 = tracker.GetForeignSession(tag3);
-  ASSERT_EQ(3U, tracker.num_foreign_sessions());
+  SyncedSession* session = tracker.GetSession(tag1);
+  SyncedSession* session2 = tracker.GetSession(tag2);
+  SyncedSession* session3 = tracker.GetSession(tag3);
+  ASSERT_EQ(3U, tracker.num_synced_sessions());
 
   ASSERT_TRUE(session);
   ASSERT_TRUE(session2);
   ASSERT_TRUE(session3);
   ASSERT_NE(session, session2);
   ASSERT_NE(session2, session3);
-  ASSERT_TRUE(tracker.DeleteForeignSession(tag3));
-  ASSERT_EQ(2U, tracker.num_foreign_sessions());
+  ASSERT_TRUE(tracker.DeleteSession(tag3));
+  ASSERT_EQ(2U, tracker.num_synced_sessions());
 
   const SessionTab *tab_ptr;
   ASSERT_TRUE(tracker.LookupSessionTab(tag1, 0, &tab_ptr));
@@ -149,13 +149,13 @@ TEST_F(SessionModelAssociatorTest, ForeignSessionTracker) {
   ASSERT_EQ(0U, windows.size());
 
   // The sessions don't have valid windows, lookup should not succeed.
-  std::vector<const ForeignSession*> sessions;
+  std::vector<const SyncedSession*> sessions;
   ASSERT_FALSE(tracker.LookupAllForeignSessions(&sessions));
 
   tracker.clear();
-  ASSERT_EQ(0U, tracker.num_foreign_tabs(tag1));
-  ASSERT_EQ(0U, tracker.num_foreign_tabs(tag2));
-  ASSERT_EQ(0U, tracker.num_foreign_sessions());
+  ASSERT_EQ(0U, tracker.num_synced_tabs(tag1));
+  ASSERT_EQ(0U, tracker.num_synced_tabs(tag2));
+  ASSERT_EQ(0U, tracker.num_synced_sessions());
 }
 
 }  // namespace browser_sync

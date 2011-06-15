@@ -22,7 +22,7 @@
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/sync/engine/syncapi.h"
-#include "chrome/browser/sync/glue/foreign_session_tracker.h"
+#include "chrome/browser/sync/glue/synced_session_tracker.h"
 #include "chrome/browser/sync/glue/model_associator.h"
 #include "chrome/browser/sync/protocol/session_specifics.pb.h"
 #include "chrome/browser/sync/syncable/model_type.h"
@@ -145,10 +145,10 @@ class SessionModelAssociator
 
   // Builds a list of all foreign sessions.
   // Caller does NOT own ForeignSession objects.
-  bool GetAllForeignSessions(std::vector<const ForeignSession*>* sessions);
+  bool GetAllForeignSessions(std::vector<const SyncedSession*>* sessions);
 
   // Loads all windows for foreign session with session tag |tag|.
-  // Caller does NOT own ForeignSession objects.
+  // Caller does NOT own SyncedSession objects.
   bool GetForeignSession(const std::string& tag,
                          std::vector<SessionWindow*>* windows);
 
@@ -297,7 +297,7 @@ class SessionModelAssociator
   typedef std::map<SessionID::id_type, TabLinks> TabLinksMap;
 
   // Delete all foreign session/window/tab objects allocated dynamically.
-  // This is comprised of ForeignSession*, IDToSessionTabMap*, and any orphaned
+  // This is comprised of SyncedSession*, IDToSessionTabMap*, and any orphaned
   // SessionTab*'s.
   void DeleteForeignSessions();
 
@@ -338,7 +338,7 @@ class SessionModelAssociator
       const sync_pb::SessionWindow& window,
       const int64 mtime,
       SessionWindow* session_window,
-      ForeignSessionTracker* tracker);
+      SyncedSessionTracker* tracker);
 
   // Used to populate a session tab from the session specifics tab provided.
   static void PopulateSessionTabFromSpecifics(const sync_pb::SessionTab& tab,
@@ -398,7 +398,7 @@ class SessionModelAssociator
   // Mapping of current open (local) tabs to their sync identifiers.
   TabLinksMap tab_map_;
 
-  ForeignSessionTracker foreign_session_tracker_;
+  SyncedSessionTracker synced_session_tracker_;
 
   // Weak pointer.
   ProfileSyncService* sync_service_;

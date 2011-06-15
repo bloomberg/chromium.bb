@@ -196,14 +196,14 @@ struct SessionWindow {
   DISALLOW_COPY_AND_ASSIGN(SessionWindow);
 };
 
-// Defines a foreign session for session sync.  A foreign session is a session
-// on a remote chrome instance.
-struct ForeignSession {
-  ForeignSession();
-  ~ForeignSession();
+// Defines a synced session for use by session sync. A synced session is a
+// list of windows along with a unique session identifer (tag).
+struct SyncedSession {
+  SyncedSession();
+  ~SyncedSession();
 
   // Unique tag for each session.
-  std::string foreign_session_tag;
+  std::string session_tag;
   std::vector<SessionWindow*> windows;
 };
 

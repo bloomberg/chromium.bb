@@ -20,7 +20,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientLiveSessionsSyncTest, Sanity) {
       "Waiting for session change."));
 
   // Get foreign session data from client 0.
-  std::vector<const ForeignSession*> sessions;
+  std::vector<const SyncedSession*> sessions;
   ASSERT_FALSE(GetSessionData(0, &sessions));
   ASSERT_EQ(0U, sessions.size());
 

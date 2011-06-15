@@ -120,12 +120,12 @@ SessionWindow::~SessionWindow() {
   STLDeleteElements(&tabs);
 }
 
-// ForeignSession --------------------------------------------------------------
+// SyncedSession --------------------------------------------------------------
 
-ForeignSession::ForeignSession() : foreign_session_tag("invalid") {
+SyncedSession::SyncedSession() : session_tag("invalid") {
 }
 
-ForeignSession::~ForeignSession() {
+SyncedSession::~SyncedSession() {
   STLDeleteElements(&windows);
 }
 
