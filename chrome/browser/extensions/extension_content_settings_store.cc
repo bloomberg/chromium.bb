@@ -66,17 +66,13 @@ void ExtensionContentSettingsStore::SetExtensionContentSetting(
       ++setting_spec;
     }
     if (setting_spec == setting_spec_list->end()) {
-      setting_spec = setting_spec_list->insert(
-          setting_spec_list->end(),
-          ContentSettingSpec(embedded_pattern,
-                             top_level_pattern,
-                             type,
-                             identifier,
-                             setting));
-    }
-
-    // Update setting.
-    if (setting != CONTENT_SETTING_DEFAULT) {
+      setting_spec_list->push_back(ContentSettingSpec(embedded_pattern,
+                                                      top_level_pattern,
+                                                      type,
+                                                      identifier,
+                                                      setting));
+    } else if (setting != CONTENT_SETTING_DEFAULT) {
+      // Update setting.
       setting_spec->setting = setting;
     } else {
       setting_spec_list->erase(setting_spec);
@@ -415,7 +411,8 @@ ExtensionContentSettingsStore::ContentSettingSpec::ContentSettingSpec(
     : embedded_pattern(embedded_pattern),
       top_level_pattern(top_level_pattern),
       content_type(type),
-      resource_identifier(identifier) {
+      resource_identifier(identifier),
+      setting(setting) {
 }
 
 void ExtensionContentSettingsStore::NotifyOfDestruction() {
