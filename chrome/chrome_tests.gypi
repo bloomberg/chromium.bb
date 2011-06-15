@@ -700,7 +700,7 @@
         '../content/browser/appcache/appcache_ui_test.cc',
         '../content/browser/in_process_webkit/dom_storage_uitest.cc',
         '../content/browser/renderer_host/resource_dispatcher_host_uitest.cc',
-        '../content/worker/worker_uitest.cc',
+        '../content/worker/test/worker_uitest.cc',
       ],
       'conditions': [
         ['target_arch!="arm"', {
