@@ -18,6 +18,7 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/password_manager/encryptor.h"
 #include "chrome/browser/sync/engine/http_post_provider_factory.h"
 #include "chrome/browser/sync/engine/http_post_provider_interface.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
@@ -759,6 +760,11 @@ class SyncManagerTest : public testing::Test,
 
   // Helper methods.
   bool SetUpEncryption() {
+    // Mock the Mac Keychain service. The real Keychain can block on user input.
+    #if defined(OS_MACOSX)
+      Encryptor::UseMockKeychain(true);
+    #endif
+
     // We need to create the nigori node as if it were an applied server update.
     UserShare* share = sync_manager_.GetUserShare();
     int64 nigori_id = GetIdForDataType(syncable::NIGORI);
@@ -1240,6 +1246,23 @@ TEST_F(SyncManagerTest, OnIncomingNotification) {
   sync_manager_.TriggerOnIncomingNotificationForTest(model_types);
 }
 
+TEST_F(SyncManagerTest, RefreshEncryptionReady) {
+  EXPECT_TRUE(SetUpEncryption());
+  sync_manager_.RefreshEncryption();
+  syncable::ModelTypeSet encrypted_types =
+      sync_manager_.GetEncryptedDataTypes();
+  EXPECT_EQ(1U, encrypted_types.count(syncable::PASSWORDS));
+}
+
+// Attempt to refresh encryption when nigori not downloaded.
+TEST_F(SyncManagerTest, RefreshEncryptionNotReady) {
+  // Don't set up encryption (no nigori node created).
+  sync_manager_.RefreshEncryption();  // Should fail.
+  syncable::ModelTypeSet encrypted_types =
+      sync_manager_.GetEncryptedDataTypes();
+  EXPECT_EQ(1U, encrypted_types.count(syncable::PASSWORDS));  // Hardcoded.
+}
+
 TEST_F(SyncManagerTest, EncryptDataTypesWithNoData) {
   EXPECT_TRUE(SetUpEncryption());
   ModelTypeSet encrypted_types;
@@ -1318,6 +1341,73 @@ TEST_F(SyncManagerTest, EncryptDataTypesWithData) {
     EXPECT_TRUE(syncable::VerifyDataTypeEncryption(trans.GetWrappedTrans(),
                                                    syncable::THEMES,
                                                    false /* not encrypted */));
+  }
+}
+
+TEST_F(SyncManagerTest, SetPassphraseWithPassword) {
+  EXPECT_TRUE(SetUpEncryption());
+  {
+    WriteTransaction trans(sync_manager_.GetUserShare());
+    ReadNode root_node(&trans);
+    root_node.InitByRootLookup();
+
+    WriteNode password_node(&trans);
+    EXPECT_TRUE(password_node.InitUniqueByCreation(syncable::PASSWORDS,
+                                                   root_node, "foo"));
+    sync_pb::PasswordSpecificsData data;
+    data.set_password_value("secret");
+    password_node.SetPasswordSpecifics(data);
+  }
+  EXPECT_CALL(observer_, OnPassphraseAccepted(_));
+  EXPECT_CALL(observer_, OnEncryptionComplete(_));
+  sync_manager_.SetPassphrase("new_passphrase", true);
+  {
+    ReadTransaction trans(sync_manager_.GetUserShare());
+    ReadNode root_node(&trans);
+    root_node.InitByRootLookup();
+
+    ReadNode password_node(&trans);
+    EXPECT_TRUE(password_node.InitByClientTagLookup(syncable::PASSWORDS,
+                                                    "foo"));
+    const sync_pb::PasswordSpecificsData& data =
+        password_node.GetPasswordSpecifics();
+    EXPECT_EQ("secret", data.password_value());
+  }
+}
+
+TEST_F(SyncManagerTest, SetPassphraseWithEmptyPasswordNode) {
+  EXPECT_TRUE(SetUpEncryption());
+  int64 node_id = 0;
+  std::string tag = "foo";
+  {
+    WriteTransaction trans(sync_manager_.GetUserShare());
+    ReadNode root_node(&trans);
+    root_node.InitByRootLookup();
+
+    WriteNode password_node(&trans);
+    EXPECT_TRUE(password_node.InitUniqueByCreation(syncable::PASSWORDS,
+                                                   root_node, tag));
+    node_id = password_node.GetId();
+  }
+  EXPECT_CALL(observer_, OnPassphraseAccepted(_));
+  EXPECT_CALL(observer_, OnEncryptionComplete(_));
+  sync_manager_.SetPassphrase("new_passphrase", true);
+  {
+    ReadTransaction trans(sync_manager_.GetUserShare());
+    ReadNode root_node(&trans);
+    root_node.InitByRootLookup();
+
+    ReadNode password_node(&trans);
+    EXPECT_FALSE(password_node.InitByClientTagLookup(syncable::PASSWORDS,
+                                                     tag));
+  }
+  {
+    ReadTransaction trans(sync_manager_.GetUserShare());
+    ReadNode root_node(&trans);
+    root_node.InitByRootLookup();
+
+    ReadNode password_node(&trans);
+    EXPECT_FALSE(password_node.InitByIdLookup(node_id));
   }
 }
 
