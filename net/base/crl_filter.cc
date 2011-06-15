@@ -404,7 +404,7 @@ class BitWriter {
       WriteBit(false);
     WriteBit(true);
     for (unsigned i = 0; i < 10; i++) {
-      WriteBit((r&1) == 1);
+      WriteBit((r & 1) == 1);
       r >>= 1;
     }
   }
@@ -446,7 +446,12 @@ class BitWriter {
   DISALLOW_COPY_AND_ASSIGN(BitWriter);
 };
 
-CRLFilter::CRLFilter() {
+CRLFilter::CRLFilter()
+    : not_before_(0),
+      not_after_(0),
+      max_range_(0U),
+      sequence_(0U),
+      num_entries_(0U) {
 }
 
 CRLFilter::~CRLFilter() {
