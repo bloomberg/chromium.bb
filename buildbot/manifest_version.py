@@ -69,19 +69,16 @@ def _GitCleanDirectory(directory):
       raise GitCommandException(err_msg)
 
 
-def _PrepForChanges(git_repo, use_repo=False):
+def _PrepForChanges(git_repo):
   """Prepare a git/repo repository for making changes. It should
      have no files modified when you call this.
   Args:
     git_repo: git repo to push
-    use_repo: use repo tool for pushing changes. Default: False
   raises: GitCommandException
   """
-
   _GitCleanDirectory(git_repo)
-
   try:
-    if use_repo:
+    if repository.InARepoRepository(git_repo):
       cros_lib.RunCommand(['repo', 'abandon', _PUSH_BRANCH, '.'],
                           cwd=git_repo, error_ok=True)
       cros_lib.RunCommand(['repo', 'start', _PUSH_BRANCH, '.'], cwd=git_repo)
@@ -97,6 +94,7 @@ def _PrepForChanges(git_repo, use_repo=False):
                          'config',
                          'url.ssh://gerrit.chromium.org:29418.insteadof',
                          'http://git.chromium.org'], cwd=git_repo)
+
   except cros_lib.RunCommandError, e:
     err_msg = 'Failed to prep for edit in %s with %s' % (git_repo, e.message)
     logging.error(err_msg)
@@ -129,12 +127,7 @@ def _PushGitChanges(git_repo, message, dry_run=True):
     _GitCleanDirectory(git_repo)
     raise GitCommandException(err_msg)
   finally:
-    # Figure out whether we can use repo (if repo returns 0).
-    output = cros_lib.RunCommand(
-        ['repo'], error_ok=True, redirect_stdout=True, redirect_stderr=True,
-        cwd=git_repo, exit_code=True, print_cmd=False)
-    use_repo = output.returncode == 0
-    if use_repo:
+    if repository.InARepoRepository(git_repo):
       # Needed for chromeos version file.  Otherwise on increment, we leave
       # local commit behind in tree.
       cros_lib.RunCommand(['repo', 'abandon', _PUSH_BRANCH], cwd=git_repo,
@@ -268,8 +261,10 @@ class VersionInfo(object):
     if self.incr_type == 'branch':
       self.ver_sp = str(int(self.ver_sp) + 1)
       self.ver_patch = '0'
+
     if self.incr_type == 'patch':
       self.ver_patch = str(int(self.ver_patch) + 1)
+
     temp_file = tempfile.mkstemp(suffix='mvp', prefix='tmp', dir=None,
                                  text=True)[1]
     with open(self.version_file, 'r') as source_version_fh:
@@ -291,7 +286,7 @@ class VersionInfo(object):
 
     repo_dir = os.path.dirname(self.version_file)
 
-    _PrepForChanges(repo_dir, use_repo=True)
+    _PrepForChanges(repo_dir)
 
     shutil.copyfile(temp_file, self.version_file)
     os.unlink(temp_file)
@@ -363,7 +358,6 @@ class BuildSpecsManager(object):
     self.unprocessed = None
     self.latest = None
     self.latest_unprocessed = None
-    self.current_build_spec = None
     self.compare_versions_fn = VersionInfo.VersionCompare
 
     self.current_version = None
@@ -489,7 +483,7 @@ class BuildSpecsManager(object):
   def GetLocalManifest(self, version):
     """Return path to local copy of manifest given by version."""
     if version:
-      return os.path.join(self.all_specs_dir, version + '.xml')\
+      return os.path.join(self.all_specs_dir, version + '.xml')
 
     return None
 

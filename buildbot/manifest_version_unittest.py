@@ -87,7 +87,6 @@ class HelperMethodsTest(unittest.TestCase):
         ('git config url.ssh://gerrit.chromium.org:29418.insteadof'
          ' http://git.chromium.org').split(), cwd=git_dir)
 
-
     manifest_version._PrepForChanges(git_dir)
 
     # Change something.
@@ -134,7 +133,7 @@ class VersionInfoTest(mox.MoxTestBase):
     self.mox.StubOutWithMock(manifest_version, '_PrepForChanges')
     self.mox.StubOutWithMock(manifest_version, '_PushGitChanges')
 
-    manifest_version._PrepForChanges(self.tmpdir, use_repo=True)
+    manifest_version._PrepForChanges(self.tmpdir)
 
     version_file = self.CreateFakeVersionFile(self.tmpdir)
 
@@ -275,9 +274,11 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
                                          incr_type='patch')
     self.manager.all_specs_dir = os.path.join(self.manager.manifests_dir,
                                               'buildspecs', '1.2')
-    info.IncrementVersion('Automatic: Updating the new version number %s' %
-                          FAKE_VERSION_STRING, dry_run=True).AndReturn(
-                              FAKE_VERSION_STRING_NEXT)
+    info.IncrementVersion(
+        'Automatic: %s - Updating to a new version number from %s' % (
+            self.build_name, FAKE_VERSION_STRING),
+        dry_run=True).AndReturn(FAKE_VERSION_STRING_NEXT)
+
     repository.RepoRepository.Sync('default')
     manifest_version._PrepForChanges(mox.IsA(str))
     repository.RepoRepository.ExportManifest(mox.IgnoreArg())

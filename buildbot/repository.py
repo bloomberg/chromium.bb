@@ -30,6 +30,14 @@ def FixExternalRepoPushUrls(buildroot):
                       ], cwd=buildroot)
 
 
+def InARepoRepository(directory):
+  """Returns True if directory is part of a repo checkout."""
+  output = cros_lib.RunCommand(
+      ['repo'], error_ok=True, redirect_stdout=True, redirect_stderr=True,
+      cwd=directory, exit_code=True, print_cmd=False)
+  return output.returncode == 0
+
+
 class RepoRepository(object):
   """ A Class that encapsulates a repo repository.
   Args:
