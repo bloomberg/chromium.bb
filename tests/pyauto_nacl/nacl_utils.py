@@ -58,14 +58,16 @@ def WaitForNexeLoad(browser, tab_index=0):
 def VerifyAllTestsPassed(browser, tab_index=0):
   """Returns true if all tests run by a nexe that was loaded by the browser in
   the tab tab_index have passed. Assumes that the nexe has fully loaded. Also
-  assumes that the nexe displays the string '0 failed, 0 errors' when all tests
-  have passed.
+  assumes that the nexe displays the string '0 failed, 0 errors' or
+  'All tests passed' when all tests have passed.
   """
   # Make sure the window has focus (runs about 10x faster on multitab tests.)
   browser.GetBrowserWindow(0).ActivateTab(tab_index)
-  AssertTrueOrLogTab(browser, browser.FindInPage(
-      '0 failed, 0 errors', tab_index=tab_index)['match_count'] == 1,
-                     'nexe test did not report success',
+  success = (browser.FindInPage(
+              '0 failed, 0 errors', tab_index=tab_index)['match_count'] == 1
+             or browser.FindInPage(
+              'All tests passed', tab_index=tab_index)['match_count'] == 1)
+  AssertTrueOrLogTab(browser, success, 'nexe test did not report success',
                      tab_index)
 
 

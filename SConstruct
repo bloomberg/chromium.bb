@@ -28,6 +28,11 @@ import command_tester
 # TODO: try to eliminate this hack
 Dir('src/third_party_mod/gtest').addRepository(
     Dir('#/../testing/gtest'))
+
+# NOTE: The following maps tests/ppapi_tests to ../ppapi/tests. It is
+# necessary to get the nacl.scons file in ../ppapi/tests/ included in
+# BUILD_SCONSCRIPTS below because that list can only contain files that
+# SCons sees as being under $MAIN_DIR.
 Dir('tests/ppapi_tests').addRepository(Dir('#/../ppapi/tests'))
 
 # ----------------------------------------------------------
@@ -2008,6 +2013,7 @@ base_env.Append(
     'tests/ppapi_file_system/build.scons',
     'tests/ppapi_geturl/build.scons',
     'tests/ppapi_messaging/build.scons',
+    'tests/ppapi_tests/build.scons',  # Build PPAPI tests from Chrome as a .so
     'tests/python_version/build.scons',
     'tests/tools/build.scons',
     'tests/unittests/shared/srpc/build.scons',
@@ -2604,9 +2610,9 @@ nacl_env.Append(
     'tests/ppapi_simple_tests/nacl.scons',
     'tests/ppapi_test_example/nacl.scons',
     'tests/ppapi_test_lib/nacl.scons',
-    # uncomment this test once issue
-    # http://code.google.com/p/nativeclient/issues/detail?id=902 gets fixed
-    # 'tests/ppapi_tests/nacl.scons',
+    # Note that tests/ppapi_tests is underlayed with the contents of
+    # ../ppapi/tests. See explanation above.
+    'tests/ppapi_tests/nacl.scons',
     'tests/ppapi/nacl.scons',
     'tests/pyauto_nacl/nacl.scons',
     'tests/redir/nacl.scons',

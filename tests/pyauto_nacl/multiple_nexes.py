@@ -30,7 +30,13 @@ class NaClTest(pyauto.PyUITest):
            ('srpc_nrd_xfer.html', 2),
            ('srpc_shm.html', 1),
            ('srpc_sockaddr.html', 1),
-           ('srpc_url_as_nacl_desc.html', 1)]
+           ('srpc_url_as_nacl_desc.html', 1),
+           ('test_case.html?mode=nacl&testcase=Graphics2D', 1),
+           ('test_case.html?mode=nacl&testcase=ImageData', 1),
+           ('test_case.html?mode=nacl&testcase=Instance', 1),
+           ('test_case.html?mode=nacl&testcase=PaintAggregator', 1),
+           ('test_case.html?mode=nacl&testcase=PostMessage', 1),
+           ('test_case.html?mode=nacl&testcase=Scrollbar', 1)]
 
   def testLoadNexesInMultipleTabs(self):
     """Load nexes in multiple tabs and surf away from all of them."""
@@ -95,7 +101,7 @@ class NaClTest(pyauto.PyUITest):
     self.NavigateToURL('about:version')
     original_title = self.GetActiveTabTitle()
 
-    # Navigate to a nexe and make sure it loads. Repeate for all nexes.
+    # Navigate to a nexe and make sure it loads. Repeat for all nexes.
     for page_info in NaClTest.nexes:
       page_url, page_nexes = page_info
       print '---> pyauto multiple_nexes: Navigating to', str(page_url) + '...',
