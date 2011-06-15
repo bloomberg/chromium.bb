@@ -20,6 +20,7 @@
 #include "ppapi/proxy/ppb_char_set_proxy.h"
 #include "ppapi/proxy/ppb_cursor_control_proxy.h"
 #include "ppapi/proxy/ppb_font_proxy.h"
+#include "ppapi/proxy/ppb_instance_proxy.h"
 #include "ppapi/proxy/ppp_class_proxy.h"
 #include "ppapi/proxy/resource_creation_proxy.h"
 #include "ppapi/shared_impl/tracker_base.h"
@@ -235,6 +236,8 @@ ppapi::WebKitForwarding* PluginDispatcher::GetWebKitForwarding() {
     proxy.reset(new PPB_CursorControl_Proxy(this, NULL));
   else if (id == INTERFACE_ID_PPB_FONT)
     proxy.reset(new PPB_Font_Proxy(this, NULL));
+  else if (id == INTERFACE_ID_PPB_INSTANCE)
+    proxy.reset(new PPB_Instance_Proxy(this, NULL));
   else if (id == INTERFACE_ID_RESOURCE_CREATION)
     proxy.reset(new ResourceCreationProxy(this));
 

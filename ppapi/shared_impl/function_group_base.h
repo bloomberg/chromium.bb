@@ -12,6 +12,8 @@
   F(PPB_CursorControl_FunctionAPI) \
   F(PPB_Find_FunctionAPI) \
   F(PPB_Font_FunctionAPI) \
+  F(PPB_Fullscreen_FunctionAPI) \
+  F(PPB_Instance_FunctionAPI) \
   F(ResourceCreationAPI)
 
 namespace ppapi {

@@ -23,9 +23,20 @@ struct PPB_Find_Dev;
 struct PPB_Flash_Menu;
 struct PPB_Flash_NetConnector;
 struct PPB_Font_Dev;
+struct PPB_Fullscreen_Dev;
 struct PPB_Graphics2D;
 struct PPB_ImageData;
+struct PPB_Instance;
+struct PPB_Instance_Private;
 struct PPB_ImageDataTrusted;
+
+#ifdef PPAPI_INSTANCE_REMOVE_SCRIPTING
+struct PPB_Instance_0_4;
+typedef PPB_Instance PPB_Instance_0_5;
+#else
+struct PPB_Instance_0_5;
+typedef PPB_Instance PPB_Instance_0_4;
+#endif
 
 namespace ppapi {
 namespace thunk {
@@ -48,8 +59,12 @@ const PPB_Find_Dev* GetPPB_Find_Thunk();
 const PPB_Flash_Menu* GetPPB_Flash_Menu_Thunk();
 const PPB_Flash_NetConnector* GetPPB_Flash_NetConnector_Thunk();
 const PPB_Font_Dev* GetPPB_Font_Thunk();
+const PPB_Fullscreen_Dev* GetPPB_Fullscreen_Thunk();
 const PPB_Graphics2D* GetPPB_Graphics2D_Thunk();
 const PPB_ImageData* GetPPB_ImageData_Thunk();
+const PPB_Instance_0_4* GetPPB_Instance_0_4_Thunk();
+const PPB_Instance_0_5* GetPPB_Instance_0_5_Thunk();
+const PPB_Instance_Private* GetPPB_Instance_Private_Thunk();
 const PPB_ImageDataTrusted* GetPPB_ImageDataTrusted_Thunk();
 
 }  // namespace thunk

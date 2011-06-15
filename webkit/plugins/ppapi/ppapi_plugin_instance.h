@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
@@ -23,7 +24,10 @@
 #include "ppapi/c/dev/ppp_printing_dev.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
+#include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppp_instance.h"
+#include "ppapi/shared_impl/function_group_base.h"
+#include "ppapi/thunk/ppb_instance_api.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCanvas.h"
@@ -32,9 +36,6 @@
 
 typedef struct NPObject NPObject;
 struct PP_Var;
-struct PPB_Instance;
-struct PPB_Instance_Private;
-struct PPB_Fullscreen_Dev;
 struct PPB_Messaging;
 struct PPB_Zoom_Dev;
 struct PPP_Find_Dev;
@@ -77,7 +78,9 @@ class Resource;
 //
 // Note: to get from a PP_Instance to a PluginInstance*, use the
 // ResourceTracker.
-class PluginInstance : public base::RefCounted<PluginInstance> {
+class PluginInstance : public base::RefCounted<PluginInstance>,
+                       public ::ppapi::FunctionGroupBase,
+                       public ::ppapi::thunk::PPB_Instance_FunctionAPI {
  public:
   struct PPP_Instance_Combined;
 
@@ -88,15 +91,8 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   // Delete should be called by the WebPlugin before this destructor.
   ~PluginInstance();
 
-  // Return a PPB_Instance interface compatible with the given interface name,
-  // if one is available.  Returns NULL if the requested interface is
-  // not supported.
-  static const void* GetInterface(const char* if_name);
-  static const PPB_Instance_Private* GetPrivateInterface();
-
   // Returns a pointer to the interface implementing PPB_Find that is
   // exposed to the plugin.
-  static const PPB_Fullscreen_Dev* GetFullscreenInterface();
   static const PPB_Messaging* GetMessagingInterface();
   static const PPB_Zoom_Dev* GetZoomInterface();
 
@@ -151,9 +147,6 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   void InstanceCrashed();
 
   // PPB_Instance and PPB_Instance_Private implementation.
-  PP_Var GetWindowObject();
-  PP_Var GetOwnerElementObject();
-  bool BindGraphics(PP_Resource graphics_id);
   const GURL& plugin_url() const { return plugin_url_; }
   bool full_frame() const { return full_frame_; }
   // If |type| is not PP_CURSORTYPE_CUSTOM, |custom_image| and |hot_spot| are
@@ -161,7 +154,6 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   bool SetCursor(PP_CursorType_Dev type,
                  PP_Resource custom_image,
                  const PP_Point* hot_spot);
-  PP_Var ExecuteScript(PP_Var script, PP_Var* exception);
 
   // PPP_Instance and PPP_Instance_Private pass-through.
   bool Initialize(WebKit::WebPluginContainer* container,
@@ -228,7 +220,6 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   // painting goes back to it
   // In pending state, events from webkit are ignored, and as soon as we receive
   // events from the fullscreen container, we go to the fullscreen state.
-  bool IsFullscreen();
   bool IsFullscreenOrPending();
 
   // Switches between fullscreen and normal mode. If |delay_report| is set to
@@ -274,7 +265,7 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
     PPP_Instance_Combined(const PPP_Instance_0_5& instance_if);
     PPP_Instance_Combined(const PPP_Instance_0_4& instance_if);
 
-    struct PP_Var (*GetInstanceObject_0_4)(PP_Instance instance);
+    struct PP_Var (*const GetInstanceObject_0_4)(PP_Instance instance);
   };
   template <class InterfaceType>
   static PPP_Instance_Combined* new_instance_interface(
@@ -282,6 +273,24 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
     return new PPP_Instance_Combined(
         *static_cast<const InterfaceType*>(interface_object));
   }
+
+  // FunctionGroupBase overrides.
+  ::ppapi::thunk::PPB_Instance_FunctionAPI* AsPPB_Instance_FunctionAPI()
+      OVERRIDE;
+
+  // PPB_Instance_API implementation.
+  virtual PP_Bool BindGraphics(PP_Instance instance,
+                               PP_Resource device) OVERRIDE;
+  virtual PP_Bool IsFullFrame(PP_Instance instance) OVERRIDE;
+  virtual PP_Var GetWindowObject(PP_Instance instance) OVERRIDE;
+  virtual PP_Var GetOwnerElementObject(PP_Instance instance) OVERRIDE;
+  virtual PP_Var ExecuteScript(PP_Instance instance,
+                               PP_Var script,
+                               PP_Var* exception) OVERRIDE;
+  virtual PP_Bool IsFullscreen(PP_Instance instance) OVERRIDE;
+  virtual PP_Bool SetFullscreen(PP_Instance instance,
+                                PP_Bool fullscreen) OVERRIDE;
+  virtual PP_Bool GetScreenSize(PP_Instance instance, PP_Size* size) OVERRIDE;
 
  private:
   bool LoadFindInterface();

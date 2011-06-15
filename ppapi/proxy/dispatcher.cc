@@ -18,7 +18,6 @@
 #include "ppapi/c/dev/ppb_cursor_control_dev.h"
 #include "ppapi/c/dev/ppb_gles_chromium_texture_mapping_dev.h"
 #include "ppapi/c/dev/ppb_font_dev.h"
-#include "ppapi/c/dev/ppb_fullscreen_dev.h"
 #include "ppapi/c/dev/ppb_opengles_dev.h"
 #include "ppapi/c/dev/ppb_surface_3d_dev.h"
 #include "ppapi/c/dev/ppb_testing_dev.h"
@@ -63,11 +62,9 @@
 #include "ppapi/proxy/ppb_flash_menu_proxy.h"
 #include "ppapi/proxy/ppb_flash_net_connector_proxy.h"
 #include "ppapi/proxy/ppb_font_proxy.h"
-#include "ppapi/proxy/ppb_fullscreen_proxy.h"
 #include "ppapi/proxy/ppb_gles_chromium_texture_mapping_proxy.h"
 #include "ppapi/proxy/ppb_graphics_2d_proxy.h"
 #include "ppapi/proxy/ppb_image_data_proxy.h"
-#include "ppapi/proxy/ppb_instance_private_proxy.h"
 #include "ppapi/proxy/ppb_instance_proxy.h"
 #include "ppapi/proxy/ppb_opengles2_proxy.h"
 #include "ppapi/proxy/ppb_pdf_proxy.h"
@@ -102,6 +99,11 @@ struct InterfaceList {
   NameToInfo name_to_plugin_info_;
   NameToInfo name_to_browser_info_;
 
+  // Note that there can be multiple interface names mapping to the same ID.
+  // In this case, the ID will map to one of them. This is temporary while
+  // we're converting to the thunk system, when that is complete, we need to
+  // have a better way of handling multiple interface implemented by one
+  // proxy object.
   const InterfaceProxy::Info* id_to_plugin_info_[INTERFACE_ID_COUNT];
   const InterfaceProxy::Info* id_to_browser_info_[INTERFACE_ID_COUNT];
 };
@@ -130,12 +132,13 @@ InterfaceList::InterfaceList() {
   AddPPB(PPB_Flash_Proxy::GetInfo());
   AddPPB(PPB_Flash_Menu_Proxy::GetInfo());
   AddPPB(PPB_Font_Proxy::GetInfo());
-  AddPPB(PPB_Fullscreen_Proxy::GetInfo());
   AddPPB(PPB_GLESChromiumTextureMapping_Proxy::GetInfo());
   AddPPB(PPB_Graphics2D_Proxy::GetInfo());
   AddPPB(PPB_ImageData_Proxy::GetInfo());
-  AddPPB(PPB_Instance_Private_Proxy::GetInfo());
-  AddPPB(PPB_Instance_Proxy::GetInfo());
+  AddPPB(PPB_Instance_Proxy::GetInfoPrivate());
+  AddPPB(PPB_Instance_Proxy::GetInfo0_4());
+  AddPPB(PPB_Instance_Proxy::GetInfo0_5());
+  AddPPB(PPB_Instance_Proxy::GetInfoFullscreen());
   AddPPB(PPB_OpenGLES2_Proxy::GetInfo());
   AddPPB(PPB_PDF_Proxy::GetInfo());
   AddPPB(PPB_Surface3D_Proxy::GetInfo());
@@ -161,21 +164,24 @@ InterfaceList::InterfaceList() {
 void InterfaceList::AddPPP(const InterfaceProxy::Info* info) {
   DCHECK(name_to_plugin_info_.find(info->name) ==
          name_to_plugin_info_.end());
-  DCHECK(info->id > 0 && info->id < INTERFACE_ID_COUNT);
-  DCHECK(id_to_plugin_info_[info->id] == NULL);
+  DCHECK(info->id >= INTERFACE_ID_NONE && info->id < INTERFACE_ID_COUNT);
+  DCHECK(info->id == INTERFACE_ID_NONE || id_to_plugin_info_[info->id] == NULL);
 
   name_to_plugin_info_[info->name] = info;
-  id_to_plugin_info_[info->id] = info;
+  if (info->id != INTERFACE_ID_NONE)
+    id_to_plugin_info_[info->id] = info;
 }
 
 void InterfaceList::AddPPB(const InterfaceProxy::Info* info) {
   DCHECK(name_to_browser_info_.find(info->name) ==
          name_to_browser_info_.end());
-  DCHECK(info->id > 0 && info->id < INTERFACE_ID_COUNT);
-  DCHECK(id_to_browser_info_[info->id] == NULL);
+  DCHECK(info->id >= INTERFACE_ID_NONE && info->id < INTERFACE_ID_COUNT);
+  DCHECK(info->id == INTERFACE_ID_NONE ||
+         id_to_browser_info_[info->id] == NULL);
 
   name_to_browser_info_[std::string(info->name)] = info;
-  id_to_browser_info_[info->id] = info;
+  if (info->id != INTERFACE_ID_NONE)
+    id_to_browser_info_[info->id] = info;
 }
 
 // static

@@ -100,11 +100,6 @@
     {
       'target_name': 'glue',
       'type': 'static_library',
-      #TODO(dmichael): Remove this #define once all plugins are ported from
-      #                PPP_Instance and PPB_Instance scripting functions.
-      'defines': [
-        'PPAPI_INSTANCE_REMOVE_SCRIPTING',
-      ],
       'dependencies': [
         '<(DEPTH)/app/app.gyp:app_base',
         '<(DEPTH)/base/base.gyp:base_i18n',

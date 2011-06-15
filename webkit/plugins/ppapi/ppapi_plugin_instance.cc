@@ -84,7 +84,10 @@
 #include "skia/ext/skia_utils_mac.h"
 #endif
 
+using ::ppapi::thunk::EnterResourceNoLock;
 using ::ppapi::thunk::PPB_Buffer_API;
+using ::ppapi::thunk::PPB_Graphics2D_API;
+using ::ppapi::thunk::PPB_Instance_FunctionAPI;
 using WebKit::WebBindings;
 using WebKit::WebCanvas;
 using WebKit::WebCursorInfo;
@@ -176,92 +179,6 @@ void RectToPPRect(const gfx::Rect& input, PP_Rect* output) {
   *output = PP_MakeRectFromXYWH(input.x(), input.y(),
                                 input.width(), input.height());
 }
-
-PP_Var GetWindowObject(PP_Instance instance_id) {
-  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
-  if (!instance)
-    return PP_MakeUndefined();
-  return instance->GetWindowObject();
-}
-
-PP_Var GetOwnerElementObject(PP_Instance instance_id) {
-  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
-  if (!instance)
-    return PP_MakeUndefined();
-  return instance->GetOwnerElementObject();
-}
-
-PP_Bool BindGraphics(PP_Instance instance_id, PP_Resource graphics_id) {
-  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
-  if (!instance)
-    return PP_FALSE;
-  return BoolToPPBool(instance->BindGraphics(graphics_id));
-}
-
-PP_Bool IsFullFrame(PP_Instance instance_id) {
-  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
-  if (!instance)
-    return PP_FALSE;
-  return BoolToPPBool(instance->full_frame());
-}
-
-PP_Var ExecuteScript(PP_Instance instance_id,
-                     PP_Var script,
-                     PP_Var* exception) {
-  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
-  if (!instance)
-    return PP_MakeUndefined();
-  return instance->ExecuteScript(script, exception);
-}
-
-const PPB_Instance ppb_instance = {
-  &BindGraphics,
-  &IsFullFrame
-};
-
-const PPB_Instance_0_4 ppb_instance_0_4 = {
-  &GetWindowObject,
-  &GetOwnerElementObject,
-  &BindGraphics,
-  &IsFullFrame,
-  &ExecuteScript
-};
-
-const PPB_Instance_Private ppb_instance_private = {
-  &GetWindowObject,
-  &GetOwnerElementObject,
-  &ExecuteScript
-};
-
-PP_Bool IsFullscreen(PP_Instance instance_id) {
-  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
-  if (!instance)
-    return PP_FALSE;
-  return BoolToPPBool(instance->IsFullscreen());
-}
-
-PP_Bool SetFullscreen(PP_Instance instance_id, PP_Bool fullscreen) {
-  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
-  if (!instance)
-    return PP_FALSE;
-  instance->SetFullscreen(PPBoolToBool(fullscreen), true);
-  return PP_TRUE;
-}
-
-PP_Bool GetScreenSize(PP_Instance instance_id, PP_Size* size) {
-  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
-  if (!instance || !size)
-    return PP_FALSE;
-  gfx::Size screen_size = instance->delegate()->GetScreenSize();
-  *size = PP_MakeSize(screen_size.width(), screen_size.height());
-  return PP_TRUE;
-}
-
-const PPB_Fullscreen_Dev ppb_fullscreen = {
-  &IsFullscreen,
-  &SetFullscreen,
-  &GetScreenSize
-};
 
 void PostMessage(PP_Instance instance_id, PP_Var message) {
   PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
@@ -372,28 +289,8 @@ PluginInstance::~PluginInstance() {
 }
 
 // static
-const void* PluginInstance::GetInterface(const char* if_name) {
-  if (strcmp(if_name, PPB_INSTANCE_INTERFACE) == 0) {
-    return &ppb_instance;
-  } else if (strcmp(if_name, PPB_INSTANCE_INTERFACE_0_4) == 0) {
-    return &ppb_instance_0_4;
-  }
-  return NULL;
-}
-
-// static
-const PPB_Fullscreen_Dev* PluginInstance::GetFullscreenInterface() {
-  return &ppb_fullscreen;
-}
-
-// static
 const PPB_Messaging* PluginInstance::GetMessagingInterface() {
   return &ppb_messaging;
-}
-
-// static
-const PPB_Instance_Private* PluginInstance::GetPrivateInterface() {
-  return &ppb_instance_private;
 }
 
 // static
@@ -491,98 +388,6 @@ void PluginInstance::InstanceCrashed() {
   delegate()->PluginCrashed(this);
 }
 
-PP_Var PluginInstance::GetWindowObject() {
-  if (!container_)
-    return PP_MakeUndefined();
-
-  WebFrame* frame = container_->element().document().frame();
-  if (!frame)
-    return PP_MakeUndefined();
-
-  return ObjectVar::NPObjectToPPVar(this, frame->windowObject());
-}
-
-PP_Var PluginInstance::GetOwnerElementObject() {
-  if (!container_)
-    return PP_MakeUndefined();
-  return ObjectVar::NPObjectToPPVar(this,
-                                    container_->scriptableObjectForElement());
-}
-
-bool PluginInstance::BindGraphics(PP_Resource graphics_id) {
-  if (!graphics_id) {
-    // Special-case clearing the current device.
-    if (bound_graphics_.get()) {
-      if (bound_graphics_2d()) {
-        bound_graphics_2d()->BindToInstance(NULL);
-      } else if (bound_graphics_.get()) {
-        bound_graphics_3d()->BindToInstance(false);
-      }
-      setBackingTextureId(0);
-      InvalidateRect(gfx::Rect());
-    }
-    bound_graphics_ = NULL;
-    return true;
-  }
-
-  scoped_refptr<PPB_Graphics2D_Impl> graphics_2d =
-      Resource::GetAs<PPB_Graphics2D_Impl>(graphics_id);
-  scoped_refptr<PPB_Surface3D_Impl> graphics_3d =
-      Resource::GetAs<PPB_Surface3D_Impl>(graphics_id);
-
-  if (graphics_2d) {
-    // Refuse to bind if we're transitioning to fullscreen.
-    if (fullscreen_container_ && !fullscreen_)
-      return false;
-    if (graphics_2d->instance() != this)
-      return false;  // Can't bind other instance's contexts.
-    if (!graphics_2d->BindToInstance(this))
-      return false;  // Can't bind to more than one instance.
-
-    // See http://crbug.com/49403: this can be further optimized by keeping the
-    // old device around and painting from it.
-    if (bound_graphics_2d()) {
-      // Start the new image with the content of the old image until the plugin
-      // repaints.
-      // Use ImageDataAutoMapper to ensure the image data is valid.
-      ImageDataAutoMapper mapper(bound_graphics_2d()->image_data());
-      if (!mapper.is_valid())
-        return false;
-      const SkBitmap* old_backing_bitmap =
-          bound_graphics_2d()->image_data()->GetMappedBitmap();
-      SkRect old_size = SkRect::MakeWH(
-          SkScalar(static_cast<float>(old_backing_bitmap->width())),
-          SkScalar(static_cast<float>(old_backing_bitmap->height())));
-
-      SkCanvas canvas(*graphics_2d->image_data()->GetMappedBitmap());
-      canvas.drawBitmap(*old_backing_bitmap, 0, 0);
-
-      // Fill in any extra space with white.
-      canvas.clipRect(old_size, SkRegion::kDifference_Op);
-      canvas.drawARGB(255, 255, 255, 255);
-    }
-
-    bound_graphics_ = graphics_2d;
-    setBackingTextureId(0);
-    // BindToInstance will have invalidated the plugin if necessary.
-  } else if (graphics_3d) {
-    // Refuse to bind if we're transitioning to fullscreen.
-    if (fullscreen_container_ && !fullscreen_)
-      return false;
-    // Make sure graphics can only be bound to the instance it is
-    // associated with.
-    if (graphics_3d->instance() != this)
-      return false;
-    if (!graphics_3d->BindToInstance(true))
-      return false;
-
-    setBackingTextureId(graphics_3d->GetBackingTextureId());
-    bound_graphics_ = graphics_3d;
-  }
-
-  return true;
-}
-
 bool PluginInstance::SetCursor(PP_CursorType_Dev type,
                                PP_Resource custom_image,
                                const PP_Point* hot_spot) {
@@ -631,46 +436,6 @@ bool PluginInstance::SetCursor(PP_CursorType_Dev type,
 
   cursor_.reset(custom_cursor.release());
   return true;
-}
-
-PP_Var PluginInstance::ExecuteScript(PP_Var script, PP_Var* exception) {
-  TryCatch try_catch(module(), exception);
-  if (try_catch.has_exception())
-    return PP_MakeUndefined();
-
-  // Convert the script into an inconvenient NPString object.
-  scoped_refptr<StringVar> script_string(StringVar::FromPPVar(script));
-  if (!script_string) {
-    try_catch.SetException("Script param to ExecuteScript must be a string.");
-    return PP_MakeUndefined();
-  }
-  NPString np_script;
-  np_script.UTF8Characters = script_string->value().c_str();
-  np_script.UTF8Length = script_string->value().length();
-
-  // Get the current frame to pass to the evaluate function.
-  WebFrame* frame = container_->element().document().frame();
-  if (!frame) {
-    try_catch.SetException("No frame to execute script in.");
-    return PP_MakeUndefined();
-  }
-
-  NPVariant result;
-  bool ok = WebBindings::evaluate(NULL, frame->windowObject(), &np_script,
-                                  &result);
-  // DANGER! |this| could be deleted at this point if the script removed the
-  // plugin from the DOM.
-  if (!ok) {
-    // TODO(brettw) bug 54011: The TryCatch isn't working properly and
-    // doesn't actually catch this exception.
-    try_catch.SetException("Exception caught");
-    WebBindings::releaseVariantValue(&result);
-    return PP_MakeUndefined();
-  }
-
-  PP_Var ret = Var::NPVariantToPPVar(this, &result);
-  WebBindings::releaseVariantValue(&result);
-  return ret;
 }
 
 void PluginInstance::PostMessage(PP_Var message) {
@@ -1192,10 +957,6 @@ void PluginInstance::PrintEnd() {
 #endif  // defined(OS_MACOSX)
 }
 
-bool PluginInstance::IsFullscreen() {
-  return fullscreen_;
-}
-
 bool PluginInstance::IsFullscreenOrPending() {
   return fullscreen_container_ != NULL;
 }
@@ -1210,7 +971,7 @@ void PluginInstance::SetFullscreen(bool fullscreen, bool delay_report) {
   if (fullscreen == IsFullscreenOrPending())
     return;
 
-  BindGraphics(0);
+  BindGraphics(pp_instance(), 0);
   VLOG(1) << "Setting fullscreen to " << (fullscreen ? "on" : "off");
   if (fullscreen) {
     DCHECK(!fullscreen_container_);
@@ -1583,6 +1344,167 @@ ObjectVar* PluginInstance::ObjectVarForNPObject(NPObject* np_object) const {
 bool PluginInstance::IsFullPagePlugin() const {
   WebFrame* frame = container()->element().document().frame();
   return frame->view()->mainFrame()->document().isPluginDocument();
+}
+
+PPB_Instance_FunctionAPI* PluginInstance::AsPPB_Instance_FunctionAPI() {
+  return this;
+}
+
+PP_Bool PluginInstance::BindGraphics(PP_Instance instance,
+                                     PP_Resource device) {
+  if (!device) {
+    // Special-case clearing the current device.
+    if (bound_graphics_.get()) {
+      if (bound_graphics_2d()) {
+        bound_graphics_2d()->BindToInstance(NULL);
+      } else if (bound_graphics_.get()) {
+        bound_graphics_3d()->BindToInstance(false);
+      }
+      setBackingTextureId(0);
+      InvalidateRect(gfx::Rect());
+    }
+    bound_graphics_ = NULL;
+    return PP_TRUE;
+  }
+
+  EnterResourceNoLock<PPB_Graphics2D_API> enter_2d(device, false);
+  PPB_Graphics2D_Impl* graphics_2d = enter_2d.succeeded() ?
+      static_cast<PPB_Graphics2D_Impl*>(enter_2d.object()) : NULL;
+  // Surface3D not converted to API yet.
+  scoped_refptr<PPB_Surface3D_Impl> graphics_3d =
+      Resource::GetAs<PPB_Surface3D_Impl>(device);
+
+  if (graphics_2d) {
+    // Refuse to bind if we're transitioning to fullscreen.
+    if (fullscreen_container_ && !fullscreen_)
+      return PP_FALSE;
+    if (graphics_2d->instance() != this)
+      return PP_FALSE;  // Can't bind other instance's contexts.
+    if (!graphics_2d->BindToInstance(this))
+      return PP_FALSE;  // Can't bind to more than one instance.
+
+    // See http://crbug.com/49403: this can be further optimized by keeping the
+    // old device around and painting from it.
+    if (bound_graphics_2d()) {
+      // Start the new image with the content of the old image until the plugin
+      // repaints.
+      // Use ImageDataAutoMapper to ensure the image data is valid.
+      ImageDataAutoMapper mapper(bound_graphics_2d()->image_data());
+      if (!mapper.is_valid())
+        return PP_FALSE;
+      const SkBitmap* old_backing_bitmap =
+          bound_graphics_2d()->image_data()->GetMappedBitmap();
+      SkRect old_size = SkRect::MakeWH(
+          SkScalar(static_cast<float>(old_backing_bitmap->width())),
+          SkScalar(static_cast<float>(old_backing_bitmap->height())));
+
+      SkCanvas canvas(*graphics_2d->image_data()->GetMappedBitmap());
+      canvas.drawBitmap(*old_backing_bitmap, 0, 0);
+
+      // Fill in any extra space with white.
+      canvas.clipRect(old_size, SkRegion::kDifference_Op);
+      canvas.drawARGB(255, 255, 255, 255);
+    }
+
+    bound_graphics_ = graphics_2d;
+    setBackingTextureId(0);
+    // BindToInstance will have invalidated the plugin if necessary.
+  } else if (graphics_3d) {
+    // Refuse to bind if we're transitioning to fullscreen.
+    if (fullscreen_container_ && !fullscreen_)
+      return PP_FALSE;
+    // Make sure graphics can only be bound to the instance it is
+    // associated with.
+    if (graphics_3d->instance() != this)
+      return PP_FALSE;
+    if (!graphics_3d->BindToInstance(true))
+      return PP_FALSE;
+
+    setBackingTextureId(graphics_3d->GetBackingTextureId());
+    bound_graphics_ = graphics_3d;
+  }
+
+  return PP_TRUE;
+}
+
+PP_Bool PluginInstance::IsFullFrame(PP_Instance instance) {
+  return PP_FromBool(full_frame());
+}
+
+PP_Var PluginInstance::GetWindowObject(PP_Instance instance) {
+  if (!container_)
+    return PP_MakeUndefined();
+
+  WebFrame* frame = container_->element().document().frame();
+  if (!frame)
+    return PP_MakeUndefined();
+
+  return ObjectVar::NPObjectToPPVar(this, frame->windowObject());
+}
+
+PP_Var PluginInstance::GetOwnerElementObject(PP_Instance instance) {
+  if (!container_)
+    return PP_MakeUndefined();
+  return ObjectVar::NPObjectToPPVar(this,
+                                    container_->scriptableObjectForElement());
+}
+
+PP_Var PluginInstance::ExecuteScript(PP_Instance instance,
+                                     PP_Var script,
+                                     PP_Var* exception) {
+  TryCatch try_catch(module(), exception);
+  if (try_catch.has_exception())
+    return PP_MakeUndefined();
+
+  // Convert the script into an inconvenient NPString object.
+  scoped_refptr<StringVar> script_string(StringVar::FromPPVar(script));
+  if (!script_string) {
+    try_catch.SetException("Script param to ExecuteScript must be a string.");
+    return PP_MakeUndefined();
+  }
+  NPString np_script;
+  np_script.UTF8Characters = script_string->value().c_str();
+  np_script.UTF8Length = script_string->value().length();
+
+  // Get the current frame to pass to the evaluate function.
+  WebFrame* frame = container_->element().document().frame();
+  if (!frame) {
+    try_catch.SetException("No frame to execute script in.");
+    return PP_MakeUndefined();
+  }
+
+  NPVariant result;
+  bool ok = WebBindings::evaluate(NULL, frame->windowObject(), &np_script,
+                                  &result);
+  // DANGER! |this| could be deleted at this point if the script removed the
+  // plugin from the DOM.
+  if (!ok) {
+    // TODO(brettw) bug 54011: The TryCatch isn't working properly and
+    // doesn't actually catch this exception.
+    try_catch.SetException("Exception caught");
+    WebBindings::releaseVariantValue(&result);
+    return PP_MakeUndefined();
+  }
+
+  PP_Var ret = Var::NPVariantToPPVar(this, &result);
+  WebBindings::releaseVariantValue(&result);
+  return ret;
+}
+
+PP_Bool PluginInstance::IsFullscreen(PP_Instance instance) {
+  return PP_FromBool(fullscreen_);
+}
+
+PP_Bool PluginInstance::SetFullscreen(PP_Instance instance,
+                                      PP_Bool fullscreen) {
+  SetFullscreen(PPBoolToBool(fullscreen), true);
+  return PP_TRUE;
+}
+
+PP_Bool PluginInstance::GetScreenSize(PP_Instance instance, PP_Size* size) {
+  gfx::Size screen_size = delegate()->GetScreenSize();
+  *size = PP_MakeSize(screen_size.width(), screen_size.height());
+  return PP_TRUE;
 }
 
 }  // namespace ppapi

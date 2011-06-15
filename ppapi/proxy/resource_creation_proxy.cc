@@ -160,6 +160,24 @@ PP_Resource ResourceCreationProxy::CreateImageData(PP_Instance instance,
   return PluginResourceTracker::GetInstance()->AddResource(object);
 }
 
+PP_Resource ResourceCreationProxy::CreateSurface3D(
+    PP_Instance instance,
+    PP_Config3D_Dev config,
+    const int32_t* attrib_list) {
+  NOTREACHED();
+  return 0;
+}
+
+PP_Resource ResourceCreationProxy::CreateURLLoader(PP_Instance instance) {
+  NOTREACHED();
+  return 0;
+}
+
+PP_Resource ResourceCreationProxy::CreateURLRequestInfo(PP_Instance instance) {
+  NOTREACHED();
+  return 0;
+}
+
 bool ResourceCreationProxy::Send(IPC::Message* msg) {
   return dispatcher_->Send(msg);
 }

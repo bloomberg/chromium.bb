@@ -540,16 +540,6 @@ IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBFlashNetConnector_ConnectTcpAddress,
 IPC_SYNC_MESSAGE_CONTROL0_1(PpapiHostMsg_PPBFont_GetFontFamilies,
                             std::string /* result */)
 
-// PPB_Fullscreen.
-IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFullscreen_SetFullscreen,
-                           PP_Instance /* instance */,
-                           PP_Bool /* fullscreen */,
-                           PP_Bool /* result */)
-IPC_SYNC_MESSAGE_ROUTED1_2(PpapiHostMsg_PPBFullscreen_GetScreenSize,
-                           PP_Instance /* instance */,
-                           PP_Bool /* result */,
-                           PP_Size /* size */)
-
 // PPB_Graphics2D.
 IPC_MESSAGE_ROUTED5(PpapiHostMsg_PPBGraphics2D_PaintImageData,
                     pp::proxy::HostResource /* graphics_2d */,
@@ -587,20 +577,14 @@ IPC_SYNC_MESSAGE_ROUTED2_2(PpapiHostMsg_PPBInstance_ExecuteScript,
                            pp::proxy::SerializedVar /* script */,
                            pp::proxy::SerializedVar /* out_exception */,
                            pp::proxy::SerializedVar /* result */)
-
-// PPB_Instance_Private.
-IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBInstancePrivate_GetWindowObject,
+IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBInstance_SetFullscreen,
                            PP_Instance /* instance */,
-                           pp::proxy::SerializedVar /* result */)
-IPC_SYNC_MESSAGE_ROUTED1_1(
-    PpapiHostMsg_PPBInstancePrivate_GetOwnerElementObject,
-    PP_Instance /* instance */,
-    pp::proxy::SerializedVar /* result */)
-IPC_SYNC_MESSAGE_ROUTED2_2(PpapiHostMsg_PPBInstancePrivate_ExecuteScript,
+                           PP_Bool /* fullscreen */,
+                           PP_Bool /* result */)
+IPC_SYNC_MESSAGE_ROUTED1_2(PpapiHostMsg_PPBInstance_GetScreenSize,
                            PP_Instance /* instance */,
-                           pp::proxy::SerializedVar /* script */,
-                           pp::proxy::SerializedVar /* out_exception */,
-                           pp::proxy::SerializedVar /* result */)
+                           PP_Bool /* result */,
+                           PP_Size /* size */)
 
 IPC_SYNC_MESSAGE_ROUTED3_1(
     PpapiHostMsg_PPBPDF_GetFontFileWithFallback,

@@ -95,6 +95,12 @@ struct PPB_Instance {
                                  struct PP_Var* exception);
 };
 
+#ifdef PPAPI_INSTANCE_REMOVE_SCRIPTING
+typedef struct PPB_Instance PPB_Instance_0_5;
+#else
+typedef struct PPB_Instance PPB_Instance_0_4;
+#endif
+
 /**
  * @}
  */

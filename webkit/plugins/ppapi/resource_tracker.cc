@@ -266,6 +266,11 @@ uint32 ResourceTracker::GetLiveObjectsForInstance(
   if (!instance)
     return NULL;
 
+  // The instance one is special, since it's just implemented by the instance
+  // object.
+  if (id == pp::proxy::INTERFACE_ID_PPB_INSTANCE)
+    return instance;
+
   scoped_ptr< ::ppapi::FunctionGroupBase >& proxy =
       instance_map_[pp_instance]->function_proxies[id];
   if (proxy.get())

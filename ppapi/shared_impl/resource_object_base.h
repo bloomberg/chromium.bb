@@ -8,9 +8,9 @@
 #include <stddef.h>  // For NULL.
 
 #define FOR_ALL_PPAPI_RESOURCE_APIS(F) \
-  F(PPB_Audio_API) \
   F(PPB_AudioConfig_API) \
   F(PPB_AudioTrusted_API) \
+  F(PPB_Audio_API) \
   F(PPB_Broker_API) \
   F(PPB_Buffer_API) \
   F(PPB_BufferTrusted_API) \
@@ -24,7 +24,14 @@
   F(PPB_Flash_NetConnector_API) \
   F(PPB_Font_API) \
   F(PPB_Graphics2D_API) \
-  F(PPB_ImageData_API)
+  F(PPB_ImageData_API) \
+  F(PPB_PDFFont_API) \
+  F(PPB_Scrollbar_API) \
+  F(PPB_Surface3D_API) \
+  F(PPB_URLLoader_API) \
+  F(PPB_URLRequestInfo_API) \
+  F(PPB_URLResponseInfo_API) \
+  F(PPB_Widget_API)
 
 namespace ppapi {
 

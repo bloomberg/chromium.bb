@@ -179,7 +179,7 @@ void PPB_Surface3D_Impl::OnSwapBuffers() {
 
 void PPB_Surface3D_Impl::OnContextLost() {
   if (bound_to_instance_)
-    instance()->BindGraphics(0);
+    instance()->BindGraphics(instance()->pp_instance(), 0);
 
   // Send context lost to plugin. This may have been caused by a PPAPI call, so
   // avoid re-entering.

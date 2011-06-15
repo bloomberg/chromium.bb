@@ -347,11 +347,6 @@
       'variables': {
         'chromium_code': 1,
       },
-      #TODO(dmichael): Remove this #define once all plugins are ported from
-      #                PPP_Instance and PPB_Instance scripting functions.
-      'defines': [
-        'PPAPI_INSTANCE_REMOVE_SCRIPTING',
-      ],
       'dependencies': [
         'test_shell_common',
         'test_shell_test_support',

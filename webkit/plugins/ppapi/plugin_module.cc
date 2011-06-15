@@ -292,17 +292,19 @@ const void* GetInterface(const char* name) {
   if (strcmp(name, PPB_FONT_DEV_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_Font_Thunk();
   if (strcmp(name, PPB_FULLSCREEN_DEV_INTERFACE) == 0)
-    return PluginInstance::GetFullscreenInterface();
+    return ::ppapi::thunk::GetPPB_Fullscreen_Thunk();
   if (strcmp(name, PPB_GRAPHICS_2D_INTERFACE) == 0)
     return PPB_Graphics2D_Impl::GetInterface();
   if (strcmp(name, PPB_IMAGEDATA_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_ImageData_Thunk();
   if (strcmp(name, PPB_IMAGEDATA_TRUSTED_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_ImageDataTrusted_Thunk();
-  if (name_prefix == GetInterfacePrefix(PPB_INSTANCE_INTERFACE))
-    return PluginInstance::GetInterface(name);
+  if (strcmp(name, PPB_INSTANCE_INTERFACE_0_4) == 0)
+    return ::ppapi::thunk::GetPPB_Instance_0_4_Thunk();
+  if (strcmp(name, PPB_INSTANCE_INTERFACE_0_5) == 0)
+    return ::ppapi::thunk::GetPPB_Instance_0_5_Thunk();
   if (strcmp(name, PPB_INSTANCE_PRIVATE_INTERFACE) == 0)
-    return PluginInstance::GetPrivateInterface();
+    return ::ppapi::thunk::GetPPB_Instance_Private_Thunk();
   if (strcmp(name, PPB_MESSAGING_INTERFACE) == 0)
     return PluginInstance::GetMessagingInterface();
   if (strcmp(name, PPB_PROXY_PRIVATE_INTERFACE) == 0)

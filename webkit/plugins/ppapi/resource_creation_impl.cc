@@ -164,5 +164,23 @@ PP_Resource ResourceCreationImpl::CreateImageData(PP_Instance pp_instance,
   return data->GetReference();
 }
 
+PP_Resource ResourceCreationImpl::CreateSurface3D(
+    PP_Instance instance,
+    PP_Config3D_Dev config,
+    const int32_t* attrib_list) {
+  NOTIMPLEMENTED();
+  return 0;
+}
+
+PP_Resource ResourceCreationImpl::CreateURLLoader(PP_Instance instance) {
+  NOTIMPLEMENTED();
+  return 0;
+}
+
+PP_Resource ResourceCreationImpl::CreateURLRequestInfo(PP_Instance instance) {
+  NOTIMPLEMENTED();
+  return 0;
+}
+
 }  // namespace ppapi
 }  // namespace webkit

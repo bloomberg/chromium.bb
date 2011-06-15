@@ -7,6 +7,7 @@
 
 #include "ppapi/c/dev/ppb_file_chooser_dev.h"
 #include "ppapi/c/dev/ppb_file_system_dev.h"
+#include "ppapi/c/dev/ppb_graphics_3d_dev.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
@@ -65,6 +66,11 @@ class ResourceCreationAPI {
                                       PP_ImageDataFormat format,
                                       const PP_Size& size,
                                       PP_Bool init_to_zero) = 0;
+  virtual PP_Resource CreateSurface3D(PP_Instance instance,
+                                      PP_Config3D_Dev config,
+                                      const int32_t* attrib_list) = 0;
+  virtual PP_Resource CreateURLLoader(PP_Instance instance) = 0;
+  virtual PP_Resource CreateURLRequestInfo(PP_Instance instance) = 0;
 };
 
 }  // namespace thunk
