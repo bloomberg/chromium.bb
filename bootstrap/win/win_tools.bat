@@ -48,6 +48,9 @@ call copy /y "%WIN_TOOLS_ROOT_DIR%\git_bin\git.bat" "%WIN_TOOLS_ROOT_DIR%\git.ba
 call copy /y "%WIN_TOOLS_ROOT_DIR%\git_bin\gitk.bat" "%WIN_TOOLS_ROOT_DIR%\gitk.bat" 1>nul
 call copy /y "%WIN_TOOLS_ROOT_DIR%\git_bin\ssh.bat" "%WIN_TOOLS_ROOT_DIR%\ssh.bat" 1>nul
 call copy /y "%WIN_TOOLS_ROOT_DIR%\git_bin\ssh-keygen.bat" "%WIN_TOOLS_ROOT_DIR%\ssh-keygen.bat" 1>nul
+:: Ensure autocrlf and filemode are set correctly.
+call %WIN_TOOLS_ROOT_DIR%\git.bat config --global core.autocrlf false
+call %WIN_TOOLS_ROOT_DIR%\git.bat config --global core.filemode false
 goto :SVN_CHECK
 
 
