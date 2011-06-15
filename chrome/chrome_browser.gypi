@@ -445,6 +445,8 @@
         'browser/chromeos/input_method/candidate_window.h',
         'browser/chromeos/input_method/input_method_util.cc',
         'browser/chromeos/input_method/input_method_util.h',
+        'browser/chromeos/input_method/virtual_keyboard_selector.cc',
+        'browser/chromeos/input_method/virtual_keyboard_selector.h',
         'browser/chromeos/input_method/xkeyboard.cc',
         'browser/chromeos/input_method/xkeyboard.h',
         'browser/chromeos/language_preferences.cc',

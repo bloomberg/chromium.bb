@@ -1312,6 +1312,7 @@
         'browser/chromeos/external_metrics_unittest.cc',
         'browser/chromeos/gview_request_interceptor_unittest.cc',
         'browser/chromeos/input_method/input_method_util_unittest.cc',
+        'browser/chromeos/input_method/virtual_keyboard_selector_unittest.cc',
         'browser/chromeos/input_method/xkeyboard_unittest.cc',
         'browser/chromeos/language_preferences_unittest.cc',
         'browser/chromeos/login/authenticator_unittest.cc',
