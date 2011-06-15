@@ -221,8 +221,6 @@ void KeyboardOverlayUIHTMLSource::StartDataRequest(const std::string& path,
   localized_strings.SetString("keyboardOverlayFocusAddressBarInSearchMode",
       l10n_util::GetStringUTF16(
           IDS_KEYBOARD_OVERLAY_FOCUS_ADDRESS_BAR_IN_SEARCH_MODE));
-  localized_strings.SetString("keyboardOverlayFullScreen",
-      l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_FULL_SCREEN));
   localized_strings.SetString("keyboardOverlayTakeScreenshot",
       l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_TAKE_SCREENSHOT));
   localized_strings.SetString("keyboardOverlayHome",
@@ -245,8 +243,6 @@ void KeyboardOverlayUIHTMLSource::StartDataRequest(const std::string& path,
       l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_SAVE));
   localized_strings.SetString("keyboardOverlayScrollUpOnePage",
       l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_SCROLL_UP_ONE_PAGE));
-  localized_strings.SetString("keyboardOverlaySettings",
-      l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_SETTINGS));
   localized_strings.SetString("keyboardOverlaySignOut",
       l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_SIGN_OUT));
   localized_strings.SetString("keyboardOverlayUndo",
@@ -277,6 +273,10 @@ void KeyboardOverlayUIHTMLSource::StartDataRequest(const std::string& path,
       l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_LOCK_SCREEN_OR_POWER_OFF));
   localized_strings.SetString("keyboardOverlayInputUnicodeCharacters",
       l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_INPUT_UNICODE_CHARACTERS));
+  localized_strings.SetString("keyboardOverlayShowWrenchMenu",
+      l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_SHOW_WRENCH_MENU));
+  localized_strings.SetString("keyboardOverlayOpenFileManager",
+      l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_OPEN_FILE_MANAGER));
 
   static const base::StringPiece keyboard_overlay_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(

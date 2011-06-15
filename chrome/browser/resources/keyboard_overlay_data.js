@@ -8824,13 +8824,13 @@ var keyboardOverlayData = {
           "label": "forward"
         },
         "3D": {
-          "label": "switch window"
+          "label": "reload"
         },
         "3E": {
           "label": "full screen"
         },
         "3F": {
-          "label": "tools"
+          "label": "switch window"
         },
         "40": {
           "label": "bright down"
@@ -16853,7 +16853,6 @@ var keyboardOverlayData = {
   },
   "shortcut": {
     "+<>CTRL": "keyboardOverlayZoomIn",
-    ",<>CTRL": "keyboardOverlaySettings",
     "-<>CTRL": "keyboardOverlayZoomOut",
     "/<>ALT<>CTRL": "keyboardOverlayViewKeyboardOverlay",
     "/<>CTRL": "keyboardOverlayHelp",
@@ -16881,12 +16880,13 @@ var keyboardOverlayData = {
     "d<>CTRL<>SHIFT": "keyboardOverlayBookmarkAllTabs",
     "down<>ALT": "keyboardOverlayPageDown",
     "down<>ALT<>CTRL": "keyboardOverlayEnd",
+    "e<>ALT": "keyboardOverlayShowWrenchMenu",
     "e<>CTRL": "keyboardOverlayFocusAddressBarInSearchMode",
     "enter<>ALT": "keyboardOverlayOpenAddressInNewTab",
     "enter<>CTRL": "keyboardOverlayAddWwwAndComAndOpenAddress",
     "enter<>SHIFT": "keyboardOverlayFindPrevious",
     "esc<>SHIFT": "keyboardOverlayTaskManager",
-    "f<>ALT<>CTRL": "keyboardOverlayFullScreen",
+    "f<>ALT": "keyboardOverlayShowWrenchMenu",
     "f<>CTRL": "keyboardOverlayFindText",
     "g<>CTRL": "keyboardOverlayFindAgain",
     "g<>CTRL<>SHIFT": "keyboardOverlayFindPrevious",
@@ -16898,6 +16898,7 @@ var keyboardOverlayData = {
     "l<>CTRL": "keyboardOverlayFocusAddressBar",
     "left<>ALT": "keyboardOverlayBack",
     "left<>CTRL<>SHIFT": "keyboardOverlaySelectWordAtATime",
+    "m<>CTRL": "keyboardOverlayOpenFileManager",
     "n<>CTRL": "keyboardOverlayNewWindow",
     "n<>CTRL<>SHIFT": "keyboardOverlayNewIncognitoWindow",
     "o<>CTRL": "keyboardOverlayContentBrowser",

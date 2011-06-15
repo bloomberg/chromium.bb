@@ -12151,9 +12151,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_KEYBOARD_OVERLAY_FOCUS_ADDRESS_BAR_IN_SEARCH_MODE" desc="The text in the keyboard overlay to explain the shortcut.">
         Focus address bar in search mode
       </message>
-      <message name="IDS_KEYBOARD_OVERLAY_FULL_SCREEN" desc="The text in the keyboard overlay to explain the shortcut.">
-        Full screen
-      </message>
       <message name="IDS_KEYBOARD_OVERLAY_TAKE_SCREENSHOT" desc="The text in the keyboard overlay to explain the shortcut.">
         Take screenshot
       </message>
@@ -12186,9 +12183,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_KEYBOARD_OVERLAY_SCROLL_UP_ONE_PAGE" desc="The text in the keyboard overlay to explain the shortcut.">
         Scroll up one page
-      </message>
-      <message name="IDS_KEYBOARD_OVERLAY_SETTINGS" desc="The text in the keyboard overlay to explain the shortcut.">
-        Settings
       </message>
       <message name="IDS_KEYBOARD_OVERLAY_SIGN_OUT" desc="The text in the keyboard overlay to explain the shortcut.">
         Sign out
@@ -12231,6 +12225,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_KEYBOARD_OVERLAY_INPUT_UNICODE_CHARACTERS" desc="The text in the keyboard overlay to explain the shortcut.">
         Input Unicode characters
+      </message>
+      <message name="IDS_KEYBOARD_OVERLAY_SHOW_WRENCH_MENU" desc="The text in the keyboard overlay to explain the shortcut.">
+        Show wrench menu
+      </message>
+      <message name="IDS_KEYBOARD_OVERLAY_OPEN_FILE_MANAGER" desc="The text in the keyboard overlay to explain the shortcut.">
+        Open file manager
       </message>
     </if>
     <if expr="pp_ifdef('chromeos') and lang == 'ja'">
