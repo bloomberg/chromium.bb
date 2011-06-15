@@ -4,7 +4,7 @@
 
 @echo off
 setlocal
-set HERMETIC_CYGWIN=hermetic_cygwin_1_7_9-0_1
+set HERMETIC_CYGWIN=hermetic_cygwin_1_7_9-0_2
 if exist "%~dp0..\cygwin\%HERMETIC_CYGWIN%.installed" goto :skip_cygwin_install
 if not exist "%~dp0..\cygwin" goto :dont_remove_cygwin
 attrib -H "%~dp0..\cygwin\.svn"

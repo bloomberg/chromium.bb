@@ -72,7 +72,7 @@ fi
 # Can only happen on CygWin - we don't autoinstall tools on other platforms
 if ((need_restart)) ; then
   if ! [ -x "$PWD/hermetic_cygwin/bin/7z" ] && ! [ -x "$PWD/hermetic_cygwin/bin/7z.exe" ] ; then
-    wget http://commondatastorage.googleapis.com/nativeclient-mirror/nacl/cygwin_mirror/hermetic_cygwin_1_7_5-1_0.exe -O cygwin_mini_setup.exe
+    wget http://commondatastorage.googleapis.com/nativeclient-mirror/nacl/cygwin_mirror/hermetic_cygwin_1_7_9-0_1.exe -O cygwin_mini_setup.exe
     chmod a+x cygwin_mini_setup.exe
     "`cygpath $COMSPEC`" /C start /WAIT ".\\cygwin_mini_setup" /CYGPORT /S "/D=`cygpath -w $PWD/hermetic_cygwin`"
   fi
@@ -110,17 +110,17 @@ declare -A description packages
 . "${0/.sh/.conf}"
 . "`dirname \"$0\"`"/make_installer.inc
 
-CYGWIN_VERSION=1.7.5-1.0
+CYGWIN_VERSION=1.7.9-0.2
 
 mkdir -p packages{,.src,.unpacked} setup
 
 parse_setup_ini
+fix_setup_inf_info
 download_package_dependences bash 0
 reqpackages=()
 sectionin=()
 allinstpackages=()
 allinstalledpackages=()
-fix_setup_inf_info
 rm setup/*.lst.gz
 download_package "Base" "`seq -s ' ' \"$((${#packages[@]}+3))\"`"
 download_addon_packages 2
@@ -166,8 +166,8 @@ InstallDir "c:\\cygwin"
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
 
-!define MUI_FINISHPAGE_LINK "Visit the Native Client site for the news, FAQs and support"
-!define MUI_FINISHPAGE_LINK_LOCATION "http://code.google.com/p/nativeclient-sdk/wiki/GettingStarted"
+!define MUI_FINISHPAGE_LINK "Visit the Native Client site for news, FAQs and support"
+!define MUI_FINISHPAGE_LINK_LOCATION "http://code.google.com/chrome/nativeclient"
 
 !insertmacro MUI_PAGE_FINISH
 
@@ -207,10 +207,6 @@ Section "" sec_PostInstall
   SetOutPath \$INSTDIR
   nsExec::ExecToLog '"bin\\bash" -c ./postinstall.sh'
   Delete \$INSTDIR\\postinstall.sh
-  Delete \$INSTDIR\\bin\\bash.exe
-  Rename \$INSTDIR\\bin\\bash4.exe \$INSTDIR\\bin\\bash.exe
-  Delete \$INSTDIR\\bin\\sh.exe
-  Rename \$INSTDIR\\bin\\sh4.exe \$INSTDIR\\bin\\sh.exe
   FileOpen \$R0 \$INSTDIR\\Cygwin.bat w
   StrCpy \$R1 \$INSTDIR 1
   FileWrite \$R0 "@echo off\$\r\$\n\$\r\$\n\$R1:$\r\$\nchdir \$INSTDIR\\bin\$\r\$\nbash --login -i$\r\$\n"
@@ -227,26 +223,41 @@ if ! patch --no-backup-if-mismatch <<END
 --- make_hermetic_cygwin.nsi
 +++ make_hermetic_cygwin.nsi
 @@ -2069,4 +2069,4 @@
-+  MkLink::Hard "\$INSTDIR\\bin\\awk.exe" "\$INSTDIR\\bin\\gawk.exe"
-   MkLink::Hard "\$INSTDIR\\bin\\gawk-3.1.7.exe" "\$INSTDIR\\bin\\gawk.exe"
-   MkLink::Hard "\$INSTDIR\\bin\\pgawk-3.1.7.exe" "\$INSTDIR\\bin\\pgawk.exe"
-   MkLink::Hard "\$INSTDIR\\usr\\share\\man\\man1\\gawk.1" "\$INSTDIR\\usr\\share\\man\\man1\\pgawk.1"
--  MkLink::SoftF "\$INSTDIR\\bin\\awk.exe" "gawk.exe"
-@@ -5296,3 +5296,5 @@
--  File "/oname=bin\\bash.exe" "packages.unpacked\\bash-4.1.5-0.tar.bz2\\usr\\bin\\bash.exe"
-+  File "/oname=bin\\bash.exe" "packages.unpacked\\bash-3.2.49-23.tar.bz2\\usr\\bin\\bash.exe"
-+  File "/oname=bin\\bash4.exe" "packages.unpacked\\bash-4.1.5-0.tar.bz2\\usr\\bin\\bash.exe"
-   File "/oname=bin\\bashbug" "packages.unpacked\\bash-4.1.5-0.tar.bz2\\usr\\bin\\bashbug"
--  File "/oname=bin\\sh.exe" "packages.unpacked\\bash-4.1.5-0.tar.bz2\\usr\\bin\\sh.exe"
-+  File "/oname=bin\\sh.exe" "packages.unpacked\\bash-3.2.49-23.tar.bz2\\usr\\bin\\sh.exe"
-+  File "/oname=bin\\sh4.exe" "packages.unpacked\\bash-4.1.5-0.tar.bz2\\usr\\bin\\sh.exe"
-@@ -24887,3 +24887,3 @@
--  MkLink::SoftF "\$INSTDIR\\bin\\python.exe" "python2.5.exe"
--  MkLink::SoftF "\$INSTDIR\\bin\\python-config" "python2.5-config"
--  MkLink::SoftF "\$INSTDIR\\lib\\libpython2.5.dll.a" "python2.5\\config\\libpython2.5.dll.a"
-+  MkLink::Hard "\$INSTDIR\\bin\\python.exe" "\$INSTDIR\\bin\\python2.5.exe"
-+  MkLink::Hard "\$INSTDIR\\bin\\python-config" "\$INSTDIR\\bin\\python2.5-config"
-+  MkLink::Hard "\$INSTDIR\\lib\\python2.5.dll.a" "\$INSTDIR\\lib\\python2.5\\config\\libpython2.5.dll.a"
++  MkLink::Hard "\$INSTDIR\\${CYGWIN_PREFIX}bin\\awk.exe" "\$INSTDIR\\bin\\gawk.exe"
+   MkLink::Hard "\$INSTDIR\\${CYGWIN_PREFIX}bin\\gawk-3.1.8.exe" "\$INSTDIR\\bin\\gawk.exe"
+   MkLink::Hard "\$INSTDIR\\${CYGWIN_PREFIX}bin\\pgawk-3.1.8.exe" "\$INSTDIR\\bin\\pgawk.exe"
+   MkLink::Hard "\$INSTDIR\\${CYGWIN_PREFIX}usr\\share\\man\\man1\\gawk.1.gz" "\$INSTDIR\\usr\\share\\man\\man1\\pgawk.1.gz"
+-  MkLink::SoftF "\$INSTDIR\\${CYGWIN_PREFIX}bin\\awk.exe" "gawk.exe"
+@@ -4775,6 +4775,7 @@
+   CreateDirectory "\$INSTDIR\\etc\\postinstall"
+   CreateDirectory "\$INSTDIR\\usr"
+   CreateDirectory "\$INSTDIR\\bin"
++  CreateDirectory "\$INSTDIR\\dev"
+   CreateDirectory "\$INSTDIR\\usr\\share"
+   CreateDirectory "\$INSTDIR\\usr\\share\\doc"
+   CreateDirectory "\$INSTDIR\\usr\\share\\doc\\bash"
+@@ -24353 +24353,0 @@
+-  File "/oname=${CYGWIN_PREFIX}bin\\python.exe" "packages.unpacked\\python-2.6.5-2.tar.bz2\\usr\\bin\\python.exe"
+@@ -24887,2 +24887,4 @@
+-  MkLink::SoftF "\$INSTDIR\\${CYGWIN_PREFIX}bin\\python-config" "python2.6-config"
+-  MkLink::SoftF "\$INSTDIR\\${CYGWIN_PREFIX}lib\\libpython2.6.dll.a" "python2.6\\config\\libpython2.6.dll.a"
++  MkLink::Hard "\$INSTDIR\\${CYGWIN_PREFIX}bin\\python.exe" "\$INSTDIR\\${CYGWIN_PREFIX}bin\\python2.6.exe"
++  MkLink::Hard "\$INSTDIR\\${CYGWIN_PREFIX}bin\\python2.exe" "\$INSTDIR\\${CYGWIN_PREFIX}bin\\python2.6.exe"
++  MkLink::Hard "\$INSTDIR\\${CYGWIN_PREFIX}bin\\python-config" "\$INSTDIR\\${CYGWIN_PREFIX}bin\\python2.6-config"
++  MkLink::Hard "\$INSTDIR\\${CYGWIN_PREFIX}lib\\python2.6.dll.a" "\$INSTDIR\\${CYGWIN_PREFIX}lib\\python2.6\\config\\libpython2.6.dll.a"
+@@ -27321,4 +27321,8 @@
+-  MkLink::SoftF "\$INSTDIR\\${CYGWIN_PREFIX}bin\\python3.exe" "python3.1.exe"
+-  MkLink::SoftF "\$INSTDIR\\${CYGWIN_PREFIX}bin\\python3-config" "python3.1-config"
+-  MkLink::SoftF "\$INSTDIR\\${CYGWIN_PREFIX}lib\\libpython3.1.dll.a" "python3.1\\config\\libpython3.1.dll.a"
+-  MkLink::SoftF "\$INSTDIR\\${CYGWIN_PREFIX}lib\\pkgconfig\\python3.pc" "python-3.1.pc"
++  IntCmp \$PKV_python 1 L1_NoInstallPythonHardlink +1 L1_NoInstallPythonHardlink
++  MkLink::Hard "\$INSTDIR\\${CYGWIN_PREFIX}bin\\python.exe" "\$INSTDIR\\${CYGWIN_PREFIX}bin\\python3.1.exe"
++L1_NoInstallPythonHardlink:
++  MkLink::Hard "\$INSTDIR\\${CYGWIN_PREFIX}bin\\python3.exe" "\$INSTDIR\\${CYGWIN_PREFIX}bin\\python3.1.exe"
++  MkLink::Hard "\$INSTDIR\\${CYGWIN_PREFIX}bin\\python3-config" "\$INSTDIR\\${CYGWIN_PREFIX}bin\\python3.1-config"
++  MkLink::Hard "\$INSTDIR\\${CYGWIN_PREFIX}lib\\libpython3.1.dll.a" "\$INSTDIR\\${CYGWIN_PREFIX}lib\\python3.1\\config\\libpython3.1.dll.a"
++  MkLink::Hard "\$INSTDIR\\${CYGWIN_PREFIX}lib\\pkgconfig\\python.pc" "\$INSTDIR\\${CYGWIN_PREFIX}lib\\pkgconfig\\python-3.1.pc"
++  MkLink::Hard "\$INSTDIR\\${CYGWIN_PREFIX}lib\\pkgconfig\\python3.pc" "\$INSTDIR\\${CYGWIN_PREFIX}lib\\pkgconfig\\python-3.1.pc"
 END
   then
     exit 1

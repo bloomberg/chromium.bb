@@ -114,16 +114,92 @@ parse_setup_ini() {
 }
 
 fix_setup_inf_info() {
-  version["bash"]="4.1.5-0"
-  requires["bash"]="cygwin libintl8 libncurses10 libreadline7 _update-info-dir"
-  install["bash"]="release/bash/bash-4.1.5-0.tar.bz2 1132678 24a05f9c3e7ca0b14fe5e55fc92a1d93"
-  source["bash"]="release/bash/bash-4.1.5-0-src.tar.bz2 6653288 e59479e2ef9b14bdf662709a2d5b0223"
-  version["libreadline7"]="6.1.2-0"
-  install["libreadline7"]="release/readline/libreadline7/libreadline7-6.1.2-0.tar.bz2 89945 afd3ec6a01c015572ff9602cb4bdc794"
-  source["libreadline7"]="release/readline/readline-6.1.2-0-src.tar.bz2 2283352 509b85aa6f723fac3b453f7c84ca3361"
-  version["readline"]="6.1.2-0"
-  install["readline"]="release/readline/readline-6.1.2-0.tar.bz2 288160 f16eeccbb99b41d9128d56ddc5d4ad3c"
-  source["readline"]="release/readline/readline-6.1.2-0-src.tar.bz2 2283352 509b85aa6f723fac3b453f7c84ca3361"
+  sdesc["python3"]="\"Py3K language interpreter\""
+  ldesc["python3"]="\"Python is an interpreted, interactive object-oriented programming language suitable (amongst other uses) for distributed application development, scripting, numeric computing and system testing.  Python is often compared to Tcl, Perl, Java, JavaScript, Visual Basic or Scheme.\""
+  category["python3"]="Python Interpreters"
+  category_contents["Python"]="${category_contents[Python]} python3"
+  category_contents["Interpreters"]="${category_contents[Interpreters]} python3"
+  requires["python3"]="crypt libbz2_1 libexpat1 libffi4 libgcc1 libgdbm4 libintl8 libncursesw10 libreadline7 libsqlite3_0 libopenssl098 zlib0"
+  version["python3"]="3.1.3-1"
+  install["python3"]="release-2/Python/python3/python3-3.1.3-1.tar.bz2 4975090 8debdd0eadfb8672bebcd56ffcec613c"
+  source["python3"]="release-2/Python/python3/python3-3.1.3-1-src.tar.bz2 13708191 5cf02a3eac26ddddad797c0d62e574d4"
+  sdesc["java-ecj"]="\"Eclipse Compiler for Java (library)\""
+  ldesc["java-ecj"]="\"Eclipse Compiler for Java\""
+  category["java-ecj"]="Devel Java"
+  category_contents["Devel"]="${category_contents[Devel]} java-ecj"
+  category_contents["Java"]="${category_contents[Java]} java-ecj"
+  version["java-ecj"]="3.5.2-1"
+  install["java-ecj"]="release-2/Java/ecj/java-ecj/java-ecj-3.5.2-1.tar.bz2 1667730 a1bfd9636a07197f4d2da9b90fa847c4"
+  source["java-ecj"]="release-2/Java/ecj/ecj-3.5.2-1-src.tar.bz2 1250373 30e95a55444836c884b8ca419bf7675a"
+  version["gcc4"]="4.5.2-2"
+  install["gcc4"]="release-2/gcc4/gcc4-4.5.2-2.tar.bz2 14 4059d198768f9f8dc9372dc1c54bc3c3"
+  source["gcc4"]="release-2/gcc4/gcc4-4.5.2-2-src.tar.bz2 66582801 18f9ca9eb0d39b2e7f81a6fa3151d1ad"
+  version["gcc4-ada"]="4.5.2-2"
+  requires["gcc4-ada"]="binutils w32api libgcc1 libgmp3 libintl8 libmpfr1 gcc4-core libgnat4.5 libcloog0 libmpc1 libppl"
+  install["gcc4-ada"]="release-2/gcc4/gcc4-ada/gcc4-ada-4.5.2-2.tar.bz2 14801659 9e35be7a1df1e6fbdec3d8b8dd2bb683"
+  source["gcc4-ada"]="release-2/gcc4/gcc4-4.5.2-2-src.tar.bz2 66582801 18f9ca9eb0d39b2e7f81a6fa3151d1ad"
+  version["gcc4-core"]="4.5.2-2"
+  requires["gcc4-core"]="binutils w32api libgcc1 libgomp1 libssp0 libffi4 libgmp3 libintl8 libmpfr1 libcloog0 libmpc1 libppl"
+  install["gcc4-core"]="release-2/gcc4/gcc4-core/gcc4-core-4.5.2-2.tar.bz2 10749366 d2d54395d79d3dc708f32b13ede04745"
+  source["gcc4-core"]="release-2/gcc4/gcc4-4.5.2-2-src.tar.bz2 66582801 18f9ca9eb0d39b2e7f81a6fa3151d1ad"
+  version["gcc4-fortran"]="4.5.2-2"
+  requires["gcc4-fortran"]="binutils w32api libgcc1 libgfortran3 libgmp3 libintl8 libmpfr1 gcc4-core libcloog0 libmpc1 libppl"
+  install["gcc4-fortran"]="release-2/gcc4/gcc4-fortran/gcc4-fortran-4.5.2-2.tar.bz2 4694636 3bf9e1054006751e249bc3637147a364"
+  source["gcc4-fortran"]="release-2/gcc4/gcc4-4.5.2-2-src.tar.bz2 66582801 18f9ca9eb0d39b2e7f81a6fa3151d1ad"
+  version["gcc4-g++"]="4.5.2-2"
+  requires["gcc4-g++"]="binutils libgcc1 w32api libstdc++6 libstdc++6-devel libgmp3 libintl8 libmpfr1 gcc4-core libcloog0 libmpc1 libppl"
+  install["gcc4-g++"]="release-2/gcc4/gcc4-g++/gcc4-g++-4.5.2-2.tar.bz2 4605327 48a68247e9f0b94415ef2f9cf2ae16d5"
+  source["gcc4-g++"]="release-2/gcc4/gcc4-4.5.2-2-src.tar.bz2 66582801 18f9ca9eb0d39b2e7f81a6fa3151d1ad"
+  version["gcc4-java"]="4.5.2-2"
+  requires["gcc4-java"]="binutils w32api java-ecj libgmp3 libmpfr1 gcc4-g++ gcc4-core libgcc1 libgcj11 libgcj-common libffi4 libcloog0 libintl8 libmpc1 libppl"
+  install["gcc4-java"]="release-2/gcc4/gcc4-java/gcc4-java-4.5.2-2.tar.bz2 55171538 5bfbdf64dc33383f6558d4a3a135482d"
+  source["gcc4-java"]="release-2/gcc4/gcc4-4.5.2-2-src.tar.bz2 66582801 18f9ca9eb0d39b2e7f81a6fa3151d1ad"
+  version["gcc4-objc"]="4.5.2-2"
+  requires["gcc4-objc"]="binutils w32api libgcc1 libgmp3 libintl8 libmpfr1 gcc4-core gcc4-g++ libobjc2 libcloog0 libmpc1 libppl"
+  install["gcc4-objc"]="release-2/gcc4/gcc4-objc/gcc4-objc-4.5.2-2.tar.bz2 7055504 73743b39f95e8b3c17e3437c5458570b"
+  source["gcc4-objc"]="release-2/gcc4/gcc4-4.5.2-2-src.tar.bz2 66582801 18f9ca9eb0d39b2e7f81a6fa3151d1ad"
+  version["libffi4"]="4.5.2-2"
+  requires["libffi4"]="libgcc1"
+  install["libffi4"]="release-2/gcc4/libffi4/libffi4-4.5.2-2.tar.bz2 12011 8eaf537ca7d53df80e6788355e3f1ee8"
+  source["libffi4"]="release-2/gcc4/gcc4-4.5.2-2-src.tar.bz2 66582801 18f9ca9eb0d39b2e7f81a6fa3151d1ad"
+  version["libgcc1"]="4.5.2-2"
+  install["libgcc1"]="release-2/gcc4/libgcc1/libgcc1-4.5.2-2.tar.bz2 39510 910da6c542c3c2ad5fe30739249157cc"
+  source["libgcc1"]="release-2/gcc4/gcc4-4.5.2-2-src.tar.bz2 66582801 18f9ca9eb0d39b2e7f81a6fa3151d1ad"
+  version["libgcj-common"]="4.5.2-2"
+  requires["libgcj-common"]="bash"
+  install["libgcj-common"]="release-2/gcc4/libgcj-common/libgcj-common-4.5.2-2.tar.bz2 2120 ce12c78b3594adb5c28e9caa425fcc0a"
+  source["libgcj-common"]="release-2/gcc4/gcc4-4.5.2-2-src.tar.bz2 66582801 18f9ca9eb0d39b2e7f81a6fa3151d1ad"
+  version["libgcj11"]="4.5.2-2"
+  requires["libgcj11"]="libiconv2 libgcj-common libgcc1"
+  install["libgcj11"]="release-2/gcc4/libgcj11/libgcj11-4.5.2-2.tar.bz2 9720695 835e2dd06238f02ef68aa8abda23b34b"
+  source["libgcj11"]="release-2/gcc4/gcc4-4.5.2-2-src.tar.bz2 66582801 18f9ca9eb0d39b2e7f81a6fa3151d1ad"
+  version["libgfortran3"]="4.5.2-2"
+  requires["libgfortran3"]="libgcc1"
+  install["libgfortran3"]="release-2/gcc4/libgfortran3/libgfortran3-4.5.2-2.tar.bz2 202184 0ab516014a4ec94ea0de37d575947213"
+  source["libgfortran3"]="release-2/gcc4/gcc4-4.5.2-2-src.tar.bz2 66582801 18f9ca9eb0d39b2e7f81a6fa3151d1ad"
+  version["libgnat4.5"]="4.5.2-2"
+  requires["libgnat4.5"]="libgcc1"
+  install["libgnat4.5"]="release-2/gcc4/libgnat4.5/libgnat4.5-4.5.2-2.tar.bz2 866495 58ff56829bbd2963f6a82ff0506c23dd"
+  source["libgnat4.5"]="release-2/gcc4/gcc4-4.5.2-2-src.tar.bz2 66582801 18f9ca9eb0d39b2e7f81a6fa3151d1ad"
+  version["libgomp1"]="4.5.2-2"
+  requires["libgomp1"]="libgcc1"
+  install["libgomp1"]="release-2/gcc4/libgomp1/libgomp1-4.5.2-2.tar.bz2 19479 70c1564321405bc24b998c7ff03320d9"
+  source["libgomp1"]="release-2/gcc4/gcc4-4.5.2-2-src.tar.bz2 66582801 18f9ca9eb0d39b2e7f81a6fa3151d1ad"
+  version["libobjc2"]="4.5.2-2"
+  requires["libobjc2"]="libgcc1"
+  install["libobjc2"]="release-2/gcc4/libobjc2/libobjc2-4.5.2-2.tar.bz2 37645 ecee1a9ffd111d4f09efa71420cfd6f1"
+  source["libobjc2"]="release-2/gcc4/gcc4-4.5.2-2-src.tar.bz2 66582801 18f9ca9eb0d39b2e7f81a6fa3151d1ad"
+  version["libssp0"]="4.5.2-2"
+  requires["libssp0"]="libgcc1"
+  install["libssp0"]="release-2/gcc4/libssp0/libssp0-4.5.2-2.tar.bz2 3798 4b65c6fae1af2f937bbc67fa89a1564b"
+  source["libssp0"]="release-2/gcc4/gcc4-4.5.2-2-src.tar.bz2 66582801 18f9ca9eb0d39b2e7f81a6fa3151d1ad"
+  version["libstdc++6"]="4.5.2-2"
+  requires["libstdc++6"]="libgcc1"
+  install["libstdc++6"]="release-2/gcc4/libstdc++6/libstdc++6-4.5.2-2.tar.bz2 245574 379df93995c956b3a0b3857ade01c2eb"
+  source["libstdc++6"]="release-2/gcc4/gcc4-4.5.2-2-src.tar.bz2 66582801 18f9ca9eb0d39b2e7f81a6fa3151d1ad"
+  version["libstdc++6-devel"]="4.5.2-2"
+  install["libstdc++6-devel"]="release-2/gcc4/libstdc++6-devel/libstdc++6-devel-4.5.2-2.tar.bz2 2677382 e13424866c60017939653d4d24cfd59d"
+  source["libstdc++6-devel"]="release-2/gcc4/gcc4-4.5.2-2-src.tar.bz2 66582801 18f9ca9eb0d39b2e7f81a6fa3151d1ad"
   requires["coreutils"]="${requires[coreutils]} dash grep patch sed"
   requires["cygwin"]="base-files ${requires[cygwin]} editrights ipc-utils run"
   requires["dash"]="${requires[dash]} cygwin"
@@ -163,19 +239,19 @@ download_package_dependences() {
 --- packages.unpacked/`basename "$instname"`/etc/postinstall/base-files-mketc.sh
 +++ packages.unpacked/`basename "$instname"`/etc/postinstall/base-files-mketc.sh
 @@ -14,9 +14,14 @@
+ WINETC="\${WINSYS32HOME}\\\\drivers\\\\etc"
  
- if [ ! -d "\$WINETC" ]
- then
--  echo "Directory \$WINETC does not exist; exiting" >&2
+ if [ ! -d "\${WINETC}" ]; then
+-  echo "Directory \${WINETC} does not exist; exiting" >&2
 -  echo "If directory name is garbage you need to update your cygwin package" >&2
--  exit 0
+-  exit 1
 +  # Vista64 is crazy: symlink is usable, but "-f" to the original is false!
-+  if ln -s "\$WINHOME\\\\sysnative\\\\drivers\\\\etc\\\\lmhosts.sam" /etc/lmhosts.sam && [ -f /etc/lmhosts.sam ] && rm /etc/lmhosts.sam ; then
-+    WINETC="\$WINHOME\\\\sysnative\\\\drivers\\\\etc"
++  if ln -s "\`/bin/cygpath -w -W\`\\\\sysnative\\\\drivers\\\\etc\\\\lmhosts.sam" /etc/lmhosts.sam && [ -f /etc/lmhosts.sam ] && rm /etc/lmhosts.sam ; then
++    WINETC="\`/bin/cygpath -w -W\`\\\\sysnative\\\\drivers\\\\etc"
 +  else
-+    echo "Directory \$WINETC does not exist; exiting" >&2
++    echo "Directory \${WINETC} does not exist; exiting" >&2
 +    echo "If directory name is garbage you need to update your cygwin package" >&2
-+    exit 0
++    exit 1
 +  fi
  fi
  
@@ -948,26 +1024,32 @@ END
         local sc_name="${secname}_${sanitized_name[$pkgname]}"
         echo "  SectionGetFlags \${sec_$sc_name} \$R0"
         echo "  IntOp \$R1 \$R0 & \${SF_SELECTED}"
-        echo "  IntCmp \$sv_$sc_name \$R1 L3_$sc_name"
+        if [[ "$defpackage" == "NONE" ]] ; then
+          echo "  IntCmp \$sv_$sc_name \$R1 L4_$sc_name"
+        else
+          echo "  IntCmp \$sv_$sc_name \$R1 L2_$sc_name"
+        fi
         echo "  IntCmp \$sv_$sc_name 0 L1_$sc_name"
         echo "  StrCpy \$$PKV_name 0"
         for subpkgname in ${required["$pkgname"]} ; do
           if [[ "${allinstpackages[$subpkgname]}" = "present" ]] ; then
+            echo "  IntCmp \$PKV_${sanitized_name[$subpkgname]} 9 +2 +1 +2"
             echo "  StrCpy \$PKV_${sanitized_name[$subpkgname]} 0"
           fi
         done
-        echo "  Goto L3_$sc_name"
+        echo "  Goto L4_$sc_name"
         echo "L1_$sc_name:"
         if [[ "$defpackage" != "NONE" ]] ; then
-          echo "  IntCmp \$R2 0 L2_$sc_name +1 +1"
-          for subpkgname in ${seed["$pkgname"]} ; do
-            echo "  IntCmp \$SVV_InstType $((subpkgname-1)) L2_$sc_name +1 +1"
-          done
-          echo "  GoTo L3_$sc_name"
+          echo "  IntCmp \$R2 0 L3_$sc_name +1 +1"
           echo "L2_$sc_name:"
+          for subpkgname in ${seed["$pkgname"]} ; do
+            echo "  IntCmp \$SVV_InstType $((subpkgname-1)) L3_$sc_name +1 +1"
+          done
+          echo "  GoTo L4_$sc_name"
+          echo "L3_$sc_name:"
         fi
         echo "  StrCpy \$$PKV_name 9"
-        echo "L3_$sc_name:"
+        echo "L4_$sc_name:"
       fi
     done
   done
@@ -980,12 +1062,12 @@ END
   # Put the dependences back
   for pkgname in "${allinstalledpackages[@]}" ; do
     if ((verbose)) ; then echo "Set state: \"$pkgname\"..." >&2 ; fi
-    echo "  IntCmp \$PKV_${sanitized_name[$pkgname]} 9 +1 L4_${sanitized_name[$pkgname]} +1"
+    echo "  IntCmp \$PKV_${sanitized_name[$pkgname]} 9 +1 L5_${sanitized_name[$pkgname]} +1"
     for subpkgname in ${requires["$pkgname"]} ; do
       echo "  IntCmp \$PKV_${sanitized_name[$subpkgname]} 9 +2 +1 +2"
       echo "  StrCpy \$PKV_${sanitized_name[$subpkgname]} 1"
     done
-    echo "L4_${sanitized_name[$pkgname]}:"
+    echo "L5_${sanitized_name[$pkgname]}:"
   done
   # Copy the calculated new state to the screen
   for pkgname in "${allinstalledpackages[@]}" ; do
