@@ -2,7 +2,8 @@ include_rules = [
   "+content/gpu",  # For gpu_info_collector.h.  Needs to move to common\gpu.
 
   # Listing of the remaining #chrome includes in content\browser.  People are
-  # actively working on reducing this to 0.  Do not add any more!
+  # actively working on reducing this to 0.
+  # DO NOT ADD ANY MORE TO THIS LIST!!!
 
   "+chrome/browser/browser_url_handler.h",
 
@@ -30,4 +31,6 @@ include_rules = [
 
   # ONLY USED BY TESTS
   "+chrome/browser/ui/browser.h",
+  
+  # DO NOT ADD ANY MORE TO THIS LIST!!!  SEE ABOVE COMMENT
 ]
