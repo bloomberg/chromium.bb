@@ -13,8 +13,6 @@ import pyauto
 class FlashTest(pyauto.PyUITest):
   """Test Cases for Flash."""
 
-  YOUTUBE_URL = 'http://www.youtube.com/watch?v=0QRO3gKj3qw'
-
   def setUp(self):
     pyauto.PyUITest.setUp(self)
     self._flash_plugin_type = 'Plug-in'
@@ -97,10 +95,11 @@ class FlashTest(pyauto.PyUITest):
 
   def testYouTubeVideo(self):
     """Verify able to watch youtube.com."""
+    youtube_url = 'http://www.youtube.com/watch?v=0QRO3gKj3qw'
     # Verify no flash process is present.
     self._AssertFlashProcessNotPresent()
     # Play YouTube video.
-    self.NavigateToURL(self.YOUTUBE_URL)
+    self.NavigateToURL(youtube_url)
     self._AssertFlashProcessPresent()
 
   def testFlashIncognitoMode(self):
@@ -114,12 +113,13 @@ class FlashTest(pyauto.PyUITest):
 
   def testFlashWithMultipleTabs(self):
     """Verify we can play flash in multiple tabs."""
+    flash_url = self.GetFileURLForDataPath('plugin', 'flash.swf')
     # Verify no flash process is currently running
     self._AssertFlashProcessNotPresent()
-    self.NavigateToURL(self.YOUTUBE_URL)
+    self.NavigateToURL(flash_url)
     # Open 5 new tabs
     for _ in range(5):
-      self.AppendTab(pyauto.GURL(self.YOUTUBE_URL))
+      self.AppendTab(pyauto.GURL(flash_url))
     self._AssertFlashProcessPresent()
 
 
