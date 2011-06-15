@@ -15,6 +15,17 @@ const size_t kDefaultURLPathLen = arraysize(kDefaultURLPath) - 1;
 namespace chromeos {
 namespace input_method {
 
+VirtualKeyboard::VirtualKeyboard(const GURL& url,
+                                 const std::set<std::string>& supported_layouts,
+                                 bool is_system)
+    : url_(url),
+      supported_layouts_(supported_layouts),
+      is_system_(is_system) {
+}
+
+VirtualKeyboard::~VirtualKeyboard() {
+}
+
 GURL VirtualKeyboard::GetURLForLayout(const std::string& layout) const {
   if (layout.empty()) {
     return url_;

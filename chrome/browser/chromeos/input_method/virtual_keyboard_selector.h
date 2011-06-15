@@ -22,10 +22,8 @@ class VirtualKeyboard {
  public:
   VirtualKeyboard(const GURL& url,
                   const std::set<std::string>& supported_layouts,
-                  bool is_system)
-      : url_(url),
-        supported_layouts_(supported_layouts),
-        is_system_(is_system) {}
+                  bool is_system);
+  ~VirtualKeyboard();
 
   // Returns URL for displaying the keyboard UI specified by |layout|.
   // For example, when |url_| is "http://adcfj..kjhil/" and |layout| is "us",
