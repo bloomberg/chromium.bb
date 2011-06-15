@@ -89,7 +89,7 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
                  PPP_Instance_Combined* instance_interface);
 
   // Delete should be called by the WebPlugin before this destructor.
-  ~PluginInstance();
+  virtual ~PluginInstance();
 
   // Returns a pointer to the interface implementing PPB_Find that is
   // exposed to the plugin.
@@ -275,7 +275,7 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
   }
 
   // FunctionGroupBase overrides.
-  ::ppapi::thunk::PPB_Instance_FunctionAPI* AsPPB_Instance_FunctionAPI()
+  virtual ::ppapi::thunk::PPB_Instance_FunctionAPI* AsPPB_Instance_FunctionAPI()
       OVERRIDE;
 
   // PPB_Instance_API implementation.
