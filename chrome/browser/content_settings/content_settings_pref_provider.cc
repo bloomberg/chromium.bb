@@ -752,55 +752,48 @@ void PrefProvider::ReadExceptions(bool overwrite) {
           pattern_str, &settings_dictionary);
       DCHECK(found);
 
-      for (DictionaryValue::key_iterator i(settings_dictionary->begin_keys());
-           i != settings_dictionary->end_keys();
-           ++i) {
-        const std::string& content_type_str(*i);
-        ContentSettingsType content_type = StringToContentSettingsType(
-            content_type_str);
-        if (content_type == CONTENT_SETTINGS_TYPE_DEFAULT) {
-          NOTREACHED();
-          LOG(WARNING) << "Skip settings for invalid content settings type '"
-                       << content_type_str << "'";
-          continue;
-        }
+      for (size_t i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
+        ContentSettingsType content_type = static_cast<ContentSettingsType>(i);
 
         if (RequiresResourceIdentifier(content_type)) {
+          const std::string content_type_str = kResourceTypeNames[i];
           DictionaryValue* resource_dictionary = NULL;
-          bool found = settings_dictionary->GetDictionary(
-              content_type_str, &resource_dictionary);
-          DCHECK(found);
-          for (DictionaryValue::key_iterator j(
-                   resource_dictionary->begin_keys());
-               j != resource_dictionary->end_keys();
-               ++j) {
-            const std::string& resource_identifier(*j);
-            int setting = CONTENT_SETTING_DEFAULT;
-            found = resource_dictionary->GetIntegerWithoutPathExpansion(
-                resource_identifier, &setting);
-            DCHECK(found);
+          if (settings_dictionary->GetDictionary(
+                  content_type_str, &resource_dictionary)) {
+            for (DictionaryValue::key_iterator j(
+                     resource_dictionary->begin_keys());
+                 j != resource_dictionary->end_keys();
+                 ++j) {
+              const std::string& resource_identifier(*j);
+              int setting = CONTENT_SETTING_DEFAULT;
+              found = resource_dictionary->GetIntegerWithoutPathExpansion(
+                  resource_identifier, &setting);
+              DCHECK_NE(CONTENT_SETTING_DEFAULT, setting);
+              setting = ClickToPlayFixup(content_type,
+                                         ContentSetting(setting));
+              value_map_.SetValue(pattern,
+                                  pattern,
+                                  content_type,
+                                  resource_identifier,
+                                  Value::CreateIntegerValue(setting));
+            }
+          }
+        } else if (kTypeNames[i]) {
+          const std::string content_type_str(kTypeNames[i]);
+          int setting = CONTENT_SETTING_DEFAULT;
+          if (settings_dictionary->GetIntegerWithoutPathExpansion(
+                  content_type_str, &setting)) {
+            DCHECK_NE(CONTENT_SETTING_DEFAULT, setting);
+            setting = FixObsoleteCookiePromptMode(content_type,
+                                                  ContentSetting(setting));
             setting = ClickToPlayFixup(content_type,
                                        ContentSetting(setting));
             value_map_.SetValue(pattern,
                                 pattern,
                                 content_type,
-                                resource_identifier,
+                                ResourceIdentifier(""),
                                 Value::CreateIntegerValue(setting));
           }
-        } else {
-          int setting = CONTENT_SETTING_DEFAULT;
-          bool found = settings_dictionary->GetIntegerWithoutPathExpansion(
-              content_type_str, &setting);
-          DCHECK(found);
-          setting = FixObsoleteCookiePromptMode(content_type,
-                                                ContentSetting(setting));
-          setting = ClickToPlayFixup(content_type,
-                                     ContentSetting(setting));
-          value_map_.SetValue(pattern,
-                              pattern,
-                              content_type,
-                              ResourceIdentifier(""),
-                              Value::CreateIntegerValue(setting));
         }
       }
     }
