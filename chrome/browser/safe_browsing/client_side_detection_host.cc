@@ -13,6 +13,7 @@
 #include "base/task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/safe_browsing/browser_feature_extractor.h"
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/chrome_switches.h"
@@ -264,6 +265,7 @@ ClientSideDetectionHost* ClientSideDetectionHost::Create(
 ClientSideDetectionHost::ClientSideDetectionHost(TabContents* tab)
     : TabContentsObserver(tab),
       csd_service_(g_browser_process->safe_browsing_detection_service()),
+      feature_extractor_(new BrowserFeatureExtractor(tab)),
       cb_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   DCHECK(tab);
   // Note: csd_service_ and sb_service_ might be NULL.
@@ -340,12 +342,12 @@ void ClientSideDetectionHost::OnDetectedPhishingSite(
     // There shouldn't be any pending requests because we revoke them everytime
     // we navigate away.
     DCHECK(!cb_factory_.HasPendingCallbacks());
-    VLOG(2) << "Start sending client phishing request for URL: "
-            << verdict->url();
-    csd_service_->SendClientReportPhishingRequest(
-        verdict.release(),  // The service takes ownership of the verdict.
-        cb_factory_.NewCallback(
-            &ClientSideDetectionHost::MaybeShowPhishingWarning));
+
+    // Start browser-side feature extraction.  Once we're done it will send
+    // the client verdict request.
+    feature_extractor_->ExtractFeatures(
+        verdict.release(),
+        NewCallback(this, &ClientSideDetectionHost::FeatureExtractionDone));
   }
 }
 
@@ -375,6 +377,22 @@ void ClientSideDetectionHost::MaybeShowPhishingWarning(GURL phishing_url,
       }
     }
   }
+}
+
+void ClientSideDetectionHost::FeatureExtractionDone(
+    bool success,
+    ClientPhishingRequest* request) {
+  if (!request) {
+    DLOG(FATAL) << "Invalid request object in FeatureExtractionDone";
+    return;
+  }
+  VLOG(2) << "Feature extraction done (success:" << success << ") for URL: "
+          << request->url() << ". Start sending client phishing request.";
+  // Send ping no matter what - even if the browser feature extraction failed.
+  csd_service_->SendClientReportPhishingRequest(
+      request,  // The service takes ownership of the request object.
+      cb_factory_.NewCallback(
+          &ClientSideDetectionHost::MaybeShowPhishingWarning));
 }
 
 void ClientSideDetectionHost::set_client_side_detection_service(
