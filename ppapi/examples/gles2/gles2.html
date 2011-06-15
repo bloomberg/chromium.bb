@@ -9,11 +9,16 @@
   <title>GLES2 Example</title>
 </head>
 
-<body style="background-color:Silver; -webkit-perspective: 500;">
+<body style="background-color:Silver">
 
+<!--
+TODO(vrk/fischman):
+It seems the plugin crashes unless this "-webkit-transform" style is
+in place. Seems to be a problem with lost context.
+-->
 <embed id="plugin" type="application/x-ppapi-example-gles2"
-        style="-webkit-transform: rotateY(-45deg); -webkit-transform: rotateX(-45deg);"
-        width="300" height="200"/>
+        style="-webkit-transform: rotateY(-0deg);"
+        width="320" height="240"/>
 
 </body>
 </html>

@@ -172,7 +172,7 @@
 #      'target_name': 'ppapi_example_gles2',
 #      'dependencies': [
 #        'ppapi_example_skeleton',
-#        'ppapi_gles2',
+#        'ppapi.gyp:ppapi_gles2',
 #        'lib/gl/gl.gyp:ppapi_egl',
 #      ],
 #      'include_dirs': [
@@ -180,6 +180,7 @@
 #      ],
 #      'sources': [
 #        'examples/gles2/gles2.cc',
+#        'examples/gles2/testdata.h',
 #      ],
 #    },
     {
