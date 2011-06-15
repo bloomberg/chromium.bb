@@ -24,6 +24,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSize.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebVector.h"
 
 using WebKit::WebAccessibilityCache;
 using WebKit::WebAccessibilityRole;
@@ -351,13 +352,16 @@ void WebAccessibility::Init(const WebKit::WebAccessibilityObject& src,
     if (element.isFormControlElement()) {
       WebKit::WebFormControlElement form_element =
           element.to<WebKit::WebFormControlElement>();
-      if (form_element.formControlType() == ASCIIToUTF16("text")) {
-        WebKit::WebInputElement input_element =
-            form_element.to<WebKit::WebInputElement>();
+      if (form_element.formControlType() == ASCIIToUTF16("text") ||
+          form_element.formControlType() == ASCIIToUTF16("textarea")) {
         attributes[ATTR_TEXT_SEL_START] = base::IntToString16(
-            input_element.selectionStart());
-        attributes[ATTR_TEXT_SEL_END] = base::IntToString16(
-            input_element.selectionEnd());
+            src.selectionStart());
+        attributes[ATTR_TEXT_SEL_END] = base::IntToString16(src.selectionEnd());
+        WebKit::WebVector<int> src_line_breaks;
+        src.lineBreaks(src_line_breaks);
+        line_breaks.reserve(src_line_breaks.size());
+        for (size_t i = 0; i < src_line_breaks.size(); i++)
+          line_breaks.push_back(src_line_breaks[i]);
       }
     }
   }

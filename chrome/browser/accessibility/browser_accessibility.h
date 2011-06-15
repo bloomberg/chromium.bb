@@ -208,6 +208,7 @@ class BrowserAccessibility {
   string16 role_name_;
   gfx::Rect location_;
   std::vector<int32> indirect_child_ids_;
+  std::vector<int32> line_breaks_;
 
   // BrowserAccessibility objects are reference-counted on some platforms.
   // When we're done with this object and it's removed from our accessibility

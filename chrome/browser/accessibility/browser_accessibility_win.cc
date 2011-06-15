@@ -548,7 +548,8 @@ STDMETHODIMP BrowserAccessibilityWin::get_nCharacters(LONG* n_characters) {
   if (!n_characters)
     return E_INVALIDARG;
 
-  if (role_ == WebAccessibility::ROLE_TEXT_FIELD) {
+  if (role_ == WebAccessibility::ROLE_TEXT_FIELD ||
+      role_ == WebAccessibility::ROLE_TEXTAREA) {
     *n_characters = value_.length();
   } else {
     *n_characters = name_.length();
@@ -564,7 +565,8 @@ STDMETHODIMP BrowserAccessibilityWin::get_caretOffset(LONG* offset) {
   if (!offset)
     return E_INVALIDARG;
 
-  if (role_ == WebAccessibility::ROLE_TEXT_FIELD) {
+  if (role_ == WebAccessibility::ROLE_TEXT_FIELD ||
+      role_ == WebAccessibility::ROLE_TEXTAREA) {
     int sel_start = 0;
     if (GetAttributeAsInt(WebAccessibility::ATTR_TEXT_SEL_START, &sel_start)) {
       *offset = sel_start;
@@ -585,7 +587,8 @@ STDMETHODIMP BrowserAccessibilityWin::get_nSelections(LONG* n_selections) {
   if (!n_selections)
     return E_INVALIDARG;
 
-  if (role_ == WebAccessibility::ROLE_TEXT_FIELD) {
+  if (role_ == WebAccessibility::ROLE_TEXT_FIELD ||
+      role_ == WebAccessibility::ROLE_TEXTAREA) {
     int sel_start = 0;
     int sel_end = 0;
     if (GetAttributeAsInt(WebAccessibility::ATTR_TEXT_SEL_START, &sel_start) &&
@@ -611,7 +614,8 @@ STDMETHODIMP BrowserAccessibilityWin::get_selection(LONG selection_index,
   if (!start_offset || !end_offset || selection_index != 0)
     return E_INVALIDARG;
 
-  if (role_ == WebAccessibility::ROLE_TEXT_FIELD) {
+  if (role_ == WebAccessibility::ROLE_TEXT_FIELD ||
+      role_ == WebAccessibility::ROLE_TEXTAREA) {
     int sel_start = 0;
     int sel_end = 0;
     if (GetAttributeAsInt(WebAccessibility::ATTR_TEXT_SEL_START, &sel_start) &&
@@ -1209,7 +1213,8 @@ string16 BrowserAccessibilityWin::Escape(const string16& str) {
 }
 
 const string16& BrowserAccessibilityWin::TextForIAccessibleText() {
-  if (role_ == WebAccessibility::ROLE_TEXT_FIELD) {
+  if (role_ == WebAccessibility::ROLE_TEXT_FIELD ||
+      role_ == WebAccessibility::ROLE_TEXTAREA) {
     return value_;
   } else {
     return name_;
@@ -1243,6 +1248,20 @@ LONG BrowserAccessibilityWin::FindBoundary(
       return start_offset + 1;
     else
       return start_offset;
+  } else if (boundary == IA2_TEXT_BOUNDARY_LINE) {
+    if (direction == 1) {
+      for (int j = 0; j < static_cast<int>(line_breaks_.size()); j++) {
+        if (line_breaks_[j] > start_offset)
+          return line_breaks_[j];
+      }
+      return text_size;
+    } else {
+      for (int j = static_cast<int>(line_breaks_.size()) - 1; j >= 0; j--) {
+        if (line_breaks_[j] <= start_offset)
+          return line_breaks_[j];
+      }
+      return 0;
+    }
   }
 
   LONG result = start_offset;
@@ -1259,11 +1278,14 @@ LONG BrowserAccessibilityWin::FindBoundary(
     }
 
     switch (boundary) {
+      case IA2_TEXT_BOUNDARY_CHAR:
+      case IA2_TEXT_BOUNDARY_LINE:
+        NOTREACHED();  // These are handled above.
+        break;
       case IA2_TEXT_BOUNDARY_WORD:
         if (IsWhitespace(text[pos]))
           return result;
         break;
-      case IA2_TEXT_BOUNDARY_LINE:
       case IA2_TEXT_BOUNDARY_PARAGRAPH:
         if (text[pos] == '\n')
           return result;
@@ -1552,11 +1574,13 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       ia_role_ = ROLE_SYSTEM_TEXT;
       ia2_state_ |= IA2_STATE_MULTI_LINE;
       ia2_state_ |= IA2_STATE_EDITABLE;
+      ia2_state_ |= IA2_STATE_SELECTABLE_TEXT;
       break;
     case WebAccessibility::ROLE_TEXT_FIELD:
       ia_role_ = ROLE_SYSTEM_TEXT;
       ia2_state_ |= IA2_STATE_SINGLE_LINE;
       ia2_state_ |= IA2_STATE_EDITABLE;
+      ia2_state_ |= IA2_STATE_SELECTABLE_TEXT;
       break;
     case WebAccessibility::ROLE_TIMER:
       ia_role_ = ROLE_SYSTEM_CLOCK;

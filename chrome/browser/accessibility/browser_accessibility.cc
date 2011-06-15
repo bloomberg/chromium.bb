@@ -61,6 +61,7 @@ void BrowserAccessibility::Initialize(
   role_ = src.role;
   state_ = src.state;
   indirect_child_ids_ = src.indirect_child_ids;
+  line_breaks_ = src.line_breaks;
 
   Initialize();
 }

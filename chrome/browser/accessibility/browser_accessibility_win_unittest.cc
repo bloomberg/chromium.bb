@@ -285,6 +285,7 @@ TEST_F(BrowserAccessibilityTest, TestTextBoundaries) {
   text1.role = WebAccessibility::ROLE_TEXT_FIELD;
   text1.state = 0;
   text1.value = L"One two three.\nFour five six.";
+  text1.line_breaks.push_back(15);
 
   WebAccessibility root;
   root.id = 1;
@@ -354,8 +355,8 @@ TEST_F(BrowserAccessibilityTest, TestTextBoundaries) {
   ASSERT_EQ(S_OK, text1_obj->get_textAtOffset(
       1, IA2_TEXT_BOUNDARY_LINE, &start, &end, &text));
   ASSERT_EQ(start, 0);
-  ASSERT_EQ(end, 13);
-  ASSERT_EQ(text, string16(L"One two three"));
+  ASSERT_EQ(end, 15);
+  ASSERT_EQ(text, string16(L"One two three.\n"));
   SysFreeString(text);
 
   ASSERT_EQ(S_OK, text1_obj->get_text(0, IA2_TEXT_OFFSET_LENGTH, &text));

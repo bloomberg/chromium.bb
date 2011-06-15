@@ -358,6 +358,7 @@ IPC_STRUCT_TRAITS_BEGIN(webkit_glue::WebAccessibility)
   IPC_STRUCT_TRAITS_MEMBER(children)
   IPC_STRUCT_TRAITS_MEMBER(indirect_child_ids)
   IPC_STRUCT_TRAITS_MEMBER(html_attributes)
+  IPC_STRUCT_TRAITS_MEMBER(line_breaks)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(webkit_glue::WebCookie)
@@ -1962,4 +1963,3 @@ IPC_MESSAGE_CONTROL1(ViewHostMsg_UserMetricsRecordAction,
 IPC_MESSAGE_CONTROL2(ViewHostMsg_FPS,
                      int /* routing id */,
                      float /* frames per second */)
-
