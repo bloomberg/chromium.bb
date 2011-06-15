@@ -8,6 +8,7 @@
 #include <dlfcn.h>
 #include <map>
 #include <queue>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -24,6 +25,8 @@
 #include "third_party/openmax/il/OMX_Video.h"
 
 // Class to wrap OpenMAX IL accelerator behind VideoDecodeAccelerator interface.
+// The implementation assumes an OpenMAX IL 1.1.2 implementation conforming to
+// http://www.khronos.org/registry/omxil/specs/OpenMAX_IL_1_1_2_Specification.pdf
 class OmxVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
  public:
   OmxVideoDecodeAccelerator(media::VideoDecodeAccelerator::Client* client,
@@ -31,7 +34,7 @@ class OmxVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   virtual ~OmxVideoDecodeAccelerator();
 
   // media::VideoDecodeAccelerator implementation.
-  void GetConfigs(const std::vector<uint32>& requested_configs,
+  bool GetConfigs(const std::vector<uint32>& requested_configs,
                   std::vector<uint32>* matched_configs) OVERRIDE;
   bool Initialize(const std::vector<uint32>& config) OVERRIDE;
   bool Decode(const media::BitstreamBuffer& bitstream_buffer) OVERRIDE;
@@ -75,8 +78,6 @@ class OmxVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   void OnStateChangeIdleToLoaded(OMX_STATETYPE state);
   // Stop the components when error is detected.
   void StopOnError();
-  // Trigger the initial call to FillBuffers to start the decoding process.
-  void InitialFillBuffer();
   // Methods for shutdown
   void PauseFromExecuting(OMX_STATETYPE ignored);
   void FlushIOPorts();
@@ -92,11 +93,12 @@ class OmxVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   bool CanEmptyBuffer();
   bool CanFillBuffer();
   void OnPortSettingsChangedRun(int port, OMX_INDEXTYPE index);
-
-  // Decoded width/height from bitstream.
-  int width_;
-  int height_;
-  std::vector<uint32> component_config_;
+  // Whenever port settings change, the first thing we must do is disable the
+  // port (see Figure 3-18 of the OpenMAX IL spec linked to above).  When the
+  // port is disabled, the component will call us back here.  We then re-enable
+  // the port once we have textures, and that's the second method below.
+  void PortDisabledForSettingsChange(int port);
+  void PortEnabledAfterSettingsChange(int port);
 
   // IL-client state.
   OMX_STATETYPE client_state_;
@@ -122,6 +124,12 @@ class OmxVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
 
   // For output buffer recycling cases.
   OutputPictureById pictures_;
+
+  // To kick the component from Loaded to Idle before we know the real size of
+  // the video (so can't yet ask for textures) we populate it with fake output
+  // buffers.  Keep track of them here.
+  // TODO(fischman): do away with this madness.
+  std::set<OMX_BUFFERHEADERTYPE*> fake_output_buffers_;
 
   // To expose client callbacks from VideoDecodeAccelerator.
   // NOTE: all calls to this object *MUST* be executed in message_loop_.

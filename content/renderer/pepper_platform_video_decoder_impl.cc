@@ -27,11 +27,12 @@ PlatformVideoDecoderImpl::PlatformVideoDecoderImpl(
 
 PlatformVideoDecoderImpl::~PlatformVideoDecoderImpl() {}
 
-void PlatformVideoDecoderImpl::GetConfigs(
+bool PlatformVideoDecoderImpl::GetConfigs(
     const std::vector<uint32>& requested_configs,
     std::vector<uint32>* matched_configs) {
   // TODO(vrk): Implement.
   NOTIMPLEMENTED();
+  return true;
 }
 
 bool PlatformVideoDecoderImpl::Initialize(const std::vector<uint32>& config) {

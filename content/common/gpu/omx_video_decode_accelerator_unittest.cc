@@ -551,6 +551,7 @@ void EglRenderingVDAClient::NotifyEndOfBitstreamBuffer(
 
 void EglRenderingVDAClient::NotifyFlushDone() {
   SetState(CS_FLUSHED);
+  decoder_->Abort();
 }
 
 void EglRenderingVDAClient::NotifyAbortDone() {
@@ -609,7 +610,7 @@ void EglRenderingVDAClient::DecodeNextNALUs() {
   CHECK(shm.ShareToProcess(base::Process::Current().handle(), &dup_handle));
   media::BitstreamBuffer bitstream_buffer(
       next_bitstream_buffer_id_++, dup_handle, end_pos - start_pos);
-  decoder_->Decode(bitstream_buffer);
+  CHECK(decoder_->Decode(bitstream_buffer));
   encoded_data_next_pos_to_decode_ = end_pos;
 }
 
@@ -703,6 +704,8 @@ TEST_P(OmxVideoDecodeAcceleratorTest, TestSimpleDecode) {
     // InitializeDone kicks off decoding inside the client, so we just need to
     // wait for Flush.
     ASSERT_EQ(note->Wait(), CS_FLUSHED);
+    // FlushDone requests Abort().
+    ASSERT_EQ(note->Wait(), CS_ABORTED);
   }
   // Finally assert that decoding went as expected.
   for (size_t i = 0; i < num_concurrent_decoders; ++i) {

@@ -35,7 +35,7 @@ class GpuVideoDecodeAcceleratorHost : public IPC::Channel::Listener,
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // media::VideoDecodeAccelerator implementation.
-  virtual void GetConfigs(
+  virtual bool GetConfigs(
       const std::vector<uint32>& requested_configs,
       std::vector<uint32>* matched_configs) OVERRIDE;
   virtual bool Initialize(const std::vector<uint32>& configs) OVERRIDE;

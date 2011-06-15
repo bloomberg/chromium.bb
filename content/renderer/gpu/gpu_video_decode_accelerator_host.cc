@@ -65,11 +65,12 @@ bool GpuVideoDecodeAcceleratorHost::OnMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
-void GpuVideoDecodeAcceleratorHost::GetConfigs(
+bool GpuVideoDecodeAcceleratorHost::GetConfigs(
     const std::vector<uint32>& requested_configs,
     std::vector<uint32>* matched_configs) {
   // TODO(vrk): Need to rethink GetConfigs.
   NOTIMPLEMENTED();
+  return true;
 }
 
 bool GpuVideoDecodeAcceleratorHost::Initialize(
