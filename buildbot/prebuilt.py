@@ -485,9 +485,9 @@ class PrebuiltUploader(object):
       excluded_paths = ('usr/lib/debug', 'usr/local/autotest', 'packages',
                         'tmp')
       for path in excluded_paths:
-        cmd.append('--exclude=%s/%s/*' % (boardname, path))
-      cmd.append(boardname)
-      cros_build_lib.RunCommand(cmd, cwd=cwd)
+        cmd.append('--exclude=%s/*' % path)
+      cmd.append('.')
+      cros_build_lib.RunCommand(cmd, cwd=os.path.join(cwd, boardname))
       remote_tarfile = '%s/%s.tbz2' % (remote_location.rstrip('/'), boardname)
       if _GsUpload((tarfile, remote_tarfile, self._acl)):
         sys.exit(1)
