@@ -1757,7 +1757,6 @@ bool SyncManager::SyncInternal::Init(
   setup_for_test_mode_ = setup_for_test_mode;
 
   sync_notifier_ = sync_notifier;
-  sync_notifier_->AddObserver(this);
 
   share_.dir_manager.reset(new DirectoryManager(database_location));
 
@@ -1800,6 +1799,13 @@ bool SyncManager::SyncInternal::Init(
   // Do this once the directory is opened.
   BootstrapEncryption(restored_key_for_bootstrapping);
   MarkAndNotifyInitializationComplete();
+
+  // Only listen to notification once we are completely initialized. This is
+  // necessary because calls to e.g. |SetState| or |UpdateCredentials| may
+  // trigger notifications, and those can be called before initialized_ is set
+  // to true.
+  sync_notifier_->AddObserver(this);
+
   return signed_in;
 }
 
