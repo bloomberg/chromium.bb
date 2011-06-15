@@ -94,11 +94,6 @@ WebPluginProxy::~WebPluginProxy() {
   if (accelerated_surface_.get())
     accelerated_surface_.reset();
 #endif
-
-  if (plugin_element_)
-    WebBindings::releaseObject(plugin_element_);
-  if (window_npobject_)
-    WebBindings::releaseObject(window_npobject_);
 }
 
 bool WebPluginProxy::Send(IPC::Message* msg) {
@@ -201,7 +196,7 @@ void WebPluginProxy::InvalidateRect(const gfx::Rect& rect) {
 
 NPObject* WebPluginProxy::GetWindowScriptNPObject() {
   if (window_npobject_)
-    return window_npobject_;
+    return WebBindings::retainObject(window_npobject_);
 
   int npobject_route_id = channel_->GenerateRouteID();
   bool success = false;
@@ -218,7 +213,7 @@ NPObject* WebPluginProxy::GetWindowScriptNPObject() {
 
 NPObject* WebPluginProxy::GetPluginElement() {
   if (plugin_element_)
-    return plugin_element_;
+    return WebBindings::retainObject(plugin_element_);
 
   int npobject_route_id = channel_->GenerateRouteID();
   bool success = false;
