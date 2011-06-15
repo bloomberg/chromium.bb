@@ -49,11 +49,6 @@ MATCHER_P(EqualsProto, other, "") {
   return other.SerializeAsString() == arg.SerializeAsString();
 }
 
-ACTION(QuitUIMessageLoop) {
-  EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  MessageLoopForUI::current()->Quit();
-}
-
 class MockClientSideDetectionService : public ClientSideDetectionService {
  public:
   explicit MockClientSideDetectionService(const FilePath& model_path)
@@ -103,7 +98,7 @@ class MockTestingProfile : public TestingProfile {
 };
 
 // Helper function which quits the UI message loop from the IO message loop.
-void QuitUIMessageLoopFromIO() {
+void QuitUIMessageLoop() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   BrowserThread::PostTask(BrowserThread::UI,
                           FROM_HERE,
@@ -155,7 +150,7 @@ class ClientSideDetectionHostTest : public TabContentsWrapperTestHarness {
     // we put the quit message there.
     BrowserThread::PostTask(BrowserThread::IO,
                             FROM_HERE,
-                            NewRunnableFunction(&QuitUIMessageLoopFromIO));
+                            NewRunnableFunction(&QuitUIMessageLoop));
     MessageLoop::current()->Run();
   }
 
@@ -232,9 +227,8 @@ TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteNotPhishing) {
 
   EXPECT_CALL(*csd_service_,
               SendClientReportPhishingRequest(Pointee(EqualsProto(verdict)), _))
-      .WillOnce(DoAll(DeleteArg<0>(), SaveArg<1>(&cb), QuitUIMessageLoop()));
+      .WillOnce(DoAll(DeleteArg<0>(), SaveArg<1>(&cb)));
   OnDetectedPhishingSite(verdict.SerializeAsString());
-  MessageLoop::current()->Run();
   EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));
   ASSERT_TRUE(cb);
 
@@ -257,9 +251,8 @@ TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteDisabled) {
 
   EXPECT_CALL(*csd_service_,
               SendClientReportPhishingRequest(Pointee(EqualsProto(verdict)), _))
-      .WillOnce(DoAll(DeleteArg<0>(), SaveArg<1>(&cb), QuitUIMessageLoop()));
+      .WillOnce(DoAll(DeleteArg<0>(), SaveArg<1>(&cb)));
   OnDetectedPhishingSite(verdict.SerializeAsString());
-  MessageLoop::current()->Run();
   EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));
   ASSERT_TRUE(cb);
 
@@ -283,9 +276,8 @@ TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteShowInterstitial) {
 
   EXPECT_CALL(*csd_service_,
               SendClientReportPhishingRequest(Pointee(EqualsProto(verdict)), _))
-      .WillOnce(DoAll(DeleteArg<0>(), SaveArg<1>(&cb), QuitUIMessageLoop()));
+      .WillOnce(DoAll(DeleteArg<0>(), SaveArg<1>(&cb)));
   OnDetectedPhishingSite(verdict.SerializeAsString());
-  MessageLoop::current()->Run();
   EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));
   ASSERT_TRUE(cb);
 
@@ -336,9 +328,8 @@ TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteMultiplePings) {
 
   EXPECT_CALL(*csd_service_,
               SendClientReportPhishingRequest(Pointee(EqualsProto(verdict)), _))
-      .WillOnce(DoAll(DeleteArg<0>(), SaveArg<1>(&cb), QuitUIMessageLoop()));
+      .WillOnce(DoAll(DeleteArg<0>(), SaveArg<1>(&cb)));
   OnDetectedPhishingSite(verdict.SerializeAsString());
-  MessageLoop::current()->Run();
   EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));
   ASSERT_TRUE(cb);
   GURL other_phishing_url("http://other_phishing_url.com/bla");
@@ -354,11 +345,8 @@ TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteMultiplePings) {
   verdict.set_client_score(0.8f);
   EXPECT_CALL(*csd_service_,
               SendClientReportPhishingRequest(Pointee(EqualsProto(verdict)), _))
-      .WillOnce(DoAll(DeleteArg<0>(),
-                      SaveArg<1>(&cb_other),
-                      QuitUIMessageLoop()));
+      .WillOnce(DoAll(DeleteArg<0>(), SaveArg<1>(&cb_other)));
   OnDetectedPhishingSite(verdict.SerializeAsString());
-  MessageLoop::current()->Run();
   EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));
   ASSERT_TRUE(cb_other);
 

@@ -17,8 +17,7 @@
 class TabContents;
 
 namespace safe_browsing {
-class BrowserFeatureExtractor;
-class ClientPhishingRequest;
+
 class ClientSideDetectionService;
 
 // This class is used to receive the IPC from the renderer which
@@ -58,11 +57,6 @@ class ClientSideDetectionHost : public TabContentsObserver {
   // Otherwise, we do nothing.  Called in UI thread.
   void MaybeShowPhishingWarning(GURL phishing_url, bool is_phishing);
 
-  // Callback that is called when the browser feature extractor is done.
-  // This method is responsible for deleting the request object.  Called on
-  // the UI thread.
-  void FeatureExtractionDone(bool success, ClientPhishingRequest* request);
-
   // Used for testing.  This function does not take ownership of the service
   // class.
   void set_client_side_detection_service(ClientSideDetectionService* service);
@@ -78,8 +72,6 @@ class ClientSideDetectionHost : public TabContentsObserver {
   // Keep a handle to the latest classification request so that we can cancel
   // it if necessary.
   scoped_refptr<ShouldClassifyUrlRequest> classification_request_;
-  // Browser-side feature extractor.
-  scoped_ptr<BrowserFeatureExtractor> feature_extractor_;
 
   base::ScopedCallbackFactory<ClientSideDetectionHost> cb_factory_;
 

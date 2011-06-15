@@ -1807,8 +1807,6 @@
         'browser/rlz/rlz.h',
         'browser/safe_browsing/bloom_filter.cc',
         'browser/safe_browsing/bloom_filter.h',
-        'browser/safe_browsing/browser_feature_extractor.cc',
-        'browser/safe_browsing/browser_feature_extractor.h',
         'browser/safe_browsing/chunk_range.cc',
         'browser/safe_browsing/chunk_range.h',
         'browser/safe_browsing/client_side_detection_host.cc',
