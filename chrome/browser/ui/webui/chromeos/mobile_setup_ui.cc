@@ -935,7 +935,7 @@ void MobileSetupHandler::EvaluateCellularNetwork(
     if ((network->activation_state() ==
             chromeos::ACTIVATION_STATE_PARTIALLY_ACTIVATED ||
         network->activation_state() == chromeos::ACTIVATION_STATE_ACTIVATING) &&
-        (network->error() == chromeos::ERROR_UNKNOWN ||
+        (network->error() == chromeos::ERROR_NO_ERROR ||
             network->error() == chromeos::ERROR_OTASP_FAILED) &&
         network->state() == chromeos::STATE_ACTIVATION_FAILURE) {
       LOG(WARNING) << "Activation failure detected "
