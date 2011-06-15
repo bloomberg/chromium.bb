@@ -220,8 +220,8 @@ class ProfileSyncServiceHarness : public ProfileSyncServiceObserver {
   bool MatchesOtherClient(ProfileSyncServiceHarness* partner);
 
   // Returns a string with relevant info about client's sync state (if
-  // available).  Useful for logging.
-  std::string GetClientInfo();
+  // available), annotated with |message|. Useful for logging.
+  std::string GetClientInfoString(const std::string& message);
 
   // Gets the current progress indicator of the current sync session
   // for a particular datatype.
