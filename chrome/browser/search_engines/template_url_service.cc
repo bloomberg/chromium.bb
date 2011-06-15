@@ -513,8 +513,8 @@ void TemplateURLService::OnWebDataServiceRequestDone(
         managed_default->set_created_by_policy(true);
         managed_default->set_id(0);
         AddNoNotify(managed_default);
-        default_search_provider = managed_default;
       }
+      default_search_provider = managed_default;
     }
     // Note that this saves the default search provider to prefs.
     SetDefaultSearchProviderNoNotify(default_search_provider);

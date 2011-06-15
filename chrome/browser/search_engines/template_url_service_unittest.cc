@@ -1187,4 +1187,23 @@ TEST_F(TemplateURLServiceTest, TestManagedDefaultSearch) {
   actual_managed_default = model()->GetDefaultSearchProvider();
   ExpectSimilar(actual_managed_default, expected_managed_default1.get());
   EXPECT_EQ(actual_managed_default->show_in_default_list(), true);
+
+  // Clear the model and disable the default search provider through policy.
+  // Verify that there is no default search provider after loading the model.
+  // This checks against regressions of http://crbug.com/67180
+
+  // First, remove the preferences, reset the model, and set a default.
+  RemoveManagedDefaultSearchPreferences();
+  ResetModel(true);
+  TemplateURL* t_url = AddKeywordWithDate("key1", false, "http://foo1",
+      "http://sugg1", "http://icon1", "UTF-8;UTF-16", "name1", true, Time());
+  model()->SetDefaultSearchProvider(t_url);
+  EXPECT_EQ(t_url, model()->GetDefaultSearchProvider());
+
+  // Now reset the model again but load it after setting the preferences.
+  ResetModel(false);
+  SetManagedDefaultSearchPreferences(false, "", "", "", "", "", "");
+  VerifyLoad();
+  EXPECT_TRUE(model()->is_default_search_managed());
+  EXPECT_TRUE(model()->GetDefaultSearchProvider() == NULL);
 }
