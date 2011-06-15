@@ -39,6 +39,20 @@ namespace input_method {
 InputMethodDescriptor::InputMethodDescriptor() {
 }
 
+InputMethodDescriptor::InputMethodDescriptor(
+    const std::string& in_id,
+    const std::string& in_display_name,
+    const std::string& in_keyboard_layout,
+    const std::string& in_virtual_keyboard_layouts,
+    const std::string& in_language_code)
+    : virtual_keyboard_layouts_(in_virtual_keyboard_layouts),
+      id(in_id),
+      display_name(in_display_name),
+      keyboard_layout(in_keyboard_layout),
+      language_code(in_language_code) {
+  DCHECK(keyboard_layout.find(",") == std::string::npos);
+}
+
 InputMethodDescriptor::~InputMethodDescriptor() {
 }
 
