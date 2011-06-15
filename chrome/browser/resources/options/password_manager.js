@@ -75,6 +75,7 @@ cr.define('options', function() {
       // Updating the password lists may cause a blocking platform dialog pop up
       // (Mac, Linux), so we delay this operation until the page is shown.
       chrome.send('updatePasswordLists');
+      $('password-search-box').focus();
     },
 
     /**

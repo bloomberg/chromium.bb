@@ -90,6 +90,7 @@ cr.define('options', function() {
     handleVisibleChange_: function(e) {
       if (!this.visible)
         return;
+
       // Resize the cookies list whenever the options page becomes visible.
       this.handleResize_(null);
       if (!this.initialized_) {
@@ -98,6 +99,8 @@ cr.define('options', function() {
       } else {
         $('cookies-list').redraw();
       }
+
+      $('cookies-search-box').focus();
     },
 
     /**
