@@ -1,17 +1,15 @@
-// Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// How to run the test:
-//   $ FEATURES="test" emerge-x86-generic -a libcros
-
-#include "chromeos_input_method.h"
-
-#include <gtest/gtest.h>
+#include "chrome/browser/chromeos/input_method/ibus_controller.h"
 
 #include "base/logging.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
+namespace input_method {
+
 namespace {
 InputMethodDescriptor GetDesc(const std::string& raw_layout) {
   return CreateInputMethodDescriptor(
@@ -20,7 +18,9 @@ InputMethodDescriptor GetDesc(const std::string& raw_layout) {
 }  // namespace
 
 // Tests InputMethodIdIsWhitelisted function.
-TEST(ChromeOSInputMethodTest, TestInputMethodIdIsWhitelisted) {
+// TODO(satorux): Enable this test once InputMethodIdIsWhitelisted() is
+// functional outside the chroot.
+TEST(IBusControllerTest, DISABLED_TestInputMethodIdIsWhitelisted) {
   EXPECT_TRUE(InputMethodIdIsWhitelisted("mozc"));
   EXPECT_TRUE(InputMethodIdIsWhitelisted("xkb:us:dvorak:eng"));
   EXPECT_FALSE(InputMethodIdIsWhitelisted("mozc,"));
@@ -31,7 +31,9 @@ TEST(ChromeOSInputMethodTest, TestInputMethodIdIsWhitelisted) {
 }
 
 // Tests XkbLayoutIsSupported function.
-TEST(ChromeOSInputMethodTest, TestXkbLayoutIsSupported) {
+// TODO(satorux): Enable this test once XkbLayoutIsSupported() is
+// functional outside the chroot.
+TEST(IBusControllerTest, DISABLED_TestXkbLayoutIsSupported) {
   EXPECT_TRUE(XkbLayoutIsSupported("us"));
   EXPECT_TRUE(XkbLayoutIsSupported("us(dvorak)"));
   EXPECT_TRUE(XkbLayoutIsSupported("fr"));
@@ -44,7 +46,9 @@ TEST(ChromeOSInputMethodTest, TestXkbLayoutIsSupported) {
 }
 
 // Tests CreateInputMethodDescriptor function.
-TEST(ChromeOSInputMethodTest, TestCreateInputMethodDescriptor) {
+// TODO(satorux): Enable this test once CreateInputMethodDescriptor() is
+// functional outside the chroot.
+TEST(IBusControllerTest, DISABLED_TestCreateInputMethodDescriptor) {
   EXPECT_EQ(GetDesc("us").keyboard_layout, "us");
   EXPECT_EQ(GetDesc("us,us(dvorak)").keyboard_layout, "us");
   EXPECT_EQ(GetDesc("us(dvorak),us").keyboard_layout, "us(dvorak)");
@@ -64,4 +68,5 @@ TEST(ChromeOSInputMethodTest, TestCreateInputMethodDescriptor) {
   // TODO(yusukes): Add tests for |virtual_keyboard_layout| member.
 }
 
-}
+}  // namespace input_method
+}  // namespace chromeos
