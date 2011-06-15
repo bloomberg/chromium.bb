@@ -45,7 +45,7 @@ const char kDMAuthHeader[] = "GoogleDMToken token=token123456";
 const char kDMToken[] = "token123456";
 
 const char kDeviceManagementUrl[] =
-    "http://localhost:12345/MessageLoopForUIdevice_management_test";
+    "http://localhost:12345/device_management_test";
 
 // Constant responses of the identity strategy.
 const char kMachineId[] = "dummy-cros-machine-123";
@@ -204,8 +204,8 @@ class CloudPolicySubsystemTest : public testing::Test {
 
     // Test conditions.
     EXPECT_EQ(CloudPolicySubsystem::SUCCESS, cloud_policy_subsystem_->state());
-    VerifyPolicy(kPolicyHomepageLocation,
-                 Value::CreateStringValue(homepage_location));
+    StringValue homepage_value(homepage_location);
+    VerifyPolicy(kPolicyHomepageLocation, &homepage_value);
     VerifyServerLoad();
   }
 

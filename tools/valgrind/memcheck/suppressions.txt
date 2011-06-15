@@ -4643,13 +4643,6 @@
    fun:_ZN28WebKitContextTest_Basic_Test8TestBodyEv
 }
 {
-   bug_86135
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN5Value17CreateStringValueERKSs
-   fun:_ZN6policy24CloudPolicySubsystemTest11ExecuteTestERKSs
-}
-{
    bug_86136
    Memcheck:Leak
    fun:_Znw*
