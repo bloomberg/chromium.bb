@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,22 +24,12 @@ class Separator : public View {
   virtual ~Separator();
 
   // Overridden from View:
-  virtual void Layout() OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
-
- protected:
-  // Overridden from View:
-  virtual void ViewHierarchyChanged(bool is_add, View* parent,
-                                    View* child) OVERRIDE;
+  virtual void Paint(gfx::Canvas* canvas) OVERRIDE;
   virtual std::string GetClassName() const OVERRIDE;
 
  private:
-  void CreateNativeWrapper();
-
-  // The native view.
-  View* native_wrapper_;
-
   DISALLOW_COPY_AND_ASSIGN(Separator);
 };
 
