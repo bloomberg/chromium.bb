@@ -860,6 +860,13 @@
    fun:_Znw*
    fun:_ZN10disk_cache14StatsHistogram10FactoryGet*
 }
+{
+   bug_83345
+   Memcheck:Leak
+   ...
+   fun:_ZN4base23LeakyLazyInstanceTraits*NewEPv
+   fun:_ZN4base12LazyInstance*LeakyLazyInstanceTraits*PointerEv
+}
 
 #-----------------------------------------------------------------------
 # 3. Suppressions for real chromium bugs that are not yet fixed.
@@ -4185,20 +4192,6 @@
    fun:_ZN9talk_base4Task4StepEv
    fun:_ZN9talk_base10TaskRunner16InternalRunTasksEb
    fun:_ZN9talk_base10TaskRunner8RunTasksEv
-}
-{
-   bug_80002a
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:*FileSystemURLRequestJobTest5SetUpEv
-}
-{
-   bug_80002b
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:*FileSystemDirURLRequestJobTest5SetUpEv
 }
 {
    bug_80022
