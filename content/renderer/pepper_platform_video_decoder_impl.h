@@ -59,6 +59,9 @@ class PlatformVideoDecoderImpl
   void InitializeDecoder(const std::vector<uint32>& configs);
 
   // Client lifetime must exceed lifetime of this class.
+  // TODO(vrk/fischman): We should take another look at the overall
+  // arcitecture of PPAPI Video Decode to make sure lifetime/ownership makes
+  // sense, including lifetime of this client.
   media::VideoDecodeAccelerator::Client* client_;
 
   // Route ID for the command buffer associated with video decoder's context.

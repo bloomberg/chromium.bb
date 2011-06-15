@@ -118,49 +118,85 @@ bool PlatformVideoDecoderImpl::Abort() {
 }
 
 void PlatformVideoDecoderImpl::NotifyEndOfStream() {
-  client_->NotifyEndOfStream();
+  DCHECK(message_loop_);
+  message_loop_->
+      PostTask(FROM_HERE, base::Bind(
+          &VideoDecodeAccelerator::Client::NotifyEndOfStream,
+          base::Unretained(client_)));
 }
 
 void PlatformVideoDecoderImpl::NotifyError(
     VideoDecodeAccelerator::Error error) {
-  client_->NotifyError(error);
+  DCHECK(message_loop_);
+  message_loop_->
+      PostTask(FROM_HERE, base::Bind(
+          &VideoDecodeAccelerator::Client::NotifyError,
+          base::Unretained(client_),
+          error));
 }
 
 void PlatformVideoDecoderImpl::ProvidePictureBuffers(
     uint32 requested_num_of_buffers,
     const gfx::Size& dimensions,
     media::VideoDecodeAccelerator::MemoryType type) {
-  client_->ProvidePictureBuffers(requested_num_of_buffers, dimensions, type);
+  DCHECK(message_loop_);
+  message_loop_->
+      PostTask(FROM_HERE, base::Bind(
+          &VideoDecodeAccelerator::Client::ProvidePictureBuffers,
+          base::Unretained(client_),
+          requested_num_of_buffers,
+          dimensions,
+          type));
 }
 
 void PlatformVideoDecoderImpl::DismissPictureBuffer(int32 picture_buffer_id) {
-  client_->DismissPictureBuffer(picture_buffer_id);
+  DCHECK(message_loop_);
+  message_loop_->
+      PostTask(FROM_HERE, base::Bind(
+          &VideoDecodeAccelerator::Client::DismissPictureBuffer,
+          base::Unretained(client_),
+          picture_buffer_id));
 }
 
 void PlatformVideoDecoderImpl::PictureReady(const media::Picture& picture) {
-  client_->PictureReady(picture);
+  DCHECK(message_loop_);
+  message_loop_->
+      PostTask(FROM_HERE, base::Bind(
+          &VideoDecodeAccelerator::Client::PictureReady,
+          base::Unretained(client_),
+          picture));
 }
 
 void PlatformVideoDecoderImpl::NotifyInitializeDone() {
-  if (message_loop_ != MessageLoop::current() ) {
-    message_loop_->
-        PostTask(FROM_HERE, base::Bind(
-            &PlatformVideoDecoderImpl::NotifyInitializeDone,
-            base::Unretained(this)));
-    return;
-  }
-  client_->NotifyInitializeDone();
+  DCHECK(message_loop_);
+  message_loop_->
+      PostTask(FROM_HERE, base::Bind(
+          &VideoDecodeAccelerator::Client::NotifyInitializeDone,
+          base::Unretained(client_)));
 }
 
 void PlatformVideoDecoderImpl::NotifyEndOfBitstreamBuffer(
-    int32 bitstream_buffer_id) {
-  client_->NotifyEndOfBitstreamBuffer(bitstream_buffer_id);
+  int32 bitstream_buffer_id) {
+  DCHECK(message_loop_);
+  message_loop_->
+      PostTask(FROM_HERE, base::Bind(
+          &VideoDecodeAccelerator::Client::NotifyEndOfBitstreamBuffer,
+          base::Unretained(client_),
+          bitstream_buffer_id));
 }
 
 void PlatformVideoDecoderImpl::NotifyFlushDone() {
-  client_->NotifyFlushDone();
+  DCHECK(message_loop_);
+  message_loop_->
+      PostTask(FROM_HERE, base::Bind(
+          &VideoDecodeAccelerator::Client::NotifyFlushDone,
+          base::Unretained(client_)));
 }
 
 void PlatformVideoDecoderImpl::NotifyAbortDone() {
-  client_->NotifyAbortDone();
+  DCHECK(message_loop_);
+  message_loop_->
+      PostTask(FROM_HERE, base::Bind(
+          &VideoDecodeAccelerator::Client::NotifyAbortDone,
+          base::Unretained(client_)));
 }
