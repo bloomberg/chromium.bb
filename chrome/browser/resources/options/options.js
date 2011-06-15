@@ -197,18 +197,8 @@ function load() {
   }
 
   // Allow platform specific CSS rules.
-  if (cr.isMac)
-    document.documentElement.setAttribute('os', 'mac');
-  if (cr.isWindows)
-    document.documentElement.setAttribute('os', 'windows');
-  if (cr.isChromeOS)
-    document.documentElement.setAttribute('os', 'chromeos');
-  if (cr.isLinux) {
-    document.documentElement.setAttribute('os', 'linux');
-    document.documentElement.setAttribute('toolkit', 'gtk');
-  }
-  if (cr.isViews)
-    document.documentElement.setAttribute('toolkit', 'views');
+  enablePlatformSpecificCSSRules();
+
   if (navigator.plugins['Shockwave Flash'])
     document.documentElement.setAttribute('hasFlashPlugin', '');
 

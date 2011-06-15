@@ -50,6 +50,8 @@ var isTabHidden = false;
  * the printer list.
  */
 function onLoad() {
+  enablePlatformSpecificCSSRules();
+
   $('system-dialog-link').addEventListener('click', showSystemDialog);
   $('cancel-button').addEventListener('click', handleCancelButtonClick);
 

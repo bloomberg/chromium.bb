@@ -323,8 +323,11 @@ input[type='checkbox']:checked:before {
   content: url('./print_preview/checkmark.png');
   height: 16px;
   left: 2px;
-  opacity: 1;
   position: absolute;
+}
+
+html[os=mac] input[type='checkbox']:checked:before {
+  top: 2px;
 }
 
 input[type='radio'] {
