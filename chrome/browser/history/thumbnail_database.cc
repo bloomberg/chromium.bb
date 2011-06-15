@@ -56,6 +56,18 @@ sql::InitStatus ThumbnailDatabase::Init(
     const FilePath& db_name,
     const HistoryPublisher* history_publisher,
     URLDatabase* url_db) {
+#if defined(OS_MACOSX)
+  // TODO(mrossetti): Remove in M15. See http://crbug.com/85999
+  // NOTE: Do not remove the SetFileBackupExclusion call below as part of this
+  //       cleanup.
+  // Do a pre-emptive unexclude by-path since by-path exclusions may have
+  // been performed on this file in the past.
+  FilePath::StringType journal_name(db_name.value());
+  journal_name.append("-journal");
+  FilePath journal_path(journal_name);
+  base::mac::ClearByPathBackupExclusion(journal_path);
+#endif
+
   history_publisher_ = history_publisher;
   sql::InitStatus status = OpenDatabase(&db_, db_name);
   if (status != sql::INIT_OK)

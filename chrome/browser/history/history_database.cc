@@ -68,6 +68,18 @@ HistoryDatabase::~HistoryDatabase() {
 
 sql::InitStatus HistoryDatabase::Init(const FilePath& history_name,
                                       const FilePath& bookmarks_path) {
+#if defined(OS_MACOSX)
+  // TODO(mrossetti): Remove in M15. See http://crbug.com/85999
+  // NOTE: Do not remove the SetFileBackupExclusion call below as part of this
+  //       cleanup.
+  // Do a pre-emptive unexclude by-path since by-path exclusions may have
+  // been performed on this file in the past.
+  FilePath::StringType journal_name(history_name.value());
+  journal_name.append("-journal");
+  FilePath journal_path(journal_name);
+  base::mac::ClearByPathBackupExclusion(journal_path);
+#endif
+
   // Set the exceptional sqlite error handler.
   db_.set_error_delegate(GetErrorHandlerForHistoryDb());
 
