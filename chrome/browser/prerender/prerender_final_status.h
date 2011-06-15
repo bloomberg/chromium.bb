@@ -48,7 +48,7 @@ void RecordFinalStatus(FinalStatus final_status);
 
 // Return a human-readable name for |final_status|. |final_status|
 // is expected to be a valid value.
-const char* const NameFromFinalStatus(FinalStatus final_status);
+const char* NameFromFinalStatus(FinalStatus final_status);
 
 }  // namespace prerender
 

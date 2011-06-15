@@ -63,7 +63,7 @@ void RecordFinalStatus(FinalStatus final_status) {
                             FINAL_STATUS_MAX);
 }
 
-const char* const NameFromFinalStatus(FinalStatus final_status) {
+const char* NameFromFinalStatus(FinalStatus final_status) {
   DCHECK(static_cast<int>(final_status) >= 0 &&
          static_cast<int>(final_status) <= FINAL_STATUS_MAX);
   return kFinalStatusNames[final_status];
