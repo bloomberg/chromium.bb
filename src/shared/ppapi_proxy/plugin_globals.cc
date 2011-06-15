@@ -8,6 +8,7 @@
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_core.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_ppb_var.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_var_deprecated.h"
 #include "native_client/src/shared/ppapi_proxy/ppruntime.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
@@ -68,12 +69,17 @@ const void* GetBrowserInterfaceSafe(const char* interface_name) {
 }
 
 const PPB_Core* PPBCoreInterface() {
-  return reinterpret_cast<const PPB_Core*>(
+  return static_cast<const PPB_Core*>(
       GetBrowserInterfaceSafe(PPB_CORE_INTERFACE));
 }
 
+const PPB_Var* PPBVarInterface() {
+  return static_cast<const PPB_Var*>(
+      GetBrowserInterfaceSafe(PPB_VAR_INTERFACE));
+}
+
 const PPB_Var_Deprecated* PPBVarDeprecatedInterface() {
-  return reinterpret_cast<const PPB_Var_Deprecated*>(
+  return static_cast<const PPB_Var_Deprecated*>(
       GetBrowserInterfaceSafe(PPB_VAR_DEPRECATED_INTERFACE));
 }
 
