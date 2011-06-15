@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "ppapi/c/pp_point.h"
 #include "ppapi/c/private/ppb_flash_menu.h"
@@ -35,9 +36,9 @@ class PPB_Flash_Menu_Impl : public Resource,
   virtual ::ppapi::thunk::PPB_Flash_Menu_API* AsPPB_Flash_Menu_API() OVERRIDE;
 
   // PPB_Flash_Menu implementation.
-  int32_t Show(const PP_Point* location,
-               int32_t* selected_id_out,
-               PP_CompletionCallback callback);
+  virtual int32_t Show(const PP_Point* location,
+                       int32_t* selected_id_out,
+                       PP_CompletionCallback callback) OVERRIDE;
 
   // Called to complete |Show()|.
   void CompleteShow(int32_t result, unsigned action);
