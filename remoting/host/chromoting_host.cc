@@ -547,8 +547,8 @@ void ChromotingHost::ProcessPreAuthentication(
 
 void ChromotingHost::ShowDisconnectWindow(bool show,
                                           const std::string& username) {
-  if (context_->ui_message_loop() != MessageLoop::current()) {
-    context_->ui_message_loop()->PostTask(
+  if (!context_->IsUIThread()) {
+    context_->PostToUIThread(
         FROM_HERE,
         NewRunnableMethod(this, &ChromotingHost::ShowDisconnectWindow,
                           show, username));
