@@ -433,7 +433,6 @@ std::string ToHtmlTableHeader(const chromeos::Network* network) {
     str += WrapWithTH("Encryption");
     str += WrapWithTH("Passphrase");
     str += WrapWithTH("Identity");
-    str += WrapWithTH("Certificate");
   }
   if (network->type() == chromeos::TYPE_CELLULAR) {
     str += WrapWithTH("Technology");
@@ -472,7 +471,6 @@ std::string ToHtmlTableRow(const chromeos::Network* network) {
     str += WrapWithTD(wifi->GetEncryptionString());
     str += WrapWithTD(std::string(wifi->passphrase().length(), '*'));
     str += WrapWithTD(wifi->identity());
-    str += WrapWithTD(wifi->cert_path());
   }
   if (network->type() == chromeos::TYPE_CELLULAR) {
     const chromeos::CellularNetwork* cell =

@@ -118,7 +118,6 @@ enum SimOperationType {
 const char* kSecurityProperty = "Security";
 const char* kPassphraseProperty = "Passphrase";
 const char* kIdentityProperty = "Identity";
-const char* kCertPathProperty = "CertPath";
 const char* kPassphraseRequiredProperty = "PassphraseRequired";
 const char* kSaveCredentialsProperty = "SaveCredentials";
 const char* kProfilesProperty = "Profiles";
@@ -444,7 +443,6 @@ enum PropertyIndex {
   PROPERTY_INDEX_CELLULAR_ALLOW_ROAMING,
   PROPERTY_INDEX_CELLULAR_APN,
   PROPERTY_INDEX_CELLULAR_LAST_GOOD_APN,
-  PROPERTY_INDEX_CERT_PATH,
   PROPERTY_INDEX_CONNECTABLE,
   PROPERTY_INDEX_CONNECTED_TECHNOLOGIES,
   PROPERTY_INDEX_CONNECTIVITY_STATE,
@@ -537,7 +535,6 @@ StringToEnum<PropertyIndex>::Pair property_index_table[] = {
   { kCellularApnProperty, PROPERTY_INDEX_CELLULAR_APN },
   { kCellularLastGoodApnProperty, PROPERTY_INDEX_CELLULAR_LAST_GOOD_APN },
   { kCarrierProperty, PROPERTY_INDEX_CARRIER },
-  { kCertPathProperty, PROPERTY_INDEX_CERT_PATH },
   { kConnectableProperty, PROPERTY_INDEX_CONNECTABLE },
   { kConnectedTechnologiesProperty, PROPERTY_INDEX_CONNECTED_TECHNOLOGIES },
   { kDefaultTechnologyProperty, PROPERTY_INDEX_DEFAULT_TECHNOLOGY },
@@ -2063,8 +2060,6 @@ bool WifiNetwork::ParseValue(int index, const Value* value) {
       return value->GetAsBoolean(&passphrase_required_);
     case PROPERTY_INDEX_IDENTITY:
       return value->GetAsString(&identity_);
-    case PROPERTY_INDEX_CERT_PATH:
-      return value->GetAsString(&cert_path_);
     case PROPERTY_INDEX_EAP_IDENTITY:
       return value->GetAsString(&eap_identity_);
     case PROPERTY_INDEX_EAP_METHOD: {
@@ -2149,10 +2144,6 @@ void WifiNetwork::EraseCredentials() {
 
 void WifiNetwork::SetIdentity(const std::string& identity) {
   SetStringProperty(kIdentityProperty, identity, &identity_);
-}
-
-void WifiNetwork::SetCertPath(const std::string& cert_path) {
-  SetStringProperty(kCertPathProperty, cert_path, &cert_path_);
 }
 
 void WifiNetwork::SetEAPMethod(EAPMethod method) {
@@ -2288,24 +2279,6 @@ bool WifiNetwork::IsPassphraseRequired() const {
   if (encryption_ == SECURITY_8021X)
     return !connectable_;
   return passphrase_required_;
-}
-
-// Parse 'path' to determine if the certificate is stored in a pkcs#11 device.
-// flimflam recognizes the string "SETTINGS:" to specify authentication
-// parameters. 'key_id=' indicates that the certificate is stored in a pkcs#11
-// device. See src/third_party/flimflam/files/doc/service-api.txt.
-bool WifiNetwork::IsCertificateLoaded() const {
-  static const std::string settings_string("SETTINGS:");
-  static const std::string pkcs11_key("key_id");
-  if (cert_path_.find(settings_string) == 0) {
-    std::string::size_type idx = cert_path_.find(pkcs11_key);
-    if (idx != std::string::npos)
-      idx = cert_path_.find_first_not_of(kWhitespaceASCII,
-                                         idx + pkcs11_key.length());
-    if (idx != std::string::npos && cert_path_[idx] == '=')
-      return true;
-  }
-  return false;
 }
 
 bool WifiNetwork::RequiresUserProfile() const {
@@ -4672,8 +4645,9 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     wifi4->set_connected(false);
     wifi4->set_connectable(false);
     wifi4->set_encryption(SECURITY_8021X);
-    wifi4->set_identity("nobody@google.com");
-    wifi4->set_cert_path("SETTINGS:key_id=3,cert_id=3,pin=111111");
+    wifi4->SetEAPMethod(EAP_METHOD_PEAP);
+    wifi4->SetEAPIdentity("nobody@google.com");
+    wifi4->SetEAPPassphrase("password");
     AddNetwork(wifi4);
 
     WifiNetwork* wifi5 = new WifiNetwork("fw5");

@@ -686,7 +686,6 @@ class WifiNetwork : public WirelessNetwork {
   ConnectionSecurity encryption() const { return encryption_; }
   const std::string& passphrase() const { return passphrase_; }
   const std::string& identity() const { return identity_; }
-  const std::string& cert_path() const { return cert_path_; }
   bool passphrase_required() const { return passphrase_required_; }
 
   EAPMethod eap_method() const { return eap_method_; }
@@ -707,7 +706,6 @@ class WifiNetwork : public WirelessNetwork {
   bool SetHexSsid(const std::string& ssid_hex);
   void SetPassphrase(const std::string& passphrase);
   void SetIdentity(const std::string& identity);
-  void SetCertPath(const std::string& cert_path);
 
   // 802.1x properties
   void SetEAPMethod(EAPMethod method);
@@ -728,9 +726,6 @@ class WifiNetwork : public WirelessNetwork {
 
   // Return true if a passphrase or other input is required to connect.
   bool IsPassphraseRequired() const;
-
-  // Return true if cert_path_ indicates that we have loaded the certificate.
-  bool IsCertificateLoaded() const;
 
  private:
   // Network overrides.
@@ -754,15 +749,10 @@ class WifiNetwork : public WirelessNetwork {
   void set_identity(const std::string& identity) {
     identity_ = identity;
   }
-  void set_cert_path(const std::string& cert_path) {
-    cert_path_ = cert_path;
-  }
-
   ConnectionSecurity encryption_;
   std::string passphrase_;
   bool passphrase_required_;
   std::string identity_;
-  std::string cert_path_;
 
   EAPMethod eap_method_;
   EAPPhase2Auth eap_phase_2_auth_;
