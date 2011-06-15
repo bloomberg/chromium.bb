@@ -289,6 +289,7 @@ add_config('arm-generic-bin', [arm, {
   'uprev' : True,
   'overlays': 'public',
   'push_overlays': None,
+  'important': True,
   'manifest_version': _MANIFEST_VERSIONS_URL,
 }])
 
