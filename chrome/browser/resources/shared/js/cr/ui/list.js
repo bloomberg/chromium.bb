@@ -355,6 +355,7 @@ cr.define('cr.ui', function() {
       this.addEventListener('focus', this.handleElementFocus_, true);
       this.addEventListener('blur', this.handleElementBlur_, true);
       this.addEventListener('scroll', this.redraw.bind(this));
+      this.setAttribute('role', 'listbox');
 
       // Make list focusable
       if (!this.hasAttribute('tabindex'))

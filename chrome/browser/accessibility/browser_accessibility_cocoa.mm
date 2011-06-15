@@ -6,6 +6,8 @@
 
 #import "chrome/browser/accessibility/browser_accessibility_cocoa.h"
 
+#include <map>
+
 #include "base/string16.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -29,12 +31,12 @@ NSString* NSStringForWebAccessibilityAttribute(
   return returnValue;
 }
 
-struct RoleEntry {
-  WebAccessibility::Role value;
-  NSString* string;
+struct MapEntry {
+  WebAccessibility::Role webKitValue;
+  NSString* nativeValue;
 };
 
-static const RoleEntry roles[] = {
+static const MapEntry roles[] = {
   { WebAccessibility::ROLE_NONE, NSAccessibilityUnknownRole },
   { WebAccessibility::ROLE_ALERT, NSAccessibilityGroupRole },
   { WebAccessibility::ROLE_ALERT_DIALOG, NSAccessibilityGroupRole },
@@ -62,6 +64,7 @@ static const RoleEntry roles[] = {
   { WebAccessibility::ROLE_LINK, NSAccessibilityLinkRole },
   { WebAccessibility::ROLE_LIST, NSAccessibilityListRole },
   { WebAccessibility::ROLE_LIST_ITEM, NSAccessibilityGroupRole },
+  { WebAccessibility::ROLE_LISTBOX, NSAccessibilityListRole },
   { WebAccessibility::ROLE_LOG, NSAccessibilityGroupRole },
   { WebAccessibility::ROLE_MARQUEE, NSAccessibilityGroupRole },
   { WebAccessibility::ROLE_MATH, NSAccessibilityGroupRole },
@@ -86,9 +89,18 @@ static const RoleEntry roles[] = {
   { WebAccessibility::ROLE_TEXT_FIELD, NSAccessibilityTextFieldRole },
   { WebAccessibility::ROLE_TIMER, NSAccessibilityGroupRole },
   { WebAccessibility::ROLE_TOOLTIP, NSAccessibilityGroupRole },
+  { WebAccessibility::ROLE_TREE, NSAccessibilityOutlineRole },
+  { WebAccessibility::ROLE_TREE_ITEM, NSAccessibilityRowRole },
   { WebAccessibility::ROLE_WEBCORE_LINK, NSAccessibilityLinkRole },
   { WebAccessibility::ROLE_WEB_AREA, @"AXWebArea" },
 };
+
+static const MapEntry subroles[] = {
+  { WebAccessibility::ROLE_TREE_ITEM, NSAccessibilityOutlineRowSubrole }
+};
+
+std::map<WebAccessibility::Role, NSString*> webAccessibilityToNativeRole;
+std::map<WebAccessibility::Role, NSString*> webAccessibilityToNativeSubrole;
 
 // GetState checks the bitmask used in webaccessibility.h to check
 // if the given state was set on the accessibility object.
@@ -99,6 +111,19 @@ bool GetState(BrowserAccessibility* accessibility, int state) {
 } // namespace
 
 @implementation BrowserAccessibilityCocoa
+
++ (void)initialize {
+  const size_t numRoles = sizeof(roles) / sizeof(roles[0]);
+  for (size_t i = 0; i < numRoles; ++i) {
+    webAccessibilityToNativeRole[roles[i].webKitValue] = roles[i].nativeValue;
+  }
+
+  const size_t numSubroles = sizeof(subroles) / sizeof(subroles[0]);
+  for (size_t i = 0; i < numSubroles; ++i) {
+    webAccessibilityToNativeSubrole[subroles[i].webKitValue] =
+        subroles[i].nativeValue;
+  }
+}
 
 - (id)initWithObject:(BrowserAccessibility*)accessibility
             delegate:(id<BrowserAccessibilityDelegateCocoa>)delegate {
@@ -184,16 +209,13 @@ bool GetState(BrowserAccessibility* accessibility, int state) {
     return @"AXSecureTextField";
   }
 
-  NSString* role = NSAccessibilityUnknownRole;
-  const size_t numRoles = sizeof(roles) / sizeof(roles[0]);
-  for (size_t i = 0; i < numRoles; ++i) {
-    if (roles[i].value == browserAccessibilityRole) {
-      role = roles[i].string;
-      break;
-    }
-  }
+  std::map<WebAccessibility::Role, NSString*>::iterator it =
+      webAccessibilityToNativeRole.find(browserAccessibilityRole);
 
-  return role;
+  if (it != webAccessibilityToNativeRole.end())
+    return it->second;
+  else
+    return NSAccessibilityUnknownRole;
 }
 
 // Returns a string indicating the role description of this object.
@@ -238,6 +260,20 @@ bool GetState(BrowserAccessibility* accessibility, int state) {
                     browserAccessibility_->location().height());
 }
 
+// Returns a subrole based upon the role.
+- (NSString*) subrole {
+  WebAccessibility::Role browserAccessibilityRole =
+      static_cast<WebAccessibility::Role>( browserAccessibility_->role());
+
+  std::map<WebAccessibility::Role, NSString*>::iterator it =
+      webAccessibilityToNativeSubrole.find(browserAccessibilityRole);
+
+  if (it != webAccessibilityToNativeSubrole.end())
+    return it->second;
+  else
+    return nil;
+}
+
 // Returns all tabs in this subtree.
 - (NSArray*)tabs {
   NSMutableArray* tabSubtree = [[[NSMutableArray alloc] init] autorelease];
@@ -270,6 +306,9 @@ bool GetState(BrowserAccessibility* accessibility, int state) {
   }
   if ([attribute isEqualToString:NSAccessibilitySizeAttribute]) {
     return [NSValue valueWithSize:[self size]];
+  }
+  if ([attribute isEqualToString:NSAccessibilitySubroleAttribute]) {
+    return [self subrole];
   }
   if ([attribute isEqualToString:NSAccessibilityTopLevelUIElementAttribute] ||
       [attribute isEqualToString:NSAccessibilityWindowAttribute]) {
@@ -513,6 +552,7 @@ bool GetState(BrowserAccessibility* accessibility, int state) {
       NSAccessibilityRoleAttribute,
       NSAccessibilityRoleDescriptionAttribute,
       NSAccessibilitySizeAttribute,
+      NSAccessibilitySubroleAttribute,
       NSAccessibilityTitleAttribute,
       NSAccessibilityTopLevelUIElementAttribute,
       NSAccessibilityValueAttribute,

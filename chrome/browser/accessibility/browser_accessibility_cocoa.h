@@ -52,6 +52,9 @@
 @property(nonatomic, readonly) NSString* role;
 // The size of this object.
 @property(nonatomic, readonly) NSSize size;
+// A string indicating the subrole of this object as far as accessibility
+// is concerned.
+@property(nonatomic, readonly) NSString* subrole;
 
 @end
 
