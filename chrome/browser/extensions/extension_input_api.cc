@@ -23,6 +23,7 @@
 #if defined(OS_CHROMEOS) && defined(TOUCH_UI)
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/input_method_library.h"
+#include "chrome/browser/chromeos/input_method/ibus_controller.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 #endif
 
@@ -179,7 +180,7 @@ bool SendHandwritingStrokeFunction::RunImpl() {
   ListValue* value = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetList(0, &value));
 
-  chromeos::HandwritingStroke stroke;
+  chromeos::input_method::HandwritingStroke stroke;
   for (size_t i = 0; i < value->GetSize(); ++i) {
     DictionaryValue* dict;
     double x = 0.0;
