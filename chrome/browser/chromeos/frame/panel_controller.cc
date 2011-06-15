@@ -95,8 +95,9 @@ const SkColor kTitleActiveGradientStart = SK_ColorWHITE;
 const SkColor kTitleActiveGradientEnd = 0xffe7edf1;
 const SkColor kTitleUrgentGradientStart = 0xfffea044;
 const SkColor kTitleUrgentGradientEnd = 0xfffa983a;
-const SkColor kTitleActiveColor = SK_ColorBLACK;
-const SkColor kTitleInactiveColor = SK_ColorBLACK;
+const SkColor kTitleActiveTextColor = SK_ColorBLACK;
+const SkColor kTitleInactiveTextColor = SK_ColorBLACK;
+const SkColor kTitleUrgentTextColor = SK_ColorWHITE;
 const SkColor kTitleCloseButtonColor = SK_ColorBLACK;
 // Delay before the urgency can be set after it has been cleared.
 const base::TimeDelta kSetUrgentDelay = base::TimeDelta::FromMilliseconds(500);
@@ -238,6 +239,10 @@ void PanelController::SetUrgent(bool urgent) {
   if (title_window_) {
     gtk_window_set_urgency_hint(panel_, urgent ? TRUE : FALSE);
     title_content_->SchedulePaint();
+    if (urgent)
+      title_content_->title_label()->SetColor(kTitleUrgentTextColor);
+    else
+      title_content_->title_label()->SetColor(kTitleInactiveTextColor);
   }
 }
 
@@ -485,14 +490,14 @@ bool PanelController::TitleContentView::OnMouseDragged(
 }
 
 void PanelController::TitleContentView::OnFocusIn() {
-  title_label_->SetColor(kTitleActiveColor);
+  title_label_->SetColor(kTitleActiveTextColor);
   title_label_->SetFont(*active_font);
   Layout();
   SchedulePaint();
 }
 
 void PanelController::TitleContentView::OnFocusOut() {
-  title_label_->SetColor(kTitleInactiveColor);
+  title_label_->SetColor(kTitleInactiveTextColor);
   title_label_->SetFont(*inactive_font);
   Layout();
   SchedulePaint();
