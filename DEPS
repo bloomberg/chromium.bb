@@ -240,7 +240,7 @@ deps_os = {
       "/trunk/deps/third_party/cygwin@66844",
 
     "src/third_party/python_26":
-      "/trunk/tools/third_party/python_26@70627",
+      "/trunk/tools/third_party/python_26@89104",
 
     "src/third_party/psyco_win32":
       "/trunk/deps/third_party/psyco_win32@79861",
