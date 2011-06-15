@@ -19,6 +19,7 @@
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/metrics/display_utils.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/logging_chrome.h"
@@ -350,10 +351,10 @@ void MetricsLog::RecordEnvironment(
     OPEN_ELEMENT_FOR_SCOPE("display");
     int width = 0;
     int height = 0;
-    base::SysInfo::GetPrimaryDisplayDimensions(&width, &height);
+    DisplayUtils::GetPrimaryDisplayDimensions(&width, &height);
     WriteIntAttribute("xsize", width);
     WriteIntAttribute("ysize", height);
-    WriteIntAttribute("screens", base::SysInfo::DisplayCount());
+    WriteIntAttribute("screens", DisplayUtils::GetDisplayCount());
   }
 
   {

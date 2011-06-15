@@ -1456,6 +1456,7 @@
         'browser/instant/promo_counter_unittest.cc',
         'browser/internal_auth_unittest.cc',
         'browser/mach_broker_mac_unittest.cc',
+        'browser/metrics/display_utils_unittest.cc',
         'browser/metrics/metrics_log_unittest.cc',
         'browser/metrics/metrics_response_unittest.cc',
         'browser/metrics/metrics_service_unittest.cc',
