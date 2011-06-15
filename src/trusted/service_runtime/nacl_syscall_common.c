@@ -800,12 +800,21 @@ int32_t NaClCommonSysRead(struct NaClAppThread  *natp,
     goto cleanup;
   }
 
+  /*
+   * The maximum length for read and write is INT32_MAX--anything larger and
+   * the return value would overflow. Passing larger values isn't an error--
+   * we'll just clamp the request size if it's too large.
+   */
+  if (count > INT32_MAX) {
+    count = INT32_MAX;
+  }
+
   read_result = (*((struct NaClDescVtbl const *) ndp->base.vtbl)->
                  Read)(ndp, (void *) sysaddr, count);
   if (read_result > 0) {
     NaClLog(4, "read returned %"NACL_PRIdS" bytes\n", read_result);
     NaClLog(8, "read result: %.*s\n",
-           (read_result < INT_MAX) ? (int) read_result : INT_MAX,
+           (int) read_result,
            (char *) sysaddr);
   } else {
     NaClLog(4, "read returned %"NACL_PRIdS"\n", read_result);
