@@ -1581,9 +1581,6 @@ def CommandSelLdrTestNacl(env, name, command,
   if sel_ldr_flags is None:
     sel_ldr_flags = []
 
-  # Always run tests with signal catching enabled
-  sel_ldr_flags += ['-S']
-
   # Disable the validator if running a GLibC test under Valgrind.
   # http://code.google.com/p/nativeclient/issues/detail?id=1799
   if env.IsRunningUnderValgrind() and env.Bit('nacl_glibc'):
@@ -1626,7 +1623,7 @@ TEST_EXTRA_ARGS = ['stdin', 'log_file',
                    'stdout_golden', 'stderr_golden', 'log_golden',
                    'filter_regex', 'filter_inverse', 'filter_group_only',
                    'osenv', 'arch', 'subarch', 'exit_status', 'track_cmdtime',
-                   'process_output']
+                   'process_output', 'using_nacl_signal_handler']
 
 TEST_TIME_THRESHOLD = {
     'small':   2,

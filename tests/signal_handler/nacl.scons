@@ -17,24 +17,30 @@ nodes = []
 # Test that crashes in untrusted code are recognised as such.
 nodes.append(env.CommandSelLdrTestNacl(
         'untrusted_crash_test.out', command=[env.File('crash_test.nexe')],
-        exit_status='untrusted_segfault'))
+        sel_ldr_flags=['-S'],
+        exit_status='untrusted_segfault',
+        using_nacl_signal_handler='1'))
 
 # Test that crashes in trusted code are recognised as such.
 # This test covers crashes that occur outside of a syscall handler,
 # before the NaClApp is set up.
 nodes.append(env.CommandSelLdrTestNacl(
         'trusted_crash_test.out', command=[env.File('crash_test.nexe')],
+        sel_ldr_flags=['-S'],
         osenv='NACL_CRASH_TEST=1',
-        exit_status='trusted_segfault'))
+        exit_status='trusted_segfault',
+        using_nacl_signal_handler='1'))
 
 # This tests a crash that occurs inside a syscall handler.
 nodes.append(env.CommandSelLdrTestNacl(
         'crash_in_syscall_test.out',
         command=[env.File('crash_in_syscall.nexe')],
+        sel_ldr_flags=['-S'],
         # Ultimately this should be recognised as a crash caused by
         # untrusted code.
         # See http://code.google.com/p/nativeclient/issues/detail?id=579
-        exit_status='trusted_segfault'))
+        exit_status='trusted_segfault',
+        using_nacl_signal_handler='1'))
 
 env.AddNodeToTestSuite(nodes, ['small_tests'], 'run_signal_handler_test',
                        is_broken=env.IsRunningUnderValgrind())

@@ -74,6 +74,8 @@ def ResetGlobalSettings():
   global GlobalSettings
   GlobalSettings = {
       'exit_status': 0,
+      'using_nacl_signal_handler': False,
+
       # List of environment variables to set.
       'osenv': '',
 
@@ -150,7 +152,26 @@ def PrintTotalTime(total_time):
 # by returning with exit(-signum) or equivalently, exit((-signum) & 0xff).
 # NaCl uses the same encoding on Windows.
 def IndirectSignal(signum):
-  return 256 - signum
+  return (-signum) & 0xff
+
+# Windows exit codes that indicate unhandled exceptions.
+STATUS_ACCESS_VIOLATION = 0xc0000005
+STATUS_PRIVILEGED_INSTRUCTION = 0xc0000096
+
+# Python's wrapper for GetExitCodeProcess() treats the STATUS_* values
+# as negative, although the unsigned values are used in headers and
+# are more widely recognised.
+def MungeWindowsErrorExit(num):
+  return num - 0x100000000
+
+# If a crash occurs in x86-32 untrusted code on Windows, the kernel
+# apparently gets confused about the cause.  It fails to take %cs into
+# account when examining the faulting instruction, so it looks at the
+# wrong instruction, so we could get either of the errors below.
+# See http://code.google.com/p/nativeclient/issues/detail?id=1689
+win32_untrusted_crash_exit = [
+    MungeWindowsErrorExit(STATUS_ACCESS_VIOLATION),
+    MungeWindowsErrorExit(STATUS_PRIVILEGED_INSTRUCTION)]
 
 # Mac OS X returns SIGBUS in most of the cases where Linux returns
 # SIGSEGV, except for actual x86 segmentation violations.
@@ -174,41 +195,37 @@ status_map = {
         'darwin': [-13], # SIGPIPE
         },
     'untrusted_sigill' : {
-        'linux2': [IndirectSignal(11)], # SIGSEGV
-        'darwin': [IndirectSignal(11)], # SIGSEGV
-        'win32':  [ -1073741819, # -0x3ffffffb or 0xc0000005
-                    -1073741674, # -0x3fffff6a or 0xc0000096
-                   ],
-        'win64':  [IndirectSignal(4)], # SIGILL, as mapped by NaCl
+        'linux2': [-11], # SIGSEGV
+        'darwin': [-11], # SIGSEGV
+        'win32':  win32_untrusted_crash_exit,
+        'win64':  [MungeWindowsErrorExit(STATUS_PRIVILEGED_INSTRUCTION)],
         },
     'untrusted_segfault': {
-        'linux2': [IndirectSignal(11)], # SIGSEGV
-        'darwin': [IndirectSignal(10)], # SIGBUS
-        'win32':  [-1073741819], # -0x3ffffffb or 0xc0000005
-        'win64':  [IndirectSignal(11)],
+        'linux2': [-11], # SIGSEGV
+        'darwin': [-10], # SIGBUS
+        'win32':  win32_untrusted_crash_exit,
+        'win64':  [MungeWindowsErrorExit(STATUS_ACCESS_VIOLATION)],
+        'win_fakesig': 11, # SIGSEGV
         },
     'untrusted_sigsegv_or_equivalent': {
-        'linux2': [IndirectSignal(11)], # SIGSEGV
-        'darwin': [IndirectSignal(11)], # SIGSEGV
-        'win32':  [ -1073741819, # -0x3ffffffb or 0xc0000005
-# TODO(khim): remove this when cause of STATUS_PRIVILEGED_INSTRUCTION will be
-# known.  This only happens on win32 with glibc which is also suspicious.
-# See: http://code.google.com/p/nativeclient/issues/detail?id=1689
-                    -1073741674, # -0x3fffff6a or 0xc0000096
-                   ],
-        'win64':  [IndirectSignal(11)],
+        'linux2': [-11], # SIGSEGV
+        'darwin': [-11], # SIGSEGV
+        'win32':  win32_untrusted_crash_exit,
+        'win64':  [MungeWindowsErrorExit(STATUS_ACCESS_VIOLATION)],
         },
     'trusted_segfault': {
-        'linux2': [IndirectSignal(11)], # SIGSEGV
-        'darwin': [IndirectSignal(10)], # SIGBUS
-        'win32':  [IndirectSignal(11)], # SIGSEGV
-        'win64':  [IndirectSignal(11)], # SIGSEGV
+        'linux2': [-11], # SIGSEGV
+        'darwin': [-10], # SIGBUS
+        'win32':  [-11], # SIGSEGV
+        'win64':  [-11], # SIGSEGV
+        'win_fakesig': 11, # SIGSEGV
         },
     'trusted_sigsegv_or_equivalent': {
-        'linux2': [IndirectSignal(11)], # SIGSEGV
-        'darwin': [IndirectSignal(11)], # SIGSEGV
-        'win32':  [IndirectSignal(11)], # SIGSEGV
-        'win64':  [IndirectSignal(11)], # SIGSEGV
+        'linux2': [-11], # SIGSEGV
+        'darwin': [-11], # SIGSEGV
+        'win32':  [-11], # SIGSEGV
+        'win64':  [-11], # SIGSEGV
+        'win_fakesig': 11, # SIGSEGV
         },
     }
 
@@ -252,7 +269,7 @@ def ProcessOptions(argv):
 # thread, or additional output due to atexit functions, we scan the
 # output in reverse order for the signal signature.
 def GetNaClSignalInfoFromStderr(stderr):
-  sigNum = 0
+  sigNum = None
   sigType = 'normal'
 
   lines = stderr.splitlines()
@@ -261,7 +278,7 @@ def GetNaClSignalInfoFromStderr(stderr):
   for curline in reversed(lines):
     words = curline.split()
     if len(words) > 4 and words[0] == '**' and words[1] == 'Signal':
-      sigNum = -int(words[2])
+      sigNum = int(words[2])
       sigType = words[4]
       break
   return sigNum, sigType
@@ -276,24 +293,43 @@ def GetQemuSignalFromStderr(stderr, default):
       return -int(words[4])
   return default
 
-def CheckExitStatus(failed, req_status, exit_status, stdout, stderr):
+def FormatExitStatus(number):
+  # Include the hex version because it makes the Windows error exit
+  # statuses (STATUS_*) more recognisable.
+  return '%i (0x%x)' % (number, number & 0xffffffff)
+
+def CheckExitStatus(failed, req_status, using_nacl_signal_handler,
+                    exit_status, stdout, stderr):
+  expected_sigtype = 'normal'
   if req_status in status_map:
     expected_statuses = status_map[req_status][GlobalPlatform]
-    if req_status.startswith('trusted_'):
-      expected_sigtype = 'trusted'
-    elif req_status.startswith('untrusted_'):
-      expected_sigtype = 'untrusted'
-    else:
-      expected_sigtype = 'normal'
+    if using_nacl_signal_handler:
+      if req_status.startswith('trusted_'):
+        expected_sigtype = 'trusted'
+      elif req_status.startswith('untrusted_'):
+        expected_sigtype = 'untrusted'
   else:
     expected_statuses = [int(req_status)]
-    expected_sigtype = 'normal'
 
   # On 32-bit Windows, we cannot catch a signal that occurs in x86-32
   # untrusted code, so it always appears as a 'normal' exit, which
   # means that the signal handler does not print a message.
   if GlobalPlatform == 'win32' and expected_sigtype == 'untrusted':
     expected_sigtype = 'normal'
+
+  if expected_sigtype == 'normal':
+    expected_printed_signum = None
+  else:
+    if sys.platform == 'win32':
+      # On Windows, the NaCl signal handler maps the fault type to a
+      # Unix-like signal number.
+      expected_printed_signum = status_map[req_status]['win_fakesig']
+    else:
+      # On Unix, the NaCl signal handler reports the actual signal number.
+      assert len(expected_statuses) == 1
+      assert expected_statuses[0] < 0
+      expected_printed_signum = -expected_statuses[0]
+    expected_statuses = [IndirectSignal(expected_printed_signum)]
 
   # If an uncaught signal occurs under QEMU (on ARM), the exit status
   # contains the signal number, mangled as per IndirectSignal().  We
@@ -303,30 +339,30 @@ def CheckExitStatus(failed, req_status, exit_status, stdout, stderr):
   if stderr is not None:
     exit_status = GetQemuSignalFromStderr(stderr, exit_status)
 
-  exitOk = exit_status in expected_statuses
-  if stderr is None:
-    printed_sigtype = 'unknown'
-  else:
-    printed_signum, printed_sigtype = GetNaClSignalInfoFromStderr(stderr)
-    exitOk = exitOk and printed_sigtype == expected_sigtype
+  msg = '\nERROR: Command returned exit status %s but we expected %s' % (
+      FormatExitStatus(exit_status),
+      ' or '.join(FormatExitStatus(value) for value in expected_statuses))
+  if exit_status not in expected_statuses:
+    Print(msg)
+    failed = True
+  if stderr is not None:
+    expected_printed = (expected_printed_signum, expected_sigtype)
+    actual_printed = GetNaClSignalInfoFromStderr(stderr)
+    msg = ('\nERROR: Command printed the signal info %s to stderr '
+           'but we expected %s' %
+           (actual_printed, expected_printed))
+    if actual_printed != expected_printed:
+      Print(msg)
+      failed = True
 
-  if exitOk and not failed:
-    return True
   if failed:
-    Print('Command failed')
-  else:
-    Print('\nERROR: Command returned %s with type=%r, '
-          'but expected %s with type=%r for platform=%s' %
-          (exit_status, printed_sigtype,
-           expected_statuses, expected_sigtype,
-           GlobalPlatform))
     if stderr is not None:
       Banner('Stdout')
       Print(stdout)
       Banner('Stderr')
       Print(stderr)
     Print(FailureMessage())
-  return False
+  return not failed
 
 def CheckTimeBounds(total_time):
   if GlobalSettings['time_error']:
@@ -430,16 +466,20 @@ def main(argv):
     (total_time, exit_status, failed) = test_lib.RunTestWithInput(command,
                                                                   stdin_data)
     PrintTotalTime(total_time)
-    if not CheckExitStatus(failed, GlobalSettings['exit_status'], exit_status,
-                           None, None):
+    if not CheckExitStatus(failed,
+                           GlobalSettings['exit_status'],
+                           GlobalSettings['using_nacl_signal_handler'],
+                           exit_status, None, None):
       return -1
   else:
     (total_time, exit_status,
      failed, stdout, stderr) = test_lib.RunTestWithInputOutput(
          command, stdin_data)
     PrintTotalTime(total_time)
-    if not CheckExitStatus(failed, GlobalSettings['exit_status'], exit_status,
-                           stdout, stderr):
+    if not CheckExitStatus(failed,
+                           GlobalSettings['exit_status'],
+                           GlobalSettings['using_nacl_signal_handler'],
+                           exit_status, stdout, stderr):
       return -1
     if not CheckGoldenOutput(stdout, stderr):
       return -1
