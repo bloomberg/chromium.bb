@@ -193,12 +193,6 @@ bool GetCookieDomainWithString(const GURL& url,
   }
 
   // Get the normalized domain specified in cookie line.
-  // Note: The RFC says we can reject a cookie if the domain
-  // attribute does not start with a dot. IE/FF/Safari however, allow a cookie
-  // of the form domain=my.domain.com, treating it the same as
-  // domain=.my.domain.com -- for compatibility we do the same here.  Firefox
-  // also treats domain=.....my.domain.com like domain=.my.domain.com, but
-  // neither IE nor Safari do this, and we don't either.
   url_canon::CanonHostInfo ignored;
   std::string cookie_domain(CanonicalizeHost(domain_string, &ignored));
   if (cookie_domain.empty())
@@ -1825,23 +1819,6 @@ void CookieMonster::ParsedCookie::ParseValue(
   SeekPast(it, end, kWhitespace);
   // value_start should point at the first character of the value.
   *value_start = *it;
-
-  // It is unclear exactly how quoted string values should be handled.
-  // Major browsers do different things, for example, Firefox supports
-  // semicolons embedded in a quoted value, while IE does not.  Looking at
-  // the specs, RFC 2109 and 2965 allow for a quoted-string as the value.
-  // However, these specs were apparently written after browsers had
-  // implemented cookies, and they seem very distant from the reality of
-  // what is actually implemented and used on the web.  The original spec
-  // from Netscape is possibly what is closest to the cookies used today.
-  // This spec didn't have explicit support for double quoted strings, and
-  // states that ; is not allowed as part of a value.  We had originally
-  // implement the Firefox behavior (A="B;C"; -> A="B;C";).  However, since
-  // there is no standard that makes sense, we decided to follow the behavior
-  // of IE and Safari, which is closer to the original Netscape proposal.
-  // This means that A="B;C" -> A="B;.  This also makes the code much simpler
-  // and reduces the possibility for invalid cookies, where other browsers
-  // like Opera currently reject those invalid cookies (ex A="B" "C";).
 
   // Just look for ';' to terminate ('=' allowed).
   // We can hit the end, maybe they didn't terminate.
