@@ -543,6 +543,11 @@ const char kForceAppsPromoVisible[]         = "force-apps-promo-visible";
 // the base layer even when compositing is not strictly required.
 const char kForceCompositingMode[]          = "force-compositing-mode";
 
+// Specify the backend server used for gaia authentications, like sync or
+// policies for example. The https:// prefix and the trailing slash should be
+// omitted. The default value is "www.google.com".
+const char kGaiaHost[]                       = "gaia-host";
+
 // Specifies a custom name for the GSSAPI library to load.
 const char kGSSAPILibraryName[]             = "gssapi-library-name";
 

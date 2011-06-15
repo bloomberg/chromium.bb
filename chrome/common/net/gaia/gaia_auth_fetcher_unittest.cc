@@ -12,6 +12,7 @@
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
 #include "chrome/common/net/gaia/gaia_auth_fetcher.h"
 #include "chrome/common/net/gaia/gaia_auth_fetcher_unittest.h"
+#include "chrome/common/net/gaia/gaia_urls.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/net/http_return.h"
 #include "chrome/test/testing_profile.h"
@@ -61,8 +62,9 @@ void MockFetcher::Start() {
 class GaiaAuthFetcherTest : public testing::Test {
  public:
   GaiaAuthFetcherTest()
-      : client_login_source_(GaiaAuthFetcher::kClientLoginUrl),
-        issue_auth_token_source_(GaiaAuthFetcher::kIssueAuthTokenUrl) {}
+      : client_login_source_(GaiaUrls::GetInstance()->client_login_url()),
+        issue_auth_token_source_(
+            GaiaUrls::GetInstance()->issue_auth_token_url()) {}
 
   void RunParsingTest(const std::string& data,
                       const std::string& sid,

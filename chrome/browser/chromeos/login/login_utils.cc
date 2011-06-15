@@ -46,8 +46,8 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
-#include "chrome/common/net/gaia/gaia_auth_fetcher.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
+#include "chrome/common/net/gaia/gaia_urls.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
@@ -539,7 +539,7 @@ class WarmingObserver : public NetworkLibrary::NetworkManagerObserver {
     if (netlib->Connected()) {
       const int kConnectionsNeeded = 1;
       chrome_browser_net::PreconnectOnUIThread(
-          GURL(GaiaAuthFetcher::kClientLoginUrl),
+          GURL(GaiaUrls::GetInstance()->client_login_url()),
           chrome_browser_net::UrlInfo::EARLY_LOAD_MOTIVATED,
           kConnectionsNeeded);
       netlib->RemoveNetworkManagerObserver(this);
@@ -554,7 +554,7 @@ void LoginUtilsImpl::PrewarmAuthentication() {
     if (network->Connected()) {
       const int kConnectionsNeeded = 1;
       chrome_browser_net::PreconnectOnUIThread(
-          GURL(GaiaAuthFetcher::kClientLoginUrl),
+          GURL(GaiaUrls::GetInstance()->client_login_url()),
           chrome_browser_net::UrlInfo::EARLY_LOAD_MOTIVATED,
           kConnectionsNeeded);
     } else {

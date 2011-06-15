@@ -13,6 +13,7 @@
 #include "base/string_util.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
+#include "chrome/common/net/gaia/gaia_urls.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/net/http_return.h"
 #include "net/base/escape.h"
@@ -68,9 +69,6 @@ const char GaiaAuthFetcher::kErrorUrlParam[] = "Url";
 const char GaiaAuthFetcher::kCaptchaUrlParam[] = "CaptchaUrl";
 // static
 const char GaiaAuthFetcher::kCaptchaTokenParam[] = "CaptchaToken";
-// static
-const char GaiaAuthFetcher::kCaptchaUrlPrefix[] =
-    "http://www.google.com/accounts/";
 
 // static
 const char GaiaAuthFetcher::kCookiePersistence[] = "true";
@@ -85,24 +83,15 @@ const char GaiaAuthFetcher::kAccountTypeGoogle[] =
 // static
 const char GaiaAuthFetcher::kSecondFactor[] = "Info=InvalidSecondFactor";
 
-// TODO(chron): These urls are also in auth_response_handler.h.
-// The URLs for different calls in the Google Accounts programmatic login API.
-const char GaiaAuthFetcher::kClientLoginUrl[] =
-    "https://www.google.com/accounts/ClientLogin";
-const char GaiaAuthFetcher::kIssueAuthTokenUrl[] =
-    "https://www.google.com/accounts/IssueAuthToken";
-const char GaiaAuthFetcher::kGetUserInfoUrl[] =
-    "https://www.google.com/accounts/GetUserInfo";
-
 GaiaAuthFetcher::GaiaAuthFetcher(GaiaAuthConsumer* consumer,
                                        const std::string& source,
                                        net::URLRequestContextGetter* getter)
     : consumer_(consumer),
       getter_(getter),
       source_(source),
-      client_login_gurl_(kClientLoginUrl),
-      issue_auth_token_gurl_(kIssueAuthTokenUrl),
-      get_user_info_gurl_(kGetUserInfoUrl),
+      client_login_gurl_(GaiaUrls::GetInstance()->client_login_url()),
+      issue_auth_token_gurl_(GaiaUrls::GetInstance()->issue_auth_token_url()),
+      get_user_info_gurl_(GaiaUrls::GetInstance()->get_user_info_url()),
       fetch_pending_(false) {}
 
 GaiaAuthFetcher::~GaiaAuthFetcher() {}
@@ -335,7 +324,8 @@ GoogleServiceAuthError GaiaAuthFetcher::GenerateAuthError(
     LOG(WARNING) << "ClientLogin failed with " << error;
 
     if (error == kCaptchaError) {
-      GURL image_url(kCaptchaUrlPrefix + captcha_url);
+      GURL image_url(
+          GaiaUrls::GetInstance()->captcha_url_prefix() + captcha_url);
       GURL unlock_url(url);
       return GoogleServiceAuthError::FromCaptchaChallenge(
           captcha_token, image_url, unlock_url);

@@ -25,6 +25,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/net/gaia/gaia_auth_fetcher_unittest.h"
+#include "chrome/common/net/gaia/gaia_urls.h"
 #include "chrome/test/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/url_fetcher.h"
@@ -476,7 +477,7 @@ TEST_F(GoogleAuthenticatorTest, OnlineLogin) {
 }
 
 TEST_F(GoogleAuthenticatorTest, CheckLocalaccount) {
-  GURL source(AuthResponseHandler::kTokenAuthUrl);
+  GURL source(GaiaUrls::GetInstance()->token_auth_url());
   net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
 
   MockConsumer consumer;

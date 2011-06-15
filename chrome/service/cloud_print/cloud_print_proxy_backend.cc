@@ -16,6 +16,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/net/gaia/gaia_oauth_client.h"
+#include "chrome/common/net/gaia/gaia_urls.h"
 #include "chrome/service/cloud_print/cloud_print_consts.h"
 #include "chrome/service/cloud_print/cloud_print_helpers.h"
 #include "chrome/service/cloud_print/cloud_print_token_store.h"
@@ -412,7 +413,8 @@ void CloudPrintProxyBackend::Core::DoInitializeWithLsid(
   std::string user_agent = "ChromiumBrowser";
   scoped_refptr<ServiceGaiaAuthenticator> gaia_auth_for_print(
       new ServiceGaiaAuthenticator(
-          user_agent, kCloudPrintGaiaServiceId, kGaiaUrl,
+          user_agent, kCloudPrintGaiaServiceId,
+          GaiaUrls::GetInstance()->client_login_url(),
           g_service_process->io_thread()->message_loop_proxy()));
   gaia_auth_for_print->set_message_loop(MessageLoop::current());
   if (gaia_auth_for_print->AuthenticateWithLsid(lsid)) {

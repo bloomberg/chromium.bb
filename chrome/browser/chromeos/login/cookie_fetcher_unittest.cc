@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/login/cookie_fetcher.h"
 #include "chrome/browser/chromeos/login/issue_response_handler.h"
 #include "chrome/browser/chromeos/login/mock_auth_response_handler.h"
+#include "chrome/common/net/gaia/gaia_urls.h"
 #include "chrome/test/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/url_fetcher.h"
@@ -27,8 +28,8 @@ using ::testing::_;
 class CookieFetcherTest : public ::testing::Test {
  public:
   CookieFetcherTest()
-      : iat_url_(AuthResponseHandler::kIssueAuthTokenUrl),
-        ta_url_(AuthResponseHandler::kTokenAuthUrl),
+      : iat_url_(GaiaUrls::GetInstance()->issue_auth_token_url()),
+        ta_url_(GaiaUrls::GetInstance()->token_auth_url()),
         client_login_data_("SID n' LSID"),
         token_("auth token"),
         ui_thread_(BrowserThread::UI, &message_loop_) {
@@ -182,7 +183,7 @@ TEST_F(CookieFetcherTest, ClientLoginResponseHandlerTest) {
 TEST_F(CookieFetcherTest, IssueResponseHandlerTest) {
   IssueResponseHandler handler(NULL);
   std::string input("a\n");
-  std::string expected(IssueResponseHandler::kTokenAuthUrl);
+  std::string expected(GaiaUrls::GetInstance()->token_auth_url());
   expected.append(input);
 
   scoped_ptr<URLFetcher> fetcher(handler.Handle(input, NULL));

@@ -8,6 +8,7 @@
 #include "chrome/browser/net/gaia/token_service_unittest.h"
 #include "chrome/browser/password_manager/encryptor.h"
 #include "chrome/browser/webdata/web_data_service.h"
+#include "chrome/common/net/gaia/gaia_urls.h"
 #include "chrome/test/signaling_task.h"
 #include "chrome/test/testing_profile.h"
 #include "content/common/test_url_fetcher_factory.h"
@@ -35,7 +36,7 @@ class SigninManagerTest : public TokenServiceTestHarness {
     DCHECK(fetcher);
     DCHECK(fetcher->delegate());
     fetcher->delegate()->OnURLFetchComplete(
-        fetcher, GURL(GaiaAuthFetcher::kClientLoginUrl),
+        fetcher, GURL(GaiaUrls::GetInstance()->client_login_url()),
         net::URLRequestStatus(), 200, net::ResponseCookies(),
         "SID=sid\nLSID=lsid\nAuth=auth");
 
@@ -45,7 +46,7 @@ class SigninManagerTest : public TokenServiceTestHarness {
     DCHECK(fetcher);
     DCHECK(fetcher->delegate());
     fetcher->delegate()->OnURLFetchComplete(
-        fetcher, GURL(GaiaAuthFetcher::kGetUserInfoUrl),
+        fetcher, GURL(GaiaUrls::GetInstance()->get_user_info_url()),
         net::URLRequestStatus(), 200, net::ResponseCookies(),
         "email=user@gmail.com");
   }

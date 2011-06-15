@@ -362,6 +362,8 @@
         'common/net/gaia/gaia_authenticator.h',
         'common/net/gaia/gaia_oauth_client.cc',
         'common/net/gaia/gaia_oauth_client.h',
+        'common/net/gaia/gaia_urls.cc',
+        'common/net/gaia/gaia_urls.h',
         'common/net/gaia/google_service_auth_error.cc',
         'common/net/gaia/google_service_auth_error.h',
         'common/net/x509_certificate_model.cc',

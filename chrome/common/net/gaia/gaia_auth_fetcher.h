@@ -33,11 +33,6 @@ class GaiaAuthFetcher : public URLFetcher::Delegate {
     HostedAccountsNotAllowed
   };
 
-  // The URLs for different calls in the Google Accounts programmatic login API.
-  static const char kClientLoginUrl[];
-  static const char kIssueAuthTokenUrl[];
-  static const char kGetUserInfoUrl[];
-
   // Magic string indicating that, while a second factor is still
   // needed to complete authentication, the user provided the right password.
   static const char kSecondFactor[];
@@ -112,7 +107,6 @@ class GaiaAuthFetcher : public URLFetcher::Delegate {
   static const char kErrorUrlParam[];
   static const char kCaptchaUrlParam[];
   static const char kCaptchaTokenParam[];
-  static const char kCaptchaUrlPrefix[];
 
   // Process the results of a ClientLogin fetch.
   void OnClientLoginFetched(const std::string& data,

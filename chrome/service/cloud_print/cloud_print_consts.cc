@@ -36,7 +36,6 @@ const char kTagDryRunFlag[] = "__cp__dry_run";
 
 
 const char kDefaultCloudPrintServerUrl[] = "https://www.google.com/cloudprint";
-const char kGaiaUrl[] = "https://www.google.com/accounts/ClientLogin";
 const char kCloudPrintGaiaServiceId[] = "cloudprint";
 const char kSyncGaiaServiceId[] = "chromiumsync";
 const char kCloudPrintPushNotificationsSource[] = "cloudprint.google.com";
