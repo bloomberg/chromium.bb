@@ -10,22 +10,22 @@
   <release seq="1" allow_pseudo="false">
     <messages fallback_to_english="true">
       <message name="IDS_AUTOFILL_ADDRESS_LINE_1_RE">
-        address.*line|address1|addr1|street<!-- de-DE -->|strasse|straße|hausnummer|housenumber<!-- en-GB -->|house.?name<!-- es -->|direccion|dirección<!-- fr-FR -->|adresse<!-- it-IT -->|indirizzo<!-- ja-JP -->|住所1<!-- pt-BR, pt-PT -->|morada|endereço<!-- ru -->|Адрес<!-- zh-CN -->|地址
+        address.*line|address1|addr1|street<!-- de-DE -->|strasse|straße|hausnummer|housenumber<!-- en-GB -->|house.?name<!-- es -->|direccion|dirección<!-- fr-FR -->|adresse<!-- it-IT -->|indirizzo<!-- ja-JP -->|住所1<!-- pt-BR, pt-PT -->|morada|endereço<!-- ru -->|Адрес<!-- zh-CN -->|地址<!-- ko-KR -->|주소.?1
       </message>
       <message name="IDS_AUTOFILL_ADDRESS_LINE_1_LABEL_RE">
-        address<!-- fr-FR -->|adresse<!-- it-IT -->|indirizzo<!-- ja-JP -->|住所<!-- zh-CN -->|地址
+        address<!-- fr-FR -->|adresse<!-- it-IT -->|indirizzo<!-- ja-JP -->|住所<!-- zh-CN -->|地址<!-- ko-KR -->|주소
       </message>
       <message name="IDS_AUTOFILL_ADDRESS_LINE_2_RE">
-        address.*line2|address2|addr2|street|suite|unit<!-- de-DE -->|adresszusatz|ergänzende.?angaben<!-- es -->|direccion2|colonia|adicional<!-- fr-FR -->|addresssuppl|complementnom|appartement<!-- it-IT -->|indirizzo2<!-- ja-JP -->|住所2<!-- pt-BR, pt-PT -->|complemento|addrcomplement<!-- ru -->|Улица<!-- zh-CN -->|地址2
+        address.*line2|address2|addr2|street|suite|unit<!-- de-DE -->|adresszusatz|ergänzende.?angaben<!-- es -->|direccion2|colonia|adicional<!-- fr-FR -->|addresssuppl|complementnom|appartement<!-- it-IT -->|indirizzo2<!-- ja-JP -->|住所2<!-- pt-BR, pt-PT -->|complemento|addrcomplement<!-- ru -->|Улица<!-- zh-CN -->|地址2<!-- ko-KR -->|주소.?2
       </message>
       <message name="IDS_AUTOFILL_ADDRESS_LINE_2_LABEL_RE">
-        address<!-- fr-FR -->|adresse<!-- it-IT -->|indirizzo<!-- zh-CN -->|地址
+        address<!-- fr-FR -->|adresse<!-- it-IT -->|indirizzo<!-- zh-CN -->|地址<!-- ko-KR -->|주소
       </message>
       <message name="IDS_AUTOFILL_ADDRESS_LINE_3_RE">
         address.*line3|address3|addr3|street|line3<!-- es -->|municipio<!-- fr-FR -->|batiment|residence<!-- it-IT -->|indirizzo3
       </message>
       <message name="IDS_AUTOFILL_COMPANY_RE">
-        company|business|organization|organisation<!-- de-DE -->|firma|firmenname<!-- es -->|empresa<!-- fr-FR -->|societe|société<!-- it-IT -->|ragione.?sociale<!-- ja-JP -->|会社<!-- ru -->|название.?компании<!-- zh-CN -->|单位|公司
+        company|business|organization|organisation<!-- de-DE -->|firma|firmenname<!-- es -->|empresa<!-- fr-FR -->|societe|société<!-- it-IT -->|ragione.?sociale<!-- ja-JP -->|会社<!-- ru -->|название.?компании<!-- zh-CN -->|单位|公司<!-- ko-KR -->|회사|직장
       </message>
       <message name="IDS_AUTOFILL_ATTENTION_IGNORED_RE">
         attention|attn
@@ -34,19 +34,19 @@
         province|region|other<!-- es -->|provincia<!-- pt-BR, pt-PT -->|bairro|suburb
       </message>
       <message name="IDS_AUTOFILL_COUNTRY_RE">
-        country|location<!-- ja-JP -->|国<!-- zh-CN -->|国家
+        country|location<!-- ja-JP -->|国<!-- zh-CN -->|国家<!-- ko-KR -->|국가|나라
       </message>
       <message name="IDS_AUTOFILL_ZIP_CODE_RE">
-        zip|postal|post.*code|pcode|^1z$<!-- de-DE -->|postleitzahl<!-- es -->|\bcp\b<!-- fr-FR -->|cdp<!-- it-IT -->|\bcap\b<!-- ja-JP -->|郵便番号<!-- pt-BR, pt-PT -->|codigo|codpos|cep<!-- ru -->|Почтовый.?Индекс<!--zh-CN -->|邮政编码|邮编<!-- zh-TW -->|郵遞區號
+        zip|postal|post.*code|pcode|^1z$<!-- de-DE -->|postleitzahl<!-- es -->|\bcp\b<!-- fr-FR -->|cdp<!-- it-IT -->|\bcap\b<!-- ja-JP -->|郵便番号<!-- pt-BR, pt-PT -->|codigo|codpos|cep<!-- ru -->|Почтовый.?Индекс<!--zh-CN -->|邮政编码|邮编<!-- zh-TW -->|郵遞區號<!-- ko-KR -->|우편.?번호
       </message>
       <message name="IDS_AUTOFILL_ZIP_4_RE">
         zip|^-$|post2<!-- pt-BR, pt-PT -->|codpos2
       </message>
       <message name="IDS_AUTOFILL_CITY_RE">
-        city|town<!-- de-DE -->|\bort\b|stadt<!-- en-AU -->|suburb<!-- es -->|ciudad|provincia|localidad|poblacion<!-- fr-FR -->|ville|commune<!-- it-IT -->|localita<!-- ja-JP -->|市区町村<!-- pt-BR, pt-PT -->|cidade<!-- ru -->|Город<!-- zh-CN -->|市<!-- zh-TW -->|分區
+        city|town<!-- de-DE -->|\bort\b|stadt<!-- en-AU -->|suburb<!-- es -->|ciudad|provincia|localidad|poblacion<!-- fr-FR -->|ville|commune<!-- it-IT -->|localita<!-- ja-JP -->|市区町村<!-- pt-BR, pt-PT -->|cidade<!-- ru -->|Город<!-- zh-CN -->|市<!-- zh-TW -->|分區<!-- ko-KR -->|^시[^도·・]|시[·・]?군[·・]?구
       </message>
       <message name="IDS_AUTOFILL_STATE_RE">
-        state|county|region|province<!-- de-DE -->|land<!-- en-UK -->|county|principality<!-- ja-JP -->|都道府県<!-- pt-BR, pt-PT -->|estado|provincia<!-- ru -->|область<!-- zh-CN -->|省<!-- zh-TW -->|地區
+        state|county|region|province<!-- de-DE -->|land<!-- en-UK -->|county|principality<!-- ja-JP -->|都道府県<!-- pt-BR, pt-PT -->|estado|provincia<!-- ru -->|область<!-- zh-CN -->|省<!-- zh-TW -->|地區<!-- ko-KR -->|^시[·・]?도
       </message>
       <message name="IDS_AUTOFILL_ADDRESS_TYPE_SAME_AS_RE">
         same as
@@ -61,7 +61,7 @@
         ship
       </message>
       <message name="IDS_AUTOFILL_EMAIL_RE">
-        e.?mail<!-- ja-JP -->|メールアドレス<!-- ru -->|Электронной.?Почты<!-- zh-CN -->|邮件|邮箱<!-- zh-TW -->|電郵地址
+        e.?mail<!-- ja-JP -->|メールアドレス<!-- ru -->|Электронной.?Почты<!-- zh-CN -->|邮件|邮箱<!-- zh-TW -->|電郵地址<!-- ko-KR -->|(이메일|전자.?우편|[Ee]-?mail)(.?주소)?
       </message>
       <message name="IDS_AUTOFILL_NAME_ON_CARD_RE">
         card.?holder|name.?on.?card|ccname|owner<!-- de-DE -->|karteninhaber<!-- es -->|nombre.*tarjeta<!-- fr-FR -->|nom.*carte<!-- it-IT -->|nome.*cart<!-- ja-JP -->|名前<!-- ru -->|Имя.*карты<!-- zh-CN -->|信用卡开户名|开户名|持卡人姓名<!-- zh-TW -->|持卡人姓名
@@ -70,7 +70,7 @@
         name
       </message>
       <message name="IDS_AUTOFILL_CARD_NUMBER_RE">
-        number|card.?#|card.?no|ccnum<!-- de-DE -->|nummer<!-- es -->|credito|numero|número<!-- fr-FR -->|numéro<!-- ja-JP -->|カード番号<!-- ru -->|Номер.*карты<!-- zh-CN -->|信用卡号|信用卡号码<!-- zh-TW -->|信用卡卡號
+        number|card.?#|card.?no|ccnum<!-- de-DE -->|nummer<!-- es -->|credito|numero|número<!-- fr-FR -->|numéro<!-- ja-JP -->|カード番号<!-- ru -->|Номер.*карты<!-- zh-CN -->|信用卡号|信用卡号码<!-- zh-TW -->|信用卡卡號<!-- ko-KR -->|카드
       </message>
       <message name="IDS_AUTOFILL_CARD_CVC_RE">
         verification|card identification|cvn|security code|cvv code|cvc
@@ -85,16 +85,16 @@
         ^card
       </message>
       <message name="IDS_AUTOFILL_USERNAME_RE">
-        user.?name|user.?id<!-- de-DE -->|vollständiger.?name<!-- zh-CN -->|用户名
+        user.?name|user.?id<!-- de-DE -->|vollständiger.?name<!-- zh-CN -->|用户名<!-- ko-KR -->|(사용자.?)?아이디|사용자.?ID
       </message>
       <message name="IDS_AUTOFILL_NAME_RE">
-        ^name|full.?name|your.?name|customer.?name|firstandlastname<!-- es -->|nombre.*y.*apellidos<!-- fr-FR -->|^nom<!-- ja-JP -->|お名前|氏名<!-- pt-BR, pt-PT -->|^nome<!-- zh-CN -->|姓名
+        ^name|full.?name|your.?name|customer.?name|firstandlastname<!-- es -->|nombre.*y.*apellidos<!-- fr-FR -->|^nom<!-- ja-JP -->|お名前|氏名<!-- pt-BR, pt-PT -->|^nome<!-- zh-CN -->|姓名<!-- ko-KR -->|성명
       </message>
       <message name="IDS_AUTOFILL_NAME_SPECIFIC_RE">
         ^name<!-- fr-FR -->|^nom<!-- pt-BR, pt-PT -->|^nome
       </message>
       <message name="IDS_AUTOFILL_FIRST_NAME_RE">
-        first.*name|initials|fname|first$<!-- de-DE -->|vorname<!-- es -->|nombre<!-- fr-FR -->|forename|prénom|prenom<!-- ja-JP -->|名<!-- pt-BR, pt-PT -->|nome<!-- ru -->|Имя
+        first.*name|initials|fname|first$<!-- de-DE -->|vorname<!-- es -->|nombre<!-- fr-FR -->|forename|prénom|prenom<!-- ja-JP -->|名<!-- pt-BR, pt-PT -->|nome<!-- ru -->|Имя<!-- ko-KR -->|이름
       </message>
       <message name="IDS_AUTOFILL_MIDDLE_INITIAL_RE">
         middle.*initial|m\.i\.|mi$
@@ -103,10 +103,10 @@
         middle.*name|mname|middle$<!-- es -->|apellido.?materno|lastlastname
       </message>
       <message name="IDS_AUTOFILL_LAST_NAME_RE">
-        last.*name|lname|surname|last$|secondname<!-- de-DE -->|nachname<!-- es -->|apellidos<!-- fr-FR -->|famille|^nom<!-- it-IT -->|cognome<!-- ja-JP -->|姓<!-- pt-BR, pt-PT -->|morada|apelidos|surename|sobrenome<!-- ru -->|Фамилия
+        last.*name|lname|surname|last$|secondname<!-- de-DE -->|nachname<!-- es -->|apellidos<!-- fr-FR -->|famille|^nom<!-- it-IT -->|cognome<!-- ja-JP -->|姓<!-- pt-BR, pt-PT -->|morada|apelidos|surename|sobrenome<!-- ru -->|Фамилия<!-- ko-KR -->|성[^명]?
       </message>
       <message name="IDS_AUTOFILL_PHONE_RE">
-        phone<!-- de-DE -->|telefonnummer<!-- es -->|telefono|teléfono<!-- fr-FR -->|telfixe<!-- ja-JP -->|電話<!-- pt-BR, pt-PT -->|telefone|telemovel<!-- ru -->|телефон<!-- zh-CN -->|电话
+        phone<!-- de-DE -->|telefonnummer<!-- es -->|telefono|teléfono<!-- fr-FR -->|telfixe<!-- ja-JP -->|電話<!-- pt-BR, pt-PT -->|telefone|telemovel<!-- ru -->|телефон<!-- zh-CN -->|电话<!-- ko-KR -->|(전화|핸드폰|휴대폰|휴대전화)(.?번호)?
       </message>
       <message name="IDS_AUTOFILL_COUNTRY_CODE_RE">
         country.*code|ccode|_cc
@@ -115,10 +115,10 @@
         ^\($
       </message>
       <message name="IDS_AUTOFILL_AREA_CODE_RE">
-        area.*code|acode|area
+        area.*code|acode|area<!-- ko-KR -->|지역.?번호
       </message>
       <message name="IDS_AUTOFILL_FAX_RE">
-        fax<!-- fr-FR -->|télécopie|telecopie<!-- ja-JP -->|ファックス<!-- ru -->|факс<!-- zh-CN -->|传真<!-- zh-TW -->|傳真
+        fax<!-- fr-FR -->|télécopie|telecopie<!-- ja-JP -->|ファックス<!-- ru -->|факс<!-- zh-CN -->|传真<!-- zh-TW -->|傳真<!-- ko-KR -->|팩스(.?번호)?
       </message>
       <message name="IDS_AUTOFILL_PHONE_PREFIX_SEPARATOR_RE">
         ^-$|^\)$
