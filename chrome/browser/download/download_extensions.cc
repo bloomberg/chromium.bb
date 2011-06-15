@@ -105,6 +105,7 @@ static const struct Executables {
   { "drv", Dangerous },
   { "exe", AllowOnUserGesture },
   { "fxp", AllowOnUserGesture },
+  { "grp", Dangerous },
   { "hlp", AllowOnUserGesture },
   { "hta", AllowOnUserGesture },
   { "htt", AllowOnUserGesture },
