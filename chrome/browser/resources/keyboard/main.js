@@ -66,6 +66,12 @@ BaseKey.prototype = {
   aspect_: 1,
 
   /**
+   * The column.
+   * @type {number}
+   */
+  column_: 0.,
+
+  /**
    * The cell type of this key.  Determines the background colour.
    * @type {string}
    */
@@ -79,13 +85,20 @@ BaseKey.prototype = {
   },
 
   /**
-   * Set the position, a.k.a. row, of this key.
-   * @param {string} position The position.
-   * @return {void}
+   * Set the horizontal position for this key.
+   * @param {number} column Horizonal position (in multiples of row height).
    */
-  set position(position) {
+  set column(column) {
+    this.column_ = column;
+  },
+
+  /**
+   * Set the vertical position, aka row, of this key.
+   * @param {number} row The row.
+   */
+  set row(row) {
     for (var i in this.modeElements_) {
-      this.modeElements_[i].classList.add(this.cellType_ + 'r' + position);
+      this.modeElements_[i].classList.add(this.cellType_ + 'r' + row);
     }
   },
 
@@ -109,7 +122,8 @@ BaseKey.prototype = {
     var padding = this.getPadding(mode, height);
     var border = 1;
     var margin = 5;
-    var width = Math.floor(height * this.aspect_);
+    var width = Math.floor(height * (this.column_ + this.aspect_)) -
+                Math.floor(height *  this.column_);
 
     var extraHeight = margin + padding + 2 * border;
     var extraWidth = margin + 2 * border;
@@ -473,8 +487,11 @@ Row.prototype = {
       this.modeElements_[MODES[i]].appendChild(clearingDiv);
     }
 
+    var column = 0.;
     for (var i = 0; i < this.keys_.length; ++i) {
-      this.keys_[i].position = this.position_;
+      this.keys_[i].row = this.position_;
+      this.keys_[i].column = column;
+      column += this.keys_[i].aspect;
     }
 
     return this.element_;
@@ -570,7 +587,7 @@ var KEYS = [
  * All of the rows in the keyboard.
  * @type {Array.<Row>}
  */
-var allRows = [];  // Populated during start()
+var allRows = [];  // Populated during onload()
 
 /**
  * Calculate the height of the row based on the size of the page.
