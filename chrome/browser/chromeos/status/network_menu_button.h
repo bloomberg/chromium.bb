@@ -125,6 +125,8 @@ class NetworkMenuButton : public StatusAreaButton,
   // Shows 3G promo notification if needed.
   void ShowOptionalMobileDataPromoNotification(NetworkLibrary* cros);
 
+  void SetTooltipAndAccessibleName(const string16& label);
+
   // Path of the Cellular device that we monitor property updates from.
   std::string cellular_device_path_;
 

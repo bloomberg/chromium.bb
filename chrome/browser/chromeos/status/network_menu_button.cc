@@ -332,8 +332,8 @@ void NetworkMenuButton::SetNetworkIcon(NetworkLibrary* cros,
     SetIconAndBadges(rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0),
                      rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_WARNING),
                      NULL);
-    SetTooltipText(UTF16ToWide(l10n_util::GetStringUTF16(
-        IDS_STATUSBAR_NETWORK_NO_NETWORK_TOOLTIP)));
+    SetTooltipAndAccessibleName(
+        l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_NO_NETWORK_TOOLTIP));
     return;
   }
 
@@ -348,8 +348,8 @@ void NetworkMenuButton::SetNetworkIcon(NetworkLibrary* cros,
           rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED),
           NULL);
     }
-    SetTooltipText(UTF16ToWide(l10n_util::GetStringUTF16(
-        IDS_STATUSBAR_NETWORK_NO_NETWORK_TOOLTIP)));
+    SetTooltipAndAccessibleName(
+        l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_NO_NETWORK_TOOLTIP));
     return;
   }
 
@@ -371,10 +371,10 @@ void NetworkMenuButton::SetNetworkIcon(NetworkLibrary* cros,
       wireless = cros->cellular_network();
       SetBadgesOnly(BadgeForNetworkTechnology(cros->cellular_network()), NULL);
     }
-    SetTooltipText(UTF16ToWide(l10n_util::GetStringFUTF16(
+    SetTooltipAndAccessibleName(l10n_util::GetStringFUTF16(
         wireless->configuring() ? IDS_STATUSBAR_NETWORK_CONFIGURING_TOOLTIP
                                 : IDS_STATUSBAR_NETWORK_CONNECTING_TOOLTIP,
-        UTF8ToUTF16(wireless->name()))));
+        UTF8ToUTF16(wireless->name())));
   } else {
     // Stop connecting animation since we are not connecting.
     animation_connecting_.Stop();
@@ -387,26 +387,25 @@ void NetworkMenuButton::SetNetworkIcon(NetworkLibrary* cros,
       if (network->type() == TYPE_ETHERNET) {
         SetIconAndBadges(rb.GetBitmapNamed(IDR_STATUSBAR_WIRED),
                          right_badge, left_badge);
-        SetTooltipText(
-            UTF16ToWide(l10n_util::GetStringFUTF16(
-                IDS_STATUSBAR_NETWORK_CONNECTED_TOOLTIP,
-                l10n_util::GetStringUTF16(
-                    IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET))));
+        SetTooltipAndAccessibleName(l10n_util::GetStringFUTF16(
+            IDS_STATUSBAR_NETWORK_CONNECTED_TOOLTIP,
+            l10n_util::GetStringUTF16(
+                IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET)));
       } else if (network->type() == TYPE_WIFI) {
         const WifiNetwork* wifi = static_cast<const WifiNetwork*>(network);
         SetIconAndBadges(IconForNetworkStrength(wifi), right_badge, left_badge);
-        SetTooltipText(UTF16ToWide(l10n_util::GetStringFUTF16(
+        SetTooltipAndAccessibleName(l10n_util::GetStringFUTF16(
             IDS_STATUSBAR_NETWORK_CONNECTED_TOOLTIP,
-            UTF8ToUTF16(wifi->name()))));
+            UTF8ToUTF16(wifi->name())));
       } else if (network->type() == TYPE_CELLULAR) {
         const CellularNetwork* cellular =
             static_cast<const CellularNetwork*>(network);
         right_badge = BadgeForNetworkTechnology(cellular);
         SetIconAndBadges(
             IconForNetworkStrength(cellular), right_badge, left_badge);
-        SetTooltipText(UTF16ToWide(l10n_util::GetStringFUTF16(
+        SetTooltipAndAccessibleName(l10n_util::GetStringFUTF16(
             IDS_STATUSBAR_NETWORK_CONNECTED_TOOLTIP,
-            UTF8ToUTF16(cellular->name()))));
+            UTF8ToUTF16(cellular->name())));
       }
     }
   }
@@ -520,6 +519,11 @@ void NetworkMenuButton::ShowOptionalMobileDataPromoNotification(
     if (carrier_deal_promo_pref != kNotificationCountPrefDefault)
       SetCarrierDealPromoShown(carrier_deal_promo_pref + 1);
   }
+}
+
+void NetworkMenuButton::SetTooltipAndAccessibleName(const string16& label) {
+  SetTooltipText(UTF16ToWide(label));
+  SetAccessibleName(label);
 }
 
 }  // namespace chromeos

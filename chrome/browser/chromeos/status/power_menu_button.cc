@@ -240,6 +240,7 @@ void PowerMenuButton::UpdateIconAndLabelInfo() {
 
   SetIcon(*ResourceBundle::GetSharedInstance().GetBitmapNamed(icon_id_));
   SetTooltipText(GetLabel(POWER_BATTERY_PERCENTAGE_ITEM));
+  SetAccessibleName(GetBatteryPercentageText());
   UpdateMenu();
   SchedulePaint();
 }
