@@ -15,6 +15,7 @@
 #include "base/string_util.h"
 #include "base/sys_info.h"
 #include "base/sys_string_conversions.h"
+#import "chrome/app/breakpad_mac.h"
 #import "chrome/browser/accessibility/browser_accessibility_cocoa.h"
 #include "chrome/browser/browser_trial.h"
 #import "chrome/browser/renderer_host/accelerated_plugin_view_mac.h"
@@ -478,6 +479,13 @@ void RenderWidgetHostViewMac::UpdateCursorIfNecessary() {
   NSEvent* event = [[cocoa_view_ window] currentEvent];
   if ([event window] != [cocoa_view_ window])
     return;
+
+  // TODO(shess): Store additional information in breakpad dumps for
+  // debugging http://crbug.com/73356 .
+  NSString* kCrashKey = @"cursor-type";
+  NSString* crashValue =
+      [NSString stringWithFormat:@"%d", current_cursor_.type()];
+  ScopedCrashKey key(kCrashKey, crashValue);
 
   NSCursor* ns_cursor = current_cursor_.GetCursor();
   [ns_cursor set];
