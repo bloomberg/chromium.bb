@@ -56,19 +56,4 @@ MessageLoop* ChromotingHostContext::ui_message_loop() {
   return ui_thread_.message_loop();
 }
 
-void ChromotingHostContext::SetUITaskPostFunction(const base::Callback<void(
-    const tracked_objects::Location& from_here, Task* task)>& poster) {
-  ui_poster_ = poster;
-  ui_main_thread_id_ = base::PlatformThread::CurrentId();
-}
-
-void ChromotingHostContext::PostToUIThread(
-    const tracked_objects::Location& from_here, Task* task) {
-  ui_poster_.Run(from_here, task);
-}
-
-bool ChromotingHostContext::IsUIThread() const {
-  return ui_main_thread_id_ == base::PlatformThread::CurrentId();
-}
-
 }  // namespace remoting

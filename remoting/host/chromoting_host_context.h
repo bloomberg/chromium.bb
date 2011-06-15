@@ -7,17 +7,9 @@
 
 #include <string>
 
-#include "base/callback.h"
 #include "base/gtest_prod_util.h"
-#include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
 #include "remoting/jingle_glue/jingle_thread.h"
-
-class Task;
-
-namespace tracked_objects {
-class Location;
-}
 
 namespace remoting {
 
@@ -43,13 +35,6 @@ class ChromotingHostContext {
   virtual MessageLoop* network_message_loop();
   virtual MessageLoop* ui_message_loop();
 
-  // Must be called from the main GUI thread.
-  void SetUITaskPostFunction(const base::Callback<void(
-      const tracked_objects::Location& from_here, Task* task)>& poster);
-
-  void PostToUIThread(const tracked_objects::Location& from_here, Task* task);
-  bool IsUIThread() const;
-
  private:
   FRIEND_TEST_ALL_PREFIXES(ChromotingHostContextTest, StartAndStop);
 
@@ -65,12 +50,6 @@ class ChromotingHostContext {
   // A thread that hosts UI integration (capture, input injection, etc)
   // This is NOT a Chrome-style UI thread.
   base::Thread ui_thread_;
-
-  base::Callback<void(const tracked_objects::Location& from_here, Task* task)>
-      ui_poster_;
-  // This IS the main Chrome GUI thread that |ui_poster_| will post to.
-  base::PlatformThreadId ui_main_thread_id_;
-
 
   DISALLOW_COPY_AND_ASSIGN(ChromotingHostContext);
 };

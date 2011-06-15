@@ -27,7 +27,6 @@
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
-#include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/test/mock_chrome_application_mac.h"
 #include "base/threading/thread.h"
@@ -121,11 +120,6 @@ class SimpleHost {
     MessageLoop message_loop(MessageLoop::TYPE_UI);
 
     remoting::ChromotingHostContext context;
-    // static_cast needed to resolve overloaded PostTask member-function.
-    context.SetUITaskPostFunction(base::Bind(
-        static_cast<void(MessageLoop::*)(
-            const tracked_objects::Location&, Task*)>(&MessageLoop::PostTask),
-        base::Unretained(&message_loop)));
     context.Start();
 
     base::Thread file_io_thread("FileIO");

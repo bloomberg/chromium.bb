@@ -140,8 +140,6 @@ class HostNPScriptObject {
         on_state_changed_func_(NULL),
         np_thread_id_(base::PlatformThread::CurrentId()) {
     LOG(INFO) << "HostNPScriptObject";
-    host_context_.SetUITaskPostFunction(base::Bind(
-        &HostNPScriptObject::PostTaskToNPThread, base::Unretained(this)));
   }
 
   ~HostNPScriptObject() {
@@ -366,8 +364,7 @@ class HostNPScriptObject {
                              NPVariant* result);
 
   // Posts a task on the main NP thread.
-  void PostTaskToNPThread(const tracked_objects::Location& from_here,
-                          Task* task);
+  void PostTaskToNPThread(Task* task);
 
   // Utility function for PostTaskToNPThread.
   static void NPTaskSpringboard(void* task);
@@ -527,10 +524,10 @@ void HostNPScriptObject::OnHostShutdown() {
 }
 
 void HostNPScriptObject::OnStateChanged(State state) {
-  if (!host_context_.IsUIThread()) {
-    host_context_.PostToUIThread(
-        FROM_HERE,
-        NewRunnableMethod(this, &HostNPScriptObject::OnStateChanged, state));
+  if (base::PlatformThread::CurrentId() != np_thread_id_) {
+    PostTaskToNPThread(NewRunnableMethod(this,
+                                         &HostNPScriptObject::OnStateChanged,
+                                         state));
     return;
   }
   state_ = state;
@@ -562,12 +559,7 @@ bool HostNPScriptObject::CallJSFunction(NPObject* func,
   return is_good;
 }
 
-void HostNPScriptObject::PostTaskToNPThread(
-    const tracked_objects::Location& from_here, Task* task) {
-  // The NPAPI functions cannot make use of |from_here|, but this method is
-  // passed as a callback to ChromotingHostContext, so it needs to have the
-  // appropriate signature.
-
+void HostNPScriptObject::PostTaskToNPThread(Task* task) {
   // Can be called from any thread.
   g_npnetscape_funcs->pluginthreadasynccall(plugin_,
                                             &NPTaskSpringboard,
