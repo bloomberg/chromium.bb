@@ -27,7 +27,10 @@ void ExternalProcessImporterHost::StartImportSettings(
     uint16 items,
     ProfileWriter* writer,
     bool first_run) {
+  // We really only support importing from one host at a time.
   DCHECK(!profile_);
+  DCHECK(target_profile);
+
   profile_ = target_profile;
   writer_ = writer;
   source_profile_ = &source_profile;

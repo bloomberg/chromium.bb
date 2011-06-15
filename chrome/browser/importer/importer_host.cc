@@ -104,6 +104,7 @@ void ImporterHost::StartImportSettings(
     bool first_run) {
   // We really only support importing from one host at a time.
   DCHECK(!profile_);
+  DCHECK(target_profile);
 
   profile_ = target_profile;
   // Preserves the observer and creates a task, since we do async import so that
@@ -165,8 +166,7 @@ ImporterHost::~ImporterHost() {
     importer_->Release();
 
   if (installed_bookmark_observer_) {
-    DCHECK(profile_);  // Only way for waiting_for_bookmarkbar_model_ to be true
-                       // is if we have a profile.
+    DCHECK(profile_);
     profile_->GetBookmarkModel()->RemoveObserver(this);
   }
 }
@@ -189,6 +189,9 @@ void ImporterHost::CheckForFirefoxLock(
 }
 
 void ImporterHost::CheckForLoadedModels(uint16 items) {
+  // A target profile must be loaded by StartImportSettings().
+  DCHECK(profile_);
+
   // BookmarkModel should be loaded before adding IE favorites. So we observe
   // the BookmarkModel if needed, and start the task after it has been loaded.
   if ((items & importer::FAVORITES) && !writer_->BookmarkModelIsLoaded()) {

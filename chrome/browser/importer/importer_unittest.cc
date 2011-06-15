@@ -32,6 +32,7 @@
 #include "chrome/browser/importer/importer_progress_observer.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/test/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/password_form.h"
@@ -54,7 +55,13 @@ class ImporterTest : public testing::Test {
  public:
   ImporterTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),
-        file_thread_(BrowserThread::FILE, &message_loop_) {}
+        file_thread_(BrowserThread::FILE, &message_loop_),
+        profile_(new TestingProfile()) {
+  }
+
+  ~ImporterTest() {
+    profile_.reset(NULL);
+  }
 
  protected:
   virtual void SetUp() {
@@ -107,7 +114,7 @@ class ImporterTest : public testing::Test {
       items = items | importer::SEARCH_ENGINES;
     loop->PostTask(FROM_HERE, NewRunnableMethod(host.get(),
         &ImporterHost::StartImportSettings, source_profile,
-        static_cast<Profile*>(NULL), items, make_scoped_refptr(writer), true));
+        profile_.get(), items, make_scoped_refptr(writer), true));
     loop->Run();
   }
 
@@ -117,6 +124,7 @@ class ImporterTest : public testing::Test {
   BrowserThread file_thread_;
   FilePath profile_path_;
   FilePath app_path_;
+  scoped_ptr<TestingProfile> profile_;
 };
 
 const int kMaxPathSize = 5;
@@ -395,7 +403,7 @@ TEST_F(ImporterTest, IEImporter) {
   loop->PostTask(FROM_HERE, NewRunnableMethod(host.get(),
       &ImporterHost::StartImportSettings,
       source_profile,
-      static_cast<Profile*>(NULL),
+      profile_.get(),
       importer::HISTORY | importer::PASSWORDS | importer::FAVORITES,
       observer,
       true));
@@ -690,7 +698,7 @@ TEST_F(ImporterTest, MAYBE(Firefox2Importer)) {
       host.get(),
       &ImporterHost::StartImportSettings,
       source_profile,
-      static_cast<Profile*>(NULL),
+      profile_.get(),
       importer::HISTORY | importer::PASSWORDS |
       importer::FAVORITES | importer::SEARCH_ENGINES,
       make_scoped_refptr(observer),
