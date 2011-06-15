@@ -138,7 +138,7 @@ deps_os = {
         'src/third_party/psyco_win32':
             Var('git_url') + '/chromium/deps/psyco_win32.git@a9e06703f2909e3725cf01e415daaac617fb319e',
         'src/third_party/python_26':
-            Var('git_url') + '/chromium/deps/python_26.git@6115c94388529d6a999c7a0ed9b938ff5f6f86ee',
+            Var('git_url') + '/chromium/deps/python_26.git@f4f5d43a2599abd4ace5dead9d4d0e63e23055b7',
         'src/third_party/swig/win':
             Var('git_url') + '/chromium/deps/swig/win.git@986f013ba518541adf5c839811efb35630a31031',
         'src/third_party/xulrunner-sdk':
