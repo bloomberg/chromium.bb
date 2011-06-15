@@ -449,9 +449,9 @@ class BitWriter {
 CRLFilter::CRLFilter()
     : not_before_(0),
       not_after_(0),
-      max_range_(0U),
-      sequence_(0U),
-      num_entries_(0U) {
+      max_range_(0),
+      sequence_(0),
+      num_entries_(0) {
 }
 
 CRLFilter::~CRLFilter() {
