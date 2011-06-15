@@ -545,11 +545,6 @@ void IOThread::CleanUp() {
   delete speculative_interceptor_;
   speculative_interceptor_ = NULL;
 
-  // TODO(eroman): hack for http://crbug.com/15513
-  if (globals_->host_resolver->GetAsHostResolverImpl()) {
-    globals_->host_resolver.get()->GetAsHostResolverImpl()->Shutdown();
-  }
-
   system_proxy_config_service_.reset();
 
   delete globals_;
