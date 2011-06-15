@@ -88,8 +88,40 @@ void OmxVideoDecodeAccelerator::SetEglState(
 void OmxVideoDecodeAccelerator::GetConfigs(
     const std::vector<uint32>& requested_configs,
     std::vector<uint32>* matched_configs) {
-  // TODO(vhiremath@nvidia.com) use this properly
-  NOTIMPLEMENTED();
+  size_t cur;
+  for (cur = 0; cur + 1 < requested_configs.size(); cur++) {
+    uint32 n = requested_configs[cur++];
+    uint32 v = requested_configs[cur];
+    if ((n == media::VIDEOATTRIBUTEKEY_BITSTREAMFORMAT_FOURCC &&
+         v == media::VIDEOCODECFOURCC_H264) ||
+        (n == media::VIDEOATTRIBUTEKEY_BITSTREAMFORMAT_BITRATE &&
+         v < 14000000 /* Baseline supports up to 14Mbps. */) ||
+        (n == media::VIDEOATTRIBUTEKEY_BITSTREAMFORMAT_WIDTH &&
+         v <= 1920 /* Baseline supports upto 1080p. */) ||
+        (n == media::VIDEOATTRIBUTEKEY_BITSTREAMFORMAT_HEIGHT &&
+         v <= 1080 /* Baseline supports up to 1080p. */) ||
+        (n == media::VIDEOATTRIBUTEKEY_BITSTREAMFORMAT_H264_LEVEL ||
+         n == media::VIDEOATTRIBUTEKEY_BITSTREAMFORMAT_H264_PAYLOADFORMAT ||
+         n == media::VIDEOATTRIBUTEKEY_BITSTREAMFORMAT_H264_FEATURE_FMO ||
+         n == media::VIDEOATTRIBUTEKEY_BITSTREAMFORMAT_H264_FEATURE_ASO ||
+         n == media::VIDEOATTRIBUTEKEY_BITSTREAMFORMAT_H264_FEATURE_INTERLACE ||
+         n == media::VIDEOATTRIBUTEKEY_BITSTREAMFORMAT_H264_FEATURE_CABAC ||
+         /* TODO(fischman) Shorten the enum name. */
+         n == media::VIDEOATTRIBUTEKEY_BITSTREAMFORMAT_H264_FEATURE_WEIGHTEDPREDICTION)
+         ||
+        (n == media::VIDEOATTRIBUTEKEY_BITSTREAMFORMAT_H264_PROFILE &&
+        (v == media::H264PROFILE_BASELINE || v == media::H264PROFILE_MAIN ||
+         v == media::H264PROFILE_HIGH)) ||
+        (n == media::VIDEOATTRIBUTEKEY_VIDEOCOLORFORMAT &&
+         v == media::VIDEOCOLORFORMAT_RGBA)) {
+      matched_configs->push_back(n);
+      matched_configs->push_back(v);
+    } else {
+      return;
+    }
+  }
+  // TODO(fischman) Fix GetConfigs() to return a bool.
+  return;
 }
 
 // This is to initialize the OMX data structures to default values.
@@ -101,11 +133,18 @@ static void InitParam(const OmxVideoDecodeAccelerator& dec, T* param) {
 }
 
 bool OmxVideoDecodeAccelerator::Initialize(const std::vector<uint32>& config) {
-  // TODO(vhiremath@nvidia.com) get these actual values from config
-  // Assume qvga for now
-  width_ = 320;
-  height_ = 240;
-
+  // Extract the required info from the configs.
+  // For now consider only what we care about.
+  std::vector<uint32> matched_configs;
+  GetConfigs(config, &matched_configs);
+  if (config != matched_configs)
+    return false;
+  for (size_t i = 0; i + 1 < config.size(); i+=2) {
+    if (config[i] == media::VIDEOATTRIBUTEKEY_BITSTREAMFORMAT_WIDTH)
+      width_ = config[i + 1];
+    else if (config[i] == media::VIDEOATTRIBUTEKEY_BITSTREAMFORMAT_HEIGHT)
+      height_ = config[i + 1];
+  }
   client_state_ = OMX_StateLoaded;
   if (!CreateComponent()) {
     StopOnError();
@@ -407,6 +446,7 @@ bool OmxVideoDecodeAccelerator::Flush() {
   OMX_STATETYPE il_state;
   OMX_GetState(component_handle_, &il_state);
   DCHECK_EQ(il_state, OMX_StateExecuting);
+  // Decode the pending data first. Then flush I/O ports.
   if (il_state != OMX_StateExecuting) {
     client_->NotifyFlushDone();
     return false;
@@ -485,16 +525,14 @@ void OmxVideoDecodeAccelerator::OutputPortFlushDone(int port) {
   VLOG(1) << "Output Port has been flushed";
   DCHECK_EQ(output_buffers_at_component_, 0);
   client_state_ = OMX_StatePause;
-  OnPortCommandFlush(OMX_StateExecuting);
+  client_->NotifyFlushDone();
 }
 
 bool OmxVideoDecodeAccelerator::Abort() {
   CHECK_EQ(message_loop_, MessageLoop::current());
-  // TODO(vhiremath@nvidia.com)
-  // Need more thinking on this to handle w.r.t OMX.
-  // There is no explicit UnInitialize call for this.
-  // Also review again for trick modes.
-  client_->NotifyAbortDone();
+  // Abort() implies immediacy but Flush() actually decodes pending data first.
+  // TODO(vhiremath@nvidia.com) Fix the Abort to handle this immediacy.
+  ShutDownOMXFromExecuting();
   return true;
 }
 
@@ -541,8 +579,7 @@ bool OmxVideoDecodeAccelerator::TransitionToState(OMX_STATETYPE new_state) {
   return true;
 }
 
-void OmxVideoDecodeAccelerator::OnPortCommandFlush(OMX_STATETYPE state) {
-  DCHECK_EQ(state, OMX_StateExecuting);
+void OmxVideoDecodeAccelerator::ShutDownOMXFromExecuting() {
   CHECK_EQ(message_loop_, MessageLoop::current());
 
   VLOG(1) << "Deinit from Executing";
@@ -585,7 +622,7 @@ void OmxVideoDecodeAccelerator::OnStateChangeIdleToLoaded(OMX_STATETYPE state) {
   client_state_ = OMX_StateLoaded;
   (*omx_deinit)();
   VLOG(1) << "OMX Deinit Clean exit done";
-  client_->NotifyFlushDone();
+  client_->NotifyAbortDone();
 }
 
 void OmxVideoDecodeAccelerator::StopOnError() {
@@ -594,7 +631,7 @@ void OmxVideoDecodeAccelerator::StopOnError() {
   client_state_ = OMX_StateInvalid;
   switch (il_state) {
     case OMX_StateExecuting:
-      OnPortCommandFlush(OMX_StateExecuting);
+      ShutDownOMXFromExecuting();
       return;
     case OMX_StateIdle:
       OnStateChangeExecutingToIdle(OMX_StateIdle);

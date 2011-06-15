@@ -631,6 +631,7 @@ class OmxVideoDecodeAcceleratorTest
 TEST_P(OmxVideoDecodeAcceleratorTest, TestSimpleDecode) {
   // Can be useful for debugging VLOGs from OVDA.
   // logging::SetMinLogLevel(-1);
+  std::vector<uint32> matched_configs;
 
   // Required for Thread to work.  Not used otherwise.
   base::ShadowingAtExitManager at_exit_manager;
@@ -689,11 +690,11 @@ TEST_P(OmxVideoDecodeAcceleratorTest, TestSimpleDecode) {
       media::VIDEOATTRIBUTEKEY_BITSTREAMFORMAT_WIDTH, kFrameWidth,
       media::VIDEOATTRIBUTEKEY_BITSTREAMFORMAT_HEIGHT, kFrameHeight,
       media::VIDEOATTRIBUTEKEY_VIDEOCOLORFORMAT, media::VIDEOCOLORFORMAT_RGBA,
-      media::VIDEOATTRIBUTEKEY_TERMINATOR
     };
     std::vector<uint32> config(
         config_array, config_array + arraysize(config_array));
-    CHECK(decoder->Initialize(config));
+    decoder->GetConfigs(config, &matched_configs);
+    CHECK(decoder->Initialize(matched_configs));
   }
   // Then wait for all the decodes to finish.
   for (size_t i = 0; i < num_concurrent_decoders; ++i) {

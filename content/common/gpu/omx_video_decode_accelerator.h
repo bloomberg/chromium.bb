@@ -71,7 +71,6 @@ class OmxVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   bool TransitionToState(OMX_STATETYPE new_state);
   void OnStateChangeLoadedToIdle(OMX_STATETYPE state);
   void OnStateChangeIdleToExecuting(OMX_STATETYPE state);
-  void OnPortCommandFlush(OMX_STATETYPE state);
   void OnStateChangeExecutingToIdle(OMX_STATETYPE state);
   void OnStateChangeIdleToLoaded(OMX_STATETYPE state);
   // Stop the components when error is detected.
@@ -84,6 +83,7 @@ class OmxVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   void InputPortFlushDone(int port);
   void OutputPortFlushDone(int port);
   void FlushBegin();
+  void ShutDownOMXFromExecuting();
 
   // Determine whether we actually start decoding the bitstream.
   bool CanAcceptInput();
