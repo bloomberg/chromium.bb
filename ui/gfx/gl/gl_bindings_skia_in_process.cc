@@ -460,6 +460,11 @@ void BindSkiaToInProcessGL() {
 
     static GrGLInterface host_gl_interface = {
       binding,
+
+      -1,   // NPOTRenderTargetSupport
+      -1,   // MinRenderTargetHeight
+      -1,   // MinRenderTargetWidth
+
       StubGLActiveTexture,
       StubGLAttachShader,
       StubGLBindAttribLocation,
