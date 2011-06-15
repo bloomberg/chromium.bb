@@ -6,7 +6,7 @@ var localStrings = new LocalStrings();
 
 // The total page count of the previewed document regardless of which pages the
 // user has selected.
-var totalPageCount = -1;
+var totalPageCount;
 
 // The previously selected pages by the user. It is used in
 // onPageSelectionMayHaveChanged() to make sure that a new preview is not
@@ -530,7 +530,7 @@ function displayErrorMessage(errorMessage) {
 function displayErrorMessageWithButton(
     errorMessage, buttonText, buttonListener) {
   var errorButton = $('error-button');
-  errorButton.innerHTML = buttonText;
+  errorButton.textContent = buttonText;
   errorButton.onclick = buttonListener;
   errorButton.classList.remove('hidden');
   displayErrorMessage(errorMessage);
@@ -580,7 +580,7 @@ function updatePrintPreview(pageCount, jobTitle, modifiable, previewUid) {
 
   hasPendingPreviewRequest = false;
 
-  if (totalPageCount == -1)
+  if (!totalPageCount)
     totalPageCount = pageCount;
 
   if (previouslySelectedPages.length == 0)
@@ -823,7 +823,7 @@ function onLayoutModeToggle() {
  */
 function setDefaultValuesAndRegeneratePreview() {
   fadeOutElement($('individual-pages-hint'));
-  totalPageCount = -1;
+  totalPageCount = undefined;
   previouslySelectedPages.length = 0;
   requestPrintPreview();
 }
