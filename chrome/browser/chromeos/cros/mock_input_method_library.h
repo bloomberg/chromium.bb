@@ -6,9 +6,11 @@
 #define CHROME_BROWSER_CHROMEOS_CROS_MOCK_INPUT_METHOD_LIBRARY_H_
 #pragma once
 
+#include <set>
 #include <string>
 
 #include "chrome/browser/chromeos/cros/input_method_library.h"
+#include "googleurl/src/gurl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace chromeos {
@@ -19,7 +21,9 @@ class MockInputMethodLibrary : public InputMethodLibrary {
   virtual ~MockInputMethodLibrary();
 
   MOCK_METHOD1(AddObserver, void(Observer*));
+  MOCK_METHOD1(AddVirtualKeyboardObserver, void(VirtualKeyboardObserver*));
   MOCK_METHOD1(RemoveObserver, void(Observer*));
+  MOCK_METHOD1(RemoveVirtualKeyboardObserver, void(VirtualKeyboardObserver*));
 
   MOCK_METHOD0(GetActiveInputMethods,
                input_method::InputMethodDescriptors*(void));
@@ -45,6 +49,9 @@ class MockInputMethodLibrary : public InputMethodLibrary {
   MOCK_METHOD1(SendHandwritingStroke,
                void(const input_method::HandwritingStroke&));
   MOCK_METHOD1(CancelHandwritingStrokes, void(int));
+  MOCK_METHOD3(RegisterVirtualKeyboard, void(const GURL&,
+                                             const std::set<std::string>&,
+                                             bool));
 };
 
 }  // namespace chromeos

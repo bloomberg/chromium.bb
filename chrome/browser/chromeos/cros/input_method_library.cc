@@ -18,12 +18,14 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
+#include "chrome/browser/chromeos/input_method/virtual_keyboard_selector.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_service.h"
+#include "googleurl/src/gurl.h"
 
 #if !defined(TOUCH_UI)
 #include "chrome/browser/chromeos/input_method/candidate_window.h"
@@ -118,6 +120,15 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
 
   virtual void RemoveObserver(InputMethodLibrary::Observer* observer) {
     observers_.RemoveObserver(observer);
+  }
+
+  virtual void AddVirtualKeyboardObserver(VirtualKeyboardObserver* observer) {
+    virtual_keyboard_observers_.AddObserver(observer);
+  }
+
+  virtual void RemoveVirtualKeyboardObserver(
+      VirtualKeyboardObserver* observer) {
+    virtual_keyboard_observers_.RemoveObserver(observer);
   }
 
   virtual input_method::InputMethodDescriptors* GetActiveInputMethods() {
@@ -282,6 +293,16 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
       return;
     // TODO(yusukes): Rename the libcros function to CancelHandwritingStrokes.
     ibus_controller_->CancelHandwriting(stroke_count);
+  }
+
+  virtual void RegisterVirtualKeyboard(const GURL& launch_url,
+                                       const std::set<std::string>& layouts,
+                                       bool is_system) {
+    if (!initialized_successfully_)
+      return;
+    virtual_keyboard_selector.AddVirtualKeyboard(launch_url,
+                                                 layouts,
+                                                 is_system);
   }
 
  private:
@@ -619,6 +640,44 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
                       InputMethodChanged(this,
                                          current_input_method_,
                                          num_active_input_methods));
+
+    // Update virtual keyboard.
+#if defined(TOUCH_UI)
+    const input_method::VirtualKeyboard* virtual_keyboard = NULL;
+    std::string virtual_keyboard_layout = "";
+
+    static const char kFallbackLayout[] = "us";
+    std::vector<std::string> layouts_vector
+        = current_input_method_.virtual_keyboard_layouts();
+    layouts_vector.push_back(kFallbackLayout);
+
+    for (size_t i = 0; i < layouts_vector.size(); ++i) {
+      virtual_keyboard =
+          virtual_keyboard_selector.SelectVirtualKeyboard(layouts_vector[i]);
+      if (virtual_keyboard) {
+        virtual_keyboard_layout = layouts_vector[i];
+        if (i == layouts_vector.size() - 1) {
+          // The system virtual keyboard does not support some XKB layouts? or
+          // a third-party input method engine uses a wrong virtual keyboard
+          // layout name? Fallback to the default layout.
+          LOG(ERROR) << "Could not find a virtual keyboard for "
+                     << current_input_method_.id
+                     << ". Use '" << kFallbackLayout << "' virtual keyboard.";
+        }
+        break;
+      }
+    }
+    // kFallbackLayout should always be supported by one of the system virtual
+    // keyboards.
+    DCHECK(virtual_keyboard);
+
+    if (virtual_keyboard) {
+      FOR_EACH_OBSERVER(VirtualKeyboardObserver, virtual_keyboard_observers_,
+                        VirtualKeyboardChanged(this,
+                                               *virtual_keyboard,
+                                               virtual_keyboard_layout));
+    }
+#endif  // TOUCH_UI
   }
 
   // Changes the current input method from the given input method ID.
@@ -798,6 +857,7 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
   // status changes.
   input_method::IBusController* ibus_controller_;
   ObserverList<InputMethodLibrary::Observer> observers_;
+  ObserverList<VirtualKeyboardObserver> virtual_keyboard_observers_;
 
   // The input method which was/is selected.
   input_method::InputMethodDescriptor previous_input_method_;
@@ -855,6 +915,9 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
   scoped_ptr<CandidateWindowController> candidate_window_controller_;
 #endif
 
+  // An object which keeps a list of available virtual keyboards.
+  input_method::VirtualKeyboardSelector virtual_keyboard_selector;
+
   // The active input method ids cache.
   std::vector<std::string> active_input_method_ids_;
 
@@ -871,7 +934,10 @@ class InputMethodLibraryStubImpl : public InputMethodLibrary {
 
   virtual ~InputMethodLibraryStubImpl() {}
   virtual void AddObserver(Observer* observer) {}
+  virtual void AddVirtualKeyboardObserver(VirtualKeyboardObserver* observer) {}
   virtual void RemoveObserver(Observer* observer) {}
+  virtual void RemoveVirtualKeyboardObserver(
+      VirtualKeyboardObserver* observer) {}
 
   virtual input_method::InputMethodDescriptors* GetActiveInputMethods() {
     return GetInputMethodDescriptorsForTesting();
@@ -931,6 +997,9 @@ class InputMethodLibraryStubImpl : public InputMethodLibrary {
   virtual void SendHandwritingStroke(
       const input_method::HandwritingStroke& stroke) {}
   virtual void CancelHandwritingStrokes(int stroke_count) {}
+  virtual void RegisterVirtualKeyboard(const GURL& launch_url,
+                                       const std::set<std::string>& layouts,
+                                       bool is_system) {}
 
  private:
   typedef std::map<std::string, std::string> KeyboardOverlayMap;

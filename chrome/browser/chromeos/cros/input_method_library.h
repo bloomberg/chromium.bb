@@ -9,6 +9,7 @@
 #define CHROME_BROWSER_CHROMEOS_CROS_INPUT_METHOD_LIBRARY_H_
 #pragma once
 
+#include <set>
 #include <string>
 #include <utility>
 
@@ -17,7 +18,13 @@
 #include "base/timer.h"
 #include "chrome/browser/chromeos/input_method/ibus_controller.h"
 
+class GURL;
+
 namespace chromeos {
+
+namespace input_method {
+class VirtualKeyboard;
+}  // namespace input_method
 
 // This class handles the interaction with the ChromeOS language library APIs.
 // Classes can add themselves as observers. Users can get an instance of this
@@ -55,12 +62,27 @@ class InputMethodLibrary {
     // Called by AddObserver() when the first observer is added.
     virtual void FirstObserverIsAdded(InputMethodLibrary* obj) = 0;
   };
+
+  class VirtualKeyboardObserver {
+   public:
+    virtual ~VirtualKeyboardObserver() {}
+    // Called when the current virtual keyboard is changed.
+    virtual void VirtualKeyboardChanged(
+        InputMethodLibrary* obj,
+        const input_method::VirtualKeyboard& virtual_keyboard,
+        const std::string& virtual_keyboard_layout) = 0;
+  };
+
   virtual ~InputMethodLibrary() {}
 
   // Adds an observer to receive notifications of input method related
   // changes as desribed in the Observer class above.
   virtual void AddObserver(Observer* observer) = 0;
+  virtual void AddVirtualKeyboardObserver(
+      VirtualKeyboardObserver* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
+  virtual void RemoveVirtualKeyboardObserver(
+      VirtualKeyboardObserver* observer) = 0;
 
   // Returns the list of input methods we can select (i.e. active). If the cros
   // library is not found or IBus/DBus daemon is not alive, this function
@@ -133,6 +155,15 @@ class InputMethodLibrary {
   // Clears last N handwriting strokes in libcros. See
   // chromeos::CancelHandwriting for details.
   virtual void CancelHandwritingStrokes(int stroke_count) = 0;
+
+  // Registers a new virtual keyboard for |layouts|. Set |is_system| true when
+  // the keyboard is provided as a content extension. System virtual keyboards
+  // have lower priority than non-system ones. See virtual_keyboard_selector.h
+  // for details.
+  // TODO(yusukes): Add UnregisterVirtualKeyboard function as well.
+  virtual void RegisterVirtualKeyboard(const GURL& launch_url,
+                                       const std::set<std::string>& layouts,
+                                       bool is_system) = 0;
 
   virtual input_method::InputMethodDescriptor previous_input_method() const = 0;
   virtual input_method::InputMethodDescriptor current_input_method() const = 0;
