@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 
+#include "base/lazy_instance.h"
 #include "base/path_service.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -17,10 +18,13 @@
 #include "content/browser/webui/web_ui.h"
 #include "ui/base/resource/resource_bundle.h"
 
-static const FilePath::CharType* kWebUILibraryJS =
+namespace {
+
+const FilePath::StringType kWebUILibraryJS =
     FILE_PATH_LITERAL("test_api.js");
-static const FilePath::CharType* kWebUITestFolder = FILE_PATH_LITERAL("webui");
-static std::vector<std::string> error_messages_;
+const FilePath::StringType kWebUITestFolder = FILE_PATH_LITERAL("webui");
+base::LazyInstance<std::vector<std::string> > error_messages_(
+    base::LINKER_INITIALIZED);
 
 // Intercepts all log messages.
 bool LogHandler(int severity,
@@ -28,14 +32,13 @@ bool LogHandler(int severity,
                 int line,
                 size_t message_start,
                 const std::string& str) {
-  if (severity == logging::LOG_ERROR) {
-    error_messages_.push_back(str);
-    return true;
-  } else {
-    // For debugging messages while developing tests.
-    return false;
-  }
+  if (severity == logging::LOG_ERROR)
+    error_messages_.Get().push_back(str);
+
+  return false;
 }
+
+} // namespace
 
 WebUIBrowserTest::~WebUIBrowserTest() {}
 
@@ -170,10 +173,10 @@ bool WebUIBrowserTest::RunJavascriptUsingHandler(
   bool result = test_handler_->RunJavascript(content, is_test);
   logging::SetLogMessageHandler(NULL);
 
-  if (error_messages_.size() > 0) {
+  if (error_messages_.Get().size() > 0) {
     LOG(ERROR) << "Encountered javascript console error(s)";
     result = false;
-    error_messages_.clear();
+    error_messages_.Get().clear();
   }
   return result;
 }
