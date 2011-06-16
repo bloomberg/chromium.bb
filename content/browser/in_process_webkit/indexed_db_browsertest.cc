@@ -35,18 +35,20 @@ class IndexedDBBrowserTest : public InProcessBrowserTest {
     return ui_test_utils::GetTestUrl(kTestDir, file_path);
   }
 
-  void SimpleTest(const GURL& test_url) {
+  void SimpleTest(const GURL& test_url, bool incognito = false) {
     // The test page will perform tests on IndexedDB, then navigate to either
     // a #pass or #fail ref.
+    Browser* the_browser = incognito ? CreateIncognitoBrowser() : browser();
+
     LOG(INFO) << "Navigating to URL and blocking.";
     ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
-        browser(), test_url, 2);
+        the_browser, test_url, 2);
     LOG(INFO) << "Navigation done.";
-    std::string result = browser()->GetSelectedTabContents()->GetURL().ref();
+    std::string result = the_browser->GetSelectedTabContents()->GetURL().ref();
     if (result != "pass") {
       std::string js_result;
       ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-          browser()->GetSelectedTabContents()->render_view_host(), L"",
+          the_browser->GetSelectedTabContents()->render_view_host(), L"",
           L"window.domAutomationController.send(getLog())", &js_result));
       FAIL() << "Failed: " << js_result;
     }
@@ -66,6 +68,11 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, CursorTest) {
 
 IN_PROC_BROWSER_TEST_F(IndexedDBLevelDBBrowserTest, CursorTest) {
   SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("cursor_test.html"))));
+}
+
+IN_PROC_BROWSER_TEST_F(IndexedDBLevelDBBrowserTest, CursorTestIncognito) {
+  SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("cursor_test.html"))),
+             true /* incognito */);
 }
 
 // Flaky: http://crbug.com/70773
