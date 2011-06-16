@@ -166,8 +166,7 @@ TEST_F(AccessibilityEventRouterViewsTest, TestFocusNotification) {
 
   // Create a profile and associate it with this window.
   TestingProfile profile;
-  window->AsWidget()->native_widget()->SetNativeWindowProperty(
-      Profile::kProfileKey, &profile);
+  window->SetNativeWindowProperty(Profile::kProfileKey, &profile);
 
   // Change the accessible name of button3.
   button3->SetAccessibleName(ASCIIToUTF16(kButton3NewASCII));

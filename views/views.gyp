@@ -365,6 +365,7 @@
         'widget/monitor_win.h',
         'widget/native_widget.h',
         'widget/native_widget_delegate.h',
+        'widget/native_widget_private.h',
         'widget/native_widget_gtk.cc',
         'widget/native_widget_gtk.h',
         'widget/native_widget_view.cc',

@@ -335,11 +335,11 @@ void SpeechInputBubbleImpl::Show() {
   bubble_content_ = new ContentView(delegate_);
   UpdateLayout();
 
-  views::NativeWidget* toplevel_widget =
-      views::NativeWidget::GetTopLevelNativeWidget(
+  views::Widget* toplevel_widget =
+      views::Widget::GetTopLevelWidgetForNativeView(
           tab_contents()->view()->GetNativeView());
   if (toplevel_widget) {
-    bubble_ = Bubble::Show(toplevel_widget->GetWidget(),
+    bubble_ = Bubble::Show(toplevel_widget,
                            GetInfoBubbleTarget(element_rect_),
                            BubbleBorder::TOP_LEFT, bubble_content_,
                            this);

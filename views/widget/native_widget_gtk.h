@@ -14,7 +14,7 @@
 #include "ui/gfx/size.h"
 #include "views/focus/focus_manager.h"
 #include "views/ime/input_method_delegate.h"
-#include "views/widget/native_widget.h"
+#include "views/widget/native_widget_private.h"
 #include "views/widget/widget.h"
 
 namespace gfx {
@@ -40,7 +40,7 @@ class NativeWidgetDelegate;
 }
 
 // Widget implementation for GTK.
-class NativeWidgetGtk : public NativeWidget,
+class NativeWidgetGtk : public internal::NativeWidgetPrivate,
                         public ui::ActiveWindowWatcherX::Observer,
                         public internal::InputMethodDelegate {
  public:
@@ -153,7 +153,7 @@ class NativeWidgetGtk : public NativeWidget,
     focus_on_creation_ = focus_on_creation;
   }
 
-  // Overridden from NativeWidget:
+  // Overridden from internal::NativeWidgetPrivate:
   virtual void InitNativeWidget(const Widget::InitParams& params) OVERRIDE;
   virtual NonClientFrameView* CreateNonClientFrameView() OVERRIDE;
   virtual void UpdateFrameAfterFrameChange() OVERRIDE;

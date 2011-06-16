@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/message_loop.h"
-#include "views/widget/native_widget.h"
+#include "views/widget/native_widget_private.h"
 
 namespace views {
 namespace internal {
@@ -19,7 +19,7 @@ class NativeWidgetView;
 //
 //  A NativeWidget implementation that uses another View as its native widget.
 //
-class NativeWidgetViews : public NativeWidget {
+class NativeWidgetViews : public internal::NativeWidgetPrivate {
  public:
   NativeWidgetViews(View* host, internal::NativeWidgetDelegate* delegate);
   virtual ~NativeWidgetViews();
@@ -33,7 +33,7 @@ class NativeWidgetViews : public NativeWidget {
   internal::NativeWidgetDelegate* delegate() { return delegate_; }
 
  protected:
-  // Overridden from NativeWidget:
+  // Overridden from internal::NativeWidgetPrivate:
   virtual void InitNativeWidget(const Widget::InitParams& params) OVERRIDE;
   virtual NonClientFrameView* CreateNonClientFrameView() OVERRIDE;
   virtual void UpdateFrameAfterFrameChange() OVERRIDE;
@@ -106,8 +106,8 @@ class NativeWidgetViews : public NativeWidget {
   virtual void SetCursor(gfx::NativeCursor cursor) OVERRIDE;
 
  private:
-  NativeWidget* GetParentNativeWidget();
-  const NativeWidget* GetParentNativeWidget() const;
+  internal::NativeWidgetPrivate* GetParentNativeWidget();
+  const internal::NativeWidgetPrivate* GetParentNativeWidget() const;
 
   internal::NativeWidgetDelegate* delegate_;
 

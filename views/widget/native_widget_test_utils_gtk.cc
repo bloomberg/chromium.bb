@@ -5,33 +5,33 @@
 #include "views/widget/native_widget_test_utils.h"
 
 #include "views/view.h"
-#include "views/widget/native_widget.h"
+#include "views/widget/native_widget_private.h"
 #include "views/widget/widget.h"
 
 namespace views {
 namespace internal {
 
-NativeWidget* CreateNativeWidget() {
+NativeWidgetPrivate* CreateNativeWidget() {
   return CreateNativeWidgetWithContents(new View);
 }
 
-NativeWidget* CreateNativeWidgetWithContents(View* contents_view) {
+NativeWidgetPrivate* CreateNativeWidgetWithContents(View* contents_view) {
   Widget* widget = new Widget;
   Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = gfx::Rect(10, 10, 200, 200);
   widget->Init(params);
-  return widget->native_widget();
+  return widget->native_widget_private();
 }
 
-NativeWidget* CreateNativeWidgetWithParent(NativeWidget* parent) {
+NativeWidgetPrivate* CreateNativeWidgetWithParent(NativeWidgetPrivate* parent) {
   Widget* widget = new Widget;
   Widget::InitParams params(Widget::InitParams::TYPE_CONTROL);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.parent = parent ? parent->GetWidget()->GetNativeView() : NULL;
   params.bounds = gfx::Rect(10, 10, 200, 200);
   widget->Init(params);
-  return widget->native_widget();
+  return widget->native_widget_private();
 }
 
 }  // namespace internal

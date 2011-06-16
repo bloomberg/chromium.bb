@@ -66,9 +66,7 @@ static views::Widget* GetToplevelWidget() {
   if (!window)
     return NULL;
 
-  views::NativeWidget* native_widget =
-      views::NativeWidget::GetNativeWidgetForNativeWindow(window);
-  return native_widget->GetWidget();
+  return views::Widget::GetWidgetForNativeWindow(window);
 }
 
 SettingLevelBubble::SettingLevelBubble(SkBitmap* increase_icon,
