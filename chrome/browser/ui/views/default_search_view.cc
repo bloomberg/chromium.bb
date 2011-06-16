@@ -171,6 +171,14 @@ bool DefaultSearchView::Accept() {
   return true;
 }
 
+views::Widget* DefaultSearchView::GetWidget() {
+  return View::GetWidget();
+}
+
+const views::Widget* DefaultSearchView::GetWidget() const {
+  return View::GetWidget();
+}
+
 DefaultSearchView::DefaultSearchView(TabContents* tab_contents,
                                      TemplateURL* proposed_default_turl,
                                      TemplateURLService* template_url_service)

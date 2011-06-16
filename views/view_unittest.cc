@@ -1083,6 +1083,9 @@ class SimpleWidgetDelegate : public WidgetDelegate {
 
   virtual View* GetContentsView() { return contents_; }
 
+  virtual Widget* GetWidget() { return contents_->GetWidget(); }
+  virtual const Widget* GetWidget() const { return contents_->GetWidget(); }
+
  private:
   View* contents_;
 };

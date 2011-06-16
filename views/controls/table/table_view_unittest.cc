@@ -141,11 +141,17 @@ int TestTableModel::CompareValues(int row1, int row2, int column_id) {
 
 class TableViewTest : public testing::Test, views::WidgetDelegate {
  public:
-  virtual void SetUp();
-  virtual void TearDown();
+  virtual void SetUp() OVERRIDE;
+  virtual void TearDown() OVERRIDE;
 
-  virtual views::View* GetContentsView() {
+  virtual views::View* GetContentsView() OVERRIDE {
     return table_;
+  }
+  virtual views::Widget* GetWidget() OVERRIDE {
+    return table_->GetWidget();
+  }
+  virtual const views::Widget* GetWidget() const OVERRIDE {
+    return table_->GetWidget();
   }
 
  protected:
@@ -471,8 +477,14 @@ class TableView2Test : public testing::Test, views::WidgetDelegate {
   virtual void SetUp();
   virtual void TearDown();
 
-  virtual views::View* GetContentsView() {
+  virtual views::View* GetContentsView() OVERRIDE {
     return table_;
+  }
+  virtual views::Widget* GetWidget() OVERRIDE {
+    return table_->GetWidget();
+  }
+  virtual const views::Widget* GetWidget() const OVERRIDE {
+    return table_->GetWidget();
   }
 
   // Returns the contents of a cell in the table.

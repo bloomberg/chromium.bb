@@ -132,14 +132,6 @@ bool WidgetDelegate::ShouldRestoreWindowSize() const {
   return true;
 }
 
-Widget* WidgetDelegate::GetWidget() {
-  return NULL;
-}
-
-const Widget* WidgetDelegate::GetWidget() const {
-  return NULL;
-}
-
 View* WidgetDelegate::GetContentsView() {
   if (!default_contents_view_)
     default_contents_view_ = new View;

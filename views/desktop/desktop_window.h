@@ -13,8 +13,7 @@ class NativeWidgetViews;
 
 namespace desktop {
 
-class DesktopWindow : public View,
-                      public WidgetDelegate {
+class DesktopWindow : public WidgetDelegateView {
  public:
    DesktopWindow();
    virtual ~DesktopWindow();

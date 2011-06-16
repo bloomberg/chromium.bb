@@ -38,19 +38,25 @@ class TabbedPaneTest : public testing::Test,
   }
 
  private:
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     tabbed_pane_ = new TabbedPane();
     window_ = Widget::CreateWindowWithBounds(this, gfx::Rect(0, 0, 100, 100));
     window_->Show();
   }
 
-  virtual void TearDown() {
+  virtual void TearDown() OVERRIDE {
     window_->Close();
     message_loop_.RunAllPending();
   }
 
-  virtual views::View* GetContentsView() {
+  virtual views::View* GetContentsView() OVERRIDE {
     return tabbed_pane_;
+  }
+  virtual views::Widget* GetWidget() OVERRIDE {
+    return tabbed_pane_->GetWidget();
+  }
+  virtual const views::Widget* GetWidget() const OVERRIDE {
+    return tabbed_pane_->GetWidget();
   }
 
   MessageLoopForUI message_loop_;

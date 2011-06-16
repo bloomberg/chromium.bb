@@ -31,16 +31,18 @@ class RepostFormWarningView : public ConstrainedDialogDelegate {
                         TabContents* tab_contents);
 
   // views::DialogDelegate Methods:
-  virtual std::wstring GetWindowTitle() const;
+  virtual std::wstring GetWindowTitle() const OVERRIDE;
   virtual std::wstring GetDialogButtonLabel(
-      MessageBoxFlags::DialogButton button) const;
-  virtual void DeleteDelegate();
+      MessageBoxFlags::DialogButton button) const OVERRIDE;
+  virtual void DeleteDelegate() OVERRIDE;
 
-  virtual bool Cancel();
-  virtual bool Accept();
+  virtual bool Cancel() OVERRIDE;
+  virtual bool Accept() OVERRIDE;
 
-  // views::WindowDelegate Methods:
-  virtual views::View* GetContentsView();
+  // views::WidgetDelegate Methods:
+  virtual views::View* GetContentsView() OVERRIDE;
+  virtual views::Widget* GetWidget() OVERRIDE;
+  virtual const views::Widget* GetWidget() const OVERRIDE;
 
  private:
   virtual ~RepostFormWarningView();

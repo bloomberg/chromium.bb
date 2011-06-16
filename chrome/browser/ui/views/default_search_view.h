@@ -49,17 +49,20 @@ class DefaultSearchView
  protected:
   // Overridden from views::View:
   // Draws the gray background at the top of the dialog.
-  virtual void OnPaint(gfx::Canvas* canvas);
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
   // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
+  virtual void ButtonPressed(views::Button* sender,
+                             const views::Event& event) OVERRIDE;
 
   // ConstrainedDialogDelegate:
-  virtual std::wstring GetWindowTitle() const;
-  virtual views::View* GetInitiallyFocusedView();
-  virtual views::View* GetContentsView();
-  virtual int GetDialogButtons() const;
-  virtual bool Accept();
+  virtual std::wstring GetWindowTitle() const OVERRIDE;
+  virtual views::View* GetInitiallyFocusedView() OVERRIDE;
+  virtual views::View* GetContentsView() OVERRIDE;
+  virtual int GetDialogButtons() const OVERRIDE;
+  virtual bool Accept() OVERRIDE;
+  virtual views::Widget* GetWidget() OVERRIDE;
+  virtual const views::Widget* GetWidget() const OVERRIDE;
 
  private:
   // Takes ownership of |proposed_default_turl|.

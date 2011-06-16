@@ -63,6 +63,14 @@ views::View* RepostFormWarningView::GetContentsView() {
   return message_box_view_;
 }
 
+views::Widget* RepostFormWarningView::GetWidget() {
+  return message_box_view_->GetWidget();
+}
+
+const views::Widget* RepostFormWarningView::GetWidget() const {
+  return message_box_view_->GetWidget();
+}
+
 bool RepostFormWarningView::Cancel() {
   controller_->Cancel();
   return true;

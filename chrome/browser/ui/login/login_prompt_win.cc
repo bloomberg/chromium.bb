@@ -96,6 +96,12 @@ class LoginHandlerWin : public LoginHandler,
   virtual views::View* GetContentsView() OVERRIDE {
     return login_view_;
   }
+  virtual views::Widget* GetWidget() OVERRIDE {
+    return login_view_->GetWidget();
+  }
+  virtual const views::Widget* GetWidget() const OVERRIDE {
+    return login_view_->GetWidget();
+  }
 
   // LoginHandler:
 

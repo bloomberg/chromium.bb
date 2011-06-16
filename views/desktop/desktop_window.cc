@@ -39,8 +39,7 @@ class DesktopWindowWindow : public Widget {
   DISALLOW_COPY_AND_ASSIGN(DesktopWindowWindow);
 };
 
-class TestWindowContentView : public View,
-                              public WidgetDelegate {
+class TestWindowContentView : public WidgetDelegateView {
  public:
   TestWindowContentView(const std::wstring& title, SkColor color)
       : title_(title),

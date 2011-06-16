@@ -110,6 +110,8 @@ class UserController : public views::WidgetDelegate,
 
   // views::WidgetDelegate implementation:
   virtual void OnWidgetActivated(bool active) OVERRIDE;
+  virtual views::Widget* GetWidget() OVERRIDE;
+  virtual const views::Widget* GetWidget() const OVERRIDE;
 
   // NewUserView::Delegate implementation:
   virtual void OnLogin(const std::string& username,

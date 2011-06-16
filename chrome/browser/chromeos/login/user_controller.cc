@@ -74,6 +74,13 @@ class UserController::ControlsWidgetDelegate : public views::WidgetDelegate {
     controller_->OnWidgetActivated(active);
   }
 
+  virtual views::Widget* GetWidget() OVERRIDE {
+    return view_->GetWidget();
+  }
+  virtual const views::Widget* GetWidget() const OVERRIDE {
+    return view_->GetWidget();
+  }
+
  private:
   UserController* controller_;
 
@@ -259,6 +266,14 @@ void UserController::OnWidgetActivated(bool active) {
     user_view_->SetRemoveButtonVisible(false);
     delegate_->ClearErrors();
   }
+}
+
+views::Widget* UserController::GetWidget() {
+  return NULL;
+}
+
+const views::Widget* UserController::GetWidget() const {
+  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

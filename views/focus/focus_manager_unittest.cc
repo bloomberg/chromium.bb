@@ -116,13 +116,13 @@ class FocusManagerTest : public testing::Test, public WidgetDelegate {
 #endif
   }
 
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     window_ = Widget::CreateWindowWithBounds(this, bounds());
     InitContentView();
     window_->Show();
   }
 
-  virtual void TearDown() {
+  virtual void TearDown() OVERRIDE {
     if (focus_change_listener_)
       GetFocusManager()->RemoveFocusChangeListener(focus_change_listener_);
     window_->Close();
@@ -152,10 +152,16 @@ class FocusManagerTest : public testing::Test, public WidgetDelegate {
   }
 
   // WidgetDelegate Implementation.
-  virtual View* GetContentsView() {
+  virtual View* GetContentsView() OVERRIDE {
     if (!content_view_)
       content_view_ = new View();
     return content_view_;
+  }
+  virtual Widget* GetWidget() OVERRIDE {
+    return content_view_->GetWidget();
+  }
+  virtual const Widget* GetWidget() const OVERRIDE {
+    return content_view_->GetWidget();
   }
 
   virtual void InitContentView() {

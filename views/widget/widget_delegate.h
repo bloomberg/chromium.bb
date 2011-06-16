@@ -135,8 +135,8 @@ class WidgetDelegate {
   virtual void OnWindowEndUserBoundsChange() {}
 
   // Returns the Widget associated with this delegate.
-  virtual Widget* GetWidget();
-  virtual const Widget* GetWidget() const;
+  virtual Widget* GetWidget() = 0;
+  virtual const Widget* GetWidget() const = 0;
 
   // Returns the View that is contained within this Widget.
   virtual View* GetContentsView();

@@ -60,15 +60,23 @@ class ScopedEvent {
 // WidgetDelegate is supplied.
 class DefaultWidgetDelegate : public WidgetDelegate {
  public:
-  DefaultWidgetDelegate() {}
+  explicit DefaultWidgetDelegate(Widget* widget) : widget_(widget) {}
   virtual ~DefaultWidgetDelegate() {}
 
   // Overridden from WidgetDelegate:
   virtual void DeleteDelegate() OVERRIDE {
     delete this;
   }
+  virtual Widget* GetWidget() {
+    return widget_;
+  }
+  virtual const Widget* GetWidget() const {
+    return widget_;
+  }
 
  private:
+  Widget* widget_;
+
   DISALLOW_COPY_AND_ASSIGN(DefaultWidgetDelegate);
 };
 
@@ -246,7 +254,7 @@ gfx::Size Widget::GetLocalizedContentsSize(int col_resource_id,
 
 void Widget::Init(const InitParams& params) {
   widget_delegate_ =
-      params.delegate ? params.delegate : new DefaultWidgetDelegate;
+      params.delegate ? params.delegate : new DefaultWidgetDelegate(this);
   ownership_ = params.ownership;
   native_widget_ = params.native_widget ?
       params.native_widget->AsNativeWidgetPrivate() :
