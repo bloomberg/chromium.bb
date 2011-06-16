@@ -65,40 +65,27 @@ class TreeNodeModelTest : public testing::Test, public TreeModelObserver {
 // |   |-- foo2
 // +-- child2
 TEST_F(TreeNodeModelTest, AddNode) {
-  TreeNodeWithValue<int>* root =
-      new TreeNodeWithValue<int>(ASCIIToUTF16("root"), 0);
+  TreeNodeWithValue<int>* root = new TreeNodeWithValue<int>();
   TreeNodeModel<TreeNodeWithValue<int> > model(root);
   model.AddObserver(this);
   ClearCounts();
 
-  // Create the first root child.
-  TreeNodeWithValue<int>* child1 =
-      new TreeNodeWithValue<int>(ASCIIToUTF16("child 1"), 1);
+  TreeNodeWithValue<int>* child1 = new TreeNodeWithValue<int>();
   model.Add(root, child1, 0);
 
   AssertObserverCount(1, 0, 0);
 
-  // Add two nodes under the |child1|.
-  TreeNodeWithValue<int>* foo1 =
-      new TreeNodeWithValue<int>(ASCIIToUTF16("foo1"), 3);
-  TreeNodeWithValue<int>* foo2 =
-      new TreeNodeWithValue<int>(ASCIIToUTF16("foo2"), 4);
-  child1->Add(foo1, 0);
-  child1->Add(foo2, 1);
+  for (int i = 0; i < 2; ++i)
+    child1->Add(new TreeNodeWithValue<int>(), i);
 
-  // Create the second root child.
-  TreeNodeWithValue<int>* child2 =
-      new TreeNodeWithValue<int>(ASCIIToUTF16("child 2"), 2);
-  root->Add(child2, 1);
+  TreeNodeWithValue<int>* child2 = new TreeNodeWithValue<int>();
+  model.Add(root, child2, 1);
 
-  // Check if there is two nodes under the root.
-  ASSERT_EQ(2, model.GetChildCount(root));
+  AssertObserverCount(2, 0, 0);
 
-  // Check if there is two nodes under |child1|.
-  ASSERT_EQ(2, model.GetChildCount(child1));
-
-  // Check if there is none nodes under |child2|.
-  ASSERT_EQ(0, model.GetChildCount(child2));
+  ASSERT_EQ(2, root->child_count());
+  ASSERT_EQ(2, child1->child_count());
+  ASSERT_EQ(0, child2->child_count());
 }
 
 // Verify if the model is properly removing a node from the tree
