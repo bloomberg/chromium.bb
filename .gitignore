@@ -42,3 +42,7 @@ toolchain/hg-log/
 /private_tests/
 /private_tools/
 /supplement/
+
+# These directories are created by running tests/spec2k/run_all.sh
+/tests/spec2k/bin/
+/tests/spec2k/[0-9][0-9][0-9].*/
