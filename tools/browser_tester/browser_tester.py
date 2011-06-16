@@ -122,7 +122,7 @@ def Run(url, options):
 
   def shutdown_callback():
     server.TestingEnded()
-    close_browser = not options.interactive
+    close_browser = options.tool is not None and not options.interactive
     return close_browser
 
   listener = browsertester.rpclistener.RPCListener(shutdown_callback)
