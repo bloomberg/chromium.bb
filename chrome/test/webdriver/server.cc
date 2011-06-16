@@ -64,7 +64,7 @@ void InitCallbacks(struct mg_context* ctx, Dispatcher* dispatcher,
                    base::WaitableEvent* shutdown_event,
                    bool forbid_other_requests) {
   dispatcher->AddShutdown("/shutdown", shutdown_event);
-  dispatcher->AddHealthz("/healthz");
+  dispatcher->AddHealthz("/status");
   dispatcher->AddLog("/log");
 
   dispatcher->Add<CreateSession>("/session");
