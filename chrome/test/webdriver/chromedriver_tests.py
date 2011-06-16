@@ -362,6 +362,8 @@ class SessionTest(unittest.TestCase):
 
     self.assertEquals('chrome', capabilities['browserName'])
     self.assertTrue(capabilities['javascriptEnabled'])
+    self.assertTrue(capabilities['takesScreenshot'])
+    self.assertTrue(capabilities['cssSelectorsEnabled'])
 
     # Value depends on what version the server is starting.
     self.assertTrue('version' in capabilities)

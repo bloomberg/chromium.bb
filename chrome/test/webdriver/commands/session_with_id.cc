@@ -33,6 +33,8 @@ bool SessionWithID::DoesDelete() {
 void SessionWithID::ExecuteGet(Response* const response) {
   DictionaryValue *temp_value = new DictionaryValue();
 
+  // Standard capabilities defined at
+  // http://code.google.com/p/selenium/wiki/JsonWireProtocol#Capabilities_JSON_Object
   temp_value->SetString("browserName", "chrome");
   temp_value->SetString("version", session_->GetBrowserVersion());
 
@@ -48,7 +50,9 @@ void SessionWithID::ExecuteGet(Response* const response) {
   temp_value->SetString("platform", "unknown");
 #endif
 
+  temp_value->SetBoolean("cssSelectorsEnabled", true);
   temp_value->SetBoolean("javascriptEnabled", true);
+  temp_value->SetBoolean("takesScreenshot", true);
 
   // Custom non-standard session info.
   temp_value->SetWithoutPathExpansion(
