@@ -398,6 +398,7 @@
         '../../fileapi/file_system_origin_database_unittest.cc',
         '../../fileapi/file_system_path_manager_unittest.cc',
         '../../fileapi/file_system_quota_client_unittest.cc',
+        '../../fileapi/file_system_quota_unittest.cc',
         '../../fileapi/file_system_usage_cache_unittest.cc',
         '../../fileapi/file_system_util_unittest.cc',
         '../../fileapi/local_file_system_file_util_unittest.cc',
