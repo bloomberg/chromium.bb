@@ -744,8 +744,9 @@ void RenderViewContextMenu::AppendEditableItems() {
   if (!params_.dictionary_suggestions.empty()) {
     menu_model_.AddSeparator();
 
+    // |spellcheck_host| can be null when the suggested word is
+    // provided by Web SpellCheck API.
     SpellCheckHost* spellcheck_host = profile_->GetSpellCheckHost();
-    DCHECK(spellcheck_host);
     if (spellcheck_host)
       spellcheck_host->RecordSuggestionStats(1);
   }
@@ -1502,12 +1503,10 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
     case IDC_SPELLCHECK_SUGGESTION_4: {
       rvh->Replace(
           params_.dictionary_suggestions[id - IDC_SPELLCHECK_SUGGESTION_0]);
-      SpellCheckHost* spellcheck_host = profile_->GetSpellCheckHost();
-      if (!spellcheck_host) {
-        NOTREACHED();
-        break;
-      }
-      spellcheck_host->RecordReplacedWordStats(1);
+      // GetSpellCheckHost() can return null when the suggested word is
+      // provided by Web SpellCheck API.
+      if (profile_->GetSpellCheckHost())
+        profile_->GetSpellCheckHost()->RecordReplacedWordStats(1);
       break;
     }
     case IDC_CHECK_SPELLING_OF_THIS_FIELD: {
@@ -1515,12 +1514,11 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
       break;
     }
     case IDC_SPELLCHECK_ADD_TO_DICTIONARY: {
-      SpellCheckHost* spellcheck_host = profile_->GetSpellCheckHost();
-      if (!spellcheck_host) {
-        NOTREACHED();
-        break;
-      }
-      spellcheck_host->AddWord(UTF16ToUTF8(params_.misspelled_word));
+      // GetSpellCheckHost() can return null when the suggested word is
+      // provided by Web SpellCheck API.
+      if (profile_->GetSpellCheckHost())
+        profile_->GetSpellCheckHost()->AddWord(
+            UTF16ToUTF8(params_.misspelled_word));
       SpellCheckerPlatform::AddWord(params_.misspelled_word);
       break;
     }
