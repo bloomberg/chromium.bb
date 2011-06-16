@@ -39,6 +39,13 @@ class Profile;
   std::vector<GURL> startupUrls_;
   BOOL startupComplete_;
 
+  // Outlets for the close tab/window menu items so that we can adjust the
+  // commmand-key equivalent depending on the kind of window and how many
+  // tabs it has.
+  IBOutlet NSMenuItem* closeTabMenuItem_;
+  IBOutlet NSMenuItem* closeWindowMenuItem_;
+  BOOL fileMenuUpdatePending_;  // ensure we only do this once per notificaion.
+
   // Outlet for the help menu so we can bless it so Cocoa adds the search item
   // to it.
   IBOutlet NSMenu* helpMenu_;
