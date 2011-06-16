@@ -8,8 +8,6 @@
 
 #include <string>
 
-#include "content/browser/webui/web_ui.h"
-
 class DictionaryValue;
 class SyncSetupFlow;
 
