@@ -246,21 +246,6 @@
       '-infobars.InfobarTest.testPluginCrashInfobar',
       # Flaky: crosbug.com/14439
       '-instant.InstantSettingsTest.testEnableDisableInstant',
-      # Failing notifications tests  crbug.com/81624
-      '-notifications.NotificationsTest.testCloseNotification',
-      '-notifications.NotificationsTest.testCreateDenyCloseNotifications',
-      '-notifications.NotificationsTest.testNotificationOrderAfterClosingOne',
-      '-notifications.NotificationsTest.testAllowOnPermissionInfobar',
-      '-notifications.NotificationsTest.testClosePermissionInfobar',
-      '-notifications.NotificationsTest.testCloseTabWithPermissionInfobar',
-      '-notifications.NotificationsTest.testCrashTabWithPermissionInfobar',
-      '-notifications.NotificationsTest.testDenyOnPermissionInfobar',
-      '-notifications.NotificationsTest.testExitBrowserWithInfobar',
-      '-notifications.NotificationsTest.testIncognitoNotification',
-      '-notifications.NotificationsTest.testNavigateAwayWithPermissionInfobar',
-      '-notifications.NotificationsTest.testOriginPrefsNotSavedInIncognito',
-      '-notifications.NotificationsTest.testPermissionInfobarAppears',
-      '-notifications.NotificationsTest.testKillNotificationProcess',
       # crosbug.com/14256
       '-ntp.NTPTest.testLaunchAppFullScreen',
       # Content history broken in omnibox.  crosbug.com/14416
