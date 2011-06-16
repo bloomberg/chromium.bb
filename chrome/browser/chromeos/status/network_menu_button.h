@@ -105,11 +105,14 @@ class NetworkMenuButton : public StatusAreaButton,
   // Sets the icon and the badges (badges are at the bottom of the icon).
   void SetIconAndBadges(const SkBitmap* icon,
                         const SkBitmap* right_badge,
+                        const SkBitmap* top_left_badge,
                         const SkBitmap* left_badge);
   // Sets the icon only. Keep the previous badge.
   void SetIconOnly(const SkBitmap* icon);
   // Sets the badges only. Keep the previous icon.
-  void SetBadgesOnly(const SkBitmap* right_badge, const SkBitmap* left_badge);
+  void SetBadgesOnly(const SkBitmap* right_badge,
+                     const SkBitmap* top_left_badge,
+                     const SkBitmap* left_badge);
   // Set the network icon based on the status of the |network|
   void SetNetworkIcon(NetworkLibrary* cros, const Network* network);
 
@@ -134,6 +137,8 @@ class NetworkMenuButton : public StatusAreaButton,
   const SkBitmap* icon_;
   // A badge icon displayed on top of icon, in bottom-right corner.
   const SkBitmap* right_badge_;
+  // A badge icon displayed on top of icon, in top-left corner.
+  const SkBitmap* top_left_badge_;
   // A  badge icon displayed on top of icon, in bottom-left corner.
   const SkBitmap* left_badge_;
 
