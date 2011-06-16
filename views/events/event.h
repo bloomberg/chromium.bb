@@ -263,7 +263,8 @@ class TouchEvent : public LocatedEvent {
              int touch_id,
              float radius_x,
              float radius_y,
-             float angle);
+             float angle,
+             float force);
 
   // Create a new TouchEvent which is identical to the provided model.
   // If source / target views are provided, the model location will be converted
@@ -274,7 +275,8 @@ class TouchEvent : public LocatedEvent {
 
   float radius_x() const { return radius_x_; }
   float radius_y() const { return radius_y_; }
-  float angle() const { return angle_; }
+  float rotation_angle() const { return rotation_angle_; }
+  float force() const { return force_; }
 
  private:
   friend class internal::RootView;
@@ -292,7 +294,10 @@ class TouchEvent : public LocatedEvent {
   const float radius_y_;
 
   // Angle of the major axis away from the X axis. Default 0.0.
-  const float angle_;
+  const float rotation_angle_;
+
+  // Force (pressure) of the touch. Normalized to be [0, 1]. Default to be 0.0.
+  const float force_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchEvent);
 };

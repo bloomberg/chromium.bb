@@ -111,7 +111,7 @@ inline void UpdateTouchParams(const views::TouchEvent& event,
                               WebKit::WebTouchPoint* tpoint) {
   tpoint->radiusX = event.radius_x();
   tpoint->radiusY = event.radius_y();
-  tpoint->rotationAngle = event.angle();
+  tpoint->rotationAngle = event.rotation_angle();
 }
 
 void UpdateTouchPointPosition(const views::TouchEvent* event,

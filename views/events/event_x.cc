@@ -254,6 +254,20 @@ float GetTouchParamFromXEvent(XEvent* xev,
   return default_value;
 }
 
+float GetTouchForceFromXEvent(XEvent* xev) {
+  float force = 0.0;
+#if defined(HAVE_XINPUT2)
+  force = GetTouchParamFromXEvent(xev, TouchFactory::TP_PRESSURE, 0.0);
+  unsigned int deviceid =
+      static_cast<XIDeviceEvent*>(xev->xcookie.data)->sourceid;
+  // Force is normalized to fall into [0, 1]
+  if (!TouchFactory::GetInstance()->NormalizeTouchParam(
+      deviceid, TouchFactory::TP_PRESSURE, &force))
+    force = 0.0;
+#endif
+  return force;
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -387,9 +401,10 @@ TouchEvent::TouchEvent(NativeEvent2 native_event_2,
       radius_y_(GetTouchParamFromXEvent(native_event_2,
                                         TouchFactory::TP_TOUCH_MINOR,
                                         2.0) / 2.0),
-      angle_(GetTouchParamFromXEvent(native_event_2,
-                                     TouchFactory::TP_ORIENTATION,
-                                     0.0)) {
+      rotation_angle_(GetTouchParamFromXEvent(native_event_2,
+                                              TouchFactory::TP_ORIENTATION,
+                                              0.0)),
+      force_(GetTouchForceFromXEvent(native_event_2)) {
   if (type() == ui::ET_TOUCH_PRESSED || type() == ui::ET_TOUCH_RELEASED) {
     TouchFactory* factory = TouchFactory::GetInstance();
     float slot;

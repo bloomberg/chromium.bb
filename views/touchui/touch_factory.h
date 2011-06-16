@@ -28,6 +28,7 @@ class TouchFactory {
     TP_TOUCH_MINOR,       // Width of the touch area.
     TP_ORIENTATION,       // Angle between the X-axis and the major axis of the
                           // touch area.
+    TP_PRESSURE,          // Pressure of the touch contact.
 
     // NOTE: A touch event can have multiple touch points. So when we receive a
     // touch event, we need to determine which point triggered the event.
@@ -98,6 +99,19 @@ class TouchFactory {
   // is not found.
   bool ExtractTouchParam(const XEvent& xev, TouchParam tp, float* value);
 
+  // Normalize the TouchParam with value on deviceid to fall into [0, 1].
+  // *value = (*value - min_value_of_tp) / (max_value_of_tp - min_value_of_tp)
+  // Returns true and sets the normalized value in|value| if normalization is
+  // successful. Returns false and |value| is unchanged otherwise.
+  bool NormalizeTouchParam(unsigned int deviceid, TouchParam tp, float* value);
+
+  // Extract the range of the TouchParam. Return true if the range is available
+  // and written into min & max, false if the range is not available.
+  bool GetTouchParamRange(unsigned int deviceid,
+                          TouchParam tp,
+                          float* min,
+                          float* max);
+
   void set_keep_mouse_cursor(bool keep) { keep_mouse_cursor_ = keep; }
   bool keep_mouse_cursor() const { return keep_mouse_cursor_; }
 
@@ -161,6 +175,11 @@ class TouchFactory {
   // space waste becomes a concern, the 2D lookup table can be replaced by a
   // hash map.
   char valuator_lookup_[kMaxDeviceNum][TP_LAST_ENTRY];
+
+  // Index table to find the min & max value of the TouchParam on a specific
+  // device.
+  int touch_param_min_[kMaxDeviceNum][TP_LAST_ENTRY];
+  int touch_param_max_[kMaxDeviceNum][TP_LAST_ENTRY];
 
   // Maximum simultaneous touch points.
   static const int kMaxTouchPoints = 32;
