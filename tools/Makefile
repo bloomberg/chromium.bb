@@ -103,8 +103,6 @@ ifeq ($(PLATFORM), win)
   SDKLOC_NATIVE=$(shell cygpath -m $(SDKLOC)/$(SDKNAME))
   CYGWIN17=$(shell grep '^cygwin cygwin-1.7' /etc/setup/installed.db | wc -l)
   ifeq ($(CYGWIN17), 1)
-    DESTDIR := $(SDKROOT)
-    SDKROOT :=
     # CygWin1.7 changes over time and list of files required to run the binaries
     # changes over time - use cygcheck (new tools in CygWin 1.7) to find list of
     # .dll files and filter only .dll files in /bin (AKA /usr/bin depending on
@@ -702,11 +700,7 @@ scons-libs-glibc: glibc-adhoc-files
 # gcc:
 #   Builds GCC with glibc as a C library.
 ##################################################################
-ifeq ($(CYGWIN17), 1)
-SYSINCLUDE_HACK_TARGET=/$(CROSSARCH)/sys-include
-else
 SYSINCLUDE_HACK_TARGET=$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/sys-include
-endif
 
 BUILD/stamp-$(CROSSARCH)-full-gcc: gcc-extras glibc-adhoc-files
 	rm -rf BUILD/build-full-gcc-$(CROSSARCH)
