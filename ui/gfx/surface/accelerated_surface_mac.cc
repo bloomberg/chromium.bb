@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "ui/gfx/gl/gl_bindings.h"
+#include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_implementation.h"
 #include "ui/gfx/gl/gl_surface.h"
 #include "ui/gfx/rect.h"
@@ -41,7 +42,10 @@ bool AcceleratedSurface::Initialize(gfx::GLContext* share_context,
     return false;
   }
 
-  gl_context_ = gfx::GLContext::CreateGLContext(share_context,
+  gfx::GLShareGroup* share_group =
+      share_context ? share_context->share_group() : NULL;
+
+  gl_context_ = gfx::GLContext::CreateGLContext(share_group,
                                                 gl_surface_.get());
   if (!gl_context_.get()) {
     Destroy();

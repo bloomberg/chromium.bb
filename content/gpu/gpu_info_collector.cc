@@ -31,8 +31,8 @@ scoped_refptr<gfx::GLSurface> InitializeGLSurface() {
 
 scoped_refptr<gfx::GLContext> InitializeGLContext(gfx::GLSurface* surface) {
 
-  scoped_refptr<gfx::GLContext> context(gfx::GLContext::CreateGLContext(NULL,
-                                                                     surface));
+  scoped_refptr<gfx::GLContext> context(
+      gfx::GLContext::CreateGLContext(NULL, surface));
   if (!context.get()) {
     LOG(ERROR) << "gfx::GLContext::CreateGLContext failed";
     return NULL;

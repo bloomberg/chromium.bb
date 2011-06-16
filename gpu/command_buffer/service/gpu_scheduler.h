@@ -27,6 +27,7 @@
 
 namespace gfx {
 class GLContext;
+class GLShareGroup;
 class GLSurface;
 }
 
@@ -63,7 +64,8 @@ class GpuScheduler : public CommandBufferEngine {
                   const char* allowed_extensions,
                   const std::vector<int32>& attribs,
                   GpuScheduler* parent,
-                  uint32 parent_texture_id);
+                  uint32 parent_texture_id,
+                  gfx::GLShareGroup* share_group);
 
   void Destroy();
   void DestroyCommon();

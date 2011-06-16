@@ -74,6 +74,8 @@
         'gl_implementation_win.cc',
         'gl_interface.cc',
         'gl_interface.h',
+        'gl_share_group.cc',
+        'gl_share_group.h',
         'gl_surface.cc',
         'gl_surface.h',
         'gl_surface_linux.cc',

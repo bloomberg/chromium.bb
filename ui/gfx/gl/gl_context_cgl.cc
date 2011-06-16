@@ -10,22 +10,22 @@
 
 namespace gfx {
 
-GLContextCGL::GLContextCGL()
-  : context_(NULL) {
+GLContextCGL::GLContextCGL(GLShareGroup* share_group)
+  : GLContext(share_group),
+    context_(NULL) {
 }
 
 GLContextCGL::~GLContextCGL() {
   Destroy();
 }
 
-bool GLContextCGL::Initialize(GLContext* shared_context,
-                              GLSurface* compatible_surface) {
+bool GLContextCGL::Initialize(GLSurface* compatible_surface) {
   DCHECK(compatible_surface);
 
   CGLError res = CGLCreateContext(
       static_cast<CGLPixelFormatObj>(GLSurfaceCGL::GetPixelFormat()),
-      shared_context ?
-          static_cast<CGLContextObj>(shared_context->GetHandle()) : NULL,
+      share_group() ?
+          static_cast<CGLContextObj>(share_group()->GetHandle()) : NULL,
       reinterpret_cast<CGLContextObj*>(&context_));
   if (res != kCGLNoError) {
     LOG(ERROR) << "Error creating context.";

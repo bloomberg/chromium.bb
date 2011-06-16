@@ -44,19 +44,21 @@ bool IsCompositingWindowManagerActive(Display* display) {
 
 }  // namespace anonymous
 
-GLContextGLX::GLContextGLX()
-  : context_(NULL) {
+GLContextGLX::GLContextGLX(GLShareGroup* share_group)
+  : GLContext(share_group),
+    context_(NULL) {
 }
 
 GLContextGLX::~GLContextGLX() {
   Destroy();
 }
 
-bool GLContextGLX::Initialize(GLContext* shared_context,
-                              GLSurface* compatible_surface) {
+bool GLContextGLX::Initialize(GLSurface* compatible_surface) {
   GLSurfaceGLX* surface_glx = static_cast<GLSurfaceGLX*>(compatible_surface);
 
   GLXFBConfig config = static_cast<GLXFBConfig>(surface_glx->GetConfig());
+  GLXContext share_handle = static_cast<GLXContext>(
+      share_group() ? share_group()->GetHandle() : NULL);
 
   // The means by which the context is created depends on whether the drawable
   // type works reliably with GLX 1.3. If it does not then fall back to GLX 1.2.
@@ -65,8 +67,7 @@ bool GLContextGLX::Initialize(GLContext* shared_context,
         GLSurfaceGLX::GetDisplay(),
         static_cast<GLXFBConfig>(surface_glx->GetConfig()),
         GLX_RGBA_TYPE,
-        static_cast<GLXContext>(
-            shared_context ? shared_context->GetHandle() : NULL),
+        share_handle,
         True);
   } else {
     Display* display = GLSurfaceGLX::GetDisplay();
@@ -94,7 +95,11 @@ bool GLContextGLX::Initialize(GLContext* shared_context,
     }
 
     // Attempt to create a context with each visual in turn until one works.
-    context_ = glXCreateContext(display, visual_info_list.get(), 0, True);
+    context_ = glXCreateContext(
+        display,
+        visual_info_list.get(),
+        share_handle,
+        True);
   }
 
   if (!context_) {

@@ -13,12 +13,11 @@ class GLSurface;
 // Encapsulates a GLX OpenGL context.
 class GLContextGLX : public GLContext {
  public:
-  GLContextGLX();
+  explicit GLContextGLX(GLShareGroup* share_group);
   virtual ~GLContextGLX();
 
   // Implement GLContext.
-  virtual bool Initialize(GLContext* shared_context,
-                          GLSurface* compatible_surface);
+  virtual bool Initialize(GLSurface* compatible_surface);
   virtual void Destroy();
   virtual bool MakeCurrent(GLSurface* surface);
   virtual void ReleaseCurrent(GLSurface* surface);

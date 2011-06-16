@@ -64,7 +64,9 @@ bool Window::CreateRenderContext(gfx::PluginWindowHandle hwnd) {
   if (!gpu_scheduler->Initialize(hwnd, gfx::Size(),
                                  gpu::gles2::DisallowedExtensions(),
                                  NULL, std::vector<int32>(),
-                                 NULL, 0)) {
+                                 NULL,
+                                 0,
+                                 NULL)) {
     return false;
   }
 

@@ -144,7 +144,8 @@ void GpuCommandBufferStub::OnInitialize(
         allowed_extensions_.c_str(),
         requested_attribs_,
         parent_processor,
-        parent_texture_id_)) {
+        parent_texture_id_,
+        channel_->share_group())) {
       command_buffer_->SetPutOffsetChangeCallback(
           NewCallback(scheduler_.get(),
                       &gpu::GpuScheduler::PutChanged));

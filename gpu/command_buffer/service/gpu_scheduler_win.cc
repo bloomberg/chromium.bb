@@ -6,6 +6,7 @@
 
 #include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "ui/gfx/gl/gl_context.h"
+#include "ui/gfx/gl/gl_share_group.h"
 #include "ui/gfx/gl/gl_surface.h"
 
 using ::base::SharedMemory;
@@ -19,16 +20,13 @@ bool GpuScheduler::Initialize(
     const char* allowed_extensions,
     const std::vector<int32>& attribs,
     GpuScheduler* parent,
-    uint32 parent_texture_id) {
-  // Get the parent decoder and the GLContext to share IDs with, if any.
+    uint32 parent_texture_id,
+    gfx::GLShareGroup* share_group) {
+  // Get the parent decoder.
   gles2::GLES2Decoder* parent_decoder = NULL;
-  gfx::GLContext* parent_context = NULL;
   if (parent) {
     parent_decoder = parent->decoder_.get();
     DCHECK(parent_decoder);
-
-    parent_context = parent_decoder->GetGLContext();
-    DCHECK(parent_context);
   }
 
   // Create either a view or pbuffer based GLSurface.
@@ -47,7 +45,7 @@ bool GpuScheduler::Initialize(
 
   // Create a GLContext and attach the surface.
   scoped_refptr<gfx::GLContext> context(
-      gfx::GLContext::CreateGLContext(parent_context, surface.get()));
+      gfx::GLContext::CreateGLContext(share_group, surface.get()));
   if (!context.get()) {
     LOG(ERROR) << "CreateGLContext failed.\n";
     Destroy();

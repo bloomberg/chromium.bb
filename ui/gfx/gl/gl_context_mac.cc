@@ -16,20 +16,22 @@
 
 namespace gfx {
 
+class GLShareGroup;
+
 scoped_refptr<GLContext> GLContext::CreateGLContext(
-    GLContext* shared_context,
+    GLShareGroup* share_group,
     GLSurface* compatible_surface) {
   switch (GetGLImplementation()) {
     case kGLImplementationDesktopGL: {
-      scoped_refptr<GLContext> context(new GLContextCGL);
-      if (!context->Initialize(shared_context, compatible_surface))
+      scoped_refptr<GLContext> context(new GLContextCGL(share_group));
+      if (!context->Initialize(compatible_surface))
         return NULL;
 
       return context;
     }
     case kGLImplementationOSMesaGL: {
-      scoped_refptr<GLContext> context(new GLContextOSMesa);
-      if (!context->Initialize(shared_context, compatible_surface))
+      scoped_refptr<GLContext> context(new GLContextOSMesa(share_group));
+      if (!context->Initialize(compatible_surface))
         return NULL;
 
       return context;

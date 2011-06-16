@@ -12,21 +12,20 @@
 
 namespace gfx {
 
-GLContextOSMesa::GLContextOSMesa()
-    : context_(NULL) {
+GLContextOSMesa::GLContextOSMesa(GLShareGroup* share_group)
+    : GLContext(share_group),
+      context_(NULL) {
 }
 
 GLContextOSMesa::~GLContextOSMesa() {
   Destroy();
 }
 
-bool GLContextOSMesa::Initialize(GLContext* shared_context,
-                                 GLSurface* compatible_surface) {
+bool GLContextOSMesa::Initialize(GLSurface* compatible_surface) {
   DCHECK(!context_);
 
-  OSMesaContext shared_handle = NULL;
-  if (shared_context)
-    shared_handle = static_cast<OSMesaContext>(shared_context->GetHandle());
+  OSMesaContext share_handle = static_cast<OSMesaContext>(
+      share_group() ? share_group()->GetHandle() : NULL);
 
   GLuint format =
       static_cast<GLSurfaceOSMesa*>(compatible_surface)->GetFormat();
@@ -34,7 +33,7 @@ bool GLContextOSMesa::Initialize(GLContext* shared_context,
                                     24,  // depth bits
                                     8,  // stencil bits
                                     0,  // accum bits
-                                    shared_handle);
+                                    share_handle);
   if (!context_) {
     LOG(ERROR) << "OSMesaCreateContextExt failed.";
     return false;

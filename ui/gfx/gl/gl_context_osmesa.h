@@ -12,17 +12,17 @@ typedef struct osmesa_context *OSMesaContext;
 
 namespace gfx {
 
+class GLShareGroup;
 class GLSurface;
 
 // Encapsulates an OSMesa OpenGL context that uses software rendering.
 class GLContextOSMesa : public GLContext {
  public:
-  GLContextOSMesa();
+  explicit GLContextOSMesa(GLShareGroup* share_group);
   virtual ~GLContextOSMesa();
 
   // Implement GLContext.
-  virtual bool Initialize(GLContext* shared_context,
-                          GLSurface* compatible_surface);
+  virtual bool Initialize(GLSurface* compatible_surface);
   virtual void Destroy();
   virtual bool MakeCurrent(GLSurface* surface);
   virtual void ReleaseCurrent(GLSurface* surface);

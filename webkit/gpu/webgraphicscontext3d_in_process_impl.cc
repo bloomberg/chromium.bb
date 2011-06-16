@@ -110,7 +110,7 @@ bool WebGraphicsContext3DInProcessImpl::initialize(
   gfx::BindSkiaToInProcessGL();
 
   render_directly_to_web_view_ = render_directly_to_web_view;
-  gfx::GLContext* share_context = 0;
+  gfx::GLShareGroup* share_group = 0;
 
   if (!render_directly_to_web_view) {
     // Pick up the compositor's context to share resources with.
@@ -118,7 +118,7 @@ bool WebGraphicsContext3DInProcessImpl::initialize(
     if (view_context) {
       WebGraphicsContext3DInProcessImpl* contextImpl =
           static_cast<WebGraphicsContext3DInProcessImpl*>(view_context);
-      share_context = contextImpl->gl_context_.get();
+      share_group = contextImpl->gl_context_->share_group();
     } else {
       // The compositor's context didn't get created
       // successfully, so conceptually there is no way we can
@@ -154,7 +154,7 @@ bool WebGraphicsContext3DInProcessImpl::initialize(
       return false;
   }
 
-  gl_context_ = gfx::GLContext::CreateGLContext(share_context,
+  gl_context_ = gfx::GLContext::CreateGLContext(share_group,
                                                 gl_surface_.get());
   if (!gl_context_.get()) {
     if (!is_gles2_)
@@ -169,7 +169,7 @@ bool WebGraphicsContext3DInProcessImpl::initialize(
     // necessary.
     webView->mainFrame()->collectGarbage();
 
-    gl_context_ = gfx::GLContext::CreateGLContext(share_context,
+    gl_context_ = gfx::GLContext::CreateGLContext(share_group,
                                                   gl_surface_.get());
     if (!gl_context_.get())
       return false;

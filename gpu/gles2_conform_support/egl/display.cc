@@ -112,7 +112,7 @@ EGLSurface Display::CreateWindowSurface(EGLConfig config,
       new GpuScheduler(command_buffer_.get(), NULL, NULL));
   if (!gpu_scheduler->Initialize(
       win, gfx::Size(), gpu::gles2::DisallowedExtensions(), NULL,
-      attribs, NULL, 0))
+      attribs, NULL, 0, NULL))
     return EGL_NO_SURFACE;
 
   command_buffer_->SetPutOffsetChangeCallback(

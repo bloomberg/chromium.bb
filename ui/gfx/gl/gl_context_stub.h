@@ -17,8 +17,7 @@ class GLContextStub : public GLContext {
   virtual ~GLContextStub();
 
   // Implement GLContext.
-  virtual bool Initialize(GLContext* shared_context,
-                          GLSurface* compatible_surface);
+  virtual bool Initialize(GLSurface* compatible_surface);
   virtual void Destroy();
   virtual bool MakeCurrent(GLSurface* surface);
   virtual void ReleaseCurrent(GLSurface* surface);

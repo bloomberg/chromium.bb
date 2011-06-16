@@ -65,7 +65,8 @@ bool GLES2Demo::Setup(void* hwnd, int32 size) {
                                  NULL,
                                  std::vector<int32>(),
                                  NULL,
-                                 0)) {
+                                 0,
+                                 NULL)) {
     return NULL;
   }
 

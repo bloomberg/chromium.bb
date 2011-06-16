@@ -32,8 +32,9 @@ std::string GLContextEGL::GetExtensions() {
   return GLContext::GetExtensions() + " " + extensions;
 }
 
-GLContextEGL::GLContextEGL()
-    : context_(NULL)
+GLContextEGL::GLContextEGL(GLShareGroup* share_group)
+    : GLContext(share_group),
+      context_(NULL)
 {
 }
 
@@ -41,8 +42,7 @@ GLContextEGL::~GLContextEGL() {
   Destroy();
 }
 
-bool GLContextEGL::Initialize(GLContext* shared_context,
-                              GLSurface* compatible_surface) {
+bool GLContextEGL::Initialize(GLSurface* compatible_surface) {
   DCHECK(compatible_surface);
   DCHECK(!context_);
 
@@ -54,7 +54,7 @@ bool GLContextEGL::Initialize(GLContext* shared_context,
   context_ = eglCreateContext(
       GLSurfaceEGL::GetDisplay(),
       GLSurfaceEGL::GetConfig(),
-      shared_context ? shared_context->GetHandle() : NULL,
+      share_group() ? share_group()->GetHandle() : NULL,
       kContextAttributes);
   if (!context_) {
     LOG(ERROR) << "eglCreateContext failed with error "

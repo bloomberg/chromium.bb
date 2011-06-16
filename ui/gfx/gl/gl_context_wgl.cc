@@ -13,8 +13,9 @@
 
 namespace gfx {
 
-GLContextWGL::GLContextWGL()
-    : context_(NULL) {
+GLContextWGL::GLContextWGL(GLShareGroup* share_group)
+    : GLContext(share_group),
+      context_(NULL) {
 }
 
 GLContextWGL::~GLContextWGL() {
@@ -36,8 +37,7 @@ std::string GLContextWGL::GetExtensions() {
   return GLContext::GetExtensions();
 }
 
-bool GLContextWGL::Initialize(GLContext* shared_context,
-                              GLSurface* compatible_surface) {
+bool GLContextWGL::Initialize(GLSurface* compatible_surface) {
   GLSurfaceWGL* surface_wgl = static_cast<GLSurfaceWGL*>(compatible_surface);
 
   // TODO(apatrick): When contexts and surfaces are separated, we won't be
@@ -51,13 +51,14 @@ bool GLContextWGL::Initialize(GLContext* shared_context,
     return false;
   }
 
-  if (shared_context) {
-    if (!wglShareLists(
-        static_cast<HGLRC>(shared_context->GetHandle()),
-        context_)) {
-      LOG(ERROR) << "Could not share GL contexts.";
-      Destroy();
-      return false;
+  if (share_group()) {
+    HGLRC share_handle = static_cast<HGLRC>(share_group()->GetHandle());
+    if (share_handle) {
+      if (!wglShareLists(share_handle, context_)) {
+        LOG(ERROR) << "Could not share GL contexts.";
+        Destroy();
+        return false;
+      }
     }
   }
 

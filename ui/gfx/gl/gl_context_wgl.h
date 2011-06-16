@@ -17,12 +17,11 @@ class GLSurface;
 // This class is a wrapper around a GL context.
 class GLContextWGL : public GLContext {
  public:
-  GLContextWGL();
+  explicit GLContextWGL(GLShareGroup* share_group);
   virtual ~GLContextWGL();
 
   // Implement GLContext.
-  virtual bool Initialize(GLContext* shared_context,
-                          GLSurface* compatible_surface);
+  virtual bool Initialize(GLSurface* compatible_surface);
   virtual void Destroy();
   virtual bool MakeCurrent(GLSurface* surface);
   virtual void ReleaseCurrent(GLSurface* surface);

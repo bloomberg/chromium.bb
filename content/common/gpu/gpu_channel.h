@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/id_map.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process.h"
 #include "build/build_config.h"
@@ -19,6 +20,7 @@
 #include "content/common/gpu/gpu_surface_stub.h"
 #include "content/common/message_router.h"
 #include "ipc/ipc_sync_channel.h"
+#include "ui/gfx/gl/gl_share_group.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
 
@@ -83,6 +85,8 @@ class GpuChannel : public IPC::Channel::Listener,
       int32* route_id);
 
   void ViewResized(int32 command_buffer_route_id);
+
+  gfx::GLShareGroup* share_group() const { return share_group_.get(); }
 
 #if defined(OS_MACOSX)
   virtual void AcceleratedSurfaceBuffersSwapped(
@@ -155,6 +159,10 @@ class GpuChannel : public IPC::Channel::Listener,
 
   // Used to implement message routing functionality to CommandBuffer objects
   MessageRouter router_;
+
+  // The share group that all contexts associated with a particular renderer
+  // process use.
+  scoped_refptr<gfx::GLShareGroup> share_group_;
 
 #if defined(ENABLE_GPU)
   typedef IDMap<GpuCommandBufferStub, IDMapOwnPointer> StubMap;

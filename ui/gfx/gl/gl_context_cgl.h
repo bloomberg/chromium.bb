@@ -11,12 +11,11 @@ class GLSurface;
 // Encapsulates a CGL OpenGL context.
 class GLContextCGL : public GLContext {
  public:
-  GLContextCGL();
+  explicit GLContextCGL(GLShareGroup* share_group);
   virtual ~GLContextCGL();
 
   // Implement GLContext.
-  virtual bool Initialize(GLContext* shared_context,
-                          GLSurface* compatible_surface);
+  virtual bool Initialize(GLSurface* compatible_surface);
   virtual void Destroy();
   virtual bool MakeCurrent(GLSurface* surface);
   virtual void ReleaseCurrent(GLSurface* surface);

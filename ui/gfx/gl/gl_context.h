@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "ui/gfx/gl/gl_share_group.h"
 
 namespace gfx {
 
@@ -18,14 +19,13 @@ class GLSurface;
 // Encapsulates an OpenGL context, hiding platform specific management.
 class GLContext : public base::RefCounted<GLContext> {
  public:
-  GLContext();
+  explicit GLContext(GLShareGroup* share_group);
 
   // Initializes the GL context to be compatible with the given surface. The GL
   // context can be made with other surface's of the same type. The compatible
   // surface is only needed for certain platforms like WGL, OSMesa and GLX. It
   // should be specific for all platforms though.
-  virtual bool Initialize(GLContext* shared_context,
-                          GLSurface* compatible_surface) = 0;
+  virtual bool Initialize(GLSurface* compatible_surface) = 0;
 
   // Destroys the GL context.
   virtual void Destroy() = 0;
@@ -53,11 +53,13 @@ class GLContext : public base::RefCounted<GLContext> {
   // context must be current.
   bool HasExtension(const char* name);
 
+  GLShareGroup* share_group();
+
   // Create a GL context that is compatible with the given surface.
-  // |share_context|, if non-NULL, is a context which the
+  // |share_group|, if non-NULL, is a group of contexts which the
   // internally created OpenGL context shares textures and other resources.
   static scoped_refptr<GLContext> CreateGLContext(
-      GLContext* shared_context,
+      GLShareGroup* share_group,
       GLSurface* compatible_surface);
 
   static bool LosesAllContextsOnContextLost();
@@ -66,6 +68,7 @@ class GLContext : public base::RefCounted<GLContext> {
   virtual ~GLContext();
 
  private:
+  scoped_refptr<GLShareGroup> share_group_;
   friend class base::RefCounted<GLContext>;
   DISALLOW_COPY_AND_ASSIGN(GLContext);
 };

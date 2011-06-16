@@ -33,6 +33,7 @@ GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
       renderer_id_(renderer_id),
       renderer_process_(base::kNullProcessHandle),
       renderer_pid_(base::kNullProcessId),
+      share_group_(new gfx::GLShareGroup),
       watchdog_(watchdog) {
   DCHECK(gpu_channel_manager);
   DCHECK(renderer_id);

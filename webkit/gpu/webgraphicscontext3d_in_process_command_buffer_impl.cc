@@ -29,6 +29,7 @@
 #include "gpu/GLES2/gles2_command_buffer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "ui/gfx/gl/gl_share_group.h"
 #include "webkit/glue/gl_bindings_skia_cmd_buffer.h"
 
 using gpu::Buffer;
@@ -526,6 +527,9 @@ bool GLInProcessContext::Initialize(bool onscreen,
                                     const char* allowed_extensions,
                                     const int32* attrib_list,
                                     const GURL& active_url) {
+  // Use one share group for all contexts.
+  static scoped_refptr<gfx::GLShareGroup> share_group(new gfx::GLShareGroup);
+
   DCHECK(size.width() >= 0 && size.height() >= 0);
 
   // Ensure the gles2 library is initialized first in a thread safe way.
@@ -585,7 +589,8 @@ bool GLInProcessContext::Initialize(bool onscreen,
                                       allowed_extensions,
                                       attribs,
                                       NULL,
-                                      0)) {
+                                      0,
+                                      share_group.get())) {
         LOG(ERROR) << "Could not initialize GpuScheduler.";
         command_buffer_.reset();
       }
@@ -600,7 +605,8 @@ bool GLInProcessContext::Initialize(bool onscreen,
                                     allowed_extensions,
                                     attribs,
                                     parent_scheduler,
-                                    parent_texture_id_)) {
+                                    parent_texture_id_,
+                                    share_group.get())) {
       LOG(ERROR) << "Could not initialize offscreen GpuScheduler.";
       command_buffer_.reset();
     }
