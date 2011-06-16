@@ -34,10 +34,13 @@
   NSPoint dropArrowPosition_;
 }
 
-@property(assign, nonatomic) IBOutlet NewTabButton* newTabButton;
 @property(assign, nonatomic) IBOutlet ProfileMenuButton* profileMenuButton;
 @property(assign, nonatomic) BOOL dropArrowShown;
 @property(assign, nonatomic) NSPoint dropArrowPosition;
+
+// Name starts with "get" because methods staring with "new" return retained
+// objects according to Cocoa's create rule.
+- (NewTabButton*)getNewTabButton;
 
 @end
 
@@ -46,6 +49,10 @@
 @interface TabStripView(Protected)
 - (void)drawBottomBorder:(NSRect)bounds;
 - (BOOL)doubleClickMinimizesWindow;
+@end
+
+@interface TabStripView(TestingAPI)
+- (void)setNewTabButton:(NewTabButton*)button;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_TABS_TAB_STRIP_VIEW_H_

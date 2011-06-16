@@ -378,7 +378,7 @@ class NotificationBridge : public NotificationObserver {
     // TODO(viettrungluu): WTF? "For some reason, if the view is present in the
     // nib a priori, it draws correctly. If we create it in code and add it to
     // the tab view, it draws with all sorts of crazy artifacts."
-    newTabButton_ = [view newTabButton];
+    newTabButton_ = [view getNewTabButton];
     [self addSubviewToPermanentList:newTabButton_];
     [newTabButton_ setTarget:nil];
     [newTabButton_ setAction:@selector(commandDispatch:)];
