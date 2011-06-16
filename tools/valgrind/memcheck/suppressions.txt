@@ -3536,6 +3536,17 @@
    fun:_ZN13PluginService11GetInstanceEv
 }
 {
+   bug_70599
+   Memcheck:Cond
+   fun:bcmp
+   fun:_ZN3WTF14VectorComparerILb1EN7WebCore11CSSPropertyEE7compareEPKS2_S5_m
+   fun:_ZN3WTF20VectorTypeOperationsIN7WebCore11CSSPropertyEE7compareEPKS2_S5_m
+   fun:_ZN3WTFeqIN7WebCore11CSSPropertyELm4EEEbRKNS_6VectorIT_XT0_EEES7_
+   fun:_ZNK7WebCore26CSSMutableStyleDeclaration15propertiesEqualEPKS0_
+   fun:_ZNK7WebCore12NamedNodeMap20mappedMapsEquivalentEPKS0_
+   fun:_ZNK7WebCore16CSSStyleSelector24canShareStyleWithElementEPNS_4NodeE
+}
+{
    bug_70924_a
    Memcheck:Leak
    fun:_Znw*
