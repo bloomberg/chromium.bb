@@ -79,7 +79,6 @@ def _RepoSync(buildroot, retries=_DEFAULT_RETRIES):
   while retries > 0:
     try:
       cros_lib.OldRunCommand(['repo', 'sync', '-q', '--jobs=4'], cwd=buildroot)
-      repository.FixExternalRepoPushUrls(buildroot)
       retries = 0
     except:
       retries -= 1
@@ -88,6 +87,8 @@ def _RepoSync(buildroot, retries=_DEFAULT_RETRIES):
       else:
         cros_lib.Warning('CBUILDBOT -- Retries exhausted')
         raise
+
+  repository.FixExternalRepoPushUrls(buildroot)
 
   # repo manifest uses PAGER, but we want it to be non-interactive
   os.environ['PAGER'] = 'cat'

@@ -17,6 +17,7 @@ import constants
 sys.path.append(constants.SOURCE_ROOT)
 import chromite.buildbot.cbuildbot_commands as commands
 import chromite.lib.cros_build_lib as cros_lib
+import chromite.buildbot.repository as repository
 
 
 class CBuildBotTest(mox.MoxTestBase):
@@ -26,6 +27,7 @@ class CBuildBotTest(mox.MoxTestBase):
     # Always stub RunCommmand out as we use it in every method.
     self.mox.StubOutWithMock(cros_lib, 'OldRunCommand')
     self.mox.StubOutWithMock(cros_lib, 'RunCommand')
+    self.mox.StubOutWithMock(repository, 'FixExternalRepoPushUrls')
     self._test_repos = [['kernel', 'third_party/kernel/files'],
                         ['login_manager', 'platform/login_manager']
                        ]
@@ -151,7 +153,8 @@ class CBuildBotTest(mox.MoxTestBase):
     cros_lib.OldRunCommand(mox.In('sync'),
                            cwd=self._buildroot).AndRaise(Exception("failed"))
     cros_lib.OldRunCommand(mox.In('sync'), cwd=self._buildroot)
-    cros_lib.OldRunCommand(mox.In('forall'), cwd=self._buildroot)
+    repository.FixExternalRepoPushUrls(self._buildroot)
+
     cros_lib.OldRunCommand(mox.In('manifest'), cwd=self._buildroot)
     self.mox.ReplayAll()
     commands._RepoSync(self._buildroot)
@@ -174,7 +177,7 @@ class CBuildBotTest(mox.MoxTestBase):
     cros_lib.OldRunCommand(mox.In('sync'),
                            cwd=self._buildroot).AndRaise(Exception("failed"))
     cros_lib.OldRunCommand(mox.In('sync'), cwd=self._buildroot)
-    cros_lib.OldRunCommand(mox.In('forall'), cwd=self._buildroot)
+    repository.FixExternalRepoPushUrls(self._buildroot)
     cros_lib.OldRunCommand(mox.In('manifest'), cwd=self._buildroot)
     self.mox.ReplayAll()
     commands._RepoSync(self._buildroot, retries=2)
