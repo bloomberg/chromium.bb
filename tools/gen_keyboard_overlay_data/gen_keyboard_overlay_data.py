@@ -340,6 +340,18 @@ def GenerateCopyrightHeader():
   return COPYRIGHT_HEADER_TEMPLATE % datetime.date.today().year
 
 
+def UniqueBehaviors(hotkey_data):
+  """Retrieves a list of unique behaviors from |hotkey_data|."""
+  behaviors = []
+  added = set()
+  for (behavior, _) in hotkey_data:
+    if behavior in added:
+      continue
+    behaviors.append(behavior)
+    added.add(behavior)
+  return behaviors
+
+
 def OutputJson(keyboard_glyph_data, hotkey_data, layouts, var_name, outfile):
   """Outputs the keyboard overlay data as a JSON file."""
   print 'Generating: %s' % outfile
@@ -363,7 +375,7 @@ def OutputGrd(hotkey_data, outfile):
   print 'Generating: %s' % outfile
   desc = 'The text in the keyboard overlay to explain the shortcut.'
   out = file(outfile, 'w')
-  for (behavior, _) in hotkey_data:
+  for behavior in UniqueBehaviors(hotkey_data):
     out.write(GRD_SNIPPET_TEMPLATE % (ToMessageName(behavior), desc, behavior))
 
 
@@ -371,7 +383,7 @@ def OutputCC(hotkey_data, outfile):
   """Outputs a snippet used for C++ file."""
   print 'Generating: %s' % outfile
   out = file(outfile, 'w')
-  for (behavior, _) in hotkey_data:
+  for behavior in UniqueBehaviors(hotkey_data):
     message_name = ToMessageName(behavior)
     # Indent the line if message_name is longer than 45 characters, which means
     # the second line in the generated code is longer than 80 characters.
