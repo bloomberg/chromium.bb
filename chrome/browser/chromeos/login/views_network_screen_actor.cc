@@ -152,7 +152,7 @@ bool ViewsNetworkScreenActor::FadeInOnShow() {
   return false;
 }
 
-void ViewsNetworkScreenActor::OnHelpLinkActivated() {
+void ViewsNetworkScreenActor::OnLinkActivated(size_t index) {
   ClearErrors();
   if (!help_app_.get()) {
     help_app_ = new HelpAppLauncher(

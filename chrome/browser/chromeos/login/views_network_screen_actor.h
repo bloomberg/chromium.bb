@@ -73,7 +73,7 @@ class ViewsNetworkScreenActor : public ViewScreen<NetworkSelectionView>,
   virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape);
   virtual bool CloseOnEscape();
   virtual bool FadeInOnShow();
-  virtual void OnHelpLinkActivated();
+  virtual void OnLinkActivated(size_t index);
 
   // ViewScreen implementation:
   virtual void CreateView();

@@ -47,6 +47,7 @@ const char kHardwareClass[] = "hardware_class";
 // Carrier deals attributes.
 const char kCarrierDealsAttr[] = "carrier_deals";
 const char kDealLocaleAttr[] = "deal_locale";
+const char kInfoURLAttr[] = "info_url";
 const char kTopUpURLAttr[] = "top_up_url";
 const char kNotificationCountAttr[] = "notification_count";
 const char kDealExpireDateAttr[] = "expire_date";
@@ -222,28 +223,33 @@ std::string StartupCustomizationDocument::GetEULAPage(
 
 ServicesCustomizationDocument::CarrierDeal::CarrierDeal(
     DictionaryValue* deal_dict)
-    : notification_count(0),
-      localized_strings(NULL) {
-  deal_dict->GetString(kDealLocaleAttr, &deal_locale);
-  deal_dict->GetString(kTopUpURLAttr, &top_up_url);
-  deal_dict->GetInteger(kNotificationCountAttr, &notification_count);
+    : notification_count_(0),
+      localized_strings_(NULL) {
+  deal_dict->GetString(kDealLocaleAttr, &deal_locale_);
+  deal_dict->GetString(kInfoURLAttr, &info_url_);
+  deal_dict->GetString(kTopUpURLAttr, &top_up_url_);
+  deal_dict->GetInteger(kNotificationCountAttr, &notification_count_);
   std::string date_string;
   if (deal_dict->GetString(kDealExpireDateAttr, &date_string)) {
-    if (!base::Time::FromString(ASCIIToWide(date_string).c_str(), &expire_date))
+    if (!base::Time::FromString(ASCIIToWide(date_string).c_str(),
+                                &expire_date_))
       LOG(ERROR) << "Error parsing deal_expire_date: " << date_string;
   }
-  deal_dict->GetDictionary(kLocalizedContentAttr, &localized_strings);
+  deal_dict->GetDictionary(kLocalizedContentAttr, &localized_strings_);
+}
+
+ServicesCustomizationDocument::CarrierDeal::~CarrierDeal() {
 }
 
 std::string ServicesCustomizationDocument::CarrierDeal::GetLocalizedString(
     const std::string& locale, const std::string& id) const {
   std::string result;
-  if (localized_strings) {
+  if (localized_strings_) {
     DictionaryValue* locale_dict = NULL;
-    if (localized_strings->GetDictionary(locale, &locale_dict) &&
+    if (localized_strings_->GetDictionary(locale, &locale_dict) &&
         locale_dict->GetString(id, &result)) {
       return result;
-    } else if (localized_strings->GetDictionary(kDefaultAttr, &locale_dict) &&
+    } else if (localized_strings_->GetDictionary(kDefaultAttr, &locale_dict) &&
                locale_dict->GetString(id, &result)) {
       return result;
     }
@@ -372,12 +378,12 @@ ServicesCustomizationDocument::GetCarrierDeal(const std::string& carrier_id,
     CarrierDeal* deal = iter->second;
     if (check_restrictions) {
       // Deal locale has to match initial_locale (= launch country).
-      if (initial_locale_ != deal->deal_locale)
+      if (initial_locale_ != deal->deal_locale())
         return NULL;
       // Make sure that deal is still active,
       // i.e. if deal expire date is defined, check it.
-      if (!deal->expire_date.is_null() &&
-          deal->expire_date <= base::Time::Now()) {
+      if (!deal->expire_date().is_null() &&
+          deal->expire_date() <= base::Time::Now()) {
         return NULL;
       }
     }

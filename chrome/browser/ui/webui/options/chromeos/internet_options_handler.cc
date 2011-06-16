@@ -789,8 +789,8 @@ void InternetOptionsHandler::PopulateCellularDetails(
       std::string carrier_id = cros_->GetCellularHomeCarrierId();
       const chromeos::ServicesCustomizationDocument::CarrierDeal* deal =
           customization->GetCarrierDeal(carrier_id, false);
-      if (deal && !deal->top_up_url.empty())
-        dictionary->SetString("carrierUrl", deal->top_up_url);
+      if (deal && !deal->top_up_url().empty())
+        dictionary->SetString("carrierUrl", deal->top_up_url());
     }
   }
 

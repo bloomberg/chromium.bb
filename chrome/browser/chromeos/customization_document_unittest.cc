@@ -195,9 +195,9 @@ TEST(ServicesCustomizationDocumentTest, Basic) {
   const ServicesCustomizationDocument::CarrierDeal* deal;
   deal = customization.GetCarrierDeal("Carrier (country)", true);
   EXPECT_TRUE(deal != NULL);
-  EXPECT_EQ("en-US", deal->deal_locale);
-  EXPECT_EQ("http://www.carrier.com/", deal->top_up_url);
-  EXPECT_EQ(1, deal->notification_count);
+  EXPECT_EQ("en-US", deal->deal_locale());
+  EXPECT_EQ("http://www.carrier.com/", deal->top_up_url());
+  EXPECT_EQ(1, deal->notification_count());
   EXPECT_EQ("3G connectivity : Carrier.",
             deal->GetLocalizedString("en-US", "notification_text"));
   EXPECT_EQ("default_text.",
@@ -205,7 +205,7 @@ TEST(ServicesCustomizationDocumentTest, Basic) {
 
   base::Time reference_time;
   base::Time::FromString(L"31/12/12 0:00", &reference_time);
-  EXPECT_EQ(reference_time, deal->expire_date);
+  EXPECT_EQ(reference_time, deal->expire_date());
 }
 
 TEST(ServicesCustomizationDocumentTest, OldDeal) {

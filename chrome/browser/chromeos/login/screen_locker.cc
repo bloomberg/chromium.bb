@@ -902,6 +902,9 @@ bool ScreenLocker::FadeInOnShow() {
   return false;
 }
 
+void ScreenLocker::OnLinkActivated(size_t index) {
+}
+
 void ScreenLocker::OnCaptchaEntered(const std::string& captcha) {
   // Captcha dialog is only shown when LoginPerformer instance exists,
   // i.e. blocking UI after password change is in place.

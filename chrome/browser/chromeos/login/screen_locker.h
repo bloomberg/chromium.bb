@@ -78,7 +78,7 @@ class ScreenLocker : public LoginStatusConsumer,
   virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape);
   virtual bool CloseOnEscape();
   virtual bool FadeInOnShow();
-  virtual void OnHelpLinkActivated() {}
+  virtual void OnLinkActivated(size_t index);
 
   // CaptchaView::Delegate implementation:
   virtual void OnCaptchaEntered(const std::string& captcha);

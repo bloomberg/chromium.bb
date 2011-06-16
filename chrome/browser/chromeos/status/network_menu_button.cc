@@ -238,6 +238,8 @@ void NetworkMenuButton::OnLocaleChanged() {
 
 void NetworkMenuButton::BubbleClosing(Bubble* bubble, bool closed_by_escape) {
   mobile_data_bubble_ = NULL;
+  deal_info_url_.clear();
+  deal_topup_url_.clear();
 }
 
 bool NetworkMenuButton::CloseOnEscape() {
@@ -248,22 +250,35 @@ bool NetworkMenuButton::FadeInOnShow() {
   return false;
 }
 
-void NetworkMenuButton::OnHelpLinkActivated() {
-  // mobile_data_bubble_ will be set to NULL in callback.
-  if (mobile_data_bubble_)
+void NetworkMenuButton::OnLinkActivated(size_t index) {
+  // If we have deal info URL defined that means that there're
+  // 2 links in bubble. Let the user close it manually then thus giving ability
+  // to navigate to second link.
+  // mobile_data_bubble_ will be set to NULL in BubbleClosing callback.
+  if (deal_info_url_.empty() && mobile_data_bubble_)
     mobile_data_bubble_->Close();
-  if (!deal_url_.empty()) {
+
+  std::string deal_url_to_open;
+  if (index == 0) {
+    if (!deal_topup_url_.empty()) {
+      deal_url_to_open = deal_topup_url_;
+    } else {
+      const Network* cellular =
+          CrosLibrary::Get()->GetNetworkLibrary()->cellular_network();
+      if (!cellular)
+        return;
+      ShowTabbedNetworkSettings(cellular);
+      return;
+    }
+  } else if (index == 1) {
+    deal_url_to_open = deal_info_url_;
+  }
+
+  if (!deal_url_to_open.empty()) {
     Browser* browser = BrowserList::GetLastActive();
     if (!browser)
       return;
-    browser->ShowSingletonTab(GURL(deal_url_));
-    deal_url_.clear();
-  } else {
-    const Network* cellular =
-        CrosLibrary::Get()->GetNetworkLibrary()->cellular_network();
-    if (!cellular)
-      return;
-    ShowTabbedNetworkSettings(cellular);
+    browser->ShowSingletonTab(GURL(deal_url_to_open));
   }
 }
 
@@ -289,7 +304,7 @@ NetworkMenuButton::GetCarrierDeal(
   if (deal) {
     // Check deal for validity.
     int carrier_deal_promo_pref = GetCarrierDealPromoShown();
-    if (carrier_deal_promo_pref >= deal->notification_count)
+    if (carrier_deal_promo_pref >= deal->notification_count())
       return NULL;
     const std::string locale = g_browser_process->GetApplicationLocale();
     std::string deal_text = deal->GetLocalizedString(locale,
@@ -458,7 +473,8 @@ void NetworkMenuButton::ShowOptionalMobileDataPromoNotification(
       carrier_deal_promo_pref = GetCarrierDealPromoShown();
       const std::string locale = g_browser_process->GetApplicationLocale();
       deal_text = deal->GetLocalizedString(locale, "notification_text");
-      deal_url_ = deal->top_up_url;
+      deal_info_url_ = deal->info_url();
+      deal_topup_url_ = deal->top_up_url();
     } else if (!ShouldShow3gPromoNotification()) {
       check_for_promo_ = false;
       return;
@@ -500,18 +516,22 @@ void NetworkMenuButton::ShowOptionalMobileDataPromoNotification(
 
     // Use deal URL if it's defined or general "Network Settings" URL.
     int link_message_id;
-    if (deal_url_.empty())
+    if (deal_topup_url_.empty())
       link_message_id = IDS_OFFLINE_NETWORK_SETTINGS;
     else
       link_message_id = IDS_STATUSBAR_NETWORK_VIEW_ACCOUNT;
 
-    mobile_data_bubble_ = MessageBubble::Show(
+    std::vector<std::wstring> links;
+    links.push_back(UTF16ToWide(l10n_util::GetStringUTF16(link_message_id)));
+    if (!deal_topup_url_.empty())
+      links.push_back(UTF16ToWide(l10n_util::GetStringUTF16(IDS_LEARN_MORE)));
+    mobile_data_bubble_ = MessageBubble::ShowWithLinks(
         GetWidget(),
         button_bounds,
         BubbleBorder::TOP_RIGHT ,
         ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_NOTIFICATION_3G),
         notification_text,
-        UTF16ToWide(l10n_util::GetStringUTF16(link_message_id)),
+        links,
         this);
 
     check_for_promo_ = false;

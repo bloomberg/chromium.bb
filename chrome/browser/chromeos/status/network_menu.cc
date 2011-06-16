@@ -743,8 +743,8 @@ void MainMenuModel::InitMenuItems(bool is_browser_mode,
           // Ignoring deal restrictions, use any carrier information available.
           const ServicesCustomizationDocument::CarrierDeal* deal =
               customization->GetCarrierDeal(carrier_id, false);
-          if (deal && !deal->top_up_url.empty())
-            top_up_url_ = deal->top_up_url;
+          if (deal && !deal->top_up_url().empty())
+            top_up_url_ = deal->top_up_url();
         }
         if (!top_up_url_.empty()) {
           menu_items_.push_back(MenuItem(

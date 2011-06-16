@@ -94,7 +94,7 @@ class NetworkMenuButton : public StatusAreaButton,
   virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape);
   virtual bool CloseOnEscape();
   virtual bool FadeInOnShow();
-  virtual void OnHelpLinkActivated();
+  virtual void OnLinkActivated(size_t index);
 
  private:
   // Returns carrier deal if it's specified and should be shown,
@@ -157,8 +157,11 @@ class NetworkMenuButton : public StatusAreaButton,
   // whose status is displayed in the network menu button.
   std::string active_network_;
 
-  // Current carrier deal URL.
-  std::string deal_url_;
+  // Current carrier deal info URL.
+  std::string deal_info_url_;
+
+  // Current carrier deal top-up URL.
+  std::string deal_topup_url_;
 
   // Factory for delaying showing promo notification.
   ScopedRunnableMethodFactory<NetworkMenuButton> method_factory_;

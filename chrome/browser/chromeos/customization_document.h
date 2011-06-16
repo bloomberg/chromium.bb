@@ -107,8 +107,10 @@ class ServicesCustomizationDocument : public CustomizationDocument,
                                       private URLFetcher::Delegate {
  public:
   // OEM specific carrier deal.
-  struct CarrierDeal {
+  class CarrierDeal {
+   public:
     explicit CarrierDeal(DictionaryValue* deal_dict);
+    ~CarrierDeal();
 
     // Returns string with the specified |locale| and |id|.
     // If there's no version for |locale|, default one is returned.
@@ -116,11 +118,21 @@ class ServicesCustomizationDocument : public CustomizationDocument,
     std::string GetLocalizedString(const std::string& locale,
                                    const std::string& id) const;
 
-    std::string deal_locale;
-    std::string top_up_url;
-    int notification_count;
-    base::Time expire_date;
-    DictionaryValue* localized_strings;
+    const std::string& deal_locale() const { return deal_locale_; }
+    const std::string& info_url() const { return info_url_; }
+    const std::string& top_up_url() const { return top_up_url_; }
+    int notification_count() const { return notification_count_; }
+    base::Time expire_date() const { return expire_date_; }
+
+   private:
+    std::string deal_locale_;
+    std::string info_url_;
+    std::string top_up_url_;
+    int notification_count_;
+    base::Time expire_date_;
+    DictionaryValue* localized_strings_;
+
+    DISALLOW_COPY_AND_ASSIGN(CarrierDeal);
   };
 
   // Carrier ID (ex. "Verizon (us)") mapping to carrier deals.

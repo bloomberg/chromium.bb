@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/views_login_display.h"
 
 #include <algorithm>
+#include <vector>
 
 #include "base/stl_util-inl.h"
 #include "base/utf_string_conversions.h"
@@ -309,7 +310,7 @@ bool ViewsLoginDisplay::FadeInOnShow() {
   return false;
 }
 
-void ViewsLoginDisplay::OnHelpLinkActivated() {
+void ViewsLoginDisplay::OnLinkActivated(size_t index) {
   ClearErrors();
   if (error_msg_id_ == IDS_LOGIN_ERROR_CAPTIVE_PORTAL) {
     delegate()->FixCaptivePortal();

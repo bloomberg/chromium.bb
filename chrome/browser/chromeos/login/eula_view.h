@@ -114,7 +114,7 @@ class EulaView
   virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape);
   virtual bool CloseOnEscape();
   virtual bool FadeInOnShow();
-  virtual void OnHelpLinkActivated() {}
+  virtual void OnLinkActivated(size_t index);
 
   // Dialog controls.
   views::Label* google_eula_label_;

@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_MESSAGE_BUBBLE_H_
 #pragma once
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/ui/views/bubble/bubble.h"
@@ -27,7 +29,8 @@ namespace chromeos {
 class MessageBubbleDelegate : public BubbleDelegate {
  public:
   // Called when the user clicked on help link.
-  virtual void OnHelpLinkActivated() = 0;
+  // |index| identifies which link was clicked if there's more than one.
+  virtual void OnLinkActivated(size_t index) = 0;
 };
 
 // MessageBubble is used to show error and info messages on OOBE screens.
@@ -36,6 +39,7 @@ class MessageBubble : public Bubble,
                       public views::LinkListener {
  public:
   // Create and show bubble. position_relative_to must be in screen coordinates.
+  // |links| is an optional vector of links texts.
   static MessageBubble* Show(views::Widget* parent,
                              const gfx::Rect& position_relative_to,
                              BubbleBorder::ArrowLocation arrow_location,
@@ -43,6 +47,17 @@ class MessageBubble : public Bubble,
                              const std::wstring& text,
                              const std::wstring& help,
                              MessageBubbleDelegate* delegate);
+
+  // Create and show bubble. position_relative_to must be in screen coordinates.
+  // |links| is an optional vector of links texts.
+  static MessageBubble* ShowWithLinks(
+      views::Widget* parent,
+      const gfx::Rect& position_relative_to,
+      BubbleBorder::ArrowLocation arrow_location,
+      SkBitmap* image,
+      const std::wstring& text,
+      const std::vector<std::wstring>& links,
+      MessageBubbleDelegate* delegate);
 
   // Create and show bubble which does not grab pointer.  This creates
   // a TYPE_CHILD NativeWidgetGtk and |position_relative_to| must be in parent's
@@ -61,6 +76,8 @@ class MessageBubble : public Bubble,
   virtual gboolean OnButtonPress(GtkWidget* widget, GdkEventButton* event);
 
  protected:
+  virtual ~MessageBubble();
+
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
                              const views::Event& event);
@@ -77,7 +94,7 @@ class MessageBubble : public Bubble,
                 views::Widget* parent,
                 SkBitmap* image,
                 const std::wstring& text,
-                const std::wstring& help,
+                const std::vector<std::wstring>& links,
                 bool grab_enabled,
                 MessageBubbleDelegate* delegate);
 
@@ -85,7 +102,7 @@ class MessageBubble : public Bubble,
   views::ImageView* icon_;
   views::Label* text_;
   views::ImageButton* close_button_;
-  views::Link* help_link_;
+  std::vector<views::Link*> help_links_;
   MessageBubbleDelegate* message_delegate_;
   bool grab_enabled_;
 

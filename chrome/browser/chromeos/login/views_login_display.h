@@ -63,7 +63,7 @@ class ViewsLoginDisplay : public LoginDisplay,
   virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape);
   virtual bool CloseOnEscape();
   virtual bool FadeInOnShow();
-  virtual void OnHelpLinkActivated();
+  virtual void OnLinkActivated(size_t index);
 
  private:
   // Returns existing UserController instance by |email|.
