@@ -682,22 +682,6 @@ void NativeWidgetGtk::InitNativeWidget(const Widget::InitParams& params) {
   CreateGtkWidget(modified_params);
   delegate_->OnNativeWidgetCreated();
 
-  // Creates input method for toplevel widget after calling
-  // delegate_->OnNativeWidgetCreated(), to make sure that focus manager is
-  // already created at this point.
-  // TODO(suzhe): Always enable input method when we start to use
-  // RenderWidgetHostViewViews in normal ChromeOS.
-  if (!child_ && NativeTextfieldViews::IsTextfieldViewsEnabled()) {
-#if defined(HAVE_IBUS)
-    input_method_.reset(InputMethodIBus::IsInputMethodIBusEnabled() ?
-                        static_cast<InputMethod*>(new InputMethodIBus(this)) :
-                        static_cast<InputMethod*>(new InputMethodGtk(this)));
-#else
-    input_method_.reset(new InputMethodGtk(this));
-#endif
-    input_method_->Init(GetWidget());
-  }
-
   if (opacity_ != 255)
     SetOpacity(opacity_);
 
@@ -906,6 +890,21 @@ bool NativeWidgetGtk::IsMouseButtonDown() const {
 }
 
 InputMethod* NativeWidgetGtk::GetInputMethodNative() {
+  if (!input_method_.get()) {
+    // Create input method when it is requested by a child view.
+    // TODO(suzhe): Always enable input method when we start to use
+    // RenderWidgetHostViewViews in normal ChromeOS.
+    if (!child_ && NativeTextfieldViews::IsTextfieldViewsEnabled()) {
+#if defined(HAVE_IBUS)
+      input_method_.reset(InputMethodIBus::IsInputMethodIBusEnabled() ?
+                          static_cast<InputMethod*>(new InputMethodIBus(this)) :
+                          static_cast<InputMethod*>(new InputMethodGtk(this)));
+#else
+      input_method_.reset(new InputMethodGtk(this));
+#endif
+      input_method_->Init(GetWidget());
+    }
+  }
   return input_method_.get();
 }
 
