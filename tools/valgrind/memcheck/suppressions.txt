@@ -4669,9 +4669,10 @@
    fun:_ZN28WebKitContextTest_Basic_Test8TestBodyEv
 }
 {
-   bug_86136
+   bug_86136_a
    Memcheck:Leak
    fun:_Znw*
+   ...
    fun:_ZN12SideTabStrip20CreateTabForDraggingEv
    fun:_ZN35gtest_case_BaseTabStripTestFixture_20CreateTabForDraggingI12SideTabStripE8TestBodyEv
 }
@@ -4679,8 +4680,7 @@
    bug_86136_b
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN7BaseTabC2EP13TabController
-   fun:_ZN3TabC1EP13TabController
+   ...
    fun:_ZN8TabStrip20CreateTabForDraggingEv
    fun:_ZN35gtest_case_BaseTabStripTestFixture_20CreateTabForDraggingI8TabStripE8TestBodyEv
 }
@@ -4690,18 +4690,6 @@
    fun:_Znw*
    fun:_ZN8chromeos12input_method14IBusController6CreateEv
    fun:_ZN8chromeos22InputMethodLibraryImpl4InitEv
-}
-{
-   bug_86294
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN5views12CustomButtonC2EPNS_14ButtonListenerE
-   fun:_ZN5views11ImageButtonC2EPNS_14ButtonListenerE
-   fun:_ZN12_GLOBAL__N_114TabCloseButtonC1EPN5views14ButtonListenerE
-   fun:_ZN7BaseTabC2EP13TabController
-   fun:_ZN3TabC1EP13TabController
-   fun:_ZN8TabStrip20CreateTabForDraggingEv
-   fun:_ZN35gtest_case_BaseTabStripTestFixture_20CreateTabForDraggingI8TabStripE8TestBodyEv
 }
 
 #-----------------------------------------------------------------------

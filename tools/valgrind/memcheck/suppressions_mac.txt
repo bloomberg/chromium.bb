@@ -1728,3 +1728,19 @@
    fun:_ZN6WebKit13WebWorkerBase24dispatchTaskToMainThreadEN3WTF10PassOwnPtrIN7WebCore22ScriptExecutionContext4TaskEEE
    fun:_ZN6WebKit13WebWorkerBase21reportPendingActivityEb
 }
+{
+   bug_86303
+   Memcheck:Addr4
+   ...
+   fun:objc_msgSend*
+   ...
+   fun:loadNib
+}
+{
+   bug_86305
+   Memcheck:Addr4
+   fun:objc_msgSend
+   ...
+   fun:_ZN14OmniboxViewMac*
+}
+
