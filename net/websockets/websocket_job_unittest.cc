@@ -59,7 +59,8 @@ class MockSocketStreamDelegate : public SocketStream::Delegate {
   }
   virtual ~MockSocketStreamDelegate() {}
 
-  virtual void OnConnected(SocketStream* socket, int max_pending_send_allowed) {
+  virtual void OnConnected(SocketStream* socket,
+                           int max_pending_send_allowed) {
   }
   virtual void OnSentData(SocketStream* socket, int amount_sent) {
     amount_sent_ += amount_sent;
@@ -278,6 +279,9 @@ const char* WebSocketJobTest::kHandshakeResponseWithCookie =
     "8jKS'y:G*Co,Wxa-";
 
 TEST_F(WebSocketJobTest, SimpleHandshake) {
+  // TODO(toyoshim): We need to consider both spdy-enabled and spdy-disabled
+  // configuration.
+  WebSocketJob::set_websocket_over_spdy_enabled(true);
   GURL url("ws://example.com/demo");
   MockSocketStreamDelegate delegate;
   InitWebSocketJob(url, &delegate);
@@ -302,6 +306,7 @@ TEST_F(WebSocketJobTest, SimpleHandshake) {
 }
 
 TEST_F(WebSocketJobTest, SlowHandshake) {
+  WebSocketJob::set_websocket_over_spdy_enabled(true);
   GURL url("ws://example.com/demo");
   MockSocketStreamDelegate delegate;
   InitWebSocketJob(url, &delegate);
@@ -341,6 +346,7 @@ TEST_F(WebSocketJobTest, SlowHandshake) {
 }
 
 TEST_F(WebSocketJobTest, HandshakeWithCookie) {
+  WebSocketJob::set_websocket_over_spdy_enabled(true);
   GURL url("ws://example.com/demo");
   GURL cookieUrl("http://example.com/demo");
   CookieOptions cookie_options;
@@ -382,6 +388,7 @@ TEST_F(WebSocketJobTest, HandshakeWithCookie) {
 }
 
 TEST_F(WebSocketJobTest, HandshakeWithCookieButNotAllowed) {
+  WebSocketJob::set_websocket_over_spdy_enabled(true);
   GURL url("ws://example.com/demo");
   GURL cookieUrl("http://example.com/demo");
   CookieOptions cookie_options;
@@ -422,6 +429,7 @@ TEST_F(WebSocketJobTest, HandshakeWithCookieButNotAllowed) {
 }
 
 TEST_F(WebSocketJobTest, HSTSUpgrade) {
+  WebSocketJob::set_websocket_over_spdy_enabled(true);
   GURL url("ws://upgrademe.com/");
   MockSocketStreamDelegate delegate;
   scoped_refptr<SocketStreamJob> job = SocketStreamJob::CreateSocketStreamJob(
