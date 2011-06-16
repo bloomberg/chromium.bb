@@ -14,6 +14,7 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/prerender/prerender_manager.h"
+#include "chrome/browser/prerender/prerender_render_view_host_observer.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/ui/download/download_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -73,30 +74,35 @@ class PrerenderContents::TabContentsDelegateImpl
   explicit TabContentsDelegateImpl(PrerenderContents* prerender_contents) :
       prerender_contents_(prerender_contents) {
   }
+
+  // TabContentsDelegate implementation:
   virtual void OpenURLFromTab(TabContents* source,
                               const GURL& url, const GURL& referrer,
                               WindowOpenDisposition disposition,
-                              PageTransition::Type transition) {}
+                              PageTransition::Type transition) OVERRIDE {}
   virtual void NavigationStateChanged(const TabContents* source,
-                                      unsigned changed_flags) {}
+                                      unsigned changed_flags) OVERRIDE {}
   virtual void AddNewContents(TabContents* source,
                               TabContents* new_contents,
                               WindowOpenDisposition disposition,
                               const gfx::Rect& initial_pos,
-                              bool user_gesture) {}
-  virtual void ActivateContents(TabContents* contents) {}
-  virtual void DeactivateContents(TabContents* contents) {}
-  virtual void LoadingStateChanged(TabContents* source) {}
-  virtual void CloseContents(TabContents* source) {}
-  virtual void MoveContents(TabContents* source, const gfx::Rect& pos) {}
-  virtual void UpdateTargetURL(TabContents* source, const GURL& url) {}
+                              bool user_gesture) OVERRIDE {}
+  virtual void ActivateContents(TabContents* contents) OVERRIDE {}
+  virtual void DeactivateContents(TabContents* contents) OVERRIDE {}
+  virtual void LoadingStateChanged(TabContents* source) OVERRIDE {}
+  virtual void CloseContents(TabContents* source) OVERRIDE {}
+  virtual void MoveContents(TabContents* source,
+                            const gfx::Rect& pos) OVERRIDE {}
+  virtual void UpdateTargetURL(TabContents* source,
+                               const GURL& url) OVERRIDE {}
   virtual bool ShouldAddNavigationToHistory(
       const history::HistoryAddPageArgs& add_page_args,
-      NavigationType::Type navigation_type) {
+      NavigationType::Type navigation_type) OVERRIDE {
     add_page_vector_.push_back(
         scoped_refptr<history::HistoryAddPageArgs>(add_page_args.Clone()));
     return false;
   }
+
   // Commits the History of Pages to the given TabContents.
   void CommitHistory(TabContentsWrapper* tab) {
     for (size_t i = 0; i < add_page_vector_.size(); ++i)

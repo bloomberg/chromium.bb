@@ -12,20 +12,16 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
-#include "chrome/browser/prerender/prerender_render_view_host_observer.h"
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "chrome/browser/ui/download/download_tab_helper_delegate.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/common/notification_registrar.h"
-#include "content/common/window_container_type.h"
-#include "webkit/glue/window_open_disposition.h"
 
 class RenderViewHost;
 class TabContents;
 class TabContentsWrapper;
 struct FaviconURL;
 struct ViewHostMsg_FrameNavigate_Params;
-struct WebPreferences;
 
 namespace base {
 class ProcessMetrics;
@@ -38,6 +34,7 @@ class Rect;
 namespace prerender {
 
 class PrerenderManager;
+class PrerenderRenderViewHostObserver;
 class PrerenderTracker;
 
 // This class is a peer of TabContents. It can host a renderer, but does not
