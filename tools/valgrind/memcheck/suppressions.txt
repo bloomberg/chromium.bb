@@ -4642,22 +4642,6 @@
    fun:_ZN28WebKitContextTest_Basic_Test8TestBodyEv
 }
 {
-   bug_86136_a
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN12SideTabStrip20CreateTabForDraggingEv
-   fun:_ZN35gtest_case_BaseTabStripTestFixture_20CreateTabForDraggingI12SideTabStripE8TestBodyEv
-}
-{
-   bug_86136_b
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN8TabStrip20CreateTabForDraggingEv
-   fun:_ZN35gtest_case_BaseTabStripTestFixture_20CreateTabForDraggingI8TabStripE8TestBodyEv
-}
-{
    bug_86146
    Memcheck:Leak
    fun:_Znw*

@@ -45,7 +45,7 @@ TYPED_TEST_P(BaseTabStripTestFixture, tab_count) {
 
 TYPED_TEST_P(BaseTabStripTestFixture, CreateTabForDragging) {
   // Any result is good, as long as it doesn't crash.
-  this->tab_strip()->CreateTabForDragging();
+  scoped_ptr<BaseTab> tab(this->tab_strip()->CreateTabForDragging());
 }
 
 
