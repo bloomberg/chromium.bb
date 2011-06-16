@@ -9,6 +9,7 @@
 #include "native_client/src/trusted/validator/ncvalidate.h"
 
 #include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/trusted/validator_x86/nacl_cpuid.h"
 #include "native_client/src/trusted/validator_x86/ncdis_util.h"
 #include "native_client/src/trusted/validator_x86/ncvalidate_iter.h"
 #include "native_client/src/trusted/validator/x86/64/ncvalidate.h"

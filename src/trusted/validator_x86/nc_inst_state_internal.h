@@ -12,7 +12,6 @@
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NC_INST_STATE_INTERNAL_H_
 
 #include "native_client/src/shared/utils/types.h"
-#include "native_client/src/trusted/validator/x86/ncinstbuffer.h"
 #include "native_client/src/trusted/validator_x86/ncop_exps.h"
 
 EXTERN_C_BEGIN
@@ -75,7 +74,7 @@ struct NaClInstState {
   /* The computed (default) address size associated with the instruction. */
   uint8_t address_size;
   /* The set of prefix byte kinds associated with the instruction
-   * (See kPrefixXXXX #define's in x86_insts.h)
+   * (See kPrefixXXXX #define's in ncdecode.h)
    */
   uint32_t prefix_mask;
   /* The (opcode) instruction pattern used to match the instruction.

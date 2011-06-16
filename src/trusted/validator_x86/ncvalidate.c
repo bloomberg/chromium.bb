@@ -19,10 +19,11 @@
 #include <assert.h>
 
 #include "native_client/src/include/portability.h"
-#include "native_client/src/trusted/service_runtime/sel_ldr.h"
-#include "native_client/src/trusted/validator/x86/halt_trim.h"
+#include "native_client/src/trusted/validator_x86/halt_trim.h"
 #include "native_client/src/trusted/validator_x86/ncdecode.h"
 #include "native_client/src/trusted/validator_x86/ncvalidate_internaltypes.h"
+#include "native_client/src/trusted/validator_x86/nacl_cpuid.h"
+#include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
 #if NACL_TARGET_SUBARCH == 64
 # include "native_client/src/trusted/validator_x86/gen/ncbadprefixmask_64.h"

@@ -4,7 +4,7 @@
  * found in the LICENSE file.
  */
 
-#include "native_client/src/trusted/validator/x86/error_reporter.h"
+#include "native_client/src/trusted/validator_x86/error_reporter.h"
 
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/gio/gio.h"

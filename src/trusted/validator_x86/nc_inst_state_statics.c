@@ -24,6 +24,7 @@
 #include "native_client/src/trusted/validator_x86/nc_segment.h"
 #include "native_client/src/trusted/validator_x86/ncop_exps.h"
 #include "native_client/src/trusted/validator_x86/ncopcode_desc.h"
+#include "native_client/src/trusted/validator_x86/rex_prefixes.h"
 
 #if NACL_TARGET_SUBARCH == 64
 # include "native_client/src/trusted/validator_x86/gen/nc_opcode_table_64.h"

@@ -16,7 +16,7 @@
 
 #include "gtest/gtest.h"
 
-#include "native_client/src/trusted/validator/x86/ncinstbuffer.h"
+#include "native_client/src/trusted/validator_x86/ncinstbuffer.h"
 
 namespace {
 

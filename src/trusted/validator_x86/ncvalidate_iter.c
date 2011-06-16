@@ -10,14 +10,13 @@
  *
  */
 
-#include "native_client/src/trusted/validator_x86/ncvalidate_iter.h"
-
 #include <assert.h>
 #include <string.h>
 
+#include "native_client/src/trusted/validator_x86/ncvalidate_iter.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
-#include "native_client/src/trusted/validator/x86/halt_trim.h"
+#include "native_client/src/trusted/validator_x86/halt_trim.h"
 #include "native_client/src/trusted/validator_x86/nc_inst_iter.h"
 #include "native_client/src/trusted/validator_x86/nc_inst_state_internal.h"
 #include "native_client/src/trusted/validator_x86/nc_jumps.h"

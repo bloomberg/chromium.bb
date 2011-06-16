@@ -11,7 +11,7 @@
  * Type declarations intimate to ncvalidate.h, exposed for testing.
  *
  */
-#include "native_client/src/trusted/validator/x86/nacl_cpuid.h"
+#include "native_client/src/trusted/validator_x86/nacl_cpuid.h"
 #include "native_client/src/trusted/validator_x86/ncdecode.h"
 
 /* statistics */

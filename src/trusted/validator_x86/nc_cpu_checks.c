@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
+ * Copyright 2009 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can
+ * be found in the LICENSE file.
  */
 
 /*
@@ -14,11 +14,11 @@
 #include "native_client/src/trusted/validator_x86/nc_cpu_checks.h"
 
 #include "native_client/src/shared/platform/nacl_log.h"
-#include "native_client/src/trusted/validator/x86/nacl_cpuid.h"
 #include "native_client/src/trusted/validator_x86/nc_inst_iter.h"
 #include "native_client/src/trusted/validator_x86/nc_inst_state.h"
 #include "native_client/src/trusted/validator_x86/nc_inst_state_internal.h"
 #include "native_client/src/trusted/validator_x86/nc_segment.h"
+#include "native_client/src/trusted/validator_x86/nacl_cpuid.h"
 #include "native_client/src/trusted/validator_x86/ncvalidate_iter.h"
 #include "native_client/src/trusted/validator_x86/ncvalidate_iter_internal.h"
 

@@ -6,7 +6,7 @@
 
 #include <stdio.h>
 
-#include "native_client/src/trusted/validator/x86/ncinstbuffer.h"
+#include "native_client/src/trusted/validator_x86/ncinstbuffer.h"
 
 /* Constant CLEAR_CACHE controls the behaviour of the buffer containing
  * the sequence of parsed bytes. Turn it on (1) to fill unused bytes with the

@@ -44,7 +44,7 @@
             'target_base': 'ncvalidate_x86_32',
           },
           'dependencies': [
-            '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:ncval_seg_sfi_x86_32'
+            '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:ncvalidate'
           ],
           'hard_dependency': 1,
         },

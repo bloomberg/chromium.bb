@@ -2812,7 +2812,7 @@ static void PrintBadPrefixMask(FILE *f) {
   fprintf(f, "static uint32_t BadPrefixMask[kNaClInstTypeRange] = {\n");
   for (i = 0; i < kNaClInstTypeRange; ++i) {
     fprintf(f, "  0x%"NACL_PRIx32", /* %s */\n", BadPrefixMask[i],
-            NaClInstTypeString(i));
+            kNaClInstTypeString[i]);
   }
   fprintf(f, "};\n");
 }

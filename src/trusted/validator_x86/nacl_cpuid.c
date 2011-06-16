@@ -4,22 +4,22 @@
  * found in the LICENSE file.
  */
 
-#include "native_client/src/trusted/validator/x86/nacl_cpuid.h"
-
 /*
  * nacl_cpuid.c
  * Retrieve and decode CPU model specific feature mask.
  */
 #if NACL_WINDOWS
-#include <intrin.h>  /* __cpuid intrinsic */
-#endif  /* NACL_WINDOWS  */
+#include <intrin.h> /* __cpuid intrinsic */
+#endif /* NACL_WINDOWS  */
 
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
 #include <stdlib.h>
 
+#include "native_client/src/trusted/validator_x86/nacl_cpuid.h"
 #include "native_client/src/include/portability_io.h"
+
 
 /*
  * TODO(bradchen): consolidate to use one debug print mechanism.

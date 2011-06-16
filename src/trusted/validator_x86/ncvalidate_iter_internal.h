@@ -11,7 +11,7 @@
 
 #include "native_client/src/shared/utils/types.h"
 #include "native_client/src/shared/gio/gio.h"
-#include "native_client/src/trusted/validator/x86/nacl_cpuid.h"
+#include "native_client/src/trusted/validator_x86/nacl_cpuid.h"
 
 struct NaClExpVector;
 

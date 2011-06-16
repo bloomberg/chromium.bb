@@ -22,9 +22,7 @@ elif env.Bit('linux'):
                  'linux/sysv_shm_and_mmap.c',
                  'posix/nacl_dep_qualify.c']
 
-# Convert a library name into a target specific libary name
-def TargetLib(env, name):
-  return name + '_' + env['TARGET_FULLARCH'].replace('-', '_')
+
 
 #
 # Architecture-specific qualification routines
@@ -39,11 +37,13 @@ if env.Bit('build_x86') and env.Bit('target_x86'):
     vcpuid_env.FilterOut(CCFLAGS = ['-fPIC'])
   if env.Bit('linux'):
     vcpuid_env.Append(CCFLAGS = ['-msse3'])
-  env.Append(LIBS = ['platform_qual_lib',
-                     TargetLib(env, 'ncval_base')])
+  env.Append(LIBS = ['platform_qual_lib', 'ncvalidate'])
   # TODO(bradchen): need to fix vcpuid to use intrinsics rather than inline
   # assembly code. (Issue 440)
-  if not (env.Bit('target_x86_64') and env.Bit('windows')):
+  if env.Bit('target_x86_64') and env.Bit('windows'):
+    env.Append(LIBS = ['platform_qual_lib',
+                       'ncvalidate'])
+  else:
     nacl_vcpuid = vcpuid_env.ComponentLibrary('vcpuid', 'arch/x86/vcpuid.c')
     env.Append(LIBS = ['vcpuid'])
 

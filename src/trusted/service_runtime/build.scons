@@ -20,11 +20,23 @@ if env.Bit('windows'):
   if env.Bit('target_x86_64'):
     env.Append(CPPDEFINES=['WIN64'])
 
+
+
 # normally comment out -- uncomment out to test the pedantic removal
 # check below.
 #if env.Bit('linux') or env.Bit('mac'):
 #  env.FilterOut(CCFLAGS=['-pedantic'])
 #  env.FilterOut(CCFLAGS=['-Wall'])
+
+
+if env.Bit('target_x86'):
+  env.Append(LIBS=['ncvalidate'])
+elif env.Bit('target_arm'):
+  env.Append(LIBS=['ncvalidate_arm_v2',
+                   'arm_validator_core'])
+else:
+  # unknown architcture
+  assert 0
 
 # Make a copy of debug CRT for now.
 # TODO(bradnelson): there should be a better way to generalize this requirement.
@@ -34,6 +46,8 @@ if env.AllBits('windows', 'debug'):
     crt += env.Replicate(i, '$VC80_DIR/vc/redist/Debug_NonRedist/'
                          'x86/Microsoft.VC80.DebugCRT')
     crt += env.Replicate(i, '$VC80_DIR/vc/redist/x86/Microsoft.VC80.CRT')
+
+
 
 if env.Bit('windows'):
   syscall_impl = 'win/nacl_syscall_impl.c'
@@ -245,20 +259,12 @@ if ((not env.Bit('coverage_enabled') or not env.Bit('windows')) and
 
   if env.Bit('target_x86'):
     if env.Bit('target_x86_64'):
-      VALIDATOR_LIBS += ['ncvalidate_x86_64',
-                         'ncval_reg_sfi_x86_64',
-                         'nccopy_x86_64',
-                         'ncval_base_x86_64']
+      VALIDATOR_LIBS += ['ncvalidate_x86_64', 'ncvalidate_sfi']
     else:
-      VALIDATOR_LIBS += ['ncvalidate_x86_32',
-                         'ncval_seg_sfi_x86_32',
-                         'nccopy_x86_32',
-                         'ncval_base_x86_32']
+      VALIDATOR_LIBS += ['ncvalidate_x86_32']
+    VALIDATOR_LIBS += ['ncvalidate']
   elif env.Bit('target_arm'):
     VALIDATOR_LIBS += ['ncvalidate_arm_v2', 'arm_validator_core']
-  else:
-    # Unknown architecture
-    assert 0
 
   # TODO(ncbray) why do we need to link against Cocoa?
   # run_fake_browser_ppapi_test fails on mac, otherwise.

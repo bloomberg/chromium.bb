@@ -38,9 +38,7 @@ if env.AllBits('windows', 'debug'):
 # TODO(bradchen): eliminate need for the following line
 env.FilterOut(CCFLAGS=['-Wextra', '-Wswitch-enum', '-Wsign-compare'])
 
-# Convert a library name into a target specific libary name
-def TargetLib(env, name):
-  return name + '_' + env['TARGET_FULLARCH'].replace('-', '_')
+
 
 #
 #
@@ -160,11 +158,9 @@ ncdecode_tablegen = gen_env.ComponentProgram(
      ncopcode_desc_o,
      force_cpp_o,
     ],
-    EXTRA_LIBS=[
-        TargetLib(gen_env, 'ncval_base'),
-        'utils',
-        'gio',
-        'platform'])
+    EXTRA_LIBS=['utils',
+                'gio',
+                'platform'])
 gen_env.Requires(ncdecode_tablegen, crt)
 
 #
@@ -247,58 +243,51 @@ env_decode_table = test_env.Clone()
 #   and others to have coverage, so it's easier to gate it off here.
 env_decode_table['COVERAGE_LINKCOM_EXTRAS'] = None
 
-ncdecode_table = env_decode_table.ComponentProgram(
-    'ncdecode_table',
-    ['ncdecode_table.c'],
-    EXTRA_LIBS=[TargetLib(env_decode_table, 'ncval_base')])
-
+ncdecode_table = env_decode_table.ComponentProgram('ncdecode_table',
+                                                   ['ncdecode_table.c'],)
 env.Requires(ncdecode_table, crt)
 
+
+
 # Segment register validator library
-NCVALIDATE_SOURCES = ['ncdecode.c',
+NCVALIDATE_SOURCES = ['halt_trim.c',
+                      'nacl_cpuid.c',
+                      'ncdecode.c',
+                      'error_reporter.c',
+                      'ncinstbuffer.c',
+                      'nc_segment.c',
+                      'nc_inst_iter.c',
+                      'nc_inst_state.c',
+                      'nc_inst_trans.c',
+                      'ncop_exps.c',
                       'ncvalidate.c',
+                      'nccopycode.c',
+                      'nccopycode_stores.S',
+                      ncopcode_desc_o
                       ]
 
-env.ComponentLibrary(TargetLib(env, 'ncval_seg_sfi'),
-                     NCVALIDATE_SOURCES)
+env.ComponentLibrary('ncvalidate', NCVALIDATE_SOURCES)
 
 # SFI validator library.
 # Note: When loading this library, follow it with ncvalidate, since
 # it contains many routines and constants needed by this library.
-env.ComponentLibrary(TargetLib(env, 'ncval_reg_sfi'),
+env.ComponentLibrary('ncvalidate_sfi',
                      ['ncvalidate_iter.c',
                       'ncvalidator_registry.c',
+                      'nc_opcode_histogram.c',
                       'nc_cpu_checks.c',
                       'nc_illegal.c',
-                      'nc_inst_iter.c',
-                      'nc_jumps.c',
-                      'nc_opcode_histogram.c',
                       'nc_protect_base.c',
                       'nc_memory_protect.c',
-                      'nc_segment.c',
-                      'nc_inst_state.c',
-                      'nc_inst_trans.c',
-                      ncopcode_desc_o,
-                      'ncop_exps.c',
                       'ncvalidate_utils.c',
-                      ])
+                      'nc_jumps.c'])
 
-# The following are common library components that use elements
-# of both x86-32 and x86-64 validators.
-test_env.ComponentLibrary(TargetLib(env, 'ncdis_util'),
+test_env.ComponentLibrary('ncdis_util',
                           ['ncdis_util.c',
                            'ncdis_segments.c',
                            'ncval_driver.c',
                            'nc_read_segment.c',
                            'ncenuminsts.c'])
-
-# The following are copycode routines for x86-32 and x86-64.
-# TODO(karl): Break this up so that we don't need to load
-# non-shared code in library.
-env.ComponentLibrary(TargetLib(env, 'nccopy'), [
-    'nccopycode.c',
-    'nccopycode_stores.S',
-    ])
 
 #------------------------------------------------------------------
 # Generate the header files containing the modeled x86 instructions.
@@ -344,9 +333,8 @@ if test_env.Bit('target_x86_32'):
     ncdecode_tests = test_env.ComponentProgram(
         'ncdecode_tests',
         ['ncdecode_tests.c'],
-        EXTRA_LIBS=[TargetLib(env, 'ncdis_util'),
-                    TargetLib(env, 'ncval_seg_sfi'),
-                    TargetLib(env, 'ncval_base'),
+        EXTRA_LIBS=['ncdis_util',
+                    'ncvalidate',
                     'platform',
                     'gio'
                     ])
@@ -365,10 +353,9 @@ ncdis = test_env.ComponentProgram(
     force_cpp_o,
   ],
   EXTRA_LIBS=[
-    TargetLib(test_env, 'ncdis_util'),
-    TargetLib(test_env, 'ncval_seg_sfi'),
-    TargetLib(test_env, 'ncval_reg_sfi'),
-    TargetLib(test_env, 'ncval_base'),
+    'ncvalidate',
+    'ncdis_util',
+    'ncvalidate',
     'nchelper',
     'utils',
     'platform',
@@ -383,11 +370,10 @@ if test_env.Bit('target_x86_32'):
   ncval_tests = test_env.ComponentProgram(
       'ncval_tests',
       ['ncval_tests.c'],
-      EXTRA_LIBS=[TargetLib(test_env, 'ncval_seg_sfi'),
-                  TargetLib(test_env, 'ncdis_util'),
-                  TargetLib(test_env, 'ncval_seg_sfi'),
-                  TargetLib(test_env, 'ncval_base'),
+      EXTRA_LIBS=['ncvalidate',
                   'nchelper',
+                  'ncdis_util',
+                  'ncvalidate',
                   'platform',
                   'gio'])
   test_env.Requires(ncval_tests, crt)
@@ -398,6 +384,16 @@ if test_env.Bit('target_x86_32'):
       )
 
   test_env.AddNodeToTestSuite(node, ['small_tests', 'validator_tests'])
+
+# ======================================================================
+nacl_cpuid = test_env.ComponentProgram('nacl_cpuid',
+                                       ['nacl_cpuid_test.c'],
+                                       EXTRA_LIBS=['ncvalidate'])
+test_env.Requires(nacl_cpuid, crt)
+node = test_env.CommandTest(
+    'nacl_cpuid_test.out',
+    [nacl_cpuid])
+test_env.AddNodeToTestSuite(node, ['large_tests'])
 
 # ======================================================================
 # Decoder vs objdump tests
@@ -469,10 +465,9 @@ ncval = test_env.ComponentProgram(
     force_cpp_o,
   ],
   EXTRA_LIBS=[
-    TargetLib(test_env, 'ncval_reg_sfi'),
-    TargetLib(test_env, 'ncval_seg_sfi'),
-    TargetLib(test_env, 'ncdis_util'),
-    TargetLib(test_env, 'ncval_base'),
+    'ncvalidate_sfi',
+    'ncvalidate',
+    'ncdis_util',
     'nchelper',
     'platform',
     'gio',
@@ -655,16 +650,17 @@ gtest_env.FilterOut(
 gtest_env.Prepend(CPPPATH=['${SOURCE_ROOT}/testing/gtest/include'])
 
 # List of (unit) test file prefixes to run unit tests on.
-gtest_sources = ['nc_inst_state']
+gtest_sources = ['halt_trim',
+                 'nc_remaining_memory',
+                 'nc_inst_bytes',
+                 'nc_inst_state']
 
 for source in gtest_sources:
   test_exe = gtest_env.ComponentProgram(
     'x86_validator_tests_' + source,
     [source+'_tests.cc'],
     EXTRA_LIBS=['gtest',
-                TargetLib(gtest_env, 'ncval_seg_sfi'),
-                TargetLib(gtest_env, 'ncval_reg_sfi'),
-                TargetLib(gtest_env, 'ncval_base'),
+                'ncvalidate',
                 'platform',
                 'gio',
                 ]);

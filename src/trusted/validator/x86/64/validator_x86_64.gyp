@@ -44,7 +44,7 @@
             'target_base': 'ncvalidate_x86_64',
           },
           'dependencies': [
-            '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:ncval_reg_sfi_x86_64'
+            '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:ncvalidate_sfi'
           ],
           'hard_dependency': 1,
         },
@@ -53,10 +53,10 @@
     ['OS=="win"', {
       'targets': [
         {
-          'target_name': 'ncvalidate_x86_64',
+          'target_name': 'ncvalidate_x86_6464',
           'type': 'static_library',
           'dependencies': [
-            '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:ncval_reg_sfi_x86_64',
+            '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:ncvalidate_sfi64',
           ],
           'variables': {
             'target_base': 'ncvalidate_x86_64',
