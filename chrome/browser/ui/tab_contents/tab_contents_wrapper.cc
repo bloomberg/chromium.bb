@@ -102,6 +102,7 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
     : TabContentsObserver(contents),
       delegate_(NULL),
       infobars_enabled_(true),
+      in_destructor_(false),
       tab_contents_(contents) {
   DCHECK(contents);
   DCHECK(!GetCurrentWrapperForContents(contents));
@@ -172,6 +173,8 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
 }
 
 TabContentsWrapper::~TabContentsWrapper() {
+  in_destructor_ = true;
+
   // Notify any lasting InfobarDelegates that have not yet been removed that
   // whatever infobar they were handling in this TabContents has closed,
   // because the TabContents is going away entirely.
@@ -400,6 +403,13 @@ bool TabContentsWrapper::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
+}
+
+void TabContentsWrapper::TabContentsDestroyed(TabContents* tab) {
+  // Destruction of the TabContents should only be done by us from our
+  // destructor. Otherwise it's very likely we (or one of the helpers we own)
+  // will attempt to access the TabContents and we'll crash.
+  DCHECK(in_destructor_);
 }
 
 void TabContentsWrapper::Observe(NotificationType type,

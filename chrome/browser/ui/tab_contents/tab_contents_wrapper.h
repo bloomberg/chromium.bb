@@ -195,6 +195,7 @@ class TabContentsWrapper : public TabContentsObserver,
   virtual void RenderViewGone() OVERRIDE;
   virtual void DidBecomeSelected() OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void TabContentsDestroyed(TabContents* tab) OVERRIDE;
 
   // NotificationObserver overrides:
   virtual void Observe(NotificationType type,
@@ -315,6 +316,9 @@ class TabContentsWrapper : public TabContentsObserver,
   scoped_ptr<ThumbnailGenerator> thumbnail_generation_observer_;
 
   // TabContents (MUST BE LAST) ------------------------------------------------
+
+  // If true, we're running the destructor.
+  bool in_destructor_;
 
   // The supporting objects need to outlive the TabContents dtor (as they may
   // be called upon during its execution). As a result, this must come last
