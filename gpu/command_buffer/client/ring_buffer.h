@@ -188,7 +188,6 @@ class RingBufferWrapper {
  private:
   RingBuffer allocator_;
   void* base_;
-  RingBuffer::Offset base_offset_;
   DISALLOW_IMPLICIT_CONSTRUCTORS(RingBufferWrapper);
 };
 
