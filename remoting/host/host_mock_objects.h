@@ -10,6 +10,7 @@
 #include "remoting/host/curtain.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/client_session.h"
+#include "remoting/host/continue_window.h"
 #include "remoting/host/disconnect_window.h"
 #include "remoting/host/event_executor.h"
 #include "remoting/host/local_input_monitor.h"
@@ -61,6 +62,15 @@ class MockLocalInputMonitor : public LocalInputMonitor {
 
   MOCK_METHOD1(Start, void(remoting::ChromotingHost* host));
   MOCK_METHOD0(Stop, void());
+};
+
+class MockContinueWindow : public ContinueWindow {
+ public:
+  MockContinueWindow();
+  virtual ~MockContinueWindow();
+
+  MOCK_METHOD1(Show, void(remoting::ChromotingHost* host));
+  MOCK_METHOD0(Hide, void());
 };
 
 class MockChromotingHostContext : public ChromotingHostContext {

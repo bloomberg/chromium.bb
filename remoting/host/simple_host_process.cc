@@ -38,6 +38,7 @@
 #include "remoting/host/capturer_fake.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
+#include "remoting/host/continue_window.h"
 #include "remoting/host/curtain.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/disconnect_window.h"
@@ -187,12 +188,15 @@ class SimpleHost {
       remoting::Curtain* curtain = remoting::Curtain::Create();
       remoting::DisconnectWindow* disconnect_window =
           remoting::DisconnectWindow::Create();
+      remoting::ContinueWindow* continue_window =
+          remoting::ContinueWindow::Create();
       remoting::LocalInputMonitor* local_input_monitor =
           remoting::LocalInputMonitor::Create();
       host = ChromotingHost::Create(
           &context, config,
           new DesktopEnvironment(capturer, event_executor, curtain,
-                                 disconnect_window, local_input_monitor),
+                                 disconnect_window, continue_window,
+                                 local_input_monitor),
           access_verifier.release());
     } else {
       host = ChromotingHost::Create(&context, config,

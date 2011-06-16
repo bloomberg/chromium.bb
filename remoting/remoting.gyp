@@ -166,6 +166,10 @@
         '../third_party/npapi/npapi.gyp:npapi',
       ],
       'sources': [
+        'host/continue_window.h',
+        'host/continue_window_mac.mm',
+        'host/continue_window_linux.cc',
+        'host/continue_window_win.cc',
         'host/disconnect_window_linux.cc',
         'host/disconnect_window_mac.h',
         'host/disconnect_window_mac.mm',
@@ -481,6 +485,10 @@
       'sources': [
         'host/capturer_fake_ascii.cc',
         'host/capturer_fake_ascii.h',
+        'host/continue_window.h',
+        'host/continue_window_mac.mm',
+        'host/continue_window_linux.cc',
+        'host/continue_window_win.cc',
         'host/disconnect_window_linux.cc',
         'host/disconnect_window_mac.h',
         'host/disconnect_window_mac.mm',

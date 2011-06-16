@@ -30,6 +30,14 @@ DisconnectWindow* DisconnectWindow::Create() {
   return new MockDisconnectWindow();
 }
 
+MockContinueWindow::MockContinueWindow() {}
+
+MockContinueWindow::~MockContinueWindow() {}
+
+ContinueWindow* ContinueWindow::Create() {
+  return new MockContinueWindow();
+}
+
 MockLocalInputMonitor::MockLocalInputMonitor() {}
 
 MockLocalInputMonitor::~MockLocalInputMonitor() {}

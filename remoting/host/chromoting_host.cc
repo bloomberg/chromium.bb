@@ -11,6 +11,7 @@
 #include "remoting/base/encoder_vp8.h"
 #include "remoting/host/capturer.h"
 #include "remoting/host/chromoting_host_context.h"
+#include "remoting/host/continue_window.h"
 #include "remoting/host/curtain.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/disconnect_window.h"
@@ -42,10 +43,12 @@ ChromotingHost* ChromotingHost::Create(ChromotingHostContext* context,
       EventExecutor::Create(context->ui_message_loop(), capturer);
   Curtain* curtain = Curtain::Create();
   DisconnectWindow* disconnect_window = DisconnectWindow::Create();
+  ContinueWindow* continue_window = ContinueWindow::Create();
   LocalInputMonitor* local_input_monitor = LocalInputMonitor::Create();
   return Create(context, config,
                 new DesktopEnvironment(capturer, event_executor, curtain,
-                                       disconnect_window, local_input_monitor),
+                                       disconnect_window, continue_window,
+                                       local_input_monitor),
                 access_verifier);
 }
 

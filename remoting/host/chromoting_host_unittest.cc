@@ -95,10 +95,12 @@ class ChromotingHostTest : public testing::Test {
     event_executor_ = new MockEventExecutor();
     curtain_ = new MockCurtain();
     disconnect_window_ = new MockDisconnectWindow();
+    continue_window_ = new MockContinueWindow();
     local_input_monitor_ = new MockLocalInputMonitor();
     DesktopEnvironment* desktop =
         new DesktopEnvironment(capturer, event_executor_, curtain_,
-                               disconnect_window_, local_input_monitor_);
+                               disconnect_window_, continue_window_,
+                               local_input_monitor_);
     MockAccessVerifier* access_verifier = new MockAccessVerifier();
 
     host_ = ChromotingHost::Create(&context_, config_,
@@ -222,6 +224,7 @@ class ChromotingHostTest : public testing::Test {
   MockEventExecutor* event_executor_;
   MockCurtain* curtain_;
   MockDisconnectWindow* disconnect_window_;
+  ContinueWindow* continue_window_;
   MockLocalInputMonitor* local_input_monitor_;
 };
 
