@@ -1729,7 +1729,12 @@ void RenderWidgetHostViewWin::EnsureTooltip() {
         WS_EX_TRANSPARENT | l10n_util::GetExtendedTooltipStyles(),
         TOOLTIPS_CLASS, NULL, TTS_NOPREFIX, 0, 0, 0, 0, m_hWnd, NULL,
         NULL, NULL);
-    ui::CheckWindowCreated(tooltip_hwnd_);
+    if (!tooltip_hwnd_) {
+      // Tooltip creation can inexplicably fail. See bug 82913 for details.
+      LOG_GETLASTERROR(WARNING) <<
+          "Tooltip creation failed, tooltips won't work";
+      return;
+    }
     ti.uFlags = TTF_TRANSPARENT;
     ti.lpszText = LPSTR_TEXTCALLBACK;
   }
