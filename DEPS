@@ -12,7 +12,7 @@ vars = {
   "o3d_trunk": "http://o3d.googlecode.com/svn/trunk",
   "python_26_rev": "53573",
   "tools_rev": "5360",
-  "valgrind_rev": "5496",
+  "valgrind_rev": "5674",
   "wix_rev": "153",
 }
 
