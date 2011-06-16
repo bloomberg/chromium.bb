@@ -135,6 +135,9 @@ ACCEPTABLE_ARGUMENTS = set([
     'run_under_extra_args',
     # Multiply timeout values by this number.
     'scale_timeout',
+    # Run browser tests under this tool. See
+    # tools/browser_tester/browsertester/browserlauncher.py for tool names.
+    'browser_test_tool',
     # enable use of SDL
     'sdl',
     # set target platform
@@ -1271,6 +1274,10 @@ def PPAPIBrowserTester(env,
   env = env.Clone()
   SetupBrowserEnv(env)
 
+  timeout = 20
+  if 'scale_timeout' in ARGUMENTS:
+    timeout = timeout * int(ARGUMENTS['scale_timeout'])
+
   command = GetHeadlessPrefix(env) + [
       '${PYTHON}', env.File('${SCONSTRUCT_DIR}/tools/browser_tester'
                             '/browser_tester.py'),
@@ -1278,7 +1285,7 @@ def PPAPIBrowserTester(env,
                                       env.DownloadedChromeBinary()),
       '--url', url,
       # Fail if there is no response for 20 seconds.
-      '--timeout', '20']
+      '--timeout', str(timeout)]
   if not env.Bit('disable_dynamic_plugin_loading'):
     command.extend(['--ppapi_plugin', GetPPAPIPluginPath(env['TRUSTED_ENV'])])
     command.extend(['--sel_ldr', GetSelLdr(env)])
@@ -1290,6 +1297,8 @@ def PPAPIBrowserTester(env,
     command.extend(['--extension', extension])
   for dest_path, dep_file in map_files:
     command.extend(['--map_file', dest_path, dep_file])
+  if 'browser_test_tool' in ARGUMENTS:
+    command.extend(['--tool', ARGUMENTS['browser_test_tool']])
   command.extend(args)
   if ShouldUseVerboseOptions(extra):
     env.MakeVerboseExtraOptions(target, log_verbosity, extra)
@@ -1681,9 +1690,8 @@ def CommandTest(env, name, command, size='small', direct_emulation=True,
   name = '${TARGET_ROOT}/test_results/' + name
   # NOTE: using the long version of 'name' helps distinguish opt vs dbg
   max_time = TEST_TIME_THRESHOLD[size]
-  scale_timeout = ARGUMENTS.get('scale_timeout')
-  if scale_timeout:
-    max_time = max_time * int(scale_timeout)
+  if 'scale_timeout' in ARGUMENTS:
+    max_time = max_time * int(ARGUMENTS['scale_timeout'])
 
   script_flags = ['--name', name,
                   '--report', name,

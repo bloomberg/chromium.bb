@@ -53,8 +53,11 @@ class RPCListener(object):
     # if things are not 100% correct.  False positives must be avoided.
     if passed.lower() != 'true':
       self.ever_failed = True
-    self._TestingDone()
-    return 'OK'
+    close_browser = self._TestingDone()
+    if close_browser:
+      return 'Die, please'
+    else:
+      return 'OK'
 
   def _TestingDone(self):
-    self.shutdown_callback()
+    return self.shutdown_callback()

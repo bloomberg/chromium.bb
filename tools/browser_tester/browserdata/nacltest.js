@@ -43,8 +43,10 @@ function RPCWrapper() {
 
   function handleRPCResponse(name, req) {
     if (req.status == 200) {
-      // URL-encoded RPC always responds 'OK'.  If we get anything else, worry.
-      if (req.responseText != 'OK') {
+      if (req.responseText == 'Die, please') {
+        // TODO(eugenis): this does not end the browser process on Mac.
+        window.close();
+      } else if (req.responseText != 'OK') {
         this_.logLocal('Unexpected RPC response to ' + name + ': \'' +
                        req.responseText + '\' - If you are running this test ' +
                        'manually, this is not a problem.', 'gray');

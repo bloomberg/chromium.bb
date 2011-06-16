@@ -8,15 +8,19 @@ import os.path
 import sys
 import thread
 import time
+import glob
 
 # Allow the import of third party modules
 script_dir = os.path.dirname(__file__)
 sys.path.append(os.path.join(script_dir, '../../../third_party/pylib/'))
+sys.path.append(os.path.join(script_dir, '../../../chrome/tools/valgrind/'))
 
 import browsertester.browserlauncher
 import browsertester.rpclistener
 import browsertester.server
 
+import memcheck_analyze
+import tsan_analyze
 
 def BuildArgParser():
   usage = 'usage: %prog [options]'
@@ -80,8 +84,23 @@ def BuildArgParser():
                     help='Load the browser extensions located at the list of '
                     'paths.  Note: this currently only works with the Chrome '
                     'browser.')
+  parser.add_option('--tool', dest='tool', action='store',
+                    type='string', default=None,
+                    help='Run tests under a tool.')
 
   return parser
+
+
+def ProcessToolLogs(options, logs_dir):
+  if options.tool == 'memcheck':
+    analyzer = memcheck_analyze.MemcheckAnalyzer('', use_gdb=True)
+    logs_wildcard = 'xml.*'
+  elif options.tool == 'tsan':
+    analyzer = tsan_analyze.TsanAnalyzer('', use_gdb=True)
+    logs_wildcard = 'log.*'
+  files = glob.glob(os.path.join(logs_dir, logs_wildcard))
+  retcode = analyzer.Report(files)
+  return retcode
 
 
 def Run(url, options):
@@ -101,7 +120,12 @@ def Run(url, options):
     if not os.path.exists(real_path):
       raise AssertionError('\'%s\' does not exist.' % real_path)
 
-  listener = browsertester.rpclistener.RPCListener(server.TestingEnded)
+  def shutdown_callback():
+    server.TestingEnded()
+    close_browser = not options.interactive
+    return close_browser
+
+  listener = browsertester.rpclistener.RPCListener(shutdown_callback)
   server.Configure(file_mapping, options.allow_404, options.bandwidth, listener)
 
   browser = browsertester.browserlauncher.ChromeLauncher(options)
@@ -116,6 +140,8 @@ def Run(url, options):
       server.handle_request()
   thread.start_new_thread(serve, ())
 
+  tool_failed = False
+
   try:
     while server.test_in_progress or options.interactive:
       if not browser.IsRunning():
@@ -128,11 +154,16 @@ def Run(url, options):
       else:
         # If Python 2.5 support is dropped, stick server.handle_request() here.
         time.sleep(0.125)
+    if options.tool:
+      browser.WaitForProcessDeath()
+      tool_failed = ProcessToolLogs(options, browser.tool_log_dir)
   finally:
     browser.Cleanup()
     server.server_close()
 
-  if listener.ever_failed:
+  if tool_failed:
+    return 2
+  elif listener.ever_failed:
     return 1
   else:
     return 0

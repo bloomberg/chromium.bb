@@ -27,6 +27,23 @@ def SelectRunCommand():
 
 RunCommand = SelectRunCommand()
 
+def RemoveDirectory(path):
+  retry = 4
+  while True:
+    try:
+      shutil.rmtree(path)
+    except Exception:
+      # Windows processes sometime hang onto files too long
+      if retry > 0:
+        retry -= 1
+        time.sleep(0.125)
+      else:
+        # No luck - don't mask the error
+        raise
+    else:
+      # succeeded
+      break
+
 
 class LaunchFailure(Exception):
   pass
@@ -67,14 +84,15 @@ def MakeEnv(debug):
 
 class BrowserLauncher(object):
 
-  WAIT_TIME = 2
-  WAIT_STEPS = 40
+  WAIT_TIME = 20
+  WAIT_STEPS = 80
   SLEEP_TIME = float(WAIT_TIME) / WAIT_STEPS
 
   def __init__(self, options):
     self.options = options
     self.profile = None
     self.binary = None
+    self.tool_log_dir = None
 
   def KnownPath(self):
     raise NotImplementedError
@@ -87,6 +105,10 @@ class BrowserLauncher(object):
 
   def MakeCmd(self, url):
     raise NotImplementedError
+
+  def CreateToolLogDir(self):
+    self.tool_log_dir = tempfile.mkdtemp(prefix='vglogs_')
+    return self.tool_log_dir
 
   def FindBinary(self):
     if self.options.browser_path:
@@ -114,24 +136,9 @@ class BrowserLauncher(object):
       # If is doesn't die, we hang.  Oh well.
       self.handle.wait()
 
-    self.DeleteProfile()
-
-  def DeleteProfile(self):
-    retry = 4
-    while True:
-      try:
-        shutil.rmtree(self.profile)
-      except Exception:
-        # Windows processes sometime hang onto files too long
-        if retry > 0:
-          retry -= 1
-          time.sleep(0.125)
-        else:
-          # No luck - don't mask the error
-          raise
-      else:
-        # succeeded
-        break
+    RemoveDirectory(self.profile)
+    if self.tool_log_dir is not None:
+      RemoveDirectory(self.tool_log_dir)
 
   def MakeProfileDirectory(self):
     self.profile = tempfile.mkdtemp(prefix='browserprofile_')
@@ -162,6 +169,8 @@ class BrowserLauncher(object):
   def Run(self, url, port):
     self.binary = EscapeSpaces(self.FindBinary())
     self.profile = self.CreateProfile()
+    if self.options.tool is not None:
+      self.tool_log_dir = self.CreateToolLogDir()
     cmd = self.MakeCmd(url, port)
     self.Launch(cmd, MakeEnv(self.options.debug))
 
@@ -238,5 +247,29 @@ class ChromeLauncher(BrowserLauncher):
       for extension in self.options.browser_extensions:
         cmd.append('--load-extension=%s' % extension)
       cmd.append('--enable-experimental-extension-apis')
+    if self.options.tool == 'memcheck':
+      cmd = ['src/third_party/valgrind/memcheck.sh',
+             '-v',
+             '--xml=yes',
+             '--leak-check=no',
+             '--gen-suppressions=all',
+             '--num-callers=30',
+             '--trace-children=yes',
+             '--nacl-file=%s' % (self.options.files[0],),
+             '--suppressions=' +
+             '../chrome/tools/valgrind/memcheck/suppressions.txt',
+             '--xml-file=%s/xml.%%p' % (self.tool_log_dir,),
+             '--log-file=%s/log.%%p' % (self.tool_log_dir,)] + cmd
+    elif self.options.tool == 'tsan':
+      cmd = ['src/third_party/valgrind/tsan.sh',
+             '-v',
+             '--num-callers=30',
+             '--trace-children=yes',
+             '--nacl-file=%s' % (self.options.files[0],),
+             '--ignore=../chrome/tools/valgrind/tsan/ignores.txt',
+             '--suppressions=../chrome/tools/valgrind/tsan/suppressions.txt',
+             '--log-file=%s/log.%%p' % (self.tool_log_dir,)] + cmd
+    elif self.options.tool != None:
+      raise LaunchFailure('Invalid tool name "%s"' % (self.options.tool,))
     cmd.append(url)
     return cmd
