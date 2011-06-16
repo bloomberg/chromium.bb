@@ -686,12 +686,35 @@ void DownloadManager::CheckDownloadHashDone(int32 download_id,
            << active_downloads_[download_id]->GetURL().spec();
 }
 
-void DownloadManager::AssertNotInQueues(DownloadItem* download) {
+void DownloadManager::AssertQueueStateConsistent(DownloadItem* download) {
   // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
-  CHECK(!ContainsKey(downloads_, download));
-  CHECK(!ContainsKey(active_downloads_, download->id()));
-  CHECK(!ContainsKey(in_progress_, download->id()));
-  CHECK(!ContainsKey(history_downloads_, download->db_handle()));
+  if (download->state() == DownloadItem::REMOVING) {
+    CHECK(!ContainsKey(downloads_, download));
+    CHECK(!ContainsKey(active_downloads_, download->id()));
+    CHECK(!ContainsKey(in_progress_, download->id()));
+    CHECK(!ContainsKey(history_downloads_, download->db_handle()));
+    return;
+  }
+
+  // Should be in downloads_ if we're not REMOVING.
+  CHECK(ContainsKey(downloads_, download));
+
+  // Check history_downloads_ consistency.
+  if (download->db_handle() != DownloadHistory::kUninitializedHandle) {
+    CHECK(ContainsKey(history_downloads_, download->db_handle()));
+  } else {
+    // TODO(rdsmith): Somewhat painful; make sure to disable in
+    // release builds after resolution of http://crbug.com/85408.
+    for (DownloadMap::iterator it = history_downloads_.begin();
+         it != history_downloads_.end(); ++it) {
+      CHECK(it->second != download);
+    }
+  }
+
+  CHECK(ContainsKey(active_downloads_, download->id()) ==
+        (download->state() == DownloadItem::IN_PROGRESS));
+  CHECK(ContainsKey(in_progress_, download->id()) ==
+        (download->state() == DownloadItem::IN_PROGRESS));
 }
 
 bool DownloadManager::IsDownloadReadyForCompletion(DownloadItem* download) {
@@ -894,6 +917,8 @@ int DownloadManager::RemoveDownloadsBetween(const base::Time remove_begin,
         (download->IsComplete() ||
          download->IsCancelled() ||
          download->IsInterrupted())) {
+      AssertQueueStateConsistent(download);
+
       // Remove from the map and move to the next in the list.
       history_downloads_.erase(it++);
 

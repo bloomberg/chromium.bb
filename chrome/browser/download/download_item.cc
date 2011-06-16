@@ -221,7 +221,7 @@ DownloadItem::~DownloadItem() {
 
   state_ = REMOVING;
   UpdateObservers();
-  download_manager_->AssertNotInQueues(this);
+  download_manager_->AssertQueueStateConsistent(this);
 }
 
 void DownloadItem::AddObserver(Observer* observer) {
@@ -530,7 +530,10 @@ void DownloadItem::Remove() {
   // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  download_manager_->AssertQueueStateConsistent(this);
   Cancel(true);
+  download_manager_->AssertQueueStateConsistent(this);
+
   state_ = REMOVING;
   download_manager_->RemoveDownload(db_handle_);
   // We have now been deleted.

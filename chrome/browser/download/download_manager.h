@@ -257,9 +257,9 @@ class DownloadManager
   // service.
   void CheckDownloadHashDone(int32 download_id, bool is_dangerous_hash);
 
-  // Assert the named download item is in no queues in the DownloadManager.
-  // For debugging.
-  void AssertNotInQueues(DownloadItem* download);
+  // Assert the named download item is on the correct queues
+  // in the DownloadManager.  For debugging.
+  void AssertQueueStateConsistent(DownloadItem* download);
 
  private:
   // For testing.
