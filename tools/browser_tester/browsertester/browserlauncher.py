@@ -257,7 +257,7 @@ class ChromeLauncher(BrowserLauncher):
              '--trace-children=yes',
              '--nacl-file=%s' % (self.options.files[0],),
              '--suppressions=' +
-             '../chrome/tools/valgrind/memcheck/suppressions.txt',
+             '../tools/valgrind/memcheck/suppressions.txt',
              '--xml-file=%s/xml.%%p' % (self.tool_log_dir,),
              '--log-file=%s/log.%%p' % (self.tool_log_dir,)] + cmd
     elif self.options.tool == 'tsan':
@@ -266,8 +266,8 @@ class ChromeLauncher(BrowserLauncher):
              '--num-callers=30',
              '--trace-children=yes',
              '--nacl-file=%s' % (self.options.files[0],),
-             '--ignore=../chrome/tools/valgrind/tsan/ignores.txt',
-             '--suppressions=../chrome/tools/valgrind/tsan/suppressions.txt',
+             '--ignore=../tools/valgrind/tsan/ignores.txt',
+             '--suppressions=../tools/valgrind/tsan/suppressions.txt',
              '--log-file=%s/log.%%p' % (self.tool_log_dir,)] + cmd
     elif self.options.tool != None:
       raise LaunchFailure('Invalid tool name "%s"' % (self.options.tool,))

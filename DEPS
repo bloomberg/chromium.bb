@@ -23,8 +23,6 @@ deps = {
     Var("chromium_trunk") + "/src/build@" + Var("chrome_rev"),
   "chrome/test/pyautolib":
     Var("chromium_trunk") + "/src/chrome/test/pyautolib@" + Var("chrome_rev"),
-  "chrome/tools/valgrind":
-    Var("chromium_trunk") + "/src/tools/valgrind@" + Var("chrome_rev"),
   "gpu/command_buffer":
     Var("chromium_trunk") + "/src/gpu/command_buffer@" + Var("chrome_rev"),
   "gpu/common":
@@ -75,6 +73,8 @@ deps = {
     Var("native_client_trunk") + "/src/third_party/zlib@" + Var("tools_rev"),
   "tools/gyp":
     "http://gyp.googlecode.com/svn/trunk@" + Var("gyp_rev"),
+  "tools/valgrind":
+    Var("chromium_trunk") + "/src/tools/valgrind@" + Var("chrome_rev"),
 }
 
 deps_os = {
