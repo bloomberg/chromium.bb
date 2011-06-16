@@ -44,6 +44,7 @@
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/size.h"
 #include "webkit/glue/glue_serialize.h"
+#include "webkit/glue/user_agent.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/plugins/npapi/plugin_list.h"
@@ -662,8 +663,8 @@ void EnableSpdy(bool enable) {
   // Used in benchmarking,  Ignored for test_shell.
 }
 
-std::string GetProductVersion() {
-  return std::string("Chrome/0.0.0.0");
+std::string BuildUserAgent(bool mimic_windows) {
+  return webkit_glue::BuildUserAgentHelper(mimic_windows, "Chrome/0.0.0.0");
 }
 
 bool IsSingleProcess() {

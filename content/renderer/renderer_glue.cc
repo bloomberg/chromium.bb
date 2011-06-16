@@ -17,6 +17,7 @@
 #include "base/shared_memory.h"
 #include "base/string_util.h"
 #include "content/common/clipboard_messages.h"
+#include "content/common/content_client.h"
 #include "content/common/content_switches.h"
 #include "content/common/socket_stream_dispatcher.h"
 #include "content/common/url_constants.h"
@@ -289,6 +290,10 @@ std::string GetWebKitLocale() {
 // http://code.google.com/p/chromium/issues/detail?id=85757
 string16 GetLocalizedString(int message_id) {
   return l10n_util::GetStringUTF16(message_id);
+}
+
+std::string BuildUserAgent(bool mimic_windows) {
+  return content::GetContentClient()->GetUserAgent(mimic_windows);
 }
 
 }  // namespace webkit_glue

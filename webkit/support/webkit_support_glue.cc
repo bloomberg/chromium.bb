@@ -7,6 +7,7 @@
 #include "base/base_paths.h"
 #include "base/path_service.h"
 #include "googleurl/src/gurl.h"
+#include "webkit/glue/user_agent.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 
 // Functions needed by webkit_glue.
@@ -32,10 +33,6 @@ void GetPlugins(bool refresh,
       }
     }
   }
-}
-
-bool IsDefaultPluginEnabled() {
-  return false;
 }
 
 void AppendToLog(const char*, int, const char*) {
@@ -69,8 +66,9 @@ void ClearHostResolverCache() {
 void ClearPredictorCache() {
 }
 
-std::string GetProductVersion() {
-  return std::string("DumpRenderTree/0.0.0.0");
+std::string BuildUserAgent(bool mimic_windows) {
+  return webkit_glue::BuildUserAgentHelper(mimic_windows,
+                                           "DumpRenderTree/0.0.0.0");
 }
 
 bool GetPluginFinderURL(std::string* plugin_finder_url) {

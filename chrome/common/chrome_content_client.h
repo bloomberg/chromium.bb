@@ -6,6 +6,8 @@
 #define CHROME_COMMON_CHROME_CONTENT_CLIENT_H_
 #pragma once
 
+#include <string>
+
 #include "content/common/content_client.h"
 
 namespace chrome {
@@ -20,6 +22,8 @@ class ChromeContentClient : public content::ContentClient {
   virtual void AddPepperPlugins(std::vector<PepperPluginInfo>* plugins);
   virtual bool CanSendWhileSwappedOut(const IPC::Message* msg);
   virtual bool CanHandleWhileSwappedOut(const IPC::Message& msg);
+  virtual std::string GetUserAgent(bool mimic_windows) const;
+
 #if defined(OS_WIN)
   virtual bool SandboxPlugin(CommandLine* command_line,
                              sandbox::TargetPolicy* policy);

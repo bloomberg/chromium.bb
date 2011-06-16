@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "webkit/glue/webkit_glue.h"
+#include "webkit/glue/user_agent.h"
 
 
 //------------------------------------------------------------------------------
@@ -16,5 +17,9 @@ bool g_forcefully_terminate_plugin_process = false;
 void SetUserAgent(const std::string& new_user_agent) {
 }
 
+std::string BuildUserAgentHelper(bool mimic_windows,
+                                 const std::string& product) {
+  return std::string();
+}
 
 } // namespace webkit_glue

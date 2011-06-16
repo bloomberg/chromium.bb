@@ -24,7 +24,7 @@
 #include "chrome_frame/chrome_frame_delegate.h"
 #include "chrome_frame/html_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/glue/user_agent.h"
+#include "webkit/glue/webkit_glue.h"
 
 const char kChromeFrameUserAgent[] = "chromeframe";
 
@@ -404,7 +404,7 @@ TEST_F(HtmlUtilUnittest, GetDefaultUserAgentHeaderWithCFTag) {
 
 TEST_F(HtmlUtilUnittest, GetChromeUserAgent) {
   std::string chrome_ua;
-  webkit_glue::BuildUserAgent(false, &chrome_ua);
+  chrome_ua = webkit_glue::BuildUserAgent(false);
   EXPECT_FALSE(chrome_ua.empty());
   const char* ua = http_utils::GetChromeUserAgent();
   EXPECT_EQ(0, chrome_ua.compare(ua));

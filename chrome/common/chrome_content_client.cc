@@ -9,12 +9,14 @@
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/string_number_conversions.h"
+#include "base/stringprintf.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/win/windows_version.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/render_messages.h"
 #include "content/common/pepper_plugin_registry.h"
 #include "remoting/client/plugin/pepper_entrypoints.h"
@@ -23,6 +25,8 @@
 #include "content/common/sandbox_policy.h"
 #include "sandbox/src/sandbox.h"
 #endif
+
+#include "webkit/glue/user_agent.h"
 
 namespace {
 
@@ -289,6 +293,14 @@ bool ChromeContentClient::CanHandleWhileSwappedOut(
       break;
   }
   return false;
+}
+
+std::string ChromeContentClient::GetUserAgent(bool mimic_windows) const {
+  chrome::VersionInfo version_info;
+  std::string product("Chrome/");
+  product += version_info.is_valid() ? version_info.Version() : "0.0.0.0";
+
+  return webkit_glue::BuildUserAgentHelper(mimic_windows, product);
 }
 
 #if defined(OS_WIN)

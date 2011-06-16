@@ -356,7 +356,7 @@ static base::LazyInstance<UserAgentState> g_user_agent(
     base::LINKER_INITIALIZED);
 
 void SetUserAgentToDefault() {
-  BuildUserAgent(false, &g_user_agent.Get().user_agent);
+  g_user_agent.Get().user_agent = BuildUserAgent(false);
 }
 
 }  // namespace
@@ -383,7 +383,7 @@ const std::string& GetUserAgent(const GURL& url) {
       // http://bugs.chromium.org/11136
       // TODO(evanm): remove this if Yahoo fixes their sniffing.
       if (g_user_agent.Get().mimic_windows_user_agent.empty())
-        BuildUserAgent(true, &g_user_agent.Get().mimic_windows_user_agent);
+        g_user_agent.Get().mimic_windows_user_agent = BuildUserAgent(true);
       return g_user_agent.Get().mimic_windows_user_agent;
     }
 #endif

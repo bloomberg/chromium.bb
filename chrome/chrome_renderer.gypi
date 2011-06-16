@@ -105,7 +105,6 @@
         'renderer/chrome_render_process_observer.h',
         'renderer/chrome_render_view_observer.cc',
         'renderer/chrome_render_view_observer.h',
-        'renderer/chrome_renderer_glue.cc',
         'renderer/content_settings_observer.cc',
         'renderer/content_settings_observer.h',
         'renderer/devtools_agent.cc',

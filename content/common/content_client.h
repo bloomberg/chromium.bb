@@ -6,6 +6,7 @@
 #define CONTENT_COMMON_CONTENT_CLIENT_H_
 #pragma once
 
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -68,6 +69,11 @@ class ContentClient {
   // Returns whether the given message should be processed in the browser on
   // behalf of a swapped out renderer.
   virtual bool CanHandleWhileSwappedOut(const IPC::Message& msg);
+
+  // Returns the user agent. If mimic_windows is true then the embedder can
+  // return a fake Windows user agent. This is a workaround for broken
+  // websites.
+  virtual std::string GetUserAgent(bool mimic_windows) const;
 
 #if defined(OS_WIN)
   // Allows the embedder to sandbox a plugin, and apply a custom policy.

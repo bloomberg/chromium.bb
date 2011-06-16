@@ -12,7 +12,16 @@ import os
 import re
 import sys
 
-sys.path.insert(0, '../../build/util')
+# Get the full path of the current script which would be something like
+# src/webkit/build/webkit_version.py and navigate backwards twice to strip the
+# last two path components to get to the srcroot.
+# This is to ensure that the script can load the lastchange module by updating
+# the sys.path variable with the desired location.
+path = os.path.dirname(os.path.realpath(__file__))
+path = os.path.dirname(os.path.dirname(path))
+path = os.path.join(path, 'build', 'util')
+
+sys.path.insert(0, path)
 import lastchange
 
 def ReadVersionFile(fname):

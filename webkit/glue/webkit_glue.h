@@ -152,6 +152,10 @@ WebKit::WebCanvas* ToWebCanvas(skia::PlatformCanvas*);
 // used to get memory usage statistics.
 int GetGlyphPageCount();
 
+// Construct the User-Agent header, filling in |result|.
+// - If mimic_windows is true, produce a fake Windows Chrome string.
+std::string BuildUserAgent(bool mimic_windows);
+
 //---- END FUNCTIONS IMPLEMENTED BY WEBKIT/GLUE -------------------------------
 
 
@@ -238,9 +242,6 @@ void ClearHostResolverCache();
 // Clear the predictor cache (for DNS prefetch and preconnect).  Used for
 // debugging.
 void ClearPredictorCache();
-
-// Returns the product version.  E.g., Chrome/4.1.333.0
-std::string GetProductVersion();
 
 // Returns true if the embedder is running in single process mode.
 bool IsSingleProcess();

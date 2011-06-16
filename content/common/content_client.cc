@@ -31,6 +31,10 @@ bool ContentClient::CanHandleWhileSwappedOut(const IPC::Message& msg) {
   return false;
 }
 
+std::string ContentClient::GetUserAgent(bool mimic_windows) const {
+  return std::string();
+}
+
 #if defined(OS_WIN)
 bool ContentClient::SandboxPlugin(CommandLine* command_line,
                                   sandbox::TargetPolicy* policy) {
