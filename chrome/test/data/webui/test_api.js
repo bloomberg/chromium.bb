@@ -5,16 +5,6 @@
 // Library providing basic test framework functionality.
 
 (function() {
-  // Indicates a pass to the C++ backend.
-  function pass() {
-    chrome.send('Pass', []);
-  }
-
-  // Indicates a fail to the C++ backend.
-  function fail(message) {
-    chrome.send('Fail', [String(message)]);
-  }
-
   // Asserts.
   // Use the following assertions to verify a condition within a test.
   // If assertion fails, the C++ backend will be immediately notified.
@@ -66,14 +56,10 @@
     } catch (e) {
       console.log(
           'Failed: ' + currentTest.name + '\nwith exception: ' + e.message);
-
-      fail(e.message);
-      return;
+      return [false, e.message] ;
     }
 
-
-    // All tests passed.
-    pass('');
+    return [true];
   }
 
   // Exports.

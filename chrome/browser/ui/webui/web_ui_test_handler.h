@@ -2,31 +2,32 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_WEBUI_WEB_UI_HANDLER_BROWSERTEST_H_
-#define CONTENT_BROWSER_WEBUI_WEB_UI_HANDLER_BROWSERTEST_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_WEB_UI_TEST_HANDLER_H_
+#define CHROME_BROWSER_UI_WEBUI_WEB_UI_TEST_HANDLER_H_
 #pragma once
 
 #include <string>
 
 #include "content/browser/webui/web_ui.h"
+#include "content/common/notification_observer.h"
 
 // This class registers test framework specific handlers on WebUI objects.
-class WebUITestHandler : public WebUIMessageHandler {
+class WebUITestHandler : public WebUIMessageHandler,
+                         public NotificationObserver {
  public:
   // Runs a string of javascript. Returns pass fail.
   bool RunJavascript(const std::string& js_test, bool is_test);
 
- protected:
-  // WebUI handlers which deliver results to any waiting message loops.
-  // |args| is currently ignored.
-  void HandlePass(const ListValue* args);
-  void HandleFail(const ListValue* args);
-
+ private:
   // WebUIMessageHandler overrides.
   // Add test handlers to the current WebUI object.
-  virtual void RegisterMessages();
+  virtual void RegisterMessages() {}
 
- private:
+  // From NotificationObserver.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) OVERRIDE;
+
   // Runs a message loop until test finishes.  Returns the result of the test.
   bool WaitForResult();
 
@@ -37,4 +38,4 @@ class WebUITestHandler : public WebUIMessageHandler {
   bool is_waiting_;
 };
 
-#endif  // CONTENT_BROWSER_WEBUI_WEB_UI_HANDLER_BROWSERTEST_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_WEB_UI_TEST_HANDLER_H_

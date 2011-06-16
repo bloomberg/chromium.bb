@@ -3279,7 +3279,7 @@ void RenderView::EvaluateScript(const string16& frame_xpath,
     result = web_frame->executeScriptAndReturnValue(WebScriptSource(script));
   if (notify_result) {
     ListValue list;
-    if (web_frame) {
+    if (!result.IsEmpty() && web_frame) {
       v8::HandleScope handle_scope;
       v8::Local<v8::Context> context = web_frame->mainWorldScriptContext();
       v8::Context::Scope context_scope(context);

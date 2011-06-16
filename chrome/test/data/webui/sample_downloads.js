@@ -8,6 +8,11 @@ function testAssertFalse() {
   assertFalse(false);
 }
 
+function FAILS_testAssertFalse() {
+  assertFalse(true);
+  assertFalse(false);
+}
+
 function testInitialFocus() {
   assertTrue(document.activeElement.id == 'term', '');
 }

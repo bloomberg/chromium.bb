@@ -8,39 +8,43 @@
 #include "base/values.h"
 #include "chrome/test/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/common/notification_details.h"
+#include "content/common/notification_registrar.h"
 
-bool WebUITestHandler::RunJavascript(const std::string& js_test,
-                                            bool is_test) {
-  web_ui_->GetRenderViewHost()->ExecuteJavascriptInWebFrame(
-      string16(), UTF8ToUTF16(js_test));
-
-  if (is_test)
+bool WebUITestHandler::RunJavascript(const std::string& js_test, bool is_test) {
+  if (is_test) {
+    NotificationRegistrar notification_registrar;
+    notification_registrar.Add(
+        this, NotificationType::EXECUTE_JAVASCRIPT_RESULT,
+        Source<RenderViewHost>(web_ui_->GetRenderViewHost()));
+    web_ui_->GetRenderViewHost()->ExecuteJavascriptInWebFrameNotifyResult(
+        string16(), UTF8ToUTF16(js_test));
     return WaitForResult();
-  else
+  } else {
+    web_ui_->GetRenderViewHost()->ExecuteJavascriptInWebFrame(
+        string16(), UTF8ToUTF16(js_test));
     return true;
+  }
 }
 
-void WebUITestHandler::HandlePass(const ListValue* args) {
-  test_succeeded_ = true;
+void WebUITestHandler::Observe(NotificationType type,
+                               const NotificationSource& source,
+                               const NotificationDetails& details) {
+  // Quit the message loop if we were waiting so Waiting process can get result
+  // or error. To ensure this gets done, do this before ASSERT* calls.
   if (is_waiting_)
     MessageLoopForUI::current()->Quit();
-}
 
-void WebUITestHandler::HandleFail(const ListValue* args) {
-  test_succeeded_ = false;
-  if (is_waiting_)
-    MessageLoopForUI::current()->Quit();
-
-  std::string message;
-  ASSERT_TRUE(args->GetString(0, &message));
-  LOG(ERROR) << message;
-}
-
-void WebUITestHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback("Pass",
-      NewCallback(this, &WebUITestHandler::HandlePass));
-  web_ui_->RegisterMessageCallback("Fail",
-      NewCallback(this, &WebUITestHandler::HandleFail));
+  SCOPED_TRACE("WebUITestHandler::Observe");
+  Value* value = Details<std::pair<int, Value*> >(details)->second;
+  ListValue* list_value;
+  ASSERT_TRUE(value->GetAsList(&list_value));
+  ASSERT_TRUE(list_value->GetBoolean(0, &test_succeeded_));
+  if (!test_succeeded_) {
+    std::string message;
+    ASSERT_TRUE(list_value->GetString(1, &message));
+    LOG(ERROR) << message;
+  }
 }
 
 bool WebUITestHandler::WaitForResult() {

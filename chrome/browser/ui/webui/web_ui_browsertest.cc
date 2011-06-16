@@ -16,6 +16,7 @@
 #include "chrome/test/ui_test_utils.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/webui/web_ui.h"
+#include "testing/gtest/include/gtest/gtest-spi.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace {
@@ -204,6 +205,42 @@ IN_PROC_BROWSER_TEST_F(WebUIBrowserTest, TestSamplePass) {
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIDownloadsURL));
 
   ASSERT_TRUE(RunJavascriptTest("testAssertFalse"));
+  ASSERT_FALSE(RunJavascriptTest("FAILS_testAssertFalse"));
   ASSERT_TRUE(RunJavascriptTest("testInitialFocus"));
   ASSERT_FALSE(RunJavascriptTest("testConsoleError"));
+}
+
+// According to the interface for EXPECT_FATAL_FAILURE
+// (http://code.google.com/p/googletest/wiki/AdvancedGuide#Catching_Failures)
+// the statement must be statically available. Therefore, we make a static
+// global s_test_ which should point to |this| for the duration of the test run
+// and be cleared afterward.
+class WebUIBrowserExpectFailTest : public WebUIBrowserTest {
+ public:
+  WebUIBrowserExpectFailTest() {
+    EXPECT_FALSE(s_test_);
+    s_test_ = this;
+  }
+
+ protected:
+  virtual ~WebUIBrowserExpectFailTest() {
+    EXPECT_TRUE(s_test_);
+    s_test_ = NULL;
+  }
+
+  static void RunJavascriptTestNoReturn(const std::string& testname) {
+    EXPECT_TRUE(s_test_);
+    s_test_->RunJavascriptTest(testname);
+  }
+
+ private:
+  static WebUIBrowserTest* s_test_;
+};
+WebUIBrowserTest* WebUIBrowserExpectFailTest::s_test_ = NULL;
+
+IN_PROC_BROWSER_TEST_F(WebUIBrowserExpectFailTest, TestFailsFast) {
+  AddLibrary(FilePath(FILE_PATH_LITERAL("sample_downloads.js")));
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIDownloadsURL));
+  EXPECT_FATAL_FAILURE(RunJavascriptTestNoReturn("FAILS_BogusFunctionName"),
+                       "WebUITestHandler::Observe");
 }
