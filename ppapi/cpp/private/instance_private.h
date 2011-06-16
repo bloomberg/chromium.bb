@@ -45,7 +45,7 @@ class InstancePrivate : public Instance {
   VarPrivate GetOwnerElementObject();
 
   /// See PPB_Instance.ExecuteScript.
-  VarPrivate ExecuteScript(const Var& script, VarPrivate* exception = NULL);
+  VarPrivate ExecuteScript(const Var& script, Var* exception = NULL);
 
   // @}
 };
