@@ -292,6 +292,10 @@ TEST_F(WorkerTest, WorkerGC) {
   RunWorkerFastLayoutTest("worker-gc.html");
 }
 
+TEST_F(WorkerTest, WorkerInit) {
+  RunWorkerFastLayoutTest("worker-init.html");
+}
+
 // worker-lifecycle.html relies on layoutTestController.workerThreadCount
 // which is not currently implemented. http://crbug.com/45168
 TEST_F(WorkerTest, DISABLED_WorkerLifecycle) {
