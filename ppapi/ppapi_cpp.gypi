@@ -224,7 +224,6 @@
       ],
       'conditions': [
         ['OS=="win"', {
-          'msvs_guid': 'AD371A1D-3459-4E2D-8E8A-881F4B83B908',
           'msvs_settings': {
             'VCCLCompilerTool': {
               'AdditionalOptions': ['/we4244'],  # implicit conversion, possible loss of data
@@ -262,9 +261,6 @@
         'cpp/ppp_entrypoints.cc',
       ],
       'conditions': [
-        ['OS=="win"', {
-          'msvs_guid': '057E7FA0-83C0-11DF-8395-0800200C9A66',
-        }],
         ['OS=="linux"', {
           'cflags': ['-Wextra', '-pedantic'],
         }],

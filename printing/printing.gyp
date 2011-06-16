@@ -19,7 +19,6 @@
         '../third_party/icu/icu.gyp:icuuc',
         '../ui/ui.gyp:ui_base',  # Only required for Font support.
       ],
-      'msvs_guid': '9E5416B9-B91B-4029-93F4-102C1AD5CAF4',
       'include_dirs': [
         '..',
       ],
@@ -151,7 +150,6 @@
     {
       'target_name': 'printing_unittests',
       'type': 'executable',
-      'msvs_guid': '8B2EE5D9-41BC-4AA2-A401-2DC143A05D2E',
       'dependencies': [
         'printing',
         '../testing/gtest.gyp:gtest',

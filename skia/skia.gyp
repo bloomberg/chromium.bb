@@ -7,7 +7,6 @@
     {
       'target_name': 'skia',
       'type': '<(component)',
-      'msvs_guid': 'CD9CA56E-4E94-444C-87D4-58CA1E6F300D',
       'sources': [
         '../third_party/skia/gpu/src/GrAllocPool.cpp',
         '../third_party/skia/gpu/src/GrAtlas.cpp',

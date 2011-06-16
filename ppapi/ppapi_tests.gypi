@@ -18,7 +18,6 @@
       'conditions': [
         ['OS=="win"', {
           'type': 'shared_library',
-          'msvs_guid': 'EE00E36E-9E8C-4DFB-925E-FBE32CEDB91B',
           'sources': [
             'example/example.rc',
           ],
@@ -292,7 +291,6 @@
       'variables': {
         'chromium_code': 1,
       },
-      'msvs_guid': 'C2BD9365-5BD7-44A7-854E-A49E606BE8E4',
       'dependencies': [
         'ppapi_proxy',
         '../base/base.gyp:test_support_base',

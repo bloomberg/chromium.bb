@@ -33,7 +33,6 @@
     {
       'target_name': 'ipc_tests',
       'type': 'executable',
-      'msvs_guid': 'B92AE829-E1CD-4781-824A-DCB1603A1672',
       'dependencies': [
         'ipc',
         '../base/base.gyp:base',

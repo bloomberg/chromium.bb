@@ -193,7 +193,6 @@
           'export_dependent_settings': [
             '../base/base.gyp:base',
           ],
-          'msvs_guid': '881F6A97-D539-4C48-B401-DF04385B2343',
           'sources': [
             # Files that are used by the 32-bit version of Windows sandbox only.
             'src/resolver_32.cc',
@@ -244,7 +243,6 @@
               'msvs_target_platform': 'x64',
             },
           },
-          'msvs_guid': 'BE3468E6-B314-4310-B449-6FC0C52EE155',
           'sources': [
             # Files that are used by the 64-bit version of Windows sandbox only.
             'src/interceptors_64.cc',

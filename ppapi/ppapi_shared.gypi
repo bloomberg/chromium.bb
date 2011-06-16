@@ -105,11 +105,6 @@
         'thunk/ppb_widget_thunk.cc',
         'thunk/thunk.h',
       ],
-      'conditions': [
-        ['OS=="win"', {
-          'msvs_guid': 'E7420D65-A885-41EB-B4BE-04DE0C97033B',
-        }],
-      ],
     },
   ],
 }
