@@ -20,17 +20,13 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/input_method/keyboard_overlay_map.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_collator.h"
-
-#if defined(HAVE_IBUS)
-// TODO(satorux): Move these to Chrome tree.
-#include <cros/chromeos_keyboard_overlay_map.h>
-#endif
 
 namespace chromeos {
 namespace input_method {
@@ -500,13 +496,11 @@ std::string GetKeyboardLayoutName(const std::string& input_method_id) {
 }
 
 std::string GetKeyboardOverlayId(const std::string& input_method_id) {
-#if defined(HAVE_IBUS)
   for (size_t i = 0; i < arraysize(kKeyboardOverlayMap); ++i) {
     if (kKeyboardOverlayMap[i].input_method_id == input_method_id) {
       return kKeyboardOverlayMap[i].keyboard_overlay_id;
     }
   }
-#endif  // defined(HAVE_IBUS)
   return "";
 }
 

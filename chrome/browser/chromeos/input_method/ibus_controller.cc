@@ -16,22 +16,10 @@
 #include <stack>
 #include <utility>
 
-#if defined(HAVE_IBUS)
-// TODO(satorux): Move these to Chrome tree.
-#include <cros/chromeos_input_method_whitelist.h>
-#include <cros/ibus_input_methods.h>
-#else
-const char* kInputMethodIdsWhitelist[] = {
-  "xkb:us::eng",
-};
-const char* kXkbLayoutsWhitelist[] = {
-  "us",
-};
-#endif  // defined(HAVE_IBUS)
-
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
+#include "chrome/browser/chromeos/input_method/ibus_input_methods.h"
 
 namespace chromeos {
 namespace input_method {
@@ -93,17 +81,15 @@ ImeConfigValue::~ImeConfigValue() {
 // refactor the two functions.
 InputMethodDescriptors* GetSupportedInputMethodDescriptors() {
   InputMethodDescriptors* input_methods = new InputMethodDescriptors;
-#if defined(HAVE_IBUS)
-  for (size_t i = 0; i < arraysize(chromeos::kIBusEngines); ++i) {
-    if (InputMethodIdIsWhitelisted(chromeos::kIBusEngines[i].name)) {
+  for (size_t i = 0; i < arraysize(kIBusEngines); ++i) {
+    if (InputMethodIdIsWhitelisted(kIBusEngines[i].id)) {
       input_methods->push_back(CreateInputMethodDescriptor(
-          chromeos::kIBusEngines[i].name,
-          chromeos::kIBusEngines[i].longname,
-          chromeos::kIBusEngines[i].layout,
-          chromeos::kIBusEngines[i].language));
+          kIBusEngines[i].id,
+          kIBusEngines[i].longname,
+          kIBusEngines[i].layout,
+          kIBusEngines[i].language));
     }
   }
-#endif  // defined(HAVE_IBUS)
   return input_methods;
 }
 
@@ -112,8 +98,8 @@ bool InputMethodIdIsWhitelisted(const std::string& input_method_id) {
   static std::set<std::string>* g_supported_input_methods = NULL;
   if (!g_supported_input_methods) {
     g_supported_input_methods = new std::set<std::string>;
-    for (size_t i = 0; i < arraysize(kInputMethodIdsWhitelist); ++i) {
-      g_supported_input_methods->insert(kInputMethodIdsWhitelist[i]);
+    for (size_t i = 0; i < arraysize(kIBusEngines); ++i) {
+      g_supported_input_methods->insert(kIBusEngines[i].id);
     }
   }
   return (g_supported_input_methods->count(input_method_id) > 0);
@@ -124,8 +110,8 @@ bool XkbLayoutIsSupported(const std::string& xkb_layout) {
   static std::set<std::string>* g_supported_layouts = NULL;
   if (!g_supported_layouts) {
     g_supported_layouts = new std::set<std::string>;
-    for (size_t i = 0; i < arraysize(kXkbLayoutsWhitelist); ++i) {
-      g_supported_layouts->insert(kXkbLayoutsWhitelist[i]);
+    for (size_t i = 0; i < arraysize(kIBusEngines); ++i) {
+      g_supported_layouts->insert(kIBusEngines[i].layout);
     }
   }
   return (g_supported_layouts->count(xkb_layout) > 0);
@@ -961,7 +947,7 @@ class IBusControllerImpl : public IBusController {
 
     const IBusEngineInfo* engine_info = NULL;
     for (size_t i = 0; i < arraysize(kIBusEngines); ++i) {
-      if (kIBusEngines[i].name == std::string(current_global_engine_id)) {
+      if (kIBusEngines[i].id == std::string(current_global_engine_id)) {
         engine_info = &kIBusEngines[i];
         break;
       }
@@ -974,7 +960,7 @@ class IBusControllerImpl : public IBusController {
     }
 
     InputMethodDescriptor current_input_method =
-        CreateInputMethodDescriptor(engine_info->name,
+        CreateInputMethodDescriptor(engine_info->id,
                                     engine_info->longname,
                                     engine_info->layout,
                                     engine_info->language);

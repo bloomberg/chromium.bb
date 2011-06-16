@@ -17,9 +17,7 @@
 namespace chromeos {
 namespace input_method {
 
-// A structure which represents an input method. All methods in this class have
-// to be in chromeos_input_method.h since Chrome also creates an instance of
-// the class.
+// A structure which represents an input method.
 struct InputMethodDescriptor {
   InputMethodDescriptor();
 

@@ -17,10 +17,7 @@ InputMethodDescriptor GetDesc(const std::string& raw_layout) {
 }
 }  // namespace
 
-// Tests InputMethodIdIsWhitelisted function.
-// TODO(satorux): Enable this test once InputMethodIdIsWhitelisted() is
-// functional outside the chroot.
-TEST(IBusControllerTest, DISABLED_TestInputMethodIdIsWhitelisted) {
+TEST(IBusControllerTest, InputMethodIdIsWhitelisted) {
   EXPECT_TRUE(InputMethodIdIsWhitelisted("mozc"));
   EXPECT_TRUE(InputMethodIdIsWhitelisted("xkb:us:dvorak:eng"));
   EXPECT_FALSE(InputMethodIdIsWhitelisted("mozc,"));
@@ -30,10 +27,7 @@ TEST(IBusControllerTest, DISABLED_TestInputMethodIdIsWhitelisted) {
   EXPECT_FALSE(InputMethodIdIsWhitelisted(""));
 }
 
-// Tests XkbLayoutIsSupported function.
-// TODO(satorux): Enable this test once XkbLayoutIsSupported() is
-// functional outside the chroot.
-TEST(IBusControllerTest, DISABLED_TestXkbLayoutIsSupported) {
+TEST(IBusControllerTest, XkbLayoutIsSupported) {
   EXPECT_TRUE(XkbLayoutIsSupported("us"));
   EXPECT_TRUE(XkbLayoutIsSupported("us(dvorak)"));
   EXPECT_TRUE(XkbLayoutIsSupported("fr"));
@@ -45,25 +39,22 @@ TEST(IBusControllerTest, DISABLED_TestXkbLayoutIsSupported) {
   EXPECT_FALSE(XkbLayoutIsSupported(""));
 }
 
-// Tests CreateInputMethodDescriptor function.
-// TODO(satorux): Enable this test once CreateInputMethodDescriptor() is
-// functional outside the chroot.
-TEST(IBusControllerTest, DISABLED_TestCreateInputMethodDescriptor) {
-  EXPECT_EQ(GetDesc("us").keyboard_layout, "us");
-  EXPECT_EQ(GetDesc("us,us(dvorak)").keyboard_layout, "us");
-  EXPECT_EQ(GetDesc("us(dvorak),us").keyboard_layout, "us(dvorak)");
+TEST(IBusControllerTest, CreateInputMethodDescriptor) {
+  EXPECT_EQ("us", GetDesc("us").keyboard_layout);
+  EXPECT_EQ("us", GetDesc("us,us(dvorak)").keyboard_layout);
+  EXPECT_EQ("us(dvorak)", GetDesc("us(dvorak),us").keyboard_layout);
 
-  EXPECT_EQ(GetDesc("fr").keyboard_layout, "fr");
-  EXPECT_EQ(GetDesc("fr,us(dvorak)").keyboard_layout, "fr");
-  EXPECT_EQ(GetDesc("us(dvorak),fr").keyboard_layout, "us(dvorak)");
+  EXPECT_EQ("fr", GetDesc("fr").keyboard_layout);
+  EXPECT_EQ("fr", GetDesc("fr,us(dvorak)").keyboard_layout);
+  EXPECT_EQ("us(dvorak)", GetDesc("us(dvorak),fr").keyboard_layout);
 
-  EXPECT_EQ(GetDesc("not-supported,fr").keyboard_layout, "fr");
-  EXPECT_EQ(GetDesc("fr,not-supported").keyboard_layout, "fr");
+  EXPECT_EQ("fr", GetDesc("not-supported,fr").keyboard_layout);
+  EXPECT_EQ("fr", GetDesc("fr,not-supported").keyboard_layout);
 
   static const char kFallbackLayout[] = "us";
-  EXPECT_EQ(GetDesc("not-supported").keyboard_layout, kFallbackLayout);
-  EXPECT_EQ(GetDesc(",").keyboard_layout, kFallbackLayout);
-  EXPECT_EQ(GetDesc("").keyboard_layout, kFallbackLayout);
+  EXPECT_EQ(kFallbackLayout, GetDesc("not-supported").keyboard_layout);
+  EXPECT_EQ(kFallbackLayout, GetDesc(",").keyboard_layout);
+  EXPECT_EQ(kFallbackLayout, GetDesc("").keyboard_layout);
 
   // TODO(yusukes): Add tests for |virtual_keyboard_layout| member.
 }
