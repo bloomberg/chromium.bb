@@ -14,7 +14,7 @@
  */
 #include "native_client/src/include/portability.h"
 #include <stdio.h>
-#include "native_client/src/trusted/validator_x86/nacl_cpuid.h"
+#include "native_client/src/trusted/validator/x86/nacl_cpuid.h"
 
 int main(int argc, char *argv[]) {
   CPUFeatures fv;

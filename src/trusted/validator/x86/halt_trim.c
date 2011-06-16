@@ -4,10 +4,10 @@
  * found in the LICENSE file.
  */
 
-#include "native_client/src/trusted/validator_x86/halt_trim.h"
+#include "native_client/src/trusted/validator/x86/halt_trim.h"
 
 #include <stdio.h>
-#include "native_client/src/trusted/validator_x86/ncinstbuffer.h"
+#include "native_client/src/trusted/validator/x86/ncinstbuffer.h"
 
 /* Safety buffer size of halts we must keep, so that we guarantee
  * that we don't trim the last legal instruction in the

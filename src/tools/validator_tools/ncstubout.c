@@ -21,8 +21,8 @@
 #include "native_client/src/shared/gio/gio.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/utils/types.h"
-#include "native_client/src/trusted/validator_x86/nacl_cpuid.h"
 #include "native_client/src/trusted/validator/ncvalidate.h"
+#include "native_client/src/trusted/validator/x86/nacl_cpuid.h"
 
 static Bool FixUpSection(uintptr_t load_address,
                          unsigned char *code,

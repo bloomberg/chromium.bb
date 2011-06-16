@@ -1,7 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /* Descriptors to model instructions, opcodes, and instruction operands. */
@@ -148,7 +148,7 @@ void NaClInstPrint(struct Gio* f, const NaClInst* inst) {
     ++count;
   }
   { /* Print out instruction type less the NACLi_ prefix. */
-    const char* name = kNaClInstTypeString[inst->insttype];
+    const char* name = NaClInstTypeString(inst->insttype);
     gprintf(f, "%s ", name + strlen("NACLi_"));
   }
   if (inst->flags) NaClIFlagsPrint(f, inst->flags);

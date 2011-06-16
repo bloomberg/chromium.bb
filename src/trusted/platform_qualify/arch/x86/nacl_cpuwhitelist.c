@@ -14,7 +14,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include "native_client/src/include/nacl_macros.h"
-#include "native_client/src/trusted/validator_x86/nacl_cpuid.h"
+#include "native_client/src/trusted/validator/x86/nacl_cpuid.h"
 #include "native_client/src/trusted/platform_qualify/nacl_cpuwhitelist.h"
 #include "native_client/src/trusted/platform_qualify/arch/x86/nacl_cpuidwhitelist.h"
 

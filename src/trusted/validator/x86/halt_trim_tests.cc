@@ -13,8 +13,8 @@
 #include "gtest/gtest.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/platform/nacl_log.h"
-#include "native_client/src/trusted/validator_x86/halt_trim.h"
-#include "native_client/src/trusted/validator_x86/ncinstbuffer.h"
+#include "native_client/src/trusted/validator/x86/halt_trim.h"
+#include "native_client/src/trusted/validator/x86/ncinstbuffer.h"
 
 // Copied from halt_trim.c
 static const NaClMemorySize kMinHaltKeepLength = MAX_INST_LENGTH + 1;

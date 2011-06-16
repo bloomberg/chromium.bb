@@ -31,10 +31,11 @@
 #  include "native_client/src/trusted/validator_x86/ncdecode.h"
 #  include "native_client/src/trusted/validator_x86/ncvalidate.h"
 # elif NACL_TARGET_SUBARCH == 64
+#  include "native_client/src/trusted/validator/x86/nacl_cpuid.h"
 #  include "native_client/src/trusted/validator_x86/nc_inst_iter.h"
 #  include "native_client/src/trusted/validator_x86/nc_segment.h"
 #  include "native_client/src/trusted/validator_x86/nc_inst_state_internal.h"
-#  include "native_client/src/trusted/validator_x86/nacl_cpuid.h"
+
 # else
 #  error "Unknown Platform"
 # endif

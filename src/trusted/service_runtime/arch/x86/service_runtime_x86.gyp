@@ -32,8 +32,17 @@
       'include_dirs': [
         '<(SHARED_INTERMEDIATE_DIR)',
       ],
-      'dependencies': [
-        '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:ncvalidate',
+      'conditions': [
+        ['target_arch=="ia32"', {
+          'dependencies': [
+            '<(DEPTH)/native_client/src/trusted/validator/x86/32/validator_x86_32.gyp:ncvalidate_x86_32',
+          ],
+        }],
+        ['OS!="win" and target_arch=="x64"', {
+          'dependencies': [
+            '<(DEPTH)/native_client/src/trusted/validator/x86/64/validator_x86_64.gyp:ncvalidate_x86_64',
+          ],
+        }],
       ],
     },
   ],
@@ -47,6 +56,9 @@
             'target_base': 'srt_x86_cmn',
             'win_target': 'x64',
           },
+          'dependencies': [
+            '<(DEPTH)/native_client/src/trusted/validator/x86/64/validator_x86_64.gyp:ncvalidate_x86_64',
+          ],
         },
       ],
     }],

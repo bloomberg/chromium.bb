@@ -13,8 +13,8 @@
 
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/utils/types.h"
+#include "native_client/src/trusted/validator/x86/types_memory_model.h"
 #include "native_client/src/trusted/validator_x86/ncopcode_desc.h"
-#include "native_client/src/trusted/validator_x86/types_memory_model.h"
 
 EXTERN_C_BEGIN
 

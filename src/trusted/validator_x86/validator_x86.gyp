@@ -1,3 +1,4 @@
+# -*- python -*-
 # Copyright (c) 2011 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -12,20 +13,10 @@
       'target_base': 'none',
     },
     'target_conditions': [
-      ['target_base=="ncvalidate"', {
+      ['target_base=="ncval_seg_sfi"', {
         'sources': [
-          'halt_trim.c',
           'ncdecode.c',
-          'error_reporter.c',
-          'ncinstbuffer.c',
-          'nc_segment.c',
-          'nc_inst_iter.c',
-          'nc_inst_state.c',
-          'nc_inst_trans.c',
-          'ncop_exps.c',
           'ncvalidate.c',
-          'nccopycode.c',
-          'nccopycode_stores.S',
         ],
         'cflags!': [
           '-Wextra',
@@ -43,6 +34,24 @@
         # because dependents may rely on ncvalidate to create header files
         # below.
       }],
+      ['target_base=="nccopy"', {
+        'sources': [
+          'nccopycode.c',
+          'nccopycode_stores.S',
+        ],
+        'cflags!': [
+          '-Wextra',
+          '-Wswitch-enum',
+          '-Wsign-compare'
+        ],
+        'xcode_settings': {
+          'WARNING_CFLAGS!': [
+            '-Wextra',
+            '-Wswitch-enum',
+            '-Wsign-compare'
+          ],
+        },
+      }],
       ['target_base=="ncopcode_utils"', {
         'sources': ['ncopcode_desc.c'],
         'cflags!': [
@@ -58,20 +67,22 @@
           ]
         },
       }],
-      ['target_base=="nacl_cpuid_lib_base"', {
-        'sources': ['nacl_cpuid.c'],
-      }],
-      ['target_base=="ncvalidate_sfi"', {
+      ['target_base=="ncval_reg_sfi"', {
         # we depend on ncvalidate build to generate the headers
         'sources': [ 'ncvalidate_iter.c',
                      'ncvalidator_registry.c',
-                     'nc_opcode_histogram.c',
                      'nc_cpu_checks.c',
                      'nc_illegal.c',
+                     'nc_inst_iter.c',
+                     'nc_jumps.c',
+                     'nc_opcode_histogram.c',
                      'nc_protect_base.c',
                      'nc_memory_protect.c',
+                     'nc_segment.c',
+                     'nc_inst_state.c',
+                     'nc_inst_trans.c',
+                     'ncop_exps.c',
                      'ncvalidate_utils.c',
-                     'nc_jumps.c',
          ],
         'cflags!': [
           '-Wextra',
@@ -88,135 +99,134 @@
       }],
     ],
   },
-  'targets': [
-    # ----------------------------------------------------------------------
-    {
-      'target_name': 'nacl_cpuid_lib',
-      'type': 'static_library',
-      'variables': {
-        'target_base': 'nacl_cpuid_lib_base',
-      },
-    },
-    # ----------------------------------------------------------------------
-    {
-      'target_name': 'nchelper',
-      'type': 'static_library',
-      'sources': [ 'ncfileutil.c' ],
-      'cflags!': [
-        '-Wextra',
-        '-Wswitch-enum',
-        '-Wsign-compare'
-      ],
-      'xcode_settings': {
-        'WARNING_CFLAGS!': [
-          '-Wextra',
-          '-Wswitch-enum',
-          '-Wsign-compare'
-        ]
-      },
-    },
-    # ----------------------------------------------------------------------
-    {
-      'target_name': 'ncopcode_utils',
-      'type': 'static_library',
-      'hard_dependency': 1,
-      'variables': {
-        'target_base': 'ncopcode_utils',
-      },
-    },
-    {
-      'target_name': 'ncvalidate',
-      'type': 'static_library',
-      'variables': {
-        'target_base': 'ncvalidate',
-      },
-      'dependencies': [
-        'ncopcode_utils',
-        'nacl_cpuid_lib',
-      ],
-      'hard_dependency': 1,
-    },
-    # ----------------------------------------------------------------------
-    { 'target_name': 'ncvalidate_sfi',
-      'type': 'static_library',
-      'dependencies': ['ncvalidate' ],
-      'variables': {
-        'target_base': 'ncvalidate_sfi',
-      },
-      'hard_dependency': 1,
-    },
-    # ----------------------------------------------------------------------
-    {
-      'target_name': 'ncdis_util',
-      'type': 'static_library',
-      # we depend on ncvalidate build to generate the headers
-      'dependencies': ['ncopcode_utils' ],
-      'sources': [ 'ncdis_util.c',
-                   'ncdis_segments.c',
-                   'nc_read_segment.c',
-                   'ncenuminsts.c'
-                 ],
-      'cflags!': [
-        '-Wextra',
-        '-Wswitch-enum',
-        '-Wsign-compare'
-      ],
-      'defines': [ 'NACL_TRUSTED_BUT_NOT_TCB' ],
-      'xcode_settings': {
-        'WARNING_CFLAGS!': [
-          '-Wextra',
-          '-Wswitch-enum',
-          '-Wsign-compare'
-        ]
-      },
-    },
-  ],
+  # ----------------------------------------------------------------------
   'conditions': [
+    ['target_arch=="ia32"', {
+      'targets': [
+        {
+          'target_name': 'ncopcode_utils_x86_32',
+          'type': 'static_library',
+          'hard_dependency': 1,
+          'variables': {
+            'target_base': 'ncopcode_utils',
+          },
+        }, {
+          'target_name': 'ncval_seg_sfi_x86_32',
+          'type': 'static_library',
+          'variables': {
+            'target_base': 'ncval_seg_sfi',
+          },
+          'dependencies': [
+            'nccopy_x86_32',
+            '<(DEPTH)/native_client/src/trusted/validator/x86/validate_x86.gyp:ncval_base_x86_32'
+          ],
+          'hard_dependency': 1,
+        }, {
+          'target_name': 'nccopy_x86_32',
+          'type': 'static_library',
+          'hard_dependency': 1,
+          'variables': {
+            'target_base': 'nccopy',
+          },
+        }, {
+          'target_name': 'ncval_reg_sfi_x86_32',
+          'type': 'static_library',
+          'dependencies': [
+             'ncopcode_utils_x86_32',
+             'nccopy_x86_32',
+            '<(DEPTH)/native_client/src/trusted/validator/x86/validate_x86.gyp:ncval_base_x86_32'
+           ],
+          'variables': {
+            'target_base': 'ncval_reg_sfi',
+          },
+        }],
+    }],
     ['OS=="win"', {
       'targets': [
         {
-          'target_name': 'ncvalidate_sfi64',
-          'type': 'static_library',
-          'dependencies': ['ncvalidate64' ],
-          'variables': {
-            'target_base': 'ncvalidate_sfi',
-            'win_target': 'x64',
-          },
-          'hard_dependency': 1,
-        },
-        # ----------------------------------------------------------------------
-        {
-          'target_name': 'nacl_cpuid_lib64',
-          'type': 'static_library',
-          'variables': {
-            'target_base': 'nacl_cpuid_lib_base',
-            'win_target': 'x64',
-          },
-        },
-        # ----------------------------------------------------------------------
-        {
-          'target_name': 'ncopcode_utils64',
+          'target_name': 'ncopcode_utils_x86_64',
           'type': 'static_library',
           'hard_dependency': 1,
           'variables': {
             'target_base': 'ncopcode_utils',
             'win_target': 'x64',
           },
-        },
-        {
-          'target_name': 'ncvalidate64',
+        }, {
+          'target_name': 'ncval_seg_sfi_x86_64',
           'type': 'static_library',
           'variables': {
-            'target_base': 'ncvalidate',
+            'target_base': 'ncval_seg_sfi',
             'win_target': 'x64',
           },
           'dependencies': [
-            'ncopcode_utils64',
-            'nacl_cpuid_lib64',
+            'nccopy_x86_64',
+            '<(DEPTH)/native_client/src/trusted/validator/x86/validate_x86.gyp:ncval_base_x86_64'
           ],
           'hard_dependency': 1,
-        },
-      ],
+        }, {
+          'target_name': 'nccopy_x86_64',
+          'type': 'static_library',
+          'hard_dependency': 1,
+          'variables': {
+            'target_base': 'nccopy',
+            'win_target': 'x64',
+          },
+        }, {
+          'target_name': 'ncval_reg_sfi_x86_64',
+          'type': 'static_library',
+          'dependencies': [
+            'ncopcode_utils_x86_64',
+            'nccopy_x86_64',
+            '<(DEPTH)/native_client/src/trusted/validator/x86/validate_x86.gyp:ncval_base_x86_64'
+           ],
+          'variables': {
+            'target_base': 'ncval_reg_sfi',
+            'win_target': 'x64',
+          },
+        }],
+    }],
+    ['OS!="win" and target_arch=="x64"', {
+      'targets': [
+        {
+          'target_name': 'ncopcode_utils_x86_64',
+          'type': 'static_library',
+          'hard_dependency': 1,
+          'variables': {
+            'target_base': 'ncopcode_utils',
+          },
+        }, {
+          'target_name': 'ncval_seg_sfi_x86_64',
+          'type': 'static_library',
+          'variables': {
+            'target_base': 'ncval_seg_sfi',
+          },
+          'dependencies': [
+            'nccopy_x86_64',
+            '<(DEPTH)/native_client/src/trusted/validator/x86/validate_x86.gyp:ncval_base_x86_64'
+          ],
+          'hard_dependency': 1,
+        }, {
+          'target_name': 'nccopy_x86_64',
+          'type': 'static_library',
+          'hard_dependency': 1,
+          'variables': {
+            'target_base': 'nccopy',
+          },
+        }, {
+          'target_name': 'ncval_reg_sfi_x86_64',
+          'type': 'static_library',
+          'dependencies': [
+             'ncopcode_utils_x86_64',
+             'nccopy_x86_64',
+            '<(DEPTH)/native_client/src/trusted/validator/x86/validate_x86.gyp:ncval_base_x86_64'
+           ],
+          'variables': {
+            'target_base': 'ncval_reg_sfi',
+          },
+        }],
+    }],
+    [ 'target_arch=="arm"', {
+      'targets': []
     }],
   ],
 }

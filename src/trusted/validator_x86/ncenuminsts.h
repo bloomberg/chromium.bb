@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /* Helper routines for testing instructions. */
@@ -14,7 +14,7 @@
 #endif
 
 #include "native_client/src/shared/utils/types.h"
-#include "native_client/src/trusted/validator_x86/types_memory_model.h"
+#include "native_client/src/trusted/validator/x86/types_memory_model.h"
 
 /* Returns true if the instruction, defined by SIZE bytes
  * in the given base, is a legal NACL instruction (other than
