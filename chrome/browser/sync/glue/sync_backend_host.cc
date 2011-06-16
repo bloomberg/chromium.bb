@@ -1145,9 +1145,9 @@ void SyncBackendHost::Core::SetParentJsEventRouter(JsEventRouter* router) {
   DCHECK_EQ(MessageLoop::current(), host_->frontend_loop_);
   DCHECK(router);
   parent_router_ = router;
-  MessageLoop* core_message_loop = host_->sync_thread_.message_loop();
-  CHECK(core_message_loop);
-  core_message_loop->PostTask(
+  MessageLoop* sync_loop = host_->sync_thread_.message_loop();
+  CHECK(sync_loop);
+  sync_loop->PostTask(
       FROM_HERE,
       NewRunnableMethod(this,
                         &SyncBackendHost::Core::ConnectChildJsEventRouter));
@@ -1156,9 +1156,9 @@ void SyncBackendHost::Core::SetParentJsEventRouter(JsEventRouter* router) {
 void SyncBackendHost::Core::RemoveParentJsEventRouter() {
   DCHECK_EQ(MessageLoop::current(), host_->frontend_loop_);
   parent_router_ = NULL;
-  MessageLoop* core_message_loop = host_->sync_thread_.message_loop();
-  CHECK(core_message_loop);
-  core_message_loop->PostTask(
+  MessageLoop* sync_loop = host_->sync_thread_.message_loop();
+  CHECK(sync_loop);
+  sync_loop->PostTask(
       FROM_HERE,
       NewRunnableMethod(this,
                         &SyncBackendHost::Core::DisconnectChildJsEventRouter));
@@ -1173,9 +1173,9 @@ void SyncBackendHost::Core::ProcessMessage(
     const std::string& name, const JsArgList& args,
     const JsEventHandler* sender) {
   DCHECK_EQ(MessageLoop::current(), host_->frontend_loop_);
-  MessageLoop* core_message_loop = host_->sync_thread_.message_loop();
-  CHECK(core_message_loop);
-  core_message_loop->PostTask(
+  MessageLoop* sync_loop = host_->sync_thread_.message_loop();
+  CHECK(sync_loop);
+  sync_loop->PostTask(
       FROM_HERE,
       NewRunnableMethod(this,
                         &SyncBackendHost::Core::DoProcessMessage,
