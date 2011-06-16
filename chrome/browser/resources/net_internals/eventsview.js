@@ -326,10 +326,18 @@ EventsView.prototype.parseRestrictDirectives_ = function(filterText, filter) {
     if (filterInfo == null)
       break;
     if (filterInfo.parameter == 'active') {
-      if (!filterInfo.isNegated)
+      if (!filterInfo.isNegated) {
         filter.isActive = true;
-      else
+      } else {
         filter.isInactive = true;
+      }
+    }
+    if (filterInfo.parameter == 'error') {
+      if (!filterInfo.isNegated) {
+        filter.isError = true;
+      } else {
+        filter.isNotError = true;
+      }
     }
     filterText = filterInfo.remainingText;
   }
