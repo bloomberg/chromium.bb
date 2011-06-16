@@ -460,7 +460,7 @@ void NativeWidgetWin::OnPaint(HDC dc) {
     GetWindowRect(hwnd(), &wr);
     SIZE size = {wr.right - wr.left, wr.bottom - wr.top};
     POINT position = {wr.left, wr.top};
-    HDC dib_dc = window_contents_->beginPlatformPaint();
+    HDC dib_dc = window_contents_->BeginPlatformPaint();
     POINT zero = {0, 0};
     BLENDFUNCTION blend = {AC_SRC_OVER, 0, 125, AC_SRC_ALPHA};
     UpdateLayeredWindow(hwnd(), NULL, &position, &size, dib_dc, &zero,

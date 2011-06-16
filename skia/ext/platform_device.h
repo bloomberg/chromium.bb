@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -58,24 +58,6 @@ typedef CGRect PlatformRect;
 SK_API void SetPlatformDevice(SkDevice* device,
                               PlatformDevice* platform_device);
 SK_API PlatformDevice* GetPlatformDevice(SkDevice* device);
-
-// Returns if the native font rendering engine is allowed to render text to
-// this device.
-SK_API bool IsNativeFontRenderingAllowed(SkDevice* device);
-
-// Returns the PlatformSurface used for native rendering into the device.
-SK_API PlatformSurface BeginPlatformPaint(SkDevice* device);
-
-// Finish a previous call to BeginPlatformPaint.
-SK_API void EndPlatformPaint(SkDevice* device);
-
-// Draws to the given PlatformSurface, |context|. Forwards to the
-// PlatformDevice bound to |device|.  Otherwise is a NOP.
-SK_API void DrawToNativeContext(SkDevice* device, PlatformSurface context,
-                                int x, int y, const PlatformRect* src_rect);
-
-// Sets the opacity of each pixel in the specified region to be opaque.
-SK_API void MakeOpaque(SkDevice* device, int x, int y, int width, int height);
 
 }  // namespace skia
 

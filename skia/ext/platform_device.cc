@@ -27,40 +27,5 @@ PlatformDevice* GetPlatformDevice(SkDevice* device) {
   return NULL;
 }
 
-PlatformSurface BeginPlatformPaint(SkDevice* device) {
-  PlatformDevice* platform_device = GetPlatformDevice(device);
-  if (platform_device)
-    return platform_device->BeginPlatformPaint();
-
-  return 0;
-}
-
-void EndPlatformPaint(SkDevice* device) {
-  PlatformDevice* platform_device = GetPlatformDevice(device);
-  if (platform_device)
-    return platform_device->EndPlatformPaint();
-}
-
-bool IsNativeFontRenderingAllowed(SkDevice* device) {
-  PlatformDevice* platform_device = GetPlatformDevice(device);
-  if (platform_device)
-    return platform_device->IsNativeFontRenderingAllowed();
-
-  return false;
-}
-
-void DrawToNativeContext(SkDevice* device, PlatformSurface context,
-                         int x, int y, const PlatformRect* src_rect) {
-  PlatformDevice* platform_device = GetPlatformDevice(device);
-  if (platform_device)
-    platform_device->DrawToNativeContext(context, x, y, src_rect);
-}
-
-void MakeOpaque(SkDevice* device, int x, int y, int width, int height) {
-  PlatformDevice* platform_device = GetPlatformDevice(device);
-  if (platform_device)
-    platform_device->MakeOpaque(x, y, width, height);
-}
-
 }  // namespace skia
 
