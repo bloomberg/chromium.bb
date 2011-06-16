@@ -1060,6 +1060,11 @@ void NativeWidgetGtk::MoveAbove(gfx::NativeView native_view) {
   ui::StackPopupWindow(GetNativeView(), native_view);
 }
 
+void NativeWidgetGtk::MoveToTop() {
+  DCHECK(GTK_IS_WINDOW(GetNativeView()));
+  gtk_window_present(GTK_WINDOW(GetNativeView()));
+}
+
 void NativeWidgetGtk::SetShape(gfx::NativeRegion region) {
   if (widget_ && widget_->window) {
     gdk_window_shape_combine_region(widget_->window, region, 0, 0);

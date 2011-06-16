@@ -42,6 +42,7 @@ void NativeWidgetViews::OnActivate(bool active) {
 
 void NativeWidgetViews::InitNativeWidget(const Widget::InitParams& params) {
   view_ = new internal::NativeWidgetView(this);
+  view_->SetPaintToTexture(true);
   host_view_->AddChildView(view_);
 
   // TODO(beng): handle parenting.
@@ -200,6 +201,10 @@ void NativeWidgetViews::SetBoundsConstrained(const gfx::Rect& bounds,
 
 void NativeWidgetViews::MoveAbove(gfx::NativeView native_view) {
   NOTIMPLEMENTED();
+}
+
+void NativeWidgetViews::MoveToTop() {
+  host_view_->ReorderChildView(view_, -1);
 }
 
 void NativeWidgetViews::SetShape(gfx::NativeRegion region) {

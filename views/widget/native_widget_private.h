@@ -167,6 +167,7 @@ class NativeWidgetPrivate : public NativeWidget {
   virtual void SetBoundsConstrained(const gfx::Rect& bounds,
                                     Widget* other_widget) = 0;
   virtual void MoveAbove(gfx::NativeView native_view) = 0;
+  virtual void MoveToTop() = 0;
   virtual void SetShape(gfx::NativeRegion shape) = 0;
   virtual void Close() = 0;
   virtual void CloseNow() = 0;

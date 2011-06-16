@@ -99,7 +99,7 @@ void DesktopWindow::CreateDesktopWindow() {
   desktop->CreateTestWindow(L"Sample Window 1", SK_ColorWHITE,
                             gfx::Rect(500, 200, 400, 400), true);
   desktop->CreateTestWindow(L"Sample Window 2", SK_ColorRED,
-                            gfx::Rect(600, 650, 450, 300), false);
+                            gfx::Rect(600, 450, 450, 300), false);
 }
 
 void DesktopWindow::ActivateWidget(Widget* widget) {
@@ -109,6 +109,7 @@ void DesktopWindow::ActivateWidget(Widget* widget) {
   if (active_widget_)
     active_widget_->OnActivate(false);
   if (widget) {
+    widget->MoveToTop();
     active_widget_ = static_cast<NativeWidgetViews*>(widget->native_widget());
     active_widget_->OnActivate(true);
   }

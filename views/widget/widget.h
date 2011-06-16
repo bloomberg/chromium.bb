@@ -281,6 +281,7 @@ class Widget : public internal::NativeWidgetDelegate,
   // Places the widget in front of the specified widget in z-order.
   void MoveAboveWidget(Widget* widget);
   void MoveAbove(gfx::NativeView native_view);
+  void MoveToTop();
 
   // Sets a shape on the widget. This takes ownership of shape.
   void SetShape(gfx::NativeRegion shape);

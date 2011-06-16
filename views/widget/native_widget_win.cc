@@ -790,6 +790,10 @@ void NativeWidgetWin::MoveAbove(gfx::NativeView native_view) {
                SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE);
 }
 
+void NativeWidgetWin::MoveToTop() {
+  NOTIMPLEMENTED();
+}
+
 void NativeWidgetWin::SetShape(gfx::NativeRegion region) {
   SetWindowRgn(region, TRUE);
 }

@@ -176,6 +176,32 @@ void View::AddChildViewAt(View* view, int index) {
   view->MarkTextureDirty();
 }
 
+void View::ReorderChildView(View* view, int index) {
+  DCHECK_EQ(view->parent_, this);
+  if (index < 0)
+    index = child_count() - 1;
+  else if (index >= child_count())
+    return;
+  if (children_[index] == view)
+    return;
+
+  const Views::iterator i(std::find(children_.begin(), children_.end(), view));
+  DCHECK(i != children_.end());
+  children_.erase(i);
+
+  // Unlink the view first
+  View* next_focusable = view->next_focusable_view_;
+  View* prev_focusable = view->previous_focusable_view_;
+  if (prev_focusable)
+    prev_focusable->next_focusable_view_ = next_focusable;
+  if (next_focusable)
+    next_focusable->previous_focusable_view_ = prev_focusable;
+
+  // Add it in the specified index now.
+  InitFocusSiblings(view, index);
+  children_.insert(children_.begin() + index, view);
+}
+
 void View::RemoveChildView(View* view) {
   DoRemoveChildView(view, true, true, false);
 }

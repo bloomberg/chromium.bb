@@ -177,6 +177,10 @@ class View : public AcceleratorTarget {
   void AddChildView(View* view);
   void AddChildViewAt(View* view, int index);
 
+  // Moves |view| to the specified |index|. A negative value for |index| moves
+  // the view at the end.
+  void ReorderChildView(View* view, int index);
+
   // Removes |view| from this view. The view's parent will change to NULL.
   void RemoveChildView(View* view);
 

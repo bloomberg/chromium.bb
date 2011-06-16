@@ -2111,4 +2111,58 @@ TEST_F(ViewTest, GetIndexOf) {
   ASSERT_EQ(-1, child2->GetIndexOf(foo1));
 }
 
+// Verifies that the child views can be reordered correctly.
+TEST_F(ViewTest, ReorderChildren) {
+  View root;
+
+  View* child = new View();
+  root.AddChildView(child);
+
+  View* foo1 = new View();
+  child->AddChildView(foo1);
+  View* foo2 = new View();
+  child->AddChildView(foo2);
+  View* foo3 = new View();
+  child->AddChildView(foo3);
+  foo1->set_focusable(true);
+  foo2->set_focusable(true);
+  foo3->set_focusable(true);
+
+  ASSERT_EQ(0, child->GetIndexOf(foo1));
+  ASSERT_EQ(1, child->GetIndexOf(foo2));
+  ASSERT_EQ(2, child->GetIndexOf(foo3));
+  ASSERT_EQ(foo2, foo1->GetNextFocusableView());
+  ASSERT_EQ(foo3, foo2->GetNextFocusableView());
+  ASSERT_EQ(NULL, foo3->GetNextFocusableView());
+
+  // Move |foo2| at the end.
+  child->ReorderChildView(foo2, -1);
+  ASSERT_EQ(0, child->GetIndexOf(foo1));
+  ASSERT_EQ(1, child->GetIndexOf(foo3));
+  ASSERT_EQ(2, child->GetIndexOf(foo2));
+  ASSERT_EQ(foo3, foo1->GetNextFocusableView());
+  ASSERT_EQ(foo2, foo3->GetNextFocusableView());
+  ASSERT_EQ(NULL, foo2->GetNextFocusableView());
+
+  // Move |foo1| at the end.
+  child->ReorderChildView(foo1, -1);
+  ASSERT_EQ(0, child->GetIndexOf(foo3));
+  ASSERT_EQ(1, child->GetIndexOf(foo2));
+  ASSERT_EQ(2, child->GetIndexOf(foo1));
+  ASSERT_EQ(NULL, foo1->GetNextFocusableView());
+  ASSERT_EQ(foo2, foo1->GetPreviousFocusableView());
+  ASSERT_EQ(foo2, foo3->GetNextFocusableView());
+  ASSERT_EQ(foo1, foo2->GetNextFocusableView());
+
+  // Move |foo2| to the front.
+  child->ReorderChildView(foo2, 0);
+  ASSERT_EQ(0, child->GetIndexOf(foo2));
+  ASSERT_EQ(1, child->GetIndexOf(foo3));
+  ASSERT_EQ(2, child->GetIndexOf(foo1));
+  ASSERT_EQ(NULL, foo1->GetNextFocusableView());
+  ASSERT_EQ(foo3, foo1->GetPreviousFocusableView());
+  ASSERT_EQ(foo3, foo2->GetNextFocusableView());
+  ASSERT_EQ(foo1, foo3->GetNextFocusableView());
+}
+
 }  // namespace views

@@ -357,6 +357,10 @@ void Widget::MoveAbove(gfx::NativeView native_view) {
   native_widget_->MoveAbove(native_view);
 }
 
+void Widget::MoveToTop() {
+  native_widget_->MoveToTop();
+}
+
 void Widget::SetShape(gfx::NativeRegion shape) {
   native_widget_->SetShape(shape);
 }
