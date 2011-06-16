@@ -357,7 +357,7 @@ END_MSG_MAP()
 
         case IDC_PRINT: {
           automation_client_->PrintTab();
-          break;
+          return true;
         }
       }
     }
