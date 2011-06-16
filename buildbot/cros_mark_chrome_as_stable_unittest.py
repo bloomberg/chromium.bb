@@ -114,7 +114,7 @@ class CrosMarkChromeAsStable(mox.MoxTestBase):
     stable_ebuilds = self._GetStableEBuilds()
 
     candidate = cros_mark_chrome_as_stable.FindChromeUprevCandidate(
-        stable_ebuilds, cros_mark_chrome_as_stable.TIP_OF_TRUNK,
+        stable_ebuilds, constants.CHROME_REV_TOT,
         self.sticky_branch)
 
     self.assertEqual(candidate.ebuild_path, self.tot_stable)
@@ -124,7 +124,7 @@ class CrosMarkChromeAsStable(mox.MoxTestBase):
     stable_ebuilds = self._GetStableEBuilds()
 
     candidate = cros_mark_chrome_as_stable.FindChromeUprevCandidate(
-        stable_ebuilds, cros_mark_chrome_as_stable.LATEST_RELEASE,
+        stable_ebuilds, constants.CHROME_REV_LATEST,
         self.sticky_branch)
 
     self.assertEqual(candidate.ebuild_path, self.latest_stable)
@@ -134,7 +134,7 @@ class CrosMarkChromeAsStable(mox.MoxTestBase):
     stable_ebuilds = self._GetStableEBuilds()
 
     candidate = cros_mark_chrome_as_stable.FindChromeUprevCandidate(
-        stable_ebuilds, cros_mark_chrome_as_stable.STICKY,
+        stable_ebuilds, constants.CHROME_REV_STICKY,
         self.sticky_branch)
 
     self.assertEqual(candidate.ebuild_path, self.sticky_rc)
@@ -250,21 +250,24 @@ class CrosMarkChromeAsStable(mox.MoxTestBase):
 
   def testStickyMarkAsStable(self):
     """Tests to see if we can mark chrome as stable for a new sticky release."""
-    self._CommonMarkAsStableTest(cros_mark_chrome_as_stable.STICKY,
-                                 self.sticky_new_rc_version, self.sticky_rc,
-                                 self.sticky_new_rc, 'stable_release')
+    self._CommonMarkAsStableTest(
+        constants.CHROME_REV_STICKY,
+        self.sticky_new_rc_version, self.sticky_rc,
+        self.sticky_new_rc, 'stable_release')
 
   def testLatestMarkAsStable(self):
     """Tests to see if we can mark chrome for a latest release."""
-    self._CommonMarkAsStableTest(cros_mark_chrome_as_stable.LATEST_RELEASE,
-                                 self.latest_new_version, self.latest_stable,
-                                 self.latest_new, 'latest_release')
+    self._CommonMarkAsStableTest(
+        constants.CHROME_REV_LATEST,
+        self.latest_new_version, self.latest_stable,
+        self.latest_new, 'latest_release')
 
   def testTotMarkAsStable(self):
     """Tests to see if we can mark chrome for tot."""
-    self._CommonMarkAsStableTest(cros_mark_chrome_as_stable.TIP_OF_TRUNK,
-                                 self.tot_new_version, self.tot_stable,
-                                 self.tot_new, 'tot')
+    self._CommonMarkAsStableTest(
+        constants.CHROME_REV_TOT,
+        self.tot_new_version, self.tot_stable,
+        self.tot_new, 'tot')
 
 
 if __name__ == '__main__':

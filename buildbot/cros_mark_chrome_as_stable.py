@@ -29,10 +29,6 @@ from cros_build_lib import RunCommand, Info, Warning
 
 BASE_CHROME_SVN_URL = 'svn://svn.chromium.org/chrome/'
 
-# Command for which chrome ebuild to uprev.
-TIP_OF_TRUNK, LATEST_RELEASE, STICKY = 'tot', 'latest_release', 'stable_release'
-CHROME_REV = [TIP_OF_TRUNK, LATEST_RELEASE, STICKY]
-
 # Helper regex's for finding ebuilds.
 _CHROME_VERSION_REGEX = '\d+\.\d+\.\d+\.\d+'
 _NON_STICKY_REGEX = '%s[(_rc.*)|(_alpha.*)]+' % _CHROME_VERSION_REGEX
@@ -195,13 +191,13 @@ def FindChromeUprevCandidate(stable_ebuilds, chrome_rev, sticky_branch):
     Returns the EBuild, otherwise None if none found.
   """
   candidates = []
-  if chrome_rev == TIP_OF_TRUNK:
+  if chrome_rev == constants.CHROME_REV_TOT:
     chrome_branch_re = re.compile('%s.*_alpha.*' % _CHROME_VERSION_REGEX)
     for ebuild in stable_ebuilds:
       if chrome_branch_re.search(ebuild.version):
         candidates.append(ebuild)
 
-  elif chrome_rev == STICKY:
+  elif chrome_rev == constants.CHROME_REV_STICKY:
     chrome_branch_re = re.compile('%s\..*' % sticky_branch)
     for ebuild in stable_ebuilds:
       if chrome_branch_re.search(ebuild.version):
@@ -233,14 +229,14 @@ def MarkChromeEBuildAsStable(stable_candidate, unstable_ebuild, chrome_rev,
       revving from.  If None, builds the a new ebuild given the version
       and logic for chrome_rev type with revision set to 1.
     unstable_ebuild:  ebuild corresponding to the unstable ebuild for chrome.
-    chrome_rev: one of CHROME_REV
-      TIP_OF_TRUNK -  Requires commit value.  Revs the ebuild for the TOT
-        version and uses the portage suffix of _alpha.
-      LATEST_RELEASE - This uses the portage suffix of _rc as they are release
-        candidates for the next sticky version.
-      STICKY -  Revs the sticky version.
+    chrome_rev: one of constants.VALID_CHROME_REVISIONS
+      constants.CHROME_REV_TOT -  Requires commit value.  Revs the ebuild for
+        the TOT version and uses the portage suffix of _alpha.
+      constants.CHROME_REV_LATEST - This uses the portage suffix of _rc as they
+        are release candidates for the next sticky version.
+      constants.CHROME_REV_STICKY -  Revs the sticky version.
     chrome_version:  The \d.\d.\d.\d version of Chrome.
-    commit:  Used with TIP_OF_TRUNK.  The svn revision of chrome.
+    commit:  Used with constants.CHROME_REV_TOT.  The svn revision of chrome.
     overlay_dir:  Path to the chromeos-chrome package dir.
     sticky_ebuild: EBuild class for the sticky ebuild.
   Returns:
@@ -251,13 +247,13 @@ def MarkChromeEBuildAsStable(stable_candidate, unstable_ebuild, chrome_rev,
 
     This is True if there if the current stable ebuild is the exact same copy
     of the new one OR the chrome versions are the same and we're revving
-    LATEST_RELEASE (as we don't care about 9999 changes for it).
+    constants.CHROME_REV_LATEST (as we don't care about 9999 changes for it).
     """
     if not stable_ebuild:
       return False
 
     if stable_candidate.chrome_version == new_ebuild.chrome_version:
-      if chrome_rev == LATEST_RELEASE:
+      if chrome_rev == constants.CHROME_REV_LATEST:
         return True
       else:
         return filecmp.cmp(
@@ -270,7 +266,7 @@ def MarkChromeEBuildAsStable(stable_candidate, unstable_ebuild, chrome_rev,
         stable_candidate.ebuild_path_no_revision,
         stable_candidate.current_revision + 1)
   else:
-    if chrome_rev == TIP_OF_TRUNK:
+    if chrome_rev == constants.CHROME_REV_TOT:
       portage_suffix = '_alpha'
     else:
       portage_suffix = '_rc'
@@ -278,7 +274,7 @@ def MarkChromeEBuildAsStable(stable_candidate, unstable_ebuild, chrome_rev,
     new_ebuild_path = base_path + ('%s-r1.ebuild' % portage_suffix)
 
   # Mark latest release and sticky branches as stable.
-  mark_stable = chrome_rev != TIP_OF_TRUNK
+  mark_stable = chrome_rev != constants.CHROME_REV_TOT
 
   cros_mark_as_stable.EBuildStableMarker.MarkAsStable(
       unstable_ebuild.ebuild_path, new_ebuild_path, 'CROS_SVN_COMMIT', commit,
@@ -304,7 +300,8 @@ def MarkChromeEBuildAsStable(stable_candidate, unstable_ebuild, chrome_rev,
 
 
 def main():
-  usage = '%s OPTIONS [%s]' % (__file__, '|'.join(CHROME_REV))
+  usage_options =  '|'.join(constants.VALID_CHROME_REVISIONS)
+  usage = '%s OPTIONS [%s]' % (__file__, usage_options)
   parser = optparse.OptionParser(usage)
   parser.add_option('-b', '--board', default='x86-generic')
   parser.add_option('-s', '--srcroot', default=os.path.join(os.environ['HOME'],
@@ -314,8 +311,9 @@ def main():
                     help='Branch we are tracking changes against')
   (options, args) = parser.parse_args()
 
-  if len(args) != 1 or args[0] not in CHROME_REV:
-    parser.error('Commit requires arg set to one of %s.' % CHROME_REV)
+  if len(args) != 1 or args[0] not in constants.VALID_CHROME_REVISIONS:
+    parser.error('Commit requires arg set to one of %s.'
+                 % constants.VALID_CHROME_REVISIONS)
 
   overlay_dir = os.path.abspath(_CHROME_OVERLAY_DIR %
                                 {'srcroot': options.srcroot})
@@ -328,10 +326,10 @@ def main():
   sticky_version = sticky_ebuild.chrome_version
   sticky_branch = sticky_version.rpartition('.')[0]
 
-  if chrome_rev == TIP_OF_TRUNK:
+  if chrome_rev == constants.CHROME_REV_TOT:
     version_to_uprev = _GetTipOfTrunkVersion()
     commit_to_use = _GetTipOfTrunkSvnRevision()
-  elif chrome_rev == LATEST_RELEASE:
+  elif chrome_rev == constants.CHROME_REV_LATEST:
     version_to_uprev = _GetLatestRelease()
     # Don't rev on stable branch for latest_release.
     if re.match('%s\.\d+' % sticky_branch, version_to_uprev):

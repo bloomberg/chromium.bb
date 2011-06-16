@@ -15,9 +15,9 @@ import constants
 sys.path.append(constants.SOURCE_ROOT)
 import chromite.buildbot.cbuildbot as cbuildbot
 import chromite.buildbot.cbuildbot_config as config
+import chromite.lib.cros_build_lib as cros_lib
 
-
-class CBuildBotTest(mox.MoxTestBase):
+class RunBuildStagesTest(mox.MoxTestBase):
 
   def setUp(self):
     mox.MoxTestBase.setUp(self)
@@ -91,6 +91,83 @@ class CBuildBotTest(mox.MoxTestBase):
     # Clean up after the test
     if 'CHROMEOS_OFFICIAL' in os.environ:
       del os.environ['CHROMEOS_OFFICIAL']
+
+
+class InterfaceTest(mox.MoxTestBase):
+
+  _X86_PREFLIGHT = 'x86-generic-pre-flight-queue'
+  _BUILD_ROOT = '/b/test_build1'
+  def setUp(self):
+    mox.MoxTestBase.setUp(self)
+    self.parser = cbuildbot._CreateParser()
+
+  def testDebugBuildBotSetByDefault(self):
+    """Test that debug and buildbot flags are set by default."""
+    args = ['-r', self._BUILD_ROOT, self._X86_PREFLIGHT]
+    (options, args) = self.parser.parse_args(args=args)
+    self.assertEquals(options.debug, True)
+    self.assertEquals(options.buildbot, False)
+
+  def testBuildBotOption(self):
+    """Test that --buildbot option unsets debug flag."""
+    args = ['-r', self._BUILD_ROOT, '--buildbot', self._X86_PREFLIGHT]
+    (options, args) = self.parser.parse_args(args=args)
+    self.assertEquals(options.debug, False)
+    self.assertEquals(options.buildbot, True)
+
+  def testBuildBotWithDebugOption(self):
+    """Test that --debug option overrides --buildbot option."""
+    args = ['-r', self._BUILD_ROOT, '--buildbot', '--debug',
+            self._X86_PREFLIGHT]
+    (options, args) = self.parser.parse_args(args=args)
+    self.assertEquals(options.debug, True)
+    self.assertEquals(options.buildbot, True)
+
+  def testNoClobberConfirmationForBuildBotBuilds(self):
+    """Test that we don't ask for clobber confirmation for --buildbot runs."""
+    self.mox.StubOutWithMock(cbuildbot, '_GetInput')
+    self.mox.ReplayAll()
+    cbuildbot._ValidateClobber(self._BUILD_ROOT, buildbot=True)
+    self.mox.VerifyAll()
+
+  def testValidateClobberUserDeclines_1(self):
+    """Test case where user declines in prompt."""
+    self.mox.StubOutWithMock(os.path, 'exists')
+    self.mox.StubOutWithMock(cbuildbot, '_GetInput')
+    self.mox.StubOutWithMock(sys, 'exit')
+
+    os.path.exists(self._BUILD_ROOT).AndReturn(True)
+    cbuildbot._GetInput(mox.IgnoreArg()).AndReturn('No')
+    sys.exit(0)
+
+    self.mox.ReplayAll()
+    cbuildbot._ValidateClobber(self._BUILD_ROOT, False)
+    self.mox.VerifyAll()
+
+  def testValidateClobberUserDeclines_2(self):
+    """Test case where user does not enter the full 'yes' pattern."""
+    self.mox.StubOutWithMock(os.path, 'exists')
+    self.mox.StubOutWithMock(cbuildbot, '_GetInput')
+    self.mox.StubOutWithMock(sys, 'exit')
+
+    os.path.exists(self._BUILD_ROOT).AndReturn(True)
+    cbuildbot._GetInput(mox.IgnoreArg()).AndReturn('y')
+    sys.exit(0)
+
+    self.mox.ReplayAll()
+    cbuildbot._ValidateClobber(self._BUILD_ROOT, False)
+    self.mox.VerifyAll()
+
+  def testValidateClobberProtectRunningChromite(self):
+    """User should not be clobbering our own source."""
+    self.mox.StubOutWithMock(cros_lib, 'Die')
+    cwd = os.path.dirname(os.path.realpath(__file__))
+    buildroot = os.path.dirname(cwd)
+    cros_lib.Die(mox.IgnoreArg()).AndRaise(Exception)
+    self.mox.ReplayAll()
+    self.assertRaises(Exception, cbuildbot._ValidateClobber, buildroot, False)
+    self.mox.VerifyAll()
+
 
 if __name__ == '__main__':
   unittest.main()

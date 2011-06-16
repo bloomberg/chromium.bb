@@ -408,7 +408,7 @@ def UploadPrebuilts(buildroot, board, overlay_config, binhosts, category,
     binhosts: The URLs of the current binhosts. Binaries that are already
               present will not be uploaded twice. Empty URLs will be ignored.
     category: Build type. Can be [binary|full|chrome].
-    chrome_rev: Chrome_rev of type [tot|latest_release|sticky_release].
+    chrome_rev: Chrome_rev of type constants.VALID_CHROME_REVISIONS.
     buildnumber:  self explanatory.
   """
   cwd = os.path.dirname(__file__)
