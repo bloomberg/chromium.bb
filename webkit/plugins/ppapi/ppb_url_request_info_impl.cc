@@ -382,8 +382,10 @@ WebURLRequest PPB_URLRequestInfo_Impl::ToWebURLRequest(WebFrame* frame) const {
   if (has_custom_referrer_url_) {
     if (!custom_referrer_url_.empty())
       frame->setReferrerForRequest(web_request, GURL(custom_referrer_url_));
-  } else {
-    frame->setReferrerForRequest(web_request, WebURL());  // Use default.
+  } else if (!allow_cross_origin_requests_) {
+    // Use default, except for cross-origin requests, since 'referer' is not
+    // whitelisted and will cause the request to fail.
+    frame->setReferrerForRequest(web_request, WebURL());
   }
 
   if (has_custom_content_transfer_encoding_) {

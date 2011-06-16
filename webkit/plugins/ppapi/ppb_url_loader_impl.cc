@@ -5,6 +5,7 @@
 #include "webkit/plugins/ppapi/ppb_url_loader_impl.h"
 
 #include "base/logging.h"
+#include "net/base/net_errors.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_url_loader.h"
@@ -16,6 +17,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKitClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebURLError.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLLoader.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLLoaderOptions.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLRequest.h"
@@ -247,7 +249,7 @@ int32_t PPB_URLLoader_Impl::Open(PPB_URLRequestInfo_Impl* request,
     return rv;
 
   if (request->RequiresUniversalAccess() && !has_universal_access_)
-    return PP_ERROR_BADARGUMENT;
+    return PP_ERROR_NOACCESS;
 
   if (loader_.get())
     return PP_ERROR_INPROGRESS;
@@ -276,13 +278,11 @@ int32_t PPB_URLLoader_Impl::Open(PPB_URLRequestInfo_Impl* request,
     return PP_ERROR_FAILED;
 
   loader_->loadAsynchronously(web_request, this);
-  // Check for immediate failure; The AssociatedURLLoader will call our
-  // didFail method synchronously for certain kinds of access violations
-  // so we must return an error to the caller.
-  // TODO(bbudge) Modify the underlying AssociatedURLLoader to only call
-  // back asynchronously.
-  if (done_status_ == PP_ERROR_FAILED)
-    return PP_ERROR_NOACCESS;
+  // TODO(bbudge) Remove this code when AssociatedURLLoader is changed to
+  // return errors asynchronously.
+  if (done_status_ == PP_ERROR_FAILED ||
+      done_status_ == PP_ERROR_NOACCESS)
+    return done_status_;
 
   request_info_ = scoped_refptr<PPB_URLRequestInfo_Impl>(request);
 
@@ -475,8 +475,23 @@ void PPB_URLLoader_Impl::didFinishLoading(WebURLLoader* loader,
 
 void PPB_URLLoader_Impl::didFail(WebURLLoader* loader,
                                  const WebURLError& error) {
-  // TODO(darin): Provide more detailed error information.
-  done_status_ = PP_ERROR_FAILED;
+  if (error.domain.equals(WebString::fromUTF8(net::kErrorDomain))) {
+    // TODO(bbudge): Extend pp_errors.h to cover interesting network errors
+    // from the net error domain.
+    switch (error.reason) {
+      case net::ERR_ACCESS_DENIED:
+      case net::ERR_NETWORK_ACCESS_DENIED:
+        done_status_ = PP_ERROR_NOACCESS;
+        break;
+      default:
+        done_status_ = PP_ERROR_FAILED;
+        break;
+    }
+  } else {
+    // It's a WebKit error.
+    done_status_ = PP_ERROR_NOACCESS;
+  }
+
   RunCallback(done_status_);
 }
 

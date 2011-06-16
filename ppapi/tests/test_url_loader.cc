@@ -11,11 +11,13 @@
 #include "ppapi/c/dev/ppb_file_io_dev.h"
 #include "ppapi/c/dev/ppb_file_io_trusted_dev.h"
 #include "ppapi/c/dev/ppb_testing_dev.h"
+#include "ppapi/c/dev/ppb_url_util_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_url_loader.h"
 #include "ppapi/cpp/dev/file_io_dev.h"
 #include "ppapi/cpp/dev/file_ref_dev.h"
 #include "ppapi/cpp/dev/file_system_dev.h"
+#include "ppapi/cpp/dev/url_util_dev.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/url_loader.h"
@@ -271,9 +273,21 @@ std::string TestURLLoader::TestSameOriginRestriction() {
 }
 
 std::string TestURLLoader::TestCrossOriginRequest() {
+  // Get the document URL and use it to construct a URL that will be
+  // considered cross-origin by the WebKit access control code, and yet be
+  // reachable by the test server.
+  PP_URLComponents_Dev components;
+  pp::Var pp_document_url = pp::URLUtil_Dev::Get()->GetDocumentURL(
+      *instance_, &components);
+  std::string document_url = pp_document_url.AsString();
+  // Replace "127.0.0.1" with "localhost".
+  if (document_url.find("127.0.0.1") == std::string::npos)
+    return "Can't construct a cross-origin URL";
+  std::string cross_origin_url = document_url.replace(
+      components.host.begin, components.host.len, "localhost");
+
   pp::URLRequestInfo request(instance_);
-  // Create a URL that will be considered to be a different origin.
-  request.SetURL("http://127.0.0.1/test_url_loader_data/hello.txt");
+  request.SetURL(cross_origin_url);
   request.SetAllowCrossOriginRequests(true);
 
   TestCompletionCallback callback(instance_->pp_instance());
@@ -284,7 +298,7 @@ std::string TestURLLoader::TestCrossOriginRequest() {
     rv = callback.WaitForResult();
 
   // We expect success since we allowed a cross-origin request.
-  if (rv == PP_ERROR_NOACCESS)
+  if (rv != PP_OK)
     return ReportError("URLLoader::Open()", rv);
 
   PASS();
