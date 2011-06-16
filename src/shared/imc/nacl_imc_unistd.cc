@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 
@@ -37,6 +37,8 @@ namespace nacl {
 
 namespace {
 
+const char kNaClTempPrefixVar[] = "NACL_TMPFS_PREFIX";
+
 // The pathname or SHM-namespace prefixes for memory objects created
 // by CreateMemoryObject().
 const char kShmTempPrefix[] = "/tmp/google-nacl-shm-";
@@ -70,14 +72,13 @@ int GetLastErrorString(char* buffer, size_t length) {
 
 static AtomicWord memory_object_count = 0;
 
-static int TryShmOrTempOpen(size_t length, bool use_temp) {
+static int TryShmOrTempOpen(size_t length, const char* prefix, bool use_temp) {
   if (0 == length) {
     return -1;
   }
 
   char name[PATH_MAX];
   for (;;) {
-    const char *prefix = use_temp ? kShmTempPrefix : kShmOpenPrefix;
     snprintf(name, sizeof name, "%s-%u.%u", prefix,
              getpid(),
              static_cast<uint32_t>(AtomicIncrement(&memory_object_count, 1)));
@@ -126,6 +127,23 @@ Handle CreateMemoryObject(size_t length, bool executable) {
       return fd;
   }
 
+  // /dev/shm is not always available on Linux.
+  // Sometimes it's mounted as noexec.
+  // To handle this case, sel_ldr can take a path
+  // to tmpfs from the environment.
+
+#if NACL_LINUX && defined(NACL_ENABLE_TMPFS_REDIRECT_VAR)
+  if (NACL_ENABLE_TMPFS_REDIRECT_VAR) {
+    const char* prefix = getenv(kNaClTempPrefixVar);
+    if (prefix != NULL) {
+      fd = TryShmOrTempOpen(length, prefix, true);
+      if (fd >= 0) {
+        return fd;
+      }
+    }
+  }
+#endif
+
   // On Mac OS X, shm_open() gives us file descriptors that the OS
   // won't mmap() with PROT_EXEC, which is no good for the dynamic
   // code region.  Try open()ing a file in /tmp first, but fall back
@@ -140,13 +158,13 @@ Handle CreateMemoryObject(size_t length, bool executable) {
   // Try /tmp first.  It would be OK to enable this for Linux, but
   // there's no need because shm_open() (which uses /dev/shm rather
   // than /tmp) is fine on Linux.
-  fd = TryShmOrTempOpen(length, true);
+  fd = TryShmOrTempOpen(length, kShmTempPrefix, true);
   if (fd >= 0)
     return fd;
 #endif
 
   // Try shm_open().
-  return TryShmOrTempOpen(length, false);
+  return TryShmOrTempOpen(length, kShmOpenPrefix, false);
 }
 
 void* Map(void* start, size_t length, int prot, int flags,
