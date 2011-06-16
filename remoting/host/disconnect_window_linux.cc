@@ -56,6 +56,9 @@ void DisconnectWindowLinux::CreateWindow() {
   // Try to keep the window always visible.
   gtk_window_stick(window);
   gtk_window_set_keep_above(window, TRUE);
+  // Utility windows have no minimize button or taskbar presence.
+  gtk_window_set_type_hint(window, GDK_WINDOW_TYPE_HINT_UTILITY);
+  gtk_window_set_deletable(window, FALSE);
 
   g_signal_connect(disconnect_window_, "delete-event",
                    G_CALLBACK(OnWindowDeleteThunk), this);
