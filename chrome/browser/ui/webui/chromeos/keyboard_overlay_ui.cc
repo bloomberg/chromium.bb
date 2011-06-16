@@ -161,8 +161,12 @@ void KeyboardOverlayUIHTMLSource::StartDataRequest(const std::string& path,
       l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_FIND_AGAIN));
   localized_strings.SetString("keyboardOverlayFindPrevious",
       l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_FIND_PREVIOUS));
+  localized_strings.SetString("keyboardOverlayFindPrevious",
+      l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_FIND_PREVIOUS));
   localized_strings.SetString("keyboardOverlayFindText",
       l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_FIND_TEXT));
+  localized_strings.SetString("keyboardOverlayFocusAddressBar",
+      l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_FOCUS_ADDRESS_BAR));
   localized_strings.SetString("keyboardOverlayFocusAddressBar",
       l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_FOCUS_ADDRESS_BAR));
   localized_strings.SetString("keyboardOverlayFocusAddressBarInSearchMode",
@@ -176,6 +180,8 @@ void KeyboardOverlayUIHTMLSource::StartDataRequest(const std::string& path,
       l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_TASK_MANAGER));
   localized_strings.SetString("keyboardOverlayBack",
       l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_BACK));
+  localized_strings.SetString("keyboardOverlayForward",
+      l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_FORWARD));
   localized_strings.SetString("keyboardOverlayForward",
       l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_FORWARD));
   localized_strings.SetString("keyboardOverlayHistory",
@@ -200,6 +206,8 @@ void KeyboardOverlayUIHTMLSource::StartDataRequest(const std::string& path,
       l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_RESET_ZOOM));
   localized_strings.SetString("keyboardOverlaySelectWordAtATime",
       l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_SELECT_WORD_AT_A_TIME));
+  localized_strings.SetString("keyboardOverlaySelectWordAtATime",
+      l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_SELECT_WORD_AT_A_TIME));
   localized_strings.SetString("keyboardOverlayToggleBookmarkBar",
       l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_TOGGLE_BOOKMARK_BAR));
   localized_strings.SetString("keyboardOverlayViewSource",
@@ -208,6 +216,11 @@ void KeyboardOverlayUIHTMLSource::StartDataRequest(const std::string& path,
       l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_ZOOM_IN));
   localized_strings.SetString("keyboardOverlayZoomOut",
       l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_ZOOM_OUT));
+  localized_strings.SetString("keyboardOverlayResetZoom",
+      l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_RESET_ZOOM));
+  localized_strings.SetString("keyboardOverlayFocusAddressBarInSearchMode",
+      l10n_util::GetStringUTF16(
+          IDS_KEYBOARD_OVERLAY_FOCUS_ADDRESS_BAR_IN_SEARCH_MODE));
   localized_strings.SetString("keyboardOverlayTakeScreenshot",
       l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_TAKE_SCREENSHOT));
   localized_strings.SetString("keyboardOverlayHome",
