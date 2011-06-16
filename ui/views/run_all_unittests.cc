@@ -4,16 +4,6 @@
 
 #include "base/test/test_suite.h"
 
-class V2TestSuite : public base::TestSuite {
- public:
-  V2TestSuite(int argc, char** argv) : base::TestSuite(argc, argv) {}
-
- protected:
-  virtual void Initialize() {
-    base::TestSuite::Initialize();
-  }
-};
-
-int main(int argc, char **argv) {
-  return V2TestSuite(argc, argv).Run();
+int main(int argc, char** argv) {
+  return base::TestSuite(argc, argv).Run();
 }
