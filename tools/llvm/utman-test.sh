@@ -110,6 +110,10 @@ scons-clean-pnacl-pic-build-dir () {
   rm -rf scons-out/nacl-$1-pnacl-pic
 }
 
+scons-clean-pnacl-sbtc-build-dir () {
+  rm -rf scons-out/nacl-$1-pnacl-sbtc
+}
+
 scons-pnacl-build () {
   local platform=$1
   shift
@@ -152,6 +156,15 @@ test-scons-pic-common () {
   run-scons-tests ${platform} ${test_setup} nacl_pic=1
 }
 
+test-scons-sbtc-common () {
+  local platform=$1
+  shift
+  scons-clean-pnacl-sbtc-build-dir ${platform}
+
+  test_setup=$(scons-determine-tests "$@")
+  run-scons-tests ${platform} ${test_setup} use_sandboxed_translator=1
+}
+
 #@ test-arm              - run arm tests via pnacl toolchain
 #@ test-arm <test>       - run a single arm test via pnacl toolchain
 test-arm() {
@@ -186,6 +199,24 @@ test-x86-32-pic() {
 #@ test-x86-64-pic <test> - run a single x86-64 pic test via pnacl toolchain
 test-x86-64-pic() {
   test-scons-pic-common x86-64 "$@"
+}
+
+#@ test-arm-sbtc           - run all arm tests via sandboxed pnacl toolchain
+#@ test-arm-sbtc <test>    - run a single arm test
+test-arm-sbtc() {
+  test-scons-sbtc-common arm "$@"
+}
+
+#@ test-x86-32-sbtc        - run all x86-32 tests via sandboxed pnacl toolchain
+#@ test-x86-32-sbtc <test> - run a single x86-32 test
+test-x86-32-sbtc() {
+  test-scons-sbtc-common x86-32 "$@"
+}
+
+#@ test-x86-64-sbtc        - run all x86-64 tests via sandboxed pnacl toolchain
+#@ test-x86-64-sbtc <test> - run a single x86-64 test
+test-x86-64-sbtc() {
+  test-scons-sbtc-common x86-64 "$@"
 }
 
 #@ --- Displayless chrome browser tests (for bots / interruption-free testing).

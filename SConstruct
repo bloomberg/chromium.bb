@@ -2533,6 +2533,7 @@ def AddTargetRootSuffix(env, bit_name, suffix):
 
 AddTargetRootSuffix(nacl_env, 'bitcode', 'pnacl')
 AddTargetRootSuffix(nacl_env, 'nacl_pic', 'pic')
+AddTargetRootSuffix(nacl_env, 'use_sandboxed_translator', 'sbtc')
 AddTargetRootSuffix(nacl_env, 'nacl_glibc', 'glibc')
 
 if nacl_env.Bit('running_on_valgrind'):
@@ -2939,7 +2940,7 @@ nacl_extra_sdk_env.Command('extra_sdk_clean', [],
                             'rm -rf ${NACL_SDK_LIB_PLATFORM}/crt[1in].*'])
 
 # The IRT-building environment was cloned from nacl_env, but it should
-# ignore the --nacl_glibc, --nacl_pic and bitcode=1 switches.
+# ignore the --nacl_glibc, nacl_pic=1 and bitcode=1 switches.
 # We have to reinstantiate the naclsdk.py magic after clearing those flags,
 # so it regenerates the tool paths right.
 # TODO(mcgrathr,bradnelson): could get cleaner if naclsdk.py got folded back in.
