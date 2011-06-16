@@ -428,6 +428,11 @@ void View::SetTransform(const ui::Transform& transform) {
 
     SchedulePaint();
   } else {
+    // Make sure if the view didn't have its own texture and was painting onto
+    // something else, that gets refreshed too.
+    if (!ShouldPaintToTexture())
+      MarkTextureDirty();
+
     transform_.reset(new ui::Transform(transform));
     if (!texture_.get()) {
       // We don't yet have a texture. SchedulePaint so one is created.
