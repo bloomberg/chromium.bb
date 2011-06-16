@@ -123,6 +123,7 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   // |config| is transferred to the object. Must be called before Start().
   void set_protocol_config(protocol::CandidateSessionConfig* config);
 
+  // TODO(wez): ChromotingHost shouldn't need to know about Me2Mom.
   void set_me2mom(bool is_me2mom) {
     is_me2mom_ = is_me2mom;
   }
@@ -163,7 +164,7 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
 
   std::string GenerateHostAuthToken(const std::string& encoded_client_token);
 
-  int AuthenticatedClientsCount() const;
+  bool HasAuthenticatedClients() const;
 
   void EnableCurtainMode(bool enable);
 

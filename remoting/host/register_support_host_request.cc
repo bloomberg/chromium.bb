@@ -78,9 +78,6 @@ void RegisterSupportHostRequest::OnSignallingDisconnected() {
   request_.reset();
 }
 
-void RegisterSupportHostRequest::OnAuthenticatedClientsChanged(int clients) {
-}
-
 void RegisterSupportHostRequest::OnShutdown() {
 }
 

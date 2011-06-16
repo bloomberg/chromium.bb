@@ -21,11 +21,6 @@ class HostStatusObserver
                                      const std::string& full_jid) = 0;
   virtual void OnSignallingDisconnected() = 0;
 
-  // Called on the main thread when a client authenticates, or disconnects.
-  // The observer must not tear-down ChromotingHost state on receipt of
-  // this callback; it is purely informational.
-  virtual void OnAuthenticatedClientsChanged(int authenticated_clients) = 0;
-
   // Called on the main thread when the host shuts down.
   virtual void OnShutdown() = 0;
 

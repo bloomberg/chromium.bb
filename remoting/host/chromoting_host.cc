@@ -186,8 +186,8 @@ void ChromotingHost::AddStatusObserver(
 void ChromotingHost::OnConnectionOpened(ConnectionToClient* connection) {
   DCHECK_EQ(context_->network_message_loop(), MessageLoop::current());
   VLOG(1) << "Connection to client established.";
+  // TODO(wez): ChromotingHost shouldn't need to know about Me2Mom.
   if (is_me2mom_) {
-    // TODO(wez): Improve our authentication framework.
     context_->main_message_loop()->PostTask(
         FROM_HERE,
         NewRunnableMethod(this, &ChromotingHost::ProcessPreAuthentication,
@@ -279,6 +279,13 @@ void ChromotingHost::OnNewClientSession(
     protocol::SessionManager::IncomingSessionResponse* response) {
   base::AutoLock auto_lock(lock_);
   if (state_ != kStarted) {
+    *response = protocol::SessionManager::DECLINE;
+    return;
+  }
+
+  // If we are running Me2Mom and already have an authenticated client then
+  // reject the connection immediately.
+  if (is_me2mom_ && HasAuthenticatedClients()) {
     *response = protocol::SessionManager::DECLINE;
     return;
   }
@@ -385,20 +392,9 @@ void ChromotingHost::OnClientDisconnected(ConnectionToClient* connection) {
   connection->Disconnect();
 
   // Also remove reference to ConnectionToClient from this object.
-  int old_authenticated_clients = AuthenticatedClientsCount();
   clients_.erase(client);
 
-  // Notify the observers of the change, if any.
-  int authenticated_clients = AuthenticatedClientsCount();
-  if (old_authenticated_clients != authenticated_clients) {
-    for (StatusObserverList::iterator it = status_observers_.begin();
-         it != status_observers_.end(); ++it) {
-      (*it)->OnAuthenticatedClientsChanged(authenticated_clients);
-    }
-  }
-
-  // Enable the "curtain", if at least one client is actually authenticated.
-  if (AuthenticatedClientsCount() > 0) {
+  if (!HasAuthenticatedClients()) {
     EnableCurtainMode(false);
     if (is_me2mom_) {
       MonitorLocalInputs(false);
@@ -432,19 +428,19 @@ std::string ChromotingHost::GenerateHostAuthToken(
   return encoded_client_token;
 }
 
-int ChromotingHost::AuthenticatedClientsCount() const {
-  int authenticated_clients = 0;
+bool ChromotingHost::HasAuthenticatedClients() const {
   for (ClientList::const_iterator it = clients_.begin(); it != clients_.end();
        ++it) {
     if (it->get()->authenticated())
-      ++authenticated_clients;
+      return true;
   }
-  return authenticated_clients;
+  return false;
 }
 
 void ChromotingHost::EnableCurtainMode(bool enable) {
   // TODO(jamiewalch): This will need to be more sophisticated when we think
   // about proper crash recovery and daemon mode.
+  // TODO(wez): CurtainMode shouldn't be driven directly by ChromotingHost.
   if (is_me2mom_ || enable == is_curtained_)
     return;
   desktop_environment_->curtain()->EnableCurtainMode(enable);
@@ -518,12 +514,6 @@ void ChromotingHost::LocalLoginSucceeded(
     if (pos != std::string::npos)
       username.replace(pos, std::string::npos, "");
     ShowDisconnectWindow(true, username);
-  }
-
-  // Notify observers that there is at least one authenticated client.
-  for (StatusObserverList::iterator it = status_observers_.begin();
-       it != status_observers_.end(); ++it) {
-    (*it)->OnAuthenticatedClientsChanged(AuthenticatedClientsCount());
   }
 }
 

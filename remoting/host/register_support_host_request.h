@@ -53,7 +53,6 @@ class RegisterSupportHostRequest : public HostStatusObserver {
   virtual void OnSignallingConnected(SignalStrategy* signal_strategy,
                                      const std::string& full_jid) OVERRIDE;
   virtual void OnSignallingDisconnected() OVERRIDE;
-  virtual void OnAuthenticatedClientsChanged(int clients_connected) OVERRIDE;
   virtual void OnShutdown() OVERRIDE;
 
  private:
