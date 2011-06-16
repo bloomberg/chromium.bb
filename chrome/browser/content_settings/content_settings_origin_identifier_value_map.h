@@ -24,15 +24,15 @@ class OriginIdentifierValueMap {
   typedef std::string ResourceIdentifier;
 
   struct Entry {
-    Entry(ContentSettingsPattern item_pattern,
-          ContentSettingsPattern top_level_frame_pattern,
+    Entry(ContentSettingsPattern primary_pattern,
+          ContentSettingsPattern secondary_pattern,
           ContentSettingsType content_type,
           ResourceIdentifier identifier,
           Value* value);
     ~Entry();
 
-    ContentSettingsPattern item_pattern;
-    ContentSettingsPattern top_level_frame_pattern;
+    ContentSettingsPattern primary_pattern;
+    ContentSettingsPattern secondary_pattern;
     ContentSettingsType content_type;
     ResourceIdentifier identifier;
     linked_ptr<Value> value;
@@ -67,30 +67,30 @@ class OriginIdentifierValueMap {
   OriginIdentifierValueMap();
   ~OriginIdentifierValueMap();
 
-  // Returns a weak pointer to the value for the given |item_pattern|,
-  // |top_level_frame_pattern|, |content_type|, |resource_identifier| tuple. If
+  // Returns a weak pointer to the value for the given |primary_pattern|,
+  // |secondary_pattern|, |content_type|, |resource_identifier| tuple. If
   // no value is stored for the passed parameter |NULL| is returned.
   Value* GetValue(
-      const GURL& item_url,
-      const GURL& top_level_frame_url,
+      const GURL& primary_url,
+      const GURL& secondary_url,
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier) const;
 
-  // Sets the |value| for the given |item_pattern|, |top_level_frame_pattern|,
+  // Sets the |value| for the given |primary_pattern|, |secondary_pattern|,
   // |content_type|, |resource_identifier| tuple. The method takes the ownership
   // of the passed |value|.
   void SetValue(
-      const ContentSettingsPattern& item_pattern,
-      const ContentSettingsPattern& top_level_frame_pattern,
+      const ContentSettingsPattern& primary_pattern,
+      const ContentSettingsPattern& secondary_pattern,
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier,
       Value* value);
 
-  // Deletes the map entry for the given |item_pattern|,
-  // |top_level_frame_pattern|, |content_type|, |resource_identifier| tuple.
+  // Deletes the map entry for the given |primary_pattern|,
+  // |secondary_pattern|, |content_type|, |resource_identifier| tuple.
   void DeleteValue(
-      const ContentSettingsPattern& item_pattern,
-      const ContentSettingsPattern& top_level_frame_pattern,
+      const ContentSettingsPattern& primary_pattern,
+      const ContentSettingsPattern& secondary_pattern,
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier);
 
@@ -102,13 +102,13 @@ class OriginIdentifierValueMap {
   void clear();
 
  private:
-  // Finds the list entry for the given |item_pattern|,
-  // |top_level_frame_pattern|, |content_type|, |resource_identifier| tuple and
+  // Finds the list entry for the given |primary_pattern|,
+  // |secondary_pattern|, |content_type|, |resource_identifier| tuple and
   // returns the iterator of the list entry. If no entry is found for the passed
   // parameters then the end of list iterator is returned.
   EntryList::iterator FindEntry(
-      const ContentSettingsPattern& item_pattern,
-      const ContentSettingsPattern& top_level_frame_pattern,
+      const ContentSettingsPattern& primary_pattern,
+      const ContentSettingsPattern& secondary_pattern,
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier);
 

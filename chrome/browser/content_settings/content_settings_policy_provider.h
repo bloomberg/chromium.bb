@@ -93,15 +93,15 @@ class PolicyProvider : public BaseProvider,
   virtual void Init();
 
   virtual void SetContentSetting(
-      const ContentSettingsPattern& requesting_pattern,
-      const ContentSettingsPattern& embedding_pattern,
+      const ContentSettingsPattern& primary_pattern,
+      const ContentSettingsPattern& secondary_pattern,
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier,
       ContentSetting content_setting);
 
   virtual ContentSetting GetContentSetting(
-      const GURL& requesting_url,
-      const GURL& embedding_url,
+      const GURL& primary_url,
+      const GURL& secondary_url,
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier) const;
 

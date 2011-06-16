@@ -54,14 +54,15 @@ class HostContentSettingsMap
   ContentSetting GetDefaultContentSetting(
       ContentSettingsType content_type) const;
 
-  // Returns a single ContentSetting which applies to a given URL. Note that
+  // Returns a single ContentSetting which applies to the given URLs. Note that
   // certain internal schemes are whitelisted. For ContentSettingsTypes that
   // require an resource identifier to be specified, the |resource_identifier|
   // must be non-empty.
   //
   // This may be called on any thread.
   ContentSetting GetContentSetting(
-      const GURL& url,
+      const GURL& primary_url,
+      const GURL& secondary_url,
       ContentSettingsType content_type,
       const std::string& resource_identifier) const;
 
@@ -75,7 +76,7 @@ class HostContentSettingsMap
       const GURL& first_party_url,
       bool setting_cookie) const;
 
-  // Returns a single ContentSetting which applies to a given URL or
+  // Returns a single ContentSetting which applies to the given URLs or
   // CONTENT_SETTING_DEFAULT, if no exception applies. Note that certain
   // internal schemes are whitelisted. For ContentSettingsTypes that require an
   // resource identifier to be specified, the |resource_identifier| must be
@@ -83,23 +84,29 @@ class HostContentSettingsMap
   //
   // This may be called on any thread.
   ContentSetting GetNonDefaultContentSetting(
-      const GURL& url,
+      const GURL& primary_url,
+      const GURL& secondary_url,
       ContentSettingsType content_type,
       const std::string& resource_identifier) const;
 
-  // Returns all ContentSettings which apply to a given URL. For content
+
+  // Returns all ContentSettings which apply to the given URLs. For content
   // setting types that require an additional resource identifier, the default
   // content setting is returned.
   //
   // This may be called on any thread.
-  ContentSettings GetContentSettings(const GURL& url) const;
+  ContentSettings GetContentSettings(
+      const GURL& primary_url,
+      const GURL& secondary_url) const;
 
-  // Returns all non-default ContentSettings which apply to a given URL. For
+  // Returns all non-default ContentSettings which apply to the given URLs. For
   // content setting types that require an additional resource identifier,
   // CONTENT_SETTING_DEFAULT is returned.
   //
   // This may be called on any thread.
-  ContentSettings GetNonDefaultContentSettings(const GURL& url) const;
+  ContentSettings GetNonDefaultContentSettings(
+      const GURL& primary_url,
+      const GURL& secondary_url) const;
 
   // For a given content type, returns all patterns with a non-default setting,
   // mapped to their actual settings, in lexicographical order.  |settings|
@@ -120,25 +127,28 @@ class HostContentSettingsMap
   void SetDefaultContentSetting(ContentSettingsType content_type,
                                 ContentSetting setting);
 
-  // Sets the blocking setting for a particular pattern and content type.
+  // Sets the content setting for the given patterns and content type.
   // Setting the value to CONTENT_SETTING_DEFAULT causes the default setting
   // for that type to be used when loading pages matching this pattern. For
   // ContentSettingsTypes that require an resource identifier to be specified,
   // the |resource_identifier| must be non-empty.
   //
   // This should only be called on the UI thread.
-  void SetContentSetting(const ContentSettingsPattern& pattern,
+  void SetContentSetting(const ContentSettingsPattern& primary_pattern,
+                         const ContentSettingsPattern& secondary_pattern,
                          ContentSettingsType content_type,
                          const std::string& resource_identifier,
                          ContentSetting setting);
 
-  // Convenience method to add a content setting for a given URL, making sure
+
+  // Convenience method to add a content setting for the given URLs, making sure
   // that there is no setting overriding it. For ContentSettingsTypes that
   // require an resource identifier to be specified, the |resource_identifier|
   // must be non-empty.
   //
   // This should only be called on the UI thread.
-  void AddExceptionForURL(const GURL& url,
+  void AddExceptionForURL(const GURL& primary_url,
+                          const GURL& secondary_url,
                           ContentSettingsType content_type,
                           const std::string& resource_identifier,
                           ContentSetting setting);
@@ -183,7 +193,8 @@ class HostContentSettingsMap
   virtual ~HostContentSettingsMap();
 
   ContentSetting GetContentSettingInternal(
-      const GURL& url,
+      const GURL& primary_url,
+      const GURL& secondary_url,
       ContentSettingsType content_type,
       const std::string& resource_identifier) const;
 

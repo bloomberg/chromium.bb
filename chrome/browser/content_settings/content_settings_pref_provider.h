@@ -110,15 +110,15 @@ class PrefProvider : public ProviderInterface,
 
   // ProviderInterface implementations.
   virtual void SetContentSetting(
-      const ContentSettingsPattern& requesting_pattern,
-      const ContentSettingsPattern& embedding_pattern,
+      const ContentSettingsPattern& primary_pattern,
+      const ContentSettingsPattern& secondary_pattern,
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier,
       ContentSetting content_setting);
 
   virtual ContentSetting GetContentSetting(
-      const GURL& requesting_url,
-      const GURL& embedding_url,
+      const GURL& primary_url,
+      const GURL& secondary_url,
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier) const;
 
@@ -146,6 +146,7 @@ class PrefProvider : public ProviderInterface,
   // migrated to the new format).
   void MigrateObsoletePerhostPref(PrefService* prefs);
   void MigrateObsoletePopupsPref(PrefService* prefs);
+  void MigrateSinglePatternSettings(PrefService* prefs);
 
   void CanonicalizeContentSettingsExceptions(
       DictionaryValue* all_settings_dictionary);

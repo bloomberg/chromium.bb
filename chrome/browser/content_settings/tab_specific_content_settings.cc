@@ -450,7 +450,7 @@ void TabSpecificContentSettings::DidStartProvisionalLoadForFrame(
       tab_contents()->profile()->GetHostContentSettingsMap();
   render_view_host->Send(new ViewMsg_SetContentSettingsForLoadingURL(
       render_view_host->routing_id(), validated_url,
-      map->GetContentSettings(validated_url)));
+      map->GetContentSettings(validated_url, validated_url)));
 }
 
 void TabSpecificContentSettings::Observe(NotificationType type,
@@ -465,10 +465,12 @@ void TabSpecificContentSettings::Observe(NotificationType type,
   if (entry)
     entry_url = entry->url();
   if (settings_details.ptr()->update_all() ||
-      settings_details.ptr()->pattern().Matches(entry_url)) {
+      // The active NavigationEntry is the URL in the URL field of a tab.
+      // Currently this should be matched by the |primary_pattern|.
+      settings_details.ptr()->primary_pattern().Matches(entry_url)) {
     Send(new ViewMsg_SetContentSettingsForCurrentURL(
         entry_url, tab_contents()->profile()->GetHostContentSettingsMap()->
-            GetContentSettings(entry_url)));
+            GetContentSettings(entry_url, entry_url)));
   }
 }
 

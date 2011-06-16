@@ -5830,8 +5830,11 @@ void TestingAutomationProvider::SetContentSetting(
     if (host.empty()) {
       map->SetDefaultContentSetting(content_type, setting);
     } else {
-      map->SetContentSetting(ContentSettingsPattern::LegacyFromString(host),
-                             content_type, "", setting);
+      map->SetContentSetting(ContentSettingsPattern::FromString(host),
+                             ContentSettingsPattern::Wildcard(),
+                             content_type,
+                             std::string(),
+                             setting);
     }
     *success = true;
   }

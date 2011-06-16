@@ -10,11 +10,11 @@ ProviderInterface::Rule::Rule()
     : content_setting(CONTENT_SETTING_DEFAULT) {
 }
 
-ProviderInterface::Rule::Rule(const ContentSettingsPattern& requesting_pattern,
-                              const ContentSettingsPattern& embedding_pattern,
+ProviderInterface::Rule::Rule(const ContentSettingsPattern& primary_pattern,
+                              const ContentSettingsPattern& secondary_pattern,
                               ContentSetting setting)
-    : requesting_url_pattern(requesting_pattern),
-      embedding_url_pattern(embedding_pattern),
+    : primary_pattern(primary_pattern),
+      secondary_pattern(secondary_pattern),
       content_setting(setting) {
 }
 

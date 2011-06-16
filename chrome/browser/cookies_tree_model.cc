@@ -403,6 +403,7 @@ void CookieTreeOriginNode::CreateContentException(
     HostContentSettingsMap* content_settings, ContentSetting setting) const {
   if (CanCreateContentException()) {
     content_settings->AddExceptionForURL(url_,
+                                         url_,
                                          CONTENT_SETTINGS_TYPE_COOKIES,
                                          "",
                                          setting);

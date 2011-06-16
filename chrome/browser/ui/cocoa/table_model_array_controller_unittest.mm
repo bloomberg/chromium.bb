@@ -38,14 +38,17 @@ class TableModelArrayControllerTest : public CocoaTest {
     ContentSettingsPattern moose_org =
         ContentSettingsPattern::FromString("[*.]moose.org");
     map->SetContentSetting(example_com,
+                           ContentSettingsPattern::Wildcard(),
                            CONTENT_SETTINGS_TYPE_PLUGINS,
                            "a-foo",
                            CONTENT_SETTING_ALLOW);
     map->SetContentSetting(moose_org,
+                           ContentSettingsPattern::Wildcard(),
                            CONTENT_SETTINGS_TYPE_PLUGINS,
                            "b-bar",
                            CONTENT_SETTING_BLOCK);
     map->SetContentSetting(example_com,
+                           ContentSettingsPattern::Wildcard(),
                            CONTENT_SETTINGS_TYPE_PLUGINS,
                            "b-bar",
                            CONTENT_SETTING_ALLOW);
@@ -147,6 +150,7 @@ TEST_F(TableModelArrayControllerTest, AddException) {
   ContentSettingsPattern example_com =
       ContentSettingsPattern::FromString("[*.]example.com");
   map->SetContentSetting(example_com,
+                         ContentSettingsPattern::Wildcard(),
                          CONTENT_SETTINGS_TYPE_PLUGINS,
                          "c-blurp",
                          CONTENT_SETTING_BLOCK);

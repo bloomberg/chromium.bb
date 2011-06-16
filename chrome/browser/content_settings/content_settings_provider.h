@@ -51,12 +51,12 @@ class ProviderInterface {
  public:
   struct Rule {
     Rule();
-    Rule(const ContentSettingsPattern& requesting_pattern,
-         const ContentSettingsPattern& embedding_pattern,
+    Rule(const ContentSettingsPattern& primary_pattern,
+         const ContentSettingsPattern& secondary_pattern,
          ContentSetting setting);
 
-    ContentSettingsPattern requesting_url_pattern;
-    ContentSettingsPattern embedding_url_pattern;
+    ContentSettingsPattern primary_pattern;
+    ContentSettingsPattern secondary_pattern;
     ContentSetting content_setting;
   };
 
@@ -64,27 +64,27 @@ class ProviderInterface {
 
   virtual ~ProviderInterface() {}
 
-  // Returns a single ContentSetting which applies to a given |requesting_url|,
-  // |embedding_url| pair or CONTENT_SETTING_DEFAULT, if no rule applies. For
+  // Returns a single ContentSetting which applies to a given |primary_url|,
+  // |secondary_url| pair or CONTENT_SETTING_DEFAULT, if no rule applies. For
   // ContentSettingsTypes that require a resource identifier to be specified,
   // the |resource_identifier| must be non-empty.
   //
   // This may be called on any thread.
   virtual ContentSetting GetContentSetting(
-      const GURL& requesting_url,
-      const GURL& embedding_url,
+      const GURL& primary_url,
+      const GURL& secondary_url,
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier) const = 0;
 
-  // Sets the content setting for a particular |requesting_pattern|,
-  // |embedding_pattern|, |content_type| tuple. For ContentSettingsTypes that
+  // Sets the content setting for a particular |primary_pattern|,
+  // |secondary_pattern|, |content_type| tuple. For ContentSettingsTypes that
   // require a resource identifier to be specified, the |resource_identifier|
   // must be non-empty.
   //
   // This should only be called on the UI thread.
   virtual void SetContentSetting(
-      const ContentSettingsPattern& requesting_url_pattern,
-      const ContentSettingsPattern& embedding_url_pattern,
+      const ContentSettingsPattern& primary_pattern,
+      const ContentSettingsPattern& secondary_pattern,
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier,
       ContentSetting content_setting) = 0;

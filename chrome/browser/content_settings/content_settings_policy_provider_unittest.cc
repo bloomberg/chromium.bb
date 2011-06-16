@@ -70,7 +70,7 @@ TEST_F(PolicyDefaultProviderTest, ObserveManagedSettingsChange) {
   EXPECT_CALL(observer,
               OnContentSettingsChanged(profile.GetHostContentSettingsMap(),
                                        CONTENT_SETTINGS_TYPE_DEFAULT, true,
-                                       _, true));
+                                       _, _, true));
   prefs->SetManagedPref(prefs::kManagedDefaultImagesSetting,
                         Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
   ::testing::Mock::VerifyAndClearExpectations(&observer);
@@ -78,7 +78,7 @@ TEST_F(PolicyDefaultProviderTest, ObserveManagedSettingsChange) {
   EXPECT_CALL(observer,
               OnContentSettingsChanged(profile.GetHostContentSettingsMap(),
                                        CONTENT_SETTINGS_TYPE_DEFAULT, true,
-                                       _, true));
+                                       _, _, true));
   // Remove the managed default-content-setting.
   prefs->RemoveManagedPref(prefs::kManagedDefaultImagesSetting);
 }

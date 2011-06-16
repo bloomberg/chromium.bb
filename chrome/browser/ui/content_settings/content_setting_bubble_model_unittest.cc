@@ -117,10 +117,12 @@ TEST_F(ContentSettingBubbleModelTest, MultiplePlugins) {
   contents()->NavigateAndCommit(GURL("http://www.example.com"));
   GURL url = contents()->GetURL();
   map->AddExceptionForURL(url,
+                          url,
                           CONTENT_SETTINGS_TYPE_PLUGINS,
                           fooPlugin,
                           CONTENT_SETTING_ALLOW);
   map->AddExceptionForURL(url,
+                          url,
                           CONTENT_SETTINGS_TYPE_PLUGINS,
                           barPlugin,
                           CONTENT_SETTING_ASK);
@@ -145,10 +147,12 @@ TEST_F(ContentSettingBubbleModelTest, MultiplePlugins) {
   // Nothing should have changed.
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             map->GetContentSetting(url,
+                                   url,
                                    CONTENT_SETTINGS_TYPE_PLUGINS,
                                    fooPlugin));
   EXPECT_EQ(CONTENT_SETTING_ASK,
             map->GetContentSetting(url,
+                                   url,
                                    CONTENT_SETTINGS_TYPE_PLUGINS,
                                    barPlugin));
 
@@ -156,10 +160,12 @@ TEST_F(ContentSettingBubbleModelTest, MultiplePlugins) {
   // Both plug-ins should be click-to-play now.
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             map->GetContentSetting(url,
+                                   url,
                                    CONTENT_SETTINGS_TYPE_PLUGINS,
                                    fooPlugin));
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             map->GetContentSetting(url,
+                                   url,
                                    CONTENT_SETTINGS_TYPE_PLUGINS,
                                    barPlugin));
 }

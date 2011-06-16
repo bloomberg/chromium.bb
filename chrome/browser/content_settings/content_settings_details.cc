@@ -5,11 +5,12 @@
 #include "chrome/browser/content_settings/content_settings_details.h"
 
 ContentSettingsDetails::ContentSettingsDetails(
-    const ContentSettingsPattern& pattern,
+    const ContentSettingsPattern& primary_pattern,
+    const ContentSettingsPattern& secondary_pattern,
     ContentSettingsType type,
     const std::string& resource_identifier)
-    : pattern_(pattern),
+    : primary_pattern_(primary_pattern),
+      secondary_pattern_(secondary_pattern),
       type_(type),
       resource_identifier_(resource_identifier) {
 }
-

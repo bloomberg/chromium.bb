@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_CONTENT_SETTINGS_CONTENT_SETTINGS_DETAILS_H_
 #pragma once
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "chrome/browser/content_settings/content_settings_pattern.h"
 #include "chrome/common/content_settings.h"
@@ -18,15 +20,26 @@
 class ContentSettingsDetails {
  public:
   // Update the setting that matches this pattern/content type/resource.
-  ContentSettingsDetails(const ContentSettingsPattern& pattern,
+  ContentSettingsDetails(const ContentSettingsPattern& primary_pattern,
+                         const ContentSettingsPattern& secondary_pattern,
                          ContentSettingsType type,
                          const std::string& resource_identifier);
 
-  // The pattern whose settings have changed.
-  const ContentSettingsPattern& pattern() const { return pattern_; }
+  // The item pattern whose settings have changed.
+  const ContentSettingsPattern& primary_pattern() const {
+    return primary_pattern_;
+  }
+
+  // The top level frame pattern whose settings have changed.
+  const ContentSettingsPattern& secondary_pattern() const {
+    return secondary_pattern_;
+  }
 
   // True if all settings should be updated for the given type.
-  bool update_all() const { return !pattern_.IsValid(); }
+  bool update_all() const {
+    return primary_pattern_.ToString().empty() &&
+           secondary_pattern_.ToString().empty();
+  }
 
   // The type of the pattern whose settings have changed.
   ContentSettingsType type() const { return type_; }
@@ -43,7 +56,8 @@ class ContentSettingsDetails {
   }
 
  private:
-  ContentSettingsPattern pattern_;
+  ContentSettingsPattern primary_pattern_;
+  ContentSettingsPattern secondary_pattern_;
   ContentSettingsType type_;
   std::string resource_identifier_;
 

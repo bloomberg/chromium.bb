@@ -179,6 +179,7 @@ void PolicyDefaultProvider::Observe(NotificationType type,
 
     if (!is_off_the_record_) {
       ContentSettingsDetails details(ContentSettingsPattern(),
+                                     ContentSettingsPattern(),
                                      CONTENT_SETTINGS_TYPE_DEFAULT,
                                      std::string());
       NotifyObservers(details);
@@ -380,21 +381,21 @@ void PolicyProvider::ReadManagedContentSettings(bool overwrite) {
 // Since the PolicyProvider is a read only content settings provider, all
 // methodes of the ProviderInterface that set or delete any settings do nothing.
 void PolicyProvider::SetContentSetting(
-    const ContentSettingsPattern& requesting_pattern,
-    const ContentSettingsPattern& embedding_pattern,
+    const ContentSettingsPattern& primary_pattern,
+    const ContentSettingsPattern& secondary_pattern,
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
     ContentSetting content_setting) {
 }
 
 ContentSetting PolicyProvider::GetContentSetting(
-    const GURL& requesting_url,
-    const GURL& embedding_url,
+    const GURL& primary_url,
+    const GURL& secondary_url,
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier) const {
   ContentSetting setting = BaseProvider::GetContentSetting(
-      requesting_url,
-      embedding_url,
+      primary_url,
+      secondary_url,
       content_type,
       NO_RESOURCE_IDENTIFIER);
   if (setting == CONTENT_SETTING_DEFAULT && default_provider_)
@@ -451,6 +452,7 @@ void PolicyProvider::Observe(NotificationType type,
         *name == prefs::kManagedPopupsBlockedForUrls) {
       ReadManagedContentSettings(true);
       ContentSettingsDetails details(ContentSettingsPattern(),
+                                     ContentSettingsPattern(),
                                      CONTENT_SETTINGS_TYPE_DEFAULT,
                                      std::string());
       NotifyObservers(details);

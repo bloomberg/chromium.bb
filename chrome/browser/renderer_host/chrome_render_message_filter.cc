@@ -453,7 +453,10 @@ void ChromeRenderMessageFilter::OnGetPluginContentSetting(
     const std::string& resource,
     ContentSetting* setting) {
   *setting = host_content_settings_map_->GetContentSetting(
-      policy_url, CONTENT_SETTINGS_TYPE_PLUGINS, resource);
+      policy_url,
+      policy_url,
+      CONTENT_SETTINGS_TYPE_PLUGINS,
+      resource);
 }
 
 void ChromeRenderMessageFilter::OnCanTriggerClipboardRead(const GURL& url,

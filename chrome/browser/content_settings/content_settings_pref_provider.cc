@@ -82,11 +82,35 @@ void SetDefaultContentSettings(DictionaryValue* default_settings) {
   }
 }
 
+const char* kPatternSeparator = ",";
+
 std::string CreatePatternString(
-    const ContentSettingsPattern& requesting_pattern,
-    const ContentSettingsPattern& embedding_pattern) {
-  DCHECK(requesting_pattern == embedding_pattern);
-  return requesting_pattern.ToString();
+    const ContentSettingsPattern& primary_pattern,
+    const ContentSettingsPattern& secondary_pattern) {
+  return primary_pattern.ToString() +
+         std::string(kPatternSeparator) +
+         secondary_pattern.ToString();
+}
+
+std::pair<ContentSettingsPattern, ContentSettingsPattern>
+    ParsePatternString(const std::string& pattern_str) {
+  DCHECK(!pattern_str.empty());
+  size_t pos = pattern_str.find(kPatternSeparator);
+
+  std::pair<ContentSettingsPattern, ContentSettingsPattern> pattern_pair;
+  if (pos == std::string::npos) {
+    pattern_pair.first = ContentSettingsPattern::FromString(pattern_str);
+    DCHECK(pattern_pair.first.IsValid());
+    pattern_pair.second = ContentSettingsPattern();
+  } else {
+    pattern_pair.first = ContentSettingsPattern::FromString(
+        pattern_str.substr(0, pos));
+    DCHECK(pattern_pair.first.IsValid());
+    pattern_pair.second = ContentSettingsPattern::FromString(
+        pattern_str.substr(pos+1, pattern_str.size() - pos - 1));
+    DCHECK(pattern_pair.second.IsValid());
+  }
+  return pattern_pair;
 }
 
 ContentSetting ValueToContentSetting(Value* value) {
@@ -196,7 +220,10 @@ void PrefDefaultProvider::UpdateDefaultSetting(
   updating_preferences_ = false;
 
   ContentSettingsDetails details(
-      ContentSettingsPattern(), content_type, std::string());
+      ContentSettingsPattern(),
+      ContentSettingsPattern(),
+      content_type,
+      std::string());
   NotifyObservers(details);
 }
 
@@ -239,6 +266,7 @@ void PrefDefaultProvider::Observe(NotificationType type,
 
     if (!is_incognito_) {
       ContentSettingsDetails details(ContentSettingsPattern(),
+                                     ContentSettingsPattern(),
                                      CONTENT_SETTINGS_TYPE_DEFAULT,
                                      std::string());
       NotifyObservers(details);
@@ -391,6 +419,7 @@ void PrefProvider::Init() {
   // Migrate obsolete preferences.
   MigrateObsoletePerhostPref(prefs);
   MigrateObsoletePopupsPref(prefs);
+  MigrateSinglePatternSettings(prefs);
 
   // Verify preferences version.
   if (!prefs->HasPrefPath(prefs::kContentSettingsVersion)) {
@@ -420,29 +449,26 @@ void PrefProvider::Init() {
 }
 
 ContentSetting PrefProvider::GetContentSetting(
-      const GURL& requesting_url,
-      const GURL& embedding_url,
+      const GURL& primary_url,
+      const GURL& secondary_url,
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier) const {
-  // Support for item, top-level-frame URLs are not enabled yet.
-  DCHECK(requesting_url == embedding_url);
-
   // For a |PrefProvider| used in a |HostContentSettingsMap| of a non incognito
   // profile, this will always return NULL.
   // TODO(markusheintz): I don't like this. I'd like to have an
   // IncognitoProviderWrapper that wrapps the pref provider for a host content
   // settings map of an incognito profile.
   Value* incognito_value = incognito_value_map_.GetValue(
-      requesting_url,
-      embedding_url,
+      primary_url,
+      secondary_url,
       content_type,
       resource_identifier);
   if (incognito_value)
     return ValueToContentSetting(incognito_value);
 
   Value* value = value_map_.GetValue(
-      requesting_url,
-      embedding_url,
+      primary_url,
+      secondary_url,
       content_type,
       resource_identifier);
   if (value)
@@ -469,8 +495,8 @@ void PrefProvider::GetAllContentSettingsRules(
         entry->identifier == resource_identifier) {
       ContentSetting setting = ValueToContentSetting(entry->value.get());
       DCHECK(setting != CONTENT_SETTING_DEFAULT);
-      Rule new_rule(entry->item_pattern,
-                    entry->top_level_frame_pattern,
+      Rule new_rule(entry->primary_pattern,
+                    entry->secondary_pattern,
                     setting);
       content_setting_rules->push_back(new_rule);
     }
@@ -478,14 +504,11 @@ void PrefProvider::GetAllContentSettingsRules(
 }
 
 void PrefProvider::SetContentSetting(
-    const ContentSettingsPattern& requesting_pattern,
-    const ContentSettingsPattern& embedding_pattern,
+    const ContentSettingsPattern& primary_pattern,
+    const ContentSettingsPattern& secondary_pattern,
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
     ContentSetting setting) {
-  // Support for embedding_patterns is not implemented yet.
-  DCHECK(requesting_pattern == embedding_pattern);
-
   DCHECK(kTypeNames[content_type] != NULL);  // Don't call this for Geolocation.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -506,14 +529,14 @@ void PrefProvider::SetContentSetting(
       base::AutoLock auto_lock(lock_);
       if (setting == CONTENT_SETTING_DEFAULT) {
         map_to_modify->DeleteValue(
-            requesting_pattern,
-            embedding_pattern,
+            primary_pattern,
+            secondary_pattern,
             content_type,
             resource_identifier);
       } else {
         map_to_modify->SetValue(
-            requesting_pattern,
-            embedding_pattern,
+            primary_pattern,
+            secondary_pattern,
             content_type,
             resource_identifier,
             Value::CreateIntegerValue(setting));
@@ -521,8 +544,8 @@ void PrefProvider::SetContentSetting(
     }
 
     // Update the content settings preference.
-    std::string pattern_str(CreatePatternString(requesting_pattern,
-                                                embedding_pattern));
+    std::string pattern_str(CreatePatternString(primary_pattern,
+                                                secondary_pattern));
     if (all_settings_dictionary) {
       // Get settings dictionary for the pattern string (key).
       DictionaryValue* settings_dictionary = NULL;
@@ -582,7 +605,7 @@ void PrefProvider::SetContentSetting(
   updating_preferences_ = false;
 
   ContentSettingsDetails details(
-      requesting_pattern, content_type, std::string());
+      primary_pattern, secondary_pattern, content_type, std::string());
   NotifyObservers(details);
 }
 
@@ -626,7 +649,7 @@ void PrefProvider::ClearAllContentSettingsRules(
       while (entry != map_to_modify->end()) {
         if (entry->content_type == content_type) {
           std::string pattern_str = CreatePatternString(
-              entry->item_pattern, entry->top_level_frame_pattern);
+              entry->primary_pattern, entry->secondary_pattern);
           // Delete current |entry| and set |entry| to the next value map entry.
           entry = map_to_modify->erase(entry);
 
@@ -655,7 +678,10 @@ void PrefProvider::ClearAllContentSettingsRules(
   updating_preferences_ = false;
 
   ContentSettingsDetails details(
-      ContentSettingsPattern(), content_type, std::string());
+      ContentSettingsPattern(),
+      ContentSettingsPattern(),
+      content_type,
+      std::string());
   NotifyObservers(details);
 }
 
@@ -680,6 +706,7 @@ void PrefProvider::Observe(
 
     if (!is_incognito_) {
       ContentSettingsDetails details(ContentSettingsPattern(),
+                                     ContentSettingsPattern(),
                                      CONTENT_SETTINGS_TYPE_DEFAULT,
                                      std::string());
       NotifyObservers(details);
@@ -729,10 +756,13 @@ void PrefProvider::ReadExceptions(bool overwrite) {
     for (DictionaryValue::key_iterator i(mutable_settings->begin_keys());
          i != mutable_settings->end_keys(); ++i) {
       const std::string& pattern_str(*i);
-      ContentSettingsPattern pattern =
-          ContentSettingsPattern::FromString(pattern_str);
-      if (!pattern.IsValid())
-        LOG(WARNING) << "Invalid pattern stored in content settings";
+      std::pair<ContentSettingsPattern, ContentSettingsPattern> pattern_pair =
+         ParsePatternString(pattern_str);
+      if (!pattern_pair.first.IsValid() ||
+          !pattern_pair.second.IsValid()) {
+        LOG(DFATAL) << "Invalid pattern strings: " << pattern_str;
+        continue;
+      }
 
       // Get settings dictionary for the current pattern string, and read
       // settings from the dictionary.
@@ -760,8 +790,8 @@ void PrefProvider::ReadExceptions(bool overwrite) {
               DCHECK_NE(CONTENT_SETTING_DEFAULT, setting);
               setting = ClickToPlayFixup(content_type,
                                          ContentSetting(setting));
-              value_map_.SetValue(pattern,
-                                  pattern,
+              value_map_.SetValue(pattern_pair.first,
+                                  pattern_pair.second,
                                   content_type,
                                   resource_identifier,
                                   Value::CreateIntegerValue(setting));
@@ -777,8 +807,8 @@ void PrefProvider::ReadExceptions(bool overwrite) {
                                                   ContentSetting(setting));
             setting = ClickToPlayFixup(content_type,
                                        ContentSetting(setting));
-            value_map_.SetValue(pattern,
-                                pattern,
+            value_map_.SetValue(pattern_pair.first,
+                                pattern_pair.second,
                                 content_type,
                                 ResourceIdentifier(""),
                                 Value::CreateIntegerValue(setting));
@@ -798,26 +828,31 @@ void PrefProvider::CanonicalizeContentSettingsExceptions(
   std::vector<std::pair<std::string, std::string> > move_items;
   for (DictionaryValue::key_iterator i(all_settings_dictionary->begin_keys());
        i != all_settings_dictionary->end_keys(); ++i) {
-    const std::string& pattern(*i);
-    const std::string canonicalized_pattern =
-        ContentSettingsPattern::FromString(pattern).ToString();
+    const std::string& pattern_str(*i);
+    std::pair<ContentSettingsPattern, ContentSettingsPattern> pattern_pair =
+         ParsePatternString(pattern_str);
 
-    if (canonicalized_pattern.empty() || canonicalized_pattern == pattern)
+    const std::string canonicalized_pattern_str = CreatePatternString(
+        pattern_pair.first, pattern_pair.second);
+
+    if (canonicalized_pattern_str.empty() ||
+        canonicalized_pattern_str == pattern_str)
       continue;
 
     // Clear old pattern if prefs already have canonicalized pattern.
     DictionaryValue* new_pattern_settings_dictionary = NULL;
     if (all_settings_dictionary->GetDictionaryWithoutPathExpansion(
-            canonicalized_pattern, &new_pattern_settings_dictionary)) {
-      remove_items.push_back(pattern);
+            canonicalized_pattern_str, &new_pattern_settings_dictionary)) {
+      remove_items.push_back(pattern_str);
       continue;
     }
 
     // Move old pattern to canonicalized pattern.
     DictionaryValue* old_pattern_settings_dictionary = NULL;
     if (all_settings_dictionary->GetDictionaryWithoutPathExpansion(
-            pattern, &old_pattern_settings_dictionary)) {
-      move_items.push_back(std::make_pair(pattern, canonicalized_pattern));
+            pattern_str, &old_pattern_settings_dictionary)) {
+      move_items.push_back(
+          std::make_pair(pattern_str, canonicalized_pattern_str));
     }
   }
 
@@ -930,6 +965,68 @@ void PrefProvider::MigrateObsoletePopupsPref(PrefService* prefs) {
                         CONTENT_SETTING_ALLOW);
     }
     prefs->ClearPref(prefs::kPopupWhitelistedHosts);
+  }
+}
+
+void PrefProvider::MigrateSinglePatternSettings(PrefService* prefs) {
+  const DictionaryValue* all_settings_dictionary =
+      prefs->GetDictionary(prefs::kContentSettingsPatterns);
+  // The all_settings_dictionary can be |NULL| if the preferences hasn't been
+  // set yet. In incognito mode we must not write to preferences.
+  if (all_settings_dictionary && !is_incognito_) {
+    DictionaryPrefUpdate update(prefs, prefs::kContentSettingsPatterns);
+    DictionaryValue* mutable_settings;
+    mutable_settings = update.Get();
+
+    // Create a list of items to migrate.
+    std::list<std::string> move_items;
+    for (DictionaryValue::key_iterator i(mutable_settings->begin_keys());
+         i != mutable_settings->end_keys();
+         ++i) {
+      const std::string& pattern_str(*i);
+      std::pair<ContentSettingsPattern, ContentSettingsPattern> pattern_pair =
+          ParsePatternString(pattern_str);
+
+      // If the pattern_str contains two valid patterns it must not be migrated,
+      // so we skip it.
+      if (pattern_pair.first.IsValid() &&
+          pattern_pair.second.IsValid()) {
+        continue;
+      }
+      if (!pattern_pair.first.IsValid()) {
+        // Skip over corrupted and malformed patterns.
+        LOG(DFATAL) << "Invalid pattern string: " << pattern_str;
+        continue;
+      }
+
+      move_items.push_back(pattern_str);
+    }
+
+    // Migrate the items.
+    for (std::list<std::string>::iterator i = move_items.begin();
+         i != move_items.end();
+         ++i) {
+      const std::string& pattern_str(*i);
+      Value* value;
+      bool found = mutable_settings->RemoveWithoutPathExpansion(*i, &value);
+      DCHECK(found);
+
+      // Migrate the content settings types that used to be applied based on the
+      // top level frame URL only.
+      std::string new_pattern_str = CreatePatternString(
+          ContentSettingsPattern::FromString(pattern_str),
+          ContentSettingsPattern::Wildcard());
+      // Check if there is already a entry for the new pattern string.
+      DictionaryValue* dictionary = NULL;
+      found = mutable_settings->GetDictionaryWithoutPathExpansion(
+          new_pattern_str, &dictionary);
+      if (!found) {
+        mutable_settings->SetWithoutPathExpansion(
+            new_pattern_str, value);
+      } else {
+        NOTREACHED();
+      }
+    }
   }
 }
 

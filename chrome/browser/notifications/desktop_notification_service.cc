@@ -59,8 +59,8 @@ void GetOriginsWithSettingFromContentSettingsRules(
        rule != content_setting_rules.end();
        ++rule) {
     if (setting == rule->content_setting) {
-      std::string url_str = rule->requesting_url_pattern.ToString();
-      if (!rule->requesting_url_pattern.IsValid()) {
+      std::string url_str = rule->primary_pattern.ToString();
+      if (!rule->primary_pattern.IsValid()) {
         // TODO(markusheintz): This will be removed in one of the next
         // refactoring steps as this entire function will disapear.
         LOG(DFATAL) << "Ignoring invalid content settings pattern: "
@@ -76,7 +76,7 @@ void GetOriginsWithSettingFromContentSettingsRules(
       } else {
         origins->push_back(
             content_settings::NotificationProvider::ToGURL(
-                rule->requesting_url_pattern));
+                rule->primary_pattern));
       }
     }
   }

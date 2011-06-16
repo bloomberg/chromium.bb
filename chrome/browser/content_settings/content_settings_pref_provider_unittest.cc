@@ -65,13 +65,13 @@ TEST_F(PrefDefaultProviderTest, Observer) {
   EXPECT_CALL(observer,
               OnContentSettingsChanged(profile.GetHostContentSettingsMap(),
                                        CONTENT_SETTINGS_TYPE_IMAGES, false,
-                                       _, true));
+                                       _, _, true));
   // Expect a second call because the PrefDefaultProvider in the TestingProfile
   // also observes the default content settings preference.
   EXPECT_CALL(observer,
               OnContentSettingsChanged(profile.GetHostContentSettingsMap(),
                                        CONTENT_SETTINGS_TYPE_DEFAULT, true,
-                                       _, true));
+                                       _, _, true));
   provider.UpdateDefaultSetting(
       CONTENT_SETTINGS_TYPE_IMAGES, CONTENT_SETTING_BLOCK);
 }
@@ -173,15 +173,18 @@ TEST_F(PrefProviderTest, Observer) {
   // Expect 2 calls: One from the update and one from canonicalization.
   EXPECT_CALL(observer,
               OnContentSettingsChanged(profile.GetHostContentSettingsMap(),
-                                       CONTENT_SETTINGS_TYPE_IMAGES, false,
-                                       pattern, false));
+                                       CONTENT_SETTINGS_TYPE_IMAGES,
+                                       false,
+                                       pattern,
+                                       ContentSettingsPattern::Wildcard(),
+                                       false));
   EXPECT_CALL(observer,
               OnContentSettingsChanged(profile.GetHostContentSettingsMap(),
                                        CONTENT_SETTINGS_TYPE_DEFAULT, true,
-                                       _, true));
+                                       _, _, true));
   pref_content_settings_provider.SetContentSetting(
       pattern,
-      pattern,
+      ContentSettingsPattern::Wildcard(),
       CONTENT_SETTINGS_TYPE_IMAGES,
       "",
       CONTENT_SETTING_ALLOW);
@@ -329,6 +332,49 @@ TEST_F(PrefProviderTest, ResourceIdentifier) {
   EXPECT_EQ(CONTENT_SETTING_DEFAULT,
             pref_content_settings_provider.GetContentSetting(
                 host, host, CONTENT_SETTINGS_TYPE_PLUGINS, resource2));
+}
+
+TEST_F(PrefProviderTest, MigrateSinglePatternSettings) {
+  // Setup single pattern settings.
+  TestingProfile profile;
+  PrefService* prefs = profile.GetPrefs();
+
+  DictionaryValue* settings_dictionary = new DictionaryValue();
+  settings_dictionary->SetInteger("cookies", 2);
+  settings_dictionary->SetInteger("images", 2);
+  settings_dictionary->SetInteger("popups", 2);
+
+  ContentSettingsPattern pattern =
+      ContentSettingsPattern::FromString("http://www.example.com");
+  DictionaryValue* all_settings_dictionary = new DictionaryValue();
+  all_settings_dictionary->SetWithoutPathExpansion(
+      pattern.ToString(), settings_dictionary);
+
+  prefs->Set(prefs::kContentSettingsPatterns, *all_settings_dictionary);
+
+  // Test if single pattern settings are properly migrated.
+  content_settings::PrefProvider provider(profile.GetOriginalProfile());
+
+  const DictionaryValue* const_all_settings_dictionary =
+      prefs->GetDictionary(prefs::kContentSettingsPatterns);
+  EXPECT_EQ(1U, const_all_settings_dictionary->size());
+  EXPECT_FALSE(const_all_settings_dictionary->HasKey(pattern.ToString()));
+  EXPECT_TRUE(const_all_settings_dictionary->HasKey(
+      pattern.ToString() + "," +
+      ContentSettingsPattern::Wildcard().ToString()));
+
+  // TODO test provider
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,  provider.GetContentSetting(
+      GURL("http://www.example.com"),
+      GURL("http://www.example.com"),
+      CONTENT_SETTINGS_TYPE_IMAGES,
+      ""));
+
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,  provider.GetContentSetting(
+      GURL("http://www.example.com"),
+      GURL("http://www.example.com"),
+      CONTENT_SETTINGS_TYPE_POPUPS,
+      ""));
 }
 
 }  // namespace content_settings

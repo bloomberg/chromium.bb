@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/content_settings_details.h"
+#include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
@@ -656,6 +657,7 @@ void ContentSettingsHandler::RemoveException(const ListValue* args) {
     if (settings_map) {
       settings_map->SetContentSetting(
           ContentSettingsPattern::FromString(pattern),
+          ContentSettingsPattern::Wildcard(),
           ContentSettingsTypeFromGroupName(type_string),
           "",
           CONTENT_SETTING_DEFAULT);
@@ -689,9 +691,8 @@ void ContentSettingsHandler::SetException(const ListValue* args) {
   // got destroyed before we received this message.
   if (!settings_map)
     return;
-
-  settings_map->SetContentSetting(ContentSettingsPattern::FromString(
-                                      pattern),
+  settings_map->SetContentSetting(ContentSettingsPattern::FromString(pattern),
+                                  ContentSettingsPattern::Wildcard(),
                                   type,
                                   "",
                                   ContentSettingFromString(setting));

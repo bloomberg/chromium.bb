@@ -212,6 +212,7 @@ void GeolocationContentSettingsMap::Observe(
     const std::string& name = *Details<std::string>(details).ptr();
     if (name == prefs::kGeolocationDefaultContentSetting) {
       ContentSettingsDetails details(ContentSettingsPattern(),
+                                     ContentSettingsPattern(),
                                      CONTENT_SETTINGS_TYPE_DEFAULT,
                                      std::string());
       NotifyObservers(details);

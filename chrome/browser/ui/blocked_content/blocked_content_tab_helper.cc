@@ -85,7 +85,10 @@ void BlockedContentTabHelper::AddPopup(TabContentsWrapper* new_contents,
 
   if (creator.is_valid() &&
       tab_contents()->profile()->GetHostContentSettingsMap()->GetContentSetting(
-          creator, CONTENT_SETTINGS_TYPE_POPUPS, "") == CONTENT_SETTING_ALLOW) {
+          creator,
+          creator,
+          CONTENT_SETTINGS_TYPE_POPUPS,
+          "") == CONTENT_SETTING_ALLOW) {
     tab_contents()->AddNewContents(new_contents->tab_contents(),
                                    NEW_POPUP,
                                    initial_pos,

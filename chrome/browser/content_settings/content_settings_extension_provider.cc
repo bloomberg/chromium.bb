@@ -70,8 +70,10 @@ void ExtensionProvider::OnContentSettingChanged(
   if (incognito_ != incognito)
     return;
   // TODO(markusheintz): Be more concise.
-  ContentSettingsDetails details(
-      ContentSettingsPattern(), CONTENT_SETTINGS_TYPE_DEFAULT, std::string());
+  ContentSettingsDetails details(ContentSettingsPattern(),
+                                 ContentSettingsPattern(),
+                                 CONTENT_SETTINGS_TYPE_DEFAULT,
+                                 std::string());
   NotifyObservers(details);
 }
 

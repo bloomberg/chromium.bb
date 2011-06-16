@@ -35,31 +35,40 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentSettings) {
   // Check default content settings by using an unknown URL.
   GURL example_url("http://www.example.com");
   EXPECT_EQ(CONTENT_SETTING_SESSION_ONLY,
-            map->GetCookieContentSetting(example_url, example_url,
-                                         false));
+            map->GetCookieContentSetting(
+                example_url, example_url, false));
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            map->GetContentSetting(example_url, CONTENT_SETTINGS_TYPE_IMAGES,
+            map->GetContentSetting(example_url,
+                                   example_url,
+                                   CONTENT_SETTINGS_TYPE_IMAGES,
                                    std::string()));
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             map->GetContentSetting(example_url,
+                                   example_url,
                                    CONTENT_SETTINGS_TYPE_JAVASCRIPT,
                                    std::string()));
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            map->GetContentSetting(example_url, CONTENT_SETTINGS_TYPE_PLUGINS,
+            map->GetContentSetting(example_url,
+                                   example_url,
+                                   CONTENT_SETTINGS_TYPE_PLUGINS,
                                    std::string()));
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            map->GetContentSetting(example_url, CONTENT_SETTINGS_TYPE_POPUPS,
+            map->GetContentSetting(example_url,
+                                   example_url,
+                                   CONTENT_SETTINGS_TYPE_POPUPS,
                                    std::string()));
 #if 0
   // TODO(bauerb): Enable once geolocation settings are integrated into the
   // HostContentSettingsMap.
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             map->GetContentSetting(example_url,
+                                   example_url,
                                    CONTENT_SETTINGS_TYPE_GEOLOCATION,
                                    std::string()));
 #endif
   EXPECT_EQ(CONTENT_SETTING_ASK,
             map->GetContentSetting(example_url,
+                                   example_url,
                                    CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
                                    std::string()));
 
@@ -68,20 +77,25 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentSettings) {
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             map->GetCookieContentSetting(url, url, false));
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            map->GetContentSetting(url, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+            map->GetContentSetting(
+                url, url, CONTENT_SETTINGS_TYPE_IMAGES, ""));
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            map->GetContentSetting(url, CONTENT_SETTINGS_TYPE_JAVASCRIPT, ""));
+            map->GetContentSetting(
+                url, url, CONTENT_SETTINGS_TYPE_JAVASCRIPT, ""));
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            map->GetContentSetting(url, CONTENT_SETTINGS_TYPE_PLUGINS, ""));
+            map->GetContentSetting(
+                url, url, CONTENT_SETTINGS_TYPE_PLUGINS, ""));
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            map->GetContentSetting(url, CONTENT_SETTINGS_TYPE_POPUPS, ""));
+            map->GetContentSetting(
+                url, url, CONTENT_SETTINGS_TYPE_POPUPS, ""));
 #if 0
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            map->GetContentSetting(url, CONTENT_SETTINGS_TYPE_GEOLOCATION, ""));
+            map->GetContentSetting(
+                url, url, CONTENT_SETTINGS_TYPE_GEOLOCATION, ""));
 #endif
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            map->GetContentSetting(url, CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-                                   ""));
+            map->GetContentSetting(
+                url, url, CONTENT_SETTINGS_TYPE_NOTIFICATIONS, ""));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PersistentIncognitoContentSettings) {

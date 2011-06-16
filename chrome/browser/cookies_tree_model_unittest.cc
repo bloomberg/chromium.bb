@@ -841,8 +841,6 @@ TEST_F(CookiesTreeModelTest, OriginOrdering) {
 
 TEST_F(CookiesTreeModelTest, ContentSettings) {
   GURL host("http://example.com/");
-  ContentSettingsPattern pattern =
-      ContentSettingsPattern::FromString("[*.]example.com");
   net::CookieMonster* monster = profile_->GetCookieMonster();
   monster->SetCookie(host, "A=1");
 
@@ -867,13 +865,20 @@ TEST_F(CookiesTreeModelTest, ContentSettings) {
   EXPECT_EQ(1, origin->child_count());
   EXPECT_TRUE(origin->CanCreateContentException());
   EXPECT_CALL(observer,
-              OnContentSettingsChanged(content_settings,
-                                       CONTENT_SETTINGS_TYPE_COOKIES, false,
-                                       _, false));
+              OnContentSettingsChanged(
+                  content_settings,
+                  CONTENT_SETTINGS_TYPE_COOKIES,
+                  false,
+                  ContentSettingsPattern::FromURLNoWildcard(host),
+                  ContentSettingsPattern::Wildcard(),
+                  false));
   EXPECT_CALL(observer,
               OnContentSettingsChanged(content_settings,
-                                       CONTENT_SETTINGS_TYPE_COOKIES, false,
-                                       pattern, false));
+                  CONTENT_SETTINGS_TYPE_COOKIES,
+                  false,
+                  ContentSettingsPattern::FromURL(host),
+                  ContentSettingsPattern::Wildcard(),
+                  false));
   origin->CreateContentException(
       content_settings, CONTENT_SETTING_SESSION_ONLY);
   EXPECT_EQ(CONTENT_SETTING_SESSION_ONLY,

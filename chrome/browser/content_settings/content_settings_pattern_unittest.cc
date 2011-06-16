@@ -373,8 +373,9 @@ TEST(ContentSettingsPatternTest, Compare) {
             Pattern("*://[*.]google.com:*").Compare(
                 Pattern("*://[*.]google.com:*")));
 
-  ContentSettingsPattern invalid_pattern1 = ContentSettingsPattern();
-  ContentSettingsPattern invalid_pattern2 = Pattern("www.google.com*");
+  ContentSettingsPattern invalid_pattern1;
+  ContentSettingsPattern invalid_pattern2 =
+      ContentSettingsPattern::FromString("google.com*");
 
   // Compare invalid patterns.
   EXPECT_TRUE(!invalid_pattern1.IsValid());

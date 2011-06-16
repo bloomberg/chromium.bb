@@ -146,7 +146,7 @@ bool GetContentSettingFunction::RunImpl() {
     setting = map->GetCookieContentSetting(embedded_url, top_level_url,
                                            setting_cookie);
   } else {
-    setting = map->GetContentSetting(top_level_url, content_type,
+    setting = map->GetContentSetting(embedded_url, top_level_url, content_type,
                                      resource_identifier);
   }
 

@@ -158,28 +158,6 @@ ContentSetting HostContentSettingsMap::GetDefaultContentSetting(
   return setting;
 }
 
-ContentSetting HostContentSettingsMap::GetContentSetting(
-    const GURL& url,
-    ContentSettingsType content_type,
-    const std::string& resource_identifier) const {
-  DCHECK_NE(CONTENT_SETTINGS_TYPE_COOKIES, content_type);
-  DCHECK_NE(content_settings::RequiresResourceIdentifier(content_type),
-            resource_identifier.empty());
-  return GetContentSettingInternal(url, content_type, resource_identifier);
-}
-
-ContentSetting HostContentSettingsMap::GetContentSettingInternal(
-    const GURL& url,
-    ContentSettingsType content_type,
-    const std::string& resource_identifier) const {
-  ContentSetting setting = GetNonDefaultContentSetting(url,
-                                                       content_type,
-                                                       resource_identifier);
-  if (setting == CONTENT_SETTING_DEFAULT)
-    return GetDefaultContentSetting(content_type);
-  return setting;
-}
-
 ContentSetting HostContentSettingsMap::GetCookieContentSetting(
     const GURL& url,
     const GURL& first_party_url,
@@ -204,16 +182,42 @@ ContentSetting HostContentSettingsMap::GetCookieContentSetting(
   }
 
   if (setting == CONTENT_SETTING_ALLOW)
-    setting = GetContentSettingInternal(url, CONTENT_SETTINGS_TYPE_COOKIES, "");
+    setting = GetContentSettingInternal(
+        url, url, CONTENT_SETTINGS_TYPE_COOKIES, "");
 
   return setting;
 }
 
-ContentSetting HostContentSettingsMap::GetNonDefaultContentSetting(
-    const GURL& url,
+ContentSetting HostContentSettingsMap::GetContentSetting(
+    const GURL& primary_url,
+    const GURL& secondary_url,
     ContentSettingsType content_type,
     const std::string& resource_identifier) const {
-  if (ShouldAllowAllContent(url))
+  DCHECK_NE(CONTENT_SETTINGS_TYPE_COOKIES, content_type);
+  DCHECK_NE(content_settings::RequiresResourceIdentifier(content_type),
+            resource_identifier.empty());
+  return GetContentSettingInternal(
+      primary_url, secondary_url, content_type, resource_identifier);
+}
+
+ContentSetting HostContentSettingsMap::GetContentSettingInternal(
+      const GURL& primary_url,
+      const GURL& secondary_url,
+      ContentSettingsType content_type,
+      const std::string& resource_identifier) const {
+  ContentSetting setting = GetNonDefaultContentSetting(
+      primary_url, secondary_url, content_type, resource_identifier);
+  if (setting == CONTENT_SETTING_DEFAULT)
+    return GetDefaultContentSetting(content_type);
+  return setting;
+}
+
+ContentSetting HostContentSettingsMap::GetNonDefaultContentSetting(
+      const GURL& primary_url,
+      const GURL& secondary_url,
+      ContentSettingsType content_type,
+      const std::string& resource_identifier) const {
+  if (ShouldAllowAllContent(secondary_url))
     return CONTENT_SETTING_ALLOW;
 
   // Iterate through the list of providers and break when the first non default
@@ -223,7 +227,7 @@ ContentSetting HostContentSettingsMap::GetNonDefaultContentSetting(
        provider != content_settings_providers_.end();
        ++provider) {
     provided_setting = (*provider)->GetContentSetting(
-        url, url, content_type, resource_identifier);
+        primary_url, secondary_url, content_type, resource_identifier);
     if (provided_setting != CONTENT_SETTING_DEFAULT)
       return provided_setting;
   }
@@ -231,8 +235,10 @@ ContentSetting HostContentSettingsMap::GetNonDefaultContentSetting(
 }
 
 ContentSettings HostContentSettingsMap::GetContentSettings(
-    const GURL& url) const {
-  ContentSettings output = GetNonDefaultContentSettings(url);
+      const GURL& primary_url,
+      const GURL& secondary_url) const {
+  ContentSettings output = GetNonDefaultContentSettings(
+      primary_url, secondary_url);
 
   // If we require a resource identifier, set the content settings to default,
   // otherwise make the defaults explicit.
@@ -248,14 +254,18 @@ ContentSettings HostContentSettingsMap::GetContentSettings(
 }
 
 ContentSettings HostContentSettingsMap::GetNonDefaultContentSettings(
-    const GURL& url) const {
-  if (ShouldAllowAllContent(url))
+    const GURL& primary_url,
+    const GURL& secondary_url) const {
+  if (ShouldAllowAllContent(secondary_url))
     return ContentSettings(CONTENT_SETTING_ALLOW);
 
   ContentSettings output(CONTENT_SETTING_DEFAULT);
   for (int j = 0; j < CONTENT_SETTINGS_NUM_TYPES; ++j) {
     output.settings[j] = GetNonDefaultContentSetting(
-        url, ContentSettingsType(j) , "");
+        primary_url,
+        secondary_url,
+        ContentSettingsType(j),
+        "");
   }
   return output;
 }
@@ -281,9 +291,17 @@ void HostContentSettingsMap::GetSettingsForOneType(
     for (Rules::iterator rule = rules.begin();
          rule != rules.end();
          ++rule) {
-      const ContentSettingsPattern& pattern(rule->requesting_url_pattern);
-      pattern_str_pattern_setting_pair_map[pattern.ToString()] =
-          PatternSettingPair(pattern, rule->content_setting);
+      // As long as we don't support pattern pairs in the UI we display the
+      // primary pattern.
+      ContentSettingsPattern pattern = rule->primary_pattern;
+      std::string key = pattern.ToString();
+      // Only add a rule if no provider with a higher priority has a rule with
+      // an identical primary pattern.
+      if (pattern_str_pattern_setting_pair_map.find(key) ==
+          pattern_str_pattern_setting_pair_map.end()) {
+        pattern_str_pattern_setting_pair_map[key] =
+            PatternSettingPair(pattern, rule->content_setting);
+      }
     }
   }
 
@@ -309,7 +327,8 @@ void HostContentSettingsMap::SetDefaultContentSetting(
 }
 
 void HostContentSettingsMap::SetContentSetting(
-    const ContentSettingsPattern& pattern,
+    const ContentSettingsPattern& primary_pattern,
+    const ContentSettingsPattern& secondary_pattern,
     ContentSettingsType content_type,
     const std::string& resource_identifier,
     ContentSetting setting) {
@@ -320,22 +339,34 @@ void HostContentSettingsMap::SetContentSetting(
        provider != content_settings_providers_.end();
        ++provider) {
     (*provider)->SetContentSetting(
-        pattern, pattern, content_type, resource_identifier, setting);
+        primary_pattern,
+        secondary_pattern,
+        content_type,
+        resource_identifier,
+        setting);
   }
 }
 
 void HostContentSettingsMap::AddExceptionForURL(
-    const GURL& url,
+    const GURL& primary_url,
+    const GURL& secondary_url,
     ContentSettingsType content_type,
     const std::string& resource_identifier,
     ContentSetting setting) {
+  // TODO(markusheintz): Until the UI supports pattern pairs, both urls must
+  // match.
+  DCHECK(primary_url == secondary_url);
+
   // Make sure there is no entry that would override the pattern we are about
   // to insert for exactly this URL.
-  SetContentSetting(ContentSettingsPattern::FromURLNoWildcard(url),
+  SetContentSetting(ContentSettingsPattern::FromURLNoWildcard(primary_url),
+                    ContentSettingsPattern::Wildcard(),
                     content_type,
                     resource_identifier,
                     CONTENT_SETTING_DEFAULT);
-  SetContentSetting(ContentSettingsPattern::FromURL(url),
+
+  SetContentSetting(ContentSettingsPattern::FromURL(primary_url),
+                    ContentSettingsPattern::Wildcard(),
                     content_type,
                     resource_identifier,
                     setting);

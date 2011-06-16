@@ -41,6 +41,7 @@ void PluginExceptionsTableModel::RemoveRows(const Rows& rows) {
     SettingsEntry entry = settings_[*it];
     HostContentSettingsMap* map = entry.is_otr ? otr_map_ : map_;
     map->SetContentSetting(entry.pattern,
+                           ContentSettingsPattern::Wildcard(),
                            CONTENT_SETTINGS_TYPE_PLUGINS,
                            resources_[entry.plugin_id],
                            CONTENT_SETTING_DEFAULT);

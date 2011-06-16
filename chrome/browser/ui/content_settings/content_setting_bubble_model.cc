@@ -258,12 +258,13 @@ class ContentSettingSingleRadioGroup
       mostRestrictiveSetting =
           content_type() == CONTENT_SETTINGS_TYPE_COOKIES ?
               map->GetCookieContentSetting(url, url, true) :
-              map->GetContentSetting(url, content_type(), std::string());
+              map->GetContentSetting(url, url, content_type(), std::string());
     } else {
       mostRestrictiveSetting = CONTENT_SETTING_ALLOW;
       for (std::set<std::string>::const_iterator it = resources.begin();
            it != resources.end(); ++it) {
         ContentSetting setting = map->GetContentSetting(url,
+                                                        url,
                                                         content_type(),
                                                         *it);
         if (setting == CONTENT_SETTING_BLOCK) {
@@ -288,7 +289,10 @@ class ContentSettingSingleRadioGroup
   void AddException(ContentSetting setting,
                     const std::string& resource_identifier) {
     profile()->GetHostContentSettingsMap()->AddExceptionForURL(
-        bubble_content().radio_group.url, content_type(), resource_identifier,
+        bubble_content().radio_group.url,
+        bubble_content().radio_group.url,
+        content_type(),
+        resource_identifier,
         setting);
   }
 

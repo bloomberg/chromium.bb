@@ -23,10 +23,11 @@ class MockSettingsObserver : public NotificationObserver {
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  MOCK_METHOD5(OnContentSettingsChanged,
+  MOCK_METHOD6(OnContentSettingsChanged,
                void(HostContentSettingsMap*,
                     ContentSettingsType,
                     bool,
+                    const ContentSettingsPattern&,
                     const ContentSettingsPattern&,
                     bool));
 
