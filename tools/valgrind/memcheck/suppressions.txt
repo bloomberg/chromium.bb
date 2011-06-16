@@ -4152,8 +4152,8 @@
 {
    bug_79671
    Memcheck:Cond
-   fun:_ZN5views15NativeWindowGtk16ShowNativeWindowENS_12NativeWindow9ShowStateE
-   fun:_ZN5views6Window4ShowEv
+   fun:_ZN5views15NativeWidgetGtk16ShowNativeWidgetENS_12NativeWidget9ShowStateE
+   fun:_ZN5views6Widget4ShowEv
    fun:_ZN11BrowserView4ShowEv
    fun:_ZN8chromeos11BrowserView12ShowInternalEb
    fun:_ZN8chromeos11BrowserView4ShowEv
@@ -4443,7 +4443,7 @@
    bug_83430
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN27ScopedRunnableMethodFactoryI13ThreadWatcherE17NewRunnableMethodIMS0_FvyEyEEP14CancelableTaskT_RKT0_
+   fun:*NewRunnable*
    fun:_ZN13ThreadWatcher15PostPingMessageEv
    fun:_Z16DispatchToMethodI13ThreadWatcherMS0_FvvEEvPT_T0_RK6Tuple0
    fun:_ZN27ScopedRunnableMethodFactoryI13ThreadWatcherE14RunnableMethodIMS0_FvvE6Tuple0E3RunEv
@@ -4451,6 +4451,21 @@
    fun:_ZN4base8internal8Invoker1ILb0ENS0_15InvokerStorage1IMN12_GLOBAL__N_118TaskClosureAdapterEFvvEPS4_EES6_E8DoInvokeEPNS0_18InvokerStorageBaseE
    fun:_ZNK4base8CallbackIFvvEE3RunEv
    fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
+}
+{
+   bug_83566
+   Memcheck:Addr4
+   fun:_ZN7WebCore*V8Entr*Callback11handleEvent*
+   ...
+   fun:_ZN7WebCore16CrossThreadTask3IPN6WebKit31WorkerFileSystemCallbacksBridge*
+   fun:_ZN6WebKit31WorkerFileSystemCallbacksBridge21runTaskOnWorkerThreadEPN7WebCore22ScriptExecutionContextEN3WTF10PassRefPtrIS0_EENS4_10PassOwnPtrINS2_4TaskEEE
+   fun:_ZN7WebCore16CrossThreadTask2IN3WTF10PassRefPtrIN6WebKit31WorkerFileSystemCallbacksBridgeEEES5_NS1_10PassOwnPtrINS_22ScriptExecutionContext4TaskEEES9_E11performTaskEPS7_
+   fun:_ZN7WebCore13WorkerRunLoop4Task11performTaskEPNS_22ScriptExecutionContextE
+   fun:_ZN7WebCore13WorkerRunLoop9runInModeEPNS_13WorkerContextERKNS_13ModePredicateE
+   fun:_ZN7WebCore13WorkerRunLoop3runEPNS_13WorkerContextE
+   fun:_ZN7WebCore12WorkerThread12runEventLoopEv
+   fun:_ZN7WebCore21DedicatedWorkerThread12runEventLoopEv
+   fun:_ZN7WebCore12WorkerThread12workerThreadEv
 }
 {
    bug_83609
@@ -4675,6 +4690,18 @@
    fun:_Znw*
    fun:_ZN8chromeos12input_method14IBusController6CreateEv
    fun:_ZN8chromeos22InputMethodLibraryImpl4InitEv
+}
+{
+   bug_86294
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN5views12CustomButtonC2EPNS_14ButtonListenerE
+   fun:_ZN5views11ImageButtonC2EPNS_14ButtonListenerE
+   fun:_ZN12_GLOBAL__N_114TabCloseButtonC1EPN5views14ButtonListenerE
+   fun:_ZN7BaseTabC2EP13TabController
+   fun:_ZN3TabC1EP13TabController
+   fun:_ZN8TabStrip20CreateTabForDraggingEv
+   fun:_ZN35gtest_case_BaseTabStripTestFixture_20CreateTabForDraggingI8TabStripE8TestBodyEv
 }
 
 #-----------------------------------------------------------------------
