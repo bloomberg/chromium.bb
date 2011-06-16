@@ -38,6 +38,7 @@
 #include "base/scoped_temp_dir.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
+#include "chrome/test/sync/null_directory_change_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace syncable {
@@ -69,6 +70,8 @@ class TestDirectorySetterUpper {
   explicit TestDirectorySetterUpper(const std::string& name);
   virtual void Init();
   void reset_directory_manager(syncable::DirectoryManager* d);
+
+  syncable::NullDirectoryChangeDelegate delegate_;
 
  private:
   void RunInvariantCheck(const syncable::ScopedDirLookup& dir);
@@ -120,6 +123,9 @@ class MockDirectorySetterUpper : public TestDirectorySetterUpper {
     explicit MockDirectory(const std::string& name);
     virtual ~MockDirectory();
     MOCK_METHOD1(PurgeEntriesWithTypeIn, void(const syncable::ModelTypeSet&));
+
+   private:
+    syncable::NullDirectoryChangeDelegate delegate_;
   };
 
   MockDirectorySetterUpper();

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/tracked.h"
 #include "chrome/browser/sync/engine/syncer_proto_util.h"
 #include "chrome/browser/sync/engine/syncproto.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
@@ -34,7 +35,7 @@ void PostCommitMessageCommand::ExecuteImpl(sessions::SyncSession* session) {
     // Not to be confused with IS_UNSYNCED, this bit is used to detect local
     // changes to items that happen during the server Commit operation.
     status->increment_num_consecutive_errors();
-    syncable::WriteTransaction trans(dir, syncable::SYNCER, __FILE__, __LINE__);
+    syncable::WriteTransaction trans(dir, syncable::SYNCER, FROM_HERE);
     const vector<syncable::Id>& commit_ids = status->commit_ids();
     for (size_t i = 0; i < commit_ids.size(); i++) {
       syncable::MutableEntry entry(&trans, syncable::GET_BY_ID, commit_ids[i]);

@@ -31,6 +31,7 @@ namespace browser_sync {
 namespace {
 
 using testing::_;
+using testing::AnyNumber;
 using testing::AtLeast;
 using testing::AtMost;
 using testing::Return;
@@ -172,6 +173,10 @@ TEST_F(ProfileSyncServiceTest,
 
   StrictMock<MockJsEventHandler> event_handler;
   EXPECT_CALL(event_handler,
+              HandleJsEvent("onTransactionStart", _)).Times(AnyNumber());
+  EXPECT_CALL(event_handler,
+              HandleJsEvent("onTransactionEnd", _)).Times(AnyNumber());
+  EXPECT_CALL(event_handler,
               HandleJsEvent("onServiceStateChanged",
                             HasDetails(JsEventDetails()))).Times(AtLeast(3));
   // For some reason, these events may or may not fire.
@@ -270,6 +275,10 @@ TEST_F(ProfileSyncServiceTest,
   StartSyncServiceAndSetInitialSyncEnded(true, false, false, true);
 
   StrictMock<MockJsEventHandler> event_handler;
+  EXPECT_CALL(event_handler,
+              HandleJsEvent("onTransactionStart", _)).Times(AnyNumber());
+  EXPECT_CALL(event_handler,
+              HandleJsEvent("onTransactionEnd", _)).Times(AnyNumber());
   // For some reason, these events may or may not fire.
   EXPECT_CALL(event_handler, HandleJsEvent("onChangesApplied", _))
       .Times(AtMost(1));

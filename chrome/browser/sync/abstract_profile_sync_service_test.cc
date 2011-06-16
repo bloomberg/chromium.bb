@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync/abstract_profile_sync_service_test.h"
 
+#include "base/tracked.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
@@ -47,7 +48,7 @@ bool ProfileSyncServiceTestHelper::CreateRoot(
 
   std::string tag_name = GetTagForType(model_type);
 
-  WriteTransaction wtrans(dir, UNITTEST, __FILE__, __LINE__);
+  WriteTransaction wtrans(dir, UNITTEST, FROM_HERE);
   MutableEntry node(&wtrans,
                     CREATE,
                     wtrans.root_id(),

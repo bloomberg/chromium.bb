@@ -296,6 +296,8 @@
       'sources': [
         'browser/sync/js_test_util.cc',
         'browser/sync/js_test_util.h',
+        'test/sync/null_directory_change_delegate.cc',
+        'test/sync/null_directory_change_delegate.h',
         'test/sync/engine/test_directory_setter_upper.cc',
         'test/sync/engine/test_directory_setter_upper.h',
       ],

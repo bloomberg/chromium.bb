@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/tracked.h"
 #include "chrome/browser/sync/engine/syncer.h"
 #include "chrome/browser/sync/engine/syncer_proto_util.h"
 #include "chrome/browser/sync/engine/syncer_util.h"
@@ -97,7 +98,7 @@ ServerUpdateProcessingResult ProcessUpdatesCommand::ProcessUpdate(
   syncable::Id server_id = update.id();
   const std::string name = SyncerProtoUtil::NameFromSyncEntity(update);
 
-  syncable::WriteTransaction trans(dir, syncable::SYNCER, __FILE__, __LINE__);
+  syncable::WriteTransaction trans(dir, syncable::SYNCER, FROM_HERE);
 
   // Look to see if there's a local item that should recieve this update,
   // maybe due to a duplicate client tag or a lost commit response.

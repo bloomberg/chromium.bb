@@ -1,10 +1,10 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
 
 #include "chrome/browser/sync/engine/verify_updates_command.h"
 
+#include "base/tracked.h"
 #include "chrome/browser/sync/engine/syncer.h"
 #include "chrome/browser/sync/engine/syncer_proto_util.h"
 #include "chrome/browser/sync/engine/syncer_types.h"
@@ -35,7 +35,7 @@ void VerifyUpdatesCommand::ModelChangingExecuteImpl(
     LOG(ERROR) << "Scoped dir lookup failed!";
     return;
   }
-  WriteTransaction trans(dir, SYNCER, __FILE__, __LINE__);
+  WriteTransaction trans(dir, SYNCER, FROM_HERE);
   sessions::StatusController* status = session->status_controller();
   const GetUpdatesResponse& updates = status->updates_response().get_updates();
   int update_count = updates.entries().size();

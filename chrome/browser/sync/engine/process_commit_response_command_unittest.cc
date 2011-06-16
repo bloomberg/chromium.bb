@@ -1,10 +1,11 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <vector>
 
 #include "base/stringprintf.h"
+#include "base/tracked.h"
 #include "chrome/browser/sync/engine/mock_model_safe_workers.h"
 #include "chrome/browser/sync/engine/process_commit_response_command.h"
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
@@ -90,7 +91,7 @@ class ProcessCommitResponseCommandTestWithParam
                           int64* metahandle_out) {
     ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
     ASSERT_TRUE(dir.good());
-    WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
+    WriteTransaction trans(dir, UNITTEST, FROM_HERE);
     Id predecessor_id = dir->GetLastChildId(&trans, parent_id);
     MutableEntry entry(&trans, syncable::CREATE, parent_id, name);
     ASSERT_TRUE(entry.good());
@@ -136,7 +137,7 @@ class ProcessCommitResponseCommandTestWithParam
 
     ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
     ASSERT_TRUE(dir.good());
-    WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
+    WriteTransaction trans(dir, UNITTEST, FROM_HERE);
     MutableEntry entry(&trans, syncable::GET_BY_ID, item_id);
     ASSERT_TRUE(entry.good());
     entry.Put(syncable::SYNCING, true);
@@ -232,7 +233,7 @@ TEST_F(ProcessCommitResponseCommandTest, MultipleCommitIdProjections) {
 
   ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
   ASSERT_TRUE(dir.good());
-  ReadTransaction trans(dir, __FILE__, __LINE__);
+  ReadTransaction trans(dir, FROM_HERE);
   Id new_fid = dir->GetFirstChildId(&trans, id_factory_.root());
   ASSERT_FALSE(new_fid.IsRoot());
   EXPECT_TRUE(new_fid.ServerKnows());
@@ -286,7 +287,7 @@ TEST_F(ProcessCommitResponseCommandTest, NewFolderCommitKeepsChildOrder) {
   {
     ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
     ASSERT_TRUE(dir.good());
-    ReadTransaction trans(dir, __FILE__, __LINE__);
+    ReadTransaction trans(dir, FROM_HERE);
     ASSERT_EQ(folder_id, dir->GetFirstChildId(&trans, id_factory_.root()));
   }
 
@@ -319,7 +320,7 @@ TEST_F(ProcessCommitResponseCommandTest, NewFolderCommitKeepsChildOrder) {
 
   ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
   ASSERT_TRUE(dir.good());
-  ReadTransaction trans(dir, __FILE__, __LINE__);
+  ReadTransaction trans(dir, FROM_HERE);
   // Lookup the parent folder by finding a child of the root.  We can't use
   // folder_id here, because it changed during the commit.
   Id new_fid = dir->GetFirstChildId(&trans, id_factory_.root());

@@ -6,6 +6,7 @@
 
 #include "base/message_loop.h"
 #include "base/time.h"
+#include "base/tracked.h"
 #include "chrome/browser/sync/engine/apply_updates_command.h"
 #include "chrome/browser/sync/engine/build_and_process_conflict_sets_command.h"
 #include "chrome/browser/sync/engine/build_commit_command.h"
@@ -167,7 +168,7 @@ void Syncer::SyncShare(sessions::SyncSession* session,
           LOG(ERROR) << "Scoped dir lookup failed!";
           return;
         }
-        WriteTransaction trans(dir, SYNCER, __FILE__, __LINE__);
+        WriteTransaction trans(dir, SYNCER, FROM_HERE);
         sessions::ScopedSetSessionWriteTransaction set_trans(session, &trans);
 
         VLOG(1) << "Getting the Commit IDs";

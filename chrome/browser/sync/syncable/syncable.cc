@@ -36,6 +36,7 @@
 #include "base/string_util.h"
 #include "base/stl_util-inl.h"
 #include "base/time.h"
+#include "base/tracked.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/sync/engine/syncer.h"
@@ -43,13 +44,15 @@
 #include "chrome/browser/sync/protocol/proto_value_conversions.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
 #include "chrome/browser/sync/syncable/directory_backing_store.h"
-#include "chrome/browser/sync/syncable/directory_change_listener.h"
+#include "chrome/browser/sync/syncable/directory_change_delegate.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/syncable-inl.h"
 #include "chrome/browser/sync/syncable/syncable_changes_version.h"
 #include "chrome/browser/sync/syncable/syncable_columns.h"
 #include "chrome/browser/sync/syncable/syncable_enum_conversions.h"
+#include "chrome/browser/sync/syncable/transaction_observer.h"
+#include "chrome/browser/sync/util/logging.h"
 #include "chrome/common/deprecated/event_sys-inl.h"
 #include "net/base/escape.h"
 
@@ -323,9 +326,10 @@ DictionaryValue* EntryKernel::ToValue() const {
 ///////////////////////////////////////////////////////////////////////////
 // Directory
 
-void Directory::init_kernel(const std::string& name) {
+void Directory::InitKernel(const std::string& name,
+                           DirectoryChangeDelegate* delegate) {
   DCHECK(kernel_ == NULL);
-  kernel_ = new Kernel(FilePath(), name, KernelLoadInfo());
+  kernel_ = new Kernel(FilePath(), name, KernelLoadInfo(), delegate);
 }
 
 Directory::PersistedKernelInfo::PersistedKernelInfo()
@@ -356,7 +360,8 @@ Directory::SaveChangesSnapshot::~SaveChangesSnapshot() {}
 
 Directory::Kernel::Kernel(const FilePath& db_path,
                           const string& name,
-                          const KernelLoadInfo& info)
+                          const KernelLoadInfo& info,
+                          DirectoryChangeDelegate* delegate)
     : db_path(db_path),
       refcount(1),
       name(name),
@@ -372,7 +377,10 @@ Directory::Kernel::Kernel(const FilePath& db_path,
       info_status(Directory::KERNEL_SHARE_INFO_VALID),
       persisted_info(info.kernel_info),
       cache_guid(info.cache_guid),
-      next_metahandle(info.max_metahandle + 1) {
+      next_metahandle(info.max_metahandle + 1),
+      delegate(delegate),
+      observers(new ObserverListThreadSafe<TransactionObserver>()) {
+  DCHECK(delegate);
 }
 
 void Directory::Kernel::AddRef() {
@@ -382,33 +390,6 @@ void Directory::Kernel::AddRef() {
 void Directory::Kernel::Release() {
   if (!base::subtle::NoBarrier_AtomicIncrement(&refcount, -1))
     delete this;
-}
-
-void Directory::Kernel::AddChangeListener(
-    DirectoryChangeListener* listener) {
-  base::AutoLock lock(change_listeners_lock_);
-  change_listeners_.AddObserver(listener);
-}
-
-void Directory::Kernel::RemoveChangeListener(
-    DirectoryChangeListener* listener) {
-  base::AutoLock lock(change_listeners_lock_);
-  change_listeners_.RemoveObserver(listener);
-}
-
-// Note: it is possible that a listener will remove itself after we
-// have made a copy, but before the copy is consumed. This could
-// theoretically result in accessing a garbage pointer, but can only
-// occur when an about:sync window is closed in the middle of a
-// notification.  See crbug.com/85481.
-void Directory::Kernel::CopyChangeListeners(
-    ObserverList<DirectoryChangeListener>* change_listeners) {
-  DCHECK_EQ(0U, change_listeners->size());
-  base::AutoLock lock(change_listeners_lock_);
-  ObserverListBase<DirectoryChangeListener>::Iterator it(change_listeners_);
-  DirectoryChangeListener* obs;
-  while ((obs = it.GetNext()) != NULL)
-    change_listeners->AddObserver(obs);
 }
 
 Directory::Kernel::~Kernel() {
@@ -432,8 +413,9 @@ Directory::~Directory() {
   Close();
 }
 
-DirOpenResult Directory::Open(const FilePath& file_path, const string& name) {
-  const DirOpenResult result = OpenImpl(file_path, name);
+DirOpenResult Directory::Open(const FilePath& file_path, const string& name,
+                              DirectoryChangeDelegate* delegate) {
+  const DirOpenResult result = OpenImpl(file_path, name, delegate);
   if (OPENED != result)
     Close();
   return result;
@@ -461,7 +443,8 @@ DirectoryBackingStore* Directory::CreateBackingStore(
 }
 
 DirOpenResult Directory::OpenImpl(const FilePath& file_path,
-                                  const string& name) {
+                                  const string& name,
+                                  DirectoryChangeDelegate* delegate) {
   DCHECK_EQ(static_cast<DirectoryBackingStore*>(NULL), store_);
   FilePath db_path(file_path);
   file_util::AbsolutePath(&db_path);
@@ -475,7 +458,7 @@ DirOpenResult Directory::OpenImpl(const FilePath& file_path,
   if (OPENED != result)
     return result;
 
-  kernel_ = new Kernel(db_path, name, info);
+  kernel_ = new Kernel(db_path, name, info, delegate);
   kernel_->metahandles_index->swap(metas_bucket);
   InitializeIndices();
   return OPENED;
@@ -671,7 +654,7 @@ bool Directory::SafeToPurgeFromMemory(const EntryKernel* const entry) const {
 }
 
 void Directory::TakeSnapshotForSaveChanges(SaveChangesSnapshot* snapshot) {
-  ReadTransaction trans(this, __FILE__, __LINE__);
+  ReadTransaction trans(this, FROM_HERE);
   ScopedKernelLock lock(this);
   // Deep copy dirty entries from kernel_->metahandles_index into snapshot and
   // clear dirty flags.
@@ -729,7 +712,7 @@ bool Directory::SaveChanges() {
 
 void Directory::VacuumAfterSaveChanges(const SaveChangesSnapshot& snapshot) {
   // Need a write transaction as we are about to permanently purge entries.
-  WriteTransaction trans(this, VACUUM_AFTER_SAVE, __FILE__, __LINE__);
+  WriteTransaction trans(this, VACUUM_AFTER_SAVE, FROM_HERE);
   ScopedKernelLock lock(this);
   kernel_->flushed_metahandles.Push(0);  // Begin flush marker
   // Now drop everything we can out of memory.
@@ -770,7 +753,7 @@ void Directory::PurgeEntriesWithTypeIn(const std::set<ModelType>& types) {
     return;
 
   {
-    WriteTransaction trans(this, PURGE_ENTRIES, __FILE__, __LINE__);
+    WriteTransaction trans(this, PURGE_ENTRIES, FROM_HERE);
     {
       ScopedKernelLock lock(this);
       MetahandlesIndex::iterator it = kernel_->metahandles_index->begin();
@@ -1186,12 +1169,12 @@ void Directory::CheckTreeInvariants(syncable::BaseTransaction* trans,
   }
 }
 
-void Directory::AddChangeListener(DirectoryChangeListener* listener) {
-  kernel_->AddChangeListener(listener);
+void Directory::AddTransactionObserver(TransactionObserver* observer) {
+  kernel_->observers->AddObserver(observer);
 }
 
-void Directory::RemoveChangeListener(DirectoryChangeListener* listener) {
-  kernel_->RemoveChangeListener(listener);
+void Directory::RemoveTransactionObserver(TransactionObserver* observer) {
+  kernel_->observers->RemoveObserver(observer);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1204,25 +1187,6 @@ ScopedKernelLock::ScopedKernelLock(const Directory* dir)
 ///////////////////////////////////////////////////////////////////////////
 // Transactions
 
-// Helper functions/macros to do logging with a source file/line.
-
-namespace {
-
-bool VlogIsOn(const char* source_file, int verbose_level) {
-  return (verbose_level <=
-          logging::GetVlogLevelHelper(source_file, ::strlen(source_file)));
-}
-
-}  // namespace
-
-#define VLOG_SRC_STREAM(source_file, line, verbose_level)               \
-  logging::LogMessage(source_file, line, -verbose_level).stream()
-
-#define VLOG_SRC(source_file, line, verbose_level)                      \
-  LAZY_STREAM(VLOG_SRC_STREAM(source_file, line, verbose_level),        \
-              VLOG_IS_ON(verbose_level) ||                              \
-              VlogIsOn(source_file, verbose_level))
-
 void BaseTransaction::Lock() {
   base::TimeTicks start_time = base::TimeTicks::Now();
 
@@ -1230,31 +1194,28 @@ void BaseTransaction::Lock() {
 
   time_acquired_ = base::TimeTicks::Now();
   const base::TimeDelta elapsed = time_acquired_ - start_time;
-  VLOG_SRC(source_file_, line_, 1)
+  VLOG_LOC(from_here_, 1)
       << name_ << " transaction waited "
       << elapsed.InSecondsF() << " seconds.";
 }
 
-BaseTransaction::BaseTransaction(Directory* directory, const char* name,
-    const char* source_file, int line, WriterTag writer)
+BaseTransaction::BaseTransaction(
+    Directory* directory, const char* name,
+    const tracked_objects::Location& from_here, WriterTag writer)
   : directory_(directory), dirkernel_(directory->kernel_), name_(name),
-    source_file_(source_file), line_(line), writer_(writer) {
+    from_here_(from_here), writer_(writer) {
+  dirkernel_->observers->Notify(
+      &TransactionObserver::OnTransactionStart, from_here_, writer_);
   Lock();
 }
 
-BaseTransaction::BaseTransaction(Directory* directory)
-    : directory_(directory),
-      dirkernel_(NULL),
-      name_(NULL),
-      source_file_(NULL),
-      line_(0),
-      writer_(INVALID) {
+BaseTransaction::~BaseTransaction() {
+  dirkernel_->observers->Notify(
+      &TransactionObserver::OnTransactionEnd, from_here_, writer_);
 }
 
-BaseTransaction::~BaseTransaction() {}
-
 void BaseTransaction::UnlockAndLog(OriginalEntries* entries) {
-  // Work while trasnaction mutex is held
+  // Work while transaction mutex is held
   ModelTypeBitSet models_with_changes;
   if (!NotifyTransactionChangingAndEnding(entries, &models_with_changes))
     return;
@@ -1270,50 +1231,32 @@ bool BaseTransaction::NotifyTransactionChangingAndEnding(
 
   scoped_ptr<OriginalEntries> originals(entries);
   const base::TimeDelta elapsed = base::TimeTicks::Now() - time_acquired_;
-  VLOG_SRC(source_file_, line_, 1)
+  VLOG_LOC(from_here_, 1)
         << name_ << " transaction completed in " << elapsed.InSecondsF()
         << " seconds.";
 
-  ObserverList<DirectoryChangeListener> change_listeners;
-  dirkernel_->CopyChangeListeners(&change_listeners);
-
-  if (NULL == originals.get() || originals->empty() ||
-      (change_listeners.size() == 0)) {
+  if (NULL == originals.get() || originals->empty()) {
     dirkernel_->transaction_mutex.Release();
     return false;
   }
 
+  DirectoryChangeDelegate* const delegate = dirkernel_->delegate;
   if (writer_ == syncable::SYNCAPI) {
-    FOR_EACH_OBSERVER(DirectoryChangeListener,
-                      change_listeners,
-                      HandleCalculateChangesChangeEventFromSyncApi(
-                          *originals.get(),
-                          writer_,
-                          this));
+    delegate->HandleCalculateChangesChangeEventFromSyncApi(*originals, this);
   } else {
-    FOR_EACH_OBSERVER(DirectoryChangeListener,
-                      change_listeners,
-                      HandleCalculateChangesChangeEventFromSyncer(
-                          *originals.get(),
-                          writer_,
-                          this));
+    delegate->HandleCalculateChangesChangeEventFromSyncer(*originals, this);
   }
 
-  // Set |*models_with_changes| to the union of the return values of
-  // the HandleTransactionEndingChangeEvent call to each
-  // DirectoryChangeListener.
-  {
-    ObserverList<DirectoryChangeListener>::Iterator it(change_listeners);
-    DirectoryChangeListener* obs = NULL;
-    while ((obs = it.GetNext()) != NULL) {
-      *models_with_changes |= obs->HandleTransactionEndingChangeEvent(this);
-    }
-  };
+  *models_with_changes = delegate->HandleTransactionEndingChangeEvent(this);
+
+  dirkernel_->observers->Notify(
+      &TransactionObserver::OnTransactionMutate,
+      from_here_, writer_, *originals, *models_with_changes);
 
   // Release the transaction. Note, once the transaction is released this thread
   // can be interrupted by another that was waiting for the transaction,
   // resulting in this code possibly being interrupted with another thread
-  // performing following the same code path. From this point foward, only
+  // performing following the same code path. From this point forward, only
   // local state can be touched.
   dirkernel_->transaction_mutex.Release();
   return true;
@@ -1321,26 +1264,22 @@ bool BaseTransaction::NotifyTransactionChangingAndEnding(
 
 void BaseTransaction::NotifyTransactionComplete(
     ModelTypeBitSet models_with_changes) {
-  ObserverList<DirectoryChangeListener> change_listeners;
-  dirkernel_->CopyChangeListeners(&change_listeners);
-  FOR_EACH_OBSERVER(DirectoryChangeListener,
-                    change_listeners,
-                    HandleTransactionCompleteChangeEvent(
-                        models_with_changes));
+  dirkernel_->delegate->HandleTransactionCompleteChangeEvent(
+      models_with_changes);
 }
 
-#undef VLOG_SRC
+#undef VLOG_LOC
 
-#undef VLOG_SRC_STREAM
+#undef VLOG_LOC_STREAM
 
-ReadTransaction::ReadTransaction(Directory* directory, const char* file,
-                                 int line)
-  : BaseTransaction(directory, "Read", file, line, INVALID) {
+ReadTransaction::ReadTransaction(Directory* directory,
+                                 const tracked_objects::Location& location)
+  : BaseTransaction(directory, "Read", location, INVALID) {
 }
 
 ReadTransaction::ReadTransaction(const ScopedDirLookup& scoped_dir,
-                                 const char* file, int line)
-  : BaseTransaction(scoped_dir.operator -> (), "Read", file, line, INVALID) {
+                                 const tracked_objects::Location& location)
+  : BaseTransaction(scoped_dir.operator -> (), "Read", location, INVALID) {
 }
 
 ReadTransaction::~ReadTransaction() {
@@ -1348,20 +1287,16 @@ ReadTransaction::~ReadTransaction() {
 }
 
 WriteTransaction::WriteTransaction(Directory* directory, WriterTag writer,
-                                   const char* file, int line)
-  : BaseTransaction(directory, "Write", file, line, writer),
+                                   const tracked_objects::Location& location)
+  : BaseTransaction(directory, "Write", location, writer),
     originals_(new OriginalEntries) {
 }
 
 WriteTransaction::WriteTransaction(const ScopedDirLookup& scoped_dir,
-                                   WriterTag writer, const char* file, int line)
-  : BaseTransaction(scoped_dir.operator -> (), "Write", file, line, writer),
+                                   WriterTag writer,
+                                   const tracked_objects::Location& location)
+  : BaseTransaction(scoped_dir.operator -> (), "Write", location, writer),
     originals_(new OriginalEntries) {
-}
-
-WriteTransaction::WriteTransaction(Directory *directory)
-    : BaseTransaction(directory),
-      originals_(new OriginalEntries) {
 }
 
 void WriteTransaction::SaveOriginal(EntryKernel* entry) {

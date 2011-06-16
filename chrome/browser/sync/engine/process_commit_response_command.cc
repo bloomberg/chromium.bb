@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/tracked.h"
 #include "chrome/browser/sync/engine/syncer_proto_util.h"
 #include "chrome/browser/sync/engine/syncer_util.h"
 #include "chrome/browser/sync/engine/syncproto.h"
@@ -136,7 +137,7 @@ void ProcessCommitResponseCommand::ProcessCommitResponse(
   ConflictProgress* conflict_progress = status->mutable_conflict_progress();
   OrderedCommitSet::Projection proj = status->commit_id_projection();
   if (!proj.empty()) { // Scope for WriteTransaction.
-    WriteTransaction trans(dir, SYNCER, __FILE__, __LINE__);
+    WriteTransaction trans(dir, SYNCER, FROM_HERE);
     for (size_t i = 0; i < proj.size(); i++) {
       CommitResponse::ResponseType response_type =
           ProcessSingleCommitResponse(&trans, cr.entryresponse(proj[i]),

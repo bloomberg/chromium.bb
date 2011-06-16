@@ -51,16 +51,18 @@ DirectoryManager::~DirectoryManager() {
   delete channel_;
 }
 
-bool DirectoryManager::Open(const std::string& name) {
+bool DirectoryManager::Open(const std::string& name,
+                            DirectoryChangeDelegate* delegate) {
   bool was_open = false;
-  const DirOpenResult result = OpenImpl(name,
-      GetSyncDataDatabasePath(), &was_open);
+  const DirOpenResult result =
+      OpenImpl(name, GetSyncDataDatabasePath(), delegate, &was_open);
   return syncable::OPENED == result;
 }
 
 // Opens a directory.  Returns false on error.
 DirOpenResult DirectoryManager::OpenImpl(const std::string& name,
                                          const FilePath& path,
+                                         DirectoryChangeDelegate* delegate,
                                          bool* was_open) {
   bool opened = false;
   {
@@ -79,7 +81,7 @@ DirOpenResult DirectoryManager::OpenImpl(const std::string& name,
   // Otherwise, open it.
 
   scoped_ptr<Directory> dir(new Directory);
-  const DirOpenResult result = dir->Open(path, name);
+  const DirOpenResult result = dir->Open(path, name, delegate);
   if (syncable::OPENED == result) {
     base::AutoLock lock(lock_);
     managed_directory_ = dir.release();

@@ -16,6 +16,7 @@
 #include "base/scoped_temp_dir.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
+#include "base/tracked.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/password_manager/encryptor.h"
@@ -134,7 +135,7 @@ int64 MakeServerNodeForType(UserShare* share,
   syncable::AddDefaultExtensionValue(model_type, &specifics);
   syncable::ScopedDirLookup dir(share->dir_manager.get(), share->name);
   EXPECT_TRUE(dir.good());
-  syncable::WriteTransaction trans(dir, syncable::UNITTEST, __FILE__, __LINE__);
+  syncable::WriteTransaction trans(dir, syncable::UNITTEST, FROM_HERE);
   // Attempt to lookup by nigori tag.
   std::string type_tag = syncable::ModelTypeToRootTag(model_type);
   syncable::Id node_id = syncable::Id::CreateFromServerId(type_tag);

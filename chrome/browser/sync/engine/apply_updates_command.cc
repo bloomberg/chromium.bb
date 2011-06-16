@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync/engine/apply_updates_command.h"
 
+#include "base/tracked.h"
 #include "chrome/browser/sync/engine/update_applicator.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
@@ -23,7 +24,7 @@ void ApplyUpdatesCommand::ModelChangingExecuteImpl(SyncSession* session) {
     LOG(ERROR) << "Scoped dir lookup failed!";
     return;
   }
-  syncable::WriteTransaction trans(dir, syncable::SYNCER, __FILE__, __LINE__);
+  syncable::WriteTransaction trans(dir, syncable::SYNCER, FROM_HERE);
   syncable::Directory::UnappliedUpdateMetaHandles handles;
   dir->GetUnappliedUpdateMetaHandles(&trans, &handles);
 

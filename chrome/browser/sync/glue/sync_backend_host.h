@@ -398,7 +398,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     // This method will add a reference to the context to persist it
     // on the IO thread. Must be removed from IO thread.
 
-    sync_api::SyncManager* syncapi() { return syncapi_.get(); }
+    sync_api::SyncManager* sync_manager() { return sync_manager_.get(); }
 
     // Delete the sync data folder to cleanup backend data.  Happens the first
     // time sync is enabled for a user (to prevent accidentally reusing old
@@ -489,7 +489,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
 
     // Called from Core::OnInitializationComplete to handle updating
     // frontend thread components.
-    void HandleInitalizationCompletedOnFrontendLoop();
+    void HandleInitializationCompletedOnFrontendLoop();
 
     void RouteJsEventOnFrontendLoop(
         const std::string& name, const JsEventDetails& details);
@@ -503,14 +503,17 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     // Return true if a model lives on the current thread.
     bool IsCurrentThreadSafeForModel(syncable::ModelType model_type);
 
+    // Debug name of the Profile this object is for.
+    const std::string name_;
+
     // Our parent SyncBackendHost
     SyncBackendHost* host_;
 
     // The timer used to periodically call SaveChanges.
     base::RepeatingTimer<Core> save_changes_timer_;
 
-    // The top-level syncapi entry point.
-    scoped_ptr<sync_api::SyncManager> syncapi_;
+    // The top-level syncapi entry point.  Lives on the sync thread.
+    scoped_ptr<sync_api::SyncManager> sync_manager_;
 
     scoped_ptr<sync_notifier::SyncNotifier> sync_notifier_;
 
@@ -552,8 +555,6 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
       net::URLRequestContextGetter* getter);
 
   MessageLoop* sync_loop() { return sync_thread_.message_loop(); }
-
-  void set_syncapi_initialized() { syncapi_initialized_ = true; }
 
   // Helpers to persist a token that can be used to bootstrap sync encryption
   // across browser restart to avoid requiring the user to re-enter their
@@ -654,7 +655,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   scoped_ptr<sessions::SyncSessionSnapshot> last_snapshot_;
 
   // Whether we've processed the initialization complete callback.
-  bool syncapi_initialized_;
+  bool sync_manager_initialized_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncBackendHost);
 };

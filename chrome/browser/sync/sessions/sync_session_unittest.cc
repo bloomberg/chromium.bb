@@ -5,6 +5,7 @@
 #include "chrome/browser/sync/sessions/sync_session.h"
 
 #include "base/memory/ref_counted.h"
+#include "base/tracked.h"
 #include "chrome/browser/sync/engine/conflict_resolver.h"
 #include "chrome/browser/sync/engine/mock_model_safe_workers.h"
 #include "chrome/browser/sync/engine/syncer_types.h"
@@ -123,7 +124,7 @@ TEST_F(SyncSessionTest, SetWriteTransaction) {
   scoped_ptr<SyncSession> session(MakeSession());
   EXPECT_TRUE(NULL == session->write_transaction());
   {
-    WriteTransaction trans(dir, syncable::UNITTEST, __FILE__, __LINE__);
+    WriteTransaction trans(dir, syncable::UNITTEST, FROM_HERE);
     sessions::ScopedSetSessionWriteTransaction set_trans(session.get(), &trans);
     EXPECT_TRUE(&trans == session->write_transaction());
   }

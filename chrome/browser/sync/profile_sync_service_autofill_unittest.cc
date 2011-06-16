@@ -16,6 +16,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/task.h"
 #include "base/time.h"
+#include "base/tracked.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_common_test.h"
 #include "chrome/browser/sync/abstract_profile_sync_service_test.h"
@@ -491,10 +492,10 @@ static const bool kLoggingInfo = true;
 class WriteTransactionTest: public WriteTransaction {
  public:
   WriteTransactionTest(const syncable::ScopedDirLookup& directory,
-                       WriterTag writer, const char* source_file,
-                       int line,
+                       WriterTag writer,
+                       const tracked_objects::Location& from_here,
                        scoped_ptr<WaitableEvent> *wait_for_syncapi)
-      : WriteTransaction(directory, writer, source_file, line),
+      : WriteTransaction(directory, writer, from_here),
         wait_for_syncapi_(wait_for_syncapi) { }
 
   virtual void NotifyTransactionComplete(syncable::ModelTypeBitSet types) {
@@ -552,7 +553,7 @@ class FakeServerUpdater: public base::RefCountedThreadSafe<FakeServerUpdater> {
       (*wait_for_start_)->Signal();
 
       // Create write transaction.
-      WriteTransactionTest trans(dir, UNITTEST, __FILE__, __LINE__,
+      WriteTransactionTest trans(dir, UNITTEST, FROM_HERE,
                                  wait_for_syncapi_);
 
       // Create actual entry based on autofill protobuf information.

@@ -29,6 +29,8 @@ namespace syncable { class BaseTransaction; }
 
 namespace syncable {
 
+class DirectoryChangeDelegate;
+
 struct DirectoryManagerEvent {
   enum {
     CLOSED,
@@ -55,13 +57,17 @@ class DirectoryManager {
   static const FilePath GetSyncDataDatabaseFilename();
   const FilePath GetSyncDataDatabasePath() const;
 
-  // Opens a directory.  Returns false on error.
-  // Name parameter is the the user's login,
-  // MUST already have been converted to a common case.
-  bool Open(const std::string& name);
+  // Opens a directory.  Returns false on error.  Name parameter is
+  // the the user's login, MUST already have been converted to a
+  // common case.  Does not take ownership of |delegate|, which must
+  // be non-NULL.  Starts sending events to |delegate| if the returned
+  // result is true.  Note that events to |delegate| may be sent from
+  // *any* thread.
+  bool Open(const std::string& name, DirectoryChangeDelegate* delegate);
 
-  // Marks a directory as closed.  It might take a while until all the
-  // file handles and resources are freed by other threads.
+  // Marks a directory as closed and stops sending events to the
+  // delegate.  It might take a while until all the file handles and
+  // resources are freed by other threads.
   void Close(const std::string& name);
 
   // Should be called at App exit.
@@ -88,7 +94,7 @@ class DirectoryManager {
   }
 
   DirOpenResult OpenImpl(const std::string& name, const FilePath& path,
-                         bool* was_open);
+                         DirectoryChangeDelegate* delegate, bool* was_open);
 
   // Helpers for friend class ScopedDirLookup:
   friend class ScopedDirLookup;

@@ -544,6 +544,9 @@ class BaseTransaction {
   DISALLOW_COPY_AND_ASSIGN(BaseTransaction);
 };
 
+// TODO(akalin): Make ReadTransaction/WriteTransaction take a Location
+// parameter.
+
 // Sync API's ReadTransaction is a read-only BaseTransaction.  It wraps
 // a syncable::ReadTransaction.
 class ReadTransaction : public BaseTransaction {

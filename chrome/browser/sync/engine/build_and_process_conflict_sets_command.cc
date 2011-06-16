@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/format_macros.h"
+#include "base/tracked.h"
 #include "chrome/browser/sync/engine/syncer_util.h"
 #include "chrome/browser/sync/engine/update_applicator.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
@@ -43,7 +44,7 @@ bool BuildAndProcessConflictSetsCommand::BuildAndProcessConflictSets(
     return false;
   bool had_single_direction_sets = false;
   {  // Scope for transaction.
-    syncable::WriteTransaction trans(dir, syncable::SYNCER, __FILE__, __LINE__);
+    syncable::WriteTransaction trans(dir, syncable::SYNCER, FROM_HERE);
     BuildConflictSets(&trans,
         session->status_controller()->mutable_conflict_progress());
     had_single_direction_sets = ProcessSingleDirectionConflictSets(&trans,

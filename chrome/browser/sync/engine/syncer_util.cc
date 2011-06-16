@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/tracked.h"
 #include "chrome/browser/sync/engine/conflict_resolver.h"
 #include "chrome/browser/sync/engine/syncer_proto_util.h"
 #include "chrome/browser/sync/engine/syncer_types.h"
@@ -659,7 +660,7 @@ void SyncerUtil::MarkDeletedChildrenSynced(
     return;
   Directory::UnsyncedMetaHandles handles;
   {
-    ReadTransaction trans(dir, __FILE__, __LINE__);
+    ReadTransaction trans(dir, FROM_HERE);
     dir->GetUnsyncedMetaHandles(&trans, &handles);
   }
   if (handles.empty())
@@ -667,7 +668,7 @@ void SyncerUtil::MarkDeletedChildrenSynced(
   Directory::UnsyncedMetaHandles::iterator it;
   for (it = handles.begin() ; it != handles.end() ; ++it) {
     // Single transaction / entry we deal with.
-    WriteTransaction trans(dir, SYNCER, __FILE__, __LINE__);
+    WriteTransaction trans(dir, SYNCER, FROM_HERE);
     MutableEntry entry(&trans, GET_BY_HANDLE, *it);
     if (!entry.Get(IS_UNSYNCED) || !entry.Get(IS_DEL))
       continue;

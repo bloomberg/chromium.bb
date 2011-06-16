@@ -14,6 +14,7 @@
 #include "base/tracked.h"
 #include "chrome/browser/sync/engine/syncer.h"
 #include "chrome/browser/sync/protocol/proto_enum_conversions.h"
+#include "chrome/browser/sync/util/logging.h"
 
 using base::TimeDelta;
 using base::TimeTicks;
@@ -107,27 +108,6 @@ GetUpdatesCallerInfo::GetUpdatesSource GetSourceFromReason(
 
 SyncScheduler::WaitInterval::WaitInterval(Mode mode, TimeDelta length)
     : mode(mode), had_nudge(false), length(length) { }
-
-// Helper functions/macros to do logging with a Location object.
-
-namespace {
-
-bool VlogIsOn(const tracked_objects::Location& from_here,
-              int verbose_level) {
-  return (verbose_level <=
-          logging::GetVlogLevelHelper(
-              from_here.file_name(), ::strlen(from_here.file_name())));
-}
-
-}  // namespace
-
-#define VLOG_LOC_STREAM(from_here, verbose_level)                       \
-  logging::LogMessage(from_here.file_name(), from_here.line_number(),   \
-                      -verbose_level).stream()
-
-#define VLOG_LOC(from_here, verbose_level)                              \
-  LAZY_STREAM(VLOG_LOC_STREAM(from_here, verbose_level),                \
-              VLOG_IS_ON(verbose_level) || VlogIsOn(from_here, verbose_level))
 
 // Helper macros to log with the syncer thread name; useful when there
 // are multiple syncer threads involved.

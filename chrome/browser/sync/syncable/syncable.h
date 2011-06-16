@@ -18,9 +18,11 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
-#include "base/observer_list.h"
+#include "base/memory/ref_counted.h"
+#include "base/observer_list_threadsafe.h"
 #include "base/synchronization/lock.h"
 #include "base/time.h"
+#include "base/tracked.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/syncable/autofill_migration.h"
 #include "chrome/browser/sync/syncable/blob.h"
@@ -38,10 +40,11 @@ namespace sync_api {
 class ReadTransaction;
 class WriteNode;
 class ReadNode;
-}
+}  // sync_api
 
 namespace syncable {
-class DirectoryChangeListener;
+class DirectoryChangeDelegate;
+class TransactionObserver;
 class Entry;
 
 std::ostream& operator<<(std::ostream& s, const Entry& e);
@@ -754,8 +757,14 @@ class Directory {
   Directory();
   virtual ~Directory();
 
-  DirOpenResult Open(const FilePath& file_path, const std::string& name);
+  // Does not take ownership of |delegate|, which must not be NULL.
+  // Starts sending events to |delegate| if the returned result is
+  // OPENED.  Note that events to |delegate| may be sent from *any*
+  // thread.
+  DirOpenResult Open(const FilePath& file_path, const std::string& name,
+                     DirectoryChangeDelegate* delegate);
 
+  // Stops sending events to the delegate.
   void Close();
 
   int64 NextMetahandle();
@@ -805,8 +814,11 @@ class Directory {
   // Unique to each account / client pair.
   std::string cache_guid() const;
 
-  void AddChangeListener(DirectoryChangeListener* listener);
-  void RemoveChangeListener(DirectoryChangeListener* listener);
+  // These are backed by a thread-safe observer list, and so can be
+  // called on any thread, and events will be sent to the observer on
+  // the same thread that it was added on.
+  void AddTransactionObserver(TransactionObserver* observer);
+  void RemoveTransactionObserver(TransactionObserver* observer);
 
  protected:  // for friends, mainly used by Entry constructors
   virtual EntryKernel* GetEntryByHandle(int64 handle);
@@ -836,7 +848,8 @@ class Directory {
   // before calling.
   EntryKernel* GetEntryById(const Id& id, ScopedKernelLock* const lock);
 
-  DirOpenResult OpenImpl(const FilePath& file_path, const std::string& name);
+  DirOpenResult OpenImpl(const FilePath& file_path, const std::string& name,
+                         DirectoryChangeDelegate* delegate);
 
   template <class T> void TestAndSet(T* kernel_data, const T* data_to_set);
 
@@ -983,24 +996,19 @@ class Directory {
 
  protected:
   // Used by tests.
-  void init_kernel(const std::string& name);
+  void InitKernel(const std::string& name, DirectoryChangeDelegate* delegate);
 
  private:
 
   struct Kernel {
+    // |delegate| can be NULL.
     Kernel(const FilePath& db_path, const std::string& name,
-           const KernelLoadInfo& info);
+           const KernelLoadInfo& info, DirectoryChangeDelegate* delegate);
 
     ~Kernel();
 
     void AddRef();  // For convenience.
     void Release();
-
-    void AddChangeListener(DirectoryChangeListener* listener);
-    void RemoveChangeListener(DirectoryChangeListener* listener);
-
-    void CopyChangeListeners(
-        ObserverList<DirectoryChangeListener>* change_listeners);
 
     FilePath const db_path;
     // TODO(timsteele): audit use of the member and remove if possible
@@ -1068,11 +1076,11 @@ class Directory {
     // purposes.  Protected by the save_changes_mutex.
     DebugQueue<int64, 1000> flushed_metahandles;
 
-   private:
-    // The listeners for directory change events, triggered when the
-    // transaction is ending (and its lock).
-    base::Lock change_listeners_lock_;
-    ObserverList<DirectoryChangeListener> change_listeners_;
+    // The delegate for directory change events.  Can be NULL.
+    DirectoryChangeDelegate* const delegate;
+
+    // The transaction observers.
+    scoped_refptr<ObserverListThreadSafe<TransactionObserver> > observers;
   };
 
   // Helper method used to do searches on |parent_id_child_index|.
@@ -1124,11 +1132,10 @@ class BaseTransaction {
   virtual ~BaseTransaction();
 
  protected:
-  BaseTransaction(Directory* directory, const char* name,
-                  const char* source_file, int line, WriterTag writer);
-
-  // For unit testing. Everything will be mocked out no point initializing.
-  explicit BaseTransaction(Directory* directory);
+  BaseTransaction(Directory* directory,
+                  const char* name,
+                  const tracked_objects::Location& from_here,
+                  WriterTag writer);
 
   void UnlockAndLog(OriginalEntries* entries);
   virtual bool NotifyTransactionChangingAndEnding(
@@ -1140,8 +1147,7 @@ class BaseTransaction {
   Directory::Kernel* const dirkernel_;  // for brevity
   const char* const name_;
   base::TimeTicks time_acquired_;
-  const char* const source_file_;
-  const int line_;
+  const tracked_objects::Location from_here_;
   WriterTag writer_;
 
  private:
@@ -1153,10 +1159,10 @@ class BaseTransaction {
 // Locks db in constructor, unlocks in destructor.
 class ReadTransaction : public BaseTransaction {
  public:
-  ReadTransaction(Directory* directory, const char* source_file,
-                  int line);
+  ReadTransaction(Directory* directory,
+                  const tracked_objects::Location& from_here);
   ReadTransaction(const ScopedDirLookup& scoped_dir,
-                  const char* source_file, int line);
+                  const tracked_objects::Location& from_here);
 
   virtual ~ReadTransaction();
 
@@ -1171,11 +1177,10 @@ class ReadTransaction : public BaseTransaction {
 class WriteTransaction : public BaseTransaction {
   friend class MutableEntry;
  public:
-  explicit WriteTransaction(Directory* directory, WriterTag writer,
-                            const char* source_file, int line);
-  explicit WriteTransaction(const ScopedDirLookup& directory,
-                            WriterTag writer, const char* source_file,
-                            int line);
+  WriteTransaction(Directory* directory, WriterTag writer,
+                  const tracked_objects::Location& from_here);
+  WriteTransaction(const ScopedDirLookup& directory, WriterTag writer,
+                   const tracked_objects::Location& from_here);
   virtual ~WriteTransaction();
 
   void SaveOriginal(EntryKernel* entry);
@@ -1185,8 +1190,6 @@ class WriteTransaction : public BaseTransaction {
   // so that we can issue change notifications when the transaction
   // is done.
   OriginalEntries* const originals_;
-
-  explicit WriteTransaction(Directory *directory);
 
   DISALLOW_COPY_AND_ASSIGN(WriteTransaction);
 };

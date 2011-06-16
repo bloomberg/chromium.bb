@@ -91,11 +91,10 @@ chrome.sync.events = {
     'onClearServerDataFailed'
   ],
 
-  'directory': [
-    'handleCalculateChangesChangeEventFromSyncApi',
-    'handleCalculateChangesChangeEventFromSyncer',
-    'handleTransactionEndingChangeEvent',
-    'handleTransactionCompleteChangeEvent'
+  'transaction': [
+    'onTransactionStart',
+    'onTransactionMutate',
+    'onTransactionEnd'
   ]
 };
 

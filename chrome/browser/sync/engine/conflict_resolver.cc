@@ -9,6 +9,7 @@
 #include <set>
 
 #include "base/metrics/histogram.h"
+#include "base/tracked.h"
 #include "chrome/browser/sync/engine/syncer.h"
 #include "chrome/browser/sync/engine/syncer_util.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
@@ -432,7 +433,7 @@ bool ConflictResolver::LogAndSignalIfConflictStuck(
 
 bool ConflictResolver::ResolveSimpleConflicts(const ScopedDirLookup& dir,
                                               StatusController* status) {
-  WriteTransaction trans(dir, syncable::SYNCER, __FILE__, __LINE__);
+  WriteTransaction trans(dir, syncable::SYNCER, FROM_HERE);
   bool forward_progress = false;
   const ConflictProgress& progress = status->conflict_progress();
   // First iterate over simple conflict items (those that belong to no set).
@@ -477,7 +478,7 @@ bool ConflictResolver::ResolveConflicts(const ScopedDirLookup& dir,
   bool rv = false;
   if (ResolveSimpleConflicts(dir, status))
     rv = true;
-  WriteTransaction trans(dir, syncable::SYNCER, __FILE__, __LINE__);
+  WriteTransaction trans(dir, syncable::SYNCER, FROM_HERE);
   set<ConflictSet*>::const_iterator set_it;
   for (set_it = progress.ConflictSetsBegin();
        set_it != progress.ConflictSetsEnd();

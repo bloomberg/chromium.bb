@@ -9,6 +9,7 @@
 #include <map>
 
 #include "base/stringprintf.h"
+#include "base/tracked.h"
 #include "chrome/browser/sync/engine/syncer_proto_util.h"
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
 #include "chrome/test/sync/engine/test_id_factory.h"
@@ -97,7 +98,7 @@ bool MockConnectionManager::PostBufferToPath(const PostBufferParams* params,
   // when there's an issue.
   if (post.message_contents() != ClientToServerMessage::AUTHENTICATE) {
     CHECK(directory.good());
-    WriteTransaction wt(directory, syncable::UNITTEST, __FILE__, __LINE__);
+    WriteTransaction wt(directory, syncable::UNITTEST, FROM_HERE);
   }
 
   if (fail_next_postbuffer_) {

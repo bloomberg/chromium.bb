@@ -28,6 +28,7 @@
 #include "base/string_util.h"
 #include "base/task.h"
 #include "base/time.h"
+#include "base/tracked.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/sync/engine/all_status.h"
@@ -41,7 +42,7 @@
 #include "chrome/browser/sync/engine/http_post_provider_factory.h"
 #include "chrome/browser/sync/js_arg_list.h"
 #include "chrome/browser/sync/js_backend.h"
-#include "chrome/browser/sync/js_directory_change_listener.h"
+#include "chrome/browser/sync/js_transaction_observer.h"
 #include "chrome/browser/sync/js_event_details.h"
 #include "chrome/browser/sync/js_event_router.h"
 #include "chrome/browser/sync/notifier/sync_notifier.h"
@@ -61,7 +62,7 @@
 #include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/sessions/sync_session_context.h"
 #include "chrome/browser/sync/syncable/autofill_migration.h"
-#include "chrome/browser/sync/syncable/directory_change_listener.h"
+#include "chrome/browser/sync/syncable/directory_change_delegate.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/model_type_payload_map.h"
 #include "chrome/browser/sync/syncable/model_type.h"
@@ -70,7 +71,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/deprecated/event_sys.h"
 #include "chrome/common/net/gaia/gaia_authenticator.h"
-#include "content/browser/browser_thread.h"
 #include "net/base/network_change_notifier.h"
 
 using base::TimeDelta;
@@ -968,7 +968,7 @@ ReadTransaction::ReadTransaction(UserShare* share)
     : BaseTransaction(share),
       transaction_(NULL),
       close_transaction_(true) {
-  transaction_ = new syncable::ReadTransaction(GetLookup(), __FILE__, __LINE__);
+  transaction_ = new syncable::ReadTransaction(GetLookup(), FROM_HERE);
 }
 
 ReadTransaction::ReadTransaction(UserShare* share,
@@ -993,7 +993,7 @@ WriteTransaction::WriteTransaction(UserShare* share)
     : BaseTransaction(share),
       transaction_(NULL) {
   transaction_ = new syncable::WriteTransaction(GetLookup(), syncable::SYNCAPI,
-                                                __FILE__, __LINE__);
+                                                FROM_HERE);
 }
 
 WriteTransaction::~WriteTransaction() {
@@ -1124,7 +1124,7 @@ class SyncManager::SyncInternal
       public browser_sync::JsEventRouter,
       public SyncEngineEventListener,
       public ServerConnectionEventListener,
-      public syncable::DirectoryChangeListener {
+      public syncable::DirectoryChangeDelegate {
   static const int kDefaultNudgeDelayMilliseconds;
   static const int kPreferencesNudgeDelayMilliseconds;
  public:
@@ -1136,8 +1136,7 @@ class SyncManager::SyncInternal
         registrar_(NULL),
         initialized_(false),
         method_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
-        js_directory_change_listener_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+        js_transaction_observer_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
     // Pre-fill |notification_info_map_|.
     for (int i = syncable::FIRST_REAL_MODEL_TYPE;
          i < syncable::MODEL_TYPE_COUNT; ++i) {
@@ -1171,7 +1170,6 @@ class SyncManager::SyncInternal
 
   virtual ~SyncInternal() {
     CHECK(!sync_loop_);
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   }
 
   bool Init(const FilePath& database_location,
@@ -1224,7 +1222,7 @@ class SyncManager::SyncInternal
   // to the syncapi model.
   void SaveChanges();
 
-  // DirectoryChangeListener implementation.
+  // DirectoryChangeDelegate implementation.
   // This listener is called upon completion of a syncable transaction, and
   // builds the list of sync-engine initiated changes that will be forwarded to
   // the SyncManager's Observers.
@@ -1234,11 +1232,9 @@ class SyncManager::SyncInternal
       syncable::BaseTransaction* trans);
   virtual void HandleCalculateChangesChangeEventFromSyncApi(
       const OriginalEntries& originals,
-      const WriterTag& writer,
       syncable::BaseTransaction* trans);
   virtual void HandleCalculateChangesChangeEventFromSyncer(
       const OriginalEntries& originals,
-      const WriterTag& writer,
       syncable::BaseTransaction* trans);
 
   // Listens for notifications from the ServerConnectionManager
@@ -1593,7 +1589,7 @@ class SyncManager::SyncInternal
   // about:sync page.
   NotificationInfoMap notification_info_map_;
 
-  browser_sync::JsDirectoryChangeListener js_directory_change_listener_;
+  browser_sync::JsTransactionObserver js_transaction_observer_;
 
   JsMessageHandlerMap js_message_handlers_;
 };
@@ -1851,7 +1847,7 @@ void SyncManager::SyncInternal::StartSyncingNormally() {
 bool SyncManager::SyncInternal::OpenDirectory() {
   DCHECK(!initialized_) << "Should only happen once";
 
-  bool share_opened = dir_manager()->Open(username_for_share());
+  bool share_opened = dir_manager()->Open(username_for_share(), this);
   DCHECK(share_opened);
   if (!share_opened) {
     ObserverList<SyncManager::Observer> temp_obs_list;
@@ -1872,14 +1868,10 @@ bool SyncManager::SyncInternal::OpenDirectory() {
 
   connection_manager()->set_client_id(lookup->cache_guid());
 
-  // Since we own |share_|, it's okay that we don't ever remove
-  // ourselves as a listener.
-  lookup->AddChangeListener(this);
-
   if (parent_router_) {
-    // Make sure we add the listener at most once.
-    lookup->RemoveChangeListener(&js_directory_change_listener_);
-    lookup->AddChangeListener(&js_directory_change_listener_);
+    // Make sure we add the observer at most once.
+    lookup->RemoveTransactionObserver(&js_transaction_observer_);
+    lookup->AddTransactionObserver(&js_transaction_observer_);
   }
   return true;
 }
@@ -2330,11 +2322,8 @@ ModelTypeBitSet SyncManager::SyncInternal::HandleTransactionEndingChangeEvent(
 
 void SyncManager::SyncInternal::HandleCalculateChangesChangeEventFromSyncApi(
     const OriginalEntries& originals,
-    const WriterTag& writer,
     syncable::BaseTransaction* trans) {
   // We have been notified about a user action changing a sync model.
-  DCHECK(writer == syncable::SYNCAPI ||
-         writer == syncable::UNITTEST);
   LOG_IF(WARNING, !ChangeBuffersAreEmpty()) <<
       "CALCULATE_CHANGES called with unapplied old changes.";
 
@@ -2408,12 +2397,9 @@ void SyncManager::SyncInternal::SetExtraChangeRecordData(int64 id,
 
 void SyncManager::SyncInternal::HandleCalculateChangesChangeEventFromSyncer(
     const OriginalEntries& originals,
-    const WriterTag& writer,
     syncable::BaseTransaction* trans) {
   // We only expect one notification per sync step, so change_buffers_ should
   // contain no pending entries.
-  DCHECK(writer == syncable::SYNCER ||
-         writer == syncable::UNITTEST);
   LOG_IF(WARNING, !ChangeBuffersAreEmpty()) <<
       "CALCULATE_CHANGES called with unapplied old changes.";
 
@@ -2613,9 +2599,9 @@ void SyncManager::SyncInternal::SetParentJsEventRouter(
     return;
   }
 
-  // Make sure we add the listener at most once.
-  lookup->RemoveChangeListener(&js_directory_change_listener_);
-  lookup->AddChangeListener(&js_directory_change_listener_);
+  // Make sure we add the observer at most once.
+  lookup->RemoveTransactionObserver(&js_transaction_observer_);
+  lookup->AddTransactionObserver(&js_transaction_observer_);
 }
 
 void SyncManager::SyncInternal::RemoveParentJsEventRouter() {
@@ -2630,7 +2616,7 @@ void SyncManager::SyncInternal::RemoveParentJsEventRouter() {
     return;
   }
 
-  lookup->RemoveChangeListener(&js_directory_change_listener_);
+  lookup->RemoveTransactionObserver(&js_transaction_observer_);
 }
 
 const browser_sync::JsEventRouter*

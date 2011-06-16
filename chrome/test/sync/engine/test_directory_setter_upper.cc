@@ -7,6 +7,7 @@
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
 #include "base/string_util.h"
+#include "base/tracked.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/common/deprecated/event_sys-inl.h"
@@ -38,7 +39,7 @@ void TestDirectorySetterUpper::reset_directory_manager(DirectoryManager* d) {
 
 void TestDirectorySetterUpper::SetUp() {
   Init();
-  ASSERT_TRUE(manager()->Open(name()));
+  ASSERT_TRUE(manager()->Open(name(), &delegate_));
 }
 
 void TestDirectorySetterUpper::TearDown() {
@@ -65,12 +66,12 @@ void TestDirectorySetterUpper::TearDown() {
 void TestDirectorySetterUpper::RunInvariantCheck(const ScopedDirLookup& dir) {
   {
     // Check invariants for in-memory items.
-    ReadTransaction trans(dir, __FILE__, __LINE__);
+    ReadTransaction trans(dir, FROM_HERE);
     dir->CheckTreeInvariants(&trans, false);
   }
   {
     // Check invariants for all items.
-    ReadTransaction trans(dir, __FILE__, __LINE__);
+    ReadTransaction trans(dir, FROM_HERE);
     dir->CheckTreeInvariants(&trans, true);
   }
 }
@@ -80,7 +81,7 @@ void ManuallyOpenedTestDirectorySetterUpper::SetUp() {
 }
 
 void ManuallyOpenedTestDirectorySetterUpper::Open() {
-  ASSERT_TRUE(manager()->Open(name()));
+  ASSERT_TRUE(manager()->Open(name(), &delegate_));
   was_opened_ = true;
 }
 
@@ -111,7 +112,7 @@ void TriggeredOpenTestDirectorySetterUpper::TearDown() {
 
 MockDirectorySetterUpper::MockDirectory::MockDirectory(
     const std::string& name) {
-  init_kernel(name);
+  InitKernel(name, &delegate_);
 }
 
 MockDirectorySetterUpper::MockDirectory::~MockDirectory() {}
