@@ -151,6 +151,9 @@ SyncSetupHandler::SyncSetupHandler() : flow_(NULL) {
 }
 
 SyncSetupHandler::~SyncSetupHandler() {
+  // This case is hit when the user performs a back navigation.
+  if (flow_)
+    flow_->OnDialogClosed("");
 }
 
 void SyncSetupHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
