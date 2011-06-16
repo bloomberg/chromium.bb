@@ -489,7 +489,7 @@ void BrowserMainParts::ConnectBackupJobsFieldTrial() {
     const base::FieldTrial::Probability kConnectBackupJobsDivisor = 100;
     // 1% probability.
     const base::FieldTrial::Probability kConnectBackupJobsProbability = 1;
-    // After June 30, 2011 builds, it will always be in defaut group.
+    // After June 30, 2011 builds, it will always be in default group.
     scoped_refptr<base::FieldTrial> trial(
         new base::FieldTrial("ConnnectBackupJobs",
             kConnectBackupJobsDivisor, "ConnectBackupJobsEnabled", 2011, 6,

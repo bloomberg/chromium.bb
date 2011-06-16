@@ -9,6 +9,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/trials/http_throttling_trial.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_type.h"
@@ -80,4 +81,11 @@ void NetPrefObserver::RegisterPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kHttpThrottlingEnabled,
                              false,
                              PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kHttpThrottlingMayExperiment,
+                             true,
+                             PrefService::UNSYNCABLE_PREF);
+
+  // This is the earliest point at which we can set up the trial, as
+  // it relies on prefs for parameterization.
+  CreateHttpThrottlingTrial(prefs);
 }

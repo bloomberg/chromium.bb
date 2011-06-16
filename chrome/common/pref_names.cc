@@ -691,6 +691,12 @@ const char kPinnedTabs[] = "pinned_tabs";
 // Boolean that is true when HTTP throttling is enabled.
 const char kHttpThrottlingEnabled[] = "http_throttling.enabled";
 
+// Boolean that is true until the user changes the setting of the check-box
+// that controls whether HTTP throttling is enabled. When this is false,
+// we do not allow FieldTrial experiments to modify whether the feature
+// is enabled or not.
+const char kHttpThrottlingMayExperiment[] = "http_throttling.may_experiment";
+
 // Integer containing the default Geolocation content setting.
 const char kGeolocationDefaultContentSetting[] =
     "geolocation.default_content_setting";

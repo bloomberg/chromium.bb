@@ -14,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop.h"
+#include "base/metrics/field_trial.h"  // TODO(joi): Remove after the trial ends.
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
 #include "base/string_piece.h"
@@ -241,6 +242,11 @@ class NetInternalsMessageHandler
   // The pref member about whether HTTP throttling is enabled, which needs to
   // be accessed on the UI thread.
   BooleanPrefMember http_throttling_enabled_;
+
+  // The pref member that determines whether experimentation on HTTP throttling
+  // is allowed (this becomes false once the user explicitly sets the
+  // feature to on or off).
+  BooleanPrefMember http_throttling_may_experiment_;
 
   // OnRendererReady invokes this callback to do the part of message handling
   // that needs to happen on the IO thread.
@@ -512,8 +518,10 @@ WebUIMessageHandler* NetInternalsMessageHandler::Attach(WebUI* web_ui) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   PrefService* pref_service = web_ui->GetProfile()->GetPrefs();
-  http_throttling_enabled_.Init(prefs::kHttpThrottlingEnabled, pref_service,
-                                this);
+  http_throttling_enabled_.Init(
+      prefs::kHttpThrottlingEnabled, pref_service, this);
+  http_throttling_may_experiment_.Init(
+      prefs::kHttpThrottlingMayExperiment, pref_service, NULL);
 
   proxy_ = new IOThreadImpl(this->AsWeakPtr(), g_browser_process->io_thread(),
                             web_ui->GetProfile()->GetRequestContext());
@@ -667,6 +675,20 @@ void NetInternalsMessageHandler::OnEnableHttpThrottling(const ListValue* list) {
   }
 
   http_throttling_enabled_.SetValue(enable);
+
+  // We never receive OnEnableHttpThrottling unless the user has modified
+  // the value of the checkbox on the about:net-internals page.  Once the
+  // user does that, we no longer allow experiments to control its value.
+  if (http_throttling_may_experiment_.GetValue()) {
+    http_throttling_may_experiment_.SetValue(false);
+
+    // Disable the ongoing trial so that histograms after this point
+    // show as being in the "Default" group of the trial.
+    base::FieldTrial* trial = base::FieldTrialList::Find(
+        "HttpThrottlingEnabled");
+    if (trial)
+      trial->Disable();
+  }
 }
 
 void NetInternalsMessageHandler::OnGetPrerenderInfo(const ListValue* list) {
