@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_GPU_GLES2_TEXTURE_TO_EGL_IMAGE_TRANSLATOR_H_
-#define CONTENT_COMMON_GPU_GLES2_TEXTURE_TO_EGL_IMAGE_TRANSLATOR_H_
+#ifndef CONTENT_COMMON_GPU_MEDIA_GLES2_TEXTURE_TO_EGL_IMAGE_TRANSLATOR_H_
+#define CONTENT_COMMON_GPU_MEDIA_GLES2_TEXTURE_TO_EGL_IMAGE_TRANSLATOR_H_
 
 #include "base/basictypes.h"
 #include "media/video/picture.h"
@@ -36,4 +36,4 @@ class Gles2TextureToEglImageTranslator {
   DISALLOW_COPY_AND_ASSIGN(Gles2TextureToEglImageTranslator);
 };
 
-#endif  // CONTENT_COMMON_GPU_GLES2_TEXTURE_TO_EGL_IMAGE_TRANSLATOR_H_
+#endif  // CONTENT_COMMON_GPU_MEDIA_GLES2_TEXTURE_TO_EGL_IMAGE_TRANSLATOR_H_

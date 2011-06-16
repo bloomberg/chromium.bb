@@ -17,7 +17,7 @@
 #include "content/common/content_switches.h"
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/gpu_messages.h"
-#include "content/common/gpu/gpu_video_service.h"
+#include "content/common/gpu/media/gpu_video_service.h"
 #include "content/common/gpu/transport_texture.h"
 #include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_surface.h"
@@ -351,7 +351,7 @@ void GpuChannel::OnCreateTransportTexture(int32 context_route_id,
                             host_id, route_id));
    router_.AddRoute(route_id, transport.get());
    transport_textures_.AddWithID(transport.release(), route_id);
- 
+
    IPC::Message* msg = new GpuTransportTextureHostMsg_TransportTextureCreated(
        host_id, route_id);
    Send(msg);

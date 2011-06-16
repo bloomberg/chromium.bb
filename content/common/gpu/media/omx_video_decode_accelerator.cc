@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/gpu/omx_video_decode_accelerator.h"
+#include "content/common/gpu/media/omx_video_decode_accelerator.h"
 
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
-#include "content/common/gpu/gles2_texture_to_egl_image_translator.h"
 #include "content/common/gpu/gpu_channel.h"
+#include "content/common/gpu/media/gles2_texture_to_egl_image_translator.h"
 #include "media/base/bitstream_buffer.h"
 #include "media/video/picture.h"
 

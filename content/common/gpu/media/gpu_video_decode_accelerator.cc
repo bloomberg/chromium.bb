@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/gpu/gpu_video_decode_accelerator.h"
+#include "content/common/gpu/media/gpu_video_decode_accelerator.h"
 
 #include <vector>
 

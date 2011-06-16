@@ -22,7 +22,7 @@
 #include "base/threading/thread.h"
 #include "content/common/common_param_traits.h"
 #include "content/common/gpu/gpu_messages.h"
-#include "content/gpu/gpu_video_decode_accelerator.h"
+#include "content/common/gpu/media/gpu_video_decode_accelerator.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_utils.h"

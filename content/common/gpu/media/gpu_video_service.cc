@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/gpu/gpu_video_service.h"
+#include "content/common/gpu/media/gpu_video_service.h"
 
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_messages.h"
-#include "content/common/gpu/gpu_video_decode_accelerator.h"
+#include "content/common/gpu/media/gpu_video_decode_accelerator.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 
 #if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
-#include "content/common/gpu/omx_video_decode_accelerator.h"
+#include "content/common/gpu/media/omx_video_decode_accelerator.h"
 #include "ui/gfx/gl/gl_surface_egl.h"
 #endif  // defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
 

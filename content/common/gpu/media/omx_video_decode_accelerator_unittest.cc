@@ -31,7 +31,7 @@
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
-#include "content/common/gpu/omx_video_decode_accelerator.h"
+#include "content/common/gpu/media/omx_video_decode_accelerator.h"
 #include "third_party/angle/include/EGL/egl.h"
 #include "third_party/angle/include/GLES2/gl2.h"
 

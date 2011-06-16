@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_GPU_OMX_VIDEO_DECODE_ACCELERATOR_H_
-#define CONTENT_COMMON_GPU_OMX_VIDEO_DECODE_ACCELERATOR_H_
+#ifndef CONTENT_COMMON_GPU_MEDIA_OMX_VIDEO_DECODE_ACCELERATOR_H_
+#define CONTENT_COMMON_GPU_MEDIA_OMX_VIDEO_DECODE_ACCELERATOR_H_
 
 #include <dlfcn.h>
 #include <map>
@@ -174,4 +174,4 @@ class OmxVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
                                           OMX_BUFFERHEADERTYPE* buffer);
 };
 
-#endif  // CONTENT_COMMON_GPU_OMX_VIDEO_DECODE_ACCELERATOR_H_
+#endif  // CONTENT_COMMON_GPU_MEDIA_OMX_VIDEO_DECODE_ACCELERATOR_H_
