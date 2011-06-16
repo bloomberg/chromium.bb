@@ -292,41 +292,41 @@ TEST_F(TreeNodeModelTest, SetTitle) {
   const string16 title(ASCIIToUTF16("root2"));
   model.SetTitle(root, title);
   AssertObserverCount(0, 0, 1);
-  EXPECT_EQ(title, root->GetTitle());
+  ASSERT_EQ(title, root->GetTitle());
 }
 
 TEST_F(TreeNodeModelTest, BasicOperations) {
   TreeNodeWithValue<int>* root = new TreeNodeWithValue<int>(0);
-  EXPECT_EQ(0, root->child_count());
+  ASSERT_EQ(0, root->child_count());
 
   TreeNodeWithValue<int>* child1 = new TreeNodeWithValue<int>(1);
   root->Add(child1, root->child_count());
-  EXPECT_EQ(1, root->child_count());
-  EXPECT_EQ(root, child1->parent());
+  ASSERT_EQ(1, root->child_count());
+  ASSERT_EQ(root, child1->parent());
 
   TreeNodeWithValue<int>* child2 = new TreeNodeWithValue<int>(1);
   root->Add(child2, root->child_count());
-  EXPECT_EQ(2, root->child_count());
-  EXPECT_EQ(child1->parent(), child2->parent());
+  ASSERT_EQ(2, root->child_count());
+  ASSERT_EQ(child1->parent(), child2->parent());
 
   root->Remove(child2);
-  EXPECT_EQ(1, root->child_count());
-  EXPECT_EQ(NULL, child2->parent());
+  ASSERT_EQ(1, root->child_count());
+  ASSERT_EQ(NULL, child2->parent());
   delete child2;
 
   delete root->Remove(child1);
-  EXPECT_EQ(0, root->child_count());
+  ASSERT_EQ(0, root->child_count());
 
   delete root;
 }
 
 TEST_F(TreeNodeModelTest, IsRoot) {
   TreeNodeWithValue<int> root;
-  EXPECT_TRUE(root.is_root());
+  ASSERT_TRUE(root.is_root());
 
   TreeNodeWithValue<int>* child1 = new TreeNodeWithValue<int>(1);
   root.Add(child1, root.child_count());
-  EXPECT_FALSE(child1->is_root());
+  ASSERT_FALSE(child1->is_root());
 }
 
 }  // namespace ui
