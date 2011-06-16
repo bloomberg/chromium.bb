@@ -327,6 +327,9 @@ class TabRestoreService : public BaseSessionService {
   // avoid creating historical tabs for them.
   std::set<TabRestoreServiceDelegate*> closing_delegates_;
 
+  // Used when loading open tabs/session when recovering from a crash.
+  CancelableRequestConsumer crash_consumer_;
+
   // Used when loading previous tabs/session.
   CancelableRequestConsumer load_consumer_;
 
