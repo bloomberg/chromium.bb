@@ -72,7 +72,7 @@ void BackendMigrator::MigrateTypes(const syncable::ModelTypeSet& types) {
 
   // Add nigori for config or not based upon if the server told us to migrate
   // nigori or not.
-  if (types.count(syncable::NIGORI) == 0) {
+  if (to_migrate_.count(syncable::NIGORI) == 0) {
     manager_->Configure(difference, sync_api::CONFIGURE_REASON_MIGRATION);
   } else {
     manager_->ConfigureWithoutNigori(difference,
