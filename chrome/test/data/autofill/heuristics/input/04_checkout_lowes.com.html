@@ -38,132 +38,103 @@
 		<body >  
 		
 <body>
-<div id="container">	
-	<!-- APP JVM LowesOnlineA04AS02 -->
-
-<!-- appServerClass: prod comm:  esb  --> 
 
 
-	
 
-			
-	
-
-
-	<!-- Masthead 2.0 --><link rel="search" type="application/opensearchdescription+xml" href="/xml/opensearch.xml" title="Search Lowes.com" /><link rel="stylesheet" type="text/css" href="/wcsstore/B2BDirectStorefrontAssetStore/css/main-1.0.5.css" /><link rel="stylesheet" href="/wcsstore/B2BDirectStorefrontAssetStore/css/masthead.css" type="text/css" charset="utf-8" /><link rel="stylesheet" href="/wcsstore/B2BDirectStorefrontAssetStore/css/jquery-ui-1.8.9.css" /><div id="header-block" class="container_16">    <div id="print-masthead">        <div id="print-logo"><img src="/wcsstore/B2BDirectStorefrontAssetStore/images/lowes_logo.gif" alt="Lowe's" /></div>        <div id="stamps">            <p>[http://www.lowes.com/ProductURL]</p>            <p>Prices, promotions, styles, and availability may vary. Our local stores do not honor online pricing. Prices and availability of products and services are subject to change without notice. Errors will be corrected where discovered, and Lowe's reserves the right to revoke any stated offer and to correct any errors, inaccuracies or omissions including after an order has been submitted.</p>        </div>        <div id="my-store-info"></div>        <div id="help-masthead" class="last">            <h5>Need Help?</h5>            <ul>                <li>Lowe's Customer Care</li>                <li>1.800.445.6937</li>            </ul>        </div>    </div>    <div id="masthead_beta" class="container_16 group clearfix">        <div id="brand" class="grid_3"><a class="logo" name="MASTHEAD_2_Logo" href="/">Lowes.com</a></div>        <div id="masthead_content" class="grid_13">            <div class="top-nav">                <div class="grid_5">                    <p id="salutation"><span class="welcome"></span><a id="user-status" name="MASTHEAD_2_user_status" href="/webapp/wcs/stores/servlet/LogonForm?langId=-1&amp;storeId=10151&amp;catalogId=10051&amp;URL=TopCategoriesDisplayView"></a> or <a id="account-status" name="MASTHEAD_2_account_status" href="/webapp/wcs/stores/servlet/UserRegistrationForm?langId=-1&amp;storeId=10151&amp;catalogId=10051&amp;new=Y&amp;URL=TopCategoriesDisplayView"></a></p>                </div>                <div>                    <ul class="aux-nav">                        <li class="main-level"><a name="MASTHEAD_2_store_locator" href="/StoreLocatorDisplayView?storeId=10151&amp;catalogId=10051"><span>Store Locator</span></a></li>                       <!-- current live site functionality  						<li class="main-level"><a name="MASTHEAD_2_my_account" href="#My_Account" class="delta-down"><span>My Account</span></a>                            <ul id="myAccountTopNav" class="sub-level">                                <li><a id="nav-my-profile" name="MASTHEAD_2_my_profile" >My Profile</a></li>                                <li><a class="my-orders" name="MASTHEAD_2_my_orders" href="/webapp/wcs/stores/servlet/OrderStatusDisplay?storeId=10151&amp;catalogId=10051">My Orders</a></li>                                 <li><a id="nav-my-subscriptions" name="MASTHEAD_2_my_subscriptions" >My Subscriptions</a></li>                                <li><a id="nav-my-rebates" name="MASTHEAD_2_my_rebates" >My Rebates</a></li>                                <li><a id="nav-my-credit-center" name="MASTHEAD_2_my_credit_center" href="/cd_Lowes+Consumer+Credit+Center_739786611_">My Credit Center</a></li>                                <li><a id="nav-my-projects" name="MASTHEAD_2_my_projects" >My Projects</a></li>                            </ul>                        </li>-->						<!-- my lowes functionality -->						<li class="main-level"><a name="MASTHEAD_2_my_account" href="#My_Account" class="delta-down" id="nav-my-account"><span>Your Account</span></a>						<ul class="sub-level" id="myAccountTopNav">                                							<li><a href="#" name="MASTHEAD_2_my_profile" id="nav-my-profile">Profile</a></li>                                							<li><a href="#" name="MASTHEAD_2_my_orders" class="nav-order" id="nav-my-order">Orders</a></li>															<li><a href="#" id="nav-favorites">Favorites</a></li>															<li><a href="#" name="MASTHEAD_2_my_reminders" id="nav-my-reminders">Reminders</a></li>                                							<li><a href="#" name="MASTHEAD_2_my_subscriptions" id="nav-my-subscriptions">Subscriptions</a></li>                                							<li><a href="#" name="MASTHEAD_2_my_rebates" id="nav-my-rebates">Rebates</a></li>                                							<li><a href="#" name="MASTHEAD_2_my_credit_center" id="nav-my-credit-center">Credit Center</a></li>                                							<li><a href="#" name="MASTHEAD_2_my_projects" id="nav-my-library">Library</a></li>                            						</ul>                        </li>						                        <li class="main-level"><a class="my-cart" name="MASTHEAD_2_my_cart" href="/OrderItemDisplay?storeId=10151&amp;catalogId=10051">My Cart <span class="cart-total"></span></a></li>                        <li class="main-level last"><a class="checkout" name="MASTHEAD_2_checkout" href="/CheckoutLinkRouting?langId=-1&amp;storeId=10151&amp;catalogId=10051">Checkout</a></li>                    </ul>                </div>            </div>            <div id="masthead_storeLocation" class="grid_11">                <p class="large-text"><strong>Get Pricing &amp; Availability</strong></p>                <form id="storeSearchForm" name="storeSearchForm" action="/LowesStoreSearchCmd" method="post">					<div>                    <input type="hidden" value="true" name="masthead" />                    <input type="hidden" value="TopCategoriesDisplayView" name="URL" />                    <input type="hidden" value="StoreLocatorDisplayView" name="findStoreErrorURL" />                    <input type="hidden" value="TopCategoriesDisplayView" name="mastheadURL" />                    <input type="hidden" value="10151" name="storeId" />                    <input type="hidden" value="10051" name="catalogId" />                    <input type="hidden" value="-1" name="langId" />                    <input type="hidden" value="" name="firstReferURL" />                    <input type="hidden" value="" name="NttParam" />                    <input type="hidden" value="" name="isQvSearch" />                    <input type="hidden" value="" name="qvRedirect" />                    <input type="text" name="zipCode" class="field" placeholder="Enter ZIP Code" />                    <button id="find_a_store_btn" type="submit" class="button secondary"><span>Find a Store</span></button>                    <a name="MASTHEAD_2_find_my_zip" href="/StoreLocatorDisplayView?storeId=10151&amp;catalogId=10051"><span>Find My ZIP</span></a>					</div>				</form>                <p>Find a store near you for <strong>great selections</strong> at <strong>neighborhood prices.</strong></p>            </div>            <div id="my-store">My Store: <span class="current-location"></span> <a id="masthead-store-info" title="Store Information" href="#store-info" name="MASTHEAD_storeInfo">Store Info &amp; Hours</a> <a name="MASTHEAD_changeStore" title="Change Store" href="/StoreLocatorDisplayView?storeId=10151&amp;catalogId=10051" id="change-current-store">Change Store</a> </div>			<div id="masthead_below_cart_banner"></div>            <div id="my-store-more-info">                <div class="topper"><a class="close" href="#NavigationClose"><span class="jaws_access">Navigation: </span>Close</a></div>                <div class="current-store"></div>                <div class="current-store-bottom">&nbsp;</div>                <div id="current-store-info" class="content"></div>                <div class="content">                    <p><a name="MASTHEAD_storeDetail" href="/StoreLocatorDisplayView?storeId=10151&amp;catalogId=10051&amp;site=2348" id="current-store-detail">Store Detail</a></p>                </div>                <div class="my-store-more-info-bottom">&nbsp;</div>            </div>            <div id="my-store-change-store" style="display:none;">                <div class="topper"><a name="MASTHEAD_closeNav" class="close" href="#NavigationClose1"><span class="jaws_access">Navigation: </span>Close</a></div>                <div class="content">                    <div class="current-store">                        <div class="col-a"></div>                        <div class="col-b">My Store</div>                    </div>                    <div class="current-store-bottom">&nbsp;</div>                    <div id="additional-stores"></div>                    <form id="storeUpdateForm" name="storeUpdateForm" action="/LowesUpdateLocalStoreCmd" method="post">						<div>							<input type="hidden" name="URL" value="TopCategoriesDisplayView"/>							<input type="hidden" name="storeId" value="10151" />							<input type="hidden" name="catalogId" value="10051" />							<input type="hidden" name="langId" value="-1" />							<input type="hidden" name="storeNumber" value="" />							<input type="hidden" name="address1" value="" />							<input type="hidden" name="address2" value="" />							<input type="hidden" name="city" value="" />							<input type="hidden" name="state" value=""/>							<input type="hidden" name="zipCode" value="" />							<input type="hidden" name="NttParam" value="" />						</div>                    </form>                    <form id="searchNearestStoresForm" name="searchNearestStoresForm" action="/StoreSearchCmd" method="post">						<div>							<input type="hidden" name="URL" value="TopCategoriesDisplayView"/>							<input type="hidden" name="storeId" value="10151" />							<input type="hidden" name="catalogId" value="10051" />							<input type="hidden" name="langId" value="-1" />							<input type="hidden" name="zipCode" value="" />						</div>                    </form>                </div>                <div class="my-store-change-store-bottom">&nbsp;</div>            </div>        </div>        <!-- Link Area: Departments -->        <div id="navigation" class="grid_10">            <ul id="globalMenu">                <li class="main-level"> <a name="MASTHEAD_2_departments" href="#Departments" class="trigger">Departments</a>                    <div class="sub-level" id="menu-dept"><img src="/images/cover.gif" class="cover" alt="" /><img src="/images/category-corner.png" class="corner" alt="" /><img src="/images/category-right-cover.gif" class="rt-corner" alt="" />                        <ul class="categories">                            <li id="gardenCenter" class="first category"><a class="category_name" name="MASTHEAD_2_garden_center" href="/pc_Garden+Center_4294778701_4294937087_" rel="/MContent/Structured/MastheadArea/departments/garden_center.html">Garden Center</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_appliances" rel="/MContent/Structured/MastheadArea/departments/appliances.html" href="/pc_Appliances_4294937007_4294937087_">Appliances</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_bath" rel="/MContent/Structured/MastheadArea/departments/bath.html" href="/pc_Bathroom_4294931928_4294933768_">Bath</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_building_supplies" rel="/MContent/Structured/MastheadArea/departments/building_supplies.html" href="/pc_Building+Supplies_4294934297_4294937087_" >Building Supplies</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_cleaning" rel="/MContent/Structured/MastheadArea/departments/cleaning.html" href="/pc_Cleaning_4294858343_4294937087_">Cleaning</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_flooring" rel="/MContent/Structured/MastheadArea/departments/flooring.html" href="/pc_Flooring_4294934373_4294937087_">Flooring</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_hardware" rel="/MContent/Structured/MastheadArea/departments/hardware.html" href="/pc_Hardware_4294934474_4294937087_">Hardware</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_heating_and_cooling" rel="/MContent/Structured/MastheadArea/departments/heating.html" href="/pc_Heating+Cooling_4294934542_4294937087_">Heating &amp; Cooling</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_home_decor" rel="/MContent/Structured/MastheadArea/departments/home_decor.html" href="/pc_Home+Decor+Paint_4294935484_4294937087_">Home D&eacute;cor</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_kitchen" rel="/MContent/Structured/MastheadArea/departments/kitchen.html" href="/pc_Kitchen_4294933153_4294933768_">Kitchen</a></li>                            <li class="category"> <a class="category_name" name="MASTHEAD_2_lawn_and_garden" rel="/MContent/Structured/MastheadArea/departments/lawn_and_garden.html" href="/pc_Lawn+Garden_4294936085_4294937087_">Lawn &amp; Garden</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_lighting_and_fans" rel="/MContent/Structured/MastheadArea/departments/lighting_and_fans.html" href="/pc_Lighting+Fans_4294935637_4294937087_">Lighting &amp; Fans</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_outdoor_power_equipment" rel="/MContent/Structured/MastheadArea/departments/outdoor_power_equipment.html" href="/pc_Outdoor+Power+Equipment_4294859121_4294937087_">Outdoor Power Equipment</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_outdoor_living" rel="/MContent/Structured/MastheadArea/departments/outdoor_living.html" href="/pc_Outdoor+Living_4294936849_4294937087_">Outdoor Living</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_paint" rel="/MContent/Structured/MastheadArea/departments/paint.html" href="/pc_Paint_4294856872_4294937087_">Paint</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_plumbing" rel="/MContent/Structured/MastheadArea/departments/plumbing.html" href="/pc_Plumbing_4294935907_4294937087_">Plumbing</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_storage_and_organization" rel="/MContent/Structured/MastheadArea/departments/storage_and_organization.html" href="/pc_Storage_4294936624_4294937087_">Storage &amp; Organization</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_tools" rel="/MContent/Structured/MastheadArea/departments/tools.html" href="/pc_Tools_4294936478_4294937087_">Tools</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_windows_and_doors" rel="/MContent/Structured/MastheadArea/departments/doors_and_windows.html" href="/pl_Windows+Doors_4294937086_4294937087_">Windows &amp; Doors</a></li>                        </ul>                    </div>                </li>                <!-- Link Area: Savings -->                <li class="main-level"> <a name="MASTHEAD_2_savings" href="#Savings" class="trigger">Savings</a>                    <div class="sub-level" id="menu-promo"> <img src="/images/cover.gif" class="cover" alt="" /><img src="/images/category-corner.png" class="corner" alt="" /><img src="/images/category-right-cover.gif" class="rt-corner" alt="" />                        <ul class="categories">                            <li class="first category"><a class="category_name" name="MASTHEAD_2_appliances_promotions" rel="Appliances" href="/cd_promotions_452036367_">Appliances</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_bath_promotions" rel="Bathroom" href="/cd_bath+promotions_543131337_">Bath</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_building_supplies_promotions" rel="BuildingSupplies" href="/cd_building+supplies+promotions_794291005_">Building Supplies</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_cleaning_promotions" rel="Cleaning" href="/cd_cleaning+promotions_414804921_">Cleaning</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_flooring_promotions" rel="Flooring" href="/cd_flooring+promotions_122873769_">Flooring</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_hardware_promotions" rel="Hardware" href="/cd_hardware+promotions_398386464_">Hardware</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_heating_and_cooling_promotions" rel="HeatingCooling" href="/cd_heating+cooling+promotions_849131093_">Heating &amp; Cooling</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_home_decor_promotions" rel="HomeDecor" href="/cd_home+decor+paint+promotions_486490712_">Home D&eacute;cor</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_kitchen_promotions" rel="Kitchen" href="/cd_kitchen+promotions_652903066_">Kitchen</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_lawn_and_garden_promotions" rel="LawnGarden" href="/cd_lawn+garden+promotions_603098378_">Lawn &amp; Garden</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_lighting_and_fans_promotions" rel="LightingFans" href="/cd_lighting+fans+promotions_16062246_">Lighting &amp; Fans</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_outdoor_power_equipment_promotions" rel="OutdoorPowerEquipment" href="/cd_outdoor+power+equipment+promotions_771494375_">Outdoor Power Equipment</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_outdoor_living_promotions" rel="OutdoorLiving" href="/cd_outdoor+living+promotions_263071523_">Outdoor Living</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_paint_promotions" rel="Paint" href="/cd_paint+promotions_953379140_">Paint</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_plumbing_promotions" rel="Plumbing" href="/cd_plumbing+promotions_518259511_">Plumbing</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_storage_and_organization_promotions" rel="Storage" href="/cd_storage+promotions_374918447_">Storage &amp; Organization</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_tools_promotions" rel="Tools" href="/cd_tools+promotions_969675527_">Tools</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_windows_and_doors_promotions" rel="WindowsDoors" href="/cd_windows+doors+promotions_352213369_">Windows &amp; Doors</a></li>                        </ul>                    </div>                </li>                <!-- Link Area: Projects -->                <li class="main-level"> <a name="MASTHEAD_2_projects" href="#Projects" class="trigger">Projects</a>                    <div class="sub-level" id="menu-projects"><img src="/images/cover.gif" class="cover" alt="" /><img src="/images/category-corner.png" class="corner" alt="" /><img src="/images/category-right-cover.gif" class="rt-corner" alt="" />                       <ul class="categories">                            <li class="first category"><a class="category_name" name="MASTHEAD_2_kitchen" rel="/MContent/Structured/MastheadArea/projects/kitchen.html" href="/pc_Kitchen_4294933153_4294933768_">Kitchen</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_bath" rel="/MContent/Structured/MastheadArea/projects/bath.html" href="/pc_Bathroom_4294931928_4294933768_">Bath</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_laundry" rel="/MContent/Structured/MastheadArea/projects/laundry.html" href="/pc_Laundry_4294933408_4294933768_">Laundry</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_closets_and_storage" rel="/MContent/Structured/MastheadArea/projects/closet.html" href="/pc_Storage_4294936624_4294937087_">Closets &amp; Storage</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_walls_and_paint" rel="/MContent/Structured/MastheadArea/projects/wall_and_paint.html" href="/pc_Home+Decor+Paint_4294935484_4294937087_">Walls &amp; Paint</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_garage" rel="/MContent/Structured/MastheadArea/projects/garage.html" href="/pc_Garage_4294932521_4294933768_">Garage</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_lawn_and_garden" rel="/MContent/Structured/MastheadArea/projects/lawn_and_garden.html" href="/pc_Lawn+Garden_4294936085_4294937087_">Lawn &amp; Garden</a></li>							<li class="category"><a class="category_name" name="MASTHEAD_2_outdoor_living" rel="/MContent/Structured/MastheadArea/projects/outdoor_living.html" href="/pc_Outdoor+Living_4294936849_4294937087_">Outdoor Living</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_childrens_corner" rel="/MContent/Structured/MastheadArea/projects/childrens_corner.html" href="/cd_Childrens+Corner_751688466_">Children's Corner</a></li>                        </ul>                    </div>                </li>                <!-- Home Ideas -->                <li class="main-level"> <a name="MASTHEAD_2_" href="#HomeIdeas" class="trigger">Home Ideas</a>                    <div class="sub-level" id="menu-galleries"><img src="/images/cover.gif" class="cover" alt="" /><img src="/images/category-corner.png" class="corner" alt="" /> <img src="/images/category-right-cover.gif" class="rt-corner" alt="" />                        <ul class="categories">                            <li class="menu-title">Galleries</li>                            <li class="first category"><a class="category_name" name="MASTHEAD_2_compare_and_save" rel="/MContent/Structured/MastheadArea/home_ideas/compare_and_save.html" href="/cd_Compare+and+Save_250498281_">Compare &amp; Save</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_allen_and_roth" rel="/MContent/Structured/MastheadArea/home_ideas/allen_and_roth.html" href="/cd_allen+roth_917887197_">allen + roth</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_kitchen_gallery" rel="/MContent/Structured/MastheadArea/home_ideas/kitchen.html" href="/pc_Kitchen_4294933153_4294933768_">Kitchen</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_laundry_room_gallery" rel="/MContent/Structured/MastheadArea/home_ideas/laundry.html" href="/pc_Laundry_4294933408_4294933768_">Laundry Room</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_bathroom_gallery" rel="/MContent/Structured/MastheadArea/home_ideas/bathroom.html" href="/pc_Bathroom_4294931928_4294933768_">Bathroom</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_entry_doors_gallery" rel="/MContent/Structured/MastheadArea/home_ideas/entry_doors.html" href="/pl_Entry+Doors_4294858088_4294937087_">Entry Doors</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_entry_doors_gallery" rel="/MContent/Structured/MastheadArea/home_ideas/patio_collection.html" href="/cd_Patio+Collection+Gallery_974985585_">Patio Collection</a></li>                            <li class="menu-title">Innovation</li>                            <li class="category"><a class="category_name" target="_blank" name="MASTHEAD_2_lowes_creative_ideas" rel="/MContent/Structured/MastheadArea/home_ideas/lci.html" href="http://www.lowescreativeideas.com/Home.aspx">Lowe's Creative Ideas</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_home_101" rel="/MContent/Structured/MastheadArea/home_ideas/home_101.html" href="/cd_Home+101_965067373_">Home 101</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_accessible_home" rel="/MContent/Structured/MastheadArea/home_ideas/accessible_home.html" href="/cd_Accessible+Homee_133799062_">Accessible Home</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_efficient_home" rel="/MContent/Structured/MastheadArea/home_ideas/efficient_home.html" href="/cd_Efficient+Home_635691152_">Efficient Home</a></li>                        </ul>                    </div>                </li>                <!-- Help Center -->                <li class="main-level"><a name="MASTHEAD_2_help_center" href="#HelpCenter" class="trigger">Help Center</a>                    <div class="sub-level" id="menu-help"><img src="/images/cover.gif" class="cover" alt="" /><img src="/images/category-corner.png" class="corner" alt="" /><img src="/images/category-right-cover.gif" class="rt-corner" alt="" />                        <ul class="categories">                            <li class="menu-title">Customer Service</li>                            <li class="first category"><a class="category_name" name="MASTHEAD_2_my_profile" rel="/MContent/Structured/MastheadArea/help_center/my_profile.html" href="#HelpProfile">My Profile</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_orders_and_returns" rel="/MContent/Structured/MastheadArea/help_center/orders_and_returns.html" href="#HelpOrderReturn">Orders &amp; Returns</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_shipping_and_delivery" rel="/MContent/Structured/MastheadArea/help_center/shipping_and_delivery.html" href="#HelpShippingDelivery">Shipping &amp; Delivery</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_shopping" rel="/MContent/Structured/MastheadArea/help_center/shopping.html" href="#HelpShopping">Shopping</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_gift_cards" rel="/MContent/Structured/MastheadArea/help_center/gift_cards.html" href="#HelpGiftCards">Gift Cards</a></li>							<li class="category"><a class="category_name" name="MASTHEAD_2_personalize" rel="/MContent/Structured/MastheadArea/help_center/personalize.html" href="#Personalize">Favorites &amp; Reminders</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_product_information" rel="/MContent/Structured/MastheadArea/help_center/product_information.html" href="#HelpProdInfo">Product Information</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_security_and_privacy" rel="/MContent/Structured/MastheadArea/help_center/services_and_privacy.html" href="#HelpSecruityPrivacy">Security &amp; Privacy</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_about_lowes" rel="/MContent/Structured/MastheadArea/help_center/about_lowes.html" href="#HelpAboutLowes">About Lowe's</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_credit_services" rel="/MContent/Structured/MastheadArea/help_center/credit_services.html" href="#HelpCreditServices">Credit Card Services</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_installation_services" rel="/MContent/Structured/MastheadArea/help_center/installation.html" href="/cd_Installation+Services_296946035_">Installation Services</a></li>                            <li class="menu-title">Project Help</li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_buying_guides" rel="/MContent/Structured/MastheadArea/help_center/buying_guides.html" href="#HelpBuyingGuides">Buying Guides</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_howto_projects" rel="/MContent/Structured/MastheadArea/help_center/how_to.html" href="#HelpHowToProjects">How-To Projects</a></li>                            <li class="category"><a class="category_name" name="MASTHEAD_2_project_calculators" rel="/MContent/Structured/MastheadArea/help_center/project_calculators.html" href="#HelpProjectCalcs">Project Calculators</a></li>							<li class="category"><a class="category_name" name="MASTHEAD_2_videos" rel="/MContent/Structured/MastheadArea/help_center/videos.html" href="/cd_Lowes+Video+Center_94400869_">Videos</a></li>                        </ul>                    </div>                </li>            </ul>        </div>        <div id="search" class="grid_6">            <form name="frmQuickSearch" action="/SearchCatalogDisplay" method="get" id="frmQuickSearch">                <div>					<input type="hidden" name="storeId" value="10151" />					<input type="hidden" name="langId" value="-1" />					<input type="hidden" name="catalogId" value="10051" />					<input type="hidden" name="N" value="0" />					<input type="hidden" name="newSearch" value="true" />					<span class="jaws_access"><label for="Ntt">Search keywords</label></span>					<!--<input type="text" name="Ntt" value="Keyword or item #" id="Ntt" name="Ntt" class="search_form" />-->					<input type="text" name="Ntt" placeholder="Keyword or item #" id="Ntt" class="search_form" />					<button id="mainSearch" class="button secondary" type="submit"><span>Search</span></button>				</div>			</form>        </div><!-- end #search -->        <div style="clear:both">            <div class="grid_9">				<a name="MASTHEAD_20_min_in_store" title="Buy Online Ready in 20 Minutes Guaranteed" href="/cd_Shipping+and+Delivery_378641591_#BOPUIS">					<img alt="Shop. Click. Pick Up. 20 Minutes Guaranteed" style="margin-top:5px;" src="/images/bopius_tran.png" />				</a>			</div>            <div id="quickLinks" class="grid_7">                <ul class="aux-nav">                    <li class="main-level first"><a target="_blank" name="MASTHEAD_2_weekly_ads" class="weekly-ad" href="http://lowes.shoplocal.com/lowes/">Weekly Ads</a></li>                    <!--<li class="main-level"><a class="delta-down" name="MASTHEAD_2_" href="#GiftCenter"><span>Gift Center</span></a>                        <div id="giftCenterQuickLink" class="sub-level">                            <ul>                                <li><a name="MASTHEAD_2_gift_cards" href="/pl_Gift+Cards_4294925533_4294925544_?goToProdList=false">Gift Cards</a></li>                                <li><a name="MASTHEAD_2_gift_guide" href="/cd_Gift+Guide_441721425_">Gift Guides</a></li>                            </ul>                        </div>                    </li>-->					<li class="main-level"><a name="MASTHEAD_2_gift_cards" href="/pl_Gift+Cards_4294925533_4294925544_?goToProdList=false">Gift Cards</a></li>                    <li class="main-level"><a target="_blank" name="MASTHEAD_2_for_your_business" href="http://www.lowesforpros.com/">For Your Business</a></li>                    <!--<li class="main-level last"><a target="_blank" name="MASTHEAD_2_credit_services" href="https://credit.lowes.com/">Credit Services</a></li>-->										<li class="main-level last"><a href="/cd_Lowes+Consumer+Credit+Center_739786611_" name="MASTHEAD_2_credit_center" class="delta-down"><span>Credit Center</span></a>						<div id="creditCenterQuickLink" class="sub-level"> 							<ul>								<li><a name="MASTHEAD_2_credit_pay_my_bill" href="https://credit.lowes.com/LowesMarketing/marketing/LowesLogin.jsp" target="_blank">Pay My Bill</a></li>								<li><a name="MASTHEAD_2_credit_manage_my_account" href="https://credit.lowes.com/LowesMarketing/marketing/LowesLogin.jsp" target="_blank">Manage My Account</a></li>								<li><a name="MASTHEAD_2_credit_apply_now" href="/cd_Lowes+Consumer+Credit+Center_739786611_">Apply Now</a></li>								<li><a name="MASTHEAD_2_credit_current_offers" href="/cd_Lowes+Credit+Center+Apply+for+Credit+or+Pay+Your+Bill+Online_781778798_">Current Offers</a></li>							</ul>						</div>					</li>									</ul>            </div>        </div>    </div>    <!-- end #masthead_beta --></div><!-- end #header-block --><div dojoType="dijit.Dialog" href="LogonFormNavIframe?langId=-1&amp;storeId=10151&amp;catalogId=10051&amp;URL=StoreCatalogDisplay" id="dialog_login"></div>
-
-
-<a name="main-content"></a>
-<!-- END HeaderDisplay.jspf --> 
-	
-	<div id="page-block">
-		<div id="content-block">
-		  <!-- Begins TopIconsDisplay.jspf -->
-
-
-<div id="my-lowes-links">
-  <ul>
-  	 
-	    <li>
-	     	<a class="shipping-link contextHelp top-icon-shipping-tooltip-activator"  href="/wcsstore/B2BDirectStorefrontAssetStore/MContent/Structured/TopIconArea/W1112.html" title="Shipping &amp; Return Policies">Shipping & Return Policies</a>
-	    </li>
-    	<li>
-        	<a class="privacy-link contextHelp top-icon-security-tooltip-activator"  href="/wcsstore/B2BDirectStorefrontAssetStore/MContent/Structured/TopIconArea/W625.html" title="Security &amp; Privacy Pledge">Security & Privacy Pledge</a>
-    	</li> 
-      
-
-<div id="shipping-return-policies" class="hidden"> 
-  <p>
-	<p>Security is a concern for many online shoppers, which is why we are committed to providing you a safe online shopping experience. Nothing is more important to us than making sure you are secure online.</p>
-
-
-	</p> 
-</div>
-
-<div id="security-privacy-pleadge" class="hidden"> 
-  <p>
-	<p>Security is a concern for many online shoppers, which is why we are committed to providing you a safe online shopping experience. Nothing is more important to us than making sure you are secure online.</p>
-
-
-	</p> 
-</div>
-  
-	<input id="contextHelpSrc" type="hidden" value="help-checkout" />    
-	
-	<li>
-		<div id="help-checkout" > 
-		     <a class="help-link contextHelp top-icon-help-tooltip-activator" title="Help" href="/wcsstore/B2BDirectStorefrontAssetStore/MContent/Structured/TopIconArea/W615.html">Help</a>
-		</div>
-	</li>
-	
-	      	<li class="last"><a class="print-link" title="Click to Print" >Print</a></li>
-	 
-
-  </ul> 
-</div>	 
-<!-- Ends TopIconsDisplay.jspf --> 
-			<div id="content-area-no-nav-wider" class="checkout clearfix">
-				<div id="breadcrumbs" class="clearfix">				
-					<ul>
-						<li><a href="TopCategoriesDisplay?storeId=10151&amp;catalogId=10051">Home</a></li>
-						<li><a href="OrderItemDisplay?storeId=10151&amp;langId=-1&amp;catalogId=10051">My Shopping Cart</a></li>
-						<li class="last">Secure Checkout</li>
-					</ul>
-				</div>  
-				<br/><br/>
-					
-						
-				<div class="two-column-a">
-					<h1><span class="secure-icon"><img src="/wcsstore/B2BDirectStorefrontAssetStore/images/icon_security_privacy.gif" alt="secure icon" /></span>
-					Secure Checkout
-					<span class="h1context">
-						Shopping is always <a class="privacy-link contextHelp top-icon-security-tooltip-activator"  href="/wcsstore/B2BDirectStorefrontAssetStore/MContent/Structured/TopIconArea/W625.html" title="Security &amp; Privacy Pledge">safe and secure.</a>
-					</span></h1>
-					<div class="checkout-tabs">
-												
-						
-							<div class="
-									first
-								on">
-							
-								<span>1. Shipping Address</span></div>
-							
-							<div class="
-									second
-								">
-							
-							<span>2. Product Destination</span></div>
-							
-							<div class="
-									third
-								">
-							
-							<span>3. Shipping Options</span></div> 
-							
-							<div class="
-									fourth
-								">
-							
-							<span>4. Review &amp; Pay</span></div>
-													 
-					</div>					
-					
-						
-								
-								
-					<div class="checkout-container">	 					
-												
-								<form action="OrderDisplay" method="post" name="EditNewAddressDisplayForm">
-									<input type="hidden" name="storeId" value="10151"/>
-									<input type="hidden" name="catalogId" value="10051"/>
-									<input type="hidden" name="langId" value="-1"/>
-									<input type="hidden" name="orderId" value="177347031"/>
-									<input type="hidden" name="pageInd" value="D"/>
-									<input type="hidden" name="pageTo" value="EditAddress"/>
-								</form>							
-								
-
+<form id="storeSearchForm" name="storeSearchForm" action="/LowesStoreSearchCmd" method="post">
 <div>
+<input type="hidden" value="true" name="masthead" />
+<input type="hidden" value="TopCategoriesDisplayView" name="URL" />
+<input type="hidden" value="StoreLocatorDisplayView" name="findStoreErrorURL" />
+<input type="hidden" value="TopCategoriesDisplayView" name="mastheadURL" />
+<input type="hidden" value="10151" name="storeId" />
+<input type="hidden" value="10051" name="catalogId" />
+<input type="hidden" value="-1" name="langId" />
+<input type="hidden" value="" name="firstReferURL" />
+<input type="hidden" value="" name="NttParam" />
+<input type="hidden" value="" name="isQvSearch" />
+<input type="hidden" value="" name="qvRedirect" />
+<input type="text" name="zipCode" class="field" placeholder="Enter ZIP Code" />
+<button id="find_a_store_btn" type="submit" class="button secondary">
+<span>Find a Store</span>
+</button>
+<a name="MASTHEAD_2_find_my_zip" href="/StoreLocatorDisplayView?storeId=10151&amp;catalogId=10051">
+<span>Find My ZIP</span>
+</a>
+</div>
+</form>
+
+
+
+
+
+
+
+<form id="storeUpdateForm" name="storeUpdateForm" action="/LowesUpdateLocalStoreCmd" method="post">
+<div>
+<input type="hidden" name="URL" value="TopCategoriesDisplayView"/>
+<input type="hidden" name="storeId" value="10151" />
+<input type="hidden" name="catalogId" value="10051" />
+<input type="hidden" name="langId" value="-1" />
+<input type="hidden" name="storeNumber" value="" />
+<input type="hidden" name="address1" value="" />
+<input type="hidden" name="address2" value="" />
+<input type="hidden" name="city" value="" />
+<input type="hidden" name="state" value=""/>
+<input type="hidden" name="zipCode" value="" />
+<input type="hidden" name="NttParam" value="" />
+</div>
+</form>                    
+
+
+
+
+
+
+
+<form id="searchNearestStoresForm" name="searchNearestStoresForm" action="/StoreSearchCmd" method="post">
+<div>
+<input type="hidden" name="URL" value="TopCategoriesDisplayView"/>
+<input type="hidden" name="storeId" value="10151" />
+<input type="hidden" name="catalogId" value="10051" />
+<input type="hidden" name="langId" value="-1" />
+<input type="hidden" name="zipCode" value="" />
+</div>
+</form>
+
+
+
+
+  
+  
+  
+  
+  <form name="frmQuickSearch" action="/SearchCatalogDisplay" method="get" id="frmQuickSearch">
+<div>
+<input type="hidden" name="storeId" value="10151" />
+<input type="hidden" name="langId" value="-1" />
+<input type="hidden" name="catalogId" value="10051" />
+<input type="hidden" name="N" value="0" />
+<input type="hidden" name="newSearch" value="true" />
+<span class="jaws_access">
+<label for="Ntt">Search keywords</label>
+</span>
+<!--<input type="text" name="Ntt" value="Keyword or item #" id="Ntt" name="Ntt" class="search_form" />-->
+<input type="text" name="Ntt" placeholder="Keyword or item #" id="Ntt" class="search_form" />
+<button id="mainSearch" class="button secondary" type="submit">
+<span>Search</span>
+</button>
+</div>
+</form>
+
+
+
+
+
+
+
+
+
 <form action="OrderDisplay" method="post" name="EditAddressNextForm" >
 		
 			<input style="WIDTH:0px;display:none" type="hidden" name="pageTo" value="ProdDestTab"/>
@@ -507,7 +478,9 @@
 		
 		<li id="taxGeoCode" class="alert">
 			<label for="municipality">Municipality:
-				<a class="contextHelp outdent" title="Click for more information" rel="taxGeoCode-help1" href="#" target="_blank"><img src="/wcsstore/B2BDirectStorefrontAssetStore/images/icon_question.gif" alt="help icon"/></a>
+				<a class="contextHelp outdent" title="Click for more information" rel="taxGeoCode-help1" href="#" target="_blank">
+<img src="/wcsstore/B2BDirectStorefrontAssetStore/images/icon_question.gif" alt="help icon"/>
+</a>
                 <div id="taxGeoCode-help1" class="hidden">
                 	
 	<p>As an additional way to make sure you receive your order, we ask that you select&nbsp;the name of your municipality (city, town, borough, village, etc.) followed by the county, township, or parish in which you reside.</p>
@@ -531,7 +504,8 @@
 		<li>
 			<div class="form-input-block-wide">	
 											
-				<label class="checkbox-label" for="also-billing-address"><input class="checkbox"  type="checkbox" name="billingAddress" id="also-billing-address" tabindex="11"/>This is also my billing address.</label>
+				<label class="checkbox-label" for="also-billing-address">
+<input class="checkbox"  type="checkbox" name="billingAddress" id="also-billing-address" tabindex="11"/>This is also my billing address.</label>
 			
   			</div>	
   			<div id="billing-address-info" class="checkout-indent-block hidden">
@@ -571,148 +545,22 @@
 			
 		<li>							
 			<div class="form-input-block buttons">
-				<a href="OrderItemDisplay?storeId=10151&amp;langId=-1&amp;catalogId=10051" class="button-grey"><span>Cancel</span></a>
+				<a href="OrderItemDisplay?storeId=10151&amp;langId=-1&amp;catalogId=10051" class="button-grey">
+<span>Cancel</span>
+</a>
 				
-						<a  class="button-green"><span>Next &gt;</span></a>
+						<a  class="button-green">
+<span>Next &gt;</span>
+</a>
 						
 			</div>
 		</li>
 	</ol>
 </fieldset>
 </form>
-</div>
-			
-				</div>																				
-				<div class="checkout-container-bottom"></div>
-				</div>
-				
-				<div id="two-column-b" class="two-column-b">
-					
-		<a class="return-to-cart" href="OrderItemDisplay?storeId=10151&amp;langId=-1&amp;catalogId=10051">Return to Cart to Edit Products</a>
-	
-<h2>Cart Summary</h2>
-<table class="order-info" cellpadding="0" cellspacing="0" border="0">
-			
-			<tr>
-				
-				<th colspan="4"><div id="pdLabel">Parcel Shipping  - Standard 3-7 Business Days</div></th>
-			</tr>
-			
-		
-	<tr class="subhead">
-		<td class="column-1 first">Products Ordered</td>
-		<td class="column-2 right"><span>Unit Price</span></td>
-		<td class="column-3 center">Quantity</td>
-		<td class="column-4 right">Total</td>
-	</tr>
-
-	<!-- debuggggg:: 11 --><!-- 379431926 --><!--debug RGL-->
-	    <tr class="border-top">		    
-			<td class="column-1 first" >	
-					
-				<acronym title="Dremel TrioTool Kit">
-				<!-- Defect Id :1707: Fixed By: Sourav Starts -->
-				Dremel TrioTool Kit 
-				<!-- Defect Id :1707: Fixed By: Sourav Ends -->
-				</acronym>
-				
-				<br />
-				Item #:148844 | Model #:6800-01
-			
-			</td>
-			<td class="column-2 right">$99.00
-				</td>
-				<td class="column-3 center">1</td>
-				<td class="column-4 right">$99.00</td>
-			</tr>
-			
-</table>
-
-<!-- BEGIN PAYMENT AND BILLING TABLE -->
-<table class="order-info" cellpadding="0" cellspacing="0" border="0">
-<tr>
-	<th colspan="4">Billing Summary</th>
-</tr>
-<tr class="sub-total">
-	<td class="first">&nbsp;</td>
-	<td class="right"><strong>Subtotal</strong></td>
-	<td class="right"><strong>$99.00</strong></td>
-	<td>&nbsp;</td>
-</tr>
-<!-- To Fix defect # 2535 --><!-- To Fix defect # 2535 -->
-		<tr class="payment">
-			<td>&nbsp;</td>
-			<td class="right">Estimated Parcel Shipping
-
-				<a class="outdent" title="Information on Shipping Estimate" rel="estShipping-help" href="#" target="_blank">
-					<img src="/wcsstore/B2BDirectStorefrontAssetStore/images/icon_question_whitebg.gif" alt="help icon" />
-				</a>
-			    <div id="estShipping-help" class="hidden">
-			    	
-	<p>We estimate your shipping cost based on the weight of your items, the shipping level of service you choose (Standard, 2nd Business Day, Next Business Day), and the shipping destination of your items.</p>
-
-			    </div>
-			    
-			</td>
-			<td class="right"><div id="shpCost">$5.99</div></td>			
-			<td>&nbsp;</td>
-		</tr>
-		<!-- To Fix defect # 2535 --><!-- To Fix defect # 2535 -->
-
-<tr class="payment">
-	<td>&nbsp;</td>
-	<td class="right">
-	<!--  Defect Id :2534: Fixed By: Sourav Starts -->Estimated Tax
-		<a class="outdent" title="Information on Estimate Tax" rel="estTax-help" href="#" target="_blank">
-			<img src="/wcsstore/B2BDirectStorefrontAssetStore/images/icon_question_whitebg.gif" alt="help icon" />
-		</a>
-	    <div id="estTax-help" class="hidden">
-	    	
-	<p>Your order may be subject to state and local sales or use taxes (including special fees where required), depending on the shipping address or store location you requested. For further assistance,&nbsp;contact Lowe's Customer Care at 1-800-445-6937.</p>
-
-	    </div>
-	</td>
-			
-	<td class="right">$9.16</td>
-	<td>&nbsp;</td>
-</tr>
-<tr class="payment">
-	<td>&nbsp;</td>
-	<td class="right payment-method">Balance Due</td>
-	<td class="right payment-method"><div id="Total">$114.15</div></td>
-	<td>&nbsp;</td>
-</tr>
-<div id="balanceDue" class="hidden">$114.15</div>
-</table>
-
-				</div>
-	
-				<div id="back-to-top"><a title="Back to Top" href="#top">Back to Top</a></div>
-			</div>
-		</div>
-		<div id="page-bottom-block"> </div>
-	</div>
-	
-	<!-- BEGIN FooterDisplay.jspf -->
-	<div id="footer" class="container_16 clearfix">	<div id="utilityBar">		<ul>			<li><a name="FOOTER_2_Featured_Promo" title="Featured Promotions" href="/cd_promotions_452036367_">Savings</a></li>			<li><a name="FOOTER_2_Credit_Services" title="Credit Services" href="/cd_Lowes+Consumer+Credit+Center_739786611_">Credit Card Services</a></li>			<li><a name="FOOTER_2_GM_Choice" title="GM Business Choice" href="http://www.gmbusinesschoice.com" target="_blank">GM Business Choice</a></li>			<li class="last"><a name="FOOTER_2_Gift_Cards" title="Gift Cards" href="/pl_Gift+Cards_4294925533_4294925544_">Gift Cards</a></li>		</ul>	</div>	<div id="footerNav">		<div class="grid_3">			<h5>Affiliated Websites</h5>				<ul>					<li><a name="FOOTER_2_Accessible_Home" href="/cd_accessible+home_133799062_">Accessible Home</a></li>					<li><a name="FOOTER_2_Efficient_Home" href="/cd_efficient+home_539377675_">Efficient Home</a></li>					<li><a name="FOOTER_2_Kobalt_Tools" target="_blank" href="http://www.kobalttools.com">Kobalt Tools</a></li>					<li><a name="FOOTER_2_LCI" target="_blank" href="http://www.lowescreativeideas.com/Home.aspx">Lowe's Creative Ideas</a></li>					<li><a name="FOOTER_2_Lowes_Pros" target="_blank" href="http://www.lowesforpros.com">LowesForPros</a></li>					<li><a name="FOOTER_2_Moving" href="/cd_Lowes+Moving+Center_509684072_">Lowe's Moving Center</a></li>					<li><a name="FOOTER_2_Plant_Guide" href="/cd_Lowes+Plant+Guide_253427968_">Lowe's Plant Guide</a></li>					<li><a name="FOOTER_2_Lowes_Racing" target="_blank" href="http://www.lowesracing.com">Team Lowe's Racing</a></li>				</ul>		</div>		<div class="grid_3">			<h5>Company Info</h5>				<ul>					<li><a name="FOOTER_2_About" href="/cd_About+Lowes+Landing+page_567636953_">About Lowe's</a></li>					<li><a name="FOOTER_2_Moving" href="https://careers.lowes.com/default.aspx">Careers</a></li>					<li><a name="FOOTER_2_Investor_Relations" href="http://investor.shareholder.com/lowes">Investor Relations</a></li>					<li><a name="FOOTER_2_Lowes_Newsroom" href="http://media.lowes.com">Lowe's Newsroom</a></li>					<li><a name="FOOTER_2_Social_Responsibility" href="/cd_Social+Responsibility_581003652_">Social Responsibility</a></li>					<li><a name="FOOTER_2_Sustainability" href="/cd_Lowes+Policy+on+Sustainability_1286385507_">Sustainability Policy</a></li>					<hr />					<li><a name="FOOTER_2_Canada" class="canada" href="http://www.lowes.ca">Lowe's Canada</a></li>					<li><a name="FOOTER_2_Mexico" class="mexico" href="/Mexico/index2.html">Lowe's Mexico</a></li>				</ul>		</div>		<div class="grid_3">			<h5>Customer Care</h5>				<ul>					<li><a name="FOOTER_2_Contact_Us" href="/webapp/wcs/stores/servlet/ContactUsLandingPageView?langId=-1&storeId=10151&catalogId=10051">Contact Us</a></li>					<li><a name="FOOTER_2_Federal_Tax" href="/cd_tax+credit+eligible+products_79020009_">Federal Tax Credits</a></li>					<li><a name="FOOTER_2_Site_Feedback" href="/webapp/wcs/stores/servlet/ContactUsCategoryFAQPageView?storeId=10151&catalogId=10051&faqId=8">How's Our Site?</a></li>					<li><a name="FOOTER_2_Recalls" href="/cd_Recalls+and+Product+Safety+News_169016347_">Recalls &amp; Product Safety</a></li>                    <li><a name="FOOTER_2_Rebate_Center" href="/cd_Rebate+Center_421976552_">Rebate Center</a></li>					<li><a name="FOOTER_2_Returns" href="/cd_Shipping+and+Delivery_378641591_#ReturnsExchanges">Returns / Exchanges</a></li>					<li><a name="FOOTER_2_Shipping_and_Delivery" href="/cd_Shipping+and+Delivery_378641591_">Shipping &amp; Delivery</a></li>					<li><a name="FOOTER_2_Warranties" href="/cd_Terms+and+Conditions+of+Use_360300527_">Warranties</a></li>				</ul>		</div>		<div class="grid_3">			<h5>Services</h5>				<ul>					<li><a name="FOOTER_2_Intl_Customers" href="/cd_International+Services_776316152_">International Customers</a></li>					<li><a name="FOOTER_2_Install_Services" href="/cd_Lowes+Installation+Services_296946035_">Installation Services</a></li>					<li><a name="FOOTER_2_Instore_Services" href="/cd_In-Store+Services+_745829091_">In-Store Services</a></li>					<li><a name="FOOTER_2_Credit_Services" href="/cd_Lowes+Consumer+Credit+Center_739786611_">Credit Card Services</a></li>					<li><a name="FOOTER_2_Protection_Plans" href="/cd_service+advantage_923014150_">Lowe's Protection Plans</a></li>					<li><a name="FOOTER_2_Special_Orders" href="/cd_Lowe%27s+Special+Order+Sales+Basics_564859853_">Special Orders</a></li>					<li><a name="FOOTER_2_Suppliers" href="/cd_Lowes+Suppliers_168283925_">Lowe's Suppliers</a></li>				</ul>		</div>		<div class="email_and_help_block">			<h5>Connect With Us:				<a name="FOOTER_2_Facebook" class="facebook" target="_blank" href="http://www.facebook.com/lowes?cm_cr=Homepage+1.2-_-Web+Activity-_-Homepage+A6+Activity+2.3.11-_-HomePage_Area6-_-10605_10_PROMO_5B_FACEBOOK"> </a>				<a name="FOOTER_2_Twitter" class="twitter" target="_blank" href="http://twitter.com/lowes?cm_cr=Homepage+1.2-_-Web+Activity-_-Homepage+A6+Activity+2.3.11-_-HomePage_Area6-_-10605_10_PROMO_5B_TWITTER"> </a>			</h5>				<div class="cm_email_signup clearfix">					<h6 class="footer_header">Sign Up for Email Alerts</h6>					<p class="email_details">Sign up for exclusive <span class="nowrap">email</span> alerts on special offers, new products and more.</p>					<a id="cm_email_trigger" class="button secondary" name="FOOTER_2_Email_Signup" href="#"><span>Sign Up</span></a>				</div>				<div class="help clearfix">					<h6 class="footer_header">Need Help?</h6>					<p>Call 1-800-445-6937 or: <a class="button secondary" name="FOOTER_2_Contact_Us_2" href="/webapp/wcs/stores/servlet/ContactUsLandingPageView?langId=-1&amp;storeId=10151&amp;catalogId=10051"><span>Contact Us</span></a></p>				</div>		</div>		<div id="cm_email_modal" class="email_modal" style="display:none;">			<div class="email_modal_content">            <iframe src="/images/blank.gif" scrolling="no" frameborder="0" width="620" height="240" allowtransparency="true"></iframe>			</div>		</div>	</div>	<div style="clear:both"></div>	<div class="grid_6 push_5">		<ul class="badgeList">            <li><a name="FOOTER_2_BBB" href="https://www.bbb.org/online/consumer/cks.aspx?ID=1080715144129" ><img src="/images/icon-bbb.jpg" alt="" /></a></li>            <li><a name="FOOTER_2_Security" href="/cd_Privacy+and+Security+Statement_137461171_#Shop%20Safe%20on%20Lowes.com" ><img src="/images/icon-security.jpg" alt="" /></a></li>            <li><a name="FOOTER_2_Pledge" href="/cd_Shopping+Lowes.com_441812978_" ><img src="/images/icon-lowes-pledge.jpg" alt="" /></a></li>        </ul> 	</div>	<div style="clear:both"></div>	<div class="copyright"><p>&copy; 2011 Lowe's Companies, Inc. All rights reserved. Lowe's and the gable design are registered trademarks of LF, LLC. Item availability and price may vary by location<a href="#disable_autozip" name="FOOTER_DISABLE_AUTOZIP" class="disguise-link" id="disable-autozip">.</a></p></div></div><!---->
 
 
-
-
-<!-- Category navigation -->
-             
-             
-             
-                          
-             
-
-<!-- END FooterDisplay.jspf -->
-		
-</div>
 </body>
-
-
-
 
 
 </html>
