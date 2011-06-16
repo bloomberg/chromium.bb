@@ -2406,6 +2406,7 @@
         'browser/extensions/extension_crash_recovery_browsertest.cc',
         'browser/extensions/extension_debugger_apitest.cc',
         'browser/extensions/extension_decode_jpeg_apitest.cc',
+        'browser/extensions/extension_file_browser_private_apitest.cc',
         'browser/extensions/extension_fileapi_apitest.cc',
         'browser/extensions/extension_gallery_install_apitest.cc',
         'browser/extensions/extension_geolocation_apitest.cc',
@@ -2558,6 +2559,7 @@
           ],
           'sources!': [
             'browser/chromeos/media/media_player_browsertest.cc',
+            'browser/extensions/extension_file_browser_private_apitest.cc',
           ],
         }, { #else: OS == "chromeos"
           'sources!': [

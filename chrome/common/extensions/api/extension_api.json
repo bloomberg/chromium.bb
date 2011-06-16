@@ -4952,6 +4952,10 @@
             "type": "string",
             "description": "Disk volume mount point path. The value corresponds to its Entry.fullPath in File API."
           },
+          "devicePath": {
+            "type": "string",
+            "description": "Disk volume device path."
+          },
           "label": {
             "type": "string",
             "description": "Volume label."
@@ -4968,6 +4972,62 @@
           "totalSizeKB": {
             "type": "integer",
             "description": "Total disk volume size in KBs"
+          }
+        }
+      },
+      {
+        "id": "VolumeMetadata",
+        "type": "object",
+        "description": "Mounted disk volume metadata.",
+        "properties": {
+          "mountPath": {
+            "type": "string",
+            "description": "Disk volume mount point path."
+          },
+          "devicePath": {
+            "type": "string",
+            "description": "Disk volume device path."
+          },
+          "systemPath": {
+            "type": "string",
+            "description": "Disk volume system path."
+          },
+          "filePath": {
+            "type": "string",
+            "description": "Disk volume file path."
+          },
+          "deviceLabel": {
+            "type": "string",
+            "description": "Volume label."
+          },
+          "driveLabel": {
+            "type": "string",
+            "description": "Volume's disk label."
+          },
+          "deviceType": {
+            "type": "string",
+            "enum": ["flash", "hdd", "optical", "undefined"],
+            "description": "Device type."
+          },
+          "isParent": {
+            "type": "boolean",
+            "description": "Flag that specifies if volume is a parent device."
+          },
+          "isReadOnly": {
+            "type": "boolean",
+            "description": "Flag that specifies if volume is mounted in read-only mode."
+          },
+          "hasMedia": {
+            "type": "boolean",
+            "description": "Flag that specifies if volume has any media."
+          },
+          "isOnBootDevice": {
+            "type": "boolean",
+            "description": "Flag that specifies if volume is on boot device."
+          },
+          "totalSize": {
+            "type": "integer",
+            "description": "Total disk volume size."
           }
         }
       },
@@ -5193,6 +5253,41 @@
             "name": "id",
             "type": "string",
             "description": "File browser handler id as for internal tasks."
+          }
+        ]
+      },
+      {
+        "name": "getVolumeMetadata",
+        "description": "Requests volume's metadata",
+        "parameters": [
+          {
+            "name": "devicePath",
+            "type": "string",
+            "description": "Device path of the volume."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": "false",
+            "parameters": [
+              {
+                "name" : "volumeMetadata",
+                "$ref": "VolumeMetadata",
+                "optional": "true",
+                "description": "A requested metadata dictionary object. null if there is no volume with selected devicePath"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "unmountVolume",
+        "description": "Unmounts specified volume",
+        "parameters": [
+          {
+            "name": "devicePath",
+            "type": "string",
+            "description": "Device path of the volume."
           }
         ]
       }

@@ -47,6 +47,7 @@ DictionaryValue* DiskToDictionaryValue(
     const chromeos::MountLibrary::Disk* disk) {
   DictionaryValue* result = new DictionaryValue();
   result->SetString("mountPath", disk->mount_path());
+  result->SetString("devicePath", disk->device_path());
   result->SetString("label", disk->device_label());
   result->SetString("deviceType", DeviceTypeToString(disk->device_type()));
   result->SetInteger("totalSizeKB", disk->total_size() / 1024);

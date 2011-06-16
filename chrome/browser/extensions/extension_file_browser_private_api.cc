@@ -48,9 +48,24 @@
 #include "webkit/fileapi/local_file_system_file_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#ifdef OS_CHROMEOS
+#include "chrome/browser/chromeos/cros/cros_library.h"
+#endif
+
 // Error messages.
 const char kFileError[] = "File error %d";
 const char kInvalidFileUrl[] = "Invalid file URL";
+#ifdef OS_CHROMEOS
+const char kVolumeDevicePathNotFound[] = "Device path not found";
+#endif
+
+#ifdef OS_CHROMEOS
+// Volume type strings.
+const std::string kVolumeTypeFlash = "flash";
+const std::string kVolumeTypeOptical = "optical";
+const std::string kVolumeTypeHardDrive = "hdd";
+const std::string kVolumeTypeUnknown = "undefined";
+#endif
 
 // Internal task ids.
 const char kEnqueueTaskId[] = "enqueue";
@@ -1120,6 +1135,97 @@ bool CancelFileDialogFunction::RunImpl() {
   SendResponse(true);
   return true;
 }
+
+UnmountVolumeFunction::UnmountVolumeFunction() {
+}
+
+UnmountVolumeFunction::~UnmountVolumeFunction() {
+}
+
+bool UnmountVolumeFunction::RunImpl() {
+  if (args_->GetSize() != 1) {
+    return false;
+  }
+
+  std::string volume_device_path;
+  if (!args_->GetString(0, &volume_device_path)) {
+    NOTREACHED();
+  }
+
+#ifdef OS_CHROMEOS
+  chromeos::CrosLibrary::Get()->GetMountLibrary()->UnmountPath(
+      volume_device_path.c_str());
+#endif
+
+  SendResponse(true);
+  return true;
+}
+
+GetVolumeMetadataFunction::GetVolumeMetadataFunction() {
+}
+
+GetVolumeMetadataFunction::~GetVolumeMetadataFunction() {
+}
+
+bool GetVolumeMetadataFunction::RunImpl() {
+  if (args_->GetSize() != 1) {
+    error_ = "Invalid argument count";
+    return false;
+  }
+
+  std::string volume_device_path;
+  if (!args_->GetString(0, &volume_device_path)) {
+    NOTREACHED();
+  }
+
+#ifdef OS_CHROMEOS
+  chromeos::MountLibrary* mount_lib =
+      chromeos::CrosLibrary::Get()->GetMountLibrary();
+  chromeos::MountLibrary::DiskMap::const_iterator volume_it =
+      mount_lib->disks().find(volume_device_path);
+
+  if (volume_it != mount_lib->disks().end()) {
+    chromeos::MountLibrary::Disk* volume = volume_it->second;
+    DictionaryValue* volume_info = new DictionaryValue();
+    result_.reset(volume_info);
+    volume_info->SetString("devicePath", volume->device_path());
+    volume_info->SetString("mountPath", volume->mount_path());
+    volume_info->SetString("systemPath", volume->system_path());
+    volume_info->SetString("filePath", volume->file_path());
+    volume_info->SetString("deviceLabel", volume->device_label());
+    volume_info->SetString("driveLabel", volume->drive_label());
+    volume_info->SetString("deviceType",
+        DeviceTypeToString(volume->device_type()));
+    volume_info->SetInteger("totalSize", volume->total_size());
+    volume_info->SetBoolean("isParent", volume->is_parent());
+    volume_info->SetBoolean("isReadOnly", volume->is_read_only());
+    volume_info->SetBoolean("hasMedia", volume->has_media());
+    volume_info->SetBoolean("isOnBootDevice", volume->on_boot_device());
+
+    SendResponse(true);
+    return true;
+  }
+#endif
+  error_ = kVolumeDevicePathNotFound;
+  return false;
+}
+
+#ifdef OS_CHROMEOS
+const std::string& GetVolumeMetadataFunction::DeviceTypeToString(
+    chromeos::DeviceType type) {
+  switch (type) {
+    case chromeos::FLASH:
+      return kVolumeTypeFlash;
+    case chromeos::OPTICAL:
+      return kVolumeTypeOptical;
+    case chromeos::HDD:
+      return kVolumeTypeHardDrive;
+    default:
+      break;
+  }
+  return kVolumeTypeUnknown;
+}
+#endif
 
 bool FileDialogStringsFunction::RunImpl() {
   result_.reset(new DictionaryValue());

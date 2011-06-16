@@ -16,6 +16,10 @@
 #include "googleurl/src/url_util.h"
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
 
+#ifdef OS_CHROMEOS
+#include "chrome/browser/chromeos/cros/mount_library.h"
+#endif
+
 class GURL;
 
 // Implements the chrome.fileBrowserPrivate.requestLocalFileSystem method.
@@ -249,6 +253,40 @@ class CancelFileDialogFunction
 
  private:
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.cancelDialog");
+};
+
+// Unmounts selected device. Expects volume's device path as an argument.
+class UnmountVolumeFunction
+    : public SyncExtensionFunction {
+  public:
+    UnmountVolumeFunction();
+
+ protected:
+  virtual ~UnmountVolumeFunction();
+
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.unmountVolume");
+};
+
+// Retrieves devices meta-data. Expects volume's device path as an argument.
+class GetVolumeMetadataFunction
+    : public SyncExtensionFunction {
+ public:
+  GetVolumeMetadataFunction();
+
+ protected:
+  virtual ~GetVolumeMetadataFunction();
+
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+#ifdef OS_CHROMEOS
+  const std::string& DeviceTypeToString(chromeos::DeviceType type);
+#endif
+
+  DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.getVolumeMetadata");
 };
 
 // File Dialog Strings.

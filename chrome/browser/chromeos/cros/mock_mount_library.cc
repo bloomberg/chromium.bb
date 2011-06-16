@@ -12,7 +12,9 @@
 namespace chromeos {
 
 using testing::_;
+using testing::AnyNumber;
 using testing::Invoke;
+using testing::ReturnRef;
 
 const char* kTestSystemPath = "/this/system/path";
 const char* kTestDevicePath = "/this/device/path";
@@ -115,6 +117,23 @@ void MockMountLibrary::FireDeviceRemoveEvents() {
   disks_.insert(std::pair<std::string, MountLibrary::Disk*>(
       std::string(kTestDevicePath), disk.get()));
   UpdateDiskChanged(chromeos::MOUNT_DISK_REMOVED, disk.get());
+}
+
+void MockMountLibrary::SetupDefaultReplies() {
+  EXPECT_CALL(*this, AddObserver(_))
+      .Times(AnyNumber());
+  EXPECT_CALL(*this, RemoveObserver(_))
+      .Times(AnyNumber());
+  EXPECT_CALL(*this, disks())
+      .WillRepeatedly(ReturnRef(disks_));
+  EXPECT_CALL(*this, RequestMountInfoRefresh())
+      .Times(AnyNumber());
+  EXPECT_CALL(*this, MountPath(_))
+      .Times(AnyNumber());
+  EXPECT_CALL(*this, UnmountPath(_))
+      .Times(AnyNumber());
+  EXPECT_CALL(*this, UnmountDeviceRecursive(_, _, _))
+      .Times(AnyNumber());
 }
 
 void MockMountLibrary::UpdateDiskChanged(MountLibraryEventType evt,

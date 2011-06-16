@@ -335,11 +335,13 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<ExecuteTasksFileBrowserFunction>();
   RegisterFunction<FileDialogStringsFunction>();
   RegisterFunction<GetFileTasksFileBrowserFunction>();
+  RegisterFunction<GetVolumeMetadataFunction>();
   RegisterFunction<RequestLocalFileSystemFunction>();
   RegisterFunction<AddFileWatchBrowserFunction>();
   RegisterFunction<RemoveFileWatchBrowserFunction>();
   RegisterFunction<SelectFileFunction>();
   RegisterFunction<SelectFilesFunction>();
+  RegisterFunction<UnmountVolumeFunction>();
   RegisterFunction<ViewFilesFunction>();
 
   // Mediaplayer
