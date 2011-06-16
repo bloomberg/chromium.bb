@@ -17,6 +17,7 @@
 #include "base/stl_util-inl.h"
 #include "base/string_number_conversions.h"
 #include "base/sys_info.h"
+#include "base/time.h"
 #include "net/base/net_util.h"
 #include "webkit/quota/quota_database.h"
 #include "webkit/quota/quota_temporary_storage_evictor.h"
@@ -346,13 +347,10 @@ QuotaManager::UsageAndQuotaDispatcherTask::Create(
 
 class QuotaManager::DatabaseTaskBase : public QuotaThreadTask {
  public:
-  DatabaseTaskBase(
-      QuotaManager* manager,
-      QuotaDatabase* database,
-      scoped_refptr<base::MessageLoopProxy> db_message_loop)
-      : QuotaThreadTask(manager, db_message_loop),
+  DatabaseTaskBase(QuotaManager* manager)
+      : QuotaThreadTask(manager, manager->db_thread_),
         manager_(manager),
-        database_(database),
+        database_(manager->database_.get()),
         db_disabled_(false) {
     DCHECK(manager_);
     DCHECK(database_);
@@ -384,11 +382,9 @@ class QuotaManager::InitializeTask : public QuotaManager::DatabaseTaskBase {
  public:
   InitializeTask(
       QuotaManager* manager,
-      QuotaDatabase* database,
-      scoped_refptr<base::MessageLoopProxy> db_message_loop,
       const FilePath& profile_path,
       bool is_incognito)
-      : DatabaseTaskBase(manager, database, db_message_loop),
+      : DatabaseTaskBase(manager),
         profile_path_(profile_path),
         is_incognito_(is_incognito),
         need_initialize_origins_(false),
@@ -430,11 +426,9 @@ class QuotaManager::TemporaryGlobalQuotaUpdateTask
  public:
   TemporaryGlobalQuotaUpdateTask(
       QuotaManager* manager,
-      QuotaDatabase* database,
-      scoped_refptr<base::MessageLoopProxy> db_message_loop,
       int64 new_quota,
       QuotaCallback* callback)
-      : DatabaseTaskBase(manager, database, db_message_loop),
+      : DatabaseTaskBase(manager),
         new_quota_(new_quota),
         callback_(callback) {
     DCHECK_GE(new_quota, 0);
@@ -466,11 +460,9 @@ class QuotaManager::PersistentHostQuotaQueryTask
  public:
   PersistentHostQuotaQueryTask(
       QuotaManager* manager,
-      QuotaDatabase* database,
-      scoped_refptr<base::MessageLoopProxy> db_message_loop,
       const std::string& host,
       HostQuotaCallback* callback)
-      : DatabaseTaskBase(manager, database, db_message_loop),
+      : DatabaseTaskBase(manager),
         host_(host),
         quota_(-1),
         callback_(callback) {
@@ -495,12 +487,10 @@ class QuotaManager::PersistentHostQuotaUpdateTask
  public:
   PersistentHostQuotaUpdateTask(
       QuotaManager* manager,
-      QuotaDatabase* database,
-      scoped_refptr<base::MessageLoopProxy> db_message_loop,
       const std::string& host,
       int new_quota,
       HostQuotaCallback* callback)
-      : DatabaseTaskBase(manager, database, db_message_loop),
+      : DatabaseTaskBase(manager),
         host_(host),
         new_quota_(new_quota),
         callback_(callback) {
@@ -534,13 +524,11 @@ class QuotaManager::GetLRUOriginTask
  public:
   GetLRUOriginTask(
       QuotaManager* manager,
-      QuotaDatabase* database,
-      scoped_refptr<base::MessageLoopProxy> db_message_loop,
       StorageType type,
       const std::map<GURL, int>& origins_in_use,
       const std::map<GURL, int>& origins_in_error,
       GetLRUOriginCallback *callback)
-      : DatabaseTaskBase(manager, database, db_message_loop),
+      : DatabaseTaskBase(manager),
         type_(type),
         callback_(callback),
         special_storage_policy_(manager->special_storage_policy_) {
@@ -586,11 +574,9 @@ class QuotaManager::OriginDeletionDatabaseTask
  public:
   OriginDeletionDatabaseTask(
       QuotaManager* manager,
-      QuotaDatabase* database,
-      scoped_refptr<base::MessageLoopProxy> db_message_loop,
       const GURL& origin,
       StorageType type)
-      : DatabaseTaskBase(manager, database, db_message_loop),
+      : DatabaseTaskBase(manager),
         origin_(origin),
         type_(type) {}
 
@@ -612,10 +598,8 @@ class QuotaManager::TemporaryOriginsRegistrationTask
  public:
   TemporaryOriginsRegistrationTask(
       QuotaManager* manager,
-      QuotaDatabase* database,
-      scoped_refptr<base::MessageLoopProxy> db_message_loop,
       UsageTracker* temporary_usage_tracker)
-      : DatabaseTaskBase(manager, database, db_message_loop),
+      : DatabaseTaskBase(manager),
         has_registered_origins_(false) {
     DCHECK(temporary_usage_tracker);
     temporary_usage_tracker->GetCachedOrigins(&origins_);
@@ -682,18 +666,17 @@ class QuotaManager::OriginAccessRecordDatabaseTask
  public:
   OriginAccessRecordDatabaseTask(
       QuotaManager* manager,
-      QuotaDatabase* database,
-      scoped_refptr<base::MessageLoopProxy> db_message_loop,
       const GURL& origin,
-      StorageType type)
-      : DatabaseTaskBase(manager, database, db_message_loop),
+      StorageType type,
+      base::Time accessed_time)
+      : DatabaseTaskBase(manager),
         origin_(origin),
-        type_(type) {}
+        type_(type),
+        accessed_time_(accessed_time) {}
 
  protected:
   virtual void RunOnTargetThread() OVERRIDE {
-    if (!database()->SetOriginLastAccessTime(
-            origin_, type_, base::Time::Now())) {
+    if (!database()->SetOriginLastAccessTime(origin_, type_, accessed_time_)) {
       set_db_disabled(true);
     }
   }
@@ -702,6 +685,7 @@ class QuotaManager::OriginAccessRecordDatabaseTask
  private:
   GURL origin_;
   StorageType type_;
+  base::Time accessed_time_;
 };
 
 class QuotaManager::DumpQuotaTableTask
@@ -716,10 +700,8 @@ class QuotaManager::DumpQuotaTableTask
  public:
   DumpQuotaTableTask(
       QuotaManager* manager,
-      QuotaDatabase* database,
-      scoped_refptr<base::MessageLoopProxy> db_message_loop,
       Callback* callback)
-      : DatabaseTaskBase(manager, database, db_message_loop),
+      : DatabaseTaskBase(manager),
         callback_(callback) {
   }
  protected:
@@ -760,10 +742,8 @@ class QuotaManager::DumpLastAccessTimeTableTask
  public:
   DumpLastAccessTimeTableTask(
       QuotaManager* manager,
-      QuotaDatabase* database,
-      scoped_refptr<base::MessageLoopProxy> db_message_loop,
       Callback* callback)
-      : DatabaseTaskBase(manager, database, db_message_loop),
+      : DatabaseTaskBase(manager),
         callback_(callback) {
   }
  protected:
@@ -881,8 +861,7 @@ void QuotaManager::SetTemporaryGlobalQuota(int64 new_quota,
 
   if (!db_disabled_) {
     scoped_refptr<TemporaryGlobalQuotaUpdateTask> task(
-        new TemporaryGlobalQuotaUpdateTask(
-            this, database_.get(), db_thread_, new_quota, callback));
+        new TemporaryGlobalQuotaUpdateTask(this, new_quota, callback));
     task->Start();
   } else {
     callback->Run(kQuotaErrorInvalidAccess,
@@ -903,8 +882,7 @@ void QuotaManager::GetPersistentHostQuota(const std::string& host,
     return;
   }
   scoped_refptr<PersistentHostQuotaQueryTask> task(
-      new PersistentHostQuotaQueryTask(
-          this, database_.get(), db_thread_, host, callback.release()));
+      new PersistentHostQuotaQueryTask(this, host, callback.release()));
   task->Start();
 }
 
@@ -927,8 +905,7 @@ void QuotaManager::SetPersistentHostQuota(const std::string& host,
   if (!db_disabled_) {
     scoped_refptr<PersistentHostQuotaUpdateTask> task(
         new PersistentHostQuotaUpdateTask(
-            this, database_.get(), db_thread_, host, new_quota,
-            callback.release()));
+            this, host, new_quota, callback.release()));
     task->Start();
   } else {
     callback->Run(kQuotaErrorInvalidAccess,
@@ -981,8 +958,7 @@ void QuotaManager::LazyInitialize() {
                        special_storage_policy_));
 
   scoped_refptr<InitializeTask> task(
-      new InitializeTask(this, database_.get(), db_thread_,
-                         profile_path_, is_incognito_));
+      new InitializeTask(this, profile_path_, is_incognito_));
   task->Start();
 }
 
@@ -995,19 +971,7 @@ void QuotaManager::RegisterClient(QuotaClient* client) {
 void QuotaManager::NotifyStorageAccessed(
     QuotaClient::ID client_id,
     const GURL& origin, StorageType type) {
-  LazyInitialize();
-  if (type == kStorageTypeTemporary && lru_origin_callback_.get()) {
-    // Record the accessed origins while GetLRUOrigin task is runing
-    // to filter out them from eviction.
-    access_notified_origins_.insert(origin);
-  }
-
-  if (db_disabled_)
-    return;
-  scoped_refptr<OriginAccessRecordDatabaseTask> task(
-      new OriginAccessRecordDatabaseTask(
-          this, database_.get(), db_thread_, origin, type));
-  task->Start();
+  NotifyStorageAccessedInternal(client_id, origin, type, base::Time::Now());
 }
 
 void QuotaManager::NotifyStorageModified(
@@ -1060,15 +1024,31 @@ void QuotaManager::GetCachedOrigins(
   }
 }
 
+void QuotaManager::NotifyStorageAccessedInternal(
+    QuotaClient::ID client_id,
+    const GURL& origin, StorageType type,
+    base::Time accessed_time) {
+  LazyInitialize();
+  if (type == kStorageTypeTemporary && lru_origin_callback_.get()) {
+    // Record the accessed origins while GetLRUOrigin task is runing
+    // to filter out them from eviction.
+    access_notified_origins_.insert(origin);
+  }
+
+  if (db_disabled_)
+    return;
+  scoped_refptr<OriginAccessRecordDatabaseTask> task(
+      new OriginAccessRecordDatabaseTask(this, origin, type, accessed_time));
+  task->Start();
+}
+
 void QuotaManager::DumpQuotaTable(DumpQuotaTableCallback* callback) {
-  make_scoped_refptr(new DumpQuotaTableTask(
-      this, database_.get(), db_thread_.get(), callback))->Start();
+  make_scoped_refptr(new DumpQuotaTableTask(this, callback))->Start();
 }
 
 void QuotaManager::DumpLastAccessTimeTable(
     DumpLastAccessTimeTableCallback* callback) {
-  make_scoped_refptr(new DumpLastAccessTimeTableTask(
-      this, database_.get(), db_thread_.get(), callback))->Start();
+  make_scoped_refptr(new DumpLastAccessTimeTableTask(this, callback))->Start();
 }
 
 
@@ -1078,8 +1058,7 @@ void QuotaManager::DeleteOriginFromDatabase(
   if (db_disabled_)
     return;
   scoped_refptr<OriginDeletionDatabaseTask> task =
-      new OriginDeletionDatabaseTask(
-          this, database_.get(), db_thread_, origin, type);
+      new OriginDeletionDatabaseTask(this, origin, type);
   task->Start();
 }
 
@@ -1096,7 +1075,7 @@ void QuotaManager::GetLRUOrigin(
     return;
   }
   scoped_refptr<GetLRUOriginTask> task(new GetLRUOriginTask(
-      this, database_.get(), db_thread_, type, origins_in_use_,
+      this, type, origins_in_use_,
       origins_in_error_, callback_factory_.NewCallback(
           &QuotaManager::DidGetDatabaseLRUOrigin)));
   task->Start();
@@ -1247,7 +1226,7 @@ void QuotaManager::DidRunInitialGetTemporaryGlobalUsage(
   // is completed.
   scoped_refptr<TemporaryOriginsRegistrationTask> task(
       new TemporaryOriginsRegistrationTask(
-          this, database_.get(), db_thread_, temporary_usage_tracker_.get()));
+          this, temporary_usage_tracker_.get()));
   task->Start();
 }
 

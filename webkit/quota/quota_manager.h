@@ -102,7 +102,7 @@ class QuotaManager : public QuotaTaskObserver,
   // Used to maintain LRU ordering.
   void NotifyStorageAccessed(QuotaClient::ID client_id,
                              const GURL& origin,
-                             StorageType typea);
+                             StorageType type);
 
   // Called by clients via proxy.
   // Client storage must call this method whenever they have made any
@@ -235,6 +235,13 @@ class QuotaManager : public QuotaTaskObserver,
   // Extract cached origins list from the usage tracker.
   // (Might return empty list if no origin is tracked by the tracker.)
   void GetCachedOrigins(StorageType type, std::set<GURL>* origins);
+
+  // This internal method is separately defined mainly for testing.
+  void NotifyStorageAccessedInternal(
+      QuotaClient::ID client_id,
+      const GURL& origin,
+      StorageType type,
+      base::Time accessed_time);
 
   void DumpQuotaTable(DumpQuotaTableCallback* callback);
   void DumpLastAccessTimeTable(DumpLastAccessTimeTableCallback* callback);
