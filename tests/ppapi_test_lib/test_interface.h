@@ -55,6 +55,7 @@
 #ifndef NATIVE_CLIENT_TESTS_PPAPI_TEST_PPB_TEMPLATE_TEST_INTERFACE_H
 #define NATIVE_CLIENT_TESTS_PPAPI_TEST_PPB_TEMPLATE_TEST_INTERFACE_H
 
+#include <stdio.h>
 #include <limits>
 
 #include "native_client/src/include/nacl_string.h"

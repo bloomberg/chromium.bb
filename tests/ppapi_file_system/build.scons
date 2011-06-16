@@ -14,8 +14,7 @@ if env.Bit('linux'):
   env['COMPONENT_STATIC'] = False;  # Build a .so, not a .a
   env.Append(CFLAGS=['-std=c99'])
 
-  sources = ['ppapi_file_system.cc',
-             'scriptable_object.c']
+  sources = ['ppapi_file_system.cc']
 
   libs = ['imc',
           'gio',

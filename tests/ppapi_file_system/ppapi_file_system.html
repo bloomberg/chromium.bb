@@ -6,29 +6,7 @@
     <META HTTP-EQUIV="Pragma" CONTENT="no-cache" />
     <META HTTP-EQUIV="Expires" CONTENT="-1" />
     <script type="text/javascript" src="nacltest.js"></script>
-    <script type="application/x-javascript">
-      //<![CDATA[
-function setupTests(tester, plugin) {
-    tester.addTest('PPB_FileSystem_Dev::Create', function(status) {
-      status.assert(plugin.testCreate());
-    });
-
-    tester.addTest('PPB_FileSystem_Dev::IsFileSystem', function(status) {
-      status.assert(plugin.testIsFileSystem());
-    });
-
-    // TODO(ncbray): Replace with async test harness.
-    tester.addTest('PPB_FileSystem_Dev::Open', function(status) {
-      status.assert(plugin.testOpen());
-      status.waitForCallback('OpenCallback', 4);
-    });
-
-    tester.addTest('PPB_FileSytem_Dev::GetType', function(status) {
-      status.assert(plugin.testGetType());
-    });
-} // STOP!!!
-      //]]>
-    </script>
+    <script type="text/javascript" src="ppapi_file_system.js"></script>
     <title>PPAPI PPB_FileSytem_Dev Test</title>
   </head>
   <body>

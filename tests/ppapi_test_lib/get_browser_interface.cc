@@ -8,6 +8,7 @@
 
 #include "ppapi/c/dev/ppb_context_3d_dev.h"
 #include "ppapi/c/dev/ppb_file_io_dev.h"
+#include "ppapi/c/dev/ppb_file_system_dev.h"
 #include "ppapi/c/dev/ppb_scrollbar_dev.h"
 #include "ppapi/c/dev/ppb_surface_3d_dev.h"
 #include "ppapi/c/dev/ppb_var_deprecated.h"
@@ -87,6 +88,11 @@ const PPB_Context3D_Dev* PPBContext3DDev() {
 const PPB_FileIO_Dev* PPBFileIODev() {
   return reinterpret_cast<const PPB_FileIO_Dev*>(
       GetBrowserInterface(PPB_FILEIO_DEV_INTERFACE));
+}
+
+const PPB_FileSystem_Dev* PPBFileSystemDev() {
+  return reinterpret_cast<const PPB_FileSystem_Dev*>(
+      GetBrowserInterface(PPB_FILESYSTEM_DEV_INTERFACE));
 }
 
 const PPB_Scrollbar_Dev* PPBScrollbarDev() {

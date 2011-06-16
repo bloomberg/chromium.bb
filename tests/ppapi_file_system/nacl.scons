@@ -5,11 +5,11 @@
 
 # This is a C PPAPI
 #
-# ppapi_file_system.html - test driver that loads the nexe and scripts it
+# ppapi_file_system.html - test driver that loads the nexe
+# ppapi_file_system.js - set up the test driver
 # ppapi_file_system.nmf - manifest file for serving platform specific nexe binary.
 #
-# ppapi_file_system.cc - implementation of PPP interface and PPP_Instance
-# scriptable_object.c - implementation of the scripting interface
+# ppapi_file_system.cc - implementation of ppapi_test_lib/test_interface.h
 
 Import('env')
 
@@ -20,27 +20,19 @@ nexe = 'ppapi_file_system_%s.nexe' % env.get('TARGET_FULLARCH')
 env.Alias('ppapi_file_system.nexe', ['$STAGING_DIR/%s' % nexe])
 
 ppapi_file_system_nexe = env.ComponentProgram(nexe,
-                                       ['ppapi_file_system.cc',
-                                        'scriptable_object.c'],
-                                       EXTRA_LIBS=['${PPAPI_LIBS}',
-                                                   'platform',
-                                                   'gio',
-                                                   'pthread'])
-
-# Note that the html is required to run this program.
-dest_copy = env.Replicate('$STAGING_DIR',
-                          ['ppapi_file_system.html',
-                           'ppapi_file_system.nmf',
-                           env.File('${SCONSTRUCT_DIR}/tools/browser_tester/'
-                                    'browserdata/nacltest.js')]
-                          )
-env.Depends(nexe, dest_copy)
-
+                                              ['ppapi_file_system.cc'],
+                                              EXTRA_LIBS=['${PPAPI_LIBS}',
+                                                          'ppapi_test_lib',
+                                                          'platform',
+                                                          'gio',
+                                                          'pthread'])
+env.Publish(nexe, 'run',
+            ['ppapi_file_system.html',
+             'ppapi_file_system.nmf',
+             'ppapi_file_system.js'])
 node = env.PPAPIBrowserTester('ppapi_file_system_browser_test.out',
                               url='ppapi_file_system.html',
-                              files=[ppapi_file_system_nexe,
-                                     env.File('ppapi_file_system.nmf'),
-                                     env.File('ppapi_file_system.html')],
+                              files=env.ExtractPublishedFiles(nexe),
                               args=['--enable_experimental_js'])
 
 # Disabled for ARM because Chrome binaries for ARM are not available.
