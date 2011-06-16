@@ -20,17 +20,17 @@
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppb_instance.h"
 #include "ppapi/c/ppb_messaging.h"
-#include "ppapi/c/ppb_var.h"
 
 void PostTestMessage(nacl::string test_name, nacl::string message) {
   nacl::string test_message = test_name;
   test_message += ":";
   test_message += message;
-  PP_Var post_var = PPBVar()->VarFromUtf8(pp_instance(),
-                                          test_message.c_str(),
-                                          test_message.size());
+  // TODO(polina): use PPBVar
+  PP_Var post_var = PPBVarDeprecated()->VarFromUtf8(pp_instance(),
+                                                    test_message.c_str(),
+                                                    test_message.size());
   PPBMessaging()->PostMessage(pp_instance(), post_var);
-  PPBVar()->Release(post_var);
+  PPBVarDeprecated()->Release(post_var);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -130,9 +130,9 @@ struct CallbackInfo {
 };
 
 void ReportCallbackInvocationToJS(const char* callback_name) {
-  PP_Var callback_var = PPBVar()->VarFromUtf8(pp_module(),
-                                              callback_name,
-                                              strlen(callback_name));
+  PP_Var callback_var = PPBVarDeprecated()->VarFromUtf8(pp_module(),
+                                                        callback_name,
+                                                        strlen(callback_name));
   // Report using synchronous scripting for sync tests.
   // This is deprecated and will be removed shortly.
 #ifndef PPAPI_INSTANCE_REMOVE_SCRIPTING
@@ -146,7 +146,7 @@ void ReportCallbackInvocationToJS(const char* callback_name) {
 
   // Report using postmessage for async tests.
   PPBMessaging()->PostMessage(pp_instance(), callback_var);
-  PPBVar()->Release(callback_var);
+  PPBVarDeprecated()->Release(callback_var);
 }
 
 void CallbackWrapper(void* user_data, int32_t result) {

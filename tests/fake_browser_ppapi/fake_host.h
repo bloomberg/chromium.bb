@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
+ * Copyright 2010 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can
+ * be found in the LICENSE file.
  */
 
 #ifndef NATIVE_CLIENT_TEST_FAKE_BROWSER_PPAPI_FAKE_HOST_H_
@@ -31,11 +31,11 @@ class Host {
   void ShutdownModule();
   virtual const void* GetInterface(const char* interface_name);
 
-  void set_var_deprecated_interface(const PPB_Var_Deprecated* var_interface) {
-    var_deprecated_interface_ = var_interface;
+  void set_var_interface(const PPB_Var_Deprecated* var_interface) {
+    var_interface_ = var_interface;
   }
-  const PPB_Var_Deprecated* var_deprecated_interface() const {
-    return var_deprecated_interface_;
+  const PPB_Var_Deprecated* var_interface() const {
+    return var_interface_;
   }
 
   // Resource and Instance tracking.
@@ -65,7 +65,7 @@ class Host {
   ShutdownModuleFunc shutdown_module_;
   GetInterfaceFunc get_interface_;
 
-  const PPB_Var_Deprecated* var_deprecated_interface_;
+  const PPB_Var_Deprecated* var_interface_;
 
   // Resource tracking.
   PP_Resource last_resource_id_;  // Used and incremented for each new resource.
