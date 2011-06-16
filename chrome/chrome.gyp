@@ -619,6 +619,7 @@
         'browser/sync/engine/net/syncapi_server_connection_manager.h',
         'browser/sync/engine/net/url_translator.cc',
         'browser/sync/engine/net/url_translator.h',
+        'browser/sync/engine/nudge_source.cc',
         'browser/sync/engine/nudge_source.h',
         'browser/sync/engine/polling_constants.cc',
         'browser/sync/engine/polling_constants.h',

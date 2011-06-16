@@ -267,6 +267,19 @@ ModelType ModelTypeFromString(const std::string& model_type_string) {
   return UNSPECIFIED;
 }
 
+std::string ModelTypeBitSetToString(const ModelTypeBitSet& model_types) {
+  std::string result;
+  for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
+    if (model_types[i]) {
+      if (!result.empty()) {
+        result += ", ";
+      }
+      result += ModelTypeToString(ModelTypeFromInt(i));
+    }
+  }
+  return result;
+}
+
 bool ModelTypeBitSetFromString(
     const std::string& model_type_bitset_string,
     ModelTypeBitSet* model_types) {

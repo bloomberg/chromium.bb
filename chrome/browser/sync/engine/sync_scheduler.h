@@ -29,6 +29,10 @@
 
 class MessageLoop;
 
+namespace tracked_objects {
+class Location;
+}  // namespace tracked_objects
+
 namespace browser_sync {
 
 struct ServerConnectionEvent;
@@ -143,15 +147,17 @@ class SyncScheduler : public sessions::SyncSession::Delegate,
         linked_ptr<sessions::SyncSession> session, bool is_canary_job,
         const tracked_objects::Location& nudge_location);
     ~SyncSessionJob();
+    static const char* GetPurposeString(SyncSessionJobPurpose purpose);
+
     SyncSessionJobPurpose purpose;
     base::TimeTicks scheduled_start;
     linked_ptr<sessions::SyncSession> session;
     bool is_canary_job;
 
-    // This is the location the nudge came from. used for debugging purpose.
-    // In case of multiple nudges getting coalesced this stores the first nudge
-    // that came in.
-    tracked_objects::Location nudge_location;
+    // This is the location the job came from.  Used for debugging.
+    // In case of multiple nudges getting coalesced this stores the
+    // first location that came in.
+    tracked_objects::Location from_here;
   };
   friend class SyncSchedulerTest;
   friend class SyncSchedulerWhiteboxTest;
@@ -197,6 +203,9 @@ class SyncScheduler : public sessions::SyncSession::Delegate,
     };
     WaitInterval();
     ~WaitInterval();
+    WaitInterval(Mode mode, base::TimeDelta length);
+
+    static const char* GetModeString(Mode mode);
 
     Mode mode;
 
@@ -209,15 +218,26 @@ class SyncScheduler : public sessions::SyncSession::Delegate,
     // Configure jobs are saved only when backing off or throttling. So we
     // expose the pointer here.
     scoped_ptr<SyncSessionJob> pending_configure_job;
-    WaitInterval(Mode mode, base::TimeDelta length);
   };
+
+  static const char* GetModeString(Mode mode);
+
+  static const char* GetDecisionString(JobProcessDecision decision);
+
+  // Helpers that log before posting to |sync_loop_|.
+  // TODO(akalin): Use base::Closure.
+
+  void PostTask(const tracked_objects::Location& from_here,
+                const char* name, Task* task);
+  void PostDelayedTask(const tracked_objects::Location& from_here,
+                       const char* name, Task* task, int64 delay_ms);
 
   // Helper to assemble a job and post a delayed task to sync.
   void ScheduleSyncSessionJob(
       const base::TimeDelta& delay,
       SyncSessionJob::SyncSessionJobPurpose purpose,
       sessions::SyncSession* session,
-      const tracked_objects::Location& nudge_location);
+      const tracked_objects::Location& from_here);
 
   // Invoke the Syncer to perform a sync.
   void DoSyncSessionJob(const SyncSessionJob& job);

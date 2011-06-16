@@ -18,6 +18,8 @@ enum NudgeSource {
   NUDGE_SOURCE_CONTINUATION,
 };
 
+const char* GetNudgeSourceString(NudgeSource nudge_source);
+
 }  // namespace browser_sync
 
 #endif  // CHROME_BROWSER_SYNC_ENGINE_NUDGE_SOURCE_H_

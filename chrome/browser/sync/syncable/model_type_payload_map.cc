@@ -6,6 +6,8 @@
 
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 
+#include "base/json/json_writer.h"
+#include "base/scoped_ptr.h"
 #include "base/values.h"
 
 using browser_sync::ModelSafeRoutingInfo;
@@ -33,6 +35,15 @@ ModelTypePayloadMap ModelTypePayloadMapFromRoutingInfo(
     types_with_payloads[i->first] = payload;
   }
   return types_with_payloads;
+}
+
+std::string ModelTypePayloadMapToString(
+    const ModelTypePayloadMap& type_payloads) {
+  scoped_ptr<DictionaryValue> value(
+      ModelTypePayloadMapToValue(type_payloads));
+  std::string json;
+  base::JSONWriter::Write(value.get(), false, &json);
+  return json;
 }
 
 DictionaryValue* ModelTypePayloadMapToValue(

@@ -97,11 +97,10 @@ struct HttpResponse {
   // Identifies the type of failure, if any.
   ServerConnectionCode server_status;
 
-  HttpResponse()
-      : response_code(kUnsetResponseCode),
-        content_length(kUnsetContentLength),
-        payload_length(kUnsetPayloadLength),
-        server_status(NONE) {}
+  HttpResponse();
+
+  static const char* GetServerConnectionCodeString(
+      ServerConnectionCode code);
 };
 
 inline bool IsGoodReplyFromServer(HttpResponse::ServerConnectionCode code) {

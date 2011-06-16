@@ -1204,6 +1204,25 @@ ScopedKernelLock::ScopedKernelLock(const Directory* dir)
 ///////////////////////////////////////////////////////////////////////////
 // Transactions
 
+// Helper functions/macros to do logging with a source file/line.
+
+namespace {
+
+bool VlogIsOn(const char* source_file, int verbose_level) {
+  return (verbose_level <=
+          logging::GetVlogLevelHelper(source_file, ::strlen(source_file)));
+}
+
+}  // namespace
+
+#define VLOG_SRC_STREAM(source_file, line, verbose_level)               \
+  logging::LogMessage(source_file, line, -verbose_level).stream()
+
+#define VLOG_SRC(source_file, line, verbose_level)                      \
+  LAZY_STREAM(VLOG_SRC_STREAM(source_file, line, verbose_level),        \
+              VLOG_IS_ON(verbose_level) ||                              \
+              VlogIsOn(source_file, verbose_level))
+
 void BaseTransaction::Lock() {
   base::TimeTicks start_time = base::TimeTicks::Now();
 
@@ -1211,14 +1230,9 @@ void BaseTransaction::Lock() {
 
   time_acquired_ = base::TimeTicks::Now();
   const base::TimeDelta elapsed = time_acquired_ - start_time;
-  if (LOG_IS_ON(INFO) &&
-      (1 <= logging::GetVlogLevelHelper(
-          source_file_, ::strlen(source_file_))) &&
-      (elapsed.InMilliseconds() > 200)) {
-    logging::LogMessage(source_file_, line_, logging::LOG_INFO).stream()
+  VLOG_SRC(source_file_, line_, 1)
       << name_ << " transaction waited "
       << elapsed.InSecondsF() << " seconds.";
-  }
 }
 
 BaseTransaction::BaseTransaction(Directory* directory, const char* name,
@@ -1256,14 +1270,9 @@ bool BaseTransaction::NotifyTransactionChangingAndEnding(
 
   scoped_ptr<OriginalEntries> originals(entries);
   const base::TimeDelta elapsed = base::TimeTicks::Now() - time_acquired_;
-  if (LOG_IS_ON(INFO) &&
-      (1 <= logging::GetVlogLevelHelper(
-          source_file_, ::strlen(source_file_))) &&
-      (elapsed.InMilliseconds() > 50)) {
-    logging::LogMessage(source_file_, line_, logging::LOG_INFO).stream()
+  VLOG_SRC(source_file_, line_, 1)
         << name_ << " transaction completed in " << elapsed.InSecondsF()
         << " seconds.";
-  }
 
   ObserverList<DirectoryChangeListener> change_listeners;
   dirkernel_->CopyChangeListeners(&change_listeners);
@@ -1319,6 +1328,10 @@ void BaseTransaction::NotifyTransactionComplete(
                     HandleTransactionCompleteChangeEvent(
                         models_with_changes));
 }
+
+#undef VLOG_SRC
+
+#undef VLOG_SRC_STREAM
 
 ReadTransaction::ReadTransaction(Directory* directory, const char* file,
                                  int line)

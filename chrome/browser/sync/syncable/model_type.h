@@ -117,6 +117,8 @@ std::string ModelTypeSetToString(const ModelTypeSet& model_types);
 // Returns the ModelType corresponding to the name |model_type_string|.
 ModelType ModelTypeFromString(const std::string& model_type_string);
 
+std::string ModelTypeBitSetToString(const ModelTypeBitSet& model_types);
+
 // Converts a string into a model type bitset. If successful, returns true. If
 // failed to parse string, returns false and model_types is unspecified.
 bool ModelTypeBitSetFromString(

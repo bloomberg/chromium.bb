@@ -36,6 +36,9 @@ ModelTypePayloadMap ModelTypePayloadMapFromRoutingInfo(
     const browser_sync::ModelSafeRoutingInfo& routes,
     const std::string& payload);
 
+std::string ModelTypePayloadMapToString(
+    const ModelTypePayloadMap& model_type_payloads);
+
 // Caller takes ownership of the returned dictionary.
 DictionaryValue* ModelTypePayloadMapToValue(
     const ModelTypePayloadMap& model_type_payloads);

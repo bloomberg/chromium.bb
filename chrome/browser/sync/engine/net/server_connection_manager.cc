@@ -35,6 +35,31 @@ static const char kSyncServerSyncPath[] = "/command/";
 // server time.
 static const char kSyncServerGetTimePath[] = "/time";
 
+HttpResponse::HttpResponse()
+    : response_code(kUnsetResponseCode),
+      content_length(kUnsetContentLength),
+      payload_length(kUnsetPayloadLength),
+      server_status(NONE) {}
+
+#define ENUM_CASE(x) case x: return #x; break
+
+const char* HttpResponse::GetServerConnectionCodeString(
+    ServerConnectionCode code) {
+  switch (code) {
+    ENUM_CASE(NONE);
+    ENUM_CASE(CONNECTION_UNAVAILABLE);
+    ENUM_CASE(IO_ERROR);
+    ENUM_CASE(SYNC_SERVER_ERROR);
+    ENUM_CASE(SYNC_AUTH_ERROR);
+    ENUM_CASE(SERVER_CONNECTION_OK);
+    ENUM_CASE(RETRY);
+  }
+  NOTREACHED();
+  return "";
+}
+
+#undef ENUM_CASE
+
 bool ServerConnectionManager::Post::ReadBufferResponse(
     string* buffer_out,
     HttpResponse* response,
