@@ -124,6 +124,8 @@ class AcceleratedSurface {
   // object is valid.
   bool SetupFrameBufferObject(GLenum target);
 
+  gfx::Size ClampToValidDimensions(const gfx::Size& size);
+
   // The OpenGL context, and pbuffer drawable, used to transfer data
   // to the shared region (IOSurface or TransportDIB). Strictly
   // speaking, we do not need to allocate a GL context all of the
@@ -147,6 +149,11 @@ class AcceleratedSurface {
   // make this work (or even compile).
   scoped_ptr<TransportDIB> transport_dib_;
   gfx::Size surface_size_;
+  // It's important to avoid allocating zero-width or zero-height
+  // IOSurfaces and textures on the Mac, so we clamp each to a minimum
+  // of 1. This is the real size of the surface; surface_size_ is what
+  // the user requested.
+  gfx::Size real_surface_size_;
   // TODO(kbr): the FBO management should not be in this class at all.
   // However, if it is factored out, care needs to be taken to not
   // introduce another copy of the color data on the GPU; the direct

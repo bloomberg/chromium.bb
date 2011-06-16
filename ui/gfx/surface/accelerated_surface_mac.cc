@@ -98,7 +98,8 @@ void AcceleratedSurface::SwapBuffers() {
       glCopyTexSubImage2D(target, 0,
                           0, 0,
                           0, 0,
-                          surface_size_.width(), surface_size_.height());
+                          real_surface_size_.width(),
+                          real_surface_size_.height());
       glBindTexture(target, current_texture);
       // This flush is absolutely essential -- it guarantees that the
       // rendering results are seen by the other process.
@@ -115,8 +116,8 @@ void AcceleratedSurface::SwapBuffers() {
       // Note that glReadPixels does an implicit glFlush().
       glReadPixels(0,
                    0,
-                   surface_size_.width(),
-                   surface_size_.height(),
+                   real_surface_size_.width(),
+                   real_surface_size_.height(),
                    GL_BGRA,  // This pixel format should have no conversion.
                    GL_UNSIGNED_INT_8_8_8_8_REV,
                    pixel_memory);
@@ -198,6 +199,10 @@ bool AcceleratedSurface::SetupFrameBufferObject(GLenum target) {
   return fbo_status == GL_FRAMEBUFFER_COMPLETE_EXT;
 }
 
+gfx::Size AcceleratedSurface::ClampToValidDimensions(const gfx::Size& size) {
+  return gfx::Size(std::max(size.width(), 1), std::max(size.height(), 1));
+}
+
 bool AcceleratedSurface::MakeCurrent() {
   if (!gl_context_.get())
     return false;
@@ -234,11 +239,13 @@ uint64 AcceleratedSurface::SetSurfaceSize(const gfx::Size& size) {
   if (!MakeCurrent())
     return 0;
 
+  gfx::Size clamped_size = ClampToValidDimensions(size);
+
   // GL_TEXTURE_RECTANGLE_ARB is the best supported render target on
   // Mac OS X and is required for IOSurface interoperability.
   GLenum target = GL_TEXTURE_RECTANGLE_ARB;
   if (allocate_fbo_) {
-    AllocateRenderBuffers(target, size);
+    AllocateRenderBuffers(target, clamped_size);
   } else if (!texture_) {
     // Generate the texture object.
     glGenTextures(1, &texture_);
@@ -257,9 +264,11 @@ uint64 AcceleratedSurface::SetSurfaceSize(const gfx::Size& size) {
                                              &kCFTypeDictionaryKeyCallBacks,
                                              &kCFTypeDictionaryValueCallBacks));
   AddIntegerValue(properties,
-                  io_surface_support->GetKIOSurfaceWidth(), size.width());
+                  io_surface_support->GetKIOSurfaceWidth(),
+                  clamped_size.width());
   AddIntegerValue(properties,
-                  io_surface_support->GetKIOSurfaceHeight(), size.height());
+                  io_surface_support->GetKIOSurfaceHeight(),
+                  clamped_size.height());
   AddIntegerValue(properties,
                   io_surface_support->GetKIOSurfaceBytesPerElement(), 4);
   AddBooleanValue(properties,
@@ -275,8 +284,8 @@ uint64 AcceleratedSurface::SetSurfaceSize(const gfx::Size& size) {
       static_cast<CGLContextObj>(gl_context_->GetHandle()),
       target,
       GL_RGBA,
-      size.width(),
-      size.height(),
+      clamped_size.width(),
+      clamped_size.height(),
       GL_BGRA,
       GL_UNSIGNED_INT_8_8_8_8_REV,
       io_surface_.get(),
@@ -286,6 +295,7 @@ uint64 AcceleratedSurface::SetSurfaceSize(const gfx::Size& size) {
     SetupFrameBufferObject(target);
   }
   surface_size_ = size;
+  real_surface_size_ = clamped_size;
 
   // Now send back an identifier for the IOSurface. We originally
   // intended to send back a mach port from IOSurfaceCreateMachPort
@@ -310,6 +320,8 @@ TransportDIB::Handle AcceleratedSurface::SetTransportDIBSize(
     return TransportDIB::DefaultHandleValue();
   }
   surface_size_ = size;
+  gfx::Size clamped_size = ClampToValidDimensions(size);
+  real_surface_size_ = clamped_size;
 
   // Release the old TransportDIB in the browser.
   if (dib_free_callback_.get() && transport_dib_.get()) {
@@ -318,7 +330,8 @@ TransportDIB::Handle AcceleratedSurface::SetTransportDIBSize(
   transport_dib_.reset();
 
   // Ask the renderer to create a TransportDIB.
-  size_t dib_size = size.width() * 4 * size.height();  // 4 bytes per pixel.
+  size_t dib_size =
+      clamped_size.width() * 4 * clamped_size.height();  // 4 bytes per pixel.
   TransportDIB::Handle dib_handle;
   if (dib_alloc_callback_.get()) {
     dib_alloc_callback_->Run(dib_size, &dib_handle);
@@ -340,12 +353,12 @@ TransportDIB::Handle AcceleratedSurface::SetTransportDIBSize(
     // Set up the render buffers and reserve enough space on the card for the
     // framebuffer texture.
     GLenum target = GL_TEXTURE_RECTANGLE_ARB;
-    AllocateRenderBuffers(target, size);
+    AllocateRenderBuffers(target, clamped_size);
     glTexImage2D(target,
                  0,  // mipmap level 0
                  GL_RGBA8,  // internal pixel format
-                 size.width(),
-                 size.height(),
+                 clamped_size.width(),
+                 clamped_size.height(),
                  0,  // 0 border
                  GL_BGRA,  // Used for consistency
                  GL_UNSIGNED_INT_8_8_8_8_REV,
