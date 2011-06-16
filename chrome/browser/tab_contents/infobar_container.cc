@@ -96,10 +96,6 @@ void InfoBarContainer::OnInfoBarStateChanged(bool is_animating) {
     delegate_->InfoBarContainerStateChanged(is_animating);
 }
 
-void InfoBarContainer::RemoveDelegate(InfoBarDelegate* delegate) {
-  tab_contents_->RemoveInfoBar(delegate);
-}
-
 void InfoBarContainer::RemoveInfoBar(InfoBar* infobar) {
   InfoBars::iterator infobar_iterator(std::find(infobars_.begin(),
                                                 infobars_.end(), infobar));

@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/tab_contents/infobar_container.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "ui/base/animation/slide_animation.h"
 
 SkColor GetInfoBarTopColor(InfoBarDelegate::Type infobar_type) {
@@ -88,8 +89,7 @@ void InfoBar::AnimationProgressed(const ui::Animation* animation) {
 }
 
 void InfoBar::RemoveInfoBar() {
-  if (container_)
-    container_->RemoveDelegate(delegate_);
+  owner_->RemoveInfoBar(delegate_);
 }
 
 void InfoBar::SetBarTargetHeight(int height) {

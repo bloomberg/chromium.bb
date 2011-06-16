@@ -72,11 +72,6 @@ class InfoBarContainer : public NotificationObserver {
   // anything necessary to respond, e.g. re-layout.
   void OnInfoBarStateChanged(bool is_animating);
 
-  // Removes the specified InfoBarDelegate from the selected TabContentsWrapper.
-  // This will notify us back and cause us to close the InfoBar.  This is called
-  // from the InfoBar's close button handler.
-  void RemoveDelegate(InfoBarDelegate* delegate);
-
   // Called by |infobar| to request that it be removed from the container, as it
   // is about to delete itself.  At this point, |infobar| should already be
   // hidden.
