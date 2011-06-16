@@ -1140,9 +1140,8 @@ LRESULT NativeWidgetWin::OnAppCommand(HWND window,
                                       int keystate) {
   // We treat APPCOMMAND ids as an extension of our command namespace, and just
   // let the delegate figure out what to do...
-  if (GetWidget()->widget_delegate())
-    return GetWidget()->widget_delegate()->ExecuteWindowsCommand(app_command);
-  SetMsgHandled(FALSE);
+  SetMsgHandled(GetWidget()->widget_delegate() &&
+      GetWidget()->widget_delegate()->ExecuteWindowsCommand(app_command));
   return 0;
 }
 
