@@ -86,6 +86,11 @@ class ChromotingHostTest : public testing::Test {
     EXPECT_CALL(context_, ui_message_loop())
         .Times(AnyNumber());
 
+    context_.SetUITaskPostFunction(base::Bind(
+        static_cast<void(MessageLoop::*)(
+            const tracked_objects::Location&, Task*)>(&MessageLoop::PostTask),
+        base::Unretained(&message_loop_)));
+
     Capturer* capturer = new CapturerFake();
     event_executor_ = new MockEventExecutor();
     curtain_ = new MockCurtain();
