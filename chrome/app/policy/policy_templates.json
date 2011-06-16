@@ -1040,18 +1040,18 @@
           'items': [
             {
               'name': 'AllowCookies',
-              'value': 0,
+              'value': 1,
               'caption': '''Allow all sites to set local data.'''
             },
             {
               'name': 'BlockCookies',
-              'value': 1,
+              'value': 2,
               'caption': '''Do not allow any site to set local data'''
             },
           ],
           'supported_on': ['chrome.*:10-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': 1},
-          'example_value': 0,
+          'example_value': 1,
           'id': 48,
           'caption': '''Default cookies setting''',
           'desc': '''Allows you to set whether websites are allowed to set local data. Setting local data can be either allowed for all websites or denied for all websites.''',
@@ -1062,18 +1062,18 @@
           'items': [
             {
               'name': 'AllowImages',
-              'value': 0,
+              'value': 1,
               'caption': '''Allow all sites to show all images'''
             },
             {
               'name': 'BlockImages',
-              'value': 1,
+              'value': 2,
               'caption': '''Do not allow any site to show images'''
             },
           ],
           'supported_on': ['chrome.*:10-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': 1},
-          'example_value': 0,
+          'example_value': 1,
           'id': 49,
           'caption': '''Default images setting''',
           'desc': '''Allows you to set whether websites are allowed to display images. Displaying images can be either allowed for all websites or denied for all websites.''',
@@ -1084,18 +1084,18 @@
           'items': [
             {
               'name': 'AllowJavaScript',
-              'value': 0,
+              'value': 1,
               'caption': '''Allow all sites to run JavaScript'''
             },
             {
               'name': 'BlockJavaScript',
-              'value': 1,
+              'value': 2,
               'caption': '''Do not allow any site to run JavaScript'''
             },
           ],
           'supported_on': ['chrome.*:10-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': 1},
-          'example_value': 0,
+          'example_value': 1,
           'id': 50,
           'caption': '''Default JavaScript setting''',
           'desc': '''Allows you to set whether websites are allowed to run JavaScript. Running JavaScript can be either allowed for all websites or denied for all websites.''',
@@ -1106,18 +1106,18 @@
           'items': [
             {
               'name': 'AllowPlugins',
-              'value': 0,
+              'value': 1,
               'caption': '''Allow all sites to automatically run plugins'''
             },
             {
               'name': 'BlockPlugins',
-              'value': 1,
+              'value': 2,
               'caption': '''Block all plugins'''
             },
           ],
           'supported_on': ['chrome.*:10-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': 1},
-          'example_value': 0,
+          'example_value': 1,
           'id': 51,
           'caption': '''Default plugins setting''',
           'desc': '''Allows you to set whether websites are allowed to automatically run plugins. Automatically running plugins can be either allowed for all websites or denied for all websites.''',
@@ -1128,12 +1128,12 @@
           'items': [
             {
               'name': 'AllowPopups',
-              'value': 0,
+              'value': 1,
               'caption': '''Allow all sites to show pop-ups'''
             },
             {
               'name': 'BlockPopups',
-              'value': 1,
+              'value': 2,
               'caption': '''Do not allow any site to show popups'''
             },
           ],
@@ -1150,17 +1150,17 @@
           'items': [
             {
               'name': 'AllowNotifications',
-              'value': 0,
+              'value': 1,
               'caption': '''Allow sites to show desktop notifications'''
             },
             {
               'name': 'BlockNotifications',
-              'value': 1,
+              'value': 2,
               'caption': '''Do not allow any site to show desktop notifications'''
             },
             {
               'name': 'AskNotifications',
-              'value': 2,
+              'value': 3,
               'caption': '''Ask every time a site wants to show desktop notifications'''
             },
           ],
@@ -1177,17 +1177,17 @@
           'items': [
             {
               'name': 'AllowGeolocation',
-              'value': 0,
+              'value': 1,
               'caption': '''Allow sites to track the users' physical location'''
             },
             {
               'name': 'BlockGeolocation',
-              'value': 1,
+              'value': 2,
               'caption': '''Do not allow any site to track the users' physical location'''
             },
             {
               'name': 'AskGeolocation',
-              'value': 2,
+              'value': 3,
               'caption': '''Ask whenever a site wants to track the users' physical location'''
             },
           ],
