@@ -1,6 +1,6 @@
 vars = {
   # These two should be updated to the same revision whenever possible.
-  "arm_toolchain_version": "5662",
+  "arm_toolchain_version": "5679",
   "x86_toolchain_version": "5651",
   # Keep them seperate from the rest of the list.
   "chrome_rev": "88807",
