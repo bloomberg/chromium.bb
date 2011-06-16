@@ -148,7 +148,7 @@ void View::AddChildView(View* view) {
 }
 
 void View::AddChildViewAt(View* view, int index) {
-  CHECK(view != this) << "You cannot add a view as its own child";
+  CHECK_NE(view, this) << "You cannot add a view as its own child";
 
   // If |view| has a parent, remove it from its parent.
   View* parent = view->parent_;
