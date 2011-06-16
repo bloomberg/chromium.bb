@@ -38,10 +38,10 @@ namespace ui {
 // The following example creates a TreeNode with two children and then
 // creates a TreeNodeModel from it:
 //
-// TreeNodeWithValue<int> root;
-// root.Add(new TreeNodeWithValue<int>(ASCIIToUTF16("child 1"), 0));
-// root.Add(new TreeNodeWithValue<int>(ASCIIToUTF16("child 2"), 1));
-// TreeNodeModel<TreeNodeWithValue<int> > model(&root);
+// TreeNodeWithValue<int>* root = new TreeNodeWithValue<int>();
+// root->Add(new TreeNodeWithValue<int>(ASCIIToUTF16("child 1"), 0));
+// root->Add(new TreeNodeWithValue<int>(ASCIIToUTF16("child 2"), 1));
+// TreeNodeModel<TreeNodeWithValue<int> > model(root);
 //
 // Two variants of TreeNode are provided here:
 //
