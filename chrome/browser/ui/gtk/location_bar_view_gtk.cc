@@ -1369,14 +1369,11 @@ gboolean LocationBarViewGtk::ContentSettingImageViewGtk::OnButtonPressed(
   TabContentsWrapper* tab_contents = parent_->GetTabContentsWrapper();
   if (!tab_contents)
     return TRUE;
-  const ContentSettingsType content_settings_type =
-      content_setting_image_model_->get_content_settings_type();
-  if (content_settings_type == CONTENT_SETTINGS_TYPE_PRERENDER)
-    return TRUE;
   content_setting_bubble_ = new ContentSettingBubbleGtk(
       sender, this,
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-          parent_->browser(), tab_contents, profile_, content_settings_type),
+          parent_->browser(), tab_contents, profile_,
+          content_setting_image_model_->get_content_settings_type()),
       profile_, tab_contents->tab_contents());
   return TRUE;
 }

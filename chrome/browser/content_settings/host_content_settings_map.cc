@@ -353,11 +353,7 @@ void HostContentSettingsMap::ClearSettingsForOneType(
 // static
 bool HostContentSettingsMap::IsSettingAllowedForType(
     ContentSetting setting, ContentSettingsType content_type) {
-  // Prerendering doesn't have settings.
-  if (content_type == CONTENT_SETTINGS_TYPE_PRERENDER)
-    return false;
-
-  // For all other types, DEFAULT, ALLOW and BLOCK are always allowed.
+  // DEFAULT, ALLOW and BLOCK are always allowed.
   if (setting == CONTENT_SETTING_DEFAULT ||
       setting == CONTENT_SETTING_ALLOW ||
       setting == CONTENT_SETTING_BLOCK) {

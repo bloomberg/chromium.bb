@@ -263,12 +263,6 @@ bool ContentSettingDecoration::OnMousePressed(NSRect frame) {
   if (!tabContents)
     return true;
 
-  // Prerender icon does not include a bubble.
-  ContentSettingsType content_settings_type =
-      content_setting_image_model_->get_content_settings_type();
-  if (content_settings_type == CONTENT_SETTINGS_TYPE_PRERENDER)
-    return true;
-
   // Find point for bubble's arrow in screen coordinates.
   // TODO(shess): |owner_| is only being used to fetch |field|.
   // Consider passing in |control_view|.  Or refactoring to be
@@ -282,7 +276,8 @@ bool ContentSettingDecoration::OnMousePressed(NSRect frame) {
   // Open bubble.
   ContentSettingBubbleModel* model =
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-          browser, tabContents, profile_, content_settings_type);
+          browser, tabContents, profile_,
+          content_setting_image_model_->get_content_settings_type());
   [ContentSettingBubbleController showForModel:model
                                   parentWindow:[field window]
                                     anchoredAt:anchor];

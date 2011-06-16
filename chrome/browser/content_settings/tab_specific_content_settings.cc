@@ -151,9 +151,6 @@ bool TabSpecificContentSettings::IsContentBlocked(
   DCHECK(content_type != CONTENT_SETTINGS_TYPE_NOTIFICATIONS)
       << "Notifications settings handled by "
       << "ContentSettingsNotificationsImageModel";
-  DCHECK(content_type != CONTENT_SETTINGS_TYPE_PRERENDER)
-      << "Prerendering settings handled by "
-      << "ContentSettingPrerenderImageModel";
 
   if (content_type == CONTENT_SETTINGS_TYPE_IMAGES ||
       content_type == CONTENT_SETTINGS_TYPE_JAVASCRIPT ||

@@ -126,8 +126,6 @@ TEST_F(HostContentSettingsMapTest, DefaultValues) {
       CONTENT_SETTING_ASK;
   desired_settings.settings[CONTENT_SETTINGS_TYPE_NOTIFICATIONS] =
       CONTENT_SETTING_ASK;
-  desired_settings.settings[CONTENT_SETTINGS_TYPE_PRERENDER] =
-      CONTENT_SETTING_ALLOW;
   ContentSettings settings =
       host_content_settings_map->GetContentSettings(host);
   EXPECT_TRUE(SettingsEqual(desired_settings, settings));
@@ -434,8 +432,6 @@ TEST_F(HostContentSettingsMapTest, NestedSettings) {
       CONTENT_SETTING_ASK;
   desired_settings.settings[CONTENT_SETTINGS_TYPE_NOTIFICATIONS] =
       CONTENT_SETTING_ASK;
-  desired_settings.settings[CONTENT_SETTINGS_TYPE_PRERENDER] =
-      CONTENT_SETTING_ALLOW;
   ContentSettings settings =
       host_content_settings_map->GetContentSettings(host);
   EXPECT_TRUE(SettingsEqual(desired_settings, settings));

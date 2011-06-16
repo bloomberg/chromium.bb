@@ -39,7 +39,6 @@ const char* kResourceTypeNames[] = {
   NULL,
   NULL,  // Not used for Geolocation
   NULL,  // Not used for Notifications
-  NULL,  // Not used for Prerender.
 };
 COMPILE_ASSERT(arraysize(kResourceTypeNames) == CONTENT_SETTINGS_NUM_TYPES,
                resource_type_names_incorrect_size);
@@ -53,7 +52,6 @@ const ContentSetting kDefaultSettings[] = {
   CONTENT_SETTING_BLOCK,  // CONTENT_SETTINGS_TYPE_POPUPS
   CONTENT_SETTING_ASK,    // Not used for Geolocation
   CONTENT_SETTING_ASK,    // CONTENT_SETTINGS_TYPE_NOTIFICATIONS
-  CONTENT_SETTING_ALLOW,  // CONTENT_SETTINGS_TYPE_PRERENDER
 };
 COMPILE_ASSERT(arraysize(kDefaultSettings) == CONTENT_SETTINGS_NUM_TYPES,
                default_settings_incorrect_size);
@@ -69,7 +67,6 @@ const char* kTypeNames[] = {
   // TODO(markusheintz): Refactoring in progress. Content settings exceptions
   // for notifications will be added next.
   "notifications",  // Only used for default Notifications settings.
-  NULL,  // Not used for Prerender
 };
 COMPILE_ASSERT(arraysize(kTypeNames) == CONTENT_SETTINGS_NUM_TYPES,
                type_names_incorrect_size);

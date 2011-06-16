@@ -66,22 +66,3 @@ TEST_F(ContentSettingImageModelTest, CookieAccessed) {
   EXPECT_NE(0, content_setting_image_model->get_icon());
   EXPECT_FALSE(content_setting_image_model->get_tooltip().empty());
 }
-
-TEST_F(ContentSettingImageModelTest, Prerender) {
-  prerender::PrerenderManager::SetMode(
-      prerender::PrerenderManager::PRERENDER_MODE_ENABLED);
-  scoped_ptr<ContentSettingImageModel> content_setting_image_model(
-     ContentSettingImageModel::CreateContentSettingImageModel(
-         CONTENT_SETTINGS_TYPE_PRERENDER));
-  EXPECT_FALSE(content_setting_image_model->is_visible());
-  EXPECT_NE(0, content_setting_image_model->get_icon());
-  EXPECT_FALSE(content_setting_image_model->get_tooltip().empty());
-
-  // Make the tab_contents prerendered
-  contents()->profile()->GetPrerenderManager()->MarkTabContentsAsPrerendered(
-      contents());
-  content_setting_image_model->UpdateFromTabContents(contents());
-  EXPECT_TRUE(content_setting_image_model->is_visible());
-  EXPECT_NE(0, content_setting_image_model->get_icon());
-  EXPECT_FALSE(content_setting_image_model->get_tooltip().empty());
-}

@@ -427,12 +427,6 @@ void ContentSettingsHandler::UpdateExceptionsViewFromModel(
     case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
       UpdateNotificationExceptionsView();
       break;
-    case CONTENT_SETTINGS_TYPE_PRERENDER:
-      // Prerender is currently (02/24/2011) an experimental feature which is
-      // only turned on via about:flags. There is intentionally no UI in
-      // chrome://preferences for CONTENT_SETTINGS_TYPE_PRERENDER.
-      // TODO(cbentzel): Change once prerender moves out of about:flags.
-      break;
     default:
       UpdateExceptionsViewFromHostContentSettingsMap(type);
       break;
@@ -444,7 +438,6 @@ void ContentSettingsHandler::UpdateOTRExceptionsViewFromModel(
   switch (type) {
     case CONTENT_SETTINGS_TYPE_GEOLOCATION:
     case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
-    case CONTENT_SETTINGS_TYPE_PRERENDER:
       break;
     default:
       UpdateExceptionsViewFromOTRHostContentSettingsMap(type);

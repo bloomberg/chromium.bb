@@ -46,13 +46,6 @@ class ContentSettingNotificationsImageModel : public ContentSettingImageModel {
   virtual void UpdateFromTabContents(TabContents* tab_contents) OVERRIDE;
 };
 
-class ContentSettingPrerenderImageModel : public ContentSettingImageModel {
- public:
-  ContentSettingPrerenderImageModel();
-
-  virtual void UpdateFromTabContents(TabContents* tab_contents) OVERRIDE;
-};
-
 const int ContentSettingBlockedImageModel::kBlockedIconIDs[] = {
     IDR_BLOCKED_COOKIES,
     IDR_BLOCKED_IMAGES,
@@ -179,27 +172,6 @@ void ContentSettingNotificationsImageModel::UpdateFromTabContents(
   set_visible(false);
 }
 
-ContentSettingPrerenderImageModel::ContentSettingPrerenderImageModel()
-    : ContentSettingImageModel(CONTENT_SETTINGS_TYPE_PRERENDER) {
-  set_tooltip(l10n_util::GetStringUTF8(IDS_PRERENDER_SUCCEED_TOOLTIP));
-  set_icon(IDR_PRERENDER_SUCCEED_ICON);
-}
-
-void ContentSettingPrerenderImageModel::UpdateFromTabContents(
-    TabContents* tab_contents) {
-  bool visibility = false;
-  if (prerender::PrerenderManager::GetMode() ==
-      prerender::PrerenderManager::PRERENDER_MODE_ENABLED) {
-    if (tab_contents) {
-      prerender::PrerenderManager* pm =
-          tab_contents->profile()->GetPrerenderManager();
-      if (pm && pm->IsTabContentsPrerendered(tab_contents))
-        visibility = true;
-    }
-  }
-  set_visible(visibility);
-}
-
 ContentSettingImageModel::ContentSettingImageModel(
     ContentSettingsType content_settings_type)
     : content_settings_type_(content_settings_type),
@@ -217,8 +189,6 @@ ContentSettingImageModel*
       return new ContentSettingGeolocationImageModel();
     case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
       return new ContentSettingNotificationsImageModel();
-    case CONTENT_SETTINGS_TYPE_PRERENDER:
-      return new ContentSettingPrerenderImageModel();
     default:
       return new ContentSettingBlockedImageModel(content_settings_type);
   }

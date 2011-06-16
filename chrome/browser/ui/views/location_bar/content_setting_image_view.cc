@@ -132,12 +132,6 @@ void ContentSettingImageView::OnMouseReleased(const views::MouseEvent& event) {
   if (!tab_contents)
     return;
 
-  // Prerender does not have a bubble.
-  ContentSettingsType content_settings_type =
-      content_setting_image_model_->get_content_settings_type();
-  if (content_settings_type == CONTENT_SETTINGS_TYPE_PRERENDER)
-    return;
-
   gfx::Rect screen_bounds(GetImageBounds());
   gfx::Point origin(screen_bounds.origin());
   views::View::ConvertPointToScreen(this, &origin);
@@ -146,7 +140,7 @@ void ContentSettingImageView::OnMouseReleased(const views::MouseEvent& event) {
       new ContentSettingBubbleContents(
           ContentSettingBubbleModel::CreateContentSettingBubbleModel(
               parent_->browser(), tab_contents, profile_,
-              content_settings_type),
+              content_setting_image_model_->get_content_settings_type()),
           profile_, tab_contents->tab_contents());
   bubble_ = Bubble::Show(GetWidget(), screen_bounds, BubbleBorder::TOP_RIGHT,
                          bubble_contents, this);
