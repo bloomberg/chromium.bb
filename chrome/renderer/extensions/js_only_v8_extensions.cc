@@ -9,15 +9,6 @@
 
 using bindings_utils::GetStringResource;
 
-// BaseJsV8Extension
-const char* BaseJsV8Extension::kName = "chrome/base";
-v8::Extension* BaseJsV8Extension::Get() {
-  static v8::Extension* extension =
-      new bindings_utils::ExtensionBase(
-          kName, GetStringResource(IDR_BASE_JS), 0, NULL, NULL);
-  return extension;
-}
-
 // JsonSchemaJsV8Extension
 const char* JsonSchemaJsV8Extension::kName = "chrome/jsonschema";
 v8::Extension* JsonSchemaJsV8Extension::Get() {

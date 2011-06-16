@@ -108,7 +108,6 @@ void RenderViewTest::SetUp() {
   // hacky, but this is the world we live in...
   webkit_glue::SetJavaScriptFlags(" --expose-gc");
   WebKit::initialize(&webkitclient_);
-  WebScriptController::registerExtension(BaseJsV8Extension::Get());
   WebScriptController::registerExtension(JsonSchemaJsV8Extension::Get());
   WebScriptController::registerExtension(EventBindings::Get(
       extension_dispatcher_));

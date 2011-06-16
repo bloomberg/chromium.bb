@@ -84,7 +84,6 @@ void ExtensionDispatcher::WebKitInitialized() {
 
   // Add v8 extensions related to chrome extensions.
   RegisterExtension(ExtensionProcessBindings::Get(this), true);
-  RegisterExtension(BaseJsV8Extension::Get(), true);
   RegisterExtension(JsonSchemaJsV8Extension::Get(), true);
   RegisterExtension(EventBindings::Get(this), true);
   RegisterExtension(RendererExtensionBindings::Get(this), true);

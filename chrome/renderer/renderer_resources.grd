@@ -11,7 +11,6 @@ without changes to the corresponding grd file. fb9 -->
   </outputs>
   <release seq="1">
     <includes>
-      <include name="IDR_BASE_JS" file="resources\base.js" type="BINDATA" />
       <include name="IDR_BLOCKED_PLUGIN_HTML" file="resources\blocked_plugin.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_CLICK_TO_PLAY_PLUGIN_HTML" file="resources\click_to_play_plugin.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_DOM_AUTOMATION_JS" file="resources\dom_automation.js" type="BINDATA" />

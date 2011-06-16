@@ -53,7 +53,7 @@ var chrome = chrome || {};
     }
     var port = new chrome.Port(portId, opt_name);
     ports[portId] = port;
-    portReleasers[portId] = PortRelease.partial(portId);
+    portReleasers[portId] = PortRelease.bind(this, portId);
     chromeHidden.onUnload.addListener(portReleasers[portId]);
 
     PortAddRef(portId);
