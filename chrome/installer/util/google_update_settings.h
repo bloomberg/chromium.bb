@@ -21,6 +21,13 @@ class InstallerState;
 // google_update.exe responsability to write the initial values.
 class GoogleUpdateSettings {
  public:
+  // Update policy constants defined by Google Update; do not change these.
+  enum UpdatePolicy {
+    UPDATES_DISABLED    = 0,
+    AUTOMATIC_UPDATES   = 1,
+    MANUAL_UPDATES_ONLY = 2,
+  };
+
   // Returns whether the user has given consent to collect UMA data and send
   // crash dumps to Google. This information is collected by the web server
   // used to download the chrome installer.
@@ -159,6 +166,12 @@ class GoogleUpdateSettings {
   // a slightly different set of brand codes from the standard IsOrganic
   // method.
   static bool IsOrganicFirstRun(const std::wstring& brand);
+
+  // Returns the effective update policy for |app_guid| as dictated by
+  // Group Policy settings.  |is_overridden|, if non-NULL, is populated with
+  // true if an app-specific policy override is in force, or false otherwise.
+  static UpdatePolicy GetAppUpdatePolicy(const std::wstring& app_guid,
+                                         bool* is_overridden);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(GoogleUpdateSettings);

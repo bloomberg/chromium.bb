@@ -74,13 +74,14 @@ enum InstallStatus {
   REQUIRES_MULTI_INSTALL,      // 41. --multi-install was missing from the
                                // command line.
   APPLY_DIFF_PATCH_FAILED,     // 42. Failed to apply a diff patch.
+  INCONSISTENT_UPDATE_POLICY,  // 43. Inconsistent update policy GP settings.
 };
 
 
 // If the following compile assert fires it means that the InstallStatus
 // enumeration changed which will break the contract between the old
 // chrome installed and the new setup.exe that is trying to upgrade.
-COMPILE_ASSERT(installer::CONFLICTING_CHANNEL_EXISTS == 39,
+COMPILE_ASSERT(installer::INCONSISTENT_UPDATE_POLICY == 43,
                dont_change_enum);
 
 // The type of an update archive.

@@ -26,6 +26,17 @@ using installer::InstallerState;
 
 namespace {
 
+const wchar_t kGoogleUpdatePoliciesKey[] =
+    L"SOFTWARE\\Policies\\Google\\Update";
+const wchar_t kGoogleUpdateUpdatePolicyValue[] = L"UpdateDefault";
+const wchar_t kGoogleUpdateUpdateOverrideValuePrefix[] = L"Update";
+const GoogleUpdateSettings::UpdatePolicy kGoogleUpdateDefaultUpdatePolicy =
+#if defined(GOOGLE_CHROME_BUILD)
+    GoogleUpdateSettings::AUTOMATIC_UPDATES;
+#else
+    GoogleUpdateSettings::UPDATES_DISABLED;
+#endif
+
 // An list of search results in increasing order of desirability.
 enum EulaSearchResult {
   NO_SETTING,
@@ -141,6 +152,24 @@ bool GetChromeChannelInternal(bool system_install,
   }
 
   return true;
+}
+
+// Populates |update_policy| with the UpdatePolicy enum value corresponding to a
+// DWORD read from the registry and returns true if |value| is within range.
+// If |value| is out of range, returns false without modifying |update_policy|.
+bool GetUpdatePolicyFromDword(
+    const DWORD value,
+    GoogleUpdateSettings::UpdatePolicy* update_policy) {
+  switch (value) {
+    case GoogleUpdateSettings::UPDATES_DISABLED:
+    case GoogleUpdateSettings::AUTOMATIC_UPDATES:
+    case GoogleUpdateSettings::MANUAL_UPDATES_ONLY:
+      *update_policy = static_cast<GoogleUpdateSettings::UpdatePolicy>(value);
+      return true;
+    default:
+      LOG(WARNING) << "Unexpected update policy override value: " << value;
+  }
+  return false;
 }
 
 }  // namespace
@@ -485,4 +514,45 @@ bool GoogleUpdateSettings::IsOrganicFirstRun(const std::wstring& brand) {
     return true;
 
   return (StartsWith(brand, L"GG", true) || StartsWith(brand, L"EU", true));
+}
+
+GoogleUpdateSettings::UpdatePolicy GoogleUpdateSettings::GetAppUpdatePolicy(
+    const std::wstring& app_guid,
+    bool* is_overridden) {
+  bool found_override = false;
+  UpdatePolicy update_policy = kGoogleUpdateDefaultUpdatePolicy;
+
+#if defined(GOOGLE_CHROME_BUILD)
+  DCHECK(!app_guid.empty());
+  RegKey policy_key;
+
+  // Google Update Group Policy settings are always in HKLM.
+  if (policy_key.Open(HKEY_LOCAL_MACHINE, kGoogleUpdatePoliciesKey,
+                      KEY_QUERY_VALUE) == ERROR_SUCCESS) {
+    static const size_t kPrefixLen =
+        arraysize(kGoogleUpdateUpdateOverrideValuePrefix) - 1;
+    DWORD value;
+    std::wstring app_update_override;
+    app_update_override.reserve(kPrefixLen + app_guid.size());
+    app_update_override.append(kGoogleUpdateUpdateOverrideValuePrefix,
+                               kPrefixLen);
+    app_update_override.append(app_guid);
+    // First try to read and comprehend the app-specific override.
+    found_override = (policy_key.ReadValueDW(app_update_override.c_str(),
+                                             &value) == ERROR_SUCCESS &&
+                      GetUpdatePolicyFromDword(value, &update_policy));
+
+    // Failing that, try to read and comprehend the default override.
+    if (!found_override &&
+        policy_key.ReadValueDW(kGoogleUpdateUpdatePolicyValue,
+                               &value) == ERROR_SUCCESS) {
+      GetUpdatePolicyFromDword(value, &update_policy);
+    }
+  }
+#endif  // defined(GOOGLE_CHROME_BUILD)
+
+  if (is_overridden != NULL)
+    *is_overridden = found_override;
+
+  return update_policy;
 }

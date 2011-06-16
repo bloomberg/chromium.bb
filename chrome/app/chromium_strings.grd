@@ -467,6 +467,8 @@ be available for now. -->
       <message name="IDS_INSTALL_READY_MODE_REQUIRES_CHROME" desc="Chrome Frame in ready mode requires Chrome.">
         Invalid arguments. Chromium Frame cannot be installed in ready mode without also installing Chromium.
       </message>
+      <message name="IDS_INSTALL_INCONSISTENT_UPDATE_POLICY" desc="This message does not apply to Chromium.">
+      </message>
       <!-- Options Dialog -->
       <message name="IDS_OPTIONS_IMPROVE_BROWSING_EXPERIENCE" desc="The text in the options panel that describes how we use web services to improve browsing experience.">
         Chromium may use web services to improve your browsing experience.
