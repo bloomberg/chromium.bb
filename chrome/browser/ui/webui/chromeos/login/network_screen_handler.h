@@ -34,7 +34,7 @@ class NetworkScreenHandler : public NetworkScreenActor,
   virtual void EnableContinue(bool enabled);
 
   // OobeMessageHandler implementation:
-  virtual void GetLocalizedSettings(DictionaryValue* localized_strings);
+  virtual void GetLocalizedStrings(DictionaryValue* localized_strings);
   virtual void Initialize();
 
   // WebUIMessageHandler implementation:

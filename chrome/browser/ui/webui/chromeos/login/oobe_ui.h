@@ -20,7 +20,7 @@ class OobeMessageHandler : public WebUIMessageHandler {
   virtual ~OobeMessageHandler();
 
   // Gets localized strings to be used on the page.
-  virtual void GetLocalizedSettings(DictionaryValue* localized_strings) = 0;
+  virtual void GetLocalizedStrings(DictionaryValue* localized_strings) = 0;
 
   // Called when the page is ready and handler can do initialization.
   virtual void Initialize() = 0;

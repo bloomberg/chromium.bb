@@ -100,6 +100,31 @@ cr.define('cr.ui', function() {
     Oobe.getInstance().toggleStep_(nextStepIndex);
   };
 
+  /**
+   * Sets update's progress bar value.
+   * @param {number} percentage of the progress.
+   */
+  Oobe.setUpdateProgress = function(progress) {
+    $('update-progress-bar').value = progress;
+  }
+
+  /**
+   * Sets update message, which is shown above the progress bar.
+   * @param {text} message to be shown by the label.
+   */
+  Oobe.setUpdateMessage = function(message) {
+    $('update-upper-label').innerText = message;
+  }
+
+  /**
+   * Shows or hides update curtain.
+   * @param {bool} whether curtain should be shown.
+   */
+  Oobe.showUpdateCurtain = function(enable) {
+    $('update-screen-curtain').hidden = !enable;
+    $('update-screen-main').hidden = enable;
+  }
+
   // Export
   return {
     Oobe: Oobe

@@ -30,7 +30,7 @@ class EulaScreenHandler : public EulaScreenActor,
   virtual void SetDelegate(Delegate* delegate);
 
   // OobeMessageHandler implementation:
-  virtual void GetLocalizedSettings(DictionaryValue* localized_strings);
+  virtual void GetLocalizedStrings(DictionaryValue* localized_strings);
   virtual void Initialize();
 
   // WebUIMessageHandler implementation:

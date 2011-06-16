@@ -33,7 +33,7 @@ void EulaScreenHandler::SetDelegate(Delegate* delegate) {
   delegate_ = delegate;
 }
 
-void EulaScreenHandler::GetLocalizedSettings(
+void EulaScreenHandler::GetLocalizedStrings(
     DictionaryValue* localized_strings) {
   localized_strings->SetString("eulaScreenTitle",
       l10n_util::GetStringUTF16(IDS_EULA_SCREEN_TITLE));

@@ -66,7 +66,7 @@ void NetworkScreenHandler::EnableContinue(bool enabled) {
   //                                 *enabled_value);
 }
 
-void NetworkScreenHandler::GetLocalizedSettings(
+void NetworkScreenHandler::GetLocalizedStrings(
     DictionaryValue* localized_strings) {
   localized_strings->SetString("networkScreenTitle",
       l10n_util::GetStringUTF16(IDS_WELCOME_SCREEN_TITLE));

@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/eula_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/update_screen_handler.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -68,7 +69,7 @@ class CoreOobeHandler : public OobeMessageHandler {
   virtual ~CoreOobeHandler();
 
   // OobeMessageHandler implementation:
-  virtual void GetLocalizedSettings(DictionaryValue* localized_strings);
+  virtual void GetLocalizedStrings(DictionaryValue* localized_strings);
   virtual void Initialize();
 
   // WebUIMessageHandler implementation.
@@ -116,16 +117,9 @@ CoreOobeHandler::CoreOobeHandler(OobeUI* oobe_ui)
 CoreOobeHandler::~CoreOobeHandler() {
 }
 
-void CoreOobeHandler::GetLocalizedSettings(DictionaryValue* localized_strings) {
+void CoreOobeHandler::GetLocalizedStrings(DictionaryValue* localized_strings) {
   localized_strings->SetString("productName",
       l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
-  localized_strings->SetString("updateScreenTitle",
-      l10n_util::GetStringUTF16(IDS_UPDATE_SCREEN_TITLE));
-  localized_strings->SetString("installingUpdate",
-      l10n_util::GetStringFUTF16(IDS_INSTALLING_UPDATE,
-          l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
-  localized_strings->SetString("installingUpdateDesc",
-      l10n_util::GetStringUTF16(IDS_INSTALLING_UPDATE_DESC));
 }
 
 void CoreOobeHandler::Initialize() {
@@ -158,6 +152,10 @@ OobeUI::OobeUI(TabContents* contents)
   EulaScreenHandler* eula_screen_handler = new EulaScreenHandler;
   eula_screen_actor_ = eula_screen_handler;
   AddOobeMessageHandler(eula_screen_handler, localized_strings.get());
+
+  UpdateScreenHandler* update_screen_handler = new UpdateScreenHandler;
+  update_screen_actor_ = update_screen_handler;
+  AddOobeMessageHandler(update_screen_handler, localized_strings.get());
 
   OobeUIHTMLSource* html_source =
       new OobeUIHTMLSource(localized_strings.release());
@@ -208,7 +206,7 @@ ViewScreenDelegate* OobeUI::GetHTMLPageScreenActor() {
 void OobeUI::AddOobeMessageHandler(OobeMessageHandler* handler,
                                    DictionaryValue* localized_strings) {
   AddMessageHandler(handler->Attach(this));
-  handler->GetLocalizedSettings(localized_strings);
+  handler->GetLocalizedStrings(localized_strings);
 }
 
 void OobeUI::InitializeHandlers() {
