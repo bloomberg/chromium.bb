@@ -82,10 +82,19 @@ static IMP gOriginalInitIMP = NULL;
     }
 
     // Mostly "unrecognized selector sent to (instance|class)".  A
-    // very small number of things like nil being passed to an
-    // inappropriate receiver.
+    // very small number of things like inappropriate nil being passed.
     if (aName == NSInvalidArgumentException) {
       fatal = YES;
+
+      // TODO(shess): http://crbug.com/85463 throws this exception
+      // from ImageKit.  Our code is not on the stack, so it needs to
+      // be whitelisted for now.
+      NSString* const kNSURLInitNilCheck =
+          @"*** -[NSURL initFileURLWithPath:isDirectory:]: "
+          @"nil string parameter";
+      if ([aReason isEqualToString:kNSURLInitNilCheck]) {
+        fatal = NO;
+      }
     }
 
     // Dear reader: Something you just did provoked an NSException.
