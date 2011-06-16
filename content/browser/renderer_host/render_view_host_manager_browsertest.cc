@@ -38,8 +38,9 @@ class RenderViewHostManagerTest : public InProcessBrowserTest {
 
 // Test for crbug.com/24447.  Following a cross-site link with rel=noreferrer
 // and target=_blank should create a new SiteInstance.
+// Disabled for http://code.google.com/p/chromium/issues/detail?id=86346
 IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
-                       SwapProcessWithRelNoreferrerAndTargetBlank) {
+                       DISABLED_SwapProcessWithRelNoreferrerAndTargetBlank) {
   // Start two servers with different sites.
   ASSERT_TRUE(test_server()->Start());
   net::TestServer https_server(
@@ -92,8 +93,9 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
 
 // Test for crbug.com/24447.  Following a cross-site link with just
 // target=_blank should not create a new SiteInstance.
+// Disabled for http://code.google.com/p/chromium/issues/detail?id=86346
 IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
-                       DontSwapProcessWithOnlyTargetBlank) {
+                       DISABLED_DontSwapProcessWithOnlyTargetBlank) {
   // Start two servers with different sites.
   ASSERT_TRUE(test_server()->Start());
   net::TestServer https_server(

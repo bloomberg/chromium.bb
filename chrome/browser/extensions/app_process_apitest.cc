@@ -61,7 +61,8 @@ static void NavigateTabHelper(TabContents* contents, const GURL& url) {
   EXPECT_EQ(url, contents->controller().GetLastCommittedEntry()->url());
 }
 
-IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcess) {
+// Disabled for http://code.google.com/p/chromium/issues/detail?id=86346
+IN_PROC_BROWSER_TEST_F(AppApiTest, DISABLED_AppProcess) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisablePopupBlocking);
 
