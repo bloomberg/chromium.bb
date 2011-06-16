@@ -22,7 +22,7 @@ class DnsQuery {
   // Every generated object has a random ID, hence two objects generated
   // with the same set of constructor arguments are generally not equal;
   // there is a 1/2^16 chance of them being equal due to size of |id_|.
-  DnsQuery(const std::string& dns_name, uint16 qtype);
+  DnsQuery(const std::string& dns_name, uint16 qtype, uint64 (*prng)());
   ~DnsQuery();
 
   // Clones |this| verbatim with ID field of the header regenerated.
@@ -61,6 +61,9 @@ class DnsQuery {
 
   // Contains query bytes to be consumed by higher level Write() call.
   scoped_refptr<IOBufferWithSize> io_buffer_;
+
+  // PRNG function for generating IDs.
+  uint64 (*prng_)();
 };
 
 }  // namespace net

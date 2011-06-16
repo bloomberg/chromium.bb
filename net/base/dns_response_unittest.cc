@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/rand_util.h"
 #include "net/base/dns_response.h"
 #include "net/base/dns_util.h"
 #include "net/base/net_errors.h"
@@ -70,7 +71,7 @@ namespace net {
 TEST(DnsResponseTest, ResponseWithCnameA) {
   const std::string kHostnameDns("\012codereview\010chromium\003org", 25);
 
-  DnsQuery q1(kHostnameDns, kDNS_A);
+  DnsQuery q1(kHostnameDns, kDNS_A, base::RandUint64);
   uint8 id_hi = q1.id() >> 8, id_lo = q1.id() & 0xff;
 
   uint8 ip[] = {              // codereview.chromium.org resolves to
