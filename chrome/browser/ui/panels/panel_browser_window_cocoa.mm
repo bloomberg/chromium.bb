@@ -32,7 +32,7 @@ bool PanelBrowserWindowCocoa::isClosed() {
   return !controller_;
 }
 
-void PanelBrowserWindowCocoa::Show() {
+void PanelBrowserWindowCocoa::ShowPanel() {
   if (isClosed())
     return;
 
@@ -45,17 +45,20 @@ void PanelBrowserWindowCocoa::Show() {
   [nswindow() setFrame:finalFrame display:YES animate:YES];
 }
 
-void PanelBrowserWindowCocoa::ShowInactive() {
-  NOTIMPLEMENTED();
-}
-
-void PanelBrowserWindowCocoa::SetBounds(const gfx::Rect& bounds) {
+void PanelBrowserWindowCocoa::SetPanelBounds(const gfx::Rect& bounds) {
   NSRect frame = ConvertCoordinatesToCocoa(bounds);
   [nswindow() setFrame:frame display:YES animate:YES];
 }
 
-// Callers assume that this doesn't immediately delete the Browser object.
-void PanelBrowserWindowCocoa::Close() {
+void PanelBrowserWindowCocoa::MinimizePanel() {
+  NOTIMPLEMENTED();
+}
+
+void PanelBrowserWindowCocoa::RestorePanel() {
+  NOTIMPLEMENTED();
+}
+
+void PanelBrowserWindowCocoa::ClosePanel() {
   if (isClosed())
       return;
 
@@ -63,7 +66,63 @@ void PanelBrowserWindowCocoa::Close() {
   frame.size.height = 0;
   [nswindow() setFrame:frame display:YES animate:YES];
   browser_->OnWindowClosing();
-  DestroyBrowser(); // not immediately, though.
+  DestroyBrowser();  // not immediately, though.
+}
+
+void PanelBrowserWindowCocoa::ActivatePanel() {
+  NOTIMPLEMENTED();
+}
+
+void PanelBrowserWindowCocoa::DeactivatePanel() {
+  NOTIMPLEMENTED();
+}
+
+bool PanelBrowserWindowCocoa::IsPanelActive() const {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+gfx::NativeWindow PanelBrowserWindowCocoa::GetNativePanelHandle() {
+  return nswindow();
+}
+
+void PanelBrowserWindowCocoa::UpdatePanelTitleBar() {
+  NOTIMPLEMENTED();
+}
+
+void PanelBrowserWindowCocoa::ShowTaskManagerForPanel() {
+  NOTIMPLEMENTED();
+}
+
+void PanelBrowserWindowCocoa::NotifyPanelOnUserChangedTheme() {
+  NOTIMPLEMENTED();
+}
+
+void PanelBrowserWindowCocoa::FlashPanelFrame() {
+  NOTIMPLEMENTED();
+}
+
+void PanelBrowserWindowCocoa::DestroyPanelBrowser() {
+  [controller_ close];
+  [controller_ autorelease];
+  controller_ = NULL;
+}
+
+void PanelBrowserWindowCocoa::Show() {
+  ShowPanel();  // Delegate to NativePanel.
+}
+
+void PanelBrowserWindowCocoa::ShowInactive() {
+  NOTIMPLEMENTED();
+}
+
+void PanelBrowserWindowCocoa::SetBounds(const gfx::Rect& bounds) {
+  SetPanelBounds(bounds);  // Delegate to NativePanel.
+}
+
+// Callers assume that this doesn't immediately delete the Browser object.
+void PanelBrowserWindowCocoa::Close() {
+  ClosePanel();  // Delegate to NativePanel.
 }
 
 void PanelBrowserWindowCocoa::Activate() {
@@ -84,7 +143,7 @@ void PanelBrowserWindowCocoa::FlashFrame() {
 }
 
 gfx::NativeWindow PanelBrowserWindowCocoa::GetNativeHandle() {
-  return nswindow();
+  return GetNativePanelHandle();  // Delegate to NativePanel.
 }
 
 BrowserWindowTesting* PanelBrowserWindowCocoa::GetBrowserWindowTesting() {
@@ -368,9 +427,7 @@ WindowOpenDisposition PanelBrowserWindowCocoa::GetDispositionForPopupBounds(
 }
 
 void PanelBrowserWindowCocoa::DestroyBrowser() {
-  [controller_ close];
-  [controller_ autorelease];
-  controller_ = NULL;
+  DestroyPanelBrowser();  // Delegate to NativePanel.
 }
 
 NSWindow* PanelBrowserWindowCocoa::nswindow() const {

@@ -9,6 +9,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/panels/native_panel.h"
 
 class Browser;
 class Panel;
@@ -18,12 +19,29 @@ class Panel;
 // Bridges between C++ and the Cocoa NSWindow. Cross-platform code will
 // interact with this object when it needs to manipulate the window.
 
-class PanelBrowserWindowCocoa : public BrowserWindow {
+class PanelBrowserWindowCocoa : public BrowserWindow, public NativePanel {
  public:
   PanelBrowserWindowCocoa(Browser* browser, Panel* panel);
   virtual ~PanelBrowserWindowCocoa();
 
+  // Overridden from NativePanel
+  virtual void ShowPanel() OVERRIDE;
+  virtual void SetPanelBounds(const gfx::Rect& bounds) OVERRIDE;
+  virtual void MinimizePanel() OVERRIDE;
+  virtual void RestorePanel() OVERRIDE;
+  virtual void ClosePanel() OVERRIDE;
+  virtual void ActivatePanel() OVERRIDE;
+  virtual void DeactivatePanel() OVERRIDE;
+  virtual bool IsPanelActive() const OVERRIDE;
+  virtual gfx::NativeWindow GetNativePanelHandle() OVERRIDE;
+  virtual void UpdatePanelTitleBar() OVERRIDE;
+  virtual void ShowTaskManagerForPanel() OVERRIDE;
+  virtual void NotifyPanelOnUserChangedTheme() OVERRIDE;
+  virtual void FlashPanelFrame() OVERRIDE;
+  virtual void DestroyPanelBrowser() OVERRIDE;
+
   // Overridden from BrowserWindow
+  // TODO(dimich): remove inheritance from BrowserWindow.
   virtual void Show() OVERRIDE;
   virtual void ShowInactive() OVERRIDE;
   virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
