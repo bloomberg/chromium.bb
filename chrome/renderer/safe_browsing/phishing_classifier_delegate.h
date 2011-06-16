@@ -75,7 +75,6 @@ class PhishingClassifierDelegate : public RenderViewObserver {
     NAVIGATE_WITHIN_PAGE,
     PAGE_RECAPTURED,
     SHUTDOWN,
-    NEW_PHISHING_SCORER,
     CANCEL_CLASSIFICATION_MAX  // Always add new values before this one.
   };
 

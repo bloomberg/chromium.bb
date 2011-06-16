@@ -138,20 +138,13 @@ void PhishingClassifierDelegate::SetPhishingScorer(
     const safe_browsing::Scorer* scorer) {
   if (!render_view()->webview())
     return;  // RenderView is tearing down.
-  if (is_classifying_) {
-    // If there is a classification going on right now it means we're
-    // actually replacing an existing scorer with a new model.  In
-    // this case we simply cancel the current classification.
-    // TODO(noelutz): if this happens too frequently we could also
-    // replace the old scorer with the new one once classification is done
-    // but this would complicate the code somewhat.
-    CancelPendingClassification(NEW_PHISHING_SCORER);
-  }
+
   classifier_->set_phishing_scorer(scorer);
   // Start classifying the current page if all conditions are met.
   // See MaybeStartClassification() for details.
   MaybeStartClassification();
 }
+
 
 void PhishingClassifierDelegate::OnStartPhishingDetection(const GURL& url) {
   last_url_received_from_browser_ = StripRef(url);

@@ -43,10 +43,6 @@ message ClientPhishingRequest {
   // List of features that were extracted.  Those are the features that were
   // sent to the scorer and which resulted in client_score being computed.
   repeated Feature feature_map = 5;
-
-  // The version number of the model that was used to compute the client-score.
-  // Copied from ClientSideModel.version().
-  optional int32 model_version = 6;
 }
 
 message ClientPhishingResponse {

@@ -18,36 +18,15 @@
 #include "base/task.h"
 #include "base/time.h"
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
-#include "chrome/common/safe_browsing/client_model.pb.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/test_url_fetcher_factory.h"
 #include "content/common/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_status.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using ::testing::Mock;
-
 namespace safe_browsing {
-namespace {
-class MockClientSideDetectionService : public ClientSideDetectionService {
- public:
-  explicit MockClientSideDetectionService(const FilePath& path)
-      : ClientSideDetectionService(path, NULL) {}
-  virtual ~MockClientSideDetectionService() {}
-
-  MOCK_METHOD1(EndFetchModel, void(ClientModelStatus));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockClientSideDetectionService);
-};
-
-ACTION(QuitCurrentMessageLoop) {
-  MessageLoop::current()->Quit();
-}
-}  // namespace
 
 class ClientSideDetectionServiceTest : public testing::Test {
  protected:
@@ -179,105 +158,6 @@ class ClientSideDetectionServiceTest : public testing::Test {
   GURL phishing_url_;
   bool is_phishing_;
 };
-
-TEST_F(ClientSideDetectionServiceTest, FetchModelTest) {
-  ScopedTempDir tmp_dir;
-  ASSERT_TRUE(tmp_dir.CreateUniqueTempDir());
-  FilePath model_path = tmp_dir.path().AppendASCII("model");
-  // We don't want to use a real service class here because we can't call
-  // the real EndFetchModel.  It would reschedule a reload which might
-  // make the test flaky.
-  MockClientSideDetectionService service(model_path);
-
-  // The model fetch failed.
-  SetModelFetchResponse("blamodel", false /* failure */);
-  EXPECT_CALL(service, EndFetchModel(
-      ClientSideDetectionService::MODEL_FETCH_FAILED))
-      .WillOnce(QuitCurrentMessageLoop());
-  service.StartFetchModel();
-  msg_loop_.Run();  // EndFetchModel will quit the message loop.
-  Mock::VerifyAndClearExpectations(&service);
-
-  // Empty model file.
-  SetModelFetchResponse("", true /* success */);
-  EXPECT_CALL(service, EndFetchModel(
-      ClientSideDetectionService::MODEL_EMPTY))
-      .WillOnce(QuitCurrentMessageLoop());
-  service.StartFetchModel();
-  msg_loop_.Run();  // EndFetchModel will quit the message loop.
-  Mock::VerifyAndClearExpectations(&service);
-
-  // Model is too large.
-  SetModelFetchResponse(
-      std::string(ClientSideDetectionService::kMaxModelSizeBytes + 1, 'x'),
-      true /* success */);
-  EXPECT_CALL(service, EndFetchModel(
-      ClientSideDetectionService::MODEL_TOO_LARGE))
-      .WillOnce(QuitCurrentMessageLoop());
-  service.StartFetchModel();
-  msg_loop_.Run();  // EndFetchModel will quit the message loop.
-  Mock::VerifyAndClearExpectations(&service);
-
-  // Unable to parse the model file.
-  SetModelFetchResponse("Invalid model file", true /* success */);
-  EXPECT_CALL(service, EndFetchModel(
-      ClientSideDetectionService::MODEL_PARSE_ERROR))
-      .WillOnce(QuitCurrentMessageLoop());
-  service.StartFetchModel();
-  msg_loop_.Run();  // EndFetchModel will quit the message loop.
-  Mock::VerifyAndClearExpectations(&service);
-
-  // Model that is missing some required fields (missing the version field).
-  ClientSideModel model;
-  model.set_max_words_per_term(4);
-  SetModelFetchResponse(model.SerializePartialAsString(), true /* success */);
-  EXPECT_CALL(service, EndFetchModel(
-      ClientSideDetectionService::MODEL_MISSING_FIELDS))
-      .WillOnce(QuitCurrentMessageLoop());
-  service.StartFetchModel();
-  msg_loop_.Run();  // EndFetchModel will quit the message loop.
-  Mock::VerifyAndClearExpectations(&service);
-
-  // Model version number is wrong.
-  model.set_version(-1);
-  SetModelFetchResponse(model.SerializeAsString(), true /* success */);
-  EXPECT_CALL(service, EndFetchModel(
-      ClientSideDetectionService::MODEL_INVALID_VERSION_NUMBER))
-      .WillOnce(QuitCurrentMessageLoop());
-  service.StartFetchModel();
-  msg_loop_.Run();  // EndFetchModel will quit the message loop.
-  Mock::VerifyAndClearExpectations(&service);
-
-  // Normal model.
-  model.set_version(10);
-  SetModelFetchResponse(model.SerializeAsString(), true /* success */);
-  EXPECT_CALL(service, EndFetchModel(
-      ClientSideDetectionService::MODEL_SUCCESS))
-      .WillOnce(QuitCurrentMessageLoop());
-  service.StartFetchModel();
-  msg_loop_.Run();  // EndFetchModel will quit the message loop.
-  Mock::VerifyAndClearExpectations(&service);
-
-  // Model version number is decreasing.
-  service.model_version_ = 11;
-  SetModelFetchResponse(model.SerializeAsString(), true /* success */);
-  EXPECT_CALL(service, EndFetchModel(
-      ClientSideDetectionService::MODEL_INVALID_VERSION_NUMBER))
-      .WillOnce(QuitCurrentMessageLoop());
-  service.StartFetchModel();
-  msg_loop_.Run();  // EndFetchModel will quit the message loop.
-  Mock::VerifyAndClearExpectations(&service);
-
-  // Model version hasn't changed since the last reload.
-  service.model_version_ = 10;
-  SetModelFetchResponse(model.SerializeAsString(), true /* success */);
-  EXPECT_CALL(service, EndFetchModel(
-      ClientSideDetectionService::MODEL_NOT_CHANGED))
-      .WillOnce(QuitCurrentMessageLoop());
-  service.StartFetchModel();
-  msg_loop_.Run();  // EndFetchModel will quit the message loop.
-  Mock::VerifyAndClearExpectations(&service);
-}
 
 TEST_F(ClientSideDetectionServiceTest, ServiceObjectDeletedBeforeCallbackDone) {
   SetModelFetchResponse("bogus model", true /* success */);

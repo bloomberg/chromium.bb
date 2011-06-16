@@ -12,7 +12,7 @@
 #include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
 #include "base/threading/thread.h"
-#include "chrome/common/safe_browsing/client_model.pb.h"
+#include "chrome/renderer/safe_browsing/client_model.pb.h"
 #include "chrome/renderer/safe_browsing/features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -144,6 +144,22 @@ TEST_F(PhishingScorerTest, CreateFromFile) {
       CreateFromFile(model_file, loader_thread.message_loop_proxy()));
   ASSERT_TRUE(scorer.get());
   EXPECT_EQ(serialized_model, GetModel(*scorer).SerializeAsString());
+  base::ClosePlatformFile(model_file);
+
+  // Now try with an empty file.
+  model_file = WriteAndOpenModelFile(model_file_path, "");
+  ASSERT_NE(base::kInvalidPlatformFileValue, model_file);
+  scorer.reset(CreateFromFile(model_file, loader_thread.message_loop_proxy()));
+  ASSERT_FALSE(scorer.get());
+  base::ClosePlatformFile(model_file);
+
+  // Try with a file that's too large.
+  model_.add_hashes(std::string(Scorer::kMaxPhishingModelSizeBytes, '0'));
+  model_file = WriteAndOpenModelFile(model_file_path,
+                                     model_.SerializeAsString());
+  ASSERT_NE(base::kInvalidPlatformFileValue, model_file);
+  scorer.reset(CreateFromFile(model_file, loader_thread.message_loop_proxy()));
+  ASSERT_FALSE(scorer.get());
   base::ClosePlatformFile(model_file);
 
   // Finally, try with an invalid file.

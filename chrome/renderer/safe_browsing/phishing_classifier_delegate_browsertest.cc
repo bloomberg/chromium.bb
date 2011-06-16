@@ -253,12 +253,6 @@ TEST_F(PhishingClassifierDelegateTest, NoScorer) {
   delegate->SetPhishingScorer(&scorer);
   Mock::VerifyAndClearExpectations(classifier);
 
-  // If we set a new scorer while a classification is going on the
-  // classification should be cancelled.
-  EXPECT_CALL(*classifier, CancelPendingClassification());
-  delegate->SetPhishingScorer(&scorer);
-  Mock::VerifyAndClearExpectations(classifier);
-
   // The delegate will cancel pending classification on destruction.
   EXPECT_CALL(*classifier, CancelPendingClassification());
 }
