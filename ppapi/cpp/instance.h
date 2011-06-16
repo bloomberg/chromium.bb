@@ -176,8 +176,6 @@ class Instance {
   /// @return true if the data was handled, false otherwise.
   virtual bool HandleDocumentLoad(const URLLoader& url_loader);
 
-  // TODO(brettw) this should probably be removed.
-  virtual Var GetSelectedText(bool html);
   /// @}
 
   /// @{

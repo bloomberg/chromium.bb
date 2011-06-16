@@ -69,10 +69,6 @@ void Instance::HandleMessage(const Var& /*message*/) {
   return;
 }
 
-Var Instance::GetSelectedText(bool /* html */) {
-  return Var();
-}
-
 #ifndef PPAPI_INSTANCE_REMOVE_SCRIPTING
 Var Instance::GetWindowObject() {
   if (!has_interface<PPB_Instance>())
