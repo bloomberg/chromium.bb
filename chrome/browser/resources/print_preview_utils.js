@@ -85,6 +85,8 @@ function isPageRangeTextValid(pageRangeText, totalPageCount) {
   var parts = pageRangeText.split(/,/);
 
   for (var i = 0; i < parts.length; ++i) {
+    // Removing whitespace.
+    parts[i] = parts[i].replace(/\s*/g, '');
     var match = parts[i].match(regex);
     if (parts[i].length == 0)
       continue;

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>print_preview_utils.js tests</title>
+<script src="http://closure-library.googlecode.com/svn/trunk/closure/goog/base.js"></script>
+<script src="print_preview_utils.js"></script>
+<script>
+goog.require('goog.testing.jsunit');
+</script>
+</head>
+<body>
+<script>
+
+function testIsInteger() {
+  assertFalse(isInteger("  abc "));
+  assertFalse(isInteger("-7"));
+  assertFalse(isInteger("7.0"));
+  assertFalse(isInteger("a7a"));
+
+  assertTrue(isInteger("0"));
+  assertTrue(isInteger(" 100  "));
+  assertTrue(isInteger("0055 "));
+}
+
+function testIsPositiveInteger() {
+  assertTrue(isPositiveInteger("100"));
+  assertTrue(isPositiveInteger("0055"));
+
+  assertFalse(isPositiveInteger("0"));
+  assertFalse(isPositiveInteger("-100"));
+  assertFalse(isPositiveInteger("sdfs"));
+}
+
+function testAreArraysEqual() {
+  assertTrue(areArraysEqual([2,4,6,8,10], [2,4,6,8,10]));
+  assertTrue(areArraysEqual([], []));
+
+  assertFalse(areArraysEqual([2,4,6,8,10,12], [2,4,6,8,10]));
+  assertFalse(areArraysEqual([], [2,4,6,8,10]));
+}
+
+function testRemoveDuplicates() {
+  var array1 = [1,2,2,3,6,6,6,7,9,10];
+  assertTrue(areArraysEqual(removeDuplicates(array1), [1,2,3,6,7,9,10]));
+}
+
+function testIsPageRangeTextValid1() {
+  var totalPageCount;
+  assertTrue(isPageRangeTextValid("1,2,  3,56,1000000", totalPageCount));
+  assertTrue(isPageRangeTextValid(", ,1,2,3,,1,, 56 ,", totalPageCount));
+  assertTrue(isPageRangeTextValid(",1-3,,6-9,6-10,", totalPageCount));
+  assertTrue(isPageRangeTextValid("10-", totalPageCount));
+  assertTrue(isPageRangeTextValid("10-10", totalPageCount));
+  assertTrue(isPageRangeTextValid(" 10-100000", totalPageCount));
+
+  assertFalse(isPageRangeTextValid("1,2,0,56,1000000", totalPageCount));
+  assertFalse(isPageRangeTextValid("-1,1,2,,56", totalPageCount));
+  assertFalse(isPageRangeTextValid("1,2,56-40", totalPageCount));
+}
+
+function testIsPageRangeTextValid2() {
+  var totalPageCount = 100;
+  assertTrue(isPageRangeTextValid(",,1,2,3,,1,,56,", totalPageCount));
+  assertTrue(isPageRangeTextValid(",1-3,,6-9,6-10,", totalPageCount));
+  assertTrue(isPageRangeTextValid("10-", totalPageCount));
+  assertTrue(isPageRangeTextValid("10-100000", totalPageCount));
+
+  assertFalse(isPageRangeTextValid("1,2,3,56,1000000", totalPageCount));
+  assertFalse(isPageRangeTextValid("1,2,0,56", totalPageCount));
+  assertFalse(isPageRangeTextValid("-1,1,2,,56", totalPageCount));
+  assertFalse(isPageRangeTextValid("1,2,56-40", totalPageCount));
+}
+
+function testPageRangeTextToPageList() {
+  var totalPageCount = 10;
+  assertTrue(areArraysEqual([1,2,3,4],
+                            pageRangeTextToPageList("1-4", totalPageCount)));
+  assertTrue(areArraysEqual([1,2,3,4,2,3,4],
+                            pageRangeTextToPageList("1-4, 2-4", totalPageCount)));
+  assertTrue(areArraysEqual([1,2,5,7,8,9,10,2,2,3],
+                            pageRangeTextToPageList("1-2, 5, 7-10, 2, 2, 3",
+                                                    totalPageCount)));
+  assertTrue(areArraysEqual([5,6,7,8,9,10],
+                            pageRangeTextToPageList("5-", totalPageCount)));
+  assertTrue(areArraysEqual([], pageRangeTextToPageList("1-4", undefined)));
+  assertTrue(areArraysEqual([],
+                            pageRangeTextToPageList("1-abcd", totalPageCount)));
+}
+
+function testPageListToPageSet() {
+  assertTrue(areArraysEqual([1,2,3,4], pageListToPageSet([4,3,2,1,1,1])));
+  assertTrue(areArraysEqual([1,2,3,4], pageListToPageSet([1,2,2,3,4,1,1,1])));
+  assertTrue(areArraysEqual([], pageListToPageSet([])));
+}
+
+function testPageSetToPageRanges() {
+  var pageRanges = pageSetToPageRanges([1,2,3,7,8,9,11]);
+  assertEquals(pageRanges.length, 3);
+  assertEquals(pageRanges[0].from, 1);
+  assertEquals(pageRanges[0].to, 3);
+  assertEquals(pageRanges[1].from, 7);
+  assertEquals(pageRanges[1].to, 9);
+  assertEquals(pageRanges[2].from, 11);
+  assertEquals(pageRanges[2].to, 11);
+}
+
+</script>
+</body>
+</html>
