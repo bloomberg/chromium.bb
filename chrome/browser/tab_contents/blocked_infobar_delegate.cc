@@ -49,10 +49,13 @@ string16 BlockedInfoBarDelegate::GetMessageText() const {
 }
 
 int BlockedInfoBarDelegate::GetButtons() const {
-  return BUTTON_OK;
+  return BUTTON_OK | BUTTON_CANCEL;
 }
 
 string16 BlockedInfoBarDelegate::GetButtonLabel(InfoBarButton button) const {
+  if (button == BUTTON_CANCEL)
+    return l10n_util::GetStringUTF16(IDS_OK);
+
   DCHECK_EQ(button, BUTTON_OK);
   return l10n_util::GetStringUTF16(button_resource_id_);
 };
