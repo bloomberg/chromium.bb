@@ -56,13 +56,14 @@ class DefaultSearchView
                              const views::Event& event) OVERRIDE;
 
   // ConstrainedDialogDelegate:
-  virtual std::wstring GetWindowTitle() const OVERRIDE;
-  virtual views::View* GetInitiallyFocusedView() OVERRIDE;
-  virtual views::View* GetContentsView() OVERRIDE;
-  virtual int GetDialogButtons() const OVERRIDE;
-  virtual bool Accept() OVERRIDE;
-  virtual views::Widget* GetWidget() OVERRIDE;
-  virtual const views::Widget* GetWidget() const OVERRIDE;
+  // TODO(beng): Figure out why adding OVERRIDE to these methods annoys Clang.
+  virtual std::wstring GetWindowTitle() const;
+  virtual views::View* GetInitiallyFocusedView();
+  virtual views::View* GetContentsView();
+  virtual int GetDialogButtons() const;
+  virtual bool Accept();
+  virtual views::Widget* GetWidget();
+  virtual const views::Widget* GetWidget() const;
 
  private:
   // Takes ownership of |proposed_default_turl|.
