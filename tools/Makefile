@@ -192,9 +192,6 @@ all-latest-git-sources = $(git-sources:%=latest-src-%)
 $(all-latest-git-sources): latest-src-%: fetched-src-%
 	./update_to_latest.sh SRC/$*
 
-pinned-src-gcc: gcc-extras
-latest-src-gcc: gcc-extras
-
 .PHONY: sync-pinned
 sync-pinned: | $(all-pinned-git-sources)
 
@@ -433,7 +430,7 @@ GCC_CONFIGURE_FLAGS-glibc = --enable-shared \
 			    --enable-tls
 
 
-BUILD/stamp-$(CROSSARCH)-pregcc: | SRC/gcc BUILD
+BUILD/stamp-$(CROSSARCH)-pregcc: gcc-extras | SRC/gcc BUILD
 	rm -rf BUILD/build-pregcc-$(CROSSARCH)
 	mkdir BUILD/build-pregcc-$(CROSSARCH)
 	cd BUILD/build-pregcc-$(CROSSARCH) && \
@@ -490,7 +487,7 @@ PREGCC_BUILD_DIR=BUILD/build-pregcc-$(CROSSARCH)
 #   the search path will include full gcc stuff that should not be picked.
 # make install:
 #   DESTDIR should be ignored at this step.
-BUILD/stamp-$(CROSSARCH)-pregcc-standalone: \
+BUILD/stamp-$(CROSSARCH)-pregcc-standalone: gcc-extras \
   BUILD/stamp-$(CROSSARCH)-binutils | SRC/gcc BUILD
 	rm -rf $(PREGCC_PREFIX)
 	mkdir -p $(PREGCC_PREFIX)/$(CROSSARCH)/bin
@@ -711,7 +708,7 @@ else
 SYSINCLUDE_HACK_TARGET=$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/sys-include
 endif
 
-BUILD/stamp-$(CROSSARCH)-full-gcc: glibc-adhoc-files
+BUILD/stamp-$(CROSSARCH)-full-gcc: gcc-extras glibc-adhoc-files
 	rm -rf BUILD/build-full-gcc-$(CROSSARCH)
 	mkdir BUILD/build-full-gcc-$(CROSSARCH)
 	# See http://code.google.com/p/nativeclient/issues/detail?id=854
@@ -757,7 +754,8 @@ endif
 # gcc:
 # Builds the gcc that will be used to build applications.
 ##################################################################
-BUILD/stamp-$(CROSSARCH)-gcc: BUILD/stamp-$(CROSSARCH)-newlib | SRC/gcc BUILD
+BUILD/stamp-$(CROSSARCH)-gcc: gcc-extras BUILD/stamp-$(CROSSARCH)-newlib \
+  | SRC/gcc BUILD
 	rm -rf BUILD/build-gcc-$(CROSSARCH)
 	mkdir BUILD/build-gcc-$(CROSSARCH)
 ifeq ($(CYGWIN17), 1)
