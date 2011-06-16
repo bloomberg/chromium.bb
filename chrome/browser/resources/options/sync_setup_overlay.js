@@ -218,11 +218,11 @@ cr.define('options', function() {
 
     sendConfiguration_: function() {
       // Trying to submit, so hide previous errors.
-      $('aborted-text').className = "sync-error-hide";
-      $('error-text').className = "sync-error-hide";
+      $('aborted-text').hidden = true;
+      $('error-text').hidden = true;
 
       if (this.noDataTypesChecked_()) {
-        $('error-text').className = "sync-error-show";
+        $('error-text').hidden = false;
         return;
       }
 
@@ -348,7 +348,7 @@ cr.define('options', function() {
       if (!args.was_aborted)
         return;
 
-      $('aborted-text').className = "sync-error-show";
+      $('aborted-text').hidden = false;
       $('choose-datatypes-ok').disabled = true;
     },
 

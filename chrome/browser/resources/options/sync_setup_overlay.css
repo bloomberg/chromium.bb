@@ -293,12 +293,11 @@ html[os='mac'] #sync-setup-configure {
   margin-left: 5px;
 }
 
-.sync-errors {
+.sync-configuration-errors {
   margin-top: 5px;
 }
 
-.sync-error-show {
-  display: block;
+.sync-configuration-error {
   width: 80%;
   margin-left: auto;
   margin-right: auto;
@@ -307,10 +306,6 @@ html[os='mac'] #sync-setup-configure {
   background-color: #eeb939;
   border-radius: 4px;
   font-weight: bold;
-}
-
-.sync-error-hide {
-  display: none;
 }
 
 #learn-more-link {
