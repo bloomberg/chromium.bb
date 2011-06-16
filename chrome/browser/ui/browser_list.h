@@ -11,6 +11,7 @@
 
 #include "base/observer_list.h"
 #include "chrome/browser/ui/browser.h"
+#include "ui/gfx/native_widget_types.h"
 
 // Stores a list of all Browser objects.
 class BrowserList {
@@ -93,6 +94,9 @@ class BrowserList {
   // Find an existing browser with the provided ID. Returns NULL if no such
   // browser currently exists.
   static Browser* FindBrowserWithID(SessionID::id_type desired_id);
+
+  // Find the browser represented by |window| or NULL if not found.
+  static Browser* FindBrowserWithWindow(gfx::NativeWindow window);
 
   // Checks if the browser can be automatically restarted to install upgrades
   // The browser can be automatically restarted when:

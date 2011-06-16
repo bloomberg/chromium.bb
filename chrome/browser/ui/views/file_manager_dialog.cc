@@ -19,23 +19,8 @@
 #include "content/browser/tab_contents/tab_contents.h"
 
 namespace {
-
 const int kFileManagerWidth = 720;  // pixels
 const int kFileManagerHeight = 580;  // pixels
-
-// Returns the browser represented by |window| or NULL if not found.
-// TODO(jamescook):  Move this to browser_list.h.
-Browser* FindBrowserWithWindow(gfx::NativeWindow window) {
-  for (BrowserList::const_iterator it = BrowserList::begin();
-       it != BrowserList::end();
-       ++it) {
-    Browser* browser = *it;
-    if (browser->window() && browser->window()->GetNativeHandle() == window)
-      return browser;
-  }
-  return NULL;
-}
-
 }  // namespace
 
 // Linking this implementation of SelectFileDialog::Create into the target
@@ -98,7 +83,7 @@ void FileManagerDialog::SelectFileImpl(
     LOG(ERROR) << "File dialog already in use!";
     return;
   }
-  Browser* owner_browser = FindBrowserWithWindow(owner_window);
+  Browser* owner_browser = BrowserList::FindBrowserWithWindow(owner_window);
   if (!owner_browser) {
     NOTREACHED() << "Can't find owning browser";
     return;

@@ -580,6 +580,18 @@ Browser* BrowserList::FindBrowserWithID(SessionID::id_type desired_id) {
 }
 
 // static
+Browser* BrowserList::FindBrowserWithWindow(gfx::NativeWindow window) {
+  for (BrowserList::const_iterator it = BrowserList::begin();
+       it != BrowserList::end();
+       ++it) {
+    Browser* browser = *it;
+    if (browser->window() && browser->window()->GetNativeHandle() == window)
+      return browser;
+  }
+  return NULL;
+}
+
+// static
 size_t BrowserList::GetBrowserCountForType(Profile* profile,
                                            bool match_tabbed) {
   size_t result = 0;

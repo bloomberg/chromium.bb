@@ -138,10 +138,6 @@ class SelectFileDialogImpl : public SelectFileDialog {
   // Notification from FileBrowseDelegate when file browse UI is dismissed.
   void OnDialogClosed(FileBrowseDelegate* delegate, const std::string& json);
 
-  // Callback method to open HTML
-  void OpenHtmlDialog(gfx::NativeWindow owning_window,
-                      FileBrowseDelegate* file_browse_delegate);
-
   // The set of all parent windows for which we are currently running dialogs.
   std::set<gfx::NativeWindow> parents_;
 
@@ -215,7 +211,7 @@ void SelectFileDialogImpl::SelectFileImpl(
       default_extension, owning_window, params);
   delegates_.insert(file_browse_delegate);
 
-  Browser* browser = BrowserList::GetLastActive();
+  Browser* browser = BrowserList::FindBrowserWithWindow(owning_window);
   // As SelectFile may be invoked after a delay, it is entirely possible for
   // it be invoked when no browser is around. Silently ignore this case.
   if (browser)
@@ -290,14 +286,6 @@ void SelectFileDialogImpl::OnDialogClosed(FileBrowseDelegate* delegate,
 
   parents_.erase(delegate->parent_);
   delegates_.erase(delegate);
-}
-
-void SelectFileDialogImpl::OpenHtmlDialog(
-    gfx::NativeWindow owning_window,
-    FileBrowseDelegate* file_browse_delegate) {
-  browser::ShowHtmlDialog(owning_window,
-                          ProfileManager::GetDefaultProfile(),
-                          file_browse_delegate);
 }
 
 SelectFileDialogImpl::FileBrowseDelegate::FileBrowseDelegate(
