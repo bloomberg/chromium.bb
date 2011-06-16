@@ -89,8 +89,8 @@
   ThreadSanitizer:Race
   fun:Replace_memcpy
   fun:memcpy
-  fun:Serialize*
-  fun:UserScriptMaster::ScriptReloader::RunScan*
+  fun:Serialize
+  fun:UserScriptMaster::ScriptReloader::RunLoad
 }
 
 {
