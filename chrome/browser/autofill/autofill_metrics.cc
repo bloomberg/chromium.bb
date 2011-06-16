@@ -218,8 +218,7 @@ void LogServerExperimentId(const std::string& histogram_name,
     metric = ACCEPTANCE_RATIO_04_WINNER_LEAD_RATIO_3_MIN_FORM_SCORE_4;
 
   DCHECK(metric < NUM_SERVER_EXPERIMENTS);
-  UMA_HISTOGRAM_ENUMERATION(histogram_name, metric,
-                            NUM_SERVER_EXPERIMENTS);
+  LogUMAHistogramEnumeration(histogram_name, metric, NUM_SERVER_EXPERIMENTS);
 }
 
 }  // namespace
