@@ -55,7 +55,7 @@ const void* FakeGetBrowserInterface(const char* interface_name) {
   } else if (std::strcmp(interface_name, PPB_INSTANCE_PRIVATE_INTERFACE) == 0) {
     ppb = fake_browser_ppapi::Instance::GetPrivateInterface();
   } else if (std::strcmp(interface_name, PPB_VAR_DEPRECATED_INTERFACE) == 0) {
-    ppb = host->var_interface();
+    ppb = host->var_deprecated_interface();
   } else if (std::strcmp(interface_name, PPB_URLLOADER_INTERFACE) == 0) {
     ppb = fake_browser_ppapi::URLLoader::GetInterface();
   } else if (std::strcmp(interface_name,
@@ -183,12 +183,12 @@ void TestInstance(PP_Module browser_module_id,
 #ifndef PPAPI_INSTANCE_REMOVE_SCRIPTING
   // Test the scriptable object for the instance.
   PP_Var instance_object = instance_interface->GetInstanceObject(instance_id);
-  const PPB_Var_Deprecated* var_interface =
+  const PPB_Var_Deprecated* var_deprecated_interface =
       reinterpret_cast<const PPB_Var_Deprecated*>(
           FakeGetBrowserInterface(PPB_VAR_DEPRECATED_INTERFACE));
   TestScriptableObject(instance_object,
                        fake_browser_ppapi::Instance::GetInterface(),
-                       var_interface,
+                       var_deprecated_interface,
                        instance_id,
                        browser_module_id);
 #endif
@@ -213,7 +213,8 @@ int main(int argc, char** argv) {
   host = new fake_browser_ppapi::Host(plugin_name);
   // TODO(polina): Change FakeWindow functions to not rely on host for
   // the var interface.
-  host->set_var_interface(ppapi_proxy::PluginVarDeprecated::GetInterface());
+  host->set_var_deprecated_interface(
+      ppapi_proxy::PluginVarDeprecated::GetInterface());
 
   // Test startup.
   CHECK(host->InitializeModule(PluginModuleId(), FakeGetBrowserInterface) ==

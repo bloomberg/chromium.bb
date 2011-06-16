@@ -8,7 +8,6 @@
 #include <string>
 
 #include "native_client/src/include/nacl_macros.h"
-#include "native_client/src/shared/ppapi_proxy/plugin_ppb_var_deprecated.h"
 #include "native_client/tests/fake_browser_ppapi/fake_resource.h"
 #include "ppapi/c/ppb_url_request_info.h"
 
