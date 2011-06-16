@@ -2621,8 +2621,10 @@ void GLES2DecoderImpl::Destroy() {
       offscreen_saved_color_texture_->Invalidate();
   }
 
-  if (context_.get())
+  if (context_.get()) {
+    context_->ReleaseCurrent(NULL);
     context_->Destroy();
+  }
   context_ = NULL;
 
   offscreen_target_frame_buffer_.reset();
