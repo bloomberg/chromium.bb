@@ -68,9 +68,6 @@ class NaClTest(pyauto.PyUITest):
   def testReloadSRPCParameterPassing(self):
     self.reloader('srpc_basic.html', 'SRPC')
 
-  def testReloadSRPCPluginProperties(self):
-    self.reloader('srpc_plugin.html', 'SRPC')
-
   def testReloadSRPCSocketAddress(self):
     self.reloader('srpc_sockaddr.html', 'SRPC')
 
