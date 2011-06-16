@@ -36,5 +36,8 @@ BUGKOZ : fast/dom/register-protocol-handler.html = TEXT
 // object is given as receiver.
 BUGRICOW : fast/js/eval-var-decl.html = TEXT
 
+// Updated V8 error message for Object.defineProperty, test needs rebaselining.
+BUGRICOW : fast/js/function-prototype-descriptor.html = TEXT
+
 // already upstreamed, can delete after roll to r88976?
 BUGWK62754 DEBUG SLOW : http/tests/misc/object-embedding-svg-delayed-size-negotiation-2.htm = IMAGE
