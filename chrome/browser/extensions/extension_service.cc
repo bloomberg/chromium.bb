@@ -238,6 +238,14 @@ class ExtensionServiceBackend
 
   virtual ~ExtensionServiceBackend();
 
+  // LoadSingleExtension needs to check the file access preference, which needs
+  // to happen back on the UI thread, so it posts CheckExtensionFileAccess on
+  // the UI thread. In turn, once that gets the pref, it goes back to the
+  // file thread with LoadSingleExtensionWithFileAccess.
+  void CheckExtensionFileAccess(const FilePath& extension_path);
+  void LoadSingleExtensionWithFileAccess(
+      const FilePath &path, bool allow_file_access);
+
   // Notify the frontend that there was an error loading an extension.
   void ReportExtensionLoadError(const FilePath& extension_path,
                                 const std::string& error);
@@ -272,7 +280,40 @@ void ExtensionServiceBackend::LoadSingleExtension(const FilePath& path_in) {
   FilePath extension_path = path_in;
   file_util::AbsolutePath(&extension_path);
 
-  int flags = Extension::ShouldAlwaysAllowFileAccess(Extension::LOAD) ?
+  if (!BrowserThread::PostTask(
+            BrowserThread::UI, FROM_HERE,
+            NewRunnableMethod(
+                this,
+                &ExtensionServiceBackend::CheckExtensionFileAccess,
+                extension_path)))
+    NOTREACHED();
+}
+
+void ExtensionServiceBackend::CheckExtensionFileAccess(
+    const FilePath& extension_path) {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  std::string id = Extension::GenerateIdForPath(extension_path);
+  // Unpacked extensions default to allowing file access, but if that has been
+  // overridden, don't reset the value.
+  bool allow_file_access =
+      Extension::ShouldAlwaysAllowFileAccess(Extension::LOAD) &&
+      !frontend_->extension_prefs()->HasAllowFileAccessSetting(id);
+
+  if (!BrowserThread::PostTask(
+          BrowserThread::FILE, FROM_HERE,
+          NewRunnableMethod(
+              this,
+              &ExtensionServiceBackend::LoadSingleExtensionWithFileAccess,
+              extension_path,
+              allow_file_access)))
+    NOTREACHED();
+}
+
+
+void ExtensionServiceBackend::LoadSingleExtensionWithFileAccess(
+    const FilePath& extension_path, bool allow_file_access) {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  int flags = allow_file_access ?
       Extension::ALLOW_FILE_ACCESS : Extension::NO_FLAGS;
   if (Extension::ShouldDoStrictErrorChecking(Extension::LOAD))
     flags |= Extension::STRICT_ERROR_CHECKS;

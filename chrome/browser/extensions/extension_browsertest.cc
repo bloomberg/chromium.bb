@@ -85,12 +85,27 @@ const Extension* ExtensionBrowserTest::LoadExtensionImpl(
   if (!extension)
     return NULL;
 
+  const std::string extension_id = extension->id();
+
   // The call to OnExtensionInstalled ensures the other extension prefs
   // are set up with the defaults.
   service->extension_prefs()->OnExtensionInstalled(
       extension, Extension::ENABLED);
-  service->SetIsIncognitoEnabled(extension->id(), incognito_enabled);
+  service->SetIsIncognitoEnabled(extension_id, incognito_enabled);
+
+  ui_test_utils::WindowedNotificationObserver extension_loaded_signal(
+      NotificationType::EXTENSION_LOADED,
+      Source<Profile>(browser()->profile()));
   service->SetAllowFileAccess(extension, fileaccess_enabled);
+
+  // Disabling file access (it's enabled by default for unpacked extensions)
+  // ends up reloading the extension, so we need to wait for that and make sure
+  // that we have the most up to date extension instance.
+  if (!fileaccess_enabled) {
+    extension_loaded_signal.Wait();
+    extension = service->GetExtensionById(extension_id, false);
+    CHECK(extension) << extension_id << " not found after reloading.";
+  }
 
   if (!WaitForExtensionHostsToLoad())
     return NULL;

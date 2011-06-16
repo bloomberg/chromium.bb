@@ -97,6 +97,10 @@ class ExtensionApiTest : public ExtensionBrowserTest {
   bool RunExtensionSubtest(const char* extension_name,
                            const std::string& page_url);
 
+  // Same as RunExtensionSubtest, but disables file access.
+  bool RunExtensionSubtestNoFileAccess(const char* extension_name,
+                                       const std::string& page_url);
+
   // Load |page_url| and wait for pass / fail notification from the extension
   // API on the page.
   bool RunPageTest(const std::string& page_url);

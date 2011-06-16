@@ -158,6 +158,15 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_CaptureVisibleTabRace) {
                                   "test_race.html")) << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, CaptureVisibleFile) {
+  ASSERT_TRUE(RunExtensionSubtest("tabs/capture_visible_tab",
+                                  "test_file.html")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, CaptureVisibleNoFile) {
+  ASSERT_TRUE(RunExtensionSubtestNoFileAccess("tabs/capture_visible_tab",
+                                              "test_nofile.html")) << message_;
+}
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabsOnUpdated) {
   ASSERT_TRUE(StartTestServer());

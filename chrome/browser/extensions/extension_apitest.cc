@@ -120,10 +120,18 @@ bool ExtensionApiTest::RunExtensionTestIncognitoNoFileAccess(
     const char* extension_name) {
   return RunExtensionTestImpl(extension_name, "", true, false, false);
 }
+
 bool ExtensionApiTest::RunExtensionSubtest(const char* extension_name,
                                            const std::string& page_url) {
   DCHECK(!page_url.empty()) << "Argument page_url is required.";
   return RunExtensionTestImpl(extension_name, page_url, false, true, false);
+}
+
+bool ExtensionApiTest::RunExtensionSubtestNoFileAccess(
+    const char* extension_name,
+    const std::string& page_url) {
+  DCHECK(!page_url.empty()) << "Argument page_url is required.";
+  return RunExtensionTestImpl(extension_name, page_url, false, false, false);
 }
 
 bool ExtensionApiTest::RunPageTest(const std::string& page_url) {
@@ -178,8 +186,10 @@ bool ExtensionApiTest::RunExtensionTestImpl(const char* extension_name,
       ExtensionService* service = browser()->profile()->GetExtensionService();
       const Extension* extension =
           service->GetExtensionById(last_loaded_extension_id_, false);
-      if (!extension)
+      if (!extension) {
+        message_ = "Failed to find extension in ExtensionService.";
         return false;
+      }
 
       url = extension->GetResourceURL(page_url);
     }
