@@ -131,7 +131,7 @@ NPObject* ObjectFromNPVariant(const NPVariant& variant) {
 }
 
 // NPAPI plugin implementation for remoting host script object.
-class HostNPScriptObject {
+class HostNPScriptObject : remoting::HostStatusObserver {
  public:
   HostNPScriptObject(NPP plugin, NPObject* parent)
       : plugin_(plugin),
@@ -354,8 +354,14 @@ class HostNPScriptObject {
   void OnReceivedSupportID(remoting::SupportAccessVerifier* access_verifier,
                            bool success,
                            const std::string& support_id);
-  void OnConnected();
   void OnHostShutdown();
+
+  // HostStatusObserver interface.
+  virtual void OnSignallingConnected(remoting::SignalStrategy* signal_strategy,
+                                     const std::string& full_jid) {}
+  virtual void OnSignallingDisconnected() {}
+  virtual void OnAuthenticatedClientsChanged(int clients_connected);
+  virtual void OnShutdown() {}
 
   // Call a JavaScript function wrapped as an NPObject.
   // If result is non-null, the result of the call will be stored in it.
@@ -457,6 +463,7 @@ bool HostNPScriptObject::Connect(const NPVariant* args,
       remoting::ChromotingHost::Create(&host_context_, host_config,
                                        access_verifier.release());
   host->AddStatusObserver(register_request);
+  host->AddStatusObserver(this);
   host->set_me2mom(true);
 
   // Nothing went wrong, so lets save the host, config and request.
@@ -516,14 +523,14 @@ void HostNPScriptObject::OnReceivedSupportID(
   OnStateChanged(kReceivedAccessCode);
 }
 
-void HostNPScriptObject::OnConnected() {
-  CHECK_NE(base::PlatformThread::CurrentId(), np_thread_id_);
-  OnStateChanged(kConnected);
-}
-
 void HostNPScriptObject::OnHostShutdown() {
   CHECK_NE(base::PlatformThread::CurrentId(), np_thread_id_);
   OnStateChanged(kDisconnected);
+}
+
+void HostNPScriptObject::OnAuthenticatedClientsChanged(int clients_connected) {
+  CHECK_NE(base::PlatformThread::CurrentId(), np_thread_id_);
+  OnStateChanged(clients_connected ? kConnected : kDisconnected);
 }
 
 void HostNPScriptObject::OnStateChanged(State state) {
