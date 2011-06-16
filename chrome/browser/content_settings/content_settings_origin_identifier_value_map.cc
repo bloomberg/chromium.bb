@@ -27,9 +27,7 @@ OriginIdentifierValueMap::Entry::~Entry() {}
 
 OriginIdentifierValueMap::OriginIdentifierValueMap() {}
 
-OriginIdentifierValueMap::~OriginIdentifierValueMap() {
-  Clear();
-}
+OriginIdentifierValueMap::~OriginIdentifierValueMap() {}
 
 bool operator>(const OriginIdentifierValueMap::Entry& first,
                const OriginIdentifierValueMap::Entry& second) {
@@ -108,19 +106,12 @@ void OriginIdentifierValueMap::DeleteValue(
   }
 }
 
-void OriginIdentifierValueMap::Clear() {
+void OriginIdentifierValueMap::clear() {
   // Delete all owned value objects.
-  /*
-  for (OriginIdentifierValueMap::iterator entry = entries_.begin();
-       entry != entries_.end();
-       ++entry) {
-    delete entry->value;
-  }
-  */
   entries_.clear();
 }
 
-OriginIdentifierValueMap::iterator OriginIdentifierValueMap::DeleteValue(
+OriginIdentifierValueMap::iterator OriginIdentifierValueMap::erase(
     OriginIdentifierValueMap::iterator entry) {
   return entries_.erase(entry);
 }

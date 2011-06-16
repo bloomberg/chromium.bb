@@ -594,8 +594,8 @@ void PrefProvider::ResetToDefaults() {
 
   {
     base::AutoLock auto_lock(lock_);
-    value_map_.Clear();
-    incognito_value_map_.Clear();
+    value_map_.clear();
+    incognito_value_map_.clear();
   }
 
   if (!is_incognito_) {
@@ -631,7 +631,7 @@ void PrefProvider::ClearAllContentSettingsRules(
           std::string pattern_str = CreatePatternString(
               entry->item_pattern, entry->top_level_frame_pattern);
           // Delete current |entry| and set |entry| to the next value map entry.
-          entry = map_to_modify->DeleteValue(entry);
+          entry = map_to_modify->erase(entry);
 
           // Update the content settings preference.
           if (all_settings_dictionary) {
@@ -710,7 +710,7 @@ void PrefProvider::ReadExceptions(bool overwrite) {
       prefs->GetDictionary(prefs::kContentSettingsPatterns);
 
   if (overwrite)
-    value_map_.Clear();
+    value_map_.clear();
 
   updating_preferences_ = true;
   // Careful: The returned value could be NULL if the pref has never been set.

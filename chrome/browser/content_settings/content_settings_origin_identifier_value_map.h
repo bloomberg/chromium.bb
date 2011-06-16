@@ -96,10 +96,10 @@ class OriginIdentifierValueMap {
 
   // Deletes the map entry at the passed position. The method returns the
   // position of the next entry in the map.
-  EntryList::iterator DeleteValue(EntryList::iterator entry);
+  EntryList::iterator erase(EntryList::iterator entry);
 
   // Clears all map entries.
-  void Clear();
+  void clear();
 
  private:
   // Finds the list entry for the given |item_pattern|,

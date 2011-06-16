@@ -132,7 +132,7 @@ TEST(OriginIdentifierValueMapTest, Clear) {
   EXPECT_EQ(1, actual_value);
 
   // Clear the map.
-  map.Clear();
+  map.clear();
   EXPECT_EQ(map.begin(), map.end());
   EXPECT_EQ(NULL, map.GetValue(GURL("http://www.google.com"),
                                GURL("http://www.google.com"),
