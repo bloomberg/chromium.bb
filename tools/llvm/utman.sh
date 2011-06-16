@@ -55,8 +55,6 @@ fi
 
 # TODO(pdox): Decide what the target should really permanently be
 readonly CROSS_TARGET_ARM=arm-none-linux-gnueabi
-readonly CROSS_TARGET_X86_32=i686-none-linux-gnu
-readonly CROSS_TARGET_X86_64=x86_64-none-linux-gnu
 readonly BINUTILS_TARGET=arm-pc-nacl
 readonly REAL_CROSS_TARGET=pnacl
 
@@ -529,13 +527,14 @@ download-toolchains() {
 #@-------------------------------------------------------------------------
 #@ rebuild-pnacl-libs    - organized native libs and build bitcode libs
 rebuild-pnacl-libs() {
+  StepBanner "REBUILD LIBS"
+
   extrasdk-clean
   clean-pnacl
   newlib-bitcode
   libstdcpp-bitcode
   # NOTE: currently also builds some native code
   extrasdk-make-install
-  organize-native-code
 }
 
 
@@ -561,17 +560,13 @@ everything() {
   driver
   gcc-stage1-sysroot
   gcc-stage1 ${CROSS_TARGET_ARM}
-  gcc-stage1 ${CROSS_TARGET_X86_32}
-  gcc-stage1 ${CROSS_TARGET_X86_64}
 
   rebuild-pnacl-libs
-  # NOTE: This overwrites the native libgcc.a's with a new native versions
-  #       build from compiler-rt and libgcc_eh with a new bitcode version
-  #       build from the regular llvm-gcc sources.
-  #       It will soon make most of the gcc-stage1 invocations obsolete after
-  #       which the exact place where those two functions are being called
-  #       from should reconsidered.
+  # Build native versions of libgcc
+  # TODO(robertm): change these to bitcode libs and the fold them into
+  #                the rebuild-pnacl-libs step
   build-compiler-rt
+  # NOTE: this currently depends on "gcc-stage1" above
   build-libgcc_eh-bitcode arm-none-linux-gnueabi
 
   # NOTE: we delay the tool building till after the sdk is essentially
@@ -741,8 +736,6 @@ clean-pnacl() {
          ${PNACL_X8632_ROOT} \
          ${PNACL_X8664_ROOT}
 }
-
-
 
 
 #@-------------------------------------------------------------------------
@@ -1086,9 +1079,6 @@ gcc-stage1-make() {
 
   ts-touch-open "${objdir}"
 
-  # In case it is still patched from an interrupted make
-  xgcc-unpatch-nofail "${target}"
-
   # we built our version of binutil for multiple targets, so they work here
   local ar=${CROSS_TARGET_AR}
   local ranlib=${CROSS_TARGET_RANLIB}
@@ -1104,28 +1094,6 @@ gcc-stage1-make() {
               CFLAGS="-Dinhibit_libc" \
               make ${MAKE_OPTS} all-gcc
 
-  xgcc-patch "${target}"
-
-  # TODO(robertm): may split this into a separate step
-  RunWithLog libgcc.clean \
-      env -i PATH=/usr/bin/:/bin:${INSTALL_DIR}/bin \
-             make clean-target-libgcc
-
-  StepBanner "GCC-${target}" "Make (Stage 2 - native libs)"
-  # NOTE: the target libgcc.a actually build libgcov.a libgcc.a libgcc_eh.a
-  #       There is no "target" in the top level Makefile to do the job.
-  #       libgcc.a and friends are actually built via gcc/libgcc.mk
-  #       which is generated on the fly by gcc/Makefile
-  spushd gcc
-  RunWithLog llvm-pregcc2-${target}.make \
-       env -i PATH=/usr/bin/:/bin:${INSTALL_DIR}/bin:${objdir}/dummy-bin \
-              CC="${CC}" \
-              CXX="${CXX}" \
-              CFLAGS="-Dinhibit_libc" \
-              make ${MAKE_OPTS} libgcc.a
-  spopd
-
-  xgcc-unpatch "${target}"
 
   ts-touch-commit "${objdir}"
 
@@ -1133,7 +1101,6 @@ gcc-stage1-make() {
 }
 
 #+ build-libgcc_eh-bitcode - build/install bitcode version of libgcc_eh
-#+                           Note: this is highly EXPERIMENTAL
 build-libgcc_eh-bitcode() {
   # NOTE: For simplicity we piggyback the libgcc_eh build onto a preconfigured
   #       objdir. So, to be safe, you have to run gcc-stage1-make first
@@ -1204,101 +1171,6 @@ build-compiler-rt() {
   cp x86-32/libgcc.a "${PNACL_X8632_ROOT}/"
   cp x86-64/libgcc.a "${PNACL_X8664_ROOT}/"
   spopd
-}
-
-#+ xgcc-patch          - Patch xgcc and clean libgcc
-xgcc-patch() {
-  # This is a hack. Ideally gcc would be configured with a pnacl-nacl target
-  # and xgcc would produce sfi code automatically. This is not the case, so
-  # we cheat gcc's build by replacing xgcc behind its back.
-  local target="$1"
-  local objdir="${TC_BUILD_LLVM_GCC1}-${target}"
-  local XGCC="${objdir}/gcc/xgcc"
-  local XGCC_REAL="${XGCC}-real"
-  local arch=""
-  local driver=""
-
-  StepBanner "GCC-${target}" "Patching xgcc and cleaning libgcc $target"
-
-  # Make sure XGCC exists
-  if [ ! -f "${XGCC}" ] ; then
-    Abort "xgcc-patch" "Real xgcc does not exist."
-    return
-  fi
-
-  # Make sure it is a real ELF file
-  if is-shell-script "${XGCC}" ; then
-    Abort "xgcc-patch" "xgcc already patched"
-    return
-  fi
-
-  # N.B:
-  # * We have to use the arch cc1 istead of the more common practice of using
-  # the ARM cc1 for everything. The reason is that the ARM cc1 will reject a
-  # asm that uses ebx for example
-  # * Because of the previous item, we have to use the arch driver bacuse
-  # the ARM driver will pass options like -mfpu that the x86 cc1 cannot handle.
-  case ${target} in
-      arm-*)    arch="arm" ;;
-      i686-*)   arch="x86-32" ;;
-      x86_64-*) arch="x86-64" ;;
-  esac
-
-  mv "${XGCC}" "${XGCC_REAL}"
-  cat > "${XGCC}" <<EOF
-#!/bin/sh
-XGCC_ABSPATH=\$(cd \$(dirname \$0) && pwd)
-XGCC_NAME=\$(basename \$0)
-XGCC_REAL=\${XGCC_ABSPATH}/\${XGCC_NAME}-real
-${PNACL_GCC} \\
---driver="\${XGCC_REAL}" \\
---pnacl-allow-translate \\
---pnacl-bias=${arch} -arch ${arch} "\$@"
-EOF
-
-  chmod 755 "${XGCC}"
-
-}
-
-xgcc-unpatch() {
-  local target="$1"
-  local objdir="${TC_BUILD_LLVM_GCC1}-${target}"
-  local XGCC="${objdir}/gcc/xgcc"
-  local XGCC_REAL="${XGCC}-real"
-
-  StepBanner "GCC-${target}" "Unpatching xgcc"
-
-  # Make sure XGCC exists
-  if [ ! -f "${XGCC}" ] ; then
-    Abort "xgcc-unpatch" "Real xgcc does not exist."
-    return
-  fi
-
-  # Make sure it isn't a real ELF file
-  if ! is-shell-script "${XGCC}" ; then
-    Abort "xgcc-unpatch" "xgcc already unpatched?"
-    return
-  fi
-
-  rm "${XGCC}"
-  mv "${XGCC_REAL}" "${XGCC}"
-}
-
-xgcc-unpatch-nofail() {
-  local target="$1"
-  local objdir="${TC_BUILD_LLVM_GCC1}-${target}"
-  local XGCC="${objdir}/gcc/xgcc"
-  local XGCC_REAL="${XGCC}-real"
-
-  # If the old patch file exists, delete it.
-  if [ -f "${XGCC}" ] && is-shell-script "${XGCC}"; then
-    rm "${XGCC}"
-  fi
-
-  # If there's a real one around, move it back.
-  if [ -f "${XGCC_REAL}" ]; then
-    mv "${XGCC_REAL}" "${XGCC}"
-  fi
 }
 
 #+ gcc-stage1-install    - Install GCC stage 1
@@ -2613,37 +2485,6 @@ driver-install() {
 
 RecordRevisionInfo() {
   svn info > "${INSTALL_ROOT}/REV"
-}
-
-
-#+ organize-native-code  - Saves the native code libraries for each architecture
-#+                         into the toolchain/pnacl-untrusted/<arch> directories.
-organize-native-code() {
-  StepBanner "PNACL" "Organizing Native Code"
-
-  readonly arm_src=${INSTALL_ROOT}
-  readonly arm_llvm_gcc=${INSTALL_DIR}
-
-  StepBanner "PNaCl" "arm native code: ${PNACL_ARM_ROOT}"
-  mkdir -p ${PNACL_ARM_ROOT}
-  local startup_dir=${arm_llvm_gcc}/lib/gcc/arm-none-linux-gnueabi/${GCC_VER}
-  cp -f ${startup_dir}/libgcc.a ${PNACL_ARM_ROOT}
-  cp -f ${startup_dir}/libgcc_eh.a ${PNACL_ARM_ROOT}
-  DebugRun ls -l ${PNACL_ARM_ROOT}
-
-  StepBanner "PNaCl" "x86-32 native code: ${PNACL_X8632_ROOT}"
-  mkdir -p ${PNACL_X8632_ROOT}
-  local startup_dir=${arm_llvm_gcc}/lib/gcc/${CROSS_TARGET_X86_32}/${GCC_VER}
-  cp -f ${startup_dir}/libgcc.a ${PNACL_X8632_ROOT}
-  cp -f ${startup_dir}/libgcc_eh.a ${PNACL_X8632_ROOT}
-  DebugRun ls -l ${PNACL_X8632_ROOT}
-
-  StepBanner "PNaCl" "x86-64 native code: ${PNACL_X8664_ROOT}"
-  mkdir -p ${PNACL_X8664_ROOT}
-  local startup_dir=${arm_llvm_gcc}/lib/gcc/${CROSS_TARGET_X86_64}/${GCC_VER}
-  cp -f ${startup_dir}/libgcc.a ${PNACL_X8664_ROOT}
-  cp -f ${startup_dir}/libgcc_eh.a ${PNACL_X8664_ROOT}
-  DebugRun ls -l ${PNACL_X8664_ROOT}
 }
 
 ######################################################################
