@@ -412,5 +412,6 @@ const char* kAppLaunchHistogram = "Extensions.AppLaunch";
 #if defined(OS_CHROMEOS)
 const char* kAccessExtensionPath =
     "/usr/share/chromeos-assets/accessibility/extensions";
+const char* kChromeVoxDirectoryName = "access_chromevox";
 #endif
 }

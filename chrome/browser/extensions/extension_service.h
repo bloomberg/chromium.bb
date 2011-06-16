@@ -134,6 +134,8 @@ class ExtensionService
           root_directory(root_directory) {
     }
 
+    bool Equals(const ComponentExtensionInfo& other) const;
+
     // The extension's manifest. This is required for component extensions so
     // that ExtensionService doesn't need to go to disk to load them.
     std::string manifest;
@@ -203,6 +205,9 @@ class ExtensionService
   void register_component_extension(const ComponentExtensionInfo& info) {
     component_extension_manifests_.push_back(info);
   }
+
+  // Unregisters a component extension from the list of extensions to be loaded
+  void UnregisterComponentExtension(const ComponentExtensionInfo& info);
 
   const FilePath& install_directory() const { return install_directory_; }
 
@@ -316,6 +321,9 @@ class ExtensionService
 
   // Loads particular component extension.
   const Extension* LoadComponentExtension(const ComponentExtensionInfo& info);
+
+  // Unloads particular component extension.
+  void UnloadComponentExtension(const ComponentExtensionInfo& info);
 
   // Loads all known extensions (used by startup and testing code).
   void LoadAllExtensions();

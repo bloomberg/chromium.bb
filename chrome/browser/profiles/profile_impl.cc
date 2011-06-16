@@ -552,7 +552,7 @@ void ProfileImpl::RegisterComponentExtensions() {
   if (g_browser_process->local_state()->
       GetBoolean(prefs::kAccessibilityEnabled)) {
     FilePath path = FilePath(extension_misc::kAccessExtensionPath)
-        .AppendASCII("access_chromevox");
+        .AppendASCII(extension_misc::kChromeVoxDirectoryName);
     std::string manifest =
         ResourceBundle::GetSharedInstance().GetRawDataResource(
             IDR_CHROMEVOX_MANIFEST).as_string();

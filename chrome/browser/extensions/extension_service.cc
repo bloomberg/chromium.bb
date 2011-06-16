@@ -191,6 +191,11 @@ void SimpleExtensionLoadPrompt::InstallUIAbort() {
 
 }  // namespace
 
+bool ExtensionService::ComponentExtensionInfo::Equals(
+    const ComponentExtensionInfo& other) const {
+  return other.manifest == manifest && other.root_directory == root_directory;
+}
+
 ExtensionService::ExtensionRuntimeData::ExtensionRuntimeData()
     : background_page_ready(false),
       being_upgraded(false) {
@@ -573,6 +578,18 @@ const ExtensionList* ExtensionService::terminated_extensions() const {
 
 PendingExtensionManager* ExtensionService::pending_extension_manager() {
   return &pending_extension_manager_;
+}
+
+void ExtensionService::UnregisterComponentExtension(
+    const ComponentExtensionInfo& info) {
+  RegisteredComponentExtensions new_component_extension_manifests;
+  for (RegisteredComponentExtensions::iterator it =
+           component_extension_manifests_.begin();
+       it != component_extension_manifests_.end(); ++it) {
+    if (!it->Equals(info))
+      new_component_extension_manifests.push_back(*it);
+  }
+  component_extension_manifests_.swap(new_component_extension_manifests);
 }
 
 ExtensionService::~ExtensionService() {
@@ -965,6 +982,27 @@ const Extension* ExtensionService::LoadComponentExtension(
   }
   AddExtension(extension);
   return extension;
+}
+
+void ExtensionService::UnloadComponentExtension(
+    const ComponentExtensionInfo& info) {
+  JSONStringValueSerializer serializer(info.manifest);
+  scoped_ptr<Value> manifest(serializer.Deserialize(NULL, NULL));
+  if (!manifest.get()) {
+    DLOG(ERROR) << "Failed to parse manifest for extension";
+    return;
+  }
+  std::string public_key;
+  std::string public_key_bytes;
+  std::string id;
+  if (!static_cast<DictionaryValue*>(manifest.get())->
+      GetString(extension_manifest_keys::kPublicKey, &public_key) ||
+      !Extension::ParsePEMKeyBytes(public_key, &public_key_bytes) ||
+      !Extension::GenerateId(public_key_bytes, &id)) {
+    DLOG(ERROR) << "Failed to get extension id";
+    return;
+  }
+  UnloadExtension(id, UnloadedExtensionInfo::DISABLE);
 }
 
 void ExtensionService::LoadAllExtensions() {

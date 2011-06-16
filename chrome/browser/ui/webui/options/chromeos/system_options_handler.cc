@@ -11,16 +11,24 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/json_value_serializer.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/language_preferences.h"
+#include "chrome/browser/extensions/extension_accessibility_api.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/options/chromeos/system_settings_provider.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/extensions/extension.h"
+#include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 
 SystemOptionsHandler::SystemOptionsHandler()
     : chromeos::CrosOptionsPageUIHandler(
@@ -96,6 +104,26 @@ void SystemOptionsHandler::AccessibilityChangeCallback(const ListValue* args) {
   std::string checked_str;
   args->GetString(0, &checked_str);
   bool accessibility_enabled = (checked_str == "true");
+
   PrefService* pref_service = g_browser_process->local_state();
   pref_service->SetBoolean(prefs::kAccessibilityEnabled, accessibility_enabled);
+
+  ExtensionAccessibilityEventRouter::GetInstance()->
+      SetAccessibilityEnabled(accessibility_enabled);
+
+  // Load/Unload ChromeVox
+  ExtensionService* extension_service =
+      web_ui_->tab_contents()->profile()->GetExtensionService();
+  std::string manifest = ResourceBundle::GetSharedInstance().
+      GetRawDataResource(IDR_CHROMEVOX_MANIFEST).as_string();
+  FilePath path = FilePath(extension_misc::kAccessExtensionPath)
+      .AppendASCII(extension_misc::kChromeVoxDirectoryName);
+  ExtensionService::ComponentExtensionInfo info(manifest, path);
+  if (accessibility_enabled) { // Load ChromeVox
+    extension_service->register_component_extension(info);
+    extension_service->LoadComponentExtension(info);
+  } else { // Unload ChromeVox
+    extension_service->UnloadComponentExtension(info);
+    extension_service->UnregisterComponentExtension(info);
+  }
 }

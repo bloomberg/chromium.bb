@@ -384,6 +384,7 @@ namespace extension_misc {
   // The directory path on a ChromeOS device where accessibility extensions are
   // stored.
   extern const char* kAccessExtensionPath;
+  extern const char* kChromeVoxDirectoryName;
 #endif
 
   // What causes an extension to be installed? Used in histograms, so don't
