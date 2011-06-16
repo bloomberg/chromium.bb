@@ -12,7 +12,6 @@
 var remoting = chrome.extension.getBackgroundPage().remoting;
 remoting.CLIENT_MODE='client';
 remoting.HOST_MODE='host';
-remoting.PLUGIN_MIMETYPE='HOST_PLUGIN_MIMETYPE';
 remoting.XMPP_LOGIN_NAME = 'xmpp_login';
 remoting.HOST_PLUGIN_ID = 'host-plugin-id';
 

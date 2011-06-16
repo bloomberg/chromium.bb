@@ -32,6 +32,25 @@
         'plugin_prefix': '',
       }],
     ],
+    'remoting_it2me_files': [
+      'webapp/me2mom/background.html',
+      'webapp/me2mom/background.js',
+      'webapp/me2mom/choice.css',
+      'webapp/me2mom/choice.html',
+      'webapp/me2mom/chromoting128.png',
+      'webapp/me2mom/debug_log.css',
+      'webapp/me2mom/debug_log.js',
+      'webapp/me2mom/dividerbottom.png',
+      'webapp/me2mom/dividertop.png',
+      'webapp/me2mom/main.css',
+      'webapp/me2mom/manifest.json',
+      'webapp/me2mom/oauth2.js',
+      'webapp/me2mom/plugin_settings.js',
+      'webapp/me2mom/remoting.js',
+      'webapp/me2mom/remoting_session.css',
+      'webapp/me2mom/remoting_session.html',
+      'webapp/me2mom/remoting_session.js',
+    ],
   },
 
   'target_defaults': {
@@ -212,9 +231,7 @@
       ],
       'sources': [
         'webapp/build-webapp.py',
-      ],
-      'sources!': [
-        'webapp/build-webapp.py',
+        '<@(remoting_it2me_files)',
       ],
       # Can't use a 'copies' because we need to manipulate
       # the manifest file to get the right plugin name.
@@ -225,18 +242,25 @@
       'actions': [
         {
           'action_name': 'Build It2Me WebApp',
+          'output_dir': '<(PRODUCT_DIR)/remoting/it2me.webapp',
+          'plugin_path': '<(PRODUCT_DIR)/<(plugin_prefix)remoting_host_plugin.<(plugin_extension)',
+          'zip_path': '<(PRODUCT_DIR)/remoting_it2me.zip',
           'inputs': [
-            'webapp/me2mom/',
-            '<(PRODUCT_DIR)/<(plugin_prefix)remoting_host_plugin.<(plugin_extension)',
+            'webapp/build-webapp.py',
+            '<(_plugin_path)',
+            '<@(remoting_it2me_files)',
           ],
           'outputs': [
-            '<(PRODUCT_DIR)/remoting/remoting-it2me.webapp',
+            '<(_output_dir)',
+            '<(_zip_path)',
           ],
           'action': [
             'python', 'webapp/build-webapp.py',
             '<(host_plugin_mime_type)',
-            '<@(_inputs)',
-            '<@(_outputs)'
+            '<(_output_dir)',
+            '<(_zip_path)',
+            '<(_plugin_path)',
+            '<@(remoting_it2me_files)',
           ],
         },
       ],
