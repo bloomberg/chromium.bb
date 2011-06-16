@@ -176,8 +176,7 @@ void TypedUrlChangeProcessor::HandleURLsVisited(
   }
   sync_pb::TypedUrlSpecifics typed_url(update_node.GetTypedUrlSpecifics());
   typed_url.add_visits(visits.back().visit_time.ToInternalValue());
-  typed_url.add_visit_transitions(
-      visits.back().transition & PageTransition::CORE_MASK);
+  typed_url.add_visit_transitions(visits.back().transition);
   update_node.SetTypedUrlSpecifics(typed_url);
 }
 

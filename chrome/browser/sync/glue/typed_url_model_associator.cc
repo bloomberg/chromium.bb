@@ -158,6 +158,7 @@ bool TypedUrlModelAssociator::AssociateModels() {
 
     // Now walk the sync nodes and detect any URLs that exist there, but not in
     // the history DB, so we can add them to our local history DB.
+    std::vector<int64> obsolete_nodes;
     int64 sync_child_id = typed_url_root.GetFirstChildId();
     while (sync_child_id != sync_api::kInvalidId) {
       sync_api::ReadNode sync_child_node(&trans);
@@ -171,9 +172,10 @@ bool TypedUrlModelAssociator::AssociateModels() {
       sync_child_id = sync_child_node.GetSuccessorId();
 
       // Ignore old sync nodes that don't have any transition data stored with
-      // them.
+      // them (will be deleted below).
       if (typed_url.visit_transitions_size() == 0) {
-        VLOG(1) << "Ignoring obsolete sync node with no visit transition info.";
+        VLOG(1) << "Deleting obsolete sync node with no visit transition info.";
+        obsolete_nodes.push_back(sync_child_node.GetId());
         continue;
       }
 
@@ -189,8 +191,8 @@ bool TypedUrlModelAssociator::AssociateModels() {
 
         for (int c = 0; c < typed_url.visits_size(); ++c) {
           DCHECK(c == 0 || typed_url.visits(c) > typed_url.visits(c - 1));
-          DCHECK_LE(typed_url.visit_transitions(c),
-                    static_cast<int>(PageTransition::LAST_CORE));
+          DCHECK_LE(typed_url.visit_transitions(c) & PageTransition::CORE_MASK,
+                    PageTransition::LAST_CORE);
           visits.push_back(history::VisitInfo(
               base::Time::FromInternalValue(typed_url.visits(c)),
               static_cast<PageTransition::Type>(
@@ -199,6 +201,21 @@ bool TypedUrlModelAssociator::AssociateModels() {
 
         Associate(&typed_url.url(), sync_child_node.GetId());
         new_urls.push_back(new_url);
+      }
+    }
+
+    // If we encountered any obsolete nodes, remove them so they don't hang
+    // around and confuse people looking at the sync node browser.
+    if (!obsolete_nodes.empty()) {
+      for (std::vector<int64>::const_iterator it = obsolete_nodes.begin();
+           it != obsolete_nodes.end();
+           ++it) {
+        sync_api::WriteNode sync_node(&trans);
+        if (!sync_node.InitByIdLookup(*it)) {
+          LOG(ERROR) << "Failed to fetch obsolete node.";
+          return false;
+        }
+        sync_node.Remove();
       }
     }
   }
@@ -503,8 +520,7 @@ void TypedUrlModelAssociator::WriteToSyncNode(
   for (history::VisitVector::const_iterator visit = visits.begin();
        visit != visits.end(); ++visit) {
     typed_url.add_visits(visit->visit_time.ToInternalValue());
-    typed_url.add_visit_transitions(
-        visit->transition & PageTransition::CORE_MASK);
+    typed_url.add_visit_transitions(visit->transition);
   }
 
   node->SetTypedUrlSpecifics(typed_url);
