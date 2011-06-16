@@ -49,16 +49,19 @@ function FileManager(dialogDom, rootEntries, params) {
   this.commands_ = {};
 
   this.document_ = dialogDom.ownerDocument;
-  this.dialogType_ =
-    this.params_.type || FileManager.DialogType.FULL_PAGE;
+  this.dialogType_ = this.params_.type || FileManager.DialogType.FULL_PAGE;
 
   this.defaultPath_ = this.params_.defaultPath || '/';
 
   // Optional list of file types.
   this.fileTypes_ = this.params_.typeList;
 
-  // This is set to just the directory portion of defaultPath in initDialogType.
-  this.defaultFolder_ = '/';
+  var ary = this.defaultPath_.match(/^\/home\/[^\/]+\/user\/Downloads(\/.*)?$/);
+  if (ary) {
+    // Chrome will probably suggest the full path to Downloads, but
+    // we're working with 'virtual paths', so we have to translate.
+    this.defaultPath_ = '/Downloads' + (ary[1] || '');
+  }
 
   this.showCheckboxes_ =
       (this.dialogType_ == FileManager.DialogType.FULL_PAGE ||
@@ -76,10 +79,10 @@ function FileManager(dialogDom, rootEntries, params) {
   this.initCommands_();
   this.initDom_();
   this.initDialogType_();
+  this.initDefaultDirectory_();
 
   this.summarizeSelection_();
   this.updatePreview_();
-  this.changeDirectory(this.defaultFolder_);
 
   chrome.fileBrowserPrivate.onDiskChanged.addListener(
       this.onDiskChanged_.bind(this));
@@ -118,6 +121,12 @@ FileManager.prototype = {
    * storage volumes.
    */
   const MEDIA_DIRECTORY = '/media';
+
+  /**
+   * Mnemonics for the second parameter of the changeDirectory method.
+   */
+  const CD_WITH_HISTORY = true;
+  const CD_NO_HISTORY = false;
 
   /**
    * Translated strings.
@@ -593,7 +602,9 @@ FileManager.prototype = {
    */
   FileManager.prototype.onRenameCanExecute_ = function(event) {
     event.canExecute =
-        (// Rename not in progress.
+        (// Initialized to the point where we have a current directory
+         this.currentDirEntry_ &&
+         // Rename not in progress.
          !this.renameInput_.currentEntry &&
          // Not in root directory.
          this.currentDirEntry_.fullPath != '/' &&
@@ -608,7 +619,9 @@ FileManager.prototype = {
    */
   FileManager.prototype.onDeleteCanExecute_ = function(event) {
     event.canExecute =
-        (// Rename not in progress.
+        (// Initialized to the point where we have a current directory
+         this.currentDirEntry_ &&
+         // Rename not in progress.
          !this.renameInput_.currentEntry &&
          // Not in root directory.
          this.currentDirEntry_.fullPath != '/' &&
@@ -737,7 +750,7 @@ FileManager.prototype = {
    * Respond to the back button.
    */
   FileManager.prototype.onPopState_ = function(event) {
-    this.changeDirectory(event.state, false);
+    this.changeDirectory(event.state, CD_NO_HISTORY);
   };
 
   /**
@@ -755,13 +768,102 @@ FileManager.prototype = {
 
     if (this.listType_ == FileManager.ListType.THUMBNAIL) {
       var self = this;
-      setTimeout(function () {
+      setTimeout(function() {
           self.grid_.columns = 0;
           self.grid_.redraw();
       }, 0);
     } else {
       this.currentList_.redraw();
     }
+  };
+
+  /**
+   * Resolve a path to either a DirectoryEntry or a FileEntry, regardless of
+   * whether the path is a directory or file.
+   *
+   * @param path {string} The path to be resolved.
+   * @param resultCallback{function(Entry)} Called back when a path is
+   *     successfully resolved.  Entry will be either a DirectoryEntry or
+   *     a FileEntry.
+   * @param errorCallback{function(FileError)} Called back if an unexpected
+   *     error occurs while resolving the path.
+   */
+  FileManager.prototype.resolvePath = function(
+      path, resultCallback, errorCallback) {
+    if (path == '' || path == '/') {
+      resultCallback(this.filesystem_.root);
+      return;
+    }
+
+    var root = this.filesystem_.root;
+    root.getFile(
+        path, {create: false},
+        resultCallback,
+        function (err) {
+          if (err.code == FileError.TYPE_MISMATCH_ERR) {
+            // Bah.  It's a directory, ask again.
+            root.getDirectory(
+                path, {create: false},
+                resultCallback,
+                errorCallback);
+            } else  {
+              errorCallback(err);
+            }
+        });
+  };
+
+  FileManager.prototype.initDefaultDirectory_ = function() {
+    // Split the dirname from the basename.
+    var ary = this.defaultPath_.match(/^(.*?)(?:\/([^\/]+))?$/);
+    if (!ary) {
+      console.warn('Unable to split default path: ' + path);
+      self.changeDirectory('/', CD_NO_HISTORY);
+      return;
+    }
+
+    var baseName = ary[1];
+    var leafName = ary[2];
+
+    var self = this;
+
+    function onBaseFound(baseDirEntry) {
+      if (!leafName) {
+        // Default path is just a directory, cd to it and we're done.
+        self.changeDirectoryEntry(baseDirEntry, CD_NO_HISTORY);
+        return;
+      }
+
+      function onLeafFound(leafEntry) {
+        if (leafEntry.isDirectory) {
+          self.changeDirectoryEntry(leafEntry, CD_NO_HISTORY);
+          return;
+        }
+
+        // Leaf is an existing file, cd to its parent directory and select it.
+        self.changeDirectoryEntry(baseDirEntry, CD_NO_HISTORY, leafEntry.name);
+      }
+
+      function onLeafError(err) {
+        if (err = FileError.NOT_FOUND_ERR) {
+          // Leaf does not exist, it's just a suggested file name.
+          self.changeDirectoryEntry(baseDirEntry, CD_NO_HISTORY);
+          self.filenameInput_.value = leafName;
+        } else {
+          console.log('Unexpected error resolving default leaf: ' + err);
+          self.changeDirectoryEntry('/', CD_NO_HISTORY);
+        }
+      }
+
+      self.resolvePath(self.defaultPath_, onLeafFound, onLeafError);
+    }
+
+    function onBaseError(err) {
+      console.log('Unexpected error resolving default base: ' + err);
+      self.changeDirectory('/', CD_NO_HISTORY);
+    }
+
+    this.filesystem_.root.getDirectory(
+        baseName, {create: false}, onBaseFound, onBaseError);
   };
 
   /**
@@ -772,58 +874,25 @@ FileManager.prototype = {
     var defaultTitle;
     var okLabel = str('OPEN_LABEL');
 
-    // Split the dirname from the basename.
-    var ary = this.defaultPath_.match(/^(.*?)(?:\/([^\/]+))?$/);
-    var defaultFolder;
-    var defaultTarget;
-
-    if (!ary) {
-      console.warn('Unable to split defaultPath: ' + defaultPath);
-      ary = [];
-    }
-
     switch (this.dialogType_) {
       case FileManager.DialogType.SELECT_FOLDER:
         defaultTitle = str('SELECT_FOLDER_TITLE');
-        defaultFolder = ary[1] || '/';
-        defaultTarget = ary[2] || '';
         break;
 
       case FileManager.DialogType.SELECT_OPEN_FILE:
         defaultTitle = str('SELECT_OPEN_FILE_TITLE');
-        defaultFolder = ary[1] || '/';
-        defaultTarget = '';
-
-        if (ary[2]) {
-          console.warn('Open should NOT have provided a default ' +
-                       'filename: ' + ary[2]);
-        }
         break;
 
       case FileManager.DialogType.SELECT_OPEN_MULTI_FILE:
         defaultTitle = str('SELECT_OPEN_MULTI_FILE_TITLE');
-        defaultFolder = ary[1] || '/';
-        defaultTarget = '';
-
-        if (ary[2]) {
-          console.warn('Multi-open should NOT have provided a default ' +
-                       'filename: ' + ary[2]);
-        }
         break;
 
       case FileManager.DialogType.SELECT_SAVEAS_FILE:
         defaultTitle = str('SELECT_SAVEAS_FILE_TITLE');
         okLabel = str('SAVE_LABEL');
-
-        defaultFolder = ary[1] || '/';
-        defaultTarget = ary[2] || '';
-        if (!defaultTarget)
-          console.warn('Save-as should have provided a default filename.');
         break;
 
       case FileManager.DialogType.FULL_PAGE:
-        defaultFolder = ary[1] || '/';
-        defaultTarget = ary[2] || '';
         break;
 
       default:
@@ -834,19 +903,6 @@ FileManager.prototype = {
 
     dialogTitle = this.params_.title || defaultTitle;
     this.dialogDom_.querySelector('.dialog-title').textContent = dialogTitle;
-
-    ary = defaultFolder.match(/^\/home\/[^\/]+\/user\/Downloads(\/.*)?$/);
-    if (ary) {
-        // Chrome will probably suggest the full path to Downloads, but
-        // we're working with 'virtual paths', so we have to translate.
-        // TODO(rginda): Maybe chrome should have suggested the correct place
-        // to begin with, but that would mean it would have to treat the
-        // file manager dialogs differently than the native ones.
-        defaultFolder = '/Downloads' + (ary[1] || '');
-      }
-
-    this.defaultFolder_ = defaultFolder;
-    this.filenameInput_.value = defaultTarget;
   };
 
   /**
@@ -1422,8 +1478,20 @@ FileManager.prototype = {
     });
   };
 
+  FileManager.prototype.selectEntry = function(name) {
+    for (var i = 0; i < this.dataModel_.length; i++) {
+      if (this.dataModel_.item(i).name == name) {
+        this.currentList_.selectionModel.selectedIndex = i;
+        this.currentList_.scrollIndexIntoView(i);
+        this.currentList_.focus();
+        return;
+      }
+    }
+  };
+
   /**
-   * Change the current directory.
+   * Change the current directory to the directory represented by a
+   * DirectoryEntry.
    *
    * Dispatches the 'directory-changed' event when the directory is successfully
    * changed.
@@ -1431,42 +1499,68 @@ FileManager.prototype = {
    * @param {string} path The absolute path to the new directory.
    * @param {bool} opt_saveHistory Save this in the history stack (defaults
    *     to true).
+   * @param {string} opt_selectedEntry The name of the file to select after
+   *     changing directories.
    */
-  FileManager.prototype.changeDirectory = function(path, opt_saveHistory) {
-    var self = this;
+  FileManager.prototype.changeDirectoryEntry = function(dirEntry,
+                                                        opt_saveHistory,
+                                                        opt_selectedEntry) {
+    if (this.currentDirEntry_ &&
+        this.currentDirEntry_.fullPath == dirEntry.fullPath) {
+      // Directory didn't actually change.
+      if (opt_selectedEntry)
+        this.selectEntry(opt_selectedEntry);
+      return;
+    }
 
-    if (arguments.length == 1) {
+    if (typeof opt_saveHistory == 'undefined') {
       opt_saveHistory = true;
     } else {
       opt_saveHistory = !!opt_saveHistory;
     }
 
-    function onPathFound(dirEntry) {
-      if (self.currentDirEntry_ &&
-          self.currentDirEntry_.fullPath == dirEntry.fullPath) {
-        // Directory didn't actually change.
-        return;
-      }
+    var e = new cr.Event('directory-changed');
+    e.previousDirEntry = this.currentDirEntry_;
+    e.newDirEntry = dirEntry;
+    e.saveHistory = opt_saveHistory;
+    e.selectedEntry = opt_selectedEntry;
+    this.currentDirEntry_ = dirEntry;
+    this.dispatchEvent(e);
+  }
 
-      var e = new cr.Event('directory-changed');
-      e.previousDirEntry = self.currentDirEntry_;
-      e.newDirEntry = dirEntry;
-      e.saveHistory = opt_saveHistory;
-      self.currentDirEntry_ = dirEntry;
-      self.dispatchEvent(e);
-    };
-
+  /**
+   * Change the current directory to the directory represented by a string
+   * path.
+   *
+   * Dispatches the 'directory-changed' event when the directory is successfully
+   * changed.
+   *
+   * @param {string} path The absolute path to the new directory.
+   * @param {bool} opt_saveHistory Save this in the history stack (defaults
+   *     to true).
+   * @param {string} opt_selectedEntry The name of the file to select after
+   *     changing directories.
+   */
+  FileManager.prototype.changeDirectory = function(path,
+                                                   opt_saveHistory,
+                                                   opt_selectedEntry) {
     if (path == '/')
-      return onPathFound(this.filesystem_.root);
+      return this.changeDirectoryEntry(this.filesystem_.root);
+
+    var self = this;
 
     this.filesystem_.root.getDirectory(
-        path, {create: false}, onPathFound,
+        path, {create: false},
+        function(dirEntry) {
+          self.changeDirectoryEntry(
+              dirEntry, opt_saveHistory, opt_selectedEntry);
+        },
         function(err) {
           console.error('Error changing directory to: ' + path + ', ' + err);
           if (!self.currentDirEntry_) {
             // If we've never successfully changed to a directory, force them
             // to the root.
-            self.changeDirectory('/');
+            self.changeDirectory('/', false);
           }
         });
   };
@@ -1695,7 +1789,12 @@ FileManager.prototype = {
          this.currentDirEntry_.fullPath == MEDIA_DIRECTORY);
 
     this.document_.title = this.currentDirEntry_.fullPath;
-    this.rescanDirectory_();
+
+    var self = this;
+    this.rescanDirectory_(function() {
+        if (event.selectedEntry)
+          self.selectEntry(event.selectedEntry);
+      });
   };
 
   /**
@@ -1925,16 +2024,7 @@ FileManager.prototype = {
 
     var self = this;
     function onSuccess() {
-      self.rescanDirectory_(function () {
-        for (var i = 0; i < self.dataModel_.length; i++) {
-          if (self.dataModel_.item(i).name == newName) {
-            self.currentList_.selectionModel.selectedIndex = i;
-            self.currentList_.scrollIndexIntoView(i);
-            self.currentList_.focus();
-            return;
-          }
-        }
-      });
+      self.rescanDirectory_(function() { self.selectEntry(newName) });
     }
 
     function onError(err) {
@@ -1990,16 +2080,7 @@ FileManager.prototype = {
     var self = this;
 
     function onSuccess(dirEntry) {
-      self.rescanDirectory_(function () {
-        for (var i = 0; i < self.dataModel_.length; i++) {
-          if (self.dataModel_.item(i).name == dirEntry.name) {
-            self.currentList_.selectionModel.selectedIndex = i;
-            self.currentList_.scrollIndexIntoView(i);
-            self.currentList_.focus();
-            return;
-          }
-        }
-      });
+      self.rescanDirectory_(function() { self.selectEntry(name) });
     }
 
     function onError(err) {
