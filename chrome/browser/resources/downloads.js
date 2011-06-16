@@ -620,6 +620,7 @@ function tryDownloadUpdatedPeriodically() {
 
 // Add handlers to HTML elements.
 document.body.onload = load;
+document.body.oncontextmenu = function() { return false; }
 $('clear-all').onclick = function () { clearAll(''); };
 $('search-link').onclick = function () {
   setSearch('');
