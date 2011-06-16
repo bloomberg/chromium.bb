@@ -148,13 +148,13 @@ def _RemoveDirs(dir_name):
     shutil.rmtree(dir_name)
 
 
-def _CreateSymlink(src_file, dest_file, remove_file=None):
+def CreateSymlink(src_file, dest_file, remove_file=None):
   """Creates a relative symlink from src to dest with optional removal of file.
 
   More robust symlink creation that creates a relative symlink from src_file to
   dest_file.  Also if remove_file is set, removes symlink there.
 
-  This is useful for multiple calls of _CreateSymlink where you are using
+  This is useful for multiple calls of CreateSymlink where you are using
   the dest_file location to store information about the status of the src_file.
 
   Args:
@@ -546,7 +546,7 @@ class BuildSpecsManager(object):
     src_file = '%s.xml' % os.path.join(self.all_specs_dir, self.current_version)
     logging.debug('Setting build in flight  %s: %s', src_file, dest_file)
     self._PrepSpecChanges()
-    _CreateSymlink(src_file, dest_file)
+    CreateSymlink(src_file, dest_file)
     self._PushSpecChanges(message)
 
   def _SetFailed(self, message):
@@ -560,7 +560,7 @@ class BuildSpecsManager(object):
                                           self.current_version)
     logging.debug('Setting build to failed  %s: %s', src_file, dest_file)
     self._PrepSpecChanges()
-    _CreateSymlink(src_file, dest_file, remove_file)
+    CreateSymlink(src_file, dest_file, remove_file)
     self._PushSpecChanges(message)
 
   def _SetPassed(self, message):
@@ -574,7 +574,7 @@ class BuildSpecsManager(object):
                                           self.current_version)
     logging.debug('Setting build to passed  %s: %s', src_file, dest_file)
     self._PrepSpecChanges()
-    _CreateSymlink(src_file, dest_file, remove_file)
+    CreateSymlink(src_file, dest_file, remove_file)
     self._PushSpecChanges(message)
 
   def _PrepSpecChanges(self):

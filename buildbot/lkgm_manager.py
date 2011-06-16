@@ -16,6 +16,11 @@ from chromite.buildbot import manifest_version
 from chromite.lib import cros_build_lib as cros_lib
 
 
+class PromoteCandidateException(Exception):
+  """Exception thrown for failure to promote manifest candidate."""
+  pass
+
+
 def _SyncGitRepo(local_dir):
   """"Clone Given git repo
   Args:
@@ -92,6 +97,9 @@ class LKGMManager(manifest_version.BuildSpecsManager):
   # Sub-directories for LKGM and Chrome LKGM's.
   LKGM_SUBDIR = 'LKGM-candidates'
   CHROME_PFQ_SUBDIR = 'chrome-LKGM-candidates'
+
+  # Set path in repository to keep latest approved LKGM manifest.
+  LKGM_PATH = 'LKGM/lkgm.xml'
 
   def __init__(self, source_dir, checkout_repo, manifest_repo, branch,
                build_name, build_type, clobber=False,
@@ -260,7 +268,29 @@ class LKGMManager(manifest_version.BuildSpecsManager):
 
     return builder_statuses
 
-  def PromoteCandidate(self):
+  def PromoteCandidate(self, retries=5):
     """Promotes the current LKGM candidate to be a real versioned LKGM."""
-    # TODO(sosa): Implement
-    pass
+    assert self.current_version, 'No current manifest exists.'
+
+    path_to_candidate = self.GetLocalManifest(self.current_version)
+    path_to_lkgm = os.path.join(self.manifests_dir, self.LKGM_PATH)
+    assert os.path.exists(path_to_candidate), 'Candidate not found locally.'
+
+    # This may potentially fail for not being at TOT while pushing.
+    for index in range(0, retries + 1):
+      try:
+        self._PrepSpecChanges()
+        manifest_version.CreateSymlink(path_to_candidate, path_to_lkgm)
+        cros_lib.RunCommand(['git', 'add', self.LKGM_PATH],
+                            cwd=self.manifests_dir)
+        self._PushSpecChanges('Automatic: %s promoting %s to LKGM' % (
+                                  self.build_name, self.current_version))
+        return
+      except (manifest_version.GitCommandException,
+              cros_lib.RunCommandError) as e:
+          last_error = 'Failed to promote manifest. error: %s' % e
+          logging.error(last_error)
+          logging.error('Retrying to promote manifest:  Retry %d/%d' %
+                        (index + 1, retries))
+    else:
+      raise PromoteCandidateException(last_error)

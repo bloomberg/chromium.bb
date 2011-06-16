@@ -47,6 +47,7 @@ class Results:
   # completed successfully.
   SUCCESS = "Stage was successful"
   SKIPPED = "Stage skipped because successful on previous run"
+  FORGIVEN = "Stage failed but was optional"
 
   @classmethod
   def Clear(cls):
@@ -65,14 +66,31 @@ class Results:
 
   @classmethod
   def Success(cls):
-    """Return true if all stages so far have passed."""
+    """Return true if all stages so far have passed.
+
+    This method returns true if all was successful or forgiven.
+    """
     for entry in cls._results_log:
       _, result, _, _ = entry
 
-      if not result in (cls.SUCCESS, cls.SKIPPED):
+      if not result in (cls.SUCCESS, cls.SKIPPED, cls.FORGIVEN):
         return False
 
     return True
+
+  @classmethod
+  def WasStageSuccessfulOrSkipped(cls, name):
+    """Return true stage passed."""
+    for entry in cls._results_log:
+      entry, result, _, _ = entry
+
+      if entry == name:
+        if result not in (cls.SUCCESS, cls.SKIPPED):
+          return False
+        else:
+          return True
+
+    return False
 
   @classmethod
   def Record(cls, name, result, description=None, time=0):
@@ -89,6 +107,28 @@ class Results:
            The textual backtrace of the exception, or None
     """
     cls._results_log.append((name, result, description, time))
+
+  @classmethod
+  def UpdateResult(cls, name, result, description=None):
+    """Updates a stage result.with a different result.
+
+       Args:
+         name: The name of the stage
+         result:
+           Result should be one of:
+             Results.SUCCESS if the stage was successful.
+             Results.SKIPPED if the stage was completed in a previous run.
+             The exception the stage errored with.
+          description:
+           The textual backtrace of the exception, or None
+    """
+    for index in range(len(cls._results_log)):
+      if cls._results_log[index][0] == name: break
+    else:
+      return
+
+    _, _, _, time = cls._results_log[index]
+    cls._results_log[index] = name, result, description, time
 
   @classmethod
   def Get(cls):
@@ -155,6 +195,10 @@ class Results:
         # The stage was executed previously, and skipped this time
         file.write('%s %s previously completed\n' %
                    (edge, name))
+      elif result == cls.FORGIVEN:
+        # The stage was executed previously, and skipped this time
+        file.write('%s FAILED BUT FORGIVEN %s (%s)\n' %
+                   (edge, name, timestr))
       else:
         if type(result) in (cros_lib.RunCommandException,
                             cros_lib.RunCommandError):
@@ -184,6 +228,7 @@ class Results:
       file.write('\n')
       file.write(first_exception)
 
+
 class BuilderStage(object):
   """Parent class for stages to be performed by a builder."""
   name_stage_re = re.compile('(\w+)Stage')
@@ -206,8 +251,8 @@ class BuilderStage(object):
     self._bot_id = bot_id
     self._options = options
     self._build_config = build_config
-    self._name = self.name_stage_re.match(self.__class__.__name__).group(1)
     self._prebuilt_type = None
+    self.name = self.name_stage_re.match(self.__class__.__name__).group(1)
     self._ExtractVariables()
     repo_dir = os.path.join(self._build_root, '.repo')
     if not self._options.clobber and os.path.isdir(repo_dir):
@@ -314,15 +359,15 @@ class BuilderStage(object):
     """Can be overridden.  Called before a stage is performed."""
 
     # Tell the buildbot we are starting a new step for the waterfall
-    print '@@@BUILD_STEP %s@@@\n' % self._name
+    print '@@@BUILD_STEP %s@@@\n' % self.name
 
     self._PrintLoudly('Start Stage %s - %s\n\n%s' % (
-        self._name, time.strftime('%H:%M:%S'), self.__doc__))
+        self.name, time.strftime('%H:%M:%S'), self.__doc__))
 
   def _Finish(self):
     """Can be overridden.  Called after a stage has been performed."""
     self._PrintLoudly('Finished Stage %s - %s' %
-                      (self._name, time.strftime('%H:%M:%S')))
+                      (self.name, time.strftime('%H:%M:%S')))
 
   def _PerformStage(self):
     """Subclassed stages must override this function to perform what they want
@@ -330,35 +375,61 @@ class BuilderStage(object):
     """
     pass
 
+  def _HandleStageException(self, exception):
+    """Called when _PerformStages throws an exception.  Can be overriden.
+
+    Should return result, description.  Description should be None if result
+    is not an exception.
+    """
+    # Tell the user about the exception, and record it
+    description = traceback.format_exc()
+    print >> sys.stderr, description
+    return exception, description
+
   def Run(self):
     """Have the builder execute the stage."""
 
-    if Results.PreviouslyCompleted(self._name):
-      self._PrintLoudly('Skipping Stage %s' % self._name)
-      Results.Record(self._name, Results.SKIPPED)
+    if Results.PreviouslyCompleted(self.name):
+      self._PrintLoudly('Skipping Stage %s' % self.name)
+      Results.Record(self.name, Results.SKIPPED)
       return
 
     start_time = time.time()
+
+    # Set default values
+    result = Results.SUCCESS
+    description = None
 
     self._Begin()
     try:
       self._PerformStage()
     except Exception as e:
-      # Tell the user about the exception, and record it
-      description = traceback.format_exc()
-      print >> sys.stderr, description
-      elapsed_time = time.time() - start_time
-      Results.Record(self._name, e, description, time=elapsed_time)
-
       # Tell the build bot this step failed for the waterfall
       print '@@@STEP_FAILURE@@@'
-
+      result, description = self._HandleStageException(e)
       raise BuildException()
-    else:
-      elapsed_time = time.time() - start_time
-      Results.Record(self._name, Results.SUCCESS, time=elapsed_time)
     finally:
+      elapsed_time = time.time() - start_time
+      Results.Record(self.name, result, description, time=elapsed_time)
       self._Finish()
+
+
+class NonHaltingBuilderStage(BuilderStage):
+  """Build stage that fails a build but finishes the other steps."""
+  def Run(self):
+    try:
+      super(NonHaltingBuilderStage, self).Run()
+    except BuildException:
+      pass
+
+
+class ForgivingBuilderStage(NonHaltingBuilderStage):
+  """Build stage that turns a build step red but not a build."""
+  def _HandleStageException(self, exception):
+    """Override and don't set status to FAIL but FORGIVEN instead."""
+    description = traceback.format_exc()
+    print >> sys.stderr, description
+    return Results.FORGIVEN, None
 
 
 class SyncStage(BuilderStage):
@@ -492,7 +563,7 @@ class LGKMVersionedSyncStage(ManifestVersionedSyncStage):
       return self.manifest_manager.GetLatestCandidate(VERSION_FILE)
 
 
-class ManifestVersionedSyncCompletionStage(BuilderStage):
+class ManifestVersionedSyncCompletionStage(ForgivingBuilderStage):
   """Stage that records board specific results for a unique manifest file."""
 
   def __init__(self, bot_id, options, build_config, success):
@@ -526,19 +597,24 @@ class LGKMVersionedSyncCompletionStage(ManifestVersionedSyncCompletionStage):
       return
 
     super(LGKMVersionedSyncCompletionStage, self)._PerformStage()
-    if self._build_config['master']:
-      builders = self._GetImportantBuilders()
-      statuses = ManifestVersionedSyncStage.manifest_manager.GetBuildersStatus(
-          builders)
-      success = True
-      for builder in builders:
-        status = statuses[builder]
-        if status != 'pass':
-          cros_lib.Warning('Builder %s reported status %s' % (builder, status))
-          success = False
+    if not self._build_config['master']:
+      return
 
-      if not success:
-        raise ImportantBuilderFailedException()
+    builders = self._GetImportantBuilders()
+    statuses = ManifestVersionedSyncStage.manifest_manager.GetBuildersStatus(
+        builders)
+    success = True
+    for builder in builders:
+      status = statuses[builder]
+      if status != 'pass':
+        cros_lib.Warning('Builder %s reported status %s' % (builder, status))
+        success = False
+
+    if not success:
+      raise ImportantBuilderFailedException(
+          'An important build failed with this manifest.')
+    else:
+      ManifestVersionedSyncStage.manifest_manager.PromoteCandidate()
 
 
 class BuildBoardStage(BuilderStage):
@@ -709,7 +785,7 @@ class RemoteTestStatusStage(BuilderStage):
       print result.output
 
 
-class ArchiveStage(BuilderStage):
+class ArchiveStage(NonHaltingBuilderStage):
   """Archives build and test artifacts for developer consumption."""
   def _PerformStage(self):
     if self._options.buildbot:
@@ -738,7 +814,7 @@ class ArchiveStage(BuilderStage):
                           archive_dir=archive_dir)
 
 
-class PushChangesStage(BuilderStage):
+class PushChangesStage(NonHaltingBuilderStage):
   """Pushes pfq and prebuilt url changes to git."""
   def _PerformStage(self):
     if self._prebuilt_type in ('binary', 'chrome'):

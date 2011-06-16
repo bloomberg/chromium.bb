@@ -245,7 +245,7 @@ class LKGMManagerTest(mox.MoxTestBase):
   @staticmethod
   def _FinishBuilderHelper(manifest, path_for_builder, dir_pfx, status, wait=0):
     time.sleep(wait)
-    manifest_version._CreateSymlink(
+    manifest_version.CreateSymlink(
         manifest, os.path.join(path_for_builder, status, dir_pfx,
                                os.path.basename(manifest)))
 

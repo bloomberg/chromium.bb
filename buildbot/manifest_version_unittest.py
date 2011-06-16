@@ -58,11 +58,11 @@ class HelperMethodsTest(unittest.TestCase):
     destfile1 = tempfile.mktemp(dir=os.path.join(self.tmpdir, 'other_dir1'))
     destfile2 = tempfile.mktemp(dir=os.path.join(self.tmpdir, 'other_dir2'))
 
-    manifest_version._CreateSymlink(srcfile, destfile1, remove_file=None)
+    manifest_version.CreateSymlink(srcfile, destfile1, remove_file=None)
     self.assertTrue(os.path.lexists(destfile1),
                     'Unable to create symlink to %s' % destfile1)
 
-    manifest_version._CreateSymlink(srcfile, destfile2, remove_file=destfile1)
+    manifest_version.CreateSymlink(srcfile, destfile2, remove_file=destfile1)
     self.assertTrue(os.path.lexists(destfile2),
                     'Unable to create symlink to %s' % destfile2)
     self.assertFalse(os.path.lexists(destfile1),
@@ -200,9 +200,9 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
     TouchFile(m4)
 
     # Fail 1, pass 2, leave 3,4 unprocessed.
-    manifest_version._CreateSymlink(m1, os.path.join(for_build, 'fail', dir_pfx,
+    manifest_version.CreateSymlink(m1, os.path.join(for_build, 'fail', dir_pfx,
                                                      os.path.basename(m1)))
-    manifest_version._CreateSymlink(m1, os.path.join(for_build, 'pass', dir_pfx,
+    manifest_version.CreateSymlink(m1, os.path.join(for_build, 'pass', dir_pfx,
                                                      os.path.basename(m2)))
     manifest_version._RemoveDirs(self.manager.manifests_dir)
     manifest_version._CloneGitRepo(self.manager.manifests_dir,

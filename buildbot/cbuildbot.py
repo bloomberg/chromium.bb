@@ -94,15 +94,15 @@ def RunBuildStages(bot_id, options, build_config):
   if build_config['chromeos_official']: os.environ['CHROMEOS_OFFICIAL'] = '1'
 
   # Determine the stages to use for syncing and completion.
-  sync_stage = stages.SyncStage
-  completion_stage = None
+  sync_stage_class = stages.SyncStage
+  completion_stage_class = None
   if build_config['manifest_version']:
     if build_config['build_type'] == 'binary':
-      sync_stage = stages.LGKMVersionedSyncStage
-      completion_stage = stages.LGKMVersionedSyncCompletionStage
+      sync_stage_class = stages.LGKMVersionedSyncStage
+      completion_stage_class = stages.LGKMVersionedSyncCompletionStage
     else:
-      sync_stage = stages.ManifestVersionedSyncStage
-      completion_stage = stages.ManifestVersionedSyncCompletionStage
+      sync_stage_class = stages.ManifestVersionedSyncStage
+      completion_stage_class = stages.ManifestVersionedSyncCompletionStage
 
   tracking_branch = _GetChromiteTrackingBranch()
   stages.BuilderStage.SetTrackingBranch(tracking_branch)
@@ -118,7 +118,7 @@ def RunBuildStages(bot_id, options, build_config):
 
   try:
     if options.sync:
-      sync_stage(bot_id, options, build_config).Run()
+      sync_stage_class(bot_id, options, build_config).Run()
 
     if options.patches:
       stages.PatchChangesStage(bot_id, options, build_config, patches).Run()
@@ -149,22 +149,20 @@ def RunBuildStages(bot_id, options, build_config):
     pass
 
   if options.sync:
-    try:
-      if (completion_stage and
-          stages.ManifestVersionedSyncStage.manifest_manager):
-        completion_stage(bot_id, options, build_config,
-                         success=build_and_test_success).Run()
+    completion_stage = None
+    if (completion_stage_class and
+        stages.ManifestVersionedSyncStage.manifest_manager):
+      completion_stage = completion_stage_class(bot_id, options, build_config,
+                                                success=build_and_test_success)
+      completion_stage.Run()
 
-      if build_config['master'] and build_and_test_success:
-        stages.PushChangesStage(bot_id, options, build_config).Run()
-    except stages.BuildException:
-      pass
+    if build_config['master'] and build_and_test_success and (
+        not completion_stage or stages.Results.WasStageSuccessfulOrSkipped(
+        completion_stage.name)):
+      stages.PushChangesStage(bot_id, options, build_config).Run()
 
   if build_success and options.archive:
-    try:
-      stages.ArchiveStage(bot_id, options, build_config).Run()
-    except stages.BuildException:
-      pass
+    stages.ArchiveStage(bot_id, options, build_config).Run()
 
   if os.path.exists(options.buildroot):
     with open(completed_stages_file, 'w+') as save_file:

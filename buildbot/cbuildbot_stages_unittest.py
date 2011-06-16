@@ -912,7 +912,7 @@ class BuildStagesResultsTest(unittest.TestCase):
         'FailRunCommand',
         cros_lib.RunCommandError(
             'Command "/bin/false /nosuchdir" failed.\n',
-            ['/bin/false', '/nosuchdir']), time=4)
+            ['/bin/false', '/nosuchdir'], error_code=2), time=4)
     stages.Results.Record(
         'FailOldRunCommand',
         cros_lib.RunCommandException(
@@ -962,7 +962,7 @@ class BuildStagesResultsTest(unittest.TestCase):
         'FailRunCommand',
         cros_lib.RunCommandError(
             'Command "/bin/false /nosuchdir" failed.\n',
-            ['/bin/false', '/nosuchdir']),
+            ['/bin/false', '/nosuchdir'], error_code=2),
         'FailRunCommand msg', time=4)
     stages.Results.Record(
         'FailOldRunCommand',
