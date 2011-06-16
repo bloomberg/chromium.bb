@@ -1,6 +1,5 @@
 #!/usr/bin/python
-
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -25,6 +24,7 @@ def main():
   dir_map = {
       'darwin': 'mac',
       'linux2': 'linux',
+      'linux3': 'linux',
       'win32':  'win',
   }
   # Swig documentation lies that platform macros are provided to swig
@@ -32,6 +32,7 @@ def main():
   platform_flags = {
       'darwin': '-DSWIGMAC',
       'linux2': '-DSWIGLINUX',
+      'linux3': '-DSWIGLINUX',
       'win32':  '-DSWIGWIN',
   }
   swig_bin = os.path.join(swig_dir, dir_map[sys.platform], 'swig')

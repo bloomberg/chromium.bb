@@ -51,6 +51,10 @@ def _LocateBinDirs():
                   os.path.join(chrome_src, 'sconsbuild', 'Debug'),
                   os.path.join(chrome_src, 'out', 'Release'),
                   os.path.join(chrome_src, 'sconsbuild', 'Release')],
+      'linux3': [ os.path.join(chrome_src, 'out', 'Debug'),
+                  os.path.join(chrome_src, 'sconsbuild', 'Debug'),
+                  os.path.join(chrome_src, 'out', 'Release'),
+                  os.path.join(chrome_src, 'sconsbuild', 'Release')],
       'darwin': [ os.path.join(chrome_src, 'xcodebuild', 'Debug'),
                   os.path.join(chrome_src, 'xcodebuild', 'Release')],
       'win32':  [ os.path.join(chrome_src, 'chrome', 'Debug'),
@@ -411,7 +415,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
   @staticmethod
   def IsLinux():
     """Are we on Linux? ChromeOS is linux too."""
-    return 'linux2' == sys.platform
+    return sys.platform.startswith('linux')
 
   @staticmethod
   def IsWin():
@@ -3447,6 +3451,7 @@ class Main(object):
     'win32':  'win',
     'darwin': 'mac',
     'linux2': 'linux',
+    'linux3': 'linux',
     'chromeos': 'chromeos',
   }
 

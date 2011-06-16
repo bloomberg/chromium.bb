@@ -292,7 +292,7 @@ if '__main__' == __name__:
 
   (options, args) = parser.parse_args()
 
-  if sys.platform == 'linux2':
+  if sys.platform.startswith('linux'):
     sys.exit(main_linux(options, args))
   else:
     sys.exit(1)

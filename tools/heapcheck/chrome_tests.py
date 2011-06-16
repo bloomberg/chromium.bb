@@ -457,7 +457,7 @@ def _main(_):
 
 
 if __name__ == "__main__":
-  if sys.platform == 'linux2':
+  if sys.platform.startswith('linux'):
     ret = _main(sys.argv)
   else:
     logging.error("Heap checking works only on Linux at the moment.")

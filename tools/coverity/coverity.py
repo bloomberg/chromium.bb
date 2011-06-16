@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -135,7 +135,7 @@ def main(options, args):
   print 'Elapsed time: %ds' % (time.time() - start_time)
 
   # Do a clean build.  Remove the build output directory first.
-  if sys.platform == 'linux2':
+  if sys.platform.startswith('linux'):
     rm_path = os.path.join(options.source_dir,'src','out',options.target)
   elif sys.platform == 'win32':
     rm_path = os.path.join(options.source_dir,options.solution_dir,
@@ -165,7 +165,7 @@ def main(options, args):
   print 'Elapsed time: %ds' % (time.time() - start_time)
 
   use_shell_during_make = False
-  if sys.platform == 'linux2':
+  if sys.platform.startswith('linux'):
     use_shell_during_make = True
     os.chdir('src')
     _RunCommand('pwd', options.dry_run, shell=True)

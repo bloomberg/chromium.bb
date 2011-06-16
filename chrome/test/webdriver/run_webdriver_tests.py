@@ -32,6 +32,7 @@ class Main(object):
     'win32':  'win',
     'darwin': 'mac',
     'linux2': 'linux',
+    'linux3': 'linux',
   }
   TEST_PREFIX = 'selenium.test.selenium.webdriver.common.'
 
