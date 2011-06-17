@@ -55,7 +55,6 @@ var draftDocument = true;
 function onLoad() {
   enablePlatformSpecificCSSRules();
 
-  $('system-dialog-link').addEventListener('click', showSystemDialog);
   $('cancel-button').addEventListener('click', handleCancelButtonClick);
 
   if (!checkCompatiblePluginExists()) {
@@ -65,6 +64,8 @@ function onLoad() {
     $('mainview').parentElement.removeChild($('dummy-viewer'));
     return;
   }
+
+  $('system-dialog-link').addEventListener('click', showSystemDialog);
   $('mainview').parentElement.removeChild($('dummy-viewer'));
 
   $('printer-list').disabled = true;
