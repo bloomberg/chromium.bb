@@ -509,7 +509,8 @@ void TranslateManager::ReportLanguageDetectionError(TabContents* tab_contents) {
   report_error_url +=
       GetLanguageCode(g_browser_process->GetApplicationLocale());
   // Open that URL in a new tab so that the user can tell us more.
-  Browser* browser = BrowserList::GetLastActive();
+  Browser* browser = BrowserList::GetLastActiveWithProfile(
+      tab_contents->profile());
   if (!browser) {
     NOTREACHED();
     return;
