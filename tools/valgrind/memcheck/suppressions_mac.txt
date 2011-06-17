@@ -313,7 +313,7 @@
    fun:__CFDictionaryInit
    fun:ut*AllSelectedIMInDoc
    ...
-   fun:MyActivateTSMDocument
+   fun:My*ctivateTSMDocument
 }
 {
    # __cxa_get_globals leaks a structure when called for the first time
@@ -1284,27 +1284,6 @@
    fun:_ZNK5TFont17InitStrikeMetricsEv
    fun:CTFontGetAscent
    fun:__NSFontInstanceInfoInitializeMetricsInfo
-}
-{
-   bug_71111
-   Memcheck:Leak
-   fun:malloc_zone_malloc
-   fun:_CFRuntimeCreateInstance
-   ...
-   fun:utDeactivateAllSelectedIMInDoc
-   fun:MyDeactivateTSMDocument
-   ...
-   fun:_HandlePopUpMenuSelection7
-   ...
-   fun:-[NSPopUpButtonCell trackMouse:inRect:ofView:untilMouseUp:]
-   fun:-[NSPopUpButtonCell performClickWithFrame:inView:]
-   fun:-[MenuButton(Private) showMenu:]
-   fun:-[MenuButton(Private) clickShowMenu:]
-   fun:-[NSApplication sendAction:to:from:]
-   fun:-[NSControl sendAction:to:]
-   fun:-[NSCell _sendActionFrom:]
-   fun:-[NSButtonCell performClick:]
-   fun:_ZN12_GLOBAL__N_131MenuButtonTest_OpenOnClick_Test8TestBodyEv
 }
 {
    bug_73036
