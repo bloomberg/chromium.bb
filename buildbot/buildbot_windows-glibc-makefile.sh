@@ -68,7 +68,7 @@ echo @@@BUILD_STEP compile_toolchain@@@
 if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" == "Trybot" ]]; then
   mkdir -p "$TOOLCHAINLOC"
   rm -rf "$TOOLCHAINLOC/$TOOLCHAINNAME"
-  mv {tools/,}"$TOOLCHAINLOC/$TOOLCHAINNAME"
+  cp -a {tools/,}"$TOOLCHAINLOC/$TOOLCHAINNAME"
   convert_symlinks_to_hardlinks "$TOOLCHAINLOC/$TOOLCHAINNAME"
 else
   echo @@@BUILD_STEP tar_toolchain@@@
