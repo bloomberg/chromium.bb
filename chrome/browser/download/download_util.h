@@ -174,8 +174,8 @@ void RecordDownloadCount(DownloadCountTypes type);
 // Record COMPLETED_COUNT and how long the download took.
 void RecordDownloadCompleted(const base::TimeTicks& start);
 
-// Record INTERRUPTED_COUNT and os_error.
-void RecordDownloadInterrupted(int os_error);
+// Record INTERRUPTED_COUNT, |error|, |received| and |total| bytes.
+void RecordDownloadInterrupted(int error, int64 received, int64 total);
 
 // Paint the common download animation progress foreground and background,
 // clipping the foreground to 'percent' full. If percent is -1, then we don't

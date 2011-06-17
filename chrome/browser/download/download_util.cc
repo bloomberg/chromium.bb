@@ -196,6 +196,14 @@ void GenerateFileNameInternal(const GURL& url,
   GenerateSafeFileName(mime_type, generated_name);
 }
 
+// All possible error codes from the network module. Note that the error codes
+// are all positive (since histograms expect positive sample values).
+const int kAllNetErrorCodes[] = {
+#define NET_ERROR(label, value) -(value),
+#include "net/base/net_error_list.h"
+#undef NET_ERROR
+};
+
 }  // namespace
 
 // Download temporary file creation --------------------------------------------
@@ -340,12 +348,49 @@ void RecordDownloadCompleted(const base::TimeTicks& start) {
   UMA_HISTOGRAM_LONG_TIMES("Download.Time", (base::TimeTicks::Now() - start));
 }
 
-void RecordDownloadInterrupted(int os_error) {
+void RecordDownloadInterrupted(int error, int64 received, int64 total) {
   download_util::RecordDownloadCount(download_util::INTERRUPTED_COUNT);
-  // |os_error| is probably < 256, so use that as the maximum value of the
-  // "enum". The histogram implementation uses a separate bucket for any
-  // unlikely value of os_error >= 256.
-  UMA_HISTOGRAM_ENUMERATION("Download.InterruptedError", os_error, 0x100);
+  UMA_HISTOGRAM_CUSTOM_ENUMERATION(
+      "Download.InterruptedError",
+      -error,
+      base::CustomHistogram::ArrayToCustomRanges(
+          kAllNetErrorCodes, arraysize(kAllNetErrorCodes)));
+
+  // The maximum should be 2^kBuckets, to have the logarithmic bucket
+  // boundaries fall on powers of 2.
+  static const int kBuckets = 30;
+  static const int64 kMaxKb = 1 << kBuckets;  // One Terabyte, in Kilobytes.
+  int64 delta_bytes = total - received;
+  bool unknown_size = total <= 0;
+  int64 received_kb = received / 1024;
+  int64 total_kb = total / 1024;
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Download.InterruptedReceivedSizeK",
+                              received_kb,
+                              1,
+                              kMaxKb,
+                              kBuckets);
+  if (!unknown_size) {
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Download.InterruptedTotalSizeK",
+                                total_kb,
+                                1,
+                                kMaxKb,
+                                kBuckets);
+    if (delta_bytes >= 0) {
+      UMA_HISTOGRAM_CUSTOM_COUNTS("Download.InterruptedOverrunBytes",
+                                  delta_bytes,
+                                  1,
+                                  kMaxKb,
+                                  kBuckets);
+    } else {
+      UMA_HISTOGRAM_CUSTOM_COUNTS("Download.InterruptedUnderrunBytes",
+                                  -delta_bytes,
+                                  1,
+                                  kMaxKb,
+                                  kBuckets);
+    }
+  }
+
+  UMA_HISTOGRAM_BOOLEAN("Download.InterruptedUnknownSize", unknown_size);
 }
 
 // Download progress painting --------------------------------------------------

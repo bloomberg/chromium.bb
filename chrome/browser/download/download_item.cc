@@ -501,7 +501,9 @@ void DownloadItem::Interrupted(int64 size, int os_error) {
   last_os_error_ = os_error;
   UpdateSize(size);
   StopProgressTimer();
-  download_util::RecordDownloadInterrupted(os_error);
+  download_util::RecordDownloadInterrupted(os_error,
+                                           received_bytes_,
+                                           total_bytes_);
   UpdateObservers();
 }
 
