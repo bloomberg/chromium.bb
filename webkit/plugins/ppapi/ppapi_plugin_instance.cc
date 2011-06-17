@@ -69,7 +69,8 @@
 #include "printing/metafile_impl.h"
 #endif
 
-#if defined(OS_LINUX) || defined(OS_WIN)
+#if defined(OS_LINUX) || defined(OS_WIN) || \
+    (defined(OS_MACOSX) && defined(USE_SKIA))
 #include "printing/metafile.h"
 #include "printing/metafile_skia_wrapper.h"
 #endif
