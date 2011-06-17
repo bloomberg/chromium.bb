@@ -63,6 +63,9 @@
   DCHECK(controller_ == controller);
   controller_ = nil;
 }
+-  (InfobarTipDrawingModel*)tipDrawingModel {
+  return nil;
+}
 @end
 
 namespace {

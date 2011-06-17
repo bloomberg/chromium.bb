@@ -21,6 +21,8 @@ class InfoBarDelegate;
  @private
   id<InfoBarContainer> containerController_;  // weak, owns us
   BOOL infoBarClosing_;
+  // Whether or not the tip has animated in.
+  BOOL tipDidAnimate_;
 
  @protected
   IBOutlet InfoBarGradientView* infoBarView_;
@@ -41,6 +43,10 @@ class InfoBarDelegate;
   // in -awakeFromNib.
   scoped_nsobject<NSTextView> label_;
 };
+
+@property(nonatomic, assign) id<InfoBarContainer> containerController;
+@property(nonatomic, readonly) InfoBarDelegate* delegate;
+@property(nonatomic, readonly) InfoBarGradientView* gradientView;
 
 // Initializes a new InfoBarController.
 - (id)initWithDelegate:(InfoBarDelegate*)delegate;
@@ -80,9 +86,6 @@ class InfoBarDelegate;
 // Removes the OK and Cancel buttons and resizes the textfield to use the
 // space.
 - (void)removeButtons;
-
-@property(nonatomic, assign) id<InfoBarContainer> containerController;
-@property(nonatomic, readonly) InfoBarDelegate* delegate;
 
 @end
 

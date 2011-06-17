@@ -160,6 +160,9 @@ class TabContents;
 // Return a weak pointer to the tab strip controller.
 - (TabStripController*)tabStripController;
 
+// Returns a weak pointer to the bookmark bar controller.
+- (BookmarkBarController*)bookmarkBarController;
+
 // Access the ObjC controller that contains the infobars.
 - (InfoBarContainerController*)infoBarContainerController;
 

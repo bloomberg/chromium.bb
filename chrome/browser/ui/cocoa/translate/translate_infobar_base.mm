@@ -15,6 +15,7 @@
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_controller.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_gradient_view.h"
+#import "chrome/browser/ui/cocoa/infobars/infobar_tip_drawing_model.h"
 #include "chrome/browser/ui/cocoa/translate/after_translate_infobar_controller.h"
 #import "chrome/browser/ui/cocoa/translate/before_translate_infobar_controller.h"
 #include "chrome/browser/ui/cocoa/translate/translate_message_infobar_controller.h"

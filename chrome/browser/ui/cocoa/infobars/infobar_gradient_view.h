@@ -11,8 +11,15 @@
 
 #import <Cocoa/Cocoa.h>
 
+@class InfobarTipDrawingModel;
+
 // A custom view that draws the background gradient for an infobar.
-@interface InfoBarGradientView : VerticalGradientView
+@interface InfoBarGradientView : VerticalGradientView {
+ @private
+  InfobarTipDrawingModel* drawingModel_;  // weak
+}
+
+@property(nonatomic, assign) InfobarTipDrawingModel* drawingModel;
 
 // Sets the infobar type. This will change the view's gradient.
 - (void)setInfobarType:(InfoBarDelegate::Type)infobarType;

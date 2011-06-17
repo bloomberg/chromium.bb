@@ -17,6 +17,7 @@
 class InfoBar;
 class InfoBarDelegate;
 class InfoBarNotificationObserver;
+@class InfobarTipDrawingModel;
 class TabContentsWrapper;
 class TabStripModel;
 
@@ -26,16 +27,8 @@ class TabStripModel;
 - (void)removeDelegate:(InfoBarDelegate*)delegate;
 - (void)willRemoveController:(InfoBarController*)controller;
 - (void)removeController:(InfoBarController*)controller;
+- (InfobarTipDrawingModel*)tipDrawingModel;
 @end
-
-
-namespace infobars {
-
-// How tall the tip is on a normal infobar.
-const CGFloat kBaseHeight = 36.0;
-
-};  // namespace infobars
-
 
 // Controller for the infobar container view, which is the superview
 // of all the infobar views.  This class owns zero or more
@@ -56,6 +49,9 @@ const CGFloat kBaseHeight = 36.0;
 
   // Holds InfoBarControllers when they are in the process of animating out.
   scoped_nsobject<NSMutableSet> closingInfoBars_;
+
+  // Model object that draws tips for infobars.
+  scoped_nsobject<InfobarTipDrawingModel> tipDrawingModel_;
 
   // Lets us registers for INFOBAR_ADDED/INFOBAR_REMOVED
   // notifications.  The actual notifications are sent to the
@@ -100,10 +96,15 @@ const CGFloat kBaseHeight = 36.0;
 // |infobarControllers_ - closingInfoBars_|.
 - (NSUInteger)infobarCount;
 
-// Returns the amount of additional height the container view needs to draw the
-// anti-spoofing tip. This will return 0 if |-infobarCount| is 0. This is the
-// total amount of overlap for all infobars.
-- (CGFloat)antiSpoofHeight;
+// Returns the InfoBarController at a given index.
+- (InfoBarController*)controllerAtIndex:(NSUInteger)index;
+
+// Returns the index of a given controller, or NSNotFound.
+- (NSUInteger)indexOfController:(InfoBarController*)controller;
+
+// Returns the amount of overlap between the toolbar and the infobars. This is
+// the height of the tip of the first infobar.
+- (CGFloat)overlapAmount;
 
 @end
 

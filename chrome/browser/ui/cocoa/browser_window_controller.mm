@@ -461,6 +461,10 @@
   return tabStripController_.get();
 }
 
+- (BookmarkBarController*)bookmarkBarController {
+  return bookmarkBarController_.get();
+}
+
 - (InfoBarContainerController*)infoBarContainerController {
   return infoBarContainerController_.get();
 }
@@ -2148,7 +2152,7 @@ willAnimateFromState:(bookmarks::VisualState)oldState
   // browser chrome.
   activeArea.size.height +=
       NSHeight([[infoBarContainerController_ view] frame]) -
-          [infoBarContainerController_ antiSpoofHeight];
+          [infoBarContainerController_ overlapAmount];
   if ([self isBookmarkBarVisible] && [self placeBookmarkBarBelowInfoBar]) {
     NSView* bookmarkBarView = [bookmarkBarController_ view];
     activeArea.size.height += NSHeight([bookmarkBarView frame]);

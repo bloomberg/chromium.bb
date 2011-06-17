@@ -8,10 +8,13 @@
 #include "chrome/browser/tab_contents/infobar.h"
 #import "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
+#import "chrome/browser/ui/cocoa/infobars/infobar_tip_drawing_model.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #include "skia/ext/skia_utils_mac.h"
 
 @implementation InfoBarGradientView
+
+@synthesize drawingModel = drawingModel_;
 
 - (void)setInfobarType:(InfoBarDelegate::Type)infobarType {
   SkColor topColor = GetInfoBarTopColor(infobarType);
@@ -35,18 +38,34 @@
 }
 
 - (void)drawRect:(NSRect)rect {
-  NSRect bounds = [self bounds];
-  bounds.size.height = infobars::kBaseHeight;
+  NSRect baseBounds = [self bounds];
+  baseBounds.size.height = infobars::kBaseHeight;
+
+  // Draw the tip that acts as the anti-spoofing countermeasure. This can be
+  // NULL when closing.
+  scoped_ptr<infobars::Tip> tip([drawingModel_ createTipForView:self]);
 
   // Around the bounds of the infobar, continue drawing the path into which the
   // gradient will be drawn.
   NSBezierPath* infoBarPath = [NSBezierPath bezierPath];
-  [infoBarPath moveToPoint:NSMakePoint(NSMinX(bounds), NSMaxY(bounds))];
-  [infoBarPath lineToPoint:NSMakePoint(NSMaxX(bounds), NSMaxY(bounds))];
+  [infoBarPath moveToPoint:NSMakePoint(NSMinX(baseBounds), NSMaxY(baseBounds))];
+  if (tip.get()) {
+    [infoBarPath lineToPoint:NSMakePoint(tip->point.x, NSMaxY(baseBounds))];
+    // When animating, this view is full-height, but its superview, the
+    // AnimatableView has its height change. Use the MaxY of the superview to
+    // determine the Y position of the tip apex so that the tip looks like it
+    // grows upwards.
+    NSPoint midPoint = tip->mid_point;
+    midPoint.y = std::min(midPoint.y, NSMaxY([[self superview] bounds]));
+    [tip->path setAssociatedPoints:&midPoint atIndex:1];
+    [infoBarPath appendBezierPath:tip->path];
+  }
+  [infoBarPath lineToPoint:NSMakePoint(NSMaxX(baseBounds), NSMaxY(baseBounds))];
   scoped_nsobject<NSBezierPath> topPath([infoBarPath copy]);
 
-  [infoBarPath lineToPoint:NSMakePoint(NSMaxX(bounds), NSMinY(bounds))];
-  [infoBarPath lineToPoint:NSMakePoint(NSMinX(bounds), NSMinY(bounds))];
+  [infoBarPath lineToPoint:NSMakePoint(NSMaxX(baseBounds), NSMinY(baseBounds))];
+  [infoBarPath lineToPoint:NSMakePoint(NSMinX(baseBounds), NSMinY(baseBounds))];
+  [infoBarPath lineToPoint:NSMakePoint(NSMinX(baseBounds), NSMaxY(baseBounds))];
   [infoBarPath closePath];
 
   // Draw the gradient.
@@ -57,7 +76,7 @@
   if (strokeColor) {
     [strokeColor set];
     NSRect borderRect, contentRect;
-    NSDivideRect(bounds, &borderRect, &contentRect, 1, NSMinYEdge);
+    NSDivideRect(baseBounds, &borderRect, &contentRect, 1, NSMinYEdge);
     NSRectFillUsingOperation(borderRect, NSCompositeSourceOver);
   }
 
@@ -67,6 +86,14 @@
   [transform translateXBy:0.0 yBy:-1.0];
   [topPath transformUsingAffineTransform:transform];
   [topPath stroke];
+
+  // Stroke the tip.
+  if (tip.get()) {
+    [tip->path setLineCapStyle:NSSquareLineCapStyle];
+    [tip->path setLineJoinStyle:NSMiterLineJoinStyle];
+    [[self strokeColor] set];
+    [tip->path stroke];
+  }
 }
 
 - (BOOL)mouseDownCanMoveWindow {
