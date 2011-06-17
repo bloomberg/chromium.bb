@@ -140,7 +140,7 @@ void ImporterHost::StartImportSettings(
           MB_OK | MB_TOPMOST);
 
       GURL url("https://www.google.com/accounts/ServiceLogin");
-      BrowserList::GetLastActive()->AddSelectedTabWithURL(
+      BrowserList::GetLastActiveWithProfile(profile_)->AddSelectedTabWithURL(
           url, PageTransition::TYPED);
 
       MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
