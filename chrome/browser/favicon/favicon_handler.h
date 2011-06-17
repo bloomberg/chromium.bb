@@ -19,11 +19,16 @@
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/favicon_size.h"
 
+class FaviconHandlerDelegate;
 class NavigationEntry;
 class Profile;
 class RefCountedMemory;
 class SkBitmap;
 class TabContents;
+
+namespace gfx {
+class Image;
+}
 
 // FaviconHandler works with FaviconTabHelper to fetch the specific type of
 // favicon.
@@ -75,7 +80,9 @@ class FaviconHandler {
     TOUCH,
   };
 
-  FaviconHandler(TabContents* tab_contents, Type icon_type);
+  FaviconHandler(Profile* profile,
+                 FaviconHandlerDelegate* delegate,
+                 Type icon_type);
   virtual ~FaviconHandler();
 
   // Initiates loading the favicon for the specified url.
@@ -101,7 +108,7 @@ class FaviconHandler {
   void OnDidDownloadFavicon(int id,
                             const GURL& image_url,
                             bool errored,
-                            const SkBitmap& image);
+                            const gfx::Image& image);
 
  protected:
   // These virtual methods make FaviconHandler testable and are overridden by
@@ -188,7 +195,7 @@ class FaviconHandler {
   // we request the TabContents to download the favicon.
   void SetFavicon(const GURL& url,
                   const GURL& icon_url,
-                  const SkBitmap& image,
+                  const gfx::Image& image,
                   history::IconType icon_type);
 
   // Converts the FAVICON's image data to an SkBitmap and sets it on the
@@ -197,11 +204,12 @@ class FaviconHandler {
   // (INVALIDATE_FAVICON).
   void UpdateFavicon(NavigationEntry* entry,
                      scoped_refptr<RefCountedMemory> data);
-  void UpdateFavicon(NavigationEntry* entry, const SkBitmap& image);
+  void UpdateFavicon(NavigationEntry* entry, const gfx::Image* image);
 
-  // Scales the image such that either the width and/or height is 16 pixels
-  // wide. Does nothing if the image is empty.
-  SkBitmap ConvertToFaviconSize(const SkBitmap& image);
+  // If the image is not already at its preferred size, scales the image such
+  // that either the width and/or height is 16 pixels wide. Does nothing if the
+  // image is empty.
+  gfx::Image ResizeFaviconIfNeeded(const gfx::Image& image);
 
   void FetchFaviconInternal();
 
@@ -215,10 +223,6 @@ class FaviconHandler {
   // preference.
   int preferred_icon_size() {
     return icon_types_ == history::FAVICON ? kFaviconSize : 0;
-  }
-
-  TabContents* tab_contents() {
-    return tab_contents_;
   }
 
   // Used for history requests.
@@ -253,7 +257,11 @@ class FaviconHandler {
   // The FaviconData from history.
   history::FaviconData history_icon_;
 
-  TabContents* tab_contents_;
+  // The Profile associated with this handler.
+  Profile* profile_;
+
+  // This handler's delegate.
+  FaviconHandlerDelegate* delegate_;  // weak
 
   DISALLOW_COPY_AND_ASSIGN(FaviconHandler);
 };

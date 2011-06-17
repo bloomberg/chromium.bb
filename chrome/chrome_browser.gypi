@@ -1124,6 +1124,7 @@
         'browser/external_tab_container_win.h',
         'browser/favicon/favicon_handler.cc',
         'browser/favicon/favicon_handler.h',
+        'browser/favicon/favicon_handler_delegate.h',
         'browser/favicon/favicon_service.cc',
         'browser/favicon/favicon_service.h',
         'browser/favicon/favicon_tab_helper.cc',

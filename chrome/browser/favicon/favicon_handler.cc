@@ -13,13 +13,11 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/icon_messages.h"
-#include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_entry.h"
-#include "content/browser/tab_contents/tab_contents_delegate.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "skia/ext/image_operations.h"
 #include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_util.h"
 
 namespace {
 
@@ -65,23 +63,26 @@ FaviconHandler::DownloadRequest::DownloadRequest(
       icon_type(icon_type) {
 }
 
-FaviconHandler::FaviconHandler(TabContents* tab_contents, Type icon_type)
+FaviconHandler::FaviconHandler(Profile* profile,
+                               FaviconHandlerDelegate* delegate,
+                               Type icon_type)
     : got_favicon_from_history_(false),
       favicon_expired_(false),
       icon_types_(icon_type == FAVICON ? history::FAVICON :
           history::TOUCH_ICON | history::TOUCH_PRECOMPOSED_ICON),
       current_url_index_(0),
-      tab_contents_(tab_contents) {
+      profile_(profile),
+      delegate_(delegate) {
+  DCHECK(profile_);
+  DCHECK(delegate_);
 }
 
 FaviconHandler::~FaviconHandler() {
-  SkBitmap empty_image;
-
   // Call pending download callbacks with error to allow caller to clean up.
   for (DownloadRequests::iterator i = download_requests_.begin();
        i != download_requests_.end(); ++i) {
     if (i->second.callback) {
-      i->second.callback->Run(i->first, true, empty_image);
+      i->second.callback->Run(i->first, true, SkBitmap());
     }
   }
 }
@@ -114,49 +115,50 @@ int FaviconHandler::DownloadImage(
 }
 
 FaviconService* FaviconHandler::GetFaviconService() {
-  return tab_contents()->profile()->GetFaviconService(Profile::EXPLICIT_ACCESS);
+  return profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
 }
 
 void FaviconHandler::SetFavicon(
     const GURL& url,
     const GURL& image_url,
-    const SkBitmap& image,
+    const gfx::Image& image,
     history::IconType icon_type) {
-  const SkBitmap& sized_image = (preferred_icon_size() == 0 ||
-      (preferred_icon_size() == image.width() &&
-       preferred_icon_size() == image.height())) ?
-      image : ConvertToFaviconSize(image);
+  const SkBitmap& bitmap = image;
+  const gfx::Image& sized_image = (preferred_icon_size() == 0 ||
+      (preferred_icon_size() == bitmap.width() &&
+       preferred_icon_size() == bitmap.height())) ?
+      image : ResizeFaviconIfNeeded(image);
 
   if (GetFaviconService() && ShouldSaveFavicon(url)) {
     std::vector<unsigned char> image_data;
-    gfx::PNGCodec::EncodeBGRASkBitmap(sized_image, false, &image_data);
-    SetHistoryFavicon(url, image_url, image_data, icon_type);
+    if (gfx::PNGEncodedDataFromImage(sized_image, &image_data))
+      SetHistoryFavicon(url, image_url, image_data, icon_type);
   }
 
   if (url == url_ && icon_type == history::FAVICON) {
     NavigationEntry* entry = GetEntry();
     if (entry)
-      UpdateFavicon(entry, sized_image);
+      UpdateFavicon(entry, &sized_image);
   }
 }
 
 void FaviconHandler::UpdateFavicon(NavigationEntry* entry,
                                   scoped_refptr<RefCountedMemory> data) {
-  SkBitmap image;
-  gfx::PNGCodec::Decode(data->front(), data->size(), &image);
-  UpdateFavicon(entry, image);
+  scoped_ptr<gfx::Image> image(gfx::ImageFromPNGEncodedData(data->front(),
+                                                            data->size()));
+  UpdateFavicon(entry, image.get());
 }
 
 void FaviconHandler::UpdateFavicon(NavigationEntry* entry,
-                                  const SkBitmap& image) {
+                                   const gfx::Image* image) {
   // No matter what happens, we need to mark the favicon as being set.
   entry->favicon().set_is_valid(true);
 
-  if (image.empty())
+  if (!image)
     return;
 
-  entry->favicon().set_bitmap(image);
-  tab_contents()->NotifyNavigationStateChanged(TabContents::INVALIDATE_TAB);
+  entry->favicon().set_bitmap(*image);
+  delegate_->NotifyFaviconUpdated();
 }
 
 void FaviconHandler::OnUpdateFaviconURL(
@@ -210,9 +212,9 @@ void FaviconHandler::OnUpdateFaviconURL(
 }
 
 void FaviconHandler::OnDidDownloadFavicon(int id,
-                                         const GURL& image_url,
-                                         bool errored,
-                                         const SkBitmap& image) {
+                                          const GURL& image_url,
+                                          bool errored,
+                                          const gfx::Image& image) {
   DownloadRequests::iterator i = download_requests_.find(id);
   if (i == download_requests_.end()) {
     // Currently TabContents notifies us of ANY downloads so that it is
@@ -221,7 +223,7 @@ void FaviconHandler::OnDidDownloadFavicon(int id,
   }
 
   if (i->second.callback) {
-    i->second.callback->Run(id, errored, image);
+    i->second.callback->Run(id, errored, *(&image));
   } else if (current_candidate() &&
              DoUrlAndIconMatch(*current_candidate(), image_url,
                                i->second.icon_type)) {
@@ -240,11 +242,10 @@ void FaviconHandler::OnDidDownloadFavicon(int id,
 }
 
 NavigationEntry* FaviconHandler::GetEntry() {
-  NavigationEntry* entry = tab_contents()->controller().GetActiveEntry();
-  if (entry && entry->url() == url_ &&
-      tab_contents()->IsActiveEntry(entry->page_id())) {
+  NavigationEntry* entry = delegate_->GetActiveEntry();
+  if (entry && entry->url() == url_)
     return entry;
-  }
+
   // If the URL has changed out from under us (as will happen with redirects)
   // return NULL.
   return NULL;
@@ -257,9 +258,7 @@ int FaviconHandler::DownloadFavicon(const GURL& image_url, int image_size) {
   }
   static int next_id = 1;
   int id = next_id++;
-  RenderViewHost* host = tab_contents()->render_view_host();
-  host->Send(new IconMsg_DownloadFavicon(
-      host->routing_id(), id, image_url, image_size));
+  delegate_->StartDownload(id, image_url, image_size);
   return id;
 }
 
@@ -299,11 +298,11 @@ void FaviconHandler::SetHistoryFavicon(
 }
 
 bool FaviconHandler::ShouldSaveFavicon(const GURL& url) {
-  if (!tab_contents()->profile()->IsOffTheRecord())
+  if (!profile_->IsOffTheRecord())
     return true;
 
   // Otherwise store the favicon if the page is bookmarked.
-  BookmarkModel* bookmark_model = tab_contents()->profile()->GetBookmarkModel();
+  BookmarkModel* bookmark_model = profile_->GetBookmarkModel();
   return bookmark_model && bookmark_model->IsBookmarked(url);
 }
 
@@ -367,7 +366,7 @@ void FaviconHandler::DownloadFaviconOrAskHistory(
     // We don't know the favicon, but we may have previously downloaded the
     // favicon for another page that shares the same favicon. Ask for the
     // favicon given the favicon URL.
-    if (tab_contents()->profile()->IsOffTheRecord()) {
+    if (profile_->IsOffTheRecord()) {
       GetFavicon(icon_url, icon_type, &cancelable_consumer_,
           NewCallback(this, &FaviconHandler::OnFaviconData));
     } else {
@@ -435,14 +434,18 @@ int FaviconHandler::ScheduleDownload(
   return download_id;
 }
 
-SkBitmap FaviconHandler::ConvertToFaviconSize(const SkBitmap& image) {
-  int width = image.width();
-  int height = image.height();
+gfx::Image FaviconHandler::ResizeFaviconIfNeeded(const gfx::Image& image) {
+  // Get an SkBitmap from the gfx::Image.
+  const SkBitmap& bitmap = image;
+  int width = bitmap.width();
+  int height = bitmap.height();
   if (width > 0 && height > 0) {
     calc_favicon_target_size(&width, &height);
-    return skia::ImageOperations::Resize(
-          image, skia::ImageOperations::RESIZE_LANCZOS3,
-          width, height);
+    return gfx::Image(new SkBitmap(
+                          skia::ImageOperations::Resize(
+                              bitmap, skia::ImageOperations::RESIZE_LANCZOS3,
+                              width, height)));
   }
+
   return image;
 }

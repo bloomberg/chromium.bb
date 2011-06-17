@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "chrome/browser/favicon/favicon_handler_delegate.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/common/favicon_url.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
@@ -28,7 +29,8 @@ class TabContents;
 // DownloadImage downloads the specified icon and returns it through the given
 // callback.
 //
-class FaviconTabHelper : public TabContentsObserver {
+class FaviconTabHelper : public TabContentsObserver,
+                         public FaviconHandlerDelegate {
  public:
   explicit FaviconTabHelper(TabContents* tab_contents);
   virtual ~FaviconTabHelper();
@@ -69,6 +71,11 @@ class FaviconTabHelper : public TabContentsObserver {
   // PrerenderContents.
   void OnUpdateFaviconURL(int32 page_id,
                           const std::vector<FaviconURL>& candidates);
+
+  // FaviconHandlerDelegate methods.
+  virtual NavigationEntry* GetActiveEntry() OVERRIDE;
+  virtual void StartDownload(int id, const GURL& url, int image_size) OVERRIDE;
+  virtual void NotifyFaviconUpdated() OVERRIDE;
 
  private:
   // TabContentsObserver overrides.

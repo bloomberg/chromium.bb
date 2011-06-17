@@ -9,17 +9,21 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/icon_messages.h"
+#include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_details.h"
+#include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/webui/web_ui.h"
 #include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/image/image.h"
 
 FaviconTabHelper::FaviconTabHelper(TabContents* tab_contents)
     : TabContentsObserver(tab_contents) {
-  favicon_handler_.reset(new FaviconHandler(tab_contents,
+  favicon_handler_.reset(new FaviconHandler(tab_contents->profile(), this,
                                             FaviconHandler::FAVICON));
   if (chrome::kEnableTouchIcon)
-    touch_icon_handler_.reset(new FaviconHandler(tab_contents,
+    touch_icon_handler_.reset(new FaviconHandler(tab_contents->profile(), this,
                                                  FaviconHandler::TOUCH));
 }
 
@@ -112,6 +116,28 @@ int FaviconTabHelper::DownloadImage(const GURL& image_url,
   return 0;
 }
 
+void FaviconTabHelper::OnUpdateFaviconURL(
+    int32 page_id,
+    const std::vector<FaviconURL>& candidates) {
+  favicon_handler_->OnUpdateFaviconURL(page_id, candidates);
+  if (touch_icon_handler_.get())
+    touch_icon_handler_->OnUpdateFaviconURL(page_id, candidates);
+}
+
+NavigationEntry* FaviconTabHelper::GetActiveEntry() {
+  return tab_contents()->controller().GetActiveEntry();
+}
+
+void FaviconTabHelper::StartDownload(int id, const GURL& url, int image_size) {
+  RenderViewHost* host = tab_contents()->render_view_host();
+  host->Send(new IconMsg_DownloadFavicon(
+                 host->routing_id(), id, url, image_size));
+}
+
+void FaviconTabHelper::NotifyFaviconUpdated() {
+  tab_contents()->NotifyNavigationStateChanged(TabContents::INVALIDATE_TAB);
+}
+
 void FaviconTabHelper::NavigateToPendingEntry(
     const GURL& url,
     NavigationController::ReloadType reload_type) {
@@ -145,15 +171,8 @@ void FaviconTabHelper::OnDidDownloadFavicon(int id,
                                             const GURL& image_url,
                                             bool errored,
                                             const SkBitmap& image) {
-  favicon_handler_->OnDidDownloadFavicon(id, image_url, errored, image);
+  gfx::Image favicon(new SkBitmap(image));
+  favicon_handler_->OnDidDownloadFavicon(id, image_url, errored, favicon);
   if (touch_icon_handler_.get())
-    touch_icon_handler_->OnDidDownloadFavicon(id, image_url, errored, image);
-}
-
-void FaviconTabHelper::OnUpdateFaviconURL(
-    int32 page_id,
-    const std::vector<FaviconURL>& candidates) {
-  favicon_handler_->OnUpdateFaviconURL(page_id, candidates);
-  if (touch_icon_handler_.get())
-    touch_icon_handler_->OnUpdateFaviconURL(page_id, candidates);
+    touch_icon_handler_->OnDidDownloadFavicon(id, image_url, errored, favicon);
 }

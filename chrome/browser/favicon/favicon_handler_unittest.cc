@@ -8,6 +8,7 @@
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/favicon_size.h"
+#include "ui/gfx/image/image.h"
 
 class TestFaviconHandler;
 
@@ -121,17 +122,48 @@ class HistoryRequestHandler {
 
 }  // namespace
 
+
+// This class is used as a temporary hack to provide working implementations of
+// the various delegate methods.  Most of these methods are actually never
+// called.
+// TODO(rohitrao): Refactor the tests to override these delegate methods instead
+// of subclassing.
+class TestFaviconHandlerDelegate : public FaviconHandlerDelegate {
+ public:
+  explicit TestFaviconHandlerDelegate(TabContents* tab_contents)
+      : tab_contents_(tab_contents) {
+  }
+
+  virtual NavigationEntry* GetActiveEntry() {
+    ADD_FAILURE() << "TestFaviconHandlerDelegate::GetActiveEntry() "
+                  << "should never be called in tests.";
+    return NULL;
+  }
+
+  virtual void StartDownload(int id, const GURL& url, int image_size) {
+    ADD_FAILURE() << "TestFaviconHandlerDelegate::StartDownload() "
+                  << "should never be called in tests.";
+  }
+
+  virtual void NotifyFaviconUpdated() {
+    tab_contents_->NotifyNavigationStateChanged(TabContents::INVALIDATE_TAB);
+  }
+
+ private:
+  TabContents* tab_contents_;  // weak
+};
+
 // This class is used to catch the FaviconHandler's download and history
 // request, and also provide the methods to access the FaviconHandler internal.
 class TestFaviconHandler : public FaviconHandler {
  public:
   TestFaviconHandler(const GURL& page_url,
-                    TabContents* tab_contents,
-                    Type type)
-    : FaviconHandler(tab_contents, type),
-      download_image_size_(0),
-      download_id_(0),
-      tab_contents_(tab_contents){
+                     Profile* profile,
+                     FaviconHandlerDelegate* delegate,
+                     Type type)
+      : FaviconHandler(profile, delegate, type),
+        download_image_size_(0),
+        download_id_(0) {
     entry_.set_url(page_url);
   }
 
@@ -176,7 +208,7 @@ class TestFaviconHandler : public FaviconHandler {
   void OnDidDownloadFavicon(int id,
                             const GURL& image_url,
                             bool errored,
-                            const SkBitmap& image) {
+                            gfx::Image& image) {
     FaviconHandler::OnDidDownloadFavicon(id, image_url, errored, image);
   }
 
@@ -245,7 +277,6 @@ class TestFaviconHandler : public FaviconHandler {
   // FaviconHandler.
   int download_id_;
 
-  TabContents* tab_contents_;
   scoped_ptr<DownloadHandler> download_handler_;
   scoped_ptr<HistoryRequestHandler> history_handler_;
 
@@ -264,8 +295,9 @@ void DownloadHandler::UpdateFaviconURL(const std::vector<FaviconURL> urls) {
 }
 
 void DownloadHandler::InvokeCallback() {
+  gfx::Image image(new SkBitmap(bitmap_));
   favicon_helper_->OnDidDownloadFavicon(download_id_, image_url_, failed_,
-                                        bitmap_);
+                                        image);
 }
 
 void HistoryRequestHandler::InvokeCallback() {
@@ -279,7 +311,9 @@ TEST_F(FaviconHandlerTest, GetFaviconFromHistory) {
   const GURL page_url("http://www.google.com");
   const GURL icon_url("http://www.google.com/favicon");
 
-  TestFaviconHandler helper(page_url, contents(), FaviconHandler::FAVICON);
+  TestFaviconHandlerDelegate delegate(contents());
+  TestFaviconHandler helper(page_url, contents()->profile(),
+                            &delegate, FaviconHandler::FAVICON);
 
   helper.FetchFavicon(page_url);
   HistoryRequestHandler* history_handler = helper.history_handler();
@@ -324,7 +358,9 @@ TEST_F(FaviconHandlerTest, DownloadFavicon) {
   const GURL page_url("http://www.google.com");
   const GURL icon_url("http://www.google.com/favicon");
 
-  TestFaviconHandler helper(page_url, contents(), FaviconHandler::FAVICON);
+  TestFaviconHandlerDelegate delegate(contents());
+  TestFaviconHandler helper(page_url, contents()->profile(),
+                            &delegate, FaviconHandler::FAVICON);
 
   helper.FetchFavicon(page_url);
   HistoryRequestHandler* history_handler = helper.history_handler();
@@ -388,7 +424,9 @@ TEST_F(FaviconHandlerTest, UpdateAndDownloadFavicon) {
   const GURL icon_url("http://www.google.com/favicon");
   const GURL new_icon_url("http://www.google.com/new_favicon");
 
-  TestFaviconHandler helper(page_url, contents(), FaviconHandler::FAVICON);
+  TestFaviconHandlerDelegate delegate(contents());
+  TestFaviconHandler helper(page_url, contents()->profile(),
+                            &delegate, FaviconHandler::FAVICON);
 
   helper.FetchFavicon(page_url);
   HistoryRequestHandler* history_handler = helper.history_handler();
@@ -473,7 +511,9 @@ TEST_F(FaviconHandlerTest, UpdateFavicon) {
   const GURL icon_url("http://www.google.com/favicon");
   const GURL new_icon_url("http://www.google.com/new_favicon");
 
-  TestFaviconHandler helper(page_url, contents(), FaviconHandler::FAVICON);
+  TestFaviconHandlerDelegate delegate(contents());
+  TestFaviconHandler helper(page_url, contents()->profile(),
+                            &delegate, FaviconHandler::FAVICON);
 
   helper.FetchFavicon(page_url);
   HistoryRequestHandler* history_handler = helper.history_handler();
@@ -544,7 +584,9 @@ TEST_F(FaviconHandlerTest, Download2ndFaviconURLCandidate) {
   const GURL icon_url("http://www.google.com/favicon");
   const GURL new_icon_url("http://www.google.com/new_favicon");
 
-  TestFaviconHandler helper(page_url, contents(), FaviconHandler::TOUCH);
+  TestFaviconHandlerDelegate delegate(contents());
+  TestFaviconHandler helper(page_url, contents()->profile(),
+                            &delegate, FaviconHandler::TOUCH);
 
   helper.FetchFavicon(page_url);
   HistoryRequestHandler* history_handler = helper.history_handler();
@@ -658,7 +700,9 @@ TEST_F(FaviconHandlerTest, UpdateDuringDownloading) {
   const GURL icon_url("http://www.google.com/favicon");
   const GURL new_icon_url("http://www.google.com/new_favicon");
 
-  TestFaviconHandler helper(page_url, contents(), FaviconHandler::TOUCH);
+  TestFaviconHandlerDelegate delegate(contents());
+  TestFaviconHandler helper(page_url, contents()->profile(),
+                            &delegate, FaviconHandler::TOUCH);
 
   helper.FetchFavicon(page_url);
   HistoryRequestHandler* history_handler = helper.history_handler();
