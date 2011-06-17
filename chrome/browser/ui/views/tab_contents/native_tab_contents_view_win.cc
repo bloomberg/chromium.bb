@@ -6,10 +6,11 @@
 
 #include "chrome/browser/renderer_host/render_widget_host_view_win.h"
 #include "chrome/browser/tab_contents/web_drop_target_win.h"
-#include "chrome/browser/ui/views/tab_contents/tab_contents_drag_win.h"
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_view_delegate.h"
+#include "chrome/browser/ui/views/tab_contents/tab_contents_drag_win.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
+#include "views/widget/widget.h"
 
 namespace {
 
@@ -26,25 +27,47 @@ namespace {
 // window that interact poorly with us.
 //
 // See: http://crbug.com/16476
-HWND GetHiddenTabHostWindow() {
-  static views::Widget* widget = NULL;
+class HiddenTabHostWindow : public views::Widget {
+ public:
+  static HWND Instance();
 
-  if (!widget) {
-    widget = new views::Widget;
-    // We don't want this widget to be closed automatically, this causes
-    // problems in tests that close the last non-secondary window.
-    widget->set_is_secondary_widget(false);
-    views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
-    widget->Init(params);
-    // If a background window requests focus, the hidden tab host will
-    // be activated to focus the tab.  Use WS_DISABLED to prevent
-    // this.
-    EnableWindow(widget->GetNativeView(), FALSE);
+ private:
+  HiddenTabHostWindow() {}
+
+  ~HiddenTabHostWindow() {
+    instance_ = NULL;
   }
 
-  return widget->GetNativeView();
-}
+  // Do nothing when asked to close.  External applications (notably
+  // installers) try to close Chrome by sending WM_CLOSE to Chrome's
+  // top level windows.  We don't want the tab host to close due to
+  // those messages.  Instead the browser will close when the browser
+  // window receives a WM_CLOSE.
+  virtual void Close() OVERRIDE {}
 
+  static HiddenTabHostWindow* instance_;
+
+  DISALLOW_COPY_AND_ASSIGN(HiddenTabHostWindow);
+};
+
+HiddenTabHostWindow* HiddenTabHostWindow::instance_ = NULL;
+
+HWND HiddenTabHostWindow::Instance() {
+  if (instance_ == NULL) {
+    instance_ = new HiddenTabHostWindow;
+    // We don't want this widget to be closed automatically, this causes
+    // problems in tests that close the last non-secondary window.
+    instance_->set_is_secondary_widget(false);
+    views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
+    instance_->Init(params);
+    // If a background window requests focus, the hidden tab host will
+    // be activated to focus the tab.  Disable the window to prevent
+    // this.
+    EnableWindow(instance_->GetNativeView(), FALSE);
+  }
+
+  return instance_->GetNativeView();
+}
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -76,7 +99,7 @@ void NativeTabContentsViewWin::InitNativeTabContentsView() {
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
   params.native_widget = this;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.parent = GetHiddenTabHostWindow();
+  params.parent = HiddenTabHostWindow::Instance();
   GetWidget()->Init(params);
 
   // Remove the root view drop target so we can register our own.
@@ -88,7 +111,8 @@ void NativeTabContentsViewWin::InitNativeTabContentsView() {
 void NativeTabContentsViewWin::Unparent() {
   // Note that we do not DCHECK on focus_manager_ as it may be NULL when used
   // with an external tab container.
-  views::Widget::ReparentNativeView(GetNativeView(), GetHiddenTabHostWindow());
+  views::Widget::ReparentNativeView(GetNativeView(),
+                                    HiddenTabHostWindow::Instance());
 }
 
 RenderWidgetHostView* NativeTabContentsViewWin::CreateRenderWidgetHostView(
