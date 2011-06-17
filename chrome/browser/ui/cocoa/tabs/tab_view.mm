@@ -49,6 +49,7 @@ const CGFloat kRapidCloseDist = 2.5;
 - (NSTimeInterval)timeElapsedSinceLastGlowUpdate;
 - (void)adjustGlowValue;
 - (NSBezierPath*)bezierPathForRect:(NSRect)rect;
+- (NSBezierPath*)topHighlightBezierPathForRect:(NSRect)rect;
 
 @end  // TabView(Private)
 
@@ -285,8 +286,15 @@ const CGFloat kRapidCloseDist = 2.5;
       // (The result is the same for normal, non-fullscreen windows.)
       [[[self window] backgroundColor] set];
       [path fill];
-      [[NSColor colorWithCalibratedWhite:1.0 alpha:0.3] set];
-      [path fill];
+
+      gfx::ScopedNSGraphicsContextSaveGState drawBackgroundState(context);
+      CGContextRef cgContext =
+          static_cast<CGContextRef>([context graphicsPort]);
+      CGContextBeginTransparencyLayer(cgContext, 0);
+      CGContextSetAlpha(cgContext, 0.5);
+      [path addClip];
+      [super drawBackgroundWithOpaque:NO];
+      CGContextEndTransparencyLayer(cgContext);
     }
   }
 
@@ -347,20 +355,28 @@ const CGFloat kRapidCloseDist = 2.5;
           ThemeService::COLOR_TOOLBAR_BEZEL :
           ThemeService::COLOR_TOOLBAR, true) : nil;
 
-  // Draw the top inner highlight within the currently selected tab if using
-  // the default theme.
-  if (selected && themeProvider && themeProvider->UsingDefaultTheme()) {
+  // Draw the top inner highlight within the tab if using the default theme.
+  if (themeProvider && themeProvider->UsingDefaultTheme()) {
     NSAffineTransform* highlightTransform = [NSAffineTransform transform];
     [highlightTransform translateXBy:lineWidth yBy:-lineWidth];
-    scoped_nsobject<NSBezierPath> highlightPath([path copy]);
-    [highlightPath transformUsingAffineTransform:highlightTransform];
-    [highlightColor setStroke];
-    [highlightPath setLineWidth:lineWidth];
-    [highlightPath stroke];
-    highlightTransform = [NSAffineTransform transform];
-    [highlightTransform translateXBy:-2 * lineWidth yBy:0.0];
-    [highlightPath transformUsingAffineTransform:highlightTransform];
-    [highlightPath stroke];
+    if (selected) {
+      scoped_nsobject<NSBezierPath> highlightPath([path copy]);
+      [highlightPath transformUsingAffineTransform:highlightTransform];
+      [highlightColor setStroke];
+      [highlightPath setLineWidth:lineWidth];
+      [highlightPath stroke];
+      highlightTransform = [NSAffineTransform transform];
+      [highlightTransform translateXBy:-2 * lineWidth yBy:0.0];
+      [highlightPath transformUsingAffineTransform:highlightTransform];
+      [highlightPath stroke];
+    } else {
+      NSBezierPath* topHighlightPath =
+          [self topHighlightBezierPathForRect:[self bounds]];
+      [topHighlightPath transformUsingAffineTransform:highlightTransform];
+      [highlightColor setStroke];
+      [topHighlightPath setLineWidth:lineWidth];
+      [topHighlightPath stroke];
+    }
   }
 
   [context restoreGraphicsState];
@@ -613,6 +629,26 @@ const CGFloat kRapidCloseDist = 2.5;
   [path lineToPoint:NSMakePoint(bottomRight.x + lineWidth, bottomRight.y)];
   [path lineToPoint:NSMakePoint(bottomRight.x + lineWidth,
                                 bottomRight.y - (2 * lineWidth))];
+  return path;
+}
+
+- (NSBezierPath*)topHighlightBezierPathForRect:(NSRect)rect {
+  // Outset by 0.5 in order to draw on pixels rather than on borders (which
+  // would cause blurry pixels). Subtract 1px of height to compensate, otherwise
+  // clipping will occur.
+  rect = NSInsetRect(rect, -0.5, -0.5);
+  rect.size.height -= 1.0;
+
+  NSPoint topRight =
+      NSMakePoint(NSMaxX(rect) - kInsetMultiplier * NSHeight(rect),
+                  NSMaxY(rect));
+  NSPoint topLeft =
+      NSMakePoint(NSMinX(rect)  + kInsetMultiplier * NSHeight(rect),
+                  NSMaxY(rect));
+
+  NSBezierPath* path = [NSBezierPath bezierPath];
+  [path moveToPoint:topLeft];
+  [path lineToPoint:topRight];
   return path;
 }
 

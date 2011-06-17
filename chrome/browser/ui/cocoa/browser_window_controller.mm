@@ -1559,6 +1559,9 @@
   // To line up the background pattern with the pattern in the browser window
   // the background pattern for the tabs needs to be moved left by 5 pixels.
   const CGFloat kPatternHorizontalOffset = -5;
+  // To match Windows and CrOS, have to offset vertically by 2 pixels.
+  const CGFloat kPatternVerticalOffset = 2;
+
   NSView* tabStripView = [self tabStripView];
   NSRect tabStripViewWindowBounds = [tabStripView bounds];
   NSView* windowChromeView = [[[self window] contentView] superview];
@@ -1568,7 +1571,8 @@
   NSPoint phase = NSMakePoint(NSMinX(tabStripViewWindowBounds)
                                   + kPatternHorizontalOffset,
                               NSMinY(tabStripViewWindowBounds)
-                                  + [TabStripController defaultTabHeight]);
+                                  + [TabStripController defaultTabHeight]
+                                  + kPatternVerticalOffset);
   return phase;
 }
 
