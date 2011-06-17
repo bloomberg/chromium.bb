@@ -495,10 +495,11 @@ PluginModule::GetInterfaceFunc PluginModule::GetLocalGetInterfaceFunc() {
 
 PluginInstance* PluginModule::CreateInstance(PluginDelegate* delegate) {
   PluginInstance* instance(NULL);
-  const void* plugin_instance_if = GetPluginInterface(PPP_INSTANCE_INTERFACE);
+  const void* plugin_instance_if =
+      GetPluginInterface(PPP_INSTANCE_INTERFACE_0_5);
   if (plugin_instance_if) {
     instance = new PluginInstance(delegate, this,
-        PluginInstance::new_instance_interface<PPP_Instance>(
+        PluginInstance::new_instance_interface<PPP_Instance_0_5>(
             plugin_instance_if));
   } else {
     // If the current interface is not supported, try retrieving older versions.
