@@ -10,6 +10,8 @@
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
+#include "jingle/notifier/base/mock_task.h"
+#include "jingle/notifier/base/task_pump.h"
 #include "jingle/notifier/base/weak_xmpp_client.h"
 #include "net/base/cert_verifier.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -240,6 +242,28 @@ TEST_F(XmppConnectionTest, ConnectThenError) {
   xmpp_connection.weak_xmpp_client_->
       SignalStateChange(buzz::XmppEngine::STATE_CLOSED);
   EXPECT_EQ(NULL, weak_ptr.get());
+}
+
+// We don't destroy XmppConnection's task pump on destruction, but it
+// should still not run any more tasks.
+TEST_F(XmppConnectionTest, TasksDontRunAfterXmppConnectionDestructor) {
+  {
+    XmppConnection xmpp_connection(buzz::XmppClientSettings(),
+                                   url_request_context_getter_,
+                                   &mock_xmpp_connection_delegate_, NULL);
+
+    MockTask* task = new MockTask(xmpp_connection.task_pump_.get());
+    // We have to do this since the state enum is protected in
+    // talk_base::Task.
+    const int TASK_STATE_ERROR = 3;
+    ON_CALL(*task, ProcessStart())
+        .WillByDefault(Return(TASK_STATE_ERROR));
+    EXPECT_CALL(*task, ProcessStart()).Times(0);
+    task->Start();
+  }
+
+  // This should destroy |task_pump|, but |task| still shouldn't run.
+  message_loop_.RunAllPending();
 }
 
 }  // namespace notifier

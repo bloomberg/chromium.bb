@@ -76,6 +76,7 @@ XmppConnection::XmppConnection(
 XmppConnection::~XmppConnection() {
   DCHECK(non_thread_safe_.CalledOnValidThread());
   ClearClient();
+  task_pump_->Stop();
   MessageLoop* current_message_loop = MessageLoop::current();
   CHECK(current_message_loop);
   // We do this because XmppConnection may get destroyed as a result

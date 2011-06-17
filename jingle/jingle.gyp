@@ -124,6 +124,8 @@
       'sources': [
         'notifier/base/fake_base_task.cc',
         'notifier/base/fake_base_task.h',
+        'notifier/base/mock_task.cc',
+        'notifier/base/mock_task.h',
       ],
       'dependencies': [
         'notifier',
@@ -157,6 +159,7 @@
         'notifier/base/chrome_async_socket_unittest.cc',
         'notifier/base/fake_ssl_client_socket_unittest.cc',
         'notifier/base/proxy_resolving_client_socket_unittest.cc',
+        'notifier/base/task_pump_unittest.cc',
         'notifier/base/xmpp_connection_unittest.cc',
         'notifier/base/weak_xmpp_client_unittest.cc',
         'notifier/communicator/xmpp_connection_generator_unittest.cc',

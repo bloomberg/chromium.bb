@@ -93,6 +93,7 @@ class XmppConnection : public sigslot::has_slots<> {
   FRIEND_TEST(XmppConnectionTest, Connect);
   FRIEND_TEST(XmppConnectionTest, MultipleConnect);
   FRIEND_TEST(XmppConnectionTest, ConnectThenError);
+  FRIEND_TEST(XmppConnectionTest, TasksDontRunAfterXmppConnectionDestructor);
 
   DISALLOW_COPY_AND_ASSIGN(XmppConnection);
 };

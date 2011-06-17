@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,8 @@ namespace notifier {
 TaskPump::TaskPump()
     : scoped_runnable_method_factory_(
         ALLOW_THIS_IN_INITIALIZER_LIST(this)),
-      posted_wake_(false) {}
+      posted_wake_(false),
+      stopped_(false) {}
 
 TaskPump::~TaskPump() {
   DCHECK(non_thread_safe_.CalledOnValidThread());
@@ -18,7 +19,7 @@ TaskPump::~TaskPump() {
 
 void TaskPump::WakeTasks() {
   DCHECK(non_thread_safe_.CalledOnValidThread());
-  if (!posted_wake_) {
+  if (!stopped_ && !posted_wake_) {
     MessageLoop* current_message_loop = MessageLoop::current();
     CHECK(current_message_loop);
     // Do the requested wake up.
@@ -37,8 +38,15 @@ int64 TaskPump::CurrentTime() {
   return 0;
 }
 
+void TaskPump::Stop() {
+  stopped_ = true;
+}
+
 void TaskPump::CheckAndRunTasks() {
   DCHECK(non_thread_safe_.CalledOnValidThread());
+  if (stopped_) {
+    return;
+  }
   posted_wake_ = false;
   // We shouldn't be using libjingle for timeout tasks, so we should
   // have no timeout tasks at all.
