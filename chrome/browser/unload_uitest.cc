@@ -361,6 +361,10 @@ TEST_F(UnloadTest, BrowserCloseInfiniteUnload) {
 // Flakily fails, times out: http://crbug.com/78803
 #define MAYBE_BrowserCloseInfiniteBeforeUnload \
     DISABLED_BrowserCloseInfiniteBeforeUnload
+#elif defined(OS_CHROMEOS)
+// Flakily fails: http://crbug.com/86469
+#define MAYBE_BrowserCloseInfiniteBeforeUnload \
+    FLAKY_BrowserCloseInfiniteBeforeUnload
 #else
 #define MAYBE_BrowserCloseInfiniteBeforeUnload BrowserCloseInfiniteBeforeUnload
 #endif
