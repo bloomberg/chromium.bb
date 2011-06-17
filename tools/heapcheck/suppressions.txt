@@ -1622,3 +1622,9 @@
    ...
    fun:WebKitContextTest_Basic_Test::TestBody
 }
+{
+   bug_86468
+   Heapcheck:Leak
+   ...
+   fun:content_settings::PrefProviderTest_MigrateSinglePatternSettings_Test::TestBody
+}

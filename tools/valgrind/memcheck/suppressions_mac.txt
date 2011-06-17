@@ -1733,14 +1733,4 @@
    Memcheck:Addr4
    ...
    fun:objc_msgSend*
-   ...
-   fun:loadNib
 }
-{
-   bug_86305
-   Memcheck:Addr4
-   fun:objc_msgSend
-   ...
-   fun:_ZN14OmniboxViewMac*
-}
-

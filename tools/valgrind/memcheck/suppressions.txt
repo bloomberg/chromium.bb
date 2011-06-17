@@ -4152,7 +4152,7 @@
 {
    bug_79671
    Memcheck:Cond
-   fun:_ZN5views15NativeWidgetGtk16ShowNativeWidgetENS_12NativeWidget9ShowStateE
+   fun:_ZN5views15NativeWidgetGtk16ShowNativeWidgetENS_*9ShowStateE
    fun:_ZN5views6Widget4ShowEv
    fun:_ZN11BrowserView4ShowEv
    fun:_ZN8chromeos11BrowserView12ShowInternalEb
@@ -4647,6 +4647,13 @@
    fun:_Znw*
    fun:_ZN8chromeos12input_method14IBusController6CreateEv
    fun:_ZN8chromeos22InputMethodLibraryImpl4InitEv
+}
+{
+   bug_86468
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN16content_settings50PrefProviderTest_MigrateSinglePatternSettings_Test8TestBodyEv
 }
 
 #-----------------------------------------------------------------------
