@@ -84,12 +84,12 @@ class ContentTest(pyauto.PyUITest):
     self.NavigateToURL(url)
     html_regular = self.GetTabContents()
     self.assertTrue('Google Search' in html_regular)
-    self.assertTrue('I&#39;m Feeling Lucky' in html_regular)
+    self.assertTrue('Feeling Lucky' in html_regular)
     self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
     self.NavigateToURL(url, 1, 0)
     html_incognito = self.GetTabContents(0, 1)
     self.assertTrue('Google Search' in html_incognito)
-    self.assertTrue('I&#39;m Feeling Lucky' in html_incognito)
+    self.assertTrue('Feeling Lucky' in html_incognito)
 
   def testTopSitesContent(self):
     """Test content in TopSites and Verify chrome is not getting blocked by

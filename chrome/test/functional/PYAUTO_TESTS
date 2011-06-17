@@ -117,8 +117,6 @@
       '-sync',  # causes browser crash. crbug.com/84494
       # Bad webkit roll? crbug.com/86397
       '-notifications',
-      # crbug.com/86237
-      '-content.ContentTest.testHttpsPage',
       # crbug.com/86523
       '-cookies.CookiesTest.testAllowCookiesForASessionUsingExceptions',
       '-cookies.CookiesTest.testAllowCookiesUsingExceptions',
