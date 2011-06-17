@@ -114,7 +114,6 @@
       '-prefs.PrefsTest.testNavigationStateOnSessionRestore',
       # Flaky: crbug.com/67851
       '-special_tabs.SpecialTabsTest.testAboutDNSTab',
-      '-sync',  # causes browser crash. crbug.com/84494
       # Bad webkit roll? crbug.com/86397
       '-notifications',
       # crbug.com/86523
