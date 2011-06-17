@@ -11,18 +11,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(TOUCH_UI)
-//  Tests that fail on touch .. http://crbug/84855
-#define MAYBE_TestDictionary FAILS_TestDictionary
-#define MAYBE_TestMSDN FAILS_TestMSDN
-#define MAYBE_TestWikipedia FAILS_TestWikipedia
-#else
-#define MAYBE_TestDictionary TestDictionary
-#define MAYBE_TestMSDN TestMSDN
-#define MAYBE_TestWikipedia TestWikipedia
-#endif
-
-
 class TemplateURLParserTest : public testing::Test {
  public:
   TemplateURLParserTest() : parse_result_(true) {
@@ -92,7 +80,7 @@ TEST_F(TemplateURLParserTest, FailOnPost) {
   EXPECT_FALSE(parse_result_);
 }
 
-TEST_F(TemplateURLParserTest, MAYBE_TestDictionary) {
+TEST_F(TemplateURLParserTest, TestDictionary) {
   if (IsDisabled())
     return;
   ParseFile("dictionary.xml", NULL);
@@ -106,7 +94,7 @@ TEST_F(TemplateURLParserTest, MAYBE_TestDictionary) {
             "http://dictionary.reference.com/browse/{searchTerms}?r=75");
 }
 
-TEST_F(TemplateURLParserTest, MAYBE_TestMSDN) {
+TEST_F(TemplateURLParserTest, TestMSDN) {
   if (IsDisabled())
     return;
   ParseFile("msdn.xml", NULL);
@@ -120,7 +108,7 @@ TEST_F(TemplateURLParserTest, MAYBE_TestMSDN) {
             "http://search.msdn.microsoft.com/search/default.aspx?Query={searchTerms}&brand=msdn&locale=en-US");
 }
 
-TEST_F(TemplateURLParserTest, MAYBE_TestWikipedia) {
+TEST_F(TemplateURLParserTest, TestWikipedia) {
   if (IsDisabled())
     return;
   ParseFile("wikipedia.xml", NULL);
