@@ -25,6 +25,9 @@ class TouchTab : public BaseTab {
   // The menu button's class name.
   static const char kViewClassName[];
 
+  // The size of the favicon touch area.
+  static const int kTouchTargetIconSize = 32;
+
   explicit TouchTab(TabController* controller);
   virtual ~TouchTab();
 
@@ -32,6 +35,14 @@ class TouchTab : public BaseTab {
   // to the frame image.
   void set_background_offset(const gfx::Point& offset) {
     background_offset_ = offset;
+  }
+
+  // get and set touch icon
+  void set_touch_icon(const SkBitmap& bitmap) {
+    touch_icon_ = bitmap;
+  }
+  const SkBitmap& touch_icon() const {
+    return touch_icon_;
   }
 
   // Returns the minimum possible size of a single unselected Tab.
@@ -73,6 +84,9 @@ class TouchTab : public BaseTab {
 
   // The offset used to paint the inactive background image.
   gfx::Point background_offset_;
+
+  // The touch icon found
+  SkBitmap touch_icon_;
 
   // 'l' is for left
   // 'c' is for center

@@ -66,6 +66,9 @@ class TouchTabStrip : public BaseTabStrip {
   // is in terms of tab_data, *not* the model.
   TouchTab* GetTabAtTabDataIndex(int tab_data_index) const;
 
+  // Retrieves the Tab at the specified *model* index.
+  TouchTab* GetTouchTabAtModelIndex(int model_index) const;
+
  private:
   void Init();
 

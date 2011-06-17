@@ -2939,6 +2939,8 @@
         'browser/ui/touch/tabs/touch_tab.h',
         'browser/ui/touch/tabs/touch_tab_strip.cc',
         'browser/ui/touch/tabs/touch_tab_strip.h',
+        'browser/ui/touch/tabs/touch_tab_strip_controller.cc',
+        'browser/ui/touch/tabs/touch_tab_strip_controller.h',
         'browser/ui/view_ids.h',
         'browser/ui/views/about_chrome_view.cc',
         'browser/ui/views/about_chrome_view.h',

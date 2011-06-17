@@ -9,11 +9,7 @@
 #include "base/compiler_specific.h"
 
 // Size (along each axis) of the favicon.
-#if defined(TOUCH_UI)
-const int kFaviconSize = 32;
-#else
 const int kFaviconSize = 16;
-#endif
 
 // If the width or height is bigger than the favicon size, a new width/height
 // is calculated and returned in width/height that maintains the aspect

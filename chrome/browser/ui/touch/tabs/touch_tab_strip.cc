@@ -271,6 +271,11 @@ TouchTab* TouchTabStrip::GetTabAtTabDataIndex(int tab_data_index) const {
   return static_cast<TouchTab*>(base_tab_at_tab_index(tab_data_index));
 }
 
+// Retrieves the Tab at the specified *model* index.
+TouchTab* TouchTabStrip::GetTouchTabAtModelIndex(int model_index) const {
+  return static_cast<TouchTab*>(GetBaseTabAtModelIndex(model_index));
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // TouchTabStrip, private:
 

@@ -97,16 +97,30 @@ class BrowserTabStripController : public TabStripController,
                        const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE;
 
+ protected:
+  // The context in which SetTabRendererDataFromModel is being called.
+  enum TabStatus {
+    NEW_TAB,
+    EXISTING_TAB
+  };
+
+  // Sets the TabRendererData from the TabStripModel.
+  virtual void SetTabRendererDataFromModel(TabContents* contents,
+                                           int model_index,
+                                           TabRendererData* data,
+                                           TabStatus tab_status);
+
+  Profile* profile() const { return model_->profile(); }
+
+  const BaseTabStrip* tabstrip() const { return tabstrip_; }
+
+  const Browser* browser() const { return browser_; }
+
  private:
   class TabContextMenuContents;
 
   // Invokes tabstrip_->SetTabData.
   void SetTabDataAt(TabContentsWrapper* contents, int model_index);
-
-  // Sets the TabRendererData from the TabStripModel.
-  void SetTabRendererDataFromModel(TabContents* contents,
-                                   int model_index,
-                                   TabRendererData* data);
 
   void StartHighlightTabsForCommand(
       TabStripModel::ContextMenuCommand command_id,
@@ -114,8 +128,6 @@ class BrowserTabStripController : public TabStripController,
   void StopHighlightTabsForCommand(
       TabStripModel::ContextMenuCommand command_id,
       BaseTab* tab);
-
-  Profile* profile() const { return model_->profile(); }
 
   TabStripModel* model_;
 

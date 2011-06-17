@@ -244,6 +244,9 @@ class CancelableRequestConsumerTSimple : public CancelableRequestConsumerBase {
   // Cancels all requests outstanding.
   void CancelAllRequests();
 
+  // Cancels all requests outstanding matching the client data.
+  void CancelAllRequestsForClientData(T client_data);
+
   // Returns the handle for the first request that has the specified client data
   // (in |handle|). Returns true if there is a request for the specified client
   // data, false otherwise.
@@ -349,12 +352,25 @@ void CancelableRequestConsumerTSimple<T>::CancelAllRequests() {
   // without acquiring the provider lock (http://crbug.com/85970).
   PendingRequestList copied_requests(pending_requests_);
   for (typename PendingRequestList::iterator i = copied_requests.begin();
-       i != copied_requests.end(); ++i)
+       i != copied_requests.end(); ++i) {
     i->first.provider->CancelRequest(i->first.handle);
+  }
   copied_requests.clear();
 
   // That should have cleared all the pending items.
   DCHECK(pending_requests_.empty());
+}
+
+template<class T>
+void CancelableRequestConsumerTSimple<T>::CancelAllRequestsForClientData(
+    T client_data) {
+  PendingRequestList copied_requests(pending_requests_);
+  for (typename PendingRequestList::const_iterator i = copied_requests.begin();
+      i != copied_requests.end(); ++i) {
+    if (i->second == client_data)
+      i->first.provider->CancelRequest(i->first.handle);
+  }
+  copied_requests.clear();
 }
 
 template<class T>

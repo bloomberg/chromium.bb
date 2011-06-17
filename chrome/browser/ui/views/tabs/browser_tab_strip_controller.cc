@@ -328,7 +328,8 @@ void BrowserTabStripController::TabInsertedAt(TabContentsWrapper* contents,
   hover_tab_selector_.CancelTabTransition();
 
   TabRendererData data;
-  SetTabRendererDataFromModel(contents->tab_contents(), model_index, &data);
+  SetTabRendererDataFromModel(contents->tab_contents(), model_index, &data,
+                              NEW_TAB);
   tabstrip_->AddTabAt(model_index, data);
 }
 
@@ -357,7 +358,8 @@ void BrowserTabStripController::TabMoved(TabContentsWrapper* contents,
 
   // Update the data first as the pinned state may have changed.
   TabRendererData data;
-  SetTabRendererDataFromModel(contents->tab_contents(), to_model_index, &data);
+  SetTabRendererDataFromModel(contents->tab_contents(), to_model_index, &data,
+                              EXISTING_TAB);
   tabstrip_->SetTabData(from_model_index, data);
 
   tabstrip_->MoveTab(from_model_index, to_model_index);
@@ -400,18 +402,26 @@ void BrowserTabStripController::TabBlockedStateChanged(
   SetTabDataAt(contents, model_index);
 }
 
-void BrowserTabStripController::SetTabDataAt(
-    TabContentsWrapper* contents,
-    int model_index) {
-  TabRendererData data;
-  SetTabRendererDataFromModel(contents->tab_contents(), model_index, &data);
-  tabstrip_->SetTabData(model_index, data);
+////////////////////////////////////////////////////////////////////////////////
+// BrowserTabStripController, NotificationObserver implementation:
+
+void BrowserTabStripController::Observe(NotificationType type,
+    const NotificationSource& source, const NotificationDetails& details) {
+  DCHECK(type.value == NotificationType::TAB_CLOSEABLE_STATE_CHANGED);
+  // Note that this notification may be fired during a model mutation and
+  // possibly before the tabstrip has processed the change.
+  // Here, we just re-layout each existing tab to reflect the change in its
+  // closeable state, and then schedule paint for entire tabstrip.
+  for (int i = 0; i < tabstrip_->tab_count(); ++i)
+    tabstrip_->base_tab_at_tab_index(i)->Layout();
+  tabstrip_->SchedulePaint();
 }
 
 void BrowserTabStripController::SetTabRendererDataFromModel(
     TabContents* contents,
     int model_index,
-    TabRendererData* data) {
+    TabRendererData* data,
+    TabStatus tab_status) {
   SkBitmap* app_icon = NULL;
   TabContentsWrapper* wrapper =
       TabContentsWrapper::GetCurrentWrapperForContents(contents);
@@ -435,6 +445,15 @@ void BrowserTabStripController::SetTabRendererDataFromModel(
   data->mini = model_->IsMiniTab(model_index);
   data->blocked = model_->IsTabBlocked(model_index);
   data->app = wrapper->extension_tab_helper()->is_app();
+}
+
+void BrowserTabStripController::SetTabDataAt(
+    TabContentsWrapper* contents,
+    int model_index) {
+  TabRendererData data;
+  SetTabRendererDataFromModel(contents->tab_contents(), model_index, &data,
+                              EXISTING_TAB);
+  tabstrip_->SetTabData(model_index, data);
 }
 
 void BrowserTabStripController::StartHighlightTabsForCommand(
@@ -464,18 +483,4 @@ void BrowserTabStripController::StopHighlightTabsForCommand(
   }
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// BrowserTabStripController, NotificationObserver implementation:
 
-void BrowserTabStripController::Observe(NotificationType type,
-    const NotificationSource& source, const NotificationDetails& details) {
-  DCHECK(type.value == NotificationType::TAB_CLOSEABLE_STATE_CHANGED);
-  // Note that this notification may be fired during a model mutation and
-  // possibly before the tabstrip has processed the change.
-  // Here, we just re-layout each existing tab to reflect the change in its
-  // closeable state, and then schedule paint for entire tabstrip.
-  for (int i = 0; i < tabstrip_->tab_count(); ++i) {
-    tabstrip_->base_tab_at_tab_index(i)->Layout();
-  }
-  tabstrip_->SchedulePaint();
-}
