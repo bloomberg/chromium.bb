@@ -19,6 +19,9 @@
 - (BOOL)firstInfobarUsesExpandedTip;
 @end
 
+infobars::Tip::Tip() {}
+infobars::Tip::~Tip() {}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 @implementation InfobarTipDrawingModel

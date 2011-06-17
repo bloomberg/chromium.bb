@@ -35,6 +35,9 @@ const CGFloat kDefaultTipWidth = 23.0;
 // This structure contains the necessary information that the
 // InfobarGradientView uses to draw the background and anti-spoof tip.
 struct Tip {
+  Tip();
+  ~Tip();
+
   // The bezier path for the tip itself.
   scoped_nsobject<NSBezierPath> path;
   // The starting point for the above |path|. The path around infobar's frame
