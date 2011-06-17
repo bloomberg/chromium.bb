@@ -17,7 +17,7 @@ fi
 source ../../tools/llvm/common-tools.sh
 readonly NACL_ROOT="$(GetAbsolutePath "../../")"
 SetScriptPath "$(pwd)/run_all.sh"
-SetLogDirectory "."
+SetLogDirectory "${NACL_ROOT}/toolchain/test-log"
 
 ######################################################################
 # CONFIGURATION

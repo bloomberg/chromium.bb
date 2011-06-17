@@ -29,6 +29,8 @@ readonly NACL_ROOT="$(pwd)"
 
 source tools/llvm/common-tools.sh
 SetScriptPath "${NACL_ROOT}/tools/llvm/utman-test.sh"
+SetLogDirectory "${NACL_ROOT}/toolchain/test-log"
+
 # For different levels of make parallelism change this in your env
 readonly UTMAN_CONCURRENCY=${UTMAN_CONCURRENCY:-8}
 
