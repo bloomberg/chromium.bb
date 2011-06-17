@@ -31,9 +31,7 @@
       ],
       'sources': [
         '../ui/base/dragdrop/os_exchange_data_win_unittest.cc',
-        '../ui/base/resource/data_pack_unittest.cc',
         '../ui/base/resource/resource_bundle_unittest.cc',
-        '../ui/base/test/data/resource.h',
         '../ui/base/view_prop_unittest.cc',
         'run_all_unittests.cc',
         'sql/connection_unittest.cc',

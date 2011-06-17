@@ -30,6 +30,8 @@
         'base/models/tree_node_model_unittest.cc',
         'base/range/range_unittest.cc',
         'base/range/range_unittest.mm',
+        'base/resource/data_pack_unittest.cc',
+        'base/test/data/resource.h',
         'base/text/text_elider_unittest.cc',
         'gfx/blit_unittest.cc',
         'gfx/codec/jpeg_codec_unittest.cc',
