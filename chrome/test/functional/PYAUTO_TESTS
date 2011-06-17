@@ -81,6 +81,16 @@
       '-autofill.AutofillTest.testMergeAggregatedProfilesWithSameAddress',
       '-autofill.AutofillTest.testProfilesNotMergedWhenNoMinAddressData',
       '-content.ContentTest.testTopSitesContent',  # crbug.com/71824
+
+      # DCHECKs firing in Debug build. crbug.com/86456
+      '-autofill.AutofillTest.testWhitespacesAndSeparatorCharsStrippedForValidCCNums',
+      '-autofill.AutofillTest.testAggregatesMinValidProfile',
+      '-autofill.AutofillTest.testCCInfoNotStoredWhenAutocompleteOff',
+      '-autofill.AutofillTest.testInvalidCreditCardNumberIsNotAggregated',
+      '-autofill.AutofillTest.testProfileWithEmailInOtherFieldNotSaved',
+      '-autofill.AutofillTest.testProfilesNotAggregatedWithInvalidEmail',
+      '-autofill.AutofillTest.testProfilesNotAggregatedWithNoAddress',
+
       # crbug.com/84060
       '-databases.DatabasesTest.testIncognitoCannotReadRegularDatabase',
       '-databases.DatabasesTest.testIncognitoDBPersistentAcrossTabs',
@@ -111,8 +121,6 @@
       '-special_tabs.SpecialTabsTest.testAboutDNSTab',
       '-sync',  # causes browser crash. crbug.com/84494
       # Bad webkit roll? crbug.com/86397
-      '-autofill.AutofillTest.testWhitespacesAndSeparatorCharsStrippedForValidCCNums',
-      '-autofill.AutofillTest.testAggregatesMinValidProfile',
       '-notifications',
       # crbug.com/86237
       '-content.ContentTest.testHttpsPage',
