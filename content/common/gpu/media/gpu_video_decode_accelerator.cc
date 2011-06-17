@@ -97,8 +97,9 @@ void GpuVideoDecodeAccelerator::NotifyError(
 
 void GpuVideoDecodeAccelerator::OnGetConfigs(
     const std::vector<uint32>& requested, std::vector<uint32>* matched) {
-  // TODO(vrk): Need to rethink GetConfigs.
-  NOTIMPLEMENTED();
+  if (!video_decode_accelerator_.get())
+    return;
+  video_decode_accelerator_->GetConfigs(requested, matched);
 }
 
 void GpuVideoDecodeAccelerator::OnInitialize(
