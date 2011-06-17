@@ -11,7 +11,6 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/webui/test_chrome_web_ui_factory.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/ui_test_utils.h"
@@ -22,8 +21,9 @@
 
 namespace {
 
-const FilePath::CharType kWebUILibraryJS[] = FILE_PATH_LITERAL("test_api.js");
-const FilePath::CharType kWebUITestFolder[] = FILE_PATH_LITERAL("webui");
+const FilePath::StringType kWebUILibraryJS =
+    FILE_PATH_LITERAL("test_api.js");
+const FilePath::StringType kWebUITestFolder = FILE_PATH_LITERAL("webui");
 base::LazyInstance<std::vector<std::string> > error_messages_(
     base::LINKER_INITIALIZED);
 
@@ -244,45 +244,3 @@ IN_PROC_BROWSER_TEST_F(WebUIBrowserExpectFailTest, TestFailsFast) {
   EXPECT_FATAL_FAILURE(RunJavascriptTestNoReturn("FAILS_BogusFunctionName"),
                        "WebUITestHandler::Observe");
 }
-
-
-// This test framework is used in the generated tests, which are included
-// below. WebUIBrowserTest requires being on a page which is a WebUI page. Using
-// the TestChromeWebUIFactory, we use a dummy URL |kChromeTestBrowserTestPass|,
-// which we force to be a WebUI page.
-class WebUIBrowserTestPass
-    : public WebUIBrowserTest,
-      public TestChromeWebUIFactory::WebUIProvider {
- private:
-  // TestChromeWebUIFactory::WebUIProvider:
-  virtual WebUI* NewWebUI(TabContents* tab_contents,
-                          const GURL& url) OVERRIDE {
-    return new WebUI(tab_contents);
-  }
-
-  // InProcessBrowserTest:
-  virtual void SetUpOnMainThread() OVERRIDE {
-    WebUIBrowserTest::SetUpOnMainThread();
-    ui_test_utils::NavigateToURL(browser(),
-                                 GURL(kChromeTestBrowserTestPass));
-  }
-
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    WebUIBrowserTest::SetUpInProcessBrowserTestFixture();
-    TestChromeWebUIFactory::AddFactoryOverride(
-        GURL(kChromeTestBrowserTestPass).host(), this);
-  }
-
-  virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {
-    WebUIBrowserTest::TearDownInProcessBrowserTestFixture();
-    TestChromeWebUIFactory::RemoveFactoryOverride(
-        GURL(kChromeTestBrowserTestPass).host());
-  }
-
-  static const char kChromeTestBrowserTestPass[];
-};
-
-const char WebUIBrowserTestPass::kChromeTestBrowserTestPass[] =
-    "chrome://WebUIBrowserTestPass";
-
-#include "chrome/browser/ui/webui/web_ui_browsertest-inl.h"
