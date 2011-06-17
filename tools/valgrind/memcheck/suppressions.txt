@@ -619,12 +619,19 @@
    obj:/bin/bash
 }
 {
-   bug_76386
+   bug_76386a
    Memcheck:Leak
    fun:_Znw*
    fun:_ZNSs4_Rep9_S_createEjjRKSaIcE
    ...
    fun:_ZNSsC1EPKcRKSaIcE
+}
+{
+   bug_76386b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZNSs4_Rep9_S_createEjjRKSaIcE
+   fun:_ZNSs4_Rep8_M_cloneERKSaIcEj
 }
 
 #-----------------------------------------------------------------------
@@ -2249,46 +2256,6 @@
    fun:*StackDumpSignalHandler*
    ...
    fun:_ZN54BrowserAboutHandlerTest_WillHandleBrowserAboutURL_Test8TestBodyEv
-}
-{
-   bug_46570_a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZNSs4_Rep9_S_createEjjRKSaIcE
-   fun:_ZNSs4_Rep8_M_cloneERKSaIcEj
-   fun:_ZNSs7reserveEj
-   fun:_ZNSs6appendERKSs
-   fun:_ZNK8FilePath6AppendERKSs
-   fun:_ZN9file_util31CreateAndOpenFdForTemporaryFileE8FilePathPS0_
-   fun:_ZN9file_util31CreateAndOpenTemporaryFileInDirERK8FilePathPS0_
-   fun:_ZN9file_util31CreateAndOpenTemporaryShmemFileEP8FilePath
-   fun:_ZN4base12SharedMemory12CreateOrOpenERKSbIwSt11char_traitsIwESaIwEEij
-   fun:_ZN4base12SharedMemory6CreateERKSbIwSt11char_traitsIwESaIwEEbbj
-   fun:_ZN14SharedIOBuffer4InitEv
-   fun:_ZN20AsyncResourceHandler10OnWillReadEiPPN3net8IOBufferEPii
-   fun:_ZN23BufferedResourceHandler10OnWillReadEiPPN3net8IOBufferEPii
-   fun:_ZN27SafeBrowsingResourceHandler10OnWillReadEiPPN3net8IOBufferEPii
-   ...
-   fun:_ZN22ResourceDispatcherHost4ReadEP10URLRequestPi
-   fun:_ZN22ResourceDispatcherHost15OnReadCompletedEP10URLRequesti
-   fun:_ZN13URLRequestJob18NotifyReadCompleteEi
-}
-{
-   bug_46570_d
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZNSs4_Rep9_S_createEjjRKSaIcE
-   ...
-   fun:_ZN31AutomationRenderMessageFilter17OnSetFilteredInetEb
-   fun:_Z16DispatchToMethodI31AutomationRenderMessageFilterMS0_FvbEbEvPT_T0_RK6Tuple1IT1_E
-   fun:_ZN3IPC16MessageWithTupleI6Tuple1IbEE8DispatchI31AutomationRenderMessageFilterMS5_FvbEEEbPKNS_7MessageEPT_T0_
-   fun:_ZN31AutomationRenderMessageFilter17OnMessageReceivedERKN3IPC7MessageE
-   fun:_ZN3IPC12ChannelProxy7Context10TryFiltersERKNS_7MessageE
-   fun:_ZN3IPC11SyncChannel11SyncContext17OnMessageReceivedERKNS_7MessageE
-   fun:_ZN3IPC7Channel11ChannelImpl23ProcessIncomingMessagesEv
-   fun:_ZN3IPC7Channel11ChannelImpl28OnFileCanReadWithoutBlockingEi
-   fun:_ZN4base19MessagePumpLibevent21FileDescriptorWatcher28OnFileCanReadWithoutBlockingEiPS0_
-   fun:_ZN4base19MessagePumpLibevent22OnLibeventNotificationEisPv
 }
 {
    bug_47950
@@ -4664,6 +4631,19 @@
    fun:_Znw*
    ...
    fun:_ZN16content_settings50PrefProviderTest_MigrateSinglePatternSettings_Test8TestBodyEv
+}
+{
+   bug_86481
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN9__gnu_cxx13new_allocatorIP8FilePathE8allocateEjPKv
+   fun:_ZNSt11_Deque_baseI8FilePathSaIS0_EE15_M_allocate_mapEj
+   fun:_ZNSt11_Deque_baseI8FilePathSaIS0_EE17_M_initialize_mapEj
+   fun:_ZNSt11_Deque_baseI8FilePathSaIS0_EEC2ERKS1_j
+   fun:_ZNSt5dequeI8FilePathSaIS0_EEC1ERKS2_
+   fun:_ZNSt5stackI8FilePathSt5dequeIS0_SaIS0_EEEC1ERKS3_
+   fun:_ZN9file_util14FileEnumeratorC1ERK8FilePathbNS0_9FILE_TYPEERKSs
+   fun:_ZN7history20ExpireHistoryBackend25DoExpireHistoryIndexFilesEv
 }
 
 #-----------------------------------------------------------------------
