@@ -33,8 +33,10 @@
 #include "config.h"
 #include "central_freelist.h"
 
-#include "linked_list.h"
-#include "static_vars.h"
+#include "internal_logging.h"  // for ASSERT, MESSAGE
+#include "linked_list.h"       // for SLL_Next, SLL_Push, etc
+#include "page_heap.h"         // for PageHeap
+#include "static_vars.h"       // for Static
 
 namespace tcmalloc {
 
@@ -44,7 +46,12 @@ void CentralFreeList::Init(size_t cl) {
   tcmalloc::DLL_Init(&nonempty_);
   counter_ = 0;
 
-  cache_size_ = 1;
+#ifdef TCMALLOC_SMALL_BUT_SLOW
+  // Disable the transfer cache for the small footprint case.
+  cache_size_ = 0;
+#else
+  cache_size_ = 16;
+#endif
   used_slots_ = 0;
   ASSERT(cache_size_ <= kNumTransferEntries);
 }
@@ -57,9 +64,22 @@ void CentralFreeList::ReleaseListToSpans(void* start) {
   }
 }
 
-void CentralFreeList::ReleaseToSpans(void* object) {
+// MapObjectToSpan should logically be part of ReleaseToSpans.  But
+// this triggers an optimization bug in gcc 4.5.0.  Moving to a
+// separate function, and making sure that function isn't inlined,
+// seems to fix the problem.  It also should be fixed for gcc 4.5.1.
+static
+#if __GNUC__ == 4 && __GNUC_MINOR__ == 5 && __GNUC_PATCHLEVEL__ == 0
+__attribute__ ((noinline))
+#endif
+Span* MapObjectToSpan(void* object) {
   const PageID p = reinterpret_cast<uintptr_t>(object) >> kPageShift;
   Span* span = Static::pageheap()->GetDescriptor(p);
+  return span;
+}
+
+void CentralFreeList::ReleaseToSpans(void* object) {
+  Span* span = MapObjectToSpan(object);
   ASSERT(span != NULL);
   ASSERT(span->refcount > 0);
 
@@ -129,8 +149,14 @@ bool CentralFreeList::MakeCacheSpace() {
   if (EvictRandomSizeClass(size_class_, false) ||
       EvictRandomSizeClass(size_class_, true)) {
     // Succeeded in evicting, we're going to make our cache larger.
-    cache_size_++;
-    return true;
+    // However, we may have dropped and re-acquired the lock in
+    // EvictRandomSizeClass (via ShrinkCache and the LockInverter), so the
+    // cache_size may have changed.  Therefore, check and verify that it is
+    // still OK to increase the cache_size.
+    if (cache_size_ < kNumTransferEntries) {
+      cache_size_++;
+      return true;
+    }
   }
   return false;
 }

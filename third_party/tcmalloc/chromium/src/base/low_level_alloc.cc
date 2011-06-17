@@ -59,7 +59,9 @@
 // ---------------------------------------------------------------------------
 static const int kMaxLevel = 30;
 
-namespace {
+// We put this class-only struct in a namespace to avoid polluting the
+// global namespace with this struct name (thus risking an ODR violation).
+namespace low_level_alloc_internal {
   // This struct describes one allocated block, or one free block.
   struct AllocList {
     struct Header {
@@ -79,6 +81,8 @@ namespace {
                                   // LLA_SkiplistLevels()
   };
 }
+using low_level_alloc_internal::AllocList;
+
 
 // ---------------------------------------------------------------------------
 // A trivial skiplist implementation.  This is used to keep the freelist
@@ -208,7 +212,7 @@ static const intptr_t kMagicAllocated = 0x4c833e95;
 static const intptr_t kMagicUnallocated = ~kMagicAllocated;
 
 namespace {
-  class ArenaLock {
+  class SCOPED_LOCKABLE ArenaLock {
    public:
     explicit ArenaLock(LowLevelAlloc::Arena *arena)
         EXCLUSIVE_LOCK_FUNCTION(arena->mu)
@@ -229,7 +233,7 @@ namespace {
       this->arena_->mu.Lock();
     }
     ~ArenaLock() { RAW_CHECK(this->left_, "haven't left Arena region"); }
-    void Leave() UNLOCK_FUNCTION(arena_->mu) {
+    void Leave() UNLOCK_FUNCTION() {
       this->arena_->mu.Unlock();
 #if 0
       if (this->mask_valid_) {

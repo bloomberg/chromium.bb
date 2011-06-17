@@ -36,13 +36,11 @@
 #define TCMALLOC_COMMON_H_
 
 #include "config.h"
-#include <stddef.h>
+#include <stddef.h>                     // for size_t
 #ifdef HAVE_STDINT_H
-#include <stdint.h>
+#include <stdint.h>                     // for uintptr_t, uint64_t
 #endif
-#include <stdarg.h>
-#include "base/commandlineflags.h"
-#include "internal_logging.h"
+#include "internal_logging.h"  // for ASSERT, etc
 
 // Type that can hold a page number
 typedef uintptr_t PageID;
@@ -54,14 +52,51 @@ typedef uintptr_t Length;
 // Configuration
 //-------------------------------------------------------------------
 
-// Not all possible combinations of the following parameters make
-// sense.  In particular, if kMaxSize increases, you may have to
-// increase kNumClasses as well.
+// Using large pages speeds up the execution at a cost of larger memory use.
+// Deallocation may speed up by a factor as the page map gets 8x smaller, so
+// lookups in the page map result in fewer L2 cache misses, which translates to
+// speedup for application/platform combinations with high L2 cache pressure.
+// As the number of size classes increases with large pages, we increase
+// the thread cache allowance to avoid passing more free ranges to and from
+// central lists.  Also, larger pages are less likely to get freed.
+// These two factors cause a bounded increase in memory use.
+
+#if defined(TCMALLOC_LARGE_PAGES)
+static const size_t kPageShift  = 15;
+static const size_t kNumClasses = 95;
+static const size_t kMaxThreadCacheSize = 4 << 20;
+#else
 static const size_t kPageShift  = 12;
+static const size_t kNumClasses = 61;
+static const size_t kMaxThreadCacheSize = 2 << 20;
+#endif
+
 static const size_t kPageSize   = 1 << kPageShift;
 static const size_t kMaxSize    = 8u * kPageSize;
 static const size_t kAlignment  = 8;
-static const size_t kNumClasses = 61;
+// For all span-lengths < kMaxPages we keep an exact-size list.
+static const size_t kMaxPages = 1 << (20 - kPageShift);
+
+// Default bound on the total amount of thread caches.
+#ifdef TCMALLOC_SMALL_BUT_SLOW
+// Make the overall thread cache no bigger than that of a single thread
+// for the small memory footprint case.
+static const size_t kDefaultOverallThreadCacheSize = kMaxThreadCacheSize;
+#else
+static const size_t kDefaultOverallThreadCacheSize = 8u * kMaxThreadCacheSize;
+#endif
+
+// Lower bound on the per-thread cache sizes
+static const size_t kMinThreadCacheSize = kMaxSize * 2;
+
+// The number of bytes one ThreadCache will steal from another when
+// the first ThreadCache is forced to Scavenge(), delaying the
+// next call to Scavenge for this thread.
+static const size_t kStealAmount = 1 << 16;
+
+// The number of times that a deallocation can cause a freelist to
+// go over its max_length() before shrinking max_length().
+static const int kMaxOverages = 3;
 
 // Maximum length we allow a per-thread free-list to have before we
 // move objects from it into the corresponding central free-list.  We
@@ -72,6 +107,17 @@ static const int kMaxDynamicFreeListLength = 8192;
 
 static const Length kMaxValidPages = (~static_cast<Length>(0)) >> kPageShift;
 
+#if defined __x86_64__
+// All current and planned x86_64 processors only look at the lower 48 bits
+// in virtual to physical address translation.  The top 16 are thus unused.
+// TODO(rus): Under what operating systems can we increase it safely to 17?
+// This lets us use smaller page maps.  On first allocation, a 36-bit page map
+// uses only 96 KB instead of the 4.5 MB used by a 52-bit page map.
+static const int kAddressBits = (sizeof(void*) < 8 ? (8 * sizeof(void*)) : 48);
+#else
+static const int kAddressBits = 8 * sizeof(void*);
+#endif
+
 namespace tcmalloc {
 
 // Convert byte size into pages.  This won't overflow, but may return
@@ -80,6 +126,10 @@ inline Length pages(size_t bytes) {
   return (bytes >> kPageShift) +
       ((bytes & (kPageSize - 1)) > 0 ? 1 : 0);
 }
+
+// For larger allocation sizes, we use larger memory alignments to
+// reduce the number of size classes.
+int AlignmentForSize(size_t size);
 
 // Size-class information + mapping
 class SizeMap {
@@ -114,8 +164,10 @@ class SizeMap {
   //   ...
   //   32768      (32768 + 127 + (120<<7)) / 128  376
   static const int kMaxSmallSize = 1024;
-  unsigned char class_array_[377];
-  
+  static const size_t kClassArraySize =
+      (((1 << kPageShift) * 8u + 127 + (120 << 7)) >> 7) + 1;
+  unsigned char class_array_[kClassArraySize];
+
   // Compute index of the class_array[] entry for a given size
   static inline int ClassIndex(int s) {
     ASSERT(0 <= s);

@@ -35,6 +35,11 @@
 #ifndef TCMALLOC_TCMALLOC_H_
 #define TCMALLOC_TCMALLOC_H_
 
+#include <stddef.h>                     // for size_t
+#ifdef HAVE_SYS_CDEFS_H
+#include <sys/cdefs.h>   // where glibc defines __THROW
+#endif
+
 // __THROW is defined in glibc systems.  It means, counter-intuitively,
 // "This function will never throw an exception."  It's an optional
 // optimization tool, but we may need to use it to match glibc prototypes.
@@ -60,7 +65,9 @@
 #endif
 
 #ifdef __cplusplus
-#include <new>          // for std::nothrow_t
+namespace std {
+struct nothrow_t;
+}
 
 extern "C" {
 #endif
@@ -88,6 +95,13 @@ extern "C" {
 #if @ac_cv_have_struct_mallinfo@
   PERFTOOLS_DLL_DECL struct mallinfo tc_mallinfo(void) __THROW;
 #endif
+
+  // This is an alias for MallocExtension::instance()->GetAllocatedSize().
+  // It is equivalent to
+  //    OS X: malloc_size()
+  //    glibc: malloc_usable_size()
+  //    Windows: _msize()
+  PERFTOOLS_DLL_DECL size_t tc_malloc_size(void* ptr) __THROW;
 
 #ifdef __cplusplus
   PERFTOOLS_DLL_DECL int tc_set_new_mode(int flag) __THROW;

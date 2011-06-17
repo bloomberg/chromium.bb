@@ -34,8 +34,12 @@
 #define TCMALLOC_CENTRAL_FREELIST_H_
 
 #include "config.h"
-#include "base/thread_annotations.h"
+#include <stddef.h>                     // for size_t
+#ifdef HAVE_STDINT_H
+#include <stdint.h>                     // for int32_t
+#endif
 #include "base/spinlock.h"
+#include "base/thread_annotations.h"
 #include "common.h"
 #include "span.h"
 
@@ -78,7 +82,12 @@ class CentralFreeList {
   // number of TCEntries across size classes is fixed.  Currently each size
   // class is initially given one TCEntry which also means that the maximum any
   // one class can have is kNumClasses.
+#ifdef TCMALLOC_SMALL_BUT_SLOW
+  // For the small memory model, the transfer cache is not used.
+  static const int kNumTransferEntries = 0;
+#else
   static const int kNumTransferEntries = kNumClasses;
+#endif
 
   // REQUIRES: lock_ is held
   // Remove object from cache and return.

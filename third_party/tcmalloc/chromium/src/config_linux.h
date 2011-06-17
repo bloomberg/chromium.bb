@@ -7,6 +7,9 @@
 /* Define to 1 if you have the <conflict-signal.h> header file. */
 /* #undef HAVE_CONFLICT_SIGNAL_H */
 
+/* Define to 1 if you have the <cygwin/signal.h> header file. */
+#undef HAVE_CYGWIN_SIGNAL_H
+
 /* Define to 1 if you have the declaration of `cfree', and to 0 if you don't.
    */
 #define HAVE_DECL_CFREE 1
@@ -70,6 +73,9 @@
 /* Define to 1 if you have the <malloc.h> header file. */
 #define HAVE_MALLOC_H 1
 
+/* Define to 1 if you have the <malloc/malloc.h> header file. */
+#undef HAVE_MALLOC_MALLOC_H
+
 /* Define to 1 if you have the <memory.h> header file. */
 #define HAVE_MEMORY_H 1
 
@@ -112,6 +118,15 @@
 /* Define to 1 if the system has the type `struct mallinfo'. */
 #define HAVE_STRUCT_MALLINFO 1
 
+/* Define to 1 if you have the <sys/cdefs.h> header file. */
+#define HAVE_SYS_CDEFS_H 1
+
+/* Define to 1 if you have the <sys/malloc.h> header file. */
+#undef HAVE_SYS_MALLOC_H
+
+/* Define to 1 if you have the <sys/param.h> header file. */
+#define HAVE_SYS_PARAM_H 1
+
 /* Define to 1 if you have the <sys/prctl.h> header file. */
 #define HAVE_SYS_PRCTL_H 1
 
@@ -127,8 +142,14 @@
 /* Define to 1 if you have the <sys/syscall.h> header file. */
 #define HAVE_SYS_SYSCALL_H 1
 
+/* Define to 1 if you have the <sys/time.h> header file. */
+#define HAVE_SYS_TIME_H 1
+
 /* Define to 1 if you have the <sys/types.h> header file. */
 #define HAVE_SYS_TYPES_H 1
+
+/* <sys/ucontext.h> is broken on redhat 7 */
+#undef HAVE_SYS_UCONTEXT_H
 
 /* Define to 1 if you have the <sys/wait.h> header file. */
 #define HAVE_SYS_WAIT_H 1
@@ -151,6 +172,9 @@
 /* define if your compiler has __attribute__ */
 #define HAVE___ATTRIBUTE__ 1
 
+/* Define to 1 if compiler supports __environ */
+#undef HAVE___ENVIRON
+
 /* Define to 1 if the system has the type `__int64'. */
 /* #undef HAVE___INT64 */
 
@@ -159,6 +183,10 @@
 
 /* Define to 1 if int32_t is equivalent to intptr_t */
 /* #undef INT32_EQUALS_INTPTR */
+
+/* Define to the sub-directory in which libtool stores uninstalled libraries.
+   */
+#undef LT_OBJDIR
 
 /* Define to 1 if your C compiler doesn't accept -c and -o together. */
 /* #undef NO_MINUS_C_MINUS_O */
@@ -173,13 +201,16 @@
 #define PACKAGE_NAME "google-perftools"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "google-perftools 1.4"
+#define PACKAGE_STRING "google-perftools 1.7"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "google-perftools"
 
+/* Define to the home page for this package. */
+#undef PACKAGE_URL
+
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "1.4"
+#define PACKAGE_VERSION "1.7"
 
 /* How to access the PC from a struct ucontext */
 #define PC_FROM_UCONTEXT uc_mcontext.gregs[REG_RIP]
@@ -211,7 +242,7 @@
 #define STL_NAMESPACE std
 
 /* Version number of package */
-#define VERSION "1.4"
+#define VERSION "1.7"
 
 /* C99 says: define this to get the PRI... macros from stdint.h */
 #ifndef __STDC_FORMAT_MACROS
@@ -228,4 +259,3 @@
 #ifdef __MINGW32__
 #include "windows/mingw.h"
 #endif
-

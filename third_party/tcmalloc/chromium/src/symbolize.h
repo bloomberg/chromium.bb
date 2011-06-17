@@ -38,6 +38,7 @@
 #include <stddef.h>
 #include <stdint.h>  // for uintptr_t
 #endif
+#include <stddef.h>  // for NULL
 #include <map>
 
 using std::map;

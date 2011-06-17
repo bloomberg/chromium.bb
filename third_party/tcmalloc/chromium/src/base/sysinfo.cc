@@ -56,6 +56,7 @@
 #endif
 #include "base/sysinfo.h"
 #include "base/commandlineflags.h"
+#include "base/dynamic_annotations.h"   // for RunningOnValgrind
 #include "base/logging.h"
 #include "base/cycleclock.h"
 
@@ -110,20 +111,23 @@
 // 8K), so it's not an ideal solution.
 const char* GetenvBeforeMain(const char* name) {
 #if defined(HAVE___ENVIRON)   // if we have it, it's declared in unistd.h
-  const int namelen = strlen(name);
-  for (char** p = __environ; *p; p++) {
-    if (!memcmp(*p, name, namelen) && (*p)[namelen] == '=')  // it's a match
-      return *p + namelen+1;                                 // point after =
+  if (__environ) {            // can exist but be NULL, if statically linked
+    const int namelen = strlen(name);
+    for (char** p = __environ; *p; p++) {
+      if (!memcmp(*p, name, namelen) && (*p)[namelen] == '=')  // it's a match
+        return *p + namelen+1;                                 // point after =
+    }
+    return NULL;
   }
-  return NULL;
-#elif defined(PLATFORM_WINDOWS)
+#endif
+#if defined(PLATFORM_WINDOWS)
   // TODO(mbelshe) - repeated calls to this function will overwrite the
   // contents of the static buffer.
-  static char envbuf[1024];  // enough to hold any envvar we care about
-  if (!GetEnvironmentVariableA(name, envbuf, sizeof(envbuf)-1))
+  static char envvar_buf[1024];  // enough to hold any envvar we care about
+  if (!GetEnvironmentVariableA(name, envvar_buf, sizeof(envvar_buf)-1))
     return NULL;
-  return envbuf;
-#else
+  return envvar_buf;
+#endif
   // static is ok because this function should only be called before
   // main(), when we're single-threaded.
   static char envbuf[16<<10];
@@ -151,7 +155,6 @@ const char* GetenvBeforeMain(const char* name) {
     p = endp + 1;
   }
   return NULL;                   // env var never found
-#endif
 }
 
 // This takes as an argument an environment-variable name (like
@@ -206,7 +209,7 @@ bool GetUniquePathFromEnv(const char* env_name, char* path) {
 static double cpuinfo_cycles_per_second = 1.0;  // 0.0 might be dangerous
 static int cpuinfo_num_cpus = 1;  // Conservative guess
 
-static void SleepForMilliseconds(int milliseconds) {
+void SleepForMilliseconds(int milliseconds) {
 #ifdef PLATFORM_WINDOWS
   _sleep(milliseconds);   // Windows's _sleep takes milliseconds argument
 #else
@@ -233,6 +236,29 @@ static int64 EstimateCyclesPerSecond(const int estimate_time_ms) {
   return guess;
 }
 
+// ReadIntFromFile is only called on linux and cygwin platforms.
+#if defined(__linux__) || defined(__CYGWIN__) || defined(__CYGWIN32__)
+// Helper function for reading an int from a file. Returns true if successful
+// and the memory location pointed to by value is set to the value read.
+static bool ReadIntFromFile(const char *file, int *value) {
+  bool ret = false;
+  int fd = open(file, O_RDONLY);
+  if (fd != -1) {
+    char line[1024];
+    char* err;
+    memset(line, '\0', sizeof(line));
+    read(fd, line, sizeof(line) - 1);
+    const int temp_value = strtol(line, &err, 10);
+    if (line[0] != '\0' && (*err == '\n' || *err == '\0')) {
+      *value = temp_value;
+      ret = true;
+    }
+    close(fd);
+  }
+  return ret;
+}
+#endif
+
 // WARNING: logging calls back to InitializeSystemInfo() so it must
 // not invoke any logging code.  Also, InitializeSystemInfo() can be
 // called before main() -- in fact it *must* be since already_called
@@ -245,31 +271,44 @@ static void InitializeSystemInfo() {
   if (already_called)  return;
   already_called = true;
 
-  // I put in a never-called reference to EstimateCyclesPerSecond() here
-  // to silence the compiler for OS's that don't need it
-  if (0) EstimateCyclesPerSecond(0);
+  bool saw_mhz = false;
+
+  if (RunningOnValgrind()) {
+    // Valgrind may slow the progress of time artificially (--scale-time=N
+    // option). We thus can't rely on CPU Mhz info stored in /sys or /proc
+    // files. Thus, actually measure the cps.
+    cpuinfo_cycles_per_second = EstimateCyclesPerSecond(100);
+    saw_mhz = true;
+  }
 
 #if defined(__linux__) || defined(__CYGWIN__) || defined(__CYGWIN32__)
   char line[1024];
   char* err;
+  int freq;
+
+  // If the kernel is exporting the tsc frequency use that. There are issues
+  // where cpuinfo_max_freq cannot be relied on because the BIOS may be
+  // exporintg an invalid p-state (on x86) or p-states may be used to put the
+  // processor in a new mode (turbo mode). Essentially, those frequencies
+  // cannot always be relied upon. The same reasons apply to /proc/cpuinfo as
+  // well.
+  if (!saw_mhz &&
+      ReadIntFromFile("/sys/devices/system/cpu/cpu0/tsc_freq_khz", &freq)) {
+      // The value is in kHz (as the file name suggests).  For example, on a
+      // 2GHz warpstation, the file contains the value "2000000".
+      cpuinfo_cycles_per_second = freq * 1000.0;
+      saw_mhz = true;
+  }
 
   // If CPU scaling is in effect, we want to use the *maximum* frequency,
   // not whatever CPU speed some random processor happens to be using now.
-  bool saw_mhz = false;
-  const char* pname0 = "/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq";
-  int fd0 = open(pname0, O_RDONLY);
-  if (fd0 != -1) {
-    memset(line, '\0', sizeof(line));
-    read(fd0, line, sizeof(line));
-    const int max_freq = strtol(line, &err, 10);
-    if (line[0] != '\0' && (*err == '\n' || *err == '\0')) {
-      // The value is in kHz.  For example, on a 2GHz machine, the file
-      // contains the value "2000000".  Historically this file contained no
-      // newline, but at some point the kernel started appending a newline.
-      cpuinfo_cycles_per_second = max_freq * 1000.0;
-      saw_mhz = true;
-    }
-    close(fd0);
+  if (!saw_mhz &&
+      ReadIntFromFile("/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq",
+                      &freq)) {
+    // The value is in kHz.  For example, on a 2GHz machine, the file
+    // contains the value "2000000".
+    cpuinfo_cycles_per_second = freq * 1000.0;
+    saw_mhz = true;
   }
 
   // Read /proc/cpuinfo for other values, and if there is no cpuinfo_max_freq.
@@ -277,11 +316,14 @@ static void InitializeSystemInfo() {
   int fd = open(pname, O_RDONLY);
   if (fd == -1) {
     perror(pname);
-    cpuinfo_cycles_per_second = EstimateCyclesPerSecond(1000);
+    if (!saw_mhz) {
+      cpuinfo_cycles_per_second = EstimateCyclesPerSecond(1000);
+    }
     return;          // TODO: use generic tester instead?
   }
 
   double bogo_clock = 1.0;
+  bool saw_bogo = false;
   int num_cpus = 0;
   line[0] = line[1] = '\0';
   int chars_read = 0;
@@ -305,29 +347,38 @@ static void InitializeSystemInfo() {
     if (newline != NULL)
       *newline = '\0';
 
-    if (!saw_mhz && strncmp(line, "cpu MHz", sizeof("cpu MHz")-1) == 0) {
+    // When parsing the "cpu MHz" and "bogomips" (fallback) entries, we only
+    // accept postive values. Some environments (virtual machines) report zero,
+    // which would cause infinite looping in WallTime_Init.
+    if (!saw_mhz && strncasecmp(line, "cpu MHz", sizeof("cpu MHz")-1) == 0) {
       const char* freqstr = strchr(line, ':');
       if (freqstr) {
         cpuinfo_cycles_per_second = strtod(freqstr+1, &err) * 1000000.0;
-        if (freqstr[1] != '\0' && *err == '\0')
+        if (freqstr[1] != '\0' && *err == '\0' && cpuinfo_cycles_per_second > 0)
           saw_mhz = true;
       }
-    } else if (strncmp(line, "bogomips", sizeof("bogomips")-1) == 0) {
+    } else if (strncasecmp(line, "bogomips", sizeof("bogomips")-1) == 0) {
       const char* freqstr = strchr(line, ':');
-      if (freqstr)
+      if (freqstr) {
         bogo_clock = strtod(freqstr+1, &err) * 1000000.0;
-      if (freqstr == NULL || freqstr[1] == '\0' || *err != '\0')
-        bogo_clock = 1.0;
-    } else if (strncmp(line, "processor", sizeof("processor")-1) == 0) {
+        if (freqstr[1] != '\0' && *err == '\0' && bogo_clock > 0)
+          saw_bogo = true;
+      }
+    } else if (strncasecmp(line, "processor", sizeof("processor")-1) == 0) {
       num_cpus++;  // count up every time we see an "processor :" entry
     }
   } while (chars_read > 0);
   close(fd);
 
   if (!saw_mhz) {
-    // If we didn't find anything better, we'll use bogomips, but
-    // we're not happy about it.
-    cpuinfo_cycles_per_second = bogo_clock;
+    if (saw_bogo) {
+      // If we didn't find anything better, we'll use bogomips, but
+      // we're not happy about it.
+      cpuinfo_cycles_per_second = bogo_clock;
+    } else {
+      // If we don't even have bogomips, we'll use the slow estimation.
+      cpuinfo_cycles_per_second = EstimateCyclesPerSecond(1000);
+    }
   }
   if (cpuinfo_cycles_per_second == 0.0) {
     cpuinfo_cycles_per_second = 1.0;   // maybe unnecessary, but safe
@@ -458,7 +509,7 @@ static void ConstructFilename(const char* spec, pid_t pid,
                               char* buf, int buf_size) {
   CHECK_LT(snprintf(buf, buf_size,
                     spec,
-                    pid ? pid : getpid()), buf_size);
+                    static_cast<int>(pid ? pid : getpid())), buf_size);
 }
 #endif
 
@@ -771,7 +822,8 @@ bool ProcMapsIterator::NextExt(uint64 *start, uint64 *end, char **flags,
                Buffer::kBufSize);
     } else {
       CHECK_LT(snprintf(object_path.buf_, Buffer::kBufSize,
-                        "/proc/%d/path/%s", pid_, mapinfo->pr_mapname),
+                        "/proc/%d/path/%s",
+                        static_cast<int>(pid_), mapinfo->pr_mapname),
                Buffer::kBufSize);
     }
     ssize_t len = readlink(object_path.buf_, current_filename_, PATH_MAX);
@@ -882,9 +934,10 @@ namespace tcmalloc {
 
 // Helper to add the list of mapped shared libraries to a profile.
 // Fill formatted "/proc/self/maps" contents into buffer 'buf' of size 'size'
-// and return the actual size occupied in 'buf'.
+// and return the actual size occupied in 'buf'.  We fill wrote_all to true
+// if we successfully wrote all proc lines to buf, false else.
 // We do not provision for 0-terminating 'buf'.
-int FillProcSelfMaps(char buf[], int size) {
+int FillProcSelfMaps(char buf[], int size, bool* wrote_all) {
   ProcMapsIterator::Buffer iterbuf;
   ProcMapsIterator it(0, &iterbuf);   // 0 means "current pid"
 
@@ -892,10 +945,17 @@ int FillProcSelfMaps(char buf[], int size) {
   int64 inode;
   char *flags, *filename;
   int bytes_written = 0;
+  *wrote_all = true;
   while (it.Next(&start, &end, &flags, &offset, &inode, &filename)) {
-    bytes_written += it.FormatLine(buf + bytes_written, size - bytes_written,
-                                   start, end, flags, offset, inode, filename,
-                                   0);
+    const int line_length = it.FormatLine(buf + bytes_written,
+                                          size - bytes_written,
+                                          start, end, flags, offset,
+                                          inode, filename, 0);
+    if (line_length == 0)
+      *wrote_all = false;     // failed to write this line out
+    else
+      bytes_written += line_length;
+
   }
   return bytes_written;
 }

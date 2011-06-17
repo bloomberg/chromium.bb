@@ -49,14 +49,24 @@
 
 // On some systems (like freebsd), we can't call write() at all in a
 // global constructor, perhaps because errno hasn't been set up.
+// (In windows, we can't call it because it might call malloc.)
 // Calling the write syscall is safer (it doesn't set errno), so we
 // prefer that.  Note we don't care about errno for logging: we just
 // do logging on a best-effort basis.
-#ifdef HAVE_SYS_SYSCALL_H
+#if defined(_MSC_VER)
+#define WRITE_TO_STDERR(buf, len) WriteToStderr(buf, len);  // in port.cc
+#elif defined(HAVE_SYS_SYSCALL_H)
 #include <sys/syscall.h>
 #define WRITE_TO_STDERR(buf, len) syscall(SYS_write, STDERR_FILENO, buf, len)
 #else
 #define WRITE_TO_STDERR(buf, len) write(STDERR_FILENO, buf, len)
+#endif
+
+// MSVC and mingw define their own, safe version of vnsprintf (the
+// windows one in broken) in port.cc.  Everyone else can use the
+// version here.  We had to give it a unique name for windows.
+#ifndef _WIN32
+# define perftools_vsnprintf vsnprintf
 #endif
 
 
@@ -188,7 +198,7 @@ inline void LogPrintf(int severity, const char* pat, va_list ap) {
   // We write directly to the stderr file descriptor and avoid FILE
   // buffering because that may invoke malloc()
   char buf[1600];
-  vsnprintf(buf, sizeof(buf)-1, pat, ap);
+  perftools_vsnprintf(buf, sizeof(buf)-1, pat, ap);
   if (buf[0] != '\0' && buf[strlen(buf)-1] != '\n') {
     assert(strlen(buf)+1 < sizeof(buf));
     strcat(buf, "\n");
@@ -230,6 +240,9 @@ inline void LOG_IF(int lvl, bool cond, const char* pat, ...) {
 // Like other "raw" routines, these functions are best effort, and
 // thus don't return error codes (except RawOpenForWriting()).
 #if defined(_WIN32) || defined(__CYGWIN__) || defined(__CYGWIN32__)
+#ifndef NOMINMAX
+#define NOMINMAX     // @#!$& windows
+#endif
 #include <windows.h>
 typedef HANDLE RawFD;
 const RawFD kIllegalRawFD = INVALID_HANDLE_VALUE;

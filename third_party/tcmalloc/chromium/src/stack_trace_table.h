@@ -36,6 +36,9 @@
 #define TCMALLOC_STACK_TRACE_TABLE_H_
 
 #include <config.h>
+#ifdef HAVE_STDINT_H
+#include <stdint.h>                     // for uintptr_t
+#endif
 #include "common.h"
 
 namespace tcmalloc {

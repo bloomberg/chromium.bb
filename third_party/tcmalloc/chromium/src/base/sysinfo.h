@@ -71,6 +71,8 @@ extern bool GetUniquePathFromEnv(const char* env_name, char* path);
 
 extern int NumCPUs();
 
+void SleepForMilliseconds(int milliseconds);
+
 // processor cycles per second of each processor.  Thread-safe.
 extern double CyclesPerSecond(void);
 
@@ -226,7 +228,7 @@ class ProcMapsIterator {
 // Helper routines
 
 namespace tcmalloc {
-int FillProcSelfMaps(char buf[], int size);
+int FillProcSelfMaps(char buf[], int size, bool* wrote_all);
 void DumpProcSelfMaps(RawFD fd);
 }
 

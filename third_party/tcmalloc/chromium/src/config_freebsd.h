@@ -73,6 +73,9 @@
 /* Define to 1 if you have the <malloc.h> header file. */
 /* #undef HAVE_MALLOC_H */
 
+/* Define to 1 if you have the <malloc/malloc.h> header file. */
+#undef HAVE_MALLOC_MALLOC_H
+
 /* Define to 1 if you have the <memory.h> header file. */
 #define HAVE_MEMORY_H 1
 
@@ -115,6 +118,15 @@
 /* Define to 1 if the system has the type `struct mallinfo'. */
 /* #undef HAVE_STRUCT_MALLINFO */
 
+/* Define to 1 if you have the <sys/cdefs.h> header file. */
+#define HAVE_SYS_CDEFS_H 1
+
+/* Define to 1 if you have the <sys/malloc.h> header file. */
+#undef HAVE_SYS_MALLOC_H
+
+/* Define to 1 if you have the <sys/param.h> header file. */
+#define HAVE_SYS_PARAM_H 1
+
 /* Define to 1 if you have the <sys/prctl.h> header file. */
 /* #undef HAVE_SYS_PRCTL_H */
 
@@ -129,6 +141,9 @@
 
 /* Define to 1 if you have the <sys/syscall.h> header file. */
 #define HAVE_SYS_SYSCALL_H 1
+
+/* Define to 1 if you have the <sys/time.h> header file. */
+#define HAVE_SYS_TIME_H 1
 
 /* Define to 1 if you have the <sys/types.h> header file. */
 #define HAVE_SYS_TYPES_H 1
@@ -171,6 +186,10 @@
 #define INT32_EQUALS_INTPTR 1
 #endif
 
+/* Define to the sub-directory in which libtool stores uninstalled libraries.
+   */
+#undef LT_OBJDIR
+
 /* Define to 1 if your C compiler doesn't accept -c and -o together. */
 /* #undef NO_MINUS_C_MINUS_O */
 
@@ -184,7 +203,7 @@
 #define PACKAGE_NAME "google-perftools"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "google-perftools 1.5"
+#define PACKAGE_STRING "google-perftools 1.7"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "google-perftools"
@@ -193,7 +212,7 @@
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "1.5"
+#define PACKAGE_VERSION "1.7"
 
 /* How to access the PC from a struct ucontext */
 #if defined(__i386__)
@@ -240,7 +259,7 @@
 #define STL_NAMESPACE std
 
 /* Version number of package */
-#define VERSION "1.5"
+#define VERSION "1.7"
 
 /* C99 says: define this to get the PRI... macros from stdint.h */
 #ifndef __STDC_FORMAT_MACROS

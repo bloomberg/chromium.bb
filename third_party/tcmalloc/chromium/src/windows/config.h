@@ -92,7 +92,7 @@
 #undef HAVE_LINUX_PTRACE_H
 
 /* Define to 1 if you have the <malloc.h> header file. */
-#undef HAVE_MALLOC_H
+#define HAVE_MALLOC_H 1
 
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
@@ -136,6 +136,9 @@
 /* Define to 1 if the system has the type `struct mallinfo'. */
 #undef HAVE_STRUCT_MALLINFO
 
+/* Define to 1 if you have the <sys/param.h> header file. */
+#undef HAVE_SYS_PARAM_H
+
 /* Define to 1 if you have the <sys/prctl.h> header file. */
 #undef HAVE_SYS_PRCTL_H
 
@@ -154,7 +157,7 @@
 /* Define to 1 if you have the <sys/types.h> header file. */
 #define HAVE_SYS_TYPES_H 1
 
-/* Define to 1 if you have the <sys/ucontext.h> header file. */
+/* <sys/ucontext.h> is broken on redhat 7 */
 #undef HAVE_SYS_UCONTEXT_H
 
 /* Define to 1 if you have the <sys/wait.h> header file. */
@@ -172,6 +175,9 @@
 /* Define to 1 if you have the <unwind.h> header file. */
 #undef HAVE_UNWIND_H
 
+/* Define to 1 if you have the <valgrind.h> header file. */
+#undef HAVE_VALGRIND_H
+
 /* define if your compiler has __attribute__ */
 #undef HAVE___ATTRIBUTE__
 
@@ -187,6 +193,10 @@
 /* Define to 1 if int32_t is equivalent to intptr_t */
 #undef INT32_EQUALS_INTPTR
 
+/* Define to the sub-directory in which libtool stores uninstalled libraries.
+   */
+#undef LT_OBJDIR
+
 /* Define to 1 if your C compiler doesn't accept -c and -o together. */
 #undef NO_MINUS_C_MINUS_O
 
@@ -200,7 +210,7 @@
 #define PACKAGE_NAME "google-perftools"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "google-perftools 1.4"
+#define PACKAGE_STRING "google-perftools 1.7"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "google-perftools"
@@ -209,7 +219,7 @@
 #undef PACKAGE_URL
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "1.4"
+#define PACKAGE_VERSION "1.7"
 
 /* How to access the PC from a struct ucontext */
 #undef PC_FROM_UCONTEXT

@@ -76,11 +76,6 @@
 #include <sys/mman.h>
 #endif
 #include <fcntl.h>              // for open(), close()
-// FreeBSD has malloc.h, but complains if you use it
-#if defined(HAVE_MALLOC_H) && !defined(__FreeBSD__)
-#include <malloc.h>
-#endif
-
 #ifdef HAVE_EXECINFO_H
 #include <execinfo.h>           // backtrace
 #endif
@@ -91,15 +86,17 @@
 #include <pwd.h>
 #endif
 
+#include <algorithm>
 #include <iostream>             // for cout
 #include <iomanip>              // for hex
-#include <set>
-#include <map>
 #include <list>
+#include <map>
 #include <memory>
-#include <vector>
+#include <set>
 #include <string>
+#include <vector>
 
+#include "base/commandlineflags.h"
 #include "base/googleinit.h"
 #include "base/logging.h"
 #include "base/commandlineflags.h"
@@ -291,7 +288,8 @@ static void Use(T** foo) {
 
 // Arbitrary value, but not such that xor'ing with it is likely
 // to map one valid pointer to another valid pointer:
-static const uintptr_t kHideMask = 0xF03A5F7B;
+static const uintptr_t kHideMask =
+  static_cast<uintptr_t>(0xF03A5F7BF03A5F7BLL);
 
 // Helpers to hide a pointer from live data traversal.
 // We just xor the pointer so that (with high probability)
@@ -683,7 +681,7 @@ static void ScopedDisabledLeaks() {
   HeapLeakChecker::Disabler disabler;
   AllocHidden(3 * sizeof(int));
   TransLeaks();
-  malloc(10);  // Direct leak
+  (void)malloc(10);  // Direct leak
 }
 
 // have different disabled leaks

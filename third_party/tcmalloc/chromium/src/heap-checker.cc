@@ -106,6 +106,28 @@ using std::max;
 using std::less;
 using std::char_traits;
 
+// If current process is being ptrace()d, 'TracerPid' in /proc/self/status
+// will be non-zero.
+static bool IsDebuggerAttached(void) {    // only works under linux, probably
+  char buf[256];   // TracerPid comes relatively earlier in status output
+  int fd = open("/proc/self/status", O_RDONLY);
+  if (fd == -1) {
+    return false;  // Can't tell for sure.
+  }
+  const int len = read(fd, buf, sizeof(buf));
+  bool rc = false;
+  if (len > 0) {
+    const char *const kTracerPid = "TracerPid:\t";
+    buf[len - 1] = '\0';
+    const char *p = strstr(buf, kTracerPid);
+    if (p != NULL) {
+      rc = (strncmp(p + strlen(kTracerPid), "0\n", 2) != 0);
+    }
+  }
+  close(fd);
+  return rc;
+}
+
 // This is the default if you don't link in -lprofiler
 extern "C" {
 ATTRIBUTE_WEAK PERFTOOLS_DLL_DECL bool ProfilingIsEnabledForAllThreads();
@@ -163,12 +185,6 @@ DEFINE_bool(heap_check_test_pointer_alignment,
 // use 1 if any alignment is ok.
 // heap_check_test_pointer_alignment flag guides if we try the value of 1.
 // The larger it can be, the lesser is the chance of missing real leaks.
-//
-// sizeof(void)* is correct.  However gold (the new linker) has a bug where it
-// sometimes places global pointers on 4-byte boundaries, even when pointers
-// are 8 bytes long.  While we are fixing the linker, degrade to 4-byte
-// alignment on all targets.  http://b/1226481
-//
 static const size_t kPointerSourceAlignment = sizeof(void*);
 DEFINE_int32(heap_check_pointer_source_alignment,
 	     EnvToInt("HEAP_CHECK_POINTER_SOURCE_ALIGNMENT",
@@ -303,6 +319,9 @@ class HeapLeakChecker::Allocator {
     RAW_DCHECK(heap_checker_lock.IsHeld(), "");
     if (p) alloc_count_ -= 1;
     LowLevelAlloc::Free(p);
+  }
+  static void Free(void* p, size_t /* n */) {
+    Free(p);
   }
   // destruct, free, and make *p to be NULL
   template<typename T> static void DeleteAndNull(T** p) {
@@ -795,7 +814,7 @@ void HeapLeakChecker::DisableLibraryAllocsLocked(const char* library,
         // pthread_setspecific (which can be the only pointer to a heap object).
       IsLibraryNamed(library, "/libdl")  ||
         // library loaders leak some "system" heap that we don't care about
-      IsLibraryNamed(library, "/libcrypto")
+      IsLibraryNamed(library, "/libcrypto")  ||
         // Sometimes libcrypto of OpenSSH is compiled with -fomit-frame-pointer
         // (any library can be, of course, but this one often is because speed
         // is so important for making crypto usable).  We ignore all its
@@ -803,6 +822,10 @@ void HeapLeakChecker::DisableLibraryAllocsLocked(const char* library,
         // to ignore allocations done in files/symbols that match
         // "default_malloc_ex|default_realloc_ex"
         // but that doesn't work when the end-result binary is stripped.
+      IsLibraryNamed(library, "/libjvm")  ||
+        // JVM has a lot of leaks we don't care about.
+      IsLibraryNamed(library, "/libzip")
+        // The JVM leaks java.util.zip.Inflater after loading classes.
      ) {
     depth = 1;  // only disable allocation calls directly from the library code
   } else if (IsLibraryNamed(library, "/ld")
@@ -859,6 +882,8 @@ HeapLeakChecker::ProcMapsResult HeapLeakChecker::UseProcMapsLocked(
   int64 inode;
   char *permissions, *filename;
   bool saw_shared_lib = false;
+  bool saw_nonzero_inode = false;
+  bool saw_shared_lib_with_nonzero_inode = false;
   while (it.Next(&start_address, &end_address, &permissions,
                  &file_offset, &inode, &filename)) {
     if (start_address >= end_address) {
@@ -874,10 +899,25 @@ HeapLeakChecker::ProcMapsResult HeapLeakChecker::UseProcMapsLocked(
       // do things in this loop.
       continue;
     }
-    // Determine if any shared libraries are present.
-    if (inode != 0 && strstr(filename, "lib") && strstr(filename, ".so")) {
-      saw_shared_lib = true;
+    // Determine if any shared libraries are present (this is the same
+    // list of extensions as is found in pprof).  We want to ignore
+    // 'fake' libraries with inode 0 when determining.  However, some
+    // systems don't share inodes via /proc, so we turn off this check
+    // if we don't see any evidence that we're getting inode info.
+    if (inode != 0) {
+      saw_nonzero_inode = true;
     }
+    if ((strstr(filename, "lib") && strstr(filename, ".so")) ||
+        strstr(filename, ".dll") ||
+        // not all .dylib filenames start with lib. .dylib is big enough
+        // that we are unlikely to get false matches just checking that.
+        strstr(filename, ".dylib") || strstr(filename, ".bundle")) {
+      saw_shared_lib = true;
+      if (inode != 0) {
+        saw_shared_lib_with_nonzero_inode = true;
+      }
+    }
+
     switch (proc_maps_task) {
       case DISABLE_LIBRARY_ALLOCS:
         // All lines starting like
@@ -894,6 +934,12 @@ HeapLeakChecker::ProcMapsResult HeapLeakChecker::UseProcMapsLocked(
       default:
         RAW_CHECK(0, "");
     }
+  }
+  // If /proc/self/maps is reporting inodes properly (we saw a
+  // non-zero inode), then we only say we saw a shared lib if we saw a
+  // 'real' one, with a non-zero inode.
+  if (saw_nonzero_inode) {
+    saw_shared_lib = saw_shared_lib_with_nonzero_inode;
   }
   if (!saw_shared_lib) {
     RAW_LOG(ERROR, "No shared libs detected. Will likely report false leak "
@@ -962,7 +1008,8 @@ static enum {
     // specially via self_thread_stack, not here:
     if (thread_pids[i] == self_thread_pid) continue;
     RAW_VLOG(11, "Handling thread with pid %d", thread_pids[i]);
-#if defined(HAVE_LINUX_PTRACE_H) && defined(HAVE_SYS_SYSCALL_H) && defined(DUMPER)
+#if (defined(__i386__) || defined(__x86_64)) && \
+    defined(HAVE_LINUX_PTRACE_H) && defined(HAVE_SYS_SYSCALL_H) && defined(DUMPER)
     i386_regs thread_regs;
 #define sys_ptrace(r, p, a, d)  syscall(SYS_ptrace, (r), (p), (a), (d))
     // We use sys_ptrace to avoid thread locking
@@ -1633,6 +1680,13 @@ bool HeapLeakChecker::DoNoLeaks(ShouldSymbolize should_symbolize) {
       return true;
     }
 
+    // Update global_region_caller_ranges. They may need to change since
+    // e.g. initialization because shared libraries might have been loaded or
+    // unloaded.
+    Allocator::DeleteAndNullIfNot(&global_region_caller_ranges);
+    ProcMapsResult pm_result = UseProcMapsLocked(DISABLE_LIBRARY_ALLOCS);
+    RAW_CHECK(pm_result == PROC_MAPS_USED, "");
+
     // Keep track of number of internally allocated objects so we
     // can detect leaks in the heap-leak-checket itself
     const int initial_allocs = Allocator::alloc_count();
@@ -1644,18 +1698,6 @@ bool HeapLeakChecker::DoNoLeaks(ShouldSymbolize should_symbolize) {
 
     MemoryRegionMap::LockHolder ml;
     int a_local_var;  // Use our stack ptr to make stack data live:
-
-    // Sanity check that nobody is messing with the hooks we need:
-    // Important to have it here: else we can misteriously SIGSEGV
-    // in IgnoreLiveObjectsLocked inside ListAllProcessThreads's callback
-    // by looking into a region that got unmapped w/o our knowledge.
-    MemoryRegionMap::CheckMallocHooks();
-    if (MallocHook::GetNewHook() != NewHook  ||
-        MallocHook::GetDeleteHook() != DeleteHook) {
-      RAW_LOG(FATAL, "Had our new/delete MallocHook-s replaced. "
-              "Are you using another MallocHook client? "
-              "Use --heap_check=\"\" to avoid this conflict.");
-    }
 
     // Make the heap profile, other threads are locked out.
     HeapProfileTable::Snapshot* base =
@@ -1833,9 +1875,6 @@ void HeapCleaner::RunHeapCleanups() {
   if (!FLAGS_heap_check_after_destructors) DoMainHeapCheck();
 }
 
-// defined below
-static int GetCommandLineFrom(const char* file, char* cmdline, int size);
-
 static bool internal_init_start_has_run = false;
 
 // Called exactly once, before main() (but hopefully just before).
@@ -1859,29 +1898,20 @@ static bool internal_init_start_has_run = false;
       // turns out we do not need checking in the end; can stop profiling
       TurnItselfOffLocked();
       return;
+    } else if (RunningOnValgrind()) {
+      // There is no point in trying -- we'll just fail.
+      RAW_LOG(WARNING, "Can't run under Valgrind; will turn itself off");
+      TurnItselfOffLocked();
+      return;
     }
   }
 
   // Changing this to false can be useful when debugging heap-checker itself:
-  if (!FLAGS_heap_check_run_under_gdb) {
-    // See if heap checker should turn itself off because we are
-    // running under gdb (to avoid conflicts over ptrace-ing rights):
-    char name_buf[15+15];
-    snprintf(name_buf, sizeof(name_buf),
-             "/proc/%d/cmdline", static_cast<int>(getppid()));
-    char cmdline[1024*8];  // /proc/*/cmdline is at most 4Kb anyway usually
-    int size = GetCommandLineFrom(name_buf, cmdline, sizeof(cmdline)-1);
-    cmdline[size] = '\0';
-    // look for "gdb" in the executable's name:
-    const char* last = strrchr(cmdline, '/');
-    if (last) last += 1;
-    else last = cmdline;
-    if (strncmp(last, "gdb", 3) == 0) {
-      RAW_LOG(WARNING, "We seem to be running under gdb; will turn itself off");
-      SpinLockHolder l(&heap_checker_lock);
-      TurnItselfOffLocked();
-      return;
-    }
+  if (!FLAGS_heap_check_run_under_gdb && IsDebuggerAttached()) {
+    RAW_LOG(WARNING, "Someone is ptrace()ing us; will turn itself off");
+    SpinLockHolder l(&heap_checker_lock);
+    TurnItselfOffLocked();
+    return;
   }
 
   { SpinLockHolder l(&heap_checker_lock);
@@ -2084,98 +2114,15 @@ void HeapLeakChecker::CancelGlobalCheck() {
   }
 }
 
-//----------------------------------------------------------------------
-// HeapLeakChecker global constructor/destructor ordering components
-//----------------------------------------------------------------------
-
-static bool in_initial_malloc_hook = false;
-
-#ifdef HAVE___ATTRIBUTE__   // we need __attribute__((weak)) for this to work
-#define INSTALLED_INITIAL_MALLOC_HOOKS
-
-void HeapLeakChecker_BeforeConstructors();  // below
-
-// Helper for InitialMallocHook_* below
-static inline void InitHeapLeakCheckerFromMallocHook() {
-  { SpinLockHolder l(&heap_checker_lock);
-    RAW_CHECK(!in_initial_malloc_hook,
-              "Something did not reset initial MallocHook-s");
-    in_initial_malloc_hook = true;
-  }
-  // Initialize heap checker on the very first allocation/mmap/sbrk call:
-  HeapLeakChecker_BeforeConstructors();
-  { SpinLockHolder l(&heap_checker_lock);
-    in_initial_malloc_hook = false;
-  }
-}
-
-// These will owerwrite the weak definitions in malloc_hook.cc:
-
-// Important to have this to catch the first allocation call from the binary:
-extern void InitialMallocHook_New(const void* ptr, size_t size) {
-  InitHeapLeakCheckerFromMallocHook();
-  // record this first allocation as well (if we need to):
-  MallocHook::InvokeNewHook(ptr, size);
-}
-
-// Important to have this to catch the first mmap call (say from tcmalloc):
-extern void InitialMallocHook_MMap(const void* result,
-                                   const void* start,
-                                   size_t size,
-                                   int protection,
-                                   int flags,
-                                   int fd,
-                                   off_t offset) {
-  InitHeapLeakCheckerFromMallocHook();
-  // record this first mmap as well (if we need to):
-  MallocHook::InvokeMmapHook(
-    result, start, size, protection, flags, fd, offset);
-}
-
-// Important to have this to catch the first sbrk call (say from tcmalloc):
-extern void InitialMallocHook_Sbrk(const void* result, std::ptrdiff_t increment) {
-  InitHeapLeakCheckerFromMallocHook();
-  // record this first sbrk as well (if we need to):
-  MallocHook::InvokeSbrkHook(result, increment);
-}
-
-// static
-void CancelInitialMallocHooks() {
-  if (MallocHook::GetNewHook() == InitialMallocHook_New) {
-    MallocHook::SetNewHook(NULL);
-  }
-  RAW_DCHECK(MallocHook::GetNewHook() == NULL, "");
-  if (MallocHook::GetMmapHook() == InitialMallocHook_MMap) {
-    MallocHook::SetMmapHook(NULL);
-  }
-  RAW_DCHECK(MallocHook::GetMmapHook() == NULL, "");
-  if (MallocHook::GetSbrkHook() == InitialMallocHook_Sbrk) {
-    MallocHook::SetSbrkHook(NULL);
-  }
-  RAW_DCHECK(MallocHook::GetSbrkHook() == NULL, "");
-}
-
-#else
-
-// static
-void CancelInitialMallocHooks() {}
-
-#endif
-
 // static
 void HeapLeakChecker::BeforeConstructorsLocked() {
   RAW_DCHECK(heap_checker_lock.IsHeld(), "");
   RAW_CHECK(!constructor_heap_profiling,
             "BeforeConstructorsLocked called multiple times");
-  CancelInitialMallocHooks();
   // Set hooks early to crash if 'new' gets called before we make heap_profile,
   // and make sure no other hooks existed:
-  if (MallocHook::SetNewHook(NewHook) != NULL  ||
-      MallocHook::SetDeleteHook(DeleteHook) != NULL) {
-    RAW_LOG(FATAL, "Had other new/delete MallocHook-s set. "
-                   "Somehow leak checker got activated "
-                   "after something else have set up these hooks.");
-  }
+  RAW_CHECK(MallocHook::AddNewHook(&NewHook), "");
+  RAW_CHECK(MallocHook::AddDeleteHook(&DeleteHook), "");
   constructor_heap_profiling = true;
   MemoryRegionMap::Init(1);
     // Set up MemoryRegionMap with (at least) one caller stack frame to record
@@ -2198,12 +2145,9 @@ void HeapLeakChecker::TurnItselfOffLocked() {
     RAW_CHECK(heap_checker_on, "");
     RAW_VLOG(heap_checker_info_level, "Turning perftools heap leak checking off");
     heap_checker_on = false;
-    // Unset our hooks checking they were the ones set:
-    if (MallocHook::SetNewHook(NULL) != NewHook  ||
-        MallocHook::SetDeleteHook(NULL) != DeleteHook) {
-      RAW_LOG(FATAL, "Had our new/delete MallocHook-s replaced. "
-                     "Are you using another MallocHook client?");
-    }
+    // Unset our hooks checking they were set:
+    RAW_CHECK(MallocHook::RemoveNewHook(&NewHook), "");
+    RAW_CHECK(MallocHook::RemoveDeleteHook(&DeleteHook), "");
     Allocator::DeleteAndNull(&heap_profile);
     // free our optional global data:
     Allocator::DeleteAndNullIfNot(&ignored_objects);
@@ -2215,57 +2159,13 @@ void HeapLeakChecker::TurnItselfOffLocked() {
   RAW_CHECK(!heap_checker_on, "");
 }
 
-// Read in the command line from 'file' into 'cmdline' and return the size read
-// 'size' is the space available in 'cmdline'.
-// We need this because we don't yet have argv/argc.
-// CAVEAT: 'file' (some /proc/*/cmdline) usually contains the command line
-// already truncated (to 4K on Linux).
-// Arguments in cmdline will be '\0'-terminated,
-// the first one will be the binary's name.
-static int GetCommandLineFrom(const char* file, char* cmdline, int size) {
-  // This routine is only used to check if we're running under gdb, so
-  // it's ok if this #if fails and the routine is a no-op.
-  //
-  // This function is called before memory allocation hooks are set up
-  // so we must not have any memory allocations in it.  We use syscall
-  // versions of open/read/close here because we don't trust the non-syscall
-  // versions: they might 'accidentally' cause a memory allocation.
-  // Here's a real-life problem scenario we had:
-  // 1) A program LD_PRELOADed a library called list_file_used.a
-  // 2) list_file_used intercepted open/read/close and called dlsym()
-  // 3) dlsym() called pthread_setspecific() which called malloc().
-  // This malloced memory is 'hidden' from the heap-checker.  By
-  // definition, this thread-local data is live, and everything it points
-  // to is live (not a memory leak) as well.  But because this memory
-  // was hidden from the heap-checker, everything it points to was
-  // taken to be orphaned, and therefore, a memory leak.
-#if defined(_WIN32) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__MINGW32__)
-  // Use a win32 call to get the command line.
-  const char* command_line = ::GetCommandLine();
-  strncpy(cmdline, command_line, size);
-  cmdline[size - 1] = '\0';
-  return strlen(cmdline);
-#elif defined(HAVE_SYS_SYSCALL_H)
-  int fd = syscall(SYS_open, file, O_RDONLY);
-  int result = 0;
-  if (fd >= 0) {
-    ssize_t r;
-    while ((r = syscall(SYS_read, fd, cmdline + result, size)) > 0) {
-      result += r;
-      size -= r;
-    }
-    syscall(SYS_close, fd);
-  }
-  return result;
-#else
-  return 0;
-#endif
-}
-
 extern bool heap_leak_checker_bcad_variable;  // in heap-checker-bcad.cc
 
 static bool has_called_before_constructors = false;
 
+// TODO(maxim): inline this function with
+// MallocHook_InitAtFirstAllocation_HeapLeakChecker, and also rename
+// HeapLeakChecker::BeforeConstructorsLocked.
 void HeapLeakChecker_BeforeConstructors() {
   SpinLockHolder l(&heap_checker_lock);
   // We can be called from several places: the first mmap/sbrk/alloc call
@@ -2304,9 +2204,17 @@ void HeapLeakChecker_BeforeConstructors() {
 #endif
   if (need_heap_check) {
     HeapLeakChecker::BeforeConstructorsLocked();
-  } else {  // cancel our initial hooks
-    CancelInitialMallocHooks();
   }
+}
+
+// This function overrides the weak function defined in malloc_hook.cc and
+// called by one of the initial malloc hooks (malloc_hook.cc) when the very
+// first memory allocation or an mmap/sbrk happens.  This ensures that
+// HeapLeakChecker is initialized and installs all its hooks early enough to
+// track absolutely all memory allocations and all memory region acquisitions
+// via mmap and sbrk.
+extern "C" void MallocHook_InitAtFirstAllocation_HeapLeakChecker() {
+  HeapLeakChecker_BeforeConstructors();
 }
 
 // This function is executed after all global object destructors run.

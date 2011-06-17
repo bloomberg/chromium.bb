@@ -49,6 +49,7 @@
 #include <unistd.h>        // for getpagesize()
 #endif
 #include "tcmalloc.h"      // must come early, to pick up posix_memalign
+#include <assert.h>
 #include <stdlib.h>        // defines posix_memalign
 #include <stdio.h>         // for the printf at the end
 #ifdef HAVE_STDINT_H
@@ -57,8 +58,13 @@
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>        // for getpagesize()
 #endif
-#ifdef HAVE_MALLOC_H
-#include <malloc.h>
+// Malloc can be in several places on older versions of OS X.
+#if defined(HAVE_MALLOC_H)
+#include <malloc.h>        // for memalign() and valloc()
+#elif defined(HAVE_MALLOC_MALLOC_H)
+#include <malloc/malloc.h>
+#elif defined(HAVE_SYS_MALLOC_H)
+#include <sys/malloc.h>
 #endif
 #include "base/basictypes.h"
 #include "base/logging.h"

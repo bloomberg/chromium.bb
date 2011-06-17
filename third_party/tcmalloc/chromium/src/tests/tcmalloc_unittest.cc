@@ -100,17 +100,12 @@
 # define cfree free         // don't bother to try to test these obsolete fns
 # define valloc malloc
 # define pvalloc malloc
-# ifdef PERFTOOLS_NO_ALIGNED_MALLOC
-#   define _aligned_malloc(size, alignment) malloc(size)
-# else
-#   include <malloc.h>      // for _aligned_malloc
-# endif
-# define memalign(alignment, size) _aligned_malloc(size, alignment)
-// Assume if we fail, it's because of out-of-memory.
-// Note, this isn't a perfect analogue: we don't enforce constraints on "align"
+// I'd like to map posix_memalign to _aligned_malloc, but _aligned_malloc
+// must be paired with _aligned_free (not normal free), which is too
+// invasive a change to how we allocate memory here.  So just bail
 # include <errno.h>
-# define posix_memalign(pptr, align, size) \
-      ((*(pptr)=_aligned_malloc(size, align)) ? 0 : ENOMEM)
+# define memalign(alignment, size)         malloc(size)
+# define posix_memalign(pptr, align, size) ((*(pptr)=malloc(size)) ? 0 : ENOMEM)
 #endif
 
 // On systems (like freebsd) that don't define MAP_ANONYMOUS, use the old
@@ -126,6 +121,7 @@ using std::string;
 
 DECLARE_double(tcmalloc_release_rate);
 DECLARE_int32(max_free_queue_size);     // in debugallocation.cc
+DECLARE_int64(tcmalloc_sample_parameter);
 
 namespace testing {
 
@@ -559,6 +555,13 @@ static void TestCalloc(size_t n, size_t s, bool ok) {
 // direction doesn't cause us to allocate new memory.
 static void TestRealloc() {
 #ifndef DEBUGALLOCATION  // debug alloc doesn't try to minimize reallocs
+  // When sampling, we always allocate in units of page-size, which
+  // makes reallocs of small sizes do extra work (thus, failing these
+  // checks).  Since sampling is random, we turn off sampling to make
+  // sure that doesn't happen to us here.
+  const int64 old_sample_parameter = FLAGS_tcmalloc_sample_parameter;
+  FLAGS_tcmalloc_sample_parameter = 0;   // turn off sampling
+
   int start_sizes[] = { 100, 1000, 10000, 100000 };
   int deltas[] = { 1, -2, 4, -8, 16, -32, 64, -128 };
 
@@ -566,7 +569,7 @@ static void TestRealloc() {
     void* p = malloc(start_sizes[s]);
     CHECK(p);
     // The larger the start-size, the larger the non-reallocing delta.
-    for (int d = 0; d < s*2; ++d) {
+    for (int d = 0; d < (s+1) * 2; ++d) {
       void* new_p = realloc(p, start_sizes[s] + deltas[d]);
       CHECK(p == new_p);  // realloc should not allocate new memory
     }
@@ -577,6 +580,7 @@ static void TestRealloc() {
     }
     free(p);
   }
+  FLAGS_tcmalloc_sample_parameter = old_sample_parameter;
 #endif
 }
 
@@ -688,14 +692,13 @@ static void TestNothrowNew(void* (*func)(size_t, const std::nothrow_t&)) {
     CHECK_GT(g_##hook_type##_calls, 0);                                 \
     g_##hook_type##_calls = 0;  /* reset for next call */               \
   }                                                                     \
-  static MallocHook::hook_type g_old_##hook_type;                       \
   static void Set##hook_type() {                                        \
-    g_old_##hook_type = MallocHook::Set##hook_type(                     \
-     (MallocHook::hook_type)&IncrementCallsTo##hook_type);              \
+    CHECK(MallocHook::Add##hook_type(                                   \
+        (MallocHook::hook_type)&IncrementCallsTo##hook_type));          \
   }                                                                     \
   static void Reset##hook_type() {                                      \
-    CHECK_EQ(MallocHook::Set##hook_type(g_old_##hook_type),             \
-             (MallocHook::hook_type)&IncrementCallsTo##hook_type);      \
+    CHECK(MallocHook::Remove##hook_type(                                \
+        (MallocHook::hook_type)&IncrementCallsTo##hook_type));          \
   }
 
 // We do one for each hook typedef in malloc_hook.h
@@ -717,11 +720,9 @@ static void TestAlignmentForSize(int size) {
     CHECK((p % sizeof(double)) == 0);
 
     // Must have 16-byte alignment for large enough objects
-#ifndef DEBUGALLOCATION    // debug allocation doesn't need to align like this
     if (size >= 16) {
       CHECK((p % 16) == 0);
     }
-#endif
   }
   for (int i = 0; i < kNum; i++) {
     free(ptrs[i]);
@@ -763,7 +764,15 @@ static void RangeCallback(void* arg, const base::MallocRange* r) {
   RangeCallbackState* state = reinterpret_cast<RangeCallbackState*>(arg);
   if (state->ptr >= r->address &&
       state->ptr < r->address + r->length) {
-    CHECK_EQ(r->type, state->expected_type);
+    if (state->expected_type == base::MallocRange::FREE) {
+      // We are expecting r->type == FREE, but ReleaseMemory
+      // may have already moved us to UNMAPPED state instead (this happens in
+      // approximately 0.1% of executions). Accept either state.
+      CHECK(r->type == base::MallocRange::FREE ||
+            r->type == base::MallocRange::UNMAPPED);
+    } else {
+      CHECK_EQ(r->type, state->expected_type);
+    }
     CHECK_GE(r->length, state->min_size);
     state->matched = true;
   }
@@ -869,7 +878,10 @@ static void TestReleaseToSystem() {
 #endif   // #ifndef DEBUGALLOCATION
 }
 
-bool g_no_memory = false;
+// On MSVC10, in release mode, the optimizer convinces itself
+// g_no_memory is never changed (I guess it doesn't realize OnNoMemory
+// might be called).  Work around this by setting the var volatile.
+volatile bool g_no_memory = false;
 std::new_handler g_old_handler = NULL;
 static void OnNoMemory() {
   g_no_memory = true;
@@ -997,69 +1009,107 @@ static int RunAllTests(int argc, char** argv) {
     SetDeleteHook();   // ditto
 
     void* p1 = malloc(10);
+    CHECK(p1 != NULL);    // force use of this variable
     VerifyNewHookWasCalled();
+    // Also test the non-standard tc_malloc_size
+    size_t actual_p1_size = tc_malloc_size(p1);
+    CHECK_GE(actual_p1_size, 10);
+    CHECK_LT(actual_p1_size, 100000);   // a reasonable upper-bound, I think
     free(p1);
     VerifyDeleteHookWasCalled();
 
+
     p1 = calloc(10, 2);
+    CHECK(p1 != NULL);
     VerifyNewHookWasCalled();
-    p1 = realloc(p1, 30);
+    // We make sure we realloc to a big size, since some systems (OS
+    // X) will notice if the realloced size continues to fit into the
+    // malloc-block and make this a noop if so.
+    p1 = realloc(p1, 30000);
+    CHECK(p1 != NULL);
     VerifyNewHookWasCalled();
     VerifyDeleteHookWasCalled();
     cfree(p1);  // synonym for free
     VerifyDeleteHookWasCalled();
 
     CHECK_EQ(posix_memalign(&p1, sizeof(p1), 40), 0);
+    CHECK(p1 != NULL);
     VerifyNewHookWasCalled();
     free(p1);
     VerifyDeleteHookWasCalled();
 
     p1 = memalign(sizeof(p1) * 2, 50);
+    CHECK(p1 != NULL);
     VerifyNewHookWasCalled();
     free(p1);
     VerifyDeleteHookWasCalled();
 
+    // Windows has _aligned_malloc.  Let's test that that's captured too.
+#if (defined(_MSC_VER) || defined(__MINGW32__)) && !defined(PERFTOOLS_NO_ALIGNED_MALLOC)
+    p1 = _aligned_malloc(sizeof(p1) * 2, 64);
+    VerifyNewHookWasCalled();
+    _aligned_free(p1);
+    VerifyDeleteHookWasCalled();
+#endif
+
     p1 = valloc(60);
+    CHECK(p1 != NULL);
     VerifyNewHookWasCalled();
     free(p1);
     VerifyDeleteHookWasCalled();
 
     p1 = pvalloc(70);
+    CHECK(p1 != NULL);
     VerifyNewHookWasCalled();
     free(p1);
     VerifyDeleteHookWasCalled();
 
     char* p2 = new char;
+    CHECK(p2 != NULL);
     VerifyNewHookWasCalled();
     delete p2;
     VerifyDeleteHookWasCalled();
 
     p2 = new char[100];
+    CHECK(p2 != NULL);
     VerifyNewHookWasCalled();
     delete[] p2;
     VerifyDeleteHookWasCalled();
 
     p2 = new(std::nothrow) char;
+    CHECK(p2 != NULL);
     VerifyNewHookWasCalled();
     delete p2;
     VerifyDeleteHookWasCalled();
 
     p2 = new(std::nothrow) char[100];
+    CHECK(p2 != NULL);
     VerifyNewHookWasCalled();
     delete[] p2;
     VerifyDeleteHookWasCalled();
 
     // Another way of calling operator new
     p2 = static_cast<char*>(::operator new(100));
+    CHECK(p2 != NULL);
     VerifyNewHookWasCalled();
     ::operator delete(p2);
     VerifyDeleteHookWasCalled();
 
     // Try to call nothrow's delete too.  Compilers use this.
     p2 = static_cast<char*>(::operator new(100, std::nothrow));
+    CHECK(p2 != NULL);
     VerifyNewHookWasCalled();
     ::operator delete(p2, std::nothrow);
     VerifyDeleteHookWasCalled();
+
+    // Try strdup(), which the system allocates but we must free.  If
+    // all goes well, libc will use our malloc!
+    p2 = strdup("test");
+    CHECK(p2 != NULL);
+    VerifyNewHookWasCalled();
+    free(p2);
+    VerifyDeleteHookWasCalled();
+
 
     // Test mmap too: both anonymous mmap and mmap of a file
     // Note that for right now we only override mmap on linux
@@ -1072,8 +1122,10 @@ static int RunAllTests(int argc, char** argv) {
     int size = 8192*2;
     p1 = mmap(NULL, size, PROT_WRITE|PROT_READ, MAP_ANONYMOUS|MAP_PRIVATE,
               -1, 0);
+    CHECK(p1 != NULL);
     VerifyMmapHookWasCalled();
     p1 = mremap(p1, size, size/2, 0);
+    CHECK(p1 != NULL);
     VerifyMremapHookWasCalled();
     size /= 2;
     munmap(p1, size);
@@ -1082,6 +1134,7 @@ static int RunAllTests(int argc, char** argv) {
     int fd = open("/dev/zero", O_RDONLY);
     CHECK_GE(fd, 0);   // make sure the open succeeded
     p1 = mmap(NULL, 8192, PROT_READ, MAP_SHARED, fd, 0);
+    CHECK(p1 != NULL);
     VerifyMmapHookWasCalled();
     munmap(p1, 8192);
     VerifyMunmapHookWasCalled();
@@ -1100,11 +1153,14 @@ static int RunAllTests(int argc, char** argv) {
 #if defined(HAVE_SBRK) && defined(__linux) && \
        (defined(__i386__) || defined(__x86_64__))
     p1 = sbrk(8192);
+    CHECK(p1 != NULL);
     VerifySbrkHookWasCalled();
     p1 = sbrk(-8192);
+    CHECK(p1 != NULL);
     VerifySbrkHookWasCalled();
     // However, sbrk hook should *not* be called with sbrk(0)
     p1 = sbrk(0);
+    CHECK(p1 != NULL);
     CHECK_EQ(g_SbrkHook_calls, 0);
 #else   // this is just to quiet the compiler: make sure all fns are called
     IncrementCallsToSbrkHook();

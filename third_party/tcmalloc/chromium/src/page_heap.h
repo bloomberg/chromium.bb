@@ -34,7 +34,12 @@
 #define TCMALLOC_PAGE_HEAP_H_
 
 #include <config.h>
+#include <stddef.h>                     // for size_t
+#ifdef HAVE_STDINT_H
+#include <stdint.h>                     // for uint64_t, int64_t, uint16_t
+#endif
 #include <google/malloc_extension.h>
+#include "base/basictypes.h"
 #include "common.h"
 #include "packed-cache-inl.h"
 #include "pagemap.h"
@@ -50,12 +55,19 @@
 
 // This #ifdef should almost never be set.  Set NO_TCMALLOC_SAMPLES if
 // you're porting to a system where you really can't get a stacktrace.
+// Because we control the definition of GetStackTrace, all clients of
+// GetStackTrace should #include us rather than stacktrace.h.
 #ifdef NO_TCMALLOC_SAMPLES
   // We use #define so code compiles even if you #include stacktrace.h somehow.
 # define GetStackTrace(stack, depth, skip)  (0)
 #else
 # include <google/stacktrace.h>
 #endif
+
+class TCMalloc_Printer;
+namespace base {
+struct MallocRange;
+}
 
 namespace tcmalloc {
 
@@ -150,6 +162,10 @@ class PERFTOOLS_DLL_DECL PageHeap {
 
   };
   inline Stats stats() const { return stats_; }
+  void GetClassSizes(int64 class_sizes_normal[kMaxPages],
+                     int64 class_sizes_returned[kMaxPages],
+                     int64* normal_pages_in_spans,
+                     int64* returned_pages_in_spans);
 
   bool Check();
   // Like Check() but does some more comprehensive checking.
@@ -186,11 +202,8 @@ class PERFTOOLS_DLL_DECL PageHeap {
   // should keep this value big because various incarnations of Linux
   // have small limits on the number of mmap() regions per
   // address-space.
-  static const int kMinSystemAlloc = 1 << (20 - kPageShift);
-
-  // For all span-lengths < kMaxPages we keep an exact-size list.
-  // REQUIRED: kMaxPages >= kMinSystemAlloc;
-  static const size_t kMaxPages = kMinSystemAlloc;
+  // REQUIRED: kMinSystemAlloc <= kMaxPages;
+  static const int kMinSystemAlloc = kMaxPages;
 
   // Never delay scavenging for more than the following number of
   // deallocated pages.  With 4K pages, this comes to 4GB of
@@ -204,8 +217,8 @@ class PERFTOOLS_DLL_DECL PageHeap {
   static const int kDefaultReleaseDelay = 1 << 12;
 
   // Pick the appropriate map and cache types based on pointer size
-  typedef MapSelector<8*sizeof(uintptr_t)>::Type PageMap;
-  typedef MapSelector<8*sizeof(uintptr_t)>::CacheType PageMapCache;
+  typedef MapSelector<kAddressBits>::Type PageMap;
+  typedef MapSelector<kAddressBits>::CacheType PageMapCache;
   PageMap pagemap_;
   mutable PageMapCache pagemap_cache_;
 
@@ -225,6 +238,8 @@ class PERFTOOLS_DLL_DECL PageHeap {
 
   // Statistics on system, free, and unmapped bytes
   Stats stats_;
+  Span* SearchFreeAndLargeLists(Length n);
+
   bool GrowHeap(Length n);
 
   // REQUIRES: span->length >= n

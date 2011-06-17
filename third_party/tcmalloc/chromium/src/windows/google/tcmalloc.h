@@ -35,12 +35,6 @@
 #ifndef TCMALLOC_TCMALLOC_H_
 #define TCMALLOC_TCMALLOC_H_
 
-// Define the version number so folks can check against it
-#define TC_VERSION_MAJOR  1
-#define TC_VERSION_MINOR  4
-#define TC_VERSION_PATCH  ""
-#define TC_VERSION_STRING "google-perftools 1.4"
-
 // __THROW is defined in glibc systems.  It means, counter-intuitively,
 // "This function will never throw an exception."  It's an optional
 // optimization tool, but we may need to use it to match glibc prototypes.
@@ -48,6 +42,11 @@
 # define __THROW   /* __THROW is just an optimization, so ok to make it "" */
 #endif
 
+// Define the version number so folks can check against it
+#define TC_VERSION_MAJOR  1
+#define TC_VERSION_MINOR  7
+#define TC_VERSION_PATCH  ""
+#define TC_VERSION_STRING "google-perftools 1.7"
 
 #include <stdlib.h>   // for struct mallinfo, if it's defined
 
@@ -89,6 +88,13 @@ extern "C" {
 #if 0
   PERFTOOLS_DLL_DECL struct mallinfo tc_mallinfo(void) __THROW;
 #endif
+
+  // This is an alias for MallocExtension::instance()->GetAllocatedSize().
+  // It is equivalent to
+  //    OS X: malloc_size()
+  //    glibc: malloc_usable_size()
+  //    Windows: _msize()
+  PERFTOOLS_DLL_DECL size_t tc_malloc_size(void* ptr) __THROW;
 
 #ifdef __cplusplus
   PERFTOOLS_DLL_DECL int tc_set_new_mode(int flag) __THROW;

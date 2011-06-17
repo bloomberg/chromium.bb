@@ -46,33 +46,45 @@
 #define GOOGLE_BASE_CYCLECLOCK_H_
 
 #include "base/basictypes.h"   // make sure we get the def for int64
+#include "base/arm_instruction_set_select.h"
 #if defined(__MACH__) && defined(__APPLE__)
-#include <mach/mach_time.h>
+# include <mach/mach_time.h>
+#endif
+// For MSVC, we want the __rdtsc intrinsic, declared in <intrin.h>.
+// Unfortunately, in some environments, <windows.h> and <intrin.h> have
+// conflicting declarations of some other intrinsics, breaking compilation.
+// Therefore, we simply declare __rdtsc ourselves. See also
+// http://connect.microsoft.com/VisualStudio/feedback/details/262047
+#if defined(_MSC_VER)
+extern "C" uint64 __rdtsc();
+#pragma intrinsic(__rdtsc)
+#endif
+#ifdef HAVE_SYS_TIME_H
+#include <sys/time.h>
 #endif
 
 // NOTE: only i386 and x86_64 have been well tested.
 // PPC, sparc, alpha, and ia64 are based on
 //    http://peter.kuscsik.com/wordpress/?p=14
-// with modifications by m3b.  cf
+// with modifications by m3b.  See also
 //    https://setisvn.ssl.berkeley.edu/svn/lib/fftw-3.0.1/kernel/cycle.h
 struct CycleClock {
   // This should return the number of cycles since power-on.  Thread-safe.
   static inline int64 Now() {
 #if defined(__MACH__) && defined(__APPLE__)
-    // this goes at the top because we need ALL Macs, regardless
-    // of architecture, to return the number of "mach time units"
-    // that have passes since startup. See sysinfo.cc where
-    // InitializeSystemInfo() sets the supposed cpu clock frequency of macs
-    // to the number of mach time units per second, not actual
+    // this goes at the top because we need ALL Macs, regardless of
+    // architecture, to return the number of "mach time units" that
+    // have passed since startup.  See sysinfo.cc where
+    // InitializeSystemInfo() sets the supposed cpu clock frequency of
+    // macs to the number of mach time units per second, not actual
     // CPU clock frequency (which can change in the face of CPU
-    // frequency scaling).  also note that when the Mac sleeps,
-    // this counter pauses; it does not continue counting, nor resets
-    // to zero.
+    // frequency scaling).  Also note that when the Mac sleeps, this
+    // counter pauses; it does not continue counting, nor does it
+    // reset to zero.
     return mach_absolute_time();
 #elif defined(__i386__)
     int64 ret;
-    __asm__ volatile ("rdtsc"
-                      : "=A" (ret) );
+    __asm__ volatile ("rdtsc" : "=A" (ret) );
     return ret;
 #elif defined(__x86_64__) || defined(__amd64__)
     uint64 low, high;
@@ -82,7 +94,7 @@ struct CycleClock {
     // This returns a time-base, which is not always precisely a cycle-count.
     int64 tbl, tbu0, tbu1;
     asm("mftbu %0" : "=r" (tbu0));
-    asm("mftb  %0" : "=r" (tbl ));
+    asm("mftb  %0" : "=r" (tbl));
     asm("mftbu %0" : "=r" (tbu1));
     tbl &= -static_cast<int64>(tbu0 == tbu1);
     // high 32 bits in tbu1; low 32 bits in tbl  (tbu0 is garbage)
@@ -96,11 +108,31 @@ struct CycleClock {
     int64 itc;
     asm("mov %0 = ar.itc" : "=r" (itc));
     return itc;
-#elif defined(_MSC_VER) && defined(_M_IX86)
-    _asm rdtsc
+#elif defined(_MSC_VER)
+    return __rdtsc();
+#elif defined(ARMV3)
+#if defined(ARMV6)  // V6 is the earliest arch that has a standard cyclecount
+    uint32 pmccntr;
+    uint32 pmuseren;
+    uint32 pmcntenset;
+    // Read the user mode perf monitor counter access permissions.
+    asm("mrc p15, 0, %0, c9, c14, 0" : "=r" (pmuseren));
+    if (pmuseren & 1) {  // Allows reading perfmon counters for user mode code.
+      asm("mrc p15, 0, %0, c9, c12, 1" : "=r" (pmcntenset));
+      if (pmcntenset & 0x80000000ul) {  // Is it counting?
+        asm("mrc p15, 0, %0, c9, c13, 0" : "=r" (pmccntr));
+        // The counter is set up to count every 64th cycle
+        return static_cast<int64>(pmccntr) * 64;  // Should optimize to << 6
+      }
+    }
+#endif
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    return static_cast<int64>(tv.tv_sec) * 1000000 + tv.tv_usec;
 #else
-    // We could define __alpha here as well, but it only has a 32-bit
-    // timer (good for like 4 seconds), which isn't very useful.
+// The soft failover to a generic implementation is automatic only for ARM.
+// For other platforms the developer is expected to make an attempt to create
+// a fast implementation and use generic version if nothing better is available.
 #error You need to define CycleTimer for your O/S and CPU
 #endif
   }

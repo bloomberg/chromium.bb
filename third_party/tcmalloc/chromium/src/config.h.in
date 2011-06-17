@@ -1,5 +1,10 @@
 /* src/config.h.in.  Generated from configure.ac by autoheader.  */
 
+
+#ifndef GOOGLE_PERFTOOLS_CONFIG_H_
+#define GOOGLE_PERFTOOLS_CONFIG_H_
+
+
 /* Define to 1 if compiler supports __builtin_stack_pointer */
 #undef HAVE_BUILTIN_STACK_POINTER
 
@@ -72,6 +77,9 @@
 /* Define to 1 if you have the <malloc.h> header file. */
 #undef HAVE_MALLOC_H
 
+/* Define to 1 if you have the <malloc/malloc.h> header file. */
+#undef HAVE_MALLOC_MALLOC_H
+
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 
@@ -114,6 +122,15 @@
 /* Define to 1 if the system has the type `struct mallinfo'. */
 #undef HAVE_STRUCT_MALLINFO
 
+/* Define to 1 if you have the <sys/cdefs.h> header file. */
+#undef HAVE_SYS_CDEFS_H
+
+/* Define to 1 if you have the <sys/malloc.h> header file. */
+#undef HAVE_SYS_MALLOC_H
+
+/* Define to 1 if you have the <sys/param.h> header file. */
+#undef HAVE_SYS_PARAM_H
+
 /* Define to 1 if you have the <sys/prctl.h> header file. */
 #undef HAVE_SYS_PRCTL_H
 
@@ -128,6 +145,9 @@
 
 /* Define to 1 if you have the <sys/syscall.h> header file. */
 #undef HAVE_SYS_SYSCALL_H
+
+/* Define to 1 if you have the <sys/time.h> header file. */
+#undef HAVE_SYS_TIME_H
 
 /* Define to 1 if you have the <sys/types.h> header file. */
 #undef HAVE_SYS_TYPES_H
@@ -167,6 +187,10 @@
 
 /* Define to 1 if int32_t is equivalent to intptr_t */
 #undef INT32_EQUALS_INTPTR
+
+/* Define to the sub-directory in which libtool stores uninstalled libraries.
+   */
+#undef LT_OBJDIR
 
 /* Define to 1 if your C compiler doesn't accept -c and -o together. */
 #undef NO_MINUS_C_MINUS_O
@@ -240,3 +264,4 @@
 #include "windows/mingw.h"
 #endif
 
+#endif  /* #ifndef GOOGLE_PERFTOOLS_CONFIG_H_ */

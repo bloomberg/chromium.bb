@@ -213,6 +213,17 @@ TEST(DebugAllocationTest, DanglingWriteAtExitTest) {
   *x = old_x_value;  // restore x so that the test can exit successfully.
 }
 
+TEST(DebugAllocationTest, StackTraceWithDanglingWriteAtExitTest) {
+  int *x = new int;
+  delete x;
+  int old_x_value = *x;
+  *x = 1;
+  // verify that we also get a stack trace when we have a dangling write.
+  // The " @ " is part of the stack trace output.
+  IF_DEBUG_EXPECT_DEATH(exit(0), " @ .*main");
+  *x = old_x_value;  // restore x so that the test can exit successfully.
+}
+
 static size_t CurrentlyAllocatedBytes() {
   size_t value;
   CHECK(MallocExtension::instance()->GetNumericProperty(
@@ -259,27 +270,24 @@ TEST(DebugAllocationTest, GetAllocatedSizeTest) {
 }
 
 TEST(DebugAllocationTest, HugeAlloc) {
-  const size_t kTooBig = ~static_cast<size_t>(0);
+  // This must not be a const variable so it doesn't form an
+  // integral-constant-expression which can be *statically* rejected by the
+  // compiler as too large for the allocation.
+  size_t kTooBig = ~static_cast<size_t>(0);
   void* a = NULL;
-  char* b = NULL;
 
 #ifndef NDEBUG
 
   a = malloc(kTooBig);
   EXPECT_EQ(NULL, a);
-  b = NULL;
-  IF_DEBUG_EXPECT_DEATH(b = new char[kTooBig],
-                        "Unable to allocate.*new\\[\\] failed\\.");
-  EXPECT_EQ(NULL, b);
 
   // kAlsoTooBig is small enough not to get caught by debugallocation's check,
-  // but will still fall through to tcmalloc's check.
-  const size_t kAlsoTooBig = kTooBig - 1024;
+  // but will still fall through to tcmalloc's check. This must also be
+  // a non-const variable. See kTooBig for more details.
+  size_t kAlsoTooBig = kTooBig - 1024;
 
   a = malloc(kAlsoTooBig);
   EXPECT_EQ(NULL, a);
-  IF_DEBUG_EXPECT_DEATH(b = new char[kAlsoTooBig], "Unable to allocate.*new failed");
-  EXPECT_EQ(NULL, b);
 #endif
 }
 
