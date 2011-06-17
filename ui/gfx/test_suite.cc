@@ -6,19 +6,17 @@
 
 #include "base/file_path.h"
 #include "base/path_service.h"
-#include "base/mac/scoped_nsautorelease_pool.h"
+#include "build/build_config.h"
 #include "ui/gfx/gfx_paths.h"
 
 #if defined(OS_MACOSX)
-#include "base/mac/mac_util.h"
+#include "base/mac/foundation_util.h"
 #endif
 
 GfxTestSuite::GfxTestSuite(int argc, char** argv) : TestSuite(argc, argv) {}
 
 void GfxTestSuite::Initialize() {
-  base::mac::ScopedNSAutoreleasePool autorelease_pool;
-
-  TestSuite::Initialize();
+  base::TestSuite::Initialize();
 
   gfx::RegisterPathProvider();
 
@@ -44,5 +42,5 @@ void GfxTestSuite::Shutdown() {
 #if defined(OS_MACOSX)
   base::mac::SetOverrideAppBundle(NULL);
 #endif
-  TestSuite::Shutdown();
+  base::TestSuite::Shutdown();
 }

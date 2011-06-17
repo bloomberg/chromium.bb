@@ -6,19 +6,17 @@
 #define UI_GFX_TEST_SUITE_H_
 #pragma once
 
-#include <string>
-
+#include "base/compiler_specific.h"
 #include "base/test/test_suite.h"
-#include "build/build_config.h"
 
 class GfxTestSuite : public base::TestSuite {
  public:
   GfxTestSuite(int argc, char** argv);
 
  protected:
-  // Overridden from base::TestSuite:
-  virtual void Initialize();
-  virtual void Shutdown();
+  // base::TestSuite:
+  virtual void Initialize() OVERRIDE;
+  virtual void Shutdown() OVERRIDE;
 };
 
 #endif  // UI_GFX_TEST_SUITE_H_
