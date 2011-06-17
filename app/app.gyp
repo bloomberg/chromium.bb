@@ -45,16 +45,6 @@
         '..',
       ],
       'conditions': [
-        ['toolkit_uses_gtk==1', {
-          'sources': [
-            '../ui/base/dragdrop/gtk_dnd_util_unittest.cc',
-          ],
-          'dependencies': [
-            '../build/linux/system.gyp:gtk',
-            '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
-            '../ui/base/strings/ui_strings.gyp:ui_unittest_strings',
-          ],
-        }],
         ['OS!="win"', {
           'sources!': [
             '../ui/base/dragdrop/os_exchange_data_win_unittest.cc',

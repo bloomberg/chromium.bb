@@ -98,8 +98,13 @@
           },
         }],
         ['toolkit_uses_gtk == 1', {
+          'sources': [
+            'base/dragdrop/gtk_dnd_util_unittest.cc',
+          ],
           'dependencies': [
             '../build/linux/system.gyp:gtk',
+            '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
+            'base/strings/ui_strings.gyp:ui_unittest_strings',
           ],
           'conditions': [
             ['linux_use_tcmalloc==1', {
