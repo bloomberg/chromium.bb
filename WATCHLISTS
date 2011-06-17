@@ -217,6 +217,9 @@
     'panels': {
       'filepath': 'chrome/browser/ui/panels/.*',
     },
+    'accelerator_table_gtk': {
+      'filepath': 'chrome/browser/ui/views/accelerator_table_gtk.cc',
+    },
   },
 
   'WATCHLISTS': {
@@ -292,5 +295,6 @@
 	       'jianli@chromium.org'],
     'importer': ['tfarina@chromium.org'],
     'views': ['dhollowa@chromium.org'],
+    'accelerator_table_gtk': ['mazda@chromium.org'],
   },
 }
