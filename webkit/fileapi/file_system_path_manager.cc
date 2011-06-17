@@ -30,6 +30,7 @@ using WebKit::WebFileSystem;
 
 using base::PlatformFileError;
 
+static const char kChromeScheme[] = "chrome";
 static const char kExtensionScheme[] = "chrome-extension";
 
 namespace fileapi {
@@ -105,7 +106,7 @@ bool FileSystemPathManager::IsAllowedScheme(const GURL& url) const {
   // Basically we only accept http or https. We allow file:// URLs
   // only if --allow-file-access-from-files flag is given.
   return url.SchemeIs("http") || url.SchemeIs("https") ||
-         url.SchemeIs(kExtensionScheme) ||
+         url.SchemeIs(kExtensionScheme) || url.SchemeIs(kChromeScheme) ||
          (url.SchemeIsFile() && allow_file_access_from_files_);
 }
 

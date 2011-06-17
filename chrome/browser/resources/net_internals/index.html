@@ -274,7 +274,7 @@ found in the LICENSE file.
               Help: How to get data for bug reports?
             </a>
           </p>
-          <button id=exportToText class=bigButton>Dump to text</button>
+          <button id=exportToFile class=bigButton>Dump to file</button>
         </div>
       </div>
       <div id=dataViewLoadDataDiv>
@@ -319,8 +319,9 @@ found in the LICENSE file.
 
     </tr>
     </table>
+    
+    <iframe style="display: none" id=dataViewDownloadIframe></iframe>
 
-    <pre id=exportedDataText></pre>
     </div>
 
 <!-- START OF HELP TEXT -->
@@ -339,12 +340,13 @@ function displayHelpForBugDump() {
 
 <ol>
 <li>Reproduce the network problem.</li>
-<li>Click the <i>Dump to text</i> button in the <i>Data</i> tab.</li>
+<li>Click the <i>Dump to file</i> button in the <i>Data</i> tab.</li>
 
-<li>Copy-paste the resulting selected text to a file.</li>
+<li>The log file will act like a normal download.</li>
 
-<li>Email the text file to the bug investigator,
-  <b>along with an explanation of what went wrong.</b>
+<li>Email the log file to the bug investigator,
+  <b>along with an explanation of what went wrong, including any relevant
+     URLs.</b>
 </li>
 
 </ol>

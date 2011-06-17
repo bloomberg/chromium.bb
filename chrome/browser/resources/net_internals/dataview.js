@@ -13,8 +13,8 @@
  *  @constructor
  */
 function DataView(mainBoxId,
-                  outputTextBoxId,
-                  exportTextButtonId,
+                  downloadIframeId,
+                  exportFileButtonId,
                   securityStrippingCheckboxId,
                   byteLoggingCheckboxId,
                   passivelyCapturedCountId,
@@ -27,8 +27,6 @@ function DataView(mainBoxId,
                   loggingTextSpanId) {
   DivView.call(this, mainBoxId);
 
-  this.textPre_ = document.getElementById(outputTextBoxId);
-
   var securityStrippingCheckbox =
       document.getElementById(securityStrippingCheckboxId);
   securityStrippingCheckbox.onclick =
@@ -38,8 +36,10 @@ function DataView(mainBoxId,
   byteLoggingCheckbox.onclick =
       this.onSetByteLogging_.bind(this, byteLoggingCheckbox);
 
-  var exportTextButton = document.getElementById(exportTextButtonId);
-  exportTextButton.onclick = this.onExportToText_.bind(this);
+  this.downloadIframe_ = document.getElementById(downloadIframeId);
+
+  this.exportFileButton_ = document.getElementById(exportFileButtonId);
+  this.exportFileButton_.onclick = this.onExportToText_.bind(this);
 
   this.activelyCapturedCountBox_ =
       document.getElementById(activelyCapturedCountId);
@@ -58,7 +58,6 @@ function DataView(mainBoxId,
       this.logFileChanged.bind(this, loadLogFileElement);
 
   this.updateEventCounts_();
-  this.waitingForUpdate_ = false;
 
   g_browser.addLogObserver(this);
 }
@@ -96,7 +95,6 @@ DataView.prototype.onSetIsViewingLogFile = function(isViewingLogFile) {
   setNodeDisplay(this.dumpDataDiv_, !isViewingLogFile);
   setNodeDisplay(this.capturingTextSpan_, !isViewingLogFile);
   setNodeDisplay(this.loggingTextSpan_, isViewingLogFile);
-  this.setText_('');
 };
 
 /**
@@ -130,12 +128,8 @@ DataView.prototype.onSetSecurityStripping_ =
   g_browser.setSecurityStripping(securityStrippingCheckbox.checked);
 };
 
-/**
- * Clears displayed text when security stripping is toggled.
- */
 DataView.prototype.onSecurityStrippingChanged = function() {
-  this.setText_('');
-}
+};
 
 /**
  * Called when a log file is selected.
@@ -152,31 +146,35 @@ DataView.prototype.logFileChanged = function(loadLogFileElement) {
 
     fileReader.readAsText(logFile);
   }
-}
+};
 
 /**
  * Displays an error message when unable to read the selected log file.
  */
 DataView.prototype.onLoadLogFileError = function(event) {
   alert('Error ' + event.target.error.code + '.  Unable to load file.');
-}
+};
 
 /**
  * Tries to load the contents of the log file.
  */
 DataView.prototype.onLoadLogFile = function(event) {
   g_browser.loadedLogFile(event.target.result);
-}
+};
+
+DataView.prototype.enableExportFileButton_ = function(enabled) {
+  this.exportFileButton_.disabled = !enabled;
+};
 
 /**
  * If not already waiting for results from all updates, triggers all
  * updates and starts waiting for them to complete.
  */
 DataView.prototype.onExportToText_ = function() {
-  if (this.waitingForUpdate_)
+  if (this.exportFileButton_.disabled)
     return;
-  this.waitingForUpdate = true;
-  this.setText_('Generating...');
+  this.enableExportFileButton_(false);
+
   g_browser.updateAllInfo(this.onUpdateAllCompleted.bind(this));
 };
 
@@ -404,10 +402,60 @@ DataView.prototype.onUpdateAllCompleted = function(data) {
     }
   }
 
-  // Open a new window to display this text.
-  this.setText_(text.join('\n'));
+  var blobBuilder = new WebKitBlobBuilder();
+  blobBuilder.append(text.join('\n'), 'native');
+  var textBlob = blobBuilder.getBlob('octet/stream');
 
-  this.selectText_();
+  window.webkitRequestFileSystem(
+      window.TEMPORARY, textBlob.size,
+      this.onFileSystemCreate_.bind(this, textBlob),
+      this.onFileError_.bind(this, 'Unable to create file system.'));
+};
+
+// Once we have access to the file system, create a log file.
+DataView.prototype.onFileSystemCreate_ = function(textBlob, fileSystem) {
+  fileSystem.root.getFile(
+      'net_internals_log.txt', {create: true},
+      this.onFileCreate_.bind(this, textBlob),
+      this.onFileError_.bind(this, 'Unable to create file.'));
+};
+
+// Once the file is created, or an existing one has been opened, create a
+// writer for it.
+DataView.prototype.onFileCreate_ = function(textBlob, fileEntry) {
+  fileEntry.createWriter(
+      this.onFileCreateWriter_.bind(this, textBlob, fileEntry),
+      this.onFileError_.bind(this, 'Unable to create writer.'));
+};
+
+// Once the |fileWriter| has been created, truncate the file, in case it already
+// existed.
+DataView.prototype.onFileCreateWriter_ = function(textBlob,
+                                                  fileEntry, fileWriter) {
+  fileWriter.onerror = this.onFileError_.bind(this, 'Truncate failed.');
+  fileWriter.onwriteend = this.onFileTruncate_.bind(this, textBlob,
+                                                    fileWriter, fileEntry);
+  fileWriter.truncate(0);
+};
+
+// Once the file has been truncated, write |textBlob| to the file.
+DataView.prototype.onFileTruncate_ = function(textBlob, fileWriter, fileEntry) {
+  fileWriter.onerror = this.onFileError_.bind(this, 'Write failed.');
+  fileWriter.onwriteend = this.onFileWriteComplete_.bind(this, fileEntry);
+  fileWriter.write(textBlob);
+};
+
+// Once the file has been written to, start the download.
+DataView.prototype.onFileWriteComplete_ = function(fileEntry) {
+  this.downloadIframe_.src = fileEntry.toURL();
+  this.enableExportFileButton_(true);
+};
+
+// On any Javascript File API error, enable the export button and display
+// |errorText|, followed by the specific error.
+DataView.prototype.onFileError_ = function(errorText, error) {
+  this.enableExportFileButton_(true);
+  alert(errorText + '  ' + getKeyWithValue(FileError, error.code));
 };
 
 DataView.prototype.appendEventsPrintedAsText_ = function(out) {
@@ -480,30 +528,10 @@ DataView.prototype.appendSocketPoolsAsText_ = function(text, socketPoolInfo) {
 };
 
 /**
- * Helper function to set this view's content to |text|.
- */
-DataView.prototype.setText_ = function(text) {
-  this.textPre_.innerHTML = '';
-  addTextNode(this.textPre_, text);
-};
-
-/**
  * Format a time ticks count as a timestamp.
  */
 DataView.prototype.formatExpirationTime_ = function(timeTicks) {
   var d = g_browser.convertTimeTicksToDate(timeTicks);
   var isExpired = d.getTime() < (new Date()).getTime();
   return 't=' + d.getTime() + (isExpired ? ' [EXPIRED]' : '');
-};
-
-/**
- * Select all text from log dump.
- */
-DataView.prototype.selectText_ = function() {
-  var selection = window.getSelection();
-  selection.removeAllRanges();
-
-  var range = document.createRange();
-  range.selectNodeContents(this.textPre_);
-  selection.addRange(range);
 };

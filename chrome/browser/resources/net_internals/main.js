@@ -73,8 +73,8 @@ function onLoaded() {
 
   // Create a view which will display import/export options to control the
   // captured data.
-  var dataView = new DataView('dataTabContent', 'exportedDataText',
-                              'exportToText', 'securityStrippingCheckbox',
+  var dataView = new DataView('dataTabContent', 'dataViewDownloadIframe',
+                              'exportToFile', 'securityStrippingCheckbox',
                               'byteLoggingCheckbox', 'passivelyCapturedCount',
                               'activelyCapturedCount', 'dataViewDeleteAll',
                               'dataViewDumpDataDiv', 'dataViewLoadDataDiv',
