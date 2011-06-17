@@ -6,6 +6,7 @@
 #define SKIA_EXT_BITMAP_PLATFORM_DEVICE_LINUX_H_
 #pragma once
 
+#include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "skia/ext/platform_device_linux.h"
 
@@ -74,13 +75,7 @@ class BitmapPlatformDevice : public PlatformDevice {
   //
   // This object takes ownership of @data.
   BitmapPlatformDevice(const SkBitmap& other, BitmapPlatformDeviceData* data);
-
-  // A stub copy constructor.  Needs to be properly implemented.
-  BitmapPlatformDevice(const BitmapPlatformDevice& other);
-
   virtual ~BitmapPlatformDevice();
-
-  BitmapPlatformDevice& operator=(const BitmapPlatformDevice& other);
 
   static BitmapPlatformDevice* Create(int width, int height, bool is_opaque);
 
@@ -106,6 +101,8 @@ class BitmapPlatformDevice : public PlatformDevice {
                                       cairo_surface_t* surface);
 
   scoped_refptr<BitmapPlatformDeviceData> data_;
+
+  DISALLOW_COPY_AND_ASSIGN(BitmapPlatformDevice);
 };
 
 }  // namespace skia

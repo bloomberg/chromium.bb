@@ -180,28 +180,9 @@ BitmapPlatformDevice::BitmapPlatformDevice(
   SkDEBUGCODE(begin_paint_count_ = 0);
 }
 
-// The copy constructor just adds another reference to the underlying data.
-// We use a const cast since the default Skia definitions don't define the
-// proper constedness that we expect (accessBitmap should really be const).
-BitmapPlatformDevice::BitmapPlatformDevice(
-    const BitmapPlatformDevice& other)
-    : PlatformDevice(
-          const_cast<BitmapPlatformDevice&>(other).accessBitmap(true)),
-      data_(other.data_) {
-  data_->ref();
-  SkDEBUGCODE(begin_paint_count_ = 0);
-}
-
 BitmapPlatformDevice::~BitmapPlatformDevice() {
   SkASSERT(begin_paint_count_ == 0);
   data_->unref();
-}
-
-BitmapPlatformDevice& BitmapPlatformDevice::operator=(
-    const BitmapPlatformDevice& other) {
-  data_ = other.data_;
-  data_->ref();
-  return *this;
 }
 
 HDC BitmapPlatformDevice::BeginPlatformPaint() {

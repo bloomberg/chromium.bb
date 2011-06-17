@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -133,13 +133,6 @@ BitmapPlatformDevice::BitmapPlatformDevice(
       data_(data) {
 }
 
-BitmapPlatformDevice::BitmapPlatformDevice(
-    const BitmapPlatformDevice& other)
-    : PlatformDevice(const_cast<BitmapPlatformDevice&>(
-                          other).accessBitmap(true)),
-      data_(other.data_) {
-}
-
 BitmapPlatformDevice::~BitmapPlatformDevice() {
 }
 
@@ -163,12 +156,6 @@ void BitmapPlatformDevice::setMatrixClip(const SkMatrix& transform,
                                          const SkRegion& region,
                                          const SkClipStack&) {
   data_->SetMatrixClip(transform, region);
-}
-
-BitmapPlatformDevice& BitmapPlatformDevice::operator=(
-    const BitmapPlatformDevice& other) {
-  data_ = other.data_;
-  return *this;
 }
 
 }  // namespace skia

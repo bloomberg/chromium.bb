@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #define SKIA_EXT_BITMAP_PLATFORM_DEVICE_MAC_H_
 #pragma once
 
+#include "base/basictypes.h"
 #include "skia/ext/platform_device_mac.h"
 
 namespace skia {
@@ -44,22 +45,7 @@ class BitmapPlatformDevice : public PlatformDevice {
                                               int width, int height,
                                               bool is_opaque);
 
-  // Copy constructor. When copied, devices duplicate their internal data, so
-  // stay linked. This is because their implementation is very heavyweight
-  // (lots of memory and CoreGraphics state). If a device has been copied, both
-  // clip rects and other state will stay in sync.
-  //
-  // This means it will NOT work to duplicate a device and assign it to a
-  // canvas, because the two canvases will each set their own clip rects, and
-  // the resulting CoreGraphics drawing state will be unpredictable.
-  //
-  // Copy constucting and "=" is designed for saving the device or passing it
-  // around to another routine willing to deal with the bitmap data directly.
-  BitmapPlatformDevice(const BitmapPlatformDevice& other);
   virtual ~BitmapPlatformDevice();
-
-  // See warning for copy constructor above.
-  BitmapPlatformDevice& operator=(const BitmapPlatformDevice& other);
 
   // PlatformDevice overrides
   virtual CGContextRef GetBitmapContext();
@@ -91,6 +77,8 @@ class BitmapPlatformDevice : public PlatformDevice {
   // Data associated with this device, guaranteed non-null. We hold a reference
   // to this object.
   BitmapPlatformDeviceData* data_;
+
+  DISALLOW_COPY_AND_ASSIGN(BitmapPlatformDevice);
 };
 
 }  // namespace skia

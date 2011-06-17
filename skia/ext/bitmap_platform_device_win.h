@@ -6,6 +6,7 @@
 #define SKIA_EXT_BITMAP_PLATFORM_DEVICE_WIN_H_
 #pragma once
 
+#include "base/basictypes.h"
 #include "skia/ext/platform_device_win.h"
 
 namespace skia {
@@ -52,22 +53,7 @@ class SK_API BitmapPlatformDevice : public PlatformDevice {
                                       bool is_opaque,
                                       HANDLE shared_section);
 
-  // Copy constructor. When copied, devices duplicate their internal data, so
-  // stay linked. This is because their implementation is very heavyweight
-  // (lots of memory and some GDI objects). If a device has been copied, both
-  // clip rects and other state will stay in sync.
-  //
-  // This means it will NOT work to duplicate a device and assign it to a
-  // canvas, because the two canvases will each set their own clip rects, and
-  // the resulting GDI clip rect will be random.
-  //
-  // Copy constucting and "=" is designed for saving the device or passing it
-  // around to another routine willing to deal with the bitmap data directly.
-  BitmapPlatformDevice(const BitmapPlatformDevice& other);
   virtual ~BitmapPlatformDevice();
-
-  // See warning for copy constructor above.
-  BitmapPlatformDevice& operator=(const BitmapPlatformDevice& other);
 
   // PlatformDevice overrides
   // Retrieves the bitmap DC, which is the memory DC for our bitmap data. The
@@ -109,6 +95,8 @@ class SK_API BitmapPlatformDevice : public PlatformDevice {
 #ifdef SK_DEBUG
   int begin_paint_count_;
 #endif
+
+  DISALLOW_COPY_AND_ASSIGN(BitmapPlatformDevice);
 };
 
 }  // namespace skia
