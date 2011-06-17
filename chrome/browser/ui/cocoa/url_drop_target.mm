@@ -41,22 +41,27 @@
 // (us).
 
 - (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)sender {
-  if (drag_util::IsUnsupportedDropData(sender)) {
-    drag_util::SetNoDropCursor();
+  if (drag_util::IsUnsupportedDropData(sender))
     return NSDragOperationNone;
-  }
 
   return [self getDragOperation:sender];
 }
 
 - (NSDragOperation)draggingUpdated:(id<NSDraggingInfo>)sender {
-  if (drag_util::IsUnsupportedDropData(sender)) {
-    drag_util::SetNoDropCursor();
-    return NSDragOperationNone;
+  NSDragOperation dragOp = NSDragOperationNone;
+  BOOL showIndicator = NO;
+  // Show indicator for drag data supported for tab contents as well as for
+  // local file drags that may not be viewable in tab contents, but should
+  // still trigger hover tab selection.
+  if (!drag_util::IsUnsupportedDropData(sender)) {
+    dragOp = [self getDragOperation:sender];
+    if (dragOp == NSDragOperationCopy)
+      showIndicator = YES;
+  } else if (!drag_util::GetFileURLFromDropData(sender).is_empty()) {
+    showIndicator = YES;
   }
 
-  NSDragOperation dragOp = [self getDragOperation:sender];
-  if (dragOp == NSDragOperationCopy) {
+  if (showIndicator) {
     // Just tell the window controller to update the indicator.
     NSPoint hoverPoint = [view_ convertPoint:[sender draggingLocation]
                                     fromView:nil];
@@ -66,9 +71,6 @@
 }
 
 - (void)draggingExited:(id<NSDraggingInfo>)sender {
-  if (drag_util::IsUnsupportedDropData(sender))
-    return;
-
   [self hideIndicator];
 }
 

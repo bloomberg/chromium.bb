@@ -16,20 +16,21 @@ namespace drag_util {
 // Populates the |url| and |title| with URL data in |pboard|. There may be more
 // than one, but we only handle dropping the first. |url| must not be |NULL|;
 // |title| is an optional parameter. Returns |YES| if URL data was obtained from
-// the pasteboard, |NO| otherwise. If |convertFilenames| is |YES|, the function
+// the pasteboard, |NO| otherwise. If |convert_filenames| is |YES|, the function
 // will also attempt to convert filenames in |pboard| to file URLs.
 BOOL PopulateURLAndTitleFromPasteBoard(GURL* url,
                                        string16* title,
                                        NSPasteboard* pboard,
-                                       BOOL convertFilenames);
+                                       BOOL convert_filenames);
+
+// Returns the first file URL from |info|, if there is one. If |info| doesn't
+// contain any file URLs, an empty |GURL| is returned.
+GURL GetFileURLFromDropData(id<NSDraggingInfo> info);
 
 // Determines whether the given drag and drop operation contains content that
 // is supported by the web view. In particular, if the content is a local file
 // URL, this checks if it is of a type that can be shown in the tab contents.
 BOOL IsUnsupportedDropData(id<NSDraggingInfo> info);
-
-// Sets the current cursor to the "no drop cursor".
-void SetNoDropCursor();
 
 }  // namespace drag_util
 
