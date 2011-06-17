@@ -76,7 +76,13 @@ TEST_F(ThreadWrapperTest, Post) {
   message_loop_.RunAllPending();
 }
 
-TEST_F(ThreadWrapperTest, PostDelayed) {
+// Crashes on Win only.  http://crbug.com/86532
+#if defined(OS_WIN)
+#define MAYBE_PostDelayed DISABLED_PostDelayed
+#else
+#define MAYBE_PostDelayed PostDelayed
+#endif
+TEST_F(ThreadWrapperTest, MAYBE_PostDelayed) {
   talk_base::MessageData* data1_ = new talk_base::MessageData();
   talk_base::MessageData* data2_ = new talk_base::MessageData();
   talk_base::MessageData* data3_ = new talk_base::MessageData();
