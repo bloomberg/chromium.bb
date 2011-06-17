@@ -296,7 +296,7 @@ class BuildBoardTest(AbstractStageTest):
     self.mox.StubOutWithMock(commands, 'MakeChroot')
     self.mox.StubOutWithMock(commands, 'SetupBoard')
 
-    os.path.isdir(self.build_root + '/.repo').AndReturn(True)
+    os.path.isdir(os.path.join(self.build_root, '.repo')).AndReturn(True)
     os.path.isdir(os.path.join(self.build_root, 'chroot')).AndReturn(True)
     commands.MakeChroot(buildroot=self.build_root,
                         fast=True,
@@ -315,10 +315,16 @@ class BuildBoardTest(AbstractStageTest):
 
   def testBinBuild(self):
     """Tests whether we skip un-necessary steps for a binary builder."""
+    self.mox.StubOutWithMock(commands, 'MakeChroot')
+    self.mox.StubOutWithMock(commands, 'SetupBoard')
+    self.mox.StubOutWithMock(commands, 'RunChrootUpgradeHooks')
+
     os.path.isdir(self.build_root + '/.repo').AndReturn(True)
     os.path.isdir(os.path.join(self.build_root, 'chroot')).AndReturn(True)
     os.path.isdir(os.path.join(self.build_root, 'chroot/build',
                                self.build_config['board'])).AndReturn(True)
+
+    commands.RunChrootUpgradeHooks(self.build_root);
 
     self.mox.ReplayAll()
     self.RunStage()
@@ -338,6 +344,7 @@ class BuildBoardTest(AbstractStageTest):
 
     os.path.isdir(os.path.join(self.build_root, 'chroot/build',
                                self.build_config['board'])).AndReturn(False)
+
     commands.SetupBoard(self.build_root,
                         board=self.build_config['board'],
                         fast=self.build_config['fast'],
