@@ -9,6 +9,7 @@ import nacl_utils
 import random
 import time
 
+
 class NaClTest(pyauto.PyUITest):
   """Tests for NaCl."""
 
@@ -35,6 +36,7 @@ class NaClTest(pyauto.PyUITest):
     # so it does not wait for the test to complete, except on the last
     # iteration.
     tab.NavigateToURLAsync(pyauto.GURL(url))
+    nacl_utils.AssertNoCrash(self)
     self.WaitUntil(lambda: self.GetActiveTabTitle() == page_title)
     for i in range(0, num_tries):
       if wait_max > 0:
@@ -43,14 +45,14 @@ class NaClTest(pyauto.PyUITest):
         self.WaitUntil(lambda: time.time() > stop_time)
       self.assertEqual(page_title, self.GetActiveTabTitle())
       tab.Reload()
+      nacl_utils.AssertNoCrash(self)
       self.WaitUntil(lambda: self.GetActiveTabTitle() == page_title)
     # After last reload, wait for test to complete before going back
     nacl_utils.WaitForNexeLoad(self)
     nacl_utils.VerifyAllTestsPassed(self)
     tab.GoBack()
+    nacl_utils.AssertNoCrash(self)
     self.assertEqual(version_title, self.GetActiveTabTitle())
-    did_snap = nacl_utils.CheckForSnap(self)
-    self.assertEqual(did_snap, False)
 
   def reloader(self, page, title_word):
     """Navigate to PPAPI page and surf away asynchronously."""
@@ -59,7 +61,6 @@ class NaClTest(pyauto.PyUITest):
     self.reloadMulti(page, title_word, 5, 0, 0)
     # Repeatedly (25 times) reload after a random delay (0 - 2 seconds)
     self.reloadMulti(page, title_word, 25, 0.0, 2.0)
-    nacl_utils.CheckForSnap(self)
     print '---> pyauto reload: finished testing', page
 
   def testReloadSRPCHelloWorld(self):
@@ -109,6 +110,7 @@ class NaClTest(pyauto.PyUITest):
 
   def testReloadPPBFileSystem(self):
     self.reloader('ppapi_file_system.html', 'PPAPI')
+
 
 if __name__ == '__main__':
   pyauto_nacl.Main()

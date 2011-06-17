@@ -47,6 +47,7 @@ def WaitForNexeLoad(browser, tab_index=0):
   """
   # Make sure the window has focus (runs about 10x faster on multitab tests.)
   browser.GetBrowserWindow(0).ActivateTab(tab_index)
+  AssertNoCrash(browser, tab_index)
   AssertTrueOrLogTab(browser, browser.WaitUntil(
       lambda:
         browser.FindInPage('[SHUTDOWN]', tab_index=tab_index)['match_count'],
@@ -63,6 +64,7 @@ def VerifyAllTestsPassed(browser, tab_index=0):
   """
   # Make sure the window has focus (runs about 10x faster on multitab tests.)
   browser.GetBrowserWindow(0).ActivateTab(tab_index)
+  AssertNoCrash(browser, tab_index)
   success = (browser.FindInPage(
               '0 failed, 0 errors', tab_index=tab_index)['match_count'] == 1
              or browser.FindInPage(
@@ -71,18 +73,13 @@ def VerifyAllTestsPassed(browser, tab_index=0):
                      tab_index)
 
 
-def CheckForSnap(browser):
-  browser.NavigateToURL('about:histograms')
-  tab_index = browser.GetActiveTabIndex()
-  def condition_function():
-    return browser.FindInPage('Histogram',
-        tab_index=tab_index)['match_count'] > 100
-  AssertTrueOrLogTab(browser,
-      browser.WaitUntil(condition_function, expect_retval=True, timeout=90),
-      'histogram page did not refresh', tab_index)
-  find_result = browser.FindInPage('BrowserRenderProcessHost.ChildCrashes')
-  match_count = find_result['match_count']
-  if match_count > 0:
-    return True
-  return False
-
+def AssertNoCrash(browser, tab_index=0):
+  """Checks if the tab at tab_index has crashed by comparing the renderer_pid of
+  the tab with the browser_pid. If they are different, the renderer process is
+  alive. If they are the same, the renderer_process has crashed.
+  """
+  browser_info = browser.GetBrowserInfo()
+  browser_pid = browser_info['browser_pid']
+  renderer_pid = browser_info['windows'][0]['tabs'][tab_index]['renderer_pid']
+  has_crashed = browser_pid == renderer_pid
+  browser.assertFalse(has_crashed, msg='*** CRASH ON TAB %u! ***' % tab_index)

@@ -9,6 +9,7 @@ import nacl_utils
 import random
 import time
 
+
 class NaClTest(pyauto.PyUITest):
   """Tests for NaCl."""
 
@@ -33,6 +34,7 @@ class NaClTest(pyauto.PyUITest):
     # so it does not wait for the test to complete.
     for i in range(0, num_tries):
       tab.NavigateToURLAsync(pyauto.GURL(url))
+      nacl_utils.AssertNoCrash(self)
       self.WaitUntil(lambda: self.GetActiveTabTitle() == page_title)
       if wait_max > 0:
         wait_duration = random.uniform(wait_min, wait_max)
@@ -40,6 +42,7 @@ class NaClTest(pyauto.PyUITest):
         self.WaitUntil(lambda: time.time() > stop_time)
       self.assertEqual(page_title, self.GetActiveTabTitle())
       tab.GoBack()
+      nacl_utils.AssertNoCrash(self)
       self.assertEqual(version_title, self.GetActiveTabTitle())
 
   def surfAwayAsync(self, page, title_word):
@@ -126,6 +129,7 @@ class NaClTest(pyauto.PyUITest):
   def testSurfAwayAsyncPPAPITestsScrollbar(self):
     self.surfAwayAsync('test_case.html?mode=nacl&testcase=Scrollbar',
                   'Test Scrollbar')
+
 
 if __name__ == '__main__':
   pyauto_nacl.Main()
