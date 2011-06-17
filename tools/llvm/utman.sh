@@ -181,7 +181,7 @@ SBTC_BUILD_WITH_PNACL="arm x8632 x8664"
 
 # Current milestones in each repo
 # hg-update-all uses these
-readonly LLVM_REV=00f246b3f25f
+readonly LLVM_REV=bfd021e013ad
 readonly LLVM_GCC_REV=90bef7731935
 readonly NEWLIB_REV=9bef47f82918
 readonly BINUTILS_REV=569e4fcf08da
@@ -1149,12 +1149,6 @@ build-compiler-rt() {
     mkdir -p "${arch}"
     spushd "${arch}"
     flags=""
-    if [ ${arch} == "arm" ] ; then
-        # NOTE: this causes the generation of aeabi alias form some libgcc
-        #       functions, e.g. __divsi3  == __aeabi_idiv
-        # TODO(robertm): fix the llc arm backend to emit the standard names
-        flags="${flags} -D__ARM_EABI__"
-    fi
     RunWithLog libgcc.${arch}.make \
         make -j ${UTMAN_CONCURRENCY} -f ${src}/Makefile-pnacl libgcc.a \
           "SRC_DIR=${src}" \
