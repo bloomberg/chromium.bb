@@ -79,6 +79,7 @@
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_tab_restore_service_delegate.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/download/download_tab_helper.h"
@@ -1985,9 +1986,16 @@ void Browser::ShowBrokenPageTab(TabContents* contents) {
 }
 
 void Browser::ShowOptionsTab(const std::string& sub_page) {
-  GURL url(chrome::kChromeUISettingsURL + sub_page);
-  browser::NavigateParams params(GetSingletonTabNavigateParams(url));
+  browser::NavigateParams params(GetSingletonTabNavigateParams(
+      GURL(chrome::kChromeUISettingsURL + sub_page)));
   params.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
+
+  if ((GetSelectedTabContents()->GetURL() == GURL(chrome::kChromeUINewTabURL) ||
+       GetSelectedTabContents()->GetURL() == GURL(chrome::kAboutBlankURL)) &&
+      browser::GetIndexOfSingletonTab(&params) < 0) {
+    params.disposition = CURRENT_TAB;
+  }
+
   browser::Navigate(&params);
 }
 
@@ -1998,10 +2006,7 @@ void Browser::OpenClearBrowsingDataDialog() {
 
 void Browser::OpenOptionsDialog() {
   UserMetrics::RecordAction(UserMetricsAction("ShowOptions"));
-  GURL url(chrome::kChromeUISettingsURL);
-  browser::NavigateParams params(GetSingletonTabNavigateParams(url));
-  params.path_behavior = browser::NavigateParams::IGNORE_AND_STAY_PUT;
-  browser::Navigate(&params);
+  ShowOptionsTab("");
 }
 
 void Browser::OpenPasswordManager() {

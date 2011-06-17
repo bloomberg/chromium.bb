@@ -171,6 +171,10 @@ struct NavigateParams {
 // Navigates according to the configuration specified in |params|.
 void Navigate(NavigateParams* params);
 
+// If the given navigational URL is a Singleton, return the tab index for it.
+// Otherwise, returns -1.
+int GetIndexOfSingletonTab(NavigateParams* params);
+
 }  // namespace browser
 
 #endif  // CHROME_BROWSER_UI_BROWSER_NAVIGATOR_H_

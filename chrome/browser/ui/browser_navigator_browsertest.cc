@@ -886,4 +886,106 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   EXPECT_FALSE(tab_contents->is_crashed());
 }
 
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
+                       NavigateFromDefaultToOptionsInSameTab) {
+  browser()->OpenOptionsDialog();
+  ui_test_utils::WaitForNavigationInCurrentTab(browser());
+  EXPECT_EQ(1, browser()->tab_count());
+  EXPECT_EQ(GURL("chrome://settings/browser"),
+            browser()->GetSelectedTabContents()->GetURL());
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
+                       NavigateFromBlankToOptionsInSameTab) {
+  browser::NavigateParams p(MakeNavigateParams());
+  p.url = GURL("about:blank");
+  browser::Navigate(&p);
+  ui_test_utils::WaitForNavigationInCurrentTab(browser());
+
+  browser()->OpenOptionsDialog();
+  ui_test_utils::WaitForNavigationInCurrentTab(browser());
+  EXPECT_EQ(1, browser()->tab_count());
+  EXPECT_EQ(GURL("chrome://settings/browser"),
+            browser()->GetSelectedTabContents()->GetURL());
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
+                       NavigateFromNTPToOptionsInSameTab) {
+  browser::NavigateParams p(MakeNavigateParams());
+  p.url = GURL("chrome://newtab");
+  browser::Navigate(&p);
+  ui_test_utils::WaitForNavigationInCurrentTab(browser());
+  EXPECT_EQ(1, browser()->tab_count());
+  EXPECT_EQ(GURL("chrome://newtab"),
+            browser()->GetSelectedTabContents()->GetURL());
+
+  browser()->OpenOptionsDialog();
+  ui_test_utils::WaitForNavigationInCurrentTab(browser());
+  EXPECT_EQ(1, browser()->tab_count());
+  EXPECT_EQ(GURL("chrome://settings/browser"),
+            browser()->GetSelectedTabContents()->GetURL());
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
+                       NavigateFromPageToOptionsInNewTab) {
+  browser::NavigateParams p(MakeNavigateParams());
+  browser::Navigate(&p);
+  ui_test_utils::WaitForNavigationInCurrentTab(browser());
+  EXPECT_EQ(GetGoogleURL(), browser()->GetSelectedTabContents()->GetURL());
+  EXPECT_EQ(1u, BrowserList::size());
+  EXPECT_EQ(1, browser()->tab_count());
+
+  browser()->OpenOptionsDialog();
+  ui_test_utils::WaitForNavigationInCurrentTab(browser());
+  EXPECT_EQ(2, browser()->tab_count());
+  EXPECT_EQ(GURL("chrome://settings/browser"),
+            browser()->GetSelectedTabContents()->GetURL());
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
+                       NavigateFromNTPToOptionsSingleton) {
+  browser()->OpenOptionsDialog();
+  ui_test_utils::WaitForNavigationInCurrentTab(browser());
+  EXPECT_EQ(1, browser()->tab_count());
+
+  browser()->NewTab();
+  EXPECT_EQ(2, browser()->tab_count());
+
+  browser()->OpenOptionsDialog();
+  EXPECT_EQ(2, browser()->tab_count());
+  EXPECT_EQ(GURL("chrome://settings"),
+            browser()->GetSelectedTabContents()->GetURL());
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
+                       NavigateFromNTPToOptionsPageInSameTab) {
+  browser()->ShowOptionsTab("personal");
+  ui_test_utils::WaitForNavigationInCurrentTab(browser());
+  EXPECT_EQ(1, browser()->tab_count());
+  EXPECT_EQ(GURL("chrome://settings/personal"),
+            browser()->GetSelectedTabContents()->GetURL());
+
+  browser()->NewTab();
+  EXPECT_EQ(2, browser()->tab_count());
+
+  browser()->ShowOptionsTab("personal");
+  EXPECT_EQ(2, browser()->tab_count());
+  EXPECT_EQ(GURL("chrome://settings/personal"),
+            browser()->GetSelectedTabContents()->GetURL());
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
+                       NavigateFromOtherTabToSingletonOptions) {
+  browser()->OpenOptionsDialog();
+  ui_test_utils::WaitForNavigationInCurrentTab(browser());
+  browser()->AddSelectedTabWithURL(GetGoogleURL(), PageTransition::LINK);
+  ui_test_utils::WaitForNavigationInCurrentTab(browser());
+
+  browser()->OpenOptionsDialog();
+  ui_test_utils::WaitForNavigationInCurrentTab(browser());
+  EXPECT_EQ(2, browser()->tab_count());
+  EXPECT_EQ(GURL("chrome://settings/browser"),
+            browser()->GetSelectedTabContents()->GetURL());
+}
+
 }  // namespace
