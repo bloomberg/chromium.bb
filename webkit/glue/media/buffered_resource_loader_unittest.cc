@@ -3,17 +3,14 @@
 // found in the LICENSE file.
 
 #include <algorithm>
-#include <string>
 
 #include "base/format_macros.h"
 #include "base/stringprintf.h"
 #include "net/base/net_errors.h"
-#include "net/http/http_request_headers.h"
 #include "net/http/http_util.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLError.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLResponse.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "webkit/glue/media/buffered_resource_loader.h"
@@ -33,7 +30,6 @@ using ::testing::Return;
 using ::testing::ReturnRef;
 using ::testing::SetArgumentPointee;
 using ::testing::StrictMock;
-using ::testing::Truly;
 using ::testing::NiceMock;
 using ::testing::WithArgs;
 
@@ -69,14 +65,6 @@ ACTION_P(RequestCanceled, loader) {
   loader->didFail(NULL, error);
 }
 
-// Predicate that tests that request disallows compressed data.
-static bool CorrectAcceptEncoding(const WebKit::WebURLRequest &request) {
-  std::string value = request.httpHeaderField(
-      WebString::fromUTF8(net::HttpRequestHeaders::kAcceptEncoding)).utf8();
-  return (value.find("identity;q=1") != std::string::npos) &&
-         (value.find("*;q=0") != std::string::npos);
-}
-
 class BufferedResourceLoaderTest : public testing::Test {
  public:
   BufferedResourceLoaderTest()
@@ -110,8 +98,7 @@ class BufferedResourceLoaderTest : public testing::Test {
 
   void Start() {
     InSequence s;
-    EXPECT_CALL(*url_loader_, loadAsynchronously(Truly(CorrectAcceptEncoding),
-                                                 loader_.get()));
+    EXPECT_CALL(*url_loader_, loadAsynchronously(_, loader_.get()));
     loader_->Start(
         NewCallback(this, &BufferedResourceLoaderTest::StartCallback),
         NewCallback(this, &BufferedResourceLoaderTest::NetworkCallback),
