@@ -18,6 +18,7 @@ vars = {
   "ffmpeg_revision": "88382",
   "skia_revision": "1613",
   "v8_revision": "8294",
+  "webrtc_revision": "90",
 }
 
 deps = {
@@ -228,6 +229,9 @@ deps = {
   "src/third_party/scons-2.0.1":
     Var("nacl_trunk") + "/src/third_party/scons-2.0.1@" +
         Var("nacl_tools_revision"),
+
+  "src/third_party/webrtc":
+    (Var("googlecode_url") % "webrtc") + "/trunk@" + Var("webrtc_revision")
 }
 
 
