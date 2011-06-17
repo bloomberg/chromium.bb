@@ -70,7 +70,7 @@ bool Transform::HasChange() const {
   return !matrix_.isIdentity();
 }
 
-bool Transform::TransformPoint(gfx::Point* point) {
+bool Transform::TransformPoint(gfx::Point* point) const {
   SkPoint skp;
   matrix_.mapXY(SkIntToScalar(point->x()), SkIntToScalar(point->y()), &skp);
   point->SetPoint(static_cast<int>(std::floor(skp.fX)),
@@ -78,7 +78,7 @@ bool Transform::TransformPoint(gfx::Point* point) {
   return true;
 }
 
-bool Transform::TransformPointReverse(gfx::Point* point) {
+bool Transform::TransformPointReverse(gfx::Point* point) const {
   SkMatrix inverse;
   // TODO(sad): Try to avoid trying to invert the matrix.
   if (matrix_.invert(&inverse)) {
@@ -91,7 +91,7 @@ bool Transform::TransformPointReverse(gfx::Point* point) {
   return false;
 }
 
-bool Transform::TransformRect(gfx::Rect* rect) {
+bool Transform::TransformRect(gfx::Rect* rect) const {
   SkRect src = gfx::RectToSkRect(*rect);
   if (!matrix_.mapRect(&src))
     return false;
@@ -99,7 +99,7 @@ bool Transform::TransformRect(gfx::Rect* rect) {
   return true;
 }
 
-bool Transform::TransformRectReverse(gfx::Rect* rect) {
+bool Transform::TransformRectReverse(gfx::Rect* rect) const {
   SkMatrix inverse;
   if (!matrix_.invert(&inverse))
     return false;

@@ -1195,9 +1195,14 @@ void View::PaintToTexture(const gfx::Rect& dirty_region) {
     // Forward to all children as a descendant may be dirty and have a texture.
     for (int i = child_count() - 1; i >= 0; --i) {
       View* child_view = GetChildViewAt(i);
-      gfx::Rect child_dirty_rect(child_view->bounds().Intersect(dirty_region));
+
+      gfx::Rect child_dirty_rect = dirty_region;
+      child_dirty_rect.Offset(-child_view->GetMirroredX(), -child_view->y());
+      child_view->GetTransform().TransformRectReverse(&child_dirty_rect);
+      child_dirty_rect = gfx::Rect(gfx::Point(), child_view->size()).Intersect(
+          child_dirty_rect);
+
       if (!child_dirty_rect.IsEmpty()) {
-        child_dirty_rect.Offset(-child_view->x(), -child_view->y());
         GetChildViewAt(i)->PaintToTexture(child_dirty_rect);
       }
     }
