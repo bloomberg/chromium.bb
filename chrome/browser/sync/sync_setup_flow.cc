@@ -288,11 +288,6 @@ void SyncSetupFlow::OnPassphraseCancel() {
   Advance(SyncSetupWizard::SETTING_UP);
 }
 
-// TODO(jhawkins): Use this method instead of a direct link in the html.
-void SyncSetupFlow::OnGoToDashboard() {
-  BrowserList::GetLastActive()->OpenPrivacyDashboardTabAndActivate();
-}
-
 // Use static Run method to get an instance.
 SyncSetupFlow::SyncSetupFlow(SyncSetupWizard::State start_state,
                              SyncSetupWizard::State end_state,

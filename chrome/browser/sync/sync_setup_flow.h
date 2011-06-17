@@ -86,8 +86,6 @@ class SyncSetupFlow {
   // The user canceled the passphrase entry without supplying a passphrase.
   void OnPassphraseCancel();
 
-  void OnGoToDashboard();
-
   void OnDialogClosed(const std::string& json_retval);
 
  private:
