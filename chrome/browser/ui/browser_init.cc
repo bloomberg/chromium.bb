@@ -1172,7 +1172,7 @@ void BrowserInit::LaunchWithProfile::AddStartupURLs(
       while (it != browser_init_->first_run_tabs_.end()) {
         // Replace magic names for the actual urls.
         if (it->host() == "new_tab_page") {
-          startup_urls->push_back(GURL());
+          startup_urls->push_back(GURL(chrome::kChromeUINewTabURL));
         } else if (it->host() == "welcome_page") {
           startup_urls->push_back(GetWelcomePageURL());
         } else {
