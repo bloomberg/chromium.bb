@@ -3,6 +3,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# Enable 'with' statements in Python 2.5
+from __future__ import with_statement
+
 import optparse
 import os.path
 import shutil
@@ -13,7 +16,7 @@ import traceback
 
 def GetHostPlatform():
   sys_platform = sys.platform.lower()
-  if sys_platform in ('linux', 'linux2'):
+  if sys_platform.startswith('linux'):
     return 'linux'
   elif sys_platform in ('win', 'win32', 'windows', 'cygwin'):
     return 'win'

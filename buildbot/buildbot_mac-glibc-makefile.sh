@@ -85,4 +85,4 @@ else
 fi
 
 export INSIDE_TOOLCHAIN=1
-exec buildbot/buildbot_mac.sh opt 32 glibc
+exec python buildbot/buildbot_standard.py opt 32 glibc

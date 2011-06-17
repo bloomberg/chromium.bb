@@ -3,6 +3,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# Enable 'with' statements in Python 2.5
+from __future__ import with_statement
+
 import os.path
 import sys
 
@@ -77,6 +80,11 @@ def SetupWindowsEnvironment(context):
 def SetupLinuxEnvironment(context):
   context.SetEnv('GYP_DEFINES', 'target_arch='+context['gyp_arch'])
 
+
+def SetupMacEnvironment(context):
+  pass
+
+
 def PartialSDK(context, platform):
   args = ['--download', 'extra_sdk_update_header', 'extra_sdk_update']
   if not context['use_glibc']:
@@ -114,7 +122,7 @@ def BuildScript(status, context):
     RemoveDirectory('build/Debug-x64')
     RemoveDirectory('build/Release-x64')
 
-    # Linux
+    # Linux and Mac
     RemoveDirectory('hg')
     RemoveDirectory('../xcodebuild')
     RemoveDirectory('../sconsbuild')
@@ -173,10 +181,17 @@ def BuildScript(status, context):
           cmd=[os.path.join(context['msvc'], 'Common7', 'IDE', 'devenv.com'),
                r'build\all.sln',
                '/build', context['gyp_mode']])
-    else:
+    elif context.Linux():
       Command(context, cmd=['make', '-C', '..', '-k',
                             '-j%d' % context['max_jobs'], 'V=1',
                             'BUILDTYPE=' + context['gyp_mode']])
+    elif context.Mac():
+      Command(context, cmd=['xcodebuild', '-project', 'build/all.xcodeproj',
+                            '-parallelizeTargets',
+                            '-configuration', context['gyp_mode']])
+    else:
+      raise Exception('Unknown platform')
+
 
   # The main compile step.
   with Step('scons_compile', status):
@@ -215,6 +230,10 @@ def BuildScript(status, context):
         base = os.path.join('..', 'out', context['gyp_mode'])
         plugin = os.path.join(base, 'lib.target/libppGoogleNaClPlugin.so')
         sel_ldr = os.path.join(base, 'sel_ldr')
+      elif context.Mac():
+        base = os.path.join('..', 'xcodebuild', context['gyp_mode'])
+        plugin = os.path.join(base, 'libppGoogleNaClPlugin.dylib')
+        sel_ldr = os.path.join(base, 'sel_ldr')
       else:
         raise Exception('Unknown platform')
 
@@ -239,6 +258,14 @@ def BuildScript(status, context):
     with Step('dynamic_library_browser_tests', status, halt_on_fail=False):
       SCons(context, browser_test=True,
             args=['SILENT=1', 'dynamic_library_browser_tests'])
+
+  if context.Mac():
+    # x86-64 is not fully supported on Mac.  Not everything works, but we
+    # want to stop x86-64 sel_ldr from regressing, so do a minimal test here.
+    with Step('minimal x86-64 test', status, halt_on_fail=False):
+      SCons(context, parallel=True, platform='x86-64',
+            args=['run_hello_world_test'])
+
   ### END tests ###
 
   if context.Linux():
@@ -289,6 +316,8 @@ def Main():
     SetupWindowsEnvironment(context)
   elif context.Linux():
     SetupLinuxEnvironment(context)
+  elif context.Mac():
+    SetupMacEnvironment(context)
   else:
     raise Exception("Unsupported platform.")
   RunBuild(BuildScript, status, context)

@@ -7,65 +7,70 @@ import os
 import subprocess
 import sys
 
+python = sys.executable
 
 BOT_ASSIGNMENT = {
     ######################################################################
     # Buildbots.
     ######################################################################
     'xp-newlib-opt':
-        '%s buildbot\\buildbot_standard.py opt 32 newlib' % sys.executable,
+        python + ' buildbot\\buildbot_standard.py opt 32 newlib',
     'xp-glibc-opt':
-        '%s buildbot\\buildbot_standard.py opt 32 glibc' % sys.executable,
+        python + ' buildbot\\buildbot_standard.py opt 32 glibc',
     'vista-64-newlib-dbg':
-        '%s buildbot\\buildbot_standard.py dbg 64 newlib' % sys.executable,
+        python + ' buildbot\\buildbot_standard.py dbg 64 newlib',
     'vista-64-newlib-opt':
-        '%s buildbot\\buildbot_standard.py opt 64 newlib' % sys.executable,
+        python + ' buildbot\\buildbot_standard.py opt 64 newlib',
     'win7-64-glibc-dbg':
-        '%s buildbot\\buildbot_standard.py dbg 64 glibc' % sys.executable,
+        python + ' buildbot\\buildbot_standard.py dbg 64 glibc',
     'win7-64-glibc-opt':
-        '%s buildbot\\buildbot_standard.py opt 64 glibc' % sys.executable,
+        python + ' buildbot\\buildbot_standard.py opt 64 glibc',
     'xp-bare-newlib-opt':
-        '%s buildbot\\buildbot_standard.py opt 32 newlib' % sys.executable,
+        python + ' buildbot\\buildbot_standard.py opt 32 newlib',
     'xp-bare-glibc-opt':
-        '%s buildbot\\buildbot_standard.py opt 32 glibc' % sys.executable,
+        python + ' buildbot\\buildbot_standard.py opt 32 glibc',
     'win7-32-bare-newlib-opt':
-        '%s buildbot\\buildbot_standard.py opt 32 newlib' % sys.executable,
+        python + ' buildbot\\buildbot_standard.py opt 32 newlib',
     'win7-32-bare-glibc-opt':
-        '%s buildbot\\buildbot_standard.py opt 32 glibc' % sys.executable,
+        python + ' buildbot\\buildbot_standard.py opt 32 glibc',
     'win7-64-bare-newlib-opt':
-        '%s buildbot\\buildbot_standard.py opt 64 newlib' % sys.executable,
+        python + ' buildbot\\buildbot_standard.py opt 64 newlib',
     'win7-64-bare-glibc-opt':
-        '%s buildbot\\buildbot_standard.py opt 64 glibc' % sys.executable,
-    'mac10.5-newlib-opt': 'bash buildbot/buildbot_mac.sh opt 32 newlib',
-    'mac10.6-newlib-opt': 'bash buildbot/buildbot_mac.sh opt 32 newlib',
-    'mac10.5-glibc-opt': 'bash buildbot/buildbot_mac.sh opt 32 glibc',
-    'mac10.6-glibc-opt': 'bash buildbot/buildbot_mac.sh opt 32 glibc',
+        python + ' buildbot\\buildbot_standard.py opt 64 glibc',
+    'mac10.5-newlib-opt':
+        python + ' buildbot/buildbot_standard.py opt 32 newlib',
+    'mac10.6-newlib-opt':
+        python + ' buildbot/buildbot_standard.py opt 32 newlib',
+    'mac10.5-glibc-opt':
+        python + ' buildbot/buildbot_standard.py opt 32 glibc',
+    'mac10.6-glibc-opt':
+        python + ' buildbot/buildbot_standard.py opt 32 glibc',
     'lucid-32-newlib-dbg':
-        '%s buildbot/buildbot_standard.py dbg 32 newlib' % sys.executable,
+        python + ' buildbot/buildbot_standard.py dbg 32 newlib',
     'lucid-32-newlib-opt':
-        '%s buildbot/buildbot_standard.py opt 32 newlib' % sys.executable,
+        python + ' buildbot/buildbot_standard.py opt 32 newlib',
     'lucid-32-glibc-dbg':
-        '%s buildbot/buildbot_standard.py dbg 32 glibc' % sys.executable,
+        python + ' buildbot/buildbot_standard.py dbg 32 glibc',
     'lucid-32-glibc-opt':
-        '%s buildbot/buildbot_standard.py opt 32 glibc' % sys.executable,
+        python + ' buildbot/buildbot_standard.py opt 32 glibc',
     'lucid-64-newlib-opt':
-        '%s buildbot/buildbot_standard.py opt 32 newlib' % sys.executable,
+        python + ' buildbot/buildbot_standard.py opt 32 newlib',
     'lucid-64-newlib-dbg':
-        '%s buildbot/buildbot_standard.py dbg 64 newlib' % sys.executable,
+        python + ' buildbot/buildbot_standard.py dbg 64 newlib',
     'lucid-64-newlib-opt':
-        '%s buildbot/buildbot_standard.py opt 64 newlib' % sys.executable,
+        python + ' buildbot/buildbot_standard.py opt 64 newlib',
     'lucid-64-glibc-dbg':
-        '%s buildbot/buildbot_standard.py dbg 64 glibc' % sys.executable,
+        python + ' buildbot/buildbot_standard.py dbg 64 glibc',
     'lucid-64-glibc-opt':
-        '%s buildbot/buildbot_standard.py opt 64 glibc' % sys.executable,
+        python + ' buildbot/buildbot_standard.py opt 64 glibc',
     'lucid-32-bare-newlib-opt':
-        '%s buildbot/buildbot_standard.py opt 32 newlib' % sys.executable,
+        python + ' buildbot/buildbot_standard.py opt 32 newlib',
     'lucid-32-bare-glibc-opt':
-        '%s buildbot/buildbot_standard.py opt 32 glibc' % sys.executable,
+        python + ' buildbot/buildbot_standard.py opt 32 glibc',
     'lucid-64-bare-newlib-opt':
-        '%s buildbot/buildbot_standard.py opt 64 newlib' % sys.executable,
+        python + ' buildbot/buildbot_standard.py opt 64 newlib',
     'lucid-64-bare-glibc-opt':
-        '%s buildbot/buildbot_standard.py opt 64 glibc' % sys.executable,
+        python + ' buildbot/buildbot_standard.py opt 64 glibc',
      # pnacl bots.
 
     'pnacl-arm-dbg':
@@ -109,43 +114,47 @@ BOT_ASSIGNMENT = {
     'xp-newlib-coverage': 'buildbot\\buildbot_coverage_win.bat',
     # PPAPI Integration.
     'lucid64-m32-n32-opt-ppapi':
-        '%s buildbot/buildbot_standard.py opt 32 newlib' % sys.executable,
+        python + ' buildbot/buildbot_standard.py opt 32 newlib',
     'lucid64-m64-n64-dbg-ppapi':
-        '%s buildbot/buildbot_standard.py dbg 64 newlib' % sys.executable,
+        python + ' buildbot/buildbot_standard.py dbg 64 newlib',
 
     ######################################################################
     # Trybots.
     ######################################################################
     'nacl-win32_newlib_opt':
-        '%s buildbot\\buildbot_standard.py opt 32 newlib' % sys.executable,
+        python + ' buildbot\\buildbot_standard.py opt 32 newlib',
     'nacl-win32_glibc_opt':
-        '%s buildbot\\buildbot_standard.py opt 32 glibc' % sys.executable,
+        python + ' buildbot\\buildbot_standard.py opt 32 glibc',
     'nacl-win64_newlib_dbg':
-        '%s buildbot\\buildbot_standard.py dbg 64 newlib' % sys.executable,
+        python + ' buildbot\\buildbot_standard.py dbg 64 newlib',
     'nacl-win64_newlib_opt':
-        '%s buildbot\\buildbot_standard.py opt 64 newlib' % sys.executable,
+        python + ' buildbot\\buildbot_standard.py opt 64 newlib',
     'nacl-win64_glibc_opt':
-        '%s buildbot\\buildbot_standard.py opt 64 glibc' % sys.executable,
-    'nacl-mac10.5_newlib_opt': 'bash buildbot/buildbot_mac.sh opt 32 newlib',
-    'nacl-mac10.5_glibc_opt': 'bash buildbot/buildbot_mac.sh opt 32 glibc',
-    'nacl-mac10.6_newlib_opt': 'bash buildbot/buildbot_mac.sh opt 32 newlib',
-    'nacl-mac10.6_glibc_opt': 'bash buildbot/buildbot_mac.sh opt 32 glibc',
+        python + ' buildbot\\buildbot_standard.py opt 64 glibc',
+    'nacl-mac10.5_newlib_opt':
+        python + ' buildbot/buildbot_standard.py opt 32 newlib',
+    'nacl-mac10.5_glibc_opt':
+        python + ' buildbot/buildbot_standard.py opt 32 glibc',
+    'nacl-mac10.6_newlib_opt':
+        python + ' buildbot/buildbot_standard.py opt 32 newlib',
+    'nacl-mac10.6_glibc_opt':
+        python + ' buildbot/buildbot_standard.py opt 32 glibc',
     'nacl-hardy32_newlib_opt':
-        '%s buildbot/buildbot_standard.py opt 32 newlib' % sys.executable,
+        python + ' buildbot/buildbot_standard.py opt 32 newlib',
     'nacl-lucid32_newlib_dbg':
-        '%s buildbot/buildbot_standard.py dbg 32 newlib' % sys.executable,
+        python + ' buildbot/buildbot_standard.py dbg 32 newlib',
     'nacl-lucid32_newlib_opt':
-        '%s buildbot/buildbot_standard.py opt 32 newlib' % sys.executable,
+        python + ' buildbot/buildbot_standard.py opt 32 newlib',
     'nacl-lucid32_glibc_opt':
-        '%s buildbot/buildbot_standard.py opt 32 glibc' % sys.executable,
+        python + ' buildbot/buildbot_standard.py opt 32 glibc',
     'nacl-hardy64_newlib_opt':
-        '%s buildbot/buildbot_standard.py opt 64 newlib' % sys.executable,
+        python + ' buildbot/buildbot_standard.py opt 64 newlib',
     'nacl-lucid64_newlib_dbg':
-        '%s buildbot/buildbot_standard.py dbg 64 newlib' % sys.executable,
+        python + ' buildbot/buildbot_standard.py dbg 64 newlib',
     'nacl-lucid64_newlib_opt':
-        '%s buildbot/buildbot_standard.py opt 64 newlib' % sys.executable,
+        python + ' buildbot/buildbot_standard.py opt 64 newlib',
     'nacl-lucid64_glibc_opt':
-        '%s buildbot/buildbot_standard.py opt 64 glibc' % sys.executable,
+        python + ' buildbot/buildbot_standard.py opt 64 glibc',
     'nacl-lucid64_newlib_dbg_valgrind':
         'bash buildbot/buildbot_valgrind.sh newlib',
     'nacl-lucid64_glibc_dbg_valgrind':
@@ -220,10 +229,8 @@ def Main():
   env['ARCHIVE_IRT'] = builder in IRT_ARCHIVE_BUILDERS and '1' or '0'
 
   print "%s runs: %s\n" % (builder, cmd)
-  p = subprocess.Popen(cmd, env=env, shell=True)
-  p.wait()
-
-  sys.exit(p.returncode)
+  retcode = subprocess.call(cmd, env=env, shell=True)
+  sys.exit(retcode)
 
 
 if __name__ == '__main__':
