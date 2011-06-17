@@ -8,6 +8,7 @@ include_rules = [
   "+chrome/tools/profiles",  # For history unit tests.
   "+chrome/views",
   "+grit",  # For generated headers
+  "+media/audio",  # For audio input for speech input feature.
   "+policy",  # For generated headers and source
   "+ppapi/c",  # For various types.
   "+ppapi/proxy",
@@ -27,8 +28,6 @@ include_rules = [
   "+chrome/third_party/hunspell",
   "+chrome/third_party/mozilla_security_manager",
   "+libxml",  # For search engine definition parsing.
-  "+media/audio",  # Chrome's lightweight audio library.
-  "+media/base",
   "+third_party/apple",  # Apple code ImageAndTextCell.
   "+third_party/cld",
   "+third_party/expat",

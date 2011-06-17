@@ -23,7 +23,6 @@
 #include "content/gpu/gpu_process.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_switches.h"
-#include "media/base/media_switches.h"
 #include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_switches.h"
 

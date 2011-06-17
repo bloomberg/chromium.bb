@@ -22,7 +22,6 @@ include_rules = [
 
   "+grit",
   "+gpu",
-  "+media",
   "+net",
   "+ppapi",
   "+printing",

@@ -2,6 +2,7 @@ include_rules = [
   "-chrome",
   "+chrome/test",
   "+content/plugin",  # For shared npruntime proxying code.
+  "+media",  # For audio input/output and audio/video decoding.
   "+third_party/mach_override",
   "+third_party/tcmalloc",
   "+v8/include",

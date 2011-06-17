@@ -3,8 +3,6 @@ include_rules = [
   "+chrome/default_plugin",
   "+grit",  # For generated headers
   "+libxml",
-  "+media/audio",
-  "+media/base",
   "+ppapi/c",  # For various types.
   "+ppapi/proxy",
   "+remoting/client/plugin",

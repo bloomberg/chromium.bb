@@ -4,8 +4,7 @@ include_rules = [
   "+gpu/command_buffer",
   "+libEGL",
   "+libGLESv2",
-  "+media/base",
-  "+media/video",
+  "+media",  # TODO(scherkus): remove when gpu_video_decode_accelerator_tester.cc is deleted.
   "+sandbox",
   "+skia",
 ]
