@@ -37,10 +37,12 @@ TEST_F(SyncChangeTest, LocalUpdate) {
       specifics.MutableExtension(sync_pb::preference);
   pref_specifics->set_name("test");
   std::string tag = "client_tag";
+  std::string title = "client_title";
   SyncChange e(change_type,
-              SyncData::CreateLocalData(tag, specifics));
+              SyncData::CreateLocalData(tag, title, specifics));
   EXPECT_EQ(change_type, e.change_type());
   EXPECT_EQ(tag, e.sync_data().GetTag());
+  EXPECT_EQ(title, e.sync_data().GetTitle());
   EXPECT_EQ(syncable::PREFERENCES, e.sync_data().GetDataType());
   scoped_ptr<DictionaryValue> ref_spec(EntitySpecificsToValue(specifics));
   scoped_ptr<DictionaryValue> e_spec(EntitySpecificsToValue(
@@ -55,10 +57,12 @@ TEST_F(SyncChangeTest, LocalAdd) {
       specifics.MutableExtension(sync_pb::preference);
   pref_specifics->set_name("test");
   std::string tag = "client_tag";
+  std::string title = "client_title";
   SyncChange e(change_type,
-              SyncData::CreateLocalData(tag, specifics));
+              SyncData::CreateLocalData(tag, title, specifics));
   EXPECT_EQ(change_type, e.change_type());
   EXPECT_EQ(tag, e.sync_data().GetTag());
+  EXPECT_EQ(title, e.sync_data().GetTitle());
   EXPECT_EQ(syncable::PREFERENCES, e.sync_data().GetDataType());
   scoped_ptr<DictionaryValue> ref_spec(EntitySpecificsToValue(specifics));
   scoped_ptr<DictionaryValue> e_spec(EntitySpecificsToValue(

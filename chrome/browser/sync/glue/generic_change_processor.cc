@@ -138,6 +138,7 @@ void GenericChangeProcessor::ProcessSyncChanges(
             "Failed to create " + type_str + " node.");
         return;
       }
+      sync_node.SetTitle(UTF8ToWide(change.sync_data().GetTitle()));
       sync_node.SetEntitySpecifics(change.sync_data().GetSpecifics());
     } else if (change.change_type() == SyncChange::ACTION_UPDATE) {
       if (change.sync_data().GetTag() == "" ||
@@ -148,6 +149,7 @@ void GenericChangeProcessor::ProcessSyncChanges(
             "Failed to update " + type_str + " node");
         return;
       }
+      sync_node.SetTitle(UTF8ToWide(change.sync_data().GetTitle()));
       sync_node.SetEntitySpecifics(change.sync_data().GetSpecifics());
       // TODO(sync): Support updating other parts of the sync node (title,
       // successor, parent, etc.).

@@ -29,7 +29,8 @@ bool SyncChange::IsValid() const {
 
   // Adds and updates must have valid specifics (checked by GetDataType())
   if (change_type_ == ACTION_ADD || change_type_ == ACTION_UPDATE)
-    return (sync_data_.GetDataType() != syncable::UNSPECIFIED);
+    return (sync_data_.GetDataType() != syncable::UNSPECIFIED &&
+            !sync_data_.GetTitle().empty());
 
   return true;
 }

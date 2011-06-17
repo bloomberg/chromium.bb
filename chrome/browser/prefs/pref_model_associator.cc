@@ -208,7 +208,7 @@ bool PrefModelAssociator::CreatePrefSyncData(
       sync_pb::preference);
   pref_specifics->set_name(name);
   pref_specifics->set_value(serialized);
-  *sync_data = SyncData::CreateLocalData(name, specifics);
+  *sync_data = SyncData::CreateLocalData(name, name, specifics);
   return true;
 }
 

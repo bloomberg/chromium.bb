@@ -39,9 +39,11 @@ SyncData SyncData::CreateLocalData(const std::string& sync_tag) {
 // Static.
 SyncData SyncData::CreateLocalData(
     const std::string& sync_tag,
+    const std::string& non_unique_title,
     const sync_pb::EntitySpecifics& specifics) {
   sync_pb::SyncEntity entity;
   entity.set_client_defined_unique_tag(sync_tag);
+  entity.set_non_unique_name(non_unique_title);
   entity.mutable_specifics()->CopyFrom(specifics);
   SyncData a;
   a.shared_entity_ = new SharedSyncEntity(&entity);
@@ -83,6 +85,12 @@ syncable::ModelType SyncData::GetDataType() const {
 const std::string& SyncData::GetTag() const {
   DCHECK(is_local_);
   return shared_entity_->sync_entity().client_defined_unique_tag();
+}
+
+const std::string& SyncData::GetTitle() const {
+  // TODO(zea): set this for data coming from the syncer too.
+  DCHECK(shared_entity_->sync_entity().has_non_unique_name());
+  return shared_entity_->sync_entity().non_unique_name();
 }
 
 bool SyncData::IsLocal() const {
