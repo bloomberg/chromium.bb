@@ -66,6 +66,7 @@ DevToolsWindow::DevToolsWindow(Profile* profile,
                                RenderViewHost* inspected_rvh,
                                bool docked)
     : profile_(profile),
+      inspected_tab_(NULL),
       browser_(NULL),
       docked_(docked),
       is_loaded_(false),
@@ -92,8 +93,9 @@ DevToolsWindow::DevToolsWindow(Profile* profile,
                  Source<NavigationController>(&tab_contents_->controller()));
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
-  inspected_tab_ = TabContentsWrapper::GetCurrentWrapperForContents(
-      inspected_rvh->delegate()->GetAsTabContents());
+  TabContents* tab = inspected_rvh->delegate()->GetAsTabContents();
+  if (tab)
+    inspected_tab_ = TabContentsWrapper::GetCurrentWrapperForContents(tab);
 }
 
 DevToolsWindow::~DevToolsWindow() {
@@ -251,6 +253,9 @@ void DevToolsWindow::CreateDevToolsBrowser() {
 
 bool DevToolsWindow::FindInspectedBrowserAndTabIndex(Browser** browser,
                                                      int* tab) {
+  if (!inspected_tab_)
+    return false;
+
   const NavigationController& controller = inspected_tab_->controller();
   for (BrowserList::const_iterator it = BrowserList::begin();
        it != BrowserList::end(); ++it) {
@@ -432,8 +437,10 @@ void DevToolsWindow::AddNewContents(TabContents* source,
                                     WindowOpenDisposition disposition,
                                     const gfx::Rect& initial_pos,
                                     bool user_gesture) {
-  inspected_tab_->tab_contents()->delegate()->AddNewContents(
-      source, new_contents, disposition, initial_pos, user_gesture);
+  if (inspected_tab_) {
+    inspected_tab_->tab_contents()->delegate()->AddNewContents(
+        source, new_contents, disposition, initial_pos, user_gesture);
+  }
 }
 
 bool DevToolsWindow::CanReloadContents(TabContents* source) const {
