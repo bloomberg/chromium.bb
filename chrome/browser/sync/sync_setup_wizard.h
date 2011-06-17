@@ -67,20 +67,12 @@ class SyncSetupWizard {
   // not visible.
   void Focus();
 
-  // TODO(jhawkins): Refactor to take a State parameter and handle the call to
-  // Step() as well as hooking up the handler.
+  // Attaches |handler| to the flow contained in |flow_container_|. Returns NULL
+  // if the flow does not exist or if an existing handler is already attached to
+  // the flow.
   SyncSetupFlow* AttachSyncSetupHandler(SyncSetupFlowHandler* handler);
 
  private:
-  // If we just need to pop open an individual dialog, say to collect
-  // gaia credentials in the event of a steady-state auth failure, this is
-  // a "discrete" run (as in not a continuous wizard flow).  This returns
-  // the end state to pass to Run for a given |start_state|.
-  static State GetEndStateForDiscreteRun(State start_state);
-
-  // Helper to return whether |state| warrants starting a new flow.
-  static bool IsTerminalState(State state);
-
   ProfileSyncService* service_;
 
   SyncSetupFlowContainer* flow_container_;
