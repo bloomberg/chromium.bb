@@ -30,9 +30,7 @@
         '<(libjpeg_gyp_path):libjpeg',
       ],
       'sources': [
-        '../ui/base/dragdrop/os_exchange_data_win_unittest.cc',
         '../ui/base/resource/resource_bundle_unittest.cc',
-        '../ui/base/view_prop_unittest.cc',
         'run_all_unittests.cc',
         'sql/connection_unittest.cc',
         'sql/sqlite_features_unittest.cc',
@@ -45,12 +43,6 @@
         '..',
       ],
       'conditions': [
-        ['OS!="win"', {
-          'sources!': [
-            '../ui/base/dragdrop/os_exchange_data_win_unittest.cc',
-            '../ui/base/view_prop_unittest.cc',
-          ],
-        }],
         ['os_posix==1 and OS!="mac"', {
           'conditions': [
             ['linux_use_tcmalloc==1', {
