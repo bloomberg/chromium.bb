@@ -13,7 +13,7 @@
 #include "base/basictypes.h"
 #include "base/synchronization/lock.h"
 #include "base/tuple.h"
-#include "chrome/browser/content_settings/content_settings_base_provider.h"
+#include "chrome/browser/content_settings/content_settings_origin_identifier_value_map.h"
 #include "chrome/browser/content_settings/content_settings_provider.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "content/common/notification_observer.h"
@@ -81,7 +81,7 @@ class PolicyDefaultProvider : public DefaultProviderInterface,
 };
 
 // PolicyProvider that provider managed content-settings.
-class PolicyProvider : public BaseProvider,
+class PolicyProvider : public ProviderInterface,
                        public NotificationObserver {
  public:
   explicit PolicyProvider(Profile* profile,
@@ -89,7 +89,7 @@ class PolicyProvider : public BaseProvider,
   virtual ~PolicyProvider();
   static void RegisterUserPrefs(PrefService* prefs);
 
-  // BaseProvider Implementation
+  // ProviderInterface Implementation
   virtual void Init();
 
   virtual void SetContentSetting(
@@ -104,6 +104,11 @@ class PolicyProvider : public BaseProvider,
       const GURL& secondary_url,
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier) const;
+
+  virtual void GetAllContentSettingsRules(
+      ContentSettingsType content_type,
+      const ResourceIdentifier& resource_identifier,
+      Rules* content_setting_rules) const;
 
   virtual void ClearAllContentSettingsRules(
       ContentSettingsType content_type);
@@ -136,6 +141,8 @@ class PolicyProvider : public BaseProvider,
 
   void UnregisterObservers();
 
+  OriginIdentifierValueMap value_map_;
+
   Profile* profile_;
 
   // Weak, owned by HostContentSettingsMap.
@@ -143,6 +150,10 @@ class PolicyProvider : public BaseProvider,
 
   PrefChangeRegistrar pref_change_registrar_;
   NotificationRegistrar notification_registrar_;
+
+  // Used around accesses to the content_settings_ object to guarantee
+  // thread safety.
+  mutable base::Lock lock_;
 
   DISALLOW_COPY_AND_ASSIGN(PolicyProvider);
 };

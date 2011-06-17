@@ -167,19 +167,12 @@ TEST_F(PolicyProviderTest, ResourceIdentifier) {
                 CONTENT_SETTINGS_TYPE_PLUGINS,
                 ""));
 
-  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+  EXPECT_EQ(CONTENT_SETTING_DEFAULT,
             provider.GetContentSetting(
                 google_url,
                 google_url,
                 CONTENT_SETTINGS_TYPE_PLUGINS,
                 "someplugin"));
-
-  EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            provider.GetContentSetting(
-                google_url,
-                google_url,
-                CONTENT_SETTINGS_TYPE_PLUGINS,
-                "anotherplugin"));
 }
 
 }  // namespace content_settings

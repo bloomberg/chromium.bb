@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "chrome/browser/content_settings/content_settings_details.h"
 #include "chrome/browser/content_settings/content_settings_pattern.h"
+#include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
@@ -291,8 +292,7 @@ void PolicyProvider::RegisterUserPrefs(PrefService* prefs) {
 
 PolicyProvider::PolicyProvider(Profile* profile,
                                DefaultProviderInterface* default_provider)
-    : BaseProvider(profile->IsOffTheRecord()),
-      profile_(profile),
+    : profile_(profile),
       default_provider_(default_provider) {
   Init();
 }
@@ -343,18 +343,22 @@ void PolicyProvider::GetContentSettingsFromPreferences(
     for (size_t j = 0; j < pattern_str_list->GetSize(); ++j) {
       std::string original_pattern_str;
       pattern_str_list->GetString(j, &original_pattern_str);
-      ContentSettingsPattern pattern =
-          ContentSettingsPattern::LegacyFromString(original_pattern_str);
+      PatternPair pattern_pair = ParsePatternString(original_pattern_str);
       // Ignore invalid patterns.
-      if (!pattern.IsValid()) {
+      if (!pattern_pair.first.IsValid()) {
         VLOG(1) << "Ignoring invalid content settings pattern: " <<
-                   pattern.ToString();
+                   original_pattern_str;
         continue;
       }
+
+      ContentSettingsType content_type =
+          kPrefsForManagedContentSettingsMap[i].content_type;
+      // If only one pattern was defined auto expand it to a pattern pair.
       rules->push_back(MakeTuple(
-          pattern,
-          pattern,
-          kPrefsForManagedContentSettingsMap[i].content_type,
+          pattern_pair.first,
+          !pattern_pair.second.IsValid() ? ContentSettingsPattern::Wildcard()
+                                         : pattern_pair.second,
+          content_type,
           ResourceIdentifier(NO_RESOURCE_IDENTIFIER),
           kPrefsForManagedContentSettingsMap[i].setting));
     }
@@ -366,14 +370,17 @@ void PolicyProvider::ReadManagedContentSettings(bool overwrite) {
   PrefService* prefs = profile_->GetPrefs();
   GetContentSettingsFromPreferences(prefs, &rules);
   {
-    base::AutoLock auto_lock(lock());
-    HostContentSettings* content_settings_map = host_content_settings();
+    base::AutoLock auto_lock(lock_);
     if (overwrite)
-      content_settings_map->clear();
+      value_map_.clear();
     for (ContentSettingsRules::iterator rule = rules.begin();
          rule != rules.end();
          ++rule) {
-      DispatchToMethod(this, &PolicyProvider::UpdateContentSettingsMap, *rule);
+      value_map_.SetValue(rule->a,
+                          rule->b,
+                          rule->c,
+                          rule->d,
+                          Value::CreateIntegerValue(rule->e));
     }
   }
 }
@@ -393,14 +400,44 @@ ContentSetting PolicyProvider::GetContentSetting(
     const GURL& secondary_url,
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier) const {
-  ContentSetting setting = BaseProvider::GetContentSetting(
-      primary_url,
-      secondary_url,
-      content_type,
-      NO_RESOURCE_IDENTIFIER);
+  // Resource identifier are not supported by policies as long as the feature is
+  // behind a flag. So resource identifiers are simply ignored.
+  Value* value = value_map_.GetValue(primary_url,
+                                     secondary_url,
+                                     content_type,
+                                     resource_identifier);
+  ContentSetting setting =
+      value == NULL ? CONTENT_SETTING_DEFAULT : ValueToContentSetting(value);
   if (setting == CONTENT_SETTING_DEFAULT && default_provider_)
     setting = default_provider_->ProvideDefaultSetting(content_type);
   return setting;
+}
+
+void PolicyProvider::GetAllContentSettingsRules(
+    ContentSettingsType content_type,
+    const ResourceIdentifier& resource_identifier,
+    Rules* content_setting_rules) const {
+  DCHECK_NE(RequiresResourceIdentifier(content_type),
+            resource_identifier.empty());
+  DCHECK(content_setting_rules);
+  content_setting_rules->clear();
+
+  const OriginIdentifierValueMap* map_to_return = &value_map_;
+
+  base::AutoLock auto_lock(lock_);
+  for (OriginIdentifierValueMap::const_iterator entry = map_to_return->begin();
+       entry != map_to_return->end();
+       ++entry) {
+    if (entry->content_type == content_type &&
+        entry->identifier == resource_identifier) {
+      ContentSetting setting = ValueToContentSetting(entry->value.get());
+      DCHECK(setting != CONTENT_SETTING_DEFAULT);
+      Rule new_rule(entry->primary_pattern,
+                    entry->secondary_pattern,
+                    setting);
+      content_setting_rules->push_back(new_rule);
+    }
+  }
 }
 
 void PolicyProvider::ClearAllContentSettingsRules(
