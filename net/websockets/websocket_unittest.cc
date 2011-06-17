@@ -1,10 +1,12 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
@@ -36,25 +38,16 @@ struct WebSocketEvent {
 class WebSocketEventRecorder : public net::WebSocketDelegate {
  public:
   explicit WebSocketEventRecorder(net::CompletionCallback* callback)
-      : onopen_(NULL),
-        onmessage_(NULL),
-        onerror_(NULL),
-        onclose_(NULL),
-        callback_(callback) {}
-  virtual ~WebSocketEventRecorder() {
-    delete onopen_;
-    delete onmessage_;
-    delete onerror_;
-    delete onclose_;
-  }
+      : callback_(callback) {}
+  virtual ~WebSocketEventRecorder() {}
 
-  void SetOnOpen(Callback1<WebSocketEvent*>::Type* callback) {
+  void SetOnOpen(const base::Callback<void(WebSocketEvent*)>& callback) {
     onopen_ = callback;
   }
-  void SetOnMessage(Callback1<WebSocketEvent*>::Type* callback) {
+  void SetOnMessage(const base::Callback<void(WebSocketEvent*)>& callback) {
     onmessage_ = callback;
   }
-  void SetOnClose(Callback1<WebSocketEvent*>::Type* callback) {
+  void SetOnClose(const base::Callback<void(WebSocketEvent*)>& callback) {
     onclose_ = callback;
   }
 
@@ -62,29 +55,29 @@ class WebSocketEventRecorder : public net::WebSocketDelegate {
     events_.push_back(
         WebSocketEvent(WebSocketEvent::EVENT_OPEN, socket,
                        std::string(), false));
-    if (onopen_)
-      onopen_->Run(&events_.back());
+    if (!onopen_.is_null())
+      onopen_.Run(&events_.back());
   }
 
   virtual void OnMessage(net::WebSocket* socket, const std::string& msg) {
     events_.push_back(
         WebSocketEvent(WebSocketEvent::EVENT_MESSAGE, socket, msg, false));
-    if (onmessage_)
-      onmessage_->Run(&events_.back());
+    if (!onmessage_.is_null())
+      onmessage_.Run(&events_.back());
   }
   virtual void OnError(net::WebSocket* socket) {
     events_.push_back(
         WebSocketEvent(WebSocketEvent::EVENT_ERROR, socket,
                        std::string(), false));
-    if (onerror_)
-      onerror_->Run(&events_.back());
+    if (!onerror_.is_null())
+      onerror_.Run(&events_.back());
   }
   virtual void OnClose(net::WebSocket* socket, bool was_clean) {
     events_.push_back(
         WebSocketEvent(WebSocketEvent::EVENT_CLOSE, socket,
                        std::string(), was_clean));
-    if (onclose_)
-      onclose_->Run(&events_.back());
+    if (!onclose_.is_null())
+      onclose_.Run(&events_.back());
     if (callback_)
       callback_->Run(net::OK);
   }
@@ -99,10 +92,10 @@ class WebSocketEventRecorder : public net::WebSocketDelegate {
 
  private:
   std::vector<WebSocketEvent> events_;
-  Callback1<WebSocketEvent*>::Type* onopen_;
-  Callback1<WebSocketEvent*>::Type* onmessage_;
-  Callback1<WebSocketEvent*>::Type* onerror_;
-  Callback1<WebSocketEvent*>::Type* onclose_;
+  base::Callback<void(WebSocketEvent*)> onopen_;
+  base::Callback<void(WebSocketEvent*)> onmessage_;
+  base::Callback<void(WebSocketEvent*)> onerror_;
+  base::Callback<void(WebSocketEvent*)> onclose_;
   net::CompletionCallback* callback_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketEventRecorder);
@@ -181,8 +174,8 @@ TEST_F(WebSocketTest, Connect) {
 
   scoped_ptr<WebSocketEventRecorder> delegate(
       new WebSocketEventRecorder(&callback));
-  delegate->SetOnOpen(NewCallback(delegate.get(),
-                                  &WebSocketEventRecorder::DoClose));
+  delegate->SetOnOpen(base::Bind(&WebSocketEventRecorder::DoClose,
+                                 base::Unretained(delegate.get())));
 
   scoped_refptr<WebSocket> websocket(
       new WebSocket(request, delegate.get()));
@@ -244,8 +237,8 @@ TEST_F(WebSocketTest, ServerSentData) {
 
   scoped_ptr<WebSocketEventRecorder> delegate(
       new WebSocketEventRecorder(&callback));
-  delegate->SetOnMessage(NewCallback(delegate.get(),
-                                     &WebSocketEventRecorder::DoClose));
+  delegate->SetOnMessage(base::Bind(&WebSocketEventRecorder::DoClose,
+                                    base::Unretained(delegate.get())));
 
   scoped_refptr<WebSocket> websocket(
       new WebSocket(request, delegate.get()));
