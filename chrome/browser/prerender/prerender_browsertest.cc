@@ -94,7 +94,9 @@ class TestPrerenderContents : public PrerenderContents {
 
   virtual ~TestPrerenderContents() {
     EXPECT_EQ(expected_final_status_, final_status()) <<
-        " when testing URL " << prerender_url().path();
+              " when testing URL " << prerender_url().path() <<
+              " (Expected: " << NameFromFinalStatus(expected_final_status_) <<
+              ", Actual: " << NameFromFinalStatus(final_status()) << ")";
     // Prerendering RenderViewHosts should be hidden before the first
     // navigation, so this should be happen for every PrerenderContents for
     // which a RenderViewHost is created, regardless of whether or not it's
