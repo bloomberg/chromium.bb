@@ -120,6 +120,7 @@ BaseLoginDisplayHost::~BaseLoginDisplayHost() {
 // LoginDisplayHost implementation ---------------------------------------------
 
 void BaseLoginDisplayHost::OnSessionStart() {
+  registrar_.RemoveAll();
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
@@ -199,11 +200,9 @@ void BaseLoginDisplayHost::Observe(NotificationType type,
                                    const NotificationDetails& details) {
   CHECK(type == NotificationType::APP_EXITING);
 
+  registrar_.RemoveAll();
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);
   MessageLoop::current()->Quit();
-  registrar_.Remove(this,
-                    NotificationType::APP_EXITING,
-                    NotificationService::AllSources());
 }
 
 }  // namespace chromeos
