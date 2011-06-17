@@ -9,7 +9,7 @@
 #include "base/shared_memory.h"
 #include "content/browser/renderer_host/media/audio_common.h"
 #include "content/browser/renderer_host/media/audio_sync_reader.h"
-#include "content/common/audio_messages.h"
+#include "content/common/media/audio_messages.h"
 #include "ipc/ipc_logging.h"
 
 

@@ -6,8 +6,8 @@
 
 #include "base/memory/singleton.h"
 #include "base/message_loop.h"
-#include "content/common/audio_messages.h"
 #include "content/common/child_process.h"
+#include "content/common/media/audio_messages.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/render_thread.h"
 #include "media/audio/audio_util.h"

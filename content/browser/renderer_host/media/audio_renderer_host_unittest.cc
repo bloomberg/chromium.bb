@@ -9,7 +9,7 @@
 #include "base/sync_socket.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/media/audio_renderer_host.h"
-#include "content/common/audio_messages.h"
+#include "content/common/media/audio_messages.h"
 #include "ipc/ipc_message_utils.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/fake_audio_output_stream.h"

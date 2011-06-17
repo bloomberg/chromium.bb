@@ -4,7 +4,7 @@
 
 #include "content/renderer/media/video_capture_message_filter.h"
 
-#include "content/common/video_capture_messages.h"
+#include "content/common/media/video_capture_messages.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/render_thread.h"
 

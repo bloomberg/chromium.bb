@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/process_util.h"
-#include "content/common/audio_messages.h"
+#include "content/common/media/audio_messages.h"
 #include "content/renderer/media/audio_renderer_impl.h"
 #include "media/base/data_buffer.h"
 #include "media/base/mock_callback.h"

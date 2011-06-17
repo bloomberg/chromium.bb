@@ -7,7 +7,7 @@
 
 #include "base/shared_memory.h"
 #include "base/sync_socket.h"
-#include "content/common/audio_stream_state.h"
+#include "content/common/media/audio_stream_state.h"
 #include "ipc/ipc_message_macros.h"
 #include "media/audio/audio_buffers_state.h"
 #include "media/audio/audio_parameters.h"

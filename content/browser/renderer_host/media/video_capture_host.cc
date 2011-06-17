@@ -6,7 +6,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util-inl.h"
-#include "content/common/video_capture_messages.h"
+#include "content/common/media/video_capture_messages.h"
 
 VideoCaptureHost::VideoCaptureHost() {}
 

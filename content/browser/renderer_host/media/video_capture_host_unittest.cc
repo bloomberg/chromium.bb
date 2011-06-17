@@ -14,7 +14,7 @@
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/media/video_capture_host.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
-#include "content/common/video_capture_messages.h"
+#include "content/common/media/video_capture_messages.h"
 #include "media/video/capture/video_capture_types.h"
 
 #include "testing/gmock/include/gmock/gmock.h"

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_AUDIO_STREAM_STATE_H_
-#define CONTENT_COMMON_AUDIO_STREAM_STATE_H_
+#ifndef CONTENT_COMMON_MEDIA_AUDIO_STREAM_STATE_H_
+#define CONTENT_COMMON_MEDIA_AUDIO_STREAM_STATE_H_
 #pragma once
 
 // Current status of the audio output stream in the browser process. Browser
@@ -15,4 +15,4 @@ enum AudioStreamState {
   kAudioStreamError
 };
 
-#endif  // CONTENT_COMMON_AUDIO_STREAM_STATE_H_
+#endif  // CONTENT_COMMON_MEDIA_AUDIO_STREAM_STATE_H_

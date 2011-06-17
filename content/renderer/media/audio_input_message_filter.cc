@@ -6,7 +6,7 @@
 
 #include "base/message_loop.h"
 #include "base/time.h"
-#include "content/common/audio_messages.h"
+#include "content/common/media/audio_messages.h"
 #include "ipc/ipc_logging.h"
 
 AudioInputMessageFilter::AudioInputMessageFilter(int32 route_id)

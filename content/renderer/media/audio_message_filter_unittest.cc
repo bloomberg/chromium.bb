@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/message_loop.h"
-#include "content/common/audio_messages.h"
+#include "content/common/media/audio_messages.h"
 #include "content/renderer/media/audio_message_filter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

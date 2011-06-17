@@ -6,7 +6,7 @@
 
 #include "base/stl_util-inl.h"
 #include "content/common/child_process.h"
-#include "content/common/video_capture_messages.h"
+#include "content/common/media/video_capture_messages.h"
 
 VideoCaptureImpl::DIBBuffer::DIBBuffer(
     base::SharedMemory* d, media::VideoCapture::VideoFrameBuffer* ptr)
