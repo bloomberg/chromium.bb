@@ -18,7 +18,7 @@
 Import('env')
 
 if env.Bit('linux'):
-  env['COMPONENT_STATIC'] = False;  # Build a .so, not a .a
+  env['COMPONENT_STATIC'] = False  # Build a .so, not a .a
 
   # Adjust CCFLAGS to match the more forgiving standards used in the Chromium
   # PPAPI tests.

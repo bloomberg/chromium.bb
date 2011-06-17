@@ -11,7 +11,7 @@
 Import('env')
 
 if env.Bit('linux'):
-  env['COMPONENT_STATIC'] = False;  # Build a .so, not a .a
+  env['COMPONENT_STATIC'] = False  # Build a .so, not a .a
 
   sources = [ 'module.cc',
               # This allow us to verify that the code builds before
