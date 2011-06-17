@@ -836,7 +836,7 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_Version) {
   VersionTest(IE, kVersionPage);
 }
 
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeFF_Version) {
+TEST_F(ChromeFrameTestWithWebServer, DISABLED_WidgetModeFF_Version) {
   VersionTest(FIREFOX, kVersionPage);
 }
 
