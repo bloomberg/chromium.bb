@@ -86,8 +86,8 @@ net::ProxyService* ProxyServiceFactory::CreateProxyService(
   net::ProxyService* proxy_service;
   if (use_v8) {
     net::DhcpProxyScriptFetcherFactory dhcp_factory;
-    if (command_line.HasSwitch(switches::kEnableDhcpWpad)) {
-      dhcp_factory.set_enabled(true);
+    if (command_line.HasSwitch(switches::kDisableDhcpWpad)) {
+      dhcp_factory.set_enabled(false);
     }
 
     proxy_service = net::ProxyService::CreateUsingV8ProxyResolver(
