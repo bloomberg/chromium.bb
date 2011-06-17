@@ -10,13 +10,18 @@
 
 class SyncChange;
 
+namespace tracked_objects {
+class Location;
+}  // namespace tracked_objects
+
 typedef std::vector<SyncChange> SyncChangeList;
 
 // An interface for services that handle receiving SyncChanges.
 class SyncChangeProcessor {
  public:
   // Process a list of SyncChanges.
-  virtual void ProcessSyncChanges(const SyncChangeList& change_list) = 0;
+  virtual void ProcessSyncChanges(const tracked_objects::Location& from_here,
+                                  const SyncChangeList& change_list) = 0;
  protected:
   virtual ~SyncChangeProcessor();
 };

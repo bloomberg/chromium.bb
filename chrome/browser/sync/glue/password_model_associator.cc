@@ -7,6 +7,7 @@
 #include <set>
 
 #include "base/stl_util-inl.h"
+#include "base/tracked.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/sync/engine/syncapi.h"
@@ -60,7 +61,7 @@ bool PasswordModelAssociator::AssociateModels() {
   PasswordVector new_passwords;
   PasswordVector updated_passwords;
   {
-    sync_api::WriteTransaction trans(sync_service_->GetUserShare());
+    sync_api::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
     sync_api::ReadNode password_root(&trans);
     if (!password_root.InitByTagLookup(kPasswordTag)) {
       LOG(ERROR) << "Server did not create the top-level password node. We "
@@ -183,7 +184,7 @@ bool PasswordModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
                << "might be running against an out-of-date server.";
     return false;
   }
-  sync_api::ReadTransaction trans(sync_service_->GetUserShare());
+  sync_api::ReadTransaction trans(FROM_HERE, sync_service_->GetUserShare());
 
   sync_api::ReadNode password_node(&trans);
   if (!password_node.InitByIdLookup(password_sync_id)) {
@@ -206,7 +207,7 @@ void PasswordModelAssociator::AbortAssociation() {
 
 bool PasswordModelAssociator::CryptoReadyIfNecessary() {
   // We only access the cryptographer while holding a transaction.
-  sync_api::ReadTransaction trans(sync_service_->GetUserShare());
+  sync_api::ReadTransaction trans(FROM_HERE, sync_service_->GetUserShare());
   // We always encrypt passwords, so no need to check if encryption is enabled.
   return sync_service_->IsCryptographerReady(&trans);
 }
@@ -254,7 +255,7 @@ void PasswordModelAssociator::Disassociate(int64 sync_id) {
 
 bool PasswordModelAssociator::GetSyncIdForTaggedNode(const std::string& tag,
                                                      int64* sync_id) {
-  sync_api::ReadTransaction trans(sync_service_->GetUserShare());
+  sync_api::ReadTransaction trans(FROM_HERE, sync_service_->GetUserShare());
   sync_api::ReadNode sync_node(&trans);
   if (!sync_node.InitByTagLookup(tag.c_str()))
     return false;

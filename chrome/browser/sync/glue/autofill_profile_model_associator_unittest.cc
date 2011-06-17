@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/tracked.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/sync/engine/read_node_mock.h"
 #include "chrome/browser/sync/engine/syncapi_mock.h"
@@ -115,7 +116,7 @@ TEST_F(AutofillProfileModelAssociatorTest,
   kernel.put(syncable::SPECIFICS, specifics);
   kernel.put(syncable::META_HANDLE, 1);
 
-  MockWriteTransaction write_trans(&mock_directory);
+  MockWriteTransaction write_trans(FROM_HERE, &mock_directory);
   EXPECT_CALL(mock_directory, GetEntryByClientTag(_))
              .WillOnce(Return(&kernel));
 
@@ -140,7 +141,7 @@ TEST_F(AutofillProfileModelAssociatorTest, TestAssociatingMissingWebDBProfile) {
   ScopedVector<AutofillProfile> profiles_from_web_db;
   MockDirectory mock_directory;
 
-  MockWriteTransaction write_trans(&mock_directory);
+  MockWriteTransaction write_trans(FROM_HERE, &mock_directory);
   EXPECT_CALL(mock_directory,
               GetEntryByClientTag(_))
              .WillOnce(Return(reinterpret_cast<EntryKernel*>(NULL)));
@@ -191,7 +192,7 @@ TEST_F(AutofillProfileModelAssociatorTest,
   kernel.put(syncable::META_HANDLE, 1);
   kernel.put(syncable::ID, root_id);
 
-  MockWriteTransaction write_trans(&mock_directory);
+  MockWriteTransaction write_trans(FROM_HERE, &mock_directory);
 
   browser_sync::AutofillProfileModelAssociator::DataBundle bundle;
 

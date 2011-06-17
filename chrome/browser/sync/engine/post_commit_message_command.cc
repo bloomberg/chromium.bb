@@ -35,7 +35,7 @@ void PostCommitMessageCommand::ExecuteImpl(sessions::SyncSession* session) {
     // Not to be confused with IS_UNSYNCED, this bit is used to detect local
     // changes to items that happen during the server Commit operation.
     status->increment_num_consecutive_errors();
-    syncable::WriteTransaction trans(dir, syncable::SYNCER, FROM_HERE);
+    syncable::WriteTransaction trans(FROM_HERE, syncable::SYNCER, dir);
     const vector<syncable::Id>& commit_ids = status->commit_ids();
     for (size_t i = 0; i < commit_ids.size(); i++) {
       syncable::MutableEntry entry(&trans, syncable::GET_BY_ID, commit_ids[i]);

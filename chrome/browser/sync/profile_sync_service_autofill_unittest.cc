@@ -333,7 +333,7 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
   }
 
   bool AddAutofillSyncNode(const AutofillEntry& entry) {
-    sync_api::WriteTransaction trans(service_->GetUserShare());
+    sync_api::WriteTransaction trans(FROM_HERE, service_->GetUserShare());
     sync_api::ReadNode autofill_root(&trans);
     if (!autofill_root.InitByTagLookup(browser_sync::kAutofillTag))
       return false;
@@ -349,7 +349,7 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
   }
 
   bool AddAutofillSyncNode(const AutofillProfile& profile) {
-    sync_api::WriteTransaction trans(service_->GetUserShare());
+    sync_api::WriteTransaction trans(FROM_HERE, service_->GetUserShare());
     sync_api::ReadNode autofill_root(&trans);
     if (!autofill_root.InitByTagLookup(browser_sync::kAutofillProfileTag))
       return false;
@@ -364,7 +364,7 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
 
   bool GetAutofillEntriesFromSyncDB(std::vector<AutofillEntry>* entries,
                                     std::vector<AutofillProfile>* profiles) {
-    sync_api::ReadTransaction trans(service_->GetUserShare());
+    sync_api::ReadTransaction trans(FROM_HERE, service_->GetUserShare());
     sync_api::ReadNode autofill_root(&trans);
     if (!autofill_root.InitByTagLookup(browser_sync::kAutofillTag))
       return false;
@@ -401,7 +401,7 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
 
   bool GetAutofillProfilesFromSyncDBUnderProfileNode(
       std::vector<AutofillProfile>* profiles) {
-    sync_api::ReadTransaction trans(service_->GetUserShare());
+    sync_api::ReadTransaction trans(FROM_HERE, service_->GetUserShare());
     sync_api::ReadNode autofill_root(&trans);
     if (!autofill_root.InitByTagLookup(browser_sync::kAutofillProfileTag))
       return false;
@@ -491,11 +491,11 @@ class AddAutofillTask : public Task {
 static const bool kLoggingInfo = true;
 class WriteTransactionTest: public WriteTransaction {
  public:
-  WriteTransactionTest(const syncable::ScopedDirLookup& directory,
+  WriteTransactionTest(const tracked_objects::Location& from_here,
                        WriterTag writer,
-                       const tracked_objects::Location& from_here,
+                       const syncable::ScopedDirLookup& directory,
                        scoped_ptr<WaitableEvent> *wait_for_syncapi)
-      : WriteTransaction(directory, writer, from_here),
+      : WriteTransaction(from_here, writer, directory),
         wait_for_syncapi_(wait_for_syncapi) { }
 
   virtual void NotifyTransactionComplete(syncable::ModelTypeBitSet types) {
@@ -553,7 +553,7 @@ class FakeServerUpdater: public base::RefCountedThreadSafe<FakeServerUpdater> {
       (*wait_for_start_)->Signal();
 
       // Create write transaction.
-      WriteTransactionTest trans(dir, UNITTEST, FROM_HERE,
+      WriteTransactionTest trans(FROM_HERE, UNITTEST, dir,
                                  wait_for_syncapi_);
 
       // Create actual entry based on autofill protobuf information.

@@ -98,7 +98,7 @@ ServerUpdateProcessingResult ProcessUpdatesCommand::ProcessUpdate(
   syncable::Id server_id = update.id();
   const std::string name = SyncerProtoUtil::NameFromSyncEntity(update);
 
-  syncable::WriteTransaction trans(dir, syncable::SYNCER, FROM_HERE);
+  syncable::WriteTransaction trans(FROM_HERE, syncable::SYNCER, dir);
 
   // Look to see if there's a local item that should recieve this update,
   // maybe due to a duplicate client tag or a lost commit response.

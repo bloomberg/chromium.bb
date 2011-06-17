@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,9 +16,10 @@ using sync_api::WriteTransaction;
 
 class MockWriteTransaction : public sync_api::WriteTransaction {
  public:
-  explicit MockWriteTransaction(Directory* directory)
+  MockWriteTransaction(const tracked_objects::Location& from_here,
+                       Directory* directory)
      : sync_api::WriteTransaction() {
-    this->SetTransaction(new MockSyncableWriteTransaction(directory));
+    SetTransaction(new MockSyncableWriteTransaction(from_here, directory));
   }
 };
 

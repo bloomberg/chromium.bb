@@ -24,7 +24,7 @@ void ApplyUpdatesCommand::ModelChangingExecuteImpl(SyncSession* session) {
     LOG(ERROR) << "Scoped dir lookup failed!";
     return;
   }
-  syncable::WriteTransaction trans(dir, syncable::SYNCER, FROM_HERE);
+  syncable::WriteTransaction trans(FROM_HERE, syncable::SYNCER, dir);
   syncable::Directory::UnappliedUpdateMetaHandles handles;
   dir->GetUnappliedUpdateMetaHandles(&trans, &handles);
 

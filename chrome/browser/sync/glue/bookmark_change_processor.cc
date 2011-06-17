@@ -8,7 +8,7 @@
 
 #include "base/string16.h"
 #include "base/string_util.h"
-
+#include "base/tracked.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/favicon/favicon_service.h"
@@ -92,7 +92,7 @@ void BookmarkChangeProcessor::RemoveOneSyncNode(
 
 void BookmarkChangeProcessor::RemoveSyncNodeHierarchy(
     const BookmarkNode* topmost) {
-  sync_api::WriteTransaction trans(share_handle());
+  sync_api::WriteTransaction trans(FROM_HERE, share_handle());
 
   // Later logic assumes that |topmost| has been unlinked.
   DCHECK(topmost->is_root());
@@ -145,7 +145,7 @@ void BookmarkChangeProcessor::BookmarkNodeAdded(BookmarkModel* model,
   DCHECK(share_handle());
 
   // Acquire a scoped write lock via a transaction.
-  sync_api::WriteTransaction trans(share_handle());
+  sync_api::WriteTransaction trans(FROM_HERE, share_handle());
 
   CreateSyncNode(parent, model, index, &trans, model_associator_,
                  error_handler());
@@ -197,7 +197,7 @@ void BookmarkChangeProcessor::BookmarkNodeChanged(BookmarkModel* model,
   }
 
   // Acquire a scoped write lock via a transaction.
-  sync_api::WriteTransaction trans(share_handle());
+  sync_api::WriteTransaction trans(FROM_HERE, share_handle());
 
   // Lookup the sync node that's associated with |node|.
   sync_api::WriteNode sync_node(&trans);
@@ -231,7 +231,7 @@ void BookmarkChangeProcessor::BookmarkNodeMoved(BookmarkModel* model,
   }
 
   // Acquire a scoped write lock via a transaction.
-  sync_api::WriteTransaction trans(share_handle());
+  sync_api::WriteTransaction trans(FROM_HERE, share_handle());
 
   // Lookup the sync node that's associated with |child|.
   sync_api::WriteNode sync_node(&trans);
@@ -258,7 +258,7 @@ void BookmarkChangeProcessor::BookmarkNodeChildrenReordered(
     BookmarkModel* model, const BookmarkNode* node) {
 
   // Acquire a scoped write lock via a transaction.
-  sync_api::WriteTransaction trans(share_handle());
+  sync_api::WriteTransaction trans(FROM_HERE, share_handle());
 
   // The given node's children got reordered. We need to reorder all the
   // children of the corresponding sync node.

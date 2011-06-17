@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <set>
 
+#include "base/tracked.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/sync/engine/syncapi.h"
@@ -68,7 +69,7 @@ bool TypedUrlModelAssociator::AssociateModels() {
   TypedUrlUpdateVector updated_urls;
 
   {
-    sync_api::WriteTransaction trans(sync_service_->GetUserShare());
+    sync_api::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
     sync_api::ReadNode typed_url_root(&trans);
     if (!typed_url_root.InitByTagLookup(kTypedUrlTag)) {
       LOG(ERROR) << "Server did not create the top-level typed_url node. We "
@@ -265,7 +266,7 @@ bool TypedUrlModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
                << "might be running against an out-of-date server.";
     return false;
   }
-  sync_api::ReadTransaction trans(sync_service_->GetUserShare());
+  sync_api::ReadTransaction trans(FROM_HERE, sync_service_->GetUserShare());
 
   sync_api::ReadNode typed_url_node(&trans);
   if (!typed_url_node.InitByIdLookup(typed_url_sync_id)) {
@@ -327,7 +328,7 @@ void TypedUrlModelAssociator::Disassociate(int64 sync_id) {
 
 bool TypedUrlModelAssociator::GetSyncIdForTaggedNode(const std::string& tag,
                                                      int64* sync_id) {
-  sync_api::ReadTransaction trans(sync_service_->GetUserShare());
+  sync_api::ReadTransaction trans(FROM_HERE, sync_service_->GetUserShare());
   sync_api::ReadNode sync_node(&trans);
   if (!sync_node.InitByTagLookup(tag.c_str()))
     return false;
@@ -577,7 +578,7 @@ void TypedUrlModelAssociator::UpdateURLRowFromTypedUrlSpecifics(
 
 bool TypedUrlModelAssociator::CryptoReadyIfNecessary() {
   // We only access the cryptographer while holding a transaction.
-  sync_api::ReadTransaction trans(sync_service_->GetUserShare());
+  sync_api::ReadTransaction trans(FROM_HERE, sync_service_->GetUserShare());
   syncable::ModelTypeSet encrypted_types;
   encrypted_types = sync_api::GetEncryptedTypes(&trans);
   return encrypted_types.count(syncable::TYPED_URLS) == 0 ||

@@ -34,7 +34,8 @@ class MockDirectory : public Directory {
 
 class MockSyncableWriteTransaction : public syncable::WriteTransaction {
  public:
-  explicit MockSyncableWriteTransaction(Directory *directory);
+  MockSyncableWriteTransaction(
+      const tracked_objects::Location& from_here, Directory *directory);
 };
 
 

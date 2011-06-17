@@ -17,6 +17,7 @@
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/tracked.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/sync/abstract_profile_sync_service_test.h"
@@ -64,7 +65,7 @@ class TestBookmarkModelAssociator : public BookmarkModelAssociator {
     bool root_exists = false;
     syncable::ModelType type = model_type();
     {
-      sync_api::WriteTransaction trans(user_share_);
+      sync_api::WriteTransaction trans(FROM_HERE, user_share_);
       sync_api::ReadNode uber_root(&trans);
       uber_root.InitByRootLookup();
 
@@ -82,7 +83,7 @@ class TestBookmarkModelAssociator : public BookmarkModelAssociator {
         return false;
     }
 
-    sync_api::WriteTransaction trans(user_share_);
+    sync_api::WriteTransaction trans(FROM_HERE, user_share_);
     sync_api::ReadNode root(&trans);
     EXPECT_TRUE(root.InitByTagLookup(
         ProfileSyncServiceTestHelper::GetTagForType(type)));
@@ -403,7 +404,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
   }
 
   void ExpectSyncerNodeMatching(const BookmarkNode* bnode) {
-    sync_api::ReadTransaction trans(test_user_share_.user_share());
+    sync_api::ReadTransaction trans(FROM_HERE, test_user_share_.user_share());
     ExpectSyncerNodeMatching(&trans, bnode);
   }
 
@@ -483,7 +484,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
   }
 
   void ExpectModelMatch() {
-    sync_api::ReadTransaction trans(test_user_share_.user_share());
+    sync_api::ReadTransaction trans(FROM_HERE, test_user_share_.user_share());
     ExpectModelMatch(&trans);
   }
 
@@ -593,7 +594,7 @@ TEST_F(ProfileSyncServiceBookmarkTest, ServerChangeProcessing) {
   LoadBookmarkModel(DELETE_EXISTING_STORAGE, DONT_SAVE_TO_STORAGE);
   StartSync();
 
-  sync_api::WriteTransaction trans(test_user_share_.user_share());
+  sync_api::WriteTransaction trans(FROM_HERE, test_user_share_.user_share());
 
   FakeServerChange adds(&trans);
   int64 f1 = adds.AddFolder(L"Server Folder B", bookmark_bar_id(), 0);
@@ -690,7 +691,7 @@ TEST_F(ProfileSyncServiceBookmarkTest, ServerChangeRequiringFosterParent) {
   LoadBookmarkModel(DELETE_EXISTING_STORAGE, DONT_SAVE_TO_STORAGE);
   StartSync();
 
-  sync_api::WriteTransaction trans(test_user_share_.user_share());
+  sync_api::WriteTransaction trans(FROM_HERE, test_user_share_.user_share());
 
   // Stress the immediate children of other_node because that's where
   // ApplyModelChanges puts a temporary foster parent node.
@@ -739,7 +740,7 @@ TEST_F(ProfileSyncServiceBookmarkTest, ServerChangeWithNonCanonicalURL) {
   StartSync();
 
   {
-    sync_api::WriteTransaction trans(test_user_share_.user_share());
+    sync_api::WriteTransaction trans(FROM_HERE, test_user_share_.user_share());
 
     FakeServerChange adds(&trans);
     std::string url("http://dev.chromium.org");
@@ -770,7 +771,7 @@ TEST_F(ProfileSyncServiceBookmarkTest, DISABLED_ServerChangeWithInvalidURL) {
 
   int child_count = 0;
   {
-    sync_api::WriteTransaction trans(test_user_share_.user_share());
+    sync_api::WriteTransaction trans(FROM_HERE, test_user_share_.user_share());
 
     FakeServerChange adds(&trans);
     std::string url("x");
@@ -887,7 +888,7 @@ TEST_F(ProfileSyncServiceBookmarkTest, UnrecoverableErrorSuspendsService) {
   // updating the ProfileSyncService state.  This should introduce
   // inconsistency between the two models.
   {
-    sync_api::WriteTransaction trans(test_user_share_.user_share());
+    sync_api::WriteTransaction trans(FROM_HERE, test_user_share_.user_share());
     sync_api::WriteNode sync_node(&trans);
     ASSERT_TRUE(InitSyncNodeFromChromeNode(node, &sync_node));
     sync_node.Remove();

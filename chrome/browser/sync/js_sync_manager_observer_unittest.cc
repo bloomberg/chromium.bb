@@ -7,6 +7,7 @@
 #include <cstddef>
 
 #include "base/basictypes.h"
+#include "base/tracked.h"
 #include "base/values.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/js_arg_list.h"
@@ -222,7 +223,7 @@ namespace {
 // Makes a node of the given model type.  Returns the id of the
 // newly-created node.
 int64 MakeNode(sync_api::UserShare* share, syncable::ModelType model_type) {
-  sync_api::WriteTransaction trans(share);
+  sync_api::WriteTransaction trans(FROM_HERE, share);
   sync_api::ReadNode root_node(&trans);
   root_node.InitByRootLookup();
   sync_api::WriteNode node(&trans);
@@ -264,7 +265,7 @@ TEST_F(JsSyncManagerObserverTest, OnChangesApplied) {
         break;
     }
     {
-      sync_api::ReadTransaction trans(test_user_share.user_share());
+      sync_api::ReadTransaction trans(FROM_HERE, test_user_share.user_share());
       sync_api::ReadNode node(&trans);
       EXPECT_TRUE(node.InitByIdLookup(changes[i].id));
       changes[i].specifics = node.GetEntry()->Get(syncable::SPECIFICS);
@@ -285,7 +286,7 @@ TEST_F(JsSyncManagerObserverTest, OnChangesApplied) {
     ListValue* expected_changes = new ListValue();
     expected_details.Set("changes", expected_changes);
     for (int j = i; j < syncable::MODEL_TYPE_COUNT; ++j) {
-      sync_api::ReadTransaction trans(test_user_share.user_share());
+      sync_api::ReadTransaction trans(FROM_HERE, test_user_share.user_share());
       expected_changes->Append(changes[j].ToValue(&trans));
     }
     EXPECT_CALL(mock_router_,
@@ -296,7 +297,7 @@ TEST_F(JsSyncManagerObserverTest, OnChangesApplied) {
   // Fire OnChangesApplied() for each data type.
   for (int i = syncable::AUTOFILL_PROFILE;
        i < syncable::MODEL_TYPE_COUNT; ++i) {
-    sync_api::ReadTransaction trans(test_user_share.user_share());
+    sync_api::ReadTransaction trans(FROM_HERE, test_user_share.user_share());
     sync_manager_observer_.OnChangesApplied(syncable::ModelTypeFromInt(i),
                                             &trans, &changes[i],
                                             syncable::MODEL_TYPE_COUNT - i);

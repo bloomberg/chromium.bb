@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/tracked.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_sync_data.h"
 #include "chrome/browser/sync/engine/syncapi.h"
@@ -21,7 +22,7 @@ bool RootNodeHasChildren(const char* tag,
                          bool* has_children) {
   CHECK(has_children);
   *has_children = false;
-  sync_api::ReadTransaction trans(user_share);
+  sync_api::ReadTransaction trans(FROM_HERE, user_share);
   sync_api::ReadNode node(&trans);
   if (!node.InitByTagLookup(tag)) {
     LOG(ERROR) << "Root node with tag " << tag << " does not exist";
@@ -71,7 +72,7 @@ bool SlurpServerData(
     const ExtensionSpecificsGetter extension_specifics_getter,
     sync_api::UserShare* user_share,
     ExtensionDataMap* extension_data_map) {
-  sync_api::WriteTransaction trans(user_share);
+  sync_api::WriteTransaction trans(FROM_HERE, user_share);
   sync_api::ReadNode root(&trans);
   if (!root.InitByTagLookup(root_node_tag)) {
     LOG(ERROR) << GetRootNodeDoesNotExistError(root_node_tag);
@@ -154,7 +155,7 @@ bool FlushExtensionData(const ExtensionSyncTraits& traits,
                         const ExtensionDataMap& extension_data_map,
                         ExtensionServiceInterface* extension_service,
                         sync_api::UserShare* user_share) {
-  sync_api::WriteTransaction trans(user_share);
+  sync_api::WriteTransaction trans(FROM_HERE, user_share);
   sync_api::ReadNode root(&trans);
   if (!root.InitByTagLookup(traits.root_node_tag)) {
     LOG(ERROR) << GetRootNodeDoesNotExistError(traits.root_node_tag);
@@ -192,7 +193,7 @@ bool UpdateServerData(const ExtensionSyncTraits& traits,
     return false;
   }
 
-  sync_api::WriteTransaction trans(user_share);
+  sync_api::WriteTransaction trans(FROM_HERE, user_share);
   if (!UpdateServer(traits, data, &trans)) {
     *error =
         std::string("Could not update server data for extension ") + id;
@@ -205,7 +206,7 @@ bool UpdateServerData(const ExtensionSyncTraits& traits,
 void RemoveServerData(const ExtensionSyncTraits& traits,
                       const std::string& id,
                       sync_api::UserShare* user_share) {
-  sync_api::WriteTransaction trans(user_share);
+  sync_api::WriteTransaction trans(FROM_HERE, user_share);
   sync_api::WriteNode write_node(&trans);
   if (write_node.InitByClientTagLookup(traits.model_type, id)) {
     write_node.Remove();

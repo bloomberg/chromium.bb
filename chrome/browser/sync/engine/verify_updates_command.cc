@@ -35,7 +35,7 @@ void VerifyUpdatesCommand::ModelChangingExecuteImpl(
     LOG(ERROR) << "Scoped dir lookup failed!";
     return;
   }
-  WriteTransaction trans(dir, SYNCER, FROM_HERE);
+  WriteTransaction trans(FROM_HERE, SYNCER, dir);
   sessions::StatusController* status = session->status_controller();
   const GetUpdatesResponse& updates = status->updates_response().get_updates();
   int update_count = updates.entries().size();

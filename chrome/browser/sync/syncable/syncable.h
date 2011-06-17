@@ -1132,10 +1132,10 @@ class BaseTransaction {
   virtual ~BaseTransaction();
 
  protected:
-  BaseTransaction(Directory* directory,
+  BaseTransaction(const tracked_objects::Location& from_here,
                   const char* name,
-                  const tracked_objects::Location& from_here,
-                  WriterTag writer);
+                  WriterTag writer,
+                  Directory* directory);
 
   void UnlockAndLog(OriginalEntries* entries);
   virtual bool NotifyTransactionChangingAndEnding(
@@ -1143,12 +1143,12 @@ class BaseTransaction {
       ModelTypeBitSet* models_with_changes);
   virtual void NotifyTransactionComplete(ModelTypeBitSet models_with_changes);
 
+  const tracked_objects::Location from_here_;
+  const char* const name_;
+  WriterTag writer_;
   Directory* const directory_;
   Directory::Kernel* const dirkernel_;  // for brevity
-  const char* const name_;
   base::TimeTicks time_acquired_;
-  const tracked_objects::Location from_here_;
-  WriterTag writer_;
 
  private:
   void Lock();
@@ -1159,10 +1159,10 @@ class BaseTransaction {
 // Locks db in constructor, unlocks in destructor.
 class ReadTransaction : public BaseTransaction {
  public:
-  ReadTransaction(Directory* directory,
-                  const tracked_objects::Location& from_here);
-  ReadTransaction(const ScopedDirLookup& scoped_dir,
-                  const tracked_objects::Location& from_here);
+  ReadTransaction(const tracked_objects::Location& from_here,
+                  Directory* directory);
+  ReadTransaction(const tracked_objects::Location& from_here,
+                  const ScopedDirLookup& scoped_dir);
 
   virtual ~ReadTransaction();
 
@@ -1177,10 +1177,11 @@ class ReadTransaction : public BaseTransaction {
 class WriteTransaction : public BaseTransaction {
   friend class MutableEntry;
  public:
-  WriteTransaction(Directory* directory, WriterTag writer,
-                  const tracked_objects::Location& from_here);
-  WriteTransaction(const ScopedDirLookup& directory, WriterTag writer,
-                   const tracked_objects::Location& from_here);
+  WriteTransaction(const tracked_objects::Location& from_here,
+                   WriterTag writer, Directory* directory);
+  WriteTransaction(const tracked_objects::Location& from_here,
+                   WriterTag writer, const ScopedDirLookup& directory);
+
   virtual ~WriteTransaction();
 
   void SaveOriginal(EntryKernel* entry);

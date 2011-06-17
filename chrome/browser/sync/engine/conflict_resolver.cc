@@ -433,7 +433,7 @@ bool ConflictResolver::LogAndSignalIfConflictStuck(
 
 bool ConflictResolver::ResolveSimpleConflicts(const ScopedDirLookup& dir,
                                               StatusController* status) {
-  WriteTransaction trans(dir, syncable::SYNCER, FROM_HERE);
+  WriteTransaction trans(FROM_HERE, syncable::SYNCER, dir);
   bool forward_progress = false;
   const ConflictProgress& progress = status->conflict_progress();
   // First iterate over simple conflict items (those that belong to no set).
@@ -478,7 +478,7 @@ bool ConflictResolver::ResolveConflicts(const ScopedDirLookup& dir,
   bool rv = false;
   if (ResolveSimpleConflicts(dir, status))
     rv = true;
-  WriteTransaction trans(dir, syncable::SYNCER, FROM_HERE);
+  WriteTransaction trans(FROM_HERE, syncable::SYNCER, dir);
   set<ConflictSet*>::const_iterator set_it;
   for (set_it = progress.ConflictSetsBegin();
        set_it != progress.ConflictSetsEnd();

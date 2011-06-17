@@ -10,6 +10,7 @@
 #include "base/string16.h"
 #include "base/threading/thread.h"
 #include "base/time.h"
+#include "base/tracked.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_types.h"
@@ -196,7 +197,7 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
 
   void AddTypedUrlSyncNode(const history::URLRow& url,
                            const history::VisitVector& visits) {
-    sync_api::WriteTransaction trans(service_->GetUserShare());
+    sync_api::WriteTransaction trans(FROM_HERE, service_->GetUserShare());
     sync_api::ReadNode typed_url_root(&trans);
     ASSERT_TRUE(typed_url_root.InitByTagLookup(browser_sync::kTypedUrlTag));
 
@@ -209,7 +210,7 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
   }
 
   void GetTypedUrlsFromSyncDB(std::vector<history::URLRow>* urls) {
-    sync_api::ReadTransaction trans(service_->GetUserShare());
+    sync_api::ReadTransaction trans(FROM_HERE, service_->GetUserShare());
     sync_api::ReadNode typed_url_root(&trans);
     if (!typed_url_root.InitByTagLookup(browser_sync::kTypedUrlTag))
       return;

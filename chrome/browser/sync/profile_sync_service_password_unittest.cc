@@ -10,6 +10,7 @@
 #include "base/task.h"
 #include "base/test/test_timeouts.h"
 #include "base/time.h"
+#include "base/tracked.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -86,7 +87,8 @@ ACTION_P3(MakePasswordSyncComponents, service, ps, dtc) {
 ACTION_P(AcquireSyncTransaction, password_test_service) {
   // Check to make sure we can aquire a transaction (will crash if a transaction
   // is already held by this thread, deadlock if held by another thread).
-  sync_api::WriteTransaction trans(password_test_service->GetUserShare());
+  sync_api::WriteTransaction trans(
+      FROM_HERE, password_test_service->GetUserShare());
   VLOG(1) << "Sync transaction acquired.";
 }
 
@@ -238,7 +240,7 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
   }
 
   void AddPasswordSyncNode(const PasswordForm& entry) {
-    sync_api::WriteTransaction trans(service_->GetUserShare());
+    sync_api::WriteTransaction trans(FROM_HERE, service_->GetUserShare());
     sync_api::ReadNode password_root(&trans);
     ASSERT_TRUE(password_root.InitByTagLookup(browser_sync::kPasswordTag));
 
@@ -251,7 +253,7 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
   }
 
   void GetPasswordEntriesFromSyncDB(std::vector<PasswordForm>* entries) {
-    sync_api::ReadTransaction trans(service_->GetUserShare());
+    sync_api::ReadTransaction trans(FROM_HERE, service_->GetUserShare());
     sync_api::ReadNode password_root(&trans);
     ASSERT_TRUE(password_root.InitByTagLookup(browser_sync::kPasswordTag));
 

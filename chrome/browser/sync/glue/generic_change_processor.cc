@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync/glue/generic_change_processor.h"
 
+#include "base/tracked.h"
 #include "chrome/browser/sync/api/syncable_service.h"
 #include "chrome/browser/sync/api/sync_change.h"
 #include "chrome/browser/sync/engine/syncapi.h"
@@ -68,7 +69,7 @@ void GenericChangeProcessor::CommitChangesFromSyncModel() {
     return;
   if (syncer_changes_.empty())
     return;
-  local_service_->ProcessSyncChanges(syncer_changes_);
+  local_service_->ProcessSyncChanges(FROM_HERE, syncer_changes_);
   syncer_changes_.clear();
 }
 
@@ -76,7 +77,7 @@ bool GenericChangeProcessor::GetSyncDataForType(
     syncable::ModelType type,
     SyncDataList* current_sync_data) {
   std::string type_name = syncable::ModelTypeToString(type);
-  sync_api::ReadTransaction trans(share_handle());
+  sync_api::ReadTransaction trans(FROM_HERE, share_handle());
   sync_api::ReadNode root(&trans);
   if (!root.InitByTagLookup(syncable::ModelTypeToRootTag(type))) {
     LOG(ERROR) << "Server did not create the top-level " + type_name + " node."
@@ -99,8 +100,9 @@ bool GenericChangeProcessor::GetSyncDataForType(
 }
 
 void GenericChangeProcessor::ProcessSyncChanges(
+    const tracked_objects::Location& from_here,
     const SyncChangeList& list_of_changes) {
-  sync_api::WriteTransaction trans(share_handle());
+  sync_api::WriteTransaction trans(from_here, share_handle());
 
   for (SyncChangeList::const_iterator iter = list_of_changes.begin();
        iter != list_of_changes.end();
@@ -171,7 +173,7 @@ bool GenericChangeProcessor::SyncModelHasUserCreatedNodes(
   std::string err_str = "Server did not create the top-level " + type_name +
       " node. We might be running against an out-of-date server.";
   *has_nodes = false;
-  sync_api::ReadTransaction trans(share_handle());
+  sync_api::ReadTransaction trans(FROM_HERE, share_handle());
   sync_api::ReadNode type_root_node(&trans);
   if (!type_root_node.InitByTagLookup(syncable::ModelTypeToRootTag(type))) {
     LOG(ERROR) << err_str;
@@ -187,7 +189,7 @@ bool GenericChangeProcessor::SyncModelHasUserCreatedNodes(
 bool GenericChangeProcessor::CryptoReadyIfNecessary(syncable::ModelType type) {
   DCHECK_NE(type, syncable::UNSPECIFIED);
   // We only access the cryptographer while holding a transaction.
-  sync_api::ReadTransaction trans(share_handle());
+  sync_api::ReadTransaction trans(FROM_HERE, share_handle());
   const syncable::ModelTypeSet& encrypted_types =
       GetEncryptedTypes(&trans);
   return encrypted_types.count(type) == 0 ||

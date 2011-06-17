@@ -5,6 +5,7 @@
 #include "chrome/browser/sync/glue/typed_url_change_processor.h"
 
 #include "base/string_util.h"
+#include "base/tracked.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/history_notifications.h"
@@ -84,7 +85,7 @@ void TypedUrlChangeProcessor::HandleURLsModified(
     }
   }
 
-  sync_api::WriteTransaction trans(share_handle());
+  sync_api::WriteTransaction trans(FROM_HERE, share_handle());
 
   sync_api::ReadNode typed_url_root(&trans);
   if (!typed_url_root.InitByTagLookup(kTypedUrlTag)) {
@@ -125,7 +126,7 @@ void TypedUrlChangeProcessor::HandleURLsModified(
 
 void TypedUrlChangeProcessor::HandleURLsDeleted(
     history::URLsDeletedDetails* details) {
-  sync_api::WriteTransaction trans(share_handle());
+  sync_api::WriteTransaction trans(FROM_HERE, share_handle());
 
   if (details->all_history) {
     if (!model_associator_->DeleteAllNodes(&trans)) {
@@ -164,7 +165,7 @@ void TypedUrlChangeProcessor::HandleURLsVisited(
     return;
   }
 
-  sync_api::WriteTransaction trans(share_handle());
+  sync_api::WriteTransaction trans(FROM_HERE, share_handle());
   std::string tag = details->row.url().spec();
   sync_api::WriteNode update_node(&trans);
   if (!update_node.InitByClientTagLookup(syncable::TYPED_URLS, tag)) {

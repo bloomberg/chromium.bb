@@ -11,6 +11,7 @@
 #include "base/file_util.h"
 #include "base/task.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/tracked.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -312,7 +313,7 @@ void SyncBackendHost::SetAutofillMigrationDebugInfo(
 
 void SyncBackendHost::ConfigureAutofillMigration() {
   if (GetAutofillMigrationState() == syncable::NOT_DETERMINED) {
-    sync_api::ReadTransaction trans(GetUserShare());
+    sync_api::ReadTransaction trans(FROM_HERE, GetUserShare());
     sync_api::ReadNode autofil_root_node(&trans);
 
     // Check for the presence of autofill node.

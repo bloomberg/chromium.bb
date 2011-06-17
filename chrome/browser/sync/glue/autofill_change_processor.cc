@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/string_util.h"
+#include "base/tracked.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -67,7 +68,7 @@ void AutofillChangeProcessor::Observe(NotificationType type,
   if (!observing_)
     return;
 
-  sync_api::WriteTransaction trans(share_handle());
+  sync_api::WriteTransaction trans(FROM_HERE, share_handle());
   sync_api::ReadNode autofill_root(&trans);
   if (!autofill_root.InitByTagLookup(kAutofillTag)) {
     error_handler()->OnUnrecoverableError(FROM_HERE,

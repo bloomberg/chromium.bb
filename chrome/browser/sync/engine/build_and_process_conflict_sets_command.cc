@@ -44,7 +44,7 @@ bool BuildAndProcessConflictSetsCommand::BuildAndProcessConflictSets(
     return false;
   bool had_single_direction_sets = false;
   {  // Scope for transaction.
-    syncable::WriteTransaction trans(dir, syncable::SYNCER, FROM_HERE);
+    syncable::WriteTransaction trans(FROM_HERE, syncable::SYNCER, dir);
     BuildConflictSets(&trans,
         session->status_controller()->mutable_conflict_progress());
     had_single_direction_sets = ProcessSingleDirectionConflictSets(&trans,

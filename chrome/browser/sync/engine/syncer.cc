@@ -168,7 +168,7 @@ void Syncer::SyncShare(sessions::SyncSession* session,
           LOG(ERROR) << "Scoped dir lookup failed!";
           return;
         }
-        WriteTransaction trans(dir, SYNCER, FROM_HERE);
+        WriteTransaction trans(FROM_HERE, SYNCER, dir);
         sessions::ScopedSetSessionWriteTransaction set_trans(session, &trans);
 
         VLOG(1) << "Getting the Commit IDs";

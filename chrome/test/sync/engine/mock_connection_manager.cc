@@ -98,7 +98,7 @@ bool MockConnectionManager::PostBufferToPath(const PostBufferParams* params,
   // when there's an issue.
   if (post.message_contents() != ClientToServerMessage::AUTHENTICATE) {
     CHECK(directory.good());
-    WriteTransaction wt(directory, syncable::UNITTEST, FROM_HERE);
+    WriteTransaction wt(FROM_HERE, syncable::UNITTEST, directory);
   }
 
   if (fail_next_postbuffer_) {

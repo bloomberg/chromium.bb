@@ -137,7 +137,7 @@ void ProcessCommitResponseCommand::ProcessCommitResponse(
   ConflictProgress* conflict_progress = status->mutable_conflict_progress();
   OrderedCommitSet::Projection proj = status->commit_id_projection();
   if (!proj.empty()) { // Scope for WriteTransaction.
-    WriteTransaction trans(dir, SYNCER, FROM_HERE);
+    WriteTransaction trans(FROM_HERE, SYNCER, dir);
     for (size_t i = 0; i < proj.size(); i++) {
       CommitResponse::ResponseType response_type =
           ProcessSingleCommitResponse(&trans, cr.entryresponse(proj[i]),

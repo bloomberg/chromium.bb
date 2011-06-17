@@ -654,7 +654,7 @@ bool Directory::SafeToPurgeFromMemory(const EntryKernel* const entry) const {
 }
 
 void Directory::TakeSnapshotForSaveChanges(SaveChangesSnapshot* snapshot) {
-  ReadTransaction trans(this, FROM_HERE);
+  ReadTransaction trans(FROM_HERE, this);
   ScopedKernelLock lock(this);
   // Deep copy dirty entries from kernel_->metahandles_index into snapshot and
   // clear dirty flags.
@@ -712,7 +712,7 @@ bool Directory::SaveChanges() {
 
 void Directory::VacuumAfterSaveChanges(const SaveChangesSnapshot& snapshot) {
   // Need a write transaction as we are about to permanently purge entries.
-  WriteTransaction trans(this, VACUUM_AFTER_SAVE, FROM_HERE);
+  WriteTransaction trans(FROM_HERE, VACUUM_AFTER_SAVE, this);
   ScopedKernelLock lock(this);
   kernel_->flushed_metahandles.Push(0);  // Begin flush marker
   // Now drop everything we can out of memory.
@@ -753,7 +753,7 @@ void Directory::PurgeEntriesWithTypeIn(const std::set<ModelType>& types) {
     return;
 
   {
-    WriteTransaction trans(this, PURGE_ENTRIES, FROM_HERE);
+    WriteTransaction trans(FROM_HERE, PURGE_ENTRIES, this);
     {
       ScopedKernelLock lock(this);
       MetahandlesIndex::iterator it = kernel_->metahandles_index->begin();
@@ -1199,11 +1199,12 @@ void BaseTransaction::Lock() {
       << elapsed.InSecondsF() << " seconds.";
 }
 
-BaseTransaction::BaseTransaction(
-    Directory* directory, const char* name,
-    const tracked_objects::Location& from_here, WriterTag writer)
-  : directory_(directory), dirkernel_(directory->kernel_), name_(name),
-    from_here_(from_here), writer_(writer) {
+BaseTransaction::BaseTransaction(const tracked_objects::Location& from_here,
+                                 const char* name,
+                                 WriterTag writer,
+                                 Directory* directory)
+    : from_here_(from_here), name_(name), writer_(writer),
+      directory_(directory), dirkernel_(directory->kernel_) {
   dirkernel_->observers->Notify(
       &TransactionObserver::OnTransactionStart, from_here_, writer_);
   Lock();
@@ -1272,31 +1273,31 @@ void BaseTransaction::NotifyTransactionComplete(
 
 #undef VLOG_LOC_STREAM
 
-ReadTransaction::ReadTransaction(Directory* directory,
-                                 const tracked_objects::Location& location)
-  : BaseTransaction(directory, "Read", location, INVALID) {
+ReadTransaction::ReadTransaction(const tracked_objects::Location& location,
+                                 Directory* directory)
+    : BaseTransaction(location, "Read", INVALID, directory) {
 }
 
-ReadTransaction::ReadTransaction(const ScopedDirLookup& scoped_dir,
-                                 const tracked_objects::Location& location)
-  : BaseTransaction(scoped_dir.operator -> (), "Read", location, INVALID) {
+ReadTransaction::ReadTransaction(const tracked_objects::Location& location,
+                                 const ScopedDirLookup& scoped_dir)
+    : BaseTransaction(location, "Read", INVALID, scoped_dir.operator->()) {
 }
 
 ReadTransaction::~ReadTransaction() {
   UnlockAndLog(NULL);
 }
 
-WriteTransaction::WriteTransaction(Directory* directory, WriterTag writer,
-                                   const tracked_objects::Location& location)
-  : BaseTransaction(directory, "Write", location, writer),
-    originals_(new OriginalEntries) {
+WriteTransaction::WriteTransaction(const tracked_objects::Location& location,
+                                   WriterTag writer, Directory* directory)
+    : BaseTransaction(location, "Write", writer, directory),
+      originals_(new OriginalEntries) {
 }
 
-WriteTransaction::WriteTransaction(const ScopedDirLookup& scoped_dir,
+WriteTransaction::WriteTransaction(const tracked_objects::Location& location,
                                    WriterTag writer,
-                                   const tracked_objects::Location& location)
-  : BaseTransaction(scoped_dir.operator -> (), "Write", location, writer),
-    originals_(new OriginalEntries) {
+                                   const ScopedDirLookup& scoped_dir)
+    : BaseTransaction(location, "Write", writer, scoped_dir.operator->()),
+      originals_(new OriginalEntries) {
 }
 
 void WriteTransaction::SaveOriginal(EntryKernel* entry) {

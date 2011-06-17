@@ -91,7 +91,7 @@ class ProcessCommitResponseCommandTestWithParam
                           int64* metahandle_out) {
     ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
     ASSERT_TRUE(dir.good());
-    WriteTransaction trans(dir, UNITTEST, FROM_HERE);
+    WriteTransaction trans(FROM_HERE, UNITTEST, dir);
     Id predecessor_id = dir->GetLastChildId(&trans, parent_id);
     MutableEntry entry(&trans, syncable::CREATE, parent_id, name);
     ASSERT_TRUE(entry.good());
@@ -137,7 +137,7 @@ class ProcessCommitResponseCommandTestWithParam
 
     ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
     ASSERT_TRUE(dir.good());
-    WriteTransaction trans(dir, UNITTEST, FROM_HERE);
+    WriteTransaction trans(FROM_HERE, UNITTEST, dir);
     MutableEntry entry(&trans, syncable::GET_BY_ID, item_id);
     ASSERT_TRUE(entry.good());
     entry.Put(syncable::SYNCING, true);
@@ -233,7 +233,7 @@ TEST_F(ProcessCommitResponseCommandTest, MultipleCommitIdProjections) {
 
   ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
   ASSERT_TRUE(dir.good());
-  ReadTransaction trans(dir, FROM_HERE);
+  ReadTransaction trans(FROM_HERE, dir);
   Id new_fid = dir->GetFirstChildId(&trans, id_factory_.root());
   ASSERT_FALSE(new_fid.IsRoot());
   EXPECT_TRUE(new_fid.ServerKnows());
@@ -287,7 +287,7 @@ TEST_F(ProcessCommitResponseCommandTest, NewFolderCommitKeepsChildOrder) {
   {
     ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
     ASSERT_TRUE(dir.good());
-    ReadTransaction trans(dir, FROM_HERE);
+    ReadTransaction trans(FROM_HERE, dir);
     ASSERT_EQ(folder_id, dir->GetFirstChildId(&trans, id_factory_.root()));
   }
 
@@ -320,7 +320,7 @@ TEST_F(ProcessCommitResponseCommandTest, NewFolderCommitKeepsChildOrder) {
 
   ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
   ASSERT_TRUE(dir.good());
-  ReadTransaction trans(dir, FROM_HERE);
+  ReadTransaction trans(FROM_HERE, dir);
   // Lookup the parent folder by finding a child of the root.  We can't use
   // folder_id here, because it changed during the commit.
   Id new_fid = dir->GetFirstChildId(&trans, id_factory_.root());

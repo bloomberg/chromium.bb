@@ -8,6 +8,7 @@
 
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/api/sync_change_processor.h"
 #include "chrome/browser/sync/api/sync_data.h"
@@ -39,7 +40,9 @@ class SyncableService : public SyncChangeProcessor {
 
   // SyncChangeProcessor interface.
   // Process a list of new SyncChanges and update the local data as necessary.
-  virtual void ProcessSyncChanges(const SyncChangeList& change_list) = 0;
+  virtual void ProcessSyncChanges(
+      const tracked_objects::Location& from_here,
+      const SyncChangeList& change_list) OVERRIDE = 0;
 
  protected:
   virtual ~SyncableService();

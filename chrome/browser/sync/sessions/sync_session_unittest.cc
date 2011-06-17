@@ -124,7 +124,7 @@ TEST_F(SyncSessionTest, SetWriteTransaction) {
   scoped_ptr<SyncSession> session(MakeSession());
   EXPECT_TRUE(NULL == session->write_transaction());
   {
-    WriteTransaction trans(dir, syncable::UNITTEST, FROM_HERE);
+    WriteTransaction trans(FROM_HERE, syncable::UNITTEST, dir);
     sessions::ScopedSetSessionWriteTransaction set_trans(session.get(), &trans);
     EXPECT_TRUE(&trans == session->write_transaction());
   }

@@ -5,6 +5,7 @@
 #include "chrome/browser/sync/glue/app_model_associator.h"
 
 #include "base/logging.h"
+#include "base/tracked.h"
 #include "chrome/browser/extensions/extension_sync_data.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/extension_sync_traits.h"
@@ -63,7 +64,7 @@ void AppModelAssociator::AbortAssociation() {
 
 bool AppModelAssociator::CryptoReadyIfNecessary() {
   // We only access the cryptographer while holding a transaction.
-  sync_api::ReadTransaction trans(user_share_);
+  sync_api::ReadTransaction trans(FROM_HERE, user_share_);
   const syncable::ModelTypeSet& encrypted_types =
       sync_api::GetEncryptedTypes(&trans);
   return encrypted_types.count(traits_.model_type) == 0 ||

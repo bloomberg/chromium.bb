@@ -10,6 +10,7 @@
 #include "base/hash_tables.h"
 #include "base/message_loop.h"
 #include "base/task.h"
+#include "base/tracked.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/profiles/profile.h"
@@ -249,7 +250,7 @@ bool BookmarkModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
     has_synced_folder = false;
   }
 
-  sync_api::ReadTransaction trans(user_share_);
+  sync_api::ReadTransaction trans(FROM_HERE, user_share_);
 
   sync_api::ReadNode bookmark_bar_node(&trans);
   if (!bookmark_bar_node.InitByIdLookup(bookmark_bar_sync_id)) {
@@ -307,7 +308,7 @@ bool BookmarkModelAssociator::AssociateTaggedPermanentNode(
 
 bool BookmarkModelAssociator::GetSyncIdForTaggedNode(const std::string& tag,
                                                      int64* sync_id) {
-  sync_api::ReadTransaction trans(user_share_);
+  sync_api::ReadTransaction trans(FROM_HERE, user_share_);
   sync_api::ReadNode sync_node(&trans);
   if (!sync_node.InitByTagLookup(tag.c_str()))
     return false;
@@ -391,7 +392,7 @@ bool BookmarkModelAssociator::BuildAssociations() {
   dfs_stack.push(other_bookmarks_sync_id);
   dfs_stack.push(bookmark_bar_sync_id);
 
-  sync_api::WriteTransaction trans(user_share_);
+  sync_api::WriteTransaction trans(FROM_HERE, user_share_);
 
   while (!dfs_stack.empty()) {
     int64 sync_parent_id = dfs_stack.top();
@@ -478,7 +479,7 @@ void BookmarkModelAssociator::PersistAssociations() {
     return;
   }
 
-  sync_api::WriteTransaction trans(user_share_);
+  sync_api::WriteTransaction trans(FROM_HERE, user_share_);
   DirtyAssociationsSyncIds::iterator iter;
   for (iter = dirty_associations_sync_ids_.begin();
        iter != dirty_associations_sync_ids_.end();
@@ -542,7 +543,7 @@ bool BookmarkModelAssociator::LoadAssociations() {
   dfs_stack.push(other_bookmarks_id);
   dfs_stack.push(bookmark_bar_id);
 
-  sync_api::ReadTransaction trans(user_share_);
+  sync_api::ReadTransaction trans(FROM_HERE, user_share_);
 
   // Count total number of nodes in sync model so that we can compare that
   // with the total number of nodes in the bookmark model.
@@ -597,7 +598,7 @@ bool BookmarkModelAssociator::LoadAssociations() {
 
 bool BookmarkModelAssociator::CryptoReadyIfNecessary() {
   // We only access the cryptographer while holding a transaction.
-  sync_api::ReadTransaction trans(user_share_);
+  sync_api::ReadTransaction trans(FROM_HERE, user_share_);
   const syncable::ModelTypeSet& encrypted_types =
       sync_api::GetEncryptedTypes(&trans);
   return encrypted_types.count(syncable::BOOKMARKS) == 0 ||

@@ -5,6 +5,7 @@
 #include "chrome/browser/sync/glue/theme_change_processor.h"
 
 #include "base/logging.h"
+#include "base/tracked.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/theme_util.h"
@@ -33,7 +34,7 @@ void ThemeChangeProcessor::Observe(NotificationType type,
   DCHECK(profile_);
   DCHECK(type == NotificationType::BROWSER_THEME_CHANGED);
 
-  sync_api::WriteTransaction trans(share_handle());
+  sync_api::WriteTransaction trans(FROM_HERE, share_handle());
   sync_api::WriteNode node(&trans);
   if (!node.InitByClientTagLookup(syncable::THEMES,
                                   kCurrentThemeClientTag)) {

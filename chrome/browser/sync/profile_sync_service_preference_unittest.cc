@@ -9,6 +9,7 @@
 #include "base/stl_util-inl.h"
 #include "base/string_piece.h"
 #include "base/task.h"
+#include "base/tracked.h"
 #include "chrome/browser/prefs/pref_model_associator.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/sync/abstract_profile_sync_service_test.h"
@@ -124,7 +125,7 @@ class ProfileSyncServicePreferenceTest
 
   // Caller gets ownership of the returned value.
   const Value* GetSyncedValue(const std::string& name) {
-    sync_api::ReadTransaction trans(service_->GetUserShare());
+    sync_api::ReadTransaction trans(FROM_HERE, service_->GetUserShare());
     sync_api::ReadNode node(&trans);
 
     if (!node.InitByClientTagLookup(syncable::PREFERENCES, name))
@@ -151,7 +152,7 @@ class ProfileSyncServicePreferenceTest
   }
 
   int64 SetSyncedValue(const std::string& name, const Value& value) {
-    sync_api::WriteTransaction trans(service_->GetUserShare());
+    sync_api::WriteTransaction trans(FROM_HERE, service_->GetUserShare());
     sync_api::ReadNode root(&trans);
     if (!root.InitByTagLookup(
         syncable::ModelTypeToRootTag(syncable::PREFERENCES))) {
@@ -385,7 +386,7 @@ TEST_F(ProfileSyncServicePreferenceTest, UpdatedSyncNodeActionUpdate) {
   scoped_ptr<SyncManager::ChangeRecord> record(MakeChangeRecord(
       node_id, SyncManager::ChangeRecord::ACTION_UPDATE));
   {
-    sync_api::WriteTransaction trans(service_->GetUserShare());
+    sync_api::WriteTransaction trans(FROM_HERE, service_->GetUserShare());
     change_processor_->ApplyChangesFromSyncModel(&trans, record.get(), 1);
   }
   change_processor_->CommitChangesFromSyncModel();
@@ -405,7 +406,7 @@ TEST_F(ProfileSyncServicePreferenceTest, UpdatedSyncNodeActionAdd) {
   scoped_ptr<SyncManager::ChangeRecord> record(MakeChangeRecord(
       node_id, SyncManager::ChangeRecord::ACTION_ADD));
   {
-    sync_api::WriteTransaction trans(service_->GetUserShare());
+    sync_api::WriteTransaction trans(FROM_HERE, service_->GetUserShare());
     change_processor_->ApplyChangesFromSyncModel(&trans, record.get(), 1);
   }
   change_processor_->CommitChangesFromSyncModel();
@@ -427,7 +428,7 @@ TEST_F(ProfileSyncServicePreferenceTest, UpdatedSyncNodeUnknownPreference) {
   scoped_ptr<SyncManager::ChangeRecord> record(MakeChangeRecord(
       node_id, SyncManager::ChangeRecord::ACTION_UPDATE));
   {
-    sync_api::WriteTransaction trans(service_->GetUserShare());
+    sync_api::WriteTransaction trans(FROM_HERE, service_->GetUserShare());
     change_processor_->ApplyChangesFromSyncModel(&trans, record.get(), 1);
   }
   change_processor_->CommitChangesFromSyncModel();
@@ -460,7 +461,7 @@ TEST_F(ProfileSyncServicePreferenceTest, ManagedPreferences) {
   scoped_ptr<SyncManager::ChangeRecord> record(MakeChangeRecord(
       node_id, SyncManager::ChangeRecord::ACTION_UPDATE));
   {
-    sync_api::WriteTransaction trans(service_->GetUserShare());
+    sync_api::WriteTransaction trans(FROM_HERE, service_->GetUserShare());
     change_processor_->ApplyChangesFromSyncModel(&trans, record.get(), 1);
   }
   change_processor_->CommitChangesFromSyncModel();
@@ -500,7 +501,7 @@ TEST_F(ProfileSyncServicePreferenceTest, DynamicManagedPreferences) {
   scoped_ptr<SyncManager::ChangeRecord> record(MakeChangeRecord(
       node_id, SyncManager::ChangeRecord::ACTION_ADD));
   {
-    sync_api::WriteTransaction trans(service_->GetUserShare());
+    sync_api::WriteTransaction trans(FROM_HERE, service_->GetUserShare());
     change_processor_->ApplyChangesFromSyncModel(&trans, record.get(), 1);
   }
   change_processor_->CommitChangesFromSyncModel();

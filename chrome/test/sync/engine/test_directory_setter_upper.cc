@@ -66,12 +66,12 @@ void TestDirectorySetterUpper::TearDown() {
 void TestDirectorySetterUpper::RunInvariantCheck(const ScopedDirLookup& dir) {
   {
     // Check invariants for in-memory items.
-    ReadTransaction trans(dir, FROM_HERE);
+    ReadTransaction trans(FROM_HERE, dir);
     dir->CheckTreeInvariants(&trans, false);
   }
   {
     // Check invariants for all items.
-    ReadTransaction trans(dir, FROM_HERE);
+    ReadTransaction trans(FROM_HERE, dir);
     dir->CheckTreeInvariants(&trans, true);
   }
 }

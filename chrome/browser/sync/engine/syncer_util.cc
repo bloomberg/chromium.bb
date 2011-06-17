@@ -660,7 +660,7 @@ void SyncerUtil::MarkDeletedChildrenSynced(
     return;
   Directory::UnsyncedMetaHandles handles;
   {
-    ReadTransaction trans(dir, FROM_HERE);
+    ReadTransaction trans(FROM_HERE, dir);
     dir->GetUnsyncedMetaHandles(&trans, &handles);
   }
   if (handles.empty())
@@ -668,7 +668,7 @@ void SyncerUtil::MarkDeletedChildrenSynced(
   Directory::UnsyncedMetaHandles::iterator it;
   for (it = handles.begin() ; it != handles.end() ; ++it) {
     // Single transaction / entry we deal with.
-    WriteTransaction trans(dir, SYNCER, FROM_HERE);
+    WriteTransaction trans(FROM_HERE, SYNCER, dir);
     MutableEntry entry(&trans, GET_BY_HANDLE, *it);
     if (!entry.Get(IS_UNSYNCED) || !entry.Get(IS_DEL))
       continue;

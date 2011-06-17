@@ -13,6 +13,6 @@ MockDirectory::MockDirectory() {
 MockDirectory::~MockDirectory() {}
 
 MockSyncableWriteTransaction::MockSyncableWriteTransaction(
-    Directory *directory)
-    : WriteTransaction(directory, syncable::UNITTEST, FROM_HERE) {
+    const tracked_objects::Location& from_here, Directory *directory)
+    : WriteTransaction(from_here, syncable::UNITTEST, directory) {
 }

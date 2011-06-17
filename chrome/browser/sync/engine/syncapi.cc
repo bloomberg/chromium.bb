@@ -964,11 +964,12 @@ bool ReadNode::InitByTagLookup(const std::string& tag) {
 
 //////////////////////////////////////////////////////////////////////////
 // ReadTransaction member definitions
-ReadTransaction::ReadTransaction(UserShare* share)
+ReadTransaction::ReadTransaction(const tracked_objects::Location& from_here,
+                                 UserShare* share)
     : BaseTransaction(share),
       transaction_(NULL),
       close_transaction_(true) {
-  transaction_ = new syncable::ReadTransaction(GetLookup(), FROM_HERE);
+  transaction_ = new syncable::ReadTransaction(from_here, GetLookup());
 }
 
 ReadTransaction::ReadTransaction(UserShare* share,
@@ -989,11 +990,12 @@ syncable::BaseTransaction* ReadTransaction::GetWrappedTrans() const {
 
 //////////////////////////////////////////////////////////////////////////
 // WriteTransaction member definitions
-WriteTransaction::WriteTransaction(UserShare* share)
+WriteTransaction::WriteTransaction(const tracked_objects::Location& from_here,
+                                   UserShare* share)
     : BaseTransaction(share),
       transaction_(NULL) {
-  transaction_ = new syncable::WriteTransaction(GetLookup(), syncable::SYNCAPI,
-                                                FROM_HERE);
+  transaction_ = new syncable::WriteTransaction(from_here, syncable::SYNCAPI,
+                                                GetLookup());
 }
 
 WriteTransaction::~WriteTransaction() {
@@ -1798,7 +1800,7 @@ bool SyncManager::SyncInternal::Init(
 void SyncManager::SyncInternal::BootstrapEncryption(
     const std::string& restored_key_for_bootstrapping) {
   // Cryptographer should only be accessed while holding a transaction.
-  ReadTransaction trans(GetUserShare());
+  ReadTransaction trans(FROM_HERE, GetUserShare());
   Cryptographer* cryptographer = trans.GetCryptographer();
 
   // Set the bootstrap token before bailing out if nigori node is not there.
@@ -1816,7 +1818,7 @@ bool SyncManager::SyncInternal::UpdateCryptographerFromNigori() {
   if (!lookup->initial_sync_ended_for_type(syncable::NIGORI))
     return false;  // Should only happen during first time sync.
 
-  ReadTransaction trans(GetUserShare());
+  ReadTransaction trans(FROM_HERE, GetUserShare());
   Cryptographer* cryptographer = trans.GetCryptographer();
 
   ReadNode node(&trans);
@@ -1965,7 +1967,7 @@ void SyncManager::SyncInternal::SetPassphrase(
   }
 
   // All accesses to the cryptographer are protected by a transaction.
-  WriteTransaction trans(GetUserShare());
+  WriteTransaction trans(FROM_HERE, GetUserShare());
   Cryptographer* cryptographer = trans.GetCryptographer();
   KeyParams params = {"localhost", "dummy", passphrase};
 
@@ -2027,7 +2029,7 @@ void SyncManager::SyncInternal::SetPassphrase(
 }
 
 bool SyncManager::SyncInternal::IsUsingExplicitPassphrase() {
-  ReadTransaction trans(&share_);
+  ReadTransaction trans(FROM_HERE, &share_);
   ReadNode node(&trans);
   if (!node.InitByTagLookup(kNigoriTag)) {
     // TODO(albertb): Plumb an UnrecoverableError all the way back to the PSS.
@@ -2044,7 +2046,7 @@ void SyncManager::SyncInternal::EncryptDataTypes(
   VLOG(1) << "Attempting to encrypt datatypes "
           << syncable::ModelTypeSetToString(encrypted_types);
 
-  WriteTransaction trans(GetUserShare());
+  WriteTransaction trans(FROM_HERE, GetUserShare());
   WriteNode node(&trans);
   if (!node.InitByTagLookup(kNigoriTag)) {
     NOTREACHED() << "Unable to set encrypted datatypes because Nigori node not "
@@ -2473,7 +2475,7 @@ void SyncManager::SyncInternal::OnSyncEngineEvent(
     {
       // Check to see if we need to notify the frontend that we have newly
       // encrypted types or that we require a passphrase.
-      sync_api::ReadTransaction trans(GetUserShare());
+      sync_api::ReadTransaction trans(FROM_HERE, GetUserShare());
       syncable::ModelTypeSet encrypted_types = GetEncryptedTypes(&trans);
       syncable::ModelTypeSet encrypted_and_enabled_types;
       for (syncable::ModelTypeSet::iterator iter = encrypted_types.begin();
@@ -2691,7 +2693,7 @@ browser_sync::JsArgList
 browser_sync::JsArgList
     SyncManager::SyncInternal::GetRootNodeDetails(
         const browser_sync::JsArgList& args) {
-  ReadTransaction trans(GetUserShare());
+  ReadTransaction trans(FROM_HERE, GetUserShare());
   ReadNode root(&trans);
   root.InitByRootLookup();
   ListValue return_args;
@@ -2722,7 +2724,7 @@ browser_sync::JsArgList GetNodeInfoById(
   ListValue* node_summaries = new ListValue();
   return_args.Append(node_summaries);
   ListValue* id_list = NULL;
-  ReadTransaction trans(user_share);
+  ReadTransaction trans(FROM_HERE, user_share);
   if (args.Get().GetList(0, &id_list)) {
     CHECK(id_list);
     for (size_t i = 0; i < id_list->GetSize(); ++i) {
@@ -2762,7 +2764,7 @@ browser_sync::JsArgList SyncManager::SyncInternal::
   return_args.Append(child_ids);
   int64 id = GetId(args.Get(), 0);
   if (id != kInvalidId) {
-    ReadTransaction trans(GetUserShare());
+    ReadTransaction trans(FROM_HERE, GetUserShare());
     syncable::Directory::ChildHandles child_handles;
     trans.GetLookup()->GetChildHandlesByHandle(trans.GetWrappedTrans(),
                                                id, &child_handles);
@@ -2793,7 +2795,7 @@ browser_sync::JsArgList SyncManager::SyncInternal::
   ListValue* result = new ListValue();
   return_args.Append(result);
 
-  ReadTransaction trans(GetUserShare());
+  ReadTransaction trans(FROM_HERE, GetUserShare());
   std::vector<const syncable::EntryKernel*> entry_kernels;
   trans.GetLookup()->GetAllEntryKernels(trans.GetWrappedTrans(),
                                         &entry_kernels);
@@ -2967,18 +2969,18 @@ void SyncManager::RefreshEncryption() {
 }
 
 syncable::ModelTypeSet SyncManager::GetEncryptedDataTypes() const {
-  sync_api::ReadTransaction trans(GetUserShare());
+  sync_api::ReadTransaction trans(FROM_HERE, GetUserShare());
   return GetEncryptedTypes(&trans);
 }
 
 bool SyncManager::HasUnsyncedItems() const {
-  sync_api::ReadTransaction trans(GetUserShare());
+  sync_api::ReadTransaction trans(FROM_HERE, GetUserShare());
   return (trans.GetWrappedTrans()->directory()->unsynced_entity_count() != 0);
 }
 
 void SyncManager::LogUnsyncedItems(int level) const {
   std::vector<int64> unsynced_handles;
-  sync_api::ReadTransaction trans(GetUserShare());
+  sync_api::ReadTransaction trans(FROM_HERE, GetUserShare());
   trans.GetWrappedTrans()->directory()->GetUnsyncedMetaHandles(
       trans.GetWrappedTrans(), &unsynced_handles);
 

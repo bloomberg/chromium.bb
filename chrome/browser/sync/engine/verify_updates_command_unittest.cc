@@ -44,7 +44,7 @@ class VerifyUpdatesCommandTest : public SyncerCommandTest {
                        const syncable::ModelType& type) {
     ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
     ASSERT_TRUE(dir.good());
-    WriteTransaction trans(dir, UNITTEST, FROM_HERE);
+    WriteTransaction trans(FROM_HERE, UNITTEST, dir);
     MutableEntry entry(&trans, syncable::CREATE_NEW_UPDATE_ITEM,
         Id::CreateFromServerId(item_id));
     ASSERT_TRUE(entry.good());

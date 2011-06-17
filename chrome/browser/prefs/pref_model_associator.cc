@@ -7,6 +7,7 @@
 #include "base/auto_reset.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
+#include "base/tracked.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/sync/api/sync_change.h"
@@ -159,7 +160,7 @@ bool PrefModelAssociator::MergeDataAndStartSyncing(
   }
 
   // Push updates to sync.
-  sync_processor_->ProcessSyncChanges(new_changes);
+  sync_processor_->ProcessSyncChanges(FROM_HERE, new_changes);
   models_associated_ = true;
   return true;
 }
@@ -310,6 +311,7 @@ SyncDataList PrefModelAssociator::GetAllSyncData(syncable::ModelType type)
 }
 
 void PrefModelAssociator::ProcessSyncChanges(
+    const tracked_objects::Location& from_here,
     const SyncChangeList& change_list) {
   if (!models_associated_)
     return;
@@ -454,5 +456,5 @@ void PrefModelAssociator::ProcessPrefChange(const std::string& name) {
     }
     changes.push_back(SyncChange(SyncChange::ACTION_UPDATE, sync_data));
   }
-  sync_processor_->ProcessSyncChanges(changes);
+  sync_processor_->ProcessSyncChanges(FROM_HERE, changes);
 }

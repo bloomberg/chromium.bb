@@ -48,7 +48,7 @@ bool ProfileSyncServiceTestHelper::CreateRoot(
 
   std::string tag_name = GetTagForType(model_type);
 
-  WriteTransaction wtrans(dir, UNITTEST, FROM_HERE);
+  WriteTransaction wtrans(FROM_HERE, UNITTEST, dir);
   MutableEntry node(&wtrans,
                     CREATE,
                     wtrans.root_id(),

@@ -10,6 +10,7 @@
 #include "base/string_number_conversions.h"
 #include "base/task.h"
 #include "base/time.h"
+#include "base/tracked.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/profiles/profile.h"
@@ -156,7 +157,7 @@ bool AutofillModelAssociator::AssociateModels() {
 
   DataBundle bundle;
   {
-    sync_api::WriteTransaction trans(sync_service_->GetUserShare());
+    sync_api::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
 
     sync_api::ReadNode autofill_root(&trans);
     if (!autofill_root.InitByTagLookup(kAutofillTag)) {
@@ -394,7 +395,7 @@ bool AutofillModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
                << "might be running against an out-of-date server.";
     return false;
   }
-  sync_api::ReadTransaction trans(sync_service_->GetUserShare());
+  sync_api::ReadTransaction trans(FROM_HERE, sync_service_->GetUserShare());
 
   sync_api::ReadNode autofill_node(&trans);
   if (!autofill_node.InitByIdLookup(autofill_sync_id)) {
@@ -454,7 +455,7 @@ void AutofillModelAssociator::Disassociate(int64 sync_id) {
 
 bool AutofillModelAssociator::GetSyncIdForTaggedNode(const std::string& tag,
                                                      int64* sync_id) {
-  sync_api::ReadTransaction trans(sync_service_->GetUserShare());
+  sync_api::ReadTransaction trans(FROM_HERE, sync_service_->GetUserShare());
   sync_api::ReadNode sync_node(&trans);
   if (!sync_node.InitByTagLookup(tag.c_str()))
     return false;
@@ -585,7 +586,7 @@ bool AutofillModelAssociator::HasNotMigratedYet(
 
 bool AutofillModelAssociator::CryptoReadyIfNecessary() {
   // We only access the cryptographer while holding a transaction.
-  sync_api::ReadTransaction trans(sync_service_->GetUserShare());
+  sync_api::ReadTransaction trans(FROM_HERE, sync_service_->GetUserShare());
   syncable::ModelTypeSet encrypted_types;
   encrypted_types = sync_api::GetEncryptedTypes(&trans);
   return encrypted_types.count(syncable::AUTOFILL) == 0 ||

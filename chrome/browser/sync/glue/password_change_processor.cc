@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/string_util.h"
+#include "base/tracked.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/password_manager/password_store_change.h"
@@ -54,7 +55,7 @@ void PasswordChangeProcessor::Observe(NotificationType type,
 
   DCHECK(running());
 
-  sync_api::WriteTransaction trans(share_handle());
+  sync_api::WriteTransaction trans(FROM_HERE, share_handle());
 
   sync_api::ReadNode password_root(&trans);
   if (!password_root.InitByTagLookup(kPasswordTag)) {

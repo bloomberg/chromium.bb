@@ -101,6 +101,10 @@ class ThemeSpecifics;
 class TypedUrlSpecifics;
 }
 
+namespace tracked_objects {
+class Location;
+}  // namespace tracked_objects
+
 namespace sync_api {
 
 class BaseTransaction;
@@ -552,7 +556,8 @@ class BaseTransaction {
 class ReadTransaction : public BaseTransaction {
  public:
   // Start a new read-only transaction on the specified repository.
-  explicit ReadTransaction(UserShare* share);
+  ReadTransaction(const tracked_objects::Location& from_here,
+                  UserShare* share);
 
   // Resume the middle of a transaction. Will not close transaction.
   ReadTransaction(UserShare* share, syncable::BaseTransaction* trans);
@@ -576,7 +581,8 @@ class ReadTransaction : public BaseTransaction {
 class WriteTransaction : public BaseTransaction {
  public:
   // Start a new read/write transaction.
-  explicit WriteTransaction(UserShare* share);
+  explicit WriteTransaction(const tracked_objects::Location& from_here,
+                            UserShare* share);
   virtual ~WriteTransaction();
 
   // Provide access to the syncable.h transaction from the API WriteNode.

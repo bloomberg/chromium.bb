@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/tracked.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
@@ -35,7 +36,7 @@ ThemeModelAssociator::ThemeModelAssociator(
 ThemeModelAssociator::~ThemeModelAssociator() {}
 
 bool ThemeModelAssociator::AssociateModels() {
-  sync_api::WriteTransaction trans(sync_service_->GetUserShare());
+  sync_api::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
   sync_api::ReadNode root(&trans);
   if (!root.InitByTagLookup(kThemesTag)) {
     LOG(ERROR) << kNoThemesFolderError;
@@ -81,7 +82,7 @@ bool ThemeModelAssociator::DisassociateModels() {
 bool ThemeModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
   DCHECK(has_nodes);
   *has_nodes = false;
-  sync_api::ReadTransaction trans(sync_service_->GetUserShare());
+  sync_api::ReadTransaction trans(FROM_HERE, sync_service_->GetUserShare());
   sync_api::ReadNode root(&trans);
   if (!root.InitByTagLookup(kThemesTag)) {
     LOG(ERROR) << kNoThemesFolderError;
@@ -95,7 +96,7 @@ bool ThemeModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
 
 bool ThemeModelAssociator::CryptoReadyIfNecessary() {
   // We only access the cryptographer while holding a transaction.
-  sync_api::ReadTransaction trans(sync_service_->GetUserShare());
+  sync_api::ReadTransaction trans(FROM_HERE, sync_service_->GetUserShare());
   syncable::ModelTypeSet encrypted_types;
   encrypted_types = sync_api::GetEncryptedTypes(&trans);
   return encrypted_types.count(syncable::THEMES) == 0 ||
