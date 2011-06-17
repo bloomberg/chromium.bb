@@ -739,8 +739,9 @@ bool PluginInstance::LoadPrintInterface() {
   if (!plugin_print_interface_.get()) {
     // Try to get the most recent version first.  Fall back to older supported
     // versions if necessary.
-    const PPP_Printing_Dev* print_if = static_cast<const PPP_Printing_Dev*>(
-        module_->GetPluginInterface(PPP_PRINTING_DEV_INTERFACE));
+    const PPP_Printing_Dev_0_4* print_if =
+        static_cast<const PPP_Printing_Dev_0_4*>(
+            module_->GetPluginInterface(PPP_PRINTING_DEV_INTERFACE_0_4));
     if (print_if) {
       plugin_print_interface_.reset(new PPP_Printing_Dev_Combined(*print_if));
     } else {
@@ -787,7 +788,7 @@ void PluginInstance::ReportGeometry() {
 }
 
 bool PluginInstance::GetPreferredPrintOutputFormat(
-    PP_PrintOutputFormat_Dev* format) {
+    PP_PrintOutputFormat_Dev_0_4* format) {
   // Keep a reference on the stack. See NOTE above.
   scoped_refptr<PluginInstance> ref(this);
   if (!LoadPrintInterface())
@@ -797,11 +798,11 @@ bool PluginInstance::GetPreferredPrintOutputFormat(
     // available, use it.
     uint32_t supported_formats =
         plugin_print_interface_->QuerySupportedFormats(pp_instance());
-    if (supported_formats & PP_PRINTOUTPUTFORMAT_PDF) {
-      *format = PP_PRINTOUTPUTFORMAT_PDF;
+    if (supported_formats & PP_PRINTOUTPUTFORMAT_PDF_0_4) {
+      *format = PP_PRINTOUTPUTFORMAT_PDF_0_4;
       return true;
-    } else if (supported_formats & PP_PRINTOUTPUTFORMAT_RASTER) {
-      *format = PP_PRINTOUTPUTFORMAT_RASTER;
+    } else if (supported_formats & PP_PRINTOUTPUTFORMAT_RASTER_0_4) {
+      *format = PP_PRINTOUTPUTFORMAT_RASTER_0_4;
       return true;
     }
     return false;
@@ -817,16 +818,16 @@ bool PluginInstance::GetPreferredPrintOutputFormat(
 
     bool found_supported_format = false;
     for (uint32_t index = 0; index < format_count; index++) {
-      if (supported_formats[index] == PP_PRINTOUTPUTFORMAT_PDF_DEPRECATED) {
+      if (supported_formats[index] == PP_PRINTOUTPUTFORMAT_PDF_0_3) {
         // If we found PDF, we are done.
         found_supported_format = true;
-        *format = PP_PRINTOUTPUTFORMAT_PDF;
+        *format = PP_PRINTOUTPUTFORMAT_PDF_0_4;
         break;
       } else if (supported_formats[index] ==
-                 PP_PRINTOUTPUTFORMAT_RASTER_DEPRECATED) {
+                 PP_PRINTOUTPUTFORMAT_RASTER_0_3) {
         // We found raster. Keep looking.
         found_supported_format = true;
-        *format = PP_PRINTOUTPUTFORMAT_RASTER;
+        *format = PP_PRINTOUTPUTFORMAT_RASTER_0_4;
       }
     }
     PluginModule::GetCore()->MemFree(supported_formats);
@@ -836,7 +837,7 @@ bool PluginInstance::GetPreferredPrintOutputFormat(
 }
 
 bool PluginInstance::SupportsPrintInterface() {
-  PP_PrintOutputFormat_Dev format;
+  PP_PrintOutputFormat_Dev_0_4 format;
   return GetPreferredPrintOutputFormat(&format);
 }
 
@@ -844,7 +845,7 @@ int PluginInstance::PrintBegin(const gfx::Rect& printable_area,
                                int printer_dpi) {
   // Keep a reference on the stack. See NOTE above.
   scoped_refptr<PluginInstance> ref(this);
-  PP_PrintOutputFormat_Dev format;
+  PP_PrintOutputFormat_Dev_0_4 format;
   if (!GetPreferredPrintOutputFormat(&format)) {
     // PrintBegin should not have been called since SupportsPrintInterface
     // would have returned false;
@@ -853,7 +854,7 @@ int PluginInstance::PrintBegin(const gfx::Rect& printable_area,
   }
 
   int num_pages = 0;
-  PP_PrintSettings_Dev print_settings;
+  PP_PrintSettings_Dev_0_4 print_settings;
   RectToPPRect(printable_area, &print_settings.printable_area);
   print_settings.dpi = printer_dpi;
   print_settings.orientation = PP_PRINTORIENTATION_NORMAL;
@@ -872,14 +873,14 @@ int PluginInstance::PrintBegin(const gfx::Rect& printable_area,
     print_settings_0_3.orientation = PP_PRINTORIENTATION_NORMAL;
     print_settings_0_3.grayscale = PP_FALSE;
     switch (format) {
-      case PP_PRINTOUTPUTFORMAT_RASTER:
-        print_settings_0_3.format = PP_PRINTOUTPUTFORMAT_RASTER_DEPRECATED;
+      case PP_PRINTOUTPUTFORMAT_RASTER_0_4:
+        print_settings_0_3.format = PP_PRINTOUTPUTFORMAT_RASTER_0_3;
         break;
-      case PP_PRINTOUTPUTFORMAT_PDF:
-        print_settings_0_3.format = PP_PRINTOUTPUTFORMAT_PDF_DEPRECATED;
+      case PP_PRINTOUTPUTFORMAT_PDF_0_4:
+        print_settings_0_3.format = PP_PRINTOUTPUTFORMAT_PDF_0_3;
         break;
-      case PP_PRINTOUTPUTFORMAT_POSTSCRIPT:
-        print_settings_0_3.format = PP_PRINTOUTPUTFORMAT_POSTSCRIPT_DEPRECATED;
+      case PP_PRINTOUTPUTFORMAT_POSTSCRIPT_0_4:
+        print_settings_0_3.format = PP_PRINTOUTPUTFORMAT_POSTSCRIPT_0_3;
         break;
       default:
         return 0;
@@ -926,9 +927,9 @@ bool PluginInstance::PrintPageHelper(PP_PrintPageNumberRange_Dev* page_ranges,
 
   bool ret = false;
 
-  if (current_print_settings_.format == PP_PRINTOUTPUTFORMAT_PDF)
+  if (current_print_settings_.format == PP_PRINTOUTPUTFORMAT_PDF_0_4)
     ret = PrintPDFOutput(print_output, canvas);
-  else if (current_print_settings_.format == PP_PRINTOUTPUTFORMAT_RASTER)
+  else if (current_print_settings_.format == PP_PRINTOUTPUTFORMAT_RASTER_0_4)
     ret = PrintRasterOutput(print_output, canvas);
 
   // Now we need to release the print output resource.
