@@ -13,6 +13,10 @@
 #include "ui/base/animation/animation_delegate.h"
 #include "views/focus/focus_manager.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/cros/input_method_library.h"
+#endif
+
 class BrowserFrame;
 class BrowserView;
 class KeyboardContainerView;
@@ -23,10 +27,14 @@ namespace ui {
 class SlideAnimation;
 }
 
-class TouchBrowserFrameView : public OpaqueBrowserFrameView,
-                              public views::FocusChangeListener,
-                              public TabStripModelObserver,
-                              public ui::AnimationDelegate {
+class TouchBrowserFrameView
+    : public OpaqueBrowserFrameView,
+      public views::FocusChangeListener,
+      public TabStripModelObserver,
+#if defined(OS_CHROMEOS)
+      public chromeos::InputMethodLibrary::VirtualKeyboardObserver,
+#endif
+      public ui::AnimationDelegate {
  public:
   enum VirtualKeyboardType {
     NONE,
@@ -50,6 +58,14 @@ class TouchBrowserFrameView : public OpaqueBrowserFrameView,
   // views::FocusChangeListener implementation
   virtual void FocusWillChange(views::View* focused_before,
                                views::View* focused_now);
+
+#if defined(OS_CHROMEOS)
+  // InputMethodLibrary::VirtualKeyboardObserver implementation.
+  virtual void VirtualKeyboardChanged(
+      chromeos::InputMethodLibrary* obj,
+      const chromeos::input_method::VirtualKeyboard& virtual_keyboard,
+      const std::string& virtual_keyboard_layout);
+#endif
 
  protected:
   // Overridden from OpaqueBrowserFrameView

@@ -26,6 +26,11 @@
 #include "views/controls/textfield/textfield.h"
 #include "views/focus/focus_manager.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/input_method/virtual_keyboard_selector.h"
+#endif
+
 namespace {
 
 const int kDefaultKeyboardHeight = 300;
@@ -78,6 +83,12 @@ TouchBrowserFrameView::TouchBrowserFrameView(BrowserFrame* frame,
   animation_.reset(new ui::SlideAnimation(this));
   animation_->SetTweenType(ui::Tween::LINEAR);
   animation_->SetSlideDuration(kKeyboardSlideDuration);
+
+#if defined(OS_CHROMEOS)
+  chromeos::InputMethodLibrary* library =
+      chromeos::CrosLibrary::Get()->GetInputMethodLibrary();
+  library->AddVirtualKeyboardObserver(this);
+#endif
 }
 
 TouchBrowserFrameView::~TouchBrowserFrameView() {
@@ -347,3 +358,17 @@ void TouchBrowserFrameView::AnimationEnded(const ui::Animation* animation) {
   }
   SchedulePaint();
 }
+
+#if defined(OS_CHROMEOS)
+void TouchBrowserFrameView::VirtualKeyboardChanged(
+    chromeos::InputMethodLibrary* obj,
+    const chromeos::input_method::VirtualKeyboard& virtual_keyboard,
+    const std::string& virtual_keyboard_layout) {
+  if (!keyboard_)
+    return;
+
+  const GURL& url = virtual_keyboard.GetURLForLayout(virtual_keyboard_layout);
+  keyboard_->LoadURL(url);
+  VLOG(1) << "VirtualKeyboardChanged: Switched to " << url.spec();
+}
+#endif

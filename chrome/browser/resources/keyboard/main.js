@@ -725,3 +725,12 @@ window.onload = function() {
 }
 // TODO(bryeung): would be nice to leave less gutter (without causing
 // rendering issues with floated divs wrapping at some sizes).
+
+/**
+ * Switch the keyboard layout e.g. to US-Dvorak.
+ * @return {void}
+ */
+window.onhashchange = function() {
+  var layout = location.hash.replace(/^#/, "");
+  // TODO(mazda): Switch the keyboard layout using the layout value.
+}

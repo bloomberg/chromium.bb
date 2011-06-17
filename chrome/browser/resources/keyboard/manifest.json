@@ -10,5 +10,15 @@
   ],
   "chrome_url_overrides": {
     "keyboard": "index.html"
-  }
+  },
+  "input_components": [
+    {
+      "name": "The system virtual keyboard extension",
+      "description": "The system virtual keyboard extension",
+      "type": "virtual_keyboard",
+      "layouts": [
+        "us"
+      ]
+    }
+  ]
 }

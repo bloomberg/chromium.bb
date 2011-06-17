@@ -59,6 +59,10 @@ void KeyboardContainerView::Layout() {
   dom_view_->SetBounds(0, 0, width(), height());
 }
 
+void KeyboardContainerView::LoadURL(const GURL& keyboard_url) {
+  dom_view_->LoadURL(keyboard_url);
+}
+
 Browser* KeyboardContainerView::GetBrowser() {
   return browser_;
 }

@@ -42,6 +42,10 @@ class KeyboardContainerView : public views::View,
   virtual gfx::NativeView GetNativeViewOfHost();
   virtual TabContents* GetAssociatedTabContents() const;
 
+  // Shows |keyboard_url|. The URL should look something like
+  // http://id_of_the_vk_extension/index.html#layout_name_to_show
+  void LoadURL(const GURL& keyboard_url);
+
  protected:
   // Overridden from views::View
   virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
