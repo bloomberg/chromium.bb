@@ -67,6 +67,7 @@
 #include "chrome/browser/ui/views/update_recommended_message_box.h"
 #include "chrome/browser/ui/views/window.h"
 #include "chrome/browser/ui/webui/bug_report_ui.h"
+#include "chrome/browser/ui/webui/task_manager_dialog.h"
 #include "chrome/browser/ui/window_sizer.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_resource.h"
@@ -78,6 +79,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/browser/user_metrics.h"
+#include "content/common/content_switches.h"
 #include "content/common/notification_service.h"
 #include "content/common/view_messages.h"
 #include "grit/app_resources.h"
@@ -1030,7 +1032,13 @@ void BrowserView::ShowCompactLocationBarUnderSelectedTab() {
 }
 
 void BrowserView::ShowTaskManager() {
-  browser::ShowTaskManager();
+  // Uses WebUI TaskManager when swiches is set. It is beta feature.
+  if (CommandLine::ForCurrentProcess()
+        ->HasSwitch(switches::kEnableWebUITaskManager)) {
+    TaskManagerDialog::Show();
+  } else {
+    browser::ShowTaskManager();
+  }
 }
 
 void BrowserView::ShowBackgroundPages() {

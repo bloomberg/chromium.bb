@@ -1,0 +1,111 @@
+/*
+ * Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+/* Outer frame of the dialog. */
+body {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  position: absolute;
+  width: 100%;
+  height: 100%; 
+  min-height: 150px;
+  font-family: sans-serif;
+  font-size: 13px;
+}
+
+/* The top title of the dialog. */
+.dialog-title {
+  background-image: -webkit-linear-gradient(top, #fff,#f6f6f6);
+  border-bottom: 1px #d6d9e3 solid;
+  color: #42506c;
+  font-size: 15px;
+  font-weight: bold;
+  padding: 0px 12px 6px 12px;
+  margin-bottom: 4px;
+}
+
+/* Container for the detail list views. */
+.dialog-body {
+  -webkit-box-flex: 1;
+  border: 1px #aaa solid;
+  border-radius: 3px;
+  display: -webkit-box;
+  margin: 4px 6px;
+}
+
+/* Column text containers. */
+.list-container {
+  display: -webkit-box;
+  -webkit-box-flex: 1;
+}
+
+/* Table splitter element */
+.table-header-splitter {
+  -webkit-border-start: 1px #aaa solid;
+  background-color: inherit;
+  height: 20px;
+  margin-top: 4px;
+}
+
+/* Container for a table header. */
+.table-header {
+  -webkit-box-sizing: border-box;
+  border-bottom: 1px #aaa solid;
+  background-image: -webkit-linear-gradient(top, #f9f9f9, #e8e8e8);
+  height: 28px;
+}
+
+/* Text label in a table header. */
+.table-header-label {
+  margin-top: 6px;
+}
+
+/* Task list in table. */
+.list {
+  -webkit-box-flex: 1;
+}
+
+/* Title Column text containers. */
+.detail-title {
+  padding-left: 20px;
+  background-image: url(images/default_page.png);
+  background-position: left;
+  background-repeat: no-repeat;
+}
+
+/* cr.ui.Table has a black focus border by default, which we don't want. */
+.detail-table {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-box-flex: 1;
+  border: 0;
+}
+
+/* Container for footer area. */
+.dialog-footer {
+  margin: 4px 6px 10px 6px;
+  display: -webkit-box;
+}
+
+/* Container for the ok/cancel buttons. */
+.footer-left-container {
+  display: -webkit-box;
+  -webkit-box-align: center;
+  -webkit-box-flex: 1;
+  text-align: left;
+}
+
+/* Container for the ok/cancel buttons. */
+.footer-right-container {
+  -webkit-box-flex: 1;
+  text-align: right;
+}
+

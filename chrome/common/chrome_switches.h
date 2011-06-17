@@ -149,6 +149,7 @@ extern const char kEnableTopSites[];
 extern const char kEnableVerticalTabs[];
 extern const char kEnableWatchdog[];
 extern const char kEnableWebSocketOverSpdy[];
+extern const char kEnableWebUITaskManager[];
 extern const char kExperimentalSpellcheckerFeatures[];
 extern const char kExplicitlyAllowedPorts[];
 extern const char kExtensionsUpdateFrequency[];

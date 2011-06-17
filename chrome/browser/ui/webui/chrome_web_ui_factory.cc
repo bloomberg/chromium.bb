@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/webui/crashes_ui.h"
 #include "chrome/browser/ui/webui/devtools_ui.h"
 #include "chrome/browser/ui/webui/downloads_ui.h"
+#include "chrome/browser/ui/webui/task_manager_ui.h"
 #include "chrome/browser/ui/webui/flags_ui.h"
 #include "chrome/browser/ui/webui/flash_ui.h"
 #include "chrome/browser/ui/webui/gpu_internals_ui.h"
@@ -145,6 +146,8 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
 #endif
   if (url.host() == chrome::kChromeUIDownloadsHost)
     return &NewWebUI<DownloadsUI>;
+  if (url.host() == chrome::kChromeUITaskManagerHost)
+    return &NewWebUI<TaskManagerUI>;
   if (url.host() == chrome::kChromeUITextfieldsHost)
     return &NewWebUI<TextfieldsUI>;
   if (url.host() == chrome::kChromeUIExtensionsHost)
