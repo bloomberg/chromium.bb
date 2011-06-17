@@ -1,4 +1,7 @@
 @echo off
+:: Copyright (c) 2011 The Native Client Authors. All rights reserved.
+:: Use of this source code is governed by a BSD-style license that can be
+:: found in the LICENSE file.
 
 setlocal
 
@@ -16,9 +19,6 @@ if %ERRORLEVEL% == 0 (
 :: Preserve a copy of the PATH (in case we need it later, mainly for cygwin).
 set PRESCONS_PATH=%PATH%
 
-:: Set the PYTHONPATH so we can import SCons modules
-set PYTHONPATH=%~dp0..\third_party\scons-2.0.1\engine
-
 :: Add python, gnu_binutils and mingw to the path
 set PATH=%~dp0..\third_party\python_26;%PATH%
 
@@ -26,6 +26,6 @@ set PATH=%~dp0..\third_party\python_26;%PATH%
 set CYGWIN=nodosfilewarning %CYGWIN%
 
 :: Run the included copy of scons.
-python -O -OO "%~dp0\..\third_party\scons-2.0.1\script\scons" %*
+python -OO "%~dp0\scons.py" %*
 
 :end
