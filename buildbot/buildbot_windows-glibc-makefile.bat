@@ -8,6 +8,7 @@
 
 echo @@@BUILD_STEP gclient_runhooks@@@
 call gclient runhooks --force
+rmdir /s /q %~dp0..\tools\toolchain
 
 setlocal
 call "%~dp0msvs_env.bat" 64
