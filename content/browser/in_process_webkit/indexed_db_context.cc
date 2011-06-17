@@ -28,8 +28,9 @@ using WebKit::WebSecurityOrigin;
 
 namespace {
 
-void ClearLocalState(const FilePath& indexeddb_path,
-                     quota::SpecialStoragePolicy* special_storage_policy) {
+void ClearLocalState(
+    const FilePath& indexeddb_path,
+    scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy) {
   file_util::FileEnumerator file_enumerator(
       indexeddb_path, false, file_util::FileEnumerator::FILES);
   // TODO(pastarmovj): We might need to consider exchanging this loop for
@@ -70,11 +71,16 @@ IndexedDBContext::IndexedDBContext(
 }
 
 IndexedDBContext::~IndexedDBContext() {
-  // Not being on the WEBKIT thread here means we are running in a unit test
-  // where no clean up is needed.
-  if (clear_local_state_on_exit_ &&
-      BrowserThread::CurrentlyOn(BrowserThread::WEBKIT)) {
-    ClearLocalState(data_path_, special_storage_policy_);
+  WebKit::WebIDBFactory* factory = idb_factory_.release();
+  if (factory)
+    BrowserThread::DeleteSoon(BrowserThread::WEBKIT, FROM_HERE, factory);
+
+  if (clear_local_state_on_exit_) {
+    // No WEBKIT thread here means we are running in a unit test where no clean
+    // up is needed.
+    BrowserThread::PostTask(BrowserThread::WEBKIT, FROM_HERE,
+        NewRunnableFunction(&ClearLocalState, data_path_,
+                            special_storage_policy_));
   }
 }
 

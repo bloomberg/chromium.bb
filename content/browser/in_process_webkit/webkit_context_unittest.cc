@@ -48,22 +48,28 @@ TEST(WebKitContextTest, Basic) {
 TEST(WebKitContextTest, PurgeMemory) {
   // Start up a WebKit thread for the WebKitContext to call the
   // DOMStorageContext on.
-  BrowserThread webkit_thread(BrowserThread::WEBKIT);
-  webkit_thread.Start();
+  MessageLoop message_loop(MessageLoop::TYPE_DEFAULT);
+  BrowserThread webkit_thread(BrowserThread::WEBKIT, &message_loop);
 
-  // Create the contexts.
-  TestingProfile profile;
-  scoped_refptr<WebKitContext> context(new WebKitContext(
-          profile.IsOffTheRecord(), profile.GetPath(),
-          profile.GetSpecialStoragePolicy(),
-          false, NULL, NULL));
-  MockDOMStorageContext* mock_context = new MockDOMStorageContext(
-      context.get(), profile.GetSpecialStoragePolicy());
-  context->set_dom_storage_context(mock_context);  // Takes ownership.
+  {
+    // Create the contexts.
+    TestingProfile profile;
+    scoped_refptr<WebKitContext> context(new WebKitContext(
+            profile.IsOffTheRecord(), profile.GetPath(),
+            profile.GetSpecialStoragePolicy(),
+            false, NULL, NULL));
+    MockDOMStorageContext* mock_context = new MockDOMStorageContext(
+        context.get(), profile.GetSpecialStoragePolicy());
+    context->set_dom_storage_context(mock_context);  // Takes ownership.
 
-  // Ensure PurgeMemory() calls our mock object on the right thread.
-  EXPECT_EQ(0, mock_context->purge_count());
-  context->PurgeMemory();
-  webkit_thread.Stop();  // Blocks until all tasks are complete.
-  EXPECT_EQ(1, mock_context->purge_count());
+    // Ensure PurgeMemory() calls our mock object on the right thread.
+    EXPECT_EQ(0, mock_context->purge_count());
+    context->PurgeMemory();
+    MessageLoop::current()->RunAllPending();
+    EXPECT_EQ(1, mock_context->purge_count());
+  }
+  // WebKitContext's destructor posts stuff to the webkit thread.  Let
+  // WebKitContext go out of scope here before processing WebKitContext's
+  // clean-up tasks.
+  MessageLoop::current()->RunAllPending();
 }

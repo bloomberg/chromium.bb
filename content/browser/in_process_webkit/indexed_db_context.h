@@ -29,9 +29,7 @@ class QuotaManagerProxy;
 class SpecialStoragePolicy;
 }
 
-class IndexedDBContext :
-    public base::RefCountedThreadSafe<IndexedDBContext,
-                                      BrowserThread::DeleteOnWebKitThread> {
+class IndexedDBContext : public base::RefCountedThreadSafe<IndexedDBContext> {
  public:
   IndexedDBContext(WebKitContext* webkit_context,
                    quota::SpecialStoragePolicy* special_storage_policy,

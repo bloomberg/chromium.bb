@@ -36,8 +36,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
         message_loop_(MessageLoop::TYPE_IO),
         webkit_thread_(BrowserThread::WEBKIT, &message_loop_) {
     TestingProfile profile;
-    idb_context_ = new IndexedDBContext(profile.GetWebKitContext(), NULL,
-                                        NULL, NULL);
+    idb_context_ = profile.GetWebKitContext()->indexed_db_context();
   }
 
   ~IndexedDBQuotaClientTest() {
