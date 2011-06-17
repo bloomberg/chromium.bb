@@ -132,9 +132,16 @@ class BrowserLauncher(object):
   def Cleanup(self):
     if self.handle.poll() is None:
       print 'KILLING the browser'
-      self.handle.kill()
-      # If is doesn't die, we hang.  Oh well.
-      self.handle.wait()
+      try:
+        self.handle.kill()
+        # If it doesn't die, we hang.  Oh well.
+        self.handle.wait()
+      except Exception:
+        # If it is already dead, then it's ok.
+        # This may happen if the browser dies after the first poll, but before
+        # the kill.
+        if self.handle.poll() is None:
+          raise
 
     RemoveDirectory(self.profile)
     if self.tool_log_dir is not None:
