@@ -1027,7 +1027,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestBadFrameNavigation) {
 
 // From an HTTP top frame, navigate to good and bad HTTPS (security state should
 // stay unauthenticated).
-#if defined(OS_WIN) || defined(OS_CHROMEOS) || defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_CHROMEOS) || defined(OS_LINUX) || \
+    defined(OS_MAC)
 // Disabled, flakily exceeds test timeout, http://crbug.com/43437.
 #define MAYBE_TestUnauthenticatedFrameNavigation \
       DISABLED_TestUnauthenticatedFrameNavigation
