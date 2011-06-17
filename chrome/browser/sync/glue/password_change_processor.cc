@@ -105,8 +105,10 @@ void PasswordChangeProcessor::Observe(NotificationType type,
         sync_api::WriteNode sync_node(&trans);
         int64 sync_id = model_associator_->GetSyncIdFromChromeId(tag);
         if (sync_api::kInvalidId == sync_id) {
-          error_handler()->OnUnrecoverableError(FROM_HERE,
-              "Unexpected notification");
+          // We've been asked to remove a password that we don't know about.
+          // That's weird, but apparently we were already in the requested
+          // state, so it's not really an unrecoverable error. Just return.
+          LOG(WARNING) << "Trying to delete nonexistent password sync node!";
           return;
         } else {
           if (!sync_node.InitByIdLookup(sync_id)) {
