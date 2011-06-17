@@ -430,6 +430,14 @@ void TabSpecificContentSettings::DidNavigateMainFramePostCommit(
   }
 }
 
+void TabSpecificContentSettings::RenderViewCreated(
+    RenderViewHost* render_view_host) {
+  HostContentSettingsMap* map =
+      tab_contents()->profile()->GetHostContentSettingsMap();
+  render_view_host->Send(new ViewMsg_SetDefaultContentSettings(
+      map->GetDefaultContentSettings()));
+}
+
 void TabSpecificContentSettings::DidStartProvisionalLoadForFrame(
     int64 frame_id,
     bool is_main_frame,
@@ -468,9 +476,12 @@ void TabSpecificContentSettings::Observe(NotificationType type,
       // The active NavigationEntry is the URL in the URL field of a tab.
       // Currently this should be matched by the |primary_pattern|.
       settings_details.ptr()->primary_pattern().Matches(entry_url)) {
+    HostContentSettingsMap* map =
+        tab_contents()->profile()->GetHostContentSettingsMap();
+    Send(new ViewMsg_SetDefaultContentSettings(
+        map->GetDefaultContentSettings()));
     Send(new ViewMsg_SetContentSettingsForCurrentURL(
-        entry_url, tab_contents()->profile()->GetHostContentSettingsMap()->
-            GetContentSettings(entry_url, entry_url)));
+        entry_url, map->GetContentSettings(entry_url, entry_url)));
   }
 }
 

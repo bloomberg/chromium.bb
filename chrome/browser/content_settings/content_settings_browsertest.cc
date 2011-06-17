@@ -30,3 +30,18 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, RedirectLoopCookies) {
   EXPECT_TRUE(tab_contents->content_settings()->IsContentBlocked(
       CONTENT_SETTINGS_TYPE_COOKIES));
 }
+
+IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, ContentSettingsBlockDataURLs) {
+  GURL url("data:text/html,<title>Data URL</title><script>alert(1)</script>");
+
+  browser()->profile()->GetHostContentSettingsMap()->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_JAVASCRIPT, CONTENT_SETTING_BLOCK);
+
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  TabContentsWrapper* tab_contents = browser()->GetSelectedTabContentsWrapper();
+  ASSERT_EQ(UTF8ToUTF16("Data URL"), tab_contents->tab_contents()->GetTitle());
+
+  EXPECT_TRUE(tab_contents->content_settings()->IsContentBlocked(
+      CONTENT_SETTINGS_TYPE_JAVASCRIPT));
+}

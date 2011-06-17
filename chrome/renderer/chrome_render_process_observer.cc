@@ -409,6 +409,8 @@ bool ChromeRenderProcessObserver::OnControlMessageReceived(
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ChromeRenderProcessObserver, message)
     IPC_MESSAGE_HANDLER(ViewMsg_SetIsIncognitoProcess, OnSetIsIncognitoProcess)
+    IPC_MESSAGE_HANDLER(ViewMsg_SetDefaultContentSettings,
+                        OnSetDefaultContentSettings)
     IPC_MESSAGE_HANDLER(ViewMsg_SetContentSettingsForCurrentURL,
                         OnSetContentSettingsForCurrentURL)
     IPC_MESSAGE_HANDLER(ViewMsg_SetCacheCapacities, OnSetCacheCapacities)
@@ -444,6 +446,11 @@ void ChromeRenderProcessObserver::OnSetContentSettingsForCurrentURL(
     const ContentSettings& content_settings) {
   RenderViewContentSettingsSetter setter(url, content_settings);
   RenderView::ForEach(&setter);
+}
+
+void ChromeRenderProcessObserver::OnSetDefaultContentSettings(
+    const ContentSettings& content_settings) {
+  ContentSettingsObserver::SetDefaultContentSettings(content_settings);
 }
 
 void ChromeRenderProcessObserver::OnSetCacheCapacities(size_t min_dead_capacity,

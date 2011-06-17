@@ -13,7 +13,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrameClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 
 using WebKit::WebDataSource;
@@ -21,7 +20,6 @@ using WebKit::WebFrame;
 using WebKit::WebFrameClient;
 using WebKit::WebSecurityOrigin;
 using WebKit::WebString;
-using WebKit::WebURLRequest;
 using WebKit::WebView;
 
 namespace {
@@ -38,7 +36,7 @@ static bool IsWhitelistedForContentSettings(WebFrame* frame) {
   // If the scheme is ftp: or file:, an empty file name indicates a directory
   // listing, which requires JavaScript to function properly.
   GURL frame_url = frame->url();
-  const char* kDirProtocols[] = { "ftp", "file" };
+  const char* kDirProtocols[] = { chrome::kFtpScheme, chrome::kFileScheme };
   for (size_t i = 0; i < arraysize(kDirProtocols); ++i) {
     if (EqualsASCII(origin.protocol(), kDirProtocols[i])) {
       return frame_url.SchemeIs(kDirProtocols[i]) &&
@@ -51,6 +49,8 @@ static bool IsWhitelistedForContentSettings(WebFrame* frame) {
 
 }  // namespace
 
+ContentSettings ContentSettingsObserver::default_settings_;
+
 ContentSettingsObserver::ContentSettingsObserver(RenderView* render_view)
     : RenderViewObserver(render_view),
       RenderViewObserverTracker<ContentSettingsObserver>(render_view),
@@ -61,10 +61,14 @@ ContentSettingsObserver::ContentSettingsObserver(RenderView* render_view)
 ContentSettingsObserver::~ContentSettingsObserver() {
 }
 
-
 void ContentSettingsObserver::SetContentSettings(
     const ContentSettings& settings) {
   current_content_settings_ = settings;
+}
+
+void ContentSettingsObserver::SetDefaultContentSettings(
+    const ContentSettings& settings) {
+  default_settings_ = settings;
 }
 
 ContentSetting ContentSettingsObserver::GetContentSetting(
@@ -109,19 +113,35 @@ void ContentSettingsObserver::DidCommitProvisionalLoad(
   if (frame->parent())
     return; // Not a top-level navigation.
 
-  WebDataSource* ds = frame->dataSource();
-  const WebURLRequest& request = ds->request();
-
   // Clear "block" flags for the new page. This needs to happen before any of
   // allowScripts(), allowImages(), allowPlugins() is called for the new page
   // so that these functions can correctly detect that a piece of content
   // flipped from "not blocked" to "blocked".
   ClearBlockedContentSettings();
 
+  GURL url = frame->url();
+
+  if (frame->securityOrigin().toString() == "null" &&
+      !url.SchemeIs(chrome::kFileScheme)) {
+    // The Frame has a unique security origin. Instead of granting the frame
+    // privileges based on it's URL, we fall back to the default content
+    // settings.
+
+    // We exempt file URLs here because we sandbox them by default, but folks
+    // might reasonably want to supply non-default content settings for various
+    // file URLs.
+    SetContentSettings(default_settings_);
+    return;
+  }
+
+  // If we start failing this DCHECK, please makes sure we don't regress
+  // this bug: http://code.google.com/p/chromium/issues/detail?id=79304
+  DCHECK(!url.SchemeIs(chrome::kDataScheme));
+
   // Set content settings. Default them from the parent window if one exists.
   // This makes sure about:blank windows work as expected.
   HostContentSettings::iterator host_content_settings =
-      host_content_settings_.find(GURL(request.url()));
+      host_content_settings_.find(url);
   if (host_content_settings != host_content_settings_.end()) {
     SetContentSettings(host_content_settings->second);
 

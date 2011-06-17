@@ -35,6 +35,7 @@ class ChromeRenderProcessObserver : public RenderProcessObserver {
   void OnSetIsIncognitoProcess(bool is_incognito_process);
   void OnSetContentSettingsForCurrentURL(
       const GURL& url, const ContentSettings& content_settings);
+  void OnSetDefaultContentSettings(const ContentSettings& content_settings);
   void OnSetCacheCapacities(size_t min_dead_capacity,
                             size_t max_dead_capacity,
                             size_t capacity);

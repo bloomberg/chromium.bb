@@ -54,6 +54,11 @@ class HostContentSettingsMap
   ContentSetting GetDefaultContentSetting(
       ContentSettingsType content_type) const;
 
+  // Returns the default settings for all content types.
+  //
+  // This may be called on any thread.
+  ContentSettings GetDefaultContentSettings() const;
+
   // Returns a single ContentSetting which applies to the given URLs. Note that
   // certain internal schemes are whitelisted. For ContentSettingsTypes that
   // require an resource identifier to be specified, the |resource_identifier|

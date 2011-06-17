@@ -176,6 +176,12 @@ IPC_MESSAGE_CONTROL2(ViewMsg_SetContentSettingsForCurrentURL,
                      GURL /* url */,
                      ContentSettings /* content_settings */)
 
+// Set the content settings for a particular url that the renderer is in the
+// process of loading.  This will be stored, to be used if the load commits
+// and ignored otherwise.
+IPC_MESSAGE_CONTROL1(ViewMsg_SetDefaultContentSettings,
+                     ContentSettings /* content_settings */)
+
 // Tells the render view to load all blocked plugins.
 IPC_MESSAGE_ROUTED0(ViewMsg_LoadBlockedPlugins)
 

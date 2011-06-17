@@ -30,6 +30,10 @@ class ContentSettingsObserver
   // allowPlugins().
   void SetContentSettings(const ContentSettings& settings);
 
+  // Sets the default content settings that back allowScripts(),
+  // allowImages(), and allowPlugins().
+  static void SetDefaultContentSettings(const ContentSettings& settings);
+
   // Returns the setting for the given type.
   ContentSetting GetContentSetting(ContentSettingsType type);
 
@@ -77,6 +81,9 @@ class ContentSettingsObserver
 
   typedef std::map<GURL, ContentSettings> HostContentSettings;
   HostContentSettings host_content_settings_;
+
+  // Stores our most up-to-date view of the default content settings.
+  static ContentSettings default_settings_;
 
   // Stores if loading of images, scripts, and plugins is allowed.
   ContentSettings current_content_settings_;

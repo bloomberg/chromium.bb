@@ -158,6 +158,13 @@ ContentSetting HostContentSettingsMap::GetDefaultContentSetting(
   return setting;
 }
 
+ContentSettings HostContentSettingsMap::GetDefaultContentSettings() const {
+  ContentSettings output(CONTENT_SETTING_DEFAULT);
+  for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i)
+    output.settings[i] = GetDefaultContentSetting(ContentSettingsType(i));
+  return output;
+}
+
 ContentSetting HostContentSettingsMap::GetCookieContentSetting(
     const GURL& url,
     const GURL& first_party_url,

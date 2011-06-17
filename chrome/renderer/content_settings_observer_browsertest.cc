@@ -107,6 +107,7 @@ TEST_F(RenderViewTest, JSBlockSentAfterPageLoad) {
   settings.settings[CONTENT_SETTINGS_TYPE_JAVASCRIPT] = CONTENT_SETTING_BLOCK;
   ContentSettingsObserver* observer = ContentSettingsObserver::Get(view_);
   observer->SetContentSettings(settings);
+  ContentSettingsObserver::SetDefaultContentSettings(settings);
 
   // Make sure no pending messages are in the queue.
   ProcessPendingMessages();
