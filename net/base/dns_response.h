@@ -7,12 +7,13 @@
 #pragma once
 
 #include "net/base/dns_query.h"
+#include "net/base/net_api.h"
 
 namespace net{
 
 // Represents on-the-wire DNS response as an object; allows extracting
 // records.
-class DnsResponse {
+class NET_TEST DnsResponse {
  public:
   // Constructs an object with an IOBuffer large enough to read
   // one byte more than largest possible response, to detect malformed

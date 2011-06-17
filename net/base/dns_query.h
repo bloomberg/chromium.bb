@@ -9,12 +9,13 @@
 #include <string>
 
 #include "net/base/io_buffer.h"
+#include "net/base/net_api.h"
 #include "net/base/net_util.h"
 
 namespace net{
 
 // Represents on-the-wire DNS query message as an object.
-class DnsQuery {
+class NET_TEST DnsQuery {
  public:
   // Constructs a query message from |dns_name| which *MUST* be in a valid
   // DNS name format, and |qtype| which must be either kDNS_A or kDNS_AAA.
