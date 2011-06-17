@@ -67,6 +67,8 @@ SECTIONS
   PROVIDE (_etext = .);
   PROVIDE (etext = .);
   . = . + 32; /* reserve space for HLTs */
+  /* Conditionally provide a segment gap for the IRT. */
+  . = DEFINED(__nacl_rodata_start) ? __nacl_rodata_start : .; 
   . = ALIGN(CONSTANT (COMMONPAGESIZE)); /* nacl wants page alignment */
   .rodata         : { *(.rodata .rodata.* .gnu.linkonce.r.*) } :rodata
   .rodata1        : { *(.rodata1) }
