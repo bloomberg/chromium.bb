@@ -17,7 +17,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextInputType.h"
+#include "ui/base/ime/text_input_type.h"
 #include "ui/base/range/range.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
@@ -134,7 +134,8 @@ class RenderWidgetHostView {
   virtual void SetIsLoading(bool is_loading) = 0;
 
   // Updates the state of the input method attached to the view.
-  virtual void ImeUpdateTextInputState(WebKit::WebTextInputType type,
+  virtual void ImeUpdateTextInputState(ui::TextInputType type,
+                                       bool can_compose_inline,
                                        const gfx::Rect& caret_rect) = 0;
 
   // Cancel the ongoing composition of the input method attached to the view.

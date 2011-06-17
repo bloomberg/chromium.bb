@@ -20,7 +20,7 @@
 #include "ipc/ipc_channel.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextInputType.h"
+#include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
@@ -453,7 +453,8 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   virtual void OnMsgBlur();
 
   void OnMsgSetCursor(const WebCursor& cursor);
-  void OnMsgImeUpdateTextInputState(WebKit::WebTextInputType type,
+  void OnMsgImeUpdateTextInputState(ui::TextInputType type,
+                                    bool can_compose_inline,
                                     const gfx::Rect& caret_rect);
   void OnMsgImeCompositionRangeChanged(const ui::Range& range);
   void OnMsgImeCancelComposition();

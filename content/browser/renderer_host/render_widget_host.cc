@@ -1048,10 +1048,11 @@ void RenderWidgetHost::OnMsgSetCursor(const WebCursor& cursor) {
 }
 
 void RenderWidgetHost::OnMsgImeUpdateTextInputState(
-    WebKit::WebTextInputType type,
+    ui::TextInputType type,
+    bool can_compose_inline,
     const gfx::Rect& caret_rect) {
   if (view_)
-    view_->ImeUpdateTextInputState(type, caret_rect);
+    view_->ImeUpdateTextInputState(type, can_compose_inline, caret_rect);
 }
 
 void RenderWidgetHost::OnMsgImeCompositionRangeChanged(const ui::Range& range) {

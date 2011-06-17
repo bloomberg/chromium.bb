@@ -3980,14 +3980,24 @@ void RenderView::OnImeConfirmComposition(const string16& text) {
   }
 }
 
-WebKit::WebTextInputType RenderView::GetTextInputType() {
+ui::TextInputType RenderView::GetTextInputType() {
   if (pepper_delegate_.IsPluginFocused()) {
     // TODO(kinaba) Until PPAPI has an interface for handling IME events, we
     // consider all the parts of PPAPI plugins are accepting text inputs.
-    return WebKit::WebTextInputTypeText;
-  } else {
-    return RenderWidget::GetTextInputType();
+    return ui::TEXT_INPUT_TYPE_TEXT;
   }
+  return RenderWidget::GetTextInputType();
+}
+
+bool RenderView::CanComposeInline() {
+  if (pepper_delegate_.IsPluginFocused()) {
+    // TODO(kinaba) Until PPAPI has an interface for handling IME events, there
+    // is no way for the browser to know whether the plugin is capable of
+    // drawing composition text.  We assume plugins are incapable and let the
+    // browser handle composition display for now.
+    return false;
+  }
+  return true;
 }
 
 #if defined(OS_MACOSX)

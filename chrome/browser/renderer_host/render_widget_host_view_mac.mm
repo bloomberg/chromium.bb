@@ -233,7 +233,7 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
     : render_widget_host_(widget),
       about_to_validate_and_paint_(false),
       call_set_needs_display_in_rect_pending_(false),
-      text_input_type_(WebKit::WebTextInputTypeNone),
+      text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
       spellcheck_enabled_(false),
       spellcheck_checked_(false),
       is_loading_(false),
@@ -498,8 +498,13 @@ void RenderWidgetHostViewMac::SetIsLoading(bool is_loading) {
 }
 
 void RenderWidgetHostViewMac::ImeUpdateTextInputState(
-    WebKit::WebTextInputType type,
+    ui::TextInputType type,
+    bool can_compose_inline,
     const gfx::Rect& caret_rect) {
+  // TODO(kinaba): currently, can_compose_inline is ignored and always treated
+  // as true. We need to support "can_compose_inline=false" for PPAPI plugins
+  // that may want to avoid drawing composition-text by themselves and pass
+  // the responsibility to the browser.
   if (text_input_type_ != type) {
     text_input_type_ = type;
     if (HasFocus()) {
@@ -1037,12 +1042,12 @@ void RenderWidgetHostViewMac::OnAccessibilityNotifications(
 
 void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   if (active) {
-    if (text_input_type_ == WebKit::WebTextInputTypePassword)
+    if (text_input_type_ == ui::TEXT_INPUT_TYPE_PASSWORD)
       EnablePasswordInput();
     else
       DisablePasswordInput();
   } else {
-    if (text_input_type_ == WebKit::WebTextInputTypePassword)
+    if (text_input_type_ == ui::TEXT_INPUT_TYPE_PASSWORD)
       DisablePasswordInput();
   }
 }
@@ -2246,8 +2251,8 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
     return [[ComplexTextInputPanel sharedComplexTextInputPanel] inputContext];
 
   switch(renderWidgetHostView_->text_input_type_) {
-    case WebKit::WebTextInputTypeNone:
-    case WebKit::WebTextInputTypePassword:
+    case ui::TEXT_INPUT_TYPE_NONE:
+    case ui::TEXT_INPUT_TYPE_PASSWORD:
       return nil;
     default:
       return [super inputContext];
@@ -2538,7 +2543,7 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   BOOL returnTypeIsString = [returnType isEqual:NSStringPboardType];
   BOOL hasText = !renderWidgetHostView_->selected_text().empty();
   BOOL takesText =
-      renderWidgetHostView_->text_input_type_ != WebKit::WebTextInputTypeNone;
+      renderWidgetHostView_->text_input_type_ != ui::TEXT_INPUT_TYPE_NONE;
 
   if (sendTypeIsString && hasText && !returnType) {
     requestor = self;

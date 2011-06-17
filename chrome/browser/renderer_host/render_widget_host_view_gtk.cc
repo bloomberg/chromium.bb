@@ -726,9 +726,10 @@ void RenderWidgetHostViewGtk::SetIsLoading(bool is_loading) {
 }
 
 void RenderWidgetHostViewGtk::ImeUpdateTextInputState(
-    WebKit::WebTextInputType type,
+    ui::TextInputType type,
+    bool can_compose_inline,
     const gfx::Rect& caret_rect) {
-  im_context_->UpdateInputMethodState(type, caret_rect);
+  im_context_->UpdateInputMethodState(type, can_compose_inline, caret_rect);
 }
 
 void RenderWidgetHostViewGtk::ImeCancelComposition() {

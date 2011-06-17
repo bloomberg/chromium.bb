@@ -296,12 +296,16 @@ void RenderWidgetHostViewViews::SetIsLoading(bool is_loading) {
 }
 
 void RenderWidgetHostViewViews::ImeUpdateTextInputState(
-    WebKit::WebTextInputType type,
+    ui::TextInputType type,
+    bool can_compose_inline,
     const gfx::Rect& caret_rect) {
+  // TODO(kinaba): currently, can_compose_inline is ignored and always treated
+  // as true. We need to support "can_compose_inline=false" for PPAPI plugins
+  // that may want to avoid drawing composition-text by themselves and pass
+  // the responsibility to the browser.
   DCHECK(GetInputMethod());
-  ui::TextInputType new_type = static_cast<ui::TextInputType>(type);
-  if (text_input_type_ != new_type) {
-    text_input_type_ = new_type;
+  if (text_input_type_ != type) {
+    text_input_type_ = type;
     GetInputMethod()->OnTextInputTypeChanged(this);
   }
   if (caret_bounds_ != caret_rect) {

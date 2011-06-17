@@ -18,9 +18,9 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextInputType.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebWidgetClient.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
@@ -278,7 +278,11 @@ class RenderWidget : public IPC::Channel::Listener,
 
   // Override point to obtain that the current input method state and caret
   // position.
-  virtual WebKit::WebTextInputType GetTextInputType();
+  virtual ui::TextInputType GetTextInputType();
+
+  // Override point to obtain that the current input method state about
+  // composition text.
+  virtual bool CanComposeInline();
 
   // Tells the renderer it does not have focus. Used to prevent us from getting
   // the focus on our own when the browser did not focus us.
@@ -397,7 +401,10 @@ class RenderWidget : public IPC::Channel::Listener,
   bool input_method_is_active_;
 
   // Stores the current text input type of |webwidget_|.
-  WebKit::WebTextInputType text_input_type_;
+  ui::TextInputType text_input_type_;
+
+  // Stores the current type of composition text rendering of |webwidget_|.
+  bool can_compose_inline_;
 
   // Stores the current caret bounds of input focus.
   WebKit::WebRect caret_bounds_;

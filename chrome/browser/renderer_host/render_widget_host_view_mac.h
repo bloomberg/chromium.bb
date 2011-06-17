@@ -192,7 +192,8 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   virtual gfx::Rect GetViewBounds() const OVERRIDE;
   virtual void UpdateCursor(const WebCursor& cursor) OVERRIDE;
   virtual void SetIsLoading(bool is_loading) OVERRIDE;
-  virtual void ImeUpdateTextInputState(WebKit::WebTextInputType state,
+  virtual void ImeUpdateTextInputState(ui::TextInputType state,
+                                       bool can_compose_inline,
                                        const gfx::Rect& caret_rect) OVERRIDE;
   virtual void ImeCancelComposition() OVERRIDE;
   virtual void ImeCompositionRangeChanged(const ui::Range& range) OVERRIDE;
@@ -331,7 +332,7 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   base::TimeTicks tab_switch_paint_time_;
 
   // Current text input type.
-  WebKit::WebTextInputType text_input_type_;
+  ui::TextInputType text_input_type_;
 
   typedef std::map<gfx::PluginWindowHandle, AcceleratedPluginView*>
       PluginViewMap;

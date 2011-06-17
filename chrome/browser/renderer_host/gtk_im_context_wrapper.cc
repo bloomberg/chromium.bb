@@ -225,8 +225,10 @@ void GtkIMContextWrapper::ProcessKeyEvent(GdkEventKey* event) {
   last_key_filtered_no_result_ = (filtered && !has_result);
 }
 
-void GtkIMContextWrapper::UpdateInputMethodState(WebKit::WebTextInputType type,
-                                                 const gfx::Rect& caret_rect) {
+void GtkIMContextWrapper::UpdateInputMethodState(
+    ui::TextInputType type,
+    bool can_compose_inline,
+    const gfx::Rect& caret_rect) {
   suppress_next_commit_ = false;
 
   // The renderer has updated its IME status.
@@ -236,7 +238,7 @@ void GtkIMContextWrapper::UpdateInputMethodState(WebKit::WebTextInputType type,
 
   DCHECK(!is_in_key_event_handler_);
 
-  bool is_enabled = (type == WebKit::WebTextInputTypeText);
+  bool is_enabled = (type == ui::TEXT_INPUT_TYPE_TEXT);
   if (is_enabled_ != is_enabled) {
     is_enabled_ = is_enabled;
     if (is_enabled)
@@ -246,6 +248,10 @@ void GtkIMContextWrapper::UpdateInputMethodState(WebKit::WebTextInputType type,
   }
 
   if (is_enabled) {
+    // If the focused element supports inline rendering of composition text,
+    // we receive and send related events to it. Otherwise, the events related
+    // to the updates of composition text are directed to the candidate window.
+    gtk_im_context_set_use_preedit(context_, can_compose_inline);
     // Updates the position of the IME candidate window.
     // The position sent from the renderer is a relative one, so we need to
     // attach the GtkIMContext object to this window before changing the

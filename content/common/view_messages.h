@@ -24,7 +24,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerAction.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextInputType.h"
+#include "ui/base/ime/text_input_type.h"
 #include "ui/base/range/range.h"
 #include "ui/gfx/rect.h"
 #include "webkit/glue/context_menu.h"
@@ -164,7 +164,7 @@ IPC_ENUM_TRAITS(ViewMsg_StopFinding_Params::Action)
 IPC_ENUM_TRAITS(WebKit::WebContextMenuData::MediaType)
 IPC_ENUM_TRAITS(WebKit::WebMediaPlayerAction::Type)
 IPC_ENUM_TRAITS(WebKit::WebPopupType)
-IPC_ENUM_TRAITS(WebKit::WebTextInputType)
+IPC_ENUM_TRAITS(ui::TextInputType)
 IPC_ENUM_TRAITS(WebMenuItem::Type)
 IPC_ENUM_TRAITS(WindowContainerType)
 IPC_ENUM_TRAITS(webkit_glue::WebAccessibility::Role)
@@ -1696,8 +1696,9 @@ IPC_SYNC_MESSAGE_ROUTED1_1(ViewHostMsg_GetRootWindowRect,
                            gfx::Rect /* Out: Window location */)
 
 // Required for updating text input state.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_ImeUpdateTextInputState,
-                    WebKit::WebTextInputType, /* text_input_type */
+IPC_MESSAGE_ROUTED3(ViewHostMsg_ImeUpdateTextInputState,
+                    ui::TextInputType, /* text_input_type */
+                    bool, /* can_compose_inline */
                     gfx::Rect /* caret_rect */)
 
 

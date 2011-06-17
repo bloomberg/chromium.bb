@@ -78,7 +78,8 @@ class TestRenderWidgetHostView : public RenderWidgetHostView {
   virtual void SetIsLoading(bool is_loading) {}
   virtual void UpdateCursor(const WebCursor& cursor) {}
   virtual void UpdateCursorIfOverSelf() {}
-  virtual void ImeUpdateTextInputState(WebKit::WebTextInputType state,
+  virtual void ImeUpdateTextInputState(ui::TextInputType state,
+                                       bool can_compose_inline,
                                        const gfx::Rect& caret_rect) {}
   virtual void ImeCancelComposition() {}
   virtual void DidUpdateBackingStore(

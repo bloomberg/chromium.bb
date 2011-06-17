@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,8 +14,8 @@
 #include "base/gtest_prod_util.h"
 #include "base/string16.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextInputType.h"
 #include "ui/base/ime/composition_text.h"
+#include "ui/base/ime/text_input_type.h"
 
 namespace gfx {
 class Rect;
@@ -48,7 +48,8 @@ class GtkIMContextWrapper {
   // Processes a gdk key event received by |host_view|.
   void ProcessKeyEvent(GdkEventKey* event);
 
-  void UpdateInputMethodState(WebKit::WebTextInputType type,
+  void UpdateInputMethodState(ui::TextInputType type,
+                              bool can_compose_inline,
                               const gfx::Rect& caret_rect);
   void OnFocusIn();
   void OnFocusOut();

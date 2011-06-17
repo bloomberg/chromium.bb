@@ -58,7 +58,6 @@ using WebKit::WebRect;
 using WebKit::WebScreenInfo;
 using WebKit::WebSize;
 using WebKit::WebTextDirection;
-using WebKit::WebTextInputType;
 using WebKit::WebVector;
 using WebKit::WebWidget;
 
@@ -83,7 +82,8 @@ RenderWidget::RenderWidget(RenderThreadBase* render_thread,
       closing_(false),
       is_swapped_out_(false),
       input_method_is_active_(false),
-      text_input_type_(WebKit::WebTextInputTypeNone),
+      text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
+      can_compose_inline_(true),
       popup_type_(popup_type),
       pending_window_rect_count_(0),
       suppress_next_char_events_(false),
@@ -1283,7 +1283,8 @@ void RenderWidget::UpdateInputMethod() {
   if (!input_method_is_active_)
     return;
 
-  WebTextInputType new_type = GetTextInputType();
+  ui::TextInputType new_type = GetTextInputType();
+  bool new_can_compose_inline = CanComposeInline();
   WebRect new_caret_bounds;
 
   if (webwidget_)
@@ -1291,18 +1292,36 @@ void RenderWidget::UpdateInputMethod() {
 
   // Only sends text input type and caret bounds to the browser process if they
   // are changed.
-  if (text_input_type_ != new_type || caret_bounds_ != new_caret_bounds) {
+  if (text_input_type_ != new_type || caret_bounds_ != new_caret_bounds ||
+      can_compose_inline_ != new_can_compose_inline) {
     text_input_type_ = new_type;
+    can_compose_inline_ = new_can_compose_inline;
     caret_bounds_ = new_caret_bounds;
     Send(new ViewHostMsg_ImeUpdateTextInputState(
-        routing_id(), new_type, new_caret_bounds));
+        routing_id(), new_type, new_can_compose_inline, new_caret_bounds));
   }
 }
 
-WebKit::WebTextInputType RenderWidget::GetTextInputType() {
-  if (webwidget_)
-    return webwidget_->textInputType();
-  return WebKit::WebTextInputTypeNone;
+COMPILE_ASSERT(int(WebKit::WebTextInputTypeNone) == \
+               int(ui::TEXT_INPUT_TYPE_NONE), mismatching_enums);
+COMPILE_ASSERT(int(WebKit::WebTextInputTypeText) == \
+               int(ui::TEXT_INPUT_TYPE_TEXT), mismatching_enums);
+COMPILE_ASSERT(int(WebKit::WebTextInputTypePassword) == \
+               int(ui::TEXT_INPUT_TYPE_PASSWORD), mismatching_enums);
+
+ui::TextInputType RenderWidget::GetTextInputType() {
+  if (webwidget_) {
+    int type = webwidget_->textInputType();
+    // Check the type is in the range representable by ui::TextInputType.
+    DCHECK(type <= ui::TEXT_INPUT_TYPE_PASSWORD) <<
+      "WebKit::WebTextInputType and ui::TextInputType not synchronized";
+    return static_cast<ui::TextInputType>(type);
+  }
+  return ui::TEXT_INPUT_TYPE_NONE;
+}
+
+bool RenderWidget::CanComposeInline() {
+  return true;
 }
 
 WebScreenInfo RenderWidget::screenInfo() {
@@ -1317,7 +1336,7 @@ void RenderWidget::resetInputMethod() {
 
   // If the last text input type is not None, then we should finish any
   // ongoing composition regardless of the new text input type.
-  if (text_input_type_ != WebKit::WebTextInputTypeNone) {
+  if (text_input_type_ != ui::TEXT_INPUT_TYPE_NONE) {
     // If a composition text exists, then we need to let the browser process
     // to cancel the input method's ongoing composition session.
     if (webwidget_->confirmComposition())

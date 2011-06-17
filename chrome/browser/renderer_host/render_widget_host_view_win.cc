@@ -237,7 +237,7 @@ RenderWidgetHostViewWin::RenderWidgetHostViewWin(RenderWidgetHost* widget)
       parent_hwnd_(NULL),
       is_loading_(false),
       overlay_color_(0),
-      text_input_type_(WebKit::WebTextInputTypeNone) {
+      text_input_type_(ui::TEXT_INPUT_TYPE_NONE) {
   render_widget_host_->set_view(this);
   registrar_.Add(this,
                  NotificationType::RENDERER_PROCESS_TERMINATED,
@@ -578,18 +578,23 @@ void RenderWidgetHostViewWin::SetIsLoading(bool is_loading) {
 }
 
 void RenderWidgetHostViewWin::ImeUpdateTextInputState(
-    WebKit::WebTextInputType type,
+    ui::TextInputType type,
+    bool can_compose_inline,
     const gfx::Rect& caret_rect) {
+  // TODO(kinaba): currently, can_compose_inline is ignored and always treated
+  // as true. We need to support "can_compose_inline=false" for PPAPI plugins
+  // that may want to avoid drawing composition-text by themselves and pass
+  // the responsibility to the browser.
   if (text_input_type_ != type) {
     text_input_type_ = type;
-    if (type == WebKit::WebTextInputTypeText)
+    if (type == ui::TEXT_INPUT_TYPE_TEXT)
       ime_input_.EnableIME(m_hWnd);
     else
       ime_input_.DisableIME(m_hWnd);
   }
 
   // Only update caret position if the input method is enabled.
-  if (type == WebKit::WebTextInputTypeText)
+  if (type == ui::TEXT_INPUT_TYPE_TEXT)
     ime_input_.UpdateCaretRect(m_hWnd, caret_rect);
 }
 

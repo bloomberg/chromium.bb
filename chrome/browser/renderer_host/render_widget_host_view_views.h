@@ -63,7 +63,8 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   virtual gfx::Rect GetViewBounds() const OVERRIDE;
   virtual void UpdateCursor(const WebCursor& cursor) OVERRIDE;
   virtual void SetIsLoading(bool is_loading) OVERRIDE;
-  virtual void ImeUpdateTextInputState(WebKit::WebTextInputType type,
+  virtual void ImeUpdateTextInputState(ui::TextInputType type,
+                                       bool can_compose_inline,
                                        const gfx::Rect& caret_rect) OVERRIDE;
   virtual void ImeCancelComposition() OVERRIDE;
   virtual void DidUpdateBackingStore(

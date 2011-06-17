@@ -169,8 +169,9 @@ TEST_F(RenderViewTest, OnImeStateChanged) {
     EXPECT_EQ(ViewHostMsg_ImeUpdateTextInputState::ID, msg->type());
     ViewHostMsg_ImeUpdateTextInputState::Param params;
     ViewHostMsg_ImeUpdateTextInputState::Read(msg, &params);
-    EXPECT_EQ(params.a, WebKit::WebTextInputTypeText);
-    EXPECT_TRUE(params.b.x() > 0 && params.b.y() > 0);
+    EXPECT_EQ(params.a, ui::TEXT_INPUT_TYPE_TEXT);
+    EXPECT_EQ(params.b, true);
+    EXPECT_TRUE(params.c.x() > 0 && params.c.y() > 0);
 
     // Move the input focus to the second <input> element, where we should
     // de-activate IMEs.
@@ -185,7 +186,7 @@ TEST_F(RenderViewTest, OnImeStateChanged) {
     EXPECT_TRUE(msg != NULL);
     EXPECT_EQ(ViewHostMsg_ImeUpdateTextInputState::ID, msg->type());
     ViewHostMsg_ImeUpdateTextInputState::Read(msg, &params);
-    EXPECT_EQ(params.a, WebKit::WebTextInputTypePassword);
+    EXPECT_EQ(params.a, ui::TEXT_INPUT_TYPE_PASSWORD);
   }
 }
 
