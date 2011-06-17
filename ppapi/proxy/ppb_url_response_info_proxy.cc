@@ -5,78 +5,22 @@
 #include "ppapi/proxy/ppb_url_response_info_proxy.h"
 
 #include "ppapi/c/ppb_url_response_info.h"
+#include "ppapi/proxy/enter_proxy.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppb_file_ref_proxy.h"
 #include "ppapi/proxy/serialized_var.h"
+#include "ppapi/thunk/ppb_url_response_info_api.h"
+#include "ppapi/thunk/thunk.h"
+
+using ppapi::thunk::PPB_URLResponseInfo_API;
 
 namespace pp {
 namespace proxy {
 
-class URLResponseInfo : public PluginResource {
- public:
-  URLResponseInfo(const HostResource& resource)
-      : PluginResource(resource) {
-  }
-  virtual ~URLResponseInfo() {}
-
-  // Resource overrides.
-  virtual URLResponseInfo* AsURLResponseInfo() { return this; }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(URLResponseInfo);
-};
-
 namespace {
-
-PP_Bool IsURLResponseInfo(PP_Resource resource) {
-  URLResponseInfo* object = PluginResource::GetAs<URLResponseInfo>(resource);
-  return BoolToPPBool(!!object);
-}
-
-PP_Var GetProperty(PP_Resource response, PP_URLResponseProperty property) {
-  URLResponseInfo* object = PluginResource::GetAs<URLResponseInfo>(response);
-  if (!object)
-    return PP_MakeUndefined();
-  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(
-      object->instance());
-  if (!dispatcher)
-    return PP_MakeUndefined();
-
-  ReceiveSerializedVarReturnValue result;
-  dispatcher->Send(new PpapiHostMsg_PPBURLResponseInfo_GetProperty(
-      INTERFACE_ID_PPB_URL_RESPONSE_INFO, object->host_resource(), property,
-      &result));
-  return result.Return(dispatcher);
-}
-
-PP_Resource GetBodyAsFileRef(PP_Resource response) {
-  URLResponseInfo* object = PluginResource::GetAs<URLResponseInfo>(response);
-  if (!object)
-    return 0;
-  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(
-      object->instance());
-  if (!dispatcher)
-    return 0;
-
-  // This could be more efficient by having the host automatically send us the
-  // file ref when the request is streaming to a file and it's in the state
-  // where the file is ready. This will prevent us from having to do this sync
-  // IPC here.
-  PPBFileRef_CreateInfo create_info;
-  dispatcher->Send(new PpapiHostMsg_PPBURLResponseInfo_GetBodyAsFileRef(
-      INTERFACE_ID_PPB_URL_RESPONSE_INFO,
-      object->host_resource(), &create_info));
-  return PPB_FileRef_Proxy::DeserializeFileRef(create_info);
-}
-
-const PPB_URLResponseInfo urlresponseinfo_interface = {
-  &IsURLResponseInfo,
-  &GetProperty,
-  &GetBodyAsFileRef
-};
 
 InterfaceProxy* CreateURLResponseInfoProxy(Dispatcher* dispatcher,
                                            const void* target_interface) {
@@ -84,6 +28,56 @@ InterfaceProxy* CreateURLResponseInfoProxy(Dispatcher* dispatcher,
 }
 
 }  // namespace
+
+// URLResponseInfo -------------------------------------------------------------
+
+class URLResponseInfo : public PluginResource,
+                        public PPB_URLResponseInfo_API {
+ public:
+  URLResponseInfo(const HostResource& resource);
+  virtual ~URLResponseInfo();
+
+  // ResourceObjectBase override.
+  virtual PPB_URLResponseInfo_API* AsPPB_URLResponseInfo_API() OVERRIDE;
+
+  // PPB_URLResponseInfo_API implementation.
+  virtual PP_Var GetProperty(PP_URLResponseProperty property) OVERRIDE;
+  virtual PP_Resource GetBodyAsFileRef() OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(URLResponseInfo);
+};
+
+URLResponseInfo::URLResponseInfo(const HostResource& resource)
+    : PluginResource(resource) {
+}
+
+URLResponseInfo::~URLResponseInfo() {
+}
+
+PPB_URLResponseInfo_API* URLResponseInfo::AsPPB_URLResponseInfo_API() {
+  return this;
+}
+
+PP_Var URLResponseInfo::GetProperty(PP_URLResponseProperty property) {
+  ReceiveSerializedVarReturnValue result;
+  GetDispatcher()->Send(new PpapiHostMsg_PPBURLResponseInfo_GetProperty(
+      INTERFACE_ID_PPB_URL_RESPONSE_INFO, host_resource(), property, &result));
+  return result.Return(GetDispatcher());
+}
+
+PP_Resource URLResponseInfo::GetBodyAsFileRef() {
+  // This could be more efficient by having the host automatically send us the
+  // file ref when the request is streaming to a file and it's in the state
+  // where the file is ready. This will prevent us from having to do this sync
+  // IPC here.
+  PPBFileRef_CreateInfo create_info;
+  GetDispatcher()->Send(new PpapiHostMsg_PPBURLResponseInfo_GetBodyAsFileRef(
+      INTERFACE_ID_PPB_URL_RESPONSE_INFO, host_resource(), &create_info));
+  return PPB_FileRef_Proxy::DeserializeFileRef(create_info);
+}
+
+// PPB_URLResponseInfo_Proxy ---------------------------------------------------
 
 PPB_URLResponseInfo_Proxy::PPB_URLResponseInfo_Proxy(
     Dispatcher* dispatcher,
@@ -97,7 +91,7 @@ PPB_URLResponseInfo_Proxy::~PPB_URLResponseInfo_Proxy() {
 // static
 const InterfaceProxy::Info* PPB_URLResponseInfo_Proxy::GetInfo() {
   static const Info info = {
-    &urlresponseinfo_interface,
+    ppapi::thunk::GetPPB_URLResponseInfo_Thunk(),
     PPB_URLRESPONSEINFO_INTERFACE,
     INTERFACE_ID_PPB_URL_RESPONSE_INFO,
     false,
@@ -127,18 +121,25 @@ bool PPB_URLResponseInfo_Proxy::OnMessageReceived(const IPC::Message& msg) {
 }
 
 void PPB_URLResponseInfo_Proxy::OnMsgGetProperty(
-    HostResource response,
+    const HostResource& response,
     int32_t property,
     SerializedVarReturnValue result) {
-  result.Return(dispatcher(), ppb_url_response_info_target()->GetProperty(
-      response.host_resource(), static_cast<PP_URLResponseProperty>(property)));
+  EnterHostFromHostResource<PPB_URLResponseInfo_API> enter(response);
+  PP_Var result_var = PP_MakeUndefined();
+  if (enter.succeeded()) {
+    result_var = enter.object()->GetProperty(
+        static_cast<PP_URLResponseProperty>(property));
+  }
+  result.Return(dispatcher(), result_var);
 }
 
 void PPB_URLResponseInfo_Proxy::OnMsgGetBodyAsFileRef(
-    HostResource response,
+    const HostResource& response,
     PPBFileRef_CreateInfo* result) {
-  PP_Resource file_ref = ppb_url_response_info_target()->GetBodyAsFileRef(
-          response.host_resource());
+  EnterHostFromHostResource<PPB_URLResponseInfo_API> enter(response);
+  PP_Resource file_ref = 0;
+  if (enter.succeeded())
+    file_ref = enter.object()->GetBodyAsFileRef();
 
   // Use the FileRef proxy to serialize.
   DCHECK(!dispatcher()->IsPlugin());

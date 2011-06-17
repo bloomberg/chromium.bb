@@ -90,9 +90,6 @@
 #include "webkit/plugins/ppapi/ppb_scrollbar_impl.h"
 #include "webkit/plugins/ppapi/ppb_transport_impl.h"
 #include "webkit/plugins/ppapi/ppb_uma_private_impl.h"
-#include "webkit/plugins/ppapi/ppb_url_loader_impl.h"
-#include "webkit/plugins/ppapi/ppb_url_request_info_impl.h"
-#include "webkit/plugins/ppapi/ppb_url_response_info_impl.h"
 #include "webkit/plugins/ppapi/ppb_url_util_impl.h"
 #include "webkit/plugins/ppapi/ppb_video_decoder_impl.h"
 #include "webkit/plugins/ppapi/ppb_video_layer_impl.h"
@@ -314,13 +311,13 @@ const void* GetInterface(const char* name) {
   if (strcmp(name, PPB_UMA_PRIVATE_INTERFACE) == 0)
     return PPB_UMA_Private_Impl::GetInterface();
   if (strcmp(name, PPB_URLLOADER_INTERFACE) == 0)
-    return PPB_URLLoader_Impl::GetInterface();
+    return ::ppapi::thunk::GetPPB_URLLoader_Thunk();
   if (strcmp(name, PPB_URLLOADERTRUSTED_INTERFACE) == 0)
-    return PPB_URLLoader_Impl::GetTrustedInterface();
+    return ::ppapi::thunk::GetPPB_URLLoaderTrusted_Thunk();
   if (strcmp(name, PPB_URLREQUESTINFO_INTERFACE) == 0)
-    return PPB_URLRequestInfo_Impl::GetInterface();
+    return ::ppapi::thunk::GetPPB_URLRequestInfo_Thunk();
   if (strcmp(name, PPB_URLRESPONSEINFO_INTERFACE) == 0)
-    return PPB_URLResponseInfo_Impl::GetInterface();
+    return ::ppapi::thunk::GetPPB_URLResponseInfo_Thunk();
   if (strcmp(name, PPB_URLUTIL_DEV_INTERFACE) == 0)
     return PPB_URLUtil_Impl::GetInterface();
   if (strcmp(name, PPB_VAR_DEPRECATED_INTERFACE) == 0)

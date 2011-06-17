@@ -144,7 +144,7 @@ InterfaceList::InterfaceList() {
   AddPPB(PPB_Surface3D_Proxy::GetInfo());
   AddPPB(PPB_Testing_Proxy::GetInfo());
   AddPPB(PPB_URLLoader_Proxy::GetInfo());
-  AddPPB(PPB_URLLoaderTrusted_Proxy::GetInfo());
+  AddPPB(PPB_URLLoader_Proxy::GetTrustedInfo());
   AddPPB(PPB_URLRequestInfo_Proxy::GetInfo());
   AddPPB(PPB_URLResponseInfo_Proxy::GetInfo());
   AddPPB(PPB_URLUtil_Proxy::GetInfo());

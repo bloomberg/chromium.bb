@@ -35,19 +35,15 @@ class PPB_URLResponseInfo_Proxy : public InterfaceProxy {
   // new resource.
   static PP_Resource CreateResponseForResource(const HostResource& resource);
 
-  const PPB_URLResponseInfo* ppb_url_response_info_target() const {
-    return static_cast<const PPB_URLResponseInfo*>(target_interface());
-  }
-
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
 
  private:
   // Message handlers.
-  void OnMsgGetProperty(HostResource response,
+  void OnMsgGetProperty(const HostResource& response,
                         int32_t property,
                         SerializedVarReturnValue result);
-  void OnMsgGetBodyAsFileRef(HostResource response,
+  void OnMsgGetBodyAsFileRef(const HostResource& response,
                              PPBFileRef_CreateInfo* result);
 
   DISALLOW_COPY_AND_ASSIGN(PPB_URLResponseInfo_Proxy);

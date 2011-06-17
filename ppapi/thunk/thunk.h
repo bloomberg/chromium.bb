@@ -29,6 +29,10 @@ struct PPB_ImageData;
 struct PPB_Instance;
 struct PPB_Instance_Private;
 struct PPB_ImageDataTrusted;
+struct PPB_URLLoader;
+struct PPB_URLLoaderTrusted;
+struct PPB_URLRequestInfo;
+struct PPB_URLResponseInfo;
 
 #ifdef PPAPI_INSTANCE_REMOVE_SCRIPTING
 struct PPB_Instance_0_4;
@@ -66,6 +70,10 @@ const PPB_Instance_0_4* GetPPB_Instance_0_4_Thunk();
 const PPB_Instance_0_5* GetPPB_Instance_0_5_Thunk();
 const PPB_Instance_Private* GetPPB_Instance_Private_Thunk();
 const PPB_ImageDataTrusted* GetPPB_ImageDataTrusted_Thunk();
+const PPB_URLLoader* GetPPB_URLLoader_Thunk();
+const PPB_URLLoaderTrusted* GetPPB_URLLoaderTrusted_Thunk();
+const PPB_URLRequestInfo* GetPPB_URLRequestInfo_Thunk();
+const PPB_URLResponseInfo* GetPPB_URLResponseInfo_Thunk();
 
 }  // namespace thunk
 }  // namespace ppapi

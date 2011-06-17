@@ -24,6 +24,8 @@
 #include "ppapi/proxy/ppb_font_proxy.h"
 #include "ppapi/proxy/ppb_graphics_2d_proxy.h"
 #include "ppapi/proxy/ppb_image_data_proxy.h"
+#include "ppapi/proxy/ppb_url_loader_proxy.h"
+#include "ppapi/proxy/ppb_url_request_info_proxy.h"
 #include "ppapi/shared_impl/font_impl.h"
 #include "ppapi/shared_impl/function_group_base.h"
 #include "ppapi/thunk/enter.h"
@@ -41,8 +43,7 @@ ResourceCreationProxy::ResourceCreationProxy(Dispatcher* dispatcher)
 ResourceCreationProxy::~ResourceCreationProxy() {
 }
 
-::ppapi::thunk::ResourceCreationAPI*
-ResourceCreationProxy::AsResourceCreationAPI() {
+ResourceCreationAPI* ResourceCreationProxy::AsResourceCreationAPI() {
   return this;
 }
 
@@ -169,13 +170,11 @@ PP_Resource ResourceCreationProxy::CreateSurface3D(
 }
 
 PP_Resource ResourceCreationProxy::CreateURLLoader(PP_Instance instance) {
-  NOTREACHED();
-  return 0;
+  return PPB_URLLoader_Proxy::CreateProxyResource(instance);
 }
 
 PP_Resource ResourceCreationProxy::CreateURLRequestInfo(PP_Instance instance) {
-  NOTREACHED();
-  return 0;
+  return PPB_URLRequestInfo_Proxy::CreateProxyResource(instance);
 }
 
 bool ResourceCreationProxy::Send(IPC::Message* msg) {

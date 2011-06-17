@@ -10,6 +10,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "ppapi/c/ppb_url_request_info.h"
+#include "ppapi/thunk/ppb_url_request_info_api.h"
 #include "webkit/plugins/ppapi/resource.h"
 
 namespace WebKit {
@@ -22,34 +23,38 @@ namespace ppapi {
 
 class PPB_FileRef_Impl;
 
-class PPB_URLRequestInfo_Impl : public Resource {
+class PPB_URLRequestInfo_Impl : public Resource,
+                                public ::ppapi::thunk::PPB_URLRequestInfo_API {
  public:
   explicit PPB_URLRequestInfo_Impl(PluginInstance* instance);
   virtual ~PPB_URLRequestInfo_Impl();
 
-  // Returns a pointer to the interface implementing PPB_URLRequestInfo that is
-  // exposed to the plugin.
-  static const PPB_URLRequestInfo* GetInterface();
+  static PP_Resource Create(PP_Instance instance);
 
-  // Resource overrides.
-  virtual PPB_URLRequestInfo_Impl* AsPPB_URLRequestInfo_Impl();
+  // ResourceObjectBase overrides.
+  virtual PPB_URLRequestInfo_API* AsPPB_URLRequestInfo_API() OVERRIDE;
 
   // PPB_URLRequestInfo implementation.
-  bool SetUndefinedProperty(PP_URLRequestProperty property);
-  bool SetBooleanProperty(PP_URLRequestProperty property, bool value);
-  bool SetIntegerProperty(PP_URLRequestProperty property, int32_t value);
-  bool SetStringProperty(PP_URLRequestProperty property,
-                         const std::string& value);
-  bool AppendDataToBody(const std::string& data);
-  bool AppendFileToBody(PPB_FileRef_Impl* file_ref,
-                        int64_t start_offset,
-                        int64_t number_of_bytes,
-                        PP_Time expected_last_modified_time);
+  virtual PP_Bool SetProperty(PP_URLRequestProperty property,
+                              PP_Var var) OVERRIDE;
+  virtual PP_Bool AppendDataToBody(const void* data, uint32_t len) OVERRIDE;
+  virtual PP_Bool AppendFileToBody(
+      PP_Resource file_ref,
+      int64_t start_offset,
+      int64_t number_of_bytes,
+      PP_Time expected_last_modified_time) OVERRIDE;
 
   WebKit::WebURLRequest ToWebURLRequest(WebKit::WebFrame* frame) const;
 
   // Whether universal access is required to use this request.
   bool RequiresUniversalAccess() const;
+
+  bool SetUndefinedProperty(PP_URLRequestProperty property);
+  bool SetBooleanProperty(PP_URLRequestProperty property, bool value);
+  bool SetIntegerProperty(PP_URLRequestProperty property, int32_t value);
+  bool SetStringProperty(PP_URLRequestProperty property,
+                         const std::string& value);
+
 
   bool follow_redirects() { return follow_redirects_; }
 

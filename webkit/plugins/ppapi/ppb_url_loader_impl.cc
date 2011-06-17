@@ -10,6 +10,7 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_url_loader.h"
 #include "ppapi/c/trusted/ppb_url_loader_trusted.h"
+#include "ppapi/thunk/enter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
@@ -30,6 +31,9 @@
 #include "webkit/plugins/ppapi/ppb_url_response_info_impl.h"
 
 using appcache::WebApplicationCacheHostImpl;
+using ppapi::thunk::EnterResourceNoLock;
+using ppapi::thunk::PPB_URLLoader_API;
+using ppapi::thunk::PPB_URLRequestInfo_API;
 using WebKit::WebFrame;
 using WebKit::WebString;
 using WebKit::WebURL;
@@ -46,157 +50,6 @@ using WebKit::WebURLResponse;
 
 namespace webkit {
 namespace ppapi {
-
-namespace {
-
-PP_Resource Create(PP_Instance instance_id) {
-  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
-  if (!instance)
-    return 0;
-
-  PPB_URLLoader_Impl* loader = new PPB_URLLoader_Impl(instance, false);
-  return loader->GetReference();
-}
-
-PP_Bool IsURLLoader(PP_Resource resource) {
-  return BoolToPPBool(!!Resource::GetAs<PPB_URLLoader_Impl>(resource));
-}
-
-int32_t Open(PP_Resource loader_id,
-             PP_Resource request_id,
-             PP_CompletionCallback callback) {
-  scoped_refptr<PPB_URLLoader_Impl> loader(
-      Resource::GetAs<PPB_URLLoader_Impl>(loader_id));
-  if (!loader)
-    return PP_ERROR_BADRESOURCE;
-
-  scoped_refptr<PPB_URLRequestInfo_Impl> request(
-      Resource::GetAs<PPB_URLRequestInfo_Impl>(request_id));
-  if (!request)
-    return PP_ERROR_BADRESOURCE;
-
-  return loader->Open(request, callback);
-}
-
-int32_t FollowRedirect(PP_Resource loader_id,
-                       PP_CompletionCallback callback) {
-  scoped_refptr<PPB_URLLoader_Impl> loader(
-      Resource::GetAs<PPB_URLLoader_Impl>(loader_id));
-  if (!loader)
-    return PP_ERROR_BADRESOURCE;
-
-  return loader->FollowRedirect(callback);
-}
-
-PP_Bool GetUploadProgress(PP_Resource loader_id,
-                          int64_t* bytes_sent,
-                          int64_t* total_bytes_to_be_sent) {
-  scoped_refptr<PPB_URLLoader_Impl> loader(
-      Resource::GetAs<PPB_URLLoader_Impl>(loader_id));
-  if (!loader)
-    return PP_FALSE;
-
-  return BoolToPPBool(loader->GetUploadProgress(bytes_sent,
-                                                total_bytes_to_be_sent));
-}
-
-PP_Bool GetDownloadProgress(PP_Resource loader_id,
-                            int64_t* bytes_received,
-                            int64_t* total_bytes_to_be_received) {
-  scoped_refptr<PPB_URLLoader_Impl> loader(
-      Resource::GetAs<PPB_URLLoader_Impl>(loader_id));
-  if (!loader)
-    return PP_FALSE;
-
-  return BoolToPPBool(loader->GetDownloadProgress(bytes_received,
-                                                  total_bytes_to_be_received));
-}
-
-PP_Resource GetResponseInfo(PP_Resource loader_id) {
-  scoped_refptr<PPB_URLLoader_Impl> loader(
-      Resource::GetAs<PPB_URLLoader_Impl>(loader_id));
-  if (!loader)
-    return 0;
-
-  PPB_URLResponseInfo_Impl* response_info = loader->response_info();
-  if (!response_info)
-    return 0;
-
-  return response_info->GetReference();
-}
-
-int32_t ReadResponseBody(PP_Resource loader_id,
-                         void* buffer,
-                         int32_t bytes_to_read,
-                         PP_CompletionCallback callback) {
-  scoped_refptr<PPB_URLLoader_Impl> loader(
-      Resource::GetAs<PPB_URLLoader_Impl>(loader_id));
-  if (!loader)
-    return PP_ERROR_BADRESOURCE;
-
-  return loader->ReadResponseBody(buffer, bytes_to_read, callback);
-}
-
-int32_t FinishStreamingToFile(PP_Resource loader_id,
-                              PP_CompletionCallback callback) {
-  scoped_refptr<PPB_URLLoader_Impl> loader(
-      Resource::GetAs<PPB_URLLoader_Impl>(loader_id));
-  if (!loader)
-    return PP_ERROR_BADRESOURCE;
-
-  return loader->FinishStreamingToFile(callback);
-}
-
-void Close(PP_Resource loader_id) {
-  scoped_refptr<PPB_URLLoader_Impl> loader(
-      Resource::GetAs<PPB_URLLoader_Impl>(loader_id));
-  if (!loader)
-    return;
-
-  loader->Close();
-}
-
-const PPB_URLLoader ppb_urlloader = {
-  &Create,
-  &IsURLLoader,
-  &Open,
-  &FollowRedirect,
-  &GetUploadProgress,
-  &GetDownloadProgress,
-  &GetResponseInfo,
-  &ReadResponseBody,
-  &FinishStreamingToFile,
-  &Close
-};
-
-void GrantUniversalAccess(PP_Resource loader_id) {
-  scoped_refptr<PPB_URLLoader_Impl> loader(
-      Resource::GetAs<PPB_URLLoader_Impl>(loader_id));
-  if (!loader)
-    return;
-
-  loader->GrantUniversalAccess();
-}
-
-void SetStatusCallback(PP_Resource loader_id,
-                       PP_URLLoaderTrusted_StatusCallback cb) {
-  scoped_refptr<PPB_URLLoader_Impl> loader(
-      Resource::GetAs<PPB_URLLoader_Impl>(loader_id));
-  if (!loader)
-    return;
-  loader->SetStatusCallback(cb);
-}
-
-const PPB_URLLoaderTrusted ppb_urlloadertrusted = {
-  &GrantUniversalAccess,
-  &SetStatusCallback
-};
-
-WebFrame* GetFrame(PluginInstance* instance) {
-  return instance->container()->element().document().frame();
-}
-
-}  // namespace
 
 PPB_URLLoader_Impl::PPB_URLLoader_Impl(PluginInstance* instance,
                                        bool main_document_loader)
@@ -220,16 +73,16 @@ PPB_URLLoader_Impl::~PPB_URLLoader_Impl() {
 }
 
 // static
-const PPB_URLLoader* PPB_URLLoader_Impl::GetInterface() {
-  return &ppb_urlloader;
+PP_Resource PPB_URLLoader_Impl::Create(PP_Instance pp_instance) {
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(pp_instance);
+  if (!instance)
+    return 0;
+
+  PPB_URLLoader_Impl* loader = new PPB_URLLoader_Impl(instance, false);
+  return loader->GetReference();
 }
 
-// static
-const PPB_URLLoaderTrusted* PPB_URLLoader_Impl::GetTrustedInterface() {
-  return &ppb_urlloadertrusted;
-}
-
-PPB_URLLoader_Impl* PPB_URLLoader_Impl::AsPPB_URLLoader_Impl() {
+PPB_URLLoader_API* PPB_URLLoader_Impl::AsPPB_URLLoader_API() {
   return this;
 }
 
@@ -242,8 +95,14 @@ void PPB_URLLoader_Impl::LastPluginRefWasDeleted(bool instance_destroyed) {
   }
 }
 
-int32_t PPB_URLLoader_Impl::Open(PPB_URLRequestInfo_Impl* request,
+int32_t PPB_URLLoader_Impl::Open(PP_Resource request_id,
                                  PP_CompletionCallback callback) {
+  EnterResourceNoLock<PPB_URLRequestInfo_API> enter_request(request_id, true);
+  if (enter_request.failed())
+    return PP_ERROR_BADARGUMENT;
+  PPB_URLRequestInfo_Impl* request = static_cast<PPB_URLRequestInfo_Impl*>(
+      enter_request.object());
+
   int32_t rv = ValidateCallback(callback);
   if (rv != PP_OK)
     return rv;
@@ -254,7 +113,7 @@ int32_t PPB_URLLoader_Impl::Open(PPB_URLRequestInfo_Impl* request,
   if (loader_.get())
     return PP_ERROR_INPROGRESS;
 
-  WebFrame* frame = GetFrame(instance());
+  WebFrame* frame = instance()->container()->element().document().frame();
   if (!frame)
     return PP_ERROR_FAILED;
   WebURLRequest web_request(request->ToWebURLRequest(frame));
@@ -303,29 +162,35 @@ int32_t PPB_URLLoader_Impl::FollowRedirect(PP_CompletionCallback callback) {
   return PP_OK_COMPLETIONPENDING;
 }
 
-bool PPB_URLLoader_Impl::GetUploadProgress(int64_t* bytes_sent,
-                                           int64_t* total_bytes_to_be_sent) {
+PP_Bool PPB_URLLoader_Impl::GetUploadProgress(int64_t* bytes_sent,
+                                              int64_t* total_bytes_to_be_sent) {
   if (!RecordUploadProgress()) {
     *bytes_sent = 0;
     *total_bytes_to_be_sent = 0;
-    return false;
+    return PP_FALSE;
   }
   *bytes_sent = bytes_sent_;
   *total_bytes_to_be_sent = total_bytes_to_be_sent_;
-  return true;
+  return PP_TRUE;
 }
 
-bool PPB_URLLoader_Impl::GetDownloadProgress(
+PP_Bool PPB_URLLoader_Impl::GetDownloadProgress(
     int64_t* bytes_received,
     int64_t* total_bytes_to_be_received) {
   if (!RecordDownloadProgress()) {
     *bytes_received = 0;
     *total_bytes_to_be_received = 0;
-    return false;
+    return PP_FALSE;
   }
   *bytes_received = bytes_received_;
   *total_bytes_to_be_received = total_bytes_to_be_received_;
-  return true;
+  return PP_TRUE;
+}
+
+PP_Resource PPB_URLLoader_Impl::GetResponseInfo() {
+  if (!response_info_)
+    return 0;
+  return response_info_->GetReference();
 }
 
 int32_t PPB_URLLoader_Impl::ReadResponseBody(void* buffer,

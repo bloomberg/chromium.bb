@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ppapi/thunk/thunk.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrameClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
-
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_url_request_info_impl.h"
 #include "webkit/plugins/ppapi/ppapi_unittest.h"
@@ -95,7 +95,8 @@ WebView* URLRequestInfoTest::web_view_;
 WebFrame* URLRequestInfoTest::frame_;
 
 TEST_F(URLRequestInfoTest, GetInterface) {
-  const PPB_URLRequestInfo* interface = info_->GetInterface();
+  const PPB_URLRequestInfo* interface =
+      ::ppapi::thunk::GetPPB_URLRequestInfo_Thunk();
   ASSERT_TRUE(interface);
   ASSERT_TRUE(interface->Create);
   ASSERT_TRUE(interface->IsURLRequestInfo);
@@ -107,7 +108,7 @@ TEST_F(URLRequestInfoTest, GetInterface) {
 }
 
 TEST_F(URLRequestInfoTest, AsURLRequestInfo) {
-  ASSERT_EQ(info_, info_->AsPPB_URLRequestInfo_Impl());
+  ASSERT_EQ(info_, info_->AsPPB_URLRequestInfo_API());
 }
 
 TEST_F(URLRequestInfoTest, StreamToFile) {

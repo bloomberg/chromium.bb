@@ -645,9 +645,7 @@ IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBURLLoader_FinishStreamingToFile,
                     uint32_t /* serialized_callback */)
 IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBURLLoader_Close,
                     pp::proxy::HostResource /* loader */)
-
-// PPB_URLLoaderTrusted.
-IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBURLLoaderTrusted_GrantUniversalAccess,
+IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBURLLoader_GrantUniversalAccess,
                     pp::proxy::HostResource /* loader */)
 
 // PPB_URLRequestInfo.

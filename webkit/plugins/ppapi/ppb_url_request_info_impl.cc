@@ -10,6 +10,8 @@
 #include "googleurl/src/url_util.h"
 #include "net/http/http_util.h"
 #include "ppapi/c/pp_var.h"
+#include "ppapi/thunk/enter.h"
+#include "ppapi/thunk/ppb_file_ref_api.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
@@ -23,6 +25,9 @@
 #include "webkit/plugins/ppapi/var.h"
 #include "webkit/glue/webkit_glue.h"
 
+using ppapi::thunk::EnterResourceNoLock;
+using ppapi::thunk::PPB_FileRef_API;
+using ppapi::thunk::PPB_URLRequestInfo_API;
 using WebKit::WebData;
 using WebKit::WebHTTPBody;
 using WebKit::WebString;
@@ -85,96 +90,6 @@ bool AreValidHeaders(const std::string& headers) {
   return true;
 }
 
-PP_Resource Create(PP_Instance instance_id) {
-  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
-  if (!instance)
-    return 0;
-
-  PPB_URLRequestInfo_Impl* request = new PPB_URLRequestInfo_Impl(instance);
-
-  return request->GetReference();
-}
-
-PP_Bool IsURLRequestInfo(PP_Resource resource) {
-  return BoolToPPBool(!!Resource::GetAs<PPB_URLRequestInfo_Impl>(resource));
-}
-
-PP_Bool SetProperty(PP_Resource request_id,
-                    PP_URLRequestProperty property,
-                    PP_Var var) {
-  scoped_refptr<PPB_URLRequestInfo_Impl> request(
-      Resource::GetAs<PPB_URLRequestInfo_Impl>(request_id));
-  if (!request)
-    return PP_FALSE;
-
-  PP_Bool result = PP_FALSE;
-  switch (var.type) {
-    case PP_VARTYPE_UNDEFINED:
-      result = BoolToPPBool(request->SetUndefinedProperty(property));
-      break;
-    case PP_VARTYPE_BOOL:
-      result = BoolToPPBool(
-          request->SetBooleanProperty(property,
-                                      PPBoolToBool(var.value.as_bool)));
-      break;
-    case PP_VARTYPE_INT32:
-      result = BoolToPPBool(
-          request->SetIntegerProperty(property, var.value.as_int));
-      break;
-    case PP_VARTYPE_STRING: {
-      scoped_refptr<StringVar> string(StringVar::FromPPVar(var));
-      if (string)
-        result = BoolToPPBool(request->SetStringProperty(property,
-                                                         string->value()));
-      break;
-    }
-    default:
-      break;
-  }
-  return result;
-}
-
-PP_Bool AppendDataToBody(PP_Resource request_id,
-                         const void* data,
-                         uint32_t len) {
-  scoped_refptr<PPB_URLRequestInfo_Impl> request(
-      Resource::GetAs<PPB_URLRequestInfo_Impl>(request_id));
-  if (!request)
-    return PP_FALSE;
-
-  return BoolToPPBool(request->AppendDataToBody(std::string(
-      static_cast<const char*>(data), len)));
-}
-
-PP_Bool AppendFileToBody(PP_Resource request_id,
-                      PP_Resource file_ref_id,
-                      int64_t start_offset,
-                      int64_t number_of_bytes,
-                      PP_Time expected_last_modified_time) {
-  scoped_refptr<PPB_URLRequestInfo_Impl> request(
-      Resource::GetAs<PPB_URLRequestInfo_Impl>(request_id));
-  if (!request)
-    return PP_FALSE;
-
-  scoped_refptr<PPB_FileRef_Impl> file_ref(
-      Resource::GetAs<PPB_FileRef_Impl>(file_ref_id));
-  if (!file_ref)
-    return PP_FALSE;
-
-  return BoolToPPBool(request->AppendFileToBody(file_ref,
-                                                start_offset,
-                                                number_of_bytes,
-                                                expected_last_modified_time));
-}
-
-const PPB_URLRequestInfo ppb_urlrequestinfo = {
-  &Create,
-  &IsURLRequestInfo,
-  &SetProperty,
-  &AppendDataToBody,
-  &AppendFileToBody
-};
-
 }  // namespace
 
 struct PPB_URLRequestInfo_Impl::BodyItem {
@@ -220,12 +135,137 @@ PPB_URLRequestInfo_Impl::~PPB_URLRequestInfo_Impl() {
 }
 
 // static
-const PPB_URLRequestInfo* PPB_URLRequestInfo_Impl::GetInterface() {
-  return &ppb_urlrequestinfo;
+PP_Resource PPB_URLRequestInfo_Impl::Create(PP_Instance pp_instance) {
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(pp_instance);
+  if (!instance)
+    return 0;
+
+  PPB_URLRequestInfo_Impl* request = new PPB_URLRequestInfo_Impl(instance);
+  return request->GetReference();
 }
 
-PPB_URLRequestInfo_Impl* PPB_URLRequestInfo_Impl::AsPPB_URLRequestInfo_Impl() {
+PPB_URLRequestInfo_API* PPB_URLRequestInfo_Impl::AsPPB_URLRequestInfo_API() {
   return this;
+}
+
+PP_Bool PPB_URLRequestInfo_Impl::SetProperty(PP_URLRequestProperty property,
+                                             PP_Var var) {
+  PP_Bool result = PP_FALSE;
+  switch (var.type) {
+    case PP_VARTYPE_UNDEFINED:
+      result = PP_FromBool(SetUndefinedProperty(property));
+      break;
+    case PP_VARTYPE_BOOL:
+      result = PP_FromBool(
+          SetBooleanProperty(property, PP_ToBool(var.value.as_bool)));
+      break;
+    case PP_VARTYPE_INT32:
+      result = PP_FromBool(
+          SetIntegerProperty(property, var.value.as_int));
+      break;
+    case PP_VARTYPE_STRING: {
+      scoped_refptr<StringVar> string(StringVar::FromPPVar(var));
+      if (string)
+        result = PP_FromBool(SetStringProperty(property, string->value()));
+      break;
+    }
+    default:
+      break;
+  }
+  return result;
+}
+
+PP_Bool PPB_URLRequestInfo_Impl::AppendDataToBody(const void* data,
+                                                  uint32_t len) {
+  if (len > 0)
+    body_.push_back(BodyItem(std::string(static_cast<const char*>(data), len)));
+  return PP_TRUE;
+}
+
+PP_Bool PPB_URLRequestInfo_Impl::AppendFileToBody(
+    PP_Resource file_ref,
+    int64_t start_offset,
+    int64_t number_of_bytes,
+    PP_Time expected_last_modified_time) {
+  // Ignore a call to append nothing.
+  if (number_of_bytes == 0)
+    return PP_TRUE;
+
+  // Check for bad values.  (-1 means read until end of file.)
+  if (start_offset < 0 || number_of_bytes < -1)
+    return PP_FALSE;
+
+  EnterResourceNoLock<PPB_FileRef_API> enter(file_ref, true);
+  if (enter.failed())
+    return PP_FALSE;
+
+  body_.push_back(BodyItem(static_cast<PPB_FileRef_Impl*>(enter.object()),
+                           start_offset,
+                           number_of_bytes,
+                           expected_last_modified_time));
+  return PP_TRUE;
+}
+
+WebURLRequest PPB_URLRequestInfo_Impl::ToWebURLRequest(WebFrame* frame) const {
+  WebURLRequest web_request;
+  web_request.initialize();
+  web_request.setURL(frame->document().completeURL(WebString::fromUTF8(url_)));
+  web_request.setDownloadToFile(stream_to_file_);
+  web_request.setReportUploadProgress(record_upload_progress());
+
+  if (!method_.empty())
+    web_request.setHTTPMethod(WebString::fromUTF8(method_));
+
+  if (!headers_.empty()) {
+    net::HttpUtil::HeadersIterator it(headers_.begin(), headers_.end(), "\n");
+    while (it.GetNext()) {
+      web_request.addHTTPHeaderField(
+          WebString::fromUTF8(it.name()),
+          WebString::fromUTF8(it.values()));
+    }
+  }
+
+  if (!body_.empty()) {
+    WebHTTPBody http_body;
+    http_body.initialize();
+    for (size_t i = 0; i < body_.size(); ++i) {
+      if (body_[i].file_ref) {
+        http_body.appendFileRange(
+            webkit_glue::FilePathToWebString(
+                body_[i].file_ref->GetSystemPath()),
+            body_[i].start_offset,
+            body_[i].number_of_bytes,
+            body_[i].expected_last_modified_time);
+      } else {
+        DCHECK(!body_[i].data.empty());
+        http_body.appendData(WebData(body_[i].data));
+      }
+    }
+    web_request.setHTTPBody(http_body);
+  }
+
+  if (has_custom_referrer_url_) {
+    if (!custom_referrer_url_.empty())
+      frame->setReferrerForRequest(web_request, GURL(custom_referrer_url_));
+  } else if (!allow_cross_origin_requests_) {
+    // Use default, except for cross-origin requests, since 'referer' is not
+    // whitelisted and will cause the request to fail.
+    frame->setReferrerForRequest(web_request, WebURL());
+  }
+
+  if (has_custom_content_transfer_encoding_) {
+    if (!custom_content_transfer_encoding_.empty()) {
+      web_request.addHTTPHeaderField(
+          WebString::fromUTF8("Content-Transfer-Encoding"),
+          WebString::fromUTF8(custom_content_transfer_encoding_));
+    }
+  }
+
+  return web_request;
+}
+
+bool PPB_URLRequestInfo_Impl::RequiresUniversalAccess() const {
+  return has_custom_referrer_url_ || has_custom_content_transfer_encoding_;
 }
 
 bool PPB_URLRequestInfo_Impl::SetUndefinedProperty(
@@ -313,94 +353,6 @@ bool PPB_URLRequestInfo_Impl::SetStringProperty(PP_URLRequestProperty property,
     default:
       return false;
   }
-}
-
-bool PPB_URLRequestInfo_Impl::AppendDataToBody(const std::string& data) {
-  if (!data.empty())
-    body_.push_back(BodyItem(data));
-  return true;
-}
-
-bool PPB_URLRequestInfo_Impl::AppendFileToBody(
-    PPB_FileRef_Impl* file_ref,
-    int64_t start_offset,
-    int64_t number_of_bytes,
-    PP_Time expected_last_modified_time) {
-  // Ignore a call to append nothing.
-  if (number_of_bytes == 0)
-    return true;
-
-  // Check for bad values.  (-1 means read until end of file.)
-  if (start_offset < 0 || number_of_bytes < -1)
-    return false;
-
-  body_.push_back(BodyItem(file_ref,
-                           start_offset,
-                           number_of_bytes,
-                           expected_last_modified_time));
-  return true;
-}
-
-WebURLRequest PPB_URLRequestInfo_Impl::ToWebURLRequest(WebFrame* frame) const {
-  WebURLRequest web_request;
-  web_request.initialize();
-  web_request.setURL(frame->document().completeURL(WebString::fromUTF8(url_)));
-  web_request.setDownloadToFile(stream_to_file_);
-  web_request.setReportUploadProgress(record_upload_progress());
-
-  if (!method_.empty())
-    web_request.setHTTPMethod(WebString::fromUTF8(method_));
-
-  if (!headers_.empty()) {
-    net::HttpUtil::HeadersIterator it(headers_.begin(), headers_.end(), "\n");
-    while (it.GetNext()) {
-      web_request.addHTTPHeaderField(
-          WebString::fromUTF8(it.name()),
-          WebString::fromUTF8(it.values()));
-    }
-  }
-
-  if (!body_.empty()) {
-    WebHTTPBody http_body;
-    http_body.initialize();
-    for (size_t i = 0; i < body_.size(); ++i) {
-      if (body_[i].file_ref) {
-        http_body.appendFileRange(
-            webkit_glue::FilePathToWebString(
-                body_[i].file_ref->GetSystemPath()),
-            body_[i].start_offset,
-            body_[i].number_of_bytes,
-            body_[i].expected_last_modified_time);
-      } else {
-        DCHECK(!body_[i].data.empty());
-        http_body.appendData(WebData(body_[i].data));
-      }
-    }
-    web_request.setHTTPBody(http_body);
-  }
-
-  if (has_custom_referrer_url_) {
-    if (!custom_referrer_url_.empty())
-      frame->setReferrerForRequest(web_request, GURL(custom_referrer_url_));
-  } else if (!allow_cross_origin_requests_) {
-    // Use default, except for cross-origin requests, since 'referer' is not
-    // whitelisted and will cause the request to fail.
-    frame->setReferrerForRequest(web_request, WebURL());
-  }
-
-  if (has_custom_content_transfer_encoding_) {
-    if (!custom_content_transfer_encoding_.empty()) {
-      web_request.addHTTPHeaderField(
-          WebString::fromUTF8("Content-Transfer-Encoding"),
-          WebString::fromUTF8(custom_content_transfer_encoding_));
-    }
-  }
-
-  return web_request;
-}
-
-bool PPB_URLRequestInfo_Impl::RequiresUniversalAccess() const {
-  return has_custom_referrer_url_ || has_custom_content_transfer_encoding_;
 }
 
 }  // namespace ppapi

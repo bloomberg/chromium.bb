@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,7 @@
 #include "webkit/plugins/ppapi/var.h"
 #include "webkit/glue/webkit_glue.h"
 
+using ppapi::thunk::PPB_URLResponseInfo_API;
 using WebKit::WebHTTPHeaderVisitor;
 using WebKit::WebString;
 using WebKit::WebURLResponse;
@@ -41,40 +42,6 @@ class HeaderFlattener : public WebHTTPHeaderVisitor {
   std::string buffer_;
 };
 
-PP_Bool IsURLResponseInfo(PP_Resource resource) {
-  return BoolToPPBool(!!Resource::GetAs<PPB_URLResponseInfo_Impl>(resource));
-}
-
-PP_Var GetProperty(PP_Resource response_id,
-                   PP_URLResponseProperty property) {
-  scoped_refptr<PPB_URLResponseInfo_Impl> response(
-      Resource::GetAs<PPB_URLResponseInfo_Impl>(response_id));
-  if (!response)
-    return PP_MakeUndefined();
-
-  return response->GetProperty(property);
-}
-
-PP_Resource GetBody(PP_Resource response_id) {
-  scoped_refptr<PPB_URLResponseInfo_Impl> response(
-      Resource::GetAs<PPB_URLResponseInfo_Impl>(response_id));
-  if (!response.get())
-    return 0;
-
-  PPB_FileRef_Impl* body = response->body();
-  if (!body)
-    return 0;
-  body->AddRef();  // AddRef for the caller.
-
-  return body->GetReference();
-}
-
-const PPB_URLResponseInfo ppb_urlresponseinfo = {
-  &IsURLResponseInfo,
-  &GetProperty,
-  &GetBody
-};
-
 bool IsRedirect(int32_t status) {
   return status >= 300 && status <= 399;
 }
@@ -89,13 +56,28 @@ PPB_URLResponseInfo_Impl::PPB_URLResponseInfo_Impl(PluginInstance* instance)
 PPB_URLResponseInfo_Impl::~PPB_URLResponseInfo_Impl() {
 }
 
-// static
-const PPB_URLResponseInfo* PPB_URLResponseInfo_Impl::GetInterface() {
-  return &ppb_urlresponseinfo;
+bool PPB_URLResponseInfo_Impl::Initialize(const WebURLResponse& response) {
+  url_ = response.url().spec();
+  status_code_ = response.httpStatusCode();
+  status_text_ = response.httpStatusText().utf8();
+  if (IsRedirect(status_code_)) {
+    redirect_url_ = response.httpHeaderField(
+        WebString::fromUTF8("Location")).utf8();
+  }
+
+  HeaderFlattener flattener;
+  response.visitHTTPHeaderFields(&flattener);
+  headers_ = flattener.buffer();
+
+  WebString file_path = response.downloadFilePath();
+  if (!file_path.isEmpty()) {
+    body_ = new PPB_FileRef_Impl(instance(),
+                                 webkit_glue::WebStringToFilePath(file_path));
+  }
+  return true;
 }
 
-PPB_URLResponseInfo_Impl*
-PPB_URLResponseInfo_Impl::AsPPB_URLResponseInfo_Impl() {
+PPB_URLResponseInfo_API* PPB_URLResponseInfo_Impl::AsPPB_URLResponseInfo_API() {
   return this;
 }
 
@@ -122,24 +104,11 @@ PP_Var PPB_URLResponseInfo_Impl::GetProperty(PP_URLResponseProperty property) {
   return PP_MakeUndefined();
 }
 
-bool PPB_URLResponseInfo_Impl::Initialize(const WebURLResponse& response) {
-  url_ = response.url().spec();
-  status_code_ = response.httpStatusCode();
-  status_text_ = response.httpStatusText().utf8();
-  if (IsRedirect(status_code_)) {
-    redirect_url_ = response.httpHeaderField(
-        WebString::fromUTF8("Location")).utf8();
-  }
-
-  HeaderFlattener flattener;
-  response.visitHTTPHeaderFields(&flattener);
-  headers_ = flattener.buffer();
-
-  WebString file_path = response.downloadFilePath();
-  if (!file_path.isEmpty())
-    body_ = new PPB_FileRef_Impl(instance(),
-                                 webkit_glue::WebStringToFilePath(file_path));
-  return true;
+PP_Resource PPB_URLResponseInfo_Impl::GetBodyAsFileRef() {
+  if (!body_.get())
+    return 0;
+  body_->AddRef();  // AddRef for the caller.
+  return body_->GetReference();
 }
 
 }  // namespace ppapi

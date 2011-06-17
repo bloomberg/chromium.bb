@@ -30,6 +30,9 @@ class PPB_URLLoader_Proxy : public InterfaceProxy {
   virtual ~PPB_URLLoader_Proxy();
 
   static const Info* GetInfo();
+  static const Info* GetTrustedInfo();
+
+  static PP_Resource CreateProxyResource(PP_Instance instance);
 
   // URLLoader objects are normally allocated by the Create function, but
   // they are also provided to PPP_Instance.OnMsgHandleDocumentLoad. This
@@ -70,6 +73,7 @@ class PPB_URLLoader_Proxy : public InterfaceProxy {
   void OnMsgFinishStreamingToFile(const HostResource& loader,
                                   uint32_t serialized_callback);
   void OnMsgClose(const HostResource& loader);
+  void OnMsgGrantUniversalAccess(const HostResource& loader);
 
   // Renderer->plugin message handlers.
   void OnMsgUpdateProgress(
@@ -77,10 +81,6 @@ class PPB_URLLoader_Proxy : public InterfaceProxy {
   void OnMsgReadResponseBodyAck(const HostResource& pp_resource,
                                 int32_t result,
                                 const std::string& data);
-
-  // Hooks the given URLLoader resource up in the host for receiving download
-  // and upload status callbacks.
-  void RegisterStatusCallback(PP_Resource resource);
 
   // Handles callbacks for read complete messages. Takes ownership of the info
   // pointer.
@@ -92,26 +92,6 @@ class PPB_URLLoader_Proxy : public InterfaceProxy {
   // Valid only in the host, this lazily-initialized pointer indicates the
   // URLLoaderTrusted interface.
   const PPB_URLLoaderTrusted* host_urlloader_trusted_interface_;
-};
-
-class PPB_URLLoaderTrusted_Proxy : public InterfaceProxy {
- public:
-  PPB_URLLoaderTrusted_Proxy(Dispatcher* dispatcher,
-                             const void* target_interface);
-  virtual ~PPB_URLLoaderTrusted_Proxy();
-
-  static const Info* GetInfo();
-
-  const PPB_URLLoaderTrusted* ppb_url_loader_trusted_target() const {
-    return reinterpret_cast<const PPB_URLLoaderTrusted*>(target_interface());
-  }
-
-  // InterfaceProxy implementation.
-  virtual bool OnMessageReceived(const IPC::Message& msg);
-
- private:
-  // Plugin->renderer message handlers.
-  void OnMsgGrantUniversalAccess(const HostResource& loader);
 };
 
 }  // namespace proxy
