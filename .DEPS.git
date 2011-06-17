@@ -63,11 +63,11 @@ deps = {
     'src/third_party/scons-2.0.1':
         Var('git_url') + '/native_client/src/third_party/scons-2.0.1.git@c81c95aff36392cffede13382dd5fcad25c0a603',
     'src/third_party/skia/gpu':
-        Var('git_url') + '/external/skia/gpu.git@eaf1ef757de790a04a102c6807430abf0aad11f7',
+        Var('git_url') + '/external/skia/gpu.git@921c7aed8cf82af0e8a208909e3a7a0f6278fc4e',
     'src/third_party/skia/include':
-        Var('git_url') + '/external/skia/include.git@539166254e9d31441ee653e3464ebd9a9dd3fe19',
+        Var('git_url') + '/external/skia/include.git@f00cabd9665e99fa96283db71e82ec80f95df115',
     'src/third_party/skia/src':
-        Var('git_url') + '/external/skia/src.git@d9e023ab0330efd7297d76d9ff69060e6ea907d4',
+        Var('git_url') + '/external/skia/src.git@04f0846e042c7334039ed6d2d03df604c6a2f6cd',
     'src/third_party/skia/third_party/glu':
         Var('git_url') + '/external/skia/third_party/glu.git@ff7deb69dcaabf939d45fca80ad507219e938412',
     'src/third_party/snappy/src':
