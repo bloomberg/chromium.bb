@@ -55,6 +55,7 @@ class BlockedDisplayingInfoBarDelegate : public BlockedInfoBarDelegate {
  private:
   virtual void InfoBarDismissed() OVERRIDE;
   virtual bool Accept() OVERRIDE;
+  virtual bool Cancel() OVERRIDE;
 };
 
 // A subclass specific to the blocked running insecure content case.
@@ -66,6 +67,7 @@ class BlockedRunningInfoBarDelegate : public BlockedInfoBarDelegate {
  private:
   virtual void InfoBarDismissed() OVERRIDE;
   virtual bool Accept() OVERRIDE;
+  virtual bool Cancel() OVERRIDE;
 };
 
 #endif  // CHROME_BROWSER_TAB_CONTENTS_BLOCKED_INFOBAR_DELEGATE_H_
