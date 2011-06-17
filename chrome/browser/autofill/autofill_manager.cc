@@ -605,7 +605,8 @@ void AutofillManager::OnFillAutofillFormData(int query_id,
 }
 
 void AutofillManager::OnShowAutofillDialog() {
-  Browser* browser = BrowserList::GetLastActive();
+  Browser* browser = BrowserList::GetLastActiveWithProfile(
+      tab_contents()->profile());
   if (browser)
     browser->ShowOptionsTab(chrome::kAutofillSubPage);
 }
