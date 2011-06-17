@@ -226,7 +226,8 @@ TEST_F(PasswordStoreWinTest, DISABLED_ConvertIE7Login) {
   store->Shutdown();
 }
 
-TEST_F(PasswordStoreWinTest, OutstandingWDSQueries) {
+// Flaky.  http://crbug.com/86558
+TEST_F(PasswordStoreWinTest, FLAKY_OutstandingWDSQueries) {
   // Prentend that the migration has already taken place.
   profile_->GetPrefs()->RegisterBooleanPref(prefs::kLoginDatabaseMigrated,
                                             true,
