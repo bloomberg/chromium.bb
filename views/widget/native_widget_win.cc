@@ -92,13 +92,6 @@ void EnsureRectIsVisibleInRect(const gfx::Rect& parent_rect,
 
 namespace {
 
-// Returns whether the specified window is the current active window.
-bool IsWindowActive(HWND hwnd) {
-  WINDOWINFO info;
-  return ::GetWindowInfo(hwnd, &info) &&
-         ((info.dwWindowStatus & WS_ACTIVECAPTION) != 0);
-}
-
 // Get the source HWND of the specified message. Depending on the message, the
 // source HWND is encoded in either the WPARAM or the LPARAM value.
 HWND GetControlHWNDForMessage(UINT message, WPARAM w_param, LPARAM l_param) {
@@ -908,7 +901,7 @@ void NativeWidgetWin::Deactivate() {
 }
 
 bool NativeWidgetWin::IsActive() const {
-  return IsWindowActive(hwnd());
+  return GetActiveWindow() == hwnd();
 }
 
 void NativeWidgetWin::SetAlwaysOnTop(bool on_top) {
@@ -1119,6 +1112,17 @@ LRESULT NativeWidgetWin::OnWndProc(UINT message, WPARAM w_param,
 // Message handlers ------------------------------------------------------------
 
 void NativeWidgetWin::OnActivate(UINT action, BOOL minimized, HWND window) {
+  if (!GetWidget()->ShouldUseNativeFrame()) {
+    // TODO(beng, et al): Hack to redraw this window and child windows
+    //     synchronously upon activation. Not all child windows are redrawing
+    //     themselves leading to issues like http://crbug.com/74604
+    //     We redraw out-of-process HWNDs asynchronously to avoid hanging the
+    //     whole app if a child HWND belonging to a hung plugin is encountered.
+    RedrawWindow(GetNativeView(), NULL, NULL,
+                 RDW_NOCHILDREN | RDW_INVALIDATE | RDW_UPDATENOW);
+    EnumChildWindows(GetNativeView(), EnumChildWindowsForRedraw, NULL);
+  }
+
   SetMsgHandled(FALSE);
 }
 
@@ -1569,17 +1573,6 @@ LRESULT NativeWidgetWin::OnNCActivate(BOOL active) {
   // visible, no need to paint.
   if (IsVisible())
     GetWidget()->non_client_view()->SchedulePaint();
-
-  if (!GetWidget()->ShouldUseNativeFrame()) {
-    // TODO(beng, et al): Hack to redraw this window and child windows
-    //     synchronously upon activation. Not all child windows are redrawing
-    //     themselves leading to issues like http://crbug.com/74604
-    //     We redraw out-of-process HWNDs asynchronously to avoid hanging the
-    //     whole app if a child HWND belonging to a hung plugin is encountered.
-    RedrawWindow(GetNativeView(), NULL, NULL,
-                 RDW_NOCHILDREN | RDW_INVALIDATE | RDW_UPDATENOW);
-    EnumChildWindows(GetNativeView(), EnumChildWindowsForRedraw, NULL);
-  }
 
   // If we're active again, we should be allowed to render as inactive, so
   // tell the non-client view.
