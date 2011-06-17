@@ -116,6 +116,15 @@
       '-notifications',
       # crbug.com/86237
       '-content.ContentTest.testHttpsPage',
+      # crbug.com/86523
+      '-cookies.CookiesTest.testAllowCookiesForASessionUsingExceptions',
+      '-cookies.CookiesTest.testAllowCookiesUsingExceptions',
+      '-cookies.CookiesTest.testBlockCookiesUsingExceptions',
+      # crbug.com/86524
+      '-plugins.PluginsTest.testAllowPluginException',
+      # crbug.com/86525
+      '-popups.PopupsTest.testAllowPopupsFromExternalSite',
+      '-popups.PopupsTest.testPopupsLaunchWhenTabIsClosed',
     ],
 
     'win': [
