@@ -38,6 +38,9 @@ class NativeWidgetView : public View {
 
   Widget* GetAssociatedWidget();
 
+  // Overridden from View:
+  virtual void SchedulePaintInternal(const gfx::Rect& r) OVERRIDE;
+
  private:
   // Overridden from View:
   virtual void ViewHierarchyChanged(bool is_add,

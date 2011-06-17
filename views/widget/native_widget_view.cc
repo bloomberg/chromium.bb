@@ -29,6 +29,10 @@ Widget* NativeWidgetView::GetAssociatedWidget() {
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetView, View overrides:
 
+void NativeWidgetView::SchedulePaintInternal(const gfx::Rect& r) {
+  View::SchedulePaintInternal(r);
+}
+
 void NativeWidgetView::ViewHierarchyChanged(bool is_add, View* parent,
                                             View* child) {
   if (is_add && child == this)
