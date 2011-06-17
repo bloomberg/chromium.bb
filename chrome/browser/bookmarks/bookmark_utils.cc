@@ -126,6 +126,7 @@ int ChildURLCount(const BookmarkNode* node) {
 void OpenAllImpl(const BookmarkNode* node,
                  WindowOpenDisposition initial_disposition,
                  PageNavigator** navigator,
+                 Profile* profile,
                  bool* opened_url) {
   if (node->is_url()) {
     WindowOpenDisposition disposition;
@@ -139,7 +140,7 @@ void OpenAllImpl(const BookmarkNode* node,
       *opened_url = true;
       // We opened the first URL which may have opened a new window or clobbered
       // the current page, reset the navigator just to be sure.
-      Browser* new_browser = BrowserList::GetLastActive();
+      Browser* new_browser = BrowserList::GetLastActiveWithProfile(profile);
       if (new_browser) {
         TabContents* current_tab = new_browser->GetSelectedTabContents();
         DCHECK(new_browser && current_tab);
@@ -152,7 +153,8 @@ void OpenAllImpl(const BookmarkNode* node,
     for (int i = 0; i < node->child_count(); ++i) {
       const BookmarkNode* child_node = node->GetChild(i);
       if (child_node->is_url())
-        OpenAllImpl(child_node, initial_disposition, navigator, opened_url);
+        OpenAllImpl(child_node, initial_disposition, navigator, profile,
+                    opened_url);
     }
   }
 }
@@ -383,7 +385,8 @@ void OpenAll(gfx::NativeWindow parent,
 
   bool opened_url = false;
   for (size_t i = 0; i < nodes.size(); ++i)
-    OpenAllImpl(nodes[i], initial_disposition, &navigator, &opened_url);
+    OpenAllImpl(nodes[i], initial_disposition, &navigator, profile,
+                &opened_url);
 }
 
 void OpenAll(gfx::NativeWindow parent,
