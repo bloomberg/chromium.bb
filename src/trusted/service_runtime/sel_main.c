@@ -145,8 +145,8 @@ static void PrintUsage() {
           " -c ignore validator! dangerous! Repeating this option twice skips\n"
           "    validation completely.\n"
           " -F fuzz testing; quit after loading NaCl app\n"
-          " -S enable signal handling.\n"
-          " -g enable gdb debug stub.\n"
+          " -S enable signal handling.  Not secure on x86-64 Windows.\n"
+          " -g enable gdb debug stub.  Not secure on x86-64 Windows.\n"
           " -I disable ELF ABI version number check (safe)\n"
           " -l <file>  write log output to the given file\n"
           " -s safely stub out non-validating instructions\n"
@@ -537,6 +537,16 @@ int main(int  argc,
     NaClSignalHandlerFini();
     /* Sanity check. */
     NaClSignalAssertNoHandlers();
+
+    /*
+     * Patch the Windows exception dispatcher to be safe in the case
+     * of faults inside x86-64 sandboxed code.  The sandbox is not
+     * secure on 64-bit Windows without this.
+     */
+#if (NACL_WINDOWS && NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && \
+     NACL_BUILD_SUBARCH == 64)
+    NaClPatchWindowsExceptionDispatcher();
+#endif
   }
 
   /*

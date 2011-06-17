@@ -177,6 +177,18 @@ int NaClMainForChromium(int handle_count, const NaClHandle *handles,
   }
 
   /*
+   * Patch the Windows exception dispatcher to be safe in the case
+   * of faults inside x86-64 sandboxed code.  The sandbox is not
+   * secure on 64-bit Windows without this.
+   */
+  if (!debug) {
+#if (NACL_WINDOWS && NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && \
+     NACL_BUILD_SUBARCH == 64)
+    NaClPatchWindowsExceptionDispatcher();
+#endif
+  }
+
+  /*
    * Check that Chrome did not register any signal handlers, because
    * these are not always safe.
    *

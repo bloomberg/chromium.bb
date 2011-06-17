@@ -1639,9 +1639,6 @@ def CommandSelLdrTestNacl(env, name, command,
   if ShouldUseVerboseOptions(extra):
     env.MakeVerboseExtraOptions(name, log_verbosity, extra)
 
-  # Add Architechture Info
-  extra['arch'] = env['BUILD_ARCHITECTURE']
-  extra['subarch'] = env['BUILD_SUBARCH']
   return CommandTest(env, name, command, size, posix_path=True, **extra)
 
 pre_base_env.AddMethod(CommandSelLdrTestNacl)
@@ -1731,6 +1728,10 @@ def CommandTest(env, name, command, size='small', direct_emulation=True,
 
   script_flags.append('--perf_env_description')
   script_flags.append(env.GetPerfEnvDescription())
+
+  # Add architecture info.
+  extra['arch'] = env['BUILD_ARCHITECTURE']
+  extra['subarch'] = env['BUILD_SUBARCH']
 
   for flag_name, flag_value in extra.iteritems():
     assert flag_name in TEST_EXTRA_ARGS
