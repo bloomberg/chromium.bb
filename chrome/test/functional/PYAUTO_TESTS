@@ -91,11 +91,6 @@
       '-autofill.AutofillTest.testProfilesNotAggregatedWithInvalidEmail',
       '-autofill.AutofillTest.testProfilesNotAggregatedWithNoAddress',
 
-      # crbug.com/84060
-      '-databases.DatabasesTest.testIncognitoCannotReadRegularDatabase',
-      '-databases.DatabasesTest.testIncognitoDBPersistentAcrossTabs',
-      '-databases.DatabasesTest.testIncognitoDatabaseNotPersistent',
-      '-databases.DatabasesTest.testRegularCannotReadIncognitoDatabase',
       # Turkish I problem. crbug.com/60638
       '-find_in_page.FindMatchTests.testLocalizationAndCaseOrder',
       # Browser crash?  crbug.com/86150
