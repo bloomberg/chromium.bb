@@ -183,12 +183,11 @@ class ADMXWriter(xml_formatted_writer.XMLFormattedWriter):
       attributes = {'displayName': self._AdmlString(item['name'])}
       item_elem = self.AddElement(enum_elem, 'item', attributes)
       value_elem = self.AddElement(item_elem, 'value')
-      attributes = {'value': str(item['value'])}
+      value_string = str(item['value'])
       if policy['type'] == 'int-enum':
-        element_type = 'decimal'
+        self.AddElement(value_elem, 'decimal', {'value': value_string})
       else:
-        element_type = 'string'
-      self.AddElement(value_elem, element_type, attributes)
+        self.AddElement(value_elem, 'string', {}, value_string)
 
   def _AddListPolicy(self, parent, name):
     '''Generates ADMX XML elements for a List-Policy and adds them to the
@@ -325,4 +324,4 @@ class ADMXWriter(xml_formatted_writer.XMLFormattedWriter):
     self._active_policy_group_name = self.config['win_category_path'][-1]
 
   def GetTemplateText(self):
-    return self._doc.toprettyxml(indent='  ')
+    return self.ToPrettyXml(self._doc)

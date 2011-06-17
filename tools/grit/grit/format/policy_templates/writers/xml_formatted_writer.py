@@ -1,4 +1,4 @@
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -52,3 +52,37 @@ class XMLFormattedWriter(template_writer.TemplateWriter):
     attribute = doc.createAttribute(name)
     attribute.value = value
     parent.setAttributeNode(attribute)
+
+  def ToPrettyXml(self, doc):
+    # return doc.toprettyxml(indent='  ')
+    # The above pretty-printer does not print the doctype and adds spaces
+    # around texts, e.g.:
+    #  <string>
+    #    value of the string
+    #  </string>
+    # This is problematic both for the OSX Workgroup Manager (plist files) and
+    # the Windows Group Policy Editor (admx files). What they need instead:
+    #  <string>value of string</string>
+    # So we use the poor man's pretty printer here. It assumes that there are
+    # no mixed-content nodes.
+    # Get all the XML content in a one-line string.
+    xml = doc.toxml()
+    # Determine where the line breaks will be. (They will only be between tags.)
+    lines = xml[1:len(xml) - 1].split('><')
+    indent = ''
+    res = ''
+    # Determine indent for each line.
+    for i in range(len(lines)):
+      line = lines[i]
+      if line[0] == '/':
+        # If the current line starts with a closing tag, decrease indent before
+        # printing.
+        indent = indent[2:]
+      lines[i] = indent + '<' + line + '>'
+      if (line[0] not in ['/', '?', '!'] and '</' not in line and
+          line[len(line) - 1] != '/'):
+        # If the current line starts with an opening tag and does not conatin a
+        # closing tag, increase indent after the line is printed.
+        indent += '  '
+    # Reconstruct XML text from the lines.
+    return '\n'.join(lines)

@@ -123,29 +123,4 @@ class PListWriter(xml_formatted_writer.XMLFormattedWriter):
     self._plist = self._doc.documentElement
 
   def GetTemplateText(self):
-    # return self.plist_doc.toprettyxml(indent='  ')
-    # The above pretty-printer does not print the doctype and adds spaces
-    # around texts, which the OSX Workgroup Manager does not like. So we use
-    # the poor man's pretty printer. It assumes that there are no mixed-content
-    # nodes.
-    # Get all the XML content in a one-line string.
-    xml = self._doc.toxml()
-    # Determine where the line breaks will be. (They will only be between tags.)
-    lines = xml[1:len(xml) - 1].split('><')
-    indent = ''
-    res = ''
-    # Determine indent for each line.
-    for i in range(len(lines)):
-      line = lines[i]
-      if line[0] == '/':
-        # If the current line starts with a closing tag, decrease indent before
-        # printing.
-        indent = indent[2:]
-      lines[i] = indent + '<' + line + '>'
-      if (line[0] not in ['/', '?', '!'] and '</' not in line and
-          line[len(line) - 1] != '/'):
-        # If the current line starts with an opening tag and does not conatin a
-        # closing tag, increase indent after the line is printed.
-        indent += '  '
-    # Reconstruct XML text from the lines.
-    return '\n'.join(lines)
+    return self.ToPrettyXml(self._doc)

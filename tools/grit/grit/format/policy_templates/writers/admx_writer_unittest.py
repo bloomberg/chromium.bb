@@ -267,31 +267,39 @@ class AdmxWriterTest(xml_writer_base_unittest.XmlWriterBaseTest):
         ]
     }
 
-    self._initWriterForPolicy(self.writer, enum_policy)
+    # This test is different than the others because it also tests that space
+    # usage inside <string> nodes is correct.
+    dom_impl = minidom.getDOMImplementation('')
+    self.writer._doc = dom_impl.createDocument(None, 'policyDefinitions', None)
+    self.writer._active_policies_elem = self.writer._doc.documentElement
+    self.writer._active_policy_group_name = 'PolicyGroup'
     self.writer.WritePolicy(enum_policy)
-    output = self.GetXMLOfChildren(self._GetPoliciesElement(self.writer._doc))
+    output = self.writer.GetTemplateText()
     expected_output = (
-        '<policy class="TestClass" displayName="$(string.SampleEnumPolicy)"'
-        ' explainText="$(string.SampleEnumPolicy_Explain)"'
-        ' key="Software\\Policies\\Test" name="SampleEnumPolicy"'
-        ' presentation="$(presentation.SampleEnumPolicy)">\n'
-        '  <parentCategory ref="PolicyGroup"/>\n'
-        '  <supportedOn ref="SUPPORTED_TESTOS"/>\n'
-        '  <elements>\n'
-        '    <enum id="SampleEnumPolicy" valueName="SampleEnumPolicy">\n'
-        '      <item displayName="$(string.item_1)">\n'
-        '        <value>\n'
-        '          <string value="one"/>\n'
-        '        </value>\n'
-        '      </item>\n'
-        '      <item displayName="$(string.item_2)">\n'
-        '        <value>\n'
-        '          <string value="two"/>\n'
-        '        </value>\n'
-        '      </item>\n'
-        '    </enum>\n'
-        '  </elements>\n'
-        '</policy>')
+        '<?xml version="1.0" ?>\n'
+        '<policyDefinitions>\n'
+        '  <policy class="TestClass" displayName="$(string.SampleEnumPolicy)"'
+          ' explainText="$(string.SampleEnumPolicy_Explain)"'
+          ' key="Software\\Policies\\Test" name="SampleEnumPolicy"'
+          ' presentation="$(presentation.SampleEnumPolicy)">\n'
+        '    <parentCategory ref="PolicyGroup"/>\n'
+        '    <supportedOn ref="SUPPORTED_TESTOS"/>\n'
+        '    <elements>\n'
+        '      <enum id="SampleEnumPolicy" valueName="SampleEnumPolicy">\n'
+        '        <item displayName="$(string.item_1)">\n'
+        '          <value>\n'
+        '            <string>one</string>\n'
+        '          </value>\n'
+        '        </item>\n'
+        '        <item displayName="$(string.item_2)">\n'
+        '          <value>\n'
+        '            <string>two</string>\n'
+        '          </value>\n'
+        '        </item>\n'
+        '      </enum>\n'
+        '    </elements>\n'
+        '  </policy>\n'
+        '</policyDefinitions>')
     self.AssertXMLEquals(output, expected_output)
 
   def testListPolicy(self):
