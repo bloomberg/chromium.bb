@@ -141,6 +141,9 @@ class BrowserAccessibility {
   const std::vector<int32>& indirect_child_ids() const {
     return indirect_child_ids_;
   }
+  const std::vector<int32>& line_breaks() const {
+    return line_breaks_;
+  }
   gfx::Rect location() const { return location_; }
   BrowserAccessibilityManager* manager() const { return manager_; }
   const string16& name() const { return name_; }

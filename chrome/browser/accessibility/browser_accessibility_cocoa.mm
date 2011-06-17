@@ -424,8 +424,8 @@ bool GetState(BrowserAccessibility* accessibility, int state) {
   }
 
   int selStart, selEnd;
-  if (browserAccessibility_->
-          GetAttributeAsInt(WebAccessibility::ATTR_TEXT_SEL_START, &selStart) &&
+  if (browserAccessibility_->GetAttributeAsInt(
+          WebAccessibility::ATTR_TEXT_SEL_START, &selStart) &&
       browserAccessibility_->
           GetAttributeAsInt(WebAccessibility::ATTR_TEXT_SEL_END, &selEnd)) {
     if (selStart > selEnd)
@@ -433,7 +433,13 @@ bool GetState(BrowserAccessibility* accessibility, int state) {
     int selLength = selEnd - selStart;
     if ([attribute isEqualToString:
         NSAccessibilityInsertionPointLineNumberAttribute]) {
-      return [NSNumber numberWithInt:0];
+      const std::vector<int32>& line_breaks =
+          browserAccessibility_->line_breaks();
+      for (int i = 0; i < static_cast<int>(line_breaks.size()); ++i) {
+        if (line_breaks[i] > selStart)
+          return [NSNumber numberWithInt:i];
+      }
+      return [NSNumber numberWithInt:static_cast<int>(line_breaks.size())];
     }
     if ([attribute isEqualToString:NSAccessibilitySelectedTextAttribute]) {
       return base::SysUTF16ToNSString(browserAccessibility_->value().substr(
@@ -450,17 +456,40 @@ bool GetState(BrowserAccessibility* accessibility, int state) {
 // value isn't supported this will return nil.
 - (id)accessibilityAttributeValue:(NSString*)attribute
                      forParameter:(id)parameter {
+  const std::vector<int32>& line_breaks = browserAccessibility_->line_breaks();
+  int len = static_cast<int>(browserAccessibility_->value().size());
+
   if ([attribute isEqualToString:
       NSAccessibilityStringForRangeParameterizedAttribute]) {
-    NSRange range =[(NSValue*)parameter rangeValue];
+    NSRange range = [(NSValue*)parameter rangeValue];
     return base::SysUTF16ToNSString(
         browserAccessibility_->value().substr(range.location, range.length));
   }
 
+  if ([attribute isEqualToString:
+      NSAccessibilityLineForIndexParameterizedAttribute]) {
+    int index = [(NSNumber*)parameter intValue];
+    for (int i = 0; i < static_cast<int>(line_breaks.size()); ++i) {
+      if (line_breaks[i] > index)
+        return [NSNumber numberWithInt:i];
+    }
+    return [NSNumber numberWithInt:static_cast<int>(line_breaks.size())];
+  }
+
+  if ([attribute isEqualToString:
+      NSAccessibilityRangeForLineParameterizedAttribute]) {
+    int line_index = [(NSNumber*)parameter intValue];
+    int line_count = static_cast<int>(line_breaks.size()) + 1;
+    if (line_index < 0 || line_index >= line_count)
+      return nil;
+    int start = line_index > 0 ? line_breaks[line_index - 1] : 0;
+    int end = line_index < line_count - 1 ? line_breaks[line_index] : len;
+    return [NSValue valueWithRange:
+        NSMakeRange(start, end - start)];
+  }
+
   // TODO(dtseng): support the following attributes.
-  if ([attribute isEqualTo:NSAccessibilityLineForIndexParameterizedAttribute] ||
-      [attribute isEqualTo:NSAccessibilityRangeForLineParameterizedAttribute] ||
-      [attribute isEqualTo:
+  if ([attribute isEqualTo:
           NSAccessibilityRangeForPositionParameterizedAttribute] ||
       [attribute isEqualTo:
           NSAccessibilityRangeForIndexParameterizedAttribute] ||
@@ -477,7 +506,8 @@ bool GetState(BrowserAccessibility* accessibility, int state) {
 // Returns an array of parameterized attributes names that this object will
 // respond to.
 - (NSArray*)accessibilityParameterizedAttributeNames {
-  if ([[self role] isEqualToString:NSAccessibilityTextFieldRole]) {
+  if ([[self role] isEqualToString:NSAccessibilityTextFieldRole] ||
+      [[self role] isEqualToString:NSAccessibilityTextAreaRole]) {
     return [NSArray arrayWithObjects:
         NSAccessibilityLineForIndexParameterizedAttribute,
         NSAccessibilityRangeForLineParameterizedAttribute,
@@ -570,7 +600,8 @@ bool GetState(BrowserAccessibility* accessibility, int state) {
         nil]];
   } else if ([role isEqualToString:@"AXWebArea"]) {
     [ret addObject:@"AXLoaded"];
-  } else if ([role isEqualToString:NSAccessibilityTextFieldRole]) {
+  } else if ([role isEqualToString:NSAccessibilityTextFieldRole] ||
+             [role isEqualToString:NSAccessibilityTextAreaRole]) {
     [ret addObjectsFromArray:[NSArray arrayWithObjects:
         NSAccessibilityInsertionPointLineNumberAttribute,
         NSAccessibilityNumberOfCharactersAttribute,
