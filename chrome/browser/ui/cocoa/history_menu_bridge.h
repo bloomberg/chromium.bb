@@ -16,6 +16,7 @@
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_observer.h"
+#import "chrome/browser/ui/cocoa/main_menu_item.h"
 #include "content/browser/cancelable_request.h"
 #include "content/common/notification_observer.h"
 
@@ -56,7 +57,8 @@ class HistoryMenuBridgeTest;
 // controller is very thin and only exists to interact with Cocoa, but this
 // class does the bulk of the work.
 class HistoryMenuBridge : public NotificationObserver,
-                          public TabRestoreServiceObserver {
+                          public TabRestoreServiceObserver,
+                          public MainMenuItem {
  public:
   // This is a generalization of the data we store in the history menu because
   // we pull things from different sources with different data types.
@@ -123,14 +125,18 @@ class HistoryMenuBridge : public NotificationObserver,
   explicit HistoryMenuBridge(Profile* profile);
   virtual ~HistoryMenuBridge();
 
-  // Overriden from NotificationObserver.
+  // NotificationObserver:
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  // For TabRestoreServiceObserver
+  // TabRestoreServiceObserver:
   virtual void TabRestoreServiceChanged(TabRestoreService* service);
   virtual void TabRestoreServiceDestroyed(TabRestoreService* service);
+
+  // MainMenuItem:
+  virtual void ResetMenu();
+  virtual void BuildMenu();
 
   // Looks up an NSMenuItem in the |menu_item_map_| and returns the
   // corresponding HistoryItem.

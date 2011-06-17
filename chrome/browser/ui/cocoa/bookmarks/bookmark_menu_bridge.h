@@ -25,6 +25,7 @@
 
 #include "base/memory/scoped_nsobject.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
+#import "chrome/browser/ui/cocoa/main_menu_item.h"
 
 class BookmarkNode;
 class Profile;
@@ -33,12 +34,13 @@ class Profile;
 @class NSMenuItem;
 @class BookmarkMenuCocoaController;
 
-class BookmarkMenuBridge : public BookmarkModelObserver {
+class BookmarkMenuBridge : public BookmarkModelObserver,
+                           public MainMenuItem {
  public:
   BookmarkMenuBridge(Profile* profile);
   virtual ~BookmarkMenuBridge();
 
-  // Overridden from BookmarkModelObserver
+  // BookmarkModelObserver:
   virtual void Loaded(BookmarkModel* model) OVERRIDE;
   virtual void BookmarkModelBeingDeleted(BookmarkModel* model) OVERRIDE;
   virtual void BookmarkNodeMoved(BookmarkModel* model,
@@ -59,6 +61,10 @@ class BookmarkMenuBridge : public BookmarkModelObserver {
                                           const BookmarkNode* node) OVERRIDE;
   virtual void BookmarkNodeChildrenReordered(BookmarkModel* model,
                                              const BookmarkNode* node) OVERRIDE;
+
+  // MainMenuItem:
+  virtual void ResetMenu() OVERRIDE;
+  virtual void BuildMenu() OVERRIDE;
 
   // Rebuilds the main bookmark menu, if it has been marked invalid.
   void UpdateMenu(NSMenu* bookmark_menu);

@@ -256,6 +256,19 @@ void HistoryMenuBridge::TabRestoreServiceDestroyed(
   // Intentionally left blank. We hold a weak reference to the service.
 }
 
+void HistoryMenuBridge::ResetMenu() {
+  NSMenu* menu = HistoryMenu();
+  ClearMenuSection(menu, kMostVisited);
+  ClearMenuSection(menu, kRecentlyClosed);
+}
+
+void HistoryMenuBridge::BuildMenu() {
+  // If the history service is ready, use it. Otherwise, a Notification will
+  // force an update when it's loaded.
+  if (history_service_)
+    CreateMenu();
+}
+
 HistoryMenuBridge::HistoryItem* HistoryMenuBridge::HistoryItemForMenuItem(
     NSMenuItem* item) {
   std::map<NSMenuItem*, HistoryItem*>::iterator it = menu_item_map_.find(item);

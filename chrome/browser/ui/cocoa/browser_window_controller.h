@@ -172,6 +172,9 @@ class TabContents;
 // Access the C++ bridge object representing the location bar.
 - (LocationBarViewMac*)locationBarBridge;
 
+// Access the Profile object that backs this Browser.
+- (Profile*)profile;
+
 // Updates the toolbar (and transitively the location bar) with the states of
 // the specified |tab|.  If |shouldRestore| is true, we're switching
 // (back?) to this tab and should restore any previous location bar state

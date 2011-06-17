@@ -477,6 +477,10 @@
   return [toolbarController_ locationBarBridge];
 }
 
+- (Profile*)profile {
+  return browser_->profile();
+}
+
 - (void)destroyBrowser {
   [NSApp removeWindowsItem:[self window]];
 

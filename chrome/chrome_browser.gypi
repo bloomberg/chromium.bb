@@ -2476,6 +2476,7 @@
         'browser/ui/cocoa/location_bar/selected_keyword_decoration.mm',
         'browser/ui/cocoa/location_bar/star_decoration.h',
         'browser/ui/cocoa/location_bar/star_decoration.mm',
+        'browser/ui/cocoa/main_menu_item.h',
         'browser/ui/cocoa/menu_button.h',
         'browser/ui/cocoa/menu_button.mm',
         'browser/ui/cocoa/menu_controller.h',

@@ -26,7 +26,13 @@ class Profile;
 @interface AppController : NSObject<NSUserInterfaceValidations,
                                     NSApplicationDelegate> {
  @private
+  // Manages the state of the command menu items.
   scoped_ptr<CommandUpdater> menuState_;
+
+  // The profile last used by a Browser. It is this profile that was used to
+  // build the user-data specific main menu items.
+  Profile* lastProfile_;
+
   // Management of the bookmark menu which spans across all windows
   // (and Browser*s).
   scoped_ptr<BookmarkMenuBridge> bookmarkMenuBridge_;

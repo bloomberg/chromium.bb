@@ -139,6 +139,14 @@ void BookmarkMenuBridge::BookmarkNodeChildrenReordered(
   InvalidateMenu();
 }
 
+void BookmarkMenuBridge::ResetMenu() {
+  ClearBookmarkMenu(BookmarkMenu());
+}
+
+void BookmarkMenuBridge::BuildMenu() {
+  UpdateMenu(BookmarkMenu());
+}
+
 // Watch for changes.
 void BookmarkMenuBridge::ObserveBookmarkModel() {
   BookmarkModel* model = GetBookmarkModel();

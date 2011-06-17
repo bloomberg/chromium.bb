@@ -158,6 +158,7 @@ void RecordLastRunAppBundlePath() {
 - (void)getUrl:(NSAppleEventDescriptor*)event
      withReply:(NSAppleEventDescriptor*)reply;
 - (void)windowLayeringDidChange:(NSNotification*)inNotification;
+- (void)windowChangedToProfile:(Profile*)profile;
 - (void)checkForAnyKeyWindows;
 - (BOOL)userWillWaitForInProgressDownloads:(int)downloadCount;
 - (BOOL)shouldQuitWithInProgressDownloads;
@@ -443,6 +444,39 @@ void RecordLastRunAppBundlePath() {
                withObject:nil
                afterDelay:0.0];
   }
+
+  // If the window changed to a new BrowserWindowController, update the profile.
+  id windowController = [[notify object] windowController];
+  if ([windowController isKindOfClass:[BrowserWindowController class]]) {
+    // If the profile is incognito, use the original profile.
+    Profile* newProfile = [windowController profile]->GetOriginalProfile();
+    [self windowChangedToProfile:newProfile];
+  }
+}
+
+// Called when the user has changed browser windows, meaning the backing profile
+// may have changed. This can cause a rebuild of the user-data menus. This is a
+// no-op if the new profile is the same as the current one. This will always be
+// the original profile and never incognito.
+- (void)windowChangedToProfile:(Profile*)profile {
+  if (lastProfile_ == profile)
+    return;
+
+  // Before tearing down the menu controller bridges, return the Cocoa menus to
+  // their initial state.
+  if (bookmarkMenuBridge_.get())
+    bookmarkMenuBridge_->ResetMenu();
+  if (historyMenuBridge_.get())
+    historyMenuBridge_->ResetMenu();
+
+  // Rebuild the menus with the new profile.
+  lastProfile_ = profile;
+
+  bookmarkMenuBridge_.reset(new BookmarkMenuBridge(lastProfile_));
+  bookmarkMenuBridge_->BuildMenu();
+
+  historyMenuBridge_.reset(new HistoryMenuBridge(lastProfile_));
+  historyMenuBridge_->BuildMenu();
 }
 
 - (void)checkForAnyKeyWindows {
@@ -481,9 +515,6 @@ void RecordLastRunAppBundlePath() {
   // Notify BrowserList to keep the application running so it doesn't go away
   // when all the browser windows get closed.
   BrowserList::StartKeepAlive();
-
-  bookmarkMenuBridge_.reset(new BookmarkMenuBridge([self defaultProfile]));
-  historyMenuBridge_.reset(new HistoryMenuBridge([self defaultProfile]));
 
   [self setUpdateCheckInterval];
 
