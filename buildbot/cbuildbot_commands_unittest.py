@@ -275,6 +275,7 @@ class CBuildBotTest(mox.MoxTestBase):
                                          buildconfig,
                                          buildnumber,
                                          test_tarball,
+                                         '/var/www/archive',
                                          debug=False)
     self.mox.VerifyAll()
 
@@ -329,6 +330,7 @@ class CBuildBotTest(mox.MoxTestBase):
                                          buildconfig,
                                          buildnumber,
                                          test_tarball,
+                                         '/var/www/archive',
                                          debug=True)
     self.mox.VerifyAll()
 

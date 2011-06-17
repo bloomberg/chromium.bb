@@ -16,6 +16,7 @@ import unittest
 
 import constants
 sys.path.append(constants.SOURCE_ROOT)
+import chromite.buildbot.cbuildbot as cbuildbot
 import chromite.buildbot.cbuildbot_config as config
 import chromite.buildbot.cbuildbot_commands as commands
 import chromite.buildbot.cbuildbot_stages as stages
@@ -48,8 +49,12 @@ class AbstractStageTest(mox.MoxTestBase):
     self.url = 'fake_url'
     self.build_config['git_url'] = self.url
 
-    self.options = self.mox.CreateMockAnything()
+    # Use the cbuildbot parser to create properties and populate default values.
+    parser = cbuildbot._CreateParser()
+    (self.options, _) = parser.parse_args([])
+
     self.options.buildroot = self.build_root
+    self.options.buildbot = True
     self.options.debug = False
     self.options.prebuilts = False
     self.options.clobber = False
@@ -644,11 +649,36 @@ class ArchiveStageTest(AbstractStageTest):
     self.mox.StubOutWithMock(commands, 'UploadSymbols')
     self.mox.StubOutWithMock(commands, 'PushImages')
 
-
-
     commands.LegacyArchiveBuild(
         self.build_root, self.bot_id, self._build_config,
-        self.options.buildnumber, None,
+        self.options.buildnumber, None, mox.IgnoreArg(),
+        self.options.debug).AndReturn((None, '/archive/dir'))
+
+    commands.UploadSymbols(self.build_root,
+                           board=self._build_config['board'],
+                           official=self._build_config['chromeos_official'])
+
+    commands.PushImages(self.build_root,
+                        board=self._build_config['board'],
+                        branch_name='master',
+                        archive_dir='/archive/dir')
+
+    self.mox.ReplayAll()
+    self.RunStage()
+    self.mox.VerifyAll()
+
+  def testTrybotArchive(self):
+    """Test archiving to a test directory with Trybots."""
+    self.mox.StubOutWithMock(commands, 'LegacyArchiveBuild')
+    self.mox.StubOutWithMock(commands, 'UploadSymbols')
+    self.mox.StubOutWithMock(commands, 'PushImages')
+    self.mox.StubOutWithMock(shutil, 'rmtree')
+
+    self.options.buildbot = False
+    shutil.rmtree(mox.Regex(r'^%s' % self.build_root))
+    commands.LegacyArchiveBuild(
+        self.build_root, self.bot_id, self._build_config,
+        self.options.buildnumber, None, mox.Regex(r'^%s' % self.build_root),
         self.options.debug).AndReturn((None, '/archive/dir'))
 
     commands.UploadSymbols(self.build_root,

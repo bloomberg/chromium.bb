@@ -469,7 +469,7 @@ def UploadPrebuilts(buildroot, board, overlay_config, binhosts, category,
 
 
 def LegacyArchiveBuild(buildroot, bot_id, buildconfig, buildnumber,
-                       test_tarball, debug=False):
+                       test_tarball, archive_path, debug=False):
   """Archives build artifacts and returns URL to archived location."""
 
   # Fixed properties
@@ -483,7 +483,7 @@ def LegacyArchiveBuild(buildroot, bot_id, buildconfig, buildnumber,
   cwd = os.path.join(buildroot, 'src', 'scripts')
   cmd = ['./archive_build.sh',
          '--build_number', str(buildnumber),
-         '--to', '/var/www/archive/' + bot_id,
+         '--to', os.path.join(archive_path, bot_id),
          '--keep_max', str(keep_max),
          '--board', buildconfig['board'],
          ]

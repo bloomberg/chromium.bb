@@ -9,6 +9,7 @@ import datetime
 import math
 import os
 import re
+import shutil
 import sys
 import tempfile
 import time
@@ -700,9 +701,16 @@ class RemoteTestStatusStage(BuilderStage):
 class ArchiveStage(BuilderStage):
   """Archives build and test artifacts for developer consumption."""
   def _PerformStage(self):
+    if self._options.buildbot:
+      archive_path = '/var/www/archive'
+    else:
+      archive_path = os.path.join(self._build_root, 'trybot_archive')
+      # Clear artifacts from previous run
+      shutil.rmtree(archive_path)
+
     BuilderStage.archive_url, archive_dir = commands.LegacyArchiveBuild(
         self._build_root, self._bot_id, self._build_config,
-        self._options.buildnumber, BuilderStage.test_tarball,
+        self._options.buildnumber, BuilderStage.test_tarball, archive_path,
         self._options.debug)
 
     if not self._options.debug and self._build_config['upload_symbols']:
