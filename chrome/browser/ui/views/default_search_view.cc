@@ -19,7 +19,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
-#include "views/controls/button/native_button.h"
+#include "views/controls/button/text_button.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
 #include "views/layout/grid_layout.h"
@@ -97,11 +97,11 @@ views::View* CreateProviderLogo(
 
   return logo_view;
 }
-views::NativeButton* CreateProviderChoiceButton(
+views::View* CreateProviderChoiceButton(
     views::ButtonListener* listener,
     int message_id,
     const std::wstring& short_name) {
-  return new views::NativeButton(listener, UTF16ToWide(
+  return new views::NativeTextButton(listener, UTF16ToWide(
       l10n_util::GetStringFUTF16(message_id, WideToUTF16(short_name))));
 }
 

@@ -24,7 +24,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
-#include "views/controls/button/native_button.h"
+#include "views/controls/button/text_button.h"
 #include "views/controls/label.h"
 #include "views/controls/link.h"
 #include "views/controls/textfield/textfield.h"
@@ -190,10 +190,10 @@ void BookmarkBubbleView::Init() {
       IDS_BOOMARK_BUBBLE_REMOVE_BOOKMARK)));
   remove_link_->set_listener(this);
 
-  edit_button_ = new views::NativeButton(
+  edit_button_ = new views::NativeTextButton(
       this, UTF16ToWide(l10n_util::GetStringUTF16(IDS_BOOMARK_BUBBLE_OPTIONS)));
 
-  close_button_ = new views::NativeButton(
+  close_button_ = new views::NativeTextButton(
       this, UTF16ToWide(l10n_util::GetStringUTF16(IDS_DONE)));
   close_button_->SetIsDefault(true);
 

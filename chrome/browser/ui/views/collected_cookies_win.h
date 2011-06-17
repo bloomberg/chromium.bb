@@ -23,7 +23,7 @@ class TabContents;
 
 namespace views {
 class Label;
-class NativeButton;
+class TextButton;
 }
 
 // This is the Views implementation of the collected cookies dialog.
@@ -98,9 +98,9 @@ class CollectedCookiesWin : public ConstrainedDialogDelegate,
   views::TreeView* allowed_cookies_tree_;
   views::TreeView* blocked_cookies_tree_;
 
-  views::NativeButton* block_allowed_button_;
-  views::NativeButton* allow_blocked_button_;
-  views::NativeButton* for_session_blocked_button_;
+  views::TextButton* block_allowed_button_;
+  views::TextButton* allow_blocked_button_;
+  views::TextButton* for_session_blocked_button_;
 
   scoped_ptr<CookiesTreeModel> allowed_cookies_tree_model_;
   scoped_ptr<CookiesTreeModel> blocked_cookies_tree_model_;

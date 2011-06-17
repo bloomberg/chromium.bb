@@ -25,7 +25,7 @@
 #include "ui/base/models/table_model_observer.h"
 #include "views/accelerator.h"
 #include "views/background.h"
-#include "views/controls/button/native_button.h"
+#include "views/controls/button/text_button.h"
 #include "views/controls/link.h"
 #include "views/controls/link_listener.h"
 #include "views/controls/menu/menu.h"
@@ -325,8 +325,8 @@ class TaskManagerView : public views::ButtonListener,
   // Restores saved always on top state from a previous session.
   bool GetSavedAlwaysOnTopState(bool* always_on_top) const;
 
-  views::NativeButton* purge_memory_button_;
-  views::NativeButton* kill_button_;
+  views::TextButton* purge_memory_button_;
+  views::TextButton* kill_button_;
   views::Link* about_memory_link_;
   views::GroupTableView* tab_table_;
 
@@ -447,10 +447,10 @@ void TaskManagerView::Init() {
   // If we're running with --purge-memory-button, add a "Purge memory" button.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kPurgeMemoryButton)) {
-    purge_memory_button_ = new views::NativeButton(this,
+    purge_memory_button_ = new views::NativeTextButton(this,
         UTF16ToWide(l10n_util::GetStringUTF16(IDS_TASK_MANAGER_PURGE_MEMORY)));
   }
-  kill_button_ = new views::NativeButton(
+  kill_button_ = new views::NativeTextButton(
       this, UTF16ToWide(l10n_util::GetStringUTF16(IDS_TASK_MANAGER_KILL)));
   kill_button_->AddAccelerator(views::Accelerator(ui::VKEY_E,
                                                   false, false, false));

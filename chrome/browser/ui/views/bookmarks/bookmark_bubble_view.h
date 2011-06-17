@@ -22,7 +22,7 @@ class BookmarkModel;
 class BookmarkNode;
 
 namespace views {
-class NativeButton;
+class TextButton;
 class Textfield;
 }
 
@@ -132,10 +132,10 @@ class BookmarkBubbleView : public views::View,
   views::Link* remove_link_;
 
   // Button to bring up the editor.
-  views::NativeButton* edit_button_;
+  views::TextButton* edit_button_;
 
   // Button to close the window.
-  views::NativeButton* close_button_;
+  views::TextButton* close_button_;
 
   // Textfield showing the title of the bookmark.
   views::Textfield* title_tf_;

@@ -343,6 +343,8 @@ class TextButton : public TextButtonBase {
     icon_placement_ = icon_placement;
   }
 
+  void set_ignore_minimum_size(bool ignore_minimum_size);
+
   // Overridden from View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual std::string GetClassName() const OVERRIDE;
@@ -382,7 +384,45 @@ class TextButton : public TextButtonBase {
   // Space between icon and text.
   int icon_text_spacing_;
 
+  // True if the button should ignore the minimum size for the platform. Default
+  // is true. Set to false to prevent narrower buttons.
+  bool ignore_minimum_size_;
+
   DISALLOW_COPY_AND_ASSIGN(TextButton);
+};
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// NativeTextButton
+//
+//  A TextButton that uses the NativeTheme border and sets some properties,
+//  like ignore-minimize-size and text alignment minimum size to mimic the
+//  NativeButton class, making it easier to replace existing NativeButton
+//  instances with NativeTextButton instances.
+//
+////////////////////////////////////////////////////////////////////////////////
+class NativeTextButton : public TextButton {
+ public:
+  // The button's class name.
+  static const char kViewClassName[];
+
+  NativeTextButton(ButtonListener* listener);
+  NativeTextButton(ButtonListener* listener, const std::wstring& text);
+
+  // Sets/Gets the text to be used as the button's label.
+  // TODO: Remove this function and replace all call sites with SetText().
+  void SetLabel(const std::wstring& label) {
+    SetText(label);
+  }
+  std::wstring label() const { return text(); }
+
+  // Overridden from TextButton:
+  virtual gfx::Size GetMinimumSize() OVERRIDE;
+
+ private:
+  void Init();
+
+  DISALLOW_COPY_AND_ASSIGN(NativeTextButton);
 };
 
 }  // namespace views

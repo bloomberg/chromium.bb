@@ -20,8 +20,8 @@
 #include "content/common/notification_type.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "views/controls/button/native_button.h"
 #include "views/controls/button/radio_button.h"
+#include "views/controls/button/text_button.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
 #include "views/controls/link.h"
@@ -326,7 +326,7 @@ void ContentSettingBubbleContents::InitControlLayout() {
   layout->AddView(manage_link_);
 
   close_button_ =
-      new views::NativeButton(this,
-                              UTF16ToWide(l10n_util::GetStringUTF16(IDS_DONE)));
+      new views::NativeTextButton(this,
+          UTF16ToWide(l10n_util::GetStringUTF16(IDS_DONE)));
   layout->AddView(close_button_);
 }

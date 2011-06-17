@@ -22,7 +22,7 @@
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "views/background.h"
-#include "views/controls/button/native_button.h"
+#include "views/controls/button/text_button.h"
 #include "views/controls/label.h"
 #include "views/controls/menu/menu_2.h"
 #include "views/controls/textfield/textfield.h"
@@ -35,7 +35,6 @@ using views::Button;
 using views::ColumnSet;
 using views::GridLayout;
 using views::Label;
-using views::NativeButton;
 using views::Textfield;
 
 // Background color of text field when URL is invalid.
@@ -301,7 +300,7 @@ void BookmarkEditorView::Init() {
 
   if (show_tree_) {
     tree_view_ = new views::TreeView();
-    new_folder_button_.reset(new views::NativeButton(
+    new_folder_button_.reset(new views::NativeTextButton(
         this,
         UTF16ToWide(l10n_util::GetStringUTF16(
             IDS_BOOMARK_EDITOR_NEW_FOLDER_BUTTON))));

@@ -80,7 +80,7 @@ void ShowFirstRunDialog(Profile* profile,
 SearchEngineChoice::SearchEngineChoice(views::ButtonListener* listener,
                                        const TemplateURL* search_engine,
                                        bool use_small_logos)
-    : NativeButton(
+    : NativeTextButton(
           listener,
           UTF16ToWide(l10n_util::GetStringUTF16(IDS_FR_SEARCH_CHOOSE))),
       is_image_label_(false),
@@ -307,7 +307,6 @@ void FirstRunSearchEngineView::SetupControls() {
   using views::Background;
   using views::ImageView;
   using views::Label;
-  using views::NativeButton;
 
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   background_image_ = new views::ImageView();

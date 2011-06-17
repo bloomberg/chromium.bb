@@ -137,7 +137,7 @@ gfx::NativeTheme::Part ExampleNativeThemeButton::GetThemePart() const {
 }
 
 gfx::Rect ExampleNativeThemeButton::GetThemePaintRect() const {
-  return bounds();
+  return GetLocalBounds();
 }
 
 gfx::NativeTheme::State ExampleNativeThemeButton::GetThemeState(

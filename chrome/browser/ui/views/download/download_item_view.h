@@ -48,7 +48,7 @@ class SlideAnimation;
 
 namespace views {
 class Label;
-class NativeButton;
+class TextButton;
 }
 
 class DownloadItemView : public views::ButtonListener,
@@ -252,8 +252,8 @@ class DownloadItemView : public views::ButtonListener,
   base::RepeatingTimer<DownloadItemView> progress_timer_;
 
   // Dangerous mode buttons.
-  views::NativeButton* save_button_;
-  views::NativeButton* discard_button_;
+  views::TextButton* save_button_;
+  views::TextButton* discard_button_;
 
   // Dangerous mode label.
   views::Label* dangerous_download_label_;

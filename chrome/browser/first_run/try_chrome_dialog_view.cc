@@ -20,6 +20,7 @@
 #include "ui/gfx/image/image.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/button/radio_button.h"
+#include "views/controls/button/text_button.h"
 #include "views/controls/image_view.h"
 #include "views/controls/link.h"
 #include "views/layout/grid_layout.h"
@@ -179,10 +180,10 @@ TryChromeDialogView::Result TryChromeDialogView::ShowModal(
   const string16 cancel_it(l10n_util::GetStringUTF16(IDS_TRY_TOAST_CANCEL));
   const string16 why_this(l10n_util::GetStringUTF16(IDS_TRY_TOAST_WHY));
   layout->StartRowWithPadding(0, 3, 0, 10);
-  views::Button* accept_button = new views::NativeButton(this, ok_it);
+  views::Button* accept_button = new views::NativeTextButton(this, ok_it);
   accept_button->set_tag(BT_OK_BUTTON);
   layout->AddView(accept_button);
-  views::Button* cancel_button = new views::NativeButton(this, cancel_it);
+  views::Button* cancel_button = new views::NativeTextButton(this, cancel_it);
   cancel_button->set_tag(BT_CLOSE_BUTTON);
   layout->AddView(cancel_button);
   // Fifth row views.

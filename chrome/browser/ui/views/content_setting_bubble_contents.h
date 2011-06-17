@@ -32,7 +32,7 @@ class Profile;
 class TabContents;
 
 namespace views {
-class NativeButton;
+class TextButton;
 class RadioButton;
 }
 
@@ -96,7 +96,7 @@ class ContentSettingBubbleContents : public views::View,
   RadioGroup radio_group_;
   views::Link* custom_link_;
   views::Link* manage_link_;
-  views::NativeButton* close_button_;
+  views::TextButton* close_button_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ContentSettingBubbleContents);
 };

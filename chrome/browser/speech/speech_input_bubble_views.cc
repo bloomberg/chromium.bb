@@ -19,7 +19,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "views/border.h"
-#include "views/controls/button/native_button.h"
+#include "views/controls/button/text_button.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
 #include "views/controls/link.h"
@@ -61,8 +61,8 @@ class ContentView
   views::ImageView* icon_;
   views::Label* heading_;
   views::Label* message_;
-  views::NativeButton* try_again_;
-  views::NativeButton* cancel_;
+  views::TextButton* try_again_;
+  views::TextButton* cancel_;
   views::Link* mic_settings_;
   SpeechInputBubbleBase::DisplayMode display_mode_;
   const int kIconLayoutMinWidth;
@@ -98,12 +98,12 @@ ContentView::ContentView(SpeechInputBubbleDelegate* delegate)
   icon_->SetHorizontalAlignment(views::ImageView::CENTER);
   AddChildView(icon_);
 
-  cancel_ = new views::NativeButton(
+  cancel_ = new views::NativeTextButton(
       this,
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_CANCEL)));
   AddChildView(cancel_);
 
-  try_again_ = new views::NativeButton(
+  try_again_ = new views::NativeTextButton(
       this,
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_SPEECH_INPUT_TRY_AGAIN)));
   AddChildView(try_again_);

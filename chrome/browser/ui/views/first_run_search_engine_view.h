@@ -10,7 +10,7 @@
 
 #include "chrome/browser/search_engines/template_url_service_observer.h"
 #include "ui/gfx/size.h"
-#include "views/controls/button/native_button.h"
+#include "views/controls/button/text_button.h"
 #include "views/view.h"
 #include "views/widget/widget_delegate.h"
 
@@ -27,7 +27,7 @@ class TemplateURLService;
 
 // This class holds the logo and TemplateURL for a search engine and serves
 // as its button in the search engine selection view.
-class SearchEngineChoice : public views::NativeButton {
+class SearchEngineChoice : public views::NativeTextButton {
  public:
   // |listener| is the FirstRunView that waits for the search engine selection
   // to complete; |search_engine| holds the data for the particular search

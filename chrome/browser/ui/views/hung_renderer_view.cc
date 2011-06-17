@@ -21,7 +21,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
-#include "views/controls/button/native_button.h"
+#include "views/controls/button/text_button.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
 #include "views/controls/table/group_table_view.h"
@@ -175,7 +175,7 @@ class HungRendererDialogView : public views::DialogDelegateView,
   // The button we insert into the ClientView to kill the errant process. This
   // is parented to a container view that uses a grid layout to align it
   // properly.
-  views::NativeButton* kill_button_;
+  views::TextButton* kill_button_;
   class ButtonContainer : public views::View {
    public:
     ButtonContainer() {}
@@ -418,7 +418,7 @@ void HungRendererDialogView::Init() {
 }
 
 void HungRendererDialogView::CreateKillButtonView() {
-  kill_button_ = new views::NativeButton(this, UTF16ToWide(
+  kill_button_ = new views::NativeTextButton(this, UTF16ToWide(
       l10n_util::GetStringUTF16(IDS_BROWSER_HANGMONITOR_RENDERER_END)));
 
   kill_button_container_ = new ButtonContainer;

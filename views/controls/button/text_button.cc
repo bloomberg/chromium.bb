@@ -16,7 +16,19 @@
 #include "views/events/event.h"
 #include "views/widget/widget.h"
 
+#if defined(OS_WIN)
+#include "ui/gfx/platform_font_win.h"
+#endif
+
 namespace views {
+
+#if defined(OS_WIN)
+// The min size in DLUs comes from
+// http://msdn.microsoft.com/library/default.asp?url=/library/en-us/dnwue/html/ch14e.asp
+static const int kMinWidthDLUs = 50;
+static const int kMinHeightDLUs = 14;
+#endif
+
 
 // Default space between the icon and text.
 static const int kDefaultIconTextSpacing = 5;
@@ -24,6 +36,10 @@ static const int kDefaultIconTextSpacing = 5;
 // Preferred padding between text and edge
 static const int kPreferredPaddingHorizontal = 6;
 static const int kPreferredPaddingVertical = 5;
+
+// Preferred padding between text and edge for NativeTheme border
+static const int kPreferredNativeThemePaddingHorizontal = 12;
+static const int kPreferredNativeThemePaddingVertical = 5;
 
 // static
 const SkColor TextButtonBase::kEnabledColor = SkColorSetRGB(6, 45, 117);
@@ -42,6 +58,8 @@ static const int kHoverAnimationDurationMs = 170;
 const char TextButtonBase::kViewClassName[] = "views/TextButtonBase";
 // static
 const char TextButton::kViewClassName[] = "views/TextButton";
+// static
+const char NativeTextButton::kViewClassName[] = "views/NativeTextButton";
 
 static int PrefixTypeToCanvasType(TextButton::PrefixType type) {
   switch (type) {
@@ -220,8 +238,10 @@ void TextButtonNativeThemeBorder::Paint(const View& view,
 }
 
 void TextButtonNativeThemeBorder::GetInsets(gfx::Insets* insets) const {
-  insets->Set(kPreferredPaddingVertical, kPreferredPaddingHorizontal,
-              kPreferredPaddingVertical, kPreferredPaddingHorizontal);
+  insets->Set(kPreferredNativeThemePaddingVertical,
+              kPreferredNativeThemePaddingHorizontal,
+              kPreferredNativeThemePaddingVertical,
+              kPreferredNativeThemePaddingHorizontal);
 }
 
 
@@ -565,7 +585,7 @@ std::string TextButtonBase::GetClassName() const {
 // TextButtonBase, NativeThemeDelegate overrides:
 
 gfx::Rect TextButtonBase::GetThemePaintRect() const {
-  return bounds();
+  return GetLocalBounds();
 }
 
 gfx::NativeTheme::State TextButtonBase::GetThemeState(
@@ -614,7 +634,8 @@ TextButton::TextButton(ButtonListener* listener,
       icon_placement_(ICON_ON_LEFT),
       has_hover_icon_(false),
       has_pushed_icon_(false),
-      icon_text_spacing_(kDefaultIconTextSpacing) {
+      icon_text_spacing_(kDefaultIconTextSpacing),
+      ignore_minimum_size_(true) {
   set_border(new TextButtonBorder);
 }
 
@@ -647,6 +668,22 @@ gfx::Size TextButton::GetPreferredSize() {
   if (max_width_ > 0)
     prefsize.set_width(std::min(max_width_, prefsize.width()));
 
+#if defined(OS_WIN)
+  // Clamp the size returned to at least the minimum size.
+  if (!ignore_minimum_size_) {
+    gfx::PlatformFontWin* platform_font =
+        static_cast<gfx::PlatformFontWin*>(font_.platform_font());
+    prefsize.set_width(std::max(
+        prefsize.width(),
+        platform_font->horizontal_dlus_to_pixels(kMinWidthDLUs)));
+    prefsize.set_height(std::max(
+        prefsize.height(),
+        platform_font->vertical_dlus_to_pixels(kMinHeightDLUs)));
+  }
+  // GTK returns a meaningful preferred size so that we don't need to adjust
+  // the preferred size as we do on windows.
+#endif
+
   return prefsize;
 }
 
@@ -674,6 +711,10 @@ void TextButton::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
     icon_bounds.set_x(GetMirroredXForRect(icon_bounds));
     canvas->DrawBitmapInt(icon, icon_bounds.x(), icon_bounds.y());
   }
+}
+
+void TextButton::set_ignore_minimum_size(bool ignore_minimum_size) {
+  ignore_minimum_size_ = ignore_minimum_size;
 }
 
 std::string TextButton::GetClassName() const {
@@ -722,6 +763,33 @@ const SkBitmap& TextButton::GetImageToPaint() const {
       return icon_pushed_;
   }
   return icon_;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// NativeTextButton
+//
+////////////////////////////////////////////////////////////////////////////////
+
+NativeTextButton::NativeTextButton(ButtonListener* listener)
+    : TextButton(listener, std::wstring()) {
+  Init();
+}
+
+NativeTextButton::NativeTextButton(ButtonListener* listener,
+                                   const std::wstring& text)
+    : TextButton(listener, text) {
+  Init();
+}
+
+void NativeTextButton::Init() {
+  set_border(new TextButtonNativeThemeBorder(this));
+  set_ignore_minimum_size(false);
+  set_alignment(ALIGN_CENTER);
+}
+
+gfx::Size NativeTextButton::GetMinimumSize() {
+  return GetPreferredSize();
 }
 
 }  // namespace views

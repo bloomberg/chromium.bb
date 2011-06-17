@@ -31,7 +31,7 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image.h"
 #include "unicode/uchar.h"
-#include "views/controls/button/native_button.h"
+#include "views/controls/button/text_button.h"
 #include "views/controls/label.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
@@ -214,12 +214,12 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
     tooltip_text_.clear();
     body_state_ = DANGEROUS;
     drop_down_state_ = DANGEROUS;
-    save_button_ = new views::NativeButton(this,
+    save_button_ = new views::NativeTextButton(this,
         UTF16ToWide(l10n_util::GetStringUTF16(
             download->is_extension_install() ?
                 IDS_CONTINUE_EXTENSION_DOWNLOAD : IDS_CONFIRM_DOWNLOAD)));
     save_button_->set_ignore_minimum_size(true);
-    discard_button_ = new views::NativeButton(
+    discard_button_ = new views::NativeTextButton(
         this, UTF16ToWide(l10n_util::GetStringUTF16(IDS_DISCARD_DOWNLOAD)));
     discard_button_->set_ignore_minimum_size(true);
     AddChildView(save_button_);
