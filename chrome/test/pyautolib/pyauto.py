@@ -72,16 +72,19 @@ def _LocateBinDirs():
 
 _LocateBinDirs()
 
+_PYAUTO_DOC_URL = 'http://dev.chromium.org/developers/testing/pyauto'
+
 try:
   import pyautolib
   # Needed so that all additional classes (like: FilePath, GURL) exposed by
   # swig interface get available in this module.
   from pyautolib import *
 except ImportError:
-  print >>sys.stderr, "Could not locate built libraries. Did you build?"
+  print >>sys.stderr, 'Could not locate pyautolib shared libraries.  ' \
+                      'Did you build?\n  Documentation: %s' % _PYAUTO_DOC_URL
   # Mac requires python2.5 even when not the default 'python' (e.g. 10.6)
   if 'darwin' == sys.platform and sys.version_info[:2] != (2,5):
-    print  >>sys.stderr, "*\n* Perhaps use 'python2.5', not 'python' ?\n*"
+    print  >>sys.stderr, '*\n* Perhaps use "python2.5", not "python" ?\n*'
   raise
 
 # Should go after sys.path is set appropriately
@@ -603,7 +606,8 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       timeout = self.action_max_timeout_ms()
     result = self._SendJSONRequest(windex, json.dumps(cmd_dict), timeout)
     if len(result) == 0:
-      raise JSONInterfaceError('Automation call received no response.')
+      raise JSONInterfaceError('Automation call %s received empty response.  '
+                               'Perhaps the browser crashed.' % cmd_dict)
     ret_dict = json.loads(result)
     if ret_dict.has_key('error'):
       raise JSONInterfaceError(ret_dict['error'])
@@ -3725,7 +3729,12 @@ class Main(object):
     result = PyAutoTextTestRuner(verbosity=verbosity).run(pyauto_suite)
     del loaded_tests  # Need to destroy test cases before the suite
     del pyauto_suite
-    sys.exit(not result.wasSuccessful())
+    successful = result.wasSuccessful()
+    if not successful:
+      pyauto_tests_file = os.path.join(self.TestsDir(), self._tests_filename)
+      print >>sys.stderr, 'Tests can be disabled by editing %s. ' \
+                          'Ref: %s' % (pyauto_tests_file, _PYAUTO_DOC_URL)
+    sys.exit(not successful)
 
 
 if __name__ == '__main__':

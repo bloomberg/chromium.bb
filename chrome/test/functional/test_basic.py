@@ -13,7 +13,7 @@ class SimpleTest(pyauto.PyUITest):
 
   def testCanOpenGoogle(self):
     """Navigate to Google."""
-    self.NavigateToURL("http://www.google.com")
+    self.NavigateToURL('http://www.google.com')
 
   def testHTTP(self):
     """Basic test over local http server."""
