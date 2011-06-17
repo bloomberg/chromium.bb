@@ -137,18 +137,17 @@ gyp-arm-build() {
 
 
 ad-hoc-shared-lib-tests() {
+  local platforms=$1
   # TODO(robertm): make this accessible by the utman script so that this get
   # http://code.google.com/p/nativeclient/issues/detail?id=1647
   echo "@@@BUILD_STEP fake_shared_libs@@@"
   pushd  tests/pnacl_ld_example/
   make -f Makefile.pnacl clean
-  make -f Makefile.pnacl preparation
-  # NOTE: these tests use the gold linker rather than the standard bfd linker
-  # BUG: http://code.google.com/p/nativeclient/issues/detail?id=1782
-  make -f Makefile.pnacl run.x86-32
-  make -f Makefile.pnacl run2.x86-32
-  make -f Makefile.pnacl run.arm
-  make -f Makefile.pnacl run2.arm
+  for platform in ${platforms} ; do
+    make -f Makefile.pnacl preparation.${platform}
+    make -f Makefile.pnacl run.${platform}
+    make -f Makefile.pnacl run2.${platform}
+  done
   popd
 }
 
@@ -199,6 +198,40 @@ browser-tests() {
 }
 
 ######################################################################
+# NOTE: these trybots are expected to diverge some more hence the code
+#       duplication
+mode-trybot-arm() {
+  FAIL_FAST=0
+  clobber
+  install-lkgr-toolchains
+  partial-sdk "arm"
+  scons-tests "arm" "--mode=opt-host,nacl -j8 -k" "smoke_tests"
+  browser-tests "arm" "--mode=opt-host,nacl -k"
+  ad-hoc-shared-lib-tests "arm"
+}
+
+mode-trybot-x8632() {
+  FAIL_FAST=0
+  clobber
+  install-lkgr-toolchains
+  partial-sdk "x86-32"
+  scons-tests "x86-32" "--mode=opt-host,nacl -j8 -k" "smoke_tests"
+  browser-tests "x86-32" "--mode=opt-host,nacl -k"
+  ad-hoc-shared-lib-tests "x86-32"
+}
+
+mode-trybot-x8664() {
+  FAIL_FAST=0
+  clobber
+  install-lkgr-toolchains
+  partial-sdk "x86-64"
+  scons-tests "x86-64" "--mode=opt-host,nacl -j8 -k" "smoke_tests"
+  browser-tests "x86-64" "--mode=opt-host,nacl -k"
+  # no adhoc tests for x86-64
+}
+
+# TODO(robetrm): this trybot config takes way too long, it should
+#                be replaced by per arch trybots above
 mode-trybot() {
   FAIL_FAST=0
   clobber
@@ -206,8 +239,9 @@ mode-trybot() {
   partial-sdk "arm x86-32 x86-64"
   scons-tests "arm x86-32 x86-64" "--mode=opt-host,nacl -j8 -k" "smoke_tests"
   browser-tests "arm x86-32 x86-64" "--mode=opt-host,nacl -k"
-  ad-hoc-shared-lib-tests
+  ad-hoc-shared-lib-tests "arm x86-32"
 }
+
 
 mode-buildbot-x8632() {
   FAIL_FAST=0
@@ -219,8 +253,7 @@ mode-buildbot-x8632() {
   # Then test (not all nexes which are build are also tested)
   scons-tests "x86-32" "--mode=opt-host,nacl -k" "smoke_tests"
   browser-tests "x86-32" "--mode=opt-host,nacl -k"
-  # this really tests arm and x86-32
-  ad-hoc-shared-lib-tests
+  ad-hoc-shared-lib-tests "x86-32"
 }
 
 mode-buildbot-x8664() {
@@ -261,6 +294,7 @@ mode-buildbot-arm() {
   scons-tests "arm" "${mode} -k" "medium_tests"
   scons-tests "arm" "${mode} -k" "large_tests"
   browser-tests "arm" "${mode}"
+  ad-hoc-shared-lib-tests "arm"
 }
 
 mode-buildbot-arm-dbg() {
@@ -323,7 +357,7 @@ mode-test-all-fast() {
   scons-tests "arm x86-32 x86-64" "--mode=opt-host,nacl -j${concur}" \
     "smoke_tests"
   browser-tests "arm x86-32 x86-64" "--mode=opt-host,nacl -j${concur}"
-  ad-hoc-shared-lib-tests
+  ad-hoc-shared-lib-tests "arm x86-32"
 }
 
 ######################################################################

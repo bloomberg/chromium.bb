@@ -117,8 +117,8 @@ build-and-run-all-timed() {
 
 
 ######################################################################
-
-# not this only runs a subset of the the spec2k tests
+# NOTE: trybots only runs a subset of the the spec2k tests
+# TODO: elminate this long running bot in favor per arch sharded bots
 mode-spec-pnacl-trybot() {
   clobber
   basic-setup "arm x86-64 x86-32"
@@ -126,6 +126,26 @@ mode-spec-pnacl-trybot() {
                                       SetupPnaclX8632Opt \
                                       SetupPnaclX8664Opt \
                                       SetupPnaclTranslatorX8632Opt \
+                                      SetupPnaclTranslatorX8664Opt"
+}
+
+mode-spec-pnacl-trybot-arm() {
+  clobber
+  basic-setup "arm"
+  build-and-run-some ${SPEC_HARNESS} "SetupPnaclArmOpt"
+}
+
+mode-spec-pnacl-trybot-x8632() {
+  clobber
+  basic-setup "x86-32"
+  build-and-run-some ${SPEC_HARNESS} "SetupPnaclX8632Opt \
+                                      SetupPnaclTranslatorX8632Opt"
+}
+
+mode-spec-pnacl-trybot-x8664() {
+  clobber
+  basic-setup "x86-64"
+  build-and-run-some ${SPEC_HARNESS} "SetupPnaclX8664Opt \
                                       SetupPnaclTranslatorX8664Opt"
 }
 

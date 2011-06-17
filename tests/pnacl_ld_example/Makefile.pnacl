@@ -26,9 +26,12 @@ DEBUG_FLAGS=
 ######################################################################
 # tools needed
 ######################################################################
-preparation:
+preparation.arm:
 	cd ../.. ; ./scons MODE=opt-linux buildplatform=x86-64 targetplatform=arm arm-ncval-core
+
+preparation.x86-32:
 	cd ../.. ; ./scons MODE=opt-linux platform=x86-32 ncval
+
 ######################################################################
 # Platform neutral
 ######################################################################
