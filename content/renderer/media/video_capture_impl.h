@@ -71,6 +71,17 @@ class VideoCaptureImpl
                    VideoCaptureMessageFilter* filter);
   virtual ~VideoCaptureImpl();
 
+  void DoStartCapture(media::VideoCapture::EventHandler* handler,
+                      const VideoCaptureCapability& capability);
+  void DoStopCapture(media::VideoCapture::EventHandler* handler);
+
+  void DoBufferCreated(base::SharedMemoryHandle handle,
+                       int length, int buffer_id);
+  void DoBufferReceived(int buffer_id, base::Time timestamp);
+  void DoStateChanged(const media::VideoCapture::State& state);
+  void DoDeviceInfoReceived(const media::VideoCaptureParams& device_info);
+  void DoDelegateAdded(int32 device_id);
+
   void Init();
   void DeInit(Task* task);
   void StopDevice();

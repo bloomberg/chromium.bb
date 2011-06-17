@@ -11,5 +11,5 @@ VideoCaptureControllerID::VideoCaptureControllerID(int32 rid, int did)
 
 bool VideoCaptureControllerID::operator<(
     const VideoCaptureControllerID& vc) const {
-  return this->routing_id < vc.routing_id && this->device_id < vc.device_id;
+  return this->routing_id < vc.routing_id || this->device_id < vc.device_id;
 }

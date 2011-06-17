@@ -107,9 +107,11 @@ TEST_F(VideoCaptureImplTest, Simple) {
       .WillOnce(Return());
 
   video_capture_impl_->StartCapture(client.get(), capability);
+  message_loop_->RunAllPending();
 
   EXPECT_CALL(*client, OnStopped(_))
       .WillOnce(Return());
 
   video_capture_impl_->StopCapture(client.get());
+  message_loop_->RunAllPending();
 }
