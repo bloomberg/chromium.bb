@@ -13,6 +13,8 @@
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
+#import "chrome/browser/ui/panels/panel_titlebar_view_cocoa.h"
+#import "chrome/browser/ui/panels/panel_window_controller_cocoa.h"
 #include "chrome/common/chrome_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -30,6 +32,17 @@ class PanelBrowserWindowCocoaTest : public CocoaTest {
                                                    gfx::Rect(),
                                                    browser_helper_.profile());
     return static_cast<Panel*>(panel_browser->window());
+  }
+
+  void VerifyTitlebarLocation(NSView* contentView, NSView* titlebar) {
+    NSRect content_frame = [contentView frame];
+    NSRect titlebar_frame = [titlebar frame];
+    // Since contentView and titlebar are both children of window's root view,
+    // we can compare their frames since they are in the same coordinate system.
+    EXPECT_EQ(NSMinX(content_frame), NSMinX(titlebar_frame));
+    EXPECT_EQ(NSWidth(content_frame), NSWidth(titlebar_frame));
+    EXPECT_EQ(NSMaxY(content_frame), NSMinY(titlebar_frame));
+    EXPECT_EQ(NSHeight([[titlebar superview] bounds]), NSMaxY(titlebar_frame));
   }
 
  private:
@@ -154,6 +167,76 @@ TEST_F(PanelBrowserWindowCocoaTest, NativeBounds) {
   EXPECT_EQ(1, manager->active_count());
 
   panel3->Close();
+  EXPECT_EQ(0, manager->active_count());
+}
+
+// Verify the titlebar is being created.
+TEST_F(PanelBrowserWindowCocoaTest, TitlebarViewCreate) {
+  Panel* panel = CreateTestPanel("Test Panel");
+  panel->Show();
+
+  PanelBrowserWindowCocoa* native_window =
+      static_cast<PanelBrowserWindowCocoa*>(panel->native_panel());
+
+  PanelTitlebarViewCocoa* titlebar = [native_window->controller_ titlebarView];
+  EXPECT_TRUE(titlebar);
+  EXPECT_EQ(native_window->controller_, [titlebar controller]);
+
+  panel->Close();
+}
+
+// Verify the sizing of titlebar - should be affixed on top of regular titlebar.
+TEST_F(PanelBrowserWindowCocoaTest, TitlebarViewSizing) {
+  Panel* panel = CreateTestPanel("Test Panel");
+  panel->Show();
+
+  PanelBrowserWindowCocoa* native_window =
+      static_cast<PanelBrowserWindowCocoa*>(panel->native_panel());
+  PanelTitlebarViewCocoa* titlebar = [native_window->controller_ titlebarView];
+
+  NSView* contentView = [[native_window->controller_ window] contentView];
+  VerifyTitlebarLocation(contentView, titlebar);
+
+  // In local coordinate system, width of titlebar should match width of
+  // content view of the window. They both use the same scale factor.
+  EXPECT_EQ(NSWidth([contentView bounds]), NSWidth([titlebar bounds]));
+
+  // Now resize the Panel, see that titlebar follows.
+  const int kDelta = 153; // random number
+  gfx::Rect bounds = panel->GetBounds();
+  // Grow panel in a way so that its titlebar moves and grows.
+  bounds.set_x(bounds.x() - kDelta);
+  bounds.set_y(bounds.y() - kDelta);
+  bounds.set_width(bounds.width() + kDelta);
+  bounds.set_height(bounds.height() + kDelta);
+  native_window->SetBounds(bounds);
+
+  // Verify the panel resized.
+  NSRect window_frame = [[native_window->controller_ window] frame];
+  EXPECT_EQ(NSWidth(window_frame), bounds.width());
+  EXPECT_EQ(NSHeight(window_frame), bounds.height());
+
+  // Verify the titlebar is still on top of regular titlebar.
+  VerifyTitlebarLocation(contentView, titlebar);
+
+  panel->Close();
+}
+
+// Verify closing behavior of titlebar close button.
+TEST_F(PanelBrowserWindowCocoaTest, TitlebarViewClose) {
+  PanelManager* manager = PanelManager::GetInstance();
+  Panel* panel = CreateTestPanel("Test Panel");
+  panel->Show();
+
+  PanelBrowserWindowCocoa* native_window =
+      static_cast<PanelBrowserWindowCocoa*>(panel->native_panel());
+
+  PanelTitlebarViewCocoa* titlebar = [native_window->controller_ titlebarView];
+  EXPECT_TRUE(titlebar);
+
+  EXPECT_EQ(1, manager->active_count());
+  // Simulate clicking Close Button. This should close the Panel as well.
+  [titlebar simulateCloseButtonClick];
   EXPECT_EQ(0, manager->active_count());
 }
 

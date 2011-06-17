@@ -15,14 +15,24 @@
 #include "base/memory/scoped_ptr.h"
 
 class PanelBrowserWindowCocoa;
+@class PanelTitlebarViewCocoa;
 
 @interface PanelWindowControllerCocoa : NSWindowController<NSWindowDelegate> {
  @private
+  IBOutlet PanelTitlebarViewCocoa* titlebar_view_;
   scoped_ptr<PanelBrowserWindowCocoa> windowShim_;
 }
 
 // Load the browser window nib and do any Cocoa-specific initialization.
 - (id)initWithBrowserWindow:(PanelBrowserWindowCocoa*)window;
+
+// Initiate the closing of the panel, starting from the platform-independent
+// layer. This will take care of PanelManager, other panels and close the
+// native window at the end.
+- (void)closePanel;
+
+// Accessor for titlebar view.
+- (PanelTitlebarViewCocoa*)titlebarView;
 
 @end  // @interface PanelWindowController
 

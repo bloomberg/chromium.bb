@@ -9,6 +9,11 @@
 #include "chrome/browser/ui/panels/panel.h"
 #import "chrome/browser/ui/panels/panel_window_controller_cocoa.h"
 
+// Use this instead of 0 for minimum size of a window when doing opening and
+// closing animations, since OSX window manager does not like 0-sized windows
+// (according to avi@).
+static const int kMinimumWindowSize = 1;
+
 // This creates a shim window class, which in turn creates a Cocoa window
 // controller which in turn creates actual NSWindow by loading a nib.
 // Panel contains this class as a nested BrowserWindow, but the overall
@@ -38,16 +43,19 @@ void PanelBrowserWindowCocoa::ShowPanel() {
 
   NSRect finalFrame = ConvertCoordinatesToCocoa(panel_->GetBounds());
   NSRect startFrame = NSMakeRect(NSMinX(finalFrame), NSMinY(finalFrame),
-                                 NSWidth(finalFrame), 0);
+                                 NSWidth(finalFrame), kMinimumWindowSize);
+  NSWindow* window = [controller_ window];
   // Show the window, using OS-specific animation.
-  [nswindow() setFrame:startFrame display:NO animate:NO];
-  [controller_ showWindow:nil];
-  [nswindow() setFrame:finalFrame display:YES animate:YES];
+  [window setFrame:startFrame display:NO animate:NO];
+  // Shows the window without making it key, on top of its layer, even if
+  // Chromium is not an active app.
+  [window orderFrontRegardless];
+  [window setFrame:finalFrame display:YES animate:YES];
 }
 
 void PanelBrowserWindowCocoa::SetPanelBounds(const gfx::Rect& bounds) {
   NSRect frame = ConvertCoordinatesToCocoa(bounds);
-  [nswindow() setFrame:frame display:YES animate:YES];
+  [[controller_ window] setFrame:frame display:YES animate:YES];
 }
 
 void PanelBrowserWindowCocoa::MinimizePanel() {
@@ -62,9 +70,10 @@ void PanelBrowserWindowCocoa::ClosePanel() {
   if (isClosed())
       return;
 
-  NSRect frame = [nswindow() frame];
-  frame.size.height = 0;
-  [nswindow() setFrame:frame display:YES animate:YES];
+  NSWindow* window = [controller_ window];
+  NSRect frame = [window frame];
+  frame.size.height = kMinimumWindowSize;
+  [window setFrame:frame display:YES animate:YES];
   browser_->OnWindowClosing();
   DestroyBrowser();  // not immediately, though.
 }
@@ -83,7 +92,7 @@ bool PanelBrowserWindowCocoa::IsPanelActive() const {
 }
 
 gfx::NativeWindow PanelBrowserWindowCocoa::GetNativePanelHandle() {
-  return nswindow();
+  return [controller_ window];
 }
 
 void PanelBrowserWindowCocoa::UpdatePanelTitleBar() {
@@ -104,7 +113,6 @@ void PanelBrowserWindowCocoa::FlashPanelFrame() {
 
 void PanelBrowserWindowCocoa::DestroyPanelBrowser() {
   [controller_ close];
-  [controller_ autorelease];
   controller_ = NULL;
 }
 
@@ -428,10 +436,6 @@ WindowOpenDisposition PanelBrowserWindowCocoa::GetDispositionForPopupBounds(
 
 void PanelBrowserWindowCocoa::DestroyBrowser() {
   DestroyPanelBrowser();  // Delegate to NativePanel.
-}
-
-NSWindow* PanelBrowserWindowCocoa::nswindow() const {
-  return [controller_ window];
 }
 
 NSRect PanelBrowserWindowCocoa::ConvertCoordinatesToCocoa(

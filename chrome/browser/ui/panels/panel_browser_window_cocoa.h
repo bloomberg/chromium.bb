@@ -125,6 +125,8 @@ class PanelBrowserWindowCocoa : public BrowserWindow, public NativePanel {
   virtual WindowOpenDisposition GetDispositionForPopupBounds(
       const gfx::Rect& bounds) OVERRIDE;
 
+  Panel* panel() { return panel_.get(); }
+
  protected:
   virtual void DestroyBrowser() OVERRIDE;
 
@@ -132,9 +134,11 @@ class PanelBrowserWindowCocoa : public BrowserWindow, public NativePanel {
   friend class PanelBrowserWindowCocoaTest;
   FRIEND_TEST_ALL_PREFIXES(PanelBrowserWindowCocoaTest, CreateClose);
   FRIEND_TEST_ALL_PREFIXES(PanelBrowserWindowCocoaTest, NativeBounds);
+  FRIEND_TEST_ALL_PREFIXES(PanelBrowserWindowCocoaTest, TitlebarViewCreate);
+  FRIEND_TEST_ALL_PREFIXES(PanelBrowserWindowCocoaTest, TitlebarViewSizing);
+  FRIEND_TEST_ALL_PREFIXES(PanelBrowserWindowCocoaTest, TitlebarViewClose);
 
   bool isClosed();
-  NSWindow* nswindow() const;  // Accessor for the |NSWindow|.
   NSRect ConvertCoordinatesToCocoa(const gfx::Rect& bounds);
 
   scoped_ptr<Browser> browser_;
