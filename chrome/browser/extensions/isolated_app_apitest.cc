@@ -44,7 +44,14 @@ class IsolatedAppApiTest : public ExtensionApiTest {
 
 // Tests that cookies set within an isolated app are not visible to normal
 // pages or other apps.
-IN_PROC_BROWSER_TEST_F(IsolatedAppApiTest, CookieIsolation) {
+//
+// Flaky on Mac/Win.  http://crbug.com/86562
+#if defined(OS_WIN) || defined(OS_MAC)
+#define MAYBE_CookieIsolation DISABLED_CookieIsolation
+#else
+#define MAYBE_CookieIsolation CookieIsolation
+#endif
+IN_PROC_BROWSER_TEST_F(IsolatedAppApiTest, MAYBE_CookieIsolation) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisablePopupBlocking);
   CommandLine::ForCurrentProcess()->AppendSwitch(
