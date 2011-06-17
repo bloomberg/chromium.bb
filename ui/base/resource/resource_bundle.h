@@ -69,6 +69,8 @@ class ResourceBundle {
     // NOTE: depending upon the locale, this may *not* result in a bold font.
     MediumBoldFont,
     LargeFont,
+    // NOTE: depending upon the locale, this may *not* result in a bold font.
+    LargeBoldFont,
   };
 
   // Initialize the ResourceBundle for this process.  Returns the language
@@ -281,6 +283,7 @@ class ResourceBundle {
   scoped_ptr<gfx::Font> medium_font_;
   scoped_ptr<gfx::Font> medium_bold_font_;
   scoped_ptr<gfx::Font> large_font_;
+  scoped_ptr<gfx::Font> large_bold_font_;
   scoped_ptr<gfx::Font> web_font_;
 
   static ResourceBundle* g_shared_instance_;

@@ -177,6 +177,8 @@ const gfx::Font& ResourceBundle::GetFont(FontStyle style) {
       return *medium_bold_font_;
     case LargeFont:
       return *large_font_;
+    case LargeBoldFont:
+      return *large_bold_font_;
     default:
       return *base_font_;
   }
@@ -223,6 +225,11 @@ void ResourceBundle::LoadFontsIfNecessary() {
 
     large_font_.reset(new gfx::Font());
     *large_font_ = base_font_->DeriveFont(kLargeFontSizeDelta);
+
+    large_bold_font_.reset(new gfx::Font());
+    *large_bold_font_ =
+        base_font_->DeriveFont(kLargeFontSizeDelta,
+                               base_font_->GetStyle() | gfx::Font::BOLD);
   }
 }
 

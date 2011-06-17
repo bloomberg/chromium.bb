@@ -10,6 +10,7 @@
 
 #include "build/build_config.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace browser_defaults {
 
@@ -86,6 +87,9 @@ extern bool enable_help_app;
 // when shown only on the new tab page.
 extern const int kBookmarkBarHeight;
 extern const int kNewtabBookmarkBarHeight;
+
+// ChromiumOS network menu font
+extern const ui::ResourceBundle::FontStyle kAssociatedNetworkFontStyle;
 
 }  // namespace browser_defaults
 

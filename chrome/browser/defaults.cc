@@ -88,4 +88,12 @@ const int kBookmarkBarHeight = 28;
 const int kNewtabBookmarkBarHeight = 57;
 #endif
 
+#ifdef TOUCH_UI
+const ui::ResourceBundle::FontStyle kAssociatedNetworkFontStyle =
+    ui::ResourceBundle::LargeBoldFont;
+#else
+const ui::ResourceBundle::FontStyle kAssociatedNetworkFontStyle =
+    ui::ResourceBundle::BoldFont;
+#endif
+
 }  // namespace browser_defaults

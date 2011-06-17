@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/sim_dialog_delegate.h"
+#include "chrome/browser/defaults.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/window.h"
@@ -430,9 +431,14 @@ string16 NetworkMenuModel::GetLabelAt(int index) const {
 }
 
 const gfx::Font* NetworkMenuModel::GetLabelFontAt(int index) const {
-  return (menu_items_[index].flags & FLAG_ASSOCIATED) ?
-      &ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::BoldFont) :
-      NULL;
+  const gfx::Font* font = NULL;
+  if (menu_items_[index].flags & FLAG_ASSOCIATED) {
+    ResourceBundle& resource_bundle = ResourceBundle::GetSharedInstance();
+    font = &resource_bundle.GetFont(
+        browser_defaults::kAssociatedNetworkFontStyle);
+  }
+
+  return font;
 }
 
 bool NetworkMenuModel::IsItemCheckedAt(int index) const {
