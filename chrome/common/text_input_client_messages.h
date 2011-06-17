@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_TEXT_INPUT_CLIENT_MESSAGES_H_
-#define CHROME_COMMON_TEXT_INPUT_CLIENT_MESSAGES_H_
+// Multiply-included message file, hence no include guard
 
 #include "ipc/ipc_message_macros.h"
 #include "ui/base/range/range.h"
@@ -52,4 +51,3 @@ IPC_MESSAGE_ROUTED1(TextInputClientReplyMsg_GotStringForRange,
                     mac::AttributedStringCoder::EncodedString)
 #endif  // defined(OS_MACOSX)
 
-#endif  // CHROME_COMMON_TEXT_INPUT_CLIENT_MESSAGES_H_

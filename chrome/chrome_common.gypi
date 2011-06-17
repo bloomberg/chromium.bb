@@ -230,7 +230,6 @@
         'common/spellcheck_messages.h',
         'common/sqlite_utils.cc',
         'common/sqlite_utils.h',
-        'common/text_input_client_messages.cc',
         'common/text_input_client_messages.h',
         'common/thumbnail_score.cc',
         'common/thumbnail_score.h',
