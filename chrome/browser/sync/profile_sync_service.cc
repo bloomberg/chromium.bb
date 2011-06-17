@@ -763,7 +763,8 @@ void ProfileSyncService::PromptForExistingPassphrase() {
 
 void ProfileSyncService::ShowSyncSetup(SyncSetupWizard::State state) {
   wizard_.Step(state);
-  BrowserList::GetLastActive()->ShowOptionsTab(chrome::kSyncSetupSubPage);
+  BrowserList::GetLastActiveWithProfile(profile())->ShowOptionsTab(
+      chrome::kSyncSetupSubPage);
 }
 
 SyncBackendHost::StatusSummary ProfileSyncService::QuerySyncStatusSummary() {
