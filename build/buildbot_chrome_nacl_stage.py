@@ -1,7 +1,7 @@
 #!/usr/bin/python
-# Copyright 2011 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 """Do all the steps required to build and test against nacl."""
 
@@ -118,6 +118,9 @@ def BuildAndTest(options):
   if options.jobs > 1:
     scons.append('-j%d' % options.jobs)
 
+  if options.buildbot is not None:
+    scons.append('buildbot=%s' % (options.buildbot,))
+
   # Clean the output of the previous build.
   # Incremental builds can get wedged in wierd ways, so we're trading speed
   # for reliability.
@@ -170,6 +173,9 @@ def MakeCommandLineParser():
   parser.add_option('--browser_path', dest='browser_path', action='store',
                     type='string', default=None,
                     help='Path to the chrome browser.')
+  parser.add_option('--buildbot', dest='buildbot', action='store',
+                    type='string', default=None,
+                    help='Value passed to scons as buildbot= option.')
   return parser
 
 

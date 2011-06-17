@@ -356,6 +356,16 @@ def ExpandArguments():
                 '--suppressions=src/third_party/valgrind/tests.supp')
     SetArgument('scale_timeout', 20)
     SetArgument('running_on_valgrind', True)
+  elif ARGUMENTS.get('buildbot') == 'memcheck-browser-tests':
+    print 'buildbot=memcheck-browser-tests expands to the following arguments:'
+    SetArgument('browser_test_tool', 'memcheck')
+    SetArgument('scale_timeout', 20)
+    SetArgument('running_on_valgrind', True)
+  elif ARGUMENTS.get('buildbot') == 'tsan-browser-tests':
+    print 'buildbot=tsan-browser-tests expands to the following arguments:'
+    SetArgument('browser_test_tool', 'tsan')
+    SetArgument('scale_timeout', 20)
+    SetArgument('running_on_valgrind', True)
   elif ARGUMENTS.get('buildbot'):
     print 'ERROR: unexpected argument buildbot="%s"' % (
         ARGUMENTS.get('buildbot'), )
