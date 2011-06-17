@@ -53,7 +53,6 @@ extern const FilePath::CharType kHistoryFilename[];
 extern const FilePath::CharType kLocalStateFilename[];
 extern const FilePath::CharType kPreferencesFilename[];
 extern const FilePath::CharType kSafeBrowsingBaseFilename[];
-extern const FilePath::CharType kSafeBrowsingPhishingModelFilename[];
 extern const FilePath::CharType kSingletonCookieFilename[];
 extern const FilePath::CharType kSingletonSocketFilename[];
 extern const FilePath::CharType kSingletonLockFilename[];

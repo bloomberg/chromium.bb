@@ -5,7 +5,6 @@
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/scoped_temp_dir.h"
 #include "base/task.h"
 #include "chrome/browser/safe_browsing/client_side_detection_host.h"
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
@@ -44,15 +43,14 @@ const bool kTrue = true;
 }
 
 namespace safe_browsing {
-
+namespace {
 MATCHER_P(EqualsProto, other, "") {
   return other.SerializeAsString() == arg.SerializeAsString();
 }
 
 class MockClientSideDetectionService : public ClientSideDetectionService {
  public:
-  explicit MockClientSideDetectionService(const FilePath& model_path)
-      : ClientSideDetectionService(model_path, NULL) {}
+  MockClientSideDetectionService() : ClientSideDetectionService(NULL) {}
   virtual ~MockClientSideDetectionService() {};
 
   MOCK_METHOD2(SendClientReportPhishingRequest,
@@ -104,6 +102,7 @@ void QuitUIMessageLoop() {
                           FROM_HERE,
                           new MessageLoop::QuitTask());
 }
+}  // namespace
 
 class ClientSideDetectionHostTest : public TabContentsWrapperTestHarness {
  public:
@@ -122,12 +121,7 @@ class ClientSideDetectionHostTest : public TabContentsWrapperTestHarness {
     ASSERT_TRUE(io_thread_->Start());
 
     // Inject service classes.
-    ScopedTempDir tmp_dir;
-    ASSERT_TRUE(tmp_dir.CreateUniqueTempDir());
-    FilePath model_path = tmp_dir.path().AppendASCII("model");
-
-    csd_service_.reset(new StrictMock<MockClientSideDetectionService>(
-        model_path));
+    csd_service_.reset(new StrictMock<MockClientSideDetectionService>());
     sb_service_ = new StrictMock<MockSafeBrowsingService>();
     csd_host_ = contents_wrapper()->safebrowsing_detection_host();
     csd_host_->set_client_side_detection_service(csd_service_.get());

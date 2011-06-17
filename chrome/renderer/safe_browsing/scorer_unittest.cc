@@ -12,7 +12,7 @@
 #include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
 #include "base/threading/thread.h"
-#include "chrome/renderer/safe_browsing/client_model.pb.h"
+#include "chrome/common/safe_browsing/client_model.pb.h"
 #include "chrome/renderer/safe_browsing/features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -58,56 +58,7 @@ class PhishingScorerTest : public ::testing::Test {
     model_.set_max_words_per_term(2);
   }
 
-  // Helper to write the given data to a file and then open the file for
-  // reading.  Returns kInvalidPlatformFileValue on error.
-  base::PlatformFile WriteAndOpenModelFile(
-      FilePath model_file_path,
-      const std::string& model_data) {
-    if (file_util::WriteFile(
-            model_file_path,
-            model_data.data(),
-            model_data.size()) != static_cast<int>(model_data.size())) {
-      LOG(ERROR) << "Unable to write model data to file";
-      return base::kInvalidPlatformFileValue;
-    }
-
-    return base::CreatePlatformFile(
-        model_file_path,
-        base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ,
-        NULL,   // created
-        NULL);  // error_code
-  }
-
-  // Helper to test CreateFromFile.  Calls the method, then runs the
-  // message loop if necessary until the load finishes.  Returns the
-  // callback result.
-  Scorer* CreateFromFile(
-      base::PlatformFile model_file,
-      scoped_refptr<base::MessageLoopProxy> file_thread_proxy) {
-    callback_result_ = NULL;
-    Scorer::CreateFromFile(
-        model_file,
-        file_thread_proxy,
-        NewCallback(this, &PhishingScorerTest::PhishingScorerCreated));
-    message_loop_.Run();
-    return callback_result_;
-  }
-
-  void PhishingScorerCreated(Scorer* scorer) {
-    callback_result_ = scorer;
-    message_loop_.Quit();
-  }
-
-  // Proxy for private model member variable.
-  const ClientSideModel& GetModel(const Scorer& scorer) {
-    return scorer.model_;
-  }
-
   ClientSideModel model_;
-
-  // For the CreateFromFile test.
-  MessageLoop message_loop_;
-  Scorer* callback_result_;
 };
 
 TEST_F(PhishingScorerTest, HasValidModel) {
@@ -123,49 +74,6 @@ TEST_F(PhishingScorerTest, HasValidModel) {
   model_.clear_max_words_per_term();
   scorer.reset(Scorer::Create(model_.SerializePartialAsString()));
   EXPECT_FALSE(scorer.get());
-}
-
-TEST_F(PhishingScorerTest, CreateFromFile) {
-  // Write out the testing model to a file.
-  ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  FilePath model_file_path = temp_dir.path().AppendASCII("phishing_model.pb");
-
-  std::string serialized_model = model_.SerializeAsString();
-  base::PlatformFile model_file = WriteAndOpenModelFile(
-      model_file_path,
-      serialized_model);
-  ASSERT_NE(base::kInvalidPlatformFileValue, model_file);
-
-  base::Thread loader_thread("PhishingScorerTest::FILE");
-  loader_thread.Start();
-
-  scoped_ptr<Scorer> scorer(
-      CreateFromFile(model_file, loader_thread.message_loop_proxy()));
-  ASSERT_TRUE(scorer.get());
-  EXPECT_EQ(serialized_model, GetModel(*scorer).SerializeAsString());
-  base::ClosePlatformFile(model_file);
-
-  // Now try with an empty file.
-  model_file = WriteAndOpenModelFile(model_file_path, "");
-  ASSERT_NE(base::kInvalidPlatformFileValue, model_file);
-  scorer.reset(CreateFromFile(model_file, loader_thread.message_loop_proxy()));
-  ASSERT_FALSE(scorer.get());
-  base::ClosePlatformFile(model_file);
-
-  // Try with a file that's too large.
-  model_.add_hashes(std::string(Scorer::kMaxPhishingModelSizeBytes, '0'));
-  model_file = WriteAndOpenModelFile(model_file_path,
-                                     model_.SerializeAsString());
-  ASSERT_NE(base::kInvalidPlatformFileValue, model_file);
-  scorer.reset(CreateFromFile(model_file, loader_thread.message_loop_proxy()));
-  ASSERT_FALSE(scorer.get());
-  base::ClosePlatformFile(model_file);
-
-  // Finally, try with an invalid file.
-  scorer.reset(CreateFromFile(base::kInvalidPlatformFileValue,
-                              loader_thread.message_loop_proxy()));
-  ASSERT_FALSE(scorer.get());
 }
 
 TEST_F(PhishingScorerTest, PageTerms) {

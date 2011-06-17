@@ -6,7 +6,6 @@
 
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"
-#include "ipc/ipc_platform_file.h"
 
 #define IPC_MESSAGE_START SafeBrowsingMsgStart
 
@@ -44,10 +43,9 @@ IPC_MESSAGE_ROUTED1(SafeBrowsingHostMsg_MalwareDOMDetails,
 // renderer.
 
 // A classification model for client-side phishing detection.
-// The given file contains an encoded safe_browsing::ClientSideModel
-// protocol buffer.
+// The string is an encoded safe_browsing::ClientSideModel protocol buffer.
 IPC_MESSAGE_CONTROL1(SafeBrowsingMsg_SetPhishingModel,
-                     IPC::PlatformFileForTransit /* model_file */)
+                     std::string /* encoded ClientSideModel proto */)
 
 // Request a DOM tree when a malware interstitial is shown.
 IPC_MESSAGE_ROUTED0(SafeBrowsingMsg_GetMalwareDOMDetails)

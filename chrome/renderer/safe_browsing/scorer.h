@@ -18,13 +18,9 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/callback_old.h"
 #include "base/hash_tables.h"
-#include "base/memory/ref_counted.h"
-#include "base/message_loop_proxy.h"
-#include "base/platform_file.h"
 #include "base/string_piece.h"
-#include "chrome/renderer/safe_browsing/client_model.pb.h"
+#include "chrome/common/safe_browsing/client_model.pb.h"
 
 namespace safe_browsing {
 class FeatureMap;
@@ -32,29 +28,19 @@ class FeatureMap;
 // Scorer methods are virtual to simplify mocking of this class.
 class Scorer {
  public:
-  typedef Callback1<Scorer*>::Type CreationCallback;
-
   virtual ~Scorer();
 
   // Factory method which creates a new Scorer object by parsing the given
   // model.  If parsing fails this method returns NULL.
   static Scorer* Create(const base::StringPiece& model_str);
 
-  // Factory method which creates a new Scorer object by asynchronously reading
-  // a model from the given file.  file_thread_proxy should point to the thread
-  // on which file I/O should take place.  On completion, creation_callback is
-  // run with the new Scorer instance, or NULL if an error occurred.  Takes
-  // ownership of creation_callback.  The creation callback will always run on
-  // the same thread that called CreateFromFile.
-  static void CreateFromFile(
-      base::PlatformFile model_file,
-      scoped_refptr<base::MessageLoopProxy> file_thread_proxy,
-      CreationCallback* creation_callback);
-
   // This method computes the probability that the given features are indicative
   // of phishing.  It returns a score value that falls in the range [0.0,1.0]
   // (range is inclusive on both ends).
   virtual double ComputeScore(const FeatureMap& features) const;
+
+  // Returns the version number of the loaded client model.
+  int model_version() const;
 
   // -- Accessors used by the page feature extractor ---------------------------
 
@@ -68,10 +54,6 @@ class Scorer {
 
   // Return the maximum number of words per term for the loaded model.
   size_t max_words_per_term() const;
-
-  // The maximum size of a client-side phishing model file that we
-  // expect to load.
-  static const int kMaxPhishingModelSizeBytes;
 
  protected:
   // Most clients should use the factory method.  This constructor is public

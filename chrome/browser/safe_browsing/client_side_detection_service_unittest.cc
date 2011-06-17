@@ -8,25 +8,42 @@
 
 #include "base/callback.h"
 #include "base/file_path.h"
-#include "base/file_util.h"
-#include "base/file_util_proxy.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/platform_file.h"
 #include "base/scoped_temp_dir.h"
 #include "base/task.h"
 #include "base/time.h"
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
+#include "chrome/common/safe_browsing/client_model.pb.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/test_url_fetcher_factory.h"
 #include "content/common/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_status.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::testing::Mock;
+
 namespace safe_browsing {
+namespace {
+class MockClientSideDetectionService : public ClientSideDetectionService {
+ public:
+  MockClientSideDetectionService() : ClientSideDetectionService(NULL) {}
+  virtual ~MockClientSideDetectionService() {}
+
+  MOCK_METHOD1(EndFetchModel, void(ClientModelStatus));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockClientSideDetectionService);
+};
+
+ACTION(QuitCurrentMessageLoop) {
+  MessageLoop::current()->Quit();
+}
+}  // namespace
 
 class ClientSideDetectionServiceTest : public testing::Test {
  protected:
@@ -45,13 +62,6 @@ class ClientSideDetectionServiceTest : public testing::Test {
     URLFetcher::set_factory(NULL);
     file_thread_.reset();
     browser_thread_.reset();
-  }
-
-  std::string ReadModelFile(base::PlatformFile model_file) {
-    char buf[1024];
-    int n = base::ReadPlatformFile(model_file, 0, buf, 1024);
-    EXPECT_LE(0, n);
-    return (n < 0) ? "" : std::string(buf, n);
   }
 
   bool SendClientReportPhishingRequest(const GURL& phishing_url,
@@ -159,12 +169,107 @@ class ClientSideDetectionServiceTest : public testing::Test {
   bool is_phishing_;
 };
 
+TEST_F(ClientSideDetectionServiceTest, FetchModelTest) {
+  // We don't want to use a real service class here because we can't call
+  // the real EndFetchModel.  It would reschedule a reload which might
+  // make the test flaky.
+  MockClientSideDetectionService service;
+
+  // The model fetch failed.
+  SetModelFetchResponse("blamodel", false /* failure */);
+  EXPECT_CALL(service, EndFetchModel(
+      ClientSideDetectionService::MODEL_FETCH_FAILED))
+      .WillOnce(QuitCurrentMessageLoop());
+  service.StartFetchModel();
+  msg_loop_.Run();  // EndFetchModel will quit the message loop.
+  Mock::VerifyAndClearExpectations(&service);
+
+  // Empty model file.
+  SetModelFetchResponse("", true /* success */);
+  EXPECT_CALL(service, EndFetchModel(
+      ClientSideDetectionService::MODEL_EMPTY))
+      .WillOnce(QuitCurrentMessageLoop());
+  service.StartFetchModel();
+  msg_loop_.Run();  // EndFetchModel will quit the message loop.
+  Mock::VerifyAndClearExpectations(&service);
+
+  // Model is too large.
+  SetModelFetchResponse(
+      std::string(ClientSideDetectionService::kMaxModelSizeBytes + 1, 'x'),
+      true /* success */);
+  EXPECT_CALL(service, EndFetchModel(
+      ClientSideDetectionService::MODEL_TOO_LARGE))
+      .WillOnce(QuitCurrentMessageLoop());
+  service.StartFetchModel();
+  msg_loop_.Run();  // EndFetchModel will quit the message loop.
+  Mock::VerifyAndClearExpectations(&service);
+
+  // Unable to parse the model file.
+  SetModelFetchResponse("Invalid model file", true /* success */);
+  EXPECT_CALL(service, EndFetchModel(
+      ClientSideDetectionService::MODEL_PARSE_ERROR))
+      .WillOnce(QuitCurrentMessageLoop());
+  service.StartFetchModel();
+  msg_loop_.Run();  // EndFetchModel will quit the message loop.
+  Mock::VerifyAndClearExpectations(&service);
+
+  // Model that is missing some required fields (missing the version field).
+  ClientSideModel model;
+  model.set_max_words_per_term(4);
+  SetModelFetchResponse(model.SerializePartialAsString(), true /* success */);
+  EXPECT_CALL(service, EndFetchModel(
+      ClientSideDetectionService::MODEL_MISSING_FIELDS))
+      .WillOnce(QuitCurrentMessageLoop());
+  service.StartFetchModel();
+  msg_loop_.Run();  // EndFetchModel will quit the message loop.
+  Mock::VerifyAndClearExpectations(&service);
+
+  // Model version number is wrong.
+  model.set_version(-1);
+  SetModelFetchResponse(model.SerializeAsString(), true /* success */);
+  EXPECT_CALL(service, EndFetchModel(
+      ClientSideDetectionService::MODEL_INVALID_VERSION_NUMBER))
+      .WillOnce(QuitCurrentMessageLoop());
+  service.StartFetchModel();
+  msg_loop_.Run();  // EndFetchModel will quit the message loop.
+  Mock::VerifyAndClearExpectations(&service);
+
+  // Normal model.
+  model.set_version(10);
+  SetModelFetchResponse(model.SerializeAsString(), true /* success */);
+  EXPECT_CALL(service, EndFetchModel(
+      ClientSideDetectionService::MODEL_SUCCESS))
+      .WillOnce(QuitCurrentMessageLoop());
+  service.StartFetchModel();
+  msg_loop_.Run();  // EndFetchModel will quit the message loop.
+  Mock::VerifyAndClearExpectations(&service);
+
+  // Model version number is decreasing.
+  service.model_version_ = 11;
+  SetModelFetchResponse(model.SerializeAsString(), true /* success */);
+  EXPECT_CALL(service, EndFetchModel(
+      ClientSideDetectionService::MODEL_INVALID_VERSION_NUMBER))
+      .WillOnce(QuitCurrentMessageLoop());
+  service.StartFetchModel();
+  msg_loop_.Run();  // EndFetchModel will quit the message loop.
+  Mock::VerifyAndClearExpectations(&service);
+
+  // Model version hasn't changed since the last reload.
+  service.model_version_ = 10;
+  SetModelFetchResponse(model.SerializeAsString(), true /* success */);
+  EXPECT_CALL(service, EndFetchModel(
+      ClientSideDetectionService::MODEL_NOT_CHANGED))
+      .WillOnce(QuitCurrentMessageLoop());
+  service.StartFetchModel();
+  msg_loop_.Run();  // EndFetchModel will quit the message loop.
+  Mock::VerifyAndClearExpectations(&service);
+}
+
 TEST_F(ClientSideDetectionServiceTest, ServiceObjectDeletedBeforeCallbackDone) {
   SetModelFetchResponse("bogus model", true /* success */);
   ScopedTempDir tmp_dir;
   ASSERT_TRUE(tmp_dir.CreateUniqueTempDir());
-  csd_service_.reset(ClientSideDetectionService::Create(
-      tmp_dir.path().AppendASCII("model"), NULL));
+  csd_service_.reset(ClientSideDetectionService::Create(tmp_dir.path(), NULL));
   EXPECT_TRUE(csd_service_.get() != NULL);
   // We delete the client-side detection service class even though the callbacks
   // haven't run yet.
@@ -178,8 +283,7 @@ TEST_F(ClientSideDetectionServiceTest, SendClientReportPhishingRequest) {
   SetModelFetchResponse("bogus model", true /* success */);
   ScopedTempDir tmp_dir;
   ASSERT_TRUE(tmp_dir.CreateUniqueTempDir());
-  csd_service_.reset(ClientSideDetectionService::Create(
-      tmp_dir.path().AppendASCII("model"), NULL));
+  csd_service_.reset(ClientSideDetectionService::Create(tmp_dir.path(), NULL));
 
   GURL url("http://a.com/");
   float score = 0.4f;  // Some random client score.
@@ -228,8 +332,7 @@ TEST_F(ClientSideDetectionServiceTest, GetNumReportTest) {
   SetModelFetchResponse("bogus model", true /* success */);
   ScopedTempDir tmp_dir;
   ASSERT_TRUE(tmp_dir.CreateUniqueTempDir());
-  csd_service_.reset(ClientSideDetectionService::Create(
-      tmp_dir.path().AppendASCII("model"), NULL));
+  csd_service_.reset(ClientSideDetectionService::Create(tmp_dir.path(), NULL));
 
   std::queue<base::Time>& report_times = GetPhishingReportTimes();
   base::Time now = base::Time::Now();
@@ -246,8 +349,7 @@ TEST_F(ClientSideDetectionServiceTest, CacheTest) {
   SetModelFetchResponse("bogus model", true /* success */);
   ScopedTempDir tmp_dir;
   ASSERT_TRUE(tmp_dir.CreateUniqueTempDir());
-  csd_service_.reset(ClientSideDetectionService::Create(
-      tmp_dir.path().AppendASCII("model"), NULL));
+  csd_service_.reset(ClientSideDetectionService::Create(tmp_dir.path(), NULL));
 
   TestCache();
 }
@@ -256,8 +358,7 @@ TEST_F(ClientSideDetectionServiceTest, IsPrivateIPAddress) {
   SetModelFetchResponse("bogus model", true /* success */);
   ScopedTempDir tmp_dir;
   ASSERT_TRUE(tmp_dir.CreateUniqueTempDir());
-  csd_service_.reset(ClientSideDetectionService::Create(
-      tmp_dir.path().AppendASCII("model"), NULL));
+  csd_service_.reset(ClientSideDetectionService::Create(tmp_dir.path(), NULL));
 
   EXPECT_TRUE(csd_service_->IsPrivateIPAddress("10.1.2.3"));
   EXPECT_TRUE(csd_service_->IsPrivateIPAddress("127.0.0.1"));

@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "base/string_util.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome/common/url_constants.h"
@@ -49,7 +50,7 @@ PhishingClassifier::~PhishingClassifier() {
 }
 
 void PhishingClassifier::set_phishing_scorer(const Scorer* scorer) {
-  DCHECK(!scorer_);
+  CheckNoPendingClassification();
   scorer_ = scorer;
   url_extractor_.reset(new PhishingUrlFeatureExtractor);
   dom_extractor_.reset(
@@ -169,6 +170,7 @@ void PhishingClassifier::TermExtractionFinished(bool success) {
     // the score.
     FeatureMap hashed_features;
     ClientPhishingRequest verdict;
+    verdict.set_model_version(scorer_->model_version());
     verdict.set_url(main_frame->url().spec());
     for (base::hash_map<std::string, double>::const_iterator it =
              features_->features().begin();
@@ -196,6 +198,8 @@ void PhishingClassifier::CheckNoPendingClassification() {
   if (done_callback_.get() || page_text_) {
     LOG(ERROR) << "Classification in progress, missing call to "
                << "CancelPendingClassification";
+    UMA_HISTOGRAM_COUNTS("SBClientPhishing.CheckNoPendingClassificationFailed",
+                         1);
   }
 }
 
