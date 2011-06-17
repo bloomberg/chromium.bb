@@ -471,7 +471,7 @@ bool JingleSession::EstablishSSLConnection(
         pseudotcp, local_cert_, local_private_key_.get(), ssl_config);
     ssl_socket->reset(new SocketWrapper(socket));
 
-    int ret = socket->Accept(&ssl_connect_callback_);
+    int ret = socket->Handshake(&ssl_connect_callback_);
     if (ret == net::ERR_IO_PENDING) {
       return true;
     } else if (ret != net::OK) {
