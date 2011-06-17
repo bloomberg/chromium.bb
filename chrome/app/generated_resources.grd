@@ -12060,14 +12060,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_KEYBOARD_OVERLAY_FIND_PREVIOUS" desc="The text in the keyboard overlay to explain the shortcut.">
         Find previous
       </message>
-      <message name="IDS_KEYBOARD_OVERLAY_FIND_PREVIOUS" desc="The text in the keyboard overlay to explain the shortcut.">
-        Find previous
-      </message>
       <message name="IDS_KEYBOARD_OVERLAY_FIND_TEXT" desc="The text in the keyboard overlay to explain the shortcut.">
         Find text
-      </message>
-      <message name="IDS_KEYBOARD_OVERLAY_FOCUS_ADDRESS_BAR" desc="The text in the keyboard overlay to explain the shortcut.">
-        Focus address bar
       </message>
       <message name="IDS_KEYBOARD_OVERLAY_FOCUS_ADDRESS_BAR" desc="The text in the keyboard overlay to explain the shortcut.">
         Focus address bar
@@ -12086,9 +12080,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_KEYBOARD_OVERLAY_BACK" desc="The text in the keyboard overlay to explain the shortcut.">
         Back
-      </message>
-      <message name="IDS_KEYBOARD_OVERLAY_FORWARD" desc="The text in the keyboard overlay to explain the shortcut.">
-        Forward
       </message>
       <message name="IDS_KEYBOARD_OVERLAY_FORWARD" desc="The text in the keyboard overlay to explain the shortcut.">
         Forward
@@ -12126,9 +12117,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_KEYBOARD_OVERLAY_SELECT_WORD_AT_A_TIME" desc="The text in the keyboard overlay to explain the shortcut.">
         Select "word at a time"
       </message>
-      <message name="IDS_KEYBOARD_OVERLAY_SELECT_WORD_AT_A_TIME" desc="The text in the keyboard overlay to explain the shortcut.">
-        Select "word at a time"
-      </message>
       <message name="IDS_KEYBOARD_OVERLAY_TOGGLE_BOOKMARK_BAR" desc="The text in the keyboard overlay to explain the shortcut.">
         Toggle bookmark bar
       </message>
@@ -12140,12 +12128,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_KEYBOARD_OVERLAY_ZOOM_OUT" desc="The text in the keyboard overlay to explain the shortcut.">
         Zoom out
-      </message>
-      <message name="IDS_KEYBOARD_OVERLAY_RESET_ZOOM" desc="The text in the keyboard overlay to explain the shortcut.">
-        Reset zoom
-      </message>
-      <message name="IDS_KEYBOARD_OVERLAY_FOCUS_ADDRESS_BAR_IN_SEARCH_MODE" desc="The text in the keyboard overlay to explain the shortcut.">
-        Focus address bar in search mode
       </message>
       <message name="IDS_KEYBOARD_OVERLAY_TAKE_SCREENSHOT" desc="The text in the keyboard overlay to explain the shortcut.">
         Take screenshot
