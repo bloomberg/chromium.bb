@@ -6,7 +6,7 @@ vars = {
     'git_url':
          'http://git.chromium.org',
     'webkit_rev':
-         '@cb6103071de792176e63e3f1f08c297875f288a5'
+         '@51f3f5d96563daaecf4bf4f1b4b9dae19f47f588'
 }
 
 deps = {
@@ -31,7 +31,7 @@ deps = {
     'src/third_party/WebKit':
         Var('webkit_url') + Var('webkit_rev'),
     'src/third_party/angle':
-        Var('git_url') + '/external/angleproject.git@625c5f39a229c58461787bebdaea11b9ea63e7e6',
+        Var('git_url') + '/external/angleproject.git@9dd8292b631cd00c15efe7ecb4666bf0290e3cdf',
     'src/third_party/bidichecker':
         Var('git_url') + '/external/bidichecker/lib.git@97f2aa645b74c28c57eca56992235c79850fa9e0',
     'src/third_party/cacheinvalidation/files/src/google':
@@ -78,6 +78,8 @@ deps = {
         Var('git_url') + '/chromium/deps/swig/Lib.git@549f0b084ad9c40ef42d111303d831eb8d91252e',
     'src/third_party/webdriver/python/selenium':
         Var('git_url') + '/external/selenium/py/selenium.git@f531d35cf99dd456a1e52af343e738635dd755e4',
+    'src/third_party/webrtc':
+        Var('git_url') + '/external/webrtc.git@a6f54fd726a573f2d229532e4a97df1dbdea02a4',
     'src/third_party/yasm/source/patched-yasm':
         Var('git_url') + '/chromium/deps/yasm/patched-yasm.git@44efe151b6960bab3db0c85354cc4cce1024219d',
     'src/tools/gyp':
