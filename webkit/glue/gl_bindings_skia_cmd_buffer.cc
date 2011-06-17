@@ -19,9 +19,9 @@ void BindSkiaToCommandBufferGL() {
   static GrGLInterface cmd_buffer_interface = {
     kES2_GrGLBinding,
 
-    -1,   // NPOTRenderTargetSupport
-    -1,   // MinRenderTargetHeight
-    -1,   // MinRenderTargetWidth
+    kProbe_GrGLCapability,   // NPOTRenderTargetSupport
+    kProbe_GrGLCapability,   // MinRenderTargetHeight
+    kProbe_GrGLCapability,   // MinRenderTargetWidth
 
     glActiveTexture,
     glAttachShader,
