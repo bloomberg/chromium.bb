@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_BACKGROUND_CONTENTS_SERVICE_FACTORY_H_
-#define CHROME_BROWSER_BACKGROUND_CONTENTS_SERVICE_FACTORY_H_
+#ifndef CHROME_BROWSER_BACKGROUND_BACKGROUND_CONTENTS_SERVICE_FACTORY_H_
+#define CHROME_BROWSER_BACKGROUND_BACKGROUND_CONTENTS_SERVICE_FACTORY_H_
 
 #include "base/compiler_specific.h"
 #include "base/memory/singleton.h"
@@ -34,4 +34,4 @@ class BackgroundContentsServiceFactory : public ProfileKeyedServiceFactory {
   virtual bool ServiceHasOwnInstanceInIncognito() OVERRIDE;
 };
 
-#endif  // CHROME_BROWSER_BACKGROUND_CONTENTS_SERVICE_FACTORY_H_
+#endif  // CHROME_BROWSER_BACKGROUND_BACKGROUND_CONTENTS_SERVICE_FACTORY_H_

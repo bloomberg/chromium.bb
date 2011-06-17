@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "base/nix/xdg_util.h"
 #include "base/task.h"
-#include "chrome/browser/background_mode_manager.h"
+#include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/common/auto_start_linux.h"

@@ -7,7 +7,7 @@
 #include <cstdlib>
 #include <set>
 
-#include "chrome/browser/background_application_list_model.h"
+#include "chrome/browser/background/background_application_list_model.h"
 
 #include "base/command_line.h"
 #include "base/file_path.h"

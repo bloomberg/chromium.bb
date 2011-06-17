@@ -4,7 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/mac/mac_util.h"
-#include "chrome/browser/background_mode_manager.h"
+#include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_switches.h"

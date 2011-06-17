@@ -4,7 +4,7 @@
 
 #include "chrome/browser/tab_contents/background_contents.h"
 
-#include "chrome/browser/background_contents_service.h"
+#include "chrome/browser/background/background_contents_service.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"

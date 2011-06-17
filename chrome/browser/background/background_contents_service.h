@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_BACKGROUND_CONTENTS_SERVICE_H_
-#define CHROME_BROWSER_BACKGROUND_CONTENTS_SERVICE_H_
+#ifndef CHROME_BROWSER_BACKGROUND_BACKGROUND_CONTENTS_SERVICE_H_
+#define CHROME_BROWSER_BACKGROUND_BACKGROUND_CONTENTS_SERVICE_H_
 #pragma once
 
 #include <map>
@@ -175,4 +175,4 @@ class BackgroundContentsService : private NotificationObserver,
   DISALLOW_COPY_AND_ASSIGN(BackgroundContentsService);
 };
 
-#endif  // CHROME_BROWSER_BACKGROUND_CONTENTS_SERVICE_H_
+#endif  // CHROME_BROWSER_BACKGROUND_BACKGROUND_CONTENTS_SERVICE_H_

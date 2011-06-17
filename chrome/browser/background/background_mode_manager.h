@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_BACKGROUND_MODE_MANAGER_H_
-#define CHROME_BROWSER_BACKGROUND_MODE_MANAGER_H_
+#ifndef CHROME_BROWSER_BACKGROUND_BACKGROUND_MODE_MANAGER_H_
+#define CHROME_BROWSER_BACKGROUND_BACKGROUND_MODE_MANAGER_H_
 #pragma once
 
 #include <map>
 
 #include "base/gtest_prod_util.h"
-#include "chrome/browser/background_application_list_model.h"
+#include "chrome/browser/background/background_application_list_model.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/status_icons/status_icon.h"
@@ -262,4 +262,4 @@ class BackgroundModeManager
   DISALLOW_COPY_AND_ASSIGN(BackgroundModeManager);
 };
 
-#endif  // CHROME_BROWSER_BACKGROUND_MODE_MANAGER_H_
+#endif  // CHROME_BROWSER_BACKGROUND_BACKGROUND_MODE_MANAGER_H_

@@ -6,8 +6,8 @@
 
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/autofill/autofill_manager.h"
-#include "chrome/browser/background_contents_service.h"
-#include "chrome/browser/background_mode_manager.h"
+#include "chrome/browser/background/background_contents_service.h"
+#include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"

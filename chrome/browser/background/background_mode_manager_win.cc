@@ -10,7 +10,7 @@
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
-#include "chrome/browser/background_mode_manager.h"
+#include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/browser/browser_thread.h"
 #include "grit/chromium_strings.h"
