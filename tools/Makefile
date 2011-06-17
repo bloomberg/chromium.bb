@@ -102,41 +102,14 @@ ifeq ($(PLATFORM), win)
   SCONS?=scons.bat
   SDKLOC_NATIVE=$(shell cygpath -m $(SDKLOC)/$(SDKNAME))
   CYGWIN17=$(shell grep '^cygwin cygwin-1.7' /etc/setup/installed.db | wc -l)
-  ifeq ($(CYGWIN17), 1)
-    # CygWin1.7 changes over time and list of files required to run the binaries
-    # changes over time - use cygcheck (new tools in CygWin 1.7) to find list of
-    # .dll files and filter only .dll files in /bin (AKA /usr/bin depending on
-    # exact version of CygWin)
-    CYGWIN_DLL_COPY= \
-      cp -f `cygpath \` \
-        cd $(DESTDIR)$(SDKROOT)/libexec ; \
-        for i in '*.exe' ; do \
-          PATH=".;\\\`cygpath -w /usr/bin\\\`" /usr/bin/cygcheck $$i ; \
-        done \` | \
-      grep '\(/usr/\|\)bin/.*dll' | tr -d "\`printf '\r'\`" | sort -u` \
-      $(DESTDIR)$(SDKROOT)/libexec ; \
-      cp -f `cygpath \` \
-        cd $(DESTDIR)$(SDKROOT)/libexec/gcc/$(CROSSARCH)/$(GCC_VERSION) ; \
-        for i in '*.exe' ; do \
-          PATH=".;\\\`cygpath -w /usr/bin\\\`" /usr/bin/cygcheck $$i ; \
-        done \` | \
-      grep '\(/usr/\|\)bin/.*dll' | tr -d "\`printf '\r'\`" | sort -u` \
-      $(DESTDIR)$(SDKROOT)/libexec/gcc/$(CROSSARCH)/$(GCC_VERSION) || true
-  else
-    CYGWIN_DLL_COPY= \
-      cp -f /cygdrive/c/cygwin/bin/cygwin1.dll \
-      /cygdrive/c/cygwin/bin/cygiconv*.dll \
-      /cygdrive/c/cygwin/bin/cygintl*.dll \
-      /cygdrive/c/cygwin/bin/cygz*.dll \
-      $(DESTDIR)$(SDKROOT)/libexec
-  endif
   WINPATH=cygpath -w
+  CREATE_REDIRECTORS=./create_redirectors_cygwin.sh
 else
   BUILDPATH=$(DESTDIR)$(SDKROOT)/bin:$(PATH)
   SCONS?=scons
   SDKLOC_NATIVE=$(DESTDIR)$(SDKLOC)/$(SDKNAME)
-  CYGWIN_DLL_COPY=echo "Cygwin not used on this platform"
   WINPATH=echo
+  CREATE_REDIRECTORS=./create_redirectors.sh
 endif
 
 ##################################################################
@@ -347,7 +320,7 @@ BUILD/stamp-$(CROSSARCH)-binutils: | SRC/binutils BUILD
 	$(MAKE) -C BUILD/build-binutils-$(CROSSARCH) all
 	$(MAKE) -C BUILD/build-binutils-$(CROSSARCH) DESTDIR=$(DESTDIR) install
 	touch $@
-	$(MAKE) -f $(THISMAKEFILE) redirector
+	$(CREATE_REDIRECTORS) "$(DESTDIR)$(SDKROOT)"
 
 .PHONY: binutils
 binutils: BUILD/stamp-$(CROSSARCH)-binutils
@@ -455,7 +428,7 @@ BUILD/stamp-$(CROSSARCH)-pregcc: gcc-extras | SRC/gcc BUILD
 		$(DESTDIR)$(SDKROOT)/lib/gcc/$(CROSSARCH)/$(GCC_VERSION)/32/libgcc_eh.a |\
 	true
 	touch $@
-	$(MAKE) -f $(THISMAKEFILE) redirector
+	$(CREATE_REDIRECTORS) "$(DESTDIR)$(SDKROOT)"
 
 .PHONY: pregcc
 pregcc: BUILD/stamp-$(CROSSARCH)-pregcc
@@ -777,29 +750,8 @@ endif
 	    -C BUILD/build-gcc-$(CROSSARCH) \
 	    DESTDIR=$(DESTDIR) \
 	    install
-	$(MAKE) -f $(THISMAKEFILE) redirector
-	$(MAKE) -f $(THISMAKEFILE) gcc-redirector
+	$(CREATE_REDIRECTORS) "$(DESTDIR)$(SDKROOT)"
 	touch $@
-
-.PHONY: gcc-redirector
-gcc-redirector:
-ifeq ($(PLATFORM), win)
-	./redirector.exe | while read from ; do \
-	  ln -fn redirector.exe "$(DESTDIR)$(SDKROOT)$$from"; \
-	done;
-else
-	for exe in "$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/bin/"* ; do \
-	  ./create_redirector.sh \
-	    -s "$(DESTDIR)$(SDKROOT)/bin/nacl-`basename $$exe`"; \
-	  ./create_redirector.sh -t \
-	    -s "$(DESTDIR)$(SDKROOT)/nacl/bin/`basename $$exe`"; \
-	done; \
-	for exe in "$(DESTDIR)$(SDKROOT)/bin/$(CROSSARCH)-"* ; do \
-	  N="`basename $$exe`"; \
-	  ln -n "$$exe" "$(DESTDIR)$(SDKROOT)/bin/nacl-$${N/$(CROSSARCH)-}"| \
-	    true; \
-	done;
-endif
 
 .PHONY: gcc
 gcc: BUILD/stamp-$(CROSSARCH)-gcc
@@ -831,8 +783,8 @@ BUILD/stamp-$(CROSSARCH)-gdb: | SRC/gdb BUILD
 	    --target=nacl
 	$(MAKE) -C BUILD/build-gdb-$(CROSSARCH) all
 	$(MAKE) -C BUILD/build-gdb-$(CROSSARCH) DESTDIR=$(DESTDIR) install
+	$(CREATE_REDIRECTORS) "$(DESTDIR)$(SDKROOT)"
 	touch $@
-	$(MAKE) -f $(THISMAKEFILE) redirector
 
 .PHONY: gdb
 gdb: BUILD/stamp-$(CROSSARCH)-gdb
@@ -891,46 +843,6 @@ gdb_minimal_test: BUILD/stamp-$(CROSSARCH)-gdb
 	    --mode=nacl,dbg-linux platform=x86-32 gdb_minimal_test
 
 
-##########################################################################
-# Install CygWin 1.7 redirector
-##########################################################################
-# Two different cygwin1.dll files in %PATH% lead to trouble, but we'd like
-# to have our as/gcc/ld in %PATH% in SDK thus simple trick is employed:
-# we move compiled binary to libexec subdirectory and put very simple
-# MSVC-compiled redirector in it's place. This only works with CygWin 1.7+
-#
-# Use redirector on other platforms to save space.
-
-.PHONY: redirector
-redirector:
-ifeq ($(PLATFORM), win)
-	for exe in "$(DESTDIR)$(SDKROOT)/bin/$(CROSSARCH)"-*.exe ; do \
-	  if ! cmp redirector.exe "$$exe" > /dev/null ; then \
-	    mv -f "$$exe" "$(DESTDIR)$(SDKROOT)/libexec/`basename $$exe`" ; \
-	    echo "The next command can hang on FAT partiton; use NTFS!" ; \
-	    ln -fn redirector.exe "$$exe" ; \
-	  fi ; \
-	done
-	for exe in "$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/bin/"*.exe ; do \
-	  echo "The next command can hang on FAT partiton; use NTFS!" ; \
-	  ln -fn redirector.exe $$exe ; \
-	done
-	$(CYGWIN_DLL_COPY)
-	LEDIR="$(DESTDIR)$(SDKROOT)/libexec" ; \
-	ARCHDIR="$$LEDIR/gcc/$(CROSSARCH)/$(GCC_VERSION)" ; \
-	if [ -d "$$ARCHDIR" ] ; then \
-	  for exe in "$$ARCHDIR/"*.dll ; do \
-	    if [ -e "$$LEDIR/`basename $$exe`" ] ; then \
-	      ln -fn "$$LEDIR/`basename $$exe`" "$$exe" ; \
-	    fi ; \
-	  done ; \
-	fi
-else
-	for exe in "$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/bin/"* ; do \
-	  ln -sfn "../../bin/$(CROSSARCH)-`basename $$exe`" "$$exe" ; \
-	done
-endif
-
 ##################################################################
 # Build the entire toolchain.
 ##################################################################
@@ -954,8 +866,7 @@ endif
 	$(MAKE) -f $(THISMAKEFILE) glibc-adhoc-files LIB_BITS=32
 	$(MAKE) -f $(THISMAKEFILE) glibc-adhoc-files LIB_BITS=64
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-full-gcc
-	$(MAKE) -f $(THISMAKEFILE) redirector
-	$(MAKE) -f $(THISMAKEFILE) gcc-redirector
+	$(CREATE_REDIRECTORS) "$(DESTDIR)$(SDKROOT)"
 	$(MAKE) -f $(THISMAKEFILE) scons-libs-glibc LIB_BITS=32
 	$(MAKE) -f $(THISMAKEFILE) scons-libs-glibc LIB_BITS=64
 	rm -rf "$(DESTDIR)$(SDKROOT)"/{include,lib/*.a*,nacl64/lib{,32}/*.la}
@@ -977,7 +888,7 @@ build-with-newlib:
 	esac
 	$(MAKE) -f $(THISMAKEFILE) nacl_libraries
 	$(MAKE) -f $(THISMAKEFILE) sdk_minimal_test
-	$(MAKE) -f $(THISMAKEFILE) redirector
+	$(CREATE_REDIRECTORS) "$(DESTDIR)$(SDKROOT)"
 	rm -rf "$(DESTDIR)$(SDKROOT)"/{include,lib/*.a*,lib/*.so*,lib32,lib64}
 
 # Newlib toolchain for buildbot.
