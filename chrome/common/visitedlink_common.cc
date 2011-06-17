@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -81,7 +81,7 @@ VisitedLinkCommon::Fingerprint VisitedLinkCommon::ComputeURLFingerprint(
 
   MD5Context ctx;
   MD5Init(&ctx);
-  MD5Update(&ctx, salt, sizeof(salt));
+  MD5Update(&ctx, salt, LINK_SALT_LENGTH * sizeof(uint8));
   MD5Update(&ctx, canonical_url, url_len * sizeof(char));
 
   MD5Digest digest;

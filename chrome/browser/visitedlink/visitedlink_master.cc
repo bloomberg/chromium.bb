@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,7 +36,7 @@ const int32 VisitedLinkMaster::kFileHeaderLengthOffset = 8;
 const int32 VisitedLinkMaster::kFileHeaderUsedOffset = 12;
 const int32 VisitedLinkMaster::kFileHeaderSaltOffset = 16;
 
-const int32 VisitedLinkMaster::kFileCurrentVersion = 2;
+const int32 VisitedLinkMaster::kFileCurrentVersion = 3;
 
 // the signature at the beginning of the URL table = "VLnk" (visited links)
 const int32 VisitedLinkMaster::kFileSignature = 0x6b6e4c56;
@@ -879,6 +879,10 @@ void VisitedLinkMaster::OnTableRebuildComplete(
         AddFingerprint(*i, false);
       added_since_rebuild_.clear();
 
+      // We shouldn't be writing the table from the main thread!
+      //   http://code.google.com/p/chromium/issues/detail?id=24163
+      base::ThreadRestrictions::ScopedAllowIO allow_io;
+
       // Now handle deletions.
       DeleteFingerprintsFromCurrentTable(deleted_since_rebuild_);
       deleted_since_rebuild_.clear();
@@ -886,9 +890,6 @@ void VisitedLinkMaster::OnTableRebuildComplete(
       // Send an update notification to all child processes.
       listener_->NewTable(shared_memory_);
 
-      // We shouldn't be writing the table from the main thread!
-      //   http://code.google.com/p/chromium/issues/detail?id=24163
-      base::ThreadRestrictions::ScopedAllowIO allow_io;
       WriteFullTable();
     }
   }
@@ -965,7 +966,7 @@ VisitedLinkMaster::TableBuilder::TableBuilder(
     : master_(master),
       success_(true) {
   fingerprints_.reserve(4096);
-  memcpy(salt_, salt, sizeof(salt));
+  memcpy(salt_, salt, LINK_SALT_LENGTH * sizeof(uint8));
 }
 
 // TODO(brettw): Do we want to try to cancel the request if this happens? It
