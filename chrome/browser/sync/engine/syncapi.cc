@@ -1073,44 +1073,6 @@ const sync_pb::PasswordSpecificsData&
   return unencrypted_;
 }
 
-namespace {
-
-struct NotificationInfo {
-  int total_count;
-  std::string payload;
-
-  NotificationInfo() : total_count(0) {}
-
-  ~NotificationInfo() {}
-
-  // Returned pointer owned by the caller.
-  DictionaryValue* ToValue() const {
-    DictionaryValue* value = new DictionaryValue();
-    value->SetInteger("totalCount", total_count);
-    value->SetString("payload", payload);
-    return value;
-  }
-};
-
-typedef std::map<syncable::ModelType, NotificationInfo> NotificationInfoMap;
-
-// returned pointer is owned by the caller.
-DictionaryValue* NotificationInfoToValue(
-    const NotificationInfoMap& notification_info) {
-  DictionaryValue* value = new DictionaryValue();
-
-  for (NotificationInfoMap::const_iterator it = notification_info.begin();
-      it != notification_info.end(); ++it) {
-    const std::string& model_type_str =
-        syncable::ModelTypeToString(it->first);
-    value->Set(model_type_str, it->second.ToValue());
-  }
-
-  return value;
-}
-
-}  // namespace
-
 syncable::ModelTypeSet GetEncryptedTypes(
     const sync_api::BaseTransaction* trans) {
   Cryptographer* cryptographer = trans->GetCryptographer();
@@ -1392,6 +1354,24 @@ class SyncManager::SyncInternal
       const browser_sync::JsEventHandler* target) OVERRIDE;
 
  private:
+  struct NotificationInfo {
+    int total_count;
+    std::string payload;
+
+    NotificationInfo() : total_count(0) {}
+
+    ~NotificationInfo() {}
+
+    // Returned pointer owned by the caller.
+    DictionaryValue* ToValue() const {
+      DictionaryValue* value = new DictionaryValue();
+      value->SetInteger("totalCount", total_count);
+      value->SetString("payload", payload);
+      return value;
+    }
+  };
+
+  typedef std::map<syncable::ModelType, NotificationInfo> NotificationInfoMap;
   typedef browser_sync::JsArgList
       (SyncManager::SyncInternal::*UnboundJsMessageHandler)(
           const browser_sync::JsArgList&);
@@ -1506,6 +1486,10 @@ class SyncManager::SyncInternal
   void BindJsMessageHandler(
     const std::string& name,
     UnboundJsMessageHandler unbound_message_handler);
+
+  // Returned pointer is owned by the caller.
+  static DictionaryValue* NotificationInfoToValue(
+      const NotificationInfoMap& notification_info);
 
   // JS message handlers.
   browser_sync::JsArgList GetNotificationState(
@@ -2671,6 +2655,20 @@ void SyncManager::SyncInternal::BindJsMessageHandler(
     UnboundJsMessageHandler unbound_message_handler) {
   js_message_handlers_[name] =
       base::Bind(unbound_message_handler, base::Unretained(this));
+}
+
+DictionaryValue* SyncManager::SyncInternal::NotificationInfoToValue(
+    const NotificationInfoMap& notification_info) {
+  DictionaryValue* value = new DictionaryValue();
+
+  for (NotificationInfoMap::const_iterator it = notification_info.begin();
+      it != notification_info.end(); ++it) {
+    const std::string& model_type_str =
+        syncable::ModelTypeToString(it->first);
+    value->Set(model_type_str, it->second.ToValue());
+  }
+
+  return value;
 }
 
 browser_sync::JsArgList
