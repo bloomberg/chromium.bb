@@ -19,7 +19,7 @@ namespace {
 const int kSetBoundsAnimationMs = 200;
 }
 
-BrowserWindow* Panel::CreateNativePanel(Browser* browser, Panel* panel) {
+NativePanel* Panel::CreateNativePanel(Browser* browser, Panel* panel) {
   PanelBrowserView* view = new PanelBrowserView(browser, panel);
   (new BrowserFrame(view))->InitBrowserFrame();
   return view;

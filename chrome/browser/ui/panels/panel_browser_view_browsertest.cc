@@ -76,8 +76,8 @@ class PanelBrowserViewTest : public InProcessBrowserTest {
                                                    gfx::Rect(),
                                                    browser()->profile());
     panel_browser->window()->Show();
-    return static_cast<PanelBrowserView*>(
-        static_cast<Panel*>(panel_browser->window())->browser_window());
+    Panel* panel = static_cast<Panel*>(panel_browser->window());
+    return static_cast<PanelBrowserView*>(panel->native_panel());
   }
 
   void ValidateDragging(PanelBrowserView** browser_views,

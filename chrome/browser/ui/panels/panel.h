@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/rect.h"
 
+class NativePanel;
 class PanelManager;
 
 // A platform independent implementation of BrowserWindow for Panels.  This
@@ -131,14 +132,14 @@ class Panel : public BrowserWindow {
 
   // Construct a native panel BrowserWindow implementation for the specified
   // |browser|.
-  static BrowserWindow* CreateNativePanel(Browser* browser, Panel* panel);
+  static NativePanel* CreateNativePanel(Browser* browser, Panel* panel);
 
   // Gets the extension from the browser that a panel is created from.
   // Returns NULL if it cannot be found.
   static const Extension* GetExtension(Browser* browser);
 
 #ifdef UNIT_TEST
-  BrowserWindow* browser_window() { return browser_window_; }
+  NativePanel* native_panel() { return native_panel_; }
 #endif
 
  protected:
@@ -156,9 +157,9 @@ class Panel : public BrowserWindow {
   //   not allowed for Panel.
   void SetPanelBounds(const gfx::Rect& bounds);
 
-  // Platform specifc BrowserWindow implementation for panels.  It'd be one of
+  // Platform specifc implementation for panels.  It'd be one of
   // PanelBrowserWindowGtk/PanelBrowserView/PanelBrowserWindowCocoa.
-  BrowserWindow* browser_window_;  // Weak, owns us.
+  NativePanel* native_panel_;  // Weak, owns us.
 
   // The normal bounds when the panel is not minimized.
   gfx::Rect bounds_;

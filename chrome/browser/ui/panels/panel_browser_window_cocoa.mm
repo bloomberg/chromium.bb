@@ -14,7 +14,7 @@
 // Panel contains this class as a nested BrowserWindow, but the overall
 // chain of ownership is:
 // PanelWindowControllerCocoa -> PanelBrowserWindowCocoa -> Panel.
-BrowserWindow* Panel::CreateNativePanel(Browser* browser, Panel* panel) {
+NativePanel* Panel::CreateNativePanel(Browser* browser, Panel* panel) {
   return new PanelBrowserWindowCocoa(browser, panel);
 }
 

@@ -42,9 +42,9 @@ TEST_F(PanelBrowserWindowCocoaTest, CreateClose) {
 
   Panel* panel = CreateTestPanel("Test Panel");
   EXPECT_TRUE(panel);
-  EXPECT_TRUE(panel->browser_window());  // Native panel is created right away.
+  EXPECT_TRUE(panel->native_panel());  // Native panel is created right away.
   PanelBrowserWindowCocoa* native_window =
-      static_cast<PanelBrowserWindowCocoa*>(panel->browser_window());
+      static_cast<PanelBrowserWindowCocoa*>(panel->native_panel());
 
   EXPECT_EQ(panel, native_window->panel_);  // Back pointer initialized.
   EXPECT_EQ(1, manager->active_count());
@@ -120,11 +120,11 @@ TEST_F(PanelBrowserWindowCocoaTest, NativeBounds) {
   panel3->Show();
 
   PanelBrowserWindowCocoa* native_window1 =
-      static_cast<PanelBrowserWindowCocoa*>(panel1->browser_window());
+      static_cast<PanelBrowserWindowCocoa*>(panel1->native_panel());
   PanelBrowserWindowCocoa* native_window2 =
-      static_cast<PanelBrowserWindowCocoa*>(panel2->browser_window());
+      static_cast<PanelBrowserWindowCocoa*>(panel2->native_panel());
   PanelBrowserWindowCocoa* native_window3 =
-      static_cast<PanelBrowserWindowCocoa*>(panel3->browser_window());
+      static_cast<PanelBrowserWindowCocoa*>(panel3->native_panel());
 
   NSRect bounds1 = [[native_window1->controller_ window] frame];
   NSRect bounds2 = [[native_window2->controller_ window] frame];

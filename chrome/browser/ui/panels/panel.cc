@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/panels/native_panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/extensions/extension.h"
@@ -27,11 +28,11 @@ const Extension* Panel::GetExtension(Browser* browser) {
 Panel::Panel(Browser* browser, const gfx::Rect& bounds)
     : bounds_(bounds),
       minimized_(false) {
-  browser_window_ = CreateNativePanel(browser, this);
+  native_panel_ = CreateNativePanel(browser, this);
 }
 
 Panel::~Panel() {
-  // Invoked by native panel so do not access browser_window_ here.
+  // Invoked by native panel so do not access native_panel_ here.
 }
 
 PanelManager* Panel::manager() const {
@@ -42,7 +43,7 @@ void Panel::SetPanelBounds(const gfx::Rect& bounds) {
   if (bounds_ == bounds)
     return;
   bounds_ = bounds;
-  browser_window_->SetBounds(bounds);
+  native_panel_->SetPanelBounds(bounds);
 }
 
 void Panel::Minimize() {
@@ -62,7 +63,7 @@ void Panel::Restore() {
 }
 
 void Panel::Show() {
-  browser_window_->Show();
+  native_panel_->ShowPanel();
 }
 
 void Panel::ShowInactive() {
@@ -77,28 +78,28 @@ void Panel::SetBounds(const gfx::Rect& bounds) {
 // Close() may be called multiple times if the browser window is not ready to
 // close on the first attempt.
 void Panel::Close() {
-  browser_window_->Close();
+  native_panel_->ClosePanel();
   manager()->Remove(this);
 }
 
 void Panel::Activate() {
-  browser_window_->Activate();
+  native_panel_->ActivatePanel();
 }
 
 void Panel::Deactivate() {
-  browser_window_->Deactivate();
+  native_panel_->DeactivatePanel();
 }
 
 bool Panel::IsActive() const {
-  return browser_window_->IsActive();
+  return native_panel_->IsPanelActive();
 }
 
 void Panel::FlashFrame() {
-  NOTIMPLEMENTED();
+  native_panel_->FlashPanelFrame();
 }
 
 gfx::NativeWindow Panel::GetNativeHandle() {
-  return browser_window_->GetNativeHandle();
+  return native_panel_->GetNativePanelHandle();
 }
 
 BrowserWindowTesting* Panel::GetBrowserWindowTesting() {
@@ -116,7 +117,7 @@ void Panel::ToolbarSizeChanged(bool is_animating){
 }
 
 void Panel::UpdateTitleBar() {
-  browser_window_->UpdateTitleBar();
+  native_panel_->UpdatePanelTitleBar();
 }
 
 void Panel::ShelfVisibilityChanged() {
@@ -248,7 +249,7 @@ void Panel::ShowUpdateChromeDialog() {
 }
 
 void Panel::ShowTaskManager() {
-  NOTIMPLEMENTED();
+  native_panel_->ShowTaskManagerForPanel();
 }
 
 void Panel::ShowBackgroundPages() {
@@ -291,7 +292,7 @@ void Panel::ShowHTMLDialog(HtmlDialogUIDelegate* delegate,
 }
 
 void Panel::UserChangedTheme() {
-  browser_window_->UserChangedTheme();
+  native_panel_->NotifyPanelOnUserChangedTheme();
 }
 
 int Panel::GetExtraRenderViewHeight() const {
@@ -389,5 +390,5 @@ void Panel::ShowKeyboardOverlay(gfx::NativeWindow owning_window) {
 #endif
 
 void Panel::DestroyBrowser() {
-  NOTIMPLEMENTED();
+  native_panel_->DestroyPanelBrowser();
 }

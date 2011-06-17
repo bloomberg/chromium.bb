@@ -6,7 +6,7 @@
 
 #include "chrome/browser/ui/panels/panel.h"
 
-BrowserWindow* Panel::CreateNativePanel(Browser* browser, Panel* panel) {
+NativePanel* Panel::CreateNativePanel(Browser* browser, Panel* panel) {
   PanelBrowserWindowGtk* panel_browser_window_gtk =
       new PanelBrowserWindowGtk(browser, panel);
   panel_browser_window_gtk->Init();
