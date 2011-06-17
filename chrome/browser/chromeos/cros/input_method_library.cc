@@ -300,9 +300,9 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
                                        bool is_system) {
     if (!initialized_successfully_)
       return;
-    virtual_keyboard_selector.AddVirtualKeyboard(launch_url,
-                                                 layouts,
-                                                 is_system);
+    virtual_keyboard_selector_.AddVirtualKeyboard(launch_url,
+                                                  layouts,
+                                                  is_system);
   }
 
  private:
@@ -646,27 +646,32 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
     const input_method::VirtualKeyboard* virtual_keyboard = NULL;
     std::string virtual_keyboard_layout = "";
 
-    static const char kFallbackLayout[] = "us";
-    std::vector<std::string> layouts_vector
+    const std::vector<std::string>& layouts_vector
         = current_input_method_.virtual_keyboard_layouts();
-    layouts_vector.push_back(kFallbackLayout);
-
-    for (size_t i = 0; i < layouts_vector.size(); ++i) {
+    for (std::vector<std::string>::const_iterator iter = layouts_vector.begin();
+         iter != layouts_vector.end();
+         ++iter) {
       virtual_keyboard =
-          virtual_keyboard_selector.SelectVirtualKeyboard(layouts_vector[i]);
+          virtual_keyboard_selector_.SelectVirtualKeyboard(*iter);
       if (virtual_keyboard) {
-        virtual_keyboard_layout = layouts_vector[i];
-        if (i == layouts_vector.size() - 1) {
-          // The system virtual keyboard does not support some XKB layouts? or
-          // a third-party input method engine uses a wrong virtual keyboard
-          // layout name? Fallback to the default layout.
-          LOG(ERROR) << "Could not find a virtual keyboard for "
-                     << current_input_method_.id
-                     << ". Use '" << kFallbackLayout << "' virtual keyboard.";
-        }
+        virtual_keyboard_layout = *iter;
         break;
       }
     }
+
+    if (!virtual_keyboard) {
+      static const char kFallbackLayout[] = "us";
+      // The system virtual keyboard does not support some XKB layouts? or
+      // a third-party input method engine uses a wrong virtual keyboard
+      // layout name? Fallback to the default layout.
+      LOG(ERROR) << "Could not find a virtual keyboard for "
+                 << current_input_method_.id
+                 << ". Use '" << kFallbackLayout << "' virtual keyboard.";
+      virtual_keyboard =
+          virtual_keyboard_selector_.SelectVirtualKeyboard(kFallbackLayout);
+      virtual_keyboard_layout = kFallbackLayout;
+    }
+
     // kFallbackLayout should always be supported by one of the system virtual
     // keyboards.
     DCHECK(virtual_keyboard);
@@ -916,7 +921,7 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
 #endif
 
   // An object which keeps a list of available virtual keyboards.
-  input_method::VirtualKeyboardSelector virtual_keyboard_selector;
+  input_method::VirtualKeyboardSelector virtual_keyboard_selector_;
 
   // The active input method ids cache.
   std::vector<std::string> active_input_method_ids_;
