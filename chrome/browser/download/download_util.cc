@@ -32,9 +32,6 @@
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_types.h"
-#include "chrome/browser/extensions/crx_installer.h"
-#include "chrome/browser/extensions/extension_install_ui.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_paths.h"
@@ -331,43 +328,6 @@ void GenerateSafeFileName(const std::string& mime_type, FilePath* file_name) {
     }
   }
 #endif
-}
-
-scoped_refptr<CrxInstaller> OpenChromeExtension(
-    Profile* profile,
-    const DownloadItem& download_item) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(download_item.is_extension_install());
-
-  ExtensionService* service = profile->GetExtensionService();
-  CHECK(service);
-  NotificationService* nservice = NotificationService::current();
-  GURL nonconst_download_url = download_item.GetURL();
-  nservice->Notify(NotificationType::EXTENSION_READY_FOR_INSTALL,
-                   Source<DownloadManager>(profile->GetDownloadManager()),
-                   Details<GURL>(&nonconst_download_url));
-
-  scoped_refptr<CrxInstaller> installer(
-      service->MakeCrxInstaller(new ExtensionInstallUI(profile)));
-  installer->set_delete_source(true);
-
-  if (UserScript::IsURLUserScript(download_item.GetURL(),
-                                  download_item.mime_type())) {
-    installer->InstallUserScript(download_item.full_path(),
-                                 download_item.GetURL());
-  } else {
-    bool is_gallery_download = service->IsDownloadFromGallery(
-        download_item.GetURL(), download_item.referrer_url());
-    installer->set_original_mime_type(download_item.original_mime_type());
-    installer->set_apps_require_extension_mime_type(true);
-    installer->set_original_url(download_item.GetURL());
-    installer->set_is_gallery_install(is_gallery_download);
-    installer->set_allow_silent_install(is_gallery_download);
-    installer->set_install_cause(extension_misc::INSTALL_CAUSE_USER_DOWNLOAD);
-    installer->InstallCrx(download_item.full_path());
-  }
-
-  return installer;
 }
 
 void RecordDownloadCount(DownloadCountTypes type) {

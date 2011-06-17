@@ -736,7 +736,10 @@ bool DownloadManager::IsDownloadReadyForCompletion(DownloadItem* download) {
   // If the download hasn't been inserted into the history system
   // (which occurs strictly after file name determination, intermediate
   // file rename, and UI display) then it's not ready for completion.
-  return (download->db_handle() != DownloadHistory::kUninitializedHandle);
+  if (download->db_handle() == DownloadHistory::kUninitializedHandle)
+    return false;
+
+  return true;
 }
 
 void DownloadManager::MaybeCompleteDownload(DownloadItem* download) {

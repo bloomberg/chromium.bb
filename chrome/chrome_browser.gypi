@@ -818,6 +818,8 @@
         'browser/download/base_file.h',
         'browser/download/download_create_info.cc',
         'browser/download/download_create_info.h',
+        'browser/download/download_crx_util.cc',
+        'browser/download/download_crx_util.h',
         'browser/download/download_extensions.cc',
         'browser/download/download_extensions.h',
         'browser/download/download_file.cc',
