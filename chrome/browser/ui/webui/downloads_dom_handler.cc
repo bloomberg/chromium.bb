@@ -160,7 +160,11 @@ void DownloadsDOMHandler::HandleDrag(const ListValue* args) {
     gfx::Image* icon = im->LookupIcon(file->GetUserVerifiedFilePath(),
                                       IconLoader::NORMAL);
     gfx::NativeView view = web_ui_->tab_contents()->GetNativeView();
-    download_util::DragDownload(file, icon, view);
+    {
+      // Enable nested tasks during DnD, while |DragDownload()| blocks.
+      MessageLoop::ScopedNestableTaskAllower allower(MessageLoop::current());
+      download_util::DragDownload(file, icon, view);
+    }
   }
 }
 
