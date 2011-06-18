@@ -12,6 +12,7 @@ import subprocess
 import sys
 import time
 from terminal import Color
+import xml.sax
 
 
 _STDOUT_IS_TTY = hasattr(sys.stdout, 'isatty') and sys.stdout.isatty()
@@ -339,6 +340,55 @@ def GetCurrentBranch(cwd):
   except RunCommandError:
     return None
   return current_branch
+
+
+class ManifestHandler(xml.sax.handler.ContentHandler):
+  """SAX handler that parses the manifest document.
+
+  Properties:
+    default: the attributes of the <default> tag.
+    projects: a dictionary keyed by project name containing the attributes of
+              each <project> tag.
+  """
+  def __init__(self):
+    self.default = None
+    self.projects = {}
+    pass
+
+  def startElement(self, name, attributes):
+    """Stores the default manifest properties and per-project overrides."""
+    if name == 'default':
+      self.default = attributes
+    if name == 'project':
+      self.projects[attributes['name']] = attributes
+
+
+def GetProjectManifestBranch(buildroot, project):
+  """Return the branch specified in the manifest for a project.
+
+  Args:
+    buildroot: The root directory of the repo-managed checkout.
+    project: The name of the project.
+
+  Returns:
+    A tuple of the remote and ref name specified in the manifest - i.e.,
+    ('cros', 'refs/heads/master').
+  """
+  parser = xml.sax.make_parser()
+  handler = ManifestHandler()
+  parser.setContentHandler(handler)
+  # We can't use .repo/manifest.xml since it may be overwritten by sync stage
+  manifest_path = os.path.join(buildroot, '.repo', 'manifests/full.xml')
+  parser.parse(manifest_path)
+
+  project_branch = {}
+  for key in ['remote', 'revision']:
+    if key in handler.projects[project]:
+      project_branch[key] = handler.projects[project][key]
+    else:
+      project_branch[key] = handler.default[key]
+
+  return project_branch['remote'], project_branch['revision']
 
 
 def GetManifestDefaultBranch(cwd):

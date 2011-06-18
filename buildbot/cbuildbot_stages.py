@@ -402,8 +402,11 @@ class PatchChangesStage(BuilderStage):
       cros_lib.RunCommand(['git', 'checkout', '--no-track',
                            '-b', constants.PATCH_BRANCH,
                            'FETCH_HEAD'], cwd=project_dir)
-      m_branch = 'remotes/m/' + self._tracking_branch
-      cros_lib.RunCommand(['git', 'rebase', m_branch], cwd=project_dir)
+
+      (remote, ref) = cros_lib.GetProjectManifestBranch(self._build_root,
+                                                        patch.project)
+      manifest_branch = os.path.join(remote, ref.replace('refs/heads/', ''))
+      cros_lib.RunCommand(['git', 'rebase', manifest_branch], cwd=project_dir)
 
 
 class ManifestVersionedSyncStage(BuilderStage):
