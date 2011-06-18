@@ -247,10 +247,13 @@ string16 InferLabelFromTable(const WebFormControlElement& element) {
     parent = parent.parentNode();
   }
 
+  if (parent.isNull())
+    return string16();
+
   // Check all previous siblings, skipping non-element nodes, until we find a
   // non-empty text block.
   string16 inferred_label;
-  WebNode previous = parent;
+  WebNode previous = parent.previousSibling();
   while (inferred_label.empty() && !previous.isNull()) {
     if (HasTagName(previous, "td") || HasTagName(previous, "th"))
       inferred_label = FindChildText(previous.to<WebElement>());
@@ -305,20 +308,21 @@ string16 InferLabelFromDefinitionList(const WebFormControlElement& element) {
 // e.g. the contents of the preceding <p> tag or text element.
 string16 InferLabelForElement(const WebFormControlElement& element) {
   string16 inferred_label = InferLabelFromPrevious(element);
+  if (!inferred_label.empty())
+    return inferred_label;
 
   // If we didn't find a label, check for table cell case.
-  if (inferred_label.empty())
-    inferred_label = InferLabelFromTable(element);
+  inferred_label = InferLabelFromTable(element);
+  if (!inferred_label.empty())
+    return inferred_label;
 
   // If we didn't find a label, check for definition list case.
-  if (inferred_label.empty())
-    inferred_label = InferLabelFromDefinitionList(element);
+  inferred_label = InferLabelFromDefinitionList(element);
+  if (!inferred_label.empty())
+    return inferred_label;
 
   // If we didn't find a label, check for div table case.
-  if (inferred_label.empty())
-    inferred_label = InferLabelFromDivTable(element);
-
-  return inferred_label;
+  return InferLabelFromDivTable(element);
 }
 
 // Fills |option_strings| with the values of the <option> elements present in

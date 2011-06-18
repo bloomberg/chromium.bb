@@ -264,6 +264,46 @@ TEST_F(PhoneFieldTest, ThreePartPhoneNumberPrefixSuffix) {
   EXPECT_EQ(PHONE_HOME_NUMBER, field_type_map_[ASCIIToUTF16("suffix1")]);
 }
 
+TEST_F(PhoneFieldTest, ThreePartPhoneNumberPrefixSuffix2) {
+  list_.push_back(
+      new AutofillField(webkit_glue::FormField(ASCIIToUTF16("("),
+                                               ASCIIToUTF16("phone1"),
+                                               string16(),
+                                               ASCIIToUTF16("text"),
+                                               3,
+                                               false),
+                        ASCIIToUTF16("phone1")));
+  list_.push_back(
+      new AutofillField(webkit_glue::FormField(ASCIIToUTF16(")"),
+                                               ASCIIToUTF16("phone2"),
+                                               string16(),
+                                               ASCIIToUTF16("text"),
+                                               3,
+                                               false),
+                        ASCIIToUTF16("phone2")));
+  list_.push_back(
+      new AutofillField(webkit_glue::FormField(string16(),
+                                               ASCIIToUTF16("phone3"),
+                                               string16(),
+                                               ASCIIToUTF16("text"),
+                                               4,
+                                               false),
+                        ASCIIToUTF16("phone3")));
+  AutofillScanner scanner(list_.get());
+  field_.reset(Parse(&scanner, false));
+  ASSERT_NE(static_cast<PhoneField*>(NULL), field_.get());
+  ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
+  ASSERT_TRUE(
+      field_type_map_.find(ASCIIToUTF16("phone1")) != field_type_map_.end());
+  EXPECT_EQ(PHONE_HOME_CITY_CODE, field_type_map_[ASCIIToUTF16("phone1")]);
+  ASSERT_TRUE(
+      field_type_map_.find(ASCIIToUTF16("phone2")) != field_type_map_.end());
+  EXPECT_EQ(PHONE_HOME_NUMBER, field_type_map_[ASCIIToUTF16("phone2")]);
+  ASSERT_TRUE(
+      field_type_map_.find(ASCIIToUTF16("phone3")) != field_type_map_.end());
+  EXPECT_EQ(PHONE_HOME_NUMBER, field_type_map_[ASCIIToUTF16("phone3")]);
+}
+
 TEST_F(PhoneFieldTest, ParseOneLineFax) {
   list_.push_back(
       new AutofillField(webkit_glue::FormField(ASCIIToUTF16("Fax"),

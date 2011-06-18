@@ -1247,6 +1247,55 @@ TEST_F(FormManagerTest, LabelsInferredFromTableEmptyTDs) {
       labels, names, values);
 }
 
+TEST_F(FormManagerTest, LabelsInferredFromPreviousTD) {
+  std::vector<string16> labels, names, values;
+
+  labels.push_back(ASCIIToUTF16("* First Name"));
+  names.push_back(ASCIIToUTF16("firstname"));
+  values.push_back(ASCIIToUTF16("John"));
+
+  labels.push_back(ASCIIToUTF16("* Last Name"));
+  names.push_back(ASCIIToUTF16("lastname"));
+  values.push_back(ASCIIToUTF16("Smith"));
+
+  labels.push_back(ASCIIToUTF16("* Email"));
+  names.push_back(ASCIIToUTF16("email"));
+  values.push_back(ASCIIToUTF16("john@example.com"));
+
+  ExpectLabels(
+      "<FORM name=\"TestForm\" action=\"http://cnn.com\" method=\"post\">"
+      "<TABLE>"
+      "  <TR>"
+      "    <TD>* First Name</TD>"
+      "    <TD>"
+      "      Bogus"
+      "      <INPUT type=\"hidden\"/>"
+      "      <INPUT type=\"text\" id=\"firstname\" value=\"John\"/>"
+      "    </TD>"
+      "  </TR>"
+      "  <TR>"
+      "    <TD>* Last Name</TD>"
+      "    <TD>"
+      "      <INPUT type=\"text\" id=\"lastname\" value=\"Smith\"/>"
+      "    </TD>"
+      "  </TR>"
+      "  <TR>"
+      "    <TD>* Email</TD>"
+      "    <TD>"
+      "      <INPUT type=\"text\" id=\"email\" value=\"john@example.com\"/>"
+      "    </TD>"
+      "  </TR>"
+      "  <TR>"
+      "    <TD></TD>"
+      "    <TD>"
+      "      <INPUT type=\"submit\" name=\"reply-send\" value=\"Send\"/>"
+      "    </TD>"
+      "  </TR>"
+      "</TABLE>"
+      "</FORM>",
+      labels, names, values);
+}
+
 // <script>, <noscript> and <option> tags are excluded when the labels are
 // inferred.
 // Also <!-- comment --> is excluded.

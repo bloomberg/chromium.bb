@@ -37,6 +37,11 @@ PhoneField::Parser PhoneField::phone_field_grammars_[] = {
   { PhoneField::REGEX_AREA, PhoneField::FIELD_AREA_CODE, 0 },
   { PhoneField::REGEX_PHONE, PhoneField::FIELD_PHONE, 0 },
   { PhoneField::REGEX_SEPARATOR, FIELD_NONE, 0 },
+  // \( <ac> \) <phone>:3 <suffix>:4 (Ext: <ext>)?
+  { PhoneField::REGEX_AREA_NOTEXT, PhoneField::FIELD_AREA_CODE, 3 },
+  { PhoneField::REGEX_PREFIX_SEPARATOR, PhoneField::FIELD_PHONE, 3 },
+  { PhoneField::REGEX_PHONE, PhoneField::FIELD_SUFFIX, 4 },
+  { PhoneField::REGEX_SEPARATOR, FIELD_NONE, 0 },
   // Phone: <cc> <ac>:3 - <phone>:3 - <suffix>:4 (Ext: <ext>)?
   { PhoneField::REGEX_PHONE, PhoneField::FIELD_COUNTRY_CODE, 0 },
   { PhoneField::REGEX_PHONE, PhoneField::FIELD_AREA_CODE, 3 },
