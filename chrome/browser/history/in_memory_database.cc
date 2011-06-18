@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -94,6 +94,17 @@ bool InMemoryDatabase::InitFromDisk(const FilePath& history_name) {
   UMA_HISTOGRAM_MEDIUM_TIMES("History.InMemoryDBPopulate",
                              end_load - begin_load);
   UMA_HISTOGRAM_COUNTS("History.InMemoryDBItemCount", db_.GetLastChangeCount());
+
+  {
+    // This calculation should be fast (since it's on an in-memory DB with
+    // an average of only 35 rows).
+    sql::Statement visit_count(db_.GetUniqueStatement(
+        "SELECT sum(visit_count) FROM urls"));
+    if (visit_count && visit_count.Step()) {
+      UMA_HISTOGRAM_COUNTS("History.InMemoryTypedUrlVisitCount",
+                           visit_count.ColumnInt(0));
+    }
+  }
 
   // Insert keyword search related URLs.
   begin_load = base::TimeTicks::Now();
