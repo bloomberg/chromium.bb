@@ -78,6 +78,10 @@ def _PlatformSubdirs(env):
   if env.Bit('bitcode'):
     import platform
     name = 'pnacl_%s_%s' % (platform.system().lower(), platform.machine())
+    if env.Bit('nacl_glibc'):
+      name += '_glibc'
+    else:
+      name += '_newlib'
   else:
     platform = NACL_CANONICAL_PLATFORM_MAP[env['PLATFORM']]
     arch = env['BUILD_ARCHITECTURE']
@@ -217,10 +221,16 @@ def _SetEnvForPnacl(env, root):
   arch = env['TARGET_FULLARCH']
   assert arch in ['arm', 'x86-32', 'x86-64']
 
+  arch_flag = ' -arch %s' % arch
+  shlibsuffix = '.so'
+  if env['BUILD_TYPE'] == 'nacl_extra_sdk':
+    arch_flag = ''
+    shlibsuffix = '.pso'
+
   env['PNACL_ROOT'] = root
   pnacl_sdk_lib = '${PNACL_ROOT}/libs-bitcode'
   #TODO(robertm): remove NACL_SDK_INCLUDE ASAP
-  pnacl_sdk_include = '${PNACL_ROOT}/arm-newlib/arm-none-linux-gnueabi/include'
+  pnacl_sdk_include = '${PNACL_ROOT}/sysroot/include'
   pnacl_sdk_ar = '${PNACL_ROOT}/bin/pnacl-ar'
   pnacl_sdk_nm = '${PNACL_ROOT}/bin/pnacl-nm'
   pnacl_sdk_ranlib = '${PNACL_ROOT}/bin/pnacl-ranlib'
@@ -232,8 +242,8 @@ def _SetEnvForPnacl(env, root):
   # NOTE: XXX_flags start with space for easy concatenation
   pnacl_sdk_cxx_flags = ''
   pnacl_sdk_cc_flags = ' -std=gnu99'
-  pnacl_sdk_cc_native_flags = ' -std=gnu99 -arch %s' % arch
-  pnacl_sdk_ld_flags = ' -arch %s' % arch
+  pnacl_sdk_cc_native_flags = ' -std=gnu99' + arch_flag
+  pnacl_sdk_ld_flags = arch_flag
   pnacl_sdk_ld_flags += ' ' + ' '.join(env['PNACL_BCLDFLAGS'])
 
   if env.Bit('nacl_pic'):
@@ -256,8 +266,14 @@ def _SetEnvForPnacl(env, root):
               # Replace the normal unix tools with the PNaCl ones.
               CC=pnacl_sdk_cc + pnacl_sdk_cc_flags,
               CXX=pnacl_sdk_cxx + pnacl_sdk_cxx_flags,
+              LIBPREFIX="lib",
+              SHLIBPREFIX="lib",
+              SHLIBSUFFIX=shlibsuffix,
               OBJSUFFIX=".bc",
               LINK=pnacl_sdk_cxx + pnacl_sdk_ld_flags,
+              # C_ONLY_LINK is needed when building libehsupport,
+              # because libstdc++ is not yet available.
+              C_ONLY_LINK=pnacl_sdk_cc + pnacl_sdk_ld_flags,
               LD=pnacl_sdk_ld,
               AR=pnacl_sdk_ar,
               RANLIB=pnacl_sdk_ranlib,
@@ -284,6 +300,7 @@ def _SetEnvForSdkManually(env):
 def PNaClForceNative(env):
   assert(env.Bit('bitcode'))
   env.Replace(OBJSUFFIX='.o')
+  env.Replace(SHLIBSUFFIX='.so')
   env.Append(CCFLAGS=['-arch', '${TARGET_FULLARCH}',
                             '--pnacl-allow-translate'])
   env.Append(LINKFLAGS=['--pnacl-allow-native'])
@@ -382,7 +399,7 @@ def generate(env):
 
   env.Replace(
       COMPONENT_LINKFLAGS=[''],
-      COMPONENT_LIBRARY_LINK_SUFFIXES=['.so', '.a'],
+      COMPONENT_LIBRARY_LINK_SUFFIXES=['.pso', '.so', '.a'],
       _RPATH='',
       COMPONENT_LIBRARY_DEBUG_SUFFIXES=[],
 

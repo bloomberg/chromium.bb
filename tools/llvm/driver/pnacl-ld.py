@@ -10,6 +10,10 @@
 #
 
 from driver_tools import *
+import fcntl
+import platform
+import random
+import hashlib
 
 EXTRA_ENV = {
   'NATIVE_HACK' : '0',    # Only link native code, ignore bitcode libraries.
@@ -62,7 +66,7 @@ EXTRA_ENV = {
 
   'GOLD_PLUGIN_ARGS': '-plugin=${GOLD_PLUGIN_SO} ' +
                       '-plugin-opt=emit-llvm ' +
-                      '${!USE_GLIBC ? ' +
+                      '${LIBMODE_NEWLIB ? ' +
                       '  -plugin-opt=-add-nacl-read-tp-dependency}',
 
    # Symbols to wrap
@@ -129,6 +133,9 @@ LDPatterns = [
   ( ('(-rpath)','(.*)'), "env.append('LD_FLAGS', $0+'='+$1)"),
   ( ('(-rpath=.*)'),     "env.append('LD_FLAGS', $0)"),
 
+  ( ('(-rpath-link)','(.*)'), "env.append('LD_FLAGS', $0+'='+$1)"),
+  ( ('(-rpath-link=.*)'),     "env.append('LD_FLAGS', $0)"),
+
   ( ('(-Ttext)','(.*)'), "env.append('LD_FLAGS', $0, $1)"),
   ( ('(-Ttext=.*)'),     "env.append('LD_FLAGS', $0)"),
   ( ('-T', '(.*)'),    "env.set('LD_SCRIPT', $0)"),
@@ -136,6 +143,7 @@ LDPatterns = [
   ( ('-e','(.*)'),     "env.append('LD_FLAGS', '-e', $0)"),
   ( ('(--section-start)','(.*)'), "env.append('LD_FLAGS', $0, $1)"),
   ( '(-?-soname=.*)',             "env.append('LD_FLAGS', $0)"),
+  ( ('(-?-soname)', '(.*)'),      "env.append('LD_FLAGS', $0, $1)"),
   ( '(--eh-frame-hdr)',           "env.append('LD_FLAGS', $0)"),
 
   ( '-melf_nacl',          "env.set('ARCH', 'X8632')"),
@@ -165,6 +173,8 @@ LDPatterns = [
   ( '(--as-needed)',       "env.append('INPUTS', $0)"),
   ( '(--start-group)',     "env.append('INPUTS', $0)"),
   ( '(--end-group)',       "env.append('INPUTS', $0)"),
+  ( '(-Bstatic)',          "env.append('INPUTS', $0)"),
+  ( '(-Bdynamic)',          "env.append('INPUTS', $0)"),
   ( '(-.*)',               UnrecognizedOption),
   ( '(.*)',                "env.append('INPUTS', $0)"),
 ]
@@ -199,6 +209,16 @@ def main(argv):
   if arch:
     env.set('ARCH', arch)
 
+  # There is an architecture bias here. To link the bitcode together,
+  # we need to specify the native libraries to be used in the final linking,
+  # just so the linker can resolve the symbols.
+  # TODO(pdox): This is a bias that we should try to remove.
+  if GetArch() is None:
+    env.set('ARCH', 'X8632')
+
+  if env.getbool('SHARED') and env.getbool('LIBMODE_NEWLIB'):
+    Log.Fatal("Cannot generate shared objects with newlib-based toolchain")
+
   # If there is bitcode, we do a bitcode link. If -arch is also specified,
   # we invoke pnacl-translate afterwards.
   if has_bitcode:
@@ -214,6 +234,9 @@ def main(argv):
       Log.Fatal("Native linking requires -arch")
   else:
     Log.Fatal("No input objects")
+
+  if env.getbool('LIBMODE_GLIBC'):
+    TranslateInputs(inputs)
 
   # Path A: Bitcode link, then opt, then translate.
   if has_bitcode:
@@ -249,7 +272,7 @@ def IsLib(arg):
   return arg.startswith('-l')
 
 def IsFlag(arg):
-  return arg.startswith('--')
+  return arg.startswith('-') and not IsLib(arg)
 
 def ForceSegmentGap(inputs):
   # Heuristic to detect when the nexe needs a segment gap (e.g., to be
@@ -266,7 +289,7 @@ def ForceSegmentGap(inputs):
       continue
     if IsLib(f):
       # Strip leading "-l".
-      path = FindLib(f[2:])
+      path = FindLib(f)
     else:
       path = f
     if os.path.basename(path) == 'libppapi.a':
@@ -278,10 +301,10 @@ def IsBitcodeInput(f):
     return False
   if IsLib(f):
     # Strip leading "-l".
-    path = FindLib(f[2:])
+    path = FindLib(f)
   else:
     path = f
-  return FileType(path) in ['bclib','pso','bc','po']
+  return FileType(path) in ['bclib','bc','po']
 
 def RemoveBitcode(inputs):
   # Library order is important. We need to reinsert the
@@ -316,7 +339,7 @@ def AnalyzeInputs(inputs):
       continue
 
     if IsLib(f):
-      path = FindLib(f[2:])
+      path = FindLib(f)
     else:
       path = f
 
@@ -339,7 +362,9 @@ def AnalyzeInputs(inputs):
           # what architecture it links.
           # TODO(pdox): Get this information somehow.
           pass
-    elif intype in ['bc','bclib','pso','po']:
+    elif intype in ['pso']:
+      pass
+    elif intype in ['bc','bclib','po']:
       has_bitcode |= True
     else:
       Log.Fatal("%s: Unexpected type of file for linking", f)
@@ -468,13 +493,6 @@ def LinkBC(inputs, output):
   '''Input: a bunch of bc/o/lib input files
      Output: a combined & optimized bitcode file
   '''
-  # There is an architecture bias here. To link the bitcode together,
-  # we need to specify the native libraries to be used in the final linking,
-  # just so the linker can resolve the symbols. We'd like to eliminate
-  # this somehow.
-  if not GetArch():
-    env.set('ARCH', 'X8632')
-
   # Produce combined bitcode file
   RunWithEnv('${RUN_BCLD}',
              inputs=inputs,
@@ -529,6 +547,118 @@ def WrapAS(infile, outfile):
 ######################################################################
 
 
+# This is a temporary hack.
+#
+# Until gold can recognize that .pso files should be treated like
+# dynamic dependencies, we need to translate them first.
+def TranslateInputs(inputs):
+  arch = GetArch()
+
+  for i in xrange(len(inputs)):
+    f = inputs[i]
+    if IsFlag(f):
+      continue
+    if IsLib(f):
+      f = FindLib(f)
+    if FileType(f) == 'pso':
+      inputs[i] = TranslatePSO(arch, f)
+
+def TranslatePSO(arch, path):
+  """ Translates a pso and returns the filename of the native so """
+  assert(FileType(path) == 'pso')
+  assert(arch)
+  if not os.path.exists(path):
+    Log.Fatal("Couldn't open %s", path)
+  dir = os.path.dirname(path)
+  cache_dir = os.path.join(dir, 'pnacl_cache')
+  try:
+    os.mkdir(cache_dir)
+  except OSError:
+    pass
+
+  output_base = os.path.join(cache_dir, os.path.basename(path)) + '.' + arch
+
+  # Acquire a lock.
+  lock = FileLock(output_base)
+  if not lock:
+    # Add a random number to the file name to prevent collisions
+    output_base += '.%d' % random.getrandbits(32)
+
+  output = '%s.so' % output_base
+
+  # Make sure the existing file matches
+  if lock:
+    md5file = '%s.md5' % output_base
+    md5 = GetMD5Sum(path)
+    if os.path.exists(output):
+      existing_md5 = ReadMD5(md5file)
+      if existing_md5 == md5:
+        lock.release()
+        return output
+
+  # TODO(pdox): Some driver flags, in particular --pnacl-driver-set
+  # and --pnacl-driver-append, could adversely affect the translation,
+  # and should probably not be passed along. However, since this is a
+  # temporary solution, and we never use those flags in combination
+  # with glibc, we'll just let them pass for now.
+  RunDriver('pnacl-translate',
+            ['-no-save-temps',
+            # -arch needs to be provided, whether or not
+            # there was an -arch to this invocation.
+             '-arch', arch, path, '-o', output],
+            suppress_arch = True) # To avoid duplicate -arch
+  if lock:
+    WriteMD5(md5, md5file)
+    lock.release()
+  else:
+    TempFiles.add(output)
+
+  return output
+
+def ReadMD5(file):
+  try:
+    fp = open(file, 'r')
+  except IOError:
+    return ''
+  s = fp.read()
+  fp.close()
+  return s
+
+def WriteMD5(s, file):
+  fp = open(file, 'w')
+  fp.write(s)
+  fp.close()
+
+def GetMD5Sum(path):
+  m = hashlib.md5()
+  fp = open(path, 'r')
+  m.update(fp.read())
+  fp.close()
+  return m.hexdigest()
+
+def FileLock(filename):
+  if platform.system().lower() == "windows":
+    return None
+  else:
+    return FileLockUnix(filename)
+
+class FileLockUnix(object):
+  def __init__(self, path):
+    self.lockfile = path + '.lock'
+    self.fd = None
+    self.acquire()
+
+  def acquire(self):
+    fd = open(self.lockfile, 'w+')
+    fcntl.lockf(fd, fcntl.LOCK_EX)
+    self.fd = fd
+
+  def release(self):
+    if self.fd is not None:
+      fcntl.lockf(self.fd, fcntl.LOCK_UN)
+      self.fd.close()
+    self.fd = None
+
 # Final native linking step
 # TODO(pdox): Move this into pnacl-translator.
 def LinkNative(inputs, output):
@@ -545,10 +675,13 @@ def LinkNative(inputs, output):
   return
 
 def FindLib(name):
-  """Returns the full pathname for the library named 'name'.
-     For example, name might be "c" or "m".
+  """Returns the full pathname for the library input.
+     For example, name might be "-lc" or "-lm".
      Returns None if the library is not found.
   """
+  assert(IsLib(name))
+  name = name[len('-l'):]
+
   searchdirs = env.get('SEARCH_DIRS')
   shared_ok = not env.getbool('STATIC')
   if shared_ok:
@@ -570,7 +703,7 @@ def LinkerFiles(args):
   ret = []
   for f in args:
     if IsLib(f):
-      libpath = FindLib(f[2:])
+      libpath = FindLib(f)
       ret.append(libpath)
       continue
     elif IsFlag(f):

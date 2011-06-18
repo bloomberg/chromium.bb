@@ -59,7 +59,7 @@ partial-sdk() {
   # TODO(robertm): teach utman to only build the sdk for those platforms
   #                we care about
   echo "@@@BUILD_STEP partial_sdk@@@"
-  UTMAN_BUILDBOT=true tools/llvm/utman.sh extrasdk-make-install
+  UTMAN_BUILDBOT=true tools/llvm/utman.sh extrasdk
 }
 
 # copy data to well known archive server
@@ -207,7 +207,9 @@ mode-trybot-arm() {
   partial-sdk "arm"
   scons-tests "arm" "--mode=opt-host,nacl -j8 -k" "smoke_tests"
   browser-tests "arm" "--mode=opt-host,nacl -k"
-  ad-hoc-shared-lib-tests "arm"
+  # TODO(pdox): Reenable when glibc-based PNaCl toolchain is building
+  # on the bots
+  #ad-hoc-shared-lib-tests "arm"
 }
 
 mode-trybot-x8632() {
@@ -217,7 +219,7 @@ mode-trybot-x8632() {
   partial-sdk "x86-32"
   scons-tests "x86-32" "--mode=opt-host,nacl -j8 -k" "smoke_tests"
   browser-tests "x86-32" "--mode=opt-host,nacl -k"
-  ad-hoc-shared-lib-tests "x86-32"
+  #ad-hoc-shared-lib-tests "x86-32"
 }
 
 mode-trybot-x8664() {
@@ -239,7 +241,7 @@ mode-trybot() {
   partial-sdk "arm x86-32 x86-64"
   scons-tests "arm x86-32 x86-64" "--mode=opt-host,nacl -j8 -k" "smoke_tests"
   browser-tests "arm x86-32 x86-64" "--mode=opt-host,nacl -k"
-  ad-hoc-shared-lib-tests "arm x86-32"
+  #ad-hoc-shared-lib-tests "arm x86-32"
 }
 
 
@@ -253,7 +255,7 @@ mode-buildbot-x8632() {
   # Then test (not all nexes which are build are also tested)
   scons-tests "x86-32" "--mode=opt-host,nacl -k" "smoke_tests"
   browser-tests "x86-32" "--mode=opt-host,nacl -k"
-  ad-hoc-shared-lib-tests "x86-32"
+  #ad-hoc-shared-lib-tests "x86-32"
 }
 
 mode-buildbot-x8664() {
@@ -294,7 +296,7 @@ mode-buildbot-arm() {
   scons-tests "arm" "${mode} -k" "medium_tests"
   scons-tests "arm" "${mode} -k" "large_tests"
   browser-tests "arm" "${mode}"
-  ad-hoc-shared-lib-tests "arm"
+  #ad-hoc-shared-lib-tests "arm"
 }
 
 mode-buildbot-arm-dbg() {
@@ -357,7 +359,7 @@ mode-test-all-fast() {
   scons-tests "arm x86-32 x86-64" "--mode=opt-host,nacl -j${concur}" \
     "smoke_tests"
   browser-tests "arm x86-32 x86-64" "--mode=opt-host,nacl -j${concur}"
-  ad-hoc-shared-lib-tests "arm x86-32"
+  #ad-hoc-shared-lib-tests "arm x86-32"
 }
 
 ######################################################################

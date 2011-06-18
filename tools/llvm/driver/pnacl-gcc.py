@@ -36,7 +36,7 @@ EXTRA_ENV = {
   'STDINC'      : '1',    # Include standard headers (-nostdinc sets to 0)
   'STDLIB'      : '1',    # Include standard libraries (-nostdlib sets to 0)
   'DIAGNOSTIC'  : '0',    # Diagnostic flag detected
-  'STATIC'      : '${USE_GLIBC ? 0 : 1}', # -static (on by default for newlib)
+  'STATIC'      : '${LIBMODE_NEWLIB ? 1 : 0}', # -static (on for newlib)
   'PIC'         : '0',   # Generate PIC
 
   'INPUTS'      : '',    # Input files
@@ -65,21 +65,29 @@ EXTRA_ENV = {
   'CC_FLAGS'    : '${OPT_LEVEL} -fuse-llvm-va-arg -Werror-portable-llvm ' +
                   '-nostdinc -DNACL_LINUX=1 -D__native_client__=1 ' +
                   '-D__pnacl__=1 ${BIAS_%BIAS%}',
-  'CC_STDINC'   :
+
+  'CC_STDINC'   : '${CC_STDINC_%LIBMODE%}',
     # NOTE: the two competing approaches here
     #       make the gcc driver "right" or
     #       put all the logic/knowledge into this driver.
     #       Currently, we have a messy mixture.
-    '-isystem ${BASE_ARM}/lib/gcc/arm-none-linux-gnueabi/4.2.1/include ' +
-    '-isystem ' +
-    '${BASE_ARM}/lib/gcc/arm-none-linux-gnueabi/4.2.1/install-tools/include ' +
-    '-isystem ${BASE_ARM}/include/c++/4.2.1 ' +
-    '-isystem ${BASE_ARM}/include/c++/4.2.1/arm-none-linux-gnueabi ' +
-    '-isystem ${BASE_ARM_INCLUDE} ' +
     # NOTE: order important
-    # '-isystem',
-    # BASE + '/arm-newlib/arm-none-linux-gnueabi/usr/include/nacl/abi',
-    '-isystem ${BASE}/arm-newlib/arm-none-linux-gnueabi/include',
+  'CC_STDINC_newlib' :
+    '-isystem ${BASE_LLVM_GCC}/lib/gcc/arm-none-linux-gnueabi/4.2.1/include ' +
+    '-isystem ${BASE_LLVM_GCC}/' +
+      'lib/gcc/arm-none-linux-gnueabi/4.2.1/install-tools/include ' +
+    '-isystem ${BASE_LIBSTDCPP}/include/c++/4.2.1 ' +
+    '-isystem ${BASE_LIBSTDCPP}/include/c++/4.2.1/arm-none-linux-gnueabi ' +
+    '-isystem ${BASE_INCLUDE} ' +
+    '-isystem ${BASE_NEWLIB}/arm-none-linux-gnueabi/include',
+
+  'CC_STDINC_glibc' :
+    '-isystem ${BASE_GLIBC}/include ' +
+    '-isystem ${BASE_LLVM_GCC}/lib/gcc/arm-none-linux-gnueabi/4.2.1/include ' +
+    '-isystem ${BASE_LLVM_GCC}/' +
+      'lib/gcc/arm-none-linux-gnueabi/4.2.1/install-tools/include ' +
+    '-isystem ${BASE_LIBSTDCPP}/include/c++/4.2.1 ' +
+    '-isystem ${BASE_LIBSTDCPP}/include/c++/4.2.1/arm-none-linux-gnueabi',
 
   # ${LIBS} must come before ${LIBS_BC} so that the native glibc/libnacl
   # takes precedence over bitcode libc.
@@ -87,20 +95,15 @@ EXTRA_ENV = {
                '-L${LIBS} -L${LIBS_BC}',
 
   # Library Strings
-  'LIBMODE'          : '${USE_GLIBC ? glibc : newlib}',
   'EMITMODE'         : '${STATIC ? static : ${SHARED ? shared : dynamic}}',
 
   # Standard Library Directories
   'LIBS_BC'          : '${BASE}/libs-bitcode',
 
-  'LIBS'             : '${LIBS_%ARCH%_%LIBMODE%}',
-  'LIBS_ARM_newlib'  : '${BASE}/libs-arm-newlib',
-  'LIBS_X8632_newlib': '${BASE}/libs-x8632-newlib',
-  'LIBS_X8664_newlib': '${BASE}/libs-x8664-newlib',
-
-  'LIBS_X8632_glibc': '${BASE}/libs-x8632-glibc',
-  'LIBS_X8664_glibc': '${BASE}/libs-x8664-glibc',
-  'LIBS_ARM_glibc'  : '${BASE}/libs-arm-glibc',
+  'LIBS'             : '${LIBS_%ARCH%}',
+  'LIBS_ARM'         : '${BASE}/libs-arm',
+  'LIBS_X8632'       : '${BASE}/libs-x8632',
+  'LIBS_X8664'       : '${BASE}/libs-x8664',
 
   'LD_ARGS' : '${STDLIB ? ${LD_ARGS_%LIBMODE%_%EMITMODE%}' +
                       ' : ${LD_ARGS_nostdlib}}',
@@ -120,34 +123,38 @@ EXTRA_ENV = {
 
   'LD_ARGS_newlib_static':
     '-static ${LIBS}/crt1.o ${LIBS_BC}/nacl_startup.bc ${ld_inputs} ' +
-    '--start-group -lgcc_eh -lgcc -lc -lnacl ' +
+    '--start-group -lgcc_eh -lgcc -lehsupport -lc -lnacl ' +
     '${LIBSTDCPP} ${LIBS}/libcrt_platform.a --end-group',
 
   # The next three are copied verbatim from nacl-gcc
   'LD_ARGS_glibc_static':
     '-T ${LIBS}/${EMUL}.x.static ' +
     '${LIBS}/crt1.o ${LIBS}/crti.o ${LIBS}/crtbeginT.o ' +
-    '${ld_inputs} ' +
-    '--start-group -lgcc -lgcc_eh -lc -lnacl ${LIBSTDCPP} -lcrt_platform ' +
+    '${ld_inputs} ${LIBSTDCPP} ' +
+    '--start-group -lgcc -lgcc_eh -lehsupport -lc ' +
     '--end-group ${LIBS}/crtend.o ${LIBS}/crtn.o',
 
   'LD_ARGS_glibc_shared':
     '-T ${LIBS}/${EMUL}.xs ' +
     '--eh-frame-hdr -shared ${LIBS}/crti.o ${LIBS}/crtbeginS.o ' +
-    '${ld_inputs} ' +
-    '-lgcc --as-needed -lgcc_s --no-as-needed -lc -lnacl -lc -lcrt_platform ' +
-    '-lc -lgcc --as-needed -lgcc_s --no-as-needed ' +
-    '${LIBS}/crtendS.o ${LIBS}/crtn.o -rpath ${LIBS}',
+    '${ld_inputs} ${LIBSTDCPP} ' +
+    '-lgcc -lgcc_eh -lc -lgcc -lgcc_eh ' +
+    # When shared libgcc is ready, use this instead:
+    # '-lgcc --as-needed -lgcc_s --no-as-needed ' +
+    # '-lc -lgcc --as-needed -lgcc_s --no-as-needed ' +
+    '${LIBS}/crtendS.o ${LIBS}/crtn.o -rpath-link ${LIBS}',
 
   'LD_ARGS_glibc_dynamic':
     '-T ${LIBS}/${EMUL}.x ' +
     '--eh-frame-hdr ${LIBS}/crt1.o ${LIBS}/crti.o ' +
-    '${LIBS}/crtbegin.o ${ld_inputs} ' +
-    '-lgcc --as-needed -lgcc_s --no-as-needed ' +
-    '-lc -lnacl -lc ${LIBSTDCPP} -lcrt_platform -lc -lgcc --as-needed ' +
-    '-lgcc_s --no-as-needed ${LIBS}/crtend.o ${LIBS}/crtn.o -rpath ${LIBS}',
+    '${LIBS}/crtbegin.o ${ld_inputs} ${LIBSTDCPP} ' +
+    '-lgcc -lgcc_eh -lc -lgcc -lgcc_eh -Bstatic -lehsupport -Bdynamic ' +
+    # When shared libgcc is ready, use this instead:
+    # '-lgcc --as-needed -lgcc_s --no-as-needed ' +
+    # '-lc -lgcc --as-needed -lgcc_s --no-as-needed ' +
+    '${LIBS}/crtend.o ${LIBS}/crtn.o -rpath-link ${LIBS}',
 
-  'LIBSTDCPP'       : '${USE_GXX ? -lstdc++ }',
+  'LIBSTDCPP'       : '${USE_GXX ? -lstdc++ -lm }',
 
   'CC' : '${USE_GXX ? ${LLVM_GXX} : ${LLVM_GCC}}',
 
@@ -220,8 +227,10 @@ GCCPatterns = [
 
   ( ('(-L)','(.+)'),          AddLDFlag),
   ( '(-L.+)',                 AddLDFlag),
-  ( '(-Wp,.*)',               AddCCFlag),
+  ( '(-Bstatic)',             AddLDFlag),
+  ( '(-Bdynamic)',            AddLDFlag),
 
+  ( '(-Wp,.*)',               AddCCFlag),
   ( '(-MMD)',                 AddCCFlag),
   ( '(-MP)',                  AddCCFlag),
   ( '(-MD)',                  AddCCFlag),
@@ -290,13 +299,12 @@ def main(argv):
   if len(unmatched) > 0:
     UnrecognizedOption(*unmatched)
 
-  use_glibc = env.getbool('USE_GLIBC')
+  libmode_newlib = env.getbool('LIBMODE_NEWLIB')
   is_static = env.getbool('STATIC')
   is_shared = env.getbool('SHARED')
 
-  if not use_glibc and (is_shared or not is_static):
-    Log.Fatal("Can't produce dynamic objects with newlib. Did you want "
-              "--pnacl-use-glibc ?")
+  if libmode_newlib and (is_shared or not is_static):
+    Log.Fatal("Can't produce dynamic objects with newlib.")
 
   if env.getbool('STATIC') and env.getbool('SHARED'):
     Log.Fatal("Can't handle both -static and -shared")

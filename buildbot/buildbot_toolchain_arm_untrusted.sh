@@ -23,18 +23,18 @@ if [[ ${BUILDBOT_BUILDERNAME} == *linux*32* ]] ||
   # Don't test arm + 64-bit on 32-bit builder.
   # We can't build 64-bit trusted components on a 32-bit system.
   # Arm disabled on 32-bit because it runs out of memory.
-  TOOLCHAIN_LABEL=pnacl_linux_i686
+  TOOLCHAIN_LABEL=pnacl_linux_i686_newlib
   RUN_TESTS="x86-32 x86-32-pic x86-32-browser"
 elif [[ ${BUILDBOT_BUILDERNAME} == *linux*64* ]] ||
      [[ ${BUILDBOT_BUILDERNAME} == *lucid*64* ]]; then
-  TOOLCHAIN_LABEL=pnacl_linux_x86_64
+  TOOLCHAIN_LABEL=pnacl_linux_x86_64_newlib
   RUN_TESTS="x86-32 x86-32-pic x86-32-browser arm arm-pic arm-browser \
 x86-64 x86-64-pic x86-64-browser"
 elif [[ ${BUILDBOT_BUILDERNAME} == *mac* ]]; then
   # We don't test X86-32 because it is flaky.
   # We can't test ARM because we do not have QEMU for Mac.
   # We can't test X86-64 because NaCl X86-64 Mac support is not in good shape.
-  TOOLCHAIN_LABEL=pnacl_darwin_i386
+  TOOLCHAIN_LABEL=pnacl_darwin_i386_newlib
   RUN_TESTS=""
 else
   echo "*** UNRECOGNIZED BUILDBOT ${BUILDBOT_BUILDERNAME} ***"

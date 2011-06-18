@@ -57,10 +57,14 @@ def SetupEnvironment():
                                 env.scons_os + '_x86')
 
   # Path to PNaCl toolchain
-  env.pnacl_root = os.path.join(env.nacl_root,
-                                'toolchain',
-                                'pnacl_%s_%s' % (GetBuildOS(),
-                                                 GetBuildArch()))
+  env.pnacl_root_newlib = os.path.join(env.nacl_root,
+                                       'toolchain',
+                                       'pnacl_%s_%s_newlib' % (GetBuildOS(),
+                                                               GetBuildArch()))
+  env.pnacl_root_glibc = os.path.join(env.nacl_root,
+                                     'toolchain',
+                                     'pnacl_%s_%s_glibc' % (GetBuildOS(),
+                                                            GetBuildArch()))
 
   # QEMU
   env.arm_root = os.path.join(env.nacl_root,
@@ -97,6 +101,14 @@ def SetupEnvironment():
   # can auto-detect .pexe type.
   env.pnacl_glibc = ''
 
+
+def SetupEnvFlags():
+  """ Setup environment after config options have been read """
+  if env.pnacl_glibc != '':
+    env.pnacl_root = env.pnacl_root_glibc
+  else:
+    env.pnacl_root = env.pnacl_root_newlib
+
 def SetupArch(arch, is_dynamic, allow_build = True):
   """Setup environment variables that require knowing the
      architecture. We can only do this after we've seen the
@@ -126,6 +138,7 @@ def main(argv):
 
   sel_ldr_options, nexe, nexe_params = ArgSplit(argv[1:])
 
+  SetupEnvFlags()
   # Translate .pexe files
   bypass_readelf = False
   if nexe.endswith('.pexe'):
@@ -374,7 +387,11 @@ def FindReadElf():
   '''Returns the path of "readelf" binary.'''
 
   # Use PNaCl's if it available.
-  readelf = os.path.join(env.pnacl_root, 'bin', 'readelf')
+  readelf = os.path.join(env.pnacl_root_newlib, 'bin', 'readelf')
+  if os.path.exists(readelf):
+    return readelf
+
+  readelf = os.path.join(env.pnacl_root_glibc, 'bin', 'readelf')
   if os.path.exists(readelf):
     return readelf
 

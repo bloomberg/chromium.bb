@@ -14,9 +14,14 @@ from driver_tools import *
 EXTRA_ENV = {
   'PIC'           : '0',
 
+  # These are temporary. Since we don't have
+  # DT_NEEDED metadata in bitcode yet, it must be provided
+  # on the command-line.
+  'EXTRA_LD_FLAGS': '',
+
   # If translating a .pexe which was linked statically against
-  # glibc, then you must do pnacl-translate --pnacl-use-glibc
-  # -static. This will be removed once we can detect .pexe type.
+  # glibc, then you must do pnacl-translate -static. This will
+  # be removed once we can detect .pexe type.
   'STATIC'        : '0',
 
   'INPUTS'        : '',
@@ -31,7 +36,7 @@ EXTRA_ENV = {
 
   'LLC_FLAGS_COMMON': '-asm-verbose=false ' +
                       '${PIC ? -relocation-model=pic} ' +
-                      '${PIC && ARCH==X8664 && !USE_GLIBC ? ' +
+                      '${PIC && ARCH==X8664 && LIBMODE_NEWLIB ? ' +
                       '  -force-tls-non-pic }',
   'LLC_FLAGS_ARM'    :
     # The following options might come in hand and are left here as comments:
@@ -81,6 +86,10 @@ TranslatorPatterns = [
 
   ( '-static',         "env.set('STATIC', '1')"),
   ( '-fPIC',           "env.set('PIC', '1')"),
+
+  ( '(-L.*)',          "env.append('EXTRA_LD_FLAGS', $0)"),
+  ( ('(-L)','(.*)'),   "env.append('EXTRA_LD_FLAGS', $0, $1)"),
+  ( '(-l.*)',          "env.append('EXTRA_LD_FLAGS', $0)"),
 
   ( '(-*)',            UnrecognizedOption),
 
@@ -161,7 +170,8 @@ def RunLD(infile, outfile, shared):
   elif env.getbool('STATIC'):
     args += ['-static']
 
-  RunDriver('pnacl-gcc', args)
+  extra_ld_flags = env.get('EXTRA_LD_FLAGS')
+  RunDriver('pnacl-gcc', args + extra_ld_flags)
 
 
 def RunLLC(infile, outfile, filetype):

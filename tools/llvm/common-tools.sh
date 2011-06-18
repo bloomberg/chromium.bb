@@ -592,14 +592,10 @@ RepeatStr() {
 }
 
 
-Abort() {
-  local module="$1"
-
-  shift 1
-  local padding=$(RepeatStr ' ' $((20-${#module})) )
-  echo
-  echo "${module}${padding} ERROR:" "$@"
-  echo
+Fatal() {
+  echo 1>&2
+  echo "$@" 1>&2
+  echo 1>&2
   exit -1
 }
 

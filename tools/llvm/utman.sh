@@ -48,10 +48,26 @@ SetLogDirectory "${NACL_ROOT}/toolchain/hg-log"
 readonly UTMAN_CONCURRENCY=${UTMAN_CONCURRENCY:-8}
 UTMAN_BUILD_ARM=true
 
-if ${BUILD_PLATFORM_MAC} || ${BUILD_PLATFORM_WIN} ; then
+if ${BUILD_PLATFORM_MAC} || ${BUILD_PLATFORM_WIN}; then
   # We don't yet support building ARM tools for mac or windows.
   UTMAN_BUILD_ARM=false
 fi
+
+# Set the library mode
+readonly LIBMODE=${LIBMODE:-newlib}
+
+LIBMODE_NEWLIB=false
+LIBMODE_GLIBC=false
+if [ ${LIBMODE} == "newlib" ]; then
+  LIBMODE_NEWLIB=true
+elif [ ${LIBMODE} == "glibc" ]; then
+  LIBMODE_GLIBC=true
+  UTMAN_BUILD_ARM=false
+else
+  Fatal "Unknown library mode ${LIBMODE}"
+fi
+readonly LIBMODE_NEWLIB
+readonly LIBMODE_GLIBC
 
 # TODO(pdox): Decide what the target should really permanently be
 readonly CROSS_TARGET_ARM=arm-none-linux-gnueabi
@@ -59,24 +75,31 @@ readonly BINUTILS_TARGET=arm-pc-nacl
 readonly REAL_CROSS_TARGET=pnacl
 
 readonly TC_ROOT="${NACL_ROOT}/toolchain"
-readonly INSTALL_ROOT="${TC_ROOT}/pnacl_${BUILD_PLATFORM}_${HOST_ARCH}"
-readonly INSTALL_BIN="${INSTALL_ROOT}/bin"
+readonly PNACL_ROOT="${TC_ROOT}/pnacl_${BUILD_PLATFORM}_${HOST_ARCH}_${LIBMODE}"
+readonly PNACL_BIN="${PNACL_ROOT}/bin"
 readonly DRIVER_DIR="${NACL_ROOT}/tools/llvm/driver"
 readonly ARM_ARCH=armv7-a
 readonly ARM_FPU=vfp
-readonly INSTALL_DIR="${INSTALL_ROOT}/${CROSS_TARGET_ARM}"
-readonly LDSCRIPTS_DIR="${INSTALL_ROOT}/ldscripts"
-readonly GCC_VER="4.2.1"
 
-# NOTE: NEWLIB_INSTALL_DIR also server as a SYSROOT
-readonly NEWLIB_INSTALL_DIR="${INSTALL_ROOT}/arm-newlib"
+readonly BASE_INSTALL_DIR="${PNACL_ROOT}/pkg"
+readonly NEWLIB_INSTALL_DIR="${BASE_INSTALL_DIR}/newlib"
+readonly GLIBC_INSTALL_DIR="${BASE_INSTALL_DIR}/glibc"
+readonly LLVM_INSTALL_DIR="${BASE_INSTALL_DIR}/llvm"
+readonly LLVM_GCC_INSTALL_DIR="${BASE_INSTALL_DIR}/llvm-gcc"
+readonly LIBSTDCPP_INSTALL_DIR="${BASE_INSTALL_DIR}/libstdcpp"
+readonly BINUTILS_INSTALL_DIR="${BASE_INSTALL_DIR}/binutils"
+readonly SYSROOT_DIR="${PNACL_ROOT}/sysroot"
+readonly LDSCRIPTS_DIR="${PNACL_ROOT}/ldscripts"
+readonly GCC_VER="4.2.1"
 
 readonly NNACL_ROOT="${TC_ROOT}/${SCONS_BUILD_PLATFORM}_x86_newlib"
 readonly NNACL_GLIBC_ROOT="${TC_ROOT}/${SCONS_BUILD_PLATFORM}_x86"
 
-readonly BFD_PLUGIN_DIR="${INSTALL_DIR}/lib/bfd-plugins"
+readonly BFD_PLUGIN_DIR="${BINUTILS_INSTALL_DIR}/lib/bfd-plugins"
 
 readonly MAKE_OPTS="-j${UTMAN_CONCURRENCY} VERBOSE=1"
+
+readonly NONEXISTENT_PATH="/going/down/the/longest/road/to/nowhere"
 
 # For speculative build status output. ( see status function )
 # Leave this blank, it will be filled during processing.
@@ -86,7 +109,7 @@ SPECULATIVE_REBUILD_SET=""
 # and objdirs. These should be ABSOLUTE paths.
 
 readonly TC_SRC="${NACL_ROOT}/hg"
-readonly TC_BUILD="${TC_ROOT}/hg-build"
+readonly TC_BUILD="${TC_ROOT}/hg-build-${LIBMODE}"
 
 # The location of sources (absolute)
 readonly TC_SRC_LLVM="${TC_SRC}/llvm"
@@ -106,59 +129,52 @@ readonly NACL_SYS_HEADERS="${SERVICE_RUNTIME_SRC}/include"
 readonly NACL_SYS_TS="${TC_SRC}/nacl.sys.timestamp"
 readonly NEWLIB_INCLUDE_DIR="${TC_SRC_NEWLIB}/newlib-trunk/newlib/libc/include"
 
-# The location of each project
-# These should be absolute paths.
+# The location of each project. These should be absolute paths.
+# If a tool below depends on a certain libc, then the build
+# directory should have ${LIBMODE} in it to distinguish them.
+
 readonly TC_BUILD_LLVM="${TC_BUILD}/llvm"
-readonly TC_BUILD_LLVM_GCC1="${TC_BUILD}/llvm-gcc-stage1"
-readonly TC_BUILD_BINUTILS_ARM="${TC_BUILD}/binutils-arm"
+readonly TC_BUILD_LLVM_GCC="${TC_BUILD}/llvm-gcc"
+readonly TC_BUILD_BINUTILS="${TC_BUILD}/binutils"
 readonly TC_BUILD_BINUTILS_LIBERTY="${TC_BUILD}/binutils-liberty"
-readonly TC_BUILD_NEWLIB_ARM="${TC_BUILD}/newlib-arm"
-readonly TC_BUILD_NEWLIB_BITCODE="${TC_BUILD}/newlib-bitcode"
+readonly TC_BUILD_NEWLIB="${TC_BUILD}/newlib"
+readonly TC_BUILD_LIBSTDCPP="${TC_BUILD_LLVM_GCC}-arm/libstdcpp"
 readonly TC_BUILD_COMPILER_RT="${TC_BUILD}/compiler_rt"
 
-# This apparently has to be at this location or gcc install breaks.
-readonly TC_BUILD_LIBSTDCPP="${TC_BUILD_LLVM_GCC1}/${CROSS_TARGET_ARM}/libstdc++-v3"
-
-readonly TC_BUILD_LIBSTDCPP_BITCODE="${TC_BUILD_LLVM_GCC1}/libstdcpp-bitcode"
-
 # These are fake directories, for storing the timestamp only
-readonly TC_BUILD_EXTRASDK_BITCODE="${TC_BUILD}/extrasdk"
+readonly TC_BUILD_EXTRASDK="${TC_BUILD}/extrasdk"
 
 readonly TIMESTAMP_FILENAME="make-timestamp"
 
 # PNaCl toolchain locations (absolute!)
-readonly PNACL_TOOLCHAIN_ROOT="${INSTALL_ROOT}"
+readonly PNACL_TOOLCHAIN_ROOT="${PNACL_ROOT}"
 readonly PNACL_BITCODE_ROOT="${PNACL_TOOLCHAIN_ROOT}/libs-bitcode"
 
-readonly PNACL_ARM_ROOT="${PNACL_TOOLCHAIN_ROOT}/libs-arm-newlib"
-readonly PNACL_X8632_ROOT="${PNACL_TOOLCHAIN_ROOT}/libs-x8632-newlib"
-readonly PNACL_X8664_ROOT="${PNACL_TOOLCHAIN_ROOT}/libs-x8664-newlib"
-
-readonly PNACL_ARM_GLIBC_ROOT="${PNACL_TOOLCHAIN_ROOT}/libs-arm-glibc"
-readonly PNACL_X8632_GLIBC_ROOT="${PNACL_TOOLCHAIN_ROOT}/libs-x8632-glibc"
-readonly PNACL_X8664_GLIBC_ROOT="${PNACL_TOOLCHAIN_ROOT}/libs-x8664-glibc"
+readonly PNACL_ARM_ROOT="${PNACL_TOOLCHAIN_ROOT}/libs-arm"
+readonly PNACL_X8632_ROOT="${PNACL_TOOLCHAIN_ROOT}/libs-x8632"
+readonly PNACL_X8664_ROOT="${PNACL_TOOLCHAIN_ROOT}/libs-x8664"
 
 # PNaCl client-translators (sandboxed) binary locations
-readonly PNACL_SB_ROOT="${INSTALL_ROOT}/tools-sb"
+readonly PNACL_SB_ROOT="${PNACL_ROOT}/tools-sb"
 readonly PNACL_SB_X8632="${PNACL_SB_ROOT}/x8632"
 readonly PNACL_SB_X8664="${PNACL_SB_ROOT}/x8664"
 readonly PNACL_SB_UNIVERSAL="${PNACL_SB_ROOT}/universal"
 
 # Location of PNaCl gcc/g++/as
-readonly PNACL_GCC="${INSTALL_BIN}/pnacl-gcc"
-readonly PNACL_GPP="${INSTALL_BIN}/pnacl-g++"
-readonly PNACL_AR="${INSTALL_BIN}/pnacl-ar"
-readonly PNACL_RANLIB="${INSTALL_BIN}/pnacl-ranlib"
-readonly PNACL_AS="${INSTALL_BIN}/pnacl-as"
-readonly PNACL_LD="${INSTALL_BIN}/pnacl-ld"
-readonly PNACL_NM="${INSTALL_BIN}/pnacl-nm"
-readonly PNACL_TRANSLATE="${INSTALL_BIN}/pnacl-translate"
-readonly PNACL_READELF="${INSTALL_BIN}/readelf"
-readonly PNACL_SIZE="${INSTALL_BIN}/size"
+readonly PNACL_GCC="${PNACL_BIN}/pnacl-gcc"
+readonly PNACL_GPP="${PNACL_BIN}/pnacl-g++"
+readonly PNACL_AR="${PNACL_BIN}/pnacl-ar"
+readonly PNACL_RANLIB="${PNACL_BIN}/pnacl-ranlib"
+readonly PNACL_AS="${PNACL_BIN}/pnacl-as"
+readonly PNACL_LD="${PNACL_BIN}/pnacl-ld"
+readonly PNACL_NM="${PNACL_BIN}/pnacl-nm"
+readonly PNACL_TRANSLATE="${PNACL_BIN}/pnacl-translate"
+readonly PNACL_READELF="${PNACL_BIN}/readelf"
+readonly PNACL_SIZE="${PNACL_BIN}/size"
 
-readonly PNACL_AS_ARM="${INSTALL_BIN}/pnacl-arm-as"
-readonly PNACL_AS_X8632="${INSTALL_BIN}/pnacl-i686-as"
-readonly PNACL_AS_X8664="${INSTALL_BIN}/pnacl-x86_64-as"
+readonly PNACL_AS_ARM="${PNACL_BIN}/pnacl-arm-as"
+readonly PNACL_AS_X8632="${PNACL_BIN}/pnacl-i686-as"
+readonly PNACL_AS_X8664="${PNACL_BIN}/pnacl-x86_64-as"
 
 # For a production (release) build, we want the sandboxed
 # translator to only contain the code needed to handle
@@ -213,13 +229,16 @@ if ${HOST_ARCH_X8632} ; then
   CXX="${NACL_ROOT}/tools/llvm/myg++32"
 fi
 
-readonly CROSS_TARGET_AR=${INSTALL_DIR}/bin/${BINUTILS_TARGET}-ar
-readonly CROSS_TARGET_RANLIB=${INSTALL_DIR}/bin/${BINUTILS_TARGET}-ranlib
-readonly ILLEGAL_TOOL=${INSTALL_DIR}/pnacl-illegal
+readonly CROSS_TARGET_AR=${BINUTILS_INSTALL_DIR}/bin/${BINUTILS_TARGET}-ar
+readonly CROSS_TARGET_NM=${BINUTILS_INSTALL_DIR}/bin/${BINUTILS_TARGET}-nm
+readonly CROSS_TARGET_RANLIB=\
+${BINUTILS_INSTALL_DIR}/bin/${BINUTILS_TARGET}-ranlib
+readonly ILLEGAL_TOOL=${PNACL_BIN}/pnacl-illegal
 
 # NOTE: we do not expect the assembler or linker to be used for libs
 #       hence the use of ILLEGAL_TOOL.
 STD_ENV_FOR_LIBSTDCPP=(
+  CC_FOR_BUILD="${CC}"
   CC="${PNACL_GCC}"
   CXX="${PNACL_GPP}"
   RAW_CXX_FOR_TARGET="${PNACL_GPP}"
@@ -361,9 +380,13 @@ hg-update-common() {
   # Make sure it is safe to update
   hg-assert-safe-to-update "${name}" "${dir}" "${rev}"
 
-  StepBanner "HG-UPDATE" "Updating ${name} to ${rev}"
-  hg-pull "${dir}"
-  hg-update "${dir}" ${rev}
+  if hg-at-revision "${dir}" "${rev}" ; then
+    StepBanner "HG-UPDATE" "Repo ${name} already at ${rev}"
+  else
+    StepBanner "HG-UPDATE" "Updating ${name} to ${rev}"
+    hg-pull "${dir}"
+    hg-update "${dir}" ${rev}
+  fi
 }
 
 #@ hg-update-llvm-gcc    - Update LLVM-GCC to the stable revision
@@ -489,7 +512,7 @@ hg-clean() {
 #@                         (your untrusted build will not be modified)
 download-trusted() {
   StepBanner "DOWNLOAD-TRUSTED" "Downloading trusted toolchains"
-  local installdir="${INSTALL_ROOT}"
+  local installdir="${PNACL_ROOT}"
   local tmpdir="${installdir}-backup"
   local dldir="${installdir}-downloaded"
 
@@ -525,23 +548,38 @@ download-toolchains() {
 }
 
 #@-------------------------------------------------------------------------
-#@ rebuild-pnacl-libs    - organized native libs and build bitcode libs
-rebuild-pnacl-libs() {
-  StepBanner "REBUILD LIBS"
+#@ libs                  - install native libs and build bitcode libs
+libs() {
+  libs-clean
+  libc
 
-  extrasdk-clean
-  clean-pnacl
-  newlib-bitcode
-  libstdcpp-bitcode
-  # NOTE: currently also builds some native code
-  extrasdk-make-install
+  # Build native versions of libgcc
+  # TODO(robertm): change these to bitcode libs
+  build-compiler-rt
+  # NOTE: this currently depends on "llvm-gcc arm"
+  build-libgcc_eh-bitcode arm
+
+
+  libehsupport
+  libstdcpp
+  extrasdk
+}
+
+libc() {
+  if ${LIBMODE_NEWLIB} ; then
+    # TODO(pdox): Why is this step needed?
+    sysroot
+    newlib
+  elif ${LIBMODE_GLIBC} ; then
+    glibc
+  fi
 }
 
 
 #@ everything            - Build and install untrusted SDK.
 everything() {
 
-  mkdir -p "${INSTALL_ROOT}"
+  mkdir -p "${PNACL_ROOT}"
 
   # This is needed to build misc-tools and run ARM tests.
   # We check this early so that there are no surprises later, and we can
@@ -555,19 +593,12 @@ everything() {
 
   clean-logs
 
-  binutils-arm
+  binutils
   llvm
   driver
-  gcc-stage1-sysroot
-  gcc-stage1 ${CROSS_TARGET_ARM}
+  llvm-gcc arm
 
-  rebuild-pnacl-libs
-  # Build native versions of libgcc
-  # TODO(robertm): change these to bitcode libs and the fold them into
-  #                the rebuild-pnacl-libs step
-  build-compiler-rt
-  # NOTE: this currently depends on "gcc-stage1" above
-  build-libgcc_eh-bitcode arm-none-linux-gnueabi
+  libs
 
   # NOTE: we delay the tool building till after the sdk is essentially
   #      complete, so that sdk sanity checks don't fail
@@ -576,47 +607,53 @@ everything() {
   verify
 }
 
-steal-glibc() {
+glibc() {
   StepBanner "GLIBC" "Copying glibc from NNaCl toolchain"
 
-  mkdir -p "${PNACL_X8632_GLIBC_ROOT}"
-  mkdir -p "${PNACL_X8664_GLIBC_ROOT}"
+  mkdir -p "${PNACL_X8632_ROOT}"
+  mkdir -p "${PNACL_X8664_ROOT}"
+  mkdir -p "${GLIBC_INSTALL_DIR}"
 
   # Files in: lib/gcc/nacl64/4.4.3/[32]/
-  local LIBS1="crtbegin.o crtbeginT.o crtbeginS.o crtend.o crtendS.o \
-               libgcc.a libgcc_eh.a"
+  local LIBS1="crtbegin.o crtbeginT.o crtbeginS.o crtend.o crtendS.o"
 
   # Files in: nacl64/lib[32]/
   local LIBS2="crt1.o crti.o crtn.o \
                libc.a libc_nonshared.a \
-               libgcc_s.so.1 libgcc_s.so \
                libc-2.9.so libc.so libc.so.6 \
-               runnable-ld.so libcrt_platform.a \
-               libnacl.a libnacl.so \
-               ld-2.9.so \
-               libstdc++.so libstdc++.so.6 libstdc++.a libstdc++.so.6.0.13 \
                libm-2.9.so libm.a libm.so libm.so.6 \
+               libpthread-2.9.so libpthread.a libpthread.so \
+               libpthread.so.0 libpthread_nonshared.a \
+               runnable-ld.so \
+               ld-2.9.so \
                ldscripts/elf_nacl.x ldscripts/elf64_nacl.x \
                ldscripts/elf_nacl.xs ldscripts/elf64_nacl.xs \
                ldscripts/elf_nacl.x.static ldscripts/elf64_nacl.x.static"
 
   for lib in ${LIBS1} ; do
     cp -a "${NNACL_GLIBC_ROOT}/lib/gcc/nacl64/4.4.3/32/${lib}" \
-       "${PNACL_X8632_GLIBC_ROOT}"
+       "${PNACL_X8632_ROOT}"
     cp -a "${NNACL_GLIBC_ROOT}/lib/gcc/nacl64/4.4.3/${lib}" \
-       "${PNACL_X8664_GLIBC_ROOT}"
+       "${PNACL_X8664_ROOT}"
   done
 
   for lib in ${LIBS2} ; do
-    cp -a "${NNACL_GLIBC_ROOT}/nacl64/lib32/${lib}" "${PNACL_X8632_GLIBC_ROOT}"
-    cp -a "${NNACL_GLIBC_ROOT}/nacl64/lib/${lib}" "${PNACL_X8664_GLIBC_ROOT}"
+    cp -a "${NNACL_GLIBC_ROOT}/nacl64/lib32/${lib}" "${PNACL_X8632_ROOT}"
+    cp -a "${NNACL_GLIBC_ROOT}/nacl64/lib/${lib}" "${PNACL_X8664_ROOT}"
   done
 
   # ld-linux has different naming across 32/64
   cp -a "${NNACL_GLIBC_ROOT}"/nacl64/lib32/ld-linux.so.2 \
-     "${PNACL_X8632_GLIBC_ROOT}"
+     "${PNACL_X8632_ROOT}"
   cp -a "${NNACL_GLIBC_ROOT}"/nacl64/lib/ld-linux-x86-64.so.2 \
-     "${PNACL_X8664_GLIBC_ROOT}"
+     "${PNACL_X8664_ROOT}"
+
+  # Copy the glibc headers
+  cp -a "${NNACL_GLIBC_ROOT}"/nacl64/include \
+        "${GLIBC_INSTALL_DIR}"
+
+  # We build our own C++, so we have our own headers.
+  rm -rf "${GLIBC_INSTALL_DIR}"/include/c++
 }
 
 #@ all                   - Alias for 'everything'
@@ -629,15 +666,13 @@ status() {
   # TODO(robertm): this is currently broken
   StepBanner "BUILD STATUS"
 
-  status-helper "BINUTILS-ARM"      binutils-arm
+  status-helper "BINUTILS"          binutils
   status-helper "LLVM"              llvm
-  status-helper "GCC-STAGE1"        gcc-stage1
+  status-helper "GCC-STAGE1"        llvm-gcc
 
-  status-helper "NEWLIB-ARM"        newlib-arm
-
-  status-helper "NEWLIB-BITCODE"    newlib-bitcode
-  status-helper "EXTRASDK-BITCODE"  extrasdk
-  status-helper "LIBSTDCPP-BITCODE" extrasdk-bitcode
+  status-helper "NEWLIB"            newlib
+  status-helper "EXTRASDK"          extrasdk
+  status-helper "LIBSTDCPP"         libstdcpp
 
 }
 
@@ -725,12 +760,12 @@ clean-build() {
 
 #+ clean-install         - Clean install directories
 clean-install() {
-  rm -rf "${INSTALL_ROOT}"
+  rm -rf "${PNACL_ROOT}"
 }
 
-#+ clean-pnacl           - Removes the pnacl-untrusted installation directory
-clean-pnacl() {
-  StepBanner "pnacl" "cleaning ${PNACL_TOOLCHAIN_ROOT}/libs-*"
+#+ libs-clean            - Removes the library directories
+libs-clean() {
+  StepBanner "LIBS-CLEAN" "Cleaning ${PNACL_TOOLCHAIN_ROOT}/libs-*"
   rm -rf ${PNACL_ARM_ROOT} \
          ${PNACL_BITCODE_ROOT} \
          ${PNACL_X8632_ROOT} \
@@ -763,34 +798,35 @@ prune() {
   # but we are currently doing a debug build and not pruning
   # as aggressively as we could.
   local ACCEPTABLE_SIZE=300
-  local dir_size_before=$(get_dir_size_in_mb ${INSTALL_ROOT})
+  local dir_size_before=$(get_dir_size_in_mb ${PNACL_ROOT})
 
-  SubBanner "Size before: ${INSTALL_ROOT} ${dir_size_before}MB"
+  SubBanner "Size before: ${PNACL_ROOT} ${dir_size_before}MB"
   echo "removing some static libs we do not have any use for"
-  rm  -f "${INSTALL_DIR}"/lib/lib*.a
-
-  echo "removing x86-32 frontend"
-  rm -rf "${INSTALL_DIR}"/libexec/gcc/i686-none-linux-gnu/
-  rm -rf "${INSTALL_DIR}"/bin/i686-none-linux-gnu-*
-
-  echo "removing x86-64 frontend"
-  rm -rf "${INSTALL_DIR}"/libexec/gcc/x86_64-none-linux-gnu/
-  rm -rf "${INSTALL_DIR}"/bin/x86_64-none-linux-gnu-*
+  rm  -f "${NEWLIB_INSTALL_DIR}"/lib/lib*.a
 
   echo "stripping binaries"
-  strip "${INSTALL_DIR}"/libexec/gcc/arm-none-linux-gnueabi/${GCC_VER}/c*
-  if ! strip "${INSTALL_DIR}"/bin/* ; then
+  strip "${LLVM_GCC_INSTALL_DIR}"/libexec/gcc/${CROSS_TARGET_ARM}/${GCC_VER}/c*
+  if ! strip "${LLVM_GCC_INSTALL_DIR}"/bin/* ||
+     ! strip "${LLVM_INSTALL_DIR}"/bin/* ; then
     echo "NOTE: some failures during stripping are expected"
   fi
 
   echo "removing llvm headers"
-  rm -rf "${INSTALL_DIR}"/include/llvm*
+  rm -rf "${LLVM_INSTALL_DIR}"/include/llvm*
 
   echo "removing .pyc files"
-  rm -f "${INSTALL_BIN}"/*.pyc
+  rm -f "${PNACL_BIN}"/*.pyc
 
-  local dir_size_after=$(get_dir_size_in_mb ${INSTALL_ROOT})
-  SubBanner "Size after: ${INSTALL_ROOT} ${dir_size_after}MB"
+  if ${LIBMODE_GLIBC}; then
+    echo "remove pnacl_cache directory"
+    rm -rf "${PNACL_BITCODE_ROOT}"/pnacl_cache
+  fi
+
+  echo "remove driver log"
+  rm -f "${PNACL_ROOT}"/driver.log
+
+  local dir_size_after=$(get_dir_size_in_mb "${PNACL_ROOT}")
+  SubBanner "Size after: ${PNACL_ROOT} ${dir_size_after}MB"
 
   if [[ ${dir_size_after} -gt ${ACCEPTABLE_SIZE} ]] ; then
     # TODO(pdox): Move this to the buildbot script so that
@@ -811,7 +847,7 @@ tarball() {
   local tarball="$1"
   StepBanner "TARBALL" "Creating tar ball ${tarball}"
 
-  tar zcf "${tarball}" -C "${INSTALL_ROOT}" .
+  tar zcf "${tarball}" -C "${PNACL_ROOT}" .
 }
 
 
@@ -824,7 +860,7 @@ tarball() {
 #+ llvm                  - Configure, build and install LLVM.
 
 llvm() {
-  StepBanner "LLVM"
+  StepBanner "LLVM (HOST)"
 
   local srcdir="${TC_SRC_LLVM}"
 
@@ -878,8 +914,8 @@ llvm-configure() {
              --with-binutils-include=${binutils_include} \
              --enable-targets=x86,x86_64,arm \
              --target=${CROSS_TARGET_ARM} \
-             --prefix=${INSTALL_DIR} \
-             --with-llvmgccdir=${INSTALL_DIR} \
+             --prefix="${LLVM_INSTALL_DIR}" \
+             --with-llvmgccdir="${LLVM_GCC_INSTALL_DIR}" \
              ${LLVM_EXTRA_OPTIONS}
 
 
@@ -944,8 +980,8 @@ llvm-install() {
 
   mkdir -p "${BFD_PLUGIN_DIR}"
 
-  ln -sf ../../lib/${SO_PREFIX}LLVMgold${SO_EXT} "${BFD_PLUGIN_DIR}"
-  ln -sf ../../lib/${SO_PREFIX}LTO${SO_EXT} "${BFD_PLUGIN_DIR}"
+  ln -sf ../../../llvm/lib/${SO_PREFIX}LLVMgold${SO_EXT} "${BFD_PLUGIN_DIR}"
+  ln -sf ../../../llvm/lib/${SO_PREFIX}LTO${SO_EXT} "${BFD_PLUGIN_DIR}"
 
   spopd
 }
@@ -963,95 +999,126 @@ llvm-install() {
 #       up a sysroot.
 #
 
-#+-------------------------------------------------------------------------
-#+ gcc-stage1            - build and install pre-gcc
-gcc-stage1() {
-  local target=$1
-  StepBanner "GCC-${target}"
 
-  if gcc-stage1-needs-configure ${target}; then
-    gcc-stage1-clean ${target}
-    gcc-stage1-configure ${target}
+LLVM_GCC_SETUP=false
+llvm-gcc-setup() {
+  # If this is an internal invocation, don't setup again.
+  if ${LLVM_GCC_SETUP} && [ $# -eq 0 ]; then
+    return 0
+  fi
+
+  if [ $# -ne 1 ] ; then
+    Fatal "Please specify architecture: x86-32, x86-64, arm"
+  fi
+  local arch=$1
+
+  case ${arch} in
+    arm) LLVM_GCC_TARGET=${CROSS_TARGET_ARM} ;;
+    x86-32) LLVM_GCC_TARGET=${CROSS_TARGET_X86_32} ;;
+    x86-64) LLVM_GCC_TARGET=${CROSS_TARGET_X86_64} ;;
+    *) Fatal "Unrecognized architecture ${arch}" ;;
+  esac
+  LLVM_GCC_SETUP=true
+  LLVM_GCC_ARCH=${arch}
+  LLVM_GCC_BUILD_DIR="${TC_BUILD_LLVM_GCC}-${LLVM_GCC_ARCH}"
+  return 0
+}
+
+#+-------------------------------------------------------------------------
+#+ llvm-gcc            - build and install pre-gcc
+llvm-gcc() {
+  llvm-gcc-setup "$@"
+  StepBanner "LLVM-GCC (HOST) for ${LLVM_GCC_ARCH}"
+
+  if llvm-gcc-needs-configure; then
+    llvm-gcc-clean
+    llvm-gcc-configure
   else
-    SkipBanner "GCC-${target}" "configure"
+    SkipBanner "LLVM-GCC ${LLVM_GCC_ARCH}" "configure"
   fi
 
   # We must always make before we do make install, because
   # the build must occur in a patched environment.
   # http://code.google.com/p/nativeclient/issues/detail?id=1128
-  gcc-stage1-make ${target}
+  llvm-gcc-make
 
-  gcc-stage1-install ${target}
+  llvm-gcc-install
 }
 
-#+ gcc-stage1-sysroot    - setup initial sysroot
-gcc-stage1-sysroot() {
-  StepBanner "GCC" "Setting up initial sysroot"
+#+ sysroot               - setup initial sysroot
+sysroot() {
+  StepBanner "LLVM-GCC" "Setting up initial sysroot"
 
-  local sys_include="${INSTALL_DIR}/${CROSS_TARGET_ARM}/include"
-  local sys_include2="${INSTALL_DIR}/${CROSS_TARGET_ARM}/sys-include"
+  local sys_include="${SYSROOT_DIR}/include"
+  local sys_include2="${SYSROOT_DIR}/sys-include"
 
   rm -rf "${sys_include}" "${sys_include2}"
   mkdir -p "${sys_include}"
   ln -sf "${sys_include}" "${sys_include2}"
-  cp -r "${NEWLIB_INCLUDE_DIR}"/* ${sys_include}
+  cp -r "${NEWLIB_INCLUDE_DIR}"/* "${sys_include}"
 }
 
-#+ gcc-stage1-clean      - Clean gcc stage 1
-gcc-stage1-clean() {
-  local target=$1
-
-  StepBanner "GCC-${target}" "Clean"
-  local objdir="${TC_BUILD_LLVM_GCC1}-${target}"
+#+ llvm-gcc-clean      - Clean gcc stage 1
+llvm-gcc-clean() {
+  llvm-gcc-setup "$@"
+  StepBanner "LLVM-GCC" "Clean"
+  local objdir="${LLVM_GCC_BUILD_DIR}"
   rm -rf "${objdir}"
 }
 
-gcc-stage1-needs-configure() {
-  local target=$1
+llvm-gcc-needs-configure() {
+  llvm-gcc-setup "$@"
   speculative-check "llvm" && return 0
   ts-newer-than "${TC_BUILD_LLVM}" \
-                "${TC_BUILD_LLVM_GCC1}-${target}" && return 0
-  [ ! -f "${TC_BUILD_LLVM_GCC1}-${target}/config.status" ]
+                "${LLVM_GCC_BUILD_DIR}" && return 0
+  [ ! -f "${LLVM_GCC_BUILD_DIR}/config.status" ]
   return $?
 }
 
-#+ gcc-stage1-configure  - Configure GCC stage 1
-gcc-stage1-configure() {
-  local target=$1
-  StepBanner "GCC-${target}" "Configure ${target}"
+#+ llvm-gcc-configure  - Configure GCC stage 1
+llvm-gcc-configure() {
+  llvm-gcc-setup "$@"
+  StepBanner "LLVM-GCC" "Configure ${LLVM_GCC_TARGET}"
 
   local srcdir="${TC_SRC_LLVM_GCC}"
-  local objdir="${TC_BUILD_LLVM_GCC1}-${target}"
+  local objdir="${LLVM_GCC_BUILD_DIR}"
 
   mkdir -p "${objdir}"
   spushd "${objdir}"
 
   # NOTE: hack, assuming presence of x86/32 toolchain (used for both 32/64)
   local config_opts=""
-  case ${target} in
-      arm-*)
+  case ${LLVM_GCC_ARCH} in
+      arm)
           config_opts="--with-as=${PNACL_AS_ARM} \
                        --with-arch=${ARM_ARCH} \
                        --with-fpu=${ARM_FPU}"
           ;;
-      i686-*)
+      x86-32)
           config_opts="--with-as=${PNACL_AS_X8632}"
           ;;
-      x86_64-*)
+      x86-64)
           config_opts="--with-as=${PNACL_AS_X8664}"
           ;;
   esac
 
-  # TODO(robertm): do we really need CROSS_TARGET_*
-  RunWithLog llvm-pregcc-${target}.configure \
+  local flags=""
+  if ${LIBMODE_NEWLIB}; then
+    flags+="--with-newlib"
+  fi
+
+  RunWithLog llvm-pregcc-${LLVM_GCC_ARCH}.configure \
       env -i PATH=/usr/bin/:/bin \
              CC="${CC}" \
              CXX="${CXX}" \
              CFLAGS="-Dinhibit_libc" \
+             AR_FOR_TARGET="${CROSS_TARGET_AR}" \
+             RANLIB_FOR_TARGET="${CROSS_TARGET_RANLIB}" \
+             NM_FOR_TARGET="${CROSS_TARGET_NM}" \
              ${srcdir}/llvm-gcc-4.2/configure \
-               --prefix=${INSTALL_DIR} \
-               --enable-llvm=${INSTALL_DIR} \
-               --with-newlib \
+               --prefix="${LLVM_GCC_INSTALL_DIR}" \
+               --enable-llvm="${LLVM_INSTALL_DIR}" \
+               ${flags} \
                --disable-libmudflap \
                --disable-decimal-float \
                --disable-libssp \
@@ -1063,37 +1130,27 @@ gcc-stage1-configure() {
                --disable-shared \
                --without-headers \
                ${config_opts} \
-               --target=${target} \
-               --with-sysroot="${NEWLIB_INSTALL_DIR}"
+               --target=${LLVM_GCC_TARGET}
 
   spopd
 }
 
-gcc-stage1-make() {
-  local target=$1
+llvm-gcc-make() {
+  llvm-gcc-setup "$@"
   local srcdir="${TC_SRC_LLVM_GCC}"
-  local objdir="${TC_BUILD_LLVM_GCC1}-${target}"
+  local objdir="${LLVM_GCC_BUILD_DIR}"
   spushd ${objdir}
 
-  StepBanner "GCC-${target}" "Make (Stage 1)"
+  StepBanner "LLVM-GCC" "Make (Stage 1)"
 
   ts-touch-open "${objdir}"
 
-  # we built our version of binutil for multiple targets, so they work here
-  local ar=${CROSS_TARGET_AR}
-  local ranlib=${CROSS_TARGET_RANLIB}
-  mkdir -p "${objdir}/dummy-bin"
-  ln -sf ${ar} "${objdir}/dummy-bin/${target}-ar"
-  ln -sf ${ranlib} "${objdir}/dummy-bin/${target}-ranlib"
-
-  # NOTE: we add ${INSTALL_DIR}/bin to PATH
-  RunWithLog llvm-pregcc-${target}.make \
-       env -i PATH=/usr/bin/:/bin:${INSTALL_DIR}/bin:${objdir}/dummy-bin \
+  RunWithLog llvm-pregcc-${LLVM_GCC_ARCH}.make \
+       env -i PATH=/usr/bin/:/bin \
               CC="${CC}" \
               CXX="${CXX}" \
               CFLAGS="-Dinhibit_libc" \
               make ${MAKE_OPTS} all-gcc
-
 
   ts-touch-commit "${objdir}"
 
@@ -1106,11 +1163,11 @@ build-libgcc_eh-bitcode() {
   #       objdir. So, to be safe, you have to run gcc-stage1-make first
   local target=$1
   local srcdir="${TC_SRC_LLVM_GCC}"
-  local objdir="${TC_BUILD_LLVM_GCC1}-${target}"
+  local objdir="${TC_BUILD_LLVM_GCC}-${target}"
   spushd ${objdir}/gcc
   StepBanner "bitcode libgcc_eh" "cleaning"
   RunWithLog libgcc_eh.clean \
-      env -i PATH=/usr/bin/:/bin:${INSTALL_DIR}/bin \
+      env -i PATH=/usr/bin/:/bin \
              make clean-target-libgcc
 
   # NOTE: usually gcc/libgcc.mk is generate and invoked implicitly by
@@ -1122,7 +1179,7 @@ build-libgcc_eh-bitcode() {
   #       The arguments were gleaned from build logs.
   StepBanner "bitcode libgcc_eh" "building"
   RunWithLog libgcc_eh.bitcode.make \
-       env -i PATH=/usr/bin/:/bin:${INSTALL_DIR}/bin:${objdir}/dummy-bin \
+       env -i PATH=/usr/bin/:/bin \
               "${STD_ENV_FOR_LIBSTDCPP[@]}" \
               "INCLUDES=-I${srcdir}/llvm-gcc-4.2/include -I${srcdir}/llvm-gcc-4.2/gcc -I." \
               "LIBGCC2_CFLAGS=-DATTRIBUTE_UNUSED= -DHOST_BITS_PER_INT=32 -Dinhibit_libc  -DIN_GCC -DCROSS_DIRECTORY_STRUCTURE " \
@@ -1131,9 +1188,10 @@ build-libgcc_eh-bitcode() {
 
   StepBanner "bitcode libgcc_eh" "installing"
   # removed the old native versions of libgcc_eh if any
-  rm -f ${INSTALL_ROOT}/libs-*newlib/libgcc_eh.a
+  rm -f "${PNACL_ROOT}"/libs-*/libgcc_eh.a
   # install the new bitcode version
-  cp libgcc_eh.a ${PNACL_BITCODE_ROOT}
+  mkdir -p "${PNACL_BITCODE_ROOT}"
+  cp libgcc_eh.a "${PNACL_BITCODE_ROOT}"
   spopd
 }
 
@@ -1143,6 +1201,7 @@ build-compiler-rt() {
   mkdir -p "${TC_BUILD_COMPILER_RT}"
   spushd "${TC_BUILD_COMPILER_RT}"
 
+  StepBanner "COMPILER-RT (LIBGCC)"
   for arch in arm x86-32 x86-64; do
     StepBanner "compiler rt" "build ${arch}"
     rm -rf "${arch}"
@@ -1161,23 +1220,28 @@ build-compiler-rt() {
 
   StepBanner "compiler rt" "install all"
   ls -l */libgcc.a
+
+  mkdir -p "${PNACL_ARM_ROOT}"
   cp arm/libgcc.a "${PNACL_ARM_ROOT}/"
+
+  mkdir -p "${PNACL_X8632_ROOT}"
   cp x86-32/libgcc.a "${PNACL_X8632_ROOT}/"
+
+  mkdir -p "${PNACL_X8664_ROOT}"
   cp x86-64/libgcc.a "${PNACL_X8664_ROOT}/"
   spopd
 }
 
-#+ gcc-stage1-install    - Install GCC stage 1
-gcc-stage1-install() {
-  local target=$1
-  StepBanner "GCC-${target}" "Install ${target}"
+#+ llvm-gcc-install    - Install GCC stage 1
+llvm-gcc-install() {
+  llvm-gcc-setup "$@"
+  StepBanner "LLVM-GCC" "Install ${LLVM_GCC_ARCH}"
 
-  local objdir="${TC_BUILD_LLVM_GCC1}-${target}"
-  spushd "${TC_BUILD_LLVM_GCC1}-${target}"
+  local objdir="${LLVM_GCC_BUILD_DIR}"
+  spushd "${objdir}"
 
-  # NOTE: we add ${INSTALL_DIR}/bin to PATH
-  RunWithLog llvm-pregcc-${target}.install \
-       env -i PATH=/usr/bin/:/bin:${INSTALL_DIR}/bin:${objdir}/dummy-bin \
+  RunWithLog llvm-pregcc-${LLVM_GCC_ARCH}.install \
+       env -i PATH=/usr/bin/:/bin \
               CC="${CC}" \
               CXX="${CXX}" \
               CFLAGS="-Dinhibit_libc" \
@@ -1186,101 +1250,102 @@ gcc-stage1-install() {
   spopd
 }
 
+#########################################################################
+#########################################################################
+#                          < LIBSTDCPP >
+#########################################################################
+#########################################################################
 
-#########################################################################
-#########################################################################
-#                          < LIBSTDCPP-BITCODE >
-#########################################################################
-#########################################################################
+#+ libstdcpp             - build and install libstdcpp in bitcode
+libstdcpp() {
+  StepBanner "LIBSTDCPP (BITCODE)"
 
-#+ libstdcpp-bitcode     - build and install libstdcpp in bitcode
-libstdcpp-bitcode() {
-  StepBanner "LIBSTDCPP-BITCODE"
-
-  if libstdcpp-bitcode-needs-configure; then
-    libstdcpp-bitcode-clean
-    libstdcpp-bitcode-configure
+  if libstdcpp-needs-configure; then
+    libstdcpp-clean
+    libstdcpp-configure
   else
-    SkipBanner "LIBSTDCPP-BITCODE" "configure"
+    SkipBanner "LIBSTDCPP" "configure"
   fi
 
-  if libstdcpp-bitcode-needs-make; then
-    libstdcpp-bitcode-make
+  if libstdcpp-needs-make; then
+    libstdcpp-make
   else
-    SkipBanner "LIBSTDCPP-BITCODE" "make"
+    SkipBanner "LIBSTDCPP" "make"
   fi
 
-  libstdcpp-bitcode-install
+  libstdcpp-install
 }
 
-#+ libstdcpp-bitcode-clean - clean libstdcpp in bitcode
-libstdcpp-bitcode-clean() {
-  StepBanner "LIBSTDCPP-BITCODE" "Clean"
-  rm -rf "${TC_BUILD_LIBSTDCPP_BITCODE}"
+#+ libstdcpp-clean - clean libstdcpp in bitcode
+libstdcpp-clean() {
+  StepBanner "LIBSTDCPP" "Clean"
+  rm -rf "${TC_BUILD_LIBSTDCPP}"
 }
 
-libstdcpp-bitcode-needs-configure() {
-  speculative-check "gcc-stage1" && return 0
-  ts-newer-than "${TC_BUILD_LLVM_GCC1}-${CROSS_TARGET_ARM}" \
-                "${TC_BUILD_LIBSTDCPP_BITCODE}" && return 0
-  [ ! -f "${TC_BUILD_LIBSTDCPP_BITCODE}/config.status" ]
+libstdcpp-needs-configure() {
+  speculative-check "llvm-gcc" && return 0
+  ts-newer-than "${TC_BUILD_LLVM_GCC}-${CROSS_TARGET_ARM}" \
+                "${TC_BUILD_LIBSTDCPP}" && return 0
+  [ ! -f "${TC_BUILD_LIBSTDCPP}/config.status" ]
   return #?
 }
 
-#+ libstdcpp-bitcode-configure - configure libstdcpp for bitcode
-libstdcpp-bitcode-configure() {
-  StepBanner "LIBSTDCPP-BITCODE" "Configure"
-  libstdcpp-configure-common "${TC_BUILD_LIBSTDCPP_BITCODE}"
-}
-
-libstdcpp-configure-common() {
+#+ libstdcpp-configure - configure libstdcpp for bitcode
+libstdcpp-configure() {
+  StepBanner "LIBSTDCPP" "Configure"
   local srcdir="${TC_SRC_LIBSTDCPP}"
-  local objdir="$1"
+  local objdir="${TC_BUILD_LIBSTDCPP}"
 
   mkdir -p "${objdir}"
   spushd "${objdir}"
 
+  local flags=""
+  if ${LIBMODE_NEWLIB}; then
+    flags+="--with-newlib --disable-shared"
+  elif ${LIBMODE_GLIBC}; then
+    # TODO(pdox): Fix right away.
+    flags+="--disable-shared"
+  else
+    Fatal "Unknown library mode"
+  fi
+
   RunWithLog llvm-gcc.configure_libstdcpp \
-      env -i PATH=/usr/bin/:/bin:${INSTALL_DIR}/bin \
+      env -i PATH=/usr/bin/:/bin \
         "${STD_ENV_FOR_LIBSTDCPP[@]}" \
         "${srcdir}"/configure \
-          --host=${CROSS_TARGET_ARM} \
-          --prefix=${INSTALL_DIR} \
-          --enable-llvm=${INSTALL_DIR} \
-          --with-newlib \
+          CC=${PNACL_GCC} \
+          CXX=${PNACL_GPP} \
+          --host="${CROSS_TARGET_ARM}" \
+          --prefix="${LIBSTDCPP_INSTALL_DIR}" \
+          --enable-llvm="${LLVM_INSTALL_DIR}" \
+          ${flags} \
           --disable-libstdcxx-pch \
-          --disable-shared \
           --enable-languages=c,c++ \
           --target=${CROSS_TARGET_ARM} \
-          --with-sysroot=${NEWLIB_INSTALL_DIR} \
           --with-arch=${ARM_ARCH} \
           --srcdir="${srcdir}"
   spopd
 }
 
-libstdcpp-bitcode-needs-make() {
+libstdcpp-needs-make() {
   local srcdir="${TC_SRC_LIBSTDCPP}"
-  local objdir="${TC_BUILD_LIBSTDCPP_BITCODE}"
+  local objdir="${TC_BUILD_LIBSTDCPP}"
 
   ts-modified "$srcdir" "$objdir"
   return $?
 }
 
-#+ libstdcpp-bitcode-make - Make libstdcpp in bitcode
-libstdcpp-bitcode-make() {
-  StepBanner "LIBSTDCPP-BITCODE" "Make"
-  libstdcpp-make-common "${TC_BUILD_LIBSTDCPP_BITCODE}"
-}
-
-libstdcpp-make-common() {
+#+ libstdcpp-make - Make libstdcpp in bitcode
+libstdcpp-make() {
+  StepBanner "LIBSTDCPP" "Make"
   local srcdir="${TC_SRC_LIBSTDCPP}"
-  local objdir="$1"
+  local objdir="${TC_BUILD_LIBSTDCPP}"
 
   ts-touch-open "${objdir}"
 
   spushd "${objdir}"
   RunWithLog llvm-gcc.make_libstdcpp \
-    env -i PATH=/usr/bin/:/bin:${INSTALL_DIR}/bin \
+    env -i PATH=/usr/bin/:/bin \
         make \
         "${STD_ENV_FOR_LIBSTDCPP[@]}" \
         ${MAKE_OPTS}
@@ -1289,23 +1354,24 @@ libstdcpp-make-common() {
   ts-touch-commit "${objdir}"
 }
 
-#+ libstdcpp-bitcode-install - Install libstdcpp in bitcode
-libstdcpp-bitcode-install() {
-  StepBanner "LIBSTDCPP-BITCODE" "Install"
-  local objdir="${TC_BUILD_LIBSTDCPP_BITCODE}"
-  local dest="${PNACL_BITCODE_ROOT}"
+#+ libstdcpp-install - Install libstdcpp in bitcode
+libstdcpp-install() {
+  StepBanner "LIBSTDCPP" "Install"
+  local objdir="${TC_BUILD_LIBSTDCPP}"
 
   spushd "${objdir}"
 
   # install headers (=install-data)
   # for good measure make sure we do not keep any old headers
-  rm -rf "${INSTALL_ROOT}/include/c++"
+  rm -rf "${PNACL_ROOT}/include/c++"
   RunWithLog llvm-gcc.install_libstdcpp \
     make \
     "${STD_ENV_FOR_LIBSTDCPP[@]}" \
     ${MAKE_OPTS} install-data
-  # install bitcode library
-  cp "${objdir}/src/.libs/libstdc++.a" "${dest}"
+
+  # Install bitcode library
+  mkdir -p "${PNACL_BITCODE_ROOT}"
+  cp "${objdir}/src/.libs/libstdc++.a" "${PNACL_BITCODE_ROOT}"
 
   spopd
 }
@@ -1323,11 +1389,11 @@ misc-tools() {
       naclsdk_validate=0 \
       sysinfo=0 \
       sel_ldr
-    rm -rf  "${INSTALL_ROOT}/tools-arm"
-    mkdir "${INSTALL_ROOT}/tools-arm"
+    rm -rf  "${PNACL_ROOT}/tools-arm"
+    mkdir "${PNACL_ROOT}/tools-arm"
     local sconsdir="scons-out/opt-${SCONS_BUILD_PLATFORM}-arm"
     cp "${sconsdir}/obj/src/trusted/service_runtime/sel_ldr" \
-       "${INSTALL_ROOT}/tools-arm"
+       "${PNACL_ROOT}/tools-arm"
   else
     StepBanner "MISC-ARM" "Skipping ARM sel_ldr (No trusted ARM toolchain)"
   fi
@@ -1339,10 +1405,10 @@ misc-tools() {
       targetplatform=arm \
       sysinfo=0 \
       arm-ncval-core
-    rm -rf  "${INSTALL_ROOT}/tools-x86"
-    mkdir "${INSTALL_ROOT}/tools-x86"
+    rm -rf  "${PNACL_ROOT}/tools-x86"
+    mkdir "${PNACL_ROOT}/tools-x86"
     cp scons-out/opt-linux-x86-32-to-arm/obj/src/trusted/validator_arm/\
-arm-ncval-core ${INSTALL_ROOT}/tools-x86
+arm-ncval-core ${PNACL_ROOT}/tools-x86
   else
     StepBanner "MISC-ARM" "Skipping ARM validator (Not yet supported on Mac)"
   fi
@@ -1354,43 +1420,43 @@ arm-ncval-core ${INSTALL_ROOT}/tools-x86
 #########################################################################
 
 #+-------------------------------------------------------------------------
-#+ binutils-arm          - Build and install binutils for ARM
-binutils-arm() {
-  StepBanner "BINUTILS-ARM"
+#+ binutils          - Build and install binutils for ARM
+binutils() {
+  StepBanner "BINUTILS (HOST)"
 
   local srcdir="${TC_SRC_BINUTILS}"
 
   assert-dir "${srcdir}" "You need to checkout binutils."
 
-  if binutils-arm-needs-configure; then
-    binutils-arm-clean
-    binutils-arm-configure
+  if binutils-needs-configure; then
+    binutils-clean
+    binutils-configure
   else
-    SkipBanner "BINUTILS-ARM" "configure"
+    SkipBanner "BINUTILS" "configure"
   fi
 
-  if binutils-arm-needs-make; then
-    binutils-arm-make
+  if binutils-needs-make; then
+    binutils-make
   else
-    SkipBanner "BINUTILS-ARM" "make"
+    SkipBanner "BINUTILS" "make"
   fi
 
-  binutils-arm-install
+  binutils-install
 }
 
-#+ binutils-arm-clean    - Clean binutils
-binutils-arm-clean() {
-  StepBanner "BINUTILS-ARM" "Clean"
-  local objdir="${TC_BUILD_BINUTILS_ARM}"
+#+ binutils-clean    - Clean binutils
+binutils-clean() {
+  StepBanner "BINUTILS" "Clean"
+  local objdir="${TC_BUILD_BINUTILS}"
   rm -rf ${objdir}
 }
 
-#+ binutils-arm-configure- Configure binutils for ARM
-binutils-arm-configure() {
-  StepBanner "BINUTILS-ARM" "Configure"
+#+ binutils-configure- Configure binutils for ARM
+binutils-configure() {
+  StepBanner "BINUTILS" "Configure"
 
   local srcdir="${TC_SRC_BINUTILS}"
-  local objdir="${TC_BUILD_BINUTILS_ARM}"
+  local objdir="${TC_BUILD_BINUTILS}"
 
   # enable multiple targets so that we can use the same ar with all .o files
   local targ="arm-pc-nacl,i686-pc-nacl,x86_64-pc-nacl"
@@ -1405,13 +1471,13 @@ binutils-arm-configure() {
   # TODO(pdox): Building binutils for nacl/nacl64 target currently requires
   # providing NACL_ALIGN_* defines. This should really be defined inside
   # binutils instead.
-  RunWithLog binutils.arm.configure \
+  RunWithLog binutils.configure \
     env -i \
     PATH="/usr/bin:/bin" \
     CC="${CC}" \
     CXX="${CXX}" \
     CFLAGS="-DNACL_ALIGN_BYTES=32 -DNACL_ALIGN_POW2=5" \
-    ${srcdir}/binutils-2.20/configure --prefix=${INSTALL_DIR} \
+    ${srcdir}/binutils-2.20/configure --prefix="${BINUTILS_INSTALL_DIR}" \
                                       --target=${BINUTILS_TARGET} \
                                       --enable-targets=${targ} \
                                       --enable-checking \
@@ -1419,33 +1485,41 @@ binutils-arm-configure() {
                                       --enable-ld=yes \
                                       --enable-plugins \
                                       --disable-werror \
-                                      --with-sysroot=${NEWLIB_INSTALL_DIR}
+                                      --with-sysroot="${NONEXISTENT_PATH}"
+  # There's no point in setting the correct path as sysroot, because we
+  # want the toolchain to be relocatable. The driver will use ld command-line
+  # option --sysroot= to override this value and set it to the correct path.
+  # However, we need to include --with-sysroot during configure to get this
+  # option. So fill in a non-sense, non-existent path.
+
   spopd
 }
 
-binutils-arm-needs-configure() {
-  [ ! -f "${TC_BUILD_BINUTILS_ARM}/config.status" ]
+binutils-needs-configure() {
+  [ ! -f "${TC_BUILD_BINUTILS}/config.status" ]
   return $?
 }
 
-binutils-arm-needs-make() {
+binutils-needs-make() {
   local srcdir="${TC_SRC_BINUTILS}"
-  local objdir="${TC_BUILD_BINUTILS_ARM}"
-
-  ts-modified "$srcdir" "$objdir"
-  return $?
+  local objdir="${TC_BUILD_BINUTILS}"
+  local ret=1
+  binutils-mess-hide
+  ts-modified "$srcdir" "$objdir" && ret=0
+  binutils-mess-unhide
+  return ${ret}
 }
 
-#+ binutils-arm-make     - Make binutils for ARM
-binutils-arm-make() {
-  StepBanner "BINUTILS-ARM" "Make"
+#+ binutils-make     - Make binutils for ARM
+binutils-make() {
+  StepBanner "BINUTILS" "Make"
   local srcdir="${TC_SRC_BINUTILS}"
-  local objdir="${TC_BUILD_BINUTILS_ARM}"
+  local objdir="${TC_BUILD_BINUTILS}"
   spushd "${objdir}"
 
   ts-touch-open "${objdir}"
 
-  RunWithLog binutils.arm.make \
+  RunWithLog binutils.make \
     env -i PATH="/usr/bin:/bin" \
     make ${MAKE_OPTS}
 
@@ -1454,13 +1528,13 @@ binutils-arm-make() {
   spopd
 }
 
-#+ binutils-arm-install  - Install binutils for ARM
-binutils-arm-install() {
-  StepBanner "BINUTILS-ARM" "Install"
-  local objdir="${TC_BUILD_BINUTILS_ARM}"
+#+ binutils-install  - Install binutils for ARM
+binutils-install() {
+  StepBanner "BINUTILS" "Install"
+  local objdir="${TC_BUILD_BINUTILS}"
   spushd "${objdir}"
 
-  RunWithLog binutils.arm.install \
+  RunWithLog binutils.install \
     env -i PATH="/usr/bin:/bin" \
     make \
       install ${MAKE_OPTS}
@@ -1468,7 +1542,7 @@ binutils-arm-install() {
   spopd
 
   # Binutils builds readelf and size, but doesn't install it.
-  mkdir -p "${INSTALL_BIN}"
+  mkdir -p "${PNACL_BIN}"
   cp -f "${objdir}"/binutils/readelf "${PNACL_READELF}"
   cp -f "${objdir}"/binutils/size "${PNACL_SIZE}"
 }
@@ -1506,7 +1580,7 @@ binutils-liberty-clean() {
   rm -rf ${objdir}
 }
 
-#+ binutils-liberty-configure - Configure binutils-liberty for X86
+#+ binutils-liberty-configure - Configure binutils-liberty
 binutils-liberty-configure() {
   StepBanner "BINUTILS-LIBERTY" "Configure"
 
@@ -1532,7 +1606,7 @@ binutils-liberty-needs-make() {
   return $?
 }
 
-#+ binutils-liberty-make - Make binutils-liberty for X86
+#+ binutils-liberty-make - Make binutils-liberty
 binutils-liberty-make() {
   StepBanner "BINUTILS-LIBERTY" "Make"
   local srcdir="${TC_SRC_BINUTILS}"
@@ -1573,69 +1647,32 @@ check-sb-arch() {
     fi
   done
 
-  echo "ERROR: Unsupported arch. Choose one of: x8632, x8664, arm, universal"
-  exit -1
+  Fatal "ERROR: Unsupported arch. Choose one of: x8632, x8664, arm, universal"
 }
 
-#+-------------------------------------------------------------------------
-#+ llvm-tools-sb <arch> <mode> - Build and install llvm tools (sandboxed)
-llvm-tools-sb() {
-  local srcdir="${TC_SRC_LLVM}"
-
-  assert-dir "${srcdir}" "You need to checkout llvm."
-
-  if [ $# -ne 2 ]; then
-    echo "ERROR: Usage llvm-tools-sb <arch> <mode>"
-    exit -1
-  fi
-
-  local arch=$1
-  local mode=$2
-  check-sb-arch ${arch}
-  check-sb-mode ${mode}
-
-  if llvm-tools-sb-needs-configure "${arch}" "${mode}" ; then
-    llvm-tools-sb-clean "${arch}" "${mode}"
-    llvm-tools-sb-configure "${arch}" "${mode}"
-  else
-    SkipBanner "LLVM-TOOLS-SB" "configure ${arch} ${mode} "
-  fi
-
-  if llvm-tools-sb-needs-make "${arch}" "${mode}" ; then
-    llvm-tools-sb-make "${arch}" "${mode}"
-  else
-    SkipBanner "LLVM-TOOLS-SB" "make ${arch} ${mode} "
-  fi
-
-  llvm-tools-sb-install "${arch}" "${mode}"
-}
-
-llvm-tools-sb-needs-configure() {
-  local arch=$1
-  local mode=$2
-  local objdir="${TC_BUILD}/llvm-tools-${arch}-${mode}-sandboxed"
-  [ ! -f "${objdir}/config.status" ]
-  return $?
-}
-
-# llvm-tools-sb-clean - Clean llvm tools (sandboxed) for x86
-llvm-tools-sb-clean() {
-  local arch=$1
-  local mode=$2
-  StepBanner "LLVM-TOOLS-SB" "Clean ${arch} ${mode}"
-  local objdir="${TC_BUILD}/llvm-tools-${arch}-${mode}-sandboxed"
-
-  rm -rf "${objdir}"
-  mkdir -p "${objdir}"
-}
-
-llvm-tools-sb-setup() {
-  local arch=$1
-  local mode=$2
+LLVM_SB_SETUP=false
+llvm-sb-setup() {
   local bitsize
   local prefix
   local flags
 
+  if ${LLVM_SB_SETUP} && [ $# -eq 0 ]; then
+    return 0
+  fi
+
+  if [ $# -ne 2 ] ; then
+    Fatal "Please specify arch and mode"
+  fi
+
+  LLVM_SB_SETUP=true
+
+  LLVM_SB_ARCH=$1
+  LLVM_SB_MODE=$2
+  check-sb-arch ${LLVM_SB_ARCH}
+  check-sb-mode ${LLVM_SB_MODE}
+
+  LLVM_SB_LOG_PREFIX="llvm.sb.${LLVM_SB_ARCH}.${LLVM_SB_MODE}"
+  LLVM_SB_OBJDIR="${TC_BUILD}/llvm-sb-${arch}-${mode}"
   flags="-static"
   case ${mode} in
     srpc)    flags+=" -DNACL_SRPC" ;;
@@ -1656,27 +1693,64 @@ llvm-tools-sb-setup() {
     LDFLAGS="") # TODO(pdox): Support -s
 }
 
-# llvm-tools-sb-configure - Configure llvm tools (sandboxed) for x86
-llvm-tools-sb-configure() {
-  local arch=$1
-  local mode=$2
-  llvm-tools-sb-setup ${arch} ${mode}
-
-  StepBanner "LLVM-TOOLS-SB" "Configure ${arch} ${mode}"
+#+-------------------------------------------------------------------------
+#+ llvm-sb <arch> <mode> - Build and install llvm tools (sandboxed)
+llvm-sb() {
+  llvm-sb-setup "$@"
   local srcdir="${TC_SRC_LLVM}"
-  local objdir="${TC_BUILD}/llvm-tools-${arch}-${mode}-sandboxed"
+  assert-dir "${srcdir}" "You need to checkout llvm."
+
+  if llvm-sb-needs-configure ; then
+    llvm-sb-clean
+    llvm-sb-configure
+  else
+    SkipBanner "LLVM-SB" "configure ${LLVM_SB_ARCH} ${LLVM_SB_MODE}"
+  fi
+
+  if llvm-sb-needs-make; then
+    llvm-sb-make
+  else
+    SkipBanner "LLVM-SB" "make"
+  fi
+
+  llvm-sb-install
+}
+
+llvm-sb-needs-configure() {
+  llvm-sb-setup "$@"
+  [ ! -f "${LLVM_SB_OBJDIR}/config.status" ]
+  return $?
+}
+
+# llvm-sb-clean          - Clean llvm tools (sandboxed)
+llvm-sb-clean() {
+  llvm-sb-setup "$@"
+  StepBanner "LLVM-SB" "Clean ${LLVM_SB_ARCH} ${LLVM_SB_MODE}"
+  local objdir="${LLVM_SB_OBJDIR}"
+
+  rm -rf "${objdir}"
+  mkdir -p "${objdir}"
+}
+
+# llvm-sb-configure - Configure llvm tools (sandboxed)
+llvm-sb-configure() {
+  llvm-sb-setup "$@"
+
+  StepBanner "LLVM-SB" "Configure ${LLVM_SB_ARCH} ${LLVM_SB_MODE}"
+  local srcdir="${TC_SRC_LLVM}"
+  local objdir="${LLVM_SB_OBJDIR}"
   local installdir="${PNACL_SB_ROOT}/${arch}/${mode}"
   local targets=""
-  case ${arch} in
+  case ${LLVM_SB_ARCH} in
     x8632) targets=x86 ;;
     x8664) targets=x86_64 ;;
     arm) targets=arm ;;
     universal) targets=x86,x86_64,arm ;;
   esac
 
-  spushd ${objdir}
+  spushd "${objdir}"
   RunWithLog \
-      llvm.tools.${arch}.${mode}.sandboxed.configure \
+      ${LLVM_SB_LOG_PREFIX}.configure \
       env -i \
       PATH="/usr/bin:/bin" \
       ${srcdir}/llvm-trunk/configure \
@@ -1693,34 +1767,28 @@ llvm-tools-sb-configure() {
   spopd
 }
 
-llvm-tools-sb-needs-make() {
-  local arch=$1
-  local mode=$2
-  local srcdir="${TC_SRC_LLVM}"
-  local objdir="${TC_BUILD}/llvm-tools-${arch}-${mode}-sandboxed"
-
-  ts-modified "$srcdir" "$objdir"
+llvm-sb-needs-make() {
+  llvm-sb-setup "$@"
+  ts-modified "${TC_SRC_LLVM}" "${LLVM_SB_OBJDIR}"
   return $?
 }
 
-# llvm-tools-sb-make - Make llvm tools (sandboxed) for x86
-llvm-tools-sb-make() {
-  local arch=$1
-  local mode=$2
-  llvm-tools-sb-setup ${arch} ${mode}
+# llvm-sb-make - Make llvm tools (sandboxed)
+llvm-sb-make() {
+  llvm-sb-setup "$@"
 
-  StepBanner "LLVM-TOOLS-SB" "Make ${arch} ${mode}"
-  local objdir="${TC_BUILD}/llvm-tools-${arch}-${mode}-sandboxed"
+  StepBanner "LLVM-SB" "Make ${LLVM_SB_ARCH} ${LLVM_SB_MODE}"
+  local objdir="${LLVM_SB_OBJDIR}"
 
-  spushd ${objdir}
+  spushd "${objdir}"
   ts-touch-open "${objdir}"
 
   local build_with_srpc=0
-  if [ ${mode} == "srpc" ]; then
+  if [ "${LLVM_SB_MODE}" == "srpc" ]; then
     build_with_srpc=1
   fi
 
-  RunWithLog llvm.tools.${arch}.${mode}.sandboxed.make \
+  RunWithLog ${LLVM_SB_LOG_PREFIX}.make \
       env -i PATH="/usr/bin:/bin" \
       ONLY_TOOLS=llc \
       NACL_SANDBOX=1 \
@@ -1735,17 +1803,15 @@ llvm-tools-sb-make() {
   spopd
 }
 
-# llvm-tools-sb-install - Install llvm tools (sandboxed) for x86
-llvm-tools-sb-install() {
-  local arch=$1
-  local mode=$2
-  llvm-tools-sb-setup ${arch} ${mode}
+# llvm-sb-install - Install llvm tools (sandboxed)
+llvm-sb-install() {
+  llvm-sb-setup "$@"
 
-  StepBanner "LLVM-TOOLS-SB" "Install ${arch} ${mode}"
-  local objdir="${TC_BUILD}/llvm-tools-${arch}-${mode}-sandboxed"
+  StepBanner "LLVM-SB" "Install ${LLVM_SB_ARCH} ${LLVM_SB_MODE}"
+  local objdir="${LLVM_SB_OBJDIR}"
   spushd ${objdir}
 
-  RunWithLog llvm.tools.${arch}.${mode}.sandboxed.install \
+  RunWithLog ${LLVM_SB_LOG_PREFIX}.install \
       env -i PATH="/usr/bin:/bin" \
       ONLY_TOOLS=llc \
       NACL_SANDBOX=1 \
@@ -1754,7 +1820,7 @@ llvm-tools-sb-install() {
 
   spopd
 
-  translate-and-install-sb-tool ${arch} ${mode} llc
+  translate-and-install-sb-tool ${LLVM_SB_ARCH} ${LLVM_SB_MODE} llc
 }
 
 translate-and-install-sb-tool() {
@@ -1863,7 +1929,7 @@ binutils-sb-needs-configure() {
   return $?
 }
 
-# binutils-sb-clean - Clean binutils (sandboxed) for x86
+# binutils-sb-clean - Clean binutils (sandboxed)
 binutils-sb-clean() {
   local arch=$1
   local mode=$2
@@ -1873,7 +1939,7 @@ binutils-sb-clean() {
   mkdir -p "${objdir}"
 }
 
-# binutils-sb-configure - Configure binutils (sandboxed) for x86
+# binutils-sb-configure - Configure binutils (sandboxed)
 binutils-sb-configure() {
   local arch=$1
   local mode=$2
@@ -1928,7 +1994,7 @@ binutils-sb-needs-make() {
   return $?
 }
 
-# binutils-sb-make - Make binutils (sandboxed) for x86
+# binutils-sb-make - Make binutils (sandboxed)
 binutils-sb-make() {
   local arch=$1
   local mode=$2
@@ -1954,7 +2020,7 @@ binutils-sb-make() {
   spopd
 }
 
-# binutils-sb-install - Install binutils (sandboxed) for x86
+# binutils-sb-install - Install binutils (sandboxed)
 binutils-sb-install() {
   local arch=$1
   local mode=$2
@@ -1978,7 +2044,7 @@ tools-sb() {
 
   StepBanner "${arch}"    "Sandboxing"
   StepBanner "----------" "--------------------------------------"
-  llvm-tools-sb ${arch} ${mode}
+  llvm-sb ${arch} ${mode}
 
   # Use regular toolchain for building binutils.
   # This is a temporary hack because we can't build binutils with pnacl yet.
@@ -2066,49 +2132,48 @@ prune-translator-install() {
 }
 
 #########################################################################
-#     < NEWLIB-ARM >
 #     < NEWLIB-BITCODE >
 #########################################################################
 
-#+ newlib-bitcode        - Build and install newlib in bitcode.
-newlib-bitcode() {
-  StepBanner "NEWLIB-BITCODE"
+#+ newlib                - Build and install newlib in bitcode.
+newlib() {
+  StepBanner "NEWLIB (BITCODE)"
 
-  if newlib-bitcode-needs-configure; then
-    newlib-bitcode-clean
-    newlib-bitcode-configure
+  if newlib-needs-configure; then
+    newlib-clean
+    newlib-configure
   else
-    SkipBanner "NEWLIB-BITCODE" "configure"
+    SkipBanner "NEWLIB" "configure"
   fi
 
-  if newlib-bitcode-needs-make; then
-    newlib-bitcode-make
+  if newlib-needs-make; then
+    newlib-make
   else
-    SkipBanner "NEWLIB-BITCODE" "make"
+    SkipBanner "NEWLIB" "make"
   fi
 
-  newlib-bitcode-install
+  newlib-install
 }
 
-#+ newlib-bitcode-clean  - Clean bitcode newlib.
-newlib-bitcode-clean() {
-  StepBanner "NEWLIB-BITCODE" "Clean"
-  rm -rf "${TC_BUILD_NEWLIB_BITCODE}"
+#+ newlib-clean  - Clean bitcode newlib.
+newlib-clean() {
+  StepBanner "NEWLIB" "Clean"
+  rm -rf "${TC_BUILD_NEWLIB}"
 }
 
-newlib-bitcode-needs-configure() {
-  speculative-check "gcc-stage1" && return 0
-  ts-newer-than "${TC_BUILD_LLVM_GCC1}-${CROSS_TARGET_ARM}" \
-                   "${TC_BUILD_NEWLIB_BITCODE}" && return 0
+newlib-needs-configure() {
+  speculative-check "llvm-gcc" && return 0
+  ts-newer-than "${TC_BUILD_LLVM_GCC}-${CROSS_TARGET_ARM}" \
+                   "${TC_BUILD_NEWLIB}" && return 0
 
-  [ ! -f "${TC_BUILD_NEWLIB_BITCODE}/config.status" ]
+  [ ! -f "${TC_BUILD_NEWLIB}/config.status" ]
   return #?
 }
 
-#+ newlib-bitcode-configure - Configure bitcode Newlib
-newlib-bitcode-configure() {
-  StepBanner "NEWLIB-BITCODE" "Configure"
-  newlib-configure-common "${TC_BUILD_NEWLIB_BITCODE}"
+#+ newlib-configure - Configure bitcode Newlib
+newlib-configure() {
+  StepBanner "NEWLIB" "Configure"
+  newlib-configure-common "${TC_BUILD_NEWLIB}"
 }
 
 newlib-configure-common() {
@@ -2136,18 +2201,18 @@ newlib-configure-common() {
   spopd
 }
 
-newlib-bitcode-needs-make() {
+newlib-needs-make() {
   local srcdir="${TC_SRC_NEWLIB}"
-  local objdir="${TC_BUILD_NEWLIB_BITCODE}"
+  local objdir="${TC_BUILD_NEWLIB}"
 
   ts-modified "$srcdir" "$objdir"
   return $?
 }
 
-#+ newlib-bitcode-make   - Make bitcode Newlib
-newlib-bitcode-make() {
-  StepBanner "NEWLIB-BITCODE" "Make"
-  newlib-make-common "${TC_BUILD_NEWLIB_BITCODE}"
+#+ newlib-make   - Make bitcode Newlib
+newlib-make() {
+  StepBanner "NEWLIB" "Make"
+  newlib-make-common "${TC_BUILD_NEWLIB}"
 }
 
 newlib-make-common() {
@@ -2169,10 +2234,10 @@ newlib-make-common() {
 }
 
 #+ newlib-bitcde-install    - Install Bitcode Newlib
-newlib-bitcode-install() {
-  StepBanner "NEWLIB-BITCODE" "Install"
+newlib-install() {
+  StepBanner "NEWLIB" "Install"
 
-  local objdir="${TC_BUILD_NEWLIB_BITCODE}"
+  local objdir="${TC_BUILD_NEWLIB}"
 
   spushd "${objdir}"
 
@@ -2194,9 +2259,8 @@ newlib-bitcode-install() {
      "${NEWLIB_INSTALL_DIR}/${CROSS_TARGET_ARM}"
   ###########################################################
 
-  StepBanner "NEWLIB-BITCODE" "Extra-install"
-  local sys_include=${INSTALL_DIR}/${CROSS_TARGET_ARM}/include
-  local sys_lib=${INSTALL_DIR}/${CROSS_TARGET_ARM}/lib
+  StepBanner "NEWLIB" "Extra-install"
+  local sys_include=${SYSROOT_DIR}/include
   # NOTE: we provide a new one via extra-sdk
   rm ${NEWLIB_INSTALL_DIR}/${CROSS_TARGET_ARM}/include/pthread.h
 
@@ -2208,11 +2272,11 @@ newlib-bitcode-install() {
     ${sys_include}
 
   # NOTE: we provide our own pthread.h via extra-sdk
-  StepBanner "NEWLIB-BITCODE" "Removing old pthreads headers"
+  StepBanner "NEWLIB" "Removing old pthreads headers"
   rm -f "${NEWLIB_INSTALL_DIR}/${CROSS_TARGET_ARM}/usr/include/pthread.h"
   rm -f "${sys_include}/pthread.h"
 
-  StepBanner "NEWLIB-BITCODE" "copying libraries"
+  StepBanner "NEWLIB" "copying libraries"
   local destdir="${PNACL_BITCODE_ROOT}"
   # We only install libc/libg/libm
   mkdir -p "${destdir}"
@@ -2228,16 +2292,14 @@ newlib-bitcode-install() {
 #+ extrasdk-clean  - Clean extra-sdk stuff
 
 extrasdk-clean() {
-  StepBanner "EXTRASDK-BITCODE" "Clean"
-  rm -rf "${TC_BUILD_EXTRASDK_BITCODE}"
+  StepBanner "EXTRASDK" "Clean"
+  rm -rf "${TC_BUILD_EXTRASDK}"
 
-  StepBanner "EXTRASDK-BITCODE" "Clean bitcode lib"
+  StepBanner "EXTRASDK" "Clean bitcode lib"
   # TODO(robertm): consider having a dedicated dir for this so can
   #                delete this wholesale
   # Do not clean libc and libstdc++ but everything else
   rm -f "${PNACL_BITCODE_ROOT}"/*google*.a
-  rm -f "${PNACL_BITCODE_ROOT}"/*nacl*
-  rm -f "${PNACL_BITCODE_ROOT}"/libpthread.a
   rm -f "${PNACL_BITCODE_ROOT}"/libsrpc.a
   rm -f "${PNACL_BITCODE_ROOT}"/libnpapi.a
   rm -f "${PNACL_BITCODE_ROOT}"/libppapi.a
@@ -2245,26 +2307,102 @@ extrasdk-clean() {
   rm -f "${PNACL_BITCODE_ROOT}"/libav.a
   rm -f "${PNACL_BITCODE_ROOT}"/libgio.a
 
-  StepBanner "EXTRASDK-BITCODE" "Clean arm libs"
-  # Do not clean libgcc but everything else
-  rm -f "${PNACL_ARM_ROOT}"/*crt*
+  if ${LIBMODE_NEWLIB}; then
+    rm -f "${PNACL_BITCODE_ROOT}"/*nacl*
+    rm -f "${PNACL_BITCODE_ROOT}"/libpthread.a
+  fi
 
-  StepBanner "EXTRASDK-BITCODE" "Clean x86-32 libs"
-  # Do not clean libgcc but everything else
-  rm -f "${PNACL_X8632_ROOT}"/*crt*
+  if ${LIBMODE_NEWLIB}; then
+    StepBanner "EXTRASDK" "Clean arm libs"
+    # Do not clean libgcc but everything else
+    rm -f "${PNACL_ARM_ROOT}"/*crt*
 
-  StepBanner "EXTRASDK-BITCODE" "Clean x86-64 libs"
-  # Do not clean libgcc but everything else
-  rm -f "${PNACL_X8664_ROOT}"/*crt*
+    StepBanner "EXTRASDK" "Clean x86-32 libs"
+    # Do not clean libgcc but everything else
+    rm -f "${PNACL_X8632_ROOT}"/*crt*
+
+    StepBanner "EXTRASDK" "Clean x86-64 libs"
+    # Do not clean libgcc but everything else
+    rm -f "${PNACL_X8664_ROOT}"/*crt*
+  fi
+
+  StepBanner "EXTRASDK" "Cleaning libehsupport"
+  rm -rf "${PNACL_ARM_ROOT}"/libehsupport*
+  rm -rf "${PNACL_X8632_ROOT}"/libehsupport*
+  rm -rf "${PNACL_X8664_ROOT}"/libehsupport*
 
   # clean scons obj dirs
-  rm -rf scons-out/nacl_extra_sdk-*-pnacl
+  rm -rf scons-out/nacl_extra_sdk-*-pnacl*
 }
 
-#+ extrasdk-make-install  - build and install all extra sdk components
-extrasdk-make-install() {
+libehsupport() {
+  extrasdk-clean
+  local headerdir
+  local extra_flag=""
+  if ${LIBMODE_NEWLIB}; then
+    headerdir="${NEWLIB_INSTALL_DIR}/${CROSS_TARGET_ARM}/include"
+  else
+    extra_flag="--nacl_glibc"
+    headerdir="${GLIBC_INSTALL_DIR}/include"
+  fi
+
+  if ${LIBMODE_NEWLIB}; then
+    StepBanner "EXTRASDK" "Make/Install arm ehsupport"
+    RunWithLog "extra_sdk.arm_ehsupport" \
+        ./scons MODE=nacl_extra_sdk \
+        extra_sdk_lib_destination="${PNACL_ARM_ROOT}" \
+        extra_sdk_include_destination="${headerdir}" \
+        bitcode=1 \
+        ${extra_flag} \
+        platform=arm \
+        sdl=none \
+        naclsdk_validate=0 \
+        --verbose \
+        install_libehsupport
+  fi
+
+  StepBanner "EXTRASDK" "Make/Install x86-32 ehsupport"
+  RunWithLog "extra_sdk.x86_32_ehsupport" \
+      ./scons MODE=nacl_extra_sdk \
+      extra_sdk_lib_destination="${PNACL_X8632_ROOT}" \
+      extra_sdk_include_destination="${headerdir}" \
+      bitcode=1 \
+      ${extra_flag} \
+      platform=x86-32 \
+      sdl=none \
+      naclsdk_validate=0 \
+      --verbose \
+      install_libehsupport
+
+  StepBanner "EXTRASDK" "Make/Install x86-64 ehsupport"
+  RunWithLog "extra_sdk.x86_64_ehsupport" \
+      ./scons MODE=nacl_extra_sdk \
+      extra_sdk_lib_destination="${PNACL_X8664_ROOT}" \
+      extra_sdk_include_destination="${headerdir}" \
+      bitcode=1 \
+      ${extra_flag} \
+      platform=x86-64 \
+      sdl=none \
+      naclsdk_validate=0 \
+      --verbose \
+      install_libehsupport
+}
+
+
+#+ extrasdk               - build and install all extra sdk components
+extrasdk() {
   StepBanner "EXTRASDK"
-  local headerdir="${NEWLIB_INSTALL_DIR}/${CROSS_TARGET_ARM}/include"
+
+  extrasdk-clean
+
+  local headerdir
+  local extra_flag=""
+  if ${LIBMODE_NEWLIB}; then
+    headerdir="${NEWLIB_INSTALL_DIR}/${CROSS_TARGET_ARM}/include"
+  else
+    extra_flag="--nacl_glibc"
+    headerdir="${GLIBC_INSTALL_DIR}/include"
+  fi
 
   StepBanner "EXTRASDK" "Make/Install headers"
   RunWithLog "extra_sdk.headers" \
@@ -2272,46 +2410,54 @@ extrasdk-make-install() {
       extra_sdk_lib_destination="${PNACL_BITCODE_ROOT}" \
       extra_sdk_include_destination="${headerdir}" \
       bitcode=1 \
+      ${extra_flag} \
       platform=arm \
       sdl=none \
       naclsdk_validate=0 \
       extra_sdk_update_header
 
-  StepBanner "EXTRASDK" "Make/Install bitcode libpthread"
-  RunWithLog "extra_sdk.bitcode_libpthread" \
-      ./scons MODE=nacl_extra_sdk -j 8\
-      extra_sdk_lib_destination="${PNACL_BITCODE_ROOT}" \
-      extra_sdk_include_destination="${headerdir}" \
-      bitcode=1 \
-      platform=arm \
-      sdl=none \
-      naclsdk_validate=0 \
-      install_libpthread
+  if ${LIBMODE_NEWLIB}; then
+    StepBanner "EXTRASDK" "Make/Install bitcode libpthread"
+    RunWithLog "extra_sdk.bitcode_libpthread" \
+        ./scons MODE=nacl_extra_sdk -j 8\
+        extra_sdk_lib_destination="${PNACL_BITCODE_ROOT}" \
+        extra_sdk_include_destination="${headerdir}" \
+        bitcode=1 \
+        ${extra_flag} \
+        platform=arm \
+        sdl=none \
+        naclsdk_validate=0 \
+        install_libpthread
+  fi
 
-  StepBanner "EXTRASDK" "Make/Install bitcode components"
+  StepBanner "EXTRASDK" "Make/Install bitcode components (${LIBMODE})"
   RunWithLog "extra_sdk.bitcode_components" \
-      ./scons MODE=nacl_extra_sdk -j 8\
+      ./scons MODE=nacl_extra_sdk -j 8 \
       extra_sdk_lib_destination="${PNACL_BITCODE_ROOT}" \
       extra_sdk_include_destination="${headerdir}" \
       disable_nosys_linker_warnings=1 \
       bitcode=1 \
+      ${extra_flag} \
       platform=arm \
       sdl=none \
       naclsdk_validate=0 \
       --verbose \
       extra_sdk_libs
 
-  StepBanner "EXTRASDK" "Make/Install arm components"
-  RunWithLog "extra_sdk.arm_components" \
-      ./scons MODE=nacl_extra_sdk \
-      extra_sdk_lib_destination="${PNACL_ARM_ROOT}" \
-      extra_sdk_include_destination="${headerdir}" \
-      bitcode=1 \
-      platform=arm \
-      sdl=none \
-      naclsdk_validate=0 \
-      --verbose \
-      extra_sdk_libs_platform
+  if ${LIBMODE_NEWLIB} ; then
+    StepBanner "EXTRASDK" "Make/Install arm components"
+    RunWithLog "extra_sdk.arm_components" \
+        ./scons MODE=nacl_extra_sdk \
+        extra_sdk_lib_destination="${PNACL_ARM_ROOT}" \
+        extra_sdk_include_destination="${headerdir}" \
+        bitcode=1 \
+        ${extra_flag} \
+        platform=arm \
+        sdl=none \
+        naclsdk_validate=0 \
+        --verbose \
+        extra_sdk_libs_platform
+  fi
 
   StepBanner "EXTRASDK" "Make/Install x86-32 components"
   RunWithLog "extra_sdk.libs_x8632" \
@@ -2319,6 +2465,7 @@ extrasdk-make-install() {
       extra_sdk_lib_destination="${PNACL_X8632_ROOT}" \
       extra_sdk_include_destination="${headerdir}" \
       bitcode=1 \
+      ${extra_flag} \
       platform=x86-32 \
       sdl=none \
       naclsdk_validate=0 \
@@ -2331,6 +2478,7 @@ extrasdk-make-install() {
       extra_sdk_lib_destination="${PNACL_X8664_ROOT}" \
       extra_sdk_include_destination="${headerdir}" \
       bitcode=1 \
+      ${extra_flag} \
       platform=x86-64 \
       sdl=none \
       naclsdk_validate=0 \
@@ -2425,22 +2573,18 @@ driver() {
   linker-install
   driver-install
   driver-intrinsics
-
-  # Steal glibc and runtime from the nnacl toolchain.
-  # TODO(pdox): Build glibc ourselves.
-  steal-glibc
 }
 
 driver-intrinsics() {
   StepBanner "DRIVER" "Install LLVM intrinsics"
-  "${INSTALL_DIR}"/bin/llvm-as \
+  "${LLVM_INSTALL_DIR}"/bin/llvm-as \
     tools/llvm/llvm-intrinsics.ll \
-    -o "${INSTALL_ROOT}/llvm-intrinsics.bc"
+    -o "${PNACL_ROOT}/llvm-intrinsics.bc"
 }
 
 # Just in case we're calling this manually
 prep-install-dir() {
-  mkdir -p ${INSTALL_DIR}
+  mkdir -p "${PNACL_ROOT}"
 }
 
 # We need to adjust the start address and aligment of nacl arm modules
@@ -2455,16 +2599,17 @@ linker-install() {
 # The driver is a simple python script which changes its behavior
 # depending on the name it is invoked as.
 driver-install() {
-  StepBanner "DRIVER" "Installing driver adaptors to ${INSTALL_DIR}"
-  # TODO(robertm): move the driver to their own dir
-  # rm -rf  ${INSTALL_DIR}
-  mkdir -p "${INSTALL_BIN}"
-  rm -f "${INSTALL_BIN}"/pnacl-*
-  cp "${DRIVER_DIR}"/driver_tools.py "${INSTALL_BIN}"
+  StepBanner "DRIVER" "Installing driver adaptors to ${PNACL_BIN}"
+  mkdir -p "${PNACL_BIN}"
+  rm -f "${PNACL_BIN}"/pnacl-*
+  cp "${DRIVER_DIR}"/driver_tools.py "${PNACL_BIN}"
   for t in "${DRIVER_DIR}"/pnacl-*; do
     local name=$(basename "$t")
-    cp "${t}" "${INSTALL_BIN}/${name/.py}"
+    cp "${t}" "${PNACL_BIN}/${name/.py}"
   done
+
+  # Tell the driver the library mode
+  touch "${PNACL_BIN}"/${LIBMODE}.cfg
 }
 
 ######################################################################
@@ -2478,7 +2623,7 @@ driver-install() {
 ######################################################################
 
 RecordRevisionInfo() {
-  svn info > "${INSTALL_ROOT}/REV"
+  svn info > "${PNACL_ROOT}/REV"
 }
 
 ######################################################################
@@ -2487,14 +2632,14 @@ RecordRevisionInfo() {
 ######################################################################
 ######################################################################
 
-readonly LLVM_DIS=${INSTALL_DIR}/bin/llvm-dis
-readonly LLVM_BCANALYZER=${INSTALL_DIR}/bin/llvm-bcanalyzer
-readonly LLVM_OPT=${INSTALL_DIR}/bin/opt
+readonly LLVM_DIS=${LLVM_INSTALL_DIR}/bin/llvm-dis
+readonly LLVM_BCANALYZER=${LLVM_INSTALL_DIR}/bin/llvm-bcanalyzer
+readonly LLVM_OPT=${LLVM_INSTALL_DIR}/bin/opt
 readonly LLVM_AR=${CROSS_TARGET_AR}
 
 # Note: we could replace this with a modified version of tools/elf_checker.py
 #       if we do not want to depend on binutils
-readonly NACL_OBJDUMP=${INSTALL_DIR}/bin/arm-pc-nacl-objdump
+readonly NACL_OBJDUMP=${BINUTILS_INSTALL_DIR}/bin/${BINUTILS_TARGET}-objdump
 
 # Usage: VerifyArchive <checker> <pattern> <filename>
 ExtractAndCheck() {
@@ -2652,7 +2797,7 @@ verify-archive-llvm() {
 # Verifies that a given archive is a proper arm achive
 #
 verify-archive-arm() {
-  VerifyArchive verify-object-arm '*.o' "$@"
+  VerifyArchive verify-object-arm '*.o *.ons' "$@"
 }
 
 #
@@ -2660,7 +2805,7 @@ verify-archive-arm() {
 # Verifies that a given archive is a proper x86-32 achive
 #
 verify-archive-x86-32() {
-  VerifyArchive verify-object-x86-32 '*.o' "$@"
+  VerifyArchive verify-object-x86-32 '*.o *.ons' "$@"
 }
 
 #
@@ -2668,7 +2813,7 @@ verify-archive-x86-32() {
 # Verifies that a given archive is a proper x86-64 achive
 #
 verify-archive-x86-64() {
-  VerifyArchive verify-object-x86-64 '*.o' "$@"
+  VerifyArchive verify-object-x86-64 '*.o *.ons' "$@"
 }
 #@-------------------------------------------------------------------------
 #+ verify                - Verifies that toolchain/pnacl-untrusted ELF files
@@ -2879,7 +3024,7 @@ ts-dir-changed() {
   local dir="$2"
 
   if [ -f "${tsfile}" ]; then
-    local MODIFIED=$(find "${dir}" -newer "${tsfile}")
+    local MODIFIED=$(find "${dir}" -type f -newer "${tsfile}")
     [ ${#MODIFIED} -gt 0 ]
     ret=$?
   else
@@ -2973,7 +3118,7 @@ function-completions() {
 ######################################################################
 ######################################################################
 
-mkdir -p "${INSTALL_ROOT}"
+mkdir -p "${PNACL_ROOT}"
 PackageCheck
 
 if [ $# = 0 ]; then set -- help; fi  # Avoid reference to undefined $1.

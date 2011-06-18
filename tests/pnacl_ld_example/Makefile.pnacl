@@ -6,7 +6,7 @@
 # simple example that tries to build a mostly sandboxed shared lib
 # which is then loaded by a regular (non-sandboxed) images
 
-PNACL_ROOT=../../toolchain/pnacl_linux_x86_64
+PNACL_ROOT=../../toolchain/pnacl_linux_x86_64_newlib
 PNACL_CC=$(PNACL_ROOT)/bin/pnacl-gcc
 PNACL_LD=$(PNACL_ROOT)/bin/pnacl-ld
 ELF_PATCHER=../../tools/elf_patcher.py

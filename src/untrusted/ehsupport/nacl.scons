@@ -1,0 +1,35 @@
+# -*- python -*-
+# Copyright (c) 2011 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+Import('env')
+
+if not env.Bit('bitcode'):
+  Return()
+
+def GetPlatformSuffix(env):
+  platform = env.get('TARGET_FULLARCH')
+  assert platform in ['x86-32',  'x86-64', 'arm']
+  # we do not like hyphens in file names
+  return platform.replace('-', '_')
+
+platform = GetPlatformSuffix(env)
+
+# NOTE: we make sure everything in this directory gets compiled
+#       all the way down into native code.
+native_env = env.Clone()
+
+native_env.Replace(OBJSUFFIX='.o')
+native_env.Replace(SHLIBSUFFIX='.so')
+native_env.Replace(LINK=native_env['C_ONLY_LINK'])
+native_env.Append(CCFLAGS=['-arch', '${TARGET_FULLARCH}',
+                      '--pnacl-allow-translate'])
+native_env.Append(LINKFLAGS=['-arch', '${TARGET_FULLARCH}',
+                             '--pnacl-allow-native'])
+
+native_env.NaClSdkLibrary('libehsupport', ['unwind_support.c'])
+
+n = native_env.AddLibraryToSdk(['libehsupport'], is_platform=True)
+
+native_env.Alias('install_libehsupport', n)

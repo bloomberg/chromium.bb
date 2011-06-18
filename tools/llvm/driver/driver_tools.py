@@ -29,21 +29,28 @@ import Queue
 # See "class env" defined later for the implementation.
 
 INITIAL_ENV = {
-  # These are filled in by env.reset()
-  # TODO(pdox): It should not be necessary to auto-detect these here. Change
-  #             detection method so that toolchain location is relative.
-  'BASE_NACL'       : '',   # Absolute path of native_client/ dir
-  'BASE_DRIVER'     : '',   # Location of PNaCl drivers
-  'BUILD_OS'        : '',   # "linux" or "darwin" or "windows"
-  'BUILD_ARCH'      : '',   # "x86_64" or "i686" or "i386"
+  'BASE_NACL'       : '${@FindBaseNaCl}',   # Absolute path of native_client/
+  'BASE'            : '${@FindBasePNaCl}',  # Absolute path to PNaCl
+  'BASE_DRIVER'     : '${@FindBaseDriver}', # Location of PNaCl drivers
+  'BUILD_OS'        : '${@GetBuildOS}',     # "linux", "darwin" or "windows"
+  'BUILD_ARCH'      : '${@GetBuildArch}',   # "x86_64" or "i686" or "i386"
+  'DRIVER_EXT'      : '${@GetDriverExt}',   # '.py' or ''
 
   # Directories
   'BASE_TOOLCHAIN'  : '${BASE_NACL}/toolchain',
-  'BASE'            : '${BASE_TOOLCHAIN}/pnacl_${BUILD_OS}_${BUILD_ARCH}',
   'BASE_TRUSTED'    : '${BASE_TOOLCHAIN}/linux_arm-trusted',
-  'BASE_ARM'        : '${BASE}/arm-none-linux-gnueabi',
-  'BASE_ARM_INCLUDE': '${BASE_ARM}/arm-none-linux-gnueabi/include',
-  'BASE_LLVM_BIN'   : '${BASE_ARM}/bin',
+
+  'BASE_PKG'        : '${BASE}/pkg',
+  'BASE_LLVM'       : '${BASE_PKG}/llvm',
+  'BASE_LLVM_GCC'   : '${BASE_PKG}/llvm-gcc',
+  'BASE_NEWLIB'     : '${BASE_PKG}/newlib',
+  'BASE_GLIBC'      : '${BASE_PKG}/glibc',
+  'BASE_BINUTILS'   : '${BASE_PKG}/binutils',
+  'BASE_LIBSTDCPP'  : '${BASE_PKG}/libstdcpp',
+  'BASE_SYSROOT'    : '${BASE}/sysroot',
+
+  'BASE_INCLUDE'    : '${BASE_SYSROOT}/include',
+  'BASE_LLVM_BIN'   : '${BASE_LLVM}/bin',
   'BASE_BIN'        : '${BASE}/bin',
   'BASE_SB'         : '${BASE_SB_%ARCH%}',
   'BASE_SB_X8632'   : '${BASE}/tools-sb/x8632',
@@ -56,7 +63,7 @@ INITIAL_ENV = {
   'DRY_RUN'     : '0',
   'DEBUG'       : '0',    # Print out internal actions
   'RECURSE'     : '0',    # In a recursive driver call
-  'CLEANUP'     : '0',    # Clean up temporary files
+  'SAVE_TEMPS'  : '0',    # Do not clean up temporary files
                           # TODO(pdox): Enable for SDK version
   'SANDBOXED'   : '0',    # Use sandboxed toolchain for this arch. (main switch)
   'SRPC'        : '1',    # Use SRPC sandboxed toolchain
@@ -70,11 +77,13 @@ INITIAL_ENV = {
   'MC_DIRECT'           : '1',
   'USE_EMULATOR'        : '0',
   'DRIVER_FLAGS'        : '', # Flags passed to the driver
-  'USE_GLIBC'           : '0', # Use glibc instead of newlib
+  'LIBMODE'             : '${@DetectLibMode}',  # glibc or newlib
+  'LIBMODE_GLIBC'       : '${LIBMODE==glibc ? 1 : 0}',
+  'LIBMODE_NEWLIB'      : '${LIBMODE==newlib ? 1 : 0}',
 
   # Logging settings
   'LOG_TO_FILE'          : '1',
-  'LOG_FILENAME'         : '${BASE_TOOLCHAIN}/hg-log/driver.log',
+  'LOG_FILENAME'         : '${BASE}/driver.log',
   'LOG_FILE_SIZE_LIMIT'  : str(20 * 1024 * 1024),
   'LOG_PRETTY_PRINT'     : '1',
 
@@ -100,7 +109,7 @@ INITIAL_ENV = {
   'SCONS_OS_windows'    : 'win',
 
   # Tool Pathnames
-  'GOLD_PLUGIN_SO'  : '${BASE_ARM}/lib/${SO_PREFIX}LLVMgold${SO_EXT}',
+  'GOLD_PLUGIN_SO'      : '${BASE_LLVM}/lib/${SO_PREFIX}LLVMgold${SO_EXT}',
 
   'SCONS_STAGING'       : '${SCONS_STAGING_%ARCH%}',
   'SCONS_STAGING_X8632' : '${SCONS_OUT}/opt-${SCONS_OS}-x86-32/staging',
@@ -133,15 +142,17 @@ INITIAL_ENV = {
   'LLC_SRPC'      : '${BASE_SB}/srpc/bin/llc',
   'LD_SRPC'       : '${BASE_SB}/srpc/bin/ld',
 
-  'LLVM_GCC'      : '${BASE_LLVM_BIN}/arm-none-linux-gnueabi-gcc${EXEC_EXT}',
-  'LLVM_GXX'      : '${BASE_LLVM_BIN}/arm-none-linux-gnueabi-g++${EXEC_EXT}',
+  'LLVM_GCC_PREFIX': '${BASE_LLVM_GCC}/bin/arm-none-linux-gnueabi-',
+  'LLVM_GCC'      : '${LLVM_GCC_PREFIX}gcc${EXEC_EXT}',
+  'LLVM_GXX'      : '${LLVM_GCC_PREFIX}g++${EXEC_EXT}',
+
   'LLVM_OPT'      : '${BASE_LLVM_BIN}/opt${EXEC_EXT}',
   'LLVM_LLC'      : '${BASE_LLVM_BIN}/llc${EXEC_EXT}',
   'LLVM_LD'       : '${BASE_LLVM_BIN}/llvm-ld${EXEC_EXT}',
   'LLVM_DIS'      : '${BASE_LLVM_BIN}/llvm-dis${EXEC_EXT}',
   'LLVM_LINK'     : '${BASE_LLVM_BIN}/llvm-link${EXEC_EXT}',
 
-  'BINUTILS_BASE'  : '${BASE_ARM}/bin/arm-pc-nacl-',
+  'BINUTILS_BASE'  : '${BASE_BINUTILS}/bin/arm-pc-nacl-',
   'OBJDUMP'        : '${BINUTILS_BASE}objdump${EXEC_EXT}',
   'NM'             : '${BINUTILS_BASE}nm${EXEC_EXT}',
   'AR'             : '${BINUTILS_BASE}ar${EXEC_EXT}',
@@ -159,7 +170,6 @@ DriverPatterns = [
   ( '--pnacl-driver-verbose',             "Log.LOG_OUT.append(sys.stderr)"),
   ( '--pnacl-driver-debug',               "env.set('DEBUG', '1')"),
   ( '--pnacl-driver-recurse',             "env.set('RECURSE', '1')"),
-  ( '--pnacl-driver-save-temps',          "env.set('CLEANUP', '0')"),
   ( '--pnacl-driver-set-([^=]+)=(.*)',    "env.set($0, $1)"),
   ( '--pnacl-driver-append-([^=]+)=(.*)', "env.append($0, $1)"),
   ( ('-arch', '(.+)'),                 "env.set('ARCH', FixArch($0))"),
@@ -172,7 +182,8 @@ DriverPatterns = [
   ( '--pnacl-x86_64-bias',             "env.set('BIAS', 'X8664')"),
   ( '--pnacl-bias=(.+)',               "env.set('BIAS', FixArch($0))"),
   ( '--pnacl-skip-lto',                "env.set('SKIP_OPT', '1')"),
-  ( '--pnacl-use-glibc',               "env.set('USE_GLIBC', '1')"),
+  ( '-save-temps',                     "env.set('SAVE_TEMPS', '1')"),
+  ( '-no-save-temps',                  "env.set('SAVE_TEMPS', '0')"),
  ]
 
 
@@ -195,11 +206,6 @@ class env(object):
   @classmethod
   def reset(cls):
     cls.data = dict(INITIAL_ENV)
-    cls.set('BASE_NACL', FindBaseDir())
-    cls.set('BASE_DRIVER', FindBaseDriver())
-    cls.set('BUILD_OS', GetBuildOS())
-    cls.set('BUILD_ARCH', GetBuildArch())
-    cls.set('DRIVER_EXT', GetDriverExt())
 
   @classmethod
   def dump(cls):
@@ -285,10 +291,11 @@ class env(object):
   #
   # str = empty | string literal
   # expr = str | expr '$' '{' bracket_expr '}' expr
-  # bracket_expr = varname | boolexpr ? expr | boolexpr ? expr : expr
+  # bracket_expr = varname | boolexpr ? expr | boolexpr ? expr : expr | @func
   # boolexpr = boolval | boolval '&&' boolexpr | boolval '||' boolexpr
   # boolval = varname | !varname | #varname | !#varname | varname '==' str
   # varname = str | varname '%' bracket_expr '%' varname
+  # func = str
   #
   # Do not call these functions outside of class env.
   # The env.eval method is the external interface to the evaluator.
@@ -355,7 +362,7 @@ class env(object):
       ParseError(s, i, j, "Undefined variable '%s'" % varname)
     vardata = cls.data[varname]
 
-    (contents, _) = cls.eval_expr(vardata, 0, terminators)
+    contents = cls.eval(vardata)
 
     if s[j] == '=':
       # String equality test
@@ -411,6 +418,19 @@ class env(object):
   # Returns the (the_evaluated_string, endpos)
   @classmethod
   def eval_bracket_expr(cls, s, pos, terminators):
+    (_,pos) = cls.eval_whitespace(s, pos)
+
+    if s[pos] == '@':
+      # Function call: ${@func}
+      (_,i) = FindFirst(s, pos, terminators)
+      if i == len(s):
+        return ('', i) # Error one level up
+      funcname = s[pos+1:i]
+
+      val = globals()[funcname]()
+      contents = cls.eval(val)
+      return (contents, i)
+
     (m,_) = FindFirst(s, pos, ['?']+terminators)
     if m != '?':
       # Regular variable substitution
@@ -420,7 +440,7 @@ class env(object):
       if varname not in cls.data:
         ParseError(s, pos, i, "Undefined variable '%s'" % varname)
       vardata = cls.data[varname]
-      (contents, _) = cls.eval_expr(vardata, 0, terminators)
+      contents = cls.eval(vardata)
       return (contents, i)
     else:
       # Ternary Mode
@@ -490,6 +510,7 @@ def RunDriver(invocation, args, suppress_arch = False):
 
   script = env.eval('${BASE_DRIVER}/%s${DRIVER_EXT}' % invocation)
   script = shell.unescape(script)
+
   driver_args = env.get('DRIVER_FLAGS')
 
   if '--pnacl-driver-recurse' not in driver_args:
@@ -528,7 +549,18 @@ def FindFirst(s, pos, strset):
   pos = min(m)
   return (m[pos], pos)
 
+def memoize(f):
+  """ Memoize a function with no arguments """
+  saved = {}
+  def newf():
+    if len(saved) == 0:
+      saved[None] = f()
+    return saved[None]
+  newf.__name__ = f.__name__
+  return newf
 
+
+@memoize
 def GetBuildOS():
   name = platform.system().lower()
   if name.startswith('cygwin_nt') or 'windows' in name:
@@ -537,6 +569,7 @@ def GetBuildOS():
     Log.Fatal("Unsupported platform '%s'", name)
   return name
 
+@memoize
 def GetBuildArch():
   m = platform.machine()
 
@@ -548,28 +581,70 @@ def GetBuildArch():
     Log.Fatal("Unsupported architecture '%s'", m)
   return m
 
-
 # Crawl backwards, starting from the directory containing this script,
-# until we find the native_client/ directory.
-def FindBaseDir():
+# until we find a directory satisfying a filter function.
+def FindBaseDir(function):
   Depth = 0
-  cur = os.path.abspath(sys.argv[0])
-  while os.path.basename(cur) != 'native_client' and \
-        Depth < 16:
+  cur = DriverPath()
+  while not function(cur) and Depth < 16:
     cur = os.path.dirname(cur)
     Depth += 1
+  if function(cur):
+    return cur
+  return None
 
-  if os.path.basename(cur) != "native_client":
-    print "Unable to find native_client directory!"
-    sys.exit(1)
+def DriverPath():
+  return os.path.abspath(sys.argv[0])
 
-  return cur
+@memoize
+def FindBaseNaCl():
+  """ Find native_client/ directory """
+  dir = FindBaseDir(lambda cur: os.path.basename(cur) == 'native_client')
+  if dir is None:
+    Log.Fatal("Unable to find 'native_client' directory")
+  return shell.escape(dir)
 
+@memoize
+def FindBasePNaCl():
+  """ Find the base directory of the PNaCl toolchain """
+
+  # Normally, the driver is in pnacl_*_*_*/bin/.
+  # But we can also be invoked from tools/llvm/driver.
+  # For now, default to using newlib when invoked from tools/llvm/driver.
+  bindir = os.path.dirname(DriverPath())
+  if os.path.basename(bindir) == 'bin':
+    dir = os.path.dirname(bindir)
+    return shell.escape(dir)
+  else:
+    # If we've invoked from tools/llvm/driver
+    return '${BASE_TOOLCHAIN}/pnacl_${BUILD_OS}_${BUILD_ARCH}_${LIBMODE}'
+
+@memoize
 def FindBaseDriver():
-  return os.path.dirname(os.path.abspath(sys.argv[0]))
+  """Find the directory with the driver"""
+  return shell.escape(os.path.dirname(DriverPath()))
 
+@memoize
 def GetDriverExt():
   return os.path.splitext(sys.argv[0])[1]
+
+@memoize
+def DetectLibMode():
+  """ Determine if this is glibc or newlib """
+  dir = os.path.dirname(DriverPath())
+
+  is_newlib = os.path.exists(os.path.join(dir, 'newlib.cfg'))
+  is_glibc = os.path.exists(os.path.join(dir, 'glibc.cfg'))
+
+  assert(not (is_newlib and is_glibc))
+
+  if is_newlib:
+    return "newlib"
+
+  if is_glibc:
+    return "glibc"
+
+  Log.Fatal("Cannot determine library mode!")
 
 ######################################################################
 #
@@ -761,7 +836,7 @@ ExtensionMap = {
 def FileType(filename):
   # Auto-detect bitcode files, since we can't rely on extensions
   ext = filename.split('.')[-1]
-  if ext in ('o', 'so') and IsBitcode(filename):
+  if ext in ('o', 'os', 'so') and IsBitcode(filename):
     return 'bc'
 
   # This is a total hack. We assume all archives contain
@@ -826,7 +901,6 @@ class TempNameGen(object):
     output = os.path.abspath(output)
 
     self.TempBase = output + '---linked'
-    self.TempList = []
 
     # TODO(pdox): Figure out if there's a less confusing way
     #             to simplify the intermediate filename in this case.
@@ -875,7 +949,8 @@ class TempNameGen(object):
 
   def TempNameForOutput(self, imtype):
     temp = self.TempBase + '.' + imtype
-    self.TempList.append(temp)
+    if not env.getbool('SAVE_TEMPS'):
+      TempFiles.add(temp)
     return temp
 
   def TempNameForInput(self, input, imtype):
@@ -887,14 +962,9 @@ class TempNameGen(object):
       # Source file
       temp = self.TempMap[fullpath] + '.' + imtype
 
-    self.TempList.append(temp)
+    if not env.getbool('SAVE_TEMPS'):
+      TempFiles.add(temp)
     return temp
-
-  def __del__(self):
-    if env.getbool('CLEANUP'):
-      for f in self.TempList:
-        os.remove(f)
-      self.TempList = []
 
 ######################################################################
 #
@@ -1368,7 +1438,7 @@ def DriverMain(main):
     env.set('ARCH', arch)
 
   ret = main(main_args)
-  sys.exit(ret)
+  DriverExit(ret)
 
 def GetArch(required = False):
   arch = env.getone('ARCH')
@@ -1380,7 +1450,23 @@ def GetArch(required = False):
 
   return arch
 
+class TempFileHandler(object):
+  def __init__(self):
+    self.files = []
+
+  def add(self, path):
+    path = os.path.abspath(path)
+    self.files.append(path)
+
+  def wipe(self):
+    for path in self.files:
+      os.remove(path)
+    self.files = []
+
+TempFiles = TempFileHandler()
+
 def DriverExit(code):
+  TempFiles.wipe()
   sys.exit(code)
 
 def CheckPresenceSelUniversal():
