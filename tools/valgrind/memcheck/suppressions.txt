@@ -4645,6 +4645,26 @@
    fun:_ZN9file_util14FileEnumeratorC1ERK8FilePathbNS0_9FILE_TYPEERKSs
    fun:_ZN7history20ExpireHistoryBackend25DoExpireHistoryIndexFilesEv
 }
+{
+   bug_86483a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN17VisitedLinkMaster23RebuildTableFromHistoryEv
+   fun:_ZN17VisitedLinkMaster15InitFromScratchEb
+   fun:_ZN17VisitedLinkMaster4InitEv
+   fun:_ZN11ProfileImpl20GetVisitedLinkMasterEv
+   fun:_ZN24VisitedLinkEventListener7ObserveE16NotificationTypeRK18NotificationSourceRK19NotificationDetails
+   fun:_ZN19NotificationService6NotifyE16NotificationTypeRK18NotificationSourceRK19NotificationDetails
+   fun:_ZN24BrowserRenderProcessHost17OnProcessLaunchedEv
+   fun:_ZN20ChildProcessLauncher7Context6NotifyEbi
+}
+{
+   bug_86483b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7history14HistoryBackend12AddPageVisitERK4GURLN4base4TimeExjNS_11VisitSourceE
+   fun:_ZN7history14HistoryBackend7AddPageE13scoped_refptrINS_18HistoryAddPageArgsEE
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
