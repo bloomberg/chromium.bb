@@ -1631,15 +1631,6 @@
    fun:_ZN12_GLOBAL__N_118TaskClosureAdapter3RunEv
 }
 {
-   bug_81022
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN12PanelManager11CreatePanelEP7Browser
-   fun:_ZN44PanelBrowserWindowCocoaTest_CreateClose_Test8TestBodyEv
-   fun:_ZN7testing8internal38HandleSehExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS4_FS3_vEPKc
-   fun:_ZN7testing8internal35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS4_FS3_vEPKc
-}
-{
    bug_81788
    Memcheck:Leak
    ...
