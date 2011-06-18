@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -47,6 +47,12 @@ message ClientPhishingRequest {
   // The version number of the model that was used to compute the client-score.
   // Copied from ClientSideModel.version().
   optional int32 model_version = 6;
+
+  // Field 7 is only used on the server.
+
+  // List of features that are extracted in the client but are not used in the
+  // machine learning model.
+  repeated Feature non_model_feature_map = 8;
 }
 
 message ClientPhishingResponse {
