@@ -233,7 +233,8 @@ def _SetEnvForPnacl(env, root):
   pnacl_sdk_cxx_flags = ''
   pnacl_sdk_cc_flags = ' -std=gnu99'
   pnacl_sdk_cc_native_flags = ' -std=gnu99 -arch %s' % arch
-  pnacl_sdk_ld_flags = ' -arch %s' % arch
+  # -O3 forces LTO when linking
+  pnacl_sdk_ld_flags = ' -arch %s -O3' % arch
   pnacl_sdk_ld_flags += ' ' + ' '.join(env['PNACL_BCLDFLAGS'])
 
   if env.Bit('nacl_pic'):
