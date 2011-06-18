@@ -101,14 +101,11 @@ ifeq ($(PLATFORM), win)
   BUILDPATH=$(DESTDIR)$(SDKROOT)/bin:/usr/local/bin:/usr/bin:/bin
   SCONS?=scons.bat
   SDKLOC_NATIVE=$(shell cygpath -m $(SDKLOC)/$(SDKNAME))
-  CYGWIN17=$(shell grep '^cygwin cygwin-1.7' /etc/setup/installed.db | wc -l)
-  WINPATH=cygpath -w
   CREATE_REDIRECTORS=./create_redirectors_cygwin.sh
 else
   BUILDPATH=$(DESTDIR)$(SDKROOT)/bin:$(PATH)
   SCONS?=scons
   SDKLOC_NATIVE=$(DESTDIR)$(SDKLOC)/$(SDKNAME)
-  WINPATH=echo
   CREATE_REDIRECTORS=./create_redirectors.sh
 endif
 
@@ -682,19 +679,6 @@ BUILD/stamp-$(CROSSARCH)-full-gcc: gcc-extras glibc-adhoc-files
 	rm -rf $(SYSINCLUDE_HACK_TARGET)
 	mkdir -p $(SYSINCLUDE_HACK_TARGET)
 	ln -s ../include/limits.h $(SYSINCLUDE_HACK_TARGET)/limits.h
-ifeq ($(CYGWIN17), 1)
-	mkdir -p /$(CROSSARCH)/include
-	touch /$(CROSSARCH)/include/limits.h
-	mkdir BUILD/build-full-gcc-$(CROSSARCH)/gcc
-	cp -af $(DESTDIR)$(SDKROOT)/libexec/cyg*.dll \
-	    BUILD/build-full-gcc-$(CROSSARCH)/gcc
-	cp -af $(DESTDIR)$(SDKROOT)/$(CROSSARCH) \
-	    BUILD/build-full-gcc-$(CROSSARCH)/$(CROSSARCH)
-ifeq ($(CROSSARCH), nacl64)
-	cp -af $(DESTDIR)$(SDKROOT)/nacl \
-	    BUILD/build-full-gcc-$(CROSSARCH)/nacl
-endif
-endif
 	cd BUILD/build-full-gcc-$(CROSSARCH) && \
 	PATH=$(BUILDPATH) \
 	$(GCC_SRC_DIR)/configure \
@@ -725,13 +709,6 @@ BUILD/stamp-$(CROSSARCH)-gcc: gcc-extras BUILD/stamp-$(CROSSARCH)-newlib \
   | SRC/gcc BUILD
 	rm -rf BUILD/build-gcc-$(CROSSARCH)
 	mkdir BUILD/build-gcc-$(CROSSARCH)
-ifeq ($(CYGWIN17), 1)
-	mkdir BUILD/build-gcc-$(CROSSARCH)/gcc
-	cp -af $(DESTDIR)$(SDKROOT)/libexec/cyg*.dll \
-	    BUILD/build-gcc-$(CROSSARCH)/gcc
-	cp -af $(DESTDIR)$(SDKROOT)/$(CROSSARCH) \
-	    BUILD/build-gcc-$(CROSSARCH)/$(CROSSARCH)
-endif
 	cd BUILD/build-gcc-$(CROSSARCH) && \
 	PATH=$(BUILDPATH) \
 	$(GCC_SRC_DIR)/configure \
