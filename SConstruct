@@ -1391,10 +1391,11 @@ def PyAutoTester(env, target, test, files=[], log_verbosity=2,
   # On Posix, make sure that nexe logs do not pollute the console output.
   # Note: If a test fails, the contents of the page are explicitly logged to
   # the console, including any errors the nexe might have encountered.
-  # TODO(rsimha): Figure out a better way to do this in the long run.
   if not env.Bit('host_windows'):
-    osenv.append('NACL_EXE_STDOUT=/dev/null')
-    osenv.append('NACL_EXE_STDERR=/dev/null')
+    osenv.append('NACL_EXE_STDOUT=%s' %
+                 os.environ.get('NACL_EXE_STDOUT', '/dev/null'))
+    osenv.append('NACL_EXE_STDERR=%s' %
+                 os.environ.get('NACL_EXE_STDERR', '/dev/null'))
 
   # Construct a relative path to the staging directory from where pyauto's HTTP
   # server should serve files. The relative path is the portion of $STAGING_DIR
