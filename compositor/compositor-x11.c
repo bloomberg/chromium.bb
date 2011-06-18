@@ -58,6 +58,8 @@ struct x11_compositor {
 		xcb_atom_t		 wm_class;
 		xcb_atom_t		 net_wm_name;
 		xcb_atom_t		 net_wm_icon;
+		xcb_atom_t		 net_wm_state;
+		xcb_atom_t		 net_wm_state_fullscreen;
 		xcb_atom_t		 string;
 		xcb_atom_t		 utf8_string;
 		xcb_atom_t		 cardinal;
@@ -225,6 +227,38 @@ x11_output_set_wm_protocols(struct x11_output *output)
 			     list);
 }
 
+static void
+x11_output_change_state(struct x11_output *output, int add, xcb_atom_t state)
+{
+	xcb_client_message_event_t event;
+	struct x11_compositor *c =
+		(struct x11_compositor *) output->base.compositor;
+	xcb_screen_iterator_t iter;
+
+#define _NET_WM_STATE_REMOVE        0    /* remove/unset property */
+#define _NET_WM_STATE_ADD           1    /* add/set property */
+#define _NET_WM_STATE_TOGGLE        2    /* toggle property  */  
+
+	memset(&event, 0, sizeof event);
+	event.response_type = XCB_CLIENT_MESSAGE;
+	event.format = 32;
+	event.window = output->window;
+	event.type = c->atom.net_wm_state;
+
+	event.data.data32[0] = add ? _NET_WM_STATE_ADD : _NET_WM_STATE_REMOVE;
+	event.data.data32[1] = state;
+	event.data.data32[2] = 0;
+	event.data.data32[3] = 0;
+	event.data.data32[4] = 0;
+
+	iter = xcb_setup_roots_iterator(xcb_get_setup(c->conn));
+	xcb_send_event(c->conn, 0, iter.data->root,
+		       XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY |
+		       XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT,
+		       (void *) &event);
+}
+
+
 struct wm_normal_hints {
     	uint32_t flags;
 	uint32_t pad[4];
@@ -267,7 +301,8 @@ x11_output_set_icon(struct x11_compositor *c,
 }
 
 static int
-x11_compositor_create_output(struct x11_compositor *c, int width, int height)
+x11_compositor_create_output(struct x11_compositor *c,
+			     int width, int height, int fullscreen)
 {
 	static const char name[] = "Wayland Compositor";
 	static const char class[] = "wayland-1\0Wayland Compositor";
@@ -339,6 +374,10 @@ x11_compositor_create_output(struct x11_compositor *c, int width, int height)
 	xcb_map_window(c->conn, output->window);
 
 	x11_output_set_wm_protocols(output);
+
+	if (fullscreen)
+		x11_output_change_state(output, 1,
+					c->atom.net_wm_state_fullscreen);
 
 	output->egl_surface = 
 		eglCreateWindowSurface(c->base.display, c->base.config,
@@ -585,6 +624,8 @@ x11_compositor_get_resources(struct x11_compositor *c)
 		{ "WM_CLASS",		F(atom.wm_class) },
 		{ "_NET_WM_NAME",	F(atom.net_wm_name) },
 		{ "_NET_WM_ICON",	F(atom.net_wm_icon) },
+		{ "_NET_WM_STATE",	F(atom.net_wm_state) },
+		{ "_NET_WM_STATE_FULLSCREEN", F(atom.net_wm_state_fullscreen) },
 		{ "STRING",		F(atom.string) },
 		{ "UTF8_STRING",	F(atom.utf8_string) },
 		{ "CARDINAL",		F(atom.cardinal) },
@@ -628,7 +669,8 @@ x11_destroy(struct wlsc_compositor *ec)
 }
 
 static struct wlsc_compositor *
-x11_compositor_create(struct wl_display *display, int width, int height)
+x11_compositor_create(struct wl_display *display,
+		      int width, int height, int fullscreen)
 {
 	struct x11_compositor *c;
 	struct wl_event_loop *loop;
@@ -666,7 +708,7 @@ x11_compositor_create(struct wl_display *display, int width, int height)
 	if (wlsc_compositor_init(&c->base, display) < 0)
 		return NULL;
 
-	if (x11_compositor_create_output(c, width, height) < 0)
+	if (x11_compositor_create_output(c, width, height, fullscreen) < 0)
 		return NULL;
 
 	if (x11_input_create(c) < 0)
@@ -689,10 +731,12 @@ backend_init(struct wl_display *display, char *options);
 WL_EXPORT struct wlsc_compositor *
 backend_init(struct wl_display *display, char *options)
 {
-	int width = 1024, height = 640, i;
+	int width = 1024, height = 640, fullscreen = 0, i;
 	char *p, *value;
 
-	static char * const tokens[] = { "width", "height", NULL };
+	static char * const tokens[] = {
+		"width", "height", "fullscreen", NULL
+	};
 	
 	p = options;
 	while (i = getsubopt(&p, tokens, &value), i != -1) {
@@ -703,8 +747,11 @@ backend_init(struct wl_display *display, char *options)
 		case 1:
 			height = strtol(value, NULL, 0);
 			break;
+		case 2:
+			fullscreen = 1;
+			break;
 		}
 	}
 
-	return x11_compositor_create(display, width, height);
+	return x11_compositor_create(display, width, height, fullscreen);
 }
