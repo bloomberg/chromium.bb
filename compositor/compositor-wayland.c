@@ -46,6 +46,7 @@ struct wayland_compositor {
 		struct wl_compositor *compositor;
 		struct wl_shell *shell;
 		struct wl_output *output;
+		struct wl_visual *visual;
 
 		struct {
 			int32_t x, y, width, height;
@@ -215,7 +216,6 @@ wayland_compositor_create_output(struct wayland_compositor *c,
 				 int width, int height)
 {
 	struct wayland_output *output;
-	struct wl_visual *visual;
 
 	output = malloc(sizeof *output);
 	if (output == NULL)
@@ -228,11 +228,9 @@ wayland_compositor_create_output(struct wayland_compositor *c,
 		wl_compositor_create_surface(c->parent.compositor);
 	wl_surface_set_user_data(output->parent.surface, output);
 
-	visual = wl_display_get_premultiplied_argb_visual(c->parent.display);
-
 	output->parent.egl_window =
 		wl_egl_window_create(output->parent.surface,
-				     width, height, visual);
+				     width, height, c->parent.visual);
 	if (!output->parent.egl_window) {
 		fprintf(stderr, "failure to create wl_egl_window\n");
 		goto cleanup_output;
@@ -253,7 +251,7 @@ wayland_compositor_create_output(struct wayland_compositor *c,
 		return -1;
 	}
 
-	wl_surface_map_toplevel(output->parent.surface);
+	wl_shell_set_toplevel(c->parent.shell, output->parent.surface);
 
 	glClearColor(0, 0, 0, 0.5);
 
@@ -417,6 +415,24 @@ display_add_input(struct wayland_compositor *c, uint32_t id)
 }
 
 static void
+compositor_handle_visual(void *data,
+			 struct wl_compositor *compositor,
+			 uint32_t id, uint32_t token)
+{
+	struct wayland_compositor *c = data;
+
+	switch (token) {
+	case WL_COMPOSITOR_VISUAL_ARGB32:
+		c->parent.visual = wl_visual_create(c->parent.display, id, 1);
+		break;
+	}
+}
+
+static const struct wl_compositor_listener compositor_listener = {
+	compositor_handle_visual,
+};
+
+static void
 display_handle_global(struct wl_display *display, uint32_t id,
 		      const char *interface, uint32_t version, void *data)
 {
@@ -424,6 +440,8 @@ display_handle_global(struct wl_display *display, uint32_t id,
 
 	if (strcmp(interface, "wl_compositor") == 0) {
 		c->parent.compositor = wl_compositor_create(display, id, 1);
+		wl_compositor_add_listener(c->parent.compositor,
+					   &compositor_listener, c);
 	} else if (strcmp(interface, "wl_output") == 0) {
 		c->parent.output = wl_output_create(display, id, 1);
 		wl_output_add_listener(c->parent.output, &output_listener, c);
