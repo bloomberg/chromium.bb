@@ -189,6 +189,8 @@
       '-search_engines.SearchEnginesTest.testDiscoverSearchEngine',
       # Keychain popups make sync tests difficult on Mac.  crbug.com/49378
       '-sync',
+      # crbug.com/86593
+      '-prefs.PrefsTest.testSessionRestore',
     ],
 
     'linux': [  # linux != chromeos
