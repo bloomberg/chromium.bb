@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "ppapi/c/dev/pp_video_dev.h"
 #include "ppapi/c/pp_var.h"
+#include "ppapi/thunk/ppb_video_decoder_api.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/resource.h"
 
@@ -29,35 +30,34 @@ namespace ppapi {
 class PluginInstance;
 
 class PPB_VideoDecoder_Impl : public Resource,
+                              public ::ppapi::thunk::PPB_VideoDecoder_API,
                               public media::VideoDecodeAccelerator::Client {
  public:
   explicit PPB_VideoDecoder_Impl(PluginInstance* instance);
   virtual ~PPB_VideoDecoder_Impl();
 
-  // Returns a pointer to the interface implementing PPB_VideoDecoder that is
-  // exposed to the plugin.
-  static const PPB_VideoDecoder_Dev* GetInterface();
+  static PP_Resource Create(PP_Instance instance);
 
-  // Resource overrides.
-  virtual PPB_VideoDecoder_Impl* AsPPB_VideoDecoder_Impl();
+  // ResourceObjectBase overrides.
+  virtual PPB_VideoDecoder_API* AsPPB_VideoDecoder_API() OVERRIDE;
 
   // PPB_VideoDecoder implementation.
-  bool GetConfigs(const PP_VideoConfigElement* requested_configs,
-                  PP_VideoConfigElement* matching_configs,
-                  uint32_t matching_configs_size,
-                  uint32_t* num_of_matching_configs);
-  int32_t Initialize(PP_Resource context_id,
-                     const PP_VideoConfigElement* dec_config,
-                     PP_CompletionCallback callback);
-  int32_t Decode(const PP_VideoBitstreamBuffer_Dev* bitstream_buffer,
-                 PP_CompletionCallback callback);
-  void AssignGLESBuffers(uint32_t no_of_buffers,
-                         const PP_GLESBuffer_Dev* buffers);
-  void AssignSysmemBuffers(uint32_t no_of_buffers,
-                           const PP_SysmemBuffer_Dev* buffers);
-  void ReusePictureBuffer(int32_t picture_buffer_id);
-  int32_t Flush(PP_CompletionCallback callback);
-  int32_t Abort(PP_CompletionCallback callback);
+  virtual PP_Bool GetConfigs(const PP_VideoConfigElement* requested_configs,
+                             PP_VideoConfigElement* matching_configs,
+                             uint32_t matching_configs_size,
+                             uint32_t* num_of_matching_configs) OVERRIDE;
+  virtual int32_t Initialize(PP_Resource context_id,
+                             const PP_VideoConfigElement* dec_config,
+                             PP_CompletionCallback callback) OVERRIDE;
+  virtual int32_t Decode(const PP_VideoBitstreamBuffer_Dev* bitstream_buffer,
+                         PP_CompletionCallback callback) OVERRIDE;
+  virtual void AssignGLESBuffers(uint32_t no_of_buffers,
+                                 const PP_GLESBuffer_Dev* buffers) OVERRIDE;
+  virtual void AssignSysmemBuffers(uint32_t no_of_buffers,
+                                   const PP_SysmemBuffer_Dev* buffers) OVERRIDE;
+  virtual void ReusePictureBuffer(int32_t picture_buffer_id) OVERRIDE;
+  virtual int32_t Flush(PP_CompletionCallback callback) OVERRIDE;
+  virtual int32_t Abort(PP_CompletionCallback callback) OVERRIDE;
 
   // media::VideoDecodeAccelerator::Client implementation.
   virtual void ProvidePictureBuffers(

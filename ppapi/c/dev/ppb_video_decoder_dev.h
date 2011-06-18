@@ -9,8 +9,8 @@
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_var.h"
 
-#define PPB_VIDEODECODER_DEV_INTERFACE_0_9 "PPB_VideoDecoder(Dev);0.9"
-#define PPB_VIDEODECODER_DEV_INTERFACE PPB_VIDEODECODER_DEV_INTERFACE_0_9
+#define PPB_VIDEODECODER_DEV_INTERFACE_0_10 "PPB_VideoDecoder(Dev);0.10"
+#define PPB_VIDEODECODER_DEV_INTERFACE PPB_VIDEODECODER_DEV_INTERFACE_0_10
 
 // Video decoder interface.
 //
@@ -20,8 +20,8 @@
 //     a. Bitstream format.
 //     b. Output picture format.
 //     c. Output picture buffer storage type.
-//   2. Select configuration that suits you and Create() the decoder with the
-//   chosen configuration.
+//   2. Select configuration that suits you and Initialize() the decoder with
+//   the chosen configuration.
 //   3. Get the input bitstream data and Decode() it until streaming should
 //   stop or pause.
 //
@@ -50,9 +50,11 @@
 //          |###########################|
 //          |       Configuration       |
 //          |###########################|
+//          | Create                    |
+//          |-------------------------->|
 //          | GetConfigs                |
 //          |-------------------------->|
-//          | Create + Initialize       |
+//          | Initialize                |
 //          |-------------------------->|  Decoder will ask for certain number
 //          | (Decode)                  |  of PictureBuffers. This may happen
 //          |- - - - - - - - - - - - - >|  either directly after constructor or
@@ -88,6 +90,24 @@
 //          |                           |  dismissed.
 //
 struct PPB_VideoDecoder_Dev {
+  // Creates a video decoder. Initialize() must be called afterwards to
+  // set its configuration.
+  //
+  // Parameters:
+  //   |instance| pointer to the plugin instance.
+  //
+  // The created decoder is returned as PP_Resource. 0 means failure.
+  PP_Resource (*Create)(PP_Instance instance);
+
+  // Tests whether |resource| is a video decoder created through Create
+  // function of this interface.
+  //
+  // Parameters:
+  //   |resource| is handle to resource to test.
+  //
+  // Returns true if is a video decoder, false otherwise.
+  PP_Bool (*IsVideoDecoder)(PP_Resource resource);
+
   // Queries capability of the decoder implementation for a specific codec.
   //
   // Parameters:
@@ -115,20 +135,11 @@ struct PPB_VideoDecoder_Dev {
   // available will be returned in |num_of_matching_configs|.
   //
   // Returns PP_TRUE on success, PP_FALSE otherwise.
-  PP_Bool (*GetConfigs)(PP_Instance instance,
+  PP_Bool (*GetConfigs)(PP_Resource video_decoder,
                         const PP_VideoConfigElement* proto_config,
                         PP_VideoConfigElement* matching_configs,
                         uint32_t matching_configs_size,
                         uint32_t* num_of_matching_configs);
-
-  // Creates a video decoder. Initialize() must be called afterwards to
-  // set its configuration.
-  //
-  // Parameters:
-  //   |instance| pointer to the plugin instance.
-  //
-  // The created decoder is returned as PP_Resource. 0 means failure.
-  PP_Resource (*Create)(PP_Instance instance);
 
   // Initializes the video decoder with requested configuration.
   // |input_format| in |decoder_config| specifies the format of input access
@@ -149,15 +160,6 @@ struct PPB_VideoDecoder_Dev {
                         PP_Resource context,
                         const PP_VideoConfigElement* decoder_config,
                         struct PP_CompletionCallback callback);
-
-  // Tests whether |resource| is a video decoder created through Create
-  // function of this interface.
-  //
-  // Parameters:
-  //   |resource| is handle to resource to test.
-  //
-  // Returns true if is a video decoder, false otherwise.
-  PP_Bool (*IsVideoDecoder)(PP_Resource resource);
 
   // Dispatches bitstream buffer to the decoder. This is asynchronous and
   // non-blocking function.

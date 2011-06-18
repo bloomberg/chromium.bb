@@ -23,127 +23,12 @@
 #include "webkit/plugins/ppapi/resource_tracker.h"
 #include "webkit/plugins/ppapi/var.h"
 
+using ppapi::thunk::PPB_VideoDecoder_API;
+
 namespace webkit {
 namespace ppapi {
 
 namespace {
-
-PP_Bool GetConfigs(PP_Instance instance_id,
-                   const PP_VideoConfigElement* proto_config,
-                   PP_VideoConfigElement* matching_configs,
-                   uint32_t matching_configs_size,
-                   uint32_t* num_of_matching_configs) {
-  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
-  if (!instance)
-    return PP_FALSE;
-
-  scoped_refptr<PPB_VideoDecoder_Impl> decoder(
-      new PPB_VideoDecoder_Impl(instance));
-
-  return BoolToPPBool(decoder->GetConfigs(proto_config,
-                                          matching_configs,
-                                          matching_configs_size,
-                                          num_of_matching_configs));
-}
-
-PP_Resource Create(PP_Instance instance_id) {
-  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
-  if (!instance)
-    return 0;
-
-  PPB_VideoDecoder_Impl* decoder = new PPB_VideoDecoder_Impl(instance);
-  return decoder->GetReference();
-}
-
-int32_t Initialize(PP_Resource video_decoder,
-                   PP_Resource context_id,
-                   const PP_VideoConfigElement* decoder_config,
-                   struct PP_CompletionCallback callback) {
-  scoped_refptr<PPB_VideoDecoder_Impl> decoder(
-      Resource::GetAs<PPB_VideoDecoder_Impl>(video_decoder));
-  if (!decoder)
-    return PP_ERROR_BADRESOURCE;
-
-  return decoder->Initialize(context_id, decoder_config, callback);
-}
-
-PP_Bool IsVideoDecoder(PP_Resource resource) {
-  return BoolToPPBool(!!Resource::GetAs<PPB_VideoDecoder_Impl>(resource));
-}
-
-int32_t Decode(PP_Resource decoder_id,
-               const PP_VideoBitstreamBuffer_Dev* bitstream_buffer,
-               PP_CompletionCallback callback) {
-  scoped_refptr<PPB_VideoDecoder_Impl> decoder(
-      Resource::GetAs<PPB_VideoDecoder_Impl>(decoder_id));
-  if (!decoder)
-    return PP_ERROR_BADRESOURCE;
-
-  return decoder->Decode(bitstream_buffer, callback);
-}
-
-void AssignGLESBuffers(PP_Resource video_decoder,
-                       uint32_t no_of_buffers,
-                       const PP_GLESBuffer_Dev* buffers) {
-  scoped_refptr<PPB_VideoDecoder_Impl> decoder(
-      Resource::GetAs<PPB_VideoDecoder_Impl>(video_decoder));
-  if (!decoder)
-    return;
-
-  decoder->AssignGLESBuffers(no_of_buffers, buffers);
-}
-
-void AssignSysmemBuffers(PP_Resource video_decoder,
-                         uint32_t no_of_buffers,
-                         const PP_SysmemBuffer_Dev* buffers) {
-  scoped_refptr<PPB_VideoDecoder_Impl> decoder(
-      Resource::GetAs<PPB_VideoDecoder_Impl>(video_decoder));
-  if (!decoder)
-    return;
-
-  decoder->AssignSysmemBuffers(no_of_buffers, buffers);
-}
-
-void ReusePictureBuffer(PP_Resource video_decoder, int32_t picture_buffer_id) {
-  scoped_refptr<PPB_VideoDecoder_Impl> decoder(
-      Resource::GetAs<PPB_VideoDecoder_Impl>(video_decoder));
-  if (!decoder)
-    return;
-
-  decoder->ReusePictureBuffer(picture_buffer_id);
-}
-
-int32_t Flush(PP_Resource video_decoder, PP_CompletionCallback callback) {
-  scoped_refptr<PPB_VideoDecoder_Impl> decoder(
-      Resource::GetAs<PPB_VideoDecoder_Impl>(video_decoder));
-  if (!decoder)
-    return PP_ERROR_BADRESOURCE;
-
-  return decoder->Flush(callback);
-}
-
-int32_t Abort(PP_Resource video_decoder,
-              PP_CompletionCallback callback) {
-  scoped_refptr<PPB_VideoDecoder_Impl> decoder(
-      Resource::GetAs<PPB_VideoDecoder_Impl>(video_decoder));
-  if (!decoder)
-    return PP_ERROR_BADRESOURCE;
-
-  return decoder->Abort(callback);
-}
-
-const PPB_VideoDecoder_Dev ppb_videodecoder = {
-  &GetConfigs,
-  &Create,
-  &Initialize,
-  &IsVideoDecoder,
-  &Decode,
-  &AssignGLESBuffers,
-  &AssignSysmemBuffers,
-  &ReusePictureBuffer,
-  &Flush,
-  &Abort,
-};
 
 // Utility methods to convert data to and from the ppapi C-types and their
 // C++ media-namespace equivalents.
@@ -189,25 +74,30 @@ PPB_VideoDecoder_Impl::~PPB_VideoDecoder_Impl() {
 }
 
 // static
-const PPB_VideoDecoder_Dev* PPB_VideoDecoder_Impl::GetInterface() {
-  return &ppb_videodecoder;
+PP_Resource PPB_VideoDecoder_Impl::Create(PP_Instance pp_instance) {
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(pp_instance);
+  if (!instance)
+    return 0;
+
+  PPB_VideoDecoder_Impl* decoder = new PPB_VideoDecoder_Impl(instance);
+  return decoder->GetReference();
 }
 
-PPB_VideoDecoder_Impl* PPB_VideoDecoder_Impl::AsPPB_VideoDecoder_Impl() {
+PPB_VideoDecoder_API* PPB_VideoDecoder_Impl::AsPPB_VideoDecoder_API() {
   return this;
 }
 
-bool PPB_VideoDecoder_Impl::GetConfigs(
+PP_Bool PPB_VideoDecoder_Impl::GetConfigs(
     const PP_VideoConfigElement* requested_configs,
     PP_VideoConfigElement* matching_configs,
     uint32_t matching_configs_size,
     uint32_t* num_of_matching_configs) {
   if (!instance())
-    return false;
+    return PP_FALSE;
   if (!platform_video_decoder_.get())
-    return false;
+    return PP_FALSE;
   if (!matching_configs)
-    return false;
+    return PP_FALSE;
 
   std::vector<uint32> requested;
   CopyToConfigList(requested_configs, &requested);
@@ -219,7 +109,7 @@ bool PPB_VideoDecoder_Impl::GetConfigs(
     matching_configs[i] = matched[i];
   *num_of_matching_configs = i;
 
-  return true;
+  return PP_TRUE;
 }
 
 int32_t PPB_VideoDecoder_Impl::Initialize(

@@ -5,7 +5,7 @@
 #ifndef WEBKIT_PLUGINS_PPAPI_PPB_VIDEO_LAYER_IMPL_H_
 #define WEBKIT_PLUGINS_PPAPI_PPB_VIDEO_LAYER_IMPL_H_
 
-#include "ppapi/c/dev/ppb_video_layer_dev.h"
+#include "ppapi/thunk/ppb_video_layer_api.h"
 #include "webkit/plugins/ppapi/resource.h"
 
 struct PP_Rect;
@@ -16,22 +16,18 @@ namespace ppapi {
 
 class PluginInstance;
 
-class PPB_VideoLayer_Impl : public Resource {
+class PPB_VideoLayer_Impl : public Resource,
+                            public ::ppapi::thunk::PPB_VideoLayer_API {
  public:
   explicit PPB_VideoLayer_Impl(PluginInstance* instance);
   virtual ~PPB_VideoLayer_Impl();
 
-  static const PPB_VideoLayer_Dev* GetInterface();
+  static PP_Resource Create(PP_Instance instance, PP_VideoLayerMode_Dev mode);
 
-  // Resource override.
-  virtual PPB_VideoLayer_Impl* AsPPB_VideoLayer_Impl();
+  // ResourceObjectBase override.
+  virtual PPB_VideoLayer_API* AsPPB_VideoLayer_API() OVERRIDE;
 
-  // Pure virtual methods to be implemented by subclasses.
-  virtual void SetPixelFormat(PP_VideoLayerPixelFormat_Dev pixel_format) = 0;
-  virtual void SetNativeSize(const PP_Size* size) = 0;
-  virtual void SetClipRect(const PP_Rect* clip_rect) = 0;
-  virtual PP_Bool IsReady() = 0;
-  virtual PP_Bool UpdateContent(uint32_t no_of_planes, const void** planes) = 0;
+  // Derived classes must implement PPB_VideoLayer_API.
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PPB_VideoLayer_Impl);

@@ -177,6 +177,18 @@ PP_Resource ResourceCreationProxy::CreateURLRequestInfo(PP_Instance instance) {
   return PPB_URLRequestInfo_Proxy::CreateProxyResource(instance);
 }
 
+PP_Resource ResourceCreationProxy::CreateVideoDecoder(PP_Instance instance) {
+  NOTIMPLEMENTED();
+  return 0;
+}
+
+PP_Resource ResourceCreationProxy::CreateVideoLayer(
+    PP_Instance instance,
+    PP_VideoLayerMode_Dev mode) {
+  NOTIMPLEMENTED();
+  return 0;
+}
+
 bool ResourceCreationProxy::Send(IPC::Message* msg) {
   return dispatcher_->Send(msg);
 }

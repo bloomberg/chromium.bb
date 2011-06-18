@@ -20,8 +20,11 @@
 #include "webkit/plugins/ppapi/ppb_font_impl.h"
 #include "webkit/plugins/ppapi/ppb_graphics_2d_impl.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
+#include "webkit/plugins/ppapi/ppb_surface_3d_impl.h"
 #include "webkit/plugins/ppapi/ppb_url_loader_impl.h"
 #include "webkit/plugins/ppapi/ppb_url_request_info_impl.h"
+#include "webkit/plugins/ppapi/ppb_video_decoder_impl.h"
+#include "webkit/plugins/ppapi/ppb_video_layer_impl.h"
 
 namespace webkit {
 namespace ppapi {
@@ -180,6 +183,15 @@ PP_Resource ResourceCreationImpl::CreateURLLoader(PP_Instance instance) {
 
 PP_Resource ResourceCreationImpl::CreateURLRequestInfo(PP_Instance instance) {
   return PPB_URLRequestInfo_Impl::Create(instance);
+}
+
+PP_Resource ResourceCreationImpl::CreateVideoDecoder(PP_Instance instance) {
+  return PPB_VideoDecoder_Impl::Create(instance);
+}
+
+PP_Resource ResourceCreationImpl::CreateVideoLayer(PP_Instance instance,
+                                                   PP_VideoLayerMode_Dev mode) {
+  return PPB_VideoLayer_Impl::Create(instance, mode);
 }
 
 }  // namespace ppapi

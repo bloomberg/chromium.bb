@@ -8,6 +8,7 @@
 #include "ppapi/c/dev/ppb_file_chooser_dev.h"
 #include "ppapi/c/dev/ppb_file_system_dev.h"
 #include "ppapi/c/dev/ppb_graphics_3d_dev.h"
+#include "ppapi/c/dev/ppb_video_layer_dev.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
@@ -71,6 +72,9 @@ class ResourceCreationAPI {
                                       const int32_t* attrib_list) = 0;
   virtual PP_Resource CreateURLLoader(PP_Instance instance) = 0;
   virtual PP_Resource CreateURLRequestInfo(PP_Instance instance) = 0;
+  virtual PP_Resource CreateVideoDecoder(PP_Instance instance) = 0;
+  virtual PP_Resource CreateVideoLayer(PP_Instance instance,
+                                       PP_VideoLayerMode_Dev mode) = 0;
 };
 
 }  // namespace thunk

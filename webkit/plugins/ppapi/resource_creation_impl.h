@@ -63,6 +63,9 @@ class ResourceCreationImpl : public ::ppapi::FunctionGroupBase,
                                       const int32_t* attrib_list) OVERRIDE;
   virtual PP_Resource CreateURLLoader(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateURLRequestInfo(PP_Instance instance) OVERRIDE;
+  virtual PP_Resource CreateVideoDecoder(PP_Instance instance) OVERRIDE;
+  virtual PP_Resource CreateVideoLayer(PP_Instance instance,
+                                       PP_VideoLayerMode_Dev mode) OVERRIDE;
 
  private:
   PluginInstance* instance_;

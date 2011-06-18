@@ -325,9 +325,9 @@ const void* GetInterface(const char* name) {
   if (strcmp(name, PPB_VAR_INTERFACE) == 0)
     return Var::GetInterface();
   if (strcmp(name, PPB_VIDEODECODER_DEV_INTERFACE) == 0)
-    return PPB_VideoDecoder_Impl::GetInterface();
+    return ::ppapi::thunk::GetPPB_VideoDecoder_Thunk();
   if (strcmp(name, PPB_VIDEOLAYER_DEV_INTERFACE) == 0)
-    return PPB_VideoLayer_Impl::GetInterface();
+    return ::ppapi::thunk::GetPPB_VideoLayer_Thunk();
   if (strcmp(name, PPB_WIDGET_DEV_INTERFACE) == 0)
     return PPB_Widget_Impl::GetInterface();
   if (strcmp(name, PPB_ZOOM_DEV_INTERFACE) == 0)
