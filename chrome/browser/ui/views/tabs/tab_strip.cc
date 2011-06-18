@@ -183,7 +183,7 @@ bool TabStrip::IsPositionInWindowCaption(const gfx::Point& point) {
   // visual portions of the button we treat it as a click to the caption.
   gfx::Point point_in_newtab_coords(point);
   View::ConvertPointToView(this, newtab_button_, &point_in_newtab_coords);
-  if (newtab_button_->bounds().Contains(point) &&
+  if (newtab_button_->GetLocalBounds().Contains(point_in_newtab_coords) &&
       !newtab_button_->HitTest(point_in_newtab_coords)) {
     return true;
   }
