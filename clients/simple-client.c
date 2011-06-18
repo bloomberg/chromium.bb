@@ -37,6 +37,7 @@ struct display {
 	struct wl_display *display;
 	struct wl_visual *premultiplied_argb_visual;
 	struct wl_compositor *compositor;
+	struct wl_shell *shell;
 	struct {
 		EGLDisplay dpy;
 		EGLContext ctx;
@@ -227,7 +228,7 @@ create_surface(struct window *window)
 				       window->native,
 				       NULL);
 
-	wl_surface_map_toplevel(window->surface);
+	wl_shell_set_toplevel(display->shell, window->surface);
 
 	ret = eglMakeCurrent(window->display->egl.dpy, window->egl_surface,
 			     window->egl_surface, window->display->egl.ctx);
@@ -320,6 +321,8 @@ display_handle_global(struct wl_display *display, uint32_t id,
 		d->compositor = wl_compositor_create(display, id, 1);
 		wl_compositor_add_listener(d->compositor,
 					   &compositor_listener, d);
+	} else if (strcmp(interface, "wl_shell") == 0) {
+		d->shell = wl_shell_create(display, id, 1);
 	}
 }
 

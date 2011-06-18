@@ -862,117 +862,18 @@ surface_attach(struct wl_client *client,
 	 * damaged by the client. */
 	wlsc_surface_damage(es);
 
-	switch (es->map_type) {
-	case WLSC_SURFACE_MAP_FULLSCREEN:
-		es->x = (es->fullscreen_output->width - es->width) / 2;
-		es->y = (es->fullscreen_output->height - es->height) / 2;
-		break;
-	default:
-		es->x += x;
-		es->y += y;
-		break;
-	}
+	es->x += x;
+	es->y += y;
 	es->width = buffer->width;
 	es->height = buffer->height;
 	if (x != 0 || y != 0)
 		wlsc_surface_assign_output(es);
+	if (es->visual == NULL)
+		wl_list_insert(&es->compositor->surface_list, &es->link);
 
 	wlsc_buffer_attach(buffer, surface);
 
 	es->compositor->shell->attach(es->compositor->shell, es);
-}
-
-static void
-surface_map_toplevel(struct wl_client *client,
-		     struct wl_surface *surface)
-{
-	struct wlsc_surface *es = (struct wlsc_surface *) surface;
-	struct wlsc_compositor *ec = es->compositor;
-
-	switch (es->map_type) {
-	case WLSC_SURFACE_MAP_UNMAPPED:
-		es->x = 10 + random() % 400;
-		es->y = 10 + random() % 400;
-		/* assign to first output */
-		es->output = container_of(ec->output_list.next,
-					  struct wlsc_output, link);
-		wl_list_insert(&es->compositor->surface_list, &es->link);
-		break;
-	case WLSC_SURFACE_MAP_TOPLEVEL:
-		return;
-	case WLSC_SURFACE_MAP_FULLSCREEN:
-		es->fullscreen_output = NULL;
-		es->x = es->saved_x;
-		es->y = es->saved_y;
-		break;
-	default:
-		break;
-	}
-
-	wlsc_surface_damage(es);
-	es->map_type = WLSC_SURFACE_MAP_TOPLEVEL;
-}
-
-static void
-surface_map_transient(struct wl_client *client,
-		      struct wl_surface *surface, struct wl_surface *parent,
-		      int x, int y, uint32_t flags)
-{
-	struct wlsc_surface *es = (struct wlsc_surface *) surface;
-	struct wlsc_surface *pes = (struct wlsc_surface *) parent;
-
-	switch (es->map_type) {
-	case WLSC_SURFACE_MAP_UNMAPPED:
-		wl_list_insert(&es->compositor->surface_list, &es->link);
-		/* assign to parents output  */
-		es->output = pes->output;
-		break;
-	case WLSC_SURFACE_MAP_FULLSCREEN:
-		es->fullscreen_output = NULL;
-		break;
-	default:
-		break;
-	}
-
-	es->x = pes->x + x;
-	es->y = pes->y + y;
-
-	wlsc_surface_damage(es);
-	es->map_type = WLSC_SURFACE_MAP_TRANSIENT;
-}
-
-static void
-surface_map_fullscreen(struct wl_client *client, struct wl_surface *surface)
-{
-	struct wlsc_surface *es = (struct wlsc_surface *) surface;
-	struct wlsc_output *output;
-
-	/* FIXME: Fullscreen on first output */
-	/* FIXME: Handle output going away */
-	output = container_of(es->compositor->output_list.next,
-			      struct wlsc_output, link);
-
-	switch (es->map_type) {
-	case WLSC_SURFACE_MAP_UNMAPPED:
-		es->x = 10 + random() % 400;
-		es->y = 10 + random() % 400;
-		/* assign to first output */
-		es->output = output;
-		wl_list_insert(&es->compositor->surface_list, &es->link);
-		break;
-	case WLSC_SURFACE_MAP_FULLSCREEN:
-		return;
-	default:
-		break;
-	}
-
-	es->saved_x = es->x;
-	es->saved_y = es->y;
-	es->x = (output->width - es->width) / 2;
-	es->y = (output->height - es->height) / 2;
-	es->fullscreen_output = output;
-	wlsc_surface_damage(es);
-	es->map_type = WLSC_SURFACE_MAP_FULLSCREEN;
 }
 
 static void
@@ -988,9 +889,6 @@ surface_damage(struct wl_client *client,
 const static struct wl_surface_interface surface_interface = {
 	surface_destroy,
 	surface_attach,
-	surface_map_toplevel,
-	surface_map_transient,
-	surface_map_fullscreen,
 	surface_damage
 };
 

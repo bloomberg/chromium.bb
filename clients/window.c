@@ -733,13 +733,13 @@ window_attach_surface(struct window *window)
 	}
 
 	if (window->fullscreen)
-		wl_surface_map_fullscreen(window->surface);
+		wl_shell_set_fullscreen(display->shell, window->surface);
 	else if (!window->parent)
-		wl_surface_map_toplevel(window->surface);
+		wl_shell_set_toplevel(display->shell, window->surface);
 	else
-		wl_surface_map_transient(window->surface,
-					 window->parent->surface,
-					 window->x, window->y, 0);
+		wl_shell_set_transient(display->shell, window->surface,
+				       window->parent->surface,
+				       window->x, window->y, 0);
 
 	wl_surface_damage(window->surface, 0, 0,
 			  window->allocation.width,

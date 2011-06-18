@@ -240,6 +240,75 @@ shell_resize(struct wl_client *client, struct wl_shell *shell,
 }
 
 static void
+shell_set_toplevel(struct wl_client *client,
+		   struct wl_shell *wl_shell,
+		   struct wl_surface *surface)
+
+{
+	struct wlsc_surface *es = (struct wlsc_surface *) surface;
+	struct wlsc_compositor *ec = es->compositor;
+
+	if (es->map_type == WLSC_SURFACE_MAP_FULLSCREEN) {
+		es->x = es->saved_x;
+		es->y = es->saved_y;
+	} else if (es->map_type == WLSC_SURFACE_MAP_UNMAPPED) {
+		es->x = 10 + random() % 400;
+		es->y = 10 + random() % 400;
+		/* assign to first output */
+		es->output = container_of(ec->output_list.next,
+					  struct wlsc_output, link);
+	}
+
+	wlsc_surface_damage(es);
+	es->map_type = WLSC_SURFACE_MAP_TOPLEVEL;
+	es->fullscreen_output = NULL;
+}
+
+static void
+shell_set_transient(struct wl_client *client,
+		    struct wl_shell *wl_shell,
+		    struct wl_surface *surface,
+		    struct wl_surface *parent,
+		    int x, int y, uint32_t flags)
+{
+	struct wlsc_surface *es = (struct wlsc_surface *) surface;
+	struct wlsc_surface *pes = (struct wlsc_surface *) parent;
+
+	/* assign to parents output  */
+	es->output = pes->output;
+ 
+	es->x = pes->x + x;
+	es->y = pes->y + y;
+
+	wlsc_surface_damage(es);
+	es->map_type = WLSC_SURFACE_MAP_TRANSIENT;
+}
+
+static void
+shell_set_fullscreen(struct wl_client *client,
+		     struct wl_shell *wl_shell,
+		     struct wl_surface *surface)
+
+{
+	struct wlsc_surface *es = (struct wlsc_surface *) surface;
+	struct wlsc_output *output;
+
+	/* FIXME: Fullscreen on first output */
+	/* FIXME: Handle output going away */
+	output = container_of(es->compositor->output_list.next,
+			      struct wlsc_output, link);
+	es->output = output;
+
+	es->saved_x = es->x;
+	es->saved_y = es->y;
+	es->x = (output->width - es->width) / 2;
+	es->y = (output->height - es->height) / 2;
+	es->fullscreen_output = output;
+	wlsc_surface_damage(es);
+	es->map_type = WLSC_SURFACE_MAP_FULLSCREEN;
+}
+
+static void
 destroy_drag(struct wl_resource *resource, struct wl_client *client)
 {
 	struct wl_drag *drag =
@@ -676,7 +745,10 @@ const static struct wl_shell_interface shell_interface = {
 	shell_move,
 	shell_resize,
 	shell_create_drag,
-	shell_create_selection
+	shell_create_selection,
+	shell_set_toplevel,
+	shell_set_transient,
+	shell_set_fullscreen
 };
 
 static void
@@ -732,8 +804,12 @@ lock(struct wlsc_shell *shell)
 }
 
 static void
-attach(struct wlsc_shell *shell, struct wlsc_surface *surface)
+attach(struct wlsc_shell *shell, struct wlsc_surface *es)
 {
+	if (es->map_type == WLSC_SURFACE_MAP_FULLSCREEN) {
+		es->x = (es->fullscreen_output->width - es->width) / 2;
+		es->y = (es->fullscreen_output->height - es->height) / 2;
+	}
 }
 
 int
