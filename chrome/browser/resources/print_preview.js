@@ -787,29 +787,35 @@ function updatePrintSummary() {
 
   var pageSet = getSelectedPagesSet();
   var numOfSheets = pageSet.length;
-  var sheetsLabel = localStrings.getString('printPreviewSheetsLabelSingular');
+  var summaryLabel = localStrings.getString('printPreviewSheetsLabelSingular');
   var numOfPagesText = '';
-  var pagesLabel = '';
+  var pagesLabel = localStrings.getString('printPreviewPageLabelPlural');
+
+  if (printToPDF)
+    summaryLabel = localStrings.getString('printPreviewPageLabelSingular');
 
   if (!printToPDF && isTwoSided())
     numOfSheets = Math.ceil(numOfSheets / 2);
   numOfSheets *= copies;
 
-  if (numOfSheets > 1)
-    sheetsLabel = localStrings.getString('printPreviewSheetsLabelPlural');
+  if (numOfSheets > 1) {
+    if (printToPDF)
+      summaryLabel = pagesLabel;
+    else
+      summaryLabel = localStrings.getString('printPreviewSheetsLabelPlural');
+  }
 
   var html = '';
   if (pageSet.length * copies != numOfSheets) {
     numOfPagesText = pageSet.length * copies;
-    pagesLabel = localStrings.getString('printPreviewPageLabelPlural');
     html = localStrings.getStringF('printPreviewSummaryFormatLong',
                                    '<b>' + numOfSheets + '</b>',
-                                   '<b>' + sheetsLabel + '</b>',
+                                   '<b>' + summaryLabel + '</b>',
                                    numOfPagesText, pagesLabel);
   } else
     html = localStrings.getStringF('printPreviewSummaryFormatShort',
                                    '<b>' + numOfSheets + '</b>',
-                                   '<b>' + sheetsLabel + '</b>');
+                                   '<b>' + summaryLabel + '</b>');
 
   // Removing extra spaces from within the string.
   html = html.replace(/\s{2,}/g, ' ');
