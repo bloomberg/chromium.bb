@@ -453,9 +453,18 @@ cr.define('options', function() {
         $('operatorName').textContent = data.operatorName;
         $('operatorCode').textContent = data.operatorCode;
         $('imsi').textContent = data.imsi;
-        $('cellularApn').value = data.apn;
-        $('cellularApnUsername').value = data.apn_username;
-        $('cellularApnPassword').value = data.apn_password;
+        // If there's no custom APN show default APN that is used. These will be
+        // displayed differently when http://crosbug.com/14290 is fixed.
+        // See also http://crosbug.com/p/4058 for context.
+        if (data.apn != '') {
+          $('cellularApn').value = data.apn;
+          $('cellularApnUsername').value = data.apn_username;
+          $('cellularApnPassword').value = data.apn_password;
+        } else {
+          $('cellularApn').value = data.last_good_apn;
+          $('cellularApnUsername').value = data.last_good_apn_username;
+          $('cellularApnPassword').value = data.last_good_apn_password;
+        }
         $('sim-card-lock-enabled').checked = data.simCardLockEnabled;
         InternetOptions.enableSecurityTab(true);
       }
