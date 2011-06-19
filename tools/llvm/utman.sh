@@ -983,6 +983,9 @@ llvm-install() {
   ln -sf ../../../llvm/lib/${SO_PREFIX}LLVMgold${SO_EXT} "${BFD_PLUGIN_DIR}"
   ln -sf ../../../llvm/lib/${SO_PREFIX}LTO${SO_EXT} "${BFD_PLUGIN_DIR}"
 
+  # On Mac, libLTO seems to be loaded from lib/
+  ln -sf ../../llvm/lib/${SO_PREFIX}LTO${SO_EXT} "${BINUTILS_INSTALL_DIR}"/lib
+
   spopd
 }
 
