@@ -18,24 +18,37 @@
 //
 // Example Usage:
 //
-//   The following is an example for watching responsiveness of IO thread.
-//   sleep_time specifies how often ping messages have to be sent to IO thread.
-//   unresponsive_time is the wait time after ping message is sent, to check if
-//   we have received pong message or not.
+//   The following is an example for watching responsiveness of watched (IO)
+//   thread. |sleep_time| specifies how often ping messages have to be sent to
+//   watched (IO) thread. |unresponsive_time| is the wait time after ping
+//   message is sent, to check if we have received pong message or not.
+//   |unresponsive_threshold| specifies the number of unanswered ping messages
+//   after which watched (IO) thread is considered as not responsive.
+//   |crash_on_hang| specifies if we want to crash the browser when the watched
+//   (IO) thread has become sufficiently unresponsive, while other threads are
+//   sufficiently responsive. |live_threads_threshold| specifies the number of
+//   browser threads that are to be responsive when we want to crash the browser
+//   because of hung watched (IO) thread.
 //
 //   base::TimeDelta sleep_time = base::TimeDelta::FromSeconds(5);
 //   base::TimeDelta unresponsive_time = base::TimeDelta::FromSeconds(10);
-//   ThreadWatcher::StartWatching(BrowserThread::IO, "IO", sleep_time,
-//                                unresponsive_time);
+//   uint32 unresponsive_threshold = ThreadWatcherList::kUnresponsiveCount;
+//   bool crash_on_hang = false;
+//   uint32 live_threads_threshold = ThreadWatcherList::kLiveThreadsThreshold;
+//   ThreadWatcher::StartWatching(
+//       BrowserThread::IO, "IO", sleep_time, unresponsive_time,
+//       unresponsive_threshold, crash_on_hang, live_threads_threshold);
 
 #ifndef CHROME_BROWSER_METRICS_THREAD_WATCHER_H_
 #define CHROME_BROWSER_METRICS_THREAD_WATCHER_H_
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/command_line.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -51,23 +64,33 @@
 
 class CustomThreadWatcher;
 class ThreadWatcherList;
+class ThreadWatcherObserver;
 
 // This class performs health check on threads that would like to be watched.
 class ThreadWatcher {
  public:
-  // This method starts performing health check on the given thread_id. It will
-  // create ThreadWatcher object for the given thread_id, thread_name,
-  // sleep_time and unresponsive_time. sleep_time_ is the wait time between ping
-  // messages. unresponsive_time_ is the wait time after ping message is sent,
-  // to check if we have received pong message or not. It will register that
-  // ThreadWatcher object and activate the thread watching of the given
-  // thread_id.
+  // This method starts performing health check on the given |thread_id|. It
+  // will create ThreadWatcher object for the given |thread_id|, |thread_name|.
+  // |sleep_time| is the wait time between ping messages. |unresponsive_time| is
+  // the wait time after ping message is sent, to check if we have received pong
+  // message or not. |unresponsive_threshold| is used to determine if the thread
+  // is responsive or not. The watched thread is considered unresponsive if it
+  // hasn't responded with a pong message for |unresponsive_threshold| number of
+  // ping messages. |crash_on_hang| specifies if browser should be crashed when
+  // the watched thread is unresponsive. |live_threads_threshold| specifies the
+  // number of browser threads that are to be responsive when we want to crash
+  // the browser and watched thread has become sufficiently unresponsive. It
+  // will register that ThreadWatcher object and activate the thread watching of
+  // the given thread_id.
   static void StartWatching(const BrowserThread::ID& thread_id,
                             const std::string& thread_name,
                             const base::TimeDelta& sleep_time,
-                            const base::TimeDelta& unresponsive_time);
+                            const base::TimeDelta& unresponsive_time,
+                            uint32 unresponsive_threshold,
+                            bool crash_on_hang,
+                            uint32 live_threads_threshold);
 
-  // Return the thread_id of the thread being watched.
+  // Return the |thread_id_| of the thread being watched.
   BrowserThread::ID thread_id() const { return thread_id_; }
 
   // Return the name of the thread being watched.
@@ -82,20 +105,23 @@ class ThreadWatcher {
   // Returns true if we are montioring the thread.
   bool active() const { return active_; }
 
-  // Returns ping_time_ (used by unit tests).
+  // Returns |ping_time_| (used by unit tests).
   base::TimeTicks ping_time() const { return ping_time_; }
 
-  // Returns ping_sequence_number_ (used by unit tests).
+  // Returns |ping_sequence_number_| (used by unit tests).
   uint64 ping_sequence_number() const { return ping_sequence_number_; }
 
  protected:
-  // Construct a ThreadWatcher for the given thread_id. sleep_time_ is the
-  // wait time between ping messages. unresponsive_time_ is the wait time after
+  // Construct a ThreadWatcher for the given |thread_id|. |sleep_time| is the
+  // wait time between ping messages. |unresponsive_time| is the wait time after
   // ping message is sent, to check if we have received pong message or not.
   ThreadWatcher(const BrowserThread::ID& thread_id,
                 const std::string& thread_name,
                 const base::TimeDelta& sleep_time,
-                const base::TimeDelta& unresponsive_time);
+                const base::TimeDelta& unresponsive_time,
+                uint32 unresponsive_threshold,
+                bool crash_on_hang,
+                uint32 live_threads_threshold);
   virtual ~ThreadWatcher();
 
   // This method activates the thread watching which starts ping/pong messaging.
@@ -105,29 +131,29 @@ class ThreadWatcher {
   virtual void DeActivateThreadWatching();
 
   // This will ensure that the watching is actively taking place, and awaken
-  // (i.e., post a PostPingMessage) if the watcher has stopped pinging due to
-  // lack of user activity. It will also reset ping_count_ to kPingCount.
+  // (i.e., post a PostPingMessage()) if the watcher has stopped pinging due to
+  // lack of user activity. It will also reset |ping_count_| to |kPingCount|.
   virtual void WakeUp();
 
   // This method records when ping message was sent and it will Post a task
-  // (OnPingMessage) to the watched thread that does nothing but respond with
-  // OnPongMessage. It also posts a task (OnCheckResponsiveness) to check
+  // (OnPingMessage()) to the watched thread that does nothing but respond with
+  // OnPongMessage(). It also posts a task (OnCheckResponsiveness()) to check
   // responsiveness of monitored thread that would be called after waiting
-  // unresponsive_time_.
+  // |unresponsive_time_|.
   // This method is accessible on WatchDogThread.
   virtual void PostPingMessage();
 
   // This method handles a Pong Message from watched thread. It will track the
   // response time (pong time minus ping time) via histograms. It posts a
-  // PostPingMessage task that would be called after waiting sleep_time_.  It
-  // increments ping_sequence_number_ by 1.
+  // PostPingMessage() task that would be called after waiting |sleep_time_|. It
+  // increments |ping_sequence_number_| by 1.
   // This method is accessible on WatchDogThread.
   virtual void OnPongMessage(uint64 ping_sequence_number);
 
   // This method will determine if the watched thread is responsive or not. If
-  // the latest ping_sequence_number_ is not same as the ping_sequence_number
-  // that is passed in, then we can assume that watched thread has responded
-  // with a pong message.
+  // the latest |ping_sequence_number_| is not same as the
+  // |ping_sequence_number| that is passed in, then we can assume that watched
+  // thread has responded with a pong message.
   // This method is accessible on WatchDogThread.
   virtual bool OnCheckResponsiveness(uint64 ping_sequence_number);
 
@@ -150,33 +176,31 @@ class ThreadWatcher {
   static void OnPingMessage(const BrowserThread::ID& thread_id,
                             Task* callback_task);
 
-  // This method resets unresponsive_count_ to zero because watched thread is
+  // This method resets |unresponsive_count_| to zero because watched thread is
   // responding to the ping message with a pong message.
   void ResetHangCounters();
 
   // This method records watched thread is not responding to the ping message.
-  // It increments unresponsive_count_ by 1.
+  // It increments |unresponsive_count_| by 1.
   void GotNoResponse();
+
+  // This method returns true if the watched thread has not responded with a
+  // pong message for |unresponsive_threshold_| number of ping messages.
+  bool IsVeryUnresponsive();
 
   // This is the number of ping messages to be sent when the user is idle.
   // ping_count_ will be initialized to kPingCount whenever user becomes active.
   static const int kPingCount;
 
-  // This value is used to determine if the watched thread is responsive or not.
-  // If unresponsive_count_ is less than kUnresponsiveCount then watched thread
-  // is considered as responsive (in responsive_count_histogram_) otherwise it
-  // is considered as unresponsive (in unresponsive_count_histogram_).
-  static const int kUnresponsiveCount;
-
-  // The thread_id of the thread being watched. Only one instance can exist for
-  // the given thread_id of the thread being watched.
+  // The |thread_id_| of the thread being watched. Only one instance can exist
+  // for the given |thread_id_| of the thread being watched.
   const BrowserThread::ID thread_id_;
 
   // The name of the thread being watched.
   const std::string thread_name_;
 
-  // It is the sleep time between between the receipt of a pong message back,
-  // and the sending of another ping message.
+  // It is the sleep time between the receipt of a pong message back, and the
+  // sending of another ping message.
   const base::TimeDelta sleep_time_;
 
   // It is the duration from sending a ping message, until we check status to be
@@ -207,28 +231,43 @@ class ThreadWatcher {
   base::Histogram* response_time_histogram_;
 
   // Histogram that keeps track of unresponsive time since the last pong message
-  // when we got no response (GotNoResponse) from the watched thread.
+  // when we got no response (GotNoResponse()) from the watched thread.
   base::Histogram* unresponsive_time_histogram_;
 
   // Histogram that keeps track of how many threads are responding when we got
-  // no response (GotNoResponse) from the watched thread.
+  // no response (GotNoResponse()) from the watched thread.
   base::Histogram* responsive_count_histogram_;
 
   // Histogram that keeps track of how many threads are not responding when we
-  // got no response (GotNoResponse) from the watched thread. Count includes the
-  // thread that got no response.
+  // got no response (GotNoResponse()) from the watched thread. Count includes
+  // the thread that got no response.
   base::Histogram* unresponsive_count_histogram_;
 
   // This counter tracks the unresponsiveness of watched thread. If this value
   // is zero then watched thread has responded with a pong message. This is
-  // incremented by 1 when we got no response (GotNoResponse) from the watched
+  // incremented by 1 when we got no response (GotNoResponse()) from the watched
   // thread.
-  int unresponsive_count_;
+  uint32 unresponsive_count_;
 
   // This is set to true when we would have crashed the browser because the
   // watched thread hasn't responded atleast 6 times. It is reset to false when
   // watched thread responds with a pong message.
   bool hung_processing_complete_;
+
+  // This is used to determine if the watched thread is responsive or not. If
+  // watched thread's |unresponsive_count_| is greater than or equal to
+  // |unresponsive_threshold_| then we would consider it as unresponsive.
+  uint32 unresponsive_threshold_;
+
+  // This is set to true if we want to crash the browser when the watched thread
+  // has become sufficiently unresponsive, while other threads are sufficiently
+  // responsive.
+  bool crash_on_hang_;
+
+  // This specifies the number of browser threads that are to be responsive when
+  // we want to crash the browser because watched thread has become sufficiently
+  // unresponsive.
+  uint32 live_threads_threshold_;
 
   // We use this factory to create callback tasks for ThreadWatcher object. We
   // use this during ping-pong messaging between WatchDog thread and watched
@@ -242,26 +281,15 @@ class ThreadWatcher {
 // if it has been registered, which includes determing the histogram name. This
 // class provides utility functions to start and stop watching all browser
 // threads. Only one instance of this class exists.
-class ThreadWatcherList : public NotificationObserver {
+class ThreadWatcherList {
  public:
   // A map from BrowserThread to the actual instances.
   typedef std::map<BrowserThread::ID, ThreadWatcher*> RegistrationList;
 
-  // This singleton holds the global list of registered ThreadWatchers.
-  ThreadWatcherList();
-  // Destructor deletes all registered ThreadWatcher instances.
-  virtual ~ThreadWatcherList();
-
-  // Register() stores a pointer to the given ThreadWatcher in a global map.
-  static void Register(ThreadWatcher* watcher);
-
-  // This method returns true if the ThreadWatcher object is registerd.
-  static bool IsRegistered(const BrowserThread::ID thread_id);
-
   // This method posts a task on WatchDogThread to start watching all browser
   // threads.
   // This method is accessible on UI thread.
-  static void StartWatchingAll();
+  static void StartWatchingAll(const CommandLine& command_line);
 
   // This method posts a task on WatchDogThread to RevokeAll tasks and to
   // deactive thread watching of other threads and tell NotificationService to
@@ -269,45 +297,73 @@ class ThreadWatcherList : public NotificationObserver {
   // This method is accessible on UI thread.
   static void StopWatchingAll();
 
-  // RemoveAll NotificationTypes that are being observed.
-  // This method is accessible on UI thread.
-  static void RemoveNotifications();
+  // Register() stores a pointer to the given ThreadWatcher in a global map.
+  static void Register(ThreadWatcher* watcher);
 
-  // This method returns number of watched threads that have responded and
-  // threads that have not responded with a pong message.
-  static void GetStatusOfThreads(int* no_of_responding_threads,
-                                 int* no_of_unresponding_threads);
+  // This method returns true if the ThreadWatcher object is registerd.
+  static bool IsRegistered(const BrowserThread::ID thread_id);
 
- private:
-  // Allow tests to access our innards for testing purposes.
-  FRIEND_TEST_ALL_PREFIXES(ThreadWatcherTest, Registration);
-
-  // Delete all thread watcher objects and remove them from global map.
-  // This method is accessible on WatchDogThread.
-  void DeleteAll();
-
-  // This will ensure that the watching is actively taking place. It will wakeup
-  // all thread watchers every 2 seconds. This is the implementation of
-  // NotificationObserver. When a matching notification is posted to the
-  // notification service, this method is called.
-  // This method is accessible on UI thread.
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+  // This method returns number of responsive and unresponsive watched threads.
+  static void GetStatusOfThreads(uint32* responding_thread_count,
+                                 uint32* unresponding_thread_count);
 
   // This will ensure that the watching is actively taking place, and awaken
   // all thread watchers that are registered.
-  // This method is accessible on WatchDogThread.
-  virtual void WakeUpAll();
+  static void WakeUpAll();
+
+ private:
+  // Allow tests to access our innards for testing purposes.
+  friend class CustomThreadWatcher;
+  friend class ThreadWatcherTest;
+  FRIEND_TEST_ALL_PREFIXES(ThreadWatcherTest, CommandLineArgs);
+
+  // This singleton holds the global list of registered ThreadWatchers.
+  ThreadWatcherList();
+
+  // Destructor deletes all registered ThreadWatcher instances.
+  virtual ~ThreadWatcherList();
+
+  // Parses the command line to get |unresponsive_threshold| from
+  // switches::kCrashOnHangSeconds, |crash_on_hang_thread_names| from
+  // switches::kCrashOnHangThreads and |live_threads_threshold| from
+  // switches::kCrashOnLive. |crash_on_hang_thread_names| is the set of watched
+  // thread's names that are to be crashed if they are not responding.
+  static void ParseCommandLine(
+      const CommandLine& command_line,
+      uint32* unresponsive_threshold,
+      std::set<std::string>* crash_on_hang_thread_names,
+      uint32* live_threads_threshold);
+
+  // This constructs the |ThreadWatcherList| singleton and starts watching
+  // browser threads by calling StartWatching() on each browser thread that is
+  // watched.
+  static void InitializeAndStartWatching(
+      uint32 unresponsive_threshold,
+      const std::set<std::string>& crash_on_hang_thread_names,
+      uint32 live_threads_threshold);
+
+  // This method calls ThreadWatcher::StartWatching() to perform health check on
+  // the given |thread_id|.
+  static void StartWatching(
+      const BrowserThread::ID& thread_id,
+      const std::string& thread_name,
+      const base::TimeDelta& sleep_time,
+      const base::TimeDelta& unresponsive_time,
+      uint32 unresponsive_threshold,
+      const std::set<std::string>& crash_on_hang_thread_names,
+      uint32 live_threads_threshold);
+
+  // Delete all thread watcher objects and remove them from global map. It also
+  // deletes |g_thread_watcher_list_|.
+  static void DeleteAll();
 
   // The Find() method can be used to test to see if a given ThreadWatcher was
   // already registered, or to retrieve a pointer to it from the global map.
   static ThreadWatcher* Find(const BrowserThread::ID& thread_id);
 
-  // Helper function should be called only while holding lock_.
-  ThreadWatcher* PreLockedFind(const BrowserThread::ID& thread_id);
-
-  static ThreadWatcherList* global_;  // The singleton of this class.
+  // The singleton of this class and is used to keep track of information about
+  // threads that are being watched.
+  static ThreadWatcherList* g_thread_watcher_list_;
 
   // This is the wait time between ping messages.
   static const int kSleepSeconds;
@@ -316,11 +372,49 @@ class ThreadWatcherList : public NotificationObserver {
   // received pong message or not.
   static const int kUnresponsiveSeconds;
 
-  // Lock for access to registered_.
-  base::Lock lock_;
+  // Default values for |unresponsive_threshold|.
+  static const int kUnresponsiveCount;
+
+  // Default values for |live_threads_threshold|.
+  static const int kLiveThreadsThreshold;
 
   // Map of all registered watched threads, from thread_id to ThreadWatcher.
   RegistrationList registered_;
+
+  DISALLOW_COPY_AND_ASSIGN(ThreadWatcherList);
+};
+
+// This class ensures that the thread watching is actively taking place. Only
+// one instance of this class exists.
+class ThreadWatcherObserver : public NotificationObserver {
+ public:
+  // Registers |g_thread_watcher_observer_| as the Notifications observer.
+  // |wakeup_interval| specifies how often to wake up thread watchers. This
+  // method is accessible on UI thread.
+  static void SetupNotifications(const base::TimeDelta& wakeup_interval);
+
+  // Removes all NotificationTypes from |registrar_| and deletes
+  // |g_thread_watcher_observer_|. This method is accessible on UI thread.
+  static void RemoveNotifications();
+
+ private:
+  // Constructor of |g_thread_watcher_observer_| singleton.
+  explicit ThreadWatcherObserver(const base::TimeDelta& wakeup_interval);
+
+  // Destructor of |g_thread_watcher_observer_| singleton.
+  virtual ~ThreadWatcherObserver();
+
+  // This ensures all thread watchers are active because there is some user
+  // activity. It will wake up all thread watchers every |wakeup_interval_|
+  // seconds. This is the implementation of NotificationObserver. When a
+  // matching notification is posted to the notification service, this method is
+  // called.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
+  // The singleton of this class.
+  static ThreadWatcherObserver* g_thread_watcher_observer_;
 
   // The registrar that holds NotificationTypes to be observed.
   NotificationRegistrar registrar_;
@@ -328,7 +422,10 @@ class ThreadWatcherList : public NotificationObserver {
   // This is the last time when woke all thread watchers up.
   base::TimeTicks last_wakeup_time_;
 
-  DISALLOW_COPY_AND_ASSIGN(ThreadWatcherList);
+  // It is the time interval between wake up calls to thread watchers.
+  const base::TimeDelta wakeup_interval_;
+
+  DISALLOW_COPY_AND_ASSIGN(ThreadWatcherObserver);
 };
 
 // Class for WatchDogThread and in its Init method, we start watching UI, IO,

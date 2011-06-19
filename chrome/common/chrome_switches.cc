@@ -150,6 +150,27 @@ const char kConflictingModulesCheck[]       = "conflicting-modules-check";
 // string value, the 2 letter code from ISO 3166-1.
 const char kCountry[]                       = "country";
 
+// Causes the browser process to crash if browser threads are not responding for
+// the given number of seconds.
+const char kCrashOnHangSeconds[]            = "crash-on-hang-seconds";
+
+// Comma separated list of BrowserThreads that cause browser process to crash if
+// the given browser thread is not responsive. UI,IO,DB,FILE,CACHE are the list
+// of BrowserThreads that are supported.
+//
+// For example:
+//    --crash-on-hang-threads=UI,IO --> Crash the browser if UI or IO thread is
+//                                      not responsive.
+const char kCrashOnHangThreads[]            = "crash-on-hang-threads";
+
+// Causes the browser process to crash if the number of browser threads that are
+// responding is equal to the given number.
+//
+// For example:
+//    --crash-on-live=1 --> Crash if only one thread is responsive and all other
+//                          threads are not responsive.
+const char kCrashOnLive[]                   = "crash-on-live";
+
 // Path to the inspector files on disk (allows reloading of devtool files
 // without having to restart the browser).
 const char kDebugDevToolsFrontend[]         = "debug-devtools-frontend";

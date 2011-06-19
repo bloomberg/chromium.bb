@@ -1437,11 +1437,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
   scoped_refptr<HistogramSynchronizer> histogram_synchronizer(
       new HistogramSynchronizer());
 
-  // Initialize thread watcher system. This is a singleton and is used by
-  // WatchDogThread to keep track of information about threads that are being
-  // watched.
-  scoped_ptr<ThreadWatcherList> thread_watcher_list(new ThreadWatcherList());
-
   // Now the command line has been mutated based on about:flags, we can
   // set up metrics and initialize field trials.
   MetricsService* metrics = parts->SetupMetricsAndFieldTrials(
@@ -1893,7 +1888,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
   }
 
   // Start watching all browser threads for responsiveness.
-  ThreadWatcherList::StartWatchingAll();
+  ThreadWatcherList::StartWatchingAll(parsed_command_line);
 
   int result_code = ResultCodes::NORMAL_EXIT;
   if (parameters.ui_task) {

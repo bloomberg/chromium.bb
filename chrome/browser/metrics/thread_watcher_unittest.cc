@@ -2,17 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <math.h>
+
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
+#include "base/string_tokenizer.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"
 #include "base/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/metrics/thread_watcher.h"
+#include "chrome/common/chrome_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -64,7 +68,9 @@ class CustomThreadWatcher : public ThreadWatcher {
                       const std::string thread_name,
                       const TimeDelta& sleep_time,
                       const TimeDelta& unresponsive_time)
-      : ThreadWatcher(thread_id, thread_name, sleep_time, unresponsive_time),
+      : ThreadWatcher(thread_id, thread_name, sleep_time, unresponsive_time,
+                      ThreadWatcherList::kUnresponsiveCount, true,
+                      ThreadWatcherList::kLiveThreadsThreshold),
         state_changed_(&custom_lock_),
         thread_watcher_state_(INITIALIZED),
         wait_state_(UNINITIALIZED),
@@ -233,10 +239,16 @@ class ThreadWatcherTest : public ::testing::Test {
   static const std::string io_thread_name;
   static const BrowserThread::ID webkit_thread_id;
   static const std::string webkit_thread_name;
+  static const std::string crash_on_hang_seconds;
+  static const std::string crash_on_hang_threads;
+  static const std::string crash_on_live;
   CustomThreadWatcher* io_watcher_;
   CustomThreadWatcher* webkit_watcher_;
+  ThreadWatcherList* thread_watcher_list_;
 
-  ThreadWatcherTest() {
+  ThreadWatcherTest()
+      : setup_complete_(&lock_),
+        initialized_(false) {
     webkit_thread_.reset(new BrowserThread(BrowserThread::WEBKIT));
     io_thread_.reset(new BrowserThread(BrowserThread::IO));
     watchdog_thread_.reset(new WatchDogThread());
@@ -244,34 +256,68 @@ class ThreadWatcherTest : public ::testing::Test {
     io_thread_->Start();
     watchdog_thread_->Start();
 
+    WatchDogThread::PostTask(
+        FROM_HERE,
+        NewRunnableMethod(this, &ThreadWatcherTest::SetUpObjects));
+
+    WaitForSetUp(TimeDelta::FromMinutes(1));
+  }
+
+  void SetUpObjects() {
+    DCHECK(WatchDogThread::CurrentlyOnWatchDogThread());
+
     // Setup the registry for thread watchers.
     thread_watcher_list_ = new ThreadWatcherList();
 
     // Create thread watcher object for the IO thread.
     io_watcher_ = new CustomThreadWatcher(io_thread_id, io_thread_name,
                                           kSleepTime, kUnresponsiveTime);
+    EXPECT_EQ(io_watcher_, thread_watcher_list_->Find(io_thread_id));
 
     // Create thread watcher object for the WEBKIT thread.
     webkit_watcher_ = new CustomThreadWatcher(
         webkit_thread_id, webkit_thread_name, kSleepTime, kUnresponsiveTime);
+    EXPECT_EQ(webkit_watcher_, thread_watcher_list_->Find(webkit_thread_id));
+
+    {
+      base::AutoLock lock(lock_);
+      initialized_ = true;
+    }
+    setup_complete_.Signal();
+  }
+
+  void WaitForSetUp(TimeDelta wait_time) {
+    DCHECK(!WatchDogThread::CurrentlyOnWatchDogThread());
+    TimeTicks end_time = TimeTicks::Now() + wait_time;
+    {
+      base::AutoLock auto_lock(lock_);
+      while (!initialized_ && TimeTicks::Now() < end_time)
+        setup_complete_.TimedWait(end_time - TimeTicks::Now());
+    }
   }
 
   ~ThreadWatcherTest() {
-    ThreadWatcherList::StopWatchingAll();
+    ThreadWatcherList::DeleteAll();
     io_watcher_ = NULL;
     webkit_watcher_ = NULL;
     io_thread_.reset();
     webkit_thread_.reset();
     watchdog_thread_.reset();
-    delete thread_watcher_list_;
+    thread_watcher_list_ = NULL;
   }
 
  private:
+  base::Lock lock_;
+  base::ConditionVariable setup_complete_;
+  bool initialized_;
   scoped_ptr<BrowserThread> webkit_thread_;
   scoped_ptr<BrowserThread> io_thread_;
   scoped_ptr<WatchDogThread> watchdog_thread_;
-  ThreadWatcherList* thread_watcher_list_;
 };
+
+// DISABLE_RUNNABLE_METHOD_REFCOUNT is a convenience macro for disabling
+// refcounting of ThreadWatcherTest classes.
+DISABLE_RUNNABLE_METHOD_REFCOUNT(ThreadWatcherTest);
 
 // Define static constants.
 const TimeDelta ThreadWatcherTest::kSleepTime =
@@ -283,13 +329,52 @@ const std::string ThreadWatcherTest::io_thread_name = "IO";
 const BrowserThread::ID ThreadWatcherTest::webkit_thread_id =
     BrowserThread::WEBKIT;
 const std::string ThreadWatcherTest::webkit_thread_name = "WEBKIT";
+const std::string ThreadWatcherTest::crash_on_hang_seconds = "24";
+const std::string ThreadWatcherTest::crash_on_hang_threads = "IO,UI";
+const std::string ThreadWatcherTest::crash_on_live = "3";
+
+TEST_F(ThreadWatcherTest, CommandLineArgs) {
+  // Setup command_line arguments.
+  CommandLine command_line(CommandLine::NO_PROGRAM);
+  command_line.AppendSwitchASCII(switches::kCrashOnHangSeconds,
+                                 crash_on_hang_seconds);
+  command_line.AppendSwitchASCII(switches::kCrashOnHangThreads,
+                                 crash_on_hang_threads);
+  command_line.AppendSwitchASCII(switches::kCrashOnLive,
+                                 crash_on_live);
+
+  // Parse command_line arguments.
+  uint32 unresponsive_threshold;
+  std::set<std::string> crash_on_hang_thread_names;
+  uint32 live_threads_threshold;
+  ThreadWatcherList::ParseCommandLine(command_line,
+                                      &unresponsive_threshold,
+                                      &crash_on_hang_thread_names,
+                                      &live_threads_threshold);
+
+  // Verify the data.
+  uint32 crash_on_unresponsive_seconds =
+      ThreadWatcherList::kUnresponsiveSeconds * unresponsive_threshold;
+  EXPECT_EQ(static_cast<int>(crash_on_unresponsive_seconds),
+            atoi(crash_on_hang_seconds.c_str()));
+
+  // Check ThreadWatcherTestList has the right crash_on_hang_threads.
+  StringTokenizer tokens(crash_on_hang_threads, ",");
+  while (tokens.GetNext()) {
+    std::string thread_name = tokens.token();
+    std::set<std::string>::iterator it =
+        crash_on_hang_thread_names.find(thread_name);
+    bool crash_on_hang = (it != crash_on_hang_thread_names.end());
+    EXPECT_TRUE(crash_on_hang);
+  }
+
+  EXPECT_EQ(static_cast<int>(live_threads_threshold),
+            atoi(crash_on_live.c_str()));
+}
 
 // Test registration. When thread_watcher_list_ goes out of scope after
 // TearDown, all thread watcher objects will be deleted.
 TEST_F(ThreadWatcherTest, Registration) {
-  EXPECT_EQ(io_watcher_, ThreadWatcherList::Find(io_thread_id));
-  EXPECT_EQ(webkit_watcher_, ThreadWatcherList::Find(webkit_thread_id));
-
   // Check ThreadWatcher object has all correct parameters.
   EXPECT_EQ(io_thread_id, io_watcher_->thread_id());
   EXPECT_EQ(io_thread_name, io_watcher_->thread_name());
