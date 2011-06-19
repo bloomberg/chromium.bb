@@ -1003,6 +1003,11 @@ void RecordLastRunAppBundlePath() {
 }
 
 - (Profile*)defaultProfile {
+  // Return the profile of the last-used BrowserWindowController, if available.
+  if (lastProfile_)
+    return lastProfile_;
+
+  // Fallback to the default if this is the first Browser.
   if (g_browser_process->profile_manager())
     return g_browser_process->profile_manager()->GetDefaultProfile();
 
