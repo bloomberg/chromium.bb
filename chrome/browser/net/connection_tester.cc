@@ -187,8 +187,8 @@ class ExperimentURLRequestContext : public net::URLRequestContext {
 
     net::DhcpProxyScriptFetcherFactory dhcp_factory;
     if (CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kDisableDhcpWpad)) {
-      dhcp_factory.set_enabled(false);
+        switches::kEnableDhcpWpad)) {
+      dhcp_factory.set_enabled(true);
     }
 
     proxy_service->reset(net::ProxyService::CreateUsingV8ProxyResolver(
