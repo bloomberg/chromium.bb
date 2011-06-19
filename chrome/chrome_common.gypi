@@ -365,6 +365,8 @@
         'common/net/gaia/gaia_urls.h',
         'common/net/gaia/google_service_auth_error.cc',
         'common/net/gaia/google_service_auth_error.h',
+        'common/net/gaia/oauth_request_signer.cc',
+        'common/net/gaia/oauth_request_signer.h',
         'common/net/x509_certificate_model.cc',
         'common/net/x509_certificate_model_nss.cc',
         'common/net/x509_certificate_model_openssl.cc',

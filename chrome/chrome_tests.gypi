@@ -1920,6 +1920,7 @@
         'common/net/gaia/gaia_authenticator_unittest.cc',
         'common/net/gaia/gaia_oauth_client_unittest.cc',
         'common/net/gaia/google_service_auth_error_unittest.cc',
+        'common/net/gaia/oauth_request_signer_unittest.cc',
         'common/random_unittest.cc',
         'common/service_process_util_unittest.cc',
         'common/switch_utils_unittest.cc',
