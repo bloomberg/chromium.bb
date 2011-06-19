@@ -2292,7 +2292,6 @@
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
         '../v8/tools/gyp/v8.gyp:v8',
-        '../v8/tools/gyp/v8.gyp:v8_shell',
         '../webkit/webkit.gyp:test_shell_test_support',
         # Runtime dependencies
         '../third_party/mesa/mesa.gyp:osmesa',
@@ -2556,24 +2555,6 @@
         '../content/renderer/render_widget_browsertest.cc',
         '../content/renderer/render_widget_browsertest.h',
         '../content/renderer/v8_value_converter_browsertest.cc',
-      ],
-      'actions': [
-        {
-          'action_name': 'js2webui',
-          'variables': {
-            'js2webui': '../tools/js2webui.py',
-          },
-          'inputs': [
-            '<(js2webui)',
-            '<!@(python <(js2webui) -i)',
-          ],
-          'outputs': [
-            '<!@(python <(js2webui) -o)',
-          ],
-          'action': [
-            'python', '<(js2webui)', '-p', '<(PRODUCT_DIR)',
-          ],
-        },
       ],
       'conditions': [
         ['chromeos==0', {
