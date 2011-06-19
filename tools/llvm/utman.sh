@@ -2128,6 +2128,9 @@ prune-translator-install() {
     spopd
   fi
 
+  echo "remove driver log"
+  rm -f "${PNACL_ROOT}"/driver.log
+
   echo "Done"
 }
 

@@ -23,10 +23,11 @@ PLATFORM_MAPPING = {
     },
     'linux': {
         'x86-32': ['linux_x86', 'linux_x86_newlib',
-                   'pnacl_linux_i686', 'linux_arm-trusted'],
+                   'pnacl_linux_i686_newlib', 'linux_arm-trusted'],
         'x86-64': ['linux_x86', 'linux_x86_newlib',
-                   'pnacl_linux_x86_64', 'linux_arm-trusted'],
-        'arm'   : ['linux_x86_newlib','pnacl_linux_x86_64','linux_arm-trusted'],
+                   'pnacl_linux_x86_64_newlib', 'linux_arm-trusted'],
+        'arm'   : ['linux_x86_newlib', 'pnacl_linux_x86_64_newlib',
+                   'linux_arm-trusted'],
     },
     'mac': {
         'x86-32': ['mac_x86', 'mac_x86_newlib'],
@@ -60,10 +61,13 @@ def main():
       version = options.arm_version
     else:
       version = options.x86_version
-    if flavor.endswith('_newlib'):
+    if 'pnacl' in flavor:
+      url = '%s/toolchain/%s/naclsdk_%s.tgz' % (
+        options.base_url, version, flavor)
+    elif flavor.endswith('_newlib'):
       url = '%s/toolchain/%s/naclsdk_%s.tgz' % (
         options.base_url, version, flavor[:-len('_newlib')])
-    elif 'x86' in flavor and not 'pnacl' in flavor:
+    elif 'x86' in flavor:
       if sys.platform == 'win32':
         url = '%s/x86_toolchain/r%s/toolchain_%s.tar.xz' % (
           options.base_url, version, flavor)
