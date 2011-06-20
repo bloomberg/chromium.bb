@@ -280,7 +280,7 @@ size_t __nacl_tp_alignment(void) {
 
 NACL_UNTRUSTED_INLINE
 size_t __nacl_thread_stack_padding(void) {
-  return 0;
+  return 4;
 }
 
 #else
