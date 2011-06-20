@@ -56,12 +56,15 @@ infobars::Tip::~Tip() {}
 }
 
 - (CGFloat)totalHeightForController:(InfoBarController*)controller {
-  NSUInteger index = [containerController_ indexOfController:controller];
-  DCHECK_NE(NSNotFound, index);
-
   const CGFloat height = infobars::kBaseHeight;
+
+  NSUInteger index = [containerController_ indexOfController:controller];
+  if (index == NSNotFound)
+    return height;
+
   if (index == 0 && [self firstInfobarUsesExpandedTip])
     return height + infobars::kExpandedTipHeight;
+
   return height + infobars::kDefaultTipHeight;
 }
 
