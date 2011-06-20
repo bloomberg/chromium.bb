@@ -12,3 +12,13 @@
   vertical-align: middle;
   visibility: hidden;
 }
+
+#import-success-header {
+  font-size: 1.2em;
+}
+
+#import-success-image {
+  text-align: center;
+  margin-top: -12px;
+  margin-bottom: 10px;
+}

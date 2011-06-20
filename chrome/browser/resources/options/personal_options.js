@@ -61,6 +61,10 @@ cr.define('options', function() {
 
       if (!cr.isChromeOS) {
         $('import-data').onclick = function(event) {
+          // Make sure that any previous import success message is hidden, and
+          // we're showing the UI to import further data.
+          $('import-data-configure').hidden = false;
+          $('import-data-success').hidden = true;
           OptionsPage.navigateToPage('importData');
           chrome.send('coreOptionsUserMetricsAction', ['Import_ShowDlg']);
         };

@@ -57,6 +57,17 @@ cr.define('options', function() {
         ImportDataOverlay.dismiss();
       };
 
+      $('import-data-show-bookmarks-bar').onchange = function() {
+        // Note: The callback 'toggleShowBookmarksBar' is handled within the
+        // browser options handler -- rather than the import data handler --
+        // as the implementation is shared by several clients.
+        chrome.send('toggleShowBookmarksBar');
+      }
+
+      $('import-data-confirm').onclick = function() {
+        ImportDataOverlay.dismiss();
+      };
+
       // Form controls are disabled until the profile list has been loaded.
       self.setControlsSensitive_(false);
     },
@@ -174,8 +185,18 @@ cr.define('options', function() {
    * Remove the import overlay from display.
    */
   ImportDataOverlay.dismiss = function() {
-    ImportDataOverlay.setImportingState(false);
     OptionsPage.closeOverlay();
+  };
+
+  /**
+   * Show a message confirming the success of the import operation.
+   */
+  ImportDataOverlay.confirmSuccess = function() {
+    var showBookmarksMessage = $('import-favorites').checked;
+    ImportDataOverlay.setImportingState(false);
+    $('import-data-configure').hidden = true;
+    $('import-data-success').hidden = false;
+    $('import-find-your-bookmarks').hidden = !showBookmarksMessage;
   };
 
   // Export
