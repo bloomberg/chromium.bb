@@ -234,9 +234,11 @@ class BaseTest(fake_repos.FakeReposTestBase):
   def _log(self):
     raise NotImplementedError()
 
-  def _test_process(self, co):
+  def _test_process(self, co_lambda):
     """Makes sure the process lambda is called correctly."""
-    co.post_processors = [lambda *args: results.append(args)]
+    post_processors = [lambda *args: results.append(args)]
+    co = co_lambda(post_processors)
+    self.assertEquals(post_processors, co.post_processors)
     co.prepare(None)
     ps = self.get_patches()
     results = []
@@ -395,10 +397,11 @@ class SvnCheckout(SvnBaseTest):
     self.assertEquals('LF\n', out)
 
   def testProcess(self):
-    co = checkout.SvnCheckout(
+    co = lambda x: checkout.SvnCheckout(
         self.root_dir, self.name,
         None, None,
-        self.svn_url)
+        self.svn_url,
+        x)
     self._test_process(co)
 
   def testPrepare(self):
@@ -475,10 +478,10 @@ class GitSvnCheckout(SvnBaseTest):
         [patch.FilePatchDiff('svn_utils_test.txt', NAKED_PATCH, svn_props)])
 
   def testProcess(self):
-    co = checkout.SvnCheckout(
+    co = lambda x: checkout.SvnCheckout(
         self.root_dir, self.name,
         None, None,
-        self.svn_url)
+        self.svn_url, x)
     self._test_process(co)
 
   def testPrepare(self):
@@ -549,10 +552,10 @@ class RawCheckout(SvnBaseTest):
         'svn_utils_test.txt.rej\n')
 
   def testProcess(self):
-    co = checkout.SvnCheckout(
+    co = lambda x: checkout.SvnCheckout(
         self.root_dir, self.name,
         None, None,
-        self.svn_url)
+        self.svn_url, x)
     self._test_process(co)
 
   def testPrepare(self):

@@ -65,6 +65,7 @@ class CheckoutBase(object):
       post_processor: list of lambda(checkout, patches) to call on each of the
                       modified files.
     """
+    super(CheckoutBase, self).__init__()
     self.root_dir = root_dir
     self.project_name = project_name
     if self.project_name is None:
@@ -73,7 +74,7 @@ class CheckoutBase(object):
       self.project_path = os.path.join(self.root_dir, self.project_name)
     # Only used for logging purposes.
     self._last_seen_revision = None
-    self.post_processors = None
+    self.post_processors = post_processors
     assert self.root_dir
     assert self.project_path
 
@@ -159,6 +160,7 @@ class RawCheckout(CheckoutBase):
 class SvnConfig(object):
   """Parses a svn configuration file."""
   def __init__(self, svn_config_dir=None):
+    super(SvnConfig, self).__init__()
     self.svn_config_dir = svn_config_dir
     self.default = not bool(self.svn_config_dir)
     if not self.svn_config_dir:
@@ -241,7 +243,8 @@ class SvnCheckout(CheckoutBase, SvnMixIn):
   """Manages a subversion checkout."""
   def __init__(self, root_dir, project_name, commit_user, commit_pwd, svn_url,
       post_processors=None):
-    super(SvnCheckout, self).__init__(root_dir, project_name, post_processors)
+    CheckoutBase.__init__(self, root_dir, project_name, post_processors)
+    SvnMixIn.__init__(self)
     self.commit_user = commit_user
     self.commit_pwd = commit_pwd
     self.svn_url = svn_url
@@ -514,8 +517,9 @@ class GitSvnCheckoutBase(GitCheckoutBase, SvnMixIn):
       commit_user, commit_pwd,
       svn_url, trunk, post_processors=None):
     """trunk is optional."""
-    super(GitSvnCheckoutBase, self).__init__(
-        root_dir, project_name + '.git', remote_branch, post_processors)
+    GitCheckoutBase.__init__(
+        self, root_dir, project_name + '.git', remote_branch, post_processors)
+    SvnMixIn.__init__(self)
     self.commit_user = commit_user
     self.commit_pwd = commit_pwd
     # svn_url in this case is the root of the svn repository.
@@ -686,6 +690,7 @@ class GitSvnCheckout(GitSvnCheckoutBase):
 class ReadOnlyCheckout(object):
   """Converts a checkout into a read-only one."""
   def __init__(self, checkout):
+    super(ReadOnlyCheckout, self).__init__()
     self.checkout = checkout
 
   def prepare(self, revision):
