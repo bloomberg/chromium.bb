@@ -1229,7 +1229,7 @@ void DownloadManager::ShowDownloadInBrowser(DownloadItem* download) {
   // browser. This is not ideal but better than fully hiding the download from
   // the user.
   if (!wrapper) {
-    Browser* last_active = BrowserList::GetLastActive();
+    Browser* last_active = BrowserList::GetLastActiveWithProfile(profile_);
     if (last_active)
       wrapper = last_active->GetSelectedTabContentsWrapper();
   }
