@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "client_logger.h"
+#include "remoting/client/client_logger.h"
 
 #include <stdarg.h>  // va_list
 
