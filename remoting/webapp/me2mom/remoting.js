@@ -186,7 +186,7 @@ function tryShare() {
     remoting.oauth2.refreshAccessToken(function() {
       if (remoting.oauth2.needsNewAccessToken()) {
         // If we still need it, we're going to infinite loop.
-        addToDebugLog("Unable to get access token");
+        showShareError_("unable-to-get-token");
         throw "Unable to get access token";
       }
       tryShare();
@@ -201,6 +201,7 @@ function tryShare() {
   plugin.setAttribute('id', remoting.HOST_PLUGIN_ID);
   div.appendChild(plugin);
   plugin.onStateChanged = onStateChanged_;
+  plugin.logDebugInfoCallback = debugInfoCallback_;
   plugin.connect(remoting.getItem(remoting.XMPP_LOGIN_NAME),
                  'oauth2:' + remoting.oauth2.getAccessToken());
 }
@@ -223,6 +224,21 @@ function onStateChanged_() {
   } else {
     addToDebugLog('Unknown state -> ' + state);
   }
+}
+
+/**
+* This is that callback that the host plugin invokes to indicate that there
+* is additional debug log info to display.
+*/
+function debugInfoCallback_(msg) {
+  addToDebugLog('plugin: ' + msg);
+}
+
+function showShareError_(errorCode) {
+  var errorDiv = document.getElementById(errorCode);
+  errorDiv.style.display = 'block';
+  addToDebugLog("Sharing error: " + errorCode);
+  setHostMode('share-failed');
 }
 
 function cancelShare() {

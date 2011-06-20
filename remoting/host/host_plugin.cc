@@ -71,6 +71,7 @@ uint64_t __cdecl __udivdi3(uint64_t a, uint64_t b) {
 //     ERROR,
 // }
 //
+// attribute Function void logDebugInfo(string);
 // attribute Function void onStateChanged();
 //
 // // The |auth_service_with_token| parameter should be in the format
@@ -83,6 +84,7 @@ namespace {
 
 const char* kAttrNameAccessCode = "accessCode";
 const char* kAttrNameState = "state";
+const char* kAttrNameLogDebugInfo = "logDebugInfo";
 const char* kAttrNameOnStateChanged = "onStateChanged";
 const char* kFuncNameConnect = "connect";
 const char* kFuncNameDisconnect = "disconnect";
@@ -157,6 +159,7 @@ class HostNPScriptObject : public remoting::HostStatusObserver {
       : plugin_(plugin),
         parent_(parent),
         state_(kDisconnected),
+        log_debug_info_func_(NULL),
         on_state_changed_func_(NULL),
         np_thread_id_(base::PlatformThread::CurrentId()),
         failed_login_attempts_(0),
@@ -179,6 +182,9 @@ class HostNPScriptObject : public remoting::HostStatusObserver {
     disconnected_event_.Wait();
 
     host_context_.Stop();
+    if (log_debug_info_func_) {
+      g_npnetscape_funcs->releaseobject(log_debug_info_func_);
+    }
     if (on_state_changed_func_) {
       g_npnetscape_funcs->releaseobject(on_state_changed_func_);
     }
@@ -228,6 +234,7 @@ class HostNPScriptObject : public remoting::HostStatusObserver {
     CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
     return (property_name == kAttrNameAccessCode ||
             property_name == kAttrNameState ||
+            property_name == kAttrNameLogDebugInfo ||
             property_name == kAttrNameOnStateChanged ||
             property_name == kAttrNameDisconnected ||
             property_name == kAttrNameRequestedAccessCode ||
@@ -247,6 +254,9 @@ class HostNPScriptObject : public remoting::HostStatusObserver {
 
     if (property_name == kAttrNameOnStateChanged) {
       OBJECT_TO_NPVARIANT(on_state_changed_func_, *result);
+      return true;
+    } else if (property_name == kAttrNameLogDebugInfo) {
+      OBJECT_TO_NPVARIANT(log_debug_info_func_, *result);
       return true;
     } else if (property_name == kAttrNameState) {
       INT32_TO_NPVARIANT(state_, *result);
@@ -283,11 +293,10 @@ class HostNPScriptObject : public remoting::HostStatusObserver {
     CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
 
     if (property_name == kAttrNameOnStateChanged) {
-      if (on_state_changed_func_) {
-        g_npnetscape_funcs->releaseobject(on_state_changed_func_);
-        on_state_changed_func_ = NULL;
-      }
       if (NPVARIANT_IS_OBJECT(*value)) {
+        if (on_state_changed_func_) {
+          g_npnetscape_funcs->releaseobject(on_state_changed_func_);
+        }
         on_state_changed_func_ = NPVARIANT_TO_OBJECT(*value);
         if (on_state_changed_func_) {
           g_npnetscape_funcs->retainobject(on_state_changed_func_);
@@ -297,6 +306,24 @@ class HostNPScriptObject : public remoting::HostStatusObserver {
         SetException("SetProperty: unexpected type for property " +
                      property_name);
       }
+      return false;
+    }
+
+    if (property_name == kAttrNameLogDebugInfo) {
+      if (NPVARIANT_IS_OBJECT(*value)) {
+        if (log_debug_info_func_) {
+          g_npnetscape_funcs->releaseobject(log_debug_info_func_);
+        }
+        log_debug_info_func_ = NPVARIANT_TO_OBJECT(*value);
+        if (log_debug_info_func_) {
+          g_npnetscape_funcs->retainobject(log_debug_info_func_);
+        }
+        return true;
+      } else {
+        SetException("SetProperty: unexpected type for property " +
+                     property_name);
+      }
+      return false;
     }
 
     return false;
@@ -314,6 +341,7 @@ class HostNPScriptObject : public remoting::HostStatusObserver {
     const char* entries[] = {
       kAttrNameAccessCode,
       kAttrNameState,
+      kAttrNameLogDebugInfo,
       kAttrNameOnStateChanged,
       kFuncNameConnect,
       kFuncNameDisconnect,
@@ -371,6 +399,9 @@ class HostNPScriptObject : public remoting::HostStatusObserver {
   // Disconnect. No arguments or result.
   bool Disconnect(const NPVariant* args, uint32_t argCount, NPVariant* result);
 
+  // Call LogDebugInfo handler if there is one.
+  void LogDebugInfo(const std::string& message);
+
   // Call OnStateChanged handler if there is one.
   void OnStateChanged(State state);
 
@@ -411,6 +442,7 @@ class HostNPScriptObject : public remoting::HostStatusObserver {
   NPObject* parent_;
   int state_;
   std::string access_code_;
+  NPObject* log_debug_info_func_;
   NPObject* on_state_changed_func_;
   base::PlatformThreadId np_thread_id_;
 
@@ -428,6 +460,8 @@ class HostNPScriptObject : public remoting::HostStatusObserver {
 bool HostNPScriptObject::Connect(const NPVariant* args,
                                  uint32_t arg_count,
                                  NPVariant* result) {
+  LogDebugInfo("Connecting...");
+
   CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
   if (arg_count != 2) {
     SetException("connect: bad number of arguments");
@@ -597,9 +631,26 @@ void HostNPScriptObject::OnStateChanged(State state) {
   }
 }
 
+void HostNPScriptObject::LogDebugInfo(const std::string& message) {
+  if (!host_context_.IsUIThread()) {
+    host_context_.PostToUIThread(
+        FROM_HERE,
+        NewRunnableMethod(this, &HostNPScriptObject::LogDebugInfo, message));
+    return;
+  }
+  if (log_debug_info_func_) {
+    NPVariant* arg = new NPVariant();
+    LOG(INFO) << "Logging: " << message;
+    STRINGZ_TO_NPVARIANT(message.c_str(), *arg);
+    bool is_good = CallJSFunction(log_debug_info_func_, arg, 1, NULL);
+    LOG_IF(ERROR, !is_good) << "LogDebugInfo failed";
+  }
+}
+
 void HostNPScriptObject::SetException(const std::string& exception_string) {
   CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
   g_npnetscape_funcs->setexception(parent_, exception_string.c_str());
+  LogDebugInfo(exception_string);
 }
 
 bool HostNPScriptObject::CallJSFunction(NPObject* func,
