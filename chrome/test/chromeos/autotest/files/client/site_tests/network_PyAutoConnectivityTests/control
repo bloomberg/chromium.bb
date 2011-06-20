@@ -1,0 +1,21 @@
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+AUTHOR = "Chrome OS Team"
+NAME = "network_PyAutoConnectivityTests"
+PURPOSE = "PyAuto based network tests that run in oyster bay."
+CRITERIA = "This test will fail if connecting to the specified networks fails."
+TIME = "LONG"
+TEST_CATEGORY = "Functional"
+TEST_CLASS = "network"
+TEST_TYPE = "client"
+
+DOC = """
+This is a wrapper test for Chrome pyauto-based network tests.
+These tests include a compliance suite against different models of wifi routers
+along with network related UI functionality.
+http://dev.chromium.org/developers/testing/pyauto
+"""
+
+job.run_test('network_PyAutoConnectivityTests')

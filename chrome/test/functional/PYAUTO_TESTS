@@ -338,6 +338,15 @@
   'EMPTY': {
   },
 
+  'CHROMEOS_CONNECTIVITY': {
+    'chromeos': [
+      'chromeos_wifi_functional',
+      'chromeos_wifi_compliance',
+      'wifi_downloads',
+      'wifi_notification',
+    ],
+  },
+
   # ChromeOS login tests.
   'CHROMEOS_LOGIN': {
     'chromeos': [
@@ -354,7 +363,7 @@
      ],
   },
 
-  # HTML5 media functional tests.   
+  # HTML5 media functional tests.
   'AV_FUNC': {
      'linux': [
        'media.media_event_simple_test',
