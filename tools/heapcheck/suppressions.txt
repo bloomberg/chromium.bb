@@ -302,13 +302,6 @@
   fun:browser_sync::SyncBackendHost::Core::NotifyFrontend
 }
 {
-  bug_40499
-  Heapcheck:Leak
-  fun:UserScriptSlaveTest::Serialize
-  ...
-  fun:testing::Test::Run
-}
-{
   bug_42153
   Heapcheck:Leak
   fun:::InitPersonalInfo
