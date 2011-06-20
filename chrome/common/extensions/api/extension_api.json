@@ -1583,7 +1583,6 @@
         "name": "setPopup",
         "type": "function",
         "description": "Sets the html document to be opened as a popup when the user clicks on the page action's icon.",
-        "min_version": "5.0.308.0",
         "parameters": [
           {
             "name": "details",
@@ -1673,7 +1672,6 @@
       {
         "name": "setPopup",
         "type": "function",
-        "min_version": "5.0.316.0",
         "description": "Sets the html document to be opened as a popup when the user clicks on the browser action's icon.",
         "parameters": [
           {
@@ -2134,7 +2132,7 @@
         "properties": {
           "id": {"type": "string", "minimum": 0, "description": "The unique identifier for the item."},
           "url": {"type": "string", "optional": true, "description": "The URL navigated to by a user."},
-          "title": {"type": "string", "optional": true, "description": "The title of the history page."},
+          "title": {"type": "string", "optional": true, "description": "The title of the page when it was last loaded."},
           "lastVisitTime": {"type": "number", "optional": true, "description": "When this page was last loaded, represented in milliseconds since the epoch."},
           "visitCount": {"type": "integer", "optional": true, "description": "The number of times the user has navigated to this page."},
           "typedCount": {"type": "integer", "optional": true, "description": "The number of times the user has navigated to this page by typing in the address."}
@@ -2264,7 +2262,7 @@
       {
         "name": "onVisited",
         "type": "function",
-        "description": "Fired when a URL is visited, providing the HistoryItem data for that URL.",
+        "description": "Fired when a URL is visited, providing the HistoryItem data for that URL.  This event fires before the page has loaded.",
         "parameters": [
           { "name": "result", "$ref": "HistoryItem"}
         ]
