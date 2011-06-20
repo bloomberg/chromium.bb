@@ -71,7 +71,7 @@ class Resource : public base::RefCountedThreadSafe<Resource>,
   // destroyed.
   //
   // If you override this, be sure to call the base class' implementation.
-  virtual void ClearInstance() { instance_ = NULL; }
+  virtual void ClearInstance();
 
   // Cast the resource into a specified type. This will return NULL if the
   // resource does not match the specified type. Specializations of this

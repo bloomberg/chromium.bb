@@ -35,6 +35,10 @@ PP_Resource Resource::GetReferenceNoAddRef() const {
   return resource_id_;
 }
 
+void Resource::ClearInstance() {
+  instance_ = NULL;
+}
+
 void Resource::LastPluginRefWasDeleted() {
   DCHECK(resource_id_ != 0);
   instance()->module()->GetCallbackTracker()->PostAbortForResource(
