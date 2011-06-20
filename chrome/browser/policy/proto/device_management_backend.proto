@@ -161,6 +161,17 @@ message PolicyData {
   // In this field the DMServer should echo back the "deviceid" HTTP parameter
   // from the request.
   optional string device_id = 8;
+
+  // Indicates which state this association with DMServer is in. This can be
+  // used to tell the client that it is not receiving policy even though the
+  // registration with the server is kept active.
+  enum AssociationState {
+    // Association is active and policy is pushed.
+    ACTIVE = 0;
+    // Association is alive, but the corresponding domain is not managed.
+    UNMANAGED = 1;
+  }
+  optional AssociationState state = 9 [default = ACTIVE];
 }
 
 message PolicyFetchResponse {
