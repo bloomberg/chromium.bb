@@ -17,9 +17,7 @@
         'app_base',
         'app_resources',
         '../base/base.gyp:test_support_base',
-        '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
-        '../ui/ui.gyp:ui_base',
       ],
       'sources': [
         'run_all_unittests.cc',
@@ -27,8 +25,6 @@
         'sql/sqlite_features_unittest.cc',
         'sql/statement_unittest.cc',
         'sql/transaction_unittest.cc',
-        'test_suite.cc',
-        'test_suite.h',
       ],
       'include_dirs': [
         '..',
