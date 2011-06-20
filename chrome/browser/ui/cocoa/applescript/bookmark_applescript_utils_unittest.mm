@@ -10,7 +10,7 @@
 
 @synthesize helper = helper_;
 
-- (Profile*)defaultProfile {
+- (Profile*)lastProfile {
   if (!helper_)
     return NULL;
   return helper_->profile();

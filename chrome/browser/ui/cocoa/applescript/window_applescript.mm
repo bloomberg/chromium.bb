@@ -37,19 +37,19 @@
       objectForKey:@"KeyDictionary"] objectForKey:@"mode"];
   AppController* appDelegate = [NSApp delegate];
 
-  Profile* defaultProfile = [appDelegate defaultProfile];
+  Profile* lastProfile = [appDelegate lastProfile];
 
-  if (!defaultProfile) {
+  if (!lastProfile) {
     AppleScript::SetError(AppleScript::errGetProfile);
     return nil;
   }
 
   Profile* profile;
   if ([mode isEqualToString:AppleScript::kIncognitoWindowMode]) {
-    profile = defaultProfile->GetOffTheRecordProfile();
+    profile = lastProfile->GetOffTheRecordProfile();
   }
   else if ([mode isEqualToString:AppleScript::kNormalWindowMode] || !mode) {
-    profile = defaultProfile;
+    profile = lastProfile;
   } else {
     // Mode cannot be anything else
     AppleScript::SetError(AppleScript::errInvalidMode);

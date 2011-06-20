@@ -61,9 +61,9 @@ class Profile;
 }
 
 @property(readonly, nonatomic) BOOL startupComplete;
+@property(readonly, nonatomic) Profile* lastProfile;
 
 - (void)didEndMainMessageLoop;
-- (Profile*)defaultProfile;
 
 // Try to close all browser windows, and if that succeeds then quit.
 - (BOOL)tryToTerminateApplication:(NSApplication*)app;

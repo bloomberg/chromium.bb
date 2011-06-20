@@ -39,9 +39,9 @@ IN_PROC_BROWSER_TEST_F(WindowAppleScriptTest, CreationWithNoProfile) {
 
 // Create a window with a particular profile.
 IN_PROC_BROWSER_TEST_F(WindowAppleScriptTest, CreationWithProfile) {
-  Profile* defaultProfile = [[NSApp delegate] defaultProfile];
+  Profile* lastProfile = [[NSApp delegate] lastProfile];
   scoped_nsobject<WindowAppleScript> aWindow(
-      [[WindowAppleScript alloc] initWithProfile:defaultProfile]);
+      [[WindowAppleScript alloc] initWithProfile:lastProfile]);
   EXPECT_TRUE(aWindow.get());
   EXPECT_TRUE([aWindow.get() uniqueID]);
 }

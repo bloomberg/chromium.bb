@@ -25,7 +25,7 @@ class BookmarkModel;
 }
 @property(nonatomic) BrowserTestHelper* helper;
 // Return the |TestingProfile*| which is used for testing.
-- (Profile*)defaultProfile;
+- (Profile*)lastProfile;
 @end
 
 

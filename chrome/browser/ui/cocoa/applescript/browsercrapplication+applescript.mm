@@ -69,13 +69,13 @@
 - (BookmarkFolderAppleScript*)otherBookmarks {
   AppController* appDelegate = [NSApp delegate];
 
-  Profile* defaultProfile = [appDelegate defaultProfile];
-  if (!defaultProfile) {
+  Profile* lastProfile = [appDelegate lastProfile];
+  if (!lastProfile) {
     AppleScript::SetError(AppleScript::errGetProfile);
     return nil;
   }
 
-  BookmarkModel* model = defaultProfile->GetBookmarkModel();
+  BookmarkModel* model = lastProfile->GetBookmarkModel();
   if (!model->IsLoaded()) {
     AppleScript::SetError(AppleScript::errBookmarkModelLoad);
     return nil;
@@ -92,13 +92,13 @@
 - (BookmarkFolderAppleScript*)bookmarksBar {
   AppController* appDelegate = [NSApp delegate];
 
-  Profile* defaultProfile = [appDelegate defaultProfile];
-  if (!defaultProfile) {
+  Profile* lastProfile = [appDelegate lastProfile];
+  if (!lastProfile) {
     AppleScript::SetError(AppleScript::errGetProfile);
     return nil;
   }
 
-  BookmarkModel* model = defaultProfile->GetBookmarkModel();
+  BookmarkModel* model = lastProfile->GetBookmarkModel();
   if (!model->IsLoaded()) {
     AppleScript::SetError(AppleScript::errBookmarkModelLoad);
     return NULL;

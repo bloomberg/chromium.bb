@@ -277,7 +277,7 @@ void RecordLastRunAppBundlePath() {
 
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication*)app {
   // Check if the preference is turned on.
-  const PrefService* prefs = [self defaultProfile]->GetPrefs();
+  const PrefService* prefs = [self lastProfile]->GetPrefs();
   if (!prefs->GetBoolean(prefs::kConfirmToQuitEnabled)) {
     confirm_quit::RecordHistogram(confirm_quit::kNoConfirm);
     return NSTerminateNow;
@@ -317,14 +317,14 @@ void RecordLastRunAppBundlePath() {
 }
 
 - (void)didEndMainMessageLoop {
-  DCHECK(!BrowserList::HasBrowserWithProfile([self defaultProfile]));
-  if (!BrowserList::HasBrowserWithProfile([self defaultProfile])) {
+  DCHECK(!BrowserList::HasBrowserWithProfile([self lastProfile]));
+  if (!BrowserList::HasBrowserWithProfile([self lastProfile])) {
     // As we're shutting down, we need to nuke the TabRestoreService, which
     // will start the shutdown of the NavigationControllers and allow for
     // proper shutdown. If we don't do this, Chrome won't shut down cleanly,
     // and may end up crashing when some thread tries to use the IO thread (or
     // another thread) that is no longer valid.
-    TabRestoreServiceFactory::ResetForProfile([self defaultProfile]);
+    TabRestoreServiceFactory::ResetForProfile([self lastProfile]);
   }
 }
 
@@ -525,7 +525,7 @@ void RecordLastRunAppBundlePath() {
   NSMenu* viewMenu = [[[NSApp mainMenu] itemWithTag:IDC_VIEW_MENU] submenu];
   NSMenuItem* encodingMenuItem = [viewMenu itemWithTag:IDC_ENCODING_MENU];
   NSMenu* encodingMenu = [encodingMenuItem submenu];
-  EncodingMenuControllerDelegate::BuildEncodingMenu([self defaultProfile],
+  EncodingMenuControllerDelegate::BuildEncodingMenu([self lastProfile],
                                                     encodingMenu);
 
   // Since Chrome is localized to more languages than the OS, tell Cocoa which
@@ -652,7 +652,7 @@ void RecordLastRunAppBundlePath() {
 // restore and returns YES if so.
 - (BOOL)canRestoreTab {
   TabRestoreService* service =
-      TabRestoreServiceFactory::GetForProfile([self defaultProfile]);
+      TabRestoreServiceFactory::GetForProfile([self lastProfile]);
   return service && !service->entries().empty();
 }
 
@@ -704,21 +704,21 @@ void RecordLastRunAppBundlePath() {
           enable = [self keyWindowIsNotModal] || ([NSApp modalWindow] == nil);
           break;
         case IDC_SYNC_BOOKMARKS: {
-          Profile* defaultProfile = [self defaultProfile];
+          Profile* lastProfile = [self lastProfile];
           // The profile may be NULL during shutdown -- see
           // http://code.google.com/p/chromium/issues/detail?id=43048 .
           //
           // TODO(akalin,viettrungluu): Figure out whether this method
-          // can be prevented from being called if defaultProfile is
+          // can be prevented from being called if lastProfile is
           // NULL.
-          if (!defaultProfile) {
+          if (!lastProfile) {
             LOG(WARNING)
-                << "NULL defaultProfile detected -- not doing anything";
+                << "NULL lastProfile detected -- not doing anything";
             break;
           }
-          enable = defaultProfile->IsSyncAccessible() &&
+          enable = lastProfile->IsSyncAccessible() &&
               [self keyWindowIsNotModal];
-          sync_ui_util::UpdateSyncItem(item, enable, defaultProfile);
+          sync_ui_util::UpdateSyncItem(item, enable, lastProfile);
           break;
         }
         default:
@@ -747,7 +747,7 @@ void RecordLastRunAppBundlePath() {
 // check, otherwise it should have been disabled in the UI in
 // |-validateUserInterfaceItem:|.
 - (void)commandDispatch:(id)sender {
-  Profile* defaultProfile = [self defaultProfile];
+  Profile* lastProfile = [self lastProfile];
 
   // Handle the case where we're dispatching a command from a sender that's in a
   // browser window. This means that the command came from a background window
@@ -765,80 +765,79 @@ void RecordLastRunAppBundlePath() {
     case IDC_NEW_TAB:
       // Create a new tab in an existing browser window (which we activate) if
       // possible.
-      if (Browser* browser = ActivateBrowser(defaultProfile)) {
+      if (Browser* browser = ActivateBrowser(lastProfile)) {
         browser->ExecuteCommand(IDC_NEW_TAB);
         break;
       }
       // Else fall through to create new window.
     case IDC_NEW_WINDOW:
-      CreateBrowser(defaultProfile);
+      CreateBrowser(lastProfile);
       break;
     case IDC_FOCUS_LOCATION:
-      ActivateOrCreateBrowser(defaultProfile)->
-          ExecuteCommand(IDC_FOCUS_LOCATION);
+      ActivateOrCreateBrowser(lastProfile)->ExecuteCommand(IDC_FOCUS_LOCATION);
       break;
     case IDC_FOCUS_SEARCH:
-      ActivateOrCreateBrowser(defaultProfile)->ExecuteCommand(IDC_FOCUS_SEARCH);
+      ActivateOrCreateBrowser(lastProfile)->ExecuteCommand(IDC_FOCUS_SEARCH);
       break;
     case IDC_NEW_INCOGNITO_WINDOW:
-      Browser::OpenEmptyWindow(defaultProfile->GetOffTheRecordProfile());
+      Browser::OpenEmptyWindow(lastProfile->GetOffTheRecordProfile());
       break;
     case IDC_RESTORE_TAB:
-      Browser::OpenWindowWithRestoredTabs(defaultProfile);
+      Browser::OpenWindowWithRestoredTabs(lastProfile);
       break;
     case IDC_OPEN_FILE:
-      CreateBrowser(defaultProfile)->ExecuteCommand(IDC_OPEN_FILE);
+      CreateBrowser(lastProfile)->ExecuteCommand(IDC_OPEN_FILE);
       break;
     case IDC_CLEAR_BROWSING_DATA: {
       // There may not be a browser open, so use the default profile.
-      if (Browser* browser = ActivateBrowser(defaultProfile)) {
+      if (Browser* browser = ActivateBrowser(lastProfile)) {
         browser->OpenClearBrowsingDataDialog();
       } else {
-        Browser::OpenClearBrowingDataDialogWindow(defaultProfile);
+        Browser::OpenClearBrowingDataDialogWindow(lastProfile);
       }
       break;
     }
     case IDC_IMPORT_SETTINGS: {
-      if (Browser* browser = ActivateBrowser(defaultProfile)) {
+      if (Browser* browser = ActivateBrowser(lastProfile)) {
         browser->OpenImportSettingsDialog();
       } else {
-        Browser::OpenImportSettingsDialogWindow(defaultProfile);
+        Browser::OpenImportSettingsDialogWindow(lastProfile);
       }
       break;
     }
     case IDC_SHOW_BOOKMARK_MANAGER:
       UserMetrics::RecordAction(UserMetricsAction("ShowBookmarkManager"));
-      if (Browser* browser = ActivateBrowser(defaultProfile)) {
+      if (Browser* browser = ActivateBrowser(lastProfile)) {
         // Open a bookmark manager tab.
         browser->OpenBookmarkManager();
       } else {
         // No browser window, so create one for the bookmark manager tab.
-        Browser::OpenBookmarkManagerWindow(defaultProfile);
+        Browser::OpenBookmarkManagerWindow(lastProfile);
       }
       break;
     case IDC_SHOW_HISTORY:
-      if (Browser* browser = ActivateBrowser(defaultProfile))
+      if (Browser* browser = ActivateBrowser(lastProfile))
         browser->ShowHistoryTab();
       else
-        Browser::OpenHistoryWindow(defaultProfile);
+        Browser::OpenHistoryWindow(lastProfile);
       break;
     case IDC_SHOW_DOWNLOADS:
-      if (Browser* browser = ActivateBrowser(defaultProfile))
+      if (Browser* browser = ActivateBrowser(lastProfile))
         browser->ShowDownloadsTab();
       else
-        Browser::OpenDownloadsWindow(defaultProfile);
+        Browser::OpenDownloadsWindow(lastProfile);
       break;
     case IDC_MANAGE_EXTENSIONS:
-      if (Browser* browser = ActivateBrowser(defaultProfile))
+      if (Browser* browser = ActivateBrowser(lastProfile))
         browser->ShowExtensionsTab();
       else
-        Browser::OpenExtensionsWindow(defaultProfile);
+        Browser::OpenExtensionsWindow(lastProfile);
       break;
     case IDC_HELP_PAGE:
-      if (Browser* browser = ActivateBrowser(defaultProfile))
+      if (Browser* browser = ActivateBrowser(lastProfile))
         browser->OpenHelpTab();
       else
-        Browser::OpenHelpWindow(defaultProfile);
+        Browser::OpenHelpWindow(lastProfile);
       break;
     case IDC_FEEDBACK: {
       Browser* browser = BrowserList::GetLastActive();
@@ -847,7 +846,7 @@ void RecordLastRunAppBundlePath() {
       BugReportWindowController* controller =
           [[BugReportWindowController alloc]
               initWithTabContents:currentTab
-                          profile:[self defaultProfile]];
+                          profile:[self lastProfile]];
       [controller runModalDialog];
       break;
     }
@@ -856,15 +855,15 @@ void RecordLastRunAppBundlePath() {
       // http://code.google.com/p/chromium/issues/detail?id=43048 .
       //
       // TODO(akalin,viettrungluu): Figure out whether this method can
-      // be prevented from being called if defaultProfile is NULL.
-      if (!defaultProfile) {
-        LOG(WARNING) << "NULL defaultProfile detected -- not doing anything";
+      // be prevented from being called if lastProfile is NULL.
+      if (!lastProfile) {
+        LOG(WARNING) << "NULL lastProfile detected -- not doing anything";
         break;
       }
       // TODO(akalin): Add a constant to denote starting sync from the
       // main menu and use that instead of START_FROM_WRENCH.
       sync_ui_util::OpenSyncMyBookmarksDialog(
-          defaultProfile, ActivateBrowser(defaultProfile),
+          lastProfile, ActivateBrowser(lastProfile),
           ProfileSyncService::START_FROM_WRENCH);
       break;
     case IDC_TASK_MANAGER:
@@ -886,7 +885,7 @@ void RecordLastRunAppBundlePath() {
 // Run a (background) application in a new tab.
 - (void)executeApplication:(id)sender {
   NSInteger tag = [sender tag];
-  Profile* profile = [self defaultProfile];
+  Profile* profile = [self lastProfile];
   DCHECK(profile);
   BackgroundApplicationListModel applications(profile);
   DCHECK(tag >= 0 &&
@@ -941,7 +940,7 @@ void RecordLastRunAppBundlePath() {
         doneOnce = YES;
         if (base::mac::WasLaunchedAsHiddenLoginItem()) {
           SessionService* sessionService =
-              SessionServiceFactory::GetForProfile([self defaultProfile]);
+              SessionServiceFactory::GetForProfile([self lastProfile]);
           if (sessionService &&
               sessionService->RestoreIfNecessary(std::vector<GURL>()))
             return NO;
@@ -951,7 +950,7 @@ void RecordLastRunAppBundlePath() {
   // Otherwise open a new window.
   {
     AutoReset<bool> auto_reset_in_run(&g_is_opening_new_window, true);
-    Browser::OpenEmptyWindow([self defaultProfile]);
+    Browser::OpenEmptyWindow([self lastProfile]);
   }
 
   // We've handled the reopen event, so return NO to tell AppKit not
@@ -990,7 +989,7 @@ void RecordLastRunAppBundlePath() {
       base::SysNSStringToUTF16(acceleratorString));
   [item setTitle:title];
 
-  const PrefService* prefService = [self defaultProfile]->GetPrefs();
+  const PrefService* prefService = [self lastProfile]->GetPrefs();
   bool enabled = prefService->GetBoolean(prefs::kConfirmToQuitEnabled);
   [item setState:enabled ? NSOnState : NSOffState];
 }
@@ -1002,7 +1001,7 @@ void RecordLastRunAppBundlePath() {
   [app registerServicesMenuSendTypes:types returnTypes:types];
 }
 
-- (Profile*)defaultProfile {
+- (Profile*)lastProfile {
   // Return the profile of the last-used BrowserWindowController, if available.
   if (lastProfile_)
     return lastProfile_;
@@ -1029,7 +1028,7 @@ void RecordLastRunAppBundlePath() {
   Browser* browser = BrowserList::GetLastActive();
   // if no browser window exists then create one with no tabs to be filled in
   if (!browser) {
-    browser = Browser::Create([self defaultProfile]);
+    browser = Browser::Create([self lastProfile]);
     browser->window()->Show();
   }
 
@@ -1068,12 +1067,12 @@ void RecordLastRunAppBundlePath() {
 // Show the preferences window, or bring it to the front if it's already
 // visible.
 - (IBAction)showPreferences:(id)sender {
-  if (Browser* browser = ActivateBrowser([self defaultProfile])) {
+  if (Browser* browser = ActivateBrowser([self lastProfile])) {
     // Show options tab in the active browser window.
     browser->OpenOptionsDialog();
   } else {
     // No browser window, so create one for the options tab.
-    Browser::OpenOptionsWindow([self defaultProfile]);
+    Browser::OpenOptionsWindow([self lastProfile]);
   }
 }
 
@@ -1094,7 +1093,7 @@ void RecordLastRunAppBundlePath() {
 - (IBAction)orderFrontStandardAboutPanel:(id)sender {
   if (!aboutController_) {
     aboutController_ =
-        [[AboutWindowController alloc] initWithProfile:[self defaultProfile]];
+        [[AboutWindowController alloc] initWithProfile:[self lastProfile]];
 
     // Watch for a notification of when it goes away so that we can destroy
     // the controller.
@@ -1109,7 +1108,7 @@ void RecordLastRunAppBundlePath() {
 }
 
 - (IBAction)toggleConfirmToQuit:(id)sender {
-  PrefService* prefService = [self defaultProfile]->GetPrefs();
+  PrefService* prefService = [self lastProfile]->GetPrefs();
   bool enabled = prefService->GetBoolean(prefs::kConfirmToQuitEnabled);
   prefService->SetBoolean(prefs::kConfirmToQuitEnabled, !enabled);
 }
@@ -1122,7 +1121,7 @@ void RecordLastRunAppBundlePath() {
 
 - (NSMenu*)applicationDockMenu:(NSApplication*)sender {
   NSMenu* dockMenu = [[[NSMenu alloc] initWithTitle: @""] autorelease];
-  Profile* profile = [self defaultProfile];
+  Profile* profile = [self lastProfile];
 
   NSString* titleStr = l10n_util::GetNSStringWithFixup(IDS_NEW_WINDOW_MAC);
   scoped_nsobject<NSMenuItem> item(
