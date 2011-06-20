@@ -1,20 +1,28 @@
 # define a bunch of variables for readability
 
+# This will be the dummy module handle used the nexe
 set_variable MODULE i(4444)
+# This will be the dummy instance handle used by the nexe
 set_variable INSTANCE i(5555)
-# NOTE: width and height must match the image_data and
-# graphic_2d object requests that the nexe makes
+
+# NOTE: you need to customize this for you own app.
+#       width and height must match the image_data and
+#       graphic_2d object requests by the nexe
 set_variable WIDTH  1000
 set_variable HEIGHT 700
-set_variable TAGS C(23,id\000name\000src\000style\000type\000)
-set_variable VALUES C(74,naclModule\000naclModule\000ppapi.nexe\000background-color:gray\000application/x-nacl\000)
+
+# NOTE: you need to customize this for you own app.
+#       These are the argument passed to the Init() function of the nexe
+#       TAGS  & VALUES must be exactly NUM_TAGS concatenated zero term. strings.
+set_variable NUM_TAGS i(1)
+set_variable TAGS C(4,src\000)
+set_variable VALUES C(11,ppapi.nexe\000)
 
 echo
 echo "*** INITIALIZE PEPPER EMULATION"
 # this registers the currently supported PPB_xxx rpcs
 pepper_emu_initialize ${INSTANCE} ${WIDTH} ${HEIGHT} demo
 echo
-
 
 echo
 echo "*** CREATE UPCALL SERVICE"
@@ -30,7 +38,7 @@ rpc PPP_InitializeModule hide-results i(0) ${MODULE} h(pepper_desc) s("${service
 echo
 echo "*** CHECK INSTANCE CREATION"
 # many nexes uses this to trigger instance initialization
-rpc PPP_Instance_DidCreate ${INSTANCE} i(5) ${TAGS} ${VALUES} * i(0)
+rpc PPP_Instance_DidCreate ${INSTANCE} ${NUM_TAGS} ${TAGS} ${VALUES} * i(0)
 
 echo
 echo "*** TRIGGER REPAINT"
@@ -38,7 +46,7 @@ rpc PPP_Instance_DidChangeView ${INSTANCE} I(4,8,79,${WIDTH},${HEIGHT}) I(4,0,0,
 
 echo
 echo "*** ENTER EVENT LOOP"
-# wait for sdl events and forward them via PPP_Instance_HandleInputEvent
+# wait for sdl events and forward them to PPP_Instance_HandleInputEvent
 pepper_emu_event_loop
 
 ######################################################################
