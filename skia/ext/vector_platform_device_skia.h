@@ -45,6 +45,10 @@ class VectorPlatformDeviceSkia : public PlatformDevice {
   virtual void EndPlatformPaint();
 #if defined(OS_WIN)
   virtual void DrawToNativeContext(HDC dc, int x, int y, const RECT* src_rect);
+#elif defined(OS_MACOSX)
+  virtual void DrawToNativeContext(CGContext* context, int x, int y,
+                                   const CGRect* src_rect);
+  virtual CGContextRef GetBitmapContext();
 #endif
 
   // SkDevice methods.

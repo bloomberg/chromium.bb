@@ -56,7 +56,7 @@ PlatformDevice::PlatformSurface VectorPlatformDeviceSkia::BeginPlatformPaint() {
                                                  pdf_device_->height(),
                                                  false, /* not opaque */
                                                  NULL);
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) && !defined(OS_MACOSX)
   raster_surface_ = BitmapPlatformDevice::Create(pdf_device_->width(),
                                                  pdf_device_->height(),
                                                  false /* not opaque */);
@@ -211,6 +211,17 @@ void VectorPlatformDeviceSkia::DrawToNativeContext(HDC dc,
                                                    const RECT* src_rect) {
   SkASSERT(false);
 }
+#elif defined(OS_MACOSX)
+void VectorPlatformDeviceSkia::DrawToNativeContext(CGContext* context, int x,
+    int y, const CGRect* src_rect) {
+  SkASSERT(false);
+}
+
+CGContextRef VectorPlatformDeviceSkia::GetBitmapContext() {
+  SkASSERT(false);
+  return NULL;
+}
+
 #endif
 
 SkDeviceFactory* VectorPlatformDeviceSkia::onNewDeviceFactory() {
