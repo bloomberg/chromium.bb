@@ -14,7 +14,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -32,7 +32,8 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #endif
 
-namespace {
+static const char kFlagsJs[] = "flags.js";
+static const char kStringsJs[] = "strings.js";
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -40,86 +41,77 @@ namespace {
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-class FlagsUIHTMLSource : public ChromeURLDataManager::DataSource {
+class FlagsUIHTMLSource : public ChromeWebUIDataSource {
  public:
-  FlagsUIHTMLSource()
-      : DataSource(chrome::kChromeUIFlagsHost, MessageLoop::current()) {}
+  FlagsUIHTMLSource();
 
   // Called when the network layer has requested a resource underneath
   // the path we registered.
   virtual void StartDataRequest(const std::string& path,
                                 bool is_incognito,
                                 int request_id);
-  virtual std::string GetMimeType(const std::string&) const {
-    return "text/html";
-  }
+  virtual std::string GetMimeType(const std::string&) const;
 
  private:
   ~FlagsUIHTMLSource() {}
-
   DISALLOW_COPY_AND_ASSIGN(FlagsUIHTMLSource);
 };
+
+FlagsUIHTMLSource::FlagsUIHTMLSource()
+    : ChromeWebUIDataSource(chrome::kChromeUIFlagsHost) {
+  AddLocalizedString("flagsLongTitle", IDS_FLAGS_LONG_TITLE);
+  AddLocalizedString("flagsTableTitle", IDS_FLAGS_TABLE_TITLE);
+  AddLocalizedString("flagsNoExperimentsAvailable",
+                     IDS_FLAGS_NO_EXPERIMENTS_AVAILABLE);
+  AddLocalizedString("flagsWarningHeader", IDS_FLAGS_WARNING_HEADER);
+  AddLocalizedString("flagsBlurb", IDS_FLAGS_WARNING_TEXT);
+#if defined(OS_CHROMEOS)
+  int ids = IDS_PRODUCT_OS_NAME;
+#else
+  int ids = IDS_PRODUCT_NAME;
+#endif
+  AddString("flagsRestartNotice",
+            l10n_util::GetStringFUTF16(IDS_FLAGS_RELAUNCH_NOTICE,
+                                       l10n_util::GetStringUTF16(ids)));
+  AddLocalizedString("flagsRestartButton", IDS_FLAGS_RELAUNCH_BUTTON);
+  AddLocalizedString("disable", IDS_FLAGS_DISABLE);
+  AddLocalizedString("enable", IDS_FLAGS_ENABLE);
+#if defined(OS_CHROMEOS)
+  // Set the strings to show which user can actually change the flags
+  AddLocalizedString("ownerOnly", IDS_OPTIONS_ACCOUNTS_OWNER_ONLY);
+  AddString("ownerUserId",
+            UTF8ToUTF16(chromeos::UserCrosSettingsProvider::cached_owner()));
+#endif
+}
 
 void FlagsUIHTMLSource::StartDataRequest(const std::string& path,
                                         bool is_incognito,
                                         int request_id) {
-  // Strings used in the JsTemplate file.
-  DictionaryValue localized_strings;
-  localized_strings.SetString("flagsLongTitle",
-      l10n_util::GetStringUTF16(IDS_FLAGS_LONG_TITLE));
-  localized_strings.SetString("flagsTableTitle",
-      l10n_util::GetStringUTF16(IDS_FLAGS_TABLE_TITLE));
-  localized_strings.SetString("flagsNoExperimentsAvailable",
-      l10n_util::GetStringUTF16(IDS_FLAGS_NO_EXPERIMENTS_AVAILABLE));
-  localized_strings.SetString("flagsWarningHeader", l10n_util::GetStringUTF16(
-      IDS_FLAGS_WARNING_HEADER));
-  localized_strings.SetString("flagsBlurb", l10n_util::GetStringUTF16(
-      IDS_FLAGS_WARNING_TEXT));
-  localized_strings.SetString("flagsRestartNotice", l10n_util::GetStringFUTF16(
-      IDS_FLAGS_RELAUNCH_NOTICE,
-      l10n_util::GetStringUTF16(
-#if defined(OS_CHROMEOS)
-          IDS_PRODUCT_OS_NAME
-#else
-          IDS_PRODUCT_NAME
-#endif
-          )));
-  localized_strings.SetString("flagsRestartButton",
-      l10n_util::GetStringUTF16(IDS_FLAGS_RELAUNCH_BUTTON));
-  localized_strings.SetString("disable",
-      l10n_util::GetStringUTF16(IDS_FLAGS_DISABLE));
-  localized_strings.SetString("enable",
-      l10n_util::GetStringUTF16(IDS_FLAGS_ENABLE));
-
-  base::StringPiece html =
-      ResourceBundle::GetSharedInstance().GetRawDataResource(IDR_FLAGS_HTML);
+  if (path == kStringsJs) {
+    SendLocalizedStringsAsJSON(request_id);
+  } else {
+    int idr;
+    if (path == kFlagsJs)
+      idr = IDR_FLAGS_JS;
 #if defined (OS_CHROMEOS)
-  if (!chromeos::UserManager::Get()->current_user_is_owner()) {
-    html = ResourceBundle::GetSharedInstance().GetRawDataResource(
-        IDR_FLAGS_HTML_WARNING);
-
-    // Set the strings to show which user can actually change the flags
-    localized_strings.SetString("ownerOnly", l10n_util::GetStringUTF16(
-        IDS_OPTIONS_ACCOUNTS_OWNER_ONLY));
-    localized_strings.SetString("ownerUserId", UTF8ToUTF16(
-        chromeos::UserCrosSettingsProvider::cached_owner()));
-  }
+    else if (!chromeos::UserManager::Get()->current_user_is_owner())
+      idr = IDR_FLAGS_HTML_WARNING;
 #endif
-  static const base::StringPiece flags_html(html);
-  ChromeURLDataManager::DataSource::SetFontAndTextDirection(&localized_strings);
+    else
+      idr = IDR_FLAGS_HTML;
 
-  std::string full_html(flags_html.data(), flags_html.size());
-  jstemplate_builder::AppendJsonHtml(&localized_strings, &full_html);
-  jstemplate_builder::AppendI18nTemplateSourceHtml(&full_html);
-  jstemplate_builder::AppendI18nTemplateProcessHtml(&full_html);
-  jstemplate_builder::AppendJsTemplateSourceHtml(&full_html);
-
-  scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
-  html_bytes->data.resize(full_html.size());
-  std::copy(full_html.begin(), full_html.end(), html_bytes->data.begin());
-
-  SendResponse(request_id, html_bytes);
+    SendFromResourceBundle(request_id, idr);
+  }
 }
+
+std::string FlagsUIHTMLSource::GetMimeType(const std::string& path) const {
+  if (path == kStringsJs || path == kFlagsJs)
+    return "application/javascript";
+
+  return "text/html";
+}
+
+namespace {
 
 ////////////////////////////////////////////////////////////////////////////////
 //

@@ -18,6 +18,9 @@ class ChromeWebUIDataSource : public ChromeURLDataManager::DataSource {
  public:
   explicit ChromeWebUIDataSource(const std::string& source_name);
 
+  // Adds a string and its equivalent to our dictionary.
+  void AddString(const std::string& name, const string16& value);
+
   // Adds a name and its equivaled localized string to our dictionary.
   void AddLocalizedString(const std::string& name, int ids);
 

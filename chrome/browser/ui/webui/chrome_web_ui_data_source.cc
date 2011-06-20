@@ -18,6 +18,11 @@ ChromeWebUIDataSource::ChromeWebUIDataSource(const std::string& source_name)
 ChromeWebUIDataSource::~ChromeWebUIDataSource() {
 }
 
+void ChromeWebUIDataSource::AddString(const std::string& name,
+                                      const string16& value) {
+  localized_strings_.SetString(name, value);
+}
+
 void ChromeWebUIDataSource::AddLocalizedString(const std::string& name,
                                                int ids) {
   localized_strings_.SetString(name, l10n_util::GetStringUTF16(ids));

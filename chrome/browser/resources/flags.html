@@ -2,244 +2,16 @@
 <html i18n-values="dir:textdirection;">
 <head>
 <meta charset="utf-8">
-<style>
-body {
-  margin: 10px;
-  min-width: 47em;
-}
-
-a {
-  color: blue;
-  font-size: 103%;
-}
-
-div#header {
-  margin-bottom: 1.05em;
-  /* 67px is the height of the header's background image. */
-  min-height: 67px;
-  overflow: hidden;
-  padding-bottom: 20px;
-  -webkit-padding-start: 0;
-  padding-top: 20px;
-  position: relative;
-  box-sizing: border-box;
-}
-
-#header h1 {
-  background: url('../../app/theme/flags_section.png') 0px 20px no-repeat;
-  display: inline;
-  margin: 0;
-  padding-bottom: 43px;
-  -webkit-padding-start: 75px;
-  padding-top: 40px;
-}
-
-html[dir=rtl] #header h1 {
-  background: url('../../app/theme/flags_section.png') right no-repeat;
-}
-
-h1 {
-  font-size: 156%;
-  font-weight: bold;
-  padding: 0;
-  margin: 0;
-}
-
-#blurb-container {
-  padding-bottom: 1.5em;
-  font-size: 120%;
-}
-
-#blurb-warning {
-  color: red;
-  font-weight: bold;
-}
-
-div.content {
-  font-size: 88%;
-  margin-top: 5px;
-}
-
-.section-header {
-  background: #ebeff9;
-  border-top: 1px solid #b5c7de;
-  font-size: 99%;
-  padding-bottom: 2px;
-  -webkit-padding-start: 5px;
-  padding-top: 3px;
-  width: 100%;
-}
-
-.section-header > table tr td:first-child {
-  width: 100%;
-}
-
-.section-header > table {
-  width: 100%;
-}
-
-.section-header-title {
-  font-weight: bold;
-}
-
-.vbox-container {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-}
-
-.wbox {
-  display: -webkit-box;
-  -webkit-box-align: stretch;
-  -webkit-box-flex: 1;
-}
-
-#top {
-  -webkit-padding-end: 5px;
-}
-
-/* Disabled experiments display grey text on a grey background.  The title,
-   however, should remain completely legible. */
-.experiment-disabled > td {
-  background: #F0F0F0;
-  color: #A0A0A0;
-}
-
-.experiment-disabled .experiment-name {
-  color: #000;
-}
-
-.experiment {
-  border-bottom: 1px solid #cdcdcd;
-}
-
-.experiment td {
-  padding-bottom: 4px;
-  padding-top: 5px;
-}
-
-/* Indent the text related to each experiment. */
-.experiment-text {
-  -webkit-padding-start: 5px;
-}
-
-.experiment-name {
-  font-weight: bold;
-}
-
-.no-experiments {
-  margin: 6em 0 0;
-  text-align: center;
-  font-size: 1.2em;
-}
-
-/* Match the indentation of .experiment-text. */
-.experiment-actions {
-  -webkit-padding-start: 5px;
-  margin-top: 0.2em;
-  margin-bottom: 0.2em;
-}
-
-div.needs-restart {
-  padding-top: 10px;
-  -webkit-padding-start: 5px;
-}
-
-button {
-  font-size: 104%;
-}
-
-</style>
-<script>
-
-/**
- * This variable structure is here to document the structure that the template
- * expects to correctly populate the page.
- */
-var flagsExperimentsDataFormat = {
-  'flagsExperiments': [
-    {
-      'internal_name': 'Experiment ID string',
-      'name': 'Experiment Name',
-      'description': 'description',
-      /* enabled is only set if the experiment is single valued */
-      'enabled': true,
-      /* choices is only set if the experiment has multiple values */
-      'choices': [
-        {
-          'internal_name': 'Experiment ID string',
-          'description': 'description',
-          'selected': true
-        }
-      ]
-    }
-  ],
-  'needsRestart': false
-};
-
-/**
- * Takes the |flagsExperimentsData| input argument which represents data about
- * the currently available experiments and populates the html jstemplate
- * with that data. It expects an object structure like the above.
- * @param {Object} flagsExperimentsData Information about available experiments
- */
-function renderTemplate(flagsExperimentsData) {
-  // This is the javascript code that processes the template:
-  var input = new JsEvalContext(flagsExperimentsData);
-  var output = document.getElementById('flagsExperimentTemplate');
-  jstProcess(input, output);
-}
-
-/**
- * Asks the C++ FlagsDOMHandler to get details about the available experiments
- * and return detailed data about the configuration. The FlagsDOMHandler
- * should reply to returnFlagsExperiments() (below).
- */
-function requestFlagsExperimentsData() {
-  chrome.send('requestFlagsExperiments', []);
-}
-
-/**
- * Asks the C++ FlagsDOMHandler to restart the browser (restoring tabs).
- */
-function restartBrowser() {
-  chrome.send('restartBrowser', []);
-}
-
-/**
- * Called by the WebUI to re-populate the page with data representing the
- * current state of installed experiments.
- */
-function returnFlagsExperiments(flagsExperimentsData){
-  var bodyContainer = document.getElementById('body-container');
-  renderTemplate(flagsExperimentsData);
-  bodyContainer.style.visibility = 'visible';
-}
-
-/**
- * Handles a 'enable' or 'disable' button getting clicked.
- */
-function handleEnableExperiment(node, enable) {
-  // Tell the C++ FlagsDOMHandler to enable/disable the experiment.
-  chrome.send('enableFlagsExperiment', [String(node.internal_name),
-                                       String(enable)]);
-  requestFlagsExperimentsData();
-}
-
-/**
- * Invoked when the selection of a multi-value choice is changed to the
- * specified index.
- */
-function handleSelectChoiceExperiment(node, index) {
-  // Tell the C++ FlagsDOMHandler to enable the selected choice.
-  chrome.send('enableFlagsExperiment',
-              [String(node.internal_name) + "@" + index, "true"]);
-  requestFlagsExperimentsData();
-}
-
-// Get data and have it displayed upon loading.
-document.addEventListener('DOMContentLoaded', requestFlagsExperimentsData);
-
-</script>
+<!-- X-WebKit-CSP is our development name for Content-Security-Policy.
+     The 'unsafe-eval' is required for jstemplate_compiled.js.
+     TODO(tsepez) rename when Content-security-policy is done.
+-->
+<meta http-equiv="X-WebKit-CSP" content="object-src 'none';
+    script-src chrome://resources 'self' 'unsafe-eval'">
+<link rel="stylesheet" href="flags.css"/>
+<script src="chrome://flags/flags.js"></script>
+<script src="chrome://flags/strings.js"></script>
+<script src="chrome://resources/js/i18n_template.js"></script>
 </head>
 <body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
 <div id="body-container" style="visibility:hidden">
@@ -290,8 +62,9 @@ document.addEventListener('DOMContentLoaded', requestFlagsExperimentsData);
                 <span jsvalues=".innerHTML:description">
               </div>
               <div jsdisplay="choices && choices.length > 0">
-                <select jsvalues=".internal_name:internal_name;.disabled:!enabled"
-                        onchange="handleSelectChoiceExperiment(this, this.selectedIndex)">
+                <select
+                  class="experiment-select"
+                  jsvalues=".internal_name:internal_name;.disabled:!enabled">
                   <option jsvalues=".selected:selected"
                           jsselect="choices"
                           jscontent="description">NAME
@@ -305,18 +78,18 @@ document.addEventListener('DOMContentLoaded', requestFlagsExperimentsData);
 		 then both jsdisplay tests fail, and we get no
 		 rendering from this section. -->
             <span>
-              <a
+              <a 
+                class="experiment-disable-link"
                 jsvalues=".internal_name:internal_name"
                 jsdisplay="enabled"
-                onclick="handleEnableExperiment(this, false)"
-                href="javascript:void(0);"
+                href="#"
                 i18n-content="disable"
                 >DISABLE</a>
               <a
+                class="experiment-enable-link"
                 jsvalues=".internal_name:internal_name"
                 jsdisplay="!enabled"
-                onclick="handleEnableExperiment(this, true)"
-                href="javascript:void(0);"
+                href="#"
                 i18n-content="enable"
                 >ENABLE</a>
             </span>
@@ -329,12 +102,15 @@ document.addEventListener('DOMContentLoaded', requestFlagsExperimentsData);
 
       <div class="needs-restart" jsdisplay="needsRestart">
         <div i18n-content="flagsRestartNotice">NEEDS_RESTART</div>
-        <button type="button"
-                onclick="restartBrowser();"
+        <button class="experiment-restart-button"
+                type="button"
                 i18n-content="flagsRestartButton">RESTART</button>
       </div>
     </div>
   </div>
 </div>
+<script src="chrome://resources/js/i18n_process.js"></script>
+<script src="chrome://resources/js/jstemplate_compiled.js"></script>
 </body>
 </html>
+
