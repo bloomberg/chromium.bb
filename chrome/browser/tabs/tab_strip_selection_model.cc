@@ -141,3 +141,9 @@ void TabStripSelectionModel::Copy(const TabStripSelectionModel& source) {
   active_ = source.active_;
   anchor_ = source.anchor_;
 }
+
+bool TabStripSelectionModel::Equals(const TabStripSelectionModel& rhs) const {
+  return active_ == rhs.active() &&
+      anchor_ == rhs.anchor() &&
+      selected_indices() == rhs.selected_indices();
+}

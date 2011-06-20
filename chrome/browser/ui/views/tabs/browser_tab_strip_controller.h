@@ -16,6 +16,7 @@
 class BaseTab;
 class BaseTabStrip;
 class Browser;
+class TabStripSelectionModel;
 
 struct TabRendererData;
 
@@ -71,10 +72,8 @@ class BrowserTabStripController : public TabStripController,
                              bool active) OVERRIDE;
   virtual void TabDetachedAt(TabContentsWrapper* contents,
                              int model_index) OVERRIDE;
-  virtual void ActiveTabChanged(TabContentsWrapper* old_contents,
-                                TabContentsWrapper* contents,
-                                int model_index,
-                                bool user_gesture) OVERRIDE;
+  virtual void TabSelectionChanged(
+      const TabStripSelectionModel& old_model) OVERRIDE;
   virtual void TabMoved(TabContentsWrapper* contents,
                         int from_model_index,
                         int to_model_index) OVERRIDE;

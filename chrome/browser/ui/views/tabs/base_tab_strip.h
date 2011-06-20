@@ -18,6 +18,7 @@
 class BaseTab;
 class DraggedTabController;
 class TabStripController;
+class TabStripSelectionModel;
 
 // Base class for the view tab strip implementations.
 class BaseTabStrip : public AbstractTabStripView,
@@ -62,7 +63,8 @@ class BaseTabStrip : public AbstractTabStripView,
 
   // Selects a tab at the specified index. |old_model_index| is the selected
   // index prior to the selection change.
-  virtual void SelectTabAt(int old_model_index, int new_model_index) = 0;
+  virtual void SetSelection(const TabStripSelectionModel& old_selection,
+                            const TabStripSelectionModel& new_selection) = 0;
 
   // Moves a tab.
   virtual void MoveTab(int from_model_index, int to_model_index);

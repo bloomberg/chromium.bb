@@ -10,6 +10,7 @@
 #include "views/controls/button/button.h"
 
 struct TabRendererData;
+class TabStripSelectionModel;
 
 class SideTabStrip : public BaseTabStrip, public views::ButtonListener {
  public:
@@ -28,7 +29,9 @@ class SideTabStrip : public BaseTabStrip, public views::ButtonListener {
   virtual void StopAllHighlighting() OVERRIDE;
   virtual BaseTab* CreateTabForDragging() OVERRIDE;
   virtual void RemoveTabAt(int model_index) OVERRIDE;
-  virtual void SelectTabAt(int old_model_index, int new_model_index) OVERRIDE;
+  virtual void SetSelection(
+      const TabStripSelectionModel& old_selection,
+      const TabStripSelectionModel& new_selection) OVERRIDE;
   virtual void TabTitleChangedNotLoading(int model_index) OVERRIDE;
 
   // views::View overrides:

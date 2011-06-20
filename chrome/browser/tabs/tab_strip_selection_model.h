@@ -95,6 +95,9 @@ class TabStripSelectionModel {
   // Copies the selection from |source| to this.
   void Copy(const TabStripSelectionModel& source);
 
+  // Compares this selection with |rhs|.
+  bool Equals(const TabStripSelectionModel& rhs) const;
+
  private:
   SelectedIndices selected_indices_;
 
