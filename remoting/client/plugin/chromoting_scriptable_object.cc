@@ -6,7 +6,8 @@
 
 #include "base/logging.h"
 #include "base/stringprintf.h"
-#include "ppapi/cpp/var.h"
+// TODO(wez): Remove this when crbug.com/86353 is complete.
+#include "ppapi/cpp/private/var_private.h"
 #include "remoting/base/auth_token_util.h"
 #include "remoting/client/client_config.h"
 #include "remoting/client/chromoting_stats.h"
@@ -14,6 +15,7 @@
 #include "remoting/client/plugin/pepper_xmpp_proxy.h"
 
 using pp::Var;
+using pp::VarPrivate;
 
 namespace remoting {
 
@@ -244,7 +246,7 @@ void ChromotingScriptableObject::SetConnectionInfo(ConnectionStatus status,
 
 void ChromotingScriptableObject::LogDebugInfo(const std::string& info) {
   Var exception;
-  Var cb = GetProperty(Var(kDebugInfo), &exception);
+  VarPrivate cb = GetProperty(Var(kDebugInfo), &exception);
 
   // Var() means call the object directly as a function rather than calling
   // a method in the object.
@@ -285,7 +287,7 @@ void ChromotingScriptableObject::AddMethod(const std::string& name,
 
 void ChromotingScriptableObject::SignalConnectionInfoChange() {
   Var exception;
-  Var cb = GetProperty(Var(kConnectionInfoUpdate), &exception);
+  VarPrivate cb = GetProperty(Var(kConnectionInfoUpdate), &exception);
 
   // Var() means call the object directly as a function rather than calling
   // a method in the object.
@@ -298,14 +300,11 @@ void ChromotingScriptableObject::SignalConnectionInfoChange() {
 
 void ChromotingScriptableObject::SignalDesktopSizeChange() {
   Var exception;
-
-  // The JavaScript callback function is the 'callback' property on the
-  // 'desktopSizeUpdate' object.
-  Var cb = GetProperty(Var(kDesktopSizeUpdate), &exception);
+  VarPrivate cb = GetProperty(Var(kDesktopSizeUpdate), &exception);
 
   // Var() means call the object directly as a function rather than calling
   // a method in the object.
-  cb.Call(Var(), 0, NULL, &exception);
+  cb.Call(Var(), &exception);
 
   if (!exception.is_undefined()) {
     LOG(WARNING) << "Exception when invoking JS callback"
@@ -315,7 +314,7 @@ void ChromotingScriptableObject::SignalDesktopSizeChange() {
 
 void ChromotingScriptableObject::SignalLoginChallenge() {
   Var exception;
-  Var cb = GetProperty(Var(kLoginChallenge), &exception);
+  VarPrivate cb = GetProperty(Var(kLoginChallenge), &exception);
 
   // Var() means call the object directly as a function rather than calling
   // a method in the object.
@@ -331,7 +330,7 @@ void ChromotingScriptableObject::AttachXmppProxy(PepperXmppProxy* xmpp_proxy) {
 
 void ChromotingScriptableObject::SendIq(const std::string& message_xml) {
   Var exception;
-  Var cb = GetProperty(Var(kSendIq), &exception);
+  VarPrivate cb = GetProperty(Var(kSendIq), &exception);
 
   // Var() means call the object directly as a function rather than calling
   // a method in the object.

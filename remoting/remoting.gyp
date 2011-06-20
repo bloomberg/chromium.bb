@@ -114,6 +114,9 @@
       'type': 'static_library',
       'defines': [
         'HAVE_STDINT_H',  # Required by on2_integer.h
+        # TODO(wez): See crbug.com/82606 and crbug.com/86353.
+        'PPAPI_INSTANCE_REMOVE_SCRIPTING',
+        'PPAPI_VAR_REMOVE_SCRIPTING',
       ],
       'dependencies': [
         'remoting_base',

@@ -15,8 +15,8 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/c/pp_resource.h"
-#include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/var.h"
+#include "ppapi/cpp/private/instance_private.h"
 #include "remoting/client/client_context.h"
 #include "remoting/client/plugin/chromoting_scriptable_object.h"
 #include "remoting/client/plugin/pepper_client_logger.h"
@@ -54,7 +54,7 @@ namespace protocol {
 class HostConnection;
 }  // namespace protocol
 
-class ChromotingInstance : public pp::Instance {
+class ChromotingInstance : public pp::InstancePrivate {
  public:
   // The mimetype for which this plugin is registered.
   static const char *kMimeType;

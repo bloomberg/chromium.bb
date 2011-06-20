@@ -20,6 +20,8 @@
 #include "ppapi/c/pp_input_event.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/rect.h"
+// TODO(wez): Remove this when crbug.com/86353 is complete.
+#include "ppapi/cpp/private/var_private.h"
 #include "remoting/client/client_config.h"
 #include "remoting/client/client_util.h"
 #include "remoting/client/chromoting_client.h"
@@ -48,7 +50,7 @@ namespace remoting {
 const char* ChromotingInstance::kMimeType = "pepper-application/x-chromoting";
 
 ChromotingInstance::ChromotingInstance(PP_Instance pp_instance)
-    : pp::Instance(pp_instance),
+    : pp::InstancePrivate(pp_instance),
       initialized_(false),
       logger_(this) {
 }
@@ -227,7 +229,7 @@ bool ChromotingInstance::HandleInputEvent(const PP_InputEvent& event) {
 }
 
 ChromotingScriptableObject* ChromotingInstance::GetScriptableObject() {
-  pp::Var object = GetInstanceObject();
+  pp::VarPrivate object = GetInstanceObject();
   if (!object.is_undefined()) {
     pp::deprecated::ScriptableObject* so = object.AsScriptableObject();
     DCHECK(so != NULL);
@@ -282,7 +284,7 @@ pp::Var ChromotingInstance::GetInstanceObject() {
     object->Init();
 
     // The pp::Var takes ownership of object here.
-    instance_object_ = pp::Var(this, object);
+    instance_object_ = pp::VarPrivate(this, object);
   }
 
   return instance_object_;
