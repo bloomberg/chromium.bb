@@ -67,6 +67,12 @@ class Resource : public base::RefCountedThreadSafe<Resource>,
   // PPAPI implementation is keeping a reference for some reason.
   PluginInstance* instance() const { return instance_; }
 
+  // Clears the instance pointer when the associated PluginInstance will be
+  // destroyed.
+  //
+  // If you override this, be sure to call the base class' implementation.
+  virtual void ClearInstance() { instance_ = NULL; }
+
   // Cast the resource into a specified type. This will return NULL if the
   // resource does not match the specified type. Specializations of this
   // template call into As* functions.
@@ -110,16 +116,8 @@ class Resource : public base::RefCountedThreadSafe<Resource>,
   // stay alive if there are other references held by the PPAPI implementation
   // (possibly for callbacks and things).
   //
-  // When the plugin instance is deleted, all resources associated with that
-  // plugin will have their plugin references force-deleted and this function
-  // will be called with instance_destroyed as true. If the plugin normally
-  // Release()s a reference before the instance is destroyed,
-  // instance_destroyed will be false. It's possible in some rare cases for the
-  // plugin to get a new reference to the object in this latter case, if it's
-  // stored internal to the PPAPI implementation and returned by some function.
-  //
   // If you override this, be sure to call the base class' implementation.
-  virtual void LastPluginRefWasDeleted(bool instance_destroyed);
+  virtual void LastPluginRefWasDeleted();
 
  private:
   // Type-specific getters for individual resource types. These will return

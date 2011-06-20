@@ -86,13 +86,9 @@ PPB_URLLoader_API* PPB_URLLoader_Impl::AsPPB_URLLoader_API() {
   return this;
 }
 
-void PPB_URLLoader_Impl::LastPluginRefWasDeleted(bool instance_destroyed) {
-  Resource::LastPluginRefWasDeleted(instance_destroyed);
-  if (instance_destroyed) {
-    // Free the WebKit request when the instance has been destroyed to avoid
-    // using bandwidth just in case this object lives longer than the instance.
-    loader_.reset();
-  }
+void PPB_URLLoader_Impl::ClearInstance() {
+  Resource::ClearInstance();
+  loader_.reset();
 }
 
 int32_t PPB_URLLoader_Impl::Open(PP_Resource request_id,

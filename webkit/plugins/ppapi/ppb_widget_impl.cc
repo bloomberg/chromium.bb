@@ -95,6 +95,8 @@ void PPB_Widget_Impl::SetLocation(const PP_Rect* location) {
 }
 
 void PPB_Widget_Impl::Invalidate(const PP_Rect* dirty) {
+  if (!instance())
+    return;
   const PPP_Widget_Dev* widget = static_cast<const PPP_Widget_Dev*>(
       instance()->module()->GetPluginInterface(PPP_WIDGET_DEV_INTERFACE));
   if (!widget)

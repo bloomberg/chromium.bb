@@ -15,9 +15,11 @@ namespace ppapi {
 
 Resource::Resource(PluginInstance* instance)
     : resource_id_(0), instance_(instance) {
+  ResourceTracker::Get()->ResourceCreated(this, instance_);
 }
 
 Resource::~Resource() {
+  ResourceTracker::Get()->ResourceDestroyed(this);
 }
 
 PP_Resource Resource::GetReference() {
@@ -33,14 +35,11 @@ PP_Resource Resource::GetReferenceNoAddRef() const {
   return resource_id_;
 }
 
-void Resource::LastPluginRefWasDeleted(bool instance_destroyed) {
+void Resource::LastPluginRefWasDeleted() {
   DCHECK(resource_id_ != 0);
   instance()->module()->GetCallbackTracker()->PostAbortForResource(
       resource_id_);
   resource_id_ = 0;
-
-  if (instance_destroyed)
-    instance_ = NULL;
 }
 
 #define DEFINE_TYPE_GETTER(RESOURCE)            \

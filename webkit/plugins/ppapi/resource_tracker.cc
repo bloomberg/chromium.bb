@@ -66,7 +66,8 @@ struct ResourceTracker::InstanceData {
   PluginInstance* instance;
 
   // Resources and object vars associated with the instance.
-  ResourceSet resources;
+  ResourceSet ref_resources;
+  std::set<Resource*> assoc_resources;
   VarSet object_vars;
 
   // Lazily allocated function proxies for the different interfaces.
@@ -107,6 +108,27 @@ ResourceTracker* ResourceTracker::Get() {
   return global_tracker_;
 }
 
+void ResourceTracker::ResourceCreated(Resource* resource,
+                                      PluginInstance* instance) {
+  if (!instance)
+    return;
+  PP_Instance pp_instance = instance->pp_instance();
+  DCHECK(pp_instance);
+  DCHECK(instance_map_.find(pp_instance) != instance_map_.end());
+  instance_map_[pp_instance]->assoc_resources.insert(resource);
+}
+
+void ResourceTracker::ResourceDestroyed(Resource* resource) {
+  if (!resource->instance())
+    return;
+
+  PP_Instance pp_instance = resource->instance()->pp_instance();
+  DCHECK(pp_instance);
+  DCHECK(instance_map_.find(pp_instance) != instance_map_.end());
+
+  instance_map_[pp_instance]->assoc_resources.erase(resource);
+}
+
 PP_Resource ResourceTracker::AddResource(Resource* resource) {
   // If the plugin manages to create 1 billion resources, don't do crazy stuff.
   if (last_resource_id_ ==
@@ -120,7 +142,7 @@ PP_Resource ResourceTracker::AddResource(Resource* resource) {
   // Track associated with the instance.
   PP_Instance pp_instance = resource->instance()->pp_instance();
   DCHECK(instance_map_.find(pp_instance) != instance_map_.end());
-  instance_map_[pp_instance]->resources.insert(new_id);
+  instance_map_[pp_instance]->ref_resources.insert(new_id);
   return new_id;
 }
 
@@ -169,9 +191,9 @@ bool ResourceTracker::UnrefResource(PP_Resource res) {
       // LastPluginRefWasDeleted will clear the instance pointer, so save it
       // first.
       PP_Instance instance = to_release->instance()->pp_instance();
-      to_release->LastPluginRefWasDeleted(false);
+      to_release->LastPluginRefWasDeleted();
 
-      instance_map_[instance]->resources.erase(res);
+      instance_map_[instance]->ref_resources.erase(res);
       live_resources_.erase(i);
     }
     return true;
@@ -193,8 +215,8 @@ void ResourceTracker::CleanupInstanceData(PP_Instance instance,
 
   // Force release all plugin references to resources associated with the
   // deleted instance.
-  ResourceSet::iterator cur_res = data.resources.begin();
-  while (cur_res != data.resources.end()) {
+  ResourceSet::iterator cur_res = data.ref_resources.begin();
+  while (cur_res != data.ref_resources.end()) {
     ResourceMap::iterator found_resource = live_resources_.find(*cur_res);
     if (found_resource == live_resources_.end()) {
       NOTREACHED();
@@ -203,7 +225,7 @@ void ResourceTracker::CleanupInstanceData(PP_Instance instance,
 
       // Must delete from the resource set first since the resource's instance
       // pointer will get zeroed out in LastPluginRefWasDeleted.
-      resource->LastPluginRefWasDeleted(true);
+      resource->LastPluginRefWasDeleted();
       live_resources_.erase(*cur_res);
     }
 
@@ -211,9 +233,9 @@ void ResourceTracker::CleanupInstanceData(PP_Instance instance,
     // are being deleted as long as we're careful not to delete the item we're
     // holding an iterator to.
     ResourceSet::iterator current = cur_res++;
-    data.resources.erase(current);
+    data.ref_resources.erase(current);
   }
-  DCHECK(data.resources.empty());
+  DCHECK(data.ref_resources.empty());
 
   // Force delete all var references.
   VarSet::iterator cur_var = data.object_vars.begin();
@@ -234,6 +256,13 @@ void ResourceTracker::CleanupInstanceData(PP_Instance instance,
   }
   DCHECK(data.object_vars.empty());
 
+  // Clear any resources that still reference this instance.
+  for (std::set<Resource*>::iterator res = data.assoc_resources.begin();
+       res != data.assoc_resources.end();
+       ++res)
+    (*res)->ClearInstance();
+  data.assoc_resources.clear();
+
   if (delete_instance)
     instance_map_.erase(found);
 }
@@ -243,7 +272,7 @@ uint32 ResourceTracker::GetLiveObjectsForInstance(
   InstanceMap::const_iterator found = instance_map_.find(instance);
   if (found == instance_map_.end())
     return 0;
-  return static_cast<uint32>(found->second->resources.size() +
+  return static_cast<uint32>(found->second->ref_resources.size() +
                              found->second->object_vars.size());
 }
 

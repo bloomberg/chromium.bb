@@ -120,6 +120,13 @@ class ResourceTracker : public ::ppapi::TrackerBase {
   ResourceTracker();
   ~ResourceTracker();
 
+  // Called when a new resource is created and associates it with its
+  // PluginInstance.
+  void ResourceCreated(Resource* resource, PluginInstance* instance);
+
+  // Removes a resource from the resource map.
+  void ResourceDestroyed(Resource* resource);
+
   // Adds the given resource to the tracker and assigns it a resource ID and
   // refcount of 1. The assigned resource ID will be returned. Used only by the
   // Resource class.

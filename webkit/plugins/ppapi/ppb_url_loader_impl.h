@@ -42,7 +42,7 @@ class PPB_URLLoader_Impl : public Resource,
   virtual ::ppapi::thunk::PPB_URLLoader_API* AsPPB_URLLoader_API() OVERRIDE;
 
   // Resource overrides.
-  virtual void LastPluginRefWasDeleted(bool instance_destroyed) OVERRIDE;
+  virtual void ClearInstance() OVERRIDE;
 
   // PPB_URLLoader_API implementation.
   virtual int32_t Open(PP_Resource request_id,
