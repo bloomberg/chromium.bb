@@ -141,7 +141,7 @@ class PrerenderContents : public NotificationObserver,
   // be prerendered - for example, it's an ftp URL - |this| will be destroyed
   // and false is returned. Otherwise, true is returned and the alias is
   // remembered.
-  bool AddAliasURL(const GURL& url);
+  virtual bool AddAliasURL(const GURL& url);
 
   // The preview TabContents (may be null).
   TabContentsWrapper* prerender_contents() const {

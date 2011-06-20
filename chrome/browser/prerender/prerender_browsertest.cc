@@ -28,6 +28,7 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
+#include "content/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -64,6 +65,8 @@ bool ShouldRenderPrerenderedPageCorrectly(FinalStatus status) {
     case FINAL_STATUS_USED:
     case FINAL_STATUS_WINDOW_OPENER:
     case FINAL_STATUS_FRAGMENT_MISMATCH:
+    // We'll crash the renderer after it's loaded.
+    case FINAL_STATUS_RENDERER_CRASHED:
       return true;
     default:
       return false;
@@ -133,18 +136,20 @@ class TestPrerenderContents : public PrerenderContents {
     PrerenderContents::OnRenderViewGone(status, exit_code);
   }
 
+  virtual bool AddAliasURL(const GURL& url) OVERRIDE {
+    // Prevent FINAL_STATUS_UNSUPPORTED_SCHEME when navigating to about:crash in
+    // the PrerenderRendererCrash test.
+    if (url.spec() != chrome::kAboutCrashURL)
+      return PrerenderContents::AddAliasURL(url);
+    return true;
+  }
+
   virtual void DidStopLoading() OVERRIDE {
     PrerenderContents::DidStopLoading();
     ++number_of_loads_;
     if (ShouldRenderPrerenderedPageCorrectly(expected_final_status_) &&
         number_of_loads_ >= expected_number_of_loads_) {
       MessageLoopForUI::current()->Quit();
-    } else if (expected_final_status_ == FINAL_STATUS_RENDERER_CRASHED) {
-      // Crash the render process.  This has to be done here because
-      // a prerender navigating to about:crash is cancelled with
-      // "FINAL_STATUS_HTTPS".  Even if this were worked around,
-      // about:crash can't be navigated to by a normal webpage.
-      render_view_host_mutable()->NavigateToURL(GURL("about:crash"));
     }
   }
 
@@ -1024,12 +1029,17 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderWindowSize) {
 }
 
 // Checks that prerenderers will terminate when the RenderView crashes.
-// Note that the prerendering RenderView will be redirected to about:crash.
-// Disabled, http://crbug.com/80561
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderRendererCrash) {
-  PrerenderTestURL(CreateClientRedirect("files/prerender/prerender_page.html"),
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderRendererCrash) {
+  PrerenderTestURL("files/prerender/prerender_page.html",
                    FINAL_STATUS_RENDERER_CRASHED,
                    1);
+
+  // Navigate to about:crash and then wait for the renderer to crash.
+  ASSERT_TRUE(GetPrerenderContents());
+  ASSERT_TRUE(GetPrerenderContents()->prerender_contents());
+  GetPrerenderContents()->prerender_contents()->controller().LoadURL(
+      GURL(chrome::kAboutCrashURL), GURL(), PageTransition::TYPED);
+  ui_test_utils::RunMessageLoop();
 }
 
 // Checks that we correctly use a prerendered page when navigating to a
