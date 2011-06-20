@@ -19,33 +19,6 @@
 
 namespace remoting {
 
-namespace {
-
-// NSS doesn't load root certificates when running in sandbox, so we
-// need to have gmail's cert hardcoded.
-//
-// TODO(sergeyu): Remove this when we don't make XMPP connection from
-// inside of sandbox.
-const char kGmailCertBase64[] =
-    "MIIC2TCCAkKgAwIBAgIDBz+SMA0GCSqGSIb3DQEBBQUAME4xCzAJBgNVBAYTAlVT"
-    "MRAwDgYDVQQKEwdFcXVpZmF4MS0wKwYDVQQLEyRFcXVpZmF4IFNlY3VyZSBDZXJ0"
-    "aWZpY2F0ZSBBdXRob3JpdHkwHhcNMDcwNDExMTcxNzM4WhcNMTIwNDEwMTcxNzM4"
-    "WjBkMQswCQYDVQQGEwJVUzETMBEGA1UECBMKQ2FsaWZvcm5pYTEWMBQGA1UEBxMN"
-    "TW91bnRhaW4gVmlldzEUMBIGA1UEChMLR29vZ2xlIEluYy4xEjAQBgNVBAMTCWdt"
-    "YWlsLmNvbTCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEA1Hds2jWwXAVGef06"
-    "7PeSJF/h9BnoYlTdykx0lBTDc92/JLvuq0lJkytqll1UR4kHmF4vwqQkwcqOK03w"
-    "k8qDK8fh6M13PYhvPEXP02ozsuL3vqE8hcCva2B9HVnOPY17Qok37rYQ+yexswN5"
-    "eh0+93nddEa1PyHgEQ8CDKCJaWUCAwEAAaOBrjCBqzAOBgNVHQ8BAf8EBAMCBPAw"
-    "HQYDVR0OBBYEFJcjzXEevMEDIEvuQiT7puEJY737MDoGA1UdHwQzMDEwL6AtoCuG"
-    "KWh0dHA6Ly9jcmwuZ2VvdHJ1c3QuY29tL2NybHMvc2VjdXJlY2EuY3JsMB8GA1Ud"
-    "IwQYMBaAFEjmaPkr0rKV10fYIyAQTzOYkJ/UMB0GA1UdJQQWMBQGCCsGAQUFBwMB"
-    "BggrBgEFBQcDAjANBgkqhkiG9w0BAQUFAAOBgQB74cGpjdENf9U+WEd29dfzY3Tz"
-    "JehnlY5cH5as8bOTe7PNPzj967OJ7TPWEycMwlS7CsqIsmfRGOFFfoHxo+iPugZ8"
-    "uO2Kd++QHCXL+MumGjkW4FcTFmceV/Q12Wdh3WApcqIZZciQ79MAeFh7bzteAYqf"
-    "wC98YQwylC9wVhf1yw==";
-
-}  // namespace
-
 SSLSocketAdapter* SSLSocketAdapter::Create(AsyncSocket* socket) {
   return new SSLSocketAdapter(socket);
 }
@@ -95,17 +68,6 @@ int SSLSocketAdapter::BeginSSL() {
   // are correct for us, so we don't use the config service to initialize this
   // object.
   net::SSLConfig ssl_config;
-
-  std::string gmail_cert_binary;
-  base::Base64Decode(kGmailCertBase64, &gmail_cert_binary);
-  scoped_refptr<net::X509Certificate> gmail_cert =
-      net::X509Certificate::CreateFromBytes(gmail_cert_binary.data(),
-                                            gmail_cert_binary.size());
-  DCHECK(gmail_cert);
-  net::SSLConfig::CertAndStatus gmail_cert_status;
-  gmail_cert_status.cert = gmail_cert;
-  gmail_cert_status.cert_status = 0;
-  ssl_config.allowed_bad_certs.push_back(gmail_cert_status);
 
   transport_socket_->set_addr(talk_base::SocketAddress(hostname_, 0));
   ssl_socket_.reset(
