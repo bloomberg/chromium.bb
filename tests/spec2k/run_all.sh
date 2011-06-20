@@ -672,7 +672,7 @@ PopulateFromSpecHarness() {
   for i in ${list} ; do
     SubBanner "Populating: $i"
     # fix the dir with the same name inside spec harness
-    src=$(find ${harness} -name $i)
+    src=$(find -H ${harness} -name $i)
     # copy relevant dirs over
     echo "COPY"
     rm -rf src/ data/
