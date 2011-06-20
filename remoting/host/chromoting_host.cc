@@ -287,6 +287,12 @@ void ChromotingHost::OnNewClientSession(
   if (!access_verifier_->VerifyPermissions(session->jid(),
                                            session->initiator_token())) {
     *response = protocol::SessionManager::DECLINE;
+
+    // Notify observers.
+    for (StatusObserverList::iterator it = status_observers_.begin();
+         it != status_observers_.end(); ++it) {
+      (*it)->OnAccessDenied();
+    }
     return;
   }
 

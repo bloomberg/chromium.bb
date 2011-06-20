@@ -78,8 +78,10 @@ void RegisterSupportHostRequest::OnSignallingDisconnected() {
   request_.reset();
 }
 
-void RegisterSupportHostRequest::OnShutdown() {
-}
+// Ignore any notifications other than signalling
+// connected/disconnected events.
+void RegisterSupportHostRequest::OnAccessDenied() { }
+void RegisterSupportHostRequest::OnShutdown() { }
 
 XmlElement* RegisterSupportHostRequest::CreateRegistrationRequest(
     const std::string& jid) {

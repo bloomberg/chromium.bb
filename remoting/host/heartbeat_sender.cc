@@ -86,8 +86,10 @@ void HeartbeatSender::OnSignallingDisconnected() {
   request_.reset(NULL);
 }
 
-void HeartbeatSender::OnShutdown() {
-}
+// Ignore any notifications other than signalling
+// connected/disconnected events.
+void HeartbeatSender::OnAccessDenied() { }
+void HeartbeatSender::OnShutdown() { }
 
 void HeartbeatSender::DoSendStanza() {
   DCHECK_EQ(MessageLoop::current(), message_loop_);

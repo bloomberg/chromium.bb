@@ -95,6 +95,8 @@ const char* kAttrNameConnected = "CONNECTED";
 const char* kAttrNameAffirmingConnection = "AFFIRMING_CONNECTION";
 const char* kAttrNameError = "ERROR";
 
+const int kMaxLoginAttempts = 5;
+
 // Global netscape functions initialized in NP_Initialize.
 NPNetscapeFuncs* g_npnetscape_funcs = NULL;
 
@@ -157,6 +159,7 @@ class HostNPScriptObject : public remoting::HostStatusObserver {
         state_(kDisconnected),
         on_state_changed_func_(NULL),
         np_thread_id_(base::PlatformThread::CurrentId()),
+        failed_login_attempts_(0),
         disconnected_event_(true, false) {
     VLOG(2) << "HostNPScriptObject";
     host_context_.SetUITaskPostFunction(base::Bind(
@@ -336,6 +339,14 @@ class HostNPScriptObject : public remoting::HostStatusObserver {
   virtual void OnSignallingDisconnected() OVERRIDE {
   }
 
+  virtual void OnAccessDenied() OVERRIDE {
+    DCHECK_EQ(MessageLoop::current(), host_context_.network_message_loop());
+
+    ++failed_login_attempts_;
+    if (failed_login_attempts_ == kMaxLoginAttempts)
+      DisconnectInternal();
+  }
+
   virtual void OnShutdown() OVERRIDE {
     DCHECK_EQ(MessageLoop::current(), host_context_.main_message_loop());
 
@@ -407,6 +418,7 @@ class HostNPScriptObject : public remoting::HostStatusObserver {
   scoped_refptr<remoting::ChromotingHost> host_;
   scoped_refptr<remoting::MutableHostConfig> host_config_;
   remoting::ChromotingHostContext host_context_;
+  int failed_login_attempts_;
 
   base::WaitableEvent disconnected_event_;
   base::CancellationFlag destructing_;

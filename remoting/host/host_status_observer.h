@@ -19,6 +19,10 @@ class HostStatusObserver {
                                      const std::string& full_jid) = 0;
   virtual void OnSignallingDisconnected() = 0;
 
+  // Called on the network thread when an unauthorized user attempts
+  // to connect to the host.
+  virtual void OnAccessDenied() = 0;
+
   // Called on the main thread when the host shuts down.
   virtual void OnShutdown() = 0;
 };
