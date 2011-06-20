@@ -891,9 +891,6 @@ const char kSearchInOmniboxHint[]           = "search-in-omnibox-hint";
 // The LSID of the account to use for the service process.
 const char kServiceAccountLsid[]            = "service-account-lsid";
 
-// Annotate forms with Autofill field type predictions.
-const char kShowAutofillTypePredictions[]   = "show-autofill-type-predictions";
-
 // See kHideIcons.
 const char kShowIcons[]                     = "show-icons";
 

@@ -336,13 +336,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE("")
 #endif
   },
-  {
-    "show-autofill-type-predictions",
-    IDS_FLAGS_SHOW_AUTOFILL_TYPE_PREDICTIONS_NAME,
-    IDS_FLAGS_SHOW_AUTOFILL_TYPE_PREDICTIONS_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kShowAutofillTypePredictions)
-  },
 };
 
 const Experiment* experiments = kExperiments;

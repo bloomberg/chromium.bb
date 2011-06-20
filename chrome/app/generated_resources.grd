@@ -4317,12 +4317,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_PRELOAD_INSTANT_SEARCH_DESCRIPTION" desc="Description for the flag to preload Instant search">
         Preload the default search engine for Instant.
       </message>
-      <message name="IDS_FLAGS_SHOW_AUTOFILL_TYPE_PREDICTIONS_NAME" desc="Title for the flag to show Autofill field type predictions for all forms">
-        Show Autofill predictions
-      </message>
-      <message name="IDS_FLAGS_SHOW_AUTOFILL_TYPE_PREDICTIONS_DESCRIPTION" desc="Description for the flag to show Autofill field type predictions for all forms">
-        Annotates web forms with Autofill field type predictions as placeholder text.
-      </message>
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">
@@ -7585,10 +7579,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <message name="IDS_AUTOFILL_HELP_LABEL" desc="The label of the Help link on the Autofill dialog.">
         About Autofill
-      </message>
-      
-      <message name="IDS_AUTOFILL_SHOW_PREDICTIONS_TITLE" desc="The title for form elements when annotated with Autofill predictions.">
-        heuristic type: <ph name="HEURISTIC_TYPE">$1<ex>NAME_FIRST</ex></ph>\nserver type: <ph name="SERVER_TYPE">$2<ex>NAME_FIRST</ex></ph>\nfield signature: <ph name="FIELD_SIGNATURE">$3<ex>12345678</ex></ph>\nform signature: <ph name="FORM_SIGNATURE">$4<ex>1234567812345678</ex></ph>\nexperiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       </message>
 
       <if expr="not pp_ifdef('use_titlecase')">
