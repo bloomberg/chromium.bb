@@ -133,7 +133,7 @@ void ScreenUnlockObserver::OnLoginFailure(const chromeos::LoginFailure& error) {
 
 NetworkScanObserver::NetworkScanObserver(AutomationProvider* automation,
                                          IPC::Message* reply_message)
-    : automation_(automation), reply_message_(reply_message) {
+    : automation_(automation->AsWeakPtr()), reply_message_(reply_message) {
   NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
   network_library->AddNetworkManagerObserver(this);
 }
@@ -147,13 +147,16 @@ void NetworkScanObserver::OnNetworkManagerChanged(NetworkLibrary* obj) {
   if (obj->wifi_scanning())
     return;
 
-  AutomationJSONReply(automation_, reply_message_).SendSuccess(NULL);
+  if (automation_) {
+    AutomationJSONReply(automation_,
+                        reply_message_.release()).SendSuccess(NULL);
+  }
   delete this;
 }
 
 NetworkConnectObserver::NetworkConnectObserver(AutomationProvider* automation,
                                                IPC::Message* reply_message)
-    : automation_(automation), reply_message_(reply_message) {
+    : automation_(automation->AsWeakPtr()), reply_message_(reply_message) {
   NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
   network_library->AddNetworkManagerObserver(this);
 }
@@ -168,22 +171,28 @@ void NetworkConnectObserver::OnNetworkManagerChanged(NetworkLibrary* obj) {
   if (!wifi) {
     // The network was not found, and we assume it no longer exists.
     // This could be because the SSID is invalid, or the network went away.
-    scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
-    return_value->SetString("error_string", "Network not found.");
-    AutomationJSONReply(automation_, reply_message_)
-        .SendSuccess(return_value.get());
+    if (automation_) {
+      scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+      return_value->SetString("error_string", "Network not found.");
+      AutomationJSONReply(automation_, reply_message_.release())
+          .SendSuccess(return_value.get());
+    }
     delete this;
     return;
   }
 
   if (wifi->failed()) {
-    scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
-    return_value->SetString("error_string", wifi->GetErrorString());
-    AutomationJSONReply(automation_, reply_message_)
-        .SendSuccess(return_value.get());
+    if (automation_) {
+      scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+      return_value->SetString("error_string", wifi->GetErrorString());
+      AutomationJSONReply(automation_, reply_message_.release())
+          .SendSuccess(return_value.get());
+    }
     delete this;
   } else if (wifi->connected()) {
-    AutomationJSONReply(automation_, reply_message_).SendSuccess(NULL);
+    if (automation_)
+      AutomationJSONReply(automation_,
+                          reply_message_.release()).SendSuccess(NULL);
     delete this;
   }
 
@@ -200,6 +209,64 @@ ServicePathConnectObserver::ServicePathConnectObserver(
 const chromeos::WifiNetwork* ServicePathConnectObserver::GetWifiNetwork(
     NetworkLibrary* network_library) {
   return network_library->FindWifiNetworkByPath(service_path_);
+}
+
+VirtualConnectObserver::VirtualConnectObserver(AutomationProvider* automation,
+                                               IPC::Message* reply_message,
+                                               const std::string& service_name)
+    : automation_(automation->AsWeakPtr()),
+      reply_message_(reply_message),
+      service_name_(service_name) {
+  NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
+  network_library->AddNetworkManagerObserver(this);
+}
+
+VirtualConnectObserver::~VirtualConnectObserver() {
+  NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
+  network_library->RemoveNetworkManagerObserver(this);
+}
+
+void VirtualConnectObserver::OnNetworkManagerChanged(NetworkLibrary* cros) {
+  const chromeos::VirtualNetwork* virt = GetVirtualNetwork(cros);
+  if (!virt) {
+    // The network hasn't been added to the NetworkLibrary's list yet,
+    // just continue waiting for more network events.
+    return;
+  }
+
+  if (virt->failed()) {
+    if (automation_) {
+      scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+      return_value->SetString("error_string", virt->GetErrorString());
+      AutomationJSONReply(automation_, reply_message_.release())
+          .SendSuccess(return_value.get());
+    }
+    delete this;
+  } else if (virt->connected()) {
+    if (automation_)
+      AutomationJSONReply(automation_,
+                          reply_message_.release()).SendSuccess(NULL);
+    delete this;
+  }
+  // The network is in the NetworkLibrary's list, but there's no failure or
+  // success condition, so just continue waiting for more network events.
+}
+
+chromeos::VirtualNetwork* VirtualConnectObserver::GetVirtualNetwork(
+    const chromeos::NetworkLibrary* cros) {
+  chromeos::VirtualNetwork* virt = NULL;
+  const chromeos::VirtualNetworkVector& virtual_networks =
+      cros->virtual_networks();
+
+  for (chromeos::VirtualNetworkVector::const_iterator iter =
+       virtual_networks.begin(); iter != virtual_networks.end(); ++iter) {
+    chromeos::VirtualNetwork* v = *iter;
+    if (v->name() == service_name_) {
+      virt = v;
+      break;
+    }
+  }
+  return virt;
 }
 
 SSIDConnectObserver::SSIDConnectObserver(

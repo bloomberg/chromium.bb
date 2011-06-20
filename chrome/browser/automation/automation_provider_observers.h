@@ -813,8 +813,8 @@ class NetworkScanObserver
   virtual void OnNetworkManagerChanged(chromeos::NetworkLibrary* obj);
 
  private:
-  AutomationProvider* automation_;
-  IPC::Message* reply_message_;
+  base::WeakPtr<AutomationProvider> automation_;
+  scoped_ptr<IPC::Message> reply_message_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkScanObserver);
 };
@@ -836,8 +836,8 @@ class NetworkConnectObserver
   virtual void OnNetworkManagerChanged(chromeos::NetworkLibrary* obj);
 
  private:
-  AutomationProvider* automation_;
-  IPC::Message* reply_message_;
+  base::WeakPtr<AutomationProvider> automation_;
+  scoped_ptr<IPC::Message> reply_message_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkConnectObserver);
 };
@@ -857,6 +857,31 @@ class ServicePathConnectObserver : public NetworkConnectObserver {
   std::string service_path_;
 
   DISALLOW_COPY_AND_ASSIGN(ServicePathConnectObserver);
+};
+
+// Waits for a connection success or failure for the specified
+// virtual network and returns the status to the automation provider.
+class VirtualConnectObserver
+    : public chromeos::NetworkLibrary::NetworkManagerObserver {
+ public:
+  VirtualConnectObserver(AutomationProvider* automation,
+                         IPC::Message* reply_message,
+                         const std::string& service_name);
+
+  virtual ~VirtualConnectObserver();
+
+  // NetworkLibrary::NetworkManagerObserver implementation.
+  virtual void OnNetworkManagerChanged(chromeos::NetworkLibrary* cros);
+
+ private:
+  virtual chromeos::VirtualNetwork* GetVirtualNetwork(
+      const chromeos::NetworkLibrary* cros);
+
+  base::WeakPtr<AutomationProvider> automation_;
+  scoped_ptr<IPC::Message> reply_message_;
+  std::string service_name_;
+
+  DISALLOW_COPY_AND_ASSIGN(VirtualConnectObserver);
 };
 
 // Waits for a connection success or failure for the specified

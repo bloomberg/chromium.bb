@@ -4,6 +4,7 @@
 
 #include "chrome/browser/automation/testing_automation_provider.h"
 
+#include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/automation/automation_provider_json.h"
 #include "chrome/browser/automation/automation_provider_observers.h"
@@ -126,6 +127,20 @@ void UpdateCheckCallback(void* user_data, chromeos::UpdateResult result,
   else
     reply->SendError(error_msg);
   delete reply;
+}
+
+const std::string VPNProviderTypeToString(chromeos::VirtualNetwork::ProviderType
+                                       provider_type) {
+  switch (provider_type) {
+    case chromeos::VirtualNetwork::PROVIDER_TYPE_L2TP_IPSEC_PSK:
+      return std::string("L2TP_IPSEC_PSK");
+    case chromeos::VirtualNetwork::PROVIDER_TYPE_L2TP_IPSEC_USER_CERT:
+      return std::string("L2TP_IPSEC_USER_CERT");
+    case chromeos::VirtualNetwork::PROVIDER_TYPE_OPEN_VPN:
+      return std::string("OPEN_VPN");
+    default:
+      return std::string("UNSUPPORTED_PROVIDER_TYPE");
+  }
 }
 
 }  // namespace
@@ -518,6 +533,151 @@ void TestingAutomationProvider::DisconnectFromWifiNetwork(
   }
 
   network_library->DisconnectFromNetwork(wifi);
+  reply.SendSuccess(NULL);
+}
+
+void TestingAutomationProvider::AddPrivateNetwork(
+    DictionaryValue* args, IPC::Message* reply_message) {
+  if (!EnsureCrosLibraryLoaded(this, reply_message))
+    return;
+
+  std::string hostname, service_name, provider_type, key, cert_id, cert_nss,
+      username, password;
+  if (!args->GetString("hostname", &hostname) ||
+      !args->GetString("service_name", &service_name) ||
+      !args->GetString("provider_type", &provider_type) ||
+      !args->GetString("username", &username) ||
+      !args->GetString("password", &password)) {
+    AutomationJSONReply(this, reply_message)
+        .SendError("Invalid or missing args.");
+    return;
+  }
+
+  NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
+
+  // Attempt to connect to the VPN based on the provider type.
+  if (provider_type == VPNProviderTypeToString(
+      chromeos::VirtualNetwork::PROVIDER_TYPE_L2TP_IPSEC_PSK)) {
+    if (!args->GetString("key", &key)) {
+      AutomationJSONReply(this, reply_message)
+          .SendError("Missing key arg.");
+      return;
+    }
+    new VirtualConnectObserver(this, reply_message, service_name);
+    // Connect using a pre-shared key.
+    network_library->ConnectToVirtualNetworkPSK(service_name,
+                                                hostname,
+                                                key,
+                                                username,
+                                                password);
+  } else if (provider_type == VPNProviderTypeToString(
+      chromeos::VirtualNetwork::PROVIDER_TYPE_L2TP_IPSEC_USER_CERT)) {
+    if (!args->GetString("cert_id", &cert_id) ||
+        !args->GetString("cert_nss", &cert_nss)) {
+      AutomationJSONReply(this, reply_message)
+          .SendError("Missing a certificate arg.");
+      return;
+    }
+    new VirtualConnectObserver(this, reply_message, service_name);
+    // Connect using a user certificate.
+    network_library->ConnectToVirtualNetworkCert(service_name,
+                                                 hostname,
+                                                 cert_nss,
+                                                 cert_id,
+                                                 username,
+                                                 password);
+  } else if (provider_type == VPNProviderTypeToString(
+      chromeos::VirtualNetwork::PROVIDER_TYPE_OPEN_VPN)) {
+    // Connect using OPEN_VPN. Not yet supported by the VPN implementation.
+    AutomationJSONReply(this, reply_message)
+      .SendError("Provider type OPEN_VPN is not yet supported.");
+    return;
+  } else {
+    AutomationJSONReply(this, reply_message)
+        .SendError("Unsupported provider type.");
+    return;
+  }
+}
+
+void TestingAutomationProvider::ConnectToPrivateNetwork(
+    DictionaryValue* args, IPC::Message* reply_message) {
+  if (!EnsureCrosLibraryLoaded(this, reply_message))
+    return;
+
+  AutomationJSONReply reply(this, reply_message);
+  std::string service_path;
+  if (!args->GetString("service_path", &service_path)) {
+    reply.SendError("Invalid or missing args.");
+    return;
+  }
+
+  // Connect to a remembered VPN by its service_path. Valid service_paths
+  // can be found in the dictionary returned by GetPrivateNetworkInfo.
+  NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
+  chromeos::VirtualNetwork* network =
+      network_library->FindVirtualNetworkByPath(service_path);
+  if (!network) {
+    reply.SendError(StringPrintf("No virtual network found: %s",
+                                 service_path.c_str()));
+    return;
+  }
+  if (network->NeedMoreInfoToConnect()) {
+    reply.SendError("Virtual network is missing info required to connect.");
+    return;
+  };
+
+  new VirtualConnectObserver(this, reply_message, network->name());
+  network_library->ConnectToVirtualNetwork(network);
+}
+
+void TestingAutomationProvider::GetPrivateNetworkInfo(
+    DictionaryValue* args, IPC::Message* reply_message) {
+  if (!EnsureCrosLibraryLoaded(this, reply_message))
+    return;
+
+  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+  NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
+  const chromeos::VirtualNetworkVector& virtual_networks =
+      network_library->virtual_networks();
+
+  // Construct a dictionary of fields describing remembered VPNs. Also list
+  // the currently active VPN, if any.
+  if (network_library->virtual_network())
+    return_value->SetString("connected",
+                            network_library->virtual_network()->service_path());
+  for (chromeos::VirtualNetworkVector::const_iterator iter =
+       virtual_networks.begin(); iter != virtual_networks.end(); ++iter) {
+    const chromeos::VirtualNetwork* virt = *iter;
+    DictionaryValue* item = new DictionaryValue;
+    item->SetString("name", virt->name());
+    item->SetString("provider_type",
+                    VPNProviderTypeToString(virt->provider_type()));
+    item->SetString("hostname", virt->server_hostname());
+    item->SetString("key", virt->psk_passphrase());
+    item->SetString("cert_nss", virt->ca_cert_nss());
+    item->SetString("cert_id", virt->client_cert_id());
+    item->SetString("username", virt->username());
+    item->SetString("password", virt->user_passphrase());
+    return_value->Set(virt->service_path(), item);
+  }
+
+  AutomationJSONReply(this, reply_message).SendSuccess(return_value.get());
+}
+
+void TestingAutomationProvider::DisconnectFromPrivateNetwork(
+    DictionaryValue* args, IPC::Message* reply_message) {
+  if (!EnsureCrosLibraryLoaded(this, reply_message))
+    return;
+
+  AutomationJSONReply reply(this, reply_message);
+  NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
+  const chromeos::VirtualNetwork* virt = network_library->virtual_network();
+  if (!virt) {
+    reply.SendError("Not connected to any virtual network.");
+    return;
+  }
+
+  network_library->DisconnectFromNetwork(virt);
   reply.SendSuccess(NULL);
 }
 

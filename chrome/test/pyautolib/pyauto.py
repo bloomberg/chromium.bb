@@ -3241,6 +3241,122 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     self._GetResultFromJSONRequest(cmd_dict, windex=-1)
 
+  def AddPrivateNetwork(self,
+                        hostname,
+                        service_name,
+                        provider_type,
+                        username,
+                        password,
+                        cert_nss='',
+                        cert_id='',
+                        key=''):
+    """Add and connect to a private network.
+
+    Blocks until connection succeeds or fails. This is equivalent to
+    'Add Private Network' in the network menu UI.
+
+    Args:
+      hostname: Server hostname for the private network.
+      service_name: Service name that defines the private network. Do not
+                    add multiple services with the same name.
+      provider_type: Types are L2TP_IPSEC_PSK and L2TP_IPSEC_USER_CERT.
+                     Provider type OPEN_VPN is not yet supported.
+                     Type names returned by GetPrivateNetworkInfo will
+                     also work.
+      username: Username for connecting to the virtual network.
+      password: Passphrase for connecting to the virtual network.
+      cert_nss: Certificate nss nickname for a L2TP_IPSEC_USER_CERT network.
+      cert_id: Certificate id for a L2TP_IPSEC_USER_CERT network.
+      key: Pre-shared key for a L2TP_IPSEC_PSK network.
+
+    Returns:
+      An error string if an error occured.
+      None otherwise.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+        'command': 'AddPrivateNetwork',
+        'hostname': hostname,
+        'service_name': service_name,
+        'provider_type': provider_type,
+        'username': username,
+        'password': password,
+        'cert_nss': cert_nss,
+        'cert_id': cert_id,
+        'key': key,
+    }
+    result = self._GetResultFromJSONRequest(cmd_dict, windex=-1, timeout=50000)
+    return result.get('error_string')
+
+  def GetPrivateNetworkInfo(self):
+    """Get details about private networks on chromeos.
+
+    Returns:
+      A dictionary including information about all remembered virtual networks
+      as well as the currently connected virtual network, if any.
+      Sample:
+      { u'connected': u'/service/vpn_123_45_67_89_test_vpn'}
+        u'/service/vpn_123_45_67_89_test_vpn':
+          { u'username': u'vpn_user',
+            u'name': u'test_vpn',
+            u'hostname': u'123.45.67.89',
+            u'key': u'abcde',
+            u'cert_id': u'',
+            u'password': u'zyxw123',
+            u'provider_type': u'L2TP_IPSEC_PSK'},
+        u'/service/vpn_111_11_11_11_test_vpn2':
+          { u'username': u'testerman',
+            u'name': u'test_vpn2',
+            u'hostname': u'111.11.11.11',
+            u'key': u'fghijklm',
+            u'cert_id': u'',
+            u'password': u'789mnop',
+            u'provider_type': u'L2TP_IPSEC_PSK'},
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = { 'command': 'GetPrivateNetworkInfo' }
+    return self._GetResultFromJSONRequest(cmd_dict, windex=-1)
+
+  def ConnectToPrivateNetwork(self, service_path):
+    """Connect to a remembered private network by its service path.
+
+    Blocks until connection succeeds or fails. The network must have been
+    previously added with all necessary connection details.
+
+    Args:
+      service_path: Service name that defines the private network.
+
+    Returns:
+      An error string if an error occured.
+      None otherwise.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+        'command': 'ConnectToPrivateNetwork',
+        'service_path': service_path,
+    }
+    result = self._GetResultFromJSONRequest(cmd_dict, windex=-1, timeout=50000)
+    return result.get('error_string')
+
+  def DisconnectFromPrivateNetwork(self):
+    """Disconnect from the active private network.
+
+    Expects a private network to be active.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+        'command': 'DisconnectFromPrivateNetwork',
+    }
+    return self._GetResultFromJSONRequest(cmd_dict, windex=-1)
+
   def GetUpdateInfo(self):
     """Gets the status of the ChromeOS updater.
 

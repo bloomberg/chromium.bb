@@ -1154,6 +1154,18 @@ class TestingAutomationProvider : public AutomationProvider,
   void DisconnectFromWifiNetwork(DictionaryValue* args,
                                  IPC::Message* reply_message);
 
+  // VPN automation
+  void AddPrivateNetwork(DictionaryValue* args, IPC::Message* reply_message);
+
+  void GetPrivateNetworkInfo(DictionaryValue* args,
+                             IPC::Message* reply_message);
+
+  void ConnectToPrivateNetwork(DictionaryValue* args,
+                               IPC::Message* reply_message);
+
+  void DisconnectFromPrivateNetwork(DictionaryValue* args,
+                                    IPC::Message* reply_message);
+
   void ForgetWifiNetwork(DictionaryValue* args, IPC::Message* reply_message);
 
   void GetUpdateInfo(DictionaryValue* args, IPC::Message* reply_message);

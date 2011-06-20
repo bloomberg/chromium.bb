@@ -2158,6 +2158,15 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
   handler_map["ForgetWifiNetwork"] =
       &TestingAutomationProvider::ForgetWifiNetwork;
 
+  handler_map["AddPrivateNetwork"] =
+      &TestingAutomationProvider::AddPrivateNetwork;
+  handler_map["GetPrivateNetworkInfo"] =
+      &TestingAutomationProvider::GetPrivateNetworkInfo;
+  handler_map["ConnectToPrivateNetwork"] =
+      &TestingAutomationProvider::ConnectToPrivateNetwork;
+  handler_map["DisconnectFromPrivateNetwork"] =
+      &TestingAutomationProvider::DisconnectFromPrivateNetwork;
+
   handler_map["GetUpdateInfo"] = &TestingAutomationProvider::GetUpdateInfo;
   handler_map["UpdateCheck"] = &TestingAutomationProvider::UpdateCheck;
   handler_map["SetReleaseTrack"] = &TestingAutomationProvider::SetReleaseTrack;
