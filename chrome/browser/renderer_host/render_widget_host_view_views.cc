@@ -112,6 +112,7 @@ inline void UpdateTouchParams(const views::TouchEvent& event,
   tpoint->radiusX = event.radius_x();
   tpoint->radiusY = event.radius_y();
   tpoint->rotationAngle = event.rotation_angle();
+  tpoint->force = event.force();
 }
 
 void UpdateTouchPointPosition(const views::TouchEvent* event,
