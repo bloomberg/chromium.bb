@@ -366,8 +366,8 @@ Compositor* Compositor::Create(gfx::AcceleratedWidget widget) {
   // on this thread long enough to perform the GL bindings.
   // TODO(wjmaclean) Remove this when GL initialisation cleaned up.
   base::ThreadRestrictions::ScopedAllowIO allow_io;
-  gfx::GLSurface::InitializeOneOff();
-  if (gfx::GetGLImplementation() != gfx::kGLImplementationNone)
+  if (gfx::GLSurface::InitializeOneOff() &&
+      gfx::GetGLImplementation() != gfx::kGLImplementationNone)
     return new glHidden::CompositorGL(widget);
   return NULL;
 }
