@@ -56,6 +56,9 @@ const int kMinCandidateLabelWidth = 100;
 // window. We use this value to prevent the candidate window from being
 // too wide when one of candidates are long.
 const int kMaxCandidateLabelWidth = 500;
+// The minimum width of preedit area. We use this value to prevent the
+// candidate window from being too narrow when candidate lists are not shown.
+const int kMinPreeditAreaWidth = 134;
 
 // VerticalCandidateLabel is used for rendering candidate text in
 // the vertical candidate window.
@@ -297,6 +300,104 @@ int ComputeAnnotationColumnWidth(
   return annotation_column_width;
 }
 
+// HidableArea is used as an area to place optional information that can be
+// turned displaying off if it is unnecessary.
+class HidableArea : public views::View {
+ public:
+  HidableArea() {
+    // |place_holder_| will be deleted by scoped_ptr, rather than
+    // the standard owning relation of views::View.
+    //
+    // This is because we swap the contents of HidableArea between
+    // |place_holder_| (to show nothing) and |contents_| (to show something).
+    // In other words, the HidableArea only contains one of the two views
+    // hence cannot own the two views at the same time.
+    place_holder_.reset(new views::View);
+    place_holder_->set_parent_owned(false);  // Won't own
+
+    // Initially show nothing.
+    SetLayoutManager(new views::FillLayout);
+    AddChildView(place_holder_.get());
+  }
+
+  // Sets the content view.
+  void SetContents(views::View* contents) {
+    contents_.reset(contents);
+    contents_->set_parent_owned(false);  // Won't own
+  }
+
+  // Shows the content.
+  void Show() {
+    if (contents_.get() && contents_->parent() != this) {
+      RemoveAllChildViews(false);  // Don't delete child views.
+      AddChildView(contents_.get());
+    }
+  }
+
+  // Hides the content.
+  void Hide() {
+    if (IsShown()) {
+      RemoveAllChildViews(false);  // Don't delete child views.
+      AddChildView(place_holder_.get());
+    }
+  }
+
+  // Returns whether the content is already set and shown.
+  bool IsShown() const {
+    return contents_.get() && contents_->parent() == this;
+  }
+
+  // Returns the content.
+  views::View* contents() {
+    return contents_.get();
+  }
+
+ private:
+  scoped_ptr<views::View> contents_;
+  scoped_ptr<views::View> place_holder_;
+};
+
+// InformationTextArea is a HidableArea having a single Label in it.
+class InformationTextArea : public HidableArea {
+ public:
+  // Specify the alignment and initialize the control.
+  InformationTextArea(views::Label::Alignment align, int minWidth)
+  : minWidth_(minWidth) {
+    label_ = new views::Label;
+    label_->SetHorizontalAlignment(align);
+
+    const gfx::Insets kInsets(2, 2, 2, 4);
+    views::View* contents = WrapWithPadding(label_, kInsets);
+    SetContents(contents);
+    contents->set_border(
+        views::Border::CreateSolidBorder(1, kFrameColor));
+    contents->set_background(
+        views::Background::CreateVerticalGradientBackground(
+            kFooterTopColor,
+            kFooterBottomColor));
+  }
+
+  // Set the displayed text.
+  void SetText(const std::string& utf8_text) {
+    label_->SetText(UTF8ToWide(utf8_text));
+  }
+
+ protected:
+  virtual gfx::Size GetPreferredSize() OVERRIDE {
+    gfx::Size size = HidableArea::GetPreferredSize();
+    // Hack. +2 is needed as the same reason as in VerticalCandidateLabel
+    size.set_width(size.width() + 2);
+    if (size.width() < minWidth_) {
+      size.set_width(minWidth_);
+    }
+    return size;
+  }
+
+ private:
+  views::Label* label_;
+  int minWidth_;
+};
+
 }  // namespace
 
 namespace chromeos {
@@ -349,11 +450,26 @@ class CandidateWindowView : public views::View {
   // Hides the auxiliary text.
   void HideAuxiliaryText();
 
+  // Hides the preedit text.
+  void HidePreeditText();
+
+  // Hides whole the candidate window.
+  void HideAll();
+
+  // Shows the lookup table.
+  void ShowLookupTable();
+
   // Shows the auxiliary text.
   void ShowAuxiliaryText();
 
+  // Shows the preedit text.
+  void ShowPreeditText();
+
   // Updates the auxiliary text.
   void UpdateAuxiliaryText(const std::string& utf8_text);
+
+  // Updates the preedit text.
+  void UpdatePreeditText(const std::string& utf8_text);
 
   // Returns true if we should update candidate views in the window.  For
   // instance, if we are going to show the same candidates as before, we
@@ -414,12 +530,8 @@ class CandidateWindowView : public views::View {
   void MaybeInitializeCandidateViews(
       const InputMethodLookupTable& lookup_table);
 
-  // Creates the footer area, where we show status information.
-  // For instance, we show a cursor position like 2/19.
-  views::View* CreateFooterArea();
-
-  // Creates the header area, where we show auxiliary text.
-  views::View* CreateHeaderArea();
+  // Returns the appropriate area (header or footer) to put auxiliary texts.
+  InformationTextArea* GetAuxiliaryTextArea();
 
   // The lookup table (candidates).
   InputMethodLookupTable lookup_table_;
@@ -436,30 +548,22 @@ class CandidateWindowView : public views::View {
   // Views created in the class will be part of tree of |this|, so these
   // child views will be deleted when |this| is deleted.
 
-  // The candidate area is where candidates are rendered.
-  views::View* candidate_area_;
-  // The footer area is where the auxiliary text is shown, if the
-  // orientation is vertical. Usually the auxiliary text is used for
-  // showing candidate number information like 2/19.
-  views::View* footer_area_;
-  // We use this when we show something in the footer area.
-  scoped_ptr<views::View> footer_area_contents_;
-  // We use this when we show nothing in the footer area.
-  scoped_ptr<views::View> footer_area_place_holder_;
+  // The preedit area is where the preedit text is shown, if it is needed
+  // in cases such as the focus is on a plugin that doesn't support in-line
+  // preedit drawing.
+  InformationTextArea* preedit_area_;
   // The header area is where the auxiliary text is shown, if the
   // orientation is horizontal. If the auxiliary text is not provided, we
   // show nothing.  For instance, we show pinyin text like "zhong'guo".
-  views::View* header_area_;
-  // We use this when we show something in the header area.
-  scoped_ptr<views::View> header_area_contents_;
-  // We use this when we show nothing in the header area.
-  scoped_ptr<views::View> header_area_place_holder_;
+  InformationTextArea* header_area_;
+  // The candidate area is where candidates are rendered.
+  HidableArea* candidate_area_;
   // The candidate views are used for rendering candidates.
   std::vector<CandidateView*> candidate_views_;
-  // The header label is shown in the header area.
-  views::Label* header_label_;
-  // The footer label is shown in the footer area.
-  views::Label* footer_label_;
+  // The footer area is where the auxiliary text is shown, if the
+  // orientation is vertical. Usually the auxiliary text is used for
+  // showing candidate number information like 2/19.
+  InformationTextArea* footer_area_;
 
   // Current columns width in |candidate_area_|.
   int previous_shortcut_column_width_;
@@ -738,11 +842,10 @@ CandidateWindowView::CandidateWindowView(
     views::Widget* parent_frame)
     : selected_candidate_index_in_page_(0),
       parent_frame_(parent_frame),
+      preedit_area_(NULL),
+      header_area_(NULL),
       candidate_area_(NULL),
       footer_area_(NULL),
-      header_area_(NULL),
-      header_label_(NULL),
-      footer_label_(NULL),
       previous_shortcut_column_width_(0),
       previous_candidate_column_width_(0),
       previous_annotation_column_width_(0),
@@ -755,19 +858,24 @@ void CandidateWindowView::Init() {
       views::Background::CreateSolidBackground(kDefaultBackgroundColor));
   set_border(views::Border::CreateSolidBorder(1, kFrameColor));
 
-  // Create the header area.
-  header_area_ = CreateHeaderArea();
-  // Create the candidate area.
-  candidate_area_ = new views::View;
-  // Create the footer area.
-  footer_area_ = CreateFooterArea();
+  // Create areas.
+  preedit_area_ = new InformationTextArea(views::Label::ALIGN_LEFT,
+                                          kMinPreeditAreaWidth);
+  header_area_ = new InformationTextArea(views::Label::ALIGN_LEFT, 0);
+  candidate_area_ = new HidableArea;
+  candidate_area_->SetContents(new views::View);
+  footer_area_ = new InformationTextArea(views::Label::ALIGN_RIGHT, 0);
 
   // Set the window layout of the view
   views::GridLayout* layout = new views::GridLayout(this);
-  SetLayoutManager(layout);  // |this| owns layout|.
+  SetLayoutManager(layout);  // |this| owns |layout|.
   views::ColumnSet* column_set = layout->AddColumnSet(0);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
                         0, views::GridLayout::USE_PREF, 0, 0);
+
+  // Add the preedit area
+  layout->StartRow(0, 0);
+  layout->AddView(preedit_area_);  // |preedit_area_| is owned by |this|.
 
   // Add the header area.
   layout->StartRow(0, 0);
@@ -782,9 +890,17 @@ void CandidateWindowView::Init() {
   layout->AddView(footer_area_);  // |footer_area_| is owned by |this|.
 }
 
+void CandidateWindowView::HideAll() {
+  parent_frame_->Hide();
+}
+
 void CandidateWindowView::HideLookupTable() {
   if (!mouse_is_pressed_) {
-    parent_frame_->Hide();
+    candidate_area_->Hide();
+    if (preedit_area_->IsShown())
+      ResizeAndMoveParentFrame();
+    else
+      parent_frame_->Hide();
     return;
   }
 
@@ -833,40 +949,47 @@ void CandidateWindowView::OnCandidateMouseReleased() {
   mouse_is_pressed_ = false;
 }
 
+InformationTextArea* CandidateWindowView::GetAuxiliaryTextArea() {
+  return (lookup_table_.orientation == InputMethodLookupTable::kHorizontal ?
+          header_area_ : footer_area_);
+}
+
 void CandidateWindowView::HideAuxiliaryText() {
-  views::View* target_area = (
-      lookup_table_.orientation == InputMethodLookupTable::kHorizontal ?
-      header_area_ : footer_area_);
-  views::View* target_place_holder = (
-      lookup_table_.orientation == InputMethodLookupTable::kHorizontal ?
-      header_area_place_holder_.get() :
-      footer_area_place_holder_.get());
-  // Put the place holder to the target display area.
-  target_area->RemoveAllChildViews(false);  // Don't delete child views.
-  target_area->AddChildView(target_place_holder);
+  GetAuxiliaryTextArea()->Hide();
+  ResizeAndMoveParentFrame();
 }
 
 void CandidateWindowView::ShowAuxiliaryText() {
-  views::View* target_area = (
-      lookup_table_.orientation == InputMethodLookupTable::kHorizontal ?
-      header_area_ : footer_area_);
-  views::View* target_contents = (
-      lookup_table_.orientation == InputMethodLookupTable::kHorizontal ?
-      header_area_contents_.get() :
-      footer_area_contents_.get());
-
-  if (target_contents->parent() != target_area) {
-    // If contents not in display area, put it in.
-    target_area->RemoveAllChildViews(false);  // Don't delete child views.
-    target_area->AddChildView(target_contents);
-  }
+  GetAuxiliaryTextArea()->Show();
+  ResizeAndMoveParentFrame();
 }
 
 void CandidateWindowView::UpdateAuxiliaryText(const std::string& utf8_text) {
-  views::Label* target_label = (
-      lookup_table_.orientation == InputMethodLookupTable::kHorizontal ?
-      header_label_ : footer_label_);
-  target_label->SetText(UTF8ToWide(utf8_text));
+  GetAuxiliaryTextArea()->SetText(utf8_text);
+}
+
+void CandidateWindowView::HidePreeditText() {
+  preedit_area_->Hide();
+  if (candidate_area_->IsShown())
+    ResizeAndMoveParentFrame();
+  else
+    parent_frame_->Hide();
+}
+
+void CandidateWindowView::ShowPreeditText() {
+  preedit_area_->Show();
+  ResizeAndMoveParentFrame();
+  parent_frame_->Show();
+}
+
+void CandidateWindowView::UpdatePreeditText(const std::string& utf8_text) {
+  preedit_area_->SetText(utf8_text);
+}
+
+void CandidateWindowView::ShowLookupTable() {
+  candidate_area_->Show();
+  ResizeAndMoveParentFrame();
+  parent_frame_->Show();
 }
 
 bool CandidateWindowView::ShouldUpdateCandidateViews(
@@ -959,6 +1082,7 @@ void CandidateWindowView::MaybeInitializeCandidateViews(
   const InputMethodLookupTable::Orientation orientation =
       lookup_table.orientation;
   const int page_size = lookup_table.page_size;
+  views::View* candidate_area_contents = candidate_area_->contents();
 
   // Current column width.
   int shortcut_column_width = 0;
@@ -997,13 +1121,13 @@ void CandidateWindowView::MaybeInitializeCandidateViews(
 
   // Clear the existing candidate_views if any.
   for (size_t i = 0; i < candidate_views_.size(); ++i) {
-    candidate_area_->RemoveChildView(candidate_views_[i]);
+    candidate_area_contents->RemoveChildView(candidate_views_[i]);
   }
   candidate_views_.clear();
 
-  views::GridLayout* layout = new views::GridLayout(candidate_area_);
-  // |candidate_area_| owns |layout|.
-  candidate_area_->SetLayoutManager(layout);
+  views::GridLayout* layout = new views::GridLayout(candidate_area_contents);
+  // |candidate_area_contents| owns |layout|.
+  candidate_area_contents->SetLayoutManager(layout);
   // Initialize the column set.
   views::ColumnSet* column_set = layout->AddColumnSet(0);
   if (orientation == InputMethodLookupTable::kVertical) {
@@ -1042,7 +1166,7 @@ void CandidateWindowView::MaybeInitializeCandidateViews(
     if (orientation == InputMethodLookupTable::kVertical) {
       layout->StartRow(0, 0);
     }
-    // |candidate_row| will be owned by |candidate_area_|.
+    // |candidate_row| will be owned by |candidate_area_contents|.
     layout->AddView(candidate_row);
   }
 
@@ -1052,71 +1176,7 @@ void CandidateWindowView::MaybeInitializeCandidateViews(
   // moves right from the correct position in ResizeAndMoveParentFrame().
   // TODO(nhiroki): Figure out why it returns invalid value.
   // It seems that the x-position of the candidate labels is not set.
-  layout->Layout(candidate_area_);
-}
-
-views::View* CandidateWindowView::CreateHeaderArea() {
-  // |header_area_place_holder_| will not be owned by another view.
-  // This will be deleted by scoped_ptr.
-  //
-  // This is because we swap the contents of |header_area_| between
-  // |header_area_place_holder_| (to show nothing) and
-  // |header_area_contents_| (to show something). In other words,
-  // |header_area_| only contains one of the two views hence cannot own
-  // the two views at the same time.
-  header_area_place_holder_.reset(new views::View);
-  header_area_place_holder_->set_parent_owned(false);  // Won't be owened.
-
-  // |header_label_| will be owned by |header_area_contents_|.
-  header_label_ = new views::Label;
-  header_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-
-  const gfx::Insets kHeaderInsets(2, 2, 2, 4);
-  // |header_area_contents_| will not be owned by another view.
-  // See a comment at |header_area_place_holder_| for why.
-  header_area_contents_.reset(
-      WrapWithPadding(header_label_, kHeaderInsets));
-  header_area_contents_->set_parent_owned(false);  // Won't be owened.
-  header_area_contents_->set_border(
-      views::Border::CreateSolidBorder(1, kFrameColor));
-  header_area_contents_->set_background(
-      views::Background::CreateVerticalGradientBackground(
-          kFooterTopColor,
-          kFooterBottomColor));
-
-  views::View* header_area = new views::View;
-  header_area->SetLayoutManager(new views::FillLayout);
-  // Initialize the header area with the place holder (i.e. show nothing).
-  header_area->AddChildView(header_area_place_holder_.get());
-  return header_area;
-}
-
-views::View* CandidateWindowView::CreateFooterArea() {
-  // |footer_area_place_holder_| will not be owned by another view.
-  // See also the comment about |header_area_place_holder_| in
-  // CreateHeaderArea().
-  footer_area_place_holder_.reset(new views::View);
-  footer_area_place_holder_->set_parent_owned(false);  // Won't be owened.
-
-  footer_label_ = new views::Label();
-  footer_label_->SetHorizontalAlignment(views::Label::ALIGN_RIGHT);
-
-  const gfx::Insets kFooterInsets(2, 2, 2, 4);
-  footer_area_contents_.reset(
-      WrapWithPadding(footer_label_, kFooterInsets));
-  footer_area_contents_->set_parent_owned(false);  // Won't be owened.
-  footer_area_contents_->set_border(
-      views::Border::CreateSolidBorder(1, kFrameColor));
-  footer_area_contents_->set_background(
-      views::Background::CreateVerticalGradientBackground(
-          kFooterTopColor,
-          kFooterBottomColor));
-
-  views::View* footer_area = new views::View;
-  footer_area->SetLayoutManager(new views::FillLayout);
-  // Initialize the footer area with the place holder (i.e. show nothing).
-  footer_area->AddChildView(footer_area_place_holder_.get());
-  return footer_area;
+  layout->Layout(candidate_area_contents);
 }
 
 void CandidateWindowView::SelectCandidateAt(int index_in_page) {
@@ -1235,6 +1295,9 @@ void CandidateWindowView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 }
 
 bool CandidateWindowController::Impl::Init() {
+  // Create the candidate window view.
+  CreateView();
+
   // Initialize the input method UI status connection.
   InputMethodUiStatusMonitorFunctions functions;
   functions.hide_auxiliary_text =
@@ -1259,9 +1322,6 @@ bool CandidateWindowController::Impl::Init() {
       ui_status_connection_,
       &CandidateWindowController::Impl::OnHidePreeditText,
       &CandidateWindowController::Impl::OnUpdatePreeditText);
-
-  // Create the candidate window view.
-  CreateView();
 
   return true;
 }
@@ -1295,21 +1355,21 @@ void CandidateWindowController::Impl::OnHideAuxiliaryText(
     void* input_method_library) {
   CandidateWindowController::Impl* controller =
       static_cast<CandidateWindowController::Impl*>(input_method_library);
-
   controller->candidate_window_->HideAuxiliaryText();
-  controller->candidate_window_->ResizeAndMoveParentFrame();
 }
 
 void CandidateWindowController::Impl::OnHideLookupTable(
     void* input_method_library) {
   CandidateWindowController::Impl* controller =
       static_cast<CandidateWindowController::Impl*>(input_method_library);
-
   controller->candidate_window_->HideLookupTable();
 }
 
 void CandidateWindowController::Impl::OnHidePreeditText(
     void* input_method_library) {
+  CandidateWindowController::Impl* controller =
+      static_cast<CandidateWindowController::Impl*>(input_method_library);
+  controller->candidate_window_->HidePreeditText();
 }
 
 void CandidateWindowController::Impl::OnSetCursorLocation(
@@ -1352,7 +1412,6 @@ void CandidateWindowController::Impl::OnUpdateAuxiliaryText(
   }
   controller->candidate_window_->UpdateAuxiliaryText(utf8_text);
   controller->candidate_window_->ShowAuxiliaryText();
-  controller->candidate_window_->ResizeAndMoveParentFrame();
 }
 
 void CandidateWindowController::Impl::OnUpdateLookupTable(
@@ -1361,20 +1420,29 @@ void CandidateWindowController::Impl::OnUpdateLookupTable(
   CandidateWindowController::Impl* controller =
       static_cast<CandidateWindowController::Impl*>(input_method_library);
 
-  // If it's not visible, hide the window and return.
+  // If it's not visible, hide the lookup table and return.
   if (!lookup_table.visible) {
     controller->candidate_window_->HideLookupTable();
     return;
   }
 
   controller->candidate_window_->UpdateCandidates(lookup_table);
-  controller->candidate_window_->ResizeAndMoveParentFrame();
-  controller->frame_->Show();
+  controller->candidate_window_->ShowLookupTable();
 }
 
 void CandidateWindowController::Impl::OnUpdatePreeditText(
     void* input_method_library,
     const std::string& utf8_text, unsigned int cursor, bool visible) {
+  CandidateWindowController::Impl* controller =
+      static_cast<CandidateWindowController::Impl*>(input_method_library);
+
+  // If it's not visible, hide the preedit text and return.
+  if (!visible || utf8_text.empty()) {
+    controller->candidate_window_->HidePreeditText();
+    return;
+  }
+  controller->candidate_window_->UpdatePreeditText(utf8_text);
+  controller->candidate_window_->ShowPreeditText();
 }
 
 void CandidateWindowController::Impl::OnCandidateCommitted(int index,
@@ -1389,7 +1457,7 @@ void CandidateWindowController::Impl::OnConnectionChange(
   if (!connected) {
     CandidateWindowController::Impl* controller =
         static_cast<CandidateWindowController::Impl*>(input_method_library);
-    controller->candidate_window_->HideLookupTable();
+    controller->candidate_window_->HideAll();
   }
 }
 
