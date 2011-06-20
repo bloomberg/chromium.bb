@@ -284,9 +284,8 @@ cr.define('ntp4', function() {
     pageList.appendChild(page);
 
     // Make a deep copy of the dot template to add a new one.
-    var newDot = new ntp4.NavDot(page);
-    if (page.classList.contains('temporary'))
-      newDot.classList.add('temporary');
+    var animate = page.classList.contains('temporary');
+    var newDot = new ntp4.NavDot(page, animate);
 
     dotList.appendChild(newDot);
     page.navigationDot = newDot;
@@ -326,10 +325,9 @@ cr.define('ntp4', function() {
     var tempPage = document.querySelector('.tile-page.temporary');
     var dot = tempPage.navigationDot;
     if (!tempPage.tileCount) {
-      dot.parentNode.removeChild(dot);
+      dot.animateRemove();
       tempPage.parentNode.removeChild(tempPage);
     } else {
-      dot.classList.remove('temporary');
       tempPage.classList.remove('temporary');
     }
   }

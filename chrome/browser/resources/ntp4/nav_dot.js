@@ -13,13 +13,15 @@ cr.define('ntp4', function() {
 
   /**
    * Creates a new navigation dot.
+   * @param {TilePage} page The associated TilePage.
+   * @param {bool} animate If true, animates into existence.
    * @constructor
    * @extends {HTMLLIElement}
    */
-  function NavDot(page) {
+  function NavDot(page, animate) {
     var dot = cr.doc.createElement('li');
     dot.__proto__ = NavDot.prototype;
-    dot.initialize(page);
+    dot.initialize(page, animate);
 
     return dot;
   }
@@ -27,7 +29,7 @@ cr.define('ntp4', function() {
   NavDot.prototype = {
     __proto__: HTMLLIElement.prototype,
 
-    initialize: function(page) {
+    initialize: function(page, animate) {
       this.className = 'dot';
       this.setAttribute('tabindex', 0);
       this.setAttribute('role', 'button');
@@ -44,11 +46,27 @@ cr.define('ntp4', function() {
       this.addEventListener('dblclick', this.onDoubleClick_);
       this.addEventListener('dragenter', this.onDragEnter_);
       this.addEventListener('dragleave', this.onDragLeave_);
+      this.addEventListener('webkitTransitionEnd', this.onTransitionEnd_);
 
       this.input_.addEventListener('blur', this.onInputBlur_.bind(this));
       this.input_.addEventListener('mousedown',
                                    this.onInputMouseDown_.bind(this));
       this.input_.addEventListener('keydown', this.onInputKeyDown_.bind(this));
+
+      if (animate) {
+        this.classList.add('small');
+        var self = this;
+        window.setTimeout(function() {
+          self.classList.remove('small');
+        }, 0);
+      }
+    },
+
+    /**
+     * Removes the dot from the page after transitioning to 0 width.
+     */
+    animateRemove: function() {
+      this.classList.add('small');
     },
 
     /**
@@ -164,6 +182,15 @@ cr.define('ntp4', function() {
         window.clearTimeout(this.dragNavTimeout);
         this.dragNavTimeout = null;
       }
+    },
+
+    /**
+     * A transition has ended.
+     * @param {Event} e The transition end event.
+     */
+    onTransitionEnd_: function(e) {
+      if (e.propertyName === 'width' && this.classList.contains('small'))
+        this.parentNode.removeChild(this);
     },
   };
 

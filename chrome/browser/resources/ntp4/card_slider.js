@@ -391,8 +391,6 @@ var CardSlider = (function() {
       // Ensure we're at a card bounary
       this.transformToCurrentCard_(true);
     },
-
-
   };
 
   return CardSlider;

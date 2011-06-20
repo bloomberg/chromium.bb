@@ -101,13 +101,13 @@ cr.define('ntp4', function() {
       // image masks.
       this.dragClone = this.cloneNode(true);
       this.dragClone.classList.add('drag-representation');
-      this.ownerDocument.documentElement.appendChild(this.dragClone);
+      this.ownerDocument.body.appendChild(this.dragClone);
       this.eventTracker.add(this.dragClone, 'webkitTransitionEnd',
                             this.onDragCloneTransitionEnd_.bind(this));
 
       this.classList.add('dragging');
-      this.dragOffsetX = e.pageX - this.offsetLeft;
-      this.dragOffsetY = e.pageY - this.offsetTop -
+      this.dragOffsetX = e.x - this.offsetLeft - this.parentNode.offsetLeft;
+      this.dragOffsetY = e.y - this.offsetTop -
           // Unlike offsetTop, this value takes scroll position into account.
           this.parentNode.getBoundingClientRect().top;
 
@@ -120,15 +120,15 @@ cr.define('ntp4', function() {
      * @private
      */
     onDragMove_: function(e) {
-      if (e.view != window || (e.pageX == 0 && e.pageY == 0)) {
+      if (e.view != window || (e.x == 0 && e.y == 0)) {
         // attribute hidden seems to be overridden by display.
         this.dragClone.classList.add('hidden');
         return;
       }
 
       this.dragClone.classList.remove('hidden');
-      this.dragClone.style.left = (e.pageX - this.dragOffsetX) + 'px';
-      this.dragClone.style.top = (e.pageY - this.dragOffsetY) + 'px';
+      this.dragClone.style.left = (e.x - this.dragOffsetX) + 'px';
+      this.dragClone.style.top = (e.y - this.dragOffsetY) + 'px';
     },
 
     /**
@@ -144,16 +144,23 @@ cr.define('ntp4', function() {
       setCurrentlyDraggingTile(null);
       this.tilePage.positionTile_(this.index);
 
-      // The tile's contents may have moved following the respositioning; adjust
-      // for that.
-      var contentDiffX = this.dragClone.firstChild.offsetLeft -
-          this.firstChild.offsetLeft;
-      var contentDiffY = this.dragClone.firstChild.offsetTop -
-          this.firstChild.offsetTop;
-      this.dragClone.style.left = (this.gridX - contentDiffX) + 'px';
-      this.dragClone.style.top =
-          (this.gridY + this.parentNode.getBoundingClientRect().top -
-           contentDiffY) + 'px';
+      if (this.tilePage.selected) {
+        // The tile's contents may have moved following the respositioning;
+        // adjust for that.
+        var contentDiffX = this.dragClone.firstChild.offsetLeft -
+            this.firstChild.offsetLeft;
+        var contentDiffY = this.dragClone.firstChild.offsetTop -
+            this.firstChild.offsetTop;
+        this.dragClone.style.left = (this.gridX + this.parentNode.offsetLeft -
+            contentDiffX) + 'px';
+        this.dragClone.style.top =
+            (this.gridY + this.parentNode.getBoundingClientRect().top -
+            contentDiffY) + 'px';
+      } else {
+        // When we're showing another page and a drag fails or gets cancelled,
+        // the tile shrinks to a dot.
+        this.dragClone.firstChild.style.webkitTransform = 'scale(0)';
+      }
     },
 
     /**
@@ -225,7 +232,8 @@ cr.define('ntp4', function() {
      */
     onDragCloneTransitionEnd_: function(e) {
       if (this.classList.contains('dragging') &&
-          (e.propertyName == 'left' || e.propertyName == 'top')) {
+          (e.propertyName == 'left' || e.propertyName == 'top' ||
+           e.propertyName == '-webkit-transform')) {
         this.finalizeDrag_();
       }
     },
@@ -344,7 +352,7 @@ cr.define('ntp4', function() {
       this.eventTracker.add(window, 'resize', this.onResize_.bind(this));
 
       this.addEventListener('DOMNodeInsertedIntoDocument',
-                            this.calculateLayoutValues_);
+                            this.onNodeInsertedIntoDocument_);
 
       this.tileGrid_.addEventListener('dragenter',
                                       this.onDragEnter_.bind(this));
@@ -357,6 +365,11 @@ cr.define('ntp4', function() {
 
     get tileCount() {
       return this.tileElements_.length;
+    },
+
+    get selected() {
+      return Array.prototype.indexOf.call(this.parentNode.children, this) ==
+          ntp4.getCardSlider().currentCard;
     },
 
     /**
@@ -392,15 +405,6 @@ cr.define('ntp4', function() {
 
       this.positionTile_(index);
       this.classList.remove('animating-tile-page');
-    },
-
-    /**
-     * Controls whether this page will accept drags that originate from outside
-     * the page.
-     * @return {boolean} True if this page accepts drags from outside sources.
-     */
-    acceptOutsideDrags: function() {
-      return true;
     },
 
     /**
@@ -534,13 +538,7 @@ cr.define('ntp4', function() {
       this.lastWidth_ = this.clientWidth;
       this.lastHeight_ = this.clientHeight;
       this.classList.add('animating-tile-page');
-
-      // The tile grid will expand to the bottom footer, or enough to hold all
-      // the tiles, whichever is greater. It would be nicer if tilePage were
-      // a flex box, and the tile grid could be box-flex: 1, but this exposes a
-      // bug where repositioning tiles will cause the scroll position to reset.
-      this.tileGrid_.style.minHeight = (this.clientHeight -
-          this.tileGrid_.offsetTop) + 'px';
+      this.heightChanged_();
 
       for (var i = 0; i < this.tileElements_.length; i++) {
         this.positionTile_(i);
@@ -611,6 +609,28 @@ cr.define('ntp4', function() {
     },
 
     /**
+     * Handles final setup that can only happen after |this| is inserted into
+     * the page.
+     */
+    onNodeInsertedIntoDocument_: function(e) {
+      this.calculateLayoutValues_();
+      this.heightChanged_();
+    },
+
+    /**
+     * Called when the height of |this| has changed: update the size of
+     * tileGrid.
+     */
+    heightChanged_: function() {
+      // The tile grid will expand to the bottom footer, or enough to hold all
+      // the tiles, whichever is greater. It would be nicer if tilePage were
+      // a flex box, and the tile grid could be box-flex: 1, but this exposes a
+      // bug where repositioning tiles will cause the scroll position to reset.
+      this.tileGrid_.style.minHeight = (this.clientHeight -
+          this.tileGrid_.offsetTop) + 'px';
+    },
+
+    /**
      * Get the height for a tile of a certain width. Override this function to
      * get non-square tiles.
      * @param {number} width The pixel width of a tile.
@@ -647,9 +667,16 @@ cr.define('ntp4', function() {
      * @private
      */
     onDragEnter_: function(e) {
-      if (++this.dragEnters_ > 1)
-        return;
-      this.doDragEnter_(e);
+      if (++this.dragEnters_ == 1) {
+        this.doDragEnter_(e);
+      } else {
+        // Sometimes we'll get an enter event over a child element without an
+        // over event following it. In this case we have to still call the
+        // drag over handler so that we make the necessary updates (one visible
+        // symptom of not doing this is that the cursor's drag state will
+        // flicker during drags).
+        this.onDragOver_(e);
+      }
     },
 
     /**
@@ -712,6 +739,8 @@ cr.define('ntp4', function() {
       // will change.
       if (!this.withinPageDrag_)
         this.updateTopMargin_();
+
+      this.doDragOver_(e);
     },
 
     /**

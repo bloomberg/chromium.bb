@@ -28,11 +28,11 @@
   text-align: left;
   width: 80px;
   -webkit-padding-start: 2px;
-  -webkit-transition: border-color 0.2s;
+  -webkit-transition: border-color 0.2s, width 0.25ms;
 }
 
-.dot.new {
-  -webkit-transform: translate(0, 40px);
+.dot.small {
+  width: 0;
 }
 
 .dot input {

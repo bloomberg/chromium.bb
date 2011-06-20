@@ -31,6 +31,7 @@
 .tile-grid {
   overflow: hidden;
   position: relative;
+  width: 100%;
   z-index: 100;
 }
 
@@ -53,11 +54,12 @@
 
 .tile.drag-representation {
   pointer-events: none;
+  position: fixed;
   z-index: 10;
 }
 
-.drag-target {
-  background-color: green;
+.tile.drag-representation.placing > * {
+  -webkit-transition: -webkit-transform 200ms;
 }
 
 .animating-tile-page .tile,
