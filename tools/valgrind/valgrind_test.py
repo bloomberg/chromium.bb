@@ -619,9 +619,11 @@ class ThreadSanitizerBase(object):
     # --show-pc flag is needed for parsing the error logs on Darwin.
     if platform_suffix == 'mac':
       ret += ["--show-pc=yes"]
+    ret += ["--show-pid=no"]
 
     # Don't show googletest frames in stacks.
     ret += ["--cut_stack_below=testing*Test*Run*"]
+    ret += ["--cut_stack_below=testing*HandleSehExceptionsInMethodIfSupported"]
 
     return ret
 
