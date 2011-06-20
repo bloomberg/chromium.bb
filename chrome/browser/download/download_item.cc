@@ -15,7 +15,6 @@
 #include "base/utf_string_conversions.h"
 #include "net/base/net_util.h"
 #include "chrome/browser/download/download_create_info.h"
-#include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/download/download_extensions.h"
 #include "chrome/browser/download/download_file_manager.h"
 #include "chrome/browser/download/download_history.h"
@@ -289,8 +288,7 @@ void DownloadItem::OpenDownload() {
       return;
 
     if (is_extension_install()) {
-      download_crx_util::OpenChromeExtension(download_manager_->profile(),
-                                             *this);
+      download_util::OpenChromeExtension(download_manager_->profile(), *this);
       return;
     }
 #if defined(OS_MACOSX)
@@ -430,7 +428,7 @@ void DownloadItem::Completed() {
 
   if (is_extension_install()) {
     // Extensions should already have been unpacked and opened.
-    DCHECK(auto_opened_);
+    auto_opened_ = true;
   } else if (open_when_complete() ||
              download_manager_->ShouldOpenFileBasedOnExtension(
                  GetUserVerifiedFilePath()) ||
@@ -454,7 +452,7 @@ void DownloadItem::StartCrxInstall() {
   DCHECK(all_data_saved_);
 
   scoped_refptr<CrxInstaller> crx_installer =
-      download_crx_util::OpenChromeExtension(
+      download_util::OpenChromeExtension(
           download_manager_->profile(),
           *this);
 

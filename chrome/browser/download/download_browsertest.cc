@@ -7,20 +7,14 @@
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
-#include "base/stl_util-inl.h"
 #include "base/test/test_file_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/download/download_file_manager.h"
-#include "chrome/browser/download/download_history.h"
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_shelf.h"
-#include "chrome/browser/download/download_util.h"
-#include "chrome/browser/extensions/extension_install_ui.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/history/download_history_info.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -45,36 +39,6 @@
 
 namespace {
 
-// IDs and paths of CRX files used in tests.
-const char kGoodCrxId[] = "ldnnhddmnhbkjipkidpdiheffobcpfmf";
-const FilePath kGoodCrxPath(FILE_PATH_LITERAL("extensions/good.crx"));
-
-const char kLargeThemeCrxId[] = "pjpgmfcmabopnnfonnhmdjglfpjjfkbf";
-const FilePath kLargeThemePath(FILE_PATH_LITERAL("extensions/theme2.crx"));
-
-// Action a test should take if a dangerous download is encountered.
-enum DangerousDownloadAction {
-  ON_DANGEROUS_DOWNLOAD_ACCEPT,  // Accept the download
-  ON_DANGEROUS_DOWNLOAD_DENY,  // Deny the download
-  ON_DANGEROUS_DOWNLOAD_FAIL  // Fail if a dangerous download is seen
-};
-
-// Fake user click on "Accept".
-void AcceptDangerousDownload(scoped_refptr<DownloadManager> download_manager,
-                             int32 download_id) {
-  DownloadItem* download = download_manager->GetDownloadItem(download_id);
-  download->DangerousDownloadValidated();
-}
-
-// Fake user click on "Deny".
-void DenyDangerousDownload(scoped_refptr<DownloadManager> download_manager,
-                           int32 download_id) {
-  DownloadItem* download = download_manager->GetDownloadItem(download_id);
-  ASSERT_TRUE(download->IsPartialDownload());
-  download->Cancel(true);
-  download->Delete(DownloadItem::DELETE_DUE_TO_USER_DISCARD);
-}
-
 // Construction of this class defines a system state, based on some number
 // of downloads being seen in a particular state + other events that
 // may occur in the download system.  That state will be recorded if it
@@ -96,32 +60,31 @@ class DownloadsObserver : public DownloadManager::Observer,
   // considered finished if the DownloadManager raises a
   // SelectFileDialogDisplayed() notification.
 
-  // TODO(rdsmith): Consider rewriting the interface to take a list of events
+  // TODO(rdsmith): Add option of "dangerous accept/reject dialog" as
+  // a unblocking event; if that shows up when you aren't expecting it,
+  // it'll result in a hang/timeout as we'll never get to final rename.
+  // This probably means rewriting the interface to take a list of events
   // to treat as completion events.
   DownloadsObserver(DownloadManager* download_manager,
                     size_t wait_count,
                     DownloadItem::DownloadState download_finished_state,
-                    bool finish_on_select_file,
-                    DangerousDownloadAction dangerous_download_action)
+                    bool finish_on_select_file)
       : download_manager_(download_manager),
         wait_count_(wait_count),
         finished_downloads_at_construction_(0),
         waiting_(false),
         download_finished_state_(download_finished_state),
         finish_on_select_file_(finish_on_select_file),
-        select_file_dialog_seen_(false),
-        dangerous_download_action_(dangerous_download_action) {
+        select_file_dialog_seen_(false) {
     download_manager_->AddObserver(this);  // Will call initial ModelChanged().
     finished_downloads_at_construction_ = finished_downloads_.size();
-    EXPECT_NE(DownloadItem::REMOVING, download_finished_state)
-        << "Waiting for REMOVING is not supported.  Try COMPLETE.";
   }
 
   ~DownloadsObserver() {
     std::set<DownloadItem*>::iterator it = downloads_observed_.begin();
-    for (; it != downloads_observed_.end(); ++it)
+    for (; it != downloads_observed_.end(); ++it) {
       (*it)->RemoveObserver(this);
-
+    }
     download_manager_->RemoveObserver(this);
   }
 
@@ -147,59 +110,8 @@ class DownloadsObserver : public DownloadManager::Observer,
 
   // DownloadItem::Observer
   virtual void OnDownloadUpdated(DownloadItem* download) {
-    // The REMOVING state indicates that the download is being destroyed.
-    // Stop observing.  Do not do anything with it, as it is about to be gone.
-    if (download->state() == DownloadItem::REMOVING) {
-      std::set<DownloadItem*>::iterator it = downloads_observed_.find(download);
-      ASSERT_TRUE(it != downloads_observed_.end());
-      downloads_observed_.erase(it);
-      download->RemoveObserver(this);
-      return;
-    }
-
-    // Real UI code gets the user's response after returning from the observer.
-    if (download->safety_state() == DownloadItem::DANGEROUS &&
-        !ContainsKey(dangerous_downloads_seen_, download->id())) {
-      dangerous_downloads_seen_.insert(download->id());
-
-      // Calling DangerousDownloadValidated() at this point will
-      // cause the download to be completed twice.  Do what the real UI
-      // code does: make the call as a delayed task.
-      switch (dangerous_download_action_) {
-        case ON_DANGEROUS_DOWNLOAD_ACCEPT:
-          // Fake user click on "Accept".  Delay the actual click, as the
-          // real UI would.
-          BrowserThread::PostTask(
-              BrowserThread::UI, FROM_HERE,
-              NewRunnableFunction(
-                  &AcceptDangerousDownload,
-                  download_manager_,
-                  download->id()));
-          break;
-
-        case ON_DANGEROUS_DOWNLOAD_DENY:
-          // Fake a user click on "Deny".  Delay the actual click, as the
-          // real UI would.
-          BrowserThread::PostTask(
-              BrowserThread::UI, FROM_HERE,
-              NewRunnableFunction(
-                  &DenyDangerousDownload,
-                  download_manager_,
-                  download->id()));
-          break;
-
-        case ON_DANGEROUS_DOWNLOAD_FAIL:
-          ADD_FAILURE() << "Unexpected dangerous download item.";
-          break;
-
-        default:
-          NOTREACHED();
-      }
-    }
-
-    if (download->state() == download_finished_state_) {
+    if (download->state() == download_finished_state_)
       DownloadInFinalState(download);
-    }
   }
 
   virtual void OnDownloadOpened(DownloadItem* download) {}
@@ -210,7 +122,7 @@ class DownloadsObserver : public DownloadManager::Observer,
     // in our final state, note them in |finished_downloads_|
     // (done by |OnDownloadUpdated()|).
     std::vector<DownloadItem*> downloads;
-    download_manager_->GetAllDownloads(FilePath(), &downloads);
+    download_manager_->SearchDownloads(string16(), &downloads);
 
     std::vector<DownloadItem*>::iterator it = downloads.begin();
     for (; it != downloads.end(); ++it) {
@@ -242,10 +154,6 @@ class DownloadsObserver : public DownloadManager::Observer,
   virtual void SelectFileDialogDisplayed(int32 /* id */) {
     select_file_dialog_seen_ = true;
     SignalIfFinished();
-  }
-
-  virtual size_t NumDangerousDownloadsSeen() const {
-    return dangerous_downloads_seen_.size();
   }
 
  private:
@@ -309,12 +217,6 @@ class DownloadsObserver : public DownloadManager::Observer,
 
   // True if we've seen the select file dialog.
   bool select_file_dialog_seen_;
-
-  // Action to take if a dangerous download is encountered.
-  DangerousDownloadAction dangerous_download_action_;
-
-  // Holds the download ids which were dangerous.
-  std::set<int32> dangerous_downloads_seen_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadsObserver);
 };
@@ -582,9 +484,8 @@ class DownloadTest : public InProcessBrowserTest {
         browser->profile()->GetDownloadManager();
     return new DownloadsObserver(
         download_manager, num_downloads,
-        DownloadItem::COMPLETE,  // Really done
-        false,                   // Bail on select file
-        ON_DANGEROUS_DOWNLOAD_FAIL);
+        DownloadItem::COMPLETE,          // Really done
+        true);                           // Bail on select file
   }
 
   // Create a DownloadsObserver that will wait for the
@@ -596,26 +497,7 @@ class DownloadTest : public InProcessBrowserTest {
     return new DownloadsObserver(
         download_manager, num_downloads,
         DownloadItem::IN_PROGRESS,      // Has started
-        true,                           // Bail on select file
-        ON_DANGEROUS_DOWNLOAD_FAIL);
-  }
-
-  // Create a DownloadsObserver that will wait for the
-  // specified number of downloads to finish, or for
-  // a dangerous download warning to be shown.
-  DownloadsObserver* DangerousInstallWaiter(
-      Browser* browser,
-      int num_downloads,
-      DownloadItem::DownloadState final_state,
-      DangerousDownloadAction dangerous_download_action) {
-
-    DownloadManager* download_manager =
-        browser->profile()->GetDownloadManager();
-    return new DownloadsObserver(
-        download_manager, num_downloads,
-        final_state,
-        true,                         // Bail on select file
-        dangerous_download_action);
+        true);                          // Bail on select file
   }
 
   // Download |url|, then wait for the download to finish.
@@ -713,8 +595,8 @@ class DownloadTest : public InProcessBrowserTest {
              URLRequestSlowDownloadJob::kKnownSizeUrl :
              URLRequestSlowDownloadJob::kUnknownSizeUrl);
 
-    // TODO(ahendrickson) -- |expected_title_in_progress| and
-    // |expected_title_finished| need to be checked.
+  // TODO(ahendrickson) -- |expected_title_in_progress| and
+  // |expected_title_finished| need to be checked.
     FilePath filename;
     net::FileURLToFilePath(url, &filename);
     string16 expected_title_in_progress(
@@ -854,39 +736,6 @@ class DownloadsHistoryDataCollector {
   CancelableRequestConsumer callback_consumer_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadsHistoryDataCollector);
-};
-
-// Mock that simulates a permissions dialog where the user denies
-// permission to install.  TODO(skerner): This could be shared with
-// extensions tests.  Find a common place for this class.
-class MockAbortExtensionInstallUI : public ExtensionInstallUI {
- public:
-  MockAbortExtensionInstallUI() : ExtensionInstallUI(NULL) {}
-
-  // Simulate a user abort on an extension installation.
-  virtual void ConfirmInstall(Delegate* delegate, const Extension* extension) {
-    delegate->InstallUIAbort();
-    MessageLoopForUI::current()->Quit();
-  }
-
-  virtual void OnInstallSuccess(const Extension* extension, SkBitmap* icon) {}
-  virtual void OnInstallFailure(const std::string& error) {}
-};
-
-// Mock that simulates a permissions dialog where the user allows
-// installation.
-class MockAutoConfirmExtensionInstallUI : public ExtensionInstallUI {
- public:
-  explicit MockAutoConfirmExtensionInstallUI(Profile* profile) :
-      ExtensionInstallUI(profile) {}
-
-  // Proceed without confirmation prompt.
-  virtual void ConfirmInstall(Delegate* delegate, const Extension* extension) {
-    delegate->InstallUIProceed();
-  }
-
-  virtual void OnInstallSuccess(const Extension* extension, SkBitmap* icon) {}
-  virtual void OnInstallFailure(const std::string& error) {}
 };
 
 }  // namespace
@@ -1408,8 +1257,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadCancelled) {
 
   // Create a download, wait until it's started, and confirm
   // we're in the expected state.
-  scoped_ptr<DownloadsObserver> observer(
-      CreateInProgressWaiter(browser(), 1));
+  scoped_ptr<DownloadsObserver> observer(CreateInProgressWaiter(browser(), 1));
   ui_test_utils::NavigateToURL(
       browser(), GURL(URLRequestSlowDownloadJob::kUnknownSizeUrl));
   observer->WaitForFinished();
@@ -1542,7 +1390,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, AutoOpen) {
   ASSERT_TRUE(
       GetDownloadPrefs(browser())->EnableAutoOpenBasedOnExtension(file));
 
-  // Mock out external opening on all downloads until end of test.
+  // Mokc out external opening on all downloads until end of test.
   MockDownloadOpeningObserver observer(
       browser()->profile()->GetDownloadManager());
 
@@ -1562,141 +1410,4 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, AutoOpen) {
   // Dissapears on most UIs, but the download panel sticks around for
   // chrome os.
   CheckDownloadUIVisible(browser(), false, true);
-}
-
-// Download an extension.  Expect a dangerous download warning.
-// Deny the download.
-IN_PROC_BROWSER_TEST_F(DownloadTest, CrxDenyInstall) {
-  ASSERT_TRUE(InitialSetup(false));
-  GURL extension_url(URLRequestMockHTTPJob::GetMockUrl(kGoodCrxPath));
-
-  scoped_ptr<DownloadsObserver> observer(
-      DangerousInstallWaiter(browser(),
-                             1,
-                             DownloadItem::CANCELLED,
-                             ON_DANGEROUS_DOWNLOAD_DENY));
-  ui_test_utils::NavigateToURL(browser(), extension_url);
-
-  observer->WaitForFinished();
-  EXPECT_EQ(1u, observer->NumDangerousDownloadsSeen());
-
-  CheckDownloadUIVisible(browser(), false, true);
-
-  // Check that the CRX is not installed.
-  ExtensionService* extension_service =
-      browser()->profile()->GetExtensionService();
-  ASSERT_FALSE(extension_service->GetExtensionById(kGoodCrxId, false));
-}
-
-// Download an extension.  Expect a dangerous download warning.
-// Allow the download, deny the install.
-IN_PROC_BROWSER_TEST_F(DownloadTest, CrxInstallDenysPermissions) {
-  ASSERT_TRUE(InitialSetup(false));
-  GURL extension_url(URLRequestMockHTTPJob::GetMockUrl(kGoodCrxPath));
-
-  // Install a mock install UI that simulates a user denying permission to
-  // finish the install.
-  download_crx_util::SetMockInstallUIForTesting(
-      new MockAbortExtensionInstallUI());
-
-  scoped_ptr<DownloadsObserver> observer(
-      DangerousInstallWaiter(browser(),
-                             1,
-                             DownloadItem::COMPLETE,
-                             ON_DANGEROUS_DOWNLOAD_ACCEPT));
-  ui_test_utils::NavigateToURL(browser(), extension_url);
-
-  observer->WaitForFinished();
-  EXPECT_EQ(1u, observer->NumDangerousDownloadsSeen());
-
-  // DL Shelf should close.  Download panel sticks around on ChromeOS.
-  CheckDownloadUIVisible(browser(), false, true);
-
-  // Check that the extension was not installed.
-  ExtensionService* extension_service =
-      browser()->profile()->GetExtensionService();
-  ASSERT_FALSE(extension_service->GetExtensionById(kGoodCrxId, false));
-}
-
-// Download an extension.  Expect a dangerous download warning.
-// Allow the download, and the install.
-IN_PROC_BROWSER_TEST_F(DownloadTest, CrxInstallAcceptPermissions) {
-  ASSERT_TRUE(InitialSetup(false));
-  GURL extension_url(URLRequestMockHTTPJob::GetMockUrl(kGoodCrxPath));
-
-  // Install a mock install UI that simulates a user allowing permission to
-  // finish the install.
-  download_crx_util::SetMockInstallUIForTesting(
-      new MockAutoConfirmExtensionInstallUI(browser()->profile()));
-
-  scoped_ptr<DownloadsObserver> observer(
-      DangerousInstallWaiter(browser(),
-                             1,
-                             DownloadItem::COMPLETE,
-                             ON_DANGEROUS_DOWNLOAD_ACCEPT));
-  ui_test_utils::NavigateToURL(browser(), extension_url);
-
-  observer->WaitForFinished();
-  EXPECT_EQ(1u, observer->NumDangerousDownloadsSeen());
-
-  // DL Shelf should close.  Download panel sticks around on ChromeOS.
-  CheckDownloadUIVisible(browser(), false, true);
-
-  // Check that the extension was installed.
-  ExtensionService* extension_service =
-      browser()->profile()->GetExtensionService();
-  ASSERT_TRUE(extension_service->GetExtensionById(kGoodCrxId, false));
-}
-
-// Test installing a CRX that fails integrity checks.
-IN_PROC_BROWSER_TEST_F(DownloadTest, CrxInvalid) {
-  ASSERT_TRUE(InitialSetup(false));
-  FilePath file(FILE_PATH_LITERAL("extensions/bad_signature.crx"));
-  GURL extension_url(URLRequestMockHTTPJob::GetMockUrl(file));
-
-  scoped_ptr<DownloadsObserver> observer(
-      DangerousInstallWaiter(browser(),
-                             1,
-                             DownloadItem::COMPLETE,
-                             ON_DANGEROUS_DOWNLOAD_ACCEPT));
-  ui_test_utils::NavigateToURL(browser(), extension_url);
-
-  download_crx_util::SetMockInstallUIForTesting(
-      new MockAutoConfirmExtensionInstallUI(browser()->profile()));
-
-  observer->WaitForFinished();
-
-  // Check that the extension was not installed.
-  ExtensionService* extension_service =
-      browser()->profile()->GetExtensionService();
-  ASSERT_FALSE(extension_service->GetExtensionById(kGoodCrxId, false));
-}
-
-// Install a large (100kb) theme.
-IN_PROC_BROWSER_TEST_F(DownloadTest, CrxLargeTheme) {
-  ASSERT_TRUE(InitialSetup(false));
-  GURL extension_url(URLRequestMockHTTPJob::GetMockUrl(kLargeThemePath));
-
-  scoped_ptr<DownloadsObserver> observer(
-      DangerousInstallWaiter(browser(),
-                             1,
-                             DownloadItem::COMPLETE,
-                             ON_DANGEROUS_DOWNLOAD_ACCEPT));
-  ui_test_utils::NavigateToURL(browser(), extension_url);
-
-  // Install a mock install UI that simulates a user allowing permission to
-  // finish the install.
-  download_crx_util::SetMockInstallUIForTesting(
-      new MockAutoConfirmExtensionInstallUI(browser()->profile()));
-
-  observer->WaitForFinished();
-  EXPECT_EQ(1u, observer->NumDangerousDownloadsSeen());
-
-  // DL Shelf should close.  Download panel sticks around on ChromeOS.
-  CheckDownloadUIVisible(browser(), false, true);
-
-  // Check that the extension was installed.
-  ExtensionService* extension_service =
-      browser()->profile()->GetExtensionService();
-  ASSERT_TRUE(extension_service->GetExtensionById(kLargeThemeCrxId, false));
 }

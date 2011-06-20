@@ -261,10 +261,6 @@ class DownloadManager
   // in the DownloadManager.  For debugging.
   void AssertQueueStateConsistent(DownloadItem* download);
 
-  // Get the download item from the history map.  Useful after the item has
-  // been removed from the active map, or was retrieved from the history DB.
-  DownloadItem* GetDownloadItem(int id);
-
  private:
   // For testing.
   friend class DownloadManagerTest;
@@ -342,6 +338,10 @@ class DownloadManager
 
   // Inform observers that the model has changed.
   void NotifyModelChanged();
+
+  // Get the download item from the history map.  Useful after the item has
+  // been removed from the active map, or was retrieved from the history DB.
+  DownloadItem* GetDownloadItem(int id);
 
   // Get the download item from the active map.  Useful when the item is not
   // yet in the history map.
