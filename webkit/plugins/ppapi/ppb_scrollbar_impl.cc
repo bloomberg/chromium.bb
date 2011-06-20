@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -171,6 +171,7 @@ bool PPB_Scrollbar_Impl::Paint(const PP_Rect* rect, PPB_ImageData_Impl* image) {
                      rect->point.y,
                      rect->size.width,
                      rect->size.height);
+  ImageDataAutoMapper mapper(image);
   skia::PlatformCanvas* canvas = image->mapped_canvas();
   if (!canvas)
     return false;
