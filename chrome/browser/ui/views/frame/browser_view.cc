@@ -951,13 +951,10 @@ void BrowserView::SaveFocusedView() {
 }
 
 void BrowserView::DestroyBrowser() {
-  // Explicitly delete the BookmarkBarView, DownloadShelfView and child views
-  // owned by BrowserView before destroying |browser_|. That way we don't have
-  // to worry about them potentially outliving the Browser & Profile.
-  bookmark_bar_view_.reset();
-  download_shelf_.reset();
-  RemoveAllChildViews(true);
-  browser_.reset();
+  // After this returns other parts of Chrome are going to be shutdown. Close
+  // the window now so that we are deleted immediately and aren't left holding
+  // references to deleted objects.
+  frame_->CloseNow();
 }
 
 bool BrowserView::IsBookmarkBarVisible() const {

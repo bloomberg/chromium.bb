@@ -13,6 +13,7 @@
 #include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/common/notification_registrar.h"
@@ -345,7 +346,6 @@ bool BrowserList::PendingDownloads() {
 void BrowserList::CloseAllBrowsers() {
   bool session_ending =
       browser_shutdown::GetShutdownType() == browser_shutdown::END_SESSION;
-  bool use_post = !session_ending;
   bool force_exit = false;
 #if defined(USE_X11)
   if (session_ending)
@@ -372,7 +372,7 @@ void BrowserList::CloseAllBrowsers() {
        i != BrowserList::end();) {
     Browser* browser = *i;
     browser->window()->Close();
-    if (use_post) {
+    if (!session_ending) {
       ++i;
     } else {
       // This path is hit during logoff/power-down. In this case we won't get
@@ -382,6 +382,8 @@ void BrowserList::CloseAllBrowsers() {
       // session we need to make sure the browser is destroyed now. So, invoke
       // DestroyBrowser to make sure the browser is deleted and cleanup can
       // happen.
+      while (browser->tab_count())
+        delete browser->GetTabContentsWrapperAt(0);
       browser->window()->DestroyBrowser();
       i = BrowserList::begin();
       if (i != BrowserList::end() && browser == *i) {
