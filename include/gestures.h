@@ -50,7 +50,7 @@ struct Gesture {
   int vscroll, hscroll;
   int fingers_present;
   int buttons_down;  // look at bits within, using button masks above
-  const HardwareState* hwstate;
+  const struct HardwareState* hwstate;
 };
 
 typedef void (*GestureReadyFunction)(void* client_data,
