@@ -98,8 +98,6 @@
       # crbug.com/83459
       '-instant.InstantTest.testPreFetchInstantURLSetsNoCookies',
       '-omnibox.OmniboxTest.testHistoryResult',  # crbug.com/71715
-      # crbug.com/85748
-      '-plugins.PluginsTest.testBlockPluginException',
       # crbug.com/85307
       '-plugins.PluginsTest.testDisableEnableAllPlugins',
       '-plugins.PluginsTest.testKillAndReloadAllPlugins',
