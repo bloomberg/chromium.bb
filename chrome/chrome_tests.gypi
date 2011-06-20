@@ -2682,6 +2682,11 @@
             'browser/extensions/browser_action_test_util_mac.mm',
           ],
         }],
+        ['os_posix == 0', {
+          'sources!': [
+            'common/time_format_browsertest.cc',
+          ],
+        }],
         ['os_posix == 1 and OS != "mac"', {
           'conditions': [
             ['linux_use_tcmalloc==1', {
