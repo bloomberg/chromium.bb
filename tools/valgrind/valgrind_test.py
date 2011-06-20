@@ -602,6 +602,8 @@ class ThreadSanitizerBase(object):
     # This should shorten filepaths for functions intercepted in TSan.
     ret += ["--file-prefix-to-cut=scripts/tsan/tsan/"]
 
+    ret += ["--gen-suppressions=true"]
+
     if self.EvalBoolFlag(self._options.hybrid):
       ret += ["--hybrid=yes"] # "no" is the default value for TSAN
 

@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -44,10 +44,6 @@ class TsanAnalyzer(object):
                             '(?:[^ ]* )*'
                             '([^ :\n]+)'
                             '')
-  TSAN_WARNING_LINE_RE = re.compile('==[0-9]+==\s*[#0-9]+\s*'
-                                    '(?:[^ ]* )*'
-                                    '([^ :\n]+)')
-
   THREAD_CREATION_STR = ("INFO: T.* "
       "(has been created by T.* at this point|is program's main thread)")
 
@@ -87,6 +83,25 @@ class TsanAnalyzer(object):
       self.stack_trace_line_ = stack_trace_line
 
   def ReadSection(self):
+    """ Example of a section:
+    ==4528== WARNING: Possible data race: {{{
+    ==4528==    T20 (L{}):
+    ==4528==     #0  MyTest::Foo1
+    ==4528==     #1  MyThread::ThreadBody
+    ==4528==   Concurrent write happened at this point:
+    ==4528==    T19 (L{}):
+    ==4528==     #0  MyTest::Foo2
+    ==4528==     #1  MyThread::ThreadBody
+    ==4528== }}}
+    ------- suppression -------
+    {
+      <Put your suppression name here>
+      ThreadSanitizer:Race
+      fun:MyTest::Foo1
+      fun:MyThread::ThreadBody
+    }
+    ------- end suppression -------
+    """
     result = [self.line_]
     if re.search("{{{", self.line_):
       while not re.search('}}}', self.line_):
@@ -95,6 +110,16 @@ class TsanAnalyzer(object):
           result.append(self.line_)
         else:
           result.append(self.stack_trace_line_)
+      self.ReadLine()
+      if re.match('-+ suppression -+', self.line_):
+        result.append(self.line_)
+        while not re.match('-+ end suppression -+', self.line_):
+          self.ReadLine()
+          result.append(self.line_)
+        self.ReadLine()
+    else:
+      self.ReadLine()
+
     return result
 
   def ReadTillTheEnd(self):
@@ -122,20 +147,24 @@ class TsanAnalyzer(object):
       if not self.line_:
         break
 
+      while True:
+        tmp = []
+        while re.search(TsanAnalyzer.RACE_VERIFIER_LINE, self.line_):
+          tmp.append(self.line_)
+          self.ReadLine()
+        while re.search(TsanAnalyzer.THREAD_CREATION_STR, self.line_):
+          tmp.extend(self.ReadSection())
+        if re.search(TsanAnalyzer.TSAN_RACE_DESCRIPTION, self.line_):
+          tmp.extend(self.ReadSection())
+          ret.append(tmp)  # includes RaceVerifier and thread creation stacks
+        elif (re.search(TsanAnalyzer.TSAN_WARNING_DESCRIPTION, self.line_) and
+            not common.IsWindows()): # workaround for http://crbug.com/53198
+          tmp.extend(self.ReadSection())
+          ret.append(tmp)
+        else:
+          break
+
       tmp = []
-      while re.search(TsanAnalyzer.RACE_VERIFIER_LINE, self.line_):
-        tmp.append(self.line_)
-        self.ReadLine()
-      while re.search(TsanAnalyzer.THREAD_CREATION_STR, self.line_):
-        tmp.extend(self.ReadSection())
-        self.ReadLine()
-      if re.search(TsanAnalyzer.TSAN_RACE_DESCRIPTION, self.line_):
-        tmp.extend(self.ReadSection())
-        ret.append(tmp)
-      if (re.search(TsanAnalyzer.TSAN_WARNING_DESCRIPTION, self.line_) and
-          not common.IsWindows()): # workaround for http://crbug.com/53198
-        tmp.extend(self.ReadSection())
-        ret.append(tmp)
       if re.search(TsanAnalyzer.TSAN_ASSERTION, self.line_):
         tmp.extend(self.ReadTillTheEnd())
         ret.append(tmp)
