@@ -21,6 +21,7 @@
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/plugin_data_remover.h"
+#include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/browser/search_engines/template_url_service.h"
@@ -173,6 +174,17 @@ void BrowsingDataRemover::Remove(int remove_mask) {
         SessionServiceFactory::GetForProfile(profile_);
     if (session_service)
       session_service->DeleteLastSession();
+
+    // The PrerenderManager keeps history of prerendered pages, so clear that.
+    // It also may have a prerendered page. If so, the page could be considered
+    // to have a small amount of historical information, so delete it, too.
+    prerender::PrerenderManager* prerender_manager =
+        profile_->GetPrerenderManager();
+    if (prerender_manager) {
+      prerender_manager->ClearData(
+          prerender::PrerenderManager::CLEAR_PRERENDER_CONTENTS |
+          prerender::PrerenderManager::CLEAR_PRERENDER_HISTORY);
+    }
   }
 
   if (remove_mask & REMOVE_DOWNLOADS) {
@@ -281,6 +293,15 @@ void BrowsingDataRemover::Remove(int remove_mask) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         NewRunnableMethod(this, &BrowsingDataRemover::ClearCacheOnIOThread));
+
+    // The PrerenderManager may have a page actively being prerendered, which
+    // is essentially a preemptively cached page.
+    prerender::PrerenderManager* prerender_manager =
+        profile_->GetPrerenderManager();
+    if (prerender_manager) {
+      prerender_manager->ClearData(
+          prerender::PrerenderManager::CLEAR_PRERENDER_CONTENTS);
+    }
   }
 
   if (remove_mask & REMOVE_LSO_DATA) {

@@ -73,6 +73,14 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
     PRERENDER_MODE_MAX
   };
 
+  // One or more of these flags must be passed to ClearData() to specify just
+  // what data to clear.  See function declaration for more information.
+  enum ClearFlags {
+    CLEAR_PRERENDER_CONTENTS = 0x1 << 0,
+    CLEAR_PRERENDER_HISTORY = 0x1 << 1,
+    CLEAR_MAX = 0x1 << 2
+  };
+
   // Owned by a Profile object for the lifetime of the profile.
   PrerenderManager(Profile* profile, PrerenderTracker* prerender_tracker);
 
@@ -195,11 +203,25 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // deleting the return value.
   Value* GetAsValue() const;
 
+  // Clears the data indicated by which bits of clear_flags are set.
+  //
+  // If the CLEAR_PRERENDER_CONTENTS bit is set, all active prerenders are
+  // cancelled and then deleted, and any TabContents queued for destruction are
+  // destroyed as well.
+  //
+  // If the CLEAR_PRERENDER_HISTORY bit is set, the prerender history is
+  // cleared, including any entries newly created by destroying them in
+  // response to the CLEAR_PRERENDER_CONTENTS flag.
+  //
+  // Intended to be used when clearing the cache or history.
+  void ClearData(int clear_flags);
+
  protected:
   struct PendingContentsData;
 
   void SetPrerenderContentsFactory(
       PrerenderContents::Factory* prerender_contents_factory);
+
   bool rate_limit_enabled_;
 
   PendingContentsData* FindPendingEntry(const GURL& url);
@@ -291,6 +313,11 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // Returns a new Value representing the pages currently being prerendered. The
   // caller is responsible for delete'ing the return value.
   Value* GetActivePrerendersAsValue() const;
+
+  // Destroys all pending prerenders using FinalStatus.  Also deletes them as
+  // well as any swapped out TabContents queued for destruction.
+  // Used both on destruction, and when clearing the browing history.
+  void DestroyAllContents(FinalStatus final_status);
 
   // Specifies whether prerendering is currently enabled for this
   // manager. The value can change dynamically during the lifetime

@@ -82,6 +82,13 @@ TEST(PrerenderHistoryTest, GetAsValue)  {
   EXPECT_EQ(2u, entry_list->GetSize());
   EXPECT_TRUE(ListEntryMatches(entry_list, 0u, kThirdUrl, kThirdFinalStatus));
   EXPECT_TRUE(ListEntryMatches(entry_list, 1u, kSecondUrl, kSecondFinalStatus));
+
+  // Make sure clearing history acts as expected.
+  history.Clear();
+  entry_value.reset(history.GetEntriesAsValue());
+  ASSERT_TRUE(entry_value.get() != NULL);
+  ASSERT_TRUE(entry_value->GetAsList(&entry_list));
+  EXPECT_TRUE(entry_list->empty());
 }
 
 }  // namespace

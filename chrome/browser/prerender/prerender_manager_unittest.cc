@@ -519,4 +519,18 @@ TEST_F(PrerenderManagerTest, FragmentMatchesFragmentTest) {
             prerender_manager()->GetEntry(other_fragment_url));
 }
 
+// Make sure that clearing works as expected.
+TEST_F(PrerenderManagerTest, ClearTest) {
+  GURL url("http://www.google.com/");
+  DummyPrerenderContents* prerender_contents =
+      prerender_manager()->CreateNextPrerenderContents(
+          url,
+          FINAL_STATUS_CACHE_OR_HISTORY_CLEARED);
+  EXPECT_TRUE(prerender_manager()->AddSimplePreload(url));
+  EXPECT_TRUE(prerender_contents->has_started());
+  prerender_manager()->ClearData(PrerenderManager::CLEAR_PRERENDER_CONTENTS);
+  DummyPrerenderContents* null = NULL;
+  EXPECT_EQ(null, prerender_manager()->GetEntry(url));
+}
+
 }  // namespace prerender

@@ -43,6 +43,7 @@ const char* kFinalStatusNames[] = {
   "Safe Browsing",
   "Fragment Mismatch",
   "SSL Client Certificate Requested",
+  "Cache or History Cleared",
   "Max",
 };
 COMPILE_ASSERT(arraysize(kFinalStatusNames) == FINAL_STATUS_MAX + 1,

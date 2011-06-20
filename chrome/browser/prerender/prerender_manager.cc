@@ -10,6 +10,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/time.h"
+#include "base/values.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
@@ -266,13 +267,7 @@ PrerenderManager::PrerenderManager(Profile* profile,
 }
 
 PrerenderManager::~PrerenderManager() {
-  DeleteOldTabContents();
-  while (!prerender_list_.empty()) {
-    PrerenderContentsData data = prerender_list_.front();
-    prerender_list_.pop_front();
-    data.contents_->Destroy(FINAL_STATUS_MANAGER_SHUTDOWN);
-  }
-  DeletePendingDeleteEntries();
+  DestroyAllContents(FINAL_STATUS_MANAGER_SHUTDOWN);
 }
 
 void PrerenderManager::SetPrerenderContentsFactory(
@@ -1001,6 +996,16 @@ Value* PrerenderManager::GetAsValue() const {
   return dict_value;
 }
 
+void PrerenderManager::ClearData(int clear_flags) {
+  DCHECK_GE(clear_flags, 0);
+  DCHECK_LT(clear_flags, CLEAR_MAX);
+  if (clear_flags & CLEAR_PRERENDER_CONTENTS)
+    DestroyAllContents(FINAL_STATUS_CACHE_OR_HISTORY_CLEARED);
+  // This has to be second, since destroying prerenders can add to the history.
+  if (clear_flags & CLEAR_PRERENDER_HISTORY)
+    prerender_history_->Clear();
+}
+
 Value* PrerenderManager::GetActivePrerendersAsValue() const {
   ListValue* list_value = new ListValue();
   for (std::list<PrerenderContentsData>::const_iterator it =
@@ -1019,6 +1024,16 @@ void PrerenderManager::AddToHistory(PrerenderContents* contents) {
   PrerenderHistory::Entry entry(contents->prerender_url(),
                                 contents->final_status());
   prerender_history_->AddEntry(entry);
+}
+
+void PrerenderManager::DestroyAllContents(FinalStatus final_status) {
+  DeleteOldTabContents();
+  while (!prerender_list_.empty()) {
+    PrerenderContentsData data = prerender_list_.front();
+    prerender_list_.pop_front();
+    data.contents_->Destroy(final_status);
+  }
+  DeletePendingDeleteEntries();
 }
 
 }  // namespace prerender

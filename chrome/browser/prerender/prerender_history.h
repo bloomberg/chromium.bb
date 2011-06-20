@@ -47,6 +47,9 @@ class PrerenderHistory : public base::NonThreadSafe {
   // Adds |entry| to the history. If at capacity, the oldest entry is dropped.
   void AddEntry(const Entry& entry);
 
+  // Deletes all history entries.
+  void Clear();
+
   // Retrieves the entries as a value which can be displayed.
   Value* GetEntriesAsValue() const;
 

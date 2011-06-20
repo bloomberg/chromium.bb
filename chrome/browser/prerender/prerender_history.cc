@@ -24,6 +24,10 @@ void PrerenderHistory::AddEntry(const Entry& entry) {
   entries_.push_back(entry);
 }
 
+void PrerenderHistory::Clear() {
+  entries_.clear();
+}
+
 Value* PrerenderHistory::GetEntriesAsValue() const {
   ListValue* return_list = new ListValue();
   for (std::list<Entry>::const_reverse_iterator it = entries_.rbegin();

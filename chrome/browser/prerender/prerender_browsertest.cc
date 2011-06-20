@@ -8,7 +8,9 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "base/values.h"
 #include "base/test/test_timeouts.h"
+#include "chrome/browser/browsing_data_remover.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -58,6 +60,16 @@ std::string CreateServerRedirect(const std::string& dest_url) {
   return kServerRedirectBase + dest_url;
 }
 
+// Clears the specified data using BrowsingDataRemover.
+void ClearBrowsingData(Browser* browser, int remove_mask) {
+  BrowsingDataRemover* remover =
+      new BrowsingDataRemover(browser->profile(),
+                              BrowsingDataRemover::EVERYTHING,
+                              base::Time());
+  remover->Remove(remove_mask);
+  // BrowsingDataRemover deletes itself.
+}
+
 // Returns true if and only if the final status is one in which the prerendered
 // page should prerender correctly. The page still may not be used.
 bool ShouldRenderPrerenderedPageCorrectly(FinalStatus status) {
@@ -65,6 +77,7 @@ bool ShouldRenderPrerenderedPageCorrectly(FinalStatus status) {
     case FINAL_STATUS_USED:
     case FINAL_STATUS_WINDOW_OPENER:
     case FINAL_STATUS_FRAGMENT_MISMATCH:
+    case FINAL_STATUS_CACHE_OR_HISTORY_CLEARED:
     // We'll crash the renderer after it's loaded.
     case FINAL_STATUS_RENDERER_CRASHED:
       return true;
@@ -466,6 +479,18 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     Profile* profile = browser()->GetSelectedTabContents()->profile();
     PrerenderManager* prerender_manager = profile->GetPrerenderManager();
     return prerender_manager;
+  }
+
+  // Returns length of |prerender_manager_|'s history, or -1 on failure.
+  int GetHistoryLength() const {
+    scoped_ptr<DictionaryValue> prerender_dict(
+        static_cast<DictionaryValue*>(prerender_manager()->GetAsValue()));
+    if (!prerender_dict.get())
+      return -1;
+    ListValue* history_list;
+    if (!prerender_dict->GetList("history", &history_list))
+      return -1;
+    return static_cast<int>(history_list->GetSize());
   }
 
   FakeSafeBrowsingService* GetSafeBrowsingService() {
@@ -1389,6 +1414,44 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderUnload) {
                                             ASCIIToUTF16("Unloaded"));
   NavigateToDestURL();
   EXPECT_TRUE(title_watcher.Wait());
+}
+
+// Checks that when the history is cleared, prerendering is cancelled and
+// prerendering history is cleared.
+// DISABLED: http://www.crbug.com/86829
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderClearHistory) {
+  PrerenderTestURL("files/prerender/prerender_page.html",
+                   FINAL_STATUS_CACHE_OR_HISTORY_CLEARED,
+                   1);
+
+  // Post a task to clear the history, and run the message loop until it
+  // destroys the prerender.
+  MessageLoop::current()->PostTask(FROM_HERE,
+      NewRunnableFunction(ClearBrowsingData, browser(),
+                          BrowsingDataRemover::REMOVE_HISTORY));
+  ui_test_utils::RunMessageLoop();
+
+  // Make sure prerender history was cleared.
+  EXPECT_EQ(0, GetHistoryLength());
+}
+
+// Checks that when the cache is cleared, prerenders are cancelled but
+// prerendering history is not cleared.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClearCache) {
+  PrerenderTestURL("files/prerender/prerender_page.html",
+                   FINAL_STATUS_CACHE_OR_HISTORY_CLEARED,
+                   1);
+
+  // Post a task to clear the cache, and run the message loop until it
+  // destroys the prerender.
+  MessageLoop::current()->PostTask(FROM_HERE,
+      NewRunnableFunction(ClearBrowsingData, browser(),
+                          BrowsingDataRemover::REMOVE_CACHE));
+  ui_test_utils::RunMessageLoop();
+
+  // Make sure prerender history was not cleared.  Not a vital behavior, but
+  // used to compare with PrerenderClearHistory test.
+  EXPECT_EQ(1, GetHistoryLength());
 }
 
 }  // namespace prerender

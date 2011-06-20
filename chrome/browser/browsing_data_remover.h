@@ -50,15 +50,16 @@ class BrowsingDataRemover : public NotificationObserver,
   };
 
   // Mask used for Remove.
-
-  // In addition to visits, this removes keywords and the last session.
-  static const int REMOVE_HISTORY = 1 << 0;
-  static const int REMOVE_DOWNLOADS = 1 << 1;
-  static const int REMOVE_COOKIES = 1 << 2;
-  static const int REMOVE_PASSWORDS = 1 << 3;
-  static const int REMOVE_FORM_DATA = 1 << 4;
-  static const int REMOVE_CACHE = 1 << 5;
-  static const int REMOVE_LSO_DATA = 1 << 6;
+  enum RemoveDataMask {
+    // In addition to visits, this removes keywords and the last session.
+    REMOVE_HISTORY = 1 << 0,
+    REMOVE_DOWNLOADS = 1 << 1,
+    REMOVE_COOKIES = 1 << 2,
+    REMOVE_PASSWORDS = 1 << 3,
+    REMOVE_FORM_DATA = 1 << 4,
+    REMOVE_CACHE = 1 << 5,
+    REMOVE_LSO_DATA = 1 << 6,
+  };
 
   // Observer is notified when the removal is done. Done means keywords have
   // been deleted, cache cleared and all other tasks scheduled.
