@@ -648,9 +648,8 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
 
     const std::vector<std::string>& layouts_vector
         = current_input_method_.virtual_keyboard_layouts();
-    for (std::vector<std::string>::const_iterator iter = layouts_vector.begin();
-         iter != layouts_vector.end();
-         ++iter) {
+    std::vector<std::string>::const_iterator iter;
+    for (iter = layouts_vector.begin(); iter != layouts_vector.end(); ++iter) {
       virtual_keyboard =
           virtual_keyboard_selector_.SelectVirtualKeyboard(*iter);
       if (virtual_keyboard) {
@@ -660,20 +659,49 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
     }
 
     if (!virtual_keyboard) {
-      static const char kFallbackLayout[] = "us";
       // The system virtual keyboard does not support some XKB layouts? or
       // a third-party input method engine uses a wrong virtual keyboard
       // layout name? Fallback to the default layout.
       LOG(ERROR) << "Could not find a virtual keyboard for "
-                 << current_input_method_.id
-                 << ". Use '" << kFallbackLayout << "' virtual keyboard.";
-      virtual_keyboard =
-          virtual_keyboard_selector_.SelectVirtualKeyboard(kFallbackLayout);
-      virtual_keyboard_layout = kFallbackLayout;
+                 << current_input_method_.id;
+
+      // If the hardware is for US, show US Qwerty virtual keyboard.
+      // If it's for France, show Azerty one.
+      const std::string fallback_id =
+          input_method::GetHardwareInputMethodId();
+      const input_method::InputMethodDescriptor* fallback_desc =
+          input_method::GetInputMethodDescriptorFromId(fallback_id);
+
+      DCHECK(fallback_desc);
+      const std::vector<std::string>& fallback_layouts_vector =
+          fallback_desc->virtual_keyboard_layouts();
+
+      for (iter = fallback_layouts_vector.begin();
+           iter != fallback_layouts_vector.end();
+           ++iter) {
+        virtual_keyboard =
+            virtual_keyboard_selector_.SelectVirtualKeyboard(*iter);
+        if (virtual_keyboard) {
+          virtual_keyboard_layout = *iter;
+          LOG(ERROR) << "Fall back to '" << (*iter) << "' virtual keyboard";
+          break;
+        }
+      }
     }
 
-    // kFallbackLayout should always be supported by one of the system virtual
-    // keyboards.
+    if (!virtual_keyboard) {
+      static const char kFallbackVirtualKeyboardLayout[] = "us";
+      LOG(ERROR) << "Could not find a FALLBACK virtual keyboard for "
+                 << current_input_method_.id
+                 << ". Use '" << kFallbackVirtualKeyboardLayout
+                 << "' virtual keyboard";
+      virtual_keyboard = virtual_keyboard_selector_.SelectVirtualKeyboard(
+          kFallbackVirtualKeyboardLayout);
+      virtual_keyboard_layout = kFallbackVirtualKeyboardLayout;
+    }
+
+    // kFallbackVirtualKeyboardLayout should always be supported by one of the
+    // system virtual keyboards.
     DCHECK(virtual_keyboard);
 
     if (virtual_keyboard) {
