@@ -87,7 +87,7 @@ function FileManager(dialogDom, rootEntries, params) {
   chrome.fileBrowserPrivate.onDiskChanged.addListener(
       this.onDiskChanged_.bind(this));
 
-  this.table_.list_.focus();
+  this.document_.querySelector('[tabindex="0"]').focus();
 
   if (ENABLE_METADATA) {
     // Pass all URLs to the metadata reader until we have a correct filter.
@@ -958,6 +958,7 @@ FileManager.prototype = {
   FileManager.prototype.renderCheckbox_ = function(entry) {
     var input = this.document_.createElement('input');
     input.setAttribute('type', 'checkbox');
+    input.setAttribute('tabindex', -1);
     input.className = 'file-checkbox';
     input.addEventListener('mousedown',
                            this.onCheckboxMouseDownUp_.bind(this));

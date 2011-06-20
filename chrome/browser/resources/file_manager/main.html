@@ -99,19 +99,20 @@
     <div class=dialog-header>
       <div class=breadcrumbs></div>
       <!-- TODO(rginda): Add icons instead of unicode glyphs -->
-      <button class=detail-view
+      <button class=detail-view tabindex=4
               ><img src='images/icon-detail-view.png'></button
-      ><button class=thumbnail-view
+      ><button class=thumbnail-view tabindex=5
               ><img src='images/icon-thumb-view.png'></button>
       <button i18n-content=NEW_FOLDER_BUTTON_LABEL class='new-folder'
+              tabindex=6
               visibleif='this.dialogType_ == "saveas-file" ||
                          this.dialogType_ == "full-page"'
               ></button>
     </div>
     <div class=dialog-body>
       <div class=list-container>
-        <grid class=thumbnail-grid></grid>
-        <div class=detail-table></div>
+        <div class=detail-table tabindex=0></div>
+        <grid class=thumbnail-grid tabindex=0></grid>
       </div>
       <div class=preview-container>
         <div class=table-header style='width:100%'>
@@ -132,10 +133,12 @@
            visibleif='this.dialogType_ == "saveas-file"'
            >[FILENAME]</div>
       <input type=text class=filename-input spellcheck=false
+             tabindex=1
              visibleif='this.dialogType_ == "saveas-file"'>
       <div class=horizontal-spacer></div>
-      <button class=ok disabled>[OK]</button>
-      <button class=cancel i18n-content=CANCEL_LABEL>[CANCEL]</button>
+      <button class=ok disabled tabindex=2>[OK]</button>
+      <button class=cancel tabindex=3 i18n-content=CANCEL_LABEL
+              >[CANCEL]</button>
     </div>
 
     <script>init();</script>
