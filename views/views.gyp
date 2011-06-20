@@ -546,9 +546,9 @@
         '../skia/skia.gyp:skia',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
-        'views',
         '../ui/ui.gyp:ui_gfx',
         '../ui/ui.gyp:gfx_resources',
+        'views',
       ],
       'include_dirs': [
         '..',
@@ -619,6 +619,10 @@
           },
           'include_dirs': [
             '<(DEPTH)/third_party/wtl/include',
+          ],
+          'sources': [
+            'examples/table_example.cc',
+            'examples/table_example.h',
           ],
         }],
       ],
