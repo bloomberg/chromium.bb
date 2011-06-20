@@ -28,6 +28,7 @@
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/handle_pass/browser_handle.h"
 #include "native_client/src/trusted/plugin/desc_based_handle.h"
+#include "native_client/src/trusted/plugin/plugin_error.h"
 #include "native_client/src/trusted/plugin/nexe_arch.h"
 #include "native_client/src/trusted/plugin/ppapi/async_receive.h"
 #include "native_client/src/trusted/plugin/ppapi/browser_interface_ppapi.h"
@@ -683,17 +684,19 @@ void PluginPpapi::NexeFileDidOpen(int32_t pp_error) {
   int32_t file_desc = nexe_downloader_.GetPOSIXFileDescriptor();
   PLUGIN_PRINTF(("PluginPpapi::NexeFileDidOpen (file_desc=%"NACL_PRId32")\n",
                  file_desc));
+  ErrorInfo error_info;
   if (pp_error != PP_OK || file_desc == NACL_NO_FILE_DESC) {
     if (pp_error == PP_ERROR_ABORTED) {
       ReportLoadAbort();
     } else {
-      ReportLoadError("could not load nexe url.");
+      error_info.SetReport(ERROR_NEXE_LOAD_URL,
+                           "could not load nexe url.");
+      ReportLoadError(error_info);
     }
     return;
   }
-  nacl::string error_string;
-  if (!IsValidNexeOrigin(nexe_downloader_.url(), &error_string)) {
-    ReportLoadError(error_string);
+  if (!IsValidNexeOrigin(nexe_downloader_.url(), error_info.message_ptr())) {
+    ReportLoadError(error_info);
     return;
   }
   int32_t file_desc_ok_to_close = DUP(file_desc);
@@ -704,7 +707,8 @@ void PluginPpapi::NexeFileDidOpen(int32_t pp_error) {
   struct stat stat_buf;
   if (0 != fstat(file_desc_ok_to_close, &stat_buf)) {
     CLOSE(file_desc_ok_to_close);
-    ReportLoadError("could not stat nexe file.");
+    error_info.SetReport(ERROR_NEXE_STAT, "could not stat nexe file.");
+    ReportLoadError(error_info);
     return;
   }
   size_t nexe_bytes_read = static_cast<size_t>(stat_buf.st_size);
@@ -721,11 +725,11 @@ void PluginPpapi::NexeFileDidOpen(int32_t pp_error) {
                        nexe_bytes_read);
   nacl::scoped_ptr<nacl::DescWrapper>
       wrapper(wrapper_factory()->MakeFileDesc(file_desc_ok_to_close, O_RDONLY));
-  bool was_successful = LoadNaClModule(wrapper.get(), &error_string);
+  bool was_successful = LoadNaClModule(wrapper.get(), &error_info);
   if (was_successful) {
     ReportLoadSuccess(LENGTH_IS_COMPUTABLE, nexe_bytes_read, nexe_bytes_read);
   } else {
-    ReportLoadError(error_string);
+    ReportLoadError(error_info);
   }
 }
 
@@ -869,13 +873,13 @@ void PluginPpapi::NaClManifestBufferReady(int32_t pp_error) {
   json_buffer[buffer_size] = '\0';
 
   nacl::string nexe_url;
-  nacl::string error_string;
-  if (!SetManifestObject(json_buffer.get(), &error_string)) {
-    ReportLoadError(error_string);
+  ErrorInfo error_info;
+  if (!SetManifestObject(json_buffer.get(), error_info.message_ptr())) {
+    ReportLoadError(error_info);
     return;
   }
-  if (!SelectNexeURLFromManifest(&nexe_url, &error_string)) {
-    ReportLoadError(error_string);
+  if (!SelectNexeURLFromManifest(&nexe_url, error_info.message_ptr())) {
+    ReportLoadError(error_info);
     return;
   }
   set_nacl_ready_state(LOADING);
@@ -967,13 +971,13 @@ void PluginPpapi::NaClManifestFileDidOpen(int32_t pp_error) {
   // No need to close |file_desc|, that is handled by |nexe_downloader_|.
   json_buffer[total_bytes_read] = '\0';  // Force null termination.
   nacl::string nexe_url;
-  nacl::string error_string;
-  if (!SetManifestObject(json_buffer.get(), &error_string)) {
-    ReportLoadError(error_string);
+  ErrorInfo error_info;
+  if (!SetManifestObject(json_buffer.get(), error_info.message_ptr())) {
+    ReportLoadError(error_info);
     return;
   }
-  if (!SelectNexeURLFromManifest(&nexe_url, &error_string)) {
-    ReportLoadError(error_string);
+  if (!SelectNexeURLFromManifest(&nexe_url, error_info.message_ptr())) {
+    ReportLoadError(error_info);
     return;
   }
   set_nacl_ready_state(LOADING);
@@ -1193,6 +1197,13 @@ void PluginPpapi::ReportLoadSuccess(LengthComputable length_computable,
 }
 
 
+// TODO(ncbray): report UMA stats
+void PluginPpapi::ReportLoadError(const ErrorInfo& error_info) {
+  ReportLoadError(error_info.message());
+}
+
+
+// TODO(ncbray): eliminate
 void PluginPpapi::ReportLoadError(const nacl::string& error) {
   PLUGIN_PRINTF(("PluginPpapi::ReportLoadError (error='%s')\n",
                  error.c_str()));

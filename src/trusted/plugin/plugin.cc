@@ -31,6 +31,7 @@
 #include "native_client/src/trusted/plugin/origin.h"
 #include "native_client/src/trusted/plugin/browser_interface.h"
 #include "native_client/src/trusted/plugin/connected_socket.h"
+#include "native_client/src/trusted/plugin/plugin_error.h"
 #include "native_client/src/trusted/plugin/nexe_arch.h"
 #include "native_client/src/trusted/plugin/scriptable_handle.h"
 #include "native_client/src/trusted/plugin/service_runtime.h"
@@ -109,8 +110,8 @@ bool LaunchExecutableFromFd(void* obj, SrpcParams* params) {
                                Plugin::LENGTH_IS_NOT_COMPUTABLE,
                                Plugin::kUnknownBytes,
                                Plugin::kUnknownBytes);
-  nacl::string error_string;
-  bool was_successful = plugin->LoadNaClModule(wrapper.get(), &error_string);
+  ErrorInfo error_info;
+  bool was_successful = plugin->LoadNaClModule(wrapper.get(), &error_info);
   // Set the readyState attribute to indicate ready to start.
   if (was_successful) {
     plugin->ReportLoadSuccess(Plugin::LENGTH_IS_NOT_COMPUTABLE,
@@ -119,8 +120,8 @@ bool LaunchExecutableFromFd(void* obj, SrpcParams* params) {
   } else {
     // For reasons unknown, the message is garbled on windows.
     // TODO(sehr): know the reasons, and fix this.
-    plugin->ReportLoadError(nacl::string("__launchExecutableFromFd failed: ") +
-                            error_string);
+    error_info.PrependMessage("__launchExecutableFromFd failed: ");
+    plugin->ReportLoadError(error_info);
   }
   return was_successful;
 }
@@ -425,10 +426,11 @@ bool Plugin::IsValidNexeOrigin(nacl::string full_url,
 }
 
 bool Plugin::LoadNaClModule(nacl::DescWrapper* wrapper,
-                            nacl::string* error_string) {
+                            ErrorInfo* error_info) {
   // Check ELF magic and ABI version compatibility.
   bool might_be_elf_exe =
-      browser_interface_->MightBeElfExecutable(wrapper, error_string);
+      browser_interface_->MightBeElfExecutable(wrapper,
+                                               error_info->message_ptr());
   PLUGIN_PRINTF(("Plugin::LoadNaClModule (might_be_elf_exe=%d)\n",
                  might_be_elf_exe));
   if (!might_be_elf_exe) {
@@ -445,11 +447,12 @@ bool Plugin::LoadNaClModule(nacl::DescWrapper* wrapper,
   PLUGIN_PRINTF(("Plugin::LoadNaClModule (service_runtime=%p)\n",
                  static_cast<void*>(service_runtime_)));
   if (NULL == service_runtime_) {
-    *error_string = "sel_ldr init failure.";
+    error_info->SetReport(ERROR_SEL_LDR_INIT, "sel_ldr init failure.");
     return false;
   }
 
-  bool service_runtime_started = service_runtime_->Start(wrapper, error_string);
+  bool service_runtime_started =
+      service_runtime_->Start(wrapper, error_info->message_ptr());
   PLUGIN_PRINTF(("Plugin::LoadNaClModule (service_runtime_started=%d)\n",
                  service_runtime_started));
 
@@ -461,7 +464,7 @@ bool Plugin::LoadNaClModule(nacl::DescWrapper* wrapper,
     return false;
   }
   CHECK(NULL != socket_address_);
-  if (!StartSrpcServices(error_string)) {  // sets socket_
+  if (!StartSrpcServices(error_info->message_ptr())) {  // sets socket_
     return false;
   }
   PLUGIN_PRINTF(("Plugin::LoadNaClModule (socket_address=%p, socket=%p)\n",

@@ -27,6 +27,7 @@ class DescWrapperFactory;
 
 namespace plugin {
 
+class ErrorInfo;
 class ScriptableHandle;
 
 class Plugin : public PortableHandle {
@@ -40,7 +41,7 @@ class Plugin : public PortableHandle {
   // Load support.
   // NaCl module can be loaded given a DescWrapper.
   // Updates nacl_module_origin() and nacl_module_url().
-  bool LoadNaClModule(nacl::DescWrapper* wrapper, nacl::string* error_string);
+  bool LoadNaClModule(nacl::DescWrapper* wrapper, ErrorInfo* error_info);
 
   // Returns the argument value for the specified key, or NULL if not found.
   // The callee retains ownership of the result.
@@ -55,8 +56,10 @@ class Plugin : public PortableHandle {
                                  uint64_t loaded_bytes,
                                  uint64_t total_bytes) = 0;
   // Report an error that was encountered while loading a module.
-  // TODO(sehr,polina): make this an error code rather than a string.
+  // TODO(ncbray): remove this version of the function when done refactoring.
+  // http://code.google.com/p/nativeclient/issues/detail?id=1923
   virtual void ReportLoadError(const nacl::string& error) = 0;
+  virtual void ReportLoadError(const ErrorInfo& error_info) = 0;
   // Report loading a module was aborted, typically due to user action.
   virtual void ReportLoadAbort() = 0;
   // Dispatch a JavaScript event to indicate a key step in loading.

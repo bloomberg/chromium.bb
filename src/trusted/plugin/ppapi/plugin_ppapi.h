@@ -95,6 +95,8 @@ class PluginPpapi : public pp::InstancePrivate, public Plugin {
                                  uint64_t total_bytes);
   // Report an error encountered while loading a module.
   virtual void ReportLoadError(const nacl::string& error);
+  virtual void ReportLoadError(const ErrorInfo& error_info);
+
   // Report loading a module was aborted, typically due to user action.
   virtual void ReportLoadAbort();
   // Dispatch a JavaScript event to indicate a key step in loading.
