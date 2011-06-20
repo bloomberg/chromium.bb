@@ -302,13 +302,25 @@ def CheckLongLines(input_api, output_api, maxlen=80, source_file_filter=None):
   """Checks that there aren't any lines longer than maxlen characters in any of
   the text files to be submitted.
   """
+  # Stupidly long symbols that needs to be worked around if takes 66% of line.
+  long_symbol = maxlen * 2 / 3
+  # Hard line length limit at 50% more.
+  extra_maxlen = maxlen * 3 / 2
+  # Note: these are C++ specific but processed on all languages. :(
+  MACROS = ('#define', '#include', '#import', '#pragma', '#if', '#endif')
+
   def no_long_lines(line):
-    # Allow lines with http://, https:// and #define/#pragma/#include/#if/#endif
-    # to exceed the maxlen rule.
-    return (len(line) <= maxlen or
-            any((url in line) for url in ('http://', 'https://')) or
-            line.startswith(('#define', '#include', '#import', '#pragma',
-                             '#if', '#endif')))
+    if len(line) <= maxlen:
+      return True
+
+    if len(line) > extra_maxlen:
+      return False
+
+    return (
+        line.startswith(MACROS) or
+        any((url in line) for url in ('http://', 'https://')) or
+        input_api.re.match(
+          r'.*[A-Za-z][A-Za-z_0-9]{%d,}.*' % long_symbol, line))
 
   def format_error(filename, line_num, line):
     return '%s, line %s, %s chars' % (filename, line_num, len(line))

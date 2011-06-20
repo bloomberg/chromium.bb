@@ -1427,7 +1427,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
         file_filter=mox.IgnoreArg()).AndReturn([affected_file])
     affected_file.NewContents().AndReturn([
         'ahoy',
-        'yo' + content1,
+        content1,
         'hay',
         'yer',
         'ya'])
@@ -1441,12 +1441,15 @@ class CannedChecksUnittest(PresubmitTestsBase):
         file_filter=mox.IgnoreArg()).AndReturn([affected_file])
     affected_file.NewContents().AndReturn([
         'ahoy',
-        'yo' + content2,
+        content2,
         'hay',
         'yer',
         'ya'])
+    # It falls back to ChangedContents when there is a failure. This is an
+    # optimization since NewContents() is much faster to execute than
+    # ChangedContents().
     affected_file.ChangedContents().AndReturn([
-        (42, 'yo, ' + content2),
+        (42, content2),
         (43, 'yer'),
         (23, 'ya')])
     affected_file.LocalPath().AndReturn('foo.cc')
@@ -1646,11 +1649,40 @@ class CannedChecksUnittest(PresubmitTestsBase):
     self.assertEquals(results1[0]._long_text,
         'makefile.foo, line 46')
 
-
   def testCannedCheckLongLines(self):
     check = lambda x, y, z: presubmit_canned_checks.CheckLongLines(x, y, 10, z)
-    self.ContentTest(check, '', 'blah blah blah',
+    self.ContentTest(check, '0123456789', '01234567890',
                      presubmit.OutputApi.PresubmitPromptWarning)
+
+  def testCannedCheckLongLinesLF(self):
+    check = lambda x, y, z: presubmit_canned_checks.CheckLongLines(x, y, 10, z)
+    self.ContentTest(check, '012345678\n', '0123456789\n',
+                     presubmit.OutputApi.PresubmitPromptWarning)
+
+  def testCannedCheckLongLinesMacro(self):
+    check = lambda x, y, z: presubmit_canned_checks.CheckLongLines(x, y, 10, z)
+    self.ContentTest(
+        check,
+        # Put a space in so it doesn't trigger long symbols. Allow 1/3 more.
+        '#if 56 89 12 45',
+        '#if 56 89 12 456',
+        presubmit.OutputApi.PresubmitPromptWarning)
+
+  def testCannedCheckLongLinesHttp(self):
+    check = lambda x, y, z: presubmit_canned_checks.CheckLongLines(x, y, 10, z)
+    self.ContentTest(
+        check,
+        ' http:// 0 23 5',
+        ' http:// 0 23 56',
+        presubmit.OutputApi.PresubmitPromptWarning)
+
+  def testCannedCheckLongLinesLongSymbol(self):
+    check = lambda x, y, z: presubmit_canned_checks.CheckLongLines(x, y, 10, z)
+    self.ContentTest(
+        check,
+        ' TUP5D_LoNG_SY ',
+        ' TUP5D_LoNG_SY5 ',
+        presubmit.OutputApi.PresubmitPromptWarning)
 
   def testCheckChangeSvnEolStyleCommit(self):
     # Test CheckSvnProperty at the same time.
