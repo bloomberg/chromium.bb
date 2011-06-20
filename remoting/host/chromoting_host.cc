@@ -32,6 +32,8 @@
 using remoting::protocol::ConnectionToClient;
 using remoting::protocol::InputStub;
 
+static const int kContinueWindowTimeoutSecs = 5 * 60;
+
 namespace remoting {
 
 // static
@@ -363,6 +365,22 @@ void ChromotingHost::LocalMouseMoved(const gfx::Point& new_pos) {
   }
 }
 
+void ChromotingHost::PauseSession(bool pause) {
+  if (context_->main_message_loop() != MessageLoop::current()) {
+    context_->main_message_loop()->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(this,
+                          &ChromotingHost::PauseSession,
+                          pause));
+    return;
+  }
+  ClientList::iterator client;
+  for (client = clients_.begin(); client != clients_.end(); ++client) {
+    client->get()->set_awaiting_continue_approval(pause);
+  }
+  StartContinueWindowTimer(!pause);
+}
+
 void ChromotingHost::OnServerClosed() {
   // Don't need to do anything here.
 }
@@ -402,6 +420,8 @@ void ChromotingHost::OnClientDisconnected(ConnectionToClient* connection) {
     if (is_me2mom_) {
       MonitorLocalInputs(false);
       ShowDisconnectWindow(false, std::string());
+      ShowContinueWindow(false);
+      StartContinueWindowTimer(false);
     }
   }
 }
@@ -517,6 +537,7 @@ void ChromotingHost::LocalLoginSucceeded(
     if (pos != std::string::npos)
       username.replace(pos, std::string::npos, "");
     ShowDisconnectWindow(true, username);
+    StartContinueWindowTimer(true);
   }
 }
 
@@ -563,6 +584,46 @@ void ChromotingHost::ShowDisconnectWindow(bool show,
   } else {
     desktop_environment_->disconnect_window()->Hide();
   }
+}
+
+void ChromotingHost::ShowContinueWindow(bool show) {
+  if (context_->ui_message_loop() != MessageLoop::current()) {
+    context_->ui_message_loop()->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(this, &ChromotingHost::ShowContinueWindow, show));
+    return;
+  }
+
+  if (show) {
+    desktop_environment_->continue_window()->Show(this);
+  } else {
+    desktop_environment_->continue_window()->Hide();
+  }
+}
+
+void ChromotingHost::StartContinueWindowTimer(bool start) {
+  if (context_->main_message_loop() != MessageLoop::current()) {
+    context_->main_message_loop()->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(this,
+                          &ChromotingHost::StartContinueWindowTimer,
+                          start));
+    return;
+  }
+  if (continue_window_timer_.IsRunning() == start)
+    return;
+  if (start) {
+    continue_window_timer_.Start(
+        base::TimeDelta::FromSeconds(kContinueWindowTimeoutSecs),
+        this, &ChromotingHost::ContinueWindowTimerFunc);
+  } else {
+    continue_window_timer_.Stop();
+  }
+}
+
+void ChromotingHost::ContinueWindowTimerFunc() {
+  PauseSession(true);
+  ShowContinueWindow(true);
 }
 
 }  // namespace remoting

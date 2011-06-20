@@ -9,6 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
+#include "base/timer.h"
 #include "remoting/base/encoder.h"
 #include "remoting/host/access_verifier.h"
 #include "remoting/host/capturer.h"
@@ -132,6 +133,10 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   // that remote input should be ignored for a short time.
   void LocalMouseMoved(const gfx::Point& new_pos);
 
+  // Pause or unpause the session. While the session is paused, remote input
+  // is ignored.
+  void PauseSession(bool pause);
+
  private:
   friend class base::RefCountedThreadSafe<ChromotingHost>;
   friend class ChromotingHostTest;
@@ -177,6 +182,13 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   // hide the window, ignoring the |username| parameter.
   void ShowDisconnectWindow(bool show, const std::string& username);
 
+  // Show or hide the Continue Sharing window on the UI thread.
+  void ShowContinueWindow(bool show);
+
+  void StartContinueWindowTimer(bool start);
+
+  void ContinueWindowTimerFunc();
+
   // The context that the chromoting host runs on.
   ChromotingHostContext* context_;
 
@@ -219,6 +231,11 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
 
   bool is_curtained_;
   bool is_monitoring_local_inputs_;
+
+  // Timer controlling the "continue session" dialog. The timer is started when
+  // a connection is made or re-confirmed. On expiry, inputs to the host are
+  // blocked and the dialog is shown.
+  base::OneShotTimer<ChromotingHost> continue_window_timer_;
 
   // Whether or not the host is running in "Me2Mom" mode, in which connections
   // are pre-authenticated, and hence the local login challenge can be bypassed.
