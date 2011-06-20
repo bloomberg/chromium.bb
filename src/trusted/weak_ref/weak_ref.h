@@ -34,6 +34,7 @@
 #include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/shared/platform/refcount_base.h"
 #include "native_client/src/shared/platform/nacl_check.h"
+#include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 
@@ -65,7 +66,7 @@ class AnchoredResource : public RefCountBase {
 
 template <typename R> class WeakRef;  // fwd
 
-// plugin instance should hold a reference, and pass new references to
+// Plugin instance should hold a reference, and pass new references to
 // the WeakRefAnchor to any threads that may need to create callbacks.
 // The plugin instance should invoke Abandon before Unref'ing its
 // pointer to its WeakRefAnchor object.  When all threads that may
@@ -84,20 +85,32 @@ class WeakRefAnchor : public RefCountBase {
   // responsible for releasing the resource represented by
   // raw_resource; if MakeWeakRef succeeds, then it takes ownership of
   // raw_resource and has wrapped in in the WeakRef<R>* object, which
-  // can be used as argument to the callback function for COMT.
+  // can be used as argument to the callback function for COMT.  After
+  // ownership passes, the caller must not continue to use the
+  // raw_resource, since the main thread may Abandon the anchor at any
+  // time and cause raw_resource to have its dtor invoked in
+  // WeakRef<R>::reset_mu.
   template <typename R>
   WeakRef<R>* MakeWeakRef(R* raw_resource) {
     WeakRef<R>* rp = NULL;
+    CHECK(raw_resource != NULL);
+    NaClLog(6, "Entered WeakRef<R>::MakeWeakRef\n");
     NaClXMutexLock(&mu_);
     if (!abandoned_) {
       rp = new WeakRef<R>(this, raw_resource);
       tracked_.insert(rp->Ref());
     }
     NaClXMutexUnlock(&mu_);
+    NaClLog(6,
+            "Leaving WeakRef<R>::MakeWeakRef, rp 0x%"NACL_PRIxPTR"\n",
+            (uintptr_t) rp);
     return rp;
   }
 
   void Remove(AnchoredResource *weak_ref) {
+    NaClLog(6,
+            "WeakRefAnchor::Remove: weak_ref 0x%"NACL_PRIxPTR"\n",
+            (uintptr_t) weak_ref);
     NaClXMutexLock(&mu_);
     tracked_.erase(weak_ref);
     weak_ref->Unref();
@@ -106,7 +119,6 @@ class WeakRefAnchor : public RefCountBase {
 
  protected:
   ~WeakRefAnchor() {
-    Abandon();
     NaClMutexDtor(&mu_);
   }  // only via Unref
 
@@ -145,11 +157,13 @@ template <typename R>
 class WeakRef : public AnchoredResource {
   // public base class, needed for win64_newlib_dbg.  why?
  public:
-  // single use!  invoked only from main thread, so anchor will not be
-  // doing Abandon() at the same time.  we don't bother to use scoped
-  // locking and swap for exception safety, since that's not a coding
-  // standard requirement.  The API permits it.
+  // Single use!  Invoked only from main thread, so anchor will not be
+  // doing Abandon() at the same time.  After ReleaseAndUnref, caller
+  // must not use the pointer to the WeakRef object further.
   void ReleaseAndUnref(scoped_ptr<R>* out_ptr) {
+    NaClLog(6,
+            "Entered WeakRef<R>::ReleaseAndUnref: this 0x%"NACL_PRIxPTR"\n",
+            (uintptr_t) this);
     NaClXMutexLock(&mu_);
     if (anchor_ == NULL) {
       // resource long gone
@@ -160,10 +174,16 @@ class WeakRef : public AnchoredResource {
     }
     NaClXMutexUnlock(&mu_);
     Unref();
+    NaClLog(6,
+            "Leaving ReleaseAndUnref: out_ptr->get() 0x%"NACL_PRIxPTR"\n",
+            (uintptr_t) out_ptr->get());
   }
 
  protected:
   void reset_mu() {
+    NaClLog(6,
+            "weak_ref<R>::reset_mu: this 0x%"NACL_PRIxPTR"\n",
+            (uintptr_t) this);
     R* rp = resource_.release();
     CHECK(rp != NULL);
     delete rp;
@@ -176,10 +196,11 @@ class WeakRef : public AnchoredResource {
  private:
   friend class WeakRefAnchor;
 
-  explicit WeakRef(WeakRefAnchor* anchor, R* resource)
+  WeakRef(WeakRefAnchor* anchor, R* resource)
       : AnchoredResource(anchor),
-        resource_(resource)
-  { }
+        resource_(resource) {
+    CHECK(resource != NULL);
+  }
 
   scoped_ptr<R> resource_;  // NULL when anchor object is destroyed.
 };
