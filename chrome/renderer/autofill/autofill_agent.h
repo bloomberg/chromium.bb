@@ -16,6 +16,12 @@
 #include "content/renderer/render_view_observer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAutoFillClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
+#include "webkit/glue/form_data.h"
+#include "webkit/glue/form_field.h"
+
+namespace webkit_glue {
+struct FormDataPredictions;
+}
 
 namespace autofill {
 
@@ -87,6 +93,8 @@ class AutofillAgent : public RenderViewObserver,
                              const std::vector<string16>& icons,
                              const std::vector<int>& unique_ids);
   void OnFormDataFilled(int query_id, const webkit_glue::FormData& form);
+  void OnFieldTypePredictionsAvailable(
+      const std::vector<webkit_glue::FormDataPredictions>& forms);
 
   // Called in a posted task by textFieldDidChange() to work-around a WebKit bug
   // http://bugs.webkit.org/show_bug.cgi?id=16976

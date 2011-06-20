@@ -9,15 +9,22 @@
 #include "base/sha1.h"
 #include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_metrics.h"
+#include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/autofill_xml_parser.h"
 #include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/autofill/form_field.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
+#include "webkit/glue/form_data.h"
+#include "webkit/glue/form_data_predictions.h"
 #include "webkit/glue/form_field.h"
+#include "webkit/glue/form_field_predictions.h"
 
 using webkit_glue::FormData;
+using webkit_glue::FormDataPredictions;
+using webkit_glue::FormFieldPredictions;
 
 namespace {
 
@@ -300,6 +307,43 @@ void FormStructure::ParseQueryResponse(const std::string& response_xml,
     metric = AutofillMetrics::QUERY_RESPONSE_MATCHED_LOCAL_HEURISTICS;
   }
   metric_logger.LogServerQueryMetric(metric);
+}
+
+// static
+void FormStructure::GetFieldTypePredictions(
+    const std::vector<FormStructure*>& form_structures,
+    std::vector<FormDataPredictions>* forms) {
+  forms->clear();
+  forms->reserve(form_structures.size());
+  for (size_t i = 0; i < form_structures.size(); ++i) {
+    FormStructure* form_structure = form_structures[i];
+    FormDataPredictions form;
+    form.data.name = form_structure->form_name_;
+    form.data.method =
+        ASCIIToUTF16((form_structure->method_ == POST) ? "POST" : "GET");
+    form.data.origin = form_structure->source_url_;
+    form.data.action = form_structure->target_url_;
+    form.signature = form_structure->FormSignature();
+    form.experiment_id = form_structure->server_experiment_id_;
+
+    for (std::vector<AutofillField*>::const_iterator field =
+             form_structure->fields_.begin();
+         field != form_structure->fields_.end(); ++field) {
+      form.data.fields.push_back(webkit_glue::FormField(**field));
+
+      FormFieldPredictions annotated_field;
+      annotated_field.signature = (*field)->FieldSignature();
+      annotated_field.heuristic_type =
+          AutofillType::FieldTypeToString((*field)->heuristic_type());
+      annotated_field.server_type =
+          AutofillType::FieldTypeToString((*field)->server_type());
+      annotated_field.overall_type =
+          AutofillType::FieldTypeToString((*field)->type());
+      form.fields.push_back(annotated_field);
+    }
+
+    forms->push_back(form);
+  }
 }
 
 std::string FormStructure::FormSignature() const {

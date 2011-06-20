@@ -93,8 +93,14 @@ string16 GetStringFUTF16(int message_id,
                          const string16& b,
                          const string16& c,
                          const string16& d);
+string16 GetStringFUTF16(int message_id,
+                         const string16& a,
+                         const string16& b,
+                         const string16& c,
+                         const string16& d,
+                         const string16& e);
 std::string GetStringFUTF8(int message_id,
-                           const string16& a);
+                         const string16& a);
 std::string GetStringFUTF8(int message_id,
                            const string16& a,
                            const string16& b);

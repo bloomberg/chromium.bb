@@ -9,6 +9,7 @@
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "grit/generated_resources.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFormControlElement.h"
@@ -21,12 +22,13 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSelectElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebVector.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "webkit/glue/form_data.h"
+#include "webkit/glue/form_data_predictions.h"
 #include "webkit/glue/form_field.h"
+#include "webkit/glue/form_field_predictions.h"
 #include "webkit/glue/web_io_operators.h"
 
-using webkit_glue::FormData;
-using webkit_glue::FormField;
 using WebKit::WebDocument;
 using WebKit::WebElement;
 using WebKit::WebFormControlElement;
@@ -40,6 +42,10 @@ using WebKit::WebOptionElement;
 using WebKit::WebSelectElement;
 using WebKit::WebString;
 using WebKit::WebVector;
+using webkit_glue::FormData;
+using webkit_glue::FormDataPredictions;
+using webkit_glue::FormField;
+using webkit_glue::FormFieldPredictions;
 
 namespace {
 
@@ -794,6 +800,47 @@ void FormManager::PreviewForm(const FormData& form, const WebNode& node) {
                            node,
                            form,
                            &PreviewFormField);
+}
+
+bool FormManager::ShowPredictions(const FormDataPredictions& form) {
+  FormElement* form_element = NULL;
+  if (!FindCachedFormElement(form.data, &form_element))
+    return false;
+
+  DCHECK_EQ(form.data.fields.size(), form.fields.size());
+  for (size_t i = 0, j = 0;
+       i < form_element->control_elements.size() && j < form.fields.size();
+       ++i) {
+    WebFormControlElement* element = &form_element->control_elements[i];
+    string16 element_name(element->nameForAutofill());
+
+    // Search forward in the |form| for a corresponding field.
+    size_t k = j;
+    while (k < form.fields.size() && element_name != form.data.fields[k].name)
+      k++;
+
+    if (k >= form.fields.size())
+      continue;
+
+    DCHECK_EQ(form.data.fields[k].name, element_name);
+
+    std::string placeholder = form.fields[k].overall_type;
+    string16 title = l10n_util::GetStringFUTF16(
+        IDS_AUTOFILL_SHOW_PREDICTIONS_TITLE,
+        UTF8ToUTF16(form.fields[k].heuristic_type),
+        UTF8ToUTF16(form.fields[k].server_type),
+        UTF8ToUTF16(form.fields[k].signature),
+        UTF8ToUTF16(form.signature),
+        UTF8ToUTF16(form.experiment_id));
+    if (!element->hasAttribute("placeholder"))
+      element->setAttribute("placeholder", WebString(UTF8ToUTF16(placeholder)));
+    element->setAttribute("title", WebString(title));
+
+    // We found a matching form field so move on to the next.
+    ++j;
+  }
+
+  return true;
 }
 
 bool FormManager::ClearFormWithNode(const WebNode& node) {

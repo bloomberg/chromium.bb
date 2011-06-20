@@ -242,6 +242,7 @@ extern const char kSbDisableDownloadProtection[];
 extern const char kSdchFilter[];
 extern const char kSearchInOmniboxHint[];
 extern const char kServiceAccountLsid[];
+extern const char kShowAutofillTypePredictions[];
 extern const char kShowCompositedLayerBorders[];
 extern const char kShowCompositedLayerTree[];
 extern const char kShowFPSCounter[];

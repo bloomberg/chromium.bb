@@ -11,6 +11,7 @@
 #include <set>
 #include <utility>
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/string16.h"
 #include "base/string_util.h"
@@ -33,6 +34,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/autofill_messages.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/guid.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -45,9 +47,11 @@
 #include "ipc/ipc_message_macros.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "webkit/glue/form_data.h"
+#include "webkit/glue/form_data_predictions.h"
 #include "webkit/glue/form_field.h"
 
 using webkit_glue::FormData;
+using webkit_glue::FormDataPredictions;
 using webkit_glue::FormField;
 
 namespace {
@@ -627,9 +631,24 @@ void AutofillManager::OnDidShowAutofillSuggestions() {
 
 void AutofillManager::OnLoadedServerPredictions(
     const std::string& response_xml) {
+  // Parse and store the server predictions.
   FormStructure::ParseQueryResponse(response_xml,
                                     form_structures_.get(),
                                     *metric_logger_);
+
+  // If the corresponding flag is set, annotate forms with the predicted types.
+  RenderViewHost* host = NULL;
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kShowAutofillTypePredictions) ||
+      !GetHost(personal_data_->profiles(), personal_data_->credit_cards(),
+               &host)) {
+    return;
+  }
+
+  std::vector<FormDataPredictions> forms;
+  FormStructure::GetFieldTypePredictions(form_structures_.get(), &forms);
+  host->Send(new AutofillMsg_FieldTypePredictionsAvailable(host->routing_id(),
+                                                           forms));
 }
 
 void AutofillManager::OnUploadedPossibleFieldTypes() {
@@ -716,8 +735,7 @@ AutofillManager::AutofillManager(TabContentsWrapper* tab_contents,
   DCHECK(tab_contents);
 }
 
-void AutofillManager::set_metric_logger(
-    const AutofillMetrics* metric_logger) {
+void AutofillManager::set_metric_logger(const AutofillMetrics* metric_logger) {
   metric_logger_.reset(metric_logger);
 }
 
