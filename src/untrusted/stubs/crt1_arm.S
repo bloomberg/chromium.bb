@@ -85,26 +85,7 @@ __aeabi_read_tp:
     /* the low order bits of r9 are for service runtime use only */
     mov r0, r9, lsr #NACL_PAGESHIFT
     lsl r0, #NACL_PAGESHIFT
-    /* NOTE: for gcc/llvm generated code there is an implicit offset of 8/16 */
-    /* TODO(robertm): find some flags to control/unify this */
-
-    sub r0, r0, #16       /* llvm flavor */
-   /* sub r0, r0, #8 */   /* gcc flavor */
-
 
     .align NACL_ARM_BUNDLE_SIZE_LOG
     bic lr, lr, #NACL_CONTROL_FLOW_MASK
     bx lr
-
-/* ====================================================================== */
-/* BEGIN .tdata section */
-/* ====================================================================== */
-    /* ensure we have space for a tdb at the very beginning of the tls area */
-    /* NOTE: this is different from x86 where we put the tdb at the end */
-    /* See tls.c for details. */
-/* TODO(robertm): this should really be sizeof(nc_thread_descriptor_t) */
-    .set TDB_SIZE, 128
-    .section .tdata
-    .global __tdb
-__tdb:
-    .fill TDB_SIZE, 1, -1
