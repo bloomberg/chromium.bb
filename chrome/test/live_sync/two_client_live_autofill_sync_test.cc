@@ -7,6 +7,9 @@
 #include "chrome/browser/webdata/autofill_entry.h"
 #include "chrome/test/live_sync/live_autofill_sync_test.h"
 
+// Autofill entry length is limited to 1024.  See http://crbug.com/49332.
+const size_t kMaxDataLength = 1024;
+
 IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, WebDataServiceSanity) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
@@ -306,4 +309,52 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, DisableSync) {
   ASSERT_TRUE(AwaitQuiescence());
   ASSERT_TRUE(ProfilesMatch(0, 1));
   ASSERT_EQ(2U, GetAllProfiles(0).size());
+}
+
+// TCM ID - 3608295.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, MaxLength) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  AddProfile(0, CreateAutofillProfile(LiveAutofillSyncTest::PROFILE_HOMER));
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  ASSERT_TRUE(ProfilesMatch(0, 1));
+  ASSERT_EQ(1U, GetAllProfiles(0).size());
+
+  string16 max_length_string(kMaxDataLength, '.');
+  UpdateProfile(0, GetAllProfiles(0)[0]->guid(),
+                AutofillType(NAME_FIRST), max_length_string);
+  UpdateProfile(0, GetAllProfiles(0)[0]->guid(),
+                AutofillType(NAME_LAST), max_length_string);
+  UpdateProfile(0, GetAllProfiles(0)[0]->guid(),
+                AutofillType(EMAIL_ADDRESS), max_length_string);
+  UpdateProfile(0, GetAllProfiles(0)[0]->guid(),
+                AutofillType(ADDRESS_HOME_LINE1), max_length_string);
+
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  ASSERT_TRUE(ProfilesMatch(0, 1));
+}
+
+// See http://crbug.com/85769.
+// TODO(braffert): Remove FAILS annotation when bug 85769 is resolved.
+// TCM ID - 7735472.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, FAILS_ExceedsMaxLength) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  AddProfile(0, CreateAutofillProfile(LiveAutofillSyncTest::PROFILE_HOMER));
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  ASSERT_TRUE(ProfilesMatch(0, 1));
+  ASSERT_EQ(1U, GetAllProfiles(0).size());
+
+  string16 exceeds_max_length_string(kMaxDataLength + 1, '.');
+  UpdateProfile(0, GetAllProfiles(0)[0]->guid(),
+                AutofillType(NAME_FIRST), exceeds_max_length_string);
+  UpdateProfile(0, GetAllProfiles(0)[0]->guid(),
+                AutofillType(NAME_LAST), exceeds_max_length_string);
+  UpdateProfile(0, GetAllProfiles(0)[0]->guid(),
+                AutofillType(EMAIL_ADDRESS), exceeds_max_length_string);
+  UpdateProfile(0, GetAllProfiles(0)[0]->guid(),
+                AutofillType(ADDRESS_HOME_LINE1), exceeds_max_length_string);
+
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  ASSERT_FALSE(ProfilesMatch(0, 1));
 }
