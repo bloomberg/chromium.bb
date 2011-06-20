@@ -22,7 +22,6 @@
         '../ui/ui.gyp:ui_base',
       ],
       'sources': [
-        '../ui/base/resource/resource_bundle_unittest.cc',
         'run_all_unittests.cc',
         'sql/connection_unittest.cc',
         'sql/sqlite_features_unittest.cc',
