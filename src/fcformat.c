@@ -732,7 +732,7 @@ interpret_simple (FcFormatContext *c,
 	c->word = c->word + strlen ((const char *) c->word) + 1;
 	/* for now we just support 'default value' */
 	if (!expect_char (c, '-') ||
-	    !read_chars (c, '\0'))
+	    !read_chars (c, '|'))
 	{
 	    c->word = orig;
 	    return FcFalse;
