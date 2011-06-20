@@ -315,3 +315,7 @@ html[os='mac'] #sync-setup-configure {
 html[dir='rtl'] #learn-more-link {
   float: left;
 }
+
+#customize-link, #use-default-link {
+  -webkit-transition: opacity .25s;
+}

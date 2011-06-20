@@ -67,14 +67,8 @@ cr.define('options', function() {
           $('stop-syncing-cancel').onclick =  function() {
         self.closeOverlay_();
       };
-      $('customize-link').onclick = function() {
-        self.showCustomizePage_(null, true);
-      };
       $('confirm-everything-ok').onclick = function() {
         self.sendConfiguration_();
-      };
-      $('use-default-link').onclick = function() {
-        self.showSyncEverythingPage_();
       };
       $('stop-syncing-ok').onclick = function() {
         chrome.send('stopSyncing');
@@ -272,6 +266,42 @@ cr.define('options', function() {
           $('customize-sync-preferences').querySelectorAll('input');
       for (var i = 0; i < configureElements.length; i++)
         configureElements[i].disabled = disabled;
+      $('sync-select-datatypes').disabled = disabled;
+
+      var self = this;
+      this.animateDisableLink_($('customize-link'), disabled, function() {
+        self.showCustomizePage_(null, true);
+      });
+
+      this.animateDisableLink_($('use-default-link'), disabled, function() {
+        self.showSyncEverythingPage_();
+      });
+    },
+
+    /**
+     * Animate a link being enabled/disabled. The link is hidden by animating
+     * its opacity, but to ensure the user doesn't click it during that time,
+     * its onclick handler is changed to null as well.
+     * @param elt The anchor element to enable/disable.
+     * @param disabled True if the link should be disabled.
+     * @param enabledFunction The onclick handler when the link is enabled.
+     * @private
+     */
+    animateDisableLink_: function(elt, disabled, enabledFunction) {
+      if (disabled) {
+        elt.classList.add('transparent');
+        elt.onclick = null;
+        elt.addEventListener('webkitTransitionEnd', function f(e) {
+          if (e.propertyName != 'opacity')
+            return;
+          elt.removeEventListener('webkitTransitionEnd', f);
+          elt.classList.remove('transparent');
+          elt.hidden = true;
+        });
+      } else {
+        elt.hidden = false;
+        elt.onclick = enabledFunction;
+      }
     },
 
     setChooseDataTypesCheckboxes_: function(args) {
@@ -566,6 +596,8 @@ cr.define('options', function() {
           function(elt) { elt.style.visibility = 'hidden'; });
       forEach(page.getElementsByClassName('reset-value'),
           function(elt) { elt.value = ''; });
+      forEach(page.getElementsByClassName('reset-opaque'),
+          function(elt) { elt.classList.remove('transparent'); });
     },
 
     showGaiaLogin_: function(args) {
