@@ -62,6 +62,7 @@
  * unparse	FcNameUnparse
  * fcmatch	fc-match default
  * fclist	fc-list default
+ * fccat	fc-cat default
  * pkgkit	PackageKit package tag format
  *
  *
@@ -74,6 +75,7 @@
  */
 
 
+#define FCCAT_FORMAT	"\"%{file|basename|cescape}\" %{index} \"%{-file{%{=unparse|cescape}}}\""
 #define FCMATCH_FORMAT	"%{file:-<unknown filename>|basename}: \"%{family[0]:-<unknown family>}\" \"%{style[0]:-<unknown style>}\""
 #define FCLIST_FORMAT	"%{?file{%{file}: }}%{-file{%{=unparse}}}"
 #define PKGKIT_FORMAT	"%{[]family{font(%{family|downcase|delete( )})\n}}%{[]lang{font(:lang=%{lang|downcase|translate(_,-)})\n}}"
@@ -304,6 +306,7 @@ interpret_builtin (FcFormatContext *c,
 #define BUILTIN(name, format) \
     else if (0 == strcmp ((const char *) c->word, name))\
 	ret = FcPatternFormatToBuf (pat, (const FcChar8 *) format, buf)
+    BUILTIN ("fccat",    FCCAT_FORMAT);
     BUILTIN ("fcmatch",  FCMATCH_FORMAT);
     BUILTIN ("fclist",   FCLIST_FORMAT);
     BUILTIN ("pkgkit",   PKGKIT_FORMAT);
