@@ -177,6 +177,8 @@ mode-spec-pnacl-x8632() {
                            SetupPnaclTranslatorX8632Opt"
 }
 
+# scheduled to be obsolete
+# TODO(robertm): delete this target
 mode-spec-nacl() {
   clobber
   basic-setup "x86-32 x86-64"
@@ -185,6 +187,23 @@ mode-spec-nacl() {
                            SetupNaclX8664Opt \
                            SetupNaclX8632 \
                            SetupNaclX8632Opt"
+}
+
+mode-spec-nacl-x8632() {
+  clobber
+  basic-setup "x86-32"
+  build-and-run-all-timed ${SPEC_HARNESS} \
+                           "SetupNaclX8632 \
+                           SetupNaclX8632Opt"
+}
+
+mode-spec-nacl-x8664() {
+  clobber
+  basic-setup "x86-64"
+  build-and-run-all-timed ${SPEC_HARNESS} \
+                          "SetupNaclX8664 \
+                           SetupNaclX8664Opt"
+
 }
 
 
