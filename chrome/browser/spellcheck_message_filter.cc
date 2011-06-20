@@ -110,12 +110,13 @@ void SpellCheckMessageFilter::OnSpellCheckerRequestDictionary() {
   }
 }
 
-void SpellCheckMessageFilter::OnNotifyChecked(bool misspelled) {
+void SpellCheckMessageFilter::OnNotifyChecked(const string16& word,
+                                              bool misspelled) {
   RenderProcessHost* host = RenderProcessHost::FromID(render_process_id_);
   if (!host)
     return;  // Teardown.
   // Delegates to SpellCheckHost which tracks the stats of our spellchecker.
   Profile* profile = host->profile();
   if (profile->GetSpellCheckHost())
-    profile->GetSpellCheckHost()->RecordCheckedWordStats(misspelled);
+    profile->GetSpellCheckHost()->RecordCheckedWordStats(word, misspelled);
 }

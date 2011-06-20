@@ -17,11 +17,13 @@
 scoped_refptr<SpellCheckHost> SpellCheckHost::Create(
     SpellCheckHostObserver* observer,
     const std::string& language,
-    net::URLRequestContextGetter* request_context_getter) {
+    net::URLRequestContextGetter* request_context_getter,
+    bool metrics_enabled) {
   scoped_refptr<SpellCheckHostImpl> host =
       new SpellCheckHostImpl(observer,
                              language,
-                             request_context_getter);
+                             request_context_getter,
+                             metrics_enabled);
   if (!host)
     return NULL;
 

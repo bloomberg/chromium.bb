@@ -52,7 +52,8 @@ class SpellCheckHost
   static scoped_refptr<SpellCheckHost> Create(
       SpellCheckHostObserver* observer,
       const std::string& language,
-      net::URLRequestContextGetter* request_context_getter);
+      net::URLRequestContextGetter* request_context_getter,
+      bool metrics_enabled);
 
   // Collects the number of words in the custom dictionary, which is
   // to be uploaded via UMA
@@ -86,7 +87,7 @@ class SpellCheckHost
 
   // Collects status of spellchecking enabling state, which is
   // to be uploaded via UMA
-  virtual void RecordCheckedWordStats(bool misspell) = 0;
+  virtual void RecordCheckedWordStats(const string16& word, bool misspell) = 0;
 
   // Collects a histogram for context menu showing as a spell correction
   // attempt to be uploaded via UMA.

@@ -101,5 +101,6 @@ IPC_MESSAGE_ROUTED2(SpellCheckHostMsg_ToggleSpellCheck,
                     bool /* checked */)
 
 // Tracks spell checking occurrence to collect histogram.
-IPC_MESSAGE_ROUTED1(SpellCheckHostMsg_NotifyChecked,
+IPC_MESSAGE_ROUTED2(SpellCheckHostMsg_NotifyChecked,
+                    string16 /* word */,
                     bool /* true if checked word is misspelled */)

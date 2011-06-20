@@ -10,7 +10,10 @@
 #include <vector>
 
 #include "base/file_path.h"
+#include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time.h"
+#include "base/timer.h"
 #include "chrome/browser/spellcheck_host.h"
 #include "chrome/browser/spellcheck_host_observer.h"
 #include "content/common/notification_observer.h"
@@ -43,7 +46,8 @@ class SpellCheckHostImpl : public SpellCheckHost,
  public:
   SpellCheckHostImpl(SpellCheckHostObserver* observer,
                      const std::string& language,
-                     net::URLRequestContextGetter* request_context_getter);
+                     net::URLRequestContextGetter* request_context_getter,
+                     bool metrics_enabled);
 
   void Initialize();
 
@@ -91,9 +95,13 @@ class SpellCheckHostImpl : public SpellCheckHost,
   // to be uploaded via UMA
   void RecordDictionaryCorruptionStats(bool corrupted);
 
+  // Collects time-dependent spell stats.
+  // This method is invoked by |histogram_timer_|.
+  void OnHistogramTimerExpired();
+
   // Collects status of spellchecking enabling state, which is
   // to be uploaded via UMA
-  virtual void RecordCheckedWordStats(bool misspell);
+  virtual void RecordCheckedWordStats(const string16& word, bool misspell);
 
   // Collects a histogram for misspelled word replacement
   // to be uploaded via UMA
@@ -157,6 +165,9 @@ class SpellCheckHostImpl : public SpellCheckHost,
 
   NotificationRegistrar registrar_;
 
+  // True if metrics recording is enabled.
+  bool metrics_enabled_;
+
   // Number of corrected words of checked words.
   int misspelled_word_count_;
   // Number of checked words.
@@ -165,6 +176,11 @@ class SpellCheckHostImpl : public SpellCheckHost,
   int suggestion_show_count_;
   // Number of misspelled words replaced by a user.
   int replaced_word_count_;
+  // Time when first spellcheck happened.
+  base::Time start_time_;
+  // Set of checked words in the hashed form.
+  base::hash_set<std::string> checked_word_hashes_;
+  base::RepeatingTimer<SpellCheckHostImpl> histogram_timer_;
 };
 
 #endif  // CHROME_BROWSER_SPELLCHECK_HOST_IMPL_H_
