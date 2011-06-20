@@ -65,10 +65,6 @@ class GLES2Decoder : public CommonDecoder {
   //  allowed_extensions: A string in the same format as
   //      glGetString(GL_EXTENSIONS) that lists the extensions this context
   //      should allow. Passing NULL or "*" means allow all extensions.
-  //  parent: the GLES2 decoder that can access this decoder's front buffer
-  //      through a texture ID in its namespace.
-  //  parent_client_texture_id: the texture ID of the front buffer in the
-  //      parent's namespace.
   // Returns:
   //   true if successful.
   virtual bool Initialize(const scoped_refptr<gfx::GLSurface>& surface,
@@ -76,12 +72,13 @@ class GLES2Decoder : public CommonDecoder {
                           const gfx::Size& size,
                           const DisallowedExtensions& disallowed_extensions,
                           const char* allowed_extensions,
-                          const std::vector<int32>& attribs,
-                          GLES2Decoder* parent,
-                          uint32 parent_client_texture_id) = 0;
+                          const std::vector<int32>& attribs) = 0;
 
   // Destroys the graphics context.
   virtual void Destroy() = 0;
+
+  virtual bool SetParent(GLES2Decoder* parent_decoder,
+                         uint32 parent_texture_id) = 0;
 
   // Resize an offscreen frame buffer.
   virtual void ResizeOffscreenFrameBuffer(const gfx::Size& size) = 0;

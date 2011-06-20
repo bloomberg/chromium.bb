@@ -63,12 +63,12 @@ class GpuScheduler : public CommandBufferEngine {
                   const gles2::DisallowedExtensions& disallowed_extensions,
                   const char* allowed_extensions,
                   const std::vector<int32>& attribs,
-                  GpuScheduler* parent,
-                  uint32 parent_texture_id,
                   gfx::GLShareGroup* share_group);
 
   void Destroy();
   void DestroyCommon();
+
+  bool SetParent(GpuScheduler* parent_scheduler, uint32 parent_texture_id);
 
   void PutChanged(bool sync);
 
@@ -152,9 +152,7 @@ class GpuScheduler : public CommandBufferEngine {
       const gfx::Size& size,
       const gles2::DisallowedExtensions& disallowed_extensions,
       const char* allowed_extensions,
-      const std::vector<int32>& attribs,
-      gles2::GLES2Decoder* parent_decoder,
-      uint32 parent_texture_id);
+      const std::vector<int32>& attribs);
 
 
  private:

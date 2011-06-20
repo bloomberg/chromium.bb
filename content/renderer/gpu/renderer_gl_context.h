@@ -108,11 +108,14 @@ class RendererGLContext : public base::SupportsWeakPtr<RendererGLContext> {
   // attribute/value pairs.
   static RendererGLContext* CreateOffscreenContext(
       GpuChannelHost* channel,
-      RendererGLContext* parent,
       const gfx::Size& size,
       const char* allowed_extensions,
       const int32* attrib_list,
       const GURL& active_url);
+
+  // Sets the parent context. If any parent textures have been created for
+  // another parent, it is important to delete them before changing the parent.
+  bool SetParent(RendererGLContext* parent);
 
   // Resize an offscreen frame buffer. The resize occurs on the next call to
   // SwapBuffers. This is to avoid waiting until all pending GL calls have been
@@ -183,8 +186,7 @@ class RendererGLContext : public base::SupportsWeakPtr<RendererGLContext> {
   bool GetChildToParentLatch(uint32* child_to_parent_latch);
 
  private:
-  RendererGLContext(GpuChannelHost* channel,
-                    RendererGLContext* parent);
+  explicit RendererGLContext(GpuChannelHost* channel);
 
   bool Initialize(bool onscreen,
                   gfx::PluginWindowHandle render_surface,

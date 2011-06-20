@@ -161,7 +161,7 @@ RendererGLContext* RendererGLContext::CreateViewContext(
     const int32* attrib_list,
     const GURL& active_url) {
 #if defined(ENABLE_GPU)
-  scoped_ptr<RendererGLContext> context(new RendererGLContext(channel, NULL));
+  scoped_ptr<RendererGLContext> context(new RendererGLContext(channel));
   if (!context->Initialize(
       true,
       render_surface,
@@ -188,13 +188,12 @@ void RendererGLContext::ResizeOnscreen(const gfx::Size& size) {
 
 RendererGLContext* RendererGLContext::CreateOffscreenContext(
     GpuChannelHost* channel,
-    RendererGLContext* parent,
     const gfx::Size& size,
     const char* allowed_extensions,
     const int32* attrib_list,
     const GURL& active_url) {
 #if defined(ENABLE_GPU)
-  scoped_ptr<RendererGLContext> context(new RendererGLContext(channel, parent));
+  scoped_ptr<RendererGLContext> context(new RendererGLContext(channel));
   if (!context->Initialize(
       false,
       gfx::kNullPluginWindow,
@@ -209,6 +208,42 @@ RendererGLContext* RendererGLContext::CreateOffscreenContext(
 #else
   return NULL;
 #endif
+}
+
+bool RendererGLContext::SetParent(RendererGLContext* new_parent) {
+  // Allocate a texture ID with respect to the parent and change the parent.
+  uint32 new_parent_texture_id = 0;
+  if (new_parent) {
+    TRACE_EVENT0("gpu", "RendererGLContext::SetParent::flushParent");
+    // Flush any remaining commands in the parent context to make sure the
+    // texture id accounting stays consistent.
+    int32 token = new_parent->gles2_helper_->InsertToken();
+    new_parent->gles2_helper_->WaitForToken(token);
+    new_parent_texture_id = new_parent->gles2_implementation_->MakeTextureId();
+
+    if (!command_buffer_->SetParent(new_parent->command_buffer_,
+                                    new_parent_texture_id)) {
+      new_parent->gles2_implementation_->FreeTextureId(parent_texture_id_);
+      return false;
+    }
+  } else {
+    if (!command_buffer_->SetParent(NULL, 0))
+      return false;
+  }
+
+  // Free the previous parent's texture ID.
+  if (parent_.get() && parent_texture_id_ != 0)
+    parent_->gles2_implementation_->FreeTextureId(parent_texture_id_);
+
+  if (new_parent) {
+    parent_ = new_parent->AsWeakPtr();
+    parent_texture_id_ = new_parent_texture_id;
+  } else {
+    parent_.reset();
+    parent_texture_id_ = 0;
+  }
+
+  return true;
 }
 
 void RendererGLContext::ResizeOffscreen(const gfx::Size& size) {
@@ -342,11 +377,9 @@ gpu::gles2::GLES2Implementation* RendererGLContext::GetImplementation() {
   return gles2_implementation_;
 }
 
-RendererGLContext::RendererGLContext(GpuChannelHost* channel,
-                                     RendererGLContext* parent)
+RendererGLContext::RendererGLContext(GpuChannelHost* channel)
     : channel_(channel),
-      parent_(parent ?
-          parent->AsWeakPtr() : base::WeakPtr<RendererGLContext>()),
+      parent_(base::WeakPtr<RendererGLContext>()),
       parent_texture_id_(0),
       child_to_parent_latch_(kInvalidLatchId),
       parent_to_child_latch_(kInvalidLatchId),
@@ -376,16 +409,6 @@ bool RendererGLContext::Initialize(bool onscreen,
 
   // Ensure the gles2 library is initialized first in a thread safe way.
   g_gles2_initializer.Get();
-
-  // Allocate a frame buffer ID with respect to the parent.
-  if (parent_.get()) {
-    TRACE_EVENT0("gpu", "RendererGLContext::Initialize::flushParent");
-    // Flush any remaining commands in the parent context to make sure the
-    // texture id accounting stays consistent.
-    int32 token = parent_->gles2_helper_->InsertToken();
-    parent_->gles2_helper_->WaitForToken(token);
-    parent_texture_id_ = parent_->gles2_implementation_->MakeTextureId();
-  }
 
   std::vector<int32> attribs;
   while (attrib_list) {
@@ -431,14 +454,10 @@ bool RendererGLContext::Initialize(bool onscreen,
           active_url);
     }
   } else {
-    CommandBufferProxy* parent_command_buffer =
-        parent_.get() ? parent_->command_buffer_ : NULL;
     command_buffer_ = channel_->CreateOffscreenCommandBuffer(
-        parent_command_buffer,
         size,
         allowed_extensions,
         attribs,
-        parent_texture_id_,
         active_url);
   }
   if (!command_buffer_) {
@@ -501,12 +520,10 @@ bool RendererGLContext::Initialize(bool onscreen,
 
   // If this is a child context, setup latches for synchronization between child
   // and parent.
-  if (parent_.get()) {
-    if (!CreateLatch(&child_to_parent_latch_) ||
-        !CreateLatch(&parent_to_child_latch_)) {
-      Destroy();
-      return false;
-    }
+  if (!CreateLatch(&child_to_parent_latch_) ||
+      !CreateLatch(&parent_to_child_latch_)) {
+    Destroy();
+    return false;
   }
 
   // Create the object exposing the OpenGL API.
@@ -523,10 +540,7 @@ bool RendererGLContext::Initialize(bool onscreen,
 }
 
 void RendererGLContext::Destroy() {
-  if (parent_.get() && parent_texture_id_ != 0) {
-    parent_->gles2_implementation_->FreeTextureId(parent_texture_id_);
-    parent_texture_id_ = 0;
-  }
+  SetParent(NULL);
 
   delete gles2_implementation_;
   gles2_implementation_ = NULL;

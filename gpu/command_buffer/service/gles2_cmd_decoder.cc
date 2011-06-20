@@ -712,10 +712,10 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
                           const gfx::Size& size,
                           const DisallowedExtensions& disallowed_extensions,
                           const char* allowed_extensions,
-                          const std::vector<int32>& attribs,
-                          GLES2Decoder* parent,
-                          uint32 parent_client_texture_id);
+                          const std::vector<int32>& attribs);
   virtual void Destroy();
+  virtual bool SetParent(GLES2Decoder* parent_decoder,
+                         uint32 parent_texture_id);
   virtual void ResizeOffscreenFrameBuffer(const gfx::Size& size);
   virtual bool UpdateOffscreenFrameBufferSize();
   virtual bool MakeCurrent();
@@ -1890,9 +1890,7 @@ bool GLES2DecoderImpl::Initialize(
     const gfx::Size& size,
     const DisallowedExtensions& disallowed_extensions,
     const char* allowed_extensions,
-    const std::vector<int32>& attribs,
-    GLES2Decoder* parent,
-    uint32 parent_client_texture_id) {
+    const std::vector<int32>& attribs) {
   DCHECK(context);
   DCHECK(!context_.get());
 
@@ -1905,11 +1903,6 @@ bool GLES2DecoderImpl::Initialize(
 
   // Take ownership of the GLContext.
   context_ = context;
-
-  // Keep only a weak pointer to the parent so we don't unmap its client
-  // frame buffer after it has been destroyed.
-  if (parent)
-    parent_ = static_cast<GLES2DecoderImpl*>(parent)->AsWeakPtr();
 
   if (!MakeCurrent()) {
     LOG(ERROR) << "GLES2DecoderImpl::Initialize failed because "
@@ -2067,16 +2060,6 @@ bool GLES2DecoderImpl::Initialize(
     //
     offscreen_saved_color_texture_.reset(new Texture(this));
     offscreen_saved_color_texture_->Create();
-
-    // Map the ID of the saved offscreen texture into the parent so that
-    // it can reference it.
-    if (parent_) {
-      GLuint service_id = offscreen_saved_color_texture_->id();
-      TextureManager::TextureInfo* info =
-          parent_->CreateTextureInfo(parent_client_texture_id, service_id);
-      info->SetNotOwned();
-      parent_->texture_manager()->SetInfoTarget(info, GL_TEXTURE_2D);
-    }
 
     // Allocate the render buffers at their initial size and check the status
     // of the frame buffers is okay.
@@ -2558,6 +2541,8 @@ void GLES2DecoderImpl::Destroy() {
   if (group_.get())
     group_->set_have_context(have_context);
 
+  SetParent(NULL, 0);
+
   if (have_context) {
     if (current_program_) {
       program_manager()->UnuseProgram(shader_manager(), current_program_);
@@ -2571,20 +2556,8 @@ void GLES2DecoderImpl::Destroy() {
       glDeleteBuffersARB(1, &fixed_attrib_buffer_id_);
     }
 
-    // Remove the saved frame buffer mapping from the parent decoder. The
-    // parent pointer is a weak pointer so it will be null if the parent has
-    // already been destroyed.
-    if (parent_) {
-      // First check the texture has been mapped into the parent. This might not
-      // be the case if initialization failed midway through.
-      GLuint service_id = offscreen_saved_color_texture_->id();
-      GLuint client_id = 0;
-      if (parent_->texture_manager()->GetClientId(service_id, &client_id)) {
-        parent_->texture_manager()->RemoveTextureInfo(feature_info_, client_id);
-      }
-
+    if (copy_texture_to_parent_texture_fb_)
       glDeleteFramebuffersEXT(1, &copy_texture_to_parent_texture_fb_);
-    }
 
     if (offscreen_target_frame_buffer_.get())
       offscreen_target_frame_buffer_->Destroy();
@@ -2634,6 +2607,40 @@ void GLES2DecoderImpl::Destroy() {
   offscreen_target_stencil_render_buffer_.reset();
   offscreen_saved_frame_buffer_.reset();
   offscreen_saved_color_texture_.reset();
+}
+
+bool GLES2DecoderImpl::SetParent(GLES2Decoder* new_parent,
+                                 uint32 new_parent_texture_id) {
+  // Remove the saved frame buffer mapping from the parent decoder. The
+  // parent pointer is a weak pointer so it will be null if the parent has
+  // already been destroyed.
+  if (parent_) {
+    // First check the texture has been mapped into the parent. This might not
+    // be the case if initialization failed midway through.
+    GLuint service_id = offscreen_saved_color_texture_->id();
+    GLuint client_id = 0;
+    if (parent_->texture_manager()->GetClientId(service_id, &client_id)) {
+      parent_->texture_manager()->RemoveTextureInfo(feature_info_, client_id);
+    }
+  }
+
+  GLES2DecoderImpl* new_parent_impl = static_cast<GLES2DecoderImpl*>(
+      new_parent);
+  if (new_parent_impl) {
+    // Map the ID of the saved offscreen texture into the parent so that
+    // it can reference it.
+    GLuint service_id = offscreen_saved_color_texture_->id();
+    TextureManager::TextureInfo* info =
+        new_parent_impl->CreateTextureInfo(new_parent_texture_id, service_id);
+    info->SetNotOwned();
+    new_parent_impl->texture_manager()->SetInfoTarget(info, GL_TEXTURE_2D);
+
+    parent_ = new_parent_impl->AsWeakPtr();
+  } else {
+    parent_.reset();
+  }
+
+  return true;
 }
 
 void GLES2DecoderImpl::ResizeOffscreenFrameBuffer(const gfx::Size& size) {

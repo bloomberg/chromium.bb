@@ -17,16 +17,7 @@ bool GpuScheduler::Initialize(
     const gles2::DisallowedExtensions& disallowed_extensions,
     const char* allowed_extensions,
     const std::vector<int32>& attribs,
-    GpuScheduler* parent,
-    uint32 parent_texture_id,
     gfx::GLShareGroup* share_group) {
-  // Get the parent decoder.
-  gles2::GLES2Decoder* parent_decoder = NULL;
-  if (parent) {
-    parent_decoder = parent->decoder_.get();
-    DCHECK(parent_decoder);
-  }
-
   scoped_refptr<gfx::GLSurface> surface(
       gfx::GLSurface::CreateOffscreenGLSurface(gfx::Size(1, 1)));
   if (!surface.get()) {
@@ -69,9 +60,7 @@ bool GpuScheduler::Initialize(
                           size,
                           disallowed_extensions,
                           allowed_extensions,
-                          attribs,
-                          parent_decoder,
-                          parent_texture_id);
+                          attribs);
 }
 
 void GpuScheduler::Destroy() {

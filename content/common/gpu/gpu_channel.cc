@@ -151,9 +151,9 @@ void GpuChannel::CreateViewCommandBuffer(
 #if defined(ENABLE_GPU)
   *route_id = GenerateRouteID();
   scoped_ptr<GpuCommandBufferStub> stub(new GpuCommandBufferStub(
-      this, window, NULL, gfx::Size(), disallowed_extensions_,
+      this, window, gfx::Size(), disallowed_extensions_,
       init_params.allowed_extensions,
-      init_params.attribs, 0, *route_id, renderer_id_, render_view_id,
+      init_params.attribs, *route_id, renderer_id_, render_view_id,
       watchdog_));
   router_.AddRoute(*route_id, stub.get());
   stubs_.AddWithID(stub.release(), *route_id);
@@ -166,6 +166,10 @@ void GpuChannel::ViewResized(int32 command_buffer_route_id) {
     return;
 
   stub->ViewResized();
+}
+
+GpuCommandBufferStub* GpuChannel::LookupCommandBuffer(int32 route_id) {
+  return stubs_.Lookup(route_id);
 }
 
 #if defined(OS_MACOSX)
@@ -231,27 +235,20 @@ void GpuChannel::OnInitialize(base::ProcessHandle renderer_process) {
 }
 
 void GpuChannel::OnCreateOffscreenCommandBuffer(
-    int32 parent_route_id,
     const gfx::Size& size,
     const GPUCreateCommandBufferConfig& init_params,
-    uint32 parent_texture_id,
     int32* route_id) {
   content::GetContentClient()->SetActiveURL(init_params.active_url);
 #if defined(ENABLE_GPU)
   *route_id = GenerateRouteID();
-  GpuCommandBufferStub* parent_stub = NULL;
-  if (parent_route_id != 0)
-    parent_stub = stubs_.Lookup(parent_route_id);
 
   scoped_ptr<GpuCommandBufferStub> stub(new GpuCommandBufferStub(
       this,
       gfx::kNullPluginWindow,
-      parent_stub,
       size,
       disallowed_extensions_,
       init_params.allowed_extensions,
       init_params.attribs,
-      parent_texture_id,
       *route_id,
       0, 0, watchdog_));
   router_.AddRoute(*route_id, stub.get());

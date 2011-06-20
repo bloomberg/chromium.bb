@@ -61,6 +61,13 @@ class CommandBufferProxy : public gpu::CommandBuffer,
   virtual void SetParseError(gpu::error::Error error);
   virtual void OnSwapBuffers();
 
+  // Reparent a command buffer. TODO(apatrick): going forward, the notion of
+  // the parent / child relationship between command buffers is going away in
+  // favor of the notion of surfaces that can be drawn to in one command buffer
+  // and bound as a texture in any other.
+  virtual bool SetParent(CommandBufferProxy* parent_command_buffer,
+                         uint32 parent_texture_id);
+
   // Set a callback that will be invoked when the SwapBuffers call has been
   // issued.
   void SetSwapBuffersCallback(Callback0::Type* callback);

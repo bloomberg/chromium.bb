@@ -137,7 +137,7 @@ void GLES2DecoderTestBase::InitDecoder(
   decoder_.reset(GLES2Decoder::Create(surface_manager_.get(), group_.get()));
   decoder_->Initialize(
       surface_, context_, surface_->GetSize(), DisallowedExtensions(),
-      NULL, std::vector<int32>(), NULL, 0);
+      NULL, std::vector<int32>());
   decoder_->set_engine(engine_.get());
 
   EXPECT_CALL(*gl_, GenBuffersARB(_, _))

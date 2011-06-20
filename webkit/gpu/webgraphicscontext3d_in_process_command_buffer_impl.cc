@@ -588,24 +588,17 @@ bool GLInProcessContext::Initialize(bool onscreen,
                                       ::gpu::gles2::DisallowedExtensions(),
                                       allowed_extensions,
                                       attribs,
-                                      NULL,
-                                      0,
                                       share_group.get())) {
         LOG(ERROR) << "Could not initialize GpuScheduler.";
         command_buffer_.reset();
       }
     }
   } else {
-    GpuScheduler* parent_scheduler =
-        parent_.get() ? parent_->gpu_scheduler_ : NULL;
-
     if (!gpu_scheduler_->Initialize(render_surface,
                                     size,
                                     ::gpu::gles2::DisallowedExtensions(),
                                     allowed_extensions,
                                     attribs,
-                                    parent_scheduler,
-                                    parent_texture_id_,
                                     share_group.get())) {
       LOG(ERROR) << "Could not initialize offscreen GpuScheduler.";
       command_buffer_.reset();

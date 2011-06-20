@@ -231,15 +231,10 @@ IPC_MESSAGE_CONTROL1(GpuChannelMsg_Initialize,
                      base::ProcessHandle /* renderer_process_for_gpu */)
 
 // Tells the GPU process to create a new command buffer that renders to an
-// offscreen frame buffer. If parent_route_id is not zero, the texture backing
-// the frame buffer is mapped into the corresponding parent command buffer's
-// namespace, with the name of parent_texture_id. This ID is in the parent's
-// namespace.
-IPC_SYNC_MESSAGE_CONTROL4_1(GpuChannelMsg_CreateOffscreenCommandBuffer,
-                            int32, /* parent_route_id */
+// offscreen frame buffer.
+IPC_SYNC_MESSAGE_CONTROL2_1(GpuChannelMsg_CreateOffscreenCommandBuffer,
                             gfx::Size, /* size */
                             GPUCreateCommandBufferConfig, /* init_params */
-                            uint32, /* parent_texture_id */
                             int32 /* route_id */)
 
 // The CommandBufferProxy sends this to the GpuCommandBufferStub in its
@@ -294,6 +289,13 @@ IPC_MESSAGE_CONTROL4(GpuChannelMsg_AssignTexturesToVideoDecoder,
 IPC_SYNC_MESSAGE_ROUTED2_1(GpuCommandBufferMsg_Initialize,
                            base::SharedMemoryHandle /* ring_buffer */,
                            int32 /* size */,
+                           bool /* result */)
+
+// Sets the parent command buffer. This allows the parent and child to share
+// textures.
+IPC_SYNC_MESSAGE_ROUTED2_1(GpuCommandBufferMsg_SetParent,
+                           int32 /* parent_route_id */,
+                           uint32 /* parent_texture_id */,
                            bool /* result */)
 
 // Get the current state of the command buffer.

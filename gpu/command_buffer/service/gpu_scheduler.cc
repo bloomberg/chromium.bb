@@ -66,9 +66,7 @@ bool GpuScheduler::InitializeCommon(
     const gfx::Size& size,
     const gles2::DisallowedExtensions& disallowed_extensions,
     const char* allowed_extensions,
-    const std::vector<int32>& attribs,
-    gles2::GLES2Decoder* parent_decoder,
-    uint32 parent_texture_id) {
+    const std::vector<int32>& attribs) {
   DCHECK(context);
 
   if (!context->MakeCurrent(surface))
@@ -111,9 +109,7 @@ bool GpuScheduler::InitializeCommon(
                             size,
                             disallowed_extensions,
                             allowed_extensions,
-                            attribs,
-                            parent_decoder,
-                            parent_texture_id)) {
+                            attribs)) {
     LOG(ERROR) << "GpuScheduler::InitializeCommon failed because decoder "
                << "failed to initialize.";
     Destroy();
@@ -132,6 +128,15 @@ void GpuScheduler::DestroyCommon() {
   }
 
   parser_.reset();
+}
+
+bool GpuScheduler::SetParent(GpuScheduler* parent_scheduler,
+                             uint32 parent_texture_id) {
+  if (parent_scheduler)
+    return decoder_->SetParent(parent_scheduler->decoder_.get(),
+                               parent_texture_id);
+  else
+    return decoder_->SetParent(NULL, 0);
 }
 
 #if defined(OS_MACOSX)

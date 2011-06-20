@@ -28,25 +28,20 @@ using gpu::Buffer;
 GpuCommandBufferStub::GpuCommandBufferStub(
     GpuChannel* channel,
     gfx::PluginWindowHandle handle,
-    GpuCommandBufferStub* parent,
     const gfx::Size& size,
     const gpu::gles2::DisallowedExtensions& disallowed_extensions,
     const std::string& allowed_extensions,
     const std::vector<int32>& attribs,
-    uint32 parent_texture_id,
     int32 route_id,
     int32 renderer_id,
     int32 render_view_id,
     GpuWatchdog* watchdog)
     : channel_(channel),
       handle_(handle),
-      parent_(
-          parent ? parent->AsWeakPtr() : base::WeakPtr<GpuCommandBufferStub>()),
       initial_size_(size),
       disallowed_extensions_(disallowed_extensions),
       allowed_extensions_(allowed_extensions),
       requested_attribs_(attribs),
-      parent_texture_id_(parent_texture_id),
       route_id_(route_id),
       last_flush_count_(0),
       renderer_id_(renderer_id),
@@ -82,6 +77,8 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(GpuCommandBufferStub, message)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_Initialize,
                                     OnInitialize);
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_SetParent,
+                                    OnSetParent);
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_GetState, OnGetState);
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_Flush, OnFlush);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_AsyncFlush, OnAsyncFlush);
@@ -132,8 +129,6 @@ void GpuCommandBufferStub::OnInitialize(
 
   // Initialize the CommandBufferService and GpuScheduler.
   if (command_buffer_->Initialize(&shared_memory, size)) {
-    gpu::GpuScheduler* parent_processor =
-        parent_ ? parent_->scheduler_.get() : NULL;
     scheduler_.reset(new gpu::GpuScheduler(command_buffer_.get(),
                                            channel_,
                                            NULL));
@@ -143,8 +138,6 @@ void GpuCommandBufferStub::OnInitialize(
         disallowed_extensions_,
         allowed_extensions_.c_str(),
         requested_attribs_,
-        parent_processor,
-        parent_texture_id_,
         channel_->share_group())) {
       command_buffer_->SetPutOffsetChangeCallback(
           NewCallback(scheduler_.get(),
@@ -186,6 +179,26 @@ void GpuCommandBufferStub::OnInitialize(
   }
 
   GpuCommandBufferMsg_Initialize::WriteReplyParams(reply_message, result);
+  Send(reply_message);
+}
+
+void GpuCommandBufferStub::OnSetParent(int32 parent_route_id,
+                                       uint32 parent_texture_id,
+                                       IPC::Message* reply_message) {
+  bool result = false;
+
+  if (parent_route_id == MSG_ROUTING_NONE) {
+    result = scheduler_->SetParent(NULL, 0);
+  } else {
+    GpuCommandBufferStub* parent_stub = channel_->LookupCommandBuffer(
+        parent_route_id);
+    if (parent_stub) {
+      result = scheduler_->SetParent(parent_stub->scheduler_.get(),
+                                     parent_texture_id);
+    }
+  }
+
+  GpuCommandBufferMsg_SetParent::WriteReplyParams(reply_message, result);
   Send(reply_message);
 }
 

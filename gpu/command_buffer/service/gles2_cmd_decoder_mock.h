@@ -29,16 +29,15 @@ class MockGLES2Decoder : public GLES2Decoder {
   MockGLES2Decoder();
   virtual ~MockGLES2Decoder();
 
-  MOCK_METHOD8(Initialize,
+  MOCK_METHOD6(Initialize,
                bool(const scoped_refptr<gfx::GLSurface>& surface,
                     const scoped_refptr<gfx::GLContext>& context,
                     const gfx::Size& size,
                     const DisallowedExtensions& disallowed_extensions,
                     const char* allowed_extensions,
-                    const std::vector<int32>& attribs,
-                    GLES2Decoder* parent,
-                    uint32 parent_texture_id));
+                    const std::vector<int32>& attribs));
   MOCK_METHOD0(Destroy, void());
+  MOCK_METHOD2(SetParent, bool(GLES2Decoder* parent, uint32 parent_texture_id));
   MOCK_METHOD1(ResizeOffscreenFrameBuffer, void(const gfx::Size& size));
   MOCK_METHOD0(UpdateOffscreenFrameBufferSize, bool());
   MOCK_METHOD0(MakeCurrent, bool());

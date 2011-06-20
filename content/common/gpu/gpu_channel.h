@@ -88,6 +88,8 @@ class GpuChannel : public IPC::Channel::Listener,
 
   gfx::GLShareGroup* share_group() const { return share_group_.get(); }
 
+  GpuCommandBufferStub* LookupCommandBuffer(int32 route_id);
+
 #if defined(OS_MACOSX)
   virtual void AcceleratedSurfaceBuffersSwapped(
       int32 route_id, uint64 swap_buffers_count);
@@ -119,10 +121,8 @@ class GpuChannel : public IPC::Channel::Listener,
   // Message handlers.
   void OnInitialize(base::ProcessHandle renderer_process);
   void OnCreateOffscreenCommandBuffer(
-      int32 parent_route_id,
       const gfx::Size& size,
       const GPUCreateCommandBufferConfig& init_params,
-      uint32 parent_texture_id,
       int32* route_id);
   void OnDestroyCommandBuffer(int32 route_id);
 

@@ -332,6 +332,33 @@ void CommandBufferProxy::OnSwapBuffers() {
     swap_buffers_callback_->Run();
 }
 
+bool CommandBufferProxy::SetParent(CommandBufferProxy* parent_command_buffer,
+                                   uint32 parent_texture_id) {
+  if (last_state_.error != gpu::error::kNoError)
+    return false;
+
+  bool result;
+  if (parent_command_buffer) {
+    if (!Send(new GpuCommandBufferMsg_SetParent(
+        route_id_,
+        parent_command_buffer->route_id_,
+        parent_texture_id,
+        &result))) {
+      return false;
+    }
+  } else {
+    if (!Send(new GpuCommandBufferMsg_SetParent(
+        route_id_,
+        MSG_ROUTING_NONE,
+        0,
+        &result))) {
+      return false;
+    }
+  }
+
+  return result;
+}
+
 void CommandBufferProxy::SetSwapBuffersCallback(Callback0::Type* callback) {
   swap_buffers_callback_.reset(callback);
 }

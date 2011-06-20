@@ -75,14 +75,16 @@ bool PlatformContext3DImpl::Init() {
   CommandBufferProxy* parent_command_buffer =
       parent_context_->GetCommandBufferProxy();
   command_buffer_ = channel_->CreateOffscreenCommandBuffer(
-      parent_command_buffer,
       gfx::Size(1, 1),
       "*",
       attribs,
-      parent_texture_id_,
       GURL::EmptyGURL());
   if (!command_buffer_)
     return false;
+
+  if (!command_buffer_->SetParent(parent_command_buffer, parent_texture_id_))
+    return false;
+
   command_buffer_->SetChannelErrorCallback(callback_factory_.NewCallback(
       &PlatformContext3DImpl::OnContextLost));
 

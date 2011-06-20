@@ -104,6 +104,7 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
   if (web_view && web_view->mainFrame())
     active_url = GURL(web_view->mainFrame()->url());
 
+  RendererGLContext* parent_context = NULL;
   if (render_directly_to_web_view) {
     RenderView* renderview = RenderView::FromWebView(web_view);
     if (!renderview)
@@ -125,7 +126,6 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
   } else {
     bool compositing_enabled = !CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kDisableAcceleratedCompositing);
-    RendererGLContext* parent_context = NULL;
     // If GPU compositing is enabled we need to create a GL context that shares
     // resources with the compositor's context.
     if (compositing_enabled) {
@@ -142,7 +142,6 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
     }
     context_ = RendererGLContext::CreateOffscreenContext(
         host,
-        parent_context,
         gfx::Size(1, 1),
         preferred_extensions,
         attribs,
@@ -150,6 +149,9 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
     web_view_ = NULL;
   }
   if (!context_)
+    return false;
+
+  if (!context_->SetParent(parent_context))
     return false;
 
   gl_ = context_->GetImplementation();

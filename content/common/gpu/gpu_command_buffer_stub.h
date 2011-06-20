@@ -33,12 +33,10 @@ class GpuCommandBufferStub
   GpuCommandBufferStub(
       GpuChannel* channel,
       gfx::PluginWindowHandle handle,
-      GpuCommandBufferStub* parent,
       const gfx::Size& size,
       const gpu::gles2::DisallowedExtensions& disallowed_extensions,
       const std::string& allowed_extensions,
       const std::vector<int32>& attribs,
-      uint32 parent_texture_id,
       int32 route_id,
       int32 renderer_id,
       int32 render_view_id,
@@ -86,6 +84,9 @@ class GpuCommandBufferStub
   void OnInitialize(base::SharedMemoryHandle ring_buffer,
                     int32 size,
                     IPC::Message* reply_message);
+  void OnSetParent(int32 parent_route_id,
+                   uint32 parent_texture_id,
+                   IPC::Message* reply_message);
   void OnGetState(IPC::Message* reply_message);
   void OnFlush(int32 put_offset,
                int32 last_known_get,
@@ -123,12 +124,10 @@ class GpuCommandBufferStub
   GpuChannel* channel_;
 
   gfx::PluginWindowHandle handle_;
-  base::WeakPtr<GpuCommandBufferStub> parent_;
   gfx::Size initial_size_;
   gpu::gles2::DisallowedExtensions disallowed_extensions_;
   std::string allowed_extensions_;
   std::vector<int32> requested_attribs_;
-  uint32 parent_texture_id_;
   int32 route_id_;
   uint32 last_flush_count_;
 

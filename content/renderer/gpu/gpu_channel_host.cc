@@ -139,11 +139,9 @@ CommandBufferProxy* GpuChannelHost::CreateViewCommandBuffer(
 }
 
 CommandBufferProxy* GpuChannelHost::CreateOffscreenCommandBuffer(
-    CommandBufferProxy* parent,
     const gfx::Size& size,
     const std::string& allowed_extensions,
     const std::vector<int32>& attribs,
-    uint32 parent_texture_id,
     const GURL& active_url) {
 #if defined(ENABLE_GPU)
   // An error occurred. Need to get the host again to reinitialize it.
@@ -154,12 +152,9 @@ CommandBufferProxy* GpuChannelHost::CreateOffscreenCommandBuffer(
   init_params.allowed_extensions = allowed_extensions;
   init_params.attribs = attribs;
   init_params.active_url = active_url;
-  int32 parent_route_id = parent ? parent->route_id() : 0;
   int32 route_id;
-  if (!Send(new GpuChannelMsg_CreateOffscreenCommandBuffer(parent_route_id,
-                                                           size,
+  if (!Send(new GpuChannelMsg_CreateOffscreenCommandBuffer(size,
                                                            init_params,
-                                                           parent_texture_id,
                                                            &route_id))) {
     return NULL;
   }

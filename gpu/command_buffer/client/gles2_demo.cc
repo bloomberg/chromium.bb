@@ -64,8 +64,6 @@ bool GLES2Demo::Setup(void* hwnd, int32 size) {
                                  gpu::gles2::DisallowedExtensions(),
                                  NULL,
                                  std::vector<int32>(),
-                                 NULL,
-                                 0,
                                  NULL)) {
     return NULL;
   }

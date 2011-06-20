@@ -76,11 +76,9 @@ class GpuChannelHost : public IPC::Channel::Listener,
 
   // Create and connect to a command buffer in the GPU process.
   CommandBufferProxy* CreateOffscreenCommandBuffer(
-      CommandBufferProxy* parent,
       const gfx::Size& size,
       const std::string& allowed_extensions,
       const std::vector<int32>& attribs,
-      uint32 parent_texture_id,
       const GURL& active_url);
 
   // Destroy a command buffer created by this channel.
