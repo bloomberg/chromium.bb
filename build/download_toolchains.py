@@ -1,7 +1,7 @@
 #!/usr/bin/python
-# Copyright 2010 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 """Download all Native Client toolchains for this platform.
 
@@ -12,35 +12,16 @@ import optparse
 import os.path
 
 import download_utils
+import toolchainbinaries
 import sync_tgz
 import sys
 
 
-PLATFORM_MAPPING = {
-    'windows': {
-        'x86-32': ['win_x86', 'win_x86_newlib'],
-        'x86-64': ['win_x86', 'win_x86_newlib'],
-    },
-    'linux': {
-        'x86-32': ['linux_x86', 'linux_x86_newlib',
-                   'pnacl_linux_i686_newlib', 'linux_arm-trusted'],
-        'x86-64': ['linux_x86', 'linux_x86_newlib',
-                   'pnacl_linux_x86_64_newlib', 'linux_arm-trusted'],
-        'arm'   : ['linux_x86_newlib', 'pnacl_linux_x86_64_newlib',
-                   'linux_arm-trusted'],
-    },
-    'mac': {
-        'x86-32': ['mac_x86', 'mac_x86_newlib'],
-        'x86-64': ['mac_x86', 'mac_x86_newlib'],
-    },
-}
-
-def main():
+def Main():
   parser = optparse.OptionParser()
   parser.add_option(
       '-b', '--base-url', dest='base_url',
-      default=('http://commondatastorage.googleapis.com/'
-               'nativeclient-archive2'),
+      default=toolchainbinaries.BASE_DOWNLOAD_URL,
       help='base url to download from')
   parser.add_option(
       '--x86-version', dest='x86_version',
@@ -56,38 +37,24 @@ def main():
 
   platform_fixed = download_utils.PlatformName()
   arch_fixed = download_utils.ArchName()
-  for flavor in PLATFORM_MAPPING[platform_fixed][arch_fixed]:
-    if 'arm' in flavor or 'pnacl' in flavor:
+  for flavor in toolchainbinaries.PLATFORM_MAPPING[platform_fixed][arch_fixed]:
+    if toolchainbinaries.IsArmFlavor(flavor):
       version = options.arm_version
     else:
       version = options.x86_version
-    if 'pnacl' in flavor:
-      url = '%s/toolchain/%s/naclsdk_%s.tgz' % (
-        options.base_url, version, flavor)
-    elif flavor.endswith('_newlib'):
-      url = '%s/toolchain/%s/naclsdk_%s.tgz' % (
-        options.base_url, version, flavor[:-len('_newlib')])
-    elif 'x86' in flavor:
-      if sys.platform == 'win32':
-        url = '%s/x86_toolchain/r%s/toolchain_%s.tar.xz' % (
-          options.base_url, version, flavor)
-      else:
-        url = '%s/x86_toolchain/r%s/toolchain_%s.tar.bz2' % (
-          options.base_url, version, flavor)
-    else:
-      url = '%s/toolchain/%s/naclsdk_%s.tgz' % (
-        options.base_url, version, flavor)
+    url = toolchainbinaries.EncodeToolchainUrl(options.base_url, version,
+                                               flavor)
     parent_dir = os.path.dirname(os.path.dirname(__file__))
     dst = os.path.join(parent_dir, 'toolchain', flavor)
     if version == 'latest':
-      print flavor + ": downloading latest version..."
+      print flavor + ': downloading latest version...'
     else:
       msg = download_utils.SourceIsCurrent(dst, url)
       if msg:
-        print flavor + ": " + msg + ".."
+        print flavor + ': ' + msg + '..'
         continue
       else:
-        print flavor + ": downloading version " + version + "..."
+        print flavor + ': downloading version ' + version + '...'
 
     # TODO(bradnelson_): get rid of this when toolchain tarballs flattened.
     if 'arm' in flavor or 'pnacl' in flavor:
@@ -117,4 +84,4 @@ def main():
 
 
 if __name__ == '__main__':
-  main()
+  Main()
