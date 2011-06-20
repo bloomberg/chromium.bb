@@ -290,7 +290,7 @@ class BuildBoardTest(AbstractStageTest):
     return stages.BuildBoardStage(self.bot_id, self.options, self.build_config)
 
   def testFullBuild(self):
-    """Tests whether correctly run make chroot and setup board for a full."""
+    """Tests whether we correctly run make chroot and setup board for a full."""
     self.bot_id = 'x86-generic-full'
     self.build_config = config.config[self.bot_id]
     self.mox.StubOutWithMock(commands, 'MakeChroot')
@@ -302,14 +302,43 @@ class BuildBoardTest(AbstractStageTest):
                         fast=True,
                         replace=True,
                         usepkg=False)
-    os.path.isdir(os.path.join(self.build_root, 'chroot/build',
+    os.path.isdir(os.path.join(self.build_root, 'chroot', 'build',
                                self.build_config['board'])).AndReturn(False)
     commands.SetupBoard(self.build_root,
                         board=self.build_config['board'],
                         fast=True,
                         usepkg=False,
                         latest_toolchain=False,
-                        extra_env={})
+                        extra_env={},
+                        profile=None)
+
+    self.mox.ReplayAll()
+    self.RunStage()
+    self.mox.VerifyAll()
+
+  def testFullBuildWithProfile(self):
+    """Tests whether full builds add profile flag when requested."""
+    self.bot_id = 'arm-tegra2_seaboard-tangent-private-full'
+    self.build_config = config.config[self.bot_id]
+    self.mox.StubOutWithMock(commands, 'MakeChroot')
+    self.mox.StubOutWithMock(commands, 'SetupBoard')
+    self.mox.StubOutWithMock(commands, 'RunChrootUpgradeHooks')
+
+    os.path.isdir(self.build_root + '/.repo').AndReturn(True)
+    os.path.isdir(os.path.join(self.build_root, 'chroot')).AndReturn(True)
+    commands.MakeChroot(buildroot=self.build_root,
+                        fast=True,
+                        replace=True,
+                        usepkg=False)
+    os.path.isdir(os.path.join(self.build_root, 'chroot', 'build',
+                               self.build_config['board'])).AndReturn(False)
+    commands.SetupBoard(self.build_root,
+                        board=self.build_config['board'],
+                        fast=True,
+                        usepkg=False,
+                        latest_toolchain=False,
+                        extra_env={},
+                        profile=self.build_config['profile'])
 
     self.mox.ReplayAll()
     self.RunStage()
@@ -323,7 +352,7 @@ class BuildBoardTest(AbstractStageTest):
 
     os.path.isdir(self.build_root + '/.repo').AndReturn(True)
     os.path.isdir(os.path.join(self.build_root, 'chroot')).AndReturn(True)
-    os.path.isdir(os.path.join(self.build_root, 'chroot/build',
+    os.path.isdir(os.path.join(self.build_root, 'chroot', 'build',
                                self.build_config['board'])).AndReturn(True)
 
     commands.RunChrootUpgradeHooks(self.build_root);
@@ -344,7 +373,7 @@ class BuildBoardTest(AbstractStageTest):
                         fast=self.build_config['fast'],
                         usepkg=self.build_config['usepkg_chroot'])
 
-    os.path.isdir(os.path.join(self.build_root, 'chroot/build',
+    os.path.isdir(os.path.join(self.build_root, 'chroot', 'build',
                                self.build_config['board'])).AndReturn(False)
 
     commands.SetupBoard(self.build_root,
@@ -352,7 +381,8 @@ class BuildBoardTest(AbstractStageTest):
                         fast=self.build_config['fast'],
                         usepkg=self.build_config['usepkg_setup_board'],
                         latest_toolchain=self.build_config['latest_toolchain'],
-                        extra_env={})
+                        extra_env={},
+                        profile=None)
 
     self.mox.ReplayAll()
     self.RunStage()

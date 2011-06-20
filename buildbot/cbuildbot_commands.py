@@ -182,10 +182,13 @@ def RunChrootUpgradeHooks(buildroot):
 
 
 def SetupBoard(buildroot, board, fast, usepkg, latest_toolchain,
-               extra_env=None):
+               extra_env=None, profile=None):
   """Wrapper around setup_board."""
   cwd = os.path.join(buildroot, 'src', 'scripts')
   cmd = ['./setup_board', '--default', '--board=%s' % board]
+
+  if profile:
+    cmd.append('--profile="%s"' % profile)
 
   if not usepkg:
     cmd.append('--nousepkg')

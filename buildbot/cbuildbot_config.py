@@ -9,6 +9,7 @@ Each dictionary entry is in turn a dictionary of config_param->value.
 config_param's:
 board -- The board of the image to build.  If build_type is chroot, may
          be an array of boards to setup.
+profile -- The profile of the variant to set up and build.
 
 master -- This bot pushes changes to the overlays.
 important -- Master bot uses important bots to determine overall status.
@@ -98,6 +99,7 @@ _MANIFEST_VERSIONS_INT_URL = constants.GERRIT_INT_SSH_URL + _VERSIONS_INT_SUFFIX
 
 default = {
   # 'board' No default value
+  'profile' : None,
 
   'master' : False,
   'important' : False,
@@ -421,6 +423,11 @@ add_config('arm-tegra2_seaboard-toolchain', [arm, internal, full, official, {
   'prebuilts' : False,
   'latest_toolchain' : True,
   'useflags' : ['chrome_internal'],
+}])
+
+add_config('arm-tegra2_seaboard-tangent-private-full', [internal, arm, full, {
+  'board' : 'tegra2_seaboard',
+  'profile' : 'tangent',
 }])
 
 add_config('x86-mario-release', [internal, full, official, release, {
