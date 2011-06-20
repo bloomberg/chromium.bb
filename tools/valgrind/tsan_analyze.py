@@ -170,7 +170,7 @@ class TsanAnalyzer(object):
         ret.append(tmp)
         break
 
-      match = re.search(" used_suppression:\s+([0-9]+)\s(.*)", self.line_)
+      match = re.search("used_suppression:\s+([0-9]+)\s(.*)", self.line_)
       if match:
         count, supp_name = match.groups()
         count = int(count)
