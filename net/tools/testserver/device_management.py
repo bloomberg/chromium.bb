@@ -169,8 +169,14 @@ class RequestHandler(object):
       A tuple of HTTP status code and response data to send to the client.
     """
     # Check the auth token and device ID.
-    if not self.CheckGoogleLogin():
+    auth = self.CheckGoogleLogin()
+    if not auth:
       return (403, 'No authorization')
+
+    policy = self._server.GetPolicies()
+    if ('*' not in policy['managed_users'] and
+        auth not in policy['managed_users']):
+      return (403, None, 'Unmanaged')
 
     device_id = self.GetUniqueParam('deviceid')
     if not device_id:
