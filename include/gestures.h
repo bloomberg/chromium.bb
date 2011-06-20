@@ -14,14 +14,15 @@ extern "C" {
 
 // C API:
 
-typedef int64_t ustime_t;
+typedef int64_t ustime_t;  // microsecond resolution (10^-6 seconds)
 
 struct HardwareProperties {
   int left, top, right, bottom;
-  int physical_width;  // mm
-  int physical_height;  // mm
+  int touch_width;  // mm
+  int touch_height;  // mm
   int screen_dpi;
-  int supports_tripletap_hack;
+  short supports_tripletap_hack;
+  short max_finger_cnt;
 };
 
 struct FingerState {
