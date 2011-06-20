@@ -75,7 +75,7 @@
 
 
 #define FCMATCH_FORMAT	"%{file:-<unknown filename>|basename}: \"%{family[0]:-<unknown family>}\" \"%{style[0]:-<unknown style>}\""
-#define FCLIST_FORMAT	"%{?file{%{file}: }}%{=unparse}"
+#define FCLIST_FORMAT	"%{?file{%{file}: }}%{-file{%{=unparse}}}"
 #define PKGKIT_FORMAT	"%{[]family{font(%{family|downcase|delete( )})\n}}%{[]lang{font(:lang=%{lang|downcase|translate(_,-)})\n}}"
 
 
