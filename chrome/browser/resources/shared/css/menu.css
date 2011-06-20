@@ -1,16 +1,16 @@
 menu {
-  display: none;
-  position: fixed;
-  border: 1px solid rgba(0, 0, 0, .50);
   -webkit-box-shadow: 0px 2px 4px rgba(0, 0, 0, .50);
-  color: black;
   background: -webkit-linear-gradient(#fff, #eee);
-  left: 0;
-  white-space: nowrap;
-  padding: 8px 0;
-  margin: 0;
-  cursor: default;
   border-radius: 3px;
+  border: 1px solid rgba(0, 0, 0, .50);
+  color: black;
+  cursor: default;
+  display: none;
+  left: 0;
+  margin: 0;
+  padding: 8px 0;
+  position: fixed;
+  white-space: nowrap;
   z-index: 3;
 }
 
@@ -25,11 +25,11 @@ menu > * {
 menu > :not(hr) {
   -webkit-appearance: none;
   background: transparent;
-  font: inherit;
   border: 0;
+  font: inherit;
   line-height: 18px;
-  padding: 0 19px;
   overflow: hidden;
+  padding: 0 19px;
   text-overflow: ellipsis;
 }
 
@@ -61,11 +61,11 @@ menu > :not(hr)[selected]:active {
 
 menu > [checked]:before {
   content: url("../images/checkbox_black.png");
-  width: 9px;
-  height: 9px;
   display: inline-block;
-  vertical-align: 50%;
+  height: 9px;
   margin: 0 5px;
+  vertical-align: 50%;
+  width: 9px;
 }
 
 menu > [checked] {

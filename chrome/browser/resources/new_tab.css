@@ -182,6 +182,7 @@ html[anim=false] *,
   background-color: hsla(213, 63%, 93%, 0);
   display: block;
   line-height: 20px;
+  max-width: 600px;
   box-sizing: border-box;
   white-space: nowrap;
   overflow: hidden;
