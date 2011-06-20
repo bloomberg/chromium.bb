@@ -14,12 +14,12 @@ TEST_MAIN=\
 	$(OBJDIR)/test_main.o
 
 TEST_EXE=test
-ARNAME=$(OBJDIR)/libgestures.a
+SONAME=$(OBJDIR)/libgestures.so.0
 
 ALL_OBJECTS=\
 	$(TEST_OBJECTS) \
 	$(TEST_MAIN) \
-	$(ARNAME)
+	$(OBJECTS)
 
 ALL_OBJECT_FILES=\
 	$(OBJECTS) \
@@ -34,6 +34,7 @@ CXXFLAGS+=\
 	-g \
 	-fno-exceptions \
 	-fno-strict-aliasing \
+	-fPIC \
 	-Wall \
 	-Wclobbered \
 	-Wempty-body \
@@ -49,11 +50,12 @@ CXXFLAGS+=\
 
 LINK_FLAGS=\
 	-lbase \
-	-lgcov \
-	-lgtest \
 	-lpthread \
-	-lrt \
-	-L$(OBJDIR) -lgestures
+	-lrt
+
+TEST_LINK_FLAGS=\
+	-lgcov \
+	-lgtest
 
 # Local compilation needs these flags, esp for code coverage testing
 ifeq (g++,$(CXX))
@@ -64,21 +66,25 @@ CXXFLAGS+=\
 	-fprofile-arcs
 endif
 
-all: $(ARNAME)
+all: $(SONAME)
 
-$(ARNAME): $(OBJECTS)
-	$(AR) cr $@ $(OBJECTS)
+$(SONAME): $(OBJECTS)
+	$(CXX) -shared -o $@ $(OBJECTS) -Wl,-h$(SONAME:$(OBJDIR)/%=%) \
+		$(LINK_FLAGS)
 
 $(TEST_EXE): $(ALL_OBJECTS)
-	$(CXX) -o $@ $(CXXFLAGS) $(ALL_OBJECTS) $(LINK_FLAGS)
+	$(CXX) -o $@ $(CXXFLAGS) $(ALL_OBJECTS) $(LINK_FLAGS) $(TEST_LINK_FLAGS)
 
 $(OBJDIR)/%.o : src/%.cc
 	mkdir -p $(OBJDIR) $(DEPDIR) || true
 	$(CXX) $(CXXFLAGS) -MD -c -o $@ $<
 	@mv $(@:$.o=$.d) $(DEPDIR)
 
-install: $(ARNAME)
-	install -D -m 0644 $(ARNAME) $(DESTDIR)/usr/lib/$(ARNAME:$(OBJDIR)/%=%)
+install: $(SONAME)
+	install -D -m 0644 $(SONAME) \
+		$(DESTDIR)/usr/lib/$(SONAME:$(OBJDIR)/%=%)
+	ln -s $(SONAME:$(OBJDIR)/%=%) \
+		$(DESTDIR)/usr/lib/$(SONAME:$(OBJDIR)/%.0=%)
 	install -D -m 0644 \
 		include/gestures.h $(DESTDIR)/usr/include/gestures/gestures.h
 
