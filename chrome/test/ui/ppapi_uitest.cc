@@ -151,11 +151,9 @@ TEST_F(PPAPITest, ImageData) {
 TEST_F(PPAPITest, Buffer) {
   RunTest("Buffer");
 }
-#if !defined(OS_MACOSX)
 TEST_F(OutOfProcessPPAPITest, Buffer) {
   RunTest("Buffer");
 }
-#endif
 
 TEST_F(PPAPITest, URLLoader) {
   RunTestViaHTTP("URLLoader");
