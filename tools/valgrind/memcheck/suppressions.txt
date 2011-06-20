@@ -622,7 +622,7 @@
    bug_76386a
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZNSs4_Rep9_S_createEjjRKSaIcE
+   fun:_ZNSs4_Rep9_S_createE*RKSaIcE
    ...
    fun:_ZNSsC1EPKcRKSaIcE
 }
@@ -630,8 +630,8 @@
    bug_76386b
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZNSs4_Rep9_S_createEjjRKSaIcE
-   fun:_ZNSs4_Rep8_M_cloneERKSaIcEj
+   fun:_ZNSs4_Rep9_S_createE*RKSaIcE
+   fun:_ZNSs4_Rep8_M_cloneERKSaIcE*
 }
 
 #-----------------------------------------------------------------------
@@ -4668,9 +4668,9 @@
 {
    bug_86755
    Memcheck:Leak
-   fun:_Znaj
+   fun:_Zna*
    fun:_ZN12_GLOBAL__N_112SignHmacSha1ERKSsS1_PSs
-   fun:_ZN18OAuthRequestSigner4SignERK4GURLRKSt3mapISsSsSt4lessISsESaISt4pairIKSsSsEEENS_15SignatureMethodENS_10HttpMethodERS7_SF_SF_SF_PSs
+   fun:_ZN18OAuthRequestSigner4Sign*
 }
 
 #-----------------------------------------------------------------------

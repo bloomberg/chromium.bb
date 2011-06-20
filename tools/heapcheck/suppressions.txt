@@ -696,7 +696,7 @@
    bug_46715
    Heapcheck:Leak
    fun:WebCore::makeExternalString
-   fun:WebCore::v8ExternalStringSlow
+   fun:WebCore::*v8ExternalStringSlow
 }
 {
    bug_46886

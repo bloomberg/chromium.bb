@@ -260,6 +260,8 @@ class ValgrindError:
     supp = self._suppression;
     supp = supp.replace("fun:_Znwj", "fun:_Znw*")
     supp = supp.replace("fun:_Znwm", "fun:_Znw*")
+    supp = supp.replace("fun:_Znaj", "fun:_Zna*")
+    supp = supp.replace("fun:_Znam", "fun:_Zna*")
     # Split into lines so we can enforce length limits
     supplines = supp.split("\n")
 
