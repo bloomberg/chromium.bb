@@ -133,6 +133,7 @@ void InputMethodMenuButton::UpdateUI(const std::string& input_method_id,
     SetTooltipText(tooltip);
   }
   SetText(name);
+  SetAccessibleName(WideToUTF16(tooltip));
 
   if (WindowIsActive()) {
     // We don't call these functions if the |current_window| is not active since
