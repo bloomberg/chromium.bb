@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/cocoa/keystone_glue.h"
+#import "chrome/browser/mac/keystone_glue.h"
 
 #include <sys/param.h>
 #include <sys/mount.h>
@@ -16,8 +16,8 @@
 #include "base/sys_string_conversions.h"
 #include "base/task.h"
 #include "base/threading/worker_pool.h"
-#include "chrome/browser/cocoa/authorization_util.h"
-#import "chrome/browser/cocoa/keystone_registration.h"
+#include "chrome/browser/mac/authorization_util.h"
+#import "chrome/browser/mac/keystone_registration.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/common/chrome_constants.h"
 #include "grit/chromium_strings.h"

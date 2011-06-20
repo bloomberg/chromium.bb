@@ -266,7 +266,7 @@
                 'app/theme/popup_window_animation.pdf',
                 'app/theme/star.pdf',
                 'app/theme/star_lit.pdf',
-                'browser/ui/cocoa/install.sh',
+                'browser/mac/install.sh',
               ],
               'mac_bundle_resources!': [
                 'app/framework-Info.plist',
@@ -538,8 +538,8 @@
                 }],  # mac_breakpad
                 ['mac_keystone==1', {
                   'mac_bundle_resources': [
-                    'browser/ui/cocoa/keystone_promote_preflight.sh',
-                    'browser/ui/cocoa/keystone_promote_postflight.sh',
+                    'browser/mac/keystone_promote_preflight.sh',
+                    'browser/mac/keystone_promote_postflight.sh',
                   ],
                   'postbuilds': [
                     {

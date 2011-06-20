@@ -1,6 +1,6 @@
 #!/bin/bash -p
 
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -25,7 +25,7 @@ set -e
 export PATH="/usr/bin:/usr/sbin:/bin:/sbin"
 
 # Output the pid to stdout before doing anything else.  See
-# chrome/browser/ui/cocoa/authorization_util.h.
+# chrome/browser/mac/authorization_util.h.
 echo "${$}"
 
 if [ ${#} -ne 1 ] ; then

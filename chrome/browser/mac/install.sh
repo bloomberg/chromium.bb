@@ -1,6 +1,6 @@
 #!/bin/bash -p
 
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -23,7 +23,7 @@ set -e
 export PATH="/usr/bin:/usr/sbin:/bin:/sbin"
 
 # If running as root, output the pid to stdout before doing anything else.
-# See chrome/browser/cocoa/authorization_util.h.
+# See chrome/browser/mac/authorization_util.h.
 if [ ${EUID} -eq 0 ] ; then
   echo "${$}"
 fi

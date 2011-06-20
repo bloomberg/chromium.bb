@@ -5,7 +5,7 @@
 #import <Cocoa/Cocoa.h>
 
 #import "base/memory/scoped_nsobject.h"
-#import "chrome/browser/cocoa/keystone_glue.h"
+#import "chrome/browser/mac/keystone_glue.h"
 #import "chrome/browser/ui/cocoa/about_window_controller.h"
 #include "chrome/browser/ui/cocoa/browser_test_helper.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"

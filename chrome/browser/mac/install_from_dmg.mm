@@ -1,8 +1,8 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/cocoa/install_from_dmg.h"
+#include "chrome/browser/mac/install_from_dmg.h"
 
 #include <ApplicationServices/ApplicationServices.h>
 #import <AppKit/AppKit.h>
@@ -18,9 +18,9 @@
 #include "base/logging.h"
 #import "base/mac/mac_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
-#include "chrome/browser/cocoa/authorization_util.h"
-#include "chrome/browser/cocoa/scoped_authorizationref.h"
-#import "chrome/browser/cocoa/keystone_glue.h"
+#include "chrome/browser/mac/authorization_util.h"
+#include "chrome/browser/mac/scoped_authorizationref.h"
+#import "chrome/browser/mac/keystone_glue.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"

@@ -5,8 +5,8 @@
 #import <Foundation/Foundation.h>
 #import <objc/objc-class.h>
 
-#import "chrome/browser/cocoa/keystone_glue.h"
-#import "chrome/browser/cocoa/keystone_registration.h"
+#import "chrome/browser/mac/keystone_glue.h"
+#import "chrome/browser/mac/keystone_registration.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
