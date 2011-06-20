@@ -11,20 +11,20 @@
 // this test is executed on its own process.
 
 #include "base/string16.h"
-#include "base/test/scoped_locale.h"
+#include "base/test/test_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/time_format.h"
 #include "chrome/test/in_process_browser_test.h"
 
+#if defined(OS_POSIX)
 using base::TimeDelta;
 
-class TimeFormatBrowserTest : public InProcessBrowserTest {
+class TimeFormatBrowserTest: public InProcessBrowserTest {
  public:
-  TimeFormatBrowserTest() : scoped_locale_("fr_FR.utf-8") {
-  }
+  TimeFormatBrowserTest(): scoped_locale_("fr_FR.utf-8") {}
 
  private:
-  base::ScopedLocale scoped_locale_;
+  base::ScopedSetLocale scoped_locale_;
 };
 
 IN_PROC_BROWSER_TEST_F(TimeFormatBrowserTest, DecimalPointNotDot) {
@@ -35,5 +35,8 @@ IN_PROC_BROWSER_TEST_F(TimeFormatBrowserTest, DecimalPointNotDot) {
   // http://crbug.com/60476
 
   string16 one_min = TimeFormat::TimeRemainingShort(TimeDelta::FromMinutes(1));
-  EXPECT_EQ(ASCIIToUTF16("1 min"), one_min);
+  EXPECT_EQ(ASCIIToUTF16("1 min"), one_min) << "fr_FR.utf-8 locale generates "
+                                            << one_min;
 }
+
+#endif // defined(OS_POSIX)
