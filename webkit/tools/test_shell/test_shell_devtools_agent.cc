@@ -141,14 +141,6 @@ void TestShellDevToolsAgent::frontendLoaded() {
       0);
 }
 
-bool TestShellDevToolsAgent::setTimelineProfilingEnabled(bool enabled) {
-  WebDevToolsAgent* agent = GetWebAgent();
-  if (!agent)
-    return false;
-  agent->setTimelineProfilingEnabled(enabled);
-  return true;
-}
-
 bool TestShellDevToolsAgent::evaluateInWebInspector(
       long call_id,
       const std::string& script) {

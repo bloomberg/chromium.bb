@@ -44,7 +44,6 @@ class TestShellDevToolsAgent : public WebKit::WebDevToolsAgentClient {
   void frontendLoaded();
 
   bool evaluateInWebInspector(long call_id, const std::string& script);
-  bool setTimelineProfilingEnabled(bool enable);
 
  private:
   void Call(const TestShellDevToolsCallArgs& args);
