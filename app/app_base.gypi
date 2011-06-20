@@ -43,8 +43,6 @@
         'win/iat_patch_function.h',
         'win/scoped_co_mem.h',
         'win/scoped_com_initializer.h',
-        'win/scoped_prop.cc',
-        'win/scoped_prop.h',
         'win/shell.cc',
         'win/shell.h',
       ],
