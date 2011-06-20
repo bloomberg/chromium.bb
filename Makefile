@@ -5,10 +5,12 @@
 OBJDIR = obj
 
 OBJECTS=\
-	$(OBJDIR)/gestures.o
+	$(OBJDIR)/gestures.o \
+	$(OBJDIR)/interpreter.o
 
 TEST_OBJECTS=\
-	$(OBJDIR)/gestures_unittest.o
+	$(OBJDIR)/gestures_unittest.o \
+	$(OBJDIR)/interpreter_unittest.o
 
 TEST_MAIN=\
 	$(OBJDIR)/test_main.o
