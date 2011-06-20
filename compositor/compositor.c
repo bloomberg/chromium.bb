@@ -180,8 +180,6 @@ wlsc_surface_create(struct wlsc_compositor *compositor,
 	glBindTexture(GL_TEXTURE_2D, surface->texture);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	surface->compositor = compositor;
 	surface->visual = NULL;
@@ -518,6 +516,7 @@ wlsc_surface_draw(struct wlsc_surface *es,
 	struct wlsc_compositor *ec = es->compositor;
 	GLfloat *v;
 	pixman_region32_t repaint;
+	GLint filter;
 	int n;
 
 	pixman_region32_init_rect(&repaint,
@@ -536,12 +535,18 @@ wlsc_surface_draw(struct wlsc_surface *es,
 		glDisable(GL_BLEND);
 	}
 
-	if (es->transform == NULL)
+	if (es->transform == NULL) {
+		filter = GL_NEAREST;
 		n = texture_region(es, &repaint);
-	else
+	} else {
+		filter = GL_LINEAR;
 		n = texture_transformed_surface(es);
+	}
 
 	glBindTexture(GL_TEXTURE_2D, es->texture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
+
 	v = ec->vertices.data;
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof *v, &v[0]);
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof *v, &v[2]);
