@@ -776,8 +776,6 @@ Value* PrefService::GetMutableUserPref(const char* path,
                                        Value::ValueType type) {
   CHECK(type == Value::TYPE_DICTIONARY || type == Value::TYPE_LIST);
   DCHECK(CalledOnValidThread());
-  DLOG_IF(WARNING, IsManagedPreference(path)) <<
-      "Attempt to change managed preference " << path;
 
   const Preference* pref = FindPreference(path);
   if (!pref) {
@@ -814,8 +812,6 @@ void PrefService::ReportUserPrefChanged(const std::string& key) {
 void PrefService::SetUserPrefValue(const char* path, Value* new_value) {
   scoped_ptr<Value> owned_value(new_value);
   DCHECK(CalledOnValidThread());
-  DLOG_IF(WARNING, IsManagedPreference(path)) <<
-      "Attempt to change managed preference " << path;
 
   const Preference* pref = FindPreference(path);
   if (!pref) {

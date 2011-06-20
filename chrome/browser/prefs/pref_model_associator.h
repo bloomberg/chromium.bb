@@ -47,10 +47,6 @@ class PrefModelAssociator
   // hence should be monitored for changes.
   std::set<std::string> registered_preferences() const;
 
-  // Returns the list of preferences actually being synced (which is a subset
-  // of those registered as syncable).
-  std::set<std::string> synced_preferences() const;
-
   // Register a preference with the specified name for syncing. We do not care
   // about the type at registration time, but when changes arrive from the
   // syncer, we check if they can be applied and if not drop them.
@@ -128,22 +124,14 @@ class PrefModelAssociator
   // All preferences that have registered as being syncable with this profile.
   PreferenceSet registered_preferences_;
 
-  // The preferences we are currently actually syncing (i.e. those the server
-  // is aware of). This is a subset of |registered_preferences_|, but excludes
-  // those with default values or not modifiable by the user (for example due
-  // to being controlled by policy)
+  // The preferences that are currently synced (excludes those preferences
+  // that have never had sync data and currently have default values or are
+  // policy controlled).
+  // Note: this set never decreases, only grows to eventually match
+  // registered_preferences_ as more preferences are synced. It determines
+  // whether a preference change should update an existing sync node or create
+  // a new sync node.
   PreferenceSet synced_preferences_;
-
-  // We keep track of the most recent sync data we've received those
-  // preferences registered as syncable but not in our synced_preferences_ list.
-  // These are used if at a later time the preference in question should be
-  // synced (for example the pref policy changes), and we need to get the
-  // most recent sync data.
-  // TODO(zea): See if we can get rid of the difference between
-  // synced_preferences_ and registered_preferences_ by always updating the
-  // local user pref store with pref data and letting the PrefStoreKeeper
-  // handle ensuring the appropriate policy value is used.
-  SyncDataMap untracked_pref_sync_data_;
 
   // The PrefService we are syncing to.
   PrefService* pref_service_;

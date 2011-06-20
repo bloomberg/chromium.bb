@@ -47,13 +47,6 @@ void PrefModelAssociator::InitPrefAndAssociate(
   const PrefService::Preference* pref =
       pref_service_->FindPreference(pref_name.c_str());
   VLOG(1) << "Associating preference " << pref_name;
-  if (!pref->IsUserModifiable()) {
-    // This preference is controlled by policy. We don't need sync it, but if
-    // there is sync data we want to track it for possible future use.
-    if (sync_pref.IsValid())
-      untracked_pref_sync_data_[pref_name] = sync_pref;
-    return;
-  }
 
   base::JSONReader reader;
   if (sync_pref.IsValid()) {
@@ -75,7 +68,8 @@ void PrefModelAssociator::InitPrefAndAssociate(
     scoped_ptr<Value> new_value(MergePreference(*pref, *value));
 
     // Update the local preference based on what we got from the
-    // sync server.
+    // sync server. Note: this only updates the user value store, which is
+    // ignored if the preference is policy controlled.
     if (new_value->IsType(Value::TYPE_NULL)) {
       pref_service_->ClearPref(pref_name.c_str());
     } else if (!new_value->IsType(pref->GetType())) {
@@ -107,8 +101,10 @@ void PrefModelAssociator::InitPrefAndAssociate(
     }
     sync_changes->push_back(SyncChange(SyncChange::ACTION_ADD, sync_data));
   } else {
-    // This pref has a default value, we can ignore it. Once it gets changed,
-    // we'll send the new custom value to the syncer.
+    // This pref does not have a sync value but also does not have a user
+    // controlled value (either it's a default value or it's policy controlled,
+    // either way it's not interesting). We can ignore it. Once it gets changed,
+    // we'll send the new user controlled value to the syncer.
     return;
   }
 
@@ -169,7 +165,6 @@ void PrefModelAssociator::StopSyncing(syncable::ModelType type) {
   DCHECK_EQ(type, PREFERENCES);
   models_associated_ = false;
   sync_processor_ = NULL;
-  untracked_pref_sync_data_.clear();
 }
 
 Value* PrefModelAssociator::MergePreference(
@@ -297,15 +292,13 @@ SyncDataList PrefModelAssociator::GetAllSyncData(syncable::ModelType type)
     std::string name = *iter;
     const PrefService::Preference* pref =
       pref_service_->FindPreference(name.c_str());
+    if (!pref->IsUserControlled() || pref->IsDefaultValue())
+      continue;  // This is not data we care about.
+    // TODO(zea): plumb a way to read the user controlled value.
     SyncData sync_data;
     if (!CreatePrefSyncData(name, *pref->GetValue(), &sync_data))
       continue;
     current_data.push_back(sync_data);
-  }
-  for (SyncDataMap::const_iterator iter = untracked_pref_sync_data_.begin();
-       iter != untracked_pref_sync_data_.end();
-       ++iter) {
-    current_data.push_back(iter->second);
   }
   return current_data;
 }
@@ -350,16 +343,13 @@ void PrefModelAssociator::ProcessSyncChanges(
     const PrefService::Preference* pref =
         pref_service_->FindPreference(pref_name);
     DCHECK(pref);
-    if (!pref->IsUserModifiable()) {
-      // This preference is controlled by policy, ignore for now, but keep
-      // the data around for possible later use.
-      untracked_pref_sync_data_[name] = iter->sync_data();
-      continue;
-    }
 
+    // This will only modify the user controlled value store, which takes
+    // priority over the default value but is ignored if the preference is
+    // policy controlled.
     pref_service_->Set(pref_name, *value);
 
-    // If this is a newly added node, associate.
+    // Keep track of any newly synced preferences.
     if (iter->change_type() == SyncChange::ACTION_ADD) {
       synced_preferences_.insert(name);
     }
@@ -387,10 +377,6 @@ std::set<std::string> PrefModelAssociator::registered_preferences() const {
   return registered_preferences_;
 }
 
-std::set<std::string> PrefModelAssociator::synced_preferences() const {
-  return synced_preferences_;
-}
-
 void PrefModelAssociator::RegisterPref(const char* name) {
   DCHECK(!models_associated_ && registered_preferences_.count(name) == 0);
   registered_preferences_.insert(name);
@@ -416,39 +402,23 @@ void PrefModelAssociator::ProcessPrefChange(const std::string& name) {
   SyncChangeList changes;
 
   if (!preference->IsUserModifiable()) {
-    // If the preference is not currently user modifiable, back up the
-    // previously synced value and remove it from our list of synced prefs.
-    if (synced_preferences_.count(name) > 0) {
-      synced_preferences_.erase(name);
-      SyncData sync_data;
-      if (!CreatePrefSyncData(name, *preference->GetValue(), &sync_data)) {
-        LOG(ERROR) << "Failed to update preference.";
-        return;
-      }
-      untracked_pref_sync_data_[name] = sync_data;
-    }
+    // If the preference is no longer user modifiable, it must now be controlled
+    // by policy, whose values we do not sync. Just return. If the preference
+    // stops being controlled by policy, it will revert back to the user value
+    // (which we continue to update with sync changes).
     return;
   }
 
   AutoReset<bool> processing_changes(&processing_syncer_changes_, true);
 
   if (synced_preferences_.count(name) == 0) {
-    // This is a preference that changed locally but we were not syncing. This
-    // happens when a preference was previously not user modifiable but now is,
-    // or if it had a default value but the user set a custom one. We now care
-    // about the preference and must inform the syncer, as well as update our
-    // own internal tracking.
-    if (untracked_pref_sync_data_.count(name) > 0) {
-      // We have sync data for this preference, merge it (this only happens
-      // when we went from policy-controlled to user controlled. Default values
-      // are always overwritten by syncer values).
-      InitPrefAndAssociate(untracked_pref_sync_data_[name], name, &changes);
-      untracked_pref_sync_data_.erase(name);
-    } else {
-      InitPrefAndAssociate(SyncData(), name, &changes);
-    }
+    DCHECK(preference->IsUserControlled());
+    // This preference was previously not user controlled and there was no sync
+    // data, but is now user controlled. We must associate it and create a sync
+    // node for it.
+    InitPrefAndAssociate(SyncData(), name, &changes);
   } else {
-    // We're already syncing this preference, we just need to update the data.
+    // We are already syncing this preference, just update it's sync node.
     SyncData sync_data;
     if (!CreatePrefSyncData(name, *preference->GetValue(), &sync_data)) {
       LOG(ERROR) << "Failed to update preference.";
