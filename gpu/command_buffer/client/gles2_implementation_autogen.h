@@ -313,17 +313,17 @@ void FrontFace(GLenum mode) {
 
 void GenBuffers(GLsizei n, GLuint* buffers) {
   GPU_CLIENT_LOG("[" << this << "] glGenBuffers(" << n << ", " << static_cast<const void*>(buffers) << ")");  // NOLINT
-  GPU_CLIENT_LOG_CODE_BLOCK({
-    for (GLsizei i = 0; i < n; ++i) {
-      GPU_CLIENT_LOG("  " << i << ": " << buffers[i]);
-    }
-  });
   if (n < 0) {
     SetGLError(GL_INVALID_VALUE, "glGenBuffers: n < 0");
     return;
   }
   buffer_id_handler_->MakeIds(0, n, buffers);
   helper_->GenBuffersImmediate(n, buffers);
+  GPU_CLIENT_LOG_CODE_BLOCK({
+    for (GLsizei i = 0; i < n; ++i) {
+      GPU_CLIENT_LOG("  " << i << ": " << buffers[i]);
+    }
+  });
 }
 
 void GenerateMipmap(GLenum target) {
@@ -333,47 +333,47 @@ void GenerateMipmap(GLenum target) {
 
 void GenFramebuffers(GLsizei n, GLuint* framebuffers) {
   GPU_CLIENT_LOG("[" << this << "] glGenFramebuffers(" << n << ", " << static_cast<const void*>(framebuffers) << ")");  // NOLINT
-  GPU_CLIENT_LOG_CODE_BLOCK({
-    for (GLsizei i = 0; i < n; ++i) {
-      GPU_CLIENT_LOG("  " << i << ": " << framebuffers[i]);
-    }
-  });
   if (n < 0) {
     SetGLError(GL_INVALID_VALUE, "glGenFramebuffers: n < 0");
     return;
   }
   framebuffer_id_handler_->MakeIds(0, n, framebuffers);
   helper_->GenFramebuffersImmediate(n, framebuffers);
+  GPU_CLIENT_LOG_CODE_BLOCK({
+    for (GLsizei i = 0; i < n; ++i) {
+      GPU_CLIENT_LOG("  " << i << ": " << framebuffers[i]);
+    }
+  });
 }
 
 void GenRenderbuffers(GLsizei n, GLuint* renderbuffers) {
   GPU_CLIENT_LOG("[" << this << "] glGenRenderbuffers(" << n << ", " << static_cast<const void*>(renderbuffers) << ")");  // NOLINT
-  GPU_CLIENT_LOG_CODE_BLOCK({
-    for (GLsizei i = 0; i < n; ++i) {
-      GPU_CLIENT_LOG("  " << i << ": " << renderbuffers[i]);
-    }
-  });
   if (n < 0) {
     SetGLError(GL_INVALID_VALUE, "glGenRenderbuffers: n < 0");
     return;
   }
   renderbuffer_id_handler_->MakeIds(0, n, renderbuffers);
   helper_->GenRenderbuffersImmediate(n, renderbuffers);
+  GPU_CLIENT_LOG_CODE_BLOCK({
+    for (GLsizei i = 0; i < n; ++i) {
+      GPU_CLIENT_LOG("  " << i << ": " << renderbuffers[i]);
+    }
+  });
 }
 
 void GenTextures(GLsizei n, GLuint* textures) {
   GPU_CLIENT_LOG("[" << this << "] glGenTextures(" << n << ", " << static_cast<const void*>(textures) << ")");  // NOLINT
-  GPU_CLIENT_LOG_CODE_BLOCK({
-    for (GLsizei i = 0; i < n; ++i) {
-      GPU_CLIENT_LOG("  " << i << ": " << textures[i]);
-    }
-  });
   if (n < 0) {
     SetGLError(GL_INVALID_VALUE, "glGenTextures: n < 0");
     return;
   }
   texture_id_handler_->MakeIds(0, n, textures);
   helper_->GenTexturesImmediate(n, textures);
+  GPU_CLIENT_LOG_CODE_BLOCK({
+    for (GLsizei i = 0; i < n; ++i) {
+      GPU_CLIENT_LOG("  " << i << ": " << textures[i]);
+    }
+  });
 }
 
 void GetActiveAttrib(

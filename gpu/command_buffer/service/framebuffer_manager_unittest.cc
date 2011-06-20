@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -122,6 +122,9 @@ TEST_F(FramebufferInfoTest, Basic) {
   EXPECT_TRUE(NULL == info_->GetAttachment(GL_DEPTH_ATTACHMENT));
   EXPECT_TRUE(NULL == info_->GetAttachment(GL_STENCIL_ATTACHMENT));
   EXPECT_TRUE(NULL == info_->GetAttachment(GL_DEPTH_STENCIL_ATTACHMENT));
+  EXPECT_FALSE(info_->HasDepthAttachment());
+  EXPECT_FALSE(info_->HasStencilAttachment());
+  EXPECT_EQ(static_cast<GLenum>(0), info_->GetColorAttachmentFormat());
 }
 
 TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
@@ -161,12 +164,23 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
   EXPECT_TRUE(info_->HasUnclearedAttachment(GL_COLOR_ATTACHMENT0));
   EXPECT_FALSE(info_->HasUnclearedAttachment(GL_DEPTH_ATTACHMENT));
   EXPECT_TRUE(info_->IsNotComplete());
+  EXPECT_EQ(static_cast<GLenum>(GL_RGBA4), info_->GetColorAttachmentFormat());
+  EXPECT_FALSE(info_->HasDepthAttachment());
+  EXPECT_FALSE(info_->HasStencilAttachment());
+
+  rb_info1->SetInfo(1, GL_RGB, 0, 0);
+  EXPECT_EQ(static_cast<GLenum>(GL_RGB), info_->GetColorAttachmentFormat());
+  EXPECT_FALSE(info_->HasDepthAttachment());
+  EXPECT_FALSE(info_->HasStencilAttachment());
 
   // check adding another
   info_->AttachRenderbuffer(GL_DEPTH_ATTACHMENT, rb_info1);
   EXPECT_TRUE(info_->HasUnclearedAttachment(GL_COLOR_ATTACHMENT0));
   EXPECT_TRUE(info_->HasUnclearedAttachment(GL_DEPTH_ATTACHMENT));
   EXPECT_TRUE(info_->IsNotComplete());
+  EXPECT_EQ(static_cast<GLenum>(GL_RGB), info_->GetColorAttachmentFormat());
+  EXPECT_TRUE(info_->HasDepthAttachment());
+  EXPECT_FALSE(info_->HasStencilAttachment());
 
   // check marking them as cleared.
   info_->MarkAttachedRenderbuffersAsCleared();
@@ -177,10 +191,16 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
   // Check adding one that is already cleared.
   info_->AttachRenderbuffer(GL_STENCIL_ATTACHMENT, rb_info1);
   EXPECT_FALSE(info_->HasUnclearedAttachment(GL_STENCIL_ATTACHMENT));
+  EXPECT_EQ(static_cast<GLenum>(GL_RGB), info_->GetColorAttachmentFormat());
+  EXPECT_TRUE(info_->HasDepthAttachment());
+  EXPECT_TRUE(info_->HasStencilAttachment());
 
   // Check marking the renderbuffer as unclared.
   rb_info1->SetInfo(kSamples1, kFormat1, kWidth1, kHeight1);
   EXPECT_FALSE(info_->IsNotComplete());
+  EXPECT_EQ(static_cast<GLenum>(kFormat1), info_->GetColorAttachmentFormat());
+  EXPECT_TRUE(info_->HasDepthAttachment());
+  EXPECT_TRUE(info_->HasStencilAttachment());
 
   const FramebufferManager::FramebufferInfo::Attachment* attachment =
       info_->GetAttachment(GL_COLOR_ATTACHMENT0);
@@ -230,6 +250,9 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
   // Check removing it.
   info_->AttachRenderbuffer(GL_STENCIL_ATTACHMENT, NULL);
   EXPECT_FALSE(info_->HasUnclearedAttachment(GL_STENCIL_ATTACHMENT));
+  EXPECT_EQ(static_cast<GLenum>(kFormat1), info_->GetColorAttachmentFormat());
+  EXPECT_TRUE(info_->HasDepthAttachment());
+  EXPECT_FALSE(info_->HasStencilAttachment());
 
   rb_manager.Destroy(false);
 }
@@ -278,12 +301,14 @@ TEST_F(FramebufferInfoTest, AttachTexture) {
   info_->AttachTexture(GL_COLOR_ATTACHMENT0, tex_info1, kTarget1, kLevel1);
   EXPECT_FALSE(info_->HasUnclearedAttachment(GL_COLOR_ATTACHMENT0));
   EXPECT_TRUE(info_->IsNotComplete());
+  EXPECT_EQ(static_cast<GLenum>(0), info_->GetColorAttachmentFormat());
 
   tex_manager.SetInfoTarget(tex_info1, GL_TEXTURE_2D);
   tex_manager.SetLevelInfo(
       &feature_info, tex_info1, GL_TEXTURE_2D, kLevel1,
       kFormat1, kWidth1, kHeight1, kDepth, kBorder, kFormat1, kType);
   EXPECT_FALSE(info_->IsNotComplete());
+  EXPECT_EQ(static_cast<GLenum>(kFormat1), info_->GetColorAttachmentFormat());
 
   const FramebufferManager::FramebufferInfo::Attachment* attachment =
       info_->GetAttachment(GL_COLOR_ATTACHMENT0);
@@ -306,6 +331,7 @@ TEST_F(FramebufferInfoTest, AttachTexture) {
       kFormat2, kWidth2, kHeight2, kDepth, kBorder, kFormat2, kType);
 
   info_->AttachTexture(GL_COLOR_ATTACHMENT0, tex_info2, kTarget2, kLevel2);
+  EXPECT_EQ(static_cast<GLenum>(kFormat2), info_->GetColorAttachmentFormat());
 
   attachment = info_->GetAttachment(GL_COLOR_ATTACHMENT0);
   ASSERT_TRUE(attachment != NULL);
@@ -326,10 +352,12 @@ TEST_F(FramebufferInfoTest, AttachTexture) {
   EXPECT_EQ(kSamples3, attachment->samples());
   EXPECT_EQ(kFormat3, attachment->internal_format());
   EXPECT_TRUE(attachment->cleared());
+  EXPECT_EQ(static_cast<GLenum>(kFormat3), info_->GetColorAttachmentFormat());
 
   // Check removing it.
   info_->AttachTexture(GL_COLOR_ATTACHMENT0, NULL, 0, 0);
   EXPECT_TRUE(info_->GetAttachment(GL_COLOR_ATTACHMENT0) == NULL);
+  EXPECT_EQ(static_cast<GLenum>(0), info_->GetColorAttachmentFormat());
 
   tex_manager.Destroy(false);
 }

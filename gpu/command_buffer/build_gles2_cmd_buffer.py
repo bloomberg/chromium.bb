@@ -1134,7 +1134,7 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoClearDepthf',
     'gl_test_func': 'glClearDepth',
   },
-  'ColorMask': {'decoder_func': 'DoColorMask'},
+  'ColorMask': {'decoder_func': 'DoColorMask', 'expectation': False},
   'ClearStencil': {'decoder_func': 'DoClearStencil'},
   'CommandBufferEnableCHROMIUM': {
     'type': 'Custom',
@@ -1192,7 +1192,7 @@ _FUNCTION_INFO = {
   },
   'DeleteTextures': {'type': 'DELn'},
   'DepthRangef': {'decoder_func': 'glDepthRange'},
-  'DepthMask': {'decoder_func': 'DoDepthMask'},
+  'DepthMask': {'decoder_func': 'DoDepthMask', 'expectation': False},
   'DetachShader': {'decoder_func': 'DoDetachShader'},
   'Disable': {
     'decoder_func': 'DoDisable',
@@ -1507,8 +1507,11 @@ _FUNCTION_INFO = {
     'cmd_args':
         'GLuint shader, const char* data',
   },
-  'StencilMask': {'decoder_func': 'DoStencilMask'},
-  'StencilMaskSeparate': {'decoder_func': 'DoStencilMaskSeparate'},
+  'StencilMask': {'decoder_func': 'DoStencilMask', 'expectation': False},
+  'StencilMaskSeparate': {
+    'decoder_func': 'DoStencilMaskSeparate',
+    'expectation': False,
+  },
   'SwapBuffers': {
     'type': 'Custom',
     'impl_func': False,
@@ -2742,7 +2745,13 @@ class GENnHandler(TypeHandler):
 
   def WriteGLES2ImplementationHeader(self, func, file):
     """Overrriden from TypeHandler."""
+    log_code = ("""  GPU_CLIENT_LOG_CODE_BLOCK({
+    for (GLsizei i = 0; i < n; ++i) {
+      GPU_CLIENT_LOG("  " << i << ": " << %s[i]);
+    }
+  });""" % func.GetOriginalArgs()[1].name)
     args = {
+        'log_code': log_code,
         'return_type': func.return_type,
         'name': func.original_name,
         'typed_args': func.MakeTypedOriginalArgString(""),
@@ -2752,16 +2761,11 @@ class GENnHandler(TypeHandler):
       }
     file.Write("%(return_type)s %(name)s(%(typed_args)s) {\n" % args)
     self.WriteClientGLCallLog(func, file)
-    file.Write("""  GPU_CLIENT_LOG_CODE_BLOCK({
-    for (GLsizei i = 0; i < n; ++i) {
-      GPU_CLIENT_LOG("  " << i << ": " << %s[i]);
-    }
-  });
-""" % func.GetOriginalArgs()[1].name)
     for arg in func.GetOriginalArgs():
       arg.WriteClientSideValidationCode(file, func)
     code = """  %(resource_type)s_id_handler_->MakeIds(0, %(args)s);
   helper_->%(name)sImmediate(%(args)s);
+%(log_code)s
 }
 
 """
@@ -4348,6 +4352,21 @@ class Argument(object):
     return self
 
 
+class BoolArgument(Argument):
+  """class for GLboolean"""
+
+  def __init__(self, name, type):
+    Argument.__init__(self, name, 'GLboolean')
+
+  def GetValidArg(self, func, offset, index):
+    """Gets a valid value for this argument."""
+    return 'true'
+
+  def GetValidGLArg(self, func, offset, index):
+    """Gets a valid GL value for this argument."""
+    return 'true'
+
+
 class DataSizeArgument(Argument):
   """class for data_size which Bucket commands do not need."""
 
@@ -4412,7 +4431,7 @@ class SizeNotNegativeArgument(SizeArgument):
 
 
 class EnumBaseArgument(Argument):
-  """Base class for EnumArgument, IntArgument and BoolArgument"""
+  """Base class for EnumArgument, IntArgument and ValidatedBoolArgument"""
 
   def __init__(self, name, gl_type, type, gl_error):
     Argument.__init__(self, name, gl_type)
@@ -4487,7 +4506,7 @@ class IntArgument(EnumBaseArgument):
     EnumBaseArgument.__init__(self, name, "GLint", type, "GL_INVALID_VALUE")
 
 
-class BoolArgument(EnumBaseArgument):
+class ValidatedBoolArgument(EnumBaseArgument):
   """A class for a GLboolean argument that can only except specific values.
 
   For example glUniformMatrix takes a GLboolean for it's transpose but it
@@ -5162,6 +5181,8 @@ def CreateArg(arg_string):
   elif arg_parts[0].startswith('GLenum') and len(arg_parts[0]) > 6:
     return EnumArgument(arg_parts[-1], " ".join(arg_parts[0:-1]))
   elif arg_parts[0].startswith('GLboolean') and len(arg_parts[0]) > 9:
+    return ValidatedBoolArgument(arg_parts[-1], " ".join(arg_parts[0:-1]))
+  elif arg_parts[0].startswith('GLboolean'):
     return BoolArgument(arg_parts[-1], " ".join(arg_parts[0:-1]))
   elif (arg_parts[0].startswith('GLint') and len(arg_parts[0]) > 5 and
         not arg_parts[0].startswith('GLintptr')):

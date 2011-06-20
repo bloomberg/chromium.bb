@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,6 +41,10 @@ class RenderbufferAttachment
 
   virtual void set_cleared() {
     render_buffer_->set_cleared();
+  }
+
+  virtual bool IsTexture(TextureManager::TextureInfo* /* texture */) const {
+    return false;
   }
 
   RenderbufferManager::RenderbufferInfo* render_buffer() const {
@@ -97,6 +101,10 @@ class TextureAttachment
 
   virtual void set_cleared() {
     NOTREACHED();
+  }
+
+  virtual bool IsTexture(TextureManager::TextureInfo* texture) const {
+    return texture == texture_.get();
   }
 
   TextureManager::TextureInfo* texture() const {
@@ -169,6 +177,25 @@ void FramebufferManager::FramebufferInfo::MarkAttachedRenderbuffersAsCleared() {
   }
 }
 
+bool FramebufferManager::FramebufferInfo::HasDepthAttachment() const {
+  return attachments_.find(GL_DEPTH_STENCIL_ATTACHMENT) != attachments_.end() ||
+         attachments_.find(GL_DEPTH_ATTACHMENT) != attachments_.end();
+}
+
+bool FramebufferManager::FramebufferInfo::HasStencilAttachment() const {
+  return attachments_.find(GL_DEPTH_STENCIL_ATTACHMENT) != attachments_.end() ||
+         attachments_.find(GL_STENCIL_ATTACHMENT) != attachments_.end();
+}
+
+GLenum FramebufferManager::FramebufferInfo::GetColorAttachmentFormat() const {
+  AttachmentMap::const_iterator it = attachments_.find(GL_COLOR_ATTACHMENT0);
+  if (it == attachments_.end()) {
+    return 0;
+  }
+  const Attachment* attachment = it->second;
+  return attachment->internal_format();
+}
+
 bool FramebufferManager::FramebufferInfo::IsNotComplete() const {
   for (AttachmentMap::const_iterator it = attachments_.begin();
        it != attachments_.end(); ++it) {
@@ -215,9 +242,14 @@ void FramebufferManager::FramebufferInfo::AttachTexture(
          attachment == GL_DEPTH_ATTACHMENT ||
          attachment == GL_STENCIL_ATTACHMENT ||
          attachment == GL_DEPTH_STENCIL_ATTACHMENT);
+  const Attachment* a = GetAttachment(attachment);
+  if (a && a->IsTexture(texture)) {
+    texture->DetachFromFramebuffer();
+  }
   if (texture) {
     attachments_[attachment] = Attachment::Ref(
         new TextureAttachment(texture, target, level));
+    texture->AttachToFramebuffer();
   } else {
     attachments_.erase(attachment);
   }

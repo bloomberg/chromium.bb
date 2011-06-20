@@ -42,6 +42,7 @@ class TextureManager {
           cube_complete_(false),
           npot_(false),
           has_been_bound_(false),
+          framebuffer_attachment_count_(0),
           owned_(true) {
     }
 
@@ -129,6 +130,19 @@ class TextureManager {
 
     void SetNotOwned() {
       owned_ = false;
+    }
+
+    bool IsAttachedToFramebuffer() const {
+      return framebuffer_attachment_count_ != 0;
+    }
+
+    void AttachToFramebuffer() {
+      ++framebuffer_attachment_count_;
+    }
+
+    void DetachFromFramebuffer() {
+      DCHECK(framebuffer_attachment_count_ > 0);
+      --framebuffer_attachment_count_;
     }
 
    private:
@@ -239,6 +253,9 @@ class TextureManager {
 
     // Whether this texture has ever been bound.
     bool has_been_bound_;
+
+    // The number of framebuffers this texture is attached to.
+    int framebuffer_attachment_count_;
 
     // Whether the associated context group owns this texture and should delete
     // it.
