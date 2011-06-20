@@ -18,6 +18,12 @@
 #include "ppapi/examples/gles2/testdata.h"
 #include "ppapi/lib/gl/include/GLES2/gl2.h"
 
+// Prevent "unused variable" warnings when building in Release mode.
+#ifdef NDEBUG
+#undef assert
+#define assert(expr) while (0 && (expr))
+#endif  // NDEBUG
+
 namespace {
 
 class GLES2DemoInstance : public pp::Instance, public pp::Graphics3DClient_Dev,
