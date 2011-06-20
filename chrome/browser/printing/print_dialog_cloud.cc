@@ -262,19 +262,6 @@ void CloudPrintFlowHandler::RegisterMessages() {
       NewCallback(this, &CloudPrintFlowHandler::HandleSetPageParameters));
 
   if (web_ui_->tab_contents()) {
-    // Also, take the opportunity to set some (minimal) additional
-    // script permissions required for the web UI.
-
-    // TODO(scottbyer): learn how to make sure we're talking to the
-    // right web site first.
-    RenderViewHost* rvh = web_ui_->tab_contents()->render_view_host();
-    if (rvh && rvh->delegate()) {
-      WebPreferences webkit_prefs = rvh->delegate()->GetWebkitPrefs();
-      webkit_prefs.allow_scripts_to_close_windows = true;
-      rvh->Send(new ViewMsg_UpdateWebPreferences(
-          rvh->routing_id(), webkit_prefs));
-    }
-
     // Register for appropriate notifications, and re-direct the URL
     // to the real server URL, now that we've gotten an HTML dialog
     // going.
@@ -291,7 +278,26 @@ void CloudPrintFlowHandler::RegisterMessages() {
 void CloudPrintFlowHandler::Observe(NotificationType type,
                                     const NotificationSource& source,
                                     const NotificationDetails& details) {
-  if (type == NotificationType::LOAD_STOP) {
+  if (type.value == NotificationType::LOAD_STOP) {
+    // Take the opportunity to set some (minimal) additional
+    // script permissions required for the web UI.
+    GURL url = web_ui_->tab_contents()->GetURL();
+    GURL dialog_url = CloudPrintURL(
+        web_ui_->GetProfile()).GetCloudPrintServiceDialogURL();
+    if (url.host() == dialog_url.host() &&
+        url.path() == dialog_url.path() &&
+        url.scheme() == dialog_url.scheme()) {
+      RenderViewHost* rvh = web_ui_->tab_contents()->render_view_host();
+      if (rvh && rvh->delegate()) {
+        WebPreferences webkit_prefs = rvh->delegate()->GetWebkitPrefs();
+        webkit_prefs.allow_scripts_to_close_windows = true;
+        rvh->Send(new ViewMsg_UpdateWebPreferences(
+            rvh->routing_id(), webkit_prefs));
+      } else {
+        DCHECK(false);
+      }
+    }
+
     // Choose one or the other.  If you need to debug, bring up the
     // debugger.  You can then use the various chrome.send()
     // registrations above to kick of the various function calls,
