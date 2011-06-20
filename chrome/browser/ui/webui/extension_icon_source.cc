@@ -264,12 +264,18 @@ bool ExtensionIconSource::ParseData(const std::string& path,
   if (!base::StringToInt(size_param, &size_num))
     return false;
   size = static_cast<Extension::Icons>(size_num);
+  if (size <= 0)
+    return false;
 
   ExtensionIconSet::MatchType match_type;
   int match_num;
   if (!base::StringToInt(match_param, &match_num))
     return false;
   match_type = static_cast<ExtensionIconSet::MatchType>(match_num);
+  if (!(match_type == ExtensionIconSet::MATCH_EXACTLY ||
+        match_type == ExtensionIconSet::MATCH_SMALLER ||
+        match_type == ExtensionIconSet::MATCH_BIGGER))
+    match_type = ExtensionIconSet::MATCH_EXACTLY;
 
   std::string extension_id = path_parts.at(0);
   const Extension* extension =
