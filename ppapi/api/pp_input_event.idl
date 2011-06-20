@@ -100,14 +100,16 @@ struct PP_InputEvent_Key {
  * isn't lost"), 'R' character event, 'R' key up.
  */
 struct PP_InputEvent_Character {
-  /* A combination of the EVENT_MODIFIER flags. */
+  /** A combination of the EVENT_MODIFIER flags. */
   uint32_t modifier;
-  /* This value represents the typed character as a single null-terminated UTF-8
+
+  /**
+   * This value represents the typed character as a single null-terminated UTF-8
    * character. Any unused bytes will be filled with null bytes. Since the
    * maximum UTF-8 character is 4 bytes, there will always be at least one null
    * at the end so you can treat this as a null-termianted UTF-8 string.
    */
-  uint8_t[5] text;
+  char[5] text;
 };
 
 /* The PP_InputEvent_Mouse struct represents all mouse events except
@@ -215,13 +217,22 @@ struct PP_InputEvent_Wheel {
 
 /* The PP_InputEvent struct represents all input events. */
 struct PP_InputEvent {
-  /* This value represents the type of the event. */
+  /** This value represents the type of the event. */
   PP_InputEvent_Type type;
-  /* This value represents the time that this event was generated. This value
+
+  /** This value ensure the time_stamp is aligned on an 8-byte boundary
+   * relative to the start of the struct. Some compilers align doubles
+   * on 8-byte boundaries for 32-bit x86, and some align on 4-byte boundaries.
+   */
+  int32_t padding;
+
+  /**
+   * This value represents the time that this event was generated. This value
    * is not relative to any particular epoch; the most you can do is compare
    * time stamps.
    */
   PP_TimeTicks time_stamp;
-  /* This value represents the event's specific data. */
+
+  /** This value represents the event type and its specific data. */
   PP_InputEventData u;
 };

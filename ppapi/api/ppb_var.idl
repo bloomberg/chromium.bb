@@ -57,13 +57,4 @@ interface PPB_Var_0_5 {
   str_t VarToUtf8(
       [in] PP_Var var,
       [out] uint32_t len);
-
-  /* Convert a variable to a different type using rules from ECMAScript
-   * specification, section [9].
-   * TODO(neb): Document what happens on failure.
-   */
-  PP_Var ConvertType(
-      [in] PP_Instance instance,
-      [in] PP_Var var,
-      [in] PP_VarType new_type);
 };

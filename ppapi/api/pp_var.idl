@@ -11,23 +11,67 @@
  * within a PP_VAR structure.
  */
 enum PP_VarType {
+  /*
+   * An undefined value.
+   */
   PP_VARTYPE_UNDEFINED = 0,
+
+  /*
+   * A NULL value. This is similar to undefined, but JavaScript differentiates
+   * the two so we expose it here as well.
+   */
   PP_VARTYPE_NULL = 1,
+
+  /*
+   * A boolean value, use the as_bool member of the var.
+   */
   PP_VARTYPE_BOOL = 2,
+
+  /*
+   * A 32-bit integer value. Use the as_int member of the var.
+   */
   PP_VARTYPE_INT32 = 3,
+
+  /*
+   * A double-precision floating point value. Use the as_double member of the
+   * var.
+   */
   PP_VARTYPE_DOUBLE = 4,
+
+  /*
+   * The Var represents a string. The as_id field is used to identify the
+   * string, which may be created and retrieved from the PPB_Var interface.
+   */
   PP_VARTYPE_STRING = 5,
-  PP_VARTYPE_OBJECT = 6
+
+  /*
+   * Represents a JavaScript object. This vartype is not currently usable
+   * from plugins, although it is used internally for some tasks.
+   */
+  PP_VARTYPE_OBJECT = 6,
+
+  /*
+   * Arrays and dictionaries are not currently supported but will be added
+   * in future revisions. These objects are reference counted so be sure
+   * to properly AddRef/Release them as you would with strings to ensure your
+   * plugin will continue to work with future versions of the API.
+   */
+  PP_VARTYPE_ARRAY = 7,
+  PP_VARTYPE_DICTIONARY = 8
 };
 
-/* The value of a Var. */
+
+/* This structure contains the various elements type within the PP_VAR. */
 [union] struct PP_VarValue {
   /* Value if type is PP_VARTYPE_BOOL. */
   PP_Bool as_bool;
+  
   /* Value if type is PP_VARTYPE_INT32. */
   int32_t as_int;
+  
   /* Value if type is PP_VARTYPE_DOUBLE. */
   double_t as_double;
+  
   /* Internal ID for strings and objects. The identifier is an opaque handle
    * assigned by the browser to the plugin. It is guaranteed never to be 0,
    * so a plugin can initialize this ID to 0 to indicate a "NULL handle."
@@ -51,6 +95,8 @@ enum PP_VarType {
 [passByValue] struct PP_Var {
   /* Type. */
   PP_VarType type;
+  
   /* Type-dependent value. */
   PP_VarValue value;
 };
+

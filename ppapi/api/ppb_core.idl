@@ -5,7 +5,10 @@
 
 /* Defines the core API. */
 
-/* {PENDING: describe PPB_CORE} */
+/*
+ * The PPB_Core interface contains pointers to functions related to memory
+ * management, time, and threads on the browser.
+ */
 interface PPB_Core_0_3 {
   /* Same as AddRefVar for Resources. */
   void AddRefResource(

@@ -137,19 +137,4 @@ interface PPP_Instance_0_4 {
       /* A PP_Resource an open PPB_URLLoader instance. */
       [in] PP_Resource url_loader);
 
-  /* This value represents a pointer to a function that returns a Var
-   * representing the scriptable object for the given instance. Normally
-   * this will be a PPP_Class object that exposes certain methods the page
-   * may want to call.
-   *
-   * On Failure, the returned var should be a "void" var.
-   *
-   * The returned PP_Var should have a reference added for the caller, which
-   * will be responsible for Release()ing that reference.
-   *
-   * Returns a PP_Var containing scriptable object.
-   */
-  PP_Var GetInstanceObject(
-      /* A PP_Instance indentifying one instance of a module. */
-      [in] PP_Instance instance);
 };

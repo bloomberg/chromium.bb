@@ -6,7 +6,7 @@
 /* This file defines the completion callback type. */
 
 /* The callback function. */
-typedef void PP_CompletionCallback_Func([in] mem_t user_data,
+typedef void PP_CompletionCallback_Func([inout] mem_t user_data,
                                         [in] int32_t result);
 
 /* Any method that takes a PP_CompletionCallback has the option of completing
