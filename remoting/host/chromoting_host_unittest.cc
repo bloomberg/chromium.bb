@@ -228,7 +228,7 @@ class ChromotingHostTest : public testing::Test {
   MockLocalInputMonitor* local_input_monitor_;
 };
 
-TEST_F(ChromotingHostTest, StartAndShutdown) {
+TEST_F(ChromotingHostTest, DISABLED_StartAndShutdown) {
   host_->Start(NewRunnableFunction(&PostQuitTask, &message_loop_));
 
   message_loop_.PostTask(FROM_HERE,
@@ -237,7 +237,7 @@ TEST_F(ChromotingHostTest, StartAndShutdown) {
   message_loop_.Run();
 }
 
-TEST_F(ChromotingHostTest, Connect) {
+TEST_F(ChromotingHostTest, DISABLED_Connect) {
   host_->Start(NewRunnableFunction(&PostQuitTask, &message_loop_));
 
   EXPECT_CALL(client_stub_, BeginSessionResponse(_, _))
@@ -265,7 +265,7 @@ TEST_F(ChromotingHostTest, Connect) {
   message_loop_.Run();
 }
 
-TEST_F(ChromotingHostTest, Reconnect) {
+TEST_F(ChromotingHostTest, DISABLED_Reconnect) {
   host_->Start(NewRunnableFunction(&PostQuitTask, &message_loop_));
 
   EXPECT_CALL(client_stub_, BeginSessionResponse(_, _))
@@ -318,6 +318,7 @@ TEST_F(ChromotingHostTest, Reconnect) {
     EXPECT_CALL(video_stub_, ProcessVideoPacket(_, _))
         .Times(AnyNumber());
   }
+
   EXPECT_CALL(*connection_.get(), Disconnect())
       .RetiresOnSaturation();
 
@@ -325,7 +326,7 @@ TEST_F(ChromotingHostTest, Reconnect) {
   message_loop_.Run();
 }
 
-TEST_F(ChromotingHostTest, ConnectTwice) {
+TEST_F(ChromotingHostTest, DISABLED_ConnectTwice) {
   host_->Start(NewRunnableFunction(&PostQuitTask, &message_loop_));
 
   EXPECT_CALL(client_stub_, BeginSessionResponse(_, _))
