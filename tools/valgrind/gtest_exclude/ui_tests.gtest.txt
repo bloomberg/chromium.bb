@@ -68,25 +68,23 @@ GPUUITest.UITestCanLaunchWithOSMesa
 # See http://crbug.com/42105
 BrowserTest.PosixSessionEnd
 
-# Fails flakily.
-# http://crbug.com/70323
+# Fails flakily, http://crbug.com/70323
 AutomatedUITestBase.ShowBookmarkBar
 
 # Video decoding under valgrind is really slow, see http://crbug.com/53825
 MediaTest.VideoBear*
 
-# Flakily times out.
-# http://crbug.com/85865
+# Flakily times out, http://crbug.com/85865
 AppCacheUITest.AppCacheLayoutTests_NoPHP
 
-# Flakily times out.
-# http://crbug.com/85866
+# Flakily times out, http://crbug.com/85866
 MetricsServiceTest.CloseRenderersNormally
 
-# Flakily times out.
-# http://crbug.com/85867
+# Flakily times out, http://crbug.com/85867
 LoginPromptTest.TestTwoAuths
 
-# Flakily times out.
-# http://crbug.com/85868
+# Flakily times out, http://crbug.com/85868
 SessionHistoryTest.FragmentBackForward
+
+# Fails flakily, http://crbug.com/86783
+ResourceDispatcherTest.CrossSiteImmediateLoadOnunloadCookie
