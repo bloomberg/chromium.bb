@@ -85,16 +85,18 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   // After this is invoked, the host process will connect to the talk
   // network and start listening for incoming connections.
   //
-  // |shutdown_task| is called if Start() has failed ot Shutdown() is called
-  // and all related operations are completed.
-  //
   // This method can only be called once during the lifetime of this object.
-  void Start(Task* shutdown_task);
+  void Start();
 
-  // Asynchronously shutdown the host process.
-  void Shutdown();
+  // Asynchronously shutdown the host process. |shutdown_task| is
+  // called after shutdown is completed.
+  void Shutdown(Task* shutdown_task);
 
-  void AddStatusObserver(const scoped_refptr<HostStatusObserver>& observer);
+  // Adds |observer| to the list of status observers. Doesn't take
+  // ownership of |observer|, so |observer| must outlive this
+  // object. All status observers must be added before the host is
+  // started.
+  void AddStatusObserver(HostStatusObserver* observer);
 
   ////////////////////////////////////////////////////////////////////////////
   // protocol::ConnectionToClient::EventHandler implementations
@@ -125,8 +127,8 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   void set_protocol_config(protocol::CandidateSessionConfig* config);
 
   // TODO(wez): ChromotingHost shouldn't need to know about Me2Mom.
-  void set_me2mom(bool is_me2mom) {
-    is_me2mom_ = is_me2mom;
+  void set_it2me(bool is_it2me) {
+    is_it2me_ = is_it2me;
   }
 
   // Notify all active client sessions that local input has been detected, and
@@ -141,7 +143,7 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   friend class base::RefCountedThreadSafe<ChromotingHost>;
   friend class ChromotingHostTest;
 
-  typedef std::vector<scoped_refptr<HostStatusObserver> > StatusObserverList;
+  typedef std::vector<HostStatusObserver*> StatusObserverList;
   typedef std::vector<scoped_refptr<ClientSession> > ClientList;
 
   // Takes ownership of |access_verifier| and |environment|, and adds a
@@ -155,11 +157,9 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   enum State {
     kInitial,
     kStarted,
+    kStopping,
     kStopped,
   };
-
-  // Callback for protocol::SessionManager::Close().
-  void OnServerClosed();
 
   // This method is called if a client is disconnected from the host.
   void OnClientDisconnected(protocol::ConnectionToClient* client);
@@ -189,6 +189,12 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
 
   void ContinueWindowTimerFunc();
 
+  // The following methods are called during shutdown.
+  void ShutdownJingleClient();
+  void ShutdownSignallingDisconnected();
+  void ShutdownRecorder();
+  void ShutdownFinish();
+
   // The context that the chromoting host runs on.
   ChromotingHostContext* context_;
 
@@ -214,10 +220,6 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   // Session manager for the host process.
   scoped_refptr<ScreenRecorder> recorder_;
 
-  // This task gets executed when this object fails to connect to the
-  // talk network or Shutdown() is called.
-  scoped_ptr<Task> shutdown_task_;
-
   // Tracks the internal state of the host.
   // This variable is written on the main thread of ChromotingHostContext
   // and read by jingle thread.
@@ -237,9 +239,13 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   // blocked and the dialog is shown.
   base::OneShotTimer<ChromotingHost> continue_window_timer_;
 
-  // Whether or not the host is running in "Me2Mom" mode, in which connections
+  // Whether or not the host is running in "IT2Me" mode, in which connections
   // are pre-authenticated, and hence the local login challenge can be bypassed.
-  bool is_me2mom_;
+  bool is_it2me_;
+
+  // Stores list of tasks that should be executed when we finish
+  // shutdown. Used only while |state_| is set to kStopping.
+  std::vector<Task*> shutdown_tasks_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromotingHost);
 };

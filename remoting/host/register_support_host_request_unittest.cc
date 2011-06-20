@@ -61,7 +61,7 @@ TEST_F(RegisterSupportHostRequestTest, Send) {
   // |iq_request| is freed by RegisterSupportHostRequest.
   int64 start_time = static_cast<int64>(base::Time::Now().ToDoubleT());
 
-  scoped_refptr<RegisterSupportHostRequest> request(
+  scoped_ptr<RegisterSupportHostRequest> request(
       new RegisterSupportHostRequest());
   ASSERT_TRUE(request->Init(
       config_, base::Bind(&MockCallback::OnResponse,

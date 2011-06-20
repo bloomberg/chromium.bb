@@ -22,7 +22,6 @@ class SupportAccessVerifier : public AccessVerifier {
   SupportAccessVerifier();
   virtual ~SupportAccessVerifier();
 
-  bool Init();
   const std::string& host_secret() const { return host_secret_; }
 
   // AccessVerifier interface.
@@ -30,10 +29,9 @@ class SupportAccessVerifier : public AccessVerifier {
       const std::string& client_jid,
       const std::string& encoded_client_token) OVERRIDE;
 
-  void OnMe2MomHostRegistered(bool successful, const std::string& support_id);
+  void OnIT2MeHostRegistered(bool successful, const std::string& support_id);
 
  private:
-  bool initialized_;
   std::string host_secret_;
   std::string support_id_;
 

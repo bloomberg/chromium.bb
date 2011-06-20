@@ -199,6 +199,11 @@ class ChromotingHostTest : public testing::Test {
     host->clients_.push_back(session);
   }
 
+  void ShutdownHost() {
+    host_->Shutdown(
+        NewRunnableFunction(&PostQuitTask, &message_loop_));
+  }
+
  protected:
   MessageLoop message_loop_;
   MockConnectionToClientEventHandler handler_;
@@ -229,16 +234,17 @@ class ChromotingHostTest : public testing::Test {
 };
 
 TEST_F(ChromotingHostTest, DISABLED_StartAndShutdown) {
-  host_->Start(NewRunnableFunction(&PostQuitTask, &message_loop_));
+  host_->Start();
 
-  message_loop_.PostTask(FROM_HERE,
-                         NewRunnableMethod(host_.get(),
-                                           &ChromotingHost::Shutdown));
+  message_loop_.PostTask(
+      FROM_HERE,NewRunnableMethod(
+          host_.get(), &ChromotingHost::Shutdown,
+          NewRunnableFunction(&PostQuitTask, &message_loop_)));
   message_loop_.Run();
 }
 
 TEST_F(ChromotingHostTest, DISABLED_Connect) {
-  host_->Start(NewRunnableFunction(&PostQuitTask, &message_loop_));
+  host_->Start();
 
   EXPECT_CALL(client_stub_, BeginSessionResponse(_, _))
       .WillOnce(RunDoneTask());
@@ -253,7 +259,7 @@ TEST_F(ChromotingHostTest, DISABLED_Connect) {
         .Times(0);
     EXPECT_CALL(video_stub_, ProcessVideoPacket(_, _))
         .WillOnce(DoAll(
-            InvokeWithoutArgs(host_.get(), &ChromotingHost::Shutdown),
+            InvokeWithoutArgs(this, &ChromotingHostTest::ShutdownHost),
             RunDoneTask()))
         .RetiresOnSaturation();
     EXPECT_CALL(video_stub_, ProcessVideoPacket(_, _))
@@ -266,7 +272,7 @@ TEST_F(ChromotingHostTest, DISABLED_Connect) {
 }
 
 TEST_F(ChromotingHostTest, DISABLED_Reconnect) {
-  host_->Start(NewRunnableFunction(&PostQuitTask, &message_loop_));
+  host_->Start();
 
   EXPECT_CALL(client_stub_, BeginSessionResponse(_, _))
       .Times(2)
@@ -312,7 +318,7 @@ TEST_F(ChromotingHostTest, DISABLED_Reconnect) {
         .Times(0);
     EXPECT_CALL(video_stub_, ProcessVideoPacket(_, _))
         .WillOnce(DoAll(
-            InvokeWithoutArgs(host_.get(), &ChromotingHost::Shutdown),
+            InvokeWithoutArgs(this, &ChromotingHostTest::ShutdownHost),
             RunDoneTask()))
         .RetiresOnSaturation();
     EXPECT_CALL(video_stub_, ProcessVideoPacket(_, _))
@@ -327,7 +333,7 @@ TEST_F(ChromotingHostTest, DISABLED_Reconnect) {
 }
 
 TEST_F(ChromotingHostTest, DISABLED_ConnectTwice) {
-  host_->Start(NewRunnableFunction(&PostQuitTask, &message_loop_));
+  host_->Start();
 
   EXPECT_CALL(client_stub_, BeginSessionResponse(_, _))
       .Times(1)
@@ -363,7 +369,7 @@ TEST_F(ChromotingHostTest, DISABLED_ConnectTwice) {
         .Times(AnyNumber());
     EXPECT_CALL(video_stub2_, ProcessVideoPacket(_, _))
         .WillOnce(DoAll(
-            InvokeWithoutArgs(host_.get(), &ChromotingHost::Shutdown),
+            InvokeWithoutArgs(this, &ChromotingHostTest::ShutdownHost),
             RunDoneTask()))
         .RetiresOnSaturation();
     EXPECT_CALL(video_stub2_, ProcessVideoPacket(_, _))
@@ -380,7 +386,7 @@ TEST_F(ChromotingHostTest, DISABLED_ConnectTwice) {
 }
 
 TEST_F(ChromotingHostTest, CurtainModeFail) {
-  host_->Start(NewRunnableFunction(&PostQuitTask, &message_loop_));
+  host_->Start();
 
   EXPECT_CALL(client_stub_, BeginSessionResponse(_, _))
       .WillOnce(RunDoneTask());
@@ -399,7 +405,7 @@ TEST_F(ChromotingHostTest, CurtainModeFail) {
 }
 
 TEST_F(ChromotingHostTest, CurtainModeFailSecond) {
-  host_->Start(NewRunnableFunction(&PostQuitTask, &message_loop_));
+  host_->Start();
 
   EXPECT_CALL(client_stub_, BeginSessionResponse(_, _))
       .WillOnce(RunDoneTask());
@@ -442,8 +448,8 @@ TEST_F(ChromotingHostTest, CurtainModeFailSecond) {
 ACTION_P(SetBool, var) { *var = true; }
 
 TEST_F(ChromotingHostTest, CurtainModeIT2Me) {
-  host_->Start(NewRunnableFunction(&PostQuitTask, &message_loop_));
-  host_->set_me2mom(true);
+  host_->Start();
+  host_->set_it2me(true);
 
   EXPECT_CALL(client_stub_, BeginSessionResponse(_, _))
       .WillOnce(RunDoneTask());
@@ -472,7 +478,7 @@ TEST_F(ChromotingHostTest, CurtainModeIT2Me) {
     EXPECT_CALL(video_stub_, ProcessVideoPacket(_, _))
         .InSequence(s1, s2)
         .WillOnce(DoAll(
-            InvokeWithoutArgs(host_.get(), &ChromotingHost::Shutdown),
+            InvokeWithoutArgs(this, &ChromotingHostTest::ShutdownHost),
             RunDoneTask()))
         .RetiresOnSaturation();
     EXPECT_CALL(video_stub_, ProcessVideoPacket(_, _))
@@ -484,7 +490,7 @@ TEST_F(ChromotingHostTest, CurtainModeIT2Me) {
   }
   SimulateClientConnection(0, true);
   message_loop_.Run();
-  host_->set_me2mom(false);
+  host_->set_it2me(false);
   EXPECT_THAT(curtain_activated, false);
 }
 }  // namespace remoting

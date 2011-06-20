@@ -81,12 +81,8 @@ const char kDefaultConfigPath[] = ".ChromotingConfig.json";
 static char* GetEnvironmentVar(const char* x) { return getenv(x); }
 #endif
 
-void ShutdownTask(MessageLoop* message_loop) {
-  message_loop->PostTask(FROM_HERE, new MessageLoop::QuitTask());
-}
-
 const char kFakeSwitchName[] = "fake";
-const char kMe2MomSwitchName[] = "me2mom";
+const char kIT2MeSwitchName[] = "it2me";
 const char kConfigSwitchName[] = "config";
 const char kVideoSwitchName[] = "video";
 
@@ -95,10 +91,10 @@ const char kVideoSwitchValueZip[] = "zip";
 const char kVideoSwitchValueVp8[] = "vp8";
 const char kVideoSwitchValueVp8Rtp[] = "vp8rtp";
 
-// Glue class to print out the access code for Me2Mom.
-void SetMe2MomAccessCode(remoting::SupportAccessVerifier* access_verifier,
+// Glue class to print out the access code for IT2Me.
+void SetIT2MeAccessCode(remoting::SupportAccessVerifier* access_verifier,
                          bool successful, const std::string& support_id) {
-  access_verifier->OnMe2MomHostRegistered(successful, support_id);
+  access_verifier->OnIT2MeHostRegistered(successful, support_id);
   if (successful) {
     std::cout << "Support id: " << support_id << "-"
               << access_verifier->host_secret() << std::endl;
@@ -112,7 +108,7 @@ class SimpleHost {
  public:
   SimpleHost()
       : fake_(false),
-        is_me2mom_(false) {
+        is_it2me_(false) {
   }
 
   int Run() {
@@ -151,21 +147,20 @@ class SimpleHost {
                       kChromotingTokenDefaultServiceName);
 
     // Initialize AccessVerifier.
-    // TODO(jamiewalch): For the Me2Mom case, the access verifier is passed to
+    // TODO(jamiewalch): For the IT2Me case, the access verifier is passed to
     // RegisterSupportHostRequest::Init, so transferring ownership of it to the
-    // ChromotingHost could cause a crash condition if SetMe2MomAccessCode is
+    // ChromotingHost could cause a crash condition if SetIT2MeAccessCode is
     // called after the ChromotingHost is destroyed (for example, at shutdown).
     // Fix this.
     scoped_ptr<remoting::AccessVerifier> access_verifier;
-    scoped_refptr<remoting::RegisterSupportHostRequest> register_request;
-    if (is_me2mom_) {
+    scoped_ptr<remoting::RegisterSupportHostRequest> register_request;
+    scoped_ptr<remoting::HeartbeatSender> heartbeat_sender;
+    if (is_it2me_) {
       scoped_ptr<remoting::SupportAccessVerifier> support_access_verifier(
           new remoting::SupportAccessVerifier());
-      if (!support_access_verifier->Init())
-        return 1;
-      register_request = new remoting::RegisterSupportHostRequest();
+      register_request.reset(new remoting::RegisterSupportHostRequest());
       if (!register_request->Init(
-              config, base::Bind(&SetMe2MomAccessCode,
+              config, base::Bind(&SetIT2MeAccessCode,
                                  support_access_verifier.get()))) {
         return 1;
       }
@@ -202,25 +197,26 @@ class SimpleHost {
       host = ChromotingHost::Create(&context, config,
                                     access_verifier.release());
     }
-    host->set_me2mom(is_me2mom_);
+    host->set_it2me(is_it2me_);
 
     if (protocol_config_.get()) {
       host->set_protocol_config(protocol_config_.release());
     }
 
-    if (is_me2mom_) {
-      host->AddStatusObserver(register_request);
+    if (is_it2me_) {
+      host->AddStatusObserver(register_request.get());
     } else {
       // Initialize HeartbeatSender.
-      scoped_refptr<remoting::HeartbeatSender> heartbeat_sender =
-          new remoting::HeartbeatSender(context.network_message_loop(), config);
+      heartbeat_sender.reset(
+          new remoting::HeartbeatSender(context.network_message_loop(),
+                                        config));
       if (!heartbeat_sender->Init())
         return 1;
-      host->AddStatusObserver(heartbeat_sender);
+      host->AddStatusObserver(heartbeat_sender.get());
     }
 
     // Let the chromoting host run until the shutdown task is executed.
-    host->Start(NewRunnableFunction(&ShutdownTask, &message_loop));
+    host->Start();
     message_loop.MessageLoop::Run();
 
     // And then stop the chromoting context.
@@ -234,7 +230,7 @@ class SimpleHost {
     config_path_ = config_path;
   }
   void set_fake(bool fake) { fake_ = fake; }
-  void set_is_me2mom(bool is_me2mom) { is_me2mom_ = is_me2mom; }
+  void set_is_it2me(bool is_it2me) { is_it2me_ = is_it2me; }
   void set_protocol_config(CandidateSessionConfig* protocol_config) {
     protocol_config_.reset(protocol_config);
   }
@@ -255,7 +251,7 @@ class SimpleHost {
 
   FilePath config_path_;
   bool fake_;
-  bool is_me2mom_;
+  bool is_it2me_;
   scoped_ptr<CandidateSessionConfig> protocol_config_;
 };
 
@@ -289,7 +285,7 @@ int main(int argc, char** argv) {
         cmd_line->GetSwitchValuePath(kConfigSwitchName));
   }
   simple_host.set_fake(cmd_line->HasSwitch(kFakeSwitchName));
-  simple_host.set_is_me2mom(cmd_line->HasSwitch(kMe2MomSwitchName));
+  simple_host.set_is_it2me(cmd_line->HasSwitch(kIT2MeSwitchName));
 
   if (cmd_line->HasSwitch(kVideoSwitchName)) {
     string video_codec = cmd_line->GetSwitchValueASCII(kVideoSwitchName);

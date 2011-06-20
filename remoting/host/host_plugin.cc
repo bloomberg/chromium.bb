@@ -21,11 +21,13 @@
 #include "base/task.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
+#include "base/synchronization/cancellation_flag.h"
 #include "remoting/base/auth_token_util.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/host_config.h"
 #include "remoting/host/host_key_pair.h"
+#include "remoting/host/host_status_observer.h"
 #include "remoting/host/in_memory_host_config.h"
 #include "remoting/host/register_support_host_request.h"
 #include "remoting/host/support_access_verifier.h"
@@ -56,29 +58,42 @@ uint64_t __cdecl __udivdi3(uint64_t a, uint64_t b) {
 }
 #endif
 
-/*
- Supported Javascript interface:
- readonly attribute string accessCode;
- readonly attribute int state;
+// Supported Javascript interface:
+// readonly attribute string accessCode;
+// readonly attribute int state;
+//
+// state: {
+//     DISCONNECTED,
+//     REQUESTED_ACCESS_CODE,
+//     RECEIVED_ACCESS_CODE,
+//     CONNECTED,
+//     AFFIRMING_CONNECTION,
+//     ERROR,
+// }
+//
+// attribute Function void onStateChanged();
+//
+// // The |auth_service_with_token| parameter should be in the format
+// // "auth_service:auth_token".  An example would be "oauth2:1/2a3912vd".
+// void connect(string uid, string auth_service_with_token);
+// void disconnect();
 
- state: {
-     DISCONNECTED,
-     REQUESTED_ACCESS_CODE,
-     RECEIVED_ACCESS_CODE,
-     CONNECTED,
-     AFFIRMING_CONNECTION,
-     ERROR,
- }
-
- attribute Function void onStateChanged();
-
- // The |auth_service_with_token| parametershould be in the format
- // "auth_service:auth_token".  An example would be "oauth2:1/2a3912vd".
- void connect(string uid, string auth_service_with_token);
- void disconnect();
-*/
 
 namespace {
+
+const char* kAttrNameAccessCode = "accessCode";
+const char* kAttrNameState = "state";
+const char* kAttrNameOnStateChanged = "onStateChanged";
+const char* kFuncNameConnect = "connect";
+const char* kFuncNameDisconnect = "disconnect";
+
+// States.
+const char* kAttrNameDisconnected = "DISCONNECTED";
+const char* kAttrNameRequestedAccessCode = "REQUESTED_ACCESS_CODE";
+const char* kAttrNameReceivedAccessCode = "RECEIVED_ACCESS_CODE";
+const char* kAttrNameConnected = "CONNECTED";
+const char* kAttrNameAffirmingConnection = "AFFIRMING_CONNECTION";
+const char* kAttrNameError = "ERROR";
 
 // Global netscape functions initialized in NP_Initialize.
 NPNetscapeFuncs* g_npnetscape_funcs = NULL;
@@ -131,21 +146,35 @@ NPObject* ObjectFromNPVariant(const NPVariant& variant) {
 }
 
 // NPAPI plugin implementation for remoting host script object.
-class HostNPScriptObject {
+// HostNPScriptObject creates threads that are required to run
+// ChromotingHost and starts/stops the host on those threads. When
+// destroyed it sychronously shuts down the host and all threads.
+class HostNPScriptObject : public remoting::HostStatusObserver {
  public:
   HostNPScriptObject(NPP plugin, NPObject* parent)
       : plugin_(plugin),
         parent_(parent),
         state_(kDisconnected),
         on_state_changed_func_(NULL),
-        np_thread_id_(base::PlatformThread::CurrentId()) {
-    LOG(INFO) << "HostNPScriptObject";
+        np_thread_id_(base::PlatformThread::CurrentId()),
+        disconnected_event_(true, false) {
+    VLOG(2) << "HostNPScriptObject";
     host_context_.SetUITaskPostFunction(base::Bind(
         &HostNPScriptObject::PostTaskToNPThread, base::Unretained(this)));
   }
 
   ~HostNPScriptObject() {
     CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
+
+    // Disconnect synchronously. We cannot disconnect asynchronously
+    // here because |host_context_| needs to be stopped on the plugin
+    // thread, but the plugin thread may not exist after the instance
+    // is destroyed.
+    destructing_.Set();
+    disconnected_event_.Reset();
+    DisconnectInternal();
+    disconnected_event_.Wait();
+
     host_context_.Stop();
     if (on_state_changed_func_) {
       g_npnetscape_funcs->releaseobject(on_state_changed_func_);
@@ -153,14 +182,14 @@ class HostNPScriptObject {
   }
 
   bool Init() {
-    LOG(INFO) << "Init";
+    VLOG(2) << "Init";
     // TODO(wez): This starts a bunch of threads, which might fail.
     host_context_.Start();
     return true;
   }
 
   bool HasMethod(const std::string& method_name) {
-    LOG(INFO) << "HasMethod " << method_name;
+    VLOG(2) << "HasMethod " << method_name;
     CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
     return (method_name == kFuncNameConnect ||
             method_name == kFuncNameDisconnect);
@@ -169,7 +198,7 @@ class HostNPScriptObject {
   bool InvokeDefault(const NPVariant* args,
                      uint32_t argCount,
                      NPVariant* result) {
-    LOG(INFO) << "InvokeDefault";
+    VLOG(2) << "InvokeDefault";
     CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
     SetException("exception during default invocation");
     return false;
@@ -179,7 +208,7 @@ class HostNPScriptObject {
               const NPVariant* args,
               uint32_t argCount,
               NPVariant* result) {
-    LOG(INFO) << "Invoke " << method_name;
+    VLOG(2) << "Invoke " << method_name;
     CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
     if (method_name == kFuncNameConnect) {
       return Connect(args, argCount, result);
@@ -192,7 +221,7 @@ class HostNPScriptObject {
   }
 
   bool HasProperty(const std::string& property_name) {
-    LOG(INFO) << "HasProperty " << property_name;
+    VLOG(2) << "HasProperty " << property_name;
     CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
     return (property_name == kAttrNameAccessCode ||
             property_name == kAttrNameState ||
@@ -206,7 +235,7 @@ class HostNPScriptObject {
   }
 
   bool GetProperty(const std::string& property_name, NPVariant* result) {
-    LOG(INFO) << "GetProperty " << property_name;
+    VLOG(2) << "GetProperty " << property_name;
     CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
     if (!result) {
       SetException("GetProperty: NULL result");
@@ -247,7 +276,7 @@ class HostNPScriptObject {
   }
 
   bool SetProperty(const std::string& property_name, const NPVariant* value) {
-    LOG(INFO) << "SetProperty " << property_name;
+    VLOG(2) << "SetProperty " << property_name;
     CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
 
     if (property_name == kAttrNameOnStateChanged) {
@@ -271,13 +300,13 @@ class HostNPScriptObject {
   }
 
   bool RemoveProperty(const std::string& property_name) {
-    LOG(INFO) << "RemoveProperty " << property_name;
+    VLOG(2) << "RemoveProperty " << property_name;
     CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
     return false;
   }
 
   bool Enumerate(std::vector<std::string>* values) {
-    LOG(INFO) << "Enumerate";
+    VLOG(2) << "Enumerate";
     CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
     const char* entries[] = {
       kAttrNameAccessCode,
@@ -298,26 +327,22 @@ class HostNPScriptObject {
     return true;
   }
 
+  // remoting::HostStatusObserver implementation.
+  virtual void OnSignallingConnected(remoting::SignalStrategy* signal_strategy,
+                                     const std::string& full_jid) OVERRIDE {
+    OnStateChanged(kConnected);
+  }
+
+  virtual void OnSignallingDisconnected() OVERRIDE {
+  }
+
+  virtual void OnShutdown() OVERRIDE {
+    DCHECK_EQ(MessageLoop::current(), host_context_.main_message_loop());
+
+    OnStateChanged(kDisconnected);
+  }
+
  private:
-  // JS string
-  static const char* kAttrNameAccessCode;
-  // JS int
-  static const char* kAttrNameState;
-  // JS func onStateChanged()
-  static const char* kAttrNameOnStateChanged;
-  // void connect(string uid, string auth_token);
-  static const char* kFuncNameConnect;
-  // void disconnect();
-  static const char* kFuncNameDisconnect;
-
-  // States
-  static const char* kAttrNameDisconnected;
-  static const char* kAttrNameRequestedAccessCode;
-  static const char* kAttrNameReceivedAccessCode;
-  static const char* kAttrNameConnected;
-  static const char* kAttrNameAffirmingConnection;
-  static const char* kAttrNameError;
-
   enum State {
     kDisconnected,
     kRequestedAccessCode,
@@ -326,18 +351,6 @@ class HostNPScriptObject {
     kAffirmingConnection,
     kError
   };
-
-  NPP plugin_;
-  NPObject* parent_;
-  int state_;
-  std::string access_code_;
-  NPObject* on_state_changed_func_;
-  base::PlatformThreadId np_thread_id_;
-
-  scoped_refptr<remoting::RegisterSupportHostRequest> register_request_;
-  scoped_refptr<remoting::ChromotingHost> host_;
-  scoped_refptr<remoting::MutableHostConfig> host_config_;
-  remoting::ChromotingHostContext host_context_;
 
   // Start connection. args are:
   //   string uid, string auth_token
@@ -354,8 +367,16 @@ class HostNPScriptObject {
   void OnReceivedSupportID(remoting::SupportAccessVerifier* access_verifier,
                            bool success,
                            const std::string& support_id);
-  void OnConnected();
-  void OnHostShutdown();
+
+  // Helper functions that run on main thread. Can be called on any
+  // other thread.
+  void ConnectInternal(const std::string& uid,
+                       const std::string& auth_token,
+                       const std::string& auth_service);
+  void DisconnectInternal();
+
+  // Callback for ChromotingHost::Shutdown().
+  void OnShutdownFinished();
 
   // Call a JavaScript function wrapped as an NPObject.
   // If result is non-null, the result of the call will be stored in it.
@@ -374,24 +395,22 @@ class HostNPScriptObject {
 
   // Set an exception for the current call.
   void SetException(const std::string& exception_string);
+
+  NPP plugin_;
+  NPObject* parent_;
+  int state_;
+  std::string access_code_;
+  NPObject* on_state_changed_func_;
+  base::PlatformThreadId np_thread_id_;
+
+  scoped_ptr<remoting::RegisterSupportHostRequest> register_request_;
+  scoped_refptr<remoting::ChromotingHost> host_;
+  scoped_refptr<remoting::MutableHostConfig> host_config_;
+  remoting::ChromotingHostContext host_context_;
+
+  base::WaitableEvent disconnected_event_;
+  base::CancellationFlag destructing_;
 };
-
-const char* HostNPScriptObject::kAttrNameAccessCode = "accessCode";
-const char* HostNPScriptObject::kAttrNameState = "state";
-const char* HostNPScriptObject::kAttrNameOnStateChanged = "onStateChanged";
-const char* HostNPScriptObject::kFuncNameConnect = "connect";
-const char* HostNPScriptObject::kFuncNameDisconnect = "disconnect";
-
-// States
-const char* HostNPScriptObject::kAttrNameDisconnected = "DISCONNECTED";
-const char* HostNPScriptObject::kAttrNameRequestedAccessCode =
-    "REQUESTED_ACCESS_CODE";
-const char* HostNPScriptObject::kAttrNameReceivedAccessCode =
-    "RECEIVED_ACCESS_CODE";
-const char* HostNPScriptObject::kAttrNameConnected = "CONNECTED";
-const char* HostNPScriptObject::kAttrNameAffirmingConnection =
-    "AFFIRMING_CONNECTION";
-const char* HostNPScriptObject::kAttrNameError = "ERROR";
 
 // string uid, string auth_token
 bool HostNPScriptObject::Connect(const NPVariant* args,
@@ -419,6 +438,22 @@ bool HostNPScriptObject::Connect(const NPVariant* args,
     return false;
   }
 
+  ConnectInternal(uid, auth_token, auth_service);
+
+  return true;
+}
+
+void HostNPScriptObject::ConnectInternal(
+    const std::string& uid,
+    const std::string& auth_token,
+    const std::string& auth_service) {
+  if (MessageLoop::current() != host_context_.main_message_loop()) {
+    host_context_.main_message_loop()->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(this, &HostNPScriptObject::ConnectInternal,
+                          uid, auth_token, auth_service));
+    return;
+  }
   // Store the supplied user ID and token to the Host configuration.
   scoped_refptr<remoting::MutableHostConfig> host_config =
       new remoting::InMemoryHostConfig;
@@ -429,10 +464,6 @@ bool HostNPScriptObject::Connect(const NPVariant* args,
   // Create an access verifier and fetch the host secret.
   scoped_ptr<remoting::SupportAccessVerifier> access_verifier;
   access_verifier.reset(new remoting::SupportAccessVerifier);
-  if (!access_verifier->Init()) {
-    SetException("connect: SupportAccessVerifier::Init failed");
-    return false;
-  }
 
   // Generate a key pair for the Host to use.
   // TODO(wez): Move this to the worker thread.
@@ -441,36 +472,35 @@ bool HostNPScriptObject::Connect(const NPVariant* args,
   host_key_pair.Save(host_config);
 
   // Request registration of the host for support.
-  scoped_refptr<remoting::RegisterSupportHostRequest> register_request =
-      new remoting::RegisterSupportHostRequest();
+  scoped_ptr<remoting::RegisterSupportHostRequest> register_request(
+      new remoting::RegisterSupportHostRequest());
   if (!register_request->Init(
           host_config.get(),
           base::Bind(&HostNPScriptObject::OnReceivedSupportID,
                      base::Unretained(this),
                      access_verifier.get()))) {
-    SetException("connect: RegisterSupportHostRequest::Init failed");
-    return false;
+    OnStateChanged(kDisconnected);
+    return;
   }
 
   // Create the Host.
   scoped_refptr<remoting::ChromotingHost> host =
       remoting::ChromotingHost::Create(&host_context_, host_config,
                                        access_verifier.release());
-  host->AddStatusObserver(register_request);
-  host->set_me2mom(true);
+  host->AddStatusObserver(this);
+  host->AddStatusObserver(register_request.get());
+  host->set_it2me(true);
 
   // Nothing went wrong, so lets save the host, config and request.
   host_ = host;
   host_config_ = host_config;
-  register_request_ = register_request;
+  register_request_.reset(register_request.release());
 
   // Start the Host.
-  // TODO(wez): Attach to the Host for notifications of state changes.
-  // It currently has no interface for that, though.
-  host_->Start(NewRunnableMethod(this, &HostNPScriptObject::OnHostShutdown));
+  host_->Start();
 
   OnStateChanged(kRequestedAccessCode);
-  return true;
+  return;
 }
 
 bool HostNPScriptObject::Disconnect(const NPVariant* args,
@@ -482,15 +512,35 @@ bool HostNPScriptObject::Disconnect(const NPVariant* args,
     return false;
   }
 
-  if (host_.get()) {
-    host_->Shutdown();
-    host_ = NULL;
-  }
-  register_request_ = NULL;
-  host_config_ = NULL;
+  DisconnectInternal();
 
-  OnStateChanged(kDisconnected);
   return true;
+}
+
+void HostNPScriptObject::DisconnectInternal() {
+  if (MessageLoop::current() != host_context_.main_message_loop()) {
+    host_context_.main_message_loop()->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(this, &HostNPScriptObject::DisconnectInternal));
+    return;
+  }
+
+  if (!host_) {
+    disconnected_event_.Signal();
+    return;
+  }
+
+  host_->Shutdown(
+      NewRunnableMethod(this, &HostNPScriptObject::OnShutdownFinished));
+}
+
+void HostNPScriptObject::OnShutdownFinished() {
+  DCHECK_EQ(MessageLoop::current(), host_context_.main_message_loop());
+
+  host_ = NULL;
+  register_request_.reset();
+  host_config_ = NULL;
+  disconnected_event_.Signal();
 }
 
 void HostNPScriptObject::OnReceivedSupportID(
@@ -501,12 +551,12 @@ void HostNPScriptObject::OnReceivedSupportID(
 
   if (!success) {
     // TODO(wez): Replace the success/fail flag with full error reporting.
-    OnHostShutdown();
+    DisconnectInternal();
     return;
   }
 
   // Inform the AccessVerifier of our Support-Id, for authentication.
-  access_verifier->OnMe2MomHostRegistered(success, support_id);
+  access_verifier->OnIT2MeHostRegistered(success, support_id);
 
   // Combine the Support Id with the Host Id to make the Access Code.
   // TODO(wez): Locking, anyone?
@@ -516,17 +566,11 @@ void HostNPScriptObject::OnReceivedSupportID(
   OnStateChanged(kReceivedAccessCode);
 }
 
-void HostNPScriptObject::OnConnected() {
-  CHECK_NE(base::PlatformThread::CurrentId(), np_thread_id_);
-  OnStateChanged(kConnected);
-}
-
-void HostNPScriptObject::OnHostShutdown() {
-  CHECK_NE(base::PlatformThread::CurrentId(), np_thread_id_);
-  OnStateChanged(kDisconnected);
-}
-
 void HostNPScriptObject::OnStateChanged(State state) {
+  if (destructing_.IsSet()) {
+    return;
+  }
+
   if (!host_context_.IsUIThread()) {
     host_context_.PostToUIThread(
         FROM_HERE,
@@ -535,7 +579,7 @@ void HostNPScriptObject::OnStateChanged(State state) {
   }
   state_ = state;
   if (on_state_changed_func_) {
-    LOG(INFO) << "Calling state changed " << state;
+    VLOG(2) << "Calling state changed " << state;
     bool is_good = CallJSFunction(on_state_changed_func_, NULL, 0, NULL);
     LOG_IF(ERROR, !is_good) << "OnStateChangedNP failed";
   }
@@ -681,7 +725,7 @@ class HostNPPlugin {
   }
 
   static NPObject* Allocate(NPP npp, NPClass* aClass) {
-    LOG(INFO) << "static Allocate";
+    VLOG(2) << "static Allocate";
     ScriptableNPObject* object =
         reinterpret_cast<ScriptableNPObject*>(
             g_npnetscape_funcs->memalloc(sizeof(ScriptableNPObject)));
@@ -697,7 +741,7 @@ class HostNPPlugin {
   }
 
   static void Deallocate(NPObject* npobj) {
-    LOG(INFO) << "static Deallocate";
+    VLOG(2) << "static Deallocate";
     if (npobj) {
       Invalidate(npobj);
       g_npnetscape_funcs->memfree(npobj);
@@ -715,7 +759,7 @@ class HostNPPlugin {
   }
 
   static bool HasMethod(NPObject* obj, NPIdentifier method_name) {
-    LOG(INFO) << "static HasMethod";
+    VLOG(2) << "static HasMethod";
     HostNPScriptObject* scriptable = ScriptableFromObject(obj);
     if (!scriptable) return false;
     std::string method_name_string = StringFromNPIdentifier(method_name);
@@ -728,7 +772,7 @@ class HostNPPlugin {
                             const NPVariant* args,
                             uint32_t argCount,
                             NPVariant* result) {
-    LOG(INFO) << "static InvokeDefault";
+    VLOG(2) << "static InvokeDefault";
     HostNPScriptObject* scriptable = ScriptableFromObject(obj);
     if (!scriptable) return false;
     return scriptable->InvokeDefault(args, argCount, result);
@@ -739,7 +783,7 @@ class HostNPPlugin {
                      const NPVariant* args,
                      uint32_t argCount,
                      NPVariant* result) {
-    LOG(INFO) << "static Invoke";
+    VLOG(2) << "static Invoke";
     HostNPScriptObject* scriptable = ScriptableFromObject(obj);
     if (!scriptable)
       return false;
@@ -750,7 +794,7 @@ class HostNPPlugin {
   }
 
   static bool HasProperty(NPObject* obj, NPIdentifier property_name) {
-    LOG(INFO) << "static HasProperty";
+    VLOG(2) << "static HasProperty";
     HostNPScriptObject* scriptable = ScriptableFromObject(obj);
     if (!scriptable) return false;
     std::string property_name_string = StringFromNPIdentifier(property_name);
@@ -762,7 +806,7 @@ class HostNPPlugin {
   static bool GetProperty(NPObject* obj,
                           NPIdentifier property_name,
                           NPVariant* result) {
-    LOG(INFO) << "static GetProperty";
+    VLOG(2) << "static GetProperty";
     HostNPScriptObject* scriptable = ScriptableFromObject(obj);
     if (!scriptable) return false;
     std::string property_name_string = StringFromNPIdentifier(property_name);
@@ -774,7 +818,7 @@ class HostNPPlugin {
   static bool SetProperty(NPObject* obj,
                           NPIdentifier property_name,
                           const NPVariant* value) {
-    LOG(INFO) << "static SetProperty";
+    VLOG(2) << "static SetProperty";
     HostNPScriptObject* scriptable = ScriptableFromObject(obj);
     if (!scriptable) return false;
     std::string property_name_string = StringFromNPIdentifier(property_name);
@@ -784,7 +828,7 @@ class HostNPPlugin {
   }
 
   static bool RemoveProperty(NPObject* obj, NPIdentifier property_name) {
-    LOG(INFO) << "static RemoveProperty";
+    VLOG(2) << "static RemoveProperty";
     HostNPScriptObject* scriptable = ScriptableFromObject(obj);
     if (!scriptable) return false;
     std::string property_name_string = StringFromNPIdentifier(property_name);
@@ -796,7 +840,7 @@ class HostNPPlugin {
   static bool Enumerate(NPObject* obj,
                         NPIdentifier** value,
                         uint32_t* count) {
-    LOG(INFO) << "static Enumerate";
+    VLOG(2) << "static Enumerate";
     HostNPScriptObject* scriptable = ScriptableFromObject(obj);
     if (!scriptable) return false;
     std::vector<std::string> values;
@@ -829,7 +873,7 @@ NPError CreatePlugin(NPMIMEType pluginType,
                      char** argn,
                      char** argv,
                      NPSavedData* saved) {
-  LOG(INFO) << "CreatePlugin";
+  VLOG(2) << "CreatePlugin";
   HostNPPlugin* plugin = new HostNPPlugin(instance, mode);
   instance->pdata = plugin;
   if (!plugin->Init(argc, argn, argv, saved)) {
@@ -843,7 +887,7 @@ NPError CreatePlugin(NPMIMEType pluginType,
 
 NPError DestroyPlugin(NPP instance,
                       NPSavedData** save) {
-  LOG(INFO) << "DestroyPlugin";
+  VLOG(2) << "DestroyPlugin";
   HostNPPlugin* plugin = PluginFromInstance(instance);
   if (plugin) {
     plugin->Save(save);
@@ -858,22 +902,22 @@ NPError DestroyPlugin(NPP instance,
 NPError GetValue(NPP instance, NPPVariable variable, void* value) {
   switch(variable) {
   default:
-    LOG(INFO) << "GetValue - default " << variable;
+    VLOG(2) << "GetValue - default " << variable;
     return NPERR_GENERIC_ERROR;
   case NPPVpluginNameString:
-    LOG(INFO) << "GetValue - name string";
+    VLOG(2) << "GetValue - name string";
     *reinterpret_cast<const char**>(value) = HOST_PLUGIN_NAME;
     break;
   case NPPVpluginDescriptionString:
-    LOG(INFO) << "GetValue - description string";
+    VLOG(2) << "GetValue - description string";
     *reinterpret_cast<const char**>(value) = HOST_PLUGIN_DESCRIPTION;
     break;
   case NPPVpluginNeedsXEmbed:
-    LOG(INFO) << "GetValue - NeedsXEmbed";
+    VLOG(2) << "GetValue - NeedsXEmbed";
     *(static_cast<NPBool*>(value)) = true;
     break;
   case NPPVpluginScriptableNPObject:
-    LOG(INFO) << "GetValue - scriptable object";
+    VLOG(2) << "GetValue - scriptable object";
     HostNPPlugin* plugin = PluginFromInstance(instance);
     if (!plugin)
       return NPERR_INVALID_PLUGIN_ERROR;
@@ -886,18 +930,17 @@ NPError GetValue(NPP instance, NPPVariable variable, void* value) {
 }
 
 NPError HandleEvent(NPP instance, void* ev) {
-  LOG(INFO) << "HandleEvent";
+  VLOG(2) << "HandleEvent";
   return NPERR_NO_ERROR;
 }
 
 NPError SetWindow(NPP instance, NPWindow* pNPWindow) {
-  LOG(INFO) << "SetWindow";
+  VLOG(2) << "SetWindow";
   return NPERR_NO_ERROR;
 }
 
 }  // namespace
 
-// TODO(fix): Temporary hack while we figure out threading models correctly.
 DISABLE_RUNNABLE_METHOD_REFCOUNT(HostNPScriptObject);
 
 #if defined(OS_WIN)
@@ -923,7 +966,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD dwReason, LPVOID lpReserved) {
 extern "C" {
 
 EXPORT NPError API_CALL NP_GetEntryPoints(NPPluginFuncs* nppfuncs) {
-  LOG(INFO) << "NP_GetEntryPoints";
+  VLOG(2) << "NP_GetEntryPoints";
   nppfuncs->version = (NP_VERSION_MAJOR << 8) | NP_VERSION_MINOR;
   nppfuncs->newp = &CreatePlugin;
   nppfuncs->destroy = &DestroyPlugin;
@@ -939,7 +982,7 @@ EXPORT NPError API_CALL NP_Initialize(NPNetscapeFuncs* npnetscape_funcs
                             , NPPluginFuncs* nppfuncs
 #endif
                             ) {
-  LOG(INFO) << "NP_Initialize";
+  VLOG(2) << "NP_Initialize";
   if (g_at_exit_manager)
     return NPERR_MODULE_LOAD_FAILED_ERROR;
 
@@ -958,7 +1001,7 @@ EXPORT NPError API_CALL NP_Initialize(NPNetscapeFuncs* npnetscape_funcs
 }
 
 EXPORT NPError API_CALL NP_Shutdown() {
-  LOG(INFO) << "NP_Shutdown";
+  VLOG(2) << "NP_Shutdown";
   delete g_at_exit_manager;
   g_at_exit_manager = NULL;
   return NPERR_NO_ERROR;
@@ -966,7 +1009,7 @@ EXPORT NPError API_CALL NP_Shutdown() {
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 EXPORT const char* API_CALL NP_GetMIMEDescription(void) {
-  LOG(INFO) << "NP_GetMIMEDescription";
+  VLOG(2) << "NP_GetMIMEDescription";
   return STRINGIZE(HOST_PLUGIN_MIME_TYPE) ":"
       HOST_PLUGIN_NAME ":"
       HOST_PLUGIN_DESCRIPTION;

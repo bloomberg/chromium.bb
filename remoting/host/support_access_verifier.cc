@@ -41,22 +41,15 @@ std::string GenerateRandomHostSecret() {
 
 }  // namespace
 
-SupportAccessVerifier::SupportAccessVerifier()
-    : initialized_(false) {
+SupportAccessVerifier::SupportAccessVerifier() {
+  host_secret_ = GenerateRandomHostSecret();
 }
 
 SupportAccessVerifier::~SupportAccessVerifier() { }
 
-bool SupportAccessVerifier::Init() {
-  host_secret_ = GenerateRandomHostSecret();
-  initialized_ = true;
-  return true;
-}
-
 bool SupportAccessVerifier::VerifyPermissions(
     const std::string& client_jid,
     const std::string& encoded_access_token) {
-  CHECK(initialized_);
   if (support_id_.empty())
     return false;
   std::string access_code = support_id_ + "-" + host_secret_;
@@ -64,7 +57,7 @@ bool SupportAccessVerifier::VerifyPermissions(
       client_jid, access_code, encoded_access_token);
 }
 
-void SupportAccessVerifier::OnMe2MomHostRegistered(
+void SupportAccessVerifier::OnIT2MeHostRegistered(
     bool successful, const std::string& support_id) {
   if (successful) {
     support_id_ = support_id;

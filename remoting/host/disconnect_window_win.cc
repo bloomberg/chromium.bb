@@ -98,7 +98,7 @@ BOOL DisconnectWindowWin::OnDialogMessage(HWND hwnd, UINT msg,
         case IDC_DISCONNECT:
           {
             CHECK(host_);
-            host_->Shutdown();
+            host_->Shutdown(NULL);
             EndDialog(hwnd, LOWORD(wParam));
             hwnd_ = NULL;
           }

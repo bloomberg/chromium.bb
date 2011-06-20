@@ -59,7 +59,7 @@ TEST_F(HeartbeatSenderTest, DoSendStanza) {
 
   EXPECT_CALL(*iq_request, set_callback(_)).Times(1);
 
-  scoped_refptr<HeartbeatSender> heartbeat_sender(
+  scoped_ptr<HeartbeatSender> heartbeat_sender(
       new HeartbeatSender(&message_loop_, config_));
   ASSERT_TRUE(heartbeat_sender->Init());
 
@@ -78,7 +78,7 @@ TEST_F(HeartbeatSenderTest, DoSendStanza) {
 
 // Validate format of the heartbeat stanza.
 TEST_F(HeartbeatSenderTest, CreateHeartbeatMessage) {
-  scoped_refptr<HeartbeatSender> heartbeat_sender(
+  scoped_ptr<HeartbeatSender> heartbeat_sender(
       new HeartbeatSender(&message_loop_, config_));
   ASSERT_TRUE(heartbeat_sender->Init());
 
@@ -129,7 +129,7 @@ TEST_F(HeartbeatSenderTest, ProcessResponse) {
   const int kTestInterval = 123;
   set_interval->AddText(base::IntToString(kTestInterval));
 
-  scoped_refptr<HeartbeatSender> heartbeat_sender(
+  scoped_ptr<HeartbeatSender> heartbeat_sender(
       new HeartbeatSender(&message_loop_, config_));
   heartbeat_sender->ProcessResponse(response.get());
 

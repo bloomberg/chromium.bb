@@ -111,7 +111,7 @@ gboolean DisconnectWindowLinux::OnWindowDelete(GtkWidget* widget,
 
 void DisconnectWindowLinux::OnDisconnectClicked(GtkButton* sender) {
   DCHECK(host_);
-  host_->Shutdown();
+  host_->Shutdown(NULL);
 }
 
 remoting::DisconnectWindow* remoting::DisconnectWindow::Create() {
