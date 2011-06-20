@@ -151,3 +151,6 @@ fun:g_slice_alloc
 # A benign race in glibc on "random_time_bits".
 fun:__gen_tempname
 
+# The sqlite cache is racing against a few different stacktraces,
+# so let's ignore it recursively. See http://crbug.com/84094
+fun_r:pcache1Fetch
