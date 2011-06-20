@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/sync/sessions/sync_session.h"
+
+#include <algorithm>
+
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 
@@ -20,6 +23,7 @@ SyncSession::SyncSession(SyncSessionContext* context, Delegate* delegate,
       workers_(workers),
       routing_info_(routing_info) {
   status_controller_.reset(new StatusController(routing_info_));
+  std::sort(workers_.begin(), workers_.end());
 }
 
 SyncSession::~SyncSession() {}
