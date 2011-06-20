@@ -12,9 +12,6 @@
 #include "chrome/browser/profiles/profile_io_data.h"
 
 namespace net {
-class CookiePolicy;
-class NetworkDelegate;
-class DnsCertProvenanceChecker;
 class HttpTransactionFactory;
 }  // namespace net
 
