@@ -27,10 +27,6 @@ void TabStripModelObserver::ActiveTabChanged(TabContentsWrapper* old_contents,
                                              bool user_gesture) {
 }
 
-void TabStripModelObserver::TabSelectionChanged(
-    const TabStripSelectionModel& model) {
-}
-
 void TabStripModelObserver::TabMoved(TabContentsWrapper* contents,
                                      int from_index,
                                      int to_index) {

@@ -2907,6 +2907,9 @@ void Browser::ActiveTabChanged(TabContentsWrapper* old_contents,
                                TabContentsWrapper* new_contents,
                                int index,
                                bool user_gesture) {
+  if (old_contents == new_contents)
+    return;
+
   // On some platforms we want to automatically reload tabs that are
   // killed when the user selects them.
   if (user_gesture && new_contents->tab_contents()->crashed_status() ==

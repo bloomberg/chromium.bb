@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/tabs/side_tab_strip.h"
 
-#include "chrome/browser/tabs/tab_strip_selection_model.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/tabs/side_tab.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
@@ -176,11 +175,11 @@ void SideTabStrip::RemoveTabAt(int model_index) {
   StartRemoveTabAnimation(model_index);
 }
 
-void SideTabStrip::SetSelection(const TabStripSelectionModel& old_selection,
-                                const TabStripSelectionModel& new_selection) {
-  GetBaseTabAtModelIndex(new_selection.active())->SchedulePaint();
-  if (old_selection.active() != new_selection.active())
-    MakeTabVisible(ModelIndexToTabIndex(new_selection.active()));
+void SideTabStrip::SelectTabAt(int old_model_index, int new_model_index) {
+  GetBaseTabAtModelIndex(new_model_index)->SchedulePaint();
+
+  if (controller()->IsActiveTab(new_model_index))
+    MakeTabVisible(ModelIndexToTabIndex(new_model_index));
 }
 
 void SideTabStrip::TabTitleChangedNotLoading(int model_index) {

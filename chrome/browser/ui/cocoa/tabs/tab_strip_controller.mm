@@ -1215,7 +1215,7 @@ class NotificationBridge : public NotificationObserver {
   // Take closing tabs into account.
   NSInteger activeIndex = [self indexFromModelIndex:modelIndex];
 
-  if (oldContents) {
+  if (oldContents && oldContents != newContents) {
     int oldModelIndex =
         browser_->GetIndexOfController(&(oldContents->controller()));
     if (oldModelIndex != -1) {  // When closing a tab, the old tab may be gone.

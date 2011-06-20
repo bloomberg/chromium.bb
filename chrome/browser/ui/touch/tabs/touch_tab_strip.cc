@@ -86,8 +86,7 @@ void TouchTabStrip::RemoveTabAt(int model_index) {
   StartRemoveTabAnimation(model_index);
 }
 
-void SetSelection(const TabStripSelectionModel& old_selection,
-                  const TabStripSelectionModel& new_selection) {
+void TouchTabStrip::SelectTabAt(int old_model_index, int new_model_index) {
   SchedulePaint();
 }
 

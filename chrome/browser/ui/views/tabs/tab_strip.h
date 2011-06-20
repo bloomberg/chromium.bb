@@ -16,7 +16,6 @@
 #include "views/mouse_watcher.h"
 
 class Tab;
-class TabStripSelectionModel;
 
 namespace views {
 class ImageView;
@@ -58,9 +57,7 @@ class TabStrip : public BaseTabStrip,
   // BaseTabStrip implementation:
   virtual void PrepareForCloseAt(int model_index) OVERRIDE;
   virtual void RemoveTabAt(int model_index) OVERRIDE;
-  virtual void SetSelection(
-      const TabStripSelectionModel& old_selection,
-      const TabStripSelectionModel& new_selection) OVERRIDE;
+  virtual void SelectTabAt(int old_model_index, int new_model_index) OVERRIDE;
   virtual void TabTitleChangedNotLoading(int model_index) OVERRIDE;
   virtual void StartHighlight(int model_index) OVERRIDE;
   virtual void StopAllHighlighting() OVERRIDE;

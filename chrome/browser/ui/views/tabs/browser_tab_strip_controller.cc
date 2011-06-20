@@ -10,7 +10,6 @@
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
-#include "chrome/browser/tabs/tab_strip_selection_model.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
@@ -342,9 +341,13 @@ void BrowserTabStripController::TabDetachedAt(TabContentsWrapper* contents,
   tabstrip_->RemoveTabAt(model_index);
 }
 
-void BrowserTabStripController::TabSelectionChanged(
-    const TabStripSelectionModel& old_model) {
-  tabstrip_->SetSelection(old_model, model_->selection_model());
+void BrowserTabStripController::ActiveTabChanged(
+    TabContentsWrapper* old_contents,
+    TabContentsWrapper* contents,
+    int model_index,
+    bool user_gesture) {
+  tabstrip_->SelectTabAt(model_->GetIndexOfTabContents(old_contents),
+                         model_index);
 }
 
 void BrowserTabStripController::TabMoved(TabContentsWrapper* contents,
