@@ -916,7 +916,14 @@
               'defines': [
                 '__ARM_HAVE_NEON',
               ],
-            }],
+              'cflags': [
+                # The neon assembly contains conditional instructions which
+                # aren't enclosed in an IT block. The assembler complains
+                # without this option.
+                # See #86592.
+                '-Wa,-mimplicit-it=always',
+              ],
+           }],
           ],
           # The assembly uses the frame pointer register (r7 in Thumb/r11 in
           # ARM), the compiler doesn't like that.
