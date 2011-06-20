@@ -29,6 +29,10 @@ class IDLOutFile(object):
     self.outlist = []
     self.open = True
 
+  # Return the file name
+  def Filename(self):
+    return self.filename
+
   # Append to the output if the file is still open
   def Write(self, string):
     if not self.open:

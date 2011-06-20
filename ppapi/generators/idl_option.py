@@ -37,7 +37,7 @@ class Option(object):
     if self.testfunc:
       if not self.testfunc(self, value): return False
     # If this is a boolean option, set it to true
-    if not self.default:
+    if self.default is None:
       self.value = True
     else:
       self.value = value
