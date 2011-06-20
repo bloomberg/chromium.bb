@@ -697,6 +697,21 @@ string16 GetStringFUTF16(int message_id,
   return GetStringF(message_id, replacements, NULL);
 }
 
+string16 GetStringFUTF16(int message_id,
+                         const string16& a,
+                         const string16& b,
+                         const string16& c,
+                         const string16& d,
+                         const string16& e) {
+  std::vector<string16> replacements;
+  replacements.push_back(a);
+  replacements.push_back(b);
+  replacements.push_back(c);
+  replacements.push_back(d);
+  replacements.push_back(e);
+  return GetStringF(message_id, replacements, NULL);
+}
+
 string16 GetStringFUTF16(int message_id, const string16& a, size_t* offset) {
   DCHECK(offset);
   std::vector<size_t> offsets;

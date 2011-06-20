@@ -15,7 +15,7 @@
 #include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/field_types.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/glue/form_data.h"
+
 
 enum RequestMethod {
   GET,
@@ -32,6 +32,11 @@ class AutofillMetrics;
 
 namespace buzz {
 class XmlElement;
+}
+
+namespace webkit_glue {
+struct FormData;
+struct FormDataPredictions;
 }
 
 // FormStructure stores a single HTML form together with the values entered
@@ -64,6 +69,12 @@ class FormStructure {
   static void ParseQueryResponse(const std::string& response_xml,
                                  const std::vector<FormStructure*>& forms,
                                  const AutofillMetrics& metric_logger);
+
+  // Fills |forms| with the details from the given |form_structures| and their
+  // fields' predicted types.
+  static void GetFieldTypePredictions(
+      const std::vector<FormStructure*>& form_structures,
+      std::vector<webkit_glue::FormDataPredictions>* forms);
 
   // The unique signature for this form, composed of the target url domain,
   // the form name, and the form field names in a 64-bit hash.

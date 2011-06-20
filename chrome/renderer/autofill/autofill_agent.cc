@@ -20,6 +20,7 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "webkit/glue/form_data.h"
+#include "webkit/glue/form_data_predictions.h"
 #include "webkit/glue/form_field.h"
 #include "webkit/glue/password_form.h"
 
@@ -31,6 +32,7 @@ using WebKit::WebKeyboardEvent;
 using WebKit::WebNode;
 using WebKit::WebString;
 using webkit_glue::FormData;
+using webkit_glue::FormDataPredictions;
 
 namespace {
 
@@ -64,6 +66,8 @@ bool AutofillAgent::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(AutofillAgent, message)
     IPC_MESSAGE_HANDLER(AutofillMsg_SuggestionsReturned, OnSuggestionsReturned)
     IPC_MESSAGE_HANDLER(AutofillMsg_FormDataFilled, OnFormDataFilled)
+    IPC_MESSAGE_HANDLER(AutofillMsg_FieldTypePredictionsAvailable,
+                        OnFieldTypePredictionsAvailable)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -303,6 +307,13 @@ void AutofillAgent::OnFormDataFilled(int query_id,
   }
   autofill_action_ = AUTOFILL_NONE;
   Send(new AutofillHostMsg_DidFillAutofillFormData(routing_id()));
+}
+
+void AutofillAgent::OnFieldTypePredictionsAvailable(
+    const std::vector<FormDataPredictions>& forms) {
+  for (size_t i = 0; i < forms.size(); ++i) {
+    form_manager_.ShowPredictions(forms[i]);
+  }
 }
 
 void AutofillAgent::ShowSuggestions(const WebInputElement& element,

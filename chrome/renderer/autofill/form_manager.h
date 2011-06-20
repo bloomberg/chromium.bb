@@ -16,6 +16,7 @@
 
 namespace webkit_glue {
 struct FormData;
+struct FormDataPredictions;
 struct FormField;
 }  // namespace webkit_glue
 
@@ -97,6 +98,12 @@ class FormManager {
   // initiated the preview process.
   void PreviewForm(const webkit_glue::FormData& form,
                    const WebKit::WebNode &node);
+
+  // For each field in the |form|, sets the field's placeholder text to the
+  // field's overall predicted type.  Also sets the title to include the field's
+  // heuristic type, server type, and signature; as well as the form's signature
+  // and the experiment id for the server predictions.
+  bool ShowPredictions(const webkit_glue::FormDataPredictions& form);
 
   // Clears the values of all input elements in the form that contains |node|.
   // Returns false if the form is not found.
