@@ -1628,3 +1628,9 @@
    ...
    fun:content_settings::PrefProviderTest_MigrateSinglePatternSettings_Test::TestBody
 }
+{
+   bug_86755
+   Heapcheck:Leak
+   fun:::SignHmacSha1
+   fun:OAuthRequestSigner::Sign
+}
