@@ -280,6 +280,8 @@ wlsc_buffer_attach(struct wl_buffer *buffer, struct wl_surface *surface)
 		wl_list_remove(&es->buffer_link);
 		wl_list_insert(surfaces_attached_to, &es->buffer_link);
 	} else {
+		if (es->image != EGL_NO_IMAGE_KHR)
+			ec->destroy_image(ec->display, es->image);
 		es->image = ec->create_image(ec->display, NULL,
 					     EGL_WAYLAND_BUFFER_WL,
 					     buffer, NULL);
