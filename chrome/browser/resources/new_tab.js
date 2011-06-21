@@ -435,7 +435,7 @@ function isAnimating() {
   return de.getAttribute('enable-section-animations') == 'true';
 }
 
-// Layout the sections in a modified accordian. The header and miniview, if
+// Layout the sections in a modified accordion. The header and miniview, if
 // visible are fixed within the viewport. If there is an expanded section, its
 // it scrolls.
 //
@@ -501,6 +501,7 @@ function layoutSections() {
   // space to show the expanded section completely, this will be the available
   // height. Otherwise, we use the intrinsic height of the expanded section.
   var expandedSectionHeight;
+  var expandedSectionIsClipped = false;
   if (expandedSection) {
     var flexHeight = window.innerHeight - headerHeight - footerHeight;
     if (flexHeight < expandedSection.scrollingHeight) {
@@ -520,6 +521,7 @@ function layoutSections() {
           footerHeight +
           fudge +
           'px';
+      expandedSectionIsClipped = true;
     } else {
       expandedSectionHeight = expandedSection.scrollingHeight;
       document.body.style.height = '';
@@ -552,7 +554,8 @@ function layoutSections() {
     }
 
     if (section.maxiview && section == expandedSection)
-      updateMask(section.maxiview, expandedSectionHeight);
+      updateMask(
+          section.maxiview, expandedSectionHeight, expandedSectionIsClipped);
 
     if (section == expandedSection)
       y += expandedSectionHeight;
@@ -564,7 +567,14 @@ function layoutSections() {
   updateAttributionDisplay(y);
 }
 
-function updateMask(maxiview, visibleHeightPx) {
+function updateMask(maxiview, visibleHeightPx, isClipped) {
+  // If the section isn't actually clipped, then we don't want to use a mask at
+  // all, since enabling one turns off subpixel anti-aliasing.
+  if (!isClipped) {
+    maxiview.style.WebkitMaskImage = 'none';
+    return;
+  }
+
   // We want to end up with 10px gradients at the top and bottom of
   // visibleHeight, but webkit-mask only supports expression in terms of
   // percentages.
