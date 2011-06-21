@@ -22,6 +22,9 @@ ui::Clipboard* TestViewsDelegate::GetClipboard() const {
   return clipboard_.get();
 }
 
+views::View* TestViewsDelegate::GetDefaultParentView() {
+  return NULL;
+}
 
 bool TestViewsDelegate::GetSavedWindowBounds(const views::Widget* window,
                                              const std::wstring& window_name,
