@@ -98,12 +98,13 @@ _VERSIONS_INT_SUFFIX = '/chromeos/manifest-versions'
 _MANIFEST_VERSIONS_INT_URL = constants.GERRIT_INT_SSH_URL + _VERSIONS_INT_SUFFIX
 
 default = {
-  # 'board' No default value
+  'board' : None, # Must be filled in
   'profile' : None,
 
   'master' : False,
   'important' : False,
-  # 'hostname' No default value
+
+  'hostname' : None,
 
   'useflags' : None,
   'chromeos_official' : False,
