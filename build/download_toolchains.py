@@ -70,11 +70,7 @@ def Main():
       download_utils.RemoveDir(dst_tmp)
     else:
       dst_tmp = os.path.join(parent_dir, 'toolchain', '.tmp')
-      if sys.platform == 'win32':
-        sync_tgz.SyncTgz(url, dst_tmp,
-                         compress='xz', maindir='toolchain', verbose=False)
-      else:
-        sync_tgz.SyncTgz(url, dst_tmp, maindir='toolchain', verbose=False)
+      sync_tgz.SyncTgz(url, dst_tmp, maindir='toolchain', verbose=False)
       subdir = os.path.join(dst_tmp, 'toolchain', flavor)
       download_utils.MoveDirCleanly(subdir, dst)
       download_utils.RemoveDir(dst_tmp)

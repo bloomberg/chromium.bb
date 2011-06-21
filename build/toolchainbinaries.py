@@ -32,6 +32,15 @@ PLATFORM_MAPPING = {
 }
 
 
+# We prefer to use .xz archives because they are significantly smaller.  Some
+# systems do not have xz installed by default (i.e. MacOS, Ubuntu Hardy).  For
+# some archives we were just lazy and provided only .tgz (i.e. Newlib, PNaCl).
+def FlavorUsesXz(flavor):
+  return ('pnacl' not in flavor and
+      not flavor.endswith('_newlib') and
+      ('win' in flavor or 'linux' in flavor))
+
+
 def EncodeToolchainUrl(base_url, version, flavor):
   if 'pnacl' in flavor:
     return '%s/toolchain/%s/naclsdk_%s.tgz' % (
@@ -40,9 +49,7 @@ def EncodeToolchainUrl(base_url, version, flavor):
     return '%s/toolchain/%s/naclsdk_%s.tgz' % (
       base_url, version, flavor[:-len('_newlib')])
   elif 'x86' in flavor:
-    # TODO(pasko): the URL must depend on the 'flavor' provided, but not the
-    # platform we are running on.
-    if sys.platform == 'win32':
+    if FlavorUsesXz(flavor):
       return '%s/x86_toolchain/r%s/toolchain_%s.tar.xz' % (
         base_url, version, flavor)
     else:

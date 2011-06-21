@@ -18,7 +18,7 @@ import tarfile
 import http_download
 
 
-def SyncTgz(url, target, compress='gzip', maindir='sdk',
+def SyncTgz(url, target, maindir='sdk',
             username=None, password=None, verbose=True):
   """Download a file from a remote server.
 
@@ -58,6 +58,9 @@ def SyncTgz(url, target, compress='gzip', maindir='sdk',
     os.chdir(target)
     env = os.environ.copy()
     env['LC_ALL'] = 'C'
+    compress = 'gzip'
+    if url.endswith('.xz'):
+      compress = 'xz'
     subprocess.check_call(
         [os.path.join('tmptar', 'tar.exe'),
          '--use-compress-program', '/tmptar/' + compress,
@@ -92,8 +95,11 @@ def SyncTgz(url, target, compress='gzip', maindir='sdk',
         print "Can not rmdir %s: %s" % (os.path.join(target, 'tmptar'),
                                           e.strerror)
   elif sys.platform == 'linux2':
-    subprocess.check_call(['tar', '-xS' + verbosechar + 'pf', tgz_filename,
-                           '-C', target])
+    compression_char = 'z'
+    if url.endswith('.xz'):
+      compression_char = 'J'
+    subprocess.check_call(['tar', '-xS' + verbosechar + compression_char + 'pf',
+                           tgz_filename, '-C', target])
   elif sys.platform == 'darwin':
     # TODO(khim): Replace with --warning=no-unknown-keyword when gnutar 1.23+
     # will be available.
