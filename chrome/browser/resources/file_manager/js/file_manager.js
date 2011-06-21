@@ -1682,6 +1682,9 @@ FileManager.prototype = {
    * the actual selection change event.
    */
   FileManager.prototype.onSelectionChangeComplete_ = function(event) {
+    // Inform tests it's OK to click buttons now.
+    chrome.test.sendMessage('selection-change-complete');
+
     if (!this.showCheckboxes_)
       return;
 
@@ -2166,24 +2169,13 @@ FileManager.prototype = {
   };
 
   /**
-   * Close the extension window, but first give the extension API time to
-   * process the last request.  Disable the UI during the wait.
-   * TODO(jamescook): Remove this hack by listening for an "OK to close"
-   * event from the C++ extension API, then call window.close().
-   */
-  FileManager.prototype.closeWindow_ = function() {
-    this.dialogDom_.style.opacity = '0';
-    setTimeout(function() { window.close(); }, 0);
-  };
-
-  /**
    * Handle a click of the cancel button.  Closes the window.
    *
    * @param {Event} event The click event.
    */
   FileManager.prototype.onCancel_ = function(event) {
+    // Closes the window and does not return.
     chrome.fileBrowserPrivate.cancelDialog();
-    this.closeWindow_();
   };
 
   /**
@@ -2209,10 +2201,10 @@ FileManager.prototype = {
       if (!this.validateFileName_(filename, false))
         return;
 
+      // Closes the window and does not return.
       chrome.fileBrowserPrivate.selectFile(
           currentDirUrl + encodeURIComponent(filename),
           this.getSelectedFilterIndex_(filename));
-      this.closeWindow_();
       return;
     }
 
@@ -2237,8 +2229,8 @@ FileManager.prototype = {
 
     // Multi-file selection has no other restrictions.
     if (this.dialogType_ == FileManager.DialogType.SELECT_OPEN_MULTI_FILE) {
+      // Closes the window and does not return.
       chrome.fileBrowserPrivate.selectFiles(ary);
-      this.closeWindow_();
       return;
     }
 
@@ -2261,9 +2253,9 @@ FileManager.prototype = {
         throw new Error('Selected entry is not a file!');
     }
 
+    // Closes the window and does not return.
     chrome.fileBrowserPrivate.selectFile(
         ary[0], this.getSelectedFilterIndex_(ary[0]));
-    this.closeWindow_();
   };
 
   /**

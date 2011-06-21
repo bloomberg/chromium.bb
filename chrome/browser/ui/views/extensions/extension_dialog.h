@@ -7,12 +7,13 @@
 #pragma once
 
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/ui/views/browser_bubble.h"
 #include "chrome/browser/ui/views/extensions/extension_view.h"
 #include "content/common/notification_observer.h"
+#include "content/common/notification_registrar.h"
 
 class Browser;
+class ExtensionDialogObserver;
 class ExtensionHost;
 class GURL;
 class Profile;
@@ -32,15 +33,6 @@ class ExtensionDialog : public BrowserBubble,
                         public NotificationObserver,
                         public base::RefCounted<ExtensionDialog> {
  public:
-  // Observer to ExtensionDialog events.
-  class Observer {
-   public:
-    // Called when the ExtensionDialog is closing. Note that it
-    // is ref-counted, and thus will be released shortly after
-    // making this delegate call.
-    virtual void ExtensionDialogIsClosing(ExtensionDialog* popup) = 0;
-  };
-
   virtual ~ExtensionDialog();
 
   // Create and show a dialog with |url| centered over the browser window.
@@ -49,7 +41,7 @@ class ExtensionDialog : public BrowserBubble,
   static ExtensionDialog* Show(const GURL& url, Browser* browser,
                                int width,
                                int height,
-                               Observer* observer);
+                               ExtensionDialogObserver* observer);
 
   // Notifies the dialog that the observer has been destroyed and should not
   // be sent notifications.
@@ -83,7 +75,7 @@ class ExtensionDialog : public BrowserBubble,
  private:
   ExtensionDialog(ExtensionHost* host, views::Widget* frame,
                   const gfx::Rect& relative_to, int width, int height,
-                  Observer* observer);
+                  ExtensionDialogObserver* observer);
 
   // The contained host for the view.
   scoped_ptr<ExtensionHost> extension_host_;
@@ -98,7 +90,7 @@ class ExtensionDialog : public BrowserBubble,
   NotificationRegistrar registrar_;
 
   // The observer of this popup.
-  Observer* observer_;
+  ExtensionDialogObserver* observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionDialog);
 };

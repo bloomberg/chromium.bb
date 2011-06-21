@@ -4,31 +4,53 @@
 
 #include "chrome/browser/ui/views/file_manager_dialog.h"
 
+#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
+#include "base/scoped_temp_dir.h"
 #include "base/threading/platform_thread.h"
+#include "base/utf_string_conversions.h"  // ASCIIToUTF16
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/shell_dialogs.h"  // SelectFileDialog
+#include "chrome/common/chrome_paths.h"
 #include "chrome/test/ui_test_utils.h"
+#include "content/browser/renderer_host/render_view_host.h"
+#include "webkit/fileapi/file_system_context.h"
+#include "webkit/fileapi/file_system_mount_point_provider.h"
+#include "webkit/fileapi/file_system_path_manager.h"
 
 class FileManagerDialogTest : public ExtensionBrowserTest {
+ public:
+  // Creates a file system mount point for a directory.
+  void AddMountPoint(const FilePath& path) {
+    fileapi::FileSystemPathManager* path_manager =
+        browser()->profile()->GetFileSystemContext()->path_manager();
+    fileapi::ExternalFileSystemMountPointProvider* provider =
+        path_manager->external_provider();
+    provider->AddMountPoint(path);
+  }
 };
 
 class MockSelectFileDialogListener : public SelectFileDialog::Listener {
  public:
   MockSelectFileDialogListener()
-    : canceled_(false) {
+    : file_selected_(false),
+      canceled_(false) {
   }
 
+  bool file_selected() const { return file_selected_; }
   bool canceled() const { return canceled_; }
 
   // SelectFileDialog::Listener implementation.
-  virtual void FileSelected(const FilePath& path, int index, void* params) {}
+  virtual void FileSelected(const FilePath& path, int index, void* params) {
+    file_selected_ = true;
+  }
   virtual void MultiFilesSelected(
       const std::vector<FilePath>& files, void* params) {}
   virtual void FileSelectionCanceled(void* params) {
@@ -36,6 +58,7 @@ class MockSelectFileDialogListener : public SelectFileDialog::Listener {
   }
 
  private:
+  bool file_selected_;
   bool canceled_;
 
   DISALLOW_COPY_AND_ASSIGN(MockSelectFileDialogListener);
@@ -107,11 +130,13 @@ IN_PROC_BROWSER_TEST_F(FileManagerDialogTest, SelectFileAndCancel) {
       NotificationType::RENDER_WIDGET_HOST_DESTROYED,
       NotificationService::AllSources());
   RenderViewHost* host = dialog->GetRenderViewHost();
-  std::wstring script =
-      L"console.log('Test JavaScript injected.');"
-      L"document.querySelector('.cancel').click();";
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
-      host, L"" /* frame_xpath */, script));
+  string16 main_frame;
+  string16 script = ASCIIToUTF16(
+      "console.log(\'Test JavaScript injected.\');"
+      "document.querySelector(\'.cancel\').click();");
+  // The file selection handler closes the dialog and does not return control
+  // to JavaScript, so do not wait for return values.
+  host->ExecuteJavascriptInWebFrame(main_frame, script);
   LOG(INFO) << "Waiting for window close notification.";
   host_destroyed.Wait();
 
@@ -119,9 +144,93 @@ IN_PROC_BROWSER_TEST_F(FileManagerDialogTest, SelectFileAndCancel) {
   ASSERT_FALSE(dialog->IsRunning(owning_window));
 
   // Listener should have been informed of the cancellation.
+  ASSERT_FALSE(listener->file_selected());
   ASSERT_TRUE(listener->canceled());
 
   // Enforce deleting the dialog first.
+  dialog.release();
+  listener.reset();
+}
+
+IN_PROC_BROWSER_TEST_F(FileManagerDialogTest, SelectFileAndOpen) {
+  // Create the dialog wrapper object, but don't show it yet.
+  scoped_ptr<MockSelectFileDialogListener> listener(
+      new MockSelectFileDialogListener());
+  scoped_refptr<FileManagerDialog> dialog =
+      new FileManagerDialog(listener.get());
+
+  // Allow the tmp directory to be mounted.  We explicitly use /tmp because
+  // it it whitelisted for file system access on Chrome OS.
+  FilePath tmp_dir("/tmp");
+  AddMountPoint(tmp_dir);
+
+  // Create a directory with a single file in it.  ScopedTempDir will delete
+  // itself and our temp file when it goes out of scope.
+  ScopedTempDir scoped_temp_dir;
+  ASSERT_TRUE(scoped_temp_dir.CreateUniqueTempDirUnderPath(tmp_dir));
+  FilePath temp_dir = scoped_temp_dir.path();
+  FilePath test_file = temp_dir.AppendASCII("file_manager_test.html");
+
+  // Put HTML with a known title into the file.
+  FILE* fp = file_util::OpenFile(test_file, "w");
+  ASSERT_TRUE(fp != NULL);
+  fputs(
+    "<html>"
+    "  <head>"
+    "    <title>File Manager Test</title>"
+    "  </head>"
+    "  <body>"
+    "    <p>Test file</p>"
+    "  </body>"
+    "</html>",
+    fp);
+  ASSERT_TRUE(file_util::CloseFile(fp));
+
+  // Spawn a dialog to open a file.  Provide the path to the file so the dialog
+  // will automatically select it.  Ensure that the OK button is enabled by
+  // waiting for chrome.test.sendMessage('selection-change-complete').
+  ExtensionTestMessageListener msg_listener("selection-change-complete",
+                                            false /* will_reply */);
+  gfx::NativeWindow owning_window = browser()->window()->GetNativeHandle();
+  dialog->SelectFile(SelectFileDialog::SELECT_OPEN_FILE,
+                     string16() /* title */,
+                     test_file,
+                     NULL /* file_types */,
+                     0 /* file_type_index */,
+                     FILE_PATH_LITERAL("") /* default_extension */,
+                     NULL /* source_contents */,
+                     owning_window,
+                     NULL /* params */);
+  LOG(INFO) << "Waiting for JavaScript selection-change-complete message.";
+  ASSERT_TRUE(msg_listener.WaitUntilSatisfied());
+
+  // Dialog should be running now.
+  ASSERT_TRUE(dialog->IsRunning(owning_window));
+
+  // Inject JavaScript to click the open button and wait for notification
+  // that the window has closed.
+  ui_test_utils::WindowedNotificationObserver host_destroyed(
+      NotificationType::RENDER_WIDGET_HOST_DESTROYED,
+      NotificationService::AllSources());
+  RenderViewHost* host = dialog->GetRenderViewHost();
+  string16 main_frame;
+  string16 script = ASCIIToUTF16(
+      "console.log(\'Test JavaScript injected.\');"
+      "document.querySelector('.ok').click();");
+  // The file selection handler closes the dialog and does not return control
+  // to JavaScript, so do not wait for return values.
+  host->ExecuteJavascriptInWebFrame(main_frame, script);
+  LOG(INFO) << "Waiting for window close notification.";
+  host_destroyed.Wait();
+
+  // Dialog no longer believes it is running.
+  ASSERT_FALSE(dialog->IsRunning(owning_window));
+
+  // Listener should have been informed that the file was opened.
+  ASSERT_TRUE(listener->file_selected());
+  ASSERT_FALSE(listener->canceled());
+
+  // Enforce deleting the dialog before the listener.
   dialog.release();
   listener.reset();
 }

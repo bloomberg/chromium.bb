@@ -123,37 +123,6 @@ class FileDialogFunction
  public:
   FileDialogFunction();
 
-  // Register/unregister callbacks.
-  // When file selection events occur in a tab, we'll call back the
-  // appropriate listener with the right params.
-  class Callback {
-   public:
-    Callback(SelectFileDialog::Listener* listener,
-             void* params)
-        : listener_(listener),
-          params_(params) {
-    }
-    SelectFileDialog::Listener* listener() const { return listener_; }
-    void* params() const { return params_; }
-    bool IsNull() const { return listener_ == NULL; }
-
-    static void Add(int32 tab_id,
-                    SelectFileDialog::Listener* listener,
-                    void* params);
-    static void Remove(int32 tab_id);
-    static const Callback& Find(int32 tab_id);
-    static const Callback& null() { return null_; }
-
-   private:
-    SelectFileDialog::Listener* listener_;
-    void* params_;
-
-    // statics.
-    typedef std::map<int32, Callback> Map;
-    static Map map_;
-    static Callback null_;
-  };
-
  protected:
   typedef std::vector<GURL> UrlList;
   typedef std::vector<FilePath> FilePathList;
@@ -168,13 +137,6 @@ class FileDialogFunction
   virtual void GetLocalPathsResponseOnUIThread(const FilePathList& files,
       const std::string& internal_task_id) {}
 
-  // Get the callback for the hosting tab.
-  const Callback& GetCallback() const;
-
-  // Remove the callback for the hosting tab.
-  void RemoveCallback();
-
- private:
   // Figure out the tab_id of the hosting tab.
   int32 GetTabId() const;
 };

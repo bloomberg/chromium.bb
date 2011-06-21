@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/bubble/bubble_border.h"
+#include "chrome/browser/ui/views/extensions/extension_dialog_observer.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -28,7 +29,7 @@
 
 ExtensionDialog::ExtensionDialog(ExtensionHost* host, views::Widget* frame,
                                  const gfx::Rect& relative_to, int width,
-                                 int height, Observer* observer)
+                                 int height, ExtensionDialogObserver* observer)
     : BrowserBubble(host->view(),
                     frame,
                     relative_to,
@@ -61,7 +62,7 @@ ExtensionDialog* ExtensionDialog::Show(
     Browser* browser,
     int width,
     int height,
-    Observer* observer) {
+    ExtensionDialogObserver* observer) {
   CHECK(browser);
   ExtensionProcessManager* manager =
       browser->profile()->GetExtensionProcessManager();

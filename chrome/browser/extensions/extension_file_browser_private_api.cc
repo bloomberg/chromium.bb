@@ -25,6 +25,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/views/file_manager_dialog.h"
 #include "chrome/browser/ui/webui/extension_icon_source.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
@@ -870,37 +871,6 @@ FileDialogFunction::FileDialogFunction() {
 FileDialogFunction::~FileDialogFunction() {
 }
 
-// static
-FileDialogFunction::Callback
-FileDialogFunction::Callback::null_(NULL, NULL);
-
-// static
-FileDialogFunction::Callback::Map FileDialogFunction::Callback::map_;
-
-// static
-void FileDialogFunction::Callback::Add(int32 tab_id,
-                                     SelectFileDialog::Listener* listener,
-                                     void* params) {
-  if (map_.find(tab_id) == map_.end()) {
-    map_.insert(std::make_pair(tab_id, Callback(listener, params)));
-  } else {
-    DLOG_ASSERT("FileDialogFunction::AddCallback tab_id already present");
-  }
-}
-
-// static
-void FileDialogFunction::Callback::Remove(int32 tab_id) {
-  map_.erase(tab_id);
-}
-
-// static
-const FileDialogFunction::Callback&
-FileDialogFunction::Callback::Find(int32 tab_id) {
-  Callback::Map::const_iterator it = map_.find(tab_id);
-  return (it == map_.end()) ? null_ : it->second;
-}
-
-
 int32 FileDialogFunction::GetTabId() const {
   int32 tab_id = 0;
   if (!dispatcher()) {
@@ -918,16 +888,6 @@ int32 FileDialogFunction::GetTabId() const {
       tab_id = ExtensionTabUtil::GetTabId(contents);
   }
   return tab_id;
-}
-
-const FileDialogFunction::Callback& FileDialogFunction::GetCallback() const {
-  return Callback::Find(GetTabId());
-}
-
-void FileDialogFunction::RemoveCallback() {
-  // Listeners expect to be invoked exactly once, so we need to remove our
-  // callback objects afterwards.
-  Callback::Remove(GetTabId());
 }
 
 // GetFileSystemRootPathOnFileThread can only be called from the file thread,
@@ -1010,17 +970,8 @@ void SelectFileFunction::GetLocalPathsResponseOnUIThread(
   }
   int index;
   args_->GetInteger(1, &index);
-  const Callback& callback = GetCallback();
-  DCHECK(!callback.IsNull());
-  if (!callback.IsNull()) {
-    LOG(INFO) << "FileBrowser: FileSelected";
-    callback.listener()->FileSelected(files[0],
-                                      index,
-                                      callback.params());
-    RemoveCallback();  // Listeners expect to be invoked exactly once.
-  } else {
-    LOG(WARNING) << "Callback not found";
-  }
+  int32 tab_id = GetTabId();
+  FileManagerDialog::OnFileSelected(tab_id, files[0], index);
   SendResponse(true);
 }
 
@@ -1109,29 +1060,14 @@ bool SelectFilesFunction::RunImpl() {
 void SelectFilesFunction::GetLocalPathsResponseOnUIThread(
     const FilePathList& files, const std::string& internal_task_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  const Callback& callback = GetCallback();
-  DCHECK(!callback.IsNull());
-  if (!callback.IsNull()) {
-    LOG(INFO) << "FileBrowser: MultiFilesSelected";
-    callback.listener()->MultiFilesSelected(files, callback.params());
-    RemoveCallback();  // Listeners expect to be invoked exactly once.
-  } else {
-    LOG(WARNING) << "Callback not found";
-  }
+  int32 tab_id = GetTabId();
+  FileManagerDialog::OnMultiFilesSelected(tab_id, files);
   SendResponse(true);
 }
 
 bool CancelFileDialogFunction::RunImpl() {
-  const Callback& callback = GetCallback();
-  DCHECK(!callback.IsNull());
-  if (!callback.IsNull()) {
-    LOG(INFO) << "FileBrowser: Cancel";
-    callback.listener()->FileSelectionCanceled(callback.params());
-    RemoveCallback();  // Listeners expect to be invoked exactly once.
-  } else {
-    LOG(WARNING) << "Callback not found";
-  }
+  int32 tab_id = GetTabId();
+  FileManagerDialog::OnFileSelectionCanceled(tab_id);
   SendResponse(true);
   return true;
 }
