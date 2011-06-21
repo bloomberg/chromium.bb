@@ -42,7 +42,7 @@ def get_code_review_setting(path, key,
         settings[k.strip()] = v.strip()
     finally:
       settings_file.close()
-  except OSError:
+  except IOError:
     return None
   return settings.get(key, None)
 
