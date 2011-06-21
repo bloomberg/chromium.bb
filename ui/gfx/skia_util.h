@@ -1,10 +1,12 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef UI_GFX_SKIA_UTIL_H_
 #define UI_GFX_SKIA_UTIL_H_
 #pragma once
+
+#include <string>
 
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkRect.h"
@@ -33,6 +35,10 @@ SkShader* CreateGradientShader(int start_point,
 
 // Returns true if the two bitmaps contain the same pixels.
 bool BitmapsAreEqual(const SkBitmap& bitmap1, const SkBitmap& bitmap2);
+
+// Strip the accelerator char (typically '&') from a menu string.  A
+// double accelerator char ('&&') will be converted to a single char.
+std::string RemoveAcceleratorChar(const std::string& s, char accelerator_char);
 
 }  // namespace gfx;
 

@@ -48,6 +48,7 @@
         'gfx/rect_unittest.cc',
         'gfx/run_all_unittests.cc',
         'gfx/skbitmap_operations_unittest.cc',
+        'gfx/skia_util_unittest.cc',
         'gfx/test_suite.cc',
         'gfx/test_suite.h',
         'views/rendering/border_unittest.cc',

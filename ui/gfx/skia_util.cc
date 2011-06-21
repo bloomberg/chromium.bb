@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -56,6 +56,23 @@ bool BitmapsAreEqual(const SkBitmap& bitmap1, const SkBitmap& bitmap2) {
   bitmap2.unlockPixels();
 
   return (size1 == size2) && (0 == memcmp(addr1, addr2, bitmap1.getSize()));
+}
+
+std::string RemoveAcceleratorChar(const std::string& s,
+                                  char accelerator_char) {
+  bool escaped = false;
+  std::string accelerator_removed;
+  accelerator_removed.reserve(s.size());
+  for (size_t i = 0; i < s.size(); ++i) {
+    if (s[i] != accelerator_char || escaped) {
+      accelerator_removed.push_back(s[i]);
+      escaped = false;
+    } else {
+      escaped = true;
+    }
+  }
+
+  return accelerator_removed;
 }
 
 }  // namespace gfx

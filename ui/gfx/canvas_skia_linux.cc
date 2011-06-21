@@ -16,6 +16,7 @@
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/platform_font_gtk.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/skia_util.h"
 
 namespace {
 
@@ -162,9 +163,14 @@ static void SetupPangoLayout(PangoLayout* layout,
                                        kAcceleratorChar, NULL);
     g_free(escaped_text);
   } else if (flags & gfx::Canvas::HIDE_PREFIX) {
-    // Remove the ampersand character.
-    utf8 = gfx::RemoveWindowsStyleAccelerators(utf8);
-    pango_layout_set_text(layout, utf8.data(), utf8.size());
+    // Remove the ampersand character.  A double ampersand is output as
+    // a single ampersand.
+    DCHECK_EQ(1, g_unichar_to_utf8(kAcceleratorChar, NULL));
+    const std::string accelerator_removed =
+        gfx::RemoveAcceleratorChar(utf8, static_cast<char>(kAcceleratorChar));
+
+    pango_layout_set_text(layout,
+        accelerator_removed.data(), accelerator_removed.size());
   } else {
     pango_layout_set_text(layout, utf8.data(), utf8.size());
   }
