@@ -312,4 +312,18 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestNetworkRawHeadersText) {
   RunTest("testNetworkRawHeadersText", kChunkedTestPage);
 }
 
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestPageWithNoJavaScript) {
+  OpenDevToolsWindow("about:blank");
+  std::string result;
+  ASSERT_TRUE(
+      ui_test_utils::ExecuteJavaScriptAndExtractString(
+          client_contents_->render_view_host(),
+          L"",
+          L"window.domAutomationController.send("
+          L"'' + (window.uiTests && (typeof uiTests.runTest)));",
+          &result));
+  ASSERT_EQ("function", result) << "DevTools front-end is broken.";
+  CloseDevToolsWindow();
+}
+
 }  // namespace
