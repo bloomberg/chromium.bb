@@ -23,7 +23,7 @@ void SpeculativeGestures::AddMovement(short first_actor,
   elt.first_actor = first_actor;
   elt.second_actor = second_actor;
   elt.kind = kPointingKind;
-  Gesture temp = { dx, dy, 0, 0, 1, 0, hwstate };
+  Gesture temp = { dx, dy, 0, 0, 1, 0, 0, hwstate };
   elt.gesture = temp;
   elt.confidence = confidence;
 }

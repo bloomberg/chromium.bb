@@ -35,22 +35,24 @@ struct FingerState {
   short tracking_id;
 };
 
-// One frame of trackpad data
-struct HardwareState {
-  ustime_t timestamp;
-  short finger_cnt;
-  struct FingerState* fingers;
-};
-
 #define GESTURES_BUTTON_LEFT 1
 #define GESTURES_BUTTON_MIDDLE 2
 #define GESTURES_BUTTON_RIGHT 4
+
+// One frame of trackpad data
+struct HardwareState {
+  ustime_t timestamp;
+  int buttons_down;  // bit field, use GESTURES_BUTTON_*
+  short finger_cnt;
+  struct FingerState* fingers;
+};
 
 struct Gesture {
   int dx, dy;
   int vscroll, hscroll;
   int fingers_present;
   int buttons_down;  // look at bits within, using button masks above
+  int buttons_mask;  // only send up/down events for buttons in the mask
   const struct HardwareState* hwstate;
 };
 
