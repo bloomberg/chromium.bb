@@ -110,6 +110,7 @@
     <output filename="locale_settings_ko.pak" type="data_package" lang="ko" />
     <if expr="pp_ifdef('use_third_party_translations')">
       <output filename="locale_settings_ku.pak" type="data_package" lang="ku" />
+      <output filename="locale_settings_kw.pak" type="data_package" lang="kw" />
     </if>
     <output filename="locale_settings_lt.pak" type="data_package" lang="lt" />
     <output filename="locale_settings_lv.pak" type="data_package" lang="lv" />

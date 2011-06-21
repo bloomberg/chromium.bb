@@ -2552,7 +2552,6 @@ Gorde zure gako-fitxategia toki seguruan. Zure hedapenaren bertsio berriak sortz
 <translation id="6621440228032089700">Konposaketa gaitzen du pantailaz kanpoko testurarako, zuzenean bistaratu ordez.</translation>
 <translation id="6812349420832218321"><ph name="PRODUCT_NAME"/> ezin dira erro modura exekutatu.</translation>
 <translation id="6839929833149231406">Area</translation>
-<translation id="6916146760805488559">Sortu profil berria...</translation>
 <translation id="6928853950228839340">Konposaketatik testurara</translation>
 <translation id="6970216967273061347">Barrutia</translation>
 <translation id="7087282848513945231">Eskualdea</translation>
@@ -3161,7 +3160,6 @@ Gorde zure gako-fitxategia toki seguruan. Zure hedapenaren bertsio berriak sortz
 <translation id="1707463636381878959">Partekatu sare hau beste erabiltzaile batzuekin</translation>
 <translation id="1905982276051748623">Protokoloen eta MIME moten kudeatzaileak</translation>
 <translation id="197288927597451399">Mantendu</translation>
-<translation id="2420476768078247624">Webgune honetako zenbait script ez dira seguruak, eta blokeatu egin dira zure segurtasunerako.</translation>
 <translation id="271907111803265074">Datu mugikorretatik at zaude. Erosi beste plan bat <ph name="NETWORK"/> erabiltzeko.</translation>
 <translation id="2744221223678373668">Partekatuta</translation>
 <translation id="2879755071890315043">Itxaron zure sare mugikorra konfiguratzen dugun arte.</translation>
@@ -3169,7 +3167,6 @@ Gorde zure gako-fitxategia toki seguruan. Zure hedapenaren bertsio berriak sortz
 <translation id="3436440123324878555">Erosi plana...</translation>
 <translation id="3452884066206827415">Aurrekargatu bilaketa-motor lehenetsia Instant-en.</translation>
 <translation id="3672159315667503033"><ph name="URL"/> guneak datu-kopuru handiak modu iraunkorrean gorde nahi ditu zure ordenagailuan.</translation>
-<translation id="3853566281579215874">Kargatu dena den (ez da gomendagarria)</translation>
 <translation id="3916445069167113093">Fitxategi-mota honek zure ordenagailua kalte dezake. Hala ere, <ph name="FILE_NAME"/> mantendu nahi duzu?</translation>
 <translation id="4408398408958794606">L2TP/IPsec + erabiltzaile-ziurtagiria</translation>
 <translation id="4442424173763614572">DNS bilaketak huts egin du</translation>
@@ -3191,4 +3188,20 @@ Gorde zure gako-fitxategia toki seguruan. Zure hedapenaren bertsio berriak sortz
 <translation id="8028653631868039867">Fitxategi hau gaiztoa da. Hala ere, mantendu nahi duzu?</translation>
 <translation id="8678698760965522072">Lineako egoera</translation>
 <translation id="8844703966364420804">Ez dago magiarik.</translation>
+<translation id="1368725949478140659">Kargatu dena den</translation>
+<translation id="1436784010935106834">Kendua</translation>
+<translation id="1954982207163873487">Erakutsi giltza menua</translation>
+<translation id="2232366847796264901">Segurua ez den edukia blokeatu da.</translation>
+<translation id="2440443888409942524">Pinyin sarbide-metodoa (US Dvorak teklaturako)</translation>
+<translation id="3011284594919057757">Flash-i buruz</translation>
+<translation id="3058072209957292419">IP estatikoen konfigurazio esperimentala</translation>
+<translation id="356785714429487785"><ph name="SHORT_PRODUCT_NAME"/></translation>
+<translation id="4535127706710932914">Profil lehenetsia</translation>
+<translation id="5359095000408548198"><ph name="SHORT_PRODUCT_NAME"/> berria</translation>
+<translation id="6132383530370527946">Inprimatze txikia</translation>
+<translation id="642282551015776456">Izen hau ez da erabili behar fitxategi edo karpetak izendatzeko</translation>
+<translation id="6894066781028910720">Ireki fitxategi-kudeatzailea</translation>
+<translation id="7027559794548152684">Azken aldian <ph name="USER_EMAIL_ADDRESS"/> kontuarekin sinkronizatua. Kudeatu sinkronizazio-datuak <ph name="BEGIN_LINK"/>Google Dashboard<ph name="END_LINK"/>-en</translation>
+<translation id="732014399093750908">Segurua ez den script-a blokeatu da.</translation>
+<translation id="7460131386973988868">IP estatikoen konfigurazioa gaitzen du. Zenbaitetan huts egin dezake.</translation>
 </translationbundle>

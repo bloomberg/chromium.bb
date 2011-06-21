@@ -2020,7 +2020,6 @@
 <translation id="6900113680982781280">Activa l'Emplenament automàtic per emplenar els formularis web amb un sol clic</translation>
 <translation id="6902055721023340732">Autoconfiguració de l'URL</translation>
 <translation id="6910239454641394402">Excepcions de JavaScript</translation>
-<translation id="6916146760805488559">Crea un perfil nou...</translation>
 <translation id="6920989436227028121">Obri-ho com a pestanya normal</translation>
 <translation id="6928853950228839340">Compost a textura</translation>
 <translation id="6929555043669117778">Continua bloquejant les finestres emergents</translation>
@@ -2861,4 +2860,5 @@ Alceu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="996250603853062861">S'està establint una connexió segura...</translation>
 <translation id="3009731429620355204">Sessions</translation>
 <translation id="473775607612524610">Actualitza</translation>
+<translation id="1368725949478140659">Carrega igualment</translation>
 </translationbundle>

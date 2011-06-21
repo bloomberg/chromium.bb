@@ -2514,7 +2514,6 @@
 <translation id="6679587617017027458">aoeuidhtns (Dvorak)</translation>
 <translation id="6805647936811177813"><ph name="TOKEN_NAME"/> غا تىزىمغا كىرىپ <ph name="HOST_NAME"/> دىن خېرىدار گۇۋاھنامىسىنى ئەكىرىڭ.</translation>
 <translation id="6839929833149231406">رايون</translation>
-<translation id="6916146760805488559">يېڭى سەپلىمە ھۆججەتتىن بىرنى قۇر…</translation>
 <translation id="6928853950228839340">بىرىكمە ماتېرىيالنىڭ سىزىقلىرى</translation>
 <translation id="6941937518557314510"><ph name="TOKEN_NAME"/> غا تىزىمغا كىرىپ گۇۋاھنامىڭىزنى ئىشلىتىپ <ph name="HOST_NAME"/> نى دەلىللەڭ.</translation>
 <translation id="6970216967273061347">رايون</translation>
@@ -3008,4 +3007,16 @@ Google سىز تەمىنلىگەن ھەر قانداق قايتما ئىنكاس
 <translation id="7791267293787079395">ھۆججەت سىستېمىسى</translation>
 <translation id="7819857487979277519">PSK (WPA ياكىRSN)</translation>
 <translation id="8044899503464538266">ئاستا</translation>
+<translation id="1071139452646369777"><ph name="HANDLER_TITLE"/> بولسا <ph name="PROTOCOL"/>: ئۇلانمىسىنى بىر تەرەپ قىلىشقا ئىشلىتىلدى.</translation>
+<translation id="1090126737595388931">ئارقا سۇپىدا ئىجرا قىلىنىۋاتقان پىروگرامما يوق</translation>
+<translation id="1185611560928829188">سېھىر تىزىمى (<ph name="MAGIC_COUNT"/>)</translation>
+<translation id="1368725949478140659">يۈكلەۋەر</translation>
+<translation id="1436784010935106834">چىقىرىۋېتىلدى</translation>
+<translation id="1486096554574027028">ئىم ئىزدە</translation>
+<translation id="1707463636381878959">بۇ تورنى باشقىلارغا ھەمبەھىرلە</translation>
+<translation id="1905982276051748623">كېلىشىم ۋە MIME تىپى باشقۇرغۇچ</translation>
+<translation id="1954982207163873487">كۇلۇچ تىزىملىكىنى كۆرسەت</translation>
+<translation id="197288927597451399">ساقلاپ قال</translation>
+<translation id="2194400577068159994">ھازىردىن باشلاپ <ph name="HANDLER_TITLE"/> (<ph name="HANDLER_HOSTNAME"/>) نى ئىشلىتىپ <ph name="PROTOCOL"/>: ئۇلانمىنى باشقۇرامسىز؟</translation>
+<translation id="2589855374197350858">شىفىرلانغان سانلىق مەلۇمات تىپى</translation>
 </translationbundle>

@@ -267,4 +267,18 @@
 <translation id="6643016212128521049">Leeren</translation>
 <translation id="667999046851023355">Dokument</translation>
 <translation id="5521674545694907834">Alle Knoten anzeigen (<ph name="COUNT"/> mehr)</translation>
+<translation id="1970347183234422155">Daten der Anfrage</translation>
+<translation id="3910041850555398247">Anfrage-Methode</translation>
+<translation id="5328580414682635314">Verglichen mit <ph name="PROFILE_NAME"/></translation>
+<translation id="6040034394100792317">''' (<ph name="TIMES"/> mal wiederholt)</translation>
+<translation id="6214555124211713909"><ph name="COUNT"/> Cookies (<ph name="SIZE"/>)</translation>
+<translation id="6322316724724460534"><ph name="USED"/> von <ph name="TOTAL"/></translation>
+<translation id="6970483822271783850">Vergrößere/Verkleinere Wert</translation>
+<translation id="7677748775835891962"><ph name="BYTES"/> übertragen</translation>
+<translation id="7759590037707568265">Als HTML kopieren</translation>
+<translation id="7805768142964895445">Status</translation>
+<translation id="7982789257301363584">Netzwerk</translation>
+<translation id="8213615223841667302">Ein-/Ausklappen</translation>
+<translation id="8346449506466267432">Als HTML bearbeiten</translation>
+<translation id="9089819584697017929">CPU PROFILE</translation>
 </translationbundle>

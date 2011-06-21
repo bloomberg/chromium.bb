@@ -165,4 +165,6 @@
 <translation id="3905760801744450823">Псевдоэлемент</translation>
 <translation id="3910041850555398247">Метод запроса</translation>
 <translation id="4156072768474272260">Время ответа</translation>
+<translation id="8765263675224758228">1 - <ph name="LAST_LINE"/></translation>
+<translation id="886930082991257706"><ph name="NAME"/> (<ph name="SIZE"/>)</translation>
 </translationbundle>
