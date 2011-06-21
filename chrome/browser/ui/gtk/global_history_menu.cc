@@ -58,6 +58,7 @@ class GlobalHistoryMenu::HistoryItem {
  public:
   HistoryItem()
       : icon_requested(false),
+        icon_handle(0),
         menu_item(NULL),
         session_id(0) {}
 

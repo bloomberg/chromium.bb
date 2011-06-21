@@ -35,7 +35,7 @@ static const int kFileSelectEnumerationId = -1;
 }
 
 struct FileSelectHelper::ActiveDirectoryEnumeration {
-  ActiveDirectoryEnumeration() {}
+  ActiveDirectoryEnumeration() : rvh_(NULL) {}
 
   scoped_ptr<DirectoryListerDispatchDelegate> delegate_;
   scoped_ptr<net::DirectoryLister> lister_;

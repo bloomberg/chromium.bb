@@ -18,7 +18,9 @@ namespace browser_sync {
 FrontendDataTypeController::FrontendDataTypeController()
     : profile_sync_factory_(NULL),
       profile_(NULL),
-      sync_service_(NULL) {}
+      sync_service_(NULL),
+      state_(NOT_RUNNING) {
+}
 
 FrontendDataTypeController::FrontendDataTypeController(
     ProfileSyncFactory* profile_sync_factory,

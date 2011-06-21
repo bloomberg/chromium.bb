@@ -19,6 +19,7 @@ NonFrontendDataTypeController::NonFrontendDataTypeController()
     : profile_sync_factory_(NULL),
       profile_(NULL),
       profile_sync_service_(NULL),
+      state_(NOT_RUNNING),
       abort_association_(false),
       abort_association_complete_(false, false),
       datatype_stopped_(false, false) {}

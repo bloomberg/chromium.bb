@@ -113,7 +113,8 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   };
 
   enum InputComponentType {
-    INPUT_COMPONENT_TYPE_IME = 0,
+    INPUT_COMPONENT_TYPE_NONE = -1,
+    INPUT_COMPONENT_TYPE_IME,
     INPUT_COMPONENT_TYPE_VIRTUAL_KEYBOARD,
     INPUT_COMPONENT_TYPE_COUNT
   };

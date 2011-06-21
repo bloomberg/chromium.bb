@@ -17,7 +17,15 @@ CustomContextMenuContext::CustomContextMenuContext()
 
 }  // namespace webkit_glue
 
-ContextMenuParams::ContextMenuParams() {
+ContextMenuParams::ContextMenuParams()
+    : media_type(WebKit::WebContextMenuData::MediaTypeNone),
+      x(0),
+      y(0),
+      is_image_blocked(false),
+      media_flags(0),
+      spellcheck_enabled(false),
+      is_editable(false),
+      edit_flags(0) {
 }
 
 ContextMenuParams::ContextMenuParams(const WebKit::WebContextMenuData& data)

@@ -209,7 +209,9 @@ void CloudPolicySubsystem::CreateCloudPolicyController() {
                                 notifier_.get()));
 }
 
-CloudPolicySubsystem::CloudPolicySubsystem() {
+CloudPolicySubsystem::CloudPolicySubsystem()
+    : refresh_pref_name_(NULL),
+      identity_strategy_(NULL) {
 }
 
 }  // namespace policy

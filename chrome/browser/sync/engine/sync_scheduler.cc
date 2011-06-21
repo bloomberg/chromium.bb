@@ -31,13 +31,18 @@ using sync_pb::GetUpdatesCallerInfo;
 SyncScheduler::DelayProvider::DelayProvider() {}
 SyncScheduler::DelayProvider::~DelayProvider() {}
 
-SyncScheduler::WaitInterval::WaitInterval() {}
+SyncScheduler::WaitInterval::WaitInterval()
+    : mode(UNKNOWN),
+      had_nudge(false) {
+}
+
 SyncScheduler::WaitInterval::~WaitInterval() {}
 
 #define ENUM_CASE(x) case x: return #x; break;
 
 const char* SyncScheduler::WaitInterval::GetModeString(Mode mode) {
   switch (mode) {
+    ENUM_CASE(UNKNOWN);
     ENUM_CASE(EXPONENTIAL_BACKOFF);
     ENUM_CASE(THROTTLED);
   }
@@ -45,7 +50,11 @@ const char* SyncScheduler::WaitInterval::GetModeString(Mode mode) {
   return "";
 }
 
-SyncScheduler::SyncSessionJob::SyncSessionJob() {}
+SyncScheduler::SyncSessionJob::SyncSessionJob()
+    : purpose(UNKNOWN),
+      is_canary_job(false) {
+}
+
 SyncScheduler::SyncSessionJob::~SyncSessionJob() {}
 
 SyncScheduler::SyncSessionJob::SyncSessionJob(SyncSessionJobPurpose purpose,
@@ -61,6 +70,7 @@ SyncScheduler::SyncSessionJob::SyncSessionJob(SyncSessionJobPurpose purpose,
 const char* SyncScheduler::SyncSessionJob::GetPurposeString(
     SyncScheduler::SyncSessionJob::SyncSessionJobPurpose purpose) {
   switch (purpose) {
+    ENUM_CASE(UNKNOWN);
     ENUM_CASE(POLL);
     ENUM_CASE(NUDGE);
     ENUM_CASE(CLEAR_USER_DATA);

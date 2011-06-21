@@ -128,6 +128,8 @@ class SyncScheduler : public sessions::SyncSession::Delegate,
   struct SyncSessionJob {
     // An enum used to describe jobs for scheduling purposes.
     enum SyncSessionJobPurpose {
+      // Uninitialized state, should never be hit in practice.
+      UNKNOWN = -1,
       // Our poll timer schedules POLL jobs periodically based on a server
       // assigned poll interval.
       POLL,
@@ -193,6 +195,8 @@ class SyncScheduler : public sessions::SyncSession::Delegate,
 
   struct WaitInterval {
     enum Mode {
+      // Uninitialized state, should not be set in practice.
+      UNKNOWN = -1,
       // A wait interval whose duration has been affected by exponential
       // backoff.
       // EXPONENTIAL_BACKOFF intervals are nudge-rate limited to 1 per interval.

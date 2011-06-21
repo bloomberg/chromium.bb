@@ -19,7 +19,9 @@ VideoCaptureController::VideoCaptureController(
     : render_handle_(render_process),
       report_ready_to_delete_(false),
       event_handler_(event_handler),
-      id_(id) {}
+      id_(id) {
+  memset(&params_, 0, sizeof(params_));
+}
 
 VideoCaptureController::~VideoCaptureController() {
   // Delete all TransportDIBs.

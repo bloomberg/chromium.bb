@@ -39,7 +39,8 @@ bool PrefixLess(const std::pair<SBPrefix,size_t>& a,
 
 namespace safe_browsing {
 
-PrefixSet::PrefixSet(const std::vector<SBPrefix>& sorted_prefixes) {
+PrefixSet::PrefixSet(const std::vector<SBPrefix>& sorted_prefixes)
+    : checksum_(0) {
   if (sorted_prefixes.size()) {
     // Lead with the first prefix.
     SBPrefix prev_prefix = sorted_prefixes[0];
@@ -97,7 +98,8 @@ PrefixSet::PrefixSet(const std::vector<SBPrefix>& sorted_prefixes) {
 }
 
 PrefixSet::PrefixSet(std::vector<std::pair<SBPrefix,size_t> > *index,
-                     std::vector<uint16> *deltas) {
+                     std::vector<uint16> *deltas)
+    : checksum_(0) {
   DCHECK(index && deltas);
   index_.swap(*index);
   deltas_.swap(*deltas);

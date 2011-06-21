@@ -194,8 +194,9 @@ std::string GpuHTMLSource::GetMimeType(const std::string&) const {
 ////////////////////////////////////////////////////////////////////////////////
 
 GpuMessageHandler::GpuMessageHandler()
-  : gpu_info_update_callback_(NULL)
-  , trace_enabled_(false) {
+  : gpu_info_update_callback_(NULL),
+    select_trace_file_dialog_type_(SelectFileDialog::SELECT_NONE),
+    trace_enabled_(false) {
   gpu_data_manager_ = GpuDataManager::GetInstance();
   DCHECK(gpu_data_manager_);
 }

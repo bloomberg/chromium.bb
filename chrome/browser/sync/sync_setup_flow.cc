@@ -66,7 +66,8 @@ SyncSetupWizard::State GetStepForNonFatalError(ProfileSyncService* service) {
 }  // namespace
 
 SyncConfiguration::SyncConfiguration()
-    : sync_everything(false),
+    : encrypt_all(false),
+      sync_everything(false),
       use_secondary_passphrase(false) {
 }
 

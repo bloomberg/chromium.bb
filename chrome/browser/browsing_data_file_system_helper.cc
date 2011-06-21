@@ -192,7 +192,9 @@ BrowsingDataFileSystemHelper* BrowsingDataFileSystemHelper::Create(
 }
 
 CannedBrowsingDataFileSystemHelper::
-    PendingFileSystemInfo::PendingFileSystemInfo() {
+    PendingFileSystemInfo::PendingFileSystemInfo()
+        : type(fileapi::kFileSystemTypeUnknown),
+          size(0) {
 }
 
 CannedBrowsingDataFileSystemHelper::

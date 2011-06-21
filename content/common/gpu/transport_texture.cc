@@ -15,7 +15,8 @@ TransportTexture::TransportTexture(GpuChannel* channel,
     sender_(sender),
     decoder_(decoder),
     host_id_(host_id),
-    route_id_(route_id) {
+    route_id_(route_id),
+    output_textures_(NULL) {
 }
 
 TransportTexture::~TransportTexture() {

@@ -354,7 +354,13 @@ const int Extension::kValidWebExtentSchemes =
 const int Extension::kValidHostPermissionSchemes =
     UserScript::kValidUserScriptSchemes | URLPattern::SCHEME_CHROMEUI;
 
-Extension::InputComponentInfo::InputComponentInfo() {}
+Extension::InputComponentInfo::InputComponentInfo()
+    : type(INPUT_COMPONENT_TYPE_NONE),
+      shortcut_alt(false),
+      shortcut_ctrl(false),
+      shortcut_shift(false) {
+}
+
 Extension::InputComponentInfo::~InputComponentInfo() {}
 
 //

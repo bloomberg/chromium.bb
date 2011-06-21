@@ -16,7 +16,9 @@ ResourceContext::ResourceContext()
       appcache_service_(NULL),
       database_tracker_(NULL),
       file_system_context_(NULL),
-      blob_storage_context_(NULL) {
+      blob_storage_context_(NULL),
+      quota_manager_(NULL),
+      host_zoom_map_(NULL) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 

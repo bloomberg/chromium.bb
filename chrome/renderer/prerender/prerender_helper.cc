@@ -27,7 +27,8 @@ namespace prerender {
 PrerenderHelper::PrerenderHelper(RenderView* render_view)
     : RenderViewObserver(render_view),
       RenderViewObserverTracker<PrerenderHelper>(render_view),
-      is_prerendering_(true) {
+      is_prerendering_(true),
+      has_unrecorded_data_(false) {
 }
 
 PrerenderHelper::~PrerenderHelper() {
