@@ -2430,8 +2430,6 @@
         'browser/ui/cocoa/infobars/infobar_controller.mm',
         'browser/ui/cocoa/infobars/infobar_gradient_view.h',
         'browser/ui/cocoa/infobars/infobar_gradient_view.mm',
-        'browser/ui/cocoa/infobars/infobar_tip_drawing_model.h',
-        'browser/ui/cocoa/infobars/infobar_tip_drawing_model.mm',
         'browser/ui/cocoa/infobars/mock_confirm_infobar_delegate.cc',
         'browser/ui/cocoa/infobars/mock_confirm_infobar_delegate.h',
         'browser/ui/cocoa/infobars/mock_link_infobar_delegate.cc',

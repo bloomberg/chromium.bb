@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <math.h>
-
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
@@ -11,7 +9,6 @@
 #include "chrome/browser/ui/cocoa/infobars/infobar.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_controller.h"
-#import "chrome/browser/ui/cocoa/infobars/infobar_tip_drawing_model.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/common/notification_details.h"
@@ -93,9 +90,6 @@ class InfoBarNotificationObserver : public NotificationObserver {
     // more than two infobars at a time, so that seems like a good choice.
     infobarControllers_.reset([[NSMutableArray alloc] initWithCapacity:2]);
     closingInfoBars_.reset([[NSMutableSet alloc] initWithCapacity:2]);
-
-    tipDrawingModel_.reset(
-        [[InfobarTipDrawingModel alloc] initWithContainerController:self]);
   }
   return self;
 }
@@ -169,26 +163,8 @@ class InfoBarNotificationObserver : public NotificationObserver {
   return [infobarControllers_ count] - [closingInfoBars_ count];
 }
 
-- (InfoBarController*)controllerAtIndex:(NSUInteger)index {
-  return [infobarControllers_ objectAtIndex:index];
-}
-
-- (NSUInteger)indexOfController:(InfoBarController*)controller {
-  return [infobarControllers_ indexOfObject:controller];
-}
-
-- (CGFloat)overlapAmount {
-  if (![self infobarCount])
-    return 0;
-
-  CGFloat height = [[[self controllerAtIndex:0] animatableView] height];
-  CGFloat overlap = height - infobars::kBaseHeight;
-  overlap = std::max(0.0f, overlap);
-  return overlap;
-}
-
-- (InfobarTipDrawingModel*)tipDrawingModel {
-  return tipDrawingModel_.get();
+- (CGFloat)antiSpoofHeight {
+  return 0;
 }
 
 - (void)resizeView:(NSView*)view newHeight:(CGFloat)height {
@@ -273,13 +249,6 @@ class InfoBarNotificationObserver : public NotificationObserver {
     [view setFrame:frame];
 
     minY += NSHeight(frame);
-
-    // Set the gradient view to its final height; it will be clipped by the
-    // animatable view, which allows us to only animate one of the two visible
-    // views.
-    frame.origin = NSZeroPoint;
-    frame.size.height = [tipDrawingModel_ totalHeightForController:controller];
-    [[controller gradientView] setFrame:frame];
   }
 
   [resizeDelegate_ resizeView:[self view] newHeight:[self desiredHeight]];

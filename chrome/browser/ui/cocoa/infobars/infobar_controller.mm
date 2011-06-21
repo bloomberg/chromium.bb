@@ -15,7 +15,6 @@
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_controller.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_gradient_view.h"
-#import "chrome/browser/ui/cocoa/infobars/infobar_tip_drawing_model.h"
 #include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #include "ui/gfx/image/image.h"
 #include "webkit/glue/window_open_disposition.h"
@@ -84,10 +83,6 @@ const float kAnimateCloseDuration = 0.12;
 // call will trigger a notification that starts the infobar animating closed.
 - (void)removeInfoBar;
 
-// Animates the infobar to its final height, as determined by the tip drawing
-// model.
-- (void)animateTipOpen;
-
 // Performs final cleanup after an animation is finished or stopped, including
 // notifying the InfoBarDelegate that the infobar was closed and removing the
 // infobar from its container, if necessary.
@@ -104,7 +99,6 @@ const float kAnimateCloseDuration = 0.12;
 
 @synthesize containerController = containerController_;
 @synthesize delegate = delegate_;
-@synthesize gradientView = infoBarView_;
 
 - (id)initWithDelegate:(InfoBarDelegate*)delegate {
   DCHECK(delegate);
@@ -119,9 +113,6 @@ const float kAnimateCloseDuration = 0.12;
 // awakeFromNib.
 - (void)awakeFromNib {
   DCHECK(delegate_);
-
-  [infoBarView_ setDrawingModel:[containerController_ tipDrawingModel]];
-
   if (delegate_->GetIcon()) {
     [image_ setImage:*(delegate_->GetIcon())];
   } else {
@@ -176,8 +167,7 @@ const float kAnimateCloseDuration = 0.12;
 
 - (void)open {
   // Simply reset the frame size to its opened size, forcing a relayout.
-  CGFloat finalHeight =
-      [[containerController_ tipDrawingModel] totalHeightForController:self];
+  CGFloat finalHeight = [[self view] frame].size.height;
   [[self animatableView] setHeight:finalHeight];
 }
 
@@ -195,7 +185,6 @@ const float kAnimateCloseDuration = 0.12;
   // Stop any running animations.
   [[self animatableView] stopAnimation];
   infoBarClosing_ = YES;
-  tipDidAnimate_ = NO;
   [self cleanUpAfterAnimation:YES];
 }
 
@@ -275,13 +264,6 @@ const float kAnimateCloseDuration = 0.12;
   [containerController_ removeDelegate:delegate_];
 }
 
-- (void)animateTipOpen {
-  const CGFloat height =
-      [[containerController_ tipDrawingModel] totalHeightForController:self];
-  [[self animatableView] animateToNewHeight:height
-                                   duration:kAnimateOpenDuration];
-}
-
 - (void)cleanUpAfterAnimation:(BOOL)finished {
   // Don't need to do any cleanup if the bar was animating open.
   if (!infoBarClosing_)
@@ -307,19 +289,6 @@ const float kAnimateCloseDuration = 0.12;
 }
 
 - (void)animationDidEnd:(NSAnimation*)animation {
-  if (!infoBarClosing_ && !tipDidAnimate_) {
-    // Once the infobar has animated in, animate the tip. Since this is a
-    // delegate callback from the last animation, schedule the animation to
-    // happen on the next iteration of the run loop so that we don't use the
-    // about-to-be-released animation.
-    tipDidAnimate_ = YES;
-    [self performSelector:@selector(animateTipOpen)
-               withObject:nil
-               afterDelay:0.0];
-  } else if (tipDidAnimate_) {
-    tipDidAnimate_ = NO;
-  }
-
   [self cleanUpAfterAnimation:YES];
 }
 

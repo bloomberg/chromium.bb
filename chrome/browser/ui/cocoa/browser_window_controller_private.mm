@@ -432,7 +432,7 @@ willPositionSheet:(NSWindow*)sheet
   NSView* containerView = [infoBarContainerController_ view];
   NSRect containerFrame = [containerView frame];
   maxY -= NSHeight(containerFrame);
-  maxY += [infoBarContainerController_ overlapAmount];
+  maxY += [infoBarContainerController_ antiSpoofHeight];
   containerFrame.origin.x = minX;
   containerFrame.origin.y = maxY;
   containerFrame.size.width = width;
