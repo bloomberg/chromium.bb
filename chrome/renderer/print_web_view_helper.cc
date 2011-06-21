@@ -200,7 +200,7 @@ void PrintWebViewHelper::OnPrintForPrintPreview(
 
   WebDocument document = main_frame->document();
   // <object> with id="pdf-viewer" is created in
-  // chrome/browser/resources/print_preview.js
+  // chrome/browser/resources/print_preview/print_preview.js
   WebElement pdf_element = document.getElementById("pdf-viewer");
   if (pdf_element.isNull()) {
     NOTREACHED();
@@ -672,7 +672,6 @@ base::TimeTicks PrintWebViewHelper::ReportPreviewPageRenderTime(
 void PrintWebViewHelper::ReportTotalPreviewGenerationTime(
         int selected_pages_length, int total_pages,
         base::TimeDelta render_time, base::TimeDelta total_time) {
-
   if (selected_pages_length == 0)
     selected_pages_length = total_pages;
 

@@ -320,7 +320,7 @@ input[type='checkbox']:active {
 
 input[type='checkbox']:checked:before {
   color: #808080;
-  content: url('./print_preview/checkmark.png');
+  content: url('./checkmark.png');
   height: 16px;
   left: 2px;
   position: absolute;
@@ -520,7 +520,7 @@ select {
   -webkit-padding-end: 20px;
   -webkit-padding-start: 14px;
   -webkit-user-select: none;
-  background-image: url('./print_preview/black_arrow.png'),
+  background-image: url('./black_arrow.png'),
                     -webkit-linear-gradient(#fafafa, #dcdcdc);
   background-position: 95% 55%, left top;
   background-repeat: no-repeat, repeat;
@@ -543,14 +543,14 @@ html[dir='rtl'] select {
 
 select:disabled,
 select.disabled {
-  background-image: url('./print_preview/gray_arrow.png'),
+  background-image: url('./gray_arrow.png'),
                     -webkit-linear-gradient(#fafafa, #dcdcdc);
 }
 
 select:not(:disabled):not(.disabled):hover {
   -webkit-box-shadow: inset 0 1px 2px white,
                       0 2px 4px rgba(0, 0, 0, .2);
-  background-image: url('./print_preview/black_arrow.png'),
+  background-image: url('./black_arrow.png'),
                     -webkit-linear-gradient(#fff, #e6e6e6);
   /* Using opacity 0.99 instead of 1 because of http://crbug.com/68370 */
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.99);
