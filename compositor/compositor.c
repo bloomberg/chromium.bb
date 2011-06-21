@@ -908,6 +908,13 @@ surface_attach(struct wl_client *client,
 {
 	struct wlsc_surface *es = (struct wlsc_surface *) surface;
 
+	/* FIXME: This damages the entire old surface, but we should
+	 * really just damage the part that's no longer covered by the
+	 * surface.  Anything covered by the new surface will be
+	 * damaged by the client. */
+	if (es->buffer)
+		wlsc_surface_damage(es);
+
 	buffer->busy_count++;
 	wlsc_buffer_post_release(es->buffer);
 
@@ -926,12 +933,6 @@ surface_attach(struct wl_client *client,
 		wl_list_insert(&es->compositor->surface_list, &es->link);
 
 	wlsc_buffer_attach(buffer, surface);
-
-	/* FIXME: This damages the entire old surface, but we should
-	 * really just damage the part that's no longer covered by the
-	 * surface.  Anything covered by the new surface will be
-	 * damaged by the client. */
-	wlsc_surface_damage(es);
 
 	es->compositor->shell->attach(es->compositor->shell, es);
 }
