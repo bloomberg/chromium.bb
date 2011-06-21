@@ -239,8 +239,9 @@ function updateWithPrinterCapabilities(settingInfo) {
   var disableColorOption = settingInfo.disableColorOption;
   var disableCopiesOption = settingInfo.disableCopiesOption;
   var setColorAsDefault = settingInfo.setColorAsDefault;
-  var colorOption = $('color');
-  var bwOption = $('bw');
+  var color = $('color');
+  var bw = $('bw');
+  var colorOptions = $('color-options');
 
   if (disableCopiesOption) {
     fadeOutElement($('copies-option'));
@@ -250,12 +251,13 @@ function updateWithPrinterCapabilities(settingInfo) {
     $('hr-before-copies').classList.add('invisible');
   }
 
-  disableColorOption ? fadeOutElement($('color-options')) :
-      fadeInElement($('color-options'));
+  disableColorOption ? fadeOutElement(colorOptions) :
+      fadeInElement(colorOptions);
+  colorOptions.setAttribute('aria-hidden', disableColorOption);
 
-  if (colorOption.checked != setColorAsDefault) {
-    colorOption.checked = setColorAsDefault;
-    bwOption.checked = !setColorAsDefault;
+  if (color.checked != setColorAsDefault) {
+    color.checked = setColorAsDefault;
+    bw.checked = !setColorAsDefault;
   }
 }
 
@@ -669,6 +671,8 @@ function createPDFPlugin(previewUid) {
   pdfViewer.setAttribute('id', 'pdf-viewer');
   pdfViewer.setAttribute('type', 'application/pdf');
   pdfViewer.setAttribute('src', 'chrome://print/' + previewUid + '/print.pdf');
+  pdfViewer.setAttribute('aria-live', 'polite');
+  pdfViewer.setAttribute('aria-atomic', 'true');
   $('mainview').appendChild(pdfViewer);
   pdfViewer.onload('onPDFLoad()');
   pdfViewer.removePrintButton();
@@ -721,9 +725,11 @@ function validatePageRangesField() {
   if (isSelectedPagesValid()) {
     individualPagesField.classList.remove('invalid');
     fadeOutElement(individualPagesHint);
+    individualPagesHint.setAttribute('aria-hidden', 'true');
   } else {
     individualPagesField.classList.add('invalid');
     individualPagesHint.classList.remove('suggestion');
+    individualPagesHint.setAttribute('aria-hidden', 'false');
     individualPagesHint.innerHTML =
         localStrings.getStringF('pageRangeInstruction',
                                 localStrings.getString(

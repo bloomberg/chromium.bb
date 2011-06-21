@@ -33,20 +33,19 @@
       <div class="two-column">
         <h1 i18n-content="pagesLabel"></h1>
         <div>
-          <input id="all-pages" name="pages" checked type="radio"
-              label="all-pages-label"/>
-          <label id="all-pages-label" for="all-pages"
-              i18n-content="optionAllPages"></label>
+          <input id="all-pages" name="pages" checked type="radio"/>
+          <label for="all-pages" i18n-content="optionAllPages"></label>
         </div>
         <div>
-          <input id="print-pages" name="pages" type="radio"/>
+          <input id="print-pages" name="pages" type="radio"
+              i18n-values="aria-label:printPagesLabel;"/>
           <label for="print-pages">
             <input id="individual-pages" type="text"
-                i18n-values="placeholder:examplePageRangeText"
-                name="individual-pages"/>
+                i18n-values="placeholder:examplePageRangeText"/>
           </label>
           <span id="individual-pages-hint" class="hint"
-              i18n-content="pageRangeInstruction"></span>
+              i18n-content="pageRangeInstruction" aria-hidden="true"
+              aria-live="polite"></span>
         </div>
       </div>
       <hr id="hr-before-copies" class="invisible">
@@ -54,19 +53,21 @@
         <h1 i18n-content="copiesLabel"></h1>
         <div>
           <div>
-            <input id="copies" type="text" name="copies" value="1" min="1"
+            <input id="copies" type="text" value="1" min="1"
                 max="999" maxlength="3" class="number small"/>
-            <button id="increment">+</button>
-            <button id="decrement">–</button>
+            <button id="increment"
+                i18n-values="title:incrementTitle;">+</button>
+            <button id="decrement"
+                i18n-values="title:decrementTitle;">–</button>
             <span id="collate-option" hidden>
-              <input id="collate" name="collate" type="checkbox" />
+              <input id="collate" type="checkbox"/>
               <label for="collate" i18n-content="optionCollate"></label>
             </span>
           </div>
           <span id="copies-hint" class="hint invalid"
               i18n-content="copiesInstruction"></span>
           <div id="two-sided-div">
-            <input id="two-sided" name="two-sided" type="checkbox"/>
+            <input id="two-sided" type="checkbox"/>
             <label for="two-sided" i18n-content="optionTwoSided"></label>
           </div>
         </div>
@@ -76,32 +77,27 @@
         <h1 i18n-content="layoutLabel"></h1>
         <div>
           <div>
-            <input id="portrait" type="radio" name="layout" checked
-                label="portrait-label"/>
-            <label id="portrait-label" for="portrait"
-                i18n-content="optionPortrait"></label>
+            <input id="portrait" type="radio" name="layout" checked/>
+            <label for="portrait" i18n-content="optionPortrait"></label>
           </div>
           <div>
-            <input id="landscape" type="radio" name="layout"
-                label="landscape-label"/>
-            <label id="landscape-label" for="landscape"
-                i18n-content="optionLandscape"></label>
+            <input id="landscape" type="radio" name="layout"/>
+            <label for="landscape" i18n-content="optionLandscape"></label>
           </div>
         </div>
       </div>
       <hr>
-      <div id="color-options" class="two-column option">
+      <div id="color-options" class="two-column option" aria-hidden="true"
+          aria-live="polite">
         <h1 i18n-content="optionColor"></h1>
         <div>
           <div>
-            <input id="color" type="radio" name="color" label="color-label"/>
-            <label id="color-label" for="color"
-                i18n-content="optionColor"></label>
+            <input id="color" type="radio" name="color"/>
+            <label for="color" i18n-content="optionColor"></label>
           </div>
           <div>
-            <input id="bw" type="radio" name="color" checked
-                label="bw-label"/>
-            <label id="bw-label" for="bw" i18n-content="optionBw"></label>
+            <input id="bw" type="radio" name="color" checked/>
+            <label for="bw" i18n-content="optionBw"></label>
           </div>
         </div>
       </div>
