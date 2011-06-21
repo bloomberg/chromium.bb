@@ -1663,6 +1663,31 @@ TEST_F(FormManagerTest, LabelsInferredFromDivTable) {
       "</FORM>");
 }
 
+TEST_F(FormManagerTest, LabelsInferredFromDivSiblingTable) {
+  ExpectJohnSmithLabels(
+      "<FORM name=\"TestForm\" action=\"http://cnn.com\" method=\"post\">"
+      "<DIV>First name:</DIV>"
+      "<DIV>"
+      "  <SPAN>"
+      "    <INPUT type=\"text\" name=\"firstname\" value=\"John\">"
+      "  </SPAN>"
+      "</DIV>"
+      "<DIV>Last name:</DIV>"
+      "<DIV>"
+      "  <SPAN>"
+      "    <INPUT type=\"text\" name=\"lastname\" value=\"Smith\">"
+      "  </SPAN>"
+      "</DIV>"
+      "<DIV>Email:</DIV>"
+      "<DIV>"
+      "  <SPAN>"
+      "    <INPUT type=\"text\" name=\"email\" value=\"john@example.com\">"
+      "  </SPAN>"
+      "</DIV>"
+      "<input type=\"submit\" name=\"reply-send\" value=\"Send\">"
+      "</FORM>");
+}
+
 TEST_F(FormManagerTest, LabelsInferredFromDefinitionListRatherThanDivTable) {
   ExpectJohnSmithLabels(
       "<FORM name=\"TestForm\" action=\"http://cnn.com\" method=\"post\">"

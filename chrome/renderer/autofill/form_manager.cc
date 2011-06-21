@@ -273,17 +273,27 @@ string16 InferLabelFromTable(const WebFormControlElement& element) {
 // Helper for |InferLabelForElement()| that infers a label, if possible, from
 // a surrounding div table,
 // e.g. <div>Some Text<span><input ...></span></div>
+// e.g. <div>Some Text</div><div><input ...></div>
 string16 InferLabelFromDivTable(const WebFormControlElement& element) {
-  WebNode parent = element.parentNode();
-  while (!parent.isNull() && parent.isElementNode() &&
-         !parent.to<WebElement>().hasTagName("div")) {
-    parent = parent.parentNode();
+  WebNode node = element.parentNode();
+  while (!node.isNull() && node.isElementNode() &&
+         !node.to<WebElement>().hasTagName("div")) {
+    node = node.parentNode();
   }
 
-  if (parent.isNull() || !HasTagName(parent, "div"))
+  if (node.isNull() || !HasTagName(node, "div"))
     return string16();
 
-  return FindChildText(parent.to<WebElement>());
+  // Search the siblings while we cannot find label.
+  string16 inferred_label;
+  while (inferred_label.empty() && !node.isNull()) {
+    if (HasTagName(node, "div"))
+      inferred_label = FindChildText(node.to<WebElement>());
+
+    node = node.previousSibling();
+  }
+
+  return inferred_label;
 }
 
 // Helper for |InferLabelForElement()| that infers a label, if possible, from
