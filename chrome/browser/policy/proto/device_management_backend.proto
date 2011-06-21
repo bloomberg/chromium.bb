@@ -8,22 +8,6 @@ option optimize_for = LITE_RUNTIME;
 
 package enterprise_management;
 
-// Meta-settings that control how a user receives regular settings
-// (CloudPolicySettings) for Chrome. The name "Initial" indicates that
-// these settings will be downloaded before Chrome starts requesting
-// regular settings.
-message ChromeInitialSettingsProto {
-  enum EnrollmentProvision {
-    // The users's device is not automatically enrolled for policies, but the
-    // user may choose to try to enroll it.
-    UNMANAGED = 0;
-    // The user must enroll its device for policies.
-    MANAGED = 1;
-  }
-  // Chrome will interpret this as UNMANAGED if unset.
-  optional EnrollmentProvision enrollment_provision = 1 [default = UNMANAGED];
-}
-
 // Request from device to server to register device.
 message DeviceRegisterRequest {
   // Reregister device without erasing server state.  It can be used
@@ -94,7 +78,7 @@ message PolicyFetchRequest {
   // Possible values for Chrome OS are:
   //   google/chromeos/device => ChromeDeviceSettingsProto
   //   google/chromeos/user => ChromeSettingsProto
-  //   google/chromeos/unregistered_user => ChromeInitialSettingsProto
+  //   google/chromeos/unregistered_user => ChromeInitialSettingsProto (unused)
   optional string policy_type = 1;
 
   // This is the last policy timestamp that client received from server.

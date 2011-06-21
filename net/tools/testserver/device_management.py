@@ -224,101 +224,6 @@ class RequestHandler(object):
 
     return (200, response.SerializeToString())
 
-  def ProcessInitialPolicy(self, msg):
-    """Handles a 'preregister policy' request.
-
-    Queries the list of managed users and responds the client if their user
-    is managed or not.
-
-    Args:
-      msg: The PolicyFetchRequest message received from the client.
-
-    Returns:
-      A tuple of HTTP status code and response data to send to the client.
-    """
-    # Check the GAIA token.
-    auth = self.CheckGoogleLogin()
-    if not auth:
-      return (403, 'No authorization')
-
-    policy = self._server.GetPolicies()
-    chrome_initial_settings = dm.ChromeInitialSettingsProto()
-    if ('*' in policy['managed_users'] or
-        auth in policy['managed_users']):
-      chrome_initial_settings.enrollment_provision = (
-          dm.ChromeInitialSettingsProto.MANAGED);
-    else:
-      chrome_initial_settings.enrollment_provision = (
-          dm.ChromeInitialSettingsProto.UNMANAGED);
-
-    policy_data = dm.PolicyData()
-    policy_data.policy_type = msg.policy_type
-    policy_data.policy_value = chrome_initial_settings.SerializeToString()
-
-    # Prepare and send the response.
-    response = dm.DeviceManagementResponse()
-    fetch_response = response.policy_response.response.add()
-    fetch_response.policy_data = (
-        policy_data.SerializeToString())
-
-    self.DumpMessage('Response', response)
-
-    return (200, response.SerializeToString())
-
-  def ProcessDevicePolicy(self, msg):
-    """Handles a policy request that uses the deprecated protcol.
-    TODO(gfeher): Remove this when we certainly don't need it.
-
-    Checks for authorization, encodes the policy into protobuf representation
-    and constructs the response.
-
-    Args:
-      msg: The DevicePolicyRequest message received from the client.
-
-    Returns:
-      A tuple of HTTP status code and response data to send to the client.
-    """
-
-    # Check the management token.
-    token, response = self.CheckToken()
-    if not token:
-      return response
-
-    # Stuff the policy dictionary into a response message and send it back.
-    response = dm.DeviceManagementResponse()
-    response.policy_response.CopyFrom(dm.DevicePolicyResponse())
-
-    # Respond only if the client requested policy for the cros/device scope,
-    # since that's where chrome policy is supposed to live in.
-    if msg.policy_scope == 'chromeos/device':
-      policy = self._server.GetPolicies()['google/chromeos/user']['mandatory']
-      setting = response.policy_response.setting.add()
-      setting.policy_key = 'chrome-policy'
-      policy_value = dm.GenericSetting()
-      for (key, value) in policy.iteritems():
-        entry = policy_value.named_value.add()
-        entry.name = key
-        entry_value = dm.GenericValue()
-        if isinstance(value, bool):
-          entry_value.value_type = dm.GenericValue.VALUE_TYPE_BOOL
-          entry_value.bool_value = value
-        elif isinstance(value, int):
-          entry_value.value_type = dm.GenericValue.VALUE_TYPE_INT64
-          entry_value.int64_value = value
-        elif isinstance(value, str) or isinstance(value, unicode):
-          entry_value.value_type = dm.GenericValue.VALUE_TYPE_STRING
-          entry_value.string_value = value
-        elif isinstance(value, list):
-          entry_value.value_type = dm.GenericValue.VALUE_TYPE_STRING_ARRAY
-          for list_entry in value:
-            entry_value.string_array.append(str(list_entry))
-        entry.value.CopyFrom(entry_value)
-      setting.policy_value.CopyFrom(policy_value)
-
-    self.DumpMessage('Response', response)
-
-    return (200, response.SerializeToString())
-
   def ProcessPolicy(self, msg, request_type):
     """Handles a policy request.
 
@@ -331,22 +236,15 @@ class RequestHandler(object):
     Returns:
       A tuple of HTTP status code and response data to send to the client.
     """
-
-    if msg.request:
-      for request in msg.request:
-        if request.policy_type == 'google/chromeos/unregistered_user':
-          if request_type != 'ping':
-            return (400, 'Invalid request type')
-          return self.ProcessInitialPolicy(request)
-        elif (request.policy_type in
-              ('google/chromeos/user', 'google/chromeos/device')):
-          if request_type != 'policy':
-            return (400, 'Invalid request type')
-          return self.ProcessCloudPolicy(request)
+    for request in msg.request:
+      if (request.policy_type in
+             ('google/chromeos/user', 'google/chromeos/device')):
+        if request_type != 'policy':
+          return (400, 'Invalid request type')
         else:
-          return (400, 'Invalid policy_type')
-    else:
-      return self.ProcessDevicePolicy(msg)
+          return self.ProcessCloudPolicy(request)
+      else:
+        return (400, 'Invalid policy_type')
 
   def SetProtobufMessageField(self, group_message, field, field_value):
     '''Sets a field in a protobuf message.
