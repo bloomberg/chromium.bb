@@ -5,6 +5,8 @@
 #ifndef REMOTING_HOST_STATUS_OBSERVER_H_
 #define REMOTING_HOST_STATUS_OBSERVER_H_
 
+#include <string>
+
 namespace remoting {
 
 class SignalStrategy;

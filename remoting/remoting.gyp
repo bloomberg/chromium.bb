@@ -181,6 +181,10 @@
         'host/host_plugin.def',
         'host/host_plugin.rc',
         'host/host_plugin_resource.h',
+        'host/host_plugin_utils.cc',
+        'host/host_plugin_utils.h',
+        'host/host_script_object.cc',
+        'host/host_script_object.h',
       ],
       'conditions': [
         ['OS=="mac"', {
