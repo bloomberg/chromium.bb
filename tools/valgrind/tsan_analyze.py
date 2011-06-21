@@ -10,6 +10,7 @@
 import gdb_helper
 
 import common
+import hashlib
 import logging
 import optparse
 import os
@@ -112,11 +113,19 @@ class TsanAnalyzer(object):
           result.append(self.stack_trace_line_)
       self.ReadLine()
       if re.match('-+ suppression -+', self.line_):
-        result.append(self.line_)
+        # We need to calculate the suppression hash and prepend a line like
+        # "Suppression (error hash=#0123456789ABCDEF#):" so the buildbot can
+        # extract the suppression snippet.
+        supp = ""
         while not re.match('-+ end suppression -+', self.line_):
           self.ReadLine()
-          result.append(self.line_)
+          supp += self.line_
         self.ReadLine()
+        result.append("Suppression (error hash=#%016X#):\n" % \
+                      (int(hashlib.md5(supp).hexdigest()[:16], 16)))
+        result.append("  For more info on using suppressions see "
+            "http://dev.chromium.org/developers/how-tos/using-valgrind/threadsanitizer#TOC-Suppressing-data-races\n")
+        result.append(supp)
     else:
       self.ReadLine()
 

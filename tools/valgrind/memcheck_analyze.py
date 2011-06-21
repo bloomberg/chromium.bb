@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 
 import gdb_helper
 
+import hashlib
 import logging
 import optparse
 import os
@@ -254,8 +255,10 @@ class ValgrindError:
     assert self._suppression != None, "Your Valgrind doesn't generate " \
                                       "suppressions - is it too old?"
 
-    output += "Suppression (error hash=#%016X#):" % \
-        (self.__hash__() & 0xffffffffffffffff)
+    output += "Suppression (error hash=#%016X#):\n" % self.ErrorHash()
+    output += ("  For more info on using suppressions see "
+               "http://dev.chromium.org/developers/how-tos/using-valgrind#TOC-Suppressing-Errors")
+
     # Widen suppression slightly to make portable between mac and linux
     supp = self._suppression;
     supp = supp.replace("fun:_Znwj", "fun:_Znw*")
@@ -299,6 +302,12 @@ class ValgrindError:
           rep += frame[OBJECT_FILE]
 
     return rep
+
+  # This is a device-independent hash identifying the suppression.
+  # By printing out this hash we can find duplicate reports between tests and
+  # different shards running on multiple buildbots
+  def ErrorHash(self):
+    return int(hashlib.md5(self.UniqueString()).hexdigest()[:16], 16)
 
   def __hash__(self):
     return hash(self.UniqueString())
@@ -489,7 +498,7 @@ class MemcheckAnalyzer:
                 # ... but we saw it in earlier reports, e.g. previous UI test
                 cur_report_errors.add("This error was already printed in "
                                       "some other test, see 'hash=#%016X#'" % \
-                                      (error.__hash__() & 0xffffffffffffffff))
+                                      self.ErrorHash())
               else:
                 # ... and we haven't seen it in other tests as well
                 self._errors.add(error)
