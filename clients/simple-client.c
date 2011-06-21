@@ -361,8 +361,7 @@ main(int argc, char **argv)
 	create_surface(&window);
 	init_gl(&window);
 
-	wl_display_frame_callback(display.display, window.surface,
-				  redraw, &window);
+	redraw(window.surface, &window, 0);
 
 	while (true)
 		wl_display_iterate(display.display, display.mask);
