@@ -16,7 +16,6 @@
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/keyword_provider.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
-#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/net/url_fixer_upper.h"
