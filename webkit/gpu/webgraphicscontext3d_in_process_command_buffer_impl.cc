@@ -609,6 +609,12 @@ bool GLInProcessContext::Initialize(bool onscreen,
     return false;
   }
 
+  if (!gpu_scheduler_->SetParent(parent_.get() ? parent_->gpu_scheduler_ : NULL,
+                                 parent_texture_id_)) {
+    Destroy();
+    return false;
+  }
+
   command_buffer_->SetPutOffsetChangeCallback(
       NewCallback(this, &GLInProcessContext::PumpCommands));
 
