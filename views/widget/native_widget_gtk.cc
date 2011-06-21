@@ -35,6 +35,7 @@
 #include "views/widget/drop_target_gtk.h"
 #include "views/widget/gtk_views_fixed.h"
 #include "views/widget/gtk_views_window.h"
+#include "views/widget/native_widget_views.h"
 #include "views/widget/tooltip_manager_gtk.h"
 #include "views/widget/widget_delegate.h"
 #include "views/window/hit_test.h"
@@ -2011,6 +2012,8 @@ namespace internal {
 // static
 NativeWidgetPrivate* NativeWidgetPrivate::CreateNativeWidget(
     NativeWidgetDelegate* delegate) {
+  if (Widget::IsPureViews() && delegate->GetDefaultParentView())
+    return new NativeWidgetViews(delegate);
   return new NativeWidgetGtk(delegate);
 }
 

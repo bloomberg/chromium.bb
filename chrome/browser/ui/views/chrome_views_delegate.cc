@@ -51,6 +51,10 @@ ui::Clipboard* ChromeViewsDelegate::GetClipboard() const {
   return g_browser_process->clipboard();
 }
 
+views::View* ChromeViewsDelegate::GetDefaultParentView() {
+  return NULL;
+}
+
 void ChromeViewsDelegate::SaveWindowPlacement(const views::Widget* window,
                                               const std::wstring& window_name,
                                               const gfx::Rect& bounds,

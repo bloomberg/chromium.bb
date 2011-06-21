@@ -29,24 +29,25 @@ class AccessibilityViewsDelegate : public views::ViewsDelegate {
   virtual ~AccessibilityViewsDelegate() {}
 
   // Overridden from views::ViewsDelegate:
-  virtual ui::Clipboard* GetClipboard() const { return NULL; }
+  virtual ui::Clipboard* GetClipboard() const OVERRIDE { return NULL; }
+  virtual views::View* GetDefaultParentView() OVERRIDE { return NULL; }
   virtual void SaveWindowPlacement(const views::Widget* window,
                                    const std::wstring& window_name,
                                    const gfx::Rect& bounds,
-                                   bool maximized) {
+                                   bool maximized) OVERRIDE {
   }
   virtual bool GetSavedWindowBounds(const views::Widget* window,
                                     const std::wstring& window_name,
-                                    gfx::Rect* bounds) const {
+                                    gfx::Rect* bounds) const OVERRIDE {
     return false;
   }
   virtual bool GetSavedMaximizedState(const views::Widget* window,
                                       const std::wstring& window_name,
-                                      bool* maximized) const {
+                                      bool* maximized) const OVERRIDE {
     return false;
   }
   virtual void NotifyAccessibilityEvent(
-      views::View* view, ui::AccessibilityTypes::Event event_type) {
+      views::View* view, ui::AccessibilityTypes::Event event_type) OVERRIDE {
     AccessibilityEventRouterViews::GetInstance()->HandleAccessibilityEvent(
         view, event_type);
   }
@@ -55,14 +56,14 @@ class AccessibilityViewsDelegate : public views::ViewsDelegate {
       const std::wstring& menu_item_name,
       int item_index,
       int item_count,
-      bool has_submenu) {}
+      bool has_submenu) OVERRIDE {}
 #if defined(OS_WIN)
-  virtual HICON GetDefaultWindowIcon() const {
+  virtual HICON GetDefaultWindowIcon() const OVERRIDE {
     return NULL;
   }
 #endif
-  virtual void AddRef() {}
-  virtual void ReleaseRef() {}
+  virtual void AddRef() OVERRIDE {}
+  virtual void ReleaseRef() OVERRIDE {}
 
   virtual int GetDispositionForEvent(int event_flags) OVERRIDE {
     return 0;

@@ -5,6 +5,7 @@
 #include "views/widget/native_widget_views.h"
 
 #include "views/view.h"
+#include "views/views_delegate.h"
 #include "views/widget/native_widget_view.h"
 
 namespace views {
@@ -12,11 +13,9 @@ namespace views {
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetViews, public:
 
-NativeWidgetViews::NativeWidgetViews(View* host,
-                                     internal::NativeWidgetDelegate* delegate)
+NativeWidgetViews::NativeWidgetViews(internal::NativeWidgetDelegate* delegate)
     : delegate_(delegate),
       view_(NULL),
-      host_view_(host),
       active_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(close_widget_factory_(this)) {
 }
@@ -43,7 +42,8 @@ void NativeWidgetViews::OnActivate(bool active) {
 void NativeWidgetViews::InitNativeWidget(const Widget::InitParams& params) {
   view_ = new internal::NativeWidgetView(this);
   view_->SetPaintToTexture(true);
-  host_view_->AddChildView(view_);
+  View* desktop_view = ViewsDelegate::views_delegate->GetDefaultParentView();
+  desktop_view->AddChildView(view_);
 
   // TODO(beng): handle parenting.
   // TODO(beng): SetInitParams().
@@ -204,7 +204,7 @@ void NativeWidgetViews::MoveAbove(gfx::NativeView native_view) {
 }
 
 void NativeWidgetViews::MoveToTop() {
-  host_view_->ReorderChildView(view_, -1);
+  view_->parent()->ReorderChildView(view_, -1);
 }
 
 void NativeWidgetViews::SetShape(gfx::NativeRegion region) {

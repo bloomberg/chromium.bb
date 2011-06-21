@@ -21,7 +21,7 @@ class NativeWidgetView;
 //
 class NativeWidgetViews : public internal::NativeWidgetPrivate {
  public:
-  NativeWidgetViews(View* host, internal::NativeWidgetDelegate* delegate);
+  explicit NativeWidgetViews(internal::NativeWidgetDelegate* delegate);
   virtual ~NativeWidgetViews();
 
   // TODO(beng): remove.
@@ -113,8 +113,6 @@ class NativeWidgetViews : public internal::NativeWidgetPrivate {
   internal::NativeWidgetDelegate* delegate_;
 
   internal::NativeWidgetView* view_;
-
-  View* host_view_;
 
   bool active_;
 

@@ -39,6 +39,7 @@
 #include "views/widget/child_window_message_processor.h"
 #include "views/widget/drop_target_win.h"
 #include "views/widget/native_widget_delegate.h"
+#include "views/widget/native_widget_views.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget_delegate.h"
 #include "views/window/native_frame_view.h"
@@ -2412,6 +2413,8 @@ namespace internal {
 // static
 NativeWidgetPrivate* NativeWidgetPrivate::CreateNativeWidget(
     internal::NativeWidgetDelegate* delegate) {
+  if (Widget::IsPureViews() && delegate->GetDefaultParentView())
+    return new NativeWidgetViews(delegate);
   return new NativeWidgetWin(delegate);
 }
 

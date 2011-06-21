@@ -19,6 +19,7 @@ class ChromeViewsDelegate : public views::ViewsDelegate {
 
   // Overridden from views::ViewsDelegate:
   virtual ui::Clipboard* GetClipboard() const OVERRIDE;
+  virtual views::View* GetDefaultParentView() OVERRIDE;
   virtual void SaveWindowPlacement(const views::Widget* window,
                                    const std::wstring& window_name,
                                    const gfx::Rect& bounds,

@@ -10,7 +10,9 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "views/views_delegate.h"
 
+// TODO(beng): this whole file should be in the views namespace.
 namespace views {
+class View;
 class Widget;
 }
 
@@ -20,18 +22,19 @@ class TestViewsDelegate : public views::ViewsDelegate {
   virtual ~TestViewsDelegate();
 
   // Overridden from views::ViewsDelegate:
-  virtual ui::Clipboard* GetClipboard() const;
+  virtual ui::Clipboard* GetClipboard() const OVERRIDE;
+  virtual views::View* GetDefaultParentView() OVERRIDE { return NULL; }
   virtual void SaveWindowPlacement(const views::Widget* window,
                                    const std::wstring& window_name,
                                    const gfx::Rect& bounds,
                                    bool maximized) OVERRIDE { }
   virtual bool GetSavedWindowBounds(const views::Widget* window,
                                     const std::wstring& window_name,
-                                    gfx::Rect* bounds) const;
+                                    gfx::Rect* bounds) const OVERRIDE;
 
   virtual bool GetSavedMaximizedState(const views::Widget* window,
                                       const std::wstring& window_name,
-                                      bool* maximized) const;
+                                      bool* maximized) const OVERRIDE;
 
   virtual void NotifyAccessibilityEvent(
       views::View* view, ui::AccessibilityTypes::Event event_type) OVERRIDE {}
@@ -41,7 +44,7 @@ class TestViewsDelegate : public views::ViewsDelegate {
       const std::wstring& menu_item_name,
       int item_index,
       int item_count,
-      bool has_submenu) {}
+      bool has_submenu) OVERRIDE {}
 #if defined(OS_WIN)
   virtual HICON GetDefaultWindowIcon() const OVERRIDE {
     return NULL;

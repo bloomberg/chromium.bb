@@ -70,6 +70,9 @@ class TestWindowContentView : public WidgetDelegateView {
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindow, public:
 
+// static
+DesktopWindow* DesktopWindow::desktop_window = NULL;
+
 DesktopWindow::DesktopWindow() : active_widget_(NULL) {
   set_background(new DesktopBackground);
 }
@@ -79,10 +82,11 @@ DesktopWindow::~DesktopWindow() {
 
 // static
 void DesktopWindow::CreateDesktopWindow() {
-  DesktopWindow* desktop = new DesktopWindow;
-  views::Widget* window = new DesktopWindowWindow(desktop);
+  DCHECK(!desktop_window);
+  desktop_window = new DesktopWindow;
+  views::Widget* window = new DesktopWindowWindow(desktop_window);
   views::Widget::InitParams params;
-  params.delegate = desktop;
+  params.delegate = desktop_window;
   // In this environment, CreateChromeWindow will default to creating a views-
   // window, so we need to construct a NativeWidgetWin by hand.
   // TODO(beng): Replace this with NativeWindow::CreateNativeRootWindow().
@@ -95,10 +99,10 @@ void DesktopWindow::CreateDesktopWindow() {
   window->Init(params);
   window->Show();
 
-  desktop->CreateTestWindow(L"Sample Window 1", SK_ColorWHITE,
-                            gfx::Rect(500, 200, 400, 400), true);
-  desktop->CreateTestWindow(L"Sample Window 2", SK_ColorRED,
-                            gfx::Rect(600, 450, 450, 300), false);
+  desktop_window->CreateTestWindow(L"Sample Window 1", SK_ColorWHITE,
+                                   gfx::Rect(500, 200, 400, 400), true);
+  desktop_window->CreateTestWindow(L"Sample Window 2", SK_ColorRED,
+                                   gfx::Rect(600, 450, 450, 300), false);
 }
 
 void DesktopWindow::ActivateWidget(Widget* widget) {
@@ -162,20 +166,17 @@ void DesktopWindow::CreateTestWindow(const std::wstring& title,
                                      SkColor color,
                                      gfx::Rect initial_bounds,
                                      bool rotate) {
-  views::Widget* window = new views::Widget;
-  views::NativeWidgetViews* nwv = new views::NativeWidgetViews(this, window);
-  views::Widget::InitParams params;
-  params.delegate = new TestWindowContentView(title, color);
-  params.native_widget = nwv;
-  params.bounds = initial_bounds;
-  window->Init(params);
+  views::Widget* window = views::Widget::CreateWindowWithBounds(
+      new TestWindowContentView(title, color),
+      initial_bounds);
   window->Show();
 
   if (rotate) {
     ui::Transform transform;
     transform.SetRotate(90.0f);
     transform.SetTranslateX(window->GetWindowScreenBounds().width());
-    nwv->GetView()->SetTransform(transform);
+    static_cast<NativeWidgetViews*>(window->native_widget())->GetView()->
+        SetTransform(transform);
   }
 }
 

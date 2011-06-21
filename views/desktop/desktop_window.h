@@ -15,6 +15,8 @@ namespace desktop {
 
 class DesktopWindow : public WidgetDelegateView {
  public:
+   static DesktopWindow* desktop_window;
+
    DesktopWindow();
    virtual ~DesktopWindow();
 

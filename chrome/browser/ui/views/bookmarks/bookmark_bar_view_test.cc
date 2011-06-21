@@ -65,39 +65,40 @@ namespace {
 class ViewsDelegateImpl : public views::ViewsDelegate {
  public:
   ViewsDelegateImpl() {}
-  virtual ui::Clipboard* GetClipboard() const { return NULL; }
+  virtual ui::Clipboard* GetClipboard() const OVERRIDE { return NULL; }
+  virtual views::View* GetDefaultParentView() OVERRIDE { return NULL; }
   virtual void SaveWindowPlacement(const views::Widget* window,
                                    const std::wstring& window_name,
                                    const gfx::Rect& bounds,
-                                   bool maximized) {}
+                                   bool maximized) OVERRIDE {}
   virtual bool GetSavedWindowBounds(const views::Widget* window,
                                     const std::wstring& window_name,
-                                    gfx::Rect* bounds) const {
+                                    gfx::Rect* bounds) const OVERRIDE {
     return false;
   }
   virtual bool GetSavedMaximizedState(const views::Widget* window,
                                       const std::wstring& window_name,
-                                      bool* maximized) const {
+                                      bool* maximized) const OVERRIDE {
     return false;
   }
 
   virtual void NotifyAccessibilityEvent(
-      views::View* view, ui::AccessibilityTypes::Event event_type) {}
+      views::View* view, ui::AccessibilityTypes::Event event_type) OVERRIDE {}
   virtual void NotifyMenuItemFocused(
       const std::wstring& menu_name,
       const std::wstring& menu_item_name,
       int item_index,
       int item_count,
-      bool has_submenu) {}
+      bool has_submenu) OVERRIDE {}
 
 #if defined(OS_WIN)
-  virtual HICON GetDefaultWindowIcon() const { return 0; }
+  virtual HICON GetDefaultWindowIcon() const OVERRIDE { return 0; }
 #endif
 
-  virtual void AddRef() {
+  virtual void AddRef() OVERRIDE {
   }
 
-  virtual void ReleaseRef() {
+  virtual void ReleaseRef() OVERRIDE {
     MessageLoopForUI::current()->Quit();
   }
 

@@ -19,6 +19,7 @@ class DesktopViewsDelegate : public ViewsDelegate {
  private:
   // Overridden from ViewsDelegate:
   virtual ui::Clipboard* GetClipboard() const OVERRIDE;
+  virtual View* GetDefaultParentView() OVERRIDE;
   virtual void SaveWindowPlacement(const Widget* widget,
                                    const std::wstring& window_name,
                                    const gfx::Rect& bounds,

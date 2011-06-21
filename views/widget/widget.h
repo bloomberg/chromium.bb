@@ -215,10 +215,6 @@ class Widget : public internal::NativeWidgetDelegate,
 
   void Init(const InitParams& params);
 
-  // Unconverted methods -------------------------------------------------------
-
-  // TODO(beng): reorder, they've been converted now.
-
   // Returns the gfx::NativeView associated with this Widget.
   gfx::NativeView GetNativeView() const;
 
@@ -237,12 +233,6 @@ class Widget : public internal::NativeWidgetDelegate,
   // Performs any necessary cleanup and forwards to RootView.
   void NotifyNativeViewHierarchyChanged(bool attached,
                                         gfx::NativeView native_view);
-
-  // Converted methods ---------------------------------------------------------
-
-  // TODO(beng):
-  // Widget subclasses are implementing these methods by implementing
-  // NativeWidget. Remove this comment once complete.
 
   // Returns the topmost Widget in a hierarchy. Will return NULL if called
   // before the underlying Native Widget has been initialized.
