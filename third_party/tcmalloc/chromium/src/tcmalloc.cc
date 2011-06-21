@@ -150,6 +150,13 @@
 # define WIN32_DO_PATCHING 1
 #endif
 
+// GLibc 2.14+ requires the hook functions be declared volatile, based on the
+// value of the define __MALLOC_HOOK_VOLATILE. For compatibility with
+// older/non-GLibc implementations, provide an empty definition.
+#if !defined(__MALLOC_HOOK_VOLATILE)
+#define __MALLOC_HOOK_VOLATILE
+#endif
+
 using STL_NAMESPACE::max;
 using STL_NAMESPACE::numeric_limits;
 using STL_NAMESPACE::vector;
@@ -403,7 +410,7 @@ static void* tc_ptmalloc_malloc_hook(size_t size, const void* caller) {
   return tc_malloc(size);
 }
 
-void* (*__malloc_hook)(
+void* (*__MALLOC_HOOK_VOLATILE __malloc_hook)(
     size_t size, const void* caller) = tc_ptmalloc_malloc_hook;
 
 static void* tc_ptmalloc_realloc_hook(
@@ -411,14 +418,14 @@ static void* tc_ptmalloc_realloc_hook(
   return tc_realloc(ptr, size);
 }
 
-void* (*__realloc_hook)(
+void* (*__MALLOC_HOOK_VOLATILE __realloc_hook)(
     void* ptr, size_t size, const void* caller) = tc_ptmalloc_realloc_hook;
 
 static void tc_ptmalloc_free_hook(void* ptr, const void* caller) {
   tc_free(ptr);
 }
 
-void (*__free_hook)(void* ptr, const void* caller) = tc_ptmalloc_free_hook;
+void (*__MALLOC_HOOK_VOLATILE __free_hook)(void* ptr, const void* caller) = tc_ptmalloc_free_hook;
 
 #endif
 
@@ -1757,7 +1764,7 @@ static void *MemalignOverride(size_t align, size_t size, const void *caller)
   MallocHook::InvokeNewHook(result, size);
   return result;
 }
-void *(*__memalign_hook)(size_t, size_t, const void *) = MemalignOverride;
+void *(*__MALLOC_HOOK_VOLATILE __memalign_hook)(size_t, size_t, const void *) = MemalignOverride;
 #endif  // TCMALLOC_USING_DEBUGALLOCATION
 
 // ---Double free() debugging implementation -----------------------------------
