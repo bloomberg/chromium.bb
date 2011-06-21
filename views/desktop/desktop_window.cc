@@ -60,6 +60,17 @@ class TestWindowContentView : public WidgetDelegateView {
   virtual View* GetContentsView() {
     return this;
   }
+  virtual bool CanMaximize() const OVERRIDE {
+    return true;
+  }
+  virtual bool OnMousePressed(const MouseEvent& event) OVERRIDE {
+    Widget* widget = View::GetWidget();
+    if (widget->IsMinimized())
+      widget->Restore();
+    else
+      widget->Minimize();
+    return true;
+  }
 
   std::wstring title_;
   SkColor color_;

@@ -116,9 +116,13 @@ class NativeWidgetViews : public internal::NativeWidgetPrivate {
 
   bool active_;
 
+  bool minimized_;
+
   // The following factory is used for calls to close the NativeWidgetViews
   // instance.
   ScopedRunnableMethodFactory<NativeWidgetViews> close_widget_factory_;
+
+  gfx::Rect restored_bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetViews);
 };

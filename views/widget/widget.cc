@@ -768,7 +768,7 @@ bool Widget::OnNativeWidgetPaintAccelerated(const gfx::Rect& dirty_region) {
     return false;
 
   compositor_->NotifyStart();
-  GetRootView()->PaintToTexture(dirty_region);
+  GetRootView()->PaintToLayer(dirty_region);
   GetRootView()->PaintComposite();
   compositor_->NotifyEnd();
   return true;
@@ -909,6 +909,9 @@ void Widget::ReplaceFocusManager(FocusManager* focus_manager) {
 ////////////////////////////////////////////////////////////////////////////////
 // Widget, private:
 
+// static
+ui::Compositor*(*Widget::factory_)() = NULL;
+
 void Widget::EnsureCompositor() {
   DCHECK(!compositor_.get());
 
@@ -916,8 +919,11 @@ void Widget::EnsureCompositor() {
   //            instead of creating a new one here.
   gfx::AcceleratedWidget widget = native_widget_->GetAcceleratedWidget();
   if (widget != gfx::kNullAcceleratedWidget &&
-                View::get_use_acceleration_when_possible())
-    compositor_ = ui::Compositor::Create(widget);
+      View::get_use_acceleration_when_possible()) {
+    compositor_ = factory_ ? (*factory_)() : ui::Compositor::Create(widget);
+    if (compositor_.get())
+      GetRootView()->SetPaintToLayer(true);
+  }
 }
 
 bool Widget::ShouldReleaseCaptureOnMouseReleased() const {

@@ -31,6 +31,8 @@
         'compositor.h',
         'compositor_gl.cc',
         'compositor_win.cc',
+        'layer.cc',
+        'layer.h',
       ],
       'conditions': [
         ['os_posix == 1 and OS != "mac"', {

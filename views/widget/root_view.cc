@@ -156,7 +156,7 @@ std::string RootView::GetClassName() const {
 }
 
 void RootView::SchedulePaintInRect(const gfx::Rect& rect) {
-  MarkTextureDirty();
+  MarkLayerDirty();
   SchedulePaintInternal(rect);
 }
 
@@ -425,10 +425,6 @@ void RootView::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
 
 void RootView::OnPaint(gfx::Canvas* canvas) {
   canvas->AsCanvasSkia()->drawColor(SK_ColorBLACK, SkXfermode::kClear_Mode);
-}
-
-bool RootView::ShouldPaintToTexture() const {
-  return widget_->compositor() != NULL;
 }
 
 const ui::Compositor* RootView::GetCompositor() const {

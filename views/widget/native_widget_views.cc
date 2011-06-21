@@ -4,6 +4,8 @@
 
 #include "views/widget/native_widget_views.h"
 
+#include "ui/gfx/compositor/compositor.h"
+#include "ui/gfx/transform.h"
 #include "views/view.h"
 #include "views/views_delegate.h"
 #include "views/widget/native_widget_view.h"
@@ -17,6 +19,7 @@ NativeWidgetViews::NativeWidgetViews(internal::NativeWidgetDelegate* delegate)
     : delegate_(delegate),
       view_(NULL),
       active_(false),
+      minimized_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(close_widget_factory_(this)) {
 }
 
@@ -41,7 +44,7 @@ void NativeWidgetViews::OnActivate(bool active) {
 
 void NativeWidgetViews::InitNativeWidget(const Widget::InitParams& params) {
   view_ = new internal::NativeWidgetView(this);
-  view_->SetPaintToTexture(true);
+  view_->SetPaintToLayer(true);
   View* desktop_view = ViewsDelegate::views_delegate->GetDefaultParentView();
   desktop_view->AddChildView(view_);
 
@@ -263,7 +266,33 @@ void NativeWidgetViews::Maximize() {
 }
 
 void NativeWidgetViews::Minimize() {
-  NOTIMPLEMENTED();
+  gfx::Rect view_bounds = view_->bounds();
+  gfx::Rect parent_bounds = view_->parent()->bounds();
+
+  restored_bounds_ = view_bounds;
+
+  float aspect_ratio = static_cast<float>(view_bounds.width()) /
+                       static_cast<float>(view_bounds.height());
+  int target_size = 100;
+  int target_height = target_size;
+  int target_width = static_cast<int>(aspect_ratio * target_height);
+  if (target_width > target_size) {
+    target_width = target_size;
+    target_height = static_cast<int>(target_width / aspect_ratio);
+  }
+
+  int target_x = 20;
+  int target_y = parent_bounds.height() - target_size - 20;
+
+  view_->SetBounds(
+      target_x, target_y, view_bounds.width(), view_bounds.height());
+
+  ui::Transform transform;
+  transform.SetScale((float)target_width / (float)view_bounds.width(),
+                     (float)target_height / (float)view_bounds.height());
+  view_->SetTransform(transform);
+
+  minimized_ = true;
 }
 
 bool NativeWidgetViews::IsMaximized() const {
@@ -272,12 +301,13 @@ bool NativeWidgetViews::IsMaximized() const {
 }
 
 bool NativeWidgetViews::IsMinimized() const {
-  NOTIMPLEMENTED();
-  return false;
+  return minimized_;
 }
 
 void NativeWidgetViews::Restore() {
-  NOTIMPLEMENTED();
+  minimized_ = false;
+  view_->SetBoundsRect(restored_bounds_);
+  view_->SetTransform(ui::Transform());
 }
 
 void NativeWidgetViews::SetFullscreen(bool fullscreen) {

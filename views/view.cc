@@ -15,6 +15,7 @@
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/compositor/compositor.h"
+#include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/transform.h"
 #include "views/background.h"
@@ -103,8 +104,8 @@ View::View()
       clip_y_(0.0),
       needs_layout_(true),
       flip_canvas_on_paint_for_rtl_ui_(false),
-      texture_needs_updating_(true),
-      paint_to_texture_(false),
+      layer_needs_updating_(true),
+      paint_to_layer_(false),
       accelerator_registration_delayed_(false),
       accelerator_focus_manager_(NULL),
       registered_accelerator_count_(0),
@@ -162,6 +163,12 @@ void View::AddChildViewAt(View* view, int index) {
   view->parent_ = this;
   children_.insert(children_.begin() + index, view);
 
+  if (GetWidget()) {
+    // Sending out notification of insert may result in adding other views.
+    // Invoke this first to make sure we know the layer is created (if needed).
+    view->CreateLayerIfNecessary();
+  }
+
   for (View* v = this; v; v = v->parent_)
     v->ViewHierarchyChangedImpl(false, true, this, view);
 
@@ -173,7 +180,7 @@ void View::AddChildViewAt(View* view, int index) {
   if (layout_manager_.get())
     layout_manager_->ViewAdded(this, view);
 
-  view->MarkTextureDirty();
+  view->MarkLayerDirty();
 }
 
 void View::ReorderChildView(View* view, int index) {
@@ -257,6 +264,13 @@ void View::SetBoundsRect(const gfx::Rect& bounds) {
       SchedulePaint();
     }
     return;
+  }
+
+  if (IsVisible()) {
+    // Paint where the view is currently.
+    SchedulePaintBoundsChanged(
+        bounds_.size() == bounds.size() ? SCHEDULE_PAINT_SIZE_SAME :
+        SCHEDULE_PAINT_SIZE_CHANGED);
   }
 
   gfx::Rect prev = bounds_;
@@ -372,7 +386,7 @@ void View::SetVisible(bool visible) {
     if (visible_)
       SchedulePaint();
     else
-      ResetTexture();
+      DestroyLayerRecurse();
 
     visible_ = visible;
 
@@ -421,27 +435,30 @@ void View::SetTransform(const ui::Transform& transform) {
   if (!transform.HasChange()) {
     if (!transform_.get())
       return;
-    transform_.reset(NULL);
+    transform_.reset();
 
-    if (!paint_to_texture_)
-      texture_.reset();
+    if (!ShouldPaintToLayer())
+      DestroyLayerAndReparent();
+    else if (layer_.get())
+      layer_->set_transform(transform);
 
     SchedulePaint();
   } else {
     // Make sure if the view didn't have its own texture and was painting onto
     // something else, that gets refreshed too.
-    if (!ShouldPaintToTexture())
-      MarkTextureDirty();
+    if (!ShouldPaintToLayer())
+      MarkLayerDirty();
 
     transform_.reset(new ui::Transform(transform));
-    if (!texture_.get()) {
-      // We don't yet have a texture. SchedulePaint so one is created.
+    if (!layer_.get()) {
+      CreateLayer();
       SchedulePaint();
     } else {
-      // We have a texture. When the transform changes and the texture is up to
+      layer_->set_transform(transform);
+      // We have a layer. When the transform changes and the layer is up to
       // date we don't want to SchedulePaint as it'll trigger painting to the
-      // texture. Instead we tell the Widget to paint, which makes the
-      // compositor draw using the existing texture.
+      // layer. Instead we tell the Widget to paint, which makes the
+      // compositor draw using the existing layer.
       // We schedule paint the complete bounds as compositor generally don't
       // support partial painting.
       Widget* widget = GetWidget();
@@ -451,13 +468,15 @@ void View::SetTransform(const ui::Transform& transform) {
   }
 }
 
-void View::SetPaintToTexture(bool value) {
-  if (value == paint_to_texture_)
+void View::SetPaintToLayer(bool value) {
+  if (value == paint_to_layer_)
     return;
 
-  paint_to_texture_ = value;
-  if (!ShouldPaintToTexture())
-    texture_.reset();
+  paint_to_layer_ = value;
+  if (!ShouldPaintToLayer())
+    DestroyLayerAndReparent();
+  else if (!layer_.get())
+    CreateLayer();
 }
 
 // RTL positioning -------------------------------------------------------------
@@ -649,7 +668,7 @@ void View::SchedulePaintInRect(const gfx::Rect& rect) {
   if (!IsVisible())
     return;
 
-  MarkTextureDirty();
+  MarkLayerDirty();
   SchedulePaintInternal(rect);
 }
 
@@ -658,13 +677,13 @@ void View::Paint(gfx::Canvas* canvas) {
     return;
 
   ScopedCanvas scoped_canvas(NULL);
-  scoped_ptr<gfx::Canvas> texture_canvas;
-  gfx::Rect texture_rect;
+  scoped_ptr<gfx::Canvas> layer_canvas;
+  gfx::Rect layer_rect;
 
-  if (ShouldPaintToTexture()) {
+  if (layer_.get()) {
     gfx::Rect dirty_rect;
-    if (!texture_clip_rect_.IsEmpty()) {
-      dirty_rect = texture_clip_rect_;
+    if (!layer_clip_rect_.IsEmpty()) {
+      dirty_rect = layer_clip_rect_;
     } else {
       // TODO: clip against dirty rect of canvas (if canvas is non-null).
       dirty_rect = gfx::Rect(0, 0, width(), height());
@@ -672,25 +691,20 @@ void View::Paint(gfx::Canvas* canvas) {
     if (dirty_rect.IsEmpty())
       return;
 
-    if (!texture_.get()) {
-      texture_.reset(GetCompositor()->CreateTexture());
-      texture_needs_updating_ = true;
-    }
-
-    if (!texture_needs_updating_) {
+    if (!layer_needs_updating_) {
       // We don't need to be painted. Iterate over descendants in case one of
       // them is dirty.
-      PaintToTexture(dirty_rect);
+      PaintToLayer(dirty_rect);
       return;
     }
 
-    texture_canvas.reset(gfx::Canvas::CreateCanvas(dirty_rect.width(),
+    layer_canvas.reset(gfx::Canvas::CreateCanvas(dirty_rect.width(),
         dirty_rect.height(), false));
-    texture_canvas->AsCanvasSkia()->drawColor(
+    layer_canvas->AsCanvasSkia()->drawColor(
         SK_ColorBLACK, SkXfermode::kClear_Mode);
-    texture_canvas->TranslateInt(-dirty_rect.x(), -dirty_rect.y());
-    canvas = texture_canvas.get();
-    texture_rect = dirty_rect;
+    layer_canvas->TranslateInt(-dirty_rect.x(), -dirty_rect.y());
+    canvas = layer_canvas.get();
+    layer_rect = dirty_rect;
   } else {
     // We're going to modify the canvas, save its state first.
     scoped_canvas.SetCanvas(canvas);
@@ -733,12 +747,11 @@ void View::Paint(gfx::Canvas* canvas) {
 
   PaintChildren(canvas);
 
-  if (texture_canvas.get()) {
-    texture_->SetBitmap(
-        texture_canvas->AsCanvasSkia()->getDevice()->accessBitmap(false),
-        texture_rect.origin(),
-        size());
-    texture_needs_updating_ = false;
+  if (layer_canvas.get()) {
+    layer_->SetBitmap(
+        layer_canvas->AsCanvasSkia()->getDevice()->accessBitmap(false),
+        layer_rect.origin());
+    layer_needs_updating_ = false;
   }
 }
 
@@ -1152,11 +1165,9 @@ void View::PaintComposite() {
   if (!IsVisible())
     return;
 
-  if (texture_.get()) {
-    OnWillCompositeTexture();
-    ui::Transform transform;
-    GetTransformRelativeTo(NULL, &transform);
-    texture_->Draw(transform);
+  if (layer_.get()) {
+    OnWillCompositeLayer();
+    layer_->Draw();
   }
 
   for (int i = 0, count = child_count(); i < count; ++i)
@@ -1173,26 +1184,16 @@ void View::SchedulePaintInternal(const gfx::Rect& rect) {
   }
 }
 
-void View::PaintToTexture(const gfx::Rect& dirty_region) {
+void View::PaintToLayer(const gfx::Rect& dirty_region) {
   if (!IsVisible())
     return;
 
-  if (ShouldPaintToTexture() && texture_needs_updating_) {
-    if (!texture_.get()) {
-      // If we have no texture paint the whole view. We do this to handle two
-      // cases:
-      // . Workaround for WidgetWin/WindowWin. In particular its possible to
-      //   create the rootview at the non-client size, even though we'll never
-      //   paint at that size.
-      // . In case the texture is recreated and a partial paint was scheduled.
-      Paint(NULL);
-    } else {
-      texture_clip_rect_ = dirty_region;
-      Paint(NULL);
-      texture_clip_rect_.SetRect(0, 0, 0, 0);
-    }
+  if (layer_.get() && layer_needs_updating_) {
+    layer_clip_rect_ = dirty_region;
+    Paint(NULL);
+    layer_clip_rect_.SetRect(0, 0, 0, 0);
   } else {
-    // Forward to all children as a descendant may be dirty and have a texture.
+    // Forward to all children as a descendant may be dirty and have a layer.
     for (int i = child_count() - 1; i >= 0; --i) {
       View* child_view = GetChildViewAt(i);
 
@@ -1202,20 +1203,13 @@ void View::PaintToTexture(const gfx::Rect& dirty_region) {
       child_dirty_rect = gfx::Rect(gfx::Point(), child_view->size()).Intersect(
           child_dirty_rect);
 
-      if (!child_dirty_rect.IsEmpty()) {
-        GetChildViewAt(i)->PaintToTexture(child_dirty_rect);
-      }
+      if (!child_dirty_rect.IsEmpty())
+        GetChildViewAt(i)->PaintToLayer(child_dirty_rect);
     }
   }
 }
 
-void View::OnWillCompositeTexture() {
-}
-
-bool View::ShouldPaintToTexture() const {
-  return use_acceleration_when_possible &&
-      (paint_to_texture_ || (transform_.get() && transform_->HasChange())) &&
-       GetCompositor();
+void View::OnWillCompositeLayer() {
 }
 
 const ui::Compositor* View::GetCompositor() const {
@@ -1325,6 +1319,20 @@ void View::DragInfo::PossibleDrag(const gfx::Point& p) {
   start_pt = p;
 }
 
+// Painting --------------------------------------------------------------------
+
+void View::SchedulePaintBoundsChanged(SchedulePaintType type) {
+  if (layer_.get() && type == SCHEDULE_PAINT_SIZE_SAME) {
+    // If only the positions changes and we have a layer, we don't need to mark
+    // the layer as dirty (which SchedulePaint does), only paint the bounds.
+    SchedulePaintInternal(gfx::Rect(0, 0, width(), height()));
+  } else {
+    // If the size changes, or we don't have a layer then we need to use
+    // SchedulePaint to make sure the layer is marked as dirty.
+    SchedulePaint();
+  }
+}
+
 // Tree operations -------------------------------------------------------------
 
 void View::DoRemoveChildView(View* view,
@@ -1347,7 +1355,7 @@ void View::DoRemoveChildView(View* view,
 
     if (GetWidget())
       UnregisterChildrenForVisibleBoundsNotification(view);
-    view->ResetTexture();
+    view->DestroyLayerRecurse();
     view->PropagateRemoveNotifications(this);
     view->parent_ = NULL;
 
@@ -1431,22 +1439,23 @@ void View::VisibilityChangedImpl(View* starting_from, bool is_visible) {
 
 void View::BoundsChanged(const gfx::Rect& previous_bounds) {
   if (IsVisible()) {
-    if (parent_) {
-      // Paint the old bounds.
-      if (base::i18n::IsRTL()) {
-        gfx::Rect paint_rect = previous_bounds;
-        paint_rect.set_x(parent_->GetMirroredXForRect(paint_rect));
-        parent_->SchedulePaintInRect(paint_rect);
-      } else {
-        parent_->SchedulePaintInRect(previous_bounds);
-      }
+    if (layer_.get())
+      layer_->set_bounds(bounds_);
 
-      // Then the new.
-      parent_->SchedulePaintInRect(GetMirroredBounds());
-    } else {
-      // Previous bounds has no meaning to an orphan. This should only happen
-      // when the View is a RootView.
-      SchedulePaintInRect(gfx::Rect(0, 0, bounds_.width(), bounds_.height()));
+    // Paint the new bounds.
+    SchedulePaintBoundsChanged(
+        bounds_.size() == previous_bounds.size() ? SCHEDULE_PAINT_SIZE_SAME :
+        SCHEDULE_PAINT_SIZE_CHANGED);
+
+    if (use_acceleration_when_possible && GetCompositor() && !layer_.get()) {
+      // If our bounds have changed, then any descendant layer bounds may
+      // have changed. Update them accordingly.
+      gfx::Point offset(bounds_.origin());
+      View* v = parent_;
+      for (; v && !v->layer_.get(); v = v->parent_)
+        offset.Add(v->bounds().origin());
+      if (v)
+        UpdateLayerBounds(offset);
     }
   }
 
@@ -1589,18 +1598,113 @@ bool View::ConvertPointFromAncestor(const View* ancestor,
 
 // Accelerated painting --------------------------------------------------------
 
-void View::MarkTextureDirty() {
-  View* owner = this;
-  while (!((owner->transform_.get() && owner->transform_->HasChange()) ||
-           owner->paint_to_texture_) && owner->parent_)
-    owner = owner->parent_;
-  owner->texture_needs_updating_ = true;
+bool View::ShouldPaintToLayer() const {
+  return use_acceleration_when_possible &&
+      (paint_to_layer_ || (transform_.get() && transform_->HasChange()));
 }
 
-void View::ResetTexture() {
-  texture_.reset();
+void View::MarkLayerDirty() {
+  View* owner = this;
+  while (!((owner->transform_.get() && owner->transform_->HasChange()) ||
+           owner->paint_to_layer_) && owner->parent_)
+    owner = owner->parent_;
+  owner->layer_needs_updating_ = true;
+}
+
+void View::CreateLayerIfNecessary() {
+  if (ShouldPaintToLayer())
+    CreateLayer();
+
+  for (int i = 0, count = child_count(); i < count; ++i)
+    GetChildViewAt(i)->CreateLayerIfNecessary();
+}
+
+void View::CreateLayer() {
+  if (!ShouldPaintToLayer() || layer_.get())
+    return;
+
+  ui::Compositor* compositor = GetCompositor();
+  if (!compositor)
+    return;
+
+  // TODO: if we want to share compositors among widgets then this code needs to
+  // ascend widget boundaries.
+  View* ancestor_with_layer = NULL;
+  gfx::Point offset(CalculateOffsetToAncestorWithLayer(&ancestor_with_layer));
+
+  DCHECK(ancestor_with_layer || parent_ == NULL);
+
+  layer_.reset(new ui::Layer(compositor));
+  layer_->set_bounds(gfx::Rect(offset.x(), offset.y(), width(), height()));
+  if (ancestor_with_layer)
+    ancestor_with_layer->layer_->Add(layer_.get());
+  layer_needs_updating_ = true;
+
+  for (int i = 0, count = child_count(); i < count; ++i)
+    GetChildViewAt(i)->MoveLayerToParent(layer_.get(), gfx::Point());
+}
+
+void View::DestroyLayerRecurse() {
   for (int i = child_count() - 1; i >= 0; --i)
-    GetChildViewAt(i)->ResetTexture();
+    GetChildViewAt(i)->DestroyLayerRecurse();
+  DestroyLayer();
+}
+
+void View::DestroyLayerAndReparent() {
+  if (!layer_.get())
+    return;
+
+  ui::Layer* new_parent = layer_->parent();
+  std::vector<ui::Layer*> children = layer_->children();
+  for (size_t i = 0; i < children.size(); ++i)
+    new_parent->Add(children[i]);
+
+  DestroyLayer();
+
+  gfx::Point offset(CalculateOffsetToAncestorWithLayer(NULL));
+  for (int i = 0, count = child_count(); i < count; ++i)
+    GetChildViewAt(i)->UpdateLayerBounds(offset);
+}
+
+void View::DestroyLayer() {
+  layer_.reset();
+}
+
+void View::MoveLayerToParent(ui::Layer* parent_layer,
+                               const gfx::Point& point) {
+  gfx::Point local_point(point.x() + x(), point.y() + y());
+  if (layer_.get()) {
+    parent_layer->Add(layer_.get());
+    layer_->set_bounds(
+        gfx::Rect(local_point.x(), local_point.y(), width(), height()));
+  } else {
+    for (int i = 0, count = child_count(); i < count; ++i)
+      GetChildViewAt(i)->MoveLayerToParent(parent_layer, local_point);
+  }
+}
+
+void View::UpdateLayerBounds(const gfx::Point& offset) {
+  if (layer_.get()) {
+    layer_->set_bounds(
+        gfx::Rect(offset.x() + x(), offset.y() + y(), width(), height()));
+  } else {
+    gfx::Point new_offset(offset.x() + x(), offset.y() + y());
+    for (int i = 0, count = child_count(); i < count; ++i)
+      GetChildViewAt(i)->UpdateLayerBounds(new_offset);
+  }
+}
+
+gfx::Point View::CalculateOffsetToAncestorWithLayer(
+    View** ancestor) {
+  gfx::Point offset;
+  View* ancestor_with_layer = this;
+  while (ancestor_with_layer && !ancestor_with_layer->layer()) {
+    offset.Offset(ancestor_with_layer->x(), ancestor_with_layer->y());
+    ancestor_with_layer = ancestor_with_layer->parent();
+  }
+  if (ancestor)
+    *ancestor = ancestor_with_layer;
+  return offset;
 }
 
 // Input -----------------------------------------------------------------------
@@ -1845,7 +1949,7 @@ std::string View::PrintViewGraph(bool first) {
   result.append("\"");
   if (!parent_)
     result.append(", shape=box");
-  if (texture_.get())
+  if (layer_.get())
     result.append(", color=green");
   result.append("]\n");
 

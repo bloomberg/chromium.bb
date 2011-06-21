@@ -464,6 +464,12 @@ class Widget : public internal::NativeWidgetDelegate,
     return non_client_view()->client_view();
   }
 
+#if defined(UNIT_TEST)
+  static void set_compositor_factory(ui::Compositor*(*factory)()) {
+    factory_ = factory;
+  }
+#endif
+
   const ui::Compositor* compositor() const { return compositor_.get(); }
   ui::Compositor* compositor() { return compositor_.get(); }
 
@@ -635,6 +641,9 @@ class Widget : public internal::NativeWidgetDelegate,
 
   // The smallest size the window can be.
   gfx::Size minimum_size_;
+
+  // Factory used to create Compositors. Settable by tests.
+  static ui::Compositor*(*factory_)();
 
   DISALLOW_COPY_AND_ASSIGN(Widget);
 };

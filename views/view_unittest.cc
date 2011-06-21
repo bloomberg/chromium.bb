@@ -11,6 +11,8 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/compositor/compositor.h"
+#include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/transform.h"
 #include "views/background.h"
@@ -41,14 +43,7 @@ using ::testing::_;
 
 namespace views {
 
-class ViewTest : public ViewsTestBase {
- public:
-  ViewTest() {
-  }
-
-  virtual ~ViewTest() {
-  }
-};
+typedef ViewsTestBase ViewTest;
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -87,7 +82,7 @@ class TestView : public View {
   virtual ui::TouchStatus OnTouchEvent(const TouchEvent& event);
 #endif
   virtual void Paint(gfx::Canvas* canvas) OVERRIDE;
-  virtual void SchedulePaintInRect(const gfx::Rect& rect) OVERRIDE;
+  virtual void SchedulePaintInternal(const gfx::Rect& rect) OVERRIDE;
   virtual bool AcceleratorPressed(const Accelerator& accelerator) OVERRIDE;
 
   // OnBoundsChanged test
@@ -512,9 +507,9 @@ void TestView::Paint(gfx::Canvas* canvas) {
   canvas->AsCanvasSkia()->getClipBounds(&last_clip_);
 }
 
-void TestView::SchedulePaintInRect(const gfx::Rect& rect) {
+void TestView::SchedulePaintInternal(const gfx::Rect& rect) {
   scheduled_paint_rects_.push_back(rect);
-  View::SchedulePaintInRect(rect);
+  View::SchedulePaintInternal(rect);
 }
 
 void CheckRect(const SkRect& check_rect, const SkRect& target_rect) {
@@ -2167,5 +2162,186 @@ TEST_F(ViewTest, ReorderChildren) {
   ASSERT_EQ(foo3, foo2->GetNextFocusableView());
   ASSERT_EQ(foo1, foo3->GetNextFocusableView());
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// Layers
+////////////////////////////////////////////////////////////////////////////////
+
+#if defined(VIEWS_COMPOSITOR) || defined(TOUCH_UI)
+
+class TestTexture : public ui::Texture {
+ public:
+  TestTexture() {
+    live_count_++;
+  }
+
+  ~TestTexture() {
+    live_count_--;
+  }
+
+  static void reset_live_count() { live_count_ = 0; }
+  static int live_count() { return live_count_; }
+
+  // ui::Texture
+  virtual void SetBitmap(const SkBitmap& bitmap,
+                         const gfx::Point& origin,
+                         const gfx::Size& overall_size) OVERRIDE {}
+  virtual void Draw(const ui::Transform& transform) OVERRIDE {}
+
+ private:
+  // Number of live instances.
+  static int live_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestTexture);
+};
+
+// static
+int TestTexture::live_count_ = 0;
+
+class TestCompositor : public ui::Compositor {
+ public:
+  TestCompositor() {}
+
+  // ui::Compositor:
+  virtual ui::Texture* CreateTexture() OVERRIDE {
+    return new TestTexture();
+  }
+  virtual void NotifyStart() OVERRIDE {}
+  virtual void NotifyEnd() OVERRIDE {}
+  virtual void Blur(const gfx::Rect& bounds) OVERRIDE {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestCompositor);
+};
+
+static ui::Compositor* TestCreateCompositor() {
+  return new TestCompositor();
+}
+
+class ViewLayerTest : public ViewsTestBase {
+ public:
+  ViewLayerTest() : widget_(NULL), old_use_acceleration_(false) {}
+
+  virtual ~ViewLayerTest() {
+  }
+
+  virtual void SetUp() OVERRIDE {
+    old_use_acceleration_ = View::get_use_acceleration_when_possible();
+    View::set_use_acceleration_when_possible(true);
+
+    TestTexture::reset_live_count();
+
+    Widget::set_compositor_factory(&TestCreateCompositor);
+    widget_ = new Widget;
+    Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
+    params.bounds = gfx::Rect(50, 50, 200, 200);
+    widget_->Init(params);
+  }
+
+  virtual void TearDown() OVERRIDE {
+    View::set_use_acceleration_when_possible(old_use_acceleration_);
+    widget_->CloseNow();
+    Widget::set_compositor_factory(NULL);
+  }
+
+  Widget* widget() { return widget_; }
+
+ private:
+  Widget* widget_;
+  bool old_use_acceleration_;
+};
+
+// Ensures the RootView has a layer and its set up correctly.
+TEST_F(ViewLayerTest, RootState) {
+  ui::Layer* layer = widget()->GetRootView()->layer();
+  ASSERT_TRUE(layer);
+  EXPECT_FALSE(layer->parent());
+  EXPECT_EQ(0u, layer->children().size());
+  EXPECT_FALSE(layer->transform().HasChange());
+  EXPECT_EQ(widget()->GetRootView()->bounds(), layer->bounds());
+  EXPECT_TRUE(layer->compositor() != NULL);
+}
+
+TEST_F(ViewLayerTest, LayerToggling) {
+  View* content_view = new View;
+  widget()->SetContentsView(content_view);
+
+  // Create v1, give it a bounds and verify everything is set up correctly.
+  View* v1 = new View;
+  v1->SetPaintToLayer(true);
+  EXPECT_EQ(1, TestTexture::live_count());
+  EXPECT_TRUE(v1->layer() == NULL);
+  content_view->AddChildView(v1);
+  EXPECT_EQ(2, TestTexture::live_count());
+  ASSERT_TRUE(v1->layer() != NULL);
+  EXPECT_EQ(widget()->GetRootView()->layer(), v1->layer()->parent());
+  v1->SetBounds(20, 30, 140, 150);
+  EXPECT_EQ(gfx::Rect(20, 30, 140, 150), v1->layer()->bounds());
+
+  // Create v2 as a child of v1 and do basic assertion testing.
+  View* v2 = new View;
+  v1->AddChildView(v2);
+  EXPECT_TRUE(v2->layer() == NULL);
+  v2->SetBounds(10, 20, 30, 40);
+  v2->SetPaintToLayer(true);
+  EXPECT_EQ(3, TestTexture::live_count());
+  ASSERT_TRUE(v2->layer() != NULL);
+  EXPECT_EQ(v1->layer(), v2->layer()->parent());
+  EXPECT_EQ(gfx::Rect(10, 20, 30, 40), v2->layer()->bounds());
+
+  // Turn off v1s layer. v2 should still have a layer but its parent should have
+  // changed.
+  v1->SetPaintToLayer(false);
+  EXPECT_EQ(2, TestTexture::live_count());
+  EXPECT_TRUE(v1->layer() == NULL);
+  EXPECT_TRUE(v2->layer() != NULL);
+  EXPECT_EQ(widget()->GetRootView()->layer(), v2->layer()->parent());
+  ASSERT_EQ(1u, widget()->GetRootView()->layer()->children().size());
+  EXPECT_EQ(widget()->GetRootView()->layer()->children()[0], v2->layer());
+  // The bounds of the layer should have changed to be relative to the root view
+  // now.
+  EXPECT_EQ(gfx::Rect(30, 50, 30, 40), v2->layer()->bounds());
+
+  // Make v1 have a layer again and verify v2s layer is wired up correctly.
+  ui::Transform transform;
+  transform.SetScale(2.0f, 2.0f);
+  v1->SetTransform(transform);
+  EXPECT_EQ(3, TestTexture::live_count());
+  EXPECT_TRUE(v1->layer() != NULL);
+  EXPECT_TRUE(v2->layer() != NULL);
+  EXPECT_EQ(widget()->GetRootView()->layer(), v1->layer()->parent());
+  EXPECT_EQ(v1->layer(), v2->layer()->parent());
+  ASSERT_EQ(1u, widget()->GetRootView()->layer()->children().size());
+  EXPECT_EQ(widget()->GetRootView()->layer()->children()[0], v1->layer());
+  ASSERT_EQ(1u, v1->layer()->children().size());
+  EXPECT_EQ(v1->layer()->children()[0], v2->layer());
+  EXPECT_EQ(gfx::Rect(10, 20, 30, 40), v2->layer()->bounds());
+}
+
+// Verifies turning on a layer wires up children correctly.
+TEST_F(ViewLayerTest, NestedLayerToggling) {
+  View* content_view = new View;
+  widget()->SetContentsView(content_view);
+
+  // Create v1, give it a bounds and verify everything is set up correctly.
+  View* v1 = new View;
+  content_view->AddChildView(v1);
+  v1->SetBounds(20, 30, 140, 150);
+
+  View* v2 = new View;
+  v1->AddChildView(v2);
+
+  View* v3 = new View;
+  v3->SetPaintToLayer(true);
+  v2->AddChildView(v3);
+  ASSERT_TRUE(v3->layer() != NULL);
+
+  // At this point we have v1-v2-v3. v3 has a layer, v1 and v2 don't.
+
+  v1->SetPaintToLayer(true);
+  EXPECT_EQ(v1->layer(), v3->layer()->parent());
+}
+
+#endif  // VIEWS_COMPOSITOR || TOUCH_UI
 
 }  // namespace views

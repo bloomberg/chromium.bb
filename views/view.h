@@ -33,7 +33,7 @@ class Path;
 namespace ui {
 struct AccessibleViewState;
 class Compositor;
-class Texture;
+class Layer;
 class ThemeProvider;
 class Transform;
 #if defined(TOUCH_UI)
@@ -316,11 +316,16 @@ class View : public AcceleratorTarget {
   // Sets the transform to the supplied transform.
   void SetTransform(const ui::Transform& transform);
 
-  // Sets whether this view paints to a texture. A view paints to a texture if
+  // Sets whether this view paints to a layer. A view paints to a layer if
   // either of the following are true:
   // . the view has a non-identity transform.
-  // . SetPaintToTexture(true) has been invoked.
-  void SetPaintToTexture(bool value);
+  // . SetPaintToLayer(true) has been invoked.
+  // Views create the Layer only when in a view hierarchy with a Widget with a
+  // non-NULL Compositor.
+  void SetPaintToLayer(bool value);
+
+  const ui::Layer* layer() const { return layer_.get(); }
+  ui::Layer* layer() { return layer_.get(); }
 
   // RTL positioning -----------------------------------------------------------
 
@@ -985,30 +990,27 @@ class View : public AcceleratorTarget {
   // Accelerated painting ------------------------------------------------------
 
   // Invoked from SchedulePaintInRect. Invokes SchedulePaintInternal on the
-  // parent. This does not mark the texture as dirty. It's assumed the caller
-  // has done this. You should not need to invoke this, use SchedulePaint or
+  // parent. This does not mark the layer as dirty. It's assumed the caller has
+  // done this. You should not need to invoke this, use SchedulePaint or
   // SchedulePaintInRect instead.
   virtual void SchedulePaintInternal(const gfx::Rect& r);
 
-  // If our texture is out of date invokes Paint() with a canvas that is then
-  // copied to the texture. If the texture is not out of date recursively
-  // descends in case any children needed their textures updated.
+  // If our layer is out of date invokes Paint() with a canvas that is then
+  // copied to the layer. If the layer is not out of date recursively descends
+  // in case any children needed their layers updated.
   //
   // This is invoked internally by Widget and painting code.
-  void PaintToTexture(const gfx::Rect& dirty_rect);
+  void PaintToLayer(const gfx::Rect& dirty_rect);
 
-  // Instructs the compositor to show our texture and all children textures.
-  // Invokes OnWillCompositeTexture() for any views that have textures.
+  // Instructs the compositor to show our layer and all children layers.
+  // Invokes OnWillCompositeLayer() for any views that have layers.
   //
   // This is invoked internally by Widget and painting code.
   void PaintComposite();
 
-  // Invoked from |PaintComposite| if this view has a texture and before the
-  // texture is rendered by the compositor.
-  virtual void OnWillCompositeTexture();
-
-  // Returns true if this view should paint using a texture.
-  virtual bool ShouldPaintToTexture() const;
+  // Invoked from |PaintComposite| if this view has a layer and before the
+  // layer is rendered by the compositor.
+  virtual void OnWillCompositeLayer();
 
   // Returns the Compositor.
   virtual const ui::Compositor* GetCompositor() const;
@@ -1113,6 +1115,20 @@ class View : public AcceleratorTarget {
     gfx::Point start_pt;
   };
 
+  // Painting  -----------------------------------------------------------------
+
+  enum SchedulePaintType {
+    // Indicates the size is the same (only the origin changed).
+    SCHEDULE_PAINT_SIZE_SAME,
+
+    // Indicates the size changed (and possibly the origin).
+    SCHEDULE_PAINT_SIZE_CHANGED
+  };
+
+  // Invoked before and after the bounds change to schedule painting the old and
+  // new bounds.
+  void SchedulePaintBoundsChanged(SchedulePaintType type);
+
   // Tree operations -----------------------------------------------------------
 
   // Removes |view| from the hierarchy tree.  If |update_focus_cycle| is true,
@@ -1204,11 +1220,45 @@ class View : public AcceleratorTarget {
 
   // Accelerated painting ------------------------------------------------------
 
-  // Marks the texture this view draws into as dirty.
-  void MarkTextureDirty();
+  // Returns true if this view should paint to layer.
+  bool ShouldPaintToLayer() const;
 
-  // Releases the texture of this and recurses through all children.
-  void ResetTexture();
+  // Marks the layer this view draws into as dirty.
+  void MarkLayerDirty();
+
+  // Creates a layer for this and recurses through all descendants.
+  void CreateLayerIfNecessary();
+
+  // Creates the layer and related fields for this view.
+  void CreateLayer();
+
+  // Destroys the layer on this view and all descendants. Intended for when a
+  // view is being removed or made invisible.
+  void DestroyLayerRecurse();
+
+  // Reparents any descendant layer to our current layer parent and destroys
+  // this views layer.
+  void DestroyLayerAndReparent();
+
+  // Destroys the layer and related fields of this view. This is intended for
+  // use from one of the other destroy methods, normally you shouldn't invoke
+  // this directly.
+  void DestroyLayer();
+
+  // If this view has a layer, the layer is reparented to |parent_layer| and its
+  // bounds is set based on |point|. If this view does not have a layer, then
+  // recurses through all children. This is used when adding a layer to an
+  // existing view to make sure all descendants that have layers are parented to
+  // the right layer.
+  void MoveLayerToParent(ui::Layer* parent_layer, const gfx::Point& point);
+
+  // Resets the bounds of the layer associated with this view and all
+  // descendants.
+  void UpdateLayerBounds(const gfx::Point& offset);
+
+  // Returns the offset from this view to the neareset ancestor with a layer.
+  // If |ancestor| is non-NULL it is set to the nearset ancestor with a layer.
+  gfx::Point CalculateOffsetToAncestorWithLayer(View** ancestor);
 
   // Input ---------------------------------------------------------------------
 
@@ -1357,18 +1407,18 @@ class View : public AcceleratorTarget {
 
   // Accelerated painting ------------------------------------------------------
 
-  scoped_ptr<ui::Texture> texture_;
+  scoped_ptr<ui::Layer> layer_;
 
   // If not empty and Paint() is invoked, the canvas is created with the
   // specified size.
   // TODO(sky): this should be passed in.
-  gfx::Rect texture_clip_rect_;
+  gfx::Rect layer_clip_rect_;
 
-  // Is the texture out of date?
-  bool texture_needs_updating_;
+  // Is the layer out of date?
+  bool layer_needs_updating_;
 
-  // Should we paint to a texture? See description above setter for details.
-  bool paint_to_texture_;
+  // Should we paint to a layer? See description above setter for details.
+  bool paint_to_layer_;
 
   // Accelerators --------------------------------------------------------------
 
