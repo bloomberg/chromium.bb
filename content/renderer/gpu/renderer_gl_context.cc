@@ -213,22 +213,25 @@ RendererGLContext* RendererGLContext::CreateOffscreenContext(
 bool RendererGLContext::SetParent(RendererGLContext* new_parent) {
   // Allocate a texture ID with respect to the parent and change the parent.
   uint32 new_parent_texture_id = 0;
-  if (new_parent) {
-    TRACE_EVENT0("gpu", "RendererGLContext::SetParent::flushParent");
-    // Flush any remaining commands in the parent context to make sure the
-    // texture id accounting stays consistent.
-    int32 token = new_parent->gles2_helper_->InsertToken();
-    new_parent->gles2_helper_->WaitForToken(token);
-    new_parent_texture_id = new_parent->gles2_implementation_->MakeTextureId();
+  if (command_buffer_) {
+    if (new_parent) {
+      TRACE_EVENT0("gpu", "RendererGLContext::SetParent::flushParent");
+      // Flush any remaining commands in the parent context to make sure the
+      // texture id accounting stays consistent.
+      int32 token = new_parent->gles2_helper_->InsertToken();
+      new_parent->gles2_helper_->WaitForToken(token);
+      new_parent_texture_id =
+        new_parent->gles2_implementation_->MakeTextureId();
 
-    if (!command_buffer_->SetParent(new_parent->command_buffer_,
-                                    new_parent_texture_id)) {
-      new_parent->gles2_implementation_->FreeTextureId(parent_texture_id_);
-      return false;
+      if (!command_buffer_->SetParent(new_parent->command_buffer_,
+                                      new_parent_texture_id)) {
+        new_parent->gles2_implementation_->FreeTextureId(parent_texture_id_);
+        return false;
+      }
+    } else {
+      if (!command_buffer_->SetParent(NULL, 0))
+        return false;
     }
-  } else {
-    if (!command_buffer_->SetParent(NULL, 0))
-      return false;
   }
 
   // Free the previous parent's texture ID.
@@ -593,17 +596,11 @@ bool RendererGLContext::DestroyLatch(uint32 latch) {
 }
 
 bool RendererGLContext::GetParentToChildLatch(uint32* parent_to_child_latch) {
-  if (parent_.get()) {
-    *parent_to_child_latch = parent_to_child_latch_;
-    return true;
-  }
-  return false;
+  *parent_to_child_latch = parent_to_child_latch_;
+  return true;
 }
 
 bool RendererGLContext::GetChildToParentLatch(uint32* child_to_parent_latch) {
-  if (parent_.get()) {
-    *child_to_parent_latch = child_to_parent_latch_;
-    return true;
-  }
-  return false;
+  *child_to_parent_latch = child_to_parent_latch_;
+  return true;
 }
