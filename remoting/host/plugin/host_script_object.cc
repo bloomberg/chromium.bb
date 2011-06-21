@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/host_script_object.h"
+#include "remoting/host/plugin/host_script_object.h"
 
 #include "base/bind.h"
 #include "base/message_loop.h"
@@ -13,8 +13,8 @@
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/host_config.h"
 #include "remoting/host/host_key_pair.h"
-#include "remoting/host/host_plugin_utils.h"
 #include "remoting/host/in_memory_host_config.h"
+#include "remoting/host/plugin/host_plugin_utils.h"
 #include "remoting/host/register_support_host_request.h"
 #include "remoting/host/support_access_verifier.h"
 

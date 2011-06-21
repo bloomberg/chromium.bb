@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_HOST_HOST_PLUGIN_UTILS_H_
-#define REMOTING_HOST_HOST_PLUGIN_UTILS_H_
+#ifndef REMOTING_HOST_PLUGIN_HOST_PLUGIN_UTILS_H_
+#define REMOTING_HOST_PLUGIN_HOST_PLUGIN_UTILS_H_
 
 #include <string>
 
@@ -32,4 +32,4 @@ NPObject* ObjectFromNPVariant(const NPVariant& variant);
 
 }  // namespace remoting
 
-#endif  // REMOTING_HOST_HOST_PLUGIN_UTILS_H_
+#endif  // REMOTING_HOST_PLUGIN_HOST_PLUGIN_UTILS_H_

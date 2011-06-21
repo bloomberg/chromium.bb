@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/host_plugin_utils.h"
+#include "remoting/host/plugin/host_plugin_utils.h"
 
 namespace remoting {
 

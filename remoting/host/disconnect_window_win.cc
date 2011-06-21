@@ -10,7 +10,9 @@
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "remoting/host/chromoting_host.h"
-#include "remoting/host/host_plugin_resource.h"
+// TODO(wez): The DisconnectWindow isn't plugin-specific, so shouldn't have
+// a dependency on the plugin's resource header.
+#include "remoting/host/plugin/host_plugin_resource.h"
 
 // HMODULE from DllMain/WinMain. This is needed to find our dialog resource.
 // This is defined in:
