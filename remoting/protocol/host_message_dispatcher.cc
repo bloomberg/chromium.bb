@@ -17,9 +17,10 @@
 namespace remoting {
 namespace protocol {
 
-HostMessageDispatcher::HostMessageDispatcher() :
-    host_stub_(NULL),
-    input_stub_(NULL) {
+HostMessageDispatcher::HostMessageDispatcher()
+    : connection_(NULL),
+      host_stub_(NULL),
+      input_stub_(NULL) {
 }
 
 HostMessageDispatcher::~HostMessageDispatcher() {

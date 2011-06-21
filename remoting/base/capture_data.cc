@@ -15,9 +15,13 @@ DataPlanes::DataPlanes() {
 
 CaptureData::CaptureData(const DataPlanes &data_planes,
                          const gfx::Size& size,
-                         media::VideoFrame::Format format) :
-    data_planes_(data_planes), dirty_rects_(), size_(size),
-    pixel_format_(format), capture_time_ms_(0) {
+                         media::VideoFrame::Format format)
+    : data_planes_(data_planes),
+      dirty_rects_(),
+      size_(size),
+      pixel_format_(format),
+      capture_time_ms_(0),
+      client_sequence_number_(0) {
 }
 
 CaptureData::~CaptureData() {}

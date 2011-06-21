@@ -184,14 +184,15 @@ class ChromotingScriptableObject
       const std::vector<pp::Var>& args, pp::Var* exception);
   struct PropertyDescriptor {
     explicit PropertyDescriptor(const std::string& n, pp::Var a)
-        : name(n), attribute(a), method(NULL) {
+        : type(NONE), name(n), attribute(a), method(NULL) {
     }
 
     explicit PropertyDescriptor(const std::string& n, MethodHandler m)
-        : name(n), method(m) {
+        : type(NONE), name(n), method(m) {
     }
 
     enum Type {
+      NONE,
       ATTRIBUTE,
       METHOD,
     } type;
