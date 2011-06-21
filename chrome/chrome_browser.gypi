@@ -1627,6 +1627,8 @@
         'browser/policy/user_policy_cache.h',
         'browser/policy/user_policy_identity_strategy.cc',
         'browser/policy/user_policy_identity_strategy.h',
+        'browser/policy/user_policy_token_cache.cc',
+        'browser/policy/user_policy_token_cache.h',
         # TODO(danno): Find a better way to include these files
         '<(protoc_out_dir)/chrome/browser/policy/proto/chrome_device_policy.pb.cc',
         '<(protoc_out_dir)/chrome/browser/policy/proto/chrome_device_policy.pb.h',

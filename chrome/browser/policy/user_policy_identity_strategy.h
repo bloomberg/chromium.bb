@@ -8,10 +8,12 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/policy/cloud_policy_identity_strategy.h"
+#include "chrome/browser/policy/user_policy_token_cache.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 
@@ -24,7 +26,8 @@ class DeviceManagementBackend;
 // A token provider implementation that provides a user device token for the
 // user corresponding to a given profile.
 class UserPolicyIdentityStrategy : public CloudPolicyIdentityStrategy,
-                                   public NotificationObserver {
+                                   public NotificationObserver,
+                                   public UserPolicyTokenCache::Delegate {
  public:
   UserPolicyIdentityStrategy(Profile* profile,
                              const FilePath& token_cache_file);
@@ -45,8 +48,6 @@ class UserPolicyIdentityStrategy : public CloudPolicyIdentityStrategy,
   virtual void OnDeviceTokenAvailable(const std::string& token) OVERRIDE;
 
  private:
-  class TokenCache;
-
   // Checks whether a new token should be fetched and if so, sends out a
   // notification.
   void CheckAndTriggerFetch();
@@ -55,18 +56,19 @@ class UserPolicyIdentityStrategy : public CloudPolicyIdentityStrategy,
   std::string GetCurrentUser();
 
   // Called from the token cache when the token has been loaded.
-  void OnCacheLoaded(const std::string& token, const std::string& device_id);
+  virtual void OnTokenCacheLoaded(const std::string& token,
+                                  const std::string& device_id) OVERRIDE;
 
   // NotificationObserver method overrides:
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
   // The profile this provider is associated with.
   Profile* profile_;
 
   // Keeps the on-disk copy of the token.
-  scoped_refptr<TokenCache> cache_;
+  scoped_refptr<UserPolicyTokenCache> cache_;
 
   // The device ID we use.
   std::string device_id_;
@@ -78,7 +80,7 @@ class UserPolicyIdentityStrategy : public CloudPolicyIdentityStrategy,
   NotificationRegistrar registrar_;
 
   // Allows to construct weak ptrs.
-  base::WeakPtrFactory<UserPolicyIdentityStrategy> weak_ptr_factory_;
+  base::WeakPtrFactory<UserPolicyTokenCache::Delegate> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(UserPolicyIdentityStrategy);
 };

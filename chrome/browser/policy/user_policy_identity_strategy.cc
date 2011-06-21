@@ -4,12 +4,10 @@
 
 #include "chrome/browser/policy/user_policy_identity_strategy.h"
 
-#include "base/file_util.h"
 #include "chrome/browser/browser_signin.h"
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "chrome/browser/policy/proto/device_management_constants.h"
-#include "chrome/browser/policy/proto/device_management_local.pb.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/guid.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
@@ -26,122 +24,12 @@ namespace policy {
 
 namespace em = enterprise_management;
 
-// Responsible for managing the on-disk token cache.
-class UserPolicyIdentityStrategy::TokenCache
-    : public base::RefCountedThreadSafe<
-          UserPolicyIdentityStrategy::TokenCache> {
- public:
-  TokenCache(const base::WeakPtr<UserPolicyIdentityStrategy>& identity_strategy,
-             const FilePath& cache_file);
-
-  void Load();
-  void Store(const std::string& token, const std::string& device_id);
-
- private:
-  friend class base::RefCountedThreadSafe<
-      UserPolicyIdentityStrategy::TokenCache>;
-  ~TokenCache() {}
-  void LoadOnFileThread();
-  void NotifyOnUIThread(const std::string& token,
-                        const std::string& device_id);
-  void StoreOnFileThread(const std::string& token,
-                         const std::string& device_id);
-
-  const base::WeakPtr<UserPolicyIdentityStrategy> identity_strategy_;
-  const FilePath cache_file_;
-
-  DISALLOW_COPY_AND_ASSIGN(TokenCache);
-};
-
-UserPolicyIdentityStrategy::TokenCache::TokenCache(
-    const base::WeakPtr<UserPolicyIdentityStrategy>& identity_strategy,
-    const FilePath& cache_file)
-    : identity_strategy_(identity_strategy),
-      cache_file_(cache_file) {}
-
-void UserPolicyIdentityStrategy::TokenCache::Load() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(
-          this, &UserPolicyIdentityStrategy::TokenCache::LoadOnFileThread));
-}
-
-void UserPolicyIdentityStrategy::TokenCache::Store(
-    const std::string& token,
-    const std::string& device_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(
-          this,
-          &UserPolicyIdentityStrategy::TokenCache::StoreOnFileThread,
-          token,
-          device_id));
-}
-
-void UserPolicyIdentityStrategy::TokenCache::LoadOnFileThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  std::string device_token;
-  std::string device_id;
-
-  if (file_util::PathExists(cache_file_)) {
-    std::string data;
-    em::DeviceCredentials device_credentials;
-    if (file_util::ReadFileToString(cache_file_, &data) &&
-        device_credentials.ParseFromArray(data.c_str(), data.size())) {
-      device_token = device_credentials.device_token();
-      device_id = device_credentials.device_id();
-    }
-  }
-
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(
-          this,
-          &UserPolicyIdentityStrategy::TokenCache::NotifyOnUIThread,
-          device_token,
-          device_id));
-}
-
-void UserPolicyIdentityStrategy::TokenCache::NotifyOnUIThread(
-    const std::string& token,
-    const std::string& device_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (identity_strategy_.get())
-    identity_strategy_->OnCacheLoaded(token, device_id);
-}
-
-void UserPolicyIdentityStrategy::TokenCache::StoreOnFileThread(
-    const std::string& token,
-    const std::string& device_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  em::DeviceCredentials device_credentials;
-  device_credentials.set_device_token(token);
-  device_credentials.set_device_id(device_id);
-  std::string data;
-  bool success = device_credentials.SerializeToString(&data);
-  if (!success) {
-    LOG(WARNING) << "Failed serialize device token data, will not write "
-                 << cache_file_.value();
-    return;
-  }
-
-  if (!file_util::CreateDirectory(cache_file_.DirName())) {
-    LOG(WARNING) << "Failed to create directory "
-                 << cache_file_.DirName().value();
-    return;
-  }
-
-  file_util::WriteFile(cache_file_, data.c_str(), data.length());
-}
-
 UserPolicyIdentityStrategy::UserPolicyIdentityStrategy(
     Profile* profile,
     const FilePath& cache_file)
     : profile_(profile),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
-  cache_ = new TokenCache(weak_ptr_factory_.GetWeakPtr(), cache_file);
+  cache_ = new UserPolicyTokenCache(weak_ptr_factory_.GetWeakPtr(), cache_file);
   registrar_.Add(this,
                  NotificationType::TOKEN_AVAILABLE,
                  Source<TokenService>(profile->GetTokenService()));
@@ -228,8 +116,9 @@ void UserPolicyIdentityStrategy::CheckAndTriggerFetch() {
   }
 }
 
-void UserPolicyIdentityStrategy::OnCacheLoaded(const std::string& token,
-                                               const std::string& device_id) {
+void UserPolicyIdentityStrategy::OnTokenCacheLoaded(
+    const std::string& token,
+    const std::string& device_id) {
   if (!token.empty() && !device_id.empty()) {
     device_token_ = token;
     device_id_ = device_id;
