@@ -278,7 +278,7 @@ void ChromotingHost::OnNewClientSession(
 
   // If we are running Me2Mom and already have an authenticated client then
   // reject the connection immediately.
-  if (is_it2me_ && HasAuthenticatedClients()) {
+  if (is_it2me_ && AuthenticatedClientsCount() > 0) {
     *response = protocol::SessionManager::DECLINE;
     return;
   }
@@ -400,9 +400,20 @@ void ChromotingHost::OnClientDisconnected(ConnectionToClient* connection) {
   connection->Disconnect();
 
   // Also remove reference to ConnectionToClient from this object.
+  int old_authenticated_clients = AuthenticatedClientsCount();
   clients_.erase(client);
 
-  if (!HasAuthenticatedClients()) {
+  // Notify the observers of the change, if any.
+  int authenticated_clients = AuthenticatedClientsCount();
+  if (old_authenticated_clients != authenticated_clients) {
+    for (StatusObserverList::iterator it = status_observers_.begin();
+         it != status_observers_.end(); ++it) {
+      (*it)->OnAuthenticatedClientsChanged(authenticated_clients);
+    }
+  }
+
+  // Enable the "curtain", if at least one client is actually authenticated.
+  if (AuthenticatedClientsCount() > 0) {
     EnableCurtainMode(false);
     if (is_it2me_) {
       MonitorLocalInputs(false);
@@ -438,13 +449,14 @@ std::string ChromotingHost::GenerateHostAuthToken(
   return encoded_client_token;
 }
 
-bool ChromotingHost::HasAuthenticatedClients() const {
+int ChromotingHost::AuthenticatedClientsCount() const {
+  int authenticated_clients = 0;
   for (ClientList::const_iterator it = clients_.begin(); it != clients_.end();
        ++it) {
     if (it->get()->authenticated())
-      return true;
+      ++authenticated_clients;
   }
-  return false;
+  return authenticated_clients;
 }
 
 void ChromotingHost::EnableCurtainMode(bool enable) {
@@ -523,6 +535,12 @@ void ChromotingHost::LocalLoginSucceeded(
       username.replace(pos, std::string::npos, "");
     ShowDisconnectWindow(true, username);
     StartContinueWindowTimer(true);
+  }
+
+  // Notify observers that there is at least one authenticated client.
+  for (StatusObserverList::iterator it = status_observers_.begin();
+       it != status_observers_.end(); ++it) {
+    (*it)->OnAuthenticatedClientsChanged(AuthenticatedClientsCount());
   }
 }
 

@@ -64,6 +64,7 @@ class HostNPScriptObject : public HostStatusObserver {
                                      const std::string& full_jid) OVERRIDE;
   virtual void OnSignallingDisconnected() OVERRIDE;
   virtual void OnAccessDenied() OVERRIDE;
+  virtual void OnAuthenticatedClientsChanged(int clients_connected) OVERRIDE;
   virtual void OnShutdown() OVERRIDE;
 
  private:

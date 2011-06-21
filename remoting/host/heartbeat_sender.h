@@ -70,6 +70,7 @@ class HeartbeatSender : public HostStatusObserver {
   virtual void OnSignallingConnected(SignalStrategy* signal_strategy,
                                      const std::string& full_jid) OVERRIDE;
   virtual void OnSignallingDisconnected() OVERRIDE;
+  virtual void OnAuthenticatedClientsChanged(int clients) OVERRIDE;
   virtual void OnAccessDenied() OVERRIDE;
   virtual void OnShutdown() OVERRIDE;
 

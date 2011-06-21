@@ -283,6 +283,11 @@ void HostNPScriptObject::OnAccessDenied() {
     DisconnectInternal();
 }
 
+void HostNPScriptObject::OnAuthenticatedClientsChanged(int clients_connected) {
+  DCHECK_NE(base::PlatformThread::CurrentId(), np_thread_id_);
+  OnStateChanged(clients_connected ? kConnected : kDisconnected);
+}
+
 void HostNPScriptObject::OnShutdown() {
   DCHECK_EQ(MessageLoop::current(), host_context_.main_message_loop());
 

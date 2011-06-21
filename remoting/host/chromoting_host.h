@@ -169,7 +169,7 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
 
   std::string GenerateHostAuthToken(const std::string& encoded_client_token);
 
-  bool HasAuthenticatedClients() const;
+  int AuthenticatedClientsCount() const;
 
   void EnableCurtainMode(bool enable);
 

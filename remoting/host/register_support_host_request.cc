@@ -81,6 +81,7 @@ void RegisterSupportHostRequest::OnSignallingDisconnected() {
 // Ignore any notifications other than signalling
 // connected/disconnected events.
 void RegisterSupportHostRequest::OnAccessDenied() { }
+void RegisterSupportHostRequest::OnAuthenticatedClientsChanged(int clients) { }
 void RegisterSupportHostRequest::OnShutdown() { }
 
 XmlElement* RegisterSupportHostRequest::CreateRegistrationRequest(

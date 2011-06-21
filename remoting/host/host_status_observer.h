@@ -25,6 +25,11 @@ class HostStatusObserver {
   // to connect to the host.
   virtual void OnAccessDenied() = 0;
 
+  // Called on the main thread when a client authenticates, or disconnects.
+  // The observer must not tear-down ChromotingHost state on receipt of
+  // this callback; it is purely informational.
+  virtual void OnAuthenticatedClientsChanged(int authenticated_clients) = 0;
+
   // Called on the main thread when the host shuts down.
   virtual void OnShutdown() = 0;
 };
