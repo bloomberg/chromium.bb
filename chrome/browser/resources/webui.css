@@ -1,38 +1,43 @@
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
 body {
-  background-color:white;
-  color:black;
-  margin:10px;
+  background-color: white;
+  color: black;
+  margin: 10px;
 }
 
 .header {
-  overflow:auto;
-  clear:both;
+  clear: both;
+  overflow: auto;
 }
 
 .header .logo {
-  float:left;
-}
-
-.header .form {
-  float:left;
-  margin-top:22px;
-  -webkit-margin-start:12px;
+  float: left;
 }
 
 html[dir='rtl'] .logo {
-  float:right;
+  float: right;
+}
+
+.header .form {
+  -webkit-margin-start: 12px;
+  float: left;
+  margin-top: 22px;
 }
 
 html[dir='rtl'] .form {
-  float:right;
+  float: right;
 }
 
 .page-navigation {
-  padding:8px;
-  background-color:#ebeff9;
-  -webkit-margin-end:4px;
+  -webkit-margin-end: 4px;
+  background-color: #ebeff9;
+  padding: 8px;
 }
 
 .footer {
-  height:24px;
+  height: 24px;
 }
