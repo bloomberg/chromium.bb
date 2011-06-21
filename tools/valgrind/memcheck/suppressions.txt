@@ -4611,19 +4611,6 @@
    fun:_ZN5views6Widget4InitERKNS0_10InitParamsE
 }
 {
-   bug_85151
-   Memcheck:Leak
-   ...
-   fun:_ZN14TestingProfile16GetWebKitContextEv
-}
-{
-   bug_85151_b
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN28WebKitContextTest_Basic_Test8TestBodyEv
-}
-{
    bug_86146
    Memcheck:Leak
    fun:_Znw*
