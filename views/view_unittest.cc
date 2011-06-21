@@ -4,6 +4,7 @@
 
 #include <map>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -60,8 +61,6 @@ class TestView : public View {
   // Reset all test state
   void Reset() {
     did_change_bounds_ = false;
-    child_added_ = false;
-    child_removed_ = false;
     last_mouse_event_type_ = 0;
     location_.SetPoint(0, 0);
 #if defined(TOUCH_UI)
@@ -73,8 +72,6 @@ class TestView : public View {
   }
 
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
-  virtual void ViewHierarchyChanged(
-      bool is_add, View *parent, View *child) OVERRIDE;
   virtual bool OnMousePressed(const MouseEvent& event) OVERRIDE;
   virtual bool OnMouseDragged(const MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const MouseEvent& event) OVERRIDE;
@@ -88,12 +85,6 @@ class TestView : public View {
   // OnBoundsChanged test
   bool did_change_bounds_;
   gfx::Rect new_bounds_;
-
-  // AddRemoveNotifications test
-  bool child_added_;
-  bool child_removed_;
-  View* parent_;
-  View* child_;
 
   // MouseEvent
   int last_mouse_event_type_;
@@ -177,86 +168,6 @@ TEST_F(ViewTest, OnBoundsChanged) {
 
   EXPECT_EQ(v->bounds(), gfx::Rect(new_rect));
   delete v;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// AddRemoveNotifications
-////////////////////////////////////////////////////////////////////////////////
-
-void TestView::ViewHierarchyChanged(bool is_add, View *parent, View *child) {
-  if (is_add) {
-    child_added_ = true;
-  } else {
-    child_removed_ = true;
-  }
-  parent_ = parent;
-  child_ = child;
-}
-
-TEST_F(ViewTest, AddRemoveNotifications) {
-  TestView* v1 = new TestView();
-  v1->SetBounds(0, 0, 300, 300);
-
-  TestView* v2 = new TestView();
-  v2->SetBounds(0, 0, 300, 300);
-
-  TestView* v3 = new TestView();
-  v3->SetBounds(0, 0, 300, 300);
-
-  // Add a child. Make sure both v2 and v3 receive the right
-  // notification
-  v2->Reset();
-  v3->Reset();
-  v2->AddChildView(v3);
-  EXPECT_EQ(v2->child_added_, true);
-  EXPECT_EQ(v2->parent_, v2);
-  EXPECT_EQ(v2->child_, v3);
-
-  EXPECT_EQ(v3->child_added_, true);
-  EXPECT_EQ(v3->parent_, v2);
-  EXPECT_EQ(v3->child_, v3);
-
-  // Add v2 and transitively v3 to v1. Make sure that all views
-  // received the right notification
-
-  v1->Reset();
-  v2->Reset();
-  v3->Reset();
-  v1->AddChildView(v2);
-
-  EXPECT_EQ(v1->child_added_, true);
-  EXPECT_EQ(v1->child_, v2);
-  EXPECT_EQ(v1->parent_, v1);
-
-  EXPECT_EQ(v2->child_added_, true);
-  EXPECT_EQ(v2->child_, v2);
-  EXPECT_EQ(v2->parent_, v1);
-
-  EXPECT_EQ(v3->child_added_, true);
-  EXPECT_EQ(v3->child_, v2);
-  EXPECT_EQ(v3->parent_, v1);
-
-  // Remove v2. Make sure all views received the right notification
-  v1->Reset();
-  v2->Reset();
-  v3->Reset();
-  v1->RemoveChildView(v2);
-
-  EXPECT_EQ(v1->child_removed_, true);
-  EXPECT_EQ(v1->parent_, v1);
-  EXPECT_EQ(v1->child_, v2);
-
-  EXPECT_EQ(v2->child_removed_, true);
-  EXPECT_EQ(v2->parent_, v1);
-  EXPECT_EQ(v2->child_, v2);
-
-  EXPECT_EQ(v3->child_removed_, true);
-  EXPECT_EQ(v3->parent_, v1);
-  EXPECT_EQ(v3->child_, v3);
-
-  // Clean-up
-  delete v1;
-  delete v2;  // This also deletes v3 (child of v2).
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2009,16 +1920,148 @@ TEST_F(ViewTest, ConvertPointToViewWithTransform) {
   }
 }
 
-// Verify if the child views added under the root are all deleted when
-// calling RemoveAllChildViews.
+class ObserverView : public View {
+ public:
+  ObserverView();
+  virtual ~ObserverView();
+
+  void ResetTestState();
+
+  bool child_added() const { return child_added_; }
+  bool child_removed() const { return child_removed_; }
+  const View* parent_view() const { return parent_view_; }
+  const View* child_view() const { return child_view_; }
+
+ private:
+  // View:
+  virtual void ViewHierarchyChanged(bool is_add,
+                                    View* parent,
+                                    View* child) OVERRIDE;
+
+  bool child_added_;
+  bool child_removed_;
+  View* parent_view_;
+  View* child_view_;
+
+  DISALLOW_COPY_AND_ASSIGN(ObserverView);
+};
+
+ObserverView::ObserverView()
+    : child_added_(false),
+      child_removed_(false),
+      parent_view_(NULL),
+      child_view_(NULL) {
+}
+
+ObserverView::~ObserverView() {}
+
+void ObserverView::ResetTestState() {
+  child_added_ = false;
+  child_removed_ = false;
+  parent_view_ = NULL;
+  child_view_ = NULL;
+}
+
+void ObserverView::ViewHierarchyChanged(bool is_add,
+                                        View* parent,
+                                        View* child) {
+  if (is_add)
+    child_added_ = true;
+  else
+    child_removed_ = true;
+
+  parent_view_ = parent;
+  child_view_ = child;
+}
+
+// Verifies that the ViewHierarchyChanged() notification is sent correctly when
+// a child view is added or removed to all the views in the hierarchy (up and
+// down).
+// The tree looks like this:
+// v1
+// +-- v2
+//     +-- v3
+TEST_F(ViewTest, ViewHierarchyChanged) {
+  ObserverView v1;
+
+  ObserverView* v3 = new ObserverView();
+
+  // Add |v3| to |v2|.
+  scoped_ptr<ObserverView> v2(new ObserverView());
+  v2->AddChildView(v3);
+
+  // Make sure both |v2| and |v3| receive the ViewHierarchyChanged()
+  // notification.
+  EXPECT_TRUE(v2->child_added());
+  EXPECT_FALSE(v2->child_removed());
+  EXPECT_EQ(v2.get(), v2->parent_view());
+  EXPECT_EQ(v3, v2->child_view());
+
+  EXPECT_TRUE(v3->child_added());
+  EXPECT_FALSE(v3->child_removed());
+  EXPECT_EQ(v2.get(), v3->parent_view());
+  EXPECT_EQ(v3, v3->child_view());
+
+  // Reset everything to the initial state.
+  v2->ResetTestState();
+  v3->ResetTestState();
+
+  // Add |v2| to v1.
+  v1.AddChildView(v2.get());
+
+  // Verifies that |v2| is the child view *added* and the parent view is |v1|.
+  // Make sure all the views (v1, v2, v3) received _that_ information.
+  EXPECT_TRUE(v1.child_added());
+  EXPECT_FALSE(v1.child_removed());
+  EXPECT_EQ(&v1, v1.parent_view());
+  EXPECT_EQ(v2.get(), v1.child_view());
+
+  EXPECT_TRUE(v2->child_added());
+  EXPECT_FALSE(v2->child_removed());
+  EXPECT_EQ(&v1, v2->parent_view());
+  EXPECT_EQ(v2.get(), v2->child_view());
+
+  EXPECT_TRUE(v3->child_added());
+  EXPECT_FALSE(v3->child_removed());
+  EXPECT_EQ(&v1, v3->parent_view());
+  EXPECT_EQ(v2.get(), v3->child_view());
+
+  // Reset everything to the initial state.
+  v1.ResetTestState();
+  v2->ResetTestState();
+  v3->ResetTestState();
+
+  // Remove |v2| from |v1|.
+  v1.RemoveChildView(v2.get());
+
+  // Verifies that |v2| is the child view *removed* and the parent view is |v1|.
+  // Make sure all the views (v1, v2, v3) received _that_ information.
+  EXPECT_FALSE(v1.child_added());
+  EXPECT_TRUE(v1.child_removed());
+  EXPECT_EQ(&v1, v1.parent_view());
+  EXPECT_EQ(v2.get(), v1.child_view());
+
+  EXPECT_FALSE(v2->child_added());
+  EXPECT_TRUE(v2->child_removed());
+  EXPECT_EQ(&v1, v2->parent_view());
+  EXPECT_EQ(v2.get(), v2->child_view());
+
+  EXPECT_FALSE(v3->child_added());
+  EXPECT_TRUE(v3->child_removed());
+  EXPECT_EQ(&v1, v3->parent_view());
+  EXPECT_EQ(v3, v3->child_view());
+}
+
+// Verifies if the child views added under the root are all deleted when calling
+// RemoveAllChildViews.
 // The tree looks like this:
 // root
-// |-- child1
-// |   |-- foo
-// |       |-- bar0
-// |       |-- bar1
-// |       |-- bar2
-// |-- child2
+// +-- child1
+//     +-- foo
+//         +-- bar0
+//         +-- bar1
+//         +-- bar2
+// +-- child2
 // +-- child3
 TEST_F(ViewTest, RemoveAllChildViews) {
   View root;
@@ -2071,12 +2114,12 @@ TEST_F(ViewTest, Contains) {
   EXPECT_FALSE(v3->Contains(v2));
 }
 
-// Verify if the View::GetIndexOf() returns the correct indexes for the
-// specified child views.
+// Verifies if GetIndexOf() returns the correct index for the specified child
+// view.
 // The tree looks like this:
 // root
-// |-- child1
-// |   |-- foo1
+// +-- child1
+//     +-- foo1
 // +-- child2
 TEST_F(ViewTest, GetIndexOf) {
   View root;
@@ -2343,5 +2386,131 @@ TEST_F(ViewLayerTest, NestedLayerToggling) {
 }
 
 #endif  // VIEWS_COMPOSITOR || TOUCH_UI
+
+class ObserverView : public View {
+ public:
+  ObserverView();
+  virtual ~ObserverView();
+
+  void ResetTestState();
+
+  bool child_added() const { return child_added_; }
+  bool child_removed() const { return child_removed_; }
+  const View* parent_view() const { return parent_view_; }
+  const View* child_view() const { return child_view_; }
+
+ private:
+  // View:
+  virtual void ViewHierarchyChanged(bool is_add,
+                                    View* parent,
+                                    View* child) OVERRIDE;
+
+  bool child_added_;
+  bool child_removed_;
+  View* parent_view_;
+  View* child_view_;
+
+ DISALLOW_COPY_AND_ASSIGN(ObserverView);
+};
+
+ObserverView::ObserverView()
+    : child_added_(false),
+      child_removed_(false),
+      parent_view_(NULL),
+      child_view_(NULL) {
+}
+
+ObserverView::~ObserverView() {}
+
+void ObserverView::ResetTestState() {
+  child_added_ = false;
+  child_removed_ = false;
+  parent_view_ = NULL;
+  child_view_ = NULL;
+}
+
+void ObserverView::ViewHierarchyChanged(bool is_add,
+                                        View* parent,
+                                        View* child) {
+  if (is_add)
+    child_added_ = true;
+  else
+    child_removed_ = true;
+
+  parent_view_ = parent;
+  child_view_ = child;
+}
+
+// Verifies that the ViewHierarchyChanged() notification is sent correctly when
+// a child view is added or removed to all the views in the hierarchy (up and
+// down).
+// The tree looks like this:
+// v1
+// +-- v2
+//     +-- v3
+TEST_F(ViewTest, ViewHierarchyChanged) {
+  ObserverView v1;
+
+  ObserverView* v3 = new ObserverView();
+
+  // Add |v3| to |v2|.
+  ObserverView* v2 = new ObserverView();
+  v2->AddChildView(v3);
+
+  // Make sure both |v2| and |v3| receive the ViewHierarchyChanged()
+  // notification.
+  EXPECT_EQ(true, v2->child_added());
+  EXPECT_EQ(v2, v2->parent_view());
+  EXPECT_EQ(v3, v2->child_view());
+
+  EXPECT_EQ(true, v3->child_added());
+  EXPECT_EQ(v2, v3->parent_view());
+  EXPECT_EQ(v3, v3->child_view());
+
+  // Reset everything to the initial state.
+  v2->ResetTestState();
+  v3->ResetTestState();
+
+  // Add |v2| to v1.
+  v1.AddChildView(v2);
+
+  // Verifies that |v2| is the child view *added* and the parent view is |v1|.
+  // Make sure all the views (v1, v2, v3) received _that_ information.
+  EXPECT_EQ(true, v1.child_added());
+  EXPECT_EQ(&v1, v1.parent_view());
+  EXPECT_EQ(v2, v1.child_view());
+
+  EXPECT_EQ(true, v2->child_added());
+  EXPECT_EQ(&v1, v2->parent_view());
+  EXPECT_EQ(v2, v2->child_view());
+
+  EXPECT_EQ(true, v3->child_added());
+  EXPECT_EQ(&v1, v3->parent_view());
+  EXPECT_EQ(v2, v3->child_view());
+
+  // Reset everything to the initial state.
+  v1.ResetTestState();
+  v2->ResetTestState();
+  v3->ResetTestState();
+
+  // Remove |v2| from |v1|.
+  v1.RemoveChildView(v2);
+
+  // Verifies that |v2| is the child view *removed* and the parent view is |v1|.
+  // Make sure all the views (v1, v2, v3) received _that_ information.
+  EXPECT_EQ(true, v1.child_removed());
+  EXPECT_EQ(&v1, v1.parent_view());
+  EXPECT_EQ(v2, v1.child_view());
+
+  EXPECT_EQ(true, v2->child_removed());
+  EXPECT_EQ(&v1, v2->parent_view());
+  EXPECT_EQ(v2, v2->child_view());
+
+  EXPECT_EQ(true, v3->child_removed());
+  EXPECT_EQ(&v1, v3->parent_view());
+  EXPECT_EQ(v3, v3->child_view());
+
+  delete v2;  // This also deletes v3.
+}
 
 }  // namespace views
