@@ -578,15 +578,7 @@ WL_EXPORT void
 wlsc_output_finish_frame(struct wlsc_output *output, int msecs)
 {
 	struct wlsc_compositor *compositor = output->compositor;
-	struct wlsc_surface *es;
 	struct wlsc_animation *animation, *next;
-
-	wl_list_for_each(es, &compositor->surface_list, link) {
-		if (es->output == output) {
-			wl_display_post_frame(compositor->wl_display,
-					      &es->surface, msecs);
-		}
-	}
 
 	output->finished = 1;
 
@@ -596,6 +588,20 @@ wlsc_output_finish_frame(struct wlsc_output *output, int msecs)
 	wl_list_for_each_safe(animation, next,
 			      &compositor->animation_list, link)
 		animation->frame(animation, output, msecs);
+}
+
+static void
+wlsc_output_finish_redraw(struct wlsc_output *output, int msecs)
+{
+	struct wlsc_compositor *compositor = output->compositor;
+	struct wlsc_surface *es;
+
+	wl_list_for_each(es, &compositor->surface_list, link) {
+		if (es->output == output) {
+			wl_display_post_frame(compositor->wl_display,
+					      &es->surface, msecs);
+		}
+	}
 }
 
 WL_EXPORT void
@@ -709,6 +715,9 @@ wlsc_output_repaint(struct wlsc_output *output)
 			pixman_region32_union(&ec->damage_region,
 					      &ec->damage_region,
 					      &total_damage);
+
+			wlsc_output_finish_redraw(output,
+						  wlsc_compositor_get_time());
 			return;
 		}
 	}
@@ -747,6 +756,8 @@ wlsc_output_repaint(struct wlsc_output *output)
 
 	if (ec->fade.spring.current > 0.001)
 		fade_output(output, ec->fade.spring.current, &total_damage);
+
+	wlsc_output_finish_redraw(output, wlsc_compositor_get_time());
 }
 
 static int
