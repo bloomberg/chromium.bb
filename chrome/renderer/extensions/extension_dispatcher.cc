@@ -64,6 +64,7 @@ bool ExtensionDispatcher::OnControlMessageReceived(
     IPC_MESSAGE_HANDLER(ExtensionMsg_SetScriptingWhitelist,
                         OnSetScriptingWhitelist)
     IPC_MESSAGE_HANDLER(ExtensionMsg_ActivateExtension, OnActivateExtension)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_ActivateApplication, OnActivateApplication)
     IPC_MESSAGE_HANDLER(ExtensionMsg_UpdateUserScripts, OnUpdateUserScripts)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -163,7 +164,14 @@ void ExtensionDispatcher::OnSetScriptingWhitelist(
   Extension::SetScriptingWhitelist(extension_ids);
 }
 
-bool ExtensionDispatcher::IsExtensionActive(const std::string& extension_id) {
+bool ExtensionDispatcher::IsApplicationActive(
+    const std::string& extension_id) const {
+  return active_application_ids_.find(extension_id) !=
+      active_application_ids_.end();
+}
+
+bool ExtensionDispatcher::IsExtensionActive(
+    const std::string& extension_id) const {
   return active_extension_ids_.find(extension_id) !=
       active_extension_ids_.end();
 }
@@ -200,6 +208,11 @@ bool ExtensionDispatcher::AllowScriptExtension(
 
   return false;
 
+}
+
+void ExtensionDispatcher::OnActivateApplication(
+    const std::string& extension_id) {
+  active_application_ids_.insert(extension_id);
 }
 
 void ExtensionDispatcher::OnActivateExtension(

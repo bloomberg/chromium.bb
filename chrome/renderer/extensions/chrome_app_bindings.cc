@@ -109,8 +109,11 @@ class ChromeAppExtensionWrapper : public v8::Extension {
         !(url.SchemeIs("http") || url.SchemeIs("https")))
       return v8::Boolean::New(false);
 
-    bool has_web_extent =
-        extension_dispatcher_->extensions()->GetByURL(url) != NULL;
+    const ::Extension* extension =
+        extension_dispatcher_->extensions()->GetByURL(frame->url());
+
+    bool has_web_extent = extension &&
+        extension_dispatcher_->IsApplicationActive(extension->id());
     return v8::Boolean::New(has_web_extent);
   }
 

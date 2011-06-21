@@ -101,11 +101,14 @@ void InitRenderViewHostForExtensions(RenderViewHost* render_view_host) {
   // ExtensionProcessManager.
   process_manager->RegisterExtensionProcess(extension->id(), process->id());
 
-  // Record which, if any, installed app is associated with this process.
-  // TODO(aa): Totally lame to store this state in a global map in extension
-  // service. Can we get it from EPM instead?
-  if (extension->is_app())
+  if (extension->is_app()) {
+    render_view_host->Send(
+        new ExtensionMsg_ActivateApplication(extension->id()));
+    // Record which, if any, installed app is associated with this process.
+    // TODO(aa): Totally lame to store this state in a global map in extension
+    // service. Can we get it from EPM instead?
     service->SetInstalledAppForRenderer(process->id(), extension);
+  }
 
   // Some extensions use chrome:// URLs.
   Extension::Type type = extension->GetType();

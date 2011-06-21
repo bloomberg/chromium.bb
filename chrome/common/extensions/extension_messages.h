@@ -175,6 +175,10 @@ IPC_MESSAGE_CONTROL1(ExtensionMsg_SetFunctionNames,
 IPC_MESSAGE_CONTROL1(ExtensionMsg_ActivateExtension,
                      std::string /* extension_id */)
 
+// Marks an application as 'active' in a process.
+IPC_MESSAGE_CONTROL1(ExtensionMsg_ActivateApplication,
+                     std::string /* extension_id */)
+
 // Notifies the renderer that an extension was loaded in the browser.
 IPC_MESSAGE_CONTROL1(ExtensionMsg_Loaded,
                      ExtensionMsg_Loaded_Params)
