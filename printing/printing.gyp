@@ -107,11 +107,12 @@
             '../build/linux/system.gyp:gtkprint',
           ],
         }],
-        ['OS=="mac"',
-          {'sources/': [
+        ['OS=="mac" and use_skia==0', {
+          'sources/': [
             ['exclude', 'pdf_metafile_skia\\.(cc|h)$'],
             ['exclude', 'metafile_skia_wrapper\\.(cc|h)$'],
-        ]}],
+          ],
+        }],
         ['OS=="win"', {
           'defines': [
             # PRINT_BACKEND_AVAILABLE disables the default dummy implementation

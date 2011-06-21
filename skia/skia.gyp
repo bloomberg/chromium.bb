@@ -787,10 +787,6 @@
           'defines': [
             'SK_BUILD_FOR_MAC',
           ],
-          'sources/': [
-            ['exclude', '/pdf/'],
-            ['exclude', 'ext/vector_platform_device_skia\\.(cc|h)'],
-          ],
           'include_dirs': [
             '../third_party/skia/include/utils/mac',
           ],
@@ -799,6 +795,20 @@
               '$(SDKROOT)/System/Library/Frameworks/AppKit.framework',
             ],
           },
+          'conditions': [
+             [ 'use_skia == 0', {
+               'sources/': [
+                 ['exclude', '/pdf/'],
+                 ['exclude', 'ext/vector_platform_device_skia\\.(cc|h)'],
+               ],
+            },
+            { # use_skia
+              'defines': [
+                'SK_SUPPORT_888_TEXT',
+                'SK_USE_MAC_CORE_TEXT',
+              ],
+            }],
+          ],
         }],
         [ 'OS == "win"', {
           'sources!': [
