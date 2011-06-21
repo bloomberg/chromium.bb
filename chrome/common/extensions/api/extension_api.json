@@ -3811,7 +3811,7 @@
           "requestHeaders": {
             "$ref": "HttpHeaders",
             "optional": true,
-            "description": "Only used as a response to the onBeforeSendHeaders event. If set, the request is made with these request headers instead. The headers should be delimited by literal \"\\r\\n\" substrings."
+            "description": "Only used as a response to the onBeforeSendHeaders event. If set, the request is made with these request headers instead."
           }
         }
       }

@@ -519,9 +519,11 @@ behave if allowed to run in incognito mode.
 
 <p>
 The default for extensions is "spanning", which means that the extension
-will run in a single shared process.  Any events or messages from an incognito
+will run in a single shared process. Any events or messages from an incognito
 tab will be sent to the shared process, with an <em>incognito</em> flag
-indicating where it came from.
+indicating where it came from. Because incognito tabs cannot use this shared
+process, an extension using the "spanning" incognito mode will not be able to
+load pages from its extension package into the main frame of an incognito tab.
 </p>
 
 <p>
