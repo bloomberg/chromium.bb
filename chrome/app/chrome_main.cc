@@ -829,9 +829,6 @@ int ChromeMain(int argc, char** argv) {
   // AdjustLinuxOOMScore function too.
 #if defined(OS_LINUX)
   AdjustLinuxOOMScore(process_type);
-  // TODO(mdm): look into calling CommandLine::SetProcTitle() here instead of
-  // in each relevant main() function below, to fix /proc/self/exe showing up
-  // as our process name since we exec() via that to be update-safe.
 #endif
 
 #if defined(OS_POSIX)
