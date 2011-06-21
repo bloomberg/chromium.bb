@@ -6,6 +6,7 @@
 
 #include <cctype>
 #include <cstdlib>
+#include <cstddef>
 #include <ctime>
 #include <map>
 #include <string>
@@ -23,7 +24,7 @@ namespace {
 
 static const int kHexBase = 16;
 static char kHexDigits[] = "0123456789ABCDEF";
-
+static const size_t kHmacDigestLength = 20;
 static const int kMaxNonceLength = 30;
 static const int kMinNonceLength = 15;
 
@@ -237,13 +238,14 @@ bool SignHmacSha1(const std::string& text,
                   const std::string& key,
                   std::string* signature_return) {
   crypto::HMAC hmac(crypto::HMAC::SHA1);
-  size_t digest_length = hmac.DigestLength();
-  unsigned char* digest = new unsigned char [digest_length];
+  DCHECK(hmac.DigestLength() == kHmacDigestLength);
+  unsigned char digest[kHmacDigestLength];
   hmac.Init(key);
-  return hmac.Sign(text, digest, digest_length) &&
+  bool result = hmac.Sign(text, digest, kHmacDigestLength) &&
       base::Base64Encode(std::string(reinterpret_cast<const char*>(digest),
-                                     digest_length),
+                                     kHmacDigestLength),
                          signature_return);
+  return result;
 }
 
 // Creates the value for the oauth_signature parameter when the

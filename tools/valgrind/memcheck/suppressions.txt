@@ -4670,13 +4670,6 @@
    fun:_ZN7history14HistoryBackend12AddPageVisitERK4GURLN4base4TimeExjNS_11VisitSourceE
    fun:_ZN7history14HistoryBackend7AddPageE13scoped_refptrINS_18HistoryAddPageArgsEE
 }
-{
-   bug_86755
-   Memcheck:Leak
-   fun:_Zna*
-   fun:_ZN12_GLOBAL__N_112SignHmacSha1ERKSsS1_PSs
-   fun:_ZN18OAuthRequestSigner4Sign*
-}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
