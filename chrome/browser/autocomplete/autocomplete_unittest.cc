@@ -337,7 +337,7 @@ TEST_F(AutocompleteTest, InputType) {
     { ASCIIToUTF16("http://foo/bar baz"), AutocompleteInput::URL },
     { ASCIIToUTF16("http://-foo.com"), AutocompleteInput::URL },
     { ASCIIToUTF16("http://foo-.com"), AutocompleteInput::UNKNOWN },
-    { ASCIIToUTF16("http://foo.-com"), AutocompleteInput::QUERY },
+    { ASCIIToUTF16("http://foo.-com"), AutocompleteInput::UNKNOWN },
     { ASCIIToUTF16("http://_foo_.com"), AutocompleteInput::UNKNOWN },
     { ASCIIToUTF16("http://foo.com:abc"), AutocompleteInput::QUERY },
     { ASCIIToUTF16("http://foo.com:123456"), AutocompleteInput::QUERY },
