@@ -88,6 +88,8 @@ struct meego_tablet_zoom {
 	struct wlsc_spring spring;
 	struct wlsc_transform transform;
 	struct wl_listener listener;
+	struct meego_tablet_shell *shell;
+	void (*done)(struct meego_tablet_zoom *zoom);
 };
 
 static int
@@ -118,15 +120,24 @@ meego_tablet_shell_set_state(struct meego_tablet_shell *shell, int state)
 }
 
 static void
+meego_tablet_zoom_destroy(struct meego_tablet_zoom *zoom)
+{
+	wl_list_remove(&zoom->animation.link);
+	zoom->surface->transform = NULL;
+	if (zoom->done)
+		zoom->done(zoom);
+	free(zoom);
+}
+
+static void
 handle_zoom_surface_destroy(struct wl_listener *listener,
 			    struct wl_resource *resource, uint32_t time)
 {
 	struct meego_tablet_zoom *zoom =
 		container_of(listener, struct meego_tablet_zoom, listener);
 
-	wl_list_remove(&zoom->animation.link);
 	fprintf(stderr, "animation surface gone\n");
-	free(zoom);
+	meego_tablet_zoom_destroy(zoom);
 }
 
 static void
@@ -141,10 +152,8 @@ meego_tablet_zoom_frame(struct wlsc_animation *animation,
 	wlsc_spring_update(&zoom->spring, msecs);
 
 	if (wlsc_spring_done(&zoom->spring)) {
-		wl_list_remove(&animation->link);
 		fprintf(stderr, "animation done\n");
-		es->transform = NULL;
-		free(zoom);
+		meego_tablet_zoom_destroy(zoom);
 	}
 
 	scale = zoom->spring.current;
@@ -162,23 +171,24 @@ meego_tablet_zoom_frame(struct wlsc_animation *animation,
 	wlsc_surface_damage(es);
 }
 
-static void
+static struct meego_tablet_zoom *
 meego_tablet_zoom_run(struct meego_tablet_shell *shell,
-		      struct wlsc_surface *surface)
+		      struct wlsc_surface *surface,
+		      GLfloat start, GLfloat stop)
 {
 	struct meego_tablet_zoom *zoom;
-	GLfloat scale;
 
 	fprintf(stderr, "starting animation for surface %p\n", surface);
 
 	zoom = malloc(sizeof *zoom);
 	if (!zoom)
-		return;
+		return NULL;
 
+	zoom->shell = shell;
 	zoom->surface = surface;
+	zoom->done = NULL;
 	surface->transform = &zoom->transform;
-	scale = 0.3;
-	wlsc_spring_init(&zoom->spring, 100.0, scale, 1.0);
+	wlsc_spring_init(&zoom->spring, 200.0, start, stop);
 	zoom->spring.timestamp = wlsc_compositor_get_time();
 	zoom->animation.frame = meego_tablet_zoom_frame;
 	meego_tablet_zoom_frame(&zoom->animation, NULL,
@@ -190,6 +200,8 @@ meego_tablet_zoom_run(struct meego_tablet_shell *shell,
 
 	wl_list_insert(shell->compositor->animation_list.prev,
 		       &zoom->animation.link);
+
+	return zoom;
 }
 
 /* FIXME: We should be handling map, not attach...  Map is when the
@@ -223,7 +235,7 @@ meego_tablet_shell_attach(struct wlsc_shell *base,
 		   shell->current_client->client == surface->surface.client) {
 		meego_tablet_shell_set_state(shell, STATE_TASK);
 		shell->current_client->surface = surface;
-		meego_tablet_zoom_run(shell, surface);
+		meego_tablet_zoom_run(shell, surface, 0.3, 1.0);
 	}
 }
 
@@ -312,24 +324,47 @@ tablet_shell_set_homescreen(struct wl_client *client,
 }
 
 static void
+minimize_zoom_done(struct meego_tablet_zoom *zoom)
+{
+	struct meego_tablet_shell *shell = zoom->shell;
+	struct wlsc_compositor *compositor = shell->compositor;
+	struct wlsc_input_device *device =
+		(struct wlsc_input_device *) compositor->input_device;
+
+	wlsc_surface_activate(shell->home_surface,
+			      device, wlsc_compositor_get_time());
+}
+
+static void
 meego_tablet_shell_switch_to(struct meego_tablet_shell *shell,
 			     struct wlsc_surface *surface)
 {
 	struct wlsc_compositor *compositor = shell->compositor;
 	struct wlsc_input_device *device =
 		(struct wlsc_input_device *) compositor->input_device;
-
-	wlsc_surface_activate(surface, device, wlsc_compositor_get_time());
+	struct wlsc_surface *current;
+	struct meego_tablet_zoom *zoom;
 
 	if (shell->state == STATE_SWITCHER) {
 		wl_list_remove(&shell->switcher_listener.link);
 		shell->switcher_surface = NULL;
 	};
 
-	if (surface == shell->home_surface)
+	if (surface == shell->home_surface) {
 		meego_tablet_shell_set_state(shell, STATE_HOME);
-	else
+
+		if (shell->current_client && shell->current_client->surface) {
+			current = shell->current_client->surface;
+			zoom = meego_tablet_zoom_run(shell, current, 1.0, 0.3);
+			zoom->done = minimize_zoom_done;
+		}
+	} else {
+		fprintf(stderr, "switch to %p\n", surface);
+		wlsc_surface_activate(surface, device,
+				      wlsc_compositor_get_time());
 		meego_tablet_shell_set_state(shell, STATE_TASK);
+		meego_tablet_zoom_run(shell, surface, 0.3, 1.0);
+	}
 }
 
 static void
