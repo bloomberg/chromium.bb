@@ -560,21 +560,6 @@ bool NavigationController::RendererDidNavigate(
   // The active entry's SiteInstance should match our SiteInstance.
   DCHECK(active_entry->site_instance() == tab_contents_->GetSiteInstance());
 
-  // WebKit doesn't set the "auto" transition on meta refreshes properly (bug
-  // 1051891) so we manually set it for redirects which we normally treat as
-  // "non-user-gestures" where we want to update stuff after navigations.
-  //
-  // Note that the redirect check also checks for a pending entry to
-  // differentiate real redirects from browser initiated navigations to a
-  // redirected entry. This happens when you hit back to go to a page that was
-  // the destination of a redirect, we don't want to treat it as a redirect
-  // even though that's what its transition will be. See bug 1117048.
-  //
-  // TODO(brettw) write a test for this complicated logic.
-  details->is_auto = (PageTransition::IsRedirect(params.transition) &&
-                      !pending_entry()) ||
-      params.gesture == NavigationGestureAuto;
-
   // Now prep the rest of the details for the notification and broadcast.
   details->entry = active_entry;
   details->is_main_frame = PageTransition::IsMainFrame(params.transition);

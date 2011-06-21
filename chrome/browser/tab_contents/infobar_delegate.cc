@@ -21,10 +21,7 @@ bool InfoBarDelegate::EqualsDelegate(InfoBarDelegate* delegate) const {
 
 bool InfoBarDelegate::ShouldExpire(
     const content::LoadCommittedDetails& details) const {
-  // Only hide InfoBars when the user has done something that makes the main
-  // frame load. We don't want various automatic or subframe navigations making
-  // it disappear.
-  if (!details.is_user_initiated_main_frame_load())
+  if (!details.is_navigation_to_different_page())
     return false;
 
   return ShouldExpireInternal(details);

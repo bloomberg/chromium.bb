@@ -1061,7 +1061,7 @@ void TabContents::DidNavigateMainFramePostCommit(
     opener_web_ui_type_ = WebUI::kNoWebUI;
   }
 
-  if (details.is_user_initiated_main_frame_load()) {
+  if (details.is_navigation_to_different_page()) {
     // Clear the status bubble. This is a workaround for a bug where WebKit
     // doesn't let us know that the cursor left an element during a
     // transition (this is also why the mouse cursor remains as a hand after

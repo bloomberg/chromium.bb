@@ -1020,7 +1020,6 @@ TEST_F(NavigationControllerTest, NewSubframe) {
   EXPECT_TRUE(notifications.Check1AndReset(
       NotificationType::NAV_ENTRY_COMMITTED));
   EXPECT_EQ(url1, details.previous_url);
-  EXPECT_FALSE(details.is_auto);
   EXPECT_FALSE(details.is_in_page);
   EXPECT_FALSE(details.is_main_frame);
 

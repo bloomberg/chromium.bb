@@ -53,7 +53,7 @@ class BrowserActivityObserver : public NotificationObserver {
     DCHECK(type == NotificationType::NAV_ENTRY_COMMITTED);
     const content::LoadCommittedDetails& load =
         *Details<content::LoadCommittedDetails>(details).ptr();
-    if (!load.is_main_frame || load.is_auto || load.is_in_page)
+    if (!load.is_navigation_to_different_page())
       return;  // Don't log for subframes or other trivial types.
 
     LogRenderProcessHostCount();

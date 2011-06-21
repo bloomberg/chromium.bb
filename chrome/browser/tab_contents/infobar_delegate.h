@@ -57,8 +57,8 @@ class InfoBarDelegate {
   virtual bool EqualsDelegate(InfoBarDelegate* delegate) const;
 
   // Returns true if the InfoBar should be closed automatically after the page
-  // is navigated. The default behavior is to return true if the user initiated
-  // navigation somewhere else or reloaded.
+  // is navigated. The default behavior is to return true if the
+  // navigation is to a new page (not including reloads).
   virtual bool ShouldExpire(
       const content::LoadCommittedDetails& details) const;
 
