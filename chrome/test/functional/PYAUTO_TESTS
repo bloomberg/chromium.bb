@@ -73,8 +73,6 @@
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
-      # crbug.com/83655
-      '-autofill.AutofillTest.testAutofillInvalid',
       # crbug.com/83686
       '-autofill.AutofillTest.testFillProfileCrazyCharacters',
       # crbug.com/81271
