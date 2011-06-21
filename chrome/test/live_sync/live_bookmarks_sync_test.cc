@@ -4,6 +4,7 @@
 
 #include "chrome/test/live_sync/live_bookmarks_sync_test.h"
 
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/ui_test_utils.h"
@@ -262,4 +263,24 @@ std::vector<unsigned char> LiveBookmarksSyncTest::CreateFavicon(int seed) {
   std::vector<unsigned char> favicon;
   gfx::PNGCodec::EncodeBGRASkBitmap(bmp, false, &favicon);
   return favicon;
+}
+
+std::string LiveBookmarksSyncTest::IndexedURL(int i) {
+  return StringPrintf("http://www.host.ext:1234/path/filename/%d", i);
+}
+
+std::wstring LiveBookmarksSyncTest::IndexedURLTitle(int i) {
+  return StringPrintf(L"URL Title %d", i);
+}
+
+std::wstring LiveBookmarksSyncTest::IndexedFolderName(int i) {
+  return StringPrintf(L"Folder Name %d", i);
+}
+
+std::wstring LiveBookmarksSyncTest::IndexedSubfolderName(int i) {
+  return StringPrintf(L"Subfolder Name %d", i);
+}
+
+std::wstring LiveBookmarksSyncTest::IndexedSubsubfolderName(int i) {
+  return StringPrintf(L"Subsubfolder Name %d", i);
 }

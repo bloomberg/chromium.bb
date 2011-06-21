@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/rand_util.h"
-#include "base/stringprintf.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "chrome/test/live_sync/live_bookmarks_sync_test.h"
@@ -14,32 +13,8 @@ const std::wstring kGenericFolderName = L"Folder Name";
 const std::wstring kGenericSubfolderName = L"Subfolder Name";
 const std::wstring kGenericSubsubfolderName = L"Subsubfolder Name";
 
-static std::string IndexedURL(int i) {
-  return StringPrintf("http://www.host.ext:1234/path/filename/%d", i);
-}
-
-static std::wstring IndexedURLTitle(int i) {
-  return StringPrintf(L"URL Title %d", i);
-}
-
-static std::wstring IndexedFolderName(int i) {
-  return StringPrintf(L"Folder Name %d", i);
-}
-
-static std::wstring IndexedSubfolderName(int i) {
-  return StringPrintf(L"Subfolder Name %d", i);
-}
-
-static std::wstring IndexedSubsubfolderName(int i) {
-  return StringPrintf(L"Subsubfolder Name %d", i);
-}
-
 const std::vector<unsigned char> GenericFavicon() {
   return LiveBookmarksSyncTest::CreateFavicon(254);
-}
-
-const std::vector<unsigned char> IndexedFavicon(int i) {
-  return LiveBookmarksSyncTest::CreateFavicon(i);
 }
 
 // http://crbug.com/81256
