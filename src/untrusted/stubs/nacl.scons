@@ -1,7 +1,7 @@
 # -*- python -*-
-# Copyright 2008 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 Import('env')
 
@@ -49,10 +49,11 @@ else:
 # them from newlib, while pnacl's newlib is arch neutral
 if env.Bit('bitcode'):
   setjmp = [env.StaticObject('setjmp.o', ['setjmp_%s.S' % platform])]
+  # TODO(mcgrathr): Temporary kludge should go away, see ../nacl/tls_params.h.
+  tls = [env.StaticObject('tls_params.o', 'tls_params.c')]
 else:
   setjmp = []
-
-tls = [env.StaticObject('tls.o', ['tls_%s.c' % platform])]
+  tls = []
 
 crt_platform = env.StaticLibrary('crt_platform', tls + setjmp)
 
