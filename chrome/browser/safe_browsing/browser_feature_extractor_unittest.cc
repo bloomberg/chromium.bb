@@ -19,6 +19,7 @@
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
+#include "content/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -35,6 +36,7 @@ class BrowserFeatureExtractorTest : public RenderViewHostTestHarness {
     profile_->CreateHistoryService(true /* delete_file */, false /* no_db */);
     extractor_.reset(new BrowserFeatureExtractor(contents()));
     num_pending_ = 0;
+    browse_info_.reset(new BrowseInfo);
   }
 
   virtual void TearDown() {
@@ -59,15 +61,27 @@ class BrowserFeatureExtractorTest : public RenderViewHostTestHarness {
     success_.erase(request);
     ++num_pending_;
     extractor_->ExtractFeatures(
+        *browse_info_,
         request,
         NewCallback(this,
                     &BrowserFeatureExtractorTest::ExtractFeaturesDone));
+  }
+
+  void GetFeatureMap(const ClientPhishingRequest& request,
+                     std::map<std::string, double>* features) {
+    for (int i = 0; i < request.non_model_feature_map_size(); ++i) {
+      const ClientPhishingRequest::Feature& feature =
+          request.non_model_feature_map(i);
+      EXPECT_EQ(0U, features->count(feature.name()));
+      (*features)[feature.name()] = feature.value();
+    }
   }
 
   BrowserThread ui_thread_;
   int num_pending_;
   scoped_ptr<BrowserFeatureExtractor> extractor_;
   std::map<ClientPhishingRequest*, bool> success_;
+  scoped_ptr<BrowseInfo> browse_info_;
 
  private:
   void ExtractFeaturesDone(bool success, ClientPhishingRequest* request) {
@@ -123,13 +137,9 @@ TEST_F(BrowserFeatureExtractorTest, UrlInHistory) {
   request.set_client_score(0.5);
   EXPECT_TRUE(ExtractFeatures(&request));
   std::map<std::string, double> features;
-  for (int i = 0; i < request.non_model_feature_map_size(); ++i) {
-    const ClientPhishingRequest::Feature& feature =
-        request.non_model_feature_map(i);
-    EXPECT_EQ(0U, features.count(feature.name()));
-    features[feature.name()] = feature.value();
-  }
-  EXPECT_EQ(8U, features.size());
+  GetFeatureMap(request, &features);
+
+  EXPECT_EQ(10U, features.size());
   EXPECT_DOUBLE_EQ(2.0, features[features::kUrlHistoryVisitCount]);
   EXPECT_DOUBLE_EQ(1.0,
                    features[features::kUrlHistoryVisitCountMoreThan24hAgo]);
@@ -159,5 +169,42 @@ TEST_F(BrowserFeatureExtractorTest, MultipleRequestsAtOnce) {
   // Success is false because the second URL is not in the history and we are
   // not able to distinguish between a missing URL in the history and an error.
   EXPECT_FALSE(success_[&request2]);
+}
+
+TEST_F(BrowserFeatureExtractorTest, BrowseFeatures) {
+  history_service()->AddPage(GURL("http://www.foo.com/"),
+                             history::SOURCE_BROWSED);
+  ClientPhishingRequest request;
+  request.set_url("http://www.foo.com/");
+  request.set_client_score(0.5);
+
+  browse_info_->url = GURL("http://www.foo.com/");
+  browse_info_->referrer = GURL("http://google.com/");
+  browse_info_->transition =
+      PageTransition::LINK | PageTransition::FORWARD_BACK;
+
+  EXPECT_TRUE(ExtractFeatures(&request));
+  std::map<std::string, double> features;
+  GetFeatureMap(request, &features);
+
+  EXPECT_EQ("http://google.com/", request.referrer_url());
+  EXPECT_EQ(0.0, features[features::kHasSSLReferrer]);
+  EXPECT_EQ(0.0, features[features::kPageTransitionType]);
+
+  request.Clear();
+  request.set_url("http://www.foo.com/");
+  request.set_client_score(0.5);
+
+  browse_info_->referrer = GURL("https://bankofamerica.com/");
+  browse_info_->transition =
+      PageTransition::TYPED | PageTransition::FORWARD_BACK;
+
+  EXPECT_TRUE(ExtractFeatures(&request));
+  features.clear();
+  GetFeatureMap(request, &features);
+
+  EXPECT_FALSE(request.has_referrer_url());
+  EXPECT_EQ(1.0, features[features::kHasSSLReferrer]);
+  EXPECT_EQ(1.0, features[features::kPageTransitionType]);
 }
 }  // namespace safe_browsing

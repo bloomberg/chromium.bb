@@ -33,6 +33,8 @@ const char kFirstHttpHostVisitMoreThan24hAgo[] =
     "FirstHttpHostVisitMoreThan24hAgo";
 const char kFirstHttpsHostVisitMoreThan24hAgo[] =
     "FirstHttpsHostVisitMoreThan24hAgo";
+const char kHasSSLReferrer[] = "HasSSLReferrer";
+const char kPageTransitionType[] = "PageTransitionType";
 }  // namespace features
 
 static void AddFeature(const std::string& feature_name,
@@ -74,7 +76,8 @@ BrowserFeatureExtractor::~BrowserFeatureExtractor() {
   pending_queries_.clear();
 }
 
-void BrowserFeatureExtractor::ExtractFeatures(ClientPhishingRequest* request,
+void BrowserFeatureExtractor::ExtractFeatures(const BrowseInfo& info,
+                                              ClientPhishingRequest* request,
                                               DoneCallback* callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(request);
@@ -84,6 +87,18 @@ void BrowserFeatureExtractor::ExtractFeatures(ClientPhishingRequest* request,
     DLOG(ERROR) << "ExtractFeatures called without a callback object";
     return;
   }
+  bool is_secure_referrer = info.referrer.SchemeIsSecure();
+  if (!is_secure_referrer) {
+    request->set_referrer_url(info.referrer.spec());
+  }
+  AddFeature(features::kHasSSLReferrer,
+             is_secure_referrer ? 1.0 : 0.0,
+             request);
+  AddFeature(features::kPageTransitionType,
+             static_cast<double>(
+                 PageTransition::StripQualifier(info.transition)),
+             request);
+
   pending_extractions_.insert(std::make_pair(request, callback));
   MessageLoop::current()->PostTask(
       FROM_HERE,

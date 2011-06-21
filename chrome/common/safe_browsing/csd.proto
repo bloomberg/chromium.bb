@@ -53,6 +53,10 @@ message ClientPhishingRequest {
   // List of features that are extracted in the client but are not used in the
   // machine learning model.
   repeated Feature non_model_feature_map = 8;
+
+  // The referrer URL.  This field might not be set, for example, in the case
+  // where the referrer uses HTTPs.
+  optional string referrer_url = 9;
 }
 
 message ClientPhishingResponse {

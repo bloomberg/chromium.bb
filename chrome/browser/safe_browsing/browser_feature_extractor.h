@@ -21,12 +21,27 @@
 #include "base/time.h"
 #include "chrome/browser/history/history_types.h"
 #include "content/browser/cancelable_request.h"
+#include "content/common/page_transition_types.h"
+#include "googleurl/src/gurl.h"
 
 class HistoryService;
 class TabContents;
 
 namespace safe_browsing {
 class ClientPhishingRequest;
+
+struct BrowseInfo {
+  // The URL that is being classified.  This is redundant information but
+  // we keep it around to verify that the URL that comes back from the
+  // renderer is unchanged.
+  GURL url;
+
+  // The referrer URL.
+  GURL referrer;
+
+  // How did we get to the URL?
+  PageTransition::Type transition;
+};
 
 namespace features {
 
@@ -58,6 +73,14 @@ extern const char kHttpsHostVisitCount[];
 // time more than 24h ago (only considers user-visible visits like above).
 extern const char kFirstHttpHostVisitMoreThan24hAgo[];
 extern const char kFirstHttpsHostVisitMoreThan24hAgo[];
+
+////////////////////////////////////////////////////
+// Browse features.
+////////////////////////////////////////////////////
+// True if the referrer was stripped because it is an SSL referrer.
+extern const char kHasSSLReferrer[];
+// Stores the page transition.  See: PageTransition.  We strip the qualifier.
+extern const char kPageTransitionType[];
 }  // namespace features
 
 // All methods of this class must be called on the UI thread (including
@@ -83,7 +106,8 @@ class BrowserFeatureExtractor {
   // feature extraction is complete, |callback| is run on the UI thread.  We
   // take ownership of the |callback| object.  This method must run on the UI
   // thread.
-  virtual void ExtractFeatures(ClientPhishingRequest* request,
+  virtual void ExtractFeatures(const BrowseInfo& info,
+                               ClientPhishingRequest* request,
                                DoneCallback* callback);
 
  private:

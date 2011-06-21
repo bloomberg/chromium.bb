@@ -290,14 +290,12 @@ void ClientSideDetectionHost::DidNavigateMainFramePostCommit(
   // TODO(noelutz): move this DCHECK to TabContents and fix all the unit tests
   // that don't call this method on the UI thread.
   // DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
   if (details.is_in_page) {
     // If the navigation is within the same page, the user isn't really
     // navigating away.  We don't need to cancel a pending callback or
     // begin a new classification.
     return;
   }
-
   // If we navigate away and there currently is a pending phishing
   // report request we have to cancel it to make sure we don't display
   // an interstitial for the wrong page.  Note that this won't cancel
@@ -305,20 +303,26 @@ void ClientSideDetectionHost::DidNavigateMainFramePostCommit(
   // interstial.
   cb_factory_.RevokeAll();
 
-  if (csd_service_) {
-    // Cancel any pending classification request.
-    if (classification_request_.get()) {
-      classification_request_->Cancel();
-    }
-
-    // Notify the renderer if it should classify this URL.
-    classification_request_ = new ShouldClassifyUrlRequest(params,
-                                                           tab_contents(),
-                                                           csd_service_,
-                                                           sb_service_,
-                                                           this);
-    classification_request_->Start();
+  if (!csd_service_) {
+    return;
   }
+
+  // Cancel any pending classification request.
+  if (classification_request_.get()) {
+    classification_request_->Cancel();
+  }
+  browse_info_.reset(new BrowseInfo);
+  browse_info_->url = params.url;
+  browse_info_->referrer = params.referrer;
+  browse_info_->transition = params.transition;
+
+  // Notify the renderer if it should classify this URL.
+  classification_request_ = new ShouldClassifyUrlRequest(params,
+                                                         tab_contents(),
+                                                         csd_service_,
+                                                         sb_service_,
+                                                         this);
+  classification_request_->Start();
 }
 
 void ClientSideDetectionHost::TabContentsDestroyed(TabContents* tab) {
@@ -338,22 +342,34 @@ void ClientSideDetectionHost::OnDetectedPhishingSite(
   // this method is called.  The renderer should not start phishing detection
   // if there isn't any service class in the browser.
   DCHECK(csd_service_);
+  // There shouldn't be any pending requests because we revoke them everytime
+  // we navigate away.
+  DCHECK(!cb_factory_.HasPendingCallbacks());
+  DCHECK(browse_info_.get());
+
   // We parse the protocol buffer here.  If we're unable to parse it we won't
   // send the verdict further.
   scoped_ptr<ClientPhishingRequest> verdict(new ClientPhishingRequest);
   if (csd_service_ &&
+      !cb_factory_.HasPendingCallbacks() &&
+      browse_info_.get() &&
       verdict->ParseFromString(verdict_str) &&
       verdict->IsInitialized()) {
-    // There shouldn't be any pending requests because we revoke them everytime
-    // we navigate away.
-    DCHECK(!cb_factory_.HasPendingCallbacks());
-
+    if (browse_info_->url.spec() != verdict->url()) {
+      // I'm not sure we can DCHECK on this one so we keep stats around to see
+      // whether this actually happens in practice.
+      UMA_HISTOGRAM_COUNTS("SBClientPhishing.BrowserRendererUrlMismatch", 1);
+      VLOG(2) << "Browser and renderer URL do not match: "
+              << browse_info_->url.spec() << " vs. " << verdict->url();
+    }
     // Start browser-side feature extraction.  Once we're done it will send
     // the client verdict request.
     feature_extractor_->ExtractFeatures(
+        *browse_info_,
         verdict.release(),
         NewCallback(this, &ClientSideDetectionHost::FeatureExtractionDone));
   }
+  browse_info_.reset();
 }
 
 void ClientSideDetectionHost::MaybeShowPhishingWarning(GURL phishing_url,

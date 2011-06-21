@@ -45,8 +45,15 @@ const bool kTrue = true;
 
 namespace safe_browsing {
 namespace {
-MATCHER_P(EqualsProto, other, "") {
-  return other.SerializeAsString() == arg.SerializeAsString();
+// This matcher verifies that the client computed verdict
+// (ClientPhishingRequest) which is passed to SendClientReportPhishingRequest
+// has the expected fields set.  Note: we can't simply compare the protocol
+// buffer strings because the BrowserFeatureExtractor might add features to the
+// verdict object before calling SendClientReportPhishingRequest.
+MATCHER_P(PartiallyEqualVerdict, other, "") {
+  return (other.url() == arg.url() &&
+          other.client_score() == arg.client_score() &&
+          other.is_phishing() == arg.is_phishing());
 }
 
 ACTION(QuitUIMessageLoop) {
@@ -107,7 +114,8 @@ class MockBrowserFeatureExtractor : public BrowserFeatureExtractor {
       : BrowserFeatureExtractor(tab) {}
   virtual ~MockBrowserFeatureExtractor() {}
 
-  MOCK_METHOD2(ExtractFeatures, void(ClientPhishingRequest*,
+  MOCK_METHOD3(ExtractFeatures, void(const BrowseInfo& info,
+                                     ClientPhishingRequest*,
                                      BrowserFeatureExtractor::DoneCallback*));
 };
 
@@ -151,6 +159,9 @@ class ClientSideDetectionHostTest : public TabContentsWrapperTestHarness {
   }
 
   void OnDetectedPhishingSite(const std::string& verdict_str) {
+    // Make sure we have a valid BrowseInfo object set before we call this
+    // method.
+    csd_host_->browse_info_.reset(new BrowseInfo);
     csd_host_->OnDetectedPhishingSite(verdict_str);
   }
 
@@ -228,7 +239,7 @@ TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteInvalidVerdict) {
   MockBrowserFeatureExtractor* mock_extractor = new MockBrowserFeatureExtractor(
       contents());
   SetFeatureExtractor(mock_extractor);  // The host class takes ownership.
-  EXPECT_CALL(*mock_extractor, ExtractFeatures(_, _)).Times(0);
+  EXPECT_CALL(*mock_extractor, ExtractFeatures(_, _, _)).Times(0);
   OnDetectedPhishingSite("Invalid Protocol Buffer");
   EXPECT_TRUE(Mock::VerifyAndClear(mock_extractor));
 }
@@ -243,7 +254,8 @@ TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteNotPhishing) {
   verdict.set_is_phishing(true);
 
   EXPECT_CALL(*csd_service_,
-              SendClientReportPhishingRequest(Pointee(EqualsProto(verdict)), _))
+              SendClientReportPhishingRequest(
+                  Pointee(PartiallyEqualVerdict(verdict)), _))
       .WillOnce(DoAll(DeleteArg<0>(), SaveArg<1>(&cb), QuitUIMessageLoop()));
   OnDetectedPhishingSite(verdict.SerializeAsString());
   MessageLoop::current()->Run();
@@ -268,7 +280,8 @@ TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteDisabled) {
   verdict.set_is_phishing(true);
 
   EXPECT_CALL(*csd_service_,
-              SendClientReportPhishingRequest(Pointee(EqualsProto(verdict)), _))
+              SendClientReportPhishingRequest(
+                  Pointee(PartiallyEqualVerdict(verdict)), _))
       .WillOnce(DoAll(DeleteArg<0>(), SaveArg<1>(&cb), QuitUIMessageLoop()));
   OnDetectedPhishingSite(verdict.SerializeAsString());
   MessageLoop::current()->Run();
@@ -294,7 +307,8 @@ TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteShowInterstitial) {
   verdict.set_is_phishing(true);
 
   EXPECT_CALL(*csd_service_,
-              SendClientReportPhishingRequest(Pointee(EqualsProto(verdict)), _))
+              SendClientReportPhishingRequest(
+                  Pointee(PartiallyEqualVerdict(verdict)), _))
       .WillOnce(DoAll(DeleteArg<0>(), SaveArg<1>(&cb), QuitUIMessageLoop()));
   OnDetectedPhishingSite(verdict.SerializeAsString());
   MessageLoop::current()->Run();
@@ -347,7 +361,8 @@ TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteMultiplePings) {
   verdict.set_is_phishing(true);
 
   EXPECT_CALL(*csd_service_,
-              SendClientReportPhishingRequest(Pointee(EqualsProto(verdict)), _))
+              SendClientReportPhishingRequest(
+                  Pointee(PartiallyEqualVerdict(verdict)), _))
       .WillOnce(DoAll(DeleteArg<0>(), SaveArg<1>(&cb), QuitUIMessageLoop()));
   OnDetectedPhishingSite(verdict.SerializeAsString());
   MessageLoop::current()->Run();
@@ -365,7 +380,8 @@ TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteMultiplePings) {
   verdict.set_url(other_phishing_url.spec());
   verdict.set_client_score(0.8f);
   EXPECT_CALL(*csd_service_,
-              SendClientReportPhishingRequest(Pointee(EqualsProto(verdict)), _))
+              SendClientReportPhishingRequest(
+                  Pointee(PartiallyEqualVerdict(verdict)), _))
       .WillOnce(DoAll(DeleteArg<0>(),
                       SaveArg<1>(&cb_other),
                       QuitUIMessageLoop()));

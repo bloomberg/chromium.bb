@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_callback_factory.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/safe_browsing/browser_feature_extractor.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
 #include "googleurl/src/gurl.h"
@@ -17,7 +18,6 @@
 class TabContents;
 
 namespace safe_browsing {
-class BrowserFeatureExtractor;
 class ClientPhishingRequest;
 class ClientSideDetectionService;
 
@@ -84,6 +84,11 @@ class ClientSideDetectionHost : public TabContentsObserver {
   scoped_refptr<ShouldClassifyUrlRequest> classification_request_;
   // Browser-side feature extractor.
   scoped_ptr<BrowserFeatureExtractor> feature_extractor_;
+  // Keeps some info about the current page visit while the renderer
+  // classification is going on.  Since we cancel classification on
+  // every page load we can simply keep this data around as a member
+  // variable.  This information will be passed on to the feature extractor.
+  scoped_ptr<BrowseInfo> browse_info_;
 
   base::ScopedCallbackFactory<ClientSideDetectionHost> cb_factory_;
 
