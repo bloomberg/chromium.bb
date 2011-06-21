@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,7 +42,7 @@ class ImageView : public View {
   // Set the bitmap that should be displayed from a pointer. Reset the image
   // if the pointer is NULL. The pointer contents is copied in the receiver's
   // bitmap.
-  void SetImage(SkBitmap* bm);
+  void SetImage(const SkBitmap* bm);
 
   // Returns the bitmap currently displayed or NULL of none is currently set.
   // The returned bitmap is still owned by the ImageView.

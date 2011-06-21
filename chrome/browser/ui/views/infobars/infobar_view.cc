@@ -230,7 +230,7 @@ void InfoBarView::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
         gfx::Image* image = delegate()->GetIcon();
         if (image) {
           icon_ = new views::ImageView;
-          icon_->SetImage(*image);
+          icon_->SetImage(image->ToSkBitmap());
           AddChildView(icon_);
         }
 
