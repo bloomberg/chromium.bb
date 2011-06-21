@@ -2316,9 +2316,6 @@ terminal_create(struct display *display, int fullscreen)
 	cairo_destroy(cr);
 	cairo_surface_destroy(surface);
 
-	terminal_resize(terminal, 80, 24);
-	terminal_draw(terminal);
-
 	return terminal;
 }
 
@@ -2367,6 +2364,9 @@ terminal_run(struct terminal *terminal, const char *path)
 	fcntl(master, F_SETFL, O_NONBLOCK);
 	g_io_add_watch(terminal->channel, G_IO_IN, io_handler, terminal);
         g_io_add_watch(terminal->channel, G_IO_HUP, io_handler, terminal);
+
+	terminal_resize(terminal, 80, 24);
+	terminal_draw(terminal);
 
 	return 0;
 }
