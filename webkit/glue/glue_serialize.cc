@@ -74,9 +74,13 @@ inline void WriteData(const void* data, int length, SerializeObject* obj) {
 
 inline void ReadData(const SerializeObject* obj, const void** data,
                      int* length) {
-  const char* tmp = NULL;
-  obj->pickle.ReadData(&obj->iter, &tmp, length);
-  *data = tmp;
+  const char* tmp;
+  if (obj->pickle.ReadData(&obj->iter, &tmp, length)) {
+    *data = tmp;
+  } else {
+    *data = NULL;
+    *length = 0;
+  }
 }
 
 inline bool ReadBytes(const SerializeObject* obj, const void** data,
@@ -93,9 +97,10 @@ inline void WriteInteger(int data, SerializeObject* obj) {
 }
 
 inline int ReadInteger(const SerializeObject* obj) {
-  int tmp = 0;
-  obj->pickle.ReadInt(&obj->iter, &tmp);
-  return tmp;
+  int tmp;
+  if (obj->pickle.ReadInt(&obj->iter, &tmp))
+    return tmp;
+  return 0;
 }
 
 inline void WriteInteger64(int64 data, SerializeObject* obj) {
@@ -127,9 +132,10 @@ inline void WriteBoolean(bool data, SerializeObject* obj) {
 }
 
 inline bool ReadBoolean(const SerializeObject* obj) {
-  bool tmp = false;
-  obj->pickle.ReadBool(&obj->iter, &tmp);
-  return tmp;
+  bool tmp;
+  if (obj->pickle.ReadBool(&obj->iter, &tmp))
+    return tmp;
+  return false;
 }
 
 inline void WriteGURL(const GURL& url, SerializeObject* obj) {
@@ -138,8 +144,9 @@ inline void WriteGURL(const GURL& url, SerializeObject* obj) {
 
 inline GURL ReadGURL(const SerializeObject* obj) {
   std::string spec;
-  obj->pickle.ReadString(&obj->iter, &spec);
-  return GURL(spec);
+  if (obj->pickle.ReadString(&obj->iter, &spec))
+    return GURL(spec);
+  return GURL();
 }
 
 // Read/WriteString pickle the WebString as <int length><WebUChar* data>.
