@@ -63,8 +63,7 @@ PPB_VideoDecoder_Impl::PPB_VideoDecoder_Impl(PluginInstance* instance)
     : Resource(instance),
       callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       abort_callback_(PP_BlockUntilComplete()),
-      flush_callback_(PP_BlockUntilComplete()),
-      bitstream_buffer_callback_(PP_BlockUntilComplete()) {
+      flush_callback_(PP_BlockUntilComplete()) {
   ppp_videodecoder_ =
       static_cast<const PPP_VideoDecoder_Dev*>(instance->module()->
           GetPluginInterface(PPP_VIDEODECODER_DEV_INTERFACE));
@@ -166,10 +165,8 @@ int32_t PPB_VideoDecoder_Impl::Decode(
   media::BitstreamBuffer decode_buffer(bitstream_buffer->id,
                                        buffer->shared_memory()->handle(),
                                        static_cast<size_t>(buffer->size()));
-
-  // Store the callback to inform when bitstream buffer has been processed.
-  // TODO(vmr): handle simultaneous decodes + callbacks.
-  bitstream_buffer_callback_ = callback;
+  CHECK(bitstream_buffer_callbacks_.insert(std::make_pair(
+      bitstream_buffer->id, callback)).second);
 
   if (platform_video_decoder_->Decode(decode_buffer))
     return PP_OK_COMPLETIONPENDING;
@@ -311,12 +308,12 @@ void PPB_VideoDecoder_Impl::NotifyAbortDone() {
 
 void PPB_VideoDecoder_Impl::NotifyEndOfBitstreamBuffer(
     int32 bitstream_buffer_id) {
-  if (bitstream_buffer_callback_.func == NULL)
-    return;
-
-  // Call the callback that was stored to be called when bitstream was sent for
-  // decoding.
-  PP_RunAndClearCompletionCallback(&bitstream_buffer_callback_, PP_OK);
+  CallbackById::iterator it =
+      bitstream_buffer_callbacks_.find(bitstream_buffer_id);
+  DCHECK(it != bitstream_buffer_callbacks_.end());
+  PP_CompletionCallback cc = it->second;
+  bitstream_buffer_callbacks_.erase(it);
+  PP_RunCompletionCallback(&cc, PP_OK);
 }
 
 void PPB_VideoDecoder_Impl::NotifyFlushDone() {

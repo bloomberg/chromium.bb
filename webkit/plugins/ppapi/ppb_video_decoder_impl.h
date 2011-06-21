@@ -75,6 +75,10 @@ class PPB_VideoDecoder_Impl : public Resource,
   virtual void NotifyAbortDone() OVERRIDE;
 
  private:
+  // Key: bitstream_buffer_id, value: callback to run when bitstream decode is
+  // done.
+  typedef std::map<int32, PP_CompletionCallback> CallbackById;
+
   // This is NULL before initialization, and if this PPB_VideoDecoder_Impl is
   // swapped with another.
   scoped_ptr<PluginDelegate::PlatformVideoDecoder> platform_video_decoder_;
@@ -85,7 +89,7 @@ class PPB_VideoDecoder_Impl : public Resource,
   PP_CompletionCallback initialization_callback_;
   PP_CompletionCallback abort_callback_;
   PP_CompletionCallback flush_callback_;
-  PP_CompletionCallback bitstream_buffer_callback_;
+  CallbackById bitstream_buffer_callbacks_;
 
   // Reference to the plugin requesting this interface.
   const PPP_VideoDecoder_Dev* ppp_videodecoder_;
