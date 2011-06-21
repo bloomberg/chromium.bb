@@ -7,33 +7,49 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_SEL_UNIVERASAL_PRIMITIVES_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_SEL_UNIVERASAL_PRIMITIVES_H_
 
-// Abstract multimedia interface
-// NOTE: currently only video and simple events are supported
+#include "ppapi/c/pp_input_event.h"
 
-struct PP_InputEvent;
+// ppapi does not have a user defined event notion.
+// c.f. ppapi/c/pp_input_event.h
+// So we superimpose one here on the existing one "u" member.
 
-const int MY_EVENT_FLUSH_CALL_BACK = 88;
-const int MY_EVENT_INIT_AUDIO = 89;
-// data1 = callback_id, data2 = result value
-const int MY_EVENT_TIMER_CALL_BACK = 90;
+enum {
+  CUSTOM_EVENT_START = 2000,
+  CUSTOM_EVENT_OPEN_CALLBACK,
+  CUSTOM_EVENT_TERMINATION,
+  CUSTOM_EVENT_FLUSH_CALLBACK,
+  CUSTOM_EVENT_INIT_AUDIO,
+  CUSTOM_EVENT_TIMER_CALLBACK,
+  CUSTOM_EVENT_READ_CALLBACK
+};
+
+struct PP_InputEvent_User {
+  int callback;   // this is often the handle for a callback on the nexe side
+  int result;     // this is often the result for the callback
+  void* pointer;  // this is often a marshalled pp_var
+  int size;       // size of the marshalled pp_var
+};
 
 
-
+// User Event Helpers
 bool IsUserEvent(PP_InputEvent* event);
-void MakeUserEvent(PP_InputEvent* event, int code, int data1, int data2);
 
-bool IsInvalidEvent(PP_InputEvent* event);
+void MakeUserEvent(PP_InputEvent* event,
+                   int code,
+                   int callback,
+                   int result,
+                   void* pointer,
+                   int size);
 void MakeInvalidEvent(PP_InputEvent* event);
-
-bool IsTerminationEvent(PP_InputEvent* event);
 void MakeTerminationEvent(PP_InputEvent* event);
 
+bool IsInvalidEvent(PP_InputEvent* event);
+bool IsTerminationEvent(PP_InputEvent* event);
 
-int GetCodeFromUserEvent(PP_InputEvent* event);
-int GetData1FromUserEvent(PP_InputEvent* event);
-int GetData2FromUserEvent(PP_InputEvent* event);
+// NOTE: this returns an int rather than PP_InputEvent_Type
+int GetUserEventType(PP_InputEvent* event);
 
-void MakeInvalidEvent(PP_InputEvent* event);
+PP_InputEvent_User* GetUserEvent(PP_InputEvent* event);
 
 typedef void (*AUDIO_CALLBACK)(void* data, unsigned char* buffer, int length);
 
@@ -44,9 +60,12 @@ class IMultimedia {
   virtual int VideoBufferSize() = 0;
   // Trigger a frame update in the multimedia system
   virtual void VideoUpdate(const void* data) = 0;
-  // Inject a userevent with the two arbitrary pieces of
-  // data into the event buffer
-  virtual void PushUserEvent(int delay, int code, int data1, int data2) = 0;
+  // Inject a userevent into the event buffer.
+  // NOTE: the event will be copied
+  virtual void PushUserEvent(PP_InputEvent* event) = 0;
+
+  // schedule a event for future delivery
+  virtual void PushDelayedUserEvent(int delay, PP_InputEvent* event) = 0;
   // Get next event (non-blocking). If no event was available
   // IsInvalidEvent(event) will be true afterwards.
   virtual void EventPoll(PP_InputEvent* event) = 0;

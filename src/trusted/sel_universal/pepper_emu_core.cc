@@ -37,9 +37,11 @@ bool IsSupportedInterface(string if_name) {
     if_name == "PPB_Graphics2D;0.3" ||
     if_name == "PPB_ImageData;0.3" ||
     if_name == "PPB_Instance;0.4" ||
+    if_name == "PPB_Messaging;0.1" ||
     if_name == "PPB_URLLoader;0.1" ||
     if_name == "PPB_URLRequestInfo;0.2" ||
-    if_name == "PPB_URLResponseInfo;0.1";
+    if_name == "PPB_URLResponseInfo;0.1" ||
+    if_name == "PPB_Var(Deprecated);0.3";
 }
 
 // void* PPB_GetInterface(const char* interface_name);
@@ -49,10 +51,10 @@ void PPB_GetInterface(SRPC_PARAMS) {
   NaClLog(1, "PPB_GetInterface(%s)\n", if_name.c_str());
   bool supported = IsSupportedInterface(if_name);
   if (!supported) {
-    NaClLog(LOG_ERROR, "unsupported interface\n");
+    NaClLog(LOG_ERROR, "unsupported interface [%s]\n", if_name.c_str());
   }
   outs[0]->u.ival = supported ? 1 : 0;
-
+  NaClLog(1, "PPB_GetInterface(%s) -> %d\n", if_name.c_str(), supported);
   rpc->result = NACL_SRPC_RESULT_OK;
   done->Run(done);
 }
@@ -85,10 +87,9 @@ void PPB_Core_CallOnMainThread(SRPC_PARAMS) {
   rpc->result = NACL_SRPC_RESULT_OK;
   done->Run(done);
 
-  GlobalMultiMediaInterface->PushUserEvent(delay,
-                                           MY_EVENT_TIMER_CALL_BACK,
-                                           callback,
-                                           result);
+  PP_InputEvent event;
+  MakeUserEvent(&event, CUSTOM_EVENT_TIMER_CALLBACK, callback, result, 0, 0);
+  GlobalMultiMediaInterface->PushDelayedUserEvent(delay, &event);
 }
 
 // This appears to have no equivalent in the ppapi world

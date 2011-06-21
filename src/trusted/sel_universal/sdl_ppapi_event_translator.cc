@@ -128,11 +128,6 @@ static uint32_t SDLKeyToPPKey(uint32_t key) {
   }
 }
 
-
-static int ptr2int(void* p) {
-  return static_cast<int>(reinterpret_cast<uintptr_t>(p));
-}
-
 // Convert the SDL event, sdl_event, into the PPAPI event, pp_event.
 // Returns false if the event is not supported or cannot be processed.
 bool ConvertSDLEventToPPAPI(
@@ -164,12 +159,6 @@ bool ConvertSDLEventToPPAPI(
       pp_event->u.mouse.button = SDLButtonToPPButton(sdl_event.button.button);
       return true;
 
-    case SDL_USEREVENT:
-      MakeUserEvent(pp_event,
-                    sdl_event.user.code,
-                    ptr2int(sdl_event.user.data1),
-                    ptr2int(sdl_event.user.data2));
-      return true;
     case SDL_QUIT:
       MakeTerminationEvent(pp_event);
       return true;

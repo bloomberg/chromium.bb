@@ -11,39 +11,38 @@
 #include <string>
 #include <iostream>
 
+#include "ppapi/c/pp_input_event.h"
+
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/trusted/sel_universal/pepper_emu.h"
+#include "native_client/src/trusted/sel_universal/pepper_emu_helper.h"
+#include "native_client/src/trusted/sel_universal/primitives.h"
 #include "native_client/src/trusted/sel_universal/rpc_universal.h"
 #include "native_client/src/trusted/sel_universal/srpc_helper.h"
 
-
-// Marshalling Conventions Used By NaCl
-#define JAVA_SCRIPT_TYPE_STRING 5
-#define JAVA_SCRIPT_TYPE_INT 2
-
-struct JavaScriptData {
-  uint32_t js_type;
-  uint32_t size;
-  char     payload[1];
-};
-
 namespace {
 
-// Currently not use
 IMultimedia* GlobalMultiMediaInterface = 0;
-
+std::string GlobalQuitMessage;
 
 // PPB_Messaging_PostMessage:iC:
 void PPB_Messaging_PostMessage(SRPC_PARAMS) {
   UNREFERENCED_PARAMETER(outs);
-  JavaScriptData* data = reinterpret_cast<JavaScriptData*>(ins[1]->arrays.carr);
   // NOTE: only string supported for now
-  CHECK(data->js_type == JAVA_SCRIPT_TYPE_STRING);
-  std::cout << "POST_MESSAGE: " << std::string(data->payload, data->size);
+  std::string message = GetMarshalledJSString(ins[1]);
+  std::cout << "POST_MESSAGE: [" << message << "]\n";
   rpc->result = NACL_SRPC_RESULT_OK;
   done->Run(done);
+
+  // automatic termination mechanism used for testing
+  if (GlobalQuitMessage.size() > 0 && GlobalQuitMessage == message) {
+    NaClLog(LOG_INFO, "'quit message' triggered termination");
+    PP_InputEvent event;
+    MakeTerminationEvent(&event);
+    GlobalMultiMediaInterface->PushUserEvent(&event);
+  }
 }
 
 }  // end namespace
@@ -54,4 +53,21 @@ void PepperEmuInitPostMessage(NaClCommandLoop* ncl, IMultimedia* im) {
   NaClLog(LOG_INFO, "HandlerPostMessageInitialize\n");
 
   ncl->AddUpcallRpc(TUPLE(PPB_Messaging_PostMessage, :iC:));
+}
+
+
+bool HandlerPepperEmuSetQuitMessage(NaClCommandLoop* ncl,
+                                    const std::vector<std::string>& args) {
+  UNREFERENCED_PARAMETER(ncl);
+  if (args.size() < 2) {
+    NaClLog(LOG_ERROR, "Insufficient arguments to 'rpc' command.\n");
+    return false;
+  }
+  // drop quotes - no escaping yet
+  GlobalQuitMessage = args[1].substr(1, args[1].size() - 2);
+  NaClLog(LOG_INFO, "Setting 'quit message' to  [%s]\n",
+          GlobalQuitMessage.c_str());
+
+
+  return true;
 }

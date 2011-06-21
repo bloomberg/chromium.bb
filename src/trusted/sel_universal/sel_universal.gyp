@@ -14,6 +14,7 @@
                     'pepper_emu_fileio.cc',
                     'pepper_emu_core.cc',
                     'pepper_emu_handler.cc',
+                    'pepper_emu_helper.cc',
                     'pepper_emu_postmessage.cc',
                     'primitives_simple.cc',
                     'replay_handler.cc',

@@ -65,15 +65,16 @@ class EmuPrimitivesSimple : public IMultimedia {
     NaClLog(LOG_FATAL, "VideoUpdate() not supported\n");
   }
 
-  virtual void PushUserEvent(int delay, int code, int data1, int data2) {
-    // NOTE: for this simple implementation we completely ignore the "delay"
-    UNREFERENCED_PARAMETER(delay);
-    PP_InputEvent event;
-    MakeUserEvent(&event, code, data1, data2);
-
+  virtual void PushUserEvent(PP_InputEvent* event) {
     ScopedMutexLock lock(&mutex_);
-    queue_.push(event);
+    queue_.push(*event);
     NaClSemPost(&sem_);
+  }
+
+  virtual void PushDelayedUserEvent(int delay, PP_InputEvent* event) {
+    // for now ignore the delay
+    UNREFERENCED_PARAMETER(delay);
+    PushUserEvent(event);
   }
 
   virtual void EventPoll(PP_InputEvent* event) {

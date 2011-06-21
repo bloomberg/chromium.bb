@@ -100,6 +100,8 @@ static struct {
 
   IMultimedia* sdl_engine;
   std::string title;
+
+  std::string quit_message;
 } Global;
 
 // ======================================================================
@@ -284,7 +286,9 @@ static void PPB_Graphics2D_Flush(SRPC_PARAMS) {
 
   Global.sdl_engine->VideoUpdate(Global.addr_video);
   NaClLog(1, "pushing user event for callback (%d)\n", callback_id);
-  Global.sdl_engine->PushUserEvent(0, MY_EVENT_FLUSH_CALL_BACK, callback_id, 0);
+  PP_InputEvent event;
+  MakeUserEvent(&event, CUSTOM_EVENT_FLUSH_CALLBACK, callback_id, 0, 0, 0);
+  Global.sdl_engine->PushUserEvent(&event);
 }
 
 // From the PPB_Audio API
@@ -328,7 +332,9 @@ static void PPB_Audio_Create(SRPC_PARAMS) {
   rpc->result = NACL_SRPC_RESULT_OK;
   done->Run(done);
 
-  Global.sdl_engine->PushUserEvent(0, MY_EVENT_INIT_AUDIO, 0, 0);
+  PP_InputEvent event;
+  MakeUserEvent(&event, CUSTOM_EVENT_INIT_AUDIO, 0, 0, 0, 0);
+  Global.sdl_engine->PushUserEvent(&event);
 }
 
 // From the PPB_Audio API
@@ -531,11 +537,10 @@ bool GetNextEvent(PP_InputEvent* event) {
       // TODO(robertm): We may need to refine this because, in theory,
       // there is no guaranteed time ordering on the UserEvents.
       // One solution would be to only use the screen refresh
-      // UserEvents (MY_EVENT_FLUSH_CALL_BACK) as sync events and
+      // UserEvents (CUSTOM_EVENT_FLUSH_CALLBACK) as sync events and
       // ignore all others.
       // We can delay this work until we see the check below firing.
-      CHECK(GetCodeFromUserEvent(event) ==
-            GetCodeFromUserEvent(&Global.next_sync_event));
+      CHECK(event->type == Global.next_sync_event.type);
       // sync event has been "consumed"
       MakeInvalidEvent(&Global.next_sync_event);
       return true;
@@ -571,6 +576,130 @@ bool GetNextEvent(PP_InputEvent* event) {
   }
 }
 
+
+static void InvokeCompletionCallback(NaClCommandLoop* ncl,
+                                     int callback,
+                                     int result,
+                                     void* data,
+                                     int size) {
+  NaClSrpcArg  in[NACL_SRPC_MAX_ARGS];
+  NaClSrpcArg* ins[NACL_SRPC_MAX_ARGS + 1];
+  NaClSrpcArg  out[NACL_SRPC_MAX_ARGS];
+  NaClSrpcArg* outs[NACL_SRPC_MAX_ARGS + 1];
+  BuildArgVec(outs, out, 0);
+  BuildArgVec(ins, in, 3);
+
+  int dummy_exception[2] = {0, 0};
+
+  ins[0]->tag = NACL_SRPC_ARG_TYPE_INT;
+  ins[0]->u.ival = callback;
+  ins[1]->tag = NACL_SRPC_ARG_TYPE_INT;
+  ins[1]->u.ival = result;
+  ins[2]->tag = NACL_SRPC_ARG_TYPE_CHAR_ARRAY;
+  if (data) {
+    ins[2]->u.count = size;;
+    ins[2]->arrays.carr = reinterpret_cast<char*>(data);
+  } else {
+    ins[2]->u.count = sizeof(dummy_exception);
+    ins[2]->arrays.carr = reinterpret_cast<char*>(dummy_exception);
+  }
+
+  ncl->InvokeNexeRpc("RunCompletionCallback:iiC:", ins, outs);
+}
+
+
+static void InvokeHandleInputEvent(NaClCommandLoop* ncl,
+                                   PP_InputEvent* event) {
+  NaClLog(1, "Got input event of type %d\n", event->type);
+  NaClSrpcArg  in[NACL_SRPC_MAX_ARGS];
+  NaClSrpcArg* ins[NACL_SRPC_MAX_ARGS + 1];
+  NaClSrpcArg  out[NACL_SRPC_MAX_ARGS];
+  NaClSrpcArg* outs[NACL_SRPC_MAX_ARGS + 1];
+  BuildArgVec(ins, in, 2);
+  BuildArgVec(outs, out, 1);
+
+  ins[0]->tag = NACL_SRPC_ARG_TYPE_INT;
+  ins[0]->u.ival = Global.instance;
+  ins[1]->tag = NACL_SRPC_ARG_TYPE_CHAR_ARRAY;
+  ins[1]->u.count = sizeof(event);
+  ins[1]->arrays.carr = reinterpret_cast<char*>(event);
+
+  outs[0]->tag = NACL_SRPC_ARG_TYPE_INT;
+  ncl->InvokeNexeRpc("PPP_Instance_HandleInputEvent:iC:i", ins, outs);
+}
+
+
+static void InvokeAudioStreamCreated(NaClCommandLoop* ncl) {
+  NaClSrpcArg  in[NACL_SRPC_MAX_ARGS];
+  NaClSrpcArg* ins[NACL_SRPC_MAX_ARGS + 1];
+  NaClSrpcArg  out[NACL_SRPC_MAX_ARGS];
+  NaClSrpcArg* outs[NACL_SRPC_MAX_ARGS + 1];
+  BuildArgVec(outs, out, 0);
+  BuildArgVec(ins, in, 4);
+  ins[0]->tag = NACL_SRPC_ARG_TYPE_INT;
+  ins[0]->u.ival = Global.handle_audio;
+  ins[1]->tag = NACL_SRPC_ARG_TYPE_HANDLE;
+  ins[1]->u.hval = Global.desc_audio_shmem->desc();
+  ins[2]->tag = NACL_SRPC_ARG_TYPE_INT;
+  ins[2]->u.ival = Global.sample_frame_count * kBytesPerSample;
+  ins[3]->tag = NACL_SRPC_ARG_TYPE_HANDLE;
+  ins[3]->u.hval = Global.desc_audio_sync_out->desc();
+  ncl->InvokeNexeRpc("PPP_Audio_StreamCreated:ihih:", ins, outs);
+}
+
+static bool HandleUserEvent(NaClCommandLoop* ncl, PP_InputEvent* event) {
+  // NOTE: this hack is necessary because we are overlaying two different
+  //       enums and gcc's range propagation is rather smart.
+  const int event_type = GetUserEventType(event);
+  NaClLog(1, "Got user event with code %d\n", event_type);
+  PP_InputEvent_User *user_event = GetUserEvent(event);
+
+  switch (event_type) {
+   case CUSTOM_EVENT_TERMINATION:
+    NaClLog(LOG_INFO, "Got termination event\n");
+    return false;
+
+    // This event is created on behalf of PPB_URLLoader_Open
+   case CUSTOM_EVENT_OPEN_CALLBACK:
+    // FALL THROUGH
+    // This event is created on behalf of PPB_Core_CallOnMainThread
+   case CUSTOM_EVENT_TIMER_CALLBACK:
+    // FALL THROUGH
+    // This event is created on behalf of PPB_URLLoader_ReadResponseBody
+   case CUSTOM_EVENT_READ_CALLBACK:
+    // FALL THROUGH
+    // This event gets created so that we can invoke
+    // RunCompletionCallback after PPB_Graphics2D_Flush
+   case CUSTOM_EVENT_FLUSH_CALLBACK: {
+     NaClLog(2, "Completion callback(%d, %d)\n",
+             user_event->callback, user_event->result);
+     InvokeCompletionCallback(ncl,
+                              user_event->callback,
+                              user_event->result,
+                              user_event->pointer,
+                              user_event->size);
+     return true;
+   }
+    // This event gets created so that we can invoke
+    // PPP_Audio_StreamCreated after PPB_Audio_Create
+   case CUSTOM_EVENT_INIT_AUDIO:
+    NaClLog(1, "audio init callback\n");
+#if (NACL_LINUX || NACL_OSX)
+    sleep(1);
+#elif NACL_WINDOWS
+    Sleep(1 * 1000);
+#else
+#error "Please specify platform as NACL_LINUX, NACL_OSX or NACL_WINDOWS"
+#endif
+    InvokeAudioStreamCreated(ncl);
+    return true;
+
+   default:
+    NaClLog(LOG_FATAL, "unknown event type %d\n", event->type);
+    return false;
+  }
+}
+
 // uncomment the line below if you want to use a non-blocking
 // event processing loop.
 // This can be sometime useful for debugging but is wasting cycles
@@ -582,96 +711,22 @@ bool HandlerPepperEmuEventLoop(NaClCommandLoop* ncl,
   UNREFERENCED_PARAMETER(args);
   UNREFERENCED_PARAMETER(ncl);
   PP_InputEvent event;
-  while (true) {
-    NaClLog(1, "event wait\n");
+  bool keep_going = true;
+  while (keep_going) {
+    NaClLog(1, "Pepper emu event loop wait\n");
     if (!GetNextEvent(&event)) {
       continue;
     }
-
-    NaClSrpcArg  in[NACL_SRPC_MAX_ARGS];
-    NaClSrpcArg* ins[NACL_SRPC_MAX_ARGS + 1];
-    NaClSrpcArg  out[NACL_SRPC_MAX_ARGS];
-    NaClSrpcArg* outs[NACL_SRPC_MAX_ARGS + 1];
-    int dummy_exception[2] = {0, 0};
 
     if (Global.event_logger_stream.is_open() && !IsInvalidEvent(&event)) {
       Global.event_logger_stream.write(reinterpret_cast<char*>(&event),
                                        sizeof(event));
     }
 
-    if (IsTerminationEvent(&event)) {
-      NaClLog(LOG_INFO, "Got termination event\n");
-      break;
-    } else if (IsUserEvent(&event)) {
-      // A user event is a non-standard event
-      NaClLog(2, "Got user event with code %d\n",
-              GetCodeFromUserEvent(&event));
-
-      switch (GetCodeFromUserEvent(&event)) {
-        // This event gets created as a result of PPB_Core_CallOnMainThread(
-       case MY_EVENT_TIMER_CALL_BACK:
-        // FALL THROUGH
-        // This event gets created so that we can invoke
-        // RunCompletionCallback after PPB_Graphics2D_Flush
-       case MY_EVENT_FLUSH_CALL_BACK: {
-          int callback = GetData1FromUserEvent(&event);
-          int result = GetData2FromUserEvent(&event);
-          NaClLog(2, "Completion callback(%d, %d)\n", callback, result);
-          BuildArgVec(ins, in, 3);
-
-          ins[0]->tag = NACL_SRPC_ARG_TYPE_INT;
-          ins[0]->u.ival = callback;
-          ins[1]->tag = NACL_SRPC_ARG_TYPE_INT;
-          ins[1]->u.ival = result;
-          ins[2]->tag = NACL_SRPC_ARG_TYPE_CHAR_ARRAY;
-          ins[2]->u.count = sizeof(dummy_exception);
-          ins[2]->arrays.carr = reinterpret_cast<char*>(dummy_exception);
-          BuildArgVec(outs, out, 0);
-          ncl->InvokeNexeRpc("RunCompletionCallback:iiC:", ins, outs);
-          break;
-        }
-        // This event gets created so that we can invoke
-        // PPP_Audio_StreamCreated after PPB_Audio_Create
-        case MY_EVENT_INIT_AUDIO:
-          NaClLog(1, "audio init callback\n");
-          BuildArgVec(ins, in, 4);
-          ins[0]->tag = NACL_SRPC_ARG_TYPE_INT;
-          ins[0]->u.ival = Global.handle_audio;
-          ins[1]->tag = NACL_SRPC_ARG_TYPE_HANDLE;
-          ins[1]->u.hval = Global.desc_audio_shmem->desc();
-          ins[2]->tag = NACL_SRPC_ARG_TYPE_INT;
-          ins[2]->u.ival = Global.sample_frame_count * kBytesPerSample;
-          ins[3]->tag = NACL_SRPC_ARG_TYPE_HANDLE;
-          ins[3]->u.hval = Global.desc_audio_sync_out->desc();
-
-          BuildArgVec(outs, out, 0);
-#if (NACL_LINUX || NACL_OSX)
-          sleep(1);
-#elif NACL_WINDOWS
-          Sleep(1 * 1000);
-#else
-#error "Please specify platform as NACL_LINUX, NACL_OSX or NACL_WINDOWS"
- #endif
-          ncl->InvokeNexeRpc("PPP_Audio_StreamCreated:ihih:", ins, outs);
-          break;
-
-       default:
-          NaClLog(LOG_FATAL, "unknown event type %d\n",
-                  GetData1FromUserEvent(&event));
-          break;
-      }
+    if (IsUserEvent(&event)) {
+      keep_going = HandleUserEvent(ncl, &event);
     } else {
-      NaClLog(1, "Got input event with type %d\n", event.type);
-      BuildArgVec(ins, in, 2);
-      ins[0]->tag = NACL_SRPC_ARG_TYPE_INT;
-      ins[0]->u.ival = Global.instance;
-      ins[1]->tag = NACL_SRPC_ARG_TYPE_CHAR_ARRAY;
-      ins[1]->u.count = sizeof(event);
-      ins[1]->arrays.carr = reinterpret_cast<char*>(&event);
-
-      BuildArgVec(outs, out, 1);
-      outs[0]->tag = NACL_SRPC_ARG_TYPE_INT;
-      ncl->InvokeNexeRpc("PPP_Instance_HandleInputEvent:iC:i", ins, outs);
+      InvokeHandleInputEvent(ncl, &event);
     }
   }
   NaClLog(LOG_INFO, "Exiting event loop\n");
