@@ -21,7 +21,6 @@
 #include "native_client/src/untrusted/irt/irt_interfaces.h"
 #include "native_client/src/untrusted/nacl/nacl_irt.h"
 #include "native_client/src/untrusted/nacl/tls.h"
-#include "native_client/src/untrusted/nacl/tls_params.h"
 
 #include "native_client/src/untrusted/pthread/nc_hash.h"
 #include "native_client/src/untrusted/pthread/pthread.h"
@@ -38,9 +37,6 @@
 static struct nacl_irt_thread irt_thread;
 
 static const uint32_t kStackAlignment = 32;
-
-#define TDB_SIZE \
-  (sizeof(nc_thread_descriptor_t) + sizeof(nc_basic_thread_data_t))
 
 static inline char* align(uint32_t offset, uint32_t alignment) {
   return (char*) ((offset + alignment - 1) & ~(alignment - 1));
@@ -86,7 +82,7 @@ static inline nc_thread_descriptor_t *nc_get_tdb(void) {
    * a wrapper around __libnacl_irt_tls.tls_get() but we don't use
    * that here so that the IRT build can override the definition.
    */
-  return (void *) ((char *) __nacl_read_tp() + __nacl_tp_tdb_offset(TDB_SIZE));
+  return __nacl_read_tp();
 }
 
 static int nc_allocate_thread_id_mu(nc_basic_thread_data_t *basic_data) {
@@ -253,8 +249,7 @@ static void nc_release_basic_data_mu(nc_basic_thread_data_t *basic_data) {
 static void nc_release_tls_node(nc_thread_memory_block_t *block) {
   if (block) {
     nc_thread_descriptor_t* tdb =
-        (nc_thread_descriptor_t *) __nacl_tls_tdb_start(NODE_TO_PAYLOAD(block),
-                                                        TDB_SIZE);
+      (nc_thread_descriptor_t *) __nacl_tls_tdb_start(NODE_TO_PAYLOAD(block));
 
     tdb->basic_data->tdb = NULL;
     block->is_used = 0;
@@ -329,7 +324,8 @@ int __pthread_initialize(void) {
   nc_basic_thread_data_t *basic_data;
   /* allocate TLS+TDB area */
   /* We allocate the basic data immediately after TDB */
-  __pthread_initialize_minimal(TDB_SIZE);
+  __pthread_initialize_minimal(sizeof(nc_thread_descriptor_t) +
+                               sizeof(nc_basic_thread_data_t));
 
   /*
    * Fetch the ABI tables from the IRT.  We fall back to tables
@@ -406,7 +402,8 @@ int __pthread_initialize(void) {
 void *__nc_adopt_thread(void) {
   nc_thread_descriptor_t *tdb;
   nc_basic_thread_data_t *basic_data;
-  __pthread_initialize_minimal(TDB_SIZE);
+  __pthread_initialize_minimal(sizeof(nc_thread_descriptor_t) +
+                               sizeof(nc_basic_thread_data_t));
   tdb = nc_get_tdb();
   basic_data = (nc_basic_thread_data_t *) (tdb + 1);
   nc_tdb_init(tdb, basic_data);
@@ -441,7 +438,6 @@ int pthread_create(pthread_t *thread_id,
   nc_basic_thread_data_t *new_basic_data = NULL;
   nc_thread_memory_block_t *tls_node = NULL;
   size_t stacksize = PTHREAD_STACK_DEFAULT;
-  void *new_tp;
 
   /* TODO(gregoryd) - right now a single lock is used, try to optimize? */
   pthread_mutex_lock(&__nc_thread_management_lock);
@@ -449,16 +445,16 @@ int pthread_create(pthread_t *thread_id,
   do {
     /* Allocate the combined TLS + TDB block---see tls.h for explanation. */
 
-    tls_node = nc_allocate_memory_block_mu(TLS_AND_TDB_MEMORY,
-                                           __nacl_tls_combined_size(TDB_SIZE));
+    tls_node = nc_allocate_memory_block_mu(
+        TLS_AND_TDB_MEMORY,
+         __nacl_tls_combined_size(sizeof(nc_thread_descriptor_t)));
     if (NULL == tls_node)
       break;
 
-    __nacl_tls_data_bss_initialize_from_template(NODE_TO_PAYLOAD(tls_node),
-                                                 TDB_SIZE);
+    __nacl_tls_data_bss_initialize_from_template(NODE_TO_PAYLOAD(tls_node));
 
     new_tdb = (nc_thread_descriptor_t *)
-              __nacl_tls_tdb_start(NODE_TO_PAYLOAD(tls_node), TDB_SIZE);
+              __nacl_tls_tdb_start(NODE_TO_PAYLOAD(tls_node));
     /* TODO(gregoryd): consider creating a pool of basic_data structs,
      * similar to stack and TLS+TDB (probably when adding the support for
      * variable stack size).
@@ -517,23 +513,21 @@ int pthread_create(pthread_t *thread_id,
   pthread_mutex_unlock(&__nc_thread_management_lock);
 
   /*
-   * Calculate the top-of-stack location.  The very first location is a
-   * zero address of architecture-dependent width, needed to satisfy the
-   * normal ABI alignment requirements for the stack.  (On some machines
-   * this is the dummy return address of the thread-start function.)
+   * Calculate the top-of-stack location.  The very first location, is
+   * a zero address of architecture-dependent width, needed to satisfy
+   * the alignment requirement when we call nacl's thread_exit syscall
+   * when the thread terminates.
    *
    * Both thread_stack and stacksize are multiples of 16.
    */
-  size_t stack_padding = __nacl_thread_stack_padding();
-  esp = (void *) (thread_stack + stacksize - stack_padding);
-  memset(esp, 0, stack_padding);
-
-  new_tp = (char *) new_tdb - __nacl_tp_tdb_offset(TDB_SIZE);
+  size_t return_addr_size = __nacl_return_address_size();
+  esp = (void*) (thread_stack + stacksize - return_addr_size);
+  memset(esp, 0, return_addr_size);  /* NULL/0x00 pun is not strictly legal. */
 
   /* start the thread */
   retval = irt_thread.thread_create(
       FUN_TO_VOID_PTR(nc_thread_starter), esp,
-      new_tp, TDB_SIZE);
+      new_tdb, sizeof(nc_thread_descriptor_t));
   if (0 != retval) {
     pthread_mutex_lock(&__nc_thread_management_lock);
     /* TODO(gregoryd) : replace with atomic decrement? */

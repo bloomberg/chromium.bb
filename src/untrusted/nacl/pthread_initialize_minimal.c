@@ -35,7 +35,7 @@ int __pthread_initialize_minimal(size_t tdb_size) {
   /*
    * Fill in that memory with its initializer data.
    */
-  void *tdb = __nacl_tls_initialize_memory(combined_area, tdb_size);
+  void *tdb = __nacl_tls_initialize_memory(combined_area);
 
   /*
    * Set %gs, r9, or equivalent platform-specific mechanism.  Requires
