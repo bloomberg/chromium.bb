@@ -110,8 +110,6 @@
       '-prefs.PrefsTest.testNavigationStateOnSessionRestore',
       # Flaky: crbug.com/67851
       '-special_tabs.SpecialTabsTest.testAboutDNSTab',
-      # Bad webkit roll? crbug.com/86397
-      '-notifications',
       # crbug.com/86523
       '-cookies.CookiesTest.testAllowCookiesForASessionUsingExceptions',
       '-cookies.CookiesTest.testAllowCookiesUsingExceptions',
