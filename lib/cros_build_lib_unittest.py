@@ -268,10 +268,11 @@ class TestRunCommand(unittest.TestCase):
   def testExceptionEquality(self):
     """Verify equality methods for RunCommandError"""
 
-    e1 = cros_build_lib.RunCommandError('Message 1', ['ls', 'arg'])
-    e2 = cros_build_lib.RunCommandError('Message 1', ['ls', 'arg'])
-    e_diff_msg = cros_build_lib.RunCommandError('Message 2', ['ls', 'arg'])
-    e_diff_cmd = cros_build_lib.RunCommandError('Message 1', ['ls', 'arg1'])
+    e1 = cros_build_lib.RunCommandError('Message 1', ['ls', 'arg'], 1)
+    e2 = cros_build_lib.RunCommandError('Message 1', ['ls', 'arg'], 1)
+    e_diff_msg = cros_build_lib.RunCommandError('Message 2', ['ls', 'arg'], 1)
+    e_diff_cmd = cros_build_lib.RunCommandError('Message 1', ['ls', 'arg1'], 1)
+    e_diff_code = cros_build_lib.RunCommandError('Message 1', ['ls', 'arg'], 2)
 
     self.assertTrue(e1 == e2)
     self.assertFalse(e1 != e2)
@@ -281,6 +282,9 @@ class TestRunCommand(unittest.TestCase):
 
     self.assertFalse(e1 == e_diff_cmd)
     self.assertTrue(e1 != e_diff_cmd)
+
+    self.assertFalse(e1 == e_diff_code)
+    self.assertTrue(e1 != e_diff_code)
 
 class TestListFiles(unittest.TestCase):
 

@@ -33,13 +33,15 @@ class CommandResult(object):
 
 class RunCommandError(Exception):
   """Error caught in RunCommand() method."""
-  def __init__(self, msg, cmd):
+  def __init__(self, msg, cmd, error_code):
     self.cmd = cmd
+    self.error_code = error_code
     Exception.__init__(self, msg)
 
   def __eq__(self, other):
     return (type(self) == type(other) and
             str(self) == str(other) and
+            self.error_code == other.error_code and
             self.cmd == other.cmd)
 
   def __ne__(self, other):
@@ -149,7 +151,7 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
     if not error_ok and proc.returncode:
       msg = ('Command "%r" with extra env %r\n' % (cmd, extra_env) +
              (error_message or cmd_result.error or cmd_result.output or ''))
-      raise RunCommandError(msg, cmd)
+      raise RunCommandError(msg, cmd, proc.returncode)
   # TODO(sosa): is it possible not to use the catch-all Exception here?
   except OSError, e:
     if not error_ok:
