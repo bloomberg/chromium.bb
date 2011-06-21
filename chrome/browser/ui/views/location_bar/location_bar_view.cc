@@ -159,14 +159,14 @@ void LocationBarView::Init() {
   location_icon_view_ = new LocationIconView(this);
   AddChildView(location_icon_view_);
   location_icon_view_->SetVisible(true);
-  location_icon_view_->SetDragController(this);
+  location_icon_view_->set_drag_controller(this);
 
   ev_bubble_view_ =
       new EVBubbleView(kEVBubbleBackgroundImages, IDR_OMNIBOX_HTTPS_VALID,
                        GetColor(ToolbarModel::EV_SECURE, SECURITY_TEXT), this);
   AddChildView(ev_bubble_view_);
   ev_bubble_view_->SetVisible(false);
-  ev_bubble_view_->SetDragController(this);
+  ev_bubble_view_->set_drag_controller(this);
 
   // URL edit field.
   // View container for URL edit field.

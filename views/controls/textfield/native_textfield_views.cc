@@ -80,7 +80,7 @@ NativeTextfieldViews::NativeTextfieldViews(Textfield* parent)
   DCHECK_NE(parent->style(), Textfield::STYLE_LOWERCASE);
 
   SetContextMenuController(this);
-  SetDragController(this);
+  set_drag_controller(this);
 }
 
 NativeTextfieldViews::~NativeTextfieldViews() {

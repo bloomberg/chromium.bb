@@ -13,6 +13,7 @@
 #include "views/border.h"
 #include "views/controls/textfield/native_textfield_wrapper.h"
 #include "views/controls/textfield/textfield_views_model.h"
+#include "views/drag_controller.h"
 #include "views/ime/text_input_client.h"
 #include "views/view.h"
 

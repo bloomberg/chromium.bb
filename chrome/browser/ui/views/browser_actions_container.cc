@@ -288,7 +288,7 @@ BrowserActionView::BrowserActionView(const Extension* extension,
                                      BrowserActionsContainer* panel)
     : panel_(panel) {
   button_ = new BrowserActionButton(extension, panel);
-  button_->SetDragController(panel_);
+  button_->set_drag_controller(panel_);
   AddChildView(button_);
   button_->UpdateState();
 }

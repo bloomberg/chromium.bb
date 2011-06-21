@@ -25,6 +25,7 @@
 #include "views/controls/button/menu_button.h"
 #include "views/controls/menu/view_menu_delegate.h"
 #include "views/controls/resize_area.h"
+#include "views/drag_controller.h"
 #include "views/view.h"
 
 class Browser;

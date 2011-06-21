@@ -49,6 +49,7 @@ namespace views {
 
 class Background;
 class Border;
+class DragController;
 class FocusManager;
 class FocusTraversable;
 class InputMethod;
@@ -87,33 +88,6 @@ class ContextMenuController {
 
  protected:
   virtual ~ContextMenuController() {}
-};
-
-// DragController is responsible for writing drag data for a view, as well as
-// supplying the supported drag operations. Use DragController if you don't
-// want to subclass.
-
-class DragController {
- public:
-  // Writes the data for the drag.
-  virtual void WriteDragDataForView(View* sender,
-                                    const gfx::Point& press_pt,
-                                    OSExchangeData* data) = 0;
-
-  // Returns the supported drag operations (see DragDropTypes for possible
-  // values). A drag is only started if this returns a non-zero value.
-  virtual int GetDragOperationsForView(View* sender,
-                                       const gfx::Point& p) = 0;
-
-  // Returns true if a drag operation can be started.
-  // |press_pt| represents the coordinates where the mouse was initially
-  // pressed down. |p| is the current mouse coordinates.
-  virtual bool CanStartDragForView(View* sender,
-                                   const gfx::Point& press_pt,
-                                   const gfx::Point& p) = 0;
-
- protected:
-  virtual ~DragController() {}
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -791,10 +765,10 @@ class View : public AcceleratorTarget {
 
   // Drag and drop -------------------------------------------------------------
 
-  // Set/get the DragController. See description of DragController for more
-  // information.
-  void SetDragController(DragController* drag_controller);
-  DragController* GetDragController();
+  DragController* drag_controller() { return drag_controller_; }
+  void set_drag_controller(DragController* drag_controller) {
+    drag_controller_ = drag_controller;
+  }
 
   // During a drag and drop session when the mouse moves the view under the
   // mouse is queried for the drop types it supports by way of the

@@ -19,6 +19,7 @@
 #include "ui/gfx/path.h"
 #include "ui/gfx/transform.h"
 #include "views/background.h"
+#include "views/drag_controller.h"
 #include "views/layout/layout_manager.h"
 #include "views/views_delegate.h"
 #include "views/widget/native_widget_private.h"
@@ -1009,14 +1010,6 @@ void View::ShowContextMenu(const gfx::Point& p, bool is_mouse_gesture) {
 }
 
 // Drag and drop ---------------------------------------------------------------
-
-void View::SetDragController(DragController* drag_controller) {
-  drag_controller_ = drag_controller;
-}
-
-DragController* View::GetDragController() {
-  return drag_controller_;
-}
 
 bool View::GetDropFormats(
       int* formats,

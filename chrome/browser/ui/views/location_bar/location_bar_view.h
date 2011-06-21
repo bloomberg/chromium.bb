@@ -24,6 +24,7 @@
 #include "ui/gfx/font.h"
 #include "ui/gfx/rect.h"
 #include "views/controls/native/native_view_host.h"
+#include "views/drag_controller.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/ui/views/omnibox/omnibox_view_win.h"
