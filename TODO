@@ -1,12 +1,5 @@
 Core wayland protocol
 
- - Move map_* requests to wl_shell as set_*, rename to
-   wl_desktop_shell.  Make initial attach the request that shows the
-   surface and make attach with 0 buffer show the surface.  Drop the
-   map concept at that point.  Make wl_shell the EWMH of wayland.
-   Handle window title, icons, lower window, needs attention,
-   minimize, maximize, move to desktop?
-
  - scanner: wl_* prefix removal: split it out into a namespace part so
    we can call variables "surface" instead of "wl_surface"?
 
@@ -149,8 +142,7 @@ Core wayland protocol
       client must have a server id, and each client has a server id ->
       client id hash.
 
- - LCD subpixel info, dpi, monitor make and model, event when a
-   surface moves from one output to another.
+ - Event when a surface moves from one output to another.
 
  - input device discovery, hotplug
 
@@ -209,31 +201,6 @@ Core wayland protocol
     - Sort out namespace pollution (XkbFoo macros, atom funcs etc).
 
     - Sort out 32 bit vmods and serialization
-
- - Automatic "triple buffering", ie, don't block on vsync if we're
-   repainting below the refresh rate.
-
-    - surface.attach triggers a compositor.release_buffer event when
-      the buffer can be used again without messing things up (ie, it's
-      no longer the front buffer, or the compositor has attached the
-      new surface).
-
-    - compositor sends out a repaint event (to who? do clients have to
-      ask for this like they ask for the frame event?) once it has
-      repainted the scene with the recent updates.
-
-    - once a client receives the repaint event, it should start
-      rendering its next frame.  If it has received a buffer release
-      event for the old buffer, that can be reused, otherwise it has
-      to allocate a third buffer (ie, we automatically do triple
-      buffering for fullscreen surfaces).
-
-    - if a client is triple buffering and receives a release event
-      before the repaint event, it can go back to double buffering.
-
-    - the repaint event needs some kind of timestamp to drive
-      animations, since clients may not use the frame event at all.
-      Could just be the time of the most recent frame.
 
 
 Clients and ports
