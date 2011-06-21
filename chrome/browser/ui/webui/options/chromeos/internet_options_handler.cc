@@ -24,6 +24,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/chromeos/sim_dialog_delegate.h"
 #include "chrome/browser/chromeos/status/network_menu.h"
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"

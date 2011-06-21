@@ -9,10 +9,9 @@
 #include <string>
 #include <vector>
 
-#include "chrome/browser/chromeos/options/network_config_view.h"
-#include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/base/models/menu_model.h"
-#include "ui/gfx/native_widget_types.h"
+#include "base/memory/scoped_ptr.h"
+#include "chrome/browser/chromeos/cros/network_library.h"  // ConnectionType
+#include "ui/gfx/native_widget_types.h"  // gfx::NativeWindow
 #include "views/controls/menu/view_menu_delegate.h"
 
 namespace {
@@ -22,6 +21,8 @@ const int kVPNCommandIndexOffset  = 2000;
 const int kMoreCommandIndexOffset = 3000;
 
 }  // namespace
+
+class SkBitmap;
 
 namespace gfx {
 class Canvas;
@@ -141,10 +142,6 @@ class NetworkMenu : public views::ViewMenuDelegate {
   virtual void OpenButtonOptions() = 0;
   virtual bool ShouldOpenButtonOptions() const = 0;
 
-  // Notify subclasses that connection to |network| was initiated.
-  virtual void OnConnectNetwork(const Network* network,
-                                SkBitmap selected_icon_) {}
-
   // Shows network details in Web UI options window.
   void ShowTabbedNetworkSettings(const Network* network) const;
 
@@ -159,17 +156,6 @@ class NetworkMenu : public views::ViewMenuDelegate {
 
   // Set to true if we are currently refreshing the menu.
   bool refreshing_menu_;
-
-  // Bars images resources.
-  static const int kNumBarsImages;
-  static const int kBarsImages[];
-  static const int kBarsImagesOrange[];
-  static SkBitmap kBarsImagesAnimating[];
-
-  // Arcs image resources.
-  static const int kNumArcsImages;
-  static const int kArcsImages[];
-  static SkBitmap kArcsImagesAnimating[];
 
   // The network menu.
   scoped_ptr<views::MenuItemView> network_menu_;

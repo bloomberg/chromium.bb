@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/choose_mobile_network_dialog.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/customization_document.h"
+#include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/chromeos/sim_dialog_delegate.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/ui/browser.h"
@@ -24,7 +25,9 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "net/base/escape.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/skbitmap_operations.h"
@@ -36,6 +39,44 @@ namespace {
 
 // Amount to fade icons while connecting.
 const double kConnectingImageAlpha = 0.5;
+
+// Network strength bars images.
+const int kNumBarsImages = 4;
+
+// NOTE: Use an array rather than just calculating a resource number to avoid
+// creating implicit ordering dependencies on the resource values.
+const int kBarsImages[kNumBarsImages] = {
+  IDR_STATUSBAR_NETWORK_BARS1,
+  IDR_STATUSBAR_NETWORK_BARS2,
+  IDR_STATUSBAR_NETWORK_BARS3,
+  IDR_STATUSBAR_NETWORK_BARS4,
+};
+
+const int kBarsImagesOrange[kNumBarsImages] = {
+  IDR_STATUSBAR_NETWORK_BARS1_ORANGE,
+  IDR_STATUSBAR_NETWORK_BARS2_ORANGE,
+  IDR_STATUSBAR_NETWORK_BARS3_ORANGE,
+  IDR_STATUSBAR_NETWORK_BARS4_ORANGE,
+};
+
+SkBitmap kBarsImagesAnimating[kNumBarsImages];
+
+// Network strength arcs images.
+const int kNumArcsImages = 7;
+
+// NOTE: Use an array rather than just calculating a resource number to avoid
+// creating implicit ordering dependencies on the resource values.
+const int kArcsImages[kNumArcsImages] = {
+  IDR_STATUSBAR_NETWORK_ARCS1,
+  IDR_STATUSBAR_NETWORK_ARCS2,
+  IDR_STATUSBAR_NETWORK_ARCS3,
+  IDR_STATUSBAR_NETWORK_ARCS4,
+  IDR_STATUSBAR_NETWORK_ARCS5,
+  IDR_STATUSBAR_NETWORK_ARCS6,
+  IDR_STATUSBAR_NETWORK_ARCS7,
+};
+
+SkBitmap kArcsImagesAnimating[kNumArcsImages];
 
 // Replace '&' in a string with "&&" to allow it to be a menu item label.
 std::string EscapeAmpersands(const std::string& input) {
@@ -1156,49 +1197,6 @@ void MoreMenuModel::PopulateMenuItem(
 
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkMenu
-
-// static
-const int NetworkMenu::kNumBarsImages = 4;
-
-// NOTE: Use an array rather than just calculating a resource number to avoid
-// creating implicit ordering dependencies on the resource values.
-// static
-const int NetworkMenu::kBarsImages[kNumBarsImages] = {
-  IDR_STATUSBAR_NETWORK_BARS1,
-  IDR_STATUSBAR_NETWORK_BARS2,
-  IDR_STATUSBAR_NETWORK_BARS3,
-  IDR_STATUSBAR_NETWORK_BARS4,
-};
-
-// static
-const int NetworkMenu::kBarsImagesOrange[kNumBarsImages] = {
-  IDR_STATUSBAR_NETWORK_BARS1_ORANGE,
-  IDR_STATUSBAR_NETWORK_BARS2_ORANGE,
-  IDR_STATUSBAR_NETWORK_BARS3_ORANGE,
-  IDR_STATUSBAR_NETWORK_BARS4_ORANGE,
-};
-
-// static
-SkBitmap NetworkMenu::kBarsImagesAnimating[kNumBarsImages];
-
-// static
-const int NetworkMenu::kNumArcsImages = 7;
-
-// NOTE: Use an array rather than just calculating a resource number to avoid
-// creating implicit ordering dependencies on the resource values.
-// static
-const int NetworkMenu::kArcsImages[kNumArcsImages] = {
-  IDR_STATUSBAR_NETWORK_ARCS1,
-  IDR_STATUSBAR_NETWORK_ARCS2,
-  IDR_STATUSBAR_NETWORK_ARCS3,
-  IDR_STATUSBAR_NETWORK_ARCS4,
-  IDR_STATUSBAR_NETWORK_ARCS5,
-  IDR_STATUSBAR_NETWORK_ARCS6,
-  IDR_STATUSBAR_NETWORK_ARCS7,
-};
-
-// static
-SkBitmap NetworkMenu::kArcsImagesAnimating[kNumArcsImages];
 
 NetworkMenu::NetworkMenu() : min_width_(kDefaultMinimumWidth) {
   main_menu_model_.reset(new MainMenuModel(this));
