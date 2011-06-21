@@ -13,7 +13,7 @@
 namespace chromeos {
 
 NetworkScreenHandler::NetworkScreenHandler()
-    : screen_(NULL) {
+    : screen_(NULL), is_continue_enabled_(false), show_on_init_(false) {
 }
 
 NetworkScreenHandler::~NetworkScreenHandler() {
@@ -28,6 +28,10 @@ void NetworkScreenHandler::PrepareToShow() {
 }
 
 void NetworkScreenHandler::Show() {
+  if (!page_is_ready()) {
+    show_on_init_ = true;
+    return;
+  }
   scoped_ptr<Value> value(Value::CreateIntegerValue(0));
   web_ui_->CallJavascriptFunction("cr.ui.Oobe.toggleStep", *value);
 }
@@ -61,9 +65,13 @@ void NetworkScreenHandler::ShowConnectingStatus(
 }
 
 void NetworkScreenHandler::EnableContinue(bool enabled) {
-  // scoped_ptr<Value> enabled_value(Value::CreateBooleanValue(enabled));
-  // web_ui_->CallJavascriptFunction("cr.ui.Oobe.enableContinue",
-  //                                 *enabled_value);
+  is_continue_enabled_ = enabled;
+  if (!page_is_ready())
+    return;
+
+  scoped_ptr<Value> enabled_value(Value::CreateBooleanValue(enabled));
+  web_ui_->CallJavascriptFunction("cr.ui.Oobe.enableContinueButton",
+                                  *enabled_value);
 }
 
 void NetworkScreenHandler::GetLocalizedStrings(
@@ -83,8 +91,11 @@ void NetworkScreenHandler::GetLocalizedStrings(
 }
 
 void NetworkScreenHandler::Initialize() {
-  // TODO(avayvod): Set necessary data.
-  // TODO(avayvod): Initialize languages, keyboards and networks lists.
+  EnableContinue(is_continue_enabled_);
+  if (show_on_init_) {
+    show_on_init_ = false;
+    Show();
+  }
 }
 
 void NetworkScreenHandler::RegisterMessages() {

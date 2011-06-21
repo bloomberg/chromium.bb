@@ -46,6 +46,11 @@ class NetworkScreenHandler : public NetworkScreenActor,
 
   NetworkScreenActor::Delegate* screen_;
 
+  bool is_continue_enabled_;
+
+  // Keeps whether screen should be shown right after initialization.
+  bool show_on_init_;
+
   DISALLOW_COPY_AND_ASSIGN(NetworkScreenHandler);
 };
 

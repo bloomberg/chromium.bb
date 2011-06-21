@@ -22,10 +22,21 @@ class OobeMessageHandler : public WebUIMessageHandler {
   // Gets localized strings to be used on the page.
   virtual void GetLocalizedStrings(DictionaryValue* localized_strings) = 0;
 
+  // This method is called when page is ready. It propagates to inherited class
+  // via virtual Initialize() method (see below).
+  void InitializeBase();
+
+ protected:
   // Called when the page is ready and handler can do initialization.
   virtual void Initialize() = 0;
 
+  // Whether page is ready.
+  bool page_is_ready() const { return page_is_ready_; }
+
  private:
+  // Keeps whether page is ready.
+  bool page_is_ready_;
+
   DISALLOW_COPY_AND_ASSIGN(OobeMessageHandler);
 };
 

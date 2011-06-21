@@ -54,14 +54,15 @@
         <div class="step right hidden" id="eula">
           <div id="eulas" class="eula-columns one-column">
             <div id="cros-eula">
-              <iframe id="cros-eula-frame" class="eula-frame"
-                  src="chrome://about/terms"></iframe>
+              <iframe id="cros-eula-frame" class="eula-frame"></iframe>
             </div>
-            <div id="oem-eula"><iframe id="oem-eula-frame"
-                class="eula-frame"></iframe></div>
+            <div id="oem-eula">
+              <iframe id="oem-eula-frame" class="eula-frame"></iframe>
+            </div>
           </div>
           <p id="logging">
-            <input type="checkbox"/><span i18n-content="checkboxLogging"></span>
+            <input id="usage-stats" type="checkbox"/>
+            <span i18n-content="checkboxLogging"></span>
             <a id="stats-help-link" href="#" i18n-content="learnMore"></a>
           </p>
         </div>

@@ -77,19 +77,16 @@ cr.define('cr.ui', function() {
     $('inner-container').style.height = $(steps[0]).offsetHeight;
 
     $('continue-button').addEventListener('click', function(event) {
-      // TODO(nkostylev): Callback screen handler.
-      Oobe.toggleStep(1);
+      chrome.send('networkOnExit', []);
     });
     $('back-button').addEventListener('click', function(event) {
-      // TODO(nkostylev): Callback screen handler.
-      Oobe.toggleStep(0);
+      chrome.send('eulaOnExit', [false, $('usage-stats').checked]);
     });
     $('accept-button').addEventListener('click', function(event) {
-      // TODO(nkostylev): Callback screen handler.
-      Oobe.toggleStep(2);
+      chrome.send('eulaOnExit', [true, $('usage-stats').checked]);
     });
 
-    chrome.send('screenStateInitialize');
+    chrome.send('screenStateInitialize', []);
   };
 
   /**
@@ -101,12 +98,38 @@ cr.define('cr.ui', function() {
   };
 
   /**
+   * Enables/disables continue button.
+   * @param {bool} whether button should be enabled.
+   */
+  Oobe.enableContinueButton = function(enable) {
+    $('continue-button').disabled = !enable;
+  };
+
+  /**
+   * Sets usage statistics checkbox.
+   * @param {bool} whether the checkbox is checked.
+   */
+  Oobe.setUsageStats = function(checked) {
+    $('usage-stats').checked = checked;
+  };
+
+  /**
+   * Sets EULA URLs.
+   * @param {text} CrOS EULA URL.
+   * @param {text} OEM EULA URL.
+   */
+  Oobe.setEulaUrls = function(google_eula_url, oem_eula_url) {
+    $('cros-eula-frame').src = google_eula_url;
+    $('oem-eula-frame').src = oem_eula_url;
+  };
+
+  /**
    * Sets update's progress bar value.
    * @param {number} percentage of the progress.
    */
   Oobe.setUpdateProgress = function(progress) {
     $('update-progress-bar').value = progress;
-  }
+  };
 
   /**
    * Sets update message, which is shown above the progress bar.
@@ -114,7 +137,7 @@ cr.define('cr.ui', function() {
    */
   Oobe.setUpdateMessage = function(message) {
     $('update-upper-label').innerText = message;
-  }
+  };
 
   /**
    * Shows or hides update curtain.
@@ -123,7 +146,7 @@ cr.define('cr.ui', function() {
   Oobe.showUpdateCurtain = function(enable) {
     $('update-screen-curtain').hidden = !enable;
     $('update-screen-main').hidden = enable;
-  }
+  };
 
   // Export
   return {

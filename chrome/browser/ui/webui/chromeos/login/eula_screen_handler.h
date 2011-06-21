@@ -43,6 +43,9 @@ class EulaScreenHandler : public EulaScreenActor,
 
   Delegate* delegate_;
 
+  // Keeps whether screen should be shown right after initialization.
+  bool show_on_init_;
+
   DISALLOW_COPY_AND_ASSIGN(EulaScreenHandler);
 };
 

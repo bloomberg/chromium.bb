@@ -54,10 +54,15 @@ class OobeUIHTMLSource : public ChromeURLDataManager::DataSource {
 };
 
 // OobeMessageHandler ----------------------------------------------------------
-OobeMessageHandler::OobeMessageHandler() {
+OobeMessageHandler::OobeMessageHandler() : page_is_ready_(false) {
 }
 
 OobeMessageHandler::~OobeMessageHandler() {
+}
+
+void OobeMessageHandler::InitializeBase() {
+  page_is_ready_ = true;
+  Initialize();
 }
 
 // CoreOobeHandler -------------------------------------------------------------
@@ -212,7 +217,7 @@ void OobeUI::AddOobeMessageHandler(OobeMessageHandler* handler,
 void OobeUI::InitializeHandlers() {
   // Note, handlers_[0] is a GenericHandler used by the WebUI.
   for (size_t i = 1; i < handlers_.size(); ++i) {
-    static_cast<OobeMessageHandler*>(handlers_[i])->Initialize();
+    static_cast<OobeMessageHandler*>(handlers_[i])->InitializeBase();
   }
 }
 
