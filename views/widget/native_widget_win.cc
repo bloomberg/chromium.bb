@@ -2413,8 +2413,10 @@ namespace internal {
 // static
 NativeWidgetPrivate* NativeWidgetPrivate::CreateNativeWidget(
     internal::NativeWidgetDelegate* delegate) {
-  if (Widget::IsPureViews() && delegate->GetDefaultParentView())
+  if (Widget::IsPureViews() &&
+      ViewsDelegate::views_delegate->GetDefaultParentView()) {
     return new NativeWidgetViews(delegate);
+  }
   return new NativeWidgetWin(delegate);
 }
 

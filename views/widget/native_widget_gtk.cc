@@ -2012,8 +2012,10 @@ namespace internal {
 // static
 NativeWidgetPrivate* NativeWidgetPrivate::CreateNativeWidget(
     NativeWidgetDelegate* delegate) {
-  if (Widget::IsPureViews() && delegate->GetDefaultParentView())
+  if (Widget::IsPureViews() &&
+      ViewsDelegate::views_delegate->GetDefaultParentView()) {
     return new NativeWidgetViews(delegate);
+  }
   return new NativeWidgetGtk(delegate);
 }
 
