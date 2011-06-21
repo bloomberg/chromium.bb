@@ -80,20 +80,21 @@ const static struct wl_buffer_interface shm_buffer_interface = {
 };
 
 static struct wl_shm_buffer *
-wl_shm_buffer_init(struct wl_shm *shm, uint32_t id,
+wl_shm_buffer_init(struct wl_shm *shm, struct wl_client *client, uint32_t id,
 		   int32_t width, int32_t height,
 		   int32_t stride, struct wl_visual *visual,
 		   void *data)
 {
 	struct wl_shm_buffer *buffer;
 
-	buffer = malloc(sizeof *buffer);
+	buffer = calloc(1, sizeof *buffer);
 	if (buffer == NULL)
 		return NULL;
 
 	buffer->buffer.width = width;
 	buffer->buffer.height = height;
 	buffer->buffer.visual = visual;
+	buffer->buffer.client = client;
 	buffer->stride = stride;
 	buffer->data = data;
 
@@ -147,7 +148,7 @@ shm_create_buffer(struct wl_client *client, struct wl_shm *shm,
 		return;
 	}
 
-	buffer = wl_shm_buffer_init(shm, id,
+	buffer = wl_shm_buffer_init(shm, client, id,
 				    width, height, stride, visual,
 				    data);
 	if (buffer == NULL) {
