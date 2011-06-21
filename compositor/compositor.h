@@ -70,7 +70,7 @@ struct wlsc_output {
 	pixman_region32_t previous_damage_region;
 	uint32_t flags;
 	int repaint_needed;
-	int finished;
+	int repaint_scheduled;
 
 	char *make, *model;
 	uint32_t subpixel;
@@ -190,8 +190,6 @@ struct wlsc_compositor {
 	uint32_t idle_inhibit;
 
 	/* Repaint state. */
-	struct wl_event_source *timer_source;
-	int repaint_on_timeout;
 	struct timespec previous_swap;
 	pixman_region32_t damage_region;
 	struct wl_array vertices, indices;

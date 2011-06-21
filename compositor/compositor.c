@@ -630,39 +630,6 @@ wlsc_buffer_post_release(struct wl_buffer *buffer)
 }
 
 WL_EXPORT void
-wlsc_output_finish_frame(struct wlsc_output *output, int msecs)
-{
-	struct wlsc_compositor *compositor = output->compositor;
-	struct wlsc_animation *animation, *next;
-
-	wlsc_buffer_post_release(output->scanout_buffer);
-	output->scanout_buffer = NULL;
-
-	output->finished = 1;
-
-	wl_event_source_timer_update(compositor->timer_source, 5);
-	compositor->repaint_on_timeout = 1;
-
-	wl_list_for_each_safe(animation, next,
-			      &compositor->animation_list, link)
-		animation->frame(animation, output, msecs);
-}
-
-static void
-wlsc_output_finish_redraw(struct wlsc_output *output, int msecs)
-{
-	struct wlsc_compositor *compositor = output->compositor;
-	struct wlsc_surface *es;
-
-	wl_list_for_each(es, &compositor->surface_list, link) {
-		if (es->output == output) {
-			wl_display_post_frame(compositor->wl_display,
-					      &es->surface, msecs);
-		}
-	}
-}
-
-WL_EXPORT void
 wlsc_output_damage(struct wlsc_output *output)
 {
 	struct wlsc_compositor *compositor = output->compositor;
@@ -783,8 +750,6 @@ wlsc_output_repaint(struct wlsc_output *output)
 			wl_list_insert(output->scanout_buffer->resource.destroy_listener_list.prev,
 				       &output->scanout_buffer_destroy_listener.link);
 
-			wlsc_output_finish_redraw(output,
-						  wlsc_compositor_get_time());
 			return;
 		}
 	}
@@ -823,56 +788,69 @@ wlsc_output_repaint(struct wlsc_output *output)
 
 	if (ec->fade.spring.current > 0.001)
 		fade_output(output, ec->fade.spring.current, &total_damage);
-
-	wlsc_output_finish_redraw(output, wlsc_compositor_get_time());
 }
 
-static int
-repaint(void *data)
+static void
+repaint(void *data, int msecs)
 {
-	struct wlsc_compositor *ec = data;
-	struct wlsc_output *output;
-	int repainted_all_outputs = 1;
+	struct wlsc_output *output = data;
+	struct wlsc_compositor *compositor = output->compositor;
+	struct wlsc_surface *es;
+	struct wlsc_animation *animation, *next;
 
-	wl_list_for_each(output, &ec->output_list, link) {
-		if (!output->repaint_needed)
-			continue;
+	wlsc_output_repaint(output);
+	output->repaint_needed = 0;
+	output->repaint_scheduled = 1;
+	output->present(output);
 
-		if (!output->finished) {
-			repainted_all_outputs = 0;
-			continue;
+	/* FIXME: Keep the surfaces in an per-output list. */
+	wl_list_for_each(es, &compositor->surface_list, link) {
+		if (es->output == output) {
+			wl_display_post_frame(compositor->wl_display,
+					      &es->surface, msecs);
 		}
-
-		wlsc_output_repaint(output);
-		output->finished = 0;
-		output->repaint_needed = 0;
-		output->present(output);
 	}
 
-	if (repainted_all_outputs)
-		ec->repaint_on_timeout = 0;
-	else
-		wl_event_source_timer_update(ec->timer_source, 1);
+	wl_list_for_each_safe(animation, next,
+			      &compositor->animation_list, link)
+		animation->frame(animation, output, msecs);
+}
 
-	return 1;
+static void
+idle_repaint(void *data)
+{
+	repaint(data, wlsc_compositor_get_time());
+}
+
+WL_EXPORT void
+wlsc_output_finish_frame(struct wlsc_output *output, int msecs)
+{
+	wlsc_buffer_post_release(output->scanout_buffer);
+	output->scanout_buffer = NULL;
+	output->repaint_scheduled = 0;
+
+	if (output->repaint_needed)
+		repaint(output, msecs);
 }
 
 WL_EXPORT void
 wlsc_compositor_schedule_repaint(struct wlsc_compositor *compositor)
 {
 	struct wlsc_output *output;
+	struct wl_event_loop *loop;
 
 	if (compositor->state == WLSC_COMPOSITOR_SLEEPING)
 		return;
 
-	wl_list_for_each(output, &compositor->output_list, link)
+	loop = wl_display_get_event_loop(compositor->wl_display);
+	wl_list_for_each(output, &compositor->output_list, link) {
 		output->repaint_needed = 1;
+		if (output->repaint_scheduled)
+			continue;
 
-	if (compositor->repaint_on_timeout)
-		return;
-
-	wl_event_source_timer_update(compositor->timer_source, 1);
-	compositor->repaint_on_timeout = 1;
+		wl_event_loop_add_idle(loop, idle_repaint, output);
+		output->repaint_scheduled = 1;
+	}
 }
 
 WL_EXPORT void
@@ -1727,7 +1705,6 @@ wlsc_output_init(struct wlsc_output *output, struct wlsc_compositor *c,
 		background_create(output, option_background);
 
 	output->flags = flags;
-	output->finished = 1;
 	wlsc_output_move(output, x, y);
 
 	output->scanout_buffer_destroy_listener.func =
@@ -1863,7 +1840,6 @@ wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display)
 	ec->idle_source = wl_event_loop_add_timer(loop, idle_handler, ec);
 	wl_event_source_timer_update(ec->idle_source, option_idle_time * 1000);
 
-	ec->timer_source = wl_event_loop_add_timer(loop, repaint, ec);
 	pixman_region32_init(&ec->damage_region);
 	wlsc_compositor_schedule_repaint(ec);
 
