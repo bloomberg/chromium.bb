@@ -530,12 +530,20 @@
   fun:PR_EnterMonitor
 }
 
+# (Looks same as the one above)
 {
-  bug_84244 (Looks same as one above)
+  bug_84244
   ThreadSanitizer:Race
   fun:PR_ExitMonitor
   ...
   fun:nss*
+}
+
+{
+  bug_86916
+  ThreadSanitizer:Race
+  fun:loopfilter_frame
+  fun:loopfilter_thread
 }
 
 ############################
