@@ -215,14 +215,14 @@ void CustomHomePagesTableModel::LoadTitleAndFavicon(Entry* entry) {
       profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
   if (history_service) {
     entry->title_handle = history_service->QueryURL(entry->url, false,
-        &query_consumer_,
+        &history_query_consumer_,
         NewCallback(this, &CustomHomePagesTableModel::OnGotTitle));
   }
   FaviconService* favicon_service =
       profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
   if (favicon_service) {
     entry->favicon_handle = favicon_service->GetFaviconForURL(entry->url,
-        history::FAVICON, &query_consumer_,
+        history::FAVICON, &favicon_query_consumer_,
         NewCallback(this, &CustomHomePagesTableModel::OnGotFavicon));
   }
 }

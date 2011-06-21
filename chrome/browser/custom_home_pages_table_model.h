@@ -99,7 +99,8 @@ class CustomHomePagesTableModel : public ui::TableModel {
   ui::TableModelObserver* observer_;
 
   // Used in loading titles and favicons.
-  CancelableRequestConsumer query_consumer_;
+  CancelableRequestConsumer history_query_consumer_;
+  CancelableRequestConsumer favicon_query_consumer_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomHomePagesTableModel);
 };
