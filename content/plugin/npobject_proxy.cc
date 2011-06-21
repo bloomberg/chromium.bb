@@ -68,11 +68,14 @@ NPObjectProxy::NPObjectProxy(
 
 NPObjectProxy::~NPObjectProxy() {
   if (channel_.get()) {
+    // This NPObjectProxy instance is now invalid and should not be reused for
+    // requests initiated by plugins. We may receive requests for the
+    // same NPObject in the context of the outgoing NPObjectMsg_Release call.
+    // We should be creating new NPObjectProxy instances to wrap these
+    // NPObjects.
+    channel_->RemoveMappingForNPObjectProxy(route_id_);
+    channel_->RemoveRoute(route_id_);
     Send(new NPObjectMsg_Release(route_id_));
-    if (channel_.get()) {
-      channel_->RemoveRoute(route_id_);
-      channel_->RemoveMappingForNPObjectProxy(route_id_);
-    }
   }
 }
 
