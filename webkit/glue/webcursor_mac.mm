@@ -14,6 +14,10 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebImage.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSize.h"
 
+#if WEBKIT_USING_SKIA
+#include "skia/ext/skia_utils_mac.h"
+#endif
+
 using WebKit::WebCursorInfo;
 using WebKit::WebImage;
 using WebKit::WebSize;
@@ -277,7 +281,11 @@ void WebCursor::InitFromCursor(const Cursor* cursor) {
   WebKit::WebCursorInfo cursor_info;
   cursor_info.type = WebCursorInfo::TypeCustom;
   cursor_info.hotSpot = WebKit::WebPoint(cursor->hotSpot.h, cursor->hotSpot.v);
+#if WEBKIT_USING_SKIA
+  cursor_info.customImage = gfx::CGImageToSkBitmap(cg_image.get());
+#else
   cursor_info.customImage = cg_image.get();
+#endif
 
   InitFromCursorInfo(cursor_info);
 }
@@ -325,7 +333,11 @@ void WebCursor::InitFromNSCursor(NSCursor* cursor) {
       cursor_info.type = WebCursorInfo::TypeCustom;
       NSPoint hot_spot = [cursor hotSpot];
       cursor_info.hotSpot = WebKit::WebPoint(hot_spot.x, hot_spot.y);
+#if WEBKIT_USING_SKIA
+      cursor_info.customImage = gfx::CGImageToSkBitmap(cg_image);
+#else
       cursor_info.customImage = cg_image;
+#endif
     } else {
       cursor_info.type = WebCursorInfo::TypePointer;
     }
