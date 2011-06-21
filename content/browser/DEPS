@@ -4,6 +4,8 @@ include_rules = [
   # Listing of the remaining #chrome includes in content\browser.  People are
   # actively working on reducing this to 0.
   # DO NOT ADD ANY MORE TO THIS LIST!!!
+  # See https://sites.google.com/a/chromium.org/dev/developers/content-module
+  # for more information.
 
   "+chrome/browser/browser_url_handler.h",
 
