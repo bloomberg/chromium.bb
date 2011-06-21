@@ -89,6 +89,7 @@ void GpuChannelManager::OnEstablishChannel(int renderer_id) {
     // On POSIX, pass the renderer-side FD. Also mark it as auto-close so
     // that it gets closed after it has been sent.
     int renderer_fd = channel->GetRendererFileDescriptor();
+    DCHECK_NE(-1, renderer_fd);
     channel_handle.socket = base::FileDescriptor(dup(renderer_fd), true);
 #endif
   }

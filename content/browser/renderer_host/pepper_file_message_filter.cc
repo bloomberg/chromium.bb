@@ -88,7 +88,8 @@ void PepperFileMessageFilter::OnOpenFile(
   base::PlatformFile file_handle = base::CreatePlatformFile(
       full_path, flags, NULL, error);
 
-  if (*error != base::PLATFORM_FILE_OK) {
+  if (*error != base::PLATFORM_FILE_OK ||
+      file_handle == base::kInvalidPlatformFileValue) {
     *file = IPC::InvalidPlatformFileForTransit();
     return;
   }

@@ -184,6 +184,7 @@ void DatabaseMessageFilter::OnDatabaseOpenFile(const string16& vfs_file_name,
   // process. The original handle is closed, unless we saved it in the
   // database tracker.
   bool auto_close = !db_tracker_->HasSavedIncognitoFileHandle(vfs_file_name);
+  DCHECK_NE(base::kInvalidPlatformFileValue, file_handle);
   target_handle =
       IPC::GetFileHandleForProcess(file_handle, peer_handle(), auto_close);
 
