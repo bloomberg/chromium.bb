@@ -1650,6 +1650,7 @@ WL_EXPORT void
 wlsc_output_destroy(struct wlsc_output *output)
 {
 	pixman_region32_fini(&output->region);
+	pixman_region32_fini(&output->previous_damage_region);
 	destroy_surface(&output->background->surface.resource, NULL);
 }
 
