@@ -4363,7 +4363,7 @@ void Browser::CheckDownloadsInProgress(bool* normal_downloads_are_present,
 
   // If there are no download in-progress, our job is done.
   DownloadManager* download_manager = NULL;
-  // But first we need to check for the existance of the download manager, as
+  // But first we need to check for the existence of the download manager, as
   // GetDownloadManager() will unnecessarily try to create one if it does not
   // exist.
   if (profile()->HasCreatedDownloadManager())
@@ -4395,7 +4395,7 @@ bool Browser::CanCloseWithInProgressDownloads() {
   bool normal_downloads_are_present = false;
   bool incognito_downloads_are_present = false;
   CheckDownloadsInProgress(&normal_downloads_are_present,
-                      &incognito_downloads_are_present);
+                           &incognito_downloads_are_present);
   if (!normal_downloads_are_present && !incognito_downloads_are_present)
     return true;
 
