@@ -309,6 +309,8 @@ Channel::ChannelImpl::ChannelImpl(const IPC::ChannelHandle& channel_handle,
       pipe_name_(channel_handle.name),
       listener_(listener),
       must_unlink_(false) {
+  memset(input_buf_, 0, sizeof(input_buf_));
+  memset(input_cmsg_buf_, 0, sizeof(input_cmsg_buf_));
   if (!CreatePipe(channel_handle)) {
     // The pipe may have been closed already.
     const char *modestr = (mode_ & MODE_SERVER_FLAG) ? "server" : "client";
