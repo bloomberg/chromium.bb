@@ -469,12 +469,37 @@
        published as global during start up, or when a screen is hot
        plugged.  -->
   <interface name="wl_output" version="1">
-    <!-- Notification about the screen size. -->
+
+    <enum name="subpixel">
+      <entry name="unknown" value="0"/>
+      <entry name="none" value="1"/>
+      <entry name="horizontal_rgb" value="2"/>
+      <entry name="horizontal_bgr" value="3"/>
+      <entry name="vertical_rgb" value="4"/>
+      <entry name="vertical_bgr" value="5"/>
+    </enum>
+
     <event name="geometry">
       <arg name="x" type="int"/>
       <arg name="y" type="int"/>
+      <arg name="physical_width" type="int"/>
+      <arg name="physical_height" type="int"/>
+      <arg name="subpixel" type="int"/>
+      <arg name="make" type="string"/>
+      <arg name="model" type="string"/>
+    </event>
+
+    <!-- Values for the flags bitfield of the mode event. -->
+    <enum name="mode">
+      <entry name="current" value="0x1"/>
+      <entry name="preferred" value="0x2"/>
+    </enum>
+      
+    <event name="mode">
+      <arg name="flags" type="uint"/>
       <arg name="width" type="int"/>
       <arg name="height" type="int"/>
+      <arg name="refresh" type="int"/>
     </event>
   </interface>
 
