@@ -271,7 +271,9 @@ NPClass message_channel_class = {
 }  // namespace
 
 // MessageChannel --------------------------------------------------------------
-MessageChannel::MessageChannelNPObject::MessageChannelNPObject() {}
+MessageChannel::MessageChannelNPObject::MessageChannelNPObject()
+    : message_channel(NULL) {
+}
 
 MessageChannel::MessageChannelNPObject::~MessageChannelNPObject() {}
 

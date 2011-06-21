@@ -20,7 +20,8 @@ class MessageLoopRelay
       : origin_message_loop_proxy_(
             base::MessageLoopProxy::CreateForCurrentThread()),
         error_code_(base::PLATFORM_FILE_OK),
-        context_(context) {
+        context_(context),
+        file_system_file_util_(NULL) {
   }
 
   bool Start(scoped_refptr<base::MessageLoopProxy> message_loop_proxy,

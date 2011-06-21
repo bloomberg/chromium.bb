@@ -70,6 +70,7 @@ const PPB_Widget_Dev ppb_widget = {
 
 PPB_Widget_Impl::PPB_Widget_Impl(PluginInstance* instance)
     : Resource(instance) {
+  memset(&location_, 0, sizeof(location_));
 }
 
 PPB_Widget_Impl::~PPB_Widget_Impl() {

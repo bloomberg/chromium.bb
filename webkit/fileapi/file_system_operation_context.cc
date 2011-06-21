@@ -16,7 +16,8 @@ FileSystemOperationContext::FileSystemOperationContext(
       src_file_system_file_util_(file_system_file_util),
       dest_file_system_file_util_(file_system_file_util),
       src_type_(kFileSystemTypeUnknown),
-      dest_type_(kFileSystemTypeUnknown) {
+      dest_type_(kFileSystemTypeUnknown),
+      allowed_bytes_growth_(0) {
 }
 
 FileSystemOperationContext::~FileSystemOperationContext() {

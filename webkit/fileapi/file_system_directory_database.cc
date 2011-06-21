@@ -109,7 +109,7 @@ std::string GetFileLookupKey(
 
 namespace fileapi {
 
-FileSystemDirectoryDatabase::FileInfo::FileInfo() {
+FileSystemDirectoryDatabase::FileInfo::FileInfo() : parent_id(0) {
 }
 
 FileSystemDirectoryDatabase::FileInfo::~FileInfo() {

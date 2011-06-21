@@ -35,6 +35,7 @@ PluginInstance::PluginInstance(PluginLib *plugin, const std::string &mime_type)
       transparent_(true),
       webplugin_(0),
       mime_type_(mime_type),
+      get_notify_data_(0),
       use_mozilla_user_agent_(false),
 #if defined (OS_MACOSX)
 #ifdef NP_NO_QUICKDRAW

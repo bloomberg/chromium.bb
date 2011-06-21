@@ -37,7 +37,8 @@ PPB_Audio_Impl::PPB_Audio_Impl(PluginInstance* instance)
     : Resource(instance),
       config_id_(0),
       audio_(NULL),
-      create_callback_pending_(false) {
+      create_callback_pending_(false),
+      shared_memory_size_for_create_callback_(0) {
   create_callback_ = PP_MakeCompletionCallback(NULL, NULL);
 }
 

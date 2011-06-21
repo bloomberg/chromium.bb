@@ -32,8 +32,9 @@ namespace webkit_glue {
 
 namespace {
 struct SerializeObject {
-  SerializeObject() : iter(NULL) {}
-  SerializeObject(const char* data, int len) : pickle(data, len), iter(NULL) {}
+  SerializeObject() : iter(NULL), version(0) {}
+  SerializeObject(const char* data, int len)
+      : pickle(data, len), iter(NULL), version(0) {}
 
   std::string GetAsString() {
     return std::string(static_cast<const char*>(pickle.data()), pickle.size());

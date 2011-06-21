@@ -341,7 +341,8 @@ PluginList::PluginList(const PluginGroupDefinition* definitions,
       plugins_need_refresh_(false),
       disable_outdated_plugins_(false),
       group_definitions_(definitions),
-      num_group_definitions_(num_definitions) {
+      num_group_definitions_(num_definitions),
+      default_plugin_enabled_(false) {
   // Don't do platform-dependend initialization in unit tests.
   AddHardcodedPluginGroups(&plugin_groups_);
 }
