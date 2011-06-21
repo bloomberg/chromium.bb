@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/message_loop.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -84,6 +85,8 @@ void InfoBarContainerGtk::PlatformSpecificRemoveInfoBar(InfoBar* infobar) {
       std::find(infobars_gtk_.begin(), infobars_gtk_.end(), infobar);
   if (it != infobars_gtk_.end())
     infobars_gtk_.erase(it);
+
+  MessageLoop::current()->DeleteSoon(FROM_HERE, infobar);
 }
 
 void InfoBarContainerGtk::PlatformSpecificInfoBarStateChanged(
