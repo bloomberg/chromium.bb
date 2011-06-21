@@ -113,7 +113,6 @@ void LiveTypedUrlsSyncTest::AddToHistory(HistoryService* service,
                    history::RedirectList(),
                    history::SOURCE_BROWSED,
                    false);
-  service->SetPageTitle(url, ASCIIToUTF16(url.spec()));
 }
 
 void LiveTypedUrlsSyncTest::DeleteUrlFromHistory(int index, const GURL& url) {

@@ -65,63 +65,65 @@ void TypedUrlChangeProcessor::Observe(NotificationType type,
 
 void TypedUrlChangeProcessor::HandleURLsModified(
     history::URLsModifiedDetails* details) {
-  // Get all the visits.
-  std::map<history::URLID, history::VisitVector> visit_vectors;
+
+  sync_api::WriteTransaction trans(FROM_HERE, share_handle());
   for (std::vector<history::URLRow>::iterator url =
        details->changed_urls.begin(); url != details->changed_urls.end();
        ++url) {
-    if (!history_backend_->GetVisitsForURL(url->id(),
-                                           &(visit_vectors[url->id()]))) {
-      error_handler()->OnUnrecoverableError(FROM_HERE,
-          "Could not get the url's visits.");
+    // Exit if we were unable to update the sync node.
+    if (!CreateOrUpdateSyncNode(*url, &trans))
       return;
-    }
-    // Make sure our visit vector is not empty by ensuring at least the most
-    // recent visit is found. Workaround for http://crbug.com/84258.
-    if (visit_vectors[url->id()].empty()) {
-      history::VisitRow visit(
-          url->id(), url->last_visit(), 0, PageTransition::TYPED, 0);
-      visit_vectors[url->id()].push_back(visit);
-    }
+  }
+}
+
+bool TypedUrlChangeProcessor::CreateOrUpdateSyncNode(
+    const history::URLRow& url, sync_api::WriteTransaction* trans) {
+  // Get the visits for this node.
+  history::VisitVector visit_vector;
+  if (!history_backend_->GetVisitsForURL(url.id(), &visit_vector)) {
+    error_handler()->OnUnrecoverableError(FROM_HERE,
+                                          "Could not get the url's visits.");
+    return false;
   }
 
-  sync_api::WriteTransaction trans(FROM_HERE, share_handle());
+  // Make sure our visit vector is not empty by ensuring at least the most
+  // recent visit is found. Workaround for http://crbug.com/84258.
+  if (visit_vector.empty()) {
+    history::VisitRow visit(
+        url.id(), url.last_visit(), 0, PageTransition::TYPED, 0);
+    visit_vector.push_back(visit);
+  }
 
-  sync_api::ReadNode typed_url_root(&trans);
+  sync_api::ReadNode typed_url_root(trans);
   if (!typed_url_root.InitByTagLookup(kTypedUrlTag)) {
     error_handler()->OnUnrecoverableError(FROM_HERE,
         "Server did not create the top-level typed_url node. We "
          "might be running against an out-of-date server.");
-    return;
+    return false;
   }
 
-  for (std::vector<history::URLRow>::iterator url =
-       details->changed_urls.begin(); url != details->changed_urls.end();
-       ++url) {
-    std::string tag = url->url().spec();
+  std::string tag = url.url().spec();
+  DCHECK(!visit_vector.empty());
 
-    history::VisitVector& visits = visit_vectors[url->id()];
-
-    DCHECK(!visits.empty());
-
-    sync_api::WriteNode update_node(&trans);
-    if (update_node.InitByClientTagLookup(syncable::TYPED_URLS, tag)) {
-      model_associator_->WriteToSyncNode(*url, visits, &update_node);
-    } else {
-      sync_api::WriteNode create_node(&trans);
-      if (!create_node.InitUniqueByCreation(syncable::TYPED_URLS,
-                                            typed_url_root, tag)) {
-        error_handler()->OnUnrecoverableError(FROM_HERE,
-            "Failed to create typed_url sync node.");
-        return;
-      }
-
-      create_node.SetTitle(UTF8ToWide(tag));
-      model_associator_->WriteToSyncNode(*url, visits, &create_node);
-
-      model_associator_->Associate(&tag, create_node.GetId());
+  sync_api::WriteNode update_node(trans);
+  if (update_node.InitByClientTagLookup(syncable::TYPED_URLS, tag)) {
+    // TODO(atwilson): Don't bother updating if the only change is
+    // a visit deletion or addition of a RELOAD visit (http://crbug.com/82451).
+    model_associator_->WriteToSyncNode(url, visit_vector, &update_node);
+  } else {
+    sync_api::WriteNode create_node(trans);
+    if (!create_node.InitUniqueByCreation(syncable::TYPED_URLS,
+                                          typed_url_root, tag)) {
+      error_handler()->OnUnrecoverableError(
+          FROM_HERE, "Failed to create typed_url sync node.");
+      return false;
     }
+
+    create_node.SetTitle(UTF8ToWide(tag));
+    model_associator_->WriteToSyncNode(url, visit_vector, &create_node);
+    model_associator_->Associate(&tag, create_node.GetId());
   }
+  return true;
 }
 
 void TypedUrlChangeProcessor::HandleURLsDeleted(
@@ -157,28 +159,8 @@ void TypedUrlChangeProcessor::HandleURLsVisited(
     // We only care about typed urls.
     return;
   }
-  history::VisitVector visits;
-  if (!history_backend_->GetVisitsForURL(details->row.id(), &visits) ||
-      visits.empty()) {
-    error_handler()->OnUnrecoverableError(FROM_HERE,
-        "Could not get the url's visits.");
-    return;
-  }
-
   sync_api::WriteTransaction trans(FROM_HERE, share_handle());
-  std::string tag = details->row.url().spec();
-  sync_api::WriteNode update_node(&trans);
-  if (!update_node.InitByClientTagLookup(syncable::TYPED_URLS, tag)) {
-    // If we don't know about it yet, it will be added later.
-    // TODO(atwilson): This can result in this URL not being synced until the
-    // next full association, as we may not get another notification for this
-    // URL if the navigation resulted in a redirect (http://crbug.com/85135).
-    return;
-  }
-  sync_pb::TypedUrlSpecifics typed_url(update_node.GetTypedUrlSpecifics());
-  typed_url.add_visits(visits.back().visit_time.ToInternalValue());
-  typed_url.add_visit_transitions(visits.back().transition);
-  update_node.SetTypedUrlSpecifics(typed_url);
+  CreateOrUpdateSyncNode(details->row, &trans);
 }
 
 void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(

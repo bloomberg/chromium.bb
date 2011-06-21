@@ -67,6 +67,12 @@ class TypedUrlChangeProcessor : public ChangeProcessor,
   void HandleURLsDeleted(history::URLsDeletedDetails* details);
   void HandleURLsVisited(history::URLVisitedDetails* details);
 
+  // Utility routine that either updates an existing sync node or creates a
+  // new one for the passed |typed_url| if one does not already exist. Returns
+  // false and sets an unrecoverable error if the operation failed.
+  bool CreateOrUpdateSyncNode(const history::URLRow& typed_url,
+                              sync_api::WriteTransaction* transaction);
+
   // The two models should be associated according to this ModelAssociator.
   TypedUrlModelAssociator* model_associator_;
 

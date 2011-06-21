@@ -453,21 +453,88 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeUpdate) {
   EXPECT_CALL((*history_backend_.get()), GetAllTypedURLs(_)).
       WillOnce(DoAll(SetArgumentPointee<0>(original_entries), Return(true)));
   EXPECT_CALL((*history_backend_.get()), GetVisitsForURL(_, _)).
-      WillRepeatedly(DoAll(SetArgumentPointee<1>(original_visits),
-                           Return(true)));
+      WillOnce(DoAll(SetArgumentPointee<1>(original_visits),
+                     Return(true)));
   CreateRootTask task(this, syncable::TYPED_URLS);
   StartSyncService(&task);
 
   history::VisitVector updated_visits;
   history::URLRow updated_entry(MakeTypedUrlEntry("http://mine.com", "entry",
-                                                  7, 15, false,
+                                                  7, 17, false,
                                                   &updated_visits));
+  EXPECT_CALL((*history_backend_.get()), GetVisitsForURL(_, _)).
+      WillOnce(DoAll(SetArgumentPointee<1>(updated_visits),
+                     Return(true)));
 
   history::URLsModifiedDetails details;
   details.changed_urls.push_back(updated_entry);
   scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(&history_thread_));
   notifier->Notify(NotificationType::HISTORY_TYPED_URLS_MODIFIED,
                    Details<history::URLsModifiedDetails>(&details));
+
+  std::vector<history::URLRow> new_sync_entries;
+  GetTypedUrlsFromSyncDB(&new_sync_entries);
+  ASSERT_EQ(1U, new_sync_entries.size());
+  EXPECT_TRUE(URLsEqual(updated_entry, new_sync_entries[0]));
+}
+
+TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeAddFromVisit) {
+  history::VisitVector added_visits;
+  history::URLRow added_entry(MakeTypedUrlEntry("http://added.com", "entry",
+                                                2, 15, false, &added_visits));
+
+  EXPECT_CALL((*history_backend_.get()), GetAllTypedURLs(_)).
+      WillOnce(Return(true));
+  EXPECT_CALL((*history_backend_.get()), GetVisitsForURL(_, _)).
+      WillOnce(DoAll(SetArgumentPointee<1>(added_visits), Return(true)));
+
+  SetIdleChangeProcessorExpectations();
+  CreateRootTask task(this, syncable::TYPED_URLS);
+  StartSyncService(&task);
+
+  history::URLVisitedDetails details;
+  details.row = added_entry;
+  details.transition = PageTransition::TYPED;
+  scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(&history_thread_));
+  notifier->Notify(NotificationType::HISTORY_URL_VISITED,
+                   Details<history::URLVisitedDetails>(&details));
+
+  std::vector<history::URLRow> new_sync_entries;
+  GetTypedUrlsFromSyncDB(&new_sync_entries);
+  ASSERT_EQ(1U, new_sync_entries.size());
+  EXPECT_TRUE(URLsEqual(added_entry, new_sync_entries[0]));
+}
+
+TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeUpdateFromVisit) {
+  history::VisitVector original_visits;
+  history::URLRow original_entry(MakeTypedUrlEntry("http://mine.com", "entry",
+                                                   2, 15, false,
+                                                   &original_visits));
+  std::vector<history::URLRow> original_entries;
+  original_entries.push_back(original_entry);
+
+  EXPECT_CALL((*history_backend_.get()), GetAllTypedURLs(_)).
+      WillOnce(DoAll(SetArgumentPointee<0>(original_entries), Return(true)));
+  EXPECT_CALL((*history_backend_.get()), GetVisitsForURL(_, _)).
+      WillOnce(DoAll(SetArgumentPointee<1>(original_visits),
+                           Return(true)));
+  CreateRootTask task(this, syncable::TYPED_URLS);
+  StartSyncService(&task);
+
+  history::VisitVector updated_visits;
+  history::URLRow updated_entry(MakeTypedUrlEntry("http://mine.com", "entry",
+                                                  7, 17, false,
+                                                  &updated_visits));
+  EXPECT_CALL((*history_backend_.get()), GetVisitsForURL(_, _)).
+      WillOnce(DoAll(SetArgumentPointee<1>(updated_visits),
+                           Return(true)));
+
+  history::URLVisitedDetails details;
+  details.row = updated_entry;
+  details.transition = PageTransition::TYPED;
+  scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(&history_thread_));
+  notifier->Notify(NotificationType::HISTORY_URL_VISITED,
+                   Details<history::URLVisitedDetails>(&details));
 
   std::vector<history::URLRow> new_sync_entries;
   GetTypedUrlsFromSyncDB(&new_sync_entries);
