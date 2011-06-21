@@ -79,14 +79,29 @@ class _LKGMCandidateInfo(manifest_version.VersionInfo):
 
 
 class LKGMManager(manifest_version.BuildSpecsManager):
-  """A Class to manage lkgm candidates and their states."""
+  """A Class to manage lkgm candidates and their states.
+
+  Vars:
+    lkgm_subdir:  Subdirectory within manifest repo to store candidates.
+  """
+  # Max timeout before assuming other builders have failed.
   MAX_TIMEOUT_SECONDS = 300
+  # Polling timeout for checking git repo for other build statuses.
   SLEEP_TIMEOUT = 30
-  LGKM_SUBDIR = 'LKGM-candidates'
-  # Wait an additional 5 minutes for any other builder.
+
+  # Sub-directories for LKGM and Chrome LKGM's.
+  LKGM_SUBDIR = 'LKGM-candidates'
+  CHROME_PFQ_SUBDIR = 'chrome-LKGM-candidates'
 
   def __init__(self, source_dir, checkout_repo, manifest_repo, branch,
-               build_name, clobber=False, dry_run=True):
+               build_name, build_type, clobber=False,
+               dry_run=True):
+    """Initialize an LKGM Manager.
+
+    Args:
+      build_type:  Type of build.  Must be either chrome or binary.
+    Other args see manifest_version.BuildSpecsManager.
+    """
     super(LKGMManager, self).__init__(
         source_dir=source_dir, checkout_repo=checkout_repo,
         manifest_repo=manifest_repo, branch=branch, build_name=build_name,
@@ -94,12 +109,18 @@ class LKGMManager(manifest_version.BuildSpecsManager):
 
     self.compare_versions_fn = _LKGMCandidateInfo.VersionCompare
 
+    assert build_type in ('chrome', 'binary')
+    if build_type == 'chrome':
+      self.lkgm_subdir = self.CHROME_PFQ_SUBDIR
+    else:
+      self.lkgm_subdir = self.LKGM_SUBDIR
+
   def _LoadSpecs(self, version_info):
     """Loads the specifications from the working directory.
     Args:
       version_info: Info class for version information of cros.
     """
-    super(LKGMManager, self)._LoadSpecs(version_info, self.LGKM_SUBDIR)
+    super(LKGMManager, self)._LoadSpecs(version_info, self.lkgm_subdir)
 
   def _GetLatestCandidateByVersion(self, version_info):
     """Returns the latest lkgm candidate corresponding to the version file.
@@ -181,7 +202,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     # Set some default location strings.
     dir_pfx = _LKGMCandidateInfo(self.current_version).DirPrefix()
     specs_for_build = os.path.join(
-        self.manifests_dir, self.LGKM_SUBDIR, 'build-name', '%(build_name)s')
+        self.manifests_dir, self.lkgm_subdir, 'build-name', '%(build_name)s')
     pass_file = os.path.join(specs_for_build, 'pass', dir_pfx, xml_name)
     fail_file = os.path.join(specs_for_build, 'fail', dir_pfx, xml_name)
     inflight_file = os.path.join(specs_for_build, 'inflight', dir_pfx, xml_name)

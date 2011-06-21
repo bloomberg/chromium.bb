@@ -149,16 +149,16 @@ def RunBuildStages(bot_id, options, build_config):
     pass
 
   if options.sync:
-    if (completion_stage and
-        stages.ManifestVersionedSyncStage.manifest_manager):
-      completion_stage(bot_id, options, build_config,
-                       success=build_and_test_success).Run()
+    try:
+      if (completion_stage and
+          stages.ManifestVersionedSyncStage.manifest_manager):
+        completion_stage(bot_id, options, build_config,
+                         success=build_and_test_success).Run()
 
-    if build_config['master'] and build_and_test_success:
-      try:
+      if build_config['master'] and build_and_test_success:
         stages.PushChangesStage(bot_id, options, build_config).Run()
-      except stages.BuildException:
-        pass
+    except stages.BuildException:
+      pass
 
   if build_success and options.archive:
     try:

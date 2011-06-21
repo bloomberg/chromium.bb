@@ -475,6 +475,7 @@ class LGKMVersionedSyncStage(ManifestVersionedSyncStage):
         manifest_repo=self._build_config['manifest_version'],
         branch=self._tracking_branch,
         build_name=self._bot_id,
+        build_type=self._build_config['build_type'],
         clobber=self._options.clobber,
         dry_run=self._options.debug)
 
@@ -502,6 +503,11 @@ class ManifestVersionedSyncCompletionStage(BuilderStage):
     if ManifestVersionedSyncStage.manifest_manager:
       ManifestVersionedSyncStage.manifest_manager.UpdateStatus(
          success=self.success)
+
+
+class ImportantBuilderFailedException(Exception):
+  """Exception thrown when an important build fails to build."""
+  pass
 
 
 class LGKMVersionedSyncCompletionStage(ManifestVersionedSyncCompletionStage):
@@ -532,8 +538,7 @@ class LGKMVersionedSyncCompletionStage(ManifestVersionedSyncCompletionStage):
           success = False
 
       if not success:
-        # TODO(sosa): Convert to Die / raise exception.
-        cros_lib.Warning('An important build failed.')
+        raise ImportantBuilderFailedException()
 
 
 class BuildBoardStage(BuilderStage):
