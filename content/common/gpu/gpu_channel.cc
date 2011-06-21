@@ -216,7 +216,7 @@ bool GpuChannel::OnControlMessageReceived(const IPC::Message& msg) {
         OnAssignTexturesToVideoDecoder)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
-  DCHECK(handled);
+  DCHECK(handled) << msg.type();
   return handled;
 }
 
@@ -322,6 +322,12 @@ void GpuChannel::OnCreateVideoDecoder(int32 decoder_host_id,
 
   int32 decoder_id = GenerateRouteID();
 
+  // TODO(fischman): this is a BUG.  We hand off stub->scheduler()->decoder()
+  // to be baked into the resulting GpuVideoDecodeAccelerator, but we don't own
+  // that GVDA, and we make no attempt to tear it down if/when
+  // stub->scheduler()->decoder() is destroyed.  GpuVideoService should be
+  // subsumed into this class and GpuVideoDecodeAccelerator should be owned by
+  // the GpuCommandBufferStub that owns the commandbuffer GVDA is using.
   bool ret = service->CreateVideoDecoder(
       this, &router_, decoder_host_id, decoder_id, stub->scheduler()->decoder(),
       configs);

@@ -33,12 +33,15 @@ class GLES2DemoInstance : public pp::Instance, public pp::Graphics3DClient_Dev,
   virtual ~GLES2DemoInstance();
 
   // pp::Instance implementation (see PPP_Instance).
-  virtual void DidChangeView(const pp::Rect& position_ignored,
-                             const pp::Rect& clip);
+  virtual void DidChangeView(const pp::Rect& position,
+                             const pp::Rect& clip_ignored);
 
   // pp::Graphics3DClient_Dev implementation.
   virtual void Graphics3DContextLost() {
-    // TODO(vrk/fischman): Properly reset after a lost graphics context.
+    // TODO(vrk/fischman): Properly reset after a lost graphics context.  In
+    // particular need to delete context_ & surface_ and re-create textures.
+    // Probably have to recreate the decoder from scratch, because old textures
+    // can still be outstanding in the decoder!
     assert(!"Unexpectedly lost graphics context");
   }
 
@@ -63,6 +66,14 @@ class GLES2DemoInstance : public pp::Instance, public pp::Graphics3DClient_Dev,
     GLuint vertex_buffers[2];
   };
 
+  // Serialize PPB_Video_Decoder_Dev operations w.r.t. GPU command buffer.
+  // TODO(fischman): figure out how much of this is actually necessary.
+  // Probably any necessary serialization ought to be happening in the
+  // PPAPI implementation, not in the plugin!
+  void FinishGL() {
+    gles2_if_->Finish(context_->pp_resource());
+  }
+
   // Initialize Video Decoder.
   void InitializeDecoder();
 
@@ -78,7 +89,7 @@ class GLES2DemoInstance : public pp::Instance, public pp::Graphics3DClient_Dev,
   void Render(const PP_GLESBuffer_Dev& buffer);
 
   // GL-related functions.
-  void InitGL(int width, int height);
+  void InitGL();
   GLuint CreateTexture(int32_t width, int32_t height);
   void CreateGLObjects();
   void CreateShader(GLuint program, GLenum type, const char* source, int size);
@@ -90,6 +101,7 @@ class GLES2DemoInstance : public pp::Instance, public pp::Graphics3DClient_Dev,
     assert(!gles2_if_->GetError(context_->pp_resource()));
   }
 
+  pp::Size position_size_;
   ShaderInfo program_data_;
   int next_picture_buffer_id_;
   int next_bitstream_buffer_id_;
@@ -135,12 +147,17 @@ GLES2DemoInstance::~GLES2DemoInstance() {
 }
 
 void GLES2DemoInstance::DidChangeView(
-    const pp::Rect& position_ignored, const pp::Rect& clip) {
-  if (clip.width() == 0 || clip.height() == 0)
+    const pp::Rect& position, const pp::Rect& clip_ignored) {
+  if (position.width() == 0 || position.height() == 0)
     return;
+  if (position_size_.width()) {
+    assert(position.size() == position_size_);
+    return;
+  }
+  position_size_ = position.size();
 
   // Initialize graphics.
-  InitGL(clip.width(), clip.height());
+  InitGL();
   InitializeDecoder();
 }
 
@@ -236,6 +253,7 @@ void GLES2DemoInstance::ProvidePictureBuffers(
     bool result = buffers_by_id_.insert(std::make_pair(id, buffer)).second;
     assert(result);
   }
+  FinishGL();
   video_decoder_->AssignGLESBuffers(buffers);
 }
 
@@ -245,6 +263,8 @@ void GLES2DemoInstance::DismissPictureBuffer(
   assert(it != buffers_by_id_.end());
   DeleteTexture(it->second.texture_id);
   buffers_by_id_.erase(it);
+
+  FinishGL();
 }
 
 void GLES2DemoInstance::PictureReady(
@@ -274,22 +294,19 @@ class GLES2DemoModule : public pp::Module {
   }
 };
 
-void GLES2DemoInstance::InitGL(int width, int height) {
-  assert(width && height);
+void GLES2DemoInstance::InitGL() {
+  assert(position_size_.width() && position_size_.height());
   is_painting_ = false;
 
-  if (context_)
-    delete(context_);
+  assert(!context_ && !surface_);
   context_ = new pp::Context3D_Dev(*this, 0, pp::Context3D_Dev(), NULL);
   assert(!context_->is_null());
 
   int32_t surface_attributes[] = {
-    PP_GRAPHICS3DATTRIB_WIDTH, width,
-    PP_GRAPHICS3DATTRIB_HEIGHT, height,
+    PP_GRAPHICS3DATTRIB_WIDTH, position_size_.width(),
+    PP_GRAPHICS3DATTRIB_HEIGHT, position_size_.height(),
     PP_GRAPHICS3DATTRIB_NONE
   };
-  if (surface_)
-    delete(surface_);
   surface_ = new pp::Surface3D_Dev(*this, 0, surface_attributes);
   assert(!surface_->is_null());
 
@@ -298,21 +315,26 @@ void GLES2DemoInstance::InitGL(int width, int height) {
 
   // Set viewport window size and clear color bit.
   gles2_if_->Clear(context_->pp_resource(), GL_COLOR_BUFFER_BIT);
-  gles2_if_->Viewport(context_->pp_resource(), 0, 0, width, height);
+  gles2_if_->Viewport(context_->pp_resource(), 0, 0,
+                      position_size_.width(), position_size_.height());
 
   bool success = BindGraphics(*surface_);
   assert(success);
   assertNoGLError();
 
   CreateGLObjects();
+
+  FinishGL();
 }
 
 void GLES2DemoInstance::Render(const PP_GLESBuffer_Dev& buffer) {
   if (is_painting_) {
     // We are dropping frames if we don't render fast enough -
     // that is why sometimes the last frame rendered is < 249.
-    if (video_decoder_)
+    if (video_decoder_) {
+      FinishGL();
       video_decoder_->ReusePictureBuffer(buffer.info.id);
+    }
     return;
   }
   is_painting_ = true;
@@ -331,6 +353,7 @@ void GLES2DemoInstance::Render(const PP_GLESBuffer_Dev& buffer) {
 
 void GLES2DemoInstance::PaintFinished(int32_t result, int picture_buffer_id) {
   is_painting_ = false;
+  FinishGL();
   if (video_decoder_)
     video_decoder_->ReusePictureBuffer(picture_buffer_id);
 }

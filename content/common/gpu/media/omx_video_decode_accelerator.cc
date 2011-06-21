@@ -489,10 +489,9 @@ void OmxVideoDecodeAccelerator::FlushIOPorts() {
   // Flush input port first.
   DCHECK(!on_flush_event_func_);
   on_flush_event_func_ = &OmxVideoDecodeAccelerator::InputPortFlushDone;
-  OMX_ERRORTYPE result;
-  result = OMX_SendCommand(component_handle_,
-                           OMX_CommandFlush,
-                           input_port_, 0);
+  OMX_ERRORTYPE result = OMX_SendCommand(component_handle_,
+                                         OMX_CommandFlush,
+                                         input_port_, 0);
   if (result != OMX_ErrorNone) {
     LOG(ERROR) << "OMX_SendCommand(OMX_CommandFlush) failed";
     StopOnError();

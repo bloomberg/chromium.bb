@@ -66,11 +66,6 @@ class GpuVideoService : public IPC::Channel::Listener {
   virtual bool IntializeGpuVideoService();
   virtual bool UnintializeGpuVideoService();
 
-  // Translates a given client texture id to the "real" texture id as recognized
-  // in the GPU process.
-  bool TranslateTextureForDecoder(
-      int32 decoder_id, uint32 client_texture_id, uint32* service_texture_id);
-
   DecoderMap decoder_map_;
 
   friend struct DefaultSingletonTraits<GpuVideoService>;

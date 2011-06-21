@@ -71,7 +71,6 @@ bool GpuVideoService::CreateVideoDecoder(
   omx_decoder->SetEglState(gfx::GLSurfaceEGL::GetDisplay(),
                            command_decoder->GetGLContext()->GetHandle());
   decoder->set_video_decode_accelerator(omx_decoder);
-
 #endif  // defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
 
   bool result = decoder_map_.insert(std::make_pair(
@@ -103,29 +102,23 @@ void GpuVideoService::AssignTexturesToDecoder(
     const std::vector<int32>& buffer_ids,
     const std::vector<uint32>& texture_ids,
     const std::vector<gfx::Size>& sizes) {
+  DecoderMap::iterator it = decoder_map_.find(decoder_id);
+  DCHECK(it != decoder_map_.end());
+  DCHECK_EQ(it->first, decoder_id);
+  GpuVideoDecodeAccelerator* video_decoder = it->second.video_decoder;
+  gpu::gles2::GLES2Decoder* command_decoder = it->second.command_decoder;
+
   std::vector<media::GLESBuffer> buffers;
   for (uint32 i = 0; i < buffer_ids.size(); ++i) {
     uint32 service_texture_id;
-    bool result = TranslateTextureForDecoder(
-        decoder_id, texture_ids[i], &service_texture_id);
-    // TODO(vrk): Send an error for invalid GLES buffers.
-    if (!result)
+    if (!command_decoder->GetServiceTextureId(
+            texture_ids[i], &service_texture_id)) {
+      // TODO(vrk): Send an error for invalid GLES buffers.
+      LOG(DFATAL) << "Failed to translate texture!";
       return;
-    buffers.push_back(
-        media::GLESBuffer(buffer_ids[i], sizes[i], service_texture_id));
+    }
+    buffers.push_back(media::GLESBuffer(
+        buffer_ids[i], sizes[i], service_texture_id));
   }
-
-  DecoderMap::iterator it = decoder_map_.find(decoder_id);
-  DCHECK(it != decoder_map_.end());
-  it->second.video_decoder->AssignGLESBuffers(buffers);
-}
-
-bool GpuVideoService::TranslateTextureForDecoder(
-    int32 decoder_id, uint32 client_texture_id, uint32* service_texture_id) {
-  DecoderMap::iterator it = decoder_map_.find(decoder_id);
-  if (it == decoder_map_.end())
-    return false;
-  it->second.command_decoder->MakeCurrent();
-  return it->second.command_decoder->GetServiceTextureId(
-      client_texture_id, service_texture_id);
+  video_decoder->AssignGLESBuffers(buffers);
 }

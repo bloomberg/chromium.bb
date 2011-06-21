@@ -23,6 +23,7 @@ Gles2TextureToEglImageTranslator::Gles2TextureToEglImageTranslator() {
     LOG(DFATAL) << "Failed to get EGL extensions";
     return;
   }
+  CHECK_EQ(eglGetError(), EGL_SUCCESS);
 }
 
 
@@ -41,7 +42,7 @@ EGLImageKHR Gles2TextureToEglImageTranslator::TranslateToEglImage(
       EGL_GL_TEXTURE_2D_KHR,
       reinterpret_cast<EGLClientBuffer>(texture),
       &attrib);
-  CHECK(hEglImage);
+  CHECK(hEglImage) << eglGetError();
   return hEglImage;
 }
 

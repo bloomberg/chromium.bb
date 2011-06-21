@@ -197,61 +197,32 @@
     ['OS!="win" and OS!="mac"', {
       'targets': [
         {
-          'target_name': 'ppapi_example_base_skeleton',
+          'target_name': 'ppapi_example_skeleton',
           'type': 'none',
           'direct_dependent_settings': {
             'product_name': '>(_target_name)',
             'conditions': [
               ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
                 'cflags': ['-fvisibility=hidden'],
-                'variables': { 'concrete_type': 'shared_library' },
+                'type': 'shared_library',
                 # -gstabs, used in the official builds, causes an ICE. Simply remove
                 # it.
                 'cflags!': ['-gstabs'],
               }],
               ['OS=="win"', {
-                'variables': { 'concrete_type': 'shared_library' },
+                'type': 'shared_library',
               }],
               ['OS=="mac"', {
-                'variables': { 'concrete_type': 'loadable_module' },
+                'type': 'loadable_module',
               }],
             ],
           },
         },
         {
-          'target_name': 'ppapi_example_cpp_skeleton',
-          'type': 'none',
-          'direct_dependent_settings': {
-            'type': '>(concrete_type)',
-          },
-          'dependencies': [
-            'ppapi_example_base_skeleton',
-            'ppapi.gyp:ppapi_cpp',
-          ],
-          'export_dependent_settings': [
-            'ppapi_example_base_skeleton',
-            'ppapi.gyp:ppapi_cpp',
-          ],
-        },
-        {
-          'target_name': 'ppapi_example_c_skeleton',
-          'type': 'none',
-          'direct_dependent_settings': {
-            'type': '>(concrete_type)',
-          },
-          'dependencies': [
-            'ppapi_example_base_skeleton',
-            'ppapi.gyp:ppapi_c',
-          ],
-          'export_dependent_settings': [
-            'ppapi_example_base_skeleton',
-            'ppapi.gyp:ppapi_c',
-          ],
-        },
-        {
           'target_name': 'ppapi_example_c_stub',
           'dependencies': [
-            'ppapi_example_c_skeleton',
+            'ppapi_example_skeleton',
+            'ppapi.gyp:ppapi_c',
           ],
           'sources': [
             'examples/stub/stub.c',
@@ -260,7 +231,8 @@
         {
           'target_name': 'ppapi_example_cc_stub',
           'dependencies': [
-            'ppapi_example_cpp_skeleton',
+            'ppapi_example_skeleton',
+            'ppapi.gyp:ppapi_cpp',
           ],
           'sources': [
             'examples/stub/stub.cc',
@@ -269,7 +241,8 @@
         {
           'target_name': 'ppapi_example_audio',
           'dependencies': [
-            'ppapi_example_cpp_skeleton',
+            'ppapi_example_skeleton',
+            'ppapi.gyp:ppapi_cpp',
           ],
           'sources': [
             'examples/audio/audio.cc',
@@ -278,7 +251,8 @@
         {
           'target_name': 'ppapi_example_file_chooser',
           'dependencies': [
-            'ppapi_example_cpp_skeleton',
+            'ppapi_example_skeleton',
+            'ppapi.gyp:ppapi_cpp',
           ],
           'sources': [
             'examples/file_chooser/file_chooser.cc',
@@ -287,7 +261,8 @@
         {
           'target_name': 'ppapi_example_graphics_2d',
           'dependencies': [
-            'ppapi_example_c_skeleton',
+            'ppapi_example_skeleton',
+            'ppapi.gyp:ppapi_c',
           ],
           'sources': [
             'examples/2d/graphics_2d_example.c',
@@ -296,7 +271,8 @@
         {
           'target_name': 'ppapi_example_paint_manager',
           'dependencies': [
-            'ppapi_example_cpp_skeleton',
+            'ppapi_example_skeleton',
+            'ppapi.gyp:ppapi_cpp',
           ],
           'sources': [
             'examples/2d/paint_manager_example.cc',
@@ -305,7 +281,8 @@
         {
           'target_name': 'ppapi_example_post_message',
           'dependencies': [
-            'ppapi_example_cpp_skeleton',
+            'ppapi_example_skeleton',
+            'ppapi.gyp:ppapi_cpp',
           ],
           'sources': [
             'examples/scripting/post_message.cc',
@@ -314,7 +291,8 @@
         {
           'target_name': 'ppapi_example_scroll',
           'dependencies': [
-            'ppapi_example_cpp_skeleton',
+            'ppapi_example_skeleton',
+            'ppapi.gyp:ppapi_cpp',
           ],
           'sources': [
             'examples/2d/scroll.cc',
@@ -323,7 +301,8 @@
         {
           'target_name': 'ppapi_example_simple_font',
           'dependencies': [
-            'ppapi_example_cpp_skeleton',
+            'ppapi_example_skeleton',
+            'ppapi.gyp:ppapi_cpp',
           ],
           'sources': [
             'examples/font/simple_font.cc',
@@ -332,7 +311,8 @@
         {
           'target_name': 'ppapi_example_gles2',
           'dependencies': [
-            'ppapi_example_cpp_skeleton',
+            'ppapi_example_skeleton',
+            'ppapi.gyp:ppapi_cpp',
             'ppapi.gyp:ppapi_gles2',
             'lib/gl/gl.gyp:ppapi_egl',
           ],
