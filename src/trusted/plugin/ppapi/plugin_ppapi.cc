@@ -643,9 +643,9 @@ bool PluginPpapi::HandleDocumentLoad(const pp::URLLoader& url_loader) {
     // Store this event and replay it when the proxy becomes available.
     replayHandleDocumentLoad = true;
     replayHandleDocumentLoadURLLoader = url_loader;
-    // Returning false allows the caller release its reference to the
-    // URL loader.
-    return false;
+    // Return true so that the browser keeps servicing this loader so we can
+    // perform requests on it later.
+    return true;
   } else {
     return pp::PPBoolToBool(
         ppapi_proxy_->ppp_instance_interface()->HandleDocumentLoad(
