@@ -269,7 +269,6 @@ bool HostNPScriptObject::Enumerate(std::vector<std::string>* values) {
 
 void HostNPScriptObject::OnSignallingConnected(SignalStrategy* signal_strategy,
                                                const std::string& full_jid) {
-  OnStateChanged(kConnected);
 }
 
 void HostNPScriptObject::OnSignallingDisconnected() {
