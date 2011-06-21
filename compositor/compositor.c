@@ -634,11 +634,8 @@ wlsc_output_damage(struct wlsc_output *output)
 {
 	struct wlsc_compositor *compositor = output->compositor;
 
-	pixman_region32_union_rect(&compositor->damage_region,
-				   &compositor->damage_region,
-				   output->x, output->y,
-				   output->current->width,
-				   output->current->height);
+	pixman_region32_union(&compositor->damage_region,
+			      &compositor->damage_region, &output->region);
 	wlsc_compositor_schedule_repaint(compositor);
 }
 
@@ -713,11 +710,8 @@ wlsc_output_repaint(struct wlsc_output *output)
 
 	pixman_region32_init(&new_damage);
 	pixman_region32_init(&total_damage);
-	pixman_region32_intersect_rect(&new_damage,
-				       &ec->damage_region,
-				       output->x, output->y,
-				       output->current->width,
-				       output->current->height);
+	pixman_region32_intersect(&new_damage,
+				  &ec->damage_region, &output->region);
 	pixman_region32_subtract(&ec->damage_region,
 				 &ec->damage_region, &new_damage);
 	pixman_region32_union(&total_damage, &new_damage,
@@ -891,8 +885,8 @@ wlsc_surface_assign_output(struct wlsc_surface *es)
 	es->output = NULL;
 
 	wl_list_for_each(output, &ec->output_list, link) {
-		if (output->x < es->x && es->x < output->x + output->current->width &&
-		    output->y < es->y && es->y < output->y + output->current->height) {
+		if (pixman_region32_contains_point(&output->region,
+						   es->x, es->y, NULL)) {
 			if (output != tmp)
 				printf("assiging surface %p to output %p\n",
 				       es, output);
@@ -1655,6 +1649,7 @@ init_solid_shader(struct wlsc_shader *shader,
 WL_EXPORT void
 wlsc_output_destroy(struct wlsc_output *output)
 {
+	pixman_region32_fini(&output->region);
 	destroy_surface(&output->background->surface.resource, NULL);
 }
 
@@ -1673,6 +1668,9 @@ wlsc_output_move(struct wlsc_output *output, int x, int y)
 	}
 
 	pixman_region32_init(&output->previous_damage_region);
+	pixman_region32_init_rect(&output->region, x, y, 
+				  output->current->width,
+				  output->current->height);
 
 	wlsc_matrix_init(&output->matrix);
 	wlsc_matrix_translate(&output->matrix,
@@ -1684,11 +1682,8 @@ wlsc_output_move(struct wlsc_output *output, int x, int y)
 			  2.0 / output->current->width,
 			  flip * 2.0 / output->current->height, 1);
 
-	pixman_region32_union_rect(&c->damage_region,
-				   &c->damage_region,
-				   x, y,
-				   output->current->width,
-				   output->current->height);
+	pixman_region32_union(&c->damage_region,
+			      &c->damage_region, &output->region);
 }
 
 WL_EXPORT void
