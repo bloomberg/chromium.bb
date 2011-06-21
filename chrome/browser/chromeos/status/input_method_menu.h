@@ -26,6 +26,7 @@ class SimpleMenuModel;
 }  // namespace ui
 
 namespace views {
+class MenuItemView;
 class MenuModelAdapter;
 }  // namespace views
 
@@ -172,6 +173,7 @@ class InputMethodMenu : public views::ViewMenuDelegate,
   // views::MenuDelegate interface required for MenuItemView.
   scoped_ptr<ui::SimpleMenuModel> model_;
   scoped_ptr<views::MenuModelAdapter> input_method_menu_delegate_;
+  scoped_ptr<views::MenuItemView> input_method_menu_;
 
   int minimum_input_method_menu_width_;
 

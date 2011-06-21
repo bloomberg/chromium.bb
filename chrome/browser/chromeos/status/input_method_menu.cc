@@ -132,9 +132,11 @@ InputMethodMenu::InputMethodMenu(PrefService* pref_service,
                                  bool for_out_of_box_experience_dialog)
     : input_method_descriptors_(CrosLibrary::Get()->GetInputMethodLibrary()->
                                 GetActiveInputMethods()),
-      model_(NULL),
+      model_(new ui::SimpleMenuModel(NULL)),
       ALLOW_THIS_IN_INITIALIZER_LIST(input_method_menu_delegate_(
           new views::MenuModelAdapter(this))),
+      input_method_menu_(
+          new views::MenuItemView(input_method_menu_delegate_.get())),
       minimum_input_method_menu_width_(0),
       menu_alignment_(views::MenuItemView::TOPRIGHT),
       pref_service_(pref_service),
@@ -375,11 +377,9 @@ void InputMethodMenu::ActivatedAt(int index) {
 void InputMethodMenu::RunMenu(views::View* source, const gfx::Point& pt) {
   PrepareForMenuOpen();
 
-  views::MenuItemView menu(input_method_menu_delegate_.get());
-  input_method_menu_delegate_->BuildMenu(&menu);
   if (minimum_input_method_menu_width_ > 0) {
-    DCHECK(menu.HasSubmenu());
-    views::SubmenuView* submenu = menu.GetSubmenu();
+    DCHECK(input_method_menu_->HasSubmenu());
+    views::SubmenuView* submenu = input_method_menu_->GetSubmenu();
     submenu->set_minimum_preferred_width(minimum_input_method_menu_width_);
   }
 
@@ -392,10 +392,8 @@ void InputMethodMenu::RunMenu(views::View* source, const gfx::Point& pt) {
   // to a NativeWindow that we can pass to MenuItemView::RunMenuAt().
   gfx::NativeWindow window = GTK_WINDOW(source->GetWidget()->GetNativeView());
 
-  menu.RunMenuAt(window, NULL,
-                 gfx::Rect(pt, gfx::Size(0, 0)),
-                 menu_alignment_,
-                 true);
+  input_method_menu_->RunMenuAt(
+      window, NULL, gfx::Rect(pt, gfx::Size()), menu_alignment_, true);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -505,7 +503,7 @@ void InputMethodMenu::UpdateUIFromInputMethod(
 }
 
 void InputMethodMenu::RebuildModel() {
-  model_.reset(new ui::SimpleMenuModel(NULL));
+  model_->Clear();
   string16 dummy_label = UTF8ToUTF16("");
   // Indicates if separator's needed before each section.
   bool need_separator = false;
@@ -543,8 +541,8 @@ void InputMethodMenu::RebuildModel() {
                          0 /* dummy */);
   }
 
-  // Wrap new model with views::MenuDelegate interface.
-  input_method_menu_delegate_.reset(new views::MenuModelAdapter(this));
+  // Rebuild the menu from the model.
+  input_method_menu_delegate_->BuildMenu(input_method_menu_.get());
 }
 
 bool InputMethodMenu::IndexIsInInputMethodList(int index) const {
