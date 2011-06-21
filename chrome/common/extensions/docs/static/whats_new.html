@@ -7,6 +7,7 @@ made in recent releases.
 </p>
 
 <ul>
+  <li> <a href="#12">Google Chrome 12</a> </li>
   <li> <a href="#11">Google Chrome 11</a> </li>
   <li> <a href="#10">Google Chrome 10</a> </li>
   <li> <a href="#9">Google Chrome 9</a> </li>
@@ -15,6 +16,36 @@ made in recent releases.
   <li> <a href="#6">Google Chrome 6</a> </li>
 </ul>
 
+
+<h2 id="12"> Google Chrome 12 </h2>
+
+<h4> Additions to existing APIs </h4>
+  <ul>
+    <li> Two new <code>chrome.extension</code>
+      methods&mdash;<a href="extension.html#method-isAllowedFileSchemeAccess">isAllowedFileSchemeAccess()</a> and
+      <a href="extension.html#method-isAllowedIncognitoAccess">isAllowedIncognitoAccess()</a>&mdash;let you
+      determine whether your extension has increased access,
+      which the user specifies using the extensions management page
+      (<b>chrome://extensions</b>).
+      </li>
+    <li> The <a href="windows.html#method-create">chrome.windows.create()</a>
+      method can now have take a <code>focused</code> value.
+      </li>
+    <li> If the manifest specifies "experimental" permission,
+      your extension can specify "panel" as the value of
+      the <code>type</code> field in
+      the <a href="windows.html#method-create">chrome.windows.create()</a>
+      method
+      or the <a href="windows.html#type-Window">Window</a> type.
+      </li>
+    <li> The <a href="cookies.html#event-onChanged">onChanged</a>
+      event of <code>chrome.cookies</code>
+      now has a <code>cause</code> parameter. </li>
+    <li> The <code>chrome.contextMenus</code>
+      <a href="contextMenus.html#method-create">create()</a> and
+      <a href="contextMenus.html#method-update">update()</a>
+      methods now let you specify a context value of "frame".
+  </ul>
 
 <h2 id="11"> Google Chrome 11 </h2>
 
@@ -66,7 +97,7 @@ made in recent releases.
 <h4> Additions to existing APIs </h4>
   <ul>
     <li> The <a href="windows.html#method-create">chrome.windows.create()</a>
-      method now has a <code>tabId</code> parameter.
+      method now has a <code>tabId</code> field.
       You can use it to move a tab or panel into a new window.
       <p class="note">
       <b>Note:</b>
@@ -88,9 +119,6 @@ made in recent releases.
     <li> The <a href="manifest.html#homepage_url">homepage_url</a> field
       lets you specify the extension or app's homepage. </li>
   </ul>
-</h4>
-
-<!-- <h4> New experimental APIs </h4> -->
 
 <h4> Additions to existing APIs </h4>
   <ul>
@@ -143,18 +171,6 @@ No API or manifest changes worth noting.
       </li>
   </ul>
 
-<!--
-<h4> New experimental APIs </h4>
-  <ul>
-    <li> a change </li>
-  </ul>
-
-<h4> Additions to existing APIs </h4>
-  <ul>
-    <li> a change </li>
-  </ul>
--->
-
 
 <h2 id="6">Google Chrome 6</h2>
 
@@ -166,14 +182,6 @@ No API or manifest changes worth noting.
       browser's cookie system.  </li>
     <li>The <a href="idle.html">idle API</a> allows you to detect when the
       machine's idle state changes. </li>
-  </ul>
-
-<h4> New experimental APIs </h4>
-  <ul>
-    <li>The <a href="experimental.omnibox.html">omnibox API</a> allows you to
-      add functionality to the browser's address bar. </li>
-    <li>The <a href="experimental.infobars.html">infobars API</a> allows you
-      to add a UI panel across the top of a tab. </li>
   </ul>
 
 <h4> Additions to existing APIs </h4>
