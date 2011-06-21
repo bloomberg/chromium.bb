@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/infobars/infobar_view.h"
 
-#include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/ui/views/infobars/infobar_background.h"
@@ -60,7 +59,6 @@ InfoBarView::InfoBarView(TabContentsWrapper* owner, InfoBarDelegate* delegate)
     : InfoBar(owner, delegate),
       icon_(NULL),
       close_button_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(delete_factory_(this)),
       fill_path_(new SkPath),
       stroke_path_(new SkPath) {
   set_parent_owned(false);  // InfoBar deletes itself at the appropriate time.
@@ -250,10 +248,6 @@ void InfoBarView::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
     } else {
       DestroyFocusTracker(false);
       animation()->Stop();
-      // Finally, clean ourselves up when we're removed from the view hierarchy
-      // since no-one refers to us now.
-      MessageLoop::current()->PostTask(FROM_HERE,
-          delete_factory_.NewRunnableMethod(&InfoBarView::DeleteSelf));
       if (GetFocusManager())
         GetFocusManager()->RemoveFocusChangeListener(this);
     }
@@ -366,8 +360,4 @@ void InfoBarView::DestroyFocusTracker(bool restore_focus) {
     focus_tracker_->SetFocusManager(NULL);
     focus_tracker_.reset();
   }
-}
-
-void InfoBarView::DeleteSelf() {
-  delete this;
 }

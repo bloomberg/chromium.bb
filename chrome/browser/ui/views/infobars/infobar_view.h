@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_VIEWS_INFOBARS_INFOBAR_VIEW_H_
 #pragma once
 
-#include "base/task.h"
 #include "chrome/browser/tab_contents/infobar.h"
 #include "chrome/browser/tab_contents/infobar_container.h"
 #include "chrome/browser/ui/views/infobars/infobar_background.h"
@@ -105,10 +104,6 @@ class InfoBarView : public InfoBar,
   // so.
   void DestroyFocusTracker(bool restore_focus);
 
-  // Deletes this object (called after a return to the message loop to allow
-  // the stack in ViewHierarchyChanged to unwind).
-  void DeleteSelf();
-
   // The optional icon at the left edge of the InfoBar.
   views::ImageView* icon_;
 
@@ -118,9 +113,6 @@ class InfoBarView : public InfoBar,
   // Tracks and stores the last focused view which is not the InfoBar or any of
   // its children. Used to restore focus once the InfoBar is closed.
   scoped_ptr<views::ExternalFocusTracker> focus_tracker_;
-
-  // Used to delete this object after a return to the message loop.
-  ScopedRunnableMethodFactory<InfoBarView> delete_factory_;
 
   // The paths for the InfoBarBackground to draw, sized according to the heights
   // above.
