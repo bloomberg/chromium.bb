@@ -1688,8 +1688,24 @@
    fun:_ZN6WebKit13WebWorkerBase21reportPendingActivityEb
 }
 {
-   bug_86303
+   bug_86303a
    Memcheck:Addr4
    ...
    fun:objc_msgSend*
 }
+{
+   bug_86303b
+   Memcheck:Addr4
+   ...
+   fun:-[NSView _recursiveDisplayAllDirtyWithLockFocus:visRect:]
+   fun:-[NSView _recursiveDisplayRectIfNeededIgnoringOpacity:isVisibleRect:rectIsVisibleRectForView:topView:]
+   fun:-[NSView _recursiveDisplayRectIfNeededIgnoringOpacity:isVisibleRect:rectIsVisibleRectForView:topView:]
+   fun:-[NSView _recursiveDisplayRectIfNeededIgnoringOpacity:isVisibleRect:rectIsVisibleRectForView:topView:]
+   fun:-[NSView _recursiveDisplayRectIfNeededIgnoringOpacity:isVisibleRect:rectIsVisibleRectForView:topView:]
+   fun:-[NSThemeFrame _recursiveDisplayRectIfNeededIgnoringOpacity:isVisibleRect:rectIsVisibleRectForView:topView:]
+   fun:-[NSView _displayRectIgnoringOpacity:isVisibleRect:rectIsVisibleRectForView:]
+   fun:-[NSView displayIfNeeded]
+   fun:-[NSWindow displayIfNeeded]
+   fun:_handleWindowNeedsDisplay
+}
+
