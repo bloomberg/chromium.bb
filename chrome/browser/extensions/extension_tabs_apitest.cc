@@ -148,7 +148,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_CaptureVisibleTabPng) {
 
 // Times out on non-Windows. See http://crbug.com/80212
 #if defined(OS_WIN)
-#define MAYBE_CaptureVisibleTabRace FLAKY_CaptureVisibleTabRace
+#define MAYBE_CaptureVisibleTabRace DISABLED_CaptureVisibleTabRace
 #else
 #define MAYBE_CaptureVisibleTabRace DISABLED_CaptureVisibleTabRace
 #endif
