@@ -4,6 +4,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -296,28 +297,25 @@ TEST_F(TreeNodeModelTest, SetTitle) {
 }
 
 TEST_F(TreeNodeModelTest, BasicOperations) {
-  TreeNodeWithValue<int>* root = new TreeNodeWithValue<int>(0);
-  ASSERT_EQ(0, root->child_count());
+  TreeNodeWithValue<int> root;
+  ASSERT_EQ(0, root.child_count());
 
-  TreeNodeWithValue<int>* child1 = new TreeNodeWithValue<int>(1);
-  root->Add(child1, root->child_count());
-  ASSERT_EQ(1, root->child_count());
-  ASSERT_EQ(root, child1->parent());
+  TreeNodeWithValue<int>* child1 = new TreeNodeWithValue<int>();
+  root.Add(child1, root.child_count());
+  ASSERT_EQ(1, root.child_count());
+  ASSERT_EQ(&root, child1->parent());
 
-  TreeNodeWithValue<int>* child2 = new TreeNodeWithValue<int>(1);
-  root->Add(child2, root->child_count());
-  ASSERT_EQ(2, root->child_count());
+  TreeNodeWithValue<int>* child2 = new TreeNodeWithValue<int>();
+  root.Add(child2, root.child_count());
+  ASSERT_EQ(2, root.child_count());
   ASSERT_EQ(child1->parent(), child2->parent());
 
-  root->Remove(child2);
-  ASSERT_EQ(1, root->child_count());
+  scoped_ptr<TreeNodeWithValue<int> > c2(root.Remove(child2));
+  ASSERT_EQ(1, root.child_count());
   ASSERT_EQ(NULL, child2->parent());
-  delete child2;
 
-  delete root->Remove(child1);
-  ASSERT_EQ(0, root->child_count());
-
-  delete root;
+  scoped_ptr<TreeNodeWithValue<int> > c1(root.Remove(child1));
+  ASSERT_EQ(0, root.child_count());
 }
 
 TEST_F(TreeNodeModelTest, IsRoot) {
