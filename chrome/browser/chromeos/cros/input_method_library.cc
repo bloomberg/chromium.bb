@@ -690,7 +690,10 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
     }
 
     if (!virtual_keyboard) {
+      // kFallbackVirtualKeyboardLayout should always be supported by one of the
+      // system virtual keyboards.
       static const char kFallbackVirtualKeyboardLayout[] = "us";
+
       LOG(ERROR) << "Could not find a FALLBACK virtual keyboard for "
                  << current_input_method_.id
                  << ". Use '" << kFallbackVirtualKeyboardLayout
@@ -699,10 +702,6 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
           kFallbackVirtualKeyboardLayout);
       virtual_keyboard_layout = kFallbackVirtualKeyboardLayout;
     }
-
-    // kFallbackVirtualKeyboardLayout should always be supported by one of the
-    // system virtual keyboards.
-    DCHECK(virtual_keyboard);
 
     if (virtual_keyboard) {
       FOR_EACH_OBSERVER(VirtualKeyboardObserver, virtual_keyboard_observers_,
