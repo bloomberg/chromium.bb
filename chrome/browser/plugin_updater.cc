@@ -157,7 +157,7 @@ void PluginUpdater::SetProfile(Profile* profile) {
   {  // Scoped update of prefs::kPluginsPluginsList.
     ListPrefUpdate update(profile->GetPrefs(), prefs::kPluginsPluginsList);
     ListValue* saved_plugins_list = update.Get();
-    if (saved_plugins_list) {
+    if (saved_plugins_list && !saved_plugins_list->empty()) {
       for (ListValue::const_iterator it = saved_plugins_list->begin();
            it != saved_plugins_list->end();
            ++it) {
@@ -208,6 +208,11 @@ void PluginUpdater::SetProfile(Profile* profile) {
           EnablePluginGroup(false, group_name);
         }
       }
+    } else {
+      // If the saved plugin list is empty, then the call to UpdatePreferences()
+      // below failed in an earlier run, possibly because the user closed the
+      // browser too quickly. Try to force enable the internal PDF plugin again.
+      force_enable_internal_pdf = true;
     }
   }  // Scoped update of prefs::kPluginsPluginsList.
 
