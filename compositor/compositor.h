@@ -77,6 +77,8 @@ struct wlsc_output {
 	
 	struct wlsc_mode *current;
 	struct wl_list mode_list;
+	struct wl_buffer *scanout_buffer;
+	struct wl_listener scanout_buffer_destroy_listener;
 
 	int (*prepare_render)(struct wlsc_output *output);
 	int (*present)(struct wlsc_output *output);
@@ -248,6 +250,9 @@ struct wlsc_surface {
 	struct wlsc_output *fullscreen_output;
 
 	EGLImageKHR image;
+
+	struct wl_buffer *buffer;
+	struct wl_listener buffer_destroy_listener;
 };
 
 void
