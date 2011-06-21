@@ -39,6 +39,12 @@ class TranslateManager : public NotificationObserver,
 
   virtual ~TranslateManager();
 
+  // Let the caller decide if and when we should fetch the language list from
+  // the translate server. This is a NOOP if switches::kDisableTranslate is
+  // set or if prefs::kEnableTranslate is set to false.
+  // It will not retry more than kMaxRetryLanguageListFetch times.
+  void FetchLanguageListFromTranslateServer(PrefService* prefs);
+
   // Translates the page contents from |source_lang| to |target_lang|.
   // The actual translation might be performed asynchronously if the translate
   // script is not yet available.
@@ -94,6 +100,9 @@ class TranslateManager : public NotificationObserver,
   // Returns true if |language| is supported by the translation server.
   static bool IsSupportedLanguage(const std::string& language);
 
+  // static const values shared with our browser tests.
+  static const char* const kLanguageListCallbackName;
+  static const char* const kTargetLanguagesKey;
  protected:
   TranslateManager();
 
@@ -111,6 +120,14 @@ class TranslateManager : public NotificationObserver,
     std::string target_lang;
   };
 
+  // Fills supported_languages_ with the list of languages that the translate
+  // server can translate to and from.
+  static void SetSupportedLanguages(const std::string& language_list);
+
+  // Initializes the list of supported languages if it wasn't initialized before
+  // in case we failed to get them from the server, or didn't get them just yet.
+  static void InitSupportedLanguages();
+
   // Starts the translation process on |tab| containing the page in the
   // |page_lang| language.
   void InitiateTranslation(TabContents* tab, const std::string& page_lang);
@@ -127,8 +144,8 @@ class TranslateManager : public NotificationObserver,
                        const std::string& source_lang,
                        const std::string& target_lang);
 
-   // Shows the after translate or error infobar depending on the details.
-   void PageTranslated(TabContents* tab, PageTranslatedDetails* details);
+  // Shows the after translate or error infobar depending on the details.
+  void PageTranslated(TabContents* tab, PageTranslatedDetails* details);
 
   // Returns true if the passed language has been configured by the user as an
   // accept language.
@@ -174,6 +191,9 @@ class TranslateManager : public NotificationObserver,
 
   // Whether the translate JS is currently being retrieved.
   bool translate_script_request_pending_;
+
+  // Whether the list of languages is currently being retrieved.
+  bool language_list_request_pending_;
 
   // The list of pending translate requests.  Translate requests are queued when
   // the translate script is not ready and has to be fetched from the translate

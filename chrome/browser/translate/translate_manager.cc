@@ -6,10 +6,12 @@
 
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/json/json_reader.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
+#include "base/values.h"
 #include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -124,10 +126,16 @@ const char* const kTranslateScriptHeader =
     "Google-Translate-Element-Mode: library";
 const char* const kReportLanguageDetectionErrorURL =
     "http://translate.google.com/translate_error";
-
+const char* const kLanguageListFetchURL =
+    "http://translate.googleapis.com/translate_a/l?client=chrome&cb=sl";
+const int kMaxRetryLanguageListFetch = 5;
 const int kTranslateScriptExpirationDelayMS = 24 * 60 * 60 * 1000;  // 1 day.
 
 }  // namespace
+
+// This must be kept in sync with the &cb= value in the kLanguageListFetchURL.
+const char* const TranslateManager::kLanguageListCallbackName = "sl(";
+const char* const TranslateManager::kTargetLanguagesKey = "tl";
 
 // static
 base::LazyInstance<std::set<std::string> >
@@ -154,11 +162,69 @@ bool TranslateManager::IsTranslatableURL(const GURL& url) {
 }
 
 // static
+void TranslateManager::SetSupportedLanguages(const std::string& language_list) {
+  // The format is:
+  // sl({'sl': {'XX': 'LanguageName', ...}, 'tl': {'XX': 'LanguageName', ...}})
+  // Where "sl(" is set in kLanguageListCallbackName
+  // and 'tl' is kTargetLanguagesKey
+  if (!StartsWithASCII(language_list, kLanguageListCallbackName, false) ||
+      !EndsWith(language_list, ")", false)) {
+    // We don't have a NOTREACHED here since this can happen in ui_tests, even
+    // though the the BrowserMain function won't call us with parameters.ui_task
+    // is NULL some tests don't set it, so we must bail here.
+    return;
+  }
+  static const size_t kLanguageListCallbackNameLength =
+      strlen(kLanguageListCallbackName);
+  std::string languages_json = language_list.substr(
+      kLanguageListCallbackNameLength,
+      language_list.size() - kLanguageListCallbackNameLength - 1);
+  // JSON doesn't support single quotes though this is what is used on the
+  // translate server so we must replace them with double quotes.
+  ReplaceSubstringsAfterOffset(&languages_json, 0, "'", "\"");
+  scoped_ptr<Value> json_value(base::JSONReader::Read(languages_json, true));
+  if (json_value == NULL || !json_value->IsType(Value::TYPE_DICTIONARY)) {
+    NOTREACHED();
+    return;
+  }
+  // The first level dictionary contains two sub-dict, one for source languages
+  // and the other for target languages, we want to use the target languages.
+  DictionaryValue* language_dict =
+      static_cast<DictionaryValue*>(json_value.get());
+  DictionaryValue* target_languages = NULL;
+  if (!language_dict->GetDictionary(kTargetLanguagesKey, &target_languages) ||
+      target_languages == NULL) {
+    NOTREACHED();
+    return;
+  }
+  // Now we can clear our current state...
+  std::set<std::string>* supported_languages = supported_languages_.Pointer();
+  supported_languages->clear();
+  // ... and replace it with the values we just fetched from the server.
+  DictionaryValue::key_iterator iter = target_languages->begin_keys();
+  for (; iter != target_languages->end_keys(); ++iter)
+    supported_languages_.Pointer()->insert(*iter);
+}
+
+// static
+void TranslateManager::InitSupportedLanguages() {
+  // If our list of supported languages have not been set yet, we default
+  // to our hard coded list of languages in kSupportedLanguages.
+  if (supported_languages_.Pointer()->empty()) {
+    for (size_t i = 0; i < arraysize(kSupportedLanguages); ++i)
+      supported_languages_.Pointer()->insert(kSupportedLanguages[i]);
+  }
+}
+
+// static
 void TranslateManager::GetSupportedLanguages(
     std::vector<std::string>* languages) {
   DCHECK(languages && languages->empty());
-  for (size_t i = 0; i < arraysize(kSupportedLanguages); ++i)
-    languages->push_back(kSupportedLanguages[i]);
+  InitSupportedLanguages();
+  std::set<std::string>* supported_languages = supported_languages_.Pointer();
+  std::set<std::string>::const_iterator iter = supported_languages->begin();
+  for (; iter != supported_languages->end(); ++iter)
+    languages->push_back(*iter);
 }
 
 // static
@@ -177,12 +243,8 @@ std::string TranslateManager::GetLanguageCode(
 
 // static
 bool TranslateManager::IsSupportedLanguage(const std::string& page_language) {
-  std::set<std::string>* supported_languages = supported_languages_.Pointer();
-  if (supported_languages->empty()) {
-    for (size_t i = 0; i < arraysize(kSupportedLanguages); ++i)
-      supported_languages->insert(kSupportedLanguages[i]);
-  }
-  return supported_languages->find(page_language) != supported_languages->end();
+  InitSupportedLanguages();
+  return supported_languages_.Pointer()->count(page_language) != 0;
 }
 
 void TranslateManager::Observe(NotificationType type,
@@ -288,54 +350,74 @@ void TranslateManager::OnURLFetchComplete(const URLFetcher* source,
                                           const net::ResponseCookies& cookies,
                                           const std::string& data) {
   scoped_ptr<const URLFetcher> delete_ptr(source);
-  DCHECK(translate_script_request_pending_);
-  translate_script_request_pending_ = false;
+  DCHECK(translate_script_request_pending_ || language_list_request_pending_);
+  // We quickly recognize that we are handling a translate script request
+  // if we don't have a language_list_request_pending_. Otherwise we do the
+  // more expensive check of confirming we got the kTranslateScriptURL in the
+  // rare case where we would have both requests pending at the same time.
+  bool translate_script_request = !language_list_request_pending_ ||
+      url == GURL(kTranslateScriptURL);
+  // Here we make sure that if we didn't get the translate_script_request,
+  // we actually got a language_list_request.
+  DCHECK(translate_script_request || url == GURL(kLanguageListFetchURL));
+  if (translate_script_request)
+    translate_script_request_pending_ = false;
+  else
+    language_list_request_pending_ = false;
+
   bool error =
       (status.status() != net::URLRequestStatus::SUCCESS ||
        response_code != 200);
 
-  if (!error) {
-    base::StringPiece str = ResourceBundle::GetSharedInstance().
-        GetRawDataResource(IDR_TRANSLATE_JS);
-    DCHECK(translate_script_.empty());
-    str.CopyToString(&translate_script_);
-    translate_script_ += "\n" + data;
-    // We'll expire the cached script after some time, to make sure long running
-    // browsers still get fixes that might get pushed with newer scripts.
-    MessageLoop::current()->PostDelayedTask(FROM_HERE,
-        method_factory_.NewRunnableMethod(
-            &TranslateManager::ClearTranslateScript),
-        translate_script_expiration_delay_);
-  }
+  if (translate_script_request) {
+    if (!error) {
+      base::StringPiece str = ResourceBundle::GetSharedInstance().
+          GetRawDataResource(IDR_TRANSLATE_JS);
+      DCHECK(translate_script_.empty());
+      str.CopyToString(&translate_script_);
+      translate_script_ += "\n" + data;
+      // We'll expire the cached script after some time, to make sure long
+      // running browsers still get fixes that might get pushed with newer
+      // scripts.
+      MessageLoop::current()->PostDelayedTask(FROM_HERE,
+          method_factory_.NewRunnableMethod(
+              &TranslateManager::ClearTranslateScript),
+          translate_script_expiration_delay_);
+    }
+    // Process any pending requests.
+    std::vector<PendingRequest>::const_iterator iter;
+    for (iter = pending_requests_.begin(); iter != pending_requests_.end();
+         ++iter) {
+      const PendingRequest& request = *iter;
+      TabContents* tab = tab_util::GetTabContentsByID(request.render_process_id,
+                                                      request.render_view_id);
+      if (!tab) {
+        // The tab went away while we were retrieving the script.
+        continue;
+      }
+      NavigationEntry* entry = tab->controller().GetActiveEntry();
+      if (!entry || entry->page_id() != request.page_id) {
+        // We navigated away from the page the translation was triggered on.
+        continue;
+      }
 
-  // Process any pending requests.
-  std::vector<PendingRequest>::const_iterator iter;
-  for (iter = pending_requests_.begin(); iter != pending_requests_.end();
-       ++iter) {
-    const PendingRequest& request = *iter;
-    TabContents* tab = tab_util::GetTabContentsByID(request.render_process_id,
-                                                    request.render_view_id);
-    if (!tab) {
-      // The tab went away while we were retrieving the script.
-      continue;
+      if (error) {
+        ShowInfoBar(tab, TranslateInfoBarDelegate::CreateErrorDelegate(
+            TranslateErrors::NETWORK, tab,
+            request.source_lang, request.target_lang));
+      } else {
+        // Translate the page.
+        DoTranslatePage(tab, translate_script_,
+                        request.source_lang, request.target_lang);
+      }
     }
-    NavigationEntry* entry = tab->controller().GetActiveEntry();
-    if (!entry || entry->page_id() != request.page_id) {
-      // We navigated away from the page the translation was triggered on.
-      continue;
-    }
-
-    if (error) {
-      ShowInfoBar(tab, TranslateInfoBarDelegate::CreateErrorDelegate(
-          TranslateErrors::NETWORK, tab,
-          request.source_lang, request.target_lang));
-    } else {
-      // Translate the page.
-      DoTranslatePage(tab, translate_script_,
-                      request.source_lang, request.target_lang);
-    }
+    pending_requests_.clear();
+  } else {  // if (translate_script_request)
+    if (!error)
+      SetSupportedLanguages(data);
+    else
+      VLOG(1) << "Failed to Fetch languages from: " << kLanguageListFetchURL;
   }
-  pending_requests_.clear();
 }
 
 // static
@@ -346,7 +428,8 @@ bool TranslateManager::IsShowingTranslateInfobar(TabContents* tab) {
 TranslateManager::TranslateManager()
     : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
       translate_script_expiration_delay_(kTranslateScriptExpirationDelayMS),
-      translate_script_request_pending_(false) {
+      translate_script_request_pending_(false),
+      language_list_request_pending_(false) {
   notification_registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED,
                               NotificationService::AllSources());
   notification_registrar_.Add(this, NotificationType::TAB_LANGUAGE_DETERMINED,
@@ -618,6 +701,27 @@ void TranslateManager::InitAcceptLanguages(PrefService* prefs) {
       accept_langs_set.insert(accept_lang);
   }
   accept_languages_[prefs] = accept_langs_set;
+}
+
+void TranslateManager::FetchLanguageListFromTranslateServer(
+    PrefService* prefs) {
+  if (language_list_request_pending_)
+    return;
+
+  // We don't want to do this when translate is disabled.
+  DCHECK(prefs != NULL);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableTranslate) ||
+      (prefs != NULL && !prefs->GetBoolean(prefs::kEnableTranslate))) {
+    return;
+  }
+
+  language_list_request_pending_ = true;
+  URLFetcher* fetcher = URLFetcher::Create(1, GURL(kLanguageListFetchURL),
+                                           URLFetcher::GET, this);
+  fetcher->set_request_context(Profile::GetDefaultRequestContext());
+  fetcher->set_max_retries(kMaxRetryLanguageListFetch);
+  fetcher->Start();
 }
 
 void TranslateManager::RequestTranslateScript() {

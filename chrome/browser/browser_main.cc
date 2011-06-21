@@ -1617,7 +1617,12 @@ int BrowserMain(const MainFunctionParams& parameters) {
     return ResultCodes::MACHINE_LEVEL_INSTALL_EXISTS;
 
   // Create the TranslateManager singleton.
-  TranslateManager::GetInstance();
+  TranslateManager* translate_manager = TranslateManager::GetInstance();
+  DCHECK(translate_manager != NULL);
+  // If we're running tests (ui_task is non-null), then we don't want to
+  // call FetchLanguageListFromTranslateServer
+  if (parameters.ui_task == NULL && translate_manager != NULL)
+    translate_manager->FetchLanguageListFromTranslateServer(user_prefs);
 
 #if defined(OS_MACOSX)
   if (!parsed_command_line.HasSwitch(switches::kNoFirstRun)) {
