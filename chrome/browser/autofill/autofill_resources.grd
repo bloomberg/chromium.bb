@@ -133,7 +133,7 @@
         suffix
       </message>
       <message name="IDS_AUTOFILL_PHONE_EXTENSION_RE">
-        ext<!-- pt-BR, pt-PT -->|ramal
+        \bext|extension<!-- pt-BR, pt-PT -->|ramal
       </message>
     </messages>
   </release>
