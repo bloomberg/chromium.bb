@@ -29,7 +29,7 @@ class VideoCaptureManager : public MediaStreamProvider {
   // before MediaStream is implemented in Chrome and WebKit.
   enum { kStartOpenSessionId = 1 };
 
-  // Called to get a pointer to the singleton
+  // Called to get a pointer to the singleton.
   static VideoCaptureManager* Get();
 
   // Implements MediaStreamProvider.
@@ -52,7 +52,7 @@ class VideoCaptureManager : public MediaStreamProvider {
 
   // Stops capture device referenced by |capture_session_id|. No more frames
   // will be delivered to the frame receiver, and |stopped_task| will be called.
-  void Stop(const media::VideoCaptureSessionId capture_session_id,
+  void Stop(const media::VideoCaptureSessionId& capture_session_id,
             Task* stopped_task);
 
   // A capture device error has occurred for |capture_session_id|. The device
@@ -100,14 +100,14 @@ class VideoCaptureManager : public MediaStreamProvider {
   bool DeviceOpened(const StreamDeviceInfo& device_info);
   bool IsOnCaptureDeviceThread() const;
 
-  // Thread for all calls to VideoCaptureDevice
+  // Thread for all calls to VideoCaptureDevice.
   base::Thread vc_device_thread_;
 
-  // Only accessed on Browser::IO thread
+  // Only accessed on Browser::IO thread.
   MediaStreamProviderListener* listener_;
   int new_capture_session_id_;
 
-  // Only accessed from vc_device_thread_
+  // Only accessed from vc_device_thread_.
   // VideoCaptureManager owns all VideoCaptureDevices and is responsible for
   // deleting the instances when they are not used any longer.
   typedef std::map<int, media::VideoCaptureDevice*> VideoCaptureDevices;

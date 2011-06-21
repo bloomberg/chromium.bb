@@ -10,7 +10,7 @@
 
 namespace media_stream {
 
-// StreamOptions is a Chromium representation of WebKits
+// StreamOptions is a Chromium representation of WebKit's
 // WebGenerateStreamOptionFlags. It describes the components in a request for a
 // new media stream.
 struct StreamOptions {
