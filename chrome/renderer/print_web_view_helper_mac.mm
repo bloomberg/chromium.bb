@@ -14,6 +14,12 @@
 #include "printing/metafile_impl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 
+#if defined(USE_SKIA)
+#include "printing/metafile_skia_wrapper.h"
+#include "skia/ext/vector_canvas.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebCanvas.h"
+#endif
+
 using WebKit::WebFrame;
 
 void PrintWebViewHelper::PrintPageInternal(
@@ -123,15 +129,29 @@ void PrintWebViewHelper::RenderPage(
     const gfx::Size& page_size, const gfx::Rect& content_area,
     const float& scale_factor, int page_number, WebFrame* frame,
     printing::Metafile* metafile) {
-  bool success = metafile->StartPage(page_size, content_area, scale_factor);
-  DCHECK(success);
 
-  // printPage can create autoreleased references to |context|. PDF contexts
-  // don't write all their data until they are destroyed, so we need to make
-  // certain that there are no lingering references.
   {
+#if defined(USE_SKIA)
+    SkDevice* device = metafile->StartPageForVectorCanvas(
+        page_size, content_area, scale_factor);
+    if (!device)
+      return;
+
+    SkRefPtr<skia::VectorCanvas> canvas = new skia::VectorCanvas(device);
+    canvas->unref();  // SkRefPtr and new both took a reference.
+    WebKit::WebCanvas* canvasPtr = canvas.get();
+    printing::MetafileSkiaWrapper::SetMetafileOnCanvas(canvasPtr, metafile);
+#else
+    bool success = metafile->StartPage(page_size, content_area, scale_factor);
+    DCHECK(success);
+    // printPage can create autoreleased references to |context|. PDF contexts
+    // don't write all their data until they are destroyed, so we need to make
+    // certain that there are no lingering references.
     base::mac::ScopedNSAutoreleasePool pool;
-    frame->printPage(page_number, metafile->context());
+    CGContextRef cgContext = metafile->context();
+    CGContextRef canvasPtr = cgContext;
+#endif
+    frame->printPage(page_number, canvasPtr);
   }
 
   // Done printing. Close the device context to retrieve the compiled metafile.
