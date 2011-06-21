@@ -221,11 +221,12 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
     return;
   }
 
-  // Kernel bug workaround (broken in 2.6.30 at least):
+  // Kernel bug workaround (broken in 2.6.30 and 2.6.32, working in 2.6.38).
   // The kernel doesn't translate PIDs in SCM_CREDENTIALS across PID
   // namespaces. Thus |crashing_pid| might be garbage from our point of view.
   // In the future we can remove this workaround, but we have to wait a couple
   // of years to be sure that it's worked its way out into the world.
+  // TODO(thestig) Remove the workaround when Ubuntu Lucid is deprecated.
 
   // The crashing process closes its copy of the signal_fd immediately after
   // calling sendmsg(). We can thus not reliably look for with with
@@ -248,39 +249,43 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
     return;
   }
 
-  if (actual_crashing_pid != crashing_pid) {
-    crashing_pid = actual_crashing_pid;
+  crashing_pid = actual_crashing_pid;
 
-    // The crashing TID set inside the compromised context via sys_gettid()
-    // in ExceptionHandler::HandleSignal is also wrong and needs to be
-    // translated.
-    //
-    // We expect the crashing thread to be in sys_read(), waiting for use to
-    // write to |signal_fd|. Most newer kernels where we have the different pid
-    // namespaces also have /proc/[pid]/syscall, so we can look through
-    // |actual_crashing_pid|'s thread group and find the thread that's in the
-    // read syscall with the right arguments.
+  // The crashing TID set inside the compromised context via
+  // sys_gettid() in ExceptionHandler::HandleSignal might be wrong (if
+  // the kernel supports PID namespacing) and may need to be
+  // translated.
+  //
+  // We expect the crashing thread to be in sys_read(), waiting for us to
+  // write to |signal_fd|. Most newer kernels where we have the different pid
+  // namespaces also have /proc/[pid]/syscall, so we can look through
+  // |actual_crashing_pid|'s thread group and find the thread that's in the
+  // read syscall with the right arguments.
 
-    std::string expected_syscall_data;
-    // /proc/[pid]/syscall is formatted as follows:
-    // syscall_number arg1 ... arg6 sp pc
-    // but we just check syscall_number through arg3.
-    base::StringAppendF(&expected_syscall_data, "%d 0x%x %p 0x1 ",
-                        SYS_read, tid_fd, tid_buf_addr);
-    pid_t crashing_tid =
-        base::FindThreadIDWithSyscall(crashing_pid, expected_syscall_data);
-    if (crashing_tid == -1) {
-      // We didn't find the thread we want. Maybe it didn't reach sys_read()
-      // yet, or the kernel doesn't support /proc/[pid]/syscall or the thread
-      // went away.  We'll just take a guess here and assume the crashing
-      // thread is the thread group leader.
-      crashing_tid = crashing_pid;
-    }
-
-    ExceptionHandler::CrashContext* bad_context =
-        reinterpret_cast<ExceptionHandler::CrashContext*>(crash_context);
-    bad_context->tid = crashing_tid;
+  std::string expected_syscall_data;
+  // /proc/[pid]/syscall is formatted as follows:
+  // syscall_number arg1 ... arg6 sp pc
+  // but we just check syscall_number through arg3.
+  base::StringAppendF(&expected_syscall_data, "%d 0x%x %p 0x1 ",
+                      SYS_read, tid_fd, tid_buf_addr);
+  bool syscall_supported = false;
+  pid_t crashing_tid =
+      base::FindThreadIDWithSyscall(crashing_pid,
+                                    expected_syscall_data,
+                                    &syscall_supported);
+  if (crashing_tid == -1 && syscall_supported) {
+    // We didn't find the thread we want. Maybe it didn't reach
+    // sys_read() yet or the thread went away.  We'll just take a
+    // guess here and assume the crashing thread is the thread group
+    // leader.  If procfs syscall is not supported by the kernel, then
+    // we assume the kernel also does not support TID namespacing and
+    // trust the TID passed by the crashing process.
+    crashing_tid = crashing_pid;
   }
+
+  ExceptionHandler::CrashContext* bad_context =
+      reinterpret_cast<ExceptionHandler::CrashContext*>(crash_context);
+  bad_context->tid = crashing_tid;
 
   // Sanitize the string data a bit more
   guid[kGuidSize] = crash_url[kMaxActiveURLSize] = distro[kDistroSize] = 0;
