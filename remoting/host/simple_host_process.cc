@@ -96,7 +96,7 @@ void SetIT2MeAccessCode(remoting::SupportAccessVerifier* access_verifier,
                          bool successful, const std::string& support_id) {
   access_verifier->OnIT2MeHostRegistered(successful, support_id);
   if (successful) {
-    std::cout << "Support id: " << support_id << "-"
+    std::cout << "Support id: " << support_id
               << access_verifier->host_secret() << std::endl;
   } else {
     LOG(ERROR) << "If you haven't done so recently, try running"

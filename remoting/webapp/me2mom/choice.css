@@ -72,6 +72,14 @@ section {
 
 /* Classes */
 
+.access-code-digit-group {
+  /*
+    Used for each of the four-digit components of the access code as
+    displayed by the host.
+  */
+  padding: 0px 6px;
+}
+
 .auth-status-control {
   /* Class used to denote controls that affect authorization status. */
   margin: 10px auto auto 0px;

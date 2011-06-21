@@ -17,6 +17,12 @@ remoting.HOST_PLUGIN_ID = 'host-plugin-id';
 
 window.addEventListener('load', init_, false);
 
+// Some constants for pretty-printing the access code.
+var kSupportIdLen = 7;
+var kHostSecretLen = 5;
+var kAccessCodeLen = kSupportIdLen + kHostSecretLen;
+var kDigitsPerGroup = 4;
+
 function hasClass(element, cls) {
   return element.className.match(new RegExp('\\b' + cls + '\\b'));
 }
@@ -225,7 +231,14 @@ function onStateChanged_() {
   } else if (state == plugin.RECEIVED_ACCESS_CODE) {
     var accessCode = plugin.accessCode;
     var accessCodeDisplay = document.getElementById('access-code-display');
-    accessCodeDisplay.innerText = accessCode;
+    accessCodeDisplay.innerText = '';
+    // Display the access code in groups of four digits for readability.
+    for (var i = 0; i < accessCode.length; i += kDigitsPerGroup) {
+      var nextFourDigits = document.createElement('span');
+      nextFourDigits.className = 'access-code-digit-group';
+      nextFourDigits.innerText = accessCode.substring(i, i + kDigitsPerGroup);
+      accessCodeDisplay.appendChild(nextFourDigits);
+    }
     setHostMode('ready-to-share');
   } else if (state == plugin.CONNECTED) {
     setHostMode('shared');
@@ -294,10 +307,10 @@ function parseServerResponse_(xhr) {
   showConnectError_(xhr.status, xhr.responseText);
 }
 
-function normalizeAccessCode(accessCode) {
-  // Trim whitespace from beginning and the end.
+function normalizeAccessCode_(accessCode) {
+  // Trim whitespace.
   // TODO(sergeyu): Do we need to do any other normalization here?
-  return accessCode.replace(/^\s+|\s+$/, '');
+  return accessCode.replace(/\s/g, '');
 }
 
 function resolveSupportId(supportId) {
@@ -330,15 +343,15 @@ function tryConnect() {
     return;
   }
   var accessCode = document.getElementById('access-code-entry').value;
-  remoting.accessCode = accessCode;
-  // TODO(jamiewalch): Since the mapping from (SupportId, HostSecret) to
-  // AccessCode is not yet defined, assume it's hyphen-separated for now.
-  var parts = remoting.accessCode.split('-');
-  if (parts.length != 2) {
+  remoting.accessCode = normalizeAccessCode_(accessCode);
+  // At present, only 12-digit access codes are supported, of which the first
+  // 7 characters are the supportId.
+  if (remoting.accessCode.length != kAccessCodeLen) {
     showConnectError_(404);
   } else {
+    var supportId = remoting.accessCode.substring(0, kSupportIdLen);
     setClientMode('connecting');
-    resolveSupportId(parts[0]);
+    resolveSupportId(supportId);
   }
 }
 

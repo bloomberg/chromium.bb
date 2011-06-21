@@ -16,10 +16,10 @@
 namespace remoting {
 
 namespace {
-// 8 characters long from 10-letter alphabet gives 100M possible
-// host secrets with uniform distribution, which should be enough
-// for short-term passwords.
-const int kHostSecretLength = 8;
+// 5 digits means 100K possible host secrets with uniform distribution, which
+// should be enough for short-term passwords, given that we rate-limit guesses
+// in the cloud and expire access codes after a small number of attempts.
+const int kHostSecretLength = 5;
 const char kHostSecretAlphabet[] = "0123456789";
 
 // Generates cryptographically strong random number in the range [0, max).
@@ -52,7 +52,7 @@ bool SupportAccessVerifier::VerifyPermissions(
     const std::string& encoded_access_token) {
   if (support_id_.empty())
     return false;
-  std::string access_code = support_id_ + "-" + host_secret_;
+  std::string access_code = support_id_ + host_secret_;
   return protocol::VerifySupportAuthToken(
       client_jid, access_code, encoded_access_token);
 }

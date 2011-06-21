@@ -443,7 +443,7 @@ void HostNPScriptObject::OnReceivedSupportID(
 
   // Combine the Support Id with the Host Id to make the Access Code.
   // TODO(wez): Locking, anyone?
-  access_code_ = support_id + "-" + access_verifier->host_secret();
+  access_code_ = support_id + access_verifier->host_secret();
 
   // Let the caller know that life is good.
   OnStateChanged(kReceivedAccessCode);
