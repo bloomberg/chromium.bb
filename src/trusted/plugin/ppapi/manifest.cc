@@ -90,8 +90,9 @@ bool Manifest::Init(const nacl::string& manifest_json, ErrorInfo* error_info) {
   }
   Json::Reader reader;
   if (!reader.parse(manifest_json, dictionary_)) {
+    std::string json_error = reader.getFormatedErrorMessages();
     error_info->SetReport(ERROR_MANIFEST_PARSING,
-                          "manifest JSON parsing failed.");
+                          "manifest JSON parsing failed: " + json_error);
     return false;
   }
   // Parse has ensured the string was valid JSON.  Check that it matches the
