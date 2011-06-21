@@ -974,12 +974,8 @@ void InputMethodIBus::ProcessKeyEventDone(IBusInputContext* context,
          data->input_method()->context_ == context ||
          data->input_method()->fake_context_ == context);
 
-  gboolean handled = FALSE;
-  if (!ibus_input_context_process_key_event_async_finish(context, res,
-                                                         &handled, NULL)) {
-    handled = FALSE;
-  }
-
+  gboolean handled = ibus_input_context_process_key_event_async_finish(
+      context, res, NULL);
   data->ProcessPostIME(handled);
   delete data;
 }
