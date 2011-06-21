@@ -67,6 +67,7 @@ class CompositorGL : public Compositor {
   virtual void NotifyStart() OVERRIDE;
   virtual void NotifyEnd() OVERRIDE;
   virtual void Blur(const gfx::Rect& bounds) OVERRIDE;
+  virtual void SchedulePaint() OVERRIDE;
 
   // Specific to CompositorGL.
   bool InitShaders();
@@ -91,8 +92,9 @@ class CompositorGL : public Compositor {
   DISALLOW_COPY_AND_ASSIGN(CompositorGL);
 };
 
-TextureGL::TextureGL(CompositorGL* compositor) : texture_id_(0),
-                                                 compositor_(compositor) {
+TextureGL::TextureGL(CompositorGL* compositor)
+    : texture_id_(0),
+      compositor_(compositor) {
 }
 
 TextureGL::~TextureGL() {
@@ -279,6 +281,11 @@ void CompositorGL::NotifyEnd() {
 }
 
 void CompositorGL::Blur(const gfx::Rect& bounds) {
+  NOTIMPLEMENTED();
+}
+
+void CompositorGL::SchedulePaint() {
+  // TODO: X doesn't provide coalescing of regions, its left to the toolkit.
   NOTIMPLEMENTED();
 }
 

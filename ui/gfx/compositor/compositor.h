@@ -63,6 +63,9 @@ class Compositor : public base::RefCounted<Compositor> {
   // Blurs the specific region in the compositor.
   virtual void Blur(const gfx::Rect& bounds) = 0;
 
+  // Schedules a paint on the widget this Compositor was created for.
+  virtual void SchedulePaint() = 0;
+
  protected:
   virtual ~Compositor() {}
 

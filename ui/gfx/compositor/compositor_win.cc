@@ -251,6 +251,7 @@ class CompositorWin : public Compositor, public ViewTextureHost {
   virtual void NotifyStart() OVERRIDE;
   virtual void NotifyEnd() OVERRIDE;
   virtual void Blur(const gfx::Rect& bounds) OVERRIDE;
+  virtual void SchedulePaint() OVERRIDE;
 
  private:
   enum Direction {
@@ -521,6 +522,12 @@ void CompositorWin::Blur(const gfx::Rect& bounds) {
   device_->IASetVertexBuffers(0, 1, &vertex_buffer, &stride, &offset);
   device_->IASetIndexBuffer(index_buffer_.get(), DXGI_FORMAT_R32_UINT, 0);
 #endif
+}
+
+void CompositorWin::SchedulePaint() {
+  RECT bounds;
+  GetClientRect(host_, &bounds);
+  InvalidateRect(host_, &bounds, FALSE);
 }
 
 CompositorWin::~CompositorWin() {
