@@ -5,6 +5,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "remoting/jingle_glue/jingle_client.h"
 #include "remoting/jingle_glue/jingle_thread.h"
+#include "remoting/jingle_glue/xmpp_signal_strategy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

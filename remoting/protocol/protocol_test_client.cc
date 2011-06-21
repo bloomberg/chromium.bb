@@ -25,6 +25,7 @@ extern "C" {
 #include "remoting/base/constants.h"
 #include "remoting/jingle_glue/jingle_client.h"
 #include "remoting/jingle_glue/jingle_thread.h"
+#include "remoting/jingle_glue/xmpp_signal_strategy.h"
 #include "remoting/protocol/jingle_session_manager.h"
 
 namespace remoting {

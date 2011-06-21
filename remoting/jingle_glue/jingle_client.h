@@ -11,8 +11,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "remoting/jingle_glue/iq_request.h"
+#include "remoting/jingle_glue/signal_strategy.h"
 #include "remoting/jingle_glue/xmpp_proxy.h"
-#include "third_party/libjingle/source/talk/xmpp/xmppclient.h"
 
 class MessageLoop;
 class Task;
@@ -22,10 +22,6 @@ class NetworkManager;
 class PacketSocketFactory;
 }  // namespace talk_base
 
-namespace buzz {
-class PreXmppAuth;
-}  // namespace buzz
-
 namespace cricket {
 class HttpPortAllocator;
 }  // namespace cricket
@@ -33,97 +29,12 @@ class HttpPortAllocator;
 namespace cricket {
 class BasicPortAllocator;
 class SessionManager;
-class TunnelSessionClient;
-class SessionManagerTask;
-class Session;
 }  // namespace cricket
 
 namespace remoting {
 
 class JingleThread;
 class PortAllocatorSessionFactory;
-class XmppProxy;
-
-// TODO(ajwong): The SignalStrategy stuff needs to be separated out to separate
-// files.
-class SignalStrategy {
- public:
-  class StatusObserver {
-   public:
-    enum State {
-      START,
-      CONNECTING,
-      CONNECTED,
-      CLOSED,
-    };
-
-    // Called when state of the connection is changed.
-    virtual void OnStateChange(State state) = 0;
-    virtual void OnJidChange(const std::string& full_jid) = 0;
-  };
-
-  SignalStrategy() {}
-  virtual ~SignalStrategy() {}
-  virtual void Init(StatusObserver* observer) = 0;
-  virtual void StartSession(cricket::SessionManager* session_manager) = 0;
-  virtual void EndSession() = 0;
-  virtual IqRequest* CreateIqRequest() = 0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SignalStrategy);
-};
-
-class XmppSignalStrategy : public SignalStrategy, public sigslot::has_slots<> {
- public:
-  XmppSignalStrategy(JingleThread* thread,
-                     const std::string& username,
-                     const std::string& auth_token,
-                     const std::string& auth_token_service);
-  virtual ~XmppSignalStrategy();
-
-  virtual void Init(StatusObserver* observer);
-  virtual void StartSession(cricket::SessionManager* session_manager);
-  virtual void EndSession();
-  virtual IqRequest* CreateIqRequest();
-
- private:
-  friend class JingleClientTest;
-
-  void OnConnectionStateChanged(buzz::XmppEngine::State state);
-  static buzz::PreXmppAuth* CreatePreXmppAuth(
-      const buzz::XmppClientSettings& settings);
-
-  JingleThread* thread_;
-
-  std::string username_;
-  std::string auth_token_;
-  std::string auth_token_service_;
-  buzz::XmppClient* xmpp_client_;
-  StatusObserver* observer_;
-
-  DISALLOW_COPY_AND_ASSIGN(XmppSignalStrategy);
-};
-
-// TODO(hclam): Javascript implementation of this interface shouldn't be here.
-class JavascriptSignalStrategy : public SignalStrategy {
- public:
-  explicit JavascriptSignalStrategy(const std::string& your_jid);
-  virtual ~JavascriptSignalStrategy();
-
-  virtual void Init(StatusObserver* observer);
-  virtual void StartSession(cricket::SessionManager* session_manager);
-  virtual void EndSession();
-  virtual void AttachXmppProxy(scoped_refptr<XmppProxy> xmpp_proxy);
-  virtual JavascriptIqRequest* CreateIqRequest();
-
- private:
-  std::string your_jid_;
-  scoped_refptr<XmppProxy> xmpp_proxy_;
-  JavascriptIqRegistry iq_registry_;
-  scoped_ptr<SessionStartRequest> session_start_request_;
-
-  DISALLOW_COPY_AND_ASSIGN(JavascriptSignalStrategy);
-};
 
 class JingleClient : public base::RefCountedThreadSafe<JingleClient>,
                      public SignalStrategy::StatusObserver {

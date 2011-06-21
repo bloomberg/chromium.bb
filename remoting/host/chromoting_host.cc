@@ -23,6 +23,7 @@
 #include "remoting/host/local_input_monitor.h"
 #include "remoting/host/screen_recorder.h"
 #include "remoting/host/user_authenticator.h"
+#include "remoting/jingle_glue/xmpp_signal_strategy.h"
 #include "remoting/proto/auth.pb.h"
 #include "remoting/protocol/connection_to_client.h"
 #include "remoting/protocol/client_stub.h"
