@@ -26,6 +26,7 @@
 #include <stdint.h>
 #include <limits.h>
 #include <stdarg.h>
+#include <assert.h>
 #include <sys/ioctl.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -619,12 +620,10 @@ wlsc_compositor_damage_all(struct wlsc_compositor *compositor)
 static inline void
 wlsc_buffer_post_release(struct wl_buffer *buffer)
 {
-	if (buffer->client == NULL) {
-		fprintf(stderr, "buffer.release warning: buffer.client: %p\n",
-			buffer->client);
+	if (buffer == NULL || --buffer->busy_count > 0)
 		return;
-	}
 
+	assert(buffer->client != NULL);
 	wl_client_post_event(buffer->client,
 			     &buffer->resource.object,
 			     WL_BUFFER_RELEASE);
@@ -636,12 +635,8 @@ wlsc_output_finish_frame(struct wlsc_output *output, int msecs)
 	struct wlsc_compositor *compositor = output->compositor;
 	struct wlsc_animation *animation, *next;
 
-	if (output->scanout_buffer) {
-		if (--output->scanout_buffer->busy_count == 0)
-			wlsc_buffer_post_release(output->scanout_buffer);
-
-		output->scanout_buffer = NULL;
-	}
+	wlsc_buffer_post_release(output->scanout_buffer);
+	output->scanout_buffer = NULL;
 
 	output->finished = 1;
 
@@ -942,10 +937,7 @@ surface_attach(struct wl_client *client,
 	struct wlsc_surface *es = (struct wlsc_surface *) surface;
 
 	buffer->busy_count++;
-
-	if (es->buffer && es->buffer->busy_count > 0)
-		if (--es->buffer->busy_count == 0)
-			wlsc_buffer_post_release(es->buffer);
+	wlsc_buffer_post_release(es->buffer);
 
 	es->buffer = buffer;
 	wl_list_remove(&es->buffer_destroy_listener.link);
