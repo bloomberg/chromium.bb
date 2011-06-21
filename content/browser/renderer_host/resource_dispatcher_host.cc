@@ -408,8 +408,7 @@ void ResourceDispatcherHost::BeginRequest(
         filter_, request_data.url, sync_result, this);
   } else {
     handler = new AsyncResourceHandler(
-        filter_, route_id, request_data.url, resource_context.host_zoom_map(),
-        this);
+        filter_, route_id, request_data.url, this);
   }
 
   // The RedirectToFileResourceHandler depends on being next in the chain.

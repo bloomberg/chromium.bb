@@ -60,10 +60,14 @@ class ChromeResourceDispatcherHostDelegate
                                       int route_id) OVERRIDE;
   virtual bool ShouldForceDownloadResource(
       const GURL& url, const std::string& mime_type) OVERRIDE;
-  virtual void OnResponseStarted(net::URLRequest* request,
-                                 ResourceResponse* response) OVERRIDE;
-  virtual void OnRequestRedirected(net::URLRequest* request,
-                                   ResourceResponse* response) OVERRIDE;
+  virtual void OnResponseStarted(
+      net::URLRequest* request,
+      ResourceResponse* response,
+      ResourceMessageFilter* filter) OVERRIDE;
+  virtual void OnRequestRedirected(
+      net::URLRequest* request,
+      ResourceResponse* response,
+      ResourceMessageFilter* filter) OVERRIDE;
 
  private:
   ResourceHandler* CreateSafeBrowsingResourceHandler(

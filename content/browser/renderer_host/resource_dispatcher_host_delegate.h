@@ -13,6 +13,7 @@
 class GURL;
 class ResourceDispatcherHostLoginDelegate;
 class ResourceHandler;
+class ResourceMessageFilter;
 struct ResourceHostMsg_Request;
 struct ResourceResponse;
 
@@ -90,12 +91,16 @@ class ResourceDispatcherHostDelegate {
       const GURL& url, const std::string& mime_type);
 
   // Informs the delegate that a response has started.
-  virtual void OnResponseStarted(net::URLRequest* request,
-                                 ResourceResponse* response);
+  virtual void OnResponseStarted(
+      net::URLRequest* request,
+      ResourceResponse* response,
+      ResourceMessageFilter* filter);
 
   // Informs the delegate that a request has been redirected.
-  virtual void OnRequestRedirected(net::URLRequest* request,
-                                   ResourceResponse* response);
+  virtual void OnRequestRedirected(
+      net::URLRequest* request,
+      ResourceResponse* response,
+      ResourceMessageFilter* filter);
 
  protected:
   ResourceDispatcherHostDelegate();

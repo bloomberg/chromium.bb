@@ -17,6 +17,7 @@
 #include "content/browser/renderer_host/resource_dispatcher_host_delegate.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/browser/renderer_host/resource_message_filter.h"
+#include "content/browser/resource_context.h"
 #include "content/common/resource_response.h"
 #include "content/common/resource_messages.h"
 #include "content/common/view_messages.h"
@@ -79,11 +80,9 @@ AsyncResourceHandler::AsyncResourceHandler(
     ResourceMessageFilter* filter,
     int routing_id,
     const GURL& url,
-    HostZoomMap* host_zoom_map,
     ResourceDispatcherHost* resource_dispatcher_host)
     : filter_(filter),
       routing_id_(routing_id),
-      host_zoom_map_(host_zoom_map),
       rdh_(resource_dispatcher_host),
       next_buffer_size_(kInitialReadBufSize) {
 }
@@ -106,7 +105,7 @@ bool AsyncResourceHandler::OnRequestRedirected(int request_id,
   net::URLRequest* request = rdh_->GetURLRequest(
       GlobalRequestID(filter_->child_id(), request_id));
   if (rdh_->delegate())
-    rdh_->delegate()->OnRequestRedirected(request, response);
+    rdh_->delegate()->OnRequestRedirected(request, response, filter_);
 
   DevToolsNetLogObserver::PopulateResponseInfo(request, response);
   return filter_->Send(new ResourceMsg_ReceivedRedirect(
@@ -124,16 +123,20 @@ bool AsyncResourceHandler::OnResponseStarted(int request_id,
       GlobalRequestID(filter_->child_id(), request_id));
 
   if (rdh_->delegate())
-    rdh_->delegate()->OnResponseStarted(request, response);
+    rdh_->delegate()->OnResponseStarted(request, response, filter_);
 
   DevToolsNetLogObserver::PopulateResponseInfo(request, response);
 
+  const content::ResourceContext& resource_context =
+      filter_->resource_context();
+  HostZoomMap* host_zoom_map = resource_context.host_zoom_map();
+
   ResourceDispatcherHostRequestInfo* info = rdh_->InfoForRequest(request);
-  if (info->resource_type() == ResourceType::MAIN_FRAME && host_zoom_map_) {
+  if (info->resource_type() == ResourceType::MAIN_FRAME && host_zoom_map) {
     GURL request_url(request->url());
     filter_->Send(new ViewMsg_SetZoomLevelForLoadingURL(
         info->route_id(),
-        request_url, host_zoom_map_->GetZoomLevel(net::GetHostOrSpecFromURL(
+        request_url, host_zoom_map->GetZoomLevel(net::GetHostOrSpecFromURL(
             request_url))));
   }
 

@@ -453,12 +453,6 @@ void TabSpecificContentSettings::DidStartProvisionalLoadForFrame(
   if (!is_error_page)
     ClearCookieSpecificContentSettings();
   ClearGeolocationContentSettings();
-
-  HostContentSettingsMap* map =
-      tab_contents()->profile()->GetHostContentSettingsMap();
-  render_view_host->Send(new ViewMsg_SetContentSettingsForLoadingURL(
-      render_view_host->routing_id(), validated_url,
-      map->GetContentSettings(validated_url, validated_url)));
 }
 
 void TabSpecificContentSettings::Observe(NotificationType type,

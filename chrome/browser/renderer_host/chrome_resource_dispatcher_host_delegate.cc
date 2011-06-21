@@ -6,18 +6,22 @@
 
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/net/load_timing_observer.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
+#include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/renderer_host/safe_browsing_resource_handler.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ui/login/login_prompt.h"
 #include "chrome/common/extensions/user_script.h"
+#include "chrome/common/render_messages.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/resource_context.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
+#include "content/browser/renderer_host/resource_message_filter.h"
 #include "content/common/resource_messages.h"
 #include "net/base/load_flags.h"
 
@@ -200,11 +204,28 @@ bool ChromeResourceDispatcherHostDelegate::ShouldForceDownloadResource(
 }
 
 void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
-    net::URLRequest* request, ResourceResponse* response) {
+    net::URLRequest* request,
+    ResourceResponse* response,
+    ResourceMessageFilter* filter) {
   LoadTimingObserver::PopulateTimingInfo(request, response);
+
+  // We must send the content settings for the URL before sending response
+  // headers to the renderer.
+  const content::ResourceContext& resource_context = filter->resource_context();
+  ProfileIOData* io_data =
+      reinterpret_cast<ProfileIOData*>(resource_context.GetUserData(NULL));
+  HostContentSettingsMap* map = io_data->GetHostContentSettingsMap();
+
+  ResourceDispatcherHostRequestInfo* info =
+      resource_dispatcher_host_->InfoForRequest(request);
+  filter->Send(new ViewMsg_SetContentSettingsForLoadingURL(
+      info->route_id(), request->url(),
+      map->GetContentSettings(request->url(), request->url())));
 }
 
 void ChromeResourceDispatcherHostDelegate::OnRequestRedirected(
-    net::URLRequest* request, ResourceResponse* response) {
+    net::URLRequest* request,
+    ResourceResponse* response,
+    ResourceMessageFilter* filter) {
   LoadTimingObserver::PopulateTimingInfo(request, response);
 }

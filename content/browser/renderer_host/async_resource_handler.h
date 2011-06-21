@@ -22,7 +22,6 @@ class AsyncResourceHandler : public ResourceHandler {
   AsyncResourceHandler(ResourceMessageFilter* filter,
                        int routing_id,
                        const GURL& url,
-                       HostZoomMap* host_zoom_map,
                        ResourceDispatcherHost* resource_dispatcher_host);
 
   // ResourceHandler implementation:
