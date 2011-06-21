@@ -6,10 +6,12 @@ OBJDIR = obj
 
 OBJECTS=\
 	$(OBJDIR)/gestures.o \
+	$(OBJDIR)/immediate_interpreter.o \
 	$(OBJDIR)/interpreter.o
 
 TEST_OBJECTS=\
 	$(OBJDIR)/gestures_unittest.o \
+	$(OBJDIR)/immediate_interpreter_unittest.o \
 	$(OBJDIR)/interpreter_unittest.o
 
 TEST_MAIN=\
