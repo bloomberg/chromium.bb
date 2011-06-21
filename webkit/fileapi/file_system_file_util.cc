@@ -236,6 +236,7 @@ PlatformFileError FileSystemFileUtil::Truncate(
   if (error_code != base::PLATFORM_FILE_OK) {
     return error_code;
   }
+  DCHECK_NE(base::kInvalidPlatformFileValue, file);
   if (!base::TruncatePlatformFile(file, length))
     error_code = base::PLATFORM_FILE_ERROR_FAILED;
   base::ClosePlatformFile(file);

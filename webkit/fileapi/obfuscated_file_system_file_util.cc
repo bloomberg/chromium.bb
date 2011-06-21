@@ -750,6 +750,7 @@ PlatformFileError ObfuscatedFileSystemFileUtil::CreateFile(
   if (!created) {
     NOTREACHED();
     if (handle) {
+      DCHECK_NE(base::kInvalidPlatformFileValue, *handle);
       base::ClosePlatformFile(*handle);
       QuotaFileUtil::GetInstance()->DeleteFile(context, path);
     }
@@ -758,8 +759,10 @@ PlatformFileError ObfuscatedFileSystemFileUtil::CreateFile(
   file_info->data_path = data_path;
   FileId file_id;
   if (!db->AddFileInfo(*file_info, &file_id)) {
-    if (handle)
+    if (handle) {
+      DCHECK_NE(base::kInvalidPlatformFileValue, *handle);
       base::ClosePlatformFile(*handle);
+    }
     QuotaFileUtil::GetInstance()->DeleteFile(context, path);
     return base::PLATFORM_FILE_ERROR_FAILED;
   }
