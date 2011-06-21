@@ -29,7 +29,6 @@ extra_cflags = [ '-Wno-long-long', '-I' + callingconv_h.dir.abspath ]
 base_env.Append(CFLAGS = extra_cflags)
 
 settings = {
-  'seed'             : random.getrandbits(64),
   'num_functions'    : 200,
   'calls_per_func'   : 4,
   'max_args_per_func': 16,
@@ -116,7 +115,7 @@ node = link_env.CommandSelLdrTestNacl(
          command=[prog],
          stdout_golden=nodes[0])
 
-env.AddNodeToTestSuite(node, [ 'medium_tests' ], 'run_callingconv_test',
+env.AddNodeToTestSuite(node, ['medium_tests'], 'run_callingconv_test',
                        # This test takes too long to compile for ARM
                        # and the resulting code doesn't pass this test.
                        is_broken=env.Bit('target_arm'))

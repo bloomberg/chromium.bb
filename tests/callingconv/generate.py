@@ -88,7 +88,8 @@ class CType(object):
 
 class Settings(object):
   def __init__(self):
-    self.seed = 0
+    # If the seed is not specified on the command line, choose a random value.
+    self.seed = random.getrandbits(64)
     self.num_functions = 0
     self.calls_per_func = 0
     self.max_args_per_func = 0
@@ -174,6 +175,7 @@ def main(argv):
     m.emit(fp)
     fp.close()
 
+  print "callingconv seed: %d" % settings.seed
   fp = open(output_golden_file, 'w')
   fp.write("generate.py arguments: %s\n" % settings._script_argv)
   fp.write("SUCCESS: %d calls OK.\n" % num_asserts)
