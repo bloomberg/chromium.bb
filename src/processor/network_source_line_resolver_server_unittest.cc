@@ -135,14 +135,14 @@ TEST(NetworkSourceLineResolverServer, SystemTest) {
   ProcessState state;
   ASSERT_EQ(processor.Process(minidump_file, &state),
             google_breakpad::PROCESS_OK);
-  ASSERT_EQ(state.system_info()->os, kSystemInfoOS);
-  ASSERT_EQ(state.system_info()->os_short, kSystemInfoOSShort);
-  ASSERT_EQ(state.system_info()->os_version, kSystemInfoOSVersion);
-  ASSERT_EQ(state.system_info()->cpu, kSystemInfoCPU);
-  ASSERT_EQ(state.system_info()->cpu_info, kSystemInfoCPUInfo);
+  EXPECT_EQ(state.system_info()->os, kSystemInfoOS);
+  EXPECT_EQ(state.system_info()->os_short, kSystemInfoOSShort);
+  EXPECT_EQ(state.system_info()->os_version, kSystemInfoOSVersion);
+  EXPECT_EQ(state.system_info()->cpu, kSystemInfoCPU);
+  EXPECT_EQ(state.system_info()->cpu_info, kSystemInfoCPUInfo);
   ASSERT_TRUE(state.crashed());
-  ASSERT_EQ(state.crash_reason(), "EXCEPTION_ACCESS_VIOLATION_WRITE");
-  ASSERT_EQ(state.crash_address(), 0x45U);
+  EXPECT_EQ(state.crash_reason(), "EXCEPTION_ACCESS_VIOLATION_WRITE");
+  EXPECT_EQ(state.crash_address(), 0x45U);
   ASSERT_EQ(state.threads()->size(), size_t(1));
   ASSERT_EQ(state.requesting_thread(), 0);
 
@@ -150,48 +150,36 @@ TEST(NetworkSourceLineResolverServer, SystemTest) {
   ASSERT_TRUE(stack);
   ASSERT_EQ(stack->frames()->size(), 4U);
 
+  // Can now only set non-empty/zero values for function_name, source_file_name
+  // and source line on certain platforms (ie. windows), so those are untested.
   ASSERT_TRUE(stack->frames()->at(0)->module);
-  ASSERT_EQ(stack->frames()->at(0)->module->base_address(), 0x400000U);
-  ASSERT_EQ(stack->frames()->at(0)->module->code_file(), "c:\\test_app.exe");
-  ASSERT_EQ(stack->frames()->at(0)->function_name,
-            "`anonymous namespace'::CrashFunction");
-  ASSERT_EQ(stack->frames()->at(0)->source_file_name, "c:\\test_app.cc");
-  ASSERT_EQ(stack->frames()->at(0)->source_line, 58);
+  EXPECT_EQ(stack->frames()->at(0)->module->base_address(), 0x400000U);
+  EXPECT_EQ(stack->frames()->at(0)->module->code_file(), "c:\\test_app.exe");
 
   ASSERT_TRUE(stack->frames()->at(1)->module);
-  ASSERT_EQ(stack->frames()->at(1)->module->base_address(), 0x400000U);
-  ASSERT_EQ(stack->frames()->at(1)->module->code_file(), "c:\\test_app.exe");
-  ASSERT_EQ(stack->frames()->at(1)->function_name, "main");
-  ASSERT_EQ(stack->frames()->at(1)->source_file_name, "c:\\test_app.cc");
-  ASSERT_EQ(stack->frames()->at(1)->source_line, 65);
+  EXPECT_EQ(stack->frames()->at(1)->module->base_address(), 0x400000U);
+  EXPECT_EQ(stack->frames()->at(1)->module->code_file(), "c:\\test_app.exe");
 
   // This comes from the CRT
   ASSERT_TRUE(stack->frames()->at(2)->module);
-  ASSERT_EQ(stack->frames()->at(2)->module->base_address(), 0x400000U);
-  ASSERT_EQ(stack->frames()->at(2)->module->code_file(), "c:\\test_app.exe");
-  ASSERT_EQ(stack->frames()->at(2)->function_name, "__tmainCRTStartup");
-  ASSERT_EQ(stack->frames()->at(2)->source_file_name,
-            "f:\\sp\\vctools\\crt_bld\\self_x86\\crt\\src\\crt0.c");
-  ASSERT_EQ(stack->frames()->at(2)->source_line, 327);
+  EXPECT_EQ(stack->frames()->at(2)->module->base_address(), 0x400000U);
+  EXPECT_EQ(stack->frames()->at(2)->module->code_file(), "c:\\test_app.exe");
 
   // OS frame, kernel32.dll
   ASSERT_TRUE(stack->frames()->at(3)->module);
-  ASSERT_EQ(stack->frames()->at(3)->module->base_address(), 0x7c800000U);
-  ASSERT_EQ(stack->frames()->at(3)->module->code_file(),
+  EXPECT_EQ(stack->frames()->at(3)->module->base_address(), 0x7c800000U);
+  EXPECT_EQ(stack->frames()->at(3)->module->code_file(),
             "C:\\WINDOWS\\system32\\kernel32.dll");
-  ASSERT_EQ(stack->frames()->at(3)->function_name, "BaseProcessStart");
-  ASSERT_TRUE(stack->frames()->at(3)->source_file_name.empty());
-  ASSERT_EQ(stack->frames()->at(3)->source_line, 0);
 
   ASSERT_EQ(state.modules()->module_count(), 13U);
   ASSERT_TRUE(state.modules()->GetMainModule());
-  ASSERT_EQ(state.modules()->GetMainModule()->code_file(), "c:\\test_app.exe");
-  ASSERT_FALSE(state.modules()->GetModuleForAddress(0));
-  ASSERT_EQ(state.modules()->GetMainModule(),
+  EXPECT_EQ(state.modules()->GetMainModule()->code_file(), "c:\\test_app.exe");
+  EXPECT_FALSE(state.modules()->GetModuleForAddress(0));
+  EXPECT_EQ(state.modules()->GetMainModule(),
             state.modules()->GetModuleForAddress(0x400000));
-  ASSERT_EQ(state.modules()->GetModuleForAddress(0x7c801234)->debug_file(),
+  EXPECT_EQ(state.modules()->GetModuleForAddress(0x7c801234)->debug_file(),
             "kernel32.pdb");
-  ASSERT_EQ(state.modules()->GetModuleForAddress(0x77d43210)->version(),
+  EXPECT_EQ(state.modules()->GetModuleForAddress(0x77d43210)->version(),
             "5.1.2600.2622");
 
   // Kill background process

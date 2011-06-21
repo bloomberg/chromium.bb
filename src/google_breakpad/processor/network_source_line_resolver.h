@@ -36,6 +36,9 @@
 // See network_source_line_server.h for a description of the protocol used.
 // An implementation of the server side of the protocol is provided there
 // as NetworkSourceLineServer.
+//
+// Note the network_source_line resolver can only properly load certain
+// stack frame elements in a limited number of environments (Windows and CFI).
 
 #ifndef GOOGLE_BREAKPAD_PROCESSOR_NETWORK_SOURCE_LINE_RESOLVER_H__
 #define GOOGLE_BREAKPAD_PROCESSOR_NETWORK_SOURCE_LINE_RESOLVER_H__
@@ -69,7 +72,7 @@ class NetworkSourceLineResolver : public SourceLineResolverInterface,
   NetworkSourceLineResolver(NetworkInterface *net,
                             int wait_milliseconds);
   virtual ~NetworkSourceLineResolver();
-  
+
   // SourceLineResolverInterface methods, see source_line_resolver_interface.h
   // for more details.
 
@@ -153,7 +156,7 @@ class NetworkSourceLineResolver : public SourceLineResolverInterface,
     kCFIFrameInfo = 1,
   } FrameInfoType;
   FrameInfoCache frame_info_cache_[2];
-  
+
   // Send a message to the server, wait a certain amount of time for a reply.
   // Returns true if a response is received, with the response data
   // in |response|.
