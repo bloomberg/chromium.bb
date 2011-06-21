@@ -15,7 +15,8 @@ wayland_compositor_SOURCES =			\
 	image-loader.c				\
 	screenshooter.c				\
 	screenshooter-protocol.c		\
-	screenshooter-server-protocol.h
+	screenshooter-server-protocol.h		\
+	x11-integration.c
 
 udevrulesddir = $(sysconfdir)/udev/rules.d
 

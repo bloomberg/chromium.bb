@@ -378,4 +378,16 @@ uint32_t *
 wlsc_load_image(const char *filename,
 		int32_t *width_arg, int32_t *height_arg, uint32_t *stride_arg);
 
+struct wlsc_process {
+	pid_t pid;
+	void (*cleanup)(struct wlsc_process *process, int status);
+	struct wl_list link;
+};
+
+void
+wlsc_watch_process(struct wlsc_process *process);
+
+int
+wlsc_xserver_init(struct wl_display *display);
+
 #endif

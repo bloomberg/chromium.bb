@@ -28,6 +28,7 @@
 #include <stdarg.h>
 #include <assert.h>
 #include <sys/ioctl.h>
+#include <sys/wait.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <math.h>
@@ -45,6 +46,38 @@
 static const char *option_socket_name = NULL;
 static const char *option_background = "background.jpg";
 static int option_idle_time = 300;
+
+static struct wl_list child_process_list;
+
+static int
+sigchld_handler(int signal_number, void *data)
+{
+	struct wlsc_process *p;
+	int status;
+	pid_t pid;
+
+	pid = wait(&status);
+	wl_list_for_each(p, &child_process_list, link) {
+		if (p->pid == pid)
+			break;
+	}
+
+	if (&p->link == &child_process_list) {
+		fprintf(stderr, "unknown child process exited\n");
+		return 1;
+	}
+
+	wl_list_remove(&p->link);
+	p->cleanup(p, status);
+
+	return 1;
+}
+
+WL_EXPORT void
+wlsc_watch_process(struct wlsc_process *process)
+{
+	wl_list_insert(&child_process_list, &process->link);
+}
 
 WL_EXPORT void
 wlsc_matrix_init(struct wlsc_matrix *matrix)
@@ -1885,7 +1918,7 @@ int main(int argc, char *argv[])
 	struct wl_display *display;
 	struct wlsc_compositor *ec;
 	struct wl_event_loop *loop;
-	int o;
+	int o, xserver = 0;
 	void *shell_module, *backend_module;
 	int (*shell_init)(struct wlsc_compositor *ec);
 	struct wlsc_compositor
@@ -1895,7 +1928,7 @@ int main(int argc, char *argv[])
 	char *shell = NULL;
 	char *p;
 
-	static const char opts[] = "B:b:o:S:i:s:";
+	static const char opts[] = "B:b:o:S:i:s:x";
 	static const struct option longopts[ ] = {
 		{ "backend", 1, NULL, 'B' },
 		{ "backend-options", 1, NULL, 'o' },
@@ -1903,6 +1936,7 @@ int main(int argc, char *argv[])
 		{ "socket", 1, NULL, 'S' },
 		{ "idle-time", 1, NULL, 'i' },
 		{ "shell", 1, NULL, 's' },
+		{ "xserver", 0, NULL, 'x' },
 		{ NULL, }
 	};
 
@@ -1931,6 +1965,9 @@ int main(int argc, char *argv[])
 			break;
 		case 's':
 			shell = optarg;
+			break;
+		case 'x':
+			xserver = 1;
 			break;
 		}
 	}
@@ -1970,6 +2007,9 @@ int main(int argc, char *argv[])
 	if (shell_init(ec) < 0)
 		exit(EXIT_FAILURE);
 
+	if (xserver)
+		wlsc_xserver_init(display);
+
 	if (wl_display_add_socket(display, option_socket_name)) {
 		fprintf(stderr, "failed to add socket: %m\n");
 		exit(EXIT_FAILURE);
@@ -1978,6 +2018,9 @@ int main(int argc, char *argv[])
 	loop = wl_display_get_event_loop(ec->wl_display);
 	wl_event_loop_add_signal(loop, SIGTERM, on_term_signal, ec);
 	wl_event_loop_add_signal(loop, SIGINT, on_term_signal, ec);
+
+	wl_list_init(&child_process_list);
+	wl_event_loop_add_signal(loop, SIGCHLD, sigchld_handler, NULL);
 
 	wl_display_run(display);
 
