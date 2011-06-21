@@ -353,9 +353,17 @@ class TestPresubmit(unittest.TestCase):
 
   def testChangesMatch_SameLengthButDifferentText(self):
     af1 = FakeAffectedFile(changed_contents=[(1, 'foo'), (14, 'bar')])
-    af2 = FakeAffectedFile(changed_contents=[(1, 'foo'), (14, 'barbaz')])
+    af2 = FakeAffectedFile(changed_contents=[(1, 'foo'), (14, 'baz')])
     self.assertFalse(PRESUBMIT._ChangesMatch(af1, af2))
     self.assertFalse(PRESUBMIT._ChangesMatch(af2, af1))
+
+  def testChangesMatch_LineIsSubstring(self):
+    af = FakeAffectedFile(changed_contents=[(1, 'foo'), (2, 'bar')])
+    af_plus = FakeAffectedFile(changed_contents=[(6, 'foo'), (9, '<b>bar</b>')])
+    # The generated file (first arg) can have extra formatting.
+    self.assertTrue(PRESUBMIT._ChangesMatch(af_plus, af))
+    # But not the static file (second arg)
+    self.assertFalse(PRESUBMIT._ChangesMatch(af, af_plus))
 
   def testSampleZipped_ZipInAffectedFiles(self):
     sample_file = FakeAffectedFile(

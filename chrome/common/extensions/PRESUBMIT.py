@@ -168,27 +168,30 @@ def _AlternateFilePath(path, alt_dir, input_api):
   base_name = input_api.os_path.basename(path)
   return input_api.os_path.join(alt_dir, base_name)
 
-def _ChangesMatch(affected_file1, affected_file2):
+def _ChangesMatch(generated_file, static_file):
   """Return True if the two files contain the same textual changes.
 
+  Generated lines may have extra formatting/text at their beginnings and ends.
   Line numbers may differ.
   """
-  if not affected_file1 and not affected_file2:
+  if not generated_file and not static_file:
     return True  # Neither file affected.
 
-  if not affected_file1 or not affected_file2:
+  if not generated_file or not static_file:
     return False  # One file missing.
 
-  changes1 = affected_file1.ChangedContents()
-  changes2 = affected_file2.ChangedContents()
+  generated_changes = generated_file.ChangedContents()
+  static_changes = static_file.ChangedContents()
   # ChangedContents() is a list of (line number, text) for all new lines.
   # Ignore the line number, but check that the text for each new line matches.
-  if len(changes1) != len(changes2):
+  if len(generated_changes) != len(static_changes):
     return False
-  for new_line in range(len(changes1)):
-    _, text1 = changes1[new_line]
-    _, text2 = changes2[new_line]
-    if text1 != text2:
+  for new_line in range(len(generated_changes)):
+    _, generated_text = generated_changes[new_line]
+    _, static_text = static_changes[new_line]
+    # Text need not be identical but the entire static line should be contained
+    # in the generated one (e.g. generated text might have extra formatting).
+    if not static_text in generated_text:
       return False
   return True
 
