@@ -430,9 +430,12 @@ void GpuCommandBufferStub::CommandBufferWasDestroyed() {
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::CommandBufferWasDestroyed");
   // In case the renderer is currently blocked waiting for a sync reply from
   // the stub, this method allows us to cleanup and unblock pending messages.
-  while (!scheduler_->IsScheduled())
-    scheduler_->SetScheduled(true);
-  // Handle any deferred messages now that the scheduler is scheduled.
+  if (scheduler_.get()) {
+    while (!scheduler_->IsScheduled())
+      scheduler_->SetScheduled(true);
+  }
+  // Handle any deferred messages now that the scheduler is not blocking
+  // message handling.
   HandleDeferredMessages();
 }
 
