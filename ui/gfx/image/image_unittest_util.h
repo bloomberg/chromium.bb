@@ -27,6 +27,8 @@ PlatformImage CreatePlatformImage();
 
 gfx::Image::RepresentationType GetPlatformRepresentationType();
 
+PlatformImage ToPlatformType(const gfx::Image& image);
+
 }  // namespace test
 }  // namespace gfx
 

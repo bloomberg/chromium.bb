@@ -43,7 +43,7 @@ TEST_F(UiGfxImageTest, ImageView) {
   [test_window() orderFront:nil];
 
   gfx::Image image(gfx::test::CreateBitmap(25, 25));
-  [image_view setImage:image];
+  [image_view setImage:image.ToNSImage()];
 }
 
 }  // namespace

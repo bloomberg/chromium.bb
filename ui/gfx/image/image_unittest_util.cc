@@ -51,5 +51,15 @@ gfx::Image::RepresentationType GetPlatformRepresentationType() {
 #endif
 }
 
+PlatformImage ToPlatformType(const gfx::Image& image) {
+#if defined(OS_MACOSX)
+  return image.ToNSImage();
+#elif defined(TOOLKIT_GTK)
+  return image.ToGdkPixbuf();
+#else
+  return image.ToSkBitmap();
+#endif
+}
+
 }  // namespace test
 }  // namespace gfx

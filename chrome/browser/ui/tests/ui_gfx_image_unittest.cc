@@ -29,7 +29,7 @@ TEST(UiGfxImageTest, ViewsImageView) {
   container->SetVisible(true);
 
   scoped_ptr<views::ImageView> image_view(new views::ImageView());
-  image_view->SetImage(image);
+  image_view->SetImage(*image.ToSkBitmap());
   container->AddChildView(image_view.get());
 }
 #endif
@@ -44,7 +44,7 @@ TEST(UiGfxImageTest, GtkImageView) {
   gtk_container_add(GTK_CONTAINER(window), fixed);
 
   gfx::Image image(gfx::test::CreateBitmap(25, 25));
-  GtkWidget* image_view = gtk_image_new_from_pixbuf(image);
+  GtkWidget* image_view = gtk_image_new_from_pixbuf(image.ToGdkPixbuf());
   gtk_fixed_put(GTK_FIXED(fixed), image_view, 10, 10);
   gtk_widget_set_size_request(image_view, 25, 25);
 

@@ -78,14 +78,39 @@ class Image {
   // representations.
   ~Image();
 
-  // Conversion handlers.
-  operator const SkBitmap*() const ;
+  // Converts the Image to the desired representation and stores it internally.
+  // The returned result is a weak pointer owned by and scoped to the life of
+  // the Image.
+  const SkBitmap* ToSkBitmap() const;
+#if defined(TOOLKIT_USES_GTK)
+  GdkPixbuf* ToGdkPixbuf() const;
+#elif defined(OS_MACOSX)
+  NSImage* ToNSImage() const;
+#endif
+
+  // Performs a conversion, like above, but returns a copy of the result rather
+  // than a weak pointer. The caller is responsible for deleting the result.
+  // Note that the result is only a copy in terms of memory management; the
+  // backing pixels are shared amongst all copies (a fact of each of the
+  // converted representations, rather than a limitation imposed by Image) and
+  // so the result should be considered immutable.
+  const SkBitmap* CopySkBitmap() const;
+#if defined(TOOLKIT_USES_GTK)
+  GdkPixbuf* CopyGdkPixbuf() const;
+#elif defined(OS_MACOSX)
+  NSImage* CopyNSImage() const;
+#endif
+
+  // DEPRECATED ----------------------------------------------------------------
+  // Conversion handlers. These wrap the ToType() variants.
+  operator const SkBitmap*() const;
   operator const SkBitmap&() const;
 #if defined(TOOLKIT_USES_GTK)
   operator GdkPixbuf*() const;
 #elif defined(OS_MACOSX)
   operator NSImage*() const;
 #endif
+  // ---------------------------------------------------------------------------
 
   // Gets the number of bitmaps in this image. This may cause a conversion
   // to a bitmap representation. Note, this function and GetSkBitmapAtIndex()

@@ -234,26 +234,62 @@ Image& Image::operator=(const Image& other) {
 Image::~Image() {
 }
 
-Image::operator const SkBitmap*() const {
+const SkBitmap* Image::ToSkBitmap() const {
   internal::ImageRep* rep = GetRepresentation(Image::kImageRepSkia);
   return rep->AsImageRepSkia()->bitmap();
 }
 
-Image::operator const SkBitmap&() const {
-  return *(this->operator const SkBitmap*());
-}
-
 #if defined(TOOLKIT_USES_GTK)
-Image::operator GdkPixbuf*() const {
+GdkPixbuf* Image::ToGdkPixbuf() const {
   internal::ImageRep* rep = GetRepresentation(Image::kImageRepGdk);
   return rep->AsImageRepGdk()->pixbuf();
 }
 #endif
 
 #if defined(OS_MACOSX)
-Image::operator NSImage*() const {
+NSImage* Image::ToNSImage() const {
   internal::ImageRep* rep = GetRepresentation(Image::kImageRepCocoa);
   return rep->AsImageRepCocoa()->image();
+}
+#endif
+
+const SkBitmap* Image::CopySkBitmap() const {
+  return new SkBitmap(*ToSkBitmap());
+}
+
+#if defined(TOOLKIT_USES_GTK)
+GdkPixbuf* Image::CopyGdkPixbuf() const {
+  GdkPixbuf* pixbuf = ToGdkPixbuf();
+  g_object_ref(pixbuf);
+  return pixbuf;
+}
+#endif
+
+#if defined(OS_MACOSX)
+NSImage* Image::CopyNSImage() const {
+  NSImage* image = ToNSImage();
+  base::mac::NSObjectRetain(image);
+  return image;
+}
+#endif
+
+Image::operator const SkBitmap*() const {
+  return ToSkBitmap();
+}
+
+Image::operator const SkBitmap&() const {
+  return *ToSkBitmap();
+}
+
+#if defined(TOOLKIT_USES_GTK)
+Image::operator GdkPixbuf*() const {
+  return ToGdkPixbuf();
+}
+#endif
+
+#if defined(OS_MACOSX)
+Image::operator NSImage*() const {
+  return ToNSImage();
 }
 #endif
 
