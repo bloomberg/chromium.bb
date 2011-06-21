@@ -12,6 +12,7 @@
 #include "net/base/mime_util.h"
 #include "net/base/net_util.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
+#include "webkit/plugins/npapi/plugin_list.h"
 
 namespace drag_util {
 
@@ -71,7 +72,21 @@ static BOOL IsSupportedFileURL(const GURL& url) {
   std::string mime_type;
   net::GetMimeTypeFromFile(full_path, &mime_type);
 
-  return net::IsSupportedMimeType(mime_type);
+  // This logic mirrors |BufferedResourceHandler::ShouldDownload()|.
+  // TODO(asvitkine): Refactor this out to a common location instead of
+  //                  duplicating code.
+  if (net::IsSupportedMimeType(mime_type))
+    return YES;
+
+  // Check whether there is a plugin that supports the mime type. (e.g. PDF)
+  webkit::npapi::PluginList* list = webkit::npapi::PluginList::Singleton();
+  webkit::npapi::WebPluginInfo info;
+  if (list->PluginsLoaded() &&
+      list->GetPluginInfo(GURL(), mime_type, false, &info, NULL)) {
+    return webkit::npapi::IsPluginEnabled(info);
+  }
+
+  return NO;
 }
 
 BOOL IsUnsupportedDropData(id<NSDraggingInfo> info) {
