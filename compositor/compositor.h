@@ -53,17 +53,30 @@ struct wlsc_transform {
 struct wlsc_surface;
 struct wlsc_input_device;
 
+struct wlsc_mode {
+	uint32_t flags;
+	int32_t width, height;
+	uint32_t refresh;
+	struct wl_list link;
+};
+
 struct wlsc_output {
 	struct wl_object object;
 	struct wl_list link;
 	struct wlsc_compositor *compositor;
 	struct wlsc_surface *background;
 	struct wlsc_matrix matrix;
-	int32_t x, y, width, height;
+	int32_t x, y, mm_width, mm_height;
 	pixman_region32_t previous_damage_region;
 	uint32_t flags;
 	int repaint_needed;
 	int finished;
+
+	char *make, *model;
+	uint32_t subpixel;
+	
+	struct wlsc_mode *current;
+	struct wl_list mode_list;
 
 	int (*prepare_render)(struct wlsc_output *output);
 	int (*present)(struct wlsc_output *output);

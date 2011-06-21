@@ -402,7 +402,8 @@ background_create(struct wlsc_output *output, const char *filename)
 
 	background = wlsc_surface_create(output->compositor,
 					 output->x, output->y,
-					 output->width, output->height);
+					 output->current->width,
+					 output->current->height);
 	if (background == NULL)
 		return NULL;
 
@@ -609,7 +610,8 @@ wlsc_output_damage(struct wlsc_output *output)
 	pixman_region32_union_rect(&compositor->damage_region,
 				   &compositor->damage_region,
 				   output->x, output->y,
-				   output->width, output->height);
+				   output->current->width,
+				   output->current->height);
 	wlsc_compositor_schedule_repaint(compositor);
 }
 
@@ -647,8 +649,8 @@ fade_output(struct wlsc_output *output,
 	surface.compositor = compositor;
 	surface.x = output->x;
 	surface.y = output->y;
-	surface.width = output->width;
-	surface.height = output->height;
+	surface.width = output->current->width;
+	surface.height = output->current->height;
 	surface.texture = GL_NONE;
 	surface.transform = NULL;
 
@@ -675,7 +677,7 @@ wlsc_output_repaint(struct wlsc_output *output)
 
 	output->prepare_render(output);
 
-	glViewport(0, 0, output->width, output->height);
+	glViewport(0, 0, output->current->width, output->current->height);
 
 	glUseProgram(ec->texture_shader.program);
 	glUniformMatrix4fv(ec->texture_shader.proj_uniform,
@@ -687,7 +689,8 @@ wlsc_output_repaint(struct wlsc_output *output)
 	pixman_region32_intersect_rect(&new_damage,
 				       &ec->damage_region,
 				       output->x, output->y,
-				       output->width, output->height);
+				       output->current->width,
+				       output->current->height);
 	pixman_region32_subtract(&ec->damage_region,
 				 &ec->damage_region, &new_damage);
 	pixman_region32_union(&total_damage, &new_damage,
@@ -717,8 +720,8 @@ wlsc_output_repaint(struct wlsc_output *output)
 	}
 
 	if (es->fullscreen_output == output) {
-		if (es->width < output->width ||
-		    es->height < output->height)
+		if (es->width < output->current->width ||
+		    es->height < output->current->height)
 			glClear(GL_COLOR_BUFFER_BIT);
 		wlsc_surface_draw(es, output, &total_damage);
 	} else {
@@ -838,8 +841,8 @@ wlsc_surface_assign_output(struct wlsc_surface *es)
 	es->output = NULL;
 
 	wl_list_for_each(output, &ec->output_list, link) {
-		if (output->x < es->x && es->x < output->x + output->width &&
-		    output->y < es->y && es->y < output->y + output->height) {
+		if (output->x < es->x && es->x < output->x + output->current->width &&
+		    output->y < es->y && es->y < output->y + output->current->height) {
 			if (output != tmp)
 				printf("assiging surface %p to output %p\n",
 				       es, output);
@@ -1091,10 +1094,10 @@ notify_motion(struct wl_input_device *device, uint32_t time, int x, int y)
 	wlsc_compositor_wake(ec);
 
 	wl_list_for_each(output, &ec->output_list, link) {
-		if (output->x <= x && x <= output->x + output->width)
+		if (output->x <= x && x <= output->x + output->current->width)
 			x_valid = 1;
 
-		if (output->y <= y && y <= output->y + output->height)
+		if (output->y <= y && y <= output->y + output->current->height)
 			y_valid = 1;
 
 		/* FIXME: calculate this only on output addition/deletion */
@@ -1103,10 +1106,10 @@ notify_motion(struct wl_input_device *device, uint32_t time, int x, int y)
 		if (output->y < min_y)
 			min_y = output->y;
 
-		if (output->x + output->width > max_x)
-			max_x = output->x + output->width;
-		if (output->y + output->height > max_y)
-			max_y = output->y + output->height;
+		if (output->x + output->current->width > max_x)
+			max_x = output->x + output->current->width;
+		if (output->y + output->current->height > max_y)
+			max_y = output->y + output->current->height;
 	}
 	
 	if (!x_valid) {
@@ -1461,11 +1464,23 @@ wlsc_output_post_geometry(struct wl_client *client,
 {
 	struct wlsc_output *output =
 		container_of(global, struct wlsc_output, object);
+	struct wlsc_mode *mode;
 
 	wl_client_post_event(client, global,
 			     WL_OUTPUT_GEOMETRY,
-			     output->x, output->y,
-			     output->width, output->height);
+			     output->x,
+			     output->y,
+			     output->mm_width,
+			     output->mm_height,
+			     output->subpixel,
+			     output->make, output->model);
+
+	wl_list_for_each (mode, &output->mode_list, link) {
+		wl_client_post_event(client, global,
+				     WL_OUTPUT_MODE,
+				     mode->flags,
+				     mode->width, mode->height, mode->refresh);
+	}
 }
 
 static const char vertex_shader[] =
@@ -1603,17 +1618,19 @@ wlsc_output_move(struct wlsc_output *output, int x, int y)
 
 	wlsc_matrix_init(&output->matrix);
 	wlsc_matrix_translate(&output->matrix,
-			      -output->x - output->width / 2.0,
-			      -output->y - output->height / 2.0, 0);
+			      -output->x - output->current->width / 2.0,
+			      -output->y - output->current->height / 2.0, 0);
 
 	flip = (output->flags & WL_OUTPUT_FLIPPED) ? -1 : 1;
 	wlsc_matrix_scale(&output->matrix,
-			  2.0 / output->width,
-			  flip * 2.0 / output->height, 1);
+			  2.0 / output->current->width,
+			  flip * 2.0 / output->current->height, 1);
 
 	pixman_region32_union_rect(&c->damage_region,
 				   &c->damage_region,
-				   x, y, output->width, output->height);
+				   x, y,
+				   output->current->width,
+				   output->current->height);
 }
 
 WL_EXPORT void
@@ -1623,8 +1640,8 @@ wlsc_output_init(struct wlsc_output *output, struct wlsc_compositor *c,
 	output->compositor = c;
 	output->x = x;
 	output->y = y;
-	output->width = width;
-	output->height = height;
+	output->mm_width = width;
+	output->mm_height = height;
 
 	output->background =
 		background_create(output, option_background);

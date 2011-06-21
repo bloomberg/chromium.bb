@@ -67,6 +67,7 @@ struct wayland_output {
 		struct wl_egl_window	*egl_window;
 	} parent;
 	EGLSurface egl_surface;
+	struct wlsc_mode	mode;
 };
 
 struct wayland_input {
@@ -222,8 +223,18 @@ wayland_compositor_create_output(struct wayland_compositor *c,
 		return -1;
 	memset(output, 0, sizeof *output);
 
+	output->mode.flags =
+		WL_OUTPUT_MODE_CURRENT | WL_OUTPUT_MODE_PREFERRED;
+	output->mode.width = width;
+	output->mode.height = height;
+	output->mode.refresh = 60;
+	wl_list_init(&output->base.mode_list);
+	wl_list_insert(&output->base.mode_list, &output->mode.link);
+
+	output->base.current = &output->mode;
 	wlsc_output_init(&output->base, &c->base, 0, 0, width, height,
 			 WL_OUTPUT_FLIPPED);
+
 	output->parent.surface =
 		wl_compositor_create_surface(c->parent.compositor);
 	wl_surface_set_user_data(output->parent.surface, output);
@@ -281,20 +292,38 @@ cleanup_output:
 /* parent output interface */
 static void
 display_handle_geometry(void *data,
-			struct wl_output *output,
-			int32_t x, int32_t y,
-			int32_t width, int32_t height)
+			struct wl_output *wl_output,
+			int x,
+			int y,
+			int physical_width,
+			int physical_height,
+			int subpixel,
+			const char *make,
+			const char *model)
 {
 	struct wayland_compositor *c = data;
 
 	c->parent.screen_allocation.x = x;
 	c->parent.screen_allocation.y = y;
+}
+
+static void
+display_handle_mode(void *data,
+		    struct wl_output *wl_output,
+		    uint32_t flags,
+		    int width,
+		    int height,
+		    int refresh)
+{
+	struct wayland_compositor *c = data;
+
 	c->parent.screen_allocation.width = width;
 	c->parent.screen_allocation.height = height;
 }
 
 static const struct wl_output_listener output_listener = {
 	display_handle_geometry,
+	display_handle_mode
 };
 
 /* parent shell interface */

@@ -301,8 +301,8 @@ shell_set_fullscreen(struct wl_client *client,
 
 	es->saved_x = es->x;
 	es->saved_y = es->y;
-	es->x = (output->width - es->width) / 2;
-	es->y = (output->height - es->height) / 2;
+	es->x = (output->current->width - es->width) / 2;
+	es->y = (output->current->height - es->height) / 2;
 	es->fullscreen_output = output;
 	wlsc_surface_damage(es);
 	es->map_type = WLSC_SURFACE_MAP_FULLSCREEN;
@@ -807,8 +807,8 @@ static void
 attach(struct wlsc_shell *shell, struct wlsc_surface *es)
 {
 	if (es->map_type == WLSC_SURFACE_MAP_FULLSCREEN) {
-		es->x = (es->fullscreen_output->width - es->width) / 2;
-		es->y = (es->fullscreen_output->height - es->height) / 2;
+		es->x = (es->fullscreen_output->current->width - es->width) / 2;
+		es->y = (es->fullscreen_output->current->height - es->height) / 2;
 	}
 }
 

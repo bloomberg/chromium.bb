@@ -49,10 +49,14 @@ struct drm_compositor {
 	PFNEGLEXPORTDRMIMAGEMESA export_drm_image;
 };
 
+struct drm_mode {
+	struct wlsc_mode base;
+	drmModeModeInfo mode_info;
+};
+
 struct drm_output {
 	struct wlsc_output   base;
 
-	drmModeModeInfo mode;
 	uint32_t crtc_id;
 	uint32_t connector_id;
 	GLuint rbo[2];
@@ -146,8 +150,8 @@ drm_output_prepare_scanout_surface(struct wlsc_output *output_base,
 
 	if (es->x != output->base.x ||
 	    es->y != output->base.y ||
-	    es->width != output->base.width ||
-	    es->height != output->base.height ||
+	    es->width != output->base.current->width ||
+	    es->height != output->base.current->height ||
 	    es->image == EGL_NO_IMAGE_KHR)
 		return -1;
 
@@ -158,7 +162,8 @@ drm_output_prepare_scanout_surface(struct wlsc_output *output_base,
 		return -1;
 
 	ret = drmModeAddFB(c->drm.fd,
-			   output->base.width, output->base.height,
+			   output->base.current->width,
+			   output->base.current->height,
 			   32, 32, stride, handle, &fb_id);
 
 	if (ret)
@@ -192,7 +197,8 @@ drm_output_set_cursor(struct wlsc_output *output_base,
 
 	pixman_region32_intersect_rect(&cursor_region, &cursor_region,
 				       output->base.x, output->base.y,
-				       output->base.width, output->base.height);
+				       output->base.current->width,
+				       output->base.current->height);
 
 	if (!pixman_region32_not_empty(&cursor_region)) {
 		ret = 0;
@@ -319,6 +325,46 @@ static drmModeModeInfo builtin_1024x768 = {
 	"1024x768"
 };
 
+
+static int
+drm_output_add_mode(struct drm_output *output, drmModeModeInfo *info)
+{
+	struct drm_mode *mode;
+
+	mode = malloc(sizeof *mode);
+	if (mode == NULL)
+		return -1;
+
+	mode->base.flags = 0;
+	mode->base.width = info->hdisplay;
+	mode->base.height = info->vdisplay;
+	mode->base.refresh = info->vrefresh;
+	mode->mode_info = *info;
+	wl_list_insert(output->base.mode_list.prev, &mode->base.link);
+
+	return 0;
+}
+
+static int
+drm_subpixel_to_wayland(int drm_value)
+{
+	switch (drm_value) {
+	default:
+	case DRM_MODE_SUBPIXEL_UNKNOWN:
+		return WL_OUTPUT_SUBPIXEL_UNKNOWN;
+	case DRM_MODE_SUBPIXEL_NONE:
+		return WL_OUTPUT_SUBPIXEL_NONE;
+	case DRM_MODE_SUBPIXEL_HORIZONTAL_RGB:
+		return WL_OUTPUT_SUBPIXEL_HORIZONTAL_RGB;
+	case DRM_MODE_SUBPIXEL_HORIZONTAL_BGR:
+		return WL_OUTPUT_SUBPIXEL_HORIZONTAL_BGR;
+	case DRM_MODE_SUBPIXEL_VERTICAL_RGB:
+		return WL_OUTPUT_SUBPIXEL_VERTICAL_RGB;
+	case DRM_MODE_SUBPIXEL_VERTICAL_BGR:
+		return WL_OUTPUT_SUBPIXEL_VERTICAL_BGR;
+	}
+}
+
 static int
 create_output_for_connector(struct drm_compositor *ec,
 			    drmModeRes *resources,
@@ -326,8 +372,8 @@ create_output_for_connector(struct drm_compositor *ec,
 			    int x, int y)
 {
 	struct drm_output *output;
+	struct drm_mode *drm_mode;
 	drmModeEncoder *encoder;
-	drmModeModeInfo *mode;
 	int i, ret;
 	EGLint handle, stride, attribs[] = {
 		EGL_WIDTH,		0,
@@ -336,15 +382,6 @@ create_output_for_connector(struct drm_compositor *ec,
 		EGL_DRM_BUFFER_USE_MESA,	EGL_DRM_BUFFER_USE_SCANOUT_MESA,
 		EGL_NONE
 	};
-
-	output = malloc(sizeof *output);
-	if (output == NULL)
-		return -1;
-
-	if (connector->count_modes > 0) 
-		mode = &connector->modes[0];
-	else
-		mode = &builtin_1024x768;
 
 	encoder = drmModeGetEncoder(ec->drm.fd, connector->encoders[0]);
 	if (encoder == NULL) {
@@ -362,16 +399,39 @@ create_output_for_connector(struct drm_compositor *ec,
 		return -1;
 	}
 
+	output = malloc(sizeof *output);
+	if (output == NULL)
+		return -1;
+
 	memset(output, 0, sizeof *output);
-	wlsc_output_init(&output->base, &ec->base, x, y,
-			 mode->hdisplay, mode->vdisplay, 0);
+	output->base.x = x;
+	output->base.y = y;
+	output->base.mm_width = connector->mmWidth;
+	output->base.mm_height = connector->mmHeight;
+	output->base.subpixel = drm_subpixel_to_wayland(connector->subpixel);
+	output->base.make = "unknown";
+	output->base.model = "unknown";
+	wl_list_init(&output->base.mode_list);
 
 	output->crtc_id = resources->crtcs[i];
 	ec->crtc_allocator |= (1 << output->crtc_id);
-
 	output->connector_id = connector->connector_id;
 	ec->connector_allocator |= (1 << output->connector_id);
-	output->mode = *mode;
+
+	for (i = 0; i < connector->count_modes; i++)
+		drm_output_add_mode(output, &connector->modes[i]);
+	if (connector->count_modes == 0)
+		drm_output_add_mode(output, &builtin_1024x768);
+
+	drm_mode = container_of(output->base.mode_list.next,
+				struct drm_mode, base.link);
+	output->base.current = &drm_mode->base;
+	drm_mode->base.flags =
+		WL_OUTPUT_MODE_CURRENT | WL_OUTPUT_MODE_PREFERRED;
+
+	wlsc_output_init(&output->base, &ec->base, x, y, 200, 100, 0);
+
+	wl_list_insert(ec->base.output_list.prev, &output->base.link);
 
 	drmModeFreeEncoder(encoder);
 
@@ -379,8 +439,8 @@ create_output_for_connector(struct drm_compositor *ec,
 	for (i = 0; i < 2; i++) {
 		glBindRenderbuffer(GL_RENDERBUFFER, output->rbo[i]);
 
-		attribs[1] = output->base.width;
-		attribs[3] = output->base.height;
+		attribs[1] = output->base.current->width;
+		attribs[3] = output->base.current->height;
 		output->image[i] =
 			ec->create_drm_image(ec->base.display, attribs);
 		ec->base.image_target_renderbuffer_storage(GL_RENDERBUFFER,
@@ -389,7 +449,8 @@ create_output_for_connector(struct drm_compositor *ec,
 				     NULL, &handle, &stride);
 
 		ret = drmModeAddFB(ec->drm.fd,
-				   output->base.width, output->base.height,
+				   output->base.current->width,
+				   output->base.current->height,
 				   32, 32, stride, handle, &output->fb_id[i]);
 		if (ret) {
 			fprintf(stderr, "failed to add fb %d: %m\n", i);
@@ -404,7 +465,8 @@ create_output_for_connector(struct drm_compositor *ec,
 				  output->rbo[output->current]);
 	ret = drmModeSetCrtc(ec->drm.fd, output->crtc_id,
 			     output->fb_id[output->current ^ 1], 0, 0,
-			     &output->connector_id, 1, &output->mode);
+			     &output->connector_id, 1,
+			     &drm_mode->mode_info);
 	if (ret) {
 		fprintf(stderr, "failed to set mode: %m\n");
 		return -1;
@@ -416,8 +478,6 @@ create_output_for_connector(struct drm_compositor *ec,
 	output->base.prepare_scanout_surface =
 		drm_output_prepare_scanout_surface;
 	output->base.set_hardware_cursor = drm_output_set_cursor;
-
-	wl_list_insert(ec->base.output_list.prev, &output->base.link);
 
 	return 0;
 }
@@ -449,7 +509,7 @@ create_outputs(struct drm_compositor *ec, int option_connector)
 				return -1;
 
 		x += container_of(ec->base.output_list.prev, struct wlsc_output,
-				  link)->width;
+				  link)->current->width;
 
 		drmModeFreeConnector(connector);
 	}
@@ -530,7 +590,7 @@ update_outputs(struct drm_compositor *ec)
 
 			/* XXX: not yet needed, we die with 0 outputs */
 			if (!wl_list_empty(&ec->base.output_list))
-				x = last_output->x + last_output->width;
+				x = last_output->x + last_output->current->width;
 			else
 				x = 0;
 			y = 0;
@@ -558,7 +618,7 @@ update_outputs(struct drm_compositor *ec)
 				disconnects &= ~(1 << output->connector_id);
 				printf("connector %d disconnected\n",
 				       output->connector_id);
-				x_offset += output->base.width;
+				x_offset += output->base.current->width;
 				destroy_output(output);
 			}
 		}

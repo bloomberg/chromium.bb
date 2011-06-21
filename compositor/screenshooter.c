@@ -36,11 +36,12 @@ screenshooter_shoot(struct wl_client *client,
 	if (!wl_buffer_is_shm(buffer))
 		return;
 
-	if (buffer->width < output->width || buffer->height < output->height)
+	if (buffer->width < output->current->width ||
+	    buffer->height < output->current->height)
 		return;
 
 	glPixelStorei(GL_PACK_ALIGNMENT, 1);
-	glReadPixels(0, 0, output->width, output->height,
+	glReadPixels(0, 0, output->current->width, output->current->height,
 		     GL_RGBA, GL_UNSIGNED_BYTE,
 		     wl_shm_buffer_get_data(buffer));
 }

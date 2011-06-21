@@ -71,6 +71,7 @@ struct x11_output {
 
 	xcb_window_t		window;
 	EGLSurface		egl_surface;
+	struct wlsc_mode	mode;
 };
 
 struct x11_input {
@@ -330,6 +331,16 @@ x11_compositor_create_output(struct x11_compositor *c,
 		return -1;
 
 	memset(output, 0, sizeof *output);
+
+	output->mode.flags =
+		WL_OUTPUT_MODE_CURRENT | WL_OUTPUT_MODE_PREFERRED;
+	output->mode.width = width;
+	output->mode.height = height;
+	output->mode.refresh = 60;
+	wl_list_init(&output->base.mode_list);
+	wl_list_insert(&output->base.mode_list, &output->mode.link);
+
+	output->base.current = &output->mode;
 	wlsc_output_init(&output->base, &c->base, 0, 0, width, height,
 			 WL_OUTPUT_FLIPPED);
 
