@@ -131,7 +131,6 @@ struct wl_resource {
 
 struct wl_buffer {
 	struct wl_resource resource;
-	struct wl_compositor *compositor;
 	struct wl_client *client;
 	struct wl_visual *visual;
 	int32_t width, height;
