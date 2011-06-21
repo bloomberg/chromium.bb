@@ -89,8 +89,7 @@ GRD_SNIPPET_TEMPLATE="""      <message name="%s" desc="%s">
 """
 
 # A snippet for C++ file
-CC_SNIPPET_TEMPLATE="""  localized_strings.SetString("%s",
-      l10n_util::GetStringUTF16(%s));
+CC_SNIPPET_TEMPLATE="""  { "%s", %s },
 """
 
 ALTGR_TEMPLATE="""// These are the overlay names of layouts that shouldn't
@@ -341,15 +340,9 @@ def GenerateCopyrightHeader():
 
 
 def UniqueBehaviors(hotkey_data):
-  """Retrieves a list of unique behaviors from |hotkey_data|."""
-  behaviors = []
-  added = set()
-  for (behavior, _) in hotkey_data:
-    if behavior in added:
-      continue
-    behaviors.append(behavior)
-    added.add(behavior)
-  return behaviors
+  """Retrieves a sorted list of unique behaviors from |hotkey_data|."""
+  return sorted(set(behavior for (behavior, _) in hotkey_data),
+                cmp=lambda x, y: cmp(ToMessageName(x), ToMessageName(y)))
 
 
 def OutputJson(keyboard_glyph_data, hotkey_data, layouts, var_name, outfile):
@@ -385,12 +378,11 @@ def OutputCC(hotkey_data, outfile):
   out = file(outfile, 'w')
   for behavior in UniqueBehaviors(hotkey_data):
     message_name = ToMessageName(behavior)
-    # Indent the line if message_name is longer than 45 characters, which means
-    # the second line in the generated code is longer than 80 characters.
-    if len(message_name) > 45:
-      message_name = '\n          %s' % message_name
-    out.write(CC_SNIPPET_TEMPLATE % (Toi18nContent(behavior),
-                                     message_name))
+    output = CC_SNIPPET_TEMPLATE % (Toi18nContent(behavior), message_name)
+    # Break the line if the line is longer than 80 characters
+    if len(output) > 80:
+      output = output.replace(' ' + message_name, '\n    %s' % message_name)
+    out.write(output)
 
 
 def OutputAltGr(keyboard_glyph_data, outfile):

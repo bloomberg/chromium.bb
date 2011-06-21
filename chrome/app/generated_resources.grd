@@ -12058,11 +12058,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_KEYBOARD_OVERLAY_ADD_WWW_AND_COM_AND_OPEN_ADDRESS" desc="The text in the keyboard overlay to explain the shortcut.">
         Add www. and .com and open address
       </message>
-      <message name="IDS_KEYBOARD_OVERLAY_BOOKMARK_CURRENT_PAGE" desc="The text in the keyboard overlay to explain the shortcut.">
-        Bookmark current page
+      <message name="IDS_KEYBOARD_OVERLAY_BACK" desc="The text in the keyboard overlay to explain the shortcut.">
+        Back
       </message>
       <message name="IDS_KEYBOARD_OVERLAY_BOOKMARK_ALL_TABS" desc="The text in the keyboard overlay to explain the shortcut.">
         Bookmark all tabs
+      </message>
+      <message name="IDS_KEYBOARD_OVERLAY_BOOKMARK_CURRENT_PAGE" desc="The text in the keyboard overlay to explain the shortcut.">
+        Bookmark current page
       </message>
       <message name="IDS_KEYBOARD_OVERLAY_CLEAR_BROWSING_DATA_DIALOG" desc="The text in the keyboard overlay to explain the shortcut.">
         "Clear browsing data" dialog
@@ -12073,11 +12076,35 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_KEYBOARD_OVERLAY_CLOSE_WINDOW" desc="The text in the keyboard overlay to explain the shortcut.">
         Close window
       </message>
+      <message name="IDS_KEYBOARD_OVERLAY_CLOSE_WINDOW" desc="The text in the keyboard overlay to explain the shortcut.">
+        Close Window
+      </message>
+      <message name="IDS_KEYBOARD_OVERLAY_CONTENT_BROWSER" desc="The text in the keyboard overlay to explain the shortcut.">
+        Content browser
+      </message>
+      <message name="IDS_KEYBOARD_OVERLAY_COPY" desc="The text in the keyboard overlay to explain the shortcut.">
+        Copy
+      </message>
+      <message name="IDS_KEYBOARD_OVERLAY_CUT" desc="The text in the keyboard overlay to explain the shortcut.">
+        Cut
+      </message>
+      <message name="IDS_KEYBOARD_OVERLAY_CYCLE_THROUGH_INPUT_METHODS" desc="The text in the keyboard overlay to explain the shortcut.">
+        Cycle through input methods
+      </message>
       <message name="IDS_KEYBOARD_OVERLAY_DELETE_WORD" desc="The text in the keyboard overlay to explain the shortcut.">
         Delete word
       </message>
       <message name="IDS_KEYBOARD_OVERLAY_DEVELOPER_TOOLS" desc="The text in the keyboard overlay to explain the shortcut.">
         Developer Tools
+      </message>
+      <message name="IDS_KEYBOARD_OVERLAY_DOM_INSPECTOR" desc="The text in the keyboard overlay to explain the shortcut.">
+        DOM Inspector
+      </message>
+      <message name="IDS_KEYBOARD_OVERLAY_DOWNLOADS" desc="The text in the keyboard overlay to explain the shortcut.">
+        Downloads
+      </message>
+      <message name="IDS_KEYBOARD_OVERLAY_END" desc="The text in the keyboard overlay to explain the shortcut.">
+        End
       </message>
       <message name="IDS_KEYBOARD_OVERLAY_FIND_AGAIN" desc="The text in the keyboard overlay to explain the shortcut.">
         Find again
@@ -12094,38 +12121,56 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_KEYBOARD_OVERLAY_FOCUS_ADDRESS_BAR_IN_SEARCH_MODE" desc="The text in the keyboard overlay to explain the shortcut.">
         Focus address bar in search mode
       </message>
-      <message name="IDS_KEYBOARD_OVERLAY_DOM_INSPECTOR" desc="The text in the keyboard overlay to explain the shortcut.">
-        DOM Inspector
-      </message>
-      <message name="IDS_KEYBOARD_OVERLAY_DOWNLOADS" desc="The text in the keyboard overlay to explain the shortcut.">
-        Downloads
-      </message>
-      <message name="IDS_KEYBOARD_OVERLAY_TASK_MANAGER" desc="The text in the keyboard overlay to explain the shortcut.">
-        Task Manager
-      </message>
-      <message name="IDS_KEYBOARD_OVERLAY_BACK" desc="The text in the keyboard overlay to explain the shortcut.">
-        Back
-      </message>
       <message name="IDS_KEYBOARD_OVERLAY_FORWARD" desc="The text in the keyboard overlay to explain the shortcut.">
         Forward
+      </message>
+      <message name="IDS_KEYBOARD_OVERLAY_HELP" desc="The text in the keyboard overlay to explain the shortcut.">
+        Help
       </message>
       <message name="IDS_KEYBOARD_OVERLAY_HISTORY" desc="The text in the keyboard overlay to explain the shortcut.">
         History
       </message>
-      <message name="IDS_KEYBOARD_OVERLAY_NEW_TAB" desc="The text in the keyboard overlay to explain the shortcut.">
-        New tab
+      <message name="IDS_KEYBOARD_OVERLAY_HOME" desc="The text in the keyboard overlay to explain the shortcut.">
+        Home
       </message>
-      <message name="IDS_KEYBOARD_OVERLAY_OPEN_ADDRESS_IN_NEW_TAB" desc="The text in the keyboard overlay to explain the shortcut.">
-        Open address in new tab
+      <message name="IDS_KEYBOARD_OVERLAY_INPUT_UNICODE_CHARACTERS" desc="The text in the keyboard overlay to explain the shortcut.">
+        Input Unicode characters
+      </message>
+      <message name="IDS_KEYBOARD_OVERLAY_LOCK_SCREEN_OR_POWER_OFF" desc="The text in the keyboard overlay to explain the shortcut.">
+        Lock screen or power off
       </message>
       <message name="IDS_KEYBOARD_OVERLAY_NEW_INCOGNITO_WINDOW" desc="The text in the keyboard overlay to explain the shortcut.">
         New Incognito window
       </message>
+      <message name="IDS_KEYBOARD_OVERLAY_NEW_TAB" desc="The text in the keyboard overlay to explain the shortcut.">
+        New tab
+      </message>
       <message name="IDS_KEYBOARD_OVERLAY_NEW_WINDOW" desc="The text in the keyboard overlay to explain the shortcut.">
         New window
       </message>
+      <message name="IDS_KEYBOARD_OVERLAY_NEXT_WINDOW" desc="The text in the keyboard overlay to explain the shortcut.">
+        Next window
+      </message>
+      <message name="IDS_KEYBOARD_OVERLAY_OPEN_ADDRESS_IN_NEW_TAB" desc="The text in the keyboard overlay to explain the shortcut.">
+        Open address in new tab
+      </message>
+      <message name="IDS_KEYBOARD_OVERLAY_OPEN_FILE_MANAGER" desc="The text in the keyboard overlay to explain the shortcut.">
+        Open file manager
+      </message>
+      <message name="IDS_KEYBOARD_OVERLAY_PAGE_DOWN" desc="The text in the keyboard overlay to explain the shortcut.">
+        Page Down
+      </message>
+      <message name="IDS_KEYBOARD_OVERLAY_PAGE_UP" desc="The text in the keyboard overlay to explain the shortcut.">
+        Page Up
+      </message>
+      <message name="IDS_KEYBOARD_OVERLAY_PASTE" desc="The text in the keyboard overlay to explain the shortcut.">
+        Paste
+      </message>
       <message name="IDS_KEYBOARD_OVERLAY_PASTE_AS_PLAIN_TEXT" desc="The text in the keyboard overlay to explain the shortcut.">
         Paste as plain text
+      </message>
+      <message name="IDS_KEYBOARD_OVERLAY_PREVIOUS_WINDOW" desc="The text in the keyboard overlay to explain the shortcut.">
+        Previous window
       </message>
       <message name="IDS_KEYBOARD_OVERLAY_PRINT" desc="The text in the keyboard overlay to explain the shortcut.">
         Print
@@ -12133,53 +12178,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_KEYBOARD_OVERLAY_RELOAD_CURRENT_PAGE" desc="The text in the keyboard overlay to explain the shortcut.">
         Reload current page
       </message>
+      <message name="IDS_KEYBOARD_OVERLAY_RELOAD_IGNORING_CACHE" desc="The text in the keyboard overlay to explain the shortcut.">
+        Reload ignoring cache
+      </message>
       <message name="IDS_KEYBOARD_OVERLAY_REOPEN_LAST_CLOSED_TAB" desc="The text in the keyboard overlay to explain the shortcut.">
         Reopen last-closed tab
       </message>
       <message name="IDS_KEYBOARD_OVERLAY_RESET_ZOOM" desc="The text in the keyboard overlay to explain the shortcut.">
         Reset zoom
-      </message>
-      <message name="IDS_KEYBOARD_OVERLAY_SELECT_WORD_AT_A_TIME" desc="The text in the keyboard overlay to explain the shortcut.">
-        Select "word at a time"
-      </message>
-      <message name="IDS_KEYBOARD_OVERLAY_TOGGLE_BOOKMARK_BAR" desc="The text in the keyboard overlay to explain the shortcut.">
-        Toggle bookmark bar
-      </message>
-      <message name="IDS_KEYBOARD_OVERLAY_VIEW_SOURCE" desc="The text in the keyboard overlay to explain the shortcut.">
-        View source
-      </message>
-      <message name="IDS_KEYBOARD_OVERLAY_ZOOM_IN" desc="The text in the keyboard overlay to explain the shortcut.">
-        Zoom in
-      </message>
-      <message name="IDS_KEYBOARD_OVERLAY_ZOOM_OUT" desc="The text in the keyboard overlay to explain the shortcut.">
-        Zoom out
-      </message>
-      <message name="IDS_KEYBOARD_OVERLAY_TAKE_SCREENSHOT" desc="The text in the keyboard overlay to explain the shortcut.">
-        Take screenshot
-      </message>
-      <message name="IDS_KEYBOARD_OVERLAY_HOME" desc="The text in the keyboard overlay to explain the shortcut.">
-        Home
-      </message>
-      <message name="IDS_KEYBOARD_OVERLAY_END" desc="The text in the keyboard overlay to explain the shortcut.">
-        End
-      </message>
-      <message name="IDS_KEYBOARD_OVERLAY_NEXT_WINDOW" desc="The text in the keyboard overlay to explain the shortcut.">
-        Next window
-      </message>
-      <message name="IDS_KEYBOARD_OVERLAY_CONTENT_BROWSER" desc="The text in the keyboard overlay to explain the shortcut.">
-        Content browser
-      </message>
-      <message name="IDS_KEYBOARD_OVERLAY_PAGE_UP" desc="The text in the keyboard overlay to explain the shortcut.">
-        Page Up
-      </message>
-      <message name="IDS_KEYBOARD_OVERLAY_PAGE_DOWN" desc="The text in the keyboard overlay to explain the shortcut.">
-        Page Down
-      </message>
-      <message name="IDS_KEYBOARD_OVERLAY_PREVIOUS_WINDOW" desc="The text in the keyboard overlay to explain the shortcut.">
-        Previous window
-      </message>
-      <message name="IDS_KEYBOARD_OVERLAY_RELOAD_IGNORING_CACHE" desc="The text in the keyboard overlay to explain the shortcut.">
-        Reload ignoring cache
       </message>
       <message name="IDS_KEYBOARD_OVERLAY_SAVE" desc="The text in the keyboard overlay to explain the shortcut.">
         Save
@@ -12187,53 +12193,47 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_KEYBOARD_OVERLAY_SCROLL_UP_ONE_PAGE" desc="The text in the keyboard overlay to explain the shortcut.">
         Scroll up one page
       </message>
-      <message name="IDS_KEYBOARD_OVERLAY_SIGN_OUT" desc="The text in the keyboard overlay to explain the shortcut.">
-        Sign out
-      </message>
-      <message name="IDS_KEYBOARD_OVERLAY_UNDO" desc="The text in the keyboard overlay to explain the shortcut.">
-        Undo
-      </message>
-      <message name="IDS_KEYBOARD_OVERLAY_WORD_MOVE" desc="The text in the keyboard overlay to explain the shortcut.">
-        Word move
-      </message>
       <message name="IDS_KEYBOARD_OVERLAY_SELECT_ALL" desc="The text in the keyboard overlay to explain the shortcut.">
         Select all
       </message>
       <message name="IDS_KEYBOARD_OVERLAY_SELECT_PREVIOUS_INPUT_METHOD" desc="The text in the keyboard overlay to explain the shortcut.">
         Select previous input method
       </message>
-      <message name="IDS_KEYBOARD_OVERLAY_CYCLE_THROUGH_INPUT_METHODS" desc="The text in the keyboard overlay to explain the shortcut.">
-        Cycle through input methods
-      </message>
-      <message name="IDS_KEYBOARD_OVERLAY_CLOSE_WINDOW" desc="The text in the keyboard overlay to explain the shortcut.">
-        Close Window
-      </message>
-      <message name="IDS_KEYBOARD_OVERLAY_VIEW_KEYBOARD_OVERLAY" desc="The text in the keyboard overlay to explain the shortcut.">
-        View keyboard overlay
-      </message>
-      <message name="IDS_KEYBOARD_OVERLAY_CUT" desc="The text in the keyboard overlay to explain the shortcut.">
-        Cut
-      </message>
-      <message name="IDS_KEYBOARD_OVERLAY_COPY" desc="The text in the keyboard overlay to explain the shortcut.">
-        Copy
-      </message>
-      <message name="IDS_KEYBOARD_OVERLAY_PASTE" desc="The text in the keyboard overlay to explain the shortcut.">
-        Paste
-      </message>
-      <message name="IDS_KEYBOARD_OVERLAY_HELP" desc="The text in the keyboard overlay to explain the shortcut.">
-        Help
-      </message>
-      <message name="IDS_KEYBOARD_OVERLAY_LOCK_SCREEN_OR_POWER_OFF" desc="The text in the keyboard overlay to explain the shortcut.">
-        Lock screen or power off
-      </message>
-      <message name="IDS_KEYBOARD_OVERLAY_INPUT_UNICODE_CHARACTERS" desc="The text in the keyboard overlay to explain the shortcut.">
-        Input Unicode characters
+      <message name="IDS_KEYBOARD_OVERLAY_SELECT_WORD_AT_A_TIME" desc="The text in the keyboard overlay to explain the shortcut.">
+        Select "word at a time"
       </message>
       <message name="IDS_KEYBOARD_OVERLAY_SHOW_WRENCH_MENU" desc="The text in the keyboard overlay to explain the shortcut.">
         Show wrench menu
       </message>
-      <message name="IDS_KEYBOARD_OVERLAY_OPEN_FILE_MANAGER" desc="The text in the keyboard overlay to explain the shortcut.">
-        Open file manager
+      <message name="IDS_KEYBOARD_OVERLAY_SIGN_OUT" desc="The text in the keyboard overlay to explain the shortcut.">
+        Sign out
+      </message>
+      <message name="IDS_KEYBOARD_OVERLAY_TAKE_SCREENSHOT" desc="The text in the keyboard overlay to explain the shortcut.">
+        Take screenshot
+      </message>
+      <message name="IDS_KEYBOARD_OVERLAY_TASK_MANAGER" desc="The text in the keyboard overlay to explain the shortcut.">
+        Task Manager
+      </message>
+      <message name="IDS_KEYBOARD_OVERLAY_TOGGLE_BOOKMARK_BAR" desc="The text in the keyboard overlay to explain the shortcut.">
+        Toggle bookmark bar
+      </message>
+      <message name="IDS_KEYBOARD_OVERLAY_UNDO" desc="The text in the keyboard overlay to explain the shortcut.">
+        Undo
+      </message>
+      <message name="IDS_KEYBOARD_OVERLAY_VIEW_KEYBOARD_OVERLAY" desc="The text in the keyboard overlay to explain the shortcut.">
+        View keyboard overlay
+      </message>
+      <message name="IDS_KEYBOARD_OVERLAY_VIEW_SOURCE" desc="The text in the keyboard overlay to explain the shortcut.">
+        View source
+      </message>
+      <message name="IDS_KEYBOARD_OVERLAY_WORD_MOVE" desc="The text in the keyboard overlay to explain the shortcut.">
+        Word move
+      </message>
+      <message name="IDS_KEYBOARD_OVERLAY_ZOOM_IN" desc="The text in the keyboard overlay to explain the shortcut.">
+        Zoom in
+      </message>
+      <message name="IDS_KEYBOARD_OVERLAY_ZOOM_OUT" desc="The text in the keyboard overlay to explain the shortcut.">
+        Zoom out
       </message>
     </if>
     <if expr="pp_ifdef('chromeos') and lang == 'ja'">
