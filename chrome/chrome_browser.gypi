@@ -3382,6 +3382,8 @@
         'browser/ui/webui/html_dialog_ui.h',
         'browser/ui/webui/keyboard_ui.cc',
         'browser/ui/webui/keyboard_ui.h',
+        'browser/ui/webui/media_internals_ui.cc',
+        'browser/ui/webui/media_internals_ui.h',
         'browser/ui/webui/net_internals_ui.cc',
         'browser/ui/webui/net_internals_ui.h',
         'browser/ui/webui/ntp/app_launcher_handler.cc',

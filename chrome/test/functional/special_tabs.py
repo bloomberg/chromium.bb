@@ -34,6 +34,7 @@ class SpecialTabsTest(pyauto.PyUITest):
     'chrome://downloads': 'Downloads',
     'chrome://extensions': 'Extensions',
     'chrome://history': 'History',
+    'chrome://media-internals': 'Media Internals',
     'chrome://newtab': 'New Tab',
     'chrome://sync-internals': 'Sync Internals',
   }
