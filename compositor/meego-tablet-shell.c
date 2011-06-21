@@ -52,8 +52,7 @@ struct meego_tablet_shell {
 	struct wlsc_shell shell;
 
 	struct wlsc_compositor *compositor;
-	struct wl_event_source *sigchld_source;
-	pid_t pid;
+	struct wlsc_process process;
 	struct wlsc_input_device *device;
 	struct wl_client *client;
 
@@ -92,18 +91,16 @@ struct meego_tablet_zoom {
 	void (*done)(struct meego_tablet_zoom *zoom);
 };
 
-static int
-sigchld_handler(int signal_number, void *data)
-{
-	struct meego_tablet_shell *shell = data;
-	int status;
 
-	wait(&status);
-	shell->pid = 0;
+static void
+meego_tablet_shell_sigchld(struct wlsc_process *process, int status)
+{
+	struct meego_tablet_shell *shell =
+		container_of(process, struct meego_tablet_shell, process);
+
+	shell->process.pid = 0;
 
 	fprintf(stderr, "meego-ux-daemon crashed, exit code %d\n", status);
-
-	return 1;
 }
 
 static void
@@ -473,8 +470,10 @@ launch_ux_daemon(struct meego_tablet_shell *shell)
 		return;
 	}
 
-	shell->pid = fork();
-	switch (shell->pid) {
+	shell->process.pid = fork();
+	shell->process.cleanup = meego_tablet_shell_sigchld;
+
+	switch (shell->process.pid) {
 	case 0:
 		/* SOCK_CLOEXEC closes both ends, so we need to unset
 		 * the flag on the client fd. */
@@ -495,6 +494,7 @@ launch_ux_daemon(struct meego_tablet_shell *shell)
 		close(sv[1]);
 		shell->client =
 			wl_client_create(compositor->wl_display, sv[0]);
+		wlsc_watch_process(&shell->process);
 		break;
 
 	case -1:
@@ -640,10 +640,6 @@ shell_init(struct wlsc_compositor *compositor)
 	wl_display_add_global(compositor->wl_display, &shell->object, NULL);
 
 	loop = wl_display_get_event_loop(compositor->wl_display);
-	shell->sigchld_source =
-		wl_event_loop_add_signal(loop, SIGCHLD,
-					 sigchld_handler, shell);
-
 	shell->long_press_source =
 		wl_event_loop_add_timer(loop, long_press_handler, shell);
 
