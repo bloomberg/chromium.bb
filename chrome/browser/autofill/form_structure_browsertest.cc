@@ -144,6 +144,14 @@ IN_PROC_BROWSER_TEST_F(FormStructureBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(FormStructureBrowserTest,
+    MAYBE_DataDrivenHeuristics(07)) {
+  const FilePath::CharType kFileNamePattern[] = FILE_PATH_LITERAL("07_*.html");
+  RunDataDrivenTest(GetInputDirectory(kTestName),
+                    GetOutputDirectory(kTestName),
+                    kFileNamePattern);
+}
+
+IN_PROC_BROWSER_TEST_F(FormStructureBrowserTest,
     MAYBE_DataDrivenHeuristics(08)) {
   const FilePath::CharType kFileNamePattern[] = FILE_PATH_LITERAL("08_*.html");
   RunDataDrivenTest(GetInputDirectory(kTestName),
