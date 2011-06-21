@@ -8,6 +8,7 @@
 #include "base/stringprintf.h"
 #include "base/string_util.h"
 #include "net/base/net_errors.h"
+#include "net/http/http_request_headers.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKitClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
@@ -106,12 +107,17 @@ void BufferedResourceLoader::Start(net::CompletionCallback* start_callback,
 
   if (IsRangeRequest()) {
     range_requested_ = true;
-    request.setHTTPHeaderField(WebString::fromUTF8("Range"),
-                               WebString::fromUTF8(GenerateHeaders(
-                                   first_byte_position_,
-                                   last_byte_position_)));
+    request.setHTTPHeaderField(
+        WebString::fromUTF8(net::HttpRequestHeaders::kRange),
+        WebString::fromUTF8(GenerateHeaders(first_byte_position_,
+                                            last_byte_position_)));
   }
   frame->setReferrerForRequest(request, WebKit::WebURL());
+
+  // Disable compression, compression for audio/video doesn't make sense...
+  request.setHTTPHeaderField(
+      WebString::fromUTF8(net::HttpRequestHeaders::kAcceptEncoding),
+      WebString::fromUTF8("identity;q=1, *;q=0"));
 
   // This flag is for unittests as we don't want to reset |url_loader|
   if (!keep_test_loader_)

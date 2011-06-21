@@ -476,6 +476,12 @@ void FilterDisabledTests() {
     // This test modifies the UploadData object after it has been marshaled to
     // ChromeFrame. We don't support this.
     "URLRequestTestHTTP.TestPostChunkedDataAfterStart",
+
+    // Do not work in CF, it may well be that IE is unconditionally
+    // adding Accept-Encoding header by default to outgoing requests.
+    "URLRequestTestHTTP.DefaultAcceptEncoding",
+    "URLRequestTestHTTP.OverrideAcceptEncoding",
+
     // Not supported in ChromeFrame as we use IE's network stack.
     "URLRequestTest.NetworkDelegateProxyError",
   };

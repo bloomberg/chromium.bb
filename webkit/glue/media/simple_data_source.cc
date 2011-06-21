@@ -9,11 +9,15 @@
 #include "media/base/filter_host.h"
 #include "net/base/data_url.h"
 #include "net/base/load_flags.h"
+#include "net/http/http_request_headers.h"
 #include "net/url_request/url_request_status.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKitClient.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "webkit/glue/media/web_data_source_factory.h"
 #include "webkit/glue/webkit_glue.h"
+
+using WebKit::WebString;
 
 namespace webkit_glue {
 
@@ -299,6 +303,11 @@ void SimpleDataSource::StartTask() {
       request.setTargetType(WebKit::WebURLRequest::TargetIsMedia);
 
       frame_->setReferrerForRequest(request, WebKit::WebURL());
+
+      // Disable compression, compression for audio/video doesn't make sense...
+      request.setHTTPHeaderField(
+          WebString::fromUTF8(net::HttpRequestHeaders::kAcceptEncoding),
+          WebString::fromUTF8("identity;q=1, *;q=0"));
 
       // This flag is for unittests as we don't want to reset |url_loader|
       if (!keep_test_loader_)
