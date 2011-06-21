@@ -357,6 +357,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kShowAutofillTypePredictions)
   },
+  {
+    "sync-typed-urls",
+    IDS_FLAGS_SYNC_TYPED_URLS_NAME,
+    IDS_FLAGS_SYNC_TYPED_URLS_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableSyncTypedUrls)
+  },
 };
 
 const Experiment* experiments = kExperiments;
