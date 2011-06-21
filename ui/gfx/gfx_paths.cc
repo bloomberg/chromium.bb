@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,10 +12,6 @@
 namespace gfx {
 
 bool PathProvider(int key, FilePath* result) {
-  // Assume that we will not need to create the directory if it does not exist.
-  // This flag can be set to true for the cases where we want to create it.
-  bool create_dir = false;
-
   FilePath cur;
   switch (key) {
     // The following are only valid in the development environment, and
@@ -34,10 +30,6 @@ bool PathProvider(int key, FilePath* result) {
     default:
       return false;
   }
-
-  if (create_dir && !file_util::PathExists(cur) &&
-      !file_util::CreateDirectory(cur))
-    return false;
 
   *result = cur;
   return true;
