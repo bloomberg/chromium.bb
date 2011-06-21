@@ -14,8 +14,9 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/gtk_util.h"
 
-ExtensionInfoBarGtk::ExtensionInfoBarGtk(ExtensionInfoBarDelegate* delegate)
-    : InfoBar(delegate),
+ExtensionInfoBarGtk::ExtensionInfoBarGtk(TabContentsWrapper* owner,
+                                         ExtensionInfoBarDelegate* delegate)
+    : InfoBarGtk(owner, delegate),
       tracker_(this),
       delegate_(delegate),
       view_(NULL) {
@@ -89,5 +90,5 @@ void ExtensionInfoBarGtk::OnExtensionPreferredSizeChanged(
 }
 
 InfoBar* ExtensionInfoBarDelegate::CreateInfoBar(TabContentsWrapper* owner) {
-  return new ExtensionInfoBarGtk(this);
+  return new ExtensionInfoBarGtk(owner, this);
 }

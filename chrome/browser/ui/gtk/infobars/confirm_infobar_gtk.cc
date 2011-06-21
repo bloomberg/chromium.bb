@@ -14,13 +14,14 @@
 // ConfirmInfoBarDelegate ------------------------------------------------------
 
 InfoBar* ConfirmInfoBarDelegate::CreateInfoBar(TabContentsWrapper* owner) {
-  return new ConfirmInfoBarGtk(this);
+  return new ConfirmInfoBarGtk(owner, this);
 }
 
 // ConfirmInfoBarGtk -----------------------------------------------------------
 
-ConfirmInfoBarGtk::ConfirmInfoBarGtk(ConfirmInfoBarDelegate* delegate)
-    : InfoBar(delegate),
+ConfirmInfoBarGtk::ConfirmInfoBarGtk(TabContentsWrapper* owner,
+                                     ConfirmInfoBarDelegate* delegate)
+    : InfoBarGtk(owner, delegate),
       size_group_(NULL) {
   confirm_hbox_ = gtk_chrome_shrinkable_hbox_new(FALSE, FALSE,
                                                  kEndOfLabelSpacing);
@@ -65,12 +66,12 @@ ConfirmInfoBarGtk::~ConfirmInfoBarGtk() {
 }
 
 void ConfirmInfoBarGtk::AddButton(ConfirmInfoBarDelegate::InfoBarButton type) {
-  if (delegate_->AsConfirmInfoBarDelegate()->GetButtons() & type) {
+  if (delegate()->AsConfirmInfoBarDelegate()->GetButtons() & type) {
     if (!size_group_)
       size_group_ = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 
     GtkWidget* button = gtk_button_new_with_label(UTF16ToUTF8(
-        delegate_->AsConfirmInfoBarDelegate()->GetButtonLabel(type)).c_str());
+        delegate()->AsConfirmInfoBarDelegate()->GetButtonLabel(type)).c_str());
     gtk_size_group_add_widget(size_group_, button);
 
     gtk_util::CenterWidgetInHBox(confirm_hbox_, button, true, 0);
@@ -82,17 +83,17 @@ void ConfirmInfoBarGtk::AddButton(ConfirmInfoBarDelegate::InfoBarButton type) {
 }
 
 void ConfirmInfoBarGtk::OnOkButton(GtkWidget* widget) {
-  if (delegate_->AsConfirmInfoBarDelegate()->Accept())
+  if (delegate()->AsConfirmInfoBarDelegate()->Accept())
     RemoveInfoBar();
 }
 
 void ConfirmInfoBarGtk::OnCancelButton(GtkWidget* widget) {
-  if (delegate_->AsConfirmInfoBarDelegate()->Cancel())
+  if (delegate()->AsConfirmInfoBarDelegate()->Cancel())
     RemoveInfoBar();
 }
 
 void ConfirmInfoBarGtk::OnLinkClicked(GtkWidget* widget) {
-  if (delegate_->AsConfirmInfoBarDelegate()->LinkClicked(
+  if (delegate()->AsConfirmInfoBarDelegate()->LinkClicked(
         gtk_util::DispositionForCurrentButtonPressEvent())) {
     RemoveInfoBar();
   }

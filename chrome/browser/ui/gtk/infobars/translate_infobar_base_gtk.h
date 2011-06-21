@@ -15,10 +15,10 @@ class TranslateInfoBarDelegate;
 
 // This class contains some of the base functionality that translate infobars
 // use.
-class TranslateInfoBarBase : public InfoBar,
-                             public ui::AnimationDelegate {
+class TranslateInfoBarBase : public InfoBarGtk {
  public:
-  explicit TranslateInfoBarBase(TranslateInfoBarDelegate* delegate);
+  explicit TranslateInfoBarBase(TabContentsWrapper* owner,
+                                TranslateInfoBarDelegate* delegate);
   virtual ~TranslateInfoBarBase();
 
   // Initializes the infobar widgets. Should be called after the object has been
@@ -57,7 +57,7 @@ class TranslateInfoBarBase : public InfoBar,
   static size_t GetLanguageComboboxActiveId(GtkComboBox* combo);
 
   // Convenience to retrieve the TranslateInfoBarDelegate for this infobar.
-  TranslateInfoBarDelegate* GetDelegate() const;
+  TranslateInfoBarDelegate* GetDelegate();
 
  private:
   // Builds a button with an arrow in it to emulate the menu-button style from

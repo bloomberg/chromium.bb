@@ -30,8 +30,10 @@ enum {
 
 }  // namespace
 
-TranslateInfoBarBase::TranslateInfoBarBase(TranslateInfoBarDelegate* delegate)
-    : InfoBar(delegate) {
+TranslateInfoBarBase::TranslateInfoBarBase(TabContentsWrapper* owner,
+                                           TranslateInfoBarDelegate* delegate)
+    : InfoBarGtk(owner, delegate) {
+  DCHECK(delegate);
   TranslateInfoBarDelegate::BackgroundAnimationType animation =
       delegate->background_animation_type();
   if (animation != TranslateInfoBarDelegate::NONE) {
@@ -70,17 +72,17 @@ void TranslateInfoBarBase::Init() {
 void TranslateInfoBarBase::GetTopColor(InfoBarDelegate::Type type,
                                        double* r, double* g, double *b) {
   if (background_error_percent_ <= 0) {
-    InfoBar::GetTopColor(InfoBarDelegate::PAGE_ACTION_TYPE, r, g, b);
+    InfoBarGtk::GetTopColor(InfoBarDelegate::PAGE_ACTION_TYPE, r, g, b);
   } else if (background_error_percent_ >= 1) {
-    InfoBar::GetTopColor(InfoBarDelegate::WARNING_TYPE, r, g, b);
+    InfoBarGtk::GetTopColor(InfoBarDelegate::WARNING_TYPE, r, g, b);
   } else {
     double normal_r, normal_g, normal_b;
-    InfoBar::GetTopColor(InfoBarDelegate::PAGE_ACTION_TYPE,
-                         &normal_r, &normal_g, &normal_b);
+    InfoBarGtk::GetTopColor(InfoBarDelegate::PAGE_ACTION_TYPE,
+                            &normal_r, &normal_g, &normal_b);
 
     double error_r, error_g, error_b;
-    InfoBar::GetTopColor(InfoBarDelegate::WARNING_TYPE,
-                         &error_r, &error_g, &error_b);
+    InfoBarGtk::GetTopColor(InfoBarDelegate::WARNING_TYPE,
+                            &error_r, &error_g, &error_b);
 
     double offset_r = error_r - normal_r;
     double offset_g = error_g - normal_g;
@@ -95,17 +97,17 @@ void TranslateInfoBarBase::GetTopColor(InfoBarDelegate::Type type,
 void TranslateInfoBarBase::GetBottomColor(InfoBarDelegate::Type type,
                                           double* r, double* g, double *b) {
   if (background_error_percent_ <= 0) {
-    InfoBar::GetBottomColor(InfoBarDelegate::PAGE_ACTION_TYPE, r, g, b);
+    InfoBarGtk::GetBottomColor(InfoBarDelegate::PAGE_ACTION_TYPE, r, g, b);
   } else if (background_error_percent_ >= 1) {
-    InfoBar::GetBottomColor(InfoBarDelegate::WARNING_TYPE, r, g, b);
+    InfoBarGtk::GetBottomColor(InfoBarDelegate::WARNING_TYPE, r, g, b);
   } else {
     double normal_r, normal_g, normal_b;
-    InfoBar::GetBottomColor(InfoBarDelegate::PAGE_ACTION_TYPE,
-                            &normal_r, &normal_g, &normal_b);
+    InfoBarGtk::GetBottomColor(InfoBarDelegate::PAGE_ACTION_TYPE,
+                               &normal_r, &normal_g, &normal_b);
 
     double error_r, error_g, error_b;
-    InfoBar::GetBottomColor(InfoBarDelegate::WARNING_TYPE,
-                            &error_r, &error_g, &error_b);
+    InfoBarGtk::GetBottomColor(InfoBarDelegate::WARNING_TYPE,
+                               &error_r, &error_g, &error_b);
 
     double offset_r = error_r - normal_r;
     double offset_g = error_g - normal_g;
@@ -118,10 +120,13 @@ void TranslateInfoBarBase::GetBottomColor(InfoBarDelegate::Type type,
 }
 
 void TranslateInfoBarBase::AnimationProgressed(const ui::Animation* animation) {
-  DCHECK(animation == background_color_animation_.get());
-  background_error_percent_ = animation->GetCurrentValue();
-  // Queue the info bar widget for redisplay so it repaints its background.
-  gtk_widget_queue_draw(widget());
+  if (animation == background_color_animation_.get()) {
+    background_error_percent_ = animation->GetCurrentValue();
+    // Queue the info bar widget for redisplay so it repaints its background.
+    gtk_widget_queue_draw(widget());
+  } else {
+    InfoBar::AnimationProgressed(animation);
+  }
 }
 
 bool TranslateInfoBarBase::ShowOptionsMenuButton() const {
@@ -184,7 +189,7 @@ size_t TranslateInfoBarBase::GetLanguageComboboxActiveId(GtkComboBox* combo) {
   return static_cast<size_t>(id);
 }
 
-TranslateInfoBarDelegate* TranslateInfoBarBase::GetDelegate() const {
+TranslateInfoBarDelegate* TranslateInfoBarBase::GetDelegate() {
   return static_cast<TranslateInfoBarDelegate*>(delegate());
 }
 
@@ -222,14 +227,14 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar(TabContentsWrapper* owner) {
   TranslateInfoBarBase* infobar = NULL;
   switch (type_) {
     case BEFORE_TRANSLATE:
-      infobar = new BeforeTranslateInfoBar(this);
+      infobar = new BeforeTranslateInfoBar(owner, this);
       break;
     case AFTER_TRANSLATE:
-      infobar = new AfterTranslateInfoBar(this);
+      infobar = new AfterTranslateInfoBar(owner, this);
       break;
     case TRANSLATING:
     case TRANSLATION_ERROR:
-      infobar = new TranslateMessageInfoBar(this);
+      infobar = new TranslateMessageInfoBar(owner, this);
       break;
     default:
       NOTREACHED();

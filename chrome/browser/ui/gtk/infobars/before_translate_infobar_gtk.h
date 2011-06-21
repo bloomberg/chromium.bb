@@ -12,7 +12,8 @@ class TranslateInfoBarDelegate;
 
 class BeforeTranslateInfoBar : public TranslateInfoBarBase {
  public:
-  explicit BeforeTranslateInfoBar(TranslateInfoBarDelegate* delegate);
+  explicit BeforeTranslateInfoBar(TabContentsWrapper* owner,
+                                  TranslateInfoBarDelegate* delegate);
   virtual ~BeforeTranslateInfoBar();
 
   // Overridden from TranslateInfoBarBase:

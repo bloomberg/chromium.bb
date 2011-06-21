@@ -90,6 +90,7 @@ class InfoBarContainer : public NotificationObserver {
   virtual void PlatformSpecificAddInfoBar(InfoBar* infobar,
                                           size_t position) = 0;
   virtual void PlatformSpecificRemoveInfoBar(InfoBar* infobar) = 0;
+  virtual void PlatformSpecificInfoBarStateChanged(bool is_animating) {}
 
  private:
   typedef std::vector<InfoBar*> InfoBars;

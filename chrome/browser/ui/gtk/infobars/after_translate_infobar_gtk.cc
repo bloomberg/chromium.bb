@@ -12,8 +12,9 @@
 #include "ui/base/l10n/l10n_util.h"
 
 AfterTranslateInfoBar::AfterTranslateInfoBar(
+    TabContentsWrapper* owner,
     TranslateInfoBarDelegate* delegate)
-    : TranslateInfoBarBase(delegate),
+    : TranslateInfoBarBase(owner, delegate),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
 }
 

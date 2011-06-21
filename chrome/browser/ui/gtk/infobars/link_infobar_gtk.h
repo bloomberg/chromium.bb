@@ -13,9 +13,10 @@
 class LinkInfoBarDelegate;
 
 // An infobar that shows a string with an embedded link.
-class LinkInfoBarGtk : public InfoBar {
+class LinkInfoBarGtk : public InfoBarGtk {
  public:
-  explicit LinkInfoBarGtk(LinkInfoBarDelegate* delegate);
+  explicit LinkInfoBarGtk(TabContentsWrapper* owner,
+                          LinkInfoBarDelegate* delegate);
 
  private:
   virtual ~LinkInfoBarGtk();

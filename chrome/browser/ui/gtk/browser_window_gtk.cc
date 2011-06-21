@@ -283,8 +283,7 @@ BrowserWindowGtk::BrowserWindowGtk(Browser* browser)
        maximize_after_show_(false),
        suppress_window_raise_(false),
        accel_group_(NULL),
-       debounce_timer_disabled_(false),
-       infobar_arrow_model_(this) {
+       debounce_timer_disabled_(false) {
 }
 
 BrowserWindowGtk::~BrowserWindowGtk() {
@@ -1230,6 +1229,26 @@ void BrowserWindowGtk::ActiveWindowChanged(GdkWindow* active_window) {
   }
 }
 
+SkColor BrowserWindowGtk::GetInfoBarSeparatorColor() const {
+  GtkThemeService* theme_service = GtkThemeService::GetFrom(
+      browser()->profile());
+  return gfx::GdkColorToSkColor(theme_service->GetBorderColor());
+}
+
+void BrowserWindowGtk::InfoBarContainerStateChanged(bool is_animating) {
+  InvalidateInfoBarBits();
+}
+
+bool BrowserWindowGtk::DrawInfoBarArrows(int* x) const {
+  if (x) {
+    // This is a views specific call that made its way into the interface. We
+    // go through GetXPositionOfLocationIcon() since we need widget relativity.
+    *x = 0;
+    NOTREACHED();
+  }
+  return true;
+}
+
 void BrowserWindowGtk::FadeForInstant(bool animate) {
   DCHECK(contents_container_->tab());
   RenderWidgetHostView* rwhv =
@@ -1684,7 +1703,7 @@ void BrowserWindowGtk::InitWidgets() {
   if (IsToolbarSupported())
     gtk_widget_show(toolbar_border_);
 
-  infobar_container_.reset(new InfoBarContainerGtk(browser_->profile()));
+  infobar_container_.reset(new InfoBarContainerGtk(this, browser_->profile()));
   gtk_box_pack_start(GTK_BOX(render_area_vbox_),
                      infobar_container_->widget(),
                      FALSE, FALSE, 0);
@@ -1886,14 +1905,6 @@ void BrowserWindowGtk::SaveWindowPosition() {
   window_preferences->SetInteger("work_area_bottom", work_area.bottom());
 }
 
-void BrowserWindowGtk::SetInfoBarShowing(InfoBar* bar, bool animate) {
-  infobar_arrow_model_.ShowArrowFor(bar, animate);
-}
-
-void BrowserWindowGtk::PaintStateChanged() {
-  InvalidateInfoBarBits();
-}
-
 void BrowserWindowGtk::InvalidateInfoBarBits() {
   gtk_widget_queue_draw(toolbar_border_);
   gtk_widget_queue_draw(toolbar_->widget());
@@ -1924,53 +1935,14 @@ void BrowserWindowGtk::OnLocationIconSizeAllocate(GtkWidget* sender,
 
 gboolean BrowserWindowGtk::OnExposeDrawInfobarBits(GtkWidget* sender,
                                                    GdkEventExpose* expose) {
-  if (!infobar_arrow_model_.NeedToDrawInfoBarArrow())
-    return FALSE;
+  // Maybe draw infobars
+  infobar_container_->PaintInfobarBitsOn(sender, expose, NULL);
 
-  int x = GetXPositionOfLocationIcon(sender);
-
-  gfx::Rect toolbar_border(toolbar_border_->allocation);
-  int y = 0;
-  gtk_widget_translate_coordinates(toolbar_border_, sender,
-                                   0, toolbar_border.bottom(),
-                                   NULL, &y);
-  if (GTK_WIDGET_NO_WINDOW(sender))
-    y += sender->allocation.y;
-
-  // x, y is the bottom middle of the arrow. Now we need to create the bounding
-  // rectangle.
-  gfx::Size arrow_size = GetInfobarArrowSize();
-  gfx::Rect bounds(
-      gfx::Point(x - arrow_size.width() / 2.0, y - arrow_size.height()),
-      arrow_size);
-
-  Profile* profile = browser()->profile();
-  infobar_arrow_model_.Paint(
-      sender, expose, bounds,
-      GtkThemeService::GetFrom(profile)->GetBorderColor());
   return FALSE;
-}
-
-gfx::Size BrowserWindowGtk::GetInfobarArrowSize() {
-  static const size_t kDefaultWidth =
-      2 * InfoBarArrowModel::kDefaultArrowSize;
-  static const size_t kDefaultHeight = InfoBarArrowModel::kDefaultArrowSize;
-  static const size_t kMaxWidth = 30;
-  static const size_t kMaxHeight = 24;
-
-  double progress = bookmark_bar_.get() && !bookmark_bar_is_floating_ ?
-      bookmark_bar_->animation()->GetCurrentValue() : 0.0;
-  size_t width = kDefaultWidth + (kMaxWidth - kDefaultWidth) * progress;
-  size_t height = kDefaultHeight + (kMaxHeight - kDefaultHeight) * progress;
-
-  return gfx::Size(width, height);
 }
 
 gboolean BrowserWindowGtk::OnBookmarkBarExpose(GtkWidget* sender,
                                                GdkEventExpose* expose) {
-  if (!infobar_arrow_model_.NeedToDrawInfoBarArrow())
-    return FALSE;
-
   if (bookmark_bar_is_floating_)
     return FALSE;
 
@@ -1981,8 +1953,14 @@ void BrowserWindowGtk::OnBookmarkBarSizeAllocate(GtkWidget* sender,
                                                  GtkAllocation* allocation) {
   // The size of the bookmark bar affects how the infobar arrow is drawn on
   // the toolbar.
-  if (infobar_arrow_model_.NeedToDrawInfoBarArrow())
+  if (infobar_container_->ContainsInfobars())
     InvalidateInfoBarBits();
+
+  // Pass the new size to our infobar container.
+  int arrow_size = InfoBar::kDefaultArrowTargetHeight;
+  if (!bookmark_bar_is_floating_)
+    arrow_size += allocation->height;
+  infobar_container_->SetMaxTopArrowHeight(arrow_size);
 }
 
 // static

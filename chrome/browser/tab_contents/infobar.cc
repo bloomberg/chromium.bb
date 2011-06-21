@@ -6,6 +6,7 @@
 
 #include <cmath>
 
+#include "build/build_config.h"
 #include "base/logging.h"
 #include "chrome/browser/tab_contents/infobar_container.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -35,7 +36,8 @@ SkColor GetInfoBarBottomColor(InfoBarDelegate::Type infobar_type) {
       kWarningBackgroundColorBottom : kPageActionBackgroundColorBottom;
 }
 
-#if defined(TOOLKIT_VIEWS)  // TODO(pkasting): Port non-views to use this.
+// TODO(pkasting): Port Mac to use this.
+#if defined(TOOLKIT_VIEWS) || defined(TOOLKIT_GTK)
 
 InfoBar::InfoBar(TabContentsWrapper* owner, InfoBarDelegate* delegate)
     : owner_(owner),
@@ -56,6 +58,7 @@ InfoBar::~InfoBar() {
 }
 
 void InfoBar::Show(bool animate) {
+  PlatformSpecificShow(animate);
   if (animate) {
     animation_->Show();
   } else {
@@ -169,4 +172,4 @@ void InfoBar::MaybeDelete() {
   }
 }
 
-#endif  // TOOLKIT_VIEWS
+#endif  // TOOLKIT_VIEWS || TOOLKIT_GTK

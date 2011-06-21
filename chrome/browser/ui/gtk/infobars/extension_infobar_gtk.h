@@ -16,11 +16,12 @@ class ExtensionInfobarDelegate;
 class ExtensionResource;
 class ExtensionViewGtk;
 
-class ExtensionInfoBarGtk : public InfoBar,
+class ExtensionInfoBarGtk : public InfoBarGtk,
                             public ImageLoadingTracker::Observer,
                             public ExtensionViewGtk::Container {
  public:
-  explicit ExtensionInfoBarGtk(ExtensionInfoBarDelegate* delegate);
+  explicit ExtensionInfoBarGtk(TabContentsWrapper* owner,
+                               ExtensionInfoBarDelegate* delegate);
   virtual ~ExtensionInfoBarGtk();
 
   // Overridden from ImageLoadingTracker::Observer:

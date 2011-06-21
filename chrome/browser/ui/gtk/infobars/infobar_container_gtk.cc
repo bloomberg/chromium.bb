@@ -16,202 +16,177 @@
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/infobars/infobar_gtk.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
-#include "third_party/skia/include/core/SkPaint.h"
+#include "third_party/skia/include/effects/SkGradientShader.h"
+#include "ui/gfx/canvas_skia_paint.h"
+#include "ui/gfx/color_utils.h"
+#include "ui/gfx/rect.h"
+#include "ui/gfx/skia_utils_gtk.h"
 
-namespace {
-
-static const char* kInfoBar = "info-bar";
-
-// If |infobar_widget| matches |info_bar_delegate|, then close the infobar.
-void AnimateClosingForDelegate(GtkWidget* infobar_widget,
-                               gpointer info_bar_delegate) {
-  InfoBarDelegate* delegate =
-      static_cast<InfoBarDelegate*>(info_bar_delegate);
-  InfoBar* infobar = reinterpret_cast<InfoBar*>(
-      g_object_get_data(G_OBJECT(infobar_widget), kInfoBar));
-
-  if (!infobar) {
-    NOTREACHED();
-    return;
-  }
-
-  if (delegate == infobar->delegate())
-    infobar->Hide(true);
-}
-
-// If |infobar_widget| matches |info_bar_delegate|, then close the infobar w/o
-// an animation.
-void ClosingForDelegate(GtkWidget* infobar_widget, gpointer info_bar_delegate) {
-  InfoBarDelegate* delegate =
-      static_cast<InfoBarDelegate*>(info_bar_delegate);
-  InfoBar* infobar = reinterpret_cast<InfoBar*>(
-      g_object_get_data(G_OBJECT(infobar_widget), kInfoBar));
-
-  if (!infobar) {
-    NOTREACHED();
-    return;
-  }
-
-  if (delegate == infobar->delegate())
-    infobar->Hide(false);
-}
-
-// Get the height of the widget and add it to |userdata|, but only if it is in
-// the process of animating.
-void SumAnimatingBarHeight(GtkWidget* widget, gpointer userdata) {
-  int* height_sum = static_cast<int*>(userdata);
-  InfoBar* infobar = reinterpret_cast<InfoBar*>(
-      g_object_get_data(G_OBJECT(widget), kInfoBar));
-  if (infobar->IsAnimating())
-    *height_sum += widget->allocation.height;
-}
-
-}  // namespace
-
-InfoBarContainerGtk::InfoBarContainerGtk(Profile* profile)
-    : profile_(profile),
-      tab_contents_(NULL),
+InfoBarContainerGtk::InfoBarContainerGtk(InfoBarContainer::Delegate* delegate,
+                                         Profile* profile)
+    : InfoBarContainer(delegate),
+      profile_(profile),
       container_(gtk_vbox_new(FALSE, 0)) {
   gtk_widget_show(widget());
 }
 
 InfoBarContainerGtk::~InfoBarContainerGtk() {
-  ChangeTabContents(NULL);
-
+  RemoveAllInfoBarsForDestruction();
   container_.Destroy();
-}
-
-void InfoBarContainerGtk::ChangeTabContents(TabContentsWrapper* contents) {
-  registrar_.RemoveAll();
-
-  gtk_util::RemoveAllChildren(widget());
-  UpdateToolbarInfoBarState(NULL, false);
-
-  tab_contents_ = contents;
-  if (tab_contents_) {
-    Source<TabContentsWrapper> source(tab_contents_);
-    registrar_.Add(this, NotificationType::TAB_CONTENTS_INFOBAR_ADDED, source);
-    registrar_.Add(this, NotificationType::TAB_CONTENTS_INFOBAR_REMOVED,
-                   source);
-    registrar_.Add(this, NotificationType::TAB_CONTENTS_INFOBAR_REPLACED,
-                   source);
-    for (size_t i = 0; i < tab_contents_->infobar_count(); ++i) {
-      InfoBarDelegate* delegate = tab_contents_->GetInfoBarDelegateAt(i);
-      AddInfoBar(delegate->CreateInfoBar(tab_contents_), false);
-    }
-  }
-}
-
-void InfoBarContainerGtk::RemoveDelegate(InfoBarDelegate* delegate) {
-  tab_contents_->RemoveInfoBar(delegate);
 }
 
 int InfoBarContainerGtk::TotalHeightOfAnimatingBars() const {
   int sum = 0;
-  gtk_container_foreach(GTK_CONTAINER(widget()), SumAnimatingBarHeight, &sum);
+
+  for (std::vector<InfoBarGtk*>::const_iterator it = infobars_gtk_.begin();
+       it != infobars_gtk_.end(); ++it) {
+    sum += (*it)->AnimatingHeight();
+  }
+
   return sum;
 }
 
-void InfoBarContainerGtk::Observe(NotificationType type,
-                                  const NotificationSource& source,
-                                  const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::TAB_CONTENTS_INFOBAR_ADDED:
-      AddInfoBar(
-          Details<InfoBarDelegate>(details)->CreateInfoBar(tab_contents_),
-          true);
-      break;
+bool InfoBarContainerGtk::ContainsInfobars() const {
+  return !infobars_gtk_.empty();
+}
 
-    case NotificationType::TAB_CONTENTS_INFOBAR_REMOVED: {
-      typedef std::pair<InfoBarDelegate*, bool> RemoveDetails;
-      RemoveDetails* remove_details = Details<RemoveDetails>(details).ptr();
-      RemoveInfoBar(remove_details->first, remove_details->second);
-      break;
+void InfoBarContainerGtk::PlatformSpecificAddInfoBar(InfoBar* infobar,
+                                                     size_t position) {
+  InfoBarGtk* infobar_gtk = static_cast<InfoBarGtk*>(infobar);
+  infobar_gtk->SetThemeProvider(GtkThemeService::GetFrom(profile_));
+
+  infobars_gtk_.insert(infobars_gtk_.begin() + position, infobar_gtk);
+
+  if (infobars_gtk_.back() == infobar_gtk) {
+    gtk_box_pack_start(GTK_BOX(widget()), infobar_gtk->widget(),
+                       FALSE, FALSE, 0);
+  } else {
+    // Clear out our container and then repack it to make sure everything is in
+    // the right order.
+    gtk_util::RemoveAllChildren(widget());
+
+    // Repack our container.
+    for (std::vector<InfoBarGtk*>::const_iterator it = infobars_gtk_.begin();
+         it != infobars_gtk_.end(); ++it) {
+      gtk_box_pack_start(GTK_BOX(widget()), (*it)->widget(),
+                         FALSE, FALSE, 0);
     }
-
-    case NotificationType::TAB_CONTENTS_INFOBAR_REPLACED: {
-      typedef std::pair<InfoBarDelegate*, InfoBarDelegate*> ReplaceDetails;
-      ReplaceDetails* replace_details = Details<ReplaceDetails>(details).ptr();
-      RemoveInfoBar(replace_details->first, false);
-      AddInfoBar(replace_details->second->CreateInfoBar(tab_contents_), false);
-      break;
-    }
-
-    default:
-      NOTREACHED();
-      break;
   }
 }
 
-void InfoBarContainerGtk::ShowArrowForDelegate(InfoBarDelegate* delegate,
-                                               bool animate) {
-  GList* children = gtk_container_get_children(GTK_CONTAINER(widget()));
-  if (!children)
+void InfoBarContainerGtk::PlatformSpecificRemoveInfoBar(InfoBar* infobar) {
+  InfoBarGtk* infobar_gtk = static_cast<InfoBarGtk*>(infobar);
+  gtk_container_remove(GTK_CONTAINER(widget()), infobar_gtk->widget());
+
+  std::vector<InfoBarGtk*>::iterator it =
+      std::find(infobars_gtk_.begin(), infobars_gtk_.end(), infobar);
+  if (it != infobars_gtk_.end())
+    infobars_gtk_.erase(it);
+}
+
+void InfoBarContainerGtk::PlatformSpecificInfoBarStateChanged(
+    bool is_animating) {
+  // Force a redraw of all infobars since something has a new height and we
+  // need to make sure we animate our arrows.
+  for (std::vector<InfoBarGtk*>::iterator it = infobars_gtk_.begin();
+       it != infobars_gtk_.end(); ++it) {
+    gtk_widget_queue_draw((*it)->widget());
+  }
+}
+
+void InfoBarContainerGtk::PaintInfobarBitsOn(GtkWidget* sender,
+                                             GdkEventExpose* expose,
+                                             InfoBarGtk* infobar) {
+  if (infobars_gtk_.empty())
     return;
 
-  // Iterate through the infobars and find the last one that isn't closing.
-  InfoBar* last_bar = NULL;
-  InfoBar* this_bar = NULL;
-  for (GList* iter = children; iter != NULL; iter = iter->next) {
-    this_bar = reinterpret_cast<InfoBar*>(
-        g_object_get_data(G_OBJECT(iter->data), kInfoBar));
-
-    if (this_bar->delegate() == delegate)
-      break;
-
-    if (!this_bar->IsClosing())
-      last_bar = this_bar;
-
-    this_bar = NULL;
-  }
-
-  if (last_bar)
-    last_bar->ShowArrowFor(this_bar, animate);
-  else
-    UpdateToolbarInfoBarState(this_bar, animate);
-
-  g_list_free(children);
-}
-
-void InfoBarContainerGtk::AddInfoBar(InfoBar* infobar, bool animate) {
-  infobar->set_container(this);
-  infobar->SetThemeProvider(GtkThemeService::GetFrom(profile_));
-  gtk_box_pack_start(GTK_BOX(widget()), infobar->widget(),
-                     FALSE, FALSE, 0);
-
-  infobar->Show(animate);
-  ShowArrowForDelegate(infobar->delegate(), animate);
-}
-
-void InfoBarContainerGtk::RemoveInfoBar(InfoBarDelegate* delegate,
-                                        bool animate) {
-  if (animate) {
-    gtk_container_foreach(GTK_CONTAINER(widget()),
-                          AnimateClosingForDelegate, delegate);
-  } else {
-    gtk_container_foreach(GTK_CONTAINER(widget()), ClosingForDelegate,
-                          delegate);
-  }
-
-  InfoBarDelegate* next_delegate = NULL;
-  for (size_t i = 1; i < tab_contents_->infobar_count(); ++i) {
-    if (tab_contents_->GetInfoBarDelegateAt(i - 1) == delegate) {
-      next_delegate = tab_contents_->GetInfoBarDelegateAt(i);
-      break;
+  // For each infobar after |infobar| (or starting from the beginning if NULL),
+  // we draw each every arrow and rely on clipping rects to ignore overdraw.
+  std::vector<InfoBarGtk*>::iterator it;
+  if (infobar) {
+    it = std::find(infobars_gtk_.begin(), infobars_gtk_.end(), infobar);
+    if (it == infobars_gtk_.end()) {
+      NOTREACHED();
+      return;
     }
+
+    it++;
+    if (it == infobars_gtk_.end()) {
+      // |infobar| is the last infobar in the list and thus doesn't need to
+      // paint the next infobar's arrow.
+      return;
+    }
+  } else {
+    it = infobars_gtk_.begin();
   }
 
-  ShowArrowForDelegate(next_delegate, animate);
-}
-
-void InfoBarContainerGtk::UpdateToolbarInfoBarState(InfoBar* infobar,
-                                                    bool animate) {
-  GtkWindow* parent = platform_util::GetTopLevel(widget());
+  // Figure out the x location so that that arrow is over the location item.
+  GtkWindow* parent = platform_util::GetTopLevel(sender);
   BrowserWindowGtk* browser_window =
       BrowserWindowGtk::GetBrowserWindowForNativeWindow(parent);
-  if (browser_window)
-    browser_window->SetInfoBarShowing(infobar, animate);
+  int x = browser_window ?
+      browser_window->GetXPositionOfLocationIcon(sender) : 0;
+
+  for (; it != infobars_gtk_.end(); ++it) {
+    // Find the location of the arrow in |sender|'s coordinate space relative
+    // to the infobar.
+    int y = 0;
+    gtk_widget_translate_coordinates((*it)->widget(), sender,
+                                     0, 0,
+                                     NULL, &y);
+    if (GTK_WIDGET_NO_WINDOW(sender))
+      y += sender->allocation.y;
+
+    // We rely on the +1 in the y calculation so we hide the bottom of the drawn
+    // triangle just right outside the view bounds.
+    gfx::Rect bounds(x - (*it)->arrow_half_width(),
+                     y - (*it)->arrow_height() + 1,
+                     2 * (*it)->arrow_half_width(),
+                     (*it)->arrow_target_height());
+
+    PaintArrowOn(sender, expose, bounds, *it);
+  }
+}
+
+void InfoBarContainerGtk::PaintArrowOn(GtkWidget* widget,
+                                       GdkEventExpose* expose,
+                                       const gfx::Rect& bounds,
+                                       InfoBarGtk* source) {
+  // TODO(erg): All of this could be rewritten in cairo.
+  SkPath path;
+  path.moveTo(bounds.x() + 0.5, bounds.bottom() + 0.5);
+  path.rLineTo(bounds.width() / 2.0, -bounds.height());
+  path.lineTo(bounds.right() + 0.5, bounds.bottom() + 0.5);
+  path.close();
+
+  SkPaint paint;
+  paint.setStrokeWidth(1);
+  paint.setStyle(SkPaint::kFill_Style);
+  paint.setAntiAlias(true);
+
+  SkPoint grad_points[2];
+  grad_points[0].set(SkIntToScalar(0), SkIntToScalar(bounds.bottom()));
+  grad_points[1].set(SkIntToScalar(0),
+                     SkIntToScalar(bounds.bottom() +
+                                   source->arrow_target_height()));
+
+  SkColor grad_colors[2];
+  grad_colors[0] = source->ConvertGetColor(&InfoBarGtk::GetTopColor);
+  grad_colors[1] = source->ConvertGetColor(&InfoBarGtk::GetBottomColor);
+
+  SkShader* gradient_shader = SkGradientShader::CreateLinear(
+      grad_points, grad_colors, NULL, 2, SkShader::kMirror_TileMode);
+  paint.setShader(gradient_shader);
+  gradient_shader->unref();
+
+  gfx::CanvasSkiaPaint canvas(expose, false);
+  canvas.drawPath(path, paint);
+
+  paint.setShader(NULL);
+  paint.setColor(SkColorSetA(gfx::GdkColorToSkColor(source->GetBorderColor()),
+                             SkColorGetA(grad_colors[0])));
+  paint.setStyle(SkPaint::kStroke_Style);
+  canvas.drawPath(path, paint);
 }

@@ -9,8 +9,9 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 
 TranslateMessageInfoBar::TranslateMessageInfoBar(
+    TabContentsWrapper* owner,
     TranslateInfoBarDelegate* delegate)
-    : TranslateInfoBarBase(delegate) {
+    : TranslateInfoBarBase(owner, delegate) {
 }
 
 TranslateMessageInfoBar::~TranslateMessageInfoBar() {

@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#if defined(TOOLKIT_VIEWS)  // TODO(pkasting): Port non-views to use this.
+#include "build/build_config.h"
+
+// TODO(pkasting): Port Mac to use this.
+#if defined(TOOLKIT_VIEWS) || defined(TOOLKIT_GTK)
 
 #include "chrome/browser/tab_contents/infobar_container.h"
 
@@ -94,6 +97,10 @@ void InfoBarContainer::SetMaxTopArrowHeight(int height) {
 void InfoBarContainer::OnInfoBarStateChanged(bool is_animating) {
   if (delegate_)
     delegate_->InfoBarContainerStateChanged(is_animating);
+
+  UpdateInfoBarArrowTargetHeights();
+
+  PlatformSpecificInfoBarStateChanged(is_animating);
 }
 
 void InfoBarContainer::RemoveInfoBar(InfoBar* infobar) {
@@ -205,4 +212,4 @@ int InfoBarContainer::ArrowTargetHeightForInfoBar(size_t infobar_index) const {
           first_infobar_animation->GetCurrentValue());
 }
 
-#endif  // TOOLKIT_VIEWS
+#endif  // TOOLKIT_VIEWS || defined(TOOLKIT_GTK)

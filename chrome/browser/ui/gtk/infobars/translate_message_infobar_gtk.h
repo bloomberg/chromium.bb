@@ -12,7 +12,8 @@ class TranslateInfoBarDelegate;
 
 class TranslateMessageInfoBar : public TranslateInfoBarBase {
  public:
-  explicit TranslateMessageInfoBar(TranslateInfoBarDelegate* delegate);
+  explicit TranslateMessageInfoBar(TabContentsWrapper* owner,
+                                   TranslateInfoBarDelegate* delegate);
   virtual ~TranslateMessageInfoBar();
 
   // Overridden from TranslateInfoBarBase:

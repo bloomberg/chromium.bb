@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_TAB_CONTENTS_INFOBAR_H_
 #pragma once
 
+#include "build/build_config.h"
+
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
@@ -18,7 +20,8 @@
 SkColor GetInfoBarTopColor(InfoBarDelegate::Type infobar_type);
 SkColor GetInfoBarBottomColor(InfoBarDelegate::Type infobar_type);
 
-#if defined(TOOLKIT_VIEWS)  // TODO(pkasting): Port non-views to use this.
+// TODO(pkasting): Port Mac to use this.
+#if defined(TOOLKIT_VIEWS) || defined(TOOLKIT_GTK)
 
 class InfoBarContainer;
 class TabContentsWrapper;
@@ -59,6 +62,8 @@ class InfoBar : public ui::AnimationDelegate {
 
   const ui::SlideAnimation* animation() const { return animation_.get(); }
   int arrow_height() const { return arrow_height_; }
+  int arrow_target_height() const { return arrow_target_height_; }
+  int arrow_half_width() const { return arrow_half_width_; }
   int total_height() const { return arrow_height_ + bar_height_; }
 
  protected:
@@ -81,12 +86,14 @@ class InfoBar : public ui::AnimationDelegate {
   int OffsetY(const gfx::Size& prefsize) const;
 
   const InfoBarContainer* container() const { return container_; }
+  InfoBarContainer* container() { return container_; }
   ui::SlideAnimation* animation() { return animation_.get(); }
-  int arrow_half_width() const { return arrow_half_width_; }
   int bar_height() const { return bar_height_; }
+  int bar_target_height() const { return bar_target_height_; }
 
   // Platforms may optionally override these if they need to do work during
   // processing of the given calls.
+  virtual void PlatformSpecificShow(bool animate) {}
   virtual void PlatformSpecificHide(bool animate) {}
   virtual void PlatformSpecificOnHeightsRecalculated() {}
 
@@ -122,8 +129,6 @@ class InfoBar : public ui::AnimationDelegate {
   DISALLOW_COPY_AND_ASSIGN(InfoBar);
 };
 
-#elif defined(TOOLKIT_USES_GTK)
-#include "chrome/browser/ui/gtk/infobars/infobar_gtk.h"
 #elif defined(OS_MACOSX)
 #include "chrome/browser/ui/cocoa/infobars/infobar.h"
 #endif

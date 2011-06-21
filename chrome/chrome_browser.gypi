@@ -2775,8 +2775,6 @@
         'browser/ui/gtk/infobars/confirm_infobar_gtk.h',
         'browser/ui/gtk/infobars/extension_infobar_gtk.cc',
         'browser/ui/gtk/infobars/extension_infobar_gtk.h',
-        'browser/ui/gtk/infobars/infobar_arrow_model.cc',
-        'browser/ui/gtk/infobars/infobar_arrow_model.h',
         'browser/ui/gtk/infobars/infobar_container_gtk.cc',
         'browser/ui/gtk/infobars/infobar_container_gtk.h',
         'browser/ui/gtk/infobars/infobar_gtk.cc',

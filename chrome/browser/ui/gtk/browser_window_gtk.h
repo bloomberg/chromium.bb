@@ -14,9 +14,9 @@
 #include "base/timer.h"
 #include "build/build_config.h"
 #include "chrome/browser/prefs/pref_member.h"
+#include "chrome/browser/tab_contents/infobar_container.h"
 #include "chrome/browser/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/gtk/infobars/infobar_arrow_model.h"
 #include "content/common/notification_registrar.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/x/active_window_watcher_x.h"
@@ -46,7 +46,7 @@ class BrowserWindowGtk : public BrowserWindow,
                          public NotificationObserver,
                          public TabStripModelObserver,
                          public ui::ActiveWindowWatcherX::Observer,
-                         public InfoBarArrowModel::Observer {
+                         public InfoBarContainer::Delegate {
  public:
   explicit BrowserWindowGtk(Browser* browser);
   virtual ~BrowserWindowGtk();
@@ -151,8 +151,10 @@ class BrowserWindowGtk : public BrowserWindow,
   // Overridden from ActiveWindowWatcher::Observer.
   virtual void ActiveWindowChanged(GdkWindow* active_window);
 
-  // Overridden from InfoBarArrowModel::Observer.
-  virtual void PaintStateChanged();
+  // Overridden from InfoBarContainer::Delegate:
+  virtual SkColor GetInfoBarSeparatorColor() const;
+  virtual void InfoBarContainerStateChanged(bool is_animating);
+  virtual bool DrawInfoBarArrows(int* x) const;
 
   // Accessor for the tab strip.
   TabStripGtk* tabstrip() const { return tabstrip_.get(); }
@@ -181,10 +183,6 @@ class BrowserWindowGtk : public BrowserWindow,
   // Reset the mouse cursor to the default cursor if it was set to something
   // else for the custom frame.
   void ResetCustomFrameCursor();
-
-  // Toggles whether an infobar is showing.
-  // |animate| controls whether we animate to the new state set by |bar|.
-  void SetInfoBarShowing(InfoBar* bar, bool animate);
 
   // Returns the BrowserWindowGtk registered with |window|.
   static BrowserWindowGtk* GetBrowserWindowForNativeWindow(
@@ -345,10 +343,6 @@ class BrowserWindowGtk : public BrowserWindow,
   // Invalidate all the widgets that need to redraw when the infobar draw state
   // has changed.
   void InvalidateInfoBarBits();
-
-  // Gets the size (width and height) of the infobar arrow. The size depends on
-  // the state of the bookmark bar.
-  gfx::Size GetInfobarArrowSize();
 
   // When the location icon moves, we have to redraw the arrow.
   CHROMEGTK_CALLBACK_1(BrowserWindowGtk, void, OnLocationIconSizeAllocate,
@@ -522,10 +516,6 @@ class BrowserWindowGtk : public BrowserWindow,
   // autocomplete popup before the results can be read) and the final window
   // position is unimportant.
   bool debounce_timer_disabled_;
-
-  // The model that tracks the paint state of the arrow for the infobar
-  // directly below the toolbar.
-  InfoBarArrowModel infobar_arrow_model_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserWindowGtk);
 };

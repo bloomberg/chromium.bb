@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/custom_button.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
+#include "chrome/browser/ui/gtk/gtk_expanded_container.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/infobars/infobar_container_gtk.h"
@@ -31,15 +32,23 @@ const int kRightPadding = 5;
 }  // namespace
 
 // static
-const int InfoBar::kInfoBarHeight = 37;
-const int InfoBar::kEndOfLabelSpacing = 6;
-const int InfoBar::kButtonButtonSpacing = 3;
+const int InfoBar::kSeparatorLineHeight = 1;
+const int InfoBar::kDefaultArrowTargetHeight = 9;
+const int InfoBar::kMaximumArrowTargetHeight = 24;
+const int InfoBar::kDefaultArrowTargetHalfWidth = kDefaultArrowTargetHeight;
+const int InfoBar::kMaximumArrowTargetHalfWidth = 14;
 
-InfoBar::InfoBar(InfoBarDelegate* delegate)
-    : container_(NULL),
-      delegate_(delegate),
-      theme_service_(NULL),
-      arrow_model_(this) {
+const int InfoBar::kDefaultBarTargetHeight = 36;
+
+// static
+const int InfoBarGtk::kInfoBarHeight = 37;
+const int InfoBarGtk::kEndOfLabelSpacing = 6;
+const int InfoBarGtk::kButtonButtonSpacing = 3;
+
+InfoBarGtk::InfoBarGtk(TabContentsWrapper* owner, InfoBarDelegate* delegate)
+    : InfoBar(owner, delegate),
+      theme_service_(NULL) {
+  DCHECK(delegate);
   // Create |hbox_| and pad the sides.
   hbox_ = gtk_hbox_new(FALSE, kElementPadding);
 
@@ -48,7 +57,7 @@ InfoBar::InfoBar(InfoBarDelegate* delegate)
 
   GtkWidget* padding = gtk_alignment_new(0, 0, 1, 1);
   gtk_alignment_set_padding(GTK_ALIGNMENT(padding),
-      0, 0, kLeftPadding, kRightPadding);
+                            0, 0, kLeftPadding, kRightPadding);
 
   bg_box_ = gtk_event_box_new();
   gtk_widget_set_app_paintable(bg_box_, TRUE);
@@ -73,69 +82,23 @@ InfoBar::InfoBar(InfoBarDelegate* delegate)
   g_signal_connect(close_button_->widget(), "clicked",
                    G_CALLBACK(OnCloseButtonThunk), this);
 
-  slide_widget_.reset(new SlideAnimatorGtk(bg_box_,
-                                           SlideAnimatorGtk::DOWN,
-                                           0, true, true, this));
-  // We store a pointer back to |this| so we can refer to it from the infobar
-  // container.
-  g_object_set_data(G_OBJECT(slide_widget_->widget()), "info-bar", this);
+  widget_.Own(gtk_expanded_container_new());
+  gtk_container_add(GTK_CONTAINER(widget_.get()), bg_box_);
+  gtk_widget_set_size_request(widget_.get(), -1, 0);
+
+  g_signal_connect(widget_.get(), "child-size-request",
+                   G_CALLBACK(OnChildSizeRequestThunk),
+                   this);
 }
 
-InfoBar::~InfoBar() {
+InfoBarGtk::~InfoBarGtk() {
 }
 
-GtkWidget* InfoBar::widget() {
-  return slide_widget_->widget();
+GtkWidget* InfoBarGtk::widget() {
+  return widget_.get();
 }
 
-void InfoBar::Show(bool animate) {
-  if (animate)
-    slide_widget_->Open();
-  else
-    slide_widget_->OpenWithoutAnimation();
-
-  gtk_widget_show_all(bg_box_);
-  if (bg_box_->window)
-    gdk_window_lower(bg_box_->window);
-}
-
-void InfoBar::Hide(bool animate) {
-  if (animate) {
-    slide_widget_->Close();
-  } else {
-    if (delegate_) {
-      delegate_->InfoBarClosed();
-      delegate_ = NULL;
-    }
-    delete this;
-  }
-}
-
-bool InfoBar::IsAnimating() {
-  return slide_widget_->IsAnimating();
-}
-
-bool InfoBar::IsClosing() {
-  return slide_widget_->IsClosing();
-}
-
-void InfoBar::ShowArrowFor(InfoBar* other, bool animate) {
-  arrow_model_.ShowArrowFor(other, animate);
-}
-
-void InfoBar::PaintStateChanged() {
-  gtk_widget_queue_draw(widget());
-}
-
-void InfoBar::RemoveInfoBar() const {
-  container_->RemoveDelegate(delegate_);
-}
-
-void InfoBar::Closed() {
-  Hide(false);
-}
-
-void InfoBar::SetThemeProvider(GtkThemeService* theme_service) {
+void InfoBarGtk::SetThemeProvider(GtkThemeService* theme_service) {
   if (theme_service_) {
     NOTREACHED();
     return;
@@ -147,16 +110,24 @@ void InfoBar::SetThemeProvider(GtkThemeService* theme_service) {
   UpdateBorderColor();
 }
 
-void InfoBar::Observe(NotificationType type,
-                      const NotificationSource& source,
-                      const NotificationDetails& details) {
-  UpdateBorderColor();
+GdkColor InfoBarGtk::GetBorderColor() const {
+  return theme_service_->GetBorderColor();
 }
 
-void InfoBar::AddLabelWithInlineLink(const string16& display_text,
-                                     const string16& link_text,
-                                     size_t link_offset,
-                                     GCallback callback) {
+int InfoBarGtk::AnimatingHeight() const {
+  return animation()->is_animating() ? bar_target_height() : 0;
+}
+
+SkColor InfoBarGtk::ConvertGetColor(ColorGetter getter) {
+  double r, g, b;
+  (this->*getter)(delegate()->GetInfoBarType(), &r, &g, &b);
+  return SkColorSetARGB(255, 255 * r, 255 * g, 255 * b);
+}
+
+void InfoBarGtk::AddLabelWithInlineLink(const string16& display_text,
+                                        const string16& link_text,
+                                        size_t link_offset,
+                                        GCallback callback) {
   GtkWidget* link_button = gtk_chrome_link_button_new(
       UTF16ToUTF8(link_text).c_str());
   gtk_chrome_link_button_set_use_gtk_theme(
@@ -195,34 +166,34 @@ void InfoBar::AddLabelWithInlineLink(const string16& display_text,
   gtk_box_pack_start(GTK_BOX(hbox), trailing_label, FALSE, FALSE, 0);
 }
 
-void InfoBar::GetTopColor(InfoBarDelegate::Type type,
-                          double* r, double* g, double *b) {
+void InfoBarGtk::GetTopColor(InfoBarDelegate::Type type,
+                             double* r, double* g, double *b) {
   SkColor color = GetInfoBarTopColor(type);
   *r = SkColorGetR(color) / 255.0;
   *g = SkColorGetG(color) / 255.0;
   *b = SkColorGetB(color) / 255.0;
 }
 
-void InfoBar::GetBottomColor(InfoBarDelegate::Type type,
-                             double* r, double* g, double *b) {
+void InfoBarGtk::GetBottomColor(InfoBarDelegate::Type type,
+                                double* r, double* g, double *b) {
   SkColor color = GetInfoBarBottomColor(type);
   *r = SkColorGetR(color) / 255.0;
   *g = SkColorGetG(color) / 255.0;
   *b = SkColorGetB(color) / 255.0;
 }
 
-void InfoBar::UpdateBorderColor() {
+void InfoBarGtk::UpdateBorderColor() {
   gtk_widget_queue_draw(widget());
 }
 
-void InfoBar::OnCloseButton(GtkWidget* button) {
-  if (delegate_)
-    delegate_->InfoBarDismissed();
+void InfoBarGtk::OnCloseButton(GtkWidget* button) {
+  if (delegate())
+    delegate()->InfoBarDismissed();
   RemoveInfoBar();
 }
 
-gboolean InfoBar::OnBackgroundExpose(GtkWidget* sender,
-                                     GdkEventExpose* event) {
+gboolean InfoBarGtk::OnBackgroundExpose(GtkWidget* sender,
+                                        GdkEventExpose* event) {
   const int height = sender->allocation.height;
 
   cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(sender->window));
@@ -232,11 +203,11 @@ gboolean InfoBar::OnBackgroundExpose(GtkWidget* sender,
   cairo_pattern_t* pattern = cairo_pattern_create_linear(0, 0, 0, height);
 
   double top_r, top_g, top_b;
-  GetTopColor(delegate_->GetInfoBarType(), &top_r, &top_g, &top_b);
+  GetTopColor(delegate()->GetInfoBarType(), &top_r, &top_g, &top_b);
   cairo_pattern_add_color_stop_rgb(pattern, 0.0, top_r, top_g, top_b);
 
   double bottom_r, bottom_g, bottom_b;
-  GetBottomColor(delegate_->GetInfoBarType(), &bottom_r, &bottom_g, &bottom_b);
+  GetBottomColor(delegate()->GetInfoBarType(), &bottom_r, &bottom_g, &bottom_b);
   cairo_pattern_add_color_stop_rgb(
       pattern, 1.0, bottom_r, bottom_g, bottom_b);
   cairo_set_source(cr, pattern);
@@ -244,10 +215,10 @@ gboolean InfoBar::OnBackgroundExpose(GtkWidget* sender,
   cairo_pattern_destroy(pattern);
 
   // Draw the bottom border.
-  GdkColor border_color = theme_service_->GetBorderColor();
+  GdkColor border_color = GetBorderColor();
   cairo_set_source_rgb(cr, border_color.red / 65535.0,
-                           border_color.green / 65535.0,
-                           border_color.blue / 65535.0);
+                       border_color.green / 65535.0,
+                       border_color.blue / 65535.0);
   cairo_set_line_width(cr, 1.0);
   int y = sender->allocation.height;
   cairo_move_to(cr, 0, y - 0.5);
@@ -256,18 +227,40 @@ gboolean InfoBar::OnBackgroundExpose(GtkWidget* sender,
 
   cairo_destroy(cr);
 
-  if (!arrow_model_.NeedToDrawInfoBarArrow())
-    return FALSE;
-
-  GtkWindow* parent = platform_util::GetTopLevel(widget());
-  BrowserWindowGtk* browser_window =
-      BrowserWindowGtk::GetBrowserWindowForNativeWindow(parent);
-  int x = browser_window ?
-      browser_window->GetXPositionOfLocationIcon(sender) : 0;
-
-  size_t size = InfoBarArrowModel::kDefaultArrowSize;
-  gfx::Rect arrow_bounds(x - size, y - size, 2 * size, size);
-  arrow_model_.Paint(sender, event, arrow_bounds, border_color);
+  if (container()) {
+    static_cast<InfoBarContainerGtk*>(container())->
+        PaintInfobarBitsOn(sender, event, this);
+  }
 
   return FALSE;
+}
+
+void InfoBarGtk::PlatformSpecificShow(bool animate) {
+  gtk_widget_show_all(widget_.get());
+  gtk_widget_set_size_request(widget_.get(), -1, bar_height());
+
+  if (bg_box_->window)
+    gdk_window_lower(bg_box_->window);
+}
+
+void InfoBarGtk::PlatformSpecificOnHeightsRecalculated() {
+  GtkRequisition req;
+  gtk_widget_size_request(bg_box_, &req);
+  gtk_expanded_container_move(GTK_EXPANDED_CONTAINER(widget_.get()),
+                              bg_box_, 0, bar_height() - req.height);
+
+  gtk_widget_set_size_request(widget_.get(), -1, bar_height());
+  gtk_widget_queue_draw(widget_.get());
+}
+
+void InfoBarGtk::Observe(NotificationType type,
+                         const NotificationSource& source,
+                         const NotificationDetails& details) {
+  UpdateBorderColor();
+}
+
+void InfoBarGtk::OnChildSizeRequest(GtkWidget* expanded,
+                                    GtkWidget* child,
+                                    GtkRequisition* requisition) {
+  requisition->height = -1;
 }
