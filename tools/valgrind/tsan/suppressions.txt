@@ -55,6 +55,12 @@
 }
 
 {
+  bug_57266c
+  ThreadSanitizer:Race
+  fun:thread_encoding_proc
+}
+
+{
   bug_64075a
   ThreadSanitizer:Race
   fun:disk_cache::EntryImpl::GetDataSize*
