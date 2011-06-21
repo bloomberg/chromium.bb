@@ -12,6 +12,7 @@
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/media/media_stream_provider.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
+#include "content/common/media/media_stream_options.h"
 #include "media/video/capture/video_capture_device.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -31,16 +32,16 @@ class MockMediaStreamProviderListener : public MediaStreamProviderListener {
   }
   ~MockMediaStreamProviderListener() {}
 
-  MOCK_METHOD2(Opened, void(MediaStreamType, MediaCaptureSessionId));
-  MOCK_METHOD2(Closed, void(MediaStreamType, MediaCaptureSessionId));
-  MOCK_METHOD1(DevicesEnumerated, void(const MediaCaptureDevices&));
-  MOCK_METHOD3(Error, void(MediaStreamType, MediaCaptureSessionId,
+  MOCK_METHOD2(Opened, void(MediaStreamType, int));
+  MOCK_METHOD2(Closed, void(MediaStreamType, int));
+  MOCK_METHOD1(DevicesEnumerated, void(const StreamDeviceInfoArray&));
+  MOCK_METHOD3(Error, void(MediaStreamType, int,
                            MediaStreamProviderError));
 
   virtual void DevicesEnumerated(MediaStreamType stream_type,
-                                 const MediaCaptureDevices& devices) {
+                                 const StreamDeviceInfoArray& devices) {
     devices_.clear();
-    for (MediaCaptureDevices::const_iterator it = devices.begin();
+    for (StreamDeviceInfoArray::const_iterator it = devices.begin();
         it != devices.end();
         ++it) {
       devices_.push_back(*it);
@@ -48,7 +49,7 @@ class MockMediaStreamProviderListener : public MediaStreamProviderListener {
     DevicesEnumerated(devices);
   }
 
-  media_stream::MediaCaptureDevices devices_;
+  media_stream::StreamDeviceInfoArray devices_;
 };  // class MockMediaStreamProviderListener
 
 }  // namespace media_stream
@@ -212,7 +213,7 @@ TEST_F(VideoCaptureManagerTest, OpenTwo) {
   // Wait to get device callback...
   SyncWithVideoCaptureManagerThread();
 
-  media_stream::MediaCaptureDevices::iterator it =
+  media_stream::StreamDeviceInfoArray::iterator it =
       listener_->devices_.begin();
 
   int video_session_id_first = vcm->Open(*it);
@@ -251,8 +252,8 @@ TEST_F(VideoCaptureManagerTest, OpenNotExisting) {
   media_stream::MediaStreamType stream_type = media_stream::kVideoCapture;
   std::string device_name("device_doesnt_exist");
   std::string device_id("id_doesnt_exist");
-  media_stream::MediaCaptureDeviceInfo dummy_device(stream_type, device_name,
-                                                    device_id, false);
+  media_stream::StreamDeviceInfo dummy_device(stream_type, device_name,
+                                              device_id, false);
 
   // This should fail with error code 'kDeviceNotAvailable'
   vcm->Open(dummy_device);

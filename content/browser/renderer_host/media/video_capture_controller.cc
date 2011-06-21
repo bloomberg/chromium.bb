@@ -154,6 +154,7 @@ void VideoCaptureController::OnIncomingCapturedFrame(const uint8* data,
 
 void VideoCaptureController::OnError() {
   event_handler_->OnError(id_);
+  media_stream::VideoCaptureManager::Get()->Error(params_.session_id);
 }
 
 void VideoCaptureController::OnFrameInfo(

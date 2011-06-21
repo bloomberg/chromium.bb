@@ -15,17 +15,9 @@
 #include <list>
 #include <string>
 
+#include "content/common/media/media_stream_options.h"
+
 namespace media_stream {
-
-// TODO(mflodman) Create a common type to use for all video capture and media
-// stream classes.
-typedef int MediaCaptureSessionId;
-
-enum MediaStreamType {
-  kNoService = 0,
-  kAudioCapture,
-  kVideoCapture
-};
 
 enum MediaStreamProviderError {
   kMediaStreamOk = 0,
@@ -39,50 +31,35 @@ enum MediaStreamProviderError {
 
 enum { kInvalidMediaCaptureSessionId = 0xFFFFFFFF };
 
-struct MediaCaptureDeviceInfo {
-  MediaCaptureDeviceInfo();
-  MediaCaptureDeviceInfo(MediaStreamType service_param,
-                         const std::string name_param,
-                         const std::string device_param,
-                         bool opened);
-
-  MediaStreamType stream_type;
-  std::string name;
-  std::string device_id;
-  bool in_use;
-};
-
-typedef std::list<MediaCaptureDeviceInfo> MediaCaptureDevices;
-
 // Callback class used by MediaStreamProvider.
 class MediaStreamProviderListener {
  public:
   // Called by a MediaStreamProvider when a stream has been opened.
   virtual void Opened(MediaStreamType stream_type,
-                      MediaCaptureSessionId capture_session_id) = 0;
+                      int capture_session_id) = 0;
 
   // Called by a MediaStreamProvider when a stream has been closed.
   virtual void Closed(MediaStreamType stream_type,
-                      MediaCaptureSessionId capture_session_id) = 0;
+                      int capture_session_id) = 0;
 
   // Called by a MediaStreamProvider when available devices has been enumerated.
   virtual void DevicesEnumerated(MediaStreamType stream_type,
-                                 const MediaCaptureDevices& devices) = 0;
+                                 const StreamDeviceInfoArray& devices) = 0;
 
   // Called by a MediaStreamProvider when an error has occured.
   virtual void Error(MediaStreamType stream_type,
-                     MediaCaptureSessionId capture_session_id,
+                     int capture_session_id,
                      MediaStreamProviderError error) = 0;
 
  protected:
-  virtual ~MediaStreamProviderListener();
+  virtual ~MediaStreamProviderListener() {}
 };
 
 // Implemented by a manager class providing captured media.
 class MediaStreamProvider {
  public:
   // Registers a listener, only one listener is allowed.
-  virtual bool Register(MediaStreamProviderListener* listener) = 0;
+  virtual void Register(MediaStreamProviderListener* listener) = 0;
 
   // Unregisters the previously registered listener.
   virtual void Unregister() = 0;
@@ -94,13 +71,13 @@ class MediaStreamProvider {
   // possible for other applications to open the device before the device is
   // started. |Opened| is called when the device is opened.
   // kInvalidMediaCaptureSessionId is returned on error.
-  virtual MediaCaptureSessionId Open(const MediaCaptureDeviceInfo& device) = 0;
+  virtual int Open(const StreamDeviceInfo& device) = 0;
 
   // Closes the specified device and calls |Closed| when done.
-  virtual void Close(MediaCaptureSessionId capture_session_id) = 0;
+  virtual void Close(int capture_session_id) = 0;
 
  protected:
-  virtual ~MediaStreamProvider();
+  virtual ~MediaStreamProvider() {}
 };
 
 }  // namespace media_stream

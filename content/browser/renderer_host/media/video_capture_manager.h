@@ -15,6 +15,7 @@
 #include "base/lazy_instance.h"
 #include "base/threading/thread.h"
 #include "content/browser/renderer_host/media/media_stream_provider.h"
+#include "content/common/media/media_stream_options.h"
 #include "media/video/capture/video_capture_device.h"
 #include "media/video/capture/video_capture_types.h"
 
@@ -32,15 +33,15 @@ class VideoCaptureManager : public MediaStreamProvider {
   static VideoCaptureManager* Get();
 
   // Implements MediaStreamProvider.
-  virtual bool Register(MediaStreamProviderListener* listener);
+  virtual void Register(MediaStreamProviderListener* listener);
 
   virtual void Unregister();
 
   virtual void EnumerateDevices();
 
-  virtual MediaCaptureSessionId Open(const MediaCaptureDeviceInfo& device);
+  virtual int Open(const StreamDeviceInfo& device);
 
-  virtual void Close(MediaCaptureSessionId capture_session_id);
+  virtual void Close(int capture_session_id);
 
   // Functions used to start and stop media flow.
   // Start allocates the device and no other application can use the device
@@ -53,6 +54,10 @@ class VideoCaptureManager : public MediaStreamProvider {
   // will be delivered to the frame receiver, and |stopped_task| will be called.
   void Stop(const media::VideoCaptureSessionId capture_session_id,
             Task* stopped_task);
+
+  // A capture device error has occurred for |capture_session_id|. The device
+  // won't stream any more captured frames.
+  void Error(const media::VideoCaptureSessionId& capture_session_id);
 
   virtual ~VideoCaptureManager();
 
@@ -69,34 +74,30 @@ class VideoCaptureManager : public MediaStreamProvider {
 
   // Called by the public functions, executed on vc_device_thread_.
   void OnEnumerateDevices();
-  void OnOpen(MediaCaptureSessionId capture_session_id,
-              const MediaCaptureDeviceInfo device);
-  void OnClose(MediaCaptureSessionId capture_session_id);
+  void OnOpen(int capture_session_id, const StreamDeviceInfo& device);
+  void OnClose(int capture_session_id);
   void OnStart(const media::VideoCaptureParams capture_params,
                media::VideoCaptureDevice::EventHandler* video_capture_receiver);
   void OnStop(const media::VideoCaptureSessionId capture_session_id,
               Task* stopped_task);
 
-
   // Executed on Browser::IO thread to call Listener.
-  void OnOpened(MediaCaptureSessionId capture_session_id);
-  void OnClosed(MediaCaptureSessionId capture_session_id);
-  void OnDevicesEnumerated(const MediaCaptureDevices& devices);
-  void OnError(MediaCaptureSessionId capture_session_id,
-               MediaStreamProviderError error);
+  void OnOpened(int capture_session_id);
+  void OnClosed(int capture_session_id);
+  void OnDevicesEnumerated(const StreamDeviceInfoArray& devices);
+  void OnError(int capture_session_id, MediaStreamProviderError error);
 
   // Executed on vc_device_thread_ to make sure Listener is called from
   // Browser::IO thread.
-  void PostOnOpened(MediaCaptureSessionId capture_session_id);
-  void PostOnClosed(MediaCaptureSessionId capture_session_id);
-  void PostOnDevicesEnumerated(MediaCaptureDevices devices);
-  void PostOnError(MediaCaptureSessionId capture_session_id,
-                   MediaStreamProviderError error);
+  void PostOnOpened(int capture_session_id);
+  void PostOnClosed(int capture_session_id);
+  void PostOnDevicesEnumerated(const StreamDeviceInfoArray& devices);
+  void PostOnError(int capture_session_id, MediaStreamProviderError error);
 
   // Helpers
   void GetAvailableDevices(media::VideoCaptureDevice::Names* device_names);
   bool DeviceOpened(const media::VideoCaptureDevice::Name& device_name);
-  bool DeviceOpened(const MediaCaptureDeviceInfo& device_info);
+  bool DeviceOpened(const StreamDeviceInfo& device_info);
   bool IsOnCaptureDeviceThread() const;
 
   // Thread for all calls to VideoCaptureDevice
@@ -104,11 +105,11 @@ class VideoCaptureManager : public MediaStreamProvider {
 
   // Only accessed on Browser::IO thread
   MediaStreamProviderListener* listener_;
-  MediaCaptureSessionId new_capture_session_id_;
+  int new_capture_session_id_;
 
   // Only accessed from vc_device_thread_
-  // TODO(mflodman) Change map key type when changing typedef for
-  // MediaCaptureSessionId.
+  // VideoCaptureManager owns all VideoCaptureDevices and is responsible for
+  // deleting the instances when they are not used any longer.
   typedef std::map<int, media::VideoCaptureDevice*> VideoCaptureDevices;
   VideoCaptureDevices devices_;
 

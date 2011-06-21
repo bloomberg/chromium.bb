@@ -27,24 +27,24 @@ VideoCaptureManager::VideoCaptureManager()
   : vc_device_thread_("VideoCaptureManagerThread"),
     listener_(NULL),
     new_capture_session_id_(kFirstSessionId),
-    devices_(),
     use_fake_device_(false) {
   vc_device_thread_.Start();
 }
 
 VideoCaptureManager::~VideoCaptureManager() {
+  DCHECK(devices_.empty());
   vc_device_thread_.Stop();
 }
 
-bool VideoCaptureManager::Register(MediaStreamProviderListener* listener) {
+void VideoCaptureManager::Register(MediaStreamProviderListener* listener) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(!listener_);
   listener_ = listener;
-  return true;
 }
 
 void VideoCaptureManager::Unregister() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(listener_);
   listener_ = NULL;
 }
 
@@ -58,13 +58,12 @@ void VideoCaptureManager::EnumerateDevices() {
                         &VideoCaptureManager::OnEnumerateDevices));
 }
 
-MediaCaptureSessionId VideoCaptureManager::Open(
-    const MediaCaptureDeviceInfo& device) {
+int VideoCaptureManager::Open(const StreamDeviceInfo& device) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(listener_);
 
   // Generate a new id for this device
-  MediaCaptureSessionId video_capture_session_id = new_capture_session_id_++;
+  int video_capture_session_id = new_capture_session_id_++;
 
   vc_device_thread_.message_loop()->PostTask(
       FROM_HERE,
@@ -76,7 +75,7 @@ MediaCaptureSessionId VideoCaptureManager::Open(
   return video_capture_session_id;
 }
 
-void VideoCaptureManager::Close(MediaCaptureSessionId capture_session_id) {
+void VideoCaptureManager::Close(int capture_session_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(listener_);
 
@@ -112,6 +111,11 @@ void VideoCaptureManager::Stop(
                         stopped_task));
 }
 
+void VideoCaptureManager::Error(
+    const media::VideoCaptureSessionId& capture_session_id) {
+  PostOnError(capture_session_id, kDeviceNotAvailable);
+}
+
 void VideoCaptureManager::UseFakeDevice() {
   use_fake_device_ = true;
 }
@@ -123,27 +127,22 @@ MessageLoop* VideoCaptureManager::GetMessageLoop() {
 void VideoCaptureManager::OnEnumerateDevices() {
   DCHECK(IsOnCaptureDeviceThread());
 
-  scoped_ptr<media::VideoCaptureDevice::Names> device_names(
-      new media::VideoCaptureDevice::Names());
-  GetAvailableDevices(device_names.get());
+  media::VideoCaptureDevice::Names device_names;
+  GetAvailableDevices(&device_names);
 
-  MediaCaptureDevices devices;
+  StreamDeviceInfoArray devices;
   for (media::VideoCaptureDevice::Names::iterator it =
-           device_names.get()->begin(); it != device_names.get()->end(); ++it) {
+           device_names.begin(); it != device_names.end(); ++it) {
     bool opened = DeviceOpened(*it);
-    devices.push_back(MediaCaptureDeviceInfo(kVideoCapture, it->device_name,
-                                             it->unique_id, opened));
+    devices.push_back(StreamDeviceInfo(kVideoCapture, it->device_name,
+                                       it->unique_id, opened));
   }
 
   PostOnDevicesEnumerated(devices);
-
-  // Clean-up
-  devices.clear();
-  device_names.get()->clear();
 }
 
-void VideoCaptureManager::OnOpen(MediaCaptureSessionId capture_session_id,
-                                 const MediaCaptureDeviceInfo device) {
+void VideoCaptureManager::OnOpen(int capture_session_id,
+                                 const StreamDeviceInfo& device) {
   DCHECK(IsOnCaptureDeviceThread());
   DCHECK(devices_.find(capture_session_id) == devices_.end());
 
@@ -175,8 +174,7 @@ void VideoCaptureManager::OnOpen(MediaCaptureSessionId capture_session_id,
   PostOnOpened(capture_session_id);
 }
 
-void VideoCaptureManager::OnClose(
-    MediaCaptureSessionId capture_session_id) {
+void VideoCaptureManager::OnClose(int capture_session_id) {
   DCHECK(IsOnCaptureDeviceThread());
 
   VideoCaptureDevices::iterator it = devices_.find(capture_session_id);
@@ -195,18 +193,22 @@ void VideoCaptureManager::OnStart(
     const media::VideoCaptureParams capture_params,
     media::VideoCaptureDevice::EventHandler* video_capture_receiver) {
   DCHECK(IsOnCaptureDeviceThread());
+  DCHECK(video_capture_receiver != NULL);
 
   // Solution for not using MediaStreamManager
   // This session id won't be returned by Open()
   if (capture_params.session_id == kStartOpenSessionId) {
     // Start() is called without using Open(), we need to open a device
-    scoped_ptr<media::VideoCaptureDevice::Names> device_names(
-        new media::VideoCaptureDevice::Names());
-    GetAvailableDevices(device_names.get());
-
-    MediaCaptureDeviceInfo device(kVideoCapture,
-                                  device_names.get()->front().device_name,
-                                  device_names.get()->front().unique_id, false);
+    media::VideoCaptureDevice::Names device_names;
+    GetAvailableDevices(&device_names);
+    if (device_names.empty()) {
+      // No devices available.
+      video_capture_receiver->OnError();
+      return;
+    }
+    StreamDeviceInfo device(kVideoCapture,
+                            device_names.front().device_name,
+                            device_names.front().unique_id, false);
 
     // Call OnOpen to open using the first device in the list
     OnOpen(capture_params.session_id, device);
@@ -253,8 +255,7 @@ void VideoCaptureManager::OnStop(
   }
 }
 
-void VideoCaptureManager::OnOpened(
-    MediaCaptureSessionId capture_session_id) {
+void VideoCaptureManager::OnOpened(int capture_session_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (listener_ == NULL) {
     // Listener has been removed
@@ -263,8 +264,7 @@ void VideoCaptureManager::OnOpened(
   listener_->Opened(kVideoCapture, capture_session_id);
 }
 
-void VideoCaptureManager::OnClosed(
-    MediaCaptureSessionId capture_session_id) {
+void VideoCaptureManager::OnClosed(int capture_session_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (listener_ == NULL) {
     // Listener has been removed
@@ -274,16 +274,16 @@ void VideoCaptureManager::OnClosed(
 }
 
 void VideoCaptureManager::OnDevicesEnumerated(
-    const MediaCaptureDevices& devices) {
+    const StreamDeviceInfoArray& devices) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (listener_ == NULL) {
+  if (!listener_) {
     // Listener has been removed
     return;
   }
   listener_->DevicesEnumerated(kVideoCapture, devices);
 }
 
-void VideoCaptureManager::OnError(MediaCaptureSessionId capture_session_id,
+void VideoCaptureManager::OnError(int capture_session_id,
                                   MediaStreamProviderError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (listener_ == NULL) {
@@ -293,8 +293,7 @@ void VideoCaptureManager::OnError(MediaCaptureSessionId capture_session_id,
   listener_->Error(kVideoCapture, capture_session_id, error);
 }
 
-void VideoCaptureManager::PostOnOpened(
-    MediaCaptureSessionId capture_session_id) {
+void VideoCaptureManager::PostOnOpened(int capture_session_id) {
   DCHECK(IsOnCaptureDeviceThread());
   BrowserThread::PostTask(BrowserThread::IO,
                           FROM_HERE,
@@ -303,8 +302,7 @@ void VideoCaptureManager::PostOnOpened(
                                             capture_session_id));
 }
 
-void VideoCaptureManager::PostOnClosed(
-    MediaCaptureSessionId capture_session_id) {
+void VideoCaptureManager::PostOnClosed(int capture_session_id) {
   DCHECK(IsOnCaptureDeviceThread());
   BrowserThread::PostTask(BrowserThread::IO,
                             FROM_HERE,
@@ -313,9 +311,9 @@ void VideoCaptureManager::PostOnClosed(
                                               capture_session_id));
 }
 
-void VideoCaptureManager::PostOnDevicesEnumerated(MediaCaptureDevices devices) {
+void VideoCaptureManager::PostOnDevicesEnumerated(
+    const StreamDeviceInfoArray& devices) {
   DCHECK(IsOnCaptureDeviceThread());
-
   BrowserThread::PostTask(BrowserThread::IO,
                           FROM_HERE,
                           NewRunnableMethod(
@@ -324,7 +322,7 @@ void VideoCaptureManager::PostOnDevicesEnumerated(MediaCaptureDevices devices) {
                               devices));
 }
 
-void VideoCaptureManager::PostOnError(MediaCaptureSessionId capture_session_id,
+void VideoCaptureManager::PostOnError(int capture_session_id,
                                       MediaStreamProviderError error) {
   // Don't check thread here, can be called from both IO thread and device
   // thread.
@@ -366,8 +364,7 @@ bool VideoCaptureManager::DeviceOpened(
   return false;
 }
 
-bool VideoCaptureManager::DeviceOpened(
-    const MediaCaptureDeviceInfo& device_info) {
+bool VideoCaptureManager::DeviceOpened(const StreamDeviceInfo& device_info) {
   DCHECK(IsOnCaptureDeviceThread());
 
   for (VideoCaptureDevices::iterator it = devices_.begin();
