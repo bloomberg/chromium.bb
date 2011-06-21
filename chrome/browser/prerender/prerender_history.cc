@@ -5,6 +5,7 @@
 #include "chrome/browser/prerender/prerender_history.h"
 
 #include "base/logging.h"
+#include "base/string_number_conversions.h"
 #include "base/values.h"
 
 namespace prerender {
@@ -30,14 +31,22 @@ void PrerenderHistory::Clear() {
 
 Value* PrerenderHistory::GetEntriesAsValue() const {
   ListValue* return_list = new ListValue();
+  // Javascript needs times in terms of milliseconds since Jan 1, 1970.
+  base::Time epoch_start = base::Time::UnixEpoch();
   for (std::list<Entry>::const_reverse_iterator it = entries_.rbegin();
        it != entries_.rend();
        ++it) {
     const Entry& entry = *it;
-    DictionaryValue* v = new DictionaryValue();
-    v->SetString("url", entry.url.spec());
-    v->SetString("final_status", NameFromFinalStatus(entry.final_status));
-    return_list->Append(v);
+    DictionaryValue* entry_dict = new DictionaryValue();
+    entry_dict->SetString("url", entry.url.spec());
+    entry_dict->SetString("final_status",
+                          NameFromFinalStatus(entry.final_status));
+    // Use a string to prevent overflow, as Values don't support 64-bit
+    // integers.
+    entry_dict->SetString(
+        "end_time",
+        base::Int64ToString((entry.end_time - epoch_start).InMilliseconds()));
+    return_list->Append(entry_dict);
   }
   return return_list;
 }

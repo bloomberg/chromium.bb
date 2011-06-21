@@ -993,6 +993,7 @@ Value* PrerenderManager::GetAsValue() const {
   DictionaryValue* dict_value = new DictionaryValue();
   dict_value->Set("history", prerender_history_->GetEntriesAsValue());
   dict_value->Set("active", GetActivePrerendersAsValue());
+  dict_value->SetBoolean("enabled", enabled_);
   return dict_value;
 }
 
@@ -1022,7 +1023,8 @@ Value* PrerenderManager::GetActivePrerendersAsValue() const {
 
 void PrerenderManager::AddToHistory(PrerenderContents* contents) {
   PrerenderHistory::Entry entry(contents->prerender_url(),
-                                contents->final_status());
+                                contents->final_status(),
+                                base::Time::Now());
   prerender_history_->AddEntry(entry);
 }
 

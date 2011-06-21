@@ -694,14 +694,14 @@ void NetInternalsMessageHandler::OnEnableHttpThrottling(const ListValue* list) {
 void NetInternalsMessageHandler::OnGetPrerenderInfo(const ListValue* list) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  Value* value = NULL;
+  scoped_ptr<Value> value;
   prerender::PrerenderManager* prerender_manager = prerender_manager_.get();
   if (!prerender_manager) {
-    value = new ListValue();
+    value.reset(new DictionaryValue());
   } else {
-    value = prerender_manager->GetAsValue();
+    value.reset(prerender_manager->GetAsValue());
   }
-  CallJavascriptFunction(L"g_browser.receivedPrerenderInfo", value);
+  CallJavascriptFunction(L"g_browser.receivedPrerenderInfo", value.get());
 }
 
 

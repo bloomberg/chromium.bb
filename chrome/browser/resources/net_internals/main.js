@@ -135,8 +135,10 @@ function onLoaded() {
                             'logsRefreshBtn');
   }
 
-  var prerenderView = new PrerenderView(
-      'prerenderTabContent', 'prerenderHistoryDiv', 'prerenderActiveDiv');
+  var prerenderView = new PrerenderView('prerenderTabContent',
+                                        'prerenderEnabledSpan',
+                                        'prerenderHistoryDiv',
+                                        'prerenderActiveDiv');
 
   // Create a view which lets you tab between the different sub-views.
   var categoryTabSwitcher = new TabSwitcherView('categoryTabHandles');

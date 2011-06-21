@@ -14,13 +14,14 @@ namespace {
 bool ListEntryMatches(ListValue* list,
                       size_t index,
                       const char* expected_url,
-                      FinalStatus expected_final_status) {
+                      FinalStatus expected_final_status,
+                      const std::string& expected_end_time) {
   if (index >= list->GetSize())
     return false;
   DictionaryValue* dict = NULL;
   if (!list->GetDictionary(index, &dict))
     return false;
-  if (dict->size() != 2u)
+  if (dict->size() != 3u)
     return false;
   std::string url;
   if (!dict->GetString("url", &url))
@@ -31,6 +32,11 @@ bool ListEntryMatches(ListValue* list,
   if (!dict->GetString("final_status", &final_status))
     return false;
   if (final_status != NameFromFinalStatus(expected_final_status))
+    return false;
+  std::string end_time;
+  if (!dict->GetString("end_time", &end_time))
+    return false;
+  if (end_time != expected_end_time)
     return false;
   return true;
 }
@@ -48,40 +54,54 @@ TEST(PrerenderHistoryTest, GetAsValue)  {
   ASSERT_TRUE(entry_value->GetAsList(&entry_list));
   EXPECT_TRUE(entry_list->empty());
 
+  // Base time used for all events.  Each event is given a time 1 millisecond
+  // after that of the previous one.
+  base::Time epoch_start = base::Time::UnixEpoch();
+
   // Add a single entry and make sure that it matches up.
   const char* const kFirstUrl = "http://www.alpha.com/";
   const FinalStatus kFirstFinalStatus = FINAL_STATUS_USED;
-  PrerenderHistory::Entry entry_first(GURL(kFirstUrl), kFirstFinalStatus);
+  PrerenderHistory::Entry entry_first(GURL(kFirstUrl), kFirstFinalStatus,
+                                      epoch_start);
   history.AddEntry(entry_first);
   entry_value.reset(history.GetEntriesAsValue());
   ASSERT_TRUE(entry_value.get() != NULL);
   ASSERT_TRUE(entry_value->GetAsList(&entry_list));
   EXPECT_EQ(1u, entry_list->GetSize());
-  EXPECT_TRUE(ListEntryMatches(entry_list, 0u, kFirstUrl, kFirstFinalStatus));
+  EXPECT_TRUE(ListEntryMatches(
+                  entry_list, 0u, kFirstUrl, kFirstFinalStatus, "0"));
 
   // Add a second entry and make sure both first and second appear.
   const char* const kSecondUrl = "http://www.beta.com/";
   const FinalStatus kSecondFinalStatus = FINAL_STATUS_INVALID_HTTP_METHOD;
-  PrerenderHistory::Entry entry_second(GURL(kSecondUrl), kSecondFinalStatus);
+  PrerenderHistory::Entry entry_second(
+      GURL(kSecondUrl), kSecondFinalStatus,
+      epoch_start + base::TimeDelta::FromMilliseconds(1));
   history.AddEntry(entry_second);
   entry_value.reset(history.GetEntriesAsValue());
   ASSERT_TRUE(entry_value.get() != NULL);
   ASSERT_TRUE(entry_value->GetAsList(&entry_list));
   EXPECT_EQ(2u, entry_list->GetSize());
-  EXPECT_TRUE(ListEntryMatches(entry_list, 0u, kSecondUrl, kSecondFinalStatus));
-  EXPECT_TRUE(ListEntryMatches(entry_list, 1u, kFirstUrl, kFirstFinalStatus));
+  EXPECT_TRUE(ListEntryMatches(
+                  entry_list, 0u, kSecondUrl, kSecondFinalStatus, "1"));
+  EXPECT_TRUE(ListEntryMatches(
+                  entry_list, 1u, kFirstUrl, kFirstFinalStatus, "0"));
 
   // Add a third entry and make sure that the first one drops off.
   const char* const kThirdUrl = "http://www.gamma.com/";
   const FinalStatus kThirdFinalStatus = FINAL_STATUS_AUTH_NEEDED;
-  PrerenderHistory::Entry entry_third(GURL(kThirdUrl), kThirdFinalStatus);
+  PrerenderHistory::Entry entry_third(
+      GURL(kThirdUrl), kThirdFinalStatus,
+      epoch_start + base::TimeDelta::FromMilliseconds(2));
   history.AddEntry(entry_third);
   entry_value.reset(history.GetEntriesAsValue());
   ASSERT_TRUE(entry_value.get() != NULL);
   ASSERT_TRUE(entry_value->GetAsList(&entry_list));
   EXPECT_EQ(2u, entry_list->GetSize());
-  EXPECT_TRUE(ListEntryMatches(entry_list, 0u, kThirdUrl, kThirdFinalStatus));
-  EXPECT_TRUE(ListEntryMatches(entry_list, 1u, kSecondUrl, kSecondFinalStatus));
+  EXPECT_TRUE(ListEntryMatches(
+                  entry_list, 0u, kThirdUrl, kThirdFinalStatus, "2"));
+  EXPECT_TRUE(ListEntryMatches(
+                  entry_list, 1u, kSecondUrl, kSecondFinalStatus, "1"));
 
   // Make sure clearing history acts as expected.
   history.Clear();

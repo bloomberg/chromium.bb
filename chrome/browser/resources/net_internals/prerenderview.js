@@ -6,9 +6,11 @@
  * This view displays information related to Prerendering.
  * @constructor
  */
-function PrerenderView(mainBoxId, prerenderHistoryDivId, prerenderActiveDivId) {
+function PrerenderView(mainBoxId, prerenderEnabledSpanId, prerenderHistoryDivId,
+                       prerenderActiveDivId) {
   DivView.call(this, mainBoxId);
   g_browser.addPrerenderInfoObserver(this);
+  this.prerenderEnabledSpan_ = document.getElementById(prerenderEnabledSpanId);
   this.prerenderHistoryDiv_ = document.getElementById(prerenderHistoryDivId);
   this.prerenderActiveDiv_ = document.getElementById(prerenderActiveDivId);
 }
@@ -19,21 +21,23 @@ function IsValidPrerenderInfo(prerenderInfo) {
   if (prerenderInfo == null) {
     return false;
   }
-  if (!'history' in prerenderInfo) {
-    return false;
-  }
-  if (!'active' in prerenderInfo) {
+  if (!('history' in prerenderInfo) ||
+      !('active' in prerenderInfo) ||
+      !('enabled' in prerenderInfo)) {
     return false;
   }
   return true;
 }
 
 PrerenderView.prototype.onPrerenderInfoChanged = function(prerenderInfo) {
+  this.prerenderEnabledSpan_.innerText = '';
   this.prerenderHistoryDiv_.innerHTML = '';
   this.prerenderActiveDiv_.innerHTML = '';
   if (!IsValidPrerenderInfo(prerenderInfo)) {
     return;
   }
+
+  this.prerenderEnabledSpan_.innerText = prerenderInfo.enabled.toString();
 
   var tabPrinter = PrerenderView.createHistoryTablePrinter(
       prerenderInfo.history);
@@ -48,12 +52,16 @@ PrerenderView.createHistoryTablePrinter = function(prerenderHistory) {
   var tablePrinter = new TablePrinter();
   tablePrinter.addHeaderCell('URL');
   tablePrinter.addHeaderCell('Final Status');
+  tablePrinter.addHeaderCell('Time');
 
   for (var i = 0; i < prerenderHistory.length; i++) {
     var historyEntry = prerenderHistory[i];
     tablePrinter.addRow();
     tablePrinter.addCell(historyEntry.url);
     tablePrinter.addCell(historyEntry.final_status);
+
+    var date = new Date(parseInt(historyEntry.end_time));
+    tablePrinter.addCell(date.toLocaleString());
   }
   return tablePrinter;
 };

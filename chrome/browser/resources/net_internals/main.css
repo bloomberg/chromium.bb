@@ -219,7 +219,9 @@ body {
 #serviceProvidersTabContent,
 #testTabContent,
 #hstsTabContent,
-#httpThrottlingTabContent {
+#httpThrottlingTabContent,
+#prerenderTabContent,
+#logsTabContent {
   overflow: auto;
   padding: 10px;
 }

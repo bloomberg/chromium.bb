@@ -9,6 +9,7 @@
 #include <list>
 
 #include "base/threading/non_thread_safe.h"
+#include "base/time.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "googleurl/src/gurl.h"
 
@@ -26,8 +27,11 @@ class PrerenderHistory : public base::NonThreadSafe {
   struct Entry {
     Entry() : final_status(FINAL_STATUS_MAX) {}
 
-    Entry(const GURL& url_arg, FinalStatus final_status_arg)
-        : url(url_arg), final_status(final_status_arg) {
+    Entry(const GURL& url_arg,
+          FinalStatus final_status_arg,
+          base::Time end_time_arg)
+        : url(url_arg), final_status(final_status_arg),
+          end_time(end_time_arg) {
     }
 
     // The URL which was prerendered. This should be the URL included in the
@@ -38,6 +42,9 @@ class PrerenderHistory : public base::NonThreadSafe {
     // The FinalStatus describing whether the prerendered page was used or why
     // it was cancelled.
     FinalStatus final_status;
+
+    // Time the PrerenderContents was destroyed.
+    base::Time end_time;
   };
 
   // Creates a history with capacity for |max_items| entries.
