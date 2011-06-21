@@ -14,6 +14,7 @@
 #include "content/common/webmessageportchannel_impl.h"
 #include "content/worker/worker_thread.h"
 #include "ipc/ipc_sync_message_filter.h"
+#include "net/base/mime_util.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBlobRegistry.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
@@ -235,6 +236,14 @@ WebString WorkerWebKitClientImpl::mimeTypeForExtension(
   std::string mime_type;
   SendSyncMessageFromAnyThread(new MimeRegistryMsg_GetMimeTypeFromExtension(
       webkit_glue::WebStringToFilePathString(file_extension), &mime_type));
+  return ASCIIToUTF16(mime_type);
+}
+
+WebString WorkerWebKitClientImpl::wellKnownMimeTypeForExtension(
+    const WebString& file_extension) {
+  std::string mime_type;
+  net::GetWellKnownMimeTypeFromExtension(
+      webkit_glue::WebStringToFilePathString(file_extension), &mime_type);
   return ASCIIToUTF16(mime_type);
 }
 

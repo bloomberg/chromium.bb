@@ -74,6 +74,8 @@ class WorkerWebKitClientImpl : public webkit_glue::WebKitClientImpl,
   virtual WebKit::WebMimeRegistry::SupportsType supportsNonImageMIMEType(
       const WebKit::WebString&);
   virtual WebKit::WebString mimeTypeForExtension(const WebKit::WebString&);
+  virtual WebKit::WebString wellKnownMimeTypeForExtension(
+      const WebKit::WebString&);
   virtual WebKit::WebString mimeTypeFromFile(const WebKit::WebString&);
   virtual WebKit::WebString preferredExtensionForMIMEType(
       const WebKit::WebString&);
