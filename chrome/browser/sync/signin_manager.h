@@ -16,6 +16,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_registrar.h"
 
 class GaiaAuthFetcher;
 class Profile;
@@ -33,7 +35,7 @@ struct GoogleServiceSigninSuccessDetails {
   std::string password;
 };
 
-class SigninManager : public GaiaAuthConsumer {
+class SigninManager : public GaiaAuthConsumer , public NotificationObserver {
  public:
   SigninManager();
   virtual ~SigninManager();
@@ -75,6 +77,11 @@ class SigninManager : public GaiaAuthConsumer {
   virtual void OnGetUserInfoKeyNotFound(const std::string& key);
   virtual void OnGetUserInfoFailure(const GoogleServiceAuthError& error);
 
+  // NotificationObserver
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) OVERRIDE;
+
  private:
   Profile* profile_;
   std::string username_;
@@ -87,6 +94,11 @@ class SigninManager : public GaiaAuthConsumer {
 
   // Actual client login handler.
   scoped_ptr<GaiaAuthFetcher> client_login_;
+
+  // Register for notifications from the TokenService.
+  NotificationRegistrar registrar_;
+
+  DISALLOW_COPY_AND_ASSIGN(SigninManager);
 };
 
 #endif  // CHROME_BROWSER_SYNC_SIGNIN_MANAGER_H_

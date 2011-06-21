@@ -49,6 +49,11 @@ const char GaiaAuthFetcher::kIssueAuthTokenFormat[] =
 // static
 const char GaiaAuthFetcher::kGetUserInfoFormat[] =
     "LSID=%s";
+// static
+const char GaiaAuthFetcher::kTokenAuthFormat[] =
+    "auth=%s&"
+    "continue=%s&"
+    "source=%s";
 
 // static
 const char GaiaAuthFetcher::kAccountDeletedError[] = "AccountDeleted";
@@ -92,6 +97,7 @@ GaiaAuthFetcher::GaiaAuthFetcher(GaiaAuthConsumer* consumer,
       client_login_gurl_(GaiaUrls::GetInstance()->client_login_url()),
       issue_auth_token_gurl_(GaiaUrls::GetInstance()->issue_auth_token_url()),
       get_user_info_gurl_(GaiaUrls::GetInstance()->get_user_info_url()),
+      token_auth_gurl_(GaiaUrls::GetInstance()->token_auth_url()),
       fetch_pending_(false) {}
 
 GaiaAuthFetcher::~GaiaAuthFetcher() {}
@@ -186,6 +192,19 @@ std::string GaiaAuthFetcher::MakeIssueAuthTokenBody(
 std::string GaiaAuthFetcher::MakeGetUserInfoBody(const std::string& lsid) {
   std::string encoded_lsid = EscapeUrlEncodedData(lsid, true);
   return base::StringPrintf(kGetUserInfoFormat, encoded_lsid.c_str());
+}
+
+// static
+std::string GaiaAuthFetcher::MakeTokenAuthBody(const std::string& auth_token,
+                                               const std::string& continue_url,
+                                               const std::string& source) {
+  std::string encoded_auth_token = EscapeUrlEncodedData(auth_token, true);
+  std::string encoded_continue_url = EscapeUrlEncodedData(continue_url, true);
+  std::string encoded_source = EscapeUrlEncodedData(source, true);
+  return base::StringPrintf(kTokenAuthFormat,
+                            encoded_auth_token.c_str(),
+                            encoded_continue_url.c_str(),
+                            encoded_source.c_str());
 }
 
 // Helper method that extracts tokens from a successful reply.
@@ -299,6 +318,24 @@ void GaiaAuthFetcher::StartGetUserInfo(const std::string& lsid,
   fetcher_->Start();
 }
 
+void GaiaAuthFetcher::StartTokenAuth(const std::string& auth_token) {
+  DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
+
+  VLOG(1) << "Starting TokenAuth with auth_token=" << auth_token;
+
+  // The continue URL is a required parameter of the TokenAuth API, but in this
+  // case we don't actually need or want to navigate to it.  Setting it to
+  // an arbitrary Google URL.
+  std::string continue_url("http://www.google.com");
+  request_body_ = MakeTokenAuthBody(auth_token, continue_url, source_);
+  fetcher_.reset(CreateGaiaFetcher(getter_,
+                                   request_body_,
+                                   token_auth_gurl_,
+                                   this));
+  fetch_pending_ = true;
+  fetcher_->Start();
+}
+
 // static
 GoogleServiceAuthError GaiaAuthFetcher::GenerateAuthError(
     const std::string& data,
@@ -406,6 +443,16 @@ void GaiaAuthFetcher::OnGetUserInfoFetched(
   }
 }
 
+void GaiaAuthFetcher::OnTokenAuthFetched(const std::string& data,
+                                         const net::URLRequestStatus& status,
+                                         int response_code) {
+  if (status.is_success() && response_code == RC_REQUEST_OK) {
+    consumer_->OnTokenAuthSuccess(data);
+  } else {
+    consumer_->OnTokenAuthFailure(GenerateAuthError(data, status));
+  }
+}
+
 void GaiaAuthFetcher::OnURLFetchComplete(const URLFetcher* source,
                                          const GURL& url,
                                          const net::URLRequestStatus& status,
@@ -419,6 +466,8 @@ void GaiaAuthFetcher::OnURLFetchComplete(const URLFetcher* source,
     OnIssueAuthTokenFetched(data, status, response_code);
   } else if (url == get_user_info_gurl_) {
     OnGetUserInfoFetched(data, status, response_code);
+  } else if (url == token_auth_gurl_) {
+    OnTokenAuthFetched(data, status, response_code);
   } else {
     NOTREACHED();
   }

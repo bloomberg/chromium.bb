@@ -14,11 +14,7 @@ const char kCaptchaUrlPrefixSuffix[] = "/accounts/";
 const char kClientLoginUrlSuffix[] = "/accounts/ClientLogin";
 const char kIssueAuthTokenUrlSuffix[] = "/accounts/IssueAuthToken";
 const char kGetUserInfoUrlSuffix[] = "/accounts/GetUserInfo";
-// TODO(cmasone): make sure that using an http:// URL in the "continue"
-// parameter here doesn't open the system up to attack long-term.
-const char kTokenAuthUrlSuffix[] =
-    "/accounts/TokenAuth?"
-    "continue=http://www.google.com/webhp&source=chromeos&auth=";
+const char kTokenAuthUrlSuffix[] = "/accounts/TokenAuth";
 
 }  // namespacce
 

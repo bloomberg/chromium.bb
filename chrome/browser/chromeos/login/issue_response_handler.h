@@ -42,6 +42,9 @@ class IssueResponseHandler : public AuthResponseHandler {
   // exposed for testing
   std::string token_url() { return token_url_; }
 
+  // Builds a TokenAuth URL using the specified authorization token.
+  static std::string BuildTokenAuthUrlWithToken(const std::string& token);
+
  private:
   std::string token_url_;
   net::URLRequestContextGetter* getter_;

@@ -4,12 +4,15 @@
 
 #include "chrome/browser/sync/signin_manager.h"
 
+#include "base/command_line.h"
 #include "base/string_util.h"
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/chrome_switches.h"
 #include "content/common/notification_service.h"
 
 const char kGetInfoEmailKey[] = "email";
@@ -69,6 +72,18 @@ void SigninManager::StartSignIn(const std::string& username,
                                   login_token,
                                   login_captcha,
                                   GaiaAuthFetcher::HostedAccountsNotAllowed);
+
+  // Register for token availability.  The signin manager will pre-login the
+  // user when the GAIA service token is ready for use.  Only do this if we
+  // are not running in ChomiumOS, since it handles pre-login itself.
+#if !defined(OS_CHROMEOS)
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableAutoLogin)) {
+    registrar_.Add(this,
+                   NotificationType::TOKEN_AVAILABLE,
+                   NotificationService::AllSources());
+  }
+#endif
 }
 
 void SigninManager::ProvideSecondFactorAccessCode(
@@ -160,4 +175,31 @@ void SigninManager::OnClientLoginFailure(const GoogleServiceAuthError& error) {
   }
 
   SignOut();
+}
+
+void SigninManager::Observe(NotificationType type,
+                            const NotificationSource& source,
+                            const NotificationDetails& details) {
+#if !defined(OS_CHROMEOS)
+  DCHECK(type == NotificationType::TOKEN_AVAILABLE);
+  TokenService::TokenAvailableDetails* tok_details =
+      Details<TokenService::TokenAvailableDetails>(details).ptr();
+
+  // If a GAIA service token has become available, use it to pre-login the
+  // user to other services that depend on GAIA credentials.
+  if (tok_details->service() == GaiaConstants::kGaiaService) {
+    if (client_login_.get() == NULL) {
+      client_login_.reset(new GaiaAuthFetcher(this,
+                                              GaiaConstants::kChromeSource,
+                                              profile_->GetRequestContext()));
+    }
+
+    client_login_->StartTokenAuth(tok_details->token());
+
+    // We only want to do this once per sign-in.
+    registrar_.Remove(this,
+                      NotificationType::TOKEN_AVAILABLE,
+                      NotificationService::AllSources());
+  }
+#endif
 }

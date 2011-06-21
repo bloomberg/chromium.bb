@@ -5,13 +5,14 @@
 // A complete set of unit tests for GaiaAuthFetcher.
 // Originally ported from GoogleAuthenticator tests.
 
+#include "chrome/common/net/gaia/gaia_auth_fetcher_unittest.h"
+
 #include <string>
 
 #include "base/message_loop.h"
 #include "base/stringprintf.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
 #include "chrome/common/net/gaia/gaia_auth_fetcher.h"
-#include "chrome/common/net/gaia/gaia_auth_fetcher_unittest.h"
 #include "chrome/common/net/gaia/gaia_urls.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/net/http_return.h"
@@ -64,7 +65,8 @@ class GaiaAuthFetcherTest : public testing::Test {
   GaiaAuthFetcherTest()
       : client_login_source_(GaiaUrls::GetInstance()->client_login_url()),
         issue_auth_token_source_(
-            GaiaUrls::GetInstance()->issue_auth_token_url()) {}
+            GaiaUrls::GetInstance()->issue_auth_token_url()),
+        token_auth_source_(GaiaUrls::GetInstance()->token_auth_url()) {}
 
   void RunParsingTest(const std::string& data,
                       const std::string& sid,
@@ -107,6 +109,7 @@ class GaiaAuthFetcherTest : public testing::Test {
   net::ResponseCookies cookies_;
   GURL client_login_source_;
   GURL issue_auth_token_source_;
+  GURL token_auth_source_;
   TestingProfile profile_;
  protected:
   MessageLoop message_loop_;
@@ -120,10 +123,12 @@ class MockGaiaConsumer : public GaiaAuthConsumer {
   MOCK_METHOD1(OnClientLoginSuccess, void(const ClientLoginResult& result));
   MOCK_METHOD2(OnIssueAuthTokenSuccess, void(const std::string& service,
       const std::string& token));
+  MOCK_METHOD1(OnTokenAuthSuccess, void(const std::string& data));
   MOCK_METHOD1(OnClientLoginFailure,
       void(const GoogleServiceAuthError& error));
   MOCK_METHOD2(OnIssueAuthTokenFailure, void(const std::string& service,
       const GoogleServiceAuthError& error));
+  MOCK_METHOD1(OnTokenAuthFailure, void(const GoogleServiceAuthError& error));
 };
 
 TEST_F(GaiaAuthFetcherTest, ErrorComparator) {
@@ -493,6 +498,81 @@ TEST_F(GaiaAuthFetcherTest, FullTokenFailure) {
       issue_auth_token_source_,
       net::URLRequestStatus(net::URLRequestStatus::SUCCESS, 0),
       RC_FORBIDDEN,
+      cookies_,
+      "");
+  EXPECT_FALSE(auth.HasPendingFetch());
+}
+
+TEST_F(GaiaAuthFetcherTest, TokenAuthSuccess) {
+  MockGaiaConsumer consumer;
+  EXPECT_CALL(consumer, OnTokenAuthSuccess("<html></html>"))
+      .Times(1);
+
+  TestingProfile profile;
+  TestURLFetcherFactory factory;
+  URLFetcher::set_factory(&factory);
+
+  GaiaAuthFetcher auth(&consumer, std::string(),
+      profile_.GetRequestContext());
+  auth.StartTokenAuth("myubertoken");
+
+  URLFetcher::set_factory(NULL);
+  EXPECT_TRUE(auth.HasPendingFetch());
+  auth.OnURLFetchComplete(
+      NULL,
+      token_auth_source_,
+      net::URLRequestStatus(net::URLRequestStatus::SUCCESS, 0),
+      RC_REQUEST_OK,
+      cookies_,
+      "<html></html>");
+  EXPECT_FALSE(auth.HasPendingFetch());
+}
+
+TEST_F(GaiaAuthFetcherTest, TokenAuthUnauthorizedFailure) {
+  MockGaiaConsumer consumer;
+  EXPECT_CALL(consumer, OnTokenAuthFailure(_))
+      .Times(1);
+
+  TestingProfile profile;
+  TestURLFetcherFactory factory;
+  URLFetcher::set_factory(&factory);
+
+  GaiaAuthFetcher auth(&consumer, std::string(),
+      profile_.GetRequestContext());
+  auth.StartTokenAuth("badubertoken");
+
+  URLFetcher::set_factory(NULL);
+  EXPECT_TRUE(auth.HasPendingFetch());
+  auth.OnURLFetchComplete(
+      NULL,
+      token_auth_source_,
+      net::URLRequestStatus(net::URLRequestStatus::SUCCESS, 0),
+      RC_UNAUTHORIZED,
+      cookies_,
+      "");
+  EXPECT_FALSE(auth.HasPendingFetch());
+}
+
+TEST_F(GaiaAuthFetcherTest, TokenAuthNetFailure) {
+  MockGaiaConsumer consumer;
+  EXPECT_CALL(consumer, OnTokenAuthFailure(_))
+      .Times(1);
+
+  TestingProfile profile;
+  TestURLFetcherFactory factory;
+  URLFetcher::set_factory(&factory);
+
+  GaiaAuthFetcher auth(&consumer, std::string(),
+      profile_.GetRequestContext());
+  auth.StartTokenAuth("badubertoken");
+
+  URLFetcher::set_factory(NULL);
+  EXPECT_TRUE(auth.HasPendingFetch());
+  auth.OnURLFetchComplete(
+      NULL,
+      token_auth_source_,
+      net::URLRequestStatus(net::URLRequestStatus::FAILED, 0),
+      RC_REQUEST_OK,
       cookies_,
       "");
   EXPECT_FALSE(auth.HasPendingFetch());

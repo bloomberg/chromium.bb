@@ -373,6 +373,10 @@ const char kEnableAeroPeekTabs[]            = "enable-aero-peek-tabs";
 // for more background.
 const char kEnableAuthNegotiatePort[]       = "enable-auth-negotiate-port";
 
+// Disable both pre- and auto-login for services attached to a GAIA account
+// even when the GAIA credentials are available through sync.
+const char kDisableAutoLogin[]              = "disable-auto-login";
+
 // This flag enables UI for clearing server data.  Temporarily in place
 // until there's a server endpoint deployed.
 const char kEnableClearServerData[]         = "enable-clear-server-data";

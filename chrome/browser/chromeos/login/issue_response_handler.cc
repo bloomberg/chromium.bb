@@ -25,8 +25,7 @@ URLFetcher* IssueResponseHandler::Handle(
     const std::string& to_process,
     URLFetcher::Delegate* catcher) {
   VLOG(1) << "Handling IssueAuthToken response";
-  token_url_.assign(base::StringPrintf("%s%s",
-      GaiaUrls::GetInstance()->token_auth_url().c_str(), to_process.c_str()));
+  token_url_.assign(BuildTokenAuthUrlWithToken(to_process));
   URLFetcher* fetcher =
       new URLFetcher(GURL(token_url_), URLFetcher::GET, catcher);
   fetcher->set_load_flags(net::LOAD_DO_NOT_SEND_COOKIES);
@@ -36,6 +35,18 @@ URLFetcher* IssueResponseHandler::Handle(
     fetcher->Start();
   }
   return fetcher;
+}
+
+// static
+std::string IssueResponseHandler::BuildTokenAuthUrlWithToken(
+    const std::string& token) {
+  const char kUrlFormat[] = "%s?"
+                            "continue=http://www.google.com/webhp&"
+                            "source=chromeos&"
+                            "auth=%s";
+  return base::StringPrintf(kUrlFormat,
+                            GaiaUrls::GetInstance()->token_auth_url().c_str(),
+                            token.c_str());
 }
 
 }  // namespace chromeos

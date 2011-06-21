@@ -182,11 +182,10 @@ TEST_F(CookieFetcherTest, ClientLoginResponseHandlerTest) {
 
 TEST_F(CookieFetcherTest, IssueResponseHandlerTest) {
   IssueResponseHandler handler(NULL);
-  std::string input("a\n");
-  std::string expected(GaiaUrls::GetInstance()->token_auth_url());
-  expected.append(input);
+  std::string expected(IssueResponseHandler::BuildTokenAuthUrlWithToken(
+      std::string("a\n")));
 
-  scoped_ptr<URLFetcher> fetcher(handler.Handle(input, NULL));
+  scoped_ptr<URLFetcher> fetcher(handler.Handle(std::string("a\n"), NULL));
   EXPECT_EQ(expected, handler.token_url());
 }
 

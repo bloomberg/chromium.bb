@@ -4323,6 +4323,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_PRELOAD_INSTANT_SEARCH_DESCRIPTION" desc="Description for the flag to preload Instant search">
         Preload the default search engine for Instant.
       </message>
+      <message name="IDS_FLAGS_AUTO_LOGIN_NAME" desc="title for the flag to pre- and auto-login the user">
+        Disable pre- and auto-login
+      </message>
+      <message name="IDS_FLAGS_AUTO_LOGIN_DESCRIPTION" desc="Description for the flag to pre- and auto-login the user">
+        Disable pre-login to services when sync is enabled.  Also disable infobar on login pages which help automate the login process.
+        Pre- and auto-login are always disabled if sync is disabled.
+      </message>
       <message name="IDS_FLAGS_SHOW_AUTOFILL_TYPE_PREDICTIONS_NAME" desc="Title for the flag to show Autofill field type predictions for all forms">
         Show Autofill predictions
       </message>

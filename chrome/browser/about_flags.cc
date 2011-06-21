@@ -332,6 +332,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kPreloadInstantSearch)
   },
   {
+    "disable-auto-login",
+    IDS_FLAGS_AUTO_LOGIN_NAME,
+    IDS_FLAGS_AUTO_LOGIN_DESCRIPTION,
+    kOsMac | kOsWin | kOsLinux,
+    SINGLE_VALUE_TYPE(switches::kDisableAutoLogin)
+  },
+  {
     "static-ip-config",
     IDS_FLAGS_STATIC_IP_CONFIG_NAME,
     IDS_FLAGS_STATIC_IP_CONFIG_DESCRIPTION,
