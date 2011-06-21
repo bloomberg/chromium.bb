@@ -508,7 +508,8 @@ FileManager.prototype = {
     this.filenameInput_.addEventListener(
         'focus', this.onFilenameInputFocus_.bind(this));
 
-    this.dialogDom_.addEventListener('keydown', this.onKeyDown_.bind(this));
+    var listContainer = this.dialogDom_.querySelector('.list-container');
+    listContainer.addEventListener('keydown', this.onListKeyDown_.bind(this));
     this.okButton_.addEventListener('click', this.onOk_.bind(this));
     this.cancelButton_.addEventListener('click', this.onCancel_.bind(this));
 
@@ -847,11 +848,11 @@ FileManager.prototype = {
         if (err = FileError.NOT_FOUND_ERR) {
           // Leaf does not exist, it's just a suggested file name.
           self.changeDirectoryEntry(baseDirEntry, CD_NO_HISTORY);
-          self.filenameInput_.value = leafName;
         } else {
           console.log('Unexpected error resolving default leaf: ' + err);
           self.changeDirectoryEntry('/', CD_NO_HISTORY);
         }
+        self.filenameInput_.value = leafName;
       }
 
       self.resolvePath(self.defaultPath_, onLeafFound, onLeafError);
@@ -860,6 +861,7 @@ FileManager.prototype = {
     function onBaseError(err) {
       console.log('Unexpected error resolving default base: ' + err);
       self.changeDirectory('/', CD_NO_HISTORY);
+      self.filenameInput_.value = leafName;
     }
 
     this.filesystem_.root.getDirectory(
@@ -1167,6 +1169,7 @@ FileManager.prototype = {
       selection.totalCount++;
 
       if (entry.isFile) {
+        selection.fileCount += 1;
         if (!('cachedSize_' in entry)) {
           // Any file that hasn't been rendered may be missing its cachedSize_
           // property.  For example, visit a large file list, and press ctrl-a
@@ -1178,7 +1181,6 @@ FileManager.prototype = {
         } else {
           selection.bytes += entry.cachedSize_;
         }
-        selection.fileCount += 1;
       } else {
         selection.directoryCount += 1;
       }
@@ -2101,9 +2103,14 @@ FileManager.prototype = {
     this.setListType(FileManager.ListType.THUMBNAIL);
   };
 
-  FileManager.prototype.onKeyDown_ = function(event) {
-    if (event.srcElement.tagName == 'INPUT')
+  /**
+   * KeyDown event handler for the div.list-container element.
+   */
+  FileManager.prototype.onListKeyDown_ = function(event) {
+    if (event.srcElement.tagName == 'INPUT') {
+      // Ignore keydown handler in the rename input box.
       return;
+    }
 
     switch (event.keyCode) {
       case 8:  // Backspace => Up one directory.
@@ -2128,8 +2135,10 @@ FileManager.prototype = {
         break;
 
       case 27:  // Escape => Cancel dialog.
-        event.preventDefault();
-        this.onCancel_();
+        if (this.dialogType_ != FileManager.DialogType.FULL_PAGE) {
+          event.preventDefault();
+          this.onCancel_();
+        }
         break;
 
       case 32:  // Ctrl-Space => New Folder.
