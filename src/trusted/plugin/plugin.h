@@ -36,7 +36,7 @@ class Plugin : public PortableHandle {
 
   // Check that full_url meets the origin requirements for loading a nexe.
   bool IsValidNexeOrigin(nacl::string full_url,
-                         nacl::string* error_string);
+                         ErrorInfo* error_info);
 
   // Load support.
   // NaCl module can be loaded given a DescWrapper.

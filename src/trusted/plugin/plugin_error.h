@@ -18,7 +18,12 @@ namespace plugin {
 // These enums should be kept roughly in the order they occur during loading.
 enum PluginErrorCode {
   ERROR_UNKNOWN = 0,
+  ERROR_MANIFEST_PARSING,
+  ERROR_MANIFEST_SCHEMA_VALIDATE,
+  ERROR_MANIFEST_GET_NEXE_URL,
   ERROR_NEXE_LOAD_URL,
+  ERROR_NEXE_ORIGIN_PROTOCOL,
+  ERROR_NEXE_FH_DUP,
   ERROR_NEXE_STAT,
   ERROR_SEL_LDR_INIT
 };

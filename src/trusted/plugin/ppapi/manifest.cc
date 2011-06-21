@@ -11,6 +11,7 @@
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/platform/nacl_check.h"
+#include "native_client/src/trusted/plugin/plugin_error.h"
 #include "native_client/src/third_party_mod/jsoncpp/include/json/reader.h"
 #include "ppapi/cpp/dev/url_util_dev.h"
 #include "ppapi/cpp/var.h"
@@ -83,30 +84,32 @@ bool ValidateISAToURL(const Json::Value& dictionary,
 
 }  // namespace
 
-bool Manifest::Init(const nacl::string& manifest_json,
-                    nacl::string* error_string) {
-  if (error_string == NULL) {
+bool Manifest::Init(const nacl::string& manifest_json, ErrorInfo* error_info) {
+  if (error_info == NULL) {
     return false;
   }
   Json::Reader reader;
   if (!reader.parse(manifest_json, dictionary_)) {
-    *error_string = "manifest JSON parsing failed.";
+    error_info->SetReport(ERROR_MANIFEST_PARSING,
+                          "manifest JSON parsing failed.");
     return false;
   }
   // Parse has ensured the string was valid JSON.  Check that it matches the
   // manifest schema.
-  return MatchesSchema(error_string);
+  return MatchesSchema(error_info);
 }
 
-bool Manifest::MatchesSchema(nacl::string* error_string) {
+bool Manifest::MatchesSchema(ErrorInfo* error_info) {
   pp::Var exception;
-  if (error_string == NULL) {
+  if (error_info == NULL) {
     return false;
   }
   // Check that there are no unrecognized top-level elements of the manifest.
   // TODO(sehr,polina): replace this when the manifest spec is extended.
   if (!dictionary_.isObject()) {
-    *error_string = "manifest: is not a json dictionary.";
+    error_info->SetReport(
+        ERROR_MANIFEST_SCHEMA_VALIDATE,
+        "manifest: is not a json dictionary.");
     return false;
   }
   Json::Value::Members members = dictionary_.getMemberNames();
@@ -117,27 +120,32 @@ bool Manifest::MatchesSchema(nacl::string* error_string) {
     if (!FindMatchingProperty(property_name,
                               kManifestTopLevelProperties,
                               NACL_ARRAY_SIZE(kManifestTopLevelProperties))) {
-      *error_string =
+      error_info->SetReport(
+          ERROR_MANIFEST_SCHEMA_VALIDATE,
           nacl::string("manifest: has unrecognized top-level property \"") +
-          property_name + "\".";
+          property_name + "\".");
       return false;
     }
   }
   // Check that the manifest file has the "nexes" property, and that property
   // is a dictionary from sandbox ISA to string URL.
-  if (!ValidateISAToURL(dictionary_[kNexesKey], sandbox_isa_, error_string)) {
-    *error_string = nacl::string("manifest: ") + kNexesKey + *error_string;
+  nacl::string error_string;
+  if (!ValidateISAToURL(dictionary_[kNexesKey], sandbox_isa_, &error_string)) {
+    error_info->SetReport(
+        ERROR_MANIFEST_SCHEMA_VALIDATE,
+        nacl::string("manifest: ") + kNexesKey + error_string);
     return false;
   }
   // TODO(sehr,polina): Add other manifest schema checks here.
   return true;
 }
 
-bool Manifest::GetNexeURL(nacl::string* full_url, nacl::string* error_string) {
-  if (full_url == NULL || error_string == NULL)
+bool Manifest::GetNexeURL(nacl::string* full_url, ErrorInfo* error_info) {
+  if (full_url == NULL || error_info == NULL)
     return false;
   if (!dictionary_.isObject()) {
-    *error_string = "manifest is not an object.";
+    error_info->SetReport(ERROR_MANIFEST_GET_NEXE_URL,
+                          "manifest is not an object.");
     return false;
   }
   nacl::string nexe_url = dictionary_[kNexesKey][sandbox_isa_].asString();
@@ -146,10 +154,11 @@ bool Manifest::GetNexeURL(nacl::string* full_url, nacl::string* error_string) {
   pp::Var resolved_url =
       url_util_->ResolveRelativeToURL(pp::Var(manifest_base_url_), nexe_url);
   if (!resolved_url.is_string()) {
-    *error_string =
+    error_info->SetReport(
+        ERROR_MANIFEST_GET_NEXE_URL,
         "could not resolve nexe url \"" + nexe_url +
         "\" relative to manifest base url \"" + manifest_base_url_.c_str() +
-        "\".";
+        "\".");
     return false;
   }
   *full_url = resolved_url.AsString();

@@ -23,6 +23,8 @@ class URLUtil_Dev;
 
 namespace plugin {
 
+class ErrorInfo;
+
 class Manifest {
  public:
   Manifest(const pp::URLUtil_Dev* url_util,
@@ -36,10 +38,10 @@ class Manifest {
 
   // Initialize the manifest object for use by later lookups.  The return
   // value is true if the manifest parses correctly and matches the schema.
-  bool Init(const nacl::string& json, nacl::string* error_string);
+  bool Init(const nacl::string& json, ErrorInfo* error_info);
 
   // Gets the full nexe URL for the current sandbox ISA from the manifest file.
-  bool GetNexeURL(nacl::string* full_url, nacl::string* error_string);
+  bool GetNexeURL(nacl::string* full_url, ErrorInfo* error_info);
 
  private:
   const pp::URLUtil_Dev* url_util_;
@@ -50,7 +52,7 @@ class Manifest {
   // Checks that |dictionary_| is a valid manifest, according to the schema.
   // Returns true on success, and sets |error_string| to a detailed message
   // if not.
-  bool MatchesSchema(nacl::string* error_string);
+  bool MatchesSchema(ErrorInfo* error_info);
 
   NACL_DISALLOW_COPY_AND_ASSIGN(Manifest);
 };

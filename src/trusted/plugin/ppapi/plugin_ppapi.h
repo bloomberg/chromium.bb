@@ -183,20 +183,23 @@ class PluginPpapi : public pp::InstancePrivate, public Plugin {
   // Callback used when getting the manifest file as a local file descriptor.
   void NaClManifestFileDidOpen(int32_t pp_error);
 
+  // Processes the JSON manifest string and starts loading the nexe.
+  void ProcessNaClManifest(const nacl::string& manifest_json);
+
   // Parses the JSON in |manifest_json| and retains a Manifest in
   // |manifest_| for use by subsequent resource lookups.
   // On success, |true| is returned and |manifest_| is updated to
   // contain a Manifest that is used by SelectNexeURLFromManifest.
   // On failure, |false| is returned, and |manifest_| is unchanged.
   bool SetManifestObject(const nacl::string& manifest_json,
-                         nacl::string* error_string);
+                         ErrorInfo* error_info);
 
   // Determines the URL of the nexe module appropriate for the NaCl sandbox
   // implemented by the installed sel_ldr.  The URL is determined from the
   // Manifest in |manifest_|.  On success, |true| is returned and |result| is
   // set to the URL to use for the nexe.  On failure, |false| is returned.
   bool SelectNexeURLFromManifest(nacl::string* result,
-                                 nacl::string* error_string);
+                                 ErrorInfo* error_info);
 
   // Determines the appropriate nexe for the sandbox and requests a load.
   void RequestNexeLoad();

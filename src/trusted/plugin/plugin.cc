@@ -397,7 +397,7 @@ Plugin::~Plugin() {
 }
 
 bool Plugin::IsValidNexeOrigin(nacl::string full_url,
-                               nacl::string* error_string) {
+                               ErrorInfo* error_info) {
   PLUGIN_PRINTF(("Plugin::IsValidNexeOrigin (full_url='%s')\n",
                  full_url.c_str()));
   CHECK(NACL_NO_URL != full_url);
@@ -417,9 +417,11 @@ bool Plugin::IsValidNexeOrigin(nacl::string full_url,
   // TODO(adonovan): JavaScript permits cross-origin loading, and so
   // does Chrome; why don't we?
   if (!origin_valid_ || !module_origin_valid) {
-    *error_string = nacl::string("module URL ") +
-        manifest_url() + " uses an unsupported protocol. "
-        "Only http, https, and chrome-extension are currently supported.";
+    error_info->SetReport(
+        ERROR_NEXE_ORIGIN_PROTOCOL,
+        nacl::string("module URL ") +
+        manifest_url() + " uses an unsupported protocol. " +
+        "Only http, https, and chrome-extension are currently supported.");
     return false;
   }
   return true;

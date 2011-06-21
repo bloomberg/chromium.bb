@@ -689,19 +689,20 @@ void PluginPpapi::NexeFileDidOpen(int32_t pp_error) {
     if (pp_error == PP_ERROR_ABORTED) {
       ReportLoadAbort();
     } else {
-      error_info.SetReport(ERROR_NEXE_LOAD_URL,
-                           "could not load nexe url.");
+      error_info.SetReport(ERROR_NEXE_LOAD_URL, "could not load nexe url.");
       ReportLoadError(error_info);
     }
     return;
   }
-  if (!IsValidNexeOrigin(nexe_downloader_.url(), error_info.message_ptr())) {
+  if (!IsValidNexeOrigin(nexe_downloader_.url(), &error_info)) {
     ReportLoadError(error_info);
     return;
   }
   int32_t file_desc_ok_to_close = DUP(file_desc);
   if (file_desc_ok_to_close == NACL_NO_FILE_DESC) {
-    ReportLoadError("could not duplicate loaded file handle.");
+    error_info.SetReport(ERROR_NEXE_FH_DUP,
+                         "could not duplicate loaded file handle.");
+    ReportLoadError(error_info);
     return;
   }
   struct stat stat_buf;
@@ -872,26 +873,7 @@ void PluginPpapi::NaClManifestBufferReady(int32_t pp_error) {
   std::copy(buffer.begin(), buffer.begin() + buffer_size, &json_buffer[0]);
   json_buffer[buffer_size] = '\0';
 
-  nacl::string nexe_url;
-  ErrorInfo error_info;
-  if (!SetManifestObject(json_buffer.get(), error_info.message_ptr())) {
-    ReportLoadError(error_info);
-    return;
-  }
-  if (!SelectNexeURLFromManifest(&nexe_url, error_info.message_ptr())) {
-    ReportLoadError(error_info);
-    return;
-  }
-  set_nacl_ready_state(LOADING);
-  // Inform JavaScript that we found a nexe URL to load.
-  EnqueueProgressEvent("progress",
-                       LENGTH_IS_NOT_COMPUTABLE,
-                       kUnknownBytes,
-                       kUnknownBytes);
-  pp::CompletionCallback open_callback =
-      callback_factory_.NewCallback(&PluginPpapi::NexeFileDidOpen);
-  // Will always call the callback on success or failure.
-  nexe_downloader_.Open(nexe_url, DOWNLOAD_TO_FILE, open_callback);
+  ProcessNaClManifest(json_buffer.get());
 }
 
 void PluginPpapi::NaClManifestFileDidOpen(int32_t pp_error) {
@@ -970,13 +952,18 @@ void PluginPpapi::NaClManifestFileDidOpen(int32_t pp_error) {
   fclose(json_file);
   // No need to close |file_desc|, that is handled by |nexe_downloader_|.
   json_buffer[total_bytes_read] = '\0';  // Force null termination.
+
+  ProcessNaClManifest(json_buffer.get());
+}
+
+void PluginPpapi::ProcessNaClManifest(const nacl::string& manifest_json) {
   nacl::string nexe_url;
   ErrorInfo error_info;
-  if (!SetManifestObject(json_buffer.get(), error_info.message_ptr())) {
+  if (!SetManifestObject(manifest_json, &error_info)) {
     ReportLoadError(error_info);
     return;
   }
-  if (!SelectNexeURLFromManifest(&nexe_url, error_info.message_ptr())) {
+  if (!SelectNexeURLFromManifest(&nexe_url, &error_info)) {
     ReportLoadError(error_info);
     return;
   }
@@ -991,7 +978,6 @@ void PluginPpapi::NaClManifestFileDidOpen(int32_t pp_error) {
   // Will always call the callback on success or failure.
   nexe_downloader_.Open(nexe_url, DOWNLOAD_TO_FILE, open_callback);
 }
-
 
 void PluginPpapi::RequestNaClManifest(const nacl::string& url) {
   PLUGIN_PRINTF(("PluginPpapi::RequestNaClManifest (url='%s')\n", url.c_str()));
@@ -1033,28 +1019,27 @@ void PluginPpapi::RequestNaClManifest(const nacl::string& url) {
 
 
 bool PluginPpapi::SetManifestObject(const nacl::string& manifest_json,
-                                    nacl::string* error_string) {
+                                    ErrorInfo* error_info) {
   PLUGIN_PRINTF(("PluginPpapi::SetManifestObject(): manifest_json='%s'.\n",
        manifest_json.c_str()));
-  if (error_string == NULL) {
+  if (error_info == NULL)
     return false;
-  }
   manifest_.reset(
       new Manifest(url_util_, manifest_base_url(), GetSandboxISA()));
-  if (!manifest_->Init(manifest_json, error_string)) {
+  if (!manifest_->Init(manifest_json, error_info)) {
     return false;
   }
   return true;
 }
 
 bool PluginPpapi::SelectNexeURLFromManifest(nacl::string* result,
-                                            nacl::string* error_string) {
+                                            ErrorInfo* error_info) {
   const nacl::string sandbox_isa(GetSandboxISA());
   PLUGIN_PRINTF(("PluginPpapi::SelectNexeURLFromManifest(): sandbox='%s'.\n",
        sandbox_isa.c_str()));
-  if (result == NULL || error_string == NULL || manifest_ == NULL)
+  if (result == NULL || error_info == NULL || manifest_ == NULL)
     return false;
-  return manifest_->GetNexeURL(result, error_string);
+  return manifest_->GetNexeURL(result, error_info);
 }
 
 
