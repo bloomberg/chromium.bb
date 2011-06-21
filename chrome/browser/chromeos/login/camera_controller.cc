@@ -28,17 +28,23 @@ CameraController::CameraController(Delegate* delegate)
       frame_height_(0),
       capture_failure_counter_(0),
       camera_init_failure_counter_(0),
+      camera_thread_(new base::Thread(kCameraThreadName)),
       delegate_(delegate) {
+  camera_thread_->Start();
 }
 
 CameraController::~CameraController() {
   Stop();
+  {
+    // A ScopedAllowIO object is required to join the thread when calling Stop.
+    // See http://crosbug.com/11392.
+    base::ThreadRestrictions::ScopedAllowIO allow_io_for_thread_join;
+    camera_thread_.reset();
+  }
 }
 
 void CameraController::Start() {
   Stop();
-  camera_thread_.reset(new base::Thread(kCameraThreadName));
-  camera_thread_->Start();
   camera_ = new Camera(this, camera_thread_.get(), true);
   camera_->Initialize(frame_width_, frame_height_);
 }
@@ -48,12 +54,6 @@ void CameraController::Stop() {
     camera_->set_delegate(NULL);
     camera_->Uninitialize();
     camera_ = NULL;
-  }
-  {
-    // A ScopedAllowIO object is required to join the thread when calling Stop.
-    // See http://crosbug.com/11392.
-    base::ThreadRestrictions::ScopedAllowIO allow_io_for_thread_join;
-    camera_thread_.reset();
   }
 }
 

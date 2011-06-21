@@ -143,7 +143,6 @@ Camera::Camera(Delegate* delegate, base::Thread* thread, bool mirrored)
 }
 
 Camera::~Camera() {
-  Uninitialize();
   DCHECK_EQ(-1, device_descriptor_) << "Don't forget to uninitialize camera.";
 }
 
