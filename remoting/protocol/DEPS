@@ -2,6 +2,8 @@ include_rules = [
   "+google/protobuf",
   "+jingle/glue",
   "+net",
+  "+ppapi/c",
+  "+ppapi/cpp",
   "+remoting/jingle_glue",
   "+third_party/protobuf/src",
 ]

@@ -596,6 +596,8 @@
         'protocol/message_decoder.h',
         'protocol/message_reader.cc',
         'protocol/message_reader.h',
+        'protocol/pepper_p2p_channel.h',
+        'protocol/pepper_p2p_channel.cc',
         'protocol/protobuf_video_reader.cc',
         'protocol/protobuf_video_reader.h',
         'protocol/protobuf_video_writer.cc',
