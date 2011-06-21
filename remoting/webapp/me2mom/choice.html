@@ -8,6 +8,8 @@ found in the LICENSE file.
 <html>
   <head>
     <meta charset="utf-8" />
+    <link href="http://fonts.googleapis.com/css?family=Droid+Sans&amp;v1"
+          rel="stylesheet" type="text/css">
     <link rel="shortcut icon" href="chromoting128.png" />
     <link rel="stylesheet" href="debug_log.css" />
     <link rel="stylesheet" href="main.css" />
@@ -63,10 +65,10 @@ found in the LICENSE file.
       <header>
         <img id="icon" src="chromoting128.png">
         <h1 class="icon-label host-element display-inline">
-          Chromoting&nbsp;>&nbsp;Share
+          Chromoting&nbsp;&rsaquo;&nbsp;Share
         </h1>
         <h1 class="icon-label client-element display-inline">
-          Chromoting&nbsp;>&nbsp;Connect
+          Chromoting&nbsp;&rsaquo;&nbsp;Connect
         </h1>
         <img id="divider-top" src="dividertop.png">
       </header>
@@ -87,7 +89,7 @@ found in the LICENSE file.
 
         <div id="preparing-to-share" class="mode">
           <div class="message">
-            Connecting...
+            Generating access code&hellip;
           </div>
         </div> <!-- preparing-to-share -->
 
@@ -99,13 +101,8 @@ found in the LICENSE file.
           <div id="access-code-display">
             FAILED!
           </div>
-          <div class="message">
-            Waiting for connection...
-          </div>
-          <div class="centered-button">
-            <button type="button" onclick="cancelShare(); return false;">
-              Cancel
-            </button>
+          <div class="description">
+            Once they enter the code your sharing session will begin.
           </div>
         </div> <!-- ready-to-share -->
 
@@ -137,22 +134,20 @@ found in the LICENSE file.
         <div id="unconnected"  class="mode">
           <div class="description">
             Have the user whose computer you wish to access click
-            ‘Share this computer with another user’ and then have them read
+            ‘Share this computer’ and then have them read
             their access code to you.
           </div>
           <div id="access-code-entry-row">
             <form action="" onsubmit="tryConnect();  return false;">
               <label class="auth-status-control" for="access-code-entry">
-                Access code:
+                Access code
               </label>
               <input id="access-code-entry" class="auth-status-control"
                      type="text"/>
-              <div class="centered-button">
-                <button id="connect-button" class="auth-status-control"
-                        type="submit">
-                  Connect
-                </button>
-              </div>
+              <button id="connect-button" class="auth-status-control"
+                      type="submit">
+                Connect
+              </button>
             </form>
           </div> <!-- code-entry-row -->
         </div> <!-- unconnected -->
@@ -162,12 +157,8 @@ found in the LICENSE file.
             Verifying access code...
             <!-- TODO(jamiewalch): Implement Cancel, being careful when ignoring
                  the eventual server response not to ignore responses for any
-                 subsequent requests.
-            <div class="centered-button">
-              <button onclick="cancelConnect(); return false;">
-                Cancel
-              </button>
-            </div>
+                 subsequent requests. This should be unified with the host-side
+                 Cancel button in the footer.
             -->
           </div>
         </div> <!-- connecting -->
@@ -191,22 +182,31 @@ found in the LICENSE file.
 
       <footer>
         <img id="divider-bottom" src="dividerbottom.png">
-        <div class="client-element">
+        <div id="client-footer" class="client-element">
           Click here to
           <a class="switch-mode"
              href="#"
              onclick="setGlobalModePersistent(remoting.HOST_MODE);
-                      return false;">
-            share this computer with another user</a>.
+                      return false;">share this computer</a>
+          with another user.
         </div> <!-- client-footer -->
 
-        <div class="host-element">
+        <div id="host-footer" class="host-element">
           Click here to <a class="switch-mode"
              href="#"
              onclick="setGlobalModePersistent(remoting.CLIENT_MODE);
                       return false;">
             access a shared computer</a>.
         </div> <!-- host-footer -->
+
+        <div id="waiting-footer">
+          <img src="throbber.svg">
+          <span class="waiting icon-label">waiting for connection&hellip;</span>
+          <button id="cancel-button"
+                  onclick="cancelPendingOperation();">
+            Cancel
+          </button>
+        </div> <!-- waiting-footer -->
       </footer>
     </div> <!-- main-panel -->
 

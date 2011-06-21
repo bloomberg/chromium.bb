@@ -50,6 +50,7 @@
       'webapp/me2mom/remoting_session.css',
       'webapp/me2mom/remoting_session.html',
       'webapp/me2mom/remoting_session.js',
+      '../chrome/browser/resources/shared/images/throbber.svg',
     ],
   },
 

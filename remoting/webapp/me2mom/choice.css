@@ -14,7 +14,7 @@ body {
   background: -webkit-gradient(radial, center center, 0, center center, 400,
                                from(rgb(254, 254, 254)),
                                to(rgb(239, 239, 239)));
-  font-family: Arial, sans-serif;
+  font-family: 'Droid sans', Arial, sans-serif;
   margin:0;
   padding:0;
 }
@@ -24,7 +24,7 @@ button {
   border: 1px solid #aaa;
   height: 2em;
   font-size: 16px;
-  padding: .5em 1em;
+  padding: 6px;
   -webkit-border-radius: 2px;
   -webkit-box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1);
   -webkit-user-select: none;
@@ -52,7 +52,6 @@ button[disabled], .button[disabled]:hover {
 
 footer {
   font-size: 14px;
-  text-align: center;
 }
 
 header h1 {
@@ -99,8 +98,8 @@ section {
 
 .display-inline {
   /*
-    Class used to denote elements that should be displayed inline as opposed
-    to block.
+    Class used to denote elements that should be displayed inline-block as
+    opposed to block.
   */
 }
 
@@ -128,6 +127,10 @@ section {
   display: none;
 }
 
+.waiting {
+  color: rgb(180, 180, 180);
+}
+
 /* Ids */
 #auth-panel {
   border-bottom: 2px solid gray;
@@ -135,13 +138,12 @@ section {
 }
 
 #access-code-display {
-  background-color: lightgray;
-  border-style: solid;
-  font-size: 200%;
-  margin: 0 auto 25px auto;
-  padding: 0 4px 0 4px;
+  margin-top: 50px;
+  margin-bottom: 50px;
+  color: rgb(0, 0, 0);
+  font-weight: bold;
+  font-size: 26px;
   text-align: center;
-  width: 350px;
 }
 
 #access-code-entry {
@@ -163,6 +165,10 @@ section {
   margin: 100px auto 0 auto;
   padding: 10px;
   width: 640px;
+}
+
+#cancel-button {
+  float: right;
 }
 
 #current-email {
@@ -187,4 +193,8 @@ section {
 
 #server-response {
   font-weight: bolder;
+}
+
+#client-footer, #host-footer {
+  text-align: center;
 }

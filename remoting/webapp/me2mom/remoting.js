@@ -10,12 +10,12 @@
 // TODO(ajwong): This seems like a bad idea to share the exact same object
 // with the background page.  Why are we doing it like this?
 var remoting = chrome.extension.getBackgroundPage().remoting;
-remoting.CLIENT_MODE='client';
-remoting.HOST_MODE='host';
+remoting.CLIENT_MODE = 'client';
+remoting.HOST_MODE = 'host';
 remoting.XMPP_LOGIN_NAME = 'xmpp_login';
 remoting.HOST_PLUGIN_ID = 'host-plugin-id';
 
-window.addEventListener("load", init_, false);
+window.addEventListener('load', init_, false);
 
 function hasClass(element, cls) {
   return element.className.match(new RegExp('\\b' + cls + '\\b'));
@@ -34,7 +34,7 @@ function removeClass(element, cls) {
 function showElement(element, visible) {
   if (visible) {
     if (hasClass(element, 'display-inline')) {
-      element.style.display = 'inline';
+      element.style.display = 'inline-block';
     } else {
       element.style.display = 'block';
     }
@@ -61,7 +61,7 @@ function updateControls_(disable) {
 function updateAuthStatus_() {
   var oauthValid = remoting.oauth2.isAuthenticated();
   if (!oauthValid) {
-    document.getElementById('oauth2-code').value = "";
+    document.getElementById('oauth2-code').value = '';
   }
   showElementById('oauth2-submit-button', false);
   showElementById('oauth2-code', !oauthValid);
@@ -101,7 +101,7 @@ function setEmail(value) {
 
 function exchangedCodeForToken_() {
   if (!remoting.oauth2.isAuthenticated()) {
-    alert("Your OAuth2 token was invalid. Please try again.");
+    alert('Your OAuth2 token was invalid. Please try again.');
   }
   updateAuthStatus_();
 }
@@ -158,6 +158,8 @@ function setGlobalMode(mode) {
   for (var i = 0; i < elementsToHide.length; ++i) {
     showElement(elementsToHide[i], false);
   }
+  showElement(document.getElementById('waiting-footer', false));
+  remoting.currentMode = mode;
 }
 
 function setGlobalModePersistent(mode) {
@@ -179,20 +181,29 @@ function setClientMode(mode) {
   setMode_(mode, modes);
 }
 
+function showWaiting_() {
+  showElement(document.getElementById('client-footer'), false);
+  showElement(document.getElementById('host-footer'), false);
+  showElement(document.getElementById('waiting-footer'), true);
+  document.getElementById('cancel-button').disabled = false;
+}
+
 function tryShare() {
-  addToDebugLog("Attempting to share...");
+  addToDebugLog('Attempting to share...');
   if (remoting.oauth2.needsNewAccessToken()) {
-    addToDebugLog("Refreshing token...");
+    addToDebugLog('Refreshing token...');
     remoting.oauth2.refreshAccessToken(function() {
       if (remoting.oauth2.needsNewAccessToken()) {
         // If we still need it, we're going to infinite loop.
-        showShareError_("unable-to-get-token");
-        throw "Unable to get access token";
+        showShareError_('unable-to-get-token');
+        throw 'Unable to get access token';
       }
       tryShare();
     });
     return;
   }
+
+  showWaiting_();
 
   var div = document.getElementById('plugin-wrapper');
   var plugin = document.createElement('embed');
@@ -219,6 +230,7 @@ function onStateChanged_() {
   } else if (state == plugin.CONNECTED) {
     setHostMode('shared');
   } else if (state == plugin.DISCONNECTED) {
+    setGlobalMode(remoting.HOST_MODE);
     setHostMode('unshared');
     plugin.parentNode.removeChild(plugin);
   } else {
@@ -311,7 +323,7 @@ function tryConnect() {
     remoting.oauth2.refreshAccessToken(function() {
       if (remoting.oauth2.needsNewAccessToken()) {
         // If we still need it, we're going to infinite loop.
-        throw "Unable to get access token.";
+        throw 'Unable to get access token.';
       }
       tryConnect();
     });
@@ -330,7 +342,9 @@ function tryConnect() {
   }
 }
 
-function cancelConnect() {
-  remoting.accessCode = '';
-  setClientMode('unconnected');
+function cancelPendingOperation() {
+  document.getElementById('cancel-button').disabled = true;
+  if (remoting.currentMode == remoting.HOST_MODE) {
+    cancelShare();
+  }
 }
