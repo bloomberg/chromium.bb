@@ -159,6 +159,7 @@ void DevToolsWindow::Show(DevToolsToggleAction action) {
     } else {
       // Sometimes we don't know where to dock. Stay undocked.
       docked_ = false;
+      UpdateFrontendAttachedState();
     }
   }
 
