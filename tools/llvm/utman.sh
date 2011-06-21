@@ -201,7 +201,7 @@ readonly LLVM_REV=07b579b7d4a3
 readonly LLVM_GCC_REV=90bef7731935
 readonly NEWLIB_REV=9bef47f82918
 readonly BINUTILS_REV=569e4fcf08da
-readonly COMPILER_RT_REV=58885e5e10cf
+readonly COMPILER_RT_REV=8b41cb76e53e
 
 # Repositories
 readonly REPO_LLVM_GCC="llvm-gcc.nacl-llvm-branches"
@@ -1210,14 +1210,12 @@ build-compiler-rt() {
     rm -rf "${arch}"
     mkdir -p "${arch}"
     spushd "${arch}"
-    flags=""
     RunWithLog libgcc.${arch}.make \
         make -j ${UTMAN_CONCURRENCY} -f ${src}/Makefile-pnacl libgcc.a \
           "SRC_DIR=${src}" \
-          "ARCH=${arch}" \
           "CC=${PNACL_GCC}" \
           "AR=${PNACL_AR}" \
-          "CFLAGS=${flags}"
+          "CFLAGS=-arch ${arch} --pnacl-allow-translate -O3 -fPIC"
     spopd
   done
 
@@ -1232,6 +1230,39 @@ build-compiler-rt() {
 
   mkdir -p "${PNACL_X8664_ROOT}"
   cp x86-64/libgcc.a "${PNACL_X8664_ROOT}/"
+  spopd
+}
+
+#+ build-compiler-rt-bitcode - build/install llvm's replacement for libgcc.a
+#                              as bitcode - this is EXPERIMENTAL
+build-compiler-rt-bitcode() {
+  src="${TC_SRC_COMPILER_RT}/compiler-rt/lib"
+  mkdir -p "${TC_BUILD_COMPILER_RT}"
+  spushd "${TC_BUILD_COMPILER_RT}"
+
+  StepBanner "COMPILER-RT (LIBGCC) bitcode"
+  StepBanner "compiler rt bitcode" "build"
+  mkdir -p bitcode
+  spushd bitcode
+  RunWithLog libgcc.bitcode.make \
+    make -j ${UTMAN_CONCURRENCY} -f ${src}/Makefile-pnacl libgcc.a \
+      "SRC_DIR=${src}" \
+      "CC=${PNACL_GCC}" \
+      "AR=${PNACL_AR}" \
+      "CFLAGS=-O3"
+  spopd
+
+
+  StepBanner "compiler rt bitcode" "install"
+  rm -f "${PNACL_ARM_ROOT}/libgcc.a" \
+        "${PNACL_X8632_ROOT}/libgcc.a" \
+        "${PNACL_X8664_ROOT}/libgcc.a" \
+        "${PNACL_BITCODE_ROOT}/libgcc.a"
+
+  mkdir -p "${PNACL_BITCODE_ROOT}"
+  ls -l bitcode/libgcc.a
+  cp bitcode/libgcc.a "${PNACL_BITCODE_ROOT}"
+
   spopd
 }
 
