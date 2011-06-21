@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,8 @@ ResourceRequestDetails::ResourceRequestDetails(const net::URLRequest* request,
       load_flags_(request->load_flags()),
       status_(request->status()),
       ssl_cert_id_(cert_id),
-      ssl_cert_status_(request->ssl_info().cert_status) {
+      ssl_cert_status_(request->ssl_info().cert_status),
+      socket_address_(request->GetSocketAddress()) {
   const ResourceDispatcherHostRequestInfo* info =
       ResourceDispatcherHost::InfoForRequest(request);
   DCHECK(info);

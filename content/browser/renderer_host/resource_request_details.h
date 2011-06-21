@@ -13,6 +13,7 @@
 #include <string>
 
 #include "googleurl/src/gurl.h"
+#include "net/base/host_port_pair.h"
 #include "net/url_request/url_request_status.h"
 #include "webkit/glue/resource_type.h"
 
@@ -38,6 +39,7 @@ class ResourceRequestDetails {
   int ssl_cert_id() const { return ssl_cert_id_; }
   int ssl_cert_status() const { return ssl_cert_status_; }
   ResourceType::Type resource_type() const { return resource_type_; }
+  net::HostPortPair socket_address() const { return socket_address_; }
 
  private:
   GURL url_;
@@ -51,6 +53,7 @@ class ResourceRequestDetails {
   int ssl_cert_id_;
   int ssl_cert_status_;
   ResourceType::Type resource_type_;
+  net::HostPortPair socket_address_;
 };
 
 // Details about a redirection of a resource request.
