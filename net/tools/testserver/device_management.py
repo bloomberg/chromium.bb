@@ -437,7 +437,7 @@ class RequestHandler(object):
       if (not token_info or
           not request_device_id or
           token_info['device_id'] != request_device_id):
-        error = 901
+        error = 410
       else:
         return (token_info, None)
 

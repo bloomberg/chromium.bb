@@ -246,6 +246,7 @@ message DeviceManagementRequest {
 // 401 Unauthorized: invalid auth cookie or DM token.
 // 403 Forbidden: device management is not allowed.
 // 404 Not Found: the request URL is invalid.
+// 410 Gone: device is unknown to the server.
 // 491 Request Pending: the request is pending approval.
 // 500 Internal Server Error: most likely a bug in DM server.
 // 503 Service Unavailable: most likely a backend error.
