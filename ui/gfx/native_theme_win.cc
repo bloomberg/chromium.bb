@@ -17,7 +17,7 @@
 #include "base/win/windows_version.h"
 #include "skia/ext/skia_utils_win.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkColorPriv.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "ui/gfx/gdi_util.h"
 #include "ui/gfx/rect.h"
@@ -163,24 +163,31 @@ void NativeThemeWin::PaintToNonPlatformCanvas(SkCanvas* canvas,
   // Draw the theme controls using existing HDC-drawing code.
   Paint(offscreen_canvas.get(), part, state, adjusted_rect, adjusted_extra);
 
-  // Post-process the bitmap to fix up the alpha values (see big comment above).
-  const SkBitmap& bitmap = offscreen_canvas->getDevice()->accessBitmap(true);
+  // Copy the pixels to a bitmap that has ref-counted pixel storage, which is
+  // necessary to have when drawing to a SkPicture.
+  const SkBitmap& bitmap = offscreen_canvas->getDevice()->accessBitmap(false);
+  SkBitmap ref_counted;
+  bitmap.copyTo(&ref_counted, SkBitmap::kARGB_8888_Config);
+
+  // Post-process the pixels to fix up the alpha values (see big comment above).
+  const SkPMColor placeholder_value = SkPreMultiplyColor(placeholder);
   const int pixel_count = rect.width() * rect.height();
-  SkColor* pixels = static_cast<SkColor*>(bitmap.getPixels());
+  SkPMColor* pixels = bitmap.getAddr32(0, 0);
   for (int i = 0; i < pixel_count; i++) {
-    if (pixels[i] == placeholder) {
+    if (pixels[i] == placeholder_value) {
       // Pixel wasn't touched - make it fully transparent.
-      pixels[i] = SkColorSetA(pixels[i], 0);
-    } else if (SkColorGetA(pixels[i]) == 0) {
+      pixels[i] = SkPackARGB32(0, 0, 0, 0);
+    } else if (SkGetPackedA32(pixels[i]) == 0) {
       // Pixel was touched but has incorrect alpha of 0, make it fully opaque.
-      pixels[i] = SkColorSetA(pixels[i], 0xFF);
+      pixels[i] = SkPackARGB32(0xFF,
+                               SkGetPackedR32(pixels[i]),
+                               SkGetPackedG32(pixels[i]),
+                               SkGetPackedB32(pixels[i]));
     }
   }
 
   // Draw the offscreen bitmap to the destination canvas.
-  canvas->drawBitmap(offscreen_canvas->getDevice()->accessBitmap(false),
-                     rect.x(),
-                     rect.y());
+  canvas->drawBitmap(ref_counted, rect.x(), rect.y());
 }
 
 void NativeThemeWin::Paint(SkCanvas* canvas,
