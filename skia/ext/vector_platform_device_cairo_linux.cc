@@ -264,9 +264,6 @@ void VectorPlatformDeviceCairo::drawPath(const SkDraw& draw,
         cairo_close_path(context_);
       } break;
 
-      case SkPath::kDone_Verb: {  // iter.next returns 0 points
-      } break;
-
       default: {
         // Should not reach here!
         SkASSERT(false);
