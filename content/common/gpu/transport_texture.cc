@@ -83,7 +83,7 @@ void TransportTexture::OnDestroy() {
   channel_->DestroyTransportTexture(route_id_);
 }
 
-void TransportTexture::OnTexturesCreated(std::vector<int> textures) {
+void TransportTexture::OnTexturesCreated(const std::vector<int>& textures) {
   bool ret = decoder_->MakeCurrent();
   if (!ret) {
     LOG(ERROR) << "Failed to switch context";

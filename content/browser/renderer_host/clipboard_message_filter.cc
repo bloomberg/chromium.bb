@@ -162,7 +162,7 @@ void ClipboardMessageFilter::OnReadImage(
 }
 
 void ClipboardMessageFilter::OnReadImageReply(
-    SkBitmap bitmap, IPC::Message* reply_msg) {
+    const SkBitmap& bitmap, IPC::Message* reply_msg) {
   base::SharedMemoryHandle image_handle = base::SharedMemory::NULLHandle();
   uint32 image_size = 0;
   std::string reply_data;

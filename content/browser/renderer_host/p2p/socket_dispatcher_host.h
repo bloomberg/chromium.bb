@@ -39,7 +39,7 @@ class P2PSocketDispatcherHost : public BrowserMessageFilter {
                       const net::IPEndPoint& remote_address);
   void OnAcceptIncomingTcpConnection(const IPC::Message& msg,
                                      int listen_socket_id,
-                                     net::IPEndPoint remote_address,
+                                     const net::IPEndPoint& remote_address,
                                      int connected_socket_id);
   void OnSend(const IPC::Message& msg, int socket_id,
               const net::IPEndPoint& socket_address,

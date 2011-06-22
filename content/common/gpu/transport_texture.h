@@ -71,7 +71,7 @@ class TransportTexture : public IPC::Channel::Listener {
   ///////////////////////////////////////////////////////////////////////////
   // IPC Message Handlers
   void OnDestroy();
-  void OnTexturesCreated(std::vector<int> textures);
+  void OnTexturesCreated(const std::vector<int>& textures);
 
   GpuChannel* channel_;
   IPC::Message::Sender* sender_;

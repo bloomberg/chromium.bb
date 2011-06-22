@@ -97,7 +97,7 @@ void P2PSocketDispatcherHost::OnCreateSocket(
 
 void P2PSocketDispatcherHost::OnAcceptIncomingTcpConnection(
     const IPC::Message& msg, int listen_socket_id,
-    net::IPEndPoint remote_address, int connected_socket_id) {
+    const net::IPEndPoint& remote_address, int connected_socket_id) {
   P2PSocketHost* socket = LookupSocket(msg.routing_id(), listen_socket_id);
   if (!socket) {
     LOG(ERROR) << "Received P2PHostMsg_AcceptIncomingTcpConnection "

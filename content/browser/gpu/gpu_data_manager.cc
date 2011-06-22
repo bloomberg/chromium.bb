@@ -226,9 +226,6 @@ void GpuDataManager::UpdateGpuFeatureFlags() {
   }
 
   GpuBlacklist* gpu_blacklist = GetGpuBlacklist();
-  if (gpu_blacklist == NULL)
-    return;
-
   // We don't set a lock around modifying gpu_feature_flags_ since it's just an
   // int.
   if (!gpu_blacklist) {
