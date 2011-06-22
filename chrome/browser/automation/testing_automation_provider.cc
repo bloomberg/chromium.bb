@@ -3480,7 +3480,7 @@ webkit_glue::PasswordForm GetPasswordFormFromDict(
   string16 password_element;
   string16 submit_element;
   string16 action_target_text;
-  bool blacklist = false;
+  bool blacklist;
   string16 old_password_element;
   string16 old_password_value;
 
@@ -3494,7 +3494,8 @@ webkit_glue::PasswordForm GetPasswordFormFromDict(
   password_dict.GetString("password_element", &password_element);
   password_dict.GetString("submit_element", &submit_element);
   password_dict.GetString("action_target", &action_target_text);
-  password_dict.GetBoolean("blacklist", &blacklist);
+  if (!password_dict.GetBoolean("blacklist", &blacklist))
+    blacklist = false;
 
   GURL origin_gurl(origin_url_text);
   GURL action_target(action_target_text);
@@ -4679,7 +4680,8 @@ std::vector<CreditCard> TestingAutomationProvider::GetCreditCardsFromList(
 
   int num_credit_cards = cards.GetSize();
   for (int i = 0; i < num_credit_cards; i++) {
-    cards.GetDictionary(i, &card_info);
+    if (!cards.GetDictionary(i, &card_info))
+      continue;
     CreditCard card;
     // Loop through the possible credit card fields and add those provided.
     for (std::map<AutofillFieldType, std::string>::iterator type_it =
