@@ -15,6 +15,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define NACL_LOG_MODULE_NAME  "elf_util"
+
 #include "native_client/src/include/elf_constants.h"
 #include "native_client/src/include/nacl_elf.h"
 #include "native_client/src/include/nacl_macros.h"

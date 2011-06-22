@@ -5,7 +5,70 @@
  */
 
 /*
- * NaCl Server Runtime logging code.
+ * NaCl logging module.
+ *
+ * This module is used in many parts of Native Client to generate
+ * logging output.
+ *
+ * If you want logging output to show up, generally you would
+ *
+ * (1) include the lines
+ *
+ * #define NACL_LOG_MODULE_NAME "my_module"
+ * #include "native_client/src/trusted/platform/nacl_log.h"
+ *
+ * in your files from which you want to generate logging output.  If
+ * the NACL_LOG_MODULE_NAME preprocessor symbol is not defined, then a
+ * global verbosity level is used for the logging statements' outputs.
+ * NB: the definition of NACL_LOG_MODULE_NAME *must* precede the
+ * include.
+ *
+ * Then
+ *
+ * (2) include actual logging output lines such as
+ *
+ * NaClLog(3, "Hello %s\n", "world");
+ *
+ * The 3 is a "detail level" for this particular log message, the
+ * "Hello %s\n" is the familiar printf-style format string, and all
+ * subsequent arguments are the corresponding arguments.  Type
+ * checking for these arguments are done when gcc-compatible compilers
+ * are used.
+ *
+ * When running the program (assuming the main function invoked the
+ * module initializer(s) appropriately [see NaClLogModuleInit*
+ * below]), you can set the verbosity level for each module, as well
+ * as the global verbosity level (source files for which
+ * NACL_LOG_MODULE_NAME was not defined) by running the program with
+ * the NACLVERBOSITY environment variable, viz:
+ *
+ *   NACLVERBOSITY=3,elf_util=4,my_module=5
+ *
+ * would set the default verbosity level to be 3, the verbosity level
+ * for the elf_util module to be 4, and the verbosity level for the
+ * my_module module to be 5.
+ *
+ * In this case, when the desired verbosity level for my_module is 5,
+ * all logging output at detail level 5 and below would be printed to
+ * the log output, and logging statements with a higher detail level
+ * would be suppressed.
+ *
+ * Pre-defined logging detail levels of LOG_INFO, LOG_WARNING,
+ * LOG_ERROR, and LOG_FATAL may also be used.  When LOG_FATAL is used,
+ * the application aborts after the log message is generated.
+ * Messages at these levels cannot be suppressed.
+ *
+ *
+ * The default logging output is standard error.  NB: on Windows, both
+ * stdout and stderr are discarded for Windowed applications.
+ *
+ * All logging output may be redirected to a file using the NACLLOG
+ * environment variable, the value of which should be the path to a
+ * file.  NOTE: when running in Chrome, the outer sandbox is by
+ * default enabled, so the log module will be unable to open the log
+ * file.  In order to enable this for testing, use the --no-sandbox
+ * flag to Chrome.  (This is not recommended for normal use, since it
+ * eliminates a layer of defense.)
  */
 
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_NACL_LOG_H__
@@ -62,6 +125,38 @@ void NaClLogModuleInit(void);
 void NaClLogModuleInitExtended(int        initial_verbosity,
                                struct Gio *log_gio);
 
+void NaClLogModuleInitExtended2(int         default_verbosity,
+                                char const  *module_verbosity_map,
+                                struct Gio  *log_gio);
+
+/*
+ * The module verbosity map is a character string, typically from a
+ * command-line argument or from the NACLVERBOSITY environment
+ * variable, which has the following form:
+ *
+ * ([0-9]+,)?([A-Za-z_][-A-Za-z_0-9]*=[0-9]+,)*([A-Za-z_][-A-Za-z_0-9]*=[0-9]+)
+ *
+ * The initial digit sequence is the default verbosity level when the
+ * module name isn't defined, and the rest of the comma-separated
+ * sequences are name=verbosity pairs.
+ *
+ * The parser isn't necessarily strict.  (It permits whitespace around
+ * the module name.)
+ *
+ * EXAMPLE USAGE:
+ *
+ *   module_verbosity_map="3,elf_util=4,plugin=6"
+ *
+ * would set the default verbosity level to 3, the verbosity levels
+ * for the "elf_util" module to be 4, and for the "plugin" module to
+ * be 6.
+ *
+ * The NaClLogModuleInit* functions take care of invoking this
+ * function using the value of NACLLOG, so the normal log user should
+ * not have to use this.
+ */
+void NaClLogParseAndSetModuleVerbosityMap(char const *module_verbosity_map);
+
 /*
  * Convenience functions, in case only one needs to be overridden.
  * Also useful for setting a new default, e.g., invoking
@@ -106,6 +201,16 @@ void  NaClLogEnableTimestamp(void);
 
 void  NaClLogDisableTimestamp(void);
 
+void NaClLogSetModuleVerbosity_mu(char const  *module_name,
+                                  int         verbosity);
+
+void NaClLogSetModuleVerbosity(char const *module_name,
+                               int        verbosity);
+
+int NaClLogGetModuleVerbosity_mu(char const *module_name);
+
+int NaClLogGetModuleVerbosity(char const *module_name);
+
 /*
  * Users of NaClLogV should add ATTRIBUTE_FORMAT_PRINTF(m,n) to their
  * function prototype, where m is the argument position of the format
@@ -119,6 +224,55 @@ void NaClLogV(int         detail_level,
 void  NaClLog(int         detail_level,
               char const  *fmt,
               ...) ATTRIBUTE_FORMAT_PRINTF(2, 3);
+
+/*
+ * "Internal" functions.  NaClLogLockAndSetModule and
+ * NaClLogDoLogAndUnlock should only be used by the syntactic macro
+ * below.
+ *
+ * NaClLogLockAndSetModule always return 0.  This means in the macro,
+ * its continuation is the else clause.  NaClLogDoLogAndUnlock is a
+ * "naked" identifier in the macro definition, and so will take on the
+ * argument list from NaClLog.
+ */
+int NaClLogLockAndSetModule(char const *module_name);
+void NaClLogDoLogAndUnlock(int        detail_level,
+                           char const *fmt,
+                           ...) ATTRIBUTE_FORMAT_PRINTF(2, 3);
+
+#ifdef NACL_LOG_MODULE_NAME
+# define NaClLog                                                     \
+  if (NaClLogLockAndSetModule(NACL_LOG_MODULE_NAME)) {               \
+    ;                                                                \
+  } else \
+    NaClLogDoLogAndUnlock
+/*
+ * User code has lines of the form
+ *
+ * NaClLog(detail_level, format_string, ...);
+ *
+ * We need to be usable without variadic macros.  So, when
+ * NACL_LOG_MODULE_NAME is not defined, the NaClLog statement would
+ * just invoke the NaClLog function.  When NACL_LOG_MODULE_NAME *is*
+ * defined, however, it expands to:
+ *
+ * if (NaClLogLockAndSetModule(NACL_LOG_MODULE_NAME)) {
+ *   ;
+ * } else
+ *   NaClLogDoLogAndUnlock(detail_level, format_string, ...);
+ *
+ * Note that this is a syntactic macro, so that if the original code had
+ *
+ * if (foo)
+ *   if (bar)
+ *     NaClLog(LOG_WARNING, "EEeeep!\n");
+ *   else
+ *     printf("!bar\n");
+ *
+ * the macro expansion for NaClLog would cause the "else" clauses to
+ * mis-bind.
+ */
+#endif
 
 #define LOG_INFO    (-1)
 #define LOG_WARNING (-2)
