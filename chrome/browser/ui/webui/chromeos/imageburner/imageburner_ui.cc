@@ -20,6 +20,7 @@
 #include "grit/locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/text/bytes_formatting.h"
 
 namespace imageburner {
 
@@ -596,8 +597,7 @@ void WebUIHandler::GetProgressTimeLeftText(int message_id,
 }
 
 void WebUIHandler::GetDataSizeText(int64 size, string16* size_text) {
-  DataUnits size_units = GetByteDisplayUnits(size);
-  *size_text = FormatBytes(size, size_units, true);
+  *size_text = ui::FormatBytes(size);
   base::i18n::AdjustStringForLocaleDirection(size_text);
 }
 

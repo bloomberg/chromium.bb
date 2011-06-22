@@ -33,6 +33,7 @@
 #include "testing/gmock_mutant.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/text/bytes_formatting.h"
 
 class DownloadManagerTest : public testing::Test {
  public:
@@ -447,10 +448,11 @@ TEST_F(DownloadManagerTest, DownloadInterruptTest) {
   EXPECT_FALSE(observer->was_opened());
   EXPECT_FALSE(download->file_externally_removed());
   EXPECT_EQ(DownloadItem::INTERRUPTED, download->state());
-  DataUnits amount_units = GetByteDisplayUnits(kTestDataLen);
-  const string16 simple_size = FormatBytes(error_size, amount_units, false);
+  ui::DataUnits amount_units = ui::GetByteDisplayUnits(kTestDataLen);
+  string16 simple_size =
+      ui::FormatBytesWithUnits(error_size, amount_units, false);
   string16 simple_total = base::i18n::GetDisplayStringInLTRDirectionality(
-      FormatBytes(kTestDataLen, amount_units, true));
+      ui::FormatBytesWithUnits(kTestDataLen, amount_units, true));
   EXPECT_EQ(download_item_model->GetStatusText(),
             l10n_util::GetStringFUTF16(IDS_DOWNLOAD_STATUS_INTERRUPTED,
                                        simple_size,

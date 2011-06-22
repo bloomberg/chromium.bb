@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include "grit/generated_resources.h"
 #include "chrome/browser/cookies_tree_model.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+#include "ui/base/text/bytes_formatting.h"
 #include "webkit/appcache/appcache_service.h"
 
 #pragma mark Cocoa Cookie Details
@@ -156,8 +157,8 @@
     canEditExpiration_ = NO;
     databaseDescription_.reset([base::SysUTF8ToNSString(
         databaseInfo->description) retain]);
-    fileSize_.reset([base::SysUTF16ToNSString(FormatBytes(databaseInfo->size,
-        GetByteDisplayUnits(databaseInfo->size), true)) retain]);
+    fileSize_.reset([base::SysUTF16ToNSString(
+        ui::FormatBytes(databaseInfo->size)) retain]);
     lastModified_.reset([base::SysUTF16ToNSString(
         base::TimeFormatFriendlyDateAndTime(
             databaseInfo->last_modified)) retain]);
@@ -171,8 +172,8 @@
     type_ = kCocoaCookieDetailsTypeTreeLocalStorage;
     canEditExpiration_ = NO;
     domain_.reset([base::SysUTF8ToNSString(storageInfo->origin) retain]);
-    fileSize_.reset([base::SysUTF16ToNSString(FormatBytes(storageInfo->size,
-        GetByteDisplayUnits(storageInfo->size), true)) retain]);
+    fileSize_.reset(
+        [base::SysUTF16ToNSString(ui::FormatBytes(storageInfo->size)) retain]);
     lastModified_.reset([base::SysUTF16ToNSString(
         base::TimeFormatFriendlyDateAndTime(
             storageInfo->last_modified)) retain]);
@@ -186,8 +187,8 @@
     canEditExpiration_ = NO;
     manifestURL_.reset([base::SysUTF8ToNSString(
         appcacheInfo->manifest_url.spec()) retain]);
-    fileSize_.reset([base::SysUTF16ToNSString(FormatBytes(appcacheInfo->size,
-        GetByteDisplayUnits(appcacheInfo->size), true)) retain]);
+    fileSize_.reset([base::SysUTF16ToNSString(
+        ui::FormatBytes(appcacheInfo->size)) retain]);
     created_.reset([base::SysUTF16ToNSString(
         base::TimeFormatFriendlyDateAndTime(
             appcacheInfo->creation_time)) retain]);
@@ -209,8 +210,8 @@
     domain_.reset([base::SysUTF8ToNSString(domain) retain]);
     databaseDescription_.reset(
         [base::SysUTF16ToNSString(databaseDescription) retain]);
-    fileSize_.reset([base::SysUTF16ToNSString(FormatBytes(fileSize,
-        GetByteDisplayUnits(fileSize), true)) retain]);
+    fileSize_.reset(
+        [base::SysUTF16ToNSString(ui::FormatBytes(fileSize)) retain]);
   }
   return self;
 }
@@ -243,8 +244,8 @@
     type_ = kCocoaCookieDetailsTypeTreeIndexedDB;
     canEditExpiration_ = NO;
     domain_.reset([base::SysUTF8ToNSString(indexedDBInfo->origin) retain]);
-    fileSize_.reset([base::SysUTF16ToNSString(FormatBytes(indexedDBInfo->size,
-        GetByteDisplayUnits(indexedDBInfo->size), true)) retain]);
+    fileSize_.reset([base::SysUTF16ToNSString(
+        ui::FormatBytes(indexedDBInfo->size)) retain]);
     lastModified_.reset([base::SysUTF16ToNSString(
         base::TimeFormatFriendlyDateAndTime(
             indexedDBInfo->last_modified)) retain]);

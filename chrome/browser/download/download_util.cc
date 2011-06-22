@@ -51,6 +51,7 @@
 #include "third_party/skia/include/core/SkShader.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/text/bytes_formatting.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/rect.h"
@@ -724,8 +725,7 @@ DictionaryValue* CreateDownloadItemValue(DownloadItem* download, int id) {
 string16 GetProgressStatusText(DownloadItem* download) {
   int64 total = download->total_bytes();
   int64 size = download->received_bytes();
-  DataUnits amount_units = GetByteDisplayUnits(size);
-  string16 received_size = FormatBytes(size, amount_units, true);
+  string16 received_size = ui::FormatBytes(size);
   string16 amount = received_size;
 
   // Adjust both strings for the locale direction since we don't yet know which
@@ -733,8 +733,7 @@ string16 GetProgressStatusText(DownloadItem* download) {
   base::i18n::AdjustStringForLocaleDirection(&amount);
 
   if (total) {
-    amount_units = GetByteDisplayUnits(total);
-    string16 total_text = FormatBytes(total, amount_units, true);
+    string16 total_text = ui::FormatBytes(total);
     base::i18n::AdjustStringForLocaleDirection(&total_text);
 
     base::i18n::AdjustStringForLocaleDirection(&received_size);
@@ -745,8 +744,7 @@ string16 GetProgressStatusText(DownloadItem* download) {
     amount.assign(received_size);
   }
   int64 current_speed = download->CurrentSpeed();
-  amount_units = GetByteDisplayUnits(current_speed);
-  string16 speed_text = FormatSpeed(current_speed, amount_units, true);
+  string16 speed_text = ui::FormatSpeed(current_speed);
   base::i18n::AdjustStringForLocaleDirection(&speed_text);
 
   base::TimeDelta remaining;

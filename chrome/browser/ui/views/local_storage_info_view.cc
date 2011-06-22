@@ -10,6 +10,7 @@
 #include "base/utf_string_conversions.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/text/bytes_formatting.h"
 #include "ui/gfx/color_utils.h"
 #include "views/controls/label.h"
 #include "views/controls/textfield/textfield.h"
@@ -35,10 +36,7 @@ void LocalStorageInfoView::SetLocalStorageInfo(
     const BrowsingDataLocalStorageHelper::LocalStorageInfo&
     local_storage_info) {
   origin_value_field_->SetText(UTF8ToWide(local_storage_info.origin));
-  size_value_field_->SetText(
-      FormatBytes(local_storage_info.size,
-                  GetByteDisplayUnits(local_storage_info.size),
-                  true));
+  size_value_field_->SetText(ui::FormatBytes(local_storage_info.size));
   last_modified_value_field_->SetText(
       base::TimeFormatFriendlyDateAndTime(local_storage_info.last_modified));
   EnableLocalStorageDisplay(true);

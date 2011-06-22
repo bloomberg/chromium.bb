@@ -8,6 +8,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "grit/generated_resources.h"
+#include "ui/base/text/bytes_formatting.h"
 
 namespace {
 const int kInfoLabelIds[] = {
@@ -27,7 +28,7 @@ void AppCacheInfoView::SetAppCacheInfo(const appcache::AppCacheInfo* info) {
   string16 manifest_url =
       UTF8ToUTF16(info->manifest_url.spec());
   string16 size =
-      FormatBytes(info->size, GetByteDisplayUnits(info->size), true);
+      ui::FormatBytes(info->size);
   string16 creation_date =
       base::TimeFormatFriendlyDateAndTime(info->creation_time);
   string16 last_access_date =

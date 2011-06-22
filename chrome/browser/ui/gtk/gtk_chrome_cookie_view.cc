@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/text/bytes_formatting.h"
 
 namespace {
 
@@ -540,10 +541,7 @@ void gtk_chrome_cookie_view_display_database(
   gtk_entry_set_text(GTK_ENTRY(self->database_description_entry_),
                      database_info.description.c_str());
   gtk_entry_set_text(GTK_ENTRY(self->database_size_entry_),
-                     UTF16ToUTF8(FormatBytes(
-                         database_info.size,
-                         GetByteDisplayUnits(database_info.size),
-                         true)).c_str());
+                     UTF16ToUTF8(ui::FormatBytes(database_info.size)).c_str());
   gtk_entry_set_text(GTK_ENTRY(self->database_last_modified_entry_),
                      UTF16ToUTF8(base::TimeFormatFriendlyDateAndTime(
                          database_info.last_modified)).c_str());
@@ -560,10 +558,8 @@ void gtk_chrome_cookie_view_display_local_storage(
   gtk_entry_set_text(GTK_ENTRY(self->local_storage_origin_entry_),
                      local_storage_info.origin.c_str());
   gtk_entry_set_text(GTK_ENTRY(self->local_storage_size_entry_),
-                     UTF16ToUTF8(FormatBytes(
-                         local_storage_info.size,
-                         GetByteDisplayUnits(local_storage_info.size),
-                         true)).c_str());
+                     UTF16ToUTF8(ui::FormatBytes(
+                         local_storage_info.size)).c_str());
   gtk_entry_set_text(GTK_ENTRY(self->local_storage_last_modified_entry_),
                      UTF16ToUTF8(base::TimeFormatFriendlyDateAndTime(
                          local_storage_info.last_modified)).c_str());
@@ -579,10 +575,7 @@ void gtk_chrome_cookie_view_display_app_cache(
   gtk_entry_set_text(GTK_ENTRY(self->appcache_manifest_entry_),
                      info.manifest_url.spec().c_str());
   gtk_entry_set_text(GTK_ENTRY(self->appcache_size_entry_),
-                     UTF16ToUTF8(FormatBytes(
-                         info.size,
-                         GetByteDisplayUnits(info.size),
-                         true)).c_str());
+                     UTF16ToUTF8(ui::FormatBytes(info.size)).c_str());
   gtk_entry_set_text(GTK_ENTRY(self->appcache_created_entry_),
                      UTF16ToUTF8(base::TimeFormatFriendlyDateAndTime(
                          info.creation_time)).c_str());
@@ -601,10 +594,8 @@ void gtk_chrome_cookie_view_display_indexed_db(
   gtk_entry_set_text(GTK_ENTRY(self->indexed_db_origin_entry_),
                      indexed_db_info.origin.c_str());
   gtk_entry_set_text(GTK_ENTRY(self->indexed_db_size_entry_),
-                     UTF16ToUTF8(FormatBytes(
-                         indexed_db_info.size,
-                         GetByteDisplayUnits(indexed_db_info.size),
-                         true)).c_str());
+                     UTF16ToUTF8(ui::FormatBytes(
+                         indexed_db_info.size)).c_str());
   gtk_entry_set_text(GTK_ENTRY(self->indexed_db_last_modified_entry_),
                      UTF16ToUTF8(base::TimeFormatFriendlyDateAndTime(
                          indexed_db_info.last_modified)).c_str());
@@ -642,10 +633,7 @@ void gtk_chrome_cookie_view_display_database_accessed(
   gtk_entry_set_text(GTK_ENTRY(self->database_accessed_description_entry_),
                      UTF16ToUTF8(display_name).c_str());
   gtk_entry_set_text(GTK_ENTRY(self->database_accessed_size_entry_),
-                     UTF16ToUTF8(FormatBytes(
-                         estimated_size,
-                         GetByteDisplayUnits(estimated_size),
-                         true)).c_str());
+                     UTF16ToUTF8(ui::FormatBytes(estimated_size)).c_str());
   SetDatabaseAccessedSensitivity(self, TRUE);
 }
 

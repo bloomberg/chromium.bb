@@ -136,6 +136,8 @@
         'base/resource/resource_bundle_mac.mm',
         'base/resource/resource_bundle_posix.cc',
         'base/resource/resource_bundle_win.cc',
+        'base/text/bytes_formatting.cc',
+        'base/text/bytes_formatting.h',
         'base/text/text_elider.cc',
         'base/text/text_elider.h',
         'base/theme_provider.cc',

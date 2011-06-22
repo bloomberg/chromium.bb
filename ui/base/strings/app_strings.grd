@@ -379,6 +379,44 @@ need to be translated for each locale.-->
       <message name="IDS_APP_SHIFT_MODIFIER" desc="Shift key shortcut modifier">
         Shift+<ph name="KEY_COMBO_NAME">$1<ex>C</ex></ph>
       </message>
+
+      <!-- Byte size units -->
+      <message name="IDS_APP_BYTES" desc="Units tag indicating a quantity of bytes">
+        <ph name="QUANTITY">$1<ex>42</ex></ph> B
+      </message>
+      <message name="IDS_APP_KIBIBYTES" desc="Units tag indicating a quantity of kilobytes">
+        <ph name="QUANTITY">$1<ex>42.0</ex></ph> kB
+      </message>
+      <message name="IDS_APP_MEBIBYTES" desc="Units tag indicating a quantity of megabytes">
+        <ph name="QUANTITY">$1<ex>42.0</ex></ph> MB
+      </message>
+      <message name="IDS_APP_GIBIBYTES" desc="Units tag indicating a quantity of gigabytes">
+        <ph name="QUANTITY">$1<ex>42.0</ex></ph> GB
+      </message>
+      <message name="IDS_APP_TEBIBYTES" desc="Units tag indicating a quantity of terabytes">
+        <ph name="QUANTITY">$1<ex>42.0</ex></ph> TB
+      </message>
+      <message name="IDS_APP_PEBIBYTES" desc="Units tag indicating a quantity of petabytes">
+        <ph name="QUANTITY">$1<ex>42.0</ex></ph> PB
+      </message>
+      <message name="IDS_APP_BYTES_PER_SECOND" desc="Units tag indicating a speed of bytes/second">
+        <ph name="QUANTITY">$1<ex>42</ex></ph> B/s
+      </message>
+      <message name="IDS_APP_KIBIBYTES_PER_SECOND" desc="Units tag indicating a speed of kilobytes/second">
+        <ph name="QUANTITY">$1<ex>42.0</ex></ph> kB/s
+      </message>
+      <message name="IDS_APP_MEBIBYTES_PER_SECOND" desc="Units tag indicating a speed of megabytes/second">
+        <ph name="QUANTITY">$1<ex>42.0</ex></ph> MB/s
+      </message>
+      <message name="IDS_APP_GIBIBYTES_PER_SECOND" desc="Units tag indicating a speed of gigabytes/second">
+        <ph name="QUANTITY">$1<ex>42.0</ex></ph> GB/s
+      </message>
+      <message name="IDS_APP_TEBIBYTES_PER_SECOND" desc="Units tag indicating a speed of terabytes/second">
+        <ph name="QUANTITY">$1<ex>42.0</ex></ph> TB/s
+      </message>
+      <message name="IDS_APP_PEBIBYTES_PER_SECOND" desc="Units tag indicating a speed of petabytes/second">
+        <ph name="QUANTITY">$1<ex>42.0</ex></ph> PB/s
+      </message>
     </messages>
   </release>
 </grit>

@@ -12,6 +12,7 @@
 #include "chrome/browser/cookies_tree_model.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/text/bytes_formatting.h"
 
 namespace {
 
@@ -116,10 +117,7 @@ void GetCookieTreeNodeDictionary(const CookieTreeNode& node,
           l10n_util::GetStringUTF8(IDS_COOKIES_WEB_DATABASE_UNNAMED_NAME) :
           database_info.database_name);
       dict->SetString(kKeyDesc, database_info.description);
-      dict->SetString(kKeySize,
-          FormatBytes(database_info.size,
-                      GetByteDisplayUnits(database_info.size),
-                      true));
+      dict->SetString(kKeySize, ui::FormatBytes(database_info.size));
       dict->SetString(kKeyModified, UTF16ToUTF8(
           base::TimeFormatFriendlyDateAndTime(database_info.last_modified)));
 
@@ -133,10 +131,7 @@ void GetCookieTreeNodeDictionary(const CookieTreeNode& node,
          local_storage_info = *node.GetDetailedInfo().local_storage_info;
 
       dict->SetString(kKeyOrigin, local_storage_info.origin);
-      dict->SetString(kKeySize,
-          FormatBytes(local_storage_info.size,
-                      GetByteDisplayUnits(local_storage_info.size),
-                      true));
+      dict->SetString(kKeySize, ui::FormatBytes(local_storage_info.size));
       dict->SetString(kKeyModified, UTF16ToUTF8(
           base::TimeFormatFriendlyDateAndTime(
               local_storage_info.last_modified)));
@@ -151,10 +146,7 @@ void GetCookieTreeNodeDictionary(const CookieTreeNode& node,
           *node.GetDetailedInfo().appcache_info;
 
       dict->SetString(kKeyManifest, appcache_info.manifest_url.spec());
-      dict->SetString(kKeySize,
-          FormatBytes(appcache_info.size,
-                      GetByteDisplayUnits(appcache_info.size),
-                      true));
+      dict->SetString(kKeySize, ui::FormatBytes(appcache_info.size));
       dict->SetString(kKeyCreated, UTF16ToUTF8(
           base::TimeFormatFriendlyDateAndTime(appcache_info.creation_time)));
       dict->SetString(kKeyAccessed, UTF16ToUTF8(
@@ -170,10 +162,7 @@ void GetCookieTreeNodeDictionary(const CookieTreeNode& node,
           *node.GetDetailedInfo().indexed_db_info;
 
       dict->SetString(kKeyOrigin, indexed_db_info.origin);
-      dict->SetString(kKeySize,
-          FormatBytes(indexed_db_info.size,
-                      GetByteDisplayUnits(indexed_db_info.size),
-                      true));
+      dict->SetString(kKeySize, ui::FormatBytes(indexed_db_info.size));
       dict->SetString(kKeyModified, UTF16ToUTF8(
           base::TimeFormatFriendlyDateAndTime(indexed_db_info.last_modified)));
 
@@ -189,20 +178,14 @@ void GetCookieTreeNodeDictionary(const CookieTreeNode& node,
       dict->SetString(kKeyOrigin, file_system_info.origin.spec());
       dict->SetString(kKeyPersistent,
                       file_system_info.has_persistent ?
-                          UTF16ToUTF8(FormatBytes(
-                              file_system_info.usage_persistent,
-                              GetByteDisplayUnits(
-                                  file_system_info.usage_persistent),
-                              true)) :
+                          UTF16ToUTF8(ui::FormatBytes(
+                              file_system_info.usage_persistent)) :
                           l10n_util::GetStringUTF8(
                               IDS_COOKIES_FILE_SYSTEM_USAGE_NONE));
       dict->SetString(kKeyTemporary,
                       file_system_info.has_temporary ?
-                          UTF16ToUTF8(FormatBytes(
-                              file_system_info.usage_temporary,
-                              GetByteDisplayUnits(
-                                  file_system_info.usage_temporary),
-                              true)) :
+                          UTF16ToUTF8(ui::FormatBytes(
+                              file_system_info.usage_temporary)) :
                           l10n_util::GetStringUTF8(
                               IDS_COOKIES_FILE_SYSTEM_USAGE_NONE));
       break;

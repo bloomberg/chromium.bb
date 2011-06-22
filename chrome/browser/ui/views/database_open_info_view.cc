@@ -7,6 +7,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "grit/generated_resources.h"
+#include "ui/base/text/bytes_formatting.h"
 
 namespace {
 const int kInfoLabelIds[] = {
@@ -29,9 +30,7 @@ void DatabaseOpenInfoView::SetFields(const std::string& host,
                                      const string16& display_name,
                                      unsigned long estimated_size) {
   string16 url = UTF8ToUTF16(host);
-  string16 size = FormatBytes(estimated_size,
-                              GetByteDisplayUnits(estimated_size),
-                              true);
+  string16 size = ui::FormatBytes(estimated_size);
   int row = 0;
   SetValue(row++, url);
   SetValue(row++, database_name);

@@ -10,6 +10,7 @@
 #include "base/utf_string_conversions.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/text/bytes_formatting.h"
 #include "ui/gfx/color_utils.h"
 #include "views/controls/label.h"
 #include "views/controls/textfield/textfield.h"
@@ -39,10 +40,7 @@ void DatabaseInfoView::SetDatabaseInfo(
           l10n_util::GetStringUTF16(IDS_COOKIES_WEB_DATABASE_UNNAMED_NAME)) :
       UTF8ToWide(database_info.database_name));
   description_value_field_->SetText(UTF8ToWide(database_info.description));
-  size_value_field_->SetText(
-      FormatBytes(database_info.size,
-                  GetByteDisplayUnits(database_info.size),
-                  true));
+  size_value_field_->SetText(ui::FormatBytes(database_info.size));
   last_modified_value_field_->SetText(
       base::TimeFormatFriendlyDateAndTime(database_info.last_modified));
   EnableDatabaseDisplay(true);

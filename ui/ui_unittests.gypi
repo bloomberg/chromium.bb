@@ -32,6 +32,7 @@
         'base/range/range_unittest.mm',
         'base/resource/data_pack_unittest.cc',
         'base/resource/resource_bundle_unittest.cc',
+        'base/text/bytes_formatting_unittest.cc',
         'base/test/data/resource.h',
         'base/text/text_elider_unittest.cc',
         'gfx/blit_unittest.cc',

@@ -28,6 +28,7 @@
 #include "crypto/nss_util.h"  // crypto::GetTPMTokenInfo() for 802.1X and VPN.
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/text/bytes_formatting.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // Implementation notes.
@@ -1530,17 +1531,13 @@ string16 CellularDataPlan::GetPlanDesciption() const {
     case chromeos::CELLULAR_DATA_PLAN_METERED_PAID: {
       return l10n_util::GetStringFUTF16(
                 IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PURCHASE_DATA,
-                FormatBytes(plan_data_bytes,
-                            GetByteDisplayUnits(plan_data_bytes),
-                            true),
+                ui::FormatBytes(plan_data_bytes),
                 base::TimeFormatFriendlyDate(plan_start_time));
     }
     case chromeos::CELLULAR_DATA_PLAN_METERED_BASE: {
       return l10n_util::GetStringFUTF16(
                 IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_RECEIVED_FREE_DATA,
-                FormatBytes(plan_data_bytes,
-                            GetByteDisplayUnits(plan_data_bytes),
-                            true),
+                ui::FormatBytes(plan_data_bytes),
                 base::TimeFormatFriendlyDate(plan_start_time));
     default:
       break;
@@ -1576,14 +1573,10 @@ string16 CellularDataPlan::GetDataRemainingDesciption() const {
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_UNLIMITED);
     }
     case chromeos::CELLULAR_DATA_PLAN_METERED_PAID: {
-      return FormatBytes(remaining_bytes,
-          GetByteDisplayUnits(remaining_bytes),
-          true);
+      return ui::FormatBytes(remaining_bytes);
     }
     case chromeos::CELLULAR_DATA_PLAN_METERED_BASE: {
-      return FormatBytes(remaining_bytes,
-          GetByteDisplayUnits(remaining_bytes),
-          true);
+      return ui::FormatBytes(remaining_bytes);
     }
     default:
       break;
