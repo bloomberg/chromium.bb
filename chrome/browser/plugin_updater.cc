@@ -168,8 +168,9 @@ void PluginUpdater::SetProfile(Profile* profile) {
 
         DictionaryValue* plugin = static_cast<DictionaryValue*>(*it);
         string16 group_name;
-        bool enabled = true;
-        plugin->GetBoolean("enabled", &enabled);
+        bool enabled;
+        if (!plugin->GetBoolean("enabled", &enabled))
+          enabled = true;
 
         FilePath::StringType path;
         // The plugin list constains all the plugin files in addition to the
@@ -299,8 +300,6 @@ void PluginUpdater::OnUpdatePreferences(
               webkit::npapi::WebPluginInfo::USER_ENABLED;
       summary->SetBoolean("enabled", user_enabled);
     }
-    bool enabled_val;
-    summary->GetBoolean("enabled", &enabled_val);
     plugins_list->Append(summary);
   }
 
