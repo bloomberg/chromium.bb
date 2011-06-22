@@ -209,7 +209,7 @@ TEST_F(PanelBrowserWindowCocoaTest, TitlebarViewSizing) {
   bounds.set_y(bounds.y() - kDelta);
   bounds.set_width(bounds.width() + kDelta);
   bounds.set_height(bounds.height() + kDelta);
-  native_window->SetBounds(bounds);
+  native_window->SetPanelBounds(bounds);
 
   // Verify the panel resized.
   NSRect window_frame = [[native_window->controller_ window] frame];
