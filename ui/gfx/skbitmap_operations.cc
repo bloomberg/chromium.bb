@@ -252,7 +252,7 @@ namespace HSLShift {
 
 // Routine used to process a line; typically specialized for specific kinds of
 // HSL shifts (to optimize).
-typedef void (*LineProcessor)(color_utils::HSL,
+typedef void (*LineProcessor)(const color_utils::HSL&,
                               const SkPMColor*,
                               SkPMColor*,
                               int width);
@@ -267,8 +267,10 @@ enum OperationOnL { kOpLNone = 0, kOpLDec, kOpLInc, kNumLOps };
 const double epsilon = 0.0005;
 
 // Line processor: default/universal (i.e., old-school).
-void LineProcDefault(color_utils::HSL hsl_shift, const SkPMColor* in,
-                     SkPMColor* out, int width) {
+void LineProcDefault(const color_utils::HSL& hsl_shift,
+                     const SkPMColor* in,
+                     SkPMColor* out,
+                     int width) {
   for (int x = 0; x < width; x++) {
     out[x] = SkPreMultiplyColor(color_utils::HSLShift(
         SkUnPreMultiply::PMColorToColor(in[x]), hsl_shift));
@@ -276,8 +278,10 @@ void LineProcDefault(color_utils::HSL hsl_shift, const SkPMColor* in,
 }
 
 // Line processor: no-op (i.e., copy).
-void LineProcCopy(color_utils::HSL hsl_shift, const SkPMColor* in,
-                  SkPMColor* out, int width) {
+void LineProcCopy(const color_utils::HSL& hsl_shift,
+                  const SkPMColor* in,
+                  SkPMColor* out,
+                  int width) {
   DCHECK(hsl_shift.h < 0);
   DCHECK(hsl_shift.s < 0 || fabs(hsl_shift.s - 0.5) < HSLShift::epsilon);
   DCHECK(hsl_shift.l < 0 || fabs(hsl_shift.l - 0.5) < HSLShift::epsilon);
@@ -285,8 +289,10 @@ void LineProcCopy(color_utils::HSL hsl_shift, const SkPMColor* in,
 }
 
 // Line processor: H no-op, S no-op, L decrease.
-void LineProcHnopSnopLdec(color_utils::HSL hsl_shift, const SkPMColor* in,
-                          SkPMColor* out, int width) {
+void LineProcHnopSnopLdec(const color_utils::HSL& hsl_shift,
+                          const SkPMColor* in,
+                          SkPMColor* out,
+                          int width) {
   const uint32_t den = 65536;
 
   DCHECK(hsl_shift.h < 0);
@@ -307,8 +313,10 @@ void LineProcHnopSnopLdec(color_utils::HSL hsl_shift, const SkPMColor* in,
 }
 
 // Line processor: H no-op, S no-op, L increase.
-void LineProcHnopSnopLinc(color_utils::HSL hsl_shift, const SkPMColor* in,
-                          SkPMColor* out, int width) {
+void LineProcHnopSnopLinc(const color_utils::HSL& hsl_shift,
+                          const SkPMColor* in,
+                          SkPMColor* out,
+                          int width) {
   const uint32_t den = 65536;
 
   DCHECK(hsl_shift.h < 0);
@@ -352,8 +360,10 @@ void LineProcHnopSnopLinc(color_utils::HSL hsl_shift, const SkPMColor* in,
 // (Med-Min)/(Max-Min)).
 
 // Line processor: H no-op, S decrease, L no-op.
-void LineProcHnopSdecLnop(color_utils::HSL hsl_shift, const SkPMColor* in,
-                          SkPMColor* out, int width) {
+void LineProcHnopSdecLnop(const color_utils::HSL& hsl_shift,
+                          const SkPMColor* in,
+                          SkPMColor* out,
+                          int width) {
   DCHECK(hsl_shift.h < 0);
   DCHECK(hsl_shift.s >= 0 && hsl_shift.s <= 0.5 - HSLShift::epsilon);
   DCHECK(hsl_shift.l < 0 || fabs(hsl_shift.l - 0.5) < HSLShift::epsilon);
@@ -387,8 +397,10 @@ void LineProcHnopSdecLnop(color_utils::HSL hsl_shift, const SkPMColor* in,
 }
 
 // Line processor: H no-op, S decrease, L decrease.
-void LineProcHnopSdecLdec(color_utils::HSL hsl_shift, const SkPMColor* in,
-                          SkPMColor* out, int width) {
+void LineProcHnopSdecLdec(const color_utils::HSL& hsl_shift,
+                          const SkPMColor* in,
+                          SkPMColor* out,
+                          int width) {
   DCHECK(hsl_shift.h < 0);
   DCHECK(hsl_shift.s >= 0 && hsl_shift.s <= 0.5 - HSLShift::epsilon);
   DCHECK(hsl_shift.l >= 0 && hsl_shift.l <= 0.5 - HSLShift::epsilon);
@@ -424,8 +436,10 @@ void LineProcHnopSdecLdec(color_utils::HSL hsl_shift, const SkPMColor* in,
 }
 
 // Line processor: H no-op, S decrease, L increase.
-void LineProcHnopSdecLinc(color_utils::HSL hsl_shift, const SkPMColor* in,
-                          SkPMColor* out, int width) {
+void LineProcHnopSdecLinc(const color_utils::HSL& hsl_shift,
+                          const SkPMColor* in,
+                          SkPMColor* out,
+                          int width) {
   DCHECK(hsl_shift.h < 0);
   DCHECK(hsl_shift.s >= 0 && hsl_shift.s <= 0.5 - HSLShift::epsilon);
   DCHECK(hsl_shift.l >= 0.5 + HSLShift::epsilon && hsl_shift.l <= 1);

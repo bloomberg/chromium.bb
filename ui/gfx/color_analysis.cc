@@ -99,11 +99,12 @@ class KMeanCluster {
 
   // Returns the previous counter, which is used to determine the weight
   // of the cluster for sorting.
-  inline uint32_t GetWeight() {
+  inline uint32_t GetWeight() const {
     return weight;
   }
 
-  static bool SortKMeanClusterByWeight(KMeanCluster a, KMeanCluster b) {
+  static bool SortKMeanClusterByWeight(const KMeanCluster& a,
+                                       const KMeanCluster& b) {
     return a.GetWeight() > b.GetWeight();
   }
 
