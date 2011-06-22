@@ -7,6 +7,8 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/autofill/autofill_type.h"
+#include "chrome/browser/autofill/form_structure.h"
+#include "webkit/glue/form_data.h"
 
 namespace {
 
@@ -23,6 +25,7 @@ enum ServerExperiment {
   ACCEPTANCE_RATIO_05_WINNER_LEAD_RATIO_15_MIN_FORM_SCORE_5,
   TOOLBAR_DATA_ONLY,
   ACCEPTANCE_RATIO_04_WINNER_LEAD_RATIO_3_MIN_FORM_SCORE_4,
+  NO_SERVER_RESPONSE,
   NUM_SERVER_EXPERIMENTS
 };
 
@@ -196,6 +199,8 @@ void LogServerExperimentId(const std::string& histogram_name,
                            const std::string& experiment_id) {
   ServerExperiment metric = UNKNOWN_EXPERIMENT;
 
+  const std::string default_experiment_name =
+      FormStructure(webkit_glue::FormData()).server_experiment_id();
   if (experiment_id.empty())
     metric = NO_EXPERIMENT;
   else if (experiment_id == "ar06")
@@ -216,6 +221,8 @@ void LogServerExperimentId(const std::string& histogram_name,
     metric = TOOLBAR_DATA_ONLY;
   else if (experiment_id == "ar04wr3fs4")
     metric = ACCEPTANCE_RATIO_04_WINNER_LEAD_RATIO_3_MIN_FORM_SCORE_4;
+  else if (experiment_id == default_experiment_name)
+    metric = NO_SERVER_RESPONSE;
 
   DCHECK(metric < NUM_SERVER_EXPERIMENTS);
   LogUMAHistogramEnumeration(histogram_name, metric, NUM_SERVER_EXPERIMENTS);

@@ -93,7 +93,7 @@ FormStructure::FormStructure(const FormData& form)
       target_url_(form.action),
       autofill_count_(0),
       upload_required_(USE_UPLOAD_RATES),
-      server_experiment_id_("unknown experiment") {
+      server_experiment_id_("no server response") {
   // Copy the form fields.
   std::vector<webkit_glue::FormField>::const_iterator field;
   for (field = form.fields.begin();
