@@ -24,8 +24,10 @@ class PluginInstance;
 class PPB_Font_Impl : public Resource,
                       public ::ppapi::thunk::PPB_Font_API {
  public:
-  PPB_Font_Impl(PluginInstance* instance, const PP_FontDescription_Dev& desc);
   virtual ~PPB_Font_Impl();
+
+  static PP_Resource Create(PluginInstance* instance,
+                            const PP_FontDescription_Dev& description);
 
   // ResourceObjectBase.
   virtual ::ppapi::thunk::PPB_Font_API* AsPPB_Font_API() OVERRIDE;
@@ -46,6 +48,8 @@ class PPB_Font_Impl : public Resource,
                                           uint32_t char_offset) OVERRIDE;
 
  private:
+  PPB_Font_Impl(PluginInstance* instance, const PP_FontDescription_Dev& desc);
+
   scoped_ptr< ::ppapi::WebKitForwarding::Font> font_forwarding_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_Font_Impl);

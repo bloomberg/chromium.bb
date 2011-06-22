@@ -21,12 +21,8 @@ PPB_VideoLayer_Impl::~PPB_VideoLayer_Impl() {
 }
 
 // static
-PP_Resource PPB_VideoLayer_Impl::Create(PP_Instance pp_instance,
+PP_Resource PPB_VideoLayer_Impl::Create(PluginInstance* instance,
                                         PP_VideoLayerMode_Dev mode) {
-  PluginInstance* instance = ResourceTracker::Get()->GetInstance(pp_instance);
-  if (!instance)
-    return 0;
-
   if (mode != PP_VIDEOLAYERMODE_SOFTWARE)
     return 0;
 

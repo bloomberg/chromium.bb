@@ -72,16 +72,6 @@ PPB_URLLoader_Impl::PPB_URLLoader_Impl(PluginInstance* instance,
 PPB_URLLoader_Impl::~PPB_URLLoader_Impl() {
 }
 
-// static
-PP_Resource PPB_URLLoader_Impl::Create(PP_Instance pp_instance) {
-  PluginInstance* instance = ResourceTracker::Get()->GetInstance(pp_instance);
-  if (!instance)
-    return 0;
-
-  PPB_URLLoader_Impl* loader = new PPB_URLLoader_Impl(instance, false);
-  return loader->GetReference();
-}
-
 PPB_URLLoader_API* PPB_URLLoader_Impl::AsPPB_URLLoader_API() {
   return this;
 }

@@ -28,10 +28,7 @@ PPB_Buffer_Impl::~PPB_Buffer_Impl() {
 }
 
 // static
-PP_Resource PPB_Buffer_Impl::Create(PP_Instance pp_instance, uint32_t size) {
-  PluginInstance* instance = ResourceTracker::Get()->GetInstance(pp_instance);
-  if (!instance)
-    return 0;
+PP_Resource PPB_Buffer_Impl::Create(PluginInstance* instance, uint32_t size) {
   scoped_refptr<PPB_Buffer_Impl> buffer(new PPB_Buffer_Impl(instance));
   if (!buffer->Init(size))
     return 0;

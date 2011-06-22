@@ -29,14 +29,19 @@ class PluginInstance;
 class PPB_AudioConfig_Impl : public Resource,
                              public ::ppapi::AudioConfigImpl {
  public:
-  // Note that you must call Init (on AudioConfigImpl) before using this class.
-  PPB_AudioConfig_Impl(PluginInstance* instance);
   virtual ~PPB_AudioConfig_Impl();
+
+  // Non-trusted creation.
+  static PP_Resource Create(PluginInstance* instance,
+                            PP_AudioSampleRate sample_rate,
+                            uint32_t sample_frame_count);
 
   // ResourceObjectBase overrides.
   virtual ::ppapi::thunk::PPB_AudioConfig_API* AsPPB_AudioConfig_API() OVERRIDE;
 
  private:
+  explicit PPB_AudioConfig_Impl(PluginInstance* instance);
+
   DISALLOW_COPY_AND_ASSIGN(PPB_AudioConfig_Impl);
 };
 
@@ -47,10 +52,20 @@ class PPB_Audio_Impl : public Resource,
                        public ::ppapi::thunk::PPB_AudioTrusted_API,
                        public PluginDelegate::PlatformAudio::Client {
  public:
-  // After creation, either call Init (for non-trusted init) or OpenTrusted
-  // (for trusted init).
+  // Trusted initialization. You must call Init after this.
+  //
+  // Untrusted initialization should just call the static Create() function
+  // to properly create & initialize this class.
   explicit PPB_Audio_Impl(PluginInstance* instance);
+
   virtual ~PPB_Audio_Impl();
+
+  // Creation function for untrusted plugins. This handles all initialization
+  // and will return 0 on failure.
+  static PP_Resource Create(PluginInstance* instance,
+                            PP_Resource config_id,
+                            PPB_Audio_Callback audio_callback,
+                            void* user_data);
 
   // Initialization function for non-trusted init.
   bool Init(PP_Resource config_id,

@@ -24,9 +24,8 @@ class PPB_Broker_Impl : public Resource,
                         public ::ppapi::thunk::PPB_Broker_API,
                         public base::SupportsWeakPtr<PPB_Broker_Impl> {
  public:
+  explicit PPB_Broker_Impl(PluginInstance* instance);
   virtual ~PPB_Broker_Impl();
-
-  static PP_Resource Create(PP_Instance instance_id);
 
   // ResourceObjectBase override.
   virtual ::ppapi::thunk::PPB_Broker_API* AsPPB_Broker_API() OVERRIDE;
@@ -38,8 +37,6 @@ class PPB_Broker_Impl : public Resource,
   void BrokerConnected(int32_t handle, int32_t result);
 
  private:
-  explicit PPB_Broker_Impl(PluginInstance* instance);
-
   // PluginDelegate ppapi broker object.
   // We don't own this pointer but are responsible for calling Disconnect on it.
   PluginDelegate::PpapiBroker* broker_;

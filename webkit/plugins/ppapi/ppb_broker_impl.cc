@@ -48,15 +48,6 @@ PPB_Broker_Impl::~PPB_Broker_Impl() {
   pipe_handle_ = PlatformFileToInt(base::kInvalidPlatformFileValue);
 }
 
-// static
-PP_Resource PPB_Broker_Impl::Create(PP_Instance instance_id) {
-  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
-  if (!instance)
-    return 0;
-  scoped_refptr<PPB_Broker_Impl> broker(new PPB_Broker_Impl(instance));
-  return broker->GetReference();
-}
-
 PPB_Broker_API* PPB_Broker_Impl::AsPPB_Broker_API() {
   return this;
 }

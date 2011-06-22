@@ -27,8 +27,16 @@ class PPB_ImageData_Impl : public Resource,
                            public ::ppapi::ImageDataImpl,
                            public ::ppapi::thunk::PPB_ImageData_API {
  public:
+  // If you call this constructor, you must also call Init before use. Normally
+  // you should use the static Create function, but this constructor is needed
+  // for some internal uses of ImageData (like Graphics2D).
   explicit PPB_ImageData_Impl(PluginInstance* instance);
   virtual ~PPB_ImageData_Impl();
+
+  static PP_Resource Create(PluginInstance* pp_instance,
+                            PP_ImageDataFormat format,
+                            const PP_Size& size,
+                            PP_Bool init_to_zero);
 
   bool Init(PP_ImageDataFormat format,
             int width, int height,

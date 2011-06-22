@@ -29,7 +29,7 @@ class PPB_FileChooser_Impl : public Resource,
                        const PP_FileChooserOptions_Dev* options);
   virtual ~PPB_FileChooser_Impl();
 
-  static PP_Resource Create(PP_Instance instance,
+  static PP_Resource Create(PluginInstance* instance,
                             const PP_FileChooserOptions_Dev* options);
 
   // Resource overrides.

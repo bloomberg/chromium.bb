@@ -163,6 +163,19 @@ PPB_Graphics2D_Impl::~PPB_Graphics2D_Impl() {
 }
 
 // static
+PP_Resource PPB_Graphics2D_Impl::Create(PluginInstance* instance,
+                                        const PP_Size& size,
+                                        PP_Bool is_always_opaque) {
+  scoped_refptr<PPB_Graphics2D_Impl> graphics_2d(
+      new PPB_Graphics2D_Impl(instance));
+  if (!graphics_2d->Init(size.width, size.height,
+                         PPBoolToBool(is_always_opaque))) {
+    return 0;
+  }
+  return graphics_2d->GetReference();
+}
+
+// static
 const PPB_Graphics2D* PPB_Graphics2D_Impl::GetInterface() {
   return ::ppapi::thunk::GetPPB_Graphics2D_Thunk();
 }

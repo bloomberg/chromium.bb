@@ -134,16 +134,6 @@ PPB_URLRequestInfo_Impl::PPB_URLRequestInfo_Impl(PluginInstance* instance)
 PPB_URLRequestInfo_Impl::~PPB_URLRequestInfo_Impl() {
 }
 
-// static
-PP_Resource PPB_URLRequestInfo_Impl::Create(PP_Instance pp_instance) {
-  PluginInstance* instance = ResourceTracker::Get()->GetInstance(pp_instance);
-  if (!instance)
-    return 0;
-
-  PPB_URLRequestInfo_Impl* request = new PPB_URLRequestInfo_Impl(instance);
-  return request->GetReference();
-}
-
 PPB_URLRequestInfo_API* PPB_URLRequestInfo_Impl::AsPPB_URLRequestInfo_API() {
   return this;
 }

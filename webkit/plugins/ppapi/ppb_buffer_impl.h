@@ -25,7 +25,7 @@ class PPB_Buffer_Impl : public Resource,
  public:
   virtual ~PPB_Buffer_Impl();
 
-  static PP_Resource Create(PP_Instance instance, uint32_t size);
+  static PP_Resource Create(PluginInstance* instance, uint32_t size);
 
   virtual PPB_Buffer_Impl* AsPPB_Buffer_Impl();
 

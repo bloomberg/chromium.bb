@@ -75,12 +75,8 @@ PPB_FileChooser_Impl::~PPB_FileChooser_Impl() {
 
 // static
 PP_Resource PPB_FileChooser_Impl::Create(
-    PP_Instance pp_instance,
+    PluginInstance* instance,
     const PP_FileChooserOptions_Dev* options) {
-  PluginInstance* instance = ResourceTracker::Get()->GetInstance(pp_instance);
-  if (!instance)
-    return 0;
-
   if ((options->mode != PP_FILECHOOSERMODE_OPEN) &&
       (options->mode != PP_FILECHOOSERMODE_OPENMULTIPLE))
     return 0;

@@ -75,16 +75,6 @@ PPB_VideoDecoder_Impl::PPB_VideoDecoder_Impl(PluginInstance* instance)
 PPB_VideoDecoder_Impl::~PPB_VideoDecoder_Impl() {
 }
 
-// static
-PP_Resource PPB_VideoDecoder_Impl::Create(PP_Instance pp_instance) {
-  PluginInstance* instance = ResourceTracker::Get()->GetInstance(pp_instance);
-  if (!instance)
-    return 0;
-
-  PPB_VideoDecoder_Impl* decoder = new PPB_VideoDecoder_Impl(instance);
-  return decoder->GetReference();
-}
-
 PPB_VideoDecoder_API* PPB_VideoDecoder_Impl::AsPPB_VideoDecoder_API() {
   return this;
 }

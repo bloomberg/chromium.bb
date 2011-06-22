@@ -24,13 +24,10 @@ namespace ppapi {
 class PPB_Flash_Menu_Impl : public Resource,
                             public ::ppapi::thunk::PPB_Flash_Menu_API {
  public:
-  explicit PPB_Flash_Menu_Impl(PluginInstance* instance);
   virtual ~PPB_Flash_Menu_Impl();
 
-  static PP_Resource Create(PP_Instance instance,
+  static PP_Resource Create(PluginInstance* instance,
                             const PP_Flash_Menu* menu_data);
-
-  bool Init(const PP_Flash_Menu* menu_data);
 
   // ResourceObjectBase.
   virtual ::ppapi::thunk::PPB_Flash_Menu_API* AsPPB_Flash_Menu_API() OVERRIDE;
@@ -47,6 +44,10 @@ class PPB_Flash_Menu_Impl : public Resource,
   const MenuData& menu_data() const { return menu_data_; }
 
  private:
+  explicit PPB_Flash_Menu_Impl(PluginInstance* instance);
+
+  bool Init(const PP_Flash_Menu* menu_data);
+
   MenuData menu_data_;
 
   // We send |WebMenuItem|s, which have an |unsigned| "action" field instead of

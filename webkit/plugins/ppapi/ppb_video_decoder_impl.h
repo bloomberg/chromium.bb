@@ -36,8 +36,6 @@ class PPB_VideoDecoder_Impl : public Resource,
   explicit PPB_VideoDecoder_Impl(PluginInstance* instance);
   virtual ~PPB_VideoDecoder_Impl();
 
-  static PP_Resource Create(PP_Instance instance);
-
   // ResourceObjectBase overrides.
   virtual PPB_VideoDecoder_API* AsPPB_VideoDecoder_API() OVERRIDE;
 

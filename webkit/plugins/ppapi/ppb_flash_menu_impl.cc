@@ -102,16 +102,11 @@ PPB_Flash_Menu_Impl::~PPB_Flash_Menu_Impl() {
 }
 
 // static
-PP_Resource PPB_Flash_Menu_Impl::Create(PP_Instance pp_instance,
+PP_Resource PPB_Flash_Menu_Impl::Create(PluginInstance* instance,
                                         const PP_Flash_Menu* menu_data) {
-  PluginInstance* instance = ResourceTracker::Get()->GetInstance(pp_instance);
-  if (!instance)
-    return 0;
-
   scoped_refptr<PPB_Flash_Menu_Impl> menu(new PPB_Flash_Menu_Impl(instance));
   if (!menu->Init(menu_data))
     return 0;
-
   return menu->GetReference();
 }
 

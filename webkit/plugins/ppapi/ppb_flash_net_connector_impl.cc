@@ -24,17 +24,6 @@ PPB_Flash_NetConnector_Impl::PPB_Flash_NetConnector_Impl(
 PPB_Flash_NetConnector_Impl::~PPB_Flash_NetConnector_Impl() {
 }
 
-// static
-PP_Resource PPB_Flash_NetConnector_Impl::Create(PP_Instance pp_instance) {
-  PluginInstance* instance = ResourceTracker::Get()->GetInstance(pp_instance);
-  if (!instance)
-    return 0;
-
-  scoped_refptr<PPB_Flash_NetConnector_Impl> connector(
-      new PPB_Flash_NetConnector_Impl(instance));
-  return connector->GetReference();
-}
-
 PPB_Flash_NetConnector_API*
     PPB_Flash_NetConnector_Impl::AsPPB_Flash_NetConnector_API() {
   return this;

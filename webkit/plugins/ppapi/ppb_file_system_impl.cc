@@ -40,20 +40,14 @@ PPB_FileSystem_Impl::~PPB_FileSystem_Impl() {
 }
 
 // static
-PP_Resource PPB_FileSystem_Impl::Create(PP_Instance instance,
+PP_Resource PPB_FileSystem_Impl::Create(PluginInstance* instance,
                                         PP_FileSystemType_Dev type) {
-  PluginInstance* plugin_instance =
-      ResourceTracker::Get()->GetInstance(instance);
-  if (!plugin_instance)
-    return 0;
-
   if (type != PP_FILESYSTEMTYPE_EXTERNAL &&
       type != PP_FILESYSTEMTYPE_LOCALPERSISTENT &&
       type != PP_FILESYSTEMTYPE_LOCALTEMPORARY)
     return 0;
 
-  PPB_FileSystem_Impl* file_system =
-      new PPB_FileSystem_Impl(plugin_instance, type);
+  PPB_FileSystem_Impl* file_system = new PPB_FileSystem_Impl(instance, type);
   return file_system->GetReference();
 }
 

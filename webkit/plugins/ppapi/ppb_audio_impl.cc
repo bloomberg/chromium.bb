@@ -26,6 +26,17 @@ PPB_AudioConfig_Impl::PPB_AudioConfig_Impl(PluginInstance* instance)
 PPB_AudioConfig_Impl::~PPB_AudioConfig_Impl() {
 }
 
+// static
+PP_Resource PPB_AudioConfig_Impl::Create(PluginInstance* instance,
+                                         PP_AudioSampleRate sample_rate,
+                                         uint32_t sample_frame_count) {
+  scoped_refptr<PPB_AudioConfig_Impl> config(
+      new PPB_AudioConfig_Impl(instance));
+  if (!config->Init(sample_rate, sample_frame_count))
+    return 0;
+  return config->GetReference();
+}
+
 ::ppapi::thunk::PPB_AudioConfig_API*
 PPB_AudioConfig_Impl::AsPPB_AudioConfig_API() {
   return this;
@@ -62,6 +73,17 @@ PPB_Audio_Impl::~PPB_Audio_Impl() {
     PP_RunCompletionCallback(&create_callback_, PP_ERROR_ABORTED);
     create_callback_pending_ = false;
   }
+}
+
+// static
+PP_Resource PPB_Audio_Impl::Create(PluginInstance* instance,
+                                   PP_Resource config_id,
+                                   PPB_Audio_Callback audio_callback,
+                                   void* user_data) {
+  scoped_refptr<PPB_Audio_Impl> audio(new PPB_Audio_Impl(instance));
+  if (!audio->Init(config_id, audio_callback, user_data))
+    return 0;
+  return audio->GetReference();
 }
 
 ::ppapi::thunk::PPB_Audio_API* PPB_Audio_Impl::AsPPB_Audio_API() {

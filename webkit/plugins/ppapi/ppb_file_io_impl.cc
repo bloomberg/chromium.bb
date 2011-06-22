@@ -44,15 +44,6 @@ PPB_FileIO_Impl::~PPB_FileIO_Impl() {
   Close();
 }
 
-// static
-PP_Resource PPB_FileIO_Impl::Create(PP_Instance pp_instance) {
-  PluginInstance* instance = ResourceTracker::Get()->GetInstance(pp_instance);
-  if (!instance)
-    return 0;
-  PPB_FileIO_Impl* file_io = new PPB_FileIO_Impl(instance);
-  return file_io->GetReference();
-}
-
 PPB_FileIO_API* PPB_FileIO_Impl::AsPPB_FileIO_API() {
   return this;
 }

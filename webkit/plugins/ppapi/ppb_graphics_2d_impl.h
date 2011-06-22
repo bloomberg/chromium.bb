@@ -31,14 +31,15 @@ class PPB_Graphics2D_Impl
     : public Resource,
       public ::ppapi::thunk::PPB_Graphics2D_API {
  public:
-  PPB_Graphics2D_Impl(PluginInstance* instance);
   virtual ~PPB_Graphics2D_Impl();
+
+  static PP_Resource Create(PluginInstance* instance,
+                            const PP_Size& size,
+                            PP_Bool is_always_opaque);
 
   // Returns a pointer to the interface implementing PPB_ImageData that is
   // exposed to the plugin.
   static const PPB_Graphics2D* GetInterface();
-
-  bool Init(int width, int height, bool is_always_opaque);
 
   bool is_always_opaque() const { return is_always_opaque_; }
 
@@ -78,6 +79,10 @@ class PPB_Graphics2D_Impl
   PPB_ImageData_Impl* image_data() { return image_data_.get(); }
 
  private:
+  explicit PPB_Graphics2D_Impl(PluginInstance* instance);
+
+  bool Init(int width, int height, bool is_always_opaque);
+
   // Tracks a call to flush that requires a callback.
   class FlushCallbackData {
    public:

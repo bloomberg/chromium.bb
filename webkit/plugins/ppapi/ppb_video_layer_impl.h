@@ -19,15 +19,18 @@ class PluginInstance;
 class PPB_VideoLayer_Impl : public Resource,
                             public ::ppapi::thunk::PPB_VideoLayer_API {
  public:
-  explicit PPB_VideoLayer_Impl(PluginInstance* instance);
   virtual ~PPB_VideoLayer_Impl();
 
-  static PP_Resource Create(PP_Instance instance, PP_VideoLayerMode_Dev mode);
+  static PP_Resource Create(PluginInstance* instance,
+                            PP_VideoLayerMode_Dev mode);
 
   // ResourceObjectBase override.
   virtual PPB_VideoLayer_API* AsPPB_VideoLayer_API() OVERRIDE;
 
   // Derived classes must implement PPB_VideoLayer_API.
+
+ protected:
+  explicit PPB_VideoLayer_Impl(PluginInstance* instance);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PPB_VideoLayer_Impl);
