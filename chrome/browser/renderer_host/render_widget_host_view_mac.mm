@@ -1837,7 +1837,7 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
 - (NSPoint)accessibilityPointInScreen:
     (BrowserAccessibilityCocoa*)accessibility {
   NSPoint origin = [accessibility origin];
-  NSSize size = [accessibility size];
+  NSSize size = [[accessibility size] sizeValue];
   origin.y = NSHeight([self bounds]) - origin.y;
   NSPoint originInWindow = [self convertPoint:origin toView:nil];
   NSPoint originInScreen = [[self window] convertBaseToScreen:originInWindow];
@@ -1858,9 +1858,10 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   // Performs a right click copying WebKit's
   // accessibilityPerformShowMenuAction.
   NSPoint location = [self accessibilityPointInScreen:accessibility];
+NSSize size = [[accessibility size] sizeValue];
   location = [[self window] convertScreenToBase:location];
-  location.x += [accessibility size].width/2;
-  location.y += [accessibility size].height/2;
+  location.x += size.width/2;
+  location.y += size.height/2;
 
   NSEvent* fakeRightClick = [NSEvent
                            mouseEventWithType:NSRightMouseDown
