@@ -140,6 +140,11 @@ class GpuCommandBufferStub
   scoped_ptr<gpu::GpuScheduler> scheduler_;
   std::queue<IPC::Message*> deferred_messages_;
 
+  // SetParent may be called before Initialize, in which case we need to keep
+  // around the parent stub, so that Initialize can set the parent correctly.
+  base::WeakPtr<GpuCommandBufferStub> parent_stub_for_initialization_;
+  uint32 parent_texture_for_initialization_;
+
   GpuWatchdog* watchdog_;
   ScopedRunnableMethodFactory<GpuCommandBufferStub> task_factory_;
 

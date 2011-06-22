@@ -46,6 +46,8 @@ GpuCommandBufferStub::GpuCommandBufferStub(
       last_flush_count_(0),
       renderer_id_(renderer_id),
       render_view_id_(render_view_id),
+      parent_stub_for_initialization_(),
+      parent_texture_for_initialization_(0),
       watchdog_(watchdog),
       task_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
@@ -171,6 +173,13 @@ void GpuCommandBufferStub::OnInitialize(
       scheduler_->SetResizeCallback(
           NewCallback(this, &GpuCommandBufferStub::ResizeCallback));
 
+      if (parent_stub_for_initialization_) {
+        scheduler_->SetParent(parent_stub_for_initialization_->scheduler_.get(),
+                              parent_texture_for_initialization_);
+        parent_stub_for_initialization_.reset();
+        parent_texture_for_initialization_ = 0;
+      }
+
       result = true;
     } else {
       scheduler_.reset();
@@ -185,19 +194,25 @@ void GpuCommandBufferStub::OnInitialize(
 void GpuCommandBufferStub::OnSetParent(int32 parent_route_id,
                                        uint32 parent_texture_id,
                                        IPC::Message* reply_message) {
-  bool result = false;
 
-  if (parent_route_id == MSG_ROUTING_NONE) {
-    result = scheduler_->SetParent(NULL, 0);
-  } else {
-    GpuCommandBufferStub* parent_stub = channel_->LookupCommandBuffer(
-        parent_route_id);
-    if (parent_stub) {
-      result = scheduler_->SetParent(parent_stub->scheduler_.get(),
-                                     parent_texture_id);
-    }
+  GpuCommandBufferStub* parent_stub = NULL;
+  if (parent_route_id != MSG_ROUTING_NONE) {
+    parent_stub = channel_->LookupCommandBuffer(parent_route_id);
   }
 
+  bool result = true;
+  if (scheduler_.get()) {
+    gpu::GpuScheduler* parent_scheduler =
+        parent_stub ? parent_stub->scheduler_.get() : NULL;
+    result = scheduler_->SetParent(parent_scheduler, parent_texture_id);
+  } else {
+    // If we don't have a scheduler, it means that Initialize hasn't been called
+    // yet. Keep around the requested parent stub and texture so that we can set
+    // it in Initialize().
+    parent_stub_for_initialization_ = parent_stub ?
+        parent_stub->AsWeakPtr() : base::WeakPtr<GpuCommandBufferStub>();
+    parent_texture_for_initialization_ = parent_texture_id;
+  }
   GpuCommandBufferMsg_SetParent::WriteReplyParams(reply_message, result);
   Send(reply_message);
 }
