@@ -410,14 +410,17 @@ void RenderWidget::OnSwapBuffersComplete()
   }
 
   // If we are not accelerated rendering, then this is a stale swapbuffers from
-  // when we were previously rendering.
-  if (!is_accelerated_compositing_active_) {
+  // when we were previously rendering. However, if an invalidation task is not
+  // posted, there may be software rendering work pending. In that case, don't
+  // early out.
+  if (!is_accelerated_compositing_active_ && invalidation_task_posted_) {
     TRACE_EVENT0("renderer", "EarlyOut_AcceleratedCompositingOff");
     return;
   }
 
   // Notify subclasses.
-  DidFlushPaint();
+  if(is_accelerated_compositing_active_)
+    DidFlushPaint();
 
   // Continue painting if necessary...
   DoDeferredUpdateAndSendInputAck();
@@ -506,7 +509,8 @@ void RenderWidget::ClearFocus() {
 void RenderWidget::PaintRect(const gfx::Rect& rect,
                              const gfx::Point& canvas_origin,
                              skia::PlatformCanvas* canvas) {
-
+  TRACE_EVENT2("renderer", "PaintRect",
+               "width", rect.width(), "height", rect.height());
   canvas->save();
 
   // Bring the canvas into the coordinate system of the paint rect.
@@ -661,6 +665,7 @@ bool RenderWidget::IsRenderingVSynced() {
 }
 
 void RenderWidget::InvalidationCallback() {
+  TRACE_EVENT0("renderer", "RenderWidget::InvalidationCallback");
   invalidation_task_posted_ = false;
   DoDeferredUpdateAndSendInputAck();
 }
