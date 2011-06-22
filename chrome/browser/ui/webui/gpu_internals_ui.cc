@@ -404,9 +404,6 @@ void GpuMessageHandler::OnSaveTraceFile(const ListValue* list) {
 
   DCHECK(list->GetSize() == 1);
 
-  Value* tmp;
-  list->Get(0, &tmp);
-
   std::string* trace_data = new std::string();
   bool ok = list->GetString(0, trace_data);
   DCHECK(ok);
