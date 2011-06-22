@@ -161,11 +161,6 @@ bool FormField::Match(const AutofillField* field,
     return true;
   }
 
-  if ((match_type & FormField::MATCH_VALUE) &&
-      autofill::MatchesPattern(field->value, pattern)) {
-    return true;
-  }
-
   return false;
 }
 
