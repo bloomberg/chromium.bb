@@ -168,11 +168,8 @@ void NaClTlsFini() {
  * actually launches.
  */
 uint32_t NaClTlsAllocate(struct NaClAppThread *natp,
-                         void                 *base_addr,
-                         uint32_t             size) {
+                         void                 *base_addr) {
   int i;
-
-  UNREFERENCED_PARAMETER(size);
 
   i = NaClThreadIdxAllocate();
 
@@ -246,10 +243,7 @@ void NaClTlsFree(struct NaClAppThread *natp) {
 
 
 uint32_t NaClTlsChange(struct NaClAppThread *natp,
-                       void                 *base_addr,
-                       uint32_t             size) {
-  UNREFERENCED_PARAMETER(size);
-
+                       void                 *base_addr) {
   natp->user.tls_base = base_addr;
   return NaClGetThreadIdx(natp);
 }
@@ -284,11 +278,8 @@ void NaClTlsFini() {
  * is zero-based, we must bias the result.
  */
 uint32_t NaClTlsAllocate(struct NaClAppThread *natp,
-                         void                 *base_addr,
-                         uint32_t             size) {
+                         void                 *base_addr) {
   int i;
-
-  UNREFERENCED_PARAMETER(size);
 
   i = NaClThreadIdxAllocate();
   if (-1 == i) {
@@ -331,10 +322,7 @@ void NaClTlsFree(struct NaClAppThread *natp) {
 }
 
 uint32_t NaClTlsChange(struct NaClAppThread   *natp,
-                       void                   *base_addr,
-                       uint32_t               size) {
-  UNREFERENCED_PARAMETER(size);
-
+                       void                   *base_addr) {
   natp->user.tls_base = base_addr;
   return NaClGetThreadIdx(natp);
 }

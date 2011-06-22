@@ -188,16 +188,14 @@ int32_t NaClCommonSysImc_Mem_Obj_Create(struct NaClAppThread  *natp,
                                         size_t                size);
 
 int32_t NaClCommonSysTls_Init(struct NaClAppThread  *natp,
-                              void                  *tdb,
-                              size_t                size);
+                              void                  *thread_ptr);
 
 int32_t NaClCommonSysThread_Create(struct NaClAppThread *natp,
                                    void                 *eip,
                                    void                 *stack_ptr,
-                                   void                 *tdb,
-                                   size_t               tdb_size);
+                                   void                 *thread_ptr);
 
-int32_t NaClCommonSysTdbGet(struct NaClAppThread *natp);
+int32_t NaClCommonSysTlsGet(struct NaClAppThread *natp);
 
 int32_t NaClCommonSysThread_Nice(struct NaClAppThread *natp,
                                  const int nice);

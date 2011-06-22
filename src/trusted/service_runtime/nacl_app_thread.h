@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -50,14 +50,14 @@ struct NaClAppThread {
 
   int                       thread_num;  /* index into nap->threads */
   /*
-   * sys_tdb and tdb2 are TLS values used by user code and the
+   * sys_tls and tls2 are TLS values used by user code and the
    * integrated runtime (IRT) respectively.  The first TLS area may be
    * accessed via the %gs segment register on x86-32 so must point
    * into untrusted address space; we store it as a system pointer.
    * The second TLS may be an arbitrary value.
    */
-  uintptr_t                 sys_tdb;  /* first saved tdb ptr */
-  uint32_t                  tdb2;  /* second saved tdb value */
+  uintptr_t                 sys_tls;  /* first saved TLS ptr */
+  uint32_t                  tls2;     /* second saved TLS value */
 
   struct NaClThread         thread;  /* low level thread representation */
 
@@ -150,24 +150,23 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
                       uintptr_t             entry,
                       uintptr_t             stack_ptr,
                       uint32_t              tls_idx,
-                      uintptr_t             sys_tdb) NACL_WUR;
+                      uintptr_t             sys_tls) NACL_WUR;
 
 void NaClAppThreadDtor(struct NaClAppThread *natp);
 
 /*
  * Low level initialization of thread, with validated values.  The
  * usr_entry and usr_stack_ptr values are directly used to initialize the
- * user register values; the sys_tdb_base is the system address for
+ * user register values; the sys_tls_base is the system address for
  * allocating a %gs thread descriptor block base.  The caller is
  * responsible for error checking: usr_entry is a valid entry point (0
- * mod N) and sys_tdb_base is in the NaClApp's address space.
+ * mod N) and sys_tls_base is in the NaClApp's address space.
  */
 int NaClAppThreadAllocSegCtor(struct NaClAppThread  *natp,
                               struct NaClApp        *nap,
                               uintptr_t             usr_entry,
                               uintptr_t             usr_stack_ptr,
-                              uintptr_t             sys_tdb_base,
-                              size_t                tdb_size) NACL_WUR;
+                              uintptr_t             sys_tls_base) NACL_WUR;
 
 EXTERN_C_END
 

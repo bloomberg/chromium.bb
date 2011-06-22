@@ -532,8 +532,7 @@ int pthread_create(pthread_t *thread_id,
 
   /* start the thread */
   retval = irt_thread.thread_create(
-      FUN_TO_VOID_PTR(nc_thread_starter), esp,
-      new_tp, TDB_SIZE);
+      FUN_TO_VOID_PTR(nc_thread_starter), esp, new_tp);
   if (0 != retval) {
     pthread_mutex_lock(&__nc_thread_management_lock);
     /* TODO(gregoryd) : replace with atomic decrement? */

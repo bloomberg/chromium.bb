@@ -40,8 +40,7 @@ void NaClTlsFini();
  * On error, returns NACL_TLS_INDEX_INVALID.
  */
 uint32_t NaClTlsAllocate(struct NaClAppThread *natp,
-                         void                 *tdb,
-                         uint32_t             size) NACL_WUR;
+                         void                 *thread_ptr) NACL_WUR;
 
 /*
  * Free a tls descriptor (almost a nop on ARM).
@@ -74,8 +73,7 @@ uint32_t NaClTlsGetIdx(void);
  * It installs tls descriptor for the main thread and also returns it.
  */
 uint32_t NaClTlsChange(struct NaClAppThread *natp,
-                       void                 *tdb,
-                       uint32_t             size) NACL_WUR;
+                       void                 *thread_ptr) NACL_WUR;
 
 /*
  * Get the current thread index which is used to look up information in a

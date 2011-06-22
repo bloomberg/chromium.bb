@@ -112,8 +112,7 @@ typedef int (*TYPE_nacl_munmap) (void *start, size_t length);
 typedef void (*TYPE_nacl_thread_exit) (int32_t *stack_flag);
 typedef int (*TYPE_nacl_thread_create) (void *start_user_address,
                                         void *stack,
-                                        void *tdb,
-                                        size_t tdb_size);
+                                        void *thread_ptr);
 typedef int (*TYPE_nacl_thread_nice) (const int nice);
 
 /* ============================================================ */
@@ -191,7 +190,7 @@ typedef void (*TYPE_nacl_exit) (int status);
 
 typedef void (*TYPE_nacl_null) (void);
 
-typedef int (*TYPE_nacl_tls_init) (void *tdb, int size);
+typedef int (*TYPE_nacl_tls_init) (void *thread_ptr);
 
 typedef void *(*TYPE_nacl_tls_get) (void);
 

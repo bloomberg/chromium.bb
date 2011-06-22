@@ -815,8 +815,7 @@ int NaClCreateMainThread(struct NaClApp     *nap,
                                  nap,
                                  nap->initial_entry_pt,
                                  NaClSysToUserStackAddr(nap, stack_ptr),
-                                 NaClUserToSys(nap, nap->break_addr),
-                                 1)) {
+                                 NaClUserToSys(nap, nap->break_addr))) {
     retval = 0;
     goto cleanup;
   }
@@ -870,8 +869,7 @@ int NaClWaitForMainThreadToExit(struct NaClApp  *nap) {
 int32_t NaClCreateAdditionalThread(struct NaClApp *nap,
                                    uintptr_t      prog_ctr,
                                    uintptr_t      sys_stack_ptr,
-                                   uintptr_t      sys_tdb,
-                                   size_t         tdb_size) {
+                                   uintptr_t      sys_tls) {
   struct NaClAppThread  *natp;
   uintptr_t             stack_ptr;
 
@@ -896,8 +894,7 @@ int32_t NaClCreateAdditionalThread(struct NaClApp *nap,
                                  nap,
                                  prog_ctr,
                                  stack_ptr,
-                                 sys_tdb,
-                                 tdb_size)) {
+                                 sys_tls)) {
     NaClLog(LOG_WARNING,
             ("NaClCreateAdditionalThread: could not allocate thread index."
              "  Returning EAGAIN per POSIX specs.\n"));

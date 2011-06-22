@@ -1,7 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include "native_client/src/include/nacl_platform.h"
@@ -32,25 +32,25 @@ static uint32_t CombinedDescriptorExtractIdx(uint32_t combined) {
 }
 
 
-static uint32_t CombinedDescriptorExtractTdb(uint32_t combined) {
+static uint32_t CombinedDescriptorExtractTls(uint32_t combined) {
   return  combined &  ~((1 << NACL_PAGESHIFT) - 1);
 }
 
-static uint32_t MakeCombinedDescriptor(uint32_t tdb,
+static uint32_t MakeCombinedDescriptor(uint32_t tls,
                                        uint32_t idx) {
   /* NOTE: we need to work around and issue here where, for the main thread,
-     we temporarily have to accomodate an invalid tdb */
+     we temporarily have to accomodate an invalid tls */
   /* TODO(robertm): clean this up */
-  if (CombinedDescriptorExtractTdb(tdb) != tdb) {
-    NaClLog(LOG_ERROR, "bad tdb alignment tdb %x idx %d\n", tdb, idx);
+  if (CombinedDescriptorExtractTls(tls) != tls) {
+    NaClLog(LOG_ERROR, "bad TLS alignment $tp %x idx %d\n", tls, idx);
     NaClLog(LOG_ERROR, "this is expected at startup\n");
-    tdb = CombinedDescriptorExtractTdb(~0);
+    tls = CombinedDescriptorExtractTls(~0);
   }
 
   if (CombinedDescriptorExtractIdx(idx) != idx) {
-    NaClLog(LOG_FATAL, "bad thread idx tdb %x idx %d\n", tdb, idx);
+    NaClLog(LOG_FATAL, "bad thread idx $tp %x idx %d\n", tls, idx);
   }
-  return tdb | idx;
+  return tls | idx;
 }
 
 
@@ -83,9 +83,9 @@ void NaClTlsSetIdx(uint32_t tls_idx) {
 
 #if 0
 /* NOTE: currently not used */
-static uint32_t NaClGetThreadTdb(struct NaClAppThread *natp) {
+static uint32_t NaClGetThreadTls(struct NaClAppThread *natp) {
   uint32_t combined = NaClGetThreadCombinedDescriptor(&natp->user);
-  return CombinedDescriptorExtractTdb(combined);
+  return CombinedDescriptorExtractTls(combined);
 }
 #endif
 
@@ -142,15 +142,14 @@ static int NaClThreadIdxAllocate() {
 
 
 uint32_t NaClTlsAllocate(struct NaClAppThread *natp,
-                         void *tdb,
-                         uint32_t size) {
+                         void *thread_ptr) {
   int idx = NaClThreadIdxAllocate();
 
   UNREFERENCED_PARAMETER(natp);
 
   NaClLog(2,
-          "NaClTlsAllocate: tdb %x size %d idx %d\n",
-          (uint32_t) tdb, size, idx);
+          "NaClTlsAllocate: $tp %x idx %d\n",
+          (uint32_t) thread_ptr, idx);
   if (-1 == idx) {
     NaClLog(LOG_FATAL,
             "NaClTlsAllocate: thread limit reached\n");
@@ -158,12 +157,12 @@ uint32_t NaClTlsAllocate(struct NaClAppThread *natp,
   }
   if (CombinedDescriptorExtractIdx(idx) != (uint32_t) idx) {
     NaClLog(LOG_FATAL,
-            "cannot allocate new thread idx tdb %x\n",
-            (uint32_t)tdb);
+            "cannot allocate new thread idx $tp %x\n",
+            (uint32_t) thread_ptr);
     return NACL_TLS_INDEX_INVALID;
   }
 
-  return MakeCombinedDescriptor((uint32_t) tdb, (uint32_t) idx);
+  return MakeCombinedDescriptor((uint32_t) thread_ptr, (uint32_t) idx);
 }
 
 
@@ -181,13 +180,12 @@ void NaClTlsFree(struct NaClAppThread *natp) {
 
 
 uint32_t NaClTlsChange(struct NaClAppThread *natp,
-                       void *tdb,
-                       uint32_t size) {
+                       void *thread_ptr) {
   uint32_t idx = NaClGetThreadIdx(natp);
-  uint32_t combined = MakeCombinedDescriptor((uint32_t) tdb, idx);
+  uint32_t combined = MakeCombinedDescriptor((uint32_t) thread_ptr, idx);
   NaClLog(2,
-          "NaClTlsChange: tdb %x size %d idx %d\n",
-          (uint32_t) tdb, size, idx);
+          "NaClTlsChange: $tp %x idx %d\n",
+          (uint32_t) thread_ptr, idx);
 
   NaClSetThreadCombinedDescriptor(&natp->user, combined);
   return combined;

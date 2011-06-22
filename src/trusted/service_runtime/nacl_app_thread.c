@@ -63,7 +63,7 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
                       uintptr_t             usr_entry,
                       uintptr_t             usr_stack_ptr,
                       uint32_t              tls_idx,
-                      uintptr_t             sys_tdb) {
+                      uintptr_t             sys_tls) {
   int                         rv;
   uint64_t                    thread_idx;
 
@@ -96,8 +96,8 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
   natp->state = NACL_APP_THREAD_ALIVE;
 
   natp->thread_num = -1;  /* illegal index */
-  natp->sys_tdb = sys_tdb;
-  natp->tdb2 = 0;
+  natp->sys_tls = sys_tls;
+  natp->tls2 = 0;
 
   natp->dynamic_delete_generation = 0;
 
@@ -154,27 +154,23 @@ int NaClAppThreadAllocSegCtor(struct NaClAppThread  *natp,
                               struct NaClApp        *nap,
                               uintptr_t             usr_entry,
                               uintptr_t             usr_stack_ptr,
-                              uintptr_t             sys_tdb_base,
-                              size_t                tdb_size) {
+                              uintptr_t             sys_tls) {
   uint32_t  tls_idx;
-  uint32_t  tdb_size32;
 
-  if (tdb_size > UINT32_MAX) {
-    NaClLog(LOG_ERROR, "Requested TDB size is too large");
-    return 0;
-  } else {
-    tdb_size32 = (uint32_t) tdb_size;
-  }
+  /*
+   * Set this early, in case NaClTlsAllocate wants to examine it.
+   */
+  natp->nap = nap;
 
   /*
    * Even though we don't know what segment base/range should gs/r9/nacl_tls_idx
    * select, we still need one, since it identifies the thread when we context
    * switch back.  This use of a dummy tls is only needed for the main thread,
    * which is expected to invoke the tls_init syscall from its crt code (before
-   * main or much of libc can run).  Other threads are spawned with the tdb
-   * address and size as a parameter.
+   * main or much of libc can run).  Other threads are spawned with the thread
+   * pointer address as a parameter.
    */
-  tls_idx = NaClTlsAllocate(natp, (void *) sys_tdb_base, tdb_size32);
+  tls_idx = NaClTlsAllocate(natp, (void *) sys_tls);
 
   NaClLog(4,
         "NaClAppThreadAllocSegCtor: stack_ptr 0x%08"NACL_PRIxPTR", "
@@ -191,5 +187,5 @@ int NaClAppThreadAllocSegCtor(struct NaClAppThread  *natp,
                            usr_entry,
                            usr_stack_ptr,
                            tls_idx,
-                           sys_tdb_base);
+                           sys_tls);
 }

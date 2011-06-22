@@ -471,21 +471,19 @@ int32_t NaClSysImc_Mem_Obj_Create(struct NaClAppThread  *natp,
 }
 
 int32_t NaClSysTls_Init(struct NaClAppThread  *natp,
-                        void                  *tdb,
-                        size_t                size) {
-  return NaClCommonSysTls_Init(natp, tdb, size);
+                        void                  *thread_ptr) {
+  return NaClCommonSysTls_Init(natp, thread_ptr);
 }
 
 int32_t NaClSysThread_Create(struct NaClAppThread *natp,
                              void                 *prog_ctr,
                              void                 *stack_ptr,
-                             void                 *tdb,
-                             size_t               tdb_size) {
-  return NaClCommonSysThread_Create(natp, prog_ctr, stack_ptr, tdb, tdb_size);
+                             void                 *thread_ptr) {
+  return NaClCommonSysThread_Create(natp, prog_ctr, stack_ptr, thread_ptr);
 }
 
 int32_t NaClSysTls_Get(struct NaClAppThread *natp) {
-  return NaClCommonSysTdbGet(natp);
+  return NaClCommonSysTlsGet(natp);
 }
 
 int32_t NaClSysThread_Nice(struct NaClAppThread *natp, const int nice) {
@@ -657,10 +655,10 @@ int32_t NaClSysDyncode_Delete(struct NaClAppThread *natp,
  */
 int32_t NaClSysSecond_Tls_Set(struct NaClAppThread *natp,
                               uint32_t             new_value) {
-  natp->tdb2 = new_value;
+  natp->tls2 = new_value;
   return 0;
 }
 
 int32_t NaClSysSecond_Tls_Get(struct NaClAppThread *natp) {
-  return natp->tdb2;
+  return natp->tls2;
 }

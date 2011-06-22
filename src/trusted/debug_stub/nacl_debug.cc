@@ -177,6 +177,8 @@ void NaClDebugSetAppEnvironment(int argc, char const * const argv[],
 }
 
 void NaClDebugThreadPrepDebugging(struct NaClAppThread *natp) throw() {
+  UNREFERENCED_PARAMETER(natp);
+
   if (NaClDebugIsEnabled()) {
     uint32_t id = IPlatform::GetCurrentThread();
     IThread* thread = IThread::Acquire(id, true);

@@ -15,7 +15,7 @@ extern "C" {
 #endif
 
 extern void *nacl_tls_get(void);
-extern int nacl_tls_init(void *tdb, size_t size);
+extern int nacl_tls_init(void *thread_ptr);
 
 #ifdef __cplusplus
 }

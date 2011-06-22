@@ -22,8 +22,8 @@
  * These functions override functions in libnacl (src/untrusted/nacl).
  */
 
-int nacl_tls_init(void *tdb, size_t size) {
-  return -NACL_SYSCALL(second_tls_set)(tdb);
+int nacl_tls_init(void *thread_ptr) {
+  return -NACL_SYSCALL(second_tls_set)(thread_ptr);
 }
 
 void *nacl_tls_get() {

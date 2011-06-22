@@ -7,6 +7,6 @@
 #include "native_client/src/untrusted/nacl/nacl_irt.h"
 #include "native_client/src/untrusted/nacl/nacl_thread.h"
 
-int nacl_tls_init(void *tdb, size_t size) {
-  return __libnacl_irt_tls.tls_init(tdb, size);
+int nacl_tls_init(void *thread_ptr) {
+  return __libnacl_irt_tls.tls_init(thread_ptr);
 }

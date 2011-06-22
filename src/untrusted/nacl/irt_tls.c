@@ -7,8 +7,8 @@
 #include "native_client/src/untrusted/irt/irt.h"
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
-static int nacl_irt_tls_init(void *tdb, size_t tdb_size) {
-  return -NACL_SYSCALL(tls_init)(tdb, tdb_size);
+static int nacl_irt_tls_init(void *thread_ptr) {
+  return -NACL_SYSCALL(tls_init)(thread_ptr);
 }
 
 static void *nacl_irt_tls_get(void) {

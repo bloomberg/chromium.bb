@@ -2262,39 +2262,34 @@ cleanup:
 }
 
 int32_t NaClCommonSysTls_Init(struct NaClAppThread  *natp,
-                              void                  *tdb,
-                              size_t                tdb_size) {
+                              void                  *thread_ptr) {
   int32_t   retval = -NACL_ABI_EINVAL;
-  uintptr_t sys_tdb;
+  uintptr_t sys_tls;
 
   NaClLog(3,
           ("Entered NaClCommonSysTls_Init(0x%08"NACL_PRIxPTR
-           " 0x%08"NACL_PRIxPTR", 0x%08"NACL_PRIxS")\n"),
-          (uintptr_t) natp, (uintptr_t) tdb, tdb_size);
+           ", 0x%08"NACL_PRIxPTR")\n"),
+          (uintptr_t) natp, (uintptr_t) thread_ptr);
 
   NaClSysCommonThreadSyscallEnter(natp);
 
   /* Verify that the address in the app's range and translated from
    * nacl module address to service runtime address - a nop on ARM
    */
-  sys_tdb = NaClUserToSysAddrRange(natp->nap, (uintptr_t) tdb, tdb_size);
-  NaClLog(4, "NaClCommonSysTls_Init: tdb 0x%p, sys_tdb 0x%"NACL_PRIxPTR"\n",
-          tdb, sys_tdb);
-  if (kNaClBadAddress == sys_tdb) {
+  sys_tls = NaClUserToSysAddrRange(natp->nap, (uintptr_t) thread_ptr, 4);
+  NaClLog(4,
+          "NaClCommonSysTls_Init: thread_ptr 0x%p, sys_tls 0x%"NACL_PRIxPTR"\n",
+          thread_ptr, sys_tls);
+  if (kNaClBadAddress == sys_tls) {
     retval = -NACL_ABI_EFAULT;
     goto cleanup;
   }
 
-  if (tdb_size > UINT32_MAX) {
-    retval = -NACL_ABI_EOVERFLOW;
-    goto cleanup;
-  }
-
-  if (0 == NaClTlsChange(natp, (void *) sys_tdb, (int32_t) tdb_size)) {
+  if (0 == NaClTlsChange(natp, (void *) sys_tls)) {
     retval = -NACL_ABI_EINVAL;
     goto cleanup;
   }
-  natp->sys_tdb = sys_tdb;
+  natp->sys_tls = sys_tls;
   retval = 0;
 cleanup:
   NaClSysCommonThreadSyscallLeave(natp);
@@ -2304,18 +2299,17 @@ cleanup:
 int32_t NaClCommonSysThread_Create(struct NaClAppThread *natp,
                                    void                 *prog_ctr,
                                    void                 *stack_ptr,
-                                   void                 *tdb,
-                                   size_t               tdb_size) {
+                                   void                 *thread_ptr) {
   int32_t     retval = -NACL_ABI_EINVAL;
-  uintptr_t   sys_tdb;
+  uintptr_t   sys_tls;
   uintptr_t   sys_stack;
 
   NaClLog(3,
           ("Entered NaClCommonSysThread_Create(0x%08"NACL_PRIxPTR
-           " pc=0x%08"NACL_PRIxPTR", sp=0x%08"NACL_PRIxPTR", tdb=0x%08"
-           NACL_PRIxPTR", tdb_size=0x%08"NACL_PRIxS")\n"),
+           " pc=0x%08"NACL_PRIxPTR", sp=0x%08"NACL_PRIxPTR", thread_ptr=0x%08"
+           NACL_PRIxPTR")\n"),
           (uintptr_t) natp, (uintptr_t) prog_ctr, (uintptr_t) stack_ptr,
-          (uintptr_t) tdb, tdb_size);
+          (uintptr_t) thread_ptr);
 
   NaClSysCommonThreadSyscallEnter(natp);
 
@@ -2342,9 +2336,9 @@ int32_t NaClCommonSysThread_Create(struct NaClAppThread *natp,
     retval = -NACL_ABI_EFAULT;
     goto cleanup;
   }
-  sys_tdb = NaClUserToSysAddrRange(natp->nap, (uintptr_t) tdb, tdb_size);
-  if (kNaClBadAddress == sys_tdb) {
-    NaClLog(LOG_ERROR, "bad tdb\n");
+  sys_tls = NaClUserToSysAddrRange(natp->nap, (uintptr_t) thread_ptr, 4);
+  if (kNaClBadAddress == sys_tls) {
+    NaClLog(LOG_ERROR, "bad TLS pointer\n");
     retval = -NACL_ABI_EFAULT;
     goto cleanup;
   }
@@ -2354,20 +2348,19 @@ int32_t NaClCommonSysThread_Create(struct NaClAppThread *natp,
   retval = NaClCreateAdditionalThread(natp->nap,
                                       (uintptr_t) prog_ctr,
                                       sys_stack,
-                                      sys_tdb,
-                                      tdb_size);
+                                      sys_tls);
 
 cleanup:
   NaClSysCommonThreadSyscallLeave(natp);
   return retval;
 }
 
-int32_t NaClCommonSysTdbGet(struct NaClAppThread *natp) {
-  uint32_t user_tdb;
+int32_t NaClCommonSysTlsGet(struct NaClAppThread *natp) {
+  uint32_t user_tls;
 
   /* too frequently used, and syscall-number level logging suffices */
-  user_tdb = (int32_t) NaClSysToUser(natp->nap, natp->sys_tdb);
-  return user_tdb;
+  user_tls = (int32_t) NaClSysToUser(natp->nap, natp->sys_tls);
+  return user_tls;
 }
 
 int NaClCommonSysThread_Nice(struct NaClAppThread *natp,
