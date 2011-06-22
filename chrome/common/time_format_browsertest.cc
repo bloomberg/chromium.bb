@@ -27,8 +27,7 @@ class TimeFormatBrowserTest : public InProcessBrowserTest {
   base::ScopedLocale scoped_locale_;
 };
 
-// Disabled until the official linux builders get the FR locale installed.
-IN_PROC_BROWSER_TEST_F(TimeFormatBrowserTest, DISABLED_DecimalPointNotDot) {
+IN_PROC_BROWSER_TEST_F(TimeFormatBrowserTest, DecimalPointNotDot) {
   // Some locales use a comma ',' instead of a dot '.' as the separator for
   // decimal digits. The icu library wasn't handling this, leading to "1"
   // being internally converted to "+1,0e00" and ultimately leading to "NaN".
