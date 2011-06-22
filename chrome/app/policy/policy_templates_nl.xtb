@@ -20,6 +20,7 @@
           Standaard staan alle extensies op de witte lijst, maar als alle extensies door een beleidsmaatregel op de zwarte lijst zijn geplaatst, kan de witte lijst worden gebruikt om dat beleid voor specifieke extensies op te heffen.</translation>
 <translation id="3185009703220253572">sinds versie <ph name="SINCE_VERSION"/></translation>
 <translation id="5469825884154817306">Afbeeldingen blokkeren op deze sites</translation>
+<translation id="3512877396423730277">Bepaalt of subinhoud van derden op een pagina een dialoogvenster voor algemene HTTP-authenticatie als pop-up mag weergeven. Deze optie is meestal uitgeschakeld als beveiliging tegen phishing.</translation>
 <translation id="1438955478865681012">Hiermee wordt extensiegerelateerd beleid geconfigureerd. De gebruiker mag geen extensies installeren die op de zwarte lijst staan, tenzij ze ook op de witte lijst staan. U kunt ook instellen dat <ph name="PRODUCT_NAME"/> extensies automatisch installeert, door deze te specificeren in <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. Voor de lijst met automatisch geïnstalleerde extensies heeft de zwarte lijst voorrang op de witte lijst.</translation>
 <translation id="4070280487546651935">Hiermee wordt het zoekwoord gespecificeerd dat in de omnibox wordt gebruikt om de zoekfunctie voor deze provider te activeren. Deze instelling is optioneel.</translation>
 <translation id="1096105751829466145">Standaardzoekprovider</translation>
@@ -28,7 +29,7 @@
 <translation id="1427655258943162134">Adres of URL van proxyserver</translation>
 <translation id="1827523283178827583">Vaste proxyservers gebruiken</translation>
 <translation id="3021409116652377124">Plug-inzoeker uitschakelen</translation>
-<translation id="2455652143675149114">Hiermee kunt u het gedrag na het starten specificeren.
+<translation id="2455652143675149114">Hiermee kunt u gedrag bij het opstarten specificeren.
 
           Als u 'Startpagina openen' kiest, wordt de startpagina altijd geopend wanneer u <ph name="PRODUCT_NAME"/> start.
 
@@ -43,7 +44,7 @@
 <translation id="3096595567015595053">Lijst met ingeschakelde plug-ins</translation>
 <translation id="7998998292074133333">Hiermee wordt de vergrendeling ingeschakeld wanneer apparaten met ChromeOS inactief worden of overschakelen op de slaapstand.
 
-      Als u deze instelling inschakelt, wordt gebruikers gevraagd een wachtwoord op te geven om apparaten met ChromeOS te activeren die in de slaapstand staan.
+      Als u deze instelling inschakelt, wordt gebruikers gevraagd een wachtwoord op te geven om apparaten met ChromeOS die in de slaapstand staan te activeren.
 
       Als u deze instelling uitschakelt, wordt gebruikers niet om een wachtwoord gevraagd wanneer apparaten met ChromeOS vanuit de slaapstand worden geactiveerd.
 
@@ -74,7 +75,7 @@
 <translation id="3496296378755072552">Wachtwoordbeheer</translation>
 <translation id="7118495359694701769">Hiermee wordt aangegeven of de gegenereerde Kerberos-SPN een niet-standaardpoort moet bevatten.
 
-          Als u deze instelling inschakelt en er een niet-standaardpoort  (een andere poort dan 80 of 443) wordt opgegeven, wordt deze opgenomen in de gegenereerde Kerberos-SPN.
+          Als u deze instelling inschakelt en er een niet-standaardpoort (een andere poort dan 80 of 443) wordt opgegeven, wordt deze opgenomen in de gegenereerde Kerberos-SPN.
 
           Als u deze instelling uitschakelt, bevat de gegenereerde Kerberos-SPN in geen geval een poortnummer.</translation>
 <translation id="9135033364005346124">Proxy voor <ph name="CLOUD_PRINT_NAME"/> inschakelen</translation>
@@ -84,7 +85,7 @@
 
       Als u deze instelling uitschakelt, kunnen er geen bladwijzers worden toegevoegd, verwijderd of aangepast. Bestaande bladwijzers zijn wel beschikbaar.</translation>
 <translation id="6943577887654905793">Voorkeursnaam voor Mac/Linux:</translation>
-<translation id="8621457834803281393">Hiermee kunt u een lijst met URL-patronen instellen waarmee sites worden gespecificeerd die geen cookies mogen instellen.</translation>
+<translation id="8621457834803281393">Hiermee kunt u een lijst met URL-patronen opgeven van sites waarop geen cookies mogen worden ingesteld.</translation>
 <translation id="254524874071906077">Chrome instellen als standaardbrowser</translation>
 <translation id="4377599627073874279">Alle sites toestaan afbeeldingen weer te geven</translation>
 <translation id="3915395663995367577">URL naar een PAC-bestand voor de proxy</translation>
@@ -100,6 +101,7 @@
 
       Als deze instelling niet is ingesteld, kunnen gebruikers zoals gewoonlijk dialoogvensters voor het selecteren van bestanden openen.</translation>
 <translation id="7683777542468165012">Beleid dynamisch vernieuwen</translation>
+<translation id="43195497515906639">Hiermee wordt de directory geconfigureerd die <ph name="PRODUCT_NAME"/> gebruikt voor het opslaan van gebruikersgegevens. Als u dit beleid instelt, gebruikt <ph name="PRODUCT_NAME"/> deze directory.</translation>
 <translation id="6228640147633317529">Hiermee kunt u een lijst met URL-patronen opgeven van sites waarop afbeeldingen mogen worden weergegeven.</translation>
 <translation id="2711603272213076156">Activering van dialoogvensters voor het selecteren van bestanden toestaan.</translation>
 <translation id="1426410128494586442">Ja</translation>
@@ -164,7 +166,7 @@
 
           Als u deze instelling in- of uitschakelt, kunnen gebruikers de instelling niet aanpassen of negeren in <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="8955719471735800169">Bovenkant pagina</translation>
-<translation id="6845930317830839162">Hiermee kunt u instellen of websites JavaScript mogen uitvoeren. Het uitvoeren van JavaScript kan voor alle websites worden toegestaan of voor alle websites worden geweigerd.</translation>
+<translation id="6845930317830839162">Hiermee kunt u instellen of JavaScript mag worden uitgevoerd op websites. Het uitvoeren van JavaScript kan voor alle websites worden toegestaan of voor alle websites worden geweigerd.</translation>
 <translation id="4250680216510889253">Nee</translation>
 <translation id="1522425503138261032">Sites toestaan de fysieke locatie van gebruikers bij te houden</translation>
 <translation id="6569553007023490040">Hiermee wordt de URL van de standaard startpagina in <ph name="PRODUCT_NAME"/> geconfigureerd en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen.
@@ -214,6 +216,8 @@
           Ga voor meer gedetailleerde voorbeelden naar:
           <ph name="PROXY_HELP_URL"/></translation>
 <translation id="2959898425599642200">Regels voor proxyomzeiling</translation>
+<translation id="7337941689192402544">Directory voor gebruikersgegevens voor <ph name="PRODUCT_NAME"/> instellen</translation>
+<translation id="5326137997741385453">Hiermee wordt de directory geconfigureerd die <ph name="PRODUCT_NAME"/> gebruikt om gecachte bestanden op schijf op te slaan. Als u dit beleid instelt, gebruikt <ph name="PRODUCT_NAME"/> de opgegeven directory, ongeacht of de gebruiker de optie '--disk-cache-dir' heeft ingesteld.</translation>
 <translation id="4752274243117690301">Als u deze instelling instelt op 'True', worden het automatisch zoeken naar en installeren van ontbrekende plug-ins uitgeschakeld in <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="3292147213643666827">      Met deze instelling kan <ph name="PRODUCT_NAME"/> als proxy worden ingesteld tussen <ph name="CLOUD_PRINT_NAME"/> en printers die zijn aangesloten op het apparaat.
 
@@ -236,7 +240,13 @@
 <translation id="9096086085182305205">Witte lijst voor verificatieserver</translation>
 <translation id="7063895219334505671">Pop-ups toestaan ​​op deze sites</translation>
 <translation id="2824715612115726353">Incognitomodus inschakelen</translation>
+<translation id="1757688868319862958">Hiermee kan <ph name="PRODUCT_NAME"/> plug-ins uitvoeren waarvooor toestemming is vereist.
+
+      Als u deze instelling inschakelt, worden plug-ins altijd uitgevoerd als ze niet verouderd zijn.
+
+      Als deze instelling is uitgeschakeld of niet is ingesteld, wordt gebruikers om toestemming gevraagd voordat plug-ins worden uitgevoerd waarvoor toestemming is vereist. Dit zijn de plug-ins die een beveiligingsrisico kunnen vormen.</translation>
 <translation id="6157537876488211233">Door komma's gescheiden lijst van regels voor proxyomzeiling</translation>
+<translation id="7091198954851103976">Plug-ins waarvoor toestemming is vereist, altijd uitvoeren</translation>
 <translation id="8870318296973696995">Startpagina</translation>
 <translation id="4505337077089958219">Vernieuwingsinterval voor beleid</translation>
 <translation id="996560596616541671">Servers waarnaar <ph name="PRODUCT_NAME"/> mag delegeren.</translation>
@@ -249,7 +259,7 @@
 
       Als u ervoor kiest de proxyserver automatisch te detecteren, worden alle andere opties genegeerd.
 
-      Ga voor meer informatie naar:
+      Ga voor gedetailleerde voorbeelden naar:
       <ph name="PROXY_HELP_URL"/>
 
       Als u deze instelling inschakelt, negeert <ph name="PRODUCT_NAME"/> alle aan proxy's gerelateerde opties die worden gespecificeerd in de opdrachtregel.</translation>
@@ -278,6 +288,7 @@
           Ga voor gedetailleerde voorbeelden naar:
           <ph name="PROXY_HELP_URL"/></translation>
 <translation id="1808715480127969042">Cookies blokkeren op deze sites</translation>
+<translation id="1115048775745697549">Prompts voor algemene HTTP-authenticatie met verschillende herkomst</translation>
 <translation id="2745445908503591390">Sitegegevens wissen als de browser wordt gesloten</translation>
 <translation id="8665913667133665583">Hiermee wordt gespecificeerd welke servers op de witte lijst moeten worden gezet voor geïntegreerde authenticatie. Geïntegreerde authenticatie wordt alleen ingeschakeld wanneer <ph name="PRODUCT_NAME"/> een oproep tot authenticatie ontvangt van een proxy of een server die op deze witte lijst staat.
 
@@ -340,6 +351,7 @@
 <translation id="847472800012384958">Niet toestaan dat sites pop-ups weergeven</translation>
 <translation id="4733471537137819387">Beleid met betrekking tot geïntegreerde HTTP-authenticatie.</translation>
 <translation id="4608714268466689965">Hiermee kunt u instellen of websites bureaubladmeldingen mogen weergeven. Het weergeven van bureaubladmeldingen kan standaard worden toegestaan of geweigerd, of de gebruiker kan een melding te zien krijgen wanneer een website bureaubladmeldingen wil weergeven.</translation>
+<translation id="8951350807133946005">Directory voor schijfcache instellen</translation>
 <translation id="1334051495529796396">Hiermee wordt gespecificeerd of de gegenereerde Kerberos-SPN wordt gebaseerd op de canonieke DNS-naam of de origineel opgegeven naam.
 
           Als u deze instelling inschakelt, wordt de CNAME-lookup overgeschakeld en wordt de servernaam gebruikt zoals deze is opgegeven.
@@ -353,7 +365,7 @@
 <translation id="4983201894483989687">Verouderde plug-ins toestaan die actief zijn</translation>
 <translation id="7492608050778218564">Hiermee kunt u de API's voor 3D-beelden uitschakelen.
 
-      Als u deze instelling inschakelt, krijgen webpagina's geen toegang tot de GPU (graphics processing unit). Specifieker gezegd krijgen webpagina's geen toegang tot de WebGL-API en kunnen plug-ins de Pepper 3D-API niet gebruiken.
+      Als u deze instelling inschakelt, krijgen webpagina's geen toegang tot de GPU (graphics processing unit). Webpagina's krijgen met name geen toegang tot de WebGL-API en kunnen plug-ins de Pepper 3D-API niet gebruiken.
 
       Als u deze instelling uitschakelt, kunnen webpagina's de WebGL-API en plug-ins de Pepper 3D-API gebruiken. In de standaardinstellingen van de browser kan zijn ingesteld dat er opdrachtregelargumenten nodig zijn om deze API's te gebruiken.</translation>
 <translation id="7202926611616207807">Alle sites toestaan lokale gegevens in te stellen.</translation>
@@ -439,10 +451,10 @@
 <translation id="7469554574977894907">Zoeksuggesties inschakelen</translation>
 <translation id="5511702823008968136">Bladwijzerbalk inschakelen</translation>
 <translation id="3653673712530669976">Hiermee kunt u de standaard HTML-renderer configureren wanneer <ph name="PRODUCT_FRAME_NAME"/> is geïnstalleerd.
-          De standaardinstelling is de hostbrowser de rendering te laten regelen, maar
+          De standaardinstelling is om de hostbrowser de rendering te laten regelen, maar
           u kunt dit aanpassen en <ph name="PRODUCT_FRAME_NAME"/> HTML-pagina's standaard laten renderen.</translation>
 <translation id="7848840259379156480">Hiermee kunt u de standaard HTML-renderer configureren wanneer <ph name="PRODUCT_FRAME_NAME"/> is geïnstalleerd.
-          De standaardinstelling is de hostbrowser de rendering te laten regelen, maar
+          De standaardinstelling is om de hostbrowser de rendering te laten regelen, maar
           u kunt dit aanpassen en <ph name="PRODUCT_FRAME_NAME"/> HTML-pagina's standaard laten renderen.</translation>
 <translation id="4486602758942612946">Hiermee kunt u de lijst aanpassen van URL-patronen die altijd moeten worden verwerkt door de hostbrowser.
           Ga voor voorbeeldpatronen naar http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
@@ -482,13 +494,6 @@
       Als u deze instelling uitschakelt, worden er nooit anonieme gebruiks- en crashgegevens naar Google verzonden.
 
       Als u deze instelling in- of uitschakelt, kunnen gebruikers de instelling niet aanpassen of negeren in <ph name="PRODUCT_NAME"/>.</translation>
-<translation id="3115819625623659514">Hiermee wordt het type standaard startpagina in <ph name="PRODUCT_NAME"/> geconfigureerd en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen. De startpagina kan worden ingesteld op een URL die u specificeert of op de pagina 'Nieuw tabblad'.
-
-          Als u deze instelling inschakelt, wordt altijd de pagina 'Nieuw tabblad' voor de startpagina gebruikt, en wordt de URL voor de startpagina genegeerd.
-
-          Als u deze instelling uitschakelt, wordt de pagina 'Nieuw tabblad' nooit weergegeven als de startpagina, tenzij de URL is ingesteld op 'chrome://newtab'.
-
-          Als u deze instelling in- of uitschakelt, kunnen gebruikers het type startpagina niet aanpassen in <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="2263362640517427542">Vergrendeling inschakelen wanneer apparaten met ChromeOS inactief worden of overschakelen op de slaapstand.</translation>
 <translation id="6808666497110319299">Hiermee wordt het gebruik ingeschakeld van alternatieve foutpagina's die worden ingebouwd in <ph name="PRODUCT_NAME"/> (zoals 'pagina niet gevonden') en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen.
 
@@ -503,6 +508,13 @@
       Als u deze instelling uitschakelt, kunnen gebruikers de functie Automatisch aanvullen niet gebruiken.
 
       Als u de instelling inschakelt of geen waarde configureert, kunnen gebruikers de opties voor Automatisch aanvullen zelf beheren. Zo kunnen ze profielen voor Automatisch aanvullen configureren en de functie naar wens in- of uitschakelen.</translation>
+<translation id="6938581770853731947">Hiermee wordt het type standaard startpagina in <ph name="PRODUCT_NAME"/> geconfigureerd en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen. De startpagina kan worden ingesteld op een URL die u specificeert of op de pagina 'Nieuw tabblad'.
+
+          Als u deze instelling inschakelt, wordt altijd de pagina 'Nieuw tabblad' voor de startpagina gebruikt, en wordt de URL voor de startpagina genegeerd.
+
+          Als u deze instelling uitschakelt, wordt de pagina 'Nieuw tabblad' nooit weergegeven als de startpagina, tenzij de URL is ingesteld op 'chrome://newtab'.
+
+          Als u deze instelling in- of uitschakelt, kunnen gebruikers het type startpagina niet aanpassen in <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="5645779841392247734">Cookies toestaan op deze sites</translation>
 <translation id="3906388518501362918">Hiermee wordt JavaScript in <ph name="PRODUCT_NAME"/> ingeschakeld en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen.
 

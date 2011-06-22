@@ -20,6 +20,7 @@
           Par défaut, toutes les extensions figurent sur la liste blanche. Toutefois, si toutes les extensions ont été mises sur la liste noire par la stratégie, seules les extensions expressément indiquées dans la liste blanche pourront être utilisées.</translation>
 <translation id="3185009703220253572">depuis la version <ph name="SINCE_VERSION"/></translation>
 <translation id="5469825884154817306">Bloquer les images sur ces sites</translation>
+<translation id="3512877396423730277">Cette règle contrôle si le sous-contenu tiers d'une page est autorisé à ouvrir une boîte de dialogue contextuelle d'authentification HTTP de base (Basic Auth). Cette option est habituellement désactivée dans le cadre de la protection contre le phishing.</translation>
 <translation id="1438955478865681012">Configure les règles relatives aux extensions. L'utilisateur n'est pas autorisé à installer les extensions inscrites sur la liste noires, sauf si elles figurent sur la liste blanche. Vous pouvez également forcer <ph name="PRODUCT_NAME"/> à installer des extensions. Pour ce faire, dressez la liste de ces extensions dans <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. La liste noire est prioritaire sur la liste des extensions dont l'installation est forcée.</translation>
 <translation id="4070280487546651935">Définit le mot clé correspondant au raccourci utilisé dans le champ polyvalent pour déclencher la recherche pour ce moteur de recherche. Facultatif.</translation>
 <translation id="1096105751829466145">Moteur de recherche par défaut</translation>
@@ -47,7 +48,7 @@
 
       Si vous désactivez ce paramètre, les utilisateurs n'ont pas de mot de passe à fournir pour réactiver les périphériques utilisant Google Chrome OS lorsqu'ils sont en veille.
 
-      Dans les deux cas, les utilisateurs ne peuvent pas modifier ni remplacer ce paramétrage dans <ph name="PRODUCT_OS_NAME"/>.</translation>
+      Dans les deux cas, les utilisateurs ne peuvent pas modifier ni remplacer ce paramétre dans <ph name="PRODUCT_OS_NAME"/>.</translation>
 <translation id="5912364507361265851">Permet aux utilisateurs d'afficher les mots de passe dans le gestionnaire de mots de passe.</translation>
 <translation id="6999540307315670568">Active la barre de favoris sur la page &quot;Nouvel onglet&quot; de <ph name="PRODUCT_NAME"/>.
 
@@ -100,6 +101,7 @@
 
       Si ce paramètre n'est pas défini, les utilisateurs peuvent ouvrir normalement la boîte de dialogue de sélection de fichiers.</translation>
 <translation id="7683777542468165012">Actualisation dynamique des stratégies</translation>
+<translation id="43195497515906639">Cette règle configure le répertoire qui sera utilisé par <ph name="PRODUCT_NAME"/> pour stocker les données utilisateur. Si vous l'appliquez, <ph name="PRODUCT_NAME"/> utilisera le répertoire fourni.</translation>
 <translation id="6228640147633317529">Vous permet de définir la liste de formats d'URL qui spécifie les sites autorisés à afficher des images.</translation>
 <translation id="2711603272213076156">Autoriser l'appel des boîtes de dialogue de sélection de fichiers.</translation>
 <translation id="1426410128494586442">Oui</translation>
@@ -120,7 +122,7 @@
 <translation id="2877225735001246144">Désactiver la consultation CNAME lors de la négociation de l'authentification Kerberos</translation>
 <translation id="6200084307932433394">Active le service Google Traduction dans <ph name="PRODUCT_NAME"/>.
 
-      Si vous activez ce paramètre, <ph name="PRODUCT_NAME"/> affichera, le cas échéant, une offre intégrée à la barre d'outils de traduction de la page.
+      Si vous activez ce paramètre, <ph name="PRODUCT_NAME"/> proposera une traduction de la page via une barre d'outils intégrée à l'utilisateur, le cas échéant.
 
       Si vous désactivez ce paramètre, les utilisateurs ne verront jamais la barre de traduction.
 
@@ -132,7 +134,7 @@
 <translation id="4084327080063933392">Indique le nom du moteur de recherche par défaut. Si vous ne définissez pas cette stratégie, le nom d'hôte indiqué par l'URL de recherche est utilisé.</translation>
 <translation id="6114416803310251055">obsolète</translation>
 <translation id="8493645415242333585">Désactiver l'enregistrement de l'historique du navigateur</translation>
-<translation id="5776485039795852974">Demander confirmation chaque fois qu'un site veut afficher des notifications sur le Bureau</translation>
+<translation id="5776485039795852974">Demander confirmation chaque fois qu'un site veut afficher des notifications sur le bureau</translation>
 <translation id="6786747875388722282">Extensions</translation>
 <translation id="6417878201680958437">Permet de définir le serveur proxy utilisé par <ph name="PRODUCT_NAME"/> et empêche les utilisateurs de modifier les paramètres de proxy.
 
@@ -157,7 +159,7 @@
 
           Si vous activez ce paramètre, une recherche par défaut est effectuée lorsque l'utilisateur saisit dans le champ polyvalent un texte autre qu'une URL.
 
-          Vous pouvez définir le moteur de recherche par défaut à utiliser en définissant le reste des stratégies de recherche par défaut. Si vous ne configurez pas ces stratégies, l'utilisateur peut choisir le moteur par défaut.
+          Vous pouvez définir le moteur de recherche par défaut à utiliser en configurant le reste des stratégies de recherche par défaut. Si vous ne configurez pas ces stratégies, l'utilisateur peut choisir le moteur par défaut.
 
           Si vous désactivez ce paramètre, aucune recherche n'est effectuée lorsque l'utilisateur saisit un texte autre qu'une URL dans le champ polyvalent.
 
@@ -179,7 +181,7 @@
 <translation id="3523486089716697173">Vous permet de définir une liste de formats d'URL indiquant les sites non autorisés à afficher des images.</translation>
 <translation id="751265277672445578">Configure les paramètres régionaux de l'application dans <ph name="PRODUCT_NAME"/> et empêche les utilisateurs de modifier ces paramètres.
 
-      Si vous activez ce paramètre, <ph name="PRODUCT_NAME"/> utilise les paramètres régionaux spécifiés. Si les paramètres régionaux configurés ne sont compatibles, le navigateur applique le paramétrage &quot;en-US&quot;.
+      Si vous activez ce paramètre, <ph name="PRODUCT_NAME"/> utilise les paramètres régionaux spécifiés. Si les paramètres régionaux configurés ne sont pas compatibles, le navigateur applique le paramétrage &quot;en-US&quot;.
 
       Si ce paramètre est désactivé ou s'il n'est pas configuré, <ph name="PRODUCT_NAME"/> utilise les paramètres régionaux favoris de l'utilisateur (s'ils ont été configurés), les paramètres régionaux du système ou les paramètres régionaux de remplacement (&quot;en-US&quot;).</translation>
 <translation id="6022948604095165524">Action au démarrage</translation>
@@ -213,6 +215,8 @@
           Pour consulter des exemples détaillés, accédez à :
           <ph name="PROXY_HELP_URL"/></translation>
 <translation id="2959898425599642200">Règles de contournement de proxy</translation>
+<translation id="7337941689192402544">Définir le répertoire de données utilisateur de <ph name="PRODUCT_NAME"/></translation>
+<translation id="5326137997741385453">Cette règle configure le répertoire qui sera utilisé par <ph name="PRODUCT_NAME"/> pour stocker les fichiers mis en cache sur le disque. Si vous l'appliquez, <ph name="PRODUCT_NAME"/> utilisera le répertoire fourni, que l'utilisateur ait spécifié ou non l'indicateur &quot;--disk-cache-dir&quot;.</translation>
 <translation id="4752274243117690301">Si vous définissez ce paramètre sur &quot;True&quot;, la recherche automatique et l'installation des plug-ins manquants seront désactivés dans <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="3292147213643666827">      Permet à <ph name="PRODUCT_NAME"/> de jouer le rôle de proxy entre <ph name="CLOUD_PRINT_NAME"/> et les anciennes imprimantes connectées à la machine.
 
@@ -221,8 +225,8 @@
       Si ce paramètre est désactivé, les utilisateurs ne peuvent pas activer le proxy et la machine ne sera pas autorisée à partager ses imprimantes avec <ph name="CLOUD_PRINT_NAME"/>.</translation>
 <translation id="617204585863800180">Active la prédiction réseau dans <ph name="PRODUCT_NAME"/> et empêche les utilisateurs de modifier ce paramètre.
 
-      Dans les deux cas, les utilisateurs ne peuvent pas modifier ni remplacer ce paramétrage dans <ph name="PRODUCT_NAME"/>.</translation>
-<translation id="6641981670621198190">Désactiver la prise en charge des API de graphisme 3D</translation>
+      Quel que soit le réglage, les utilisateurs ne peuvent pas modifier ni remplacer ce paramétrage dans <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="6641981670621198190">Désactiver la prise en charge des API 3D graphics</translation>
 <translation id="2741921267428646309">Cette page répertorie les stratégies respectées par <ph name="PRODUCT_NAME"/>.
 
       Vous n'avez pas besoin de modifier ces paramètres manuellement. Vous pouvez télécharger des modèles de stratégie faciles à utiliser à partir de <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>.
@@ -234,22 +238,16 @@
 <translation id="9096086085182305205">Liste blanche des serveurs d'authentification</translation>
 <translation id="7063895219334505671">Autoriser les fenêtres pop-up sur ces sites</translation>
 <translation id="2824715612115726353">Activer le mode navigation privée</translation>
+<translation id="1757688868319862958">Cette règle permet à <ph name="PRODUCT_NAME"/> d'exécuter les plug-ins qui nécessitent une autorisation. Si vous activez ce paramètre, les plug-ins non obsolètes sont toujours exécutés. Si ce paramètre est désactivé ou n'est pas appliqué, les utilisateurs doivent donner leur permission pour l'exécution des plug-ins qui nécessitent une autorisation. Ceux-ci présentent un risque de sécurité.</translation>
 <translation id="6157537876488211233">Liste de règles de contournement de proxy séparées par des virgules</translation>
+<translation id="7091198954851103976">Toujours exécuter les plug-ins qui nécessitent une autorisation</translation>
 <translation id="8870318296973696995">Page d'accueil</translation>
 <translation id="4505337077089958219">Fréquence d'actualisation des stratégies</translation>
 <translation id="996560596616541671">Serveurs auxquels <ph name="PRODUCT_NAME"/> peut accorder une délégation.</translation>
 <translation id="3866249974567520381">Description</translation>
 <translation id="2236488539271255289">Interdire à tous les sites de définir des données locales</translation>
 <translation id="4467952432486360968">Bloquer les cookies tiers</translation>
-<translation id="1722705282440676367">Permet de définir le serveur proxy utilisé par <ph name="PRODUCT_NAME"/> et empêche les utilisateurs de modifier les paramètres de proxy.
-      Si vous choisissez de ne jamais utiliser de serveur proxy et de demander une connexion directe systématique, toutes les autres options sont ignorées.
-
-      Si vous décidez de demander la détection automatique du serveur proxy, toutes les autres options sont ignorées.
-
-      Pour consulter des exemples détaillés, accédez à :
-      <ph name="PROXY_HELP_URL"/>
-
-      Si vous activez ce paramètre, <ph name="PRODUCT_NAME"/> ignore toutes les options de proxy spécifiées sur la ligne de commande.</translation>
+<translation id="1722705282440676367">Cette règle vous permet de définir le serveur proxy utilisé par <ph name="PRODUCT_NAME"/> et empêche les utilisateurs de modifier les paramètres de proxy. Si vous choisissez de ne jamais utiliser de serveur proxy et de demander une connexion directe systématique, toutes les autres options sont ignorées. Si vous optez pour la détection automatique du serveur proxy, toutes les autres options sont ignorées. Pour consulter des exemples détaillés, accédez à : <ph name="PROXY_HELP_URL"/>. Si vous activez ce paramètre, <ph name="PRODUCT_NAME"/> ignore toutes les options de proxy spécifiées sur la ligne de commande.</translation>
 <translation id="8470053727907466464">Définit les codages de caractères compatibles avec le moteur de recherche. Les codages sont des noms de page de codes tels que UTF-8, GB2312 et ISO-8859-1. Ces codages sont testés dans l'ordre dans lequel ils sont indiqués. La valeur par défaut est UTF-8.</translation>
 <translation id="2537063115727103969">Cette stratégie remplace l'option de paramètres de contenu &quot;Effacer les cookies et autres données de site et de plug-in lorsque je ferme le navigateur&quot;.
 
@@ -275,6 +273,7 @@
           Pour consulter des exemples détaillés, accédez à :
           <ph name="PROXY_HELP_URL"/></translation>
 <translation id="1808715480127969042">Bloquer les cookies sur ces sites</translation>
+<translation id="1115048775745697549">Invites d'authentification de base HTTP (Basic Auth) multi-domaine</translation>
 <translation id="2745445908503591390">Effacer les données de sites à la fermeture du navigateur</translation>
 <translation id="8665913667133665583">Répertorie les serveurs à inclure dans la liste blanche pour l'authentification intégrée. L'authentification intégrée est activée uniquement lorsque <ph name="PRODUCT_NAME"/> reçoit une demande d'authentification provenant d'un proxy ou d'un serveur figurant dans cette liste de serveurs autorisés.
 
@@ -292,11 +291,11 @@
 
           Pour consulter les options supplémentaires et des exemples détaillés, accédez à :
 <ph name="PROXY_HELP_URL"/></translation>
-<translation id="350797926066071931">Activer la fonction de traduction</translation>
+<translation id="350797926066071931">Activer Google Traduction</translation>
 <translation id="2267204956165795704">Définit l'URL du moteur de recherche utilisé dans le cadre d'une recherche par défaut. Cette URL doit contenir la chaîne &quot;<ph name="SEARCH_TERM_MARKER"/>&quot;, qui sera remplacée lors de la requête par les termes recherchés par l'utilisateur.</translation>
 <translation id="4518251772179446575">Demander chaque fois qu'un site veut suivre la position géographique des utilisateurs</translation>
 <translation id="402759845255257575">Interdire à tous les sites d'exécuter JavaScript</translation>
-<translation id="706669471845501145">Autoriser les sites à afficher des notifications sur le Bureau</translation>
+<translation id="706669471845501145">Autoriser les sites à afficher des notifications sur le bureau</translation>
 <translation id="5475361623548884387">Activer l'impression</translation>
 <translation id="3653237928288822292">Icône du moteur de recherche par défaut</translation>
 <translation id="8496973106638946974">Active la fonctionnalité de navigation sécurisée de <ph name="PRODUCT_NAME"/> et empêche les utilisateurs de modifier ce paramètre.
@@ -316,7 +315,7 @@
       Si vous désactivez ce paramètre, le navigateur n'utilise jamais les suggestions de recherche.
 
       Dans les deux cas, les utilisateurs ne peuvent pas modifier ni remplacer ce paramétrage dans <ph name="PRODUCT_NAME"/>.</translation>
-<translation id="6775978436824155661">Active l'impression dans <ph name="PRODUCT_NAME"/> et empêche l'utilisateur de modifier ce paramètre.
+<translation id="6775978436824155661">Active l'impression dans <ph name="PRODUCT_NAME"/> et empêche les utilisateurs de modifier ce paramètre.
 
       Si ce paramètre est activé ou configuré, les utilisateurs peuvent imprimer.
 
@@ -334,9 +333,10 @@
       Si ce paramètre n'est pas défini, <ph name="PRODUCT_NAME"/> autorisera l'utilisateur à déterminer s'il s'agit du navigateur par défaut et si des notifications aux utilisateurs doivent être affichées dans le cas contraire.</translation>
 <translation id="1530812829012954197">Toujours rendre les formats d'URL suivants dans le navigateur hôte</translation>
 <translation id="6190022522129724693">Paramètre de fenêtres pop-up par défaut</translation>
-<translation id="847472800012384958">Interdire à tous les sites d'afficher des fenêtres pop-up</translation>
+<translation id="847472800012384958">Interdire à tous les sites d'afficher les fenêtres pop-up</translation>
 <translation id="4733471537137819387">Stratégies liées à l'authentification HTTP intégrée</translation>
-<translation id="4608714268466689965">Vous permet de définir si des sites Web sont autorisés à afficher des notifications sur le Bureau. L'affichage des notifications sur le Bureau peut être autorisé par défaut, refusé par défaut, ou la question peut être posée à l'utilisateur chaque fois qu'un site Web veut afficher des notifications sur le Bureau.</translation>
+<translation id="4608714268466689965">Vous permet de définir si des sites Web sont autorisés à afficher des notifications sur le bureau. L'affichage des notifications sur le bureau peut être autorisé par défaut, refusé par défaut, ou la question peut être posée à l'utilisateur chaque fois qu'un site Web veut afficher des notifications sur le bureau.</translation>
+<translation id="8951350807133946005">Définir le répertoire du cache disque</translation>
 <translation id="1334051495529796396">Indique si le SPN Kerberos généré est basé sur le nom canonique du serveur DNS ou sur le nom initialement saisi.
 
           Si vous activez ce paramètre, la consultation CNAME n'est pas effectuée et le nom du serveur est utilisé tel qu'il a été saisi.
@@ -408,7 +408,7 @@
 <translation id="3101501961102569744">Sélectionner le mode de spécification des paramètres de serveur proxy</translation>
 <translation id="7774768074957326919">Utiliser les paramètres proxy du système</translation>
 <translation id="3891357445869647828">Activer JavaScript</translation>
-<translation id="868187325500643455">Autoriser tous les sites à exécuter automatiquement des plug-ins</translation>
+<translation id="868187325500643455">Autoriser tous les sites à exécuter automatiquement les plug-ins</translation>
 <translation id="5226033722357981948">Indiquer si l'outil de recherche de plug-ins doit être désactivé</translation>
 <translation id="9068358498333390522">Vous permet d'indiquer si les sites Web sont autorisés à afficher des fenêtres pop-up. L'affichage des fenêtres pop-up peut être autorisé pour tous les sites Web ou refusé pour tous les sites Web.</translation>
 <translation id="7194407337890404814">Nom du moteur de recherche par défaut</translation>
@@ -424,7 +424,7 @@
       Les URL utilisant un schéma de cette liste ne seront pas chargées et sont inaccessibles.</translation>
 <translation id="4056910949759281379">Désactiver le protocole SPDY</translation>
 <translation id="3808945828600697669">Répertorier les plug-ins désactivés</translation>
-<translation id="2187975305444384964">Vous permet d'indiquer si les sites Web sont autorisés à suivre la position géographique des utilisateurs. Le tracking de la position géographique des utilisateurs peut être autorisé par défaut, refusé par défaut ou la question peut être posée à l'utilisateur chaque fois qu'un site Web demande la position géographique.</translation>
+<translation id="2187975305444384964">Vous permet d'indiquer si les sites Web sont autorisés à suivre la position géographique des utilisateurs. Le suivi de la position géographique des utilisateurs peut être autorisé par défaut, refusé par défaut ou la question peut être posée à l'utilisateur chaque fois qu'un site Web demande sa position géographique.</translation>
 <translation id="8397112610813153899">Personnalise la liste des formats d'URL qui doivent toujours être rendus par <ph name="PRODUCT_FRAME_NAME"/>.
 
           Pour consulter des exemples de formats, accédez à http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
@@ -478,13 +478,6 @@
       Si vous désactivez ce paramètre, aucun rapport anonyme concernant l'utilisation et les incidents n'est envoyé à Google.
 
       Dans les deux cas, les utilisateurs ne peuvent pas modifier ni remplacer ce paramétrage dans <ph name="PRODUCT_NAME"/>.</translation>
-<translation id="3115819625623659514">Configure le type de page d'accueil par défaut dans <ph name="PRODUCT_NAME"/> et empêche les utilisateurs de modifier les préférences de page d'accueil. Vous pouvez définir la page d'accueil sur une URL spécifique que vous indiquez ou sur la page &quot;Nouvel onglet&quot;.
-
-          Si vous activez ce paramètre, la page &quot;Nouvel onglet&quot; est systématiquement utilisée en guise de page d'accueil et l'adresse URL de la page d'accueil est ignorée.
-
-          Si vous désactivez ce paramètre, la page d'accueil de l'utilisateur ne correspond jamais à la page &quot;Nouvel onglet&quot;, sauf si l'URL de la page d'accueil est définie sur la valeur &quot;chrome://newtab&quot;.
-
-          Dans les deux cas, les utilisateurs ne peuvent pas modifier leur type de page d'accueil dans <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="2263362640517427542">Activer le verrouillage lorsque les périphériques utilisant Google Chrome OS sont inactifs ou en veille.</translation>
 <translation id="6808666497110319299">Permet d'utiliser les pages d'erreur alternatives intégrées à <ph name="PRODUCT_NAME"/> (par exemple, &quot;Page introuvable&quot;) et empêche les utilisateurs de modifier ce paramétrage.
 
@@ -498,7 +491,8 @@
 
       Si vous désactivez ce paramètre, la fonction de saisie automatique n'est pas accessible aux utilisateurs.
 
-      Si vous activez ce paramètre ou ne configurez pas de valeur, la fonction de saisie automatique est disponible pour les utilisateurs. Ils peuvent ainsi configurer des profils de saisie automatique et activer ou désactiver à leur guise la fonction de saisie automatique.</translation>
+      Si vous activez ce paramètre ou ne configurez pas de valeur, la fonction de saisie automatique peut être contrôlée pour les utilisateurs. Ils peuvent ainsi configurer des profils de saisie automatique et activer ou désactiver à leur guise la fonction de saisie automatique.</translation>
+<translation id="6938581770853731947">Cette règle configure le type de page d'accueil par défaut dans <ph name="PRODUCT_NAME"/> et empêche les utilisateurs de modifier les préférences de page d'accueil. Vous pouvez définir la page d'accueil sur une URL spécifique que vous indiquez ou sur la page &quot;Nouvel onglet&quot;. Si vous activez ce paramètre, la page &quot;Nouvel onglet&quot; est systématiquement utilisée en tant que page d'accueil et l'adresse URL de la page d'accueil est ignorée. Si vous désactivez ce paramètre, la page d'accueil de l'utilisateur ne correspondra jamais à la page &quot;Nouvel onglet&quot;, sauf si l'URL de la page d'accueil est définie sur la valeur &quot;chrome://newtab&quot;. Dans les deux cas, les utilisateurs ne peuvent pas modifier leur type de page d'accueil dans <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="5645779841392247734">Autoriser les cookies sur ces sites</translation>
 <translation id="3906388518501362918">Active JavaScript dans <ph name="PRODUCT_NAME"/> et empêche les utilisateurs de modifier ce paramètre.
 

@@ -9,6 +9,7 @@
 <translation id="1437399238463685286">Invalid character in file name: $1</translation>
 <translation id="7040807039050164757">&amp;Check Spelling in This Field</translation>
 <translation id="778579833039460630">No data received</translation>
+<translation id="8791923223854254330">Manage Handlers...</translation>
 <translation id="1852799913675865625">There was an error while trying to read the file: <ph name="ERROR_TEXT"/>.</translation>
 <translation id="3828924085048779000">Empty passphrase is not allowed.</translation>
 <translation id="8265562484034134517">Import Data from Another Browser...</translation>
@@ -43,6 +44,7 @@
 <translation id="5048179823246820836">Nordic</translation>
 <translation id="1763046204212875858">Create application shortcuts</translation>
 <translation id="2105006017282194539">Not loaded yet</translation>
+<translation id="7821009361098626711">The server <ph name="DOMAIN"/> requires a username and password. The server says: <ph name="REALM"/>.</translation>
 <translation id="524759338601046922">Retype new PIN:</translation>
 <translation id="688547603556380205">L2TP/IPSec + User certificate</translation>
 <translation id="777702478322588152">Prefecture</translation>
@@ -50,8 +52,11 @@
 <translation id="561349411957324076">Completed</translation>
 <translation id="4764776831041365478">The web page at <ph name="URL"/> might be temporarily down or it may have moved permanently to a new web address.</translation>
 <translation id="6156863943908443225">Script cache</translation>
+<translation id="3233454090437339537">Would you like to use <ph name="HANDLER_TITLE"/> (<ph name="HANDLER_HOSTNAME"/>) to handle <ph name="PROTOCOL"/>:// links instead of <ph name="REPLACED_HANDLER_TITLE"/> from now on?</translation>
 <translation id="4610656722473172270">Google Toolbar</translation>
+<translation id="7845201717638045845">Data that you copy and paste</translation>
 <translation id="151501797353681931">Imported From Safari</translation>
+<translation id="7880025619322806991">Portal state</translation>
 <translation id="6706684875496318067">The <ph name="PLUGIN_NAME"/> plug-in is not allowed.</translation>
 <translation id="586567932979200359">You're running <ph name="PRODUCT_NAME"/> from its disk image. Installing it on your computer lets you run it without the disk image and ensures that it will be kept up to date.</translation>
 <translation id="3775432569830822555">SSL Server Certificate</translation>
@@ -63,7 +68,6 @@
 <translation id="4714531393479055912"><ph name="PRODUCT_NAME"/> can now sync your passwords.</translation>
 <translation id="5704565838965461712">Choose a certificate to present as identification:</translation>
 <translation id="2025632980034333559"><ph name="APP_NAME"/> has crashed. Click this balloon to reload the extension.</translation>
-<translation id="4059593000330943833">Experimental support for additional Wi-Fi Extensible Authentication Protocol methods, such as EAP-TLS and LEAP.</translation>
 <translation id="6322279351188361895">Failed to read private key.</translation>
 <translation id="3781072658385678636">The following plug-ins were blocked on this page:</translation>
 <translation id="4428782877951507641">Setting up sync</translation>
@@ -71,7 +75,6 @@
 <translation id="4654488276758583406">Very Small</translation>
 <translation id="6647228709620733774">Netscape Certification Authority Revocation URL</translation>
 <translation id="546411240573627095">Numpad style</translation>
-<translation id="7663002797281767775">Enables 3D CSS and higher performance compositing of web pages using Graphics Processor Unit (GPU) hardware.</translation>
 <translation id="2972581237482394796">&amp;Redo</translation>
 <translation id="5895138241574237353">Restart</translation>
 <translation id="1858072074757584559">The connection is not compressed.</translation>
@@ -103,12 +106,15 @@
 <translation id="3602290021589620013">Preview</translation>
 <translation id="7516602544578411747">Associates every browser window with a profile and adds a profile switcher in the upper right-hand corner. Every profile has its own bookmarks, extensions, apps, etc.</translation>
 <translation id="7082055294850503883">Ignore Caps Lock status and input lower case by default</translation>
+<translation id="4744603770635761495">Executable Path</translation>
 <translation id="1800124151523561876">No speech heard.</translation>
 <translation id="7814266509351532385">Change Default Search Engine</translation>
 <translation id="5376169624176189338">Click to go back, hold to see history</translation>
 <translation id="6310545596129886942"><ph name="NUMBER_FEW"/> secs left</translation>
 <translation id="9181716872983600413">Unicode</translation>
 <translation id="1383861834909034572">Opening when complete</translation>
+<translation id="2492538245231809938">Encrypted data types</translation>
+<translation id="1905982276051748623">Protocol and MIME type Handlers</translation>
 <translation id="5727728807527375859">Extensions, apps and themes can harm your computer. Are you sure that you want to continue?</translation>
 <translation id="3857272004253733895">Double Pinyin schema</translation>
 <translation id="1636842079139032947">Disconnect This Account...</translation>
@@ -118,11 +124,7 @@
 <translation id="1901494098092085382">Feedback submission status</translation>
 <translation id="2861301611394761800">System update complete. Please restart the system.</translation>
 <translation id="2231238007119540260">If you delete a server certificate, you restore the usual security checks for that server and require that it uses a valid certificate.</translation>
-<translation id="5463582782056205887">Try adding
-        <ph name="PRODUCT_NAME"/>
-        as a permitted programme in your firewall or antivirus software's settings. If it is
-        already a permitted programme, try deleting it from the list of permitted programmes
-        and adding it again.</translation>
+<translation id="9134410174832249455"><ph name="PRODUCT_NAME"/> could not load the web page because <ph name="HOST_NAME"/> took too long to respond. The website may be down or you may be experiencing issues with your Internet connection.</translation>
 <translation id="7624154074265342755">Wireless networks</translation>
 <translation id="3315158641124845231">Hide <ph name="PRODUCT_NAME"/></translation>
 <translation id="3496213124478423963">Zoom Out</translation>
@@ -134,9 +136,9 @@
 <translation id="4920887663447894854">The following sites have been blocked from tracking your location on this page:</translation>
 <translation id="7690346658388844119">Image burning has been terminated</translation>
 <translation id="8133676275609324831">&amp;Show in folder</translation>
+<translation id="26224892172169984">Do not allow any site to handle protocols</translation>
 <translation id="645705751491738698">Continue blocking JavaScript</translation>
 <translation id="4780321648949301421">Save Page As...</translation>
-<translation id="9154072353677278078">The server <ph name="DOMAIN"/> at <ph name="REALM"/> requires a username and password.</translation>
 <translation id="2551191967044410069">Geo-location Exceptions</translation>
 <translation id="4092066334306401966">13px</translation>
 <translation id="8178665534778830238">Content:</translation>
@@ -174,9 +176,10 @@
 <translation id="2972557485845626008">Firmware</translation>
 <translation id="735327918767574393">Something went wrong while displaying this web page. To continue, reload or go to another page.</translation>
 <translation id="8028060951694135607">Microsoft Key Recovery</translation>
-<translation id="9187657844611842955">two-sided</translation>
 <translation id="6391832066170725637">The file or directory could not be found.</translation>
 <translation id="4694445829210540512">No active <ph name="NETWORK"/> data plan</translation>
+<translation id="5510072263871409308">Loading additional printers</translation>
+<translation id="577624874850706961">Search cookies</translation>
 <translation id="5494920125229734069">Select all</translation>
 <translation id="2857834222104759979">Manifest file is invalid.</translation>
 <translation id="7931071620596053769">The following page(s) have become unresponsive. You can wait for them to become responsive or kill them.</translation>
@@ -184,8 +187,8 @@
 <translation id="7938958445268990899">Server's certificate is not yet valid.</translation>
 <translation id="4569998400745857585">Menu containing hidden extensions</translation>
 <translation id="4081383687659939437">Save info</translation>
-<translation id="5786805320574273267">Setting up remote access to this computer.</translation>
 <translation id="1801827354178857021">Full Stop</translation>
+<translation id="7849443193236180005">Hostname Pattern</translation>
 <translation id="2179052183774520942">Add Search Engine</translation>
 <translation id="5498951625591520696">Unable to reach the server.</translation>
 <translation id="2956948609882871496">Import bookmarks...</translation>
@@ -228,15 +231,14 @@
 <translation id="4684748086689879921">Skip Import</translation>
 <translation id="9130015405878219958">Invalid mode entered.</translation>
 <translation id="6615807189585243369"><ph name="BURNT_AMOUNT"/> of <ph name="TOTAL_SIZE"/> copied</translation>
-<translation id="8518425453349204360">Remote access to this computer is enabled for <ph name="USER_EMAIL_ADDRESS"/>.</translation>
 <translation id="4950138595962845479">Options...</translation>
 <translation id="4653235815000740718">There was a problem while creating OS recovery media. Used storage device could not be found.</translation>
+<translation id="6943836128787782965">HTTP get failed</translation>
 <translation id="5516565854418269276">&amp;Always show bookmarks bar</translation>
 <translation id="6426222199977479699">SSL Error</translation>
 <translation id="7104784605502674932">Confirm Sync Preferences</translation>
 <translation id="1788636309517085411">Use default</translation>
 <translation id="1661867754829461514">PIN missing</translation>
-<translation id="7406714851119047430">Remote access to this computer is disabled.</translation>
 <translation id="8589311641140863898">Experimental Extension APIs</translation>
 <translation id="2804922931795102237">Include System Information</translation>
 <translation id="869891660844655955">Expiry date</translation>
@@ -260,16 +262,15 @@
 <translation id="8534801226027872331">In this case, the certificate presented to your browser has errors and cannot be understood. This may mean that we cannot understand the identity information within the certificate or that certain other information in the certificate used to secure the connection. You should not proceed.</translation>
 <translation id="3608527593787258723">Activate tab 1</translation>
 <translation id="4497369307931735818">Remoting</translation>
+<translation id="1476822615785139447">Manage printers...</translation>
 <translation id="3855676282923585394">Import Bookmarks and Settings...</translation>
 <translation id="1116694919640316211">About</translation>
+<translation id="6878031674662373246">Stop syncing this account...</translation>
 <translation id="4422347585044846479">Edit bookmark for this page</translation>
-<translation id="1684638090259711957">Add a new exception pattern</translation>
-<translation id="4925481733100738363">Set up remote access...</translation>
 <translation id="1880905663253319515">Delete certificate &quot;<ph name="CERTIFICATE_NAME"/>&quot;?</translation>
 <translation id="8546306075665861288">Image cache</translation>
 <translation id="5904093760909470684">Proxy Configuration</translation>
 <translation id="2874027208508018603">Chrome will use 3G data when no Wi-Fi connection is present.</translation>
-<translation id="4558734465070698159">Press <ph name="HOTKEY_NAME"/> to select the previous input method.</translation>
 <translation id="3348643303702027858">OS Recovery Media creation has been cancelled.</translation>
 <translation id="3391060940042023865">The following plug-in has crashed: <ph name="PLUGIN_NAME"/></translation>
 <translation id="4237016987259239829">Network Connection Error</translation>
@@ -277,7 +278,6 @@
 <translation id="5197255632782567636">Internet</translation>
 <translation id="4755860829306298968">Manage plug-in blocking...</translation>
 <translation id="8879284080359814990">&amp;Show As Tab</translation>
-<translation id="2786847742169026523">Sync your passwords</translation>
 <translation id="41293960377217290">A proxy server is a server that acts as an intermediary between your computer and other servers.  At the moment, your system is configured to use a proxy, but
         <ph name="PRODUCT_NAME"/>
         can't connect to it.</translation>
@@ -302,7 +302,6 @@
 <translation id="5191625995327478163">&amp;Language Settings...</translation>
 <translation id="8833054222610756741">CRX-less Web Apps</translation>
 <translation id="4031729365043810780">Network Connection</translation>
-<translation id="3332115613788466465">Long-edge binding</translation>
 <translation id="1985136186573666099"><ph name="PRODUCT_NAME"/> is using your computer's system proxy settings to connect to the network.</translation>
 <translation id="6508261954199872201">App: <ph name="APP_NAME"/></translation>
 <translation id="5585645215698205895">&amp;Down</translation>
@@ -314,6 +313,7 @@
 <translation id="715487527529576698">Initial Chinese mode is Simplified Chinese</translation>
 <translation id="1674989413181946727">Computer-wide SSL settings:</translation>
 <translation id="8703575177326907206">Your connection to <ph name="DOMAIN"/> is not encrypted.</translation>
+<translation id="3042282020249392540">Add <ph name="PRODUCT_NAME"/> as a permitted programme in your firewall or antivirus software's settings. If it is already a permitted programme, try deleting it from the list of permitted programmes and adding it again.</translation>
 <translation id="8472623782143987204">hardware-backed</translation>
 <translation id="4865571580044923428">Manage exceptions...</translation>
 <translation id="2526619973349913024">Check for update</translation>
@@ -348,6 +348,7 @@
 <translation id="5829990587040054282">Lock screen or turn off</translation>
 <translation id="7800304661137206267">The connection is encrypted using <ph name="CIPHER"/>, with <ph name="MAC"/> for message authentication and <ph name="KX"/> as the key exchange mechanism.</translation>
 <translation id="7706319470528945664">Portuguese keyboard</translation>
+<translation id="7552723648707145905">Compact Navigation</translation>
 <translation id="5584537427775243893">Importing</translation>
 <translation id="9128870381267983090">Connect to network</translation>
 <translation id="4181841719683918333">Languages</translation>
@@ -361,6 +362,7 @@
 <translation id="5235889404533735074"><ph name="PRODUCT_NAME"/> sync makes it easy to share your data (such as bookmarks and preferences) between your computers.        <ph name="PRODUCT_NAME"/> synchronises your data by storing it online with Google when you sign in with your Google Account.</translation>
 <translation id="6533668113756472185">Page formatting or layout</translation>
 <translation id="5640179856859982418">Swiss keyboard</translation>
+<translation id="1662837784918284394">(none)</translation>
 <translation id="5910363049092958439">Sa&amp;ve Image As...</translation>
 <translation id="1363055550067308502">Toggle full-/half width mode</translation>
 <translation id="3108967419958202225">Choose...</translation>
@@ -381,7 +383,6 @@
 <translation id="62780591024586043">Experimental location features</translation>
 <translation id="8584280235376696778">&amp;Open video in new tab</translation>
 <translation id="2845382757467349449">Always Show Bookmarks Bar</translation>
-<translation id="2516384155283419848">Binding</translation>
 <translation id="3053013834507634016">Certificate Key Usage</translation>
 <translation id="4487088045714738411">Belgian keyboard</translation>
 <translation id="7511635910912978956"><ph name="NUMBER_FEW"/> hours left</translation>
@@ -394,17 +395,17 @@
           <ph name="BEGIN_BOLD"/>%windir%\\network diagnostic\\xpnetdiag.exe<ph name="END_BOLD"/><ph name="BEGIN_BOLD"/>
           and then click OK<ph name="END_BOLD"/>.</translation>
 <translation id="2934952234745269935">Volume Label</translation>
-<translation id="7960533875494434480">Short-edge binding</translation>
+<translation id="6272247697534482847">Disable GPU VSync</translation>
 <translation id="6431347207794742960"><ph name="PRODUCT_NAME"/> will set up automatic updates for all users of this computer.</translation>
 <translation id="4973698491777102067">Obliterate the following items from:</translation>
 <translation id="6074963268421707432">Do not allow any site to show desktop notifications</translation>
-<translation id="8508050303181238566">Press <ph name="HOTKEY_NAME"/> to switch between input methods.</translation>
 <translation id="6273404661268779365">Add new fax</translation>
 <translation id="1995173078718234136">Scanning content...</translation>
 <translation id="4735819417216076266">Space input style</translation>
 <translation id="2977095037388048586">You attempted to reach <ph name="DOMAIN"/>, but instead you actually reached a server identifying itself as <ph name="DOMAIN2"/>. This may be caused by a misconfiguration on the server or by something more serious. An attacker on your network could be trying to get you to visit a fake (and potentially harmful) version of <ph name="DOMAIN3"/>. You should not proceed.</translation>
 <translation id="220138918934036434">Hide button</translation>
 <translation id="5374359983950678924">Change picture</translation>
+<translation id="2194400577068159994">Would you like to use <ph name="HANDLER_TITLE"/> (<ph name="HANDLER_HOSTNAME"/>) to handle <ph name="PROTOCOL"/>:// links from now on?</translation>
 <translation id="5158548125608505876">Do not sync my passwords</translation>
 <translation id="2167276631610992935">JavaScript</translation>
 <translation id="6974306300279582256">Enable notifications from <ph name="SITE"/></translation>
@@ -421,7 +422,6 @@
 <translation id="3314070176311241517">Allow all sites to run JavaScript (recommended)</translation>
 <translation id="2406911946387278693">Manage your devices from the cloud</translation>
 <translation id="7419631653042041064">Catalan keyboard</translation>
-<translation id="5710740561465385694">Ask me when a site tries to set data</translation>
 <translation id="3897092660631435901">Menu</translation>
 <translation id="7024867552176634416">Select a removable storage device to use</translation>
 <translation id="8553075262323480129">The translation failed because the page's language could not be determined.</translation>
@@ -447,12 +447,11 @@
 <translation id="9121814364785106365">Open as pinned tab</translation>
 <translation id="6996264303975215450">Web Page, Complete</translation>
 <translation id="3435896845095436175">Enable</translation>
+<translation id="5849294688757445020">GPU compositing on all pages</translation>
 <translation id="1891668193654680795">Trust this certificate for identifying software makers.</translation>
 <translation id="5078638979202084724">Bookmark all tabs</translation>
 <translation id="5585118885427931890">Could not create bookmark folder.</translation>
 <translation id="2154710561487035718">Copy URL</translation>
-<translation id="8163672774605900272">If you don't believe that you should be using a proxy server, try the following steps:
-        <ph name="PLATFORM_TEXT"/></translation>
 <translation id="5510687173983454382">Control which users are allowed to log in to a device and configure whether guest browsing sessions are permitted.</translation>
 <translation id="3241680850019875542">Select the root directory of the extension to pack. To update an extension, also select the private key file to reuse.</translation>
 <translation id="7500424997253660722">Restricted pool:</translation>
@@ -478,6 +477,7 @@
 <translation id="4417271111203525803">Address line 2</translation>
 <translation id="7617095560120859490">Tell us what is happening. (required)</translation>
 <translation id="5618333180342767515">(this might take a few minutes)</translation>
+<translation id="938470336146445890">Please install a user certificate.</translation>
 <translation id="5399884481423204214">User feedback submission failed: $1</translation>
 <translation id="4307992518367153382">Basics</translation>
 <translation id="8480417584335382321">Page zoom:</translation>
@@ -538,7 +538,10 @@
 <translation id="4307281933914537745">Learn more about system recovery</translation>
 <translation id="2849936225196189499">Critical</translation>
 <translation id="9001035236599590379">MIME type</translation>
+<translation id="1408167824939409937">Compact Navigation Bar</translation>
 <translation id="5612754943696799373">Allow Download?</translation>
+<translation id="347699201225182431">This extension is blacklisted.</translation>
+<translation id="2565875069387440417">Sign in with your Google Account.</translation>
 <translation id="6353618411602605519">Croatian keyboard</translation>
 <translation id="5515810278159179124">Do not allow any site to track my physical location</translation>
 <translation id="5999606216064768721">Use System Title Bar and Borders</translation>
@@ -546,6 +549,7 @@
 <translation id="3398951731874728419">Error info:</translation>
 <translation id="1464570622807304272">Try it out - type &quot;orchids&quot; and press Enter.</translation>
 <translation id="8026684114486203427">To use the Chrome Web Store, you must sign in with a Google Account.</translation>
+<translation id="1486096554574027028">Search passwords</translation>
 <translation id="8417276187983054885">Set up <ph name="CLOUD_PRINT_NAME"/></translation>
 <translation id="3056462238804545033">Oops!  Something went wrong when trying to authenticate you.  Please double-check your login credentials and try again.</translation>
 <translation id="5298420986276701358">By signing in with your Google Apps account, you can manage the configuration of this <ph name="PRODUCT_NAME"/> device remotely from the cloud.</translation>
@@ -562,12 +566,11 @@
 <translation id="4110342520124362335">Cookies from <ph name="DOMAIN"/> blocked.</translation>
 <translation id="3303818374450886607">Copies</translation>
 <translation id="2019718679933488176">&amp;Open Audio in New Tab</translation>
+<translation id="1031362278801463162">Loading preview</translation>
 <translation id="4138267921960073861">Show usernames and photos on the sign-in screen</translation>
 <translation id="7465778193084373987">Netscape Certificate Revocation URL</translation>
 <translation id="5976690834266782200">Adds items to the tab context menu for grouping tabs.</translation>
 <translation id="4755240240651974342">Finnish keyboard</translation>
-<translation id="7049893973755373474">Check your Internet connection. Reboot any routers, modems or other
-        network devices that you may be using.</translation>
 <translation id="7421925624202799674">&amp;View Page Source</translation>
 <translation id="3940082421246752453">The server does not support the HTTP version used in the request.</translation>
 <translation id="661719348160586794">Your saved passwords will appear here.</translation>
@@ -600,6 +603,7 @@
 <translation id="4287689875748136217">Unable to load the web page because the server sent no data.</translation>
 <translation id="1634788685286903402">Trust this certificate for identifying email users.</translation>
 <translation id="7052402604161570346">This type of file can harm your computer. Are you sure that you want to download <ph name="FILE_NAME"/>?</translation>
+<translation id="3154015489111064513">Use DHCP</translation>
 <translation id="8642489171979176277">Imported From Google Toolbar</translation>
 <translation id="4142744419835627535">Instant Auto-complete Immediately</translation>
 <translation id="4684427112815847243">Sync everything</translation>
@@ -609,6 +613,9 @@
 <translation id="7787129790495067395">You are currently using a passphrase.  If you have forgotten your passphrase, you can reset sync to clear your data from Google's servers, using the Google Dashboard.</translation>
 <translation id="2686759344028411998">Unable to detect any modules loaded.</translation>
 <translation id="572525680133754531">Renders a border around composited Render Layers to help debug and study layer compositing.</translation>
+<translation id="2519040785135695148">This site was prevented from registering a customised URL handler.</translation>
+<translation id="3317459757438853210">Two-sided</translation>
+<translation id="8788054318005539616">Stop Syncing This Account</translation>
 <translation id="2011110593081822050">Web Worker: <ph name="WORKER_NAME"/></translation>
 <translation id="3294437725009624529">Guest</translation>
 <translation id="350069200438440499">File name:</translation>
@@ -617,11 +624,13 @@
 <translation id="7810202088502699111">Pop-ups were blocked on this page.</translation>
 <translation id="8190698733819146287">Customise languages and input...</translation>
 <translation id="646727171725540434">HTTP proxy</translation>
+<translation id="7576690715254076113">Collate</translation>
 <translation id="1006316751839332762">Encryption passphrase</translation>
 <translation id="8795916974678578410">New Window</translation>
 <translation id="2733275712367076659">You have certificates from these organisations that identify you:</translation>
 <translation id="4801512016965057443">Allow mobile data roaming</translation>
 <translation id="2515586267016047495">Alt</translation>
+<translation id="4839122884004914586">Override software rendering list</translation>
 <translation id="2046040965693081040">Use Current Pages</translation>
 <translation id="3798449238516105146">Version</translation>
 <translation id="5764483294734785780">Sa&amp;ve audio as...</translation>
@@ -638,7 +647,6 @@
 <translation id="3885155851504623709">Parish</translation>
 <translation id="4910171858422458941">Cannot enable plug-ins that are disabled by enterprise policy</translation>
 <translation id="4495419450179050807">Don't show on this page</translation>
-<translation id="4745800796303246012">Experimental Wi-Fi EAP methods</translation>
 <translation id="1225544122210684390">Hard Disk Device</translation>
 <translation id="939736085109172342">New folder</translation>
 <translation id="4933484234309072027">embedded on <ph name="URL"/></translation>
@@ -680,6 +688,7 @@
 <translation id="7484645889979462775">Never for this site</translation>
 <translation id="8666066831007952346"><ph name="NUMBER_TWO"/> days left</translation>
 <translation id="9086455579313502267">Unable to access the network</translation>
+<translation id="4161592545897541416">Restrict Instant to loading only search pages.</translation>
 <translation id="5595485650161345191">Edit address</translation>
 <translation id="2374144379568843525">&amp;Hide spelling panel</translation>
 <translation id="2694026874607847549">1 cookie</translation>
@@ -706,6 +715,7 @@
 <translation id="7427315641433634153">MSCHAP</translation>
 <translation id="6622980291894852883">Continue blocking images</translation>
 <translation id="5937837224523037661">When I encounter plug-ins on a site:</translation>
+<translation id="1710259589646384581">OS</translation>
 <translation id="4988792151665380515">Failed to export public key.</translation>
 <translation id="6333049849394141510">Choose what to sync</translation>
 <translation id="446322110108864323">Pinyin Input Settings</translation>
@@ -724,6 +734,7 @@
 <translation id="1722567105086139392">Link</translation>
 <translation id="2620436844016719705">System</translation>
 <translation id="5362741141255528695">Select private key file.</translation>
+<translation id="8638842473654406096">Reopen the page</translation>
 <translation id="5292890015345653304">Insert an SD card or USB memory stick</translation>
 <translation id="5583370583559395927">Time remaining: <ph name="TIME_REMAINING"/></translation>
 <translation id="8065982201906486420">Click to run the <ph name="PLUGIN_NAME"/> plug-in.</translation>
@@ -762,11 +773,9 @@
 <translation id="1071917609930274619">Data Encipherment</translation>
 <translation id="3473105180351527598">Enable phishing and malware protection</translation>
 <translation id="6151323131516309312">Press <ph name="SEARCH_KEY"/> to search <ph name="SITE_NAME"/></translation>
-<translation id="3753317529742723206">Would you like to use <ph name="HANDLER_TITLE"/> (<ph name="HANDLER_HOSTNAME"/>) to handle <ph name="PROTOCOL"/>:// links instead of <ph name="REPLACED_HANDLER_TITLE"/> from now on?</translation>
 <translation id="6216679966696797604">Start a Guest session</translation>
 <translation id="5456397824015721611">Maximum Chinese characters in pre-edit buffer, including input of Zhuyin
         symbols</translation>
-<translation id="2055443983279698110">Experimental GNOME menu bar support.</translation>
 <translation id="2342959293776168129">Clear download history</translation>
 <translation id="2503522102815150840">Browser crash... go boom</translation>
 <translation id="7201354769043018523">Right paren</translation>
@@ -788,12 +797,12 @@
 <translation id="833853299050699606">Plan information not available.</translation>
 <translation id="1737968601308870607">File bug</translation>
 <translation id="4571852245489094179">Import Bookmarks and Settings</translation>
-<translation id="99648783926443049">Go to <ph name="BEGIN_BOLD"/> Spanner menu &gt; Options &gt; Under the Hood &gt; Change proxy settings <ph name="END_BOLD"/> and make sure that your configuration is set to &quot;no proxy&quot; or &quot;direct&quot;.</translation>
 <translation id="4421917670248123270">Close and cancel downloads</translation>
 <translation id="5605623530403479164">Other search engines</translation>
 <translation id="8887243200615092733"><ph name="PRODUCT_NAME"/> can now sync your passwords. To protect your data, you need to confirm your account information.</translation>
 <translation id="4740663705480958372">Enables P2P Pepper API and P2P JavaScript API. The API is under development and doesn't work yet.</translation>
 <translation id="5710435578057952990">The identity of this website has not been verified.</translation>
+<translation id="3452884066206827415">Preload the default search engine for Instant.</translation>
 <translation id="1421046588786494306">Foreign Sessions</translation>
 <translation id="1661245713600520330">This page lists all modules loaded into the main process and modules registered to be loaded at a later point.</translation>
 <translation id="5451646087589576080">View Frame &amp;Info</translation>
@@ -806,8 +815,10 @@
 <translation id="5184063094292164363">&amp;JavaScript Console</translation>
 <translation id="333371639341676808">Prevent this page from creating additional dialogues.</translation>
 <translation id="7632380866023782514">Upper right</translation>
+<translation id="4693789964669838452">FPS</translation>
 <translation id="4925520021222027859">Enter your application-specific password:</translation>
 <translation id="3494768541638400973">Google Japanese Input (for Japanese keyboard)</translation>
+<translation id="4994474651455208930">Allow sites to ask to become default handlers for protocols</translation>
 <translation id="5844183150118566785"><ph name="PRODUCT_NAME"/> is up to date (<ph name="VERSION"/>)</translation>
 <translation id="3118046075435288765">The server closed the connection unexpectedly.</translation>
 <translation id="8041140688818013446">It is likely that the server hosting the web page has been overloaded or encountered an error. In order to avoid causing
@@ -857,7 +868,6 @@
 <translation id="4064488613268730704">Manage Auto-fill settings...</translation>
 <translation id="6830600606572693159">The web page at <ph name="URL"/> is currently unavailable. It may be overloaded or down for maintenance.</translation>
 <translation id="4145797339181155891">Eject</translation>
-<translation id="7886793013438592140">Unable to start service process.</translation>
 <translation id="8417944620073548444"><ph name="MEGABYTES"/> MB remaining</translation>
 <translation id="7339898014177206373">New window</translation>
 <translation id="3026202950002788510">Go to
@@ -866,7 +876,9 @@
           <ph name="END_BOLD"/>
           and deselect any proxies that have been selected.</translation>
 <translation id="7033648024564583278">Initialising burn process...</translation>
+<translation id="3759371141211657149">Manage handler settings...</translation>
 <translation id="2246340272688122454">Downloading recovery image...</translation>
+<translation id="5305688511332277257">None installed</translation>
 <translation id="7770995925463083016"><ph name="NUMBER_TWO"/> mins ago</translation>
 <translation id="2816269189405906839">Chinese input method (cangjie)</translation>
 <translation id="7087282848513945231">County</translation>
@@ -877,6 +889,7 @@
         down and new network requests fail.  Reloading the page should
         resolve this.</translation>
 <translation id="2655386581175833247">User certificate:</translation>
+<translation id="8082103788701842156">Adds a &quot;Hide the toolbar&quot; entry to the tab strip's context menu. Use this to toggle between always displaying the toolbar (default) and only opening it as a drop-down box, as needed.</translation>
 <translation id="5039804452771397117">Allow</translation>
 <translation id="5435964418642993308">Press enter to go back, context menu key to see history</translation>
 <translation id="81686154743329117">ZRM</translation>
@@ -917,6 +930,7 @@
 <translation id="189210018541388520">Open full screen</translation>
 <translation id="8795668016723474529">Add a credit card</translation>
 <translation id="5860033963881614850">Off</translation>
+<translation id="3755825649750405623"><ph name="SHORT_PRODUCT_NAME"/> › Connect</translation>
 <translation id="3956882961292411849">Loading mobile data plan information, please wait...</translation>
 <translation id="689050928053557380">Buy data plan...</translation>
 <translation id="4235618124995926194">Include this email:</translation>
@@ -949,6 +963,7 @@
 <translation id="4091434297613116013">sheets of paper</translation>
 <translation id="7475671414023905704">Netscape Lost Password URL</translation>
 <translation id="3335947283844343239">Re-open Closed Tab</translation>
+<translation id="3711446483454322176">Advanced...</translation>
 <translation id="4089663545127310568">Clear saved passwords</translation>
 <translation id="6500444002471948304">Add folder...</translation>
 <translation id="2480626392695177423">Toggle full-/half-width punctuation mode</translation>
@@ -981,11 +996,11 @@
 <translation id="2629089419211541119"><ph name="NUMBER_ONE"/> hour ago</translation>
 <translation id="1691063574428301566">Your computer will restart when the update is complete.</translation>
 <translation id="131364520783682672">Caps Lock</translation>
-<translation id="6259308910735500867">Access to the remoting host directory was denied. Please try with another account.</translation>
 <translation id="3415261598051655619">Accessible to Script:</translation>
 <translation id="2335122562899522968">This page has set cookies.</translation>
 <translation id="3786100282288846904">Unable to delete &quot;$1&quot;: $2</translation>
 <translation id="8461914792118322307">Proxy</translation>
+<translation id="455627352480893350">Synced Bookmarks</translation>
 <translation id="4089521618207933045">Has sub-menu</translation>
 <translation id="1936157145127842922">Show in Folder</translation>
 <translation id="6982279413068714821"><ph name="NUMBER_DEFAULT"/> mins ago</translation>
@@ -994,6 +1009,7 @@
 <translation id="7443484992065838938">Preview report</translation>
 <translation id="5714678912774000384">Activate last tab</translation>
 <translation id="3799598397265899467">When I leave my browser</translation>
+<translation id="8813811964357448561">sheets of paper</translation>
 <translation id="2125314715136825419">Proceed without updating Adobe Reader (not recommended)</translation>
 <translation id="1120026268649657149">Keyword must be empty or unique</translation>
 <translation id="542318722822983047">Automatically move cursor to the next character</translation>
@@ -1001,6 +1017,7 @@
 <translation id="9027459031423301635">Open Link in New &amp;Tab</translation>
 <translation id="2251809247798634662">New Incognito window</translation>
 <translation id="358344266898797651">Celtic</translation>
+<translation id="5106282558266057405"><ph name="SHORT_PRODUCT_NAME"/> › The small print</translation>
 <translation id="3625870480639975468">Reset zoom</translation>
 <translation id="5199729219167945352">Experiments</translation>
 <translation id="5055518462594137986">Remember my choice for all links of this type.</translation>
@@ -1039,6 +1056,7 @@
 <translation id="7857823885309308051">This may take a minute...</translation>
 <translation id="662870454757950142">Password format is incorrect.</translation>
 <translation id="370665806235115550">Loading...</translation>
+<translation id="2580924999637585241">Total: <ph name="NUMBER_OF_SHEETS"/> <ph name="SHEETS_LABEL"/></translation>
 <translation id="1808792122276977615">Add Page...</translation>
 <translation id="2076269580855484719">Hide this plug-in</translation>
 <translation id="254416073296957292">&amp;Language settings...</translation>
@@ -1050,7 +1068,6 @@
 <translation id="4222982218026733335">Invalid Server Certificate</translation>
 <translation id="152234381334907219">Never Saved</translation>
 <translation id="5600599436595580114">This page was prerendered.</translation>
-<translation id="8926468725336609312">Google Chrome cannot show the print preview when the built-in PDF viewer is disabled. In order to see the preview, please visit <ph name="BEGIN_LINK"/>chrome://plug-ins<ph name="END_LINK"/>, enable the &quot;Chrome PDF Viewer&quot; and try again.</translation>
 <translation id="8494214181322051417">New!</translation>
 <translation id="7762841930144642410"><ph name="BEGIN_BOLD"/>You've gone incognito<ph name="END_BOLD"/>. Pages that you view in this window won't appear in your browser history or search history, and they won't leave other traces, like cookies, on your computer after you close the incognito window. Any files that you download or bookmarks that you create will be preserved, however.        <ph name="LINE_BREAK"/>        <ph name="BEGIN_BOLD"/>Going incognito doesn't affect the behaviour of other people, servers or software. Be wary of:<ph name="END_BOLD"/>        <ph name="BEGIN_LIST"/>          <ph name="BEGIN_LIST_ITEM"/>Websites that collect or share information about you<ph name="END_LIST_ITEM"/>          <ph name="BEGIN_LIST_ITEM"/>Internet service providers or employers that track the pages that you visit<ph name="END_LIST_ITEM"/>          <ph name="BEGIN_LIST_ITEM"/>Malicious software that tracks your keystrokes in exchange for free smileys<ph name="END_LIST_ITEM"/>          <ph name="BEGIN_LIST_ITEM"/>Surveillance by secret agents<ph name="END_LIST_ITEM"/>          <ph name="BEGIN_LIST_ITEM"/>People standing behind you<ph name="END_LIST_ITEM"/>        <ph name="END_LIST"/>        <ph name="BEGIN_LINK"/>Learn more<ph name="END_LINK"/> about incognito browsing.</translation>
 <translation id="2386255080630008482">Server's certificate has been revoked</translation>
@@ -1068,17 +1085,6 @@
 <translation id="2096368010154057602">Department</translation>
 <translation id="1036561994998035917">Keep using <ph name="ENGINE_NAME"/></translation>
 <translation id="8730621377337864115">Done</translation>
-<translation id="665757950158579497">Try disabling network prediction by following these steps:
-        Go to
-        <ph name="BEGIN_BOLD"/>
-        Spanner menu &gt;
-        <ph name="SETTINGS_TITLE"/>
-        &gt;
-        <ph name="ADVANCED_TITLE"/>
-        <ph name="END_BOLD"/>
-        and deselect &quot;<ph name="NO_PREFETCH_DESCRIPTION"/>.&quot;
-        If this does not resolve the issue, we recommend selecting this option
-        again for improved performance.</translation>
 <translation id="4932733599132424254">Date</translation>
 <translation id="6267166720438879315">Select a certificate to which you want to authenticate <ph name="HOST_NAME"/></translation>
 <translation id="2422927186524098759">Sidebar</translation>
@@ -1105,14 +1111,13 @@
 <translation id="308268297242056490">URI</translation>
 <translation id="4479812471636796472">US Dvorak keyboard</translation>
 <translation id="8673026256276578048">Search the web...</translation>
-<translation id="1437307674059038925">If you use a proxy server, check your proxy settings or check with your network administrator
-        to make sure that the proxy server is working.</translation>
 <translation id="149347756975725155">Could not load extension icon '<ph name="ICON"/>'.</translation>
 <translation id="3675321783533846350">Set up a proxy to connect to the network.</translation>
 <translation id="5451285724299252438">page range text box</translation>
 <translation id="5669267381087807207">Activating</translation>
 <translation id="7434823369735508263">UK Dvorak keyboard</translation>
 <translation id="1572103024875503863"><ph name="NUMBER_MANY"/> days</translation>
+<translation id="1707463636381878959">Share this network with other users</translation>
 <translation id="2084978867795361905">MS-IME</translation>
 <translation id="7227669995306390694"><ph name="NETWORK"/> no data plan</translation>
 <translation id="3481915276125965083">The following pop-ups were blocked on this page:</translation>
@@ -1122,6 +1127,8 @@
 <translation id="5586329397967040209">Make this my home page</translation>
 <translation id="629730747756840877">Account</translation>
 <translation id="8525306231823319788">Full screen</translation>
+<translation id="5892507820957994680">Overrides the built-in software rendering list and enables GPU acceleration on unsupported system configurations.</translation>
+<translation id="6280731100889067253">Print preview</translation>
 <translation id="9054208318010838">Allow all sites to track my physical location</translation>
 <translation id="3058212636943679650">If you ever need to restore your computer's operating system, you'll need a recovery SD card or USB memory stick.</translation>
 <translation id="2815382244540487333">The following cookies were blocked:</translation>
@@ -1157,7 +1164,6 @@
 <translation id="6248988683584659830">Search settings</translation>
 <translation id="8323232699731382745">network password</translation>
 <translation id="6588399906604251380">Enable spellchecking</translation>
-<translation id="7167621057293532233">Data Types</translation>
 <translation id="7053983685419859001">Block</translation>
 <translation id="2485056306054380289">Server CA certificate:</translation>
 <translation id="6462109140674788769">Greek keyboard</translation>
@@ -1177,6 +1183,7 @@
 <translation id="7238461040709361198">Your Google Account password has changed since the last time that you signed in on this computer.</translation>
 <translation id="1956050014111002555">The file contained multiple certificates, none of which were imported:</translation>
 <translation id="302620147503052030">Show button</translation>
+<translation id="7030689690480150547">About this panel</translation>
 <translation id="5512074755152723588">Typing a URL of an existing tab into the omnibox results in refocusing the tab instead of loading in the current tab.</translation>
 <translation id="9157595877708044936">Setting up...</translation>
 <translation id="4475552974751346499">Search downloads</translation>
@@ -1199,8 +1206,8 @@
 <translation id="8494234776635784157">Web Contents</translation>
 <translation id="2681441671465314329">Empty the cache</translation>
 <translation id="3646789916214779970">Reset to default theme</translation>
-<translation id="1592960452683145077">Remoting was started successfully. Now you should be able to connect to this computer remotely.</translation>
 <translation id="1679068421605151609">Developer Tools</translation>
+<translation id="7014051144917845222"><ph name="PRODUCT_NAME"/>'s connection attempt to <ph name="HOST_NAME"/> was rejected. The website may be down or your network may not be properly configured.</translation>
 <translation id="6648524591329069940">Serif Font</translation>
 <translation id="6896758677409633944">Copy</translation>
 <translation id="5260508466980570042">Sorry, your email or password could not be verified. Please try again.</translation>
@@ -1225,6 +1232,7 @@
 <translation id="74354239584446316">Your web store account is <ph name="EMAIL_ADDRESS"/> - signing in to sync with a different account will result in incompatibilities.</translation>
 <translation id="3712897371525859903">Save page &amp;as...</translation>
 <translation id="7926251226597967072"><ph name="PRODUCT_NAME"/> is now importing the following items from <ph name="IMPORT_BROWSER_NAME"/>:</translation>
+<translation id="4442424173763614572">DNS lookup failed</translation>
 <translation id="2767649238005085901">Press enter to go forward, context menu key to see history</translation>
 <translation id="8580634710208701824">Reload Frame</translation>
 <translation id="1018656279737460067">Cancelled</translation>
@@ -1241,6 +1249,7 @@
 <translation id="2307164895203900614">View Background Pages (<ph name="NUM_BACKGROUND_APPS"/>)</translation>
 <translation id="3192947282887913208">Audio Files</translation>
 <translation id="6295535972717341389">Plug-ins</translation>
+<translation id="7791267293787079395">File System</translation>
 <translation id="8116190140324504026">More info...</translation>
 <translation id="7469894403370665791">Automatically connect to this network</translation>
 <translation id="4807098396393229769">Name on card</translation>
@@ -1253,6 +1262,7 @@
 <translation id="3776667127601582921">In this case, the server certificate or an intermediate CA certificate presented to your browser is invalid. This may mean that the certificate is malformed, contains invalid fields or is not supported.</translation>
 <translation id="2412835451908901523">Please enter the 8-digit PIN Unlocking Key provided by <ph name="CARRIER_ID"/>.</translation>
 <translation id="6979448128170032817">Exceptions...</translation>
+<translation id="7019805045859631636">Fast</translation>
 <translation id="7584802760054545466">Connecting to <ph name="NETWORK_ID"/></translation>
 <translation id="208047771235602537">Do you want to exit <ph name="PRODUCT_NAME"/> with a download in progress?</translation>
 <translation id="4060383410180771901">The website is unable to handle the request for <ph name="URL"/>.</translation>
@@ -1261,11 +1271,15 @@
 <translation id="6035087343161522833">When the option to block third-party cookies from being set is enabled, also block third-party cookies from being read.</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME"/>: <ph name="ERROR"/></translation>
 <translation id="1567993339577891801">JavaScript Console</translation>
+<translation id="1559235587769913376">Input Unicode characters</translation>
 <translation id="1548132948283577726">Sites which never save passwords will appear here.</translation>
 <translation id="583281660410589416">Unknown</translation>
 <translation id="3774278775728862009">Thai input method (TIS-820.2538 keyboard)</translation>
 <translation id="9115675100829699941">&amp;Bookmarks</translation>
 <translation id="2485422356828889247">Uninstall</translation>
+<translation id="1731589410171062430">Total: <ph name="NUMBER_OF_SHEETS"/> <ph name="SHEETS_LABEL"/> (<ph name="NUMBER_OF_PAGES"/> <ph name="PAGE_OR_PAGES_LABEL"/>)</translation>
+<translation id="6349012449811924268">Last synced to <ph name="USER_EMAIL_ADDRESS"/>. 
+        Manage sync data on <ph name="BEGIN_LINK"/>Google Dashboard<ph name="END_LINK"/></translation>
 <translation id="2621889926470140926">Do you want to exit <ph name="PRODUCT_NAME"/> with <ph name="DOWNLOAD_COUNT"/> downloads in progress?</translation>
 <translation id="7279701417129455881">Manage cookie blocking...</translation>
 <translation id="1166359541137214543">ABC</translation>
@@ -1290,9 +1304,11 @@
 <translation id="5170568018924773124">Show in folder</translation>
 <translation id="883848425547221593">Other Bookmarks</translation>
 <translation id="6054173164583630569">French keyboard</translation>
+<translation id="3596315483920932980">Allow local data to be set for the current session only</translation>
 <translation id="4870177177395420201"><ph name="PRODUCT_NAME"/> cannot determine or set the default browser.</translation>
 <translation id="8898786835233784856">Select Next Tab</translation>
 <translation id="2674170444375937751">Are you sure that you want to delete these pages from your history?</translation>
+<translation id="2932883381142163287">Report abuse</translation>
 <translation id="9111102763498581341">Unlock</translation>
 <translation id="289695669188700754">Key ID: <ph name="KEY_ID"/></translation>
 <translation id="3067198360141518313">Run this plug-in</translation>
@@ -1310,6 +1326,7 @@
 <translation id="8886960478266132308"><ph name="PRODUCT_NAME"/> securely syncs your data with your Google account.</translation>
 <translation id="8028993641010258682">Size</translation>
 <translation id="5031603669928715570">Enable...</translation>
+<translation id="532340483382036194">Enables support for installing Chrome apps that are deployed using a manifest file on a web page, rather than by packaging the manifest and icons into a crx file.</translation>
 <translation id="1383876407941801731">Search</translation>
 <translation id="8398877366907290961">Proceed anyway</translation>
 <translation id="5063180925553000800">New PIN:</translation>
@@ -1352,6 +1369,7 @@
 <translation id="57646104491463491">Date Modified</translation>
 <translation id="5992752872167177798">Seccomp sandbox</translation>
 <translation id="6362853299801475928">&amp;Report an issue...</translation>
+<translation id="5527463195266282916">Attempted to downgrade extension.</translation>
 <translation id="3289566588497100676">Easy symbol input</translation>
 <translation id="6507969014813375884">Chinese Simplified</translation>
 <translation id="7314244761674113881">SOCKS host</translation>
@@ -1367,16 +1385,19 @@
 <translation id="5895187275912066135">Issued On</translation>
 <translation id="1190844492833803334">When I close my browser</translation>
 <translation id="5646376287012673985">Location</translation>
+<translation id="7444538544936087653"><ph name="PRODUCT_NAME"/> is no longer updating, because your operating system is obsolete.</translation>
 <translation id="1110155001042129815">Wait</translation>
 <translation id="2607101320794533334">Subject Public Key Info</translation>
 <translation id="7071586181848220801">Unknown plug-in</translation>
 <translation id="3354601307791487577">Signing in guest mode.</translation>
+<translation id="8315720913203253727">This web page requires data that you entered earlier in order to be properly displayed. You can send this data again, but by doing so, you will repeat any action that this page previously performed. Press Reload to resend that data and display this page.</translation>
 <translation id="4419409365248380979">Always allow <ph name="HOST"/> to set cookies</translation>
 <translation id="2956070106555335453">Summary</translation>
 <translation id="917450738466192189">Server's certificate is invalid.</translation>
 <translation id="2649045351178520408">Base64-encoded ASCII, certificate chain</translation>
 <translation id="7424526482660971538">Choose my own passphrase</translation>
 <translation id="380271916710942399">Unlisted Server Certificate</translation>
+<translation id="6853643819051005790">Restrict Instant To Search</translation>
 <translation id="6459488832681039634">Use Selection for Find</translation>
 <translation id="2392369802118427583">Activate</translation>
 <translation id="9040421302519041149">Access to this network is protected.</translation>
@@ -1402,6 +1423,7 @@
 <translation id="1664712100580477121">Are you sure that you want to burn the image to the following device:</translation>
 <translation id="6639554308659482635">SQLite memory</translation>
 <translation id="8141503649579618569"><ph name="DOWNLOAD_RECEIVED"/>/<ph name="DOWNLOAD_TOTAL"/>, <ph name="TIME_LEFT"/></translation>
+<translation id="7231224339346098802">Use a number to indicate how many copies to print (1 or more).</translation>
 <translation id="7650701856438921772"><ph name="PRODUCT_NAME"/> is displayed in this language</translation>
 <translation id="740624631517654988">Pop-up blocked</translation>
 <translation id="3738924763801731196"><ph name="OID"/>:</translation>
@@ -1421,7 +1443,6 @@
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME"/> is ready to complete your installation</translation>
 <translation id="5316814419223884568">Search from right here</translation>
 <translation id="8142732521333266922">OK, sync everything</translation>
-<translation id="965674096648379287">This web page requires data that you entered earlier in order to be properly displayed. You can send this data again, but by doing so you will repeat any action that this page previously performed. Press Reload to resend that data and display this page.</translation>
 <translation id="43742617823094120">In this case, the certificate presented to your browser has been revoked by its issuer. This usually means that the integrity of this certificate has been compromised and that the certificate should not be trusted. You absolutely should not proceed past this point.</translation>
 <translation id="9019654278847959325">Slovakian keyboard</translation>
 <translation id="18139523105317219">EDI Party Name</translation>
@@ -1434,7 +1455,6 @@
 <translation id="7222232353993864120">Email Address</translation>
 <translation id="2128531968068887769">Native Client</translation>
 <translation id="7175353351958621980">Loaded from:</translation>
-<translation id="4590074117005971373">Enables higher performance of canvas tags with a 2D context by rendering using Graphics Processor Unit (GPU) hardware.</translation>
 <translation id="7186367841673660872">This page has been translated from<ph name="ORIGINAL_LANGUAGE"/>to<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="8448695406146523553">Only someone with your passphrase can read your encrypted data - the passphrase is not sent to or stored by Google. If you forget your passphrase, you will need to</translation>
 <translation id="6052976518993719690">SSL Certification Authority</translation>
@@ -1470,8 +1490,6 @@
 <translation id="2497284189126895209">All Files</translation>
 <translation id="696036063053180184">3 Set (No shift)</translation>
 <translation id="452785312504541111">Full-width English</translation>
-<translation id="945332329539165145">GPU Accelerated Canvas 2D</translation>
-<translation id="5220797120063118010">Enables support for installing Chrome apps that are deployed using a manifest file on a web page, rather than by packaging the manifest and icons into a crx file.</translation>
 <translation id="9148126808321036104">Sign in again</translation>
 <translation id="2282146716419988068">GPU Process</translation>
 <translation id="428771275901304970">Less than 1 MB available</translation>
@@ -1484,33 +1502,32 @@
 <translation id="4018133169783460046">Display <ph name="PRODUCT_NAME"/> in this language</translation>
 <translation id="5110450810124758964"><ph name="NUMBER_ONE"/> day ago</translation>
 <translation id="3264544094376351444">Sans-serif font</translation>
-<translation id="5586942249556966598">Do nothing</translation>
 <translation id="2820806154655529776"><ph name="NUMBER_ONE"/> sec</translation>
 <translation id="1077946062898560804">Set Up Automatic Updates for All Users</translation>
 <translation id="3122496702278727796">Failed To Create Data Directory</translation>
 <translation id="4517036173149081027">Close and cancel download</translation>
 <translation id="7150146631451105528"><ph name="DATE"/></translation>
+<translation id="350945665292790777">Uses GPU-accelerated compositing on all pages, not just those that include GPU-accelerated layers.</translation>
 <translation id="3166547286524371413">Address:</translation>
 <translation id="4522570452068850558">Details</translation>
 <translation id="59659456909144943">Notification: <ph name="NOTIFICATION_NAME"/></translation>
 <translation id="6731320427842222405">This may take a few minutes</translation>
 <translation id="4806525999832945986">Managed by <ph name="DOMAIN"/> (<ph name="STATUS"/>)</translation>
+<translation id="940573721483482582">Try disabling network prediction by following these steps: Go to <ph name="BEGIN_BOLD"/> Spanner menu &gt; <ph name="SETTINGS_TITLE"/> &gt; <ph name="ADVANCED_TITLE"/> <ph name="END_BOLD"/> and deselect &quot;<ph name="NO_PREFETCH_DESCRIPTION"/>.&quot; If this does not resolve the issue, we recommend selecting this option again for improved performance.</translation>
 <translation id="7503191893372251637">Netscape Certificate Type</translation>
 <translation id="1502960562739459116">Parts of this PDF document could not be displayed.  Install Adobe Reader?</translation>
 <translation id="4135450933899346655">Your Certificates</translation>
 <translation id="4731578803613910821">Your data on <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> and <ph name="WEBSITE_3"/></translation>
 <translation id="7716781361494605745">Netscape Certification Authority Policy URL</translation>
 <translation id="2881966438216424900">Last accessed:</translation>
-<translation id="7552203043556919163">Sync passwords</translation>
 <translation id="630065524203833229">E&amp;xit</translation>
 <translation id="4647090755847581616">&amp;Close Tab</translation>
 <translation id="2649204054376361687"><ph name="CITY"/>, <ph name="COUNTRY"/></translation>
 <translation id="7886758531743562066">The website at <ph name="HOST_NAME"/> contains elements from sites which appear to host malware – software that can hurt your computer or otherwise operate without your consent.  Just visiting a site that contains malware can infect your computer.</translation>
-<translation id="2064746092913005102">Total: <ph name="NUMBER_OF_PAGES"/> <ph name="PAGE_OR_PAGES_LABEL"/> <ph name="TWO_SIDED"/> <ph name="TIMES"/> <ph name="NUMBER_OF_COPIES"/> <ph name="COPIES_LABEL"/> <ph name="EQUAL_SIGN"/> <ph name="NUMBER_OF_SHEETS"/> <ph name="SHEETS_LABEL"/></translation>
 <translation id="7538227655922918841">Cookies from multiple sites allowed for session only.</translation>
 <translation id="2385700042425247848">Service name:</translation>
+<translation id="3128628928070793746">Go to <ph name="BEGIN_BOLD"/> the spanner menu &gt; <ph name="SETTINGS_TITLE"/> &gt; <ph name="ADVANCED_TITLE"/> &gt; <ph name="PROXIES_TITLE"/> <ph name="END_BOLD"/> and make sure that your configuration is set to &quot;no proxy&quot; or &quot;direct&quot;.</translation>
 <translation id="7751005832163144684">Print a Test Page</translation>
-<translation id="3638865692466101147">Print Preview - <ph name="PREVIEW_TAB_TITLE"/></translation>
 <translation id="1471300011765310414"><ph name="PRODUCT_NAME"/>
         can't display the web page because your computer isn't connected to the Internet.</translation>
 <translation id="5464632865477611176">Run this time</translation>
@@ -1547,6 +1564,7 @@
 <translation id="6445051938772793705">Country</translation>
 <translation id="3251759466064201842">&lt;Not Part Of Certificate&gt;</translation>
 <translation id="4229495110203539533"><ph name="NUMBER_ONE"/> sec ago</translation>
+<translation id="3399068503715460757">Use static IP</translation>
 <translation id="6410257289063177456">Image Files</translation>
 <translation id="6419902127459849040">Central European</translation>
 <translation id="6707389671160270963">SSL Client Certificate</translation>
@@ -1592,7 +1610,6 @@
 <translation id="5434065355175441495">PKCS #1 RSA Encryption</translation>
 <translation id="7073704676847768330">This is probably not the site that you are looking for!</translation>
 <translation id="8477384620836102176">&amp;General</translation>
-<translation id="1074663319790387896">Configure sync</translation>
 <translation id="4302315780171881488">Connection Status:</translation>
 <translation id="3391392691301057522">Old PIN:</translation>
 <translation id="1344519653668879001">Disable hyperlink auditing</translation>
@@ -1600,6 +1617,7 @@
 <translation id="4262113024799883061">Chinese</translation>
 <translation id="4775879719735953715">Default Browser</translation>
 <translation id="5575473780076478375">Incognito Extension: <ph name="EXTENSION_NAME"/></translation>
+<translation id="9118862410733032325">Error while playing back</translation>
 <translation id="4188026131102273494">Keyword:</translation>
 <translation id="2930644991850369934">There was a problem during recovery image download. Network connection has been lost.</translation>
 <translation id="3461610253915486539">Some preferences have been disabled by your IT administrator.</translation>
@@ -1612,7 +1630,6 @@
 <translation id="7227780179130368205">Malware Detected!</translation>
 <translation id="435243347905038008">Low <ph name="NETWORK"/> data</translation>
 <translation id="2489428929217601177">the past day</translation>
-<translation id="7418490403869327287">With Instant enabled, most web pages begin loading as soon as you type a URL in the omnibox, before you hit Enter. In addition, if supported by your default search engine, search results appear instantly, as you type queries in the omnibox, and in-line predictions help guide your search.\n\nBecause search results are requested even while you're typing your query, your default search engine may be logging these as search queries.\n</translation>
 <translation id="5149131957118398098"><ph name="NUMBER_ZERO"/> hours left</translation>
 <translation id="2541913031883863396">proceed anyway</translation>
 <translation id="4278390842282768270">Allowed</translation>
@@ -1641,6 +1658,7 @@
 <translation id="4521805507184738876">(expired)</translation>
 <translation id="111844081046043029">Are you sure that you want to leave this page?</translation>
 <translation id="1951615167417147110">Scroll up one page</translation>
+<translation id="6147020289383635445">Print preview failed.</translation>
 <translation id="4154664944169082762">Fingerprints</translation>
 <translation id="3202578601642193415">Newest</translation>
 <translation id="8112886015144590373"><ph name="NUMBER_FEW"/> hours</translation>
@@ -1688,6 +1706,7 @@
 <translation id="2850961597638370327">Issued to: <ph name="NAME"/></translation>
 <translation id="2168039046890040389">Page Up</translation>
 <translation id="1767519210550978135">Hsu</translation>
+<translation id="5508282018086013138">This extension is blacklisted by admin policy.</translation>
 <translation id="2498539833203011245">Minimise</translation>
 <translation id="2893168226686371498">Default browser</translation>
 <translation id="2435457462613246316">Show password</translation>
@@ -1703,7 +1722,9 @@
 <translation id="7568790562536448087">Updating</translation>
 <translation id="4856408283021169561">No microphone found.</translation>
 <translation id="8190193592390505034">Connecting to <ph name="PROVIDER_NAME"/></translation>
+<translation id="3222343486469566063">Not Signed In</translation>
 <translation id="6144890426075165477"><ph name="PRODUCT_NAME"/> is not currently your default browser.</translation>
+<translation id="2498131838700757846">Enable the experimental LevelDB back end for IndexedDB.</translation>
 <translation id="823241703361685511">Plan</translation>
 <translation id="4068506536726151626">This page contains elements from the following sites that are tracking your location:</translation>
 <translation id="4721475475128190282">Multiple Profiles</translation>
@@ -1716,10 +1737,8 @@
 <translation id="2466804342846034717">Enter the correct password above and then type the characters that you see in the picture below.</translation>
 <translation id="3881435075661337013">Nearing <ph name="NETWORK"/> expiry</translation>
 <translation id="5681833099441553262">Activate previous tab</translation>
-<translation id="4792057643643237295">Disable remote access</translation>
 <translation id="1681614449735360921">View Incompatibilities</translation>
 <translation id="19094784437781028">Solo debit card</translation>
-<translation id="2657327428424666237"><ph name="BEGIN_LINK"/>Reload<ph name="END_LINK"/> this web page later.</translation>
 <translation id="7347751611463936647">To use this extension, type &quot;<ph name="EXTENSION_KEYWORD"/>&quot;, then TAB, then your command or search.</translation>
 <translation id="659432221160402784"><ph name="PRODUCT_NAME"/> will sync any apps that you install, so you will be able to access them from any <ph name="PRODUCT_NAME"/> browser that you sign in to.</translation>
 <translation id="892464165639979917">Languages and Spellchecker Settings...</translation>
@@ -1754,6 +1773,8 @@
 <translation id="2378982052244864789">Select the extension directory.</translation>
 <translation id="7861215335140947162">&amp;Downloads</translation>
 <translation id="4778630024246633221">Certificate Manager</translation>
+<translation id="5279641203372218761">Manage local printers...</translation>
+<translation id="2744221223678373668">Shared</translation>
 <translation id="6705050455568279082"><ph name="URL"/> wants to track your physical location</translation>
 <translation id="4708849949179781599">Quit <ph name="PRODUCT_NAME"/></translation>
 <translation id="2505402373176859469"><ph name="RECEIVED_AMOUNT"/> of <ph name="TOTAL_SIZE"/></translation>
@@ -1781,9 +1802,11 @@
 <translation id="7723779034587221017">Lost connection with the policy service. Please reset the device or contact your support representative.</translation>
 <translation id="3046388203776734202">Pop-up Settings:</translation>
 <translation id="3437994698969764647">Export All...</translation>
+<translation id="8119631488458759651">remove this site</translation>
 <translation id="8349305172487531364">Bookmarks bar</translation>
 <translation id="1898064240243672867">Stored in: <ph name="CERT_LOCATION"/></translation>
 <translation id="444134486829715816">Expand...</translation>
+<translation id="2589855374197350858">Encrypted Data Types</translation>
 <translation id="1401874662068168819">Gin Yieh</translation>
 <translation id="7208899522964477531">Search <ph name="SITE_NAME"/> for <ph name="SEARCH_TERMS"/></translation>
 <translation id="6255097610484507482">Edit Credit Card</translation>
@@ -1810,29 +1833,21 @@
 <translation id="8793043992023823866">Importing...</translation>
 <translation id="8106211421800660735">Credit card number</translation>
 <translation id="2550839177807794974">Manage Search Engines...</translation>
-<translation id="7031711645186424727">Use external monitor</translation>
 <translation id="6316768948917110108">Burning image...</translation>
 <translation id="5089810972385038852">County</translation>
 <translation id="2872961005593481000">Shut down</translation>
 <translation id="8986267729801483565">Download location:</translation>
+<translation id="8428252096944387389">Print Preview - <ph name="PREVIEW_TAB_TITLE"/></translation>
 <translation id="4322394346347055525">Close Other Tabs</translation>
+<translation id="593451978644335626">Press ctrl+space to select the previous input method.</translation>
 <translation id="4411770745820968260">File Shelf</translation>
 <translation id="881799181680267069">Hide Others</translation>
 <translation id="1812631533912615985">Unpin tabs</translation>
-<translation id="6042308850641462728">More</translation>
 <translation id="8318945219881683434">Failed to check revocation.</translation>
 <translation id="1650709179466243265">Add www. and .com, and open address</translation>
 <translation id="3524079319150349823">To inspect a pop-up, right-click the page or browser action icon and choose Inspect pop-up.</translation>
 <translation id="994289308992179865">&amp;Loop</translation>
 <translation id="7793343764764530903">You have enabled <ph name="CLOUD_PRINT_NAME"/>successfully!  <ph name="PRODUCT_NAME"/> has registered the printers on this machine with &lt;b&gt;<ph name="EMAIL_ADDRESSES"/>&lt;/b&gt;.  You can now print to your printers from any <ph name="CLOUD_PRINT_NAME"/> enabled web or mobile app!</translation>
-<translation id="1703490097606704369">The server at <ph name="HOST_NAME"/>
-        can't be found because the DNS lookup failed.  DNS is the web service
-        that translates a website's name to its Internet address.  This error is
-        most often caused by having no connection to the Internet or a
-        misconfigured network.  It can also be caused by an unresponsive DNS
-        server or a firewall preventing
-        <ph name="PRODUCT_NAME"/>
-        from accessing the network.</translation>
 <translation id="8887090188469175989">ZGPY</translation>
 <translation id="3302709122321372472">Could not load css '<ph name="RELATIVE_PATH"/>' for content script.</translation>
 <translation id="305803244554250778">Create application shortcuts in the following places:</translation>
@@ -1868,6 +1883,7 @@
 <translation id="4608500690299898628">&amp;Find...</translation>
 <translation id="3574305903863751447"><ph name="CITY"/>, <ph name="STATE"/> <ph name="COUNTRY"/></translation>
 <translation id="8724859055372736596">&amp;Show in Folder</translation>
+<translation id="2367657048471519165">Set <ph name="PRODUCT_NAME"/> as my default browser</translation>
 <translation id="4605399136610325267">Internet not connected</translation>
 <translation id="978407797571588532">Go to
           <ph name="BEGIN_BOLD"/>
@@ -1880,6 +1896,7 @@
 <translation id="5266113311903163739">Certification Authority Import Error</translation>
 <translation id="9563164493805065">Image burn complete.</translation>
 <translation id="4756388243121344051">&amp;History</translation>
+<translation id="8044899503464538266">Slow</translation>
 <translation id="3789841737615482174">Install</translation>
 <translation id="4320697033624943677">Add users</translation>
 <translation id="9153934054460603056">Save identity and password</translation>
@@ -1896,6 +1913,8 @@
 <translation id="4563210852471260509">Initial input language is Chinese</translation>
 <translation id="6897140037006041989">User Agent</translation>
 <translation id="3413122095806433232">CA Issuers: <ph name="LOCATION"/></translation>
+<translation id="4148957013307229264">Installing...</translation>
+<translation id="1956724372173215413">Press alt+shift to switch between input methods.</translation>
 <translation id="4115153316875436289"><ph name="NUMBER_TWO"/> days</translation>
 <translation id="701080569351381435">View Source</translation>
 <translation id="3286538390144397061">Restart Now</translation>
@@ -1915,15 +1934,16 @@
 <translation id="5818003990515275822">Korean</translation>
 <translation id="4182252350869425879">Warning: Suspected phishing site!</translation>
 <translation id="5458214261780477893">Dvorak</translation>
-<translation id="5353719617589986386">Invalid page range</translation>
 <translation id="1164369517022005061"><ph name="NUMBER_DEFAULT"/> hours left</translation>
 <translation id="5943260032016910017">Cookie and Site Data Exceptions</translation>
+<translation id="93424266670380528">The server at <ph name="HOST_NAME"/> can't be found because the DNS look-up failed. DNS is the web service that translates a website's name to its Internet address. This error is most often caused by having no connection to the Internet or a misconfigured network. It can also be caused by an unresponsive DNS server or a firewall preventing <ph name="PRODUCT_NAME"/> from accessing the network.</translation>
 <translation id="2214283295778284209"><ph name="SITE"/> is not available</translation>
 <translation id="8755376271068075440">&amp;Larger</translation>
 <translation id="8132793192354020517">Connected to <ph name="NAME"/></translation>
 <translation id="8187473050234053012">The server's security certificate is revoked!</translation>
 <translation id="7444983668544353857">Disable <ph name="NETWORKDEVICE"/></translation>
 <translation id="6003177993629630467"><ph name="PRODUCT_NAME"/> may not be able to keep itself updated.</translation>
+<translation id="2374898461628345975">Enables 3D CSS and higher-performance compositing of web pages, using Graphics Processor Unit (GPU) hardware.</translation>
 <translation id="421577943854572179">embedded on any other site</translation>
 <translation id="580886651983547002"><ph name="PRODUCT_NAME"/>
         cannot reach the website.  This is typically caused by network issues,
@@ -1931,6 +1951,7 @@
 <translation id="5445557969380904478">About voice recognition</translation>
 <translation id="3093473105505681231">Languages and spellchecker settings...</translation>
 <translation id="152482086482215392"><ph name="NUMBER_ONE"/> sec left</translation>
+<translation id="8678698760965522072">Online state</translation>
 <translation id="529172024324796256">Username:</translation>
 <translation id="3308116878371095290">This page was prevented from setting cookies.</translation>
 <translation id="7521387064766892559">JavaScript</translation>
@@ -1938,18 +1959,20 @@
 <translation id="7219179957768738017">The connection uses <ph name="SSL_VERSION"/>.</translation>
 <translation id="7014174261166285193">Installation failed.</translation>
 <translation id="1970746430676306437">View page &amp;info</translation>
+<translation id="8741168824058335685">Persistent Storage:</translation>
 <translation id="3199127022143353223">Servers</translation>
 <translation id="2805646850212350655">Microsoft Encrypting File System</translation>
+<translation id="1974060860693918893">Advanced</translation>
 <translation id="8053959338015477773">An additional plug-in is required to display some elements on this page.</translation>
 <translation id="3541661933757219855">Type Ctrl+Alt+/ or Escape to hide</translation>
 <translation id="8813873272012220470">Enables a background check that warns you when a software incompatibility is detected (i.e. 3rd-party modules that crash the browser).</translation>
 <translation id="5020734739305654865">Sign in with your</translation>
-<translation id="2679385451463308372">Print using system dialogue…</translation>
 <translation id="7414887922320653780"><ph name="NUMBER_ONE"/> hour left</translation>
 <translation id="121632099317611328">The camera failed to initialise.</translation>
 <translation id="399179161741278232">Imported</translation>
 <translation id="3829932584934971895">Provider type:</translation>
 <translation id="462288279674432182">Restricted IP:</translation>
+<translation id="9097192044535179206">Manage cloud printers...</translation>
 <translation id="3927932062596804919">Deny</translation>
 <translation id="3524915994314972210">Waiting for download to start...</translation>
 <translation id="6484929352454160200">A new version of <ph name="PRODUCT_NAME"/> is available</translation>
@@ -1987,6 +2010,7 @@
 <translation id="2444609190341826949">Without a passphrase, your passwords and other encrypted data will not be synced on this computer.</translation>
 <translation id="77221669950527621">Extensions or Apps</translation>
 <translation id="6650142020817594541">This site recommends Google Chrome Frame (already installed).</translation>
+<translation id="6780786534712515143">With Instant enabled, most web pages begin loading as soon as you type a URL in the omnibox, before you hit Enter. In addition, if supported by your default search engine, search results appear instantly as you type queries in the omnibox, and in-line predictions help guide your search.\n\nBecause search results are requested even while you're typing your query, your default search engine may be logging these as search queries.\n</translation>
 <translation id="6503077044568424649">Most visited</translation>
 <translation id="4625904365165566833">Sorry, you don't have permission to sign in. Check with the notebook owner.</translation>
 <translation id="7450633916678972976">Note: When you click &quot;Send Feedback&quot;, Chrome includes a log of your
@@ -2003,12 +2027,14 @@
 <translation id="465365366590259328">Your changes will take effect the next time that you restart <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="7168109975831002660">Minimum font size</translation>
 <translation id="7070804685954057874">Direct input</translation>
+<translation id="5175870427301879686"><ph name="URL"/> wants to permanently store data on your local computer.</translation>
 <translation id="3265459715026181080">Close Window</translation>
 <translation id="6074871234879228294">Japanese input method (for Japanese keyboard)</translation>
 <translation id="7855296476260297092">Enrolment successful</translation>
 <translation id="907841381057066561">Failed to create temporary zip file during packaging.</translation>
 <translation id="1294298200424241932">Edit trust settings:</translation>
 <translation id="1384617406392001144">Your browsing history</translation>
+<translation id="1119447706177454957">Internal error</translation>
 <translation id="3831099738707437457">&amp;Hide Spelling Panel</translation>
 <translation id="1040471547130882189">Plug-in Unresponsive</translation>
 <translation id="5473075389972733037">IBM</translation>
@@ -2042,6 +2068,7 @@
 <translation id="5538307496474303926">Clearing...</translation>
 <translation id="4367133129601245178">C&amp;opy Image URL</translation>
 <translation id="7542995811387359312">Automatic credit card filling is disabled because this form does not use a secure connection.</translation>
+<translation id="8268437482190589132">Temporary Storage:</translation>
 <translation id="3494444535872870968">Save &amp;Frame As...</translation>
 <translation id="987264212798334818">General</translation>
 <translation id="7005812687360380971">Failure</translation>
@@ -2054,7 +2081,6 @@
 <translation id="5135533361271311778">Could not create bookmark item.</translation>
 <translation id="5271247532544265821">Toggle Simplified/Traditional Chinese mode</translation>
 <translation id="2052610617971448509">You are not adequately sandboxed!</translation>
-<translation id="7384913436093989340">Go to <ph name="BEGIN_BOLD"/> Spanner menu &gt; Options &gt; Under the Hood &gt; Change proxy settings <ph name="END_BOLD"/> and make sure that your configuration is set to &quot;no proxy&quot; or &quot;direct&quot;.</translation>
 <translation id="6417515091412812850">Unable to check whether the certificate has been revoked.</translation>
 <translation id="7282743297697561153">Database Storage</translation>
 <translation id="3363332416643747536"><ph name="DOWNLOAD_RECEIVED"/>/<ph name="DOWNLOAD_TOTAL"/>, Interrupted</translation>
@@ -2075,6 +2101,7 @@
 <translation id="1199232041627643649">Hold <ph name="KEY_EQUIVALENT"/> to Quit.</translation>
 <translation id="5428562714029661924">Hide this plug-in</translation>
 <translation id="7907591526440419938">Open File</translation>
+<translation id="8074548357564495927">Enable the Remoting client plug-in. Warning: This is currently for developer testing only. Unless you are on the dev team and whitelisted, nothing in the enabled UI will work.</translation>
 <translation id="2568774940984945469">Infobar Container</translation>
 <translation id="8971063699422889582">Server's certificate has expired.</translation>
 <translation id="8281596639154340028">Use <ph name="HANDLER_TITLE"/></translation>
@@ -2089,7 +2116,6 @@
 <translation id="6430814529589430811">Base64-encoded ASCII, single certificate</translation>
 <translation id="5143712164865402236">Enter Full Screen</translation>
 <translation id="8434177709403049435">&amp;Encoding</translation>
-<translation id="4051923669149193910"><ph name="HANDLER_TITLE"/> is already being used to handle <ph name="PROTOCOL"/>:// links.</translation>
 <translation id="2722201176532936492">Selection Keys</translation>
 <translation id="385120052649200804">US international keyboard</translation>
 <translation id="9012607008263791152">I understand that visiting this site may harm my computer.</translation>
@@ -2113,6 +2139,7 @@
 <translation id="4126154898592630571">Date/time conversion</translation>
 <translation id="5088534251099454936">PKCS #1 SHA-512 With RSA Encryption</translation>
 <translation id="6392373519963504642">Korean keyboard</translation>
+<translation id="5037358328087281103">IndexedDB use LevelDB.</translation>
 <translation id="7887334752153342268">Duplicate</translation>
 <translation id="4980691186726139495">Don't keep on this page</translation>
 <translation id="3081523290047420375">Disable <ph name="CLOUD_PRINT_NAME"/></translation>
@@ -2134,7 +2161,6 @@
 <translation id="8590375307970699841">Set up automatic updates</translation>
 <translation id="2797524280730715045"><ph name="NUMBER_DEFAULT"/> hours ago</translation>
 <translation id="265390580714150011">Field Value</translation>
-<translation id="9073247318500677671">Newer versions of Unity and GNOME (including the upcoming Ubuntu Natty Narwhal) show an OSX style menu bar across the top of the screen.</translation>
 <translation id="3869917919960562512">Wrong index.</translation>
 <translation id="7031962166228839643">TPM is being prepared, please wait (this may take a few minutes)...</translation>
 <translation id="4250377793615429299">Invalid number of copies</translation>
@@ -2161,7 +2187,6 @@
 <translation id="1308727876662951186"><ph name="NUMBER_ZERO"/> mins left</translation>
 <translation id="7671576867600624">Technology:</translation>
 <translation id="1103966635949043187">Go to the homepage of the site:</translation>
-<translation id="1951332921786364801">Set up remoting</translation>
 <translation id="1086613338090581534">For a certificate which has not expired, the issuer of that certificate is responsible for maintaining something called a &quot;revocation list&quot;. If a certificate is ever compromised, the issuer can revoke it by adding it to the revocation list, and then this certificate will no longer be trusted by your browser. Revocation status is not required to be maintained for expired certificates, so while this certificate used to be valid for the website that you're visiting, at this point it is not possible to determine whether the certificate was compromised and subsequently revoked, or whether it remains secure. As such it is impossible to tell whether you're communicating with the legitimate website or whether the certificate was compromised and is now in the possession of an attacker with whom you are communicating. You should not proceed past this point.</translation>
 <translation id="2645575947416143543">If, however, you work in an organisation that generates its own certificates, and you are trying to connect to an internal website of that organisation using such a certificate, you may be able to solve this problem securely. You can import your organisation's root certificate as a &quot;root certificate&quot;, and then certificates issued or verified by your organisation will be trusted and you will not see this error next time you try to connect to an internal website. Contact your organisation's help staff for assistance in adding a new root certificate to your computer.</translation>
 <translation id="376466258076168640">Make <ph name="PRODUCT_NAME"/> My Default Browser</translation>
@@ -2217,6 +2242,9 @@
 <translation id="6321196148033717308">About Voice Recognition</translation>
 <translation id="3412265149091626468">Jump to Selection</translation>
 <translation id="8167737133281862792">Add Certificate</translation>
+<translation id="7509179828847922845">The connection to
+        <ph name="HOST_NAME"/>
+        was interrupted.</translation>
 <translation id="2911372483530471524">PID name spaces</translation>
 <translation id="6093374025603915876">Auto-fill Preferences</translation>
 <translation id="8584134039559266300">Activate tab 8</translation>
@@ -2224,6 +2252,7 @@
 <translation id="3785852283863272759">Email Page Location</translation>
 <translation id="2255317897038918278">Microsoft Time Stamping</translation>
 <translation id="3493881266323043047">Validity</translation>
+<translation id="8124784517328765068">Hostname Pattern:</translation>
 <translation id="5979421442488174909">&amp;Translate to <ph name="LANGUAGE"/></translation>
 <translation id="7326526699920221209">Battery: <ph name="PRECENTAGE"/>%</translation>
 <translation id="952992212772159698">Not activated</translation>
@@ -2236,9 +2265,9 @@
 <translation id="5792852254658380406">Manage extensions...</translation>
 <translation id="2359808026110333948">Continue</translation>
 <translation id="176759384517330673">Synced to <ph name="USER_EMAIL_ADDRESS"/>. Last synced: <ph name="LAST_SYNC_TIME"/></translation>
+<translation id="5951823343679007761">No battery</translation>
 <translation id="1618661679583408047">The server's security certificate is not yet valid!</translation>
 <translation id="7039912931802252762">Microsoft Smart Card Logon</translation>
-<translation id="6285074077487067719">Pattern</translation>
 <translation id="3065140616557457172">Type to search or enter a URL to navigate - everything just works.</translation>
 <translation id="5509693895992845810">Save &amp;As...</translation>
 <translation id="5986279928654338866">The server <ph name="DOMAIN"/>  requires a username and password.</translation>
@@ -2246,6 +2275,7 @@
 <translation id="2491120439723279231">Server's certificate contains errors.</translation>
 <translation id="4448844063988177157">Searching for Wi-Fi networks...</translation>
 <translation id="5765780083710877561">Description:</translation>
+<translation id="2954705784594331199"><ph name="BEGIN_LINK"/>Reload<ph name="END_LINK"/> this web page later.</translation>
 <translation id="338583716107319301">Separator</translation>
 <translation id="2079053412993822885">If you delete one of your own certificates, you can no longer use it to identify yourself.</translation>
 <translation id="7221869452894271364">Reload this page</translation>
@@ -2255,11 +2285,11 @@
 <translation id="6175314957787328458">Microsoft Domain GUID</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8261506727792406068">Delete</translation>
-<translation id="4404805853119650018">Failed to register this computer for remote access.</translation>
 <translation id="345693547134384690">Open &amp;image in new tab</translation>
 <translation id="7422192691352527311">Preferences...</translation>
 <translation id="354211537509721945">Updates are disabled by the administrator</translation>
 <translation id="1375198122581997741">About Version</translation>
+<translation id="2345435964258511234">Disables synchronisation with the display's vertical refresh rate when GPU rendering. This allows frame rates to exceed 60 hertz. While useful for benchmarking purposes, this also results in visual tearing during rapid screen updates.</translation>
 <translation id="7915471803647590281">Please tell us what is happening before sending the feedback.</translation>
 <translation id="5725124651280963564">Please sign in to <ph name="TOKEN_NAME"/> to generate a key for <ph name="HOST_NAME"/>.</translation>
 <translation id="8418113698656761985">Romanian keyboard</translation>
@@ -2313,6 +2343,7 @@
 <translation id="4440967101351338638">ChromiumOs Image Burn</translation>
 <translation id="1813278315230285598">Services</translation>
 <translation id="6860097299815761905">Proxy settings...</translation>
+<translation id="3672159315667503033"><ph name="URL"/> wants to permanently store large data on your local computer.</translation>
 <translation id="373572798843615002">1 Tab</translation>
 <translation id="4162393307849942816"><ph name="BEGIN_BOLD"/>You're browsing as a guest<ph name="END_BOLD"/>. Pages that you view in this window won't appear in the browser history or search history and they won't leave other traces, like cookies, on the computer after you sign out. Files that you download and bookmarks that you create won't be preserved.
         <ph name="LINE_BREAK"/>
@@ -2340,6 +2371,7 @@
 <translation id="6460601847208524483">Find Next</translation>
 <translation id="8433186206711564395">Network settings</translation>
 <translation id="4856478137399998590">Your data service is activated and ready to use</translation>
+<translation id="3978212384680351466">Synced bookmarks</translation>
 <translation id="1676388805288306495">Change the default font and language for web pages.</translation>
 <translation id="8969761905474557563">GPU Accelerated Compositing</translation>
 <translation id="3937640725563832867">Certificate Issuer Alternative Name</translation>
@@ -2372,11 +2404,6 @@
 <translation id="131461803491198646">Home network, not roaming</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE"/> - <ph name="FULL_DATE"/></translation>
 <translation id="5679279978772703611">Manage Saved Passwords...</translation>
-<translation id="4551440281920791563">Go to
-          <ph name="BEGIN_BOLD"/>
-          Spanner menu &gt; Options &gt; Under the Hood &gt; Change proxy settings &gt; LAN Settings
-          <ph name="END_BOLD"/>
-          and deselect &quot;Use a proxy server for your LAN&quot;.</translation>
 <translation id="1285320974508926690">Never translate this site</translation>
 <translation id="8954894007019320973">(Cont.)</translation>
 <translation id="3748412725338508953">There were too many redirects.</translation>
@@ -2384,13 +2411,13 @@
 <translation id="6858960932090176617">Enables WebKit's XSS Auditor (cross-site scripting protection). This feature aims to protect you from certain attacks of malicious websites. It improves your security, but it might not be compatible with all websites.</translation>
 <translation id="6005282720244019462">Latin American keyboard</translation>
 <translation id="8831104962952173133">Phishing Detected!</translation>
-<translation id="5141720258550370428">Would you like to use <ph name="HANDLER_TITLE"/> (<ph name="HANDLER_HOSTNAME"/>) to handle <ph name="PROTOCOL"/>:// links from now on?</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE"/> (Incognito)</translation>
 <translation id="6681668084120808868">Take photo</translation>
 <translation id="780301667611848630">No, thank you</translation>
 <translation id="2812989263793994277">Do not show any images</translation>
 <translation id="7190251665563814471">Always allow these plug-ins on <ph name="HOST"/></translation>
 <translation id="6845383723252244143">Select Folder</translation>
+<translation id="3653550165444444309">Add a cloud printer...</translation>
 <translation id="8925458182817574960">&amp;Settings</translation>
 <translation id="6361850914223837199">Error details:</translation>
 <translation id="8948393169621400698">Always allow plug-ins on <ph name="HOST"/></translation>
@@ -2416,6 +2443,7 @@
 <translation id="8051695050440594747"><ph name="MEGABYTES"/> MB available</translation>
 <translation id="7088615885725309056">Older</translation>
 <translation id="461656879692943278"><ph name="HOST_NAME"/> contains content from <ph name="ELEMENTS_HOST_NAME"/>, a site known to distribute malware. Your computer might catch a virus if you visit this site.</translation>
+<translation id="6468702002867725697">Encrypt sensitive data (passwords)</translation>
 <translation id="1387022316521171484">These experimental features may change, break or disappear at any time. We make absolutely no guarantees about what may happen if you turn one of these experiments on, and your browser may even spontaneously combust. Jokes aside, your browser may delete all your data or your security and privacy could be compromised in unexpected ways. Please proceed with caution.</translation>
 <translation id="2143778271340628265">Manual proxy configuration</translation>
 <translation id="5294529402252479912">Update Adobe Reader now</translation>
@@ -2425,9 +2453,9 @@
 <translation id="2231990265377706070">Exclamation point</translation>
 <translation id="7199540622786492483"><ph name="PRODUCT_NAME"/> is out of date because it hasn't been relaunched for a while. An update is available and will be applied as soon as you relaunch.</translation>
 <translation id="8652722422052983852">Oops! Let's fix that.</translation>
-<translation id="5970231080121144965">Enables sub-string and multi-fragment matching within URLs from history.</translation>
 <translation id="4665674675433053715">Experimental new tab page</translation>
 <translation id="3726527440140411893">The following cookies were set when you viewed this page:</translation>
+<translation id="8212778630687987949">Encryption Passphrase</translation>
 <translation id="3320859581025497771">your operator</translation>
 <translation id="8828781037212165374">Enable these features...</translation>
 <translation id="8562413501751825163">Close Firefox Before Importing</translation>
@@ -2463,6 +2491,8 @@
 <translation id="1851266746056575977">Update Now</translation>
 <translation id="7017219178341817193">Add a new page</translation>
 <translation id="1038168778161626396">Encipher Only</translation>
+<translation id="3924129493187796992">Add a new hostname pattern</translation>
+<translation id="8765985713192161328">Manage handlers...</translation>
 <translation id="2756651186786928409">Do not swap modifier keys</translation>
 <translation id="1217515703261622005">Special number conversion</translation>
 <translation id="7179921470347911571">Relaunch Now</translation>
@@ -2504,9 +2534,11 @@
 <translation id="721197778055552897"><ph name="BEGIN_LINK"/>Learn more<ph name="END_LINK"/> about this problem.</translation>
 <translation id="1699395855685456105">Hardware revision:</translation>
 <translation id="212464871579942993">The website at <ph name="HOST_NAME"/> contains elements from sites which appear to host malware – software that can hurt your computer or otherwise operate without your consent.  Just visiting a site that hosts malware can infect your computer. The website also hosts content from sites that have been reported as a “phishing” sites.  Phishing sites trick users into disclosing personal or financial information, often by pretending to represent trusted institutions, such as banks.</translation>
+<translation id="6157714576637082050">Cloud printers</translation>
 <translation id="8156020606310233796">List view</translation>
 <translation id="957120528631539888">Disable showing validation messages and preventing form submission.</translation>
 <translation id="146000042969587795">This frame was blocked because it contains some insecure content.</translation>
+<translation id="3258924582848461629">Handwriting input method for Japanese</translation>
 <translation id="8112223930265703044">Everything</translation>
 <translation id="3968739731834770921">Kana</translation>
 <translation id="3729920814805072072">Manage saved passwords...</translation>
@@ -2519,6 +2551,7 @@
 <translation id="6154697846084421647">Currently signed in</translation>
 <translation id="8241707690549784388">The page that you're looking for used information that you entered. Returning to that page might cause any action that you took to be repeated. Do you want to continue?</translation>
 <translation id="5359419173856026110">Shows a page's actual frame rate, in frames per second, when hardware acceleration is active.</translation>
+<translation id="8632196666436827923">Hide The Toolbar</translation>
 <translation id="4104163789986725820">E&amp;xport...</translation>
 <translation id="2113479184312716848">Open &amp;File...</translation>
 <translation id="8412709057120877195">Set access control for your devices</translation>
@@ -2537,6 +2570,8 @@
 <translation id="1893137424981664888">No plug-ins installed.</translation>
 <translation id="3718288130002896473">Behaviour</translation>
 <translation id="2168725742002792683">File extensions</translation>
+<translation id="2285615095750412963">Extension installed: <ph name="DATE"/></translation>
+<translation id="7861805612256278846">not signed in</translation>
 <translation id="1753905327828125965">Most Visited</translation>
 <translation id="8116972784401310538">&amp;Bookmark manager</translation>
 <translation id="1849632043866553433">Application Caches</translation>
@@ -2553,6 +2588,8 @@
 <translation id="4673916386520338632">Could not install application because it conflicts with '<ph name="APP_NAME"/>', which is already installed.</translation>
 <translation id="2024918351532495204">Your device is offline</translation>
 <translation id="6040143037577758943">Close</translation>
+<translation id="5607923769356613853">Go to <ph name="BEGIN_BOLD"/> the spanner menu &gt; <ph name="SETTINGS_TITLE"/> &gt; <ph name="ADVANCED_TITLE"/> &gt; <ph name="PROXIES_TITLE"/> &gt; LAN Settings <ph name="END_BOLD"/> and deselect the &quot;Use a proxy server for your LAN&quot; checkbox.</translation>
+<translation id="7522312030875244365">Preload Instant Search</translation>
 <translation id="5787146423283493983">Key Agreement</translation>
 <translation id="1101671447232096497"><ph name="NUMBER_MANY"/> mins ago</translation>
 <translation id="4265682251887479829">Can't find what you're looking for?</translation>
@@ -2562,7 +2599,6 @@
 <translation id="2749881179542288782">Check Grammar With Spelling</translation>
 <translation id="5105855035535475848">Pin tabs</translation>
 <translation id="6892450194319317066">Select by Opener</translation>
-<translation id="3549436232897695316">collate</translation>
 <translation id="5414121716219514204"><ph name="ENGINE_HOST_NAME"/> wants to be your search engine.</translation>
 <translation id="2752805177271551234">Use input history</translation>
 <translation id="7268365133021434339">Close Tabs</translation>
@@ -2574,7 +2610,6 @@
 <translation id="1903219944620007795">For text input, select a language to see available input methods.</translation>
 <translation id="4362187533051781987">City/Town</translation>
 <translation id="9149866541089851383">Edit...</translation>
-<translation id="7608619752233383356">Reset sync</translation>
 <translation id="1065245965611933814">Include a saved screenshot:</translation>
 <translation id="7876243839304621966">Remove all</translation>
 <translation id="5663459693447872156">Automatically switch to half width</translation>
@@ -2585,20 +2620,18 @@
 <translation id="8412145213513410671">Crashes (<ph name="CRASH_COUNT"/>)</translation>
 <translation id="560602183358579978">Computing selection...</translation>
 <translation id="7649070708921625228">Help</translation>
-<translation id="5994107996638824097">Sorry! Chromium does not include the PDF viewer built in to Google Chrome, which is required to show the print preview.</translation>
 <translation id="976526967778596630">The web page at <ph name="HOST_NAME"/> cannot be reached because your network connection is down. The page will be loaded when the network connection is restored. &lt;br&gt;</translation>
 <translation id="1734072960870006811">Fax</translation>
 <translation id="3095995014811312755">version</translation>
 <translation id="7052500709156631672">The gateway or proxy server received an invalid response from an upstream server.</translation>
 <translation id="281133045296806353">Created new window in existing browser session.</translation>
-<translation id="7144878232160441200">Retry</translation>
-<translation id="2860002559146138960"><ph name="PRODUCT_NAME"/> can now sync your passwords; your data will be encrypted with your Google Account password or a passphrase of your choosing.</translation>
 <translation id="3951872452847539732">Your network proxy settings are being managed by an extension.</translation>
 <translation id="6442697326824312960">Unpin Tab</translation>
 <translation id="6382612843547381371">Valid from <ph name="START_DATE_TIME"/> to <ph name="END_DATE_TIME"/></translation>
 <translation id="6869402422344886127">Ticked checkbox</translation>
 <translation id="5637380810526272785">Input Method</translation>
 <translation id="404928562651467259">WARNING</translation>
+<translation id="6314007596429871800">Application Cache</translation>
 <translation id="7172053773111046550">Estonian keyboard</translation>
 <translation id="497490572025913070">Composited render layer borders</translation>
 <translation id="9002707937526687073">P&amp;rint...</translation>
@@ -2608,14 +2641,13 @@
 <translation id="8326395326942127023">Database Name:</translation>
 <translation id="7507930499305566459">Status Responder Certificate</translation>
 <translation id="2689915906323125315">Use my Google Account password</translation>
-<translation id="6440205424473899061">Your bookmarks are now synced to Google Docs! To merge and sync your bookmarks to <ph name="PRODUCT_NAME"/>
-        on another computer, just repeat the same setup process on that computer.</translation>
 <translation id="7727721885715384408">Rename...</translation>
 <translation id="2604243255129603442"><ph name="NAME_OF_EXTENSION"/> has been disabled. If you stop syncing your bookmarks, you can re-enable it on the extensions page, accessible through the Tools menu.</translation>
 <translation id="2024621544377454980">Pages not Loading</translation>
 <translation id="7136694880210472378">Make default</translation>
 <translation id="7681202901521675750">SIM card is locked. Please enter PIN. Tries left: <ph name="TRIES_COUNT"/></translation>
 <translation id="7420789336015002755">Invalid character in folder name: $1</translation>
+<translation id="9215535963167691630">More printers...</translation>
 <translation id="1731346223650886555">Semi-colon</translation>
 <translation id="158849752021629804">Need home network</translation>
 <translation id="7339763383339757376">PKCS #7, single certificate</translation>
@@ -2630,7 +2662,9 @@
 <translation id="8601206103050338563">TLS WWW Client Authentication</translation>
 <translation id="1692799361700686467">Cookies from multiple sites allowed.</translation>
 <translation id="7074488040076962230">Could not load sidebar page '<ph name="SIDEBAR_PAGE"/>'.</translation>
+<translation id="5509519625080982753">Local printers</translation>
 <translation id="529232389703829405">You purchased <ph name="DATA_AMOUNT"/> of data on <ph name="DATE"/></translation>
+<translation id="7419106976560586862">Profile Path</translation>
 <translation id="5271549068863921519">Save password</translation>
 <translation id="4345587454538109430">Configure...</translation>
 <translation id="8148264977957212129">Pinyin input method</translation>
@@ -2657,7 +2691,6 @@
 <translation id="6320286250305104236">Network settings...</translation>
 <translation id="2927657246008729253">Change...</translation>
 <translation id="7978412674231730200">Private key</translation>
-<translation id="464745974361668466">Pattern:</translation>
 <translation id="5308380583665731573">Connect</translation>
 <translation id="9111395131601239814"><ph name="NETWORKDEVICE"/>: <ph name="STATUS"/></translation>
 <translation id="9049981332609050619">You attempted to reach <ph name="DOMAIN"/>, but the server presented an invalid certificate.</translation>
@@ -2675,6 +2708,7 @@
 <translation id="4443536555189480885">&amp;Help</translation>
 <translation id="340485819826776184">Use a prediction service to help complete searches and URLs typed in the address bar</translation>
 <translation id="4074900173531346617">Email Signer Certificate</translation>
+<translation id="4743103415223548376">Print preview failed because the page you were trying to print has been closed.</translation>
 <translation id="6165508094623778733">Learn more</translation>
 <translation id="9052208328806230490">You have registered your printers with <ph name="CLOUD_PRINT_NAME"/>, using the account <ph name="EMAIL"/></translation>
 <translation id="822618367988303761"><ph name="NUMBER_TWO"/> days ago</translation>
@@ -2697,7 +2731,6 @@
 <translation id="4470270245053809099">Issued by: <ph name="NAME"/></translation>
 <translation id="5365539031341696497">Thai input method (Kesmanee keyboard)</translation>
 <translation id="2403091441537561402">Gateway:</translation>
-<translation id="6337234675334993532">Encryption</translation>
 <translation id="668171684555832681">Other...</translation>
 <translation id="1932098463447129402">Not Before</translation>
 <translation id="7845920762538502375"><ph name="PRODUCT_NAME"/> could not sync your data because it could not connect to the sync server. Retrying...</translation>
@@ -2714,12 +2747,12 @@
 <translation id="636850387210749493">Enterprise enrolment</translation>
 <translation id="1947424002851288782">German keyboard</translation>
 <translation id="932508678520956232">Could not initiate printing.</translation>
+<translation id="948487459457438956">Stop Syncing This Account...</translation>
 <translation id="4861833787540810454">&amp;Play</translation>
 <translation id="2552545117464357659">Newer</translation>
 <translation id="7269802741830436641">This web page has a redirect loop</translation>
 <translation id="4180788401304023883">Delete CA certificate &quot;<ph name="CERTIFICATE_NAME"/>&quot;?</translation>
 <translation id="5869522115854928033">Saved passwords</translation>
-<translation id="2089090684895656482">Less</translation>
 <translation id="1709220265083931213">Under the Bonnet</translation>
 <translation id="5748266869826978907">Check your DNS settings. Contact your network administrator if you're
         not sure what this means.</translation>
@@ -2732,6 +2765,7 @@
 <translation id="8615618338313291042">Incognito App: <ph name="APP_NAME"/></translation>
 <translation id="978146274692397928">Initial punctuation width is Full</translation>
 <translation id="8959027566438633317">Install <ph name="EXTENSION_NAME"/>?</translation>
+<translation id="3250798078333049843">Encrypt all data</translation>
 <translation id="8155798677707647270">Installing new version...</translation>
 <translation id="6886871292305414135">Open link in new &amp;tab</translation>
 <translation id="1639192739400715787">To access Security settings, enter the SIM card PIN</translation>
@@ -2742,6 +2776,7 @@
 <translation id="3695919544155087829">Please enter the password that was used to encrypt this certificate file.</translation>
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="6308937455967653460">Save lin&amp;k as...</translation>
+<translation id="5828633471261496623">Printing...</translation>
 <translation id="5421136146218899937">Clear browsing data...</translation>
 <translation id="5783059781478674569">Voice recognition options</translation>
 <translation id="5441100684135434593">Wired network</translation>
@@ -2751,6 +2786,7 @@
 <translation id="480990236307250886">Open the homepage</translation>
 <translation id="8286036467436129157">Sign In</translation>
 <translation id="5999940714422617743"><ph name="EXTENSION_NAME"/> is now installed.</translation>
+<translation id="6665950606684122759">Uninstall &quot;<ph name="EXTENSION_NAME"/>&quot;?</translation>
 <translation id="1122198203221319518">&amp;Tools</translation>
 <translation id="5757539081890243754">Homepage</translation>
 <translation id="2760009672169282879">Bulgarian phonetic keyboard</translation>
@@ -2796,7 +2832,6 @@
 <translation id="4880827082731008257">Search history</translation>
 <translation id="8661290697478713397">Open Link in Inco&amp;gnito Window</translation>
 <translation id="4197700912384709145"><ph name="NUMBER_ZERO"/> secs</translation>
-<translation id="7454780465968211330">Better omnibox history matching</translation>
 <translation id="2158448795143567596">Enables canvas elements to use 3D graphics via the WebGL API.</translation>
 <translation id="1702534956030472451">Western</translation>
 <translation id="6636709850131805001">Unrecognised state</translation>
@@ -2804,10 +2839,11 @@
 <translation id="9141716082071217089">Unable to check whether the server's certificate was revoked.</translation>
 <translation id="4304224509867189079">Log In</translation>
 <translation id="5332624210073556029">Time zone:</translation>
+<translation id="4572673395966285802">File Systems</translation>
 <translation id="4799797264838369263">This option is controlled by enterprise policy. Please contact your administrator for more information.</translation>
 <translation id="4492190037599258964">Search results for '<ph name="SEARCH_STRING"/>'</translation>
 <translation id="3573179567135747900">Change back to &quot;<ph name="FROM_LOCALE"/>&quot; (requires restart)</translation>
-<translation id="2238123906478057869"><ph name="PRODUCT_NAME"/> will do these tasks:</translation>
+<translation id="8235333616059839358">Check your Internet connection. Reboot any routers, modems or other network devices that you may be using.</translation>
 <translation id="4042471398575101546">Add Page</translation>
 <translation id="8848709220963126773">Shift-key mode switch</translation>
 <translation id="4871865824885782245">Open date and time options...</translation>
@@ -2824,6 +2860,7 @@
 <translation id="5811533512835101223">(Go back to original screenshot)</translation>
 <translation id="5131817835990480221">Update &amp;<ph name="PRODUCT_NAME"/></translation>
 <translation id="939519157834106403">SSID</translation>
+<translation id="7005848115657603926">Invalid page range, use <ph name="EXAMPLE_PAGE_RANGE"/></translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="2635102990349508383">Account sign-in details are not yet entered.</translation>
 <translation id="6902055721023340732">Auto-configuration URL</translation>
@@ -2844,6 +2881,7 @@
 <translation id="7088418943933034707">Manage certificates...</translation>
 <translation id="8482183012530311851">Scanning Device...</translation>
 <translation id="3127589841327267804">PYJJ</translation>
+<translation id="3668823961463113931">Handlers</translation>
 <translation id="8808478386290700967">Web Store</translation>
 <translation id="1732215134274276513">Unpin Tabs</translation>
 <translation id="4084682180776658562">Bookmark</translation>
@@ -2852,6 +2890,7 @@
 <translation id="8525552230188318924">Configure password sync.</translation>
 <translation id="4381091992796011497">User Name:</translation>
 <translation id="5830720307094128296">Save Page &amp;As...</translation>
+<translation id="2448312741937722512">Types</translation>
 <translation id="8114439576766120195">Your data on all websites</translation>
 <translation id="4668954208278016290">There was a problem while extracting image to the machine.</translation>
 <translation id="5822838715583768518">Launch Application</translation>
@@ -2861,6 +2900,7 @@
 <translation id="3048564749795856202">If you feel that you understand the risks, you may <ph name="PROCEED_LINK"/>.</translation>
 <translation id="2433507940547922241">Appearance</translation>
 <translation id="839072384475670817">Create Application &amp;Shortcuts...</translation>
+<translation id="1704967159337061587">Hide the toolbar</translation>
 <translation id="1478632774608054702">Run PPAPI Flash in the renderer process</translation>
 <translation id="6756161853376828318">Make <ph name="PRODUCT_NAME"/> my default browser</translation>
 <translation id="9112614144067920641">Please choose a new PIN.</translation>
@@ -2870,6 +2910,7 @@
 <translation id="1803557475693955505">Could not load background page '<ph name="BACKGROUND_PAGE"/>'.</translation>
 <translation id="5818334088068591797">Where are you having problems? (required)</translation>
 <translation id="6264485186158353794">Back to safety</translation>
+<translation id="7705524343798198388">VPN</translation>
 <translation id="5130080518784460891">Eten</translation>
 <translation id="5847724078457510387">This site lists all its valid certificates in DNS. However, the server used one which isn't listed.</translation>
 <translation id="1394853081832053657">Voice Recognition Options</translation>
@@ -2877,6 +2918,7 @@
 <translation id="2785530881066938471">Could not load file '<ph name="RELATIVE_PATH"/>' for content script. It isn't UTF-8 encoded.</translation>
 <translation id="3807747707162121253">&amp;Cancel</translation>
 <translation id="3306897190788753224">Temporarily disable conversion personalisation, history-based suggestions and user dictionary</translation>
+<translation id="2489435327075806094">Pointer speed:</translation>
 <translation id="2574102660421949343">Cookies from <ph name="DOMAIN"/> allowed.</translation>
 <translation id="77999321721642562">Over time, the area below will show your eight most visited sites.</translation>
 <translation id="1503894213707460512">The <ph name="PLUGIN_NAME"/> plug-in needs your permission to run.</translation>
@@ -2973,7 +3015,6 @@
 <translation id="8000066093800657092">No network</translation>
 <translation id="4481249487722541506">Load unpacked extension...</translation>
 <translation id="8180239481735238521">page</translation>
-<translation id="8321738493186308836">Enable the UI plus backing code for the Remoting service process and client plug-in. Warning: This is currently for developer testing only. Unless you are on the dev team and whitelisted, nothing in the enabled UI will work.</translation>
 <translation id="2963783323012015985">Turkish keyboard</translation>
 <translation id="2149973817440762519">Edit Bookmark</translation>
 <translation id="5431318178759467895">Colour</translation>
@@ -3008,6 +3049,7 @@
 <translation id="7427348830195639090">Background Page: <ph name="BACKGROUND_PAGE_URL"/></translation>
 <translation id="5898154795085152510">The server returned an invalid client certificate. Error <ph name="ERROR_NUMBER"/> (<ph name="ERROR_NAME"/>).</translation>
 <translation id="2704184184447774363">Microsoft Document Signing</translation>
+<translation id="1071139452646369777"><ph name="HANDLER_TITLE"/> is already being used to handle <ph name="PROTOCOL"/>:// links.</translation>
 <translation id="5677928146339483299">Blocked</translation>
 <translation id="1474842329983231719">Manage Print Settings...</translation>
 <translation id="2455981314101692989">This web page has disabled automatic filling for this form.</translation>
@@ -3029,12 +3071,14 @@
 <translation id="6900113680982781280">Enable Auto-fill to fill in web forms with a single click</translation>
 <translation id="1131850611586448366">The website at <ph name="HOST_NAME"/> has been reported as a “phishing” site.  Phishing sites trick users into disclosing personal or financial information, often by pretending to represent trusted institutions, such as banks.</translation>
 <translation id="5413218268059792983">Search using <ph name="SEARCH_ENGINE"/> from right here</translation>
+<translation id="1049337682107026577">Enter Your Sync Passphrase</translation>
 <translation id="1161575384898972166">Please sign in to <ph name="TOKEN_NAME"/> to export the client certificate.</translation>
 <translation id="1718559768876751602">Create a Google Account now</translation>
 <translation id="1884319566525838835">Sandbox Status</translation>
 <translation id="2770465223704140727">Remove from list</translation>
 <translation id="3590587280253938212">fast</translation>
 <translation id="6053401458108962351">&amp;Clear browsing data...</translation>
+<translation id="4844024059590024413">Customise sync preferences</translation>
 <translation id="2339641773402824483">Checking for updates...</translation>
 <translation id="9111742992492686570">Download Critical Security Update</translation>
 <translation id="8636666366616799973">Package is invalid. Details: '<ph name="ERROR_MESSAGE"/>'.</translation>
@@ -3048,6 +3092,7 @@
 <translation id="9087725134750123268">Delete cookies and other site data</translation>
 <translation id="5050255233730056751">Typed URLs</translation>
 <translation id="3349155901412833452">Use , and . keys to page a candidate list</translation>
+<translation id="3981681824736556685">If you use a proxy server, check your proxy settings or contact your network administrator to make sure that the proxy server is working. If you don't believe you should be using a proxy server, adjust your proxy settings: <ph name="PLATFORM_TEXT"/></translation>
 <translation id="6872947427305732831">Purge memory</translation>
 <translation id="2742870351467570537">Remove selected items</translation>
 <translation id="7561196759112975576">Always</translation>
@@ -3085,11 +3130,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="7339785458027436441">Check Spelling While Typing</translation>
 <translation id="8308427013383895095">The translation failed because of a problem with the network connection.</translation>
 <translation id="1801298019027379214">Incorrect PIN. Please try again. Tries left: <ph name="TRIES_COUNT"/></translation>
+<translation id="3529020546926570314">Sign in to access cloud printers...</translation>
 <translation id="1384721974622518101">Did you know that you can search directly from the box above?</translation>
 <translation id="992543612453727859">Add phrases in front</translation>
+<translation id="1559528461873125649">No such file or directory</translation>
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
 <translation id="1244147615850840081">Operator</translation>
 <translation id="8203365863660628138">Confirm Installation</translation>
 <translation id="406259880812417922">(Keyword: <ph name="KEYWORD"/>)</translation>
-<translation id="309628958563171656">Sensitivity:</translation>
 </translationbundle>

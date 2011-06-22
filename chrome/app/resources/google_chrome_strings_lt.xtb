@@ -3,6 +3,7 @@
 <translationbundle lang="lt">
 <translation id="8000275528373650868">„Google Chrome“ reikalinga „Windows Vista“ arba „Windows XP“ operacinė sistema su SP2 arba naujesniu pakeitimų paketu.</translation>
 <translation id="6676384891291319759">Interneto prieiga</translation>
+<translation id="5453904507266736060">Paleisti „Google Chrome“ fone</translation>
 <translation id="2383457833405848421">Apie „Chrome Frame“...</translation>
 <translation id="386202838227397562">Uždarykite visus „Google Chrome“ langus ir bandykite dar kartą.</translation>
 <translation id="2770231113462710648">Pakeisti numatytąją naršyklę į:</translation>
@@ -10,6 +11,7 @@
 <translation id="7781002470561365167">Galima nauja „Google Chrome“ versija.</translation>
 <translation id="7101265395643981223">Paleiskite „Google Chrome“</translation>
 <translation id="647902066410369402">Nuostatų failas yra sugadintas ir neteisingas.\n\n„Google Chrome“ negali atkurti nustatymų.</translation>
+<translation id="4891791193823137474">Paleisti „Google Chrome“ fone</translation>
 <translation id="2879385160622431163">„Google Chrome“ intuityvioji paieška</translation>
 <translation id="2370289711218562573">„Google Chrome“ dabar importuoja mėgstamiausius / žymas.</translation>
 <translation id="8970027151245482499">„Google Chrome“ neįdiegta arba nepavyko rasti diegimo katalogo. Atsisiųskite „Google Chrome“ dar kartą.</translation>
@@ -21,6 +23,7 @@
 <translation id="3555616473548901994">Pašalinimas baigtas.</translation>
 <translation id="8556340503434111824">Galima nauja „Google Chrome“ versija, kuri greitesnė nei bet kada.</translation>
 <translation id="4728575227883772061">Diegimas nepavyko dėl nežinomos klaidos. Jei šiuo metu veikia „Google Chrome“, uždarykite ir pabandykite iš naujo.</translation>
+<translation id="3080151273017101988">Uždarius „Google Chrome“ toliau leisti fono programas</translation>
 <translation id="4149882025268051530">Diegimo programai nepavyko išpakuoti archyvo. Atsisiųskite „Google Chrome“ dar kartą.</translation>
 <translation id="6989339256997917931">„Google Chrome“ atnaujinta, tačiau jos nenaudojote mažiausiai 30 dienų.</translation>
 <translation id="5744005218040929396">„Google Chrome“ paslaugų programa</translation>
@@ -48,8 +51,8 @@
 <translation id="8738921060445980047">Nežinoma versija.</translation>
 <translation id="2485422356828889247">Pašalinti</translation>
 <translation id="3324235665723428530">Negalima naudoti profilio, nes jis yra naujesnės „Google Chrome“ versijos. \n\nGali nebūti kai kurių funkcijų. Nurodykite kito profilio katalogą arba naudokite naujesnę „Chrome“ versiją.</translation>
+<translation id="9073088951656332330">Nerasta „Google Chrome“ ar „Google Chrome Frame“ įdiegties, kad būtų galima atnaujinti.</translation>
 <translation id="1759842336958782510">„Chrome“</translation>
-<translation id="5008136264574452501">„Google Chrome Canary“ versija</translation>
 <translation id="911206726377975832">Ar ištrinti naršymo duomenis?</translation>
 <translation id="2044287590254833138">„Google Chrome“ įrankių juosta</translation>
 <translation id="5074344184765391290">„Chrome“ papildinio priegloba</translation>
@@ -60,10 +63,12 @@
 <translation id="3847841918622877581">„Google Chrome“ gali naudoti žiniatinklio paslaugas naršymo patirčiai pagerinti.</translation>
 <translation id="7436949144778751379">„Google Chrome“ reikia „Windows XP“ ar naujesnės versijos. Gali neveikti kai kurios funkcijos.</translation>
 <translation id="7100330187273168372">„Google Chrome“ negali skaityti ir rašyti į duomenų katalogą:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="7938170099933661772">„Google Chrome“ negalima rodyti spaudinio peržiūros, kai neleidžiama įtaisytoji PDF žiūryklė. Jei norite peržiūrėti, apsilankykite <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/>, įgalinkite parinktį „Chrome“ PDF žiūryklė“ ir bandykite dar kartą.</translation>
 <translation id="6757767188268205357">Netrukdykite</translation>
 <translation id="2290095356545025170">Ar tikrai norite pašalinti „Google Chrome“?</translation>
 <translation id="6087062680442281307">„Google Chrome“ yra žiniatinklio naršyklė, kuri akimirksniu paleidžia tinklalapius ir programas. Ji greita, stabili ir lengvai naudojama. Naršykite žiniatinklį saugiau – „Google Chrome“ įdiegta apsauga nuo kenkėjiškų programų ir sukčiavimo.</translation>
 <translation id="5941830788786076944">Padarykite „Google Chrome“ numatytąja naršykle</translation>
+<translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Naudodami „Google Chrome“ galite spustelėti telefono numerį žiniatinklyje ir skambinti juo naudodami „Skype“!</translation>
 <translation id="3612333635265770873">Modulis tokiu pačiu pavadinimu žinomas kaip prieštaraujantis „Google Chrome“.</translation>
 <translation id="5947389362804196214">Jūsų nuostatų negalima nuskaityti.\n\nKai kurios funkcijos gali būti negalimos ir nuostatų pakeitimai nebus išsaugoti.</translation>

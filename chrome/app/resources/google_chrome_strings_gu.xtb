@@ -3,6 +3,7 @@
 <translationbundle lang="gu">
 <translation id="8000275528373650868">Google Chrome ને Windows Vista અથવા SP1 વાળા Windows XP અથવા તે પછીનાની આવશ્યકતા છે.</translation>
 <translation id="6676384891291319759">ઇંટરનેટ ઍક્સેસ કરો</translation>
+<translation id="5453904507266736060">પૃષ્ઠભૂમિમાં Google Chrome ને ચાલવા દો</translation>
 <translation id="2383457833405848421">Chrome Frame વિશે...</translation>
 <translation id="386202838227397562">કૃપા કરીને બધી Google Chrome વિંડોઝ બંધ કરો અને ફરીથી પ્રયાસ કરો.</translation>
 <translation id="2770231113462710648">ડિફૉલ્ટ બ્રાઉઝરને આના પર બદલો:</translation>
@@ -10,6 +11,7 @@
 <translation id="7781002470561365167">Google Chrome નું નવું સંસ્કરણ ઉપલબ્ધ છે.</translation>
 <translation id="7101265395643981223">Google Chrome પ્રારંભ કરો</translation>
 <translation id="647902066410369402">તમારી સંદર્ભોની ફાઇલ દૂષિત છે અથવા અમાન્ય છે.\n\nGoogle Chrome તમારી સેટિંગ્સ પુનર્પ્રાપ્ત કરવામાં અક્ષમ છે.</translation>
+<translation id="4891791193823137474">Google Chrome ને પૃષ્ટભૂમિમાં ચાલવા દો</translation>
 <translation id="2879385160622431163">Google Chrome ઝટપટ</translation>
 <translation id="2370289711218562573">Google Chrome હવે પસંદગીઓ/બુકમાર્ક્સ આયાત કરી રહ્યું છે.</translation>
 <translation id="8970027151245482499">Google Chrome ઇન્સ્ટોલ થયું નથી અથવા તે ઇન્સ્ટોલેશન ડાયરેક્ટરીએ મેળવવામાં નિષ્ફળ રહ્યું છે. કૃપા કરીને Google Chrome ફરીથી ડાઉનલોડ કરો.</translation>
@@ -21,6 +23,7 @@
 <translation id="3555616473548901994">અનઇન્સ્ટોલેશન પૂર્ણ.</translation>
 <translation id="8556340503434111824">Google Chrome નું એક નવું સંસ્કરણ ઉપલબ્ધ છે અને તે પહેલાં કરતાંએ વધુ ઝડપી છે.</translation>
 <translation id="4728575227883772061">અનુલ્લેખિત ભૂલને કારણે ઇન્સ્ટોલેશન નિષ્ફળ રહ્યું. જો Google Chrome હાલમાં ચાલુ હોય, તો કૃપા કરીને તેને બંધ કરો અને તેનો ફરીથી પ્રયાસ કરો.</translation>
+<translation id="3080151273017101988">જ્યારે Google Chrome બંધ થાય ત્યારે પૃષ્ઠભૂમિમાં  એપ્લિકેશન્સ ચલાવવાનું ચાલુ રાખો </translation>
 <translation id="4149882025268051530">ઇન્સ્ટોલર આર્કાઇવને અસંક્ષિપ્ત કરવામાં નિષ્ફળ રહ્યું. કૃપા કરીને Google Chrome ફરીથી ડાઉનલોડ કરો.</translation>
 <translation id="6989339256997917931">Google Chrome અપડેટ કરવામાં આવ્યું હતું, પણ તમે તેનો 30 દિવસ સુધી ઉપયોગ કર્યો નથી.</translation>
 <translation id="5744005218040929396">Google Chrome Utility</translation>
@@ -48,8 +51,8 @@
 <translation id="8738921060445980047">અજ્ઞાત સંસ્કરણ.</translation>
 <translation id="2485422356828889247">અનઇન્સ્ટોલ કરો</translation>
 <translation id="3324235665723428530">તમારી પ્રોફાઇલ ઉપયોગમાં લઈ શકાતી નથી કારણ કે તે Google Chrome ના નવા વર્ઝનમાંથી છે.\n\nકેટલીક સુવિધાઓ અનુપલબ્ધ હોઈ શકે છે. કૃપા કરીને એક અલગ પ્રોફાઇલ ડાયરેક્ટરીનો ઉલ્લેખ કરો અથવા Chrome ના નવા વર્ઝનનો ઉપયોગ કરો.</translation>
+<translation id="9073088951656332330">અપડેટ કરવા માટે Google Chrome  અથવા Google Chrome ફ્રેમ નું ઇન્સ્ટોલેશન નથી.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="5008136264574452501">Google Chrome કૅનેરી બિલ્ડ</translation>
 <translation id="911206726377975832">તમારો બ્રાઉઝિંગ ડેટા પણ કાઢી નાખીએ?</translation>
 <translation id="2044287590254833138">Google Chrome ટૂલબાર</translation>
 <translation id="5074344184765391290">Chrome Plug-In Host</translation>
@@ -60,10 +63,12 @@
 <translation id="3847841918622877581">Google Chrome તમારા બ્રાઉઝિંગ અનુભવને સુધારવા માટે વેબ સેવાઓનો ઉપયોગ કરી શકે છે.</translation>
 <translation id="7436949144778751379">Google Chrome ને Windows XP અથવા તે પછીનાની આવશ્યકતા છે. કેટલીક સુવિધાઓ કામ કરશે નહીં.</translation>
 <translation id="7100330187273168372">Google Chrome તેની ડેટા ડાયરેક્ટરીને વાંચી અને લખી શકતું નથી:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="7938170099933661772">બિલ્ટ-ઇન PDF વ્યુઅર અક્ષમ હોય ત્યારે Google Chrome છાપવાનું પૂર્વાવલોકન બતાવી શકતું નથી. પૂર્વાવલોકન જોવા માટે, કૃપા કરીને <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/> ની મુલાકાત લો, અને &quot;Chrome PDF Viewer&quot;ને સક્ષમ કરો, તથા ફરીથી પ્રયાસ કરો.</translation>
 <translation id="6757767188268205357">મને બગ રીતે કરશો નહીં</translation>
 <translation id="2290095356545025170">શું તમને ખાતરી છે કે તમારે Google Chromeને અનઇન્સ્ટોલ કરવું છે?</translation>
 <translation id="6087062680442281307">Google Chrome એ એક એવું વેબ બ્રાઉઝર છે જે પ્રકાશની ગતિએ વેબ પૃષ્ઠો અને એપ્લિકેશંસને ચલાવે છે. તે ઝડપી, સ્થિર અને ઉપયોગમાં સરળ છે. Google Chrome માં નિર્મિત મૉલવેર અને ફિશીંગ સુરક્ષા સાથે વેબને વધુ સુરક્ષિત રૂપે બ્રાઉઝ કરો.</translation>
 <translation id="5941830788786076944">Google Chrome ને ડિફૉલ્ટ બ્રાઉઝર બનાવો</translation>
+<translation id="4990567037958725628">Google Chrome કૅનેરી</translation>
 <translation id="4561051373932531560">Google Chrome થી તમે વેબ પર એક ફોન નંબર પર ક્લિક કરી શકો છો અને તેને Skype થી કૉલ કરી શકો છો!</translation>
 <translation id="3612333635265770873">આ જ નામનું એક મોડ્યુલ Google Chrome સાથે વિરોધાભાસમાં જાણમાં આવ્યું છે.</translation>
 <translation id="5947389362804196214">તમારી પસંદગીઓ વાંચી શકાતી નથી.\n\nકેટલીક સુવિધાઓ અનુપલબ્ધ ક છે અને પસંદગીઓના ફેરફારો સાચવી શકાશે નહીં.</translation>

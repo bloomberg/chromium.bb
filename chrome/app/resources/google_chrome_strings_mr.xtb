@@ -3,6 +3,7 @@
 <translationbundle lang="mr">
 <translation id="8000275528373650868">Google Chrome साठी SP2 किंवा त्यापेक्षा उच्च आवृत्ती सह Windows Vista किंवा Windows XP आवश्यक आहे.</translation>
 <translation id="6676384891291319759">इंटरनेटमध्ये प्रवेश करा</translation>
+<translation id="5453904507266736060">Google Chrome ला पार्श्वभूमीत चालू द्या</translation>
 <translation id="2383457833405848421">Chrome Frame बद्दल...</translation>
 <translation id="386202838227397562">कृपया सर्व Google Chrome विंडो बंद करा आणि पुन्हा प्रयत्न करा.</translation>
 <translation id="2770231113462710648">डीफॉल्ट ब्राउझर यावर बदला:</translation>
@@ -10,6 +11,7 @@
 <translation id="7781002470561365167">Google Chrome ची नवी आवृत्ती उपलब्ध आहे. </translation>
 <translation id="7101265395643981223">Google Chrome प्रारंभ करा</translation>
 <translation id="647902066410369402">आपली प्राधान्ये फाइल दूषित किंवा अवैध आहे.\n\nGoogle Chrome आपली सेटिंग्ज पुनर्प्राप्त करण्यात अक्षम आहे.</translation>
+<translation id="4891791193823137474">पार्श्वभूमीत Google Chrome चालू द्या</translation>
 <translation id="2879385160622431163">Google Chrome झटपट</translation>
 <translation id="2370289711218562573">Google Chrome आता मनपसंत/बुकमार्क् आयात करीत आहे.</translation>
 <translation id="8970027151245482499">Google Chrome स्थापित नाही किंवा तो इन्स्टॉलेशन निर्देशिका मिळवण्यास अयशस्वी आहे. कृपया Google Chrome पुन्हा डाउनलोड करा.</translation>
@@ -21,6 +23,7 @@
 <translation id="3555616473548901994">विस्थापन पूर्ण.</translation>
 <translation id="8556340503434111824">Google Chrome ची नवीन आवृत्ती उपलब्ध आहे, आणि ही नेहमीपेक्षा द्रुत आहे. </translation>
 <translation id="4728575227883772061">अनिर्दिष्ट त्रुटीमुळे स्थापना अयशस्वी. जर Google Chrome सध्या चालू असेल तर, कृपया त्यास बंद करा आणि पुन्हा प्रयत्न करा.</translation>
+<translation id="3080151273017101988">जेव्हा Google Chrome बंद असेल तेव्हा पार्श्वभूमीत अनुप्रयोग चालणे सुरू ठेवा</translation>
 <translation id="4149882025268051530">संग्रहणाचा असंक्षिप्त करण्यास इन्स्टॉलर अयशस्वी. कृपया Google Chrome पुन्हा डाउनलोड करा.</translation>
 <translation id="6989339256997917931">Google Chrome अद्यतनित केला गेला, परंतु आपण तो किमान 30 दिवसांपासून वापरलेला नाही.</translation>
 <translation id="5744005218040929396">Google Chrome Utility</translation>
@@ -48,8 +51,8 @@
 <translation id="8738921060445980047">अज्ञात आवृत्ती.</translation>
 <translation id="2485422356828889247">अनइन्स्टॉल करणे</translation>
 <translation id="3324235665723428530">आपले प्रोफाइल वापरले जाऊ शकत नाही कारण ते Google Chrome च्या एक नवीन आवृत्ती कडून आहे.\n\nकाही वैशिष्ट्ये अनुपलब्ध असू शकतात. कृपया एक वेगळी प्रोफाइल निर्देशिका निर्दिष्ट करा किंवा Chromeची नवीन आवृत्ती वापरा.</translation>
+<translation id="9073088951656332330">अपडेट करण्यासाठी Google Chrome किंवा Google Chrome Frame ची कोणतीही स्थापना आढळली नाही.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="5008136264574452501">Google Chrome कॅनरी बिल्ड</translation>
 <translation id="911206726377975832">आपला ब्राउझिंग डेटा देखील हटवायचा?</translation>
 <translation id="2044287590254833138">Google Chrome टूलबार</translation>
 <translation id="5074344184765391290">Chrome Plug-In Host</translation>
@@ -60,10 +63,12 @@
 <translation id="3847841918622877581">Google Chrome आपला ब्राउझिंग अनुभव सुधारण्यासाठी वेब सेवा वापरू शकतो.</translation>
 <translation id="7436949144778751379">Google Chrome साठी Windows XP किंवा नंतरची आवृत्ती आवश्यक आहे. काही वैशिष्ट्ये कार्य करत नाही.</translation>
 <translation id="7100330187273168372">Google Chrome त्याच्या डेटा निर्देशिकेत वाचू आणि लिहू शकत नाही:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="7938170099933661772">अंगभूत PDF दर्शक अक्षम असताना Google Chrome मुद्रण पूर्वावलोकन दर्शवू शकत नाही. पूर्वावलोकन पाहण्यासाठी, कृपया <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/> वर भेट द्या, &quot;Chrome PDF दर्शक&quot; सक्षम करा आणि पुन्हा प्रयत्न करा.</translation>
 <translation id="6757767188268205357">माझा बग नोंदवू नका</translation>
 <translation id="2290095356545025170">आपली खात्री आहे की आपण Google Chrome विस्थापित करू इच्छिता?</translation>
 <translation id="6087062680442281307">Google Chrome एक वेब ब्राउझर आहे जो वेब पृष्ठे आणि अनुप्रयोग विजेच्या गतीने चालवितो. तो जलद, स्थिर आणि वापरण्यास सोपा आहे. Google Chrome मध्ये तयार केलेल्या मालवेयर आणि फिशिंग संरक्षणासह वेब अधिक सुरक्षितपणे ब्राउझ करा.</translation>
 <translation id="5941830788786076944">Google Chromeला डीफॉल्ट ब्राउझर बनवा</translation>
+<translation id="4990567037958725628">Google Chrome कॅनरी</translation>
 <translation id="4561051373932531560">Google Chrome आपल्याला वेबवरील फोन नंबर क्लिक करू देते आणि त्या नंबरवर Skype द्वारा कॉल करू देते!</translation>
 <translation id="3612333635265770873">यासारख्या नावाचे मॉड्यूल Google Chrome बरोबर संघर्षाकरिता ओळखले जाते. </translation>
 <translation id="5947389362804196214">आपली प्राधान्ये वाचणे शक्य नाही.\n\nकाही वैशिष्ट्ये अनुपलब्ध आहेत आणि प्राधान्यांमध्ये केलेले बदल जतन होणार नाहीत.</translation>

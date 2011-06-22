@@ -3,6 +3,7 @@
 <translationbundle lang="cs">
 <translation id="8000275528373650868">Google Chrome vyžaduje operační systém Windows Vista nebo Windows XP SP2 nebo vyšší.</translation>
 <translation id="6676384891291319759">Přístup k internetu</translation>
+<translation id="5453904507266736060">Nechat aplikaci Google Chrome spuštěnou na pozadí</translation>
 <translation id="2383457833405848421">O pluginu Chrome Frame...</translation>
 <translation id="386202838227397562">Zavřete prosím všechna okna prohlížeče Google Chrome a zkuste to znovu.</translation>
 <translation id="2770231113462710648">Změnit výchozí prohlížeč na:</translation>
@@ -10,6 +11,7 @@
 <translation id="7781002470561365167">K dispozici je nová verze prohlížeče Google Chrome.</translation>
 <translation id="7101265395643981223">Spustit Google Chrome</translation>
 <translation id="647902066410369402">Soubor nastavení je poškozený nebo neplatný.\n\nAplikace Google Chrome nemůže vaše nastavení obnovit.</translation>
+<translation id="4891791193823137474">Nechat aplikaci Google Chrome spuštěnou na pozadí</translation>
 <translation id="2879385160622431163">Dynamický režim Google Chrome</translation>
 <translation id="2370289711218562573">Google Chrome právě importuje Oblíbené položky nebo záložky:</translation>
 <translation id="8970027151245482499">Google Chrome není nainstalován nebo se nepodařilo nalézt instalační adresář. Stáhněte prosím Google Chrome ještě jednou.</translation>
@@ -21,6 +23,7 @@
 <translation id="3555616473548901994">Odinstalace byla dokončena.</translation>
 <translation id="8556340503434111824">Je k dispozici nová verze prohlížeče Google Chrome, ještě rychlejší než ty předchozí.</translation>
 <translation id="4728575227883772061">Došlo k nespecifikované chybě, instalace se nezdařila. Pokud je Google Chrome právě spuštěný, zavřete jej prosím a zkuste to znovu.</translation>
+<translation id="3080151273017101988">Po ukončení prohlížeče Google Chrome nechat aplikace na pozadí spuštěné</translation>
 <translation id="4149882025268051530">Instalačnímu programu se nepodařilo rozbalit archiv. Stáhněte prosím Google Chrome ještě jednou.</translation>
 <translation id="6989339256997917931">Prohlížeč Google Chrome byl aktualizován, ale minimálně po 30 dnů jste jej nepoužili.</translation>
 <translation id="5744005218040929396">Google Chrome Utility</translation>
@@ -48,8 +51,8 @@
 <translation id="8738921060445980047">Neznámá verze.</translation>
 <translation id="2485422356828889247">Odinstalovat</translation>
 <translation id="3324235665723428530">Váš profil nelze použít, protože je vytvořen v novější verzi aplikace Google Chrome.\n\nNěkteré funkce mohou být nedostupné. Zadejte prosím jiný adresář profilu nebo použijte novější verzi aplikace Chrome.</translation>
+<translation id="9073088951656332330">Žádnou instalaci prohlížeče Google Chrome nebo modulu Google Chrome Frame není třeba aktualizovat.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="5008136264574452501">Google Chrome Canary Build</translation>
 <translation id="911206726377975832">Vymazat také všechna data procházení?</translation>
 <translation id="2044287590254833138">Lišta nástrojů aplikace Google Chrome</translation>
 <translation id="5074344184765391290">Hostitel pluginu aplikace Chrome</translation>
@@ -60,10 +63,12 @@
 <translation id="3847841918622877581">Prohlížeč Google Chrome vám může usnadnit prohlížení pomocí webových služeb.</translation>
 <translation id="7436949144778751379">Google Chrome vyžaduje operační systém Windows XP nebo novější. Některé funkce možná nebudou dostupné.</translation>
 <translation id="7100330187273168372">Aplikace Google Chrome nemůže číst ani zapisovat do svého datového adresáře:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="7938170099933661772">Google Chrome nemůže zobrazit náhled tisku, je-li deaktivován vestavěný prohlížeč souborů PDF. Chcete-li náhled zobrazit, přejděte na stránku <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/>, aktivujte modul Chrome PDF Viewer a zkuste to znovu.</translation>
 <translation id="6757767188268205357">Již se neptat</translation>
 <translation id="2290095356545025170">Opravdu chcete odinstalovat Google Chrome?</translation>
 <translation id="6087062680442281307">Webový prohlížeč Google Chrome spouští webové stránky a aplikace rychlostí blesku. Je rychlý, stabilní a snadno použitelný. S ochranou proti malwaru a phishingu integrovanou do prohlížeče Google Chrome můžete procházet web bezpečněji.</translation>
 <translation id="5941830788786076944">Nastavit Google Chrome jako výchozí prohlížeč</translation>
+<translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome umožňuje kliknout na telefonní číslo na webu a volat na něj prostřednictvím aplikace Skype.</translation>
 <translation id="3612333635265770873">Je známo, že s aplikací Google Chrome koliduje modul se stejným názvem.</translation>
 <translation id="5947389362804196214">Nelze číst vaše nastavení.\n\nNěkteré funkce možná nebudou k dispozici a změny nastavení se neuloží.</translation>

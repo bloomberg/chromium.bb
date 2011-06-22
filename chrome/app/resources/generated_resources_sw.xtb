@@ -49,7 +49,6 @@
 <translation id="8133676275609324831">&amp;Onyesha katika folda</translation>
 <translation id="645705751491738698">Endelea kuzuia JavaScript</translation>
 <translation id="4780321648949301421">Hifadhi Ukurasa Kama...</translation>
-<translation id="9154072353677278078">Seva <ph name="DOMAIN"/> iliyo <ph name="REALM"/> inahitaji jina la mtumiaji na nenosiri.</translation>
 <translation id="8178665534778830238">Maudhui:</translation>
 <translation id="558170650521898289">Uthibitishaji wa Viendeshi vya Maunzi vya Microsoft Windows</translation>
 <translation id="8974161578568356045">Gundua Atomatiki</translation>
@@ -153,7 +152,6 @@
 <translation id="1992397118740194946">Haijawekwa</translation>
 <translation id="8556732995053816225">Linganisha u&amp;kubwa wa herufi</translation>
 <translation id="3314070176311241517">Ruhusu tovuti zote ziendeshe JavaScript (inapendekezwa)</translation>
-<translation id="5710740561465385694">Niulize tovuti inapojaribu kuweka data</translation>
 <translation id="2263497240924215535">(Kimelemazwa)</translation>
 <translation id="2159087636560291862">Mara hii, cheti hakijathibitishwa na tovuti nyingine inayoaminiwa na kompyuta yako. Mtu yeyote anaweza kuunda cheti akidai kuwa tovuti yoyote ile atakayo; hii ndiyo sababu ni muhimu ithibitishwe na tovuti nyingine inayoaminika. Pasipo uthibitishaji huo, maelezo ya utambulisho katika cheti hayana maana. Hivyo basi haiwezekani kuthibitisha kuwa unawasiliana na <ph name="DOMAIN"/> na wala sio mshambulizi aliyeunda cheti chake mwenyewe akidai kuwa <ph name="DOMAIN2"/>. Hufai kuendelea kupita hapa.</translation>
 <translation id="8017335670460187064"><ph name="LABEL"/></translation>
@@ -589,7 +587,6 @@
 <translation id="1974043046396539880">Sehemu za Usambazaji wa CRL</translation>
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME"/> iko tayari kukamilisha usakinishaji wako</translation>
 <translation id="5316814419223884568">Tafuta kutoka papa hapa</translation>
-<translation id="965674096648379287">Ukurasa huu wa wavuti unahitaji data uliyoweka hapo awali ili uweze kuonyeshwa vizuri. Unaweza kutuma data hii tena, lakini kwa kufanya hivyo utarudia kitendo kilichofanywa na ukurasa huu hapo mbeleni. Bofya Pakia Upya ili kutuma data hiyo upya na kuonyesha ukurasa huu.</translation>
 <translation id="43742617823094120">Mara hii, cheti kilichowasilishwa kwa kivinjari chako kimebatilishwa na mtoaji. Kwa kawaida hii humaanisha kuwa uthabiti wa cheti hicho umehatarishwa, na cheti hicho hakistahili kuaminiwa.  Hustahili kabisa kuendelea kupita hapa.</translation>
 <translation id="18139523105317219">Jina la Sehemu ya EDI</translation>
 <translation id="1205605488412590044">Unda Mkato wa Programu...</translation>
@@ -720,7 +717,6 @@
 <translation id="872451400847464257">Hariri Injini Tafuti</translation>
 <translation id="6463061331681402734">dakika <ph name="NUMBER_MANY"/></translation>
 <translation id="2466804342846034717">Ingiza nenosiri sahihi kisha uchape herufi unazoziona kwenye picha iliyo hapo chini.</translation>
-<translation id="2657327428424666237"><ph name="BEGIN_LINK"/>Pakia tena<ph name="END_LINK"/> ukurasa huu wa wavuti baadaye.</translation>
 <translation id="5645845270586517071">Hitilafu ya Usalama</translation>
 <translation id="2989786307324390836">Data jozi iliyosimbwa kwa DER, cheti kimoja</translation>
 <translation id="3827774300009121996">&amp;Skrini Kamili</translation>
@@ -973,7 +969,6 @@
 <translation id="176759384517330673">Imesawazishwa kwa <ph name="USER_EMAIL_ADDRESS"/>. Ilisawazishwa mara ya mwisho <ph name="LAST_SYNC_TIME"/></translation>
 <translation id="1618661679583408047">Cheti cha usalama wa seva bado si sahihi!</translation>
 <translation id="7039912931802252762">Kuingia Kupitia Kadi Mahiri ya Microsoft</translation>
-<translation id="6285074077487067719">Mchoro</translation>
 <translation id="3065140616557457172">Jaribu kutafuta au kuweka URL ili uabiri - kila kitu kinafanya kazi.</translation>
 <translation id="5509693895992845810">Hifadhi K&amp;ama</translation>
 <translation id="5986279928654338866">Seva <ph name="DOMAIN"/> inahitaji jina la mtumiaji na nenosiri.</translation>
@@ -1130,11 +1125,11 @@
 <translation id="6442697326824312960">Banua Kichupo</translation>
 <translation id="6382612843547381371">Halali kutoka <ph name="START_DATE_TIME"/> hadi <ph name="END_DATE_TIME"/></translation>
 <translation id="5637380810526272785">Mbinu ya Uingizaji</translation>
+<translation id="6314007596429871800">Kache ya Programu</translation>
 <translation id="9002707937526687073">&amp;Chapisha</translation>
 <translation id="5556459405103347317">Pakia upya</translation>
 <translation id="8326395326942127023">Jina la Hifadhidata:</translation>
 <translation id="7507930499305566459">Cheti cha Jibu la Hali</translation>
-<translation id="6440205424473899061">Alamisho zako sasa zimesawazishwa na Google Docs! Ili kuunganisha na kusawazisha alamisho zako na <ph name="PRODUCT_NAME"/> kwenye kompyuta nyingineyo, rudia hatua zizo hizo za usanidi kwenye kompyuta hiyo.</translation>
 <translation id="7727721885715384408">Badilisha jina...</translation>
 <translation id="7339763383339757376">PKCS #7, cheti kimoja</translation>
 <translation id="7587108133605326224">Kibaltiki</translation>
@@ -1156,7 +1151,6 @@
 <translation id="6320286250305104236">Mipangilio ya Mtandao...</translation>
 <translation id="2927657246008729253">Badilisha...</translation>
 <translation id="7978412674231730200">Ufunguo binafsi</translation>
-<translation id="464745974361668466">Mchoro:</translation>
 <translation id="9111395131601239814"><ph name="NETWORKDEVICE"/>: <ph name="STATUS"/></translation>
 <translation id="4414232939543644979">Dirisha &amp;Fiche Jipya</translation>
 <translation id="1693754753824026215">Ukurasa ulio <ph name="SITE"/> unasema...</translation>
@@ -1230,7 +1224,6 @@
 <translation id="9141716082071217089">Haiwezekani kuchunguza ikiwa cheti cha seva kimebatilishwa.</translation>
 <translation id="4304224509867189079">Ingia</translation>
 <translation id="4492190037599258964">Matokeo ya utafutaji wa '<ph name="SEARCH_STRING"/>'</translation>
-<translation id="2238123906478057869"><ph name="PRODUCT_NAME"/> itatekeleza majukumu haya:</translation>
 <translation id="4042471398575101546">Ongeza Ukurasa</translation>
 <translation id="4871865824885782245">Fungua chaguo za tarehe na wakati</translation>
 <translation id="8828933418460119530">Jina la DNS</translation>

@@ -4,9 +4,9 @@
 <translation id="1503959756075098984">Extension IDs and update URLs to be silently installed</translation>
 <translation id="2463365186486772703">Application locale</translation>
 <translation id="1397855852561539316">Default search provider suggest URL</translation>
-<translation id="7040229947030068419">Example value</translation>
+<translation id="7040229947030068419">Sample value</translation>
 <translation id="6106630674659980926">Enable the password manager</translation>
-<translation id="7337927025691881244">.</translation>
+<translation id="7337927025691881244">Allows you to specify which extensions the users cannot install. Extensions already installed will be removed if blacklisted. A blacklist value of * means all extensions are blacklisted unless they are explicitly listed in the white list.</translation>
 <translation id="7755528767666760533">Specifies the URL of the search engine used to provide instant results. The URL should contain the string <ph name="SEARCH_TERM_MARKER"/>, which will be replaced at query time by the text the user has entered so far. Optional.</translation>
 <translation id="7614663184588396421">List of disabled protocol schemes</translation>
 <translation id="2309390639296060546">Default geolocation setting</translation>
@@ -18,6 +18,7 @@
           By default, all extensions are whitelisted, but if all extensions have been blacklisted by policy, the whitelist can be used to override that policy.</translation>
 <translation id="3185009703220253572">since version <ph name="SINCE_VERSION"/></translation>
 <translation id="5469825884154817306">Block images on these sites</translation>
+<translation id="3512877396423730277">Controls whether third-party sub-content on a page is allowed to pop up an HTTP Basic Auth dialogue box. Typically, this is disabled as a phishing defence.</translation>
 <translation id="1438955478865681012">Configures extension-related policies. The user is not allowed to install blacklisted extensions unless they are whitelisted. You can also force <ph name="PRODUCT_NAME"/> to automatically install extensions by specifying them in <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. The blacklist takes precedence over the list of forced extensions.</translation>
 <translation id="4070280487546651935">Specifies the keyword, which is the shortcut used in the omnibox to trigger the search for this provider. Optional.</translation>
 <translation id="1096105751829466145">Default search provider</translation>
@@ -98,6 +99,7 @@
 
       If this setting is not set, users can open file selection dialogues as normal.</translation>
 <translation id="7683777542468165012">Dynamic Policy Refresh</translation>
+<translation id="43195497515906639">Configures the directory that <ph name="PRODUCT_NAME"/> will use for storing user data. If you set this policy, <ph name="PRODUCT_NAME"/> will use the directory provided.</translation>
 <translation id="6228640147633317529">Allows you to set a list of url patterns that specify sites which are allowed to display images.</translation>
 <translation id="2711603272213076156">.</translation>
 <translation id="1426410128494586442">Yes</translation>
@@ -198,6 +200,8 @@
           For more detailed examples, visit:
           <ph name="PROXY_HELP_URL"/></translation>
 <translation id="2959898425599642200">Proxy bypass rules</translation>
+<translation id="7337941689192402544">Set <ph name="PRODUCT_NAME"/> user data directory</translation>
+<translation id="5326137997741385453">Configures the directory that <ph name="PRODUCT_NAME"/> will use for storing cached files on the disk. If you set this policy, <ph name="PRODUCT_NAME"/> will use the directory provided, regardless of whether the user has specified the '--disk-cache-dir' flag or not.</translation>
 <translation id="4752274243117690301"> will be disabled in <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="3292147213643666827">      Enables <ph name="PRODUCT_NAME"/> to act as a proxy between <ph name="CLOUD_PRINT_NAME"/> and legacy printers connected to the machine.
 
@@ -220,7 +224,9 @@
 <translation id="9096086085182305205">Authentication server whitelist</translation>
 <translation id="7063895219334505671">Allow pop-ups on these sites</translation>
 <translation id="2824715612115726353">Enable Incognito mode</translation>
+<translation id="1757688868319862958">Allows <ph name="PRODUCT_NAME"/> to run plug-ins that require authorisation. If you enable this setting, plug-ins that are not outdated always run. If this setting is disabled or not set, users will be asked for permission to run plug-ins that require authorisation. These are plug-ins that can compromise security.</translation>
 <translation id="6157537876488211233">Comma-separated list of proxy bypass rules</translation>
+<translation id="7091198954851103976">Always runs plug-ins that require authorisation</translation>
 <translation id="8870318296973696995">Homepage</translation>
 <translation id="4505337077089958219">Policy refresh rate</translation>
 <translation id="996560596616541671">Servers to which that <ph name="PRODUCT_NAME"/> may delegate.</translation>
@@ -262,6 +268,7 @@
           For detailed examples, visit:
           <ph name="PROXY_HELP_URL"/></translation>
 <translation id="1808715480127969042">Block cookies on these sites</translation>
+<translation id="1115048775745697549">Cross-origin HTTP Basic Auth propmts</translation>
 <translation id="2745445908503591390">Clear site data on browser shutdown</translation>
 <translation id="8665913667133665583">Specifies which servers should be whitelisted for integrated authentication. Integrated authentication is only enabled when <ph name="PRODUCT_NAME"/> receives an authentication challenge from a proxy or from a server which is in this permitted list.
 
@@ -321,8 +328,10 @@
       If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to control whether it is the default browser and whether user notifications should be shown when it isn't.</translation>
 <translation id="1530812829012954197">Always render the following URL patterns in the host browser</translation>
 <translation id="6190022522129724693"> setting</translation>
+<translation id="847472800012384958">Do not allow any site to show pop-ups</translation>
 <translation id="4733471537137819387">Policies related to integrated HTTP authentication.</translation>
 <translation id="4608714268466689965">Allows you to set whether websites are allowed to display desktop notifications. Displaying desktop notifications can be allowed by default, denied by default or the user can be asked every time a website wants to show desktop notifications.</translation>
+<translation id="8951350807133946005">Set disk cache directory</translation>
 <translation id="1334051495529796396">Specifies whether the generated Kerberos SPN is based on the canonical DNS name or the original name entered.
 
           If you enable this setting, CNAME lookup will be skipped and the server name will be used as entered.
@@ -330,7 +339,8 @@
           If you disable this setting, the canonical name of the server will be determined via CNAME lookup.</translation>
 <translation id="166427968280387991">Proxy server</translation>
 <translation id="2805707493867224476">Allow all sites to show pop-ups</translation>
-<translation id="7079519252486108041"> on these sites</translation>
+<translation id="1727394138581151779">Block all plug-ins</translation>
+<translation id="7079519252486108041">Block pop-ups on these sites</translation>
 <translation id="7433714841194914373">Enable Instant</translation>
 <translation id="4983201894483989687">Allow running plug-ins that are outdated</translation>
 <translation id="7492608050778218564">.</translation>
@@ -364,7 +374,9 @@
       If you set this policy, <ph name="PRODUCT_NAME"/> will use the provided directory regardless of whether the user has specified a different directory or enabled the flag to be prompted for a download location every time.</translation>
 <translation id="8284208534498422489">.</translation>
 <translation id="8544375438507658205">Default HTML renderer for <ph name="PRODUCT_FRAME_NAME"/></translation>
+<translation id="7424751532654212117">List of exceptions to the list of disabled plugins</translation>
 <translation id="6233173491898450179">Set download directory</translation>
+<translation id="2299220924812062390">Specify a list of enabled plug-ins</translation>
 <translation id="8754704265300028644">Disables saving browser history in <ph name="PRODUCT_NAME"/> and prevents users from changing this setting.
 
       If this setting is enabled, browsing history is not saved.
@@ -387,6 +399,7 @@
 <translation id="3101501961102569744">Choose how to specify proxy server settings</translation>
 <translation id="7774768074957326919">Use system proxy settings</translation>
 <translation id="3891357445869647828">Enable JavaScript</translation>
+<translation id="868187325500643455">Allow all sites to automatically run plug-ins</translation>
 <translation id="5226033722357981948"> finder should be disabled</translation>
 <translation id="9068358498333390522"> can be either allowed for all websites or denied for all websites.</translation>
 <translation id="7194407337890404814">Default search provider name</translation>
@@ -399,6 +412,7 @@
 
       URLs using a scheme from this list will not load and cannot be navigated to.</translation>
 <translation id="4056910949759281379">Disable SPDY protocol</translation>
+<translation id="3808945828600697669">Specify a list of disabled plug-ins</translation>
 <translation id="2187975305444384964">Allows you to set whether websites are allowed to track the users' physical location. Tracking the users' physical location can be allowed by default, denied by default or the user can be asked every time a website requests the physical location.</translation>
 <translation id="8397112610813153899">Customise the list of URL patterns that should always be rendered by <ph name="PRODUCT_FRAME_NAME"/>.
 
@@ -446,13 +460,6 @@
       If you disable this setting, anonymous reporting of usage and crash-related data is never sent to Google.
 
       If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME"/>.</translation>
-<translation id="3115819625623659514">Configures the type of the default home page in <ph name="PRODUCT_NAME"/> and prevents users from changing home page preferences. The home page can either be set to a URL you specify or set to the New Tab Page.
-
-          If you enable this setting, the New Tab Page will always be used as the home page, and the home page URL location will be ignored.
-
-          If you disable this setting, the user's homepage will never be the New Tab Page, unless its URL is set to 'chrome://newtab'.
-
-          If you enable or disable this setting, users cannot change their homepage type in <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="2263362640517427542">Enable lock when ChromeOS devices become idle or suspended.</translation>
 <translation id="6808666497110319299">Enables the use of alternative error pages that are built into <ph name="PRODUCT_NAME"/> (such as 'page not found') and prevents users from changing this setting.
 
@@ -467,6 +474,7 @@
       If you disable this setting, AutoFill will be inaccessible to users.
 
       If you enable this setting or do not configure a value, AutoFill will remain under the control of the user. This will allow the user to configure AutoFill profiles and to switch AutoFill on or off at the user's own discretion.</translation>
+<translation id="6938581770853731947">Configures the type of the default homepage in <ph name="PRODUCT_NAME"/> and prevents users from changing homepage preferences. The homepage can either be set to a URL that you specify or set to the New Tab Page. If you enable this setting, the New Tab Page will always be used as the homepage and the homepage URL location will be ignored. If you disable this setting, the user's homepage will never be the New Tab Page, unless its URL is set to 'chrome://newtab'. If you enable or disable this setting, users cannot change their homepage type in <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="5645779841392247734">Allow cookies on these sites</translation>
 <translation id="3906388518501362918">Enables JavaScript in <ph name="PRODUCT_NAME"/> and prevents users from changing this setting.
 

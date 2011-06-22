@@ -3,6 +3,7 @@
 <translationbundle lang="te">
 <translation id="8000275528373650868">Google Chromeకి Windows Vista లేదా Windows XPతో SP2 లేదా తదుపరిది అవసరం.</translation>
 <translation id="6676384891291319759">ఇంటర్నెట్‌ను ఆక్సెస్ చెయ్యండి</translation>
+<translation id="5453904507266736060">Google Chromeను నేపథ్యంలో అమలు అయ్యేందుకు అనుమతించండి</translation>
 <translation id="2383457833405848421">Chrome Frame గురించి...</translation>
 <translation id="386202838227397562">దయచేసి అన్ని Google Chrome విండోలను మూసివేసి, మళ్ళీ ప్రయత్నించండి.</translation>
 <translation id="2770231113462710648">డిఫాల్ట్ బ్రౌజర్‌ను దీనికి మార్చు:</translation>
@@ -10,6 +11,7 @@
 <translation id="7781002470561365167">Google Chrome యొక్క క్రొత్త సంస్కరణ ఇప్పుడు అందుబాటులో ఉంది.</translation>
 <translation id="7101265395643981223">Google Chromeను ప్రారంభించు</translation>
 <translation id="647902066410369402">మీ ప్రాధాన్యతల ఫైల్ పాడైంది లేదా చెల్లనిది.\n\nGoogle Chrome మీ సెట్టింగ్‌లను తిరిగి పొందలేదు.</translation>
+<translation id="4891791193823137474">Google Chromeను నేపథ్యంలో అమలు అయ్యేలా అనుమతించండి</translation>
 <translation id="2879385160622431163">Google Chrome తక్షణం</translation>
 <translation id="2370289711218562573">Google Chrome ఇప్పుడు ఇష్టమైనవి/బుక్‌మార్క్‌లను దిగుమతి చేస్తోంది.</translation>
 <translation id="8970027151245482499">Google Chrome ఇన్‌స్టాల్ అవ్వలేదు లేదా ఇది ఇన్‌స్టాలేషన్ డైరక్టరీని కనుగొనడంలో విఫలమైంది. దయచేసి Google Chromeను మళ్ళీ డౌన్‌లోడ్ చెయ్యండి.</translation>
@@ -21,6 +23,7 @@
 <translation id="3555616473548901994">వ్యవస్థాపన యొక్క తొలగింపు పూర్తయింది.</translation>
 <translation id="8556340503434111824">Google Chrome యొక్క క్రొత్త సంస్కరణ అందుబాటులో ఉంది, ఇది ఎప్పటి కంటే వేగంగా ఉంది.</translation>
 <translation id="4728575227883772061">పేర్కొనబడని లోపం కారణంగా ఇన్‌స్టాలేషన్ విఫలమైంది. ప్రస్తుతం Google Chrome రన్ చేస్తున్నట్లయితే, దయచేసి దాన్ని మూసివేసి, మళ్ళీ ప్రయత్నించండి.</translation>
+<translation id="3080151273017101988">Google Chrome మూసివేసినపుడు అనువర్తనాలను నేపథ్యంలో అమలు చేయడాన్ని కొనసాగించు</translation>
 <translation id="4149882025268051530">ఆర్కైవ్‌ను విస్తరించడంలో ఇన్‌స్టాలర్ విఫలమైంది. దయచేసి Google Chromeను మళ్ళీ డౌన్‌లోడ్ చెయ్యండి.</translation>
 <translation id="6989339256997917931">Google Chrome నవీకరింబడింది, కానీ మీరు దీన్ని కనీసం 30 రోజులు ఉయోగించలేరు.</translation>
 <translation id="5744005218040929396">Google Chrome Utility</translation>
@@ -48,8 +51,8 @@
 <translation id="8738921060445980047">తెలియని సంస్కరణ.</translation>
 <translation id="2485422356828889247">వ్యవస్థాపనను తీసివెయ్యి</translation>
 <translation id="3324235665723428530">మీ ప్రొఫైల్ Google Chrome యొక్క కొత్త వెర్షన్ కాబట్టి దాన్ని ఉపయోగించలేము. \n\nకొన్ని ఫీచర్లు అందుబాటులో ఉండకపోవచ్చు. దయచేసి వేరొక ప్రొఫైల్ డైరెక్టరీని పేర్కొనండి లేదా Chrome యొక్క కొత్త వెర్షన్‌ను ఉపయోగించండి.</translation>
+<translation id="9073088951656332330">అప్‌డేట్ చేయడానికి Google Chrome లేదా Google Chrome Frame యొక్క వ్యవస్థాపన కనుగొనబడలేదు.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="5008136264574452501">Google Chrome కెనరీ బిల్డ్</translation>
 <translation id="911206726377975832">మీ బ్రౌజింగ్ డేటాని కూడా తొలగించాలా?</translation>
 <translation id="2044287590254833138">Google Chrome ఉపకరణ పట్టీ</translation>
 <translation id="5074344184765391290">Chrome Plug-In Host</translation>
@@ -60,10 +63,12 @@
 <translation id="3847841918622877581">Google Chrome మీ బ్రౌజింగ్ అనుభవాన్ని మెరుగుపరచడానికి వెబ్ సేవలను ఉపయోగించవచ్చు.</translation>
 <translation id="7436949144778751379">Google Chromeకు Windows XP లేదా క్రొత్తది అవసరం. కొన్ని లక్షణాలు పని చేయకపోవచ్చు.</translation>
 <translation id="7100330187273168372">Google Chrome దాని డేటా డైరెక్టరీలో రాయలేదు మరియు చదవలేదు:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="7938170099933661772">అంతర్నిర్మాణ PDF వ్యూయర్ నిలిపివేసినపుడు Google Chrome ముద్రణ పరిదృశ్యాన్ని చూపించదు. పరిదృశ్యాన్ని చూడటానికి, దయచేసి <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/>ను సందర్శించండి మరియు &quot;Chrome PDF Viewer&quot; ని ప్రారంభించి మరల ప్రయత్నించండి.</translation>
 <translation id="6757767188268205357">నన్ను విసిగించకు</translation>
 <translation id="2290095356545025170">మీరు Google Chrome ని ఖచ్చితంగా అన్ ఇన్స్టాల్ చెయ్యాలని అనుకుంటున్నారా?</translation>
 <translation id="6087062680442281307">Google Chrome అనేది మెరుపు వేగంతో వెబ్ పేజీలను మరియు అనువర్తనాలను అమలు చేసే వెబ్ బ్రౌజర్. ఇది వేగమైనది, సామర్థ్యం కలది మరియు ఉపయోగించడానికి సులభమైంది. Google Chromeలో నిర్మితమైన మాల్వేర్ మరియు ఫిషింగ్ భద్రతతో మరింత సురక్షితంగా వెబ్‌ను బ్రౌజ్ చేయండి.</translation>
 <translation id="5941830788786076944">Google Chromeను డిఫాల్ట్ బ్రౌజర్‌గా చేసుకోండి</translation>
+<translation id="4990567037958725628">Google Chrome కేనరీ</translation>
 <translation id="4561051373932531560">Google Chrome వెబ్‌లో మిమ్మళ్ని ఫోన్ నంబర్ క్లిక్ చెయ్యనిస్తుంది మరియు Skypeతో కాల్ చేస్తుంది!</translation>
 <translation id="3612333635265770873">Google Chromeతో వైరుధ్యం అయ్యే అదే పేరుతో మాడ్యూల్ ఉంది.</translation>
 <translation id="5947389362804196214">మీ ప్రాధాన్యతలను చదవలేము.\n\nకొన్ని లక్షణాలు అందుబాటులో లేకపోవచ్చు మరియు ప్రాధాన్యతలకు మార్పులు సేవ్ చేయబడవు.</translation>

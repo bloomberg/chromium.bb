@@ -3,6 +3,7 @@
 <translationbundle lang="uk">
 <translation id="8000275528373650868">Для роботи Google Chrome потрібно мати ОС Windows Vista чи Windows XP із SP2 або новішу версію.</translation>
 <translation id="6676384891291319759">Доступ до Інтернету</translation>
+<translation id="5453904507266736060">Дозволити Google Chrome працювати у фоновому режимі</translation>
 <translation id="2383457833405848421">Про Chrome Frame...</translation>
 <translation id="386202838227397562">Закрийте всі вікна Google Chrome і повторіть спробу.</translation>
 <translation id="2770231113462710648">Змінити веб-переглядач за умовчанням на:</translation>
@@ -10,6 +11,7 @@
 <translation id="7781002470561365167">Доступна нова версія Google Chrome.</translation>
 <translation id="7101265395643981223">Запустити Google Chrome</translation>
 <translation id="647902066410369402">Ваш файл налаштувань пошкоджений чи недійсний.\n\nGoogle Chrome не може відновити ваші налаштування.</translation>
+<translation id="4891791193823137474">Дозволити Google Chrome працювати у фоновому режимі</translation>
 <translation id="2879385160622431163">Google Chrome Instant</translation>
 <translation id="2370289711218562573">Google Chrome імпортує &quot;Улюблені/Закладки&quot;.</translation>
 <translation id="8970027151245482499">Google Chrome не встановлено, або не вдалося знайти каталог установки. Завантажте Google Chrome ще раз.</translation>
@@ -21,6 +23,7 @@
 <translation id="3555616473548901994">Видалення завершено.</translation>
 <translation id="8556340503434111824">Доступна нова версія Google Chrome – швидша, ніж будь-коли.</translation>
 <translation id="4728575227883772061">Не вдалося здійснити встановлення через невизначену помилку. Якщо наразі Google Chrome запущено, закрийте його та повторіть спробу.</translation>
+<translation id="3080151273017101988">Продовжувати роботу фонових програм, коли Google Chrome закрито</translation>
 <translation id="4149882025268051530">Не вдалося відкрити архів за допомогою програми встановлення. Завантажте Google Chrome ще раз.</translation>
 <translation id="6989339256997917931">Google Chrome оновлено, проте ви не користувалися цим веб-переглядачем щонайменше 30 днів.</translation>
 <translation id="5744005218040929396">Утиліта Google Chrome</translation>
@@ -48,8 +51,8 @@
 <translation id="8738921060445980047">Невідома версія.</translation>
 <translation id="2485422356828889247">Видалити</translation>
 <translation id="3324235665723428530">Ваш профіль не можна використати, тому що його створено у новішій версії Google Chrome.\n\nДеякі функції можуть не працювати. Вкажіть інший каталог профілю або скористайтеся новішою версією Chrome.</translation>
+<translation id="9073088951656332330">Не знайдено встановлення Google Chrome або Google Chrome Frame для оновлення.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="5008136264574452501">Конструкція Google Chrome Canary</translation>
 <translation id="911206726377975832">Також видалити дані веб-перегляду?</translation>
 <translation id="2044287590254833138">Панель інструментів Google Chrome</translation>
 <translation id="5074344184765391290">Хост модуля Chrome</translation>
@@ -60,10 +63,12 @@
 <translation id="3847841918622877581">Google Chrome може використовувати веб-послуги для покращення умов перегляду.</translation>
 <translation id="7436949144778751379">Для роботи Google Chrome потрібно мати ОС Windows XP або новішої версії. Деякі функції можуть не працювати.</translation>
 <translation id="7100330187273168372">Google Chrome не може читати з та записувати у каталог:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="7938170099933661772">Google Chrome не може показати версію для друку, якщо вимкнено вбудований засіб перегляду файлів PDF. Щоб переглянути версію для друку, перейдіть у розділ <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/>, увімкніть плагін &quot;Перегляд документів PDF у Chrome&quot; і повторіть спробу.</translation>
 <translation id="6757767188268205357">Не турбувати мене</translation>
 <translation id="2290095356545025170">Ви дійсно хочете видалити Google Chrome?</translation>
 <translation id="6087062680442281307">Google Chrome – це веб-переглядач, який із блискавичною швидкістю запускає веб-сторінки та програми. Він швидкий, надійний і зручний у користуванні. Вбудований у Google Chrome захист від шкідливих програм і фішингу гарантує ще більшу безпеку під час перегляду веб-сторінок.</translation>
 <translation id="5941830788786076944">Зробити Google Chrome переглядачем за промовчанням</translation>
+<translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome дозволяє натиснути номер телефону в Інтернеті та здійснити виклик через Skype.</translation>
 <translation id="3612333635265770873">Відомо, що модуль із такою назвою конфліктує з Google Chrome.</translation>
 <translation id="5947389362804196214">Не вдається розпізнати налаштування.\n\nДеякі функції можуть бути недоступними, а зміни в налаштуваннях не зберігатимуться.</translation>

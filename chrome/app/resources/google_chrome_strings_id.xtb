@@ -3,6 +3,7 @@
 <translationbundle lang="id">
 <translation id="8000275528373650868">Google Chrome memerlukan Windows Vista atau Windows XP dengan SP2 atau yang lebih baru.</translation>
 <translation id="6676384891291319759">Akses Internet</translation>
+<translation id="5453904507266736060">Jalankan Google Chrome di Latar Belakang</translation>
 <translation id="2383457833405848421">Tentang Chrome Frame...</translation>
 <translation id="386202838227397562">Tutup semua jendela Google Chrome, lalu coba lagi.</translation>
 <translation id="2770231113462710648">Ubah peramban bawaan ke:</translation>
@@ -10,6 +11,7 @@
 <translation id="7781002470561365167">Tersedia Google Chrome versi baru.</translation>
 <translation id="7101265395643981223">Aktifkan Google Chrome</translation>
 <translation id="647902066410369402">Berkas preferensi Anda rusak atau tidak valid.\n\nGoogle Chrome tidak dapat memulihkan setelan Anda.</translation>
+<translation id="4891791193823137474">Jalankan Google Chrome di latar belakang</translation>
 <translation id="2879385160622431163">Google Chrome Sekejap</translation>
 <translation id="2370289711218562573">Kini Google Chrome mengimpor Favorites/Bookmark.</translation>
 <translation id="8970027151245482499">Google Chrome tidak terinstal atau gagal menemukan direktori penginstalan. Unduh kembali Google Chrome.</translation>
@@ -21,6 +23,7 @@
 <translation id="3555616473548901994">Pencopotan pemasangan selesai.</translation>
 <translation id="8556340503434111824">Tersedia versi Google Chrome yang baru, dan versi ini lebih cepat dari sebelumnya.</translation>
 <translation id="4728575227883772061">Penginstalan gagal karena galat yang tidak diketahui. Jika Google Chrome sedang berjalan; tutup, lalu ulang kembali.</translation>
+<translation id="3080151273017101988">Terus menjalankan apl latar belakang saat Google Chrome ditutup</translation>
 <translation id="4149882025268051530">Instalatur gagal mendekompresi arsip. Unduh kembali Google Chrome.</translation>
 <translation id="6989339256997917931">Google Chrome telah diperbarui, tetapi Anda belum menggunakannya selama setidaknya 30 hari.</translation>
 <translation id="5744005218040929396">Utilitas Google Chrome</translation>
@@ -43,27 +46,29 @@
 <translation id="4331809312908958774">OS Chrome</translation>
 <translation id="1195935957447623558">Google Chrome tidak dinonaktifkan dengan benar. Untuk membuka kembali halaman yang pernah dibuka, klik Kembalikan.</translation>
 <translation id="2580411288591421699">Tak dapat memasang Google Chrome dengan versi yang sama dengan yang sedang aktif. Tutup dulu, baru coba lagi.</translation>
-<translation id="7747138024166251722">Instalatur tidak dapat membuat direktori sementara. Periksa kapasitas kosong pada disk dan izin untuk menginstal perangkat lunak.</translation>
+<translation id="7747138024166251722">Pemasang tidak dapat membuat direktori sementara. Periksa kapasitas kosong pada disk dan izin untuk memasang perangkat lunak.</translation>
 <translation id="6009537148180854585">Anda berupaya membuka &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, namun sertifikat yang diberikan oleh server berisi kesalahan. Google Chrome dapat menggunakan sertifikat yang berisi kesalahan dan tidak dapat memvalidasi identitas situs yang akan dibuka. Sambungan tidak aman dan Anda tidak boleh melanjutkan.</translation>
 <translation id="8738921060445980047">Versi tidak diketahui.</translation>
 <translation id="2485422356828889247">Copot instalasi</translation>
 <translation id="3324235665723428530">Profil Anda tidak dapat digunakan karena berasal dari versi Google Chrome yang lebih baru.\n\nBeberapa fitur mungkin tidak tersedia. Tentukan direktori profil yang berbeda atau gunakan versi Chrome terbaru.</translation>
+<translation id="9073088951656332330">Tidak ditemukan pemasangan Google Chrome atau Google Chrome Frame untuk diperbarui.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="5008136264574452501">Build Google Chrome Canary</translation>
 <translation id="911206726377975832">Hapus juga data rambanan Anda?</translation>
 <translation id="2044287590254833138">Toolbar Google Chrome</translation>
 <translation id="5074344184765391290">Inang Pengaya Chrome</translation>
 <translation id="6481075104394517441">Anda berupaya membuka &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, namun server memberikan sertifikat yang belum valid. Tidak ada informasi yang tersedia untuk menunjukkan bahwa sertifikat dapat dipercaya. Google Chrome tidak dapat menjamin secara pasti bahwa Anda berkomunikasi dengan &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; dan bukan pengganggu. Anda harus memastikan bahwa jam dan zona waktu ditetapkan dengan benar di komputer. Jika belum, Anda harus mengatasi masalah dan me-refresh halaman ini. Jika sudah benar, Anda tidak boleh melanjutkan.</translation>
-<translation id="8862326446509486874">Anda tidak memiliki hak yang diperlukan untuk penginstalan tingkat sistem. Coba jalankan lagi penginstal saat masuk sebagai Administrator.</translation>
+<translation id="8862326446509486874">Anda tidak memiliki hak yang diperlukan untuk pemasangan tingkat sistem. Coba jalankan lagi pemasang saat masuk sebagai Administrator.</translation>
 <translation id="595871952790078940">Utilitas Chrome</translation>
 <translation id="2874156562296220396">Google Chrome hadir berkat proyek sumber terbuka<ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> dan <ph name="BEGIN_LINK_OSS"/>perangkat lunak sumber terbuka <ph name="END_LINK_OSS"/> lainnya.</translation>
 <translation id="3847841918622877581">Google Chrome dapat menggunakan layanan web guna meningkatkan pengalaman meramban Anda.</translation>
 <translation id="7436949144778751379">Google Chrome memerlukan Windows XP atau yang lebih baru. Sebagian fitur mungkin tidak berfungsi.</translation>
 <translation id="7100330187273168372">Google Chrome tidak dapat membaca dan menulis ke direktori data:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="7938170099933661772">Google Chrome tidak dapat menampilkan pratinjau cetak jika penayang PDF yang tertanam dinonaktifkan. Untuk melihat pratinjau, kunjungi <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/>, aktifkan &quot;Chrome PDF Viewer&quot;, lalu coba lagi.</translation>
 <translation id="6757767188268205357">Jangan ganggu saya</translation>
 <translation id="2290095356545025170">Apakah Anda yakin ingin mencopot penginstalan Google Chrome?</translation>
 <translation id="6087062680442281307">Google Chrome adalah peramban web yang menjalankan laman dan aplikasi web dengan kecepatan kilat. Cepat, stabil, dan mudah digunakan. Ramban web secara lebih aman dengan perlindungan terhadap perangkat lunak jahat dan phishing yang disertakan dalam Google Chrome.</translation>
 <translation id="5941830788786076944">Jadikan Google Chrome sebagai browser default</translation>
+<translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome memungkinkan Anda mengeklik nomor telepon pada web dan menghubunginya melalui Skype!</translation>
 <translation id="3612333635265770873">Modul dengan nama yang sama biasanya konflik dengan Google Chrome.</translation>
 <translation id="5947389362804196214">Preferensi Anda tidak dapat dibaca.\n\nSebagian fitur mungkin tidak tersedia dan pengubahan pada preferensi tidak akan disimpan.</translation>
@@ -83,7 +88,7 @@
 <translation id="9039578207253536065">Pekerja Google Chrome</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Peramban Internet</translation>
-<translation id="8776515774046280928">Google Chrome telah terinstal dan tersedia bagi seluruh pengguna komputer ini. Jika Anda ingin menginstal Google Chrome pada tingkat pengguna, Anda harus terlebih dulu menghapus penginstalan versi tingkat sistem yang diinstal oleh administrator.</translation>
+<translation id="8776515774046280928">Google Chrome telah terpasang dan tersedia bagi seluruh pengguna komputer ini. Jika Anda ingin memasang Google Chrome pada tingkat pengguna, Anda harus terlebih dulu menghapus pemasangan versi tingkat sistem yang dipasang oleh administrator.</translation>
 <translation id="2189123953385179981">Google ChromeOS tidak mendukung peluncuran aplikasi eksternal untuk menangani tautan <ph name="SCHEME"/>. Tautan yang diminta adalah <ph name="PROTOLINK"/>.</translation>
 <translation id="8205111949707227942">Opsional: Bantu kami membuat OS Chrome lebih baik dengan mengirim statistik penggunaan dan laporan kerusakan ke Google secara otomatis.</translation>
 <translation id="7196020411877309443">Mengapa saya melihat ini?</translation>

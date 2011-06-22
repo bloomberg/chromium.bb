@@ -20,6 +20,7 @@
           Pagal numatytuosius nustatymus visi plėtiniai yra įtraukti į baltąjį sąrašą, bet jei visi plėtiniai į juodąjį sąrašą buvo įtraukti todėl, kad to reikalavo politika, naudojant baltąjį sąrašą politikos galima nepaisyti.</translation>
 <translation id="3185009703220253572">nuo <ph name="SINCE_VERSION"/> versijos</translation>
 <translation id="5469825884154817306">Blokuoti vaizdus šiose svetainėse</translation>
+<translation id="3512877396423730277">Kontroliuoja, ar trečiosios šalies puslapio papildomame turinyje gali iššokti dialogo langas „HTTP pagrindinė prieigos teisė“. Paprastai tai neleidžiama kaip apsaugos nuo sukčiavimo dalis.</translation>
 <translation id="1438955478865681012">Konfigūruojama su plėtiniais susijusi politika. Naudotojui neleidžiama diegti į juodąjį sąrašą įtrauktų plėtinių, jei jų nėra baltajame sąraše. Taip pat galite nustatyti, kad „<ph name="PRODUCT_NAME"/>“ automatiškai įdiegtų plėtinius, nurodydama juos „<ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>“. Juodasis sąrašas laikomas prioritetiniu privalomai įdiegiamų plėtinių sąrašo atžvilgiu.</translation>
 <translation id="4070280487546651935">Nurodomas raktinis žodis, kuris kaip nuoroda naudojamas „omnibox“ šio teikėjo paieškai inicijuoti. Pasirinktinai.</translation>
 <translation id="1096105751829466145">Numatytasis paieškos teikėjas</translation>
@@ -100,6 +101,7 @@
 
       Nenustačius šio nustatymo, failų pasirinkimo dialogo langus naudotojai galės atidaryti kaip įprastai.</translation>
 <translation id="7683777542468165012">Dinaminis politikos atnaujinimas</translation>
+<translation id="43195497515906639">Konfigūruojamas katalogas, kuris „<ph name="PRODUCT_NAME"/>“ bus naudojamas naudotojo duomenims saugoti. Jei nustatysite šią politiką, „<ph name="PRODUCT_NAME"/>“ bus naudojamas pateiktas katalogas.</translation>
 <translation id="6228640147633317529">Leidžiama nustatyti URL šablonų, nurodančių svetaines, kuriose leidžiama pateikti vaizdus, sąrašą.</translation>
 <translation id="2711603272213076156">Leisti iškviesti failų pasirinkimo dialogo langus.</translation>
 <translation id="1426410128494586442">Taip</translation>
@@ -214,6 +216,8 @@
           Jei norite gauti išsamesnių pavyzdžių, apsilankykite šiuo adresu:
           <ph name="PROXY_HELP_URL"/></translation>
 <translation id="2959898425599642200">Tarpinio serverio apėjimo taisyklės</translation>
+<translation id="7337941689192402544">„<ph name="PRODUCT_NAME"/>“ naudotojo duomenų katalogo nustatymas</translation>
+<translation id="5326137997741385453">Konfigūruojamas katalogas, kuris „<ph name="PRODUCT_NAME"/>“ bus naudojamas talpyklos failams diske saugoti. Jei nustatysite šią politiką, „<ph name="PRODUCT_NAME"/>“ bus naudojamas pateiktas katalogas, neatsižvelgiant į tai, ar naudotojas nurodė žymą „--disk-cache-dir“.</translation>
 <translation id="4752274243117690301">Jei nustatysite šio nustatymo parinktį „Teisinga“, „<ph name="PRODUCT_NAME"/>“ bus neleidžiama automatiškai vykdyti trūkstamų papildinių paieškos ir įdiegties.</translation>
 <translation id="3292147213643666827">      „<ph name="PRODUCT_NAME"/>“ įgalinama veikti kaip tarpinis serveris, siejantis <ph name="CLOUD_PRINT_NAME"/> ir senesnius prie kompiuterio prijungtus spausdintuvus.
 
@@ -236,23 +240,16 @@
 <translation id="9096086085182305205">Tapatumo nustatymo serverio baltasis sąrašas</translation>
 <translation id="7063895219334505671">Leisti iššokančiuosius langus šiose svetainėse</translation>
 <translation id="2824715612115726353">Įgalinti inkognito režimą</translation>
+<translation id="1757688868319862958">„<ph name="PRODUCT_NAME"/>“ leidžiama paleisti papildinius, kuriuos naudojant reikalinga prieigos teisė. Jei įgalinsite šį nustatymą, visada bus paleidžiami nepasenę papildiniai. Jei šis nustatymas neleidžiamas arba nenustatytas, naudotojų bus prašoma suteikti leidimą paleisti papildinius, kuriuos naudojant reikalinga prieigos teisė. Šiais papildiniais gali būti pažeista sauga.</translation>
 <translation id="6157537876488211233">Kableliais atskirtų tarpinio serverio apėjimo taisyklių sąrašas</translation>
+<translation id="7091198954851103976">Visada paleidžiami papildiniai, kuriuos naudojant reikalinga prieigos teisė</translation>
 <translation id="8870318296973696995">Pagrindinis puslapis</translation>
 <translation id="4505337077089958219">Politikos atnaujinimo dažnis</translation>
 <translation id="996560596616541671">Serveriai, į kuriuos gali nukreipti „<ph name="PRODUCT_NAME"/>“.</translation>
 <translation id="3866249974567520381">Aprašas</translation>
 <translation id="2236488539271255289">Neleisti nė vienoje svetainėje nustatyti vietinių duomenų</translation>
 <translation id="4467952432486360968">Blokuoti trečiosios šalies slapukus</translation>
-<translation id="1722705282440676367">Leidžiama nurodyti „<ph name="PRODUCT_NAME"/>“ naudojamą tarpinį serverį ir neleidžiama naudotojams keisti tarpinio serverio nustatymų.
-
-      Jei pasirinksite niekada nenaudoti tarpinio serverio ir visada jungtis tiesiogiai, visų kitų parinkčių bus nepaisoma.
-
-      Jei tarpinį serverį pasirinksite aptikti automatiškai, visų kitų parinkčių bus nepaisoma.
-
-      Jei norite gauti išsamių pavyzdžių, apsilankykite šiuo adresu:
-      <ph name="PROXY_HELP_URL"/>
-
-      Jei įgalinsite šį nustatymą, „<ph name="PRODUCT_NAME"/>“ nepaisys jokių komandų eilutėje nurodytų su tarpiniu serveriu susijusių parinkčių.</translation>
+<translation id="1722705282440676367">Leidžiama nurodyti „<ph name="PRODUCT_NAME"/>“ naudojamą įgaliotąjį serverį ir neleidžiama naudotojams keisti įgaliotojo serverio nustatymų. Jei pasirinksite niekada nenaudoti įgaliotojo serverio ir visada jungtis tiesiogiai, visų kitų parinkčių bus nepaisoma. Jei pasirinksite įgaliotąjį serverį aptikti automatiškai, visų kitų parinkčių bus nepaisoma. Jei norite gauti išsamių pavyzdžių, apsilankykite šiuo adresu: <ph name="PROXY_HELP_URL"/>. Jei įgalinsite šį nustatymą, „<ph name="PRODUCT_NAME"/>“ nepaisys jokių komandų eilutėje nurodytų su įgaliotuoju serveriu susijusių parinkčių.</translation>
 <translation id="8470053727907466464">Nurodomos paieškos teikėjo palaikomos simbolių koduotės. Koduotės yra kodų puslapių pavadinimai, pvz., UTF-8, GB2312 ir ISO-8859-1. Jie bandomi tokia tvarka, kokia yra pateikti. Numatytoji koduotė yra UTF-8.</translation>
 <translation id="2537063115727103969">Ši politika yra turinio nustatymų parinkties „Uždarant naršyklę išvalyti slapukus ir kitus svetainės duomenis“ nepaisymo politika.
 
@@ -278,6 +275,7 @@
           Jei norite gauti išsamių pavyzdžių, apsilankykite šiuo adresu:
           <ph name="PROXY_HELP_URL"/></translation>
 <translation id="1808715480127969042">Blokuoti slapukus šiose svetainėse</translation>
+<translation id="1115048775745697549">Mišrios kilmės HTTP pagrindinės prieigos teisės raginimai</translation>
 <translation id="2745445908503591390">Išvalyti svetainės duomenis uždarant naršyklę</translation>
 <translation id="8665913667133665583">Nurodoma, kurie serveriai turi būti įtraukti į baltąjį sąrašą, kurio paisoma integruotai nustatant tapatumą. Integruotasis tapatumo nustatymas įgalinamas tik tada, kai „<ph name="PRODUCT_NAME"/>“ gauna tapatumo nustatymo iššūkį iš tarpinio arba į leistinų serverių sąrašą įtraukto serverio.
 
@@ -340,6 +338,7 @@
 <translation id="847472800012384958">Neleisti jokioje svetainėje rodyti iššokančiųjų langų</translation>
 <translation id="4733471537137819387">Politika, susijusi su integruotuoju HTTP tapatumo nustatymu.</translation>
 <translation id="4608714268466689965">Leidžiama nustatyti, ar svetainėse turi būti leidžiama pateikti darbalaukio pranešimus. Pateikti darbalaukio pranešimus gali būti leidžiama arba neleidžiama pagal numatytuosius nustatymus arba kaskart prieš ketinant pateikti svetainėje darbalaukio pranešimus naudotojo gali būti apie tai paklausta.</translation>
+<translation id="8951350807133946005">Nustatyti disko talpyklos katalogą</translation>
 <translation id="1334051495529796396">Nurodoma, ar sugeneruotas „Kerberos“ SPN yra pagrįstas standartiniu DNS pavadinimu, ar pirminiu įvestu vardu.
 
           Jei įgalinsite šį nustatymą, CNAME paieška bus praleista ir bus naudojamas įvestas serverio pavadinimas.
@@ -481,13 +480,6 @@
       Jei šio nustatymo neleisite, „Google“ niekada nebus siunčiamos anonimiškos naudojimo ir su strigtimis susijusių duomenų ataskaitos.
 
       Jei šį nustatymą įgalinsite arba jo neleisite, paleidę „<ph name="PRODUCT_NAME"/>“ naudotojai negalės nei jo pakeisti, nei nepaisyti.</translation>
-<translation id="3115819625623659514">Konfigūruojamas numatytojo „<ph name="PRODUCT_NAME"/>“ pagrindinio puslapio tipas; naudotojams pagrindinio puslapio nuostatų keisti neleidžiama. Pagrindinį puslapį galima nustatyti nurodant URL arba nustatant naujo skirtuko puslapį.
-
-          Jei įgalinsite šį nustatymą, naujo skirtuko puslapis visada bus naudojamas kaip pagrindinis puslapis, o pagrindinio puslapio URL vietos bus nepaisoma.
-
-          Jei šio nustatymo neleisite, naudotojo pagrindinis puslapis niekada nebus naujo skirtuko puslapis, jei jo URL nebus nustatytas kaip „chrome://newtab“.
-
-          Jei šį nustatymą įgalinsite arba jo neleisite, paleidę „<ph name="PRODUCT_NAME"/>“ naudotojai negalės pakeisti pagrindinio puslapio tipo.</translation>
 <translation id="2263362640517427542">Įgalinti užraktą, kai įrenginiai, kuriuose veikia „ChromeOS“ yra nenaudojami arba pristabdyti.</translation>
 <translation id="6808666497110319299">Įgalinamas kitų „<ph name="PRODUCT_NAME"/>“ esančių klaidų puslapių (pvz., „puslapio nerasta“) naudojimas; naudotojams šio nustatymo keisti neleidžiama.
 
@@ -502,6 +494,7 @@
       Jei šio nustatymo neleisite, naudotojai negalės naudoti automatinio pildymo funkcijos.
 
       Jei šį nustatymą įgalinsite arba vertės nekonfigūruosite, naudotojai ir toliau galės valdyti automatinį pildymą. Taip jie galės sukonfigūruoti automatinio pildymo profilius ir savo nuožiūra įjungti arba išjungti automatinio pildymo funkciją.</translation>
+<translation id="6938581770853731947">Konfigūruojamas numatytojo „<ph name="PRODUCT_NAME"/>“ pagrindinio puslapio tipas; naudotojams pagrindinio puslapio nuostatų keisti neleidžiama. Pagrindinį puslapį galima nustatyti nurodant URL arba nustatant naujo skirtuko puslapį. Jei įgalinsite šį nustatymą, naujo skirtuko puslapis visada bus naudojamas kaip pagrindinis puslapis, o pagrindinio puslapio URL vietos bus nepaisoma. Jei šio nustatymo neleisite, naudotojo pagrindinis puslapis niekada nebus naujo skirtuko puslapis, jei jo URL nebus nustatytas kaip „chrome://newtab“. Jei šį nustatymą įgalinsite arba jo neleisite, paleidę „<ph name="PRODUCT_NAME"/>“ naudotojai negalės pakeisti pagrindinio puslapio tipo.</translation>
 <translation id="5645779841392247734">Leisti slapukus šiose svetainėse</translation>
 <translation id="3906388518501362918">„<ph name="PRODUCT_NAME"/>“ įgalinamas „JavaScript“; naudotojams šio nustatymo keisti neleidžiama.
 

@@ -3,6 +3,7 @@
 <translationbundle lang="ml">
 <translation id="8000275528373650868">Google Chrome ന് Windows Vista അല്ലെങ്കില്‍ Windows XP with SP2 അല്ലെങ്കില്‍ അതിലും ഉയര്‍ന്നത് ആവശ്യമാണ്.</translation>
 <translation id="6676384891291319759">ഇന്റര്‍‌നെറ്റ് ആക്‌സസ് ചെയ്യുക</translation>
+<translation id="5453904507266736060">പശ്ചാത്തലത്തില്‍ Google Chrome പ്രവര്‍ത്തിക്കാന്‍ അനുവദിക്കുക</translation>
 <translation id="2383457833405848421">Chrome ഫ്രെയിമിനെക്കുറിച്ച്...</translation>
 <translation id="386202838227397562">ദയവായി എല്ലാ Google Chrome വിന്‍‌ഡോകളും അടച്ച് വീണ്ടും ശ്രമിക്കുക.</translation>
 <translation id="2770231113462710648">സ്ഥിരസ്ഥി ബ്രൌസര്‍‌ ഇനിപ്പറയുന്നതിലേക്ക് മാറ്റുക:</translation>
@@ -10,6 +11,7 @@
 <translation id="7781002470561365167">Google Chrome ന്റെ പുതിയ പതിപ്പ് ലഭ്യമാണ്.</translation>
 <translation id="7101265395643981223">Google Chrome ആരംഭിക്കൂ</translation>
 <translation id="647902066410369402">നിങ്ങളുടെ മുന്‍‌ഗണന ഫയല്‍ കേടുസംഭവിച്ചതാണ് അല്ലെങ്കില്‍ അസാധുവാണ്.\n\nGoogle Chrome ന് നിങ്ങളുടെ ക്രമീകരണങ്ങള്‍ കണ്ടെടുക്കാന്‍ കഴിയില്ല.</translation>
+<translation id="4891791193823137474">പശ്ചാത്തലത്തില്‍ Google Chrome പ്രവര്‍ത്തിക്കാന്‍ അനുവദിക്കുക</translation>
 <translation id="2879385160622431163">Google Chrome തല്‍ക്ഷണം</translation>
 <translation id="2370289711218562573">Google Chrome ഇപ്പോള്‍ പ്രിയങ്കരങ്ങളും/ബുക്മാര്‍ക്കുകളും ഇറക്കുമതിചെയ്യുന്നു.</translation>
 <translation id="8970027151245482499">Google Chrome ഇന്‍സ്റ്റാള്‍ ചെയ്തില്ല, അല്ലെങ്കില്‍ അതിന് ഇന്‍സ്റ്റാളേഷന്‍ ഡയറക്‌ടറി കണ്ടെത്താന്‍ കഴിഞ്ഞില്ല. ദയവായി Google Chrome വീണ്ടും ഡൌണ്‍ലോഡ് ചെയ്യുക.</translation>
@@ -21,6 +23,7 @@
 <translation id="3555616473548901994">അണ്‍‌ഇന്‍‌സ്റ്റാളേഷന്‍‌ പൂര്‍‌ത്തിയായി.</translation>
 <translation id="8556340503434111824">Google Chrome ന്‍റെ ഒരു പുതിയ പതിപ്പ് ഉണ്ട്, അത് എന്നത്തേതിലും വേഗതയേറിയതാണ്.</translation>
 <translation id="4728575227883772061">വ്യക്തമല്ലാത്ത പിശക് കാരണം ഇന്‍സ്റ്റാളേഷന്‍ പരാജയപ്പെട്ടു. Google Chrome നിലവില്‍ പ്രവര്‍ത്തിക്കുകയാണെങ്കില്‍, ദയവായി അത് അടച്ചിട്ട് വീണ്ടും ശ്രമിക്കുക.</translation>
+<translation id="3080151273017101988">Google Chrome അടച്ചാലും പശ്ചാത്തല ആപ്ലിക്കേഷനുകള്‍ പ്രവര്‍ത്തിപ്പിക്കുന്നത് തുടരുക</translation>
 <translation id="4149882025268051530">ആര്‍ക്കൈവ് അണ്‍‌കം‌പ്രസ്സ് ചെയ്യാന്‍ ഇന്‍സ്റ്റാളറിന് കഴിഞ്ഞില്ല. ദയവായി Google Chrome വീണ്ടും ഡൌണ്‍ലോഡ് ചെയ്യുക.</translation>
 <translation id="6989339256997917931">Google Chrome അപ്ഡേറ്റുചെയ്തു, പക്ഷേ 30 ദിവസം പോലും നിങ്ങള്‍ ഇത് ഉപയോഗിച്ചിട്ടില്ല.</translation>
 <translation id="5744005218040929396">Google Chrome Utility</translation>
@@ -48,8 +51,8 @@
 <translation id="8738921060445980047">അജ്ഞാത പതിപ്പ്</translation>
 <translation id="2485422356828889247">അണ്‍‌ഇന്‍‌സ്റ്റാള്‍‌ ചെയ്യുക</translation>
 <translation id="3324235665723428530">നിങ്ങളുടെ പ്രൊഫൈല്‍ ഉപയോഗിക്കാന്‍ കഴിയില്ല കാരണം ഇത് Google Chrome ന്റെ പുതിയ പതിപ്പില്‍ നിന്നുമുള്ളതാണ്.\n\nചില സവിശേഷതകള്‍ ലഭ്യമല്ലായിരിക്കാം. ദയവായി മറ്റൊരു പ്രൊഫൈല്‍ ഡയറക്‌ടറി നിര്‍ദ്ദേശിക്കുക, അല്ലെങ്കില്‍ Chrome ന്റെ ഒരു പുതിയ പതിപ്പ് ഉപയോഗിക്കുക.</translation>
+<translation id="9073088951656332330">Google Chrome അല്ലെങ്കില്‍ Google Chrome ഫ്രേം-ന്‍റെ ഒരു ഇന്‍സ്റ്റലേഷനും അപ്ഡേറ്റ് ചെയ്യാന്‍ കണ്ടെത്തിയിട്ടില്ല.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="5008136264574452501">Google Chrome Canary Build</translation>
 <translation id="911206726377975832">നിങ്ങളുടെ ബ്രൌസിംഗ് ഡാറ്റയും ഇതോടൊപ്പം ഇല്ലാതാക്കണോ?</translation>
 <translation id="2044287590254833138">Google Chrome ടൂള്‍ബാര്‍</translation>
 <translation id="5074344184765391290">Chrome Plug-In Host</translation>
@@ -60,10 +63,12 @@
 <translation id="3847841918622877581">നിങ്ങളുടെ ബ്രൌസിംഗ് അനുഭവം മെച്ചപ്പെടുത്താനായി Google Chrome വെബ് സേവനങ്ങള്‍ ഉപയോഗിക്കാം.</translation>
 <translation id="7436949144778751379">Google Chrome ന് Windows XP അല്ലെങ്കില്‍ അതിന് ശേഷമുള്ളതോ ആവശ്യമുണ്ട്. ചില സവിശേഷതകള്‍‌ പ്രവര്‍‌ത്തിക്കില്ലായിരിക്കാം.</translation>
 <translation id="7100330187273168372">Google Chrome ന് അതിന്റെ ഡാറ്റാ ഡയറക്ടറി വായിക്കുവാനും എഴുതുവാനും കഴിയില്ല:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="7938170099933661772">ബില്‍ട്ട്-ഇന്‍ PDF വ്യൂവര്‍ അപ്രാപ്തമാക്കുമ്പോള്‍ Google Chrome-ന് പ്രിന്‍റ് പ്രിവ്യൂ കാണിക്കാന്‍ സാധിക്കില്ല. പ്രിവ്യൂ കാണുന്നതിനായി, <ph name="BEGIN_LINK"/>‍$1<ph name="END_LINK"/> ദയവായി സന്ദര്‍ശിക്കുക, &quot;Chrome PDF വ്യൂവര്‍&quot; പ്രാപ്തമാക്കി, വീണ്ടും ശ്രമിക്കുക.</translation>
 <translation id="6757767188268205357">എന്നെ ബഗ് ചെയ്യല്ലേ</translation>
 <translation id="2290095356545025170">Google Chrome അണിന്‍സ്റ്റാള്‍ ചെയ്യണമെന്ന് നിങ്ങള്‍ക്കുറപ്പാണോ?</translation>
 <translation id="6087062680442281307">Google Chrome എന്നത് അതിവേഗത്തില്‍‌ വെബ് പേജുകളും അപ്ലിക്കേഷനുകളും പ്രവര്‍‌ത്തിപ്പിക്കുന്ന ഒരു വെബ് ബ്രൌസറാണ്. അത് വേഗതയുള്ളതും, സ്ഥിരതയുള്ളതും ഉപയോഗിക്കാനെളുപ്പവുമാണ്. Google Chrome ലേക്ക് ബില്‍‌റ്റുചെയ്‌ത ക്ഷുദ്രവെയര്‍‌, ഫിഷിംഗ് പരിരക്ഷണം ഉപയോഗിച്ച് വെബ് കൂടുതല്‍‌ സുരക്ഷിതമായി ബ്രൌസുചെയ്യുക.</translation>
 <translation id="5941830788786076944">Google Chrome നെ സ്ഥിരസ്ഥിതി ബ്രൌസറായി മാറ്റുക</translation>
+<translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">വെബ്ബിലുള്ള ഒരു ഫോണ്‍ നമ്പരില്‍ ക്ലിക്കുചെയ്യുവാനും Skype ഉപയോഗിച്ച് വിളിക്കുവാനും Google Chrome നിങ്ങളെ അനുവദിക്കുന്നു!</translation>
 <translation id="3612333635265770873">സമാന നാമമുള്ള ഒരു മൊഡ്യൂളിന് Google Chrome മായി വൈരുദ്ധ്യമുണ്ടെന്ന് അറിഞ്ഞു.</translation>
 <translation id="5947389362804196214">നിങ്ങളുടെ മുന്‍‌ഗണനകള്‍ വായിക്കാന്‍ കഴിയുന്നില്ല.\n\nചില സവിശേഷതകള്‍ ലഭ്യമല്ലായിരിക്കാം മാത്രമല്ല മുന്‍‌ഗണനയിലുള്ള മാറ്റങ്ങള്‍ സംരക്ഷിക്കില്ല.</translation>

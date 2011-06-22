@@ -3,6 +3,7 @@
 <translationbundle lang="ca">
 <translation id="8000275528373650868">Google Chrome requereix Windows Vista o Windows XP amb SP2 o superior.</translation>
 <translation id="6676384891291319759">Accedeix a Internet</translation>
+<translation id="5453904507266736060">Permet que Google Chrome s'executi en procés de fons</translation>
 <translation id="2383457833405848421">Quant a Chrome Frame...</translation>
 <translation id="386202838227397562">Tanqueu totes les finestres de Google Chrome i torneu-ho a provar.</translation>
 <translation id="2770231113462710648">Canvia el navegador predeterminat a:</translation>
@@ -10,6 +11,7 @@
 <translation id="7781002470561365167">Hi ha disponible una versió nova de Google Chrome.</translation>
 <translation id="7101265395643981223">Inicieu Google Chrome</translation>
 <translation id="647902066410369402">El fitxer de preferències està malmès o no és vàlid.\n\nGoogle Chrome no pot recuperar la configuració.</translation>
+<translation id="4891791193823137474">Permet que Google Chrome s'executi en procés de fons</translation>
 <translation id="2879385160622431163">Google Chrome Instant</translation>
 <translation id="2370289711218562573">En aquests moments, Google Chrome està important els preferits o les adreces d'interès.</translation>
 <translation id="8970027151245482499">Google Chrome no s'ha instal·lat o bé no ha pogut trobar el directori d'instal·lació. Torna a baixar Google Chrome.</translation>
@@ -21,6 +23,7 @@
 <translation id="3555616473548901994">S'ha completat la desinstal·lació.</translation>
 <translation id="8556340503434111824">Hi ha disponible una nova versió de Google Chrome, i és més ràpida que mai.</translation>
 <translation id="4728575227883772061">S'ha produït un error no especificat durant la instal·lació. Si Google Chrome s'està executant en aquests moments, tanca'l i torna-ho a provar.</translation>
+<translation id="3080151273017101988">Continua executant les aplicacions de fons quan es tanqui Google Chrome</translation>
 <translation id="4149882025268051530">L'instal·lador no ha pogut descomprimir el fitxer. Torna a baixar Google Chrome.</translation>
 <translation id="6989339256997917931">Google Chrome està actualitzat, però no l'heu utilitzat durant un mínim de 30 dies.</translation>
 <translation id="5744005218040929396">Utilitat de Google Chrome</translation>
@@ -48,8 +51,8 @@
 <translation id="8738921060445980047">Versió desconeguda.</translation>
 <translation id="2485422356828889247">Desinstal·la</translation>
 <translation id="3324235665723428530">El vostre perfil no es pot utilitzar perquè es va crear amb una versió més recent de Google Chrome.\n\nÉs possible que algunes funcions no estiguin disponibles. Especifiqueu un altre directori de perfil o feu servir una versió actualitzada de Google Chrome.</translation>
+<translation id="9073088951656332330">No s'ha trobat cap instal·lació de Google Chrome o de Google Chrome Frame pendent d'actualització.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="5008136264574452501">Google Chrome Canary Build</translation>
 <translation id="911206726377975832">També voleu suprimir les dades de navegació?</translation>
 <translation id="2044287590254833138">Barra d'eines de Google Chrome</translation>
 <translation id="5074344184765391290">Amfitrió del connector de Chrome</translation>
@@ -60,10 +63,12 @@
 <translation id="3847841918622877581">Google Chrome pot utilitzar serveis web per millorar la vostra experiència de navegació.</translation>
 <translation id="7436949144778751379">Google Chrome necessita Windows XP o una versió posterior. És possible que algunes funcions no estiguin disponibles.</translation>
 <translation id="7100330187273168372">Google Chrome no pot llegir ni escriure al seu directori de dades:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="7938170099933661772">Google Chrome no pot mostrar la visualització prèvia de la impressió si el lector de PDF integrat està desactivat. Per veure-la, visiteu <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/>, activeu el lector de PDF de Chrome i torneu-ho a provar.</translation>
 <translation id="6757767188268205357">No em molestis</translation>
 <translation id="2290095356545025170">Esteu segur que voleu desinstal·lar Google Chrome?</translation>
 <translation id="6087062680442281307">Google Chrome és un navegador web que executa pàgines web i aplicacions a gran velocitat. És ràpid, estable i fàcil d'utilitzar. Navegueu d'una manera més segura pel web amb la protecció contra programari maliciós i llocs de pesca integrada a Google Chrome.</translation>
 <translation id="5941830788786076944">Estableix Google Chrome com el navegador per defecte</translation>
+<translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome us permet fer clic en un número de telèfon al web i trucar-hi amb Skype!</translation>
 <translation id="3612333635265770873">Se sap que un mòdul amb el mateix nom entra en conflicte amb Google Chrome.</translation>
 <translation id="5947389362804196214">No es poden llegir les vostres preferències.\n\nÉs possible que algunes funcions no estiguin disponibles, i els canvis a les preferències no es desaran.</translation>

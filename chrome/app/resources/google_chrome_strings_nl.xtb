@@ -3,6 +3,7 @@
 <translationbundle lang="nl">
 <translation id="8000275528373650868">Voor Google Chrome is Windows Vista of Windows XP met SP2 of hoger vereist.</translation>
 <translation id="6676384891291319759">Verbinding maken met internet</translation>
+<translation id="5453904507266736060">Google Chrome op de achtergrond laten uitvoeren</translation>
 <translation id="2383457833405848421">Over Chrome Frame...</translation>
 <translation id="386202838227397562">Sluit alle Google Chrome-vensters en probeer het opnieuw.</translation>
 <translation id="2770231113462710648">Standaardbrowser wijzigen in:</translation>
@@ -10,6 +11,7 @@
 <translation id="7781002470561365167">Er is een nieuwe versie van Google Chrome beschikbaar.</translation>
 <translation id="7101265395643981223">Start Google Chrome</translation>
 <translation id="647902066410369402">Uw bestand met voorkeuren is beschadigd of ongeldig.\n\nGoogle Chrome kan uw instellingen niet herstellen.</translation>
+<translation id="4891791193823137474">Google Chrome op de achtergrond laten uitvoeren</translation>
 <translation id="2879385160622431163">Google Chrome Instant</translation>
 <translation id="2370289711218562573">Google Chrome importeert momenteel favorieten/bladwijzers.</translation>
 <translation id="8970027151245482499">Google Chrome is niet geïnstalleerd of de installatiedirectory is niet gevonden. Download Google Chrome opnieuw.</translation>
@@ -21,6 +23,7 @@
 <translation id="3555616473548901994">Verwijdering voltooid.</translation>
 <translation id="8556340503434111824">Er is een nieuwe versie van Google Chrome en deze is sneller dan ooit.</translation>
 <translation id="4728575227883772061">De installatie is mislukt wegens een onbekende fout. Als Google Chrome momenteel actief is, sluit u het programma af en probeert u het opnieuw.</translation>
+<translation id="3080151273017101988">Achtergrondapps blijven uitvoeren wanneer Google Chrome is gesloten</translation>
 <translation id="4149882025268051530">Het installatieprogramma kan het archief niet uitpakken. Download Google Chrome opnieuw.</translation>
 <translation id="6989339256997917931">Google Chrome is bijgewerkt, maar u heeft het programma minstens 30 dagen niet gebruikt.</translation>
 <translation id="5744005218040929396">Google Chrome</translation>
@@ -48,8 +51,8 @@
 <translation id="8738921060445980047">Onbekende versie.</translation>
 <translation id="2485422356828889247">Installatie ongedaan maken</translation>
 <translation id="3324235665723428530">Chrome kan uw profiel niet gebruiken aangezien het van een nieuwere versie van Google Chrome is.\n\nSommige functies zijn misschien niet beschikbaar. Geef een andere profieldirectory aan of gebruik een nieuwere versie van Chrome.</translation>
+<translation id="9073088951656332330">Geen installatie van Google Chrome of Google Chrome Frame gevonden om bij te werken.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="5008136264574452501">Google Chrome Canary Build</translation>
 <translation id="911206726377975832">Ook browsegegevens wissen?</translation>
 <translation id="2044287590254833138">Google Chrome Toolbar</translation>
 <translation id="5074344184765391290">Invoegtoepassingshost van Chrome</translation>
@@ -60,10 +63,12 @@
 <translation id="3847841918622877581">Google Chrome kan webservices gebruiken om uw internetervaring te verbeteren.</translation>
 <translation id="7436949144778751379">Voor Google Chrome is Windows XP of hoger vereist. Het is mogelijk dat sommige functies niet werken.</translation>
 <translation id="7100330187273168372">Google Chrome kan deze datadirectory niet lezen of beschrijven:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="7938170099933661772">Google Chrome kan geen afdrukvoorbeeld weergeven wanneer de ingebouwde pdf-viewer is uitgeschakeld. Als u een afdrukvoorbeeld wilt bekijken, gaat u naar  <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/>, schakelt u 'Chrome PDF Viewer' in en probeert u het opnieuw.</translation>
 <translation id="6757767188268205357">Vraag me niet meer</translation>
 <translation id="2290095356545025170">Weet u zeker dat u Google Chrome wilt verwijderen?</translation>
 <translation id="6087062680442281307">Google Chrome is een webbrowser die bliksemsnel webpagina's en online applicaties kan weergeven. Het is snel, stabiel en gebruiksvriendelijk. Met Google Chrome kunt u veiliger op internet surfen dankzij de ingebouwde bescherming tegen phishing en malware.</translation>
 <translation id="5941830788786076944">Google Chrome instellen als mijn standaardbrowser</translation>
+<translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Met Google Chrome kunt u klikken op een telefoonnummer op internet om dit via Skype te bellen!</translation>
 <translation id="3612333635265770873">Van een module met dezelfde naam is bekend dat deze conflicteert met Google Chrome.</translation>
 <translation id="5947389362804196214">Uw voorkeuren kunnen niet worden gelezen.\n\nSommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren worden niet opgeslagen.</translation>

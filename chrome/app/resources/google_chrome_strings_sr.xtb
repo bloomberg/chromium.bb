@@ -3,6 +3,7 @@
 <translationbundle lang="sr">
 <translation id="8000275528373650868">За Google Chrome је неопходан оперативни систем Windows Vista или Windows XP са SP2 или новија верзија.</translation>
 <translation id="6676384891291319759">Приступите Интернету</translation>
+<translation id="5453904507266736060">Нека Google Chrome ради у позадини</translation>
 <translation id="2383457833405848421">О Chrome Frame-у...</translation>
 <translation id="386202838227397562">Затворите све прозоре Google Chrome прегледача и покушајте поново.</translation>
 <translation id="2770231113462710648">Промени подразумевани прегледач у:</translation>
@@ -10,6 +11,7 @@
 <translation id="7781002470561365167">Доступна је нова верзија Google Chrome прегледача.</translation>
 <translation id="7101265395643981223">Покрените Google Chrome</translation>
 <translation id="647902066410369402">Датотека са подешавањима је оштећена или неважећа.\n\nGoogle Chrome не може да врати подешавања.</translation>
+<translation id="4891791193823137474">Нека Google Chrome ради у позадини</translation>
 <translation id="2879385160622431163">Google Chrome инстант</translation>
 <translation id="2370289711218562573">Google Chrome тренутно увози ставке „Омиљено/обележивачи“.</translation>
 <translation id="8970027151245482499">Google Chrome није инсталиран или није нашао директоријум за инсталацију. Преузмите Google Chrome поново.</translation>
@@ -21,6 +23,7 @@
 <translation id="3555616473548901994">Деинсталација је довршена.</translation>
 <translation id="8556340503434111824">Доступна је нова верзија Google Chrome прегледача, бржа него икад пре.</translation>
 <translation id="4728575227883772061">Инсталација није успела због неодређене грешке. Ако је Google Chrome тренутно отворен, затворите га и покушајте поново.</translation>
+<translation id="3080151273017101988">Настави са покретањем апликација у позадини када се Google Chrome затвори</translation>
 <translation id="4149882025268051530">Програм за инсталацију није успео да декомпримује архиву. Преузмите Google Chrome поново.</translation>
 <translation id="6989339256997917931">Google Chrome је ажуриран, али га нисте користили најмање 30 дана.</translation>
 <translation id="5744005218040929396">Google Chrome услужни програм</translation>
@@ -48,8 +51,8 @@
 <translation id="8738921060445980047">Непозната верзија.</translation>
 <translation id="2485422356828889247">Деинсталирај</translation>
 <translation id="3324235665723428530">Ваш профил не може да се користи пошто припада новијој верзији програма Google Chrome.\n\nНеке функције можда нису доступне. Наведите други директоријум профила или користите новију верзију програма Chrome.</translation>
+<translation id="9073088951656332330">Нису пронађене Google Chrome или Google Chrome Frame инсталације за ажурирање.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="5008136264574452501">Google Chrome Canary верзија</translation>
 <translation id="911206726377975832">Желите ли да избришете и податке прегледања?</translation>
 <translation id="2044287590254833138">Google Chrome Toolbar</translation>
 <translation id="5074344184765391290">Хост Chrome додатне компоненте</translation>
@@ -60,10 +63,12 @@
 <translation id="3847841918622877581">Google Chrome може да користи веб услуге да би побољшао искуство прегледања.</translation>
 <translation id="7436949144778751379">Google Chrome захтева Windows XP или новију верзију. Неке функције можда неће радити.</translation>
 <translation id="7100330187273168372">Google Chrome не може да прочита нити да упише податке у свој директоријум са подацима:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="7938170099933661772">Google Chrome не може да прикаже преглед пре штампања када је уграђени приказивач PDF датотека онемогућен. Да бисте видели преглед, посетите <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/>, омогућите „Chrome PDF прегледач“ и покушајте поново.</translation>
 <translation id="6757767188268205357">Не досађуј</translation>
 <translation id="2290095356545025170">Да ли заиста желите да деинсталирате Google Chrome?</translation>
 <translation id="6087062680442281307">Google Chrome је веб прегледач који приказује веб странице и апликације муњевитом брзином. Он је брз, стабилан и једноставан за употребу. Google Chrome вас аутоматски штити од малвера и „пецања“ и омогућава безбедније прегледање Веба.</translation>
 <translation id="5941830788786076944">Подесите Google Chrome као подразумевани прегледач</translation>
+<translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome вам омогућава да кликнете на број телефона на Вебу и да га позовете помоћу Skype-а!</translation>
 <translation id="3612333635265770873">Модул истог назива се већ сукобљавао са Google Chrome прегледачем.</translation>
 <translation id="5947389362804196214">Није могуће прочитати подешавања.\n\nМогуће је да неке функције нису доступне, тако да промене подешавања неће бити сачуване.</translation>

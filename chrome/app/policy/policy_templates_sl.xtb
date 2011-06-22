@@ -20,6 +20,7 @@
           Privzeto so dovoljene vse razširitve, če pa so vse prepovedane s pravilnikom, ga lahko preglasite s seznamom dovoljenih.</translation>
 <translation id="3185009703220253572">od različice <ph name="SINCE_VERSION"/></translation>
 <translation id="5469825884154817306">Blokiranje slik na teh mestih</translation>
+<translation id="3512877396423730277">Določa, ali lahko podvsebina drugega ponudnika na strani odpre pojavno pogovorno okno HTTP Basic Auth. Običajno je to onemogočeno kot obramba zaščita pred lažnim predstavljanjem.</translation>
 <translation id="1438955478865681012">Nastavi pravilnike, povezane z razširitvami. Uporabniku ne sme namestiti razširitev na seznamu prepovedanih, razen če so na seznamu dovoljenih. Vsilite lahko tudi, da <ph name="PRODUCT_NAME"/> samodejno namesti razširitve, če jih navedete v <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. Seznam prepovedanih ima prednost pred seznamom vsiljenih razširitev.</translation>
 <translation id="4070280487546651935">Določa ključno besedo, ki se v naslovni vrstici uporablja kot bližnjica, ki sproži iskanje za tega ponudnika. Izbirno.</translation>
 <translation id="1096105751829466145">Privzeti iskalnik</translation>
@@ -100,6 +101,7 @@
 
       Če ta možnost ni nastavljena, lahko uporabniki kot običajno odpirajo pogovorna okna za izbiro datotek.</translation>
 <translation id="7683777542468165012">Dinamična osvežitev pravilnika</translation>
+<translation id="43195497515906639">Konfigurira imenik, ki ga bo <ph name="PRODUCT_NAME"/> uporabljal za shranjevanje uporabniških podatkov. Če nastavite ta pravilnik, bo <ph name="PRODUCT_NAME"/> uporabil navedeni imenik.</translation>
 <translation id="6228640147633317529">Omogoča nastavitev seznama vzorcev za URL-je, ki določajo mesta, ki smejo prikazati slike.</translation>
 <translation id="2711603272213076156">Dovoli proženje pogovornih oken za izbiro datotek.</translation>
 <translation id="1426410128494586442">Da</translation>
@@ -214,6 +216,8 @@
           Podrobne primere si lahko ogledate tukaj:
           <ph name="PROXY_HELP_URL"/></translation>
 <translation id="2959898425599642200">Pravila, kdaj se obide proxy</translation>
+<translation id="7337941689192402544">Nastavi imenik uporabniških podatkov za <ph name="PRODUCT_NAME"/></translation>
+<translation id="5326137997741385453">Konfigurira imenik, ki ga bo <ph name="PRODUCT_NAME"/> uporabljal za shranjevanje predpomnjenih datotek na disku. Če nastavite ta pravilnik, bo <ph name="PRODUCT_NAME"/> uporabljal ta imenik, ne glede na to, ali je uporabnik nastavil zastavico »- disk-cache-dir«.</translation>
 <translation id="4752274243117690301">Če to možnost nastavite na »True« bo v programu <ph name="PRODUCT_NAME"/> onemogočeno samodejno iskanje in namestitev manjkajočih vtičnikov.</translation>
 <translation id="3292147213643666827">      Omogoča, da <ph name="PRODUCT_NAME"/> deluje kot proxy med programom <ph name="CLOUD_PRINT_NAME"/> in podedovanimi tiskalniki, priključenimi na računalnik.
 
@@ -236,23 +240,16 @@
 <translation id="9096086085182305205">Seznam dovoljenih strežnikov za preverjanje pristnosti</translation>
 <translation id="7063895219334505671">Dovoli pojavna okna na teh mestih</translation>
 <translation id="2824715612115726353">Omogoči način brez beleženja zgodovine</translation>
+<translation id="1757688868319862958">Omogoča brskalniku <ph name="PRODUCT_NAME"/> izvajanje vtičnikov, ki zahtevajo dovoljenje. Če omogočite to nastavitev, se vtičniki, ki niso zastareli, vedno izvedejo. Če je ta nastavitev onemogočena, bodo uporabniki morali dati dovoljenje za izvajanje takih vtičnikov. To so vtičniki, ki lahko ogrozijo varnost.</translation>
 <translation id="6157537876488211233">Seznam pravil za obvod proxyja, ločenih z vejico</translation>
+<translation id="7091198954851103976">Vedno izvedi vtičnike, ki zahtevajo dovoljenje</translation>
 <translation id="8870318296973696995">Domača stran</translation>
 <translation id="4505337077089958219">Hitrost osveževanja pravilnika</translation>
 <translation id="996560596616541671">Strežniki, katerim lahko <ph name="PRODUCT_NAME"/> delegira.</translation>
 <translation id="3866249974567520381">Opis</translation>
 <translation id="2236488539271255289">Nobenemu mestu ne dovoli nastavljanja lokalnih podatkov</translation>
 <translation id="4467952432486360968">Blokiraj piškotke drugih spletnih mest</translation>
-<translation id="1722705282440676367">Omogoča nastavitev strežnika proxy, ki ga uporablja <ph name="PRODUCT_NAME"/>, in uporabnikom prepreči spreminjanje nastavitev proxyja.
-
-      Če izberete, da se strežnik proxy nikoli ne uporablja, in vedno vzpostavljate neposredno povezavo, so vse druge možnosti prezrte.
-
-      Če izberete samodejno zaznavanje proxyja, so vse druge možnosti prezrte.
-
-      Podrobne primere si lahko ogledate tukaj:
-      <ph name="PROXY_HELP_URL"/>
-
-      Če omogočite to nastavitev, <ph name="PRODUCT_NAME"/> prezre vse možnosti, povezane s proxyjem, navedene v ukazni vrstici.</translation>
+<translation id="1722705282440676367">Omogoča izbiro strežnika proxy, ki naj ga uporablja <ph name="PRODUCT_NAME"/>, in uporabnikom prepreči spreminjanje nastavitev proxyja. Če izberete, da se proxy nikoli ne uporablja in se vedno vzpostavi neposredna povezava, so vse druge možnosti prezrte. Če izberete samodejno zaznavanje proxyja, so vse druge možnosti prezrte. Podrobne primere si lahko ogledate tukaj: <ph name="PROXY_HELP_URL"/> Če omogočite to nastavitev, <ph name="PRODUCT_NAME"/> prezre vse možnosti, povezane s proxyjem, navedene v ukazni vrstici.</translation>
 <translation id="8470053727907466464">Določa kodiranje znakov, ki jih podpira iskalnik. Kodiranja so imena kodnih strani, na primer UTF-8, GB2312 in ISO-8859-1. Uporabijo se v vrstnem redu, v katerem so navedena. Privzeto je UTF-8.</translation>
 <translation id="2537063115727103969">Ta pravilnik preglasi možnost nastavitve vsebine »Počisti piškotke in druge podatke spletnih mest, ko zaprem brskalnik«.
 
@@ -278,6 +275,7 @@
           Podrobne primere si lahko ogledate tukaj:
           <ph name="PROXY_HELP_URL"/></translation>
 <translation id="1808715480127969042">Blokiraj piškotke na teh mestih</translation>
+<translation id="1115048775745697549">Ukazni pozivi HTTP Basic Auth iz več izvorov</translation>
 <translation id="2745445908503591390">Izbriši brskalnikove podatke o mestih, ko se zapre</translation>
 <translation id="8665913667133665583">Določa, kateri strežniki so na seznamu dovoljenih za integrirano preverjanje pristnosti. Integrirano preverjanje pristnosti je omogočeno samo, ko <ph name="PRODUCT_NAME"/> dobi poziv za preverjanje pristnosti od proxyja ali strežnika, ki je na tem seznamu dovoljenih.
 
@@ -337,9 +335,10 @@
       Če ta možnost ni nastavljena, bo <ph name="PRODUCT_NAME"/> uporabniku dovolil, da nadzira, ali je privzeti brskalnik in ali naj bodo prikazana obvestila, če ni.</translation>
 <translation id="1530812829012954197">Vedno upodobi te vzorce URL-jev v gostiteljskem brskalniku</translation>
 <translation id="6190022522129724693">Privzeta nastavitev pojavnih oken</translation>
-<translation id="847472800012384958">Nobenemu spletnemu mestu ne dovoli prikaza pojavnih oken</translation>
+<translation id="847472800012384958">Nobenemu mestu ne dovoli prikaza pojavnih oken</translation>
 <translation id="4733471537137819387">Pravilniki, povezani z integriranim preverjanjem pristnosti HTTP.</translation>
 <translation id="4608714268466689965">Omogoča, da nastavite, ali je spletnim mestom dovoljeno prikazovanje namiznih obvestil. Prikazovanje namiznih obvestil je lahko privzeto dovoljeno, privzeto prepovedano ali pa se uporabnika vpraša, vsakič ko želi mesto pokazati namizno obvestilo.</translation>
+<translation id="8951350807133946005">Nastavi imenik predpomnilnika diska</translation>
 <translation id="1334051495529796396">Določa, ali generirani SPN za Kerberos temelji na kanoničnem imenu DNS ali izvirnem imenu, ki je bilo vneseno.
 
           Če omogočite to nastavitev, bo iskanje CNAME preskočeno in strežnikovo ime bo uporabljeno, kot je bilo vneseno.
@@ -480,13 +479,6 @@
       Če jo onemogočite, se Googlu nikoli ne poroča o uporabi in podatkih, povezanih z zrušitvami.
 
       Če to nastavitev omogočite ali onemogočite, je uporabniki ne morejo spremeniti ali preglasiti v programu <ph name="PRODUCT_NAME"/>.</translation>
-<translation id="3115819625623659514">Nastavi vrsto privzete domače strani v programu <ph name="PRODUCT_NAME"/> in uporabnikom preprečuje spreminjanje nastavitev domače strani. Domačo stran lahko nastavite na URL, ki ga določite, ali na stran »Nov zavihek«.
-
-          Če to nastavitev omogočite, bo za domačo stran vedno uporabljena stran »Nov zavihek«, URL domače strani pa se prezre.
-
-          Če jo onemogočite, uporabnikova domača stran nikoli ne bo stran »Nov zavihek«, razen če je njen URL nastavljen na »chrome://newtab«.
-
-          Če to nastavitev omogočite ali onemogočite, uporabniki ne morejo spremeniti vrste domače strani v programu <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="2263362640517427542">Omogoči zaklepanje, ko so naprave ChromeOS nedejavne ali preidejo v stanje pripravljenosti.</translation>
 <translation id="6808666497110319299">Omogoča uporabo nadomestnih strani z napakami, vgrajenih v <ph name="PRODUCT_NAME"/> (npr. »stran ni najdena«), in uporabnikom preprečuje spreminjanje te nastavitve.
 
@@ -501,6 +493,7 @@
       Če to nastavitev onemogočite, samodejno izpolnjevanje ne bo na voljo uporabnikom.
 
       Če to nastavitev omogočite ali ne nastavite vrednosti zanjo, ostane samodejno izpolnjevanje pod nadzorom uporabnikov. Nastavili bodo lahko profile za samodejno izpolnjevanje in ga poljubno vklapljali ali izklapljali.</translation>
+<translation id="6938581770853731947">Nastavi vrsto privzete domače strani v programu <ph name="PRODUCT_NAME"/> in uporabnikom preprečuje spreminjanje nastavitev domače strani. Domačo stran lahko nastavite na URL, ki ga določite, ali na stran »Nov zavihek«. Če to nastavitev omogočite, bo za domačo stran vedno uporabljena stran »Nov zavihek«, URL domače strani pa se prezre. Če jo onemogočite, uporabnikova domača stran nikoli ne bo stran »Nov zavihek«, razen če je njen URL nastavljen na »chrome://newtab«. Če to nastavitev omogočite ali onemogočite, uporabniki ne morejo spremeniti vrste domače strani v programu <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="5645779841392247734">Dovoli piškotke na teh mestih</translation>
 <translation id="3906388518501362918">Omogoči JavaScript v programu <ph name="PRODUCT_NAME"/> in uporabnikom prepreči spreminjanje te nastavitve.
 

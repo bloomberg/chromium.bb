@@ -3,6 +3,7 @@
 <translationbundle lang="sv">
 <translation id="8000275528373650868">För Google Chrome krävs Windows Vista eller Windows XP med SP2 eller senare.</translation>
 <translation id="6676384891291319759">Gå ut på Internet</translation>
+<translation id="5453904507266736060">Låt Google Chrome köras i bakgrunden</translation>
 <translation id="2383457833405848421">Om Chrome Frame...</translation>
 <translation id="386202838227397562">Stäng alla Google Chrome-fönster och försök igen.</translation>
 <translation id="2770231113462710648">Ändra standardwebbläsare till:</translation>
@@ -10,6 +11,7 @@
 <translation id="7781002470561365167">Det finns en ny version av Google Chrome tillgänglig.</translation>
 <translation id="7101265395643981223">Starta Google Chrome</translation>
 <translation id="647902066410369402">Inställningsfilen är skadad eller ogiltig.\n\nGoogle Chrome kan inte återställa dina inställningar.</translation>
+<translation id="4891791193823137474">Låt Google Chrome köras i bakgrunden</translation>
 <translation id="2879385160622431163">Google Chrome Instant</translation>
 <translation id="2370289711218562573">Google Chrome importerar favoriter/bokmärken.</translation>
 <translation id="8970027151245482499">Google Chrome är inte installerat eller installationskatalogen gick inte att hitta. Hämta Google Chrome igen.</translation>
@@ -21,6 +23,7 @@
 <translation id="3555616473548901994">Avinstallation slutförd.</translation>
 <translation id="8556340503434111824">Det finns en ny version av Google Chrome och den är snabbare än någonsin.</translation>
 <translation id="4728575227883772061">Installationen misslyckades på grund av ett ospecificerat fel. Stäng Google Chrome, om det är igång, och försök sedan igen.</translation>
+<translation id="3080151273017101988">Fortsätt köra bakgrundsappar när Google Chrome avslutas</translation>
 <translation id="4149882025268051530">Det gick inte att packa upp arkivet med installationsfilen. Hämta Google Chrome igen.</translation>
 <translation id="6989339256997917931">Chrome har uppdaterats men du har inte använt det på över 30 dagar.</translation>
 <translation id="5744005218040929396">Google Chrome Utility</translation>
@@ -48,8 +51,8 @@
 <translation id="8738921060445980047">Okänd version.</translation>
 <translation id="2485422356828889247">Avinstallera</translation>
 <translation id="3324235665723428530">Din profil kan inte användas eftersom den kommer från en nyare version av Google Chrome.\n\nEn del funktioner kan vara otillgängliga. Ange en annan profilkatalog eller använd en nyare version av Chrome.</translation>
+<translation id="9073088951656332330">Det finns ingen installation av Google Chrome eller Google Chrome Frame att uppdatera.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="5008136264574452501">Google Chrome Canary Build</translation>
 <translation id="911206726377975832">Vill du även ta bort din webbinformation?</translation>
 <translation id="2044287590254833138">Verktygsfältet Google Chrome</translation>
 <translation id="5074344184765391290">Plugin-värd för Chrome</translation>
@@ -60,10 +63,12 @@
 <translation id="3847841918622877581">Google Chrome kan använda webbtjänster för att förbättra din upplevelse när du surfar.</translation>
 <translation id="7436949144778751379">För Google Chrome krävs Windows XP eller senare. En del funktioner fungerar eventuellt inte.</translation>
 <translation id="7100330187273168372">Google Chrome kan inte läsa och skriva till sin datakatalog:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="7938170099933661772">Google Chrome kan inte visa förhandsgranskningen när PDF-läsaren är inaktiverad. Om du vill visa förhandsgranskningen besöker du <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/>, aktiverar Chromes PDF-läsare och försöker igen.</translation>
 <translation id="6757767188268205357">Stör mig inte</translation>
 <translation id="2290095356545025170">Är du säker på att du vill avinstallera Google Chrome?</translation>
 <translation id="6087062680442281307">Google Chrome är en webbläsare som kör webbsidor och program med ljusets hastighet. Det är snabbt, stabilt och lätt att använda. Sök på webben säkrare med Google Chromes inbyggda skydd mot skadlig programvara och lösenordsfiske.</translation>
 <translation id="5941830788786076944">Använd Google Chrome som standardwebbläsare</translation>
+<translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">I Google Chrome kan du klicka på ett telefonnummer på nätet och ringa det med Skype!</translation>
 <translation id="3612333635265770873">En modul med samma namn har tidigare varit i konflikt med Google Chrome.</translation>
 <translation id="5947389362804196214">Det går inte att läsa inställningarna.\n\nVissa funktioner kanske inte är tillgängliga och ändringar i inställningarna sparas inte.</translation>

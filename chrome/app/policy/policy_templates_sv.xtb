@@ -18,6 +18,7 @@
           Som standard är alla tillägg vitlistade, men om alla tillägg har svartlistats av en policy kan vitlistan användas för att åsidosätta den policyn.</translation>
 <translation id="3185009703220253572">sedan version <ph name="SINCE_VERSION"/></translation>
 <translation id="5469825884154817306">Blockera bilder på dessa webbplatser</translation>
+<translation id="3512877396423730277">Kontrollerar om delinnehåll från tredje part på en sida får öppna en HTTP Basic Auth-dialogruta. Normalt är detta inaktiverat som ett skydd mot lösenordsfiske.</translation>
 <translation id="1438955478865681012">Konfigurerar tilläggsrelaterade policyer. Användaren får inte installera svartlistade tillägg om de inte tas med i vitlistan. Du kan också tvinga <ph name="PRODUCT_NAME"/> att installera tillägg automatiskt genom att ange dem i <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. Svartlistan åsidosätter listan med påtvingade tillägg.</translation>
 <translation id="4070280487546651935">Anger det sökord som används som genväg för att aktivera leverantörens sökning i adressfältet. Valfritt.</translation>
 <translation id="1096105751829466145">Standardsökleverantör</translation>
@@ -98,6 +99,9 @@
 
       Om inställningen inte ställs in kan användaren öppna dialogrutor för filval som vanligt.</translation>
 <translation id="7683777542468165012">Dynamisk policyuppdatering</translation>
+<translation id="43195497515906639">Konfigurerar katalogen som <ph name="PRODUCT_NAME"/> ska spara användardata i.
+
+      Om du använder den här policyn använder <ph name="PRODUCT_NAME"/> den angivna katalogen.</translation>
 <translation id="6228640147633317529">Innebär att du kan skapa en lista med webbadressmönster som anger webbplatser som inte får visa bilder.</translation>
 <translation id="2711603272213076156">Tillåt anrop till dialogrutor för filval.</translation>
 <translation id="1426410128494586442">Ja</translation>
@@ -212,6 +216,10 @@
           Mer detaljerade exempel finns på
           <ph name="PROXY_HELP_URL"/></translation>
 <translation id="2959898425599642200">Regler för proxybypass</translation>
+<translation id="7337941689192402544">Ställ in användardatakatalog för <ph name="PRODUCT_NAME"/></translation>
+<translation id="5326137997741385453">Katalogen som <ph name="PRODUCT_NAME"/> ska använda för att spara cachelagrade filer på disken konfigureras.
+
+      Om du anger den här policyn använder <ph name="PRODUCT_NAME"/> den angivna katalogen oavsett om användaren har angett flaggan &quot;--disk-cache-dir&quot; eller inte.</translation>
 <translation id="4752274243117690301">Om du ställer in den här inställningen på Sant inaktiveras automatisk sökning efter och installation av plugin-program som saknas i <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="3292147213643666827">      Innebär att <ph name="PRODUCT_NAME"/> kan fungera som proxy mellan <ph name="CLOUD_PRINT_NAME"/> och äldre skrivare som är anslutna till datorn.
 
@@ -234,23 +242,20 @@
 <translation id="9096086085182305205">Vitlista för autentiseringsserver</translation>
 <translation id="7063895219334505671">Tillåt popup-fönster på dessa webbplatser</translation>
 <translation id="2824715612115726353">Aktivera inkognitoläge</translation>
+<translation id="1757688868319862958">Tillåter att <ph name="PRODUCT_NAME"/> kör pluginprogram som kräver auktorisering.
+
+      Om du aktiverar den här inställningen kan pluginprogram som inte är föråldrade alltid köras.
+
+      Om inställningen är inaktiverad eller inte inställd får användaren välja om pluginprogram som kräver auktorisering ska få köras eller inte. Den här typen av pluginprogram kan utgöra en säkerhetsrisk.</translation>
 <translation id="6157537876488211233">Kommaavgränsad lista med regler för proxybypass</translation>
+<translation id="7091198954851103976">Kör alltid pluginprogram som kräver auktorisering</translation>
 <translation id="8870318296973696995">Startsida</translation>
 <translation id="4505337077089958219">Uppdateringsfrekvens för policy</translation>
 <translation id="996560596616541671">Servrar som <ph name="PRODUCT_NAME"/> kan delegera till.</translation>
 <translation id="3866249974567520381">Beskrivning</translation>
 <translation id="2236488539271255289">Tillåt inte att någon webbplats ställer in lokala data</translation>
 <translation id="4467952432486360968">Blockera cookies från tredje part</translation>
-<translation id="1722705282440676367">Innebär att du kan ange vilken proxyserver som ska användas av <ph name="PRODUCT_NAME"/> och förhindrar att användarna ändrar proxyinställningarna.
-
-      Om du väljer att aldrig använda en proxyserver och alltid ansluta direkt ignoreras alla andra alternativ.
-
-      Om du väljer att identifiera proxyservern automatiskt ignoreras alla andra alternativ.
-
-      Detaljerade instruktioner finns på
-      <ph name="PROXY_HELP_URL"/>
-
-      Om du aktiverar den här inställningen ignorerar <ph name="PRODUCT_NAME"/> alla proxyrelaterade alternativ som anges från kommandoraden.</translation>
+<translation id="1722705282440676367">Innebär att du kan ange vilken proxyserver som ska användas av <ph name="PRODUCT_NAME"/> och förhindrar att användarna ändrar proxyinställningarna. Om du väljer att aldrig använda en proxyserver och alltid ansluta direkt ignoreras alla andra alternativ. Om du väljer att identifiera proxyservern automatiskt ignoreras alla andra alternativ. Detaljerade instruktioner finns på <ph name="PROXY_HELP_URL"/> Om du aktiverar den här inställningen ignorerar <ph name="PRODUCT_NAME"/> alla proxyrelaterade alternativ som anges från kommandoraden.</translation>
 <translation id="8470053727907466464">Anger vilka teckenkodningar som stöds av sökleverantören. Kodningar är kodsidenamn som UTF-8, GB2312 och ISO-8859-1. De prövas i den ordning de anges. Standardvärdet är UTF-8.</translation>
 <translation id="2537063115727103969">Den här policyn åsidosätter alternativet &quot;Ta bort cookies och andra webbplatsdata när jag stänger webbläsaren&quot; i innehållsinställningarna.
 
@@ -276,6 +281,7 @@
           Detaljerade exempel finns på
           <ph name="PROXY_HELP_URL"/></translation>
 <translation id="1808715480127969042">Blockera cookies på dessa webbplatser</translation>
+<translation id="1115048775745697549">Fråga vid korsursprungs-HTTP med basauktorisering</translation>
 <translation id="2745445908503591390">Ta bort webbplatsdata när webbläsaren avslutas</translation>
 <translation id="8665913667133665583">Anger vilka servrar som ska vitlistas för integrerad autentisering. Integrerad autentisering aktiveras bara när <ph name="PRODUCT_NAME"/> tar emot en autentiseringsfråga från en proxy eller från en server som finns på vitlistan.
 
@@ -338,6 +344,7 @@
 <translation id="847472800012384958">Tillåt inte att popup-fönster visas på någon webbplats</translation>
 <translation id="4733471537137819387">Policyer som gäller integrerad HTTP-autentisering</translation>
 <translation id="4608714268466689965">Innebär att du kan ange om webbplatser får visa aviseringar på skrivbordet. Att visa aviseringar på skrivbordet kan tillåtas som standard eller nekas som standard, eller så kan användaren tillfrågas varje gång en webbplats försöker visa aviseringar på skrivbordet.</translation>
+<translation id="8951350807133946005">Ange katalog för diskcache</translation>
 <translation id="1334051495529796396">Anger om genererat Kerberos SPN baseras på det kanoniska DNS-namnet eller det namn som angavs från början.
 
           Om du aktiverar den här inställningen hoppas CNAME-sökningen över och servernamnet används så som det angavs.
@@ -409,7 +416,7 @@
 <translation id="3101501961102569744">Välj hur inställningar för proxyserver ska anges</translation>
 <translation id="7774768074957326919">Använd systemets proxyinställningar</translation>
 <translation id="3891357445869647828">Aktivera JavaScript</translation>
-<translation id="868187325500643455">Tillåt alla webbplatser att köra plugin-program automatiskt</translation>
+<translation id="868187325500643455">Tillåt alla webbplatser att köra pluginprogram automatiskt</translation>
 <translation id="5226033722357981948">Ange om plugin-sökaren ska inaktiveras</translation>
 <translation id="9068358498333390522">Innebär att du kan ange om webbplatser får visa popup-fönster. Popup-fönster kan antingen vara tillåtna för alla webbplatser eller inte tillåtna för alla webbplatser.</translation>
 <translation id="7194407337890404814">Standardsökleverantörens namn</translation>
@@ -480,13 +487,6 @@
       Om du inaktiverar inställningen skickas inga anonyma rapporter om användning och kraschrelaterade data till Google.
 
       Om du aktiverar eller inaktiverar inställningen kan den inte ändras eller åsidosättas av användarna i <ph name="PRODUCT_NAME"/>.</translation>
-<translation id="3115819625623659514">Konfigurerar standardstartsidans typ i <ph name="PRODUCT_NAME"/> och förhindrar att användarna ändrar inställningarna för startsidan. Startsidan kan vara en webbadress du anger eller sidan Ny flik.
-
-          Om du aktiverar inställningen används alltid sidan Ny flik som startsida och startsidans webbadress ignoreras.
-
-          Om du inaktiverar inställningen blir användarens startsida aldrig sidan Ny flik om inte dess webbadress ställs in på &quot;chrome://newtab&quot;.
-
-          Om du aktiverar eller inaktiverar inställningen kan användarna inte ändra startsidans typ i <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="2263362640517427542">Aktivera lås när enheter med Chrome OS är i viloläge eller vänteläge.</translation>
 <translation id="6808666497110319299">Aktiverar användning av alternativa felsidor som är inbyggda i <ph name="PRODUCT_NAME"/> (till exempel &quot;Sidan hittades inte&quot;) och förhindrar att användarna ändrar inställningen.
 
@@ -501,6 +501,7 @@
       Om du inaktiverar inställningen kan användarna inte använda Autofyll.
 
       Om du aktiverar inställningen eller inte konfigurerar något värde förblir Autofyll under användarnas kontroll. Det innebär att de kan konfigurera profiler för Autofyll och aktivera och inaktivera Autofyll som de vill.</translation>
+<translation id="6938581770853731947">Konfigurerar standardstartsidans typ i <ph name="PRODUCT_NAME"/> och förhindrar att användarna ändrar inställningarna för startsidan. Startsidan kan vara en webbadress du anger eller sidan Ny flik. Om du aktiverar inställningen används alltid sidan Ny flik som startsida och startsidans webbadress ignoreras. Om du inaktiverar inställningen blir användarens startsida aldrig sidan Ny flik om inte dess webbadress ställs in på &quot;chrome://newtab&quot;. Om du aktiverar eller inaktiverar inställningen kan användarna inte ändra startsidans typ i <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="5645779841392247734">Tillåt cookies på dessa webbplatser</translation>
 <translation id="3906388518501362918">Aktiverar JavaScript i <ph name="PRODUCT_NAME"/> och förhindrar att användarna ändrar inställningen.
 

@@ -3,6 +3,7 @@
 <translationbundle lang="bg">
 <translation id="8000275528373650868">За Google Chrome се изисква Windows Vista или Windows XP с SP2 или по-нова версия.</translation>
 <translation id="6676384891291319759">Достъп до интернет</translation>
+<translation id="5453904507266736060">Нека Google Chrome да се изпълнява на заден план</translation>
 <translation id="2383457833405848421">Всичко за Chrome Frame...</translation>
 <translation id="386202838227397562">Моля, затворете всички прозорци на Google Chrome и опитайте отново.</translation>
 <translation id="2770231113462710648">Промяна на браузъра по подразбиране с/ъс:</translation>
@@ -10,6 +11,7 @@
 <translation id="7781002470561365167">Налице е нова версия на Google Chrome.</translation>
 <translation id="7101265395643981223">Стартиране на Google Chrome</translation>
 <translation id="647902066410369402">Файлът с предпочитанията ви е повреден или невалиден.\n\nGoogle Chrome не може да възстанови настройките ви.</translation>
+<translation id="4891791193823137474">Google Chrome да се изпълнява на заден план</translation>
 <translation id="2879385160622431163">Динамично търсене в Google Chrome</translation>
 <translation id="2370289711218562573">В момента Google Chrome импортира „Любими/Отметки“.</translation>
 <translation id="8970027151245482499">Google Chrome не е инсталиран или не е успял да намери инсталационната директория. Моля, изтеглете Google Chrome отново.</translation>
@@ -21,6 +23,7 @@
 <translation id="3555616473548901994">Деинсталирането завърши.</translation>
 <translation id="8556340503434111824">Налице е нова версия на Google Chrome, която е по-бърза от всякога.</translation>
 <translation id="4728575227883772061">Инсталирането не бе успешно поради неизвестна грешка. Ако Google Chrome понастоящем работи, моля, затворете го и опитайте отново.</translation>
+<translation id="3080151273017101988">Да продължават да се изпълняват приложения на заден план, когато Google Chrome е затворен</translation>
 <translation id="4149882025268051530">Инсталационната програма не успя да декомпресира архива. Моля, изтеглете Google Chrome отново.</translation>
 <translation id="6989339256997917931">Google Chrome е актуализиран, но не сте го използвали от поне 30 дни.</translation>
 <translation id="5744005218040929396">Google Chrome Utility</translation>
@@ -49,8 +52,8 @@
 <translation id="8738921060445980047">Непозната версия.</translation>
 <translation id="2485422356828889247">Деинсталиране</translation>
 <translation id="3324235665723428530">Не можете да използвате профила си, тъй като той е от по-нова версия на Google Chrome.\n\nВъзможно е някои функции да са недостъпни. Моля посочете директория на друг профил или използвайте по-нова версия на Chrome.</translation>
+<translation id="9073088951656332330">Няма намерена инсталация за актуализиране на Google Chrome или Google Chrome Frame.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="5008136264574452501">Ранна версия на Google Chrome</translation>
 <translation id="911206726377975832">Да се изтрият ли и данните от сърфирането?</translation>
 <translation id="2044287590254833138">Лента с инструменти на Google Chrome</translation>
 <translation id="5074344184765391290">Chrome Plug-In Host</translation>
@@ -61,10 +64,12 @@
 <translation id="3847841918622877581">Google Chrome може да използва уеб услуги, за да подобри сърфирането ви.</translation>
 <translation id="7436949144778751379">Google Chrome изисква Windows XP или по-нова версия. Някои функции може да не работят.</translation>
 <translation id="7100330187273168372">Google Chrome не може да чете и записва в директорията си с данни:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="7938170099933661772">Google Chrome не може да покаже визуализацията за печат, когато вграденият визуализатор на PDF е деактивиран. За да я видите, моля, посетете <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/>, активирайте „Визуализатор на PDF в Chrome“ и опитайте отново.</translation>
 <translation id="6757767188268205357">Не ме занимавайте</translation>
 <translation id="2290095356545025170">Наистина ли искате да деинсталирате Google Chrome?</translation>
 <translation id="6087062680442281307">Google Chrome е уеб браузър, който зарежда уеб страници и изпълнява приложения със светкавична скорост. Той е бърз, стабилен и лесен за употреба. Сърфирайте в мрежата по-безопасно с вградената защита на Google Chrome срещу злонамерен софтуер и фишинг.</translation>
 <translation id="5941830788786076944">Искам Google Chrome да бъде браузърът по подразбиране</translation>
+<translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome ви позволява да кликнете върху телефонен номер в мрежата и да се обадите до него със Skype!</translation>
 <translation id="3612333635265770873">Известно е, че модул със същото име влиза в конфликт с Google Chrome.</translation>
 <translation id="5947389362804196214">Предпочитанията ви не могат да бъдат прочетени.\n\nВъзможно е да няма достъп до някои функции и промените в предпочитанията няма да бъдат запазени.</translation>

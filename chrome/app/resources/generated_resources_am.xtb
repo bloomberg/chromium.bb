@@ -48,7 +48,6 @@
 <translation id="8133676275609324831">&amp;በአቃፊ ውስጥ አሳይ</translation>
 <translation id="645705751491738698">JavaScriptን ማገድ ቀጥል</translation>
 <translation id="4780321648949301421">ገጽ አስቀምጥ እንደ…</translation>
-<translation id="9154072353677278078">በ<ph name="REALM"/> ያለው አገልጋይ <ph name="DOMAIN"/> የተጠቃሚ ስም እና የይለፈ ቃል ይፈልጋል።</translation>
 <translation id="8178665534778830238">ይዘት፦</translation>
 <translation id="558170650521898289">Microsoft Windows የሃርድዌር መሳሪያ ማረጋገጫ</translation>
 <translation id="8974161578568356045">ራስ ፈልግ</translation>
@@ -147,7 +146,6 @@
 <translation id="1992397118740194946">ያልተዘጋጀ</translation>
 <translation id="8556732995053816225">&amp;ሆሄያትን አመሳስል</translation>
 <translation id="3314070176311241517">ሁሉም ጣቢያዎች JavaScript እንዲያሄዱ ፍቀድ (የሚደገፍ)</translation>
-<translation id="5710740561465385694">አንድ ጣቢያ ውሂብ ማዘጋጀት ሲሞክር ጠይቀኝ</translation>
 <translation id="2263497240924215535">(የተሰናከለ)</translation>
 <translation id="8017335670460187064"><ph name="LABEL"/></translation>
 <translation id="7925285046818567682"><ph name="HOST_NAME"/> በመጠበቅ ላይ…</translation>
@@ -586,7 +584,6 @@ nil</translation>
 <translation id="1974043046396539880">CRL የማሰራጫ ነጥቦች</translation>
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME"/> ጭነትዎን ለማጠናቀቅ ዝግጁ ነው</translation>
 <translation id="5316814419223884568">ልክ ከዚህ ፈልግ</translation>
-<translation id="965674096648379287">ይህ ድረ-ገጽ በትክክል ለመታየት ቀደም ሲል ያስገቡትን ውሂብ ይፈልጋል። ይህን ውሂብ ደግመው መላክ ይችላሉ፣ ነገር ግን ይህን በማድረግዎ ይህ ገጽ ቀድሞ ያከናወነውን ማንኛውንም ተግባር  ይደግሙታል። ያንን ውሂብ ዳግም ለመላክ እና ይህን ገጽ ለማሳየት ‹ዳግም ጫን› የሚለውን ይጫኑ።</translation>
 <translation id="43742617823094120">በዚህ ሁኔታ፣ ለአሳሽዎ የቀረበው ሰርቲፊኬት በሰጪው ተሽሯል። ይህም ማለት የዚህ ሰርቲፊኬት ምሉእነቱ ጠፍቷል፣ እናም ሰርቲፊኬቱ እምነት አይጣልበትም። ይህን ነጥብ ፈፅሞ እንዳለፈ መቀጠል አይኖርብዎትም።</translation>
 <translation id="18139523105317219">EDI ፓርቲ ስም</translation>
 <translation id="1205605488412590044">የመተግበሪያ አቋራጭ ፍጠር…</translation>
@@ -947,7 +944,6 @@ nil</translation>
 <translation id="2359808026110333948">ቀጥል</translation>
 <translation id="1618661679583408047">የአገልጋዩ የደኅንነት ሰርቲፊኬት ገና አልጸናም</translation>
 <translation id="7039912931802252762">Microsoft Smart Card Logon</translation>
-<translation id="6285074077487067719">ሥርዓተ ጥለት</translation>
 <translation id="3065140616557457172">ለመፈለግ ይተይቡ ወይም ለመዳሰስ URL ያስገቡ - ሁሉም ነገር በትክክል ይሰራል።</translation>
 <translation id="5509693895992845810">አስቀምጥ &amp;እንደ…</translation>
 <translation id="5986279928654338866">አገልጋዩ <ph name="DOMAIN"/> የተጠቃሚ ስም እና የይለፈ ቃል ይፈልጋል።</translation>
@@ -1101,6 +1097,7 @@ nil</translation>
 <translation id="281133045296806353">ባለው አሳሽ ክፍለ ጊዜ አዲስ መስኮት ተፈጥሯል።</translation>
 <translation id="6442697326824312960">ትር መጣበቅን አላቅ</translation>
 <translation id="5637380810526272785">የግቤት ዘዴዎች</translation>
+<translation id="6314007596429871800">የመተግበሪያ መሸጎጫ</translation>
 <translation id="9002707937526687073">አ&amp;ትም…</translation>
 <translation id="5556459405103347317">ዳግም ጫን</translation>
 <translation id="8326395326942127023">የውሂብ ጎታ ስም፦</translation>
@@ -1126,7 +1123,6 @@ nil</translation>
 <translation id="6320286250305104236">የአውታረ መረብ ቅንጅቶች…</translation>
 <translation id="2927657246008729253">ለውጥ…</translation>
 <translation id="7978412674231730200">የግል ቁልፍ</translation>
-<translation id="464745974361668466">ሥርዓተ ጥለት፦</translation>
 <translation id="9111395131601239814"><ph name="NETWORKDEVICE"/>: <ph name="STATUS"/></translation>
 <translation id="4414232939543644979">አዲስ ማን&amp;ነትን የማያሳውቅ መስኮት</translation>
 <translation id="1902576642799138955">የተገቢነት ክፍለ ጊዜ</translation>
@@ -1193,7 +1189,6 @@ nil</translation>
 <translation id="9141716082071217089">የአገልጋዩ ሰርቲፊኬት ተሽሮ እንደሆነ ለመፈተሽ አልተቻለም።</translation>
 <translation id="4304224509867189079">ይግቡ</translation>
 <translation id="4492190037599258964">የፍለጋ ውጤቶች ለ'<ph name="SEARCH_STRING"/>'</translation>
-<translation id="2238123906478057869"><ph name="PRODUCT_NAME"/> እነዚህን ተግባሮች ይሰራል፦</translation>
 <translation id="4042471398575101546">ገጽ አክል</translation>
 <translation id="4871865824885782245">የቀን እና ሰዓት አማራጮችን ክፈት…</translation>
 <translation id="8828933418460119530">የDNS ስም</translation>

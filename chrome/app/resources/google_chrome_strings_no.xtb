@@ -3,6 +3,7 @@
 <translationbundle lang="no">
 <translation id="8000275528373650868">Google Chrome krever Windows Vista eller Windows XP med SP2 eller nyere.</translation>
 <translation id="6676384891291319759">Gå til Internett</translation>
+<translation id="5453904507266736060">La Google Chrome kjøre i bakgrunnen</translation>
 <translation id="2383457833405848421">Om Chrome Frame</translation>
 <translation id="386202838227397562">Lukk alle Google Chrome-vinduer og prøv på nytt.</translation>
 <translation id="2770231113462710648">Endre standardnettleser til:</translation>
@@ -10,6 +11,7 @@
 <translation id="7781002470561365167">En ny versjon av Google Chrome er tilgjengelig.</translation>
 <translation id="7101265395643981223">Start Google Chrome</translation>
 <translation id="647902066410369402">Innstillingsfilen er skadet eller ugyldig.\n\nGoogle Chrome kan ikke gjenopprette innstillingene dine.</translation>
+<translation id="4891791193823137474">La Google Chrome kjøre i bakgrunnen</translation>
 <translation id="2879385160622431163">Google Chrome Instant</translation>
 <translation id="2370289711218562573">Google Chrome importerer nå favoritter/bokmerker.</translation>
 <translation id="8970027151245482499">Google Chrome er ikke installert, eller installasjonskatalogen ble ikke funnet. Last ned Google Chrome på nytt.</translation>
@@ -21,6 +23,7 @@
 <translation id="3555616473548901994">Avinstallering fullført.</translation>
 <translation id="8556340503434111824">En ny versjon av Google Chrome er tilgjengelig, og den er nå raskere en noen sinne.</translation>
 <translation id="4728575227883772061">Installeringen mislyktes på grunn av en uspesifisert feil. Lukk Google Chrome hvis det kjører, og prøv på nytt.</translation>
+<translation id="3080151273017101988">Fortsett kjøringen av bakgrunnsprogrammer når Google Chrome er lukket</translation>
 <translation id="4149882025268051530">Installasjonsprogrammet fikk ikke dekomprimert arkivet. Last ned Google Chrome på nytt.</translation>
 <translation id="6989339256997917931">Google Chrome har blitt oppdatert, men du har ikke brukt programmet på minst 30 dager.</translation>
 <translation id="5744005218040929396">Google Chromes verktøy</translation>
@@ -48,8 +51,8 @@
 <translation id="8738921060445980047">Ukjent versjon.</translation>
 <translation id="2485422356828889247">Avinstaller</translation>
 <translation id="3324235665723428530">Profilen kan ikke brukes fordi den er fra en nyere versjon av Google Chrome.\n\nNoen funksjoner kan være utilgjengelige. Angi en annen profilkatalog eller bruk en nyere versjon av Chrome.</translation>
+<translation id="9073088951656332330">Finner ingen installasjon av Google Chrome eller Google Chrome Frame å oppdatere.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="5008136264574452501">Google Chrome Canary-delversjon</translation>
 <translation id="911206726377975832">Vil du slette all nettleserdata også?</translation>
 <translation id="2044287590254833138">Google Chrome-verktøyraden</translation>
 <translation id="5074344184765391290">Chromes vert for programtillegg</translation>
@@ -60,10 +63,12 @@
 <translation id="3847841918622877581">Det kan hende at Google Chrome bruker nettbaserte tjenester for å forbedre din surfeopplevelse.</translation>
 <translation id="7436949144778751379">Google Chrome krever Windows XP eller nyere. Enkelte funksjoner vil kanskje ikke fungere.</translation>
 <translation id="7100330187273168372">Google Chrome kan ikke lese og lagre data i denne katalogen:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="7938170099933661772">Google Chrome kan ikke forhåndsvise en utskrift når den innebygde PDF-leseren er deaktivert. Du kan se forhåndsvisningen ved å gå til <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/>, aktivere «Chrome PDF Viewer» og prøve på nytt.</translation>
 <translation id="6757767188268205357">Ikke spør meg igjen</translation>
 <translation id="2290095356545025170">Er du sikker på at du vil avinstallere Google Chrome?</translation>
 <translation id="6087062680442281307">Nettleseren Google Chrome kjører nettsider og programmer i ekspressfart. Den er rask, stabil og enkel å bruke. Google Chrome har innebygd beskyttelse mot skadelig programvare og svindelforsøk (nettfisking), slik at du kan føle deg tryggere når du bruker Internett.</translation>
 <translation id="5941830788786076944">Gjør Google Chrome til standardleser</translation>
+<translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Med Google Chrome kan du klikke på et telefonnummer på Internett og ringe ved bruk av Skype!</translation>
 <translation id="3612333635265770873">Det er kjent at en modul med samme navn har vært i konflikt med Google Chrome.</translation>
 <translation id="5947389362804196214">Kan ikke lese innstillingene.\n\nEnkelte funksjoner kan være utilgjengelige og endringer av innstillingene blir ikke lagret.</translation>

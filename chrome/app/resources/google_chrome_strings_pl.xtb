@@ -3,6 +3,7 @@
 <translationbundle lang="pl">
 <translation id="8000275528373650868">Google Chrome wymaga systemu Windows Vista bądź Windows XP z dodatkiem SP2 lub nowszym.</translation>
 <translation id="6676384891291319759">Skorzystaj z internetu</translation>
+<translation id="5453904507266736060">Zezwalaj przeglądarce Google Chrome na działanie w tle</translation>
 <translation id="2383457833405848421">Chrome Frame – informacje</translation>
 <translation id="386202838227397562">Zamknij wszystkie okna przeglądarki Google Chrome i spróbuj ponownie.</translation>
 <translation id="2770231113462710648">Zmień przeglądarkę domyślną na:</translation>
@@ -10,6 +11,7 @@
 <translation id="7781002470561365167">Dostępna jest nowa wersja przeglądarki Google Chrome.</translation>
 <translation id="7101265395643981223">Uruchom Google Chrome</translation>
 <translation id="647902066410369402">Plik ustawień jest uszkodzony lub nieprawidłowy.\n\nPrzeglądarka Google Chrome nie może odzyskać ustawień.</translation>
+<translation id="4891791193823137474">Zezwalaj przeglądarce Google Chrome na działanie w tle</translation>
 <translation id="2879385160622431163">Wyszukiwanie w przeglądarce Google Chrome</translation>
 <translation id="2370289711218562573">Google Chrome rozpoczął importowanie Ulubionych/Zakładek.</translation>
 <translation id="8970027151245482499">Przeglądarka Google Chrome nie jest zainstalowana lub znalezienie katalogu instalacyjnego nie powiodło się. Pobierz Google Chrome ponownie.</translation>
@@ -21,6 +23,7 @@
 <translation id="3555616473548901994">Zakończono odinstalowywanie.</translation>
 <translation id="8556340503434111824">Dostępna jest nowa, szybsza niż kiedykolwiek wersja przeglądarki Google Chrome.</translation>
 <translation id="4728575227883772061">Instalacja nie powiodła się z powodu nieokreślonego błędu. Jeśli Google Chrome jest aktualnie uruchomiony, zamknij aplikację i spróbuj ponownie.</translation>
+<translation id="3080151273017101988">Kontynuuj działanie aplikacji w tle po zamknięciu przeglądarki Google Chrome</translation>
 <translation id="4149882025268051530">Instalator nie może prawidłowo rozpakować archiwum. Pobierz Google Chrome ponownie.</translation>
 <translation id="6989339256997917931">Przeglądarka Google Chrome została zaktualizowana, ale nie była przez Ciebie używana przez co najmniej 30 dni.</translation>
 <translation id="5744005218040929396">Program Google Chrome</translation>
@@ -48,8 +51,8 @@
 <translation id="8738921060445980047">Nieznana wersja.</translation>
 <translation id="2485422356828889247">Odinstaluj</translation>
 <translation id="3324235665723428530">Twój profil nie może zostać użyty ponieważ został utworzony w nowszej wersji przeglądarki Chrome.\n\nNiektóre funkcje mogą być niedostępne. Podaj inny katalog z profilem lub użyj nowszej wersji przeglądarki Chrome.</translation>
+<translation id="9073088951656332330">Nie znaleziono instalacji przeglądarki Google Chrome ani wtyczki Google Chrome Frame do zaktualizowania.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="5008136264574452501">Kompilacja Google Chrome Canary</translation>
 <translation id="911206726377975832">Czy usunąć także dane przeglądarki?</translation>
 <translation id="2044287590254833138">Pasek narzędzi Google Chrome</translation>
 <translation id="5074344184765391290">Serwer wtyczek przeglądarki Chrome</translation>
@@ -60,10 +63,12 @@
 <translation id="3847841918622877581">Przeglądarka Google Chrome może korzystać z usług internetowych w celu poprawy wygody użytkowania.</translation>
 <translation id="7436949144778751379">Przeglądarka Google Chrome wymaga systemu Windows XP lub nowszego. Niektóre funkcje mogą nie działać.</translation>
 <translation id="7100330187273168372">Google Chrome nie może odczytać ani zapisać danych w katalogu:\n\n <ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="7938170099933661772">Nie można wyświetlić podglądu wydruku w przeglądarce Google Chrome, gdy wyłączona jest wbudowana przeglądarka PDF. Aby wyświetlić podgląd, otwórz stronę <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/>, włącz wtyczkę „Chrome PDF Viewer”, a następnie spróbuj ponownie.</translation>
 <translation id="6757767188268205357">Nie proponuj więcej</translation>
 <translation id="2290095356545025170">Czy na pewno chcesz odinstalować przeglądarkę Google Chrome?</translation>
 <translation id="6087062680442281307">Google Chrome jest przeglądarką internetową, w której witryny internetowe i aplikacje są szybkie jak błyskawica. Jest szybka, stabilna i łatwa w obsłudze. Dzięki wbudowanej ochronie przed złośliwym oprogramowaniem i wyłudzaniem informacji przeglądanie internetu przy użyciu przeglądarki Google Chrome jest bezpieczniejsze.</translation>
 <translation id="5941830788786076944">Ustaw Google Chrome jako domyślną przeglądarkę</translation>
+<translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">W przeglądarce Google Chrome możesz kliknąć numer telefonu zamieszczony w sieci i zadzwonić na niego za pośrednictwem usługi Skype!</translation>
 <translation id="3612333635265770873">Znane są przypadki konfliktu modułu o takiej nazwie z przeglądarką Google Chrome.</translation>
 <translation id="5947389362804196214">Nie można odczytać ustawień.\n\nNiektóre funkcje mogą być niedostępne, a zmiany w ustawieniach nie zostaną zapisane.</translation>

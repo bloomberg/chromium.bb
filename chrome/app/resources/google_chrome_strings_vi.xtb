@@ -3,6 +3,7 @@
 <translationbundle lang="vi">
 <translation id="8000275528373650868">Google Chrome yêu cầu Windows Vista hoặc Windows XP với SP2 trở lên.</translation>
 <translation id="6676384891291319759">Truy cập Internet</translation>
+<translation id="5453904507266736060">Để Google Chrome chạy trên nền</translation>
 <translation id="2383457833405848421">Giới thiệu về Chrome Frame...</translation>
 <translation id="386202838227397562">Vui lòng đóng tất cả cửa sổ của Google Chrome và thử lại.</translation>
 <translation id="2770231113462710648">Thay đổi trình duyệt mặc định thành:</translation>
@@ -10,6 +11,7 @@
 <translation id="7781002470561365167">Hiện đã có phiên bản mới của Google Chrome.</translation>
 <translation id="7101265395643981223">Khởi động Google Chrome</translation>
 <translation id="647902066410369402">Tệp tuỳ chọn của bạn bị hỏng hoặc không hợp lệ.\n\nGoogle Chrome không thể phục hồi cài đặt của bạn.</translation>
+<translation id="4891791193823137474">Để Google Chrome chạy trên nền</translation>
 <translation id="2879385160622431163">Google Chrome Instant</translation>
 <translation id="2370289711218562573">Google Chrome hiện đang nhập Mục ưa thích/Dấu trang.</translation>
 <translation id="8970027151245482499">Google Chrome chưa được cài đặt hoặc không tìm được thư mục cài đặt. Vui lòng tải xuống lại Google Chrome.</translation>
@@ -21,6 +23,7 @@
 <translation id="3555616473548901994">Quá trình gỡ cài đặt đã hoàn tất.</translation>
 <translation id="8556340503434111824">Hiện đã có phiên bản mới của Google Chrome và phiên bản này nhanh hơn bao giờ hết.</translation>
 <translation id="4728575227883772061">Không cài đặt được do lỗi chưa xác định. Nếu Google Chrome hiện đang chạy, vui lòng đóng Google Chrome và thử lại.</translation>
+<translation id="3080151273017101988">Tiếp tục chạy các ứng dụng nền khi Google Chrome đóng</translation>
 <translation id="4149882025268051530">Trình cài đặt không thể giải nén lưu trữ được. Vui lòng tải xuống lại Google Chrome.</translation>
 <translation id="6989339256997917931">Google Chrome đã được cập nhật, nhưng bạn đã không sử dụng chương trình này ít nhất 30 ngày.</translation>
 <translation id="5744005218040929396">Tiện ích của Google Chrome</translation>
@@ -48,8 +51,8 @@
 <translation id="8738921060445980047">Phiên bản không xác định.</translation>
 <translation id="2485422356828889247">Gỡ cài đặt</translation>
 <translation id="3324235665723428530">Không thể sử dụng hồ sơ của bạn vì hồ sơ được tạo từ phiên bản Google Chrome mới.\n\nMột số tính năng có thể không có sẵn. Vui lòng xác định thư mục hồ sơ khác hoặc sử dụng phiên bản Google Chrome mới.</translation>
+<translation id="9073088951656332330">Không tìm thấy cài đặt Google Chrome hoặc Google Chrome Frame để cập nhật.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="5008136264574452501">Google Chrome Canary Build</translation>
 <translation id="911206726377975832">Bạn cũng muốn xoá dữ liệu duyệt web của mình?</translation>
 <translation id="2044287590254833138">Thanh công cụ Google Chrome</translation>
 <translation id="5074344184765391290">Máy chủ lưu trữ Trình cắm của Chrome</translation>
@@ -60,10 +63,12 @@
 <translation id="3847841918622877581">Google Chrome có thể sử dụng dịch vụ web để cải thiện trải nghiệm duyệt web của bạn.</translation>
 <translation id="7436949144778751379">Google Chrome yêu cầu Windows XP hoặc phiên bản mới hơn. Một số tính năng không thể hoạt động.</translation>
 <translation id="7100330187273168372">Google Chrome không thể đọc và ghi lên thư mục dữ liệu:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="7938170099933661772">Google Chrome không thể hiển thị xem trước bản in khi trình xem PDF được tích hợp sẵn bị tắt. Để xem bản xem trước, vui lòng truy cập <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/>, bật &quot;Trình xem PDF trên Chrome&quot; và thử lại.</translation>
 <translation id="6757767188268205357">Đừng hỏi lại</translation>
 <translation id="2290095356545025170">Bạn có chắc chắn muốn gỡ cài đặt Google Chrome không?</translation>
 <translation id="6087062680442281307">Google Chrome là một trình duyệt web chạy các trang web và ứng dụng với tốc độ cực nhanh. Trình duyệt này nhanh, ổn định và dễ sử dụng. Duyệt web an toàn hơn với tính năng ngăn chặn phần mềm độc hại và lừa đảo được tích hợp vào Google Chrome.</translation>
 <translation id="5941830788786076944">Chọn Google Chrome làm trình duyệt mặc định</translation>
+<translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome cho phép bạn nhấp vào số điện thoại trên web và gọi tới số đó bằng Skype!</translation>
 <translation id="3612333635265770873">Một mô-đun có cùng tên đã được xác định là xung đột với Google Chrome.</translation>
 <translation id="5947389362804196214">Không thể đọc tuỳ chọn của bạn.\n\nMột số tính năng có thể không khả dụng và thay đổi cho tuỳ chọn của bạn sẽ không được lưu.</translation>

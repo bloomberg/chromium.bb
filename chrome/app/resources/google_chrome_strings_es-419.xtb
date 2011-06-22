@@ -3,6 +3,7 @@
 <translationbundle lang="es-419">
 <translation id="8000275528373650868">Para usar Google Chrome, se necesita Windows Vista o Windows XP con SP2 o superior.</translation>
 <translation id="6676384891291319759">Acceder a Internet</translation>
+<translation id="5453904507266736060">Permitir que Google Chrome se ejecute en segundo plano</translation>
 <translation id="2383457833405848421">Acerca de Chrome Frame...</translation>
 <translation id="386202838227397562">Cierra todas las ventanas de Google Chrome e intenta nuevamente.</translation>
 <translation id="2770231113462710648">Cambiar el navegador predeterminado a:</translation>
@@ -10,6 +11,7 @@
 <translation id="7781002470561365167">Hay una nueva versión disponible de Google Chrome.</translation>
 <translation id="7101265395643981223">Iniciar Google Chrome</translation>
 <translation id="647902066410369402">Tu archivo de preferencias está dañado o no es válido.\n\nGoogle Chrome no puede recuperar tu configuración.</translation>
+<translation id="4891791193823137474">Permitir que Google Chrome se ejecute en segundo plano</translation>
 <translation id="2879385160622431163">Google Chrome Instant</translation>
 <translation id="2370289711218562573">Google Chrome está importando favoritos y marcadores:</translation>
 <translation id="8970027151245482499">Google Chrome no está instalado o no se pudo encontrar el directorio de instalación. Descargue Google Chrome nuevamente.</translation>
@@ -21,6 +23,7 @@
 <translation id="3555616473548901994">Desinstalación finalizada</translation>
 <translation id="8556340503434111824">Hay una nueva versión de Google Chrome disponible, y es más rápida que nunca.</translation>
 <translation id="4728575227883772061">No se pudo completar la instalación debido a un error no identificado. Si Google Chrome se está ejecutando en este momento, ciérrelo e intente nuevamente.</translation>
+<translation id="3080151273017101988">Seguir ejecutando aplicaciones en segundo plano al cerrar Google Chrome</translation>
 <translation id="4149882025268051530">El instalador no pudo descomprimir el archivo. Descargue Google Chrome nuevamente.</translation>
 <translation id="6989339256997917931">Google Chrome fue actualizado, pero no lo has utilizado en los últimos 30 días.</translation>
 <translation id="5744005218040929396">Utilidad de Google Chrome</translation>
@@ -48,8 +51,8 @@
 <translation id="8738921060445980047">Versión desconocida.</translation>
 <translation id="2485422356828889247">Desinstalación</translation>
 <translation id="3324235665723428530">No se puede utilizar su perfil porque pertenece a una versión más nueva de Google Chrome.\n\nEs posible que no pueda utilizar algunas funciones. Especifique otro directorio para el perfil o utilice una versión más nueva de Chrome.</translation>
+<translation id="9073088951656332330">No se han encontrado actualizaciones de Google Chrome ni de Google Chrome Frame.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="5008136264574452501">Compilación de Google Chrome Canario</translation>
 <translation id="911206726377975832">¿También eliminar datos de navegación?</translation>
 <translation id="2044287590254833138">Barra de herramientas de Google Chrome</translation>
 <translation id="5074344184765391290">Host complemento de Chrome</translation>
@@ -60,10 +63,12 @@
 <translation id="3847841918622877581">Google Chrome puede utilizar servicios web con el objetivo de mejorar la navegación.</translation>
 <translation id="7436949144778751379">Google Chrome requiere Windows XP o versiones posteriores. Es posible que no funcionen algunas características.</translation>
 <translation id="7100330187273168372">Google Chrome no puede leer y escribir a su directorio de datos:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="7938170099933661772">Google Chrome no puede mostrar la vista previa de impresión si el visor de PDF integrado no está habilitado. Para poder ver la vista previa, accede a <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/>, habilita la opción del visor de PDF de Chrome y vuelve a intentarlo.</translation>
 <translation id="6757767188268205357">No preguntar de nuevo</translation>
 <translation id="2290095356545025170">¿Estás seguro de que deseas desinstalar Google Chrome?</translation>
 <translation id="6087062680442281307">Google Chrome es un navegador web que ejecuta aplicaciones y páginas web a la velocidad de un rayo. Es rápido, estable y fácil de usar. Navega la web de manera más segura con protección contra software malicioso y suplantación de identidad (phishing) incorporada en Google Chrome.</translation>
 <translation id="5941830788786076944">Haga de Google Chrome su navegador predeterminado</translation>
+<translation id="4990567037958725628">Google Chrome Canario</translation>
 <translation id="4561051373932531560">Google Chrome te permite hacer clic en un número de teléfono en la web y ¡llamarlo por Skype!</translation>
 <translation id="3612333635265770873">Un módulo con el mismo nombre ha interferido con Google Chrome.</translation>
 <translation id="5947389362804196214">No se pueden leer tus preferencias.\n\nEs posible que algunas funciones no estén disponibles y no se guardarán los cambios realizados a las preferencias.</translation>

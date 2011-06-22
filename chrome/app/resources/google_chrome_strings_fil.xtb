@@ -3,6 +3,7 @@
 <translationbundle lang="fil">
 <translation id="8000275528373650868">Kinakailangan ng Google Chrome ang Windows Vista o Windows XP na may SP2 o mas mataas pa.</translation>
 <translation id="6676384891291319759">I-access ang Internet</translation>
+<translation id="5453904507266736060">Hayaan ang Google Chrome na Tumakbo sa Background</translation>
 <translation id="2383457833405848421">Tungkol sa Chrome Frame...</translation>
 <translation id="386202838227397562">Mangyaring isara lahat ng mga window ng Google Chrome at muling subukan.</translation>
 <translation id="2770231113462710648">Baguhin ang default na browser sa:</translation>
@@ -10,6 +11,7 @@
 <translation id="7781002470561365167">May magagamit na bagong bersyon ng Google Chrome.</translation>
 <translation id="7101265395643981223">Magsimula sa Google Chrome</translation>
 <translation id="647902066410369402">Na-corrupt o di-wasto ang iyong mga ginustong file.\n\nHindi mabawi ng Google Chrome ang iyong mga setting.</translation>
+<translation id="4891791193823137474">Hayaan ang Google Chrome na tumakbo sa background</translation>
 <translation id="2879385160622431163">Google Chrome Instant</translation>
 <translation id="2370289711218562573">Ini-import ngayon ng Google Chrome ang Mga Paborito/Bookmark.</translation>
 <translation id="8970027151245482499">Hindi na-install o nabigong makahanap ng direktoryo sa pag-install ang Google Chrome. Paki-download muli ang Google Chrome.</translation>
@@ -21,6 +23,7 @@
 <translation id="3555616473548901994">Kumpleto na ang pag-uninstall.</translation>
 <translation id="8556340503434111824">May available na bagong bersyon ng Google Chrome, at mas mabilis ito kaysa sa dati.</translation>
 <translation id="4728575227883772061">Nabigo ang pag-install dahil sa hindi natukoy na error. Kung kasalukuyang tumatakbo ang Google Chrome, paki-sara ito at subukang muli.</translation>
+<translation id="3080151273017101988">Magpatuloy sa pagpapatakbo ng apps sa background kapag nakasara ang Google Chrome</translation>
 <translation id="4149882025268051530">Nabigo ang installer sa pag-uncompress ng archive. Paki-download muli ang Google Chrome.</translation>
 <translation id="6989339256997917931">Na-update na ang Google Chrome, ngunit hindi mo pa ito ginamit sa huling 30 araw.</translation>
 <translation id="5744005218040929396">Google Chrome Utility</translation>
@@ -48,8 +51,8 @@
 <translation id="8738921060445980047">Hindi kilalang bersyon.</translation>
 <translation id="2485422356828889247">I-uninstall</translation>
 <translation id="3324235665723428530">Ang iyong profile ay hindi magagamit dahil ito ay mula sa isang bagong bersyon ng Google Chrome.\n\nIlang mga tampok ay maaaring hindi magagamit. Mangyaring tukuyin ang isang kakaibang derektoryo ng profile o gamitin ang isan bagong bersyon ng Chrome.</translation>
+<translation id="9073088951656332330">Walang nakitang pag-install sa Google Chrome o Google Chrome Frame na i-a-update.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="5008136264574452501">Google Chrome Canary Build</translation>
 <translation id="911206726377975832">Tatanggalin din ang iyong data sa pag-browse?</translation>
 <translation id="2044287590254833138">Toolbar ng Google Chrome</translation>
 <translation id="5074344184765391290">Plug-In Host ng Chrome</translation>
@@ -60,10 +63,12 @@
 <translation id="3847841918622877581">Maaaring gumamit ang Google Chrome ng mga serbisyo sa web upang mapabuti ang iyong karanasan sa pagba-browse.</translation>
 <translation id="7436949144778751379">Kailangan ng Google Chrome ng Windows XP o mas bago. Maaaring hindi gumana ang ilang tampok.</translation>
 <translation id="7100330187273168372">Hindi mababasa ang Google Chrome at isulat ito sa direktoryo ng data:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="7938170099933661772">Hindi maipakita ng Google Chrome ang preview ng pag-print kapag hindi pinagana ang built-in na PDF viewer. Upang makita ang preview, pakibisita ang <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/>, Paganahin ang &quot;Chrome PDF Viewer&quot;, at subukang muli.</translation>
 <translation id="6757767188268205357">Huwag akong istorbohin</translation>
 <translation id="2290095356545025170">Sigurado ka bang nais mong i-uninstall ang Google Chrome?</translation>
 <translation id="6087062680442281307">Ang Google Chrome ay isang web browser na nagpapatakbo ng mga web page at application na kasingbilis ng kidlat. Mabilis ito, matatag, at madaling gamitin. I-browse ang web nang mas ligtas na may proteksyon sa malware at phishing na binuo sa Google Chrome.</translation>
 <translation id="5941830788786076944">Gawin ang Google Chrome na default browser</translation>
+<translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Pinapayagan ka ng Google Chrome na mag-click sa isang numero ng telepono sa web at tawagan ito gamit ang Skype!</translation>
 <translation id="3612333635265770873">Ang module na may parehong pangalan ay kilalang salungat sa Google Chrome.</translation>
 <translation id="5947389362804196214">Hindi mabasa ang iyong mga kagustuhan.\n\nMaaaring hindi magamit ang ilang mga tampok at hindi mase-save ang mga pagbabago sa kagustuhan.</translation>

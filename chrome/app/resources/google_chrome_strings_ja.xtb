@@ -3,6 +3,7 @@
 <translationbundle lang="ja">
 <translation id="8000275528373650868">Google Chrome のご利用には Windows Vista または Windows XP SP2 以降が必要です。</translation>
 <translation id="6676384891291319759">インターネットにアクセス</translation>
+<translation id="5453904507266736060">Google Chrome のバックグラウンドでの実行を許可する</translation>
 <translation id="2383457833405848421">Chrome フレームについて...</translation>
 <translation id="386202838227397562">すべての Google Chrome ウィンドウを閉じてからもう一度お試しください。</translation>
 <translation id="2770231113462710648">既定のブラウザを変更:</translation>
@@ -10,6 +11,7 @@
 <translation id="7781002470561365167">Google クロームブラウザの最新バージョンを是非お試しください。</translation>
 <translation id="7101265395643981223">Google Chrome を起動</translation>
 <translation id="647902066410369402">ユーザー設定ファイルが壊れているか無効です。\n\n設定を復元できません。</translation>
+<translation id="4891791193823137474">Google Chrome のバックグラウンドでの実行を許可する</translation>
 <translation id="2879385160622431163">Google Chrome インスタント検索</translation>
 <translation id="2370289711218562573">Google Chrome にお気に入り/ブックマークをインポートしています。</translation>
 <translation id="8970027151245482499">Google Chrome がインストールされていないか、インストールされたディレクトリが見つかりません。Google Chrome をダウンロードし直してください。</translation>
@@ -21,6 +23,7 @@
 <translation id="3555616473548901994">アンインストールが完了しました。</translation>
 <translation id="8556340503434111824">Google クロームブラウザがバージョンアップ！是非お試しください。</translation>
 <translation id="4728575227883772061">原因不明のエラーによりインストールが失敗しました。実行中の Google Chrome を終了してからやり直してください。</translation>
+<translation id="3080151273017101988">Google Chrome を閉じた際にバックグラウンド アプリケーションの処理を続行する</translation>
 <translation id="4149882025268051530">インストーラー アーカイブを解凍できませんでした。Google Chrome をダウンロードし直してください。</translation>
 <translation id="6989339256997917931">Google Chrome が更新されましたが、30 日間以上使用されていません。</translation>
 <translation id="5744005218040929396">Google Chrome Utility</translation>
@@ -48,8 +51,8 @@
 <translation id="8738921060445980047">バージョンが不明です。</translation>
 <translation id="2485422356828889247">アンインストール</translation>
 <translation id="3324235665723428530">バージョンが新しい Google Chrome のプロフィールは使用できません。\n\n一部の機能が使用できない可能性があります。別の場所のプロフィールを指定するか、新しいバージョンの Chrome をご使用ください</translation>
+<translation id="9073088951656332330">Google Chrome と Google Chrome Frame のインストール可能なアップデートは見つかりませんでした。</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="5008136264574452501">Google Chrome Canary Build</translation>
 <translation id="911206726377975832">閲覧データも削除しますか？</translation>
 <translation id="2044287590254833138">Google Chrome ツールバー</translation>
 <translation id="5074344184765391290">Chrome Plug-In Host</translation>
@@ -60,10 +63,12 @@
 <translation id="3847841918622877581">Google Chrome は、より快適なブラウジングを提供する目的でウェブサービスを使用することがあります。</translation>
 <translation id="7436949144778751379">Google Chrome では Windows XP 以降が必要です。機能の一部が動作しない可能性があります。</translation>
 <translation id="7100330187273168372">このディレクトリには Google Chrome はアクセスできません:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="7938170099933661772">Google Chrome では、組み込みの PDF ビューアが無効になっていると、印刷プレビューを表示できません。プレビューを表示するには、<ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/> にアクセスし、[Chrome PDF ビューア] を有効にして、もう一度お試しください。</translation>
 <translation id="6757767188268205357">今後は表示しない</translation>
 <translation id="2290095356545025170">Google Chrome をアンインストールしてもよろしいですか？</translation>
 <translation id="6087062680442281307">Google Chrome は、ウェブページやウェブ アプリケーションを高速に実行できるスピードと、高い安定性を兼ね備えた非常に使いやすいウェブ ブラウザです。不正なソフトウェアやフィッシングに対する保護機能が組み込まれており、ウェブを安全にブラウジングできます。</translation>
 <translation id="5941830788786076944">Google Chrome を既定のブラウザにする</translation>
+<translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome では、ウェブサイト上の電話番号をクリックするだけで Skype で通話を発信できます。</translation>
 <translation id="3612333635265770873">同じ名前のモジュールは Google Chrome と競合することがわかっています。</translation>
 <translation id="5947389362804196214">ユーザー設定ファイルを読み込むことができません。\n\n一部の機能が利用できない可能性があります。また、設定への変更は保存されません。</translation>

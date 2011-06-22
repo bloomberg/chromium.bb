@@ -3,6 +3,7 @@
 <translationbundle lang="th">
 <translation id="8000275528373650868">Google Chrome ต้องใช้ Windows Vista หรือ Windows XP พร้อม SP2 หรือที่สูงกว่า</translation>
 <translation id="6676384891291319759">เข้าถึงอินเทอร์เน็ต</translation>
+<translation id="5453904507266736060">ให้ Google Chrome ทำงานในเบื้องหลัง</translation>
 <translation id="2383457833405848421">เกี่ยวกับ Chrome Frame...</translation>
 <translation id="386202838227397562">โปรดปิดหน้าต่าง Google Chrome ทั้งหมดและลองใหม่อีกครั้ง</translation>
 <translation id="2770231113462710648">เปลี่ยนเบราว์เซอร์ที่เป็นค่าเริ่มต้นเป็น:</translation>
@@ -10,6 +11,7 @@
 <translation id="7781002470561365167">Google Chrome เวอร์ชันใหม่มีให้ได้ลองใช้กันแล้ว</translation>
 <translation id="7101265395643981223">เปิด Google Chrome</translation>
 <translation id="647902066410369402">ไฟล์ค่ากำหนดของคุณขัดข้องหรือไม่ถูกต้อง\n\nGoogle Chrome ไม่สามารถกู้คืนการตั้งค่าของคุณได้</translation>
+<translation id="4891791193823137474">ให้ Google Chrome ทำงานในเบื้องหลัง</translation>
 <translation id="2879385160622431163">ค้นหาทันใจของ Google Chrome</translation>
 <translation id="2370289711218562573">Google Chrome กำลังนำเข้ารายการโปรด/บุ๊คมาร์ค</translation>
 <translation id="8970027151245482499">ไม่มีการติดตั้ง Google Chrome หรือไม่สามารถหาไดเรกทอรีการติดตั้งได้ โปรดดาวน์โหลด Google Chrome อีกครั้ง</translation>
@@ -21,6 +23,7 @@
 <translation id="3555616473548901994">การถอนการติดตั้งเสร็จสมบูรณ์</translation>
 <translation id="8556340503434111824">มี Chrome รุ่นใหม่ให้ใช้งานแล้วและเร็วกว่าเดิม</translation>
 <translation id="4728575227883772061">การติดตั้งล้มเหลวเนื่องจากมีข้อผิดพลาดที่ไม่ได้ระบุ หาก Google Chrome ทำงานอยู่ในขณะนี้ โปรดปิดและลองอีกครั้ง</translation>
+<translation id="3080151273017101988">เรียกใช้แอปพลิเคชันเบื้องหลังต่อไปเมื่อ Google Chrome ถูกปิดลง</translation>
 <translation id="4149882025268051530">โปรแกรมติดตั้งยกเลิกการบีบอัดการเก็บข้อมูลไม่ได้ โปรดดาวน์โหลด Google Chrome อีกครั้ง</translation>
 <translation id="6989339256997917931">อัปเดต Google Chrome แล้ว แต่คุณไม่ได้ใช้งานมาไม่ต่ำกว่า 30 วันแล้ว</translation>
 <translation id="5744005218040929396">ยูทิลิตีของ Google Chrome</translation>
@@ -48,8 +51,8 @@
 <translation id="8738921060445980047">รุ่นที่ไม่รู้จัก</translation>
 <translation id="2485422356828889247">ถอนการติดตั้ง</translation>
 <translation id="3324235665723428530">ไม่สามารถใช้โปรไฟล์ของคุณได้เนื่องจากโปรไฟล์ดังกล่าวมาจาก Google Chrome รุ่นที่ใหม่กว่า\n\nบางคุณสมบัติอาจไม่สามารถใช้งานได้ โปรดระบุไดเรกทอรีของโปรไฟล์อื่น หรือใช้ Chrome รุ่นใหม่กว่านี้</translation>
+<translation id="9073088951656332330">ไม่พบการติดตั้ง Google Chrome หรือ Google Chrome Frame ที่จะอัปเดต</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="5008136264574452501">Google Chrome Canary Build</translation>
 <translation id="911206726377975832">ลบข้อมูลการท่องเว็บด้วยหรือไม่</translation>
 <translation id="2044287590254833138">ดาวน์โหลดแถบเครื่องมือ Google Chrome</translation>
 <translation id="5074344184765391290">โฮสต์ปลั๊กอินของ Chrome</translation>
@@ -60,10 +63,12 @@
 <translation id="3847841918622877581">Google Chrome อาจใช้บริการเว็บเพื่อปรับปรุงการเรียกดูของคุณ</translation>
 <translation id="7436949144778751379">Google Chrome ต้องใช้ Windows XP หรือรุ่นใหม่กว่า คุณลักษณะบางอย่างอาจไม่ทำงาน</translation>
 <translation id="7100330187273168372">Google Chrome ไม่สามารถอ่านและเขียนข้อมูลในไดเรกทอรีข้อมูล:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="7938170099933661772">Google Chrome ไม่สามารถแสดงหน้าตัวอย่างก่อนพิมพ์เมื่อปิดใช้งานโปรแกรมอ่าน PDF ภายใน หากคุณต้องการดูหน้าตัวอย่าง โปรดไปที่ <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/> เปิดใช้งาน &quot;โปรแกรมอ่าน PDF ของ Chrome&quot; และลองอีกครั้ง</translation>
 <translation id="6757767188268205357">อย่ากวนใจฉัน</translation>
 <translation id="2290095356545025170">คุณแน่ใจหรือไม่ว่าต้องการยกเลิกการติดตั้ง Google Chrome</translation>
 <translation id="6087062680442281307">Google Chrome คือเว็บเบราว์เซอร์ที่แสดงหน้าเว็บและแอปพลิเคชันต่างๆ ได้รวดเร็วในพริบตา โดยทำงานได้เร็ว มีเสถียรภาพ และใช้งานง่าย ช่วยให้คุณเรียกดูเว็บได้อย่างปลอดภัยมากขึ้นด้วยการป้องกันมัลแวร์และฟิชชิงซึ่งมีอยู่ใน Google Chrome</translation>
 <translation id="5941830788786076944">ทำให้ Google Chrome เป็นเบราว์เซอร์เริ่มต้น</translation>
+<translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome ทำให้คุณสามารถคลิกที่หมายเลขโทรศัพท์บนเว็บแล้วโทรหาด้วย Skype!</translation>
 <translation id="3612333635265770873">เป็นที่ทราบกันว่าโมดูลที่มีชื่อเดียวกันจะมีความขัดแย้งกับ Google Chrome</translation>
 <translation id="5947389362804196214">ค่ากำหนดของคุณไม่สามารถอ่านได้\n\nคุณลักษณะบางอย่างอาจใช้ไม่ได้และการเปลี่ยนแปลงค่ากำหนดจะไม่ได้รับการบันทึก</translation>

@@ -3,6 +3,7 @@
 <translationbundle lang="et">
 <translation id="8000275528373650868">Google Chrome vajab operatsioonisüsteemi Windows Vista või Windows XP hoolduspaketiga SP2 või uuem.</translation>
 <translation id="6676384891291319759">Pääs Internetti</translation>
+<translation id="5453904507266736060">Luba Google Chrome'i töötamine taustal</translation>
 <translation id="2383457833405848421">Info Chrome Frame'i kohta...</translation>
 <translation id="386202838227397562">Sulgege kõik Google Chrome'i aknad ja proovige uuesti.</translation>
 <translation id="2770231113462710648">Asenda vaikebrauser:</translation>
@@ -10,6 +11,7 @@
 <translation id="7781002470561365167">Saadaval on uus Google Chrome'i versioon.</translation>
 <translation id="7101265395643981223">Käivitage Google Chrome</translation>
 <translation id="647902066410369402">Eelistuste fail on rikutud või kehtetu.\n\nGoogle Chrome ei saa teie seadeid taastada.</translation>
+<translation id="4891791193823137474">Luba Google Chrome'i töötamine taustal</translation>
 <translation id="2879385160622431163">Google Chrome Instant</translation>
 <translation id="2370289711218562573">Google Chrome impordib nüüd lemmikud/järjehoidjad.</translation>
 <translation id="8970027151245482499">Google Chrome ei ole installitud või installikataloogi ei leitud. Palun laadige Google Chrome uuesti alla.</translation>
@@ -21,6 +23,7 @@
 <translation id="3555616473548901994">Desinstallimine on lõpetatud.</translation>
 <translation id="8556340503434111824">Saadaval on uus Google Chrome'i versioon ja see on senistest kiireim.</translation>
 <translation id="4728575227883772061">Install ebaõnnestus määramata vea tõttu. Kui Google Chrome parasjagu töötab, siis palun sulgege see ja proovige uuesti.</translation>
+<translation id="3080151273017101988">Jätka taustal olevate rakenduste tööd, kui Google Chrome on suletud</translation>
 <translation id="4149882025268051530">Installijal ei õnnestunud arhiivi lahti pakkida. Palun laadige Google Chrome uuesti alla.</translation>
 <translation id="6989339256997917931">Google Chrome'i on värskendatud, aga te pole seda kasutanud vähemalt 30 päeva.</translation>
 <translation id="5744005218040929396">Google Chrome'i utiliit</translation>
@@ -48,8 +51,8 @@
 <translation id="8738921060445980047">Tundmatu versioon.</translation>
 <translation id="2485422356828889247">Desinstalli</translation>
 <translation id="3324235665723428530">Teie profiili ei saa kasutada, kuna see pärineb uuemast Google Chrome'i versioonist.\n\nMõned funktsioonid ei pruugi olla kättesaadavad. Palun täpsustage mõni teine profiilikaust või kasutage Chrome'i uuemat versiooni.</translation>
+<translation id="9073088951656332330">Ei leitud ühtegi Google Chrome'i ega Google Chrome Frame'i installi, mida värskendada.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="5008136264574452501">Google Chrome Canary järk</translation>
 <translation id="911206726377975832">Kas kustutada ka teie sirvimisandmed?</translation>
 <translation id="2044287590254833138">Google Chrome'i tööriistariba</translation>
 <translation id="5074344184765391290">Chrome'i Plug-In Host</translation>
@@ -60,10 +63,12 @@
 <translation id="3847841918622877581">Google Chrome võib teie sirvimiskogemuse täiustamiseks kasutada veebiteenuseid.</translation>
 <translation id="7436949144778751379">Google Chrome nõuab Windows XP-d või uuemat operatsioonisüsteemi. Mõned funktsioonid ei pruugi töötada.</translation>
 <translation id="7100330187273168372">Google Chrome ei suuda oma andmekaustast lugeda ega sinna kirjutada:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="7938170099933661772">Kui sisseehitatud PDF-vaataja on keelatud, ei saa Google Chrome printimise eelvaadet näidata. Eelvaate nägemiseks külastage aadressi <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/>, lubage „Chrome'i PDF-vaataja” ja proovige uuesti.</translation>
 <translation id="6757767188268205357">Ära tüüta mind</translation>
 <translation id="2290095356545025170">Olete kindel, et soovite Google Chrome'i desinstallida?</translation>
 <translation id="6087062680442281307">Google Chrome on veebibrauser, mis käitab veebilehti ja rakendusi välgukiirusel. See on kiire, töökindel ja lihtsalt kasutatav. Veebisirvimine on turvalisem tänu Google Chrome'i sisseehitatud pahavara- ja andmepüügivastasele kaitsele.</translation>
 <translation id="5941830788786076944">Tee Google Chrome vaikebrauseriks</translation>
+<translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome võimaldab teil veebis telefoninumbril klõpsata ja sellele Skype'i abil helistada!</translation>
 <translation id="3612333635265770873">Samanimeline moodul on teadaolevalt Google Chrome'iga vastuolus.</translation>
 <translation id="5947389362804196214">Teie eelistusi ei saa lugeda.\n\nMõned funktsioonid võivad olla kättesaamatud ja eelistuste muudatusi ei salvestata.</translation>

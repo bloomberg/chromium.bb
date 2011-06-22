@@ -3,6 +3,7 @@
 <translationbundle lang="iw">
 <translation id="8000275528373650868">להפעלת Google Chrome יש להשתמש במערכת ההפעלה Windows Vista או Windows XP עם SP2 ואילך.</translation>
 <translation id="6676384891291319759">גישה אל האינטרנט</translation>
+<translation id="5453904507266736060">אפשר ל-Google Chrome לפעול ברקע</translation>
 <translation id="2383457833405848421">אודות Chrome Frame...</translation>
 <translation id="386202838227397562">סגור את כל החלונות של Google Chrome ונסה שוב.</translation>
 <translation id="2770231113462710648">שנה את דפדפן ברירת המחדל ל:</translation>
@@ -10,6 +11,7 @@
 <translation id="7781002470561365167">גרסה חדשה של Google Chrome זמינה כעת.</translation>
 <translation id="7101265395643981223">התחל את Google Chrome</translation>
 <translation id="647902066410369402">קובץ ההעדפות שלך פגום או לא חוקי.\n\nGoogle Chrome לא יכול לשחזר את ההגדרות שלך.</translation>
+<translation id="4891791193823137474">אפשר ל-Google Chrome לפעול ברקע</translation>
 <translation id="2879385160622431163">Google Chrome Instant</translation>
 <translation id="2370289711218562573">Google Chrome מייבא כעת מועדפים/סימניות.</translation>
 <translation id="8970027151245482499">Google Chrome אינו מותקן או שהוא נכשל במציאת ספריה להתקנה. הורד שוב את Google Chrome.</translation>
@@ -21,6 +23,7 @@
 <translation id="3555616473548901994">הסרת ההתקנה הושלמה.</translation>
 <translation id="8556340503434111824">גרסה חדשה של Google Chrome זמינה, והיא מהירה יותר מאי פעם.</translation>
 <translation id="4728575227883772061">ההתקנה נכשלה בשל שגיאה לא צפויה. אם Google Chrome פועל כעת, סגור אותו ונסה שוב.</translation>
+<translation id="3080151273017101988">המשך הפעלת יישומים ברקע כאשר Google Chrome סגור</translation>
 <translation id="4149882025268051530">המתקין נכשל בביצוע דחיסה לארכיון. הורד שוב את Google Chrome.</translation>
 <translation id="6989339256997917931">Google Chrome עודכן, אך לא השתמשת בו לפחות 30 ימים.</translation>
 <translation id="5744005218040929396">תוכנית השירות Google Chrome Utility</translation>
@@ -48,8 +51,8 @@
 <translation id="8738921060445980047">גרסה לא ידועה.</translation>
 <translation id="2485422356828889247">הסר התקנה</translation>
 <translation id="3324235665723428530">לא ניתן להשתמש בפרופיל שלך מכיוון שהוא מגיע מגירסה חדשה יותר של Google Chrome. \n\nיתכן שתכונות מסוימות לא יהיו זמינות. אנא ציין ספריית פרופיל אחרת או השתמש בגירסה חדשה יותר של .Chrome</translation>
+<translation id="9073088951656332330">לא נמצאה התקנה של Google Chrome או Google Chrome Frame שיש לעדכן.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="5008136264574452501">גרסת Google Chrome Canary</translation>
 <translation id="911206726377975832">למחוק גם את נתוני הגלישה שלך?</translation>
 <translation id="2044287590254833138">סרגל הכלים של Google Chrome</translation>
 <translation id="5074344184765391290">Chrome Plug-In Host</translation>
@@ -60,10 +63,12 @@
 <translation id="3847841918622877581">Google Chrome עשוי להשתמש בשירותי אינטרנט כדי לשפר את חווית הגלישה שלך.</translation>
 <translation id="7436949144778751379">Google Chrome דורש Windows XP ואילך. ייתכן שחלק מהתכונות לא יפעלו.</translation>
 <translation id="7100330187273168372">Google Chrome אינו יכול לקרוא ולכתוב אל ספריית המידע שלו:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="7938170099933661772">לא ניתן להציג את התצוגה המקדימה של ההדפסה ב-Google Chrome כאשר מציג ה-PDF המובנה מושבת. כדי לראות את התצוגה המקדימה, בקר בכתובת <ph name="BEGIN_LINK"/>chrome://plugins<ph name="END_LINK"/>, הפוך את &quot;מציג ה-PDF של Chrome&quot; לפעיל ונסה שוב.</translation>
 <translation id="6757767188268205357">אל תנדנד לי</translation>
 <translation id="2290095356545025170">האם אתה בטוח שאתה רוצה להסיר את Google Chrome?</translation>
 <translation id="6087062680442281307">Google Chrome הוא דפדפן אינטרנט המפעיל דפי אינטרנט ויישומים במהירות הבזק. הוא מהיר, יציב וקל לשימוש. גלוש באינטרנט בבטחה עם הגנה נגד תוכנות זדוניות והתחזות המובנית ב-Google Chrome.</translation>
 <translation id="5941830788786076944">הפוך את Google Chrome לדפדפן ברירת המחדל</translation>
+<translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome מאפשר לך ללחוץ על מספר טלפון באינטרנט ולהתקשר אליו באמצעות Skype!</translation>
 <translation id="3612333635265770873">מודול בעל אותו שם מתנגש עם Google Chrome.</translation>
 <translation id="5947389362804196214">לא היתה אפשרות לקרוא את ההעדפות שלך.\n\nייתכן שחלק מהתכונות לא יהיו זמינות ושינויים בהעדפות לא יישמרו.</translation>

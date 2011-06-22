@@ -3,6 +3,7 @@
 <translationbundle lang="ko">
 <translation id="8000275528373650868">Google 크롬은 Windows Vista 또는 Windows XP 서비스 팩 2 이상이 설치된 컴퓨터에서 사용하실 수 있습니다.</translation>
 <translation id="6676384891291319759">인터넷 연결</translation>
+<translation id="5453904507266736060">백그라운드에서 Chrome을 실행</translation>
 <translation id="2383457833405848421">크롬 프레임 정보...</translation>
 <translation id="386202838227397562">Google 크롬 창을 모두 닫고 다시 시도해 보세요.</translation>
 <translation id="2770231113462710648">다음으로 기본 브라우저 변경:</translation>
@@ -10,6 +11,7 @@
 <translation id="7781002470561365167">Google 크롬의 새 버전이 출시되었습니다.</translation>
 <translation id="7101265395643981223">Google 크롬 시작</translation>
 <translation id="647902066410369402">환경설정 파일이 손상되었거나 잘못되었습니다.\n\nGoogle 크롬에서 설정을 복구할 수 없습니다.</translation>
+<translation id="4891791193823137474">백그라운드에서 Chrome을 실행</translation>
 <translation id="2879385160622431163">Google 크롬 순간 검색</translation>
 <translation id="2370289711218562573">Google 크롬에서 즐겨찾기/북마크를 가져오고 있습니다.</translation>
 <translation id="8970027151245482499">Google 크롬이 설치되지 않았거나 설치 디렉토리를 찾지 못했습니다. Google 크롬을 다시 다운로드하세요.</translation>
@@ -21,6 +23,7 @@
 <translation id="3555616473548901994">제거를 완료했습니다.</translation>
 <translation id="8556340503434111824">이전보다 더 빨라진 Google 크롬 새 버전을 사용할 수 있습니다.</translation>
 <translation id="4728575227883772061">확인되지 않은 오류로 설치에 실패했습니다. Google 크롬이 실행 중인 경우 종료한 후 다시 실행하세요.</translation>
+<translation id="3080151273017101988">Chrome 종료 후에도 백그라운드 앱을 계속 실행</translation>
 <translation id="4149882025268051530">설치 프로그램이 보관 파일 압축 풀기에 실패했습니다. Google 크롬을 다시 다운로드하세요.</translation>
 <translation id="6989339256997917931">Google 크롬이 업데이트되었지만, 최소 30일 동안 사용하지 않았습니다.</translation>
 <translation id="5744005218040929396">Google 크롬 유틸리티</translation>
@@ -48,8 +51,8 @@
 <translation id="8738921060445980047">알 수 없는 버전입니다.</translation>
 <translation id="2485422356828889247">제거</translation>
 <translation id="3324235665723428530">최신 버전의 Google 크롬에서 가져온 사용자 프로필을 사용할 수 없습니다.\n\n일부 기능만 사용 가능할 수 있습니다. 다른 프로필 디렉토리를 지정하거나 최신 버전의 Google 크롬을 사용하세요.</translation>
+<translation id="9073088951656332330">업데이트할 Chrome 또는 Chrome 프레임이 없습니다.</translation>
 <translation id="1759842336958782510">크롬</translation>
-<translation id="5008136264574452501">Google 크롬 카나리아 빌드</translation>
 <translation id="911206726377975832">인터넷 사용 기록도 삭제하시겠습니까?</translation>
 <translation id="2044287590254833138">Google 크롬 툴바</translation>
 <translation id="5074344184765391290">크롬 플러그인 호스트</translation>
@@ -60,10 +63,12 @@
 <translation id="3847841918622877581">Google 크롬은 사용자의 탐색 환경을 개선하기 위해 웹 서비스를 사용할 수 있습니다.</translation>
 <translation id="7436949144778751379">Google 크롬에는 Windows XP 이상이 필요합니다. 일부 기능이 작동하지 않을 수 있습니다.</translation>
 <translation id="7100330187273168372">Google 크롬에서 다음 데이터 디렉토리에 읽고 쓸 수 없습니다.\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="7938170099933661772">내장된 PDF 뷰어를 사용 중지하면 Chrome에서 인쇄 미리보기를 표시할 수 없습니다. 미리보기를 보려면 <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/>을(를) 방문하여 'Chrome PDF 뷰어'를 사용하도록 설정하고 다시 시도해 보세요.</translation>
 <translation id="6757767188268205357">더 이상 묻지 않음</translation>
 <translation id="2290095356545025170">Google 크롬을 제거하시겠습니까?</translation>
 <translation id="6087062680442281307">Google 크롬은 웹페이지와 애플리케이션을 빠르게 실행하는 웹 브라우저입니다. 또한 빠르고 안정적이며 사용하기 쉽습니다. Google 크롬에 기본적으로 제공되는 악성코드 및 피싱 방지로 더욱 안전하게 웹을 탐색하세요.</translation>
 <translation id="5941830788786076944">Google 크롬을 기본 브라우저로</translation>
+<translation id="4990567037958725628">Google 크롬 카나리아</translation>
 <translation id="4561051373932531560">Google 크롬을 사용하면 웹에서 전화번호를 클릭하여 Skype로 통화할 수 있습니다.</translation>
 <translation id="3612333635265770873">같은 이름의 모듈이 Google 크롬과 충돌하는 것으로 알려져 있습니다.</translation>
 <translation id="5947389362804196214">환경설정을 읽을 수 없습니다.\n\n일부 기능을 사용할 수 없으며 환경설정의 변경사항이 저장되지 않습니다.</translation>
@@ -85,7 +90,7 @@
 <translation id="8865765905101981392">인터넷 브라우저</translation>
 <translation id="8776515774046280928">Google 크롬이 설치되어 컴퓨터의 모든 사용자가 사용할 수 있습니다. 사용자 수준에서 Google 크롬을 설치하려면 관리자가 설치한 시스템 수준 버전을 제거하세요.</translation>
 <translation id="2189123953385179981">Google 크롬 OS는 외부 애플리케이션 실행을 통한<ph name="SCHEME"/>링크 처리를 지원하지 않습니다. 요청된 링크는<ph name="PROTOLINK"/>입니다.</translation>
-<translation id="8205111949707227942">선택사항: 사용 통계 및 충돌 보고서를 자동 전송하도록 설정하여 Google 크롬 OS 개선에 도움을 주세요.</translation>
+<translation id="8205111949707227942">선택사항: 사용 통계 및 충돌 보고서를 자동 전송하도록 설정하여 Chrome OS 개선에 도움을 주세요.</translation>
 <translation id="7196020411877309443">이 메시지가 표시되는 이유</translation>
 <translation id="2769762047821873045">Google 크롬이 기본 브라우저로 설정되어 있지 않습니다.</translation>
 <translation id="7825851276765848807">알 수 없는 오류로 인해 설치에 실패했습니다. Google 크롬을 다시 다운로드하세요.</translation>
@@ -95,7 +100,7 @@
 <translation id="3360895254066713204">크롬 도우미</translation>
 <translation id="1001534784610492198">설치 프로그램 보관 파일이 손상되었거나 올바르지 않습니다. Google 크롬을 다시 다운로드하세요.</translation>
 <translation id="6626317981028933585">Mozilla Firefox 브라우저가 실행 중일 때는 설정 기능을 사용할 수 없습니다. 이 설정을 Google 크롬으로 가져오려면 현재 작업을 저장하고 Firefox 창을 모두 닫습니다. 그런 다음 '계속'을 클릭합니다.</translation>
-<translation id="8540666473246803645">Google 크롬</translation>
+<translation id="8540666473246803645">Google Chrome</translation>
 <translation id="3419750618886995598">크롬 프레임 업데이트</translation>
 <translation id="6049075767726609708">시스템에 모든 사용자용 Google 크롬이 설치되었습니다. 기존의 사용자 수준 Google 크롬 대신 설치된 시스템 수준 Google 크롬이 사용됩니다.</translation>
 <translation id="7123348595797445166">사용해 보기(이미 설치됨)</translation>

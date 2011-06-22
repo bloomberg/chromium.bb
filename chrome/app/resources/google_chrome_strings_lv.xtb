@@ -3,6 +3,7 @@
 <translationbundle lang="lv">
 <translation id="8000275528373650868">Pārlūkprogrammas Google Chrome izmantošanai nepieciešama operētājsistēma Windows Vista vai Windows XP ar SP2, vai jaunāka tās versija.</translation>
 <translation id="6676384891291319759">Piekļūt internetam</translation>
+<translation id="5453904507266736060">Ļaut Google Chrome darboties fonā</translation>
 <translation id="2383457833405848421">Par Chrome Frame...</translation>
 <translation id="386202838227397562">Lūdzu, aizveriet visus Google Chrome logus un mēģiniet vēlreiz.</translation>
 <translation id="2770231113462710648">Mainīt noklusējuma pārlūkprogrammu uz:</translation>
@@ -10,6 +11,7 @@
 <translation id="7781002470561365167">Pieejama jauna Google Chrome versija.</translation>
 <translation id="7101265395643981223">Sākt Google Chrome</translation>
 <translation id="647902066410369402">Jūsu preferenču fails ir bojāts vai nederīgs.\n\nGoogle Chrome nespēj atkopt jūsu iestatījumus.</translation>
+<translation id="4891791193823137474">Ļaut Google Chrome darboties fonā</translation>
 <translation id="2879385160622431163">Google Chrome dinamiskā meklēšana</translation>
 <translation id="2370289711218562573">Google Chrome pašlaik importē Izlasi/Grāmatzīmes.</translation>
 <translation id="8970027151245482499">Google Chrome nav instalēts, vai tam neizdevās atrast instalācijas katalogu. Lūdzu, vēlreiz lejupielādējiet Google Chrome.</translation>
@@ -21,6 +23,7 @@
 <translation id="3555616473548901994">Atinstalēšana ir pabeigta.</translation>
 <translation id="8556340503434111824">Ir pieejama jauna Google Chrome versija, un tā ir ātrāka nekā jebkad agrāk.</translation>
 <translation id="4728575227883772061">Instalācija neizdevās nenoteiktas kļūdas dēļ. Ja Google Chrome pašlaik darbojas, lūdzu, aizveriet to un mēģiniet vēlreiz.</translation>
+<translation id="3080151273017101988">Turpināt lietotņu izpildi fonā, kad Google Chrome ir aizvērts</translation>
 <translation id="4149882025268051530">Instalētājam neizdevās atarhivēt arhīvu. Lūdzu, vēlreiz lejupielādējiet Google Chrome.</translation>
 <translation id="6989339256997917931">Pārlūkprogramma Google Chrome ir atjaunināta, bet jūs neesat to izmantojis vismaz 30 dienas.</translation>
 <translation id="5744005218040929396">Google Chrome Utility</translation>
@@ -48,8 +51,8 @@
 <translation id="8738921060445980047">Nezināma versija.</translation>
 <translation id="2485422356828889247">Atinstalēt</translation>
 <translation id="3324235665723428530">Nav iespējams izmantot jūsu profilu, jo tas atrodas uz jaunākas Google Chrome versijas.\n\nDažas no funkcijām var nebūt pieejamas. Lūdzu, norādiet citu profila direktoriju vai izmantojiet jaunāku Chrome versiju.</translation>
+<translation id="9073088951656332330">Nevienai Google Chrome vai Google Chrome Frame instalācijai nav atrasti atjauninājumi.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="5008136264574452501">Būvējums Google Chrome Canary</translation>
 <translation id="911206726377975832">Vai dzēst arī pārlūkošanas datus?</translation>
 <translation id="2044287590254833138">Google Chrome rīkjosla</translation>
 <translation id="5074344184765391290">Chrome Plug-In Host</translation>
@@ -60,10 +63,12 @@
 <translation id="3847841918622877581">Lai uzlabotu pārlūkošanu, Google Chrome var izmantot tīmekļa pakalpojumus.</translation>
 <translation id="7436949144778751379">Google Chrome darbībai nepieciešams Windows XP vai jaunāka operētājsistēma. Dažas funkcijas var nedarboties.</translation>
 <translation id="7100330187273168372">Google Chrome nevar nolasīt un ierakstīt savu datu direktorijā:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="7938170099933661772">Google Chrome nevar parādīt drukas priekšskatījumu, ja ir atspējots iebūvētais PDF skatītājs. Lai skatītu priekšskatījumu, atveriet lapu <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/>, iespējojiet opciju Chrome PDF skatītājs un pēc tam mēģiniet vēlreiz.</translation>
 <translation id="6757767188268205357">Netraucējiet mani</translation>
 <translation id="2290095356545025170">Vai tiešām vēlaties atinstalēt Google Chrome?</translation>
 <translation id="6087062680442281307">Google Chrome ir tīmekļa pārlūks, kas zibenīgi atver tīmekļa lapas un izpilda lietojumprogrammas. Tā ir ātra, stabila un ērti lietotojama. Google Chrome iebūvētā aizsardzība pret ļaunprātīgu programmatūru un pikšķerēšanu nodrošina daudz drošāku tīmekļa pārlūkošanu.</translation>
 <translation id="5941830788786076944">Izveidot Google Chrome par noklusējuma pārlūku</translation>
+<translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome ļauj jums noklikšķināt uz tālruņa numura un zvanīt ar to pakalpojumā Skype!</translation>
 <translation id="3612333635265770873">Ir zināms, ka modulis ar tādu pašu nosaukumu konfliktē ar Google Chrome.</translation>
 <translation id="5947389362804196214">Jūsu preferences nevar nolasīt.\n\nDažas funkcijas var nebūt pieejamas, un preferenču izmaiņas netiks saglabātas.</translation>

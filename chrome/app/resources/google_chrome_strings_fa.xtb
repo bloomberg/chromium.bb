@@ -3,6 +3,7 @@
 <translationbundle lang="fa">
 <translation id="8000275528373650868">Google Chrome به Windows Vista یا Windows XP با SP2 یا بالاتر نیاز دارد.</translation>
 <translation id="6676384891291319759">دسترسی به اینترنت</translation>
+<translation id="5453904507266736060">اجازه به Google Chrome برای اجرا در پس زمینه</translation>
 <translation id="2383457833405848421">درباره Chrome Frame...</translation>
 <translation id="386202838227397562">لطفاً همه پنجره های Google Chrome را ببندید و دوباره امتحان کنید.</translation>
 <translation id="2770231113462710648">تغییر مرورگر پیش فرض به:</translation>
@@ -10,6 +11,7 @@
 <translation id="7781002470561365167">نسخه جدیدی از Google Chrome موجود است.</translation>
 <translation id="7101265395643981223">شروع کردن Google Chrome</translation>
 <translation id="647902066410369402">فایل موارد برگزیده شما خراب یا نامعتبر است.\n\nGoogle Chromeنمی تواند تنظیمات شما را بازیابی کند.</translation>
+<translation id="4891791193823137474">اجازه به Google Chrome برای اجرا در پس زمینه</translation>
 <translation id="2879385160622431163">Google Chrome Instant</translation>
 <translation id="2370289711218562573">اکنون Google Chrome درحال واردکردن نشانک ها/موارد دلخواه است.</translation>
 <translation id="8970027151245482499">Google Chrome نصب نشده است یا دایرکتوری نصب پیدا نشده است. لطفاً دوباره Google Chrome را دانلود کنید.</translation>
@@ -21,6 +23,7 @@
 <translation id="3555616473548901994">حذف نصب انجام شد.</translation>
 <translation id="8556340503434111824">نسخه جدیدی از Google Chrome وجود دارد که سریعتر از همیشه است.</translation>
 <translation id="4728575227883772061">به دلیل خطای نامشخص نصب ناموفق بود. اگر Google Chrome در حال اجرا است، لطفاً آن را ببندید و دوباره سعی کنید.</translation>
+<translation id="3080151273017101988">ادامه اجرای برنامه ها در پس زمینه هنگامیکه Google Chrome بسته می شود</translation>
 <translation id="4149882025268051530">نصب کننده در خارج کردن آرشیو از حالت فشرده ناموفق بود. لطفاً دوباره Google Chrome را دانلود کنید.</translation>
 <translation id="6989339256997917931">Google Chrome به روز شده است اما حداقل 30 روز از آن استفاده نکرده اید.</translation>
 <translation id="5744005218040929396">برنامه کمکی Google Chrome</translation>
@@ -48,8 +51,8 @@
 <translation id="8738921060445980047">نسخه ناشناخته.</translation>
 <translation id="2485422356828889247">حذف نصب</translation>
 <translation id="3324235665723428530">استفاده از نمایه شما ممکن نیست چون از نسخه جدیدتر Google Chrome است. ممکن است برخی از ویژگیها در دسترس نباشند. لطفاً دایرکتوری نمایه دیگری را تعیین کنید یا نسخه جدیدتر Chrome را استفاده کنید.</translation>
+<translation id="9073088951656332330">هیچ Google Chrome یا Google Chrome Frame برای به روز رسانی یافت نشد.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="5008136264574452501">Google Chrome Canary Build</translation>
 <translation id="911206726377975832">داده های مرور شما نیز حذف شود؟</translation>
 <translation id="2044287590254833138">نوارابزار Google Chrome</translation>
 <translation id="5074344184765391290">میزبان افزونه Chrome</translation>
@@ -60,10 +63,12 @@
 <translation id="3847841918622877581">Google Chrome ممکن است از سرویس های وب برای بهبود تجربه مرور استفاده کند.</translation>
 <translation id="7436949144778751379">Google Chrome به Windows XP یا نسخه بالاتر آن نیاز دارد. برخی از ویژگیها ممکن است کار نکند.</translation>
 <translation id="7100330187273168372">Google Chrome نمی تواند دایرکتوری داده های خود را بخواند یا در آن بنویسد:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="7938170099933661772">در صورتی که نمایشگر PDF داخلی غیر فعال شده باشد، Google Chrome نمی تواند پیش نمایش چاپ را نشان دهد. به منظور مشاهده پیش نمایش، لطفاً به <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/> مراجعه کنید و &quot;نمایشگر Chrome PDF&quot; را فعال کرده و دوباره امتحان کنید.</translation>
 <translation id="6757767188268205357">مرا اذیت نکن</translation>
 <translation id="2290095356545025170">آیا می خواهید Google Chrome را غیر فعال کنید؟</translation>
 <translation id="6087062680442281307">Google Chrome یک مرورگر وب است که برنامه های کاربردی و صفحات وب را در یک چشم به هم زدن اجرا و باز می کند. استفاده از آن سریع و آسان است و همیشه در دسترس است. با برنامه های حفاظت در برابر فیشینگ و بدافزار تعبیه شده در Google Chrome، وب را امن تر مرور کنید.</translation>
 <translation id="5941830788786076944">Google Chrome مرورگر پیش فرض شود</translation>
+<translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome به شما اجازه می دهد بر روی شماره تلفن روی وب کلیک کرده و از طریق Skype تماس بگیرید!</translation>
 <translation id="3612333635265770873">یک مدول با همین نام با Google Chrome تداخل دارد.</translation>
 <translation id="5947389362804196214">موارد برگزیده شما را نمی توان خواند.\n\nبعضی ویژگیها ممکن است در دسترس نباشند و تغییرات موارد برگزیده ذخیره نخواهد شد.</translation>

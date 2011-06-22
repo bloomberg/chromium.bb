@@ -3,6 +3,7 @@
 <translationbundle lang="zh-CN">
 <translation id="8000275528373650868">Google Chrome 浏览器要求操作系统必须为 Windows Vista 或者 Windows XP SP2 或更高版本。</translation>
 <translation id="6676384891291319759">访问互联网</translation>
+<translation id="5453904507266736060">让“Google Chrome 浏览器”在后台运行</translation>
 <translation id="2383457833405848421">关于 Chrome 浏览器内嵌框架...</translation>
 <translation id="386202838227397562">请关闭所有 Google Chrome 浏览器窗口，然后重试。</translation>
 <translation id="2770231113462710648">将默认浏览器更改为：</translation>
@@ -10,6 +11,7 @@
 <translation id="7781002470561365167">Google Chrome 浏览器现已推出新版本。</translation>
 <translation id="7101265395643981223">启动 Google Chrome 浏览器</translation>
 <translation id="647902066410369402">您的偏好设置文件已损坏或无效。\n\nGoogle Chrome 浏览器无法恢复您的设置。</translation>
+<translation id="4891791193823137474">让“Google Chrome 浏览器”在后台运行</translation>
 <translation id="2879385160622431163">Google Chrome 浏览器即搜即得</translation>
 <translation id="2370289711218562573">Google Chrome 浏览器正在导入收藏夹/书签。</translation>
 <translation id="8970027151245482499">未安装 Google Chrome 浏览器或无法找到安装目录。请重新下载 Google Chrome 浏览器。</translation>
@@ -21,6 +23,7 @@
 <translation id="3555616473548901994">卸载已完成。</translation>
 <translation id="8556340503434111824">Google Chrome 浏览器现已推出速度更快的新版本。</translation>
 <translation id="4728575227883772061">未知错误导致安装失败。如果 Google Chrome 浏览器正在运行，请将其关闭，然后重试。</translation>
+<translation id="3080151273017101988">关闭“Google Chrome 浏览器”后继续运行后台应用程序</translation>
 <translation id="4149882025268051530">安装程序无法解压缩存档文件。请重新下载 Google Chrome 浏览器。</translation>
 <translation id="6989339256997917931">Google Chrome 浏览器已更新，但您已经至少 30 天未使用它了。</translation>
 <translation id="5744005218040929396">Google Chrome 浏览器实用工具</translation>
@@ -48,8 +51,8 @@
 <translation id="8738921060445980047">版本未知。</translation>
 <translation id="2485422356828889247">卸载</translation>
 <translation id="3324235665723428530">您的配置文件来自新版 Google Chrome 浏览器，因此无法使用。\n\n某些功能可能不能使用。请指定其他配置文件目录，或使用新版 Chrome 浏览器。</translation>
+<translation id="9073088951656332330">未发现“Google Chrome 浏览器”或“Google Chrome 浏览器内嵌框架”的安装更新。</translation>
 <translation id="1759842336958782510">Chrome 浏览器</translation>
-<translation id="5008136264574452501">Google Chrome 浏览器 Canary 版</translation>
 <translation id="911206726377975832">同时删除您的浏览数据吗？</translation>
 <translation id="2044287590254833138">Google Chrome 浏览器工具栏</translation>
 <translation id="5074344184765391290">Chrome 浏览器插件主程序</translation>
@@ -60,10 +63,12 @@
 <translation id="3847841918622877581">Google Chrome 浏览器可能会使用网络服务改善您的浏览体验。</translation>
 <translation id="7436949144778751379">您需要在 Windows XP 或更高版本的操作系统中运行 Google Chrome 浏览器，否则可能无法正常使用某些功能。</translation>
 <translation id="7100330187273168372">Google Chrome 浏览器无法对其数据目录进行读写操作：\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="7938170099933661772">“Google Chrome 浏览器”无法在内置 PDF 查看器已停用的情况下显示打印预览。要查看打印预览，请访问 <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/>，启用“Chrome PDF 查看器”，然后重试。</translation>
 <translation id="6757767188268205357">谢绝打扰</translation>
 <translation id="2290095356545025170">确定要卸载 Google Chrome 浏览器吗？</translation>
 <translation id="6087062680442281307">Google Chrome 浏览器是一款可高速运行网页和应用程序的网络浏览器。它快捷、稳定且易于使用。Google Chrome 浏览器内置的恶意软件和网上诱骗防护功能可让您更加安全地浏览网页。</translation>
 <translation id="5941830788786076944">将 Google Chrome 浏览器设为默认浏览器</translation>
+<translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">您可以在 Google Chrome 浏览器中点击网上的电话号码，然后通过 Skype 拨打！</translation>
 <translation id="3612333635265770873">已发现一个同名的模块与 Google Chrome 浏览器存在冲突。</translation>
 <translation id="5947389362804196214">系统无法读取您的偏好设置。\n\n某些功能可能无法使用，并且对偏好设置进行的更改不会保存。</translation>
