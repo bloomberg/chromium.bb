@@ -253,7 +253,15 @@ IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest,
                    pref_service);
 }
 
-// Tests error events.
-IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest, ProxyEvents) {
-  ASSERT_TRUE(RunExtensionTest("proxy/events")) << message_;
+// Tests error events: invalid proxy
+IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest, ProxyEventsInvalidProxy) {
+  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(
+      RunExtensionSubtest("proxy/events", "invalid_proxy.html")) << message_;
+}
+
+// Tests error events: PAC script parse error.
+IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest, ProxyEventsParseError) {
+  ASSERT_TRUE(
+      RunExtensionSubtest("proxy/events", "parse_error.html")) << message_;
 }
