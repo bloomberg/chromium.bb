@@ -20,19 +20,18 @@ class ImmediateInterpreter : public Interpreter {
  public:
   ImmediateInterpreter();
   virtual ~ImmediateInterpreter();
-  ustime_t Push(const HardwareState* hwstate);
-  const SpeculativeGestures* Back(ustime_t now) const { return &result_; }
-  ustime_t Pop(ustime_t now) { return 0; }
 
-  void SetHardwareProperties(const HardwareProperties* hw_props);
+  virtual Gesture* SyncInterpret(HardwareState* hwstate);
+
+  void SetHardwareProperties(const HardwareProperties& hw_props);
 
  private:
   // Does a deep copy of hwstate into prev_state_
-  void SetPrevState(const HardwareState* hwstate);
+  void SetPrevState(const HardwareState& hwstate);
 
   HardwareState prev_state_;
   HardwareProperties hw_props_;
-  SpeculativeGestures result_;
+  Gesture result_;
 };
 
 }  // namespace gestures

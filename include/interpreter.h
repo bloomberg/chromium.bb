@@ -5,7 +5,10 @@
 #ifndef GESTURES_INTERPRETER_H__
 #define GESTURES_INTERPRETER_H__
 
-#include <vector>
+#include <algorithm>
+#include <set>
+
+#include <base/logging.h>
 
 #include "gestures/include/gestures.h"
 
@@ -16,51 +19,19 @@ struct HardwareState;
 
 namespace gestures {
 
-enum GestureKind {
-  kUnknownKind = 0,
-  kPointingKind,
-  kScrollingKind
-};
-
-struct SpeculativeGesture {
-  short first_actor, second_actor;
-  GestureKind kind;
-  Gesture gesture;
-  short confidence;  // [0..100]
-};
-
-struct SpeculativeGestures {
- public:
-  // Insertion:
-  void Add(const SpeculativeGesture* gesture);
-  void AddMovement(short first_actor,
-                   short second_actor,
-                   int dx,
-                   int dy,
-                   short confidence,
-                   const struct HardwareState* hwstate);
-  void Clear() { gestures_.clear(); }
-
-  // Retrieval:
-  const SpeculativeGesture* GetHighestConfidence() const;
-  const SpeculativeGesture* GetOneActor(GestureKind kind, short actor) const;
-  // The two actors may be passed in any order:
-  const SpeculativeGesture* GetTwoActors(GestureKind kind,
-                                         short actor1,
-                                         short actor2) const;
-
- private:
-  std::vector<SpeculativeGesture> gestures_;
-};
-
-// Interface for all interpreters:
+// Interface for all interpreters. Interpreters currently are synchronous.
+// A synchronous interpreter will return  0 or 1 Gestures for each passed in
+// HardwareState.
 
 class Interpreter {
  public:
   virtual ~Interpreter() {}
-  virtual ustime_t Push(const HardwareState* hwstate) = 0;
-  virtual const SpeculativeGestures* Back(ustime_t now) const = 0;
-  virtual ustime_t Pop(ustime_t now) = 0;
+
+  // Called to interpret the current state and optionally produce 1
+  // resulting gesture. The passed |hwstate| may be modified.
+  virtual Gesture* SyncInterpret(HardwareState* hwstate) = 0;
+
+  virtual void SetHardwareProperties(const HardwareProperties& hwprops) {}
 };
 
 }  // namespace gestures

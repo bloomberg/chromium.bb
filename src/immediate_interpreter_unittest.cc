@@ -20,9 +20,12 @@ TEST(ImmediateInterpreterTest, MoveDownTest) {
     1000,  // bottom edge
     2,  // TP width
     2,  // TP height
-    96,  // screen DPI
+    96,  // screen DPI x
+    96,  // screen DPI y
+    2,  // max fingers
     0,  // tripletap
-    2  // max fingers
+    0,  // semi-mt
+    1  // is button pad
   };
 
   FingerState finger_states[] = {
@@ -30,8 +33,8 @@ TEST(ImmediateInterpreterTest, MoveDownTest) {
     {0, 0, 0, 0, 1, 0, 10, 10, 0},
     {0, 0, 0, 0, 1, 0, 10, 20, 0},
     {0, 0, 0, 0, 1, 0, 20, 20, 0},
-    {0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {0, 0, 0, 0, 0, 0, 0, 0, 0}
+    {0, 0, 0, 0, 0, 0,  0,  0, 0},
+    {0, 0, 0, 0, 0, 0,  0,  0, 0}
   };
   HardwareState hardware_states[] = {
     // time, finger count, finger states pointer
@@ -43,38 +46,69 @@ TEST(ImmediateInterpreterTest, MoveDownTest) {
   };
 
   // Should fail w/o hardware props set
-  EXPECT_EQ(0, ii.Push(&hardware_states[0]));
+  EXPECT_EQ(NULL, ii.SyncInterpret(&hardware_states[0]));
 
-  ii.SetHardwareProperties(&hwprops);
+  ii.SetHardwareProperties(hwprops);
 
-  EXPECT_EQ(0, ii.Push(&hardware_states[0]));
+  EXPECT_EQ(NULL, ii.SyncInterpret(&hardware_states[0]));
 
-  ustime_t next = ii.Push(&hardware_states[1]);
-  EXPECT_NE(0, next);
-  const SpeculativeGestures* sgs = ii.Back(next);
-  const SpeculativeGesture* sg = sgs->GetHighestConfidence();
-  EXPECT_EQ(kPointingKind, sg->kind);
-  EXPECT_EQ(100, sg->confidence);
-  EXPECT_EQ(0, sg->gesture.dx);
-  EXPECT_EQ(10, sg->gesture.dy);
-  EXPECT_EQ(0, sg->gesture.hscroll);
-  EXPECT_EQ(0, sg->gesture.vscroll);
-  ii.Pop(next);
+  Gesture* gs = ii.SyncInterpret(&hardware_states[1]);
+  EXPECT_NE(reinterpret_cast<Gesture*>(NULL), gs);
+  EXPECT_EQ(kGestureTypeMove, gs->type);
+  EXPECT_EQ(0, gs->details.move.dx);
+  EXPECT_EQ(10, gs->details.move.dy);
+  EXPECT_EQ(200000, gs->start_time);
+  EXPECT_EQ(210000, gs->end_time);
 
-  next = ii.Push(&hardware_states[2]);
-  EXPECT_NE(0, next);
-  sgs = ii.Back(next);
-  sg = sgs->GetHighestConfidence();
-  EXPECT_EQ(kPointingKind, sg->kind);
-  EXPECT_EQ(100, sg->confidence);
-  EXPECT_EQ(10, sg->gesture.dx);
-  EXPECT_EQ(0, sg->gesture.dy);
-  EXPECT_EQ(0, sg->gesture.hscroll);
-  EXPECT_EQ(0, sg->gesture.vscroll);
-  ii.Pop(next);
+  gs = ii.SyncInterpret(&hardware_states[2]);
+  EXPECT_NE(reinterpret_cast<Gesture*>(NULL), gs);
+  EXPECT_EQ(kGestureTypeMove, gs->type);
+  EXPECT_EQ(10, gs->details.move.dx);
+  EXPECT_EQ(0, gs->details.move.dy);
+  EXPECT_EQ(210000, gs->start_time);
+  EXPECT_EQ(220000, gs->end_time);
 
-  EXPECT_EQ(0, ii.Push(&hardware_states[3]));
-  EXPECT_EQ(0, ii.Push(&hardware_states[4]));
+  EXPECT_EQ(reinterpret_cast<Gesture*>(NULL),
+            ii.SyncInterpret(&hardware_states[3]));
+  EXPECT_EQ(reinterpret_cast<Gesture*>(NULL),
+            ii.SyncInterpret(&hardware_states[4]));
+}
+
+TEST(ImmediateInterpreterTest, SetHardwarePropertiesTwiceTest) {
+  ImmediateInterpreter ii;
+  HardwareProperties hwprops = {
+    0,  // left edge
+    0,  // top edge
+    1000,  // right edge
+    1000,  // bottom edge
+    2,  // TP width
+    2,  // TP height
+    96,  // screen DPI x
+    96,  // screen DPI y
+    2,  // max fingers
+    0,  // tripletap
+    0,  // semi-mt
+    1  // is button pad
+  };
+  ii.SetHardwareProperties(hwprops);
+  hwprops.max_finger_cnt = 3;
+  ii.SetHardwareProperties(hwprops);
+
+  FingerState finger_states[] = {
+    // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
+    {0, 0, 0, 0, 1, 0, 0, 0, 1},
+    {0, 0, 0, 0, 1, 0, 0, 0, 2},
+    {0, 0, 0, 0, 1, 0, 0, 0, 3},
+    {0, 0, 0, 0, 0, 0, 0, 0, 4},
+    {0, 0, 0, 0, 0, 0, 0, 0, 5}
+  };
+  HardwareState hardware_state = {
+    // time, finger count, finger states pointer
+    200000, 0, 5, &finger_states[0]
+  };
+  // This used to cause a crash:
+  Gesture* gs = ii.SyncInterpret(&hardware_state);
+  EXPECT_EQ(reinterpret_cast<Gesture*>(NULL), gs);
 }
 
 }  // namespace gestures

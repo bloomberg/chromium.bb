@@ -13,9 +13,9 @@
 static const int kMinSupportedVersion = 1;
 static const int kMaxSupportedVersion = 1;
 
-ustime_t UstimeFromTimeval(const struct timeval* tv) {
-  return static_cast<ustime_t>(tv->tv_sec) * static_cast<ustime_t>(1000000) +
-      static_cast<ustime_t>(tv->tv_usec);
+stime_t StimeFromTimeval(const struct timeval* tv) {
+  return static_cast<stime_t>(tv->tv_sec) +
+      static_cast<stime_t>(tv->tv_usec) / 1000000.0;
 }
 
 GestureInterpreter* NewGestureInterpreterImpl(int version) {
@@ -46,7 +46,7 @@ void GestureInterpreterPushHardwareState(GestureInterpreter* obj,
 void GestureInterpreterSetHardwareProperties(
     GestureInterpreter* obj,
     const struct HardwareProperties* hwprops) {
-  obj->SetHardwareProps(hwprops);
+  obj->SetHardwareProps(*hwprops);
 }
 
 void GestureInterpreterSetCallback(GestureInterpreter* obj,
@@ -85,6 +85,6 @@ void GestureInterpreter::PushHardwareState(const HardwareState* hwstate) {
   LOG(INFO) << "TODO(adlr): handle input";
 }
 
-void GestureInterpreter::SetHardwareProps(const HardwareProperties* hwprops) {
-  memcpy(&hw_props_, hwprops, sizeof(hw_props_));
+void GestureInterpreter::SetHardwareProps(const HardwareProperties& hwprops) {
+  hw_props_ = hwprops;
 }

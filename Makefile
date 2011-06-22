@@ -6,13 +6,11 @@ OBJDIR = obj
 
 OBJECTS=\
 	$(OBJDIR)/gestures.o \
-	$(OBJDIR)/immediate_interpreter.o \
-	$(OBJDIR)/interpreter.o
+	$(OBJDIR)/immediate_interpreter.o
 
 TEST_OBJECTS=\
 	$(OBJDIR)/gestures_unittest.o \
-	$(OBJDIR)/immediate_interpreter_unittest.o \
-	$(OBJDIR)/interpreter_unittest.o
+	$(OBJDIR)/immediate_interpreter_unittest.o
 
 TEST_MAIN=\
 	$(OBJDIR)/test_main.o
@@ -50,6 +48,7 @@ CXXFLAGS+=\
 	-Wuninitialized \
 	-D__STDC_FORMAT_MACROS=1 \
 	-D_FILE_OFFSET_BITS=64 \
+	-DGESTURES_INTERNAL=1 \
 	-I..
 
 LINK_FLAGS=\
