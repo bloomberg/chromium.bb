@@ -20,7 +20,8 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/user_metrics.h"
 #include "content/common/notification_service.h"
-#include "views/controls/menu/menu_2.h"
+#include "views/controls/menu/menu_item_view.h"
+#include "views/controls/menu/menu_model_adapter.h"
 #include "views/widget/widget.h"
 
 static TabRendererData::NetworkState TabContentsNetworkState(
@@ -41,13 +42,15 @@ class BrowserTabStripController::TabContextMenuContents
           model_(this,
                  controller->model_,
                  controller->tabstrip_->GetModelIndexOfBaseTab(tab))),
+        menu_model_adapter_(&model_),
+        menu_(&menu_model_adapter_),
         tab_(tab),
         controller_(controller),
         last_command_(TabStripModel::CommandFirst) {
-    Build();
+    menu_model_adapter_.BuildMenu(&menu_);
   }
   virtual ~TabContextMenuContents() {
-    menu_->CancelMenu();
+    menu_.Cancel();
     if (controller_)
       controller_->tabstrip_->StopAllHighlighting();
   }
@@ -57,7 +60,8 @@ class BrowserTabStripController::TabContextMenuContents
   }
 
   void RunMenuAt(const gfx::Point& point) {
-    menu_->RunMenuAt(point, views::Menu2::ALIGN_TOPLEFT);
+    menu_.RunMenuAt(tab_->GetWidget()->GetNativeWindow(), NULL,
+        gfx::Rect(point, gfx::Size()), views::MenuItemView::TOPLEFT, true);
     // We could be gone now. Assume |this| is junk!
   }
 
@@ -103,12 +107,9 @@ class BrowserTabStripController::TabContextMenuContents
   }
 
  private:
-  void Build() {
-    menu_.reset(new views::Menu2(&model_));
-  }
-
   TabMenuModel model_;
-  scoped_ptr<views::Menu2> menu_;
+  views::MenuModelAdapter menu_model_adapter_;
+  views::MenuItemView menu_;
 
   // The tab we're showing a menu for.
   BaseTab* tab_;
@@ -482,5 +483,3 @@ void BrowserTabStripController::StopHighlightTabsForCommand(
     tabstrip_->StopAllHighlighting();
   }
 }
-
-
