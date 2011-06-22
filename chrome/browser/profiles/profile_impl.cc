@@ -21,6 +21,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_signin.h"
+#include "chrome/browser/browsing_data_remover.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/defaults.h"
@@ -602,6 +603,12 @@ ProfileImpl::~ProfileImpl() {
   StopCreateSessionServiceTimer();
 
   ProfileDependencyManager::GetInstance()->DestroyProfileServices(this);
+
+  if (clear_local_state_on_exit_) {
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
+        NewRunnableFunction(&BrowsingDataRemover::ClearGearsData, path_));
+  }
 
   // DownloadManager is lazily created, so check before accessing it.
   if (download_manager_.get()) {
