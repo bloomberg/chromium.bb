@@ -288,12 +288,14 @@ class ContentSettingSingleRadioGroup
 
   void AddException(ContentSetting setting,
                     const std::string& resource_identifier) {
-    profile()->GetHostContentSettingsMap()->AddExceptionForURL(
-        bubble_content().radio_group.url,
-        bubble_content().radio_group.url,
-        content_type(),
-        resource_identifier,
-        setting);
+    if (profile()) {
+      profile()->GetHostContentSettingsMap()->AddExceptionForURL(
+          bubble_content().radio_group.url,
+          bubble_content().radio_group.url,
+          content_type(),
+          resource_identifier,
+          setting);
+    }
   }
 
   virtual void OnRadioClicked(int radio_index) {
@@ -506,6 +508,8 @@ ContentSettingBubbleModel::ContentSettingBubbleModel(
       content_type_(content_type) {
   registrar_.Add(this, NotificationType::TAB_CONTENTS_DESTROYED,
                  Source<TabContents>(tab_contents->tab_contents()));
+  registrar_.Add(this, NotificationType::PROFILE_DESTROYED,
+                 Source<Profile>(profile_));
 }
 
 ContentSettingBubbleModel::~ContentSettingBubbleModel() {
@@ -534,7 +538,16 @@ void ContentSettingBubbleModel::AddBlockedResource(
 void ContentSettingBubbleModel::Observe(NotificationType type,
                                         const NotificationSource& source,
                                         const NotificationDetails& details) {
-  DCHECK(type == NotificationType::TAB_CONTENTS_DESTROYED);
-  DCHECK(source == Source<TabContents>(tab_contents_->tab_contents()));
-  tab_contents_ = NULL;
+  switch (type.value) {
+    case NotificationType::TAB_CONTENTS_DESTROYED:
+      DCHECK(source == Source<TabContents>(tab_contents_->tab_contents()));
+      tab_contents_ = NULL;
+      break;
+    case NotificationType::PROFILE_DESTROYED:
+      DCHECK(source == Source<Profile>(profile_));
+      profile_ = NULL;
+      break;
+    default:
+      NOTREACHED();
+  }
 }
