@@ -80,19 +80,18 @@ class VideoCaptureHost : public BrowserMessageFilter,
   // VideoCaptureParams::session_id. device_id is an id created by
   // VideCaptureMessageFilter to identify a session
   // between a VideCaptureMessageFilter and a VideoCaptureHost.
-  void OnStartCapture(const IPC::Message& msg, int device_id,
+  void OnStartCapture(int device_id,
                       const media::VideoCaptureParams& params);
 
   // IPC message: Stop capture on device referenced by device_id.
-  void OnStopCapture(const IPC::Message& msg, int device_id);
+  void OnStopCapture(int device_id);
 
   // IPC message: Pause capture on device referenced by device_id.
-  void OnPauseCapture(const IPC::Message& msg, int device_id);
+  void OnPauseCapture(int device_id);
 
   // IPC message: Receive an empty buffer from renderer. Send it to device
   // referenced by |device_id|.
-  void OnReceiveEmptyBuffer(const IPC::Message& msg,
-                            int device_id,
+  void OnReceiveEmptyBuffer(int device_id,
                             int buffer_id);
 
 
@@ -101,28 +100,25 @@ class VideoCaptureHost : public BrowserMessageFilter,
   void DoDeleteVideoCaptureController(const VideoCaptureControllerID& id);
 
   // Send a newly created buffer to the VideoCaptureMessageFilter.
-  void DoSendNewBuffer(int32 routing_id,
-                       int device_id,
+  void DoSendNewBuffer(int device_id,
                        base::SharedMemoryHandle handle,
                        int length,
                        int buffer_id);
 
   // Send a filled buffer to the VideoCaptureMessageFilter.
-  void DoSendFilledBuffer(int32 routing_id,
-                          int device_id,
+  void DoSendFilledBuffer(int device_id,
                           int buffer_id,
                           base::Time timestamp);
 
   // Send a information about frame resolution and frame rate
   // to the VideoCaptureMessageFilter.
-  void DoSendFrameInfo(int32 routing_id,
-                       int device_id,
+  void DoSendFrameInfo(int device_id,
                        int width,
                        int height,
                        int frame_per_second);
 
   // Handle error coming from VideoCaptureDevice.
-  void DoHandleError(int32 routing_id, int device_id);
+  void DoHandleError(int device_id);
 
   typedef std::map<VideoCaptureControllerID,
                    scoped_refptr<VideoCaptureController> >EntryMap;

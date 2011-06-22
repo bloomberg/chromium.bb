@@ -45,7 +45,7 @@ class VideoCaptureMessageFilter : public IPC::ChannelProxy::MessageFilter {
     virtual ~Delegate() {}
   };
 
-  explicit VideoCaptureMessageFilter(int32 route_id);
+  VideoCaptureMessageFilter();
   virtual ~VideoCaptureMessageFilter();
 
   // Add a delegate to the map.
@@ -70,12 +70,12 @@ class VideoCaptureMessageFilter : public IPC::ChannelProxy::MessageFilter {
   virtual void OnChannelClosing();
 
   // Receive a newly created buffer from browser process.
-  void OnBufferCreated(const IPC::Message& msg, int device_id,
+  void OnBufferCreated(int device_id,
                        base::SharedMemoryHandle handle,
                        int length, int buffer_id);
 
   // Receive a buffer from browser process.
-  void OnBufferReceived(const IPC::Message& msg, int device_id,
+  void OnBufferReceived(int device_id,
                         int buffer_id, base::Time timestamp);
 
   // State of browser process' video capture device has changed.
@@ -83,15 +83,13 @@ class VideoCaptureMessageFilter : public IPC::ChannelProxy::MessageFilter {
                             const media::VideoCapture::State& state);
 
   // Receive device info from browser process.
-  void OnDeviceInfoReceived(const IPC::Message& msg, int device_id,
-                            media::VideoCaptureParams& params);
+  void OnDeviceInfoReceived(int device_id,
+                            const media::VideoCaptureParams& params);
 
   // A map of device ids to delegates.
   Delegates delegates_;
   Delegates pending_delegates_;
   int32 last_device_id_;
-
-  int32 route_id_;
 
   IPC::Channel* channel_;
 

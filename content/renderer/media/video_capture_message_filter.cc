@@ -8,9 +8,8 @@
 #include "content/common/view_messages.h"
 #include "content/renderer/render_thread.h"
 
-VideoCaptureMessageFilter::VideoCaptureMessageFilter(int32 route_id)
+VideoCaptureMessageFilter::VideoCaptureMessageFilter()
     : last_device_id_(0),
-      route_id_(route_id),
       channel_(NULL) {
 }
 
@@ -23,14 +22,10 @@ bool VideoCaptureMessageFilter::Send(IPC::Message* message) {
     return false;
   }
 
-  message->set_routing_id(route_id_);
   return channel_->Send(message);
 }
 
 bool VideoCaptureMessageFilter::OnMessageReceived(const IPC::Message& message) {
-  if (message.routing_id() != route_id_)
-    return false;
-
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(VideoCaptureMessageFilter, message)
     IPC_MESSAGE_HANDLER(VideoCaptureMsg_BufferReady, OnBufferReceived)
@@ -64,7 +59,7 @@ void VideoCaptureMessageFilter::OnChannelClosing() {
   channel_ = NULL;
 }
 
-void VideoCaptureMessageFilter::OnBufferCreated(const IPC::Message& msg,
+void VideoCaptureMessageFilter::OnBufferCreated(
     int device_id,
     base::SharedMemoryHandle handle,
     int length,
@@ -80,14 +75,14 @@ void VideoCaptureMessageFilter::OnBufferCreated(const IPC::Message& msg,
     // Send the buffer back to Host in case it's waiting for all buffers
     // to be returned.
     base::SharedMemory::CloseHandle(handle);
-    Send(new VideoCaptureHostMsg_BufferReady(0, device_id, buffer_id));
+    Send(new VideoCaptureHostMsg_BufferReady(device_id, buffer_id));
     return;
   }
 
   delegate->OnBufferCreated(handle, length, buffer_id);
 }
 
-void VideoCaptureMessageFilter::OnBufferReceived(const IPC::Message& msg,
+void VideoCaptureMessageFilter::OnBufferReceived(
     int device_id,
     int buffer_id,
     base::Time timestamp) {
@@ -101,7 +96,7 @@ void VideoCaptureMessageFilter::OnBufferReceived(const IPC::Message& msg,
 
     // Send the buffer back to Host in case it's waiting for all buffers
     // to be returned.
-    Send(new VideoCaptureHostMsg_BufferReady(0, device_id, buffer_id));
+    Send(new VideoCaptureHostMsg_BufferReady(device_id, buffer_id));
     return;
   }
 
@@ -123,9 +118,8 @@ void VideoCaptureMessageFilter::OnDeviceStateChanged(
 }
 
 void VideoCaptureMessageFilter::OnDeviceInfoReceived(
-    const IPC::Message& msg,
     int device_id,
-    media::VideoCaptureParams& params) {
+    const media::VideoCaptureParams& params) {
   Delegate* delegate = NULL;
   if (delegates_.find(device_id) != delegates_.end())
     delegate = delegates_.find(device_id)->second;

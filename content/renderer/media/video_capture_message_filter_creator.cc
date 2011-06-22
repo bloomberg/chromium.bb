@@ -7,7 +7,7 @@
 #include "content/renderer/media/video_capture_message_filter.h"
 
 VideoCaptureMessageFilterCreator::VideoCaptureMessageFilterCreator() {
-  filter_ = new VideoCaptureMessageFilter(1);
+  filter_ = new VideoCaptureMessageFilter();
 }
 
 VideoCaptureMessageFilterCreator::~VideoCaptureMessageFilterCreator() {

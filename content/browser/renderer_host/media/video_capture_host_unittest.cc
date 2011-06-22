@@ -28,8 +28,6 @@ using ::testing::InSequence;
 using ::testing::Mock;
 using ::testing::Return;
 
-// IPC::Msg.routing_id.
-static const int32 kRouteId = 200;
 // Id used to identify the capture session between renderer and
 // video_capture_host.
 static const int kDeviceId = 1;
@@ -77,16 +75,14 @@ class MockVideoCaptureHost : public VideoCaptureHost {
   }
 
   // A list of mock methods.
-  MOCK_METHOD5(OnNewBufferCreated,
-               void(int routing_id, int device_id,
-                    base::SharedMemoryHandle handle,
+  MOCK_METHOD4(OnNewBufferCreated,
+               void(int device_id, base::SharedMemoryHandle handle,
                     int length, int buffer_id));
   MOCK_METHOD3(OnBufferFilled,
-               void(int routing_id, int device_id, int buffer_id));
-  MOCK_METHOD3(OnStateChanged,
-               void(int routing_id, int device_id,
-                    media::VideoCapture::State state));
-  MOCK_METHOD2(OnDeviceInfo, void(int routing_id, int device_id));
+               void(int device_id, int buffer_id, base::Time timestamp));
+  MOCK_METHOD2(OnStateChanged,
+               void(int device_id, media::VideoCapture::State state));
+  MOCK_METHOD1(OnDeviceInfo, void(int device_id));
 
   // Use class DumpVideo to write I420 video to file.
   void SetDumpVideo(bool enable) {
@@ -100,9 +96,7 @@ class MockVideoCaptureHost : public VideoCaptureHost {
   void ReturnReceivedDibs(int device_id)  {
     int handle = GetReceivedDib();
     while (handle) {
-      IPC::Message msg;
-      msg.set_routing_id(kRouteId);
-      this->OnReceiveEmptyBuffer(msg, device_id, handle);
+      this->OnReceiveEmptyBuffer(device_id, handle);
       handle = GetReceivedDib();
     }
   }
@@ -128,10 +122,10 @@ class MockVideoCaptureHost : public VideoCaptureHost {
     // we are the renderer.
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(MockVideoCaptureHost, *message)
-      IPC_MESSAGE_HANDLER(VideoCaptureMsg_NewBuffer, OnNewBufferCreated)
-      IPC_MESSAGE_HANDLER(VideoCaptureMsg_BufferReady, OnBufferFilled)
-      IPC_MESSAGE_HANDLER(VideoCaptureMsg_StateChanged, OnStateChanged)
-      IPC_MESSAGE_HANDLER(VideoCaptureMsg_DeviceInfo, OnDeviceInfo)
+      IPC_MESSAGE_HANDLER(VideoCaptureMsg_NewBuffer, OnNewBufferCreatedDispatch)
+      IPC_MESSAGE_HANDLER(VideoCaptureMsg_BufferReady, OnBufferFilledDispatch)
+      IPC_MESSAGE_HANDLER(VideoCaptureMsg_StateChanged, OnStateChangedDispatch)
+      IPC_MESSAGE_HANDLER(VideoCaptureMsg_DeviceInfo, OnDeviceInfoDispatch)
       IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
     EXPECT_TRUE(handled);
@@ -141,40 +135,40 @@ class MockVideoCaptureHost : public VideoCaptureHost {
   }
 
   // These handler methods do minimal things and delegate to the mock methods.
-  void OnNewBufferCreated(const IPC::Message& msg, int device_id,
-                          base::SharedMemoryHandle handle,
-                          int length, int buffer_id) {
-    OnNewBufferCreated(msg.routing_id(), device_id, handle, length, buffer_id);
+  void OnNewBufferCreatedDispatch(int device_id,
+                                  base::SharedMemoryHandle handle,
+                                  int length, int buffer_id) {
+    OnNewBufferCreated(device_id, handle, length, buffer_id);
     base::SharedMemory* dib = new base::SharedMemory(handle, false);
     dib->Map(length);
     filled_dib_[buffer_id] = dib;
   }
 
-  void OnBufferFilled(const IPC::Message& msg, int device_id,
-                      int buffer_id) {
+  void OnBufferFilledDispatch(int device_id, int buffer_id,
+                              base::Time timestamp) {
     if (dump_video_) {
       base::SharedMemory* dib = filled_dib_[buffer_id];
       ASSERT_TRUE(dib != NULL);
       dumper_.NewVideoFrame(dib->memory());
     }
 
-    OnBufferFilled(msg.routing_id(), device_id, buffer_id);
+    OnBufferFilled(device_id, buffer_id, timestamp);
     if (return_buffers_) {
-      VideoCaptureHost::OnReceiveEmptyBuffer(msg, device_id, buffer_id);
+      VideoCaptureHost::OnReceiveEmptyBuffer(device_id, buffer_id);
     }
   }
 
-  void OnStateChanged(const IPC::Message& msg, int device_id,
-                      media::VideoCapture::State state) {
-    OnStateChanged(msg.routing_id(), device_id, state);
+  void OnStateChangedDispatch(int device_id,
+                              media::VideoCapture::State state) {
+    OnStateChanged(device_id, state);
   }
 
-  void OnDeviceInfo(const IPC::Message& msg, int device_id,
-                      media::VideoCaptureParams params) {
+  void OnDeviceInfoDispatch(int device_id,
+                            media::VideoCaptureParams params) {
     if (dump_video_) {
       dumper_.StartDump(params.width, params.height);
     }
-    OnDeviceInfo(msg.routing_id(), device_id);
+    OnDeviceInfo(device_id);
   }
 
   std::map<int, base::SharedMemory*> filled_dib_;
@@ -213,7 +207,7 @@ class VideoCaptureHostTest : public testing::Test {
     // returns true iff successful.
     Mock::VerifyAndClearExpectations(host_);
 
-    EXPECT_CALL(*host_, OnStateChanged(kRouteId, kDeviceId,
+    EXPECT_CALL(*host_, OnStateChanged(kDeviceId,
                                        media::VideoCapture::kStopped))
         .Times(AnyNumber());
 
@@ -256,50 +250,44 @@ class VideoCaptureHostTest : public testing::Test {
   void StartCapture() {
     InSequence s;
     // 1. Newly created buffers will arrive.
-    EXPECT_CALL(*host_, OnNewBufferCreated(kRouteId, kDeviceId, _, _, _))
+    EXPECT_CALL(*host_, OnNewBufferCreated(kDeviceId, _, _, _))
         .Times(AnyNumber())
         .WillRepeatedly(Return());
 
     // 2. First - get info about the new resolution
-    EXPECT_CALL(*host_, OnDeviceInfo(kRouteId, kDeviceId));
+    EXPECT_CALL(*host_, OnDeviceInfo(kDeviceId));
 
     // 3. Change state to started
-    EXPECT_CALL(*host_, OnStateChanged(kRouteId, kDeviceId,
+    EXPECT_CALL(*host_, OnStateChanged(kDeviceId,
                                        media::VideoCapture::kStarted));
 
     // 4. First filled buffer will arrive.
-    EXPECT_CALL(*host_, OnBufferFilled(kRouteId, kDeviceId, _))
+    EXPECT_CALL(*host_, OnBufferFilled(kDeviceId, _, _))
         .Times(AnyNumber())
         .WillOnce(ExitMessageLoop(message_loop_.get()));
-
-    IPC::Message msg;
-    msg.set_routing_id(kRouteId);
 
     media::VideoCaptureParams params;
     params.width = 352;
     params.height = 288;
     params.frame_per_second = 30;
     params.session_id = kTestFakeDeviceId;
-    host_->OnStartCapture(msg, kDeviceId, params);
+    host_->OnStartCapture(kDeviceId, params);
     message_loop_->Run();
   }
 
   void CaptureAndDumpVideo(int width, int heigt, int frame_rate) {
     InSequence s;
     // 1. First - get info about the new resolution
-    EXPECT_CALL(*host_, OnDeviceInfo(kRouteId, kDeviceId));
+    EXPECT_CALL(*host_, OnDeviceInfo(kDeviceId));
 
     // 2. Change state to started
-    EXPECT_CALL(*host_, OnStateChanged(kRouteId, kDeviceId,
+    EXPECT_CALL(*host_, OnStateChanged(kDeviceId,
                                        media::VideoCapture::kStarted));
 
     // 3. First filled buffer will arrive.
-    EXPECT_CALL(*host_, OnBufferFilled(kRouteId, kDeviceId, _))
+    EXPECT_CALL(*host_, OnBufferFilled(kDeviceId, _, _))
         .Times(AnyNumber())
         .WillOnce(ExitMessageLoop(message_loop_.get()));
-
-    IPC::Message msg;
-    msg.set_routing_id(kRouteId);
 
     media::VideoCaptureParams params;
     params.width = width;
@@ -307,18 +295,16 @@ class VideoCaptureHostTest : public testing::Test {
     params.frame_per_second = frame_rate;
     params.session_id = kTestFakeDeviceId;
     host_->SetDumpVideo(true);
-    host_->OnStartCapture(msg, kDeviceId, params);
+    host_->OnStartCapture(kDeviceId, params);
     message_loop_->Run();
   }
 
   void StopCapture() {
-    EXPECT_CALL(*host_, OnStateChanged(kRouteId, kDeviceId,
+    EXPECT_CALL(*host_, OnStateChanged(kDeviceId,
                                        media::VideoCapture::kStopped))
         .Times(AtLeast(1));
 
-    IPC::Message msg;
-    msg.set_routing_id(kRouteId);
-    host_->OnStopCapture(msg, kDeviceId);
+    host_->OnStopCapture(kDeviceId);
     host_->SetReturnReceviedDibs(true);
     host_->ReturnReceivedDibs(kDeviceId);
 
@@ -329,7 +315,7 @@ class VideoCaptureHostTest : public testing::Test {
   }
 
   void NotifyPacketReady() {
-    EXPECT_CALL(*host_, OnBufferFilled(kRouteId, kDeviceId, _))
+    EXPECT_CALL(*host_, OnBufferFilled(kDeviceId, _, _))
         .Times(AnyNumber())
         .WillOnce(ExitMessageLoop(message_loop_.get()))
         .RetiresOnSaturation();
@@ -342,10 +328,10 @@ class VideoCaptureHostTest : public testing::Test {
 
   void SimulateError() {
     // Expect a change state to error state  sent through IPC.
-    EXPECT_CALL(*host_, OnStateChanged(kRouteId, kDeviceId,
+    EXPECT_CALL(*host_, OnStateChanged(kDeviceId,
                                        media::VideoCapture::kError))
         .Times(1);
-    VideoCaptureControllerID id(kRouteId, kDeviceId);
+    VideoCaptureControllerID id(kDeviceId);
     host_->OnError(id);
     SyncWithVideoCaptureManagerThread();
   }
@@ -377,7 +363,7 @@ TEST_F(VideoCaptureHostTest, StartCaptureErrorStop) {
 }
 
 TEST_F(VideoCaptureHostTest, StartCaptureError) {
-  EXPECT_CALL(*host_, OnStateChanged(kRouteId, kDeviceId,
+  EXPECT_CALL(*host_, OnStateChanged(kDeviceId,
                                      media::VideoCapture::kStopped))
       .Times(0);
   StartCapture();

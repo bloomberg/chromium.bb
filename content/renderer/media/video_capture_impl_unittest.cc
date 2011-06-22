@@ -19,7 +19,7 @@ ACTION(DeleteMessage) {
 
 class MockVideoCaptureMessageFilter : public VideoCaptureMessageFilter {
  public:
-  MockVideoCaptureMessageFilter() : VideoCaptureMessageFilter(1) {}
+  MockVideoCaptureMessageFilter() : VideoCaptureMessageFilter() {}
   virtual ~MockVideoCaptureMessageFilter() {}
 
   // Filter implementation.

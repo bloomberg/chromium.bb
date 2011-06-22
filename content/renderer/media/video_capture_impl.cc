@@ -72,7 +72,7 @@ void VideoCaptureImpl::Init() {
 
 void VideoCaptureImpl::DeInit(Task* task) {
   if (state_ == kStarted)
-    Send(new VideoCaptureHostMsg_Stop(0, device_id_));
+    Send(new VideoCaptureHostMsg_Stop(device_id_));
 
   base::MessageLoopProxy* io_message_loop_proxy =
       ChildProcess::current()->io_message_loop_proxy();
@@ -292,7 +292,7 @@ void VideoCaptureImpl::DoBufferReceived(int buffer_id, base::Time timestamp) {
   DCHECK(ml_proxy_->BelongsToCurrentThread());
 
   if (state_ != kStarted) {
-    Send(new VideoCaptureHostMsg_BufferReady(0, device_id_, buffer_id));
+    Send(new VideoCaptureHostMsg_BufferReady(device_id_, buffer_id));
     return;
   }
 
@@ -305,7 +305,7 @@ void VideoCaptureImpl::DoBufferReceived(int buffer_id, base::Time timestamp) {
     it->first->OnBufferReady(this, buffer);
   }
 
-  Send(new VideoCaptureHostMsg_BufferReady(0, device_id_, buffer_id));
+  Send(new VideoCaptureHostMsg_BufferReady(device_id_, buffer_id));
 }
 
 void VideoCaptureImpl::DoStateChanged(const media::VideoCapture::State& state) {
@@ -374,7 +374,7 @@ void VideoCaptureImpl::StopDevice() {
 
   if (state_ == kStarted) {
     state_ = kStopping;
-    Send(new VideoCaptureHostMsg_Stop(0, device_id_));
+    Send(new VideoCaptureHostMsg_Stop(device_id_));
     width_ = height_ = 0;
     STLDeleteContainerPairSecondPointers(cached_dibs_.begin(),
                                          cached_dibs_.end());
@@ -405,7 +405,7 @@ void VideoCaptureImpl::StartCaptureInternal() {
   params.frame_per_second = frame_rate_;
   params.session_id = session_id_;
 
-  Send(new VideoCaptureHostMsg_Start(0, device_id_, params));
+  Send(new VideoCaptureHostMsg_Start(device_id_, params));
   state_ = kStarted;
   for (ClientInfo::iterator it = clients_.begin(); it != clients_.end(); it++) {
     it->first->OnStarted(this);
