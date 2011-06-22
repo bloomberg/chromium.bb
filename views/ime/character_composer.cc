@@ -253,8 +253,9 @@ bool CheckCharacterComposeTable(const std::vector<unsigned int>& sequence,
 
 namespace views {
 
-CharacterComposer::CharacterComposer() {
-}
+CharacterComposer::CharacterComposer() {}
+
+CharacterComposer::~CharacterComposer() {}
 
 void CharacterComposer::Reset() {
   compose_buffer_.clear();

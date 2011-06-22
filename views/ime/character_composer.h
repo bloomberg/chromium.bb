@@ -20,6 +20,7 @@ namespace views {
 class CharacterComposer {
  public:
   CharacterComposer();
+  ~CharacterComposer();
 
   void Reset();
 
