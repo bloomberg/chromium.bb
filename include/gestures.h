@@ -16,6 +16,8 @@ extern "C" {
 
 typedef int64_t ustime_t;  // microsecond resolution (10^-6 seconds)
 
+ustime_t UstimeFromTimeval(const struct timeval*);
+
 struct HardwareProperties {
   int left, top, right, bottom;
   int touch_width;  // mm

@@ -4,12 +4,19 @@
 
 #include "gestures/include/gestures.h"
 
+#include <sys/time.h>
+
 #include <base/logging.h>
 
 // C API:
 
 static const int kMinSupportedVersion = 1;
 static const int kMaxSupportedVersion = 1;
+
+ustime_t UstimeFromTimeval(const struct timeval* tv) {
+  return static_cast<ustime_t>(tv->tv_sec) * static_cast<ustime_t>(1000000) +
+      static_cast<ustime_t>(tv->tv_usec);
+}
 
 GestureInterpreter* NewGestureInterpreterImpl(int version) {
   if (version < kMinSupportedVersion) {

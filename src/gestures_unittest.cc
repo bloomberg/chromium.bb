@@ -17,4 +17,15 @@ TEST(GesturesTest, SimpleTest) {
   EXPECT_NE(static_cast<GestureInterpreter*>(NULL), gs.get());
 }
 
+TEST(GesturesTest, UstimeFromTimevalTest) {
+  struct timeval tv;
+  tv.tv_sec = 3;
+  tv.tv_usec = 88;
+  EXPECT_EQ(3000088, UstimeFromTimeval(&tv));
+  tv.tv_sec = 2000000000;
+  tv.tv_usec = 999999;
+  EXPECT_EQ(2000000000999999, UstimeFromTimeval(&tv));
+}
+
+
 }  // namespace gestures
