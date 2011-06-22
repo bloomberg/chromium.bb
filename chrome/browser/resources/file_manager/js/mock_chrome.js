@@ -109,8 +109,9 @@ chrome.fileBrowserPrivate = {
     // Keep this list in sync with the strings in generated_resources.grd and
     // extension_file_manager_api.cc!
     callback({
-      BODY_FONT_FAMILY: 'sans-serif',
-      BODY_FONT_SIZE: '13px',
+      // These two are from locale_settings*.grd
+      WEB_FONT_FAMILY: 'Chrome Droid Sans,Droid Sans Fallback,sans-serif',
+      WEB_FONT_SIZE: '84%',
 
       FILE_IS_DIRECTORY: 'Folder',
       PARENT_DIRECTORY: 'Parent Directory',

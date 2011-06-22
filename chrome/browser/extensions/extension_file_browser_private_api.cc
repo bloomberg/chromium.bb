@@ -38,6 +38,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
+#include "grit/platform_locale_settings.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
 #include "webkit/fileapi/file_system_operation.h"
@@ -1170,8 +1171,8 @@ bool FileDialogStringsFunction::RunImpl() {
 #define SET_STRING(ns, id) \
   dict->SetString(#id, l10n_util::GetStringUTF16(ns##_##id))
 
-  SET_STRING(IDS_FILE_BROWSER, BODY_FONT_FAMILY);
-  SET_STRING(IDS_FILE_BROWSER, BODY_FONT_SIZE);
+  SET_STRING(IDS, WEB_FONT_FAMILY);
+  SET_STRING(IDS, WEB_FONT_SIZE);
 
   SET_STRING(IDS_FILE_BROWSER, ROOT_DIRECTORY_LABEL);
   SET_STRING(IDS_FILE_BROWSER, DOWNLOADS_DIRECTORY_LABEL);

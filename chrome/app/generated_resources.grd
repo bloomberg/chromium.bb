@@ -8620,13 +8620,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <!-- File Browser -->
-      <message name="IDS_FILE_BROWSER_BODY_FONT_FAMILY" desc="Font family for the file dialog.">
-        sans-serif
-      </message>
-      <message name="IDS_FILE_BROWSER_BODY_FONT_SIZE" desc="Font size for the file dialog.">
-        13px
-      </message>
-
       <message name="IDS_FILE_BROWSER_ROOT_DIRECTORY_LABEL" desc="Root directory label.">
         Files
       </message>
