@@ -10,10 +10,11 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "remoting/jingle_glue/iq_request.h"
+#include "remoting/jingle_glue/javascript_iq_request.h"
 
 namespace remoting {
 
+class JingleSignalingConnector;
 class XmppProxy;
 
 class JavascriptSignalStrategy : public SignalStrategy {
@@ -33,7 +34,7 @@ class JavascriptSignalStrategy : public SignalStrategy {
   std::string your_jid_;
   scoped_refptr<XmppProxy> xmpp_proxy_;
   JavascriptIqRegistry iq_registry_;
-  scoped_ptr<SessionStartRequest> session_start_request_;
+  scoped_ptr<JingleSignalingConnector> jingle_signaling_connector_;
 
   DISALLOW_COPY_AND_ASSIGN(JavascriptSignalStrategy);
 };

@@ -5,6 +5,7 @@
 #include "remoting/jingle_glue/javascript_signal_strategy.h"
 
 #include "remoting/jingle_glue/iq_request.h"
+#include "remoting/jingle_glue/jingle_signaling_connector.h"
 #include "remoting/jingle_glue/xmpp_proxy.h"
 
 namespace remoting {
@@ -36,9 +37,9 @@ void JavascriptSignalStrategy::Init(StatusObserver* observer) {
 
 void JavascriptSignalStrategy::StartSession(
     cricket::SessionManager* session_manager) {
-  session_start_request_.reset(
-      new SessionStartRequest(CreateIqRequest(), session_manager));
-  session_start_request_->Run();
+  jingle_signaling_connector_.reset(
+      new JingleSignalingConnector(CreateIqRequest(), session_manager));
+  jingle_signaling_connector_->Run();
 }
 
 void JavascriptSignalStrategy::EndSession() {

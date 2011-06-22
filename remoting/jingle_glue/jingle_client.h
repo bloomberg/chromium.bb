@@ -6,9 +6,11 @@
 #define REMOTING_JINGLE_GLUE_JINGLE_CLIENT_H_
 
 #include <string>
+#include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "remoting/jingle_glue/iq_request.h"
 #include "remoting/jingle_glue/signal_strategy.h"
@@ -20,6 +22,7 @@ class Task;
 namespace talk_base {
 class NetworkManager;
 class PacketSocketFactory;
+class SocketAddress;
 }  // namespace talk_base
 
 namespace cricket {
@@ -33,6 +36,7 @@ class SessionManager;
 
 namespace remoting {
 
+class JingleInfoRequest;
 class JingleThread;
 class PortAllocatorSessionFactory;
 

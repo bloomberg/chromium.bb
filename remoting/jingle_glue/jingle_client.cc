@@ -9,6 +9,7 @@
 #include "base/string_util.h"
 #include "remoting/jingle_glue/http_port_allocator.h"
 #include "remoting/jingle_glue/iq_request.h"
+#include "remoting/jingle_glue/jingle_info_request.h"
 #include "remoting/jingle_glue/jingle_thread.h"
 #include "third_party/libjingle/source/talk/base/basicpacketsocketfactory.h"
 #include "third_party/libjingle/source/talk/base/ssladapter.h"

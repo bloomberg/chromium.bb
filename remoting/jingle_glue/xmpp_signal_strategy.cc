@@ -5,8 +5,8 @@
 #include "remoting/jingle_glue/xmpp_signal_strategy.h"
 
 #include "jingle/notifier/base/gaia_token_pre_xmpp_auth.h"
-#include "remoting/jingle_glue/iq_request.h"
 #include "remoting/jingle_glue/jingle_thread.h"
+#include "remoting/jingle_glue/xmpp_iq_request.h"
 #include "remoting/jingle_glue/xmpp_socket_adapter.h"
 #include "third_party/libjingle/source/talk/base/asyncsocket.h"
 #include "third_party/libjingle/source/talk/p2p/client/sessionmanagertask.h"
