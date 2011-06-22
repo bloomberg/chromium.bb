@@ -432,9 +432,10 @@ bool ExtensionPrefs::ReadExtensionPrefList(
   ListValue* out = NULL;
   if (!ext || !ext->GetList(pref_key, &out))
     return false;
-  *out_value = out;
+  if (out_value)
+    *out_value = out;
 
-  return out_value != NULL;
+  return true;
 }
 
 bool ExtensionPrefs::ReadExtensionPrefStringSet(
