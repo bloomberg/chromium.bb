@@ -146,6 +146,13 @@ TEST_F(RenderViewHostTest, StartDragging) {
   rvh()->TestOnMsgStartDragging(drop_data);
   EXPECT_EQ(https_url, view_delegate.drag_url());
   EXPECT_EQ(https_url, view_delegate.html_base_url());
+
+  GURL javascript_url = GURL("javascript:alert('I am a bookmarklet')");
+  drop_data.url = javascript_url;
+  drop_data.html_base_url = http_url;
+  rvh()->TestOnMsgStartDragging(drop_data);
+  EXPECT_EQ(javascript_url, view_delegate.drag_url());
+  EXPECT_EQ(http_url, view_delegate.html_base_url());
 }
 
 // The test that follow trigger DCHECKS in debug build.

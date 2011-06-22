@@ -1021,7 +1021,10 @@ void RenderViewHost::OnMsgStartDragging(
 
   ChildProcessSecurityPolicy* policy =
       ChildProcessSecurityPolicy::GetInstance();
-  FilterURL(policy, process()->id(), &drag_url);
+
+  // Allow drag of Javascript URLs to enable bookmarklet drag to bookmark bar.
+  if (!drag_url.SchemeIs(chrome::kJavaScriptScheme))
+    FilterURL(policy, process()->id(), &drag_url);
   FilterURL(policy, process()->id(), &html_base_url);
 
   if (drag_url != drop_data.url || html_base_url != drop_data.html_base_url) {
