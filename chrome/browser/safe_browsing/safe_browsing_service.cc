@@ -1190,7 +1190,7 @@ void SafeBrowsingService::StartDownloadCheck(SafeBrowsingCheck* check,
       FROM_HERE, check->timeout_task, timeout_ms);
 }
 
-void SafeBrowsingService::UpdateWhitelist(UnsafeResource resource) {
+void SafeBrowsingService::UpdateWhitelist(const UnsafeResource& resource) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Whitelist this domain and warning type for the given tab.
   WhiteListedEntry entry;

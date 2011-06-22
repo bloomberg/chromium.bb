@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,9 +45,9 @@ class RtpVideoReader : public VideoReader {
   typedef std::deque<PacketsQueueEntry> PacketsQueue;
 
   void OnRtpPacket(const RtpPacket* rtp_packet);
-  void CheckFullPacket(PacketsQueue::iterator pos);
-  void RebuildVideoPacket(PacketsQueue::iterator from,
-                          PacketsQueue::iterator to);
+  void CheckFullPacket(const PacketsQueue::iterator& pos);
+  void RebuildVideoPacket(const PacketsQueue::iterator& from,
+                          const PacketsQueue::iterator& to);
   void ResetQueue();
 
   // Helper method that sends RTCP receiver reports if enough time has

@@ -408,7 +408,7 @@ class SafeBrowsingService
                           int64 timeout_ms);
 
   // Adds the given entry to the whitelist.  Called on the UI thread.
-  void UpdateWhitelist(UnsafeResource resource);
+  void UpdateWhitelist(const UnsafeResource& resource);
 
   // The factory used to instanciate a SafeBrowsingService object.
   // Useful for tests, so they can provide their own implementation of

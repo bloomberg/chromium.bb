@@ -544,7 +544,7 @@ bool PPB_Context3D_Proxy::OnMessageReceived(const IPC::Message& msg) {
 
 void PPB_Context3D_Proxy::OnMsgCreate(PP_Instance instance,
                                       PP_Config3D_Dev config,
-                                      std::vector<int32_t> attribs,
+                                      const std::vector<int32_t>& attribs,
                                       HostResource* result) {
   DCHECK(attribs.back() == 0);
   PP_Resource resource = ppb_context_3d_trusted()->CreateRaw(

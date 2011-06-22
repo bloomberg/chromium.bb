@@ -94,7 +94,7 @@ void RtpVideoReader::OnRtpPacket(const RtpPacket* rtp_packet) {
   CheckFullPacket(packets_queue_.begin() + packet_index);
 }
 
-void RtpVideoReader::CheckFullPacket(PacketsQueue::iterator pos) {
+void RtpVideoReader::CheckFullPacket(const PacketsQueue::iterator& pos) {
   if (pos->packet->vp8_descriptor().fragmentation_info ==
       Vp8Descriptor::NOT_FRAGMENTED) {
     // The packet is not fragmented.
@@ -131,8 +131,8 @@ void RtpVideoReader::CheckFullPacket(PacketsQueue::iterator pos) {
   RebuildVideoPacket(first, last);
 }
 
-void RtpVideoReader::RebuildVideoPacket(PacketsQueue::iterator first,
-                                        PacketsQueue::iterator last) {
+void RtpVideoReader::RebuildVideoPacket(const PacketsQueue::iterator& first,
+                                        const PacketsQueue::iterator& last) {
   VideoPacket* packet = new VideoPacket();
 
   // Set flags.

@@ -159,7 +159,7 @@ bool PPB_Surface3D_Proxy::OnMessageReceived(const IPC::Message& msg) {
 
 void PPB_Surface3D_Proxy::OnMsgCreate(PP_Instance instance,
                                       PP_Config3D_Dev config,
-                                      std::vector<int32_t> attribs,
+                                      const std::vector<int32_t>& attribs,
                                       HostResource* result) {
   DCHECK(attribs.size() % 2 == 1);
   DCHECK(attribs.back() == PP_GRAPHICS3DATTRIB_NONE);

@@ -87,7 +87,7 @@ class PPB_Context3D_Proxy : public InterfaceProxy {
  private:
   void OnMsgCreate(PP_Instance instance,
                    PP_Config3D_Dev config,
-                   std::vector<int32_t> attribs,
+                   const std::vector<int32_t>& attribs,
                    HostResource* result);
   void OnMsgBindSurfaces(const HostResource& context,
                          const HostResource& draw,
