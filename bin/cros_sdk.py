@@ -17,12 +17,12 @@ sys.path.insert(0, os.path.abspath(__file__ + '/../..'))
 import lib.cros_build_lib as cros_build_lib
 import buildbot.constants as constants
 
-SDK_DIR = os.path.join(constants.SOURCE_ROOT, 'sdks')
 #TODO(zbehan): Rename back to chroot.
-CHROOT_DIR = os.path.join(constants.SOURCE_ROOT, 'sdk-chroot')
-
-DEFAULT_URL = 'http://commondatastorage.googleapis.com/cros-sdk/'
-DEFAULT_VERSION = '2010.03.09'
+DEFAULT_CHROOT_DIR = 'sdk-chroot'
+DEFAULT_URL = 'http://commondatastorage.googleapis.com/chromiumos-sdk/'
+SDK_DIR = os.path.join(constants.SOURCE_ROOT, 'sdks')
+SDK_VERSION_FILE = os.path.join(constants.SOURCE_ROOT,
+  'src/third_party/chromiumos-overlay/chromeos/binhost/host/sdk_version.conf')
 
 def GetHostArch():
   """Returns a string for the host architecture"""
@@ -30,15 +30,22 @@ def GetHostArch():
       redirect_stdout=True).output
   return out.rstrip('\n')
 
-def GetArchStageTarball(tarballArch, version = DEFAULT_VERSION):
+def GetLatestVersion():
+  sdk_file = open(SDK_VERSION_FILE)
+  buf = sdk_file.readline().rstrip('\n').split('=')
+  if buf[0] != 'SDK_LATEST_VERSION':
+    raise Exception('Malformed version file')
+  return buf[1]
+
+def GetArchStageTarball(tarballArch, version):
   """Returns the URL for a given arch/version"""
   D = { 'x86_64': 'cros-sdk-' }
   try:
-    return DEFAULT_URL + '/' + D[tarballArch] + version + '.tar.bz2'
+    return DEFAULT_URL + D[tarballArch] + version + '.tbz2'
   except KeyError:
     sys.exit('Unsupported arch: ' + arch)
 
-def CreateChroot(sdk_path, sdk_url, replace):
+def CreateChroot(sdk_path, sdk_url, chroot_path, replace):
   """Creates a new chroot from a given SDK"""
   if options.sdk_path and options.sdk_url:
     sys.exit('You can either select path or url, not both!')
@@ -60,8 +67,8 @@ def CreateChroot(sdk_path, sdk_url, replace):
       url = options.sdk_url
     else:
       arch = GetHostArch()
-      if options.version:
-        url = GetArchStageTarball(arch, options.version)
+      if options.sdk_version:
+        url = GetArchStageTarball(arch, options.sdk_version)
       else:
         url = GetArchStageTarball(arch)
 
@@ -78,13 +85,22 @@ def CreateChroot(sdk_path, sdk_url, replace):
   # These should all be eliminated/minimised, after which, we can change
   # this to just unpacking the sdk.
   print 'Deferring to make_chroot'
+  cmd = [os.path.join(constants.SOURCE_ROOT, 'src/scripts/make_chroot'),
+         '--stage3_path', tarball_dest,
+         '--chroot', chroot_path]
   if replace:
-    extra_args = '--replace'
-  else:
-    extra_args = '--noreplace'
-  cros_build_lib.RunCommand([os.path.join(constants.SOURCE_ROOT,
-      'src/scripts/make_chroot'), '--stage3_path', tarball_dest,
-      '--chroot', CHROOT_DIR, extra_args])
+    cmd.append('--replace')
+  cros_build_lib.RunCommand(cmd)
+
+
+# TODO(zbehan): support passthrough commands (eg. --enter -- /usr/bin/foo)
+def EnterChroot(chroot_path):
+  """Enters an existing SDK chroot"""
+
+  cmd = [os.path.join(constants.SOURCE_ROOT, 'src/scripts/enter_chroot.sh'),
+         '--chroot', chroot_path]
+  cros_build_lib.RunCommand(cmd)
+
 
 if __name__ == '__main__':
   usage="""usage: %prog [options]
@@ -92,21 +108,34 @@ if __name__ == '__main__':
 This script downloads and installs a CrOS SDK. If an SDK already
 exists, it will do nothing at all, and every call will be a noop.
 To replace, use --replace."""
+  sdk_latest_version = GetLatestVersion()
   parser = optparse.OptionParser(usage)
+  parser.add_option('', '--chroot',
+                    dest='chroot', default=DEFAULT_CHROOT_DIR,
+                    help=('Chroot subdirectory name [%s]' % DEFAULT_CHROOT_DIR))
+  parser.add_option('', '--enter',
+                    action='store_true', dest='enter', default=False,
+                    help=('Enter the chroot, possibly (re)create first'))
   parser.add_option('-p', '--path',
                     dest='sdk_path', default='',
-                    help=('Use sdk tarball located on this path'))
-  parser.add_option('-u', '--url',
-                    dest='sdk_url', default='',
-                    help=('Use sdk tarball located on this url'))
-  parser.add_option('-v', '--version',
-                    dest='sdk_version', default=DEFAULT_VERSION,
-                    help=('Use this sdk version'))
+                    help=('Use sdk tarball located at this path'))
   parser.add_option('-r', '--replace',
                     action='store_true', dest='replace', default=False,
                     help=('Replace an existing chroot'))
+  parser.add_option('-u', '--url',
+                    dest='sdk_url', default='',
+                    help=('Use sdk tarball located at this url'))
+  parser.add_option('-v', '--version',
+                    dest='sdk_version', default=sdk_latest_version,
+                    help=('Use this sdk version [%s]' % sdk_latest_version))
   (options, remaining_arguments) = parser.parse_args()
 
-  if not os.path.exists(CHROOT_DIR) or options.replace:
-    CreateChroot(options.sdk_path, options.sdk_url, options.replace)
+  chroot_path = os.path.join(constants.SOURCE_ROOT, options.chroot)
+
+  if not os.path.exists(chroot_path) or options.replace:
+    CreateChroot(options.sdk_path, options.sdk_url,
+                 chroot_path, options.replace)
+
+  if options.enter:
+    EnterChroot(chroot_path)
 
