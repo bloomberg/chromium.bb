@@ -543,6 +543,7 @@ bool RendererGLContext::Initialize(bool onscreen,
 }
 
 void RendererGLContext::Destroy() {
+  TRACE_EVENT0("gpu", "RendererGLContext::Destroy");
   SetParent(NULL);
 
   delete gles2_implementation_;

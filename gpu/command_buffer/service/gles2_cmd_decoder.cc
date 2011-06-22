@@ -6714,7 +6714,7 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
 
 error::Error GLES2DecoderImpl::HandleSetLatchCHROMIUM(
     uint32 immediate_data_size, const gles2::SetLatchCHROMIUM& c) {
-  TRACE_EVENT0("gpu", "SetLatch");
+  TRACE_EVENT1("gpu", "SetLatch", "latch_id", c.latch_id);
   // Ensure the side effects of previous commands are visible to other contexts.
   // There is no need to do this for ANGLE because it uses a
   // single D3D device for all contexts.
@@ -6743,7 +6743,7 @@ error::Error GLES2DecoderImpl::HandleSetLatchCHROMIUM(
 
 error::Error GLES2DecoderImpl::HandleWaitLatchCHROMIUM(
     uint32 immediate_data_size, const gles2::WaitLatchCHROMIUM& c) {
-  TRACE_EVENT0("gpu", "WaitLatch");
+  TRACE_EVENT1("gpu", "WaitLatch", "latch_id", c.latch_id);
   int32 shm_id = gpu::kLatchSharedMemoryId;
   uint32 latch_id = c.latch_id;
   uint32 shm_offset = 0;
