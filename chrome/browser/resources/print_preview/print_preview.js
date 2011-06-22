@@ -504,16 +504,20 @@ function setPrinters(printers) {
  * @param {String} optionText specifies the option text content.
  * @param {String} optionValue specifies the option value.
  * @param {boolean} isDefault is true if the option needs to be selected.
- * @param {boolean} isDisabled is true if the option needs to be disabled.
+ * @param {boolean} isSeparator is true if the option is a visual separator and
+ *                  needs to be disabled.
  */
 function addDestinationListOption(optionText, optionValue, isDefault,
-    isDisabled) {
+    isSeparator) {
   var option = document.createElement('option');
   option.textContent = optionText;
   option.value = optionValue;
   $('printer-list').add(option);
   option.selected = isDefault;
-  option.disabled = isDisabled;
+  option.disabled = isSeparator;
+  // Adding attribute for improved accessibility.
+  if (isSeparator)
+    option.setAttribute("role", "separator");
 }
 
 /**
