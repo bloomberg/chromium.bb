@@ -400,7 +400,7 @@ SortedDisplayURL::SortedDisplayURL(const GURL& url,
   }
 }
 
-SortedDisplayURL::SortedDisplayURL() {
+SortedDisplayURL::SortedDisplayURL() : prefix_end_(0) {
 }
 
 SortedDisplayURL::~SortedDisplayURL() {
