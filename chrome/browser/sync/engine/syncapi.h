@@ -891,9 +891,6 @@ class SyncManager {
       syncable::AutofillMigrationDebugInfo::PropertyToSet property_to_set,
       const syncable::AutofillMigrationDebugInfo& info);
 
-  // Migrate tokens from user settings DB to the token service.
-  void MigrateTokens();
-
   // Update tokens that we're using in Sync. Email must stay the same.
   void UpdateCredentials(const SyncCredentials& credentials);
 

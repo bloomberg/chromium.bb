@@ -1411,9 +1411,11 @@ class SyncManager::SyncInternal
     syncable::ModelType model_type = b.GetModelType();
     // Suppress updates to items that aren't tracked by any browser model.
     if (model_type == syncable::UNSPECIFIED ||
-        model_type == syncable::TOP_LEVEL_FOLDER) {
+        model_type == syncable::TOP_LEVEL_FOLDER ||
+        !a.ref(syncable::UNIQUE_SERVER_TAG).empty()) {
       return false;
     }
+
     if (a.ref(syncable::NON_UNIQUE_NAME) != b.Get(syncable::NON_UNIQUE_NAME))
       return true;
     if (a.ref(syncable::IS_DIR) != b.Get(syncable::IS_DIR))

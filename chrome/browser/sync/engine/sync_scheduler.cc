@@ -109,6 +109,8 @@ GetUpdatesCallerInfo::GetUpdatesSource GetSourceFromReason(
       return GetUpdatesCallerInfo::RECONFIGURATION;
     case sync_api::CONFIGURE_REASON_MIGRATION:
       return GetUpdatesCallerInfo::MIGRATION;
+    case sync_api::CONFIGURE_REASON_NEW_CLIENT:
+      return GetUpdatesCallerInfo::NEW_CLIENT;
     default:
       NOTREACHED();
   }

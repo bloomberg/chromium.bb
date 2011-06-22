@@ -295,8 +295,7 @@ TEST_F(SyncSetupWizardTest, InitialStepLogin) {
   // Simulate success.
   wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
   EXPECT_TRUE(wizard_->IsVisible());
-  // In a non-discrete run, GAIA_SUCCESS immediately transitions you to
-  // SYNC_EVERYTHING.
+  wizard_->Step(SyncSetupWizard::SYNC_EVERYTHING);
   EXPECT_EQ(SyncSetupWizard::SYNC_EVERYTHING, flow_->current_state_);
 
   // That's all we're testing here, just move on to DONE.  We'll test the
@@ -399,6 +398,7 @@ TEST_F(SyncSetupWizardTest, InvalidTransitions) {
   EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, flow_->current_state_);
 
   wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
+  wizard_->Step(SyncSetupWizard::SYNC_EVERYTHING);
   EXPECT_EQ(SyncSetupWizard::SYNC_EVERYTHING, flow_->current_state_);
 
   wizard_->Step(SyncSetupWizard::FATAL_ERROR);
@@ -419,6 +419,7 @@ TEST_F(SyncSetupWizardTest, AbortedByPendingClear) {
   wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
   AttachSyncSetupHandler();
   wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
+  wizard_->Step(SyncSetupWizard::SYNC_EVERYTHING);
   wizard_->Step(SyncSetupWizard::SETUP_ABORTED_BY_PENDING_CLEAR);
   EXPECT_EQ(SyncSetupWizard::SETUP_ABORTED_BY_PENDING_CLEAR,
             flow_->current_state_);

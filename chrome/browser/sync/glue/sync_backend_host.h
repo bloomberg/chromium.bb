@@ -264,6 +264,15 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   // to make this class testable in general.
 
  protected:
+  // An enum representing the steps to initializing the SyncBackendHost.
+  enum InitializationState {
+    NOT_INITIALIZED,     // Initialization hasn't completed.
+    DOWNLOADING_NIGORI,  // The SyncManager is initialized, but we're fetching
+                         // encryption information before alerting the
+                         // frontend.
+    INITIALIZED,         // Initialization is complete.
+  };
+
   // The real guts of SyncBackendHost, to keep the public client API clean.
   class Core : public base::RefCountedThreadSafe<SyncBackendHost::Core>,
                public sync_api::SyncManager::Observer,
@@ -416,6 +425,10 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     // A callback from the SyncerThread when it is safe to continue config.
     void FinishConfigureDataTypes();
 
+    // Called to handle updating frontend thread components whenever we may
+    // need to alert the frontend that the backend is intialized.
+    void HandleInitializationCompletedOnFrontendLoop();
+
 #if defined(UNIT_TEST)
     // Special form of initialization that does not try and authenticate the
     // last known user (since it will fail in test mode) and does some extra
@@ -486,10 +499,6 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     // Called to handle success/failure of clearing server data
     void HandleClearServerDataSucceededOnFrontendLoop();
     void HandleClearServerDataFailedOnFrontendLoop();
-
-    // Called from Core::OnInitializationComplete to handle updating
-    // frontend thread components.
-    void HandleInitializationCompletedOnFrontendLoop();
 
     void RouteJsEventOnFrontendLoop(
         const std::string& name, const JsEventDetails& details);
@@ -566,6 +575,8 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   // Our core, which communicates directly to the syncapi.
   scoped_refptr<Core> core_;
 
+  InitializationState initialization_state_;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(SyncBackendHostTest, MakePendingConfigModeState);
 
@@ -600,6 +611,9 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
       ModelSafeRoutingInfo* routing_info,
       sync_api::ConfigureReason reason,
       bool nigori_enabled);
+
+  // For convenience, checks if initialization state is INITIALIZED.
+  bool initialized() const { return initialization_state_ == INITIALIZED; }
 
   // A thread where all the sync operations happen.
   base::Thread sync_thread_;
@@ -653,9 +667,6 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
 
   // UI-thread cache of the last SyncSessionSnapshot received from syncapi.
   scoped_ptr<sessions::SyncSessionSnapshot> last_snapshot_;
-
-  // Whether we've processed the initialization complete callback.
-  bool sync_manager_initialized_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncBackendHost);
 };

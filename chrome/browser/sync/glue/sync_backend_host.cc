@@ -62,23 +62,23 @@ using sync_api::SyncCredentials;
 SyncBackendHost::SyncBackendHost(Profile* profile)
     : core_(new Core(profile->GetDebugName(),
                      ALLOW_THIS_IN_INITIALIZER_LIST(this))),
+      initialization_state_(NOT_INITIALIZED),
       sync_thread_("Chrome_SyncThread"),
       frontend_loop_(MessageLoop::current()),
       profile_(profile),
       frontend_(NULL),
       sync_data_folder_path_(
           profile_->GetPath().Append(kSyncDataFolderName)),
-      last_auth_error_(AuthError::None()),
-      sync_manager_initialized_(false) {
+      last_auth_error_(AuthError::None()) {
 }
 
 SyncBackendHost::SyncBackendHost()
-    : sync_thread_("Chrome_SyncThread"),
+    : initialization_state_(NOT_INITIALIZED),
+      sync_thread_("Chrome_SyncThread"),
       frontend_loop_(MessageLoop::current()),
       profile_(NULL),
       frontend_(NULL),
-      last_auth_error_(AuthError::None()),
-      sync_manager_initialized_(false) {
+      last_auth_error_(AuthError::None()) {
 }
 
 SyncBackendHost::~SyncBackendHost() {
@@ -99,12 +99,6 @@ void SyncBackendHost::Initialize(
   frontend_ = frontend;
   DCHECK(frontend);
 
-  // Create a worker for the UI thread and route bookmark changes to it.
-  // TODO(tim): Pull this into a method to reuse.  For now we don't even
-  // need to lock because we init before the syncapi exists and we tear down
-  // after the syncapi is destroyed.  Make sure to NULL-check workers_ indices
-  // when a new type is synced as the worker may already exist and you just
-  // need to update routing_info_.
   registrar_.workers[GROUP_DB] = new DatabaseModelWorker();
   registrar_.workers[GROUP_UI] = new UIModelWorker();
   registrar_.workers[GROUP_PASSIVE] = new ModelSafeWorker();
@@ -113,11 +107,14 @@ void SyncBackendHost::Initialize(
 
   // Any datatypes that we want the syncer to pull down must
   // be in the routing_info map.  We set them to group passive, meaning that
-  // updates will be applied, but not dispatched to the UI thread yet.
+  // updates will be applied to sync, but not dispatched to the native models.
   for (syncable::ModelTypeSet::const_iterator it = types.begin();
       it != types.end(); ++it) {
     registrar_.routing_info[(*it)] = GROUP_PASSIVE;
   }
+
+  if (profile_->GetPrefs()->GetBoolean(prefs::kSyncHasSetupCompleted))
+    registrar_.routing_info[syncable::NIGORI] = GROUP_PASSIVE;
 
   PasswordStore* password_store =
       profile_->GetPasswordStore(Profile::IMPLICIT_ACCESS);
@@ -129,9 +126,6 @@ void SyncBackendHost::Initialize(
         << "not initialized, cannot sync passwords";
     registrar_.routing_info.erase(syncable::PASSWORDS);
   }
-
-  // Nigori is populated by default now.
-  registrar_.routing_info[syncable::NIGORI] = GROUP_PASSIVE;
 
   // TODO(akalin): Create SyncNotifier here and pass it in as part of
   // DoInitializeOptions.
@@ -167,18 +161,18 @@ bool SyncBackendHost::IsNigoriEnabled() const {
 }
 
 bool SyncBackendHost::IsUsingExplicitPassphrase() {
-  return IsNigoriEnabled() && sync_manager_initialized_ &&
+  return IsNigoriEnabled() && initialized() &&
       core_->sync_manager()->InitialSyncEndedForAllEnabledTypes() &&
       core_->sync_manager()->IsUsingExplicitPassphrase();
 }
 
 bool SyncBackendHost::IsCryptographerReady(
     const sync_api::BaseTransaction* trans) const {
-  return sync_manager_initialized_ && trans->GetCryptographer()->is_ready();
+  return initialized() && trans->GetCryptographer()->is_ready();
 }
 
 JsBackend* SyncBackendHost::GetJsBackend() {
-  if (sync_manager_initialized_) {
+  if (initialized()) {
     return core_.get();
   } else {
     NOTREACHED();
@@ -238,7 +232,7 @@ void SyncBackendHost::Shutdown(bool sync_disabled) {
   // - UI Thread (stops some time after we return from this call).
   if (sync_thread_.IsRunning()) {  // Not running in tests.
     // TODO(akalin): Remove the need for this.
-    if (sync_manager_initialized_) {
+    if (initialization_state_ > NOT_INITIALIZED) {
       core_->sync_manager()->RequestEarlyExit();
     }
     sync_thread_.message_loop()->PostTask(FROM_HERE,
@@ -287,26 +281,26 @@ void SyncBackendHost::Shutdown(bool sync_disabled) {
 
 syncable::AutofillMigrationState
     SyncBackendHost::GetAutofillMigrationState() {
-  DCHECK(sync_manager_initialized_);
+  DCHECK_GT(initialization_state_, NOT_INITIALIZED);
   return core_->sync_manager()->GetAutofillMigrationState();
 }
 
 void SyncBackendHost::SetAutofillMigrationState(
     syncable::AutofillMigrationState state) {
-  DCHECK(sync_manager_initialized_);
+  DCHECK_GT(initialization_state_, NOT_INITIALIZED);
   return core_->sync_manager()->SetAutofillMigrationState(state);
 }
 
 syncable::AutofillMigrationDebugInfo
     SyncBackendHost::GetAutofillMigrationDebugInfo() {
-  DCHECK(sync_manager_initialized_);
+  DCHECK_GT(initialization_state_, NOT_INITIALIZED);
   return core_->sync_manager()->GetAutofillMigrationDebugInfo();
 }
 
 void SyncBackendHost::SetAutofillMigrationDebugInfo(
     syncable::AutofillMigrationDebugInfo::PropertyToSet property_to_set,
     const syncable::AutofillMigrationDebugInfo& info) {
-  DCHECK(sync_manager_initialized_);
+  DCHECK_GT(initialization_state_, NOT_INITIALIZED);
   return core_->sync_manager()->SetAutofillMigrationDebugInfo(
       property_to_set, info);
 }
@@ -381,10 +375,12 @@ SyncBackendHost::PendingConfigureDataTypesState*
     }
   }
 
+  // We must handle NIGORI separately as it has no DataTypeController.
   if (types.count(syncable::NIGORI) == 0) {
     if (nigori_enabled) { // Nigori is currently enabled.
       state->deleted_type = true;
       routing_info->erase(syncable::NIGORI);
+      // IsNigoriEnabled is now false.
     }
   } else { // Nigori needs to be enabled.
     if (!nigori_enabled) {
@@ -409,7 +405,7 @@ void SyncBackendHost::ConfigureDataTypes(
   // Only one configure is allowed at a time.
   DCHECK(!pending_config_mode_state_.get());
   DCHECK(!pending_download_state_.get());
-  DCHECK(sync_manager_initialized_);
+  DCHECK_GT(initialization_state_, NOT_INITIALIZED);
 
   if (types.count(syncable::AUTOFILL_PROFILE) != 0) {
     ConfigureAutofillMigration();
@@ -433,7 +429,7 @@ void SyncBackendHost::ConfigureDataTypes(
 }
 
 void SyncBackendHost::StartConfiguration(Callback0::Type* callback) {
-  // Put syncer in the config mode. DTM will put us in normal mode once it is.
+  // Put syncer in the config mode. DTM will put us in normal mode once it is
   // done. This is to ensure we dont do a normal sync when we are doing model
   // association.
   sync_thread_.message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
@@ -513,7 +509,7 @@ void SyncBackendHost::EncryptDataTypes(
 }
 
 syncable::ModelTypeSet SyncBackendHost::GetEncryptedDataTypes() const {
-  DCHECK(sync_manager_initialized_);
+  DCHECK_GT(initialization_state_, NOT_INITIALIZED);
   return core_->sync_manager()->GetEncryptedDataTypes();
 }
 
@@ -658,22 +654,22 @@ SyncBackendHost::Core::DoInitializeOptions::DoInitializeOptions(
 SyncBackendHost::Core::DoInitializeOptions::~DoInitializeOptions() {}
 
 sync_api::UserShare* SyncBackendHost::GetUserShare() const {
-  DCHECK(sync_manager_initialized_);
+  DCHECK(initialized());
   return core_->sync_manager()->GetUserShare();
 }
 
 SyncBackendHost::Status SyncBackendHost::GetDetailedStatus() {
-  DCHECK(sync_manager_initialized_);
+  DCHECK(initialized());
   return core_->sync_manager()->GetDetailedStatus();
 }
 
 SyncBackendHost::StatusSummary SyncBackendHost::GetStatusSummary() {
-  DCHECK(sync_manager_initialized_);
+  DCHECK(initialized());
   return core_->sync_manager()->GetStatusSummary();
 }
 
 string16 SyncBackendHost::GetAuthenticatedUsername() const {
-  DCHECK(sync_manager_initialized_);
+  DCHECK(initialized());
   return UTF8ToUTF16(core_->sync_manager()->GetAuthenticatedUsername());
 }
 
@@ -701,12 +697,12 @@ void SyncBackendHost::GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) {
 }
 
 bool SyncBackendHost::HasUnsyncedItems() const {
-  DCHECK(sync_manager_initialized_);
+  DCHECK(initialized());
   return core_->sync_manager()->HasUnsyncedItems();
 }
 
 void SyncBackendHost::LogUnsyncedItems(int level) const {
-  DCHECK(sync_manager_initialized_);
+  DCHECK(initialized());
   return core_->sync_manager()->LogUnsyncedItems(level);
 }
 
@@ -874,7 +870,8 @@ ChangeProcessor* SyncBackendHost::Core::GetProcessor(
     return NULL;
 
   if (!IsCurrentThreadSafeForModel(model_type)) {
-    NOTREACHED() << "Changes applied on wrong thread.";
+    NOTREACHED() << "Changes applied on wrong thread. Model: "
+                 <<  syncable::ModelTypeToString(model_type);
     return NULL;
   }
 
@@ -946,22 +943,24 @@ void SyncBackendHost::Core::HandleSyncCycleCompletedOnFrontendLoop(
   // if this sync cycle has initialized all of the types we've been
   // waiting for.
   if (host_->pending_download_state_.get()) {
+    scoped_ptr<PendingConfigureDataTypesState> state(
+        host_->pending_download_state_.release());
     bool found_all_added = true;
-    for (syncable::ModelTypeSet::const_iterator it =
-             host_->pending_download_state_->initial_types.begin();
-         it != host_->pending_download_state_->initial_types.end();
+    syncable::ModelTypeSet::const_iterator it;
+    for (it = state->initial_types.begin(); it != state->initial_types.end();
          ++it) {
-      if (host_->pending_download_state_->added_types.test(*it))
+      if (state->added_types.test(*it))
         found_all_added &= snapshot->initial_sync_ended.test(*it);
     }
     if (!found_all_added) {
       NOTREACHED() << "Update didn't return updates for all types requested.";
     } else {
-      host_->pending_download_state_->ready_task->Run();
+      state->ready_task->Run();
     }
-    host_->pending_download_state_.reset();
   }
-  host_->frontend_->OnSyncCycleCompleted();
+
+  if (host_->initialized())
+    host_->frontend_->OnSyncCycleCompleted();
 }
 
 void SyncBackendHost::Core::OnInitializationComplete() {
@@ -989,11 +988,25 @@ void SyncBackendHost::Core::HandleInitializationCompletedOnFrontendLoop() {
 void SyncBackendHost::HandleInitializationCompletedOnFrontendLoop() {
   if (!frontend_)
     return;
-  sync_manager_initialized_ = true;
-  // Now that the syncapi is initialized, we can update the cryptographer (and
-  // can handle any ON_PASSPHRASE_REQUIRED notifications that may arise).
-  core_->sync_manager()->RefreshEncryption();
-  frontend_->OnBackendInitialized();
+
+  if (profile_->GetPrefs()->GetBoolean(prefs::kSyncHasSetupCompleted) ||
+      initialization_state_ == DOWNLOADING_NIGORI) {
+    // Now that the syncapi is initialized, we can update the cryptographer
+    // and can handle any ON_PASSPHRASE_REQUIRED notifications that may arise.
+    initialization_state_ = INITIALIZED;
+    core_->sync_manager()->RefreshEncryption();
+    frontend_->OnBackendInitialized();
+    return;
+  }
+
+  initialization_state_ = DOWNLOADING_NIGORI;
+  ConfigureDataTypes(
+      DataTypeController::TypeMap(),
+      syncable::ModelTypeSet(),
+      sync_api::CONFIGURE_REASON_NEW_CLIENT,
+      NewRunnableMethod(core_.get(),
+          &SyncBackendHost::Core::HandleInitializationCompletedOnFrontendLoop),
+      true);
 }
 
 bool SyncBackendHost::Core::IsCurrentThreadSafeForModel(

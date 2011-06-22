@@ -361,8 +361,8 @@ void SyncSetupFlow::ActivateState(SyncSetupWizard::State state) {
         flow_handler_->ShowGaiaSuccessAndClose();
         break;
       }
-      current_state_ = SyncSetupWizard::SYNC_EVERYTHING;
-      //  Fall through.
+      flow_handler_->ShowGaiaSuccessAndSettingUp();
+      break;
     case SyncSetupWizard::SYNC_EVERYTHING: {
       DictionaryValue args;
       SyncSetupFlow::GetArgsForConfigure(service_, &args);

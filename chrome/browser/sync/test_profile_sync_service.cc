@@ -133,6 +133,15 @@ void SyncBackendHostForProfileSyncTest::StartConfiguration(
     Callback0::Type* callback) {
   scoped_ptr<Callback0::Type> scoped_callback(callback);
   SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop();
+  if (initialization_state_ == DOWNLOADING_NIGORI) {
+    syncable::ModelTypeBitSet sync_ended;
+    sync_ended.set(syncable::NIGORI);
+    std::string download_progress_markers[syncable::MODEL_TYPE_COUNT];
+    core_->HandleSyncCycleCompletedOnFrontendLoop(new SyncSessionSnapshot(
+        SyncerStatus(), ErrorCounters(), 0, false,
+        sync_ended, download_progress_markers, false, false, 0, 0, 0, false,
+        SyncSourceInfo(), 0));
+  }
 }
 
 void SyncBackendHostForProfileSyncTest::

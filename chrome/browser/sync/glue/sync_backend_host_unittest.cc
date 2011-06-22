@@ -93,6 +93,9 @@ TEST_F(SyncBackendHostTest, InitShutdown) {
   // "register sync prefs" code.
   PrefService* pref_service = profile.GetPrefs();
   pref_service->RegisterStringPref(prefs::kEncryptionBootstrapToken, "");
+  pref_service->RegisterBooleanPref(prefs::kSyncHasSetupCompleted,
+                                    false,
+                                    PrefService::UNSYNCABLE_PREF);
 
   MockSyncFrontend mock_frontend;
   sync_api::SyncCredentials credentials;

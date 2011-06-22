@@ -552,6 +552,12 @@ void ProfileSyncService::OnBackendInitialized() {
 
   if (HasSyncSetupCompleted()) {
     ConfigureDataTypeManager();
+  } else if (SetupInProgress()) {
+    wizard_.Step(SyncSetupWizard::SYNC_EVERYTHING);
+  } else {
+    // This should only be hit during integration tests, but there's no good
+    // way to assert this.
+    DVLOG(1) << "Setup not complete, no wizard - integration tests?";
   }
 }
 
@@ -687,12 +693,17 @@ void ProfileSyncService::OnPassphraseAccepted() {
   // since we know we no longer require the passphrase.
   passphrase_required_reason_ = sync_api::REASON_PASSPHRASE_NOT_REQUIRED;
 
-  if (data_type_manager_.get())
+  if (data_type_manager_.get()) {
+    // Unblock the data type manager if necessary.
     data_type_manager_->Configure(types,
                                   sync_api::CONFIGURE_REASON_RECONFIGURATION);
+  }
 
   NotifyObservers();
 
+  // TODO(tim): We shouldn't call this if !HasSyncSetupCompleted and the user
+  // isn't actually at the ENTER_PASSPHRASE screen.  It results in a
+  // LOG(WARNING) currently.
   wizard_.Step(SyncSetupWizard::DONE);
 }
 

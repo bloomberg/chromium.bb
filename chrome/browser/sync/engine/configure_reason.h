@@ -21,7 +21,11 @@ enum ConfigureReason {
   CONFIGURE_REASON_RECONFIGURATION,
 
   // The client is configuring because the client is being asked to migrate.
-  CONFIGURE_REASON_MIGRATION
+  CONFIGURE_REASON_MIGRATION,
+
+  // Setting up sync performs an initial config to download NIGORI data, and
+  // also a config to download initial data once the user selects types.
+  CONFIGURE_REASON_NEW_CLIENT,
 };
 
 } // namespace sync_api
