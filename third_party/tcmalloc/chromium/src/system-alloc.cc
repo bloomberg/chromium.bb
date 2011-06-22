@@ -186,7 +186,6 @@ static const char mmap_name[] = "MmapSysAllocator";
 void* SbrkSysAllocator::Alloc(size_t size, size_t *actual_size,
                               size_t alignment) {
 #ifndef HAVE_SBRK
-TCMalloc_MESSAGE(__FILE__, __LINE__, "HAVE_SBRK\n");
   return NULL;
 #else
   // Check if we should use sbrk allocation.
@@ -196,16 +195,12 @@ TCMalloc_MESSAGE(__FILE__, __LINE__, "HAVE_SBRK\n");
   // That means that even if this flag is set to true, some (initial)
   // memory will be allocated with sbrk before the flag takes effect.
   if (FLAGS_malloc_skip_sbrk) {
-TCMalloc_MESSAGE(__FILE__, __LINE__, "malloc_skip_sbrk\n");
     return NULL;
   }
 
   // sbrk will release memory if passed a negative number, so we do
   // a strict check here
-  if (static_cast<std::ptrdiff_t>(size + alignment) < 0) {
-TCMalloc_MESSAGE(__FILE__, __LINE__, "size + alignment\n");
-return NULL;
-}
+  if (static_cast<std::ptrdiff_t>(size + alignment) < 0) return NULL;
 
   // This doesn't overflow because TCMalloc_SystemAlloc has already
   // tested for overflow at the alignment boundary.
@@ -225,13 +220,11 @@ return NULL;
   //    http://sourceware.org/cgi-bin/cvsweb.cgi/~checkout~/libc/misc/sbrk.c?rev=1.1.2.1&content-type=text/plain&cvsroot=glibc
   // Without this check, sbrk may succeed when it ought to fail.)
   if (reinterpret_cast<intptr_t>(sbrk(0)) + size < size) {
-TCMalloc_MESSAGE(__FILE__, __LINE__, "vaddr wrap (curr %p)\n", sbrk(0));
     return NULL;
   }
 
   void* result = sbrk(size);
   if (result == reinterpret_cast<void*>(-1)) {
-TCMalloc_MESSAGE(__FILE__, __LINE__, "sbrk -1 (curr %p)\n", sbrk(0));
     return NULL;
   }
 
@@ -251,7 +244,6 @@ TCMalloc_MESSAGE(__FILE__, __LINE__, "sbrk -1 (curr %p)\n", sbrk(0));
   // that we can find an aligned region within it.
   result = sbrk(size + alignment - 1);
   if (result == reinterpret_cast<void*>(-1)) {
-TCMalloc_MESSAGE(__FILE__, __LINE__, "sbrk -1 #2 (curr %p)\n", sbrk(0));
     return NULL;
   }
   ptr = reinterpret_cast<uintptr_t>(result);
