@@ -3428,8 +3428,8 @@ void GetPrepopulatedTemplateFromPrefs(PrefService* prefs,
   for (size_t i = 0; i != num_engines; ++i) {
     Value* val;
     DictionaryValue* engine;
-    list->GetDictionary(i, &engine);
-    if (engine->Get("name", &val) && val->GetAsString(&name) &&
+    if (list->GetDictionary(i, &engine) &&
+        engine->Get("name", &val) && val->GetAsString(&name) &&
         engine->Get("keyword", &val) && val->GetAsString(&keyword) &&
         engine->Get("search_url", &val) && val->GetAsString(&search_url) &&
         engine->Get("suggest_url", &val) && val->GetAsString(&suggest_url) &&
