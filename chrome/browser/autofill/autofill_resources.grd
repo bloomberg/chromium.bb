@@ -97,7 +97,7 @@
         first.*name|initials|fname|first$<!-- de-DE -->|vorname<!-- es -->|nombre<!-- fr-FR -->|forename|prénom|prenom<!-- ja-JP -->|名<!-- pt-BR, pt-PT -->|nome<!-- ru -->|Имя<!-- ko-KR -->|이름
       </message>
       <message name="IDS_AUTOFILL_MIDDLE_INITIAL_RE">
-        middle.*initial|m\.i\.|mi$
+        middle.*initial|m\.i\.|mi$|\bmi\b
       </message>
       <message name="IDS_AUTOFILL_MIDDLE_NAME_RE">
         middle.*name|mname|middle$<!-- es -->|apellido.?materno|lastlastname

@@ -157,13 +157,6 @@ FirstLastNameField* FirstLastNameField::ParseComponentNames(
       continue;
     }
 
-    if (!v->last_name_ &&
-        ParseField(scanner,
-                   l10n_util::GetStringUTF16(IDS_AUTOFILL_LAST_NAME_RE),
-                   &v->last_name_)) {
-      continue;
-    }
-
     // We check for a middle initial before checking for a middle name
     // because at least one page (PC Connection.html) has a field marked
     // as both (the label text is "MI" and the element name is
@@ -181,6 +174,13 @@ FirstLastNameField* FirstLastNameField::ParseComponentNames(
         ParseField(scanner,
                    l10n_util::GetStringUTF16(IDS_AUTOFILL_MIDDLE_NAME_RE),
                    &v->middle_name_)) {
+      continue;
+    }
+
+    if (!v->last_name_ &&
+        ParseField(scanner,
+                   l10n_util::GetStringUTF16(IDS_AUTOFILL_LAST_NAME_RE),
+                   &v->last_name_)) {
       continue;
     }
 

@@ -1507,6 +1507,52 @@ TEST_F(FormManagerTest, LabelsInferredFromTableAdjacentElements) {
       labels, names, values);
 }
 
+// Verify that we correctly infer labels when the label text resides in the
+// previous row.
+TEST_F(FormManagerTest, LabelsInferredFromTableRow) {
+  std::vector<string16> labels, names, values;
+
+  labels.push_back(ASCIIToUTF16("*First Name *Last Name *Email"));
+  names.push_back(ASCIIToUTF16("firstname"));
+  values.push_back(ASCIIToUTF16("John"));
+
+  labels.push_back(ASCIIToUTF16("*First Name *Last Name *Email"));
+  names.push_back(ASCIIToUTF16("lastname"));
+  values.push_back(ASCIIToUTF16("Smith"));
+
+  labels.push_back(ASCIIToUTF16("*First Name *Last Name *Email"));
+  names.push_back(ASCIIToUTF16("email"));
+  values.push_back(ASCIIToUTF16("john@example.com"));
+
+  ExpectLabels(
+      "<FORM name=\"TestForm\" action=\"http://cnn.com\" method=\"post\">"
+      "<TABLE>"
+      "  <TR>"
+      "    <TD>*First Name</TD>"
+      "    <TD>*Last Name</TD>"
+      "    <TD>*Email</TD>"
+      "  </TR>"
+      "  <TR>"
+      "    <TD>"
+      "      <INPUT type=\"text\" id=\"firstname\" value=\"John\"/>"
+      "    </TD>"
+      "    <TD>"
+      "      <INPUT type=\"text\" id=\"lastname\" value=\"Smith\"/>"
+      "    </TD>"
+      "    <TD>"
+      "      <INPUT type=\"text\" id=\"email\" value=\"john@example.com\"/>"
+      "    </TD>"
+      "  </TR>"
+      "  <TR>"
+      "    <TD>"
+      "      <INPUT type=\"submit\" name=\"reply-send\" value=\"Send\"/>"
+      "    </TD>"
+      "  </TR>"
+      "</TABLE>"
+      "</FORM>",
+      labels, names, values);
+}
+
 TEST_F(FormManagerTest, LabelsInferredFromDefinitionList) {
   std::vector<string16> labels, names, values;
 

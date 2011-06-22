@@ -134,8 +134,10 @@ string16 FindChildTextInner(const WebNode& node, int depth) {
   string16 child_text = FindChildTextInner(node.firstChild(), depth - 1);
   TrimPositions child_leading_whitespace =
       TrimWhitespace(child_text, TRIM_LEADING, &child_text);
-  if (node_trailing_whitespace || child_leading_whitespace)
+  if (node_trailing_whitespace || child_leading_whitespace ||
+      (node.nodeType() == WebNode::TextNode && node_text.empty())) {
     node_text += ASCIIToUTF16(" ");
+  }
   node_text += child_text;
   node_trailing_whitespace =
       TrimWhitespace(node_text, TRIM_TRAILING, &node_text);
@@ -145,8 +147,10 @@ string16 FindChildTextInner(const WebNode& node, int depth) {
   string16 sibling_text = FindChildTextInner(node.nextSibling(), depth - 1);
   TrimPositions sibling_leading_whitespace =
       TrimWhitespace(sibling_text, TRIM_LEADING, &sibling_text);
-  if (node_trailing_whitespace || sibling_leading_whitespace)
+  if (node_trailing_whitespace || sibling_leading_whitespace ||
+      (node.nodeType() == WebNode::TextNode && node_text.empty())) {
     node_text += ASCIIToUTF16(" ");
+  }
   node_text += sibling_text;
 
   return node_text;
@@ -246,7 +250,7 @@ string16 InferLabelFromPrevious(const WebFormControlElement& element) {
 // or   <tr><th>Some Text</th><td><input ...></td></tr>
 // or   <tr><td><b>Some Text</b></td><td><b><input ...></b></td></tr>
 // or   <tr><th><b>Some Text</b></th><td><b><input ...></b></td></tr>
-string16 InferLabelFromTable(const WebFormControlElement& element) {
+string16 InferLabelFromTableColumn(const WebFormControlElement& element) {
   WebNode parent = element.parentNode();
   while (!parent.isNull() && parent.isElementNode() &&
          !parent.to<WebElement>().hasTagName("td")) {
@@ -262,6 +266,33 @@ string16 InferLabelFromTable(const WebFormControlElement& element) {
   WebNode previous = parent.previousSibling();
   while (inferred_label.empty() && !previous.isNull()) {
     if (HasTagName(previous, "td") || HasTagName(previous, "th"))
+      inferred_label = FindChildText(previous.to<WebElement>());
+
+    previous = previous.previousSibling();
+  }
+
+  return inferred_label;
+}
+
+// Helper for |InferLabelForElement()| that infers a label, if possible, from
+// surrounding table structure,
+// e.g. <tr><td>Some Text</td></tr><tr><td><input ...></td></tr>
+string16 InferLabelFromTableRow(const WebFormControlElement& element) {
+  WebNode parent = element.parentNode();
+  while (!parent.isNull() && parent.isElementNode() &&
+         !parent.to<WebElement>().hasTagName("tr")) {
+    parent = parent.parentNode();
+  }
+
+  if (parent.isNull())
+    return string16();
+
+  // Check all previous siblings, skipping non-element nodes, until we find a
+  // non-empty text block.
+  string16 inferred_label;
+  WebNode previous = parent.previousSibling();
+  while (inferred_label.empty() && !previous.isNull()) {
+    if (HasTagName(previous, "tr"))
       inferred_label = FindChildText(previous.to<WebElement>());
 
     previous = previous.previousSibling();
@@ -328,7 +359,12 @@ string16 InferLabelForElement(const WebFormControlElement& element) {
     return inferred_label;
 
   // If we didn't find a label, check for table cell case.
-  inferred_label = InferLabelFromTable(element);
+  inferred_label = InferLabelFromTableColumn(element);
+  if (!inferred_label.empty())
+    return inferred_label;
+
+  // If we didn't find a label, check for table row case.
+  inferred_label = InferLabelFromTableRow(element);
   if (!inferred_label.empty())
     return inferred_label;
 

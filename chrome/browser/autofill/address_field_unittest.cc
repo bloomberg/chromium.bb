@@ -253,7 +253,7 @@ TEST_F(AddressFieldTest, ParseCityEcml) {
   AutofillScanner scanner(list_.get());
   field_.reset(Parse(&scanner, true));
   ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
-  EXPECT_EQ(kGenericAddress, field_->FindType());
+  EXPECT_EQ(kShippingAddress, field_->FindType());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("city1")) != field_type_map_.end());
@@ -292,7 +292,7 @@ TEST_F(AddressFieldTest, ParseStateEcml) {
   AutofillScanner scanner(list_.get());
   field_.reset(Parse(&scanner, true));
   ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
-  EXPECT_EQ(kGenericAddress, field_->FindType());
+  EXPECT_EQ(kShippingAddress, field_->FindType());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("state1")) != field_type_map_.end());
@@ -331,7 +331,7 @@ TEST_F(AddressFieldTest, ParseZipEcml) {
   AutofillScanner scanner(list_.get());
   field_.reset(Parse(&scanner, true));
   ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
-  EXPECT_EQ(kGenericAddress, field_->FindType());
+  EXPECT_EQ(kShippingAddress, field_->FindType());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("zip1")) != field_type_map_.end());
@@ -403,7 +403,7 @@ TEST_F(AddressFieldTest, ParseCountryEcml) {
   AutofillScanner scanner(list_.get());
   field_.reset(Parse(&scanner, true));
   ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
-  EXPECT_EQ(kGenericAddress, field_->FindType());
+  EXPECT_EQ(kShippingAddress, field_->FindType());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("country1")) != field_type_map_.end());
@@ -472,7 +472,7 @@ TEST_F(AddressFieldTest, ParseCompanyEcml) {
   AutofillScanner scanner(list_.get());
   field_.reset(Parse(&scanner, true));
   ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
-  EXPECT_EQ(kGenericAddress, field_->FindType());
+  EXPECT_EQ(kShippingAddress, field_->FindType());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("company1")) != field_type_map_.end());
