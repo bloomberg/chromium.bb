@@ -779,7 +779,7 @@ var apps = (function() {
       var a = document.createElement('a');
       a.textContent = localStrings.getString('web_store_title');
       a.href = localStrings.getString('web_store_url');
-      a.style.backgroundImage = url('chrome://theme/IDR_PRODUCT_LOGO_16');
+      a.style.backgroundImage = url('chrome://theme/IDR_WEBSTORE_ICON_16');
       a.className = 'item';
       return a;
     }
