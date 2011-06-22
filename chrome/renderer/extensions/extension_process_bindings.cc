@@ -276,18 +276,20 @@ class ExtensionImpl : public ExtensionBase {
 
   // Decodes supplied JPEG byte array to image pixel array.
   static v8::Handle<v8::Value> DecodeJPEG(const v8::Arguments& args) {
-    static const char* kSomeWebAppId    = "haiffjcadagjlijoggckpgfnoeiflnem";
-    static const char* kAnotherWebAppId = "gnedhmakppccajfpfiihfcdlnpgomkcf";
-    static const char* kTestAppId       = "oflbaaikkabfdfkimeclgkackhdkpnip";
+    static std::string allowed_ids[] = {
+        "haiffjcadagjlijoggckpgfnoeiflnem",
+        "gnedhmakppccajfpfiihfcdlnpgomkcf",
+        "fjcibdnjlbfnbfdjneajpipnlcppleek",
+        "oflbaaikkabfdfkimeclgkackhdkpnip"  // Testing extension.
+    };
 
     ExtensionImpl* v8_extension = GetFromArguments<ExtensionImpl>(args);
     const ::Extension* extension =
         v8_extension->GetExtensionForCurrentContext();
     if (!extension)
       return v8::Undefined();
-    if (extension->id() != kSomeWebAppId &&
-        extension->id() != kAnotherWebAppId &&
-        extension->id() != kTestAppId) {
+    if (allowed_ids + arraysize(allowed_ids) == std::find(
+        allowed_ids, allowed_ids + arraysize(allowed_ids), extension->id())) {
       return v8::Undefined();
     }
 

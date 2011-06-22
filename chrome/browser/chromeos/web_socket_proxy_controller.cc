@@ -25,12 +25,10 @@
 
 namespace {
 
-const char* kSomeWebAppId    = "haiffjcadagjlijoggckpgfnoeiflnem";
-const char* kAnotherWebAppId = "gnedhmakppccajfpfiihfcdlnpgomkcf";
-
 const char* kAllowedIds[] = {
-    kSomeWebAppId,
-    kAnotherWebAppId
+    "haiffjcadagjlijoggckpgfnoeiflnem",
+    "gnedhmakppccajfpfiihfcdlnpgomkcf",
+    "fjcibdnjlbfnbfdjneajpipnlcppleek"
 };
 
 class OriginValidator {
