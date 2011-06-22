@@ -93,12 +93,7 @@ function updateControls_(disable) {
 
 function updateAuthStatus_() {
   var oauthValid = remoting.oauth2.isAuthenticated();
-  if (!oauthValid) {
-    document.getElementById('oauth2-code').value = '';
-  }
-  showElementById('oauth2-submit-button', false);
-  showElementById('oauth2-code', !oauthValid);
-  showElementById('oauth2-code-button', !oauthValid);
+  showElementById('oauth2-token-button', !oauthValid);
   showElementById('oauth2-clear-button', oauthValid);
 
   var loginName = remoting.getItem(remoting.EMAIL);
@@ -138,21 +133,9 @@ function exchangedCodeForToken_() {
   });
 }
 
-function authorizeOAuth2() {
-  remoting.oauth2.exchangeCodeForToken(
-      document.getElementById('oauth2-code').value, exchangedCodeForToken_);
-}
-
 function clearOAuth2() {
   remoting.oauth2.clear();
   updateAuthStatus_();
-}
-
-function handleOAuth2CodeChange() {
-  var hasCode = document.getElementById('oauth2-code').value.length > 0;
-
-  showElementById('oauth2-submit-button', hasCode);
-  showElementById('oauth2-code-button', !hasCode);
 }
 
 // Show the div with id |mode| and hide those with other ids in |modes|.

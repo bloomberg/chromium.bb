@@ -85,6 +85,11 @@ section {
   margin: 10px auto auto 0px;
 }
 
+.auth-status-label {
+  color: black;
+  font-weight: bold;
+}
+
 .centered-button {
   /*
     Used to force buttons to center correctly on Chrome due to a quirk
@@ -181,11 +186,6 @@ section {
 
 #email-status {
   margin-right: 0.5ex;
-}
-
-#email-label {
-  color: black;
-  font-weight: bold;
 }
 
 #current-email {

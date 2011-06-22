@@ -1,0 +1,37 @@
+<!doctype html>
+<!--
+Copyright (c) 2011 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<html>
+  <head>
+    <script src="oauth2.js"></script>
+  </head>
+  <body>
+    <div id="error" style="display:none;">
+      Something went wrong getting OAuth2 token.
+    </div>
+    <script>
+      function retrieveRefreshToken(query) {
+        var parts = query.split('&');
+        var queryArgs = {};
+        for (var i = 0; i < parts.length; i++) {
+          var pair = parts[i].split('=');
+          queryArgs[pair[0]] = pair[1];
+        }
+        if ('code' in queryArgs) {
+          var oauth2 = new OAuth2();
+          oauth2.exchangeCodeForToken(queryArgs['code'], function() {
+            window.location.replace(chrome.extension.getURL('choice.html'));
+          });
+        } else {
+          document.getElementById('error').style.display = 'block';
+        }
+      }
+
+      retrieveRefreshToken(window.location.search.substring(1));
+    </script>
+  </body>
+</html>

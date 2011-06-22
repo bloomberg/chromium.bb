@@ -15,14 +15,16 @@ function OAuth2() {
   this.OAUTH2_REFRESH_TOKEN_NAME = 'oauth2_refresh_token';
 
   this.client_id = encodeURIComponent(
-      '440925447803-m890isgsr23kdkcu2erd4mirnrjalf98.' +
+      '440925447803-2pi3v45bff6tp1rde2f7q6lgbor3o5uj.' +
       'apps.googleusercontent.com');
-  this.client_secret = encodeURIComponent('TgKrL73H2kJe6Ir0ufp7bf6e');
+  this.client_secret = encodeURIComponent('W2ieEsG-R1gIA4MMurGrgMc_');
   this.scope = encodeURIComponent(
       'https://www.googleapis.com/auth/chromoting ' +
       'https://www.googleapis.com/auth/googletalk ' +
       'https://www.googleapis.com/auth/userinfo#email');
-  this.redirect_uri = encodeURIComponent('urn:ietf:wg:oauth:2.0:oob');
+  this.redirect_uri = encodeURIComponent(
+      'https://chromoting-httpxmpp-oauth2-dev.corp.google.com' +
+      '/oauth2_trampoline');
 }
 
 OAuth2.prototype.isAuthenticated = function() {

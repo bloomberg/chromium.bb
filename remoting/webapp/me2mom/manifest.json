@@ -11,6 +11,15 @@
   "icons": {
     "128": "chromoting128.png"
   },
+  "content_scripts": [
+    {
+      "matches": [
+      "https://chromoting-httpxmpp-oauth2-dev.corp.google.com/oauth2_trampoline",
+      "https://chromoting-httpxmpp-oauth2-dev.corp.google.com/oauth2_trampoline?*"
+      ],
+      "js": ["cs_oauth2_trampoline.js"]
+    }
+  ],
   "permissions": [
     "tabs",
     "https://accounts.google.com/o/oauth2/*",
