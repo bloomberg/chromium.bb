@@ -50,11 +50,19 @@ suppressions_root = path_utils.ScriptDir()
 
 supp_filename = os.path.join(suppressions_root,
                              "memcheck", "suppressions.txt")
-common_suppressions = suppressions.ReadSuppressionsFromFile(supp_filename)
+vg_common = suppressions.ReadSuppressionsFromFile(supp_filename)
+supp_filename = os.path.join(suppressions_root,
+                             "tsan", "suppressions.txt")
+tsan_common = suppressions.ReadSuppressionsFromFile(supp_filename)
+common_suppressions = vg_common + tsan_common
 
 supp_filename = os.path.join(suppressions_root,
                              "memcheck", "suppressions_mac.txt")
-mac_suppressions = suppressions.ReadSuppressionsFromFile(supp_filename)
+vg_mac = suppressions.ReadSuppressionsFromFile(supp_filename)
+supp_filename = os.path.join(suppressions_root,
+                             "tsan", "suppressions_mac.txt")
+tsan_mac = suppressions.ReadSuppressionsFromFile(supp_filename)
+mac_suppressions = vg_mac + tsan_mac
 
 supp_filename = os.path.join(suppressions_root,
                              "..", "heapcheck", "suppressions.txt")

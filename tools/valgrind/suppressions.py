@@ -152,14 +152,18 @@ def ReadSuppressions(lines, supp_descriptor):
       continue
     elif not cur_type:
       if (not line.startswith("Memcheck:")) and \
+         (not line.startswith("ThreadSanitizer:")) and \
          (line != "Heapcheck:Leak"):
         raise SuppressionError(supp_descriptor, nline,
-            '"Memcheck:TYPE" or "Heapcheck:Leak is expected, got "%s"' % line)
-      if not line.split(':')[1] in ["Addr1", "Addr2", "Addr4", "Addr8",
+            '"Memcheck:TYPE" , "ThreadSanitizer:TYPE" or "Heapcheck:Leak '
+            'is expected, got "%s"' % line)
+      supp_type = line.split(':')[1]
+      if not supp_type in ["Addr1", "Addr2", "Addr4", "Addr8",
                           "Cond", "Free", "Jump", "Leak", "Overlap", "Param",
-                          "Value1", "Value2", "Value4", "Value8"]:
+                          "Value1", "Value2", "Value4", "Value8",
+                          "Race", "UnlockNonLocked", "InvalidLock"]:
         raise SuppressionError(supp_descriptor, nline,
-                               'Unknown suppression type "%s"' % line[9:])
+                               'Unknown suppression type "%s"' % supp_type)
       cur_type = line
       continue
     elif re.match("^fun:.*|^obj:.*|^\.\.\.$", line):
@@ -211,6 +215,17 @@ def SelfTest():
     fun:expression
   }""".split("\n")
 
+  test_stack3 = """{
+    test
+    ThreadSanitizer:Race
+    fun:absolutly
+    fun:brilliant
+    obj:condition
+    fun:detection
+    fun:expression
+  }""".split("\n")
+
+
   positive_memcheck_suppressions = [
     "{\nzzz\nMemcheck:Leak\nfun:absolutly\n}",
     "{\nzzz\nMemcheck:Leak\nfun:ab*ly\n}",
@@ -229,6 +244,11 @@ def SelfTest():
     "{\nzzz\nHeapcheck:Leak\nfun:absolutly\n}",
   ]
 
+  positive_tsan_suppressions = [
+    "{\nzzz\nThreadSanitizer:Race\n...\nobj:condition\n}",
+    "{\nzzz\nThreadSanitizer:Race\nfun:absolutly\n}",
+  ]
+
   negative_memcheck_suppressions = [
     "{\nzzz\nMemcheck:Leak\nfun:abnormal\n}",
     "{\nzzz\nMemcheck:Leak\nfun:ab*liant\n}",
@@ -242,10 +262,17 @@ def SelfTest():
     "{\nzzz\nHeapcheck:Leak\nfun:brilliant\n}",
   ]
 
+  negative_tsan_suppressions = [
+    "{\nzzz\nThreadSanitizer:Leak\nfun:absolutly\n}",
+    "{\nzzz\nThreadSanitizer:Race\nfun:brilliant\n}",
+  ]
+
   TestStack(test_stack1, positive_memcheck_suppressions,
             negative_memcheck_suppressions)
   TestStack(test_stack2, positive_heapcheck_suppressions,
             negative_heapcheck_suppressions)
+  TestStack(test_stack3, positive_tsan_suppressions,
+            negative_tsan_suppressions)
 
 if __name__ == '__main__':
   SelfTest()
