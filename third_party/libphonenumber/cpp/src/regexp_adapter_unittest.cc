@@ -15,7 +15,7 @@
 // Author: George Yakovlev
 #include <gtest/gtest.h>
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "regexp_adapter.h"
 
 namespace reg_exp {
@@ -139,4 +139,3 @@ TEST(RegExpAdapter, TestUtf8) {
 }
 
 }  // namespace reg_exp
-

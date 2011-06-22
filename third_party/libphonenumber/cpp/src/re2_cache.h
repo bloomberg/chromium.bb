@@ -38,7 +38,7 @@
 #include <hash_map>
 #include <string>
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 
 namespace re2 {

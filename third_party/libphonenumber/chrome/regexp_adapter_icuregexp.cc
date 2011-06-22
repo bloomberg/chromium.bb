@@ -8,8 +8,8 @@
 
 // Setup all of the Chromium and WebKit defines
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
-#include "base/scoped_ptr.h"
 #include "build/build_config.h"
 #include "unicode/regex.h"
 #include "unicode/stringpiece.h"

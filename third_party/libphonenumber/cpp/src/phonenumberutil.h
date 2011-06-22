@@ -28,7 +28,7 @@
 #include <vector>
 #include <unicode/translit.h>
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/singleton.h"
 #include "phonenumber.pb.h"
 
