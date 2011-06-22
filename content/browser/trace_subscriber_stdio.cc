@@ -51,6 +51,7 @@ void TraceSubscriberStdio::OnTraceDataCollected(
     LOG(ERROR) << "Error " << ferror(m_file) << " when writing to trace file";
     fclose(m_file);
     m_file = 0;
+  } else {
+    fputc(',', m_file);
   }
-  fputc(',', m_file);
 }

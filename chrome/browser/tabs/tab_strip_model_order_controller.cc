@@ -128,9 +128,12 @@ void TabStripModelOrderController::ActiveTabChanged(
   }
   NavigationController* new_opener =
       tabstrip_->GetOpenerOfTabContentsAt(index);
+
   if (user_gesture && new_opener != old_opener &&
-      new_opener != &old_contents->controller() &&
-      old_opener != &new_contents->controller()) {
+      ((old_contents == NULL && new_opener == NULL) ||
+          new_opener != &old_contents->controller()) &&
+      ((new_contents == NULL && old_opener == NULL) ||
+          old_opener != &new_contents->controller())) {
     tabstrip_->ForgetAllOpeners();
   }
 }
