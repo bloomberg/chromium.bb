@@ -30,7 +30,6 @@
 #include "net/base/net_api.h"
 
 #if defined(OS_POSIX)
-struct event;  // From libevent
 typedef int SOCKET;
 #endif
 
