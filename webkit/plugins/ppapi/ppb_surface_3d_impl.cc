@@ -14,60 +14,10 @@
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_context_3d_impl.h"
 
+using ppapi::thunk::PPB_Surface3D_API;
+
 namespace webkit {
 namespace ppapi {
-
-namespace {
-
-PP_Resource Create(PP_Instance instance_id,
-                   PP_Config3D_Dev config,
-                   const int32_t* attrib_list) {
-  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
-  if (!instance)
-    return 0;
-
-  scoped_refptr<PPB_Surface3D_Impl> surface(
-      new PPB_Surface3D_Impl(instance));
-  if (!surface->Init(config, attrib_list))
-    return 0;
-
-  return surface->GetReference();
-}
-
-PP_Bool IsSurface3D(PP_Resource resource) {
-  return BoolToPPBool(!!Resource::GetAs<PPB_Surface3D_Impl>(resource));
-}
-
-int32_t SetAttrib(PP_Resource surface_id,
-                  int32_t attribute,
-                  int32_t value) {
-  // TODO(alokp): Implement me.
-  return 0;
-}
-
-int32_t GetAttrib(PP_Resource surface_id,
-                  int32_t attribute,
-                  int32_t* value) {
-  // TODO(alokp): Implement me.
-  return 0;
-}
-
-int32_t SwapBuffers(PP_Resource surface_id,
-                    PP_CompletionCallback callback) {
-  scoped_refptr<PPB_Surface3D_Impl> surface(
-      Resource::GetAs<PPB_Surface3D_Impl>(surface_id));
-  return surface->SwapBuffers(callback);
-}
-
-const PPB_Surface3D_Dev ppb_surface3d = {
-  &Create,
-  &IsSurface3D,
-  &SetAttrib,
-  &GetAttrib,
-  &SwapBuffers
-};
-
-}  // namespace
 
 PPB_Surface3D_Impl::PPB_Surface3D_Impl(PluginInstance* instance)
     : Resource(instance),
@@ -82,47 +32,33 @@ PPB_Surface3D_Impl::~PPB_Surface3D_Impl() {
     context_->BindSurfaces(NULL, NULL);
 }
 
-const PPB_Surface3D_Dev* PPB_Surface3D_Impl::GetInterface() {
-  return &ppb_surface3d;
+// static
+PP_Resource PPB_Surface3D_Impl::Create(PP_Instance instance_id,
+                                       PP_Config3D_Dev config,
+                                       const int32_t* attrib_list) {
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
+  if (!instance)
+    return 0;
+
+  scoped_refptr<PPB_Surface3D_Impl> surface(
+      new PPB_Surface3D_Impl(instance));
+  if (!surface->Init(config, attrib_list))
+    return 0;
+  return surface->GetReference();
 }
 
-PPB_Surface3D_Impl* PPB_Surface3D_Impl::AsPPB_Surface3D_Impl() {
+PPB_Surface3D_API* PPB_Surface3D_Impl::AsPPB_Surface3D_API() {
   return this;
 }
 
-bool PPB_Surface3D_Impl::Init(PP_Config3D_Dev config,
-                              const int32_t* attrib_list) {
-  return true;
+int32_t PPB_Surface3D_Impl::SetAttrib(int32_t attribute, int32_t value) {
+  // TODO(alokp): Implement me.
+  return 0;
 }
 
-bool PPB_Surface3D_Impl::BindToInstance(bool bind) {
-  bound_to_instance_ = bind;
-  return true;
-}
-
-bool PPB_Surface3D_Impl::BindToContext(
-    PPB_Context3D_Impl* context) {
-  if (context == context_)
-    return true;
-
-  // Unbind from the current context.
-  if (context_) {
-    context_->platform_context()->SetSwapBuffersCallback(NULL);
-  }
-  if (context) {
-    // Resize the backing texture to the size of the instance when it is bound.
-    // TODO(alokp): This should be the responsibility of plugins.
-    gpu::gles2::GLES2Implementation* impl = context->gles2_impl();
-    if (impl) {
-      const gfx::Size& size = instance()->position().size();
-      impl->ResizeCHROMIUM(size.width(), size.height());
-    }
-
-    context->platform_context()->SetSwapBuffersCallback(
-        NewCallback(this, &PPB_Surface3D_Impl::OnSwapBuffers));
-  }
-  context_ = context;
-  return true;
+int32_t PPB_Surface3D_Impl::GetAttrib(int32_t attribute, int32_t* value) {
+  // TODO(alokp): Implement me.
+  return 0;
 }
 
 int32_t PPB_Surface3D_Impl::SwapBuffers(PP_CompletionCallback callback) {
@@ -142,10 +78,42 @@ int32_t PPB_Surface3D_Impl::SwapBuffers(PP_CompletionCallback callback) {
 
   swap_callback_ = callback;
   gpu::gles2::GLES2Implementation* impl = context_->gles2_impl();
-  if (impl) {
+  if (impl)
     context_->gles2_impl()->SwapBuffers();
-  }
   return PP_OK_COMPLETIONPENDING;
+}
+
+bool PPB_Surface3D_Impl::Init(PP_Config3D_Dev config,
+                              const int32_t* attrib_list) {
+  return true;
+}
+
+bool PPB_Surface3D_Impl::BindToInstance(bool bind) {
+  bound_to_instance_ = bind;
+  return true;
+}
+
+bool PPB_Surface3D_Impl::BindToContext(PPB_Context3D_Impl* context) {
+  if (context == context_)
+    return true;
+
+  // Unbind from the current context.
+  if (context_ && context_->platform_context())
+    context_->platform_context()->SetSwapBuffersCallback(NULL);
+  if (context && context->platform_context()) {
+    // Resize the backing texture to the size of the instance when it is bound.
+    // TODO(alokp): This should be the responsibility of plugins.
+    gpu::gles2::GLES2Implementation* impl = context->gles2_impl();
+    if (impl) {
+      const gfx::Size& size = instance()->position().size();
+      impl->ResizeCHROMIUM(size.width(), size.height());
+    }
+
+    context->platform_context()->SetSwapBuffersCallback(
+        NewCallback(this, &PPB_Surface3D_Impl::OnSwapBuffers));
+  }
+  context_ = context;
+  return true;
 }
 
 void PPB_Surface3D_Impl::ViewInitiatedPaint() {

@@ -33,6 +33,7 @@
 #include "ppapi/c/dev/ppb_layer_compositor_dev.h"
 #include "ppapi/c/dev/ppb_opengles_dev.h"
 #include "ppapi/c/dev/ppb_scrollbar_dev.h"
+#include "ppapi/c/dev/ppb_surface_3d_dev.h"
 #include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/c/dev/ppb_transport_dev.h"
 #include "ppapi/c/dev/ppb_url_util_dev.h"
@@ -69,6 +70,7 @@
 #include "ppapi/c/trusted/ppb_buffer_trusted.h"
 #include "ppapi/c/trusted/ppb_image_data_trusted.h"
 #include "ppapi/c/trusted/ppb_url_loader_trusted.h"
+#include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/thunk.h"
 #include "webkit/plugins/ppapi/callbacks.h"
 #include "webkit/plugins/ppapi/common.h"
@@ -86,25 +88,19 @@
 #include "webkit/plugins/ppapi/ppb_graphics_2d_impl.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
 #include "webkit/plugins/ppapi/ppb_layer_compositor_impl.h"
+#include "webkit/plugins/ppapi/ppb_opengles_impl.h"
 #include "webkit/plugins/ppapi/ppb_proxy_impl.h"
 #include "webkit/plugins/ppapi/ppb_scrollbar_impl.h"
-#include "webkit/plugins/ppapi/ppb_transport_impl.h"
 #include "webkit/plugins/ppapi/ppb_uma_private_impl.h"
 #include "webkit/plugins/ppapi/ppb_url_util_impl.h"
 #include "webkit/plugins/ppapi/ppb_video_decoder_impl.h"
 #include "webkit/plugins/ppapi/ppb_video_layer_impl.h"
-#include "webkit/plugins/ppapi/ppb_widget_impl.h"
 #include "webkit/plugins/ppapi/resource_tracker.h"
 #include "webkit/plugins/ppapi/var.h"
 #include "webkit/plugins/ppapi/webkit_forwarding_impl.h"
 
-#ifdef ENABLE_GPU
-#include "webkit/plugins/ppapi/ppb_context_3d_impl.h"
-#include "webkit/plugins/ppapi/ppb_gles_chromium_texture_mapping_impl.h"
-#include "webkit/plugins/ppapi/ppb_graphics_3d_impl.h"
-#include "webkit/plugins/ppapi/ppb_opengles_impl.h"
-#include "webkit/plugins/ppapi/ppb_surface_3d_impl.h"
-#endif  // ENABLE_GPU
+using ppapi::thunk::EnterResource;
+using ppapi::thunk::PPB_Graphics2D_API;
 
 namespace webkit {
 namespace ppapi {
@@ -188,11 +184,11 @@ const PPB_Core core_interface = {
 PP_Bool ReadImageData(PP_Resource device_context_2d,
                       PP_Resource image,
                       const PP_Point* top_left) {
-  scoped_refptr<PPB_Graphics2D_Impl> context(
-      Resource::GetAs<PPB_Graphics2D_Impl>(device_context_2d));
-  if (!context.get())
+  EnterResource<PPB_Graphics2D_API> enter(device_context_2d, true);
+  if (enter.failed())
     return PP_FALSE;
-  return BoolToPPBool(context->ReadImageData(image, top_left));
+  return BoolToPPBool(static_cast<PPB_Graphics2D_Impl*>(enter.object())->
+      ReadImageData(image, top_left));
 }
 
 void RunMessageLoop(PP_Instance instance) {
@@ -329,7 +325,7 @@ const void* GetInterface(const char* name) {
   if (strcmp(name, PPB_VIDEOLAYER_DEV_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_VideoLayer_Thunk();
   if (strcmp(name, PPB_WIDGET_DEV_INTERFACE) == 0)
-    return PPB_Widget_Impl::GetInterface();
+    return ::ppapi::thunk::GetPPB_Widget_Thunk();
   if (strcmp(name, PPB_ZOOM_DEV_INTERFACE) == 0)
     return PluginInstance::GetZoomInterface();
 
@@ -337,19 +333,19 @@ const void* GetInterface(const char* name) {
   // This should really refer to switches::kDisable3DAPIs.
   if (!CommandLine::ForCurrentProcess()->HasSwitch("disable-3d-apis")) {
     if (strcmp(name, PPB_GRAPHICS_3D_DEV_INTERFACE) == 0)
-      return PPB_Graphics3D_Impl::GetInterface();
+      return ::ppapi::thunk::GetPPB_Graphics3D_Thunk();
     if (strcmp(name, PPB_CONTEXT_3D_DEV_INTERFACE) == 0)
-      return PPB_Context3D_Impl::GetInterface();
+      return ::ppapi::thunk::GetPPB_Context3D_Thunk();
     if (strcmp(name, PPB_CONTEXT_3D_TRUSTED_DEV_INTERFACE) == 0)
-      return PPB_Context3D_Impl::GetTrustedInterface();
+      return ::ppapi::thunk::GetPPB_Context3DTrusted_Thunk();
     if (strcmp(name, PPB_GLES_CHROMIUM_TEXTURE_MAPPING_DEV_INTERFACE) == 0)
-      return PPB_GLESChromiumTextureMapping_Impl::GetInterface();
+      return ::ppapi::thunk::GetPPB_GLESChromiumTextureMapping_Thunk();
     if (strcmp(name, PPB_OPENGLES2_DEV_INTERFACE) == 0)
       return PPB_OpenGLES_Impl::GetInterface();
     if (strcmp(name, PPB_SURFACE_3D_DEV_INTERFACE) == 0)
-      return PPB_Surface3D_Impl::GetInterface();
+      return ::ppapi::thunk::GetPPB_Surface3D_Thunk();
     if (strcmp(name, PPB_LAYER_COMPOSITOR_DEV_INTERFACE) == 0)
-      return PPB_LayerCompositor_Impl::GetInterface();
+      return ::ppapi::thunk::GetPPB_LayerCompositor_Thunk();
   }
 #endif  // ENABLE_GPU
 
@@ -360,7 +356,7 @@ const void* GetInterface(const char* name) {
 
 #if defined(ENABLE_P2P_APIS)
   if (strcmp(name, PPB_TRANSPORT_DEV_INTERFACE) == 0)
-    return PPB_Transport_Impl::GetInterface();
+    return ::ppapi::thunk::GetPPB_Transport_Thunk();
 #endif
 
   // Only support the testing interface when the command line switch is

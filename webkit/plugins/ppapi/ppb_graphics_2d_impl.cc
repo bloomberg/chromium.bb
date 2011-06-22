@@ -15,6 +15,7 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/ppb_graphics_2d.h"
 #include "ppapi/cpp/common.h"
+#include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/thunk.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/blit.h"
@@ -28,6 +29,9 @@
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #endif
+
+using ppapi::thunk::EnterResourceNoLock;
+using ppapi::thunk::PPB_ImageData_API;
 
 namespace webkit {
 namespace ppapi {
@@ -199,10 +203,11 @@ void PPB_Graphics2D_Impl::PaintImageData(PP_Resource image_data,
   if (!top_left)
     return;
 
-  scoped_refptr<PPB_ImageData_Impl> image_resource(
-      Resource::GetAs<PPB_ImageData_Impl>(image_data));
-  if (!image_resource)
+  EnterResourceNoLock<PPB_ImageData_API> enter(image_data, true);
+  if (enter.failed())
     return;
+  PPB_ImageData_Impl* image_resource =
+      static_cast<PPB_ImageData_Impl*>(enter.object());
 
   QueuedOperation operation(QueuedOperation::PAINT);
   operation.paint_image = image_resource;
@@ -253,10 +258,12 @@ void PPB_Graphics2D_Impl::Scroll(const PP_Rect* clip_rect,
 }
 
 void PPB_Graphics2D_Impl::ReplaceContents(PP_Resource image_data) {
-  scoped_refptr<PPB_ImageData_Impl> image_resource(
-      Resource::GetAs<PPB_ImageData_Impl>(image_data));
-  if (!image_resource)
+  EnterResourceNoLock<PPB_ImageData_API> enter(image_data, true);
+  if (enter.failed())
     return;
+  PPB_ImageData_Impl* image_resource =
+      static_cast<PPB_ImageData_Impl*>(enter.object());
+
   if (!PPB_ImageData_Impl::IsImageDataFormatSupported(
           image_resource->format()))
     return;
@@ -335,10 +342,11 @@ int32_t PPB_Graphics2D_Impl::Flush(PP_CompletionCallback callback) {
 bool PPB_Graphics2D_Impl::ReadImageData(PP_Resource image,
                                         const PP_Point* top_left) {
   // Get and validate the image object to paint into.
-  scoped_refptr<PPB_ImageData_Impl> image_resource(
-      Resource::GetAs<PPB_ImageData_Impl>(image));
-  if (!image_resource)
+  EnterResourceNoLock<PPB_ImageData_API> enter(image, true);
+  if (enter.failed())
     return false;
+  PPB_ImageData_Impl* image_resource =
+      static_cast<PPB_ImageData_Impl*>(enter.object());
   if (!PPB_ImageData_Impl::IsImageDataFormatSupported(
           image_resource->format()))
     return false;  // Must be in the right format.
@@ -369,7 +377,7 @@ bool PPB_Graphics2D_Impl::ReadImageData(PP_Resource image,
 
   if (image_resource->format() != image_data_->format()) {
     // Convert the image data if the format does not match.
-    ConvertImageData(image_data_, src_irect, image_resource.get(), dest_rect);
+    ConvertImageData(image_data_, src_irect, image_resource, dest_rect);
   } else {
     skia::PlatformCanvas* dest_canvas = image_resource->mapped_canvas();
 

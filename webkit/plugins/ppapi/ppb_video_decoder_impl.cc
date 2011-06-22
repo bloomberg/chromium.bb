@@ -23,6 +23,9 @@
 #include "webkit/plugins/ppapi/resource_tracker.h"
 #include "webkit/plugins/ppapi/var.h"
 
+using ppapi::thunk::EnterResourceNoLock;
+using ppapi::thunk::PPB_Buffer_API;
+using ppapi::thunk::PPB_Context3D_API;
 using ppapi::thunk::PPB_VideoDecoder_API;
 
 namespace webkit {
@@ -121,11 +124,11 @@ int32_t PPB_VideoDecoder_Impl::Initialize(
   if (!instance())
     return PP_ERROR_FAILED;
 
-  scoped_refptr<webkit::ppapi::PPB_Context3D_Impl> context3d =
-      webkit::ppapi::Resource::GetAs<webkit::ppapi::PPB_Context3D_Impl>(
-          context_id);
-  if (!context3d)
+  EnterResourceNoLock<PPB_Context3D_API> enter(context_id, true);
+  if (enter.failed())
     return PP_ERROR_BADRESOURCE;
+  PPB_Context3D_Impl* context3d =
+      static_cast<PPB_Context3D_Impl*>(enter.object());
 
   int command_buffer_route_id =
       context3d->platform_context()->GetCommandBufferRouteId();
@@ -156,8 +159,7 @@ int32_t PPB_VideoDecoder_Impl::Decode(
   if (!platform_video_decoder_.get())
     return PP_ERROR_BADRESOURCE;
 
-  ::ppapi::thunk::EnterResourceNoLock< ::ppapi::thunk::PPB_Buffer_API>
-      enter(bitstream_buffer->data, true);
+  EnterResourceNoLock<PPB_Buffer_API> enter(bitstream_buffer->data, true);
   if (enter.failed())
     return PP_ERROR_FAILED;
 
@@ -351,9 +353,12 @@ GLESBuffer::GLESBuffer(const PP_GLESBuffer_Dev& buffer)
 
 SysmemBuffer::SysmemBuffer(const PP_SysmemBuffer_Dev& buffer)
     : BaseBuffer(buffer.info) {
-  scoped_refptr<webkit::ppapi::PPB_Buffer_Impl> pepper_buffer =
-      webkit::ppapi::Resource::GetAs<webkit::ppapi::PPB_Buffer_Impl>(
-          buffer.data);
+  // TODO(brettw) we should properly handle the errors here if the buffer
+  // isn't a valid image rather than CHECKing.
+  EnterResourceNoLock<PPB_Buffer_API> enter(buffer.data, true);
+  CHECK(enter.succeeded());
+  webkit::ppapi::PPB_Buffer_Impl* pepper_buffer =
+      static_cast<webkit::ppapi::PPB_Buffer_Impl*>(enter.object());
   CHECK(pepper_buffer->IsMapped());
   data_ = pepper_buffer->Map();
 }

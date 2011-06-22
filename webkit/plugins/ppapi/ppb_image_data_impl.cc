@@ -38,10 +38,6 @@ PPB_ImageData_API* PPB_ImageData_Impl::AsPPB_ImageData_API() {
   return this;
 }
 
-PPB_ImageData_Impl* PPB_ImageData_Impl::AsPPB_ImageData_Impl() {
-  return this;
-}
-
 bool PPB_ImageData_Impl::Init(PP_ImageDataFormat format,
                               int width, int height,
                               bool init_to_zero) {

@@ -85,10 +85,12 @@
 #include "skia/ext/skia_utils_mac.h"
 #endif
 
-using ::ppapi::thunk::EnterResourceNoLock;
-using ::ppapi::thunk::PPB_Buffer_API;
-using ::ppapi::thunk::PPB_Graphics2D_API;
-using ::ppapi::thunk::PPB_Instance_FunctionAPI;
+using ppapi::thunk::EnterResourceNoLock;
+using ppapi::thunk::PPB_Buffer_API;
+using ppapi::thunk::PPB_Graphics2D_API;
+using ppapi::thunk::PPB_ImageData_API;
+using ppapi::thunk::PPB_Instance_FunctionAPI;
+using ppapi::thunk::PPB_Surface3D_API;
 using WebKit::WebBindings;
 using WebKit::WebCanvas;
 using WebKit::WebCursorInfo;
@@ -400,10 +402,11 @@ bool PluginInstance::SetCursor(PP_CursorType_Dev type,
   if (!hot_spot)
     return false;
 
-  scoped_refptr<PPB_ImageData_Impl> image_data(
-      Resource::GetAs<PPB_ImageData_Impl>(custom_image));
-  if (!image_data.get())
+  EnterResourceNoLock<PPB_ImageData_API> enter(custom_image, true);
+  if (enter.failed())
     return false;
+  PPB_ImageData_Impl* image_data =
+      static_cast<PPB_ImageData_Impl*>(enter.object());
 
   if (image_data->format() != PPB_ImageData_Impl::GetNativeImageDataFormat()) {
     // TODO(yzshen): Handle the case that the image format is different from the
@@ -1136,9 +1139,17 @@ bool PluginInstance::PrintPDFOutput(PP_Resource print_output,
 
 bool PluginInstance::PrintRasterOutput(PP_Resource print_output,
                                        WebKit::WebCanvas* canvas) {
-  scoped_refptr<PPB_ImageData_Impl> image(
-      Resource::GetAs<PPB_ImageData_Impl>(print_output));
-  if (!image.get() || !image->is_mapped())
+  EnterResourceNoLock<PPB_ImageData_API> enter(print_output, true);
+  if (enter.failed())
+    return false;
+  PPB_ImageData_Impl* image =
+      static_cast<PPB_ImageData_Impl*>(enter.object());
+
+  // TODO(brettw) this should not require the image to be mapped. It should
+  // instead map on demand. The DCHECK here is to remind you if you see the
+  // assert fire, fix the bug rather than mapping the data.
+  DCHECK(image->is_mapped());
+  if (!image->is_mapped())
     return false;
 
   const SkBitmap* bitmap = image->GetMappedBitmap();
@@ -1278,14 +1289,18 @@ PPB_Graphics2D_Impl* PluginInstance::bound_graphics_2d() const {
   if (bound_graphics_.get() == NULL)
     return NULL;
 
-  return bound_graphics_->Cast<PPB_Graphics2D_Impl>();
+  if (bound_graphics_->AsPPB_Graphics2D_API())
+    return static_cast<PPB_Graphics2D_Impl*>(bound_graphics_.get());
+  return NULL;
 }
 
 PPB_Surface3D_Impl* PluginInstance::bound_graphics_3d() const {
   if (bound_graphics_.get() == NULL)
     return NULL;
 
-  return bound_graphics_->Cast<PPB_Surface3D_Impl>();
+  if (bound_graphics_->AsPPB_Surface3D_API())
+    return static_cast<PPB_Surface3D_Impl*>(bound_graphics_.get());
+  return NULL;
 }
 
 void PluginInstance::setBackingTextureId(unsigned int id) {
@@ -1372,9 +1387,9 @@ PP_Bool PluginInstance::BindGraphics(PP_Instance instance,
   EnterResourceNoLock<PPB_Graphics2D_API> enter_2d(device, false);
   PPB_Graphics2D_Impl* graphics_2d = enter_2d.succeeded() ?
       static_cast<PPB_Graphics2D_Impl*>(enter_2d.object()) : NULL;
-  // Surface3D not converted to API yet.
-  scoped_refptr<PPB_Surface3D_Impl> graphics_3d =
-      Resource::GetAs<PPB_Surface3D_Impl>(device);
+  EnterResourceNoLock<PPB_Surface3D_API> enter_3d(device, false);
+  PPB_Surface3D_Impl* graphics_3d = enter_3d.succeeded() ?
+      static_cast<PPB_Surface3D_Impl*>(enter_3d.object()) : NULL;
 
   if (graphics_2d) {
     // Refuse to bind if we're transitioning to fullscreen.

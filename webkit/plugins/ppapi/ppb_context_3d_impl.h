@@ -7,7 +7,7 @@
 
 #include "base/memory/scoped_callback_factory.h"
 #include "base/memory/scoped_ptr.h"
-#include "ppapi/c/dev/ppb_context_3d_dev.h"
+#include "ppapi/thunk/ppb_context_3d_api.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/resource.h"
 
@@ -26,16 +26,64 @@ namespace ppapi {
 
 class PPB_Surface3D_Impl;
 
-class PPB_Context3D_Impl : public Resource {
+class PPB_Context3D_Impl : public Resource,
+                           public ::ppapi::thunk::PPB_Context3D_API {
  public:
-  explicit PPB_Context3D_Impl(PluginInstance* instance);
   virtual ~PPB_Context3D_Impl();
 
-  static const PPB_Context3D_Dev* GetInterface();
-  static const PPB_Context3DTrusted_Dev* GetTrustedInterface();
+  static PP_Resource Create(PP_Instance instance,
+                            PP_Config3D_Dev config,
+                            PP_Resource share_context,
+                            const int32_t* attrib_list);
+  static PP_Resource CreateRaw(PP_Instance instance,
+                               PP_Config3D_Dev config,
+                               PP_Resource share_context,
+                               const int32_t* attrib_list);
 
-  // Resource override.
-  virtual PPB_Context3D_Impl* AsPPB_Context3D_Impl();
+  // ResourceObjectBase override.
+  virtual ::ppapi::thunk::PPB_Context3D_API* AsPPB_Context3D_API();
+
+  // PPB_Context3D_API implementation.
+  virtual int32_t GetAttrib(int32_t attribute, int32_t* value) OVERRIDE;
+  virtual int32_t BindSurfaces(PP_Resource draw, PP_Resource read) OVERRIDE;
+  virtual int32_t GetBoundSurfaces(PP_Resource* draw,
+                                   PP_Resource* read) OVERRIDE;
+  virtual PP_Bool InitializeTrusted(int32_t size) OVERRIDE;
+  virtual PP_Bool GetRingBuffer(int* shm_handle,
+                                uint32_t* shm_size) OVERRIDE;
+  virtual PP_Context3DTrustedState GetState() OVERRIDE;
+  virtual PP_Bool Flush(int32_t put_offset) OVERRIDE;
+  virtual PP_Context3DTrustedState FlushSync(int32_t put_offset) OVERRIDE;
+  virtual int32_t CreateTransferBuffer(uint32_t size) OVERRIDE;
+  virtual PP_Bool DestroyTransferBuffer(int32_t id) OVERRIDE;
+  virtual PP_Bool GetTransferBuffer(int32_t id,
+                                    int* shm_handle,
+                                    uint32_t* shm_size) OVERRIDE;
+  virtual PP_Context3DTrustedState FlushSyncFast(
+      int32_t put_offset,
+      int32_t last_known_get) OVERRIDE;
+  virtual void* MapTexSubImage2DCHROMIUM(GLenum target,
+                                         GLint level,
+                                         GLint xoffset,
+                                         GLint yoffset,
+                                         GLsizei width,
+                                         GLsizei height,
+                                         GLenum format,
+                                         GLenum type,
+                                         GLenum access) OVERRIDE;
+  virtual void UnmapTexSubImage2DCHROMIUM(const void* mem) OVERRIDE;
+
+  gpu::gles2::GLES2Implementation* gles2_impl() {
+    return gles2_impl_.get();
+  }
+
+  // Possibly NULL if initialization fails.
+  PluginDelegate::PlatformContext3D* platform_context() {
+    return platform_context_.get();
+  }
+
+ private:
+  explicit PPB_Context3D_Impl(PluginInstance* instance);
 
   bool Init(PP_Config3D_Dev config,
             PP_Resource share_context,
@@ -44,32 +92,15 @@ class PPB_Context3D_Impl : public Resource {
                PP_Resource share_context,
                const int32_t* attrib_list);
 
-  PluginInstance* instance() {
-    return instance_;
-  }
-
-  PluginDelegate::PlatformContext3D* platform_context() {
-    return platform_context_.get();
-  }
-
-  gpu::gles2::GLES2Implementation* gles2_impl() {
-    return gles2_impl_.get();
-  }
-
-  gpu::CommandBuffer* command_buffer();
-
-  int32_t BindSurfaces(PPB_Surface3D_Impl* draw,
-                       PPB_Surface3D_Impl* read);
-
- private:
-  void Destroy();
   bool CreateImplementation();
+  void Destroy();
   void OnContextLost();
 
   // Plugin instance this context is associated with.
   PluginInstance* instance_;
 
   // PluginDelegate's 3D Context. Responsible for providing the command buffer.
+  // Possibly NULL.
   scoped_ptr<PluginDelegate::PlatformContext3D> platform_context_;
 
   scoped_ptr<gpu::gles2::GLES2CmdHelper> helper_;

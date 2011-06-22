@@ -28,9 +28,6 @@ class PPB_Broker_Impl : public Resource,
 
   static PP_Resource Create(PP_Instance instance_id);
 
-  // Resource override.
-  virtual PPB_Broker_Impl* AsPPB_Broker_Impl() OVERRIDE;
-
   // ResourceObjectBase override.
   virtual ::ppapi::thunk::PPB_Broker_API* AsPPB_Broker_API() OVERRIDE;
 

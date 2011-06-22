@@ -10,9 +10,14 @@
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "ppapi/c/dev/ppb_context_3d_trusted_dev.h"
+#include "ppapi/thunk/enter.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_surface_3d_impl.h"
+
+using ppapi::thunk::EnterResourceNoLock;
+using ppapi::thunk::PPB_Context3D_API;
+using ppapi::thunk::PPB_Surface3D_API;
 
 namespace webkit {
 namespace ppapi {
@@ -23,21 +28,27 @@ namespace {
 const int32 kCommandBufferSize = 1024 * 1024;
 const int32 kTransferBufferSize = 1024 * 1024;
 
-bool ShmToHandle(base::SharedMemory* shm,
-                 size_t size,
-                 int* shm_handle,
-                 uint32_t* shm_size) {
+PP_Bool ShmToHandle(base::SharedMemory* shm,
+                    size_t size,
+                    int* shm_handle,
+                    uint32_t* shm_size) {
   if (!shm || !shm_handle || !shm_size)
-    return false;
+    return PP_FALSE;
 #if defined(OS_POSIX)
-    *shm_handle = shm->handle().fd;
+  *shm_handle = shm->handle().fd;
 #elif defined(OS_WIN)
-    *shm_handle = reinterpret_cast<int>(shm->handle());
+  *shm_handle = reinterpret_cast<int>(shm->handle());
 #else
-    #error "Platform not supported."
+  #error "Platform not supported."
 #endif
-    *shm_size = size;
-    return true;
+  *shm_size = size;
+  return PP_TRUE;
+}
+
+PP_Context3DTrustedState GetErrorState() {
+  PP_Context3DTrustedState error_state = { 0 };
+  error_state.error = kGenericError;
+  return error_state;
 }
 
 PP_Context3DTrustedState PPStateFromGPUState(
@@ -53,194 +64,6 @@ PP_Context3DTrustedState PPStateFromGPUState(
   return state;
 }
 
-PP_Resource Create(PP_Instance instance_id,
-                   PP_Config3D_Dev config,
-                   PP_Resource share_context,
-                   const int32_t* attrib_list) {
-  // TODO(alokp): Support shared context.
-  DCHECK_EQ(0, share_context);
-  if (share_context != 0)
-    return 0;
-
-  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
-  if (!instance)
-    return 0;
-
-  scoped_refptr<PPB_Context3D_Impl> context(
-      new PPB_Context3D_Impl(instance));
-  if (!context->Init(config, share_context, attrib_list))
-    return 0;
-
-  return context->GetReference();
-}
-
-PP_Bool IsContext3D(PP_Resource resource) {
-  return BoolToPPBool(!!Resource::GetAs<PPB_Context3D_Impl>(resource));
-}
-
-int32_t GetAttrib(PP_Resource context,
-                  int32_t attribute,
-                  int32_t* value) {
-  // TODO(alokp): Implement me.
-  return 0;
-}
-
-int32_t BindSurfaces(PP_Resource context_id,
-                     PP_Resource draw,
-                     PP_Resource read) {
-  scoped_refptr<PPB_Context3D_Impl> context(
-      Resource::GetAs<PPB_Context3D_Impl>(context_id));
-  if (!context.get())
-    return PP_ERROR_BADRESOURCE;
-
-  scoped_refptr<PPB_Surface3D_Impl> draw_surface(
-      Resource::GetAs<PPB_Surface3D_Impl>(draw));
-  if (!draw_surface.get())
-    return PP_ERROR_BADRESOURCE;
-
-  scoped_refptr<PPB_Surface3D_Impl> read_surface(
-      Resource::GetAs<PPB_Surface3D_Impl>(read));
-  if (!read_surface.get())
-    return PP_ERROR_BADRESOURCE;
-
-  return context->BindSurfaces(draw_surface.get(), read_surface.get());
-}
-
-int32_t GetBoundSurfaces(PP_Resource context,
-                         PP_Resource* draw,
-                         PP_Resource* read) {
-  // TODO(alokp): Implement me.
-  return 0;
-}
-
-const PPB_Context3D_Dev ppb_context3d = {
-  &Create,
-  &IsContext3D,
-  &GetAttrib,
-  &BindSurfaces,
-  &GetBoundSurfaces,
-};
-
-PP_Resource CreateRaw(PP_Instance instance_id,
-                      PP_Config3D_Dev config,
-                      PP_Resource share_context,
-                      const int32_t* attrib_list) {
-  // TODO(alokp): Support shared context.
-  DCHECK_EQ(0, share_context);
-  if (share_context != 0)
-    return 0;
-
-  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
-  if (!instance)
-    return 0;
-
-  scoped_refptr<PPB_Context3D_Impl> context(
-      new PPB_Context3D_Impl(instance));
-  if (!context->InitRaw(config, share_context, attrib_list))
-    return 0;
-
-  return context->GetReference();
-}
-
-PP_Bool Initialize(PP_Resource context_id, int32_t size) {
-  scoped_refptr<PPB_Context3D_Impl> context(
-      Resource::GetAs<PPB_Context3D_Impl>(context_id));
-  if (!context.get() || !context->command_buffer())
-    return PP_FALSE;
-  return context->command_buffer()->Initialize(size) ? PP_TRUE : PP_FALSE;
-}
-
-PP_Bool GetRingBuffer(PP_Resource context_id,
-                      int* shm_handle,
-                      uint32_t* shm_size) {
-  scoped_refptr<PPB_Context3D_Impl> context(
-      Resource::GetAs<PPB_Context3D_Impl>(context_id));
-  if (!context.get() || !context->command_buffer())
-    return PP_FALSE;
-
-  gpu::Buffer buffer = context->command_buffer()->GetRingBuffer();
-
-  return ShmToHandle(buffer.shared_memory, buffer.size, shm_handle, shm_size)
-    ? PP_TRUE : PP_FALSE;
-}
-
-PP_Context3DTrustedState GetState(PP_Resource context_id) {
-  scoped_refptr<PPB_Context3D_Impl> context(
-      Resource::GetAs<PPB_Context3D_Impl>(context_id));
-  if (!context.get() || !context->command_buffer()) {
-    PP_Context3DTrustedState error_state = { 0 };
-    return error_state;
-  }
-
-  return PPStateFromGPUState(context->command_buffer()->GetState());
-}
-
-PP_Bool Flush(PP_Resource context_id, int32_t put_offset) {
-  scoped_refptr<PPB_Context3D_Impl> context(
-      Resource::GetAs<PPB_Context3D_Impl>(context_id));
-  if (!context.get() || !context->command_buffer())
-    return PP_FALSE;
-
-  context->command_buffer()->Flush(put_offset);
-  return PP_TRUE;
-}
-
-PP_Context3DTrustedState FlushSync(PP_Resource context_id, int32_t put_offset) {
-  scoped_refptr<PPB_Context3D_Impl> context(
-      Resource::GetAs<PPB_Context3D_Impl>(context_id));
-  if (!context.get() || !context->command_buffer()) {
-    PP_Context3DTrustedState error_state = { 0 };
-    return error_state;
-  }
-
-  gpu::CommandBuffer::State state = context->command_buffer()->GetState();
-  return PPStateFromGPUState(
-      context->command_buffer()->FlushSync(put_offset, state.get_offset));
-}
-
-int32_t CreateTransferBuffer(PP_Resource context_id, uint32_t size) {
-  scoped_refptr<PPB_Context3D_Impl> context(
-      Resource::GetAs<PPB_Context3D_Impl>(context_id));
-  if (!context.get() || !context->command_buffer())
-    return 0;
-  return context->command_buffer()->CreateTransferBuffer(size, -1);
-}
-
-PP_Bool DestroyTransferBuffer(PP_Resource context_id, int32_t id) {
-  scoped_refptr<PPB_Context3D_Impl> context(
-      Resource::GetAs<PPB_Context3D_Impl>(context_id));
-  if (!context.get() || !context->command_buffer())
-    return PP_FALSE;
-  context->command_buffer()->DestroyTransferBuffer(id);
-  return PP_TRUE;
-}
-
-PP_Bool GetTransferBuffer(PP_Resource context_id,
-                          int32_t id,
-                          int* shm_handle,
-                          uint32_t* shm_size) {
-  scoped_refptr<PPB_Context3D_Impl> context(
-      Resource::GetAs<PPB_Context3D_Impl>(context_id));
-  if (!context.get() || !context->command_buffer())
-    return PP_FALSE;
-  gpu::Buffer buffer = context->command_buffer()->GetTransferBuffer(id);
-
-  return ShmToHandle(buffer.shared_memory, buffer.size, shm_handle, shm_size)
-      ? PP_TRUE : PP_FALSE;
-}
-
-PP_Context3DTrustedState FlushSyncFast(
-    PP_Resource context_id, int32_t put_offset, int32 last_known_get) {
-  scoped_refptr<PPB_Context3D_Impl> context(
-      Resource::GetAs<PPB_Context3D_Impl>(context_id));
-  if (!context.get() || !context->command_buffer()) {
-    PP_Context3DTrustedState error_state = { 0 };
-    return error_state;
-  }
-
-  return PPStateFromGPUState(
-      context->command_buffer()->FlushSync(put_offset, last_known_get));
-}
 }  // namespace
 
 PPB_Context3D_Impl::PPB_Context3D_Impl(PluginInstance* instance)
@@ -256,28 +79,201 @@ PPB_Context3D_Impl::~PPB_Context3D_Impl() {
   Destroy();
 }
 
-const PPB_Context3D_Dev* PPB_Context3D_Impl::GetInterface() {
-  return &ppb_context3d;
+// static
+PP_Resource PPB_Context3D_Impl::Create(PP_Instance pp_instance,
+                                       PP_Config3D_Dev config,
+                                       PP_Resource share_context,
+                                       const int32_t* attrib_list) {
+  // TODO(alokp): Support shared context.
+  DCHECK_EQ(0, share_context);
+  if (share_context != 0)
+    return 0;
+
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(pp_instance);
+  if (!instance)
+    return 0;
+
+  scoped_refptr<PPB_Context3D_Impl> context(
+      new PPB_Context3D_Impl(instance));
+  if (!context->Init(config, share_context, attrib_list))
+    return 0;
+
+  return context->GetReference();
 }
 
-const PPB_Context3DTrusted_Dev* PPB_Context3D_Impl::GetTrustedInterface() {
-  static const PPB_Context3DTrusted_Dev iface = {
-    &CreateRaw,
-    &Initialize,
-    &GetRingBuffer,
-    &GetState,
-    &Flush,
-    &FlushSync,
-    &CreateTransferBuffer,
-    &DestroyTransferBuffer,
-    &GetTransferBuffer,
-    &FlushSyncFast,
-  };
-  return &iface;
+// static
+PP_Resource PPB_Context3D_Impl::CreateRaw(PP_Instance pp_instance,
+                                          PP_Config3D_Dev config,
+                                          PP_Resource share_context,
+                                          const int32_t* attrib_list) {
+  // TODO(alokp): Support shared context.
+  DCHECK_EQ(0, share_context);
+  if (share_context != 0)
+    return 0;
+
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(pp_instance);
+  if (!instance)
+    return 0;
+
+  scoped_refptr<PPB_Context3D_Impl> context(
+      new PPB_Context3D_Impl(instance));
+  if (!context->InitRaw(config, share_context, attrib_list))
+    return 0;
+
+  return context->GetReference();
 }
 
-PPB_Context3D_Impl* PPB_Context3D_Impl::AsPPB_Context3D_Impl() {
+PPB_Context3D_API* PPB_Context3D_Impl::AsPPB_Context3D_API() {
   return this;
+}
+
+int32_t PPB_Context3D_Impl::GetAttrib(int32_t attribute, int32_t* value) {
+  // TODO(alokp): Implement me.
+  return 0;
+}
+
+int32_t PPB_Context3D_Impl::BindSurfaces(PP_Resource draw, PP_Resource read) {
+  EnterResourceNoLock<PPB_Surface3D_API> enter_draw(draw, true);
+  if (enter_draw.failed())
+    return PP_ERROR_BADRESOURCE;
+  PPB_Surface3D_Impl* new_draw =
+      static_cast<PPB_Surface3D_Impl*>(enter_draw.object());
+
+  EnterResourceNoLock<PPB_Surface3D_API> enter_read(read, true);
+  if (enter_read.failed())
+    return PP_ERROR_BADRESOURCE;
+  PPB_Surface3D_Impl* new_read =
+      static_cast<PPB_Surface3D_Impl*>(enter_read.object());
+
+  // TODO(alokp): Support separate draw-read surfaces.
+  DCHECK_EQ(new_draw, new_read);
+  if (new_draw != new_read)
+    return PP_GRAPHICS3DERROR_BAD_MATCH;
+
+  if (new_draw == draw_surface_)
+    return PP_OK;
+
+  if (new_draw->context())
+    return PP_GRAPHICS3DERROR_BAD_ACCESS;  // Already bound.
+
+  if (draw_surface_)
+    draw_surface_->BindToContext(NULL);
+  if (!new_draw->BindToContext(this))
+    return PP_ERROR_NOMEMORY;
+
+  draw_surface_ = new_draw;
+  read_surface_ = new_read;
+  return PP_OK;
+}
+
+int32_t PPB_Context3D_Impl::GetBoundSurfaces(PP_Resource* draw,
+                                             PP_Resource* read) {
+  // TODO(alokp): Implement me.
+  return 0;
+}
+
+PP_Bool PPB_Context3D_Impl::InitializeTrusted(int32_t size) {
+  if (!platform_context_.get())
+    return PP_FALSE;
+  return PP_FromBool(platform_context_->GetCommandBuffer()->Initialize(size));
+}
+
+PP_Bool PPB_Context3D_Impl::GetRingBuffer(int* shm_handle,
+                                          uint32_t* shm_size) {
+  if (!platform_context_.get())
+    return PP_FALSE;
+  gpu::Buffer buffer = platform_context_->GetCommandBuffer()->GetRingBuffer();
+  return ShmToHandle(buffer.shared_memory, buffer.size, shm_handle, shm_size);
+}
+
+PP_Context3DTrustedState PPB_Context3D_Impl::GetState() {
+  if (!platform_context_.get())
+    return GetErrorState();
+  return PPStateFromGPUState(platform_context_->GetCommandBuffer()->GetState());
+}
+
+PP_Bool PPB_Context3D_Impl::Flush(int32_t put_offset) {
+  if (!platform_context_.get())
+    return PP_FALSE;
+  platform_context_->GetCommandBuffer()->Flush(put_offset);
+  return PP_TRUE;
+}
+
+PP_Context3DTrustedState PPB_Context3D_Impl::FlushSync(int32_t put_offset) {
+  if (!platform_context_.get())
+    return GetErrorState();
+  gpu::CommandBuffer::State state =
+      platform_context_->GetCommandBuffer()->GetState();
+  return PPStateFromGPUState(
+      platform_context_->GetCommandBuffer()->FlushSync(put_offset,
+                                                       state.get_offset));
+}
+
+int32_t PPB_Context3D_Impl::CreateTransferBuffer(uint32_t size) {
+  if (!platform_context_.get())
+    return 0;
+  return platform_context_->GetCommandBuffer()->CreateTransferBuffer(size, -1);
+}
+
+PP_Bool PPB_Context3D_Impl::DestroyTransferBuffer(int32_t id) {
+  if (!platform_context_.get())
+    return PP_FALSE;
+  platform_context_->GetCommandBuffer()->DestroyTransferBuffer(id);
+  return PP_TRUE;
+}
+
+PP_Bool PPB_Context3D_Impl::GetTransferBuffer(int32_t id,
+                                              int* shm_handle,
+                                              uint32_t* shm_size) {
+  if (!platform_context_.get())
+    return PP_FALSE;
+  gpu::Buffer buffer =
+      platform_context_->GetCommandBuffer()->GetTransferBuffer(id);
+  return ShmToHandle(buffer.shared_memory, buffer.size, shm_handle, shm_size);
+}
+
+PP_Context3DTrustedState PPB_Context3D_Impl::FlushSyncFast(
+    int32_t put_offset,
+    int32_t last_known_get) {
+  if (!platform_context_.get())
+    return GetErrorState();
+  return PPStateFromGPUState(
+      platform_context_->GetCommandBuffer()->FlushSync(put_offset,
+                                                       last_known_get));
+}
+
+void* PPB_Context3D_Impl::MapTexSubImage2DCHROMIUM(GLenum target,
+                                                   GLint level,
+                                                   GLint xoffset,
+                                                   GLint yoffset,
+                                                   GLsizei width,
+                                                   GLsizei height,
+                                                   GLenum format,
+                                                   GLenum type,
+                                                   GLenum access) {
+  if (!gles2_impl_.get())
+    return NULL;
+  return gles2_impl_->MapTexSubImage2DCHROMIUM(
+      target, level, xoffset, yoffset, width, height, format, type, access);
+}
+
+void PPB_Context3D_Impl::UnmapTexSubImage2DCHROMIUM(const void* mem) {
+  if (gles2_impl_.get())
+    gles2_impl_->UnmapTexSubImage2DCHROMIUM(mem);
+}
+
+bool PPB_Context3D_Impl::Init(PP_Config3D_Dev config,
+                              PP_Resource share_context,
+                              const int32_t* attrib_list) {
+  if (!InitRaw(config, share_context, attrib_list))
+    return false;
+
+  if (!CreateImplementation()) {
+    Destroy();
+    return false;
+  }
+
+  return true;
 }
 
 bool PPB_Context3D_Impl::InitRaw(PP_Config3D_Dev config,
@@ -295,20 +291,6 @@ bool PPB_Context3D_Impl::InitRaw(PP_Config3D_Dev config,
   }
   platform_context_->SetContextLostCallback(
       callback_factory_.NewCallback(&PPB_Context3D_Impl::OnContextLost));
-  return true;
-}
-
-bool PPB_Context3D_Impl::Init(PP_Config3D_Dev config,
-                              PP_Resource share_context,
-                              const int32_t* attrib_list) {
-  if (!InitRaw(config, share_context, attrib_list))
-    return false;
-
-  if (!CreateImplementation()) {
-    Destroy();
-    return false;
-  }
-
   return true;
 }
 
@@ -348,37 +330,15 @@ bool PPB_Context3D_Impl::CreateImplementation() {
   return true;
 }
 
-int32_t PPB_Context3D_Impl::BindSurfaces(PPB_Surface3D_Impl* draw,
-                                         PPB_Surface3D_Impl* read) {
-  // TODO(alokp): Support separate draw-read surfaces.
-  DCHECK_EQ(draw, read);
-  if (draw != read)
-    return PP_GRAPHICS3DERROR_BAD_MATCH;
-
-  if (draw == draw_surface_)
-    return PP_OK;
-
-  if (draw && draw->context())
-    return PP_GRAPHICS3DERROR_BAD_ACCESS;
-
-  if (draw_surface_)
-    draw_surface_->BindToContext(NULL);
-  if (draw && !draw->BindToContext(this))
-    return PP_ERROR_NOMEMORY;
-
-  draw_surface_ = draw;
-  read_surface_ = read;
-  return PP_OK;
-}
-
 void PPB_Context3D_Impl::Destroy() {
   if (draw_surface_)
     draw_surface_->BindToContext(NULL);
 
   gles2_impl_.reset();
 
-  if (command_buffer() && transfer_buffer_id_ != 0) {
-    command_buffer()->DestroyTransferBuffer(transfer_buffer_id_);
+  if (platform_context_.get() && transfer_buffer_id_ != 0) {
+    platform_context_->GetCommandBuffer()->DestroyTransferBuffer(
+        transfer_buffer_id_);
     transfer_buffer_id_ = 0;
   }
 
@@ -391,10 +351,6 @@ void PPB_Context3D_Impl::OnContextLost() {
     draw_surface_->OnContextLost();
   if (read_surface_)
     read_surface_->OnContextLost();
-}
-
-gpu::CommandBuffer *PPB_Context3D_Impl::command_buffer() {
-  return platform_context_.get() ? platform_context_->GetCommandBuffer() : NULL;
 }
 
 }  // namespace ppapi

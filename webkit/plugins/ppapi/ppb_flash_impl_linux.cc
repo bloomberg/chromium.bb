@@ -8,6 +8,7 @@
 #include "ppapi/c/pp_point.h"
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/c/dev/ppb_font_dev.h"
+#include "ppapi/thunk/enter.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkMatrix.h"
 #include "third_party/skia/include/core/SkPaint.h"
@@ -16,6 +17,9 @@
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
 #include "webkit/plugins/ppapi/var.h"
+
+using ppapi::thunk::EnterResource;
+using ppapi::thunk::PPB_ImageData_API;
 
 namespace webkit {
 namespace ppapi {
@@ -30,10 +34,12 @@ PP_Bool PPB_Flash_Impl::DrawGlyphs(PP_Instance,
                                    uint32_t glyph_count,
                                    const uint16_t glyph_indices[],
                                    const PP_Point glyph_advances[]) {
-  scoped_refptr<PPB_ImageData_Impl> image_resource(
-      Resource::GetAs<PPB_ImageData_Impl>(pp_image_data));
-  if (!image_resource.get())
+  EnterResource<PPB_ImageData_API> enter(pp_image_data, true);
+  if (enter.failed())
     return PP_FALSE;
+  PPB_ImageData_Impl* image_resource =
+      static_cast<PPB_ImageData_Impl*>(enter.object());
+
   ImageDataAutoMapper mapper(image_resource);
   if (!mapper.is_valid())
     return PP_FALSE;

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_PPB_CONTEXT_3D_PROXY_H_
-#define PPAPI_PPB_CONTEXT_3D_PROXY_H_
+#ifndef PPAPI_PROXY_PPB_CONTEXT_3D_PROXY_H_
+#define PPAPI_PROXY_PPB_CONTEXT_3D_PROXY_H_
 
 #include <vector>
 
@@ -14,6 +14,7 @@
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/proxy_non_thread_safe_ref_count.h"
+#include "ppapi/thunk/ppb_context_3d_api.h"
 
 struct PPB_Context3D_Dev;
 struct PPB_Context3DTrusted_Dev;
@@ -33,29 +34,50 @@ namespace proxy {
 
 class Surface3D;
 
-class Context3D : public PluginResource {
+class Context3D : public PluginResource,
+                  public ppapi::thunk::PPB_Context3D_API {
  public:
   explicit Context3D(const HostResource& resource);
   virtual ~Context3D();
 
-  // Resource overrides.
-  virtual Context3D* AsContext3D() { return this; }
-
-  bool CreateImplementation();
-
-  Surface3D* get_draw_surface() const {
-    return draw_;
-  }
-
-  Surface3D* get_read_surface() const {
-    return read_;
-  }
-
-  void BindSurfaces(Surface3D* draw, Surface3D* read);
+  // ResourceObjectBase overrides.
+  virtual ::ppapi::thunk::PPB_Context3D_API* AsPPB_Context3D_API() OVERRIDE;
 
   gpu::gles2::GLES2Implementation* gles2_impl() const {
     return gles2_impl_.get();
   }
+
+  // PPB_Context3D_API implementation.
+  virtual int32_t GetAttrib(int32_t attribute, int32_t* value) OVERRIDE;
+  virtual int32_t BindSurfaces(PP_Resource draw, PP_Resource read) OVERRIDE;
+  virtual int32_t GetBoundSurfaces(PP_Resource* draw,
+                                   PP_Resource* read) OVERRIDE;
+  virtual PP_Bool InitializeTrusted(int32_t size) OVERRIDE;
+  virtual PP_Bool GetRingBuffer(int* shm_handle,
+                                uint32_t* shm_size) OVERRIDE;
+  virtual PP_Context3DTrustedState GetState() OVERRIDE;
+  virtual PP_Bool Flush(int32_t put_offset) OVERRIDE;
+  virtual PP_Context3DTrustedState FlushSync(int32_t put_offset) OVERRIDE;
+  virtual int32_t CreateTransferBuffer(uint32_t size) OVERRIDE;
+  virtual PP_Bool DestroyTransferBuffer(int32_t id) OVERRIDE;
+  virtual PP_Bool GetTransferBuffer(int32_t id,
+                                    int* shm_handle,
+                                    uint32_t* shm_size) OVERRIDE;
+  virtual PP_Context3DTrustedState FlushSyncFast(
+      int32_t put_offset,
+      int32_t last_known_get) OVERRIDE;
+  virtual void* MapTexSubImage2DCHROMIUM(GLenum target,
+                                         GLint level,
+                                         GLint xoffset,
+                                         GLint yoffset,
+                                         GLsizei width,
+                                         GLsizei height,
+                                         GLenum format,
+                                         GLenum type,
+                                         GLenum access) OVERRIDE;
+  virtual void UnmapTexSubImage2DCHROMIUM(const void* mem) OVERRIDE;
+
+  bool CreateImplementation();
 
  private:
   Surface3D* draw_;
@@ -75,11 +97,12 @@ class PPB_Context3D_Proxy : public InterfaceProxy {
   virtual ~PPB_Context3D_Proxy();
 
   static const Info* GetInfo();
+  static const Info* GetTextureMappingInfo();
 
-  const PPB_Context3D_Dev* ppb_context_3d_target() const {
-    return reinterpret_cast<const PPB_Context3D_Dev*>(target_interface());
-  }
-  const PPB_Context3DTrusted_Dev* ppb_context_3d_trusted() const;
+  static PP_Resource Create(PP_Instance instance,
+                            PP_Config3D_Dev config,
+                            PP_Resource share_context,
+                            const int32_t* attrib_list);
 
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
@@ -118,4 +141,4 @@ class PPB_Context3D_Proxy : public InterfaceProxy {
 }  // namespace proxy
 }  // namespace pp
 
-#endif  // PPAPI_PPB_CONTEXT_3D_PROXY_H_
+#endif  // PPAPI_PROXY_PPB_CONTEXT_3D_PROXY_H_

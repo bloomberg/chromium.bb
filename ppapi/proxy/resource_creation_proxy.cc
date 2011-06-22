@@ -16,6 +16,7 @@
 #include "ppapi/proxy/ppb_audio_proxy.h"
 #include "ppapi/proxy/ppb_buffer_proxy.h"
 #include "ppapi/proxy/ppb_broker_proxy.h"
+#include "ppapi/proxy/ppb_context_3d_proxy.h"
 #include "ppapi/proxy/ppb_file_chooser_proxy.h"
 #include "ppapi/proxy/ppb_file_ref_proxy.h"
 #include "ppapi/proxy/ppb_file_system_proxy.h"
@@ -24,6 +25,7 @@
 #include "ppapi/proxy/ppb_font_proxy.h"
 #include "ppapi/proxy/ppb_graphics_2d_proxy.h"
 #include "ppapi/proxy/ppb_image_data_proxy.h"
+#include "ppapi/proxy/ppb_surface_3d_proxy.h"
 #include "ppapi/proxy/ppb_url_loader_proxy.h"
 #include "ppapi/proxy/ppb_url_request_info_proxy.h"
 #include "ppapi/shared_impl/font_impl.h"
@@ -78,9 +80,28 @@ PP_Resource ResourceCreationProxy::CreateBuffer(PP_Instance instance,
   return PPB_Buffer_Proxy::CreateProxyResource(instance, size);
 }
 
+PP_Resource ResourceCreationProxy::CreateContext3D(
+    PP_Instance instance,
+    PP_Config3D_Dev config,
+    PP_Resource share_context,
+    const int32_t* attrib_list) {
+  return PPB_Context3D_Proxy::Create(instance, config, share_context,
+                                     attrib_list);
+}
+
+PP_Resource ResourceCreationProxy::CreateContext3DRaw(
+    PP_Instance instance,
+    PP_Config3D_Dev config,
+    PP_Resource share_context,
+    const int32_t* attrib_list) {
+  // Not proxied. The raw creation function is used only in the implementation
+  // of the proxy on the host side.
+  return 0;
+}
+
 PP_Resource ResourceCreationProxy::CreateDirectoryReader(
     PP_Resource directory_ref) {
-  // Not proxied yet.
+  NOTIMPLEMENTED();  // Not proxied yet.
   return 0;
 }
 
@@ -91,7 +112,7 @@ PP_Resource ResourceCreationProxy::CreateFileChooser(
 }
 
 PP_Resource ResourceCreationProxy::CreateFileIO(PP_Instance instance) {
-  // Not proxied yet.
+  NOTIMPLEMENTED();  // Not proxied yet.
   return 0;
 }
 
@@ -161,11 +182,27 @@ PP_Resource ResourceCreationProxy::CreateImageData(PP_Instance instance,
   return PluginResourceTracker::GetInstance()->AddResource(object);
 }
 
+PP_Resource ResourceCreationProxy::CreateGraphics3D(
+    PP_Instance instance,
+    PP_Config3D_Dev config,
+    PP_Resource share_context,
+    const int32_t* attrib_list) {
+  NOTIMPLEMENTED();  // Not proxied yet.
+  return 0;
+}
+
 PP_Resource ResourceCreationProxy::CreateSurface3D(
     PP_Instance instance,
     PP_Config3D_Dev config,
     const int32_t* attrib_list) {
-  NOTREACHED();
+  return PPB_Surface3D_Proxy::CreateProxyResource(instance, config,
+                                                  attrib_list);
+}
+
+PP_Resource ResourceCreationProxy::CreateTransport(PP_Instance instance,
+                                                   const char* name,
+                                                   const char* proto) {
+  NOTIMPLEMENTED();  // Not proxied yet.
   return 0;
 }
 

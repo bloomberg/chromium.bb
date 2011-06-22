@@ -92,8 +92,6 @@
         'proxy/ppb_flash_net_connector_proxy.h',
         'proxy/ppb_font_proxy.cc',
         'proxy/ppb_font_proxy.h',
-        'proxy/ppb_gles_chromium_texture_mapping_proxy.cc',
-        'proxy/ppb_gles_chromium_texture_mapping_proxy.h',
         'proxy/ppb_graphics_2d_proxy.cc',
         'proxy/ppb_graphics_2d_proxy.h',
         'proxy/ppb_image_data_proxy.cc',

@@ -264,8 +264,6 @@
         '../plugins/ppapi/ppb_flash_net_connector_impl.h',
         '../plugins/ppapi/ppb_font_impl.cc',
         '../plugins/ppapi/ppb_font_impl.h',
-        '../plugins/ppapi/ppb_gles_chromium_texture_mapping_impl.cc',
-        '../plugins/ppapi/ppb_gles_chromium_texture_mapping_impl.h',
         '../plugins/ppapi/ppb_graphics_2d_impl.cc',
         '../plugins/ppapi/ppb_graphics_2d_impl.h',
         '../plugins/ppapi/ppb_graphics_3d_impl.cc',

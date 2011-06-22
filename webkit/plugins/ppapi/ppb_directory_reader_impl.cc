@@ -73,11 +73,6 @@ PP_Resource PPB_DirectoryReader_Impl::Create(PP_Resource directory_ref) {
   return reader->GetReference();
 }
 
-PPB_DirectoryReader_Impl*
-PPB_DirectoryReader_Impl::AsPPB_DirectoryReader_Impl() {
-  return this;
-}
-
 PPB_DirectoryReader_API* PPB_DirectoryReader_Impl::AsPPB_DirectoryReader_API() {
   return this;
 }

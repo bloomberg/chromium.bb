@@ -29,9 +29,6 @@ class PPB_DirectoryReader_Impl
 
   static PP_Resource Create(PP_Resource directory_ref);
 
-  // Resource overrides.
-  virtual PPB_DirectoryReader_Impl* AsPPB_DirectoryReader_Impl() OVERRIDE;
-
   // ResourceObjectBase overrides.
   virtual ::ppapi::thunk::PPB_DirectoryReader_API* AsPPB_DirectoryReader_API()
       OVERRIDE;

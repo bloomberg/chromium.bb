@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/completion_callback.h"
-#include "ppapi/c/dev/ppb_transport_dev.h"
+#include "ppapi/thunk/ppb_transport_api.h"
 #include "webkit/glue/p2p_transport.h"
 #include "webkit/plugins/ppapi/callbacks.h"
 #include "webkit/plugins/ppapi/resource.h"
@@ -20,25 +20,29 @@ namespace webkit {
 namespace ppapi {
 
 class PPB_Transport_Impl : public Resource,
+                           public ::ppapi::thunk::PPB_Transport_API,
                            public webkit_glue::P2PTransport::EventHandler {
  public:
-  static const PPB_Transport_Dev* GetInterface();
-
-  explicit PPB_Transport_Impl(PluginInstance* instance);
   virtual ~PPB_Transport_Impl();
 
-  bool Init(const char* name, const char* proto);
+  static PP_Resource Create(PluginInstance* instance,
+                            const char* name,
+                            const char* proto);
 
-  // Resource override.
-  virtual PPB_Transport_Impl* AsPPB_Transport_Impl() OVERRIDE;
+  // ResourceObjectBase override.
+  virtual ::ppapi::thunk::PPB_Transport_API* AsPPB_Transport_API() OVERRIDE;
 
-  bool IsWritable() const;
-  int32_t Connect(PP_CompletionCallback cb);
-  int32_t GetNextAddress(PP_Var* address, PP_CompletionCallback cb);
-  int32_t ReceiveRemoteAddress(PP_Var address);
-  int32_t Recv(void* data, uint32_t len, PP_CompletionCallback cb);
-  int32_t Send(const void* data, uint32_t len, PP_CompletionCallback cb);
-  int32_t Close();
+  // PPB_Transport_API implementation.
+  virtual PP_Bool IsWritable() OVERRIDE;
+  virtual int32_t Connect(PP_CompletionCallback callback) OVERRIDE;
+  virtual int32_t GetNextAddress(PP_Var* address,
+                                 PP_CompletionCallback callback) OVERRIDE;
+  virtual int32_t ReceiveRemoteAddress(PP_Var address) OVERRIDE;
+  virtual int32_t Recv(void* data, uint32_t len,
+                       PP_CompletionCallback callback) OVERRIDE;
+  virtual int32_t Send(const void* data, uint32_t len,
+                       PP_CompletionCallback callback) OVERRIDE;
+  virtual int32_t Close() OVERRIDE;
 
   // webkit_glue::P2PTransport::EventHandler implementation.
   virtual void OnCandidateReady(const std::string& address) OVERRIDE;
@@ -46,6 +50,10 @@ class PPB_Transport_Impl : public Resource,
   virtual void OnError(int error) OVERRIDE;
 
  private:
+  explicit PPB_Transport_Impl(PluginInstance* instance);
+
+  bool Init(const char* name, const char* proto);
+
   void OnRead(int result);
   void OnWritten(int result);
 

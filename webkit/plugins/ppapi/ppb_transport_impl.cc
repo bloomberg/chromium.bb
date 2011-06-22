@@ -17,6 +17,7 @@
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/var.h"
 
+using ppapi::thunk::PPB_Transport_API;
 using webkit_glue::P2PTransport;
 
 namespace webkit {
@@ -26,81 +27,6 @@ namespace {
 
 const char kUdpProtocolName[] = "udp";
 const char kTcpProtocolName[] = "tcp";
-
-PP_Resource CreateTransport(PP_Instance instance_id, const char* name,
-                            const char* proto) {
-  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
-  if (!instance)
-    return 0;
-
-  scoped_refptr<PPB_Transport_Impl> t(new PPB_Transport_Impl(instance));
-  if (!t->Init(name, proto))
-    return 0;
-
-  return t->GetReference();
-}
-
-PP_Bool IsTransport(PP_Resource resource) {
-  return BoolToPPBool(Resource::GetAs<PPB_Transport_Impl>(resource) != NULL);
-}
-
-PP_Bool IsWritable(PP_Resource resource) {
-  scoped_refptr<PPB_Transport_Impl> t(
-      Resource::GetAs<PPB_Transport_Impl>(resource));
-  return BoolToPPBool((t.get()) ? t->IsWritable() : false);
-}
-
-int32_t Connect(PP_Resource resource, PP_CompletionCallback callback) {
-  scoped_refptr<PPB_Transport_Impl> t(
-      Resource::GetAs<PPB_Transport_Impl>(resource));
-  return (t.get()) ? t->Connect(callback) : PP_ERROR_BADRESOURCE;
-}
-
-int32_t GetNextAddress(PP_Resource resource, PP_Var* address,
-                       PP_CompletionCallback callback) {
-  scoped_refptr<PPB_Transport_Impl> t(
-      Resource::GetAs<PPB_Transport_Impl>(resource));
-  return (t.get())? t->GetNextAddress(address, callback) : PP_ERROR_BADRESOURCE;
-}
-
-int32_t ReceiveRemoteAddress(PP_Resource resource, PP_Var address) {
-  scoped_refptr<PPB_Transport_Impl> t(
-      Resource::GetAs<PPB_Transport_Impl>(resource));
-  return (t.get())? t->ReceiveRemoteAddress(address) : PP_ERROR_BADRESOURCE;
-}
-
-int32_t Recv(PP_Resource resource, void* data, uint32_t len,
-             PP_CompletionCallback callback) {
-  scoped_refptr<PPB_Transport_Impl> t(
-      Resource::GetAs<PPB_Transport_Impl>(resource));
-  return (t.get())? t->Recv(data, len, callback) : PP_ERROR_BADRESOURCE;
-}
-
-int32_t Send(PP_Resource resource, const void* data, uint32_t len,
-             PP_CompletionCallback callback) {
-  scoped_refptr<PPB_Transport_Impl> t(
-      Resource::GetAs<PPB_Transport_Impl>(resource));
-  return (t.get())? t->Send(data, len, callback) : PP_ERROR_BADRESOURCE;
-}
-
-// Disconnects from the remote peer.
-int32_t Close(PP_Resource resource) {
-  scoped_refptr<PPB_Transport_Impl> t(
-      Resource::GetAs<PPB_Transport_Impl>(resource));
-  return (t.get())? t->Close() : PP_ERROR_BADRESOURCE;
-}
-
-const PPB_Transport_Dev ppb_transport = {
-  &CreateTransport,
-  &IsTransport,
-  &IsWritable,
-  &Connect,
-  &GetNextAddress,
-  &ReceiveRemoteAddress,
-  &Recv,
-  &Send,
-  &Close,
-};
 
 int MapNetError(int result) {
   if (result > 0)
@@ -133,11 +59,17 @@ PPB_Transport_Impl::PPB_Transport_Impl(PluginInstance* instance)
 PPB_Transport_Impl::~PPB_Transport_Impl() {
 }
 
-const PPB_Transport_Dev* PPB_Transport_Impl::GetInterface() {
-  return &ppb_transport;
+// static
+PP_Resource PPB_Transport_Impl::Create(PluginInstance* instance,
+                                       const char* name,
+                                       const char* proto) {
+  scoped_refptr<PPB_Transport_Impl> t(new PPB_Transport_Impl(instance));
+  if (!t->Init(name, proto))
+    return 0;
+  return t->GetReference();
 }
 
-PPB_Transport_Impl* PPB_Transport_Impl::AsPPB_Transport_Impl() {
+PPB_Transport_API* PPB_Transport_Impl::AsPPB_Transport_API() {
   return this;
 }
 
@@ -157,11 +89,11 @@ bool PPB_Transport_Impl::Init(const char* name, const char* proto) {
   return p2p_transport_.get() != NULL;
 }
 
-bool PPB_Transport_Impl::IsWritable() const {
+PP_Bool PPB_Transport_Impl::IsWritable() {
   if (!p2p_transport_.get())
-    return false;
+    return PP_FALSE;
 
-  return writable_;
+  return PP_FromBool(writable_);
 }
 
 int32_t PPB_Transport_Impl::Connect(PP_CompletionCallback callback) {

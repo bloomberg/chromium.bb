@@ -10,6 +10,7 @@
 #include "webkit/plugins/ppapi/ppb_audio_impl.h"
 #include "webkit/plugins/ppapi/ppb_broker_impl.h"
 #include "webkit/plugins/ppapi/ppb_buffer_impl.h"
+#include "webkit/plugins/ppapi/ppb_context_3d_impl.h"
 #include "webkit/plugins/ppapi/ppb_directory_reader_impl.h"
 #include "webkit/plugins/ppapi/ppb_file_chooser_impl.h"
 #include "webkit/plugins/ppapi/ppb_file_io_impl.h"
@@ -19,8 +20,10 @@
 #include "webkit/plugins/ppapi/ppb_flash_net_connector_impl.h"
 #include "webkit/plugins/ppapi/ppb_font_impl.h"
 #include "webkit/plugins/ppapi/ppb_graphics_2d_impl.h"
+#include "webkit/plugins/ppapi/ppb_graphics_3d_impl.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
 #include "webkit/plugins/ppapi/ppb_surface_3d_impl.h"
+#include "webkit/plugins/ppapi/ppb_transport_impl.h"
 #include "webkit/plugins/ppapi/ppb_url_loader_impl.h"
 #include "webkit/plugins/ppapi/ppb_url_request_info_impl.h"
 #include "webkit/plugins/ppapi/ppb_video_decoder_impl.h"
@@ -85,6 +88,24 @@ PP_Resource ResourceCreationImpl::CreateBroker(PP_Instance instance) {
 PP_Resource ResourceCreationImpl::CreateBuffer(PP_Instance instance,
                                                uint32_t size) {
   return PPB_Buffer_Impl::Create(instance, size);
+}
+
+PP_Resource ResourceCreationImpl::CreateContext3D(
+    PP_Instance instance,
+    PP_Config3D_Dev config,
+    PP_Resource share_context,
+    const int32_t* attrib_list) {
+  return PPB_Context3D_Impl::Create(instance, config, share_context,
+                                    attrib_list);
+}
+
+PP_Resource ResourceCreationImpl::CreateContext3DRaw(
+    PP_Instance instance,
+    PP_Config3D_Dev config,
+    PP_Resource share_context,
+    const int32_t* attrib_list) {
+  return PPB_Context3D_Impl::CreateRaw(instance, config, share_context,
+                                       attrib_list);
 }
 
 PP_Resource ResourceCreationImpl::CreateDirectoryReader(
@@ -155,6 +176,15 @@ PP_Resource ResourceCreationImpl::CreateGraphics2D(
   return graphics_2d->GetReference();
 }
 
+PP_Resource ResourceCreationImpl::CreateGraphics3D(
+    PP_Instance instance,
+    PP_Config3D_Dev config,
+    PP_Resource share_context,
+    const int32_t* attrib_list) {
+  return PPB_Graphics3D_Impl::Create(instance_, config, share_context,
+                                     attrib_list);
+}
+
 PP_Resource ResourceCreationImpl::CreateImageData(PP_Instance pp_instance,
                                                   PP_ImageDataFormat format,
                                                   const PP_Size& size,
@@ -175,6 +205,12 @@ PP_Resource ResourceCreationImpl::CreateSurface3D(
     const int32_t* attrib_list) {
   NOTIMPLEMENTED();
   return 0;
+}
+
+PP_Resource ResourceCreationImpl::CreateTransport(PP_Instance instance,
+                                                  const char* name,
+                                                  const char* proto) {
+  return PPB_Transport_Impl::Create(instance_, name, proto);
 }
 
 PP_Resource ResourceCreationImpl::CreateURLLoader(PP_Instance instance) {

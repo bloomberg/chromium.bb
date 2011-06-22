@@ -183,18 +183,10 @@ void PPB_Flash_Menu_Proxy::OnMsgShow(const HostResource& menu,
 void PPB_Flash_Menu_Proxy::OnMsgShowACK(const HostResource& menu,
                                         int32_t selected_id,
                                         int32_t result) {
-  PP_Resource plugin_resource =
-      PluginResourceTracker::GetInstance()->PluginResourceForHostResource(menu);
-  if (!plugin_resource)
+  EnterPluginFromHostResource<PPB_Flash_Menu_API> enter(menu);
+  if (enter.failed())
     return;
-  FlashMenu* object = PluginResource::GetAs<FlashMenu>(plugin_resource);
-  if (!object) {
-    // The plugin has released the FlashMenu object so don't issue the
-    // callback.
-    return;
-  }
-
-  object->ShowACK(selected_id, result);
+  static_cast<FlashMenu*>(enter.object())->ShowACK(selected_id, result);
 }
 
 void PPB_Flash_Menu_Proxy::SendShowACKToPlugin(

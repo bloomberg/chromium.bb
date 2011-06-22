@@ -14,6 +14,7 @@
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/proxy_non_thread_safe_ref_count.h"
+#include "ppapi/thunk/ppb_surface_3d_api.h"
 
 struct PPB_Surface3D_Dev;
 
@@ -22,27 +23,26 @@ namespace proxy {
 
 class Context3D;
 
-class Surface3D : public PluginResource {
+class Surface3D : public PluginResource,
+                  public ppapi::thunk::PPB_Surface3D_API {
  public:
-  explicit Surface3D(const HostResource& host_resource)
-      : PluginResource(host_resource),
-        resource_(0),
-        context_(NULL),
-        current_flush_callback_(PP_BlockUntilComplete()) {
-  }
+  explicit Surface3D(const HostResource& host_resource);
   virtual ~Surface3D();
 
-  // Resource overrides.
-  virtual Surface3D* AsSurface3D() { return this; }
+  // ResourceObjectBase overrides.
+  virtual PPB_Surface3D_API* AsPPB_Surface3D_API() OVERRIDE;
+
+  // PPB_Surface3D_API implementation.
+  virtual int32_t SetAttrib(int32_t attribute, int32_t value) OVERRIDE;
+  virtual int32_t GetAttrib(int32_t attribute, int32_t* value) OVERRIDE;
+  virtual int32_t SwapBuffers(PP_CompletionCallback callback) OVERRIDE;
+
+  void SwapBuffersACK(int32_t pp_error);
 
   bool is_flush_pending() const { return !!current_flush_callback_.func; }
 
   PP_CompletionCallback current_flush_callback() const {
     return current_flush_callback_;
-  }
-
-  void set_current_flush_callback(PP_CompletionCallback cb) {
-    current_flush_callback_ = cb;
   }
 
   void set_context(Context3D* context) {
@@ -57,6 +57,7 @@ class Surface3D : public PluginResource {
  private:
   PP_Resource resource_;
   Context3D* context_;
+
   // In the plugin, this is the current callback set for Flushes. When the
   // callback function pointer is non-NULL, we're waiting for a flush ACK.
   PP_CompletionCallback current_flush_callback_;
@@ -71,9 +72,9 @@ class PPB_Surface3D_Proxy : public InterfaceProxy {
 
   static const Info* GetInfo();
 
-  const PPB_Surface3D_Dev* ppb_surface_3d_target() const {
-    return reinterpret_cast<const PPB_Surface3D_Dev*>(target_interface());
-  }
+  static PP_Resource CreateProxyResource(PP_Instance instance,
+                                         PP_Config3D_Dev config,
+                                         const int32_t* attrib_list);
 
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);

@@ -38,19 +38,22 @@ class PPB_Scrollbar_Impl : public PPB_Widget_Impl,
   void SetTickMarks(const PP_Rect* tick_marks, uint32_t count);
   void ScrollBy(PP_ScrollBy_Dev unit, int32_t multiplier);
 
-  // PPB_Widget implementation.
-  virtual bool Paint(const PP_Rect* rect, PPB_ImageData_Impl* image);
-  virtual bool HandleEvent(const PP_InputEvent* event);
-  virtual void SetLocationInternal(const PP_Rect* location);
+  // PPB_Widget public implementation.
+  virtual PP_Bool HandleEvent(const PP_InputEvent* event) OVERRIDE;
 
  private:
+  // PPB_Widget private implementation.
+  virtual PP_Bool PaintInternal(const gfx::Rect& rect,
+                                PPB_ImageData_Impl* image) OVERRIDE;
+  virtual void SetLocationInternal(const PP_Rect* location) OVERRIDE;
+
   // WebKit::WebScrollbarClient implementation.
-  virtual void valueChanged(WebKit::WebScrollbar* scrollbar);
+  virtual void valueChanged(WebKit::WebScrollbar* scrollbar) OVERRIDE;
   virtual void invalidateScrollbarRect(WebKit::WebScrollbar* scrollbar,
-                                       const WebKit::WebRect& rect);
+                                       const WebKit::WebRect& rect) OVERRIDE;
   virtual void getTickmarks(
       WebKit::WebScrollbar* scrollbar,
-      WebKit::WebVector<WebKit::WebRect>* tick_marks) const;
+      WebKit::WebVector<WebKit::WebRect>* tick_marks) const OVERRIDE;
 
   void NotifyInvalidate();
 

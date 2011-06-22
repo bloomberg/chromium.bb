@@ -11,6 +11,7 @@
 #include "ppapi/c/dev/pp_file_info_dev.h"
 #include "ppapi/c/dev/ppb_file_io_dev.h"
 #include "ppapi/c/private/ppb_flash_file.h"
+#include "ppapi/thunk/enter.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/file_path.h"
 #include "webkit/plugins/ppapi/file_type_conversions.h"
@@ -23,6 +24,9 @@
 #if defined(OS_WIN)
 #include "base/utf_string_conversions.h"
 #endif
+
+using ppapi::thunk::EnterResource;
+using ppapi::thunk::PPB_FileRef_API;
 
 namespace webkit {
 namespace ppapi {
@@ -214,10 +218,10 @@ int32_t OpenFileRefFile(PP_Resource file_ref_id,
   if (!PepperFileOpenFlagsToPlatformFileFlags(mode, &flags) || !file)
     return PP_ERROR_BADARGUMENT;
 
-  scoped_refptr<PPB_FileRef_Impl> file_ref(
-      Resource::GetAs<PPB_FileRef_Impl>(file_ref_id));
-  if (!file_ref)
+  EnterResource<PPB_FileRef_API> enter(file_ref_id, true);
+  if (enter.failed())
     return PP_ERROR_BADRESOURCE;
+  PPB_FileRef_Impl* file_ref = static_cast<PPB_FileRef_Impl*>(enter.object());
 
   PluginInstance* instance = file_ref->instance();
   if (!instance)
@@ -234,10 +238,10 @@ int32_t OpenFileRefFile(PP_Resource file_ref_id,
 
 int32_t QueryFileRefFile(PP_Resource file_ref_id,
                          PP_FileInfo_Dev* info) {
-  scoped_refptr<PPB_FileRef_Impl> file_ref(
-      Resource::GetAs<PPB_FileRef_Impl>(file_ref_id));
-  if (!file_ref)
+  EnterResource<PPB_FileRef_API> enter(file_ref_id, true);
+  if (enter.failed())
     return PP_ERROR_BADRESOURCE;
+  PPB_FileRef_Impl* file_ref = static_cast<PPB_FileRef_Impl*>(enter.object());
 
   PluginInstance* instance = file_ref->instance();
   if (!instance)

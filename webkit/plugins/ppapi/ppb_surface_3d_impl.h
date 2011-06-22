@@ -6,7 +6,7 @@
 #define WEBKIT_PLUGINS_PPAPI_PPB_SURFACE_3D_IMPL_H_
 
 #include "base/callback.h"
-#include "ppapi/c/dev/ppb_surface_3d_dev.h"
+#include "ppapi/thunk/ppb_surface_3d_api.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/resource.h"
 
@@ -17,18 +17,24 @@ class Size;
 namespace webkit {
 namespace ppapi {
 
-class PPB_Surface3D_Impl : public Resource {
+class PPB_Context3D_Impl;
+
+class PPB_Surface3D_Impl : public Resource,
+                           public ::ppapi::thunk::PPB_Surface3D_API {
  public:
-  explicit PPB_Surface3D_Impl(PluginInstance* instance);
   virtual ~PPB_Surface3D_Impl();
 
-  static const PPB_Surface3D_Dev* GetInterface();
+  static PP_Resource Create(PP_Instance instance_id,
+                            PP_Config3D_Dev config,
+                            const int32_t* attrib_list);
 
-  // Resource override.
-  virtual PPB_Surface3D_Impl* AsPPB_Surface3D_Impl();
+  // ResourceObjectBase override.
+  virtual ::ppapi::thunk::PPB_Surface3D_API* AsPPB_Surface3D_API() OVERRIDE;
 
-  bool Init(PP_Config3D_Dev config,
-            const int32_t* attrib_list);
+  // PPB_Surface3D_API implementation.
+  virtual int32_t SetAttrib(int32_t attribute, int32_t value) OVERRIDE;
+  virtual int32_t GetAttrib(int32_t attribute, int32_t* value) OVERRIDE;
+  virtual int32_t SwapBuffers(PP_CompletionCallback callback) OVERRIDE;
 
   PPB_Context3D_Impl* context() const {
     return context_;
@@ -46,13 +52,15 @@ class PPB_Surface3D_Impl : public Resource {
 
   unsigned int GetBackingTextureId();
 
-  int32_t SwapBuffers(PP_CompletionCallback callback);
-
   void ViewInitiatedPaint();
   void ViewFlushedPaint();
   void OnContextLost();
 
  private:
+  explicit PPB_Surface3D_Impl(PluginInstance* instance);
+
+  bool Init(PP_Config3D_Dev config, const int32_t* attrib_list);
+
   // Called when SwapBuffers is complete.
   void OnSwapBuffers();
   void SendContextLost();

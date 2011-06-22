@@ -5,11 +5,16 @@
 #include "webkit/plugins/ppapi/ppb_proxy_impl.h"
 
 #include "ppapi/c/private/ppb_proxy_private.h"
+#include "ppapi/thunk/enter.h"
+#include "ppapi/thunk/ppb_image_data_api.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_url_loader_impl.h"
 #include "webkit/plugins/ppapi/resource.h"
 #include "webkit/plugins/ppapi/resource_tracker.h"
+
+using ppapi::thunk::EnterResource;
+using ppapi::thunk::PPB_URLLoader_API;
 
 namespace webkit {
 namespace ppapi {
@@ -37,11 +42,10 @@ void SetReserveInstanceIDCallback(PP_Module module,
 }
 
 int32_t GetURLLoaderBufferedBytes(PP_Resource url_loader) {
- scoped_refptr<PPB_URLLoader_Impl> loader(
-      Resource::GetAs<PPB_URLLoader_Impl>(url_loader));
-  if (!loader)
-    return 0;
-  return loader->buffer_size();
+  EnterResource<PPB_URLLoader_API> enter(url_loader, true);
+  if (enter.succeeded())
+    return static_cast<PPB_URLLoader_Impl*>(enter.object())->buffer_size();
+  return 0;
 }
 
 void AddRefModule(PP_Module module) {

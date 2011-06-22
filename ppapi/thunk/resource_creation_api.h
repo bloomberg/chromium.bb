@@ -44,6 +44,14 @@ class ResourceCreationAPI {
                                         uint32_t sample_frame_count) = 0;
   virtual PP_Resource CreateBroker(PP_Instance instance) = 0;
   virtual PP_Resource CreateBuffer(PP_Instance instance, uint32_t size) = 0;
+  virtual PP_Resource CreateContext3D(PP_Instance instance,
+                                      PP_Config3D_Dev config,
+                                      PP_Resource share_context,
+                                      const int32_t* attrib_list) = 0;
+  virtual PP_Resource CreateContext3DRaw(PP_Instance instance,
+                                         PP_Config3D_Dev config,
+                                         PP_Resource share_context,
+                                         const int32_t* attrib_list) = 0;
   virtual PP_Resource CreateDirectoryReader(PP_Resource directory_ref) = 0;
   virtual PP_Resource CreateFileChooser(
       PP_Instance instance,
@@ -63,6 +71,10 @@ class ResourceCreationAPI {
   virtual PP_Resource CreateGraphics2D(PP_Instance instance,
                                        const PP_Size& size,
                                        PP_Bool is_always_opaque) = 0;
+  virtual PP_Resource CreateGraphics3D(PP_Instance instance,
+                                       PP_Config3D_Dev config,
+                                       PP_Resource share_context,
+                                       const int32_t* attrib_list) = 0;
   virtual PP_Resource CreateImageData(PP_Instance instance,
                                       PP_ImageDataFormat format,
                                       const PP_Size& size,
@@ -70,6 +82,9 @@ class ResourceCreationAPI {
   virtual PP_Resource CreateSurface3D(PP_Instance instance,
                                       PP_Config3D_Dev config,
                                       const int32_t* attrib_list) = 0;
+  virtual PP_Resource CreateTransport(PP_Instance instance,
+                                      const char* name,
+                                      const char* proto) = 0;
   virtual PP_Resource CreateURLLoader(PP_Instance instance) = 0;
   virtual PP_Resource CreateURLRequestInfo(PP_Instance instance) = 0;
   virtual PP_Resource CreateVideoDecoder(PP_Instance instance) = 0;

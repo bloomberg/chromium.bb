@@ -50,9 +50,6 @@ class PPB_ImageData_Impl : public Resource,
 
   virtual ::ppapi::thunk::PPB_ImageData_API* AsPPB_ImageData_API() OVERRIDE;
 
-  // Resource overrides.
-  virtual PPB_ImageData_Impl* AsPPB_ImageData_Impl() OVERRIDE;
-
   // PPB_ImageData_API implementation.
   virtual PP_Bool Describe(PP_ImageDataDesc* desc) OVERRIDE;
   virtual void* Map() OVERRIDE;

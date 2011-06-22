@@ -62,7 +62,6 @@
 #include "ppapi/proxy/ppb_flash_menu_proxy.h"
 #include "ppapi/proxy/ppb_flash_net_connector_proxy.h"
 #include "ppapi/proxy/ppb_font_proxy.h"
-#include "ppapi/proxy/ppb_gles_chromium_texture_mapping_proxy.h"
 #include "ppapi/proxy/ppb_graphics_2d_proxy.h"
 #include "ppapi/proxy/ppb_image_data_proxy.h"
 #include "ppapi/proxy/ppb_instance_proxy.h"
@@ -120,6 +119,7 @@ InterfaceList::InterfaceList() {
   AddPPB(PPB_CharSet_Proxy::GetInfo());
   AddPPB(PPB_Console_Proxy::GetInfo());
   AddPPB(PPB_Context3D_Proxy::GetInfo());
+  AddPPB(PPB_Context3D_Proxy::GetTextureMappingInfo());
   AddPPB(PPB_Core_Proxy::GetInfo());
   AddPPB(PPB_Crypto_Proxy::GetInfo());
   AddPPB(PPB_CursorControl_Proxy::GetInfo());
@@ -132,7 +132,6 @@ InterfaceList::InterfaceList() {
   AddPPB(PPB_Flash_Proxy::GetInfo());
   AddPPB(PPB_Flash_Menu_Proxy::GetInfo());
   AddPPB(PPB_Font_Proxy::GetInfo());
-  AddPPB(PPB_GLESChromiumTextureMapping_Proxy::GetInfo());
   AddPPB(PPB_Graphics2D_Proxy::GetInfo());
   AddPPB(PPB_ImageData_Proxy::GetInfo());
   AddPPB(PPB_Instance_Proxy::GetInfoPrivate());

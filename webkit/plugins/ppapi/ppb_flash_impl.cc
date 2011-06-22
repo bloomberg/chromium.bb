@@ -10,6 +10,7 @@
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
 #include "ppapi/c/private/ppb_flash.h"
+#include "ppapi/thunk/enter.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
@@ -17,6 +18,9 @@
 #include "webkit/plugins/ppapi/ppb_url_request_info_impl.h"
 #include "webkit/plugins/ppapi/resource_tracker.h"
 #include "webkit/plugins/ppapi/var.h"
+
+using ppapi::thunk::EnterResource;
+using ppapi::thunk::PPB_URLRequestInfo_API;
 
 namespace webkit {
 namespace ppapi {
@@ -48,10 +52,11 @@ PP_Var GetProxyForURL(PP_Instance pp_instance, const char* url) {
 int32_t Navigate(PP_Resource request_id,
                  const char* target,
                  bool from_user_action) {
-  scoped_refptr<PPB_URLRequestInfo_Impl> request(
-      Resource::GetAs<PPB_URLRequestInfo_Impl>(request_id));
-  if (!request)
+  EnterResource<PPB_URLRequestInfo_API> enter(request_id, true);
+  if (enter.failed())
     return PP_ERROR_BADRESOURCE;
+  PPB_URLRequestInfo_Impl* request =
+      static_cast<PPB_URLRequestInfo_Impl*>(enter.object());
 
   if (!target)
     return PP_ERROR_BADARGUMENT;

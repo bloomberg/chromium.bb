@@ -57,10 +57,6 @@ PP_Resource PPB_Broker_Impl::Create(PP_Instance instance_id) {
   return broker->GetReference();
 }
 
-PPB_Broker_Impl* PPB_Broker_Impl::AsPPB_Broker_Impl() {
-  return this;
-}
-
 PPB_Broker_API* PPB_Broker_Impl::AsPPB_Broker_API() {
   return this;
 }

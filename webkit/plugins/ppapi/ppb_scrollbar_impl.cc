@@ -166,33 +166,28 @@ void PPB_Scrollbar_Impl::ScrollBy(PP_ScrollBy_Dev unit, int32_t multiplier) {
   scrollbar_->scroll(direction, granularity, fmultiplier);
 }
 
-bool PPB_Scrollbar_Impl::Paint(const PP_Rect* rect, PPB_ImageData_Impl* image) {
-  gfx::Rect gfx_rect(rect->point.x,
-                     rect->point.y,
-                     rect->size.width,
-                     rect->size.height);
+PP_Bool PPB_Scrollbar_Impl::HandleEvent(const PP_InputEvent* event) {
+  scoped_ptr<WebInputEvent> web_input_event(CreateWebInputEvent(*event));
+  if (!web_input_event.get())
+    return PP_FALSE;
+
+  return PP_FromBool(scrollbar_->handleInputEvent(*web_input_event.get()));
+}
+
+PP_Bool PPB_Scrollbar_Impl::PaintInternal(const gfx::Rect& rect,
+                                          PPB_ImageData_Impl* image) {
   ImageDataAutoMapper mapper(image);
   skia::PlatformCanvas* canvas = image->mapped_canvas();
   if (!canvas)
-    return false;
-  scrollbar_->paint(webkit_glue::ToWebCanvas(canvas), gfx_rect);
+    return PP_FALSE;
+  scrollbar_->paint(webkit_glue::ToWebCanvas(canvas), rect);
 
 #if defined(OS_WIN)
-  if (base::win::GetVersion() == base::win::VERSION_XP) {
-    skia::MakeOpaque(canvas, gfx_rect.x(), gfx_rect.y(),
-                     gfx_rect.width(), gfx_rect.height());
-  }
+  if (base::win::GetVersion() == base::win::VERSION_XP)
+    skia::MakeOpaque(canvas, rect.x(), rect.y(), rect.width(), rect.height());
 #endif
 
-  return true;
-}
-
-bool PPB_Scrollbar_Impl::HandleEvent(const PP_InputEvent* event) {
-  scoped_ptr<WebInputEvent> web_input_event(CreateWebInputEvent(*event));
-  if (!web_input_event.get())
-    return false;
-
-  return scrollbar_->handleInputEvent(*web_input_event.get());
+  return PP_TRUE;
 }
 
 void PPB_Scrollbar_Impl::SetLocationInternal(const PP_Rect* location) {

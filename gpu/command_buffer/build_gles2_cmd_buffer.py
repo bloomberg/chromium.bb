@@ -22,6 +22,12 @@ _LICENSE = """// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 
 """
 
+_DO_NOT_EDIT_WARNING = """// This file is auto-generated from
+// gpu/command_buffer/build_gles2_cmd_buffer.py
+// DO NOT EDIT!
+
+"""
+
 # This string is copied directly out of the gl2.h file from GLES2.0
 #
 # Edits:
@@ -1852,9 +1858,7 @@ class CHeaderWriter(CWriter):
     self.guard = self._non_alnum_re.sub('_', hpath).upper() + '_'
 
     self.Write(_LICENSE)
-    self.Write(
-        "// This file is auto-generated. DO NOT EDIT!\n"
-        "\n")
+    self.Write(_DO_NOT_EDIT_WARNING)
     if not file_comment == None:
       self.Write(file_comment)
     self.Write("#ifndef %s\n" % self.guard)
@@ -5665,17 +5669,27 @@ const size_t GLES2Util::enum_to_string_table_len_ =
 
     file = CWriter(filename)
     file.Write(_LICENSE)
-    file.Write("// This file is auto-generated. DO NOT EDIT!\n\n")
+    file.Write(_DO_NOT_EDIT_WARNING)
 
     file.Write("#include \"webkit/plugins/ppapi/ppb_opengles_impl.h\"\n\n")
 
     file.Write("#include \"gpu/command_buffer/client/gles2_implementation.h\"\n")
     file.Write("#include \"ppapi/c/dev/ppb_opengles_dev.h\"\n")
+    file.Write("#include \"ppapi/shared_impl/resource_object_base.h\"\n")
+    file.Write("#include \"ppapi/shared_impl/tracker_base.h\"\n")
     file.Write("#include \"webkit/plugins/ppapi/ppb_context_3d_impl.h\"\n\n")
 
+    file.Write("using ppapi::ResourceObjectBase;\n")
+    file.Write("using ppapi::TrackerBase;\n\n")
     file.Write("namespace webkit {\n")
     file.Write("namespace ppapi {\n\n")
     file.Write("namespace {\n\n")
+
+    file.Write("gpu::gles2::GLES2Implementation* GetGLES(PP_Resource context) {\n")
+    file.Write("  ResourceObjectBase* base = TrackerBase::Get()->GetResourceAPI(context);\n")
+    file.Write("  DCHECK(base->AsPPB_Context3D_API());\n")
+    file.Write("  return static_cast<PPB_Context3D_Impl*>(base)->gles2_impl();\n")
+    file.Write("}\n\n")
 
     for func in self.original_functions:
       if not func.IsCoreGLFunction():
@@ -5689,12 +5703,8 @@ const size_t GLES2Util::enum_to_string_table_len_ =
         arg = context_arg
       file.Write("%s %s(%s) {\n" % (func.return_type, func.name, arg))
 
-      file.Write("""  scoped_refptr<PPB_Context3D_Impl> context =
-      Resource::GetAs<PPB_Context3D_Impl>(context_id);
-""")
-
       return_str = "" if func.return_type == "void" else "return "
-      file.Write("  %scontext->gles2_impl()->%s(%s);\n" %
+      file.Write("  %sGetGLES(context_id)->%s(%s);\n" %
                  (return_str, func.original_name,
                   func.MakeOriginalArgString("")))
       file.Write("}\n\n")
@@ -5724,7 +5734,7 @@ const PPB_OpenGLES2_Dev* PPB_OpenGLES_Impl::GetInterface() {
 
     file = CWriter(filename)
     file.Write(_LICENSE)
-    file.Write("// This file is auto-generated. DO NOT EDIT!\n\n")
+    file.Write(_DO_NOT_EDIT_WARNING)
 
     file.Write("#include \"ppapi/proxy/ppb_opengles2_proxy.h\"\n\n")
 
@@ -5734,12 +5744,19 @@ const PPB_OpenGLES2_Dev* PPB_OpenGLES_Impl::GetInterface() {
     file.Write("#include \"ppapi/c/dev/ppb_opengles_dev.h\"\n")
     file.Write("#include \"ppapi/proxy/plugin_dispatcher.h\"\n")
     file.Write("#include \"ppapi/proxy/plugin_resource.h\"\n")
-    file.Write("#include \"ppapi/proxy/ppb_context_3d_proxy.h\"\n\n")
+    file.Write("#include \"ppapi/proxy/ppb_context_3d_proxy.h\"\n")
+    file.Write("#include \"ppapi/shared_impl/resource_object_base.h\"\n")
+    file.Write("#include \"ppapi/shared_impl/tracker_base.h\"\n\n")
 
     file.Write("namespace pp {\n")
     file.Write("namespace proxy {\n\n")
     file.Write("namespace {\n\n")
-
+    file.Write("gpu::gles2::GLES2Implementation* GetGLES(PP_Resource context) {\n")
+    file.Write("  ppapi::ResourceObjectBase* base =\n")
+    file.Write("  ppapi::TrackerBase::Get()->GetResourceAPI(context);\n")
+    file.Write("  DCHECK(base->AsPPB_Context3D_API());\n")
+    file.Write("  return static_cast<Context3D*>(base)->gles2_impl();\n")
+    file.Write("}\n\n")
 
     for func in self.original_functions:
       if not func.IsCoreGLFunction():
@@ -5753,10 +5770,8 @@ const PPB_OpenGLES2_Dev* PPB_OpenGLES_Impl::GetInterface() {
         arg = context_arg
       file.Write("%s %s(%s) {\n" % (func.return_type, func.name, arg))
 
-      file.Write("""  Context3D* context = PluginResource::GetAs<Context3D>(context_id);\n""")
-
       return_str = "" if func.return_type == "void" else "return "
-      file.Write("  %scontext->gles2_impl()->%s(%s);\n" %
+      file.Write("  %sGetGLES(context_id)->%s(%s);\n" %
                  (return_str, func.original_name,
                   func.MakeOriginalArgString("")))
       file.Write("}\n\n")
@@ -5811,7 +5826,7 @@ bool PPB_OpenGLES2_Proxy::OnMessageReceived(const IPC::Message& msg) {
 
     file = CWriter(filename)
     file.Write(_LICENSE)
-    file.Write("// This file is auto-generated. DO NOT EDIT!\n\n")
+    file.Write(_DO_NOT_EDIT_WARNING)
 
     file.Write("#include <GLES2/gl2.h>\n")
     file.Write("#include \"ppapi/lib/gl/gles2/gl2ext_ppapi.h\"\n\n")
@@ -5840,7 +5855,7 @@ bool PPB_OpenGLES2_Proxy::OnMessageReceived(const IPC::Message& msg) {
 
     file = CWriter(filename)
     file.Write(_LICENSE)
-    file.Write("// This file is auto-generated. DO NOT EDIT!\n\n")
+    file.Write(_DO_NOT_EDIT_WARNING)
 
     file.Write("#include \"native_client/src/shared/ppapi_proxy"
         "/plugin_context_3d.h\"\n\n")

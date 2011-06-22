@@ -16,6 +16,7 @@
 #include "ppapi/thunk/ppb_image_data_api.h"
 #include "ppapi/thunk/thunk.h"
 
+using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_ImageData_API;
 using ppapi::WebKitForwarding;
 
@@ -148,14 +149,10 @@ PP_Bool Font::DrawTextAt(PP_Resource pp_image_data,
                          const PP_Rect* clip,
                          PP_Bool image_data_is_opaque) {
   // Convert to an ImageData object.
-  ppapi::ResourceObjectBase* image_base =
-      ppapi::TrackerBase::Get()->GetResourceAPI(pp_image_data);
-  if (!image_base)
+  EnterResourceNoLock<PPB_ImageData_API> enter(pp_image_data, true);
+  if (enter.failed())
     return PP_FALSE;
-  PPB_ImageData_API* image_api = image_base->GetAs<PPB_ImageData_API>();
-  if (!image_api)
-    return PP_FALSE;
-  ImageData* image_data = static_cast<ImageData*>(image_api);
+  ImageData* image_data = static_cast<ImageData*>(enter.object());
 
   skia::PlatformCanvas* canvas = image_data->mapped_canvas();
   bool needs_unmapping = false;

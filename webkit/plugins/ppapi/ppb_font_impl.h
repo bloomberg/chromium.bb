@@ -30,9 +30,6 @@ class PPB_Font_Impl : public Resource,
   // ResourceObjectBase.
   virtual ::ppapi::thunk::PPB_Font_API* AsPPB_Font_API() OVERRIDE;
 
-  // Resource overrides.
-  virtual PPB_Font_Impl* AsPPB_Font_Impl() OVERRIDE;
-
   // PPB_Font implementation.
   virtual PP_Bool Describe(PP_FontDescription_Dev* description,
                            PP_FontMetrics_Dev* metrics) OVERRIDE;

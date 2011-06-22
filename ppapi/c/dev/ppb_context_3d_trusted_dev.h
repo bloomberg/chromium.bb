@@ -15,6 +15,7 @@
 #define PPB_CONTEXT_3D_TRUSTED_DEV_INTERFACE \
     PPB_CONTEXT_3D_TRUSTED_DEV_INTERFACE_0_4
 
+// TODO(brettw) Remove these generic names from the global namespace!
 typedef enum {
   kNoError,
   kInvalidSize,

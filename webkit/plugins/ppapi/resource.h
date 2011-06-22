@@ -14,35 +14,11 @@
 namespace webkit {
 namespace ppapi {
 
-// If you inherit from resource, make sure you add the class name here.
+// Support the old way of doing resource casts for those resources that have
+// not been converted to the new system.
 #define FOR_ALL_RESOURCES(F) \
   F(MockResource) \
-  F(PPB_AudioConfig_Impl) \
-  F(PPB_Audio_Impl) \
-  F(PPB_Broker_Impl) \
-  F(PPB_Buffer_Impl) \
-  F(PPB_Context3D_Impl) \
-  F(PPB_DirectoryReader_Impl) \
-  F(PPB_FileChooser_Impl) \
-  F(PPB_FileIO_Impl) \
-  F(PPB_FileRef_Impl) \
-  F(PPB_FileSystem_Impl) \
-  F(PPB_Flash_Menu_Impl) \
-  F(PPB_Flash_NetConnector_Impl) \
-  F(PPB_Font_Impl) \
-  F(PPB_Graphics2D_Impl) \
-  F(PPB_Graphics3D_Impl) \
-  F(PPB_ImageData_Impl) \
-  F(PPB_LayerCompositor_Impl) \
-  F(PPB_Scrollbar_Impl) \
-  F(PPB_Surface3D_Impl) \
-  F(PPB_Transport_Impl) \
-  F(PPB_URLLoader_Impl) \
-  F(PPB_URLRequestInfo_Impl) \
-  F(PPB_URLResponseInfo_Impl) \
-  F(PPB_VideoDecoder_Impl) \
-  F(PPB_VideoLayer_Impl) \
-  F(PPB_Widget_Impl)
+  F(PPB_Scrollbar_Impl)
 
 // Forward declaration of Resource classes.
 #define DECLARE_RESOURCE_CLASS(RESOURCE) class RESOURCE;

@@ -11,125 +11,25 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/dev/ppb_context_3d_dev.h"
 #include "ppapi/c/dev/ppb_context_3d_trusted_dev.h"
+#include "ppapi/proxy/enter_proxy.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppb_surface_3d_proxy.h"
+#include "ppapi/thunk/enter.h"
+#include "ppapi/thunk/resource_creation_api.h"
+#include "ppapi/thunk/thunk.h"
+
+using ppapi::thunk::EnterFunctionNoLock;
+using ppapi::thunk::EnterResourceNoLock;
+using ppapi::thunk::PPB_Context3D_API;
+using ppapi::thunk::PPB_Surface3D_API;
+using ppapi::thunk::ResourceCreationAPI;
 
 namespace pp {
 namespace proxy {
 
 namespace {
-
-PP_Resource Create(PP_Instance instance,
-                   PP_Config3D_Dev config,
-                   PP_Resource share_context,
-                   const int32_t* attrib_list) {
-  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
-  if (!dispatcher)
-    return PP_ERROR_BADARGUMENT;
-
-  // TODO(alokp): Support shared context.
-  DCHECK_EQ(0, share_context);
-  if (share_context != 0)
-    return 0;
-
-  std::vector<int32_t> attribs;
-  if (attrib_list) {
-    for (const int32_t* attr = attrib_list; attr; ++attr)
-      attribs.push_back(*attr);
-  } else {
-    attribs.push_back(0);
-  }
-
-  HostResource result;
-  dispatcher->Send(new PpapiHostMsg_PPBContext3D_Create(
-      INTERFACE_ID_PPB_CONTEXT_3D, instance, config, attribs, &result));
-
-  if (result.is_null())
-    return 0;
-  linked_ptr<Context3D> context_3d(new Context3D(result));
-  if (!context_3d->CreateImplementation())
-    return 0;
-  return PluginResourceTracker::GetInstance()->AddResource(context_3d);
-}
-
-PP_Bool IsContext3D(PP_Resource resource) {
-  Context3D* object = PluginResource::GetAs<Context3D>(resource);
-  return BoolToPPBool(!!object);
-}
-
-int32_t GetAttrib(PP_Resource context,
-                  int32_t attribute,
-                  int32_t* value) {
-  // TODO(alokp): Implement me.
-  return 0;
-}
-
-int32_t BindSurfaces(PP_Resource context_id,
-                     PP_Resource draw,
-                     PP_Resource read) {
-  Context3D* object = PluginResource::GetAs<Context3D>(context_id);
-  if (!object)
-    return PP_ERROR_BADRESOURCE;
-  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(
-      object->instance());
-  if (!dispatcher)
-    return PP_ERROR_FAILED;
-
-  // TODO(alokp): Support separate draw-read surfaces.
-  DCHECK_EQ(draw, read);
-  if (draw != read)
-    return PP_GRAPHICS3DERROR_BAD_MATCH;
-
-  Surface3D* draw_surface = PluginResource::GetAs<Surface3D>(draw);
-  Surface3D* read_surface = PluginResource::GetAs<Surface3D>(read);
-  if (draw && !draw_surface)
-    return PP_ERROR_BADRESOURCE;
-  if (read && !read_surface)
-    return PP_ERROR_BADRESOURCE;
-  HostResource host_draw =
-      draw_surface ? draw_surface->host_resource() : HostResource();
-  HostResource host_read =
-      read_surface ? read_surface->host_resource() : HostResource();
-
-  int32_t result;
-  dispatcher->Send(new PpapiHostMsg_PPBContext3D_BindSurfaces(
-      INTERFACE_ID_PPB_CONTEXT_3D,
-      object->host_resource(),
-      host_draw,
-      host_read,
-      &result));
-
-  if (result == PP_OK)
-    object->BindSurfaces(draw_surface, read_surface);
-
-  return result;
-}
-
-int32_t GetBoundSurfaces(PP_Resource context,
-                         PP_Resource* draw,
-                         PP_Resource* read) {
-  Context3D* object = PluginResource::GetAs<Context3D>(context);
-  if (!object)
-    return PP_ERROR_BADRESOURCE;
-
-  Surface3D* draw_surface = object->get_draw_surface();
-  Surface3D* read_surface = object->get_read_surface();
-
-  *draw = draw_surface ? draw_surface->resource() : 0;
-  *read = read_surface ? read_surface->resource() : 0;
-  return PP_OK;
-}
-
-
-const PPB_Context3D_Dev context_3d_interface = {
-  &Create,
-  &IsContext3D,
-  &GetAttrib,
-  &BindSurfaces,
-  &GetBoundSurfaces,
-};
 
 base::SharedMemoryHandle TransportSHMHandleFromInt(Dispatcher* dispatcher,
                                                    int shm_handle) {
@@ -145,6 +45,12 @@ base::SharedMemoryHandle TransportSHMHandleFromInt(Dispatcher* dispatcher,
 #endif
   // Don't close the handle, it doesn't belong to us.
   return dispatcher->ShareHandleWithRemote(source, false);
+}
+
+PP_Context3DTrustedState GetErrorState() {
+  PP_Context3DTrustedState error_state = { 0 };
+  error_state.error = kGenericError;
+  return error_state;
 }
 
 gpu::CommandBuffer::State GPUStateFromPPState(
@@ -419,6 +325,8 @@ void PepperCommandBuffer::UpdateState(const gpu::CommandBuffer::State& state) {
     last_state_ = state;
 }
 
+// Context3D -------------------------------------------------------------------
+
 Context3D::Context3D(const HostResource& resource)
     : PluginResource(resource),
       draw_(NULL),
@@ -429,6 +337,10 @@ Context3D::Context3D(const HostResource& resource)
 Context3D::~Context3D() {
   if (draw_)
     draw_->set_context(NULL);
+}
+
+PPB_Context3D_API* Context3D::AsPPB_Context3D_API() {
+  return this;
 }
 
 bool Context3D::CreateImplementation() {
@@ -465,27 +377,131 @@ bool Context3D::CreateImplementation() {
   return true;
 }
 
-void Context3D::BindSurfaces(Surface3D* draw, Surface3D* read) {
-  if (draw != draw_) {
+int32_t Context3D::GetAttrib(int32_t attribute, int32_t* value) {
+  // TODO(alokp): Implement me.
+  return 0;
+}
+
+int32_t Context3D::BindSurfaces(PP_Resource pp_draw, PP_Resource pp_read) {
+  // TODO(alokp): Support separate draw-read surfaces.
+  DCHECK_EQ(pp_draw, pp_read);
+  if (pp_draw != pp_read)
+    return PP_GRAPHICS3DERROR_BAD_MATCH;
+
+  EnterResourceNoLock<PPB_Surface3D_API> enter_draw(pp_draw, false);
+  EnterResourceNoLock<PPB_Surface3D_API> enter_read(pp_read, false);
+  Surface3D* draw_surface = enter_draw.succeeded() ?
+      static_cast<Surface3D*>(enter_draw.object()) : NULL;
+  Surface3D* read_surface = enter_read.succeeded() ?
+      static_cast<Surface3D*>(enter_read.object()) : NULL;
+
+  if (pp_draw && !draw_surface)
+    return PP_ERROR_BADRESOURCE;
+  if (pp_read && !read_surface)
+    return PP_ERROR_BADRESOURCE;
+  HostResource host_draw =
+      draw_surface ? draw_surface->host_resource() : HostResource();
+  HostResource host_read =
+      read_surface ? read_surface->host_resource() : HostResource();
+
+  int32_t result;
+  GetDispatcher()->Send(new PpapiHostMsg_PPBContext3D_BindSurfaces(
+      INTERFACE_ID_PPB_CONTEXT_3D,
+      host_resource(), host_draw, host_read, &result));
+  if (result != PP_OK)
+    return result;
+
+  if (draw_surface != draw_) {
     if (draw_)
       draw_->set_context(NULL);
-    if (draw) {
-      draw->set_context(this);
+    if (draw_surface) {
+      draw_surface->set_context(this);
       // Resize the backing texture to the size of the instance when it is
       // bound.
       // TODO(alokp): This should be the responsibility of plugins.
-      PluginDispatcher* dispatcher =
-          PluginDispatcher::GetForInstance(instance());
-      DCHECK(dispatcher);
-      InstanceData* data = dispatcher->GetInstanceData(instance());
-      DCHECK(data);
+      InstanceData* data = GetDispatcher()->GetInstanceData(instance());
       gles2_impl()->ResizeCHROMIUM(data->position.size.width,
                                    data->position.size.height);
     }
-    draw_ = draw;
+    draw_ = draw_surface;
   }
-  read_ = read;
+  read_ = read_surface;
+  return PP_OK;
 }
+
+int32_t Context3D::GetBoundSurfaces(PP_Resource* draw, PP_Resource* read) {
+  *draw = draw_ ? draw_->resource() : 0;
+  *read = read_ ? read_->resource() : 0;
+  return PP_OK;
+}
+
+PP_Bool Context3D::InitializeTrusted(int32_t size) {
+  // Trusted interface not implemented in the proxy.
+  return PP_FALSE;
+}
+
+PP_Bool Context3D::GetRingBuffer(int* shm_handle,
+                                 uint32_t* shm_size) {
+  // Trusted interface not implemented in the proxy.
+  return PP_FALSE;
+}
+
+PP_Context3DTrustedState Context3D::GetState() {
+  // Trusted interface not implemented in the proxy.
+  return GetErrorState();
+}
+
+PP_Bool Context3D::Flush(int32_t put_offset) {
+  // Trusted interface not implemented in the proxy.
+  return PP_FALSE;
+}
+
+PP_Context3DTrustedState Context3D::FlushSync(int32_t put_offset) {
+  // Trusted interface not implemented in the proxy.
+  return GetErrorState();
+}
+
+int32_t Context3D::CreateTransferBuffer(uint32_t size) {
+  // Trusted interface not implemented in the proxy.
+  return 0;
+}
+
+PP_Bool Context3D::DestroyTransferBuffer(int32_t id) {
+  // Trusted interface not implemented in the proxy.
+  return PP_FALSE;
+}
+
+PP_Bool Context3D::GetTransferBuffer(int32_t id,
+                                     int* shm_handle,
+                                     uint32_t* shm_size) {
+  // Trusted interface not implemented in the proxy.
+  return PP_FALSE;
+}
+
+PP_Context3DTrustedState Context3D::FlushSyncFast(int32_t put_offset,
+                                                  int32_t last_known_get) {
+  // Trusted interface not implemented in the proxy.
+  return GetErrorState();
+}
+
+void* Context3D::MapTexSubImage2DCHROMIUM(GLenum target,
+                                          GLint level,
+                                          GLint xoffset,
+                                          GLint yoffset,
+                                          GLsizei width,
+                                          GLsizei height,
+                                          GLenum format,
+                                          GLenum type,
+                                          GLenum access) {
+  return gles2_impl_->MapTexSubImage2DCHROMIUM(
+      target, level, xoffset, yoffset, width, height, format, type, access);
+}
+
+void Context3D::UnmapTexSubImage2DCHROMIUM(const void* mem) {
+  gles2_impl_->UnmapTexSubImage2DCHROMIUM(mem);
+}
+
+// PPB_Context3D_Proxy ---------------------------------------------------------
 
 PPB_Context3D_Proxy::PPB_Context3D_Proxy(Dispatcher* dispatcher,
                                          const void* target_interface)
@@ -498,7 +514,7 @@ PPB_Context3D_Proxy::~PPB_Context3D_Proxy() {
 // static
 const InterfaceProxy::Info* PPB_Context3D_Proxy::GetInfo() {
   static const Info info = {
-    &context_3d_interface,
+    ::ppapi::thunk::GetPPB_Context3D_Thunk(),
     PPB_CONTEXT_3D_DEV_INTERFACE,
     INTERFACE_ID_PPB_CONTEXT_3D,
     false,
@@ -507,11 +523,50 @@ const InterfaceProxy::Info* PPB_Context3D_Proxy::GetInfo() {
   return &info;
 }
 
-const PPB_Context3DTrusted_Dev*
-PPB_Context3D_Proxy::ppb_context_3d_trusted() const {
-  return static_cast<const PPB_Context3DTrusted_Dev*>(
-      dispatcher()->GetLocalInterface(
-          PPB_CONTEXT_3D_TRUSTED_DEV_INTERFACE));
+// static
+const InterfaceProxy::Info* PPB_Context3D_Proxy::GetTextureMappingInfo() {
+  static const Info info = {
+    ::ppapi::thunk::GetPPB_GLESChromiumTextureMapping_Thunk(),
+    PPB_GLES_CHROMIUM_TEXTURE_MAPPING_DEV_INTERFACE,
+    INTERFACE_ID_NONE,  // CONTEXT_3D is the canonical one.
+    false,
+    &CreateContext3DProxy,
+  };
+  return &info;
+}
+
+// static
+PP_Resource PPB_Context3D_Proxy::Create(PP_Instance instance,
+                                        PP_Config3D_Dev config,
+                                        PP_Resource share_context,
+                                        const int32_t* attrib_list) {
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
+  if (!dispatcher)
+    return PP_ERROR_BADARGUMENT;
+
+  // TODO(alokp): Support shared context.
+  DCHECK_EQ(0, share_context);
+  if (share_context != 0)
+    return 0;
+
+  std::vector<int32_t> attribs;
+  if (attrib_list) {
+    for (const int32_t* attr = attrib_list; attr; ++attr)
+      attribs.push_back(*attr);
+  } else {
+    attribs.push_back(0);
+  }
+
+  HostResource result;
+  dispatcher->Send(new PpapiHostMsg_PPBContext3D_Create(
+      INTERFACE_ID_PPB_CONTEXT_3D, instance, config, attribs, &result));
+
+  if (result.is_null())
+    return 0;
+  linked_ptr<Context3D> context_3d(new Context3D(result));
+  if (!context_3d->CreateImplementation())
+    return 0;
+  return PluginResourceTracker::GetInstance()->AddResource(context_3d);
 }
 
 bool PPB_Context3D_Proxy::OnMessageReceived(const IPC::Message& msg) {
@@ -545,46 +600,56 @@ bool PPB_Context3D_Proxy::OnMessageReceived(const IPC::Message& msg) {
 void PPB_Context3D_Proxy::OnMsgCreate(PP_Instance instance,
                                       PP_Config3D_Dev config,
                                       const std::vector<int32_t>& attribs,
-                                      HostResource* result) {
-  DCHECK(attribs.back() == 0);
-  PP_Resource resource = ppb_context_3d_trusted()->CreateRaw(
-      instance, config, 0, &attribs.front());
-  result->SetHostResource(instance, resource);
+                                     HostResource* result) {
+  if (attribs.empty() || attribs.back() != 0)
+    return;  // Bad message.
+  EnterFunctionNoLock<ResourceCreationAPI> enter(instance, true);
+  if (enter.succeeded()) {
+    result->SetHostResource(
+        instance,
+        enter.functions()->CreateContext3DRaw(instance, config, 0,
+                                              &attribs.front()));
+  }
 }
 
 void PPB_Context3D_Proxy::OnMsgBindSurfaces(const HostResource& context,
                                             const HostResource& draw,
                                             const HostResource& read,
                                             int32_t* result) {
-  *result = ppb_context_3d_target()->BindSurfaces(context.host_resource(),
-                                                  draw.host_resource(),
-                                                  read.host_resource());
+  EnterHostFromHostResource<PPB_Context3D_API> enter(context);
+  if (enter.succeeded()) {
+    *result = enter.object()->BindSurfaces(draw.host_resource(),
+                                           read.host_resource());
+  } else {
+    *result = PP_ERROR_BADRESOURCE;
+  }
 }
 
 void PPB_Context3D_Proxy::OnMsgInitialize(
     const HostResource& context,
     int32 size,
     base::SharedMemoryHandle* ring_buffer) {
-  const PPB_Context3DTrusted_Dev* context_3d_trusted = ppb_context_3d_trusted();
   *ring_buffer = base::SharedMemory::NULLHandle();
-  if (!context_3d_trusted->Initialize(context.host_resource(), size))
+  EnterHostFromHostResource<PPB_Context3D_API> enter(context);
+  if (enter.failed())
+    return;
+
+  if (!enter.object()->InitializeTrusted(size))
     return;
 
   int shm_handle;
   uint32_t shm_size;
-  if (!context_3d_trusted->GetRingBuffer(context.host_resource(),
-                                         &shm_handle,
-                                         &shm_size)) {
+  if (!enter.object()->GetRingBuffer(&shm_handle, &shm_size))
     return;
-  }
-
   *ring_buffer = TransportSHMHandleFromInt(dispatcher(), shm_handle);
 }
 
 void PPB_Context3D_Proxy::OnMsgGetState(const HostResource& context,
                                         gpu::CommandBuffer::State* state) {
-  PP_Context3DTrustedState pp_state =
-      ppb_context_3d_trusted()->GetState(context.host_resource());
+  EnterHostFromHostResource<PPB_Context3D_API> enter(context);
+  if (enter.failed())
+    return;
+  PP_Context3DTrustedState pp_state = enter.object()->GetState();
   *state = GPUStateFromPPState(pp_state);
 }
 
@@ -592,28 +657,38 @@ void PPB_Context3D_Proxy::OnMsgFlush(const HostResource& context,
                                      int32 put_offset,
                                      int32 last_known_get,
                                      gpu::CommandBuffer::State* state) {
-  PP_Context3DTrustedState pp_state = ppb_context_3d_trusted()->FlushSyncFast(
-      context.host_resource(), put_offset, last_known_get);
+  EnterHostFromHostResource<PPB_Context3D_API> enter(context);
+  if (enter.failed())
+    return;
+  PP_Context3DTrustedState pp_state = enter.object()->FlushSyncFast(
+      put_offset, last_known_get);
   *state = GPUStateFromPPState(pp_state);
 }
 
 void PPB_Context3D_Proxy::OnMsgAsyncFlush(const HostResource& context,
                                           int32 put_offset) {
-  ppb_context_3d_trusted()->Flush(context.host_resource(), put_offset);
+  EnterHostFromHostResource<PPB_Context3D_API> enter(context);
+  if (enter.succeeded())
+    enter.object()->Flush(put_offset);
 }
 
 void PPB_Context3D_Proxy::OnMsgCreateTransferBuffer(
     const HostResource& context,
     int32 size,
     int32* id) {
-  *id = ppb_context_3d_trusted()->CreateTransferBuffer(
-      context.host_resource(), size);
+  EnterHostFromHostResource<PPB_Context3D_API> enter(context);
+  if (enter.succeeded())
+    *id = enter.object()->CreateTransferBuffer(size);
+  else
+    *id = 0;
 }
 
 void PPB_Context3D_Proxy::OnMsgDestroyTransferBuffer(
     const HostResource& context,
     int32 id) {
-  ppb_context_3d_trusted()->DestroyTransferBuffer(context.host_resource(), id);
+  EnterHostFromHostResource<PPB_Context3D_API> enter(context);
+  if (enter.succeeded())
+    enter.object()->DestroyTransferBuffer(id);
 }
 
 void PPB_Context3D_Proxy::OnMsgGetTransferBuffer(
@@ -622,16 +697,16 @@ void PPB_Context3D_Proxy::OnMsgGetTransferBuffer(
     base::SharedMemoryHandle* transfer_buffer,
     uint32* size) {
   *transfer_buffer = base::SharedMemory::NULLHandle();
-  int shm_handle;
-  uint32_t shm_size;
-  if (!ppb_context_3d_trusted()->GetTransferBuffer(context.host_resource(),
-                                                   id,
-                                                   &shm_handle,
-                                                   &shm_size)) {
-    return;
+  *size = 0;
+
+  EnterHostFromHostResource<PPB_Context3D_API> enter(context);
+  int shm_handle = 0;
+  uint32_t shm_size = 0;
+  if (enter.succeeded() &&
+      enter.object()->GetTransferBuffer(id, &shm_handle, &shm_size)) {
+    *transfer_buffer = TransportSHMHandleFromInt(dispatcher(), shm_handle);
+    *size = shm_size;
   }
-  *transfer_buffer = TransportSHMHandleFromInt(dispatcher(), shm_handle);
-  *size = shm_size;
 }
 
 }  // namespace proxy
