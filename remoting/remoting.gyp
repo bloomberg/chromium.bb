@@ -245,7 +245,7 @@
           'action_name': 'Build It2Me WebApp',
           'output_dir': '<(PRODUCT_DIR)/remoting/it2me.webapp',
           'plugin_path': '<(PRODUCT_DIR)/<(plugin_prefix)remoting_host_plugin.<(plugin_extension)',
-          'zip_path': '<(PRODUCT_DIR)/remoting_it2me.zip',
+          'zip_path': '<(PRODUCT_DIR)/remoting-it2me.zip',
           'inputs': [
             'webapp/build-webapp.py',
             '<(_plugin_path)',
