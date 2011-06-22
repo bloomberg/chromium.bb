@@ -61,8 +61,8 @@ EXTRA_ENV = {
   'BIAS_X8664'  : '${REMOVE_BIAS} ' +
                   '-D__amd64__ -D__amd64 -D__x86_64__ -D__x86_64 -D__core2__',
 
-  'OPT_LEVEL'   : '',
-  'CC_FLAGS'    : '${OPT_LEVEL} -fuse-llvm-va-arg -Werror-portable-llvm ' +
+  'OPT_LEVEL'   : '0',
+  'CC_FLAGS'    : '-O${OPT_LEVEL} -fuse-llvm-va-arg -Werror-portable-llvm ' +
                   '-nostdinc -DNACL_LINUX=1 -D__native_client__=1 ' +
                   '-D__pnacl__=1 ${BIAS_%BIAS%}',
 
@@ -91,8 +91,8 @@ EXTRA_ENV = {
 
   # ${LIBS} must come before ${LIBS_BC} so that the native glibc/libnacl
   # takes precedence over bitcode libc.
-  'LD_FLAGS' : '${STATIC ? -static} ${SHARED ? -shared} ${PIC ? -fPIC} ' +
-               '-L${LIBS} -L${LIBS_BC}',
+  'LD_FLAGS' : '-O${OPT_LEVEL} ${STATIC ? -static} ${SHARED ? -shared} ' +
+               '${PIC ? -fPIC} -L${LIBS} -L${LIBS_BC}',
 
   # Library Strings
   'EMITMODE'         : '${STATIC ? static : ${SHARED ? shared : dynamic}}',
@@ -205,9 +205,8 @@ GCCPatterns = [
   ( ('-Xlinker','(.*)'),  "env.append('INPUTS', '-Xlinker=' + $0)"),
   ( '(-Wl,.*)',           "env.append('INPUTS', $0)"),
 
-  # This is currently only used for the front-end, but we may want to have
-  # this control LTO optimization level as well.
-  ( '(-O.+)',          "env.set('OPT_LEVEL', $0)"),
+  ( '-O([0-4s])',         "env.set('OPT_LEVEL', $0)\n"),
+  ( '-O',                 "env.set('OPT_LEVEL', 1)\n"),
 
   ( '(-g)',                   AddCCFlag),
   ( '(-W.*)',                 AddCCFlag),
@@ -337,11 +336,11 @@ def main(argv):
   }
 
   output_type = output_type_map[(gcc_mode, arch is None)]
-  NeedsLinking = (gcc_mode == '')
+  needs_linking = (gcc_mode == '')
 
   # There are multiple input files and no linking is being done.
   # There will be multiple outputs. Handle this case separately.
-  if not NeedsLinking:
+  if not needs_linking:
     if output != '' and len(inputs) > 1:
       Log.Fatal('Cannot have -o with -c, -S, or -E and multiple inputs')
 
@@ -366,7 +365,7 @@ def main(argv):
     return 0
 
   # Linking case
-  assert(NeedsLinking)
+  assert(needs_linking)
   assert(output_type in ('pso','so','pexe','nexe'))
 
   if output == '':

@@ -104,6 +104,8 @@ def MakeEnv(use_opts, use_frames):
   if use_opts:
     new_env.Append(CFLAGS=['-O2'])
     new_env.Append(CCFLAGS=['-O2'])
+    # TODO(dschuff) remove this once we merge closer to tip and fix bug 1941
+    new_env.Append(LINKFLAGS=['-Wl,--add-opt-option=-std-compile-opts'])
   else:
     new_env.FilterOut(CFLAGS=['-O2'])
     new_env.FilterOut(CCFLAGS=['-O2'])
