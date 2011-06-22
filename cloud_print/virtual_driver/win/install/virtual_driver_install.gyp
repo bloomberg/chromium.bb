@@ -15,7 +15,6 @@
     {
       'target_name': 'virtual_driver_setup',
       'type': 'executable',
-      'msvs_guid': 'E1E25ACA-043D-4D6E-A06F-97126532843A',
       'dependencies': [
         '../../../../base/base.gyp:base',
         'virtual_driver_setup_resources',
@@ -39,7 +38,6 @@
     {
       'target_name': 'virtual_driver_setup_resources',
       'type': 'none',
-      'msvs_guid': '13D30B4C-1B06-40DB-8ED6-D2CAD76940CB',
       'variables': {
         'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/virtual_driver_setup_resources',
       },

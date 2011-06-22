@@ -62,7 +62,6 @@
     {
       'target_name': 'chrome_launcher',
       'type': 'executable',
-      'msvs_guid': 'B7E540C1-49D9-4350-ACBC-FB8306316D16',
       'dependencies': [
         '../breakpad/breakpad.gyp:breakpad_handler',
         '../chrome/chrome.gyp:chrome_version_header',
@@ -96,7 +95,6 @@
     {
       'target_name': 'chrome_frame_helper',
       'type': 'executable',
-      'msvs_guid': 'BF4FFA36-2F66-4B65-9A91-AB7EC08D1042',
       'dependencies': [
         '../breakpad/breakpad.gyp:breakpad_handler',
         '../chrome/chrome.gyp:chrome_version_header',
@@ -129,7 +127,6 @@
     {
       'target_name': 'chrome_frame_helper_dll',
       'type': 'shared_library',
-      'msvs_guid': '5E80032F-7033-4661-9016-D98268244783',
       'dependencies': [
         '../chrome/chrome.gyp:chrome_version_header',
         'chrome_frame_helper_lib',
@@ -167,7 +164,6 @@
     {
       'target_name': 'chrome_frame_helper_lib',
       'type': 'static_library',
-      'msvs_guid': '9984D820-1D28-48A7-957C-2AFA41B416C9',
       'dependencies': [
         '../chrome/chrome.gyp:chrome_version_header',
       ],

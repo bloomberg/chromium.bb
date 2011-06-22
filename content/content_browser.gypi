@@ -419,9 +419,6 @@
             'browser/renderer_host/p2p/socket_dispatcher_host.h',
           ],
         }],
-        ['OS=="win"', {
-          'msvs_guid': '639DB58D-32C2-435A-A711-65A12F62E442',
-        }],
         ['toolkit_uses_gtk == 1', {
           'dependencies': [
             '../build/linux/system.gyp:dbus-glib',

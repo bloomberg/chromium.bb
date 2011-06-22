@@ -34,7 +34,6 @@
       'dependencies': [
         '../../../../base/base.gyp:base',
       ],
-      'msvs_guid': 'ED3D7186-C94E-4D8B-A8E7-B7260F638F46',
     },
     {
       'target_name': 'gcp_portmon64',
@@ -45,7 +44,6 @@
       'dependencies': [
         '../../../../base/base.gyp:base_nacl_win64',
       ],
-      'msvs_guid': '9BB292F4-6104-495A-B415-C3E314F46D6F',
       'configurations': {
         'Common_Base': {
           'msvs_target_platform': 'x64',
@@ -55,7 +53,6 @@
     {
       'target_name': 'virtual_driver_unittests',
       'type': 'executable',
-      'msvs_guid': '97F82D29-58D8-4909-86C8-F2BBBCC4FEBF',
       'dependencies': [
         '../../../../base/base.gyp:base',
         '../../../../base/base.gyp:test_support_base',

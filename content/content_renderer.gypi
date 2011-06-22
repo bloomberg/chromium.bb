@@ -6,7 +6,6 @@
   'targets': [
     {
       'target_name': 'content_renderer',
-      'msvs_guid': '9AAA8CF2-9B3D-4895-8CB9-D70BBD125EAD',
       'type': 'static_library',
       'dependencies': [
         'content_common',
