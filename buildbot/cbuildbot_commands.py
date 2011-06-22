@@ -185,7 +185,7 @@ def SetupBoard(buildroot, board, fast, usepkg, latest_toolchain,
                extra_env=None, profile=None):
   """Wrapper around setup_board."""
   cwd = os.path.join(buildroot, 'src', 'scripts')
-  cmd = ['./setup_board', '--default', '--board=%s' % board]
+  cmd = ['./setup_board', '--board=%s' % board]
 
   if profile:
     cmd.append('--profile="%s"' % profile)
@@ -205,11 +205,11 @@ def SetupBoard(buildroot, board, fast, usepkg, latest_toolchain,
   # TODO(sosa): Add prebuilt call for boards in build_type == chroot.
 
 
-def Build(buildroot, build_autotest, fast, usepkg, skip_toolchain_update,
+def Build(buildroot, board, build_autotest, fast, usepkg, skip_toolchain_update,
           extra_env=None):
   """Wrapper around build_packages."""
   cwd = os.path.join(buildroot, 'src', 'scripts')
-  cmd = ['./build_packages']
+  cmd = ['./build_packages', '--board=%s' % board]
   if extra_env is None:
     env = {}
   else:
@@ -234,18 +234,19 @@ def Build(buildroot, build_autotest, fast, usepkg, skip_toolchain_update,
   cros_lib.RunCommand(cmd, cwd=cwd, enter_chroot=True, extra_env=env)
 
 
-def BuildImage(buildroot, extra_env=None):
+def BuildImage(buildroot, board, extra_env=None):
   _WipeOldOutput(buildroot)
 
   cwd = os.path.join(buildroot, 'src', 'scripts')
-  cros_lib.RunCommand(['./build_image', '--replace'], cwd=cwd,
-                         enter_chroot=True, extra_env=extra_env)
+  cros_lib.RunCommand(['./build_image', '--board=%s' % board, '--replace'],
+                      cwd=cwd, enter_chroot=True, extra_env=extra_env)
 
 
-def BuildVMImageForTesting(buildroot, extra_env=None):
+def BuildVMImageForTesting(buildroot, board, extra_env=None):
   (vdisk_size, statefulfs_size) = _GetVMConstants(buildroot)
   cwd = os.path.join(buildroot, 'src', 'scripts')
   cros_lib.RunCommand(['./image_to_vm.sh',
+                       '--board=%s' % board,
                        '--test_image',
                        '--full',
                        '--vdisk_size=%s' % vdisk_size,
@@ -253,10 +254,10 @@ def BuildVMImageForTesting(buildroot, extra_env=None):
                       ], cwd=cwd, enter_chroot=True, extra_env=extra_env)
 
 
-def RunUnitTests(buildroot, full):
+def RunUnitTests(buildroot, board, full):
   cwd = os.path.join(buildroot, 'src', 'scripts')
 
-  cmd = ['cros_run_unit_tests']
+  cmd = ['cros_run_unit_tests', '--board=%s' % board]
 
   # If we aren't running ALL tests, then restrict to just the packages
   #   uprev noticed were changed.
@@ -268,7 +269,7 @@ def RunUnitTests(buildroot, full):
   cros_lib.OldRunCommand(cmd, cwd=cwd, enter_chroot=True)
 
 
-def RunChromeSuite(buildroot, results_dir):
+def RunChromeSuite(buildroot, board, results_dir):
   results_dir_in_chroot = os.path.join(buildroot, 'chroot',
                                        results_dir.lstrip('/'))
   if os.path.exists(results_dir_in_chroot):
@@ -277,6 +278,7 @@ def RunChromeSuite(buildroot, results_dir):
   cwd = os.path.join(buildroot, 'src', 'scripts')
   # TODO(cmasone): make this look for ALL desktopui_BrowserTest control files.
   cros_lib.OldRunCommand(['bin/cros_run_parallel_vm_tests',
+                          '--board=%s' % board,
                           '--quiet',
                           '--results_dir_root=%s' % results_dir,
                           'desktopui_BrowserTest.control$',

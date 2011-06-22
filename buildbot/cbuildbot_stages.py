@@ -632,6 +632,7 @@ class BuildTargetStage(BuilderStage):
     skip_toolchain_update = self._build_config['latest_toolchain']
 
     commands.Build(self._build_root,
+                   self._build_config['board'],
                    build_autotest=build_autotest,
                    skip_toolchain_update=skip_toolchain_update,
                    fast=self._build_config['fast'],
@@ -644,10 +645,13 @@ class BuildTargetStage(BuilderStage):
           self._build_config['overlays'], [], self._prebuilt_type,
           None, self._options.buildnumber)
 
-    commands.BuildImage(self._build_root, extra_env=env)
+    commands.BuildImage(self._build_root, self._build_config['board'],
+                        extra_env=env)
 
     if self._build_config['vm_tests']:
-      commands.BuildVMImageForTesting(self._build_root, extra_env=env)
+      commands.BuildVMImageForTesting(self._build_root,
+                                      self._build_config['board'],
+                                      extra_env=env)
 
 
 class TestStage(BuilderStage):
@@ -669,6 +673,7 @@ class TestStage(BuilderStage):
   def _PerformStage(self):
     if self._build_config['unittests']:
       commands.RunUnitTests(self._build_root,
+                            self._build_config['board'],
                             full=(not self._build_config['quick_unit']))
 
     if self._build_config['vm_tests']:
@@ -682,6 +687,7 @@ class TestStage(BuilderStage):
 
         if self._build_config['chrome_tests']:
           commands.RunChromeSuite(self._build_root,
+                                  self._build_config['board'],
                                   os.path.join(test_results_dir,
                                                'chrome_results'))
       finally:

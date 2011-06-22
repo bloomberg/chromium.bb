@@ -420,7 +420,8 @@ class TestStageTest(AbstractStageTest):
 
     os.path.isdir(self.build_root + '/.repo').AndReturn(True)
     stages.TestStage._CreateTestRoot().AndReturn(self.fake_results_dir)
-    commands.RunUnitTests(self.build_root, full=True)
+    commands.RunUnitTests(self.build_root, self.build_config['board'],
+                          full=True)
     commands.RunTestSuite(self.build_root,
                           self.build_config['board'],
                           os.path.join(self.fake_results_dir,
@@ -446,7 +447,8 @@ class TestStageTest(AbstractStageTest):
 
     os.path.isdir(self.build_root + '/.repo').AndReturn(True)
     stages.TestStage._CreateTestRoot().AndReturn(self.fake_results_dir)
-    commands.RunUnitTests(self.build_root, full=False)
+    commands.RunUnitTests(self.build_root, self.build_config['board'],
+                          full=False)
     commands.RunTestSuite(self.build_root,
                             self.build_config['board'],
                             os.path.join(self.fake_results_dir,
@@ -594,6 +596,7 @@ class BuildTargetStageTest(AbstractStageTest):
     proper_env = {'USE' : ' '.join(self.build_config['useflags'])}
 
     commands.Build(self.build_root,
+                   self.build_config['board'],
                    build_autotest=True,
                    usepkg=True,
                    fast=True,
@@ -605,8 +608,10 @@ class BuildTargetStageTest(AbstractStageTest):
         self.build_config['overlays'], [],
         self.build_config['build_type'], None, self.options.buildnumber)
 
-    commands.BuildImage(self.build_root, extra_env=proper_env)
-    commands.BuildVMImageForTesting(self.build_root, extra_env=proper_env)
+    commands.BuildImage(self.build_root, self.build_config['board'],
+                        extra_env=proper_env)
+    commands.BuildVMImageForTesting(self.build_root, self.build_config['board'],
+                                    extra_env=proper_env)
 
     self.mox.ReplayAll()
     self.RunStage()
@@ -617,12 +622,14 @@ class BuildTargetStageTest(AbstractStageTest):
     self.build_config['useflags'] = None
 
     commands.Build(self.build_root,
+                   self.build_config['board'],
                    build_autotest=mox.IgnoreArg(),
                    fast=mox.IgnoreArg(),
                    usepkg=mox.IgnoreArg(),
                    skip_toolchain_update=mox.IgnoreArg(),
                    extra_env={})
-    commands.BuildImage(self.build_root, extra_env={})
+    commands.BuildImage(self.build_root, self.build_config['board'],
+                        extra_env={})
 
     self.mox.ReplayAll()
     self.RunStage()

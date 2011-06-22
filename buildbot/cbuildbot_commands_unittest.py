@@ -186,13 +186,18 @@ class CBuildBotTest(mox.MoxTestBase):
   def testBuildMinimal(self):
     """Base case where Build is called with minimal options."""
     buildroot = '/bob/'
-    cros_lib.RunCommand(['./build_packages', '--fast', '--nowithautotest',
-                         '--nousepkg'],
+    arg_test = mox.SameElementsAs(['./build_packages',
+                                   '--fast',
+                                   '--nowithautotest',
+                                   '--nousepkg',
+                                   '--board=x86-generic'])
+    cros_lib.RunCommand(arg_test,
                         cwd=mox.StrContains(buildroot),
                         enter_chroot=True,
                         extra_env={})
     self.mox.ReplayAll()
     commands.Build(buildroot=buildroot,
+                   board='x86-generic',
                    build_autotest=False,
                    fast=True,
                    usepkg=False,
@@ -202,12 +207,17 @@ class CBuildBotTest(mox.MoxTestBase):
   def testBuildMaximum(self):
     """Base case where Build is called with all options (except extra_evn)."""
     buildroot = '/bob/'
-    cros_lib.RunCommand(['./build_packages', '--fast', '--skip_toolchain_update'],
+    arg_test = mox.SameElementsAs(['./build_packages',
+                                   '--fast',
+                                   '--board=x86-generic',
+                                   '--skip_toolchain_update'])
+    cros_lib.RunCommand(arg_test,
                         cwd=mox.StrContains(buildroot),
                         enter_chroot=True,
                         extra_env={'EXTRA_BOARD_FLAGS': '--rebuilt-binaries'})
     self.mox.ReplayAll()
     commands.Build(buildroot=buildroot,
+                   board='x86-generic',
                    fast=True,
                    build_autotest=True,
                    usepkg=True,
@@ -226,6 +236,7 @@ class CBuildBotTest(mox.MoxTestBase):
         mox.ContainsKeyValue('A', 'Av'), mox.ContainsKeyValue('B', 'Bv')))
     self.mox.ReplayAll()
     commands.Build(buildroot=buildroot,
+                   board='x86-generic',
                    build_autotest=False,
                    fast=False,
                    usepkg=False,
