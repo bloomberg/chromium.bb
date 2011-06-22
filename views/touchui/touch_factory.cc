@@ -228,7 +228,7 @@ bool TouchFactory::ShouldProcessXI2Event(XEvent* xev) {
     return true;
 
   XIDeviceEvent* xiev = static_cast<XIDeviceEvent*>(cookie->data);
-  return pointer_device_lookup_[xiev->sourceid];
+  return pointer_device_lookup_[xiev->deviceid];
 }
 
 void TouchFactory::SetupXI2ForXWindow(Window window) {
