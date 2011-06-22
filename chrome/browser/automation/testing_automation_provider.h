@@ -606,6 +606,14 @@ class TestingAutomationProvider : public AutomationProvider,
                               DictionaryValue* args,
                               IPC::Message* reply_message);
 
+  // Set extension states:
+  //   Enable/disable extension.
+  //   Allow/disallow extension in incognito mode.
+  // Uses the JSON interface for input/output.
+  void SetExtensionStateById(Browser* browser,
+                             DictionaryValue* args,
+                             IPC::Message* reply_message);
+
   // Responds to the Find request and returns the match count.
   void FindInPage(Browser* browser,
                   DictionaryValue* args,

@@ -94,6 +94,12 @@ class ExtensionsTest(pyauto.PyUITest):
     # None of the extensions crashed.
     return None
 
+  def _GetExtensionInfoById(self, extensions, id):
+    for x in extensions:
+      if x['id'] == id:
+        return x
+    return None
+
   def ExtensionCrashes(self):
     """Add top extensions; confirm browser stays up when visiting top urls"""
     # TODO: provide a way in pyauto to pass args to a test - take these as args
@@ -146,6 +152,38 @@ class ExtensionsTest(pyauto.PyUITest):
                     'experimental' in permissions_api and
                     'tabs' in permissions_api,
                     msg='Unexpected host permissions information.')
+
+  def testSetExtensionStates(self):
+    """Test setting different extension states."""
+    crx_file_path = os.path.abspath(
+        os.path.join(self.DataDir(), 'extensions', 'google_talk.crx'))
+    ext_id = self.InstallExtension(pyauto.FilePath(crx_file_path), False);
+    self.assertTrue(ext_id, 'Failed to install extension.')
+
+    # Verify extension is in default state.
+    extension = self._GetExtensionInfoById(self.GetExtensionsInfo(), ext_id)
+    self.assertTrue(extension['is_enabled'])
+    self.assertFalse(extension['allowed_in_incognito'])
+
+    # Disable the extension and verify.
+    self.SetExtensionStateById(ext_id, enable=False, allow_in_incognito=False)
+    extension = self._GetExtensionInfoById(self.GetExtensionsInfo(), ext_id)
+    self.assertFalse(extension['is_enabled'])
+
+    # Enable extension and verify.
+    self.SetExtensionStateById(ext_id, enable=True, allow_in_incognito=False)
+    extension = self._GetExtensionInfoById(self.GetExtensionsInfo(), ext_id)
+    self.assertTrue(extension['is_enabled'])
+
+    # Allow extension in incognito mode and verify.
+    self.SetExtensionStateById(ext_id, enable=True, allow_in_incognito=True)
+    extension = self._GetExtensionInfoById(self.GetExtensionsInfo(), ext_id)
+    self.assertTrue(extension['allowed_in_incognito'])
+
+    # Disallow extension in incognito mode and verify.
+    self.SetExtensionStateById(ext_id, enable=True, allow_in_incognito=False)
+    extension = self._GetExtensionInfoById(self.GetExtensionsInfo(), ext_id)
+    self.assertFalse(extension['allowed_in_incognito'])
 
 
 if __name__ == '__main__':

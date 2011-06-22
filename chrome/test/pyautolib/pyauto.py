@@ -1427,7 +1427,9 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
           u'name': u'Facebook for Google Chrome',
           u'options_url': u'',
           u'public_key': u'...',
-          u'version': u'2.0.9' } ]
+          u'version': u'2.0.9'
+          u'is_enabled': True,
+          u'allowed_in_incognito': True} ]
     """
     cmd_dict = {  # Prepare command for the json interface
       'command': 'GetExtensionsInfo'
@@ -1438,8 +1440,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     """Uninstall the extension with the given id.
 
     Args:
-      id: The string id of the extension. It can be retrieved through the
-          GetExtensionsInfo call above.
+      id: The string id of the extension.
 
     Returns:
       True, if the extension was successfully uninstalled, or
@@ -1450,6 +1451,22 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       'id': id,
     }
     return self._GetResultFromJSONRequest(cmd_dict)['success']
+
+  def SetExtensionStateById(self, id, enable, allow_in_incognito):
+    """Set extension state: enable/disable, allow/disallow in incognito mode.
+
+    Args:
+      id: The string id of the extension.
+      enable: A boolean, enable extension.
+      allow_in_incognito: A boolean, allow extension in incognito.
+    """
+    cmd_dict = {  # Prepare command for the json interface
+      'command': 'SetExtensionStateById',
+      'id': id,
+      'enable': enable,
+      'allow_in_incognito': allow_in_incognito,
+    }
+    self._GetResultFromJSONRequest(cmd_dict)
 
   def UpdateExtensionsNow(self):
     """Auto-updates installed extensions.

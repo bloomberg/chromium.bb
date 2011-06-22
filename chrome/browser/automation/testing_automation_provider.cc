@@ -2271,6 +2271,9 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
   browser_handler_map["UninstallExtensionById"] =
       &TestingAutomationProvider::UninstallExtensionById;
 
+  browser_handler_map["SetExtensionStateById"] =
+      &TestingAutomationProvider::SetExtensionStateById;
+
   browser_handler_map["FindInPage"] = &TestingAutomationProvider::FindInPage;
 
   browser_handler_map["SelectTranslateOption"] =
@@ -4050,11 +4053,20 @@ void TestingAutomationProvider::GetExtensionsInfo(
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
   ListValue* extensions_values = new ListValue;
   const ExtensionList* extensions = service->extensions();
-  for (ExtensionList::const_iterator it = extensions->begin();
-       it != extensions->end(); ++it) {
+  const ExtensionList* disabled_extensions = service->disabled_extensions();
+  ExtensionList all;
+  all.insert(all.end(),
+             extensions->begin(),
+             extensions->end());
+  all.insert(all.end(),
+             disabled_extensions->begin(),
+             disabled_extensions->end());
+  for (ExtensionList::const_iterator it = all.begin();
+       it != all.end(); ++it) {
     const Extension* extension = *it;
+    std::string id = extension->id();
     DictionaryValue* extension_value = new DictionaryValue;
-    extension_value->SetString("id", extension->id());
+    extension_value->SetString("id", id);
     extension_value->SetString("version", extension->VersionString());
     extension_value->SetString("name", extension->name());
     extension_value->SetString("public_key", extension->public_key());
@@ -4070,6 +4082,9 @@ void TestingAutomationProvider::GetExtensionsInfo(
     extension_value->Set("api_permissions", GetAPIPermissions(extension));
     extension_value->SetBoolean("is_component_extension",
                                 extension->location() == Extension::COMPONENT);
+    extension_value->SetBoolean("is_enabled", service->IsExtensionEnabled(id));
+    extension_value->SetBoolean("allowed_in_incognito",
+                                service->IsIncognitoEnabled(id));
     extensions_values->Append(extension_value);
   }
   return_value->Set("extensions", extensions_values);
@@ -4109,6 +4124,61 @@ void TestingAutomationProvider::UninstallExtensionById(
   // has been uninstalled.  This observer will delete itself.
   new ExtensionUninstallObserver(this, reply_message, id);
   service->UninstallExtension(id, false, NULL);
+}
+
+// See SetExtensionStateById() in chrome/test/pyautolib/pyauto.py
+// for sample json input.
+void TestingAutomationProvider::SetExtensionStateById(
+    Browser* browser,
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  std::string id;
+  if (!args->GetString("id", &id)) {
+    reply.SendError("Missing or invalid key: id");
+    return;
+  }
+
+  bool enable;
+  if (!args->GetBoolean("enable", &enable)) {
+    reply.SendError("Missing or invalid key: enable");
+    return;
+  }
+
+  bool allow_in_incognito;
+  if (!args->GetBoolean("allow_in_incognito", &allow_in_incognito)) {
+    reply.SendError("Missing or invalid key: allow_in_incognito");
+    return;
+  }
+
+  if (allow_in_incognito && !enable) {
+    reply.SendError("Invalid state: Disabled extension "
+                    "cannot be allowed in incognito mode.");
+    return;
+  }
+
+  ExtensionService* service = profile()->GetExtensionService();
+  if (!service) {
+    reply.SendError("No extensions service.");
+    return;
+  }
+
+  if (!service->GetExtensionById(id, true) &&
+      !service->GetTerminatedExtension(id)) {
+    // The extension ID does not correspond to any extension, whether crashed
+    // or not.
+    reply.SendError(base::StringPrintf("Extension does not exist: %s.",
+                                       id.c_str()));
+    return;
+  }
+
+  if (enable)
+    service->EnableExtension(id);
+  else
+    service->DisableExtension(id);
+
+  service->SetIsIncognitoEnabled(id, allow_in_incognito);
+  reply.SendSuccess(NULL);
 }
 
 // Sample json input:
