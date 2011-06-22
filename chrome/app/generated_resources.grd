@@ -8619,17 +8619,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Deny
       </message>
 
-      <!-- cr.Locale -->
-      <message name="IDS_LOCALE_FMT_DATE_SHORT" desc="Preferred short date format for this locale.">
-        %b %-d, %Y
-      </message>
-      <message name="IDS_LOCALE_MONTHS_SHORT" desc="Abbreviated month names, caret delimited.">
-        Jan^Feb^Mar^Apr^May^Jun^Jul^Aug^Sep^Oct^Nov^Dec
-      </message>
-      <message name="IDS_LOCALE_DAYS_SHORT" desc="Abbreviated day names, caret delimited.">
-        Sun^Mon^Tue^Wed^Thu^Fri^Sat
-      </message>
-
       <!-- File Browser -->
       <message name="IDS_FILE_BROWSER_BODY_FONT_FAMILY" desc="Font family for the file dialog.">
         sans-serif

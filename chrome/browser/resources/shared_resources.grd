@@ -44,8 +44,6 @@ without changes to the corresponding grd file. paaaae -->
                file="shared/js/cr/event_target.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_CR_LINK_CONTROLLER"
                file="shared/js/cr/link_controller.js" type="BINDATA" />
-      <include name="IDR_SHARED_JS_CR_LOCALE"
-               file="shared/js/cr/locale.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_CR_PROMISE"
                file="shared/js/cr/promise.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_CR_UI"

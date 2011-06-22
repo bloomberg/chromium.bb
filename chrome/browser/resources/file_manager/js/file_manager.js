@@ -53,6 +53,10 @@ function FileManager(dialogDom, rootEntries, params) {
 
   this.defaultPath_ = this.params_.defaultPath || '/';
 
+  this.locale_ = new v8Locale(navigator.language);
+  this.shortDateFormatter_ =
+      this.locale_.createDateTimeFormat({'dateType': 'medium'});
+
   // Optional list of file types.
   this.fileTypes_ = this.params_.typeList;
 
@@ -450,8 +454,6 @@ FileManager.prototype = {
   FileManager.initStrings = function(callback) {
     chrome.fileBrowserPrivate.getStrings(function(strings) {
       localStrings = new LocalStrings(strings);
-      cr.initLocale(strings);
-
       if (callback)
         callback();
     });
@@ -1084,7 +1086,7 @@ FileManager.prototype = {
       if (entry.cachedSize_ == -1) {
         div.textContent = '';
       } else {
-        div.textContent = cr.locale.bytesToSi(entry.cachedSize_);
+        div.textContent = util.bytesToSi(entry.cachedSize_);
       }
     });
 
@@ -1112,8 +1114,7 @@ FileManager.prototype = {
         // We'd rather display nothing than this bogus date.
         div.textContent = '---';
       } else {
-        div.textContent = cr.locale.formatDate(entry.cachedMtime_,
-                                               str('LOCALE_FMT_DATE_SHORT'));
+        div.textContent = self.shortDateFormatter_.format(entry.cachedMtime_);
       }
     });
 
@@ -1603,12 +1604,12 @@ FileManager.prototype = {
 
     } else if (this.selection.totalCount == 1) {
       this.previewSummary_.textContent =
-        strf('ONE_FILE_SELECTED', cr.locale.bytesToSi(this.selection.bytes));
+        strf('ONE_FILE_SELECTED', util.bytesToSi(this.selection.bytes));
 
     } else {
       this.previewSummary_.textContent =
         strf('MANY_FILES_SELECTED', this.selection.totalCount,
-             cr.locale.bytesToSi(this.selection.bytes));
+             util.bytesToSi(this.selection.bytes));
     }
   };
 

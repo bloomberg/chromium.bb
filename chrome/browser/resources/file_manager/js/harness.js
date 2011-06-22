@@ -18,6 +18,8 @@ var harness = {
     function onFilesystem(filesystem) {
       console.log('Filesystem found.');
       self.filesystem = filesystem;
+      self.getOrCreatePath('/Downloads', function () {});
+      self.getOrCreatePath('/media', function () {});
     };
 
     window.webkitRequestFileSystem(window.PERSISTENT, 16 * 1024 * 1024,

@@ -109,10 +109,6 @@ chrome.fileBrowserPrivate = {
     // Keep this list in sync with the strings in generated_resources.grd and
     // extension_file_manager_api.cc!
     callback({
-      LOCALE_FMT_DATE_SHORT: '%b %-d, %Y',
-      LOCALE_MONTHS_SHORT: 'Jan^Feb^Mar^Apr^May^Jun^Jul^Aug^Sep^Oct^Nov^Dec',
-      LOCALE_DAYS_SHORT: 'Sun^Mon^Tue^Wed^Thu^Fri^Sat',
-
       BODY_FONT_FAMILY: 'sans-serif',
       BODY_FONT_SIZE: '13px',
 

@@ -131,4 +131,39 @@ var util = {
     getNextDirectory();
   },
 
+  /**
+   * Lookup tables used by bytesToSi.
+   */
+  units_: ['B', 'k', 'M', 'G', 'T', 'P'],
+  scale_: [1, 1e3, 1e6, 1e9, 1e12, 1e15],
+
+  /**
+   * Convert a number of bytes into an appropriate International System of
+   * Units (SI) representation, using the correct number separators.
+   *
+   * The first time this function is called it computes a lookup table which
+   * is cached for subsequent calls.
+   *
+   * @param {number} bytes The number of bytes.
+   */
+  bytesToSi: function(bytes) {
+    function fmt(s, u) {
+      var rounded = Math.round(bytes / s * 10) / 10;
+      // TODO(rginda): Switch to v8Locale's number formatter when it's
+      // available.
+      return rounded.toLocaleString() + u;
+    }
+
+    // This loop index is used outside the loop if it turns out |bytes|
+    // requires the largest unit.
+    var i;
+
+    for (i = 0; i < this.units_.length - 1; i++) {
+      if (bytes < this.scale_[i + 1])
+        return fmt(this.scale_[i], this.units_[i]);
+    }
+
+    return fmt(this.scale_[i], this.units_[i]);
+  },
+
 };
