@@ -184,16 +184,6 @@ int CurrentTabId() {
         // NOTE: The enum and the order of the menu items MUST be in sync.
         [itemObj setTag:[self indexOfItem:itemObj]];
 
-        // Disable the 'Options' item if there are no options to set.
-        if ([itemObj tag] == kExtensionContextOptions &&
-            extension_->options_url().spec().length() <= 0) {
-          // Setting the target to nil will disable the item. For some reason
-          // setEnabled:NO does not work.
-          [itemObj setTarget:nil];
-        } else {
-          [itemObj setTarget:self];
-        }
-
         // Only browser actions can have their button hidden. Page actions
         // should never show the "Hide" menu item.
         if ([itemObj tag] == kExtensionContextHide &&
@@ -317,8 +307,12 @@ int CurrentTabId() {
 }
 
 - (BOOL)validateMenuItem:(NSMenuItem*)menuItem {
-  if([menuItem isEqualTo:inspectorItem_.get()]) {
+  if ([menuItem tag] == kExtensionContextInspect) {
+    // Disable 'Inspect popup' if there is no popup.
     return action_ && action_->HasPopup(CurrentTabId());
+  } else if ([menuItem tag] == kExtensionContextOptions) {
+    // Disable 'Options' if there are no options to set.
+    return extension_->options_url().spec().length() > 0;
   }
   return YES;
 }
