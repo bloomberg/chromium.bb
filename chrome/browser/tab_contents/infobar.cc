@@ -43,7 +43,7 @@ InfoBar::InfoBar(TabContentsWrapper* owner, InfoBarDelegate* delegate)
     : owner_(owner),
       delegate_(delegate),
       container_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(animation_(new ui::SlideAnimation(this))),
+      ALLOW_THIS_IN_INITIALIZER_LIST(animation_(this)),
       arrow_height_(0),
       arrow_target_height_(kDefaultArrowTargetHeight),
       arrow_half_width_(0),
@@ -51,7 +51,7 @@ InfoBar::InfoBar(TabContentsWrapper* owner, InfoBarDelegate* delegate)
       bar_target_height_(kDefaultBarTargetHeight) {
   DCHECK(owner != NULL);
   DCHECK(delegate != NULL);
-  animation_->SetTweenType(ui::Tween::LINEAR);
+  animation_.SetTweenType(ui::Tween::LINEAR);
 }
 
 InfoBar::~InfoBar() {
@@ -60,9 +60,9 @@ InfoBar::~InfoBar() {
 void InfoBar::Show(bool animate) {
   PlatformSpecificShow(animate);
   if (animate) {
-    animation_->Show();
+    animation_.Show();
   } else {
-    animation_->Reset(1.0);
+    animation_.Reset(1.0);
     AnimationEnded(NULL);
   }
 }
@@ -70,9 +70,9 @@ void InfoBar::Show(bool animate) {
 void InfoBar::Hide(bool animate) {
   PlatformSpecificHide(animate);
   if (animate) {
-    animation_->Hide();
+    animation_.Hide();
   } else {
-    animation_->Reset(0.0);
+    animation_.Reset(0.0);
     AnimationEnded(NULL);
   }
 }
@@ -81,7 +81,7 @@ void InfoBar::SetArrowTargetHeight(int height) {
   DCHECK_LE(height, kMaximumArrowTargetHeight);
   // Once the closing animation starts, we ignore further requests to change the
   // target height.
-  if ((arrow_target_height_ != height) && !animation()->IsClosing()) {
+  if ((arrow_target_height_ != height) && !animation_.IsClosing()) {
     arrow_target_height_ = height;
     RecalculateHeights(false);
   }
@@ -126,9 +126,9 @@ void InfoBar::RecalculateHeights(bool force_notify) {
   // scaling each of these with the square root of the animation value causes a
   // linear animation of the area, which matches the perception of the animation
   // of the bar portion.
-  double scale_factor = sqrt(animation_->GetCurrentValue());
+  double scale_factor = sqrt(animation_.GetCurrentValue());
   arrow_height_ = static_cast<int>(arrow_target_height_ * scale_factor);
-  if (animation_->is_animating()) {
+  if (animation_.is_animating()) {
     arrow_half_width_ = static_cast<int>(std::min(arrow_target_height_,
         kMaximumArrowTargetHalfWidth) * scale_factor);
   } else {
@@ -147,7 +147,7 @@ void InfoBar::RecalculateHeights(bool force_notify) {
   if (arrow_height_)
     arrow_height_ += kSeparatorLineHeight;
 
-  bar_height_ = animation_->CurrentValueBetween(0, bar_target_height_);
+  bar_height_ = animation_.CurrentValueBetween(0, bar_target_height_);
 
   // Don't re-layout if nothing has changed, e.g. because the animation step was
   // not large enough to actually change the heights by at least a pixel.
@@ -157,11 +157,11 @@ void InfoBar::RecalculateHeights(bool force_notify) {
     PlatformSpecificOnHeightsRecalculated();
 
   if (container_ && (heights_differ || force_notify))
-    container_->OnInfoBarStateChanged(animation_->is_animating());
+    container_->OnInfoBarStateChanged(animation_.is_animating());
 }
 
 void InfoBar::MaybeDelete() {
-  if (delegate_ && (animation_->GetCurrentValue() == 0.0)) {
+  if (delegate_ && (animation_.GetCurrentValue() == 0.0)) {
     if (container_)
       container_->RemoveInfoBar(this);
     // Note that we only tell the delegate we're closed here, and not when we're

@@ -115,7 +115,7 @@ GdkColor InfoBarGtk::GetBorderColor() const {
 }
 
 int InfoBarGtk::AnimatingHeight() const {
-  return animation()->is_animating() ? bar_target_height() : 0;
+  return animation().is_animating() ? bar_target_height() : 0;
 }
 
 SkColor InfoBarGtk::ConvertGetColor(ColorGetter getter) {

@@ -87,6 +87,7 @@ class InfoBarView : public InfoBar,
   static const int kHorizontalPadding;
 
   // InfoBar:
+  virtual void PlatformSpecificShow(bool animate) OVERRIDE;
   virtual void PlatformSpecificHide(bool animate) OVERRIDE;
   virtual void PlatformSpecificOnHeightsRecalculated() OVERRIDE;
 
@@ -98,11 +99,6 @@ class InfoBarView : public InfoBar,
   // views::FocusChangeListener:
   virtual void FocusWillChange(View* focused_before,
                                View* focused_now) OVERRIDE;
-
-  // Destroys the external focus tracker, if present. If |restore_focus| is
-  // true, restores focus to the view tracked by the focus tracker before doing
-  // so.
-  void DestroyFocusTracker(bool restore_focus);
 
   // The optional icon at the left edge of the InfoBar.
   views::ImageView* icon_;

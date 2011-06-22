@@ -13,6 +13,7 @@
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/animation/animation_delegate.h"
+#include "ui/base/animation/slide_animation.h"
 #include "ui/gfx/size.h"
 
 // TODO(sail): These functions should be static methods in the InfoBar class
@@ -25,10 +26,6 @@ SkColor GetInfoBarBottomColor(InfoBarDelegate::Type infobar_type);
 
 class InfoBarContainer;
 class TabContentsWrapper;
-
-namespace ui {
-class SlideAnimation;
-}
 
 class InfoBar : public ui::AnimationDelegate {
  public:
@@ -60,7 +57,7 @@ class InfoBar : public ui::AnimationDelegate {
   // effect once the infobar is animating closed.
   void SetArrowTargetHeight(int height);
 
-  const ui::SlideAnimation* animation() const { return animation_.get(); }
+  const ui::SlideAnimation& animation() const { return animation_; }
   int arrow_height() const { return arrow_height_; }
   int arrow_target_height() const { return arrow_target_height_; }
   int arrow_half_width() const { return arrow_half_width_; }
@@ -87,7 +84,7 @@ class InfoBar : public ui::AnimationDelegate {
 
   const InfoBarContainer* container() const { return container_; }
   InfoBarContainer* container() { return container_; }
-  ui::SlideAnimation* animation() { return animation_.get(); }
+  ui::SlideAnimation* animation() { return &animation_; }
   int bar_height() const { return bar_height_; }
   int bar_target_height() const { return bar_target_height_; }
 
@@ -112,10 +109,10 @@ class InfoBar : public ui::AnimationDelegate {
   // delete us) and closes the delegate.
   void MaybeDelete();
 
-  TabContentsWrapper* owner_;  // TODO(pkasting): Transition to using this.
+  TabContentsWrapper* owner_;
   InfoBarDelegate* delegate_;
   InfoBarContainer* container_;
-  scoped_ptr<ui::SlideAnimation> animation_;
+  ui::SlideAnimation animation_;
 
   // The current and target heights of the arrow and bar portions, and half the
   // current arrow width.  (It's easier to work in half-widths as we draw the

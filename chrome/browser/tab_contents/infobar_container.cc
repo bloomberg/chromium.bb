@@ -35,11 +35,9 @@ void InfoBarContainer::ChangeTabContents(TabContentsWrapper* contents) {
 
   while (!infobars_.empty()) {
     InfoBar* infobar = infobars_.front();
-    // NULL the container pointer first so that if the infobar is currently
-    // animating, OnInfoBarStateChanged() won't get called; we'll manually
-    // trigger this once for the whole set of changes below.  This also prevents
-    // InfoBar::MaybeDelete() from calling RemoveInfoBar() a second time if the
-    // infobar happens to be at zero height (dunno if this can actually happen).
+    // NULL the container pointer first so that the infobar cannot call back to
+    // OnInfoBarStateChanged() for any reason; we'll manually trigger this once
+    // for the whole set of changes below.
     infobar->set_container(NULL);
     RemoveInfoBar(infobar);
   }
@@ -104,11 +102,10 @@ void InfoBarContainer::OnInfoBarStateChanged(bool is_animating) {
 }
 
 void InfoBarContainer::RemoveInfoBar(InfoBar* infobar) {
-  InfoBars::iterator infobar_iterator(std::find(infobars_.begin(),
-                                                infobars_.end(), infobar));
-  DCHECK(infobar_iterator != infobars_.end());
+  InfoBars::iterator i(std::find(infobars_.begin(), infobars_.end(), infobar));
+  DCHECK(i != infobars_.end());
   PlatformSpecificRemoveInfoBar(infobar);
-  infobars_.erase(infobar_iterator);
+  infobars_.erase(i);
 }
 
 void InfoBarContainer::RemoveAllInfoBarsForDestruction() {
@@ -200,16 +197,16 @@ int InfoBarContainer::ArrowTargetHeightForInfoBar(size_t infobar_index) const {
     return 0;
   if (infobar_index == 0)
     return top_arrow_target_height_;
-  const ui::SlideAnimation* first_infobar_animation =
+  const ui::SlideAnimation& first_infobar_animation =
       const_cast<const InfoBar*>(infobars_.front())->animation();
-  if ((infobar_index > 1) || first_infobar_animation->IsShowing())
+  if ((infobar_index > 1) || first_infobar_animation.IsShowing())
     return InfoBar::kDefaultArrowTargetHeight;
   // When the first infobar is animating closed, we animate the second infobar's
   // arrow target height from the default to the top target height.  Note that
   // the animation values here are going from 1.0 -> 0.0 as the top bar closes.
   return top_arrow_target_height_ + static_cast<int>(
       (InfoBar::kDefaultArrowTargetHeight - top_arrow_target_height_) *
-          first_infobar_animation->GetCurrentValue());
+          first_infobar_animation.GetCurrentValue());
 }
 
 #endif  // TOOLKIT_VIEWS || defined(TOOLKIT_GTK)

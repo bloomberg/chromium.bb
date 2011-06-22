@@ -13,7 +13,6 @@
 #include "grit/theme_resources_standard.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/base/accessibility/accessible_view_state.h"
-#include "ui/base/animation/slide_animation.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia_paint.h"
@@ -207,23 +206,6 @@ void InfoBarView::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
 
   if (child == this) {
     if (is_add) {
-#if defined(OS_WIN)
-      // When we're added to a view hierarchy within a widget, we create an
-      // external focus tracker to track what was focused in case we obtain
-      // focus so that we can restore focus when we're removed.
-      views::Widget* widget = GetWidget();
-      if (widget) {
-        focus_tracker_.reset(
-            new views::ExternalFocusTracker(this, GetFocusManager()));
-      }
-#endif
-      if (GetFocusManager())
-        GetFocusManager()->AddFocusChangeListener(this);
-      if (GetWidget()) {
-        GetWidget()->NotifyAccessibilityEvent(
-            this, ui::AccessibilityTypes::EVENT_ALERT, true);
-      }
-
       if (close_button_ == NULL) {
         gfx::Image* image = delegate()->GetIcon();
         if (image) {
@@ -246,10 +228,11 @@ void InfoBarView::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
         AddChildView(close_button_);
       }
     } else {
-      DestroyFocusTracker(false);
-      animation()->Stop();
-      if (GetFocusManager())
-        GetFocusManager()->RemoveFocusChangeListener(this);
+      // TODO(pkasting): Move this to PlatformSpecificHide() once that's
+      // guaranteed to be called each time we're hidden.
+      views::FocusManager* focus_manager = GetFocusManager();
+      if (focus_manager)
+        focus_manager->RemoveFocusChangeListener(this);
     }
   }
 
@@ -309,19 +292,38 @@ const InfoBarContainer::Delegate* InfoBarView::container_delegate() const {
   return infobar_container ? infobar_container->delegate() : NULL;
 }
 
+void InfoBarView::PlatformSpecificShow(bool animate) {
+  views::Widget* widget = GetWidget();
+  views::FocusManager* focus_manager = GetFocusManager();
+#if defined(OS_WIN)
+  // If we gain focus, we want to restore it to the previously-focused element
+  // when we're hidden.  So when we're in a Widget, create a focus tracker so
+  // that if we gain focus we'll know what the previously-focused element was.
+  if (widget) {
+    focus_tracker_.reset(
+        new views::ExternalFocusTracker(this, focus_manager));
+  }
+#endif
+  if (focus_manager)
+    focus_manager->AddFocusChangeListener(this);
+  if (widget) {
+    widget->NotifyAccessibilityEvent(
+        this, ui::AccessibilityTypes::EVENT_ALERT, true);
+  }
+}
+
 void InfoBarView::PlatformSpecificHide(bool animate) {
-  if (!animate)
+#if defined(OS_WIN)
+  if (!animate || !focus_tracker_.get())
     return;
 
-  bool restore_focus = true;
-#if defined(OS_WIN)
-  // Do not restore focus (and active state with it) on Windows if some other
-  // top-level window became active.
-  if (GetWidget() &&
-      !ui::DoesWindowBelongToActiveWindow(GetWidget()->GetNativeView()))
-    restore_focus = false;
-#endif  // defined(OS_WIN)
-  DestroyFocusTracker(restore_focus);
+  // Do not restore focus (and active state with it) if some other top-level
+  // window became active.
+  views::Widget* widget = GetWidget();
+  if (!widget || ui::DoesWindowBelongToActiveWindow(widget->GetNativeView()))
+    focus_tracker_->FocusLastFocusedExternalView();
+  focus_tracker_.reset();
+#endif
 }
 
 void InfoBarView::PlatformSpecificOnHeightsRecalculated() {
@@ -346,18 +348,9 @@ gfx::Size InfoBarView::GetPreferredSize() {
 void InfoBarView::FocusWillChange(View* focused_before, View* focused_now) {
   // This will trigger some screen readers to read the entire contents of this
   // infobar.
-  if (focused_before && focused_now && !this->Contains(focused_before) &&
-      this->Contains(focused_now) && GetWidget()) {
+  if (focused_before && focused_now && !Contains(focused_before) &&
+      Contains(focused_now) && GetWidget()) {
     GetWidget()->NotifyAccessibilityEvent(
         this, ui::AccessibilityTypes::EVENT_ALERT, true);
-  }
-}
-
-void InfoBarView::DestroyFocusTracker(bool restore_focus) {
-  if (focus_tracker_ != NULL) {
-    if (restore_focus)
-      focus_tracker_->FocusLastFocusedExternalView();
-    focus_tracker_->SetFocusManager(NULL);
-    focus_tracker_.reset();
   }
 }
