@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -89,9 +89,6 @@ void AudioImpl::Run() {
   while (sizeof(pending_data) ==
       socket_->Receive(&pending_data, sizeof(pending_data)) &&
       pending_data >= 0) {
-    // Exit the thread on pause.
-    if (pending_data < 0)
-      return;
     callback_(buffer, shared_memory_size_, user_data_);
   }
 }
