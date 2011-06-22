@@ -479,8 +479,8 @@ const char kEnablePreconnect[]              = "enable-preconnect";
 // parameter to indicate if the provider should be the default.
 const char kEnableSearchProviderApiV2[]     = "enable-search-provider-api-v2";
 
-// Enables 0-RTT HTTPS handshakes.
-const char kEnableSnapStart[]               = "enable-snap-start";
+// Enables TLS cached info extension.
+const char kEnableSSLCachedInfo[]  = "enable-ssl-cached-info";
 
 // Enable syncing browser data to a Google Account.
 const char kEnableSync[]                    = "enable-sync";

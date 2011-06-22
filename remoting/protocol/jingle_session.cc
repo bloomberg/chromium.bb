@@ -51,6 +51,7 @@ net::SSLClientSocket* CreateSSLClientSocket(
     net::StreamSocket* socket, scoped_refptr<net::X509Certificate> cert,
     net::CertVerifier* cert_verifier) {
   net::SSLConfig ssl_config;
+  ssl_config.cached_info_enabled = false;
   ssl_config.false_start_enabled = false;
   ssl_config.ssl3_enabled = true;
   ssl_config.tls1_enabled = true;

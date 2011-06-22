@@ -233,9 +233,8 @@ void BrowserMainParts::EarlyInitialization() {
 
   if (parsed_command_line().HasSwitch(switches::kDisableSSLFalseStart))
     net::SSLConfigService::DisableFalseStart();
-  // Disabled to stop people playing with it.
-  // if (parsed_command_line().HasSwitch(switches::kEnableSnapStart))
-  //   net::SSLConfigService::EnableSnapStart();
+  if (parsed_command_line().HasSwitch(switches::kEnableSSLCachedInfo))
+    net::SSLConfigService::EnableCachedInfo();
   if (parsed_command_line().HasSwitch(
           switches::kEnableDNSCertProvenanceChecking)) {
     net::SSLConfigService::EnableDNSCertProvenanceChecking();

@@ -139,7 +139,7 @@ extern const char kEnablePreconnect[];
 extern const char kEnableRemoting[];
 extern const char kEnableResourceContentSettings[];
 extern const char kEnableSearchProviderApiV2[];
-extern const char kEnableSnapStart[];
+extern const char kEnableSSLCachedInfo[];
 extern const char kEnableSync[];
 extern const char kEnableSyncAutofill[];
 extern const char kEnableSyncEncryption[];
