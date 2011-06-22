@@ -25,14 +25,6 @@ var log = function(message) {
   rpc.log('test', message);
 };
 
-// This is based on the test in ppapi_core.html.
-// Deliberately global - this what the nexe expects.
-var CallOnMainThreadCallback_FromMainThread = function() {
-  log('Received CallOnMainThread callback!');
-  rpc.pass('test');
-  rpc.shutdown();
-};
-
 function $(id) {
   return document.getElementById(id);
 }
@@ -41,21 +33,30 @@ var onWindowLoad = function() {
   log('in onWindowLoad()');
   var plugin = $('naclDSOModule');
   var nexe_names = {
-    'x86-32': './ppapi_core_x86-32.nexe',
-    'x86-64': './ppapi_core_x86-64.nexe',
-    'arm': './ppapi_core_arm.nexe',
+    'x86-32': './ppapi_test_example_x86-32.nexe',
+    'x86-64': './ppapi_test_example_x86-64.nexe',
+    'arm': './ppapi_test_example_arm.nexe',
   };
   var lib_names = {
     'x86-32': 'lib',
     'x86-64': 'lib',
     'arm': 'lib',
   };
+
+  var onMessage = function(message) {
+    log('Received message: ' + message.data);
+    if (message.data == 'TestSimpleAsync:PASSED') {
+      rpc.pass('test');
+    } else {
+      rpc.fail('test', 'Unexpected reply');
+    }
+    rpc.shutdown();
+  };
+  plugin.addEventListener('message', onMessage, false);
+
   var onPluginStart = function() {
     log('started OK');
-    var value = plugin.testCallOnMainThread_FromMainThread();
-    if (value !== true) {
-      rpc.fail('test', 'Unexpected value: ' + value);
-    }
+    plugin.postMessage('TestSimpleAsync');
   };
 
   // TODO(bradchen): Rewrite this test.
