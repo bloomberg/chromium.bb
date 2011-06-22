@@ -29,8 +29,8 @@ std::string GetDefaultPort(const std::string& scheme) {
 // Returns true if |sub_domain| is a sub domain or equls |domain|.  E.g.
 // "mail.google.com" is a sub domain of "google.com" but "evilhost.com" is not a
 // subdomain of "host.com".
-bool IsSubDomainOrEqual(const std::string sub_domain,
-                        const std::string domain) {
+bool IsSubDomainOrEqual(const std::string& sub_domain,
+                        const std::string& domain) {
   // The empty string serves as wildcard. Each domain is a subdomain of the
   // wildcard.
   if (domain.empty())

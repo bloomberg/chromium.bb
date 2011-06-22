@@ -24,8 +24,8 @@ class OriginIdentifierValueMap {
   typedef std::string ResourceIdentifier;
 
   struct Entry {
-    Entry(ContentSettingsPattern primary_pattern,
-          ContentSettingsPattern secondary_pattern,
+    Entry(const ContentSettingsPattern& primary_pattern,
+          const ContentSettingsPattern& secondary_pattern,
           ContentSettingsType content_type,
           ResourceIdentifier identifier,
           Value* value);

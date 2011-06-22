@@ -96,7 +96,7 @@ class UserScriptMaster : public base::RefCountedThreadSafe<UserScriptMaster>,
     // Load the specified user scripts, calling NotifyMaster when done.
     // |user_scripts| is intentionally passed by value so its lifetime isn't
     // tied to the caller.
-    void RunLoad(UserScriptList user_scripts);
+    void RunLoad(const UserScriptList& user_scripts);
 
     static void LoadUserScripts(UserScriptList* user_scripts);
 

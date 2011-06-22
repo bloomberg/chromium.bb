@@ -776,7 +776,7 @@ GdkPoint MakeBidiGdkPoint(gint x, gint y, gint width, bool ltr) {
   return point;
 }
 
-std::string BuildTooltipTitleFor(string16 title, GURL url) {
+std::string BuildTooltipTitleFor(string16 title, const GURL& url) {
   const std::string& url_str = url.possibly_invalid_spec();
   const std::string& title_str = UTF16ToUTF8(title);
 

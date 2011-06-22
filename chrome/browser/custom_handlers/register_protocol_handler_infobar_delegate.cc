@@ -12,7 +12,7 @@
 RegisterProtocolHandlerInfoBarDelegate::RegisterProtocolHandlerInfoBarDelegate(
     TabContents* tab_contents,
     ProtocolHandlerRegistry* registry,
-    ProtocolHandler handler)
+    const ProtocolHandler& handler)
     : ConfirmInfoBarDelegate(tab_contents),
       tab_contents_(tab_contents),
       registry_(registry),

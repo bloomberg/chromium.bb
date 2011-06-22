@@ -232,8 +232,9 @@ static base::SharedMemory* Serialize(const UserScriptList& scripts) {
 }
 
 // This method will be called from the file thread
-void UserScriptMaster::ScriptReloader::RunLoad(UserScriptList user_scripts) {
-  LoadUserScripts(&user_scripts);
+void UserScriptMaster::ScriptReloader::RunLoad(
+    const UserScriptList& user_scripts) {
+  LoadUserScripts(const_cast<UserScriptList*>(&user_scripts));
 
   // Scripts now contains list of up-to-date scripts. Load the content in the
   // shared memory and let the master know it's ready. We need to post the task

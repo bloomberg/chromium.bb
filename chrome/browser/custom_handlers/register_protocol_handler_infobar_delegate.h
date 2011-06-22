@@ -19,7 +19,7 @@ class RegisterProtocolHandlerInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   RegisterProtocolHandlerInfoBarDelegate(TabContents* tab_contents,
                                          ProtocolHandlerRegistry* registry,
-                                         ProtocolHandler handler);
+                                         const ProtocolHandler& handler);
 
   // ConfirmInfoBarDelegate:
   virtual bool ShouldExpire(const content::LoadCommittedDetails&

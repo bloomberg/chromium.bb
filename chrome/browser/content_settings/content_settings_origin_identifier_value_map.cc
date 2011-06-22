@@ -11,8 +11,8 @@
 namespace content_settings {
 
 OriginIdentifierValueMap::Entry::Entry(
-    ContentSettingsPattern primary_pattern,
-    ContentSettingsPattern secondary_pattern,
+    const ContentSettingsPattern& primary_pattern,
+    const ContentSettingsPattern& secondary_pattern,
     ContentSettingsType content_type,
     OriginIdentifierValueMap::ResourceIdentifier identifier,
     Value* value)
