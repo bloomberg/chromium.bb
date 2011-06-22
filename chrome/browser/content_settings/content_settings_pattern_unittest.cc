@@ -74,12 +74,12 @@ TEST(ContentSettingsPatternTest, FromURL) {
   pattern = ContentSettingsPattern::FromURL(GURL("https://www.google.com:443"));
   EXPECT_TRUE(pattern.Matches(GURL("https://www.google.com")));
   EXPECT_TRUE(pattern.Matches(GURL("https://www.google.com:443")));
-  EXPECT_TRUE(pattern.Matches(GURL("https://www.google.com:444")));
+  EXPECT_FALSE(pattern.Matches(GURL("https://www.google.com:444")));
   EXPECT_FALSE(pattern.Matches(GURL("http://www.google.com:443")));
 
   pattern = ContentSettingsPattern::FromURL(GURL("https://127.0.0.1"));
   EXPECT_TRUE(pattern.IsValid());
-  EXPECT_STREQ("https://127.0.0.1", pattern.ToString().c_str());
+  EXPECT_STREQ("https://127.0.0.1:443", pattern.ToString().c_str());
 
   pattern = ContentSettingsPattern::FromURL(GURL("http://[::1]"));
   EXPECT_TRUE(pattern.IsValid());

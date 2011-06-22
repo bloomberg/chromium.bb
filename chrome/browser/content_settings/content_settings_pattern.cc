@@ -301,7 +301,10 @@ ContentSettingsPattern ContentSettingsPattern::FromURL(
       // Unsupported scheme
     }
     if (url.port().empty()) {
-      builder->WithPortWildcard();
+      if (url.SchemeIs(chrome::kHttpsScheme))
+        builder->WithPort(GetDefaultPort(chrome::kHttpsScheme));
+      else
+        builder->WithPortWildcard();
     } else {
       builder->WithPort(url.port());
     }
