@@ -179,6 +179,15 @@ section {
   float: right;
 }
 
+#email-status {
+  margin-right: 0.5ex;
+}
+
+#email-label {
+  color: black;
+  font-weight: bold;
+}
+
 #current-email {
   color: rgba(0, 0, 0, 0.5);
 }

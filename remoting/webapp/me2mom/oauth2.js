@@ -20,7 +20,8 @@ function OAuth2() {
   this.client_secret = encodeURIComponent('TgKrL73H2kJe6Ir0ufp7bf6e');
   this.scope = encodeURIComponent(
       'https://www.googleapis.com/auth/chromoting ' +
-      'https://www.googleapis.com/auth/googletalk');
+      'https://www.googleapis.com/auth/googletalk ' +
+      'https://www.googleapis.com/auth/userinfo#email');
   this.redirect_uri = encodeURIComponent('urn:ietf:wg:oauth:2.0:oob');
 }
 
@@ -139,3 +140,21 @@ OAuth2.prototype.exchangeCodeForToken = function(code, on_done) {
   xhr.send(post_data);
 }
 
+// Call myfunc with an access token as the only parameter.
+//
+// This will refresh the access token if necessary.  If the access token
+// cannot be refreshed, an error is thrown.
+OAuth2.prototype.callWithToken = function(myfunc) {
+  if (remoting.oauth2.needsNewAccessToken()) {
+    remoting.oauth2.refreshAccessToken(function() {
+      if (remoting.oauth2.needsNewAccessToken()) {
+        // If we still need it, we're going to infinite loop.
+        throw "Unable to get access token.";
+      }
+      myfunc(remoting.oauth2.getAccessToken());
+    });
+    return;
+  }
+
+  myfunc(remoting.oauth2.getAccessToken());
+}

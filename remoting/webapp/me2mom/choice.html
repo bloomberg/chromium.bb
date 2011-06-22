@@ -23,6 +23,11 @@ found in the LICENSE file.
 
   <body>
     <div id="auth-panel">
+      <span id="email-status" class="display-inline">
+        <span id="email-label">Email:</span>
+        <span id="current-email" class="display-inline"></span>
+      </span> <!-- email-status -->
+
       <span id="oauth2-entry">
         <form action="" onsubmit="authorizeOAuth2(); return false;">
           <label for="oauth2-code">OAuth2 Token:</label>
@@ -37,20 +42,6 @@ found in the LICENSE file.
                  onclick="clearOAuth2(); return false;" value="Revoke" />
         </form>
       </span> <!-- oauth2-entry -->
-
-      <span id="email-entry">
-        <form action=""
-              onsubmit="setEmail(this['new-email'].value); return false;">
-          <label for="new-email">Email:</label>
-          <span id="current-email" class="display-inline"></span>
-          <input id="new-email" class="display-inline" name="new-email"
-                 type="text" />
-          <input id="email-submit-button" class="display-inline"
-                 type="submit" />
-          <input id="change-email-button" class="display-inline" type="button"
-                 onclick="setEmail(''); return false;" value="Change Email" />
-        </form>
-      </span> <!-- email-entry -->
 
       <span id="debug-enable">
         <form>

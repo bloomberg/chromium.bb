@@ -12,7 +12,7 @@
 var remoting = chrome.extension.getBackgroundPage().remoting;
 remoting.CLIENT_MODE = 'client';
 remoting.HOST_MODE = 'host';
-remoting.XMPP_LOGIN_NAME = 'xmpp_login';
+remoting.EMAIL = 'email';
 remoting.HOST_PLUGIN_ID = 'host-plugin-id';
 
 window.addEventListener('load', init_, false);
@@ -25,6 +25,33 @@ var kDigitsPerGroup = 4;
 
 function hasClass(element, cls) {
   return element.className.match(new RegExp('\\b' + cls + '\\b'));
+}
+
+function retrieveEmail_(access_token) {
+  var xhr = new XMLHttpRequest();
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState != 4) {
+      return;
+    }
+    if (xhr.status != 200) {
+      // TODO(ajwong): Have a better way of showing an error.
+      window.alert("Unable to get e-mail");
+      return;
+    }
+
+    // TODO(ajwong): See if we can't find a JSON endpoint.
+    setEmail(xhr.responseText.split('&')[0].split('=')[1]);
+  };
+
+  xhr.open('GET', 'https://www.googleapis.com/userinfo/email', true);
+  xhr.setRequestHeader('Authorization', 'OAuth ' + access_token);
+  xhr.send(null);
+}
+
+function refreshEmail_() {
+  if (!remoting.getItem(remoting.EMAIL) && remoting.oauth2.isAuthenticated()) {
+    remoting.oauth2.callWithToken(retrieveEmail_);
+  }
 }
 
 function addClass(element, cls) {
@@ -74,14 +101,10 @@ function updateAuthStatus_() {
   showElementById('oauth2-code-button', !oauthValid);
   showElementById('oauth2-clear-button', oauthValid);
 
-  var loginName = remoting.getItem(remoting.XMPP_LOGIN_NAME);
+  var loginName = remoting.getItem(remoting.EMAIL);
   if (loginName) {
     document.getElementById('current-email').innerText = loginName;
   }
-  showElementById('current-email', loginName);
-  showElementById('change-email-button', loginName);
-  showElementById('new-email', !loginName);
-  showElementById('email-submit-button', !loginName);
 
   var disableControls = !(loginName && oauthValid);
   var authPanel = document.getElementById('auth-panel');
@@ -101,7 +124,7 @@ function initBackgroundFuncs_() {
 }
 
 function setEmail(value) {
-  remoting.setItem(remoting.XMPP_LOGIN_NAME, value);
+  remoting.setItem(remoting.EMAIL, value);
   updateAuthStatus_();
 }
 
@@ -109,7 +132,10 @@ function exchangedCodeForToken_() {
   if (!remoting.oauth2.isAuthenticated()) {
     alert('Your OAuth2 token was invalid. Please try again.');
   }
-  updateAuthStatus_();
+  remoting.oauth2.callWithToken(function(token) {
+      retrieveEmail_(token);
+      updateAuthStatus_();
+  });
 }
 
 function authorizeOAuth2() {
@@ -139,6 +165,7 @@ function setMode_(mode, modes) {
 function init_() {
   initBackgroundFuncs_();
   updateAuthStatus_();
+  refreshEmail_();
   setHostMode('unshared');
   setClientMode('unconnected');
   setGlobalMode(remoting.getItem('startup-mode', remoting.HOST_MODE));
@@ -219,7 +246,7 @@ function tryShare() {
   div.appendChild(plugin);
   plugin.onStateChanged = onStateChanged_;
   plugin.logDebugInfoCallback = debugInfoCallback_;
-  plugin.connect(remoting.getItem(remoting.XMPP_LOGIN_NAME),
+  plugin.connect(remoting.getItem(remoting.EMAIL),
                  'oauth2:' + remoting.oauth2.getAccessToken());
 }
 
@@ -274,7 +301,7 @@ function cancelShare() {
 
 function startSession_() {
   addToDebugLog('Starting session...');
-  remoting.username = remoting.getItem(remoting.XMPP_LOGIN_NAME);
+  remoting.username = remoting.getItem(remoting.EMAIL);
   document.location = 'remoting_session.html';
 }
 
