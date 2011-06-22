@@ -57,7 +57,7 @@ class NET_TEST CRLFilter : public base::RefCounted<CRLFilter> {
   Result CheckCertificate(
       base::StringPiece cert_spki,
       const std::string& serial_number,
-      std::vector<base::StringPiece> crl_urls,
+      const std::vector<base::StringPiece>& crl_urls,
       base::StringPiece parent_spki);
 
   // ApplyDelta returns a new CRLFilter in |out_crl_filter| that is the result
@@ -96,7 +96,7 @@ class NET_TEST CRLFilter : public base::RefCounted<CRLFilter> {
   };
 
   static CRLFilter* CRLFilterFromHeader(base::StringPiece header);
-  bool CRLIsCovered(std::vector<base::StringPiece> crl_urls,
+  bool CRLIsCovered(const std::vector<base::StringPiece>& crl_urls,
                     const std::string& parent_spki_sha256);
 
   int64 not_before_, not_after_;

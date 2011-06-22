@@ -104,7 +104,7 @@ bool PluginGroup::IsPluginNameEnabledByPolicy(const string16& plugin_name) {
   return IsStringMatchedInSet(plugin_name, policy_enabled_plugin_patterns_);
 }
 
-VersionRange::VersionRange(VersionRangeDefinition definition)
+VersionRange::VersionRange(const VersionRangeDefinition& definition)
     : low_str(definition.version_matcher_low),
       high_str(definition.version_matcher_high),
       min_str(definition.min_version),

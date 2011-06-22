@@ -53,7 +53,7 @@ struct PluginGroupDefinition {
 // Run-time structure to hold version range information.
 struct VersionRange {
  public:
-  explicit VersionRange(VersionRangeDefinition definition);
+  explicit VersionRange(const VersionRangeDefinition& definition);
   VersionRange(const VersionRange& other);
   VersionRange& operator=(const VersionRange& other);
   ~VersionRange();

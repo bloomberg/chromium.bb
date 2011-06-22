@@ -106,8 +106,10 @@ class AppCacheStorageImpl : public AppCacheStorage {
   bool FindResponseForMainRequestInGroup(
       AppCacheGroup* group,  const GURL& url, Delegate* delegate);
   void DeliverShortCircuitedFindMainResponse(
-      const GURL& url, AppCacheEntry found_entry,
-      scoped_refptr<AppCacheGroup> group, scoped_refptr<AppCache> newest_cache,
+      const GURL& url,
+      const AppCacheEntry& found_entry,
+      scoped_refptr<AppCacheGroup> group,
+      scoped_refptr<AppCache> newest_cache,
       scoped_refptr<DelegateReference> delegate_ref);
 
   void CheckPolicyAndCallOnMainResponseFound(

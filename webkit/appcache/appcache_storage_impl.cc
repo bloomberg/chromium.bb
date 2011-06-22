@@ -1287,8 +1287,10 @@ bool AppCacheStorageImpl::FindResponseForMainRequestInGroup(
 }
 
 void AppCacheStorageImpl::DeliverShortCircuitedFindMainResponse(
-    const GURL& url, AppCacheEntry found_entry,
-    scoped_refptr<AppCacheGroup> group, scoped_refptr<AppCache> cache,
+    const GURL& url,
+    const AppCacheEntry& found_entry,
+    scoped_refptr<AppCacheGroup> group,
+    scoped_refptr<AppCache> cache,
     scoped_refptr<DelegateReference> delegate_ref) {
   if (delegate_ref->delegate) {
     DelegateReferenceVector delegates(1, delegate_ref);

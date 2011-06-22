@@ -789,7 +789,7 @@ bool CRLFilter::ApplyDelta(base::StringPiece data,
 }
 
 bool CRLFilter::CRLIsCovered(
-    std::vector<base::StringPiece> crl_urls,
+    const std::vector<base::StringPiece>& crl_urls,
     const std::string& parent_spki_sha256) {
   for (std::vector<base::StringPiece>::const_iterator
        i = crl_urls.begin(); i != crl_urls.end(); i++) {
@@ -820,7 +820,7 @@ static uint64 FNV1a64(const std::string& a, const std::string& b) {
 CRLFilter::Result CRLFilter::CheckCertificate(
     base::StringPiece cert_spki,
     const std::string& serial_number,
-    std::vector<base::StringPiece> crl_urls,
+    const std::vector<base::StringPiece>& crl_urls,
     base::StringPiece parent_spki) {
   const std::string parent_spki_sha256 =
       crypto::SHA256HashString(parent_spki.as_string());
