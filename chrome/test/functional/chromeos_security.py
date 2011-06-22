@@ -4,6 +4,7 @@
 # found in the LICENSE file.
 
 import os
+import pprint
 
 import pyauto_functional
 import pyauto
@@ -16,6 +17,7 @@ class ChromeosSecurity(pyauto.PyUITest):
   """
   def setUp(self):
     pyauto.PyUITest.setUp(self)
+    self.pp = pprint.PrettyPrinter(indent=2)
     baseline_file = os.path.abspath(os.path.join(
         pyauto.PyUITest.DataDir(), 'pyauto_private', 'chromeos',
         'security', 'extension_permission_baseline.txt'))
@@ -52,6 +54,72 @@ class ChromeosSecurity(pyauto.PyUITest):
       self.assertNotEqual(title, self.GetActiveTabTitle(),
           msg='Could access local file %s.' % url)
 
+  def _AssertPermissionSetIsExpected(self, expected_set, actual_set, perm_type,
+                                     full_expected_info, full_actual_info):
+    """Asserts that the set of permissions for an extension is expected.
+
+    Args:
+      expected_set: A set of permissions that are expected to be present.
+      actual_set: A set of permissions that are actually present.
+      perm_type: A string describing the type of permission involved.
+      full_expected_info: A dictionary fully describing the expected information
+                          associated with the given extension.
+      full_actual_info: A dictionary fully describing the actual information
+                        associated with the given extension.
+    """
+    def _GetSetDifferenceMessage(expected_set, actual_set):
+      strings = []
+      for missing_item in expected_set.difference(actual_set):
+        strings.append('Missing item: "%s"' % missing_item)
+      for extra_item in actual_set.difference(expected_set):
+        strings.append('Unexpected (extra) item: "%s"' % extra_item)
+      return '\n'.join(strings)
+
+    self.assertEqual(
+        expected_set, actual_set,
+        msg=('%s do not match for "%s".\n'
+             '%s\n'
+             'Expected extension info:\n%s'
+             '\nActual extension info:\n%s' %
+             (perm_type, full_expected_info['name'],
+              _GetSetDifferenceMessage(expected_set, actual_set),
+              self.pp.pformat(full_expected_info),
+              self.pp.pformat(full_actual_info))))
+
+  def _AssertExtensionNamesAreExpected(self, expected_set, actual_set,
+                                       ext_type, full_expected_info,
+                                       full_actual_info):
+    """Asserts that a set of extensions is expected.
+
+    Args:
+      expected_set: A set of extension names that are expected to be present.
+      actual_set: A set of extension names that are actually present.
+      ext_type: A string describing the type of extensions involved.
+      full_expected_info: A list of dictionaries describing the expected
+                          information for all extensions.
+      full_actual_info: A list of dictionaries describing the actual information
+                        for all extensions.
+    """
+    def _GetSetDifferenceMessage(expected_set, actual_set):
+      strings = []
+      for missing_item in expected_set.difference(actual_set):
+        strings.append('Missing item: "%s"' % missing_item)
+        located_ext_info = [info for info in full_expected_info if
+                            info['name'] == missing_item][0]
+        strings.append(self.pp.pformat(located_ext_info))
+      for extra_item in actual_set.difference(expected_set):
+        strings.append('Unexpected (extra) item: "%s"' % extra_item)
+        located_ext_info = [info for info in full_actual_info if
+                            info['name'] == extra_item][0]
+        strings.append(self.pp.pformat(located_ext_info))
+      return '\n'.join(strings)
+
+    self.assertEqual(
+        expected_set, actual_set,
+        msg='%s names do not match the baseline.\n'
+            '%s\n' %
+            (ext_type, _GetSetDifferenceMessage(expected_set, actual_set)))
+
   def _VerifyExtensionPermissions(self, baseline):
     """Ensures extension permissions in the baseline match actual info.
 
@@ -70,27 +138,28 @@ class ChromeosSecurity(pyauto.PyUITest):
                           info['name'] == ext_expected_info['name']]
       self.assertTrue(
           located_ext_info,
-          msg='Cannot locate extension info: ' + ext_expected_info['name'])
+          msg=('Cannot locate extension info for "%s".\n'
+               'Expected extension info:\n%s' %
+               (ext_expected_info['name'], self.pp.pformat(ext_expected_info))))
       ext_actual_info = located_ext_info[0]
-      self.assertEqual(set(ext_expected_info['effective_host_permissions']),
-                       set(ext_actual_info['effective_host_permissions']),
-                       msg='Effective host permission info does not match for '
-                           'extension: ' + ext_expected_info['name'])
-      self.assertEqual(set(ext_expected_info['api_permissions']),
-                       set(ext_actual_info['api_permissions']),
-                       msg='API permission info does not match for '
-                           'extension: ' + ext_expected_info['name'])
+      self._AssertPermissionSetIsExpected(
+          set(ext_expected_info['effective_host_permissions']),
+          set(ext_actual_info['effective_host_permissions']),
+          'Effective host permissions', ext_expected_info, ext_actual_info)
+      self._AssertPermissionSetIsExpected(
+          set(ext_expected_info['api_permissions']),
+          set(ext_actual_info['api_permissions']),
+          'API permissions', ext_expected_info, ext_actual_info)
 
   def testComponentExtensionPermissions(self):
     """Ensures component extension permissions are as expected."""
     expected_names = [ext['name'] for ext in self._component_extension_baseline]
-    actual_names = [ext['name'] for ext in self.GetExtensionsInfo() if
+    ext_actual_info = self.GetExtensionsInfo()
+    actual_names = [ext['name'] for ext in ext_actual_info if
                     ext['is_component_extension']]
-    self.assertEqual(set(expected_names), set(actual_names),
-                     msg='Component extension names do not match baseline:\n'
-                         'Installed extensions: %s\n'
-                         'Expected extensions: %s' % (actual_names,
-                                                      expected_names))
+    self._AssertExtensionNamesAreExpected(
+        set(expected_names), set(actual_names), 'Component extension',
+        self._component_extension_baseline, ext_actual_info)
     self._VerifyExtensionPermissions(self._component_extension_baseline)
 
   def testBundledCrxPermissions(self):
@@ -126,11 +195,11 @@ class ChromeosSecurity(pyauto.PyUITest):
     expected_names.extend([ext['name'] for ext in self._bundled_crx_baseline])
     ext_actual_info = self.GetExtensionsInfo()
     installed_names = [ext['name'] for ext in ext_actual_info]
-    self.assertEqual(set(expected_names), set(installed_names),
-                     msg='Installed extension names do not match baseline:\n'
-                         'Installed extensions: %s\n'
-                         'Expected extensions: %s' % (installed_names,
-                                                      expected_names))
+    self._AssertExtensionNamesAreExpected(
+        set(expected_names), set(installed_names), 'Installed extension',
+        self._component_extension_baseline + self._bundled_crx_baseline,
+        ext_actual_info)
+
 
 if __name__ == '__main__':
   pyauto_functional.Main()
