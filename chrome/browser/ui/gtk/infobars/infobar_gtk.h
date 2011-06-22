@@ -31,8 +31,6 @@ class InfoBarGtk : public InfoBar,
   // Get the top level native GTK widget for this infobar.
   GtkWidget* widget();
 
-  void SetThemeProvider(GtkThemeService* theme_provider);
-
   GdkColor GetBorderColor() const;
 
   // Returns the target height of the infobar if the bar is animating,
@@ -60,6 +58,14 @@ class InfoBarGtk : public InfoBar,
   static const int kEndOfLabelSpacing;
   // Spacing between buttons.
   static const int kButtonButtonSpacing;
+
+  // Creates a label with the appropriate font and color for the current
+  // gtk-theme state. It is InfoBarGtk's responsibility to observe browser
+  // theme changes and update the label's state.
+  GtkWidget* CreateLabel(const std::string& text);
+
+  // Creates a link button with the appropriate current gtk-theme state.
+  GtkWidget* CreateLinkButton(const std::string& text);
 
   // Adds |display_text| to the infobar. If |link_text| is not empty, it is
   // rendered as a hyperlink and inserted into |display_text| at |link_offset|,

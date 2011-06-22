@@ -39,10 +39,6 @@ class TranslateInfoBarBase : public InfoBarGtk {
   // override and return true.
   virtual bool ShowOptionsMenuButton() const;
 
-  // Creates a label with the appropriate font and color for the translate
-  // infobars.
-  GtkWidget* CreateLabel(const std::string& text);
-
   // Creates a combobox that displays the languages currently available.
   // |selected_language| is the language index (as used in the
   // TranslateInfoBarDelegate) that should be selected initially.

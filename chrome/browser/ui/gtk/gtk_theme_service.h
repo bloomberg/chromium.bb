@@ -69,6 +69,15 @@ class GtkThemeService : public ThemeService {
   // away.
   GtkWidget* BuildChromeButton();
 
+  // Creates a GtkChromeLinkButton instance. We update its state as theme
+  // changes, and listen for its destruction.
+  GtkWidget* BuildChromeLinkButton(const std::string& text);
+
+  // Builds a GtkLabel that is black in chrome theme mode, and the normal text
+  // color in gtk-mode. Like the previous two calls, listens for the object's
+  // destruction.
+  GtkWidget* BuildBlackLabel(const std::string& text);
+
   // Creates a theme-aware vertical separator widget.
   GtkWidget* CreateToolbarSeparator();
 
@@ -234,9 +243,11 @@ class GtkThemeService : public ThemeService {
   // Handles signal from GTK that our theme has been changed.
   CHROMEGTK_CALLBACK_1(GtkThemeService, void, OnStyleSet, GtkStyle*);
 
-  // A notification from the GtkChromeButton GObject destructor that we should
+  // A notification from various GObject destructors that we should
   // remove it from our internal list.
   CHROMEGTK_CALLBACK_0(GtkThemeService, void, OnDestroyChromeButton);
+  CHROMEGTK_CALLBACK_0(GtkThemeService, void, OnDestroyChromeLinkButton);
+  CHROMEGTK_CALLBACK_0(GtkThemeService, void, OnDestroyLabel);
 
   CHROMEGTK_CALLBACK_1(GtkThemeService, gboolean, OnSeparatorExpose,
                        GdkEventExpose*);
@@ -252,9 +263,12 @@ class GtkThemeService : public ThemeService {
   OwnedWidgetGtk fake_entry_;
   OwnedWidgetGtk fake_menu_item_;
 
-  // A list of all GtkChromeButton instances. We hold on to these to notify
-  // them of theme changes.
+  // A list of diferent types of widgets that we hold on to these to notify
+  // them of theme changes. We do not own these and listen for their
+  // destruction via OnDestory{ChromeButton,ChromeLinkButton,Label}.
   std::vector<GtkWidget*> chrome_buttons_;
+  std::vector<GtkWidget*> link_buttons_;
+  std::vector<GtkWidget*> black_labels_;
 
   // Tracks all the signals we have connected to on various widgets.
   scoped_ptr<ui::GtkSignalRegistrar> signals_;

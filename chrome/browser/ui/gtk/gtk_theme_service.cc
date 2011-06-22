@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/gtk/cairo_cached_surface.h"
 #include "chrome/browser/ui/gtk/chrome_gtk_frame.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_button.h"
+#include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/hover_controller_gtk.h"
 #include "chrome/common/pref_names.h"
@@ -388,6 +389,30 @@ GtkWidget* GtkThemeService::BuildChromeButton() {
   return button;
 }
 
+GtkWidget* GtkThemeService::BuildChromeLinkButton(const std::string& text) {
+  GtkWidget* link_button = gtk_chrome_link_button_new(text.c_str());
+  gtk_chrome_link_button_set_use_gtk_theme(
+      GTK_CHROME_LINK_BUTTON(link_button),
+      use_gtk_);
+  link_buttons_.push_back(link_button);
+
+  signals_->Connect(link_button, "destroy",
+                    G_CALLBACK(OnDestroyChromeLinkButtonThunk), this);
+
+  return link_button;
+}
+
+GtkWidget* GtkThemeService::BuildBlackLabel(const std::string& text) {
+  GtkWidget* label = gtk_label_new(text.c_str());
+  if (!use_gtk_)
+    gtk_widget_modify_fg(label, GTK_STATE_NORMAL, &gtk_util::kGdkBlack);
+  black_labels_.push_back(label);
+
+  signals_->Connect(label, "destroy", G_CALLBACK(OnDestroyLabelThunk), this);
+
+  return label;
+}
+
 GtkWidget* GtkThemeService::CreateToolbarSeparator() {
   GtkWidget* separator = gtk_vseparator_new();
   GtkWidget* alignment = gtk_alignment_new(0, 0, 1, 1);
@@ -651,6 +676,18 @@ void GtkThemeService::NotifyThemeChanged() {
        it != chrome_buttons_.end(); ++it) {
     gtk_chrome_button_set_use_gtk_rendering(
         GTK_CHROME_BUTTON(*it), use_gtk_);
+  }
+
+  for (std::vector<GtkWidget*>::iterator it = link_buttons_.begin();
+       it != link_buttons_.end(); ++it) {
+    gtk_chrome_link_button_set_use_gtk_theme(
+        GTK_CHROME_LINK_BUTTON(*it), use_gtk_);
+  }
+
+  const GdkColor* color = use_gtk_ ? NULL : &gtk_util::kGdkBlack;
+  for (std::vector<GtkWidget*>::iterator it = black_labels_.begin();
+       it != black_labels_.end(); ++it) {
+    gtk_widget_modify_fg(*it, GTK_STATE_NORMAL, color);
   }
 
   Browser* browser = BrowserList::GetLastActive();
@@ -1107,6 +1144,20 @@ void GtkThemeService::OnDestroyChromeButton(GtkWidget* button) {
       find(chrome_buttons_.begin(), chrome_buttons_.end(), button);
   if (it != chrome_buttons_.end())
     chrome_buttons_.erase(it);
+}
+
+void GtkThemeService::OnDestroyChromeLinkButton(GtkWidget* button) {
+  std::vector<GtkWidget*>::iterator it =
+      find(link_buttons_.begin(), link_buttons_.end(), button);
+  if (it != link_buttons_.end())
+    link_buttons_.erase(it);
+}
+
+void GtkThemeService::OnDestroyLabel(GtkWidget* button) {
+  std::vector<GtkWidget*>::iterator it =
+      find(black_labels_.begin(), black_labels_.end(), button);
+  if (it != black_labels_.end())
+    black_labels_.erase(it);
 }
 
 gboolean GtkThemeService::OnSeparatorExpose(GtkWidget* widget,

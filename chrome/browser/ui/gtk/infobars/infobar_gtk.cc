@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/infobars/infobar_container_gtk.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/common/notification_service.h"
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/image/image.h"
@@ -47,7 +48,7 @@ const int InfoBarGtk::kButtonButtonSpacing = 3;
 
 InfoBarGtk::InfoBarGtk(TabContentsWrapper* owner, InfoBarDelegate* delegate)
     : InfoBar(owner, delegate),
-      theme_service_(NULL) {
+      theme_service_(GtkThemeService::GetFrom(owner->profile())) {
   DCHECK(delegate);
   // Create |hbox_| and pad the sides.
   hbox_ = gtk_hbox_new(FALSE, kElementPadding);
@@ -77,7 +78,7 @@ InfoBarGtk::InfoBarGtk(TabContentsWrapper* owner, InfoBarDelegate* delegate)
     gtk_box_pack_start(GTK_BOX(hbox_), image, FALSE, FALSE, 0);
   }
 
-  close_button_.reset(CustomDrawButton::CloseButton(NULL));
+  close_button_.reset(CustomDrawButton::CloseButton(theme_service_));
   gtk_util::CenterWidgetInHBox(hbox_, close_button_->widget(), true, 0);
   g_signal_connect(close_button_->widget(), "clicked",
                    G_CALLBACK(OnCloseButtonThunk), this);
@@ -89,6 +90,10 @@ InfoBarGtk::InfoBarGtk(TabContentsWrapper* owner, InfoBarDelegate* delegate)
   g_signal_connect(widget_.get(), "child-size-request",
                    G_CALLBACK(OnChildSizeRequestThunk),
                    this);
+
+  registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
+                 NotificationService::AllSources());
+  UpdateBorderColor();
 }
 
 InfoBarGtk::~InfoBarGtk() {
@@ -98,24 +103,20 @@ GtkWidget* InfoBarGtk::widget() {
   return widget_.get();
 }
 
-void InfoBarGtk::SetThemeProvider(GtkThemeService* theme_service) {
-  if (theme_service_) {
-    NOTREACHED();
-    return;
-  }
-
-  theme_service_ = theme_service;
-  registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
-                 NotificationService::AllSources());
-  UpdateBorderColor();
-}
-
 GdkColor InfoBarGtk::GetBorderColor() const {
   return theme_service_->GetBorderColor();
 }
 
 int InfoBarGtk::AnimatingHeight() const {
   return animation().is_animating() ? bar_target_height() : 0;
+}
+
+GtkWidget* InfoBarGtk::CreateLabel(const std::string& text) {
+  return theme_service_->BuildBlackLabel(text);
+}
+
+GtkWidget* InfoBarGtk::CreateLinkButton(const std::string& text) {
+  return theme_service_->BuildChromeLinkButton(text);
 }
 
 SkColor InfoBarGtk::ConvertGetColor(ColorGetter getter) {
@@ -128,10 +129,7 @@ void InfoBarGtk::AddLabelWithInlineLink(const string16& display_text,
                                         const string16& link_text,
                                         size_t link_offset,
                                         GCallback callback) {
-  GtkWidget* link_button = gtk_chrome_link_button_new(
-      UTF16ToUTF8(link_text).c_str());
-  gtk_chrome_link_button_set_use_gtk_theme(
-      GTK_CHROME_LINK_BUTTON(link_button), FALSE);
+  GtkWidget* link_button = CreateLinkButton(UTF16ToUTF8(link_text));
   gtk_util::ForceFontSizePixels(
       GTK_CHROME_LINK_BUTTON(link_button)->label, 13.4);
   DCHECK(callback);
@@ -145,10 +143,10 @@ void InfoBarGtk::AddLabelWithInlineLink(const string16& display_text,
   gtk_box_pack_start(GTK_BOX(hbox_), hbox, TRUE, TRUE, 0);
 
   // Need to insert the link inside the display text.
-  GtkWidget* initial_label = gtk_label_new(
-      UTF16ToUTF8(display_text.substr(0, link_offset)).c_str());
-  GtkWidget* trailing_label = gtk_label_new(
-      UTF16ToUTF8(display_text.substr(link_offset)).c_str());
+  GtkWidget* initial_label = CreateLabel(
+      UTF16ToUTF8(display_text.substr(0, link_offset)));
+  GtkWidget* trailing_label = CreateLabel(
+      UTF16ToUTF8(display_text.substr(link_offset)));
 
   gtk_util::ForceFontSizePixels(initial_label, 13.4);
   gtk_util::ForceFontSizePixels(trailing_label, 13.4);
@@ -156,8 +154,6 @@ void InfoBarGtk::AddLabelWithInlineLink(const string16& display_text,
   // TODO(joth): None of the label widgets are set as shrinkable here, meaning
   // the text will run under the close button etc. when the width is restricted,
   // rather than eliding.
-  gtk_widget_modify_fg(initial_label, GTK_STATE_NORMAL, &gtk_util::kGdkBlack);
-  gtk_widget_modify_fg(trailing_label, GTK_STATE_NORMAL, &gtk_util::kGdkBlack);
 
   // We don't want any spacing between the elements, so we pack them into
   // this hbox that doesn't use kElementPadding.
@@ -168,7 +164,9 @@ void InfoBarGtk::AddLabelWithInlineLink(const string16& display_text,
 
 void InfoBarGtk::GetTopColor(InfoBarDelegate::Type type,
                              double* r, double* g, double *b) {
-  SkColor color = GetInfoBarTopColor(type);
+  SkColor color = theme_service_->UsingNativeTheme() ?
+                  theme_service_->GetColor(ThemeService::COLOR_TOOLBAR) :
+                  GetInfoBarTopColor(type);
   *r = SkColorGetR(color) / 255.0;
   *g = SkColorGetG(color) / 255.0;
   *b = SkColorGetB(color) / 255.0;
@@ -176,7 +174,9 @@ void InfoBarGtk::GetTopColor(InfoBarDelegate::Type type,
 
 void InfoBarGtk::GetBottomColor(InfoBarDelegate::Type type,
                                 double* r, double* g, double *b) {
-  SkColor color = GetInfoBarBottomColor(type);
+  SkColor color = theme_service_->UsingNativeTheme() ?
+                  theme_service_->GetColor(ThemeService::COLOR_TOOLBAR) :
+                  GetInfoBarBottomColor(type);
   *r = SkColorGetR(color) / 255.0;
   *g = SkColorGetG(color) / 255.0;
   *b = SkColorGetB(color) / 255.0;

@@ -37,11 +37,10 @@ ConfirmInfoBarGtk::ConfirmInfoBarGtk(TabContentsWrapper* owner,
   AddButton(ConfirmInfoBarDelegate::BUTTON_CANCEL);
 
   std::string label_text = UTF16ToUTF8(delegate->GetMessageText());
-  GtkWidget* label = gtk_label_new(label_text.c_str());
+  GtkWidget* label = CreateLabel(label_text);
   gtk_util::ForceFontSizePixels(label, 13.4);
   gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
   gtk_util::CenterWidgetInHBox(confirm_hbox_, label, true, 0);
-  gtk_widget_modify_fg(label, GTK_STATE_NORMAL, &gtk_util::kGdkBlack);
   g_signal_connect(label, "map",
                    G_CALLBACK(gtk_util::InitLabelSizeRequestAndEllipsizeMode),
                    NULL);
@@ -50,7 +49,7 @@ ConfirmInfoBarGtk::ConfirmInfoBarGtk(TabContentsWrapper* owner,
   if (link_text.empty())
     return;
 
-  GtkWidget* link = gtk_chrome_link_button_new(link_text.c_str());
+  GtkWidget* link = CreateLinkButton(link_text);
   gtk_misc_set_alignment(GTK_MISC(GTK_CHROME_LINK_BUTTON(link)->label), 0, 0.5);
   g_signal_connect(link, "clicked", G_CALLBACK(OnLinkClickedThunk), this);
   gtk_util::SetButtonTriggersNavigation(link);

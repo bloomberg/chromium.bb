@@ -14,7 +14,6 @@
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
-#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/infobars/infobar_gtk.h"
 #include "content/common/notification_details.h"
@@ -56,8 +55,6 @@ bool InfoBarContainerGtk::ContainsInfobars() const {
 void InfoBarContainerGtk::PlatformSpecificAddInfoBar(InfoBar* infobar,
                                                      size_t position) {
   InfoBarGtk* infobar_gtk = static_cast<InfoBarGtk*>(infobar);
-  infobar_gtk->SetThemeProvider(GtkThemeService::GetFrom(profile_));
-
   infobars_gtk_.insert(infobars_gtk_.begin() + position, infobar_gtk);
 
   if (infobars_gtk_.back() == infobar_gtk) {
