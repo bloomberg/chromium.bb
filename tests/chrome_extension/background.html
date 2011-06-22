@@ -72,15 +72,32 @@
                        testResults: {error: 0} };
       if (loadSuccess) {
         try {
-          response.testResults.helloWorld = nacl_module.helloWorld();
-          response.testResults.fortyTwo = nacl_module.fortyTwo;
+          var messageListener = function(message) {
+            // Get the test result.
+            nacl_module.removeEventListener('message', messageListener, false);
+            response.testResults.testResult = message.data;
+
+            // Send the test result back to the main html page to check.
+            // The main page will make sure the nexe loaded and that the
+            // TestSimpleAsync test passed.
+            responseCallback(response);
+          };
+
+          // Kick off the test.  The test will respond via post message.
+          nacl_module.addEventListener("message", messageListener, false);
+          nacl_module.postMessage("TestSimpleAsync");
         } catch (err) {
-          response.testResults.error = err;
+          // Trying to kick off the test failed, and threw a Javascript
+          // exception.  Send the exception back to the main page so it can be
+          // displayed.
+          response.testResults.error = err.toString();
+          responseCallback(response);
         }
       } else {
+        // Notify the main page the nexe did not load.
         response.testResults.error = 'NaCl module failed to load';
+        responseCallback(response);
       }
-      responseCallback(response);
     }
 
     /**
@@ -99,6 +116,9 @@
      * test_bridge script.  For more info, see:
      *     http://code.google.com/chrome/extensions/messaging.html
      */
+    // To deal with a race condition in Chrome extensions, the bridge script
+    // will try to initiate multiple connections.  Only respond to the first
+    // one we see.
     var connected = false;
     chrome.extension.onConnect.addListener(function(port) {
       if(!connected) {
@@ -115,7 +135,7 @@
          name="nacl_module"
          type="application/x-nacl"
          hidden="true"
-         src="chrome_extension.nmf"
+         src="ppapi_test_example.nmf"
          />
   </body>
 </html>

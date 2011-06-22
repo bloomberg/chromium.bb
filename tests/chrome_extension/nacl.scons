@@ -11,22 +11,17 @@ Import('env')
 if env.Bit('target_arm'):
   Return()
 
-# Build the .nexe used by this test.
-nexe_sources = env.ComponentObject('extension_test.cc'),
 
-nexe_target = 'chrome_extension_%s.nexe' % env.get('TARGET_FULLARCH')
-nexe = env.ComponentProgram(nexe_target,
-                            [nexe_sources],
-                            EXTRA_LIBS=['${PPAPI_LIBS}', 'ppapi_cpp'])
+nexe = 'ppapi_test_example_%s.nexe' % env.get('TARGET_FULLARCH')
 
-# Note: this test uses the nexe built above, manifest.json, background.html and
+# Note: this test uses the nexe, manifest.json, background.html and
 # test_bridge.js, but these files are loaded from the disk as part of the
 # installed Chrome extension and not loaded through the tester's web server.
 # These files need their own install command.
 dest_copy = env.Replicate('$STAGING_DIR/chrome_extension',
-                          [nexe,
+                          [env.File('$STAGING_DIR/%s' % nexe),
+                           env.File('$STAGING_DIR/ppapi_test_example.nmf'),
                            'background.html',
-                           'chrome_extension.nmf',
                            'manifest.json',
                            'test_bridge.js'])
 
@@ -35,10 +30,10 @@ node = env.PPAPIBrowserTester(
     url='chrome_extension_test.html',
     extensions=[env.Dir('$STAGING_DIR/chrome_extension')],
     files=[env.File('chrome_extension_test.html')],
-    args=['--debug', '--enable_experimental_js']
-    # The extension test has been a little flakey.
+    args=['--enable_experimental_js']
     )
 env.Depends(node, dest_copy)
+env.Alias('all_programs', dest_copy)
 
 env.AddNodeToTestSuite(node,
                        ['chrome_browser_tests'],

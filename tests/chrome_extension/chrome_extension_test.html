@@ -19,19 +19,20 @@
    *     test result values.
    */
   function processTestResults(testResults) {
+    // When this function is called, the "test" has already been performed.
+    // These tests are actually validating the output of the test that ran
+    // inside the extension and sent its results to this page.  This is done
+    // so the output can be easily seen.  Output inside the extension would
+    // not be visible.
+
     // Fail if any errors occurred during the test run in the extension.
     tester.addTest('load_errors', function() {
       assertEqual(testResults.error, 0);
     });
 
-    // Test property access.
-    tester.addTest('forty_two', function() {
-      assertEqual(testResults.fortyTwo, 42);
-    });
-
-    // Check that the module prints the correct string.
-    tester.addTest('hello_world', function() {
-      assertEqual(testResults.helloWorld, "hello, world");
+    // Check that the nexe worked.
+    tester.addTest('check_result', function() {
+      assertEqual(testResults.testResult, 'TestSimpleAsync:PASSED');
     });
 
     // Note that there are no EMBED elements for the tester to wait for, so
