@@ -1991,7 +1991,8 @@ void Browser::ShowOptionsTab(const std::string& sub_page) {
       GURL(chrome::kChromeUISettingsURL + sub_page)));
   params.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
 
-  if ((GetSelectedTabContents()->GetURL() == GURL(chrome::kChromeUINewTabURL) ||
+  if (GetSelectedTabContents() != NULL &&
+      (GetSelectedTabContents()->GetURL() == GURL(chrome::kChromeUINewTabURL) ||
        GetSelectedTabContents()->GetURL() == GURL(chrome::kAboutBlankURL)) &&
       browser::GetIndexOfSingletonTab(&params) < 0) {
     params.disposition = CURRENT_TAB;
