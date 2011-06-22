@@ -9,8 +9,7 @@
 
 using webkit_glue::PasswordForm;
 
-// TODO(rsimha): This test fails intermittently -- see http://crbug.com/77993.
-IN_PROC_BROWSER_TEST_F(MultipleClientLivePasswordsSyncTest, FAILS_Sanity) {
+IN_PROC_BROWSER_TEST_F(MultipleClientLivePasswordsSyncTest, Sanity) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   for (int i = 0; i < num_clients(); ++i) {

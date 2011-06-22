@@ -17,6 +17,7 @@
 using webkit_glue::PasswordForm;
 
 const std::string kFakeSignonRealm = "http://fake-signon-realm.google.com/";
+const char* kIndexedFakeOrigin = "http://fake-signon-realm.google.com/%d";
 
 // We use a WaitableEvent to wait when logins are added, removed, or updated
 // instead of running the UI message loop because of a restriction that
@@ -185,8 +186,7 @@ int LivePasswordsSyncTest::GetVerifierPasswordCount() {
 PasswordForm LivePasswordsSyncTest::CreateTestPasswordForm(int index) {
   PasswordForm form;
   form.signon_realm = kFakeSignonRealm;
-  form.origin =
-      GURL(base::StringPrintf("http://fake-domain%d.google.com/", index));
+  form.origin = GURL(base::StringPrintf(kIndexedFakeOrigin, index));
   form.username_value = ASCIIToUTF16(base::StringPrintf("username%d", index));
   form.password_value = ASCIIToUTF16(base::StringPrintf("password%d", index));
   return form;
