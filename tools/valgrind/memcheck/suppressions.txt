@@ -4570,11 +4570,139 @@
    fun:_ZN7WebCore16V8DOMWindowShell16createNewContextEN2v86HandleINS1_6ObjectEEEi
 }
 {
-   bug_84774
+   bug_84774a
    Memcheck:Addr4
    fun:_ZN10CppVariant3setEP8NPObject
    fun:_ZN13CppBoundClass15getAsCppVariantEv
    fun:_ZN13CppBoundClass16bindToJavascriptEPN6WebKit8WebFrameERKNS0_9WebStringE
+}
+{
+   bug_84774b
+   Memcheck:Addr4
+   ...
+   fun:_ZN13CppBoundClass6invokeEPvPK10_NPVariantjPS1_
+   fun:_ZN11CppNPObject6invokeEP8NPObjectPvPK10_NPVariantjPS3_
+   fun:_ZN7WebCoreL18npObjectInvokeImplERKN2v89ArgumentsENS_18InvokeFunctionTypeE
+   fun:_ZN7WebCore21npObjectMethodHandlerERKN2v89ArgumentsE
+   fun:_ZN2v88internalL19HandleApiCallHelperILb0EEEPNS0_11MaybeObjectENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
+}
+{
+   bug_84774c
+   Memcheck:Addr4
+   ...
+   fun:_ZN7WebCoreL19npObjectGetPropertyEN2v85LocalINS0_6ObjectEEEPvNS1_INS0_5ValueEEE
+   fun:_ZN7WebCore27npObjectNamedPropertyGetterEN2v85LocalINS0_6StringEEERKNS0_12AccessorInfoE
+   fun:_ZN2v88internal8JSObject26GetPropertyWithInterceptorEPNS0_10JSReceiverEPNS0_6StringEP18PropertyAttributes
+}
+{
+   bug_84774d
+   Memcheck:Addr4
+   ...
+   fun:_ZN13CppBoundClass16bindToJavascriptEPN6WebKit8WebFrameERKNS0_9WebStringE
+   ...
+   fun:_ZN9TestShell21bindJSObjectsToWindowEPN6WebKit8WebFrameE
+   fun:_ZN11WebViewHost20didClearWindowObjectEPN6WebKit8WebFrameE
+   fun:_ZN6WebKit21FrameLoaderClientImpl35dispatchDidClearWindowObjectInWorldEPN7WebCore15DOMWrapperWorldE
+   fun:_ZN7WebCore11FrameLoader35dispatchDidClearWindowObjectInWorldEPNS_15DOMWrapperWorldE
+   fun:_ZN7WebCore16V8DOMWindowShell19initContextIfNeededEv
+   fun:_ZN7WebCore16V8DOMWindowShell14updateDocumentEv
+   fun:_ZN7WebCore16ScriptController14updateDocumentEv
+   fun:_ZN7WebCore5Frame11setDocumentEN3WTF10PassRefPtrINS_8DocumentEEE
+   fun:_ZN7WebCore14DocumentWriter5beginERKNS_4KURLEbPNS_14SecurityOriginE
+   fun:_ZN7WebCore11FrameLoader17receivedFirstDataEv
+}
+{
+   bug_84774e
+   Memcheck:Addr1
+   ...
+   fun:_ZN13CppBoundClass16bindToJavascriptEPN6WebKit8WebFrameERKNS0_9WebStringE
+   ...
+   fun:_ZN9TestShell21bindJSObjectsToWindowEPN6WebKit8WebFrameE
+   fun:_ZN11WebViewHost20didClearWindowObjectEPN6WebKit8WebFrameE
+   fun:_ZN6WebKit21FrameLoaderClientImpl35dispatchDidClearWindowObjectInWorldEPN7WebCore15DOMWrapperWorldE
+   fun:_ZN7WebCore11FrameLoader35dispatchDidClearWindowObjectInWorldEPNS_15DOMWrapperWorldE
+   fun:_ZN7WebCore16V8DOMWindowShell19initContextIfNeededEv
+   fun:_ZN7WebCore16V8DOMWindowShell14updateDocumentEv
+   fun:_ZN7WebCore16ScriptController14updateDocumentEv
+   fun:_ZN7WebCore5Frame11setDocumentEN3WTF10PassRefPtrINS_8DocumentEEE
+   fun:_ZN7WebCore14DocumentWriter5beginERKNS_4KURLEbPNS_14SecurityOriginE
+   fun:_ZN7WebCore11FrameLoader17receivedFirstDataEv
+}
+{
+   bug_84774f
+   Memcheck:Addr1
+   fun:_ZN20LayoutTestController25shouldDumpStatusCallbacksEv
+   fun:_ZN11WebViewHost13setStatusTextERKN6WebKit9WebStringE
+   fun:_ZN6WebKit16ChromeClientImpl16setStatusbarTextERKN3WTF6StringE
+   fun:_ZN7WebCore6Chrome16setStatusbarTextEPNS_5FrameERKN3WTF6StringE
+   fun:_ZN7WebCore9DOMWindow9setStatusERKN3WTF6StringE
+   fun:_ZN7WebCore11FrameLoader10didOpenURLEv
+   fun:_ZN7WebCore11FrameLoader21commitProvisionalLoadEv
+   fun:_ZN7WebCore14DocumentLoader13commitIfReadyEv
+   fun:_ZN7WebCore14DocumentLoader10commitLoadEPKci
+   fun:_ZN7WebCore14DocumentLoader12receivedDataEPKci
+   fun:_ZN7WebCore18MainResourceLoader7addDataEPKcib
+   fun:_ZN7WebCore14ResourceLoader14didReceiveDataEPKcixb
+   fun:_ZN7WebCore18MainResourceLoader14didReceiveDataEPKcixb
+   fun:_ZN7WebCore14ResourceLoader14didReceiveDataEPNS_14ResourceHandleEPKcii
+   fun:_ZN7WebCore22ResourceHandleInternal14didReceiveDataEPN6WebKit12WebURLLoaderEPKcii
+   fun:_ZN11webkit_glue16WebURLLoaderImpl7Context14OnReceivedDataEPKcii
+}
+{
+   bug_84774g
+   Memcheck:Addr1
+   ...
+   fun:_ZN7WebCore11FrameLoader31continueLoadAfterWillSubmitFormEv
+   fun:_ZN7WebCore11FrameLoader33continueLoadAfterNavigationPolicyERKNS_15ResourceRequestEN3WTF10PassRefPtrINS_9FormStateEEEb
+   fun:_ZN7WebCore11FrameLoader37callContinueLoadAfterNavigationPolicyEPvRKNS_15ResourceRequestEN3WTF10PassRefPtrINS_9FormStateEEEb
+   fun:_ZN7WebCore14PolicyCallback4callEb
+   fun:_ZN7WebCore13PolicyChecker29continueAfterNavigationPolicyENS_12PolicyActionE
+}
+{
+   bug_84774h
+   Memcheck:Addr4
+   fun:_ZN6WebKit21FrameLoaderClientImpl11allowImagesEb
+   fun:_ZN7WebCore20CachedResourceLoader12requestImageERNS_15ResourceRequestE
+   fun:_ZN7WebCore13CSSImageValue11cachedImageEPNS_20CachedResourceLoaderERKN3WTF6StringE
+   fun:_ZN7WebCore13CSSImageValue11cachedImageEPNS_20CachedResourceLoaderE
+   fun:_ZN7WebCore16CSSStyleSelector17loadPendingImagesEv
+   fun:_ZN7WebCore16CSSStyleSelector21pseudoStyleForElementENS_8PseudoIdEPNS_7ElementEPNS_11RenderStyleEb
+   fun:_ZNK7WebCore12RenderObject22getUncachedPseudoStyleENS_8PseudoIdEPNS_11RenderStyleES3_
+   fun:_ZNK7WebCore12RenderObject20getCachedPseudoStyleENS_8PseudoIdEPNS_11RenderStyleE
+   fun:_ZN7WebCore21RenderObjectChildList24updateBeforeAfterContentEPNS_12RenderObjectENS_8PseudoIdEPKS1_
+   fun:_ZN7WebCore12RenderInline14styleDidChangeENS_15StyleDifferenceEPKNS_11RenderStyleE
+   fun:_ZN7WebCore12RenderObject8setStyleEN3WTF10PassRefPtrINS_11RenderStyleEEE
+   fun:_ZN7WebCore12RenderObject18setAnimatableStyleEN3WTF10PassRefPtrINS_11RenderStyleEEE
+   fun:_ZN7WebCore19NodeRendererFactory22createRendererAndStyleEv
+   fun:_ZN7WebCore19NodeRendererFactory22createRendererIfNeededEv
+   fun:_ZN7WebCore4Node22createRendererIfNeededEv
+   fun:_ZN7WebCore7Element6attachEv
+   fun:_ZN7WebCore20HTMLConstructionSite6attachINS_7ElementEEEN3WTF10PassRefPtrIT_EEPNS_13ContainerNodeES6_
+   fun:_ZN7WebCore20HTMLConstructionSite15attachToCurrentEN3WTF10PassRefPtrINS_7ElementEEE
+   fun:_ZN7WebCore20HTMLConstructionSite17insertHTMLElementERNS_15AtomicHTMLTokenE
+   fun:_ZN7WebCore15HTMLTreeBuilder24processStartTagForInBodyERNS_15AtomicHTMLTokenE
+   fun:_ZN7WebCore15HTMLTreeBuilder15processStartTagERNS_15AtomicHTMLTokenE
+   fun:_ZN7WebCore15HTMLTreeBuilder12processTokenERNS_15AtomicHTMLTokenE
+}
+{
+   bug_84774i
+   Memcheck:Addr1
+   fun:_ZN20LayoutTestController25deferMainResourceDataLoadEv
+   fun:_ZN11WebViewHost19didCreateDataSourceEPN6WebKit8WebFrameEPNS0_13WebDataSourceE
+   fun:_ZN6WebKit21FrameLoaderClientImpl20createDocumentLoaderERKN7WebCore15ResourceRequestERKNS1_14SubstituteDataE
+   fun:_ZN7WebCore11FrameLoader24loadWithNavigationActionERKNS_15ResourceRequestERKNS_16NavigationActionEbNS_13FrameLoadTypeEN3WTF10PassRefPtrINS_9FormStateEEE
+   fun:_ZN7WebCore11FrameLoader7loadURLERKNS_4KURLERKN3WTF6StringES7_bNS_13FrameLoadTypeENS4_10PassRefPtrINS_5EventEEENS9_INS_9FormStateEEE
+   fun:_ZN7WebCore11FrameLoader16loadFrameRequestERKNS_16FrameLoadRequestEbbN3WTF10PassRefPtrINS_5EventEEENS5_INS_9FormStateEEENS_14ReferrerPolicyE
+   fun:_ZN7WebCore11FrameLoader11urlSelectedERKNS_16FrameLoadRequestEN3WTF10PassRefPtrINS_5EventEEEbbNS_14ReferrerPolicyENS_36ShouldReplaceDocumentIfJavaScriptURLE
+   fun:_ZN7WebCore11FrameLoader14changeLocationEN3WTF10PassRefPtrINS_14SecurityOriginEEERKNS_4KURLERKNS1_6StringEbbb
+   fun:_ZN7WebCore22ScheduledURLNavigation4fireEPNS_5FrameE
+   fun:_ZN7WebCore19NavigationScheduler10timerFiredEPNS_5TimerIS0_EE
+   fun:_ZN7WebCore5TimerINS_19NavigationSchedulerEE5firedEv
+   fun:_ZN7WebCore12ThreadTimers24sharedTimerFiredInternalEv
+   fun:_ZN7WebCore12ThreadTimers16sharedTimerFiredEv
+   fun:_ZN11webkit_glue16WebKitClientImpl9DoTimeoutEv
+   fun:_Z16DispatchToMethodIN11webkit_glue16WebKitClientImplEMS1_FvvEEvPT_T0_RK6Tuple0
+   fun:_ZN4base9BaseTimerIN11webkit_glue16WebKitClientImplELb0EE9TimerTask3RunEv
 }
 {
    bug_84777
