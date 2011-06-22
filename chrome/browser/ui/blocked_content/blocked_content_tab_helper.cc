@@ -20,7 +20,8 @@ BlockedContentTabHelper::BlockedContentTabHelper(
         : TabContentsObserver(tab_contents->tab_contents()),
           blocked_contents_(new BlockedContentContainer(tab_contents)),
           all_contents_blocked_(false),
-          tab_contents_wrapper_(tab_contents) {
+          tab_contents_wrapper_(tab_contents),
+          delegate_(NULL) {
 }
 
 BlockedContentTabHelper::~BlockedContentTabHelper() {
