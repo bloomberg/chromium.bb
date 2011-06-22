@@ -1385,24 +1385,18 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderLocalStorageWrite) {
 }
 
 // Checks that the favicon is properly loaded on prerender.
-// FLAKY: http://crbug.com/85729
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, FLAKY_PrerenderFavicon) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderFavicon) {
   PrerenderTestURL("files/prerender/prerender_favicon.html",
                    FINAL_STATUS_USED,
                    1);
   TestPrerenderContents* prerender_contents = GetPrerenderContents();
   ASSERT_TRUE(prerender_contents != NULL);
-  prerender_contents->set_quit_message_loop_on_destruction(false);
-  // The Favicon should show within two seconds of navigating to the page,
-  // otherwise something is wrong.
-  MessageLoopForUI::current()->PostDelayedTask(
-      FROM_HERE,
-      new MessageLoop::QuitTask(),
-      TestTimeouts::action_timeout_ms());
+  ui_test_utils::WindowedNotificationObserver favicon_update_watcher(
+      NotificationType::FAVICON_UPDATED,
+      Source<TabContents>(prerender_contents->prerender_contents()->
+                          tab_contents()));
   NavigateToDestURL();
-  ASSERT_TRUE(TabContentsWrapper::GetCurrentWrapperForContents(
-      browser()->GetSelectedTabContents())->favicon_tab_helper()
-              ->FaviconIsValid());
+  favicon_update_watcher.Wait();
 }
 
 // Checks that when a prerendered page is swapped in to a referring page, the
