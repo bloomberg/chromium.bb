@@ -546,6 +546,27 @@
   fun:loopfilter_thread
 }
 
+{
+   bug_87062a
+   ThreadSanitizer:Race
+   fun:net::SdchManager::SdchManager
+   fun:BrowserMain
+}
+
+{
+   bug_87062b
+   ThreadSanitizer:Race
+   ...
+   fun:net::SdchManager::*
+   fun:net::URLRequestHttpJob::AddExtraHeaders
+   fun:net::URLRequestHttpJob::Start
+   fun:net::URLRequest::StartJob
+   fun:net::URLRequest::Start
+   fun:URLFetcher::Core::StartURLRequest
+   fun:URLFetcher::Core::StartURLRequestWhenAppropriate
+   fun:DispatchToMethod
+}
+
 ############################
 # TSan false positives
 {
