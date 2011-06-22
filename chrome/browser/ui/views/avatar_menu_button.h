@@ -33,8 +33,6 @@ class AvatarMenuButton : public views::MenuButton,
   // views::MenuButton
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
-  static gfx::Size GetPreferredAvatarSize();
-
  private:
   // views::ViewMenuDelegate
   virtual void RunMenu(views::View* source, const gfx::Point& pt) OVERRIDE;

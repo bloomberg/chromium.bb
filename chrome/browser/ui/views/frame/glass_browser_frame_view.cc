@@ -428,6 +428,11 @@ void GlassBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
 }
 
 void GlassBrowserFrameView::LayoutAvatar() {
+  // Even though the avatar is used for both incognito and profiles we always
+  // use the incognito icon to layout the avatar button. The profile icon
+  // can be customized so we can't depend on its size to perform layout.
+  SkBitmap incognito_icon = browser_view_->GetOTRAvatarIcon();
+
   int avatar_x = NonClientBorderThickness() + kAvatarSideSpacing;
   // Move this avatar icon by the size of window controls to prevent it from
   // being rendered over them in RTL languages. This code also needs to adjust
@@ -435,8 +440,6 @@ void GlassBrowserFrameView::LayoutAvatar() {
   // comment in GetBoundsForTabStrip().)
   if (base::i18n::IsRTL())
     avatar_x += width() - frame_->GetMinimizeButtonOffset();
-
-  gfx::Size preferred_size = AvatarMenuButton::GetPreferredAvatarSize();
 
   int avatar_bottom, avatar_restored_y;
   if (browser_view_->UseVerticalTabs()) {
@@ -446,12 +449,12 @@ void GlassBrowserFrameView::LayoutAvatar() {
   } else {
     avatar_bottom = GetHorizontalTabStripVerticalOffset(false) +
         browser_view_->GetTabStripHeight() - kAvatarBottomSpacing;
-    avatar_restored_y = avatar_bottom - preferred_size.height();
+    avatar_restored_y = avatar_bottom - incognito_icon.height();
   }
   int avatar_y = frame_->IsMaximized() ?
       (NonClientTopBorderHeight(false, true) + kTabstripTopShadowThickness) :
       avatar_restored_y;
-  avatar_bounds_.SetRect(avatar_x, avatar_y, preferred_size.width(),
+  avatar_bounds_.SetRect(avatar_x, avatar_y, incognito_icon.width(),
       browser_view_->ShouldShowAvatar() ? (avatar_bottom - avatar_y) : 0);
 
   if (avatar_button_.get())

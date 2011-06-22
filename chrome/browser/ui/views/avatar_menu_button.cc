@@ -13,7 +13,7 @@
 const int kMenuDisplayOffset = 5;
 
 static inline int Round(double x) {
-  return static_cast<int>(floor(x + 0.5));
+  return static_cast<int>(x + 0.5);
 }
 
 AvatarMenuButton::AvatarMenuButton(const std::wstring& text,
@@ -28,30 +28,29 @@ AvatarMenuButton::~AvatarMenuButton() {}
 
 void AvatarMenuButton::OnPaint(gfx::Canvas* canvas) {
   const SkBitmap& icon = GetImageToPaint();
-  if (!icon.isNull()) {
-    // Scale the image to fit the width of the button.
-    int src_width = icon.width();
-    int src_x = 0;
-    int dst_width = std::min(src_width, width());
-    int dst_x = Round((width() - dst_width) / 2.0);
+  if (icon.isNull())
+    return;
 
-    // Scale the height and maintain aspect ratio. This means that the
-    // icon may not fit in the view. That's ok, we just center it vertically.
-    float scale =
-        static_cast<float>(dst_width) / static_cast<float>(icon.width());
-    int scaled_height = Round(height() / scale);
-    int src_height = std::min(scaled_height, icon.height());
-    int src_y = Round((icon.height() - src_height) / 2.0);
-    int dst_height = src_height * scale;
-    int dst_y = Round((height() - dst_height) / 2.0);
+  // Scale the image to fit the width of the button.
+  int dst_width = std::min(icon.width(), width());
+  // Truncate rather than rounding, so that for odd widths we put the extra
+  // pixel on the left.
+  int dst_x = (width() - dst_width) / 2;
 
-    canvas->DrawBitmapInt(icon, src_x, src_y, src_width, src_height,
-        dst_x, dst_y, dst_width, dst_height, false);
-  }
-}
+  // Scale the height and maintain aspect ratio. This means that the
+  // icon may not fit in the view. That's ok, we just vertically center it.
+  float scale =
+      static_cast<float>(dst_width) / static_cast<float>(icon.width());
+  // Round here so that we minimize the aspect ratio drift.
+  int dst_height = Round(icon.height() * scale);
+  // Round rather than truncating, so that for odd heights we select an extra
+  // pixel below the image center rather than above.  This is because the
+  // incognito image has shadows at the top that make the apparent center below
+  // the real center.
+  int dst_y = Round((height() - dst_height) / 2.0);
 
-gfx::Size AvatarMenuButton::GetPreferredAvatarSize() {
-  return gfx::Size(38, 31);
+  canvas->DrawBitmapInt(icon, 0, 0, icon.width(), icon.height(),
+      dst_x, dst_y, dst_width, dst_height, false);
 }
 
 // views::ViewMenuDelegate implementation

@@ -1120,7 +1120,8 @@ void OpaqueBrowserFrameView::LayoutTitleBar() {
 
 void OpaqueBrowserFrameView::LayoutAvatar() {
   // Even though the avatar is used for both incognito and profiles we always
-  // use the incognito icon to layout the avatar button.
+  // use the incognito icon to layout the avatar button. The profile icon
+  // can be customized so we can't depend on its size to perform layout.
   SkBitmap incognito_icon = browser_view_->GetOTRAvatarIcon();
 
   int avatar_bottom, avatar_restored_y;

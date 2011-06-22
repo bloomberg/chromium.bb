@@ -355,7 +355,6 @@ class TextButton : public TextButtonBase {
  protected:
   SkBitmap icon() const { return icon_; }
 
-  // Returns the image to paint. This is invoked from paint.
   virtual const SkBitmap& GetImageToPaint() const;
 
   // Overridden from NativeThemeDelegate:
