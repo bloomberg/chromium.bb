@@ -58,6 +58,7 @@ void TouchTabStripController::TabDetachedAt(TabContentsWrapper* contents,
     TouchTab* touch_tab = tabstrip()->GetTouchTabAtModelIndex(model_index);
     consumer_.CancelAllRequestsForClientData(touch_tab);
   }
+  BrowserTabStripController::TabDetachedAt(contents, model_index);
 }
 
 void TouchTabStripController::TabChangedAt(TabContentsWrapper* contents,
