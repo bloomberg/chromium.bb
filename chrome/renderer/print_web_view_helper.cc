@@ -350,7 +350,8 @@ void PrintWebViewHelper::PrintPreview(WebKit::WebFrame* frame,
   }
 
   bool draft;
-  settings.GetBoolean(printing::kSettingDraftDocument, &draft);
+  if (!settings.GetBoolean(printing::kSettingDraftDocument, &draft))
+    draft = false;
 
   // Render Pages for printing.
   if (!RenderPagesForPreview(frame, node, draft))

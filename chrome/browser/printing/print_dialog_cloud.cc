@@ -348,8 +348,8 @@ void CloudPrintFlowHandler::HandleSendPrintData(const ListValue* args) {
 
 void CloudPrintFlowHandler::HandleSetPageParameters(const ListValue* args) {
   std::string json;
-  args->GetString(0, &json);
-  if (json.empty()) {
+  bool ret = args->GetString(0, &json);
+  if (!ret || json.empty()) {
     NOTREACHED() << "Empty json string";
     return;
   }

@@ -340,7 +340,8 @@ void ProfileImpl::DoFinalInit() {
   // to PathService.
   chrome::GetUserCacheDirectory(path_, &base_cache_path_);
   if (!delegate_) {
-    file_util::CreateDirectory(base_cache_path_);
+    if (!file_util::CreateDirectory(base_cache_path_))
+      LOG(FATAL) << "Failed to create " << base_cache_path_.value();
   } else {
     // Async profile loading is used, so call this on the FILE thread instead.
     // It is safe since all other file operations should also be done there.

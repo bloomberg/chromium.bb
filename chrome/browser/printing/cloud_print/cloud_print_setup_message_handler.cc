@@ -26,9 +26,9 @@ void CloudPrintSetupMessageHandler::RegisterMessages() {
 
 void CloudPrintSetupMessageHandler::HandleSubmitAuth(const ListValue* args) {
   std::string json;
-  args->GetString(0, &json);
+  bool ret = args->GetString(0, &json);
   std::string username, password, captcha, access_code;
-  if (json.empty()) {
+  if (!ret || json.empty()) {
     NOTREACHED() << "Empty json string";
     return;
   }
