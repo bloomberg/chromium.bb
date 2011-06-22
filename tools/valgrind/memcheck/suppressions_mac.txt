@@ -256,6 +256,22 @@
    fun:CFBundleGetPackageInfo
    fun:_ZN6webkit5npapi9PluginLib17ReadWebPluginInfoERK8FilePathPNS0_13WebPluginInfoE
 }
+{
+   bug_86927
+   Memcheck:Leak
+   fun:malloc
+   fun:CGSMapShmem
+   fun:CGSResolveShmemReference
+   fun:CGSScoreboard
+   fun:initCGDisplayState
+   fun:initCGDisplayMappings
+   fun:cgsInit
+   fun:pthread_once
+   fun:CGSInitialize
+   fun:CGSServerOperationState
+   fun:+[NSThemeFrame initialize]
+   fun:_class_initialize
+}
 
 # 2. Intentional unit test errors, stuff that is somehow a false positive
 # in our own code, or stuff that is so trivial it's not worth fixing.
