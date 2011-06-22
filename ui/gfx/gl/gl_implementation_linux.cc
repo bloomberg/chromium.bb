@@ -111,8 +111,10 @@ bool InitializeGLBindings(GLImplementation implementation) {
       if (!gles_library)
         return false;
       base::NativeLibrary egl_library = LoadLibrary("libEGL.so");
-      if (!egl_library)
+      if (!egl_library) {
+        base::UnloadNativeLibrary(gles_library);
         return false;
+      }
 
       GLGetProcAddressProc get_proc_address =
           reinterpret_cast<GLGetProcAddressProc>(
