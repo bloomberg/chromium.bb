@@ -12,6 +12,7 @@
 namespace crypto {
 
 SignatureVerifier::SignatureVerifier() : sig_handle_(0) {
+  memset(&public_key_, 0, sizeof(public_key_));
   EnsureCSSMInit();
 }
 
