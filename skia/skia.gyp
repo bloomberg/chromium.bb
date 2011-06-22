@@ -776,11 +776,6 @@
           'sources': [
             'ext/SkFontHost_fontconfig.cpp',
             'ext/SkFontHost_fontconfig_direct.cpp',
-            '../third_party/skia/src/core/SkBlitter_ARGB32_Subpixel.cpp',
-            '../third_party/skia/src/ports/SkFontHost_FreeType_Subpixel.cpp',
-          ],
-          'defines': [
-            'SK_SUPPORT_LCDTEXT',
           ],
         }],
         [ 'OS == "mac"', {
