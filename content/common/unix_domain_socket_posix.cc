@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "base/eintr_wrapper.h"
 #include "base/logging.h"
 #include "base/pickle.h"
+#include "base/stl_util-inl.h"
 
 // static
 bool UnixDomainSocket::SendMsg(int fd,
@@ -94,7 +95,7 @@ ssize_t UnixDomainSocket::RecvMsg(int fd,
   }
 
   fds->resize(wire_fds_len);
-  memcpy(&(*fds)[0], wire_fds, sizeof(int) * wire_fds_len);
+  memcpy(vector_as_array(fds), wire_fds, sizeof(int) * wire_fds_len);
 
   return r;
 }
@@ -143,4 +144,3 @@ ssize_t UnixDomainSocket::SendRecvMsg(int fd,
 
   return reply_len;
 }
-
