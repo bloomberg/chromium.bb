@@ -355,5 +355,5 @@ void PageInfoModel::Init() {
   icons_.push_back(&rb.GetNativeImageNamed(IDR_PAGEINFO_WARNING_MAJOR));
   icons_.push_back(&rb.GetNativeImageNamed(IDR_PAGEINFO_BAD));
   icons_.push_back(&rb.GetNativeImageNamed(IDR_PAGEINFO_INFO));
-  icons_.push_back(&rb.GetNativeImageNamed(IDR_PAGEINFO_INTERNAL));
+  icons_.push_back(&rb.GetNativeImageNamed(IDR_PRODUCT_LOGO_26));
 }

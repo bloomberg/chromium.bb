@@ -192,7 +192,6 @@
       <include name="IDR_PAGEINFO_BAD" file="pageinfo_bad.png" type="BINDATA" />
       <include name="IDR_PAGEINFO_GOOD" file="pageinfo_good.png" type="BINDATA" />
       <include name="IDR_PAGEINFO_INFO" file="pageinfo_info.png" type="BINDATA" />
-      <include name="IDR_PAGEINFO_INTERNAL" file="pageinfo_internal.png" type="BINDATA" />
       <include name="IDR_PAGEINFO_WARNING_MAJOR" file="pageinfo_warning_major.png" type="BINDATA" />
       <include name="IDR_PAGEINFO_WARNING_MINOR" file="pageinfo_warning_minor.png" type="BINDATA" />
       <include name="IDR_PLUGIN" file="plugin.png" type="BINDATA" />
@@ -203,6 +202,7 @@
         <include name="IDR_PRODUCT_ICON_32" file="google_chrome/google_chrome_icon_32.png" type="BINDATA" />
         <include name="IDR_PRODUCT_LOGO" file="google_chrome/product_logo.png" type="BINDATA" />
         <include name="IDR_PRODUCT_LOGO_16" file="google_chrome/product_logo_16.png" type="BINDATA" />
+        <include name="IDR_PRODUCT_LOGO_26" file="google_chrome/product_logo_26.png" type="BINDATA" />
         <include name="IDR_PRODUCT_LOGO_64" file="google_chrome/product_logo_64.png" type="BINDATA" />
         <include name="IDR_PRODUCT_LOGO_WHITE" file="google_chrome/product_logo_white.png" type="BINDATA" />
       </if>
@@ -211,6 +211,7 @@
         <include name="IDR_PRODUCT_LOGO" file="chromium/product_logo.png" type="BINDATA" />
         <include name="IDR_PRODUCT_LOGO_WHITE" file="chromium/product_logo_white.png" type="BINDATA" />
         <include name="IDR_PRODUCT_LOGO_16" file="chromium/product_logo_16.png" type="BINDATA" />
+        <include name="IDR_PRODUCT_LOGO_26" file="chromium/product_logo_26.png" type="BINDATA" />
         <include name="IDR_PRODUCT_LOGO_64" file="chromium/product_logo_64.png" type="BINDATA" />
       </if>
       <!-- NOTE: product_logo_*.* files beyond what's listed above are
