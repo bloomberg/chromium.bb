@@ -71,8 +71,8 @@ static void *tp_from_combined_area(void *combined_area, size_t tdb_size) {
      * Instead, align from the putative end of the TDB, to decide where
      * $tp--the true end of the TDB--should actually lie.
      */
-    return aligned_addr((char *) combined_area + tdb_size,
-                        __nacl_tp_alignment());
+    size_t align = aligned_size(TLS_ALIGNMENT, __nacl_tp_alignment());
+    return aligned_addr((char *) combined_area + tdb_size, align);
   } else {
     /*
      * x86 case:
@@ -86,7 +86,7 @@ static void *tp_from_combined_area(void *combined_area, size_t tdb_size) {
      *                    +--- first word's value is $tp address
      */
     size_t align = aligned_size(TLS_ALIGNMENT, __nacl_tp_alignment());
-    return aligned_addr(combined_area, align) + tls_size;
+    return aligned_addr((char *) combined_area + tls_size, align);
   }
 }
 
