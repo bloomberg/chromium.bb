@@ -22,12 +22,19 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
+#if defined(OS_MACOSX)
+#include "printing/pdf_metafile_cg_mac.h"
+#endif
+
 namespace printing {
 
 struct PdfMetafileSkiaData {
   SkRefPtr<SkPDFDevice> current_page_;
   SkPDFDocument pdf_doc_;
   SkDynamicMemoryWStream pdf_stream_;
+#if defined(OS_MACOSX)
+  PdfMetafileCg pdf_cg_;
+#endif
 };
 
 PdfMetafileSkia::~PdfMetafileSkia() {}
@@ -166,7 +173,30 @@ HENHMETAFILE PdfMetafileSkia::emf() const {
   NOTREACHED();
   return NULL;
 }
-#endif  // if defined(OS_WIN)
+#elif defined(OS_MACOSX)
+/* TODO(caryclark): The set up of PluginInstance::PrintPDFOutput may result in
+   rasterized output.  Even if that flow uses PdfMetafileCg::RenderPage,
+   the drawing of the PDF into the canvas may result in a rasterized output.
+   PDFMetafileSkia::RenderPage should be not implemented as shown and instead
+   should do something like the following CL in PluginInstance::PrintPDFOutput:
+http://codereview.chromium.org/7200040/diff/1/webkit/plugins/ppapi/ppapi_plugin_instance.cc
+*/
+bool PdfMetafileSkia::RenderPage(unsigned int page_number,
+                                 CGContextRef context,
+                                 const CGRect rect,
+                                 bool shrink_to_fit,
+                                 bool stretch_to_fit,
+                                 bool center_horizontally,
+                                 bool center_vertically) const {
+  DCHECK_GT(data_->pdf_stream_.getOffset(), 0U);
+  if (data_->pdf_cg_.GetDataSize() == 0)
+    data_->pdf_cg_.InitFromData(data_->pdf_stream_.getStream(),
+                                data_->pdf_stream_.getOffset());
+  return data_->pdf_cg_.RenderPage(page_number, context, rect, shrink_to_fit,
+                                   stretch_to_fit, center_horizontally,
+                                   center_vertically);
+}
+#endif
 
 #if defined(OS_CHROMEOS)
 bool PdfMetafileSkia::SaveToFD(const base::FileDescriptor& fd) const {
