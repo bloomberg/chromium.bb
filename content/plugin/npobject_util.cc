@@ -181,6 +181,7 @@ void CreateNPVariantParam(const NPVariant& variant,
         param->type = NPVARIANT_PARAM_RECEIVER_OBJECT_ROUTING_ID;
         NPObjectProxy* proxy =
             NPObjectProxy::GetProxy(variant.value.objectValue);
+        DCHECK(proxy);
         param->npobject_routing_id = proxy->route_id();
         // Don't release, because our original variant is the same as our proxy.
         release = false;

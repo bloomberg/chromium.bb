@@ -511,7 +511,7 @@ void RenderMessageFilter::OnLoadFont(const FontDescriptor& font,
 #endif  // OS_MACOSX
 
 #if defined(OS_WIN)  // This hack is Windows-specific.
-void RenderMessageFilter::OnPreCacheFont(LOGFONT font) {
+void RenderMessageFilter::OnPreCacheFont(const LOGFONT& font) {
   ChildProcessHost::PreCacheFont(font);
 }
 #endif  // OS_WIN

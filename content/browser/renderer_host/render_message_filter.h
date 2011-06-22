@@ -145,7 +145,7 @@ class RenderMessageFilter : public BrowserMessageFilter {
   // This hack is Windows-specific.
   // Cache fonts for the renderer. See RenderMessageFilter::OnPreCacheFont
   // implementation for more details.
-  void OnPreCacheFont(LOGFONT font);
+  void OnPreCacheFont(const LOGFONT& font);
 #endif
 
   void OnGetPlugins(bool refresh,
