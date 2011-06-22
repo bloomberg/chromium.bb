@@ -44,7 +44,7 @@ Surface3D::Surface3D(const HostResource& host_resource)
 
 Surface3D::~Surface3D() {
   if (context_)
-    context_->BindSurfaces(NULL, NULL);
+    context_->BindSurfaces(0, 0);
 }
 
 PPB_Surface3D_API* Surface3D::AsPPB_Surface3D_API() {
