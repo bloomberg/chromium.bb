@@ -20,7 +20,5 @@ IN_PROC_BROWSER_TEST_F(MultipleClientLivePasswordsSyncTest, FAILS_Sanity) {
   ASSERT_TRUE(AwaitQuiescence());
 
   ASSERT_EQ(num_clients(), GetPasswordCount(0));
-  for (int i = 1; i < num_clients(); ++i) {
-    ASSERT_TRUE(ProfilesContainSamePasswordForms(0, i));
-  }
+  ASSERT_TRUE(AllProfilesContainSamePasswordForms());
 }
