@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include <shlobj.h>
 #include <shobjidl.h>
 
+#include "base/win/scoped_comptr.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_win.h"
@@ -24,9 +25,9 @@ static void SetDragImageOnDataObject(HBITMAP hbitmap,
                                      const gfx::Size& size,
                                      const gfx::Point& cursor_offset,
                                      IDataObject* data_object) {
-  IDragSourceHelper* helper = NULL;
+  base::win::ScopedComPtr<IDragSourceHelper> helper;
   HRESULT rv = CoCreateInstance(CLSID_DragDropHelper, 0, CLSCTX_INPROC_SERVER,
-      IID_IDragSourceHelper, reinterpret_cast<LPVOID*>(&helper));
+                                IID_IDragSourceHelper, helper.ReceiveVoid());
   if (SUCCEEDED(rv)) {
     SHDRAGIMAGE sdi;
     sdi.sizeDragImage = size.ToSIZE();
@@ -35,7 +36,7 @@ static void SetDragImageOnDataObject(HBITMAP hbitmap,
     sdi.ptOffset = cursor_offset.ToPOINT();
     helper->InitializeFromBitmap(&sdi, data_object);
   }
-};
+}
 
 // Blit the contents of the canvas to a new HBITMAP. It is the caller's
 // responsibility to release the |bits| buffer.
