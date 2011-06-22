@@ -4,6 +4,7 @@
 
 #include "chrome/browser/browser_signin.h"
 
+#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -181,7 +182,8 @@ void BrowserSigninHtml::HandleSigninInit(const ListValue* args) {
   // particular value.
   bool is_editable;
   std::string user;
-  json_args.GetBoolean("editable_user", &is_editable);
+  if (!json_args.GetBoolean("editable_user", &is_editable))
+    is_editable = false;
   json_args.GetString("user", &user);
   if (is_editable && user.empty() && !suggested_email_.empty())
     json_args.SetString("user", suggested_email_);
