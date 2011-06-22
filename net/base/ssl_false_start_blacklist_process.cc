@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -140,6 +140,10 @@ int main(int argc, char** argv) {
   }
 
   const long input_size = ftell(input);
+  if (input_size < 0) {
+    perror("ftell");
+    return 1;
+  }
 
   if (fseek(input, 0, SEEK_SET)) {
     perror("fseek");
