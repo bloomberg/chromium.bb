@@ -34,7 +34,7 @@
         province|region|other<!-- es -->|provincia<!-- pt-BR, pt-PT -->|bairro|suburb
       </message>
       <message name="IDS_AUTOFILL_COUNTRY_RE">
-        country|location<!-- ja-JP -->|国<!-- zh-CN -->|国家<!-- ko-KR -->|국가|나라
+        country|countries|location<!-- ja-JP -->|国<!-- zh-CN -->|国家<!-- ko-KR -->|국가|나라
       </message>
       <message name="IDS_AUTOFILL_ZIP_CODE_RE">
         zip|postal|post.*code|pcode|^1z$<!-- de-DE -->|postleitzahl<!-- es -->|\bcp\b<!-- fr-FR -->|cdp<!-- it-IT -->|\bcap\b<!-- ja-JP -->|郵便番号<!-- pt-BR, pt-PT -->|codigo|codpos|cep<!-- ru -->|Почтовый.?Индекс<!--zh-CN -->|邮政编码|邮编<!-- zh-TW -->|郵遞區號<!-- ko-KR -->|우편.?번호
@@ -46,7 +46,7 @@
         city|town<!-- de-DE -->|\bort\b|stadt<!-- en-AU -->|suburb<!-- es -->|ciudad|provincia|localidad|poblacion<!-- fr-FR -->|ville|commune<!-- it-IT -->|localita<!-- ja-JP -->|市区町村<!-- pt-BR, pt-PT -->|cidade<!-- ru -->|Город<!-- zh-CN -->|市<!-- zh-TW -->|分區<!-- ko-KR -->|^시[^도·・]|시[·・]?군[·・]?구
       </message>
       <message name="IDS_AUTOFILL_STATE_RE">
-        state|county|region|province<!-- de-DE -->|land<!-- en-UK -->|county|principality<!-- ja-JP -->|都道府県<!-- pt-BR, pt-PT -->|estado|provincia<!-- ru -->|область<!-- zh-CN -->|省<!-- zh-TW -->|地區<!-- ko-KR -->|^시[·・]?도
+        (?&lt;!united )state|county|region|province<!-- de-DE -->|land<!-- en-UK -->|county|principality<!-- ja-JP -->|都道府県<!-- pt-BR, pt-PT -->|estado|provincia<!-- ru -->|область<!-- zh-CN -->|省<!-- zh-TW -->|地區<!-- ko-KR -->|^시[·・]?도
       </message>
       <message name="IDS_AUTOFILL_ADDRESS_TYPE_SAME_AS_RE">
         same as
@@ -70,7 +70,7 @@
         name
       </message>
       <message name="IDS_AUTOFILL_CARD_NUMBER_RE">
-        number|card.?#|card.?no|ccnum<!-- de-DE -->|nummer<!-- es -->|credito|numero|número<!-- fr-FR -->|numéro<!-- ja-JP -->|カード番号<!-- ru -->|Номер.*карты<!-- zh-CN -->|信用卡号|信用卡号码<!-- zh-TW -->|信用卡卡號<!-- ko-KR -->|카드
+        number|card.?#|card.?no|ccnum|acctnum<!-- de-DE -->|nummer<!-- es -->|credito|numero|número<!-- fr-FR -->|numéro<!-- ja-JP -->|カード番号<!-- ru -->|Номер.*карты<!-- zh-CN -->|信用卡号|信用卡号码<!-- zh-TW -->|信用卡卡號<!-- ko-KR -->|카드
       </message>
       <message name="IDS_AUTOFILL_CARD_CVC_RE">
         verification|card identification|security code|cvn|cvv|cvc
