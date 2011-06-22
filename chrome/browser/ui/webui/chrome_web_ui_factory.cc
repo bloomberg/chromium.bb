@@ -44,7 +44,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/webui/chromeos/choose_mobile_network_ui.h"
 #include "chrome/browser/ui/webui/chromeos/enterprise_enrollment_ui.h"
-#include "chrome/browser/ui/webui/chromeos/imageburner_ui.h"
+#include "chrome/browser/ui/webui/chromeos/imageburner/imageburner_ui.h"
 #include "chrome/browser/ui/webui/chromeos/keyboard_overlay_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/login_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
