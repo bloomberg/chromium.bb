@@ -1,0 +1,46 @@
+bin/nacl-addr2line     nacl64-addr2line
+bin/nacl-ar            nacl64-ar
+bin/nacl-as            nacl64-as                   --32
+bin/nacl-c++           nacl64-c++                  -m32
+bin/nacl-c++filt       nacl64-c++filt
+bin/nacl-cpp           nacl64-cpp
+bin/nacl-g++           nacl64-g++                  -m32
+bin/nacl-gcc           nacl64-gcc                  -m32
+bin/nacl-gcc-4.4.3     nacl64-gcc-4.4.3
+bin/nacl-gccbug        nacl64-gccbug
+bin/nacl-gcov          nacl64-gcov
+bin/nacl-gfortran      nacl64-gfortran             -m32
+bin/nacl-gprof         nacl64-gprof
+bin/nacl-ld            nacl64-ld                   -melf_nacl
+bin/nacl-nm            nacl64-nm
+bin/nacl-objcopy       nacl64-objcopy
+bin/nacl-objdump       nacl64-objdump
+bin/nacl-ranlib        nacl64-ranlib
+bin/nacl-readelf       nacl64-readelf
+bin/nacl-size          nacl64-size
+bin/nacl-strings       nacl64-strings
+bin/nacl-strip         nacl64-strip
+nacl64/bin/ar          ../../bin/nacl64-ar
+nacl64/bin/as          ../../bin/nacl64-as
+nacl64/bin/c++         ../../bin/nacl64-c++
+nacl64/bin/g++         ../../bin/nacl64-g++
+nacl64/bin/gcc         ../../bin/nacl64-gcc
+nacl64/bin/gfortran    ../../bin/nacl64-gfortran
+nacl64/bin/ld          ../../bin/nacl64-ld
+nacl64/bin/nm          ../../bin/nacl64-nm
+nacl64/bin/objcopy     ../../bin/nacl64-objcopy
+nacl64/bin/objdump     ../../bin/nacl64-objdump
+nacl64/bin/ranlib      ../../bin/nacl64-ranlib
+nacl64/bin/strip       ../../bin/nacl64-strip
+nacl/bin/ar            ../../bin/nacl64-ar
+nacl/bin/as            ../../bin/nacl64-as         --32
+nacl/bin/c++           ../../bin/nacl64-c++        -m32
+nacl/bin/g++           ../../bin/nacl64-g++        -m32
+nacl/bin/gcc           ../../bin/nacl64-gcc        -m32
+nacl/bin/gfortran      ../../bin/nacl64-gfortran   -m32
+nacl/bin/ld            ../../bin/nacl64-ld         -melf_nacl
+nacl/bin/nm            ../../bin/nacl64-nm
+nacl/bin/objcopy       ../../bin/nacl64-objcopy
+nacl/bin/objdump       ../../bin/nacl64-objdump
+nacl/bin/ranlib        ../../bin/nacl64-ranlib
+nacl/bin/strip         ../../bin/nacl64-strip

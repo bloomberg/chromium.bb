@@ -40,25 +40,8 @@ fi
 #   the cygwin shell. On *nix, there is no usage difference.
 #   Here we handle only the *nix case and use the symbolic links.
 
-
-# Replace each "/nacl64/bin/bar" with a link to "/bin/nacl64-bar"
-for exe in "$prefix/nacl64/bin/"*; do
-  name="$(basename "$exe")"
-  ln -sfn "../../bin/nacl64-$name" "$exe"
-done
-
-
-# For each "/bin/nacl64-foo" create "/bin/nacl-foo" redirector
-for exe in "$prefix/bin/nacl64-"*; do
-  name="$(basename "$exe")"
-  ./create_redirector.sh -s "$prefix/bin/nacl-${name/nacl64-}" ||
-      ln -sfn "$name" "$prefix/bin/nacl-${name/nacl64-}"
-done
-
-
-# For each "/nacl64/bin/bar" create "/nacl/bin/bar" redirector
-for exe in "$prefix/nacl64/bin/"*; do
-  name="$(basename "$exe")"
-  ./create_redirector.sh -t -s "$prefix/nacl/bin/$name" ||
-      ln -sfn "../../bin/nacl64-$name" "$prefix/nacl/bin/$name"
-done
+while read from to action ; do
+  if [[ -e "$prefix/`dirname $from`/$to" ]] ; then
+    ./create_redirector.sh "$prefix/$from" "$to" "$action"
+  fi
+done < redirect_table.txt
