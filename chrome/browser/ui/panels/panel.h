@@ -33,7 +33,6 @@ class Panel : public BrowserWindow {
 
   void Minimize();
   void Restore();
-  bool minimized() const { return minimized_; }
 
   // BrowserWindow overrides.
   virtual void Show() OVERRIDE;
@@ -132,7 +131,9 @@ class Panel : public BrowserWindow {
 
   // Construct a native panel BrowserWindow implementation for the specified
   // |browser|.
-  static NativePanel* CreateNativePanel(Browser* browser, Panel* panel);
+  static NativePanel* CreateNativePanel(Browser* browser,
+                                        Panel* panel,
+                                        const gfx::Rect& bounds);
 
   // Gets the extension from the browser that a panel is created from.
   // Returns NULL if it cannot be found.
@@ -160,15 +161,6 @@ class Panel : public BrowserWindow {
   // Platform specifc implementation for panels.  It'd be one of
   // PanelBrowserWindowGtk/PanelBrowserView/PanelBrowserWindowCocoa.
   NativePanel* native_panel_;  // Weak, owns us.
-
-  // The normal bounds when the panel is not minimized.
-  gfx::Rect bounds_;
-
-  // The bounds when the panel is minimized.
-  gfx::Rect minimized_bounds_;
-
-  // Is the panel minimized?
-  bool minimized_;
 
   DISALLOW_COPY_AND_ASSIGN(Panel);
 };

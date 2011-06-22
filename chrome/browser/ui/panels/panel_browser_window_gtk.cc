@@ -6,15 +6,18 @@
 
 #include "chrome/browser/ui/panels/panel.h"
 
-NativePanel* Panel::CreateNativePanel(Browser* browser, Panel* panel) {
+NativePanel* Panel::CreateNativePanel(Browser* browser, Panel* panel,
+                                      const gfx::Rect& bounds) {
   PanelBrowserWindowGtk* panel_browser_window_gtk =
-      new PanelBrowserWindowGtk(browser, panel);
+      new PanelBrowserWindowGtk(browser, panel, bounds);
   panel_browser_window_gtk->Init();
   return panel_browser_window_gtk;
 }
 
-PanelBrowserWindowGtk::PanelBrowserWindowGtk(Browser* browser, Panel* panel)
-    : BrowserWindowGtk(browser), panel_(panel) {
+PanelBrowserWindowGtk::PanelBrowserWindowGtk(Browser* browser,
+                                             Panel* panel,
+                                             const gfx::Rect& bounds)
+    : BrowserWindowGtk(browser), panel_(panel), bounds_(bounds) {
 }
 
 PanelBrowserWindowGtk::~PanelBrowserWindowGtk() {
@@ -63,6 +66,7 @@ void PanelBrowserWindowGtk::SetGeometryHints() {
 }
 
 void PanelBrowserWindowGtk::SetBounds(const gfx::Rect& bounds) {
+  bounds_ = bounds;
   SetBoundsImpl();
 }
 
@@ -73,6 +77,10 @@ bool PanelBrowserWindowGtk::UseCustomFrame() {
 
 void PanelBrowserWindowGtk::ShowPanel() {
   Show();
+}
+
+gfx::Rect PanelBrowserWindowGtk::GetPanelBounds() const {
+  return bounds_;
 }
 
 void PanelBrowserWindowGtk::SetPanelBounds(const gfx::Rect& bounds) {
@@ -128,7 +136,6 @@ void PanelBrowserWindowGtk::DestroyPanelBrowser() {
 }
 
 void PanelBrowserWindowGtk::SetBoundsImpl() {
-  const gfx::Rect& bounds = panel_->GetBounds();
-  gtk_window_move(window_, bounds.x(), bounds.y());
-  gtk_window_resize(window(), bounds.width(), bounds.height());
+  gtk_window_move(window_, bounds_.x(), bounds_.y());
+  gtk_window_resize(window(), bounds_.width(), bounds_.height());
 }

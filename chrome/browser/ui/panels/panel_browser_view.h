@@ -24,7 +24,7 @@ class PanelBrowserView : public BrowserView,
                          public NativePanel,
                          public ui::AnimationDelegate {
  public:
-  PanelBrowserView(Browser* browser, Panel* panel);
+  PanelBrowserView(Browser* browser, Panel* panel, const gfx::Rect& bounds);
   virtual ~PanelBrowserView();
 
   Panel* panel() const { return panel_.get(); }
@@ -60,6 +60,7 @@ class PanelBrowserView : public BrowserView,
 
   // Overridden from NativePanel:
   virtual void ShowPanel() OVERRIDE;
+  virtual gfx::Rect GetPanelBounds() const OVERRIDE;
   virtual void SetPanelBounds(const gfx::Rect& bounds) OVERRIDE;
   virtual void MinimizePanel() OVERRIDE;
   virtual void RestorePanel() OVERRIDE;
@@ -81,6 +82,7 @@ class PanelBrowserView : public BrowserView,
   bool EndDragging(bool cancelled);
 
   scoped_ptr<Panel> panel_;
+  gfx::Rect bounds_;
 
   // Is the panel being closed? Do not use it when it is closed.
   bool closed_;
@@ -98,7 +100,6 @@ class PanelBrowserView : public BrowserView,
   // Used to animate the bounds change.
   scoped_ptr<ui::SlideAnimation> bounds_animator_;
   gfx::Rect animation_start_bounds_;
-  gfx::Rect animation_target_bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelBrowserView);
 };

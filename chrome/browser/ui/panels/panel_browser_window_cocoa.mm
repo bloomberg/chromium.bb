@@ -9,23 +9,40 @@
 #include "chrome/browser/ui/panels/panel.h"
 #import "chrome/browser/ui/panels/panel_window_controller_cocoa.h"
 
+namespace {
+
 // Use this instead of 0 for minimum size of a window when doing opening and
 // closing animations, since OSX window manager does not like 0-sized windows
 // (according to avi@).
-static const int kMinimumWindowSize = 1;
+const int kMinimumWindowSize = 1;
+
+// TODO(dcheng): Move elsewhere so BrowserWindowCocoa can use them too.
+NSRect ConvertCoordinatesToCocoa(const gfx::Rect& bounds) {
+  // Flip coordinates based on the primary screen.
+  NSScreen* screen = [[NSScreen screens] objectAtIndex:0];
+
+  return NSMakeRect(
+      bounds.x(), NSHeight([screen frame]) - bounds.height() - bounds.y(),
+      bounds.width(), bounds.height());
+}
+
+}  // namespace
 
 // This creates a shim window class, which in turn creates a Cocoa window
 // controller which in turn creates actual NSWindow by loading a nib.
 // Overall chain of ownership is:
 // PanelWindowControllerCocoa -> PanelBrowserWindowCocoa -> Panel.
-NativePanel* Panel::CreateNativePanel(Browser* browser, Panel* panel) {
-  return new PanelBrowserWindowCocoa(browser, panel);
+NativePanel* Panel::CreateNativePanel(Browser* browser, Panel* panel,
+                                      const gfx::Rect& bounds) {
+  return new PanelBrowserWindowCocoa(browser, panel, bounds);
 }
 
 PanelBrowserWindowCocoa::PanelBrowserWindowCocoa(Browser* browser,
-                                                 Panel* panel)
+                                                 Panel* panel,
+                                                 const gfx::Rect& bounds)
   : browser_(browser),
-    panel_(panel) {
+    panel_(panel),
+    bounds_(bounds) {
   controller_ = [[PanelWindowControllerCocoa alloc] initWithBrowserWindow:this];
 }
 
@@ -40,7 +57,7 @@ void PanelBrowserWindowCocoa::ShowPanel() {
   if (isClosed())
     return;
 
-  NSRect finalFrame = ConvertCoordinatesToCocoa(panel_->GetBounds());
+  NSRect finalFrame = ConvertCoordinatesToCocoa(GetPanelBounds());
   NSRect startFrame = NSMakeRect(NSMinX(finalFrame), NSMinY(finalFrame),
                                  NSWidth(finalFrame), kMinimumWindowSize);
   NSWindow* window = [controller_ window];
@@ -52,7 +69,12 @@ void PanelBrowserWindowCocoa::ShowPanel() {
   [window setFrame:finalFrame display:YES animate:YES];
 }
 
+gfx::Rect PanelBrowserWindowCocoa::GetPanelBounds() const {
+  return bounds_;
+}
+
 void PanelBrowserWindowCocoa::SetPanelBounds(const gfx::Rect& bounds) {
+  bounds_ = bounds;
   NSRect frame = ConvertCoordinatesToCocoa(bounds);
   [[controller_ window] setFrame:frame display:YES animate:YES];
 }
@@ -113,15 +135,5 @@ void PanelBrowserWindowCocoa::FlashPanelFrame() {
 void PanelBrowserWindowCocoa::DestroyPanelBrowser() {
   [controller_ close];
   controller_ = NULL;
-}
-
-NSRect PanelBrowserWindowCocoa::ConvertCoordinatesToCocoa(
-    const gfx::Rect& bounds) {
-  // Flip coordinates based on the primary screen.
-  NSScreen* screen = [[NSScreen screens] objectAtIndex:0];
-
-  return NSMakeRect(
-      bounds.x(), NSHeight([screen frame]) - bounds.height() - bounds.y(),
-      bounds.width(), bounds.height());
 }
 

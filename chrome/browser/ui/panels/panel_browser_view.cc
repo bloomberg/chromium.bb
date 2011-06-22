@@ -19,15 +19,18 @@ namespace {
 const int kSetBoundsAnimationMs = 200;
 }
 
-NativePanel* Panel::CreateNativePanel(Browser* browser, Panel* panel) {
-  PanelBrowserView* view = new PanelBrowserView(browser, panel);
+NativePanel* Panel::CreateNativePanel(Browser* browser, Panel* panel,
+                                      const gfx::Rect& bounds) {
+  PanelBrowserView* view = new PanelBrowserView(browser, panel, bounds);
   (new BrowserFrame(view))->InitBrowserFrame();
   return view;
 }
 
-PanelBrowserView::PanelBrowserView(Browser* browser, Panel* panel)
+PanelBrowserView::PanelBrowserView(Browser* browser, Panel* panel,
+                                   const gfx::Rect& bounds)
   : BrowserView(browser),
     panel_(panel),
+    bounds_(bounds),
     closed_(false),
     mouse_pressed_(false),
     mouse_dragging_(false) {
@@ -55,14 +58,15 @@ void PanelBrowserView::Close() {
 }
 
 void PanelBrowserView::SetBounds(const gfx::Rect& bounds) {
-  // No animation if the panel is empty or being dragged.
-  if (GetBounds().IsEmpty() || mouse_dragging_) {
+  bounds_ = bounds;
+
+  // No animation if the panel is being dragged.
+  if (mouse_dragging_) {
     ::BrowserView::SetBounds(bounds);
     return;
   }
 
   animation_start_bounds_ = GetBounds();
-  animation_target_bounds_ = bounds;
 
   if (!bounds_animator_.get()) {
     bounds_animator_.reset(new ui::SlideAnimation(this));
@@ -80,7 +84,7 @@ void PanelBrowserView::UpdateTitleBar() {
 }
 
 bool PanelBrowserView::GetSavedWindowBounds(gfx::Rect* bounds) const {
-  *bounds = panel_->GetRestoredBounds();
+  *bounds = GetPanelBounds();
   return true;
 }
 
@@ -100,7 +104,7 @@ bool PanelBrowserView::AcceleratorPressed(
 
 void PanelBrowserView::AnimationProgressed(const ui::Animation* animation) {
   gfx::Rect new_bounds = bounds_animator_->CurrentValueBetween(
-      animation_start_bounds_, animation_target_bounds_);
+      animation_start_bounds_, bounds_);
   ::BrowserView::SetBounds(new_bounds);
 }
 
@@ -120,6 +124,10 @@ bool PanelBrowserView::WillProcessWorkAreaChange() const {
 
 void PanelBrowserView::ShowPanel() {
   Show();
+}
+
+gfx::Rect PanelBrowserView::GetPanelBounds() const {
+  return bounds_;
 }
 
 void PanelBrowserView::SetPanelBounds(const gfx::Rect& bounds) {

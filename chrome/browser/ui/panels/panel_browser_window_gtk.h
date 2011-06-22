@@ -13,7 +13,8 @@ class Panel;
 class PanelBrowserWindowGtk : public BrowserWindowGtk,
                               public NativePanel {
  public:
-  PanelBrowserWindowGtk(Browser* browser, Panel* panel);
+  PanelBrowserWindowGtk(Browser* browser, Panel* panel,
+                        const gfx::Rect& bounds);
   virtual ~PanelBrowserWindowGtk();
 
   // BrowserWindowGtk overrides
@@ -35,6 +36,7 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
 
   // Overridden from NativePanel:
   virtual void ShowPanel() OVERRIDE;
+  virtual gfx::Rect GetPanelBounds() const OVERRIDE;
   virtual void SetPanelBounds(const gfx::Rect& bounds) OVERRIDE;
   virtual void MinimizePanel() OVERRIDE;
   virtual void RestorePanel() OVERRIDE;
@@ -53,6 +55,7 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
   void SetBoundsImpl();
 
   scoped_ptr<Panel> panel_;
+  gfx::Rect bounds_;
   DISALLOW_COPY_AND_ASSIGN(PanelBrowserWindowGtk);
 };
 

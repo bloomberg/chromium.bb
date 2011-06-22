@@ -94,7 +94,7 @@ Panel* PanelManager::CreatePanel(Browser* browser) {
 void PanelManager::ProcessPending() {
   while (!pending_panels_.empty()) {
     Panel* panel = pending_panels_.front();
-    gfx::Rect bounds = panel->GetRestoredBounds();
+    gfx::Rect bounds = panel->GetBounds();
     if (ComputeBoundsForNextPanel(&bounds, true)) {
       // TODO(jianli): More work to support displaying pending panels.
       active_panels_.push_back(panel);
@@ -132,7 +132,7 @@ void PanelManager::DoRemove(Panel* panel) {
     return;
   }
 
-  gfx::Rect bounds = (*iter)->GetRestoredBounds();
+  gfx::Rect bounds = (*iter)->GetBounds();
   current_x_ = bounds.x() + bounds.width();
   Rearrange(active_panels_.erase(iter));
 
@@ -143,7 +143,7 @@ void PanelManager::StartDragging(Panel* panel) {
   for (size_t i = 0; i < active_panels_.size(); ++i) {
     if (active_panels_[i] == panel) {
       dragging_panel_index_ = i;
-      dragging_panel_bounds_ = panel->GetRestoredBounds();
+      dragging_panel_bounds_ = panel->GetBounds();
       dragging_panel_original_x_ = dragging_panel_bounds_.x();
       break;
     }
@@ -158,7 +158,7 @@ void PanelManager::Drag(int delta_x) {
 
   // Moves this panel to the dragging position.
   Panel* dragging_panel = active_panels_[dragging_panel_index_];
-  gfx::Rect new_bounds(dragging_panel->GetRestoredBounds());
+  gfx::Rect new_bounds(dragging_panel->GetBounds());
   new_bounds.set_x(new_bounds.x() + delta_x);
   dragging_panel->SetPanelBounds(new_bounds);
 
@@ -174,7 +174,7 @@ void PanelManager::DragLeft() {
 
   // This is the left corner of the dragging panel. We use it to check against
   // all the panels on its left.
-  int dragging_panel_left_boundary = dragging_panel->GetRestoredBounds().x();
+  int dragging_panel_left_boundary = dragging_panel->GetBounds().x();
 
   // This is the right corner which a panel will be moved to.
   int current_panel_right_boundary =
@@ -187,12 +187,12 @@ void PanelManager::DragLeft() {
 
     // Current panel will only be affected if the left corner of dragging
     // panel goes beyond the middle position of the current panel.
-    if (dragging_panel_left_boundary > current_panel->GetRestoredBounds().x() +
-            current_panel->GetRestoredBounds().width() / 2)
+    if (dragging_panel_left_boundary > current_panel->GetBounds().x() +
+            current_panel->GetBounds().width() / 2)
       break;
 
     // Moves current panel to the new position.
-    gfx::Rect bounds(current_panel->GetRestoredBounds());
+    gfx::Rect bounds(current_panel->GetBounds());
     bounds.set_x(current_panel_right_boundary - bounds.width());
     current_panel_right_boundary -= bounds.width() + kPanelsHorizontalSpacing;
     current_panel->SetPanelBounds(bounds);
@@ -217,8 +217,8 @@ void PanelManager::DragRight() {
 
   // This is the right corner of the dragging panel. We use it to check against
   // all the panels on its right.
-  int dragging_panel_right_boundary = dragging_panel->GetRestoredBounds().x() +
-      dragging_panel->GetRestoredBounds().width() - 1;
+  int dragging_panel_right_boundary = dragging_panel->GetBounds().x() +
+      dragging_panel->GetBounds().width() - 1;
 
   // This is the left corner which a panel will be moved to.
   int current_panel_left_boundary = dragging_panel_bounds_.x();
@@ -230,12 +230,12 @@ void PanelManager::DragRight() {
 
     // Current panel will only be affected if the right corner of dragging
     // panel goes beyond the middle position of the current panel.
-    if (dragging_panel_right_boundary < current_panel->GetRestoredBounds().x() +
-            current_panel->GetRestoredBounds().width() / 2)
+    if (dragging_panel_right_boundary < current_panel->GetBounds().x() +
+            current_panel->GetBounds().width() / 2)
       break;
 
     // Moves current panel to the new position.
-    gfx::Rect bounds(current_panel->GetRestoredBounds());
+    gfx::Rect bounds(current_panel->GetBounds());
     bounds.set_x(current_panel_left_boundary);
     current_panel_left_boundary += bounds.width() + kPanelsHorizontalSpacing;
     current_panel->SetPanelBounds(bounds);
@@ -259,7 +259,7 @@ void PanelManager::EndDragging(bool cancelled) {
 
   if (cancelled) {
     Drag(dragging_panel_original_x_ -
-         active_panels_[dragging_panel_index_]->GetRestoredBounds().x());
+         active_panels_[dragging_panel_index_]->GetBounds().x());
   } else {
     active_panels_[dragging_panel_index_]->SetPanelBounds(
         dragging_panel_bounds_);
@@ -276,9 +276,9 @@ void PanelManager::Rearrange(ActivePanels::iterator iter_to_start) {
 
   for (ActivePanels::iterator iter = iter_to_start;
        iter != active_panels_.end(); ++iter) {
-    gfx::Rect new_bounds((*iter)->GetRestoredBounds());
+    gfx::Rect new_bounds((*iter)->GetBounds());
     ComputeBoundsForNextPanel(&new_bounds, false);
-    if (new_bounds != (*iter)->GetRestoredBounds())
+    if (new_bounds != (*iter)->GetBounds())
       (*iter)->SetPanelBounds(new_bounds);
   }
 }

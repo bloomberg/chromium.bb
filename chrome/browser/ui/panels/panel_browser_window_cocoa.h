@@ -9,6 +9,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/panels/native_panel.h"
+#include "ui/gfx/rect.h"
 
 class Browser;
 class Panel;
@@ -20,11 +21,13 @@ class Panel;
 
 class PanelBrowserWindowCocoa : public NativePanel {
  public:
-  PanelBrowserWindowCocoa(Browser* browser, Panel* panel);
+  PanelBrowserWindowCocoa(Browser* browser, Panel* panel,
+                          const gfx::Rect& bounds);
   virtual ~PanelBrowserWindowCocoa();
 
   // Overridden from NativePanel
   virtual void ShowPanel() OVERRIDE;
+  virtual gfx::Rect GetPanelBounds() const OVERRIDE;
   virtual void SetPanelBounds(const gfx::Rect& bounds) OVERRIDE;
   virtual void MinimizePanel() OVERRIDE;
   virtual void RestorePanel() OVERRIDE;
@@ -50,10 +53,10 @@ class PanelBrowserWindowCocoa : public NativePanel {
   FRIEND_TEST_ALL_PREFIXES(PanelBrowserWindowCocoaTest, TitlebarViewClose);
 
   bool isClosed();
-  NSRect ConvertCoordinatesToCocoa(const gfx::Rect& bounds);
 
   scoped_ptr<Browser> browser_;
   scoped_ptr<Panel> panel_;
+  gfx::Rect bounds_;
   PanelWindowControllerCocoa* controller_;  // Weak, owns us.
 
   DISALLOW_COPY_AND_ASSIGN(PanelBrowserWindowCocoa);

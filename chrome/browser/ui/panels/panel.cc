@@ -25,10 +25,8 @@ const Extension* Panel::GetExtension(Browser* browser) {
       web_app::GetExtensionIdFromApplicationName(browser->app_name()), false);
 }
 
-Panel::Panel(Browser* browser, const gfx::Rect& bounds)
-    : bounds_(bounds),
-      minimized_(false) {
-  native_panel_ = CreateNativePanel(browser, this);
+Panel::Panel(Browser* browser, const gfx::Rect& bounds) {
+  native_panel_ = CreateNativePanel(browser, this, bounds);
 }
 
 Panel::~Panel() {
@@ -40,25 +38,14 @@ PanelManager* Panel::manager() const {
 }
 
 void Panel::SetPanelBounds(const gfx::Rect& bounds) {
-  if (bounds_ == bounds)
-    return;
-  bounds_ = bounds;
   native_panel_->SetPanelBounds(bounds);
 }
 
 void Panel::Minimize() {
-  if (minimized_)
-    return;
-  minimized_ = true;
-
   NOTIMPLEMENTED();
 }
 
 void Panel::Restore() {
-  if (!minimized_)
-    return;
-  minimized_ = false;
-
   NOTIMPLEMENTED();
 }
 
@@ -137,11 +124,11 @@ void Panel::SetStarredState(bool is_starred) {
 }
 
 gfx::Rect Panel::GetRestoredBounds() const {
-  return bounds_;
+  return native_panel_->GetPanelBounds();
 }
 
 gfx::Rect Panel::GetBounds() const {
-  return minimized_ ? minimized_bounds_ : bounds_;
+  return native_panel_->GetPanelBounds();
 }
 
 bool Panel::IsMaximized() const {
