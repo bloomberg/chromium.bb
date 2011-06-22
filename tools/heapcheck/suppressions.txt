@@ -1519,7 +1519,6 @@
    Heapcheck:Leak
    fun:sqlite3MemMalloc
    fun:net::::PKIXVerifyCert
-   fun:net::X509Certificate::Verify
 }
 {
    bug_82974c
@@ -1608,12 +1607,5 @@
    Heapcheck:Leak
    ...
    fun:content_settings::PrefProviderTest_MigrateSinglePatternSettings_Test::TestBody
-}
-{
-   bug_87059
-   Heapcheck:Leak
-   fun:sqlite3MemMalloc
-   fun:net::::PKIXVerifyCert
-   fun:net::X509Certificate::VerifyInternal
 }
 
