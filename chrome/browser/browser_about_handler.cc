@@ -49,6 +49,7 @@
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "crypto/nss_util.h"
 #include "googleurl/src/gurl.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
@@ -575,6 +576,13 @@ std::string AddBoolRow(const std::string& name, bool value) {
   return WrapWithTR(row);
 }
 
+std::string AddStringRow(const std::string& name, const std::string& value) {
+  std::string row;
+  row.append(WrapWithTD(name));
+  row.append(WrapWithTD(value));
+  return WrapWithTR(row);
+}
+
 std::string GetCryptohomeHtmlInfo(int refresh) {
   chromeos::CryptohomeLibrary* cryptohome =
       chromeos::CrosLibrary::Get()->GetCryptohomeLibrary();
@@ -584,7 +592,8 @@ std::string GetCryptohomeHtmlInfo(int refresh) {
   output.append("<body>");
   output.append(AboutRefresh(refresh, "cryptohome"));
 
-  output.append("<h3>CryptohomeLibrary:</h3><table>");
+  output.append("<h3>CryptohomeLibrary:</h3>");
+  output.append("<table>");
   output.append(AddBoolRow("IsMounted", cryptohome->IsMounted()));
   output.append(AddBoolRow("TpmIsReady", cryptohome->TpmIsReady()));
   output.append(AddBoolRow("TpmIsEnabled", cryptohome->TpmIsEnabled()));
@@ -592,8 +601,19 @@ std::string GetCryptohomeHtmlInfo(int refresh) {
   output.append(AddBoolRow("TpmIsBeingOwned", cryptohome->TpmIsBeingOwned()));
   output.append(AddBoolRow("Pkcs11IsTpmTokenReady",
                            cryptohome->Pkcs11IsTpmTokenReady()));
+  output.append("</table>");
 
-  output.append("</table></body></html>");
+  std::string token_name, user_pin;
+  crypto::GetTPMTokenInfo(&token_name, &user_pin);
+  output.append("<h3>crypto:</h3>");
+  output.append("<table>");
+  output.append(AddBoolRow("IsTPMTokenReady", crypto::IsTPMTokenReady()));
+  output.append(AddStringRow("token_name", token_name));
+  output.append(AddStringRow("user_pin", std::string(user_pin.length(), '*')));
+  output.append("</table>");
+
+  output.append("</body>");
+  output.append("</html>");
   return output;
 }
 
