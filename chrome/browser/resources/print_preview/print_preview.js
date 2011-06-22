@@ -53,7 +53,7 @@ var draftDocument = true;
  * the printer list.
  */
 function onLoad() {
-  enablePlatformSpecificCSSRules();
+  cr.enablePlatformSpecificCSSRules();
 
   $('cancel-button').addEventListener('click', handleCancelButtonClick);
 

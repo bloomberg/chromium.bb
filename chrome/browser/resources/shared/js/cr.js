@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,6 +33,25 @@ const cr = (function() {
    * @type {boolean}
    */
   const isViews = isWindows || isChromeOS;
+
+  /**
+   * Sets the os and toolkit attributes in the <html> element so that platform
+   * specific css rules can be applied.
+   */
+  function enablePlatformSpecificCSSRules() {
+    if (isMac)
+      doc.documentElement.setAttribute('os', 'mac');
+    if (isWindows)
+      doc.documentElement.setAttribute('os', 'windows');
+    if (isChromeOS)
+      doc.documentElement.setAttribute('os', 'chromeos');
+    if (isLinux) {
+      doc.documentElement.setAttribute('os', 'linux');
+      doc.documentElement.setAttribute('toolkit', 'gtk');
+    }
+    if (isViews)
+      doc.documentElement.setAttribute('toolkit', 'views');
+  }
 
   /**
    * Builds an object structure for the provided namespace path,
@@ -324,6 +343,7 @@ const cr = (function() {
     isWindows: isWindows,
     isLinux: isLinux,
     isViews: isViews,
+    enablePlatformSpecificCSSRules: enablePlatformSpecificCSSRules,
     define: define,
     defineProperty: defineProperty,
     PropertyKind: PropertyKind,

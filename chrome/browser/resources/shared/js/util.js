@@ -12,25 +12,6 @@ const global = this;
 const IS_MAC = /^Mac/.test(navigator.platform);
 
 /**
- * Sets the os and toolkit attributes in the <html> element so that platform
- * specific css rules can be applied.
- */
-function enablePlatformSpecificCSSRules() {
-  if (cr.isMac)
-    document.documentElement.setAttribute('os', 'mac');
-  if (cr.isWindows)
-    document.documentElement.setAttribute('os', 'windows');
-  if (cr.isChromeOS)
-    document.documentElement.setAttribute('os', 'chromeos');
-  if (cr.isLinux) {
-    document.documentElement.setAttribute('os', 'linux');
-    document.documentElement.setAttribute('toolkit', 'gtk');
-  }
-  if (cr.isViews)
-    document.documentElement.setAttribute('toolkit', 'views');
-}
-
-/**
  * Alias for document.getElementById.
  * @param {string} id The ID of the element to find.
  * @return {HTMLElement} The found element or null if not found.

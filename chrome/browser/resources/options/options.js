@@ -197,7 +197,7 @@ function load() {
   }
 
   // Allow platform specific CSS rules.
-  enablePlatformSpecificCSSRules();
+  cr.enablePlatformSpecificCSSRules();
 
   if (navigator.plugins['Shockwave Flash'])
     document.documentElement.setAttribute('hasFlashPlugin', '');
