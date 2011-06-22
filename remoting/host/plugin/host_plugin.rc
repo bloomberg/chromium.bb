@@ -98,8 +98,18 @@ CAPTION "Remoting"
 FONT 9, "Microsoft Sans Serif", 400, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "Disconnect",IDC_DISCONNECT,56,38,50,14
-    LTEXT           "Sharing with:",IDC_SHARINGWITH,7,17,55,8
-    LTEXT           "<username>",IDC_USERNAME,51,17,108,8
+    LTEXT           "Sharing with:",IDC_DISCONNECT_SHARINGWITH,7,17,46,8
+    LTEXT           "<username>",IDC_DISCONNECT_USERNAME,51,17,108,8
+END
+
+IDD_CONTINUE DIALOGEX 0, 0, 221, 58
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION
+EXSTYLE WS_EX_TOPMOST
+CAPTION "Continue Sharing"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "Yes, continue sharing",IDC_CONTINUE,61,38,90,14
+    LTEXT           "You are currently sharing this machine with another user.  Please confirm that you want to continue sharing.",IDC_CONTINUE_TEXT,7,7,201,30
 END
 
 
@@ -115,6 +125,14 @@ BEGIN
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 159
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 52
+    END
+
+    IDD_CONTINUE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 214
         TOPMARGIN, 7
         BOTTOMMARGIN, 52
     END

@@ -14,35 +14,39 @@
 // a dependency on the plugin's resource header.
 #include "remoting/host/plugin/host_plugin_resource.h"
 
+// TODO(garykac): Lots of duplicated code in this file and
+// continue_window_win.cc. These global floating windows are temporary so
+// they should be deleted soon. If we need to expand this then we should
+// create a class with the shared code.
+
 // HMODULE from DllMain/WinMain. This is needed to find our dialog resource.
 // This is defined in:
 //   Plugin: host_plugin.cc
 //   SimpleHost: simple_host_process.cc
 extern HMODULE g_hModule;
 
-namespace {
+namespace remoting {
 
-class DisconnectWindowWin : public remoting::DisconnectWindow {
+class DisconnectWindowWin : public DisconnectWindow {
  public:
   DisconnectWindowWin();
+  virtual ~DisconnectWindowWin();
+
   virtual void Show(remoting::ChromotingHost* host,
                     const std::string& username) OVERRIDE;
   virtual void Hide() OVERRIDE;
 
+private:
   static BOOL CALLBACK DialogProc(HWND hwmd, UINT msg, WPARAM wParam,
                                   LPARAM lParam);
 
   BOOL OnDialogMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-private:
+  void EndDialog();
+
   remoting::ChromotingHost* host_;
   std::string username_;
   HWND hwnd_;
-
-  // A "random" key from the tickcount that is used to validate the WM_USER
-  // message sent to end the dialog. This check is used to help protect
-  // against someone sending (WM_APP,0,0L) to close the dialog.
-  DWORD key_;
 
   DISALLOW_COPY_AND_ASSIGN(DisconnectWindowWin);
 };
@@ -50,8 +54,11 @@ private:
 DisconnectWindowWin::DisconnectWindowWin()
     : host_(NULL),
       username_(""),
-      hwnd_(NULL),
-      key_(0L) {
+      hwnd_(NULL) {
+}
+
+DisconnectWindowWin::~DisconnectWindowWin() {
+  EndDialog();
 }
 
 BOOL CALLBACK DisconnectWindowWin::DialogProc(HWND hwnd, UINT msg,
@@ -76,7 +83,7 @@ BOOL DisconnectWindowWin::OnDialogMessage(HWND hwnd, UINT msg,
     case WM_INITDIALOG:
       {
         // Update username in dialog.
-        HWND hwndUsername = GetDlgItem(hwnd, IDC_USERNAME);
+        HWND hwndUsername = GetDlgItem(hwnd, IDC_DISCONNECT_USERNAME);
         CHECK(hwndUsername);
         std::wstring w_username = UTF8ToWide(username_);
         SetWindowText(hwndUsername, w_username.c_str());
@@ -89,19 +96,13 @@ BOOL DisconnectWindowWin::OnDialogMessage(HWND hwnd, UINT msg,
       // Ensure we don't try to use the HWND anymore.
       hwnd_ = NULL;
       return TRUE;
-    case WM_APP:
-      if (key_ == static_cast<DWORD>(lParam)) {
-        EndDialog(hwnd, LOWORD(wParam));
-        hwnd_ = NULL;
-      }
-      return TRUE;
     case WM_COMMAND:
       switch (LOWORD(wParam)) {
         case IDC_DISCONNECT:
           {
             CHECK(host_);
             host_->Shutdown(NULL);
-            EndDialog(hwnd, LOWORD(wParam));
+            ::EndDialog(hwnd, LOWORD(wParam));
             hwnd_ = NULL;
           }
           return TRUE;
@@ -110,13 +111,10 @@ BOOL DisconnectWindowWin::OnDialogMessage(HWND hwnd, UINT msg,
   return FALSE;
 }
 
-void DisconnectWindowWin::Show(remoting::ChromotingHost* host,
+void DisconnectWindowWin::Show(ChromotingHost* host,
                                const std::string& username) {
   host_ = host;
   username_ = username;
-  // Get a "random" value that we can use to prevent someone from sending a
-  // simple (WM_APP,0,0L) message to our window to close it.
-  key_ = GetTickCount();
 
   CHECK(!hwnd_);
   hwnd_ = CreateDialogParam(g_hModule, MAKEINTRESOURCE(IDD_DISCONNECT), NULL,
@@ -127,19 +125,21 @@ void DisconnectWindowWin::Show(remoting::ChromotingHost* host,
   }
 
   ShowWindow(hwnd_, SW_SHOW);
-  // TODO(garykac): Remove this UpdateWindow() call once threading issues are
-  // resolved and it's no longer needed.
-  UpdateWindow(hwnd_);
 }
 
 void DisconnectWindowWin::Hide() {
+  EndDialog();
+}
+
+void DisconnectWindowWin::EndDialog() {
   if (hwnd_) {
-    SendMessage(hwnd_, WM_APP, 0, (LPARAM)key_);
+    ::EndDialog(hwnd_, 0);
+    hwnd_ = NULL;
   }
 }
 
-}  // namespace
-
-remoting::DisconnectWindow* remoting::DisconnectWindow::Create() {
+DisconnectWindow* DisconnectWindow::Create() {
   return new DisconnectWindowWin;
 }
+
+}  // namespace remoting

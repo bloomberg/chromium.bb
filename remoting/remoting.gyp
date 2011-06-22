@@ -382,6 +382,7 @@
         'host/desktop_environment.h',
         'host/differ.h',
         'host/differ.cc',
+        'host/disconnect_window.h',
         'host/disconnect_window_linux.cc',
         'host/disconnect_window_mac.h',
         'host/disconnect_window_mac.mm',
