@@ -4746,13 +4746,6 @@
    fun:_ZN8chromeos22InputMethodLibraryImpl4InitEv
 }
 {
-   bug_86468
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN16content_settings50PrefProviderTest_MigrateSinglePatternSettings_Test8TestBodyEv
-}
-{
    bug_86481
    Memcheck:Leak
    fun:_Znw*

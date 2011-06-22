@@ -346,7 +346,7 @@ TEST_F(PrefProviderTest, MigrateSinglePatternSettings) {
 
   ContentSettingsPattern pattern =
       ContentSettingsPattern::FromString("http://www.example.com");
-  DictionaryValue* all_settings_dictionary = new DictionaryValue();
+  scoped_ptr<DictionaryValue> all_settings_dictionary(new DictionaryValue());
   all_settings_dictionary->SetWithoutPathExpansion(
       pattern.ToString(), settings_dictionary);
 
