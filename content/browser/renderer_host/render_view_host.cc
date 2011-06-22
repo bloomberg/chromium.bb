@@ -111,6 +111,8 @@ RenderViewHost::RenderViewHost(SiteInstance* instance,
   DCHECK(instance_);
   CHECK(delegate_);  // http://crbug.com/82827
 
+  process()->EnableSendQueue();
+
   content::GetContentClient()->browser()->RenderViewHostCreated(this);
 
   NotificationService::current()->Notify(

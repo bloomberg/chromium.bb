@@ -244,6 +244,10 @@ BrowserRenderProcessHost::~BrowserRenderProcessHost() {
   ClearTransportDIBCache();
 }
 
+void BrowserRenderProcessHost::EnableSendQueue() {
+  is_initialized_ = false;
+}
+
 bool BrowserRenderProcessHost::Init(bool is_accessibility_enabled) {
   // calling Init() more than once does nothing, this makes it more convenient
   // for the view host which may not be sure in some cases

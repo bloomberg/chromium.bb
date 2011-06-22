@@ -23,6 +23,9 @@ MockRenderProcessHost::~MockRenderProcessHost() {
     factory_->Remove(this);
 }
 
+void MockRenderProcessHost::EnableSendQueue() {
+}
+
 bool MockRenderProcessHost::Init(bool is_accessibility_enabled) {
   return true;
 }

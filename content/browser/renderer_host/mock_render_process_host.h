@@ -36,6 +36,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   int bad_msg_count() const { return bad_msg_count_; }
 
   // RenderProcessHost implementation (public portion).
+  virtual void EnableSendQueue();
   virtual bool Init(bool is_accessibility_enabled);
   virtual int GetNextRoutingID();
   virtual void CancelResourceRequests(int render_widget_id);

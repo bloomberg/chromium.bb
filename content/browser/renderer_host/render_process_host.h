@@ -162,6 +162,10 @@ class RenderProcessHost : public IPC::Channel::Sender,
 
   // Virtual interface ---------------------------------------------------------
 
+  // Call this to allow queueing of IPC messages that are sent before the
+  // process is launched.
+  virtual void EnableSendQueue() = 0;
+
   // Initialize the new renderer process, returning true on success. This must
   // be called once before the object can be used, but can be called after
   // that with no effect. Therefore, if the caller isn't sure about whether

@@ -46,6 +46,7 @@ class BrowserRenderProcessHost : public RenderProcessHost,
   virtual ~BrowserRenderProcessHost();
 
   // RenderProcessHost implementation (public portion).
+  virtual void EnableSendQueue();
   virtual bool Init(bool is_accessibility_enabled);
   virtual int GetNextRoutingID();
   virtual void CancelResourceRequests(int render_widget_id);
