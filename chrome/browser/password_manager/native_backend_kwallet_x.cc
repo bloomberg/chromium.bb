@@ -411,7 +411,8 @@ bool NativeBackendKWallet::SetLoginsList(const PasswordFormList& forms,
                       G_TYPE_INVALID,
                       G_TYPE_INT,     &ret,
                       G_TYPE_INVALID);
-    CheckError();
+    if (CheckError())
+      return false;
     if (ret != 0)
       LOG(ERROR) << "Bad return code " << ret << " from KWallet removeEntry";
     return ret == 0;
@@ -438,7 +439,8 @@ bool NativeBackendKWallet::SetLoginsList(const PasswordFormList& forms,
                     G_TYPE_INVALID);
   g_array_free(byte_array, true);
 
-  CheckError();
+  if (CheckError())
+    return false;
   if (ret != 0)
     LOG(ERROR) << "Bad return code " << ret << " from KWallet writeEntry";
   return ret == 0;
