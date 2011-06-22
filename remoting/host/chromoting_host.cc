@@ -137,8 +137,8 @@ void ChromotingHost::Shutdown(Task* shutdown_task) {
     base::AutoLock auto_lock(lock_);
     if (state_ == kInitial || state_ == kStopped) {
       // Nothing to do if we are not started.
-      base::ScopedTaskRunner run_task(shutdown_task);
       state_ = kStopped;
+      context_->main_message_loop()->PostTask(FROM_HERE, shutdown_task);
       return;
     }
     if (shutdown_task)
