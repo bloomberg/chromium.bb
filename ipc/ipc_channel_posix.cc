@@ -24,6 +24,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/process_util.h"
+#include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/synchronization/lock.h"
 #include "ipc/ipc_descriptors.h"
@@ -737,7 +738,7 @@ bool Channel::ChannelImpl::ProcessIncomingMessages() {
       }
       input_overflow_fds_ = std::vector<int>(&fds[fds_i], &fds[num_fds]);
       fds_i = 0;
-      fds = &input_overflow_fds_[0];
+      fds = vector_as_array(&input_overflow_fds_);
       num_fds = input_overflow_fds_.size();
     }
     input_overflow_buf_.assign(p, end - p);
