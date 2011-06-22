@@ -180,7 +180,7 @@ error::Error CommandBufferHelper::GetError() {
   return static_cast<error::Error>(state.error);
 }
 
-void CommandBufferHelper::SynchronizeState(CommandBuffer::State state) {
+void CommandBufferHelper::SynchronizeState(const CommandBuffer::State& state) {
   get_ = state.get_offset;
   last_token_read_ = state.token;
 }

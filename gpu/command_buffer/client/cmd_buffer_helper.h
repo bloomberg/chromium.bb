@@ -224,7 +224,7 @@ class CommandBufferHelper {
   }
 
   // Synchronize with current service state.
-  void SynchronizeState(CommandBuffer::State state);
+  void SynchronizeState(const CommandBuffer::State& state);
 
   CommandBuffer* command_buffer_;
   Buffer ring_buffer_;
