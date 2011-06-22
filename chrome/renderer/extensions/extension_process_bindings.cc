@@ -434,7 +434,8 @@ class ExtensionImpl : public ExtensionBase {
     params.source_url = source_url;
     params.request_id = request_id;
     params.has_callback = has_callback;
-    params.user_gesture = webframe->isProcessingUserGesture();
+    params.user_gesture =
+        webframe ? webframe->isProcessingUserGesture() : false;
     if (for_io_thread) {
       renderview->Send(new ExtensionHostMsg_RequestForIOThread(
           renderview->routing_id(), params));
