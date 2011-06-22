@@ -223,6 +223,7 @@ struct WebPluginImpl::ClientInfo {
   bool pending_failure_notification;
   linked_ptr<WebKit::WebURLLoader> loader;
   bool notify_redirects;
+  bool check_mixed_scripting;
 };
 
 bool WebPluginImpl::initialize(WebPluginContainer* container) {
@@ -809,7 +810,7 @@ void WebPluginImpl::InvalidateRect(const gfx::Rect& rect) {
 void WebPluginImpl::OnDownloadPluginSrcUrl() {
   HandleURLRequestInternal(
       plugin_url_.spec().c_str(), "GET", NULL, NULL, 0, 0, false, DOCUMENT_URL,
-      false);
+      false, true);
 }
 
 WebPluginResourceClient* WebPluginImpl::GetClientFromLoader(
@@ -836,6 +837,17 @@ void WebPluginImpl::willSendRequest(WebURLLoader* loader,
                                     const WebURLResponse& response) {
   WebPluginImpl::ClientInfo* client_info = GetClientInfoFromLoader(loader);
   if (client_info) {
+    // Currently this check is just to catch an https -> http redirect when
+    // loading the main plugin src URL. Longer term, we could investigate
+    // firing mixed diplay or scripting issues for subresource loads
+    // initiated by plug-ins.
+    if (client_info->check_mixed_scripting &&
+        webframe_ &&
+        !webframe_->checkIfRunInsecureContent(request.url())) {
+      loader->cancel();
+      client_info->client->DidFail();
+      return;
+    }
     if (net::HttpResponseHeaders::IsRedirectResponseCode(
             response.httpStatusCode())) {
       // If the plugin does not participate in url redirect notifications then
@@ -1038,7 +1050,7 @@ void WebPluginImpl::HandleURLRequest(const char* url,
   // plugin SRC url as the referrer if it is available.
   HandleURLRequestInternal(
       url, method, target, buf, len, notify_id, popups_allowed, PLUGIN_SRC,
-      notify_redirects);
+      notify_redirects, false);
 }
 
 void WebPluginImpl::HandleURLRequestInternal(const char* url,
@@ -1049,7 +1061,8 @@ void WebPluginImpl::HandleURLRequestInternal(const char* url,
                                              int notify_id,
                                              bool popups_allowed,
                                              Referrer referrer_flag,
-                                             bool notify_redirects) {
+                                             bool notify_redirects,
+                                             bool check_mixed_scripting) {
   // For this request, we either route the output to a frame
   // because a target has been specified, or we handle the request
   // here, i.e. by executing the script if it is a javascript url
@@ -1108,7 +1121,8 @@ void WebPluginImpl::HandleURLRequestInternal(const char* url,
     return;
 
   InitiateHTTPRequest(resource_id, resource_client, complete_url, method, buf,
-                      len, NULL, referrer_flag, notify_redirects);
+                      len, NULL, referrer_flag, notify_redirects,
+                      check_mixed_scripting);
 }
 
 unsigned long WebPluginImpl::GetNextResourceId() {
@@ -1128,7 +1142,8 @@ bool WebPluginImpl::InitiateHTTPRequest(unsigned long resource_id,
                                         int buf_len,
                                         const char* range_info,
                                         Referrer referrer_flag,
-                                        bool notify_redirects) {
+                                        bool notify_redirects,
+                                        bool check_mixed_scripting) {
   if (!client) {
     NOTREACHED();
     return false;
@@ -1146,6 +1161,7 @@ bool WebPluginImpl::InitiateHTTPRequest(unsigned long resource_id,
   info.request.setHTTPMethod(WebString::fromUTF8(method));
   info.pending_failure_notification = false;
   info.notify_redirects = notify_redirects;
+  info.check_mixed_scripting = check_mixed_scripting;
 
   if (range_info) {
     info.request.addHTTPHeaderField(WebString::fromUTF8("Range"),
@@ -1192,7 +1208,7 @@ void WebPluginImpl::InitiateHTTPRangeRequest(
       delegate_->CreateSeekableResourceClient(resource_id, range_request_id);
   InitiateHTTPRequest(
       resource_id, resource_client, complete_url, "GET", NULL, 0, range_info,
-      load_manually_ ? NO_REFERRER : PLUGIN_SRC, false);
+      load_manually_ ? NO_REFERRER : PLUGIN_SRC, false, false);
 }
 
 void WebPluginImpl::SetDeferResourceLoading(unsigned long resource_id,
