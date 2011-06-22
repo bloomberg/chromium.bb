@@ -1018,6 +1018,9 @@ void ExtensionPrefs::UpdateManifest(const Extension* extension) {
 
 FilePath ExtensionPrefs::GetExtensionPath(const std::string& extension_id) {
   const DictionaryValue* dict = GetExtensionPref(extension_id);
+  if (!dict)
+    return FilePath();
+
   std::string path;
   if (!dict->GetString(kPrefPath, &path))
     return FilePath();
