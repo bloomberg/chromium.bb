@@ -178,7 +178,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     // method exists because the hosts are presented as one message that depends
     // on what and how many hosts there are.
     static PermissionMessage CreateFromHostList(
-        const std::vector<std::string> hosts);
+        const std::vector<std::string>& hosts);
 
     // Gets the id of the permission message, which can be used in UMA
     // histograms.

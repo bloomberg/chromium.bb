@@ -499,8 +499,8 @@ void DownloadManager::CheckIfSuggestedPathExists(int32 download_id,
                         state));
 }
 
-void DownloadManager::OnPathExistenceAvailable(int32 download_id,
-                                               DownloadStateInfo new_state) {
+void DownloadManager::OnPathExistenceAvailable(
+    int32 download_id, const DownloadStateInfo& new_state) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   DownloadItem* download = GetActiveDownloadItem(download_id);

@@ -315,7 +315,7 @@ class DownloadManager
   // Called on the UI thread once the DownloadManager has determined whether the
   // suggested file path exists.
   void OnPathExistenceAvailable(int32 download_id,
-                                DownloadStateInfo new_state);
+                                const DownloadStateInfo& new_state);
 
   // Called back after a target path for the file to be downloaded to has been
   // determined, either automatically based on the suggested file name, or by

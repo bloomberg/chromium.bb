@@ -380,7 +380,7 @@ Extension::PermissionMessage Extension::PermissionMessage::CreateFromMessageId(
 
 // static
 Extension::PermissionMessage Extension::PermissionMessage::CreateFromHostList(
-    const std::vector<std::string> hosts) {
+    const std::vector<std::string>& hosts) {
   CHECK(hosts.size() > 0);
 
   MessageId message_id;
