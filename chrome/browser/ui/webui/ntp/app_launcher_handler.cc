@@ -405,7 +405,7 @@ void AppLauncherHandler::HandleLaunchApp(const ListValue* args) {
         old_contents ? CURRENT_TAB : NEW_FOREGROUND_TAB);
 
     // This will also destroy the handler, so do not perform any actions after.
-    if (new_contents != old_contents && browser->tab_count() > 1)
+    if (new_contents != old_contents && browser && browser->tab_count() > 1)
       browser->CloseTabContents(old_contents);
   }
 }
