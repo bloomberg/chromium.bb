@@ -1370,7 +1370,10 @@ void WebGraphicsContext3DInProcessImpl::shaderSource(
     ShaderSourceEntry* entry = result->second;
     DCHECK(entry);
     entry->source.reset(new char[length + 1]);
-    memcpy(entry->source.get(), source, (length + 1) * sizeof(char));
+    if (source)
+      memcpy(entry->source.get(), source, (length + 1) * sizeof(char));
+    else
+      entry->source[0] = '\0';
   } else {
     glShaderSource(shader, 1, &source, &length);
   }
