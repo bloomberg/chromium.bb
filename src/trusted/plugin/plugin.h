@@ -56,9 +56,6 @@ class Plugin : public PortableHandle {
                                  uint64_t loaded_bytes,
                                  uint64_t total_bytes) = 0;
   // Report an error that was encountered while loading a module.
-  // TODO(ncbray): remove this version of the function when done refactoring.
-  // http://code.google.com/p/nativeclient/issues/detail?id=1923
-  virtual void ReportLoadError(const nacl::string& error) = 0;
   virtual void ReportLoadError(const ErrorInfo& error_info) = 0;
   // Report loading a module was aborted, typically due to user action.
   virtual void ReportLoadAbort() = 0;

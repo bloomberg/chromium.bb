@@ -849,12 +849,15 @@ void PluginPpapi::ShutdownProxy() {
 void PluginPpapi::NaClManifestBufferReady(int32_t pp_error) {
   PLUGIN_PRINTF(("PluginPpapi::NaClManifestBufferReady (pp_error=%"
                  NACL_PRId32")\n", pp_error));
+  ErrorInfo error_info;
   set_manifest_url(nexe_downloader_.url());
   if (pp_error != PP_OK) {
     if (pp_error == PP_ERROR_ABORTED) {
       ReportLoadAbort();
     } else {
-      ReportLoadError("could not load manifest url.");
+      error_info.SetReport(ERROR_MANIFEST_LOAD_URL,
+                           "could not load manifest url.");
+      ReportLoadError(error_info);
     }
     return;
   }
@@ -862,12 +865,16 @@ void PluginPpapi::NaClManifestBufferReady(int32_t pp_error) {
   const std::deque<char>& buffer = nexe_downloader_.buffer();
   size_t buffer_size = buffer.size();
   if (buffer_size > kNaClManifestMaxFileBytes) {
-    ReportLoadError("manifest file too large.");
+    error_info.SetReport(ERROR_MANIFEST_TOO_LARGE,
+                         "manifest file too large.");
+    ReportLoadError(error_info);
     return;
   }
   nacl::scoped_array<char> json_buffer(new char[buffer_size + 1]);
   if (json_buffer == NULL) {
-    ReportLoadError("could not allocate manifest memory.");
+    error_info.SetReport(ERROR_MANIFEST_MEMORY_ALLOC,
+                         "could not allocate manifest memory.");
+    ReportLoadError(error_info);
     return;
   }
   std::copy(buffer.begin(), buffer.begin() + buffer_size, &json_buffer[0]);
@@ -881,6 +888,7 @@ void PluginPpapi::NaClManifestFileDidOpen(int32_t pp_error) {
                  NACL_PRId32")\n", pp_error));
   HistogramTimeSmall("NaCl.ManifestDownloadTime",
                      nexe_downloader_.TimeSinceOpenMilliseconds());
+  ErrorInfo error_info;
   // The manifest file was successfully opened.  Set the src property on the
   // plugin now, so that the full url is available to error handlers.
   set_manifest_url(nexe_downloader_.url());
@@ -891,7 +899,9 @@ void PluginPpapi::NaClManifestFileDidOpen(int32_t pp_error) {
     if (pp_error == PP_ERROR_ABORTED) {
       ReportLoadAbort();
     } else {
-      ReportLoadError("could not load manifest url.");
+      error_info.SetReport(ERROR_MANIFEST_LOAD_URL,
+                           "could not load manifest url.");
+      ReportLoadError(error_info);
     }
     return;
   }
@@ -902,13 +912,17 @@ void PluginPpapi::NaClManifestFileDidOpen(int32_t pp_error) {
   struct stat stat_buf;
   if (0 != fstat(dup_file_desc, &stat_buf)) {
     CLOSE(dup_file_desc);
-    ReportLoadError("could not stat manifest file.");
+    error_info.SetReport(ERROR_MANIFEST_STAT,
+                         "could not stat manifest file.");
+    ReportLoadError(error_info);
     return;
   }
   size_t bytes_to_read = static_cast<size_t>(stat_buf.st_size);
   if (bytes_to_read > kNaClManifestMaxFileBytes) {
     CLOSE(dup_file_desc);
-    ReportLoadError("manifest file too large.");
+    error_info.SetReport(ERROR_MANIFEST_TOO_LARGE,
+                         "manifest file too large.");
+    ReportLoadError(error_info);
     return;
   }
   FILE* json_file = fdopen(dup_file_desc, "rb");
@@ -917,13 +931,17 @@ void PluginPpapi::NaClManifestFileDidOpen(int32_t pp_error) {
                  dup_file_desc, reinterpret_cast<void*>(json_file)));
   if (json_file == NULL) {
     CLOSE(dup_file_desc);
-    ReportLoadError("could not open manifest file.");
+    error_info.SetReport(ERROR_MANIFEST_OPEN,
+                         "could not open manifest file.");
+    ReportLoadError(error_info);
     return;
   }
   nacl::scoped_array<char> json_buffer(new char[bytes_to_read + 1]);
   if (json_buffer == NULL) {
     fclose(json_file);
-    ReportLoadError("could not allocate manifest memory.");
+    error_info.SetReport(ERROR_MANIFEST_MEMORY_ALLOC,
+                         "could not allocate manifest memory.");
+    ReportLoadError(error_info);
     return;
   }
   // json_buffer could hold a large enough buffer that the system might need
@@ -941,7 +959,9 @@ void PluginPpapi::NaClManifestFileDidOpen(int32_t pp_error) {
                      "bytes_to_read=%"NACL_PRIuS"\n",
                      total_bytes_read, bytes_to_read));
       fclose(json_file);
-      ReportLoadError("could not read manifest file.");
+      error_info.SetReport(ERROR_MANIFEST_READ,
+                           "could not read manifest file.");
+      ReportLoadError(error_info);
       return;
     }
     total_bytes_read += bytes_this_read;
@@ -988,8 +1008,12 @@ void PluginPpapi::RequestNaClManifest(const nacl::string& url) {
   pp::Var nmf_resolved_url =
       url_util_->ResolveRelativeToURL(plugin_base_url(), pp::Var(url));
   if (!nmf_resolved_url.is_string()) {
-    ReportLoadError(nacl::string("could not resolve URL \"") + url.c_str() +
-                    "\" relative to \"" + plugin_base_url().c_str() + "\".");
+    ErrorInfo error_info;
+    error_info.SetReport(
+        ERROR_MANIFEST_RESOLVE_URL,
+        nacl::string("could not resolve URL \"") + url.c_str() +
+        "\" relative to \"" + plugin_base_url().c_str() + "\".");
+    ReportLoadError(error_info);
     return;
   }
   set_manifest_base_url(nmf_resolved_url.AsString());
@@ -1184,20 +1208,15 @@ void PluginPpapi::ReportLoadSuccess(LengthComputable length_computable,
 
 // TODO(ncbray): report UMA stats
 void PluginPpapi::ReportLoadError(const ErrorInfo& error_info) {
-  ReportLoadError(error_info.message());
-}
-
-
-// TODO(ncbray): eliminate
-void PluginPpapi::ReportLoadError(const nacl::string& error) {
   PLUGIN_PRINTF(("PluginPpapi::ReportLoadError (error='%s')\n",
-                 error.c_str()));
+                 error_info.message().c_str()));
   // Set the readyState attribute to indicate we need to start over.
   set_nacl_ready_state(DONE);
   // Report an error in lastError and on the JavaScript console.
-  nacl::string prefix("NaCl module load failed: ");
-  set_last_error_string(prefix + error);
-  browser_interface()->AddToConsole(instance_id(), prefix + error);
+  nacl::string message = nacl::string("NaCl module load failed: ") +
+      error_info.message();
+  set_last_error_string(message);
+  browser_interface()->AddToConsole(instance_id(), message);
   ShutdownProxy();
   // Inform JavaScript that loading encountered an error and is complete.
   EnqueueProgressEvent("error",
