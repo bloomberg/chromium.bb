@@ -8,7 +8,6 @@
 
 #include <string>
 
-#include "base/file_path.h"
 #include "base/memory/scoped_callback_factory.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop_proxy.h"
@@ -19,6 +18,7 @@
 #include "net/url_request/url_request_job.h"
 
 class GURL;
+class FilePath;
 
 namespace net {
 class FileStream;
@@ -66,7 +66,6 @@ class FileSystemURLRequestJob : public net::URLRequestJob {
   base::ScopedCallbackFactory<FileSystemURLRequestJob> callback_factory_;
   net::CompletionCallbackImpl<FileSystemURLRequestJob> io_callback_;
   scoped_ptr<net::FileStream> stream_;
-  FilePath absolute_file_path_;
   bool is_directory_;
   scoped_ptr<net::HttpResponseInfo> response_info_;
   int64 remaining_bytes_;

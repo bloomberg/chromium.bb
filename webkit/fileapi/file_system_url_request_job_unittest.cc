@@ -25,6 +25,7 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "net/base/load_flags.h"
+#include "net/base/mime_util.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/http/http_request_headers.h"
@@ -363,6 +364,24 @@ TEST_F(FileSystemURLRequestJobTest, Cancel) {
   request_.reset();
   MessageLoop::current()->RunAllPending();
   // If we get here, success! we didn't crash!
+}
+
+TEST_F(FileSystemURLRequestJobTest, GetMimeType) {
+  const char kFilename[] = "hoge.html";
+
+  std::string mime_type_direct;
+  FilePath::StringType extension =
+      FilePath().AppendASCII(kFilename).Extension();
+  if (!extension.empty())
+    extension = extension.substr(1);
+  EXPECT_TRUE(net::GetWellKnownMimeTypeFromExtension(
+      extension, &mime_type_direct));
+
+  TestRequest(CreateFileSystemURL(kFilename));
+
+  std::string mime_type_from_job;
+  request_->GetMimeType(&mime_type_from_job);
+  EXPECT_EQ(mime_type_direct, mime_type_from_job);
 }
 
 }  // namespace (anonymous)

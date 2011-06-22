@@ -5,6 +5,7 @@
 #include "webkit/fileapi/file_system_url_request_job.h"
 
 #include "base/compiler_specific.h"
+#include "base/file_path.h"
 #include "base/file_util_proxy.h"
 #include "base/message_loop.h"
 #include "base/platform_file.h"
@@ -171,12 +172,15 @@ bool FileSystemURLRequestJob::ReadRawData(net::IOBuffer* dest, int dest_size,
 }
 
 bool FileSystemURLRequestJob::GetMimeType(std::string* mime_type) const {
-  // URL requests should not block on the disk!  On Windows this goes to the
-  // registry.
-  //   http://code.google.com/p/chromium/issues/detail?id=59849
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
   DCHECK(request_);
-  return net::GetMimeTypeFromFile(absolute_file_path_, mime_type);
+  FilePath virtual_path;
+  if (CrackFileSystemURL(request_->url(), NULL, NULL, &virtual_path)) {
+    FilePath::StringType extension = virtual_path.Extension();
+    if (!extension.empty())
+      extension = extension.substr(1);
+    return net::GetWellKnownMimeTypeFromExtension(extension, mime_type);
+  }
+  return false;
 }
 
 void FileSystemURLRequestJob::SetExtraRequestHeaders(
@@ -224,7 +228,6 @@ void FileSystemURLRequestJob::DidGetMetadata(
   if (!request_)
     return;
 
-  absolute_file_path_ = platform_path;
   is_directory_ = file_info.is_directory;
 
   if (!byte_range_.ComputeBounds(file_info.size)) {
@@ -234,10 +237,11 @@ void FileSystemURLRequestJob::DidGetMetadata(
 
   if (!is_directory_) {
     base::FileUtilProxy::CreateOrOpen(
-        file_thread_proxy_, absolute_file_path_, kFileFlags,
+        file_thread_proxy_, platform_path, kFileFlags,
         callback_factory_.NewCallback(&FileSystemURLRequestJob::DidOpen));
-  } else
+  } else {
     NotifyHeadersComplete();
+  }
 }
 
 void FileSystemURLRequestJob::DidOpen(base::PlatformFileError error_code,
