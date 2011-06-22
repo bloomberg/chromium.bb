@@ -428,6 +428,9 @@ SkBitmap ImageOperations::ResizeSubpixel(const SkBitmap& source,
               b = SkGetPackedB32(src[2 * row_words]);
               a = SkGetPackedA32(src[1 * row_words]);
               break;
+            default:
+              NOTREACHED();
+              break;
           }
           break;
         case SkFontHost::kBGR_LCDOrder:
