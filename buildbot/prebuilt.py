@@ -468,12 +468,13 @@ class PrebuiltUploader(object):
 
     return True
 
-  def _UploadBoardTarball(self, board_path, url_suffix):
+  def _UploadBoardTarball(self, board_path, url_suffix, version):
     """Upload a tarball of the board at the specified path to Google Storage.
 
     Args:
       board_path: The path to the board dir.
       url_suffix: The remote subdirectory where we should upload the packages.
+      version: The version of the board.
     """
     remote_location = '%s/%s' % (self._upload_location.rstrip('/'), url_suffix)
     assert remote_location.startswith('gs://')
@@ -489,6 +490,11 @@ class PrebuiltUploader(object):
       cmd.append('.')
       cros_build_lib.RunCommand(cmd, cwd=os.path.join(cwd, boardname))
       remote_tarfile = '%s/%s.tbz2' % (remote_location.rstrip('/'), boardname)
+      # FIXME(zbehan): Temporary hack to upload amd64-host chroots to a
+      # different gs bucket. The right way is to do the upload in a separate
+      # pass of this script.
+      if boardname == 'amd64-host':
+        remote_tarfile = 'gs://chromiumos-sdk/cros-sdk-%s.tbz2' % version
       if _GsUpload((tarfile, remote_tarfile, self._acl)):
         sys.exit(1)
     finally:
@@ -555,7 +561,8 @@ class PrebuiltUploader(object):
     # Upload board tarballs in the background.
     if upload_board_tarball:
       tar_process = multiprocessing.Process(target=self._UploadBoardTarball,
-                                            args=(board_path, url_suffix))
+                                            args=(board_path, url_suffix,
+                                                  version))
       tar_process.start()
 
     # Upload prebuilts.

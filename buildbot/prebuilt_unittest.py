@@ -441,7 +441,7 @@ class TestSyncPrebuilts(unittest.TestCase):
     self.mox.StubOutWithMock(multiprocessing.Process, 'start')
     self.mox.StubOutWithMock(multiprocessing.Process, 'join')
     multiprocessing.Process.__init__(target=mox.IgnoreArg(),
-        args=(board_path, url_suffix))
+        args=(board_path, url_suffix, self.version))
     multiprocessing.Process.start()
     prebuilt.PrebuiltUploader._UploadPrebuilt(package_path,
         packages_url_suffix).AndReturn(True)
