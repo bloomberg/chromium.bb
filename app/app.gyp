@@ -15,7 +15,6 @@
       'type': 'executable',
       'dependencies': [
         'app_base',
-        'app_resources',
         '../base/base.gyp:test_support_base',
         '../testing/gtest.gyp:gtest',
       ],
