@@ -37,12 +37,14 @@
           <label for="all-pages" i18n-content="optionAllPages"></label>
         </div>
         <div>
-          <input id="print-pages" name="pages" type="radio"
-              i18n-values="aria-label:printPagesLabel;"/>
-          <label for="print-pages">
-            <input id="individual-pages" type="text"
-                i18n-values="placeholder:examplePageRangeText"/>
-          </label>
+          <div id="print-pages-div">
+            <input id="print-pages" name="pages" type="radio"
+                i18n-values="aria-label:printPagesLabel;"/>
+            <label for="print-pages">
+              <input id="individual-pages" type="text"
+                  i18n-values="placeholder:examplePageRangeText"/>
+            </label>
+          </div>
           <span id="individual-pages-hint" class="hint"
               i18n-content="pageRangeInstruction" aria-hidden="true"
               aria-live="polite"></span>

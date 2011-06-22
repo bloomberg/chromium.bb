@@ -611,8 +611,21 @@ input[type='radio']:focus {
   visibility: visible;
 }
 
-body #individual-pages {
- width: 81.5%;
+#print-pages-div {
+  -webkit-box-align: center;
+  -webkit-box-orient: horizontal;
+  display: -webkit-box;
+}
+
+#print-pages-div > label {
+  -webkit-box-flex: 1;
+  display: -webkit-box;
+}
+
+#individual-pages {
+  -webkit-box-flex: 1;
+  -webkit-margin-start: 5px;
+  display: block;
 }
 
 #print-summary {
