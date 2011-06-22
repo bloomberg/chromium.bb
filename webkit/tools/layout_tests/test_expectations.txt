@@ -19,9 +19,13 @@ BUGKOZ : fast/dom/register-protocol-handler.html = TEXT
 // given through eval to builtins (undefined). Test assumes that the global
 // object is given as receiver.
 BUGRICOW : fast/js/eval-var-decl.html = TEXT
-
 // Updated V8 error message for Object.defineProperty, test needs rebaselining.
 BUGRICOW : fast/js/function-prototype-descriptor.html = TEXT
+// This needs rebaselining because "native" is no longer a reserved word.
+BUGRICOW : fast/js/reserved-words.html = TEXT
+// Needs rebaselining because we fixed a bug that is in platform expectations.
+BUGRICOW : fast/js/parser-xml-close-comment.html = TEXT
+
 
 // Started crashing in the r89132 roll; canaries seem unaffected.
 BUGCR86570 MAC : http/tests/misc/acid3.html = IMAGE CRASH
