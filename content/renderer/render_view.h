@@ -725,7 +725,7 @@ class RenderView : public RenderWidget,
                          int message_id);
   void OnPpapiBrokerChannelCreated(int request_id,
                                    base::ProcessHandle broker_process_handle,
-                                   IPC::ChannelHandle handle);
+                                   const IPC::ChannelHandle& handle);
   void OnCancelDownload(int32 download_id);
   void OnClearFocusedNode();
   void OnClosePage();

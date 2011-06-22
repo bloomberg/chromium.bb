@@ -29,7 +29,7 @@ class ClipboardMessageFilter : public BrowserMessageFilter {
   void OnWriteObjectsSync(const ui::Clipboard::ObjectMap& objects,
                           base::SharedMemoryHandle bitmap_handle);
 
-  void OnIsFormatAvailable(ui::Clipboard::FormatType format,
+  void OnIsFormatAvailable(const ui::Clipboard::FormatType& format,
                            ui::Clipboard::Buffer buffer,
                            bool* result);
   void OnReadAvailableTypes(ui::Clipboard::Buffer buffer,
