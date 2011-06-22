@@ -111,6 +111,18 @@ void UserImageView::Init() {
       this, UTF16ToWide(l10n_util::GetStringUTF16(IDS_OK)));
   ok_button_->SetEnabled(false);
 
+  accel_ok_ = views::Accelerator(ui::VKEY_RETURN, false, false, false);
+  accel_up_ = views::Accelerator(ui::VKEY_UP, false, false, false);
+  accel_down_ = views::Accelerator(ui::VKEY_DOWN, false, false, false);
+  accel_left_ = views::Accelerator(ui::VKEY_LEFT, false, false, false);
+  accel_right_ = views::Accelerator(ui::VKEY_RIGHT, false, false, false);
+
+  AddAccelerator(accel_ok_);
+  AddAccelerator(accel_up_);
+  AddAccelerator(accel_down_);
+  AddAccelerator(accel_left_);
+  AddAccelerator(accel_right_);
+
   InitLayout();
 
   default_images_view_->Init();
@@ -228,6 +240,33 @@ void UserImageView::ButtonPressed(
   } else {
     NOTREACHED();
   }
+}
+
+bool UserImageView::AcceleratorPressed(const views::Accelerator& accel) {
+  if (accel == accel_ok_) {
+    if (default_images_view_->GetDefaultImageIndex() == -1) {
+      if (IsCapturing()) {
+        take_photo_view_->CaptureImage();
+      } else {
+        delegate_->OnPhotoTaken(take_photo_view_->GetImage());
+      }
+    } else {
+      delegate_->OnDefaultImageSelected(
+          default_images_view_->GetDefaultImageIndex());
+    }
+  } else if (accel == accel_up_) {
+    default_images_view_->SelectPreviousRowImage();
+  } else if (accel == accel_down_) {
+    default_images_view_->SelectNextRowImage();
+  } else if (accel == accel_left_) {
+    default_images_view_->SelectPreviousImage();
+  } else if (accel == accel_right_) {
+    default_images_view_->SelectNextImage();
+  } else {
+    return false;
+  }
+
+  return true;
 }
 
 void UserImageView::OnCapturingStarted() {

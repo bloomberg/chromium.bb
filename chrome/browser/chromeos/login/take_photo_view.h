@@ -59,6 +59,9 @@ class TakePhotoView : public views::View,
   // Sets the image indicating that the view is used only for image preview.
   void SetImage(SkBitmap* image);
 
+  // Captures the image, as if the button was pressed.
+  void CaptureImage();
+
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize();
 

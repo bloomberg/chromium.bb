@@ -69,6 +69,7 @@ class UserImageView : public views::View,
 
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize();
+  bool AcceleratorPressed(const views::Accelerator& accel);
 
   // Overridden from views::ButtonListener.
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
@@ -90,6 +91,12 @@ class UserImageView : public views::View,
   TakePhotoView* take_photo_view_;
   views::View* splitter_;
   views::NativeButton* ok_button_;
+
+  views::Accelerator accel_ok_;
+  views::Accelerator accel_up_;
+  views::Accelerator accel_down_;
+  views::Accelerator accel_left_;
+  views::Accelerator accel_right_;
 
   // Notifications receiver.
   Delegate* delegate_;

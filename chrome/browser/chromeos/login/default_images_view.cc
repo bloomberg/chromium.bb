@@ -46,6 +46,8 @@ const SkColor kImageBackgroundColor = SK_ColorWHITE;
 const int kImageStartId = 100;
 // ID for image control for video capture.
 const int kCaptureButtonId = 1000;
+// Index of the item for video capture.
+const int kCaptureButtonIndex = 0;
 // A number of the first buttons that don't correspond to any default image
 // (i.e. button to take a photo).
 const int kNonDefaultImageButtonsCount = 1;
@@ -119,6 +121,61 @@ void DefaultImagesView::SetDefaultImageIndex(int image_index) {
 
 void DefaultImagesView::ClearSelection() {
   selected_image_index_ = -1;
+}
+
+void DefaultImagesView::SelectNextImage() {
+  // If there's no selection, start at 0.
+  if (selected_image_index_ < 0)
+    selected_image_index_ = 0;
+
+  ++selected_image_index_;
+  if (selected_image_index_ >= kNonDefaultImageButtonsCount +
+                               kDefaultImagesCount) {
+    selected_image_index_ = 0;
+  }
+
+  UpdateSelectedImage();
+}
+
+void DefaultImagesView::SelectPreviousImage() {
+  // If there's no selection, start at 0.
+  if (selected_image_index_ < 0)
+    selected_image_index_ = 0;
+
+  --selected_image_index_;
+  if (selected_image_index_ < 0) {
+    selected_image_index_ = kNonDefaultImageButtonsCount +
+                            kDefaultImagesCount - 1;
+  }
+
+  UpdateSelectedImage();
+}
+
+void DefaultImagesView::SelectNextRowImage() {
+  // If there's no selection, start at 0.
+  if (selected_image_index_ < 0)
+    selected_image_index_ = 0;
+
+  selected_image_index_ += kColumnsCount;
+  if (selected_image_index_ >= kDefaultImagesCount +
+                               kNonDefaultImageButtonsCount) {
+    selected_image_index_ -= kDefaultImagesCount + kNonDefaultImageButtonsCount;
+  }
+
+  UpdateSelectedImage();
+}
+
+void DefaultImagesView::SelectPreviousRowImage() {
+  // If there's no selection, start at 0.
+  if (selected_image_index_ < 0)
+    selected_image_index_ = 0;
+
+  selected_image_index_ -= kColumnsCount;
+  if (selected_image_index_ < 0) {
+    selected_image_index_ += kDefaultImagesCount + kNonDefaultImageButtonsCount;
+  }
+
+  UpdateSelectedImage();
 }
 
 gfx::Size DefaultImagesView::GetPreferredSize() {
@@ -215,5 +272,21 @@ void DefaultImagesView::InitLayout() {
     }
   }
 }
+
+void DefaultImagesView::UpdateSelectedImage() {
+  if (selected_image_index_ == kCaptureButtonIndex) {
+    // If they selected the camera button, turn on the webcam.
+    if (delegate_)
+      delegate_->OnCaptureButtonClicked();
+  } else if (selected_image_index_ >= kNonDefaultImageButtonsCount &&
+             selected_image_index_ < kNonDefaultImageButtonsCount +
+                                     kDefaultImagesCount) {
+    if (delegate_)
+      delegate_->OnImageSelected(
+          (selected_image_index_ - kNonDefaultImageButtonsCount) %
+          kDefaultImagesCount);
+  }
+}
+
 
 }  // namespace chromeos

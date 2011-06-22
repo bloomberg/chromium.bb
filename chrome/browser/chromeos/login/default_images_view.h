@@ -48,6 +48,12 @@ class DefaultImagesView : public views::View,
   // Unselects the selected image if there's one.
   void ClearSelection();
 
+  // Used navigate the images via keyboard.
+  void SelectNextImage();
+  void SelectPreviousImage();
+  void SelectNextRowImage();
+  void SelectPreviousRowImage();
+
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize();
 
@@ -60,6 +66,9 @@ class DefaultImagesView : public views::View,
 
   // Initializes layout manager for this view.
   void InitLayout();
+
+  // Update the current selected image after keyboard navigation.
+  void UpdateSelectedImage();
 
   // Vector of image buttons corresponding to default images and take photo
   // button.
@@ -76,5 +85,3 @@ class DefaultImagesView : public views::View,
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_DEFAULT_IMAGES_VIEW_H_
-
-

@@ -263,6 +263,20 @@ void TakePhotoView::SetImage(SkBitmap* image) {
   user_image_->SetImage(image);
 }
 
+void TakePhotoView::CaptureImage() {
+  DCHECK(delegate_);
+  DCHECK(is_capturing_);
+  if (is_capturing_) {
+    is_capturing_ = false;
+    snapshot_button_->SetImage(
+        views::CustomButton::BS_NORMAL,
+        ResourceBundle::GetSharedInstance().GetBitmapNamed(
+            IDR_USER_IMAGE_RECYCLE));
+    delegate_->OnCapturingStopped();
+    snapshot_button_->SchedulePaint();
+  }
+}
+
 gfx::Size TakePhotoView::GetPreferredSize() {
   return gfx::Size(width(), height());
 }
