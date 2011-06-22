@@ -411,7 +411,6 @@ static void RememberTP(const NaClPcAddress src, NaClPcAddress target,
   const NaClMemorySize ioffset =  target - vstate->iadrbase;
 
   if (vstate->iadrbase <= target && target < vstate->iadrlimit) {
-    /* Remember address for checking later. */
     SetAdrTable(ioffset, vstate->kttable);
   }
   else if ((target & vstate->alignmask) == 0) {

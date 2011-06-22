@@ -38,6 +38,11 @@
 #include "native_client/src/trusted/validator_x86/ncvalidate_iter.h"
 #include "native_client/src/trusted/validator_x86/ncvalidator_registry.h"
 
+/* Flag defining if statistics should be printed for callback validator
+ * model.
+ */
+static Bool NACL_FLAGS_stats_print = FALSE;
+
 /* Flag defining the name of a hex text to be used as the code segment.
  */
 static char *NACL_FLAGS_hex_text = "";
@@ -160,7 +165,7 @@ static int AnalyzeSegmentCodeSegments(ncfile *ncf, const char *fname) {
   }
   result = NCValidateFinish(vstate);
   NCValidateResults(result, fname);
-  Stats_Print(vstate);
+  if (NACL_FLAGS_stats_print) Stats_Print(vstate);
   NCValidateFreeState(&vstate);
   SegmentDebug("Validated %s\n", fname);
   return result;
@@ -496,7 +501,11 @@ static void usage() {
       "\tOnly check for memory write software fault isolation.\n"
       "--attempts=N\n"
       "\tRun the validator on the nexe file (after loading) N times.\n"
-      "\tNote: this flag should only be used for profiling.\n",
+      "\tNote: this flag should only be used for profiling.\n"
+      "\n"
+      "Options (callback model):\n"
+      "--stats\n"
+      "\tPrint statistics collected by the validator.\n",
       NACL_TARGET_SUBARCH);
   exit(0);
 }
@@ -566,6 +575,7 @@ static Bool GrokABoolFlag(const char *arg) {
     { "--trace_insts", &NACL_FLAGS_validator_trace_instructions },
     { "-t", &NACL_FLAGS_print_timing },
     { "--use_iter", &NACL_FLAGS_use_iter },
+    { "--stats", &NACL_FLAGS_stats_print },
   };
   int i;
   for (i = 0; i < NACL_ARRAY_SIZE(flags); ++i) {
@@ -708,16 +718,26 @@ int main(int argc, const char *argv[]) {
     struct NCValidatorState *vstate;
     NCValidateSetCPUFeatures(&ncval_cpu_features);
     argc = ValidateSfiHexLoad(argc, argv, &data);
-    vstate = NCValidateInit(data.base, data.num_bytes,
+    vstate = NCValidateInit(data.base, data.base + data.num_bytes,
                             (uint8_t) NACL_FLAGS_block_alignment);
-    NCValidateSetErrorReporter(vstate, &kNCVerboseErrorReporter);
-    if (NACL_FLAGS_stubout_memory) {
-      NCValidateSetStubOutMode(vstate, 1);
+    if (vstate == NULL) {
+      printf("Unable to create validator state, quitting!\n");
+      result = 1;
+    } else {
+      NCValidateSetErrorReporter(vstate, &kNCVerboseErrorReporter);
+      if (NACL_FLAGS_stubout_memory) {
+        NCValidateSetStubOutMode(vstate, 1);
+      }
+      NCValidateSegment(&data.bytes[0], data.base, data.num_bytes, vstate);
+      NCValidateResults(NCValidateFinish(vstate),
+                        ((strcmp(NACL_FLAGS_hex_text, "-") == 0)
+                         ? "<hex_text>" : NACL_FLAGS_hex_text));
+      if (NACL_FLAGS_stats_print) Stats_Print(vstate);
+      NCValidateFreeState(&vstate);
+      NaClMaybeDecodeDataSegment(&data.bytes[0], data.base, data.num_bytes);
+      /* always succeed, so that the testing framework works. */
+      result = 0;
     }
-    NCValidateSegment(&data.bytes[0], data.base, data.num_bytes, vstate);
-    NCValidateResults(NCValidateFinish(vstate), "<hex_text>");
-    NCValidateFreeState(&vstate);
-    NaClMaybeDecodeDataSegment(&data.bytes[0], data.base, data.num_bytes);
   }
   NaClLogModuleFini();
   GioFileDtor(gout);

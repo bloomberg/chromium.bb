@@ -52,6 +52,11 @@ struct NCValTestCase {
 };
 
 struct NCValTestCase NCValTests[] = {
+  /* NOTE: Many of these tests are now in the textual testing structure in
+   * native_client/src/trusted/validator_x86/testdata/32 using
+   * files "test-n.hex", "test-n.ndis", "test-n.nvals", and
+   * "test-n.nvals16".
+   */
   {
     "test 1",
     "a first very simple test with an illegal inst.",
@@ -1138,6 +1143,9 @@ static void TestValidator(struct NCValTestCase *vtest) {
   free(byte0);
   rc = NCValidateFinish(vstate);
   do {
+    printf("vtest->sawfailure = %d, vstate->stats.sawfailure = %d\n",
+           vtest->sawfailure, vstate->stats.sawfailure);
+    Stats_Print(vstate);
     if (vtest->sawfailure ^ vstate->stats.sawfailure) break;
     if (vtest->instructions != vstate->stats.instructions) break;
     if (vtest->illegalinst != vstate->stats.illegalinst) break;

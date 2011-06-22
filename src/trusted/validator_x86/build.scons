@@ -551,12 +551,21 @@ for read_write in [False, True]:
    __AddNcvalSfiTests(read_write, cpu_features_all)
 
 # Run tests using ncval --use_iter=false on test files.
-def __AddNcvalSegmentTests(test_cpuid_all):
+def __AddNcvalSegmentTests(test_cpuid_all, test_stats, align_16):
   if env.Bit('target_x86_32'):
-    ext = 'nval'
     options = ['--use_iter=false',
                '--hex_text=-',
                '--max_errors=-1']
+    if (test_stats):
+      ext = 'nvals'
+      options.append('--stats')
+    else:
+      ext = 'nval'
+    if (align_16):
+      ext += '16'
+      options.append('--alignment=16')
+    else:
+      options.append('--alignment=32')
     if test_cpuid_all:
       options.append('--cpuid-all')
     else:
@@ -574,7 +583,9 @@ def __AddNcvalSegmentTests(test_cpuid_all):
                 ['small_tests', 'validator_tests'])
 
 for cpu_features_all in [False, True]:
-  __AddNcvalSegmentTests(cpu_features_all)
+  for test_stats in [False, True]:
+    for align_16 in [False, True]:
+      __AddNcvalSegmentTests(cpu_features_all, test_stats, align_16)
 
 # Run tests for stubout on test files. Assumes that the extension
 # sval implies to use the SFI model, while snval implies use of the
