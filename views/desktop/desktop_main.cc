@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/app_paths.h"
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/i18n/icu_util.h"
@@ -35,9 +34,7 @@ int main(int argc, char** argv) {
   // The exit manager is in charge of calling the dtors of singleton objects.
   base::AtExitManager exit_manager;
 
-  app::RegisterPathProvider();
   ui::RegisterPathProvider();
-
   icu_util::Initialize();
 
   ResourceBundle::InitSharedInstance("en-US");

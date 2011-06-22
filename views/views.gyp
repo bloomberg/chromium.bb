@@ -61,7 +61,6 @@
       'target_name': 'views',
       'type': 'static_library',
       'dependencies': [
-        '../app/app.gyp:app_base',
         '../app/app.gyp:app_resources',
         '../base/base.gyp:base',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',

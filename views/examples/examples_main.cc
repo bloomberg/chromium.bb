@@ -4,7 +4,6 @@
 
 #include "views/examples/examples_main.h"
 
-#include "app/app_paths.h"
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/i18n/icu_util.h"
@@ -76,9 +75,7 @@ void ExamplesMain::Run() {
   // The exit manager is in charge of calling the dtors of singleton objects.
   base::AtExitManager exit_manager;
 
-  app::RegisterPathProvider();
   ui::RegisterPathProvider();
-
   icu_util::Initialize();
 
   ResourceBundle::InitSharedInstance("en-US");
