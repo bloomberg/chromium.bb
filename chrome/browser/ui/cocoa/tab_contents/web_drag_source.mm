@@ -6,7 +6,6 @@
 
 #include <sys/param.h>
 
-#include "app/mac/nsimage_cache.h"
 #include "base/file_path.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
@@ -26,6 +25,7 @@
 #include "net/base/file_stream.h"
 #include "net/base/net_util.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
+#include "ui/gfx/mac/nsimage_cache.h"
 #include "webkit/glue/webdropdata.h"
 
 using base::SysNSStringToUTF8;
@@ -440,7 +440,7 @@ void PromiseWriterTask::Run() {
     return dragImage_;
 
   // Default to returning a generic image.
-  return app::mac::GetCachedImageWithName(@"nav.pdf");
+  return gfx::GetCachedImageWithName(@"nav.pdf");
 }
 
 @end  // @implementation WebDragSource (Private)

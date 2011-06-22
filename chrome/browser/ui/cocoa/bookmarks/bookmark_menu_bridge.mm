@@ -4,7 +4,6 @@
 
 #import <AppKit/AppKit.h>
 
-#include "app/mac/nsimage_cache.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #import "chrome/browser/app_controller_mac.h"
@@ -20,6 +19,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/mac/nsimage_cache.h"
 
 BookmarkMenuBridge::BookmarkMenuBridge(Profile* profile)
     : menuIsValid_(false),
@@ -298,7 +298,7 @@ void BookmarkMenuBridge::ConfigureMenuItem(const BookmarkNode* node,
   // Either we do not have a loaded favicon or the conversion from SkBitmap
   // failed. Use the default site image instead.
   if (!favicon)
-    favicon = app::mac::GetCachedImageWithName(@"nav.pdf");
+    favicon = gfx::GetCachedImageWithName(@"nav.pdf");
   [item setImage:favicon];
 }
 

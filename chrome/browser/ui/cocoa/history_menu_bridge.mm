@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/cocoa/history_menu_bridge.h"
 
-#include "app/mac/nsimage_cache.h"
 #include "base/callback.h"
 #include "base/stl_util-inl.h"
 #include "base/string_number_conversions.h"
@@ -29,6 +28,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/mac/nsimage_cache.h"
 
 namespace {
 
@@ -93,7 +93,7 @@ HistoryMenuBridge::HistoryMenuBridge(Profile* profile)
   }
 
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  default_favicon_.reset([app::mac::GetCachedImageWithName(@"nav.pdf") retain]);
+  default_favicon_.reset([gfx::GetCachedImageWithName(@"nav.pdf") retain]);
 
   // Set the static icons in the menu.
   NSMenuItem* item = [HistoryMenu() itemWithTag:IDC_SHOW_HISTORY];

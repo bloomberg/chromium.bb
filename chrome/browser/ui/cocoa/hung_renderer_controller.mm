@@ -6,7 +6,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "app/mac/nsimage_cache.h"
 #include "base/mac/mac_util.h"
 #include "base/process_util.h"
 #include "base/sys_string_conversions.h"
@@ -14,12 +13,12 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
 #import "chrome/browser/ui/cocoa/multi_key_equivalent_button.h"
+#import "chrome/browser/ui/cocoa/tab_contents/favicon_util.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/logging_chrome.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#import "chrome/browser/ui/cocoa/tab_contents/favicon_util.h"
 #include "content/common/result_codes.h"
 #include "grit/app_resources.h"
 #include "grit/chromium_strings.h"
@@ -35,7 +34,7 @@ namespace {
 // We only support showing one of these at a time per app.  The
 // controller owns itself and is released when its window is closed.
 HungRendererController* g_instance = NULL;
-}  // end namespace
+}  // namespace
 
 @implementation HungRendererController
 

@@ -1,15 +1,15 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "chrome/browser/ui/cocoa/tab_contents/web_contents_drag_source.h"
 
-#include "app/mac/nsimage_cache.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/tab_contents/tab_contents_view_mac.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "ui/gfx/mac/nsimage_cache.h"
 
 namespace {
 
@@ -20,7 +20,7 @@ NSImage* MakeDragImage() {
   // WebKit/WebKit/mac/Misc/WebNSViewExtras.m: |-_web_DragImageForElement:...|).
 
   // Default to returning a generic image.
-  return app::mac::GetCachedImageWithName(@"nav.pdf");
+  return gfx::GetCachedImageWithName(@"nav.pdf");
 }
 
 // Flips screen and point coordinates over the y axis to work with webkit

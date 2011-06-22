@@ -9,7 +9,6 @@
 #include <limits>
 #include <string>
 
-#include "app/mac/nsimage_cache.h"
 #include "base/command_line.h"
 #include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
@@ -65,6 +64,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/mac/nsimage_cache.h"
 
 NSString* const kTabStripNumberOfTabsChanged = @"kTabStripNumberOfTabsChanged";
 
@@ -371,7 +371,7 @@ class NotificationBridge : public NotificationObserver {
     permanentSubviews_.reset([[NSMutableArray alloc] init]);
 
     defaultFavicon_.reset(
-        [app::mac::GetCachedImageWithName(@"nav.pdf") retain]);
+        [gfx::GetCachedImageWithName(@"nav.pdf") retain]);
 
     [self setIndentForControls:[[self class] defaultIndentForControls]];
 

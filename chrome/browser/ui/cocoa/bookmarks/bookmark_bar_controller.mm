@@ -4,7 +4,6 @@
 
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
 
-#include "app/mac/nsimage_cache.h"
 #include "base/mac/mac_util.h"
 #include "base/metrics/histogram.h"
 #include "base/sys_string_conversions.h"
@@ -51,6 +50,7 @@
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/mac/nsimage_cache.h"
 
 // Bookmark bar state changing and animations
 //
@@ -243,7 +243,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     folderImage_.reset(
         [rb.GetNativeImageNamed(IDR_BOOKMARK_BAR_FOLDER) retain]);
-    defaultImage_.reset([app::mac::GetCachedImageWithName(@"nav.pdf") retain]);
+    defaultImage_.reset([gfx::GetCachedImageWithName(@"nav.pdf") retain]);
 
     // Register for theme changes, bookmark button pulsing, ...
     NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];

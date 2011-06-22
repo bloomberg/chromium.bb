@@ -26,9 +26,6 @@
       'sources': [
         'app_paths.h',
         'app_paths.cc',
-        'mac/nsimage_cache.h',
-        'mac/nsimage_cache.mm',
-        'mac/scoped_nsdisable_screen_updates.h',
         'sql/connection.cc',
         'sql/connection.h',
         'sql/diagnostic_error_delegate.h',

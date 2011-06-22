@@ -6,11 +6,11 @@
 
 #import <AppKit/AppKit.h>
 
-#include "app/mac/nsimage_cache.h"
 #include "base/mac/mac_util.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "skia/ext/skia_utils_mac.h"
+#include "ui/gfx/mac/nsimage_cache.h"
 
 namespace mac {
 
@@ -29,7 +29,7 @@ NSImage* FaviconForTabContents(TabContentsWrapper* contents) {
     }
   }
 
-  return app::mac::GetCachedImageWithName(@"nav.pdf");
+  return gfx::GetCachedImageWithName(@"nav.pdf");
 }
 
 }  // namespace mac

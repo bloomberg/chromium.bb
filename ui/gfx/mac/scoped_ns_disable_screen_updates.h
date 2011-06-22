@@ -1,17 +1,16 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_MAC_SCOPED_NSDISABLE_SCREEN_UPDATES_H_
-#define APP_MAC_SCOPED_NSDISABLE_SCREEN_UPDATES_H_
+#ifndef UI_GFX_MAC_SCOPED_NS_DISABLE_SCREEN_UPDATES_H_
+#define UI_GFX_MAC_SCOPED_NS_DISABLE_SCREEN_UPDATES_H_
 #pragma once
 
 #import <Cocoa/Cocoa.h>
 
 #include "base/basictypes.h"
 
-namespace app {
-namespace mac {
+namespace gfx {
 
 // A stack-based class to disable Cocoa screen updates. When instantiated, it
 // disables screen updates and enables them when destroyed. Update disabling
@@ -31,7 +30,6 @@ class ScopedNSDisableScreenUpdates {
   DISALLOW_COPY_AND_ASSIGN(ScopedNSDisableScreenUpdates);
 };
 
-}  // namespace mac
-}  // namespace app
+}  // namespace gfx
 
-#endif  // APP_MAC_SCOPED_NSDISABLE_SCREEN_UPDATES_H_
+#endif  // UI_GFX_MAC_SCOPED_NS_DISABLE_SCREEN_UPDATES_H_

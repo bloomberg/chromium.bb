@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/cocoa/notifications/balloon_controller.h"
 
-#include "app/mac/nsimage_cache.h"
 #import "base/mac/cocoa_protocols.h"
 #include "base/mac/mac_util.h"
 #import "base/memory/scoped_nsobject.h"
@@ -24,6 +23,7 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/mac/nsimage_cache.h"
 
 namespace {
 
@@ -60,7 +60,7 @@ const int kRightMargin = 2;
   DCHECK([self window]);
   DCHECK_EQ(self, [[self window] delegate]);
 
-  NSImage* image = app::mac::GetCachedImageWithName(@"balloon_wrench.pdf");
+  NSImage* image = gfx::GetCachedImageWithName(@"balloon_wrench.pdf");
   [optionsButton_ setDefaultImage:image];
   [optionsButton_ setDefaultOpacity:0.6];
   [optionsButton_ setHoverImage:image];

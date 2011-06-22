@@ -6,8 +6,6 @@
 
 #include <Carbon/Carbon.h>
 
-#include "app/mac/scoped_nsdisable_screen_updates.h"
-#include "app/mac/nsimage_cache.h"
 #include "base/mac/mac_util.h"
 #import "base/memory/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
@@ -46,10 +44,10 @@
 #import "chrome/browser/ui/cocoa/tab_contents/previewable_contents_controller.h"
 #import "chrome/browser/ui/cocoa/tab_contents/sad_tab_controller.h"
 #import "chrome/browser/ui/cocoa/tab_contents/tab_contents_controller.h"
+#import "chrome/browser/ui/cocoa/tabpose_window.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_view.h"
-#import "chrome/browser/ui/cocoa/tabpose_window.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -63,6 +61,8 @@
 #include "grit/locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+#include "ui/gfx/mac/nsimage_cache.h"
+#include "ui/gfx/mac/scoped_ns_disable_screen_updates.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
 
@@ -542,7 +542,7 @@
 // going away) will again call to close the window when it's finally ready.
 - (BOOL)windowShouldClose:(id)sender {
   // Disable updates while closing all tabs to avoid flickering.
-  app::mac::ScopedNSDisableScreenUpdates disabler;
+  gfx::ScopedNSDisableScreenUpdates disabler;
   // Give beforeunload handlers the chance to cancel the close before we hide
   // the window below.
   if (!browser_->ShouldCloseWindow())
@@ -1244,7 +1244,7 @@
 
 - (TabWindowController*)detachTabToNewWindow:(TabView*)tabView {
   // Disable screen updates so that this appears as a single visual change.
-  app::mac::ScopedNSDisableScreenUpdates disabler;
+  gfx::ScopedNSDisableScreenUpdates disabler;
 
   // Fetch the tab contents for the tab being dragged.
   int index = [tabStripController_ modelIndexForTabView:tabView];
@@ -1644,7 +1644,7 @@
 
   // Install the image into the badge view and size the view appropriately.
   // Hide it for now; positioning and showing will be done by the layout code.
-  NSImage* image = app::mac::GetCachedImageWithName(@"otr_icon.pdf");
+  NSImage* image = gfx::GetCachedImageWithName(@"otr_icon.pdf");
   incognitoBadge_.reset([[IncognitoImageView alloc] init]);
   [incognitoBadge_ setImage:image];
   [incognitoBadge_ setFrameSize:[image size]];

@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/mac/nsimage_cache.h"
 #include "base/memory/scoped_nsobject.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -13,6 +12,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/mac/nsimage_cache.h"
 
 // Simple class to remember how many mouseEntered: and mouseExited:
 // calls it gets.  Only used by BookmarkMouseForwarding but placed
@@ -66,7 +66,7 @@ TEST_F(BookmarkButtonCellTest, IconOnlySqueeze) {
   [[test_window() contentView] addSubview:view];
 
   scoped_nsobject<NSImage> image(
-      [app::mac::GetCachedImageWithName(@"nav.pdf") retain]);
+      [gfx::GetCachedImageWithName(@"nav.pdf") retain]);
   EXPECT_TRUE(image.get());
 
   NSRect r = NSMakeRect(0, 0, 100, 100);

@@ -6,7 +6,6 @@
 
 #include <Carbon/Carbon.h>  // kVK_Return
 
-#include "app/mac/nsimage_cache.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -26,6 +25,7 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/mac/nsimage_cache.h"
 #include "ui/gfx/rect.h"
 
 // Focus-handling between |field_| and |model_| is a bit subtle.
@@ -156,7 +156,7 @@ NSImage* OmniboxViewMac::ImageForResource(int resource_id) {
   }
 
   if (image_name) {
-    if (NSImage* image = app::mac::GetCachedImageWithName(image_name)) {
+    if (NSImage* image = gfx::GetCachedImageWithName(image_name)) {
       return image;
     } else {
       NOTREACHED()

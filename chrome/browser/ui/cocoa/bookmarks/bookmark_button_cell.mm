@@ -4,16 +4,16 @@
 
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button_cell.h"
 
-#include "app/mac/nsimage_cache.h"
 #include "base/logging.h"
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/bookmarks/bookmark_model.h"
-#import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button.h"
+#import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu.h"
 #import "chrome/browser/ui/cocoa/image_utils.h"
 #include "content/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+#include "ui/gfx/mac/nsimage_cache.h"
 
 
 @interface BookmarkButtonCell(Private)
@@ -208,7 +208,7 @@
   drawFolderArrow_ = draw;
   if (draw && !arrowImage_) {
     arrowImage_.reset(
-        [app::mac::GetCachedImageWithName(@"menu_hierarchy_arrow.pdf") retain]);
+        [gfx::GetCachedImageWithName(@"menu_hierarchy_arrow.pdf") retain]);
   }
 }
 

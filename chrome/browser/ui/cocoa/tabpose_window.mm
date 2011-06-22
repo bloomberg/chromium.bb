@@ -8,7 +8,6 @@
 
 #include <algorithm>
 
-#include "app/mac/nsimage_cache.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/scoped_callback_factory.h"

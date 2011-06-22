@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "app/mac/nsimage_cache.h"
 #include "base/mac/mac_util.h"
 #include "base/memory/singleton.h"
 #include "base/string_util.h"
