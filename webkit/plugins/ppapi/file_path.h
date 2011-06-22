@@ -30,7 +30,7 @@ class PepperFilePath {
   };
 
   PepperFilePath();
-  PepperFilePath(Domain d, FilePath p);
+  PepperFilePath(Domain d, const FilePath& p);
 
   static PepperFilePath MakeAbsolute(const FilePath& path);
   static PepperFilePath MakeModuleLocal(PluginModule* module,

@@ -221,7 +221,7 @@ void GetJavaDirectory(std::set<FilePath>* plugin_dirs) {
   }
 }
 
-bool IsValid32BitImage(FilePath path) {
+bool IsValid32BitImage(const FilePath& path) {
   file_util::MemoryMappedFile plugin_image;
 
   if (!plugin_image.InitializeAsImageSection(path))

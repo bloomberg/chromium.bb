@@ -72,8 +72,10 @@ class NET_API WebSocket : public base::RefCountedThreadSafe<WebSocket>,
   };
   class Request {
    public:
-    Request(const GURL& url, const std::string protocol,
-            const std::string origin, const std::string location,
+    Request(const GURL& url,
+            const std::string& protocol,
+            const std::string& origin,
+            const std::string& location,
             ProtocolVersion version,
             net::URLRequestContext* context)
         : url_(url),

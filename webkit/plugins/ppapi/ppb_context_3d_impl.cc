@@ -40,7 +40,8 @@ bool ShmToHandle(base::SharedMemory* shm,
     return true;
 }
 
-PP_Context3DTrustedState PPStateFromGPUState(gpu::CommandBuffer::State s) {
+PP_Context3DTrustedState PPStateFromGPUState(
+    const gpu::CommandBuffer::State& s) {
   PP_Context3DTrustedState state = {
       s.num_entries,
       s.get_offset,

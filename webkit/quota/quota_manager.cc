@@ -265,7 +265,7 @@ class QuotaManager::UsageAndQuotaDispatcherTaskForTemporary
     : public QuotaManager::UsageAndQuotaDispatcherTask {
  public:
   UsageAndQuotaDispatcherTaskForTemporary(
-      QuotaManager* manager, const std::string host)
+      QuotaManager* manager, const std::string& host)
       : UsageAndQuotaDispatcherTask(manager, host, kStorageTypeTemporary) {}
 
  protected:
@@ -309,7 +309,7 @@ class QuotaManager::UsageAndQuotaDispatcherTaskForPersistent
     : public QuotaManager::UsageAndQuotaDispatcherTask {
  public:
   UsageAndQuotaDispatcherTaskForPersistent(
-      QuotaManager* manager, const std::string host)
+      QuotaManager* manager, const std::string& host)
       : UsageAndQuotaDispatcherTask(manager, host, kStorageTypePersistent) {}
 
  protected:
