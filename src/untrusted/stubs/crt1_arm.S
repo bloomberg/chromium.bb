@@ -72,20 +72,3 @@ _start:
 
     /* unreachable */
     bkpt    0x7777
-
-/* ====================================================================== */
-/* Some runtime code for ARM */
-/* NOTE: this code can only clobber r0 and hence is hand coded */
-/* Access to tls. We also have an unused trampoline version of this */
-/* ====================================================================== */
-    .align NACL_ARM_BUNDLE_SIZE_LOG
-    .global __aeabi_read_tp
-
-__aeabi_read_tp:
-    /* the low order bits of r9 are for service runtime use only */
-    mov r0, r9, lsr #NACL_PAGESHIFT
-    lsl r0, #NACL_PAGESHIFT
-
-    .align NACL_ARM_BUNDLE_SIZE_LOG
-    bic lr, lr, #NACL_CONTROL_FLOW_MASK
-    bx lr

@@ -44,17 +44,18 @@ else:
   bookends = [env.ComponentObject('crti', ['crti_%s.S' % platform]),
               env.ComponentObject('crtn', ['crtn_%s.S' % platform])]
 
-
 # NOTE: we only provide setjmp/longjmp for pnacl, nacl-gcc obtains
 # them from newlib, while pnacl's newlib is arch neutral
-if env.Bit('bitcode'):
-  setjmp = [env.StaticObject('setjmp.o', ['setjmp_%s.S' % platform])]
-  # TODO(mcgrathr): Temporary kludge should go away, see ../nacl/tls_params.h.
-  tls = [env.StaticObject('tls_params.o', 'tls_params.c')]
-else:
-  setjmp = []
-  tls = []
+platform_objs = []
 
-crt_platform = env.StaticLibrary('crt_platform', tls + setjmp)
+if env.Bit('bitcode'):
+  platform_objs.append(env.StaticObject('setjmp.o', ['setjmp_%s.S' % platform]))
+  # TODO(mcgrathr): Temporary kludge should go away, see ../nacl/tls_params.h.
+  platform_objs.append(env.StaticObject('tls_params.o', 'tls_params.c'))
+
+if env.Bit('target_arm'):
+  platform_objs.append('aeabi_read_tp.S')
+
+crt_platform = env.StaticLibrary('crt_platform', platform_objs)
 
 env.AddObjectToSdk([crt1, crt_platform] + bookends, is_platform=True)
