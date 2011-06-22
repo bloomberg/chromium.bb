@@ -321,6 +321,7 @@ made in recent releases.
 </p>
 
 <ul>
+  <li> <a href="#13">Google Chrome 13</a> </li>
   <li> <a href="#12">Google Chrome 12</a> </li>
   <li> <a href="#11">Google Chrome 11</a> </li>
   <li> <a href="#10">Google Chrome 10</a> </li>
@@ -330,6 +331,53 @@ made in recent releases.
   <li> <a href="#6">Google Chrome 6</a> </li>
 </ul>
 
+<h2 id="13"> Google Chrome 13 </h2>
+
+<h4> New APIs </h4>
+  <ul>
+    <li> The <a href="proxy.html">proxy API</a>
+      lets extensions manage Chrome's proxy settings.
+      </li>
+    <li> The
+      <a href="types.html#type-ChromeSetting">chrome.types.ChromeSetting</a> prototype
+      provides an interface to browser settings;
+      it's used by the proxy API.
+      </li>
+    <li> <em>Chrome OS only:</em>
+      The <a href="fileBrowserHandler.html">fileBrowserHandler API</a>
+      lets you extend the Chrome OS file browser.
+      </li>
+  </ul>
+
+<h4> Manifest changes </h4>
+  <ul>
+    <li> A new <code>exclude_matches</code> item
+      in the "content_scripts" field
+      lets you target your content script more precisely.
+      For details, see
+      <a href="content_scripts.html#match-patterns-globs">Match patterns and globs</a>.
+      </li>
+    <li> New "clipboardRead" and "clipboardWrite"
+      <a href="manifest.html#permissions">permissions</a>
+      specify capabilities for <code>document.execCommand()</code>.
+      </li>
+  </ul>
+
+<h4> Additions to existing APIs </h4>
+  <ul>
+    <li> Content scripts can now make
+      <a href="xhr.html">cross-origin XMLHttpRequests</a>
+      to the same sites that their parent extension can,
+      eliminating the need to relay these requests
+      through a background page.
+      </li>
+    <li> You can now use <code>@run-at</code>
+      in an imported Greasemonkey script
+      to control when the script is injected.
+      It works the same way as
+      <a href="content_scripts.html#run_at"><code>run_at</code></a>
+      in content scripts.
+  </li></ul>
 
 <h2 id="12"> Google Chrome 12 </h2>
 

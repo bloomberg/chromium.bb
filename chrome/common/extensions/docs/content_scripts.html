@@ -400,9 +400,6 @@ They <b>cannot</b>:
   <li>
     Use variables or functions defined by web pages or by other content scripts
   </li>
-  <li>
-    Make <a href="xhr.html">cross-site XMLHttpRequests</a>
-  </li>
 </ul>
 
 <p>
@@ -413,6 +410,9 @@ and request extension actions
 by exchanging <a href="messaging.html">messages</a>
 with their parent extension.
 Content scripts can also
+make <a href="xhr.html">cross-site XMLHttpRequests</a>
+to the same sites as their parent extensions,
+and they can
 <a href="#host-page-communication">communicate with web pages</a>
 using the shared DOM.
 For more insight into what content scripts can and can't do,
@@ -504,7 +504,7 @@ can have the following properties:</p>
     <td><em>Optional.</em>
     The list of JavaScript files to be injected into matching pages. These are injected in the order they appear in this array.</td>
   </tr>
-  <tr>
+  <tr id="run_at">
     <td><code>run_at<code></code></code></td>
     <td>string</td>
     <td><em>Optional.</em>
@@ -731,8 +731,8 @@ document.getElementById('myCustomEventDiv').addEventListener('myCustomEvent', fu
 <p>When writing a content script, you should be aware of two security issues.
 First, be careful not to introduce security vulnerabilities into the web site
 your content script is injected into.  For example, if your content script
-receives content from another web site (e.g., by <a href="messaging.html">asking your background page to make an
-XMLHttpRequest</a>), be careful to filter that content for <a href="http://en.wikipedia.org/wiki/Cross-site_scripting">cross-site
+receives content from another web site (for example, by making an <a href="messaging.html">XMLHttpRequest</a>),
+be careful to filter that content for <a href="http://en.wikipedia.org/wiki/Cross-site_scripting">cross-site
 scripting</a> attacks before injecting the content into the current page.
 For example, prefer to inject content via innerText rather than innerHTML.
 Be especially careful when retrieving HTTP content on an HTTPS page because
@@ -790,27 +790,15 @@ document.getElementById("someImage").src = imgURL;
 <h2 id="examples"> Examples </h2>
 
 <p>
-The 
-<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/howto/contentscript_xhr">contentscript_xhr</a> example
-shows how an extension can perform
-cross-site requests for its content script.
-You can find other simple examples of communication via messages in the
-<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/messaging/">examples/api/messaging</a>
-directory.
-</p>
-
-<p>
-See
-<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/browserAction/make_page_red/">make_page_red</a> and
-<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/email_this_page/">email_this_page</a>
+You can find many
+<a href="samples.html#script">examples that use content scripts</a>.
+A simple example of communication via messages is in the
+<a href="samples.html#51a83d2ba3a32e3ff1bdb624d4e18ccec4c4038e">timer sample</a>.
+See <a href="samples.html#ede3c47b7757245be42ec33fd5ca63df4b490066">make_page_red</a> and
+<a href="samples.html#028eb5364924344029bcbe1d527f132fc72b34e5">email_this_page</a>
 for examples of programmatic injection.
-
 </p>
 
-<p>
-For more examples and for help in viewing the source code, see
-<a href="samples.html">Samples</a>.
-</p>
 
 <h2 id="videos"> Videos </h2>
 

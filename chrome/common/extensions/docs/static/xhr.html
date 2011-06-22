@@ -12,13 +12,14 @@ An extension can talk to remote servers outside of its origin,
 as long as it first requests cross-origin permissions.</p>
 
 <p class="note">
-<b>Note:</b>
-Content scripts can't directly make cross-origin requests.
-However, a content script can
+<b>Version note:</b>
+As of Chrome 13,
+content scripts can make cross-origin requests
+to the same servers as the rest of the extension.
+Before Chrome 13, a content script couldn't directly make requests;
+instead, it had to
 send a message to its parent extension
-that asks the extension to make a cross-origin request.
-For an example of this technique, see the
-<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/howto/contentscript_xhr">contentscript_xhr example</a>.
+asking the extension to make a cross-origin request.
 </p>
 
 <h2 id="extension-origin">Extension origin</h2>
