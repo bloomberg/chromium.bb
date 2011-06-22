@@ -11,6 +11,7 @@ import os.path
 import shutil
 import subprocess
 import sys
+import time
 import traceback
 
 
@@ -114,17 +115,50 @@ def TryToCleanPath(path):
         pass
 
 
-def RemoveDirectory(path):
-  """
-  Remove a directory if it exists.
-  Does not mask failures.
-  """
+def Retry(op, *args):
+  # Windows seems to be prone to having commands that delete files or
+  # directories fail.  We currently do not have a complete understanding why,
+  # and as a workaround we simply retry the command a few times.
+  # It appears that file locks are hanging around longer than they should.  This
+  # may be a secondary effect of processes hanging around longer than they
+  # should.  This may be because when we kill a browser sel_ldr does not exit
+  # immediately, etc.
+  # Virus checkers can also accidently prevent files from being deleted, but
+  # that shouldn't be a problem on the bots.
+  if GetHostPlatform() == 'win':
+    count = 0
+    while True:
+      try:
+        op(*args)
+        break
+      except Exception:
+        print "FAILED: %s %s" % (op.__name__, repr(args))
+        count += 1
+        if count < 5:
+          print "RETRY: %s %s" % (op.__name__, repr(args))
+          time.sleep(pow(2, count))
+        else:
+          # Don't mask the exception.
+          raise
+  else:
+    op(*args)
+
+
+def _RemoveDirectory(path):
   print 'Removing %s' % path
   if os.path.exists(path):
     shutil.rmtree(path)
     print '    Succeeded.'
   else:
     print '    Path does not exist, nothing to do.'
+
+
+def RemoveDirectory(path):
+  """
+  Remove a directory if it exists.
+  Does not mask failures, although it does retry a few times on Windows.
+  """
+  Retry(_RemoveDirectory, path)
 
 
 # This is a sanity check so Command can print out better error information.

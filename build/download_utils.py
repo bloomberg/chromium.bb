@@ -117,19 +117,30 @@ def WriteSourceStamp(path, url):
 
 
 def Retry(op, *args):
+  # Windows seems to be prone to having commands that delete files or
+  # directories fail.  We currently do not have a complete understanding why,
+  # and as a workaround we simply retry the command a few times.
+  # It appears that file locks are hanging around longer than they should.  This
+  # may be a secondary effect of processes hanging around longer than they
+  # should.  This may be because when we kill a browser sel_ldr does not exit
+  # immediately, etc.
+  # Virus checkers can also accidently prevent files from being deleted, but
+  # that shouldn't be a problem on the bots.
   if sys.platform in ('win32', 'cygwin'):
-    for i in xrange(5):
-      if i:
-        sys.stdout.write("RETRY: %s %s\n" % (op.__name__, repr(args)))
-        time.sleep(pow(2, i))
+    count = 0
+    while True:
       try:
         op(*args)
         break
       except Exception:
-        pass
-    else:
-      sys.stdout.write("FAILED: %s %s\n" % (op.__name__, repr(args)))
-      raise
+        sys.stdout.write("FAILED: %s %s\n" % (op.__name__, repr(args)))
+        count += 1
+        if count < 5:
+          sys.stdout.write("RETRY: %s %s\n" % (op.__name__, repr(args)))
+          time.sleep(pow(2, count))
+        else:
+          # Don't mask the exception.
+          raise
   else:
     op(*args)
 
