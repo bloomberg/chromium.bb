@@ -428,12 +428,7 @@ bool ChromeRenderProcessObserver::OnControlMessageReceived(
 }
 
 void ChromeRenderProcessObserver::WebKitInitialized() {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-
   WebRuntimeFeatures::enableMediaPlayer(media::IsMediaLibraryInitialized());
-
-  WebRuntimeFeatures::enableSpellCheckAPI(
-      !command_line.HasSwitch(switches::kDisableSpellcheckAPI));
 }
 
 void ChromeRenderProcessObserver::OnSetIsIncognitoProcess(
