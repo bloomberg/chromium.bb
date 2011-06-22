@@ -229,9 +229,10 @@ function init() {
   localStrings = new LocalStrings();
   initTestHarness();
 
-  // Suppress browser shortcuts.
   window.onkeydown = function(e) {
-    e.preventDefault();
+    if (e.keyCode == 27)  // Escape.
+      menu.clear();
+    e.preventDefault();  // Suppress browser shortcuts.
   };
 
   $('showalldownloadstext').textContent =
@@ -248,6 +249,9 @@ function init() {
 function initTestHarness() {
   if (location.protocol != 'file:')
     return;
+
+  // Enable right click for dom inspector.
+  document.body.oncontextmenu = '';
 
   // Fix localStrings.
   localStrings = {
@@ -276,9 +280,6 @@ function initTestHarness() {
         ary[0] == 'chrome://downloads'))
       sendTestResults();
   };
-
-  // Enable right click for dom inspector.
-  document.body.oncontextmenu = '';
 
   // Fix resource images.
   var cssRules = document.styleSheets[0].cssRules;
@@ -854,7 +855,8 @@ DownloadRowList.prototype = {
 
 </script>
 <body onload="init();" onclick="menu.clear();" onselectstart="return false;"
-  i18n-values=".style.fontFamily:fontfamily" oncontextmenu="return false;">
+  i18n-values=".style.fontFamily:fontfamily" oncontextmenu="return false;"
+  onBlur="menu.clear();">
 <div id="main" class="columnlist"></div>
 <div id="showalldownloads" class="showalldownloads">
   <span id="showalldownloadstext" class="showalldownloadstext"
