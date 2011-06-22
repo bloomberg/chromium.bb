@@ -150,7 +150,10 @@ void RemoveDuplicatePhoneNumberAtIndex(size_t index,
                                        const std::string& country_code,
                                        ListValue* list) {
   string16 new_value;
-  list->GetString(index, &new_value);
+  if (!list->GetString(index, &new_value)) {
+    NOTREACHED() << "List should have a value at index " << index;
+    return;
+  }
 
   bool is_duplicate = false;
   for (size_t i = 0; i < list->GetSize() && !is_duplicate; ++i) {
@@ -158,7 +161,10 @@ void RemoveDuplicatePhoneNumberAtIndex(size_t index,
       continue;
 
     string16 existing_value;
-    list->GetString(i, &existing_value);
+    if (!list->GetString(i, &existing_value)) {
+      NOTREACHED() << "List should have a value at index " << i;
+      continue;
+    }
     is_duplicate = autofill_i18n::PhoneNumbersMatch(new_value,
                                                     existing_value,
                                                     country_code);
