@@ -38,31 +38,46 @@ gles_demo_srcs = [
 env.ComponentLibrary('ppapi_gles_demo', gles_demo_srcs)
 
 gles_book_examples = {
-  'hello_triangle': [
-      'Chapter_2/Hello_Triangle/Hello_Triangle.c' ],
-  'mip_map_2d': [
-      'Chapter_9/MipMap2D/MipMap2D.c' ],
-  'simple_texture_2d': [
-      'Chapter_9/Simple_Texture2D/Simple_Texture2D.c' ],
-  'simple_texture_cubemap': [
-      'Chapter_9/Simple_TextureCubemap/Simple_TextureCubemap.c' ],
-  'simple_vertex_shader': [
-      'Chapter_8/Simple_VertexShader/Simple_VertexShader.c' ],
-  'stencil_test': [
-      'Chapter_11/Stencil_Test/Stencil_Test.c' ],
-  'texture_wrap': [
-      'Chapter_9/TextureWrap/TextureWrap.c' ],
+    'hello_triangle': [
+        'Chapter_2/Hello_Triangle/Hello_Triangle.c'],
+    'mip_map_2d': [
+        'Chapter_9/MipMap2D/MipMap2D.c'],
+    'simple_texture_2d': [
+        'Chapter_9/Simple_Texture2D/Simple_Texture2D.c'],
+    'simple_texture_cubemap': [
+        'Chapter_9/Simple_TextureCubemap/Simple_TextureCubemap.c'],
+    'simple_vertex_shader': [
+        'Chapter_8/Simple_VertexShader/Simple_VertexShader.c'],
+    'stencil_test': [
+        'Chapter_11/Stencil_Test/Stencil_Test.c'],
+    'texture_wrap': [
+        'Chapter_9/TextureWrap/TextureWrap.c'],
 }
 
 for demo, sources in gles_book_examples.iteritems():
-    env.ComponentProgram(
-        'ppapi_' + demo + '.nexe',
-        [ 'demos/gles2_book/demo_' + demo + '.cc' ] + sources,
+    nexe_name = ('ppapi_gles_book_%s_%s.nexe'
+                 % (demo, env.get('TARGET_FULLARCH')))
+    nmf_name = 'ppapi_gles_book_' + demo + '.nmf'
+    nexe = env.ComponentProgram(
+        nexe_name,
+        ['demos/gles2_book/demo_' + demo + '.cc'] + sources,
         EXTRA_LIBS=['${PPAPI_LIBS}',
                     'ppapi_cpp',
                     'ppapi_gles_demo',
                     'ppapi_cpp',
                     'ppapi_gles2',
                     'm'])
-    env.Publish('ppapi_' + demo + '.nexe', 'run',
-       ['ppapi_gles_book.html?nexe=' + demo ])
+    env.Publish(nexe_name, 'run',
+                ['ppapi_gles_book.html',
+                 nmf_name])
+    test = env.PPAPIBrowserTester('ppapi_gles_book_' + demo + '.out',
+                                  url='ppapi_gles_book.html?manifest='
+                                      + nmf_name,
+                                  files=[nexe,
+                                         env.File(nmf_name),
+                                         env.File('ppapi_gles_book.html')],
+                                  args=['--enable_experimental_js'])
+    env.AddNodeToTestSuite(test,
+                           ['chrome_browser_tests'],
+                           'run_ppapi_gles_book_' + demo + '_test',
+                           is_broken=env.PPAPIBrowserTesterIsBroken())

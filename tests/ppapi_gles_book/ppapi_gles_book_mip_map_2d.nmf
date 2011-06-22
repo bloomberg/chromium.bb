@@ -1,0 +1,7 @@
+{
+  "nexes": {
+    "x86-32": "ppapi_gles_book_mip_map_2d_x86-32.nexe",
+    "x86-64": "ppapi_gles_book_mip_map_2d_x86-64.nexe",
+    "arm": "ppapi_gles_book_mip_map_2d_arm.nexe"
+  }
+}

@@ -180,9 +180,6 @@ def RunFromCommandLine():
   url = options.url
   if url is None:
     parser.error('Must specify a URL')
-  url_split = url.split('#')[0]
-  if not (url_split.endswith('.html') or url_split.endswith('.htm')):
-    parser.error('URL must be a HTML file.')
 
   # Look for files in the browserdata directory as a last resort
   options.files.append(os.path.join(script_dir, 'browserdata', 'nacltest.js'))

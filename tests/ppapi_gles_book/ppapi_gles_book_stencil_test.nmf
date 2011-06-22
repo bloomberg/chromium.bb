@@ -1,0 +1,7 @@
+{
+  "nexes": {
+    "x86-32": "ppapi_gles_book_stencil_test_x86-32.nexe",
+    "x86-64": "ppapi_gles_book_stencil_test_x86-64.nexe",
+    "arm": "ppapi_gles_book_stencil_test_arm.nexe"
+  }
+}
