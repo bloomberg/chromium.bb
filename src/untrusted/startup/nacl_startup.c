@@ -21,24 +21,9 @@ extern void __pthread_initialize();
 extern void __pthread_shutdown();
 extern void atexit(void (*funptr)());
 
-/*
- * We have to force the symbols below to be linked in as they
- * are referenced in libgcc_eh.a
- * c.f. http://code.google.com/p/nativeclient/issues/detail?id=1044
- */
-/* @IGNORE_LINES_FOR_CODE_HYGIENE[4] */
-extern void abort();
-extern void* malloc(int);
-extern void free(void*);
-extern void* memcpy(void*, const void *, int);
-
 typedef void (*FUN_PTR)();
-volatile FUN_PTR HACK_TO_KEEP_SYMBOLS_ALIVE[] = {
-  (FUN_PTR) abort,
-  (FUN_PTR) malloc,
-  (FUN_PTR) free,
-  (FUN_PTR) memcpy };
 
+/* @IGNORE_LINES_FOR_CODE_HYGIENE[1] */
 extern char** environ;
 
 /*
@@ -92,6 +77,7 @@ void __nacl_startup(int argc, char *argv[], char *envp[]) {
   exit(result);
 }
 
+/* @IGNORE_LINES_FOR_CODE_HYGIENE[1] */
 #if defined(__pnacl__)
 /* pnacl handles init/fini through the .init_array and .fini_array sections
  * rather than .init/.fini.  Stub out the functions called from newlib's
