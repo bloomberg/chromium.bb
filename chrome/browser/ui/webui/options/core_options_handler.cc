@@ -324,10 +324,8 @@ void CoreOptionsHandler::HandleSetPref(const ListValue* args,
   CHECK_EQ(type, value->GetType());
 
   std::string metric;
-  if (args->GetSize() > 2)
-    args->GetString(2, &metric);
-
-  SetPref(pref_name, value, metric);
+  if (args->GetSize() > 2 && args->GetString(2, &metric))
+    SetPref(pref_name, value, metric);
 }
 
 void CoreOptionsHandler::HandleClearPref(const ListValue* args) {

@@ -3440,9 +3440,9 @@ void TestingAutomationProvider::ImportSettings(Browser* browser,
   int num_items = import_items_list->GetSize();
   for (int i = 0; i < num_items; i++) {
     std::string item;
-    import_items_list->GetString(i, &item);
     // If the provided string is not part of the map, error out.
-    if (!ContainsKey(string_to_import_item, item)) {
+    if (!import_items_list->GetString(i, &item) ||
+        !ContainsKey(string_to_import_item, item)) {
       AutomationJSONReply(this, reply_message)
           .SendError("Invalid item string found in import_items.");
       return;
@@ -3663,9 +3663,9 @@ void TestingAutomationProvider::ClearBrowsingData(
   int num_removals = to_remove->GetSize();
   for (int i = 0; i < num_removals; i++) {
     std::string removal;
-    to_remove->GetString(i, &removal);
     // If the provided string is not part of the map, then error out.
-    if (!ContainsKey(string_to_mask_value, removal)) {
+    if (!to_remove->GetString(i, &removal) ||
+        !ContainsKey(string_to_mask_value, removal)) {
       AutomationJSONReply(this, reply_message)
           .SendError("Invalid browsing data string found in to_remove.");
       return;

@@ -223,7 +223,8 @@ bool KeywordTable::SetBuitinKeywordVersion(int version) {
 
 int KeywordTable::GetBuitinKeywordVersion() {
   int version = 0;
-  meta_table_->GetValue(kBuiltinKeywordVersion, &version);
+  if (!meta_table_->GetValue(kBuiltinKeywordVersion, &version))
+    return 0;
   return version;
 }
 
