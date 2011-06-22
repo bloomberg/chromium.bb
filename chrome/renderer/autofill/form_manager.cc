@@ -245,6 +245,22 @@ string16 InferLabelFromPrevious(const WebFormControlElement& element) {
 }
 
 // Helper for |InferLabelForElement()| that infers a label, if possible, from
+// enclosing list item,
+// e.g. <li>Some Text<input ...><input ...><input ...></tr>
+string16 InferLabelFromListItem(const WebFormControlElement& element) {
+  WebNode parent = element.parentNode();
+  while (!parent.isNull() && parent.isElementNode() &&
+         !parent.to<WebElement>().hasTagName("li")) {
+    parent = parent.parentNode();
+  }
+
+  if (!parent.isNull() && HasTagName(parent, "li"))
+    return FindChildText(parent.to<WebElement>());
+
+  return string16();
+}
+
+// Helper for |InferLabelForElement()| that infers a label, if possible, from
 // surrounding table structure,
 // e.g. <tr><td>Some Text</td><td><input ...></td></tr>
 // or   <tr><th>Some Text</th><td><input ...></td></tr>
@@ -355,6 +371,11 @@ string16 InferLabelFromDefinitionList(const WebFormControlElement& element) {
 // e.g. the contents of the preceding <p> tag or text element.
 string16 InferLabelForElement(const WebFormControlElement& element) {
   string16 inferred_label = InferLabelFromPrevious(element);
+  if (!inferred_label.empty())
+    return inferred_label;
+
+  // If we didn't find a label, check for list item case.
+  inferred_label = InferLabelFromListItem(element);
   if (!inferred_label.empty())
     return inferred_label;
 

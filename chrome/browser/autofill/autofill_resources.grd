@@ -106,7 +106,7 @@
         last.*name|lname|surname|last$|secondname<!-- de-DE -->|nachname<!-- es -->|apellidos<!-- fr-FR -->|famille|^nom<!-- it-IT -->|cognome<!-- ja-JP -->|姓<!-- pt-BR, pt-PT -->|morada|apelidos|surename|sobrenome<!-- ru -->|Фамилия<!-- ko-KR -->|성[^명]?
       </message>
       <message name="IDS_AUTOFILL_PHONE_RE">
-        phone<!-- de-DE -->|telefonnummer<!-- es -->|telefono|teléfono<!-- fr-FR -->|telfixe<!-- ja-JP -->|電話<!-- pt-BR, pt-PT -->|telefone|telemovel<!-- ru -->|телефон<!-- zh-CN -->|电话<!-- ko-KR -->|(전화|핸드폰|휴대폰|휴대전화)(.?번호)?
+        phone|mobile<!-- de-DE -->|telefonnummer<!-- es -->|telefono|teléfono<!-- fr-FR -->|telfixe<!-- ja-JP -->|電話<!-- pt-BR, pt-PT -->|telefone|telemovel<!-- ru -->|телефон<!-- zh-CN -->|电话<!-- ko-KR -->|(전화|핸드폰|휴대폰|휴대전화)(.?번호)?
       </message>
       <message name="IDS_AUTOFILL_COUNTRY_CODE_RE">
         country.*code|ccode|_cc
@@ -127,13 +127,13 @@
         ^-$
       </message>
       <message name="IDS_AUTOFILL_PHONE_PREFIX_RE">
-        prefix<!-- fr-FR -->|preselection<!-- pt-BR, pt-PT -->|ddd
+        prefix|exchange<!-- fr-FR -->|preselection<!-- pt-BR, pt-PT -->|ddd
       </message>
       <message name="IDS_AUTOFILL_PHONE_SUFFIX_RE">
         suffix
       </message>
       <message name="IDS_AUTOFILL_PHONE_EXTENSION_RE">
-        \bext|extension<!-- pt-BR, pt-PT -->|ramal
+        \bext|ext\b|extension<!-- pt-BR, pt-PT -->|ramal
       </message>
     </messages>
   </release>

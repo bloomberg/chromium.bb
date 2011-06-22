@@ -1548,7 +1548,42 @@ TEST_F(FormManagerTest, LabelsInferredFromTableRow) {
       "      <INPUT type=\"submit\" name=\"reply-send\" value=\"Send\"/>"
       "    </TD>"
       "  </TR>"
-      "</TABLE>"
+      "</TABLE>",
+      labels, names, values);
+}
+
+// Verify that we correctly infer labels when enclosed within a list item.
+TEST_F(FormManagerTest, LabelsInferredFromListItem) {
+  std::vector<string16> labels, names, values;
+
+  labels.push_back(ASCIIToUTF16("* Home Phone"));
+  names.push_back(ASCIIToUTF16("areacode"));
+  values.push_back(ASCIIToUTF16("415"));
+
+  labels.push_back(ASCIIToUTF16("* Home Phone"));
+  names.push_back(ASCIIToUTF16("prefix"));
+  values.push_back(ASCIIToUTF16("555"));
+
+  labels.push_back(ASCIIToUTF16("* Home Phone"));
+  names.push_back(ASCIIToUTF16("suffix"));
+  values.push_back(ASCIIToUTF16("1212"));
+
+  ExpectLabels(
+      "<FORM name=\"TestForm\" action=\"http://cnn.com\" method=\"post\">"
+      "<DIV>"
+      "  <LI>"
+      "    <SPAN>Bogus</SPAN>"
+      "  </LI>"
+      "  <LI>"
+      "    <LABEL><EM>*</EM> Home Phone</LABEL>"
+      "    <INPUT type=\"text\" id=\"areacode\" value=\"415\"/>"
+      "    <INPUT type=\"text\" id=\"prefix\" value=\"555\"/>"
+      "    <INPUT type=\"text\" id=\"suffix\" value=\"1212\"/>"
+      "  </LI>"
+      "  <LI>"
+      "    <INPUT type=\"submit\" name=\"reply-send\" value=\"Send\"/>"
+      "  </LI>"
+      "</DIV>"
       "</FORM>",
       labels, names, values);
 }
