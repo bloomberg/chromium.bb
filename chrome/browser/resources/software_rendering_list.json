@@ -47,7 +47,7 @@
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "1.11",
+  "version": "1.12",
   "entries": [
     {
       "id": 1,
@@ -228,6 +228,19 @@
         "type": "linux"
       },
       "vendor_id": "0x8086",
+      "blacklist": [
+        "all"
+      ]
+    },
+    {
+      "id": 18,
+      "description": "NVIDIA Quadro FX 1500 is buggy.",
+      "cr_bugs": [84701],
+      "os": {
+        "type": "linux"
+      },
+      "vendor_id": "0x10de",
+      "device_id": ["0x029e"],
       "blacklist": [
         "all"
       ]
