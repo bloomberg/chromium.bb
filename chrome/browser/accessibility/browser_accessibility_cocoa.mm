@@ -75,7 +75,6 @@ static const MapEntry roles[] = {
   { WebAccessibility::ROLE_LANDMARK_BANNER, NSAccessibilityGroupRole },
   { WebAccessibility::ROLE_LANDMARK_COMPLEMENTARY, NSAccessibilityGroupRole },
   { WebAccessibility::ROLE_LANDMARK_CONTENTINFO, NSAccessibilityGroupRole },
-  // TODO: role: main should report SubRole: AXLandmarkMain
   { WebAccessibility::ROLE_LANDMARK_MAIN, NSAccessibilityGroupRole },
   { WebAccessibility::ROLE_LANDMARK_NAVIGATION, NSAccessibilityGroupRole },
   { WebAccessibility::ROLE_LANDMARK_SEARCH, NSAccessibilityGroupRole },
@@ -137,7 +136,30 @@ static const MapEntry roles[] = {
 };
 
 static const MapEntry subroles[] = {
-  { WebAccessibility::ROLE_TREE_ITEM, NSAccessibilityOutlineRowSubrole }
+  { WebAccessibility::ROLE_ALERT, @"AXApplicationAlert" },
+  { WebAccessibility::ROLE_ALERT_DIALOG, @"AXApplicationAlertDialog" },
+  { WebAccessibility::ROLE_ARTICLE, @"AXDocumentArticle" },
+  { WebAccessibility::ROLE_DEFINITION_LIST_DEFINITION, @"AXDefinition" },
+  { WebAccessibility::ROLE_DEFINITION_LIST_TERM, @"AXTerm" },
+  { WebAccessibility::ROLE_DIALOG, @"AXApplicationDialog" },
+  { WebAccessibility::ROLE_DOCUMENT, @"AXDocument" },
+  { WebAccessibility::ROLE_LANDMARK_APPLICATION, @"AXLandmarkApplication" },
+  { WebAccessibility::ROLE_LANDMARK_BANNER, @"AXLandmarkBanner" },
+  { WebAccessibility::ROLE_LANDMARK_COMPLEMENTARY, @"AXLandmarkComplementary" },
+  { WebAccessibility::ROLE_LANDMARK_CONTENTINFO, @"AXLandmarkContentInfo" },
+  { WebAccessibility::ROLE_LANDMARK_MAIN, @"AXLandmarkMain" },
+  { WebAccessibility::ROLE_LANDMARK_NAVIGATION, @"AXLandmarkNavigation" },
+  { WebAccessibility::ROLE_LANDMARK_SEARCH, @"AXLandmarkSearch" },
+  { WebAccessibility::ROLE_LOG, @"AXApplicationLog" },
+  { WebAccessibility::ROLE_MARQUEE, @"AXApplicationMarquee" },
+  { WebAccessibility::ROLE_MATH, @"AXDocumentMath" },
+  { WebAccessibility::ROLE_NOTE, @"AXDocumentNote" },
+  { WebAccessibility::ROLE_REGION, @"AXDocumentRegion" },
+  { WebAccessibility::ROLE_STATUS, @"AXApplicationStatus" },
+  { WebAccessibility::ROLE_TAB_PANEL, @"AXTabPanel" },
+  { WebAccessibility::ROLE_TIMER, @"AXApplicationTimer" },
+  { WebAccessibility::ROLE_TOOLTIP, @"AXUserInterfaceTooltip" },
+  { WebAccessibility::ROLE_TREE_ITEM, NSAccessibilityOutlineRowSubrole },
 };
 
 std::map<WebAccessibility::Role, NSString*> webAccessibilityToNativeRole;
@@ -303,6 +325,11 @@ bool GetState(BrowserAccessibility* accessibility, int state) {
 
 // Returns a subrole based upon the role.
 - (NSString*) subrole {
+  // TODO: support password field -> NSAccessibilitySecureTextFieldSubrole
+  // TODO: support attachments
+  // TODO: support lists -> NSAccessibilityContentListSubrole ||
+  //                        NSAccessibilityDefinitionListSubrole
+
   WebAccessibility::Role browserAccessibilityRole =
       static_cast<WebAccessibility::Role>( browserAccessibility_->role());
 
