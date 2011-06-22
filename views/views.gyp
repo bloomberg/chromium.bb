@@ -287,6 +287,8 @@
         'focus/focus_util_win.h',
         'focus/view_storage.cc',
         'focus/view_storage.h',
+        'ime/character_composer.cc',
+        'ime/character_composer.h',
         'ime/input_method.h',
         'ime/input_method_delegate.h',
         'ime/input_method_base.cc',
@@ -437,6 +439,12 @@
             }],
           ],
         }],
+        ['chromeos!=1', {
+          'sources/': [
+            ['exclude', 'ime/character_composer.cc'],
+            ['exclude', 'ime/character_composer.h'],
+          ],
+        }],
         ['use_ibus==1', {
           'dependencies': [
             '../build/linux/system.gyp:ibus',
@@ -488,6 +496,7 @@
         'focus/focus_manager_unittest.cc',
         'ime/mock_input_method.cc',
         'ime/mock_input_method.h',
+        'ime/character_composer_unittest.cc',
         'layout/grid_layout_unittest.cc',
         'layout/box_layout_unittest.cc',
         'test/views_test_base.cc',
@@ -534,6 +543,11 @@
           },
           'include_dirs': [
             '<(DEPTH)/third_party/wtl/include',
+          ],
+        }],
+        ['chromeos!=1', {
+          'sources/': [
+            ['exclude', 'ime/character_composer_unittest.cc'],
           ],
         }],
       ],

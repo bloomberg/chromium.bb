@@ -57,6 +57,41 @@ guint32 IBusStateFromViewsFlags(int flags) {
          (flags & ui::EF_RIGHT_BUTTON_DOWN ? IBUS_BUTTON3_MASK : 0);
 }
 
+void IBusKeyEventFromViewsKeyEvent(const views::KeyEvent& key,
+                                   guint32* ibus_keyval,
+                                   guint32* ibus_keycode,
+                                   guint32* ibus_state) {
+#if defined(TOUCH_UI)
+  if (key.native_event_2()) {
+    XKeyEvent* x_key = reinterpret_cast<XKeyEvent*>(key.native_event_2());
+    // Yes, ibus uses X11 keysym. We cannot use XLookupKeysym(), which doesn't
+    // translate Shift and CapsLock states.
+    KeySym keysym = NoSymbol;
+    ::XLookupString(x_key, NULL, 0, &keysym, NULL);
+    *ibus_keyval = keysym;
+    *ibus_keycode = x_key->keycode;
+  }
+#elif defined(TOOLKIT_USES_GTK)
+  if (key.native_event()) {
+    GdkEventKey* gdk_key = reinterpret_cast<GdkEventKey*>(key.native_event());
+    *ibus_keyval = gdk_key->keyval;
+    *ibus_keycode = gdk_key->hardware_keycode;
+  }
+#endif
+  else {
+    // GdkKeyCodeForWindowsKeyCode() is actually nothing to do with Gtk, we
+    // probably want to rename it to something like XKeySymForWindowsKeyCode(),
+    // because Gtk keyval is actually same as X KeySym.
+    *ibus_keyval = ui::GdkKeyCodeForWindowsKeyCode(
+        key.key_code(), key.IsShiftDown() ^ key.IsCapsLockDown());
+    *ibus_keycode = 0;
+  }
+
+  *ibus_state = IBusStateFromViewsFlags(key.flags());
+  if (key.type() == ui::ET_KEY_RELEASED)
+    *ibus_state |= IBUS_RELEASE_MASK;
+}
+
 void ExtractCompositionTextFromIBusPreedit(IBusText* text,
                                            guint cursor_position,
                                            ui::CompositionText* composition) {
@@ -140,7 +175,8 @@ namespace views {
 // InputMethodIBus::PendingKeyEvent implementation ----------------------------
 class InputMethodIBus::PendingKeyEvent {
  public:
-  PendingKeyEvent(InputMethodIBus* input_method, const KeyEvent& key);
+  PendingKeyEvent(InputMethodIBus* input_method, const KeyEvent& key,
+                  guint32 ibus_keyval);
   ~PendingKeyEvent();
 
   // Abandon this pending key event. Its result will just be discarded.
@@ -161,6 +197,8 @@ class InputMethodIBus::PendingKeyEvent {
   int flags_;
   ui::KeyboardCode key_code_;
 
+  guint32 ibus_keyval_;
+
 #if defined(TOUCH_UI)
   // corresponding XEvent data of a views::KeyEvent. It's a plain struct so we
   // can do bitwise copy.
@@ -171,12 +209,15 @@ class InputMethodIBus::PendingKeyEvent {
 };
 
 InputMethodIBus::PendingKeyEvent::PendingKeyEvent(InputMethodIBus* input_method,
-                                                  const KeyEvent& key)
+                                                  const KeyEvent& key,
+                                                  guint32 ibus_keyval)
     : input_method_(input_method),
       type_(key.type()),
       flags_(key.flags()),
-      key_code_(key.key_code()) {
+      key_code_(key.key_code()),
+      ibus_keyval_(ibus_keyval) {
   DCHECK(input_method_);
+
 #if defined(TOUCH_UI)
   if (key.native_event_2())
     x_event_ = *reinterpret_cast<XKeyEvent*>(key.native_event_2());
@@ -198,12 +239,12 @@ void InputMethodIBus::PendingKeyEvent::ProcessPostIME(bool handled) {
   if (x_event_.type == KeyPress || x_event_.type == KeyRelease) {
     Event::FromNativeEvent2 from_native;
     KeyEvent key(reinterpret_cast<XEvent*>(&x_event_), from_native);
-    input_method_->ProcessKeyEventPostIME(key, handled);
+    input_method_->ProcessKeyEventPostIME(key, ibus_keyval_, handled);
     return;
   }
 #endif
   KeyEvent key(type_, key_code_, flags_);
-  input_method_->ProcessKeyEventPostIME(key, handled);
+  input_method_->ProcessKeyEventPostIME(key, ibus_keyval_, handled);
 }
 
 // InputMethodIBus::PendingCreateICRequest implementation ---------------------
@@ -319,6 +360,11 @@ void InputMethodIBus::DispatchKeyEvent(const KeyEvent& key) {
   DCHECK(key.type() == ui::ET_KEY_PRESSED || key.type() == ui::ET_KEY_RELEASED);
   DCHECK(widget_focused());
 
+  guint32 ibus_keyval = 0;
+  guint32 ibus_keycode = 0;
+  guint32 ibus_state = 0;
+  IBusKeyEventFromViewsKeyEvent(key, &ibus_keyval, &ibus_keycode, &ibus_state);
+
   // If |context_| is not usable and |fake_context_| is not created yet, then we
   // can only dispatch the key event as is. We also dispatch the key event
   // directly if the current text input type is ui::TEXT_INPUT_TYPE_PASSWORD,
@@ -328,17 +374,14 @@ void InputMethodIBus::DispatchKeyEvent(const KeyEvent& key) {
   if (!(context_focused_ || fake_context_) ||
       GetTextInputType() == ui::TEXT_INPUT_TYPE_PASSWORD) {
     if (key.type() == ui::ET_KEY_PRESSED)
-      ProcessUnfilteredKeyPressEvent(key);
+      ProcessUnfilteredKeyPressEvent(key, ibus_keyval);
     else
       DispatchKeyEventPostIME(key);
     return;
   }
 
-  guint32 ibus_keyval = 0;
-  guint32 ibus_keycode = 0;
-  guint32 ibus_state = 0;
-  PendingKeyEvent* pending_key =
-      NewPendingKeyEvent(key, &ibus_keyval, &ibus_keycode, &ibus_state);
+  PendingKeyEvent* pending_key = new PendingKeyEvent(this, key, ibus_keyval);
+  pending_key_events_.insert(pending_key);
 
   // Note:
   // 1. We currently set timeout to -1, because ibus doesn't have a mechanism to
@@ -579,6 +622,8 @@ void InputMethodIBus::ResetContext() {
   ibus_input_context_reset(context_);
 
   // We don't need to reset |fake_context_|.
+
+  character_composer_.Reset();
 }
 
 void InputMethodIBus::UpdateContextFocusState() {
@@ -625,6 +670,7 @@ void InputMethodIBus::UpdateFakeContextFocusState() {
 }
 
 void InputMethodIBus::ProcessKeyEventPostIME(const KeyEvent& key,
+                                             guint32 ibus_keyval,
                                              bool handled) {
   // If we get here without a focused text input client, then it means the key
   // event is sent to the global ibus input context.
@@ -655,7 +701,7 @@ void InputMethodIBus::ProcessKeyEventPostIME(const KeyEvent& key,
     return;
 
   if (key.type() == ui::ET_KEY_PRESSED && !handled)
-    ProcessUnfilteredKeyPressEvent(key);
+    ProcessUnfilteredKeyPressEvent(key, ibus_keyval);
   else if (key.type() == ui::ET_KEY_RELEASED)
     DispatchKeyEventPostIME(key);
 }
@@ -669,7 +715,8 @@ void InputMethodIBus::ProcessFilteredKeyPressEvent(const KeyEvent& key) {
   }
 }
 
-void InputMethodIBus::ProcessUnfilteredKeyPressEvent(const KeyEvent& key) {
+void InputMethodIBus::ProcessUnfilteredKeyPressEvent(const KeyEvent& key,
+                                                     guint32 ibus_keyval) {
   const View* old_focused_view = focused_view();
   DispatchKeyEventPostIME(key);
 
@@ -678,13 +725,22 @@ void InputMethodIBus::ProcessUnfilteredKeyPressEvent(const KeyEvent& key) {
   if (old_focused_view != focused_view())
     return;
 
-  // If a key event was not filtered by |context_|, then it means the key
-  // event didn't generate any result text. So we need to send corresponding
-  // character to the focused text input client.
-  // TODO(suzhe): support compose and dead keys. Gtk supports it in
-  // GtkIMContextSimple class. We need similar thing after getting rid of Gtk.
-  char16 ch = key.GetCharacter();
+  // Process compose and dead keys
+  if (character_composer_.FilterKeyPress(ibus_keyval)) {
+    string16 composed = character_composer_.GetComposedCharacter();
+    if (!composed.empty()) {
+      TextInputClient* client = GetTextInputClient();
+      if (client)
+        client->InsertText(composed);
+    }
+    return;
+  }
+  // If a key event was not filtered by |context_| and |character_composer_|,
+  // then it means the key event didn't generate any result text. So we need
+  // to send corresponding character to the focused text input client.
+
   TextInputClient* client = GetTextInputClient();
+  char16 ch = key.GetCharacter();
   if (ch && client)
     client->InsertChar(ch, key.flags());
 }
@@ -735,46 +791,6 @@ void InputMethodIBus::SendFakeProcessKeyEvent(bool pressed) const {
   KeyEvent key(pressed ? ui::ET_KEY_PRESSED : ui::ET_KEY_RELEASED,
                ui::VKEY_PROCESSKEY, 0);
   DispatchKeyEventPostIME(key);
-}
-
-InputMethodIBus::PendingKeyEvent* InputMethodIBus::NewPendingKeyEvent(
-    const KeyEvent& key,
-    guint32* ibus_keyval,
-    guint32* ibus_keycode,
-    guint32* ibus_state) {
-#if defined(TOUCH_UI)
-  if (key.native_event_2()) {
-    XKeyEvent* x_key = reinterpret_cast<XKeyEvent*>(key.native_event_2());
-    // Yes, ibus uses X11 keysym. We cannot use XLookupKeysym(), which doesn't
-    // translate Shift and CapsLock states.
-    KeySym keysym = NoSymbol;
-    ::XLookupString(x_key, NULL, 0, &keysym, NULL);
-    *ibus_keyval = keysym;
-    *ibus_keycode = x_key->keycode;
-  }
-#elif defined(TOOLKIT_USES_GTK)
-  if (key.native_event()) {
-    GdkEventKey* gdk_key = reinterpret_cast<GdkEventKey*>(key.native_event());
-    *ibus_keyval = gdk_key->keyval;
-    *ibus_keycode = gdk_key->hardware_keycode;
-  }
-#endif
-  else {
-    // GdkKeyCodeForWindowsKeyCode() is actually nothing to do with Gtk, we
-    // probably want to rename it to something like XKeySymForWindowsKeyCode(),
-    // because Gtk keyval is actually same as X KeySym.
-    *ibus_keyval = ui::GdkKeyCodeForWindowsKeyCode(
-        key.key_code(), key.IsShiftDown() ^ key.IsCapsLockDown());
-    *ibus_keycode = 0;
-  }
-
-  *ibus_state = IBusStateFromViewsFlags(key.flags());
-  if (key.type() == ui::ET_KEY_RELEASED)
-    *ibus_state |= IBUS_RELEASE_MASK;
-
-  PendingKeyEvent* pending_key = new PendingKeyEvent(this, key);
-  pending_key_events_.insert(pending_key);
-  return pending_key;
 }
 
 void InputMethodIBus::FinishPendingKeyEvent(PendingKeyEvent* pending_key) {
@@ -846,7 +862,7 @@ void InputMethodIBus::OnForwardKeyEvent(IBusInputContext* context,
   // calling ProcessKeyEventPostIME(), which will clear pending input method
   // results.
   if (key.type() == ui::ET_KEY_PRESSED)
-    ProcessUnfilteredKeyPressEvent(key);
+    ProcessUnfilteredKeyPressEvent(key, keyval);
   else
     DispatchKeyEventPostIME(key);
 }

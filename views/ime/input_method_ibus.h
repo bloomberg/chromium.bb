@@ -13,6 +13,7 @@
 #include "base/scoped_ptr.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "views/events/event.h"
+#include "views/ime/character_composer.h"
 #include "views/ime/input_method_base.h"
 #include "views/view.h"
 
@@ -85,14 +86,16 @@ class InputMethodIBus : public InputMethodBase {
   void UpdateFakeContextFocusState();
 
   // Process a key returned from the input method.
-  void ProcessKeyEventPostIME(const KeyEvent& key, bool handled);
+  void ProcessKeyEventPostIME(const KeyEvent& key, guint32 ibus_keycode,
+                              bool handled);
 
   // Processes a key event that was already filtered by the input method.
   // A VKEY_PROCESSKEY may be dispatched to the focused View.
   void ProcessFilteredKeyPressEvent(const KeyEvent& key);
 
   // Processes a key event that was not filtered by the input method.
-  void ProcessUnfilteredKeyPressEvent(const KeyEvent& key);
+  void ProcessUnfilteredKeyPressEvent(const KeyEvent& key,
+                                      guint32 ibus_keycode);
 
   // Sends input method result caused by the given key event to the focused text
   // input client.
@@ -108,14 +111,6 @@ class InputMethodIBus : public InputMethodBase {
   // Fabricates a key event with VKEY_PROCESSKEY key code and dispatches it to
   // the focused View.
   void SendFakeProcessKeyEvent(bool pressed) const;
-
-  // Creates a new PendingKeyEvent object and add it to |pending_key_events_|.
-  // Corresponding ibus key event information will be stored in |*ibus_keyval|,
-  // |*ibus_keycode| and |*ibus_state|.
-  PendingKeyEvent* NewPendingKeyEvent(const KeyEvent& key,
-                                      guint32* ibus_keyval,
-                                      guint32* ibus_keycode,
-                                      guint32* ibus_state);
 
   // Called when a pending key event has finished. The event will be removed
   // from |pending_key_events_|.
@@ -198,6 +193,10 @@ class InputMethodIBus : public InputMethodBase {
   // If it's true then all input method result received before the next key
   // event will be discarded.
   bool suppress_next_result_;
+
+  // An object to compose a character from a sequence of key presses
+  // including dead key etc.
+  CharacterComposer character_composer_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodIBus);
 };
