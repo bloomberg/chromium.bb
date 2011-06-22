@@ -45,7 +45,7 @@ ChromotingHost* ChromotingHost::Create(ChromotingHostContext* context,
                                        AccessVerifier* access_verifier) {
   Capturer* capturer = Capturer::Create();
   EventExecutor* event_executor =
-      EventExecutor::Create(context->ui_message_loop(), capturer);
+      EventExecutor::Create(context->desktop_message_loop(), capturer);
   Curtain* curtain = Curtain::Create();
   DisconnectWindow* disconnect_window = DisconnectWindow::Create();
   ContinueWindow* continue_window = ContinueWindow::Create();
@@ -591,8 +591,8 @@ void ChromotingHost::ShowDisconnectWindow(bool show,
 }
 
 void ChromotingHost::ShowContinueWindow(bool show) {
-  if (context_->ui_message_loop() != MessageLoop::current()) {
-    context_->ui_message_loop()->PostTask(
+  if (!context_->IsUIThread()) {
+    context_->PostToUIThread(
         FROM_HERE,
         NewRunnableMethod(this, &ChromotingHost::ShowContinueWindow, show));
     return;

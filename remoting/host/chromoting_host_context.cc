@@ -14,7 +14,7 @@ namespace remoting {
 ChromotingHostContext::ChromotingHostContext()
     : main_thread_("ChromotingMainThread"),
       encode_thread_("ChromotingEncodeThread"),
-      ui_thread_("ChromotingUiThread") {
+      desktop_thread_("ChromotingDesktopThread") {
 }
 
 ChromotingHostContext::~ChromotingHostContext() {
@@ -25,7 +25,7 @@ void ChromotingHostContext::Start() {
   main_thread_.Start();
   encode_thread_.Start();
   jingle_thread_.Start();
-  ui_thread_.Start();
+  desktop_thread_.Start();
 }
 
 void ChromotingHostContext::Stop() {
@@ -33,7 +33,7 @@ void ChromotingHostContext::Stop() {
   jingle_thread_.Stop();
   encode_thread_.Stop();
   main_thread_.Stop();
-  ui_thread_.Stop();
+  desktop_thread_.Stop();
 }
 
 JingleThread* ChromotingHostContext::jingle_thread() {
@@ -52,8 +52,8 @@ MessageLoop* ChromotingHostContext::network_message_loop() {
   return jingle_thread_.message_loop();
 }
 
-MessageLoop* ChromotingHostContext::ui_message_loop() {
-  return ui_thread_.message_loop();
+MessageLoop* ChromotingHostContext::desktop_message_loop() {
+  return desktop_thread_.message_loop();
 }
 
 void ChromotingHostContext::SetUITaskPostFunction(const base::Callback<void(

@@ -179,7 +179,8 @@ class SimpleHost {
       remoting::Capturer* capturer =
           new remoting::CapturerFake();
       remoting::EventExecutor* event_executor =
-          remoting::EventExecutor::Create(context.ui_message_loop(), capturer);
+          remoting::EventExecutor::Create(context.desktop_message_loop(),
+                                          capturer);
       remoting::Curtain* curtain = remoting::Curtain::Create();
       remoting::DisconnectWindow* disconnect_window =
           remoting::DisconnectWindow::Create();

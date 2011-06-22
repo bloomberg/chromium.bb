@@ -41,7 +41,7 @@ class ChromotingHostContext {
   virtual MessageLoop* main_message_loop();
   virtual MessageLoop* encode_message_loop();
   virtual MessageLoop* network_message_loop();
-  virtual MessageLoop* ui_message_loop();
+  virtual MessageLoop* desktop_message_loop();
 
   // Must be called from the main GUI thread.
   void SetUITaskPostFunction(const base::Callback<void(
@@ -62,9 +62,9 @@ class ChromotingHostContext {
   // A thread that hosts all encode operations.
   base::Thread encode_thread_;
 
-  // A thread that hosts UI integration (capture, input injection, etc)
+  // A thread that hosts desktop integration (capture, input injection, etc)
   // This is NOT a Chrome-style UI thread.
-  base::Thread ui_thread_;
+  base::Thread desktop_thread_;
 
   base::Callback<void(const tracked_objects::Location& from_here, Task* task)>
       ui_poster_;
