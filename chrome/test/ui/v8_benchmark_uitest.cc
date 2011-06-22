@@ -148,7 +148,14 @@ TEST_F(V8BenchmarkTest, Perf) {
   RunTest();
 }
 
-TEST_F(V8BenchmarkReferenceTest, Perf) {
+// Bug 87162: Disable Perf for ChromeOS
+#if defined(OS_CHROMEOS)
+#define MAYBE_Perf DISABLED_Perf
+#else
+#define MAYBE_Perf Perf
+#endif
+
+TEST_F(V8BenchmarkReferenceTest, MAYBE_Perf) {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(kRunV8Benchmark))
     return;
 
