@@ -44,6 +44,8 @@ void BackgroundPrintingManager::OwnTabContents(TabContentsWrapper* contents) {
   // Detach |contents| from its tab strip.
   Browser* browser = BrowserList::FindBrowserWithID(
       contents->restore_tab_helper()->window_id().id());
+  DCHECK(browser);
+
   TabStripModel* tabstrip = browser->tabstrip_model();
   tabstrip->DetachTabContentsAt(tabstrip->GetIndexOfTabContents(contents));
 

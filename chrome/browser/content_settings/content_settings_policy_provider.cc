@@ -335,6 +335,7 @@ void PolicyProvider::GetContentSettingsFromPreferences(
     }
 
     const PrefService::Preference* pref = prefs->FindPreference(pref_name);
+    DCHECK(pref);
     DCHECK(pref->IsManaged());
     DCHECK_EQ(Value::TYPE_LIST, pref->GetType());
 

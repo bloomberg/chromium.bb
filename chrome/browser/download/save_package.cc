@@ -1324,6 +1324,7 @@ void SavePackage::ContinueGetSaveInfo(const FilePath& suggested_path,
   int file_type_index =
       SavePackageTypeToIndex(
           static_cast<SavePackageType>(download_prefs->save_file_type()));
+  DCHECK_NE(-1, file_type_index);
 
   SelectFileDialog::FileTypeInfo file_type_info;
   FilePath::StringType default_extension;

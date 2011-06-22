@@ -46,6 +46,7 @@ void PrefModelAssociator::InitPrefAndAssociate(
     SyncChangeList* sync_changes) {
   const PrefService::Preference* pref =
       pref_service_->FindPreference(pref_name.c_str());
+  DCHECK(pref);
   VLOG(1) << "Associating preference " << pref_name;
 
   base::JSONReader reader;
@@ -292,6 +293,7 @@ SyncDataList PrefModelAssociator::GetAllSyncData(syncable::ModelType type)
     std::string name = *iter;
     const PrefService::Preference* pref =
       pref_service_->FindPreference(name.c_str());
+    DCHECK(pref);
     if (!pref->IsUserControlled() || pref->IsDefaultValue())
       continue;  // This is not data we care about.
     // TODO(zea): plumb a way to read the user controlled value.
@@ -396,6 +398,9 @@ void PrefModelAssociator::ProcessPrefChange(const std::string& name) {
 
   const PrefService::Preference* preference =
       pref_service_->FindPreference(name.c_str());
+  if (!preference)
+    return;
+
   if (!IsPrefRegistered(name.c_str()))
     return;  // We are not syncing this preference.
 

@@ -92,6 +92,8 @@ PrefProxyConfigTracker::ConfigState
 
   const PrefService::Preference* pref =
       pref_service_->FindPreference(prefs::kProxy);
+  DCHECK(pref);
+
   const DictionaryValue* dict = pref_service_->GetDictionary(prefs::kProxy);
   DCHECK(dict);
   ProxyConfigDictionary proxy_dict(dict);

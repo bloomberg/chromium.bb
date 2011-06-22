@@ -325,9 +325,12 @@ void BookmarkBubbleGtk::ShowEditor() {
 }
 
 void BookmarkBubbleGtk::InitFolderComboModel() {
+  const BookmarkNode* node =
+      profile_->GetBookmarkModel()->GetMostRecentlyAddedNodeForURL(url_);
+  DCHECK(node);
+
   folder_combo_model_.reset(new RecentlyUsedFoldersComboModel(
-      profile_->GetBookmarkModel(),
-      profile_->GetBookmarkModel()->GetMostRecentlyAddedNodeForURL(url_)));
+      profile_->GetBookmarkModel(), node));
 
   // We always have nodes + 1 entries in the combo.  The last entry will be
   // the 'Select another folder...' entry that opens the bookmark editor.
