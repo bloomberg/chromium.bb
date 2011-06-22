@@ -18,13 +18,10 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/ui/gtk/bubble/bubble_gtk.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
 
 class Profile;
 
-class FirstRunBubble : public BubbleDelegateGtk,
-                       public NotificationObserver {
+class FirstRunBubble : public BubbleDelegateGtk {
  public:
   // Shows the first run bubble, pointing at |rect|.
   static void Show(Profile* profile,
@@ -35,11 +32,6 @@ class FirstRunBubble : public BubbleDelegateGtk,
   // Overridden from BubbleDelegateGtk:
   virtual void BubbleClosing(BubbleGtk* bubble, bool closed_by_escape) OVERRIDE;
 
-  // Overridden from NotificationObserver:
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
-
  private:
   FirstRunBubble(Profile* profile,
                  GtkWidget* anchor,
@@ -48,13 +40,13 @@ class FirstRunBubble : public BubbleDelegateGtk,
   virtual ~FirstRunBubble();
 
   // Create and pack widgets for different bubble types.
-  void InitializeContentForLarge();
-  void InitializeContentForOEM();
-  void InitializeContentForMinimal();
+  void InitializeContentForLarge(std::vector<GtkWidget*>* labels);
+  void InitializeContentForOEM(std::vector<GtkWidget*>* labels);
+  void InitializeContentForMinimal(std::vector<GtkWidget*>* labels);
 
   // Contains some common set up for the labels in the bubble. |width| is a
   // resource that holds the desired width for the labels.
-  void InitializeLabels(int width_resource);
+  void InitializeLabels(int width_resource, std::vector<GtkWidget*>* labels);
 
   CHROMEGTK_CALLBACK_0(FirstRunBubble, void, HandleDestroy);
   CHROMEGTK_CALLBACK_0(FirstRunBubble, void, HandleKeepButton);
@@ -74,13 +66,7 @@ class FirstRunBubble : public BubbleDelegateGtk,
   // widget is destroyed (when the BubbleGtk is destroyed).
   GtkWidget* content_;
 
-  // The various labels in the interface. We keep track of them for theme
-  // changes.
-  std::vector<GtkWidget*> labels_;
-
   BubbleGtk* bubble_;
-
-  NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(FirstRunBubble);
 };

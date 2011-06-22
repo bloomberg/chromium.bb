@@ -225,6 +225,9 @@ void gtk_chrome_link_button_set_use_gtk_theme(GtkChromeLinkButton* button,
                                               gboolean use_gtk) {
   if (use_gtk != button->using_native_theme) {
     button->using_native_theme = use_gtk;
+
+    gtk_chrome_link_button_set_text(button);
+
     if (GTK_WIDGET_VISIBLE(button))
       gtk_widget_queue_draw(GTK_WIDGET(button));
   }

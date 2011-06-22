@@ -30,8 +30,8 @@ BookmarkBarInstructionsGtk::BookmarkBarInstructionsGtk(Delegate* delegate,
                    G_CALLBACK(gtk_util::InitLabelSizeRequestAndEllipsizeMode),
                    NULL);
 
-  instructions_link_ = gtk_chrome_link_button_new(
-      l10n_util::GetStringUTF8(IDS_BOOKMARK_BAR_IMPORT_LINK).c_str());
+  instructions_link_ = theme_service_->BuildChromeLinkButton(
+      l10n_util::GetStringUTF8(IDS_BOOKMARK_BAR_IMPORT_LINK));
   gtk_misc_set_alignment(
       GTK_MISC(GTK_CHROME_LINK_BUTTON(instructions_link_)->label), 0, 0.5);
   g_signal_connect(instructions_link_, "clicked",
@@ -64,10 +64,6 @@ void BookmarkBarInstructionsGtk::OnButtonClick(GtkWidget* button) {
 }
 
 void BookmarkBarInstructionsGtk::UpdateColors() {
-  gtk_chrome_link_button_set_use_gtk_theme(
-      GTK_CHROME_LINK_BUTTON(instructions_link_),
-      theme_service_->UsingNativeTheme());
-
   GdkColor bookmark_color = theme_service_->GetGdkColor(
       ThemeService::COLOR_BOOKMARK_TEXT);
   if (theme_service_->UsingNativeTheme()) {

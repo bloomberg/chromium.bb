@@ -73,10 +73,10 @@ class GtkThemeService : public ThemeService {
   // changes, and listen for its destruction.
   GtkWidget* BuildChromeLinkButton(const std::string& text);
 
-  // Builds a GtkLabel that is black in chrome theme mode, and the normal text
-  // color in gtk-mode. Like the previous two calls, listens for the object's
-  // destruction.
-  GtkWidget* BuildBlackLabel(const std::string& text);
+  // Builds a GtkLabel that is |color| in chrome theme mode, and the normal
+  // text color in gtk-mode. Like the previous two calls, listens for the
+  // object's destruction.
+  GtkWidget* BuildLabel(const std::string& text, GdkColor color);
 
   // Creates a theme-aware vertical separator widget.
   GtkWidget* CreateToolbarSeparator();
@@ -268,7 +268,7 @@ class GtkThemeService : public ThemeService {
   // destruction via OnDestory{ChromeButton,ChromeLinkButton,Label}.
   std::vector<GtkWidget*> chrome_buttons_;
   std::vector<GtkWidget*> link_buttons_;
-  std::vector<GtkWidget*> black_labels_;
+  std::map<GtkWidget*, GdkColor> labels_;
 
   // Tracks all the signals we have connected to on various widgets.
   scoped_ptr<ui::GtkSignalRegistrar> signals_;

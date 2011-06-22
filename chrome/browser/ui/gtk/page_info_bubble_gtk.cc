@@ -21,9 +21,6 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/location_bar_view_gtk.h"
 #include "chrome/common/url_constants.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
-#include "content/common/notification_service.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -34,8 +31,7 @@ class Profile;
 namespace {
 
 class PageInfoBubbleGtk : public PageInfoModel::PageInfoModelObserver,
-                          public BubbleDelegateGtk,
-                          public NotificationObserver {
+                          public BubbleDelegateGtk {
  public:
   PageInfoBubbleGtk(gfx::NativeWindow parent,
                     Profile* profile,
@@ -49,11 +45,6 @@ class PageInfoBubbleGtk : public PageInfoModel::PageInfoModelObserver,
 
   // BubbleDelegateGtk implementation.
   virtual void BubbleClosing(BubbleGtk* bubble, bool closed_by_escape) OVERRIDE;
-
-  // NotificationObserver implementation.
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
 
  private:
   // Layouts the different sections retrieved from the model.
@@ -87,13 +78,7 @@ class PageInfoBubbleGtk : public PageInfoModel::PageInfoModelObserver,
   // Provides colors and stuff.
   GtkThemeService* theme_service_;
 
-  // The various elements in the interface we keep track of for theme changes.
-  std::vector<GtkWidget*> labels_;
-  std::vector<GtkWidget*> links_;
-
   BubbleGtk* bubble_;
-
-  NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(PageInfoBubbleGtk);
 };
@@ -115,9 +100,6 @@ PageInfoBubbleGtk::PageInfoBubbleGtk(gfx::NativeWindow parent,
 
   anchor_ = browser_window->
       GetToolbar()->GetLocationBarView()->location_icon_widget();
-
-  registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
-                 NotificationService::AllSources());
 
   InitContents();
 
@@ -150,39 +132,12 @@ void PageInfoBubbleGtk::BubbleClosing(BubbleGtk* bubble,
   delete this;
 }
 
-void PageInfoBubbleGtk::Observe(NotificationType type,
-                                const NotificationSource& source,
-                                const NotificationDetails& details) {
-  DCHECK(type == NotificationType::BROWSER_THEME_CHANGED);
-
-  for (std::vector<GtkWidget*>::iterator it = links_.begin();
-       it != links_.end(); ++it) {
-    gtk_chrome_link_button_set_use_gtk_theme(
-        GTK_CHROME_LINK_BUTTON(*it),
-        theme_service_->UsingNativeTheme());
-  }
-
-  if (theme_service_->UsingNativeTheme()) {
-    for (std::vector<GtkWidget*>::iterator it = labels_.begin();
-         it != labels_.end(); ++it) {
-      gtk_widget_modify_fg(*it, GTK_STATE_NORMAL, NULL);
-    }
-  } else {
-    for (std::vector<GtkWidget*>::iterator it = labels_.begin();
-         it != labels_.end(); ++it) {
-      gtk_widget_modify_fg(*it, GTK_STATE_NORMAL, &gtk_util::kGdkBlack);
-    }
-  }
-}
-
 void PageInfoBubbleGtk::InitContents() {
   if (!contents_) {
     contents_ = gtk_vbox_new(FALSE, gtk_util::kContentAreaSpacing);
     gtk_container_set_border_width(GTK_CONTAINER(contents_),
                                    gtk_util::kContentAreaBorder);
   } else {
-    labels_.clear();
-    links_.clear();
     gtk_util::RemoveAllChildren(contents_);
   }
 
@@ -195,9 +150,8 @@ void PageInfoBubbleGtk::InitContents() {
                        FALSE, FALSE, 0);
   }
 
-  GtkWidget* help_link = gtk_chrome_link_button_new(
-      l10n_util::GetStringUTF8(IDS_PAGE_INFO_HELP_CENTER_LINK).c_str());
-  links_.push_back(help_link);
+  GtkWidget* help_link = theme_service_->BuildChromeLinkButton(
+      l10n_util::GetStringUTF8(IDS_PAGE_INFO_HELP_CENTER_LINK));
   GtkWidget* help_link_hbox = gtk_hbox_new(FALSE, 0);
   // Stick it in an hbox so it doesn't expand to the whole width.
   gtk_box_pack_start(GTK_BOX(help_link_hbox), help_link, FALSE, FALSE, 0);
@@ -205,7 +159,6 @@ void PageInfoBubbleGtk::InitContents() {
   g_signal_connect(help_link, "clicked",
                    G_CALLBACK(OnHelpLinkClickedThunk), this);
 
-  theme_service_->InitThemesFor(this);
   gtk_widget_show_all(contents_);
 }
 
@@ -224,9 +177,9 @@ GtkWidget* PageInfoBubbleGtk::CreateSection(
   gtk_box_pack_start(GTK_BOX(section_box), vbox, TRUE, TRUE, 0);
 
   if (!section.headline.empty()) {
-    GtkWidget* label = gtk_label_new(UTF16ToUTF8(section.headline).c_str());
+    GtkWidget* label = theme_service_->BuildLabel(
+        UTF16ToUTF8(section.headline), gtk_util::kGdkBlack);
     gtk_label_set_selectable(GTK_LABEL(label), TRUE);
-    labels_.push_back(label);
     PangoAttrList* attributes = pango_attr_list_new();
     pango_attr_list_insert(attributes,
                            pango_attr_weight_new(PANGO_WEIGHT_BOLD));
@@ -238,9 +191,9 @@ GtkWidget* PageInfoBubbleGtk::CreateSection(
     gtk_label_set_line_wrap_mode(GTK_LABEL(label), PANGO_WRAP_WORD_CHAR);
     gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 0);
   }
-  GtkWidget* label = gtk_label_new(UTF16ToUTF8(section.description).c_str());
+  GtkWidget* label = theme_service_->BuildLabel(
+      UTF16ToUTF8(section.description), gtk_util::kGdkBlack);
   gtk_label_set_selectable(GTK_LABEL(label), TRUE);
-  labels_.push_back(label);
   gtk_util::SetLabelWidth(label, 400);
   // Allow linebreaking in the middle of words if necessary, so that extremely
   // long hostnames (longer than one line) will still be completely shown.
@@ -248,9 +201,8 @@ GtkWidget* PageInfoBubbleGtk::CreateSection(
   gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 0);
 
   if (section.type == PageInfoModel::SECTION_INFO_IDENTITY && cert_id_ > 0) {
-    GtkWidget* view_cert_link = gtk_chrome_link_button_new(
-        l10n_util::GetStringUTF8(IDS_PAGEINFO_CERT_INFO_BUTTON).c_str());
-    links_.push_back(view_cert_link);
+    GtkWidget* view_cert_link = theme_service_->BuildChromeLinkButton(
+        l10n_util::GetStringUTF8(IDS_PAGEINFO_CERT_INFO_BUTTON));
     GtkWidget* cert_link_hbox = gtk_hbox_new(FALSE, 0);
     // Stick it in an hbox so it doesn't expand to the whole width.
     gtk_box_pack_start(GTK_BOX(cert_link_hbox), view_cert_link,

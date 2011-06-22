@@ -117,9 +117,8 @@ DownloadShelfGtk::DownloadShelfGtk(Browser* browser, GtkWidget* parent)
                    G_CALLBACK(OnButtonClickThunk), this);
 
   // Create the "Show all downloads..." link and connect to the click event.
-  std::string link_text =
-      l10n_util::GetStringUTF8(IDS_SHOW_ALL_DOWNLOADS);
-  link_button_ = gtk_chrome_link_button_new(link_text.c_str());
+  link_button_ = theme_service_->BuildChromeLinkButton(
+      l10n_util::GetStringUTF8(IDS_SHOW_ALL_DOWNLOADS));
   g_signal_connect(link_button_, "clicked",
                    G_CALLBACK(OnButtonClickThunk), this);
   gtk_util::SetButtonTriggersNavigation(link_button_);
@@ -231,10 +230,6 @@ void DownloadShelfGtk::Observe(NotificationType type,
 
     color = theme_service_->GetBorderColor();
     gtk_widget_modify_bg(top_border_, GTK_STATE_NORMAL, &color);
-
-    gtk_chrome_link_button_set_use_gtk_theme(
-        GTK_CHROME_LINK_BUTTON(link_button_),
-        theme_service_->UsingNativeTheme());
 
     // When using a non-standard, non-gtk theme, we make the link color match
     // the bookmark text color. Otherwise, standard link blue can look very

@@ -186,6 +186,8 @@ LocationBarViewGtk::~LocationBarViewGtk() {
 void LocationBarViewGtk::Init(bool popup_window_mode) {
   popup_window_mode_ = popup_window_mode;
 
+  theme_service_ = GtkThemeService::GetFrom(profile_);
+
   // Create the widget first, so we can pass it to the OmniboxViewGtk.
   hbox_.Own(gtk_hbox_new(FALSE, kInnerPadding));
   gtk_container_set_border_width(GTK_CONTAINER(hbox_.get()), kHboxBorder);
@@ -223,8 +225,10 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
                    G_CALLBACK(&OnEntryBoxSizeAllocateThunk), this);
 
   // Tab to search (the keyword box on the left hand side).
-  tab_to_search_full_label_ = gtk_label_new(NULL);
-  tab_to_search_partial_label_ = gtk_label_new(NULL);
+  tab_to_search_full_label_ =
+      theme_service_->BuildLabel("", gtk_util::kGdkBlack);
+  tab_to_search_partial_label_ =
+      theme_service_->BuildLabel("", gtk_util::kGdkBlack);
   GtkWidget* tab_to_search_label_hbox = gtk_hbox_new(FALSE, 0);
   gtk_box_pack_start(GTK_BOX(tab_to_search_label_hbox),
                      tab_to_search_full_label_, FALSE, FALSE, 0);
@@ -269,11 +273,13 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   // Tab to search notification (the hint on the right hand side).
   tab_to_search_hint_ = gtk_hbox_new(FALSE, 0);
   gtk_widget_set_name(tab_to_search_hint_, "chrome-tab-to-search-hint");
-  tab_to_search_hint_leading_label_ = gtk_label_new(NULL);
+  tab_to_search_hint_leading_label_ =
+      theme_service_->BuildLabel("", kHintTextColor);
   gtk_widget_set_sensitive(tab_to_search_hint_leading_label_, FALSE);
   tab_to_search_hint_icon_ = gtk_image_new_from_pixbuf(
       rb.GetNativeImageNamed(IDR_LOCATION_BAR_KEYWORD_HINT_TAB));
-  tab_to_search_hint_trailing_label_ = gtk_label_new(NULL);
+  tab_to_search_hint_trailing_label_ =
+      theme_service_->BuildLabel("", kHintTextColor);
   gtk_widget_set_sensitive(tab_to_search_hint_trailing_label_, FALSE);
   gtk_box_pack_start(GTK_BOX(tab_to_search_hint_),
                      tab_to_search_hint_leading_label_,
@@ -330,7 +336,6 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   edit_bookmarks_enabled_.Init(prefs::kEditBookmarksEnabled,
                                profile_->GetPrefs(), this);
 
-  theme_service_ = GtkThemeService::GetFrom(profile_);
   theme_service_->InitThemesFor(this);
 }
 
@@ -773,11 +778,6 @@ void LocationBarViewGtk::Observe(NotificationType type,
         ThemeService::COLOR_FRAME);
     gtk_util::SetRoundedWindowBorderColor(tab_to_search_box_, border_color);
 
-    gtk_util::SetLabelColor(tab_to_search_full_label_, NULL);
-    gtk_util::SetLabelColor(tab_to_search_partial_label_, NULL);
-    gtk_util::SetLabelColor(tab_to_search_hint_leading_label_, NULL);
-    gtk_util::SetLabelColor(tab_to_search_hint_trailing_label_, NULL);
-
     gtk_util::UndoForceFontSize(security_info_label_);
     gtk_util::UndoForceFontSize(tab_to_search_full_label_);
     gtk_util::UndoForceFontSize(tab_to_search_partial_label_);
@@ -795,13 +795,6 @@ void LocationBarViewGtk::Observe(NotificationType type,
                          &kKeywordBackgroundColor);
     gtk_util::SetRoundedWindowBorderColor(tab_to_search_box_,
                                           kKeywordBorderColor);
-
-    gtk_util::SetLabelColor(tab_to_search_full_label_, &gtk_util::kGdkBlack);
-    gtk_util::SetLabelColor(tab_to_search_partial_label_, &gtk_util::kGdkBlack);
-    gtk_util::SetLabelColor(tab_to_search_hint_leading_label_,
-                            &kHintTextColor);
-    gtk_util::SetLabelColor(tab_to_search_hint_trailing_label_,
-                            &kHintTextColor);
 
     // Until we switch to vector graphics, force the font size of labels.
     // 12.1px = 9pt @ 96dpi

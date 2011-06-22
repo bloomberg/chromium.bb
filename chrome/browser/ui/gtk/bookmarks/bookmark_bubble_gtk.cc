@@ -17,7 +17,6 @@
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/bookmarks/recently_used_folders_combo_model.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "content/browser/user_metrics.h"
@@ -63,10 +62,6 @@ void BookmarkBubbleGtk::Observe(NotificationType type,
                                 const NotificationDetails& details) {
   DCHECK(type == NotificationType::BROWSER_THEME_CHANGED);
 
-  gtk_chrome_link_button_set_use_gtk_theme(
-      GTK_CHROME_LINK_BUTTON(remove_button_),
-      theme_service_->UsingNativeTheme());
-
   if (theme_service_->UsingNativeTheme()) {
     for (std::vector<GtkWidget*>::iterator it = labels_.begin();
          it != labels_.end(); ++it) {
@@ -100,8 +95,8 @@ BookmarkBubbleGtk::BookmarkBubbleGtk(GtkWidget* anchor,
       newly_bookmarked_ ? IDS_BOOMARK_BUBBLE_PAGE_BOOKMARKED :
                           IDS_BOOMARK_BUBBLE_PAGE_BOOKMARK).c_str());
   labels_.push_back(label);
-  remove_button_ = gtk_chrome_link_button_new(
-      l10n_util::GetStringUTF8(IDS_BOOMARK_BUBBLE_REMOVE_BOOKMARK).c_str());
+  remove_button_ = theme_service_->BuildChromeLinkButton(
+      l10n_util::GetStringUTF8(IDS_BOOMARK_BUBBLE_REMOVE_BOOKMARK));
   GtkWidget* edit_button = gtk_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_BOOMARK_BUBBLE_OPTIONS).c_str());
   GtkWidget* close_button = gtk_button_new_with_label(

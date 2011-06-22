@@ -402,11 +402,12 @@ GtkWidget* GtkThemeService::BuildChromeLinkButton(const std::string& text) {
   return link_button;
 }
 
-GtkWidget* GtkThemeService::BuildBlackLabel(const std::string& text) {
-  GtkWidget* label = gtk_label_new(text.c_str());
+GtkWidget* GtkThemeService::BuildLabel(const std::string& text,
+                                       GdkColor color) {
+  GtkWidget* label = gtk_label_new(text.empty() ? NULL : text.c_str());
   if (!use_gtk_)
-    gtk_widget_modify_fg(label, GTK_STATE_NORMAL, &gtk_util::kGdkBlack);
-  black_labels_.push_back(label);
+    gtk_widget_modify_fg(label, GTK_STATE_NORMAL, &color);
+  labels_.insert(std::make_pair(label, color));
 
   signals_->Connect(label, "destroy", G_CALLBACK(OnDestroyLabelThunk), this);
 
@@ -684,10 +685,10 @@ void GtkThemeService::NotifyThemeChanged() {
         GTK_CHROME_LINK_BUTTON(*it), use_gtk_);
   }
 
-  const GdkColor* color = use_gtk_ ? NULL : &gtk_util::kGdkBlack;
-  for (std::vector<GtkWidget*>::iterator it = black_labels_.begin();
-       it != black_labels_.end(); ++it) {
-    gtk_widget_modify_fg(*it, GTK_STATE_NORMAL, color);
+  for (std::map<GtkWidget*, GdkColor>::iterator it = labels_.begin();
+       it != labels_.end(); ++it) {
+    const GdkColor* color = use_gtk_ ? NULL : &it->second;
+    gtk_util::SetLabelColor(it->first, color);
   }
 
   Browser* browser = BrowserList::GetLastActive();
@@ -1154,10 +1155,9 @@ void GtkThemeService::OnDestroyChromeLinkButton(GtkWidget* button) {
 }
 
 void GtkThemeService::OnDestroyLabel(GtkWidget* button) {
-  std::vector<GtkWidget*>::iterator it =
-      find(black_labels_.begin(), black_labels_.end(), button);
-  if (it != black_labels_.end())
-    black_labels_.erase(it);
+  std::map<GtkWidget*, GdkColor>::iterator it = labels_.find(button);
+  if (it != labels_.end())
+    labels_.erase(it);
 }
 
 gboolean GtkThemeService::OnSeparatorExpose(GtkWidget* widget,

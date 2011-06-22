@@ -112,7 +112,7 @@ int InfoBarGtk::AnimatingHeight() const {
 }
 
 GtkWidget* InfoBarGtk::CreateLabel(const std::string& text) {
-  return theme_service_->BuildBlackLabel(text);
+  return theme_service_->BuildLabel(text, gtk_util::kGdkBlack);
 }
 
 GtkWidget* InfoBarGtk::CreateLinkButton(const std::string& text) {

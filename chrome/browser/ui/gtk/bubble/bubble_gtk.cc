@@ -59,7 +59,7 @@ BubbleGtk* BubbleGtk::Show(GtkWidget* anchor_widget,
 }
 
 BubbleGtk::BubbleGtk(GtkThemeService* provider,
-                    bool match_system_theme)
+                     bool match_system_theme)
     : delegate_(NULL),
       window_(NULL),
       theme_service_(provider),

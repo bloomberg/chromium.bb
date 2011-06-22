@@ -14,7 +14,6 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
-#include "content/common/notification_service.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -48,24 +47,6 @@ void FirstRunBubble::BubbleClosing(BubbleGtk* bubble,
   // TODO(port): Enable parent window
 }
 
-void FirstRunBubble::Observe(NotificationType type,
-                             const NotificationSource& source,
-                             const NotificationDetails& details) {
-  DCHECK(type == NotificationType::BROWSER_THEME_CHANGED);
-
-  if (theme_service_->UsingNativeTheme()) {
-    for (std::vector<GtkWidget*>::iterator it = labels_.begin();
-         it != labels_.end(); ++it) {
-      gtk_widget_modify_fg(*it, GTK_STATE_NORMAL, NULL);
-    }
-  } else {
-    for (std::vector<GtkWidget*>::iterator it = labels_.begin();
-         it != labels_.end(); ++it) {
-      gtk_widget_modify_fg(*it, GTK_STATE_NORMAL, &gtk_util::kGdkBlack);
-    }
-  }
-}
-
 FirstRunBubble::FirstRunBubble(Profile* profile,
                                GtkWidget* anchor,
                                const gfx::Rect& rect,
@@ -81,20 +62,21 @@ FirstRunBubble::FirstRunBubble(Profile* profile,
                    G_CALLBACK(&HandleDestroyThunk), this);
 
   int width_resource = 0;
+  std::vector<GtkWidget*> labels;
   if (bubble_type == FirstRun::LARGE_BUBBLE) {
     width_resource = IDS_FIRSTRUNBUBBLE_DIALOG_WIDTH_CHARS;
-    InitializeContentForLarge();
+    InitializeContentForLarge(&labels);
   } else if (bubble_type == FirstRun::OEM_BUBBLE) {
     width_resource = IDS_FIRSTRUNOEMBUBBLE_DIALOG_WIDTH_CHARS;
-    InitializeContentForOEM();
+    InitializeContentForOEM(&labels);
   } else if (bubble_type == FirstRun::MINIMAL_BUBBLE) {
     width_resource = IDS_FIRSTRUN_MINIMAL_BUBBLE_DIALOG_WIDTH_CHARS;
-    InitializeContentForMinimal();
+    InitializeContentForMinimal(&labels);
   } else {
     NOTREACHED();
   }
 
-  InitializeLabels(width_resource);
+  InitializeLabels(width_resource, &labels);
 
   BubbleGtk::ArrowLocationGtk arrow_location =
       !base::i18n::IsRTL() ?
@@ -112,31 +94,29 @@ FirstRunBubble::FirstRunBubble(Profile* profile,
     NOTREACHED();
     return;
   }
-
-  registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
-                 NotificationService::AllSources());
-  theme_service_->InitThemesFor(this);
 }
 
 FirstRunBubble::~FirstRunBubble() {
 }
 
-void FirstRunBubble::InitializeContentForLarge() {
-  GtkWidget* label1 = gtk_label_new(NULL);
-  labels_.push_back(label1);
+void FirstRunBubble::InitializeContentForLarge(
+    std::vector<GtkWidget*>* labels) {
+  GtkWidget* label1 = theme_service_->BuildLabel("", gtk_util::kGdkBlack);
+  labels->push_back(label1);
   char* markup = g_markup_printf_escaped(kSearchLabelMarkup,
       l10n_util::GetStringUTF8(IDS_FR_BUBBLE_TITLE).c_str());
   gtk_label_set_markup(GTK_LABEL(label1), markup);
   g_free(markup);
 
-  GtkWidget* label2 = gtk_label_new(
-      l10n_util::GetStringUTF8(IDS_FR_BUBBLE_SUBTEXT).c_str());
-  labels_.push_back(label2);
+  GtkWidget* label2 = theme_service_->BuildLabel(
+      l10n_util::GetStringUTF8(IDS_FR_BUBBLE_SUBTEXT), gtk_util::kGdkBlack);
+  labels->push_back(label2);
 
   string16 search_engine = GetDefaultSearchEngineName(profile_);
-  GtkWidget* label3 = gtk_label_new(
-      l10n_util::GetStringFUTF8(IDS_FR_BUBBLE_QUESTION, search_engine).c_str());
-  labels_.push_back(label3);
+  GtkWidget* label3 = theme_service_->BuildLabel(
+      l10n_util::GetStringFUTF8(IDS_FR_BUBBLE_QUESTION, search_engine),
+      gtk_util::kGdkBlack);
+  labels->push_back(label3);
 
   GtkWidget* keep_button = gtk_button_new_with_label(
       l10n_util::GetStringFUTF8(IDS_FR_BUBBLE_OK, search_engine).c_str());
@@ -167,14 +147,15 @@ void FirstRunBubble::InitializeContentForLarge() {
                    G_CALLBACK(&HandleChangeButtonThunk), this);
 }
 
-void FirstRunBubble::InitializeContentForOEM() {
+void FirstRunBubble::InitializeContentForOEM(std::vector<GtkWidget*>* labels) {
   NOTIMPLEMENTED() << "Falling back to minimal bubble";
-  InitializeContentForMinimal();
+  InitializeContentForMinimal(labels);
 }
 
-void FirstRunBubble::InitializeContentForMinimal() {
-  GtkWidget* label1 = gtk_label_new(NULL);
-  labels_.push_back(label1);
+void FirstRunBubble::InitializeContentForMinimal(
+    std::vector<GtkWidget*>* labels) {
+  GtkWidget* label1 = theme_service_->BuildLabel("", gtk_util::kGdkBlack);
+  labels->push_back(label1);
   char* markup = g_markup_printf_escaped(kSearchLabelMarkup,
       l10n_util::GetStringFUTF8(
           IDS_FR_SE_BUBBLE_TITLE,
@@ -182,25 +163,26 @@ void FirstRunBubble::InitializeContentForMinimal() {
   gtk_label_set_markup(GTK_LABEL(label1), markup);
   g_free(markup);
 
-  GtkWidget* label2 =
-      gtk_label_new(l10n_util::GetStringUTF8(IDS_FR_BUBBLE_SUBTEXT).c_str());
-  labels_.push_back(label2);
+  GtkWidget* label2 = theme_service_->BuildLabel(
+      l10n_util::GetStringUTF8(IDS_FR_BUBBLE_SUBTEXT), gtk_util::kGdkBlack);
+  labels->push_back(label2);
 
   gtk_box_pack_start(GTK_BOX(content_), label1, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(content_), label2, FALSE, FALSE, 0);
 }
 
-void FirstRunBubble::InitializeLabels(int width_resource) {
+void FirstRunBubble::InitializeLabels(int width_resource,
+                                      std::vector<GtkWidget*>* labels) {
   int width = -1;
 
   gtk_util::GetWidgetSizeFromResources(
       anchor_, width_resource, 0, &width, NULL);
 
-  for (size_t i = 0; i < labels_.size(); ++i) {
+  for (size_t i = 0; i < labels->size(); ++i) {
     // Resize the labels so that they don't wrap more than necessary.  We leave
     // |content_| unsized so that it'll expand as needed to hold the other
     // widgets -- the buttons may be wider than |width| on high-DPI displays.
-    gtk_util::SetLabelWidth(labels_[i], width);
+    gtk_util::SetLabelWidth((*labels)[i], width);
   }
 }
 
