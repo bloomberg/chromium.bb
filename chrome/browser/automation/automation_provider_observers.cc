@@ -1958,17 +1958,21 @@ std::vector<DictionaryValue*>* GetAppInfoFromExtensions(
 
       // Convert the launch_type integer into a more descriptive string.
       int launch_type;
-      app_info->GetInteger("launch_type", &launch_type);
+      const char* kLaunchType = "launch_type";
+      if (!app_info->GetInteger(kLaunchType, &launch_type)) {
+        NOTREACHED() << "Can't get integer from key " << kLaunchType;
+        continue;
+      }
       if (launch_type == ExtensionPrefs::LAUNCH_PINNED) {
-        app_info->SetString("launch_type", "pinned");
+        app_info->SetString(kLaunchType, "pinned");
       } else if (launch_type == ExtensionPrefs::LAUNCH_REGULAR) {
-        app_info->SetString("launch_type", "regular");
+        app_info->SetString(kLaunchType, "regular");
       } else if (launch_type == ExtensionPrefs::LAUNCH_FULLSCREEN) {
-        app_info->SetString("launch_type", "fullscreen");
+        app_info->SetString(kLaunchType, "fullscreen");
       } else if (launch_type == ExtensionPrefs::LAUNCH_WINDOW) {
-        app_info->SetString("launch_type", "window");
+        app_info->SetString(kLaunchType, "window");
       } else {
-        app_info->SetString("launch_type", "unknown");
+        app_info->SetString(kLaunchType, "unknown");
       }
 
       apps_list->push_back(app_info);
