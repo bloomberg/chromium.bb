@@ -302,7 +302,7 @@ const void* GetInterface(const char* name) {
     return PluginInstance::GetMessagingInterface();
   if (strcmp(name, PPB_PROXY_PRIVATE_INTERFACE) == 0)
     return PPB_Proxy_Impl::GetInterface();
-  if (strcmp(name, PPB_SCROLLBAR_DEV_INTERFACE) == 0)
+  if (strcmp(name, PPB_SCROLLBAR_DEV_INTERFACE_0_4) == 0)
     return ::ppapi::thunk::GetPPB_Scrollbar_Thunk();
   if (strcmp(name, PPB_SCROLLBAR_DEV_INTERFACE_0_3) == 0)
     return PPB_Scrollbar_Impl::Get0_3Interface();
