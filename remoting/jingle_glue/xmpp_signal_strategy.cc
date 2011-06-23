@@ -94,7 +94,8 @@ IqRequest* XmppSignalStrategy::CreateIqRequest() {
 }
 
 bool XmppSignalStrategy::HandleStanza(const buzz::XmlElement* stanza) {
-  listener_->OnIncomingStanza(stanza);
+  if (listener_)
+    listener_->OnIncomingStanza(stanza);
   return false;
 }
 
