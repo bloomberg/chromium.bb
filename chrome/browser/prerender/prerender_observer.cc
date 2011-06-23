@@ -7,13 +7,15 @@
 #include "base/time.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/view_messages.h"
 
 namespace prerender {
 
-PrerenderObserver::PrerenderObserver(TabContents* tab_contents)
-    : TabContentsObserver(tab_contents),
+PrerenderObserver::PrerenderObserver(TabContentsWrapper* tab)
+    : TabContentsObserver(tab->tab_contents()),
+      tab_(tab),
       pplt_load_start_() {
 }
 
@@ -22,6 +24,8 @@ PrerenderObserver::~PrerenderObserver() {
 
 void PrerenderObserver::ProvisionalChangeToMainFrameUrl(const GURL& url,
                                                         bool has_opener_set) {
+  if (!tab_->delegate())
+    return;  // PrerenderManager needs a delegate to handle the swap.
   PrerenderManager* prerender_manager = MaybeGetPrerenderManager();
   if (!prerender_manager)
     return;

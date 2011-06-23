@@ -137,7 +137,7 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
   external_protocol_observer_.reset(new ExternalProtocolObserver(contents));
   file_select_observer_.reset(new FileSelectObserver(contents));
   plugin_observer_.reset(new PluginObserver(this));
-  prerender_observer_.reset(new prerender::PrerenderObserver(contents));
+  prerender_observer_.reset(new prerender::PrerenderObserver(this));
   print_preview_.reset(new printing::PrintPreviewMessageHandler(contents));
   webnavigation_observer_.reset(
       new ExtensionWebNavigationTabObserver(contents));

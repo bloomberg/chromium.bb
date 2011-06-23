@@ -9,7 +9,7 @@
 
 #include "base/time.h"
 
-class TabContents;
+class TabContentsWrapper;
 class GURL;
 
 namespace prerender {
@@ -21,7 +21,7 @@ class PrerenderManager;
 // to compare PLT's with prerendering enabled and disabled.
 class PrerenderObserver : public TabContentsObserver {
  public:
-  explicit PrerenderObserver(TabContents* tab_contents);
+  explicit PrerenderObserver(TabContentsWrapper* tab);
   virtual ~PrerenderObserver();
 
   // TabContentsObserver implementation.
@@ -50,6 +50,9 @@ class PrerenderObserver : public TabContentsObserver {
 
   // Returns whether the TabContents being observed is currently prerendering.
   bool IsPrerendering();
+
+  // TabContentsWrapper we're created for.
+  TabContentsWrapper* tab_;
 
   // System time at which the current load was started for the purpose of
   // the perceived page load time (PPLT).

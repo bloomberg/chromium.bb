@@ -537,6 +537,7 @@ void PrerenderContents::DestroyWhenUsingTooManyResources() {
 }
 
 TabContentsWrapper* PrerenderContents::ReleasePrerenderContents() {
+  prerender_contents_->tab_contents()->set_delegate(NULL);
   render_view_host_observer_.reset();
   prerender_contents_->download_tab_helper()->set_delegate(NULL);
   TabContentsObserver::Observe(NULL);
