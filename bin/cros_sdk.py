@@ -77,7 +77,7 @@ def CreateChroot(sdk_path, sdk_url, chroot_path, replace):
 
     print 'Downloading sdk: "%s"' % url
     cros_build_lib.RunCommand(['curl', '-f', '--retry', '5', '-L',
-        '-y', '30', '--output', tarball_dest, url])
+        '-y', '30', '-C', '-', '--output', tarball_dest, url])
 
   # TODO(zbehan): Unpack and install
   # For now, we simply call make_chroot on the prebuilt chromeos-sdk.
