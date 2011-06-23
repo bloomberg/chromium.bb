@@ -93,8 +93,6 @@ ProfileSyncService::ProfileSyncService(ProfileSyncFactory* factory,
       channel == platform_util::CHANNEL_BETA) {
     sync_service_url_ = GURL(kSyncServerUrl);
   }
-
-  tried_implicit_gaia_remove_when_bug_62103_fixed_ = false;
 }
 
 ProfileSyncService::~ProfileSyncService() {
@@ -990,9 +988,7 @@ void ProfileSyncService::GetRegisteredDataTypes(
 }
 
 bool ProfileSyncService::IsUsingSecondaryPassphrase() const {
-  return backend_.get() && (backend_->IsUsingExplicitPassphrase() ||
-      (tried_implicit_gaia_remove_when_bug_62103_fixed_ &&
-       IsPassphraseRequired()));
+  return backend_.get() && backend_->IsUsingExplicitPassphrase();
 }
 
 bool ProfileSyncService::IsCryptographerReady(
@@ -1275,7 +1271,6 @@ void ProfileSyncService::Observe(NotificationType type,
       // update the implicit passphrase (idempotent if the passphrase didn't
       // actually change), or the user has an explicit passphrase set so this
       // becomes a no-op.
-      tried_implicit_gaia_remove_when_bug_62103_fixed_ = true;
       SetPassphrase(successful->password, false, true);
       break;
     }

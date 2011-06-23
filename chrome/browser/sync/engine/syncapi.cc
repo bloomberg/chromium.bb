@@ -1474,13 +1474,6 @@ class SyncManager::SyncInternal
   void UpdateNotificationInfo(
       const syncable::ModelTypePayloadMap& type_payloads);
 
-  // Helper for migration to new nigori proto to set
-  // 'using_explicit_passphrase' in the NigoriSpecifics.
-  // TODO(tim): Bug 62103.  Remove this after it has been pushed out to dev
-  // channel users.
-  void SetUsingExplicitPassphrasePrefForMigration(
-      WriteTransaction* const trans);
-
   // Checks for server reachabilty and requests a nudge.
   void OnIPAddressChangedImpl();
 
@@ -1927,19 +1920,6 @@ void SyncManager::SyncInternal::RaiseAuthNeededEvent() {
       OnAuthError(AuthError(AuthError::INVALID_GAIA_CREDENTIALS)));
 }
 
-void SyncManager::SyncInternal::SetUsingExplicitPassphrasePrefForMigration(
-    WriteTransaction* const trans) {
-  WriteNode node(trans);
-  if (!node.InitByTagLookup(kNigoriTag)) {
-    // TODO(albertb): Plumb an UnrecoverableError all the way back to the PSS.
-    NOTREACHED();
-    return;
-  }
-  sync_pb::NigoriSpecifics specifics(node.GetNigoriSpecifics());
-  specifics.set_using_explicit_passphrase(true);
-  node.SetNigoriSpecifics(specifics);
-}
-
 void SyncManager::SyncInternal::SetPassphrase(
     const std::string& passphrase, bool is_explicit) {
   // We do not accept empty passphrases.
@@ -1966,14 +1946,6 @@ void SyncManager::SyncInternal::SetPassphrase(
           OnPassphraseRequired(sync_api::REASON_SET_PASSPHRASE_FAILED));
       return;
     }
-
-    // TODO(tim): If this is the first time the user has entered a passphrase
-    // since the protocol changed to store passphrase preferences in the cloud,
-    // make sure we update this preference. See bug 62103.
-    // TODO(jhawkins): Verify that this logic may be removed now that the
-    // migration is no longer supported.
-    if (is_explicit)
-      SetUsingExplicitPassphrasePrefForMigration(&trans);
 
     // Nudge the syncer so that encrypted datatype updates that were waiting for
     // this passphrase get applied as soon as possible.

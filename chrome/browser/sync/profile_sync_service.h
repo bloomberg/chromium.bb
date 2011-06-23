@@ -636,15 +636,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // TODO(lipalani): Bug 82221 unify this with the CachedPassphrase struct.
   std::string gaia_password_;
 
-  // TODO(tim): Remove this once new 'explicit passphrase' code flushes through
-  // dev channel. See bug 62103.
-  // To "migrate" early adopters of password sync on dev channel to the new
-  // model that stores their secondary passphrase preference in the cloud, we
-  // need some extra state since this cloud pref will be empty for all of them
-  // regardless of how they set up sync, and we can't trust
-  // kSyncUsingSecondaryPassphrase due to bugs in that implementation.
-  bool tried_implicit_gaia_remove_when_bug_62103_fixed_;
-
   // Keep track of where we are in a server clear operation
   ClearServerDataState clear_server_data_state_;
 
