@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -177,11 +177,6 @@ void BuildCommitCommand::ExecuteImpl(SyncSession* session) {
         string prev_id_string =
             prev_id.IsRoot() ? string() : prev_id.GetServerId();
         sync_entry->set_insert_after_item_id(prev_id_string);
-
-        // TODO(ncarter): In practice we won't want to send this data twice
-        // over the wire; instead, when deployed servers are able to accept
-        // the new-style scheme, we should abandon the old way.
-        SetOldStyleBookmarkData(&meta_entry, sync_entry);
       }
       SetEntrySpecifics(&meta_entry, sync_entry);
     }
