@@ -12,6 +12,7 @@ namespace ui {
 enum TouchStatus;
 }
 
+class TabStripSelectionModel;
 class TouchTab;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -40,7 +41,8 @@ class TouchTabStrip : public BaseTabStrip {
   virtual void StopAllHighlighting();
   virtual BaseTab* CreateTabForDragging();
   virtual void RemoveTabAt(int model_index);
-  virtual void SelectTabAt(int old_model_index, int new_model_index);
+  virtual void SetSelection(const TabStripSelectionModel& old_selection,
+                            const TabStripSelectionModel& new_selection);
   virtual void TabTitleChangedNotLoading(int model_index);
   virtual BaseTab* CreateTab();
   virtual void StartInsertTabAnimation(int model_index);

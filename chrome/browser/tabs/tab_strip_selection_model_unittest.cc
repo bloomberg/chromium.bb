@@ -173,3 +173,20 @@ TEST_F(TabStripSelectionModelTest, AddSelectionFromAnchorTo) {
   model.AddSelectionFromAnchorTo(0);
   EXPECT_EQ("active=0 anchor=2 selection=0 1 2 3 4", StateAsString(model));
 }
+
+TEST_F(TabStripSelectionModelTest, Equals) {
+  TabStripSelectionModel model1;
+  model1.SetSelectedIndex(0);
+  model1.AddSelectionFromAnchorTo(4);
+
+  TabStripSelectionModel model2;
+  model2.SetSelectedIndex(0);
+  model2.AddSelectionFromAnchorTo(4);
+
+  EXPECT_TRUE(model1.Equals(model2));
+  EXPECT_TRUE(model2.Equals(model1));
+
+  model2.SetSelectedIndex(0);
+  EXPECT_FALSE(model1.Equals(model2));
+  EXPECT_FALSE(model2.Equals(model1));
+}

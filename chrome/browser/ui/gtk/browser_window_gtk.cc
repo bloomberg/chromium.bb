@@ -1174,9 +1174,6 @@ void BrowserWindowGtk::ActiveTabChanged(TabContentsWrapper* old_contents,
                                         TabContentsWrapper* new_contents,
                                         int index,
                                         bool user_gesture) {
-  if (old_contents == new_contents)
-    return;
-
   if (old_contents && !old_contents->tab_contents()->is_being_destroyed())
     old_contents->view()->StoreFocus();
 

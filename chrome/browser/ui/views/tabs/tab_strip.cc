@@ -5,12 +5,14 @@
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 
 #include <algorithm>
+#include <iterator>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/stl_util-inl.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/defaults.h"
+#include "chrome/browser/tabs/tab_strip_selection_model.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
@@ -236,7 +238,8 @@ void TabStrip::RemoveTabAt(int model_index) {
     StartRemoveTabAnimation(model_index);
 }
 
-void TabStrip::SelectTabAt(int old_model_index, int new_model_index) {
+void TabStrip::SetSelection(const TabStripSelectionModel& old_selection,
+                            const TabStripSelectionModel& new_selection) {
   // We have "tiny tabs" if the tabs are so tiny that the unselected ones are
   // a different size to the selected ones.
   bool tiny_tabs = current_unselected_width_ != current_selected_width_;
@@ -246,8 +249,16 @@ void TabStrip::SelectTabAt(int old_model_index, int new_model_index) {
     SchedulePaint();
   }
 
-  if (old_model_index >= 0) {
-    GetTabAtTabDataIndex(ModelIndexToTabIndex(old_model_index))->
+  TabStripSelectionModel::SelectedIndices no_longer_selected;
+  std::insert_iterator<TabStripSelectionModel::SelectedIndices>
+      it(no_longer_selected, no_longer_selected.begin());
+  std::set_difference(old_selection.selected_indices().begin(),
+                      old_selection.selected_indices().end(),
+                      new_selection.selected_indices().begin(),
+                      new_selection.selected_indices().end(),
+                      it);
+  for (size_t i = 0; i < no_longer_selected.size(); ++i) {
+    GetTabAtTabDataIndex(ModelIndexToTabIndex(no_longer_selected[i]))->
         StopMiniTabTitleAnimation();
   }
 }

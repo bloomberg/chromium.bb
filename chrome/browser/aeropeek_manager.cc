@@ -1115,9 +1115,6 @@ void AeroPeekManager::ActiveTabChanged(TabContentsWrapper* old_contents,
                                        TabContentsWrapper* new_contents,
                                        int index,
                                        bool user_gesture) {
-  if (old_contents == new_contents)
-    return;
-
   // Deactivate the old window in the thumbnail list and activate the new one
   // to synchronize the thumbnail list with TabStrip.
   if (old_contents) {

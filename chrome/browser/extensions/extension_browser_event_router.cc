@@ -331,9 +331,6 @@ void ExtensionBrowserEventRouter::ActiveTabChanged(
     TabContentsWrapper* new_contents,
     int index,
     bool user_gesture) {
-  if (old_contents == new_contents)
-    return;
-
   ListValue args;
   args.Append(Value::CreateIntegerValue(
       ExtensionTabUtil::GetTabId(new_contents->tab_contents())));

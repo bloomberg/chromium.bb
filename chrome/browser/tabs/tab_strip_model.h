@@ -514,15 +514,22 @@ class TabStripModel : public NotificationObserver {
 
   TabContentsWrapper* GetContentsAt(int index) const;
 
-  // If the TabContentsWrapper at |to_index| differs from |old_contents|
-  // notifies observers.
-  void NotifyTabSelectedIfChanged(TabContentsWrapper* old_contents,
-                                  int to_index,
-                                  bool user_gesture);
+  // Notifies the observers if the active tab has changed. If |old_contents| is
+  // non-null a TabDeactivated notification is sent right before sending
+  // ActiveTabChanged notification.
+  void NotifyIfActiveTabChanged(TabContentsWrapper* old_contents,
+                                bool user_gesture);
 
-  // Notifies the observers the active tab changed. |old_active_index| gives
-  // the old active index.
-  void NotifyActiveTabChanged(int old_active_index);
+  // Notifies the observers if the active tab or the tab selection has changed.
+  // If |old_contents| is non-null a TabDeactivated notification is sent right
+  // before sending ActiveTabChanged notification. |old_model| is a snapshot of
+  // |selection_model_| before the change.
+  // Note: This function might end up sending 0 to 3 notifications in the
+  // following order: TabDeactivated, ActiveTabChanged, TabSelectionChanged.
+  void NotifyIfActiveOrSelectionChanged(
+      TabContentsWrapper* old_contents,
+      bool user_gesture,
+      const TabStripSelectionModel& old_model);
 
   // Returns the number of New Tab tabs in the TabStripModel.
   int GetNewTabCount() const;
