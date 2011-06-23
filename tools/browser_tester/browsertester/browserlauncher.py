@@ -173,6 +173,9 @@ class BrowserLauncher(object):
   def IsRunning(self):
     return self.handle.poll() is None
 
+  def GetReturnCode(self):
+    return self.handle.returncode
+
   def Run(self, url, port):
     self.binary = EscapeSpaces(self.FindBinary())
     self.profile = self.CreateProfile()

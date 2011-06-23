@@ -145,7 +145,8 @@ def Run(url, options):
   try:
     while server.test_in_progress or options.interactive:
       if not browser.IsRunning():
-        listener.ServerError('Browser process ended during test')
+        listener.ServerError('Browser process ended during test '
+                             '(return code %r)' % browser.GetReturnCode())
         break
       elif not options.interactive and server.TimedOut(options.timeout):
         listener.ServerError('Did not hear from the browser for %.1f seconds' %
