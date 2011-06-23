@@ -83,56 +83,6 @@ class ActiveDownloadsUIHTMLSource : public ChromeURLDataManager::DataSource {
   DISALLOW_COPY_AND_ASSIGN(ActiveDownloadsUIHTMLSource);
 };
 
-// The handler for Javascript messages related to the "active_downloads" view.
-class ActiveDownloadsHandler
-    : public WebUIMessageHandler,
-      public DownloadManager::Observer,
-      public DownloadItem::Observer {
- public:
-  ActiveDownloadsHandler();
-  virtual ~ActiveDownloadsHandler();
-
-  // Initialization after Attach.
-  void Init();
-
-  // WebUIMessageHandler implementation.
-  virtual WebUIMessageHandler* Attach(WebUI* web_ui);
-  virtual void RegisterMessages();
-
-  // DownloadItem::Observer interface.
-  virtual void OnDownloadUpdated(DownloadItem* item);
-  virtual void OnDownloadOpened(DownloadItem* item) { }
-
-  // DownloadManager::Observer interface.
-  virtual void ModelChanged();
-
-  // WebUI Callbacks.
-  void HandleGetDownloads(const ListValue* args);
-  void HandlePauseToggleDownload(const ListValue* args);
-  void HandleCancelDownload(const ListValue* args);
-  void HandleAllowDownload(const ListValue* args);
-  void OpenNewFullWindow(const ListValue* args);
-  void PlayMediaFile(const ListValue* args);
-
- private:
-  // Downloads helpers.
-  DownloadItem* GetDownloadById(const ListValue* args);
-  void UpdateDownloadList();
-  void SendDownloads();
-  void AddDownload(DownloadItem* item);
-  bool SelectTab(const GURL& url);
-
-  Profile* profile_;
-  TabContents* tab_contents_;
-  DownloadManager* download_manager_;
-
-  typedef std::vector<DownloadItem*> DownloadList;
-  DownloadList active_downloads_;
-  DownloadList downloads_;
-
-  DISALLOW_COPY_AND_ASSIGN(ActiveDownloadsHandler);
-};
-
 ////////////////////////////////////////////////////////////////////////////////
 //
 // ActiveDownloadsUIHTMLSource
@@ -189,11 +139,66 @@ void ActiveDownloadsUIHTMLSource::StartDataRequest(const std::string& path,
   SendResponse(request_id, html_bytes);
 }
 
+}  // namespace
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // ActiveDownloadsHandler
 //
 ////////////////////////////////////////////////////////////////////////////////
+
+// The handler for Javascript messages related to the "active_downloads" view.
+class ActiveDownloadsHandler
+    : public WebUIMessageHandler,
+      public DownloadManager::Observer,
+      public DownloadItem::Observer {
+ public:
+  ActiveDownloadsHandler();
+  virtual ~ActiveDownloadsHandler();
+
+  // Initialization after Attach.
+  void Init();
+
+  // WebUIMessageHandler implementation.
+  virtual WebUIMessageHandler* Attach(WebUI* web_ui);
+  virtual void RegisterMessages();
+
+  // DownloadItem::Observer interface.
+  virtual void OnDownloadUpdated(DownloadItem* item);
+  virtual void OnDownloadOpened(DownloadItem* item) { }
+
+  // DownloadManager::Observer interface.
+  virtual void ModelChanged();
+
+  // WebUI Callbacks.
+  void HandleGetDownloads(const ListValue* args);
+  void HandlePauseToggleDownload(const ListValue* args);
+  void HandleCancelDownload(const ListValue* args);
+  void HandleAllowDownload(const ListValue* args);
+  void OpenNewFullWindow(const ListValue* args);
+  void PlayMediaFile(const ListValue* args);
+
+  // For testing.
+  typedef std::vector<DownloadItem*> DownloadList;
+  const DownloadList& downloads() const { return downloads_; }
+
+ private:
+  // Downloads helpers.
+  DownloadItem* GetDownloadById(const ListValue* args);
+  void UpdateDownloadList();
+  void SendDownloads();
+  void AddDownload(DownloadItem* item);
+  bool SelectTab(const GURL& url);
+
+  Profile* profile_;
+  TabContents* tab_contents_;
+  DownloadManager* download_manager_;
+
+  DownloadList active_downloads_;
+  DownloadList downloads_;
+
+  DISALLOW_COPY_AND_ASSIGN(ActiveDownloadsHandler);
+};
 
 ActiveDownloadsHandler::ActiveDownloadsHandler()
     : profile_(NULL),
@@ -365,8 +370,6 @@ void ActiveDownloadsHandler::OnDownloadUpdated(DownloadItem* item) {
   }
 }
 
-}  // namespace
-
 ////////////////////////////////////////////////////////////////////////////////
 //
 // ActiveDownloadsUI
@@ -375,10 +378,10 @@ void ActiveDownloadsHandler::OnDownloadUpdated(DownloadItem* item) {
 
 
 ActiveDownloadsUI::ActiveDownloadsUI(TabContents* contents)
-    : HtmlDialogUI(contents) {
-  ActiveDownloadsHandler* handler = new ActiveDownloadsHandler();
-  AddMessageHandler(handler->Attach(this));
-  handler->Init();
+    : HtmlDialogUI(contents),
+      handler_(new ActiveDownloadsHandler()) {
+  AddMessageHandler(handler_->Attach(this));
+  handler_->Init();
   ActiveDownloadsUIHTMLSource* html_source = new ActiveDownloadsUIHTMLSource();
 
   // Set up the chrome://active-downloads/ source.
@@ -433,3 +436,6 @@ Browser* ActiveDownloadsUI::GetPopup(Profile* profile) {
   return NULL;
 }
 
+const ActiveDownloadsUI::DownloadList& ActiveDownloadsUI::GetDownloads() const {
+  return handler_->downloads();
+}

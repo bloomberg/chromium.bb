@@ -7,6 +7,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
@@ -15,6 +16,8 @@
 
 class Browser;
 class Profile;
+class DownloadItem;
+class ActiveDownloadsHandler;
 
 class ActiveDownloadsUI : public HtmlDialogUI {
  public:
@@ -23,7 +26,13 @@ class ActiveDownloadsUI : public HtmlDialogUI {
   static Browser* OpenPopup(Profile* profile);
   static Browser* GetPopup(Profile* profile);
 
+  // For testing.
+  typedef std::vector<DownloadItem*> DownloadList;
+  const DownloadList& GetDownloads() const;
+
  private:
+  ActiveDownloadsHandler* handler_;
+
   DISALLOW_COPY_AND_ASSIGN(ActiveDownloadsUI);
 };
 
