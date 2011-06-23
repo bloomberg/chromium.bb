@@ -27,11 +27,13 @@
       "default_title": "__MSG_PREVIEW_IMAGE__",
       "default_icon": "images/icon_preview_16x16.png",
       "file_filters": [
+        "filesystem:*.bmp",
         "filesystem:*.gif",
         "filesystem:*.jpg",
         "filesystem:*.jpeg",
         "filesystem:*.webp",
         "filesystem:*.png",
+        "filesystem:*.BMP",
         "filesystem:*.GIF",
         "filesystem:*.JPG",
         "filesystem:*.JPEG",
