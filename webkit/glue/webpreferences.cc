@@ -81,7 +81,8 @@ WebPreferences::WebPreferences()
       fullscreen_enabled(false),
       allow_displaying_insecure_content(true),
       allow_running_insecure_content(false),
-      should_print_backgrounds(false) {
+      should_print_backgrounds(false),
+      enable_scroll_animator(false) {
 }
 
 WebPreferences::~WebPreferences() {
@@ -231,4 +232,5 @@ void WebPreferences::Apply(WebView* web_view) const {
   settings->setAllowDisplayOfInsecureContent(allow_displaying_insecure_content);
   settings->setAllowRunningOfInsecureContent(allow_running_insecure_content);
   settings->setShouldPrintBackgrounds(should_print_backgrounds);
+  settings->setEnableScrollAnimator(enable_scroll_animator);
 }

@@ -4512,6 +4512,11 @@
             ['exclude', '^browser/ui/views/file_manager_dialog.h'],
           ]}
         ],
+        ['enable_smooth_scrolling==1', {
+          'defines': [
+            'ENABLE_SMOOTH_SCROLLING',
+          ],
+        }],
       ],
     },
     {

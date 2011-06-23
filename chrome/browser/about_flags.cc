@@ -364,6 +364,18 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnableSyncTypedUrls)
   },
+  {
+    "enable-smooth-scrolling",  // FLAGS:RECORD_UMA
+    IDS_FLAGS_ENABLE_SMOOTH_SCROLLING_NAME,
+    IDS_FLAGS_ENABLE_SMOOTH_SCROLLING_DESCRIPTION,
+    // Can't expose the switch unless the code is compiled in.
+#if defined(ENABLE_SMOOTH_SCROLLING)
+    kOsAll,
+#else
+    0,
+#endif
+    SINGLE_VALUE_TYPE(switches::kEnableSmoothScrolling)
+  },
 };
 
 const Experiment* experiments = kExperiments;

@@ -479,6 +479,9 @@ const char kEnablePreconnect[]              = "enable-preconnect";
 // parameter to indicate if the provider should be the default.
 const char kEnableSearchProviderApiV2[]     = "enable-search-provider-api-v2";
 
+// On platforms that support it, enable smooth scroll animation.
+const char kEnableSmoothScrolling[]         = "enable-smooth-scrolling";
+
 // Enables TLS cached info extension.
 const char kEnableSSLCachedInfo[]  = "enable-ssl-cached-info";
 

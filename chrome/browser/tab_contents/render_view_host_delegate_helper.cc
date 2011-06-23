@@ -341,6 +341,8 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
         prefs->GetBoolean(prefs::kWebKitAllowDisplayingInsecureContent);
     web_prefs.allow_running_insecure_content =
         prefs->GetBoolean(prefs::kWebKitAllowRunningInsecureContent);
+    web_prefs.enable_scroll_animator =
+        command_line.HasSwitch(switches::kEnableSmoothScrolling);
 
     // The user stylesheet watcher may not exist in a testing profile.
     if (profile->GetUserStyleSheetWatcher()) {
