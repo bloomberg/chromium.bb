@@ -681,33 +681,35 @@ free_surface(void *data)
 }
 
 static void
+window_get_resize_dx_dy(struct window *window, int *x, int *y)
+{
+	if (window->resize_edges & WINDOW_RESIZING_LEFT)
+		*x = window->server_allocation.width - window->allocation.width;
+	else
+		*x = 0;
+
+	if (window->resize_edges & WINDOW_RESIZING_TOP)
+		*y = window->server_allocation.height -
+			window->allocation.height;
+	else
+		*y = 0;
+
+	window->resize_edges = 0;
+}
+
+static void
 window_attach_surface(struct window *window)
 {
 	struct display *display = window->display;
 	struct wl_buffer *buffer;
 	struct egl_window_surface_data *data;
 	int32_t x, y;
-	int width = window->allocation.width;
-	int height = window->allocation.height;
-
-	if (window->resize_edges & WINDOW_RESIZING_LEFT)
-		x = window->server_allocation.width - width;
-	else
-		x = 0;
-
-	if (window->resize_edges & WINDOW_RESIZING_TOP)
-		y = window->server_allocation.height - height;
-	else
-		y = 0;
-
-	window->resize_edges = 0;
 
 	switch (window->buffer_type) {
 	case WINDOW_BUFFER_TYPE_EGL_WINDOW:
 		data = cairo_surface_get_user_data(window->cairo_surface,
 						   &surface_data_key);
 
-		wl_egl_window_resize(data->window, width, height, x, y);
 		cairo_gl_surface_swapbuffers(window->cairo_surface);
 		wl_egl_window_get_attached_size(data->window,
 				&window->server_allocation.width,
@@ -715,6 +717,8 @@ window_attach_surface(struct window *window)
 		break;
 	case WINDOW_BUFFER_TYPE_EGL_IMAGE:
 	case WINDOW_BUFFER_TYPE_SHM:
+		window_get_resize_dx_dy(window, &x, &y);
+
 		if (window->pending_surface != NULL)
 			return;
 
@@ -781,13 +785,17 @@ static void
 window_resize_cairo_window_surface(struct window *window)
 {
 	struct egl_window_surface_data *data;
+	int x, y;
 
 	data = cairo_surface_get_user_data(window->cairo_surface,
 					   &surface_data_key);
 
+	window_get_resize_dx_dy(window, &x, &y),
 	wl_egl_window_resize(data->window,
 			     window->allocation.width,
-			     window->allocation.height, 0, 0);
+			     window->allocation.height,
+			     x,y);
+
 	cairo_gl_surface_set_size(window->cairo_surface,
 				  window->allocation.width,
 				  window->allocation.height);
