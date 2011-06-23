@@ -8,58 +8,42 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 
-class GeolocationInfoBarQueueController;
-class GeolocationPermissionContext;
 class GURL;
-class InfoBarDelegate;
-class Profile;
-class RenderViewHost;
-class TabContents;
 
-// GeolocationPermissionContext manages Geolocation permissions flow,
-// and delegates UI handling via GeolocationInfoBarQueueController.
-// It always notifies the requesting render_view asynchronously via
-// GeolocationMsg_PermissionSet.
+// GeolocationPermissionContext must be implemented by the embedder, to provide
+// the policy and logic for the Geolocation permissions flow.
+// This includes both prompting the user and persisting results, as required.
 class GeolocationPermissionContext
     : public base::RefCountedThreadSafe<GeolocationPermissionContext> {
  public:
-  explicit GeolocationPermissionContext(Profile* profile);
+  // The renderer is requesting permission to use Geolocation.
+  // When the answer to a permission request has been determined, the result
+  // should be forwarded to the renderer via SetGeolocationPermissionResponse().
+  virtual void RequestGeolocationPermission(int render_process_id,
+                                            int render_view_id,
+                                            int bridge_id,
+                                            const GURL& requesting_frame) = 0;
 
-  // The render is requesting permission to use Geolocation.
-  // Response will be sent asynchronously as GeolocationMsg_PermissionSet.
-  void RequestGeolocationPermission(
+  // The renderer is cancelling a pending permission request.
+  virtual void CancelGeolocationPermissionRequest(
       int render_process_id, int render_view_id, int bridge_id,
-      const GURL& requesting_frame);
+      const GURL& requesting_frame) = 0;
 
-  // The render is cancelling a pending permission request.
-  void CancelGeolocationPermissionRequest(
-      int render_process_id, int render_view_id, int bridge_id,
-      const GURL& requesting_frame);
+  // The embedder must callback to this method when the outcome of a previous
+  // geolocation request (indicated via RequestGeolocationPermission above) has
+  // been determined.
+  static void SetGeolocationPermissionResponse(int render_process_id,
+                                               int render_view_id,
+                                               int bridge_id,
+                                               bool is_allowed);
 
-  // Notifies whether or not the corresponding bridge is allowed to use
-  // geolocation via GeolocationMsg_PermissionSet.
-  void NotifyPermissionSet(
-      int render_process_id, int render_view_id, int bridge_id,
-      const GURL& requesting_frame, bool allowed);
+ protected:
+  GeolocationPermissionContext();
+  virtual ~GeolocationPermissionContext();
 
  private:
   friend class base::RefCountedThreadSafe<GeolocationPermissionContext>;
-  virtual ~GeolocationPermissionContext();
-
-  // Calls GeolocationArbitrator::OnPermissionGranted.
-  void NotifyArbitratorPermissionGranted(const GURL& requesting_frame);
-
-  // Removes any pending InfoBar request.
-  void CancelPendingInfoBarRequest(
-      int render_process_id, int render_view_id, int bridge_id);
-
-  // This should only be accessed from the UI thread.
-  Profile* const profile_;
-
-  scoped_ptr<GeolocationInfoBarQueueController>
-      geolocation_infobar_queue_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(GeolocationPermissionContext);
 };

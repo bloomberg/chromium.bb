@@ -97,6 +97,7 @@
         'browser/geolocation/geolocation_dispatcher_host.cc',
         'browser/geolocation/geolocation_dispatcher_host.h',
         'browser/geolocation/geolocation_observer.h',
+        'browser/geolocation/geolocation_permission_context.cc',
         'browser/geolocation/geolocation_permission_context.h',
         'browser/geolocation/geolocation_provider.cc',
         'browser/geolocation/geolocation_provider.h',

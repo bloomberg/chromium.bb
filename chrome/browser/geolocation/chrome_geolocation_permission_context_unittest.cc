@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/geolocation/chrome_geolocation_permission_context.h"
+
 #include <set>
 
 #include "base/memory/scoped_vector.h"
@@ -13,7 +15,6 @@
 #include "chrome/test/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/geolocation/arbitrator_dependency_factories_for_test.h"
-#include "content/browser/geolocation/geolocation_permission_context.h"
 #include "content/browser/geolocation/location_arbitrator.h"
 #include "content/browser/geolocation/location_provider.h"
 #include "content/browser/geolocation/mock_location_provider.h"
@@ -108,7 +109,8 @@ class GeolocationPermissionContextTests : public TabContentsWrapperTestHarness {
   void CheckTabContentsState(const GURL& requesting_frame,
                              ContentSetting expected_content_setting);
 
-  scoped_refptr<GeolocationPermissionContext> geolocation_permission_context_;
+  scoped_refptr<ChromeGeolocationPermissionContext>
+      geolocation_permission_context_;
   ClosedDelegateTracker closed_delegate_tracker_;
   ScopedVector<TabContentsWrapper> extra_tabs_;
 
@@ -193,7 +195,7 @@ void GeolocationPermissionContextTests::SetUp() {
   GeolocationArbitrator::SetDependencyFactoryForTest(
       dependency_factory_.get());
   geolocation_permission_context_ =
-      new GeolocationPermissionContext(profile());
+      new ChromeGeolocationPermissionContext(profile());
 }
 
 void GeolocationPermissionContextTests::TearDown() {

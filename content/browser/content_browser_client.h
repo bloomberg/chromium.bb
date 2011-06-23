@@ -48,8 +48,14 @@ namespace content {
 class ResourceContext;
 class WebUIFactory;
 
-// Embedder API for participating in browser logic.  The methods are assumed to
+// Embedder API (or SPI) for participating in browser logic, to be implemented
+// by the client of the content browser. See ChromeContentBrowserClient for the
+// principle implementation. The methods are assumed to
 // be called on the UI thread unless otherwise specified.
+// Use this "escape hatch" sparingly, to avoid the embedder interface ballooning
+// and becoming very specific to Chrome. (Often, the call out to the client can
+// happen in a different part of the code that either already has a hook out to
+// the embedder, or calls out to one of the observer interfaces.)
 class ContentBrowserClient {
  public:
   // Notifies that a new RenderHostView has been created.
