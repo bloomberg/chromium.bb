@@ -109,7 +109,7 @@ class BrowserTitlebar : public NotificationObserver,
   // the button into, and a tooltip id (IDS_).
   CustomDrawButton* BuildTitlebarButton(int image, int image_pressed,
                                         int image_hot, GtkWidget* box,
-                                        int tooltip);
+                                        bool start, int tooltip);
 
   // Update the titlebar spacing based on the custom frame and maximized state.
   void UpdateTitlebarAlignment();
@@ -138,6 +138,12 @@ class BrowserTitlebar : public NotificationObserver,
   CHROMEGTK_CALLBACK_1(BrowserTitlebar, gboolean, OnScroll,
                        GdkEventScroll*);
 
+  // Callbacks for mouse enter leave events.
+  CHROMEGTK_CALLBACK_1(BrowserTitlebar, gboolean, OnEnterNotify,
+                       GdkEventCrossing*);
+  CHROMEGTK_CALLBACK_1(BrowserTitlebar, gboolean, OnLeaveNotify,
+                       GdkEventCrossing*);
+
   // Callback for min/max/close buttons.
   CHROMEGTK_CALLBACK_0(BrowserTitlebar, void, OnButtonClicked);
 
@@ -161,6 +167,8 @@ class BrowserTitlebar : public NotificationObserver,
 
   // Overriden from ActiveWindowWatcher::Observer.
   virtual void ActiveWindowChanged(GdkWindow* active_window);
+
+  bool IsTypePanel();
 
   // Pointers to the browser window that owns us and it's GtkWindow.
   BrowserWindowGtk* browser_window_;
@@ -202,12 +210,20 @@ class BrowserTitlebar : public NotificationObserver,
   GtkWidget* app_mode_favicon_;
   GtkWidget* app_mode_title_;
 
+  // Wrench icon for panels. This'll only appear when a panel window has focus
+  // or mouse is in a panel window.
+  scoped_ptr<CustomDrawButton> panel_wrench_button_;
+
   // Whether we are using a custom frame.
   bool using_custom_frame_;
 
   // Whether we have focus (gtk_window_is_active() sometimes returns the wrong
   // value, so manually track the focus-in and focus-out events.)
   bool window_has_focus_;
+
+  // Whether mouse is in the window. We show the wrench icon when a panel
+  // window has focus or mouse is in a panel window.
+  bool window_has_mouse_;
 
   // We change the size of these three buttons when the window is maximized, so
   // we use these structs to keep track of their original size.

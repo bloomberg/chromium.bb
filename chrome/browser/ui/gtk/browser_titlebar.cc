@@ -219,6 +219,7 @@ BrowserTitlebar::BrowserTitlebar(BrowserWindowGtk* browser_window,
       app_mode_title_(NULL),
       using_custom_frame_(false),
       window_has_focus_(false),
+      window_has_mouse_(false),
       theme_service_(NULL) {
   Init();
 }
@@ -283,6 +284,13 @@ void BrowserTitlebar::Init() {
 
   g_signal_connect(window_, "window-state-event",
                    G_CALLBACK(OnWindowStateChangedThunk), this);
+
+  if (IsTypePanel()) {
+    g_signal_connect(window_, "enter-notify-event",
+                     G_CALLBACK(OnEnterNotifyThunk), this);
+    g_signal_connect(window_, "leave-notify-event",
+                     G_CALLBACK(OnLeaveNotifyThunk), this);
+  }
 
   // Allocate the two button boxes on the left and right parts of the bar,
   // spyguy frames in case of incognito mode, and profile button boxes.
@@ -376,6 +384,14 @@ void BrowserTitlebar::Init() {
                       reinterpret_cast<void*>(true));
     gtk_container_add(GTK_CONTAINER(favicon_event_box), app_mode_favicon_);
 
+    if (IsTypePanel()) {
+      panel_wrench_button_.reset(
+          BuildTitlebarButton(IDR_BALLOON_WRENCH, IDR_BALLOON_WRENCH_P,
+                              IDR_BALLOON_WRENCH_H, app_mode_hbox, FALSE,
+                              IDS_NEW_TAB_APP_SETTINGS));
+      gtk_widget_set_no_show_all(panel_wrench_button_->widget(), TRUE);
+    }
+
     app_mode_title_ = gtk_label_new(NULL);
     gtk_label_set_ellipsize(GTK_LABEL(app_mode_title_), PANGO_ELLIPSIZE_END);
     gtk_misc_set_alignment(GTK_MISC(app_mode_title_), 0.0, 0.5);
@@ -428,26 +444,26 @@ void BrowserTitlebar::BuildButtons(const std::string& button_string) {
         left_side = false;
     } else {
       base::StringPiece token = tokenizer.token_piece();
-      if (token == "minimize") {
+      if (token == "minimize" && !IsTypePanel()) {
         (left_side ? left_count : right_count)++;
         GtkWidget* parent_box = GetButtonHBox(left_side);
         minimize_button_.reset(
             BuildTitlebarButton(IDR_MINIMIZE, IDR_MINIMIZE_P,
-                                IDR_MINIMIZE_H, parent_box,
+                                IDR_MINIMIZE_H, parent_box, true,
                                 IDS_XPFRAME_MINIMIZE_TOOLTIP));
 
         gtk_widget_size_request(minimize_button_->widget(),
                                 &minimize_button_req_);
-      } else if (token == "maximize") {
+      } else if (token == "maximize" && !IsTypePanel()) {
         (left_side ? left_count : right_count)++;
         GtkWidget* parent_box = GetButtonHBox(left_side);
         restore_button_.reset(
             BuildTitlebarButton(IDR_RESTORE, IDR_RESTORE_P,
-                                IDR_RESTORE_H, parent_box,
+                                IDR_RESTORE_H, parent_box, true,
                                 IDS_XPFRAME_RESTORE_TOOLTIP));
         maximize_button_.reset(
             BuildTitlebarButton(IDR_MAXIMIZE, IDR_MAXIMIZE_P,
-                                IDR_MAXIMIZE_H, parent_box,
+                                IDR_MAXIMIZE_H, parent_box, true,
                                 IDS_XPFRAME_MAXIMIZE_TOOLTIP));
 
         gtk_util::SetButtonClickableByMouseButtons(maximize_button_->widget(),
@@ -459,7 +475,7 @@ void BrowserTitlebar::BuildButtons(const std::string& button_string) {
         GtkWidget* parent_box = GetButtonHBox(left_side);
         close_button_.reset(
             BuildTitlebarButton(IDR_CLOSE, IDR_CLOSE_P,
-                                IDR_CLOSE_H, parent_box,
+                                IDR_CLOSE_H, parent_box, true,
                                 IDS_XPFRAME_CLOSE_TOOLTIP));
         close_button_->set_flipped(left_side);
 
@@ -532,7 +548,8 @@ GtkWidget* BrowserTitlebar::GetButtonHBox(bool left_side) {
 }
 
 CustomDrawButton* BrowserTitlebar::BuildTitlebarButton(int image,
-    int image_pressed, int image_hot, GtkWidget* box, int tooltip) {
+    int image_pressed, int image_hot, GtkWidget* box, bool start,
+    int tooltip) {
   CustomDrawButton* button = new CustomDrawButton(image, image_pressed,
                                                   image_hot, 0);
   gtk_widget_add_events(GTK_WIDGET(button->widget()), GDK_POINTER_MOTION_MASK);
@@ -543,7 +560,10 @@ CustomDrawButton* BrowserTitlebar::BuildTitlebarButton(int image,
   std::string localized_tooltip = l10n_util::GetStringUTF8(tooltip);
   gtk_widget_set_tooltip_text(button->widget(),
                               localized_tooltip.c_str());
-  gtk_box_pack_start(GTK_BOX(box), button->widget(), FALSE, FALSE, 0);
+  if (start)
+    gtk_box_pack_start(GTK_BOX(box), button->widget(), FALSE, FALSE, 0);
+  else
+    gtk_box_pack_end(GTK_BOX(box), button->widget(), FALSE, FALSE, 0);
   return button;
 }
 
@@ -575,7 +595,7 @@ void BrowserTitlebar::UpdateTitleAndIcon() {
 
   // Note: we want to exclude the application popup window.
   if (browser_window_->browser()->is_app() &&
-      !browser_window_->browser()->is_type_popup()) {
+      browser_window_->browser()->is_type_tabbed()) {
     // Update the system app icon.  We don't need to update the icon in the top
     // left of the custom frame, that will get updated when the throbber is
     // updated.
@@ -802,6 +822,32 @@ gboolean BrowserTitlebar::OnScroll(GtkWidget* widget, GdkEventScroll* event) {
   return TRUE;
 }
 
+gboolean BrowserTitlebar::OnEnterNotify(GtkWidget* widget,
+                                        GdkEventCrossing* event) {
+  // Ignore if entered from a child widget.
+  if (event->detail == GDK_NOTIFY_INFERIOR)
+    return FALSE;
+
+  if (window_ && panel_wrench_button_.get())
+    gtk_widget_show(panel_wrench_button_->widget());
+
+  window_has_mouse_ = TRUE;
+  return FALSE;
+}
+
+gboolean BrowserTitlebar::OnLeaveNotify(GtkWidget* widget,
+                                        GdkEventCrossing* event) {
+  // Ignore if left towards a child widget.
+  if (event->detail == GDK_NOTIFY_INFERIOR)
+    return FALSE;
+
+  if (window_ && panel_wrench_button_.get() && !window_has_focus_)
+    gtk_widget_hide(panel_wrench_button_->widget());
+
+  window_has_mouse_ = FALSE;
+  return FALSE;
+}
+
 // static
 void BrowserTitlebar::OnButtonClicked(GtkWidget* button) {
   if (close_button_.get() && close_button_->widget() == button) {
@@ -912,7 +958,18 @@ void BrowserTitlebar::ActiveWindowChanged(GdkWindow* active_window) {
     return;
 
   window_has_focus_ = GTK_WIDGET(window_)->window == active_window;
+  if (IsTypePanel()) {
+    if (window_has_focus_ || window_has_mouse_)
+      gtk_widget_show(panel_wrench_button_->widget());
+    else
+      gtk_widget_hide(panel_wrench_button_->widget());
+  }
   UpdateTextColor();
+}
+
+bool BrowserTitlebar::IsTypePanel() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnablePanels) &&
+      browser_window_->browser()->is_type_panel();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
