@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,7 +29,7 @@ function gotValue()
 function startTransaction()
 {
     debug("Using get in a transaction");
-    transaction = db.transaction();
+    transaction = db.transaction('storeName');
     //transaction.onabort = unexpectedErrorCallback;
     store = transaction.objectStore('storeName');
     shouldBeEqualToString("store.name", "storeName");
