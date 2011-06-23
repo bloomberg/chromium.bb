@@ -356,12 +356,20 @@ void TaskManagerGtk::OnModelChanged() {
 
 void TaskManagerGtk::OnItemsChanged(int start, int length) {
   GtkTreeIter iter;
-  gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(process_list_), &iter,
-                                NULL, start);
+  if (!gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(process_list_), &iter,
+                                     NULL, start)) {
+    NOTREACHED() << "Can't get child " << start <<
+        " from GTK_TREE_MODEL(process_list_)";
+  }
 
   for (int i = start; i < start + length; i++) {
     SetRowDataFromModel(i, &iter);
-    gtk_tree_model_iter_next(GTK_TREE_MODEL(process_list_), &iter);
+    if (i != start + length - 1) {
+      if (!gtk_tree_model_iter_next(GTK_TREE_MODEL(process_list_), &iter)) {
+        NOTREACHED() << "Can't get next GtkTreeIter object from process_list_ \
+            iterator at position " << i;
+      }
+    }
   }
 }
 
