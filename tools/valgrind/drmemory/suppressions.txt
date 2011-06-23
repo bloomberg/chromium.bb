@@ -98,11 +98,6 @@ UNINITIALIZED READ
 ...
 *!base::LaunchApp*
 
-# http://code.google.com/p/drmemory/issues/detail?id=15
-UNINITIALIZED READ
-...
-*!rand_s
-
 # http://code.google.com/p/drmemory/issues/detail?id=17
 UNINITIALIZED READ
 ...
@@ -184,6 +179,10 @@ UNINITIALIZED READ
 system call NtContinue
 *!*SetThreadName
 
+UNINITIALIZED READ
+system call NtContinue
+*!WTF::initializeCurrentThreadInternal
+
 # http://code.google.com/p/drmemory/issues/detail?id=52
 UNINITIALIZED READ
 ...
@@ -229,7 +228,7 @@ UNADDRESSABLE ACCESS
 # http://code.google.com/p/drmemory/issues/detail?id=65
 UNINITIALIZED READ
 ...
-ADVAPI32.dll!SystemFunction036
+*!SystemFunction036
 
 UNINITIALIZED READ
 ...
@@ -313,6 +312,10 @@ GDI32.dll!CreateICW
 UNINITIALIZED READ
 USER32.dll!UnregisterClass*
 
+# http://code.google.com/p/drmemory/issues/detail?id=380
+UNINITIALIZED READ
+system call NtQueryInformationToken
+
 # http://code.google.com/p/drmemory/issues/detail?id=382
 LEAK
 ...
@@ -362,6 +365,14 @@ ADVAPI32.dll!CryptAcquireContextA
 CRYPT32.dll!CryptEnumOIDFunction
 ...
 CRYPT32.dll!CertFindCertificateInStore
+
+UNINITIALIZED READ
+...
+RSAENH.dll!CPGenRandom
+
+UNINITIALIZED READ
+...
+CRYPT32.dll!Crypt*
 
 # http://code.google.com/p/drmemory/issues/detail?id=425
 UNINITIALIZED READ
@@ -421,6 +432,15 @@ system call NtQueryValueKey
 KERNEL32.dll!GetProfileIntA
 ...
 RICHED20.dll!CreateTextServices
+
+# http://code.google.com/p/drmemory/issues/detail?id=462
+UNADDRESSABLE ACCESS
+...
+*!SystemFunction036
+
+UNADDRESSABLE ACCESS
+...
+RSAENH.dll!CPGenRandom
 
 # http://code.google.com/p/drmemory/issues/detail?id=471
 UNINITIALIZED READ
