@@ -24,7 +24,7 @@ class PPB_Surface3D_Impl : public Resource,
  public:
   virtual ~PPB_Surface3D_Impl();
 
-  static PP_Resource Create(PP_Instance instance_id,
+  static PP_Resource Create(PluginInstance* instance_id,
                             PP_Config3D_Dev config,
                             const int32_t* attrib_list);
 

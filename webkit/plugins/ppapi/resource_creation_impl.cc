@@ -186,8 +186,7 @@ PP_Resource ResourceCreationImpl::CreateSurface3D(
     PP_Instance instance,
     PP_Config3D_Dev config,
     const int32_t* attrib_list) {
-  NOTIMPLEMENTED();
-  return 0;
+  return PPB_Surface3D_Impl::Create(instance_, config, attrib_list);
 }
 
 PP_Resource ResourceCreationImpl::CreateTransport(PP_Instance instance,

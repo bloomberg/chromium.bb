@@ -33,13 +33,9 @@ PPB_Surface3D_Impl::~PPB_Surface3D_Impl() {
 }
 
 // static
-PP_Resource PPB_Surface3D_Impl::Create(PP_Instance instance_id,
+PP_Resource PPB_Surface3D_Impl::Create(PluginInstance* instance,
                                        PP_Config3D_Dev config,
                                        const int32_t* attrib_list) {
-  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
-  if (!instance)
-    return 0;
-
   scoped_refptr<PPB_Surface3D_Impl> surface(
       new PPB_Surface3D_Impl(instance));
   if (!surface->Init(config, attrib_list))
