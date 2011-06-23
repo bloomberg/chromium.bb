@@ -190,6 +190,11 @@ TEST_F(WorkerTest, MultipleSharedWorkers) {
 #define TerminateQueuedWorkers FLAKY_TerminateQueuedWorkers
 #endif
 
+#if defined(OS_MACOSX)
+// http://crbug.com/87204
+#define TerminateQueuedWorkers DISABLED_TerminateQueuedWorkers
+#endif
+
 TEST_F(WorkerTest, TerminateQueuedWorkers) {
   ASSERT_TRUE(WaitForProcessCountToBe(1, 0));
   RunTest(FilePath(FILE_PATH_LITERAL("terminate_queued_workers.html")), "");
