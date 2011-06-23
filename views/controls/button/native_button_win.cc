@@ -23,7 +23,7 @@ namespace views {
 ////////////////////////////////////////////////////////////////////////////////
 // NativeButtonWin, public:
 
-NativeButtonWin::NativeButtonWin(NativeButtonBase* native_button)
+NativeButtonWin::NativeButtonWin(NativeButton* native_button)
     : native_button_(native_button),
       button_size_valid_(false) {
   // Associates the actual HWND with the native_button so the native_button is
@@ -271,7 +271,7 @@ int NativeButtonWrapper::GetFixedWidth() {
 
 // static
 NativeButtonWrapper* NativeButtonWrapper::CreateNativeButtonWrapper(
-    NativeButtonBase* native_button) {
+    NativeButton* native_button) {
   return new NativeButtonWin(native_button);
 }
 

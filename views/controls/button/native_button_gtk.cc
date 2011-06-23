@@ -18,7 +18,7 @@
 
 namespace views {
 
-NativeButtonGtk::NativeButtonGtk(NativeButtonBase* native_button)
+NativeButtonGtk::NativeButtonGtk(NativeButton* native_button)
     : native_button_(native_button),
       deliver_click_event_(true) {
   // Associates the actual GtkWidget with the native_button so the native_button
@@ -289,7 +289,7 @@ int NativeButtonWrapper::GetFixedWidth() {
 
 // static
 NativeButtonWrapper* NativeButtonWrapper::CreateNativeButtonWrapper(
-    NativeButtonBase* native_button) {
+    NativeButton* native_button) {
   return new NativeButtonGtk(native_button);
 }
 

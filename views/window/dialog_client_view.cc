@@ -21,7 +21,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/font.h"
-#include "views/controls/button/native_button.h"
+#include "views/controls/button/text_button.h"
 #include "views/layout/layout_constants.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
@@ -42,7 +42,7 @@ namespace views {
 namespace {
 
 // Updates any of the standard buttons according to the delegate.
-void UpdateButtonHelper(NativeButton* button_view,
+void UpdateButtonHelper(NativeTextButton* button_view,
                         DialogDelegate* delegate,
                         MessageBoxFlags::DialogButton button) {
   std::wstring label = delegate->GetDialogButtonLabel(button);
@@ -65,14 +65,14 @@ void FillViewWithSysColor(gfx::Canvas* canvas, View* view, COLORREF color) {
 // DialogButtons is used for the ok/cancel buttons of the window. DialogButton
 // forwards AcceleratorPressed to the delegate.
 
-class DialogButton : public NativeButton {
+class DialogButton : public NativeTextButton {
  public:
   DialogButton(ButtonListener* listener,
                Widget* owner,
                MessageBoxFlags::DialogButton type,
                const std::wstring& title,
                bool is_default)
-      : NativeButton(listener, title),
+      : NativeTextButton(listener, title),
         owner_(owner),
         type_(type) {
     SetIsDefault(is_default);
@@ -84,7 +84,7 @@ class DialogButton : public NativeButton {
         AreAcceleratorsEnabled(type_)) {
       return false;
     }
-    return NativeButton::AcceleratorPressed(accelerator);
+    return NativeTextButton::AcceleratorPressed(accelerator);
   }
 
  private:
@@ -177,7 +177,7 @@ void DialogClientView::ShowDialogButtons() {
   }
 }
 
-void DialogClientView::SetDefaultButton(NativeButton* new_default_button) {
+void DialogClientView::SetDefaultButton(NativeTextButton* new_default_button) {
   if (default_button_ && default_button_ != new_default_button) {
     default_button_->SetIsDefault(false);
     default_button_ = NULL;
@@ -191,10 +191,10 @@ void DialogClientView::SetDefaultButton(NativeButton* new_default_button) {
 
 void DialogClientView::FocusWillChange(View* focused_before,
                                        View* focused_now) {
-  NativeButton* new_default_button = NULL;
+  NativeTextButton* new_default_button = NULL;
   if (focused_now &&
-      focused_now->GetClassName() == NativeButton::kViewClassName) {
-    new_default_button = static_cast<NativeButton*>(focused_now);
+      focused_now->GetClassName() == NativeTextButton::kViewClassName) {
+    new_default_button = static_cast<NativeTextButton*>(focused_now);
   } else {
     // The focused view is not a button, get the default button from the
     // delegate.

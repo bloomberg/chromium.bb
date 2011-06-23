@@ -19,7 +19,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "views/controls/button/image_button.h"
-#include "views/controls/button/native_button.h"
+#include "views/controls/button/text_button.h"
 #include "views/controls/label.h"
 #include "views/events/event.h"
 #include "views/focus/focus_manager.h"
@@ -90,8 +90,8 @@ class FirstRunBubbleView : public FirstRunBubbleViewBase {
   views::Label* label1_;
   views::Label* label2_;
   views::Label* label3_;
-  views::NativeButton* change_button_;
-  views::NativeButton* keep_button_;
+  views::NativeTextButton* change_button_;
+  views::NativeTextButton* keep_button_;
   Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(FirstRunBubbleView);
@@ -138,13 +138,13 @@ FirstRunBubbleView::FirstRunBubbleView(FirstRunBubble* bubble_window,
   std::wstring keep_str = UTF16ToWide(l10n_util::GetStringFUTF16(
       IDS_FR_BUBBLE_OK,
       GetDefaultSearchEngineName(profile)));
-  keep_button_ = new views::NativeButton(this, keep_str);
+  keep_button_ = new views::NativeTextButton(this, keep_str);
   keep_button_->SetIsDefault(true);
   AddChildView(keep_button_);
 
   std::wstring change_str =
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_FR_BUBBLE_CHANGE));
-  change_button_ = new views::NativeButton(this, change_str);
+  change_button_ = new views::NativeTextButton(this, change_str);
   AddChildView(change_button_);
 }
 
@@ -218,14 +218,17 @@ gfx::Size FirstRunBubbleView::GetPreferredSize() {
 void FirstRunBubbleView::FocusWillChange(View* focused_before,
                                          View* focused_now) {
   if (focused_before &&
-      (focused_before->GetClassName() == views::NativeButton::kViewClassName)) {
-    views::NativeButton* before =
-        static_cast<views::NativeButton*>(focused_before);
+      (focused_before->GetClassName() ==
+          views::NativeTextButton::kViewClassName)) {
+    views::NativeTextButton* before =
+        static_cast<views::NativeTextButton*>(focused_before);
     before->SetIsDefault(false);
   }
   if (focused_now &&
-      (focused_now->GetClassName() == views::NativeButton::kViewClassName)) {
-    views::NativeButton* after = static_cast<views::NativeButton*>(focused_now);
+      (focused_now->GetClassName() ==
+          views::NativeTextButton::kViewClassName)) {
+    views::NativeTextButton* after =
+        static_cast<views::NativeTextButton*>(focused_now);
     after->SetIsDefault(true);
   }
 }

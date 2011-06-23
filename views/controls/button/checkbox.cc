@@ -24,12 +24,12 @@ static const int kLabelFocusPaddingVertical = 1;
 ////////////////////////////////////////////////////////////////////////////////
 // NativeCheckbox, public:
 
-NativeCheckbox::NativeCheckbox() : NativeButtonBase(NULL), checked_(false) {
+NativeCheckbox::NativeCheckbox() : NativeButton(NULL), checked_(false) {
   Init(std::wstring());
 }
 
 NativeCheckbox::NativeCheckbox(const std::wstring& label)
-    : NativeButtonBase(NULL, label),
+    : NativeButton(NULL, label),
       checked_(false) {
   Init(label);
 }
@@ -91,7 +91,7 @@ int NativeCheckbox::GetHeightForWidth(int w) {
 }
 
 void NativeCheckbox::OnEnabledChanged() {
-  NativeButtonBase::OnEnabledChanged();
+  NativeButton::OnEnabledChanged();
   if (label_)
     label_->SetEnabled(IsEnabled());
 }
@@ -168,7 +168,7 @@ void NativeCheckbox::GetAccessibleState(ui::AccessibleViewState* state) {
 // NativeCheckbox, NativeButton overrides:
 
 void NativeCheckbox::SetLabel(const std::wstring& label) {
-  NativeButtonBase::SetLabel(label);
+  NativeButton::SetLabel(label);
   if (!native_wrapper_->UsesNativeLabel())
     label_->SetText(label);
 }
@@ -189,7 +189,7 @@ void NativeCheckbox::OnPaintFocusBorder(gfx::Canvas* canvas) {
   // Our focus border is rendered by the label, so we don't do anything here.
 }
 void NativeCheckbox::OnFocus() {
-  NativeButtonBase::OnFocus();
+  NativeButton::OnFocus();
   label_->set_paint_as_focused(true);
 }
 

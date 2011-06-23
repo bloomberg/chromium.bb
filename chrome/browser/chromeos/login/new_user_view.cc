@@ -33,6 +33,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font.h"
 #include "views/controls/button/menu_button.h"
+#include "views/controls/button/text_button.h"
 #include "views/controls/label.h"
 #include "views/controls/link.h"
 #include "views/controls/textfield/textfield.h"

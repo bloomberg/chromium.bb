@@ -16,7 +16,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
 #include "views/controls/button/menu_button.h"
-#include "views/controls/button/native_button.h"
 #include "views/controls/label.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/controls/throbber.h"
@@ -176,9 +175,9 @@ void CorrectMenuButtonFontSize(views::MenuButton* button) {
     button->SetFont(button->font().DeriveFont(kFontSizeCorrectionDelta));
 }
 
-void CorrectNativeButtonFontSize(views::NativeButton* button) {
+void CorrectNativeButtonFontSize(views::NativeTextButton* button) {
   if (button)
-    button->set_font(button->font().DeriveFont(kFontSizeCorrectionDelta));
+    button->SetFont(button->font().DeriveFont(kFontSizeCorrectionDelta));
 }
 
 void CorrectTextfieldFontSize(views::Textfield* textfield) {
@@ -220,7 +219,7 @@ string16 GetCurrentNetworkName(NetworkLibrary* network_library) {
 namespace login {
 
 gfx::Size WideButton::GetPreferredSize() {
-  gfx::Size preferred_size = NativeButton::GetPreferredSize();
+  gfx::Size preferred_size = NativeTextButton::GetPreferredSize();
   // Set minimal width.
   if (preferred_size.width() < kButtonMinWidth)
     preferred_size.set_width(kButtonMinWidth);

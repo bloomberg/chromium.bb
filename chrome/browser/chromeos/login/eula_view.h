@@ -18,7 +18,7 @@ namespace views {
 class Checkbox;
 class Label;
 class Link;
-class NativeButton;
+class NativeTextButton;
 
 }  // namespace views
 
@@ -124,8 +124,8 @@ class EulaView
   views::Label* oem_eula_label_;
   DOMView* oem_eula_view_;
   views::Link* system_security_settings_link_;
-  views::NativeButton* back_button_;
-  views::NativeButton* continue_button_;
+  views::NativeTextButton* back_button_;
+  views::NativeTextButton* continue_button_;
 
   ViewsEulaScreenActor* actor_;
 

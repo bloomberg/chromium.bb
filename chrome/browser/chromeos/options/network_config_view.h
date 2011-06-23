@@ -12,7 +12,7 @@
 #include "views/window/dialog_delegate.h"
 
 namespace views {
-class NativeButton;
+class NativeTextButton;
 class View;
 }
 
@@ -92,7 +92,7 @@ class NetworkConfigView : public views::DialogDelegateView,
   Delegate* delegate_;
 
   // Button in lower-left corner, may be null or hidden.
-  views::NativeButton* advanced_button_;
+  views::NativeTextButton* advanced_button_;
   views::View* advanced_button_container_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkConfigView);

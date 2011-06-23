@@ -15,7 +15,7 @@ class SkBitmap;
 
 namespace views {
 class Label;
-class NativeButton;
+class NativeTextButton;
 }  // namespace views
 
 namespace chromeos {
@@ -90,7 +90,7 @@ class UserImageView : public views::View,
   DefaultImagesView* default_images_view_;
   TakePhotoView* take_photo_view_;
   views::View* splitter_;
-  views::NativeButton* ok_button_;
+  views::NativeTextButton* ok_button_;
 
   views::Accelerator accel_ok_;
   views::Accelerator accel_up_;

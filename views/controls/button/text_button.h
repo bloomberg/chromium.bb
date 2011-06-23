@@ -213,7 +213,7 @@ class TextButtonBase : public CustomButton, public NativeThemeDelegate {
   static const SkColor kHoverColor;
 
   // Returns views/TextButton.
-  virtual std::string GetClassName() const;
+  virtual std::string GetClassName() const OVERRIDE;
 
  protected:
   TextButtonBase(ButtonListener* listener, const std::wstring& text);
@@ -417,6 +417,8 @@ class NativeTextButton : public TextButton {
 
   // Overridden from TextButton:
   virtual gfx::Size GetMinimumSize() OVERRIDE;
+
+  virtual std::string GetClassName() const OVERRIDE;
 
  private:
   void Init();

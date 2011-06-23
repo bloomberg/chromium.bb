@@ -20,7 +20,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "views/background.h"
-#include "views/controls/button/native_button.h"
+#include "views/controls/button/text_button.h"
 #include "views/controls/label.h"
 #include "views/layout/grid_layout.h"
 

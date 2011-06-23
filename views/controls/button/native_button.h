@@ -12,24 +12,20 @@
 #include "views/controls/button/button.h"
 #include "views/controls/button/native_button_wrapper.h"
 
-#if defined(TOUCH_UI)
-#include "views/controls/button/text_button.h"
-#endif
-
 namespace gfx {
 class Font;
 }
 
 namespace views {
 
-class NativeButtonBase : public Button {
+class NativeButton : public Button {
  public:
   // The button's class name.
   static const char kViewClassName[];
 
-  explicit NativeButtonBase(ButtonListener* listener);
-  NativeButtonBase(ButtonListener* listener, const std::wstring& label);
-  virtual ~NativeButtonBase();
+  explicit NativeButton(ButtonListener* listener);
+  NativeButton(ButtonListener* listener, const std::wstring& label);
+  virtual ~NativeButton();
 
   // Sets/Gets the text to be used as the button's label.
   virtual void SetLabel(const std::wstring& label);
@@ -103,40 +99,8 @@ class NativeButtonBase : public Button {
   // is false. Set to true to create narrower buttons.
   bool ignore_minimum_size_;
 
-  DISALLOW_COPY_AND_ASSIGN(NativeButtonBase);
-};
-
-#if defined(TOUCH_UI)
-// TODO(saintlou): this maps NativeButton to TextButton in the touch case
-class NativeButton : public TextButton {
- public:
-  NativeButton(ButtonListener* listener, const std::wstring& label);
-  void SetLabel(const std::wstring& label);
-  void set_font(const gfx::Font& font);
-  void SetIsDefault(bool default_button);
-  bool is_default() const;
-  void set_ignore_minimum_size(bool);
-
- private:
-  // True if the button is the default button in its context.
-  bool is_default_;
-
   DISALLOW_COPY_AND_ASSIGN(NativeButton);
 };
-#else
-// TODO(saintlou): Windows and Clang do not like typedef, it
-// chokes in other modules that have a forward declaration for
-// NativeButton
-class NativeButton : public NativeButtonBase {
- public:
-  explicit NativeButton(ButtonListener* listener);
-  NativeButton(ButtonListener* listener, const std::wstring& label);
-  virtual ~NativeButton();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NativeButton);
-};
-#endif
 
 }  // namespace views
 

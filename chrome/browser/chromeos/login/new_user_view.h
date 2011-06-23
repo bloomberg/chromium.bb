@@ -21,7 +21,7 @@
 namespace views {
 class Label;
 class MenuButton;
-class NativeButton;
+class NativeTextButton;
 }  // namespace views
 
 namespace chromeos {
@@ -154,7 +154,7 @@ class NewUserView : public ThrobberHostView,
   views::View* splitter_up2_;
   views::View* splitter_down1_;
   views::View* splitter_down2_;
-  views::NativeButton* sign_in_button_;
+  views::NativeTextButton* sign_in_button_;
   views::Link* guest_link_;
   views::Link* create_account_link_;
   views::MenuButton* languages_menubutton_;

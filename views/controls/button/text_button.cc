@@ -792,4 +792,8 @@ gfx::Size NativeTextButton::GetMinimumSize() {
   return GetPreferredSize();
 }
 
+std::string NativeTextButton::GetClassName() const {
+  return kViewClassName;
+}
+
 }  // namespace views

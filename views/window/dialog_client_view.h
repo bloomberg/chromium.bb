@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,7 @@
 namespace views {
 
 class DialogDelegate;
-class NativeButton;
+class NativeTextButton;
 class Widget;
 namespace internal {
 class RootView;
@@ -54,8 +54,8 @@ class DialogClientView : public ClientView,
   void CancelWindow();
 
   // Accessors in case the user wishes to adjust these buttons.
-  NativeButton* ok_button() const { return ok_button_; }
-  NativeButton* cancel_button() const { return cancel_button_; }
+  NativeTextButton* ok_button() const { return ok_button_; }
+  NativeTextButton* cancel_button() const { return cancel_button_; }
 
   // Sets the view that is positioned along the bottom of the buttons. The
   // bottom view is positioned beneath the buttons at the full width of the
@@ -107,7 +107,7 @@ class DialogClientView : public ClientView,
   void LayoutContentsView();
 
   // Makes the specified button the default button.
-  void SetDefaultButton(NativeButton* button);
+  void SetDefaultButton(NativeTextButton* button);
 
   bool has_dialog_buttons() const { return ok_button_ || cancel_button_; }
 
@@ -126,11 +126,11 @@ class DialogClientView : public ClientView,
   static void InitClass();
 
   // The dialog buttons.
-  NativeButton* ok_button_;
-  NativeButton* cancel_button_;
+  NativeTextButton* ok_button_;
+  NativeTextButton* cancel_button_;
 
   // The button that is currently the default button if any.
-  NativeButton* default_button_;
+  NativeTextButton* default_button_;
 
   // The button-level extra view, NULL unless the dialog delegate supplies one.
   View* extra_view_;

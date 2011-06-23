@@ -19,7 +19,6 @@
 #include "views/controls/button/checkbox.h"
 #include "views/controls/button/custom_button.h"
 #include "views/controls/button/menu_button.h"
-#include "views/controls/button/native_button.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/controls/link.h"
 #include "views/controls/menu/menu_item_view.h"
@@ -152,6 +151,7 @@ void AccessibilityEventRouterViews::DispatchAccessibilityNotification(
     SendMenuItemNotification(view, type, profile);
   } else if (class_name == views::CustomButton::kViewClassName ||
              class_name == views::NativeButton::kViewClassName ||
+             class_name == views::NativeTextButton::kViewClassName ||
              class_name == views::TextButton::kViewClassName) {
     SendButtonNotification(view, type, profile);
   } else if (class_name == views::Link::kViewClassName) {

@@ -9,7 +9,7 @@
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/user_input.h"
 #include "views/accelerator.h"
-#include "views/controls/button/native_button.h"
+#include "views/controls/button/text_button.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/view.h"
 
@@ -48,7 +48,7 @@ class GuestUserView : public ThrobberHostView,
   virtual void Layout();
 
   // Button to start login.
-  views::NativeButton* submit_button_;
+  views::NativeTextButton* submit_button_;
 
   UserController* user_controller_;
 

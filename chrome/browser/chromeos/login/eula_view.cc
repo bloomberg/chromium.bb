@@ -38,7 +38,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "views/controls/button/checkbox.h"
-#include "views/controls/button/native_button_gtk.h"
+#include "views/controls/button/text_button.h"
 #include "views/controls/label.h"
 #include "views/controls/link.h"
 #include "views/controls/throbber.h"

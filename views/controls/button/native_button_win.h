@@ -15,7 +15,7 @@ namespace views {
 class NativeButtonWin : public NativeControlWin,
                         public NativeButtonWrapper {
  public:
-  explicit NativeButtonWin(NativeButtonBase* native_button);
+  explicit NativeButtonWin(NativeButton* native_button);
   virtual ~NativeButtonWin();
 
   // Overridden from NativeButtonWrapper:
@@ -49,7 +49,7 @@ class NativeButtonWin : public NativeControlWin,
 
  private:
   // The NativeButton we are bound to.
-  NativeButtonBase* native_button_;
+  NativeButton* native_button_;
 
   // It's expensive to find the size of a button on windows, so we cache it.
   mutable gfx::Size button_size_;

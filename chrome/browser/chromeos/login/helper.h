@@ -10,7 +10,7 @@
 
 #include "base/string16.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "views/controls/button/native_button.h"
+#include "views/controls/button/text_button.h"
 #include "views/view.h"
 
 class GURL;
@@ -87,8 +87,8 @@ void CorrectLabelFontSize(views::Label* label);
 // Corrects font size for MenuButton control.
 void CorrectMenuButtonFontSize(views::MenuButton* button);
 
-// Corrects font size for NativeButton control.
-void CorrectNativeButtonFontSize(views::NativeButton* button);
+// Corrects font size for NativeTextButton control.
+void CorrectNativeButtonFontSize(views::NativeTextButton* button);
 
 // Corrects font size for Textfield control.
 void CorrectTextfieldFontSize(views::Textfield* textfield);
@@ -149,10 +149,10 @@ const int kUnselectedLabelHeight = 20;
 // Minimal width for the button.
 const int kButtonMinWidth = 90;
 
-class WideButton : public views::NativeButton {
+class WideButton : public views::NativeTextButton {
  public:
   WideButton(views::ButtonListener* listener, const std::wstring& text)
-      : NativeButton(listener, text) {
+      : NativeTextButton(listener, text) {
     CorrectNativeButtonFontSize(this);
   }
 

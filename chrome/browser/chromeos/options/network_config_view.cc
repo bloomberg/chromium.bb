@@ -16,7 +16,7 @@
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/rect.h"
-#include "views/controls/button/native_button.h"
+#include "views/controls/button/text_button.h"
 #include "views/layout/grid_layout.h"
 #include "views/layout/layout_constants.h"
 #include "views/widget/widget.h"
@@ -171,7 +171,7 @@ void NetworkConfigView::ViewHierarchyChanged(
 }
 
 void NetworkConfigView::CreateAdvancedButton() {
-  advanced_button_ = new views::NativeButton(this, UTF16ToWide(
+  advanced_button_ = new views::NativeTextButton(this, UTF16ToWide(
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_ADVANCED_BUTTON)));
 
