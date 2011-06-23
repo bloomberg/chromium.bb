@@ -169,6 +169,10 @@ const char kEnableGPUPlugin[]               = "enable-gpu-plugin";
 // builds.
 const char kEnableLogging[]                 = "enable-logging";
 
+// Enable media stream in WebKit.
+// http://www.whatwg.org/specs/web-apps/current-work/multipage/dnd.html#mediastream
+const char kEnableMediaStream[]             = "enable-media-stream";
+
 // On Windows, converts the page to the currently-installed monitor profile.
 // This does NOT enable color management for images. The source is still
 // assumed to be sRGB.

@@ -62,6 +62,7 @@ extern const char kEnableBenchmarking[];
 extern const char kEnableDeviceMotion[];
 extern const char kEnableGPUPlugin[];
 extern const char kEnableLogging[];
+extern const char kEnableMediaStream[];
 extern const char kEnableMonitorProfile[];
 extern const char kEnablePreparsedJsCaching[];
 extern const char kEnableSandboxLogging[];
