@@ -14,6 +14,8 @@
 
 class ChromeViewsDelegate : public views::ViewsDelegate {
  public:
+  static views::View* default_parent_view;
+
   ChromeViewsDelegate() {}
   virtual ~ChromeViewsDelegate() {}
 

@@ -325,6 +325,7 @@ extern const char kKioskMode[];
 
 #if defined(TOOLKIT_VIEWS)
 extern const char kDebugViewsPaint[];
+extern const char kViewsDesktop[];
 #endif
 
 #if defined(TOUCH_UI)

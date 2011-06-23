@@ -114,6 +114,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/gl/gl_implementation.h"
 #include "ui/gfx/gl/gl_switches.h"
+#include "views/desktop/desktop_window.h"
 
 #if defined(USE_LINUX_BREAKPAD)
 #include "base/linux_util.h"
@@ -1377,6 +1378,18 @@ int BrowserMain(const MainFunctionParams& parameters) {
 #if defined(OS_CHROMEOS)
   // This needs to be called after the locale has been set.
   RegisterTranslateableItems();
+#endif
+
+#if defined(TOOLKIT_VIEWS)
+  // Launch the views desktop shell window and register it as the default parent
+  // for all unparented views widgets.
+  if (parsed_command_line.HasSwitch(switches::kViewsDesktop)) {
+    views::desktop::DesktopWindow::CreateDesktopWindow();
+    ChromeViewsDelegate* chrome_views_delegate =
+        static_cast<ChromeViewsDelegate*>(views::ViewsDelegate::views_delegate);
+    chrome_views_delegate->default_parent_view =
+        views::desktop::DesktopWindow::desktop_window;
+  }
 #endif
 
   BrowserInit browser_init;

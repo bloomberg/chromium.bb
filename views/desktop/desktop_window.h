@@ -15,16 +15,21 @@ namespace desktop {
 
 class DesktopWindow : public WidgetDelegateView {
  public:
-   static DesktopWindow* desktop_window;
+  static DesktopWindow* desktop_window;
 
-   DesktopWindow();
-   virtual ~DesktopWindow();
+  DesktopWindow();
+  virtual ~DesktopWindow();
 
-   static void CreateDesktopWindow();
+  static void CreateDesktopWindow();
 
-   // Changes activation to the specified Widget. The currently active Widget
-   // is de-activated.
-   void ActivateWidget(Widget* widget);
+  // Changes activation to the specified Widget. The currently active Widget
+  // is de-activated.
+  void ActivateWidget(Widget* widget);
+
+  void CreateTestWindow(const std::wstring& title,
+                        SkColor color,
+                        gfx::Rect initial_bounds,
+                        bool rotate);
 
  private:
   // Overridden from View:
@@ -39,11 +44,6 @@ class DesktopWindow : public WidgetDelegateView {
   virtual bool ShouldShowWindowIcon() const OVERRIDE;
   virtual void WindowClosing() OVERRIDE;
   virtual View* GetContentsView() OVERRIDE;
-
-  void CreateTestWindow(const std::wstring& title,
-                        SkColor color,
-                        gfx::Rect initial_bounds,
-                        bool rotate);
 
   NativeWidgetViews* active_widget_;
 

@@ -22,41 +22,23 @@
 #include "content/common/view_messages.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/gtk/WebInputEventFactory.h"
-#include "ui/base/keycodes/keyboard_code_conversion_gtk.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/x/x11_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia.h"
-#include "ui/gfx/gtk_native_view_id_manager.h"
 #include "views/events/event.h"
 #include "views/ime/input_method.h"
-#include "views/widget/native_widget_gtk.h"
 #include "views/widget/widget.h"
 
 static const int kMaxWindowWidth = 4000;
 static const int kMaxWindowHeight = 4000;
-static const char kRenderWidgetHostViewKey[] = "__RENDER_WIDGET_HOST_VIEW__";
 
-// Copied from third_party/WebKit/Source/WebCore/page/EventHandler.cpp
-//
-// Match key code of composition keydown event on windows.
-// IE sends VK_PROCESSKEY which has value 229;
-//
-// Please refer to following documents for detals:
-// - Virtual-Key Codes
-//   http://msdn.microsoft.com/en-us/library/ms645540(VS.85).aspx
-// - How the IME System Works
-//   http://msdn.microsoft.com/en-us/library/cc194848.aspx
-// - ImmGetVirtualKey Function
-//   http://msdn.microsoft.com/en-us/library/dd318570(VS.85).aspx
-static const int kCompositionEventKeyCode = 229;
+// static
+const char RenderWidgetHostViewViews::kViewClassName[] =
+    "browser/renderer_host/RenderWidgetHostViewViews";
 
 using WebKit::WebInputEventFactory;
 using WebKit::WebMouseWheelEvent;
 using WebKit::WebTouchEvent;
-
-const char RenderWidgetHostViewViews::kViewClassName[] =
-    "browser/renderer_host/RenderWidgetHostViewViews";
 
 namespace {
 
@@ -75,56 +57,6 @@ int WebInputEventFlagsFromViewsEvent(const views::Event& event) {
   return modifiers;
 }
 
-WebKit::WebTouchPoint::State TouchPointStateFromEvent(
-    const views::TouchEvent* event) {
-  switch (event->type()) {
-    case ui::ET_TOUCH_PRESSED:
-      return WebKit::WebTouchPoint::StatePressed;
-    case ui::ET_TOUCH_RELEASED:
-      return WebKit::WebTouchPoint::StateReleased;
-    case ui::ET_TOUCH_MOVED:
-      return WebKit::WebTouchPoint::StateMoved;
-    case ui::ET_TOUCH_CANCELLED:
-      return WebKit::WebTouchPoint::StateCancelled;
-    default:
-      return WebKit::WebTouchPoint::StateUndefined;
-  }
-}
-
-WebKit::WebInputEvent::Type TouchEventTypeFromEvent(
-    const views::TouchEvent* event) {
-  switch (event->type()) {
-    case ui::ET_TOUCH_PRESSED:
-      return WebKit::WebInputEvent::TouchStart;
-    case ui::ET_TOUCH_RELEASED:
-      return WebKit::WebInputEvent::TouchEnd;
-    case ui::ET_TOUCH_MOVED:
-      return WebKit::WebInputEvent::TouchMove;
-    case ui::ET_TOUCH_CANCELLED:
-      return WebKit::WebInputEvent::TouchCancel;
-    default:
-      return WebKit::WebInputEvent::Undefined;
-  }
-}
-
-inline void UpdateTouchParams(const views::TouchEvent& event,
-                              WebKit::WebTouchPoint* tpoint) {
-  tpoint->radiusX = event.radius_x();
-  tpoint->radiusY = event.radius_y();
-  tpoint->rotationAngle = event.rotation_angle();
-  tpoint->force = event.force();
-}
-
-void UpdateTouchPointPosition(const views::TouchEvent* event,
-                              const gfx::Point& origin,
-                              WebKit::WebTouchPoint* tpoint) {
-  tpoint->position.x = event->x();
-  tpoint->position.y = event->y();
-
-  tpoint->screenPosition.x = tpoint->position.x + origin.x();
-  tpoint->screenPosition.y = tpoint->position.y + origin.y();
-}
-
 void InitializeWebMouseEventFromViewsEvent(const views::LocatedEvent& event,
                                            const gfx::Point& origin,
                                            WebKit::WebMouseEvent* wmevent) {
@@ -138,12 +70,6 @@ void InitializeWebMouseEventFromViewsEvent(const views::LocatedEvent& event,
 }
 
 }  // namespace
-
-// static
-RenderWidgetHostView* RenderWidgetHostView::CreateViewForWidget(
-    RenderWidgetHost* widget) {
-  return new RenderWidgetHostViewViews(widget);
-}
 
 RenderWidgetHostViewViews::RenderWidgetHostViewViews(RenderWidgetHost* host)
     : host_(host),
@@ -276,24 +202,13 @@ gfx::Rect RenderWidgetHostViewViews::GetViewBounds() const {
   return bounds();
 }
 
-void RenderWidgetHostViewViews::UpdateCursor(const WebCursor& cursor) {
-  // Optimize the common case, where the cursor hasn't changed.
-  // However, we can switch between different pixmaps, so only on the
-  // non-pixmap branch.
-  if (current_cursor_.GetCursorType() != GDK_CURSOR_IS_PIXMAP &&
-      current_cursor_.GetCursorType() == cursor.GetCursorType()) {
-    return;
-  }
-
-  current_cursor_ = cursor;
-  ShowCurrentCursor();
-}
-
 void RenderWidgetHostViewViews::SetIsLoading(bool is_loading) {
   is_loading_ = is_loading;
+#if defined(TOOLKIT_USES_GTK)
   // Only call ShowCurrentCursor() when it will actually change the cursor.
   if (current_cursor_.GetCursorType() == GDK_LAST_CURSOR)
     ShowCurrentCursor();
+#endif  // TOOLKIT_USES_GTK
 }
 
 void RenderWidgetHostViewViews::ImeUpdateTextInputState(
@@ -404,16 +319,6 @@ void RenderWidgetHostViewViews::SetBackground(const SkBitmap& background) {
     host_->Send(new ViewMsg_SetBackground(host_->routing_id(), background));
 }
 
-void RenderWidgetHostViewViews::CreatePluginContainer(
-    gfx::PluginWindowHandle id) {
-  // TODO(anicolao): plugin_container_manager_.CreatePluginContainer(id);
-}
-
-void RenderWidgetHostViewViews::DestroyPluginContainer(
-    gfx::PluginWindowHandle id) {
-  // TODO(anicolao): plugin_container_manager_.DestroyPluginContainer(id);
-}
-
 void RenderWidgetHostViewViews::SetVisuallyDeemphasized(
     const SkColor* color, bool animate) {
   // TODO(anicolao)
@@ -423,35 +328,8 @@ bool RenderWidgetHostViewViews::ContainsNativeView(
     gfx::NativeView native_view) const {
   // TODO(port)
   NOTREACHED() <<
-    "RenderWidgetHostViewViews::ContainsNativeView not implemented.";
+      "RenderWidgetHostViewViews::ContainsNativeView not implemented.";
   return false;
-}
-
-void RenderWidgetHostViewViews::AcceleratedCompositingActivated(
-    bool activated) {
-  // TODO(anicolao): figure out if we need something here
-  if (activated)
-    NOTIMPLEMENTED();
-}
-
-gfx::PluginWindowHandle RenderWidgetHostViewViews::GetCompositingSurface() {
-  GtkNativeViewManager* manager = GtkNativeViewManager::GetInstance();
-  gfx::PluginWindowHandle surface = gfx::kNullPluginWindow;
-  gfx::NativeViewId view_id = gfx::IdFromNativeView(GetInnerNativeView());
-
-  if (!manager->GetXIDForId(&surface, view_id)) {
-    DLOG(ERROR) << "Can't find XID for view id " << view_id;
-  }
-  return surface;
-}
-
-gfx::NativeView RenderWidgetHostViewViews::GetInnerNativeView() const {
-  // TODO(sad): Ideally this function should be equivalent to GetNativeView, and
-  // NativeWidgetGtk-specific function call should not be necessary.
-  const views::Widget* widget = GetWidget();
-  const views::NativeWidget* native = widget ? widget->native_widget() : NULL;
-  return native ? static_cast<const views::NativeWidgetGtk*>(native)->
-      window_contents() : NULL;
 }
 
 std::string RenderWidgetHostViewViews::GetClassName() const {
@@ -515,110 +393,6 @@ void RenderWidgetHostViewViews::OnMouseEntered(const views::MouseEvent& event) {
 
 void RenderWidgetHostViewViews::OnMouseExited(const views::MouseEvent& event) {
   // Already generated synthetically by webkit.
-}
-
-ui::TouchStatus RenderWidgetHostViewViews::OnTouchEvent(
-    const views::TouchEvent& event) {
-  if (!host_)
-    return ui::TOUCH_STATUS_UNKNOWN;
-
-  // Update the list of touch points first.
-  WebKit::WebTouchPoint* point = NULL;
-  ui::TouchStatus status = ui::TOUCH_STATUS_UNKNOWN;
-
-  switch (event.type()) {
-    case ui::ET_TOUCH_PRESSED:
-      // Add a new touch point.
-      if (touch_event_.touchPointsLength <
-          WebTouchEvent::touchPointsLengthCap) {
-        point = &touch_event_.touchPoints[touch_event_.touchPointsLength++];
-        point->id = event.identity();
-
-        if (touch_event_.touchPointsLength == 1) {
-          // A new touch sequence has started.
-          status = ui::TOUCH_STATUS_START;
-
-          // We also want the focus.
-          RequestFocus();
-
-          // Confirm existing composition text on touch press events, to make
-          // sure the input caret won't be moved with an ongoing composition
-          // text.
-          FinishImeCompositionSession();
-        }
-      }
-      break;
-    case ui::ET_TOUCH_RELEASED:
-    case ui::ET_TOUCH_CANCELLED:
-    case ui::ET_TOUCH_MOVED: {
-      // The touch point should have been added to the event from an earlier
-      // _PRESSED event. So find that.
-      // At the moment, only a maximum of 4 touch-points are allowed. So a
-      // simple loop should be sufficient.
-      for (int i = 0; i < touch_event_.touchPointsLength; ++i) {
-        point = touch_event_.touchPoints + i;
-        if (point->id == event.identity()) {
-          break;
-        }
-        point = NULL;
-      }
-      break;
-    }
-    default:
-      DLOG(WARNING) << "Unknown touch event " << event.type();
-      break;
-  }
-
-  if (!point)
-    return ui::TOUCH_STATUS_UNKNOWN;
-
-  if (status != ui::TOUCH_STATUS_START)
-    status = ui::TOUCH_STATUS_CONTINUE;
-
-  UpdateTouchParams(event, point);
-
-  // Update the location and state of the point.
-  point->state = TouchPointStateFromEvent(&event);
-  if (point->state == WebKit::WebTouchPoint::StateMoved) {
-    // It is possible for badly written touch drivers to emit Move events even
-    // when the touch location hasn't changed. In such cases, consume the event
-    // and pretend nothing happened.
-    if (point->position.x == event.x() && point->position.y == event.y()) {
-      return status;
-    }
-  }
-  UpdateTouchPointPosition(&event, GetMirroredPosition(), point);
-
-  // Mark the rest of the points as stationary.
-  for (int i = 0; i < touch_event_.touchPointsLength; ++i) {
-    WebKit::WebTouchPoint* iter = touch_event_.touchPoints + i;
-    if (iter != point) {
-      iter->state = WebKit::WebTouchPoint::StateStationary;
-    }
-  }
-
-  // Update the type of the touch event.
-  touch_event_.type = TouchEventTypeFromEvent(&event);
-  touch_event_.timeStampSeconds = base::Time::Now().ToDoubleT();
-
-  // The event and all the touches have been updated. Dispatch.
-  host_->ForwardTouchEvent(touch_event_);
-
-  // If the touch was released, then remove it from the list of touch points.
-  if (event.type() == ui::ET_TOUCH_RELEASED) {
-    --touch_event_.touchPointsLength;
-    for (int i = point - touch_event_.touchPoints;
-         i < touch_event_.touchPointsLength;
-         ++i) {
-      touch_event_.touchPoints[i] = touch_event_.touchPoints[i + 1];
-    }
-    if (touch_event_.touchPointsLength == 0)
-      status = ui::TOUCH_STATUS_END;
-  } else if (event.type() == ui::ET_TOUCH_CANCELLED) {
-    status = ui::TOUCH_STATUS_CANCEL;
-  }
-
-  return status;
 }
 
 bool RenderWidgetHostViewViews::OnKeyPressed(const views::KeyEvent& event) {
@@ -807,7 +581,9 @@ void RenderWidgetHostViewViews::OnPaint(gfx::Canvas* canvas) {
   if (host_->is_accelerated_compositing_active())
     return;
 
+#if defined(TOOLKIT_USES_GTK)
   GdkWindow* window = GetInnerNativeView()->window;
+#endif
   DCHECK(!about_to_validate_and_paint_);
 
   // TODO(anicolao): get the damage somehow
@@ -825,10 +601,12 @@ void RenderWidgetHostViewViews::OnPaint(gfx::Canvas* canvas) {
   paint_rect = paint_rect.Intersect(invalid_rect_);
 
   if (backing_store) {
+#if defined(TOOLKIT_USES_GTK)
     // Only render the widget if it is attached to a window; there's a short
     // period where this object isn't attached to a window but hasn't been
     // Destroy()ed yet and it receives paint messages...
     if (window) {
+#endif
       if (!visually_deemphasized_) {
         // In the common case, use XCopyArea. We don't draw more than once, so
         // we don't need to double buffer.
@@ -843,7 +621,9 @@ void RenderWidgetHostViewViews::OnPaint(gfx::Canvas* canvas) {
         // TODO(sad)
         NOTIMPLEMENTED();
       }
+#if defined(TOOLKIT_USES_GTK)
     }
+#endif
     if (!whiteout_start_time_.is_null()) {
       base::TimeDelta whiteout_duration = base::TimeTicks::Now() -
           whiteout_start_time_;
@@ -909,15 +689,6 @@ bool RenderWidgetHostViewViews::IsPopup() {
   return popup_type_ != WebKit::WebPopupTypeNone;
 }
 
-void RenderWidgetHostViewViews::ShowCurrentCursor() {
-  // The widget may not have a window. If that's the case, abort mission. This
-  // is the same issue as that explained above in Paint().
-  if (!GetInnerNativeView() || !GetInnerNativeView()->window)
-    return;
-
-  native_cursor_ = current_cursor_.GetNativeCursor();
-}
-
 WebKit::WebMouseEvent RenderWidgetHostViewViews::WebMouseEventFromViewsEvent(
     const views::MouseEvent& event) {
   WebKit::WebMouseEvent wmevent;
@@ -949,13 +720,4 @@ void RenderWidgetHostViewViews::FinishImeCompositionSession() {
   DCHECK(GetInputMethod());
   GetInputMethod()->CancelComposition(this);
   has_composition_text_ = false;
-}
-
-// static
-RenderWidgetHostView*
-    RenderWidgetHostView::GetRenderWidgetHostViewFromNativeView(
-        gfx::NativeView widget) {
-  gpointer user_data = g_object_get_data(G_OBJECT(widget),
-                                         kRenderWidgetHostViewKey);
-  return reinterpret_cast<RenderWidgetHostView*>(user_data);
 }

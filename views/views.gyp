@@ -643,8 +643,8 @@
       ],
     },
     {
-      'target_name': 'views_desktop',
-      'type': 'executable',
+      'target_name': 'views_desktop_lib',
+      'type': 'static_library',
       'dependencies': [
         '../app/app.gyp:app_resources',
         '../base/base.gyp:base',
@@ -661,13 +661,60 @@
       'sources': [
         'desktop/desktop_background.cc',
         'desktop/desktop_background.h',
-        'desktop/desktop_main.cc',
-        'desktop/desktop_views_delegate.cc',
-        'desktop/desktop_views_delegate.h',
         'desktop/desktop_window.cc',
         'desktop/desktop_window.h',
         'desktop/desktop_window_root_view.cc',
         'desktop/desktop_window_root_view.h',
+      ],
+      'conditions': [
+        ['toolkit_uses_gtk == 1', {
+          'dependencies': [
+            '../build/linux/system.gyp:gtk',
+            '../chrome/chrome.gyp:packed_resources',
+          ],
+          'conditions': [
+            ['linux_use_tcmalloc==1', {
+               'dependencies': [
+                 '../base/allocator/allocator.gyp:allocator',
+               ],
+            }],
+          ],
+        },
+        ],
+        ['OS=="win"', {
+          'link_settings': {
+            'libraries': [
+              '-limm32.lib',
+              '-loleacc.lib',
+            ]
+          },
+          'include_dirs': [
+            '<(DEPTH)/third_party/wtl/include',
+          ],
+        }],
+      ],      
+    },
+    {
+      'target_name': 'views_desktop',
+      'type': 'executable',
+      'dependencies': [
+        '../app/app.gyp:app_resources',
+        '../base/base.gyp:base',
+        '../skia/skia.gyp:skia',
+        '../third_party/icu/icu.gyp:icui18n',
+        '../third_party/icu/icu.gyp:icuuc',
+        'views',
+        'views_desktop_lib',
+        '../ui/ui.gyp:ui_gfx',
+        '../ui/ui.gyp:gfx_resources',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'desktop/desktop_main.cc',
+        'desktop/desktop_views_delegate.cc',
+        'desktop/desktop_views_delegate.h',
         '<(SHARED_INTERMEDIATE_DIR)/app/app_resources/app_resources.rc',
         '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/gfx_resources.rc',
       ],

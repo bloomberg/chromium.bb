@@ -47,6 +47,10 @@ int main(int argc, char** argv) {
   views::Widget::SetPureViews(true);
 
   views::desktop::DesktopWindow::CreateDesktopWindow();
+  views::desktop::DesktopWindow::desktop_window->CreateTestWindow(
+      L"Sample Window 1", SK_ColorWHITE, gfx::Rect(500, 200, 400, 400), true);
+  views::desktop::DesktopWindow::desktop_window->CreateTestWindow(
+      L"Sample Window 2", SK_ColorRED, gfx::Rect(600, 450, 450, 300), false);
 
   views::AcceleratorHandler accelerator_handler;
   MessageLoopForUI::current()->Run(&accelerator_handler);

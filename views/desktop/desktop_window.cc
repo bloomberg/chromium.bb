@@ -109,11 +109,6 @@ void DesktopWindow::CreateDesktopWindow() {
   params.bounds = gfx::Rect(20, 20, 1920, 1200);
   window->Init(params);
   window->Show();
-
-  desktop_window->CreateTestWindow(L"Sample Window 1", SK_ColorWHITE,
-                                   gfx::Rect(500, 200, 400, 400), true);
-  desktop_window->CreateTestWindow(L"Sample Window 2", SK_ColorRED,
-                                   gfx::Rect(600, 450, 450, 300), false);
 }
 
 void DesktopWindow::ActivateWidget(Widget* widget) {
@@ -126,6 +121,25 @@ void DesktopWindow::ActivateWidget(Widget* widget) {
     widget->MoveToTop();
     active_widget_ = static_cast<NativeWidgetViews*>(widget->native_widget());
     active_widget_->OnActivate(true);
+  }
+}
+
+
+void DesktopWindow::CreateTestWindow(const std::wstring& title,
+                                     SkColor color,
+                                     gfx::Rect initial_bounds,
+                                     bool rotate) {
+  views::Widget* window = views::Widget::CreateWindowWithBounds(
+      new TestWindowContentView(title, color),
+      initial_bounds);
+  window->Show();
+
+  if (rotate) {
+    ui::Transform transform;
+    transform.SetRotate(90.0f);
+    transform.SetTranslateX(window->GetWindowScreenBounds().width());
+    static_cast<NativeWidgetViews*>(window->native_widget())->GetView()->
+        SetTransform(transform);
   }
 }
 
@@ -168,27 +182,6 @@ void DesktopWindow::WindowClosing() {
 
 View* DesktopWindow::GetContentsView() {
   return this;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// DesktopWindow, private:
-
-void DesktopWindow::CreateTestWindow(const std::wstring& title,
-                                     SkColor color,
-                                     gfx::Rect initial_bounds,
-                                     bool rotate) {
-  views::Widget* window = views::Widget::CreateWindowWithBounds(
-      new TestWindowContentView(title, color),
-      initial_bounds);
-  window->Show();
-
-  if (rotate) {
-    ui::Transform transform;
-    transform.SetRotate(90.0f);
-    transform.SetTranslateX(window->GetWindowScreenBounds().width());
-    static_cast<NativeWidgetViews*>(window->native_widget())->GetView()->
-        SetTransform(transform);
-  }
 }
 
 }  // namespace desktop

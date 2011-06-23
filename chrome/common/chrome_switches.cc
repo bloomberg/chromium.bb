@@ -1118,10 +1118,13 @@ const char kEnableExposeForTabs[]           = "enable-expose-for-tabs";
 const char kKioskMode[]                     = "kiosk";
 #endif
 
+#if defined(TOOLKIT_VIEWS)
 // Enables debug paint in views framework. Enabling this causes the damaged
 // region being painted to flash in red.
-#if defined(TOOLKIT_VIEWS)
 const char kDebugViewsPaint[]               = "debug-views-paint";
+
+// Runs Chrome inside the views desktop shell.
+const char kViewsDesktop[]                  = "views-desktop";
 #endif
 
 // Debug only switch to prevent the mouse cursor from disappearing when

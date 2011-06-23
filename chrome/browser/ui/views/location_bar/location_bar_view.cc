@@ -35,6 +35,7 @@
 #include "chrome/browser/ui/views/location_bar/page_action_with_badge_view.h"
 #include "chrome/browser/ui/views/location_bar/selected_keyword_view.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
+#include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
@@ -51,6 +52,7 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/skia_util.h"
 #include "views/controls/label.h"
+#include "views/controls/textfield/native_textfield_views.h"
 #include "views/drag_utils.h"
 
 #if defined(OS_WIN)
@@ -171,9 +173,17 @@ void LocationBarView::Init() {
   // URL edit field.
   // View container for URL edit field.
 #if defined(OS_WIN)
-  location_entry_.reset(new OmniboxViewWin(font_, this, model_, this,
-      GetWidget()->GetNativeView(), profile_, browser_->command_updater(),
-      mode_ == POPUP, this));
+  if (UseViewsOmnibox()) {
+    OmniboxViewViews* omnibox_view =
+        new OmniboxViewViews(this, model_, profile_,
+                             browser_->command_updater(), mode_ == POPUP, this);
+    omnibox_view->Init();
+    location_entry_.reset(omnibox_view);
+  } else {
+    location_entry_.reset(new OmniboxViewWin(font_, this, model_, this,
+        GetWidget()->GetNativeView(), profile_, browser_->command_updater(),
+        mode_ == POPUP, this));
+  }
 #else
   location_entry_.reset(OmniboxViewGtk::Create(this, model_, profile_,
       browser_->command_updater(), mode_ == POPUP, this));
@@ -421,7 +431,10 @@ void LocationBarView::SetInstantSuggestion(const string16& text,
           GetColor(ToolbarModel::NONE,
                    LocationBarView::DEEMPHASIZED_TEXT));
       suggested_text_view_->SetText(UTF16ToWide(text));
-      suggested_text_view_->SetFont(location_entry_->GetFont());
+      if (UseViewsOmnibox())
+        NOTIMPLEMENTED();
+      else
+        suggested_text_view_->SetFont(GetOmniboxViewWin()->GetFont());
       AddChildView(suggested_text_view_);
     } else if (suggested_text_view_->GetText() != UTF16ToWide(text)) {
       suggested_text_view_->SetText(UTF16ToWide(text));
@@ -533,12 +546,17 @@ void LocationBarView::Layout() {
   }
 
 #if defined(OS_WIN)
-  RECT formatting_rect;
-  location_entry_->GetRect(&formatting_rect);
-  RECT edit_bounds;
-  location_entry_->GetClientRect(&edit_bounds);
-  int max_edit_width = entry_width - formatting_rect.left -
-                       (edit_bounds.right - formatting_rect.right);
+  int max_edit_width = entry_width;
+  if (UseViewsOmnibox()) {
+    NOTIMPLEMENTED();
+  } else {
+    RECT formatting_rect;
+    GetOmniboxViewWin()->GetRect(&formatting_rect);
+    RECT edit_bounds;
+    GetOmniboxViewWin()->GetClientRect(&edit_bounds);
+    max_edit_width = entry_width - formatting_rect.left -
+                     (edit_bounds.right - formatting_rect.right);
+  }
 #else
   int max_edit_width = entry_width;
 #endif
@@ -657,22 +675,27 @@ void LocationBarView::Layout() {
   // keyword hints and suggested text is minimal and we're not confident this
   // is the right approach for suggested text.
   if (suggested_text_view_) {
-    // TODO(sky): need to layout when the user changes caret position.
-    int suggested_text_width = suggested_text_view_->GetPreferredSize().width();
-    int vis_text_width = location_entry_->WidthOfTextAfterCursor();
-    if (vis_text_width + suggested_text_width > entry_width) {
-      // Hide the suggested text if the user has scrolled or we can't fit all
-      // the suggested text.
-      suggested_text_view_->SetBounds(0, 0, 0, 0);
+    if (UseViewsOmnibox()) {
+      NOTIMPLEMENTED();
     } else {
-      int location_needed_width = location_entry_->TextWidth();
-      location_bounds.set_width(std::min(location_needed_width,
-                                         entry_width - suggested_text_width));
-      // TODO(sky): figure out why this needs the -1.
-      suggested_text_view_->SetBounds(location_bounds.right() - 1,
-                                      location_bounds.y(),
-                                      suggested_text_width,
-                                      location_bounds.height());
+      // TODO(sky): need to layout when the user changes caret position.
+      int suggested_text_width =
+          suggested_text_view_->GetPreferredSize().width();
+      int vis_text_width = GetOmniboxViewWin()->WidthOfTextAfterCursor();
+      if (vis_text_width + suggested_text_width > entry_width) {
+        // Hide the suggested text if the user has scrolled or we can't fit all
+        // the suggested text.
+        suggested_text_view_->SetBounds(0, 0, 0, 0);
+      } else {
+        int location_needed_width = location_entry_->TextWidth();
+        location_bounds.set_width(std::min(location_needed_width,
+                                           entry_width - suggested_text_width));
+        // TODO(sky): figure out why this needs the -1.
+        suggested_text_view_->SetBounds(location_bounds.right() - 1,
+                                        location_bounds.y(),
+                                        suggested_text_width,
+                                        location_bounds.height());
+      }
     }
   }
 #endif
@@ -778,7 +801,10 @@ void LocationBarView::OnMouseReleased(const views::MouseEvent& event) {
 }
 
 void LocationBarView::OnMouseCaptureLost() {
-  location_entry_->HandleExternalMsg(WM_CAPTURECHANGED, 0, CPoint());
+  if (UseViewsOmnibox())
+    NOTIMPLEMENTED();
+  else
+    GetOmniboxViewWin()->HandleExternalMsg(WM_CAPTURECHANGED, 0, CPoint());
 }
 #endif
 
@@ -971,7 +997,10 @@ void LocationBarView::OnMouseEvent(const views::MouseEvent& event, UINT msg) {
   UINT flags = event.GetWindowsFlags();
   gfx::Point screen_point(event.location());
   ConvertPointToScreen(this, &screen_point);
-  location_entry_->HandleExternalMsg(msg, flags, screen_point.ToPOINT());
+  if (UseViewsOmnibox())
+    NOTIMPLEMENTED();
+  else
+    GetOmniboxViewWin()->HandleExternalMsg(msg, flags, screen_point.ToPOINT());
 }
 #endif
 
@@ -1003,6 +1032,7 @@ std::string LocationBarView::GetClassName() const {
 bool LocationBarView::SkipDefaultKeyEventProcessing(
     const views::KeyEvent& event) {
 #if defined(OS_WIN)
+  bool views_omnibox = UseViewsOmnibox();
   if (views::FocusManager::IsTabTraversalKeyEvent(event)) {
     if (HasValidSuggestText()) {
       // Return true so that the edit sees the tab and commits the suggestion.
@@ -1014,7 +1044,7 @@ bool LocationBarView::SkipDefaultKeyEventProcessing(
     }
 
     // If the caret is not at the end, then tab moves the caret to the end.
-    if (!location_entry_->IsCaretAtEnd())
+    if (!views_omnibox && !GetOmniboxViewWin()->IsCaretAtEnd())
       return true;
 
     // Tab while showing instant commits instant immediately.
@@ -1024,7 +1054,10 @@ bool LocationBarView::SkipDefaultKeyEventProcessing(
       return true;
   }
 
-  return location_entry_->SkipDefaultKeyEventProcessing(event);
+  if (!views_omnibox)
+    return GetOmniboxViewWin()->SkipDefaultKeyEventProcessing(event);
+  NOTIMPLEMENTED();
+  return false;
 #else
   // This method is not used for Linux ports. See FocusManager::OnKeyEvent() in
   // src/views/focus/focus_manager.cc for details.
@@ -1220,5 +1253,15 @@ void LocationBarView::Observe(NotificationType type,
 bool LocationBarView::HasValidSuggestText() const {
   return suggested_text_view_ && !suggested_text_view_->size().IsEmpty() &&
       !suggested_text_view_->GetText().empty();
+}
+
+OmniboxViewWin* LocationBarView::GetOmniboxViewWin() {
+  CHECK(!UseViewsOmnibox());
+  return static_cast<OmniboxViewWin*>(location_entry_.get());
+}
+
+bool LocationBarView::UseViewsOmnibox() {
+  return views::Widget::IsPureViews() ||
+      views::NativeTextfieldViews::IsTextfieldViewsEnabled();
 }
 #endif

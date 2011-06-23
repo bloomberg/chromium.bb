@@ -18,6 +18,7 @@
 #include "chrome/browser/accessibility/browser_accessibility_state.h"
 #include "chrome/browser/accessibility/browser_accessibility_win.h"
 #include "chrome/browser/browser_trial.h"
+#include "chrome/browser/renderer_host/render_widget_host_view_views.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
@@ -214,6 +215,8 @@ LRESULT CALLBACK PluginWrapperWindowProc(HWND window, unsigned int message,
 // static
 RenderWidgetHostView* RenderWidgetHostView::CreateViewForWidget(
     RenderWidgetHost* widget) {
+  if (views::Widget::IsPureViews())
+    return new RenderWidgetHostViewViews(widget);
   return new RenderWidgetHostViewWin(widget);
 }
 
@@ -1804,6 +1807,10 @@ void RenderWidgetHostViewWin::ShutdownHost() {
 RenderWidgetHostView*
     RenderWidgetHostView::GetRenderWidgetHostViewFromNativeView(
         gfx::NativeView native_view) {
+  if (views::Widget::IsPureViews()) {
+    // TODO(beng): Figure out what to do for Windows/v.o.v.
+    return NULL;
+  }
   return ::IsWindow(native_view) ?
       reinterpret_cast<RenderWidgetHostView*>(
           ViewProp::GetValue(native_view, kRenderWidgetHostViewKey)) : NULL;

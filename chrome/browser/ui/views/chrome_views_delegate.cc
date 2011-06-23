@@ -44,6 +44,9 @@ PrefService* GetPrefsForWindow(const views::Widget* window) {
 
 }  // namespace
 
+// static
+views::View* ChromeViewsDelegate::default_parent_view = NULL;
+
 ///////////////////////////////////////////////////////////////////////////////
 // ChromeViewsDelegate, views::ViewsDelegate implementation:
 
@@ -52,7 +55,7 @@ ui::Clipboard* ChromeViewsDelegate::GetClipboard() const {
 }
 
 views::View* ChromeViewsDelegate::GetDefaultParentView() {
-  return NULL;
+  return default_parent_view;
 }
 
 void ChromeViewsDelegate::SaveWindowPlacement(const views::Widget* window,

@@ -21,9 +21,11 @@
 #include "views/view.h"
 #include "webkit/glue/webcursor.h"
 
+#if defined(TOUCH_UI)
 namespace ui {
 enum TouchStatus;
 }
+#endif
 
 class RenderWidgetHost;
 struct NativeWebKeyboardEvent;
@@ -80,12 +82,20 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   virtual void ShowingContextMenu(bool showing) OVERRIDE;
   virtual BackingStore* AllocBackingStore(const gfx::Size& size) OVERRIDE;
   virtual void SetBackground(const SkBitmap& background) OVERRIDE;
+#if defined(TOOLKIT_USES_GTK)
   virtual void CreatePluginContainer(gfx::PluginWindowHandle id) OVERRIDE;
   virtual void DestroyPluginContainer(gfx::PluginWindowHandle id) OVERRIDE;
+#endif
   virtual void SetVisuallyDeemphasized(const SkColor* color,
                                        bool animate) OVERRIDE;
   virtual bool ContainsNativeView(gfx::NativeView native_view) const OVERRIDE;
+#if defined(TOOLKIT_USES_GTK)
   virtual void AcceleratedCompositingActivated(bool activated) OVERRIDE;
+#endif
+#if defined(OS_WIN)
+  virtual void WillWmDestroy() OVERRIDE;
+  virtual void ShowCompositorHostWindow(bool show) OVERRIDE;
+#endif
   virtual gfx::PluginWindowHandle GetCompositingSurface() OVERRIDE;
 
   // On some systems, there can be two native views, where an outer native view
@@ -102,7 +112,9 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   virtual void OnMouseMoved(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
+#if defined(TOUCH_UI)
   virtual ui::TouchStatus OnTouchEvent(const views::TouchEvent& event) OVERRIDE;
+#endif
   virtual bool OnKeyPressed(const views::KeyEvent& event) OVERRIDE;
   virtual bool OnKeyReleased(const views::KeyEvent& event) OVERRIDE;
   virtual bool OnMouseWheel(const views::MouseWheelEvent& event) OVERRIDE;

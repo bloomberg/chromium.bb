@@ -11,6 +11,7 @@
 
 #include "chrome/browser/accessibility/browser_accessibility_state.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/views/frame/browser_frame_views.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "grit/theme_resources.h"
 #include "ui/base/theme_provider.h"
@@ -216,6 +217,8 @@ const gfx::Font& BrowserFrame::GetTitleFont() {
 NativeBrowserFrame* NativeBrowserFrame::CreateNativeBrowserFrame(
     BrowserFrame* browser_frame,
     BrowserView* browser_view) {
+  if (views::Widget::IsPureViews())
+    return new BrowserFrameViews(browser_frame, browser_view);
   return new BrowserFrameWin(browser_frame, browser_view);
 }
 

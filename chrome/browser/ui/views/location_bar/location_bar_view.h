@@ -330,6 +330,14 @@ class LocationBarView : public LocationBar,
 
   // Returns true if the suggest text is valid.
   bool HasValidSuggestText() const;
+
+  // Returns |location_entry_| cast to OmniboxViewWin, or NULL if
+  // |location_entry_| is of a different type.
+  OmniboxViewWin* GetOmniboxViewWin();
+
+  // Returns true if the views-based omnibox should be used. When false,
+  // |location_entry_| can be cast to OmniboxViewWin.
+  static bool UseViewsOmnibox();
 #endif
 
   // Helper to show the first run info bubble.
@@ -339,11 +347,7 @@ class LocationBarView : public LocationBar,
   Profile* profile_;
 
   // The Autocomplete Edit field.
-#if defined(OS_WIN)
-  scoped_ptr<OmniboxViewWin> location_entry_;
-#else
   scoped_ptr<OmniboxView> location_entry_;
-#endif
 
   // The Browser object that corresponds to this View.
   Browser* browser_;
