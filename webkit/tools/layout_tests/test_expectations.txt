@@ -8,13 +8,6 @@
 // PLEASE DO NOT LEAVE ENTRIES IN THIS FILE FOR MORE THAN 24 HRS.
 // The need for rebaselines is conflicting with the TIMEOUT expectation upstream
 
-// Issues introduced with bug 84157
-BUGGMAN : plugins/embed-attributes-style.html = IMAGE+TEXT
-BUGGMAN : fast/dom/object-plugin-hides-properties.html = TEXT
-
-BUGKOZ : fast/dom/navigator-detached-no-crash.html = TEXT
-BUGKOZ : fast/dom/register-protocol-handler.html = TEXT
-
 // Started crashing in the r89132 roll; canaries seem unaffected.
 BUGCR86570 MAC : http/tests/misc/acid3.html = IMAGE CRASH
 BUGCR86570 MAC : http/tests/misc/font-face-in-multiple-segmented-faces.html = CRASH
