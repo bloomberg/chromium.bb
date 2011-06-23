@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_COCOA_H_
-#define CHROME_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_COCOA_H_
+#ifndef CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_COCOA_H_
+#define CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_COCOA_H_
 #pragma once
 
 #import <Cocoa/Cocoa.h>
 
 #import "base/memory/scoped_nsobject.h"
-#import "chrome/browser/accessibility/browser_accessibility_delegate_mac.h"
-#include "chrome/browser/accessibility/browser_accessibility.h"
+#import "content/browser/accessibility/browser_accessibility_delegate_mac.h"
+#include "content/browser/accessibility/browser_accessibility.h"
 
 // BrowserAccessibilityCocoa is a cocoa wrapper around the BrowserAccessibility
 // object. The renderer converts webkit's accessibility tree into a
@@ -73,4 +73,4 @@
 @property(nonatomic, readonly) id window;
 @end
 
-#endif // CHROME_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_COCOA_H_
+#endif // CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_COCOA_H_

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/accessibility/browser_accessibility_manager.h"
+#include "content/browser/accessibility/browser_accessibility_manager.h"
 
 #include "base/logging.h"
-#include "chrome/browser/accessibility/browser_accessibility.h"
+#include "content/browser/accessibility/browser_accessibility.h"
 #include "content/common/view_messages.h"
 
 using webkit_glue::WebAccessibility;

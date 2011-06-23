@@ -20,11 +20,29 @@
         '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
         '../third_party/zlib/zlib.gyp:zlib',
         '../ui/ui.gyp:ui_base',
+        '../webkit/support/webkit_support.gyp:webkit_resources',
       ],
       'include_dirs': [
         '..',
       ],
       'sources': [
+        'browser/accessibility/browser_accessibility.cc',
+        'browser/accessibility/browser_accessibility.h',
+        'browser/accessibility/browser_accessibility_cocoa.h',
+        'browser/accessibility/browser_accessibility_cocoa.mm',
+        'browser/accessibility/browser_accessibility_delegate_mac.h',
+        'browser/accessibility/browser_accessibility_mac.h',
+        'browser/accessibility/browser_accessibility_mac.mm',
+        'browser/accessibility/browser_accessibility_manager.cc',
+        'browser/accessibility/browser_accessibility_manager.h',
+        'browser/accessibility/browser_accessibility_manager_mac.h',
+        'browser/accessibility/browser_accessibility_manager_mac.mm',
+        'browser/accessibility/browser_accessibility_manager_win.cc',
+        'browser/accessibility/browser_accessibility_manager_win.h',
+        'browser/accessibility/browser_accessibility_state.cc',
+        'browser/accessibility/browser_accessibility_state.h',
+        'browser/accessibility/browser_accessibility_win.cc',
+        'browser/accessibility/browser_accessibility_win.h',
         'browser/appcache/appcache_dispatcher_host.cc',
         'browser/appcache/appcache_dispatcher_host.h',
         'browser/appcache/appcache_frontend_proxy.cc',
@@ -421,6 +439,12 @@
             'browser/renderer_host/p2p/socket_dispatcher_host.cc',
             'browser/renderer_host/p2p/socket_dispatcher_host.h',
           ],
+        }],
+        ['OS=="win"', {
+          'dependencies': [
+            '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
+            '../third_party/isimpledom/isimpledom.gyp:isimpledom',
+          ]
         }],
         ['toolkit_uses_gtk == 1', {
           'dependencies': [

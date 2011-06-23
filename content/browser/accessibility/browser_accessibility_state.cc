@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/accessibility/browser_accessibility_state.h"
+#include "content/browser/accessibility/browser_accessibility_state.h"
 
 #include "base/memory/singleton.h"
 
