@@ -264,6 +264,16 @@ add_config('x86-generic-chrome-pre-flight-queue', [{
   'push_overlays': 'public',
 }])
 
+add_config('arm-generic-chrome-pre-flight-queue', [{
+  'board' : 'arm-generic',
+
+  'build_type': 'chrome',
+  'uprev' : False,
+  'chrome_tests' : True,
+  'overlays': 'public',
+  'push_overlays': None,
+}])
+
 add_config('x86-agz-bin', [{
   'board' : 'x86-agz',
 
