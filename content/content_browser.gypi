@@ -177,6 +177,8 @@
         'browser/load_from_memory_cache_details.cc',
         'browser/load_from_memory_cache_details.h',
         'browser/load_notification_details.h',
+        'browser/mach_broker_mac.cc',
+        'browser/mach_broker_mac.h',
         'browser/mime_registry_message_filter.cc',
         'browser/mime_registry_message_filter.h',
         # TODO:  These should be moved to test_support (see below), but

@@ -1352,8 +1352,6 @@
         'browser/mac/keystone_registration.h',
         'browser/mac/keystone_registration.mm',
         'browser/mac/scoped_authorizationref.h',
-        'browser/mach_broker_mac.cc',
-        'browser/mach_broker_mac.h',
         'browser/memory_details.cc',
         'browser/memory_details.h',
         'browser/memory_details_linux.cc',

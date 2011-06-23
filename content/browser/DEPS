@@ -24,8 +24,6 @@ include_rules = [
   "+chrome/browser/renderer_host/download_throttling_resource_handler.h",
   "+chrome/browser/renderer_host/save_file_resource_handler.h",
 
-  "+chrome/browser/mach_broker_mac.h",
-
   # http://crbug.com/76788
   "+chrome/browser/profiles/profile.h",
 

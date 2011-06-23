@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/mach_broker_mac.h"
+#include "content/browser/mach_broker_mac.h"
 
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -11,11 +11,10 @@
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/threading/platform_thread.h"
-#include "chrome/browser/extensions/extension_host.h"
-#include "chrome/common/chrome_switches.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/common/child_process_info.h"
+#include "content/common/content_switches.h"
 #include "content/common/notification_service.h"
 
 namespace {
@@ -44,9 +43,6 @@ class RegisterNotificationTask : public Task {
         NotificationService::AllSources());
     broker_->registrar_.Add(broker_,
         NotificationType::CHILD_PROCESS_HOST_DISCONNECTED,
-        NotificationService::AllSources());
-    broker_->registrar_.Add(broker_,
-        NotificationType::EXTENSION_PROCESS_TERMINATED,
         NotificationService::AllSources());
   }
 
@@ -210,10 +206,6 @@ void MachBroker::Observe(NotificationType type,
     case NotificationType::RENDERER_PROCESS_CLOSED:
     case NotificationType::RENDERER_PROCESS_TERMINATED:
       handle = Source<RenderProcessHost>(source)->GetHandle();
-      break;
-    case NotificationType::EXTENSION_PROCESS_TERMINATED:
-      handle =
-          Details<ExtensionHost>(details)->render_process_host()->GetHandle();
       break;
     case NotificationType::CHILD_PROCESS_CRASHED:
     case NotificationType::CHILD_PROCESS_HOST_DISCONNECTED:
