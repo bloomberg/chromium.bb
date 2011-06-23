@@ -1,5 +1,5 @@
 <!--
-  Copyright 2010 The Native Client Authors. All rights reserved.
+  Copyright 2011 The Native Client Authors. All rights reserved.
   Use of this source code is governed by a BSD-style license that can
   be found in the LICENSE file.
 -->
@@ -14,13 +14,15 @@
   <title>PPAPI Audio</title>
   </head>
 
-  <h1>Native Client PPAPI Audio</h1>
   <body>
-    <div id="attach"></div>
-    <br>Verify that a 400Hz tone is emitted on the left channel.<br>
-    <br>Verify that a 1000Hz tone is emitted on the right channel.<br>
-    <br>Note: This example depends on your system supporting audio output.<br>
-  </body>
+  <h1>Native Client PPAPI Audio</h1>
+  <div id="attach"></div>
+    <br />Verify that a 400Hz tone is emitted on the left channel.<br />
+    <br />Verify that a 1000Hz tone is emitted on the right
+    channel.<br />
+    <br />Note: This example depends on your system supporting audio
+    output.<br />
+
   <script type="text/javascript">
     //<![CDATA[
 function setupTests(tester, plugin) {
@@ -64,4 +66,5 @@ tester.waitFor($('naclModule'));
 tester.run();
     //]]>
   </script>
+  </body>
 </html>

@@ -56,9 +56,19 @@ var test_table_descriptor = [
       ['PPB_Messaging/PPP_Messaging', 'ppapi_messaging.html']
     ]
   ],
-  ['chrome/ppapi/examples',
+  ['chrome/ppapi/{examples|tests}',
     [
-      ['2D', 'ppapi_example_2d.html']
+      ['examples 2d', 'ppapi_example_2d.html'],
+      ['examples font', 'ppapi_example_font.html'],
+      ['examples gles2', 'ppapi_example_gles2.html'],
+      ['examples post_message', 'ppapi_example_post_message.html'],
+      ['list/run all PPAPI tests', 'test_case.html?mode=nacl'],
+      ['test Graphics2D', 'test_case.html?testcase=Graphics2D&mode=nacl'],
+      ['test ImageData', 'test_case.html?testcase=ImageData&mode=nacl'],
+      ['test Instance', 'test_case.html?testcase=Instance&mode=nacl'],
+      ['test PaintAggregator',
+       'test_case.html?testcase=PaintAggregator&mode=nacl'],
+      ['test Scrollbar', 'test_case.html?testcase=Scrollbar&mode=nacl'],
     ]
   ]
 ];

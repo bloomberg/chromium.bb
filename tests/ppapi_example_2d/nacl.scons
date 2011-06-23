@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# This is a pepper 2d example from examples/2d.
+# This is a Pepper 2D example from ppapi/examples/2d.
 
 Import('env')
 
