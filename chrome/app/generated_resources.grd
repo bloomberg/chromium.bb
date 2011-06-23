@@ -4519,8 +4519,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Insecure script has been blocked.
       </message>
       <message name="IDS_ALLOW_INSECURE_CONTENT_BUTTON" desc="Button to allow insecure content to be displayed">
-        Load Anyway
+        Load anyway (not recommended)
       </message>
+
       <if expr="pp_ifdef('chromeos')">
         <!-- Locale Change Notification-->
         <message name="IDS_LOCALE_CHANGE_MESSAGE" desc="Message shown when locale was changed based on profile content.">

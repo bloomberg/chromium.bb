@@ -34,8 +34,8 @@
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/safe_browsing/client_side_detection_host.h"
-#include "chrome/browser/tab_contents/blocked_infobar_delegate.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
+#include "chrome/browser/tab_contents/insecure_content_infobar_delegate.h"
 #include "chrome/browser/tab_contents/simple_alert_infobar_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents_ssl_helper.h"
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
@@ -593,24 +593,28 @@ void TabContentsWrapper::OnPDFHasUnsupportedFeature() {
 void TabContentsWrapper::OnDidBlockDisplayingInsecureContent() {
   // At most one infobar and do not supersede the stronger running content bar.
   for (size_t i = 0; i < infobar_count(); ++i) {
-    if (GetInfoBarDelegateAt(i)->AsBlockedInfoBarDelegate())
+    if (GetInfoBarDelegateAt(i)->AsInsecureContentInfoBarDelegate())
       return;
   }
-  AddInfoBar(new BlockedDisplayingInfoBarDelegate(this));
+  AddInfoBar(new InsecureContentInfoBarDelegate(this,
+      InsecureContentInfoBarDelegate::DISPLAY));
 }
 
 void TabContentsWrapper::OnDidBlockRunningInsecureContent() {
-  // At most one infobar but supersede the weaker displaying content bar.
+  // At most one infobar superseding any weaker displaying content bar.
   for (size_t i = 0; i < infobar_count(); ++i) {
-    BlockedInfoBarDelegate* blocked =
-        GetInfoBarDelegateAt(i)->AsBlockedInfoBarDelegate();
-    if (blocked) {
-      if (blocked->AsBlockedRunningInfoBarDelegate())
-        return;
-      RemoveInfoBar(blocked);
+    InsecureContentInfoBarDelegate* delegate =
+        GetInfoBarDelegateAt(i)->AsInsecureContentInfoBarDelegate();
+    if (delegate) {
+      if (delegate->type() != InsecureContentInfoBarDelegate::RUN) {
+        ReplaceInfoBar(delegate, new InsecureContentInfoBarDelegate(this,
+            InsecureContentInfoBarDelegate::RUN));
+      }
+      return;
     }
   }
-  AddInfoBar(new BlockedRunningInfoBarDelegate(this));
+  AddInfoBar(new InsecureContentInfoBarDelegate(this,
+      InsecureContentInfoBarDelegate::RUN));
 }
 
 GURL TabContentsWrapper::GetAlternateErrorPageURL() const {
