@@ -3872,7 +3872,7 @@
    obj:*
 }
 {
-   bug_76647
+   bug_76647a
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN11webkit_glue18BufferedDataSource20CreateResourceLoaderExx
@@ -3886,6 +3886,16 @@
    fun:_ZN4base16MessagePumpForUI3RunEPNS_11MessagePump8DelegateE
    fun:_ZN11MessageLoop11RunInternalEv
    fun:_ZN11MessageLoop10RunHandlerEv
+}
+{
+   bug_76647b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_Z17NewRunnableMethodIN11webkit_glue18BufferedDataSourceEMS1_FvvEEP14CancelableTaskPT_T0_
+   fun:_ZN11webkit_glue18BufferedDataSource4StopEP14CallbackRunnerI6Tuple0E
+   fun:_ZN5media13FFmpegDemuxer8StopTaskEP14CallbackRunnerI6Tuple0E
+   fun:_Z16DispatchToMethodIN5media13FFmpegDemuxerEMS1_FvP14CallbackRunnerI6Tuple0EES5_EvPT_T0_RK6Tuple1IT1_E
+   fun:_ZN14RunnableMethodIN5media13FFmpegDemuxerEMS1_FvP14CallbackRunnerI6Tuple0EE6Tuple1IS5_EE3RunEv
 }
 {
    bug_77049
@@ -4815,6 +4825,15 @@
    fun:_ZN16TranslateManager36FetchLanguageListFromTranslateServerEP11PrefService
    fun:_Z11BrowserMainRK18MainFunctionParams
    fun:*RunNamedProcessTypeMainERKSsRK18MainFunctionParams
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_Z17NewRunnableMethodIN11webkit_glue18WebMediaPlayerImpl5ProxyEMS2_FvvEEP14CancelableTaskPT_T0_
+   fun:_ZN11webkit_glue18WebMediaPlayerImpl5Proxy7RepaintEv
+   fun:_ZN11webkit_glue17VideoRendererImpl16OnFrameAvailableEv
+   fun:_ZN5media17VideoRendererBase10ThreadMainEv
 }
 
 #-----------------------------------------------------------------------
