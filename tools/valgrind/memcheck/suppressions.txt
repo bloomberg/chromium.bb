@@ -4808,7 +4808,15 @@
    fun:_ZN16RunnableFunctionIPFviPciP14CallbackRunnerI6Tuple1IiEEE6Tuple4IiS0_iPN3net22CompletionCallbackImplINS9_10FileStream12AsyncContextEEEEE3RunEv
    fun:_ZN4base12_GLOBAL__N_112WorkerThread10ThreadMainEv
 }
-
+{
+   bug_87222
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN10URLFetcher6CreateEiRK4GURLNS_11RequestTypeEPNS_8DelegateE
+   fun:_ZN16TranslateManager36FetchLanguageListFromTranslateServerEP11PrefService
+   fun:_Z11BrowserMainRK18MainFunctionParams
+   fun:*RunNamedProcessTypeMainERKSsRK18MainFunctionParams
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
