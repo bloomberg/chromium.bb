@@ -197,7 +197,7 @@ void FirstRunBubble::HandleKeepButton(GtkWidget* sender) {
 
 void FirstRunBubble::HandleChangeButton(GtkWidget* sender) {
   bubble_->Close();
-  Browser* browser = BrowserList::GetLastActive();
+  Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
   DCHECK(browser);
   browser->OpenSearchEngineOptionsDialog();
 }

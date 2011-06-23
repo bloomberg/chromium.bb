@@ -161,7 +161,7 @@ void FirstRunBubbleView::ButtonPressed(views::Button* sender,
     UserMetrics::RecordAction(
                     UserMetricsAction("FirstRunBubbleView_ChangeButton"));
 
-    Browser* browser = BrowserList::GetLastActive();
+    Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
     if (browser) {
       browser->OpenSearchEngineOptionsDialog();
     }
