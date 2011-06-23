@@ -52,9 +52,7 @@ bool ResourceDispatcherHostBrowserTest::GetPopupTitle(const GURL& url,
 
 // Test title for content created by javascript window.open().
 // See http://crbug.com/5988
-// Disabled for http://code.google.com/p/chromium/issues/detail?id=86346
-IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
-    DISABLED_DynamicTitle1) {
+IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest, DynamicTitle1) {
   ASSERT_TRUE(test_server()->Start());
 
   GURL url(test_server()->GetURL("files/dynamic1.html"));
@@ -66,9 +64,7 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
 
 // Test title for content created by javascript window.open().
 // See http://crbug.com/5988
-// Disabled for http://code.google.com/p/chromium/issues/detail?id=86346
-IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
-    DISABLED_DynamicTitle2) {
+IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest, DynamicTitle2) {
   ASSERT_TRUE(test_server()->Start());
 
   GURL url(test_server()->GetURL("files/dynamic2.html"));
