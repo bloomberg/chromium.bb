@@ -28,7 +28,7 @@ void RenderWidgetHost::OnMsgGetScreenInfo(gfx::NativeViewId view,
     gdk_window = widget->window;
   } else {
     GdkDisplay* display = gdk_display_get_default();
-    gdk_window = gdk_display_get_window_at_pointer(display, NULL, NULL);
+    gdk_window = gdk_display_get_default_group(display);
   }
   if (!gdk_window)
     return;
