@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,8 +8,7 @@
 
 #include "base/basictypes.h"
 
-// A RAII-style class to block the system from entering low-power
-// (sleep) mode.
+// A RAII-style class to block the system from entering low-power (sleep) mode.
 class PowerSaveBlocker {
  public:
   explicit PowerSaveBlocker(bool enabled);
@@ -24,7 +23,7 @@ class PowerSaveBlocker {
 
  private:
   // Platform-specific function called when enable state is changed.
-  // Guarenteed to be called only from the UI thread.
+  // Guaranteed to be called only from the UI thread.
   static void ApplyBlock(bool blocked);
 
   // Called only from UI thread.
