@@ -5,7 +5,6 @@
 #include "views/widget/native_widget_views.h"
 
 #include "ui/gfx/compositor/compositor.h"
-#include "ui/gfx/transform.h"
 #include "views/view.h"
 #include "views/views_delegate.h"
 #include "views/widget/native_widget_view.h"
@@ -270,6 +269,7 @@ void NativeWidgetViews::Minimize() {
   gfx::Rect parent_bounds = view_->parent()->bounds();
 
   restored_bounds_ = view_bounds;
+  restored_transform_ = view_->GetTransform();
 
   float aspect_ratio = static_cast<float>(view_bounds.width()) /
                        static_cast<float>(view_bounds.height());
@@ -307,7 +307,7 @@ bool NativeWidgetViews::IsMinimized() const {
 void NativeWidgetViews::Restore() {
   minimized_ = false;
   view_->SetBoundsRect(restored_bounds_);
-  view_->SetTransform(ui::Transform());
+  view_->SetTransform(restored_transform_);
 }
 
 void NativeWidgetViews::SetFullscreen(bool fullscreen) {

@@ -21,6 +21,7 @@
 #include "views/background.h"
 #include "views/context_menu_controller.h"
 #include "views/drag_controller.h"
+#include "views/layer_property_setter.h"
 #include "views/layout/layout_manager.h"
 #include "views/views_delegate.h"
 #include "views/widget/native_widget_private.h"
@@ -176,8 +177,10 @@ void View::AddChildViewAt(View* view, int index) {
 
   view->PropagateAddNotifications(this, view);
   UpdateTooltip();
-  if (GetWidget())
+  if (GetWidget()) {
     RegisterChildrenForVisibleBoundsNotification(view);
+    view->CreateLayerIfNecessary();
+  }
 
   if (layout_manager_.get())
     layout_manager_->ViewAdded(this, view);
@@ -442,7 +445,7 @@ void View::SetTransform(const ui::Transform& transform) {
     if (!ShouldPaintToLayer())
       DestroyLayerAndReparent();
     else if (layer_.get())
-      layer_->set_transform(transform);
+      layer_property_setter_->SetTransform(layer_.get(), transform);
 
     SchedulePaint();
   } else {
@@ -456,7 +459,7 @@ void View::SetTransform(const ui::Transform& transform) {
       CreateLayer();
       SchedulePaint();
     } else {
-      layer_->set_transform(transform);
+      layer_property_setter_->SetTransform(layer_.get(), transform);
       // We have a layer. When the transform changes and the layer is up to
       // date we don't want to SchedulePaint as it'll trigger painting to the
       // layer. Instead we tell the Widget to paint, which makes the
@@ -479,6 +482,19 @@ void View::SetPaintToLayer(bool value) {
     DestroyLayerAndReparent();
   else if (!layer_.get())
     CreateLayer();
+}
+
+void View::SetLayerPropertySetter(LayerPropertySetter* setter) {
+  if (layer_property_setter_.get() == setter)
+    return;
+
+  if (layer_property_setter_.get() && layer_.get())
+    layer_property_setter_->Uninstalled(layer_.get());
+  layer_property_setter_.reset(setter);
+  if (!setter && layer_.get())
+    layer_property_setter_.reset(LayerPropertySetter::CreateDefaultSetter());
+  if (layer_property_setter_.get() && layer_.get())
+    layer_property_setter_->Installed(layer_.get());
 }
 
 // RTL positioning -------------------------------------------------------------
@@ -1430,7 +1446,7 @@ void View::VisibilityChangedImpl(View* starting_from, bool is_visible) {
 void View::BoundsChanged(const gfx::Rect& previous_bounds) {
   if (IsVisible()) {
     if (layer_.get())
-      layer_->set_bounds(bounds_);
+      layer_property_setter_->SetBounds(layer_.get(), bounds_);
 
     // Paint the new bounds.
     SchedulePaintBoundsChanged(
@@ -1617,14 +1633,15 @@ void View::CreateLayer() {
   if (!compositor)
     return;
 
-  // TODO: if we want to share compositors among widgets then this code needs to
-  // ascend widget boundaries.
   View* ancestor_with_layer = NULL;
   gfx::Point offset(CalculateOffsetToAncestorWithLayer(&ancestor_with_layer));
 
   DCHECK(ancestor_with_layer || parent_ == NULL);
 
   layer_.reset(new ui::Layer(compositor));
+  if (!layer_property_setter_.get())
+    layer_property_setter_.reset(LayerPropertySetter::CreateDefaultSetter());
+  layer_property_setter_->Installed(layer_.get());
   layer_->set_bounds(gfx::Rect(offset.x(), offset.y(), width(), height()));
   if (ancestor_with_layer)
     ancestor_with_layer->layer_->Add(layer_.get());
@@ -1657,6 +1674,8 @@ void View::DestroyLayerAndReparent() {
 }
 
 void View::DestroyLayer() {
+  if (layer_property_setter_.get())
+    layer_property_setter_->Uninstalled(layer_.get());
   layer_.reset();
 }
 
@@ -1675,7 +1694,8 @@ void View::MoveLayerToParent(ui::Layer* parent_layer,
 
 void View::UpdateLayerBounds(const gfx::Point& offset) {
   if (layer_.get()) {
-    layer_->set_bounds(
+    layer_property_setter_->SetBounds(
+        layer_.get(),
         gfx::Rect(offset.x() + x(), offset.y() + y(), width(), height()));
   } else {
     gfx::Point new_offset(offset.x() + x(), offset.y() + y());
@@ -1687,6 +1707,8 @@ void View::UpdateLayerBounds(const gfx::Point& offset) {
 gfx::Point View::CalculateOffsetToAncestorWithLayer(
     View** ancestor) {
   gfx::Point offset;
+  // TODO: if we want to share compositors among widgets then this code needs to
+  // ascend widget boundaries.
   View* ancestor_with_layer = this;
   while (ancestor_with_layer && !ancestor_with_layer->layer()) {
     offset.Offset(ancestor_with_layer->x(), ancestor_with_layer->y());

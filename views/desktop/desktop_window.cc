@@ -8,6 +8,7 @@
 #include "ui/gfx/transform.h"
 #include "views/desktop/desktop_background.h"
 #include "views/desktop/desktop_window_root_view.h"
+#include "views/layer_property_setter.h"
 #include "views/widget/native_widget_view.h"
 #include "views/widget/native_widget_views.h"
 #include "views/widget/widget.h"
@@ -141,6 +142,8 @@ void DesktopWindow::CreateTestWindow(const std::wstring& title,
     static_cast<NativeWidgetViews*>(window->native_widget())->GetView()->
         SetTransform(transform);
   }
+  static_cast<NativeWidgetViews*>(window->native_widget())->GetView()->
+      SetLayerPropertySetter(LayerPropertySetter::CreateAnimatingSetter());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

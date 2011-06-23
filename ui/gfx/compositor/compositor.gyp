@@ -33,6 +33,8 @@
         'compositor_win.cc',
         'layer.cc',
         'layer.h',
+        'layer_animator.cc',
+        'layer_animator.h',
       ],
       'conditions': [
         ['os_posix == 1 and OS != "mac"', {

@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/message_loop.h"
+#include "ui/gfx/transform.h"
 #include "views/widget/native_widget_private.h"
 
 namespace views {
@@ -123,6 +124,7 @@ class NativeWidgetViews : public internal::NativeWidgetPrivate {
   ScopedRunnableMethodFactory<NativeWidgetViews> close_widget_factory_;
 
   gfx::Rect restored_bounds_;
+  ui::Transform restored_transform_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetViews);
 };

@@ -87,6 +87,7 @@ class Transform {
 
   // Returns the underlying matrix.
   const SkMatrix& matrix() const { return matrix_; }
+  SkMatrix& matrix() { return matrix_; }
 
  private:
   SkMatrix matrix_;

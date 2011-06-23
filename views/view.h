@@ -54,6 +54,7 @@ class DragController;
 class FocusManager;
 class FocusTraversable;
 class InputMethod;
+class LayerPropertySetter;
 class LayoutManager;
 class ScrollView;
 class TextInputClient;
@@ -266,9 +267,13 @@ class View : public AcceleratorTarget {
   // either of the following are true:
   // . the view has a non-identity transform.
   // . SetPaintToLayer(true) has been invoked.
-  // Views create the Layer only when in a view hierarchy with a Widget with a
-  // non-NULL Compositor.
+  // View creates the Layer only when it exists in a Widget with a non-NULL
+  // Compositor.
   void SetPaintToLayer(bool value);
+
+  // Sets the LayerPropertySetter for this view. A value of NULL resets the
+  // LayerPropertySetter to the default (immediate).
+  void SetLayerPropertySetter(LayerPropertySetter* setter);
 
   const ui::Layer* layer() const { return layer_.get(); }
   ui::Layer* layer() { return layer_.get(); }
@@ -1367,6 +1372,8 @@ class View : public AcceleratorTarget {
 
   // Should we paint to a layer? See description above setter for details.
   bool paint_to_layer_;
+
+  scoped_ptr<LayerPropertySetter> layer_property_setter_;
 
   // Accelerators --------------------------------------------------------------
 
