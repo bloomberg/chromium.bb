@@ -488,7 +488,7 @@ bool TreeView::OnKeyDown(ui::KeyboardCode virtual_key_code) {
 }
 
 void TreeView::OnContextMenu(const POINT& location) {
-  if (!GetContextMenuController())
+  if (!context_menu_controller())
     return;
 
   if (location.x == -1 && location.y == -1) {

@@ -19,6 +19,7 @@
 #include "ui/gfx/path.h"
 #include "ui/gfx/transform.h"
 #include "views/background.h"
+#include "views/context_menu_controller.h"
 #include "views/drag_controller.h"
 #include "views/layout/layout_manager.h"
 #include "views/views_delegate.h"
@@ -997,10 +998,6 @@ bool View::GetTooltipTextOrigin(const gfx::Point& p, gfx::Point* loc) {
 }
 
 // Context menus ---------------------------------------------------------------
-
-void View::SetContextMenuController(ContextMenuController* menu_controller) {
-  context_menu_controller_ = menu_controller;
-}
 
 void View::ShowContextMenu(const gfx::Point& p, bool is_mouse_gesture) {
   if (!context_menu_controller_)

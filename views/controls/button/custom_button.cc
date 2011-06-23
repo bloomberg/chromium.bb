@@ -207,7 +207,7 @@ bool CustomButton::AcceleratorPressed(const Accelerator& accelerator) {
 }
 
 void CustomButton::ShowContextMenu(const gfx::Point& p, bool is_mouse_gesture) {
-  if (!GetContextMenuController())
+  if (!context_menu_controller())
     return;
 
   // We're about to show the context menu. Showing the context menu likely means

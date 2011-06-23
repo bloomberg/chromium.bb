@@ -6,12 +6,14 @@
 #define CHROME_BROWSER_UI_VIEWS_BOOKMARKS_BOOKMARK_EDITOR_VIEW_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "base/string16.h"
 #include "chrome/browser/bookmarks/bookmark_editor.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/models/tree_node_model.h"
+#include "views/context_menu_controller.h"
 #include "views/controls/button/button.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/controls/textfield/textfield_controller.h"
@@ -121,10 +123,10 @@ class BookmarkEditorView : public BookmarkEditor,
   // Closes the dialog.
   void Close();
 
-  // Shows the context menu.
+  // views::ContextMenuController:
   virtual void ShowContextMenuForView(View* source,
                                       const gfx::Point& p,
-                                      bool is_mouse_gesture);
+                                      bool is_mouse_gesture) OVERRIDE;
 
  private:
   friend class BookmarkEditorViewTest;

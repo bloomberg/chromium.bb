@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/views/detachable_toolbar_view.h"
 #include "content/common/notification_registrar.h"
 #include "ui/base/animation/animation_delegate.h"
+#include "views/context_menu_controller.h"
 #include "views/controls/button/button.h"
 #include "views/controls/menu/view_menu_delegate.h"
 #include "views/drag_controller.h"

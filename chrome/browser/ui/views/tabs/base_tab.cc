@@ -173,7 +173,7 @@ BaseTab::BaseTab(TabController* controller)
   close_button_->SetAnimationDuration(0);
   AddChildView(close_button_);
 
-  SetContextMenuController(this);
+  set_context_menu_controller(this);
 }
 
 BaseTab::~BaseTab() {

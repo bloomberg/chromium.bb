@@ -267,7 +267,7 @@ void NativeControl::Layout() {
 }
 
 void NativeControl::OnContextMenu(const POINT& location) {
-  if (!GetContextMenuController())
+  if (!context_menu_controller())
     return;
 
   if (location.x == -1 && location.y == -1)

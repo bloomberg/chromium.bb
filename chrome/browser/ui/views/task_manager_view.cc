@@ -25,6 +25,7 @@
 #include "ui/base/models/table_model_observer.h"
 #include "views/accelerator.h"
 #include "views/background.h"
+#include "views/context_menu_controller.h"
 #include "views/controls/button/text_button.h"
 #include "views/controls/link.h"
 #include "views/controls/link_listener.h"
@@ -302,12 +303,14 @@ class TaskManagerView : public views::ButtonListener,
   // may have appeared since last time.
   void UpdateStatsCounters();
 
-  // Menu::Delegate
+  // views::ContextMenuController
   virtual void ShowContextMenuForView(views::View* source,
                                       const gfx::Point& p,
-                                      bool is_mouse_gesture);
-  virtual bool IsItemChecked(int id) const;
-  virtual void ExecuteCommand(int id);
+                                      bool is_mouse_gesture) OVERRIDE;
+
+  // views::Menu::Delegate
+  virtual bool IsItemChecked(int id) const OVERRIDE;
+  virtual void ExecuteCommand(int id) OVERRIDE;
 
  private:
   // Creates the child controls.
@@ -442,8 +445,8 @@ void TaskManagerView::Init() {
 
   UpdateStatsCounters();
   tab_table_->SetObserver(this);
-  tab_table_->SetContextMenuController(this);
-  SetContextMenuController(this);
+  tab_table_->set_context_menu_controller(this);
+  set_context_menu_controller(this);
   // If we're running with --purge-memory-button, add a "Purge memory" button.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kPurgeMemoryButton)) {

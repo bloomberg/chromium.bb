@@ -1200,7 +1200,7 @@ void BookmarkBarView::Init() {
   instructions_ = new BookmarkBarInstructionsView(this);
   AddChildView(instructions_);
 
-  SetContextMenuController(this);
+  set_context_menu_controller(this);
 
   size_animation_.reset(new ui::SlideAnimation(this));
 }
@@ -1234,7 +1234,7 @@ MenuButton* BookmarkBarView::CreateOtherBookmarkedButton() {
       false);
   button->set_id(VIEW_ID_OTHER_BOOKMARKS);
   button->SetIcon(GetFolderIcon());
-  button->SetContextMenuController(this);
+  button->set_context_menu_controller(this);
   button->set_tag(kOtherFolderButtonTag);
   button->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_BOOMARK_BAR_OTHER_BOOKMARKED));
@@ -1307,7 +1307,7 @@ void BookmarkBarView::ConfigureButton(const BookmarkNode* node,
   }
 
   button->ClearMaxTextSize();
-  button->SetContextMenuController(this);
+  button->set_context_menu_controller(this);
   button->set_drag_controller(this);
   if (node->is_url()) {
     if (model_->GetFavicon(node).width() != 0)

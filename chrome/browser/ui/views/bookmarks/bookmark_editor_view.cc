@@ -305,7 +305,7 @@ void BookmarkEditorView::Init() {
         UTF16ToWide(l10n_util::GetStringUTF16(
             IDS_BOOMARK_EDITOR_NEW_FOLDER_BUTTON))));
     new_folder_button_->set_parent_owned(false);
-    tree_view_->SetContextMenuController(this);
+    tree_view_->set_context_menu_controller(this);
 
     tree_view_->SetRootShown(false);
     new_folder_button_->SetEnabled(false);

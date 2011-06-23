@@ -122,7 +122,7 @@ void NativeControlWin::OnFocus() {
 // NativeControlWin, protected:
 
 void NativeControlWin::ShowContextMenu(const gfx::Point& location) {
-  if (!GetContextMenuController())
+  if (!context_menu_controller())
     return;
 
   if (location.x() == -1 && location.y() == -1)

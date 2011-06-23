@@ -79,7 +79,7 @@ NativeTextfieldViews::NativeTextfieldViews(Textfield* parent)
   // Lowercase is not supported.
   DCHECK_NE(parent->style(), Textfield::STYLE_LOWERCASE);
 
-  SetContextMenuController(this);
+  set_context_menu_controller(this);
   set_drag_controller(this);
 }
 

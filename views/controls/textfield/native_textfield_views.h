@@ -11,6 +11,7 @@
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/gfx/font.h"
 #include "views/border.h"
+#include "views/context_menu_controller.h"
 #include "views/controls/textfield/native_textfield_wrapper.h"
 #include "views/controls/textfield/textfield_views_model.h"
 #include "views/drag_controller.h"

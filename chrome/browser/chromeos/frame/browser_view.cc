@@ -309,7 +309,7 @@ void BrowserView::Init() {
   AddChildView(status_area_);
   status_area_->Init();
 
-  frame()->non_client_view()->SetContextMenuController(this);
+  frame()->non_client_view()->set_context_menu_controller(this);
 
   // Listen to wrench menu opens.
   if (toolbar())

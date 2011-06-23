@@ -11,6 +11,7 @@
 #include "base/message_loop.h"
 #include "chrome/browser/chromeos/status/status_area_host.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "views/context_menu_controller.h"
 #include "views/controls/menu/menu_wrapper.h"
 
 class AccessibleToolbarView;

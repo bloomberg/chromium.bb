@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
 #include "ui/base/animation/animation_delegate.h"
+#include "views/context_menu_controller.h"
 #include "views/controls/button/button.h"
 #include "views/view.h"
 

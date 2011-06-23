@@ -299,10 +299,10 @@ BitmapScrollBar::BitmapScrollBar(bool horizontal, bool show_scroll_buttons)
   AddChildView(next_button_);
   AddChildView(thumb_);
 
-  SetContextMenuController(this);
-  prev_button_->SetContextMenuController(this);
-  next_button_->SetContextMenuController(this);
-  thumb_->SetContextMenuController(this);
+  set_context_menu_controller(this);
+  prev_button_->set_context_menu_controller(this);
+  next_button_->set_context_menu_controller(this);
+  thumb_->set_context_menu_controller(this);
 }
 
 gfx::Rect BitmapScrollBar::GetTrackBounds() const {
