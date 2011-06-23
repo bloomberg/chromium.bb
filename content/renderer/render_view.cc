@@ -2976,7 +2976,9 @@ void RenderView::OnFind(int request_id, const string16& search_text,
                         const WebFindOptions& options) {
   WebFrame* main_frame = webview()->mainFrame();
 
-  if (main_frame->document().isPluginDocument()) {
+  // Check if the plugin still exists in the document.
+  if (main_frame->document().isPluginDocument() &&
+      GetWebPluginFromPluginDocument()) {
     if (options.findNext) {
       // Just navigate back/forward.
       GetWebPluginFromPluginDocument()->selectFindResult(options.forward);
@@ -3104,7 +3106,7 @@ void RenderView::OnStopFinding(const ViewMsg_StopFinding_Params& params) {
     return;
 
   WebDocument doc = view->mainFrame()->document();
-  if (doc.isPluginDocument()) {
+  if (doc.isPluginDocument() && GetWebPluginFromPluginDocument()) {
     GetWebPluginFromPluginDocument()->stopFind();
     return;
   }
