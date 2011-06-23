@@ -38,6 +38,10 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
   void UpdateTitleBar();
   void OnActivationChanged(bool active);
 
+  // Returns the height of the entire nonclient top border, including the window
+  // frame, any title area, and any connected client edge.
+  int NonClientTopBorderHeight() const;
+
  protected:
   // Overridden from BrowserNonClientFrameView:
   virtual gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const OVERRIDE;
@@ -133,10 +137,6 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
   // Returns the thickness of the entire nonclient left, right, and bottom
   // borders, including both the window frame and any client edge.
   int NonClientBorderThickness() const;
-
-  // Returns the height of the entire nonclient top border, including the window
-  // frame, any title area, and any connected client edge.
-  int NonClientTopBorderHeight() const;
 
   // Update control styles to indicate if the title bar is active or not.
   void UpdateControlStyles(PaintState paint_state);

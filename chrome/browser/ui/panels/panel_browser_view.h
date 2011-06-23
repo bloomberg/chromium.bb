@@ -80,9 +80,15 @@ class PanelBrowserView : public BrowserView,
 
   PanelBrowserFrameView* GetFrameView() const;
   bool EndDragging(bool cancelled);
+  void MinimizeOrRestore();
 
   scoped_ptr<Panel> panel_;
   gfx::Rect bounds_;
+
+  // Stores the original height of the panel so we can restore it after it's
+  // been minimized.
+  int original_height_;
+  bool minimized_;
 
   // Is the panel being closed? Do not use it when it is closed.
   bool closed_;

@@ -494,18 +494,6 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, TitleBarMouseEvent) {
                      false);
   }
 
-  // Tests that no dragging is involved.
-  for (size_t i = 0; i < browser_view_count; ++i) {
-    ValidateDragging(browser_views,
-                     browser_view_count,
-                     i,
-                     0,
-                     0,
-                     expected_delta_x_without_change,
-                     expected_delta_x_without_change,
-                     false);
-  }
-
   // Closes all panels.
   for (size_t i = 0; i < browser_view_count; ++i) {
     browser_views[i]->panel()->Close();

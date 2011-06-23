@@ -31,6 +31,8 @@ PanelBrowserView::PanelBrowserView(Browser* browser, Panel* panel,
   : BrowserView(browser),
     panel_(panel),
     bounds_(bounds),
+    original_height_(bounds.height()),
+    minimized_(false),
     closed_(false),
     mouse_pressed_(false),
     mouse_dragging_(false) {
@@ -135,11 +137,26 @@ void PanelBrowserView::SetPanelBounds(const gfx::Rect& bounds) {
 }
 
 void PanelBrowserView::MinimizePanel() {
-  NOTIMPLEMENTED();
+  if (minimized_)
+    return;
+
+  minimized_ = true;
+  gfx::Rect bounds = GetPanelBounds();
+  original_height_ = bounds.height();
+  bounds.set_height(GetFrameView()->NonClientTopBorderHeight());
+  bounds.set_y(bounds.y() + original_height_ - bounds.height());
+  SetPanelBounds(bounds);
 }
 
 void PanelBrowserView::RestorePanel() {
-  NOTIMPLEMENTED();
+  if (!minimized_)
+    return;
+
+  minimized_ = false;
+  gfx::Rect bounds = GetPanelBounds();
+  bounds.set_y(bounds.y() - original_height_ + bounds.height());
+  bounds.set_height(original_height_);
+  SetPanelBounds(bounds);
 }
 
 void PanelBrowserView::ClosePanel() {
@@ -192,7 +209,6 @@ bool PanelBrowserView::OnTitleBarMousePressed(const views::MouseEvent& event) {
   mouse_pressed_ = true;
   mouse_pressed_point_ = event.location();
   mouse_dragging_ = false;
-  panel_->manager()->StartDragging(panel_.get());
   return true;
 }
 
@@ -202,15 +218,21 @@ bool PanelBrowserView::OnTitleBarMouseDragged(const views::MouseEvent& event) {
 
   // We do not allow dragging vertically.
   int delta_x = event.location().x() - mouse_pressed_point_.x();
-  if (!mouse_dragging_ && ExceededDragThreshold(delta_x, 0))
+  if (!mouse_dragging_ && ExceededDragThreshold(delta_x, 0)) {
+    panel_->manager()->StartDragging(panel_.get());
     mouse_dragging_ = true;
+  }
   if (mouse_dragging_)
     panel_->manager()->Drag(delta_x);
   return true;
 }
 
 bool PanelBrowserView::OnTitleBarMouseReleased(const views::MouseEvent& event) {
-  return EndDragging(false);
+  if (mouse_dragging_)
+    return EndDragging(false);
+
+  MinimizeOrRestore();
+  return true;
 }
 
 bool PanelBrowserView::OnTitleBarMouseCaptureLost() {
@@ -228,4 +250,11 @@ bool PanelBrowserView::EndDragging(bool cancelled) {
   mouse_dragging_ = false;
   panel_->manager()->EndDragging(cancelled);
   return true;
+}
+
+void PanelBrowserView::MinimizeOrRestore() {
+  if (minimized_)
+    panel_->Restore();
+  else
+    panel_->Minimize();
 }

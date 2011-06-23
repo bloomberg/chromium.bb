@@ -42,11 +42,11 @@ void Panel::SetPanelBounds(const gfx::Rect& bounds) {
 }
 
 void Panel::Minimize() {
-  NOTIMPLEMENTED();
+  native_panel_->MinimizePanel();
 }
 
 void Panel::Restore() {
-  NOTIMPLEMENTED();
+  native_panel_->RestorePanel();
 }
 
 void Panel::Show() {
