@@ -260,7 +260,7 @@ class DownloadItem : public NotificationObserver {
 
   // Accessors
   DownloadState state() const { return state_; }
-  FilePath full_path() const { return full_path_; }
+  const FilePath& full_path() const { return full_path_; }
   void set_path_uniquifier(int uniquifier) {
     state_info_.path_uniquifier = uniquifier;
   }
@@ -297,13 +297,13 @@ class DownloadItem : public NotificationObserver {
   void MarkUrlDangerous();
 
   bool auto_opened() { return auto_opened_; }
-  FilePath target_name() const { return state_info_.target_name; }
+  const FilePath& target_name() const { return state_info_.target_name; }
   bool save_as() const { return state_info_.prompt_user_for_save_location; }
   bool is_otr() const { return is_otr_; }
   bool is_extension_install() const {
     return state_info_.is_extension_install;
   }
-  FilePath suggested_path() const { return state_info_.suggested_path; }
+  const FilePath& suggested_path() const { return state_info_.suggested_path; }
   bool is_temporary() const { return is_temporary_; }
   void set_opened(bool opened) { opened_ = opened; }
   bool opened() const { return opened_; }
