@@ -32,7 +32,10 @@ class NewTabUITest : public UITest {
   }
 };
 
-#if defined(OS_LINUX)
+#if defined(OS_WIN)
+// Bug 87200: Disable NTPHasThumbnails for Windows
+#define MAYBE_NTPHasThumbnails DISABLED_NTPHasThumbnails
+#elif defined(OS_LINUX)
 // This test is flaky on Linux and CrOS: http://crbug/
 #define MAYBE_NTPHasThumbnails FLAKY_NTPHasThumbnails
 #else
@@ -88,9 +91,15 @@ TEST_F(NewTabUITest, DISABLED_NTPHasLoginName) {
   EXPECT_EQ(L"user@gmail.com", displayed_username);
 }
 
+// Bug 87200: Disable ChromeHangInNTP for Windows
+#if defined(OS_WIN)
+#define MAYBE_ChromeHangInNTP DISABLED_ChromeHangInNTP
+#else
+#define MAYBE_ChromeHangInNTP ChromeHangInNTP
+#endif
 // Loads chrome://hang/ into two NTP tabs, ensuring we don't crash.
 // See http://crbug.com/59859.
-TEST_F(NewTabUITest, ChromeHangInNTP) {
+TEST_F(NewTabUITest, MAYBE_ChromeHangInNTP) {
   scoped_refptr<BrowserProxy> window(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(window.get());
 
@@ -122,10 +131,16 @@ class NewTabUIProcessPerTabTest : public NewTabUITest {
   }
 };
 
+// Bug 87200: Disable NavBeforeNTPCommits for Windows
+#if defined(OS_WIN)
+#define MAYBE_NavBeforeNTPCommits DISABLED_NavBeforeNTPCommits
+#else
+#define MAYBE_NavBeforeNTPCommits NavBeforeNTPCommits
+#endif
 // Navigates away from NTP before it commits, in process-per-tab mode.
 // Ensures that we don't load the normal page in the NTP process (and thus
 // crash), as in http://crbug.com/69224.
-TEST_F(NewTabUIProcessPerTabTest, NavBeforeNTPCommits) {
+TEST_F(NewTabUIProcessPerTabTest, MAYBE_NavBeforeNTPCommits) {
   scoped_refptr<BrowserProxy> window(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(window.get());
 
@@ -165,7 +180,13 @@ TEST_F(NewTabUITest, FLAKY_ChromeInternalLoadsNTP) {
   EXPECT_GT(thumbnails_count, 0);
 }
 
-TEST_F(NewTabUITest, UpdateUserPrefsVersion) {
+// Bug 87200: Disable UpdateUserPrefsVersion for Windows
+#if defined(OS_WIN)
+#define MAYBE_UpdateUserPrefsVersion DISABLED_UpdateUserPrefsVersion
+#else
+#define MAYBE_UpdateUserPrefsVersion UpdateUserPrefsVersion
+#endif
+TEST_F(NewTabUITest, MAYBE_UpdateUserPrefsVersion) {
   // PrefService with JSON user-pref file only, no enforced or advised prefs.
   scoped_ptr<PrefService> prefs(new TestingPrefService);
 
