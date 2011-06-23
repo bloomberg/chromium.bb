@@ -4,6 +4,8 @@
  * found in the LICENSE file.
  */
 
+#define NACL_LOG_MODULE_NAME "weak_ref"
+
 #include "native_client/src/trusted/weak_ref/weak_ref.h"
 
 #include "native_client/src/shared/platform/nacl_check.h"
@@ -20,11 +22,11 @@ AnchoredResource::AnchoredResource(WeakRefAnchor* anchor)
 
 AnchoredResource::~AnchoredResource() {
   NaClMutexDtor(&mu_);
-  NaClLog(6, "~AnchoredResource: this 0x%"NACL_PRIxPTR"\n", (uintptr_t) this);
+  NaClLog(3, "~AnchoredResource: this 0x%"NACL_PRIxPTR"\n", (uintptr_t) this);
 }
 
 void AnchoredResource::Abandon() {
-  NaClLog(6,
+  NaClLog(3,
           "Entered AnchoredResource::Abandon: this 0x%"NACL_PRIxPTR"\n",
           (uintptr_t) this);
   NaClXMutexLock(&mu_);
@@ -32,7 +34,7 @@ void AnchoredResource::Abandon() {
   reset_mu();
   NaClXMutexUnlock(&mu_);
   Unref();
-  NaClLog(6, "Leaving AnchoredResource::Abandon\n");
+  NaClLog(3, "Leaving AnchoredResource::Abandon\n");
 }
 
 WeakRefAnchor::WeakRefAnchor()
@@ -41,7 +43,7 @@ WeakRefAnchor::WeakRefAnchor()
 }
 
 void WeakRefAnchor::Abandon() {
-  NaClLog(6,
+  NaClLog(2,
           "Entered WeakRefAnchor::Abandon: this 0x%"NACL_PRIxPTR"\n",
           (uintptr_t) this);
   NaClXMutexLock(&mu_);
@@ -51,7 +53,7 @@ void WeakRefAnchor::Abandon() {
   }
   abandoned_ = true;
   NaClXMutexUnlock(&mu_);
-  NaClLog(6, "Leaving WeakRefAnchor::Abandon\n");
+  NaClLog(2, "Leaving WeakRefAnchor::Abandon\n");
 }
 
 }  // namespace nacl

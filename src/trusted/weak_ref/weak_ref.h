@@ -43,6 +43,8 @@
 
 namespace nacl {
 
+char const *const kWeakRefModuleName = "weak_ref";
+
 class WeakRefAnchor;
 
 class AnchoredResource : public RefCountBase {
@@ -97,23 +99,25 @@ class WeakRefAnchor : public RefCountBase {
   WeakRef<R>* MakeWeakRef(R* raw_resource) {
     WeakRef<R>* rp = NULL;
     CHECK(raw_resource != NULL);
-    NaClLog(6, "Entered WeakRef<R>::MakeWeakRef\n");
+    NaClLog2(kWeakRefModuleName, 2,
+             "Entered WeakRef<R>::MakeWeakRef, raw 0x%"NACL_PRIxPTR"\n",
+             (uintptr_t) raw_resource);
     NaClXMutexLock(&mu_);
     if (!abandoned_) {
       rp = new WeakRef<R>(this, raw_resource);
       tracked_.insert(rp->Ref());
     }
     NaClXMutexUnlock(&mu_);
-    NaClLog(6,
-            "Leaving WeakRef<R>::MakeWeakRef, rp 0x%"NACL_PRIxPTR"\n",
-            (uintptr_t) rp);
+    NaClLog2(kWeakRefModuleName, 3,
+             "Leaving WeakRef<R>::MakeWeakRef, weak_ref 0x%"NACL_PRIxPTR"\n",
+             (uintptr_t) rp);
     return rp;
   }
 
   void Remove(AnchoredResource *weak_ref) {
-    NaClLog(6,
-            "WeakRefAnchor::Remove: weak_ref 0x%"NACL_PRIxPTR"\n",
-            (uintptr_t) weak_ref);
+    NaClLog2(kWeakRefModuleName, 3,
+             "WeakRefAnchor::Remove: weak_ref 0x%"NACL_PRIxPTR"\n",
+             (uintptr_t) weak_ref);
     NaClXMutexLock(&mu_);
     tracked_.erase(weak_ref);
     weak_ref->Unref();
@@ -164,9 +168,9 @@ class WeakRef : public AnchoredResource {
   // doing Abandon() at the same time.  After ReleaseAndUnref, caller
   // must not use the pointer to the WeakRef object further.
   void ReleaseAndUnref(scoped_ptr<R>* out_ptr) {
-    NaClLog(6,
-            "Entered WeakRef<R>::ReleaseAndUnref: this 0x%"NACL_PRIxPTR"\n",
-            (uintptr_t) this);
+    NaClLog2(kWeakRefModuleName, 3,
+             "Entered WeakRef<R>::ReleaseAndUnref: this 0x%"NACL_PRIxPTR"\n",
+             (uintptr_t) this);
     NaClXMutexLock(&mu_);
     if (anchor_ == NULL) {
       // resource long gone
@@ -177,16 +181,18 @@ class WeakRef : public AnchoredResource {
     }
     NaClXMutexUnlock(&mu_);
     Unref();
-    NaClLog(6,
-            "Leaving ReleaseAndUnref: out_ptr->get() 0x%"NACL_PRIxPTR"\n",
-            (uintptr_t) out_ptr->get());
+    NaClLog2(kWeakRefModuleName, 2,
+             "Leaving ReleaseAndUnref: raw: out_ptr->get() 0x%"NACL_PRIxPTR"\n",
+             (uintptr_t) out_ptr->get());
   }
 
  protected:
   void reset_mu() {
-    NaClLog(6,
-            "weak_ref<R>::reset_mu: this 0x%"NACL_PRIxPTR"\n",
-            (uintptr_t) this);
+    NaClLog2(kWeakRefModuleName, 2,
+             ("weak_ref<R>::reset_mu: this 0x%"NACL_PRIxPTR
+              ", raw 0x%"NACL_PRIxPTR"\n"),
+             (uintptr_t) this,
+             (uintptr_t) resource_.get());
     R* rp = resource_.release();
     CHECK(rp != NULL);
     delete rp;

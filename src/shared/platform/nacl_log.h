@@ -197,9 +197,9 @@ struct Gio *NaClLogGetGio(void);
  * write test that compare logging output.
  */
 
-void  NaClLogEnableTimestamp(void);
+void NaClLogEnableTimestamp(void);
 
-void  NaClLogDisableTimestamp(void);
+void NaClLogDisableTimestamp(void);
 
 void NaClLogSetModuleVerbosity_mu(char const  *module_name,
                                   int         verbosity);
@@ -221,9 +221,21 @@ void NaClLogV(int         detail_level,
               char const  *fmt,
               va_list     ap);
 
-void  NaClLog(int         detail_level,
-              char const  *fmt,
-              ...) ATTRIBUTE_FORMAT_PRINTF(2, 3);
+void NaClLog(int         detail_level,
+             char const  *fmt,
+             ...) ATTRIBUTE_FORMAT_PRINTF(2, 3);
+
+/*
+ * A version of NaClLog with an explicit module name parameter.  This
+ * is used, for example, by C++ template code that is defined in a
+ * header file which logically belongs to the module in which the
+ * header file appears, rather than where the template expansion
+ * occurs.
+ */
+void NaClLog2(char const *module_name,
+              int        detail_level,
+              char const *fmt,
+              ...) ATTRIBUTE_FORMAT_PRINTF(3, 4);
 
 /*
  * "Internal" functions.  NaClLogLockAndSetModule and
@@ -241,10 +253,10 @@ void NaClLogDoLogAndUnlock(int        detail_level,
                            ...) ATTRIBUTE_FORMAT_PRINTF(2, 3);
 
 #ifdef NACL_LOG_MODULE_NAME
-# define NaClLog                                                     \
-  if (NaClLogLockAndSetModule(NACL_LOG_MODULE_NAME)) {               \
-    ;                                                                \
-  } else \
+# define NaClLog                                     \
+  if (NaClLogLockAndSetModule(NACL_LOG_MODULE_NAME)) \
+    ;                                                \
+  else                                               \
     NaClLogDoLogAndUnlock
 /*
  * User code has lines of the form
@@ -256,9 +268,9 @@ void NaClLogDoLogAndUnlock(int        detail_level,
  * just invoke the NaClLog function.  When NACL_LOG_MODULE_NAME *is*
  * defined, however, it expands to:
  *
- * if (NaClLogLockAndSetModule(NACL_LOG_MODULE_NAME)) {
+ * if (NaClLogLockAndSetModule(NACL_LOG_MODULE_NAME))
  *   ;
- * } else
+ * else
  *   NaClLogDoLogAndUnlock(detail_level, format_string, ...);
  *
  * Note that this is a syntactic macro, so that if the original code had

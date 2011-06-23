@@ -377,7 +377,7 @@ void NaClLogPreInitSetGio(struct Gio *out_stream) {
   NaClLogSetGio_mu(out_stream);
 }
 
-void  NaClLogSetGio(struct Gio *stream) {
+void NaClLogSetGio(struct Gio *stream) {
   NaClLogLock();
   NaClLogSetGio_mu(stream);
   NaClLogUnlock();
@@ -434,9 +434,9 @@ static void NaClLogOutputTag_mu(struct Gio *s) {
  * timestamp on windows.  This means that if the NaCl app can read its
  * own logs, it can distinguish which host OS it is running on.
  */
-void  NaClLogDoLogV_mu(int         detail_level,
-                       char const  *fmt,
-                       va_list     ap) {
+void NaClLogDoLogV_mu(int         detail_level,
+                      char const  *fmt,
+                      va_list     ap) {
   struct Gio  *s;
 
   s = NaClLogGetGio_mu();
@@ -450,9 +450,9 @@ void  NaClLogDoLogV_mu(int         detail_level,
   }
 }
 
-void  NaClLogV_mu(int         detail_level,
-                  char const  *fmt,
-                  va_list     ap) {
+void NaClLogV_mu(int        detail_level,
+                 char const *fmt,
+                 va_list    ap) {
   if (NACL_VERBOSITY_UNSET == verbosity) {
     verbosity = NaClLogDefaultLogVerbosity();
   }
@@ -532,27 +532,32 @@ int NaClLogLockAndSetModule(char const *module_name) {
   return 0;
 }
 
-void NaClLogDoLogAndUnlock(int        detail_level,
-                           char const *fmt,
-                           ...) {
+void NaClLogDoLogAndUnlockV(int         detail_level,
+                            char const  *fmt,
+                            va_list     ap) {
   int module_verbosity;
-  /*
-   * TODO(bsy): Look up module-specific verbosity level and compare.
-   */
+
   module_verbosity = NaClLogGetModuleVerbosity_mu(nacl_log_module_name);
   if (detail_level <= module_verbosity) {
-    va_list ap;
-    va_start(ap, fmt);
     NaClLogDoLogV_mu(detail_level, fmt, ap);
-    va_end(ap);
   }
   nacl_log_module_name = NULL;
   NaClLogUnlock();
 }
 
-void  NaClLog(int         detail_level,
-              char const  *fmt,
-              ...) {
+void NaClLogDoLogAndUnlock(int        detail_level,
+                           char const *fmt,
+                           ...) {
+  va_list ap;
+
+  va_start(ap, fmt);
+  NaClLogDoLogAndUnlockV(detail_level, fmt, ap);
+  va_end(ap);
+}
+
+void NaClLog(int         detail_level,
+             char const  *fmt,
+             ...) {
   va_list ap;
 
 #if NON_THREAD_SAFE_DETAIL_CHECK
@@ -568,9 +573,9 @@ void  NaClLog(int         detail_level,
   NaClLogUnlock();
 }
 
-void  NaClLog_mu(int         detail_level,
-                 char const  *fmt,
-                 ...) {
+void NaClLog_mu(int         detail_level,
+                char const  *fmt,
+                ...) {
   va_list ap;
 
 #if NON_THREAD_SAFE_DETAIL_CHECK
@@ -581,5 +586,17 @@ void  NaClLog_mu(int         detail_level,
 
   va_start(ap, fmt);
   NaClLogV_mu(detail_level, fmt, ap);
+  va_end(ap);
+}
+
+void NaClLog2(char const *module_name,
+              int        detail_level,
+              char const *fmt,
+              ...) {
+  va_list ap;
+
+  (void) NaClLogLockAndSetModule(module_name);
+  va_start(ap, fmt);
+  NaClLogDoLogAndUnlockV(detail_level, fmt, ap);
   va_end(ap);
 }
