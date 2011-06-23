@@ -62,6 +62,8 @@ struct wfd_output {
 	EGLImageKHR image[2];
 	GLuint rbo[2];
 	uint32_t current;
+
+	struct wlsc_mode wl_mode;
 };
 
 static int
@@ -188,7 +190,7 @@ create_output_for_port(struct wfd_compositor *ec,
 	WFDint num_pipelines, *pipelines;
 	WFDint num_modes;
 	WFDint rect[4] = { 0, 0, 0, 0 };
-	int width, height;
+	int width, height, refresh;
 
 	output = malloc(sizeof *output);
 	if (output == NULL)
@@ -211,7 +213,19 @@ create_output_for_port(struct wfd_compositor *ec,
 				      WFD_PORT_MODE_WIDTH);
 	height = wfdGetPortModeAttribi(ec->dev, output->port, output->mode,
 				       WFD_PORT_MODE_HEIGHT);
-	
+	refresh = wfdGetPortModeAttribi(ec->dev, output->port, output->mode,
+					WFD_PORT_MODE_REFRESH_RATE);
+
+	output->wl_mode.flags =
+		WL_OUTPUT_MODE_CURRENT | WL_OUTPUT_MODE_PREFERRED;
+	output->wl_mode.width = width;
+	output->wl_mode.height = height;
+	output->wl_mode.refresh = refresh;
+	wl_list_init(&output->base.mode_list);
+	wl_list_insert(&output->base.mode_list, &output->wl_mode.link);
+
+	output->base.current = &output->wl_mode;	
+
 	wfdSetPortMode(ec->dev, output->port, output->mode);
 
 	wfdEnumeratePipelines(ec->dev, NULL, 0, NULL);
@@ -233,8 +247,8 @@ create_output_for_port(struct wfd_compositor *ec,
 	output->pipeline_id = WFD_INVALID_PIPELINE_ID;
 	for (i = 0; i < num_pipelines; ++i) {
 		if (!(ec->used_pipelines & (1 << pipelines[i]))) {
-		    output->pipeline_id = pipelines[i];
-		    break;
+			output->pipeline_id = pipelines[i];
+			break;
 		}
 	}
 	if (output->pipeline_id == WFD_INVALID_PIPELINE_ID) {
@@ -257,8 +271,8 @@ create_output_for_port(struct wfd_compositor *ec,
 	for (i = 0; i < 2; i++) {
 		glBindRenderbuffer(GL_RENDERBUFFER, output->rbo[i]);
 
-		attribs[1] = output->base.width;
-		attribs[3] = output->base.height;
+		attribs[1] = output->base.current->width;
+		attribs[3] = output->base.current->height;
 		output->image[i] =
 			ec->create_drm_image(ec->base.display, attribs);
 
@@ -350,7 +364,7 @@ create_outputs(struct wfd_compositor *ec, int option_connector)
 
 			x += container_of(ec->base.output_list.prev,
 					  struct wlsc_output,
-					  link)->width;
+					  link)->current->width;
 		} else {
 			wfdDestroyPort(ec->dev, port);
 		}
@@ -416,7 +430,8 @@ handle_port_state_change(struct wfd_compositor *ec)
 
 		/* XXX: not yet needed, we die with 0 outputs */
 		if (!wl_list_empty(&ec->base.output_list))
-			x = last_output->x + last_output->width;
+			x = last_output->x +
+				last_output->current->width;
 		else
 			x = 0;
 		y = 0;
@@ -435,7 +450,7 @@ handle_port_state_change(struct wfd_compositor *ec)
 			wfdGetPortAttribi(ec->dev, output->port, WFD_PORT_ID);
 
 		if (!state && output_port_id == port_id) {
-			x_offset += output->base.width;
+			x_offset += output->base.current->width;
 			destroy_output(output);
 			continue;
 		}
@@ -593,7 +608,7 @@ wfd_compositor_create(struct wl_display *display, int connector)
 struct wlsc_compositor *
 backend_init(struct wl_display *display, char *options);
 
-struct wlsc_compositor *
+WL_EXPORT struct wlsc_compositor *
 backend_init(struct wl_display *display, char *options)
 {
 	int connector = 0, i;
