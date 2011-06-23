@@ -118,7 +118,11 @@ void PasswordStoreX::GetLoginsImpl(GetLoginsRequest* request,
   if (use_native_backend() && backend_->GetLogins(form, &request->value)) {
     SortLoginsByOrigin(&request->value);
     ForwardLoginsResult(request);
-    allow_fallback_ = false;
+    // The native backend may succeed and return no data even while locked, if
+    // the query did not match anything stored. So we continue to allow fallback
+    // until we perform a write operation, or until a read returns actual data.
+    if (request->value.size() > 0)
+      allow_fallback_ = false;
   } else if (allow_default_store()) {
     PasswordStoreDefault::GetLoginsImpl(request, form);
   } else {
@@ -133,7 +137,9 @@ void PasswordStoreX::GetAutofillableLoginsImpl(GetLoginsRequest* request) {
       backend_->GetAutofillableLogins(&request->value)) {
     SortLoginsByOrigin(&request->value);
     ForwardLoginsResult(request);
-    allow_fallback_ = false;
+    // See GetLoginsImpl() for why we disallow fallback conditionally here.
+    if (request->value.size() > 0)
+      allow_fallback_ = false;
   } else if (allow_default_store()) {
     PasswordStoreDefault::GetAutofillableLoginsImpl(request);
   } else {
@@ -148,7 +154,9 @@ void PasswordStoreX::GetBlacklistLoginsImpl(GetLoginsRequest* request) {
       backend_->GetBlacklistLogins(&request->value)) {
     SortLoginsByOrigin(&request->value);
     ForwardLoginsResult(request);
-    allow_fallback_ = false;
+    // See GetLoginsImpl() for why we disallow fallback conditionally here.
+    if (request->value.size() > 0)
+      allow_fallback_ = false;
   } else if (allow_default_store()) {
     PasswordStoreDefault::GetBlacklistLoginsImpl(request);
   } else {
@@ -160,7 +168,9 @@ void PasswordStoreX::GetBlacklistLoginsImpl(GetLoginsRequest* request) {
 bool PasswordStoreX::FillAutofillableLogins(vector<PasswordForm*>* forms) {
   CheckMigration();
   if (use_native_backend() && backend_->GetAutofillableLogins(forms)) {
-    allow_fallback_ = false;
+    // See GetLoginsImpl() for why we disallow fallback conditionally here.
+    if (forms->size() > 0)
+      allow_fallback_ = false;
     return true;
   }
   if (allow_default_store())
@@ -171,7 +181,9 @@ bool PasswordStoreX::FillAutofillableLogins(vector<PasswordForm*>* forms) {
 bool PasswordStoreX::FillBlacklistLogins(vector<PasswordForm*>* forms) {
   CheckMigration();
   if (use_native_backend() && backend_->GetBlacklistLogins(forms)) {
-    allow_fallback_ = false;
+    // See GetLoginsImpl() for why we disallow fallback conditionally here.
+    if (forms->size() > 0)
+      allow_fallback_ = false;
     return true;
   }
   if (allow_default_store())
@@ -192,7 +204,7 @@ void PasswordStoreX::CheckMigration() {
     // store is working. But if there is nothing to migrate, the "migration"
     // can succeed even when the native store would fail. In this case we
     // allow a later fallback to the default store. Once any later operation
-    // succeeds on the native store, we will no longer allow it.
+    // succeeds on the native store, we will no longer allow fallback.
     allow_fallback_ = true;
   } else {
     LOG(WARNING) << "Native password store migration failed! " <<
@@ -227,22 +239,6 @@ ssize_t PasswordStoreX::MigrateLogins() {
         ok = false;
         break;
       }
-    }
-    if (forms.empty()) {
-      // If there's nothing to migrate, then we try to insert a dummy login form
-      // just to force the native store to unlock if it was locked. We delete it
-      // right away if we are successful. If the first operation we try to do is
-      // a read, then in some cases this is just an error rather than an action
-      // that causes the native store to prompt the user to unlock.
-      // TODO(mdm): this means we no longer need the allow_fallback mechanism.
-      // Remove it once this preemptive unlock by write is baked for a while.
-      PasswordForm dummy;
-      dummy.origin = GURL("http://www.example.com/force-keyring-unlock");
-      dummy.signon_realm = "www.example.com";
-      if (backend_->AddLogin(dummy))
-        backend_->RemoveLogin(dummy);
-      else
-        ok = false;
     }
     if (ok) {
       for (size_t i = 0; i < forms.size(); ++i) {
