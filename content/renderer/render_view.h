@@ -994,9 +994,6 @@ class RenderView : public RenderWidget,
   int history_list_offset_;
   int history_list_length_;
 
-  // True if the page has any frame-level unload or beforeunload listeners.
-  bool has_unload_listener_;
-
   // UI state ------------------------------------------------------------------
 
   // The state of our target_url transmissions. When we receive a request to
