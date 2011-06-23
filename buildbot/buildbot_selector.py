@@ -181,12 +181,14 @@ BOT_ASSIGNMENT = {
     # Pnacl toolchain builders.
     'linux-armtools-x86_32':
         'bash buildbot/buildbot_toolchain_arm_trusted.sh',
-    'linux-pnacl-x86_32':
-        'bash buildbot/buildbot_toolchain_arm_untrusted.sh',
-    'linux-pnacl-x86_64':
-        'bash buildbot/buildbot_toolchain_arm_untrusted.sh',
-    'mac-pnacl-x86_32':
-        'bash buildbot/buildbot_toolchain_arm_untrusted.sh',
+    'linux-pnacl-x86_32-newlib':
+        'bash buildbot/buildbot_toolchain_arm_untrusted.sh linux 32 newlib',
+    'linux-pnacl-x86_64-newlib':
+        'bash buildbot/buildbot_toolchain_arm_untrusted.sh linux 64 newlib',
+    'linux-pnacl-x86_64-glibc':
+        'bash buildbot/buildbot_toolchain_arm_untrusted.sh linux 64 glibc',
+    'mac-pnacl-x86_32-newlib':
+        'bash buildbot/buildbot_toolchain_arm_untrusted.sh mac 32 newlib',
 
     # Toolchain trybots.
     'nacl-toolchain-lucid64-newlib':
@@ -199,12 +201,12 @@ BOT_ASSIGNMENT = {
     'nacl-toolchain-win7-glibc':
         'buildbot\\buildbot_windows-glibc-makefile.bat',
 
-    'nacl-toolchain-linux-pnacl-x86_32':
-        'bash buildbot/buildbot_toolchain_arm_untrusted.sh',
-    'nacl-toolchain-linux-pnacl-x86_64':
-        'bash buildbot/buildbot_toolchain_arm_untrusted.sh',
-    'nacl-toolchain-mac-pnacl-x86_32':
-        'bash buildbot/buildbot_toolchain_arm_untrusted.sh',
+    'nacl-toolchain-linux-pnacl-x86_32-newlib':
+        'bash buildbot/buildbot_toolchain_arm_untrusted.sh linux 32 newlib',
+    'nacl-toolchain-linux-pnacl-x86_64-newlib':
+        'bash buildbot/buildbot_toolchain_arm_untrusted.sh linux 64 newlib',
+    'nacl-toolchain-mac-pnacl-x86_32-newlib':
+        'bash buildbot/buildbot_toolchain_arm_untrusted.sh mac 32 newlib',
 
 }
 

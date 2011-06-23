@@ -796,8 +796,11 @@ untrusted_sdk() {
   clean
   everything
   prune
+
   install-translators srpc
   prune-translator-install srpc
+  prune
+
   tarball $1
 }
 

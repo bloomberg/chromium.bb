@@ -3,44 +3,82 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+set -u
+set -e
+
 # Script assumed to be run in native_client/
 if [[ $(pwd) != */native_client ]]; then
   echo "ERROR: must be run in native_client!"
   exit 1
 fi
 
-if [ $# -ne 0 ]; then
-  echo "USAGE: $0"
+if [ $# -ne 3 ]; then
+  echo "USAGE: $0 [os] [arch] [libmode]"
+  echo "os     : linux, mac"
+  echo "arch   : 32, 64"
+  echo "libmode: newlib, glibc"
   exit 2
 fi
 
-set -x
-set -e
-set -u
+readonly BUILD_OS=$1
+readonly BUILD_ARCH=$2
+readonly BUILD_LIBMODE=$3
 
-if [[ ${BUILDBOT_BUILDERNAME} == *linux*32* ]] ||
-   [[ ${BUILDBOT_BUILDERNAME} == *lucid*32* ]]; then
-  # Don't test arm + 64-bit on 32-bit builder.
-  # We can't build 64-bit trusted components on a 32-bit system.
-  # Arm disabled on 32-bit because it runs out of memory.
-  TOOLCHAIN_LABEL=pnacl_linux_i686_newlib
-  RUN_TESTS="x86-32 x86-32-pic x86-32-browser"
-elif [[ ${BUILDBOT_BUILDERNAME} == *linux*64* ]] ||
-     [[ ${BUILDBOT_BUILDERNAME} == *lucid*64* ]]; then
-  TOOLCHAIN_LABEL=pnacl_linux_x86_64_newlib
-  RUN_TESTS="x86-32 x86-32-pic x86-32-browser arm arm-pic arm-browser \
-x86-64 x86-64-pic x86-64-browser"
-elif [[ ${BUILDBOT_BUILDERNAME} == *mac* ]]; then
-  # We don't test X86-32 because it is flaky.
-  # We can't test ARM because we do not have QEMU for Mac.
-  # We can't test X86-64 because NaCl X86-64 Mac support is not in good shape.
-  TOOLCHAIN_LABEL=pnacl_darwin_i386_newlib
-  RUN_TESTS=""
-else
-  echo "*** UNRECOGNIZED BUILDBOT ${BUILDBOT_BUILDERNAME} ***"
-  exit 3
+echo "***            STARTING PNACL BUILD           ***"
+if [ "${BUILDBOT_BUILDERNAME:+isset}" == "isset" ]; then
+  echo "*** BUILDBOT_BUILDERNAME: ${BUILDBOT_BUILDERNAME}"
 fi
+echo "*** ARGUMENTS           : $*"
 
+UTMAN="tools/llvm/utman.sh"
+UTMAN_TEST="tools/llvm/utman-test.sh"
+
+case ${BUILD_OS}-${BUILD_ARCH}-${BUILD_LIBMODE} in
+  linux-32-newlib)
+    # Don't test arm + 64-bit on 32-bit builder.
+    # We can't build 64-bit trusted components on a 32-bit system.
+    # Arm disabled on 32-bit because it runs out of memory.
+    TOOLCHAIN_LABEL=pnacl_linux_i686_newlib
+    RUN_TESTS="x86-32 x86-32-pic x86-32-browser"
+    ;;
+  linux-32-glibc)
+    TOOLCHAIN_LABEL=pnacl_linux_i686_glibc
+    UTMAN="tools/llvm/gutman.sh"
+    # TODO(pdox): Determine which tests should be run.
+    RUN_TESTS=""
+    ;;
+  linux-64-newlib)
+    TOOLCHAIN_LABEL=pnacl_linux_x86_64_newlib
+    RUN_TESTS="x86-32 x86-32-pic x86-32-browser"
+    RUN_TESTS+=" arm arm-pic arm-browser"
+    RUN_TESTS+=" x86-64 x86-64-pic x86-64-browser"
+    ;;
+  linux-64-glibc)
+    TOOLCHAIN_LABEL=pnacl_linux_x86_64_glibc
+    UTMAN="tools/llvm/gutman.sh"
+    # TODO(pdox): Determine which tests should be run.
+    RUN_TESTS=""
+    ;;
+  mac-32-newlib)
+    # We don't test X86-32 because it is flaky.
+    # We can't test ARM because we do not have QEMU for Mac.
+    # We can't test X86-64 because NaCl X86-64 Mac support is not in good shape.
+    TOOLCHAIN_LABEL=pnacl_darwin_i386_newlib
+    RUN_TESTS=""
+    ;;
+  mac-32-glibc)
+    TOOLCHAIN_LABEL=pnacl_darwin_i386_glibc
+    UTMAN="tools/llvm/gutman.sh"
+    # TODO(pdox): Determine which tests should be run.
+    RUN_TESTS=""
+    ;;
+  *)
+    echo -n "*** UNRECOGNIZED CONFIGURATION: "
+    echo "${BUILD_OS}-${BUILD_ARCH}-${BUILD_LIBMODE} ***"
+    exit 3
+esac
+
+set -x
 
 RETCODE=0
 
@@ -50,11 +88,11 @@ rm -rf scons-out toolchain compiler ../xcodebuild ../sconsbuild ../out \
 rm -rf ../toolchain
 
 echo @@@BUILD_STEP show-config@@@
-UTMAN_BUILDBOT=true tools/llvm/utman.sh show-config
+UTMAN_BUILDBOT=true ${UTMAN} show-config
 
 echo @@@BUILD_STEP compile_toolchain@@@
-UTMAN_BUILDBOT=true tools/llvm/utman.sh download-trusted
-UTMAN_BUILDBOT=true tools/llvm/utman.sh untrusted_sdk pnacl-toolchain.tgz
+UTMAN_BUILDBOT=true ${UTMAN} download-trusted
+UTMAN_BUILDBOT=true ${UTMAN} untrusted_sdk pnacl-toolchain.tgz
 chmod a+r pnacl-toolchain.tgz
 
 echo @@@BUILD_STEP untar_toolchain@@@
@@ -78,7 +116,7 @@ fi
 
 for arch in ${RUN_TESTS} ; do
   echo @@@BUILD_STEP test-${arch}@@@
-  UTMAN_BUILDBOT=true tools/llvm/utman-test.sh test-${arch} ||
+  UTMAN_BUILDBOT=true ${UTMAN_TEST} test-${arch} ||
       { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 done
 
