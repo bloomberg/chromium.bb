@@ -16,7 +16,6 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/extensions/extension_protocols.h"
-#include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/chrome_cookie_notification_details.h"
 #include "chrome/browser/net/chrome_dns_cert_provenance_checker_factory.h"

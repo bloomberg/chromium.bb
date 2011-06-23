@@ -362,6 +362,10 @@ void UserScriptMaster::StartLoad() {
 
 void UserScriptMaster::SendUpdate(RenderProcessHost* process,
                                   base::SharedMemory* shared_memory) {
+  // Make sure we only send user scripts to processes in our profile.
+  if (!profile_->IsSameProfile(process->profile()))
+    return;
+
   // If the process is being started asynchronously, early return.  We'll end up
   // calling InitUserScripts when it's created which will call this again.
   base::ProcessHandle handle = process->GetHandle();
