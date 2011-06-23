@@ -18,7 +18,7 @@
 namespace pp {
 
 /// An audio resource. Refer to the
-/// <a href="chrome/nativeclient/docs/audio.html">Pepper
+/// <a href="/chrome/nativeclient/docs/audio.html">Pepper
 /// Audio API Code Walkthrough</a> for information on using this interface.
 class Audio : public Resource {
  public:

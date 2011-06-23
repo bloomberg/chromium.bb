@@ -76,7 +76,7 @@ class Rect {
   /// A constructor accepting a pointer to a Point representing the origin
   /// of the rectangle and a pointer to a Size representing the height and
   /// width.
-  /// @param[in] point A pointer to a Point representing the upper-left
+  /// @param[in] origin A pointer to a Point representing the upper-left
   /// starting coordinate.
   /// @param[in] size A pointer to a Size representing the height and width.
   Rect(const Point& origin, const Size& size) {
@@ -183,7 +183,7 @@ class Rect {
   }
 
   /// Setter function for setting the Size.
-  /// @param[in] size A pointer to a Size representing the height and width.
+  /// @param[in] s A pointer to a Size representing the height and width.
   void set_size(const Size& s) {
     rect_.size.width = s.width();
     rect_.size.height = s.height();
@@ -341,7 +341,7 @@ class Rect {
   /// (same width or same height) with the given rectangle, and the
   /// rectangles do not overlap.
   /// @param[in] rect A pointer to a Rect.
-  /// @retrn TRUE if this rectangle and supplied rectangle share an edge.
+  /// @return TRUE if this rectangle and supplied rectangle share an edge.
   bool SharesEdgeWith(const Rect& rect) const;
 
  private:

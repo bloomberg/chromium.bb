@@ -40,7 +40,7 @@ class Core {
 
   /// A function that allocates memory.
   ///
-  /// @param[in] @param[in] num_bytes A number of bytes to allocate.
+  /// @param[in] num_bytes A number of bytes to allocate.
   /// @return A pointer to the memory if successful, NULL If the
   /// allocation fails.
   void* MemAlloc(uint32_t num_bytes) {

@@ -26,7 +26,7 @@ class Size {
 
   /// A constructor accepting a pointer to a PP_Size and converting the
   /// PP_Size to a Size. This is an implicit conversion constructor.
-  /// @param[in] point A pointer to a PP_Size.
+  /// @param[in] s A pointer to a PP_Size.
   Size(const PP_Size& s) {  // Implicit.
     // Want the >= 0 checking of the setter.
     set_width(s.width);
