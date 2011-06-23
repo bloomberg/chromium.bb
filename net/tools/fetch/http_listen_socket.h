@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,8 +13,8 @@ class HttpServerRequestInfo;
 class HttpServerResponseInfo;
 
 // Implements a simple HTTP listen socket on top of the raw socket interface.
-class HttpListenSocket : public ListenSocket,
-                         public ListenSocket::ListenSocketDelegate {
+class HttpListenSocket : public net::ListenSocket,
+                         public net::ListenSocket::ListenSocketDelegate {
  public:
   class Delegate {
    public:
@@ -36,12 +36,14 @@ class HttpListenSocket : public ListenSocket,
   void Respond(HttpServerResponseInfo* info, std::string& data);
 
   // ListenSocketDelegate
-  virtual void DidAccept(ListenSocket* server, ListenSocket* connection);
-  virtual void DidRead(ListenSocket* connection, const char* data, int len);
-  virtual void DidClose(ListenSocket* sock);
+  virtual void DidAccept(net::ListenSocket* server,
+                         net::ListenSocket* connection);
+  virtual void DidRead(net::ListenSocket* connection,
+                       const char* data, int len);
+  virtual void DidClose(net::ListenSocket* sock);
 
  private:
-  friend class base::RefCountedThreadSafe<ListenSocket>;
+  friend class base::RefCountedThreadSafe<net::ListenSocket>;
 
   static const int kReadBufSize = 16 * 1024;
   HttpListenSocket(SOCKET s, HttpListenSocket::Delegate* del);

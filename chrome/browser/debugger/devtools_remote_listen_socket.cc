@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,7 +43,7 @@ const int kReadBufSize = 200;
 DevToolsRemoteListenSocket::DevToolsRemoteListenSocket(
     SOCKET s,
     DevToolsRemoteListener* message_listener)
-        : ALLOW_THIS_IN_INITIALIZER_LIST(ListenSocket(s, this)),
+        : ALLOW_THIS_IN_INITIALIZER_LIST(net::ListenSocket(s, this)),
           state_(HANDSHAKE),
           remaining_payload_length_(0),
           message_listener_(message_listener),
@@ -87,7 +87,7 @@ DevToolsRemoteListenSocket*
     DevToolsRemoteListenSocket::Listen(const std::string& ip,
                                        int port,
                                        DevToolsRemoteListener* listener) {
-  SOCKET s = ListenSocket::Listen(ip, port);
+  SOCKET s = net::ListenSocket::Listen(ip, port);
   if (s == INVALID_SOCKET) {
     // TODO(apavlov): error handling
   } else {
@@ -99,15 +99,15 @@ DevToolsRemoteListenSocket*
   return NULL;
 }
 
-void DevToolsRemoteListenSocket::DidAccept(ListenSocket *server,
-                                           ListenSocket *connection) {
+void DevToolsRemoteListenSocket::DidAccept(net::ListenSocket *server,
+                                           net::ListenSocket *connection) {
   connection->AddRef();
   message_listener_->OnAcceptConnection(connection);
 }
 
 // Dispatches data from socket to socket_delegate_, extracting messages
 // delimited by newlines.
-void DevToolsRemoteListenSocket::DidRead(ListenSocket* connection,
+void DevToolsRemoteListenSocket::DidRead(net::ListenSocket* connection,
                                          const char* pBuf,
                                          int len) {
   while (len > 0) {
@@ -148,7 +148,7 @@ void DevToolsRemoteListenSocket::DidRead(ListenSocket* connection,
   }
 }
 
-void DevToolsRemoteListenSocket::DidClose(ListenSocket *connection) {
+void DevToolsRemoteListenSocket::DidClose(net::ListenSocket *connection) {
   message_listener_->OnConnectionLost();
   connection->Release();
 }
@@ -207,11 +207,11 @@ void DevToolsRemoteListenSocket::HandleMessage() {
 }
 
 void DevToolsRemoteListenSocket::Listen() {
-  ListenSocket::Listen();
+  net::ListenSocket::Listen();
 }
 
 void DevToolsRemoteListenSocket::Accept() {
-  SOCKET conn = ListenSocket::Accept(socket_);
+  SOCKET conn = net::ListenSocket::Accept(socket_);
   if (conn != INVALID_SOCKET) {
     scoped_refptr<DevToolsRemoteListenSocket> sock(
         new DevToolsRemoteListenSocket(conn,
@@ -257,5 +257,5 @@ void DevToolsRemoteListenSocket::SendInternal(const char* bytes, int len) {
 }
 
 void DevToolsRemoteListenSocket::Close() {
-  ListenSocket::Close();
+  net::ListenSocket::Close();
 }

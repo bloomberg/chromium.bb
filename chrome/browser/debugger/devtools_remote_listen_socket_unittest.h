@@ -87,7 +87,7 @@ class DevToolsRemoteListenSocketTester :
 
   // DevToolsRemoteMessageHandler interface
   virtual void HandleMessage(const DevToolsRemoteMessage& message);
-  virtual void OnAcceptConnection(ListenSocket* connection);
+  virtual void OnAcceptConnection(net::ListenSocket* connection);
   virtual void OnConnectionLost();
 
   // read all pending data from the test socket
@@ -112,15 +112,15 @@ class DevToolsRemoteListenSocketTester :
 
   scoped_ptr<base::Thread> thread_;
   MessageLoopForIO* loop_;
-  ListenSocket* server_;
-  ListenSocket* connection_;
+  net::ListenSocket* server_;
+  net::ListenSocket* connection_;
   ListenSocketTestAction last_action_;
   std::deque<ListenSocketTestAction> queue_;
   SOCKET test_socket_;
   static const int kTestPort;
 
  protected:
-  virtual ListenSocket* DoListen();
+  virtual net::ListenSocket* DoListen();
 
  private:
   virtual ~DevToolsRemoteListenSocketTester();

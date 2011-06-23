@@ -97,7 +97,7 @@ bool FileResponse::GetContentType(std::string* content_type) const {
   return content_type->length() > 0;
 }
 
-void FileResponse::WriteContents(ListenSocket* socket) const {
+void FileResponse::WriteContents(net::ListenSocket* socket) const {
   DCHECK(file_.get());
   if (file_.get()) {
     socket->Send(reinterpret_cast<const char*>(file_->data()),
@@ -130,7 +130,7 @@ SimpleWebServer::SimpleWebServer(int port) {
   CHECK(MessageLoop::current()) << "SimpleWebServer requires a message loop";
   net::EnsureWinsockInit();
   AddResponse(&quit_);
-  server_ = ListenSocket::Listen("127.0.0.1", port, this);
+  server_ = net::ListenSocket::Listen("127.0.0.1", port, this);
   DCHECK(server_.get() != NULL);
 }
 
@@ -165,7 +165,8 @@ Response* SimpleWebServer::FindResponse(const Request& request) const {
   return NULL;
 }
 
-Connection* SimpleWebServer::FindConnection(const ListenSocket* socket) const {
+Connection* SimpleWebServer::FindConnection(
+    const net::ListenSocket* socket) const {
   ConnectionList::const_iterator it;
   for (it = connections_.begin(); it != connections_.end(); it++) {
     if ((*it)->IsSame(socket)) {
@@ -175,12 +176,12 @@ Connection* SimpleWebServer::FindConnection(const ListenSocket* socket) const {
   return NULL;
 }
 
-void SimpleWebServer::DidAccept(ListenSocket* server,
-                                ListenSocket* connection) {
+void SimpleWebServer::DidAccept(net::ListenSocket* server,
+                                net::ListenSocket* connection) {
   connections_.push_back(new Connection(connection));
 }
 
-void SimpleWebServer::DidRead(ListenSocket* connection,
+void SimpleWebServer::DidRead(net::ListenSocket* connection,
                               const char* data,
                               int len) {
   Connection* c = FindConnection(connection);
@@ -217,7 +218,7 @@ void SimpleWebServer::DidRead(ListenSocket* connection,
   }
 }
 
-void SimpleWebServer::DidClose(ListenSocket* sock) {
+void SimpleWebServer::DidClose(net::ListenSocket* sock) {
   // To keep the historical list of connections reasonably tidy, we delete
   // 404's when the connection ends.
   Connection* c = FindConnection(sock);
@@ -233,7 +234,7 @@ HTTPTestServer::HTTPTestServer(int port, const std::wstring& address,
                                FilePath root_dir)
     : port_(port), address_(address), root_dir_(root_dir) {
   net::EnsureWinsockInit();
-  server_ = ListenSocket::Listen(WideToUTF8(address), port, this);
+  server_ = net::ListenSocket::Listen(WideToUTF8(address), port, this);
 }
 
 HTTPTestServer::~HTTPTestServer() {
@@ -241,7 +242,7 @@ HTTPTestServer::~HTTPTestServer() {
 }
 
 std::list<scoped_refptr<ConfigurableConnection>>::iterator
-HTTPTestServer::FindConnection(const ListenSocket* socket) {
+HTTPTestServer::FindConnection(const net::ListenSocket* socket) {
   ConnectionList::iterator it;
   for (it = connection_list_.begin(); it != connection_list_.end(); ++it) {
     if ((*it)->socket_ == socket) {
@@ -253,18 +254,19 @@ HTTPTestServer::FindConnection(const ListenSocket* socket) {
 }
 
 scoped_refptr<ConfigurableConnection> HTTPTestServer::ConnectionFromSocket(
-    const ListenSocket* socket) {
+    const net::ListenSocket* socket) {
   ConnectionList::iterator it = FindConnection(socket);
   if (it != connection_list_.end())
     return *it;
   return NULL;
 }
 
-void HTTPTestServer::DidAccept(ListenSocket* server, ListenSocket* socket) {
+void HTTPTestServer::DidAccept(net::ListenSocket* server,
+                               net::ListenSocket* socket) {
   connection_list_.push_back(new ConfigurableConnection(socket));
 }
 
-void HTTPTestServer::DidRead(ListenSocket* socket,
+void HTTPTestServer::DidRead(net::ListenSocket* socket,
                              const char* data,
                              int len) {
   scoped_refptr<ConfigurableConnection> connection =
@@ -282,7 +284,7 @@ void HTTPTestServer::DidRead(ListenSocket* socket,
   }
 }
 
-void HTTPTestServer::DidClose(ListenSocket* socket) {
+void HTTPTestServer::DidClose(net::ListenSocket* socket) {
   ConnectionList::iterator it = FindConnection(socket);
   DCHECK(it != connection_list_.end());
   connection_list_.erase(it);

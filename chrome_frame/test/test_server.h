@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -105,13 +105,13 @@ class Request {
 // shut down.
 class Connection {
  public:
-  explicit Connection(ListenSocket* sock) : socket_(sock) {
+  explicit Connection(net::ListenSocket* sock) : socket_(sock) {
   }
 
   ~Connection() {
   }
 
-  bool IsSame(const ListenSocket* socket) const {
+  bool IsSame(const net::ListenSocket* socket) const {
     return socket_ == socket;
   }
 
@@ -124,7 +124,7 @@ class Connection {
   }
 
  protected:
-  scoped_refptr<ListenSocket> socket_;
+  scoped_refptr<net::ListenSocket> socket_;
   Request request_;
 
  private:
@@ -160,7 +160,7 @@ class Response {
     return 0;
   }
 
-  virtual void WriteContents(ListenSocket* socket) const {
+  virtual void WriteContents(net::ListenSocket* socket) const {
   }
 
   virtual void IncrementAccessCounter() {
@@ -211,7 +211,7 @@ class SimpleResponse : public ResponseForPath {
       : ResponseForPath(request_path), contents_(contents) {
   }
 
-  virtual void WriteContents(ListenSocket* socket) const {
+  virtual void WriteContents(net::ListenSocket* socket) const {
     socket->Send(contents_.c_str(), contents_.length(), false);
   }
 
@@ -237,7 +237,7 @@ class FileResponse : public ResponseForPath {
   }
 
   virtual bool GetContentType(std::string* content_type) const;
-  virtual void WriteContents(ListenSocket* socket) const;
+  virtual void WriteContents(net::ListenSocket* socket) const;
   virtual size_t ContentLength() const;
 
  protected:
@@ -271,7 +271,7 @@ typedef std::list<Connection*> ConnectionList;
 // Implementation of a simple http server.
 // Before creating an instance of the server, make sure the current thread
 // has a message loop.
-class SimpleWebServer : public ListenSocket::ListenSocketDelegate {
+class SimpleWebServer : public net::ListenSocket::ListenSocketDelegate {
  public:
   explicit SimpleWebServer(int port);
   virtual ~SimpleWebServer();
@@ -287,9 +287,12 @@ class SimpleWebServer : public ListenSocket::ListenSocketDelegate {
   void DeleteAllResponses();
 
   // ListenSocketDelegate overrides.
-  virtual void DidAccept(ListenSocket* server, ListenSocket* connection);
-  virtual void DidRead(ListenSocket* connection, const char* data, int len);
-  virtual void DidClose(ListenSocket* sock);
+  virtual void DidAccept(net::ListenSocket* server,
+                         net::ListenSocket* connection);
+  virtual void DidRead(net::ListenSocket* connection,
+                       const char* data,
+                       int len);
+  virtual void DidClose(net::ListenSocket* sock);
 
   const ConnectionList& connections() const {
     return connections_;
@@ -302,17 +305,17 @@ class SimpleWebServer : public ListenSocket::ListenSocketDelegate {
         : SimpleResponse("/quit", "So long and thanks for all the fish.") {
     }
 
-    virtual void QuitResponse::WriteContents(ListenSocket* socket) const {
+    virtual void QuitResponse::WriteContents(net::ListenSocket* socket) const {
       SimpleResponse::WriteContents(socket);
       MessageLoop::current()->Quit();
     }
   };
 
   Response* FindResponse(const Request& request) const;
-  Connection* FindConnection(const ListenSocket* socket) const;
+  Connection* FindConnection(const net::ListenSocket* socket) const;
 
  protected:
-  scoped_refptr<ListenSocket> server_;
+  scoped_refptr<net::ListenSocket> server_;
   ConnectionList connections_;
   std::list<Response*> responses_;
   QuitResponse quit_;
@@ -337,8 +340,9 @@ class ConfigurableConnection : public base::RefCounted<ConfigurableConnection> {
     int64 timeout_;
   };
 
-  explicit ConfigurableConnection(ListenSocket* sock)
-    : socket_(sock), cur_pos_(0) { }
+  explicit ConfigurableConnection(net::ListenSocket* sock)
+      : socket_(sock),
+        cur_pos_(0) {}
 
   // Send HTTP response with provided |headers| and |content|. Appends
   // "Context-Length:" header if the |content| is not empty.
@@ -356,7 +360,7 @@ class ConfigurableConnection : public base::RefCounted<ConfigurableConnection> {
   // next chunk of |data_|.
   void SendChunk();
 
-  scoped_refptr<ListenSocket> socket_;
+  scoped_refptr<net::ListenSocket> socket_;
   Request r_;
   SendOptions options_;
   std::string data_;
@@ -368,7 +372,7 @@ class ConfigurableConnection : public base::RefCounted<ConfigurableConnection> {
 // Simple class used as a base class for mock webserver.
 // Override virtual functions Get and Post and use passed ConfigurableConnection
 // instance to send the response.
-class HTTPTestServer : public ListenSocket::ListenSocketDelegate {
+class HTTPTestServer : public net::ListenSocket::ListenSocketDelegate {
  public:
   explicit HTTPTestServer(int port, const std::wstring& address,
                           FilePath root_dir);
@@ -396,16 +400,16 @@ class HTTPTestServer : public ListenSocket::ListenSocketDelegate {
 
  private:
   typedef std::list<scoped_refptr<ConfigurableConnection> > ConnectionList;
-  ConnectionList::iterator FindConnection(const ListenSocket* socket);
+  ConnectionList::iterator FindConnection(const net::ListenSocket* socket);
   scoped_refptr<ConfigurableConnection> ConnectionFromSocket(
-      const ListenSocket* socket);
+      const net::ListenSocket* socket);
 
   // ListenSocketDelegate overrides.
-  virtual void DidAccept(ListenSocket* server, ListenSocket* socket);
-  virtual void DidRead(ListenSocket* socket, const char* data, int len);
-  virtual void DidClose(ListenSocket* socket);
+  virtual void DidAccept(net::ListenSocket* server, net::ListenSocket* socket);
+  virtual void DidRead(net::ListenSocket* socket, const char* data, int len);
+  virtual void DidClose(net::ListenSocket* socket);
 
-  scoped_refptr<ListenSocket> server_;
+  scoped_refptr<net::ListenSocket> server_;
   ConnectionList connection_list_;
 
   DISALLOW_COPY_AND_ASSIGN(HTTPTestServer);

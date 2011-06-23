@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -105,7 +105,8 @@ void DevToolsProtocolHandler::Send(const DevToolsRemoteMessage& message) {
   }
 }
 
-void DevToolsProtocolHandler::OnAcceptConnection(ListenSocket *connection) {
+void DevToolsProtocolHandler::OnAcceptConnection(
+    net::ListenSocket *connection) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   connection_ = connection;
 }

@@ -10,7 +10,10 @@
 #include "base/memory/ref_counted.h"
 
 class DevToolsRemoteMessage;
+
+namespace net {
 class ListenSocket;
+}
 
 // This interface should be implemented by a class that wants to handle
 // DevToolsRemoteMessages dispatched by some entity. It must extend
@@ -22,7 +25,7 @@ class DevToolsRemoteListener
   // This method is invoked on the UI thread whenever the debugger connection
   // has been lost.
   virtual void OnConnectionLost() = 0;
-  virtual void OnAcceptConnection(ListenSocket* connection) {}
+  virtual void OnAcceptConnection(net::ListenSocket* connection) {}
 
  protected:
   friend class base::RefCountedThreadSafe<DevToolsRemoteListener>;

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -186,28 +186,28 @@ bool ListenSocketTester::Send(SOCKET sock, const std::string& str) {
   return true;
 }
 
-void ListenSocketTester::DidAccept(ListenSocket *server,
-                                   ListenSocket *connection) {
+void ListenSocketTester::DidAccept(net::ListenSocket *server,
+                                   net::ListenSocket *connection) {
   connection_ = connection;
   connection_->AddRef();
   ReportAction(ListenSocketTestAction(ACTION_ACCEPT));
 }
 
-void ListenSocketTester::DidRead(ListenSocket *connection,
+void ListenSocketTester::DidRead(net::ListenSocket *connection,
                                  const char* data,
                                  int len) {
   std::string str(data, len);
   ReportAction(ListenSocketTestAction(ACTION_READ, str));
 }
 
-void ListenSocketTester::DidClose(ListenSocket *sock) {
+void ListenSocketTester::DidClose(net::ListenSocket *sock) {
   ReportAction(ListenSocketTestAction(ACTION_CLOSE));
 }
 
 ListenSocketTester::~ListenSocketTester() {}
 
-ListenSocket* ListenSocketTester::DoListen() {
-  return ListenSocket::Listen(kLoopback, kTestPort, this);
+net::ListenSocket* ListenSocketTester::DoListen() {
+  return net::ListenSocket::Listen(kLoopback, kTestPort, this);
 }
 
 

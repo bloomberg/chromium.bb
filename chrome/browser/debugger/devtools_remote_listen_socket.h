@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,8 +15,9 @@ class DevToolsRemoteListener;
 
 // Listens to remote debugger incoming connections, handles the V8ARDP protocol
 // socket input and invokes the message handler when appropriate.
-class DevToolsRemoteListenSocket : public ListenSocket,
-                                   public ListenSocket::ListenSocketDelegate {
+class DevToolsRemoteListenSocket
+    : public net::ListenSocket,
+      public net::ListenSocket::ListenSocketDelegate {
  public:
   // Listen on port for the specified IP address.  Use 127.0.0.1 to only
   // accept local connections.
@@ -34,10 +35,12 @@ class DevToolsRemoteListenSocket : public ListenSocket,
  private:
   virtual ~DevToolsRemoteListenSocket();
 
-  // ListenSocket::ListenSocketDelegate interface
-  virtual void DidAccept(ListenSocket *server, ListenSocket *connection);
-  virtual void DidRead(ListenSocket *connection, const char* data, int len);
-  virtual void DidClose(ListenSocket *connection);
+  // net::ListenSocket::ListenSocketDelegate interface
+  virtual void DidAccept(net::ListenSocket *server,
+                         net::ListenSocket *connection);
+  virtual void DidRead(net::ListenSocket *connection,
+                       const char* data, int len);
+  virtual void DidClose(net::ListenSocket *connection);
 
   // The protocol states while reading socket input
   enum State {

@@ -1114,7 +1114,7 @@ class UaTemplateFileResponse : public test_server::FileResponse {
     return content_.length();
   }
 
-  virtual void WriteContents(ListenSocket* socket) const {
+  virtual void WriteContents(net::ListenSocket* socket) const {
     DCHECK(content_.length());
     socket->Send(content_.c_str(), content_.length(), false);
     request_id_++;
@@ -1240,7 +1240,7 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_TestDownloadFromForm) {
       return match;
     }
 
-    virtual void WriteContents(ListenSocket* socket) const {
+    virtual void WriteContents(net::ListenSocket* socket) const {
       if (is_post_) {
         socket->Send(kText, sizeof(kText) - 1, false);
       } else {

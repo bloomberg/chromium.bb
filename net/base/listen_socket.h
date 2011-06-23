@@ -33,6 +33,8 @@
 typedef int SOCKET;
 #endif
 
+namespace net {
+
 // Implements a raw socket interface
 class NET_API ListenSocket : public base::RefCountedThreadSafe<ListenSocket>,
 #if defined(OS_WIN)
@@ -128,5 +130,7 @@ class NET_API ListenSocket : public base::RefCountedThreadSafe<ListenSocket>,
 
   DISALLOW_COPY_AND_ASSIGN(ListenSocket);
 };
+
+}  // namespace net
 
 #endif  // NET_BASE_LISTEN_SOCKET_H_

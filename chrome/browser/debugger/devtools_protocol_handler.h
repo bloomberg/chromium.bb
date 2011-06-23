@@ -52,7 +52,7 @@ class DevToolsProtocolHandler
 
   // DevToolsRemoteListener interface
   virtual void HandleMessage(const DevToolsRemoteMessage& message);
-  virtual void OnAcceptConnection(ListenSocket *connection);
+  virtual void OnAcceptConnection(net::ListenSocket *connection);
   virtual void OnConnectionLost();
 
   // OutboundSocketDelegate interface
@@ -67,7 +67,7 @@ class DevToolsProtocolHandler
   void Teardown();
   int port_;
   ToolToListenerMap tool_to_listener_map_;
-  scoped_refptr<ListenSocket> connection_;
+  scoped_refptr<net::ListenSocket> connection_;
   scoped_refptr<DevToolsRemoteListenSocket> server_;
   scoped_ptr<InspectableTabProxy> inspectable_tab_proxy_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsProtocolHandler);

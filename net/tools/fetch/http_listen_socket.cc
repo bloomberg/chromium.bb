@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,7 +16,7 @@
 // must run in the IO thread
 HttpListenSocket::HttpListenSocket(SOCKET s,
                                    HttpListenSocket::Delegate* delegate)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(ListenSocket(s, this)),
+    : ALLOW_THIS_IN_INITIALIZER_LIST(net::ListenSocket(s, this)),
       delegate_(delegate) {
 }
 
@@ -25,13 +25,13 @@ HttpListenSocket::~HttpListenSocket() {
 }
 
 void HttpListenSocket::Listen() {
-  ListenSocket::Listen();
+  net::ListenSocket::Listen();
 }
 
 void HttpListenSocket::Accept() {
-  SOCKET conn = ListenSocket::Accept(socket_);
-  DCHECK_NE(conn, ListenSocket::kInvalidSocket);
-  if (conn == ListenSocket::kInvalidSocket) {
+  SOCKET conn = net::ListenSocket::Accept(socket_);
+  DCHECK_NE(conn, net::ListenSocket::kInvalidSocket);
+  if (conn == net::ListenSocket::kInvalidSocket) {
     // TODO
   } else {
     scoped_refptr<HttpListenSocket> sock(
@@ -45,8 +45,8 @@ HttpListenSocket* HttpListenSocket::Listen(
     const std::string& ip,
     int port,
     HttpListenSocket::Delegate* delegate) {
-  SOCKET s = ListenSocket::Listen(ip, port);
-  if (s == ListenSocket::kInvalidSocket) {
+  SOCKET s = net::ListenSocket::Listen(ip, port);
+  if (s == net::ListenSocket::kInvalidSocket) {
     // TODO (ibrar): error handling
   } else {
     HttpListenSocket *serv = new HttpListenSocket(s, delegate);
@@ -185,12 +185,12 @@ HttpServerRequestInfo* HttpListenSocket::ParseHeaders() {
   return NULL;
 }
 
-void HttpListenSocket::DidAccept(ListenSocket* server,
-                                 ListenSocket* connection) {
+void HttpListenSocket::DidAccept(net::ListenSocket* server,
+                                 net::ListenSocket* connection) {
   connection->AddRef();
 }
 
-void HttpListenSocket::DidRead(ListenSocket* connection,
+void HttpListenSocket::DidRead(net::ListenSocket* connection,
                                const char* data,
                                int len) {
   recv_data_.append(data, len);
@@ -203,7 +203,7 @@ void HttpListenSocket::DidRead(ListenSocket* connection,
   }
 }
 
-void HttpListenSocket::DidClose(ListenSocket* sock) {
+void HttpListenSocket::DidClose(net::ListenSocket* sock) {
   sock->Release();
 }
 
