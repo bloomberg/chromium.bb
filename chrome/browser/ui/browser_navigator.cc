@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/status_bubble.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_factory.h"
+#include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
@@ -144,13 +145,15 @@ Browser* GetBrowserForDisposition(browser::NavigateParams* params) {
         // Coerce app-style if |params->browser| or |source| represents an app.
         std::string app_name;
         if (!params->extension_app_id.empty()) {
-          app_name = params->extension_app_id;
+          app_name = web_app::GenerateApplicationNameFromExtensionId(
+              params->extension_app_id);
         } else if (params->browser && !params->browser->app_name().empty()) {
           app_name = params->browser->app_name();
         } else if (params->source_contents &&
                    params->source_contents->extension_tab_helper()->is_app()) {
-          app_name = params->source_contents->extension_tab_helper()->
-              extension_app()->id();
+          app_name = web_app::GenerateApplicationNameFromExtensionId(
+              params->source_contents->extension_tab_helper()->
+                  extension_app()->id());
         }
         if (app_name.empty()) {
           Browser::CreateParams browser_params(Browser::TYPE_POPUP, profile);
