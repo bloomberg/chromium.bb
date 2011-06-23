@@ -23,7 +23,6 @@
 // TODO(wez): Remove this when crbug.com/86353 is complete.
 #include "ppapi/cpp/private/var_private.h"
 #include "remoting/client/client_config.h"
-#include "remoting/client/client_util.h"
 #include "remoting/client/chromoting_client.h"
 #include "remoting/client/rectangle_update_decoder.h"
 #include "remoting/client/plugin/chromoting_scriptable_object.h"

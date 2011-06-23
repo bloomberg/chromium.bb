@@ -77,38 +77,6 @@
         }
       ],  # end of target 'remoting_client_test_webserver'
     }],
-
-    # TODO(hclam): Enable this target for mac.
-    ['use_x11 == 1', {
-
-      'targets': [
-        {
-          'target_name': 'remoting_x11_client',
-          'type': 'executable',
-          'dependencies': [
-            'remoting_base',
-            'remoting_client',
-            'remoting_jingle_glue',
-            '../media/media.gyp:media',
-          ],
-          'link_settings': {
-            'libraries': [
-              '-ldl',
-              '-lX11',
-              '-lXrender',
-              '-lXext',
-            ],
-          },
-          'sources': [
-            'client/x11_client.cc',
-            'client/x11_input_handler.cc',
-            'client/x11_input_handler.h',
-            'client/x11_view.cc',
-            'client/x11_view.h',
-          ],
-        },  # end of target 'remoting_x11_client'
-      ],
-    }],  # end of OS conditions for x11 client
   ],  # end of 'conditions'
 
   'targets': [
@@ -469,8 +437,6 @@
         'client/client_context.h',
         'client/client_logger.cc',
         'client/client_logger.h',
-        'client/client_util.cc',
-        'client/client_util.h',
         'client/frame_consumer.h',
         'client/input_handler.cc',
         'client/input_handler.h',
