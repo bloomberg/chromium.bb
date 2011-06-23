@@ -46,20 +46,24 @@ class MockSelectFileDialogListener : public SelectFileDialog::Listener {
 
   bool file_selected() const { return file_selected_; }
   bool canceled() const { return canceled_; }
+  void* params() const { return params_; }
 
   // SelectFileDialog::Listener implementation.
   virtual void FileSelected(const FilePath& path, int index, void* params) {
     file_selected_ = true;
+    params_ = params;
   }
   virtual void MultiFilesSelected(
       const std::vector<FilePath>& files, void* params) {}
   virtual void FileSelectionCanceled(void* params) {
     canceled_ = true;
+    params_ = params;
   }
 
  private:
   bool file_selected_;
   bool canceled_;
+  void* params_;
 
   DISALLOW_COPY_AND_ASSIGN(MockSelectFileDialogListener);
 };
@@ -117,7 +121,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerDialogTest, SelectFileAndCancel) {
                      FILE_PATH_LITERAL("") /* default_extension */,
                      NULL /* source_contents */,
                      owning_window,
-                     NULL /* params */);
+                     this /* params */);
   LOG(INFO) << "Waiting for JavaScript ready message.";
   ASSERT_TRUE(msg_listener.WaitUntilSatisfied());
 
@@ -146,6 +150,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerDialogTest, SelectFileAndCancel) {
   // Listener should have been informed of the cancellation.
   ASSERT_FALSE(listener->file_selected());
   ASSERT_TRUE(listener->canceled());
+  ASSERT_EQ(this, listener->params());
 
   // Enforce deleting the dialog first.
   dialog.release();
@@ -200,7 +205,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerDialogTest, SelectFileAndOpen) {
                      FILE_PATH_LITERAL("") /* default_extension */,
                      NULL /* source_contents */,
                      owning_window,
-                     NULL /* params */);
+                     this /* params */);
   LOG(INFO) << "Waiting for JavaScript selection-change-complete message.";
   ASSERT_TRUE(msg_listener.WaitUntilSatisfied());
 
@@ -229,6 +234,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerDialogTest, SelectFileAndOpen) {
   // Listener should have been informed that the file was opened.
   ASSERT_TRUE(listener->file_selected());
   ASSERT_FALSE(listener->canceled());
+  ASSERT_EQ(this, listener->params());
 
   // Enforce deleting the dialog before the listener.
   dialog.release();

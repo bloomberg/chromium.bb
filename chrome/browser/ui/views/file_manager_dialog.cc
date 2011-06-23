@@ -188,6 +188,7 @@ void FileManagerDialog::SelectFileImpl(
   int32 tab_id = (tab ? tab->restore_tab_helper()->session_id().id() : 0);
   PendingDialog::Add(tab_id, this);
 
+  params_ = params;
   tab_id_ = tab_id;
   owner_window_ = owner_window;
 }
