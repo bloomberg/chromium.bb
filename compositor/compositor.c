@@ -241,6 +241,8 @@ wlsc_surface_create(struct wlsc_compositor *compositor,
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
+	surface->surface.client = NULL;
+
 	surface->compositor = compositor;
 	surface->visual = NULL;
 	surface->image = EGL_NO_IMAGE_KHR;
@@ -729,7 +731,7 @@ wlsc_output_repaint(struct wlsc_output *output)
 {
 	struct wlsc_compositor *ec = output->compositor;
 	struct wlsc_surface *es;
-	struct wlsc_input_device *eid, *hw_cursor;
+	struct wlsc_input_device *device;
 	pixman_region32_t new_damage, total_damage;
 
 	output->prepare_render(output);
@@ -751,34 +753,40 @@ wlsc_output_repaint(struct wlsc_output *output)
 			      &output->previous_damage_region);
 	pixman_region32_copy(&output->previous_damage_region, &new_damage);
 
-	hw_cursor = NULL;
+	device = (struct wlsc_input_device *) ec->input_device;
 	if (ec->focus && ec->fade.spring.current < 0.001) {
-		hw_cursor = (struct wlsc_input_device *) ec->input_device;
-		if (output->set_hardware_cursor(output, hw_cursor) < 0)
-			hw_cursor = NULL;
-	} else {
-		output->set_hardware_cursor(output, NULL);
-	}
+		if (!wl_list_empty(&device->sprite->link)) {
+			wl_list_remove(&device->sprite->link);
+			wl_list_init(&device->sprite->link);
+		}
+		if (output->set_hardware_cursor(output, device) < 0)
+			wl_list_insert(&ec->surface_list,
+				       &device->sprite->link);
+ 	} else {
+ 		output->set_hardware_cursor(output, NULL);
+		if (wl_list_empty(&device->sprite->link))
+			wl_list_insert(&ec->surface_list,
+				       &device->sprite->link);
+ 	}
 
 	es = container_of(ec->surface_list.next, struct wlsc_surface, link);
 
-	if (es->visual == &ec->compositor.rgb_visual && hw_cursor) {
-		if (output->prepare_scanout_surface(output, es) == 0) {
-			/* We're drawing nothing now,
-			 * draw the damaged regions later. */
-			pixman_region32_union(&ec->damage_region,
-					      &ec->damage_region,
-					      &total_damage);
+	if (es->visual == &ec->compositor.rgb_visual &&
+	    output->prepare_scanout_surface(output, es) == 0) {
+		/* We're drawing nothing now,
+		 * draw the damaged regions later. */
+		pixman_region32_union(&ec->damage_region,
+				      &ec->damage_region,
+				      &total_damage);
 
-			output->scanout_buffer = es->buffer;
-			output->scanout_buffer->busy_count++;
+		output->scanout_buffer = es->buffer;
+		output->scanout_buffer->busy_count++;
 
-			wl_list_remove(&output->scanout_buffer_destroy_listener.link);
-			wl_list_insert(output->scanout_buffer->resource.destroy_listener_list.prev,
-				       &output->scanout_buffer_destroy_listener.link);
+		wl_list_remove(&output->scanout_buffer_destroy_listener.link);
+		wl_list_insert(output->scanout_buffer->resource.destroy_listener_list.prev,
+			       &output->scanout_buffer_destroy_listener.link);
 
-			return;
-		}
+		return;
 	}
 
 	if (es->fullscreen_output == output) {
@@ -804,14 +812,6 @@ wlsc_output_repaint(struct wlsc_output *output)
 
 	if (ec->overlay)
 		wlsc_surface_draw(ec->overlay, output, &total_damage);
-
-	if (ec->focus)
-		wl_list_for_each(eid, &ec->input_device_list, link) {
-			if (&eid->input_device != ec->input_device ||
-			    eid != hw_cursor)
-				wlsc_surface_draw(eid->sprite, output,
-						  &total_damage);
-		}
 
 	if (ec->fade.spring.current > 0.001)
 		fade_output(output, ec->fade.spring.current, &total_damage);
@@ -1076,6 +1076,8 @@ pick_surface(struct wl_input_device *device, int32_t *sx, int32_t *sy)
 	struct wlsc_surface *es;
 
 	wl_list_for_each(es, &ec->surface_list, link) {
+		if (es->surface.client == NULL)
+			continue;
 		wlsc_surface_transform(es, device->x, device->y, sx, sy);
 		if (0 <= *sx && *sx < es->width &&
 		    0 <= *sy && *sy < es->height)
@@ -1533,6 +1535,8 @@ wlsc_input_device_init(struct wlsc_input_device *device,
 	device->sprite = wlsc_surface_create(ec,
 					     device->input_device.x,
 					     device->input_device.y, 32, 32);
+	wl_list_insert(&ec->surface_list, &device->sprite->link);
+
 	device->hotspot_x = 16;
 	device->hotspot_y = 16;
 	device->modifier_state = 0;
