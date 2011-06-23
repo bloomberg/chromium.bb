@@ -128,14 +128,6 @@ TabFinder::~TabFinder() {
   STLDeleteElements(&tab_contents_observers_);
 }
 
-void TabFinder::Init() {
-  for (BrowserList::const_iterator i = BrowserList::begin();
-       i != BrowserList::end(); ++i) {
-    if (!(*i)->profile()->IsOffTheRecord())
-      TrackBrowser(*i);
-  }
-}
-
 void TabFinder::DidNavigateAnyFramePostCommit(
     TabContents* source,
     const content::LoadCommittedDetails& details,
@@ -182,11 +174,6 @@ void TabFinder::TrackTab(TabContents* tab) {
   TabContentsObserverImpl* observer = new TabContentsObserverImpl(tab, this);
   tab_contents_observers_.insert(observer);
   FetchRedirectStart(tab);
-}
-
-void TabFinder::TrackBrowser(Browser* browser) {
-  for (int i = 0; i < browser->tab_count(); ++i)
-    FetchRedirectStart(browser->GetTabContentsAt(i));
 }
 
 void TabFinder::TabDestroyed(TabContentsObserverImpl* observer) {
