@@ -132,6 +132,17 @@ void GpuChannel::LoseAllContexts() {
   gpu_channel_manager_->LoseAllContexts();
 }
 
+void GpuChannel::DestroySoon() {
+  MessageLoop::current()->PostTask(
+      FROM_HERE, NewRunnableMethod(this,
+          &GpuChannel::OnDestroy));
+}
+
+void GpuChannel::OnDestroy() {
+  TRACE_EVENT0("gpu", "GpuChannel::OnDestroy");
+  gpu_channel_manager_->RemoveChannel(renderer_id_);
+}
+
 gfx::GLSurface* GpuChannel::LookupSurface(int surface_id) {
   GpuSurfaceStub *surface_stub = surfaces_.Lookup(surface_id);
   if (!surface_stub)
