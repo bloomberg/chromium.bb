@@ -163,9 +163,8 @@ class NetInternalsMessageHandler
   virtual void RegisterMessages();
 
   // Executes the javascript function |function_name| in the renderer, passing
-  // it the argument |value|.
-  void CallJavascriptFunction(const std::wstring& function_name,
-                              const Value* value);
+  // it the argument |arg|.  Takes ownership of |arg|.
+  void CallJavascriptFunction(const std::wstring& function_name, Value* arg);
 
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,
@@ -630,10 +629,11 @@ void NetInternalsMessageHandler::RegisterMessages() {
 
 void NetInternalsMessageHandler::CallJavascriptFunction(
     const std::wstring& function_name,
-    const Value* value) {
+    Value* arg) {
+  scoped_ptr<Value> value(arg);
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (value) {
-    web_ui_->CallJavascriptFunction(WideToASCII(function_name), *value);
+  if (value.get()) {
+    web_ui_->CallJavascriptFunction(WideToASCII(function_name), *value.get());
   } else {
     web_ui_->CallJavascriptFunction(WideToASCII(function_name));
   }
@@ -647,11 +647,9 @@ void NetInternalsMessageHandler::Observe(NotificationType type,
 
   std::string* pref_name = Details<std::string>(details).ptr();
   if (*pref_name == prefs::kHttpThrottlingEnabled) {
-    scoped_ptr<Value> enabled(
-        Value::CreateBooleanValue(*http_throttling_enabled_));
-
     CallJavascriptFunction(
-        L"g_browser.receivedHttpThrottlingEnabledPrefChanged", enabled.get());
+        L"g_browser.receivedHttpThrottlingEnabledPrefChanged",
+        Value::CreateBooleanValue(*http_throttling_enabled_));
   }
 }
 
@@ -659,10 +657,9 @@ void NetInternalsMessageHandler::OnRendererReady(const ListValue* list) {
   CHECK(renderer_ready_io_callback_.get());
   renderer_ready_io_callback_->Run(list);
 
-  scoped_ptr<Value> enabled(
-      Value::CreateBooleanValue(*http_throttling_enabled_));
   CallJavascriptFunction(
-      L"g_browser.receivedHttpThrottlingEnabledPrefChanged", enabled.get());
+      L"g_browser.receivedHttpThrottlingEnabledPrefChanged",
+      Value::CreateBooleanValue(*http_throttling_enabled_));
 }
 
 void NetInternalsMessageHandler::OnEnableHttpThrottling(const ListValue* list) {
@@ -694,14 +691,14 @@ void NetInternalsMessageHandler::OnEnableHttpThrottling(const ListValue* list) {
 void NetInternalsMessageHandler::OnGetPrerenderInfo(const ListValue* list) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  scoped_ptr<Value> value;
+  Value* value = NULL;
   prerender::PrerenderManager* prerender_manager = prerender_manager_.get();
   if (!prerender_manager) {
-    value.reset(new DictionaryValue());
+    value = new DictionaryValue();
   } else {
-    value.reset(prerender_manager->GetAsValue());
+    value = prerender_manager->GetAsValue();
   }
-  CallJavascriptFunction(L"g_browser.receivedPrerenderInfo", value.get());
+  CallJavascriptFunction(L"g_browser.receivedPrerenderInfo", value);
 }
 
 
@@ -782,7 +779,7 @@ void NetInternalsMessageHandler::SystemLogsGetter::OnSystemLogsLoaded(
 
 void NetInternalsMessageHandler::SystemLogsGetter::SendLogs(
     const SystemLogRequest& request) {
-  scoped_ptr<DictionaryValue> result(new DictionaryValue());
+  DictionaryValue* result = new DictionaryValue();
   chromeos::LogDictionaryType::iterator log_it = logs_->find(request.log_key);
   if (log_it != logs_->end()) {
     if (!log_it->second.empty()) {
@@ -795,8 +792,7 @@ void NetInternalsMessageHandler::SystemLogsGetter::SendLogs(
   }
   result->SetString("cellId", request.cell_id);
 
-  handler_->CallJavascriptFunction(L"g_browser.getSystemLogCallback",
-                                   result.get());
+  handler_->CallJavascriptFunction(L"g_browser.getSystemLogCallback", result);
 }
 #endif
 ////////////////////////////////////////////////////////////////////////////////
@@ -1572,8 +1568,9 @@ void NetInternalsMessageHandler::IOThreadImpl::CallJavascriptFunction(
       // We check |handler_| in case it was deleted on the UI thread earlier
       // while we were running on the IO thread.
       handler_->CallJavascriptFunction(function_name, arg);
+    } else {
+      delete arg;
     }
-    delete arg;
     return;
   }
 
