@@ -44,7 +44,7 @@
  * advertise that through a service on the session dbus.
  */
 static const char *option_socket_name = NULL;
-static const char *option_background = "background.jpg";
+static const char *option_background = "background.png";
 static int option_idle_time = 300;
 
 static struct wl_list child_process_list;
