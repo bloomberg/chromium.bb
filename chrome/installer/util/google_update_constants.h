@@ -44,6 +44,7 @@ extern const wchar_t kRegNameField[];
 extern const wchar_t kRegOldVersionField[];
 extern const wchar_t kRegOopcrashesField[];
 extern const wchar_t kRegRLZBrandField[];
+extern const wchar_t kRegRLZReactivationBrandField[];
 extern const wchar_t kRegReferralField[];
 extern const wchar_t kRegRenameCmdField[];
 extern const wchar_t kRegSendsPingsField[];

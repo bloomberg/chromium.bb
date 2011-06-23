@@ -347,6 +347,11 @@ bool GoogleUpdateSettings::GetBrand(std::wstring* brand) {
   return ReadGoogleUpdateStrKey(google_update::kRegRLZBrandField, brand);
 }
 
+bool GoogleUpdateSettings::GetReactivationBrand(std::wstring* brand) {
+  return ReadGoogleUpdateStrKey(google_update::kRegRLZReactivationBrandField,
+                                brand);
+}
+
 bool GoogleUpdateSettings::GetClient(std::wstring* client) {
   return ReadGoogleUpdateStrKey(google_update::kRegClientField, client);
 }

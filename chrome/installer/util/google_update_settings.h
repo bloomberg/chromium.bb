@@ -77,6 +77,11 @@ class GoogleUpdateSettings {
   // assigned to a partner. Returns false if the information is not available.
   static bool GetBrand(std::wstring* brand);
 
+  // Returns in |brand| the RLZ reactivation brand code or distribution tag
+  // that has been assigned to a partner for reactivating a dormant chrome
+  // install. Returns false if the information is not available.
+  static bool GetReactivationBrand(std::wstring* brand);
+
   // Returns in |client| the google_update client field, which is currently
   // used to track experiments. Returns false if the entry does not exist.
   static bool GetClient(std::wstring* client);
