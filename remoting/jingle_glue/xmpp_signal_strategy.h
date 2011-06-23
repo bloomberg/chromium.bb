@@ -20,7 +20,9 @@ namespace remoting {
 
 class JingleThread;
 
-class XmppSignalStrategy : public SignalStrategy, public sigslot::has_slots<> {
+class XmppSignalStrategy : public SignalStrategy,
+                           public buzz::XmppStanzaHandler,
+                           public sigslot::has_slots<> {
  public:
   XmppSignalStrategy(JingleThread* thread,
                      const std::string& username,
@@ -30,9 +32,14 @@ class XmppSignalStrategy : public SignalStrategy, public sigslot::has_slots<> {
 
   // SignalStrategy interface.
   virtual void Init(StatusObserver* observer) OVERRIDE;
+  virtual void SetListener(Listener* listener) OVERRIDE;
+  virtual void SendStanza(buzz::XmlElement* stanza) OVERRIDE;
   virtual void StartSession(cricket::SessionManager* session_manager) OVERRIDE;
   virtual void EndSession() OVERRIDE;
   virtual IqRequest* CreateIqRequest() OVERRIDE;
+
+  // buzz::XmppStanzaHandler interface.
+  virtual bool HandleStanza(const buzz::XmlElement* stanza) OVERRIDE;
 
  private:
   friend class JingleClientTest;
@@ -42,6 +49,8 @@ class XmppSignalStrategy : public SignalStrategy, public sigslot::has_slots<> {
       const buzz::XmppClientSettings& settings);
 
   JingleThread* thread_;
+
+  Listener* listener_;
 
   std::string username_;
   std::string auth_token_;

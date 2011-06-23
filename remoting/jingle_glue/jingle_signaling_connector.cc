@@ -4,6 +4,7 @@
 
 #include "remoting/jingle_glue/jingle_signaling_connector.h"
 
+#include "base/logging.h"
 #include "remoting/jingle_glue/javascript_iq_request.h"
 #include "third_party/libjingle/source/talk/p2p/base/sessionmanager.h"
 #include "third_party/libjingle/source/talk/xmpp/constants.h"
@@ -12,28 +13,27 @@
 namespace remoting {
 
 JingleSignalingConnector::JingleSignalingConnector(
-    JavascriptIqRequest* request,
+    SignalStrategy* signal_strategy,
     cricket::SessionManager* session_manager)
-    : request_(request),
+    : signal_strategy_(signal_strategy),
       session_manager_(session_manager) {
-  request_->set_callback(
-      NewCallback(this, &JingleSignalingConnector::OnResponse));
-}
 
-JingleSignalingConnector::~JingleSignalingConnector() {
-}
-
-void JingleSignalingConnector::Run() {
   session_manager_->SignalOutgoingMessage.connect(
       this, &JingleSignalingConnector::OnOutgoingMessage);
 
-  // TODO(ajwong): Why are we connecting SessionManager to itself?
+  signal_strategy_->SetListener(this);
+
+  // Assume that signaling is ready from the beginning.
   session_manager_->SignalRequestSignaling.connect(
       session_manager_, &cricket::SessionManager::OnSignalingReady);
-  request_->BecomeDefaultHandler();
 }
 
-void JingleSignalingConnector::OnResponse(const buzz::XmlElement* response) {
+JingleSignalingConnector::~JingleSignalingConnector() {
+  signal_strategy_->SetListener(NULL);
+}
+
+void JingleSignalingConnector::OnIncomingStanza(
+    const buzz::XmlElement* stanza) {
   // TODO(ajwong): Techncially, when SessionManager sends IQ packets, it
   // actually expects a response in SessionSendTask(). However, if you look in
   // SessionManager::OnIncomingResponse(), it does nothing with the response.
@@ -44,18 +44,17 @@ void JingleSignalingConnector::OnResponse(const buzz::XmlElement* response) {
   // messages outside of the request/reply framework to
   // SessionManager::OnIncomingMessage.
 
-  if (session_manager_->IsSessionMessage(response)) {
-    session_manager_->OnIncomingMessage(response);
+  if (session_manager_->IsSessionMessage(stanza)) {
+    session_manager_->OnIncomingMessage(stanza);
   }
 }
 
 void JingleSignalingConnector::OnOutgoingMessage(
     cricket::SessionManager* session_manager,
     const buzz::XmlElement* stanza) {
-  // TODO(ajwong): Are we just supposed to not use |session_manager|?
   DCHECK_EQ(session_manager, session_manager_);
   scoped_ptr<buzz::XmlElement> stanza_copy(new buzz::XmlElement(*stanza));
-  request_->SendRawIq(stanza_copy.get());
+  signal_strategy_->SendStanza(stanza_copy.release());
 }
 
 }  // namespace remoting

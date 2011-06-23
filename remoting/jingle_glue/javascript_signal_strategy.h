@@ -10,14 +10,18 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/threading/non_thread_safe.h"
 #include "remoting/jingle_glue/javascript_iq_request.h"
+#include "remoting/jingle_glue/xmpp_proxy.h"
 
 namespace remoting {
 
 class JingleSignalingConnector;
 class XmppProxy;
 
-class JavascriptSignalStrategy : public SignalStrategy {
+class JavascriptSignalStrategy : public SignalStrategy,
+                                 public XmppProxy::ResponseCallback,
+                                 public base::NonThreadSafe {
  public:
   explicit JavascriptSignalStrategy(const std::string& your_jid);
   virtual ~JavascriptSignalStrategy();
@@ -26,15 +30,22 @@ class JavascriptSignalStrategy : public SignalStrategy {
 
   // SignalStrategy interface.
   virtual void Init(StatusObserver* observer) OVERRIDE;
+  virtual void SetListener(Listener* listener) OVERRIDE;
+  virtual void SendStanza(buzz::XmlElement* stanza) OVERRIDE;
   virtual void StartSession(cricket::SessionManager* session_manager) OVERRIDE;
   virtual void EndSession() OVERRIDE;
-  virtual JavascriptIqRequest* CreateIqRequest() OVERRIDE;
+  virtual IqRequest* CreateIqRequest() OVERRIDE;
+
+  // XmppProxy::ResponseCallback interface.
+  virtual void OnIq(const std::string& stanza);
 
  private:
   std::string your_jid_;
   scoped_refptr<XmppProxy> xmpp_proxy_;
   JavascriptIqRegistry iq_registry_;
   scoped_ptr<JingleSignalingConnector> jingle_signaling_connector_;
+
+  Listener* listener_;
 
   DISALLOW_COPY_AND_ASSIGN(JavascriptSignalStrategy);
 };

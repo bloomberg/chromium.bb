@@ -4,6 +4,7 @@
 
 #include "remoting/jingle_glue/xmpp_signal_strategy.h"
 
+#include "base/logging.h"
 #include "jingle/notifier/base/gaia_token_pre_xmpp_auth.h"
 #include "remoting/jingle_glue/jingle_thread.h"
 #include "remoting/jingle_glue/xmpp_iq_request.h"
@@ -21,6 +22,7 @@ XmppSignalStrategy::XmppSignalStrategy(JingleThread* jingle_thread,
                                        const std::string& auth_token,
                                        const std::string& auth_token_service)
    : thread_(jingle_thread),
+     listener_(NULL),
      username_(username),
      auth_token_(auth_token),
      auth_token_service_(auth_token_service),
@@ -29,6 +31,10 @@ XmppSignalStrategy::XmppSignalStrategy(JingleThread* jingle_thread,
 }
 
 XmppSignalStrategy::~XmppSignalStrategy() {
+  if (xmpp_client_)
+    xmpp_client_->engine()->RemoveStanzaHandler(this);
+
+  DCHECK(listener_ == NULL);
 }
 
 void XmppSignalStrategy::Init(StatusObserver* observer) {
@@ -51,7 +57,19 @@ void XmppSignalStrategy::Init(StatusObserver* observer) {
   xmpp_client_->Connect(settings, "", socket, CreatePreXmppAuth(settings));
   xmpp_client_->SignalStateChange.connect(
       this, &XmppSignalStrategy::OnConnectionStateChanged);
+  xmpp_client_->engine()->AddStanzaHandler(this, buzz::XmppEngine::HL_PEEK);
   xmpp_client_->Start();
+}
+
+void XmppSignalStrategy::SetListener(Listener* listener) {
+  // Don't overwrite an listener without explicitly going
+  // through "NULL" first.
+  DCHECK(listener_ == NULL || listener == NULL);
+  listener_ = listener;
+}
+
+void XmppSignalStrategy::SendStanza(buzz::XmlElement* stanza) {
+  xmpp_client_->SendStanza(stanza);
 }
 
 void XmppSignalStrategy::StartSession(
@@ -64,6 +82,7 @@ void XmppSignalStrategy::StartSession(
 
 void XmppSignalStrategy::EndSession() {
   if (xmpp_client_) {
+    xmpp_client_->engine()->RemoveStanzaHandler(this);
     xmpp_client_->Disconnect();
     // Client is deleted by TaskRunner.
     xmpp_client_ = NULL;
@@ -72,6 +91,11 @@ void XmppSignalStrategy::EndSession() {
 
 IqRequest* XmppSignalStrategy::CreateIqRequest() {
   return new XmppIqRequest(thread_->message_loop(), xmpp_client_);
+}
+
+bool XmppSignalStrategy::HandleStanza(const buzz::XmlElement* stanza) {
+  listener_->OnIncomingStanza(stanza);
+  return false;
 }
 
 void XmppSignalStrategy::OnConnectionStateChanged(
@@ -99,6 +123,7 @@ void XmppSignalStrategy::OnConnectionStateChanged(
   }
 }
 
+// static
 buzz::PreXmppAuth* XmppSignalStrategy::CreatePreXmppAuth(
     const buzz::XmppClientSettings& settings) {
   buzz::Jid jid(settings.user(), settings.host(), buzz::STR_EMPTY);

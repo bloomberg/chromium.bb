@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "remoting/jingle_glue/signal_strategy.h"
 #include "third_party/libjingle/source/talk/base/sigslot.h"
 
 namespace buzz {
@@ -33,13 +34,15 @@ class JavascriptIqRequest;
 //
 // TODO(sergeyu): This class should not depend on JavascriptIqRequest:
 // it should work with SignalStrategy instead.
-class JingleSignalingConnector : public sigslot::has_slots<> {
+class JingleSignalingConnector : public SignalStrategy::Listener,
+                                 public sigslot::has_slots<> {
  public:
-  JingleSignalingConnector(JavascriptIqRequest* request,
-                            cricket::SessionManager* session_manager);
+  JingleSignalingConnector(SignalStrategy* signal_strategy,
+                           cricket::SessionManager* session_manager);
   virtual ~JingleSignalingConnector();
 
-  void Run();
+  // SignalStrategy::Listener interface.
+  virtual void OnIncomingStanza(const buzz::XmlElement* stanza) OVERRIDE;
 
  private:
   void OnResponse(const buzz::XmlElement* stanza);
@@ -47,7 +50,7 @@ class JingleSignalingConnector : public sigslot::has_slots<> {
   void OnOutgoingMessage(cricket::SessionManager* manager,
                          const buzz::XmlElement* stanza);
 
-  scoped_ptr<JavascriptIqRequest> request_;
+  SignalStrategy* signal_strategy_;
   cricket::SessionManager* session_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(JingleSignalingConnector);

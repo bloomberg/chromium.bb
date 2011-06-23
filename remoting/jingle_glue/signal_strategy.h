@@ -9,6 +9,10 @@
 
 #include "base/basictypes.h"
 
+namespace buzz {
+class XmlElement;
+}  // namespace buzz
+
 namespace cricket {
 class SessionManager;
 }  // namespace cricket
@@ -33,9 +37,23 @@ class SignalStrategy {
     virtual void OnJidChange(const std::string& full_jid) = 0;
   };
 
+  class Listener {
+   public:
+    virtual void OnIncomingStanza(const buzz::XmlElement* stanza) = 0;
+  };
+
   SignalStrategy() {}
   virtual ~SignalStrategy() {}
   virtual void Init(StatusObserver* observer) = 0;
+
+  // Set a listener that can listen to all incoming messages. Doesn't
+  // take ownership of the |listener|. Can be called with |listener|
+  // set to NULL to unset current listener. It must be unset before
+  // object is destroyed.
+  virtual void SetListener(Listener* listener) = 0;
+
+  // Sends a raw XMPP stanza. Takes ownership of the |stanza|.
+  virtual void SendStanza(buzz::XmlElement* stanza) = 0;
 
   // TODO(sergeyu): Do these methods belong to this interface?
   virtual void StartSession(cricket::SessionManager* session_manager) = 0;

@@ -4,26 +4,35 @@
 
 #include "remoting/jingle_glue/javascript_signal_strategy.h"
 
+#include <algorithm>
+
+#include "base/logging.h"
 #include "remoting/jingle_glue/iq_request.h"
 #include "remoting/jingle_glue/jingle_signaling_connector.h"
 #include "remoting/jingle_glue/xmpp_proxy.h"
+#include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 
 namespace remoting {
 
 JavascriptSignalStrategy::JavascriptSignalStrategy(const std::string& your_jid)
-    : your_jid_(your_jid) {
+    : your_jid_(your_jid),
+      listener_(NULL) {
 }
 
 JavascriptSignalStrategy::~JavascriptSignalStrategy() {
+  jingle_signaling_connector_.reset();
+  DCHECK(listener_ == NULL);
 }
 
 void JavascriptSignalStrategy::AttachXmppProxy(
     scoped_refptr<XmppProxy> xmpp_proxy) {
   xmpp_proxy_ = xmpp_proxy;
-  xmpp_proxy_->AttachCallback(iq_registry_.AsWeakPtr());
+  xmpp_proxy_->AttachCallback(AsWeakPtr());
 }
 
 void JavascriptSignalStrategy::Init(StatusObserver* observer) {
+  DCHECK(CalledOnValidThread());
+
   // Blast through each state since for a JavascriptSignalStrategy, we're
   // already connected.
   //
@@ -35,22 +44,55 @@ void JavascriptSignalStrategy::Init(StatusObserver* observer) {
   observer->OnStateChange(StatusObserver::CONNECTED);
 }
 
+void JavascriptSignalStrategy::SetListener(Listener* listener) {
+  DCHECK(CalledOnValidThread());
+
+  // Don't overwrite an listener without explicitly going
+  // through "NULL" first.
+  DCHECK(listener_ == NULL || listener == NULL);
+  listener_ = listener;
+}
+
+void JavascriptSignalStrategy::SendStanza(buzz::XmlElement* stanza) {
+  DCHECK(CalledOnValidThread());
+
+  xmpp_proxy_->SendIq(stanza->Str());
+  delete stanza;
+}
+
 void JavascriptSignalStrategy::StartSession(
     cricket::SessionManager* session_manager) {
+  DCHECK(CalledOnValidThread());
+
   jingle_signaling_connector_.reset(
-      new JingleSignalingConnector(CreateIqRequest(), session_manager));
-  jingle_signaling_connector_->Run();
+      new JingleSignalingConnector(this, session_manager));
 }
 
 void JavascriptSignalStrategy::EndSession() {
+  DCHECK(CalledOnValidThread());
+
   if (xmpp_proxy_) {
     xmpp_proxy_->DetachCallback();
   }
   xmpp_proxy_ = NULL;
 }
 
-JavascriptIqRequest* JavascriptSignalStrategy::CreateIqRequest() {
-  return new JavascriptIqRequest(&iq_registry_, xmpp_proxy_);
+IqRequest* JavascriptSignalStrategy::CreateIqRequest() {
+  DCHECK(CalledOnValidThread());
+
+  return new JavascriptIqRequest(this, &iq_registry_);
+}
+
+void JavascriptSignalStrategy::OnIq(const std::string& stanza_str) {
+  scoped_ptr<buzz::XmlElement> stanza(buzz::XmlElement::ForStr(stanza_str));
+
+  if (!stanza.get()) {
+    LOG(WARNING) << "Malformed XMPP stanza received: " << stanza_str;
+    return;
+  }
+
+  listener_->OnIncomingStanza(stanza.get());
+  iq_registry_.OnIncomingStanza(stanza.get());
 }
 
 }  // namespace remoting

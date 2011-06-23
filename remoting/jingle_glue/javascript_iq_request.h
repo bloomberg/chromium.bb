@@ -10,13 +10,13 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "remoting/jingle_glue/iq_request.h"
-#include "remoting/jingle_glue/xmpp_proxy.h"
 
 namespace remoting {
 
 class JavascriptIqRequest;
+class SignalStrategy;
 
-class JavascriptIqRegistry : public XmppProxy::ResponseCallback {
+class JavascriptIqRegistry {
  public:
   JavascriptIqRegistry();
   virtual ~JavascriptIqRegistry();
@@ -35,11 +35,11 @@ class JavascriptIqRegistry : public XmppProxy::ResponseCallback {
 
   void SetDefaultHandler(JavascriptIqRequest* default_request);
 
+  // Called by JavascriptSignalStrategy.
+  void OnIncomingStanza(const buzz::XmlElement* stanza);
+
  private:
   typedef std::map<std::string, JavascriptIqRequest*> IqRequestMap;
-
-  // XmppProxy::ResponseCallback interface.
-  virtual void OnIq(const std::string& response_xml);
 
   IqRequestMap requests_;
   int current_id_;
@@ -51,33 +51,9 @@ class JavascriptIqRegistry : public XmppProxy::ResponseCallback {
 // This call must only be used on the thread it was created on.
 class JavascriptIqRequest : public IqRequest {
  public:
-  JavascriptIqRequest(JavascriptIqRegistry* registry,
-                      scoped_refptr<XmppProxy> xmpp_proxy);
+  JavascriptIqRequest(SignalStrategy* signal_strategy,
+                      JavascriptIqRegistry* registry);
   virtual ~JavascriptIqRequest();
-
-  // Similar to SendIq(), but has 3 major differences:
-  //
-  //   (1) It does absoluately no error checking. Caller is responsible for
-  //       validity.
-  //   (2) It doesn't add an Iq envelope. Caller is again responsible.
-  //   (3) BecomeDefaultHandler() must have been called.
-  //
-  // TODO(ajwong): We need to rationalize the semantics of these two
-  // APIs. SendRawIq() is a hack for JingleSignalingConnector which
-  // uses a different memory management convention.
-  void SendRawIq(buzz::XmlElement* stanza);
-
-  // This function is a hack to support SessionStartRequest. It registers the
-  // current JavascriptIqRequest instance to be the single passthrough filter
-  // for the associated JavascriptIqRegistry.  What this means is that any IQ
-  // packet that does not match a previous respone packet will be funneled
-  // through to this JavascriptIqRegistry instance (basically a default
-  // handler).  It also means that the registry will not be tracking any of the
-  // packets sent from this JavascriptIqRegistry instance.
-  //
-  // TODO(ajwong): We need to take a high-level look at IqRequest to understand
-  // how to make this API cleaner.
-  void BecomeDefaultHandler();
 
   //  IqRequest interface.
   virtual void SendIq(const std::string& type, const std::string& addressee,
@@ -88,9 +64,8 @@ class JavascriptIqRequest : public IqRequest {
   friend class JavascriptIqRegistry;
 
   scoped_ptr<ReplyCallback> callback_;
-  scoped_refptr<XmppProxy> xmpp_proxy_;
+  SignalStrategy* signal_strategy_;
   JavascriptIqRegistry* registry_;
-  bool is_default_handler_;
 
   FRIEND_TEST_ALL_PREFIXES(IqRequestTest, MakeIqStanza);
 };
