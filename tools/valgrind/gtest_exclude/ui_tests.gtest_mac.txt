@@ -234,3 +234,7 @@ AutomatedUITestBase.OpenNewTab
 PPAPITest.ImageData
 OutOfProcessPPAPITest.Buffer
 WorkerFileSystemTest.FileWriterTruncateExtend
+AutomationProxyTest.GetBrowserWindowCount
+AutomationProxySnapshotTest.LargeSnapshot
+PPAPITest.VarDeprecated
+WorkerFileSystemTest.FileFromFileEntrySync
