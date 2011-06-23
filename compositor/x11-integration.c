@@ -91,7 +91,7 @@ wlsc_xserver_handle_event(int listen_fd, uint32_t mask, void *data)
 			  "/usr/bin/Xorg",
 			  display,
 			  "-wayland",
-			  // "-rootless",
+			  "-rootless",
 			  "-retro",
 			  "-logfile", "/tmp/foo",
 			  "-terminate",
