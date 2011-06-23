@@ -17,6 +17,17 @@ import chromite.buildbot.cbuildbot as cbuildbot
 import chromite.buildbot.cbuildbot_config as config
 import chromite.lib.cros_build_lib as cros_lib
 
+
+class TestExitedException(Exception):
+  """Exception used by sys.exit() mock to halt execution."""
+  pass
+
+
+class TestFailedException(Exception):
+  """Exception used by mocks to halt execution and indicate failure."""
+  pass
+
+
 class RunBuildStagesTest(mox.MoxTestBase):
 
   def setUp(self):
@@ -167,6 +178,83 @@ class InterfaceTest(mox.MoxTestBase):
     self.mox.ReplayAll()
     self.assertRaises(Exception, cbuildbot._ValidateClobber, buildroot, False)
     self.mox.VerifyAll()
+
+
+class FullInterfaceTest(unittest.TestCase):
+  """Tests that run the cbuildbot.main() function directly.
+
+  Don't inherit from MoxTestBase since it runs VerifyAll() at the end of every
+  test which we don't want.
+  """
+  def setUp(self):
+    self.mox = mox.Mox()
+
+    # Create the parser before we stub out os.path.exists() - which the parser
+    # creation code actually uses.
+    parser = cbuildbot._CreateParser()
+
+    # Stub out all relevant methods regardless of whether they are called in the
+    # specific test case.  We can do this because we don't run VerifyAll() at
+    # the end of every test.
+    self.mox.StubOutWithMock(parser, 'error')
+    self.mox.StubOutWithMock(cbuildbot.os.path, 'exists')
+    self.mox.StubOutWithMock(cbuildbot, '_CreateParser')
+    self.mox.StubOutWithMock(sys, 'exit')
+    self.mox.StubOutWithMock(cbuildbot, '_GetInput')
+    self.mox.StubOutWithMock(cros_lib, 'FindRepoDir')
+    self.mox.StubOutWithMock(cbuildbot, 'RunBuildStages')
+
+    parser.error(mox.IgnoreArg()).InAnyOrder().AndRaise(TestExitedException())
+    cbuildbot._CreateParser().InAnyOrder().AndReturn(parser)
+    sys.exit(mox.IgnoreArg()).InAnyOrder().AndRaise(TestExitedException())
+    cros_lib.FindRepoDir().InAnyOrder().AndReturn('/b/test_build1/.repo')
+    cbuildbot.RunBuildStages(mox.IgnoreArg(), mox.IgnoreArg(),
+                             mox.IgnoreArg()).InAnyOrder().AndReturn(True)
+
+  def tearDown(self):
+    self.mox.UnsetStubs()
+
+  def testDontInferBuildrootForBuildBotRuns(self):
+    """Test that we don't infer buildroot if run with --buildbot option."""
+    self.mox.ReplayAll()
+    self.assertRaises(TestExitedException, cbuildbot.main,
+                      ['--buildbot', 'x86-generic-pre-flight-queue'])
+
+  def testInferExternalBuildRoot(self):
+    """Test that we default to correct buildroot for external config."""
+    os.path.exists('/b/test_build1/trybot').InAnyOrder().AndReturn(False)
+    cbuildbot._GetInput(mox.IgnoreArg()).InAnyOrder().AndReturn('yes')
+
+    self.mox.ReplayAll()
+    cbuildbot.main(['x86-generic-pre-flight-queue'])
+
+  def testInferInternalBuildRoot(self):
+    """Test that we default to correct buildroot for internal config."""
+    (os.path.exists('/b/test_build1/trybot-internal').InAnyOrder().
+        AndReturn(False))
+    cbuildbot._GetInput(mox.IgnoreArg()).InAnyOrder().AndReturn('yes')
+
+    self.mox.ReplayAll()
+    cbuildbot.main(['x86-mario-pre-flight-queue'])
+
+  def testInferBuildRootPromptNo(self):
+    """Test that a 'no' answer on the prompt halts execution."""
+    os.path.exists('/b/test_build1/trybot').InAnyOrder().AndReturn(False)
+    cbuildbot._GetInput(mox.IgnoreArg()).InAnyOrder().AndReturn('no')
+
+    self.mox.ReplayAll()
+    self.assertRaises(TestExitedException, cbuildbot.main,
+                      ['x86-generic-pre-flight-queue'])
+
+  def testInferBuildRootExists(self):
+    """Test that we don't prompt the user if the buildroot already exists."""
+    os.path.exists('/b/test_build1/trybot').InAnyOrder().AndReturn(False)
+    (cbuildbot._GetInput(mox.IgnoreArg()).InAnyOrder()
+        .AndRaise(TestFailedException()))
+
+    self.mox.ReplayAll()
+    self.assertRaises(TestFailedException, cbuildbot.main,
+                      ['x86-generic-pre-flight-queue'])
 
 
 if __name__ == '__main__':

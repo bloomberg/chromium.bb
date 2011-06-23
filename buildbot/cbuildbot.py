@@ -25,6 +25,10 @@ from chromite.buildbot import cbuildbot_stages as stages
 from chromite.lib import cros_build_lib as cros_lib
 
 
+_DEFAULT_EXT_BUILDROOT = 'trybot'
+_DEFAULT_INT_BUILDROOT = 'trybot-internal'
+
+
 def _PrintValidConfigs():
   """Print a list of valid buildbot configs."""
   config_names = cbuildbot_config.config.keys()
@@ -180,6 +184,9 @@ def RunBuildStages(bot_id, options, build_config):
   return stages.Results.Success()
 
 
+# Input validation functions
+
+
 def _GetInput(prompt):
   """Helper function that makes testing easier."""
   return raw_input(prompt)
@@ -203,6 +210,38 @@ def _ValidateClobber(buildroot, buildbot):
     response = _GetInput(prompt).lower()
     if response != 'yes':
       sys.exit(0)
+
+
+def _ConfirmBuildRoot(buildroot):
+  """Make sure the user wants to use inferred buildroot."""
+  cros_lib.Warning('Using default directory %s as buildroot' % buildroot)
+  prompt = ('\nDo you want to continue (yes/NO)? ')
+  response = _GetInput(prompt).lower()
+  if response != 'yes':
+    print('Please specify a buildroot with the --buildroot option.')
+    sys.exit(0)
+
+
+def _DetermineDefaultBuildRoot(git_url):
+  """Default buildroot to a top-level directory in current source checkout.
+
+  We separate the buildroot for external and internal configurations.
+  """
+  repo_dir = cros_lib.FindRepoDir()
+  if not repo_dir:
+    cros_lib.Die('Could not find root of local checkout.  Please specify'
+                 'using --buildroot option.')
+
+  srcroot = os.path.realpath(os.path.dirname(repo_dir))
+  if git_url == cbuildbot_config.MANIFEST_INT_URL:
+    buildroot = os.path.join(srcroot, _DEFAULT_INT_BUILDROOT)
+  else:
+    buildroot = os.path.join(srcroot, _DEFAULT_EXT_BUILDROOT)
+
+  return buildroot
+
+
+# Parser related functions
 
 
 def _CheckPatches(option, opt_str, value, parser):
@@ -246,7 +285,9 @@ def _CreateParser():
   parser.add_option('-r', '--buildroot', action='callback', dest='buildroot',
                     type='string', callback=_CheckBuildRootOption,
                     help=('Root directory where source is checked out to, and '
-                         'where the build occurs'))
+                          'where the build occurs. For external build configs, '
+                          "defaults to 'trybot' directory at top level of your "
+                          'repo-managed checkout.'))
   parser.add_option('--chrome_rev', default=None, type='string',
                     action='callback', dest='chrome_rev',
                     callback=_CheckChromeRevOption,
@@ -323,9 +364,12 @@ def _CreateParser():
   return parser
 
 
-def main():
+def main(argv=None):
+  if not argv:
+    argv = sys.argv[1:]
+
   parser = _CreateParser()
-  (options, args) = parser.parse_args()
+  (options, args) = parser.parse_args(argv)
 
   if options.list:
     _PrintValidConfigs()
@@ -345,7 +389,12 @@ def main():
     sys.exit(0)
 
   if not options.buildroot:
-    cros_lib.Die('Please specify a buildroot with the --buildroot option.')
+    if options.buildbot:
+      parser.error('Please specify a buildroot with the --buildroot option.')
+    else:
+      options.buildroot = _DetermineDefaultBuildRoot(build_config['git_url'])
+      if not os.path.exists(options.buildroot):
+        _ConfirmBuildRoot(options.buildroot)
 
   if options.clobber:
     _ValidateClobber(options.buildroot, options.buildbot)
@@ -355,4 +404,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+  main()
