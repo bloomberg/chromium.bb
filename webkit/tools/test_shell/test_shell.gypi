@@ -439,7 +439,6 @@
         '../../plugins/ppapi/callbacks_unittest.cc',
         '../../plugins/ppapi/mock_plugin_delegate.cc',
         '../../plugins/ppapi/mock_plugin_delegate.h',
-        '../../plugins/ppapi/mock_resource.cc',
         '../../plugins/ppapi/mock_resource.h',
         '../../plugins/ppapi/ppapi_unittest.cc',
         '../../plugins/ppapi/ppapi_unittest.h',

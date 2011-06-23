@@ -101,6 +101,8 @@
         'thunk/ppb_layer_compositor_api.h',
         'thunk/ppb_layer_compositor_thunk.cc',
         'thunk/ppb_pdf_api.h',
+        'thunk/ppb_scrollbar_api.h',
+        'thunk/ppb_scrollbar_thunk.cc',
         'thunk/ppb_surface_3d_api.h',
         'thunk/ppb_surface_3d_thunk.cc',
         'thunk/ppb_transport_api.h',

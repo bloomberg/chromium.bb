@@ -22,11 +22,12 @@ typedef enum {
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_ScrollBy_Dev, 4);
 
 #define PPB_SCROLLBAR_DEV_INTERFACE_0_3 "PPB_Scrollbar(Dev);0.3"
+#define PPB_SCROLLBAR_DEV_INTERFACE_0_4 "PPB_Scrollbar(Dev);0.4"
 #define PPB_SCROLLBAR_DEV_INTERFACE PPB_SCROLLBAR_DEV_INTERFACE_0_3
 
 // The interface for a scrollbar.  A scrollbar is a widget, so the functions
 // in PPB_Widget can also be used with scrollbar objects.
-struct PPB_Scrollbar_Dev {
+struct PPB_Scrollbar_0_4_Dev {
   // Create a new scrollbar.  Returns 0 if the instance is invalid.
   PP_Resource (*Create)(PP_Instance instance,
                         PP_Bool vertical);
@@ -36,7 +37,7 @@ struct PPB_Scrollbar_Dev {
   PP_Bool (*IsScrollbar)(PP_Resource resource);
 
   // Gets the thickness of a scrollbar.
-  uint32_t (*GetThickness)();
+  uint32_t (*GetThickness)(PP_Resource resource);
 
   // Get/set the value of the scrollbar.
   uint32_t (*GetValue)(PP_Resource scrollbar);
@@ -62,6 +63,27 @@ struct PPB_Scrollbar_Dev {
                    PP_ScrollBy_Dev unit,
                    int32_t multiplier);
 };
+
+// Old version with no resource argument to GetThickness.
+struct PPB_Scrollbar_Dev {
+  PP_Resource (*Create)(PP_Instance instance,
+                        PP_Bool vertical);
+  PP_Bool (*IsScrollbar)(PP_Resource resource);
+  uint32_t (*GetThickness)();
+  uint32_t (*GetValue)(PP_Resource scrollbar);
+  void (*SetValue)(PP_Resource scrollbar,
+                   uint32_t value);
+  void (*SetDocumentSize)(PP_Resource scrollbar,
+                          uint32_t size);
+  void (*SetTickMarks)(PP_Resource scrollbar,
+                       const struct PP_Rect* tick_marks,
+                       uint32_t count);
+  void (*ScrollBy)(PP_Resource scrollbar,
+                   PP_ScrollBy_Dev unit,
+                   int32_t multiplier);
+};
+
+typedef struct PPB_Scrollbar_Dev PPB_Scrollbar_0_3_Dev;
 
 #endif  /* PPAPI_C_DEV_PPB_SCROLLBAR_DEV_H_ */
 

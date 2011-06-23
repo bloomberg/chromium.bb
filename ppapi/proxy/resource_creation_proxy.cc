@@ -191,6 +191,12 @@ PP_Resource ResourceCreationProxy::CreateGraphics3D(
   return 0;
 }
 
+PP_Resource ResourceCreationProxy::CreateScrollbar(PP_Instance instance,
+                                                   PP_Bool vertical) {
+  NOTIMPLEMENTED();  // Not proxied yet.
+  return 0;
+}
+
 PP_Resource ResourceCreationProxy::CreateSurface3D(
     PP_Instance instance,
     PP_Config3D_Dev config,

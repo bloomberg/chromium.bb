@@ -21,6 +21,7 @@
 #include "webkit/plugins/ppapi/ppb_graphics_2d_impl.h"
 #include "webkit/plugins/ppapi/ppb_graphics_3d_impl.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
+#include "webkit/plugins/ppapi/ppb_scrollbar_impl.h"
 #include "webkit/plugins/ppapi/ppb_surface_3d_impl.h"
 #include "webkit/plugins/ppapi/ppb_transport_impl.h"
 #include "webkit/plugins/ppapi/ppb_url_loader_impl.h"
@@ -180,6 +181,11 @@ PP_Resource ResourceCreationImpl::CreateImageData(PP_Instance pp_instance,
                                                   const PP_Size& size,
                                                   PP_Bool init_to_zero) {
   return PPB_ImageData_Impl::Create(instance_, format, size, init_to_zero);
+}
+
+PP_Resource ResourceCreationImpl::CreateScrollbar(PP_Instance instance,
+                                                  PP_Bool vertical) {
+  return ReturnResource(new PPB_Scrollbar_Impl(instance_, PP_ToBool(vertical)));
 }
 
 PP_Resource ResourceCreationImpl::CreateSurface3D(

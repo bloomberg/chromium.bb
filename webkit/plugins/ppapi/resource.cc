@@ -46,11 +46,6 @@ void Resource::LastPluginRefWasDeleted() {
   resource_id_ = 0;
 }
 
-#define DEFINE_TYPE_GETTER(RESOURCE)            \
-  RESOURCE* Resource::As##RESOURCE() { return NULL; }
-FOR_ALL_RESOURCES(DEFINE_TYPE_GETTER)
-#undef DEFINE_TYPE_GETTER
-
 }  // namespace ppapi
 }  // namespace webkit
 

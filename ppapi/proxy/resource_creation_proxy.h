@@ -77,6 +77,8 @@ class ResourceCreationProxy : public ::ppapi::FunctionGroupBase,
                                       PP_ImageDataFormat format,
                                       const PP_Size& size,
                                       PP_Bool init_to_zero) OVERRIDE;
+  virtual PP_Resource CreateScrollbar(PP_Instance instance,
+                                      PP_Bool vertical) OVERRIDE;
   virtual PP_Resource CreateSurface3D(PP_Instance instance,
                                       PP_Config3D_Dev config,
                                       const int32_t* attrib_list) OVERRIDE;
