@@ -133,7 +133,7 @@ void AccessibilityEventRouterViews::DispatchAccessibilityNotification(
   if (!profile)
     profile = most_recent_profile_;
   if (!profile)
-    profile = g_browser_process->profile_manager()->GetDefaultProfile();
+    profile = g_browser_process->profile_manager()->GetLastUsedProfile();
   if (!profile) {
     NOTREACHED();
     return;
