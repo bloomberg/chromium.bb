@@ -97,10 +97,7 @@
  * "local exec" TLS model ("initial exec" is similar).  The generated
  * code calls __aeabi_read_tp() to locate the TLS area, then uses
  * positive offsets from this address.  Our implementation of this
- * function computes r9[32:12]; the low bits are reserved for the
- * trusted runtime's use.  The padding is distributed so that the header
- * falls on a 4KB page boundary, since with any finer alignment, there
- * aren't enough low bits in r9 to avoid collisions.
+ * function just fetches r9.
  *
  *      mov     r1, #192          @ offset of symbol from $tp, i.e. var(tpoff)
  *      bl      __aeabi_read_tp
@@ -256,7 +253,7 @@ size_t __nacl_thread_stack_padding(void) {
  *              +--- $tp points here
  *
  * In ARM EABI, __aeabi_read_tp() gets $tp address.
- * In NaCl, this is defined as register r9 with the low 12 bits masked off.
+ * In NaCl, this is defined as register r9.
  */
 
 NACL_UNTRUSTED_INLINE
@@ -270,12 +267,11 @@ ptrdiff_t __nacl_tp_tdb_offset(size_t tdb_size) {
 }
 
 /*
- * The $tp address must be aligned to reserve the low 12 bits of the
- * register for trusted code's use.
+ * No special alignment is required by the ABI.
  */
 NACL_UNTRUSTED_INLINE
 size_t __nacl_tp_alignment(void) {
-  return 1 << 12;
+  return 4;
 }
 
 NACL_UNTRUSTED_INLINE

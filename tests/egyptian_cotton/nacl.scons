@@ -1,7 +1,7 @@
 # -*- python -*-
-# Copyright 2010 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 import os
 
@@ -44,34 +44,35 @@ large_stack_args = ['-s', '0x400000', '-n', '4095', '-f' ]
 #
 # WARNING: Magic numbers ahead!
 #
-# The high_thread_count_args is used to stress test the thread library
-# and the service runtime by having the test binary
-# (egyptian_cotton.nexe) allocate a large number of concurrent
-# threads.  This is done to ensure that there are no sudden decrease
-# in the number of threads that can be created.  While limits imposed
-# by our threading design -- 4096 for arm, 8192 for x86-32, and
-# essentially unlimited for x86-64 (though there's a statically sized
-# table involved, so we chose to limit to 8192 as well) -- are of our
-# design and thus easy to determine, the underlying host operating
-# system also imposes limits on the number of real underlying host OS
-# threads that can be created.  Thus, the magic numbers below are
-# *empirically* determined.  This is somewhat unfortunate, since it'd
-# be nice to have a better understanding of the source of these
-# limits, and it'd be especially nice if, for example, they could be
-# lifted by some simple configuration parameter (that do not require
-# administrative rights).  Nonetheless, we use the empirically
-# determined values to detect changes that might further reduce the
-# thread limit in practice.  The limits were obtained by simply
-# running egyptian_cotton.nexe manually and seeing where it fails, and
-# subtracting a few, so that minor, inconsequential and negligible
-# changes to the runtime libraries etc won't require updating this
-# test.
+# The high_thread_count_args is used to stress test the thread library and
+# the service runtime by having the test binary (egyptian_cotton.nexe)
+# allocate a large number of concurrent threads.  This is done to ensure
+# that there are no sudden decrease in the number of threads that can be
+# created.  While limits imposed by our threading design -- 8192 for
+# x86-32, and essentially unlimited for x86-64 and arm (though there's a
+# statically sized table involved, so we chose to limit to 8192 as well) --
+# are of our design and thus easy to determine, the underlying host
+# operating system also imposes limits on the number of real underlying
+# host OS threads that can be created.  Thus, the magic numbers below are
+# *empirically* determined.  This is somewhat unfortunate, since it'd be
+# nice to have a better understanding of the source of these limits, and
+# it'd be especially nice if, for example, they could be lifted by some
+# simple configuration parameter (that do not require administrative
+# rights).  Nonetheless, we use the empirically determined values to detect
+# changes that might further reduce the thread limit in practice.  The
+# limits were obtained by simply running egyptian_cotton.nexe manually and
+# seeing where it fails, and subtracting a few, so that minor,
+# inconsequential and negligible changes to the runtime libraries etc won't
+# require updating this test.
 #
 
 if env.Bit('target_arm'):
-  # so far, only linux.  and the limit that we hit is one that is
-  # imposed by our threading implementation, not by the OS.
-  high_thread_count_nthreads = 4095
+  # so far, only linux.
+  # The arm-hw-bot was actually clocked at successfully doing 8191,
+  # though it gets pretty resource-starved near the top and might
+  # crash if anything else is being done on the bot.
+  # Let's limit it to 8180 since that's good enough for x86 (below).
+  high_thread_count_nthreads = 8180
   platform_limits_known = True
 elif env.Bit('target_x86'):
   trusted_env = env.get('TRUSTED_ENV')

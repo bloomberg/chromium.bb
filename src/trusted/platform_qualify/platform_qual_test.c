@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -20,6 +20,10 @@
 #include "native_client/src/trusted/platform_qualify/nacl_dep_qualify.h"
 #include "native_client/src/trusted/platform_qualify/nacl_os_qualify.h"
 #include "native_client/src/trusted/platform_qualify/vcpuid.h"
+
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
+#include "native_client/src/trusted/platform_qualify/arch/arm/nacl_arm_qualify.h"
+#endif
 
 int main() {
 
@@ -47,6 +51,11 @@ int main() {
 
   if (NaClCheckDEP() != 1) return -1;
   printf("DEP is either working or not required\n");
+
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
+  if (NaClQualifyReadTp() != 1) return -1;
+  printf("__aeabi_read_tp is safe\n");
+#endif
 
   printf("platform_qual_test: PASS\n");
   return 0;

@@ -54,14 +54,14 @@ void NaClTlsFree(struct NaClAppThread *natp);
  * Called in thread bootup code, to set TLS/TSD when the thread ID is not
  * saved in a reserved register (e.g., %gs in NaCl x86-32).
  *
- * No-op for x86-32 NaCl classic and ARM.
+ * No-op for x86-32 NaCl classic.
  */
 void NaClTlsSetIdx(uint32_t tls_idx);
 
 /*
  * Gets the current thread's index value as set by NaClTlsSetIdx().
- * Only implemented for x86-64, since this is the only sandbox where
- * we use the host OS's TLS facility.
+ * Only implemented for x86-64 and ARM, since these are the only sandboxes
+ * where we use the host OS's TLS facility.
  * Returns NACL_TLS_INDEX_INVALID if NaClTlsSetIdx() has not been
  * called on this thread.
  */

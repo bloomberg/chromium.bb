@@ -1,7 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #ifndef SERVICE_RUNTIME_ARCH_ARM_SEL_LDR_H__
@@ -13,7 +13,7 @@
 /* NOTE: we hope to unify this among archtectures */
 #define NACL_MAX_ADDR_BITS      30
 
-#define NACL_THREAD_MAX         (1 << NACL_PAGESHIFT)
+#define NACL_THREAD_MAX         8192  /* arbitrary, can be larger */
 
 #define NACL_NOOP_OPCODE        0xe1a00000  /* mov r0, r0 */
 #define NACL_HALT_OPCODE        0xe1266676  /* bkpt 6666 */

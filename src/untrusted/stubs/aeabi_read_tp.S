@@ -15,9 +15,7 @@
     .global __aeabi_read_tp
 
 __aeabi_read_tp:
-    /* the low order bits of r9 are for service runtime use only */
-    mov r0, r9, lsr #NACL_PAGESHIFT
-    lsl r0, #NACL_PAGESHIFT
+    mov r0, r9
 
     .align NACL_ARM_BUNDLE_SIZE_LOG
     bic lr, lr, #NACL_CONTROL_FLOW_MASK

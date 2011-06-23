@@ -1,7 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
@@ -30,18 +30,32 @@
 
 DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSeg):
 
+  /*
+   * Load the __thread variable's offset into r3.  We're quite sure that
+   * our offsets will be small and so this could fit into an immediate
+   * rather than using this load here.  But the only kind of TLS reloc
+   * available is the full-word one, not one that can go inside an
+   * immediate (and there's no assembly syntax to permit it either).
+   */
+  ldr  r3, .L.gNaClThreadIdx
+
   push {lr}
 
   /*
-   * TLS_IDX represents address of a TLS region and index in
-   * nacl_thread/nacl_user/nacl_sys arrays. The TLS region is paged aligned;
-   * therefore, we use the lowest 12 bits to store the thread index
+   * Fetch the thread-local variable holding the thread index.
+   * TODO(mcgrathr): On newer ARM chips, perhaps detectable by some #if
+   * (ones where -mtp=auto chooses -mtp=cp15), we could directly use:
+   *    mrc p15, 0, r0, c13, c0, 3
+   * instead of the call here.
+   *
+   * __aeabi_read_tp is not allowed to clobber any registers but r0.
+   * We're also sure that this call doesn't use the stack, which would
+   * be unsafe since it's the untrusted stack and could be clobbered
+   * by a racing thread to hijack us.  We verify that in the platform
+   * qualification tests, for paranoia's sake.
    */
-
-  /* r9 keep lower 12 bits =  TLS_IDX */
-  /* TODO(cbiffle): this maybe equivalent to ubfx r0, r9, #0, #NACL_PAGESHIFT */
-  mov r0, r9, lsl #(32 - NACL_PAGESHIFT)
-  lsr r0, #(32 - NACL_PAGESHIFT)
+  bl  __aeabi_read_tp
+  ldr  r0, [r0, r3]
 
   ldr  r1, =nacl_user
   ldr  r1, [r1, r0, lsl #2]
@@ -68,3 +82,6 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSeg):
 
   NACL_HALT
 
+  .balign 4
+.L.gNaClThreadIdx:
+  .word  gNaClThreadIdx(tpoff)

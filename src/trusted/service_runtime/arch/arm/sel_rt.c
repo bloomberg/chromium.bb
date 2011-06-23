@@ -1,7 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -23,12 +23,18 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
                           nacl_reg_t                prog_ctr,
                           nacl_reg_t                stack_ptr,
                           nacl_reg_t                tls_idx) {
+  /*
+   * This is set by NaClTlsAllocate before we get here, so don't wipe it.
+   */
+  uint32_t r9 = ntcp->r9;
+
   UNREFERENCED_PARAMETER(nap);
 
   memset((void *)ntcp, 0, sizeof(*ntcp));
   ntcp->stack_ptr = stack_ptr;
   ntcp->prog_ctr = prog_ctr;
-  NaClSetThreadCombinedDescriptor(ntcp, tls_idx);
+  ntcp->tls_idx = tls_idx;
+  ntcp->r9 = r9;
 
   NaClLog(4, "user.tls_idx: 0x%08"NACL_PRIxNACL_REG"\n", tls_idx);
   NaClLog(4, "user.stack_ptr: 0x%08"NACL_PRIxNACL_REG"\n", ntcp->stack_ptr);
