@@ -1618,10 +1618,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // Create the TranslateManager singleton.
   TranslateManager* translate_manager = TranslateManager::GetInstance();
   DCHECK(translate_manager != NULL);
-  // If we're running tests (ui_task is non-null), then we don't want to
-  // call FetchLanguageListFromTranslateServer
-  if (parameters.ui_task == NULL && translate_manager != NULL)
-    translate_manager->FetchLanguageListFromTranslateServer(user_prefs);
 
 #if defined(OS_MACOSX)
   if (!parsed_command_line.HasSwitch(switches::kNoFirstRun)) {
@@ -1917,6 +1913,11 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
       UMA_HISTOGRAM_MEDIUM_TIMES("Startup.BrowserOpenTabs",
                                  base::TimeTicks::Now() - browser_open_start);
+
+      // If we're running tests (ui_task is non-null), then we don't want to
+      // call FetchLanguageListFromTranslateServer
+      if (parameters.ui_task == NULL && translate_manager != NULL)
+        translate_manager->FetchLanguageListFromTranslateServer(user_prefs);
 
       RunUIMessageLoop(browser_process.get());
     }
