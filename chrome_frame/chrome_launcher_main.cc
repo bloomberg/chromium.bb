@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,11 +11,10 @@
 #include "chrome_frame/update_launcher.h"
 
 int APIENTRY wWinMain(HINSTANCE, HINSTANCE, wchar_t*, int) {
-  const wchar_t* cmd_line = ::GetCommandLine();
-
   google_breakpad::scoped_ptr<google_breakpad::ExceptionHandler> breakpad(
-      InitializeCrashReporting(cmd_line));
+      InitializeCrashReporting(NORMAL));
 
+  const wchar_t* cmd_line = ::GetCommandLine();
   std::wstring update_command(
       update_launcher::GetUpdateCommandFromArguments(cmd_line));
 

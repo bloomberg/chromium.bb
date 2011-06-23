@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,11 +15,12 @@ extern const wchar_t kChromePipeName[];
 extern const wchar_t kGoogleUpdatePipeName[];
 extern const wchar_t kSystemPrincipalSid[];
 
-// Assume this implies headless mode and use kChromePipeName if it shows
-// up in the command line.
-extern const wchar_t kFullMemoryCrashReport[];
-
 extern const MINIDUMP_TYPE kLargerDumpType;
+
+enum CrashReportingMode {
+  HEADLESS,  // Used for testing, uses crash_service.exe for dumps.
+  NORMAL     // Regular mode, uses GoogleCrashService.exe for dumps.
+};
 
 // Returns a pointer to a static instance of a CustomClientInfo structure
 // containing Chrome Frame specific data.
@@ -29,6 +30,6 @@ google_breakpad::CustomClientInfo* GetCustomInfo();
 // constructed ExceptionHandler object. It is the responsibility of the caller
 // to delete this object which will shut down the crash reporting machinery.
 google_breakpad::ExceptionHandler* InitializeCrashReporting(
-    const wchar_t* cmd_line);
+    CrashReportingMode mode);
 
 #endif  // CHROME_FRAME_CRASH_SERVER_INIT_H_

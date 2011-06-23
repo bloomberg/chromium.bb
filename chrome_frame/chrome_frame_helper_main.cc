@@ -223,9 +223,8 @@ void WaitCallback() {
 }
 
 int APIENTRY wWinMain(HINSTANCE hinstance, HINSTANCE, wchar_t*, int show_cmd) {
-  const wchar_t* cmd_line = ::GetCommandLine();
   google_breakpad::scoped_ptr<google_breakpad::ExceptionHandler> breakpad(
-      InitializeCrashReporting(cmd_line));
+    InitializeCrashReporting(NORMAL));
 
   if (IsSystemLevelChromeFrameInstalled()) {
     // If we're running at startup, check for system-level Chrome Frame

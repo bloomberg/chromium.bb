@@ -260,6 +260,7 @@
       ],
       'include_dirs': [
         '<(DEPTH)/third_party/wtl/include',
+        '<(DEPTH)/breakpad/src',
       ],
       'resource_include_dirs': [
         '<(INTERMEDIATE_DIR)',
@@ -396,6 +397,9 @@
         'chrome_frame_ie',
         'chrome_tab_idl',
         'npchrome_frame',
+      ],
+      'include_dirs': [
+        '<(DEPTH)/breakpad/src',
       ],
       'sources': [
         '../net/url_request/url_request_unittest.cc',
@@ -569,6 +573,7 @@
       ],
       'include_dirs': [
         '<(DEPTH)/third_party/wtl/include',
+        '<(DEPTH)/breakpad/src',
         # To allow including "chrome_tab.h"
         '<(INTERMEDIATE_DIR)',
       ],
@@ -644,7 +649,6 @@
     {
       'target_name': 'chrome_frame_utils',
        # The intent is that shared util code can be built into a separate lib.
-       # Currently on the resource loading code is here.
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base_i18n',
