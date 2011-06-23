@@ -795,12 +795,6 @@ wlsc_output_repaint(struct wlsc_output *output)
 			glClear(GL_COLOR_BUFFER_BIT);
 		wlsc_surface_draw(es, output, &total_damage);
 	} else {
-		if (output->background)
-			wlsc_surface_draw(output->background,
-					  output, &total_damage);
-		else
-			fade_output(output, 1.0, &total_damage);
-
 		glUseProgram(ec->texture_shader.program);
 		wl_list_for_each_reverse(es, &ec->surface_list, link) {
 			if (ec->overlay == es)
@@ -1737,6 +1731,10 @@ wlsc_output_init(struct wlsc_output *output, struct wlsc_compositor *c,
 
 	output->background =
 		background_create(output, option_background);
+ 
+	if (output->background != NULL)
+		wl_list_insert(c->surface_list.prev,
+			       &output->background->link);
 
 	output->flags = flags;
 	wlsc_output_move(output, x, y);
