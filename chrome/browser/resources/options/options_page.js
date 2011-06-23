@@ -699,6 +699,13 @@ cr.define('options', function() {
     if (!topPage || topPage.isOverlay || !topPage.parentPage)
       return;
 
+    // Don't close subpages if a user is clicking in a select element.
+    // This is necessary because WebKit sends click events with strange
+    // coordinates when a user selects a new entry in a select element.
+    // See: http://crbug.com/87199
+    if (event.srcElement.nodeName == 'SELECT')
+      return;
+
     // Do nothing if the client coordinates are not within the source element.
     // This occurs if the user toggles a checkbox by pressing spacebar.
     // This is a workaround to prevent keyboard events from closing the window.
