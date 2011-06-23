@@ -32,6 +32,8 @@
 #include "native_client/src/trusted/plugin/srt_socket.h"
 #include "native_client/src/trusted/plugin/utility.h"
 
+#include "native_client/src/trusted/weak_ref/call_on_main_thread.h"
+
 #include "native_client/src/trusted/service_runtime/nacl_error_code.h"
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_imc_api.h"
 
@@ -55,26 +57,20 @@ struct LogToJavaScriptConsoleResource {
 };
 
 // Must be called on the main thread.
-void LogToJavaScriptConsole(nacl::WeakRef<LogToJavaScriptConsoleResource>* wr,
+void LogToJavaScriptConsole(LogToJavaScriptConsoleResource* p,
                             int32_t err) {
   UNREFERENCED_PARAMETER(err);
-  nacl::scoped_ptr<LogToJavaScriptConsoleResource> p;
-  wr->ReleaseAndUnref(&p);
-  if (p == NULL) {
-    NaClLog(1, "LogToJavaScriptConsole: Weak ref died\n");
-    return;
-  }
-  NaClLog(1, "LogToJavaScriptConsole: Weak ref okay: %p\n",
-          reinterpret_cast<void*>(p.get()));
   p->plugin->browser_interface()->AddToConsole(p->plugin->instance_id(),
                                                p->message);
 }
 
 void PluginReverseInterface::Log(nacl::string message) {
-  (void) WeakRefCompletionCallback(anchor_, 0,
-                                   LogToJavaScriptConsole,
-                                   new LogToJavaScriptConsoleResource(
-                                       message, plugin_));
+  (void) plugin::WeakRefCallOnMainThread(
+      anchor_,
+      0,  /* delay in ms */
+      LogToJavaScriptConsole,
+      new LogToJavaScriptConsoleResource(
+          message, plugin_));
 }
 
 ServiceRuntime::ServiceRuntime(Plugin* plugin)

@@ -18,11 +18,6 @@
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/weak_ref/weak_ref.h"
 
-#include "ppapi/c/pp_errors.h"  // for PP_OK
-#include "ppapi/cpp/completion_callback.h"  // for pp::CompletionCallback
-#include "ppapi/cpp/core.h"  // for pp::
-#include "ppapi/cpp/module.h"  // for pp::Module
-
 namespace nacl {
 class DescWrapper;
 struct SelLdrLauncher;
@@ -37,27 +32,6 @@ class SocketAddress;
 class SrtSocket;
 class ScriptableHandle;
 class ServiceRuntime;
-
-// a typesafe utility to schedule a completion callback using weak
-// references
-template <typename R> bool WeakRefCompletionCallback(
-    nacl::WeakRefAnchor* anchor,
-    int32_t delay_in_milliseconds,
-    void callback_fn(nacl::WeakRef<R>* weak_data, int32_t err),
-    R* raw_data) {
-  nacl::WeakRef<R>* wp = anchor->MakeWeakRef<R>(raw_data);
-  if (wp == NULL) {
-    return false;
-  }
-  pp::CompletionCallback cc(reinterpret_cast<void (*)(void*, int32_t)>(
-                                callback_fn),
-                            reinterpret_cast<void*>(wp));
-  pp::Module::Get()->core()->CallOnMainThread(
-      delay_in_milliseconds,
-      cc,
-      PP_OK);
-  return true;
-}
 
 class PluginReverseInterface: public nacl::ReverseInterface {
  public:

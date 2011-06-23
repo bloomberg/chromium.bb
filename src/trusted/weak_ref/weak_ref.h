@@ -28,6 +28,9 @@
 // In the normal execution, the callback data is present, and
 // ownership is released to the callback function.
 
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_WEAK_REF_WEAK_REF_H_
+#define NATIVE_CLIENT_SRC_TRUSTED_WEAK_REF_WEAK_REF_H_
+
 #include <set>
 
 #include "native_client/src/include/portability.h"
@@ -206,3 +209,5 @@ class WeakRef : public AnchoredResource {
 };
 
 }  // namespace nacl
+
+#endif
