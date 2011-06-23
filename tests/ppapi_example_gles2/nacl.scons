@@ -29,4 +29,7 @@ test = env.PPAPIBrowserTester('ppapi_example_gles2_test.out',
 env.AddNodeToTestSuite(test,
                        ['chrome_browser_tests'],
                        'run_ppapi_example_gles2_test',
-                       is_broken=env.PPAPIBrowserTesterIsBroken())
+                       # TODO(cstefansen): When fixed set to
+                       # env.PPAPIBrowserTesterIsBroken().
+                       # code.google.com/p/nativeclient/issues/detail?id=1936
+                       is_broken=True)
