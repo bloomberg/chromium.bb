@@ -17,8 +17,7 @@ const std::vector<unsigned char> GenericFavicon() {
   return LiveBookmarksSyncTest::CreateFavicon(254);
 }
 
-// http://crbug.com/81256
-IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest, FLAKY_Sanity) {
+IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest, Sanity) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllModelsMatchVerifier());
 
@@ -203,9 +202,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 }
 
 // Test Scribe ID - 370639 - Add bookmarks with different name and same URL.
-// http://crbug.com/81256
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-                       FLAKY_SC_DuplicateBookmarksWithSameURL) {
+                       SC_DuplicateBookmarksWithSameURL) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllModelsMatchVerifier());
 
@@ -885,9 +883,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest, SC_HoistBMs10LevelUp) {
 }
 
 // Test Scribe ID - 371968.
-// TODO(rsimha): Enable after http://crbug.com/74853 is fixed.
-IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-                       FAILS_SC_SinkBMs10LevelDown) {
+IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest, SC_SinkBMs10LevelDown) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllModelsMatchVerifier());
 
