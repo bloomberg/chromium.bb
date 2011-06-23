@@ -29,12 +29,6 @@ import command_tester
 Dir('src/third_party_mod/gtest').addRepository(
     Dir('#/../testing/gtest'))
 
-# NOTE: The following maps tests/ppapi_tests to ../ppapi/tests. It is
-# necessary to get the nacl.scons file in ../ppapi/tests/ included in
-# BUILD_SCONSCRIPTS below because that list can only contain files that
-# SCons sees as being under $MAIN_DIR.
-Dir('tests/ppapi_tests').addRepository(Dir('#/../ppapi/tests'))
-
 # ----------------------------------------------------------
 # REPORT
 # ----------------------------------------------------------
@@ -2573,8 +2567,6 @@ nacl_env.Append(
     'tests/ppapi_simple_tests/nacl.scons',
     'tests/ppapi_test_example/nacl.scons',
     'tests/ppapi_test_lib/nacl.scons',
-    # Note that tests/ppapi_tests is underlayed with the contents of
-    # ../ppapi/tests. See explanation above.
     'tests/ppapi_tests/nacl.scons',
     'tests/ppapi/nacl.scons',
     'tests/pyauto_nacl/nacl.scons',

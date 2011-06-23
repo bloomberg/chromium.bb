@@ -12,8 +12,7 @@
 # Tip: you can verify that the plugin was loaded by navigating to about:plugins
 # in Chromium.
 
-# Also see ppapi/tests/nacl.scons DEPS'ed in from the Chromium repository
-# for building and running (a subset of) these tests in NaCl.
+# Also see nacl.scons for building/running (a subset of) these tests in NaCl.
 
 Import('env')
 
@@ -35,11 +34,12 @@ if env.Bit('linux'):
                           no_import_lib=True)
 
   env.Publish(ppapi_tests_trusted, 'run',
-              ['test_url_loader_data/*'], subdir='test_url_loader_data')
+              ['${SOURCE_ROOT}/ppapi/tests/test_url_loader_data/*'],
+              subdir='test_url_loader_data')
 
   env.Publish(ppapi_tests_trusted, 'run',
               [libppapi_tests_so,
-               'test_case.html',
+               '${SOURCE_ROOT}/ppapi/tests/test_case.html',
                'test_case.nmf',
-               'test_image_data',
-               'test_page.css'])
+               '${SOURCE_ROOT}/ppapi/tests/test_image_data',
+               '${SOURCE_ROOT}/ppapi/tests/test_page.css'])
