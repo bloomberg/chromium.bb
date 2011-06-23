@@ -1733,15 +1733,15 @@
    fun:crc32
    ...
    fun:png_write_row
-   fun:_ZN7WebCore12encodePixelsERKNS_7IntSizeEPhbPN3WTF6VectorIhLj0EEE
+   fun:_ZN7WebCore*12encodePixelsERKNS_7IntSizeEPhbPN3WTF6VectorIhLj0EEE
    fun:_ZN7WebCore15PNGImageEncoder6encode*
 }
 {
-   bug_30704f
+   bug_87232
    Memcheck:Value4
    fun:_ZN7WebCore12base64EncodeEPKcjRN3WTF6VectorIcLj0EEEb
    fun:_ZN7WebCore12base64EncodeERKN3WTF6VectorIcLj0EEERS2_b
-   fun:_ZN7WebCore14ImageToDataURLI8SkBitmapEEN3WTF6StringERT_RKS3_PKd
+   fun:_ZN7WebCore*14ImageToDataURLI8SkBitmapEEN3WTF6StringERT_RKS3_PKd
 }
 {
    bug_31800
@@ -1757,7 +1757,6 @@
    fun:_ZNK7WebCore16FontFallbackList10fontDataAtEPKNS_4FontEj
    fun:_ZNK7WebCore16FontFallbackList15primaryFontDataEPKNS_4FontE
 }
-
 {
    bug_31985
    Memcheck:Leak
