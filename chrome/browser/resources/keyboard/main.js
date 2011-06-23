@@ -24,6 +24,52 @@ MODE_TRANSITIONS[SYMBOL_MODE + SHIFT_MODE] = NUMBER_MODE;
 MODE_TRANSITIONS[SYMBOL_MODE + NUMBER_MODE] = KEY_MODE;
 
 /**
+ * The repeat delay in milliseconds before a key starts repeating.
+ * @type {number}
+ */
+var REPEAT_DELAY_MSEC = 250;
+
+/**
+ * The repeat interval or number of milliseconds between subsequent keypresses.
+ * @type {number}
+ */
+var REPEAT_INTERVAL_MSEC = 92;
+
+/**
+ * A structure to track the currently repeating key on the keyboard.
+ */
+var repeatKey = {
+    /**
+     * The timer for the delay before repeating behaviour begins.
+     * @type {number|undefined}
+     */
+    timer: undefined,
+
+    /**
+     * The interval timer for issuing keypresses of a repeating key.
+     * @type {number|undefined}
+     */
+    interval: undefined,
+
+    /**
+     * The key which is currently repeating.
+     * @type {BaseKey|undefined}
+     */
+    key: undefined,
+
+    /**
+     * Cancel the repeat timers of the currently active key.
+     */
+    cancel: function() {
+      clearTimeout(this.timer);
+      clearInterval(this.interval);
+      this.timer = undefined;
+      this.interval = undefined;
+      this.key = undefined;
+    }
+};
+
+/**
  * Transition the mode according to the given transition.
  * @param {string} transition The transition to take.
  * @return {void}
@@ -76,6 +122,50 @@ BaseKey.prototype = {
    * @type {string}
    */
   cellType_: '',
+
+  /**
+   * If true, holding this key will issue repeat keypresses.
+   * @type {boolean}
+   */
+  repeat_: false,
+
+  /**
+   * Track the pressed state of the key. This is true if currently pressed.
+   * @type {boolean}
+   */
+  pressed_: false,
+
+  /**
+   * Get the repeat behaviour of the key.
+   * @return {boolean} True if the key will repeat.
+   */
+  get repeat() {
+    return this.repeat_;
+  },
+
+  /**
+   * Set the repeat behaviour of the key
+   * @param {boolean} repeat True if the key should repeat.
+   */
+  set repeat(repeat) {
+    this.repeat_ = repeat;
+  },
+
+  /**
+   * Get the pressed state of the key.
+   * @return {boolean} True if the key is currently pressed.
+   */
+  get pressed() {
+    return this.pressed_;
+  },
+
+  /**
+   * Set the pressed state of the key.
+   * @param {boolean} pressed True if the key is currently pressed.
+   */
+  set pressed(pressed) {
+    this.pressed_ = pressed;
+  },
 
   /**
    * @return {number} The aspect ratio of this key.
@@ -188,9 +278,9 @@ Key.prototype = {
     this.modeElements_[mode].className = 'key';
 
     this.sizeElement(mode, height);
-
-    setupKeyEventHandlers(this.modeElements_[mode],
-                          sendKeyFunction(this.modes_[mode].keyIdentifier));
+    setupKeyEventHandlers(this, this.modeElements_[mode],
+        sendKeyFunction(this.modes_[mode].keyIdentifier, 'keydown'),
+        sendKeyFunction(this.modes_[mode].keyIdentifier, 'keyup'));
 
     return this.modeElements_[mode];
   }
@@ -227,9 +317,9 @@ SvgKey.prototype = {
     img.className = 'image-key ' + this.className_;
     this.modeElements_[mode].appendChild(img);
 
-    setupKeyEventHandlers(this.modeElements_[mode],
-                          sendKeyFunction(this.keyId_));
-
+    setupKeyEventHandlers(this, this.modeElements_[mode],
+        sendKeyFunction(this.keyId_, 'keydown'),
+        sendKeyFunction(this.keyId_, 'keyup'));
     this.sizeElement(mode, height);
 
     return this.modeElements_[mode];
@@ -261,10 +351,10 @@ SpecialKey.prototype = {
     this.modeElements_[mode].textContent = this.content_;
     this.modeElements_[mode].className = 'key';
 
-    setupKeyEventHandlers(this.modeElements_[mode],
-                          sendKeyFunction(this.keyId_));
-
     this.sizeElement(mode, height);
+    setupKeyEventHandlers(this, this.modeElements_[mode],
+        sendKeyFunction(this.keyId_, 'keydown'),
+        sendKeyFunction(this.keyId_, 'keyup'));
 
     return this.modeElements_[mode];
   }
@@ -314,11 +404,11 @@ ShiftKey.prototype = {
     }
 
     this.sizeElement(mode, height);
+    setupKeyEventHandlers(this, this.modeElements_[mode],
+        function() {
+          transitionMode(SHIFT_MODE);
+        });
 
-    setupKeyEventHandlers(this.modeElements_[mode],
-                          function() {
-                            transitionMode(SHIFT_MODE);
-                          });
     return this.modeElements_[mode];
   },
 };
@@ -354,11 +444,10 @@ SymbolKey.prototype = {
     }
 
     this.sizeElement(mode, height);
-
-    setupKeyEventHandlers(this.modeElements_[mode],
-                          function() {
-                            transitionMode(NUMBER_MODE);
-                          });
+    setupKeyEventHandlers(this, this.modeElements_[mode],
+        function() {
+          transitionMode(NUMBER_MODE);
+        });
 
     return this.modeElements_[mode];
   }
@@ -385,14 +474,13 @@ DotComKey.prototype = {
     this.modeElements_[mode].className = 'key';
 
     this.sizeElement(mode, height);
-
-    setupKeyEventHandlers(this.modeElements_[mode],
-                          function() {
-                            sendKey('.');
-                            sendKey('c');
-                            sendKey('o');
-                            sendKey('m');
-                          });
+    setupKeyEventHandlers(this, this.modeElements_[mode],
+        function() {
+          sendKey('.');
+          sendKey('c');
+          sendKey('o');
+          sendKey('m');
+        });
 
     return this.modeElements_[mode];
   }
@@ -425,10 +513,10 @@ HideKeyboardKey.prototype = {
     this.modeElements_[mode].appendChild(hide);
 
     this.sizeElement(mode, height);
-
-    this.modeElements_[mode].onclick = function() {
-      chrome.experimental.input.hideKeyboard();
-    };
+    setupKeyEventHandlers(this, this.modeElements_[mode],
+        function() {
+          chrome.experimental.input.hideKeyboard();
+        });
 
     return this.modeElements_[mode];
   }
@@ -522,6 +610,12 @@ Row.prototype = {
 };
 
 /**
+ * The backspace key.
+ * @type {BaseKey}
+ */
+var backspaceKey;
+
+/**
  * All keys for the rows of the keyboard.
  * NOTE: every row below should have an aspect of 12.6.
  * @type {Array.<Array.<BaseKey>>}
@@ -539,7 +633,7 @@ var KEYS = [
     new Key(C('i'), C('I'), C('8'), C('}')),
     new Key(C('o'), C('O'), C('9'), C('\'')),
     new Key(C('p'), C('P'), C('0'), C('|')),
-    new SvgKey(1.6, 'backspace', 'Backspace')
+    backspaceKey = new SvgKey(1.6, 'backspace', 'Backspace')
   ],
   [
     new SymbolKey(),
@@ -583,6 +677,9 @@ var KEYS = [
   ]
 ];
 
+// Backspace key should repeat.
+backspaceKey.repeat = true;
+
 /**
  * All of the rows in the keyboard.
  * @type {Array.<Row>}
@@ -621,47 +718,114 @@ var kKeyboardAspect = 3.3;
 /**
  * Send the given key to chrome, via the experimental extension API.
  * @param {string} key The key to send.
+ * @param {string=} opt_type The type of event to send (keydown or keyup). If
+ *     omitted send both keydown and keyup events.
  * @return {void}
  */
-function sendKey(key) {
-  if (!chrome.experimental) {
-    console.log(key);
-    return;
+function sendKey(key, type) {
+  var keyEvent = {'keyIdentifier': key};
+  if (!type || type == 'keydown') {
+    // A keypress event is automatically generated for printable characters
+    // immediately following the keydown event.
+    keyEvent.type = 'keydown';
+    chrome.experimental.input.sendKeyboardEvent(keyEvent);
   }
-
-  var keyEvent = {'type': 'keydown', 'keyIdentifier': key};
-  chrome.experimental.input.sendKeyboardEvent(keyEvent);
-  keyEvent['type'] = 'keyup';
-  chrome.experimental.input.sendKeyboardEvent(keyEvent);
-
-  if (currentMode == SHIFT_MODE) {
-    transitionMode(SHIFT_MODE);
+  if (!type || type == 'keyup') {
+    keyEvent.type = 'keyup';
+    chrome.experimental.input.sendKeyboardEvent(keyEvent);
+    // Exit shift mode after completing any shifted keystroke.
+    if (currentMode == SHIFT_MODE) {
+      transitionMode(SHIFT_MODE);
+    }
   }
 }
 
 /**
- * Setup event handlers for the keys.
- * @param {BaseKey} key The key to setup event handlers for.
- * @param {fn} handler The event handler to use for the key.
- * @return {void}
+ * Set up the event handlers necessary to respond to mouse and touch events on
+ * the virtual keyboard.
+ * @param {BaseKey} key The BaseKey object corresponding to this key.
+ * @param {Element} element The top-level DOM Element to set event handlers on.
+ * @param {function()} keyDownHandler The event handler called when the key is
+ *     pressed. This will be called repeatedly when holding a repeating key.
+ * @param {function()=} opt_keyUpHandler The event handler called when the key
+ *     is released. This is only called once per actual key press.
  */
-function setupKeyEventHandlers(key, handler) {
-  key.onclick = function(evt) {
-    handler();
-    evt.preventDefault()
+function setupKeyEventHandlers(key, element, keyDownHandler, opt_keyUpHandler) {
+  /**
+   * Handle a key down event on the virtual key.
+   * @param {UIEvent} evt The UI event which triggered the key down.
+   */
+  var downHandler = function(evt) {
+    // Don't process a key down if the key is already down.
+    if (key.pressed) {
+      return;
+    }
+    key.pressed = true;
+    if (keyDownHandler) {
+      keyDownHandler();
+    }
+    evt.preventDefault();
+    repeatKey.cancel();
+
+    // Start a repeating timer if there is a repeat interval and a function to
+    // process key down events.
+    if (key.repeat && keyDownHandler) {
+      repeatKey.key = key;
+      // The timeout for the repeating timer occurs at
+      // REPEAT_DELAY_MSEC - REPEAT_INTERVAL_MSEC so that the interval
+      // function can handle all repeat keypresses and will get the first one
+      // at the correct time.
+      repeatKey.timer = setTimeout(function() {
+            repeatKey.timer = undefined;
+            repeatKey.interval = setInterval(function() {
+                  keyDownHandler();
+                }, REPEAT_INTERVAL_MSEC);
+          }, Math.max(0, REPEAT_DELAY_MSEC - REPEAT_INTERVAL_MSEC));
+    }
   };
-  key.ontouchstart = key.onclick;
+
+  /**
+   * Handle a key up event on the virtual key.
+   * @param {UIEvent} evt The UI event which triggered the key up.
+   */
+  var upHandler = function(evt) {
+    // If they key was not actually pressed do not send a key up event.
+    if (!key.pressed) {
+      return;
+    }
+    key.pressed = false;
+
+    // Cancel running repeat timer for the released key only.
+    if (repeatKey.key == key) {
+      repeatKey.cancel();
+    }
+
+    if (opt_keyUpHandler) {
+      opt_keyUpHandler();
+    }
+    evt.preventDefault();
+  };
+
+  // Setup mouse event handlers.
+  element.addEventListener('mousedown', downHandler);
+  element.addEventListener('mouseup', upHandler);
+  element.addEventListener('mouseout', upHandler);
+
+  // Setup touch handlers.
+  element.addEventListener('touchstart', downHandler);
+  element.addEventListener('touchend', upHandler);
 }
 
 /**
- * Create a closure for the sendKey function.
- * @param {string} key The parameter to sendKey.
- * @return {void}
+ * Create closure for the sendKey function.
+ * @param {string} key The key paramater to sendKey.
+ * @param {string=} type The type parameter to sendKey.
+ * @return {function()} A function which calls sendKey(key, type).
  */
-function sendKeyFunction(key) {
+function sendKeyFunction(key, type) {
   return function() {
-    sendKey(key);
-  }
+    sendKey(key, type);
+  };
 }
 
 var oldHeight = 0;
