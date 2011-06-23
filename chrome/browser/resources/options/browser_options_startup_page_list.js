@@ -54,6 +54,7 @@ cr.define('options.browser_options', function() {
       var titleEl = this.ownerDocument.createElement('div');
       titleEl.className = 'title';
       titleEl.classList.add('favicon-cell');
+      titleEl.classList.add('weakrtl');
       titleEl.textContent = pageInfo['title'];
       if (!this.isPlaceholder) {
         titleEl.style.backgroundImage = url('chrome://favicon/' +
@@ -65,10 +66,12 @@ cr.define('options.browser_options', function() {
 
       var urlEl = this.createEditableTextCell(pageInfo['url']);
       urlEl.className = 'url';
+      urlEl.classList.add('weakrtl');
       this.contentElement.appendChild(urlEl);
 
       var urlField = urlEl.querySelector('input')
       urlField.required = true;
+      urlField.className = 'weakrtl';
       this.urlField_ = urlField;
 
       this.addEventListener('commitedit', this.onEditCommitted_);

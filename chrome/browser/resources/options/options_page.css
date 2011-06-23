@@ -773,3 +773,38 @@ html[flashPluginSupportsClearSiteData] .clear-plugin-lso-data-disabled {
 .displaytable > section:last-child > *  {
   border-bottom: none;
 }
+
+/* Elements that need to be LTR even in an RTL context, but should align
+ * right. (Namely, URLs, search engine names, etc.)
+ */
+html[dir='rtl'] .weakrtl {
+  direction: ltr;
+  text-align: right;
+}
+
+/* Input fields in search engine table need to be weak-rtl. Since those input
+ * fields are generated for all cr.ListItem elements (and we only want weakrtl
+ * on some), the class needs to be on the enclosing div.
+ */
+html[dir='rtl'] div.weakrtl input {
+    direction: ltr;
+    text-align: right;
+}
+
+html[dir='rtl'] .favicon-cell.weakrtl {
+  -webkit-padding-end: 22px;
+  -webkit-padding-start: 0;
+}
+
+/* weakrtl for selection drop downs needs to account for the fact that
+ * Webkit does not honor the text-align attribute for the select element.
+ * (See Webkit bug #40216)
+ */
+html[dir='rtl'] select.weakrtl {
+  direction: rtl;
+}
+
+html[dir='rtl'] select.weakrtl option {
+  direction: ltr;
+}
+

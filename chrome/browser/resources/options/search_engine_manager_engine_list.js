@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -90,6 +90,7 @@ cr.define('options.search_engines', function() {
       // Construct the name column.
       var nameColEl = this.ownerDocument.createElement('div');
       nameColEl.className = 'name-column';
+      nameColEl.classList.add('weakrtl');
       this.contentElement.appendChild(nameColEl);
 
       // Add the favicon.
@@ -101,11 +102,13 @@ cr.define('options.search_engines', function() {
       nameColEl.appendChild(faviconDivEl);
 
       var nameEl = this.createEditableTextCell(engine['displayName']);
+      nameEl.classList.add('weakrtl');
       nameColEl.appendChild(nameEl);
 
       // Then the keyword column.
       var keywordEl = this.createEditableTextCell(engine['keyword']);
       keywordEl.className = 'keyword-column';
+      keywordEl.classList.add('weakrtl');
       this.contentElement.appendChild(keywordEl);
 
       // And the URL column.
@@ -113,6 +116,7 @@ cr.define('options.search_engines', function() {
       var urlWithButtonEl = this.ownerDocument.createElement('div');
       urlWithButtonEl.appendChild(urlEl);
       urlWithButtonEl.className = 'url-column';
+      urlWithButtonEl.classList.add('weakrtl');
       this.contentElement.appendChild(urlWithButtonEl);
       // Add the Make Default button. Temporary until drag-and-drop re-ordering
       // is implemented. When this is removed, remove the extra div above.

@@ -33,6 +33,7 @@ cr.define('options.passwordManager', function() {
       // The URL of the site.
       var urlLabel = this.ownerDocument.createElement('div');
       urlLabel.classList.add('favicon-cell');
+      urlLabel.classList.add('weakrtl');
       urlLabel.classList.add('url');
       urlLabel.setAttribute('title', this.url);
       urlLabel.textContent = this.url;
@@ -168,6 +169,7 @@ cr.define('options.passwordManager', function() {
       var urlLabel = this.ownerDocument.createElement('div');
       urlLabel.className = 'url';
       urlLabel.classList.add('favicon-cell');
+      urlLabel.classList.add('weakrtl');
       urlLabel.textContent = this.url;
       urlLabel.style.backgroundImage = url('chrome://favicon/' + this.url);
       this.contentElement.appendChild(urlLabel);

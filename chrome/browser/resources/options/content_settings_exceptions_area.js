@@ -42,6 +42,7 @@ cr.define('options.contentSettings', function() {
       this.isPlaceholder = !this.pattern;
       var patternCell = this.createEditableTextCell(this.pattern);
       patternCell.className = 'exception-pattern';
+      patternCell.classList.add('weakrtl');
       this.contentElement.appendChild(patternCell);
       if (this.pattern)
         this.patternLabel = patternCell.querySelector('.static-text');
