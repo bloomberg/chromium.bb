@@ -27,7 +27,7 @@ class TraceSubscriberStdio : public TraceSubscriber {
   virtual ~TraceSubscriberStdio();
 
  private:
-  FILE* m_file;
+  FILE* file_;
 };
 
 #endif  // CONTENT_BROWSER_TRACE_SUBSCRIBER_STDIO_H_

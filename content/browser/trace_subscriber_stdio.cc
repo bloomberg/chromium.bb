@@ -8,10 +8,10 @@
 
 TraceSubscriberStdio::TraceSubscriberStdio(const FilePath& path) {
   LOG(INFO) << "Logging performance trace to file: " << path.value();
-  m_file = file_util::OpenFile(path, "w+");
+  file_ = file_util::OpenFile(path, "w+");
   if (IsValid()) {
     // FIXME: the file format expects it to start with "[".
-    fputc('[', m_file);
+    fputc('[', file_);
   } else {
     LOG(ERROR) << "Failed to open performance trace file: " << path.value();
   }
@@ -22,15 +22,15 @@ TraceSubscriberStdio::~TraceSubscriberStdio() {
 }
 
 bool TraceSubscriberStdio::IsValid() {
-  return m_file && (0 == ferror(m_file));
+  return file_ && (0 == ferror(file_));
 }
 
 void TraceSubscriberStdio::OnEndTracingComplete() {
-  if (m_file) {
+  if (file_) {
     // FIXME: the file format expects it to end with "]".
-    fputc(']', m_file);
-    fclose(m_file);
-    m_file = 0;
+    fputc(']', file_);
+    fclose(file_);
+    file_ = 0;
   }
 }
 
@@ -46,12 +46,12 @@ void TraceSubscriberStdio::OnTraceDataCollected(
   const char* data = json_events.data() + 1;
   size_t size = json_events.size() - 2;
 
-  size_t written = fwrite(data, 1, size, m_file);
+  size_t written = fwrite(data, 1, size, file_);
   if (written != size) {
-    LOG(ERROR) << "Error " << ferror(m_file) << " when writing to trace file";
-    fclose(m_file);
-    m_file = 0;
+    LOG(ERROR) << "Error " << ferror(file_) << " when writing to trace file";
+    fclose(file_);
+    file_ = 0;
   } else {
-    fputc(',', m_file);
+    fputc(',', file_);
   }
 }
