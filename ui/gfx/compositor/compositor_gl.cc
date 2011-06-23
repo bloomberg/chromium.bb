@@ -31,7 +31,6 @@ class CompositorGL;
 class TextureGL : public Texture {
  public:
   TextureGL(CompositorGL* compositor);
-  virtual ~TextureGL();
 
   virtual void SetBitmap(const SkBitmap& bitmap,
                          const gfx::Point& origin,
@@ -40,10 +39,13 @@ class TextureGL : public Texture {
   // Draws the texture.
   virtual void Draw(const ui::Transform& transform) OVERRIDE;
 
+ protected:
+  virtual ~TextureGL();
+
  private:
   unsigned int texture_id_;
   gfx::Size size_;
-  CompositorGL* compositor_;
+  scoped_refptr <CompositorGL> compositor_;
   DISALLOW_COPY_AND_ASSIGN(TextureGL);
 };
 

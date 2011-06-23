@@ -27,10 +27,8 @@ class Transform;
 // the bitmap.
 //
 // Views own the Texture.
-class Texture {
+class Texture : public base::RefCounted<Texture> {
  public:
-  virtual ~Texture() {}
-
   // Sets the bitmap of this texture. The bitmaps origin is at |origin|.
   // |overall_size| gives the total size of texture.
   virtual void SetBitmap(const SkBitmap& bitmap,
@@ -39,6 +37,12 @@ class Texture {
 
   // Draws the texture.
   virtual void Draw(const ui::Transform& transform) = 0;
+
+ protected:
+  virtual ~Texture() {}
+
+ private:
+  friend class base::RefCounted<Texture>;
 };
 
 // Compositor object to take care of GPU painting.

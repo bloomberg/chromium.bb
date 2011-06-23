@@ -34,25 +34,7 @@ namespace ui {
 
 namespace {
 
-class ViewTexture;
-
-// ViewTexture talks to its host by way of this interface.
-class ViewTextureHost {
- public:
-  // Invoked to update the perspective needed by this texture. |transform| is
-  // the transform for the texture, and |size| the size of the texture.
-  virtual void UpdatePerspective(const ui::Transform& transform,
-                                 const gfx::Size& size) = 0;
-
-  // Returns the overall size of the compositor.
-  virtual const gfx::Size& GetHostSize() = 0;
-
-  // Returns the index buffer used for drawing a texture.
-  virtual ID3D10Buffer* GetTextureIndexBuffer() = 0;
-
- protected:
-  virtual ~ViewTextureHost() {}
-};
+class CompositorWin;
 
 // Vertex structure used by the compositor.
 struct Vertex {
@@ -65,11 +47,9 @@ struct Vertex {
 // matching that of |SetBitmap|.
 class ViewTexture : public Texture {
  public:
-  ViewTexture(ViewTextureHost* host,
+  ViewTexture(CompositorWin* compositor,
               ID3D10Device* device,
               ID3D10Effect* effect);
-
-  ~ViewTexture();
 
   // Texture:
   virtual void SetBitmap(const SkBitmap& bitmap,
@@ -78,6 +58,8 @@ class ViewTexture : public Texture {
   virtual void Draw(const ui::Transform& transform) OVERRIDE;
 
  private:
+  ~ViewTexture();
+
   void Errored(HRESULT result);
 
   void ConvertBitmapToD3DData(const SkBitmap& bitmap,
@@ -85,7 +67,7 @@ class ViewTexture : public Texture {
 
   void CreateVertexBuffer(const gfx::Size& size);
 
-  ViewTextureHost* host_;
+  scoped_refptr<CompositorWin> compositor_;
 
   // Size of the corresponding View.
   gfx::Size view_size_;
@@ -99,152 +81,23 @@ class ViewTexture : public Texture {
   DISALLOW_COPY_AND_ASSIGN(ViewTexture);
 };
 
-ViewTexture::ViewTexture(ViewTextureHost* host,
-                         ID3D10Device* device,
-                         ID3D10Effect* effect)
-    : host_(host),
-      device_(device),
-      effect_(effect) {
-}
-
-ViewTexture::~ViewTexture() {
-}
-
-void ViewTexture::SetBitmap(const SkBitmap& bitmap,
-                            const gfx::Point& origin,
-                            const gfx::Size& overall_size) {
-  if (view_size_ != overall_size)
-    CreateVertexBuffer(overall_size);
-  view_size_ = overall_size;
-
-  scoped_array<uint32> converted_data;
-  ConvertBitmapToD3DData(bitmap, &converted_data);
-  if (gfx::Size(bitmap.width(), bitmap.height()) == overall_size) {
-    shader_view_.Release();
-    texture_.Release();
-
-    D3D10_TEXTURE2D_DESC texture_desc;
-    texture_desc.Width = bitmap.width();
-    texture_desc.Height = bitmap.height();
-    texture_desc.MipLevels = 1;
-    texture_desc.ArraySize = 1;
-    texture_desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-    texture_desc.SampleDesc.Count = 1;
-    texture_desc.SampleDesc.Quality = 0;
-    texture_desc.Usage = D3D10_USAGE_DEFAULT;
-    texture_desc.BindFlags = D3D10_BIND_SHADER_RESOURCE;
-    texture_desc.CPUAccessFlags = 0;
-    texture_desc.MiscFlags = 0;
-    D3D10_SUBRESOURCE_DATA texture_data;
-    texture_data.pSysMem = converted_data.get();
-    texture_data.SysMemPitch = texture_desc.Width * 4;
-    texture_data.SysMemSlicePitch = 0;
-    RETURN_IF_FAILED(device_->CreateTexture2D(&texture_desc,
-                                              &texture_data,
-                                              texture_.Receive()));
-    RETURN_IF_FAILED(
-        device_->CreateShaderResourceView(texture_.get(), NULL,
-                                          shader_view_.Receive()));
-  } else {
-    // Only part of the texture was updated.
-    DCHECK(texture_.get());
-    D3D10_BOX dst_box = { origin.x(), origin.y(), 0,
-                          origin.x() + bitmap.width(),
-                          origin.y() + bitmap.height(), 1 };
-    device_->UpdateSubresource(texture_.get(), 0, &dst_box,
-                               converted_data.get(), bitmap.width() * 4, 0);
-  }
-}
-
-void ViewTexture::Draw(const ui::Transform& transform) {
-  host_->UpdatePerspective(transform, view_size_);
-
-  // Make texture active.
-  RETURN_IF_FAILED(
-      effect_->GetVariableByName("textureMap")->AsShaderResource()->
-      SetResource(shader_view_.get()));
-
-  ID3D10EffectTechnique* technique = effect_->GetTechniqueByName("ViewTech");
-  DCHECK(technique);
-  D3D10_TECHNIQUE_DESC tech_desc;
-  technique->GetDesc(&tech_desc);
-  for(UINT p = 0; p < tech_desc.Passes; ++p)
-    technique->GetPassByIndex(p)->Apply(0);
-
-  UINT stride = sizeof(Vertex);
-  UINT offset = 0;
-  ID3D10Buffer* vertex_buffer = vertex_buffer_.get();
-  device_->IASetVertexBuffers(0, 1, &vertex_buffer, &stride, &offset);
-  device_->IASetIndexBuffer(host_->GetTextureIndexBuffer(),
-                            DXGI_FORMAT_R32_UINT, 0);
-  device_->DrawIndexed(6, 0, 0);
-}
-
-void ViewTexture::Errored(HRESULT result) {
-  // TODO: figure out error handling.
-  DCHECK(false);
-}
-
-void ViewTexture::ConvertBitmapToD3DData(
-    const SkBitmap& bitmap,
-    scoped_array<uint32>* converted_data) {
-  int width = bitmap.width();
-  int height = bitmap.height();
-  SkAutoLockPixels pixel_lock(bitmap);
-  // D3D wants colors in ABGR format (premultiplied).
-  converted_data->reset(new uint32[width * height]);
-  uint32_t* bitmap_data = bitmap.getAddr32(0, 0);
-  for (int x = 0, offset = 0; x < width; ++x) {
-    for (int y = 0; y < height; ++y, ++offset) {
-      SkColor color = bitmap_data[offset];
-      (*converted_data)[offset] =
-          (SkColorGetA(color) << 24) |
-          (SkColorGetB(color) << 16) |
-          (SkColorGetG(color) << 8) |
-          (SkColorGetR(color));
-    }
-  }
-}
-
-void ViewTexture::CreateVertexBuffer(const gfx::Size& size) {
-  vertex_buffer_.Release();
-  const gfx::Size& host_size = host_->GetHostSize();
-  float x = static_cast<float>(host_size.width()) / 2.0f;
-  float y = static_cast<float>(host_size.height()) / 2.0f;
-  float w = static_cast<float>(size.width());
-  float h = static_cast<float>(size.height());
-  Vertex vertices[] = {
-    { D3DXVECTOR3(0.0f,   -h, 0.0f), D3DXVECTOR2(0.0f, 1.0f) },
-    { D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR2(0.0f, 0.0f) },
-    { D3DXVECTOR3(   w, 0.0f, 0.0f), D3DXVECTOR2(1.0f, 0.0f) },
-    { D3DXVECTOR3(   w,   -h, 0.0f), D3DXVECTOR2(1.0f, 1.0f) },
-  };
-
-  // Create the vertex buffer containing the points.
-  D3D10_BUFFER_DESC buffer_desc;
-  buffer_desc.Usage = D3D10_USAGE_IMMUTABLE;
-  buffer_desc.ByteWidth = sizeof(Vertex) * ARRAYSIZE_UNSAFE(vertices);
-  buffer_desc.BindFlags = D3D10_BIND_VERTEX_BUFFER;
-  buffer_desc.CPUAccessFlags = 0;
-  buffer_desc.MiscFlags = 0;
-  D3D10_SUBRESOURCE_DATA init_data;
-  init_data.pSysMem = vertices;
-  RETURN_IF_FAILED(device_->CreateBuffer(&buffer_desc, &init_data,
-                                         vertex_buffer_.Receive()));
-}
-
 // D3D 10 Compositor implementation.
-class CompositorWin : public Compositor, public ViewTextureHost {
+class CompositorWin : public Compositor {
  public:
   explicit CompositorWin(gfx::AcceleratedWidget widget);
 
   void Init();
 
-  // ViewTextureHost.
-  virtual void UpdatePerspective(const ui::Transform& transform,
-                                 const gfx::Size& view_size) OVERRIDE;
-  virtual const gfx::Size& GetHostSize() OVERRIDE;
-  virtual ID3D10Buffer* GetTextureIndexBuffer() OVERRIDE;
+  // Invoked to update the perspective needed by this texture. |transform| is
+  // the transform for the texture, and |size| the size of the texture.
+  void UpdatePerspective(const ui::Transform& transform,
+                         const gfx::Size& view_size);
+
+  // Returns the overall size of the compositor.
+  const gfx::Size& GetHostSize();
+
+  // Returns the index buffer used for drawing a texture.
+  ID3D10Buffer* GetTextureIndexBuffer();
 
   // Compositor:
   virtual Texture* CreateTexture() OVERRIDE;
@@ -334,6 +187,140 @@ class CompositorWin : public Compositor, public ViewTextureHost {
 
   DISALLOW_COPY_AND_ASSIGN(CompositorWin);
 };
+
+ViewTexture::ViewTexture(CompositorWin* compositor,
+                         ID3D10Device* device,
+                         ID3D10Effect* effect)
+    : compositor_(compositor),
+      device_(device),
+      effect_(effect) {
+}
+
+ViewTexture::~ViewTexture() {
+}
+
+void ViewTexture::SetBitmap(const SkBitmap& bitmap,
+                            const gfx::Point& origin,
+                            const gfx::Size& overall_size) {
+  if (view_size_ != overall_size)
+    CreateVertexBuffer(overall_size);
+  view_size_ = overall_size;
+
+  scoped_array<uint32> converted_data;
+  ConvertBitmapToD3DData(bitmap, &converted_data);
+  if (gfx::Size(bitmap.width(), bitmap.height()) == overall_size) {
+    shader_view_.Release();
+    texture_.Release();
+
+    D3D10_TEXTURE2D_DESC texture_desc;
+    texture_desc.Width = bitmap.width();
+    texture_desc.Height = bitmap.height();
+    texture_desc.MipLevels = 1;
+    texture_desc.ArraySize = 1;
+    texture_desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    texture_desc.SampleDesc.Count = 1;
+    texture_desc.SampleDesc.Quality = 0;
+    texture_desc.Usage = D3D10_USAGE_DEFAULT;
+    texture_desc.BindFlags = D3D10_BIND_SHADER_RESOURCE;
+    texture_desc.CPUAccessFlags = 0;
+    texture_desc.MiscFlags = 0;
+    D3D10_SUBRESOURCE_DATA texture_data;
+    texture_data.pSysMem = converted_data.get();
+    texture_data.SysMemPitch = texture_desc.Width * 4;
+    texture_data.SysMemSlicePitch = 0;
+    RETURN_IF_FAILED(device_->CreateTexture2D(&texture_desc,
+                                              &texture_data,
+                                              texture_.Receive()));
+    RETURN_IF_FAILED(
+        device_->CreateShaderResourceView(texture_.get(), NULL,
+                                          shader_view_.Receive()));
+  } else {
+    // Only part of the texture was updated.
+    DCHECK(texture_.get());
+    D3D10_BOX dst_box = { origin.x(), origin.y(), 0,
+                          origin.x() + bitmap.width(),
+                          origin.y() + bitmap.height(), 1 };
+    device_->UpdateSubresource(texture_.get(), 0, &dst_box,
+                               converted_data.get(), bitmap.width() * 4, 0);
+  }
+}
+
+void ViewTexture::Draw(const ui::Transform& transform) {
+  compositor_->UpdatePerspective(transform, view_size_);
+
+  // Make texture active.
+  RETURN_IF_FAILED(
+      effect_->GetVariableByName("textureMap")->AsShaderResource()->
+      SetResource(shader_view_.get()));
+
+  ID3D10EffectTechnique* technique = effect_->GetTechniqueByName("ViewTech");
+  DCHECK(technique);
+  D3D10_TECHNIQUE_DESC tech_desc;
+  technique->GetDesc(&tech_desc);
+  for(UINT p = 0; p < tech_desc.Passes; ++p)
+    technique->GetPassByIndex(p)->Apply(0);
+
+  UINT stride = sizeof(Vertex);
+  UINT offset = 0;
+  ID3D10Buffer* vertex_buffer = vertex_buffer_.get();
+  device_->IASetVertexBuffers(0, 1, &vertex_buffer, &stride, &offset);
+  device_->IASetIndexBuffer(compositor_->GetTextureIndexBuffer(),
+                            DXGI_FORMAT_R32_UINT, 0);
+  device_->DrawIndexed(6, 0, 0);
+}
+
+void ViewTexture::Errored(HRESULT result) {
+  // TODO: figure out error handling.
+  DCHECK(false);
+}
+
+void ViewTexture::ConvertBitmapToD3DData(
+    const SkBitmap& bitmap,
+    scoped_array<uint32>* converted_data) {
+  int width = bitmap.width();
+  int height = bitmap.height();
+  SkAutoLockPixels pixel_lock(bitmap);
+  // D3D wants colors in ABGR format (premultiplied).
+  converted_data->reset(new uint32[width * height]);
+  uint32_t* bitmap_data = bitmap.getAddr32(0, 0);
+  for (int x = 0, offset = 0; x < width; ++x) {
+    for (int y = 0; y < height; ++y, ++offset) {
+      SkColor color = bitmap_data[offset];
+      (*converted_data)[offset] =
+          (SkColorGetA(color) << 24) |
+          (SkColorGetB(color) << 16) |
+          (SkColorGetG(color) << 8) |
+          (SkColorGetR(color));
+    }
+  }
+}
+
+void ViewTexture::CreateVertexBuffer(const gfx::Size& size) {
+  vertex_buffer_.Release();
+  const gfx::Size& host_size = compositor_->GetHostSize();
+  float x = static_cast<float>(host_size.width()) / 2.0f;
+  float y = static_cast<float>(host_size.height()) / 2.0f;
+  float w = static_cast<float>(size.width());
+  float h = static_cast<float>(size.height());
+  Vertex vertices[] = {
+    { D3DXVECTOR3(0.0f,   -h, 0.0f), D3DXVECTOR2(0.0f, 1.0f) },
+    { D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR2(0.0f, 0.0f) },
+    { D3DXVECTOR3(   w, 0.0f, 0.0f), D3DXVECTOR2(1.0f, 0.0f) },
+    { D3DXVECTOR3(   w,   -h, 0.0f), D3DXVECTOR2(1.0f, 1.0f) },
+  };
+
+  // Create the vertex buffer containing the points.
+  D3D10_BUFFER_DESC buffer_desc;
+  buffer_desc.Usage = D3D10_USAGE_IMMUTABLE;
+  buffer_desc.ByteWidth = sizeof(Vertex) * ARRAYSIZE_UNSAFE(vertices);
+  buffer_desc.BindFlags = D3D10_BIND_VERTEX_BUFFER;
+  buffer_desc.CPUAccessFlags = 0;
+  buffer_desc.MiscFlags = 0;
+  D3D10_SUBRESOURCE_DATA init_data;
+  init_data.pSysMem = vertices;
+  RETURN_IF_FAILED(device_->CreateBuffer(&buffer_desc, &init_data,
+                                         vertex_buffer_.Receive()));
+}
 
 CompositorWin::CompositorWin(gfx::AcceleratedWidget widget)
     : host_(widget),

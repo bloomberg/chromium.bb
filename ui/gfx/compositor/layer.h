@@ -8,7 +8,7 @@
 
 #include <vector>
 
-#include "base/scoped_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/transform.h"
 
@@ -64,7 +64,7 @@ class Layer {
  private:
   Compositor* compositor_;
 
-  scoped_ptr<ui::Texture> texture_;
+  scoped_refptr<ui::Texture> texture_;
 
   Layer* parent_;
 
