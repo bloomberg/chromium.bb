@@ -677,6 +677,10 @@ class NotificationType {
     // history_notifications.h).
     FAVICON_CHANGED,
 
+    // Sent by FaviconTabHelper when a tab's favicon has been successfully
+    // updated.
+    FAVICON_UPDATED,
+
     // Sent after an incognito profile has been created. The details are none
     // and the source is the new profile.
     OTR_PROFILE_CREATED,
