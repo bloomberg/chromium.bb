@@ -71,8 +71,10 @@ bool PluginInfoBarDelegate::Cancel() {
 }
 
 bool PluginInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
+  if (disposition == CURRENT_TAB)
+    disposition = NEW_FOREGROUND_TAB;
   GURL url = google_util::AppendGoogleLocaleParam(GURL(GetLearnMoreURL()));
-  tab_contents_->OpenURL(url, GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
+  tab_contents_->OpenURL(url, GURL(), disposition, PageTransition::LINK);
   return false;
 }
 
