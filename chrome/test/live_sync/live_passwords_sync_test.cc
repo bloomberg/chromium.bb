@@ -137,7 +137,20 @@ bool LivePasswordsSyncTest::ProfileContainsSamePasswordFormsAsVerifier(
   std::vector<PasswordForm> forms;
   GetLogins(GetVerifierPasswordStore(), verifier_forms);
   GetLogins(GetPasswordStore(index), forms);
-  return ContainsSamePasswordForms(verifier_forms, forms);
+  bool result = ContainsSamePasswordForms(verifier_forms, forms);
+  if (!result) {
+    LOG(ERROR) << "Password forms in Verifier Profile:";
+    for (std::vector<PasswordForm>::iterator it = verifier_forms.begin();
+         it != verifier_forms.end(); ++it) {
+      LOG(ERROR) << *it << std::endl;
+    }
+    LOG(ERROR) << "Password forms in Profile" << index << ":";
+    for (std::vector<PasswordForm>::iterator it = forms.begin();
+         it != forms.end(); ++it) {
+      LOG(ERROR) << *it << std::endl;
+    }
+  }
+  return result;
 }
 
 bool LivePasswordsSyncTest::ProfilesContainSamePasswordForms(int index_a,
@@ -146,7 +159,20 @@ bool LivePasswordsSyncTest::ProfilesContainSamePasswordForms(int index_a,
   std::vector<PasswordForm> forms_b;
   GetLogins(GetPasswordStore(index_a), forms_a);
   GetLogins(GetPasswordStore(index_b), forms_b);
-  return ContainsSamePasswordForms(forms_a, forms_b);
+  bool result = ContainsSamePasswordForms(forms_a, forms_b);
+  if (!result) {
+    LOG(ERROR) << "Password forms in Profile" << index_a << ":";
+    for (std::vector<PasswordForm>::iterator it = forms_a.begin();
+         it != forms_a.end(); ++it) {
+      LOG(ERROR) << *it << std::endl;
+    }
+    LOG(ERROR) << "Password forms in Profile" << index_b << ":";
+    for (std::vector<PasswordForm>::iterator it = forms_b.begin();
+         it != forms_b.end(); ++it) {
+      LOG(ERROR) << *it << std::endl;
+    }
+  }
+  return result;
 }
 
 bool LivePasswordsSyncTest::AllProfilesContainSamePasswordFormsAsVerifier() {

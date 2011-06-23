@@ -1,10 +1,12 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_FORM_DATA_H_
 #define CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_FORM_DATA_H_
 #pragma once
+
+#include <ostream>
 
 #include "testing/gmock/include/gmock/gmock.h"
 #include "webkit/glue/password_form.h"
@@ -40,6 +42,11 @@ bool ContainsSamePasswordFormsPtr(
 bool ContainsSamePasswordForms(
     std::vector<webkit_glue::PasswordForm>& first,
     std::vector<webkit_glue::PasswordForm>& second);
+
+// Pretty-prints the contents of a PasswordForm.
+// TODO(sync): This file must eventually be refactored away -- crbug.com/87185.
+std::ostream& operator<<(std::ostream& os,
+                         const webkit_glue::PasswordForm& form);
 
 // This gmock matcher is used to check that the |arg| contains exactly the same
 // PasswordForms as |forms|, regardless of order.
