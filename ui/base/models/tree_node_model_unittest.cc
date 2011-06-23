@@ -84,9 +84,9 @@ TEST_F(TreeNodeModelTest, AddNode) {
 
   AssertObserverCount(2, 0, 0);
 
-  ASSERT_EQ(2, root->child_count());
-  ASSERT_EQ(2, child1->child_count());
-  ASSERT_EQ(0, child2->child_count());
+  EXPECT_EQ(2, root->child_count());
+  EXPECT_EQ(2, child1->child_count());
+  EXPECT_EQ(0, child2->child_count());
 }
 
 // Verify if the model is properly removing a node from the tree
@@ -105,14 +105,14 @@ TEST_F(TreeNodeModelTest, RemoveNode) {
   // And add it to the root node.
   root->Add(child1, 0);
 
-  ASSERT_EQ(1, model.GetChildCount(root));
+  EXPECT_EQ(1, model.GetChildCount(root));
 
   // Now remove the |child1| from root and release the memory.
   delete model.Remove(root, child1);
 
   AssertObserverCount(0, 1, 0);
 
-  ASSERT_EQ(0, model.GetChildCount(root));
+  EXPECT_EQ(0, model.GetChildCount(root));
 }
 
 // Verify if the nodes added under the root are all deleted when calling
@@ -145,18 +145,18 @@ TEST_F(TreeNodeModelTest, RemoveAllNodes) {
   for (int i = 0; i < 3; ++i)
     foo->Add(new TreeNodeWithValue<int>(i), i);
 
-  ASSERT_EQ(3, root.child_count());
-  ASSERT_EQ(1, child1.child_count());
-  ASSERT_EQ(3, foo->child_count());
+  EXPECT_EQ(3, root.child_count());
+  EXPECT_EQ(1, child1.child_count());
+  EXPECT_EQ(3, foo->child_count());
 
   // Now remove the child nodes from root.
   root.RemoveAll();
 
-  ASSERT_EQ(0, root.child_count());
-  ASSERT_TRUE(root.empty());
+  EXPECT_EQ(0, root.child_count());
+  EXPECT_TRUE(root.empty());
 
-  ASSERT_EQ(1, child1.child_count());
-  ASSERT_EQ(3, foo->child_count());
+  EXPECT_EQ(1, child1.child_count());
+  EXPECT_EQ(3, foo->child_count());
 }
 
 // Verify if the model returns correct indexes for the specified nodes.
@@ -177,20 +177,20 @@ TEST_F(TreeNodeModelTest, GetIndexOf) {
   TreeNodeWithValue<int>* foo1 = new TreeNodeWithValue<int>(0);
   child1->Add(foo1, 0);
 
-  ASSERT_EQ(-1, root.GetIndexOf(&root));
-  ASSERT_EQ(0, root.GetIndexOf(child1));
-  ASSERT_EQ(1, root.GetIndexOf(child2));
-  ASSERT_EQ(-1, root.GetIndexOf(foo1));
+  EXPECT_EQ(-1, root.GetIndexOf(&root));
+  EXPECT_EQ(0, root.GetIndexOf(child1));
+  EXPECT_EQ(1, root.GetIndexOf(child2));
+  EXPECT_EQ(-1, root.GetIndexOf(foo1));
 
-  ASSERT_EQ(-1, child1->GetIndexOf(&root));
-  ASSERT_EQ(-1, child1->GetIndexOf(child1));
-  ASSERT_EQ(-1, child1->GetIndexOf(child2));
-  ASSERT_EQ(0, child1->GetIndexOf(foo1));
+  EXPECT_EQ(-1, child1->GetIndexOf(&root));
+  EXPECT_EQ(-1, child1->GetIndexOf(child1));
+  EXPECT_EQ(-1, child1->GetIndexOf(child2));
+  EXPECT_EQ(0, child1->GetIndexOf(foo1));
 
-  ASSERT_EQ(-1, child2->GetIndexOf(&root));
-  ASSERT_EQ(-1, child2->GetIndexOf(child2));
-  ASSERT_EQ(-1, child2->GetIndexOf(child1));
-  ASSERT_EQ(-1, child2->GetIndexOf(foo1));
+  EXPECT_EQ(-1, child2->GetIndexOf(&root));
+  EXPECT_EQ(-1, child2->GetIndexOf(child2));
+  EXPECT_EQ(-1, child2->GetIndexOf(child1));
+  EXPECT_EQ(-1, child2->GetIndexOf(foo1));
 }
 
 // Verify whether a specified node has or not an ancestor.
@@ -210,25 +210,25 @@ TEST_F(TreeNodeModelTest, HasAncestor) {
   TreeNodeWithValue<int>* foo1 = new TreeNodeWithValue<int>(0);
   child1->Add(foo1, 0);
 
-  ASSERT_TRUE(root.HasAncestor(&root));
-  ASSERT_FALSE(root.HasAncestor(child1));
-  ASSERT_FALSE(root.HasAncestor(child2));
-  ASSERT_FALSE(root.HasAncestor(foo1));
+  EXPECT_TRUE(root.HasAncestor(&root));
+  EXPECT_FALSE(root.HasAncestor(child1));
+  EXPECT_FALSE(root.HasAncestor(child2));
+  EXPECT_FALSE(root.HasAncestor(foo1));
 
-  ASSERT_TRUE(child1->HasAncestor(child1));
-  ASSERT_TRUE(child1->HasAncestor(&root));
-  ASSERT_FALSE(child1->HasAncestor(child2));
-  ASSERT_FALSE(child1->HasAncestor(foo1));
+  EXPECT_TRUE(child1->HasAncestor(child1));
+  EXPECT_TRUE(child1->HasAncestor(&root));
+  EXPECT_FALSE(child1->HasAncestor(child2));
+  EXPECT_FALSE(child1->HasAncestor(foo1));
 
-  ASSERT_TRUE(child2->HasAncestor(child2));
-  ASSERT_TRUE(child2->HasAncestor(&root));
-  ASSERT_FALSE(child2->HasAncestor(child1));
-  ASSERT_FALSE(child2->HasAncestor(foo1));
+  EXPECT_TRUE(child2->HasAncestor(child2));
+  EXPECT_TRUE(child2->HasAncestor(&root));
+  EXPECT_FALSE(child2->HasAncestor(child1));
+  EXPECT_FALSE(child2->HasAncestor(foo1));
 
-  ASSERT_TRUE(foo1->HasAncestor(foo1));
-  ASSERT_TRUE(foo1->HasAncestor(child1));
-  ASSERT_TRUE(foo1->HasAncestor(&root));
-  ASSERT_FALSE(foo1->HasAncestor(child2));
+  EXPECT_TRUE(foo1->HasAncestor(foo1));
+  EXPECT_TRUE(foo1->HasAncestor(child1));
+  EXPECT_TRUE(foo1->HasAncestor(&root));
+  EXPECT_FALSE(foo1->HasAncestor(child2));
 }
 
 // Verify if GetTotalNodeCount returns the correct number of nodes from the node
@@ -274,11 +274,11 @@ TEST_F(TreeNodeModelTest, GetTotalNodeCount) {
 
   root.Add(bar1, 2);
 
-  ASSERT_EQ(9, root.GetTotalNodeCount());
-  ASSERT_EQ(3, child1->GetTotalNodeCount());
-  ASSERT_EQ(2, child2->GetTotalNodeCount());
-  ASSERT_EQ(2, foo2->GetTotalNodeCount());
-  ASSERT_EQ(1, bar1->GetTotalNodeCount());
+  EXPECT_EQ(9, root.GetTotalNodeCount());
+  EXPECT_EQ(3, child1->GetTotalNodeCount());
+  EXPECT_EQ(2, child2->GetTotalNodeCount());
+  EXPECT_EQ(2, foo2->GetTotalNodeCount());
+  EXPECT_EQ(1, bar1->GetTotalNodeCount());
 }
 
 // Makes sure that we are notified when the node is renamed,
@@ -293,38 +293,38 @@ TEST_F(TreeNodeModelTest, SetTitle) {
   const string16 title(ASCIIToUTF16("root2"));
   model.SetTitle(root, title);
   AssertObserverCount(0, 0, 1);
-  ASSERT_EQ(title, root->GetTitle());
+  EXPECT_EQ(title, root->GetTitle());
 }
 
 TEST_F(TreeNodeModelTest, BasicOperations) {
   TreeNodeWithValue<int> root;
-  ASSERT_EQ(0, root.child_count());
+  EXPECT_EQ(0, root.child_count());
 
   TreeNodeWithValue<int>* child1 = new TreeNodeWithValue<int>();
   root.Add(child1, root.child_count());
-  ASSERT_EQ(1, root.child_count());
-  ASSERT_EQ(&root, child1->parent());
+  EXPECT_EQ(1, root.child_count());
+  EXPECT_EQ(&root, child1->parent());
 
   TreeNodeWithValue<int>* child2 = new TreeNodeWithValue<int>();
   root.Add(child2, root.child_count());
-  ASSERT_EQ(2, root.child_count());
-  ASSERT_EQ(child1->parent(), child2->parent());
+  EXPECT_EQ(2, root.child_count());
+  EXPECT_EQ(child1->parent(), child2->parent());
 
   scoped_ptr<TreeNodeWithValue<int> > c2(root.Remove(child2));
-  ASSERT_EQ(1, root.child_count());
-  ASSERT_EQ(NULL, child2->parent());
+  EXPECT_EQ(1, root.child_count());
+  EXPECT_EQ(NULL, child2->parent());
 
   scoped_ptr<TreeNodeWithValue<int> > c1(root.Remove(child1));
-  ASSERT_EQ(0, root.child_count());
+  EXPECT_EQ(0, root.child_count());
 }
 
 TEST_F(TreeNodeModelTest, IsRoot) {
   TreeNodeWithValue<int> root;
-  ASSERT_TRUE(root.is_root());
+  EXPECT_TRUE(root.is_root());
 
   TreeNodeWithValue<int>* child1 = new TreeNodeWithValue<int>(1);
   root.Add(child1, root.child_count());
-  ASSERT_FALSE(child1->is_root());
+  EXPECT_FALSE(child1->is_root());
 }
 
 }  // namespace ui
