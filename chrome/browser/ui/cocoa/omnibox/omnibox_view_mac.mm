@@ -1078,7 +1078,7 @@ string16 OmniboxViewMac::GetClipboardText(ui::Clipboard* clipboard) {
     // lines in terminals, email programs, etc., and so linebreaks indicate
     // completely bogus whitespace that would just cause the input to be
     // invalid.
-    return CollapseWhitespace(StripJavascriptSchemas(text16), true);
+    return StripJavascriptSchemas(CollapseWhitespace(text16, true));
   }
 
   // Try bookmark format.

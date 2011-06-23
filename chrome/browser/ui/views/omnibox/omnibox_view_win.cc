@@ -2364,7 +2364,7 @@ string16 OmniboxViewWin::GetClipboardText() const {
     // lines in terminals, email programs, etc., and so linebreaks indicate
     // completely bogus whitespace that would just cause the input to be
     // invalid.
-    return CollapseWhitespace(StripJavascriptSchemas(text), true);
+    return StripJavascriptSchemas(CollapseWhitespace(text, true));
   }
 
   // Try bookmark format.
