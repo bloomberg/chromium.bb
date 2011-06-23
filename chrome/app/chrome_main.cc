@@ -274,6 +274,14 @@ void CommonSubprocessInit(const std::string& process_type) {
   setlocale(LC_NUMERIC, "C");
 #endif
 
+#if defined(USE_LINUX_BREAKPAD)
+  // Needs to be called after we have chrome::DIR_USER_DATA.  BrowserMain sets
+  // this up for the browser process in a different manner. Zygotes need to call
+  // InitCrashReporter() in RunZygote().
+  if (process_type != switches::kZygoteProcess)
+    InitCrashReporter();
+#endif
+
   InitializeChromeContentClient(process_type);
 }
 
