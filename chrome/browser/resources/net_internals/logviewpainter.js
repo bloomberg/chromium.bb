@@ -287,12 +287,39 @@ function stripCookieOrLoginInfo(line) {
       // Unencrypted authentication patterns
       /^authorization: \S*/i,
       /^proxy-authorization: \S*/i];
-
   for (var i = 0; i < patterns.length; i++) {
     var match = patterns[i].exec(line);
     if (match != null)
-      return match + ' [value was stripped]';
+      return match[0] + ' [value was stripped]';
   }
+
+  // Remove authentication information from data received from the server in
+  // multi-round Negotiate authentication.
+  var challengePatterns = [
+      /^www-authenticate: (\S*)\s*/i,
+      /^proxy-authenticate: (\S*)\s*/i];
+  for (var i = 0; i < challengePatterns.length; i++) {
+    var match = challengePatterns[i].exec(line);
+    if (!match)
+      continue;
+
+    // If there's no data after the scheme name, do nothing.
+    if (match[0].length == line.length)
+      break;
+
+    // Ignore lines with commas in them, as they may contain lists of schemes,
+    // and the information we want to hide is Base64 encoded, so has no commas.
+    if (line.indexOf(',') >= 0)
+      break;
+
+    // Ignore Basic and Digest authentication challenges, as they contain
+    // public information.
+    if (/^basic$/i.test(match[1]) || /^digest$/i.test(match[1]))
+      break;
+
+    return match[0] + '[value was stripped]';
+  }
+
   return line;
 }
 
