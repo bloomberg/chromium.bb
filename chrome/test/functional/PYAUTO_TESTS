@@ -134,14 +134,6 @@
       '-downloads.DownloadsTest.testRemoveDownload',
       # crbug.com/66072
       '-notifications.NotificationsTest.testNotificationOrderAfterClosingOne',
-      # crbug.com/85598
-      '-ntp.NTPTest.testGetAppsWhenInstallApp',
-      '-ntp.NTPTest.testLaunchAppFullScreen',
-      '-ntp.NTPTest.testLaunchAppNewWindow',
-      '-ntp.NTPTest.testLaunchAppPinnedTab',
-      '-ntp.NTPTest.testLaunchAppRegularTab',
-      '-ntp.NTPTest.testLaunchAppWithDefaultSettings',
-      '-ntp.NTPTest.testUninstallApp',
       # crbug.com/70694, crbug.com/73078
       '-passwords.PasswordTest.testInfoBarDisappearByReload',
       '-passwords.PasswordTest.testNeverSavePasswords',
