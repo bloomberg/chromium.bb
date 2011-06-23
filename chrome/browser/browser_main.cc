@@ -114,7 +114,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/gl/gl_implementation.h"
 #include "ui/gfx/gl/gl_switches.h"
-#include "views/desktop/desktop_window.h"
 
 #if defined(USE_LINUX_BREAKPAD)
 #include "base/linux_util.h"
@@ -193,6 +192,7 @@
 
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/views/chrome_views_delegate.h"
+#include "views/desktop/desktop_window.h"
 #include "views/focus/accelerator_handler.h"
 #include "views/widget/widget.h"
 #if defined(TOOLKIT_USES_GTK)
