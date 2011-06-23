@@ -58,9 +58,9 @@ class GpuVideoDecodeAccelerator
                     std::vector<uint32>* configs);
   void OnInitialize(const std::vector<uint32>& configs);
   void OnDecode(int32 id, base::SharedMemoryHandle handle, int32 size);
-  void OnAssignSysmemBuffers(const std::vector<int32> buffer_ids,
-                             const std::vector<base::SharedMemoryHandle> data,
-                             const std::vector<gfx::Size> sizes);
+  void OnAssignSysmemBuffers(const std::vector<int32>& buffer_ids,
+                             const std::vector<base::SharedMemoryHandle>& data,
+                             const std::vector<gfx::Size>& sizes);
   void OnReusePictureBuffer(int32 picture_buffer_id);
   void OnFlush();
   void OnAbort();

@@ -113,7 +113,8 @@ void TransportTextureHost::ReleaseTexturesInternal() {
   glDeleteTextures(textures_.size(), textures.get());
 }
 
-void TransportTextureHost::SendTexturesInternal(std::vector<int> textures) {
+void TransportTextureHost::SendTexturesInternal(
+    const std::vector<int>& textures) {
   if (MessageLoop::current() != io_message_loop_) {
     io_message_loop_->PostTask(
         FROM_HERE,

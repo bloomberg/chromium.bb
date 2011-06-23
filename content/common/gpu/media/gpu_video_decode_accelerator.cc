@@ -126,9 +126,9 @@ void GpuVideoDecodeAccelerator::AssignGLESBuffers(
 }
 
 void GpuVideoDecodeAccelerator::OnAssignSysmemBuffers(
-    const std::vector<int32> buffer_ids,
-    const std::vector<base::SharedMemoryHandle> data,
-    const std::vector<gfx::Size> sizes) {
+    const std::vector<int32>& buffer_ids,
+    const std::vector<base::SharedMemoryHandle>& data,
+    const std::vector<gfx::Size>& sizes) {
   // TODO(vrk): Implement.
   NOTIMPLEMENTED();
 }

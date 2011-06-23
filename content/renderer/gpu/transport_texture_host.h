@@ -161,7 +161,7 @@ class TransportTextureHost
 
   // Send the texture IDs to the GPU process. This will copy the set of
   // texture IDs.
-  void SendTexturesInternal(std::vector<int> textures);
+  void SendTexturesInternal(const std::vector<int>& textures);
 
   // Send the destroy message to the GPU process.
   void SendDestroyInternal();
