@@ -136,7 +136,22 @@ class LKGMManager(manifest_version.BuildSpecsManager):
 
     return _LKGMCandidateInfo(version_info.VersionString())
 
-  def CreateNewCandidate(self, version_file, retries=0):
+
+  def _SetInFlightWithRetry(self, commit_message, retries=3):
+    for index in range(retries+1):
+      try:
+        self._SetInFlight(commit_message)
+        break
+      except (manifest_version.GitCommandException,
+              cros_lib.RunCommandError) as e:
+        last_error = 'Failed to set build in-flight: %s' % e
+        logging.error(last_error)
+        logging.error('Retrying:  Retry %d/%d' %
+                      (index + 1, retries + 1))
+    else:
+      raise manifest_version.GenerateBuildSpecException(last_error)
+
+  def CreateNewCandidate(self, version_file, retries=3):
     """Gets the version number of the next build spec to build.
       Args:
         version_file: File to use in cros when checking for cros version.
@@ -157,7 +172,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
         logging.debug('Using build spec: %s', self.current_version)
         commit_message = 'Automatic: Start %s %s' % (self.build_name,
                                                      self.current_version)
-        self._SetInFlight(commit_message)
+        self._SetInFlightWithRetry(commit_message, retries)
 
       return self.GetLocalManifest(self.current_version)
 
@@ -185,7 +200,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
         logging.debug('Using build spec: %s', self.current_version)
         commit_message = 'Automatic: Start %s %s' % (self.build_name,
                                                      self.current_version)
-        self._SetInFlight(commit_message)
+        self._SetInFlightWithRetry(commit_message, retries)
 
       return self.GetLocalManifest(self.current_version)
 
