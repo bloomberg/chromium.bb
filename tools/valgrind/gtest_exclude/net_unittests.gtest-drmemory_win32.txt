@@ -10,5 +10,10 @@ X509CertificateTest.*
 # Too many uninits and too slow. TODO(timurrrr): investigate uninits
 ProxyResolverV8Test.*
 
+# Funny std::string::replace bug leads to test failures
+# http://crbug.com/87241 aka
+# http://code.google.com/p/drmemory/issues/detail?id=474
+UrlToFilenameEncoderTest.EncodeUrlCorrectly
+
 # Slow
 CookieMonsterTest.GarbageCollectionTriggers
