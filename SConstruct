@@ -100,12 +100,10 @@ ACCEPTABLE_ARGUMENTS = set([
     'buildplatform',
     # Location to download Chromium binaries to and/or read them from.
     'chrome_binaries_dir',
-    # used for browser_tests: path to the browser
+    # used for chrome_browser_tests: path to the browser
     'chrome_browser_path',
-    # used for browser_tests: path to a pre-built browser plugin.
+    # used for chrome_browser_tests: path to a pre-built browser plugin.
     'force_ppapi_plugin',
-    # used for browser_tests: which plugin to use (npapi,ppapi,internal)
-    'chrome_plugin_type',
     # where should we store extrasdk libraries
     'extra_sdk_lib_destination',
     # where should we store extrasdk headers
@@ -553,8 +551,6 @@ MAJOR_TEST_SUITES = set([
   'small_tests',
   'medium_tests',
   'large_tests',
-  # Tests using the firefox plugin, usually only run on firefox
-  'browser_tests',
   # Tests using the pepper plugin, only run with chrome
   # TODO(ncbray): migrate pepper_browser_tests to chrome_browser_tests
   'pepper_browser_tests',
@@ -700,7 +696,6 @@ Alias('sel_ldr_sled_tests', [])
 Alias('small_tests', [])
 Alias('medium_tests', [])
 Alias('large_tests', [])
-Alias('browser_tests', [])
 Alias('pepper_browser_tests', [])
 Alias('chrome_browser_tests', [])
 Alias('pyauto_tests', [])
@@ -1152,74 +1147,6 @@ def GetHeadlessPrefix(env):
   else:
     # Mac and Windows do not seem to have an equivalent.
     return []
-
-
-SELENIUM_TEST_SCRIPT = '${SCONSTRUCT_DIR}/tools/selenium_tester.py'
-
-def BrowserTester(env,
-                  target,
-                  url,
-                  files,
-                  log_verbosity=2,
-                  args=[]):
-  browser = '*firefox'
-  # NOTE: hack to enable chrome testing - only works with Linux so far
-  if ARGUMENTS.get('chrome_browser_path'):
-    browser = env.subst('"*googlechrome '
-                        '${SOURCE_ROOT}/native_client/tools/'
-                        'google-chrome-wrapper.py"')
-
-  deps = [SELENIUM_TEST_SCRIPT] + files
-  command = (GetHeadlessPrefix(env) +
-             ['${SOURCES[0].abspath}', '--url', url, '--browser', browser])
-  for i in range(len(files)):
-    command.append('--file')
-    command.append('${SOURCES[%d].abspath}' % (i + 1))
-
-  # NOTE: additional hack to enable chrome testing
-  # use a more recent version of the selenium server
-  if ARGUMENTS.get('chrome_browser_path'):
-    command.append('--selenium_jar')
-    command.append(env.subst('${SOURCE_ROOT}/third_party/selenium/'
-                             'selenium-server-2.0a1/'
-                             'selenium-server-standalone.jar'))
-    # this env affects the behavior of google-chrome-wrapper.py
-    command.append('--env')
-    command.append('CHROME_BROWSER_EXE=' + ARGUMENTS.get('chrome_browser_path'))
-    # BrowserTester() is called with an untrusted env, but the plugin is
-    # built in the corresponding trusted env
-
-    plugin = ARGUMENTS.get('chrome_plugin_type', 'npapi')
-    if plugin == 'ppapi':
-      # TODO(robertm): this plugin dependency is not properly modeled in scons
-      #                this also needs more work for non linux systems
-      trusted_env = env['TRUSTED_ENV']
-      plugin = trusted_env.subst('${STAGING_DIR}/libppNaClPlugin.so')
-    command.append('--env')
-    command.append('CHROME_PLUGIN_TYPE=' + plugin)
-
-    # These are here mostly for reference, the selenium infrastructure
-    # seems to swallow stdout from the browser and module
-    command.append('--env')
-    command.append('PPAPI_BROWSER_DEBUG=1')
-    command.append('--env')
-    command.append('NACL_PLUGIN_DEBUG=1')
-
-  # NOTE: setting the PYTHONPATH is currently not necessary as the test
-  #       script sets its own path
-  # env['ENV']['PYTHONPATH'] = ???
-  # NOTE: since most of the demos use X11 we need to make sure
-  #      some env vars are set for tag, val in extra_env:
-  SetupBrowserEnv(env)
-
-  node = env.Command(target, deps, ' '.join(command))
-  # If we are testing build output captured from elsewhere,
-  # ignore build dependencies.
-  if env.Bit('built_elsewhere'):
-    env.Ignore(node, deps)
-  return node
-
-pre_base_env.AddMethod(BrowserTester)
 
 
 pre_base_env['CHROME_DOWNLOAD_DIR'] = \

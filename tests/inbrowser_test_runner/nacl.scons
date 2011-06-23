@@ -33,20 +33,12 @@ test_files = [
 env.Depends(dest_copy, test_files)
 env.Alias('test_runner.html', dest_copy)
 
-node = env.BrowserTester(
-    'my_browser_test.out', url='test_runner.html',
-    files=[env.File('test_runner.html')] + test_files)
-# Disabling test on mac, see:
-#   http://code.google.com/p/nativeclient/issues/detail?id=1170
-if 'TRUSTED_ENV' in env and not env['TRUSTED_ENV'].Bit('mac'):
-  env.AddNodeToTestSuite(node, ['browser_tests'], 'run_inbrowser_test_runner')
-
 node = env.PPAPIBrowserTester(
-    'inbrowser_test_runner_chrome.out', url='test_runner.html',
+    'inbrowser_test_runner.out', url='test_runner.html',
     files=[env.File('test_runner.html')] + test_files,
     args=['--enable_experimental_js'])
 
 env.AddNodeToTestSuite(node, ['chrome_browser_tests'],
-                       'run_inbrowser_test_runner_chrome',
+                       'run_inbrowser_test_runner',
                        is_flaky=True, # Don't subject Chrome to our problems.
                        is_broken=env.PPAPIBrowserTesterIsBroken())
