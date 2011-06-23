@@ -15,6 +15,7 @@
 #include "base/file_util.h"
 #include "base/file_version_info.h"
 #include "base/i18n/icu_util.h"
+#include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
@@ -117,9 +118,24 @@ class FakeBrowserProcessImpl : public BrowserProcessImpl {
     return profile_manager_.get();
   }
 
+  virtual MetricsService* metrics_service() {
+    return NULL;
+  }
+
  private:
   scoped_ptr<ProfileManager> profile_manager_;
 };
+
+base::LazyInstance<chrome::ChromeContentClient>
+    g_chrome_content_client(base::LINKER_INITIALIZED);
+
+// Override the default ContentBrowserClient to let Chrome participate in
+// content logic.  Must be done before any tabs are created.
+base::LazyInstance<chrome::ChromeContentBrowserClient>
+    g_browser_client(base::LINKER_INITIALIZED);
+
+base::LazyInstance<chrome::ChromeContentRendererClient>
+    g_renderer_client(base::LINKER_INITIALIZED);
 
 }  // namespace
 
@@ -212,6 +228,7 @@ void FakeExternalTab::Initialize() {
   base::SystemMonitor system_monitor;
 
   icu_util::Initialize();
+  TestTimeouts::Initialize();
 
   app::RegisterPathProvider();
   content::RegisterPathProvider();
@@ -238,12 +255,24 @@ void FakeExternalTab::Initialize() {
   g_browser_process->SetApplicationLocale("en-US");
 
   RenderProcessHost::set_run_renderer_in_process(true);
-  browser::RegisterLocalState(browser_process_->local_state());
+
+  browser_process_->local_state()->RegisterBooleanPref(
+      prefs::kMetricsReportingEnabled, false);
 
   FilePath profile_path(ProfileManager::GetDefaultProfileDir(user_data()));
 
   Profile* profile =
       g_browser_process->profile_manager()->GetProfile(profile_path);
+
+  // Initialize the content client which that code uses to talk to Chrome.
+  content::SetContentClient(&g_chrome_content_client.Get());
+
+  // Override the default ContentBrowserClient to let Chrome participate in
+  // content logic.  Must be done before any tabs are created.
+  content::GetContentClient()->set_browser(&g_browser_client.Get());
+
+  content::GetContentClient()->set_renderer(&g_renderer_client.Get());
+
   // Create the child threads.
   g_browser_process->db_thread();
   g_browser_process->file_thread();
@@ -521,18 +550,6 @@ int main(int argc, char** argv) {
     LOG(INFO) << "Not running ChromeFrame net tests on IE9";
     return 0;
   }
-
-  // Initialize the content client which that code uses to talk to Chrome.
-  chrome::ChromeContentClient chrome_content_client;
-  content::SetContentClient(&chrome_content_client);
-
-  // Override the default ContentBrowserClient to let Chrome participate in
-  // content logic.  Must be done before any tabs are created.
-  chrome::ChromeContentBrowserClient browser_client;
-  content::GetContentClient()->set_browser(&browser_client);
-
-  chrome::ChromeContentRendererClient renderer_client;
-  content::GetContentClient()->set_renderer(&renderer_client);
 
   // TODO(tommi): Stuff be broke. Needs a fixin'.
   // This is awkward: the TestSuite derived CFUrlRequestUnittestRunner contains
