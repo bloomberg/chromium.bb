@@ -1184,12 +1184,12 @@ TEST_F(HostContentSettingsMapTest, CookiesExplicitSessionOnly) {
   EXPECT_EQ(CONTENT_SETTING_SESSION_ONLY,
             host_content_settings_map->GetCookieContentSetting(
                 kBlockedSite, kFirstPartySite, false));
-  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+  EXPECT_EQ(CONTENT_SETTING_SESSION_ONLY,
             host_content_settings_map->GetCookieContentSetting(
                 kBlockedSite, kFirstPartySite, true));
 }
 
-TEST_F(HostContentSettingsMapTest, CookiesThirdPartyAlwaysBlocked) {
+TEST_F(HostContentSettingsMapTest, CookiesThirdPartyBlockedExplicitAllow) {
   TestingProfile profile;
   HostContentSettingsMap* host_content_settings_map =
       profile.GetHostContentSettingsMap();
@@ -1200,7 +1200,7 @@ TEST_F(HostContentSettingsMapTest, CookiesThirdPartyAlwaysBlocked) {
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetCookieContentSetting(
                 kAllowedSite, kFirstPartySite, false));
-  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetCookieContentSetting(
                 kAllowedSite, kFirstPartySite, true));
 
@@ -1216,7 +1216,7 @@ TEST_F(HostContentSettingsMapTest, CookiesThirdPartyAlwaysBlocked) {
   AutoReset<CommandLine> auto_reset(cmd, *cmd);
   cmd->AppendSwitch(switches::kBlockReadingThirdPartyCookies);
 
-  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetCookieContentSetting(
                 kAllowedSite, kFirstPartySite, false));
 

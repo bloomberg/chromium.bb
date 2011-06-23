@@ -5349,7 +5349,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Exceptions...
       </message>
       <message name="IDS_COOKIES_BLOCK_3RDPARTY_CHKBOX" desc="A checkbox in the Content Settings dialog for blocking all 3rd party cookies.">
-        Ignore exceptions and block third-party cookies from being set
+        Block third-party cookies from being set
       </message>
 
       <!-- Mac users do not close their browser; they quit it. -->

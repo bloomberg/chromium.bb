@@ -171,8 +171,14 @@ ContentSetting HostContentSettingsMap::GetCookieContentSetting(
     bool setting_cookie) const {
   if (ShouldAllowAllContent(first_party_url))
     return CONTENT_SETTING_ALLOW;
-  ContentSetting setting = CONTENT_SETTING_ALLOW;
-  if (BlockThirdPartyCookies()) {
+
+  // First get any host-specific settings.
+  ContentSetting setting = GetNonDefaultContentSetting(url,
+      first_party_url, CONTENT_SETTINGS_TYPE_COOKIES, "");
+
+  // If no explicit exception has been made and third-party cookies are blocked
+  // by default, apply that rule.
+  if (setting == CONTENT_SETTING_DEFAULT && BlockThirdPartyCookies()) {
     bool strict = CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kBlockReadingThirdPartyCookies);
     net::StaticCookiePolicy policy(strict ?
@@ -180,17 +186,17 @@ ContentSetting HostContentSettingsMap::GetCookieContentSetting(
         net::StaticCookiePolicy::BLOCK_SETTING_THIRD_PARTY_COOKIES);
     int rv;
     if (setting_cookie)
-     rv = policy.CanSetCookie(url, first_party_url);
+      rv = policy.CanSetCookie(url, first_party_url);
     else
-     rv = policy.CanGetCookies(url, first_party_url);
+      rv = policy.CanGetCookies(url, first_party_url);
     DCHECK_NE(net::ERR_IO_PENDING, rv);
     if (rv != net::OK)
       setting = CONTENT_SETTING_BLOCK;
   }
 
-  if (setting == CONTENT_SETTING_ALLOW)
-    setting = GetContentSettingInternal(
-        url, url, CONTENT_SETTINGS_TYPE_COOKIES, "");
+  // If no other policy has changed the setting, use the default.
+  if (setting == CONTENT_SETTING_DEFAULT)
+    setting = GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_COOKIES);
 
   return setting;
 }
