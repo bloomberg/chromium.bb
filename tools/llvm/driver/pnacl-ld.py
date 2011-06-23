@@ -177,6 +177,7 @@ LDPatterns = [
 
   # Inputs and options that need to be kept in order
   ( '(-l.*)',              "env.append('INPUTS', $0)"),
+  ( ('(-l)','(.*)'),       "env.append('INPUTS', $0+$1)"),
   ( '(--no-as-needed)',    "env.append('INPUTS', $0)"),
   ( '(--as-needed)',       "env.append('INPUTS', $0)"),
   ( '(--start-group)',     "env.append('INPUTS', $0)"),
@@ -296,7 +297,6 @@ def ForceSegmentGap(inputs):
     if IsFlag(f):
       continue
     if IsLib(f):
-      # Strip leading "-l".
       path = FindLib(f)
     else:
       path = f
@@ -308,11 +308,10 @@ def IsBitcodeInput(f):
   if IsFlag(f):
     return False
   if IsLib(f):
-    # Strip leading "-l".
     path = FindLib(f)
   else:
     path = f
-  return FileType(path) in ['bclib','bc','po']
+  return FileType(path) in ['bclib','po']
 
 def RemoveBitcode(inputs):
   # Library order is important. We need to reinsert the
@@ -372,7 +371,7 @@ def AnalyzeInputs(inputs):
           pass
     elif intype in ['pso']:
       pass
-    elif intype in ['bc','bclib','po']:
+    elif intype in ['bclib','po']:
       has_bitcode |= True
     else:
       Log.Fatal("%s: Unexpected type of file for linking", f)
@@ -682,28 +681,44 @@ def LinkNative(inputs, output):
   env.pop()
   return
 
-def FindLib(name):
+def FindLib(arg):
   """Returns the full pathname for the library input.
      For example, name might be "-lc" or "-lm".
      Returns None if the library is not found.
   """
-  assert(IsLib(name))
-  name = name[len('-l'):]
+  assert(IsLib(arg))
+  name = arg[len('-l'):]
 
   searchdirs = env.get('SEARCH_DIRS')
-  shared_ok = not env.getbool('STATIC')
-  if shared_ok:
-    extensions = [ 'pso', 'so', 'a' ]
+  searchnames = []
+
+  if name[0] == ':':
+    # -l:filename  (search for the filename)
+    name = name[1:]
+    searchnames.append(name)
+
+    # .pso may exist in lieu of .so, or vice versa.
+    if '.so' in name:
+      searchnames.append(name.replace('.so', '.pso'))
+    if '.pso' in name:
+      searchnames.append(name.replace('.pso', '.so'))
   else:
-    extensions = [ 'a' ]
+    # -lfoo
+    shared_ok = not env.getbool('STATIC')
+    if shared_ok:
+      extensions = [ 'pso', 'so', 'a' ]
+    else:
+      extensions = [ 'a' ]
+    for ext in extensions:
+      searchnames.append('lib' + name + '.' + ext)
 
   for curdir in searchdirs:
-    for ext in extensions:
-      guess = os.path.join(curdir, 'lib' + name + '.' + ext)
+    for name in searchnames:
+      guess = os.path.join(curdir, name)
       if os.path.exists(guess):
         return guess
 
-  Log.Fatal("Unable to find library '%s'", name)
+  Log.Fatal("Unable to find library '%s'", arg)
 
 # Given linker arguments (including -L, -l, and filenames),
 # returns the list of files which are pulled by the linker.

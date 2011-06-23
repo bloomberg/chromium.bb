@@ -12,7 +12,7 @@
 from driver_tools import *
 
 EXTRA_ENV = {
-  'ALLOW_TRANSLATE': '0',  # Allow .bc to be translated to .o (before linking).
+  'ALLOW_TRANSLATE': '0',  # Allow bitcode translation before linking.
                            # It doesn't normally make sense to do this.
 
   'ALLOW_NATIVE'   : '0',  # Allow native objects (.S,.s,.o) to be in the
@@ -327,7 +327,7 @@ def main(argv):
   output_type_map = {
     ('-E', True) : 'pp',
     ('-E', False): 'pp',
-    ('-c', True) : 'bc',
+    ('-c', True) : 'po',
     ('-c', False): 'o',
     ('-S', True) : 'll',
     ('-S', False): 's',
@@ -350,9 +350,9 @@ def main(argv):
       intype = FileType(f)
       if ((output_type == 'pp' and intype not in ('src','S')) or
           (output_type == 'll' and intype not in 'src') or
-          (output_type == 'bc' and intype not in ('src','ll')) or
-          (output_type == 's' and intype not in ('src','ll','bc','S')) or
-          (output_type == 'o' and intype not in ('src','ll','bc','S','s'))):
+          (output_type == 'po' and intype not in ('src','ll')) or
+          (output_type == 's' and intype not in ('src','ll','po','S')) or
+          (output_type == 'o' and intype not in ('src','ll','po','S','s'))):
         Log.Fatal("%s: Unexpected type of file for '%s'", f, gcc_mode)
 
       if output == '':
@@ -372,13 +372,13 @@ def main(argv):
     output = 'a.out'
   namegen = TempNameGen(inputs, output)
 
-  # Compile all source files (c/c++/ll) to .bc
+  # Compile all source files (c/c++/ll) to .po
   for i in xrange(0, len(inputs)):
     if inputs[i].startswith('-'):
       continue
     intype = FileType(inputs[i])
     if intype in ('src','ll'):
-      inputs[i] = CompileOne(inputs[i], 'bc', namegen)
+      inputs[i] = CompileOne(inputs[i], 'po', namegen)
 
   # Compile all .s/.S to .o
   if env.getbool('ALLOW_NATIVE'):
@@ -389,7 +389,7 @@ def main(argv):
       if intype in ('s','S'):
         inputs[i] = CompileOne(inputs[i], 'o', namegen)
 
-  # We should only be left with .bc and .o and libraries
+  # We should only be left with .po and .o and libraries
   for f in inputs:
     if f.startswith('-'):
       continue
@@ -397,7 +397,7 @@ def main(argv):
     if intype in ('o','nlib','s','S') and not env.getbool('ALLOW_NATIVE'):
         Log.Fatal('%s: Native object files not allowed in link. '
                   'Use --pnacl-allow-native to override.', f)
-    assert(intype in ('bc','o','bclib','nlib'))
+    assert(intype in ('po','o','bclib','nlib','so','pso'))
 
   # Fix the user-specified linker arguments
   ld_inputs = []
@@ -454,7 +454,7 @@ def RunTranslate(input, output, mode):
   RunDriver('pnacl-translate', args)
 
 def SetupChain(chain, input_type, output_type):
-  assert(output_type in ('pp','ll','bc','s','o'))
+  assert(output_type in ('pp','ll','po','s','o'))
   cur_type = input_type
 
   # src -> pp
@@ -471,29 +471,29 @@ def SetupChain(chain, input_type, output_type):
   if cur_type == output_type:
     return
 
-  # ll -> bc
+  # ll -> po
   if cur_type == 'll':
-    chain.add(RunLLVMAS, 'bc')
-    cur_type = 'bc'
+    chain.add(RunLLVMAS, 'po')
+    cur_type = 'po'
   if cur_type == output_type:
     return
 
-  # src -> bc
-  if cur_type == 'src' and output_type == 'bc':
-    chain.add(RunCC, 'bc', mode='-c')
-    cur_type = 'bc'
+  # src -> po
+  if cur_type == 'src' and output_type == 'po':
+    chain.add(RunCC, 'po', mode='-c')
+    cur_type = 'po'
   if cur_type == output_type:
     return
 
-  # bc -> o
-  if env.getbool('MC_DIRECT') and cur_type == 'bc' and output_type == 'o':
+  # po -> o
+  if env.getbool('MC_DIRECT') and cur_type == 'po' and output_type == 'o':
     chain.add(RunTranslate, 'o', mode='-c')
     cur_type = 'o'
   if cur_type == output_type:
     return
 
-  # bc -> s
-  if cur_type == 'bc':
+  # po -> s
+  if cur_type == 'po':
     chain.add(RunTranslate, 's', mode='-S')
     cur_type = 's'
   if cur_type == output_type:

@@ -88,7 +88,7 @@ def main(argv):
   if arch:
     output_type = 'o'
   else:
-    output_type = 'bc'
+    output_type = 'po'
 
   if output == '':
     output = 'a.out'
@@ -97,8 +97,8 @@ def main(argv):
   env.set('input', inputs[0])
   env.set('output', output)
 
-  if output_type == 'bc':
-    # .ll to .bc
+  if output_type == 'po':
+    # .ll to .po
     RunWithLog("${RUN_LLVM_AS}")
   else:
     # .s to .o

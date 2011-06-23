@@ -109,31 +109,42 @@ def main(argv):
   if len(inputs) != 1:
     Log.Fatal('Expecting exactly one input file')
 
-  intype = FileType(inputs[0])
+  infile = inputs[0]
 
-  if intype not in ('pso', 'po', 'bc', 'pexe'):
+  if not IsBitcode(infile):
+    Log.Fatal('%s: File is not bitcode', infile)
+
+  intype = FileType(infile)
+  if intype not in ('pso', 'po', 'pexe'):
     Log.Fatal('Expecting input file to be bitcode (.pexe, .pso, .po, or .bc)')
 
-  if not IsBitcode(inputs[0]):
-    Log.Fatal('%s: File is not bitcode', inputs[0])
-
-  if intype in ('pso'):
+  if intype == 'pso':
     env.set('PIC', '1')
+
+  # Read the bitcode metadata to extract library
+  # dependencies and SOName.
+  metadata = GetBitcodeMetadata(infile)
+  for lib in metadata['NeedsLibrary']:
+    env.append('EXTRA_LD_FLAGS', '-l:' + lib)
+
+  if intype == 'pso':
+    soname = metadata['SOName']
+    if soname:
+      env.append('EXTRA_LD_FLAGS', '-Wl,-soname=' + soname)
 
   if output_type == '':
     DefaultOutputTypes = {
       'pso' : 'so',
       'pexe': 'nexe',
       'po'  : 'o',
-      'bc'  : 'o',
     }
     output_type = DefaultOutputTypes[intype]
 
   if output == '':
-    output = DefaultOutputName(inputs[0], output_type)
+    output = DefaultOutputName(infile, output_type)
 
-  tng = TempNameGen([inputs[0]], output)
-  chain = DriverChain(inputs[0], output, tng)
+  tng = TempNameGen([infile], output)
+  chain = DriverChain(infile, output, tng)
   SetupChain(chain, output_type)
   chain.run()
   return 0

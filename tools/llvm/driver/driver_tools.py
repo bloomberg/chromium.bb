@@ -63,8 +63,8 @@ INITIAL_ENV = {
   'DRY_RUN'     : '0',
   'DEBUG'       : '0',    # Print out internal actions
   'RECURSE'     : '0',    # In a recursive driver call
-  'SAVE_TEMPS'  : '0',    # Do not clean up temporary files
-                          # TODO(pdox): Enable for SDK version
+  'SAVE_TEMPS'  : '1',    # Do not clean up temporary files
+                          # TODO(pdox): Disable for SDK version
   'SANDBOXED'   : '0',    # Use sandboxed toolchain for this arch. (main switch)
   'SRPC'        : '1',    # Use SRPC sandboxed toolchain
   'GOLD_FIX'    : '0',    # Use linker script instead of -Ttext for gold.
@@ -793,21 +793,47 @@ def DecodeLE(bytes):
     value += ord(b)
   return value
 
-# If ForcedFileType is set, FileType() will return ForcedFileType for all
+@SimpleCache
+def GetBitcodeMetadata(filename):
+  assert(IsBitcode(filename))
+
+  # TODO(pdox): Make this work with sandboxed translator
+  llc = env.getone('LLVM_LLC')
+  args = [ llc, '-only-dump-metadata', '-dump-metadata=-', filename ]
+  _, stdout_contents, _ = Run(args, echo_stdout = False, return_stdout = True)
+
+  metadata = { 'OutputFormat': '',
+               'SOName'      : '',
+               'NeedsLibrary': [] }
+  for line in stdout_contents.split('\n'):
+    if not line.strip():
+      continue
+    k, v = line.split(':')
+    k = k.strip()
+    v = v.strip()
+    assert(k in metadata)
+    if isinstance(metadata[k], list):
+      metadata[k].append(v)
+    else:
+      metadata[k] = v
+
+  return metadata
+
+# If FORCED_FILE_TYPE is set, FileType() will return FORCED_FILE_TYPE for all
 # future input files. This is useful for the "as" incarnation, which
 # needs to accept files of any extension and treat them as ".s" (or ".ll")
 # files. Also useful for gcc's "-x", which causes all files to be treated
 # in a certain way.
-ForcedFileType = None
+FORCED_FILE_TYPE = None
 def SetForcedFileType(t):
-  global ForcedFileType
-  ForcedFileType = t
+  global FORCED_FILE_TYPE
+  FORCED_FILE_TYPE = t
 
 def ForceFileType(filename, newtype = None):
   if newtype is None:
-    if ForcedFileType is None:
+    if FORCED_FILE_TYPE is None:
       return
-    newtype = ForcedFileType
+    newtype = FORCED_FILE_TYPE
   FileType.__cache[filename] = newtype
 
 # File Extension -> Type string
@@ -817,8 +843,8 @@ ExtensionMap = {
   'cpp' : 'src',
   'C'   : 'src',
   'll'  : 'll',
-  'bc'  : 'bc',
-  'po'  : 'bc',   # .po = "Portable object file"
+  'bc'  : 'po',
+  'po'  : 'po',   # .po = "Portable object file"
   'pexe': 'pexe', # .pexe = "Portable executable"
   'pso' : 'pso',  # .pso = "Portable Shared Object"
   'asm' : 'S',
@@ -836,8 +862,6 @@ ExtensionMap = {
 def FileType(filename):
   # Auto-detect bitcode files, since we can't rely on extensions
   ext = filename.split('.')[-1]
-  if ext in ('o', 'os', 'so') and IsBitcode(filename):
-    return 'bc'
 
   # This is a total hack. We assume all archives contain
   # bitcode except for the ones in libs-arm*, and libs-x86*.
@@ -849,10 +873,48 @@ def FileType(filename):
       return 'nlib'
     return 'bclib'
 
-  if ext not in ExtensionMap:
-    Log.Fatal('Unknown file extension: %s' % filename)
+  could_be_bitcode = ext in ('o','os','so','bc','po','pso','pexe')
+  if could_be_bitcode and IsBitcode(filename):
+    return GetBitcodeType(filename)
 
-  return ExtensionMap[ext]
+  # Use the file extension if it is recognized
+  if ext in ExtensionMap:
+    return ExtensionMap[ext]
+
+  # We might have a strangely named file, like "ld-linux.so.3".
+  # Auto-detect if it is bitcode or object.
+  if IsELF(filename):
+    return GetELFType(filename)
+
+  if IsBitcode(filename):
+    return GetBitcodeType(filename)
+
+  Log.Fatal('%s: Unrecognized file type', filename)
+
+
+@SimpleCache
+def GetELFType(filename):
+  """ ELF type as determined by ELF metadata """
+  assert(IsELF(filename))
+  elfinfo = GetELFInfo(filename)
+  elf_type_map = {
+    'EXEC': 'nexe',
+    'REL' : 'o',
+    'DYN' : 'so'
+  }
+  return elf_type_map[elfinfo[0]]
+
+@SimpleCache
+def GetBitcodeType(filename):
+  """ Bitcode type as determined by bitcode metadata """
+  assert(IsBitcode(filename))
+  metadata = GetBitcodeMetadata(filename)
+  format_map = {
+    'object': 'po',
+    'shared': 'pso',
+    'executable': 'pexe'
+  }
+  return format_map[metadata['OutputFormat']]
 
 ######################################################################
 #
@@ -865,7 +927,7 @@ def DefaultOutputName(filename, outtype):
   base = RemoveExtension(base)
 
   if outtype in ('pp','dis'): return '-'; # stdout
-  if outtype in ('bc'): return base + '.o'
+  if outtype in ('po'): return base + '.o'
 
   assert(outtype in ExtensionMap.values())
   assert(outtype != 'src')
@@ -1460,7 +1522,12 @@ class TempFileHandler(object):
 
   def wipe(self):
     for path in self.files:
-      os.remove(path)
+      try:
+        os.remove(path)
+      except OSError:
+        # If we're exiting early, the temp file
+        # may have never been created.
+        pass
     self.files = []
 
 TempFiles = TempFileHandler()

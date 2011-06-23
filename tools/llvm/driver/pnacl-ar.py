@@ -49,7 +49,7 @@ def ExperimentalArHack(argv):
     Log.Fatal('Unexpected "ar" mode %s', mode)
   if not output.endswith('.a'):
     Log.Fatal('Unexpected "ar" lib %s', output)
-  not_bitcode = [f for f in inputs if 'bc' != FileType(f)]
+  not_bitcode = [f for f in inputs if 'po' != FileType(f)]
   # NOTE: end of paranoid checks
   for f in not_bitcode:
     # This is for the last remaining native lib build via scons: libcrt_platform

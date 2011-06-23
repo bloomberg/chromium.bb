@@ -193,14 +193,18 @@ readonly PNACL_AS_X8664="${PNACL_BIN}/pnacl-x86_64-as"
 SBTC_PRODUCTION=${SBTC_PRODUCTION:-false}
 
 # Which toolchain to use for each arch.
-SBTC_BUILD_WITH_PNACL="arm x8632 x8664"
+if ${LIBMODE_NEWLIB}; then
+  SBTC_BUILD_WITH_PNACL="arm x8632 x8664"
+else
+  SBTC_BUILD_WITH_PNACL="x8632 x8664"
+fi
 
 # Current milestones in each repo
 # hg-update-all uses these
-readonly LLVM_REV=07b579b7d4a3
+readonly LLVM_REV=857e44955115
 readonly LLVM_GCC_REV=90bef7731935
 readonly NEWLIB_REV=9bef47f82918
-readonly BINUTILS_REV=569e4fcf08da
+readonly BINUTILS_REV=0afa2765184c
 readonly COMPILER_RT_REV=8b41cb76e53e
 
 # Repositories
@@ -622,6 +626,7 @@ glibc() {
                libc.a libc_nonshared.a \
                libc-2.9.so libc.so libc.so.6 \
                libm-2.9.so libm.a libm.so libm.so.6 \
+               libdl-2.9.so libdl.so.2 libdl.so libdl.a \
                libpthread-2.9.so libpthread.a libpthread.so \
                libpthread.so.0 libpthread_nonshared.a \
                runnable-ld.so \
@@ -642,11 +647,16 @@ glibc() {
     cp -a "${NNACL_GLIBC_ROOT}/nacl64/lib/${lib}" "${PNACL_X8664_ROOT}"
   done
 
-  # ld-linux has different naming across 32/64
+  # ld-linux has different sonames across 32/64.
+  # Create symlinks to make them look the same.
+  # TODO(pdox): Can this be fixed in glibc?
   cp -a "${NNACL_GLIBC_ROOT}"/nacl64/lib32/ld-linux.so.2 \
      "${PNACL_X8632_ROOT}"
+  ln -sf ld-linux.so.2 "${PNACL_X8632_ROOT}"/ld-linux-x86-64.so.2
+
   cp -a "${NNACL_GLIBC_ROOT}"/nacl64/lib/ld-linux-x86-64.so.2 \
      "${PNACL_X8664_ROOT}"
+  ln -sf ld-linux-x86-64.so.2 "${PNACL_X8664_ROOT}"/ld-linux.so.2
 
   # Copy the glibc headers
   cp -a "${NNACL_GLIBC_ROOT}"/nacl64/include \
@@ -1688,7 +1698,7 @@ LLVM_SB_SETUP=false
 llvm-sb-setup() {
   local bitsize
   local prefix
-  local flags
+  local flags=""
 
   if ${LLVM_SB_SETUP} && [ $# -eq 0 ]; then
     return 0
@@ -1707,7 +1717,10 @@ llvm-sb-setup() {
 
   LLVM_SB_LOG_PREFIX="llvm.sb.${LLVM_SB_ARCH}.${LLVM_SB_MODE}"
   LLVM_SB_OBJDIR="${TC_BUILD}/llvm-sb-${arch}-${mode}"
-  flags="-static"
+  if ${LIBMODE_NEWLIB}; then
+    flags+=" -static"
+  fi
+
   case ${mode} in
     srpc)    flags+=" -DNACL_SRPC" ;;
     nonsrpc) ;;

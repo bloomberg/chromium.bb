@@ -21,7 +21,7 @@ def Usage():
 %s [run_py_options] [sel_ldr_options] <nexe> [nexe_parameters]
 
 run.py options:
-  -L<LIBRARY_PATH>       Sets the library path for runnable-ld.so
+  -L<LIBRARY_PATH>       Add a library path for runnable-ld.so
   --paranoid             Remove -S (signals) and -a (file access)
                          from the default sel_ldr options.
   --dbg                  Use dbg version of sel_ldr
@@ -81,7 +81,7 @@ def SetupEnvironment():
   env.scons = os.path.join(env.nacl_root, 'scons')
 
   # Library path for runnable-ld.so
-  env.library_path = None
+  env.library_path = []
 
   # Suppress -S -a
   env.paranoid = False
@@ -126,9 +126,8 @@ def SetupArch(arch, is_dynamic, allow_build = True):
       Fatal('Dynamic loading is not yet supported on %s' % arch)
     env.runnable_ld = os.path.join(env.nnacl_root,
                                       'nacl64', libdir, 'runnable-ld.so')
-    if env.library_path is None:
-      env.library_path = os.path.join(env.nnacl_root,
-                                         'nacl64', libdir)
+    env.library_path.append(os.path.join(env.nnacl_root,
+                                         'nacl64', libdir))
 
   env.sel_ldr = FindOrBuildSelLdr(allow_build = allow_build)
 
@@ -177,7 +176,8 @@ def main(argv):
   sel_ldr_args = sel_ldr_options + ['--']
 
   if is_dynamic:
-    sel_ldr_args += [env.runnable_ld, '--library-path', env.library_path]
+    sel_ldr_args += [env.runnable_ld,
+                     '--library-path', ':'.join(env.library_path)]
 
   sel_ldr_args += [os.path.abspath(nexe)] + nexe_params
 
@@ -303,9 +303,15 @@ def ArgSplit(argv):
       continue
 
     if arg.startswith('-L'):
-      if len(arg) == 2:
-        Fatal("Use: -L<LIBRARY_PATH> (no space!)")
-      env.library_path = arg[2:]
+      if arg == '-L':
+        if i+1 < len(argv):
+          path = argv[i+1]
+          skip_one = True
+        else:
+          Fatal("Missing argument to -L")
+      else:
+        path = arg[len('-L'):]
+      env.library_path.append(path)
     elif arg == '-m32':
       env.arch = 'x86-32'
     elif arg == '-m64':
