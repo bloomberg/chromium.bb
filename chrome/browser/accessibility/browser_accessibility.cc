@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/accessibility/browser_accessibility.h"
+#include "chrome/browser/accessibility/browser_accessibility.h"
 
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
-#include "content/browser/accessibility/browser_accessibility_manager.h"
+#include "chrome/browser/accessibility/browser_accessibility_manager.h"
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 // There's no OS-specific implementation of BrowserAccessibilityManager

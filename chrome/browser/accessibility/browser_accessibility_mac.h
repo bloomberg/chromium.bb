@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_MAC_H_
-#define CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_MAC_H_
+#ifndef CHROME_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_MAC_H_
+#define CHROME_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_MAC_H_
 #pragma once
 
 #include <map>
@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/memory/scoped_nsobject.h"
-#include "content/browser/accessibility/browser_accessibility.h"
+#include "chrome/browser/accessibility/browser_accessibility.h"
 
 @class BrowserAccessibilityCocoa;
 
@@ -43,4 +43,4 @@ class BrowserAccessibilityMac : public BrowserAccessibility {
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityMac);
 };
 
-#endif // CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_MAC_H_
+#endif // CHROME_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_MAC_H_
