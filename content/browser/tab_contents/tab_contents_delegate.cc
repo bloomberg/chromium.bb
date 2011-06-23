@@ -24,10 +24,6 @@ bool TabContentsDelegate::IsPopupOrPanel(const TabContents* source) const {
   return false;
 }
 
-TabContents* TabContentsDelegate::GetConstrainingContents(TabContents* source) {
-  return source;
-}
-
 bool TabContentsDelegate::ShouldFocusConstrainedWindow() {
   return true;
 }

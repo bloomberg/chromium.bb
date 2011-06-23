@@ -50,8 +50,7 @@ class BlockedContentContainer : public BlockedContentTabHelperDelegate,
   // Removes all blocked contents.
   void Clear();
 
-  // Overridden from BlockedContentTabHelperDelegate, TabContentsDelegate:
-  virtual TabContents* GetConstrainingContents(TabContents* source) OVERRIDE;
+  // Overridden from BlockedContentTabHelperDelegate:
   virtual TabContentsWrapper* GetConstrainingContentsWrapper(
       TabContentsWrapper* source) OVERRIDE;
 

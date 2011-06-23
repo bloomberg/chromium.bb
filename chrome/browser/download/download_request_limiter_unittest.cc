@@ -7,6 +7,7 @@
 #include "chrome/test/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/navigation_controller.h"
+#include "content/browser/tab_contents/test_tab_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class DownloadRequestLimiterTest
@@ -41,8 +42,7 @@ class DownloadRequestLimiterTest
   }
 
   void CanDownload() {
-    download_request_limiter_->CanDownloadImpl(
-        controller().tab_contents(), -1, this);
+    download_request_limiter_->CanDownloadImpl(contents_wrapper(), -1, this);
     message_loop_.RunAllPending();
   }
 
@@ -88,14 +88,12 @@ class DownloadRequestLimiterTest
 TEST_F(DownloadRequestLimiterTest, Allow) {
   // All tabs should initially start at ALLOW_ONE_DOWNLOAD.
   ASSERT_EQ(DownloadRequestLimiter::ALLOW_ONE_DOWNLOAD,
-            download_request_limiter_->GetDownloadStatus(
-                controller().tab_contents()));
+            download_request_limiter_->GetDownloadStatus(contents()));
 
   // Ask if the tab can do a download. This moves to PROMPT_BEFORE_DOWNLOAD.
   CanDownload();
   ASSERT_EQ(DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD,
-            download_request_limiter_->GetDownloadStatus(
-                controller().tab_contents()));
+            download_request_limiter_->GetDownloadStatus(contents()));
   // We should have been told we can download.
   ASSERT_EQ(1, continue_count_);
   ASSERT_EQ(0, cancel_count_);
@@ -109,8 +107,7 @@ TEST_F(DownloadRequestLimiterTest, Allow) {
   ASSERT_EQ(1, ask_allow_count_);
   ask_allow_count_ = 0;
   ASSERT_EQ(DownloadRequestLimiter::ALLOW_ALL_DOWNLOADS,
-            download_request_limiter_->GetDownloadStatus(
-                controller().tab_contents()));
+            download_request_limiter_->GetDownloadStatus(contents()));
   // We should have been told we can download.
   ASSERT_EQ(1, continue_count_);
   ASSERT_EQ(0, cancel_count_);
@@ -121,8 +118,7 @@ TEST_F(DownloadRequestLimiterTest, Allow) {
   // The state is at allow_all, which means the delegate shouldn't be asked.
   ASSERT_EQ(0, ask_allow_count_);
   ASSERT_EQ(DownloadRequestLimiter::ALLOW_ALL_DOWNLOADS,
-            download_request_limiter_->GetDownloadStatus(
-                controller().tab_contents()));
+            download_request_limiter_->GetDownloadStatus(contents()));
   // We should have been told we can download.
   ASSERT_EQ(1, continue_count_);
   ASSERT_EQ(0, cancel_count_);
@@ -138,8 +134,7 @@ TEST_F(DownloadRequestLimiterTest, ResetOnNavigation) {
   CanDownload();
   ask_allow_count_ = continue_count_ = cancel_count_ = 0;
   ASSERT_EQ(DownloadRequestLimiter::ALLOW_ALL_DOWNLOADS,
-            download_request_limiter_->GetDownloadStatus(
-                controller().tab_contents()));
+            download_request_limiter_->GetDownloadStatus(contents()));
 
   // Navigate to a new URL with the same host, which shouldn't reset the allow
   // all state.
@@ -150,21 +145,18 @@ TEST_F(DownloadRequestLimiterTest, ResetOnNavigation) {
   ASSERT_EQ(0, ask_allow_count_);
   ask_allow_count_ = continue_count_ = cancel_count_ = 0;
   ASSERT_EQ(DownloadRequestLimiter::ALLOW_ALL_DOWNLOADS,
-            download_request_limiter_->GetDownloadStatus(
-                controller().tab_contents()));
+            download_request_limiter_->GetDownloadStatus(contents()));
 
   // Do a user gesture, because we're at allow all, this shouldn't change the
   // state.
-  download_request_limiter_->OnUserGesture(controller().tab_contents());
+  download_request_limiter_->OnUserGesture(contents());
   ASSERT_EQ(DownloadRequestLimiter::ALLOW_ALL_DOWNLOADS,
-            download_request_limiter_->GetDownloadStatus(
-                controller().tab_contents()));
+            download_request_limiter_->GetDownloadStatus(contents()));
 
   // Navigate to a completely different host, which should reset the state.
   NavigateAndCommit(GURL("http://fooey.com"));
   ASSERT_EQ(DownloadRequestLimiter::ALLOW_ONE_DOWNLOAD,
-            download_request_limiter_->GetDownloadStatus(
-                controller().tab_contents()));
+            download_request_limiter_->GetDownloadStatus(contents()));
 }
 
 TEST_F(DownloadRequestLimiterTest, ResetOnUserGesture) {
@@ -174,14 +166,12 @@ TEST_F(DownloadRequestLimiterTest, ResetOnUserGesture) {
   CanDownload();
   ask_allow_count_ = continue_count_ = cancel_count_ = 0;
   ASSERT_EQ(DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD,
-            download_request_limiter_->GetDownloadStatus(
-                controller().tab_contents()));
+            download_request_limiter_->GetDownloadStatus(contents()));
 
   // Do a user gesture, which should reset back to allow one.
-  download_request_limiter_->OnUserGesture(controller().tab_contents());
+  download_request_limiter_->OnUserGesture(contents());
   ASSERT_EQ(DownloadRequestLimiter::ALLOW_ONE_DOWNLOAD,
-            download_request_limiter_->GetDownloadStatus(
-                controller().tab_contents()));
+            download_request_limiter_->GetDownloadStatus(contents()));
 
   // Ask twice, which triggers calling the delegate. Don't allow the download
   // so that we end up with not allowed.
@@ -189,14 +179,12 @@ TEST_F(DownloadRequestLimiterTest, ResetOnUserGesture) {
   CanDownload();
   CanDownload();
   ASSERT_EQ(DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED,
-            download_request_limiter_->GetDownloadStatus(
-                controller().tab_contents()));
+            download_request_limiter_->GetDownloadStatus(contents()));
 
   // A user gesture now should NOT change the state.
-  download_request_limiter_->OnUserGesture(controller().tab_contents());
+  download_request_limiter_->OnUserGesture(contents());
   ASSERT_EQ(DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED,
-            download_request_limiter_->GetDownloadStatus(
-                controller().tab_contents()));
+            download_request_limiter_->GetDownloadStatus(contents()));
   // And make sure we really can't download.
   ask_allow_count_ = continue_count_ = cancel_count_ = 0;
   CanDownload();
@@ -205,6 +193,5 @@ TEST_F(DownloadRequestLimiterTest, ResetOnUserGesture) {
   ASSERT_EQ(1, cancel_count_);
   // And the state shouldn't have changed.
   ASSERT_EQ(DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED,
-            download_request_limiter_->GetDownloadStatus(
-                controller().tab_contents()));
+            download_request_limiter_->GetDownloadStatus(contents()));
 }

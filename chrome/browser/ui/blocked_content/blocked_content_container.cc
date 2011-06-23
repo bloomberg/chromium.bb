@@ -50,8 +50,6 @@ void BlockedContentContainer::AddTabContents(TabContentsWrapper* tab_contents,
 
   blocked_contents_.push_back(
       BlockedContent(tab_contents, disposition, bounds, user_gesture));
-  // TODO(avi): remove once TabContentsDelegate::GetConstrainingContents goes
-  // away.
   tab_contents->tab_contents()->set_delegate(this);
   tab_contents->blocked_content_tab_helper()->set_delegate(this);
   // Since the new tab_contents will not be shown, call WasHidden to change
@@ -70,8 +68,6 @@ void BlockedContentContainer::LaunchForContents(
       BlockedContent content(*i);
       blocked_contents_.erase(i);
       i = blocked_contents_.end();
-      // TODO(avi): remove once TabContentsDelegate::GetConstrainingContents
-      // goes away.
       tab_contents->tab_contents()->set_delegate(NULL);
       tab_contents->blocked_content_tab_helper()->set_delegate(NULL);
       // We needn't call WasRestored to change its status because the
@@ -102,8 +98,6 @@ void BlockedContentContainer::Clear() {
   for (BlockedContents::iterator i(blocked_contents_.begin());
        i != blocked_contents_.end(); ++i) {
     TabContentsWrapper* tab_contents = i->tab_contents;
-    // TODO(avi): remove once TabContentsDelegate::GetConstrainingContents goes
-    // away.
     tab_contents->tab_contents()->set_delegate(NULL);
     tab_contents->blocked_content_tab_helper()->set_delegate(NULL);
     delete tab_contents;
@@ -134,8 +128,6 @@ void BlockedContentContainer::CloseContents(TabContents* source) {
        i != blocked_contents_.end(); ++i) {
     TabContentsWrapper* tab_contents = i->tab_contents;
     if (tab_contents->tab_contents() == source) {
-      // TODO(avi): remove once TabContentsDelegate::GetConstrainingContents
-      // goes away.
       tab_contents->tab_contents()->set_delegate(NULL);
       tab_contents->blocked_content_tab_helper()->set_delegate(NULL);
       blocked_contents_.erase(i);
@@ -167,11 +159,6 @@ bool BlockedContentContainer::ShouldSuppressDialogs() {
   // Suppress JavaScript dialogs when inside a constrained popup window (because
   // that activates them and breaks them out of the constrained window jail).
   return true;
-}
-
-TabContents* BlockedContentContainer::GetConstrainingContents(
-    TabContents* source) {
-  return owner_->tab_contents();
 }
 
 TabContentsWrapper* BlockedContentContainer::GetConstrainingContentsWrapper(

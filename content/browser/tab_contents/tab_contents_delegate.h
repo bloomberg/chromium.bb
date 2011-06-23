@@ -118,12 +118,6 @@ class TabContentsDelegate {
   // or a panel window.
   virtual bool IsPopupOrPanel(const TabContents* source) const;
 
-  // If |source| is constrained, returns the tab containing it.  Otherwise
-  // returns |source|. TODO(avi): Remove in favor of GetConstrainingContents on
-  // ContentSettingsTabHelperDelegate once uses of it in TabContents are
-  // removed.
-  virtual TabContents* GetConstrainingContents(TabContents* source);
-
   // Returns true if constrained windows should be focused. Default is true.
   virtual bool ShouldFocusConstrainedWindow();
 
