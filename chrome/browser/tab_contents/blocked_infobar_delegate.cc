@@ -53,11 +53,8 @@ int BlockedInfoBarDelegate::GetButtons() const {
 }
 
 string16 BlockedInfoBarDelegate::GetButtonLabel(InfoBarButton button) const {
-  if (button == BUTTON_CANCEL)
-    return l10n_util::GetStringUTF16(IDS_OK);
-
-  DCHECK_EQ(button, BUTTON_OK);
-  return l10n_util::GetStringUTF16(button_resource_id_);
+  return l10n_util::GetStringUTF16(
+      button == BUTTON_OK ? IDS_OK : button_resource_id_);
 };
 
 string16 BlockedInfoBarDelegate::GetLinkText() {
@@ -66,6 +63,8 @@ string16 BlockedInfoBarDelegate::GetLinkText() {
 
 bool BlockedInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
   TabContents* contents = wrapper_->tab_contents();
+  if (disposition == CURRENT_TAB)
+    disposition = NEW_FOREGROUND_TAB;
   contents->OpenURL(url_, GURL(), disposition, PageTransition::LINK);
   return false;
 }
@@ -96,20 +95,19 @@ void BlockedDisplayingInfoBarDelegate::InfoBarDismissed() {
 
 bool BlockedDisplayingInfoBarDelegate::Accept() {
   UMA_HISTOGRAM_ENUMERATION("MixedContent.DisplayingInfoBar",
-                     BLOCKED_INFOBAR_EVENT_ALLOWED,
-                     BLOCKED_INFOBAR_EVENT_LAST);
-  wrapper()->Send(new ViewMsg_SetAllowDisplayingInsecureContent(
-      wrapper()->routing_id(), true));
-  return true;
-}
-
-bool BlockedDisplayingInfoBarDelegate::Cancel() {
-  UMA_HISTOGRAM_ENUMERATION("MixedContent.DisplayingInfoBar",
                             BLOCKED_INFOBAR_EVENT_CANCELLED,
                             BLOCKED_INFOBAR_EVENT_LAST);
   return true;
 }
 
+bool BlockedDisplayingInfoBarDelegate::Cancel() {
+  UMA_HISTOGRAM_ENUMERATION("MixedContent.DisplayingInfoBar",
+                            BLOCKED_INFOBAR_EVENT_ALLOWED,
+                            BLOCKED_INFOBAR_EVENT_LAST);
+  wrapper()->Send(new ViewMsg_SetAllowDisplayingInsecureContent(
+      wrapper()->routing_id(), true));
+  return true;
+}
 
 BlockedRunningInfoBarDelegate::BlockedRunningInfoBarDelegate(
     TabContentsWrapper* wrapper)
@@ -137,6 +135,13 @@ void BlockedRunningInfoBarDelegate::InfoBarDismissed() {
 
 bool BlockedRunningInfoBarDelegate::Accept() {
   UMA_HISTOGRAM_ENUMERATION("MixedContent.RunningInfoBar",
+                            BLOCKED_INFOBAR_EVENT_CANCELLED,
+                            BLOCKED_INFOBAR_EVENT_LAST);
+  return true;
+}
+
+bool BlockedRunningInfoBarDelegate::Cancel() {
+  UMA_HISTOGRAM_ENUMERATION("MixedContent.RunningInfoBar",
                             BLOCKED_INFOBAR_EVENT_ALLOWED,
                             BLOCKED_INFOBAR_EVENT_LAST);
   wrapper()->Send(new ViewMsg_SetAllowRunningInsecureContent(
@@ -144,10 +149,4 @@ bool BlockedRunningInfoBarDelegate::Accept() {
   return true;
 }
 
-bool BlockedRunningInfoBarDelegate::Cancel() {
-  UMA_HISTOGRAM_ENUMERATION("MixedContent.RunningInfoBar",
-                            BLOCKED_INFOBAR_EVENT_CANCELLED,
-                            BLOCKED_INFOBAR_EVENT_LAST);
-  return true;
-}
 
