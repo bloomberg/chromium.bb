@@ -70,9 +70,10 @@ if env.Bit('target_arm'):
   # so far, only linux.
   # The arm-hw-bot was actually clocked at successfully doing 8191,
   # though it gets pretty resource-starved near the top and might
-  # crash if anything else is being done on the bot.
-  # Let's limit it to 8180 since that's good enough for x86 (below).
-  high_thread_count_nthreads = 8180
+  # crash if anything else is being done on the bot, and takes a
+  # really long time.  Limit to 7000 since that's more than 4096
+  # but not enough to take too long.
+  high_thread_count_nthreads = 7000
   platform_limits_known = True
 elif env.Bit('target_x86'):
   trusted_env = env.get('TRUSTED_ENV')
@@ -126,6 +127,4 @@ nodes = [ ThreadTestNode(name, args) for name, args in tests ]
 is_broken = env.Bit('target_arm') and env.UsingEmulator()
 for p, n in zip(tests, nodes):
   env.AddNodeToTestSuite(n, ['small_tests', 'sel_ldr_tests'], 'run_' + p[0],
-                         # These are torturous tests, can take a long time.
-                         scale_timeout=20,
                          is_broken=is_broken)
