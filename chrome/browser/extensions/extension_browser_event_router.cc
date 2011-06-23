@@ -98,8 +98,9 @@ void ExtensionBrowserEventRouter::Init() {
 
 ExtensionBrowserEventRouter::ExtensionBrowserEventRouter(Profile* profile)
     : initialized_(false),
-      focused_window_id_(extension_misc::kUnknownWindowId),
-      profile_(profile) {
+      profile_(profile),
+      focused_profile_(NULL),
+      focused_window_id_(extension_misc::kUnknownWindowId) {
   DCHECK(!profile->IsOffTheRecord());
 }
 
@@ -113,6 +114,8 @@ ExtensionBrowserEventRouter::~ExtensionBrowserEventRouter() {
 }
 
 void ExtensionBrowserEventRouter::OnBrowserAdded(const Browser* browser) {
+  if (!profile_->IsSameProfile(browser->profile()))
+    return;
   RegisterForBrowserNotifications(browser);
 }
 
@@ -127,10 +130,8 @@ void ExtensionBrowserEventRouter::RegisterForBrowserNotifications(
   registrar_.Add(this, NotificationType::BROWSER_WINDOW_READY,
       Source<const Browser>(browser));
 
-  if (browser->tabstrip_model()) {
-    for (int i = 0; i < browser->tabstrip_model()->count(); ++i)
-      RegisterForTabNotifications(browser->GetTabContentsAt(i));
-  }
+  for (int i = 0; i < browser->tabstrip_model()->count(); ++i)
+    RegisterForTabNotifications(browser->GetTabContentsAt(i));
 }
 
 void ExtensionBrowserEventRouter::RegisterForTabNotifications(
@@ -168,6 +169,9 @@ void ExtensionBrowserEventRouter::OnBrowserWindowReady(const Browser* browser) {
 }
 
 void ExtensionBrowserEventRouter::OnBrowserRemoved(const Browser* browser) {
+  if (!profile_->IsSameProfile(browser->profile()))
+    return;
+
   // Stop listening to TabStripModel events for this browser.
   browser->tabstrip_model()->RemoveObserver(this);
 
@@ -196,21 +200,45 @@ void ExtensionBrowserEventRouter::ActiveWindowChanged(
 
 void ExtensionBrowserEventRouter::OnBrowserSetLastActive(
     const Browser* browser) {
+  Profile* window_profile = NULL;
   int window_id = extension_misc::kUnknownWindowId;
-  if (browser)
+  if (browser && profile_->IsSameProfile(browser->profile())) {
+    window_profile = browser->profile();
     window_id = ExtensionTabUtil::GetWindowId(browser);
+  }
 
   if (focused_window_id_ == window_id)
     return;
 
+  // window_profile is either this profile's default profile, its
+  // incognito profile, or NULL iff this profile is losing focus.
+  Profile* previous_focused_profile = focused_profile_;
+  focused_profile_ = window_profile;
   focused_window_id_ = window_id;
-  // Note: because we use the default profile when |browser| is NULL, it means
-  // that all extensions hear about the event regardless of whether the browser
-  // that lost focus was OTR or if the extension is OTR-enabled.
+
+  ListValue real_args;
+  real_args.Append(Value::CreateIntegerValue(window_id));
+  std::string real_json_args;
+  base::JSONWriter::Write(&real_args, false, &real_json_args);
+
+  // When switching between windows in the default and incognitoi profiles,
+  // dispatch WINDOW_ID_NONE to extensions whose profile lost focus that
+  // can't see the new focused window across the incognito boundary.
   // See crbug.com/46610.
-  DispatchSimpleBrowserEvent(browser ? browser->profile() : profile_,
-                             focused_window_id_,
-                             events::kOnWindowFocusedChanged);
+  std::string none_json_args;
+  if (focused_profile_ != NULL && previous_focused_profile != NULL &&
+      focused_profile_ != previous_focused_profile) {
+    ListValue none_args;
+    none_args.Append(
+        Value::CreateIntegerValue(extension_misc::kUnknownWindowId));
+    base::JSONWriter::Write(&none_args, false, &none_json_args);
+  }
+
+  DispatchEventsAcrossIncognito((focused_profile_ ? focused_profile_ :
+                                 previous_focused_profile),
+                                events::kOnWindowFocusedChanged,
+                                real_json_args,
+                                none_json_args);
 }
 
 void ExtensionBrowserEventRouter::TabCreatedAt(TabContents* contents,
@@ -380,6 +408,18 @@ void ExtensionBrowserEventRouter::DispatchEventToExtension(
 
   profile->GetExtensionEventRouter()->DispatchEventToExtension(
       extension_id, event_name, json_args, profile, GURL());
+}
+
+void ExtensionBrowserEventRouter::DispatchEventsAcrossIncognito(
+    Profile* profile,
+    const char* event_name,
+    const std::string& json_args,
+    const std::string& cross_incognito_args) {
+  if (!profile_->IsSameProfile(profile) || !profile->GetExtensionEventRouter())
+    return;
+
+  profile->GetExtensionEventRouter()->DispatchEventsToRenderersAcrossIncognito(
+      event_name, json_args, profile, cross_incognito_args, GURL());
 }
 
 void ExtensionBrowserEventRouter::DispatchEventWithTab(

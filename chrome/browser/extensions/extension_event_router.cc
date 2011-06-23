@@ -139,24 +139,42 @@ bool ExtensionEventRouter::ExtensionHasEventListener(
 }
 
 void ExtensionEventRouter::DispatchEventToRenderers(
-    const std::string& event_name, const std::string& event_args,
-    Profile* restrict_to_profile, const GURL& event_url) {
-  DispatchEventImpl("", event_name, event_args, restrict_to_profile, event_url);
+    const std::string& event_name,
+    const std::string& event_args,
+    Profile* restrict_to_profile,
+    const GURL& event_url) {
+  DispatchEventImpl("", event_name, event_args, restrict_to_profile, "",
+                    event_url);
 }
 
 void ExtensionEventRouter::DispatchEventToExtension(
     const std::string& extension_id,
-    const std::string& event_name, const std::string& event_args,
-    Profile* restrict_to_profile, const GURL& event_url) {
+    const std::string& event_name,
+    const std::string& event_args,
+    Profile* restrict_to_profile,
+    const GURL& event_url) {
   DCHECK(!extension_id.empty());
   DispatchEventImpl(extension_id, event_name, event_args, restrict_to_profile,
-                    event_url);
+                    "", event_url);
+}
+
+void ExtensionEventRouter::DispatchEventsToRenderersAcrossIncognito(
+    const std::string& event_name,
+    const std::string& event_args,
+    Profile* restrict_to_profile,
+    const std::string& cross_incognito_args,
+    const GURL& event_url) {
+  DispatchEventImpl("", event_name, event_args, restrict_to_profile,
+                    cross_incognito_args, event_url);
 }
 
 void ExtensionEventRouter::DispatchEventImpl(
     const std::string& extension_id,
-    const std::string& event_name, const std::string& event_args,
-    Profile* restrict_to_profile, const GURL& event_url) {
+    const std::string& event_name,
+    const std::string& event_args,
+    Profile* restrict_to_profile,
+    const std::string& cross_incognito_args,
+    const GURL& event_url) {
   if (!profile_)
     return;
 
@@ -188,8 +206,15 @@ void ExtensionEventRouter::DispatchEventImpl(
         listener->process->profile() != restrict_to_profile;
     const Extension* extension = service->GetExtensionById(
         listener->extension_id, false);
-    if (cross_incognito && !service->CanCrossIncognito(extension))
+    // Send the event with different arguments to extensions that can't
+    // cross incognito, if necessary.
+    if (cross_incognito && !service->CanCrossIncognito(extension)) {
+      if (!cross_incognito_args.empty()) {
+        DispatchEvent(listener->process, listener->extension_id,
+                      event_name, cross_incognito_args, event_url);
+      }
       continue;
+    }
 
     DispatchEvent(listener->process, listener->extension_id,
                   event_name, event_args, event_url);
