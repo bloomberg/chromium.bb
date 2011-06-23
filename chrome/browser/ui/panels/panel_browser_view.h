@@ -29,6 +29,7 @@ class PanelBrowserView : public BrowserView,
 
   Panel* panel() const { return panel_.get(); }
   bool closed() const { return closed_; }
+  bool focused() const { return focused_; }
 
   // Called from frame view when title bar receives a mouse event.
   // Return true if the event is handled.
@@ -92,6 +93,9 @@ class PanelBrowserView : public BrowserView,
 
   // Is the panel being closed? Do not use it when it is closed.
   bool closed_;
+
+  // Is the panel receiving the focus?
+  bool focused_;
 
   // Is the mouse button currently down?
   bool mouse_pressed_;

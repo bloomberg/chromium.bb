@@ -316,7 +316,7 @@ void PanelBrowserFrameView::UpdateWindowIcon() {
 void PanelBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
   // The font and color need to be updated when the panel becomes active or
   // inactive.
-  UpdateControlStyles(browser_view_->panel()->IsActive() ?
+  UpdateControlStyles(browser_view_->focused() ?
                       PAINT_AS_ACTIVE : PAINT_AS_INACTIVE);
   PaintFrameBorder(canvas);
   PaintClientEdge(canvas);
@@ -629,8 +629,8 @@ void PanelBrowserFrameView::UpdateTitleBar() {
   title_label_->SetText(frame_->widget_delegate()->GetWindowTitle());
 }
 
-void PanelBrowserFrameView::OnActivationChanged(bool active) {
-  UpdateSettingsButtonVisibility(active,
+void PanelBrowserFrameView::OnFocusChanged(bool focused) {
+  UpdateSettingsButtonVisibility(focused,
                                  mouse_watcher_->IsCursorInViewBounds());
   SchedulePaint();
 }
@@ -639,13 +639,13 @@ void PanelBrowserFrameView::OnMouseEnterOrLeaveWindow(bool mouse_entered) {
   // Panel might be closed when we still watch the mouse event.
   if (!browser_view_->panel())
     return;
-  UpdateSettingsButtonVisibility(browser_view_->panel()->IsActive(),
+  UpdateSettingsButtonVisibility(browser_view_->focused(),
                                  mouse_entered);
 }
 
 void PanelBrowserFrameView::UpdateSettingsButtonVisibility(
-    bool active, bool cursor_in_view) {
-  settings_button_->SetVisible(active || cursor_in_view);
+    bool focused, bool cursor_in_view) {
+  settings_button_->SetVisible(focused || cursor_in_view);
 }
 
 const Extension* PanelBrowserFrameView::GetExtension() const {

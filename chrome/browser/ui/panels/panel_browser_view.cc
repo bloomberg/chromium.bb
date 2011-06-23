@@ -34,6 +34,7 @@ PanelBrowserView::PanelBrowserView(Browser* browser, Panel* panel,
     original_height_(bounds.height()),
     minimized_(false),
     closed_(false),
+    focused_(false),
     mouse_pressed_(false),
     mouse_dragging_(false) {
 }
@@ -92,7 +93,22 @@ bool PanelBrowserView::GetSavedWindowBounds(gfx::Rect* bounds) const {
 
 void PanelBrowserView::OnWindowActivationChanged(bool active) {
   ::BrowserView::OnWindowActivationChanged(active);
-  GetFrameView()->OnActivationChanged(active);
+
+#if defined(OS_WIN)
+  // The panel window is in focus (actually accepting keystrokes) if it is
+  // active and belongs to a foreground application.
+  bool focused = active &&
+      GetFrameView()->GetWidget()->GetNativeView() == ::GetForegroundWindow();
+#else
+  // TODO(jianli): Investigate focus behavior for ChromeOS
+  bool focused = active;
+#endif
+
+  if (focused_ == focused)
+    return;
+  focused_ = focused;
+
+  GetFrameView()->OnFocusChanged(focused);
 }
 
 bool PanelBrowserView::AcceleratorPressed(
