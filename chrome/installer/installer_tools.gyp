@@ -16,7 +16,6 @@
       'targets': [
         {
           'target_name': 'validate_installation',
-          'msvs_guid': '7CC08DA8-E9CA-4573-A8C4-E7F0D0CF8EBA',
           'type': 'executable',
           'dependencies': [
             '<(DEPTH)/base/base.gyp:base',

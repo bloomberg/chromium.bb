@@ -83,7 +83,6 @@
     {
       'target_name': 'common',
       'type': 'static_library',
-      'msvs_guid': '899F1280-3441-4D1F-BA04-CCD6208D9146',
       'variables': {
         'chrome_common_target': 1,
       },
@@ -510,7 +509,6 @@
         {
           'target_name': 'common_nacl_win64',
           'type': 'static_library',
-          'msvs_guid': '3AB5C5E9-470C-419B-A0AE-C7381FB632FA',
           'variables': {
             'chrome_common_target': 1,
           },

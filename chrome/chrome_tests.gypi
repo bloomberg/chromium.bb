@@ -388,7 +388,6 @@
     {
       'target_name': 'automated_ui_tests',
       'type': 'executable',
-      'msvs_guid': 'D2250C20-3A94-4FB9-AF73-11BC5B73884B',
       'dependencies': [
         'browser',
         'renderer',
@@ -443,7 +442,6 @@
     {
       'target_name': 'interactive_ui_tests',
       'type': 'executable',
-      'msvs_guid': '018D4F38-6272-448F-A864-976DA09F05D0',
       'dependencies': [
         'browser/sync/protocol/sync_proto.gyp:sync_proto_cpp',
         'chrome',
@@ -620,7 +618,6 @@
     {
       'target_name': 'ui_tests',
       'type': 'executable',
-      'msvs_guid': '76235B67-1C27-4627-8A33-4B2E1EF93EDE',
       'dependencies': [
         'chrome',
         'browser',
@@ -920,7 +917,6 @@
     {
       'target_name': 'chromedriver',
       'type': 'executable',
-      'msvs_guid': '3F9C9B6D-BBB6-480F-B038-23BF35A432DC',
       'dependencies': [
         'chromedriver_lib',
         '../base/base.gyp:base',
@@ -963,7 +959,6 @@
     {
       'target_name': 'chromedriver_unittests',
       'type': 'executable',
-      'msvs_guid': 'E24B445D-96E3-4272-BB54-AACBC6D3FE7E',
       'dependencies': [
         'chromedriver_lib',
         '../base/base.gyp:test_support_base',
@@ -1014,7 +1009,6 @@
     {
       'target_name': 'nacl_security_tests',
       'type': 'shared_library',
-      'msvs_guid': 'D705E8B8-4750-4F1F-BC8F-A7806872F504',
       'include_dirs': [
         '..'
       ],
@@ -1064,7 +1058,6 @@
     {
       'target_name': 'nacl_sandbox_tests',
       'type': 'executable',
-      'msvs_guid': '3087FC25-2C24-44B2-8253-44065EB47ACD',
       'dependencies': [
         'chrome',
         'browser',
@@ -1132,7 +1125,6 @@
     {
       'target_name': 'nacl_ui_tests',
       'type': 'executable',
-      'msvs_guid': '43E2004F-CD62-4595-A8A6-31E9BFA1EE5E',
       'dependencies': [
         'chrome',
         'browser',
@@ -1197,7 +1189,6 @@
     {
       'target_name': 'unit_tests',
       'type': 'executable',
-      'msvs_guid': 'ECFC2BEC-9FC0-4AD9-9649-5F26793F65FC',
       'dependencies': [
         # unit tests should only depend on
         # 1) everything that the chrome binaries depend on:
@@ -2270,7 +2261,6 @@
       # Executable that runs each browser test in a new process.
       'target_name': 'browser_tests',
       'type': 'executable',
-      'msvs_guid': 'D7589D0D-304E-4589-85A4-153B7D84B07F',
       'dependencies': [
         'browser',
         'browser/sync/protocol/sync_proto.gyp:sync_proto_cpp',
@@ -2725,7 +2715,6 @@
       # Executable that runs safebrowsing test in a new process.
       'target_name': 'safe_browsing_tests',
       'type': 'executable',
-      'msvs_guid': 'BBF2BC2F-7CD8-463E-BE88-CB81AAD92BFE',
       'dependencies': [
         'chrome',
         'test_support_common',
@@ -2791,7 +2780,6 @@
       # TODO(darin): Remove in favor of performance_ui_tests.
       'target_name': 'startup_tests',
       'type': 'executable',
-      'msvs_guid': 'D3E6C0FD-54C7-4FF2-9AE1-72F2DAFD820C',
       'dependencies': [
         'chrome',
         'browser',
@@ -2876,7 +2864,6 @@
       #   c) Strip the binary if it's a debug build. (binary may be over 2GB)
       'target_name': 'reliability_tests',
       'type': 'executable',
-      'msvs_guid': '8A3E1774-1DE9-445C-982D-3EE37C8A752A',
       'dependencies': [
         'browser',
         'chrome',
@@ -2934,7 +2921,6 @@
       # TODO(darin): Remove in favor of performance_ui_tests.
       'target_name': 'page_cycler_tests',
       'type': 'executable',
-      'msvs_guid': 'C9E0BD1D-B175-4A91-8380-3FDC81FAB9D7',
       'dependencies': [
         'chrome',
         'chrome_resources',
@@ -2977,7 +2963,6 @@
     {
       'target_name': 'performance_ui_tests',
       'type': 'executable',
-      'msvs_guid': 'C3539D2F-B87A-4F9B-8220-1BB5F7119720',
       'dependencies': [
         'chrome',
         'chrome_resources',
@@ -3066,7 +3051,6 @@
       # TODO(darin): Remove in favor of performance_ui_tests.
       'target_name': 'tab_switching_test',
       'type': 'executable',
-      'msvs_guid': 'A34770EA-A574-43E8-9327-F79C04770E98',
       'run_as': {
         'action': ['$(TargetPath)', '--gtest_print_time'],
       },
@@ -3105,7 +3089,6 @@
       # TODO(darin): Remove in favor of performance_ui_tests.
       'target_name': 'memory_test',
       'type': 'executable',
-      'msvs_guid': 'A5F831FD-9B9C-4FEF-9FBA-554817B734CE',
       'dependencies': [
         'chrome',
         'debugger',
@@ -3135,7 +3118,6 @@
     {
       'target_name': 'url_fetch_test',
       'type': 'executable',
-      'msvs_guid': '7EFD0C91-198E-4043-9E71-4A4C7879B929',
       'dependencies': [
         'chrome',
         'debugger',
@@ -3489,7 +3471,6 @@
       # Executable that contains all the tests to be run on the GPU bots.
       'target_name': 'gpu_tests',
       'type': 'executable',
-      'msvs_guid': '3D3BB86C-F284-4911-BAEB-12C6EFA09A01',
       'dependencies': [
         'browser',
         'chrome',
@@ -3621,7 +3602,6 @@
     {
       'target_name': 'plugin_tests',
       'type': 'executable',
-      'msvs_guid': 'A1CAA831-C507-4B2E-87F3-AEC63C9907F9',
       'dependencies': [
         'chrome',
         'chrome_resources',
@@ -3664,7 +3644,6 @@
         {
           'target_name': 'perf_tests',
           'type': 'executable',
-          'msvs_guid': '9055E088-25C6-47FD-87D5-D9DD9FD75C9F',
           'dependencies': [
             'browser',
             'common',
@@ -3730,7 +3709,6 @@
         {
           'target_name': 'generate_profile',
           'type': 'executable',
-          'msvs_guid': '2E969AE9-7B12-4EDB-8E8B-48C7AE7BE357',
           'dependencies': [
             'test_support_common',
             'browser',
@@ -3771,7 +3749,6 @@
         {
           'target_name': 'security_tests',
           'type': 'shared_library',
-          'msvs_guid': 'E750512D-FC7C-4C98-BF04-0A0DAF882055',
           'include_dirs': [
             '..',
           ],
@@ -3807,7 +3784,6 @@
         {
           'target_name': 'selenium_tests',
           'type': 'executable',
-          'msvs_guid': 'E3749617-BA3D-4230-B54C-B758E56D9FA5',
           'dependencies': [
             'chrome_resources',
             'chrome_strings',

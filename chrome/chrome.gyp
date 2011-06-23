@@ -142,7 +142,6 @@
       # generated headers.
       'target_name': 'chrome_resources',
       'type': 'none',
-      'msvs_guid': 'B95AB527-F7DB-41E9-AD91-EB51EE0F56BE',
       'actions': [
         # Data resources.
         {
@@ -182,7 +181,6 @@
       # of the static libraries currently have circular dependencies among
       # generated headers.
       'target_name': 'chrome_strings',
-      'msvs_guid': 'D9DDAF60-663F-49CC-90DC-3D08CC3D1B28',
       'type': 'none',
       'conditions': [
         ['OS=="win"', {
@@ -232,7 +230,6 @@
     {
       'target_name': 'theme_resources',
       'type': 'none',
-      'msvs_guid' : 'A158FB0A-25E4-6523-6B5A-4BB294B73D31',
       'actions': [
         {
           'action_name': 'theme_resources',
@@ -390,7 +387,6 @@
     {
       'target_name': 'default_extensions',
       'type': 'none',
-      'msvs_guid': 'DA9BAB64-91DC-419B-AFDE-6FF8C569E83A',
       'conditions': [
         ['OS=="win"', {
           'copies': [
@@ -417,7 +413,6 @@
     {
       'target_name': 'debugger',
       'type': 'static_library',
-      'msvs_guid': '57823D8C-A317-4713-9125-2C91FDFD12D6',
       'dependencies': [
         'chrome_extra_resources',
         'chrome_resources',
@@ -479,7 +474,6 @@
     {
       'target_name': 'utility',
       'type': 'static_library',
-      'msvs_guid': '4D2B38E6-65FF-4F97-B88A-E441DF54EBF7',
       'dependencies': [
         '../base/base.gyp:base',
         '../content/content.gyp:content_utility',
@@ -821,7 +815,6 @@
     {
       'target_name': 'service',
       'type': 'static_library',
-      'msvs_guid': '2DA87614-55C5-4E56-A17E-0CD099786197',
       'dependencies': [
         'chrome_strings',
         'common',
@@ -1186,7 +1179,6 @@
         {
           'target_name': 'convert_dict',
           'type': 'executable',
-          'msvs_guid': '42ECD5EC-722F-41DE-B6B8-83764C8016DF',
           'dependencies': [
             '../base/base.gyp:base',
             '../base/base.gyp:base_i18n',
@@ -1201,7 +1193,6 @@
           'target_name': 'convert_dict_lib',
           'product_name': 'convert_dict',
           'type': 'static_library',
-          'msvs_guid': '1F669F6B-3F4A-4308-E496-EE480BDF0B89',
           'include_dirs': [
             '..',
           ],
@@ -1220,7 +1211,6 @@
         {
           'target_name': 'flush_cache',
           'type': 'executable',
-          'msvs_guid': '4539AFB3-B8DC-47F3-A491-6DAC8FD26657',
           'dependencies': [
             '../base/base.gyp:base',
             '../base/base.gyp:test_support_base',
@@ -1409,7 +1399,6 @@
         {
           'target_name': 'chrome_dll_version',
           'type': 'none',
-          #'msvs_guid': '414D4D24-5D65-498B-A33F-3A29AD3CDEDC',
           'dependencies': [
             '../build/util/build_util.gyp:lastchange',
           ],
@@ -1509,7 +1498,6 @@
         {
           'target_name': 'automation',
           'type': 'static_library',
-          'msvs_guid': '1556EF78-C7E6-43C8-951F-F6B43AC0DD12',
           'dependencies': [
             'theme_resources',
             'theme_resources_standard',
@@ -1544,7 +1532,6 @@
         {
           'target_name': 'crash_service',
           'type': 'executable',
-          'msvs_guid': '89C1C190-A5D1-4EC4-BD6A-67FF2195C7CC',
           'dependencies': [
             'app/policy/cloud_policy_codegen.gyp:policy',
             'common_constants',

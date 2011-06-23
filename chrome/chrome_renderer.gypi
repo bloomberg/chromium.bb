@@ -7,7 +7,6 @@
     {
       'target_name': 'renderer',
       'type': 'static_library',
-      'msvs_guid': '9301A569-5D2B-4D11-9332-B1E30AEACB8D',
       'dependencies': [
         'common',
         'common_net',

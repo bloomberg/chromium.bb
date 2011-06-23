@@ -54,7 +54,6 @@
     {
       'target_name': 'nacl',
       'type': 'static_library',
-      'msvs_guid': '83E86DAF-5763-4711-AD34-5FDAE395560C',
       'variables': {
         'nacl_target': 1,
       },
@@ -107,7 +106,6 @@
         {
           'target_name': 'nacl_win64',
           'type': 'static_library',
-          'msvs_guid': '14135464-9FB9-42E3-99D8-791116FA1204',
           'variables': {
             'nacl_target': 1,
           },

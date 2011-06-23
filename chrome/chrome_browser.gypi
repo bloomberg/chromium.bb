@@ -7,7 +7,6 @@
     {
       'target_name': 'browser',
       'type': 'static_library',
-      'msvs_guid': '5BF908A7-68FB-4A4B-99E3-8C749F1FE4EA',
       'dependencies': [
         'app/policy/cloud_policy_codegen.gyp:policy',
         'browser/sync/protocol/sync_proto.gyp:sync_proto_cpp',

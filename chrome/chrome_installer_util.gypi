@@ -88,7 +88,6 @@
         {
           'target_name': 'installer_util',
           'type': 'static_library',
-          'msvs_guid': 'EFBB1436-A63F-4CD8-9E99-B89226E782EC',
           'variables': {
             'installer_util_target': 1,
           },
@@ -142,7 +141,6 @@
         {
           'target_name': 'installer_util_nacl_win64',
           'type': 'static_library',
-          'msvs_guid': '91016F29-C324-4236-8AA0-032765E71582',
           'variables': {
             'installer_util_target': 1,
           },

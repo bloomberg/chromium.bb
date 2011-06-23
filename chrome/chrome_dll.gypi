@@ -75,7 +75,6 @@
           'conditions': [
             ['OS=="win"', {
               'product_name': 'chrome',
-              'msvs_guid': 'C0A7EE2C-2A6D-45BE-BA78-6D006FDF52D9',
               'dependencies': [
                 # On Windows, link the dependencies (libraries) that make
                 # up actual Chromium functionality into this .dll.
@@ -578,7 +577,6 @@
           'target_name': 'chrome_dll_nacl_win64',
           'type': 'shared_library',
           'product_name': 'nacl64',
-          'msvs_guid': 'F5B2D851-1279-4CE1-9386-AB7C6433551B',
           'variables': {
             'chrome_dll_target': 1,
           },

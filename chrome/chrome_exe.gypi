@@ -143,7 +143,6 @@
       'target_name': 'chrome',
       'type': 'executable',
       'mac_bundle': 1,
-      'msvs_guid': '7B219FAA-E360-43C8-B341-804A94EEFFAC',
       'variables': {
         'chrome_exe_target': 1,
         'use_system_xdg_utils%': 0,
@@ -488,7 +487,6 @@
           'target_name': 'chrome_nacl_win64',
           'type': 'executable',
           'product_name': 'nacl64',
-          'msvs_guid': 'BB1AE956-038B-4092-96A2-951D2B418548',
           'variables': {
             'chrome_exe_target': 1,
           },

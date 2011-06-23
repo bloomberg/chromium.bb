@@ -13,7 +13,6 @@
         {
           'target_name': 'gcapi_dll',
           'type': 'loadable_module',
-          'msvs_guid': 'B802A2FE-E4E2-4F5A-905A-D5128875C954',
           'dependencies': [
             '<(DEPTH)/google_update/google_update.gyp:google_update',
           ],
@@ -28,7 +27,6 @@
         {
           'target_name': 'gcapi_lib',
           'type': 'static_library',
-          'msvs_guid': 'CD2FD73A-6AAB-4886-B887-760D18E8B635',
           'dependencies': [
             '<(DEPTH)/google_update/google_update.gyp:google_update',
           ],
@@ -43,7 +41,6 @@
         {
           'target_name': 'gcapi_test',
           'type': 'executable',
-          'msvs_guid': 'B64B396B-8EF1-4B6B-A07E-48D40EB961AB',
           'dependencies': [
             'gcapi_dll',
             'gcapi_lib',
@@ -60,7 +57,6 @@
         {
           'target_name': 'installer_util_unittests',
           'type': 'executable',
-          'msvs_guid': '903F8C1E-537A-4C9E-97BE-075147CBE769',
           'dependencies': [
             'installer_util',
             'installer_util_strings',
@@ -121,7 +117,6 @@
         },
         {
           'target_name': 'installer_util_strings',
-          'msvs_guid': '0026A376-C4F1-4575-A1BA-578C69F07013',
           'type': 'none',
           'rules': [
             {
@@ -160,7 +155,6 @@
         {
           'target_name': 'mini_installer_test',
           'type': 'executable',
-          'msvs_guid': '4B6E199A-034A-49BD-AB93-458DD37E45B1',
           'dependencies': [
             'installer_util',
             'installer_util_strings',
@@ -195,7 +189,6 @@
         {
           'target_name': 'setup',
           'type': 'executable',
-          'msvs_guid': '21C76E6E-8B38-44D6-8148-B589C13B9554',
           'dependencies': [
             'installer_util',
             'installer_util_strings',
@@ -326,7 +319,6 @@
         {
           'target_name': 'setup_unittests',
           'type': 'executable',
-          'msvs_guid': 'C0AE4E06-F023-460F-BC14-6302CEAC51F8',
           'dependencies': [
             'installer_util',
             'installer_util_strings',
