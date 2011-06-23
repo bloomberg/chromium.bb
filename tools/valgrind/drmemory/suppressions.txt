@@ -448,6 +448,12 @@ UNINITIALIZED READ
 *!media::AudioRendererAlgorithmOLA::FillBuffer
 *!media::AudioRendererAlgorithmOLATest_FillBuffer_*
 
+# http://code.google.com/p/drmemory/issues/detail?id=473
+UNINITIALIZED READ
+system call NtDeviceIoControlFile InputBuffer
+...
+iphlpapi.dll!GetAdaptersAddresses
+
 ############################
 # TODO(timurrrr): investigate these
 UNINITIALIZED READ
