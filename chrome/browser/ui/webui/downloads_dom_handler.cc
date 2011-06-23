@@ -109,15 +109,6 @@ void DownloadsDOMHandler::OnDownloadUpdated(DownloadItem* download) {
                                        download);
   if (it == download_items_.end())
     return;
-
-  if (download->state() == DownloadItem::REMOVING) {
-    (*it)->RemoveObserver(this);
-    *it = NULL;
-    // A later ModelChanged() notification will change the WebUI's
-    // view of the downloads list.
-    return;
-  }
-
   const int id = static_cast<int>(it - download_items_.begin());
 
   ListValue results_value;
@@ -138,13 +129,6 @@ void DownloadsDOMHandler::ModelChanged() {
        it != download_items_.end(); ++it) {
     if (static_cast<int>(it - download_items_.begin()) > kMaxDownloads)
       break;
-
-    // TODO(rdsmith): Convert to DCHECK()s when http://crbug.com/84508 is
-    // fixed.
-    // We should never see anything that isn't already in the history.
-    CHECK(*it);
-    CHECK_NE(DownloadHistory::kUninitializedHandle, (*it)->db_handle());
-
     (*it)->AddObserver(this);
   }
 
@@ -210,8 +194,6 @@ void DownloadsDOMHandler::HandlePause(const ListValue* args) {
 
 void DownloadsDOMHandler::HandleRemove(const ListValue* args) {
   DownloadItem* file = GetDownloadByValue(args);
-  // TODO(rdsmith): Change to DCHECK when http://crbug.com/84508 is fixed.
-  CHECK_NE(DownloadHistory::kUninitializedHandle, file->db_handle());
   if (file)
     file->Remove();
 }
@@ -235,8 +217,6 @@ void DownloadsDOMHandler::SendCurrentDownloads() {
     int index = static_cast<int>(it - download_items_.begin());
     if (index > kMaxDownloads)
       break;
-    if (!*it)
-      continue;
     results_value.Append(download_util::CreateDownloadItemValue(*it, index));
   }
 
@@ -247,8 +227,6 @@ void DownloadsDOMHandler::ClearDownloadItems() {
   // Clear out old state and remove self as observer for each download.
   for (OrderedDownloads::iterator it = download_items_.begin();
       it != download_items_.end(); ++it) {
-    if (!*it)
-      continue;
     (*it)->RemoveObserver(this);
   }
   download_items_.clear();
