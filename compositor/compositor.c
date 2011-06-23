@@ -1471,8 +1471,9 @@ notify_keyboard_focus(struct wl_input_device *device,
 			update_modifier_state(wd, *k, 1);
 		}
 
-		wl_input_device_set_keyboard_focus(&wd->input_device,
-						   &es->surface, time);
+		if (es->surface.client)
+			wl_input_device_set_keyboard_focus(&wd->input_device,
+							   &es->surface, time);
 	} else {
 		end = device->keys.data + device->keys.size;
 		for (k = device->keys.data; k < end; k++)
