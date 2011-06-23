@@ -24,13 +24,13 @@ if [[ "\$1" = "-V" ]]; then
   shift
   OPTV="\$1"
   shift
-  exec "\$program_name" -V "\$OPTV" -m32 "\$@"
+  exec "\${0%/*}/\$program_name" -V "\$OPTV" -m32 "\$@"
 elif [[ "\${1:0:2}" = "-V" ]]; then
   OPTV="\$1"
   shift
-  exec "\$program_name" "\$OPTV" -m32 "\$@"
+  exec "\${0%/*}/\$program_name" "\$OPTV" -m32 "\$@"
 else
-  exec "\$program_name" -m32 "\$@"
+  exec "\${0%/*}/\$program_name" -m32 "\$@"
 fi
 ENDSCRIPT
 elif [[ "$3" = "" ]]; then
@@ -38,7 +38,7 @@ elif [[ "$3" = "" ]]; then
 else
   cat >"$1" <<ENDSCRIPT
 #!/bin/bash
-exec $2 $3 "\$@"
+exec "\${0%/*}/$2" $3 "\$@"
 ENDSCRIPT
 fi
 
