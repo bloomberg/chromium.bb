@@ -9,6 +9,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/chrome_process_util.h"
+#include "chrome/test/test_switches.h"
 
 void UIPerfTest::SetLaunchSwitches() {
   UITestBase::SetLaunchSwitches();
@@ -332,5 +333,6 @@ void UIPerfTest::UseReferenceBuild() {
 #elif defined(OS_MACOSX)
   dir = dir.AppendASCII("chrome_mac");
 #endif
+  launch_arguments_.AppendSwitch(switches::kEnableChromiumBranding);
   SetBrowserDirectory(dir);
 }

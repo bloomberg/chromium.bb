@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,9 +7,11 @@
 #include <vector>
 #include <set>
 
+#include "base/command_line.h"
 #include "base/process_util.h"
 #include "base/time.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/test/test_switches.h"
 #include "content/common/result_codes.h"
 
 using base::TimeDelta;
@@ -50,13 +52,21 @@ class ChildProcessFilter : public base::ProcessFilter {
   DISALLOW_COPY_AND_ASSIGN(ChildProcessFilter);
 };
 
+const FilePath::CharType* GetRunningExecutableName() {
+  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  if (cmd_line->HasSwitch(switches::kEnableChromiumBranding))
+    return chrome::kBrowserProcessExecutableNameChromium;
+  return chrome::kBrowserProcessExecutableName;
+}
+
 ChromeProcessList GetRunningChromeProcesses(base::ProcessId browser_pid) {
+  const FilePath::CharType* executable_name = GetRunningExecutableName();
   ChromeProcessList result;
   if (browser_pid == static_cast<base::ProcessId>(-1))
     return result;
 
   ChildProcessFilter filter(browser_pid);
-  base::NamedProcessIterator it(chrome::kBrowserProcessExecutableName, &filter);
+  base::NamedProcessIterator it(executable_name, &filter);
   while (const base::ProcessEntry* process_entry = it.NextProcessEntry()) {
     result.push_back(process_entry->pid());
   }
@@ -67,8 +77,7 @@ ChromeProcessList GetRunningChromeProcesses(base::ProcessId browser_pid) {
   // are children of one of the processes that we've already seen.
   {
     ChildProcessFilter filter(result);
-    base::NamedProcessIterator it(chrome::kBrowserProcessExecutableName,
-                                  &filter);
+    base::NamedProcessIterator it(executable_name, &filter);
     while (const base::ProcessEntry* process_entry = it.NextProcessEntry())
       result.push_back(process_entry->pid());
   }
@@ -80,8 +89,7 @@ ChromeProcessList GetRunningChromeProcesses(base::ProcessId browser_pid) {
   // name.  We must collect them in a second pass.
   {
     ChildProcessFilter filter(browser_pid);
-    base::NamedProcessIterator it(chrome::kHelperProcessExecutableName,
-                                  &filter);
+    base::NamedProcessIterator it(executable_name, &filter);
     while (const base::ProcessEntry* process_entry = it.NextProcessEntry())
       result.push_back(process_entry->pid());
   }

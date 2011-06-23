@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,9 @@
 
 // Extra flags that the test should pass to launched browser process.
 const char switches::kExtraChromeFlags[] = "extra-chrome-flags";
+
+// Enable Chromium branding of the executable.
+const char switches::kEnableChromiumBranding[] = "enable-chromium-branding";
 
 // Enable displaying error dialogs (for debugging).
 const char switches::kEnableErrorDialogs[] = "enable-errdialogs";

@@ -41,27 +41,9 @@ class MemoryTest : public UIPerfTest {
   // Called from SetUp() to determine the user data dir to copy.
   virtual FilePath GetUserDataDirSource() const = 0;
 
-  // Called from Setup() to find the path for the chrome executable.
-  // An empty FilePath results in the default being used.
-  virtual FilePath GetBrowserDirectory() const { return FilePath(); }
-
   // Called from RunTest() to determine the set of URLs to retrieve.
   // Returns the length of the list.
   virtual size_t GetUrlList(std::string** list) = 0;
-
-  static FilePath GetReferenceBrowserDirectory() {
-    FilePath dir;
-    PathService::Get(chrome::DIR_TEST_TOOLS, &dir);
-    dir = dir.AppendASCII("reference_build");
-#if defined(OS_WIN)
-    dir = dir.AppendASCII("chrome");
-#elif defined(OS_LINUX)
-    dir = dir.AppendASCII("chrome_linux");
-#elif defined(OS_MACOSX)
-    dir = dir.AppendASCII("chrome_mac");
-#endif
-    return dir;
-  }
 
   virtual void SetUp() {
     show_window_ = true;
@@ -103,18 +85,6 @@ class MemoryTest : public UIPerfTest {
       launch_arguments_.AppendSwitch(switches::kNoEvents);
 
       user_data_dir_ = GetUserDataDirSource();
-    }
-
-    FilePath browser_dir = GetBrowserDirectory();
-    if (!browser_dir.empty()) {
-#if defined(OS_WIN)
-      browser_dir = browser_dir.AppendASCII("chrome");
-#elif defined(OS_LINUX)
-      browser_dir = browser_dir.AppendASCII("chrome_linux");
-#elif defined(OS_MACOSX)
-      browser_dir = browser_dir.AppendASCII("chrome_mac");
-#endif
-      browser_directory_ = browser_dir;
     }
 
     launch_arguments_.AppendSwitchPath(switches::kUserDataDir, user_data_dir_);
@@ -423,10 +393,11 @@ std::string GeneralMixMemoryTest::urls_[] = {
 size_t GeneralMixMemoryTest::urls_length_ =
     arraysize(GeneralMixMemoryTest::urls_);
 
-class GenerlMixReferenceMemoryTest : public GeneralMixMemoryTest {
+class GeneralMixReferenceMemoryTest : public GeneralMixMemoryTest {
  public:
-  virtual FilePath GetBrowserDirectory() const {
-    return GetReferenceBrowserDirectory();
+  void SetUp() {
+    UseReferenceBuild();
+    GeneralMixMemoryTest::SetUp();
   }
 };
 
@@ -519,17 +490,18 @@ std::string MembusterMemoryTest::source_urls_[] = {
 size_t MembusterMemoryTest::urls_length_ =
     arraysize(MembusterMemoryTest::source_urls_);
 
-TEST_F(GeneralMixMemoryTest, SingleTabTest) {
-  RunTest("_1t", 1);
+#define QUOTE(x) #x
+#define GENERAL_MIX_MEMORY_TESTS(name, tabs) \
+TEST_F(GeneralMixMemoryTest, name) { \
+  RunTest(QUOTE(_##tabs##t), tabs); \
+} \
+TEST_F(GeneralMixReferenceMemoryTest, name) { \
+  RunTest(QUOTE(_##tabs##t_ref), tabs); \
 }
 
-TEST_F(GeneralMixMemoryTest, FiveTabTest) {
-  RunTest("_5t", 5);
-}
-
-TEST_F(GeneralMixMemoryTest, TwelveTabTest) {
-  RunTest("_12t", 12);
-}
+GENERAL_MIX_MEMORY_TESTS(SingleTabTest, 1);
+GENERAL_MIX_MEMORY_TESTS(FiveTabTest, 5);
+GENERAL_MIX_MEMORY_TESTS(TwelveTabTest, 12);
 
 // Commented out until the recorded cache data is added.
 //TEST_F(MembusterMemoryTest, Windows) {

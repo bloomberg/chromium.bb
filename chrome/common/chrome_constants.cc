@@ -9,6 +9,7 @@
 #define FPL FILE_PATH_LITERAL
 
 #if defined(OS_MACOSX)
+#define CHROMIUM_PRODUCT_STRING "Chromium"
 #if defined(GOOGLE_CHROME_BUILD)
 #define PRODUCT_STRING "Google Chrome"
 #elif defined(CHROMIUM_BUILD)
@@ -24,35 +25,76 @@ const char kChromeVersionEnvVar[] = "CHROME_VERSION";
 
 // The following should not be used for UI strings; they are meant
 // for system strings only. UI changes should be made in the GRD.
+//
+// There are four constants used to locate the executable name and path:
+//
+//     kBrowserProcessExecutableName
+//     kHelperProcessExecutableName
+//     kBrowserProcessExecutablePath
+//     kHelperProcessExecutablePath
+//
+// In one condition, our tests will be built using the Chrome branding
+// though we want to actually execute a Chromium branded application.
+// This happens for the reference build on Mac.  To support that case,
+// we also include a Chromium version of each of the four constants and
+// in the UITest class we support switching to that version when told to
+// do so.
+
 #if defined(OS_WIN)
+const FilePath::CharType kBrowserProcessExecutableNameChromium[] =
+    FPL("chrome.exe");
 const FilePath::CharType kBrowserProcessExecutableName[] = FPL("chrome.exe");
+const FilePath::CharType kHelperProcessExecutableNameChromium[] =
+    FPL("chrome.exe");
 const FilePath::CharType kHelperProcessExecutableName[] = FPL("chrome.exe");
 #elif defined(OS_MACOSX)
+const FilePath::CharType kBrowserProcessExecutableNameChromium[] =
+    FPL(CHROMIUM_PRODUCT_STRING);
 const FilePath::CharType kBrowserProcessExecutableName[] = FPL(PRODUCT_STRING);
+const FilePath::CharType kHelperProcessExecutableNameChromium[] =
+    FPL(CHROMIUM_PRODUCT_STRING " Helper");
 const FilePath::CharType kHelperProcessExecutableName[] =
     FPL(PRODUCT_STRING " Helper");
 #elif defined(OS_POSIX)
+const FilePath::CharType kBrowserProcessExecutableNameChromium[] =
+    FPL("chrome");
 const FilePath::CharType kBrowserProcessExecutableName[] = FPL("chrome");
 // Helper processes end up with a name of "exe" due to execing via
 // /proc/self/exe.  See bug 22703.
+const FilePath::CharType kHelperProcessExecutableNameChromium[] = FPL("exe");
 const FilePath::CharType kHelperProcessExecutableName[] = FPL("exe");
 #endif  // OS_*
+
 #if defined(OS_WIN)
+const FilePath::CharType kBrowserProcessExecutablePathChromium[] =
+    FPL("chrome.exe");
 const FilePath::CharType kBrowserProcessExecutablePath[] = FPL("chrome.exe");
+const FilePath::CharType kHelperProcessExecutablePathChromium[] =
+    FPL("chrome.exe");
 const FilePath::CharType kHelperProcessExecutablePath[] = FPL("chrome.exe");
 #elif defined(OS_MACOSX)
+const FilePath::CharType kBrowserProcessExecutablePathChromium[] =
+    FPL(CHROMIUM_PRODUCT_STRING ".app/Contents/MacOS/" CHROMIUM_PRODUCT_STRING);
 const FilePath::CharType kBrowserProcessExecutablePath[] =
     FPL(PRODUCT_STRING ".app/Contents/MacOS/" PRODUCT_STRING);
+const FilePath::CharType kHelperProcessExecutablePathChromium[] =
+    FPL(CHROMIUM_PRODUCT_STRING " Helper.app/Contents/MacOS/"
+        CHROMIUM_PRODUCT_STRING " Helper");
 const FilePath::CharType kHelperProcessExecutablePath[] =
     FPL(PRODUCT_STRING " Helper.app/Contents/MacOS/" PRODUCT_STRING " Helper");
 #elif defined(OS_POSIX)
+const FilePath::CharType kBrowserProcessExecutablePathChromium[] =
+    FPL("chrome");
 const FilePath::CharType kBrowserProcessExecutablePath[] = FPL("chrome");
+const FilePath::CharType kHelperProcessExecutablePathChromium[] = FPL("chrome");
 const FilePath::CharType kHelperProcessExecutablePath[] = FPL("chrome");
 #endif  // OS_*
+
 #if defined(OS_MACOSX)
 const FilePath::CharType kFrameworkName[] =
     FPL(PRODUCT_STRING " Framework.framework");
 #endif  // OS_MACOSX
+
 const wchar_t kNaClAppName[] = L"nacl64";
 #if defined(GOOGLE_CHROME_BUILD)
 const wchar_t kBrowserAppName[] = L"Chrome";

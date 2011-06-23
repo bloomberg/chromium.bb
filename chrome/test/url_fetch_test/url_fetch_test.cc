@@ -12,7 +12,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/automation/tab_proxy.h"
-#include "chrome/test/ui/ui_test.h"
+#include "chrome/test/ui/ui_perf_test.h"
 
 namespace {
 
@@ -20,7 +20,7 @@ namespace {
 // wait for a cookie value to be set or a JavaScript expression to evaluate
 // true before closing the page. It is undefined what happens if you specify
 // both a cookie and a JS expression.
-class UrlFetchTest : public UITest {
+class UrlFetchTest : public UIPerfTest {
  public:
   UrlFetchTest() {
     show_window_ = true;
@@ -34,17 +34,7 @@ class UrlFetchTest : public UITest {
   void SetUp() {
     const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
     if (cmd_line->HasSwitch("reference_build")) {
-      FilePath dir;
-      PathService::Get(chrome::DIR_TEST_TOOLS, &dir);
-      dir = dir.AppendASCII("reference_build");
-#if defined(OS_WIN)
-      dir = dir.AppendASCII("chrome");
-#elif defined(OS_LINUX)
-      dir = dir.AppendASCII("chrome_linux");
-#elif defined(OS_MACOSX)
-      dir = dir.AppendASCII("chrome_mac");
-#endif
-      browser_directory_ = dir;
+      UseReferenceBuild();
     }
     UITest::SetUp();
   }

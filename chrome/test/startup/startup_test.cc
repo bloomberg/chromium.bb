@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -133,8 +133,7 @@ class StartupTest : public UIPerfTest {
         FilePath dir_app;
         ASSERT_TRUE(PathService::Get(chrome::DIR_APP, &dir_app));
 
-        FilePath chrome_exe(dir_app.Append(
-            chrome::kBrowserProcessExecutablePath));
+        FilePath chrome_exe(dir_app.Append(GetExecutablePath()));
         ASSERT_TRUE(EvictFileFromSystemCacheWrapper(chrome_exe));
 #if defined(OS_WIN)
         // chrome.dll is windows specific.

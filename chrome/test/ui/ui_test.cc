@@ -174,8 +174,7 @@ ProxyLauncher* UITestBase::CreateProxyLauncher() {
 }
 
 ProxyLauncher::LaunchState UITestBase::DefaultLaunchState() {
-  FilePath browser_executable = browser_directory_.Append(
-      chrome::kBrowserProcessExecutablePath);
+  FilePath browser_executable = browser_directory_.Append(GetExecutablePath());
   CommandLine command(browser_executable);
   command.AppendArguments(launch_arguments_, false);
   ProxyLauncher::LaunchState state =
@@ -404,6 +403,12 @@ FilePath UITestBase::GetDownloadDirectory() {
   FilePath download_directory;
   EXPECT_TRUE(tab_proxy->GetDownloadDirectory(&download_directory));
   return download_directory;
+}
+
+const FilePath::CharType* UITestBase::GetExecutablePath() {
+  if (launch_arguments_.HasSwitch(switches::kEnableChromiumBranding))
+    return chrome::kBrowserProcessExecutablePathChromium;
+  return chrome::kBrowserProcessExecutablePath;
 }
 
 void UITestBase::CloseBrowserAsync(BrowserProxy* browser) const {

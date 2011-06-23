@@ -20,6 +20,10 @@ extern const FilePath::CharType kBrowserProcessExecutableName[];
 extern const FilePath::CharType kHelperProcessExecutableName[];
 extern const FilePath::CharType kBrowserProcessExecutablePath[];
 extern const FilePath::CharType kHelperProcessExecutablePath[];
+extern const FilePath::CharType kBrowserProcessExecutableNameChromium[];
+extern const FilePath::CharType kHelperProcessExecutableNameChromium[];
+extern const FilePath::CharType kBrowserProcessExecutablePathChromium[];
+extern const FilePath::CharType kHelperProcessExecutablePathChromium[];
 #if defined(OS_MACOSX)
 extern const FilePath::CharType kFrameworkName[];
 #endif

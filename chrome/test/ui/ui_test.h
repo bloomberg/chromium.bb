@@ -166,6 +166,9 @@ class UITestBase {
   // Gets the directory for the currently active profile in the browser.
   FilePath GetDownloadDirectory();
 
+  // Gets the executable file path of the Chrome browser process.
+  const FilePath::CharType* GetExecutablePath();
+
   // Returns the directory name where the "typical" user data is that we use
   // for testing.
   static FilePath ComputeTypicalUserDataSource(
