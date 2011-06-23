@@ -107,9 +107,6 @@ void Tracked::ResetBirthTime() {}
 Tracked::Tracked()
     : tracked_births_(NULL),
       tracked_birth_time_(TimeTicks::Now()) {
-  if (!ThreadData::IsActive())
-    return;
-  SetBirthPlace(Location("NoFunctionName", "NeedToSetBirthPlace", -1, NULL));
 }
 
 Tracked::~Tracked() {
