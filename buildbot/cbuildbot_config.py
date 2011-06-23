@@ -441,6 +441,12 @@ add_config('arm-tegra2_seaboard-tangent-private-full', [internal, arm, full, {
   'profile' : 'tangent',
 }])
 
+add_config('arm-tegra2_seaboard-tangent-private-binary',
+  [internal, arm, binary, {
+    'board' : 'tegra2_seaboard',
+    'profile' : 'tangent',
+}])
+
 add_config('x86-mario-release', [internal, full, official, release, {
   'board' : 'x86-mario',
 }])
