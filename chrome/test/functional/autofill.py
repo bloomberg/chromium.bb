@@ -326,6 +326,60 @@ class AutofillTest(pyauto.PyUITest):
                  'Expected: "%s"\nReturned: "%s"' % (
                      key, value, form_values[key])))
 
+  def _FillPhoneFormAndSubmit(self, datalist, filename, tab_index=0, windex=0):
+    """Navigate to the phone form, input field values, and submit form.
+
+    Args:
+      datalist: List of dictionary profiles.
+      filename: HTML form website file. File is assumed to be located in
+                autofill/functional directory of the data folder.
+      tab_index: Integer index of the tab to work on; defaults to 0 (first tab).
+      windex: Integer index of the browser window to work on; defaults to 0
+              (first window).
+    """
+    url = self.GetHttpURLForDataPath('autofill', 'functional', filename)
+    file_path = os.path.join(self.DataDir(), 'autofill', 'functional',
+                             datalist)
+    profiles_list = self.EvalDataFrom(file_path)
+    for profile in profiles_list:
+      self.NavigateToURL(url)
+      for key, value in profile.iteritems():
+        script = ('document.getElementById("%s").value = "%s"; '
+                  'window.domAutomationController.send("done");') % (key, value)
+        self.ExecuteJavascript(script, tab_index, windex)
+      # Submit form.
+      js_code = """
+        document.getElementById("testform").submit();
+        window.addEventListener("unload", function() {
+          window.domAutomationController.send("done");
+        });
+      """
+      self.ExecuteJavascript(js_code, tab_index, windex)
+
+  def testProfileSavedWithValidCountryPhone(self):
+    """Test profile is saved if phone number is valid in selected country.
+
+    The data file contains two profiles with valid phone numbers and two
+    profiles with invalid phone numbers from their respective country.
+    """
+    self._FillPhoneFormAndSubmit(
+        'phonechecker.txt', 'autofill_test_form.html', tab_index=0, windex=0)
+    self.assertEqual(2, len(self.GetAutofillProfile()['profiles']),
+                     msg='Profile with invalid country phone number saved.')
+
+  def testCharsStrippedForAggregatedPhoneNumbers(self):
+    """Test aggregated phone numbers are cleaned (not saved "as-is")."""
+    self._FillPhoneFormAndSubmit(
+        'phonecharacters.txt', 'autofill_test_form.html', tab_index=0, windex=0)
+    self.assertEqual(
+        '14088714567',
+        self.GetAutofillProfile()['profiles'][0]['PHONE_HOME_WHOLE_NUMBER'],
+        msg='Aggregated US phone number not cleaned.')
+    self.assertEqual(
+        '4940808179000',
+        self.GetAutofillProfile()['profiles'][1]['PHONE_HOME_WHOLE_NUMBER'],
+        msg='Aggregated Germany phone number not cleaned.')
+
   def testCCInfoNotStoredWhenAutocompleteOff(self):
     """Test CC info not offered to be saved when autocomplete=off for CC field.
 
@@ -563,6 +617,28 @@ class AutofillTest(pyauto.PyUITest):
       self.ExecuteJavascript('document.getElementById("testform").submit();'
                              'window.domAutomationController.send("done");',
                              0, 0)
+
+  def testSameAddressProfilesAddInPrefsDontMerge(self):
+    """Test profiles added through prefs with same address do not merge."""
+    profileA = {'NAME_FIRST': 'John',
+                'NAME_LAST': 'Doe',
+                'ADDRESS_HOME_LINE1': '123 Cherry St',
+                'ADDRESS_HOME_CITY': 'Mountain View',
+                'ADDRESS_HOME_STATE': 'CA',
+                'ADDRESS_HOME_ZIP': '94043',
+                'PHONE_HOME_WHOLE_NUMBER': '650-555-1234',}
+    profileB = {'NAME_FIRST': 'Jane',
+                'NAME_LAST': 'Smith',
+                'ADDRESS_HOME_LINE1': '123 Cherry St',
+                'ADDRESS_HOME_CITY': 'Mountain View',
+                'ADDRESS_HOME_STATE': 'CA',
+                'ADDRESS_HOME_ZIP': '94043',
+                'PHONE_HOME_WHOLE_NUMBER': '650-253-1234',}
+
+    profiles_list = [profileA, profileB]
+    self.FillAutofillProfile(profiles=profiles_list)
+    self.assertEqual(2, len(self.GetAutofillProfile()['profiles']),
+                     msg='Profiles in prefs with same address merged.')
 
   def testMergeAggregatedProfilesWithSameAddress(self):
     """Test that profiles merge for aggregated data with same address.
