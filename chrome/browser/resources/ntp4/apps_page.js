@@ -5,7 +5,153 @@
 cr.define('ntp4', function() {
   'use strict';
 
-  var TilePage = ntp4.TilePage;
+  var localStrings = new LocalStrings;
+
+  var APP_LAUNCH = {
+    // The histogram buckets (keep in sync with extension_constants.h).
+    NTP_APPS_MAXIMIZED: 0,
+    NTP_APPS_COLLAPSED: 1,
+    NTP_APPS_MENU: 2,
+    NTP_MOST_VISITED: 3,
+    NTP_RECENTLY_CLOSED: 4,
+    NTP_APP_RE_ENABLE: 16
+  };
+
+  /**
+   * App context menu. The class is designed to be used as a singleton with
+   * the app that is currently showing a context menu stored in this.app_.
+   * @constructor
+   */
+  function AppContextMenu() {
+    this.__proto__ = AppContextMenu.prototype;
+    this.initialize();
+  };
+  cr.addSingletonGetter(AppContextMenu);
+
+  AppContextMenu.prototype = {
+    initialize: function() {
+      var menu = new cr.ui.Menu;
+      cr.ui.decorate(menu, cr.ui.Menu);
+      menu.classList.add('app-context-menu');
+      this.menu = menu;
+
+      this.launch_ = this.appendMenuItem_();
+      this.launch_.addEventListener('activate', this.onLaunch_.bind(this));
+
+      menu.appendChild(cr.ui.MenuItem.createSeparator());
+      this.launchRegularTab_ = this.appendMenuItem_('applaunchtyperegular');
+      this.launchPinnedTab_ = this.appendMenuItem_('applaunchtypepinned');
+      if (!cr.isMac)
+        this.launchNewWindow_ = this.appendMenuItem_('applaunchtypewindow');
+      this.launchFullscreen_ = this.appendMenuItem_('applaunchtypefullscreen');
+
+      var self = this;
+      this.forAllLaunchTypes_(function(launchTypeButton, id) {
+        launchTypeButton.addEventListener('activate',
+            self.onLaunchTypeChanged_.bind(self));
+      });
+
+      menu.appendChild(cr.ui.MenuItem.createSeparator());
+      this.options_ = this.appendMenuItem_('appoptions');
+      this.uninstall_ = this.appendMenuItem_('appuninstall');
+      this.options_.addEventListener('activate',
+                                     this.onShowOptions_.bind(this));
+      this.uninstall_.addEventListener('activate',
+                                       this.onUninstall_.bind(this));
+
+      if (!cr.isMac && !cr.isChromeOs) {
+        menu.appendChild(cr.ui.MenuItem.createSeparator());
+        this.createShortcut_ = this.appendMenuItem_('appcreateshortcut');
+        this.createShortcut_.addEventListener(
+            'activate', this.onCreateShortcut_.bind(this));
+      }
+
+      menu.hidden = true;
+      document.body.appendChild(menu);
+    },
+
+    /**
+     * Appends a menu item to |this.menu_|.
+     * @param {?String} textId If non-null, the ID for the localized string
+     *     that acts as the item's label.
+     */
+    appendMenuItem_: function(textId) {
+      var button = cr.doc.createElement('button');
+      this.menu.appendChild(button);
+      cr.ui.decorate(button, cr.ui.MenuItem);
+      if (textId)
+        button.textContent = localStrings.getString(textId);
+      return button;
+    },
+
+    /**
+     * Iterates over all the launch type menu items.
+     * @param {function(cr.ui.MenuItem, number)} f The function to call for each
+     *     menu item. The parameters to the function include the menu item and
+     *     the associated launch ID.
+     */
+    forAllLaunchTypes_: function(f) {
+      // Order matters: index matches launchType id.
+      var launchTypes = [ this.launchPinnedTab_,
+                          this.launchRegularTab_,
+                          this.launchFullscreen_,
+                          this.launchNewWindow_ ];
+
+      for (var i = 0; i < launchTypes.length; ++i) {
+        if (!launchTypes[i])
+          continue;
+
+        f(launchTypes[i], i);
+      }
+    },
+
+    /**
+     * Does all the necessary setup to show the menu for the give app.
+     * @param {App} app The App object that will be showing a context menu.
+     */
+    setupForApp: function(app) {
+      this.app_ = app;
+
+      this.launch_.textContent = app.appData.name;
+
+      this.forAllLaunchTypes_(function(launchTypeButton, id) {
+        launchTypeButton.disabled = false;
+        launchTypeButton.checked = app.appData.launch_type == id;
+      });
+
+      this.options_.disabled = !app.appData.options_url;
+    },
+
+    /**
+     * Handlers for menu item activation.
+     * @param {Event} e The activation event.
+     * @private
+     */
+    onLaunch_: function(e) {
+      chrome.send('launchApp', [this.app_.appId, APP_LAUNCH.NTP_APPS_MENU]);
+    },
+    onLaunchTypeChanged_: function(e) {
+      var pressed = e.currentTarget;
+      var app = this.app_;
+      this.forAllLaunchTypes_(function(launchTypeButton, id) {
+        if (launchTypeButton == pressed) {
+          chrome.send('setLaunchType', [app.appId, id]);
+          // Manually update the launch type. We will only get
+          // appsPrefChangedCallback calls after changes to other NTP instances.
+          app.appData.launch_type = id;
+        }
+      });
+    },
+    onShowOptions_: function(e) {
+      window.location = this.app_.appData.options_url;
+    },
+    onUninstall_: function(e) {
+      chrome.send('uninstallApp', [this.app_.appData.id]);
+    },
+    onCreateShortcut_: function(e) {
+      chrome.send('createAppShortcut', [this.app_.appData.id]);
+    },
+  };
 
   /**
    * Creates a new App object.
@@ -26,15 +172,15 @@ cr.define('ntp4', function() {
     __proto__: HTMLDivElement.prototype,
 
     initialize: function() {
-      assert(this.appData.id, 'Got an app without an ID');
+      assert(this.appData_.id, 'Got an app without an ID');
 
       this.className = 'app';
 
       var appImg = this.ownerDocument.createElement('img');
-      appImg.src = this.appData.icon_big;
+      appImg.src = this.appData_.icon_big;
       // We use a mask of the same image so CSS rules can highlight just the
       // image when it's touched.
-      appImg.style.WebkitMaskImage = url(this.appData.icon_big);
+      appImg.style.WebkitMaskImage = url(this.appData_.icon_big);
       // We put a click handler just on the app image - so clicking on the
       // margins between apps doesn't do anything.
       appImg.addEventListener('click', this.onClick_.bind(this));
@@ -42,10 +188,12 @@ cr.define('ntp4', function() {
       this.appImg_ = appImg;
 
       var appSpan = this.ownerDocument.createElement('span');
-      appSpan.textContent = this.appData.name;
+      appSpan.textContent = this.appData_.name;
       this.appendChild(appSpan);
 
-      /* TODO(estade): grabber */
+      this.addEventListener('contextmenu', cr.ui.contextMenuHandler);
+      this.addEventListener('keydown', cr.ui.contextMenuHandler);
+      this.addEventListener('keyup', cr.ui.contextMenuHandler);
     },
 
     /**
@@ -69,16 +217,39 @@ cr.define('ntp4', function() {
      * @private
      */
     onClick_: function(e) {
-      // Tell chrome to launch the app.
-      var NTP_APPS_MAXIMIZED = 0;
-      chrome.send('launchApp', [this.appData.id, NTP_APPS_MAXIMIZED]);
+      var args = [this.appId, APP_LAUNCH.NTP_APPS_MAXIMIZED];
+      args.push(e.altKey, e.ctrlKey, e.metaKey, e.shiftKey, e.button);
+      chrome.send('launchApp', args);
 
       // Don't allow the click to trigger a link or anything
       e.preventDefault();
     },
 
+    /**
+     * The data and preferences for this app.
+     * @type {Object}
+     */
+    set appData(data) {
+      this.appData_ = data;
+    },
+    get appData() {
+      return this.appData_;
+    },
+
     get appId() {
-      return this.appData.id;
+      return this.appData_.id;
+    },
+
+    /**
+     * Returns a pointer to the context menu for this app. All apps share the
+     * singleton AppContextMenu. This function is called by the
+     * ContextMenuHandler in response to the 'contextmenu' event.
+     * @type {cr.ui.Menu}
+     */
+    get contextMenu() {
+      var menu = AppContextMenu.getInstance();
+      menu.setupForApp(this);
+      return menu.menu;
     },
   };
 
@@ -123,6 +294,8 @@ cr.define('ntp4', function() {
       this.style.top = y + 'px';
     },
   };
+
+  var TilePage = ntp4.TilePage;
 
   // The fraction of the app tile size that the icon uses.
   var APP_IMG_SIZE_FRACTION = 4 / 5;

@@ -245,14 +245,21 @@ cr.define('ntp4', function() {
 
   /**
    * Callback invoked by chrome whenever an app preference changes.
-   * The normal NTP uses this to keep track of the current launch-type of an
-   * app, updating the choices in the context menu.  We don't have such a menu
-   * so don't use this at all (but it still needs to be here for chrome to
-   * call).
    * @param {Object} data An object with all the data on available
-   *        applications.
+   *     applications.
    */
   function appsPrefChangeCallback(data) {
+    var apps = document.querySelectorAll('.app');
+
+    // This is an expensive operation. We minimize how frequently it's called
+    // by only calling it for changes across different instances of the NTP
+    // (i.e. two separate tabs both showing NTP).
+    for (var j = 0; j < data.apps.length; ++j) {
+      for (var i = 0; i < apps.length; ++i) {
+        if (data.apps[j]['id'] == apps[i].appId)
+          apps[i].appData = data.apps[j];
+      }
+    }
   }
 
   function getCardSlider() {

@@ -248,6 +248,8 @@ void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
 
   dictionary->Set("apps", list);
 
+  // TODO(estade): remove these settings when the old NTP is removed. The new
+  // NTP does it in js.
 #if defined(OS_MACOSX)
   // App windows are not yet implemented on mac.
   dictionary->SetBoolean("disableAppWindowLaunch", true);
@@ -419,6 +421,11 @@ void AppLauncherHandler::HandleSetLaunchType(const ListValue* args) {
   const Extension* extension =
       extensions_service_->GetExtensionById(extension_id, true);
   CHECK(extension);
+
+  // Don't update the page; it already knows about the launch type change.
+  scoped_ptr<AutoReset<bool> > auto_reset;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewTabPage4))
+    auto_reset.reset(new AutoReset<bool>(&ignore_changes_, true));
 
   extensions_service_->extension_prefs()->SetLaunchType(
       extension_id,

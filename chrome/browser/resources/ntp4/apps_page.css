@@ -26,30 +26,8 @@
   -webkit-mask-size: 100% 100%;
 }
 
-/* Pressed is set when an app is first touched.
-   By using the mask, pressing causes a darkening effect of just the image */
-.app.grabber-pressed img {
-  opacity: 0.8;
-}
-
-/* Grabbed is set (and pressed is cleared) when the app has been held. */
-.grabber-grabbed {
-  opacity: 0.8;
-  -webkit-transform: scale3d(1.4, 1.4, 1);
-}
-
-/* Dragging is set (without grabbed being cleared) when a grabbed app is
-   moved */
-.grabber-dragging {
-  /* We need to ensure there is no animation applied to its position
-    (or the drag touch may stop being over top of it */
-  -webkit-transition: none !important;
-
-  /* Ensure the element has a large z-index so that we can get events
-     for it as it moves over other elements.  This is animated as the
-     element flys back, so we want a large value that will stay large until
-     its almost home.  */
-  z-index: 100;
+.app-context-menu > button:first-child {
+  font-weight: bold;
 }
 
 /* Link (bookmark) tiles. */

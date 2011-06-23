@@ -262,6 +262,8 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
 }
 
 void NTPResourceCache::CreateNewTabHTML() {
+  // TODO(estade): these strings should be defined in their relevant handlers
+  // (in GetLocalizedValues) and should have more legible names.
   // Show the profile name in the title and most visited labels if the current
   // profile is not the default.
   string16 apps = l10n_util::GetStringUTF16(IDS_NEW_TAB_APPS);
