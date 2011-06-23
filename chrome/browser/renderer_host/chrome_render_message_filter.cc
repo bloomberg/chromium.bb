@@ -466,7 +466,7 @@ void ChromeRenderMessageFilter::OnCanTriggerClipboardRead(const GURL& url,
   const Extension* extension =
       context->extension_info_map()->extensions().GetByURL(url);
   *allowed = extension &&
-      extension->HasApiPermission(Extension::kClipboardReadPermission);
+      extension->HasAPIPermission(ExtensionAPIPermission::kClipboardRead);
 }
 
 void ChromeRenderMessageFilter::OnCanTriggerClipboardWrite(const GURL& url,
@@ -479,7 +479,7 @@ void ChromeRenderMessageFilter::OnCanTriggerClipboardWrite(const GURL& url,
       context->extension_info_map()->extensions().GetByURL(url);
   *allowed = url.SchemeIs(chrome::kExtensionScheme) ||
       (extension &&
-       extension->HasApiPermission(Extension::kClipboardWritePermission));
+       extension->HasAPIPermission(ExtensionAPIPermission::kClipboardWrite));
 }
 
 void ChromeRenderMessageFilter::OnClearPredictorCache(int* result) {

@@ -484,7 +484,7 @@ WebKit::WebNotificationPresenter::Permission
   const Extension* extension =
       io_data->GetExtensionInfoMap()->extensions().GetByURL(source_url);
   if (extension &&
-      extension->HasApiPermission(Extension::kNotificationPermission)) {
+      extension->HasAPIPermission(ExtensionAPIPermission::kNotification)) {
     return WebKit::WebNotificationPresenter::PermissionAllowed;
   }
 
@@ -547,7 +547,7 @@ bool ChromeContentBrowserClient::CanCreateWindow(
     const Extension* extension =
         io_data->GetExtensionInfoMap()->extensions().GetByURL(source_url);
     return (extension &&
-            extension->HasApiPermission(Extension::kBackgroundPermission));
+            extension->HasAPIPermission(ExtensionAPIPermission::kBackground));
   }
   return true;
 }

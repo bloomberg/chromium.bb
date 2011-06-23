@@ -808,6 +808,8 @@ void AutomationProvider::InstallExtensionAndGetHandle(
     ExtensionInstallUI* client =
         (with_ui ? new ExtensionInstallUI(profile_) : NULL);
     scoped_refptr<CrxInstaller> installer(service->MakeCrxInstaller(client));
+    if (!with_ui)
+      installer->set_allow_silent_install(true);
     installer->set_install_cause(extension_misc::INSTALL_CAUSE_AUTOMATION);
     installer->InstallCrx(crx_path);
   } else {

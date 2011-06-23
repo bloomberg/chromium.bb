@@ -517,7 +517,7 @@ void ChromeGeolocationPermissionContext::RequestGeolocationPermission(
     const Extension* ext = extensions->GetExtensionByURL(requesting_frame);
     if (!ext)
       ext = extensions->GetExtensionByWebExtent(requesting_frame);
-    if (ext && ext->HasApiPermission(Extension::kGeolocationPermission)) {
+    if (ext && ext->HasAPIPermission(ExtensionAPIPermission::kGeolocation)) {
       ExtensionProcessManager* epm = profile_->GetExtensionProcessManager();
       RenderProcessHost* process = epm->GetExtensionProcess(requesting_frame);
       if (process && process->id() == render_process_id) {

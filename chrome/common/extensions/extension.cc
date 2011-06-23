@@ -98,50 +98,6 @@ bool IsBaseCrxKey(const std::string& key) {
   return false;
 }
 
-// Constant used to represent an undefined l10n message id.
-const int kUndefinedMessageId = -1;
-
-// Names of API modules that do not require a permission.
-const char kBrowserActionModuleName[] = "browserAction";
-const char kBrowserActionsModuleName[] = "browserActions";
-const char kDevToolsModuleName[] = "devtools";
-const char kExtensionModuleName[] = "extension";
-const char kI18NModuleName[] = "i18n";
-const char kOmniboxModuleName[] = "omnibox";
-const char kPageActionModuleName[] = "pageAction";
-const char kPageActionsModuleName[] = "pageActions";
-const char kTestModuleName[] = "test";
-const char kTypesModuleName[] = "types";
-
-// Names of modules that can be used without listing it in the permissions
-// section of the manifest.
-const char* kNonPermissionModuleNames[] = {
-  kBrowserActionModuleName,
-  kBrowserActionsModuleName,
-  kDevToolsModuleName,
-  kExtensionModuleName,
-  kI18NModuleName,
-  kOmniboxModuleName,
-  kPageActionModuleName,
-  kPageActionsModuleName,
-  kTestModuleName,
-  kTypesModuleName
-};
-const size_t kNumNonPermissionModuleNames =
-    arraysize(kNonPermissionModuleNames);
-
-// Names of functions (within modules requiring permissions) that can be used
-// without asking for the module permission. In other words, functions you can
-// use with no permissions specified.
-const char* kNonPermissionFunctionNames[] = {
-  "tabs.create",
-  "tabs.onRemoved",
-  "tabs.remove",
-  "tabs.update",
-};
-const size_t kNumNonPermissionFunctionNames =
-    arraysize(kNonPermissionFunctionNames);
-
 // A singleton object containing global data needed by the extension objects.
 class ExtensionConfig {
  public:
@@ -149,24 +105,13 @@ class ExtensionConfig {
     return Singleton<ExtensionConfig>::get();
   }
 
-  Extension::PermissionMessage::MessageId GetPermissionMessageId(
-      const std::string& permission) {
-    return Extension::kPermissions[permission_map_[permission]].message_id;
-  }
-
   Extension::ScriptingWhitelist* whitelist() { return &scripting_whitelist_; }
 
  private:
   friend struct DefaultSingletonTraits<ExtensionConfig>;
 
-  ExtensionConfig() {
-    for (size_t i = 0; i < Extension::kNumPermissions; ++i)
-      permission_map_[Extension::kPermissions[i].name] = i;
-  };
-
+  ExtensionConfig() { }
   ~ExtensionConfig() { }
-
-  std::map<const std::string, size_t> permission_map_;
 
   // A whitelist of extensions that can script anywhere. Do not add to this
   // list (except in tests) without consulting the Extensions team first.
@@ -174,10 +119,6 @@ class ExtensionConfig {
   // added to this list.
   Extension::ScriptingWhitelist scripting_whitelist_;
 };
-
-// Aliased to kTabPermission for purposes of API checks, but not allowed
-// in the permissions field of the manifest.
-static const char kWindowPermission[] = "windows";
 
 // Rank extension locations in a way that allows
 // Extension::GetHigherPriorityLocation() to compare locations.
@@ -264,90 +205,6 @@ const int Extension::kPageActionIconMaxSize = 19;
 const int Extension::kBrowserActionIconMaxSize = 19;
 const int Extension::kSidebarIconMaxSize = 16;
 
-// Explicit permissions -- permission declaration required.
-const char Extension::kBackgroundPermission[] = "background";
-const char Extension::kBookmarkPermission[] = "bookmarks";
-const char Extension::kClipboardReadPermission[] = "clipboardRead";
-const char Extension::kClipboardWritePermission[] = "clipboardWrite";
-const char Extension::kContextMenusPermission[] = "contextMenus";
-const char Extension::kContentSettingsPermission[] = "contentSettings";
-const char Extension::kCookiePermission[] = "cookies";
-const char Extension::kChromePrivatePermission[] = "chromePrivate";
-const char Extension::kChromeosInfoPrivatePermission[] = "chromeosInfoPrivate";
-const char Extension::kDebuggerPermission[] = "debugger";
-const char Extension::kExperimentalPermission[] = "experimental";
-const char Extension::kFileBrowserHandlerPermission[] = "fileBrowserHandler";
-const char Extension::kFileBrowserPrivatePermission[] = "fileBrowserPrivate";
-const char Extension::kGeolocationPermission[] = "geolocation";
-const char Extension::kHistoryPermission[] = "history";
-const char Extension::kIdlePermission[] = "idle";
-const char Extension::kManagementPermission[] = "management";
-const char Extension::kMediaPlayerPrivatePermission[] = "mediaPlayerPrivate";
-const char Extension::kNotificationPermission[] = "notifications";
-const char Extension::kProxyPermission[] = "proxy";
-const char Extension::kTabPermission[] = "tabs";
-const char Extension::kUnlimitedStoragePermission[] = "unlimitedStorage";
-const char Extension::kWebstorePrivatePermission[] = "webstorePrivate";
-const char Extension::kWebSocketProxyPrivatePermission[] =
-    "webSocketProxyPrivate";
-
-// In general, all permissions should have an install message.
-// See ExtensionsTest.PermissionMessages for an explanation of each
-// exception.
-const Extension::Permission Extension::kPermissions[] = {
-  { kBackgroundPermission,            PermissionMessage::ID_NONE },
-  { kBookmarkPermission,              PermissionMessage::ID_BOOKMARKS },
-  { kChromePrivatePermission,         PermissionMessage::ID_NONE },
-  { kChromeosInfoPrivatePermission,   PermissionMessage::ID_NONE },
-  { kClipboardReadPermission,         PermissionMessage::ID_CLIPBOARD },
-  { kClipboardWritePermission,        PermissionMessage::ID_NONE },
-  { kContentSettingsPermission,       PermissionMessage::ID_NONE },
-  { kContextMenusPermission,          PermissionMessage::ID_NONE },
-  { kCookiePermission,                PermissionMessage::ID_NONE },
-  { kDebuggerPermission,              PermissionMessage::ID_DEBUGGER },
-  { kExperimentalPermission,          PermissionMessage::ID_NONE },
-  { kFileBrowserHandlerPermission,    PermissionMessage::ID_NONE },
-  { kFileBrowserPrivatePermission,    PermissionMessage::ID_NONE },
-  { kGeolocationPermission,           PermissionMessage::ID_GEOLOCATION },
-  { kHistoryPermission,               PermissionMessage::ID_BROWSING_HISTORY },
-  { kIdlePermission,                  PermissionMessage::ID_NONE },
-  { kManagementPermission,            PermissionMessage::ID_MANAGEMENT },
-  { kMediaPlayerPrivatePermission,    PermissionMessage::ID_NONE },
-  { kNotificationPermission,          PermissionMessage::ID_NONE },
-  { kProxyPermission,                 PermissionMessage::ID_NONE },
-  { kTabPermission,                   PermissionMessage::ID_TABS },
-  { kUnlimitedStoragePermission,      PermissionMessage::ID_NONE },
-  { kWebSocketProxyPrivatePermission, PermissionMessage::ID_NONE },
-  { kWebstorePrivatePermission,       PermissionMessage::ID_NONE },
-};
-const size_t Extension::kNumPermissions = arraysize(Extension::kPermissions);
-
-const char* const Extension::kHostedAppPermissionNames[] = {
-  Extension::kBackgroundPermission,
-  Extension::kChromePrivatePermission,
-  Extension::kClipboardReadPermission,
-  Extension::kClipboardWritePermission,
-  Extension::kExperimentalPermission,
-  Extension::kGeolocationPermission,
-  Extension::kNotificationPermission,
-  Extension::kUnlimitedStoragePermission,
-  Extension::kWebstorePrivatePermission,
-};
-const size_t Extension::kNumHostedAppPermissions =
-    arraysize(Extension::kHostedAppPermissionNames);
-
-const char* const Extension::kComponentPrivatePermissionNames[] = {
-    Extension::kFileBrowserPrivatePermission,
-    Extension::kWebstorePrivatePermission,
-    Extension::kMediaPlayerPrivatePermission,
-    Extension::kChromeosInfoPrivatePermission,
-};
-const size_t Extension::kNumComponentPrivatePermissions =
-    arraysize(Extension::kComponentPrivatePermissionNames);
-
-// We purposefully don't put this into kPermissionNames.
-const char Extension::kOldUnlimitedStoragePermission[] = "unlimited_storage";
-
 const int Extension::kValidWebExtentSchemes =
     URLPattern::SCHEME_HTTP | URLPattern::SCHEME_HTTPS;
 
@@ -362,84 +219,6 @@ Extension::InputComponentInfo::InputComponentInfo()
 }
 
 Extension::InputComponentInfo::~InputComponentInfo() {}
-
-//
-// PermissionMessage
-//
-
-// static
-Extension::PermissionMessage Extension::PermissionMessage::CreateFromMessageId(
-    Extension::PermissionMessage::MessageId message_id) {
-  DCHECK_GT(PermissionMessage::ID_NONE, PermissionMessage::ID_UNKNOWN);
-  if (message_id <= ID_NONE)
-    return PermissionMessage(message_id, string16());
-
-  string16 message = l10n_util::GetStringUTF16(kMessageIds[message_id]);
-  return PermissionMessage(message_id, message);
-}
-
-// static
-Extension::PermissionMessage Extension::PermissionMessage::CreateFromHostList(
-    const std::vector<std::string>& hosts) {
-  CHECK(hosts.size() > 0);
-
-  MessageId message_id;
-  string16 message;
-  switch (hosts.size()) {
-    case 1:
-      message_id = ID_HOSTS_1;
-      message = l10n_util::GetStringFUTF16(kMessageIds[message_id],
-                                           UTF8ToUTF16(hosts[0]));
-      break;
-    case 2:
-      message_id = ID_HOSTS_2;
-      message = l10n_util::GetStringFUTF16(kMessageIds[message_id],
-                                           UTF8ToUTF16(hosts[0]),
-                                           UTF8ToUTF16(hosts[1]));
-      break;
-    case 3:
-      message_id = ID_HOSTS_3;
-      message = l10n_util::GetStringFUTF16(kMessageIds[message_id],
-                                           UTF8ToUTF16(hosts[0]),
-                                           UTF8ToUTF16(hosts[1]),
-                                           UTF8ToUTF16(hosts[2]));
-      break;
-    default:
-      message_id = ID_HOSTS_4_OR_MORE;
-      message = l10n_util::GetStringFUTF16(
-          kMessageIds[message_id],
-          UTF8ToUTF16(hosts[0]),
-          UTF8ToUTF16(hosts[1]),
-          base::IntToString16(hosts.size() - 2));
-      break;
-  }
-
-  return PermissionMessage(message_id, message);
-}
-
-Extension::PermissionMessage::PermissionMessage(
-    Extension::PermissionMessage::MessageId message_id, string16 message)
-    : message_id_(message_id),
-      message_(message) {
-}
-
-const int Extension::PermissionMessage::kMessageIds[] = {
-  kUndefinedMessageId,  // "unknown"
-  kUndefinedMessageId,  // "none"
-  IDS_EXTENSION_PROMPT_WARNING_BOOKMARKS,
-  IDS_EXTENSION_PROMPT_WARNING_GEOLOCATION,
-  IDS_EXTENSION_PROMPT_WARNING_BROWSING_HISTORY,
-  IDS_EXTENSION_PROMPT_WARNING_TABS,
-  IDS_EXTENSION_PROMPT_WARNING_MANAGEMENT,
-  IDS_EXTENSION_PROMPT_WARNING_DEBUGGER,
-  IDS_EXTENSION_PROMPT_WARNING_1_HOST,
-  IDS_EXTENSION_PROMPT_WARNING_2_HOSTS,
-  IDS_EXTENSION_PROMPT_WARNING_3_HOSTS,
-  IDS_EXTENSION_PROMPT_WARNING_4_OR_MORE_HOSTS,
-  IDS_EXTENSION_PROMPT_WARNING_ALL_HOSTS,
-  IDS_EXTENSION_PROMPT_WARNING_FULL_ACCESS,
-  IDS_EXTENSION_PROMPT_WARNING_CLIPBOARD
-};
 
 //
 // Extension
@@ -491,145 +270,12 @@ Extension::Location Extension::GetHigherPriorityLocation(
   return (loc1_rank > loc2_rank ? loc1 : loc2 );
 }
 
-// static
-Extension::PermissionMessage::MessageId Extension::GetPermissionMessageId(
-    const std::string& permission) {
-  return ExtensionConfig::GetInstance()->GetPermissionMessageId(permission);
-}
-
-Extension::PermissionMessages Extension::GetPermissionMessages() const {
-  PermissionMessages messages;
-  if (!plugins().empty()) {
-    messages.push_back(PermissionMessage::CreateFromMessageId(
-        PermissionMessage::ID_FULL_ACCESS));
-    return messages;
-  }
-
-  if (HasEffectiveAccessToAllHosts()) {
-    messages.push_back(PermissionMessage::CreateFromMessageId(
-        PermissionMessage::ID_HOSTS_ALL));
-  } else {
-    std::vector<std::string> hosts = GetDistinctHostsForDisplay(
-        GetEffectiveHostPermissions().patterns());
-    if (!hosts.empty())
-      messages.push_back(PermissionMessage::CreateFromHostList(hosts));
-  }
-
-  std::set<PermissionMessage> simple_msgs = GetSimplePermissionMessages();
-  messages.insert(messages.end(), simple_msgs.begin(), simple_msgs.end());
-
-  return messages;
+ExtensionPermissionMessages Extension::GetPermissionMessages() const {
+  return permission_set_->GetPermissionMessages();
 }
 
 std::vector<string16> Extension::GetPermissionMessageStrings() const {
-  std::vector<string16> messages;
-  PermissionMessages permissions = GetPermissionMessages();
-  for (PermissionMessages::const_iterator i = permissions.begin();
-       i != permissions.end(); ++i)
-    messages.push_back(i->message());
-  return messages;
-}
-
-std::set<Extension::PermissionMessage>
-    Extension::GetSimplePermissionMessages() const {
-  std::set<PermissionMessage> messages;
-  std::set<std::string>::const_iterator i;
-  for (i = api_permissions().begin(); i != api_permissions().end(); ++i) {
-    PermissionMessage::MessageId message_id = GetPermissionMessageId(*i);
-    DCHECK_GT(PermissionMessage::ID_NONE, PermissionMessage::ID_UNKNOWN);
-    if (message_id > PermissionMessage::ID_NONE)
-      messages.insert(PermissionMessage::CreateFromMessageId(message_id));
-  }
-  return messages;
-}
-
-// static
-std::vector<std::string> Extension::GetDistinctHostsForDisplay(
-    const URLPatternList& list) {
-  return GetDistinctHosts(list, true);
-}
-
-// static
-bool Extension::IsElevatedHostList(
-    const URLPatternList& old_list, const URLPatternList& new_list) {
-  // TODO(jstritar): This is overly conservative with respect to subdomains.
-  // For example, going from *.google.com to www.google.com will be
-  // considered an elevation, even though it is not (http://crbug.com/65337).
-
-  std::vector<std::string> new_hosts = GetDistinctHosts(new_list, false);
-  std::vector<std::string> old_hosts = GetDistinctHosts(old_list, false);
-
-  std::set<std::string> old_hosts_set(old_hosts.begin(), old_hosts.end());
-  std::set<std::string> new_hosts_set(new_hosts.begin(), new_hosts.end());
-  std::set<std::string> new_hosts_only;
-
-  std::set_difference(new_hosts_set.begin(), new_hosts_set.end(),
-                      old_hosts_set.begin(), old_hosts_set.end(),
-                      std::inserter(new_hosts_only, new_hosts_only.begin()));
-
-  return !new_hosts_only.empty();
-}
-
-// Helper for GetDistinctHosts(): com > net > org > everything else.
-static bool RcdBetterThan(const std::string& a, const std::string& b) {
-  if (a == b)
-    return false;
-  if (a == "com")
-    return true;
-  if (a == "net")
-    return b != "com";
-  if (a == "org")
-    return b != "com" && b != "net";
-  return false;
-}
-
-// static
-std::vector<std::string> Extension::GetDistinctHosts(
-    const URLPatternList& host_patterns,
-    bool include_rcd) {
-  // Use a vector to preserve order (also faster than a map on small sets).
-  // Each item is a host split into two parts: host without RCDs and
-  // current best RCD.
-  typedef std::vector<std::pair<std::string, std::string> > HostVector;
-  HostVector hosts_best_rcd;
-  for (size_t i = 0; i < host_patterns.size(); ++i) {
-    std::string host = host_patterns[i].host();
-
-    // Add the subdomain wildcard back to the host, if necessary.
-    if (host_patterns[i].match_subdomains())
-      host = "*." + host;
-
-    // If the host has an RCD, split it off so we can detect duplicates.
-    std::string rcd;
-    size_t reg_len = net::RegistryControlledDomainService::GetRegistryLength(
-        host, false);
-    if (reg_len && reg_len != std::string::npos) {
-      if (include_rcd)  // else leave rcd empty
-        rcd = host.substr(host.size() - reg_len);
-      host = host.substr(0, host.size() - reg_len);
-    }
-
-    // Check if we've already seen this host.
-    HostVector::iterator it = hosts_best_rcd.begin();
-    for (; it != hosts_best_rcd.end(); ++it) {
-      if (it->first == host)
-        break;
-    }
-    // If this host was found, replace the RCD if this one is better.
-    if (it != hosts_best_rcd.end()) {
-      if (include_rcd && RcdBetterThan(rcd, it->second))
-        it->second = rcd;
-    } else {  // Previously unseen host, append it.
-      hosts_best_rcd.push_back(std::make_pair(host, rcd));
-    }
-  }
-
-  // Build up the final vector by concatenating hosts and RCDs.
-  std::vector<std::string> distinct_hosts;
-  for (HostVector::iterator it = hosts_best_rcd.begin();
-       it != hosts_best_rcd.end(); ++it)
-    distinct_hosts.push_back(it->first + it->second);
-  return distinct_hosts;
+  return permission_set_->GetWarningMessages();
 }
 
 FilePath Extension::MaybeNormalizePath(const FilePath& path) {
@@ -646,16 +292,6 @@ FilePath Extension::MaybeNormalizePath(const FilePath& path) {
 #else
   return path;
 #endif
-}
-
-// static
-bool Extension::IsHostedAppPermission(const std::string& str) {
-  for (size_t i = 0; i < Extension::kNumHostedAppPermissions; ++i) {
-    if (str == Extension::kHostedAppPermissionNames[i]) {
-      return true;
-    }
-  }
-  return false;
 }
 
 const std::string Extension::VersionString() const {
@@ -1624,55 +1260,6 @@ bool Extension::FormatPEMForFileOutput(const std::string& input,
 }
 
 // static
-bool Extension::IsPrivilegeIncrease(const bool granted_full_access,
-                                    const std::set<std::string>& granted_apis,
-                                    const URLPatternSet& granted_extent,
-                                    const Extension* new_extension) {
-  // If the extension had native code access, we don't need to go any further.
-  // Things can't get any worse.
-  if (granted_full_access)
-    return false;
-
-  // Otherwise, if the new extension has a plugin, it's a privilege increase.
-  if (new_extension->HasFullPermissions())
-    return true;
-
-  // If the extension hadn't been granted access to all hosts in the past, then
-  // see if the extension requires more host permissions.
-  if (!HasEffectiveAccessToAllHosts(granted_extent, granted_apis)) {
-    if (new_extension->HasEffectiveAccessToAllHosts())
-      return true;
-
-    const URLPatternSet new_extent =
-        new_extension->GetEffectiveHostPermissions();
-
-    if (IsElevatedHostList(granted_extent.patterns(), new_extent.patterns()))
-      return true;
-  }
-
-  std::set<std::string> new_apis = new_extension->api_permissions();
-  std::set<std::string> new_apis_only;
-  std::set_difference(new_apis.begin(), new_apis.end(),
-                      granted_apis.begin(), granted_apis.end(),
-                      std::inserter(new_apis_only, new_apis_only.begin()));
-
-  // Ignore API permissions that don't require user approval when deciding if
-  // an extension has increased its privileges.
-  size_t new_api_count = 0;
-  for (std::set<std::string>::iterator i = new_apis_only.begin();
-       i != new_apis_only.end(); ++i) {
-    DCHECK_GT(PermissionMessage::ID_NONE, PermissionMessage::ID_UNKNOWN);
-    if (GetPermissionMessageId(*i) > PermissionMessage::ID_NONE)
-      new_api_count++;
-  }
-
-  if (new_api_count)
-    return true;
-
-  return false;
-}
-
-// static
 void Extension::DecodeIcon(const Extension* extension,
                            Icons icon_size,
                            scoped_ptr<SkBitmap>* result) {
@@ -1738,6 +1325,9 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
   URLPattern::ParseOption parse_strictness =
       (flags & STRICT_ERROR_CHECKS ? URLPattern::PARSE_STRICT
                                    : URLPattern::PARSE_LENIENT);
+
+  // Initialize permissions with an empty, default permission set.
+  permission_set_.reset(new ExtensionPermissionSet());
 
   if (source.HasKey(keys::kPublicKey)) {
     std::string public_key_bytes;
@@ -2257,6 +1847,9 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
     }
   }
 
+  ExtensionAPIPermissionSet api_permissions;
+  URLPatternSet host_permissions;
+
   // Initialize the permissions (optional).
   if (source.HasKey(keys::kPermissions)) {
     ListValue* permissions = NULL;
@@ -2274,10 +1867,13 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
         return false;
       }
 
+      ExtensionAPIPermission* permission =
+          ExtensionPermissionsInfo::GetInstance()->GetByName(permission_str);
+
       // Only COMPONENT extensions can use private APIs.
       // TODO(asargent) - We want a more general purpose mechanism for this,
       // and better error messages. (http://crbug.com/54013)
-      if (!IsComponentOnlyPermission(permission_str)
+      if (!IsComponentOnlyPermission(permission)
 #ifndef NDEBUG
            && !CommandLine::ForCurrentProcess()->HasSwitch(
                  switches::kExposePrivateExtensionApi)
@@ -2286,31 +1882,27 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
         continue;
       }
 
-      // Remap the old unlimited storage permission name.
-      if (permission_str == kOldUnlimitedStoragePermission)
-        permission_str = kUnlimitedStoragePermission;
-
       if (web_extent().is_empty() || location() == Extension::COMPONENT) {
         // Check if it's a module permission.  If so, enable that permission.
-        if (IsAPIPermission(permission_str)) {
+        if (permission != NULL) {
           // Only allow the experimental API permission if the command line
           // flag is present, or if the extension is a component of Chrome.
-          if (IsDisallowedExperimentalPermission(permission_str) &&
+          if (IsDisallowedExperimentalPermission(permission->id()) &&
               location() != Extension::COMPONENT) {
             *error = errors::kExperimentalFlagRequired;
             return false;
           }
-          api_permissions_.insert(permission_str);
+          api_permissions.insert(permission->id());
           continue;
         }
       } else {
         // Hosted apps only get access to a subset of the valid permissions.
-        if (IsHostedAppPermission(permission_str)) {
-          if (IsDisallowedExperimentalPermission(permission_str)) {
+        if (permission != NULL && permission->is_hosted_app()) {
+          if (IsDisallowedExperimentalPermission(permission->id())) {
             *error = errors::kExperimentalFlagRequired;
             return false;
           }
-          api_permissions_.insert(permission_str);
+          api_permissions.insert(permission->id());
           continue;
         }
       }
@@ -2340,7 +1932,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
                 pattern.valid_schemes() & ~URLPattern::SCHEME_FILE);
         }
 
-        host_permissions_.push_back(pattern);
+        host_permissions.AddPattern(pattern);
       }
 
       // If it's not a host permission, then it's probably an unknown API
@@ -2365,8 +1957,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
 
     if (is_hosted_app()) {
       // Make sure "background" permission is set.
-      if (api_permissions_.find(kBackgroundPermission) ==
-          api_permissions_.end()) {
+      if (!api_permissions.count(ExtensionAPIPermission::kBackground)) {
         *error = errors::kBackgroundPermissionNeeded;
         return false;
       }
@@ -2605,7 +2196,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
       *error = errors::kInvalidDevToolsPage;
       return false;
     }
-    if (!HasApiPermission(Extension::kExperimentalPermission)) {
+    if (!api_permissions.count(ExtensionAPIPermission::kExperimental)) {
       *error = errors::kDevToolsExperimental;
       return false;
     }
@@ -2619,7 +2210,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
       *error = errors::kInvalidSidebar;
       return false;
     }
-    if (!HasApiPermission(Extension::kExperimentalPermission)) {
+    if (!api_permissions.count(ExtensionAPIPermission::kExperimental)) {
       *error = errors::kSidebarExperimental;
       return false;
     }
@@ -2705,7 +2296,8 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
     return false;
   }
 
-  InitEffectiveHostPermissions();
+  permission_set_.reset(
+      new ExtensionPermissionSet(this, api_permissions, host_permissions));
 
   // Although |source| is passed in as a const, it's still possible to modify
   // it.  This is dangerous since the utility process re-uses |source| after
@@ -2896,91 +2488,37 @@ bool Extension::CanSpecifyHostPermission(const URLPattern& pattern) const {
   return true;
 }
 
-// static
-bool Extension::HasApiPermission(
-    const std::set<std::string>& api_permissions,
-    const std::string& function_name) {
-  std::string permission_name = function_name;
+bool Extension::HasAPIPermission(
+    ExtensionAPIPermission::ID permission) const {
+  return permission_set()->HasAPIPermission(permission);
+}
 
-  for (size_t i = 0; i < kNumNonPermissionFunctionNames; ++i) {
-    if (permission_name == kNonPermissionFunctionNames[i])
-      return true;
-  }
+bool Extension::HasAPIPermission(
+    const std::string& function_name) const {
+  return permission_set()->HasAccessToFunction(function_name);
+}
 
-  // See if this is a function or event name first and strip out the package.
-  // Functions will be of the form package.function
-  // Events will be of the form package/id or package.optional.stuff
-  size_t separator = function_name.find_first_of("./");
-  if (separator != std::string::npos)
-    permission_name = function_name.substr(0, separator);
-
-  // windows and tabs are the same permission.
-  if (permission_name == kWindowPermission)
-    permission_name = Extension::kTabPermission;
-
-  if (api_permissions.count(permission_name))
-    return true;
-
-  for (size_t i = 0; i < kNumNonPermissionModuleNames; ++i) {
-    if (permission_name == kNonPermissionModuleNames[i]) {
-      return true;
-    }
-  }
-
-  return false;
+const URLPatternSet& Extension::GetEffectiveHostPermissions() const {
+  return permission_set()->effective_hosts();
 }
 
 bool Extension::HasHostPermission(const GURL& url) const {
-  for (URLPatternList::const_iterator host = host_permissions().begin();
-       host != host_permissions().end(); ++host) {
-    // Non-component extensions can only access chrome://favicon and no other
-    // chrome:// scheme urls.
-    if (url.SchemeIs(chrome::kChromeUIScheme) &&
-        url.host() != chrome::kChromeUIFaviconHost &&
-        location() != Extension::COMPONENT)
-      return false;
-
-    if (host->MatchesURL(url))
-      return true;
-  }
-  return false;
+  if (url.SchemeIs(chrome::kChromeUIScheme) &&
+      url.host() != chrome::kChromeUIFaviconHost &&
+      location() != Extension::COMPONENT)
+    return false;
+  return permission_set()->HasExplicitAccessToOrigin(url);
 }
 
-void Extension::InitEffectiveHostPermissions() {
-  // Some APIs effectively grant access to every site.  New ones should be
-  // added here.  (I'm looking at you, network API)
-  if (HasApiPermission(api_permissions_, kProxyPermission) ||
-      !devtools_url_.is_empty()) {
-    URLPattern all_urls(URLPattern::SCHEME_ALL);
-    all_urls.set_match_all_urls(true);
-    effective_host_permissions_.AddPattern(all_urls);
-    return;
-  }
-
-  for (URLPatternList::const_iterator host = host_permissions().begin();
-       host != host_permissions().end(); ++host)
-    effective_host_permissions_.AddPattern(*host);
-
-  for (UserScriptList::const_iterator content_script =
-           content_scripts().begin();
-       content_script != content_scripts().end(); ++content_script) {
-    URLPatternList::const_iterator pattern =
-        content_script->url_patterns().begin();
-    for (; pattern != content_script->url_patterns().end(); ++pattern)
-      effective_host_permissions_.AddPattern(*pattern);
-  }
-}
-
-bool Extension::IsComponentOnlyPermission(const std::string& permission) const {
+bool Extension::IsComponentOnlyPermission(
+    const ExtensionAPIPermission* api) const {
   if (location() == Extension::COMPONENT)
     return true;
 
-  // Non-component extensions are not allowed to access private apis.
-  for (size_t i = 0; i < Extension::kNumComponentPrivatePermissions; ++i) {
-    if (permission == Extension::kComponentPrivatePermissionNames[i])
-      return false;
-  }
-  return true;
+  if (api == NULL)
+    return true;
+
+  return !api->is_component_only();
 }
 
 bool Extension::HasMultipleUISurfaces() const {
@@ -3025,10 +2563,8 @@ bool Extension::CanExecuteScriptOnPage(const GURL& page_url,
 
   // Otherwise, see if this extension has permission to execute script
   // programmatically on pages.
-  for (size_t i = 0; i < host_permissions_.size(); ++i) {
-    if (host_permissions_[i].MatchesURL(page_url))
-      return true;
-  }
+  if (permission_set()->HasExplicitAccessToOrigin(page_url))
+    return true;
 
   if (error) {
     *error = ExtensionErrorUtils::FormatErrorMessage(errors::kCannotAccessPage,
@@ -3038,28 +2574,12 @@ bool Extension::CanExecuteScriptOnPage(const GURL& page_url,
   return false;
 }
 
-// static
-bool Extension::HasEffectiveAccessToAllHosts(
-    const URLPatternSet& effective_host_permissions,
-    const std::set<std::string>& api_permissions) {
-  const URLPatternList patterns = effective_host_permissions.patterns();
-  for (URLPatternList::const_iterator host = patterns.begin();
-       host != patterns.end(); ++host) {
-    if (host->match_all_urls() ||
-        (host->match_subdomains() && host->host().empty()))
-      return true;
-  }
-
-  return false;
-}
-
 bool Extension::HasEffectiveAccessToAllHosts() const {
-  return HasEffectiveAccessToAllHosts(GetEffectiveHostPermissions(),
-                                      api_permissions());
+  return permission_set_->HasEffectiveAccessToAllHosts();
 }
 
 bool Extension::HasFullPermissions() const {
-  return !plugins().empty();
+  return permission_set_->HasEffectiveFullAccess();
 }
 
 bool Extension::ShowConfigureContextMenus() const {
@@ -3071,19 +2591,10 @@ bool Extension::ShowConfigureContextMenus() const {
 }
 
 bool Extension::IsDisallowedExperimentalPermission(
-    const std::string& permission_str) const {
-  return permission_str == Extension::kExperimentalPermission &&
+    ExtensionAPIPermission::ID permission) const {
+  return permission == ExtensionAPIPermission::kExperimental &&
       !CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kEnableExperimentalExtensionApis);
-}
-
-bool Extension::IsAPIPermission(const std::string& str) const {
-  for (size_t i = 0; i < Extension::kNumPermissions; ++i) {
-    if (str == Extension::kPermissions[i].name) {
-      return true;
-    }
-  }
-  return false;
 }
 
 bool Extension::CanExecuteScriptEverywhere() const {
@@ -3161,7 +2672,8 @@ ExtensionInfo::~ExtensionInfo() {}
 UninstalledExtensionInfo::UninstalledExtensionInfo(
     const Extension& extension)
     : extension_id(extension.id()),
-      extension_api_permissions(extension.api_permissions()),
+      extension_api_permissions(
+          extension.permission_set()->GetAPIsAsStrings()),
       extension_type(extension.GetType()),
       update_url(extension.update_url()) {}
 

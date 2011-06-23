@@ -82,6 +82,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension_permission_set.h"
 #include "chrome/common/json_pref_store.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
@@ -883,7 +884,8 @@ net::URLRequestContextGetter* ProfileImpl::GetRequestContextForRenderProcess(
     const Extension* installed_app = extension_service_->
         GetInstalledAppForRenderer(renderer_child_id);
     if (installed_app != NULL && installed_app->is_storage_isolated() &&
-        installed_app->HasApiPermission(Extension::kExperimentalPermission)) {
+        installed_app->HasAPIPermission(
+            ExtensionAPIPermission::kExperimental)) {
       return GetRequestContextForIsolatedApp(installed_app->id());
     }
   }

@@ -296,8 +296,8 @@ TEST_F(ExtensionManifestTest, UpdateUrls) {
 TEST_F(ExtensionManifestTest, OldUnlimitedStoragePermission) {
   scoped_refptr<Extension> extension = LoadStrictAndExpectSuccess(
       "old_unlimited_storage.json");
-  EXPECT_TRUE(extension->HasApiPermission(
-      Extension::kUnlimitedStoragePermission));
+  EXPECT_TRUE(extension->HasAPIPermission(
+      ExtensionAPIPermission::kUnlimitedStorage));
 }
 
 TEST_F(ExtensionManifestTest, ValidApp) {
@@ -620,14 +620,18 @@ TEST_F(ExtensionManifestTest, AllowUnrecognizedPermissions) {
 
   ListValue *permissions = new ListValue();
   manifest->Set(keys::kPermissions, permissions);
-  for (size_t i = 0; i < Extension::kNumPermissions; i++) {
-    const char* name = Extension::kPermissions[i].name;
+  ExtensionPermissionsInfo* info = ExtensionPermissionsInfo::GetInstance();
+  ExtensionAPIPermissionSet api_perms = info->GetAll();
+  for (ExtensionAPIPermissionSet::iterator i = api_perms.begin();
+       i != api_perms.end(); ++i) {
+    ExtensionAPIPermission* permission = info->GetByID(*i);
+    const char* name = permission->name();
     StringValue* p = new StringValue(name);
     permissions->Clear();
     permissions->Append(p);
     std::string message_name = base::StringPrintf("permission-%s", name);
 
-    if (name == Extension::kExperimentalPermission) {
+    if (*i == ExtensionAPIPermission::kExperimental) {
       // Experimental permission is allowed, but requires this switch.
       CommandLine::ForCurrentProcess()->AppendSwitch(
           switches::kEnableExperimentalExtensionApis);

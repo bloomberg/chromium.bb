@@ -563,7 +563,7 @@ ExtensionFunction* ExtensionFunctionDispatcher::CreateExtensionFunction(
     return NULL;
   }
 
-  if (!extension->HasApiPermission(params.name)) {
+  if (!extension->HasAPIPermission(params.name)) {
     LOG(ERROR) << "Extension " << extension->id() << " does not have "
                << "permission to function: " << params.name;
     SendAccessDenied(ipc_sender, routing_id, params.request_id);

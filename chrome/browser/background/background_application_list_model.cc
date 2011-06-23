@@ -99,11 +99,6 @@ void GetServiceApplications(ExtensionService* service,
        ExtensionNameComparator(collator.get()));
 }
 
-bool HasBackgroundAppPermission(
-    const std::set<std::string>& api_permissions) {
-  return Extension::HasApiPermission(
-      api_permissions, Extension::kBackgroundPermission);
-}
 }  // namespace
 
 void
@@ -250,7 +245,7 @@ int BackgroundApplicationListModel::GetPosition(
 // static
 bool BackgroundApplicationListModel::IsBackgroundApp(
     const Extension& extension) {
-  return HasBackgroundAppPermission(extension.api_permissions());
+  return extension.HasAPIPermission(ExtensionAPIPermission::kBackground);
 }
 
 void BackgroundApplicationListModel::Observe(

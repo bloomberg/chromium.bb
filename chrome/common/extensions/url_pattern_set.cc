@@ -7,6 +7,22 @@
 #include "chrome/common/extensions/url_pattern.h"
 #include "googleurl/src/gurl.h"
 
+// static
+void URLPatternSet::CreateUnion(const URLPatternSet& set1,
+                                const URLPatternSet& set2,
+                                URLPatternSet* out) {
+  const URLPatternList list1 = set1.patterns();
+  const URLPatternList list2 = set2.patterns();
+
+  out->ClearPatterns();
+
+  for (size_t i = 0; i < list1.size(); ++i)
+    out->AddPattern(list1.at(i));
+
+  for (size_t i = 0; i < list2.size(); ++i)
+    out->AddPattern(list2.at(i));
+}
+
 URLPatternSet::URLPatternSet() {
 }
 

@@ -546,6 +546,13 @@ void CrxInstaller::ReportSuccessFromUIThread() {
   if (client_)
     client_->OnInstallSuccess(extension_.get(), install_icon_.get());
 
+  // We update the extension's granted permissions if the user already approved
+  // the install (client_ is non NULL), or we are allowed to install this
+  // silently. We only track granted permissions for INTERNAL extensions.
+  if ((client_ || allow_silent_install_) &&
+      extension_->location() == Extension::INTERNAL)
+    frontend_weak_->GrantPermissions(extension_);
+
   // Tell the frontend about the installation and hand off ownership of
   // extension_ to it.
   frontend_weak_->OnExtensionInstalled(extension_);

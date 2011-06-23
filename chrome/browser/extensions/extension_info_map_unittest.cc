@@ -138,19 +138,19 @@ TEST_F(ExtensionInfoMapTest, CheckPermissions) {
   const Extension* match = info_map->extensions().GetByURL(
       app->GetResourceURL("a.html"));
   EXPECT_TRUE(match &&
-              match->HasApiPermission(Extension::kNotificationPermission));
+      match->HasAPIPermission(ExtensionAPIPermission::kNotification));
   match = info_map->extensions().GetByURL(app_url);
   EXPECT_TRUE(match &&
-              match->HasApiPermission(Extension::kNotificationPermission));
+      match->HasAPIPermission(ExtensionAPIPermission::kNotification));
   EXPECT_FALSE(match &&
-               match->HasApiPermission(Extension::kTabPermission));
+      match->HasAPIPermission(ExtensionAPIPermission::kTab));
 
   // The extension should have the tabs permission.
   match = info_map->extensions().GetByURL(extension->GetResourceURL("a.html"));
   EXPECT_TRUE(match &&
-      match->HasApiPermission(Extension::kTabPermission));
+      match->HasAPIPermission(ExtensionAPIPermission::kTab));
   EXPECT_FALSE(match &&
-      match->HasApiPermission(Extension::kNotificationPermission));
+      match->HasAPIPermission(ExtensionAPIPermission::kNotification));
 
   // Random URL should not have any permissions.
   match = info_map->extensions().GetByURL(GURL("http://evil.com/a.html"));

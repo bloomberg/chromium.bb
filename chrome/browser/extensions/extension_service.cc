@@ -747,6 +747,8 @@ bool ExtensionService::UpdateExtension(
     installer->set_install_source(pending_extension_info.install_source());
   else if (extension)
     installer->set_install_source(extension->location());
+  if (pending_extension_info.install_silently())
+    installer->set_allow_silent_install(true);
   installer->set_delete_source(true);
   installer->set_original_url(download_url);
   installer->set_install_cause(extension_misc::INSTALL_CAUSE_UPDATE);
@@ -965,11 +967,8 @@ void ExtensionService::GrantPermissions(const Extension* extension) {
   // We only maintain the granted permissions prefs for INTERNAL extensions.
   CHECK_EQ(Extension::INTERNAL, extension->location());
 
-  URLPatternSet effective_hosts = extension->GetEffectiveHostPermissions();
   extension_prefs_->AddGrantedPermissions(extension->id(),
-                                          extension->HasFullPermissions(),
-                                          extension->api_permissions(),
-                                          effective_hosts);
+                                          extension->permission_set());
 }
 
 void ExtensionService::GrantPermissionsAndEnableExtension(
@@ -1208,18 +1207,17 @@ void ExtensionService::RecordPermissionMessagesHistogram(
   base::Histogram* counter = base::LinearHistogram::FactoryGet(
       histogram,
       1,
-      Extension::PermissionMessage::ID_ENUM_BOUNDARY,
-      Extension::PermissionMessage::ID_ENUM_BOUNDARY + 1,
+      ExtensionPermissionMessage::kEnumBoundary,
+      ExtensionPermissionMessage::kEnumBoundary + 1,
       base::Histogram::kUmaTargetedHistogramFlag);
 
-  std::vector<Extension::PermissionMessage> permissions =
-      e->GetPermissionMessages();
+  ExtensionPermissionMessages permissions = e->GetPermissionMessages();
   if (permissions.empty()) {
-    counter->Add(Extension::PermissionMessage::ID_NONE);
+    counter->Add(ExtensionPermissionMessage::kNone);
   } else {
-    std::vector<Extension::PermissionMessage>::iterator it;
-    for (it = permissions.begin(); it != permissions.end(); ++it)
-      counter->Add(it->message_id());
+    for (ExtensionPermissionMessages::iterator it = permissions.begin();
+         it != permissions.end(); ++it)
+      counter->Add(it->id());
   }
 }
 
@@ -1938,10 +1936,6 @@ void ExtensionService::DisableIfPrivilegeIncrease(const Extension* extension) {
   // can upgrade without requiring this user's approval.
   const Extension* old = GetExtensionByIdInternal(extension->id(),
                                                   true, true, false);
-  bool granted_full_access;
-  std::set<std::string> granted_apis;
-  URLPatternSet granted_extent;
-
   bool is_extension_upgrade = old != NULL;
   bool is_privilege_increase = false;
 
@@ -1950,23 +1944,16 @@ void ExtensionService::DisableIfPrivilegeIncrease(const Extension* extension) {
   if (extension->location() == Extension::INTERNAL) {
     // Add all the recognized permissions if the granted permissions list
     // hasn't been initialized yet.
-    if (!extension_prefs_->GetGrantedPermissions(extension->id(),
-                                                 &granted_full_access,
-                                                 &granted_apis,
-                                                 &granted_extent)) {
-      GrantPermissions(extension);
-      CHECK(extension_prefs_->GetGrantedPermissions(extension->id(),
-                                                    &granted_full_access,
-                                                    &granted_apis,
-                                                    &granted_extent));
-    }
+    scoped_ptr<ExtensionPermissionSet> granted_permissions(
+        extension_prefs_->GetGrantedPermissions(extension->id()));
+    CHECK(granted_permissions.get());
 
     // Here, we check if an extension's privileges have increased in a manner
     // that requires the user's approval. This could occur because the browser
     // upgraded and recognized additional privileges, or an extension upgrades
     // to a version that requires additional privileges.
-    is_privilege_increase = Extension::IsPrivilegeIncrease(
-        granted_full_access, granted_apis, granted_extent, extension);
+    is_privilege_increase =
+        granted_permissions->HasLessPrivilegesThan(extension->permission_set());
   }
 
   if (is_extension_upgrade) {
@@ -2023,7 +2010,6 @@ void ExtensionService::OnLoadSingleExtension(const Extension* extension) {
     prompt->ShowPrompt();
     return;  // continues in SimpleExtensionLoadPrompt::InstallUI*
   }
-
   OnExtensionInstalled(extension);
 }
 

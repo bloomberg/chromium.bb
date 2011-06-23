@@ -15,6 +15,12 @@ class GURL;
 // Represents the set of URLs an extension uses for web content.
 class URLPatternSet {
  public:
+  // Clears |out| and populates the set with the union of |set1| and |set2|.
+  // NOTE: this does not discard duplicates.
+  static void CreateUnion(const URLPatternSet& set1,
+                          const URLPatternSet& set2,
+                          URLPatternSet* out);
+
   URLPatternSet();
   URLPatternSet(const URLPatternSet& rhs);
   ~URLPatternSet();

@@ -20,6 +20,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension_error_utils.h"
+#include "chrome/common/extensions/extension_permission_set.h"
 #include "chrome/common/pref_names.h"
 #include "content/common/notification_type.h"
 #include "content/common/notification_service.h"
@@ -29,7 +30,7 @@ namespace {
 struct PrefMappingEntry {
   const char* extension_pref;
   const char* browser_pref;
-  const char* permission;
+  ExtensionAPIPermission::ID permission;
 };
 
 const char kNotControllable[] = "not_controllable";
@@ -46,19 +47,19 @@ const char kOnPrefChangeFormat[] = "types.ChromeSetting.%s.onChange";
 PrefMappingEntry kPrefMapping[] = {
   { "thirdPartyCookiesAllowed",
     prefs::kBlockThirdPartyCookies,
-    Extension::kContentSettingsPermission
+    ExtensionAPIPermission::kContentSettings
   },
   { "referrersEnabled",
     prefs::kEnableReferrers,
-    Extension::kContentSettingsPermission
+    ExtensionAPIPermission::kContentSettings
   },
   { "hyperlinkAuditingEnabled",
     prefs::kEnableHyperlinkAuditing,
-    Extension::kContentSettingsPermission
+    ExtensionAPIPermission::kContentSettings
   },
   { "proxy",
     prefs::kProxy,
-    Extension::kProxyPermission
+    ExtensionAPIPermission::kProxy
   },
 };
 
@@ -130,9 +131,8 @@ class PrefMapping {
 
   bool FindBrowserPrefForExtensionPref(const std::string& extension_pref,
                                        std::string* browser_pref,
-                                       std::string* permission) {
-    std::map<std::string, std::pair<std::string, std::string> >::iterator it =
-        mapping_.find(extension_pref);
+                                       ExtensionAPIPermission::ID* permission) {
+    PrefMap::iterator it = mapping_.find(extension_pref);
     if (it != mapping_.end()) {
       *browser_pref = it->second.first;
       *permission = it->second.second;
@@ -143,9 +143,8 @@ class PrefMapping {
 
   bool FindEventForBrowserPref(const std::string& browser_pref,
                                std::string* event_name,
-                               std::string* permission) {
-    std::map<std::string, std::pair<std::string, std::string> >::iterator it =
-        event_mapping_.find(browser_pref);
+                               ExtensionAPIPermission::ID* permission) {
+    PrefMap::iterator it = event_mapping_.find(browser_pref);
     if (it != event_mapping_.end()) {
       *event_name = it->second.first;
       *permission = it->second.second;
@@ -198,11 +197,15 @@ class PrefMapping {
     transformers_[browser_pref] = transformer;
   }
 
+  typedef std::map<std::string,
+                   std::pair<std::string, ExtensionAPIPermission::ID> >
+          PrefMap;
+
   // Mapping from extension pref keys to browser pref keys and permissions.
-  std::map<std::string, std::pair<std::string, std::string> > mapping_;
+  PrefMap mapping_;
 
   // Mapping from browser pref keys to extension event names and permissions.
-  std::map<std::string, std::pair<std::string, std::string> > event_mapping_;
+  PrefMap event_mapping_;
 
   // Mapping from browser pref keys to transformers.
   std::map<std::string, PrefTransformerInterface*> transformers_;
@@ -248,7 +251,7 @@ void ExtensionPreferenceEventRouter::OnPrefChanged(
   bool incognito = (pref_service != profile_->GetPrefs());
 
   std::string event_name;
-  std::string permission;
+  ExtensionAPIPermission::ID permission = ExtensionAPIPermission::kInvalid;
   bool rv = PrefMapping::GetInstance()->FindEventForBrowserPref(
       browser_pref, &event_name, &permission);
   DCHECK(rv);
@@ -278,7 +281,7 @@ void ExtensionPreferenceEventRouter::OnPrefChanged(
     std::string extension_id = (*it)->id();
     // TODO(bauerb): Only iterate over registered event listeners.
     if (router->ExtensionHasEventListener(extension_id, event_name) &&
-        (*it)->HasApiPermission(permission) &&
+        (*it)->HasAPIPermission(permission) &&
         (!incognito || extension_service->CanCrossIncognito(*it))) {
       std::string level_of_control =
           GetLevelOfControl(profile_, extension_id, browser_pref, incognito);
@@ -323,11 +326,11 @@ bool GetPreferenceFunction::RunImpl() {
   PrefService* prefs = incognito ? profile_->GetOffTheRecordPrefs()
                                  : profile_->GetPrefs();
   std::string browser_pref;
-  std::string permission;
+  ExtensionAPIPermission::ID permission = ExtensionAPIPermission::kInvalid;
   EXTENSION_FUNCTION_VALIDATE(
       PrefMapping::GetInstance()->FindBrowserPrefForExtensionPref(
           pref_key, &browser_pref, &permission));
-  if (!GetExtension()->HasApiPermission(permission)) {
+  if (!GetExtension()->HasAPIPermission(permission)) {
     error_ = ExtensionErrorUtils::FormatErrorMessage(
         keys::kPermissionErrorMessage, pref_key);
     return false;
@@ -397,11 +400,11 @@ bool SetPreferenceFunction::RunImpl() {
   }
 
   std::string browser_pref;
-  std::string permission;
+  ExtensionAPIPermission::ID permission = ExtensionAPIPermission::kInvalid;
   EXTENSION_FUNCTION_VALIDATE(
       PrefMapping::GetInstance()->FindBrowserPrefForExtensionPref(
           pref_key, &browser_pref, &permission));
-  if (!GetExtension()->HasApiPermission(permission)) {
+  if (!GetExtension()->HasAPIPermission(permission)) {
     error_ = ExtensionErrorUtils::FormatErrorMessage(
         keys::kPermissionErrorMessage, pref_key);
     return false;
@@ -461,11 +464,11 @@ bool ClearPreferenceFunction::RunImpl() {
   }
 
   std::string browser_pref;
-  std::string permission;
+  ExtensionAPIPermission::ID permission = ExtensionAPIPermission::kInvalid;
   EXTENSION_FUNCTION_VALIDATE(
       PrefMapping::GetInstance()->FindBrowserPrefForExtensionPref(
           pref_key, &browser_pref, &permission));
-  if (!GetExtension()->HasApiPermission(permission)) {
+  if (!GetExtension()->HasAPIPermission(permission)) {
     error_ = ExtensionErrorUtils::FormatErrorMessage(
         keys::kPermissionErrorMessage, pref_key);
     return false;

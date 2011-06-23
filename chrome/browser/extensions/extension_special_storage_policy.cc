@@ -34,16 +34,18 @@ void ExtensionSpecialStoragePolicy::GrantRightsForExtension(
     const Extension* extension) {
   DCHECK(extension);
   if (!extension->is_hosted_app() &&
-      !extension->HasApiPermission(Extension::kUnlimitedStoragePermission) &&
-      !extension->HasApiPermission(Extension::kFileBrowserHandlerPermission)) {
+      !extension->HasAPIPermission(
+          ExtensionAPIPermission::kUnlimitedStorage) &&
+      !extension->HasAPIPermission(
+          ExtensionAPIPermission::kFileBrowserHandler)) {
     return;
   }
   base::AutoLock locker(lock_);
   if (extension->is_hosted_app())
     protected_apps_.Add(extension);
-  if (extension->HasApiPermission(Extension::kUnlimitedStoragePermission))
+  if (extension->HasAPIPermission(ExtensionAPIPermission::kUnlimitedStorage))
     unlimited_extensions_.Add(extension);
-  if (extension->HasApiPermission(Extension::kFileBrowserHandlerPermission))
+  if (extension->HasAPIPermission(ExtensionAPIPermission::kFileBrowserHandler))
     file_handler_extensions_.Add(extension);
 }
 
@@ -51,16 +53,18 @@ void ExtensionSpecialStoragePolicy::RevokeRightsForExtension(
     const Extension* extension) {
   DCHECK(extension);
   if (!extension->is_hosted_app() &&
-      !extension->HasApiPermission(Extension::kUnlimitedStoragePermission) &&
-      !extension->HasApiPermission(Extension::kFileBrowserHandlerPermission)) {
+      !extension->HasAPIPermission(
+          ExtensionAPIPermission::kUnlimitedStorage) &&
+      !extension->HasAPIPermission(
+          ExtensionAPIPermission::kFileBrowserHandler)) {
     return;
   }
   base::AutoLock locker(lock_);
   if (extension->is_hosted_app())
     protected_apps_.Remove(extension);
-  if (extension->HasApiPermission(Extension::kUnlimitedStoragePermission))
+  if (extension->HasAPIPermission(ExtensionAPIPermission::kUnlimitedStorage))
     unlimited_extensions_.Remove(extension);
-  if (extension->HasApiPermission(Extension::kFileBrowserHandlerPermission))
+  if (extension->HasAPIPermission(ExtensionAPIPermission::kFileBrowserHandler))
     file_handler_extensions_.Remove(extension);
 }
 

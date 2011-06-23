@@ -124,6 +124,18 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, InstallThenCancel) {
                                    "1.0"));
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, InstallRequiresConfirm) {
+  // Installing the extension without an auto confirming UI should fail
+  // since good.crx has permissions that require approval.
+  ASSERT_TRUE(InstallExtension(test_data_dir_.AppendASCII("good.crx"), 0));
+  UninstallExtension("ldnnhddmnhbkjipkidpdiheffobcpfmf");
+
+  // And the install should succeed when the permissions are accepted.
+  ASSERT_TRUE(InstallExtensionWithUIAutoConfirm(
+      test_data_dir_.AppendASCII("good.crx"), 1, browser()->profile()));
+  UninstallExtension("ldnnhddmnhbkjipkidpdiheffobcpfmf");
+}
+
 // Tests that installing and uninstalling extensions don't crash with an
 // incognito window open.
 IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, Incognito) {
@@ -133,7 +145,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, Incognito) {
   ui_test_utils::OpenURLOffTheRecord(browser()->profile(),
                                      GURL(chrome::kChromeUIExtensionsURL));
 
-  ASSERT_TRUE(InstallExtension(test_data_dir_.AppendASCII("good.crx"), 1));
+  ASSERT_TRUE(InstallExtensionWithUIAutoConfirm(
+      test_data_dir_.AppendASCII("good.crx"), 1, browser()->profile()));
   UninstallExtension("ldnnhddmnhbkjipkidpdiheffobcpfmf");
 }
 

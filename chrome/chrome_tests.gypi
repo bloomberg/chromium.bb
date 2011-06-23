@@ -1889,6 +1889,7 @@
         'common/extensions/extension_localization_peer_unittest.cc',
         'common/extensions/extension_manifests_unittest.cc',
         'common/extensions/extension_message_bundle_unittest.cc',
+        'common/extensions/extension_permission_set_unittest.cc',
         'common/extensions/extension_resource_unittest.cc',
         'common/extensions/extension_set_unittest.cc',
         'common/extensions/extension_unittest.cc',

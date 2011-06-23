@@ -91,7 +91,8 @@ static DictionaryValue* CreateExtensionInfo(const Extension& extension,
     info->Set("icons", icon_list);
   }
 
-  const std::set<std::string> perms = extension.api_permissions();
+  const std::set<std::string> perms =
+      extension.permission_set()->GetAPIsAsStrings();
   ListValue* permission_list = new ListValue();
   if (!perms.empty()) {
     std::set<std::string>::const_iterator perms_iter;
@@ -105,7 +106,8 @@ static DictionaryValue* CreateExtensionInfo(const Extension& extension,
   ListValue* host_permission_list = new ListValue();
   if (!extension.is_hosted_app()) {
     // Skip host permissions for hosted apps.
-    const URLPatternList host_perms = extension.host_permissions();
+    const URLPatternList host_perms =
+        extension.permission_set()->explicit_hosts().patterns();
     if (!host_perms.empty()) {
       URLPatternList::const_iterator host_perms_iter;
       for (host_perms_iter = host_perms.begin();

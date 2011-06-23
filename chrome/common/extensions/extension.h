@@ -18,6 +18,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
+#include "chrome/common/extensions/extension_permission_set.h"
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/extensions/url_pattern_set.h"
@@ -142,80 +143,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     std::string gender;
   };
 
-  // When prompting the user to install or approve permissions, we display
-  // messages describing the effects of the permissions and not the permissions
-  // themselves. Each PermissionMessage represents one of the messages that is
-  // shown to the user.
-  class PermissionMessage {
-   public:
-    // Do not reorder or add new enumerations in this list. If you need to add a
-    // new enum, add it just prior to ID_ENUM_BOUNDARY and enter its l10n
-    // message in kMessageIds.
-    enum MessageId {
-      ID_UNKNOWN,
-      ID_NONE,
-      ID_BOOKMARKS,
-      ID_GEOLOCATION,
-      ID_BROWSING_HISTORY,
-      ID_TABS,
-      ID_MANAGEMENT,
-      ID_DEBUGGER,
-      ID_HOSTS_1,
-      ID_HOSTS_2,
-      ID_HOSTS_3,
-      ID_HOSTS_4_OR_MORE,
-      ID_HOSTS_ALL,
-      ID_FULL_ACCESS,
-      ID_CLIPBOARD,
-      ID_ENUM_BOUNDARY
-    };
-
-    // Creates a permission message with the given |message_id| and initializes
-    // its message to the appropriate value.
-    static PermissionMessage CreateFromMessageId(MessageId message_id);
-
-    // Creates the corresponding permission message for a list of hosts. This
-    // method exists because the hosts are presented as one message that depends
-    // on what and how many hosts there are.
-    static PermissionMessage CreateFromHostList(
-        const std::vector<std::string>& hosts);
-
-    // Gets the id of the permission message, which can be used in UMA
-    // histograms.
-    MessageId message_id() const { return message_id_; }
-
-    // Gets a localized message describing this permission. Please note that
-    // the message will be empty for message types TYPE_NONE and TYPE_UNKNOWN.
-    const string16& message() const { return message_; }
-
-    // Comparator to work with std::set.
-    bool operator<(const PermissionMessage& that) const {
-      return message_id_ < that.message_id_;
-    }
-
-   private:
-    PermissionMessage(MessageId message_id, string16 message_);
-
-    // The index of the id in the array is its enum value. The first two values
-    // are non-existent message ids to act as placeholders for "unknown" and
-    // "none".
-    // Note: Do not change the order of the items in this list since they
-    // are used in a histogram. The order must match the MessageId order.
-    static const int kMessageIds[];
-
-    MessageId message_id_;
-    string16 message_;
-  };
-
-  typedef std::vector<PermissionMessage> PermissionMessages;
-
-  // A permission is defined by its |name| (what is used in the manifest),
-  // and the |message_id| that's used by install/update UI.
-  struct Permission {
-    const char* const name;
-    const PermissionMessage::MessageId message_id;
-  };
-
   enum InitFromValueFlags {
     NO_FLAGS = 0,
 
@@ -256,37 +183,14 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // its install source should be set to GetHigherPriorityLocation(A, B).
   static Location GetHigherPriorityLocation(Location loc1, Location loc2);
 
-  // Get's the install message id for |permission|.  Returns
-  // MessageId::TYPE_NONE if none exists.
-  static PermissionMessage::MessageId GetPermissionMessageId(
-      const std::string& permission);
-
   // Returns the full list of permission messages that this extension
   // should display at install time.
-  PermissionMessages GetPermissionMessages() const;
+  ExtensionPermissionMessages GetPermissionMessages() const;
 
   // Returns the full list of permission messages that this extension
   // should display at install time. The messages are returned as strings
   // for convenience.
   std::vector<string16> GetPermissionMessageStrings() const;
-
-  // Returns the distinct hosts that should be displayed in the install UI
-  // for the URL patterns |list|. This discards some of the detail that is
-  // present in the manifest to make it as easy as possible to process by
-  // users. In particular we disregard the scheme and path components of
-  // URLPatterns and de-dupe the result, which includes filtering out common
-  // hosts with differing RCDs (aka Registry Controlled Domains, most of which
-  // are Top Level Domains but also include exceptions like co.uk).
-  // NOTE: when de-duping hosts the preferred RCD will be returned, given this
-  // order of preference: .com, .net, .org, first in list.
-  static std::vector<std::string> GetDistinctHostsForDisplay(
-      const URLPatternList& list);
-
-  // Compares two URLPatternLists for security equality by returning whether
-  // the URL patterns in |new_list| contain additional distinct hosts compared
-  // to |old_list|.
-  static bool IsElevatedHostList(
-      const URLPatternList& old_list, const URLPatternList& new_list);
 
   // Icon sizes used by the extension system.
   static const int kIconSizes[];
@@ -296,55 +200,11 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   static const int kBrowserActionIconMaxSize;
   static const int kSidebarIconMaxSize;
 
-  // Each permission is a module that the extension is permitted to use.
-  //
-  // NOTE: To add a new permission, define it here, and add an entry to
-  // Extension::kPermissions.
-  static const char kBackgroundPermission[];
-  static const char kBookmarkPermission[];
-  static const char kClipboardReadPermission[];
-  static const char kClipboardWritePermission[];
-  static const char kContentSettingsPermission[];
-  static const char kContextMenusPermission[];
-  static const char kCookiePermission[];
-  static const char kChromePrivatePermission[];
-  static const char kChromeosInfoPrivatePermission[];
-  static const char kDebuggerPermission[];
-  static const char kExperimentalPermission[];
-  static const char kFileBrowserHandlerPermission[];
-  static const char kFileBrowserPrivatePermission[];
-  static const char kGeolocationPermission[];
-  static const char kHistoryPermission[];
-  static const char kIdlePermission[];
-  static const char kManagementPermission[];
-  static const char kMediaPlayerPrivatePermission[];
-  static const char kNotificationPermission[];
-  static const char kProxyPermission[];
-  static const char kTabPermission[];
-  static const char kUnlimitedStoragePermission[];
-  static const char kWebstorePrivatePermission[];
-  static const char kWebSocketProxyPrivatePermission[];
-
-  static const Permission kPermissions[];
-  static const size_t kNumPermissions;
-  static const char* const kHostedAppPermissionNames[];
-  static const size_t kNumHostedAppPermissions;
-  static const char* const kComponentPrivatePermissionNames[];
-  static const size_t kNumComponentPrivatePermissions;
-
-  // The old name for the unlimited storage permission, which is deprecated but
-  // still accepted as meaning the same thing as kUnlimitedStoragePermission.
-  static const char kOldUnlimitedStoragePermission[];
-
   // Valid schemes for web extent URLPatterns.
   static const int kValidWebExtentSchemes;
 
   // Valid schemes for host permission URLPatterns.
   static const int kValidHostPermissionSchemes;
-
-  // Returns true if the string is one of the known hosted app permissions (see
-  // kHostedAppPermissionNames).
-  static bool IsHostedAppPermission(const std::string& permission);
 
   // The name of the manifest inside an extension.
   static const FilePath::CharType kManifestFilename[];
@@ -455,14 +315,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
                                      std::string* output,
                                      bool is_public);
 
-  // Determine whether |new_extension| has increased privileges compared to
-  // its previously granted permissions, specified by |granted_apis|,
-  // |granted_extent| and |granted_full_access|.
-  static bool IsPrivilegeIncrease(const bool granted_full_access,
-                                  const std::set<std::string>& granted_apis,
-                                  const URLPatternSet& granted_extent,
-                                  const Extension* new_extension);
-
   // Given an extension and icon size, read it if present and decode it into
   // result. In the browser process, this will DCHECK if not called on the
   // file thread. To easily load extension images on the UI thread, see
@@ -497,24 +349,10 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   static void SetScriptingWhitelist(const ScriptingWhitelist& whitelist);
   static const ScriptingWhitelist* GetScriptingWhitelist();
 
-  // Returns true if the extension has the specified API permission.
-  static bool HasApiPermission(const std::set<std::string>& api_permissions,
-                               const std::string& function_name);
+  bool HasAPIPermission(ExtensionAPIPermission::ID permission) const;
+  bool HasAPIPermission(const std::string& function_name) const;
 
-  // Whether the |effective_host_permissions| and |api_permissions| include
-  // effective access to all hosts. See the non-static version of the method
-  // for more details.
-  static bool HasEffectiveAccessToAllHosts(
-      const URLPatternSet& effective_host_permissions,
-      const std::set<std::string>& api_permissions);
-
-  bool HasApiPermission(const std::string& function_name) const {
-    return HasApiPermission(this->api_permissions(), function_name);
-  }
-
-  const URLPatternSet& GetEffectiveHostPermissions() const {
-    return effective_host_permissions_;
-  }
+  const URLPatternSet& GetEffectiveHostPermissions() const;
 
   // Whether or not the extension is allowed permission for a URL pattern from
   // the manifest.  http, https, and chrome://favicon/ is allowed for all
@@ -630,10 +468,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   const GURL& options_url() const { return options_url_; }
   const GURL& devtools_url() const { return devtools_url_; }
   const std::vector<GURL>& toolstrips() const { return toolstrips_; }
-  const std::set<std::string>& api_permissions() const {
-    return api_permissions_;
+  const ExtensionPermissionSet* permission_set() const {
+    return permission_set_.get();
   }
-  const URLPatternList& host_permissions() const { return host_permissions_; }
   const GURL& update_url() const { return update_url_; }
   const ExtensionIconSet& icons() const { return icons_; }
   const DictionaryValue* manifest_value() const {
@@ -766,10 +603,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   ExtensionSidebarDefaults* LoadExtensionSidebarDefaults(
       const DictionaryValue* sidebar, std::string* error);
 
-  // Calculates the effective host permissions from the permissions and content
-  // script petterns.
-  void InitEffectiveHostPermissions();
-
   // Returns true if the extension has more than one "UI surface". For example,
   // an extension that has a browser action and a page action.
   bool HasMultipleUISurfaces() const;
@@ -780,21 +613,12 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // Only allow the experimental API permission if the command line
   // flag is present.
-  bool IsDisallowedExperimentalPermission(const std::string& permission) const;
-
-  // Returns true if the string is one of the known api permissions (see
-  // kPermissions).
-  bool IsAPIPermission(const std::string& permission) const;
+  bool IsDisallowedExperimentalPermission(
+      ExtensionAPIPermission::ID permission) const;
 
   // Returns true if this is a component, or we are not attempting to access a
   // component-private permission.
-  bool IsComponentOnlyPermission(const std::string& permission) const;
-
-  // The set of unique API install messages that the extension has.
-  // NOTE: This only includes messages related to permissions declared in the
-  // "permissions" key in the manifest.  Permissions implied from other features
-  // of the manifest, like plugins and content scripts are not included.
-  std::set<PermissionMessage> GetSimplePermissionMessages() const;
+  bool IsComponentOnlyPermission(const ExtensionAPIPermission* api) const;
 
   // Cached images for this extension. This should only be touched on the UI
   // thread.
@@ -825,15 +649,8 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Defines the set of URLs in the extension's web content.
   URLPatternSet extent_;
 
-  // The set of host permissions that the extension effectively has access to,
-  // which is a merge of host_permissions_ and all of the match patterns in
-  // any content scripts the extension has. This is used to determine which
-  // URLs have the ability to load an extension's resources via embedded
-  // chrome-extension: URLs (see extension_protocols.cc).
-  URLPatternSet effective_host_permissions_;
-
-  // The set of module-level APIs this extension can use.
-  std::set<std::string> api_permissions_;
+  // The set of permissions that the extension effectively has access to.
+  scoped_ptr<ExtensionPermissionSet> permission_set_;
 
   // The icons for the extension.
   ExtensionIconSet icons_;
@@ -908,9 +725,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // Whether the extension is a theme.
   bool is_theme_;
-
-  // The sites this extension has permission to talk to (using XHR, etc).
-  URLPatternList host_permissions_;
 
   // The homepage for this extension. Useful if it is not hosted by Google and
   // therefore does not have a Gallery URL.

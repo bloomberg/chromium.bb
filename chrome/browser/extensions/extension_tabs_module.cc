@@ -548,8 +548,8 @@ bool CreateWindowFunction::RunImpl() {
         window_type = Browser::TYPE_POPUP;
         app_name = GetExtension()->id();
       } else if (type_str == keys::kWindowTypeValuePanel) {
-        if (GetExtension()->HasApiPermission(
-                Extension::kExperimentalPermission)) {
+        if (GetExtension()->HasAPIPermission(
+                ExtensionAPIPermission::kExperimental)) {
           window_type = Browser::TYPE_PANEL;
           app_name = GetExtension()->id();
         } else {

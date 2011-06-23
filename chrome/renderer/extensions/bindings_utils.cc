@@ -65,7 +65,7 @@ bool ExtensionBase::CheckPermissionForCurrentContext(
   const ::Extension* extension = GetExtensionForCurrentContext();
   if (extension &&
       extension_dispatcher_->IsExtensionActive(extension->id()) &&
-      extension->HasApiPermission(function_name))
+      extension->HasAPIPermission(function_name))
     return true;
 
   static const char kMessage[] =

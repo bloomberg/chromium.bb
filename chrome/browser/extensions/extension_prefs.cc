@@ -67,7 +67,6 @@ const char kIdleInstallInfoCrxPath[] = "crx_path";
 const char kIdleInstallInfoVersion[] = "version";
 const char kIdleInstallInfoFetchTime[] = "fetch_time";
 
-
 // A preference that, if true, will allow this extension to run in incognito
 // mode.
 const char kPrefIncognitoEnabled[] = "incognito";
@@ -103,9 +102,15 @@ const char kBrowserActionVisible[] = "browser_action_visible";
 // We explicitly keep track of these so that extensions can contain unknown
 // permissions, for backwards compatibility reasons, and we can still prompt
 // the user to accept them once recognized.
-const char kPrefGrantedPermissionsAPI[] = "granted_permissions.api";
-const char kPrefGrantedPermissionsHost[] = "granted_permissions.host";
-const char kPrefGrantedPermissionsAll[] = "granted_permissions.full";
+const char kPrefGrantedAPIs[] = "granted_permissions.api";
+const char kPrefGrantedExplicitHosts[] = "granted_permissions.explicit_host";
+const char kPrefGrantedScriptableHosts[] =
+    "granted_permissions.scriptable_host";
+
+// The preference names for the old granted permissions scheme.
+const char kPrefOldGrantedFullAccess[] = "granted_permissions.full";
+const char kPrefOldGrantedHosts[] = "granted_permissions.host";
+const char kPrefOldGrantedAPIs[] = "granted_permissions.api";
 
 // A preference that indicates when an extension was installed.
 const char kPrefInstallTime[] = "install_time";
@@ -254,15 +259,6 @@ static void CleanupBadExtensionKeys(const FilePath& root_dir,
 
     prefs->ScheduleSavePersistentPrefs();
   }
-}
-
-static void ExtentToStringSet(const URLPatternSet& host_extent,
-                              std::set<std::string>* result) {
-  URLPatternList patterns = host_extent.patterns();
-  URLPatternList::const_iterator i;
-
-  for (i = patterns.begin(); i != patterns.end(); ++i)
-    result->insert(i->GetAsString());
 }
 
 }  // namespace
@@ -438,42 +434,46 @@ bool ExtensionPrefs::ReadExtensionPrefList(
   return true;
 }
 
-bool ExtensionPrefs::ReadExtensionPrefStringSet(
+bool ExtensionPrefs::ReadExtensionPrefURLPatternSet(
     const std::string& extension_id,
     const std::string& pref_key,
-    std::set<std::string>* result) {
+    URLPatternSet* result,
+    int valid_schemes) {
   const ListValue* value = NULL;
   if (!ReadExtensionPrefList(extension_id, pref_key, &value))
     return false;
 
-  result->clear();
+  result->ClearPatterns();
+  bool allow_file_access = AllowFileAccess(extension_id);
 
   for (size_t i = 0; i < value->GetSize(); ++i) {
     std::string item;
     if (!value->GetString(i, &item))
       return false;
-    result->insert(item);
+    URLPattern pattern(valid_schemes);
+    if (pattern.Parse(item, URLPattern::PARSE_LENIENT) !=
+        URLPattern::PARSE_SUCCESS) {
+      NOTREACHED();
+      return false;
+    }
+    if (!allow_file_access && pattern.MatchesScheme(chrome::kFileScheme)) {
+      pattern.set_valid_schemes(
+          pattern.valid_schemes() & ~URLPattern::SCHEME_FILE);
+    }
+    result->AddPattern(pattern);
   }
 
   return true;
 }
 
-void ExtensionPrefs::AddToExtensionPrefStringSet(
+void ExtensionPrefs::SetExtensionPrefURLPatternSet(
     const std::string& extension_id,
     const std::string& pref_key,
-    const std::set<std::string>& added_value) {
-  std::set<std::string> old_value;
-  std::set<std::string> new_value;
-  ReadExtensionPrefStringSet(extension_id, pref_key, &old_value);
-
-  std::set_union(old_value.begin(), old_value.end(),
-                 added_value.begin(), added_value.end(),
-                 std::inserter(new_value, new_value.begin()));
-
+    const URLPatternSet& new_value) {
   ListValue* value = new ListValue();
-  for (std::set<std::string>::const_iterator iter = new_value.begin();
-       iter != new_value.end(); ++iter)
-    value->Append(Value::CreateStringValue(*iter));
+  for (URLPatternList::const_iterator i = new_value.patterns().begin();
+       i != new_value.patterns().end(); ++i)
+    value->AppendIfNotPresent(Value::CreateStringValue(i->GetAsString()));
 
   UpdateExtensionPref(extension_id, pref_key, value);
 }
@@ -671,72 +671,132 @@ void ExtensionPrefs::SetActiveBit(const std::string& extension_id,
                       Value::CreateBooleanValue(active));
 }
 
-bool ExtensionPrefs::GetGrantedPermissions(
-    const std::string& extension_id,
-    bool* full_access,
-    std::set<std::string>* api_permissions,
-    URLPatternSet* host_extent) {
+void ExtensionPrefs::MigratePermissions(const ExtensionIdSet& extension_ids) {
+  ExtensionPermissionsInfo* info = ExtensionPermissionsInfo::GetInstance();
+  for (ExtensionIdSet::const_iterator ext_id = extension_ids.begin();
+       ext_id != extension_ids.end(); ++ext_id) {
+
+    // An extension's granted permissions need to be migrated if the
+    // full_access bit is present. This bit was always present in the previous
+    // scheme and is never present now.
+    bool full_access;
+    const DictionaryValue* ext = GetExtensionPref(*ext_id);
+    if (!ext || !ext->GetBoolean(kPrefOldGrantedFullAccess, &full_access))
+      continue;
+
+    // Remove the full access bit (empty list will get trimmed).
+    UpdateExtensionPref(
+        *ext_id, kPrefOldGrantedFullAccess, new ListValue());
+
+    // Add the plugin permission if the full access bit was set.
+    if (full_access) {
+      ListValue* apis = NULL;
+      ListValue* new_apis = NULL;
+
+      if (ext->GetList(kPrefGrantedAPIs, &apis))
+        new_apis = apis->DeepCopy();
+      else
+        new_apis = new ListValue();
+
+      std::string plugin_name = info->GetByID(
+          ExtensionAPIPermission::kPlugin)->name();
+      new_apis->Append(Value::CreateStringValue(plugin_name));
+      UpdateExtensionPref(*ext_id, kPrefGrantedAPIs, new_apis);
+    }
+
+    // The granted permissions originally only held the effective hosts,
+    // which are a combination of host and user script host permissions.
+    // We now maintain these lists separately. For migration purposes, it
+    // does not matter how we treat the old effective hosts as long as the
+    // new effective hosts will be the same, so we move them to explicit
+    // host permissions.
+    ListValue* hosts;
+    if (ext->GetList(kPrefOldGrantedHosts, &hosts)) {
+      UpdateExtensionPref(
+          *ext_id, kPrefGrantedExplicitHosts, hosts->DeepCopy());
+
+      // We can get rid of the old one by setting it to an empty list.
+      UpdateExtensionPref(*ext_id, kPrefOldGrantedHosts, new ListValue());
+    }
+  }
+}
+
+ExtensionPermissionSet* ExtensionPrefs::GetGrantedPermissions(
+    const std::string& extension_id) {
   CHECK(Extension::IdIsValid(extension_id));
 
   const DictionaryValue* ext = GetExtensionPref(extension_id);
-  if (!ext || !ext->GetBoolean(kPrefGrantedPermissionsAll, full_access))
-    return false;
+  if (!ext)
+    return NULL;
 
-  ReadExtensionPrefStringSet(
-      extension_id, kPrefGrantedPermissionsAPI, api_permissions);
-
-  std::set<std::string> host_permissions;
-  ReadExtensionPrefStringSet(
-      extension_id, kPrefGrantedPermissionsHost, &host_permissions);
-  bool allow_file_access = AllowFileAccess(extension_id);
-
-  // The granted host permissions contain hosts from the manifest's
-  // "permissions" array and from the content script "matches" arrays,
-  // so the URLPattern needs to accept valid schemes from both types.
-  for (std::set<std::string>::iterator i = host_permissions.begin();
-       i != host_permissions.end(); ++i) {
-    URLPattern pattern(
-        Extension::kValidHostPermissionSchemes |
-        UserScript::kValidUserScriptSchemes);
-
-    // Parse without strict checks, so that new strict checks do not
-    // fail on a pattern in an installed extension.
-    if (URLPattern::PARSE_SUCCESS != pattern.Parse(
-            *i, URLPattern::PARSE_LENIENT)) {
-      NOTREACHED();  // Corrupt prefs?  Hand editing?
-    } else {
-      if (!allow_file_access && pattern.MatchesScheme(chrome::kFileScheme)) {
-        pattern.set_valid_schemes(
-            pattern.valid_schemes() & ~URLPattern::SCHEME_FILE);
+  // Retrieve the API permissions.
+  ExtensionAPIPermissionSet apis;
+  const ListValue* api_values = NULL;
+  if (ReadExtensionPrefList(extension_id, kPrefGrantedAPIs, &api_values)) {
+    ExtensionPermissionsInfo* info = ExtensionPermissionsInfo::GetInstance();
+    for (size_t i = 0; i < api_values->GetSize(); ++i) {
+      std::string permission_name;
+      if (api_values->GetString(i, &permission_name)) {
+        ExtensionAPIPermission *permission = info->GetByName(permission_name);
+        if (permission)
+          apis.insert(permission->id());
       }
-      host_extent->AddPattern(pattern);
     }
   }
 
-  return true;
+  // Retrieve the explicit host permissions.
+  URLPatternSet explicit_hosts;
+  ReadExtensionPrefURLPatternSet(
+      extension_id, kPrefGrantedExplicitHosts,
+      &explicit_hosts, Extension::kValidHostPermissionSchemes);
+
+  // Retrieve the scriptable host permissions.
+  URLPatternSet scriptable_hosts;
+  ReadExtensionPrefURLPatternSet(
+      extension_id, kPrefGrantedScriptableHosts,
+      &scriptable_hosts, UserScript::kValidUserScriptSchemes);
+
+  return new ExtensionPermissionSet(apis, explicit_hosts, scriptable_hosts);
 }
 
 void ExtensionPrefs::AddGrantedPermissions(
     const std::string& extension_id,
-    const bool full_access,
-    const std::set<std::string>& api_permissions,
-    const URLPatternSet& host_extent) {
+    const ExtensionPermissionSet* permissions) {
   CHECK(Extension::IdIsValid(extension_id));
 
-  UpdateExtensionPref(extension_id, kPrefGrantedPermissionsAll,
-                      Value::CreateBooleanValue(full_access));
+  scoped_ptr<ExtensionPermissionSet> granted_permissions(
+      GetGrantedPermissions(extension_id));
 
-  if (!api_permissions.empty()) {
-    AddToExtensionPrefStringSet(
-        extension_id, kPrefGrantedPermissionsAPI, api_permissions);
+  // The new granted permissions are the union of the already granted
+  // permissions and the newly granted permissions.
+  scoped_ptr<ExtensionPermissionSet> new_perms(
+      ExtensionPermissionSet::CreateUnion(
+          permissions, granted_permissions.get()));
+
+  // Set the API permissions.
+  ListValue* api_values = new ListValue();
+  ExtensionAPIPermissionSet apis = new_perms->apis();
+  ExtensionPermissionsInfo* info = ExtensionPermissionsInfo::GetInstance();
+  for (ExtensionAPIPermissionSet::const_iterator i = apis.begin();
+       i != apis.end(); ++i) {
+    ExtensionAPIPermission* perm = info->GetByID(*i);
+    if (perm)
+      api_values->Append(Value::CreateStringValue(perm->name()));
+  }
+  UpdateExtensionPref(extension_id, kPrefGrantedAPIs, api_values);
+
+  // Set the explicit host permissions.
+  if (!new_perms->explicit_hosts().is_empty()) {
+    SetExtensionPrefURLPatternSet(extension_id,
+                                  kPrefGrantedExplicitHosts,
+                                  new_perms->explicit_hosts());
   }
 
-  if (!host_extent.is_empty()) {
-    std::set<std::string> host_permissions;
-    ExtentToStringSet(host_extent, &host_permissions);
-
-    AddToExtensionPrefStringSet(
-        extension_id, kPrefGrantedPermissionsHost, host_permissions);
+  // Set the scriptable host permissions.
+  if (!new_perms->scriptable_hosts().is_empty()) {
+    SetExtensionPrefURLPatternSet(extension_id,
+                                  kPrefGrantedScriptableHosts,
+                                  new_perms->scriptable_hosts());
   }
 }
 
@@ -1432,6 +1492,8 @@ void ExtensionPrefs::InitPrefStore() {
   }
 
   FixMissingPrefs(extension_ids);
+  MigratePermissions(extension_ids);
+
   // Store extension controlled preference values in the
   // |extension_pref_value_map_|, which then informs the subscribers
   // (ExtensionPrefStores) about the winning values.
@@ -1488,7 +1550,6 @@ void ExtensionPrefs::InitPrefStore() {
 
   extension_pref_value_map_->NotifyInitializationCompleted();
 }
-
 
 void ExtensionPrefs::SetExtensionControlledPref(
     const std::string& extension_id,

@@ -176,6 +176,8 @@
         'common/extensions/extension_message_bundle.h',
         'common/extensions/extension_messages.cc',
         'common/extensions/extension_messages.h',
+        'common/extensions/extension_permission_set.cc',
+        'common/extensions/extension_permission_set.h',
         'common/extensions/extension_resource.cc',
         'common/extensions/extension_resource.h',
         'common/extensions/extension_set.cc',

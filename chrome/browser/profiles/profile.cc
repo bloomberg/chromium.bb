@@ -478,7 +478,8 @@ class OffTheRecordProfileImpl : public Profile,
       const Extension* installed_app = GetExtensionService()->
           GetInstalledAppForRenderer(renderer_child_id);
       if (installed_app != NULL && installed_app->is_storage_isolated() &&
-          installed_app->HasApiPermission(Extension::kExperimentalPermission)) {
+          installed_app->HasAPIPermission(
+              ExtensionAPIPermission::kExperimental)) {
         return GetRequestContextForIsolatedApp(installed_app->id());
       }
     }

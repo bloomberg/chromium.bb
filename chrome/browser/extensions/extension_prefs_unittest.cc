@@ -14,6 +14,7 @@
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/extension_permission_set.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_observer_mock.h"
@@ -43,13 +44,13 @@ static void AddPattern(URLPatternSet* extent, const std::string& pattern) {
   extent->AddPattern(URLPattern(schemes, pattern));
 }
 
-static void AssertEqualExtents(URLPatternSet* extent1,
-                               URLPatternSet* extent2) {
-  URLPatternList patterns1 = extent1->patterns();
-  URLPatternList patterns2 = extent2->patterns();
-  std::set<std::string> strings1;
+static void AssertEqualExtents(const URLPatternSet& extent1,
+                               const URLPatternSet& extent2) {
+  URLPatternList patterns1 = extent1.patterns();
+  URLPatternList patterns2 = extent2.patterns();
   EXPECT_EQ(patterns1.size(), patterns2.size());
 
+  std::set<std::string> strings1;
   for (size_t i = 0; i < patterns1.size(); ++i)
     strings1.insert(patterns1.at(i).GetAsString());
 
@@ -204,100 +205,135 @@ class ExtensionPrefsGrantedPermissions : public ExtensionPrefsTest {
   virtual void Initialize() {
     extension_id_ = prefs_.AddExtensionAndReturnId("test");
 
-    api_perm_set1_.insert("tabs");
-    api_perm_set1_.insert("bookmarks");
-    api_perm_set1_.insert("something_random");
+    api_perm_set1_.insert(ExtensionAPIPermission::kTab);
+    api_perm_set1_.insert(ExtensionAPIPermission::kBookmark);
 
-    api_perm_set2_.insert("history");
-    api_perm_set2_.insert("unknown2");
+    api_perm_set2_.insert(ExtensionAPIPermission::kHistory);
 
-    AddPattern(&host_perm_set1_, "http://*.google.com/*");
-    AddPattern(&host_perm_set1_, "http://example.com/*");
-    AddPattern(&host_perm_set1_, "chrome://favicon/*");
+    AddPattern(&ehost_perm_set1_, "http://*.google.com/*");
+    AddPattern(&ehost_perm_set1_, "http://example.com/*");
+    AddPattern(&ehost_perm_set1_, "chrome://favicon/*");
 
-    AddPattern(&host_perm_set2_, "https://*.google.com/*");
+    AddPattern(&ehost_perm_set2_, "https://*.google.com/*");
     // with duplicate:
-    AddPattern(&host_perm_set2_, "http://*.google.com/*");
+    AddPattern(&ehost_perm_set2_, "http://*.google.com/*");
 
-    std::set_union(api_perm_set1_.begin(), api_perm_set1_.end(),
+    AddPattern(&shost_perm_set1_, "http://reddit.com/r/test/*");
+    AddPattern(&shost_perm_set2_, "http://reddit.com/r/test/*");
+    AddPattern(&shost_perm_set2_, "http://somesite.com/*");
+    AddPattern(&shost_perm_set2_, "http://example.com/*");
+
+    ExtensionAPIPermissionSet expected_apis = api_perm_set1_;
+
+    AddPattern(&ehost_permissions_, "http://*.google.com/*");
+    AddPattern(&ehost_permissions_, "http://example.com/*");
+    AddPattern(&ehost_permissions_, "chrome://favicon/*");
+    AddPattern(&ehost_permissions_, "https://*.google.com/*");
+
+    AddPattern(&shost_permissions_, "http://reddit.com/r/test/*");
+    AddPattern(&shost_permissions_, "http://somesite.com/*");
+    AddPattern(&shost_permissions_, "http://example.com/*");
+
+    ExtensionAPIPermissionSet empty_set;
+    URLPatternSet empty_extent;
+    scoped_ptr<ExtensionPermissionSet> permissions;
+    scoped_ptr<ExtensionPermissionSet> granted_permissions;
+
+    // Make sure both granted api and host permissions start empty.
+    granted_permissions.reset(
+        prefs()->GetGrantedPermissions(extension_id_));
+    EXPECT_TRUE(granted_permissions->IsEmpty());
+
+    permissions.reset(new ExtensionPermissionSet(
+        api_perm_set1_, empty_extent, empty_extent));
+
+    // Add part of the api permissions.
+    prefs()->AddGrantedPermissions(extension_id_, permissions.get());
+    granted_permissions.reset(prefs()->GetGrantedPermissions(extension_id_));
+    EXPECT_TRUE(granted_permissions.get());
+    EXPECT_FALSE(granted_permissions->IsEmpty());
+    EXPECT_EQ(expected_apis, granted_permissions->apis());
+    EXPECT_TRUE(granted_permissions->effective_hosts().is_empty());
+    EXPECT_FALSE(granted_permissions->HasEffectiveFullAccess());
+    granted_permissions.reset();
+
+    // Add part of the explicit host permissions.
+    permissions.reset(new ExtensionPermissionSet(
+        empty_set, ehost_perm_set1_, empty_extent));
+    prefs()->AddGrantedPermissions(extension_id_, permissions.get());
+    granted_permissions.reset(prefs()->GetGrantedPermissions(extension_id_));
+    EXPECT_FALSE(granted_permissions->IsEmpty());
+    EXPECT_FALSE(granted_permissions->HasEffectiveFullAccess());
+    EXPECT_EQ(expected_apis, granted_permissions->apis());
+    AssertEqualExtents(ehost_perm_set1_,
+                       granted_permissions->explicit_hosts());
+    AssertEqualExtents(ehost_perm_set1_,
+                       granted_permissions->effective_hosts());
+
+    // Add part of the scriptable host permissions.
+    permissions.reset(new ExtensionPermissionSet(
+        empty_set, empty_extent, shost_perm_set1_));
+    prefs()->AddGrantedPermissions(extension_id_, permissions.get());
+    granted_permissions.reset(prefs()->GetGrantedPermissions(extension_id_));
+    EXPECT_FALSE(granted_permissions->IsEmpty());
+    EXPECT_FALSE(granted_permissions->HasEffectiveFullAccess());
+    EXPECT_EQ(expected_apis, granted_permissions->apis());
+    AssertEqualExtents(ehost_perm_set1_,
+                       granted_permissions->explicit_hosts());
+    AssertEqualExtents(shost_perm_set1_,
+                       granted_permissions->scriptable_hosts());
+    URLPatternSet::CreateUnion(ehost_perm_set1_, shost_perm_set1_,
+                               &effective_permissions_);
+    AssertEqualExtents(effective_permissions_,
+                       granted_permissions->effective_hosts());
+
+    // Add the rest of both the permissions.
+    permissions.reset(new ExtensionPermissionSet(
+       api_perm_set2_, ehost_perm_set2_, shost_perm_set2_));
+
+    std::set_union(expected_apis.begin(), expected_apis.end(),
                    api_perm_set2_.begin(), api_perm_set2_.end(),
                    std::inserter(api_permissions_, api_permissions_.begin()));
 
-    AddPattern(&host_permissions_, "http://*.google.com/*");
-    AddPattern(&host_permissions_, "http://example.com/*");
-    AddPattern(&host_permissions_, "chrome://favicon/*");
-    AddPattern(&host_permissions_, "https://*.google.com/*");
-
-    std::set<std::string> empty_set;
-    std::set<std::string> api_perms;
-    bool full_access = false;
-    URLPatternSet host_perms;
-    URLPatternSet empty_extent;
-
-    // Make sure both granted api and host permissions start empty.
-    EXPECT_FALSE(prefs()->GetGrantedPermissions(
-        extension_id_, &full_access, &api_perms, &host_perms));
-
-    EXPECT_TRUE(api_perms.empty());
-    EXPECT_TRUE(host_perms.is_empty());
-
-    // Add part of the api permissions.
-    prefs()->AddGrantedPermissions(
-        extension_id_, false, api_perm_set1_, empty_extent);
-    EXPECT_TRUE(prefs()->GetGrantedPermissions(
-        extension_id_, &full_access, &api_perms, &host_perms));
-    EXPECT_EQ(api_perm_set1_, api_perms);
-    EXPECT_TRUE(host_perms.is_empty());
-    EXPECT_FALSE(full_access);
-    host_perms.ClearPatterns();
-    api_perms.clear();
-
-    // Add part of the host permissions.
-    prefs()->AddGrantedPermissions(
-        extension_id_, false, empty_set, host_perm_set1_);
-    EXPECT_TRUE(prefs()->GetGrantedPermissions(
-        extension_id_, &full_access, &api_perms, &host_perms));
-    EXPECT_FALSE(full_access);
-    EXPECT_EQ(api_perm_set1_, api_perms);
-    AssertEqualExtents(&host_perm_set1_, &host_perms);
-    host_perms.ClearPatterns();
-    api_perms.clear();
-
-    // Add the rest of both the api and host permissions.
-    prefs()->AddGrantedPermissions(extension_id_,
-                                   true,
-                                   api_perm_set2_,
-                                   host_perm_set2_);
-
-    EXPECT_TRUE(prefs()->GetGrantedPermissions(
-        extension_id_, &full_access, &api_perms, &host_perms));
-    EXPECT_TRUE(full_access);
-    EXPECT_EQ(api_permissions_, api_perms);
-    AssertEqualExtents(&host_permissions_, &host_perms);
+    prefs()->AddGrantedPermissions(extension_id_, permissions.get());
+    granted_permissions.reset(prefs()->GetGrantedPermissions(extension_id_));
+    EXPECT_TRUE(granted_permissions.get());
+    EXPECT_FALSE(granted_permissions->IsEmpty());
+    EXPECT_EQ(api_permissions_, granted_permissions->apis());
+    AssertEqualExtents(ehost_permissions_,
+                       granted_permissions->explicit_hosts());
+    AssertEqualExtents(shost_permissions_,
+                       granted_permissions->scriptable_hosts());
+    effective_permissions_.ClearPatterns();
+    URLPatternSet::CreateUnion(ehost_permissions_, shost_permissions_,
+                               &effective_permissions_);
+    AssertEqualExtents(effective_permissions_,
+                       granted_permissions->effective_hosts());
   }
 
   virtual void Verify() {
-    std::set<std::string> api_perms;
-    URLPatternSet host_perms;
-    bool full_access;
-
-    EXPECT_TRUE(prefs()->GetGrantedPermissions(
-        extension_id_, &full_access, &api_perms, &host_perms));
-    EXPECT_EQ(api_permissions_, api_perms);
-    EXPECT_TRUE(full_access);
-    AssertEqualExtents(&host_permissions_, &host_perms);
+    scoped_ptr<ExtensionPermissionSet> permissions(
+        prefs()->GetGrantedPermissions(extension_id_));
+    EXPECT_TRUE(permissions.get());
+    EXPECT_FALSE(permissions->HasEffectiveFullAccess());
+    EXPECT_EQ(api_permissions_, permissions->apis());
+    AssertEqualExtents(ehost_permissions_, permissions->explicit_hosts());
+    AssertEqualExtents(shost_permissions_, permissions->scriptable_hosts());
   }
 
  private:
   std::string extension_id_;
-  std::set<std::string> api_perm_set1_;
-  std::set<std::string> api_perm_set2_;
-  URLPatternSet host_perm_set1_;
-  URLPatternSet host_perm_set2_;
+  ExtensionAPIPermissionSet api_perm_set1_;
+  ExtensionAPIPermissionSet api_perm_set2_;
+  URLPatternSet ehost_perm_set1_;
+  URLPatternSet ehost_perm_set2_;
+  URLPatternSet shost_perm_set1_;
+  URLPatternSet shost_perm_set2_;
 
-
-  std::set<std::string> api_permissions_;
-  URLPatternSet host_permissions_;
+  ExtensionAPIPermissionSet api_permissions_;
+  URLPatternSet ehost_permissions_;
+  URLPatternSet shost_permissions_;
+  URLPatternSet effective_permissions_;
 };
 TEST_F(ExtensionPrefsGrantedPermissions, GrantedPermissions) {}
 

@@ -235,7 +235,7 @@ void ExtensionDispatcher::OnActivateExtension(
 }
 
 void ExtensionDispatcher::InitHostPermissions(const Extension* extension) {
-  if (extension->HasApiPermission(Extension::kManagementPermission)) {
+  if (extension->HasAPIPermission(ExtensionAPIPermission::kManagement)) {
     WebSecurityPolicy::addOriginAccessWhitelistEntry(
         extension->url(),
         WebString::fromUTF8(chrome::kChromeUIScheme),
@@ -243,7 +243,8 @@ void ExtensionDispatcher::InitHostPermissions(const Extension* extension) {
         false);
   }
 
-  const URLPatternList& permissions = extension->host_permissions();
+  const URLPatternList& permissions =
+      extension->permission_set()->explicit_hosts().patterns();
   for (size_t i = 0; i < permissions.size(); ++i) {
     const char* schemes[] = {
       chrome::kHttpScheme,

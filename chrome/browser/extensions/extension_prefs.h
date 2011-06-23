@@ -173,26 +173,17 @@ class ExtensionPrefs : public ExtensionContentSettingsStore::Observer {
   bool GetActiveBit(const std::string& extension_id);
   void SetActiveBit(const std::string& extension_id, bool active);
 
-  // Gets the permissions (|api_permissions|, |host_extent| and |full_access|)
-  // granted to the extension with |extension_id|. |full_access| will be true
-  // if the extension has all effective permissions (like from an NPAPI plugin).
-  // Returns false if the granted permissions haven't been initialized yet.
-  // TODO(jstritar): Refactor the permissions into a class that encapsulates
-  // all granted permissions, can be initialized from preferences or
-  // a manifest file, and can be compared to each other.
-  bool GetGrantedPermissions(const std::string& extension_id,
-                             bool* full_access,
-                             std::set<std::string>* api_permissions,
-                             URLPatternSet* host_extent);
+  // Returns the granted permission set for the extension with |extension_id|,
+  // and NULL if no preferences were found for |extension_id|.
+  // This passes ownership of the returned set to the caller.
+  ExtensionPermissionSet* GetGrantedPermissions(
+      const std::string& extension_id);
 
-  // Adds the specified |api_permissions|, |host_extent| and |full_access|
-  // to the granted permissions for extension with |extension_id|.
-  // |full_access| should be set to true if the extension effectively has all
-  // permissions (such as by having an NPAPI plugin).
+  // Adds |permissions| to the granted permissions set for the extension with
+  // |extension_id|. The new granted permissions set will be the union of
+  // |permissions| and the already granted permissions.
   void AddGrantedPermissions(const std::string& extension_id,
-                             const bool full_access,
-                             const std::set<std::string>& api_permissions,
-                             const URLPatternSet& host_extent);
+                             const ExtensionPermissionSet* permissions);
 
   // Returns true if the user enabled this extension to be loaded in incognito
   // mode.
@@ -393,23 +384,23 @@ class ExtensionPrefs : public ExtensionContentSettingsStore::Observer {
                                 const std::string& pref_key,
                                 int* out_value);
 
-  // Reads a list pref |pref_key| from extension with id | extension_id|.
+  // Reads a list pref |pref_key| from extension with id |extension_id|.
   bool ReadExtensionPrefList(const std::string& extension_id,
                              const std::string& pref_key,
                              const ListValue** out_value);
 
-  // Reads a list pref |pref_key| as a string set from the extension with
-  // id |extension_id|.
-  bool ReadExtensionPrefStringSet(const std::string& extension_id,
-                                  const std::string& pref_key,
-                                  std::set<std::string>* result);
+  // Interprets the list pref, |pref_key| in |extension_id|'s preferences, as a
+  // URLPatternSet. The |valid_schemes| specify how to parse the URLPatterns.
+  bool ReadExtensionPrefURLPatternSet(const std::string& extension_id,
+                                      const std::string& pref_key,
+                                      URLPatternSet* result,
+                                      int valid_schemes);
 
-  // Adds the |added_values| to the value of |pref_key| for the extension
-  // with id |extension_id| (the new value will be the union of the existing
-  // value and |added_values|).
-  void AddToExtensionPrefStringSet(const std::string& extension_id,
-                                   const std::string& pref_key,
-                                   const std::set<std::string>& added_values);
+  // Converts |new_value| to a list of strings and sets the |pref_key| pref
+  // belonging to |extension_id|.
+  void SetExtensionPrefURLPatternSet(const std::string& extension_id,
+                                     const std::string& pref_key,
+                                     const URLPatternSet& new_value);
 
   // Returns a dictionary for extension |id|'s prefs or NULL if it doesn't
   // exist.
@@ -439,6 +430,9 @@ class ExtensionPrefs : public ExtensionContentSettingsStore::Observer {
   // Installs the persistent extension preferences into |prefs_|'s extension
   // pref store.
   void InitPrefStore();
+
+  // Migrates the permissions data in the pref store.
+  void MigratePermissions(const ExtensionIdSet& extension_ids);
 
   // The pref service specific to this set of extension prefs. Owned by profile.
   PrefService* prefs_;
