@@ -45,8 +45,6 @@ if env.Bit('bitcode') and env.Bit('target_x86_32'):
   settings['allow_double'] = 0
   # The structures contain long long / double
   settings['allow_struct'] = 0
-  # va_list is not yet matched correctly between NNaCl and PNNaCl
-  settings['allow_vcheck'] = 0
 
 # Structure passing in X86-64 PNaCl does not match NNaCl
 if env.Bit('bitcode') and env.Bit('target_x86_64'):

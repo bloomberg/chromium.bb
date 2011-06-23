@@ -98,7 +98,6 @@ class Settings(object):
     self.allow_longlong = 1
     self.allow_struct = 1
     self.allow_struct_va_arg = 1
-    self.allow_vcheck = 1
     self._script_argv = None
 
   def fixtypes(self):
@@ -111,7 +110,6 @@ class Settings(object):
     self.allow_longlong = bool(int(self.allow_longlong))
     self.allow_struct = bool(int(self.allow_struct))
     self.allow_struct_va_arg = bool(int(self.allow_struct_va_arg))
-    self.allow_vcheck = bool(int(self.allow_vcheck))
 
   def set(self, k, v):
     if not hasattr(self, k):
@@ -133,7 +131,6 @@ def Usage():
   print "  --allow_longlong=<0|1>       Test long long arguments"
   print "  --allow_struct=<0|1>         Test struct arguments (by value)"
   print "  --allow_struct_va_arg=<0|1>  Test va_arg on struct arguments"
-  print "  --allow_vcheck=<0|1>         Test passing va_list's between modules"
   sys.exit(1)
 
 def main(argv):
@@ -281,10 +278,9 @@ class Module(object):
     out.write("\n")
 
     # Emit prototypes of the vcheck functions
-    if self.settings.allow_vcheck:
-      for module_id in xrange(self.settings.num_modules):
-        out.write("void vcheck%d(va_list ap, int i, char type);\n" % module_id)
-      out.write("\n")
+    for module_id in xrange(self.settings.num_modules):
+      out.write("void vcheck%d(va_list ap, int i, char type);\n" % module_id)
+    out.write("\n")
 
     # Emit the main module function
     out.write("void module%d(void) {\n" % self.id)
@@ -296,16 +292,15 @@ class Module(object):
 
     # Emit the "vcheck" function, for checking
     # va_list passing.
-    if self.settings.allow_vcheck:
-      out.write("void vcheck%d(va_list ap, int i, char type) {\n" % self.id)
-      for t in self.settings.va_arg_types:
-          va_arg_val = "va_arg(ap, %s)" % t.cast
-          expected_val = "v_%s[i]" % t.id
-          comparison = t.compare_expr % (va_arg_val, expected_val)
-          out.write("  if (type == '%s')\n" % t.id)
-          out.write("    ASSERT(%s);\n" % comparison)
-          out.write("")
-      out.write("}\n\n")
+    out.write("void vcheck%d(va_list ap, int i, char type) {\n" % self.id)
+    for t in self.settings.va_arg_types:
+        va_arg_val = "va_arg(ap, %s)" % t.cast
+        expected_val = "v_%s[i]" % t.id
+        comparison = t.compare_expr % (va_arg_val, expected_val)
+        out.write("  if (type == '%s')\n" % t.id)
+        out.write("    ASSERT(%s);\n" % comparison)
+        out.write("")
+    out.write("}\n\n")
 
     # Emit the function definitions in this module
     for f in self.functions:
@@ -375,11 +370,8 @@ class TestCall(object):
     # Each fixed argument is checked once.
     # Each variable argument is checked once by the test function,
     # and once by each vcheck() call. (one per module)
-    if settings.allow_vcheck:
-      self.num_asserts = (self.f.num_fixed_args +
-                          self.num_var_args * (settings.num_modules + 1))
-    else:
-      self.num_asserts = self.f.num_fixed_args + self.num_var_args
+    self.num_asserts = (self.f.num_fixed_args +
+                        self.num_var_args * (settings.num_modules + 1))
 
   def emit(self, out):
     out.write("  /* C%d */\n" % self.id)
@@ -466,8 +458,7 @@ class TestFunction(object):
     self.emit_prototype(out, True)
 
     out.write("  va_list ap;\n")
-    if self.settings.allow_vcheck:
-      out.write("  va_list ap2;\n")
+    out.write("  va_list ap2;\n")
     out.write("  int i = 0;\n")
     out.write("\n");
 
@@ -499,10 +490,9 @@ class TestFunction(object):
         check_val = "v_%s[i]" % t.id
         comp_expr = t.compare_expr % (arg_val, check_val)
         out.write("    case '%s':\n" % t.id)
-        if self.settings.allow_vcheck:
-          for module_id in xrange(self.settings.num_modules):
-            out.write("      va_copy(ap2, ap);\n")
-            out.write("      vcheck%d(ap2, i, fmt[i]);\n" % module_id)
+        for module_id in xrange(self.settings.num_modules):
+          out.write("      va_copy(ap2, ap);\n")
+          out.write("      vcheck%d(ap2, i, fmt[i]);\n" % module_id)
         out.write("      ASSERT(%s);\n" % comp_expr)
         out.write("      break;\n")
     out.write("    default:\n")
