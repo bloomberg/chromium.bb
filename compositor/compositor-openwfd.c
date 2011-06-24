@@ -216,6 +216,7 @@ create_output_for_port(struct wfd_compositor *ec,
 	WFDint native_resolution[2];
 	struct wfd_mode *mode;
 	WFDPortMode *modes;
+	WFDfloat physical_size[2];
 
 	output = malloc(sizeof *output);
 	if (output == NULL)
@@ -300,8 +301,12 @@ create_output_for_port(struct wfd_compositor *ec,
 
 	ec->used_pipelines |= (1 << output->pipeline_id);
 
+	wfdGetPortAttribfv(ec->dev, output->port,
+			   WFD_PORT_PHYSICAL_SIZE,
+			   2, physical_size);
+
 	wlsc_output_init(&output->base, &ec->base, x, y,
-			 width, height, 0);
+			 physical_size[0], physical_size[1], 0);
 
 	output->pipeline = wfdCreatePipeline(ec->dev, output->pipeline_id, NULL);
 	if (output->pipeline == WFD_INVALID_HANDLE) {
