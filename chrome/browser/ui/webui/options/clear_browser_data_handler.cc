@@ -34,33 +34,25 @@ void ClearBrowserDataHandler::Initialize() {
 void ClearBrowserDataHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
+
+  static OptionsStringResource resources[] = {
+    { "clearBrowserDataLabel", IDS_CLEAR_BROWSING_DATA_LABEL },
+    { "deleteBrowsingHistoryCheckbox", IDS_DEL_BROWSING_HISTORY_CHKBOX },
+    { "deleteDownloadHistoryCheckbox", IDS_DEL_DOWNLOAD_HISTORY_CHKBOX },
+    { "deleteCacheCheckbox", IDS_DEL_CACHE_CHKBOX },
+    { "deleteCookiesCheckbox", IDS_DEL_COOKIES_CHKBOX },
+    { "deleteCookiesFlashCheckbox", IDS_DEL_COOKIES_FLASH_CHKBOX },
+    { "deletePasswordsCheckbox", IDS_DEL_PASSWORDS_CHKBOX },
+    { "deleteFormDataCheckbox", IDS_DEL_FORM_DATA_CHKBOX },
+    { "clearBrowserDataCommit", IDS_CLEAR_BROWSING_DATA_COMMIT },
+    { "flashStorageSettings", IDS_FLASH_STORAGE_SETTINGS },
+    { "flash_storage_url", IDS_FLASH_STORAGE_URL },
+    { "clearDataDeleting", IDS_CLEAR_DATA_DELETING },
+  };
+
+  RegisterStrings(localized_strings, resources, arraysize(resources));
   RegisterTitle(localized_strings, "clearBrowserDataOverlay",
                 IDS_CLEAR_BROWSING_DATA_TITLE);
-
-  localized_strings->SetString("clearBrowserDataLabel",
-      l10n_util::GetStringUTF16(IDS_CLEAR_BROWSING_DATA_LABEL));
-  localized_strings->SetString("deleteBrowsingHistoryCheckbox",
-      l10n_util::GetStringUTF16(IDS_DEL_BROWSING_HISTORY_CHKBOX));
-  localized_strings->SetString("deleteDownloadHistoryCheckbox",
-      l10n_util::GetStringUTF16(IDS_DEL_DOWNLOAD_HISTORY_CHKBOX));
-  localized_strings->SetString("deleteCacheCheckbox",
-      l10n_util::GetStringUTF16(IDS_DEL_CACHE_CHKBOX));
-  localized_strings->SetString("deleteCookiesCheckbox",
-      l10n_util::GetStringUTF16(IDS_DEL_COOKIES_CHKBOX));
-  localized_strings->SetString("deleteCookiesFlashCheckbox",
-      l10n_util::GetStringUTF16(IDS_DEL_COOKIES_FLASH_CHKBOX));
-  localized_strings->SetString("deletePasswordsCheckbox",
-      l10n_util::GetStringUTF16(IDS_DEL_PASSWORDS_CHKBOX));
-  localized_strings->SetString("deleteFormDataCheckbox",
-      l10n_util::GetStringUTF16(IDS_DEL_FORM_DATA_CHKBOX));
-  localized_strings->SetString("clearBrowserDataCommit",
-      l10n_util::GetStringUTF16(IDS_CLEAR_BROWSING_DATA_COMMIT));
-  localized_strings->SetString("flashStorageSettings",
-      l10n_util::GetStringUTF16(IDS_FLASH_STORAGE_SETTINGS));
-  localized_strings->SetString("flash_storage_url",
-      l10n_util::GetStringUTF16(IDS_FLASH_STORAGE_URL));
-  localized_strings->SetString("clearDataDeleting",
-      l10n_util::GetStringUTF16(IDS_CLEAR_DATA_DELETING));
 
   ListValue* time_list = new ListValue;
   for (int i = 0; i < 5; i++) {
