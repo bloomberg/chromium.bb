@@ -21,10 +21,17 @@
      return document.getElementById(id);
     }
 
+    var events = '';
+
+    function receiveMessage(message) {
+      events += message.data;
+    }
+
     function getEvents() {
       try {
         var event_dump = document.getElementById('event_dump');
-        event_dump.firstChild.nodeValue = module.events;
+        event_dump.firstChild.nodeValue = events;
+        events = '';
       } catch(e) {
         alert(e.message);
       }
@@ -36,6 +43,7 @@
   <div id="listener">
     <script type="text/javascript">
       $('listener').addEventListener('load', moduleDidLoad, true);
+      $('listener').addEventListener('message', receiveMessage, true);
     </script>
 
     <embed name="nacl_module"
