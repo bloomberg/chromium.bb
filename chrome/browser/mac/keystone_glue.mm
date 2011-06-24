@@ -18,8 +18,8 @@
 #include "base/threading/worker_pool.h"
 #include "chrome/browser/mac/authorization_util.h"
 #import "chrome/browser/mac/keystone_registration.h"
-#include "chrome/browser/platform_util.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_version_info.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -298,10 +298,10 @@ NSString* const kVersionKey = @"KSVersion";
     brandFileType_ = kBrandFileTypeNone;
 
     // Only the stable channel has a brand code.
-    platform_util::Channel channel = platform_util::GetChannel();
+    chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
 
-    if (channel == platform_util::CHANNEL_DEV ||
-        channel == platform_util::CHANNEL_BETA) {
+    if (channel == chrome::VersionInfo::CHANNEL_DEV ||
+        channel == chrome::VersionInfo::CHANNEL_BETA) {
 
       // If on the dev or beta channel, this installation may have replaced
       // an older system-level installation. Check for a user brand file and
@@ -316,7 +316,7 @@ NSString* const kVersionKey = @"KSVersion";
         [fm removeItemAtPath:userBrandFile error:NULL];
       }
 
-    } else if (channel == platform_util::CHANNEL_STABLE) {
+    } else if (channel == chrome::VersionInfo::CHANNEL_STABLE) {
 
       // If there is a system brand file, use it.
       if ([fm fileExistsAtPath:systemBrandFile]) {

@@ -15,7 +15,6 @@
 #include "base/sys_info.h"
 #include "base/path_service.h"
 #include "chrome/browser/diagnostics/diagnostics_test.h"
-#include "chrome/browser/platform_util.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_version_info.h"
@@ -177,7 +176,8 @@ class VersionTest : public DiagnosticTest {
       RecordFailure(ASCIIToUTF16("Empty Version"));
       return true;
     }
-    std::string version_modifier = platform_util::GetVersionStringModifier();
+    std::string version_modifier =
+        chrome::VersionInfo::GetVersionStringModifier();
     if (!version_modifier.empty())
       current_version += " " + version_modifier;
 #if defined(GOOGLE_CHROME_BUILD)

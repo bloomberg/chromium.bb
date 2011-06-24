@@ -11,7 +11,6 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/google/google_util.h"
-#include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/gtk/cairo_cached_surface.h"
@@ -116,7 +115,7 @@ void ShowAboutDialogForProfile(GtkWindow* parent, Profile* profile) {
   current_version += version_info.OSType();
   current_version += ")";
 #endif
-  std::string channel = platform_util::GetVersionStringModifier();
+  std::string channel = chrome::VersionInfo::GetVersionStringModifier();
   if (!channel.empty())
     current_version += " " + channel;
 

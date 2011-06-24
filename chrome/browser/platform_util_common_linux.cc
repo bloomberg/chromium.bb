@@ -113,47 +113,6 @@ bool SimpleYesNoBox(gfx::NativeWindow parent,
   return g_dialog_response == GTK_RESPONSE_YES;
 }
 
-// Warning: this may be either Linux or ChromeOS.
-std::string GetVersionStringModifier() {
-  char* env = getenv("CHROME_VERSION_EXTRA");
-  if (!env)
-    return std::string();
-  std::string modifier(env);
-
-#if defined(GOOGLE_CHROME_BUILD)
-  // Only ever return "", "unknown", "dev" or "beta" in a branded build.
-  if (modifier == "unstable")  // linux version of "dev"
-    modifier = "dev";
-  if (modifier == "stable") {
-    modifier = "";
-  } else if ((modifier == "dev") || (modifier == "beta")) {
-    // do nothing.
-  } else {
-    modifier = "unknown";
-  }
-#endif
-
-  return modifier;
-}
-
-// Warning: this may be either Linux or ChromeOS.
-Channel GetChannel() {
-#if defined(GOOGLE_CHROME_BUILD)
-  std::string channel = GetVersionStringModifier();
-  if (channel.empty()) {
-    return CHANNEL_STABLE;
-  } else if (channel == "beta") {
-    return CHANNEL_BETA;
-  } else if (channel == "dev") {
-    return CHANNEL_DEV;
-  } else if (channel == "canary") {
-    return CHANNEL_CANARY;
-  }
-#endif
-
-  return CHANNEL_UNKNOWN;
-}
-
 bool CanSetAsDefaultBrowser() {
   return true;
 }

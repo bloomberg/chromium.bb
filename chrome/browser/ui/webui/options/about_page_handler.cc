@@ -16,7 +16,6 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/google/google_util.h"
-#include "chrome/browser/platform_util.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
@@ -142,7 +141,8 @@ void AboutPageHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
   DCHECK(version_info.is_valid());
 
   std::string browser_version = version_info.Version();
-  std::string version_modifier = platform_util::GetVersionStringModifier();
+  std::string version_modifier =
+      chrome::VersionInfo::GetVersionStringModifier();
   if (!version_modifier.empty())
     browser_version += " " + version_modifier;
 

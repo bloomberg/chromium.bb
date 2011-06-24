@@ -11,7 +11,6 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/crash_upload_list.h"
-#include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/crashes_ui.h"
@@ -236,7 +235,7 @@ void FlashDOMHandler::MaybeRespondToPage() {
   AddPair(list,
           l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
           version_info.Version() + " (" +
-              platform_util::GetVersionStringModifier() + ")");
+          chrome::VersionInfo::GetVersionStringModifier() + ")");
 
   // OS version information.
   std::string os_label = version_info.OSType();

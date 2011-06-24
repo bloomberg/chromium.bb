@@ -26,7 +26,6 @@
 #include "chrome/browser/net/connection_tester.h"
 #include "chrome/browser/net/passive_log_collector.h"
 #include "chrome/browser/net/url_fixer_upper.h"
-#include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/shell_dialogs.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
@@ -458,7 +457,7 @@ Value* GpuMessageHandler::OnRequestClientInfo(const ListValue* list) {
     dict->SetString("version", version_info.Version());
     dict->SetString("cl", version_info.LastChange());
     dict->SetString("version_mod",
-        platform_util::GetVersionStringModifier());
+        chrome::VersionInfo::GetVersionStringModifier());
     dict->SetString("official",
         l10n_util::GetStringUTF16(
             version_info.IsOfficialBuild() ?

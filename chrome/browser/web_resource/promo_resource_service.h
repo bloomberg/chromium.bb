@@ -8,8 +8,8 @@
 
 #include <string>
 
-#include "chrome/browser/platform_util.h"
 #include "chrome/browser/web_resource/web_resource_service.h"
+#include "chrome/common/chrome_version_info.h"
 
 namespace PromoResourceServiceUtil {
 
@@ -32,7 +32,7 @@ class PrefService;
 class PromoResourceService
     : public WebResourceService {
  public:
-  static bool IsBuildTargeted(platform_util::Channel channel,
+  static bool IsBuildTargeted(chrome::VersionInfo::Channel channel,
                               int builds_targeted);
 
   static void RegisterPrefs(PrefService* local_state);
@@ -86,7 +86,7 @@ class PromoResourceService
   void ScheduleNotificationOnInit();
 
   // Overrides the current Chrome release channel for testing purposes.
-  void set_channel(platform_util::Channel channel) { channel_ = channel; }
+  void set_channel(chrome::VersionInfo::Channel channel) { channel_ = channel; }
 
   virtual void Unpack(const DictionaryValue& parsed_json);
 
@@ -195,7 +195,7 @@ class PromoResourceService
   DictionaryValue* web_resource_cache_;
 
   // Overrides the current Chrome release channel for testing purposes.
-  platform_util::Channel channel_;
+  chrome::VersionInfo::Channel channel_;
 
   DISALLOW_COPY_AND_ASSIGN(PromoResourceService);
 };

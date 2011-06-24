@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/mac/scoped_aedesc.h"
 #include "base/sys_string_conversions.h"
+#include "chrome/common/chrome_version_info.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -180,54 +181,9 @@ bool SimpleYesNoBox(gfx::NativeWindow parent,
   return result == NSAlertFirstButtonReturn;
 }
 
-std::string GetVersionStringModifier() {
-#if defined(GOOGLE_CHROME_BUILD)
-  // Use the main application bundle and not the framework bundle. Keystone
-  // keys don't live in the framework.
-  NSBundle* bundle = [NSBundle mainBundle];
-  NSString* channel = [bundle objectForInfoDictionaryKey:@"KSChannelID"];
-
-  // Only ever return "", "unknown", "beta", "dev", or "canary" in a branded
-  // build.
-  if (![bundle objectForInfoDictionaryKey:@"KSProductID"]) {
-    // This build is not Keystone-enabled, it can't have a channel.
-    channel = @"unknown";
-  } else if (!channel) {
-    // For the stable channel, KSChannelID is not set.
-    channel = @"";
-  } else if ([channel isEqual:@"beta"] ||
-             [channel isEqual:@"dev"] ||
-             [channel isEqual:@"canary"]) {
-    // do nothing.
-  } else {
-    channel = @"unknown";
-  }
-
-  return base::SysNSStringToUTF8(channel);
-#else
-  return std::string();
-#endif
-}
-
-Channel GetChannel() {
-#if defined(GOOGLE_CHROME_BUILD)
-  std::string channel = GetVersionStringModifier();
-  if (channel.empty()) {
-    return CHANNEL_STABLE;
-  } else if (channel == "beta") {
-    return CHANNEL_BETA;
-  } else if (channel == "dev") {
-    return CHANNEL_DEV;
-  } else if (channel == "canary") {
-    return CHANNEL_CANARY;
-  }
-#endif
-
-  return CHANNEL_UNKNOWN;
-}
-
 bool CanSetAsDefaultBrowser() {
-  return GetChannel() != CHANNEL_CANARY;
+  return chrome::VersionInfo::GetChannel() !=
+      chrome::VersionInfo::CHANNEL_CANARY;
 }
 
 bool CanSetAsDefaultProtocolClient(const std::string& protocol) {

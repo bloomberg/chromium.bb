@@ -14,7 +14,6 @@
 #include "base/task.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/platform_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/installer/util/browser_distribution.h"
@@ -112,9 +111,9 @@ class DetectUpgradeTask : public Task {
     installed_version.reset(Version::GetVersionFromString(reply));
 #endif
 
-    platform_util::Channel channel = platform_util::GetChannel();
-    *is_unstable_channel_ = channel == platform_util::CHANNEL_DEV ||
-                            channel == platform_util::CHANNEL_CANARY;
+    chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+    *is_unstable_channel_ = channel == chrome::VersionInfo::CHANNEL_DEV ||
+                            channel == chrome::VersionInfo::CHANNEL_CANARY;
 
     // Get the version of the currently *running* instance of Chrome.
     chrome::VersionInfo version_info;

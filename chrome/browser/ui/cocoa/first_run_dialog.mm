@@ -17,6 +17,7 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #import "chrome/browser/ui/cocoa/search_engine_dialog_controller.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 #include "grit/locale_settings.h"
@@ -138,7 +139,8 @@ void ShowFirstRun(Profile* profile) {
 // True when the stats checkbox should be checked by default. This is only
 // the case when the canary is running.
 bool StatsCheckboxDefault() {
-  return platform_util::GetChannel() == platform_util::CHANNEL_CANARY;
+  return chrome::VersionInfo::GetChannel() ==
+      chrome::VersionInfo::CHANNEL_CANARY;
 }
 
 }  // namespace

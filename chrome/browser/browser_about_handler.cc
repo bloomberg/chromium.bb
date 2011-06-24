@@ -32,7 +32,6 @@
 #include "chrome/browser/metrics/histogram_synchronizer.h"
 #include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/net/url_fixer_upper.h"
-#include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -1008,7 +1007,7 @@ std::string AboutVersion(DictionaryValue* localized_strings, Profile* profile) {
   // this thread.
   base::ThreadRestrictions::ScopedAllowIO allow_io;
   localized_strings->SetString("version_modifier",
-                               platform_util::GetVersionStringModifier());
+                               chrome::VersionInfo::GetVersionStringModifier());
   localized_strings->SetString("os_name",
                                l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_OS));
   localized_strings->SetString("os_type", version_info.OSType());

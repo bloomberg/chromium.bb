@@ -18,7 +18,6 @@
 #include "base/utf_string_conversions.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/google/google_util.h"
-#include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/window.h"
@@ -150,7 +149,8 @@ void AboutChromeView::Init() {
   // This code only runs as a result of the user opening the About box so
   // doing registry access to get the version string modifier should be fine.
   base::ThreadRestrictions::ScopedAllowIO allow_io;
-  std::string version_modifier = platform_util::GetVersionStringModifier();
+  std::string version_modifier =
+      chrome::VersionInfo::GetVersionStringModifier();
   if (!version_modifier.empty())
     version_details_ += " " + version_modifier;
 

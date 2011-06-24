@@ -16,15 +16,6 @@ class GURL;
 
 namespace platform_util {
 
-// The possible channels for an installation, from most fun to most stable.
-enum Channel {
-  CHANNEL_UNKNOWN = 0,  // Probably blue
-  CHANNEL_CANARY,       // Yellow
-  CHANNEL_DEV,          // Technicolor
-  CHANNEL_BETA,         // Rainbow
-  CHANNEL_STABLE        // Full-spectrum
-};
-
 // Show the given file in a file manager. If possible, select the file.
 void ShowItemInFolder(const FilePath& full_path);
 
@@ -65,24 +56,6 @@ void SimpleErrorBox(gfx::NativeWindow parent,
 bool SimpleYesNoBox(gfx::NativeWindow parent,
                     const string16& title,
                     const string16& message);
-
-// Returns a human-readable modifier for the version string. For a branded
-// build, this modifier is the channel ("canary", "dev", or "beta", but ""
-// for stable). On Windows, this may be modified with additional information
-// after a hyphen. For multi-user installations, it will return "canary-m",
-// "dev-m", "beta-m", and for a stable channel multi-user installation, "m".
-// In branded builds, when the channel cannot be determined, "unknown" will
-// be returned. In unbranded builds, the modifier is usually an empty string
-// (""), although on Linux, it may vary in certain distributions.
-// GetVersionStringModifier() is intended to be used for display purposes.
-// To simply test the channel, use GetChannel().
-std::string GetVersionStringModifier();
-
-// Returns the channel for the installation. In branded builds, this will be
-// CHANNEL_STABLE, CHANNEL_BETA, CHANNEL_DEV, or CHANNEL_CANARY. In unbranded
-// builds, or in branded builds when the channel cannot be determined, this
-// will be CHANNEL_UNKNOWN.
-Channel GetChannel();
 
 // Returns true if the running browser can be set as the default browser.
 bool CanSetAsDefaultBrowser();

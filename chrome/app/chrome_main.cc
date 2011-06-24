@@ -23,7 +23,6 @@
 #include "crypto/nss_util.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/diagnostics/diagnostics_main.h"
-#include "chrome/browser/platform_util.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_content_plugin_client.h"
@@ -400,7 +399,7 @@ bool HandleVersionSwitches(const CommandLine& command_line) {
     printf("%s %s %s\n",
            version_info.Name().c_str(),
            version_info.Version().c_str(),
-           platform_util::GetVersionStringModifier().c_str());
+           chrome::VersionInfo::GetVersionStringModifier().c_str());
     return true;
   }
 

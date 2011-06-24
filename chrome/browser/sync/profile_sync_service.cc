@@ -22,7 +22,6 @@
 #include "base/task.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/net/gaia/token_service.h"
-#include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/backend_migrator.h"
@@ -39,6 +38,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/time_format.h"
@@ -88,9 +88,9 @@ ProfileSyncService::ProfileSyncService(ProfileSyncFactory* factory,
   //
   // GetChannel hits the registry on Windows. See http://crbug.com/70380.
   base::ThreadRestrictions::ScopedAllowIO allow_io;
-  platform_util::Channel channel = platform_util::GetChannel();
-  if (channel == platform_util::CHANNEL_STABLE ||
-      channel == platform_util::CHANNEL_BETA) {
+  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+  if (channel == chrome::VersionInfo::CHANNEL_STABLE ||
+      channel == chrome::VersionInfo::CHANNEL_BETA) {
     sync_service_url_ = GURL(kSyncServerUrl);
   }
 }

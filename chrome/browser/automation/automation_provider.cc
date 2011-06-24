@@ -54,7 +54,6 @@
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/net/url_request_mock_util.h"
-#include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/print_job.h"
 #include "chrome/browser/profiles/profile_manager.h"

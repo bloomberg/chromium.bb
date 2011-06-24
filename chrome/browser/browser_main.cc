@@ -78,6 +78,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/common/json_pref_store.h"
 #include "chrome/common/jstemplate_builder.h"
@@ -148,7 +149,6 @@
 #include "chrome/browser/chromeos/system_key_event_listener.h"
 #include "chrome/browser/chromeos/xinput_hierarchy_changed_event_listener.h"
 #include "chrome/browser/oom_priority_manager.h"
-#include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
 #endif
 
@@ -1174,7 +1174,7 @@ bool IsCrashReportingEnabled(const PrefService* local_state) {
   bool is_guest_session =
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kGuestSession);
   bool is_stable_channel =
-      platform_util::GetChannel() == platform_util::CHANNEL_STABLE;
+      chrome::VersionInfo::GetChannel() == chrome::VersionInfo::CHANNEL_STABLE;
   bool breakpad_enabled =
       !(is_guest_session && is_stable_channel) &&
       chromeos::MetricsCrosSettingsProvider::GetMetricsStatus();

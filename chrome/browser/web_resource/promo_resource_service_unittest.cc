@@ -167,7 +167,7 @@ TEST_F(PromoResourceServiceTest, UnpackPromoSignal) {
 }
 
 TEST_F(PromoResourceServiceTest, UnpackWebStoreSignal) {
-  web_resource_service_->set_channel(platform_util::CHANNEL_DEV);
+  web_resource_service_->set_channel(chrome::VersionInfo::CHANNEL_DEV);
 
   std::string json = "{ "
                      "  \"topic\": {"
@@ -231,7 +231,8 @@ TEST_F(PromoResourceServiceTest, UnpackPartialWebStoreSignal) {
 
 TEST_F(PromoResourceServiceTest, IsBuildTargeted) {
   // canary
-  const platform_util::Channel canary = platform_util::CHANNEL_CANARY;
+  const chrome::VersionInfo::Channel canary =
+      chrome::VersionInfo::CHANNEL_CANARY;
   EXPECT_FALSE(PromoResourceService::IsBuildTargeted(canary, 1));
   EXPECT_FALSE(PromoResourceService::IsBuildTargeted(canary, 3));
   EXPECT_FALSE(PromoResourceService::IsBuildTargeted(canary, 7));
@@ -240,7 +241,8 @@ TEST_F(PromoResourceServiceTest, IsBuildTargeted) {
   EXPECT_TRUE(PromoResourceService::IsBuildTargeted(canary, 11));
 
   // dev
-  const platform_util::Channel dev = platform_util::CHANNEL_DEV;
+  const chrome::VersionInfo::Channel dev =
+      chrome::VersionInfo::CHANNEL_DEV;
   EXPECT_TRUE(PromoResourceService::IsBuildTargeted(dev, 1));
   EXPECT_TRUE(PromoResourceService::IsBuildTargeted(dev, 3));
   EXPECT_TRUE(PromoResourceService::IsBuildTargeted(dev, 7));
@@ -249,7 +251,8 @@ TEST_F(PromoResourceServiceTest, IsBuildTargeted) {
   EXPECT_TRUE(PromoResourceService::IsBuildTargeted(dev, 11));
 
   // beta
-  const platform_util::Channel beta = platform_util::CHANNEL_BETA;
+  const chrome::VersionInfo::Channel beta =
+      chrome::VersionInfo::CHANNEL_BETA;
   EXPECT_FALSE(PromoResourceService::IsBuildTargeted(beta, 1));
   EXPECT_TRUE(PromoResourceService::IsBuildTargeted(beta, 3));
   EXPECT_TRUE(PromoResourceService::IsBuildTargeted(beta, 7));
@@ -258,7 +261,8 @@ TEST_F(PromoResourceServiceTest, IsBuildTargeted) {
   EXPECT_TRUE(PromoResourceService::IsBuildTargeted(beta, 11));
 
   // stable
-  const platform_util::Channel stable = platform_util::CHANNEL_STABLE;
+  const chrome::VersionInfo::Channel stable =
+      chrome::VersionInfo::CHANNEL_STABLE;
   EXPECT_FALSE(PromoResourceService::IsBuildTargeted(stable, 1));
   EXPECT_FALSE(PromoResourceService::IsBuildTargeted(stable, 3));
   EXPECT_TRUE(PromoResourceService::IsBuildTargeted(stable, 7));

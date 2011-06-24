@@ -11,11 +11,11 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/google/google_util.h"
 #import "chrome/browser/mac/keystone_glue.h"
-#include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/background_tile_view.h"
 #include "chrome/browser/ui/cocoa/restart_browser.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -136,7 +136,7 @@ static BOOL recentShownUserActionFailedStatus = NO;
 
   NSString* versionModifier = @"";
   NSString* svnRevision = @"";
-  std::string modifier = platform_util::GetVersionStringModifier();
+  std::string modifier = chrome::VersionInfo::GetVersionStringModifier();
   if (!modifier.empty())
     versionModifier = [NSString stringWithFormat:@" %@",
                                 base::SysUTF8ToNSString(modifier)];
