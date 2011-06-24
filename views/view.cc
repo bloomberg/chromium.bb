@@ -108,6 +108,7 @@ View::View()
       needs_layout_(true),
       flip_canvas_on_paint_for_rtl_ui_(false),
       layer_needs_updating_(true),
+      layer_updated_externally_(false),
       paint_to_layer_(false),
       accelerator_registration_delayed_(false),
       accelerator_focus_manager_(NULL),
@@ -1218,6 +1219,31 @@ void View::PaintToLayer(const gfx::Rect& dirty_region) {
 void View::OnWillCompositeLayer() {
 }
 
+bool View::SetExternalTexture(ui::Texture* texture) {
+  // A little heavy-handed -- it should be that each child has it's own layer.
+  // The desired use case is where there are no children.
+  DCHECK_EQ(child_count(), 0);
+
+  bool use_external = (texture != NULL);
+  if (use_external != paint_to_layer_)
+    SetPaintToLayer(use_external);
+  else if (use_external && !layer_.get())
+    CreateLayer();
+
+  if (use_external && !layer_.get())
+    return false;
+
+  layer_updated_externally_ = use_external;
+  layer_needs_updating_ = !use_external;
+  if (layer_.get())
+    layer_->SetTexture(texture);
+
+  if (IsVisible())
+    SchedulePaintInternal(GetLocalBounds());
+
+  return true;
+}
+
 const ui::Compositor* View::GetCompositor() const {
   return parent_ ? parent_->GetCompositor() : NULL;
 }
@@ -1617,6 +1643,8 @@ bool View::ShouldPaintToLayer() const {
 }
 
 void View::MarkLayerDirty() {
+  if (layer_updated_externally_)
+    return;
   View* owner = this;
   while (!((owner->transform_.get() && owner->transform_->HasChange()) ||
            owner->paint_to_layer_) && owner->parent_)

@@ -55,6 +55,9 @@ class Layer {
   const Compositor* compositor() const { return compositor_; }
   Compositor* compositor() { return compositor_; }
 
+  // Passing NULL will cause the layer to get a texture from its compositor.
+  void SetTexture(ui::Texture* texture);
+
   // Resets the bitmap of the texture.
   void SetBitmap(const SkBitmap& bitmap, const gfx::Point& origin);
 

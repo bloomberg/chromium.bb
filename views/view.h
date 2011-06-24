@@ -34,6 +34,7 @@ namespace ui {
 struct AccessibleViewState;
 class Compositor;
 class Layer;
+class Texture;
 class ThemeProvider;
 class Transform;
 #if defined(TOUCH_UI)
@@ -965,6 +966,15 @@ class View : public AcceleratorTarget {
   // layer is rendered by the compositor.
   virtual void OnWillCompositeLayer();
 
+  // This creates a layer for the view, if one does not exist. It then
+  // passes the texture to a layer associated with the view. While an external
+  // texture is set, the view will not update the layer contents.
+  //
+  // Passing NULL resets to default behavior.
+  //
+  // Returns false if it cannot create a layer to which to assign the texture.
+  bool SetExternalTexture(ui::Texture* texture);
+
   // Returns the Compositor.
   virtual const ui::Compositor* GetCompositor() const;
   virtual ui::Compositor* GetCompositor();
@@ -1369,6 +1379,10 @@ class View : public AcceleratorTarget {
 
   // Is the layer out of date?
   bool layer_needs_updating_;
+
+  // Is the texture backing the layer being updated externally?
+  // (i.e. by the GPU process when rendering 3D CSS)
+  bool layer_updated_externally_;
 
   // Should we paint to a layer? See description above setter for details.
   bool paint_to_layer_;

@@ -39,6 +39,13 @@ void Layer::Remove(Layer* child) {
   child->parent_ = NULL;
 }
 
+void Layer::SetTexture(ui::Texture* texture) {
+  if (texture == NULL)
+    texture_ = compositor_->CreateTexture();
+  else
+    texture_ = texture;
+}
+
 void Layer::SetBitmap(const SkBitmap& bitmap, const gfx::Point& origin) {
   texture_->SetBitmap(bitmap, origin, bounds_.size());
 }
