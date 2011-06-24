@@ -572,6 +572,11 @@ class PrebuiltUploader(object):
     if upload_board_tarball:
       tar_process.join()
       assert tar_process.exitcode == 0
+      # TODO(zbehan): This should be done cleaner.
+      if board == 'amd64-host':
+        sdk_conf = os.path.join(self._build_path, _BINHOST_CONF_DIR,
+                                'host/sdk_version.conf')
+        RevGitFile(sdk_conf, version, key='SDK_LATEST_VERSION')
 
     if uploaded:
       # Record URL where prebuilts were uploaded.
