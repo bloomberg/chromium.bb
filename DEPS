@@ -14,7 +14,7 @@ vars = {
   "nacl_revision": "5679",
   "nacl_tools_revision": "5675",
   "libjingle_revision": "66",
-  "libvpx_revision": "88361",
+  "libvpx_revision": "90416",
   "ffmpeg_revision": "88382",
   "skia_revision": "1690",
   "v8_revision": "8394",
