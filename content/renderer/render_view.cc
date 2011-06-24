@@ -542,8 +542,8 @@ WebPlugin* RenderView::CreatePluginNoCheck(WebFrame* frame,
   bool found;
   std::string mime_type;
   Send(new ViewHostMsg_GetPluginInfo(
-      routing_id_, params.url, frame->top()->url(), params.mimeType.utf8(),
-      &found, &info, &mime_type));
+      routing_id_, params.url, frame->top()->document().url(),
+      params.mimeType.utf8(), &found, &info, &mime_type));
   if (!found || !webkit::npapi::IsPluginEnabled(info))
     return NULL;
 
@@ -582,7 +582,7 @@ void RenderView::UnregisterPluginDelegate(WebPluginDelegateProxy* delegate) {
 bool RenderView::OnMessageReceived(const IPC::Message& message) {
   WebFrame* main_frame = webview() ? webview()->mainFrame() : NULL;
   if (main_frame)
-    content::GetContentClient()->SetActiveURL(main_frame->url());
+    content::GetContentClient()->SetActiveURL(main_frame->document().url());
 
   ObserverListBase<RenderViewObserver>::Iterator it(observers_);
   RenderViewObserver* observer;
@@ -1262,8 +1262,9 @@ WebView* RenderView::createView(
   params.session_storage_namespace_id = session_storage_namespace_id_;
   params.frame_name = frame_name;
   params.opener_frame_id = creator->identifier();
-  params.opener_url = creator->url();
-  params.opener_security_origin = creator->securityOrigin().toString().utf8();
+  params.opener_url = creator->document().url();
+  params.opener_security_origin =
+      creator->document().securityOrigin().toString().utf8();
   if (!request.isNull())
     params.target_url = request.url();
 
@@ -1294,7 +1295,7 @@ WebView* RenderView::createView(
   view->opener_suppressed_ = opener_suppressed;
 
   // Record the security origin of the creator.
-  GURL creator_url(creator->securityOrigin().toString().utf8());
+  GURL creator_url(creator->document().securityOrigin().toString().utf8());
   if (!creator_url.is_valid() || !creator_url.IsStandard())
     creator_url = GURL();
   view->creator_url_ = creator_url;
@@ -1334,7 +1335,7 @@ RenderWidgetFullscreenPepper* RenderView::CreatePepperFullscreenContainer(
     webkit::ppapi::PluginInstance* plugin) {
   GURL active_url;
   if (webview() && webview()->mainFrame())
-    active_url = GURL(webview()->mainFrame()->url());
+    active_url = GURL(webview()->mainFrame()->document().url());
   RenderWidgetFullscreenPepper* widget = RenderWidgetFullscreenPepper::Create(
       routing_id_, render_thread_, plugin, active_url);
   widget->show(WebKit::WebNavigationPolicyIgnore);
@@ -1571,7 +1572,7 @@ void RenderView::runModalAlertDialog(
   RunJavaScriptMessage(ui::MessageBoxFlags::kIsJavascriptAlert,
                        message,
                        string16(),
-                       frame->url(),
+                       frame->document().url(),
                        NULL);
 }
 
@@ -1580,7 +1581,7 @@ bool RenderView::runModalConfirmDialog(
   return RunJavaScriptMessage(ui::MessageBoxFlags::kIsJavascriptConfirm,
                               message,
                               string16(),
-                              frame->url(),
+                              frame->document().url(),
                               NULL);
 }
 
@@ -1591,7 +1592,7 @@ bool RenderView::runModalPromptDialog(
   bool ok = RunJavaScriptMessage(ui::MessageBoxFlags::kIsJavascriptPrompt,
                                  message,
                                  default_value,
-                                 frame->url(),
+                                 frame->document().url(),
                                  &result);
   if (ok)
     actual_value->assign(result);
@@ -1611,7 +1612,8 @@ bool RenderView::runModalBeforeUnloadDialog(
   // response as RunJavaScriptMessage.
   string16 ignored_result;
   SendAndRunNestedMessageLoop(new ViewHostMsg_RunBeforeUnloadConfirm(
-      routing_id_, frame->url(), message, &success, &ignored_result));
+      routing_id_, frame->document().url(), message,
+      &success, &ignored_result));
   return success;
 }
 
@@ -1976,7 +1978,7 @@ WebNavigationPolicy RenderView::decidePolicyForNavigation(
     return WebKit::WebNavigationPolicyIgnore;  // Suppress the load here.
   }
 
-  GURL old_url(frame->url());
+  GURL old_url(frame->document().url());
 
   // Detect when we're crossing a permission-based boundary (e.g. into or out of
   // an extension or app origin, leaving a WebUI page, etc). We only care about
@@ -2060,7 +2062,7 @@ WebNavigationPolicy RenderView::decidePolicyForNavigation(
   bool is_noreferrer_and_blank_target =
       // Frame should be top level and not yet navigated.
       frame->parent() == NULL &&
-      frame->url().isEmpty() &&
+      frame->document().url().isEmpty() &&
       historyBackListCount() < 1 &&
       historyForwardListCount() < 1 &&
       // Links with rel=noreferrer will have no Referer field, and their
@@ -2433,7 +2435,7 @@ void RenderView::didClearWindowObject(WebFrame* frame) {
   FOR_EACH_OBSERVER(RenderViewObserver, observers_,
                     DidClearWindowObject(frame));
 
-  GURL frame_url = frame->url();
+  GURL frame_url = frame->document().url();
   if (BindingsPolicy::is_web_ui_enabled(enabled_bindings_) &&
       (frame_url.SchemeIs(chrome::kChromeUIScheme) ||
       frame_url.SchemeIs(chrome::kDataScheme))) {
@@ -2445,7 +2447,7 @@ void RenderView::didClearWindowObject(WebFrame* frame) {
 
 void RenderView::didCreateDocumentElement(WebFrame* frame) {
   // Notify the browser about non-blank documents loading in the top frame.
-  GURL url = frame->url();
+  GURL url = frame->document().url();
   if (url.is_valid() && url.spec() != chrome::kAboutBlankURL) {
     if (frame == webview()->mainFrame())
       Send(new ViewHostMsg_DocumentAvailableInMainFrame(routing_id_));
@@ -2629,14 +2631,15 @@ void RenderView::didFinishResourceLoad(
   int http_status_code = navigation_state->http_status_code();
   if (http_status_code == 404) {
     // On 404s, try a remote search page as a fallback.
-    const GURL& frame_url = frame->url();
+    const GURL& document_url = frame->document().url();
 
-    const GURL& error_page_url = GetAlternateErrorPageURL(frame_url, HTTP_404);
+    const GURL& error_page_url =
+        GetAlternateErrorPageURL(document_url, HTTP_404);
     if (error_page_url.is_valid()) {
       WebURLError original_error;
       original_error.domain = "http";
       original_error.reason = 404;
-      original_error.unreachableURL = frame_url;
+      original_error.unreachableURL = document_url;
 
       navigation_state->set_alt_error_page_fetcher(
           new AltErrorPageResourceFetcher(
@@ -2793,7 +2796,7 @@ void RenderView::openFileSystem(
     WebFileSystemCallbacks* callbacks) {
   DCHECK(callbacks);
 
-  WebSecurityOrigin origin = frame->securityOrigin();
+  WebSecurityOrigin origin = frame->document().securityOrigin();
   if (origin.isEmpty()) {
     // Uninitialized document?
     callbacks->didFail(WebKit::WebFileErrorAbort);
@@ -2810,7 +2813,7 @@ void RenderView::queryStorageUsageAndQuota(
     WebStorageQuotaType type,
     WebStorageQuotaCallbacks* callbacks) {
   DCHECK(frame);
-  WebSecurityOrigin origin = frame->securityOrigin();
+  WebSecurityOrigin origin = frame->document().securityOrigin();
   if (origin.isEmpty()) {
     // Uninitialized document?
     callbacks->didFail(WebKit::WebStorageQuotaErrorAbort);
@@ -2826,7 +2829,7 @@ void RenderView::requestStorageQuota(
     unsigned long long requested_size,
     WebStorageQuotaCallbacks* callbacks) {
   DCHECK(frame);
-  WebSecurityOrigin origin = frame->securityOrigin();
+  WebSecurityOrigin origin = frame->document().securityOrigin();
   if (origin.isEmpty()) {
     // Uninitialized document?
     callbacks->didFail(WebKit::WebStorageQuotaErrorAbort);
@@ -3305,11 +3308,12 @@ void RenderView::OnScriptEvalRequest(const string16& frame_xpath,
 void RenderView::OnCSSInsertRequest(const std::wstring& frame_xpath,
                                     const std::string& css,
                                     const std::string& id) {
-  WebFrame* web_frame = GetChildFrame(frame_xpath);
-  if (!web_frame)
+  WebFrame* frame = GetChildFrame(frame_xpath);
+  if (!frame)
     return;
 
-  web_frame->insertStyleText(WebString::fromUTF8(css), WebString::fromUTF8(id));
+  frame->document().insertStyleText(WebString::fromUTF8(css),
+                                    WebString::fromUTF8(id));
 }
 
 void RenderView::OnAllowBindings(int enabled_bindings_flags) {
@@ -4139,7 +4143,7 @@ void RenderView::zoomLevelChanged() {
   // saved values if necessary
   Send(new ViewHostMsg_DidZoomURL(
       routing_id_, webview()->zoomLevel(), remember,
-      GURL(webview()->mainFrame()->url())));
+      GURL(webview()->mainFrame()->document().url())));
 }
 
 void RenderView::registerProtocolHandler(const WebString& scheme,
@@ -4198,7 +4202,7 @@ bool RenderView::IsNonLocalTopLevelNavigation(
     if (!opener) {
       return true;
     } else {
-      if (url.GetOrigin() != GURL(opener->url()).GetOrigin())
+      if (url.GetOrigin() != GURL(opener->document().url()).GetOrigin())
         return true;
     }
   }

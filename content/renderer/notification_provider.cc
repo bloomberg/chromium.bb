@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -102,8 +102,8 @@ bool NotificationProvider::ShowHTML(const WebNotification& notification,
                                     int id) {
   DCHECK(notification.isHTML());
   DesktopNotificationHostMsg_Show_Params params;
-  params.origin =
-      GURL(render_view()->webview()->mainFrame()->url()).GetOrigin();
+  WebDocument document = render_view()->webview()->mainFrame()->document();
+  params.origin = GURL(document.securityOrigin().toString());
   params.is_html = true;
   params.contents_url = notification.url();
   params.notification_id = id;
@@ -116,8 +116,8 @@ bool NotificationProvider::ShowText(const WebNotification& notification,
   DCHECK(!notification.isHTML());
   DesktopNotificationHostMsg_Show_Params params;
   params.is_html = false;
-  params.origin = GURL(
-      render_view()->webview()->mainFrame()->url()).GetOrigin();
+  WebDocument document = render_view()->webview()->mainFrame()->document();
+  params.origin = GURL(document.securityOrigin().toString());
   params.icon_url = notification.iconURL();
   params.title = notification.title();
   params.body = notification.body();

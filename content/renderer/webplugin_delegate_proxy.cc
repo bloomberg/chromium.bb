@@ -36,6 +36,7 @@
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
@@ -182,7 +183,7 @@ WebPluginDelegateProxy::WebPluginDelegateProxy(
       sad_plugin_(NULL),
       invalidate_pending_(false),
       transparent_(false),
-      page_url_(render_view_->webview()->mainFrame()->url()) {
+      page_url_(render_view_->webview()->mainFrame()->document().url()) {
 }
 
 WebPluginDelegateProxy::~WebPluginDelegateProxy() {

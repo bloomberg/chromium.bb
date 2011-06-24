@@ -25,6 +25,7 @@
 #include "content/renderer/render_view.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/common/constants.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "webkit/glue/gl_bindings_skia_cmd_buffer.h"
@@ -102,7 +103,7 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
 
   GURL active_url;
   if (web_view && web_view->mainFrame())
-    active_url = GURL(web_view->mainFrame()->url());
+    active_url = GURL(web_view->mainFrame()->document().url());
 
   RendererGLContext* parent_context = NULL;
   if (render_directly_to_web_view) {

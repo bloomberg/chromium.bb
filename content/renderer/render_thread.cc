@@ -83,6 +83,7 @@
 #include "ipc/ipc_channel_posix.h"
 #endif
 
+using WebKit::WebDocument;
 using WebKit::WebFrame;
 using WebKit::WebRuntimeFeatures;
 using WebKit::WebScriptController;
@@ -106,14 +107,15 @@ class RenderViewZoomer : public RenderViewVisitor {
   }
 
   virtual bool Visit(RenderView* render_view) {
-    WebView* webview = render_view->webview();  // Guaranteed non-NULL.
+    WebView* webview = render_view->webview();
+    WebDocument document = webview->mainFrame()->document();
 
     // Don't set zoom level for full-page plugin since they don't use the same
     // zoom settings.
-    if (webview->mainFrame()->document().isPluginDocument())
+    if (document.isPluginDocument())
       return true;
 
-    if (net::GetHostOrSpecFromURL(GURL(webview->mainFrame()->url())) == host_)
+    if (net::GetHostOrSpecFromURL(GURL(document.url())) == host_)
       webview->setZoomLevel(false, zoom_level_);
     return true;
   }

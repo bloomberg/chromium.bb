@@ -8,6 +8,7 @@
 #include "base/stl_util-inl.h"
 #include "base/values.h"
 #include "content/common/view_messages.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
 
@@ -81,11 +82,11 @@ void WebUIBindings::send(const CppArgumentList& args, CppVariant* result) {
     content.reset(new ListValue());
   }
 
-  // Retrieve the source frame's url
+  // Retrieve the source document's url
   GURL source_url;
-  WebKit::WebFrame* webframe = WebKit::WebFrame::frameForCurrentContext();
-  if (webframe)
-    source_url = webframe->url();
+  WebKit::WebFrame* frame = WebKit::WebFrame::frameForCurrentContext();
+  if (frame)
+    source_url = frame->document().url();
 
   // Send the message up to the browser.
   sender()->Send(new ViewHostMsg_WebUISend(
