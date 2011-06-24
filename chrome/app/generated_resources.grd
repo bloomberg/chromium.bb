@@ -4525,7 +4525,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Insecure script has been blocked.
       </message>
       <message name="IDS_ALLOW_INSECURE_CONTENT_BUTTON" desc="Button to allow insecure content to be displayed">
-        Load anyway
+        Load anyway (not recommended)
       </message>
 
       <if expr="pp_ifdef('chromeos')">

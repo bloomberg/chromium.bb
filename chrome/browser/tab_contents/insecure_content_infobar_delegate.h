@@ -41,6 +41,7 @@ class InsecureContentInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual InsecureContentInfoBarDelegate*
       AsInsecureContentInfoBarDelegate() OVERRIDE;
   virtual string16 GetMessageText() const;
+  virtual int GetButtons() const OVERRIDE;
   virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
   virtual bool Accept() OVERRIDE;
   virtual string16 GetLinkText() const OVERRIDE;

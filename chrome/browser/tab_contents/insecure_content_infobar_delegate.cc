@@ -43,10 +43,15 @@ string16 InsecureContentInfoBarDelegate::GetMessageText() const {
       IDS_BLOCKED_RUNNING_INSECURE_CONTENT);
 }
 
+int InsecureContentInfoBarDelegate::GetButtons() const {
+  return BUTTON_OK;
+}
+
 string16 InsecureContentInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
+  DCHECK_EQ(button, BUTTON_OK);
   return l10n_util::GetStringUTF16(IDS_ALLOW_INSECURE_CONTENT_BUTTON);
-};
+}
 
 bool InsecureContentInfoBarDelegate::Accept() {
   UMA_HISTOGRAM_ENUMERATION("InsecureContentInfoBarDelegate",
