@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/tab_contents/native_tab_contents_container_win.h"
-
-#include "chrome/browser/renderer_host/render_widget_host_view_win.h"
-#include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_container_views.h"
+
+#include "chrome/browser/renderer_host/render_widget_host_view_views.h"
+#include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/tab_contents/tab_contents_container.h"
 #include "chrome/browser/ui/views/tab_contents/tab_contents_view_views.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
@@ -14,55 +13,46 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "views/focus/focus_manager.h"
+#include "views/layout/fill_layout.h"
+#include "views/widget/native_widget_views.h"
 
 ////////////////////////////////////////////////////////////////////////////////
-// NativeTabContentsContainerWin, public:
+// NativeTabContentsContainerViews, public:
 
-NativeTabContentsContainerWin::NativeTabContentsContainerWin(
+NativeTabContentsContainerViews::NativeTabContentsContainerViews(
     TabContentsContainer* container)
     : container_(container) {
   set_id(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW);
+  SetLayoutManager(new views::FillLayout);
 }
 
-NativeTabContentsContainerWin::~NativeTabContentsContainerWin() {
+NativeTabContentsContainerViews::~NativeTabContentsContainerViews() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// NativeTabContentsContainerWin, NativeTabContentsContainer overrides:
+// NativeTabContentsContainerViews, NativeTabContentsContainer overrides:
 
-void NativeTabContentsContainerWin::AttachContents(TabContents* contents) {
-  // We need to register the tab contents window with the BrowserContainer so
-  // that the BrowserContainer is the focused view when the focus is on the
-  // TabContents window (for the TabContents case).
-  set_focus_view(this);
-
-  Attach(contents->GetNativeView());
+void NativeTabContentsContainerViews::AttachContents(TabContents* contents) {
+  TabContentsViewViews* widget =
+      static_cast<TabContentsViewViews*>(contents->view());
+  views::NativeWidgetViews* nwv =
+      static_cast<views::NativeWidgetViews*>(widget->native_widget());
+  AddChildView(nwv->GetView());
+  Layout();
 }
 
-void NativeTabContentsContainerWin::DetachContents(TabContents* contents) {
-  // Detach the TabContents.  Do this before we unparent the
-  // TabContentsViewViews so that the window hierarchy is intact for any
-  // cleanup during Detach().
-  Detach();
-
-  // TODO(brettw) should this move to NativeViewHost::Detach?  It
-  // needs cleanup regardless.
-  HWND container_hwnd = contents->GetNativeView();
-  if (container_hwnd) {
-    // Hide the contents before adjusting its parent to avoid a full desktop
-    // flicker.
-    ShowWindow(container_hwnd, SW_HIDE);
-
-    // Reset the parent to NULL to ensure hidden tabs don't receive messages.
-    static_cast<TabContentsViewViews*>(contents->view())->Unparent();
-  }
+void NativeTabContentsContainerViews::DetachContents(TabContents* contents) {
+  TabContentsViewViews* widget =
+      static_cast<TabContentsViewViews*>(contents->view());
+  views::NativeWidgetViews* nwv =
+      static_cast<views::NativeWidgetViews*>(widget->native_widget());
+  RemoveChildView(nwv->GetView());
 }
 
-void NativeTabContentsContainerWin::SetFastResize(bool fast_resize) {
-  set_fast_resize(fast_resize);
+void NativeTabContentsContainerViews::SetFastResize(bool fast_resize) {
 }
 
-void NativeTabContentsContainerWin::RenderViewHostChanged(
+void NativeTabContentsContainerViews::RenderViewHostChanged(
     RenderViewHost* old_host,
     RenderViewHost* new_host) {
   // If we are focused, we need to pass the focus to the new RenderViewHost.
@@ -70,11 +60,11 @@ void NativeTabContentsContainerWin::RenderViewHostChanged(
     OnFocus();
 }
 
-views::View* NativeTabContentsContainerWin::GetView() {
+views::View* NativeTabContentsContainerViews::GetView() {
   return this;
 }
 
-void NativeTabContentsContainerWin::TabContentsFocused(
+void NativeTabContentsContainerViews::TabContentsFocused(
     TabContents* tab_contents) {
   views::FocusManager* focus_manager = GetFocusManager();
   if (!focus_manager) {
@@ -87,7 +77,7 @@ void NativeTabContentsContainerWin::TabContentsFocused(
 ////////////////////////////////////////////////////////////////////////////////
 // NativeTabContentsContainerWin, views::View overrides:
 
-bool NativeTabContentsContainerWin::SkipDefaultKeyEventProcessing(
+bool NativeTabContentsContainerViews::SkipDefaultKeyEventProcessing(
     const views::KeyEvent& e) {
   // Don't look-up accelerators or tab-traversal if we are showing a non-crashed
   // TabContents.
@@ -98,18 +88,18 @@ bool NativeTabContentsContainerWin::SkipDefaultKeyEventProcessing(
          !container_->tab_contents()->is_crashed();
 }
 
-bool NativeTabContentsContainerWin::IsFocusable() const {
+bool NativeTabContentsContainerViews::IsFocusable() const {
   // We need to be focusable when our contents is not a view hierarchy, as
   // clicking on the contents needs to focus us.
   return container_->tab_contents() != NULL;
 }
 
-void NativeTabContentsContainerWin::OnFocus() {
+void NativeTabContentsContainerViews::OnFocus() {
   if (container_->tab_contents())
     container_->tab_contents()->Focus();
 }
 
-void NativeTabContentsContainerWin::RequestFocus() {
+void NativeTabContentsContainerViews::RequestFocus() {
   // This is a hack to circumvent the fact that a the OnFocus() method is not
   // invoked when RequestFocus() is called on an already focused view.
   // The TabContentsContainer is the view focused when the TabContents has
@@ -127,37 +117,17 @@ void NativeTabContentsContainerWin::RequestFocus() {
   View::RequestFocus();
 }
 
-void NativeTabContentsContainerWin::AboutToRequestFocusFromTabTraversal(
+void NativeTabContentsContainerViews::AboutToRequestFocusFromTabTraversal(
     bool reverse) {
   container_->tab_contents()->FocusThroughTabTraversal(reverse);
 }
 
-void NativeTabContentsContainerWin::GetAccessibleState(
+void NativeTabContentsContainerViews::GetAccessibleState(
     ui::AccessibleViewState* state) {
   state->role = ui::AccessibilityTypes::ROLE_GROUPING;
 }
 
 gfx::NativeViewAccessible
-    NativeTabContentsContainerWin::GetNativeViewAccessible() {
-  TabContents* tab_contents = container_->tab_contents();
-  if (tab_contents) {
-    RenderWidgetHostViewWin* host_view_win =
-        static_cast<RenderWidgetHostViewWin*>(
-            tab_contents->GetRenderWidgetHostView());
-    if (host_view_win)
-      return host_view_win->GetIAccessible();
-  }
-
+    NativeTabContentsContainerViews::GetNativeViewAccessible() {
   return View::GetNativeViewAccessible();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// NativeTabContentsContainer, public:
-
-// static
-NativeTabContentsContainer* NativeTabContentsContainer::CreateNativeContainer(
-    TabContentsContainer* container) {
-  if (views::Widget::IsPureViews())
-    return new NativeTabContentsContainerViews(container);
-  return new NativeTabContentsContainerWin(container);
 }

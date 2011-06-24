@@ -1381,6 +1381,8 @@ int BrowserMain(const MainFunctionParams& parameters) {
 #endif
 
 #if defined(TOOLKIT_VIEWS)
+  views::Widget::SetPureViews(
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kUsePureViews));
   // Launch the views desktop shell window and register it as the default parent
   // for all unparented views widgets.
   if (parsed_command_line.HasSwitch(switches::kViewsDesktop)) {
@@ -1791,11 +1793,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
 #if defined(TOUCH_UI) && defined(HAVE_XINPUT2)
   views::TouchFactory::GetInstance()->set_keep_mouse_cursor(
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kKeepMouseCursor));
-#endif
-
-#if defined(TOOLKIT_VIEWS)
-  views::Widget::SetPureViews(
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kUsePureViews));
 #endif
 
   HandleTestParameters(parsed_command_line);
