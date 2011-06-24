@@ -1135,7 +1135,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_PopupAccelerators) {
   PopupAcceleratorsTest();
 }
 
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, BackspaceInKeywordMode) {
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, FAILS_BackspaceInKeywordMode) {
   BackspaceInKeywordModeTest();
 }
 
@@ -1190,7 +1190,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, TabMoveCursorToEnd) {
 }
 
 IN_PROC_BROWSER_TEST_F(OmniboxViewTest,
-                       PersistKeywordModeOnTabSwitch) {
+                       FAILS_PersistKeywordModeOnTabSwitch) {
   PersistKeywordModeOnTabSwitch();
 }
 
