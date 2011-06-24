@@ -326,6 +326,9 @@ void
 wlsc_surface_damage(struct wlsc_surface *surface);
 
 void
+wlsc_surface_damage_below(struct wlsc_surface *surface);
+
+void
 wlsc_surface_damage_rectangle(struct wlsc_surface *surface,
 			      int32_t x, int32_t y,
 			      int32_t width, int32_t height);

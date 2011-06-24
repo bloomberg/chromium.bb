@@ -285,6 +285,23 @@ wlsc_surface_damage(struct wlsc_surface *surface)
 				      surface->width, surface->height);
 }
 
+WL_EXPORT void
+wlsc_surface_damage_below(struct wlsc_surface *surface)
+{
+	struct wlsc_surface *below;
+
+	if (surface->link.next == &surface->compositor->surface_list)
+		return;
+
+	below = container_of(surface->link.next, struct wlsc_surface, link);
+
+	pixman_region32_union_rect(&below->damage,
+				   &below->damage,
+				   surface->x, surface->y,
+				   surface->width, surface->height);
+	wlsc_compositor_schedule_repaint(surface->compositor);
+}
+
 WL_EXPORT uint32_t
 wlsc_compositor_get_time(void)
 {
@@ -302,7 +319,7 @@ destroy_surface(struct wl_resource *resource, struct wl_client *client)
 		container_of(resource, struct wlsc_surface, surface.resource);
 	struct wlsc_compositor *compositor = surface->compositor;
 
-	wlsc_surface_damage(surface);
+	wlsc_surface_damage_below(surface);
 
 	wl_list_remove(&surface->link);
 	if (surface->saved_texture == 0)
@@ -951,7 +968,7 @@ surface_attach(struct wl_client *client,
 	 * surface.  Anything covered by the new surface will be
 	 * damaged by the client. */
 	if (es->buffer)
-		wlsc_surface_damage(es);
+		wlsc_surface_damage_below(es);
 
 	buffer->busy_count++;
 	wlsc_buffer_post_release(es->buffer);
@@ -995,7 +1012,7 @@ static void
 wlsc_input_device_attach(struct wlsc_input_device *device,
 			 int x, int y, int width, int height)
 {
-	wlsc_surface_damage(device->sprite);
+	wlsc_surface_damage_below(device->sprite);
 
 	device->hotspot_x = x;
 	device->hotspot_y = y;
@@ -1236,7 +1253,7 @@ notify_motion(struct wl_input_device *device, uint32_t time, int x, int y)
 					     time, x, y, sx, sy);
 	}
 
-	wlsc_surface_damage(wd->sprite);
+	wlsc_surface_damage_below(wd->sprite);
 
 	wd->sprite->x = device->x - wd->hotspot_x;
 	wd->sprite->y = device->y - wd->hotspot_y;
