@@ -14,7 +14,7 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
-#include "third_party/cros/chromeos_input_method_ui.h"
+#include "chrome/browser/chromeos/input_method/ibus_ui_controller.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "views/controls/label.h"
@@ -25,6 +25,9 @@
 #include "views/screen.h"
 #include "views/widget/widget.h"
 #include "views/window/non_client_view.h"
+
+namespace chromeos {
+namespace input_method {
 
 namespace {
 
@@ -103,8 +106,9 @@ views::View* WrapWithPadding(views::View* view, const gfx::Insets& insets) {
 }
 
 // Creates shortcut text from the given index and the orientation.
-std::wstring CreateShortcutText(int index,
-    chromeos::InputMethodLookupTable::Orientation orientation) {
+std::wstring CreateShortcutText(
+    int index,
+    InputMethodLookupTable::Orientation orientation) {
   // Choose the character used for the shortcut label.
   const wchar_t kShortcutCharacters[] = L"1234567890ABCDEF";
   // The default character should not be used but just in case.
@@ -115,7 +119,7 @@ std::wstring CreateShortcutText(int index,
   }
 
   std::wstring shortcut_text;
-  if (orientation == chromeos::InputMethodLookupTable::kVertical) {
+  if (orientation == InputMethodLookupTable::kVertical) {
     shortcut_text = base::StringPrintf(L"%lc", shortcut_character);
   } else {
     shortcut_text = base::StringPrintf(L"%lc.", shortcut_character);
@@ -127,13 +131,13 @@ std::wstring CreateShortcutText(int index,
 // Creates the shortcut label, and returns it (never returns NULL).
 // The label text is not set in this function.
 views::Label* CreateShortcutLabel(
-    chromeos::InputMethodLookupTable::Orientation orientation) {
+    InputMethodLookupTable::Orientation orientation) {
   // Create the shortcut label. The label will be owned by
   // |wrapped_shortcut_label|, hence it's deleted when
   // |wrapped_shortcut_label| is deleted.
   views::Label* shortcut_label = new views::Label;
 
-  if (orientation == chromeos::InputMethodLookupTable::kVertical) {
+  if (orientation == InputMethodLookupTable::kVertical) {
     shortcut_label->SetFont(
         shortcut_label->font().DeriveFont(kFontSizeDelta, gfx::Font::BOLD));
   } else {
@@ -150,20 +154,21 @@ views::Label* CreateShortcutLabel(
 // Wraps the shortcut label, then decorates wrapped shortcut label
 // and returns it (never returns NULL).
 // The label text is not set in this function.
-views::View* CreateWrappedShortcutLabel(views::Label* shortcut_label,
-    chromeos::InputMethodLookupTable::Orientation orientation) {
+views::View* CreateWrappedShortcutLabel(
+    views::Label* shortcut_label,
+    InputMethodLookupTable::Orientation orientation) {
   // Wrap it with padding.
   const gfx::Insets kVerticalShortcutLabelInsets(1, 6, 1, 6);
   const gfx::Insets kHorizontalShortcutLabelInsets(1, 3, 1, 0);
   const gfx::Insets insets =
-      (orientation == chromeos::InputMethodLookupTable::kVertical ?
+      (orientation == InputMethodLookupTable::kVertical ?
        kVerticalShortcutLabelInsets :
        kHorizontalShortcutLabelInsets);
   views::View* wrapped_shortcut_label =
       WrapWithPadding(shortcut_label, insets);
 
   // Add decoration based on the orientation.
-  if (orientation == chromeos::InputMethodLookupTable::kVertical) {
+  if (orientation == InputMethodLookupTable::kVertical) {
     // Set the background color.
     wrapped_shortcut_label->set_background(
         views::Background::CreateSolidBackground(
@@ -176,12 +181,12 @@ views::View* CreateWrappedShortcutLabel(views::Label* shortcut_label,
 // Creates the candidate label, and returns it (never returns NULL).
 // The label text is not set in this function.
 views::Label* CreateCandidateLabel(
-    chromeos::InputMethodLookupTable::Orientation orientation) {
+    InputMethodLookupTable::Orientation orientation) {
   views::Label* candidate_label = NULL;
 
   // Create the candidate label. The label will be added to |this| as a
   // child view, hence it's deleted when |this| is deleted.
-  if (orientation == chromeos::InputMethodLookupTable::kVertical) {
+  if (orientation == InputMethodLookupTable::kVertical) {
     candidate_label = new VerticalCandidateLabel;
   } else {
     candidate_label = new views::Label;
@@ -198,7 +203,7 @@ views::Label* CreateCandidateLabel(
 // Creates the annotation label, and return it (never returns NULL).
 // The label text is not set in this function.
 views::Label* CreateAnnotationLabel(
-    chromeos::InputMethodLookupTable::Orientation orientation) {
+    InputMethodLookupTable::Orientation orientation) {
   // Create the annotation label.
   views::Label* annotation_label = new views::Label;
 
@@ -213,7 +218,7 @@ views::Label* CreateAnnotationLabel(
 
 // Computes shortcut column width.
 int ComputeShortcutColumnWidth(
-    const chromeos::InputMethodLookupTable& lookup_table) {
+    const InputMethodLookupTable& lookup_table) {
   int shortcut_column_width = 0;
   // Create the shortcut label. The label will be owned by
   // |wrapped_shortcut_label|, hence it's deleted when
@@ -238,7 +243,7 @@ int ComputeShortcutColumnWidth(
 // Computes the page index. For instance, if the page size is 9, and the
 // cursor is pointing to 13th candidate, the page index will be 1 (2nd
 // page, as the index is zero-origin). Returns -1 on error.
-int ComputePageIndex(const chromeos::InputMethodLookupTable& lookup_table) {
+int ComputePageIndex(const InputMethodLookupTable& lookup_table) {
   if (lookup_table.page_size > 0)
     return lookup_table.cursor_absolute_index / lookup_table.page_size;
   return -1;
@@ -246,7 +251,7 @@ int ComputePageIndex(const chromeos::InputMethodLookupTable& lookup_table) {
 
 // Computes candidate column width.
 int ComputeCandidateColumnWidth(
-    const chromeos::InputMethodLookupTable& lookup_table) {
+    const InputMethodLookupTable& lookup_table) {
   int candidate_column_width = 0;
   scoped_ptr<views::Label> candidate_label(
       CreateCandidateLabel(lookup_table.orientation));
@@ -273,8 +278,7 @@ int ComputeCandidateColumnWidth(
 }
 
 // Computes annotation column width.
-int ComputeAnnotationColumnWidth(
-    const chromeos::InputMethodLookupTable& lookup_table) {
+int ComputeAnnotationColumnWidth(const InputMethodLookupTable& lookup_table) {
   int annotation_column_width = 0;
   scoped_ptr<views::Label> annotation_label(
       CreateAnnotationLabel(lookup_table.orientation));
@@ -399,8 +403,6 @@ class InformationTextArea : public HidableArea {
 };
 
 }  // namespace
-
-namespace chromeos {
 
 class CandidateView;
 
@@ -643,7 +645,8 @@ class CandidateView : public views::View {
 
 // The implementation of CandidateWindowController.
 // CandidateWindowController controls the CandidateWindow.
-class CandidateWindowController::Impl : public CandidateWindowView::Observer {
+class CandidateWindowController::Impl : public CandidateWindowView::Observer,
+                                        public IBusUiController::Observer {
  public:
   Impl();
   virtual ~Impl();
@@ -660,50 +663,20 @@ class CandidateWindowController::Impl : public CandidateWindowView::Observer {
   // Creates the candidate window view.
   void CreateView();
 
-  // The function is called when |HideAuxiliaryText| signal is received in
-  // libcros. |input_method_library| is a void pointer to this object.
-  static void OnHideAuxiliaryText(void* input_method_library);
+  // IBusUiController::Observer overrides.
+  virtual void OnHideAuxiliaryText();
+  virtual void OnHideLookupTable();
+  virtual void OnHidePreeditText();
+  virtual void OnSetCursorLocation(int x, int y, int width, int height);
+  virtual void OnUpdateAuxiliaryText(const std::string& utf8_text,
+                                     bool visible);
+  virtual void OnUpdateLookupTable(const InputMethodLookupTable& lookup_table);
+  virtual void OnUpdatePreeditText(const std::string& utf8_text,
+                                   unsigned int cursor, bool visible);
+  virtual void OnConnectionChange(bool connected);
 
-  // The function is called when |HideLookupTable| signal is received in
-  // libcros. |input_method_library| is a void pointer to this object.
-  static void OnHideLookupTable(void* input_method_library);
-
-  // The function is called when |SetCursorLocation| signal is received
-  // in libcros. |input_method_library| is a void pointer to this object.
-  static void OnSetCursorLocation(void* input_method_library,
-                                  int x,
-                                  int y,
-                                  int width,
-                                  int height);
-
-  // The function is called when |UpdateAuxiliaryText| signal is received
-  // in libcros. |input_method_library| is a void pointer to this object.
-  static void OnUpdateAuxiliaryText(void* input_method_library,
-                                    const std::string& utf8_text,
-                                    bool visible);
-
-  // The function is called when |UpdateLookupTable| signal is received
-  // in libcros. |input_method_library| is a void pointer to this object.
-  static void OnUpdateLookupTable(void* input_method_library,
-                                  const InputMethodLookupTable& lookup_table);
-
-  // The function is called when |UpdatePreeditText| signal is received
-  // in libcros. |input_method_library| is a void pointer to this object.
-  static void OnUpdatePreeditText(void* input_method_library,
-                                  const std::string& utf8_text,
-                                  unsigned int cursor, bool visible);
-
-  // The function is called when |HidePreeditText| signal is received
-  // in libcros. |input_method_library| is a void pointer to this object.
-  static void OnHidePreeditText(void* input_method_library);
-
-  // This function is called by libcros when ibus connects or disconnects.
-  // |input_method_library| is a void pointer to this object.
-  static void OnConnectionChange(void* input_method_library, bool connected);
-
-  // The connection is used for communicating with input method UI logic
-  // in libcros.
-  InputMethodUiStatusConnection* ui_status_connection_;
+  // The controller is used for communicating with the IBus daemon.
+  scoped_ptr<IBusUiController> ibus_ui_controller_;
 
   // The candidate window view.
   CandidateWindowView* candidate_window_;
@@ -1298,31 +1271,10 @@ bool CandidateWindowController::Impl::Init() {
   // Create the candidate window view.
   CreateView();
 
-  // Initialize the input method UI status connection.
-  InputMethodUiStatusMonitorFunctions functions;
-  functions.hide_auxiliary_text =
-      &CandidateWindowController::Impl::OnHideAuxiliaryText;
-  functions.hide_lookup_table =
-      &CandidateWindowController::Impl::OnHideLookupTable;
-  functions.set_cursor_location =
-      &CandidateWindowController::Impl::OnSetCursorLocation;
-  functions.update_auxiliary_text =
-      &CandidateWindowController::Impl::OnUpdateAuxiliaryText;
-  functions.update_lookup_table =
-      &CandidateWindowController::Impl::OnUpdateLookupTable;
-  ui_status_connection_ = MonitorInputMethodUiStatus(functions, this);
-  if (!ui_status_connection_) {
-    LOG(ERROR) << "MonitorInputMethodUiStatus() failed.";
-    return false;
-  }
-  MonitorInputMethodConnection(
-      ui_status_connection_,
-      &CandidateWindowController::Impl::OnConnectionChange);
-  MonitorInputMethodPreeditText(
-      ui_status_connection_,
-      &CandidateWindowController::Impl::OnHidePreeditText,
-      &CandidateWindowController::Impl::OnUpdatePreeditText);
-
+  // The observer should be added before Connect() so we can capture the
+  // initial connection change.
+  ibus_ui_controller_->AddObserver(this);
+  ibus_ui_controller_->Connect();
   return true;
 }
 
@@ -1342,50 +1294,38 @@ void CandidateWindowController::Impl::CreateView() {
 }
 
 CandidateWindowController::Impl::Impl()
-    : ui_status_connection_(NULL),
+    : ibus_ui_controller_(IBusUiController::Create()),
       frame_(NULL) {
 }
 
 CandidateWindowController::Impl::~Impl() {
+  ibus_ui_controller_->RemoveObserver(this);
   candidate_window_->RemoveObserver(this);
-  chromeos::DisconnectInputMethodUiStatus(ui_status_connection_);
+  // ibus_ui_controller_'s destructor will close the connection.
 }
 
-void CandidateWindowController::Impl::OnHideAuxiliaryText(
-    void* input_method_library) {
-  CandidateWindowController::Impl* controller =
-      static_cast<CandidateWindowController::Impl*>(input_method_library);
-  controller->candidate_window_->HideAuxiliaryText();
+void CandidateWindowController::Impl::OnHideAuxiliaryText() {
+  candidate_window_->HideAuxiliaryText();
 }
 
-void CandidateWindowController::Impl::OnHideLookupTable(
-    void* input_method_library) {
-  CandidateWindowController::Impl* controller =
-      static_cast<CandidateWindowController::Impl*>(input_method_library);
-  controller->candidate_window_->HideLookupTable();
+void CandidateWindowController::Impl::OnHideLookupTable() {
+  candidate_window_->HideLookupTable();
 }
 
-void CandidateWindowController::Impl::OnHidePreeditText(
-    void* input_method_library) {
-  CandidateWindowController::Impl* controller =
-      static_cast<CandidateWindowController::Impl*>(input_method_library);
-  controller->candidate_window_->HidePreeditText();
+void CandidateWindowController::Impl::OnHidePreeditText() {
+  candidate_window_->HidePreeditText();
 }
 
 void CandidateWindowController::Impl::OnSetCursorLocation(
-    void* input_method_library,
     int x,
     int y,
     int width,
     int height) {
-  CandidateWindowController::Impl* controller =
-      static_cast<CandidateWindowController::Impl*>(input_method_library);
-
   // A workaround for http://crosbug.com/6460. We should ignore very short Y
   // move to prevent the window from shaking up and down.
   const int kKeepPositionThreshold = 2;  // px
   const gfx::Rect& last_location =
-      controller->candidate_window_->cursor_location();
+      candidate_window_->cursor_location();
   const int delta_y = abs(last_location.y() - y);
   if ((last_location.x() == x) && (delta_y <= kKeepPositionThreshold)) {
     DLOG(INFO) << "Ignored set_cursor_location signal to prevent window shake";
@@ -1393,71 +1333,56 @@ void CandidateWindowController::Impl::OnSetCursorLocation(
   }
 
   // Remember the cursor location.
-  controller->candidate_window_->set_cursor_location(
+  candidate_window_->set_cursor_location(
       gfx::Rect(x, y, width, height));
   // Move the window per the cursor location.
-  controller->candidate_window_->ResizeAndMoveParentFrame();
+  candidate_window_->ResizeAndMoveParentFrame();
 }
 
 void CandidateWindowController::Impl::OnUpdateAuxiliaryText(
-    void* input_method_library,
     const std::string& utf8_text,
     bool visible) {
-  CandidateWindowController::Impl* controller =
-      static_cast<CandidateWindowController::Impl*>(input_method_library);
   // If it's not visible, hide the auxiliary text and return.
   if (!visible) {
-    controller->candidate_window_->HideAuxiliaryText();
+    candidate_window_->HideAuxiliaryText();
     return;
   }
-  controller->candidate_window_->UpdateAuxiliaryText(utf8_text);
-  controller->candidate_window_->ShowAuxiliaryText();
+  candidate_window_->UpdateAuxiliaryText(utf8_text);
+  candidate_window_->ShowAuxiliaryText();
 }
 
 void CandidateWindowController::Impl::OnUpdateLookupTable(
-    void* input_method_library,
     const InputMethodLookupTable& lookup_table) {
-  CandidateWindowController::Impl* controller =
-      static_cast<CandidateWindowController::Impl*>(input_method_library);
-
   // If it's not visible, hide the lookup table and return.
   if (!lookup_table.visible) {
-    controller->candidate_window_->HideLookupTable();
+    candidate_window_->HideLookupTable();
     return;
   }
 
-  controller->candidate_window_->UpdateCandidates(lookup_table);
-  controller->candidate_window_->ShowLookupTable();
+  candidate_window_->UpdateCandidates(lookup_table);
+  candidate_window_->ShowLookupTable();
 }
 
 void CandidateWindowController::Impl::OnUpdatePreeditText(
-    void* input_method_library,
     const std::string& utf8_text, unsigned int cursor, bool visible) {
-  CandidateWindowController::Impl* controller =
-      static_cast<CandidateWindowController::Impl*>(input_method_library);
-
   // If it's not visible, hide the preedit text and return.
   if (!visible || utf8_text.empty()) {
-    controller->candidate_window_->HidePreeditText();
+    candidate_window_->HidePreeditText();
     return;
   }
-  controller->candidate_window_->UpdatePreeditText(utf8_text);
-  controller->candidate_window_->ShowPreeditText();
+  candidate_window_->UpdatePreeditText(utf8_text);
+  candidate_window_->ShowPreeditText();
 }
 
 void CandidateWindowController::Impl::OnCandidateCommitted(int index,
                                                            int button,
                                                            int flags) {
-  NotifyCandidateClicked(ui_status_connection_, index, button, flags);
+  ibus_ui_controller_->NotifyCandidateClicked(index, button, flags);
 }
 
-void CandidateWindowController::Impl::OnConnectionChange(
-    void* input_method_library,
-    bool connected) {
+void CandidateWindowController::Impl::OnConnectionChange(bool connected) {
   if (!connected) {
-    CandidateWindowController::Impl* controller =
-        static_cast<CandidateWindowController::Impl*>(input_method_library);
-    controller->candidate_window_->HideAll();
+    candidate_window_->HideAll();
   }
 }
 
@@ -1473,4 +1398,5 @@ bool CandidateWindowController::Init() {
   return impl_->Init();
 }
 
+}  // namespace input_method
 }  // namespace chromeos

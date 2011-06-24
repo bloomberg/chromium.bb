@@ -1,17 +1,21 @@
-// Copyright (c) 2010 The Chromium OS Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos_input_method_ui.h"
+#include "chrome/browser/chromeos/input_method/ibus_ui_controller.h"
 
-#include <base/logging.h>
-#include <base/string_util.h>
-#include <base/utf_string_conversions.h>
+#if defined(HAVE_IBUS)
 #include <ibus.h>
+#endif
+
+#include "base/logging.h"
+#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 
 namespace chromeos {
+namespace input_method {
 
-namespace {
+#if defined(HAVE_IBUS)
 
 // Checks the attribute if this indicates annotation.
 gboolean IsAnnotation(IBusAttribute *attr) {
@@ -48,22 +52,15 @@ std::string IBusLookupTableToString(IBusLookupTable* table) {
   return stream.str();
 }
 
-}  // namespace
-
-// A thin wrapper for IBusPanelService.
-class InputMethodUiStatusConnection {
+// The real implementation of the IBusUiController.
+class IBusUiControllerImpl : public IBusUiController {
  public:
-  InputMethodUiStatusConnection(
-      const InputMethodUiStatusMonitorFunctions& monitor_functions,
-      void* input_method_library)
-      : monitor_functions_(monitor_functions),
-        connection_change_handler_(NULL),
-        input_method_library_(input_method_library),
-        ibus_(NULL),
+  IBusUiControllerImpl()
+      : ibus_(NULL),
         ibus_panel_service_(NULL) {
   }
 
-  ~InputMethodUiStatusConnection() {
+  ~IBusUiControllerImpl() {
     // ibus_panel_service_ depends on ibus_, thus unref it first.
     if (ibus_panel_service_) {
       DisconnectPanelServiceSignals();
@@ -90,9 +87,7 @@ class InputMethodUiStatusConnection {
     // Check the IBus connection status.
     if (ibus_bus_is_connected(ibus_)) {
       LOG(INFO) << "ibus_bus_is_connected(). IBus connection is ready.";
-      if (connection_change_handler_) {
-        connection_change_handler_(input_method_library_, true);
-      }
+      FOR_EACH_OBSERVER(Observer, observers_, OnConnectionChange(true));
       result = true;
     }
 
@@ -141,15 +136,15 @@ class InputMethodUiStatusConnection {
     return true;
   }
 
-  // A function called when a user clicks the candidate_window.
-  bool NotifyCandidateClicked(int index, int button, int flags) {
+  // IBusUiController override.
+  virtual void NotifyCandidateClicked(int index, int button, int flags) {
     if (!ibus_ || !ibus_bus_is_connected(ibus_)) {
       LOG(ERROR) << "NotifyCandidateClicked: bus is not connected.";
-      return false;
+      return;
     }
     if (!ibus_panel_service_) {
       LOG(ERROR) << "NotifyCandidateClicked: panel service is not available.";
-      return false;
+      return;
     }
 
     /* Send a D-Bus signal to ibus-daemon *asynchronously*. */
@@ -157,81 +152,145 @@ class InputMethodUiStatusConnection {
                                          index,
                                          button,
                                          flags);
-    return true;
   }
 
-  // A function called when a user clicks the cursor up button.
-  bool NotifyCursorUp() {
+  // IBusUiController override.
+  virtual void NotifyCursorUp() {
     if (!ibus_ || !ibus_bus_is_connected(ibus_)) {
       LOG(ERROR) << "NotifyCursorUp: bus is not connected.";
-      return false;
+      return;
     }
     if (!ibus_panel_service_) {
       LOG(ERROR) << "NotifyCursorUp: panel service is not available.";
-      return false;
+      return;
     }
 
     /* Send a D-Bus signal to ibus-daemon *asynchronously*. */
     ibus_panel_service_cursor_up(ibus_panel_service_);
-    return true;
   }
 
-  // A function called when a user clicks the cursor down button.
-  bool NotifyCursorDown() {
+  // IBusUiController override.
+  virtual void NotifyCursorDown() {
     if (!ibus_ || !ibus_bus_is_connected(ibus_)) {
       LOG(ERROR) << "NotifyCursorDown: bus is not connected.";
-      return false;
+      return;
     }
     if (!ibus_panel_service_) {
       LOG(ERROR) << "NotifyCursorDown: panel service is not available.";
-      return false;
+      return;
     }
      /* Send a D-Bus signal to ibus-daemon *asynchronously*. */
     ibus_panel_service_cursor_down(ibus_panel_service_);
-    return true;
   }
 
-  // A function called when a user clicks the page up button.
-  bool NotifyPageUp() {
+  // IBusUiController override.
+  virtual void NotifyPageUp() {
     if (!ibus_ || !ibus_bus_is_connected(ibus_)) {
       LOG(ERROR) << "NotifyPageUp: bus is not connected.";
-      return false;
+      return;
     }
     if (!ibus_panel_service_) {
       LOG(ERROR) << "NotifyPageUp: panel service is not available.";
-      return false;
+      return;
     }
 
     /* Send a D-Bus signal to ibus-daemon *asynchronously*. */
     ibus_panel_service_page_up(ibus_panel_service_);
-    return true;
   }
 
-  // A function called when a user clicks the page down button.
-  bool NotifyPageDown() {
+  // IBusUiController override.
+  virtual void NotifyPageDown() {
     if (!ibus_ || !ibus_bus_is_connected(ibus_)) {
       LOG(ERROR) << "NotifyPageDown: bus is not connected.";
-      return false;
+      return;
     }
     if (!ibus_panel_service_) {
       LOG(ERROR) << "NotifyPageDown: panel service is not available.";
-      return false;
+      return;
     }
 
     /* Send a D-Bus signal to ibus-daemon *asynchronously*. */
     ibus_panel_service_page_down(ibus_panel_service_);
-    return true;
   }
 
+  // IBusUiController override.
+  virtual void Connect() {
+    // It's totally fine if ConnectToIBus() fails here, as we'll get
+    // "connected" gobject signal once the connection becomes ready.
+    if (ConnectToIBus())
+      MaybeRestorePanelService();
+  }
 
-  // Registers a callback function which is called when IBusBus connection
-  // status is changed.
-  void MonitorInputMethodConnection(
-      InputMethodConnectionChangeMonitorFunction connection_change_handler) {
-    connection_change_handler_ = connection_change_handler;
+  // IBusUiController override.
+  virtual void AddObserver(Observer* observer) {
+    observers_.AddObserver(observer);
+  }
+
+  // IBusUiController override.
+  virtual void RemoveObserver(Observer* observer) {
+    observers_.RemoveObserver(observer);
   }
 
  private:
+  // Functions that end with Thunk are used to deal with glib callbacks.
+  //
+  // Note that we cannot use CHROMEG_CALLBACK_0() here as we'll define
+  // IBusBusConnected() inline. If we are to define the function outside
+  // of the class definition, we should use CHROMEG_CALLBACK_0() here.
+  //
+  // CHROMEG_CALLBACK_0(Impl,
+  //                    void, IBusBusConnected, IBusBus*);
+  static void IBusBusConnectedThunk(IBusBus* sender, gpointer userdata) {
+    return reinterpret_cast<IBusUiControllerImpl*>(userdata)
+        ->IBusBusConnected(sender);
+  }
+  static void IBusBusDisconnectedThunk(IBusBus* sender, gpointer userdata) {
+    return reinterpret_cast<IBusUiControllerImpl*>(userdata)
+        ->IBusBusDisconnected(sender);
+  }
+  static void HideAuxiliaryTextThunk(IBusPanelService* sender,
+                                     gpointer userdata) {
+    return reinterpret_cast<IBusUiControllerImpl*>(userdata)
+        ->HideAuxiliaryText(sender);
+  }
+  static void HideLookupTableThunk(IBusPanelService* sender,
+                                   gpointer userdata) {
+    return reinterpret_cast<IBusUiControllerImpl*>(userdata)
+        ->HideLookupTable(sender);
+  }
+  static void UpdateAuxiliaryTextThunk(IBusPanelService* sender,
+                                       IBusText* text, gboolean visible,
+                                       gpointer userdata) {
+    return reinterpret_cast<IBusUiControllerImpl*>(userdata)
+        ->UpdateAuxiliaryText(sender, text, visible);
+  }
+  static void SetCursorLocationThunk(IBusPanelService* sender,
+                                     gint x, gint y, gint width, gint height,
+                                     gpointer userdata) {
+    return reinterpret_cast<IBusUiControllerImpl*>(userdata)
+        ->SetCursorLocation(sender, x, y, width, height);
+  }
+  static void UpdateLookupTableThunk(IBusPanelService* sender,
+                                     IBusLookupTable* table, gboolean visible,
+                                     gpointer userdata) {
+    return reinterpret_cast<IBusUiControllerImpl*>(userdata)
+        ->UpdateLookupTable(sender, table, visible);
+  }
+  static void UpdatePreeditTextThunk(IBusPanelService* sender,
+                                     IBusText* text,
+                                     guint cursor_pos,
+                                     gboolean visible,
+                                     gpointer userdata) {
+    return reinterpret_cast<IBusUiControllerImpl*>(userdata)
+        ->UpdatePreeditText(sender, text, cursor_pos, visible);
+  }
+  static void HidePreeditTextThunk(IBusPanelService* sender,
+                                   gpointer userdata) {
+    return reinterpret_cast<IBusUiControllerImpl*>(userdata)
+        ->HidePreeditText(sender);
+  }
+
+
   // Installs gobject signal handlers to |ibus_|.
   void ConnectIBusSignals() {
     if (!ibus_) {
@@ -239,11 +298,11 @@ class InputMethodUiStatusConnection {
     }
     g_signal_connect(ibus_,
                      "connected",
-                     G_CALLBACK(IBusBusConnectedCallback),
+                     G_CALLBACK(IBusBusConnectedThunk),
                      this);
     g_signal_connect(ibus_,
                      "disconnected",
-                     G_CALLBACK(IBusBusDisconnectedCallback),
+                     G_CALLBACK(IBusBusDisconnectedThunk),
                      this);
   }
 
@@ -254,11 +313,11 @@ class InputMethodUiStatusConnection {
     }
     g_signal_handlers_disconnect_by_func(
         ibus_,
-        reinterpret_cast<gpointer>(G_CALLBACK(IBusBusConnectedCallback)),
+        reinterpret_cast<gpointer>(G_CALLBACK(IBusBusConnectedThunk)),
         this);
     g_signal_handlers_disconnect_by_func(
         ibus_,
-        reinterpret_cast<gpointer>(G_CALLBACK(IBusBusDisconnectedCallback)),
+        reinterpret_cast<gpointer>(G_CALLBACK(IBusBusDisconnectedThunk)),
         this);
   }
 
@@ -269,23 +328,31 @@ class InputMethodUiStatusConnection {
     }
     g_signal_connect(ibus_panel_service_,
                      "hide-auxiliary-text",
-                     G_CALLBACK(HideAuxiliaryTextCallback),
+                     G_CALLBACK(HideAuxiliaryTextThunk),
                      this);
     g_signal_connect(ibus_panel_service_,
                      "hide-lookup-table",
-                     G_CALLBACK(HideLookupTableCallback),
+                     G_CALLBACK(HideLookupTableThunk),
                      this);
     g_signal_connect(ibus_panel_service_,
                      "update-auxiliary-text",
-                     G_CALLBACK(UpdateAuxiliaryTextCallback),
+                     G_CALLBACK(UpdateAuxiliaryTextThunk),
                      this);
     g_signal_connect(ibus_panel_service_,
                      "set-cursor-location",
-                     G_CALLBACK(SetCursorLocationCallback),
+                     G_CALLBACK(SetCursorLocationThunk),
                      this);
     g_signal_connect(ibus_panel_service_,
                      "update-lookup-table",
-                     G_CALLBACK(UpdateLookupTableCallback),
+                     G_CALLBACK(UpdateLookupTableThunk),
+                     this);
+    g_signal_connect(ibus_panel_service_,
+                     "update-preedit-text",
+                     G_CALLBACK(UpdatePreeditTextThunk),
+                     this);
+    g_signal_connect(ibus_panel_service_,
+                     "hide-preedit-text",
+                     G_CALLBACK(HidePreeditTextThunk),
                      this);
   }
 
@@ -296,63 +363,62 @@ class InputMethodUiStatusConnection {
     }
     g_signal_handlers_disconnect_by_func(
         ibus_panel_service_,
-        reinterpret_cast<gpointer>(HideAuxiliaryTextCallback),
+        reinterpret_cast<gpointer>(HideAuxiliaryTextThunk),
         this);
     g_signal_handlers_disconnect_by_func(
         ibus_panel_service_,
-        reinterpret_cast<gpointer>(HideLookupTableCallback),
+        reinterpret_cast<gpointer>(HideLookupTableThunk),
         this);
     g_signal_handlers_disconnect_by_func(
         ibus_panel_service_,
-        reinterpret_cast<gpointer>(UpdateAuxiliaryTextCallback),
+        reinterpret_cast<gpointer>(UpdateAuxiliaryTextThunk),
         this);
     g_signal_handlers_disconnect_by_func(
         ibus_panel_service_,
-        reinterpret_cast<gpointer>(SetCursorLocationCallback),
+        reinterpret_cast<gpointer>(SetCursorLocationThunk),
         this);
     g_signal_handlers_disconnect_by_func(
         ibus_panel_service_,
-        reinterpret_cast<gpointer>(UpdateLookupTableCallback),
+        reinterpret_cast<gpointer>(UpdateLookupTableThunk),
+        this);
+    g_signal_handlers_disconnect_by_func(
+        ibus_panel_service_,
+        reinterpret_cast<gpointer>(UpdatePreeditTextThunk),
+        this);
+    g_signal_handlers_disconnect_by_func(
+        ibus_panel_service_,
+        reinterpret_cast<gpointer>(HidePreeditTextThunk),
         this);
   }
 
   // Handles "connected" signal from ibus-daemon.
-  static void IBusBusConnectedCallback(IBusBus* bus, gpointer user_data) {
+  void IBusBusConnected(IBusBus* bus) {
     LOG(WARNING) << "IBus connection is recovered.";
-    g_return_if_fail(user_data);
-    InputMethodUiStatusConnection* self
-        = static_cast<InputMethodUiStatusConnection*>(user_data);
-    if (!self->MaybeRestorePanelService()) {
+    if (!MaybeRestorePanelService()) {
       LOG(ERROR) << "MaybeRestorePanelService() failed";
       return;
     }
-    if (self->connection_change_handler_) {
-      self->connection_change_handler_(self->input_method_library_, true);
-    }
+
+    FOR_EACH_OBSERVER(Observer, observers_, OnConnectionChange(true));
   }
 
   // Handles "disconnected" signal from ibus-daemon. Releases the
   // |ibus_panel_service_| object since the connection the service has will be
   // destroyed soon.
-  static void IBusBusDisconnectedCallback(IBusBus* bus, gpointer user_data) {
+  void IBusBusDisconnected(IBusBus* bus) {
     LOG(WARNING) << "IBus connection is terminated.";
-    g_return_if_fail(user_data);
-    InputMethodUiStatusConnection* self
-        = static_cast<InputMethodUiStatusConnection*>(user_data);
-    if (self->ibus_panel_service_) {
-      self->DisconnectPanelServiceSignals();
+    if (ibus_panel_service_) {
+      DisconnectPanelServiceSignals();
       // Since the connection being disconnected is currently mutex-locked,
       // we can't unref the panel service object directly here. Because when the
       // service object is deleted, the connection, which the service also has,
       // will be locked again. To avoid deadlock, we use g_idle_add instead.
-      g_object_set_data(G_OBJECT(self->ibus_), kPanelObjectKey, NULL);
-      g_idle_add(ReleasePanelService, self->ibus_panel_service_);
-      self->ibus_panel_service_ = NULL;
+      g_object_set_data(G_OBJECT(ibus_), kPanelObjectKey, NULL);
+      g_idle_add(ReleasePanelService, ibus_panel_service_);
+      ibus_panel_service_ = NULL;
     }
 
-    if (self->connection_change_handler_) {
-      self->connection_change_handler_(self->input_method_library_, false);
-    }
+    FOR_EACH_OBSERVER(Observer, observers_, OnConnectionChange(false));
   }
 
   // Releases |ibus_panel_service_|. See the comment above.
@@ -363,74 +429,56 @@ class InputMethodUiStatusConnection {
   }
 
   // Handles IBusPanelService's |HideAuxiliaryText| method call.
-  // Calls |hide_auxiliary_text| in |monitor_functions|.
-  static void HideAuxiliaryTextCallback(IBusPanelService *panel,
-                                        gpointer user_data) {
-    g_return_if_fail(user_data);
-    InputMethodUiStatusConnection* self
-        = static_cast<InputMethodUiStatusConnection*>(user_data);
-    g_return_if_fail(self->monitor_functions_.hide_auxiliary_text);
-    self->monitor_functions_.hide_auxiliary_text(self->input_method_library_);
+  void HideAuxiliaryText(IBusPanelService* panel) {
+    FOR_EACH_OBSERVER(Observer, observers_, OnHideAuxiliaryText());
   }
 
   // Handles IBusPanelService's |HideLookupTable| method call.
-  // Calls |hide_lookup_table| in |monitor_functions|.
-  static void HideLookupTableCallback(IBusPanelService *panel,
-                                      gpointer user_data) {
-    g_return_if_fail(user_data);
-    InputMethodUiStatusConnection* self
-        = static_cast<InputMethodUiStatusConnection*>(user_data);
-    g_return_if_fail(self->monitor_functions_.hide_lookup_table);
-    self->monitor_functions_.hide_lookup_table(self->input_method_library_);
+  void HideLookupTable(IBusPanelService *panel) {
+    FOR_EACH_OBSERVER(Observer, observers_, OnHideLookupTable());
   }
 
   // Handles IBusPanelService's |UpdateAuxiliaryText| method call.
-  // Converts IBusText to a std::string, and calls |update_auxiliary_text| in
-  // |monitor_functions|
-  static void UpdateAuxiliaryTextCallback(IBusPanelService *panel,
-                                          IBusText *text,
-                                          gboolean visible,
-                                          gpointer user_data) {
+  void UpdateAuxiliaryText(IBusPanelService* panel,
+                           IBusText* text,
+                           gboolean visible) {
     g_return_if_fail(text);
     g_return_if_fail(text->text);
-    g_return_if_fail(user_data);
-    InputMethodUiStatusConnection* self
-        = static_cast<InputMethodUiStatusConnection*>(user_data);
-    g_return_if_fail(self->monitor_functions_.update_auxiliary_text);
     // Convert IBusText to a std::string. IBusText is an attributed text,
     const std::string simple_text = text->text;
-    self->monitor_functions_.update_auxiliary_text(
-        self->input_method_library_, simple_text, visible == TRUE);
+    FOR_EACH_OBSERVER(Observer, observers_,
+                      OnUpdateAuxiliaryText(simple_text, visible == TRUE));
   }
 
   // Handles IBusPanelService's |SetCursorLocation| method call.
-  // Calls |set_cursor_location| in |monitor_functions|.
-  static void SetCursorLocationCallback(IBusPanelService *panel,
-                                        gint x,
-                                        gint y,
-                                        gint width,
-                                        gint height,
-                                        gpointer user_data) {
-    g_return_if_fail(user_data);
-    InputMethodUiStatusConnection* self
-        = static_cast<InputMethodUiStatusConnection*>(user_data);
-    g_return_if_fail(self->monitor_functions_.set_cursor_location);
-    self->monitor_functions_.set_cursor_location(
-        self->input_method_library_, x, y, width, height);
+  void SetCursorLocation(IBusPanelService *panel,
+                         gint x,
+                         gint y,
+                         gint width,
+                         gint height) {
+    FOR_EACH_OBSERVER(Observer, observers_,
+                      OnSetCursorLocation(x, y, width, height));
+  }
+
+  // Handles IBusPanelService's |UpdatePreeditText| method call.
+  void UpdatePreeditText(IBusPanelService *panel,
+                         IBusText *text,
+                         guint cursor_pos,
+                         gboolean visible) {
+    FOR_EACH_OBSERVER(Observer, observers_,
+                      OnUpdatePreeditText(text->text, cursor_pos, visible));
+  }
+
+  // Handles IBusPanelService's |UpdatePreeditText| method call.
+  void HidePreeditText(IBusPanelService *panel) {
+    FOR_EACH_OBSERVER(Observer, observers_, OnHidePreeditText());
   }
 
   // Handles IBusPanelService's |UpdateLookupTable| method call.
-  // Creates an InputMethodLookupTable object and calls |update_lookup_table| in
-  // |monitor_functions|
-  static void UpdateLookupTableCallback(IBusPanelService *panel,
-                                        IBusLookupTable *table,
-                                        gboolean visible,
-                                        gpointer user_data) {
+  void UpdateLookupTable(IBusPanelService *panel,
+                         IBusLookupTable *table,
+                         gboolean visible) {
     g_return_if_fail(table);
-    g_return_if_fail(user_data);
-    InputMethodUiStatusConnection* self
-        = static_cast<InputMethodUiStatusConnection*>(user_data);
-    g_return_if_fail(self->monitor_functions_.update_lookup_table);
 
     InputMethodLookupTable lookup_table;
     lookup_table.visible = (visible == TRUE);
@@ -503,8 +551,8 @@ class InputMethodUiStatusConnection {
       lookup_table.page_size = 1;
     }
 
-    self->monitor_functions_.update_lookup_table(
-        self->input_method_library_, lookup_table);
+    FOR_EACH_OBSERVER(Observer, observers_,
+                      OnUpdateLookupTable(lookup_table));
   }
 
   // A callback function that will be called when ibus_bus_request_name_async()
@@ -535,100 +583,57 @@ class InputMethodUiStatusConnection {
     g_object_unref(bus);
   }
 
-  InputMethodUiStatusMonitorFunctions monitor_functions_;
-  InputMethodConnectionChangeMonitorFunction connection_change_handler_;
-  void* input_method_library_;
   IBusBus* ibus_;
   IBusPanelService* ibus_panel_service_;
+  ObserverList<Observer> observers_;
+};
+#endif  // defined(HAVE_IBUS)
+
+// The stub implementation is used if IBus is not present.
+//
+// Note that this class is intentionally built even if HAVE_IBUS is
+// defined so that we can easily tell build breakage when we change the
+// IBusUiControllerImpl but forget to update the stub implementation.
+class IBusUiControllerStubImpl : public IBusUiController {
+ public:
+  IBusUiControllerStubImpl() {
+  }
+
+  virtual void Connect() {
+  }
+
+  virtual void AddObserver(Observer* observer) {
+  }
+
+  virtual void RemoveObserver(Observer* observer) {
+  }
+
+  virtual void NotifyCandidateClicked(int index, int button, int flags) {
+  }
+
+  virtual void NotifyCursorUp() {
+  }
+
+  virtual void NotifyCursorDown() {
+  }
+
+  virtual void NotifyPageUp() {
+  }
+
+  virtual void NotifyPageDown() {
+  }
 };
 
-//
-// cros APIs
-//
-
-// The function will be bound to chromeos::MonitorInputMethodUiStatus with
-// dlsym() in load.cc so it needs to be in the C linkage, so the symbol
-// name does not get mangled.
-extern "C"
-InputMethodUiStatusConnection* ChromeOSMonitorInputMethodUiStatus(
-    const InputMethodUiStatusMonitorFunctions& monitor_functions,
-    void* input_method_library) {
-  DLOG(INFO) << "MonitorInputMethodUiStatus";
-
-  InputMethodUiStatusConnection* connection =
-      new InputMethodUiStatusConnection(monitor_functions,
-                                        input_method_library);
-
-  // It's totally fine if ConnectToIBus() fails here, as we'll get "connected"
-  // gobject signal once the connection becomes ready.
-  if (connection->ConnectToIBus()) {
-    connection->MaybeRestorePanelService();
-  }
-  return connection;
+IBusUiController* IBusUiController::Create() {
+#if defined(HAVE_IBUS)
+  return new IBusUiControllerImpl;
+#else
+  return new IBusUiControllerStubImpl;
+#endif
 }
 
-extern "C"
-void ChromeOSDisconnectInputMethodUiStatus(
-    InputMethodUiStatusConnection* connection) {
-  DLOG(INFO) << "DisconnectInputMethodUiStatus";
-  delete connection;
+IBusUiController::~IBusUiController() {
 }
 
-extern "C"
-void ChromeOSNotifyCandidateClicked(InputMethodUiStatusConnection* connection,
-                                    int index, int button, int flags) {
-  DLOG(INFO) << "NotifyCandidateClicked";
-  DCHECK(connection);
-  if (connection) {
-    connection->NotifyCandidateClicked(index, button, flags);
-  }
-}
-
-extern "C"
-void ChromeOSNotifyCursorUp(InputMethodUiStatusConnection* connection) {
-  DLOG(INFO) << "NotifyCursorUp";
-  DCHECK(connection);
-  if (connection) {
-    connection->NotifyCursorUp();
-  }
-}
-
-extern "C"
-void ChromeOSNotifyCursorDown(InputMethodUiStatusConnection* connection) {
-  DLOG(INFO) << "NotifyCursorDown";
-  DCHECK(connection);
-  if (connection) {
-    connection->NotifyCursorDown();
-  }
-}
-
-extern "C"
-void ChromeOSNotifyPageUp(InputMethodUiStatusConnection* connection) {
-  DLOG(INFO) << "NotifyPageUp";
-  DCHECK(connection);
-  if (connection) {
-    connection->NotifyPageUp();
-  }
-}
-
-extern "C"
-void ChromeOSNotifyPageDown(InputMethodUiStatusConnection* connection) {
-  DLOG(INFO) << "NotifyPageDown";
-  DCHECK(connection);
-  if (connection) {
-    connection->NotifyPageDown();
-  }
-}
-
-extern "C"
-void ChromeOSMonitorInputMethodConnection(
-    InputMethodUiStatusConnection* connection,
-    InputMethodConnectionChangeMonitorFunction connection_change_handler) {
-  DLOG(INFO) << "MonitorInputMethodConnection";
-  DCHECK(connection);
-  if (connection) {
-    connection->MonitorInputMethodConnection(connection_change_handler);
-  }
-}
-
+}  // namespace input_method
 }  // namespace chromeos

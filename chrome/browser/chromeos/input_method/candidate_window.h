@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 
 namespace chromeos {
+namespace input_method {
 
 // CandidateWindowController is used for controlling the input method
 // candidate window. Once the initialization is done, the controller
@@ -32,6 +33,7 @@ class CandidateWindowController {
   DISALLOW_COPY_AND_ASSIGN(CandidateWindowController);
 };
 
+}  // namespace input_method
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_INPUT_METHOD_CANDIDATE_WINDOW_H_

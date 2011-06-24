@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium OS Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -6,16 +6,19 @@
 // method UI status. The APIs encapsulate the APIs of IBus, the underlying
 // input method framework.
 
-#ifndef CHROMEOS_INPUT_METHOD_UI_H_
-#define CHROMEOS_INPUT_METHOD_UI_H_
-
-#include <base/basictypes.h>
+#ifndef CHROME_BROWSER_CHROMEOS_INPUT_METHOD_IBUS_UI_CONTROLLER_H_
+#define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_IBUS_UI_CONTROLLER_H_
+#pragma once
 
 #include <sstream>
 #include <string>
 #include <vector>
 
+#include "base/basictypes.h"
+#include "base/observer_list.h"
+
 namespace chromeos {
+namespace input_method {
 
 // A key for attaching the |ibus_service_panel_| object to |ibus_|.
 const char kPanelObjectKey[] = "panel-object";
@@ -84,112 +87,81 @@ struct InputMethodLookupTable {
   std::vector<std::string> annotations;
 };
 
-// Callback function type for handling IBus's |HideAuxiliaryText| signal.
-typedef void (*InputMethodHideAuxiliaryTextMonitorFunction)(
-    void* input_method_library);
+// IBusUiController is used to interact with the IBus daemon.
+class IBusUiController {
+ public:
+  class Observer {
+   public:
+    // Called when the auxiliary text becomes hidden.
+    virtual void OnHideAuxiliaryText() = 0;
 
-// Callback function type for handling IBus's |HideLookupTable| signal.
-typedef void (*InputMethodHideLookupTableMonitorFunction)(
-    void* input_method_library);
+    // Called when the lookup table becomes hidden.
+    virtual void OnHideLookupTable() = 0;
 
-// Callback function type for handling IBus's |SetCandidateText| signal.
-typedef void (*InputMethodSetCursorLocationMonitorFunction)(
-    void* input_method_library,
-    int x, int y, int width, int height);
+    // Called when the preedit text becomes hidden.
+    virtual void OnHidePreeditText() = 0;
 
-// Callback function type for handling IBus's |UpdateAuxiliaryText| signal.
-typedef void (*InputMethodUpdateAuxiliaryTextMonitorFunction)(
-    void* input_method_library,
-    const std::string& text,
-    bool visible);
+    // Called when the cursor location is set.
+    virtual void OnSetCursorLocation(int x, int y, int width, int height) = 0;
 
-// Callback function type for handling IBus's |UpdateLookupTable| signal.
-typedef void (*InputMethodUpdateLookupTableMonitorFunction)(
-    void* input_method_library,
-    const InputMethodLookupTable& table);
+    // Called when the auxiliary text is updated.
+    virtual void OnUpdateAuxiliaryText(const std::string& text,
+                                       bool visible) = 0;
 
-// A monitor function which is called when ibus connects or disconnects.
-typedef void(*InputMethodConnectionChangeMonitorFunction)(
-    void* input_method_library, bool connected);
+    // Called when the lookup table is updated.
+    virtual void OnUpdateLookupTable(const InputMethodLookupTable& table) = 0;
 
-// A set of function pointers used for monitoring the input method UI status.
-struct InputMethodUiStatusMonitorFunctions {
-  InputMethodUiStatusMonitorFunctions()
-      : hide_auxiliary_text(NULL),
-        hide_lookup_table(NULL),
-        set_cursor_location(NULL),
-        update_auxiliary_text(NULL),
-        update_lookup_table(NULL) {
-  }
+    // Called when the preedit text is updated.
+    virtual void OnUpdatePreeditText(const std::string& utf8_text,
+                                     unsigned int cursor, bool visible) = 0;
 
-  InputMethodHideAuxiliaryTextMonitorFunction hide_auxiliary_text;
-  InputMethodHideLookupTableMonitorFunction hide_lookup_table;
-  InputMethodSetCursorLocationMonitorFunction set_cursor_location;
-  InputMethodUpdateAuxiliaryTextMonitorFunction update_auxiliary_text;
-  InputMethodUpdateLookupTableMonitorFunction update_lookup_table;
+    // Called when the connection is changed. |connected| is true if the
+    // connection is established, and false if the connection is closed.
+    virtual void OnConnectionChange(bool connected) = 0;
+  };
+
+  // Creates an instance of the class. The constructor is unused.
+  static IBusUiController* Create();
+
+  virtual ~IBusUiController();
+
+  // Connects to the IBus daemon.
+  virtual void Connect() = 0;
+
+  // Adds and removes observers for IBus UI notifications. Clients must be
+  // sure to remove the observer before they go away. To capture the
+  // initial connection change, you should add an observer before calling
+  // Connect().
+  virtual void AddObserver(Observer* observer) = 0;
+  virtual void RemoveObserver(Observer* observer) = 0;
+
+  // Notifies that a candidate is clicked. |CandidateClicked| signal will be
+  // sent to the ibus-daemon.
+  //
+  // - |index| Index in the Lookup table. The semantics is same with
+  //   |cursor_absolute_index|.
+  // - |button| GdkEventButton::button (1: left button, etc.)
+  // - |state|  GdkEventButton::state (key modifier flags)
+  virtual void NotifyCandidateClicked(int index, int button, int flags) = 0;
+
+  // Notifies that the cursor up button is clicked. |CursorUp| signal will be
+  // sent to the ibus-daemon
+  virtual void NotifyCursorUp() = 0;
+
+  // Notifies that the cursor down button is clicked. |CursorDown| signal
+  // will be sent to the ibus-daemon
+  virtual void NotifyCursorDown() = 0;
+
+  // Notifies that the page up button is clicked. |PageUp| signal will be
+  // sent to the ibus-daemon
+  virtual void NotifyPageUp() = 0;
+
+  // Notifies that the page down button is clicked. |PageDown| signal will be
+  // sent to the ibus-daemon
+  virtual void NotifyPageDown() = 0;
 };
 
-// Establishes IBus connection to the ibus-daemon.
-//
-// Returns an InputMethodUiStatusConnection object that is used for
-// maintaining and monitoring an IBus connection. The implementation
-// details of InputMethodUiStatusConnection is not exposed.
-//
-// Function pointers in |monitor_functions| are registered in the returned
-// InputMethodUiStatusConnection object. These functions will be called,
-// unless the pointers are NULL, when certain signals are received from
-// ibus-daemon.
-//
-// The client can pass a pointer to an abitrary object as
-// |input_method_library|. The pointer passed as |input_method_library|
-// will be passed to the registered callback functions as the first
-// parameter.
-class InputMethodUiStatusConnection;
-extern InputMethodUiStatusConnection* (*MonitorInputMethodUiStatus)(
-    const InputMethodUiStatusMonitorFunctions& monitor_functions,
-    void* input_method_library);
-
-// Disconnects the input method UI status connection, as well as the
-// underlying IBus connection.
-extern void (*DisconnectInputMethodUiStatus)(
-    InputMethodUiStatusConnection* connection);
-
-// Notifies that a candidate is clicked. |CandidateClicked| signal will be
-// sent to the ibus-daemon.
-//
-// - |index| Index in the Lookup table. The semantics is same with
-//   |cursor_absolute_index|.
-// - |button| GdkEventButton::button (1: left button, etc.)
-// - |state|  GdkEventButton::state (key modifier flags)
-extern void (*NotifyCandidateClicked)(
-    InputMethodUiStatusConnection* connection,
-    int index, int button, int flags);
-
-// Notifies that the cursor up button is clicked. |CursorUp| signal will be
-// sent to the ibus-daemon
-extern void (*NotifyCursorUp)(
-    InputMethodUiStatusConnection* connection);
-
-// Notifies that the cursor down button is clicked. |CursorDown| signal will be
-// sent to the ibus-daemon
-extern void (*NotifyCursorDown)(
-    InputMethodUiStatusConnection* connection);
-
-// Notifies that the page up button is clicked. |PageUp| signal will be
-// sent to the ibus-daemon
-extern void (*NotifyPageUp)(
-    InputMethodUiStatusConnection* connection);
-
-// Notifies that the page down button is clicked. |PageDown| signal will be
-// sent to the ibus-daemon
-extern void (*NotifyPageDown)(
-    InputMethodUiStatusConnection* connection);
-
-// Set a notification function for changes to an ibus connection.
-extern void (*MonitorInputMethodConnection)(
-    InputMethodUiStatusConnection* connection,
-    InputMethodConnectionChangeMonitorFunction connection_change_handler);
-
+}  // namespace input_method
 }  // namespace chromeos
 
-#endif  // CHROMEOS_INPUT_METHOD_UI_H_
+#endif  // CHROME_BROWSER_CHROMEOS_INPUT_METHOD_IBUS_UI_CONTROLLER_H_

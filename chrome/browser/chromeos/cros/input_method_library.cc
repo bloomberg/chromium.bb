@@ -806,7 +806,8 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
 
 #if !defined(TOUCH_UI)
     if (!candidate_window_controller_.get()) {
-      candidate_window_controller_.reset(new CandidateWindowController);
+      candidate_window_controller_.reset(
+          new input_method::CandidateWindowController);
       if (!candidate_window_controller_->Init()) {
         LOG(WARNING) << "Failed to initialize the candidate window controller";
       }
@@ -944,7 +945,8 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
   // The candidate window.  This will be deleted when the APP_TERMINATING
   // message is sent.
 #if !defined(TOUCH_UI)
-  scoped_ptr<CandidateWindowController> candidate_window_controller_;
+  scoped_ptr<input_method::CandidateWindowController>
+      candidate_window_controller_;
 #endif
 
   // An object which keeps a list of available virtual keyboards.
