@@ -422,6 +422,12 @@
             'browser/renderer_host/p2p/socket_dispatcher_host.h',
           ],
         }],
+        ['OS=="win"', {
+          'dependencies': [
+            # For enable-handle-auditing switch
+            '../sandbox/sandbox.gyp:sandbox',
+          ],
+        }],
         ['toolkit_uses_gtk == 1', {
           'dependencies': [
             '../build/linux/system.gyp:dbus-glib',

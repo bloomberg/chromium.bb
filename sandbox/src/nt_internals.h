@@ -16,6 +16,7 @@ typedef LONG NTSTATUS;
 #define STATUS_BUFFER_OVERFLOW        ((NTSTATUS)0x80000005L)
 #define STATUS_UNSUCCESSFUL           ((NTSTATUS)0xC0000001L)
 #define STATUS_NOT_IMPLEMENTED        ((NTSTATUS)0xC0000002L)
+#define STATUS_INFO_LENGTH_MISMATCH   ((NTSTATUS)0xC0000004L)
 #ifndef STATUS_INVALID_PARAMETER
 // It is now defined in Windows 2008 SDK.
 #define STATUS_INVALID_PARAMETER      ((NTSTATUS)0xC000000DL)
@@ -441,6 +442,35 @@ typedef enum _OBJECT_INFORMATION_CLASS {
   ObjectDataInformation
 } OBJECT_INFORMATION_CLASS, *POBJECT_INFORMATION_CLASS;
 
+typedef struct _OBJDIR_INFORMATION {
+  UNICODE_STRING ObjectName;
+  UNICODE_STRING ObjectTypeName;
+  BYTE Data[1];
+} OBJDIR_INFORMATION;
+
+typedef struct _PUBLIC_OBJECT_BASIC_INFORMATION {
+  ULONG Attributes;
+  ACCESS_MASK GrantedAccess;
+  ULONG HandleCount;
+  ULONG PointerCount;
+  ULONG Reserved[10];    // reserved for internal use
+ } PUBLIC_OBJECT_BASIC_INFORMATION, *PPUBLIC_OBJECT_BASIC_INFORMATION;
+
+typedef struct __PUBLIC_OBJECT_TYPE_INFORMATION {
+  UNICODE_STRING TypeName;
+  ULONG Reserved[22];    // reserved for internal use
+} PUBLIC_OBJECT_TYPE_INFORMATION, *PPUBLIC_OBJECT_TYPE_INFORMATION;
+
+typedef enum _POOL_TYPE {
+  NonPagedPool,
+  PagedPool,
+  NonPagedPoolMustSucceed,
+  ReservedType,
+  NonPagedPoolCacheAligned,
+  PagedPoolCacheAligned,
+  NonPagedPoolCacheAlignedMustS
+} POOL_TYPE;
+
 typedef struct _OBJECT_BASIC_INFORMATION {
   ULONG Attributes;
   ACCESS_MASK GrantedAccess;
@@ -454,6 +484,50 @@ typedef struct _OBJECT_BASIC_INFORMATION {
   ULONG SecurityDescriptorLength;
   LARGE_INTEGER CreateTime;
 } OBJECT_BASIC_INFORMATION, *POBJECT_BASIC_INFORMATION;
+
+typedef struct _OBJECT_TYPE_INFORMATION {
+  UNICODE_STRING Name;
+  ULONG TotalNumberOfObjects;
+  ULONG TotalNumberOfHandles;
+  ULONG TotalPagedPoolUsage;
+  ULONG TotalNonPagedPoolUsage;
+  ULONG TotalNamePoolUsage;
+  ULONG TotalHandleTableUsage;
+  ULONG HighWaterNumberOfObjects;
+  ULONG HighWaterNumberOfHandles;
+  ULONG HighWaterPagedPoolUsage;
+  ULONG HighWaterNonPagedPoolUsage;
+  ULONG HighWaterNamePoolUsage;
+  ULONG HighWaterHandleTableUsage;
+  ULONG InvalidAttributes;
+  GENERIC_MAPPING GenericMapping;
+  ULONG ValidAccess;
+  BOOLEAN SecurityRequired;
+  BOOLEAN MaintainHandleCount;
+  USHORT MaintainTypeList;
+  POOL_TYPE PoolType;
+  ULONG PagedPoolUsage;
+  ULONG NonPagedPoolUsage;
+} OBJECT_TYPE_INFORMATION, *POBJECT_TYPE_INFORMATION;
+
+typedef enum _SYSTEM_INFORMATION_CLASS {
+  SystemHandleInformation = 16
+} SYSTEM_INFORMATION_CLASS;
+
+typedef struct _SYSTEM_HANDLE_INFORMATION {
+  USHORT ProcessId;
+  USHORT CreatorBackTraceIndex;
+  UCHAR ObjectTypeNumber;
+  UCHAR Flags;
+  USHORT Handle;
+  PVOID Object;
+  ACCESS_MASK GrantedAccess;
+} SYSTEM_HANDLE_INFORMATION, *PSYSTEM_HANDLE_INFORMATION;
+
+typedef struct _SYSTEM_HANDLE_INFORMATION_EX {
+  ULONG NumberOfHandles;
+  SYSTEM_HANDLE_INFORMATION Information[1];
+} SYSTEM_HANDLE_INFORMATION_EX, *PSYSTEM_HANDLE_INFORMATION_EX;
 
 typedef struct _OBJECT_NAME_INFORMATION {
   UNICODE_STRING ObjectName;
@@ -480,6 +554,19 @@ typedef NTSTATUS (WINAPI *NtSignalAndWaitForSingleObjectFunction)(
   IN HANDLE HandleToWait,
   IN BOOLEAN Alertable,
   IN PLARGE_INTEGER Timeout OPTIONAL);
+
+typedef NTSTATUS (WINAPI *NtQuerySystemInformation)(
+  IN SYSTEM_INFORMATION_CLASS SystemInformationClass,
+  OUT PVOID SystemInformation,
+  IN ULONG SystemInformationLength,
+  OUT PULONG ReturnLength);
+
+typedef NTSTATUS (WINAPI *NtQueryObject)(
+  IN HANDLE Handle,
+  IN OBJECT_INFORMATION_CLASS ObjectInformationClass,
+  OUT PVOID ObjectInformation,
+  IN ULONG ObjectInformationLength,
+  OUT PULONG ReturnLength);
 
 // -----------------------------------------------------------------------
 // Strings

@@ -5,6 +5,7 @@
 #include "content/browser/handle_enumerator_win.h"
 
 #include <windows.h>
+#include <map>
 
 #include "base/logging.h"
 #include "base/process.h"
@@ -15,7 +16,40 @@
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/common/result_codes.h"
-#include "sandbox/tools/finder/ntundoc.h"
+#include "sandbox/src/handle_table.h"
+
+namespace {
+
+typedef std::map<const string16, content::HandleType> HandleTypeMap;
+
+HandleTypeMap& MakeHandleTypeMap() {
+  HandleTypeMap& handle_types = *(new HandleTypeMap());
+  handle_types[sandbox::HandleTable::kTypeProcess] = content::ProcessHandle;
+  handle_types[sandbox::HandleTable::kTypeThread] = content::ThreadHandle;
+  handle_types[sandbox::HandleTable::kTypeFile] = content::FileHandle;
+  handle_types[sandbox::HandleTable::kTypeDirectory] =
+      content::DirectoryHandle;
+  handle_types[sandbox::HandleTable::kTypeKey] = content::KeyHandle;
+  handle_types[sandbox::HandleTable::kTypeWindowStation] =
+      content::WindowStationHandle;
+  handle_types[sandbox::HandleTable::kTypeDesktop] = content::DesktopHandle;
+  handle_types[sandbox::HandleTable::kTypeService] = content::ServiceHandle;
+  handle_types[sandbox::HandleTable::kTypeMutex] = content::MutexHandle;
+  handle_types[sandbox::HandleTable::kTypeSemaphore] =
+      content::SemaphoreHandle;
+  handle_types[sandbox::HandleTable::kTypeEvent] = content::EventHandle;
+  handle_types[sandbox::HandleTable::kTypeTimer] = content::TimerHandle;
+  handle_types[sandbox::HandleTable::kTypeNamedPipe] =
+      content::NamedPipeHandle;
+  handle_types[sandbox::HandleTable::kTypeJobObject] = content::JobHandle;
+  handle_types[sandbox::HandleTable::kTypeFileMap] = content::FileMapHandle;
+  handle_types[sandbox::HandleTable::kTypeAlpcPort] =
+      content::AlpcPortHandle;
+
+  return handle_types;
+}
+
+}  // namespace
 
 namespace content {
 
@@ -23,65 +57,14 @@ const wchar_t kNtdllDllName[] = L"ntdll.dll";
 const size_t kMaxHandleNameLength = 1024;
 
 void HandleEnumerator::EnumerateHandles() {
-  ULONG pid = 0;
-  pid = ::GetProcessId(handle_);
-  if (!pid)
-    return;
-  ULONG handle_info_size = 0x10000;
-  HMODULE ntdll = ::GetModuleHandle(kNtdllDllName);
-  if (!ntdll)
-    return;
-
-  NTQUERYSYSTEMINFORMATION NtQuerySystemInformation =
-      reinterpret_cast<NTQUERYSYSTEMINFORMATION>(
-          GetProcAddress(ntdll, "NtQuerySystemInformation"));
-  NTQUERYOBJECT NtQueryObject =
-      reinterpret_cast<NTQUERYOBJECT>(GetProcAddress(ntdll, "NtQueryObject"));
-
-  if (!NtQuerySystemInformation || !NtQueryObject)
-    return;
-
-  SYSTEM_HANDLE_INFORMATION_EX* handle_info =
-      reinterpret_cast<SYSTEM_HANDLE_INFORMATION_EX*>(
-          new BYTE[handle_info_size]);
-  while (NtQuerySystemInformation(SystemHandleInformation,
-                                  handle_info,
-                                  handle_info_size,
-                                  &handle_info_size)
-         == STATUS_INFO_LENGTH_MISMATCH) {
-    delete handle_info;
-    handle_info = reinterpret_cast<SYSTEM_HANDLE_INFORMATION_EX*>
-        (new BYTE[handle_info_size]);
-  }
+  sandbox::HandleTable handles;
 
   string16 output = ProcessTypeString(type_);
   output.append(ASCIIToUTF16(" Process - Handles at shutdown:\n"));
-  for (UINT i = 0; i < handle_info->NumberOfHandles; i++) {
-    SYSTEM_HANDLE_INFORMATION sys_handle = handle_info->Information[i];
-    HANDLE handle = reinterpret_cast<HANDLE>(sys_handle.Handle);
-    if (sys_handle.ProcessId != pid)
-      continue;
-
-    OBJECT_TYPE_INFORMATION* type_info =
-        reinterpret_cast<OBJECT_TYPE_INFORMATION*>(
-            new BYTE[sizeof(OBJECT_TYPE_INFORMATION) + kMaxHandleNameLength]);
-    if (NtQueryObject(handle, ObjectTypeInformation, type_info,
-        sizeof(OBJECT_TYPE_INFORMATION) + kMaxHandleNameLength, NULL) < 0)
-      return;
-
-    UNICODE_STRING* name = reinterpret_cast<UNICODE_STRING*>(
-        new BYTE[kMaxHandleNameLength]);
-    if (NtQueryObject(handle, ObjectNameInformation, name,
-        kMaxHandleNameLength, NULL) < 0)
-      return;
-
-    string16 handle_type;
-    string16 handle_name;
-    WideToUTF16(type_info->Name.Buffer,
-        type_info->Name.Length/2, &handle_type);
-    WideToUTF16(name->Buffer, name->Length/2, &handle_name);
-
-    HandleType current_type = StringToHandleType(handle_type);
+  for (sandbox::HandleTable::Iterator sys_handle
+      = handles.HandlesForProcess(::GetProcessId(handle_));
+      sys_handle != handles.end(); ++sys_handle) {
+    HandleType current_type = StringToHandleType(sys_handle->Type());
     if (!all_handles_ && (current_type != ProcessHandle &&
                           current_type != FileHandle &&
                           current_type != DirectoryHandle &&
@@ -92,13 +75,13 @@ void HandleEnumerator::EnumerateHandles() {
       continue;
 
     output += ASCIIToUTF16("[");
-    output += handle_type;
+    output += sys_handle->Type();
     output += ASCIIToUTF16("] (");
-    output += handle_name;
+    output += sys_handle->Name();
     output += ASCIIToUTF16(")\n");
-    output += GetAccessString(current_type, sys_handle.GrantedAccess);
+    output += GetAccessString(current_type,
+        sys_handle->handle_entry()->GrantedAccess);
   }
-  delete handle_info;
   LOG(INFO) << output;
 }
 
@@ -213,37 +196,9 @@ string16 ProcessTypeString(ChildProcessInfo::ProcessType process_type) {
 }
 
 HandleType StringToHandleType(const string16& type) {
-  if (!type.compare(ASCIIToUTF16("Process")))
-    return ProcessHandle;
-  else if (!type.compare(ASCIIToUTF16("Thread")))
-    return ThreadHandle;
-  else if (!type.compare(ASCIIToUTF16("File")))
-    return FileHandle;
-  else if (!type.compare(ASCIIToUTF16("Directory")))
-    return DirectoryHandle;
-  else if (!type.compare(ASCIIToUTF16("Key")))
-    return KeyHandle;
-  else if (!type.compare(ASCIIToUTF16("WindowStation")))
-    return WindowStationHandle;
-  else if (!type.compare(ASCIIToUTF16("Desktop")))
-    return DesktopHandle;
-  else if (!type.compare(ASCIIToUTF16("Service")))
-    return ServiceHandle;
-  else if (!type.compare(ASCIIToUTF16("Mutex")))
-    return MutexHandle;
-  else if (!type.compare(ASCIIToUTF16("Semaphore")))
-    return SemaphoreHandle;
-  else if (!type.compare(ASCIIToUTF16("Event")))
-    return EventHandle;
-  else if (!type.compare(ASCIIToUTF16("Timer")))
-    return TimerHandle;
-  else if (!type.compare(ASCIIToUTF16("NamedPipe")))
-    return NamedPipeHandle;
-  else if (!type.compare(ASCIIToUTF16("JobObject")))
-    return JobHandle;
-  else if (!type.compare(ASCIIToUTF16("FileMap")))
-    return FileMapHandle;
-  return OtherHandle;
+  static HandleTypeMap handle_types = MakeHandleTypeMap();
+  HandleTypeMap::iterator result = handle_types.find(type);
+  return result != handle_types.end() ? result->second : OtherHandle;
 }
 
 string16 GetAccessString(HandleType handle_type,

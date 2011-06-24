@@ -27,6 +27,7 @@ enum HandleType {
   NamedPipeHandle,
   JobHandle,
   FileMapHandle,
+  AlpcPortHandle,
   OtherHandle
 };
 
