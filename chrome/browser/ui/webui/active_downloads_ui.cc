@@ -390,7 +390,7 @@ ActiveDownloadsUI::ActiveDownloadsUI(TabContents* contents)
 
 // static
 Browser* ActiveDownloadsUI::OpenPopup(Profile* profile) {
-  Browser* browser = GetPopup(profile);
+  Browser* browser = GetPopup();
 
   // Create new browser if no matching pop up is found.
   if (browser == NULL) {
@@ -416,7 +416,7 @@ Browser* ActiveDownloadsUI::OpenPopup(Profile* profile) {
   return browser;
 }
 
-Browser* ActiveDownloadsUI::GetPopup(Profile* profile) {
+Browser* ActiveDownloadsUI::GetPopup() {
   for (BrowserList::const_iterator it = BrowserList::begin();
        it != BrowserList::end();
        ++it) {

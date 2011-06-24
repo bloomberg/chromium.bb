@@ -24,7 +24,7 @@ class ActiveDownloadsUI : public HtmlDialogUI {
   explicit ActiveDownloadsUI(TabContents* contents);
 
   static Browser* OpenPopup(Profile* profile);
-  static Browser* GetPopup(Profile* profile);
+  static Browser* GetPopup();
 
   // For testing.
   typedef std::vector<DownloadItem*> DownloadList;
