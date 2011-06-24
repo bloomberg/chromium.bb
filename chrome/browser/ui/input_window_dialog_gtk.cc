@@ -8,7 +8,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/string_piece.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "ui/base/gtk/gtk_signal.h"
@@ -104,7 +103,7 @@ void InputWindowDialogGtk::Close() {
 }
 
 void InputWindowDialogGtk::OnEntryChanged(GtkEditable* entry) {
-  std::wstring value(UTF8ToWide(gtk_entry_get_text(GTK_ENTRY(entry))));
+  string16 value(UTF8ToUTF16(gtk_entry_get_text(GTK_ENTRY(entry))));
   gtk_dialog_set_response_sensitive(GTK_DIALOG(dialog_),
                                     GTK_RESPONSE_ACCEPT,
                                     delegate_->IsValid(value));
@@ -112,7 +111,7 @@ void InputWindowDialogGtk::OnEntryChanged(GtkEditable* entry) {
 
 void InputWindowDialogGtk::OnResponse(GtkWidget* dialog, int response_id) {
   if (response_id == GTK_RESPONSE_ACCEPT) {
-    std::wstring value(UTF8ToWide(gtk_entry_get_text(GTK_ENTRY(input_))));
+    string16 value(UTF8ToUTF16(gtk_entry_get_text(GTK_ENTRY(input_))));
     delegate_->InputAccepted(value);
   } else {
     delegate_->InputCanceled();
@@ -135,13 +134,13 @@ void InputWindowDialogGtk::OnWindowDestroy(GtkWidget* widget) {
 }
 
 InputWindowDialog* InputWindowDialog::Create(gfx::NativeWindow parent,
-                                             const std::wstring& window_title,
-                                             const std::wstring& label,
-                                             const std::wstring& contents,
+                                             const string16& window_title,
+                                             const string16& label,
+                                             const string16& contents,
                                              Delegate* delegate) {
   return new InputWindowDialogGtk(parent,
-                                  WideToUTF8(window_title),
-                                  WideToUTF8(label),
-                                  WideToUTF8(contents),
+                                  UTF16ToUTF8(window_title),
+                                  UTF16ToUTF8(label),
+                                  UTF16ToUTF8(contents),
                                   delegate);
 }

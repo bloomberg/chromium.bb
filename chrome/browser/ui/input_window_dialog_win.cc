@@ -7,6 +7,7 @@
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "base/task.h"
+#include "base/utf_string_conversions.h"
 #include "grit/generated_resources.h"
 #include "views/controls/label.h"
 #include "views/controls/textfield/textfield.h"
@@ -16,10 +17,12 @@
 #include "views/widget/widget.h"
 #include "views/window/dialog_delegate.h"
 
-// Width to make the text field, in pixels.
-static const int kTextfieldWidth = 200;
+namespace {
 
-class ContentView;
+// Width of the text field, in pixels.
+const int kTextfieldWidth = 200;
+
+}  // namespace
 
 namespace views {
 class Widget;
@@ -68,7 +71,7 @@ class ContentView : public views::DialogDelegateView,
     DCHECK(delegate_);
   }
 
-  // views::DialogDelegate:
+  // views::DialogDelegateView:
   virtual bool IsDialogButtonEnabled(
       MessageBoxFlags::DialogButton button) const;
   virtual bool Accept();
@@ -228,13 +231,13 @@ void WinInputWindowDialog::Close() {
 
 // static
 InputWindowDialog* InputWindowDialog::Create(HWND parent,
-                                             const std::wstring& window_title,
-                                             const std::wstring& label,
-                                             const std::wstring& contents,
+                                             const string16& window_title,
+                                             const string16& label,
+                                             const string16& contents,
                                              Delegate* delegate) {
   return new WinInputWindowDialog(parent,
-                                  window_title,
-                                  label,
-                                  contents,
+                                  UTF16ToWide(window_title),
+                                  UTF16ToWide(label),
+                                  UTF16ToWide(contents),
                                   delegate);
 }

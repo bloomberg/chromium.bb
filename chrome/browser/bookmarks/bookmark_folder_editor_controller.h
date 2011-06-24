@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
 #include "chrome/browser/ui/input_window_dialog.h"
 #include "ui/gfx/native_widget_types.h"
@@ -40,14 +41,14 @@ class BookmarkFolderEditorController : public InputWindowDialog::Delegate,
                                  int index,
                                  Type type);
 
-  // Overridden from InputWindowDialog::Delegate:
-  virtual bool IsValid(const std::wstring& text);
-  virtual void InputAccepted(const std::wstring& text);
-  virtual void InputCanceled();
+  // InputWindowDialog::Delegate:
+  virtual bool IsValid(const string16& text) OVERRIDE;
+  virtual void InputAccepted(const string16& text) OVERRIDE;
+  virtual void InputCanceled() OVERRIDE;
 
-  // Overridden from BaseBookmarkModelObserver:
-  virtual void BookmarkModelChanged();
-  virtual void BookmarkModelBeingDeleted(BookmarkModel* model);
+  // BaseBookmarkModelObserver:
+  virtual void BookmarkModelChanged() OVERRIDE;
+  virtual void BookmarkModelBeingDeleted(BookmarkModel* model) OVERRIDE;
 
   Profile* profile_;
 

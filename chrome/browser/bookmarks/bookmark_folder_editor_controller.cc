@@ -39,6 +39,8 @@ BookmarkFolderEditorController::BookmarkFolderEditorController(
       is_new_(type == NEW_BOOKMARK) {
   DCHECK(is_new_ || node);
 
+  model_->AddObserver(this);
+
   string16 title = is_new_ ?
       l10n_util::GetStringUTF16(IDS_BOOMARK_FOLDER_EDITOR_WINDOW_TITLE_NEW) :
       l10n_util::GetStringUTF16(IDS_BOOMARK_FOLDER_EDITOR_WINDOW_TITLE);
@@ -48,25 +50,19 @@ BookmarkFolderEditorController::BookmarkFolderEditorController(
       l10n_util::GetStringUTF16(IDS_BOOMARK_EDITOR_NEW_FOLDER_NAME) :
       node_->GetTitle();
 
-  dialog_ = InputWindowDialog::Create(wnd,
-                                      UTF16ToWideHack(title),
-                                      UTF16ToWideHack(label),
-                                      UTF16ToWideHack(contents),
-                                      this);
-  model_->AddObserver(this);
-
+  dialog_ = InputWindowDialog::Create(wnd, title, label, contents, this);
   dialog_->Show();
 }
 
-bool BookmarkFolderEditorController::IsValid(const std::wstring& text) {
+bool BookmarkFolderEditorController::IsValid(const string16& text) {
   return !text.empty();
 }
 
-void BookmarkFolderEditorController::InputAccepted(const std::wstring& text) {
+void BookmarkFolderEditorController::InputAccepted(const string16& text) {
   if (is_new_)
-    model_->AddFolder(node_, index_, WideToUTF16Hack(text));
+    model_->AddFolder(node_, index_, text);
   else
-    model_->SetTitle(node_, WideToUTF16Hack(text));
+    model_->SetTitle(node_, text);
 }
 
 void BookmarkFolderEditorController::InputCanceled() {
