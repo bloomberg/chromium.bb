@@ -226,7 +226,7 @@ cr.define('options', function() {
         if (hash)
           this.searchField.value = unescape(hash.slice(1));
       } else {
-          // Just wipe out any active search text since it's no longer relevant.
+        // Just wipe out any active search text since it's no longer relevant.
         this.searchField.value = '';
       }
 
@@ -241,11 +241,21 @@ cr.define('options', function() {
         // sections (ie titles, button strips).  We do this before changing
         // the page visibility to avoid excessive re-draw.
         for (var i = 0, childDiv; childDiv = page.pageDiv.children[i]; i++) {
-          if (active) {
-            if (childDiv.tagName != 'SECTION')
-              childDiv.classList.add('search-hidden');
+          if (childDiv.classList.contains('displaytable')) {
+            childDiv.setAttribute('searching', active ? 'true' : 'false');
+            for (var j = 0, subDiv; subDiv = childDiv.children[j]; j++) {
+              if (active) {
+                if (subDiv.tagName != 'SECTION')
+                  subDiv.classList.add('search-hidden');
+              } else {
+                subDiv.classList.remove('search-hidden');
+              }
+            }
           } else {
-            childDiv.classList.remove('search-hidden');
+            if (active)
+              childDiv.classList.add('search-hidden');
+            else
+              childDiv.classList.remove('search-hidden');
           }
         }
 
@@ -310,14 +320,12 @@ cr.define('options', function() {
         }
         if (pageMatch)
           foundMatches = true;
-        for (var i = 0, childDiv; childDiv = page.pageDiv.children[i]; i++) {
-          if (childDiv.tagName == 'SECTION') {
-            if (pageMatch) {
-              childDiv.classList.remove('search-hidden');
-            } else {
-              childDiv.classList.add('search-hidden');
-            }
-          }
+        var elements = page.pageDiv.querySelectorAll('.displaytable > section');
+        for (var i = 0, node; node = elements[i]; i++) {
+          if (pageMatch)
+            node.classList.remove('search-hidden');
+          else
+            node.classList.add('search-hidden');
         }
       }
 
@@ -325,10 +333,11 @@ cr.define('options', function() {
         // Search all top-level sections for anchored string matches.
         for (var key in pagesToSearch) {
           page = pagesToSearch[key];
-          for (var i = 0, childDiv; childDiv = page.pageDiv.children[i]; i++) {
-            if (childDiv.tagName == 'SECTION' &&
-                this.performReplace_(regEx, replaceString, childDiv)) {
-              childDiv.classList.remove('search-hidden');
+          var elements =
+              page.pageDiv.querySelectorAll('.displaytable > section');
+          for (var i = 0, node; node = elements[i]; i++) {
+            if (this.performReplace_(regEx, replaceString, node)) {
+              node.classList.remove('search-hidden');
               foundMatches = true;
             }
           }

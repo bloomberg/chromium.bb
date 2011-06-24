@@ -770,7 +770,7 @@ html[flashPluginSupportsClearSiteData] .clear-plugin-lso-data-disabled {
 }
 
 /* do not display a border after the last section in the table */
-.displaytable > section:last-child > *  {
+.displaytable:not([searching='true']) > section:last-child > *  {
   border-bottom: none;
 }
 
