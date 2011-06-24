@@ -71,6 +71,10 @@ message CameraEnabledProto {
   optional bool camera_enabled = 1;
 }
 
+message MetricsEnabledProto {
+  optional bool metrics_enabled = 1;
+}
+
 message ChromeDeviceSettingsProto {
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
   optional UserWhitelistProto user_whitelist = 2;
@@ -80,4 +84,5 @@ message ChromeDeviceSettingsProto {
   optional ShowUserNamesOnSigninProto show_user_names = 6;
   optional DataRoamingEnabledProto data_roaming_enabled = 7;
   optional AllowNewUsersProto allow_new_users = 8;
+  optional MetricsEnabledProto metrics_enabled = 9;
 }
