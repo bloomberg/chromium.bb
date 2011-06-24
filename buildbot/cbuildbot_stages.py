@@ -584,11 +584,20 @@ class ImportantBuilderFailedException(Exception):
 class LGKMVersionedSyncCompletionStage(ManifestVersionedSyncCompletionStage):
   """Stage that records whether we passed or failed to build/test manifest."""
 
-  @staticmethod
-  def _GetImportantBuilders():
+  def _GetImportantBuildersForMaster(self, config):
+    """Gets the important builds corresponding to this master builder.
+
+    Given that we are a master builder, find all corresponding slaves that
+    are important to me.  These are those builders that share the same
+    build_type and manifest_version url.
+    """
     builders = []
-    for build_name, config in cbuildbot_config.config.iteritems():
-      if config['important']: builders.append(build_name)
+    build_type = self._build_config['build_type']
+    manifest_version_url = self._build_config['manifest_version']
+    for build_name, config in config.iteritems():
+      if (config['important'] and config['build_type'] == build_type and
+          config['manifest_version'] == manifest_version_url):
+        builders.append(build_name)
 
     return builders
 
@@ -600,7 +609,7 @@ class LGKMVersionedSyncCompletionStage(ManifestVersionedSyncCompletionStage):
     if not self._build_config['master']:
       return
 
-    builders = self._GetImportantBuilders()
+    builders = self._GetImportantBuildersForMaster()
     statuses = ManifestVersionedSyncStage.manifest_manager.GetBuildersStatus(
         builders)
     success = True

@@ -258,20 +258,24 @@ add_config('x86-generic-chrome-pre-flight-queue', [{
   'master' : True,
 
   'build_type': 'chrome',
+  'important': True,
   'uprev' : False,
   'chrome_tests' : True,
   'overlays': 'public',
   'push_overlays': 'public',
+  'manifest_version': _MANIFEST_VERSIONS_URL,
 }])
 
 add_config('arm-generic-chrome-pre-flight-queue', [{
   'board' : 'arm-generic',
 
   'build_type': 'chrome',
+  'important': True,
   'uprev' : False,
   'chrome_tests' : True,
   'overlays': 'public',
   'push_overlays': None,
+  'manifest_version': _MANIFEST_VERSIONS_URL,
 }])
 
 add_config('x86-agz-bin', [{

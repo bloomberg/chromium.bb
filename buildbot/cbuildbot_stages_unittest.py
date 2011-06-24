@@ -16,12 +16,13 @@ import unittest
 
 import constants
 sys.path.append(constants.SOURCE_ROOT)
-import chromite.buildbot.cbuildbot as cbuildbot
-import chromite.buildbot.cbuildbot_config as config
-import chromite.buildbot.cbuildbot_commands as commands
-import chromite.buildbot.cbuildbot_stages as stages
-import chromite.buildbot.manifest_version as manifest_version
-import chromite.lib.cros_build_lib as cros_lib
+from chromite.buildbot import cbuildbot
+from chromite.buildbot import cbuildbot_config as config
+from chromite.buildbot import cbuildbot_commands as commands
+from chromite.buildbot import cbuildbot_stages as stages
+from chromite.buildbot import lkgm_manager
+from chromite.buildbot import manifest_version
+from chromite.lib import cros_build_lib as cros_lib
 
 
 class AbstractStageTest(mox.MoxTestBase):
@@ -283,6 +284,69 @@ class ManifestVersionedSyncStageTest(AbstractStageTest):
                                                         success=False)
     stage.Run()
     self.mox.VerifyAll()
+
+
+class LGKMVersionedSyncCompletionStage(AbstractStageTest):
+  """Tests the two (heavily related) stages ManifestVersionedSync, and
+     ManifestVersionedSyncCompleted.
+  """
+
+  def setUp(self):
+    mox.MoxTestBase.setUp(self)
+    AbstractStageTest.setUp(self)
+
+    self.tmpdir = tempfile.mkdtemp()
+    self.source_repo = 'ssh://source/repo'
+    self.manifest_version_url = 'fake manifest url'
+    self.branch = 'master'
+    self.build_name = 'x86-generic-pre-flight-queue'
+    self.build_type = 'binary'
+
+    self.build_config['manifest_version'] = self.manifest_version_url
+    self.build_config['build_type'] = self.build_type
+
+    self.manager = lkgm_manager.LKGMManager(
+      self.tmpdir, self.source_repo, self.manifest_version_url, self.branch,
+      self.build_name, self.build_type, dry_run=True)
+
+  def ConstructStage(self):
+    return stages.LGKMVersionedSyncCompletionStage(self.bot_id, self.options,
+                                                   self.build_config,
+                                                   success=True)
+
+  def testGetImportantBuildsForMaster(self):
+    test_config = {}
+    test_config['test1'] = {
+        'manifest_version': self.manifest_version_url,
+        'build_type': 'binary',
+        'important': True,
+    }
+    test_config['test2'] = {
+        'manifest_version': self.manifest_version_url,
+        'build_type': 'binary',
+        'important': True,
+    }
+    test_config['test3'] = {
+        'manifest_version': self.manifest_version_url,
+        'build_type': 'binary',
+        'important': False,
+    }
+    test_config['test4'] = {
+        'manifest_version': 'some_other_url',
+        'build_type': 'binary',
+        'important': True,
+    }
+    os.path.isdir(self.build_root + '/.repo').AndReturn(True)
+
+    self.mox.ReplayAll()
+    stage = self.ConstructStage()
+    important_configs = stage._GetImportantBuildersForMaster(test_config)
+    self.mox.VerifyAll()
+
+    self.assertTrue('test1' in important_configs)
+    self.assertTrue('test2' in important_configs)
+    self.assertFalse('test3' in important_configs)
+    self.assertFalse('test4' in important_configs)
 
 
 class BuildBoardTest(AbstractStageTest):
