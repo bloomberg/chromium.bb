@@ -734,7 +734,7 @@ wlsc_output_repaint(struct wlsc_output *output)
 	struct wlsc_compositor *ec = output->compositor;
 	struct wlsc_surface *es;
 	struct wlsc_input_device *device;
-	pixman_region32_t new_damage, total_damage;
+	pixman_region32_t clip, new_damage, total_damage, region;
 
 	output->prepare_render(output);
 
@@ -745,16 +745,26 @@ wlsc_output_repaint(struct wlsc_output *output)
 			   1, GL_FALSE, output->matrix.d);
 	glUniform1i(ec->texture_shader.tex_uniform, 0);
 
-	wl_list_for_each(es, &ec->surface_list, link)
-		pixman_region32_union(&ec->damage, &ec->damage, &es->damage);
-
 	pixman_region32_init(&new_damage);
-	pixman_region32_init(&total_damage);
 	pixman_region32_intersect(&new_damage, &ec->damage, &output->region);
-	pixman_region32_subtract(&ec->damage, &ec->damage, &new_damage);
+	pixman_region32_init(&clip);
+	pixman_region32_copy(&clip, &output->region);
+	wl_list_for_each(es, &ec->surface_list, link) {
+		pixman_region32_intersect(&es->damage, &es->damage, &clip);
+		pixman_region32_union(&new_damage, &new_damage, &es->damage);
+		if (es->visual == &ec->compositor.rgb_visual) {
+			pixman_region32_init_rect(&region, es->x, es->y, es->width, es->height);
+			pixman_region32_subtract(&clip, &clip, &region);
+			pixman_region32_fini(&region);
+		}
+						   
+	}
+
+	pixman_region32_subtract(&ec->damage, &ec->damage, &output->region);
+	pixman_region32_init(&total_damage);
 	pixman_region32_union(&total_damage, &new_damage,
-			      &output->previous_damage_region);
-	pixman_region32_copy(&output->previous_damage_region, &new_damage);
+			      &output->previous_damage);
+	pixman_region32_copy(&output->previous_damage, &new_damage);
 
 	device = (struct wlsc_input_device *) ec->input_device;
 	if (ec->focus && ec->fade.spring.current < 0.001) {
@@ -1684,7 +1694,7 @@ WL_EXPORT void
 wlsc_output_destroy(struct wlsc_output *output)
 {
 	pixman_region32_fini(&output->region);
-	pixman_region32_fini(&output->previous_damage_region);
+	pixman_region32_fini(&output->previous_damage);
 	destroy_surface(&output->background->surface.resource, NULL);
 }
 
@@ -1702,7 +1712,7 @@ wlsc_output_move(struct wlsc_output *output, int x, int y)
 		output->background->y = y;
 	}
 
-	pixman_region32_init(&output->previous_damage_region);
+	pixman_region32_init(&output->previous_damage);
 	pixman_region32_init_rect(&output->region, x, y, 
 				  output->current->width,
 				  output->current->height);

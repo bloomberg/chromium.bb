@@ -68,7 +68,7 @@ struct wlsc_output {
 	struct wlsc_matrix matrix;
 	int32_t x, y, mm_width, mm_height;
 	pixman_region32_t region;
-	pixman_region32_t previous_damage_region;
+	pixman_region32_t previous_damage;
 	uint32_t flags;
 	int repaint_needed;
 	int repaint_scheduled;
